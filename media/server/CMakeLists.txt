@@ -54,6 +54,10 @@ set_target_properties(
         PROPERTIES LINK_FLAGS "-Wl,--unresolved-symbols=report-all"
 )
 
+if( CMAKE_BUILD_FLAG STREQUAL "UnitTests" )
+        set( RialtoServerStubsLibs RialtoServerStubs )
+endif()
+
 target_link_libraries(
         RialtoServer
 
@@ -61,6 +65,7 @@ target_link_libraries(
         RialtoServerIpc
         RialtoServerMain
         RialtoServerService
+        ${RialtoServerStubsLibs}
 )
 
 install(
