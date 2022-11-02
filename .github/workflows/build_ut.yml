@@ -1,0 +1,222 @@
+#
+# If not stated otherwise in this file or this component's LICENSE file the
+# following copyright and licenses apply:
+#
+# Copyright 2022 Sky UK
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# This workflow builds and runs the rialto unittests. The workflow shall fail if any test fails
+# and the results of the tests are checked and displayed in github. Logs are uploaded on failure.
+
+name: build_ut
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "master" branch
+  push:
+    branches: [ "master", "rdkcentral:master" ]
+  pull_request:
+    branches: [ "master", "rdkcentral:master" ]
+    paths-ignore:
+      - 'README.md'
+      - 'CPPLINT.cfg'
+      - 'CONTRIBUTING.md'
+      - 'COPYING'
+      - 'LICENSE'
+      - 'NOTICE'
+      - '.gitignore'
+      - '.clang-format'
+      - '**/valgrind_ut.yml'
+      - '**/cpplint.yml'
+      - '**/clang-format.yml'
+      - '**/cppcheck.yml'
+      - 'docs/**'
+      - 'rialto.supp'
+      - 'scripts/**'
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+
+  # This job downloads and caches the protobuf library to speed up execution
+  download-protobuf:
+    name: Download and Cache Protobuf
+    # Runs on ubuntu
+    runs-on: ubuntu-latest
+    # Timeout after
+    timeout-minutes: 90
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    # Protobuf isnt cached if any steps fail, hence it is isolated in its own job
+    steps:
+      # Setup github for protobuf 3.7.0
+      - name: Cache protobuf library
+        id: cache-protobuf-2
+        uses: actions/cache@v3
+        with:
+          path: protobuf
+          key: ${{ runner.os }}-protobuf-2
+      - name: Build protobuf library
+        if: steps.cache-protobuf-2.outputs.cache-hit != 'true'
+        run: |
+          git clone https://github.com/protocolbuffers/protobuf.git protobuf
+          cd protobuf
+          git checkout v3.7.0
+          git submodule update --init --recursive
+          ./autogen.sh
+          ./autogen.sh
+          ./configure
+          make
+          make check
+      - name: Install protobuf library
+        timeout-minutes: 2
+        run: |
+          cd protobuf
+          sudo make install
+          sudo ldconfig
+
+      # If this job was cancelled by protobuf install, the cache is likely corrupt
+      - name: Is Cancelled
+        if: cancelled()
+        run: |
+          echo "If this job was cancelled due to 'Install protobuf library' timeout, the cache is likely corrupt and needs deleting!" >> $GITHUB_STEP_SUMMARY
+
+  # This job sets up the repo with the dependancies then runs the tests
+  build-test:
+    name: Build and test build_ut
+    # Wait for protobuf to be cached first
+    needs: download-protobuf
+    # Runs on ubuntu
+    runs-on: ubuntu-latest
+    # Timeout after
+    timeout-minutes: 20
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: checkout repo
+        uses: actions/checkout@v3
+
+      # Setup github for python 3.8
+      - name: setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      # Setup gstreamer 1.0
+      - name: Build gstreamer library
+        run: |
+          sudo apt-get update
+          sudo apt-get install libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-doc gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio lcov
+
+      # Setup github for protobuf 3.7.0
+      # Protobuf should always be cached here
+      - name: Cache protobuf library
+        id: cache-protobuf-2
+        uses: actions/cache@v3
+        with:
+          path: protobuf
+          key: ${{ runner.os }}-protobuf-2
+      - name: Check cache
+        if: steps.cache-protobuf-2.outputs.cache-hit != 'true'
+        run: |
+          exit 1
+      - name: Install protobuf library
+        timeout-minutes: 2
+        run: |
+          cd protobuf
+          sudo make install
+          sudo ldconfig
+
+      # If this job was cancelled by protobuf install, the cache is likely corrupt
+      - name: Is Cancelled
+        if: cancelled()
+        run: |
+          echo "If this job was cancelled due to 'Install protobuf library' timeout, the cache is likely corrupt and needs deleting!" >> $GITHUB_STEP_SUMMARY
+
+      # Run the build script
+      - name: build_ut.py script
+        run: |
+              python build_ut.py -c -xml -f -cov
+
+      # Process the test results
+      - name: Check results
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: GTests
+          path: build/*gtest_result.xml
+          reporter: java-junit
+
+      # Upload logs on failure
+      - name: Upload logs
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: logs
+          path: |
+            gtest_result.log
+            build/*gtest_result.xml
+
+      # Upload coverage report on success
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v3
+        if: success()
+        with:
+          name: coverage_report
+          path: build/coverage_report
+
+      # Upload coverage statistics on success
+      - name: Upload Coverage Statistics
+        uses: actions/upload-artifact@v3
+        if: success()
+        with:
+          name: coverage_report_stats
+          path: build/coverage_statistics.txt
+
+      # Download current master coverage statistics
+      - name: Download Master Coverage Statistics
+        uses: dawidd6/action-download-artifact@v2
+        if: ${{ success() && github.ref != 'refs/heads/master' }}
+        with:
+          workflow_conclusion: success
+          branch: master
+          name: coverage_report_stats
+          path: master_artifacts
+
+      # Run the process_coverage_stats script
+      - name: Process Coverage Statistics
+        if: ${{ success() && github.ref != 'refs/heads/master' }}
+        run: python scripts/coverage/process_coverage_stats.py ./master_artifacts/coverage_statistics.txt build/coverage_statistics.txt
+
+      # Get process_coverage_stats script output
+      - id: get-comment-body
+        if: ${{ success() && github.ref != 'refs/heads/master' }}
+        run: |
+          body="$(cat comparison_output.txt)"
+          body="${body//'%'/'%25'}"
+          body="${body//$'\n'/'%0A'}"
+          body="${body//$'\r'/'%0D'}"
+          echo "::set-output name=body::$body"
+
+      # Create comment with coverage info
+      - name: Create Coverage Comment
+        if: ${{ success() && github.ref != 'refs/heads/master' }}
+        uses: peter-evans/create-or-update-comment@v2
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: ${{ steps.get-comment-body.outputs.body }}

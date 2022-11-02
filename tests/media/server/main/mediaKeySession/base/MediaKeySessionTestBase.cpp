@@ -1,0 +1,69 @@
+/*
+ * If not stated otherwise in this file or this component's LICENSE file the
+ * following copyright and licenses apply:
+ *
+ * Copyright 2022 Sky UK
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#include "MediaKeySessionTestBase.h"
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
+MediaKeySessionTestBase::MediaKeySessionTestBase()
+    : m_mediaKeysClientMock{std::make_shared<StrictMock<MediaKeysClientMock>>()},
+      m_ocdmSystemMock{std::make_unique<StrictMock<OcdmSystemMock>>()},
+      m_ocdmSession{std::make_unique<StrictMock<OcdmSessionMock>>()}, m_ocdmSessionMock{m_ocdmSession.get()}
+{
+}
+
+MediaKeySessionTestBase::~MediaKeySessionTestBase() {}
+
+void MediaKeySessionTestBase::createKeySession(const std::string &keySystem)
+{
+    EXPECT_CALL(*m_ocdmSystemMock, createSession(_)).WillOnce(Return(ByMove(std::move(m_ocdmSession))));
+
+    EXPECT_NO_THROW(m_mediaKeySession = std::make_unique<MediaKeySession>(keySystem, m_keySessionId, *m_ocdmSystemMock,
+                                                                          m_keySessionType, m_mediaKeysClientMock,
+                                                                          m_isLDL));
+    EXPECT_NE(m_mediaKeySession, nullptr);
+}
+
+void MediaKeySessionTestBase::expectCloseKeySession(const std::string &keySystem)
+{
+    if (kNetflixKeySystem == keySystem)
+    {
+        EXPECT_CALL(*m_ocdmSessionMock, cancelChallengeData()).WillOnce(Return(MediaKeyErrorStatus::OK));
+        EXPECT_CALL(*m_ocdmSessionMock, cleanDecryptContext()).WillOnce(Return(MediaKeyErrorStatus::OK));
+    }
+    else
+    {
+        EXPECT_CALL(*m_ocdmSessionMock, close()).WillOnce(Return(MediaKeyErrorStatus::OK));
+    }
+
+    EXPECT_CALL(*m_ocdmSessionMock, destructSession()).WillOnce(Return(MediaKeyErrorStatus::OK));
+}
+
+void MediaKeySessionTestBase::generateRequest()
+{
+    InitDataType m_initDataType = InitDataType::CENC;
+    std::vector<uint8_t> m_initData{1, 2, 3};
+
+    EXPECT_CALL(*m_ocdmSessionMock, constructSession(m_keySessionType, m_initDataType, &m_initData[0], m_initData.size()))
+        .WillOnce(Return(MediaKeyErrorStatus::OK));
+
+    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->generateRequest(m_initDataType, m_initData));
+}

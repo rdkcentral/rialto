@@ -1,0 +1,112 @@
+#
+# If not stated otherwise in this file or this component's LICENSE file the
+# following copyright and licenses apply:
+#
+# Copyright 2022 Sky UK
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# This workflow runs clang-format on our rialto code, which checks that the formating is
+# correct. This workflow shall fail if any code has been changed by clang-format. Logs
+# are uploaded on failure.
+
+name: clang-format
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "master" branch
+  push:
+    branches: [ "master", "rdkcentral:master" ]
+  pull_request:
+    branches: [ "master", "rdkcentral:master" ]
+    paths-ignore:
+      - 'README.md'
+      - 'CPPLINT.cfg'
+      - 'CONTRIBUTING.md'
+      - 'COPYING'
+      - 'LICENSE'
+      - 'NOTICE'
+      - '.gitignore'
+      - 'rialto.supp'
+      - 'build_ut.py'
+      - '**/valgrind_ut.yml'
+      - '**/build_ut.yml'
+      - '**/cpplint.yml'
+      - '**/cppcheck.yml'
+      - 'docs/**'
+      - 'scripts/cpplint/**'
+      - 'scripts/valgrind/**'
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+
+ # This runs the clang-format program and processes the results
+  run-clang-format:
+    name: Run clang-format
+    # Runs on ubuntu
+    runs-on: ubuntu-latest
+    # Timeout after
+    timeout-minutes: 2
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: checkout repo
+        uses: actions/checkout@v3
+
+      # Setup github for python 3.8
+      - name: setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      # Install dependencies
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install clang-format
+
+      # Run the prgram with rialto config
+      - name: Run clang-format
+        run: |
+              find . -regex '.*\.\(cpp\|hpp\|cu\|c\|h\)' -exec clang-format -style=file -n --Werror {} \; &> clang-format_errors.log
+
+      # Process the clang-format errors and generate a junit xml file
+      # Generate a failure if errors detected
+      - name: Process clang-format results
+        id: create-clang-format-xml
+        if: failure() || success()
+        run: python scripts/clang-format/process_clang-format_errors.py
+
+      # Report the errors on failure using the xml file
+      - name: Check results
+        uses: dorny/test-reporter@v1
+        if: failure()
+        with:
+          name: Clang-format errors
+          path: clang-format_errors.xml
+          reporter: java-junit
+
+      # Upload logs on failure
+      - name: Upload logs
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: logs
+          path: |
+            clang-format_errors.log
+            clang-format_errors.xml

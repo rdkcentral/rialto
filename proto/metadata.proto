@@ -1,0 +1,52 @@
+/*
+ * If not stated otherwise in this file or this component's LICENSE file the
+ * following copyright and licenses apply:
+ *
+ * Copyright 2022 Sky UK
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+syntax = "proto2";
+
+package firebolt.rialto;
+
+message MediaSegmentMetadata {
+    enum SegmentAlignment {
+        ALIGNMENT_UNDEFINED = 0;
+        ALIGNMENT_NAL       = 1;
+        ALIGNMENT_AU        = 2;
+    }
+
+    message SubsamplePair {
+        required uint32 num_clear_bytes      = 1;             /* How many of next bytes in sequence are clear */
+        required uint32 num_encrypted_bytes  = 2;             /* How many of next bytes in sequence are encrypted */
+    }
+
+    required uint32           length               = 1;       /* Number of bytes in sample */
+    required int64            time_position        = 2;       /* Position in stream in nanoseconds */
+    required int64            sample_duration      = 3;       /* Frame/sample duration in nanoseconds */
+    required uint32           stream_id            = 4;       /* stream id (unique ID for ES, as defined in attachSource()) */
+    optional uint32           sample_rate          = 5;       /* Samples per second for audio segments */
+    optional uint32           channels_num         = 6;       /* Number of channels for audio segments */
+    optional uint32           width                = 7;       /* Frame width in pixels for video segments */
+    optional uint32           height               = 8;       /* Frame height in pixels for video segments */
+    optional SegmentAlignment segment_alignment    = 9;       /* Segment alignment can be specified for H264/H265, will use NAL if not set */
+    optional bytes            extra_data           = 10;      /* buffer containing extradata */
+    optional int32            media_key_session_id = 11;      /* Buffer containing key session ID to use for decryption */
+    optional bytes            key_id               = 12;      /* Buffer containing Key ID to use for decryption */
+    optional bytes            init_vector          = 13;      /* Buffer containing the initialization vector for decryption */
+    optional uint32           init_with_last_15    = 14;      /* initWithLast15 value for decryption */
+    repeated SubsamplePair    sub_sample_info      = 15;      /* If present, use gather/scatter decryption based on this list of clear/encrypted byte lengths. */
+                                                              /* If not present and content is encrypted then entire media segment needs decryption.           */
+}

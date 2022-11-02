@@ -1,0 +1,508 @@
+/*
+ * If not stated otherwise in this file or this component's LICENSE file the
+ * following copyright and licenses apply:
+ *
+ * Copyright 2022 Sky UK
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+syntax = "proto2";
+
+import "google/protobuf/descriptor.proto";
+
+package firebolt.rialto;
+
+// You need this to generate the rpc service stubs
+option cc_generic_services = true;
+
+/**
+ * @fn int createSession(uint32 max_width, uint32 max_height)
+ * @brief Creates a new A/V playback session.
+ *
+ * @param[in]  max_width    The maximum width of the video.
+ * @param[in]  max_height   The maximum height of the video.
+ *
+ * A client can have multiple A/V sessions, although typically only one will be streaming at a time.  A session is used
+ * to group a one or more video and audio media sources together into a single playback session.
+ *
+ * Sessions are unique to a single IPC connection to the server, it is not possible to use a session id created on
+ * one IPC connection with another IPC connection.  When an IPC connection is closed the session ids are invalidated
+ * and the resource allocated to the session on the server are freed.
+ *
+ * @returns a unique numeric session id value that should be used for all subsequent operations on the session.
+ */
+message CreateSessionRequest {
+    required uint32 max_width = 1;
+    required uint32 max_height = 2;
+}
+message CreateSessionResponse {
+    required int32 session_id = 1;
+}
+
+/**
+ * @fn void destroySession(int session_id)
+ * @brief Destroys an A/V playback session.
+ *
+ * @param[in]  session_id   The id of the session to destroy.
+ *
+ * Destroys an A/V playback session freeing all resources on the server.
+ *
+ */
+message DestroySessionRequest {
+  required int32 session_id = 1;
+}
+message DestroySessionResponse {
+}
+
+/**
+ * @fn void load(MediaType type, string mime_type, string url)
+ * @brief Loads the media pipeline.
+ *
+ * @param[in]  session_id   The id of the A/V session.
+ * @param[in]  type         The type of media.
+ * @param[in]  mime_type    The mime type.
+ * @param[in]  url          The url.
+ *
+ */
+message LoadRequest {
+    enum MediaType {
+        UNKNOWN = 0;        ///< Media type not known.
+        MSE = 1;            ///< Media is MSE and will request data.
+    }
+
+    required int32      session_id = 1;
+    required MediaType  type = 2;
+    required string     mime_type = 3;
+    required string     url = 4;
+}
+message LoadResponse {
+}
+
+/**
+ * @fn int attachSource(int session_id, MediaSourceType media_type, string caps)
+ * @brief Attaches a new media source on a session with the given capabilities.
+ *
+ * @param[in]  session_id   The id of the A/V session.
+ * @param[in]  media_type   The media source type.
+ * @param[in]  caps         The capabilities of the source.
+ *
+ * A client will typically create a single audio and video media source on a given session.
+ *
+ * Media sources are unique to an A/V session, it is not possible to use a media source id created on one session with
+ * another session.  When a session is destroyed the media source ids are invalidated and the resource allocated to the
+ * media source on the server are freed.
+ *
+ * @returns a unique numeric media source id value that should be used for all subsequent operations on the media source.
+ */
+message AttachSourceRequest {
+    enum MediaSourceType {
+        UNKNOWN = 0;        ///< Media source type not known.
+        AUDIO = 1;          ///< Media source is AUDIO.
+        VIDEO = 2;          ///< Media source is VIDEO.
+    }
+
+    required int32 session_id = 1;
+    required MediaSourceType media_type = 2;
+    required string caps = 3;
+}
+message AttachSourceResponse {
+    required int32 source_id = 1;
+}
+
+/**
+ * @fn void removeSource(int session_id, int source_id)
+ * @brief Remove a media source for a session.
+ *
+ * @param[in]  session_id   The id of the A/V session.
+ * @param[in]  source_id  The id of the media source to destroy.
+ *
+ */
+message RemoveSourceRequest {
+  required int32 session_id = 1;
+  required int32 source_id = 2;
+}
+message RemoveSourceResponse {
+}
+
+/**
+ * @fn void setVideoWindow(int session_id, uint x, uint y, uint width, uint height)
+ * @brief Sets the on-screen dimensions of the video window associated with the session
+ *
+ * @param session_id        The id of the A/V session the request is for.
+ * @param x                 The x position in pixels.
+ * @param y                 The y position in pixels.
+ * @param width             The width in pixels.
+ * @param height            The height in pixels.
+ *
+ */
+message SetVideoWindowRequest {
+    required int32 session_id = 1;
+    required uint32 x = 2;
+    required uint32 y = 3;
+    required uint32 width = 4;
+    required uint32 height = 5;
+}
+message SetVideoWindowResponse {
+}
+
+/**
+ * @fn void play(int session_id)
+ * @brief Starts playback on a session.
+ *
+ * @param[in]  session_id   The id of the A/V session.
+ *
+ * This method is asynchronous. Once the backend is successfully playing it will notify the media player client of
+ * playback state.
+ *
+ */
+message PlayRequest {
+    required int32 session_id = 1;
+}
+message PlayResponse {
+}
+
+/**
+ * @fn void pause(int session_id)
+ * @brief Pauses the playback on a session.
+ *
+ * @param[in]  session_id   The id of the A/V session.
+ *
+ * This method is asynchronous. Once the backend is successfully pauseed it will notify the media player client of
+ * playback state.
+ *
+ */
+message PauseRequest {
+    required int32 session_id = 1;
+}
+message PauseResponse {
+}
+
+/**
+ * @fn void stop(int session_id)
+ * @brief Stops playback of the media.
+ *
+ * @param[in]  session_id   The id of the A/V session.
+ *
+ * This method is asynchronous. Once the backend has successfully stopped playback it will notify the media player
+ * client of playback state.
+ *
+ */
+message StopRequest {
+    required int32 session_id = 1;
+}
+message StopResponse {
+}
+
+/**
+ * @fn void setPosition(int session_id, int64 position)
+ * @brief Set the playback position in nanoseconds.
+ *
+ * @param[in]  session_id   The id of the A/V session.
+ * @param[in]  position     The playback position in nanoseconds.
+ *
+ * If playback has not started this method sets the start position for playback. If playback has started this method
+ * performs a seek.
+ *
+ * This method is asynchronous. For MSE playback Rialto Client will already be in the SEEKING state when this method is
+ * called. This method is used to tell PLAYER that data for the new position will be supplied. When seeking has
+ * completed and PLAYER is playing the new data the state FLUSHED is notified followed by PLAYING.
+ *
+ */
+message SetPositionRequest {
+    required int32 session_id = 1;
+    required int64 position = 2;
+}
+message SetPositionResponse {
+}
+
+/**
+ * @fn void getPosition(int session_id)
+ * @brief Get the playback position in nanoseconds.
+ *
+ * @param[in]  session_id   The id of the A/V session.
+ *
+ * This method is considered to be sychronous, it returns current playback position
+ *
+ */
+message GetPositionRequest {
+    required int32 session_id = 1;
+}
+message GetPositionResponse {
+    required int64 position = 1;
+}
+
+/**
+ * @fn void setPlaybackRate(int session_id, double rate)
+ * @brief Set the playback position in nanoseconds.
+ *
+ * @param[in]  session_id   The id of the A/V session.
+ * @param[in]  rate         The playback rate to be set
+ *
+ * If playback has not started this method sets the playback rate. This method is asynchronous.
+ *
+ */
+message SetPlaybackRateRequest {
+    required int32 session_id = 1;
+    required double rate = 2;
+}
+message SetPlaybackRateResponse {
+}
+
+/**
+ * @fn void haveData(int session_id, MediaSourceStatus status, uint num_frames, uint request_id)
+ * @brief Notify that the data is ready to be consumed in response to a NeedMediaDataEvent.
+ *
+ * @param session_id        The id of the A/V session the request is for.
+ * @param status            The status of the media source
+ * @param num_frames        The number of frames written to the shared memory.
+ * @param request_id        The id of the request, this should match the value in the NeedMediaDataEvent event.
+ */
+message HaveDataRequest {
+    enum MediaSourceStatus {
+        UNKNOWN = 0;                ///< Unknown.
+        OK = 1;                     ///< Source data provided without error.
+        EOS = 2;                    ///< Source reached the end of stream.
+        ERROR = 3;                  ///< There was an error providing source data.
+        CODEC_CHANGED = 4;          ///< strThe codec has changed and the decoder must be reconfigured.
+        NO_AVAILABLE_SAMPLES = 5;   ///< Could not retrieve media samples.
+    };
+
+    required int32 session_id = 1;
+    required MediaSourceStatus status = 2;
+    optional uint32 num_frames = 3;
+    required uint32 request_id = 4;
+}
+message HaveDataResponse {
+}
+
+/**
+ * @brief Event sent the playback state has changed.
+ *
+ * @param session_id   The id of the A/V session the status is for.
+ * @param state        The new state of the playback session.
+ *
+ */
+message PlaybackStateChangeEvent {
+
+    enum PlaybackState {
+        UNKNOWN = 0;        ///< An unknown or undefined playback state.
+        IDLE = 1;           ///< The backend player is idle.
+        PLAYING = 2;        ///< The backend player is playing media.
+        PAUSED = 3;         ///< The backend player is paused.
+        SEEKING = 4;        ///< The backend player is seeking a new playback position.
+        FLUSHED = 5;        ///< The backend player has flushed the media data.
+        STOPPED = 6;        ///< The backend player has stopped playback.
+        END_OF_STREAM = 7;  ///< The backend player has got to the end of playback.
+        FAILURE = 8;        ///< The backend player failed to set playback state.
+    }
+
+    required int32 session_id = 1;
+    required PlaybackState state = 2;
+}
+
+/**
+ * @brief Event sent the network state has changed.
+ *
+ * @param session_id   The id of the A/V session the status is for.
+ * @param state        The new state of the network session.
+ *
+ */
+message NetworkStateChangeEvent {
+
+    enum NetworkState {
+        UNKNOWN = 0;            ///< An unknown or undefined network state.
+        IDLE = 1;               ///< The network is idle.
+        BUFFERING = 2;          ///< The network is buffering data before playing.
+        BUFFERING_PROGRESS = 3; ///< The network is buffering data whilst playing.
+        BUFFERED = 4;           ///< All the data is buffered.
+        STALLED = 5;            ///< The network has stalled but may recover.
+        FORMAT_ERROR = 6;       ///< The data is the wrong format.
+        NETWORK_ERROR = 7;      ///< There has been a network error. Playback stops.
+        DECODE_ERROR = 8;       ///< There has been a decode error of the data.
+    }
+
+    required int32 session_id = 1;
+    required NetworkState state = 2;
+}
+
+/**
+ * @brief Event sent the position has changed.
+ *
+ * @param session_id   The id of the A/V session the status is for.
+ * @param position     The position in nanoseconds
+ *
+ */
+message PositionChangeEvent {
+    required int32 session_id = 1;
+    required int64 position = 2;
+}
+
+/**
+ * @brief Event sent by the server when data is needed for a media source.
+ *
+ * @param session_id        The id of the A/V session the request is for.
+ * @param source_id         The id of the media source the request is for.
+ * @param request_id        The id of the request.
+ * @param frame_count       The number of frames to read.
+ * @param shm_info          Information for populating the shared memory (nullptr if not applicable to the client).
+ *
+ * This is sent by the server whenever data is needed for a given media source.  The client is expected to respond with
+ * a haveData() call, referencing the NeedMediaDataEvent that triggered it.
+ */
+message NeedMediaDataEvent {
+
+    message ShmInfo {
+        required uint32 max_metadata_bytes = 1;
+        required uint32 metadata_offset = 2;
+        required uint32 media_data_offset = 3;
+        required uint32 max_media_bytes = 4;
+    }
+
+    required int32 session_id = 1;
+    required uint64 source_id = 2;
+    required uint32 request_id = 3;
+
+    required uint32 frame_count = 4;
+    optional ShmInfo shm_info = 5;
+}
+
+/**
+ * @brief Event sent by the server when a QOS message has been raised.
+ *
+ * @param session_id        The id of the A/V session the request is for.
+ * @param source_id         The id of the media source the request is for.
+ * @param qos_info          Information from the QOS message.
+ *
+ * This is sent by the server whenever frames are dropped from a buffer.
+ */
+message QosEvent {
+
+    message QosInfo {
+        required uint64 processed = 1;
+        required uint64 dropped = 2;
+    }
+
+    required int32 session_id = 1;
+    required uint64 source_id = 2;
+    required QosInfo qos_info = 3;
+}
+
+/**
+ * @brief Requests RialtoClient to change its log levels
+ *
+ * @param[in]  defaultLogLevels       Desired default log level
+ * @param[in]  clientLogLevels        Desired client log level
+ * @param[in]  ipcLogLevels           Desired ipc log level
+ * @param[in]  commonLogLevels        Desired ipc log level
+ *
+ */
+message SetLogLevelsEvent {
+    optional uint32 defaultLogLevels = 1;
+    optional uint32 clientLogLevels = 2;
+    optional uint32 ipcLogLevels = 3;
+    optional uint32 commonLogLevels = 4;
+}
+
+service MediaPipelineModule {
+    /**
+     * @brief Creates a new playback session.
+     * @see CreateSessionRequest
+     */
+    rpc createSession(CreateSessionRequest) returns (CreateSessionResponse) {
+    }
+
+    /**
+     * @brief Destroys a playback session.
+     * @see DestroySessionRequest
+     */
+    rpc destroySession(DestroySessionRequest) returns (DestroySessionResponse) {
+    }
+
+    /**
+     * @brief Loads the media pipeline.
+     * @see LoadRequest
+     */
+    rpc load(LoadRequest) returns (LoadResponse) {
+    }
+
+    /**
+     * @brief Attach a new audio or video media source.
+     * @see AttachSourceRequest
+     */
+    rpc attachSource(AttachSourceRequest) returns (AttachSourceResponse) {
+    }
+
+    /**
+     * @brief Remove the media source.
+     * @see RemoveSourceRequest
+     */
+    rpc removeSource(RemoveSourceRequest) returns (RemoveSourceResponse) {
+    }
+
+    /**
+     * @brief Sets the on-screen dimensions of the video window.
+     * @see SetVideoWindowRequest
+     */
+    rpc setVideoWindow(SetVideoWindowRequest) returns (SetVideoWindowResponse) {
+    }
+
+    /**
+     * @brief Starts/resumes the playback.
+     * @see PlayRequest
+     */
+    rpc play(PlayRequest) returns (PlayResponse) {
+    }
+
+    /**
+     * @brief Pauses the playback.
+     * @see PauseRequest
+     */
+    rpc pause(PauseRequest) returns (PauseResponse) {
+    }
+
+    /**
+     * @brief Stops playback.
+     * @see StopRequest
+     */
+    rpc stop(StopRequest) returns (StopResponse) {
+    }
+
+    /**
+     * @brief Sets the position of the playback (seek)
+     * @see SetPositionRequest
+     */
+    rpc setPosition(SetPositionRequest) returns (SetPositionResponse) {
+    }
+
+    /**
+     * @brief Gets the current position of the playback
+     * @see GetPositionRequest
+     */
+    rpc getPosition(GetPositionRequest) returns (GetPositionResponse) {
+    }
+
+    /**
+     * @brief Sets the playback rate
+     * @see SetPlaybackRateRequest
+     */
+    rpc setPlaybackRate(SetPlaybackRateRequest) returns (SetPlaybackRateResponse) {
+    }
+
+    /**
+     * @brief Indicates that the data is ready to be consumed in response to a NeedMediaDataEvent.
+     * @see HaveDataRequest
+     */
+    rpc haveData(HaveDataRequest) returns (HaveDataResponse) {
+    }
+}

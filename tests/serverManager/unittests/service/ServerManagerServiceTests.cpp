@@ -1,0 +1,59 @@
+/*
+ * If not stated otherwise in this file or this component's LICENSE file the
+ * following copyright and licenses apply:
+ *
+ * Copyright 2022 Sky UK
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#include "ServerManagerServiceTestsFixture.h"
+#include "gtest/gtest.h"
+
+namespace
+{
+const std::string APP_NAME{"YouTube"};
+const rialto::servermanager::service::SessionServerState APP_STATE{
+    rialto::servermanager::service::SessionServerState::INACTIVE};
+const std::string APP_SOCKET{getenv("RIALTO_SOCKET_PATH")};
+} // namespace
+
+TEST_F(ServerManagerServiceTests, setStateShouldReturnTrueIfOperationSucceeded)
+{
+    setSessionServerStateWillBeCalled(APP_NAME, APP_STATE, true);
+    ASSERT_TRUE(triggerChangeSessionServerState(APP_NAME, APP_STATE));
+}
+
+TEST_F(ServerManagerServiceTests, setStateShouldReturnFalseIfOperationFailed)
+{
+    setSessionServerStateWillBeCalled(APP_NAME, APP_STATE, false);
+    ASSERT_FALSE(triggerChangeSessionServerState(APP_NAME, APP_STATE));
+}
+
+TEST_F(ServerManagerServiceTests, getSessionServerInfoShouldReturnAppSocket)
+{
+    getAppConnectionInfoWillBeCalled(APP_NAME, APP_SOCKET);
+    EXPECT_EQ(triggerGetAppConnectionInfo(APP_NAME), APP_SOCKET);
+}
+
+TEST_F(ServerManagerServiceTests, setLogLevelsShouldReturnTrueIfOperationSucceeded)
+{
+    setLogLevelsWillBeCalled(true);
+    ASSERT_TRUE(triggerSetLogLevels());
+}
+
+TEST_F(ServerManagerServiceTests, setLogLevelsShouldReturnFalseIfOperationFailed)
+{
+    setLogLevelsWillBeCalled(false);
+    ASSERT_FALSE(triggerSetLogLevels());
+}

@@ -1,0 +1,78 @@
+/*
+ * If not stated otherwise in this file or this component's LICENSE file the
+ * following copyright and licenses apply:
+ *
+ * Copyright 2022 Sky UK
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#ifndef FIREBOLT_RIALTO_SERVER_SERVICE_CDM_SERVICE_H_
+#define FIREBOLT_RIALTO_SERVER_SERVICE_CDM_SERVICE_H_
+
+#include "ICdmService.h"
+#include "IDecryptionService.h"
+#include "IMainThread.h"
+#include <condition_variable>
+#include <functional>
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
+
+namespace firebolt::rialto::server::service
+{
+class CdmService : public ICdmService, public IDecryptionService
+{
+public:
+    CdmService(IMainThread &mainThread, std::shared_ptr<IMediaKeysServerInternalFactory> &&mediaKeysFactory,
+               std::shared_ptr<IMediaKeysCapabilitiesFactory> &&mediaKeysCapabilitiesFactory);
+    virtual ~CdmService();
+
+    bool switchToActive() override;
+    void switchToInactive() override;
+
+    bool createMediaKeys(int mediaKeysHandle, std::string keySystem) override;
+    bool destroyMediaKeys(int mediaKeysHandle) override;
+    MediaKeyErrorStatus createKeySession(int mediaKeysHandle, KeySessionType sessionType,
+                                         const std::shared_ptr<IMediaKeysClient> &client, bool isLDL,
+                                         int32_t &keySessionId) override;
+    MediaKeyErrorStatus generateRequest(int mediaKeysHandle, int32_t keySessionId, InitDataType initDataType,
+                                        const std::vector<uint8_t> &initData) override;
+    MediaKeyErrorStatus loadSession(int mediaKeysHandle, int32_t keySessionId) override;
+    MediaKeyErrorStatus updateSession(int mediaKeysHandle, int32_t keySessionId,
+                                      const std::vector<uint8_t> &responseData) override;
+    MediaKeyErrorStatus closeKeySession(int mediaKeysHandle, int32_t keySessionId) override;
+    MediaKeyErrorStatus removeKeySession(int mediaKeysHandle, int32_t keySessionId) override;
+    MediaKeyErrorStatus getCdmKeySessionId(int mediaKeysHandle, int32_t keySessionId,
+                                           std::string &cdmKeySessionId) override;
+
+    std::vector<std::string> getSupportedKeySystems() override;
+    bool supportsKeySystem(const std::string &keySystem) override;
+    bool getSupportedKeySystemVersion(const std::string &keySystem, std::string &version) override;
+    MediaKeyErrorStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstBuffer *subSample,
+                                const uint32_t subSampleCount, GstBuffer *IV, GstBuffer *keyId,
+                                uint32_t initWithLast15) override;
+
+private:
+    IMainThread &m_mainThread;
+    std::shared_ptr<IMediaKeysServerInternalFactory> m_mediaKeysFactory;
+    std::shared_ptr<IMediaKeysCapabilitiesFactory> m_mediaKeysCapabilitiesFactory;
+    bool m_isActive;
+    std::map<int, std::unique_ptr<IMediaKeysServerInternal>> m_mediaKeys;
+    std::map<int, std::shared_ptr<IMediaKeysClient>> m_mediaKeysClients;
+    std::shared_ptr<IMediaKeysCapabilities> m_mediaKeysCapabilities;
+};
+} // namespace firebolt::rialto::server::service
+
+#endif // FIREBOLT_RIALTO_SERVER_SERVICE_CDM_SERVICE_H_

@@ -1,0 +1,144 @@
+/*
+ * If not stated otherwise in this file or this component's LICENSE file the
+ * following copyright and licenses apply:
+ *
+ * Copyright 2022 Sky UK
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+syntax = "proto2";
+
+import "google/protobuf/descriptor.proto";
+
+package rialto;
+
+// You need this to generate the rpc service stubs
+option cc_generic_services = true;
+
+/**
+ * @brief Represents all possible states of session server
+ *
+ */
+enum SessionServerState {
+    UNINITIALIZED = 0;
+    INACTIVE = 1;
+    ACTIVE = 2;
+    NOT_RUNNING = 3;
+    ERROR = 4;
+}
+
+/**
+ * @brief Represents log levels of Rialto applications
+ *
+ * @param[in]  defaultLogLevels       default log level
+ * @param[in]  clientLogLevels        client log level
+ * @param[in]  sessionServerLogLevels session server log level
+ * @param[in]  ipcLogLevels           ipc log level
+ * @param[in]  serverManagerLogLevels server manager log level
+ * @param[in]  commonLogLevels        common log level
+ *
+ */
+message LogLevels {
+    optional uint32 defaultLogLevels = 1;
+    optional uint32 clientLogLevels = 2;
+    optional uint32 sessionServerLogLevels = 3;
+    optional uint32 ipcLogLevels = 4;
+    optional uint32 serverManagerLogLevels = 5;
+    optional uint32 commonLogLevels = 6;
+}
+
+/**
+ * @brief Represents container application resources
+ *
+ * @param[in]  maxPlaybacks     Maximum number of playback sessions
+ *
+ */
+message Resources {
+    required uint32 maxPlaybacks = 1;
+}
+
+/**
+ * @brief Contains all initial parameters for RialtoSessionServer
+ *
+ * @param[in]  sessionManagementSocketName  Name of socket used for SessionServer <-> Application communication
+ * @param[in]  initialSessionServerState    Initial session server state
+ * @param[in]  resources                    Application resources
+ * @param[in]  logLevels                    Initial log levels
+ *
+ */
+message SetConfigurationRequest {
+    required string sessionManagementSocketName = 1;
+    required SessionServerState initialSessionServerState = 2;
+    required Resources resources = 3;
+    required LogLevels logLevels = 4;
+}
+message SetConfigurationResponse {
+}
+
+/**
+ * @brief Informs RialtoServerManager about state change of RialtoSessionServer
+ *
+ * @param[in]  sessionServerState    Current session server state
+ *
+ */
+message StateChangedEvent {
+    required SessionServerState sessionServerState = 1;
+}
+
+/**
+ * @brief Requests RialtoSessionServer to change its state
+ *
+ * @param[in]  sessionServerState    Desired app state
+ *
+ */
+message SetStateRequest {
+    required SessionServerState sessionServerState = 1;
+}
+message SetStateResponse {
+}
+
+/**
+ * @brief Requests RialtoSessionServer to change its log levels
+ *
+ * @param[in]  logLevels       Desired log levels
+ *
+ */
+message SetLogLevelsRequest {
+    required LogLevels logLevels = 1;
+}
+message SetLogLevelsResponse {
+}
+
+service ServerManagerModule {
+    /**
+     * @brief Provides initialization data for RialtoSessionServer
+     *
+     */
+    rpc setConfiguration(SetConfigurationRequest) returns (SetConfigurationResponse) {
+    }
+
+    /**
+     * @brief Requests RialtoSessionServer to change its state
+     *
+     */
+    rpc setState(SetStateRequest) returns (SetStateResponse) {
+    }
+
+    /**
+     * @brief Requests RialtoSessionServer to change its log levels
+     *
+     */
+    rpc setLogLevels(SetLogLevelsRequest) returns (SetLogLevelsResponse) {
+    }
+}

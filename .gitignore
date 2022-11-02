@@ -1,0 +1,9 @@
+/build/*
+/cmake-build-*
+/gtest_result.log
+/valgrind_report.log
+/valgrind_report.csv
+/cpplint_errors.xml
+/clang-format_errors.log
+/clang-format_errors.xml
+/cppcheck_report.txt

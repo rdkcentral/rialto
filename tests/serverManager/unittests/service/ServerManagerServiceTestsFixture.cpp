@@ -1,0 +1,71 @@
+/*
+ * If not stated otherwise in this file or this component's LICENSE file the
+ * following copyright and licenses apply:
+ *
+ * Copyright 2022 Sky UK
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#include "ServerManagerServiceTestsFixture.h"
+#include "ServerManagerService.h"
+#include "ServiceContextMock.h"
+#include <string>
+#include <utility>
+
+using testing::_;
+using testing::AtLeast;
+using testing::Return;
+using testing::ReturnRef;
+
+ServerManagerServiceTests::ServerManagerServiceTests()
+{
+    auto serviceContext{std::make_unique<StrictMock<rialto::servermanager::service::mocks::ServiceContextMock>>()};
+    EXPECT_CALL(*serviceContext, getSessionServerAppManager).Times(AtLeast(0)).WillRepeatedly(ReturnRef(m_appManager));
+    m_sut = std::make_unique<rialto::servermanager::service::ServerManagerService>(std::move(serviceContext));
+}
+
+void ServerManagerServiceTests::setSessionServerStateWillBeCalled(
+    const std::string &appId, const rialto::servermanager::service::SessionServerState &state, bool returnValue)
+{
+    EXPECT_CALL(m_appManager, setSessionServerState(appId, state)).WillOnce(Return(returnValue));
+}
+
+void ServerManagerServiceTests::getAppConnectionInfoWillBeCalled(const std::string &appId, const std::string &returnValue)
+{
+    EXPECT_CALL(m_appManager, getAppConnectionInfo(appId)).WillOnce(Return(returnValue));
+}
+
+void ServerManagerServiceTests::setLogLevelsWillBeCalled(bool returnValue)
+{
+    EXPECT_CALL(m_appManager, setLogLevels(_)).WillOnce(Return(returnValue));
+}
+
+bool ServerManagerServiceTests::triggerChangeSessionServerState(
+    const std::string &appId, const rialto::servermanager::service::SessionServerState &state)
+{
+    EXPECT_TRUE(m_sut);
+    return m_sut->changeSessionServerState(appId, state);
+}
+
+std::string ServerManagerServiceTests::triggerGetAppConnectionInfo(const std::string &appId)
+{
+    EXPECT_TRUE(m_sut);
+    return m_sut->getAppConnectionInfo(appId);
+}
+
+bool ServerManagerServiceTests::triggerSetLogLevels()
+{
+    EXPECT_TRUE(m_sut);
+    return m_sut->setLogLevels(rialto::servermanager::service::LoggingLevels());
+}

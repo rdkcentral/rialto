@@ -1,0 +1,96 @@
+#
+# If not stated otherwise in this file or this component's LICENSE file the
+# following copyright and licenses apply:
+#
+# Copyright 2022 Sky UK
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+name: cppcheck
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "master" branch
+  push:
+    branches: [ "master", "rdkcentral:master" ]
+  pull_request:
+    branches: [ "master", "rdkcentral:master" ]
+    paths-ignore:
+      - 'README.md'
+      - 'CONTRIBUTING.md'
+      - 'COPYING'
+      - 'LICENSE'
+      - 'NOTICE'
+      - '.gitignore'
+      - '.clang-format'
+      - 'rialto.supp'
+      - 'build_ut.py'
+      - '**/valgrind_ut.yml'
+      - '**/build_ut.yml'
+      - '**/clang-format.yml'
+      - '**/cpplint.yml'
+      - 'docs/**'
+      - 'scripts/valgrind/**'
+      - 'scripts/clang-format/**'
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  build:
+    name: cppcheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install cppcheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install cppcheck
+
+      - name: checkout repo
+        uses: actions/checkout@v3
+
+      # Run the build script and output errors to file
+      # Proccess returns error if failure detected
+      - name: cppcheck command
+        run: |
+              cppcheck -q -ibuild --enable=all --output-file=cppcheck_report.txt --std=c++14 --error-exitcode=1 --suppress-xml=cppcheck_suppressions.xml .
+
+      # Upload logs on failure
+      - name: Upload logs
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: cppcheck_result
+          path: |
+            cppcheck_report.txt
+
+      # Get process_coverage_stats script output
+      - id: get-comment-body
+        if: ${{ failure() && github.ref != 'refs/heads/master' }}
+        run: |
+          body="$(cat cppcheck_report.txt)"
+          body="${body//'%'/'%25'}"
+          body="${body//$'\n'/'%0A'}"
+          body="${body//$'\r'/'%0D'}"
+          echo "::set-output name=body::$body"
+
+      # Create comment with coverage info
+      - name: Create Comment
+        if: ${{ failure() && github.ref != 'refs/heads/master' }}
+        uses: peter-evans/create-or-update-comment@v2
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: ${{ steps.get-comment-body.outputs.body }}
+

@@ -1,0 +1,73 @@
+/*
+ * If not stated otherwise in this file or this component's LICENSE file the
+ * following copyright and licenses apply:
+ *
+ * Copyright 2022 Sky UK
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#include "TestService.h"
+#include <list>
+#include <stdio.h>
+#include <string>
+
+int main(int argc, char *argv[])
+{
+    fprintf(stderr, "===========================================================================\n");
+    fprintf(stderr, "==                     RIALTO SERVER MANAGER SIM                         ==\n");
+    fprintf(stderr, "==                                                                       ==\n");
+    fprintf(stderr, "== Test application is a Http Server running on localhost:9008           ==\n");
+    fprintf(stderr, "==                                                                       ==\n");
+    fprintf(stderr, "== To set state, send POST HttpRequest /SetState/AppName/NewState        ==\n");
+    fprintf(stderr, "== Available states: Inactive, Active, NotRunning, Error                 ==\n");
+    fprintf(stderr, "== For example:                                                          ==\n");
+    fprintf(stderr, "== curl -X POST -d \"\" <BOX_IP>:9008/SetState/YouTube/NotRunning          ==\n");
+    fprintf(stderr, "==                                                                       ==\n");
+    fprintf(stderr, "== To get current state, send GET HttpRequest: /GetState/AppName         ==\n");
+    fprintf(stderr, "== For example:                                                          ==\n");
+    fprintf(stderr, "== curl -X GET <BOX_IP>:9008/GetState/YouTube                            ==\n");
+    fprintf(stderr, "==                                                                       ==\n");
+    fprintf(stderr, "== To get application info, send GET HttpRequest: /GetAppInfo/AppName    ==\n");
+    fprintf(stderr, "== For example:                                                          ==\n");
+    fprintf(stderr, "== curl -X GET <BOX_IP>:9008/GetAppInfo/YouTube                          ==\n");
+    fprintf(stderr, "==                                                                       ==\n");
+    fprintf(stderr, "== To set log levels, send POST HttpRequest: /SetLog/<component>/<level> ==\n");
+    fprintf(stderr, "== For example:                                                          ==\n");
+    fprintf(stderr, "== curl -X POST -d \"\" <BOX_IP>:9008/SetLog/client/error                  ==\n");
+    fprintf(stderr, "==                                                                       ==\n");
+    fprintf(stderr, "== To shutdown Test Service, send POST HttpRequest: /Quit                ==\n");
+    fprintf(stderr, "== For example:                                                          ==\n");
+    fprintf(stderr, "== curl -X POST -d \"\" <BOX_IP>:9008/Quit                                 ==\n");
+    fprintf(stderr, "==                                                                       ==\n");
+    fprintf(stderr, "===========================================================================\n");
+
+    std::list<std::string> environmentVariables;
+    const char *sessionServerEnvVars = getenv("SESSION_SERVER_ENV_VARS");
+    if (sessionServerEnvVars)
+    {
+        std::string envVarsStr{sessionServerEnvVars};
+        size_t pos = 0;
+        while ((pos = envVarsStr.find(";")) != std::string::npos)
+        {
+            environmentVariables.emplace_back(envVarsStr.substr(0, pos));
+            envVarsStr.erase(0, pos + 1);
+        }
+        environmentVariables.emplace_back(envVarsStr);
+    }
+
+    rialto::servermanager::TestService service{environmentVariables};
+    service.run();
+
+    return 0;
+}

@@ -1,0 +1,92 @@
+/*
+ * If not stated otherwise in this file or this component's LICENSE file the
+ * following copyright and licenses apply:
+ *
+ * Copyright 2022 Sky UK
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#ifndef FIREBOLT_RIALTO_SERVER_I_OCDM_SYSTEM_H_
+#define FIREBOLT_RIALTO_SERVER_I_OCDM_SYSTEM_H_
+
+#include "IOcdmSession.h"
+#include "IOcdmSessionClient.h"
+#include <MediaCommon.h>
+#include <memory>
+#include <stdint.h>
+#include <string>
+
+namespace firebolt::rialto::server
+{
+class IOcdmSystem;
+
+/**
+ * @brief IOcdmSystem factory class, for the IOcdmSystem object.
+ */
+class IOcdmSystemFactory
+{
+public:
+    IOcdmSystemFactory() = default;
+    virtual ~IOcdmSystemFactory() = default;
+
+    /**
+     * @brief Gets the IOcdmSystemFactory instance.
+     *
+     * @retval the factory instance or null on error.
+     */
+    static std::shared_ptr<IOcdmSystemFactory> createFactory();
+
+    /**
+     * @brief Creates a IOcdmSystem object.
+     *
+     * @param[in] keySystem : The key system to create.
+     *
+     * @retval the wrapper instance or null on error.
+     */
+    virtual std::unique_ptr<IOcdmSystem> createOcdmSystem(const std::string &keySystem) const = 0;
+};
+
+class IOcdmSystem
+{
+public:
+    IOcdmSystem() = default;
+    virtual ~IOcdmSystem() = default;
+
+    IOcdmSystem(const IOcdmSystem &) = delete;
+    IOcdmSystem &operator=(const IOcdmSystem &) = delete;
+    IOcdmSystem(IOcdmSystem &&) = delete;
+    IOcdmSystem &operator=(IOcdmSystem &&) = delete;
+
+    /**
+     * @brief Get the system version.
+     *
+     * @param[out] version : The string of the version.
+     *
+     * @retval the return status.
+     */
+    virtual MediaKeyErrorStatus getVersion(std::string &version) = 0;
+
+    /**
+     * @brief Creates a IOcdmSession and returns a pointer to that object.
+     *
+     * @param[in]  client       : Client object for callbacks.
+     *
+     * @retval the new IOcdmSession object or null on error.
+     */
+    virtual std::unique_ptr<IOcdmSession> createSession(IOcdmSessionClient *client) const = 0;
+};
+
+}; // namespace firebolt::rialto::server
+
+#endif // FIREBOLT_RIALTO_SERVER_I_OCDM_SYSTEM_H_

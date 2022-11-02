@@ -1,0 +1,634 @@
+/*
+ * If not stated otherwise in this file or this component's LICENSE file the
+ * following copyright and licenses apply:
+ *
+ * Copyright 2022 Sky UK
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+syntax = "proto2";
+
+import "google/protobuf/descriptor.proto";
+
+package firebolt.rialto;
+
+// You need this to generate the rpc service stubs
+option cc_generic_services = true;
+
+/**
+ * @brief The error return status for session management methods.
+ */
+enum ProtoMediaKeyErrorStatus {
+    OK = 0;               ///< No error. */
+    FAIL = 1;             ///< An unspecified error occurred. */
+    BAD_SESSION_ID = 2;   ///< The session id is not recognised. */
+    NOT_SUPPORTED = 3;    ///< The request parameters are not supported. */
+    INVALID_STATE = 4;    ///< The object is in an invalid state for the operation. */
+};
+
+/**
+ * @brief Event to notify that a license is required.
+ *
+ * @param media_keys_handle       The handle of the media keys.
+ * @param key_session_id          The key session id for the session.
+ * @param license_request_message The license renewal message blob.
+ * @param url                     URL to which the message should be sent or empty string.
+ *
+ */
+message LicenseRequestEvent {
+    required int32 media_keys_handle = 1;
+    required int32 key_session_id = 2;
+    repeated uint32 license_request_message = 3;
+    required string url = 4;
+}
+
+/**
+ * @brief Event to notify that a license renewal is requiredy.
+ *
+ * @param media_keys_handle       The handle of the media keys.
+ * @param key_session_id          The key session id for the session.
+ * @param license_renewal_message The license renewal message blob
+ *
+ */
+message LicenseRenewalEvent {
+    required int32 media_keys_handle = 1;
+    required int32 key_session_id = 2;
+    repeated uint32 license_renewal_message = 3;
+}
+
+/**
+ * @brief Event to notify that the status of one or more keys in the key session has changed.
+ *
+ * @param media_keys_handle       The handle of the media keys.
+ * @param key_session_id          The key session id for the session.
+ * @param license_request_message The license renewal message blob.
+ *
+ */
+message KeyStatusesChangedEvent {
+  enum KeyStatus
+  {
+      USABLE = 0;
+      EXPIRED = 1;
+      OUTPUT_RESTRICTED = 2;
+      PENDING = 3;
+      INTERNAL_ERROR = 4;
+      RELEASED = 5;
+  };
+
+  message KeyStatusPair {
+    repeated uint32 key_id = 1;
+    required KeyStatus key_status = 2;
+  }
+
+  required int32 media_keys_handle = 1;
+  required int32 key_session_id = 2;
+  repeated KeyStatusPair key_statuses = 3;
+}
+
+/**
+ * @fn int createMediaKeys(string key_system)
+ * @brief Creates a new media keys instance.
+ *
+ * @param[in]  key_system   The key system for which to create a Media Keys instance.
+ *
+ * A client can have multiple media keys.
+ *
+ * MediaKeysHandles are unique to a single IPC connection to the server, it is not possible to use a handle created on
+ * one IPC connection with another IPC connection.  When an IPC connection is closed the handles are invalidated
+ * and the resource allocated to the session on the server are freed.
+ *
+ * @returns a unique numeric media keys handle value that should be used for all subsequent operations on the media keys.
+ */
+message CreateMediaKeysRequest {
+  required string key_system = 1;
+}
+message CreateMediaKeysResponse {
+  required int32 media_keys_handle = 1;
+}
+
+/**
+ * @fn void destroyMediaKeys(int32 media_keys_handle)
+ * @brief Destroys a media keys instance.
+ *
+ * @param[in] media_keys_handle    The handle of the media keys.
+ *
+ * Destroys a media keys instance freeing all resources on the server.
+ *
+ */
+message DestroyMediaKeysRequest {
+  required int32 media_keys_handle = 1;
+}
+message DestroyMediaKeysResponse {
+}
+
+/**
+ * @fn MediaKeyErrorStatus selectKeyId(int32 media_keys_handle, string keySessionId, vector<uint8_t> keyId)
+ * @brief Selects the specified keyId for the key session. Netflix specific API.
+ *
+ * @param[in] media_keys_handle The handle of the media keys.
+ * @param[in] key_session_id    The key session id for the session.
+ * @param[in] key_id            The key id.
+ *
+ * @retval an error status.
+ */
+message SelectKeyIdRequest {
+  required int32 media_keys_handle = 1;
+  required int32 key_session_id = 2;
+  repeated uint32 key_id = 3;
+}
+message SelectKeyIdResponse {
+  required ProtoMediaKeyErrorStatus error_status = 1;
+}
+
+/**
+ * @fn bool containsKey(int32 media_keys_handle, string keySessionId, vector<uint8_t> keyId)
+ * @brief Returns true if the Key Session object contains the specified key.
+ *
+ * @param[in] media_keys_handle The handle of the media keys.
+ * @param[in] key_session_id    The key session id for the session.
+ * @param[in] key_id            The key id.
+ *
+ * @retval true if it contains the key.
+ */
+message ContainsKeyRequest {
+  required int32 media_keys_handle = 1;
+  required int32 key_session_id = 2;
+  repeated uint32 key_id = 3;
+}
+message ContainsKeyResponse {
+  required bool contains_key = 1;
+}
+
+/**
+ * @fn MediaKeyErrorStatus, string createKeySession(int32 media_keys_handle, KeySessionType session_type, bool is_ldl)
+ * @brief Creates a session and returns the session id.
+ *
+ * This method creates a new session and returns the session id in
+ * the specified string. If the key system is not supported an
+ * MediaKeyErrorStatus:NOT_SUPPORTED value must be returned. Any other
+ * errors will result in MediaKeyErrorStatus:FAIL.
+ *
+ * @param[in] media_keys_handle The handle of the media keys.
+ * @param[in] session_type      The session type.
+ * @param[in] is_ldl            Is this an LDL.
+ *
+ * @retval an error status & the key session id.
+ */
+message CreateKeySessionRequest {
+  enum KeySessionType {
+    UNKNOWN = 0;                    ///< The session type is unknown.
+    TEMPORARY = 1;                  ///< The session is a temporary session.
+    PERSISTENT_LICENCE = 2;         ///< The session is a persistent session.
+    PERSISTENT_RELEASE_MESSAGE = 3;   ///< The session's persistent licence should be released.
+  };
+
+  required int32 media_keys_handle = 1;
+  required KeySessionType session_type = 2;
+  required bool is_ldl = 3;
+}
+message CreateKeySessionResponse {
+  required ProtoMediaKeyErrorStatus error_status = 1;
+  required int32 key_session_id = 2;
+}
+
+/**
+ * @fn ProtoMediaKeyErrorStatus generateRequest(int32 media_keys_handle, int32 key_session_id, InitDataType init_data_type,
+ *                                              vector<uint8_t> init_data)
+ * @brief Generates a licence request.
+ *
+ * This method triggers generation of a licence request. If the session
+ * id does not exist an MediaKeyErrorStatus:BAD_SESSION_ID is returned. If the
+ * session type or init data type is not supported a
+ * MediaKeyErrorStatus:NOT_SUPPORTED value is be returned. Any other
+ * errors will result in MediaKeyErrorStatus:FAIL.
+ *
+ * A uint32 is used from the input vectors as protobuf does not support uint8. uint32 is a variant type
+ * so will change size depending on th data stored in it.
+ *
+ * @param[in] media_keys_handle The handle of the media keys.
+ * @param[in] key_session_id    The key session id for the session.
+ * @param[in] init_data_type    The init data type.
+ * @param[in] init_data         The init data.
+ *
+ * @retval an error status.
+ */
+message GenerateRequestRequest {
+  enum InitDataType {
+    UNKNOWN = 0;    ///< The init data type is unknown.
+    CENC = 1;       ///< The init data is in CENC format.
+    KEY_IDS = 2;    ///< The init data is key ids.
+    WEBM = 3;       ///< The init data is in WEBM format.
+    DRMHEADER = 4;  ///< The init data is in DrmHeader format.
+  };
+
+  required int32 media_keys_handle = 1;
+  required int32 key_session_id = 2;
+  required InitDataType init_data_type = 3;
+  repeated uint32 init_data = 4;
+
+}
+message GenerateRequestResponse {
+  required ProtoMediaKeyErrorStatus error_status = 1;
+}
+
+/**
+ * @fn ProtoMediaKeyErrorStatus loadSession(int32 media_keys_handle, int32 key_session_id)
+ * @brief Loads an existing key session.
+ *
+ * This method loads an existing key session. If the session id does
+ * not exist an MediaKeyErrorStatus:BAD_SESSION_ID is returned. If the
+ * session type or init data type is not supported a
+ * MediaKeyErrorStatus:NOT_SUPPORTED value must be returned. If the session
+ * state is invalid an MediaKeyErrorStatus:INVALID_STATE is returned. Any
+ * other errors will result in MediaKeyErrorStatus:FAIL.
+ *
+ * @param[in] media_keys_handle The handle of the media keys.
+ * @param[in] key_session_id  The key session id for the session.
+ *
+ * @retval an error status.
+ */
+message LoadSessionRequest {
+  required int32 media_keys_handle = 1;
+  required int32 key_session_id = 2;
+}
+message LoadSessionResponse {
+  required ProtoMediaKeyErrorStatus error_status = 1;
+}
+
+/**
+ * @fn ProtoMediaKeyErrorStatus updateSession(int32 media_keys_handle,int32 key_session_id ,vector<uint32> response_data)
+ * @brief Updates a key session's state.
+ *
+ * This method updates a session's state. If the session id does
+ * not exist an MediaKeyErrorStatus:BAD_SESSION_ID is returned. If the session
+ * state is invalid an MediaKeyErrorStatus:INVALID_STATE is returned. Any
+ * other errors will result in MediaKeyErrorStatus:FAIL.
+ *
+ * A uint32 is used from the input vectors as protobuf does not support uint8. uint32 is a variant type
+ * so will change size depending on th data stored in it.
+ *
+ * @param[in] media_keys_handle The handle of the media keys.
+ * @param[in] key_session_id    The key session id for the session.
+ * @param[in] response_data     The request data.
+ *
+ * @retval an error status.
+ */
+message UpdateSessionRequest {
+  required int32 media_keys_handle = 1;
+  required int32 key_session_id = 2;
+  repeated uint32 response_data = 3;
+}
+message UpdateSessionResponse {
+  required ProtoMediaKeyErrorStatus error_status = 1;
+}
+
+/**
+ * @fn ProtoMediaKeyErrorStatus setDrmHeader(int32 media_keys_handle,int32 key_session_id, vector<uint32> request_data)
+ * @brief Set DRM Header for a key session.
+ *
+ * This method updates a key session's DRM header. If the session id does
+ * not exist an MediaKeyErrorStatus:BAD_SESSION_ID is returned.If the session
+ * state is invalid an MediaKeyErrorStatus:INVALID_STATE is returned. Any
+ * other errors will result in MediaKeyErrorStatus:FAIL.
+ *
+ * A uint32 is used from the input vectors as protobuf does not support uint8. uint32 is a variant type
+ * so will change size depending on th data stored in it.
+ *
+ * @param[in] media_keys_handle The handle of the media keys.
+ * @param[in] key_session_id    The key session id for the session.
+ * @param[in] request_data      The request data.
+ *
+ * @retval an error status.
+ */
+message SetDrmHeaderRequest {
+  required int32 media_keys_handle = 1;
+  required int32 key_session_id = 2;
+  repeated uint32 request_data = 3;
+}
+message SetDrmHeaderResponse {
+  required ProtoMediaKeyErrorStatus error_status = 1;
+}
+
+/**
+ * @fn ProtoMediaKeyErrorStatus closeKeySession(int32 media_keys_handle,int32 key_session_id)
+ * @brief Closes a key session.
+ *
+ * This method closes an open session. If the session id does
+ * not exist an MediaKeyErrorStatus:BAD_SESSION_ID is returned. Any other
+ * errors will result in MediaKeyErrorStatus:FAIL.
+ *
+ * @param[in] media_keys_handle The handle of the media keys.
+ * @param[in] key_session_id    The key session id for the session.
+ *
+ * @retval an error status.
+ */
+message CloseKeySessionRequest {
+  required int32 media_keys_handle = 1;
+  required int32 key_session_id = 2;
+}
+message CloseKeySessionResponse {
+  required ProtoMediaKeyErrorStatus error_status = 1;
+}
+
+/**
+ * @fn ProtoMediaKeyErrorStatus removeKeySession(int32 media_keys_handle,int32 key_session_id)
+ * @brief Removes a key session.
+ *
+ * This method removes an open session. If the session id does
+ * not exist an MediaKeyErrorStatus:BAD_SESSION_ID is returned. Any other
+ * errors will result in MediaKeyErrorStatus:FAIL.
+ *
+ * @param[in] media_keys_handle The handle of the media keys.
+ * @param[in] key_session_id    The key session id for the session.
+ *
+ * @retval an error status.
+ */
+message RemoveKeySessionRequest {
+  required int32 media_keys_handle = 1;
+  required int32 key_session_id = 2;
+}
+message RemoveKeySessionResponse {
+  required ProtoMediaKeyErrorStatus error_status = 1;
+}
+
+/**
+ * @fn ProtoMediaKeyErrorStatus deleteDrmStore(int32 media_keys_handle)
+ * @brief Delete the DRM store for the object's key system.
+ *
+ * @param[in] media_keys_handle The handle of the media keys.
+ *
+ * @retval an error status.
+ */
+message DeleteDrmStoreRequest {
+  required int32 media_keys_handle = 1;
+}
+message DeleteDrmStoreResponse {
+  required ProtoMediaKeyErrorStatus error_status = 1;
+}
+
+/**
+ * @fn ProtoMediaKeyErrorStatus deleteKeyStore(int32 media_keys_handle)
+ * @brief Delete the key store for the object's key system.
+ *
+ * @param[in] media_keys_handle The handle of the media keys.
+ *
+ * @retval an error status.
+ */
+message DeleteKeyStoreRequest {
+  required int32 media_keys_handle = 1;
+}
+message DeleteKeyStoreResponse {
+  required ProtoMediaKeyErrorStatus error_status = 1;
+}
+
+/**
+ * @fn ProtoMediaKeyErrorStatus, vector<uint32> getDrmStoreHash(int32 media_keys_handle)
+ * @brief Gets a hash of the DRM store for the object's key system.
+ *
+ * A uint32 is used from the input vectors as protobuf does not support uint8. uint32 is a variant type
+ * so will change size depending on th data stored in it.
+ *
+ * @param[in] media_keys_handle The handle of the media keys.
+ *
+ * @retval an error status & the drm hash.
+ */
+message GetDrmStoreHashRequest {
+  required int32 media_keys_handle = 1;
+}
+message GetDrmStoreHashResponse {
+  required ProtoMediaKeyErrorStatus error_status = 1;
+  repeated uint32 drm_store_hash = 2;
+}
+
+/**
+ * @fn ProtoMediaKeyErrorStatus, vector<uint32> getKeyStoreHash(int32 media_keys_handle)
+ * @brief Gets a hash of the Key store for the object's key system.
+ *
+ * A uint32 is used from the input vectors as protobuf does not support uint8. uint32 is a variant type
+ * so will change size depending on th data stored in it.
+ *
+ * @param[in] media_keys_handle The handle of the media keys.
+ *
+ * @retval an error status & the key hash.
+ */
+message GetKeyStoreHashRequest {
+  required int32 media_keys_handle = 1;
+}
+message GetKeyStoreHashResponse {
+  required ProtoMediaKeyErrorStatus error_status = 1;
+  repeated uint32 key_store_hash = 2;
+}
+
+/**
+ * @fn ProtoMediaKeyErrorStatus, uint32 getLdlSessionsLimit(int32 media_keys_handle)
+ * @brief Get the limit on the number of ldl key sessions for the object's key system.
+ *
+ * @param[in] media_keys_handle The handle of the media keys.
+ *
+ * @retval an error status & the limit on the number of ldl key sessions.
+ */
+message GetLdlSessionsLimitRequest {
+  required int32 media_keys_handle = 1;
+}
+message GetLdlSessionsLimitResponse {
+  required ProtoMediaKeyErrorStatus error_status = 1;
+  repeated uint32 ldl_limit = 2;
+}
+
+/**
+ * @fn ProtoMediaKeyErrorStatus, uint32 getLastDrmError(int32 media_keys_handle)
+ * @brief Get the last cdm specific DRM error code.
+ *
+ * @param[in] media_keys_handle The handle of the media keys.
+ *
+ * @retval an error status & the error code.
+ */
+message GetLastDrmErrorRequest {
+  required int32 media_keys_handle = 1;
+}
+message GetLastDrmErrorResponse {
+  required ProtoMediaKeyErrorStatus error_status = 1;
+  repeated uint32 error_code = 2;
+}
+
+/**
+ * @fn ProtoMediaKeyErrorStatus, uint64 getDrmTime(int32 media_keys_handle)
+ * @brief Get the DRM system time for the object's key system.
+ *
+ * @param[in] media_keys_handle The handle of the media keys.
+ *
+ * @retval an error status & the drm system time.
+ */
+message GetDrmTimeRequest {
+  required int32 media_keys_handle = 1;
+}
+message GetDrmTimeResponse {
+  required ProtoMediaKeyErrorStatus error_status = 1;
+  repeated uint64 drm_time = 2;
+}
+
+/**
+ * @fn ProtoMediaKeyErrorStatus getCdmKeySessionId(int32 key_session_id)
+ * @brief Loads an existing key session.
+ *
+ * This method returns the internal CDM key session ID.
+ *
+ * @param[in] media_keys_handle The handle of the media keys.
+ * @param[in] key_session_id  The key session id for the session.
+ *
+ * @retval an error status & internal CDM key session ID.
+ */
+message GetCdmKeySessionIdRequest {
+  required int32 media_keys_handle = 1;
+  required int32 key_session_id = 2;
+}
+message GetCdmKeySessionIdResponse {
+  required ProtoMediaKeyErrorStatus error_status = 1;
+  required string cdm_key_session_id = 2;
+}
+
+service MediaKeysModule {
+    /**
+     * @brief Creates a new media keys instance.
+     * @see CreateMediaKeysRequest
+     */
+    rpc createMediaKeys(CreateMediaKeysRequest) returns (CreateMediaKeysResponse) {
+    }
+
+    /**
+     * @brief Destroys a media keys instance.
+     * @see DestroyMediaKeysRequest
+     */
+    rpc destroyMediaKeys(DestroyMediaKeysRequest) returns (DestroyMediaKeysResponse) {
+    }
+
+    /**
+     * @brief Sets the specified key id.
+     * @see SelectKeyIdRequest
+     */
+    rpc selectKeyId(SelectKeyIdRequest) returns (SelectKeyIdResponse) {
+    }
+
+    /**
+     * @brief Returns true if the Key Session object contains the specified key.
+     * @see ContainsKeyRequest
+     */
+    rpc containsKey(ContainsKeyRequest) returns (ContainsKeyResponse) {
+    }
+
+    /**
+     * @brief Creates a session and returns the session id.
+     * @see CreateKeySessionRequest
+     */
+    rpc createKeySession(CreateKeySessionRequest) returns (CreateKeySessionResponse) {
+    }
+
+    /**
+     * @brief Generates a licence request.
+     * @see GenerateRequestRequest
+     */
+    rpc generateRequest(GenerateRequestRequest) returns (GenerateRequestResponse) {
+    }
+
+    /**
+     * @brief Loads an existing key session.
+     * @see LoadSessionRequest
+     */
+    rpc loadSession(LoadSessionRequest) returns (LoadSessionResponse) {
+    }
+
+    /**
+     * @brief Updates an existing key session.
+     * @see UpdateSessionRequest
+     */
+    rpc updateSession(UpdateSessionRequest) returns (UpdateSessionResponse) {
+    }
+
+    /**
+     * @brief Set DRM Header for a key session.
+     * @see SetDrmHeaderRequest
+     */
+    rpc setDrmHeader(SetDrmHeaderRequest) returns (SetDrmHeaderResponse) {
+    }
+
+    /**
+     * @brief Closes a key session.
+     * @see CloseKeySessionRequest
+     */
+    rpc closeKeySession(CloseKeySessionRequest) returns (CloseKeySessionResponse) {
+    }
+
+    /**
+     * @brief Removes a key session.
+     * @see RemoveKeySessionRequest
+     */
+    rpc removeKeySession(RemoveKeySessionRequest) returns (RemoveKeySessionResponse) {
+    }
+
+    /**
+     * @brief Delete the DRM store for the object's key system.
+     * @see DeleteDrmStoreRequest
+     */
+    rpc deleteDrmStore(DeleteDrmStoreRequest) returns (DeleteDrmStoreResponse) {
+    }
+
+    /**
+     * @brief Delete the key store for the object's key system.
+     * @see DeleteKeyStoreRequest
+     */
+    rpc deleteKeyStore(DeleteKeyStoreRequest) returns (DeleteKeyStoreResponse) {
+    }
+
+    /**
+     * @brief Gets a hash of the DRM store for the object's key system.
+     * @see GetDrmStoreHashRequest
+     */
+    rpc getDrmStoreHashStore(GetDrmStoreHashRequest) returns (GetDrmStoreHashResponse) {
+    }
+
+    /**
+     * @brief Gets a hash of the Key store for the object's key system.
+     * @see GetKeyStoreHashRequest
+     */
+    rpc getKeyStoreHashStore(GetKeyStoreHashRequest) returns (GetKeyStoreHashResponse) {
+    }
+
+    /**
+     * @brief Get the limit on the number of ldl key sessions for the object's key system.
+     * @see GetLdlSessionsLimitRequest
+     */
+    rpc getLdlSessionsLimit(GetLdlSessionsLimitRequest) returns (GetLdlSessionsLimitResponse) {
+    }
+
+    /**
+     * @brief Get the last cdm specific DRM error code.
+     * @see GetLastDrmErrorRequest
+     */
+    rpc getLastDrmErrorLimit(GetLastDrmErrorRequest) returns (GetLastDrmErrorResponse) {
+    }
+
+    /**
+     * @brief Get the DRM system time for the object's key system.
+     * @see GetDrmTimeRequest
+     */
+    rpc getDrmTime(GetDrmTimeRequest) returns (GetDrmTimeResponse) {
+    }
+
+    /**
+     * @brief Get the internal CDM key session ID
+     * @see GetCdmKeySessionIdRequest
+     */
+    rpc getCdmKeySessionId(GetCdmKeySessionIdRequest) returns (GetCdmKeySessionIdResponse) {
+    }
+}

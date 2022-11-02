@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<suppressions>
+    <suppress>
+        <id>missingInclude</id>
+    </suppress>
+    <suppress>
+        <id>ConfigurationNotChecked</id>
+    </suppress>
+    <suppress>
+        <id>unusedFunction</id>
+        <fileName>logging/source/RialtoLogging.cpp</fileName>
+    </suppress>
+    <suppress>
+        <id>unusedFunction</id>
+        <fileName>media/server/gstplayer/source/GstSrc.cpp</fileName>
+    </suppress>
+    <suppress>
+        <id>unusedFunction</id>
+        <fileName>ipc/server/source/IpcServerControllerImpl.cpp</fileName>
+    </suppress>
+    <suppress>
+        <id>unusedFunction</id>
+        <fileName>ipc/client/source/IpcClientControllerImpl.cpp</fileName>
+    </suppress>
+    <suppress>
+        <id>unusedFunction</id>
+        <symbolName>MATCHER_P5</symbolName>
+    </suppress>
+</suppressions>
