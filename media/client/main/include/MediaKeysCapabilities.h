@@ -50,7 +50,7 @@ public:
 namespace firebolt::rialto::client
 {
 /**
- * @brief The definition of the MediaKeys.
+ * @brief The definition of the MediaKeysCapabilities.
  */
 class MediaKeysCapabilities : public IMediaKeysCapabilities
 {

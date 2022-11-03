@@ -85,8 +85,6 @@ public:
      */
     virtual ~MediaPipelineServerInternal();
 
-    std::vector<std::string> getSupportedCaps(MediaSourceType type) override;
-
     bool load(MediaType type, const std::string &mimeType, const std::string &url) override;
 
     bool attachSource(MediaSource &source) override;

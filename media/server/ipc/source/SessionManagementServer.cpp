@@ -31,11 +31,13 @@ namespace firebolt::rialto::server::ipc
 SessionManagementServer::SessionManagementServer(
     const std::shared_ptr<firebolt::rialto::ipc::IServerFactory> &ipcFactory,
     const std::shared_ptr<IMediaPipelineModuleServiceFactory> &mediaPipelineModuleFactory,
+    const std::shared_ptr<IMediaPipelineCapabilitiesModuleServiceFactory> &mediaPipelineCapabilitiesModuleFactory,
     const std::shared_ptr<IMediaKeysModuleServiceFactory> &mediaKeysModuleFactory,
     const std::shared_ptr<IMediaKeysCapabilitiesModuleServiceFactory> &mediaKeysCapabilitiesModuleFactory,
     const std::shared_ptr<IRialtoControlModuleServiceFactory> &rialtoControlModuleFactory,
     service::IPlaybackService &playbackService, service::ICdmService &cdmService)
     : m_isRunning{false}, m_mediaPipelineModule{mediaPipelineModuleFactory->create(playbackService)},
+      m_mediaPipelineCapabilitiesModule{mediaPipelineCapabilitiesModuleFactory->create(playbackService)},
       m_mediaKeysModule{mediaKeysModuleFactory->create(cdmService)},
       m_mediaKeysCapabilitiesModule{mediaKeysCapabilitiesModuleFactory->create(cdmService)},
       m_rialtoControlModule{rialtoControlModuleFactory->create(playbackService)}
@@ -113,6 +115,7 @@ void SessionManagementServer::onClientConnected(const std::shared_ptr<::firebolt
 {
     m_rialtoControlModule->clientConnected(client);
     m_mediaPipelineModule->clientConnected(client);
+    m_mediaPipelineCapabilitiesModule->clientConnected(client);
     m_mediaKeysModule->clientConnected(client);
     m_mediaKeysCapabilitiesModule->clientConnected(client);
     m_setLogLevelsService.clientConnected(client);
@@ -123,6 +126,7 @@ void SessionManagementServer::onClientDisconnected(const std::shared_ptr<::fireb
     m_setLogLevelsService.clientDisconnected(client);
     m_mediaKeysCapabilitiesModule->clientDisconnected(client);
     m_mediaKeysModule->clientDisconnected(client);
+    m_mediaPipelineCapabilitiesModule->clientDisconnected(client);
     m_mediaPipelineModule->clientDisconnected(client);
     m_rialtoControlModule->clientDisconnected(client);
 }

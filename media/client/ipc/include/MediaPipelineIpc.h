@@ -170,12 +170,6 @@ private:
     firebolt::rialto::LoadRequest_MediaType convertLoadRequestMediaType(MediaType mediaType);
 
     /**
-     * @brief Converts the MediaSourceType enum to protobuf AttachSourceRequest MediaSourceType.
-     */
-    firebolt::rialto::AttachSourceRequest_MediaSourceType
-    convertAttachSourceRequestMediaSourceType(MediaSourceType mediaType);
-
-    /**
      * @brief Converts the MediaSourceStatus enum to protobuf HaveDataRequest MediaSourceStatus.
      */
     firebolt::rialto::HaveDataRequest_MediaSourceStatus convertHaveDataRequestMediaSourceStatus(MediaSourceStatus status);

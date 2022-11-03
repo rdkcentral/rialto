@@ -26,6 +26,7 @@ include( CheckCXXCompilerFlag )
 
 set(LIB_RIALTO_CLIENT_SOURCES
         source/MediaPipeline.cpp
+        source/MediaPipelineCapabilities.cpp
         source/RialtoControl.cpp
         source/MediaKeys.cpp
         source/MediaKeysCapabilities.cpp

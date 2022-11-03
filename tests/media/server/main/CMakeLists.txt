@@ -34,6 +34,8 @@ add_gtests (
         mediaPipeline/MiscellaneousFunctionsTest.cpp
         mediaPipeline/HaveDataTest.cpp
 
+        mediaPipelineCapabilities/MediaPipelineCapabilitiesTest.cpp
+
         mediaKeys/base/MediaKeysTestBase.cpp
         mediaKeys/CreateTest.cpp
         mediaKeys/CreateKeySessionTest.cpp

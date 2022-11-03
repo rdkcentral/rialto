@@ -19,14 +19,21 @@
 
 #include "PlaybackServiceTestsFixture.h"
 
+TEST_F(PlaybackServiceTests, shouldFailToCreatePlaybackService)
+{
+    mediaPipelineCapabilitiesFactoryWillReturnNullptr();
+}
+
 TEST_F(PlaybackServiceTests, shouldFailToCreateSessionInInactiveState)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     mainThreadWillEnqueueTask();
     createSessionShouldFail();
 }
 
 TEST_F(PlaybackServiceTests, shouldFailToCreateSessionAfterSwitchToInactive)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
@@ -38,6 +45,7 @@ TEST_F(PlaybackServiceTests, shouldFailToCreateSessionAfterSwitchToInactive)
 
 TEST_F(PlaybackServiceTests, shouldFailToCreateSessionAfterFailedSwitchToActive)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillFailToInitialize();
     triggerSwitchToActive();
@@ -47,6 +55,7 @@ TEST_F(PlaybackServiceTests, shouldFailToCreateSessionAfterFailedSwitchToActive)
 
 TEST_F(PlaybackServiceTests, shouldFailToCreateSessionWhenMaxPlaybackSessionsIsReached)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     constexpr int maxPlaybacks{0};
     triggerSetMaxPlaybacks(maxPlaybacks);
     sharedMemoryBufferWillBeInitialized(maxPlaybacks);
@@ -57,6 +66,7 @@ TEST_F(PlaybackServiceTests, shouldFailToCreateSessionWhenMaxPlaybackSessionsIsR
 
 TEST_F(PlaybackServiceTests, shouldFailToCreateSessionWhenFactoryReturnsNull)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
@@ -66,6 +76,7 @@ TEST_F(PlaybackServiceTests, shouldFailToCreateSessionWhenFactoryReturnsNull)
 
 TEST_F(PlaybackServiceTests, shouldCreateSession)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
@@ -75,7 +86,9 @@ TEST_F(PlaybackServiceTests, shouldCreateSession)
 
 TEST_F(PlaybackServiceTests, shouldFailToCreateSessionWithTheSameIdTwice)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     constexpr int maxPlaybacks{2};
+
     triggerSetMaxPlaybacks(maxPlaybacks);
     sharedMemoryBufferWillBeInitialized(maxPlaybacks);
     triggerSwitchToActive();
@@ -87,6 +100,7 @@ TEST_F(PlaybackServiceTests, shouldFailToCreateSessionWithTheSameIdTwice)
 
 TEST_F(PlaybackServiceTests, shouldFailToDestroyNotExistingSession)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
@@ -96,6 +110,7 @@ TEST_F(PlaybackServiceTests, shouldFailToDestroyNotExistingSession)
 
 TEST_F(PlaybackServiceTests, shouldDestroySession)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
@@ -107,6 +122,7 @@ TEST_F(PlaybackServiceTests, shouldDestroySession)
 
 TEST_F(PlaybackServiceTests, shouldDestroySessionWhenSwitchedToInactive)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
@@ -120,6 +136,7 @@ TEST_F(PlaybackServiceTests, shouldDestroySessionWhenSwitchedToInactive)
 
 TEST_F(PlaybackServiceTests, shouldFailToLoadNotExistingSession)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
@@ -129,6 +146,7 @@ TEST_F(PlaybackServiceTests, shouldFailToLoadNotExistingSession)
 
 TEST_F(PlaybackServiceTests, shouldFailToLoadSession)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
@@ -140,6 +158,7 @@ TEST_F(PlaybackServiceTests, shouldFailToLoadSession)
 
 TEST_F(PlaybackServiceTests, shouldLoadSession)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
@@ -151,6 +170,7 @@ TEST_F(PlaybackServiceTests, shouldLoadSession)
 
 TEST_F(PlaybackServiceTests, shouldFailToAttachSourceForNotExistingSession)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
@@ -160,6 +180,7 @@ TEST_F(PlaybackServiceTests, shouldFailToAttachSourceForNotExistingSession)
 
 TEST_F(PlaybackServiceTests, shouldFailToAttachSource)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
@@ -171,6 +192,7 @@ TEST_F(PlaybackServiceTests, shouldFailToAttachSource)
 
 TEST_F(PlaybackServiceTests, shouldAttachSource)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
@@ -182,6 +204,7 @@ TEST_F(PlaybackServiceTests, shouldAttachSource)
 
 TEST_F(PlaybackServiceTests, shouldFailToRemoveSourceForNotExistingSession)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
@@ -191,6 +214,7 @@ TEST_F(PlaybackServiceTests, shouldFailToRemoveSourceForNotExistingSession)
 
 TEST_F(PlaybackServiceTests, shouldFailToRemoveSource)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
@@ -202,6 +226,7 @@ TEST_F(PlaybackServiceTests, shouldFailToRemoveSource)
 
 TEST_F(PlaybackServiceTests, shouldRemoveSource)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
@@ -213,6 +238,7 @@ TEST_F(PlaybackServiceTests, shouldRemoveSource)
 
 TEST_F(PlaybackServiceTests, shouldFailToPlayForNotExistingSession)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
@@ -222,6 +248,7 @@ TEST_F(PlaybackServiceTests, shouldFailToPlayForNotExistingSession)
 
 TEST_F(PlaybackServiceTests, shouldFailToPlay)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
@@ -233,6 +260,7 @@ TEST_F(PlaybackServiceTests, shouldFailToPlay)
 
 TEST_F(PlaybackServiceTests, shouldPlay)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
@@ -244,6 +272,7 @@ TEST_F(PlaybackServiceTests, shouldPlay)
 
 TEST_F(PlaybackServiceTests, shouldFailToStopForNotExistingSession)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
@@ -253,6 +282,7 @@ TEST_F(PlaybackServiceTests, shouldFailToStopForNotExistingSession)
 
 TEST_F(PlaybackServiceTests, shouldFailToStop)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
@@ -264,6 +294,7 @@ TEST_F(PlaybackServiceTests, shouldFailToStop)
 
 TEST_F(PlaybackServiceTests, shouldStop)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
@@ -275,6 +306,7 @@ TEST_F(PlaybackServiceTests, shouldStop)
 
 TEST_F(PlaybackServiceTests, shouldFailToPauseForNotExistingSession)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
@@ -284,6 +316,7 @@ TEST_F(PlaybackServiceTests, shouldFailToPauseForNotExistingSession)
 
 TEST_F(PlaybackServiceTests, shouldFailToPause)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
@@ -295,6 +328,7 @@ TEST_F(PlaybackServiceTests, shouldFailToPause)
 
 TEST_F(PlaybackServiceTests, shouldPause)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
@@ -306,6 +340,7 @@ TEST_F(PlaybackServiceTests, shouldPause)
 
 TEST_F(PlaybackServiceTests, shouldFailToSetPlaybackRateForNotExistingSession)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
@@ -315,6 +350,7 @@ TEST_F(PlaybackServiceTests, shouldFailToSetPlaybackRateForNotExistingSession)
 
 TEST_F(PlaybackServiceTests, shouldFailToSetPlaybackRate)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
@@ -326,6 +362,7 @@ TEST_F(PlaybackServiceTests, shouldFailToSetPlaybackRate)
 
 TEST_F(PlaybackServiceTests, shouldSetPlaybackRate)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
@@ -337,6 +374,7 @@ TEST_F(PlaybackServiceTests, shouldSetPlaybackRate)
 
 TEST_F(PlaybackServiceTests, shouldFailToSetPositionForNotExistingSession)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
@@ -346,6 +384,7 @@ TEST_F(PlaybackServiceTests, shouldFailToSetPositionForNotExistingSession)
 
 TEST_F(PlaybackServiceTests, shouldFailToSetPosition)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
@@ -357,6 +396,7 @@ TEST_F(PlaybackServiceTests, shouldFailToSetPosition)
 
 TEST_F(PlaybackServiceTests, shouldSetPosition)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
@@ -368,6 +408,7 @@ TEST_F(PlaybackServiceTests, shouldSetPosition)
 
 TEST_F(PlaybackServiceTests, shouldFailToSetVideoWindowForNotExistingSession)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
@@ -377,6 +418,7 @@ TEST_F(PlaybackServiceTests, shouldFailToSetVideoWindowForNotExistingSession)
 
 TEST_F(PlaybackServiceTests, shouldFailToSetVideoWindow)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
@@ -388,6 +430,7 @@ TEST_F(PlaybackServiceTests, shouldFailToSetVideoWindow)
 
 TEST_F(PlaybackServiceTests, shouldSetVideoWindow)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
@@ -399,6 +442,7 @@ TEST_F(PlaybackServiceTests, shouldSetVideoWindow)
 
 TEST_F(PlaybackServiceTests, shouldFailToHaveDataForNotExistingSession)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
@@ -408,6 +452,7 @@ TEST_F(PlaybackServiceTests, shouldFailToHaveDataForNotExistingSession)
 
 TEST_F(PlaybackServiceTests, shouldFailToHaveData)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
@@ -419,6 +464,7 @@ TEST_F(PlaybackServiceTests, shouldFailToHaveData)
 
 TEST_F(PlaybackServiceTests, shouldHaveData)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
@@ -430,12 +476,14 @@ TEST_F(PlaybackServiceTests, shouldHaveData)
 
 TEST_F(PlaybackServiceTests, shouldFailToGetSharedMemoryInInactiveState)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     mainThreadWillEnqueueTask();
     getSharedMemoryShouldFail();
 }
 
 TEST_F(PlaybackServiceTests, shouldGetSharedMemory)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
@@ -445,6 +493,7 @@ TEST_F(PlaybackServiceTests, shouldGetSharedMemory)
 
 TEST_F(PlaybackServiceTests, shouldFailToGetPositionForNotExistingSession)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
@@ -453,6 +502,7 @@ TEST_F(PlaybackServiceTests, shouldFailToGetPositionForNotExistingSession)
 
 TEST_F(PlaybackServiceTests, shouldFailToGetPosition)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
@@ -464,6 +514,7 @@ TEST_F(PlaybackServiceTests, shouldFailToGetPosition)
 
 TEST_F(PlaybackServiceTests, shouldGetPosition)
 {
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
@@ -471,4 +522,16 @@ TEST_F(PlaybackServiceTests, shouldGetPosition)
     createSessionShouldSucceed();
     mediaPipelineWillGetPosition();
     getPositionShouldSucceed();
+}
+
+TEST_F(PlaybackServiceTests, shouldGetSupportedMimeTypes)
+{
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
+    getSupportedMimeTypesSucceed();
+}
+
+TEST_F(PlaybackServiceTests, shouldCheckSupportedMimeType)
+{
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
+    isMimeTypeSupportedSucceed();
 }

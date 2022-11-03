@@ -20,6 +20,7 @@
 #include "MediaPipelineModuleService.h"
 #include "IPlaybackService.h"
 #include "MediaPipelineClient.h"
+#include "RialtoCommonModule.h"
 #include "RialtoServerLogging.h"
 #include <IIpcController.h>
 #include <algorithm>
@@ -31,27 +32,6 @@ int generateSessionId()
 {
     static int sessionId{0};
     return sessionId++;
-}
-
-firebolt::rialto::MediaSourceType
-convertMediaSourceType(const firebolt::rialto::AttachSourceRequest_MediaSourceType &mediaSourceType)
-{
-    switch (mediaSourceType)
-    {
-    case firebolt::rialto::AttachSourceRequest_MediaSourceType::AttachSourceRequest_MediaSourceType_UNKNOWN:
-    {
-        return firebolt::rialto::MediaSourceType::UNKNOWN;
-    }
-    case firebolt::rialto::AttachSourceRequest_MediaSourceType::AttachSourceRequest_MediaSourceType_AUDIO:
-    {
-        return firebolt::rialto::MediaSourceType::AUDIO;
-    }
-    case firebolt::rialto::AttachSourceRequest_MediaSourceType::AttachSourceRequest_MediaSourceType_VIDEO:
-    {
-        return firebolt::rialto::MediaSourceType::VIDEO;
-    }
-    }
-    return firebolt::rialto::MediaSourceType::UNKNOWN;
 }
 
 firebolt::rialto::MediaType convertMediaType(const firebolt::rialto::LoadRequest_MediaType &mediaType)
