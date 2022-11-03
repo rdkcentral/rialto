@@ -30,7 +30,7 @@ using testing::ReturnRef;
 
 ServerManagerServiceTests::ServerManagerServiceTests()
 {
-    auto serviceContext{std::make_unique<StrictMock<rialto::servermanager::service::mocks::ServiceContextMock>>()};
+    auto serviceContext{std::make_unique<StrictMock<rialto::servermanager::service::ServiceContextMock>>()};
     EXPECT_CALL(*serviceContext, getSessionServerAppManager).Times(AtLeast(0)).WillRepeatedly(ReturnRef(m_appManager));
     m_sut = std::make_unique<rialto::servermanager::service::ServerManagerService>(std::move(serviceContext));
 }

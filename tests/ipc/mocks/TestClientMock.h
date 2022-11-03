@@ -17,12 +17,12 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_IPC_MOCK_TEST_CLIENT_MOCK_H_
-#define FIREBOLT_RIALTO_IPC_MOCK_TEST_CLIENT_MOCK_H_
+#ifndef FIREBOLT_RIALTO_IPC_TEST_CLIENT_MOCK_H_
+#define FIREBOLT_RIALTO_IPC_TEST_CLIENT_MOCK_H_
 
 #include <gmock/gmock.h>
 
-namespace firebolt::rialto::ipc::mock
+namespace firebolt::rialto::ipc
 {
 class TestClientMock
 {
@@ -32,6 +32,6 @@ public:
     TestClientMock() {}
     virtual ~TestClientMock() = default;
 };
-} // namespace firebolt::rialto::ipc::mock
+} // namespace firebolt::rialto::ipc
 
-#endif // FIREBOLT_RIALTO_IPC_MOCK_TEST_CLIENT_MOCK_H_
+#endif // FIREBOLT_RIALTO_IPC_TEST_CLIENT_MOCK_H_

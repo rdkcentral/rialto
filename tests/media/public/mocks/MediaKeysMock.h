@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_MOCK_MEDIA_KEYS_MOCK_H_
-#define FIREBOLT_RIALTO_MOCK_MEDIA_KEYS_MOCK_H_
+#ifndef FIREBOLT_RIALTO_MEDIA_KEYS_MOCK_H_
+#define FIREBOLT_RIALTO_MEDIA_KEYS_MOCK_H_
 
 #include "IMediaKeys.h"
 #include <gmock/gmock.h>
@@ -26,7 +26,7 @@
 #include <string>
 #include <vector>
 
-namespace firebolt::rialto::mock
+namespace firebolt::rialto
 {
 class MediaKeysMock : public IMediaKeys
 {
@@ -58,6 +58,6 @@ public:
     MOCK_METHOD(MediaKeyErrorStatus, getCdmKeySessionId, (int32_t keySessionId, std::string &cdmKeySessionId),
                 (override));
 };
-} // namespace firebolt::rialto::mock
+} // namespace firebolt::rialto
 
-#endif // FIREBOLT_RIALTO_MOCK_MEDIA_KEYS_MOCK_H_
+#endif // FIREBOLT_RIALTO_MEDIA_KEYS_MOCK_H_

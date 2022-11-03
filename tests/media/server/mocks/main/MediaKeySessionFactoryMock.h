@@ -17,15 +17,15 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_MOCK_MEDIA_KEY_SESSION_FACTORY_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_MOCK_MEDIA_KEY_SESSION_FACTORY_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_MEDIA_KEY_SESSION_FACTORY_MOCK_H_
+#define FIREBOLT_RIALTO_SERVER_MEDIA_KEY_SESSION_FACTORY_MOCK_H_
 
 #include "IMediaKeySession.h"
 #include <gmock/gmock.h>
 #include <memory>
 #include <string>
 
-namespace firebolt::rialto::server::mock
+namespace firebolt::rialto::server
 {
 class MediaKeySessionFactoryMock : public IMediaKeySessionFactory
 {
@@ -35,6 +35,6 @@ public:
                  KeySessionType sessionType, std::weak_ptr<IMediaKeysClient> client, bool isLDL),
                 (const, override));
 };
-} // namespace firebolt::rialto::server::mock
+} // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_MOCK_MEDIA_KEY_SESSION_FACTORY_MOCK_H_
+#endif // FIREBOLT_RIALTO_SERVER_MEDIA_KEY_SESSION_FACTORY_MOCK_H_

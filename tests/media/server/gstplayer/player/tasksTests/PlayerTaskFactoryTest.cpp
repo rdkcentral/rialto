@@ -53,12 +53,12 @@ using testing::StrictMock;
 struct PlayerTaskFactoryTest : public testing::Test
 {
     firebolt::rialto::server::PlayerContext m_context;
-    StrictMock<firebolt::rialto::server::mock::GstPlayerPrivateMock> m_gstPlayer;
-    StrictMock<firebolt::rialto::server::mock::GstPlayerClientMock> m_gstPlayerClient;
-    std::shared_ptr<firebolt::rialto::server::mock::GlibWrapperMock> m_glibWrapper{
-        std::make_shared<StrictMock<firebolt::rialto::server::mock::GlibWrapperMock>>()};
-    std::shared_ptr<firebolt::rialto::server::mock::GstWrapperMock> m_gstWrapper{
-        std::make_shared<StrictMock<firebolt::rialto::server::mock::GstWrapperMock>>()};
+    StrictMock<firebolt::rialto::server::GstPlayerPrivateMock> m_gstPlayer;
+    StrictMock<firebolt::rialto::server::GstPlayerClientMock> m_gstPlayerClient;
+    std::shared_ptr<firebolt::rialto::server::GlibWrapperMock> m_glibWrapper{
+        std::make_shared<StrictMock<firebolt::rialto::server::GlibWrapperMock>>()};
+    std::shared_ptr<firebolt::rialto::server::GstWrapperMock> m_gstWrapper{
+        std::make_shared<StrictMock<firebolt::rialto::server::GstWrapperMock>>()};
     firebolt::rialto::server::PlayerTaskFactory m_sut{&m_gstPlayerClient, m_gstWrapper, m_glibWrapper};
 };
 

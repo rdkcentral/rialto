@@ -55,10 +55,10 @@ public:
     void sendSetLogLevels();
 
 private:
-    std::shared_ptr<StrictMock<firebolt::rialto::ipc::mock::ClientMock>> m_clientMock;
-    std::shared_ptr<StrictMock<firebolt::rialto::ipc::mock::ServerMock>> m_serverMock;
-    std::shared_ptr<StrictMock<firebolt::rialto::ipc::mock::ClosureMock>> m_closureMock;
-    std::shared_ptr<StrictMock<firebolt::rialto::ipc::mock::ControllerMock>> m_controllerMock;
+    std::shared_ptr<StrictMock<firebolt::rialto::ipc::ClientMock>> m_clientMock;
+    std::shared_ptr<StrictMock<firebolt::rialto::ipc::ServerMock>> m_serverMock;
+    std::shared_ptr<StrictMock<firebolt::rialto::ipc::ClosureMock>> m_closureMock;
+    std::shared_ptr<StrictMock<firebolt::rialto::ipc::ControllerMock>> m_controllerMock;
     StrictMock<firebolt::rialto::server::service::SessionServerManagerMock> m_sessionServerManagerMock;
     std::shared_ptr<::rialto::ServerManagerModule> m_sut;
 };

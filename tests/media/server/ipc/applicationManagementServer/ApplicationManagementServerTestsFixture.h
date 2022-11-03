@@ -52,9 +52,9 @@ public:
     void stopApplicationManager();
 
 private:
-    std::shared_ptr<StrictMock<firebolt::rialto::ipc::mock::ClientMock>> m_clientMock;
-    std::shared_ptr<StrictMock<firebolt::rialto::ipc::mock::ServerMock>> m_serverMock;
-    std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::mock::ServerManagerModuleServiceMock>> m_serverManagerModuleMock;
+    std::shared_ptr<StrictMock<firebolt::rialto::ipc::ClientMock>> m_clientMock;
+    std::shared_ptr<StrictMock<firebolt::rialto::ipc::ServerMock>> m_serverMock;
+    std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::ServerManagerModuleServiceMock>> m_serverManagerModuleMock;
     StrictMock<firebolt::rialto::server::service::SessionServerManagerMock> m_sessionServerManagerMock;
     std::unique_ptr<firebolt::rialto::server::ipc::IApplicationManagementServer> m_sut;
 };

@@ -106,8 +106,7 @@ public:
         return decoderPadTemplate;
     }
 
-    std::shared_ptr<StrictMock<mock::GstWrapperMock>> m_gstWrapperMock{
-        std::make_shared<StrictMock<mock::GstWrapperMock>>()};
+    std::shared_ptr<StrictMock<GstWrapperMock>> m_gstWrapperMock{std::make_shared<StrictMock<GstWrapperMock>>()};
     std::unordered_map<std::string, GstCaps> m_capsMap;
     std::unique_ptr<GstCapabilities> m_sut;
 };

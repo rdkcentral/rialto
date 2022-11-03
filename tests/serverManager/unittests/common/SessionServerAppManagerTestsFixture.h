@@ -62,12 +62,12 @@ public:
 
 private:
     std::unique_ptr<rialto::servermanager::ipc::IController> m_controller;
-    std::shared_ptr<StrictMock<rialto::servermanager::service::mocks::StateObserverMock>> m_stateObserver;
+    std::shared_ptr<StrictMock<rialto::servermanager::service::StateObserverMock>> m_stateObserver;
     std::unique_ptr<rialto::servermanager::common::ISessionServerApp> m_sessionServerApp;
-    StrictMock<rialto::servermanager::ipc::mocks::ControllerMock> &m_controllerMock;
-    StrictMock<rialto::servermanager::common::mocks::SessionServerAppMock> &m_sessionServerAppMock;
-    StrictMock<rialto::servermanager::common::mocks::SessionServerAppFactoryMock> *m_sessionServerAppFactoryMock;
-    StrictMock<firebolt::rialto::common::mocks::EventThreadMock> *m_eventThreadMock;
+    StrictMock<rialto::servermanager::ipc::ControllerMock> &m_controllerMock;
+    StrictMock<rialto::servermanager::common::SessionServerAppMock> &m_sessionServerAppMock;
+    StrictMock<rialto::servermanager::common::SessionServerAppFactoryMock> *m_sessionServerAppFactoryMock;
+    StrictMock<firebolt::rialto::common::EventThreadMock> *m_eventThreadMock;
     std::unique_ptr<rialto::servermanager::common::ISessionServerAppManager> m_sut;
 };
 

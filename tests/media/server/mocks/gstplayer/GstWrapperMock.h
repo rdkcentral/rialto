@@ -17,14 +17,14 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_MOCK_GST_WRAPPER_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_MOCK_GST_WRAPPER_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_GST_WRAPPER_MOCK_H_
+#define FIREBOLT_RIALTO_SERVER_GST_WRAPPER_MOCK_H_
 
 #include "IGstWrapper.h"
 #include <gmock/gmock.h>
 #include <string>
 
-namespace firebolt::rialto::server::mock
+namespace firebolt::rialto::server
 {
 class GstWrapperMock : public IGstWrapper
 {
@@ -160,6 +160,6 @@ public:
         return structure;
     }
 };
-} // namespace firebolt::rialto::server::mock
+} // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_MOCK_GST_WRAPPER_MOCK_H_
+#endif // FIREBOLT_RIALTO_SERVER_GST_WRAPPER_MOCK_H_

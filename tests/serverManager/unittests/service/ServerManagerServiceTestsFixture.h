@@ -46,7 +46,7 @@ public:
     bool triggerSetLogLevels();
 
 private:
-    StrictMock<rialto::servermanager::common::mocks::SessionServerAppManagerMock> m_appManager;
+    StrictMock<rialto::servermanager::common::SessionServerAppManagerMock> m_appManager;
     std::unique_ptr<rialto::servermanager::service::IServerManagerService> m_sut;
 };
 

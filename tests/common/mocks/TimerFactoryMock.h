@@ -17,13 +17,13 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_MOCK_TIMER_FACTORY_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_MOCK_TIMER_FACTORY_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_TIMER_FACTORY_MOCK_H_
+#define FIREBOLT_RIALTO_SERVER_TIMER_FACTORY_MOCK_H_
 #include "ITimer.h"
 #include <gmock/gmock.h>
 #include <memory>
 
-namespace firebolt::rialto::server::mock
+namespace firebolt::rialto::server
 {
 class TimerFactoryMock : public common::ITimerFactory
 {
@@ -35,6 +35,6 @@ public:
                  common::TimerType timerType),
                 (const, override));
 };
-} // namespace firebolt::rialto::server::mock
+} // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_MOCK_TIMER_FACTORY_MOCK_H_
+#endif // FIREBOLT_RIALTO_SERVER_TIMER_FACTORY_MOCK_H_

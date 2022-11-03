@@ -17,14 +17,14 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_IPC_MOCK_RPC_CONTROLLER_MOCK_H_
-#define FIREBOLT_RIALTO_IPC_MOCK_RPC_CONTROLLER_MOCK_H_
+#ifndef FIREBOLT_RIALTO_IPC_RPC_CONTROLLER_MOCK_H_
+#define FIREBOLT_RIALTO_IPC_RPC_CONTROLLER_MOCK_H_
 
 #include <gmock/gmock.h>
 #include <google/protobuf/service.h>
 #include <string>
 
-namespace firebolt::rialto::ipc::mock
+namespace firebolt::rialto::ipc
 {
 class RpcControllerMock : public google::protobuf::RpcController
 {
@@ -40,6 +40,6 @@ public:
     MOCK_METHOD(bool, IsCanceled, (), (override, const));
     MOCK_METHOD(void, NotifyOnCancel, (google::protobuf::Closure * callback), (override));
 };
-} // namespace firebolt::rialto::ipc::mock
+} // namespace firebolt::rialto::ipc
 
-#endif // FIREBOLT_RIALTO_IPC_MOCK_RPC_CONTROLLER_MOCK_H_
+#endif // FIREBOLT_RIALTO_IPC_RPC_CONTROLLER_MOCK_H_

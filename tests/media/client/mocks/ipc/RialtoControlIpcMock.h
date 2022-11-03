@@ -17,13 +17,13 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_CLIENT_MOCK_RIALTO_CONTROL_IPC_MOCK_H_
-#define FIREBOLT_RIALTO_CLIENT_MOCK_RIALTO_CONTROL_IPC_MOCK_H_
+#ifndef FIREBOLT_RIALTO_CLIENT_RIALTO_CONTROL_IPC_MOCK_H_
+#define FIREBOLT_RIALTO_CLIENT_RIALTO_CONTROL_IPC_MOCK_H_
 
 #include "IRialtoControlIpc.h"
 #include <gmock/gmock.h>
 
-namespace firebolt::rialto::client::mock
+namespace firebolt::rialto::client
 {
 class RialtoControlIpcMock : public IRialtoControlIpc
 {
@@ -35,6 +35,6 @@ public:
     MOCK_METHOD(bool, disconnect, (), (override));
     MOCK_METHOD(bool, getSharedMemory, (int32_t & fd, uint32_t &size), (override));
 };
-} // namespace firebolt::rialto::client::mock
+} // namespace firebolt::rialto::client
 
-#endif // FIREBOLT_RIALTO_CLIENT_MOCK_RIALTO_CONTROL_IPC_MOCK_H_
+#endif // FIREBOLT_RIALTO_CLIENT_RIALTO_CONTROL_IPC_MOCK_H_

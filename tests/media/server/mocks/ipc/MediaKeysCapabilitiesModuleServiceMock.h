@@ -17,14 +17,14 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_IPC_MOCK_MEDIA_KEYS_CAPABILITIES_MODULE_SERVICE_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_IPC_MOCK_MEDIA_KEYS_CAPABILITIES_MODULE_SERVICE_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_IPC_MEDIA_KEYS_CAPABILITIES_MODULE_SERVICE_MOCK_H_
+#define FIREBOLT_RIALTO_SERVER_IPC_MEDIA_KEYS_CAPABILITIES_MODULE_SERVICE_MOCK_H_
 
 #include "IMediaKeysCapabilitiesModuleService.h"
 #include <gmock/gmock.h>
 #include <memory>
 
-namespace firebolt::rialto::server::ipc::mock
+namespace firebolt::rialto::server::ipc
 {
 class MediaKeysCapabilitiesModuleServiceMock : public IMediaKeysCapabilitiesModuleService
 {
@@ -51,6 +51,6 @@ public:
                  ::firebolt::rialto::GetSupportedKeySystemVersionResponse *response, ::google::protobuf::Closure *done),
                 (override));
 };
-} // namespace firebolt::rialto::server::ipc::mock
+} // namespace firebolt::rialto::server::ipc
 
-#endif // FIREBOLT_RIALTO_SERVER_IPC_MOCK_MEDIA_KEYS_CAPABILITIES_MODULE_SERVICE_MOCK_H_
+#endif // FIREBOLT_RIALTO_SERVER_IPC_MEDIA_KEYS_CAPABILITIES_MODULE_SERVICE_MOCK_H_
