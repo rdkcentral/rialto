@@ -68,8 +68,25 @@ public:
      */
     virtual ~MediaPipelineCapabilities();
 
+    /**
+     * @brief Returns the MSE mime types supported by Rialto for \a sourceType
+     *
+     * @param[in] sourceType : source type
+     *
+     * @retval The supported mime types.
+     */
     std::vector<std::string> getSupportedMimeTypes(MediaSourceType sourceType) override;
 
+    /**
+     * @brief Indicates if the specified mime type is supported.
+     *
+     * This method should be called to ensure that the specified mime
+     * type is supported by Rialto.
+     *
+     * @param[in] mimeType : The mime type to check.
+     *
+     * @retval true if supported.
+     */
     bool isMimeTypeSupported(const std::string &mimeTypee) override;
 
 private:

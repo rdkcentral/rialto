@@ -64,8 +64,18 @@ public:
     IGstCapabilities(IGstCapabilities &&) = delete;
     IGstCapabilities &operator=(IGstCapabilities &&) = delete;
 
+    /**
+     * @brief Gets vector of mime types supported by gstreamer
+     *
+     * @retval vector of mime types supported by gstreamer
+     */
     virtual std::vector<std::string> getSupportedMimeTypes(MediaSourceType sourceType) = 0;
 
+    /**
+     * @brief Checks is \a mimeType is supported by gstreamer
+     *
+     * @retval True if mime type is supported by gstreamer
+     */
     virtual bool isMimeTypeSupported(const std::string &mimeType) = 0;
 };
 

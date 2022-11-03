@@ -57,13 +57,13 @@ public:
     GstCapabilities &operator=(GstCapabilities &&) = delete;
 
     /**
-     * @brief Gets vector of supported by gstreamer mime types
+     * @brief Gets vector of mime types supported by gstreamer
      *
-     * @retval vector of supported by gstreamer mime types
+     * @retval vector of mime types supported by gstreamer
      */
     std::vector<std::string> getSupportedMimeTypes(MediaSourceType sourceType) override;
     /**
-     * @brief Checks is \a mimeType is suppotred by gstreamer
+     * @brief Checks is \a mimeType is supported by gstreamer
      *
      * @retval True if mime type is supported by gstreamer
      */
@@ -90,6 +90,11 @@ private:
      */
     void addAllUniqueSinkPadsCapsToVector(std::vector<GstCaps *> &capsVector, const GList *padTemplates);
 
+    /**
+     * @brief Checks if any src pad of parser can be connected to decoder
+     *
+     * @retval True if it's possible
+     */
     bool canCreateParserDecoderChain(GstCaps *decoderCaps, const GList *parserPadTemplates);
 
     /**
@@ -105,7 +110,6 @@ private:
      * @retval Mime types
      */
     std::unordered_set<std::string> convertFromCapsVectorToMimeSet(std::vector<GstCaps *> &supportedCaps);
-    bool isMimeSupportedByParserDecoderChain(GstCaps *caps, GstElementFactoryListType mediaType, GList *decoderList);
 
     /**
      * @brief Set of mime types which are supported by gstreamer

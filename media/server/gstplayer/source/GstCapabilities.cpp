@@ -90,6 +90,7 @@ std::vector<std::string> GstCapabilities::getSupportedMimeTypes(MediaSourceType 
     }
     else
     {
+        RIALTO_SERVER_LOG_WARN("Unsupported media type");
         return {};
     }
 

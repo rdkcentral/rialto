@@ -23,7 +23,6 @@
 #include "IMediaPipelineCapabilitiesIpcFactory.h"
 #include <gmock/gmock.h>
 #include <memory>
-#include <string>
 
 namespace firebolt::rialto::client
 {
