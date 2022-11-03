@@ -62,6 +62,7 @@ public:
      * @retval vector of mime types supported by gstreamer
      */
     std::vector<std::string> getSupportedMimeTypes(MediaSourceType sourceType) override;
+
     /**
      * @brief Checks is \a mimeType is supported by gstreamer
      *
