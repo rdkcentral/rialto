@@ -187,3 +187,36 @@ jobs:
         with:
           name: coverage_report_stats
           path: build/coverage_statistics.txt
+
+      # Download current master coverage statistics
+      - name: Download Master Coverage Statistics
+        uses: dawidd6/action-download-artifact@v2
+        if: ${{ success() && github.ref != 'refs/heads/master' }}
+        with:
+          workflow_conclusion: success
+          branch: master
+          name: coverage_report_stats
+          path: master_artifacts
+
+      # Run the process_coverage_stats script
+      - name: Process Coverage Statistics
+        if: ${{ success() && github.ref != 'refs/heads/master' }}
+        run: python scripts/coverage/process_coverage_stats.py ./master_artifacts/coverage_statistics.txt build/coverage_statistics.txt
+
+      # Get process_coverage_stats script output
+      - id: get-comment-body
+        if: ${{ success() && github.ref != 'refs/heads/master' }}
+        run: |
+          body="$(cat comparison_output.txt)"
+          body="${body//'%'/'%25'}"
+          body="${body//$'\n'/'%0A'}"
+          body="${body//$'\r'/'%0D'}"
+          echo "::set-output name=body::$body"
+
+      # Create comment with coverage info
+      - name: Create Coverage Comment
+        if: ${{ success() && github.ref != 'refs/heads/master' }}
+        uses: peter-evans/create-or-update-comment@v2
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: ${{ steps.get-comment-body.outputs.body }}
