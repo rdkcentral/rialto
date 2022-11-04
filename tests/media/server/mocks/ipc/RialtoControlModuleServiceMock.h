@@ -17,14 +17,14 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_IPC_MOCK_RIALTO_CONTROL_MODULE_SERVICE_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_IPC_MOCK_RIALTO_CONTROL_MODULE_SERVICE_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_IPC_RIALTO_CONTROL_MODULE_SERVICE_MOCK_H_
+#define FIREBOLT_RIALTO_SERVER_IPC_RIALTO_CONTROL_MODULE_SERVICE_MOCK_H_
 
 #include "IRialtoControlModuleService.h"
 #include <gmock/gmock.h>
 #include <memory>
 
-namespace firebolt::rialto::server::ipc::mock
+namespace firebolt::rialto::server::ipc
 {
 class RialtoControlModuleServiceMock : public IRialtoControlModuleService
 {
@@ -40,6 +40,6 @@ public:
                  ::firebolt::rialto::GetSharedMemoryResponse *response, ::google::protobuf::Closure *done),
                 (override));
 };
-} // namespace firebolt::rialto::server::ipc::mock
+} // namespace firebolt::rialto::server::ipc
 
-#endif // FIREBOLT_RIALTO_SERVER_IPC_MOCK_RIALTO_CONTROL_MODULE_SERVICE_MOCK_H_
+#endif // FIREBOLT_RIALTO_SERVER_IPC_RIALTO_CONTROL_MODULE_SERVICE_MOCK_H_

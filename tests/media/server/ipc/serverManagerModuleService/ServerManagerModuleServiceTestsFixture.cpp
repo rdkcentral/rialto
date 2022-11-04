@@ -50,10 +50,10 @@ rialto::SessionServerState convertSessionServerState(const firebolt::rialto::ser
 } // namespace
 
 ServerManagerModuleServiceTests::ServerManagerModuleServiceTests()
-    : m_clientMock{std::make_shared<StrictMock<firebolt::rialto::ipc::mock::ClientMock>>()},
-      m_serverMock{std::make_shared<StrictMock<firebolt::rialto::ipc::mock::ServerMock>>()},
-      m_closureMock{std::make_shared<StrictMock<firebolt::rialto::ipc::mock::ClosureMock>>()},
-      m_controllerMock{std::make_shared<StrictMock<firebolt::rialto::ipc::mock::ControllerMock>>()}
+    : m_clientMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ClientMock>>()},
+      m_serverMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ServerMock>>()},
+      m_closureMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ClosureMock>>()},
+      m_controllerMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ControllerMock>>()}
 {
     auto sutFactory = firebolt::rialto::server::ipc::IServerManagerModuleServiceFactory::createFactory();
     m_sut = sutFactory->create(m_sessionServerManagerMock);

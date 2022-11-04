@@ -17,13 +17,13 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_MOCK_GST_PLAYER_CLIENT_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_MOCK_GST_PLAYER_CLIENT_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_GST_PLAYER_CLIENT_MOCK_H_
+#define FIREBOLT_RIALTO_SERVER_GST_PLAYER_CLIENT_MOCK_H_
 
 #include "IGstPlayerClient.h"
 #include <gmock/gmock.h>
 
-namespace firebolt::rialto::server::mock
+namespace firebolt::rialto::server
 {
 class GstPlayerClientMock : public IGstPlayerClient
 {
@@ -38,6 +38,6 @@ public:
     MOCK_METHOD(void, clearActiveRequestsCache, (), (override));
     MOCK_METHOD(void, notifyQos, (MediaSourceType mediaSourceType, const QosInfo &qosInfo), (override));
 };
-} // namespace firebolt::rialto::server::mock
+} // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_MOCK_GST_PLAYER_CLIENT_MOCK_H_
+#endif // FIREBOLT_RIALTO_SERVER_GST_PLAYER_CLIENT_MOCK_H_

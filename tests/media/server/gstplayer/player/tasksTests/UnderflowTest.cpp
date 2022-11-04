@@ -29,8 +29,8 @@ using testing::StrictMock;
 
 struct UnderflowTest : public testing::Test
 {
-    StrictMock<firebolt::rialto::server::mock::GstPlayerPrivateMock> m_gstPlayer;
-    StrictMock<firebolt::rialto::server::mock::GstPlayerClientMock> m_gstPlayerClient;
+    StrictMock<firebolt::rialto::server::GstPlayerPrivateMock> m_gstPlayer;
+    StrictMock<firebolt::rialto::server::GstPlayerClientMock> m_gstPlayerClient;
 };
 
 TEST_F(UnderflowTest, shouldNotReportUnderflowWhenItIsAlreadyActive)

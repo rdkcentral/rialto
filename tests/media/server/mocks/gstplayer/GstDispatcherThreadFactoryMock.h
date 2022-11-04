@@ -17,14 +17,14 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_MOCK_GST_DISPATCHER_THREAD_FACTORY_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_MOCK_GST_DISPATCHER_THREAD_FACTORY_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_GST_DISPATCHER_THREAD_FACTORY_MOCK_H_
+#define FIREBOLT_RIALTO_SERVER_GST_DISPATCHER_THREAD_FACTORY_MOCK_H_
 
 #include "IGstDispatcherThread.h"
 #include <gmock/gmock.h>
 #include <memory>
 
-namespace firebolt::rialto::server::mock
+namespace firebolt::rialto::server
 {
 class GstDispatcherThreadFactoryMock : public IGstDispatcherThreadFactory
 {
@@ -34,6 +34,6 @@ public:
                  IWorkerThread &workerThread, const IPlayerTaskFactory &taskFactory),
                 (const, override));
 };
-} // namespace firebolt::rialto::server::mock
+} // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_MOCK_GST_DISPATCHER_THREAD_FACTORY_MOCK_H_
+#endif // FIREBOLT_RIALTO_SERVER_GST_DISPATCHER_THREAD_FACTORY_MOCK_H_

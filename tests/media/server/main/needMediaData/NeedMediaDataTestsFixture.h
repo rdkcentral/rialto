@@ -44,7 +44,7 @@ public:
 private:
     std::unique_ptr<firebolt::rialto::server::NeedMediaData> m_sut;
     std::shared_ptr<StrictMock<firebolt::rialto::MediaPipelineClientMock>> m_clientMock;
-    StrictMock<firebolt::rialto::server::mock::ActiveRequestsMock> activeRequestsMock;
+    StrictMock<firebolt::rialto::server::ActiveRequestsMock> activeRequestsMock;
     StrictMock<firebolt::rialto::server::SharedMemoryBufferMock> shmBufferMock;
 };
 

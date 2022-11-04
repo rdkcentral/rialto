@@ -17,13 +17,13 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_IPC_MOCK_CLOSURE_MOCK_H_
-#define FIREBOLT_RIALTO_IPC_MOCK_CLOSURE_MOCK_H_
+#ifndef FIREBOLT_RIALTO_IPC_CLOSURE_MOCK_H_
+#define FIREBOLT_RIALTO_IPC_CLOSURE_MOCK_H_
 
 #include <gmock/gmock.h>
 #include <google/protobuf/service.h>
 
-namespace firebolt::rialto::ipc::mock
+namespace firebolt::rialto::ipc
 {
 class ClosureMock : public google::protobuf::Closure
 {
@@ -33,6 +33,6 @@ public:
 
     MOCK_METHOD(void, Run, (), (override));
 };
-} // namespace firebolt::rialto::ipc::mock
+} // namespace firebolt::rialto::ipc
 
-#endif // FIREBOLT_RIALTO_IPC_MOCK_CLOSURE_MOCK_H_
+#endif // FIREBOLT_RIALTO_IPC_CLOSURE_MOCK_H_

@@ -55,18 +55,18 @@ constexpr rialto::servermanager::service::LoggingLevels
 } // namespace
 
 SessionServerAppManagerTests::SessionServerAppManagerTests()
-    : m_controller{std::make_unique<StrictMock<rialto::servermanager::ipc::mocks::ControllerMock>>()},
-      m_stateObserver{std::make_shared<StrictMock<rialto::servermanager::service::mocks::StateObserverMock>>()},
-      m_sessionServerApp{std::make_unique<StrictMock<rialto::servermanager::common::mocks::SessionServerAppMock>>()},
-      m_controllerMock{dynamic_cast<StrictMock<rialto::servermanager::ipc::mocks::ControllerMock> &>(*m_controller)},
+    : m_controller{std::make_unique<StrictMock<rialto::servermanager::ipc::ControllerMock>>()},
+      m_stateObserver{std::make_shared<StrictMock<rialto::servermanager::service::StateObserverMock>>()},
+      m_sessionServerApp{std::make_unique<StrictMock<rialto::servermanager::common::SessionServerAppMock>>()},
+      m_controllerMock{dynamic_cast<StrictMock<rialto::servermanager::ipc::ControllerMock> &>(*m_controller)},
       m_sessionServerAppMock{
-          dynamic_cast<StrictMock<rialto::servermanager::common::mocks::SessionServerAppMock> &>(*m_sessionServerApp)}
+          dynamic_cast<StrictMock<rialto::servermanager::common::SessionServerAppMock> &>(*m_sessionServerApp)}
 {
-    auto appFactory = std::make_unique<StrictMock<rialto::servermanager::common::mocks::SessionServerAppFactoryMock>>();
+    auto appFactory = std::make_unique<StrictMock<rialto::servermanager::common::SessionServerAppFactoryMock>>();
     m_sessionServerAppFactoryMock = appFactory.get();
 
-    auto eventThreadFactoryMock = std::make_shared<StrictMock<firebolt::rialto::common::mocks::EventThreadFactoryMock>>();
-    auto eventThreadMock = std::make_unique<StrictMock<firebolt::rialto::common::mocks::EventThreadMock>>();
+    auto eventThreadFactoryMock = std::make_shared<StrictMock<firebolt::rialto::common::EventThreadFactoryMock>>();
+    auto eventThreadMock = std::make_unique<StrictMock<firebolt::rialto::common::EventThreadMock>>();
     m_eventThreadMock = eventThreadMock.get();
     EXPECT_CALL(*eventThreadFactoryMock, createEventThread(_)).WillOnce(Return(ByMove(std::move(eventThreadMock))));
 

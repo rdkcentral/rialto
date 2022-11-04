@@ -17,14 +17,14 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_CLIENT_MOCK_SHARED_MEMORY_MANAGER_FACTORY_MOCK_H_
-#define FIREBOLT_RIALTO_CLIENT_MOCK_SHARED_MEMORY_MANAGER_FACTORY_MOCK_H_
+#ifndef FIREBOLT_RIALTO_CLIENT_SHARED_MEMORY_MANAGER_FACTORY_MOCK_H_
+#define FIREBOLT_RIALTO_CLIENT_SHARED_MEMORY_MANAGER_FACTORY_MOCK_H_
 
 #include "ISharedMemoryManager.h"
 #include <gmock/gmock.h>
 #include <memory>
 
-namespace firebolt::rialto::client::mock
+namespace firebolt::rialto::client
 {
 class SharedMemoryManagerFactoryMock : public ISharedMemoryManagerFactory
 {
@@ -34,6 +34,6 @@ public:
 
     MOCK_METHOD(std::shared_ptr<ISharedMemoryManager>, getSharedMemoryManager, (), (const, override));
 };
-} // namespace firebolt::rialto::client::mock
+} // namespace firebolt::rialto::client
 
-#endif // FIREBOLT_RIALTO_CLIENT_MOCK_SHARED_MEMORY_MANAGER_FACTORY_MOCK_H_
+#endif // FIREBOLT_RIALTO_CLIENT_SHARED_MEMORY_MANAGER_FACTORY_MOCK_H_

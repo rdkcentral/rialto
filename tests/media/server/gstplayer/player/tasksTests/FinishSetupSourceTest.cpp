@@ -33,10 +33,10 @@ using testing::StrictMock;
 struct FinishSetupSourceTest : public testing::Test
 {
     firebolt::rialto::server::PlayerContext m_context;
-    StrictMock<firebolt::rialto::server::mock::GstPlayerPrivateMock> m_gstPlayer;
-    StrictMock<firebolt::rialto::server::mock::GstPlayerClientMock> m_gstPlayerClient;
-    std::shared_ptr<StrictMock<firebolt::rialto::server::mock::GstSrcMock>> m_gstSrc{
-        std::make_shared<StrictMock<firebolt::rialto::server::mock::GstSrcMock>>()};
+    StrictMock<firebolt::rialto::server::GstPlayerPrivateMock> m_gstPlayer;
+    StrictMock<firebolt::rialto::server::GstPlayerClientMock> m_gstPlayerClient;
+    std::shared_ptr<StrictMock<firebolt::rialto::server::GstSrcMock>> m_gstSrc{
+        std::make_shared<StrictMock<firebolt::rialto::server::GstSrcMock>>()};
     GstElement m_source{};
     GstAppSrc m_audioAppSrc{};
     GstAppSrc m_videoAppSrc{};

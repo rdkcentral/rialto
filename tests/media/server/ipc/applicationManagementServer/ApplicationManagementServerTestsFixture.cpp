@@ -56,17 +56,17 @@ MATCHER_P(StateChangedEventMatcher, state, "")
 }
 
 ApplicationManagementServerTests::ApplicationManagementServerTests()
-    : m_clientMock{std::make_shared<StrictMock<firebolt::rialto::ipc::mock::ClientMock>>()},
-      m_serverMock{std::make_shared<StrictMock<firebolt::rialto::ipc::mock::ServerMock>>()},
+    : m_clientMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ClientMock>>()},
+      m_serverMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ServerMock>>()},
       m_serverManagerModuleMock{
-          std::make_shared<StrictMock<firebolt::rialto::server::ipc::mock::ServerManagerModuleServiceMock>>()}
+          std::make_shared<StrictMock<firebolt::rialto::server::ipc::ServerManagerModuleServiceMock>>()}
 {
-    std::shared_ptr<StrictMock<firebolt::rialto::ipc::mock::ServerFactoryMock>> serverFactoryMock =
-        std::make_shared<StrictMock<firebolt::rialto::ipc::mock::ServerFactoryMock>>();
+    std::shared_ptr<StrictMock<firebolt::rialto::ipc::ServerFactoryMock>> serverFactoryMock =
+        std::make_shared<StrictMock<firebolt::rialto::ipc::ServerFactoryMock>>();
     EXPECT_CALL(*serverFactoryMock, create(_)).WillOnce(Return(m_serverMock));
-    std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::mock::ServerManagerModuleServiceFactoryMock>>
+    std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::ServerManagerModuleServiceFactoryMock>>
         serverManagerModuleFactoryMock =
-            std::make_shared<StrictMock<firebolt::rialto::server::ipc::mock::ServerManagerModuleServiceFactoryMock>>();
+            std::make_shared<StrictMock<firebolt::rialto::server::ipc::ServerManagerModuleServiceFactoryMock>>();
     EXPECT_CALL(*serverManagerModuleFactoryMock, create(_)).WillOnce(Return(m_serverManagerModuleMock));
     m_sut = std::make_unique<firebolt::rialto::server::ipc::ApplicationManagementServer>(serverFactoryMock,
                                                                                          serverManagerModuleFactoryMock,

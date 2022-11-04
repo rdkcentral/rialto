@@ -56,17 +56,17 @@ public:
     void sendSetLogLevels();
 
 private:
-    std::shared_ptr<StrictMock<firebolt::rialto::ipc::mock::ClientMock>> m_clientMock;
+    std::shared_ptr<StrictMock<firebolt::rialto::ipc::ClientMock>> m_clientMock;
     StrictMock<firebolt::rialto::server::service::PlaybackServiceMock> m_playbackServiceMock;
     StrictMock<firebolt::rialto::server::service::CdmServiceMock> m_cdmServiceMock;
-    std::shared_ptr<StrictMock<firebolt::rialto::ipc::mock::ServerMock>> m_serverMock;
-    std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::mock::MediaPipelineModuleServiceMock>> m_mediaPipelineModuleMock;
+    std::shared_ptr<StrictMock<firebolt::rialto::ipc::ServerMock>> m_serverMock;
+    std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::MediaPipelineModuleServiceMock>> m_mediaPipelineModuleMock;
     std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::MediaPipelineCapabilitiesModuleServiceMock>>
         m_mediaPipelineCapabilitiesModuleMock;
-    std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::mock::MediaKeysModuleServiceMock>> m_mediaKeysModuleMock;
-    std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::mock::MediaKeysCapabilitiesModuleServiceMock>>
+    std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::MediaKeysModuleServiceMock>> m_mediaKeysModuleMock;
+    std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::MediaKeysCapabilitiesModuleServiceMock>>
         m_mediaKeysCapabilitiesModuleMock;
-    std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::mock::RialtoControlModuleServiceMock>> m_rialtoControlModuleMock;
+    std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::RialtoControlModuleServiceMock>> m_rialtoControlModuleMock;
     std::unique_ptr<firebolt::rialto::server::ipc::ISessionManagementServer> m_sut;
 
     std::function<void(const std::shared_ptr<firebolt::rialto::ipc::IClient> &)> m_clientConnectedCb;

@@ -17,20 +17,20 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_MOCK_PLAYER_TASK_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_MOCK_PLAYER_TASK_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_PLAYER_TASK_MOCK_H_
+#define FIREBOLT_RIALTO_SERVER_PLAYER_TASK_MOCK_H_
 
 #include "IGstPlayerPrivate.h"
 #include "tasks/IPlayerTask.h"
 #include <gmock/gmock.h>
 
-namespace firebolt::rialto::server::mock
+namespace firebolt::rialto::server
 {
 class PlayerTaskMock : public IPlayerTask
 {
 public:
     MOCK_METHOD(void, execute, (), (const, override));
 };
-} // namespace firebolt::rialto::server::mock
+} // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_MOCK_PLAYER_TASK_MOCK_H_
+#endif // FIREBOLT_RIALTO_SERVER_PLAYER_TASK_MOCK_H_

@@ -31,7 +31,7 @@
 #include <mutex>
 
 using namespace firebolt::rialto::server;
-using namespace firebolt::rialto::server::mock;
+using namespace firebolt::rialto::server;
 
 using ::testing::_;
 using ::testing::ByMove;
@@ -46,7 +46,7 @@ struct GstDispatcherThreadTest : public ::testing::Test
 {
     GstElement m_pipeline{};
     PlayerContext m_context{};
-    StrictMock<firebolt::rialto::server::mock::GstPlayerPrivateMock> m_gstPlayer;
+    StrictMock<firebolt::rialto::server::GstPlayerPrivateMock> m_gstPlayer;
     std::shared_ptr<StrictMock<GstWrapperMock>> m_gstWrapperMock{std::make_shared<StrictMock<GstWrapperMock>>()};
     StrictMock<WorkerThreadMock> m_workerThreadMock;
     StrictMock<PlayerTaskFactoryMock> m_taskFactoryMock;

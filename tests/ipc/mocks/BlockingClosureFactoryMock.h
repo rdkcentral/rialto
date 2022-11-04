@@ -17,14 +17,14 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_IPC_MOCK_BLOCKING_CLOSURE_FACTORY_MOCK_H_
-#define FIREBOLT_RIALTO_IPC_MOCK_BLOCKING_CLOSURE_FACTORY_MOCK_H_
+#ifndef FIREBOLT_RIALTO_IPC_BLOCKING_CLOSURE_FACTORY_MOCK_H_
+#define FIREBOLT_RIALTO_IPC_BLOCKING_CLOSURE_FACTORY_MOCK_H_
 
 #include "IBlockingClosure.h"
 #include <gmock/gmock.h>
 #include <memory>
 
-namespace firebolt::rialto::ipc::mock
+namespace firebolt::rialto::ipc
 {
 class BlockingClosureFactoryMock : public IBlockingClosureFactory
 {
@@ -36,6 +36,6 @@ public:
                 (std::shared_ptr<::firebolt::rialto::ipc::IChannel> ipcChannel), (override));
     MOCK_METHOD(std::shared_ptr<IBlockingClosure>, createBlockingClosureSemaphore, (), (override));
 };
-} // namespace firebolt::rialto::ipc::mock
+} // namespace firebolt::rialto::ipc
 
-#endif // FIREBOLT_RIALTO_IPC_MOCK_BLOCKING_CLOSURE_FACTORY_MOCK_H_
+#endif // FIREBOLT_RIALTO_IPC_BLOCKING_CLOSURE_FACTORY_MOCK_H_

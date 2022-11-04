@@ -17,15 +17,15 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_IPC_MOCK_IPC_CHANNEL_FACTORY_MOCK_H_
-#define FIREBOLT_RIALTO_IPC_MOCK_IPC_CHANNEL_FACTORY_MOCK_H_
+#ifndef FIREBOLT_RIALTO_IPC_IPC_CHANNEL_FACTORY_MOCK_H_
+#define FIREBOLT_RIALTO_IPC_IPC_CHANNEL_FACTORY_MOCK_H_
 
 #include "IIpcChannel.h"
 #include <gmock/gmock.h>
 #include <memory>
 #include <string>
 
-namespace firebolt::rialto::ipc::mock
+namespace firebolt::rialto::ipc
 {
 class ChannelFactoryMock : public IChannelFactory
 {
@@ -36,6 +36,6 @@ public:
     MOCK_METHOD(std::shared_ptr<IChannel>, createChannel, (const std::string &socketPath), (override));
     MOCK_METHOD(std::shared_ptr<IChannel>, createChannel, (int sockFd), (override));
 };
-} // namespace firebolt::rialto::ipc::mock
+} // namespace firebolt::rialto::ipc
 
-#endif // FIREBOLT_RIALTO_IPC_MOCK_IPC_CHANNEL_FACTORY_MOCK_H_
+#endif // FIREBOLT_RIALTO_IPC_IPC_CHANNEL_FACTORY_MOCK_H_

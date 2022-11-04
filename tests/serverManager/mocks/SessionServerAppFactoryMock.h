@@ -17,15 +17,15 @@
  * limitations under the License.
  */
 
-#ifndef RIALTO_SERVERMANAGER_COMMON_MOCKS_SESSION_SERVER_APP_FACTORY_MOCK_H_
-#define RIALTO_SERVERMANAGER_COMMON_MOCKS_SESSION_SERVER_APP_FACTORY_MOCK_H_
+#ifndef RIALTO_SERVERMANAGER_COMMON_SESSION_SERVER_APP_FACTORY_MOCK_H_
+#define RIALTO_SERVERMANAGER_COMMON_SESSION_SERVER_APP_FACTORY_MOCK_H_
 
 #include "ISessionServerAppFactory.h"
 #include <gmock/gmock.h>
 #include <memory>
 #include <string>
 
-namespace rialto::servermanager::common::mocks
+namespace rialto::servermanager::common
 {
 class SessionServerAppFactoryMock : public ISessionServerAppFactory
 {
@@ -38,6 +38,6 @@ public:
                  SessionServerAppManager &sessionServerAppManager),
                 (const, override));
 };
-} // namespace rialto::servermanager::common::mocks
+} // namespace rialto::servermanager::common
 
-#endif // RIALTO_SERVERMANAGER_COMMON_MOCKS_SESSION_SERVER_APP_FACTORY_MOCK_H_
+#endif // RIALTO_SERVERMANAGER_COMMON_SESSION_SERVER_APP_FACTORY_MOCK_H_

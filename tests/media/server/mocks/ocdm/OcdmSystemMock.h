@@ -17,15 +17,15 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_MOCK_OCDM_SYSTEM_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_MOCK_OCDM_SYSTEM_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_OCDM_SYSTEM_MOCK_H_
+#define FIREBOLT_RIALTO_SERVER_OCDM_SYSTEM_MOCK_H_
 
 #include "IOcdmSystem.h"
 #include <gmock/gmock.h>
 #include <memory>
 #include <string>
 
-namespace firebolt::rialto::server::mock
+namespace firebolt::rialto::server
 {
 class OcdmSystemMock : public IOcdmSystem
 {
@@ -33,6 +33,6 @@ public:
     MOCK_METHOD(MediaKeyErrorStatus, getVersion, (std::string & version), (override));
     MOCK_METHOD(std::unique_ptr<IOcdmSession>, createSession, (IOcdmSessionClient * client), (override, const));
 };
-} // namespace firebolt::rialto::server::mock
+} // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_MOCK_OCDM_SYSTEM_MOCK_H_
+#endif // FIREBOLT_RIALTO_SERVER_OCDM_SYSTEM_MOCK_H_

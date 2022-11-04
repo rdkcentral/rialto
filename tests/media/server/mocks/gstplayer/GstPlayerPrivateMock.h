@@ -17,13 +17,13 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_MOCK_GST_PLAYER_PRIVATE_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_MOCK_GST_PLAYER_PRIVATE_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_GST_PLAYER_PRIVATE_MOCK_H_
+#define FIREBOLT_RIALTO_SERVER_GST_PLAYER_PRIVATE_MOCK_H_
 
 #include "IGstPlayerPrivate.h"
 #include <gmock/gmock.h>
 
-namespace firebolt::rialto::server::mock
+namespace firebolt::rialto::server
 {
 class GstPlayerPrivateMock : public IGstPlayerPrivate
 {
@@ -48,6 +48,6 @@ public:
     MOCK_METHOD(void, cancelUnderflow, (bool &underflowFlag), (override));
     MOCK_METHOD(void, setPendingPlaybackRate, (), (override));
 };
-} // namespace firebolt::rialto::server::mock
+} // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_MOCK_GST_PLAYER_PRIVATE_MOCK_H_
+#endif // FIREBOLT_RIALTO_SERVER_GST_PLAYER_PRIVATE_MOCK_H_

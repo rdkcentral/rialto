@@ -33,8 +33,7 @@
 class ClientStub
 {
 public:
-    ClientStub(const std::shared_ptr<firebolt::rialto::ipc::mock::TestClientMock> &clientMock,
-               const std::string &socketName);
+    ClientStub(const std::shared_ptr<firebolt::rialto::ipc::TestClientMock> &clientMock, const std::string &socketName);
     ~ClientStub();
 
     bool connect();
@@ -59,7 +58,7 @@ private:
     std::string m_socketName;
     std::shared_ptr<firebolt::rialto::ipc::IChannel> m_channel;
     std::unique_ptr<firebolt::rialto::TestModule_Stub> m_testModuleStub;
-    std::shared_ptr<firebolt::rialto::ipc::mock::TestClientMock> m_clientMock;
+    std::shared_ptr<firebolt::rialto::ipc::TestClientMock> m_clientMock;
     std::atomic<bool> m_messageReceived;
     std::thread m_eventThread;
     std::mutex m_messageMutex;

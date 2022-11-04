@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_MOCK_MEDIA_KEYS_CLIENT_MOCK_H_
-#define FIREBOLT_RIALTO_MOCK_MEDIA_KEYS_CLIENT_MOCK_H_
+#ifndef FIREBOLT_RIALTO_MEDIA_KEYS_CLIENT_MOCK_H_
+#define FIREBOLT_RIALTO_MEDIA_KEYS_CLIENT_MOCK_H_
 
 #include "IMediaKeysClient.h"
 #include <gmock/gmock.h>
@@ -26,7 +26,7 @@
 #include <string>
 #include <vector>
 
-namespace firebolt::rialto::mock
+namespace firebolt::rialto
 {
 class MediaKeysClientMock : public IMediaKeysClient
 {
@@ -41,6 +41,6 @@ public:
                 (override));
     MOCK_METHOD(void, onKeyStatusesChanged, (int32_t keySessionId, const KeyStatusVector &keyStatuses), (override));
 };
-} // namespace firebolt::rialto::mock
+} // namespace firebolt::rialto
 
-#endif // FIREBOLT_RIALTO_MOCK_MEDIA_KEYS_CLIENT_MOCK_H_
+#endif // FIREBOLT_RIALTO_MEDIA_KEYS_CLIENT_MOCK_H_

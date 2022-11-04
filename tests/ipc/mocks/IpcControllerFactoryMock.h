@@ -17,14 +17,14 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_IPC_MOCK_IPC_CONTROLLER_FACTORY_MOCK_H_
-#define FIREBOLT_RIALTO_IPC_MOCK_IPC_CONTROLLER_FACTORY_MOCK_H_
+#ifndef FIREBOLT_RIALTO_IPC_IPC_CONTROLLER_FACTORY_MOCK_H_
+#define FIREBOLT_RIALTO_IPC_IPC_CONTROLLER_FACTORY_MOCK_H_
 
 #include "IIpcControllerFactory.h"
 #include <gmock/gmock.h>
 #include <memory>
 
-namespace firebolt::rialto::ipc::mock
+namespace firebolt::rialto::ipc
 {
 class ControllerFactoryMock : public IControllerFactory
 {
@@ -34,6 +34,6 @@ public:
 
     MOCK_METHOD(std::shared_ptr<google::protobuf::RpcController>, create, (), (override));
 };
-} // namespace firebolt::rialto::ipc::mock
+} // namespace firebolt::rialto::ipc
 
-#endif // FIREBOLT_RIALTO_IPC_MOCK_IPC_CONTROLLER_FACTORY_MOCK_H_
+#endif // FIREBOLT_RIALTO_IPC_IPC_CONTROLLER_FACTORY_MOCK_H_

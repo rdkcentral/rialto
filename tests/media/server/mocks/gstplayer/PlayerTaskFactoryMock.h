@@ -17,13 +17,13 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_MOCK_PLAYER_TASK_FACTORY_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_MOCK_PLAYER_TASK_FACTORY_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_PLAYER_TASK_FACTORY_MOCK_H_
+#define FIREBOLT_RIALTO_SERVER_PLAYER_TASK_FACTORY_MOCK_H_
 #include "tasks/IPlayerTaskFactory.h"
 #include <gmock/gmock.h>
 #include <memory>
 
-namespace firebolt::rialto::server::mock
+namespace firebolt::rialto::server
 {
 class PlayerTaskFactoryMock : public IPlayerTaskFactory
 {
@@ -69,6 +69,6 @@ public:
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createUnderflow, (IGstPlayerPrivate & player, bool &underflowFlag),
                 (const, override));
 };
-} // namespace firebolt::rialto::server::mock
+} // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_MOCK_PLAYER_TASK_FACTORY_MOCK_H_
+#endif // FIREBOLT_RIALTO_SERVER_PLAYER_TASK_FACTORY_MOCK_H_
