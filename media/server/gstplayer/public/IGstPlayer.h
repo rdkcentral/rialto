@@ -89,11 +89,10 @@ public:
     /**
      * @brief Attaches a source to gstreamer.
      *
-     * @param[in] type : The source type.
-     * @param[in] caps : The source capabilities.
+     * @param[in] mediaSource : The media source.
      *
      */
-    virtual void attachSource(MediaSourceType type, const std::string &caps) = 0;
+    virtual void attachSource(const IMediaPipeline::MediaSource &mediaSource) = 0;
 
     /**
      * @brief Starts playback of the media.

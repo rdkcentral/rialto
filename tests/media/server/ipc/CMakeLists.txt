@@ -70,7 +70,8 @@ target_include_directories(
         $<TARGET_PROPERTY:RialtoLogging,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoServerMocks,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoIpcMocks,INTERFACE_INCLUDE_DIRECTORIES>
-
+        $<TARGET_PROPERTY:RialtoCommonMisc,INTERFACE_INCLUDE_DIRECTORIES>
+        
         stubs
         )
 
@@ -81,6 +82,7 @@ target_link_libraries(
         RialtoServerIpc
         RialtoIpcClient
         RialtoIpcCommon
+        RialtoCommonMisc
         protobuf::libprotobuf
         )
 

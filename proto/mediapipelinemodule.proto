@@ -111,10 +111,23 @@ message AttachSourceRequest {
         AUDIO = 1;          ///< Media source is AUDIO.
         VIDEO = 2;          ///< Media source is VIDEO.
     }
+    enum SegmentAlignment {
+        ALIGNMENT_UNDEFINED = 0;
+        ALIGNMENT_NAL       = 1;
+        ALIGNMENT_AU        = 2;
+    }
+
+    message AudioConfig {
+        optional uint32 number_of_channels = 1;   ///< The number of channels. 
+        optional uint32 sample_rate = 2;         ///< The sampling rate.
+        optional bytes codec_specific_config = 3; ///The audio specific config. Zero length if no specific config
+    }
 
     required int32 session_id = 1;
     required MediaSourceType media_type = 2;
-    required string caps = 3;
+    required string mime_type = 3;
+    optional SegmentAlignment segment_alignment    = 4; /* Segment alignment can be specified for H264/H265, will use NAL if not set */
+    optional AudioConfig audio_config    = 5;
 }
 message AttachSourceResponse {
     required int32 source_id = 1;

@@ -21,6 +21,7 @@
 #include "GstPlayerTestCommon.h"
 #include "IMediaPipeline.h"
 #include "Matchers.h"
+#include "MediaSourceUtil.h"
 #include "PlayerTaskMock.h"
 
 using testing::_;
@@ -50,16 +51,14 @@ struct GstPlayerTest : public GstPlayerTestCommon
 
 TEST_F(GstPlayerTest, shouldAttachSource)
 {
-    MediaSourceType type{MediaSourceType::AUDIO};
-    std::string capsStr{"caps"};
-    GstCaps caps;
+    firebolt::rialto::IMediaPipeline::MediaSource source{-1, firebolt::rialto::MediaSourceType::VIDEO, "video/mpeg"};
 
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsFromString(CharStrMatcher(capsStr.c_str()))).WillOnce(Return(&caps));
-    EXPECT_CALL(m_taskFactoryMock, createAttachSource(_, Source{type, &caps})).WillOnce(Return(ByMove(std::move(task))));
+    // EXPECT_CALL(*m_gstWrapperMock, gstCapsFromString(CharStrMatcher(capsStr.c_str()))).WillOnce(Return(&caps));
+    EXPECT_CALL(m_taskFactoryMock, createAttachSource(_, source)).WillOnce(Return(ByMove(std::move(task))));
 
-    m_sut->attachSource(type, capsStr);
+    m_sut->attachSource(source);
 }
 
 TEST_F(GstPlayerTest, shouldPlay)

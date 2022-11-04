@@ -196,7 +196,7 @@ bool MediaPipeline::attachSource(MediaSource &source)
 
     int32_t sourceId = -1;
 
-    bool status = m_mediaPipelineIpc->attachSource(source.getType(), source.getCaps(), sourceId);
+    bool status = m_mediaPipelineIpc->attachSource(source, sourceId);
     if (status)
     {
         source.setId(sourceId);

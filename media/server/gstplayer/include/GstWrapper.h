@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_GST_WRAPPER_H_
 
 #include "IGstWrapper.h"
+#include <gst/pbutils/pbutils.h>
 #include <memory>
 #include <string>
 
@@ -300,6 +301,14 @@ public:
     GstBuffer *gstBufferNewWrapped(gpointer data, gsize size) const override
     {
         return gst_buffer_new_wrapped(data, size);
+    }
+
+    GstCaps *gstCodecUtilsOpusCreateCapsFromHeader(gconstpointer data, gsize size) const override
+    {
+        GstBuffer *tmp = gst_buffer_new_wrapped(g_memdup(data, size), size);
+        GstCaps *gst_caps = gst_codec_utils_opus_create_caps_from_header(tmp, NULL);
+        gst_buffer_unref(tmp);
+        return gst_caps;
     }
 };
 

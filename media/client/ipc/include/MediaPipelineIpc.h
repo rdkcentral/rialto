@@ -23,6 +23,7 @@
 #include "IEventThread.h"
 #include "IMediaPipelineIpc.h"
 #include "IpcModule.h"
+#include <IMediaPipeline.h>
 #include <memory>
 #include <string>
 
@@ -68,7 +69,7 @@ public:
      */
     virtual ~MediaPipelineIpc();
 
-    bool attachSource(MediaSourceType type, const std::string &caps, int32_t &sourceId) override;
+    bool attachSource(const IMediaPipeline::MediaSource &source, int32_t &sourceId) override;
 
     bool removeSource(int32_t sourceId) override;
 
@@ -179,6 +180,12 @@ private:
      * @brief Converts the MediaSourceStatus enum to protobuf HaveDataRequest MediaSourceStatus.
      */
     firebolt::rialto::HaveDataRequest_MediaSourceStatus convertHaveDataRequestMediaSourceStatus(MediaSourceStatus status);
+
+    /**
+     * @brief Converts the SegmentAlignment enum to protobuf AttachSourceRequest SegmentAlignment.
+     */
+    firebolt::rialto::AttachSourceRequest_SegmentAlignment
+    convertSegmentAlignment(const firebolt::rialto::SegmentAlignment &alignment);
 };
 
 }; // namespace firebolt::rialto::client

@@ -46,6 +46,7 @@ public:
     void playbackServiceWillLoadSession();
     void playbackServiceWillFailToLoadSession();
     void playbackServiceWillAttachSource();
+    void playbackServiceWillAttachAudioSourceWithCodecConfig();
     void playbackServiceWillFailToAttachSource();
     void playbackServiceWillPlay();
     void playbackServiceWillFailToPlay();
@@ -76,6 +77,7 @@ public:
     void sendDestroySessionRequestAndReceiveResponse();
     void sendLoadRequestAndReceiveResponse();
     void sendAttachSourceRequestAndReceiveResponse();
+    void sendAttachAudioSourceWithCodecConfigRequestAndReceiveResponse();
     void sendPlayRequestAndReceiveResponse();
     void sendPauseRequestAndReceiveResponse();
     void sendStopRequestAndReceiveResponse();

@@ -23,6 +23,7 @@
 #include "RialtoServerLogging.h"
 #include "WorkerThread.h"
 #include "tasks/PlayerTaskFactory.h"
+#include <IMediaPipeline.h>
 #include <chrono>
 
 namespace
@@ -280,10 +281,8 @@ void GstPlayer::setupElement(GstElement *pipeline, GstElement *element, GstPlaye
     }
 }
 
-void GstPlayer::attachSource(MediaSourceType type, const std::string &caps)
+void GstPlayer::attachSource(const IMediaPipeline::MediaSource &attachedSource)
 {
-    GstCaps *gstCaps = m_gstWrapper->gstCapsFromString(caps.c_str());
-    Source attachedSource{type, gstCaps};
     if (m_workerThread)
     {
         m_workerThread->enqueueTask(m_taskFactory->createAttachSource(m_context, attachedSource));

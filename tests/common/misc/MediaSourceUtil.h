@@ -17,12 +17,18 @@
  * limitations under the License.
  */
 
-#include "Matchers.h"
+#ifndef FIREBOLT_RIALTO_MEDIA_SOURCE_UTIL_H_
+#define FIREBOLT_RIALTO_MEDIA_SOURCE_UTIL_H_
 
-namespace firebolt::rialto::server
+#include <IMediaPipeline.h>
+#include <MediaCommon.h>
+
+#include <string>
+
+namespace firebolt::rialto
 {
-bool operator==(const Rectangle &lhs, const Rectangle &rhs)
-{
-    return lhs.x == rhs.x && lhs.y == rhs.y && lhs.width == rhs.width && lhs.height == rhs.height;
-}
-} // namespace firebolt::rialto::server
+bool operator==(const AudioConfig &lhs, const AudioConfig &rhs);
+bool operator==(const IMediaPipeline::MediaSource &lhs, const IMediaPipeline::MediaSource &rhs);
+} // namespace firebolt::rialto
+
+#endif // FIREBOLT_RIALTO_MEDIA_SOURCE_UTIL_H_
