@@ -55,7 +55,6 @@ TEST_F(GstPlayerTest, shouldAttachSource)
 
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    // EXPECT_CALL(*m_gstWrapperMock, gstCapsFromString(CharStrMatcher(capsStr.c_str()))).WillOnce(Return(&caps));
     EXPECT_CALL(m_taskFactoryMock, createAttachSource(_, source)).WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->attachSource(source);
