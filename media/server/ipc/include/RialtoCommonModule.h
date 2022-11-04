@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_RIALTO_COMMON_MODULE_H_
-#define FIREBOLT_RIALTO_RIALTO_COMMON_MODULE_H_
+#ifndef FIREBOLT_RIALTO_SERVER_IPC_RIALTO_COMMON_MODULE_H_
+#define FIREBOLT_RIALTO_SERVER_IPC_RIALTO_COMMON_MODULE_H_
 
 #include "MediaCommon.h"
 #include "rialtocommon.pb.h"
@@ -28,4 +28,4 @@ namespace firebolt::rialto::server::ipc
 firebolt::rialto::MediaSourceType convertMediaSourceType(const firebolt::rialto::ProtoMediaSourceType &mediaSourceType);
 } // namespace firebolt::rialto::server::ipc
 
-#endif // FIREBOLT_RIALTO_RIALTO_COMMON_MODULE_H_
+#endif // FIREBOLT_RIALTO_SERVER_IPC_RIALTO_COMMON_MODULE_H_

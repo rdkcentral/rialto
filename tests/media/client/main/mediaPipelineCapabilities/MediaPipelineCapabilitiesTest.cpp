@@ -22,7 +22,6 @@
 #include "MediaPipelineCapabilities.h"
 #include "MediaPipelineCapabilitiesIpcFactoryMock.h"
 #include "MediaPipelineCapabilitiesIpcMock.h"
-#include <gtest/gtest.h>
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::client;
@@ -85,7 +84,6 @@ TEST_F(MediaPipelineCapabilitiesTest, getSupportedMimeTypes)
 
 TEST_F(MediaPipelineCapabilitiesTest, isMimeTypeSupported)
 {
-    std::string mimeType = "video/h264";
     createMediaPipelineCapabilitiesIpcSucceeds();
 
     EXPECT_CALL(*m_mediaPipelineCapabilitiesIpcMock, isMimeTypeSupported("video/h264")).WillOnce(Return(true));

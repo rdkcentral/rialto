@@ -33,11 +33,11 @@ PlaybackService::PlaybackService(IMainThread &mainThread,
                                  std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
                                  std::unique_ptr<ISharedMemoryBufferFactory> &&shmBufferFactory,
                                  IDecryptionService &decryptionService)
-    : m_mainThread{mainThread}, m_mediaPipelineFactory{mediaPipelineFactory}, m_shmBufferFactory{std::move(
-                                                                                  shmBufferFactory)},
-      m_decryptionService{decryptionService}, m_isActive{false}, m_maxPlaybacks{0}
+    : m_mainThread{mainThread}, m_mediaPipelineFactory{mediaPipelineFactory},
+      m_mediaPipelineCapabilities{mediaPipelineCapabilitiesFactory->createMediaPipelineCapabilities()},
+      m_shmBufferFactory{std::move(shmBufferFactory)}, m_decryptionService{decryptionService}, m_isActive{false},
+      m_maxPlaybacks{0}
 {
-    m_mediaPipelineCapabilities = mediaPipelineCapabilitiesFactory->createMediaPipelineCapabilities();
     if (!m_mediaPipelineCapabilities)
     {
         throw std::runtime_error("Could not create Media Pipeline Capabilities");

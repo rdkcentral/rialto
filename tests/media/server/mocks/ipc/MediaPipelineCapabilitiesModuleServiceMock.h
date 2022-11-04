@@ -22,6 +22,7 @@
 
 #include "IMediaPipelineCapabilitiesModuleService.h"
 #include <gmock/gmock.h>
+#include <memory>
 
 namespace firebolt::rialto::server::ipc
 {

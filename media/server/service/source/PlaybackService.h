@@ -34,6 +34,7 @@
 #include <queue>
 #include <string>
 #include <thread>
+#include <vector>
 
 namespace firebolt::rialto::server::service
 {

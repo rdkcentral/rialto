@@ -78,7 +78,7 @@ GstCapabilities::GstCapabilities(const std::shared_ptr<IGstWrapper> &gstWrapper)
 
 std::vector<std::string> GstCapabilities::getSupportedMimeTypes(MediaSourceType sourceType)
 {
-    std::vector<std::string> supportedMimeTypes;
+    std::vector<std::string> supportedMimeTypesSource;
     std::string type;
     if (sourceType == MediaSourceType::VIDEO)
     {
@@ -94,13 +94,10 @@ std::vector<std::string> GstCapabilities::getSupportedMimeTypes(MediaSourceType 
         return {};
     }
 
-    for (const std::string &supportedMimeType : m_supportedMimeTypes)
-    {
-        if (supportedMimeType.find(type) == 0)
-            supportedMimeTypes.push_back(supportedMimeType);
-    }
+    std::copy_if(m_supportedMimeTypes.begin(), m_supportedMimeTypes.end(), std::back_inserter(supportedMimeTypesSource),
+                 [&type](const std::string &supportedMimeType) { return supportedMimeType.find(type) == 0; });
 
-    return supportedMimeTypes;
+    return supportedMimeTypesSource;
 }
 
 bool GstCapabilities::isMimeTypeSupported(const std::string &mimeType)

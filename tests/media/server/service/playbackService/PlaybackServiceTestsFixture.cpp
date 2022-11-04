@@ -21,6 +21,7 @@
 #include "MediaCommon.h"
 #include <string>
 #include <utility>
+#include <vector>
 
 using testing::_;
 using testing::ByMove;

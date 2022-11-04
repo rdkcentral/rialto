@@ -63,4 +63,4 @@ private:
     void expectRequestSuccess();
 };
 
-#endif // MEDIA_PIPELINE_MODULE_SERVICE_TESTS_FIXTURE_H_
+#endif // MEDIA_PIPELINE_CAPABILITIES_MODULE_SERVICE_TESTS_FIXTURE_H_

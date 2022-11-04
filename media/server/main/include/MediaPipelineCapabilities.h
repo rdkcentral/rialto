@@ -22,6 +22,9 @@
 
 #include "IGstCapabilities.h"
 #include "IMediaPipelineCapabilities.h"
+#include <memory>
+#include <vector>
+#include <string>
 
 namespace firebolt::rialto
 {
@@ -52,7 +55,7 @@ public:
      *
      * @param[in] gstCapabilitiesFactory : The gstreamer capabilities factory.
      */
-    MediaPipelineCapabilities(std::shared_ptr<IGstCapabilitiesFactory> gstCapabilitiesFactory);
+    explicit MediaPipelineCapabilities(std::shared_ptr<IGstCapabilitiesFactory> gstCapabilitiesFactory);
 
     /**
      * @brief Virtual destructor.

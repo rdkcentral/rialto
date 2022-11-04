@@ -24,6 +24,7 @@
 #include <gmock/gmock.h>
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace firebolt::rialto::server::service
 {

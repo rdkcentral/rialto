@@ -17,12 +17,15 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_GST_CAPABILITES_H_
-#define FIREBOLT_RIALTO_SERVER_GST_CAPABILITES_H_
+#ifndef FIREBOLT_RIALTO_SERVER_GST_CAPABILITIES_H_
+#define FIREBOLT_RIALTO_SERVER_GST_CAPABILITIES_H_
 
 #include "IGstWrapper.h"
-#include <IGstCapabilities.h>
+#include "IGstCapabilities.h"
+#include <memory>
+#include <string>
 #include <unordered_set>
+#include <vector>
 
 namespace firebolt::rialto::server
 {
@@ -48,7 +51,7 @@ public:
 class GstCapabilities : public IGstCapabilities
 {
 public:
-    GstCapabilities(const std::shared_ptr<IGstWrapper> &gstWrapper);
+    explicit GstCapabilities(const std::shared_ptr<IGstWrapper> &gstWrapper);
     ~GstCapabilities() = default;
 
     GstCapabilities(const GstCapabilities &) = delete;
@@ -125,4 +128,4 @@ private:
 
 }; // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_GST_CAPABILITES_H_
+#endif // FIREBOLT_RIALTO_SERVER_GST_CAPABILITIES_H_
