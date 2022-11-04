@@ -422,7 +422,7 @@ public:
         /**
          * @brief Sets the encryption initialisation vector.
          *
-         * @param[in] initVect : The initialisation vector.
+         * @param[in] initVector : The initialisation vector.
          */
         void setInitVector(const std::vector<uint8_t> &initVector) { m_initVector = initVector; }
 
