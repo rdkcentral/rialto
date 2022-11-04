@@ -19,9 +19,9 @@
 #include "MediaPipelineIpc.h"
 #include "IIpcClient.h"
 #include "RialtoClientLogging.h"
+#include "RialtoCommonIpc.h"
 #include "mediapipelinemodule.pb.h"
 #include <IMediaPipeline.h>
-#include "RialtoCommonIpc.h"
 
 namespace firebolt::rialto::client
 {
