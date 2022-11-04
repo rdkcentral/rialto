@@ -275,10 +275,7 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
                                               ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("%s requested. media type %s, mime_type: %s", __func__,
-                            firebolt::rialto::AttachSourceRequest_MediaSourceType::AttachSourceRequest_MediaSourceType_AUDIO ==
-                                    request->media_type()
-                                ? "audio"
-                                : "video",
+                            firebolt::rialto::ProtoMediaSourceType::AUDIO == request->media_type() ? "audio" : "video",
                             request->mime_type().c_str());
     IMediaPipeline::MediaSource mediaSource{0, convertMediaSourceType(request->media_type()),
                                             request->mime_type().c_str()};

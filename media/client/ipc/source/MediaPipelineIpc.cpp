@@ -745,26 +745,6 @@ MediaPipelineIpc::convertHaveDataRequestMediaSourceStatus(MediaSourceStatus stat
     return protoMediaSourceStatus;
 }
 
-firebolt::rialto::AttachSourceRequest_MediaSourceType
-MediaPipelineIpc::convertAttachSourceRequestMediaSourceType(MediaSourceType mediaSourceType)
-{
-    firebolt::rialto::AttachSourceRequest_MediaSourceType protoMediaSourceType =
-        firebolt::rialto::AttachSourceRequest_MediaSourceType_UNKNOWN;
-    switch (mediaSourceType)
-    {
-    case MediaSourceType::AUDIO:
-        protoMediaSourceType = firebolt::rialto::AttachSourceRequest_MediaSourceType_AUDIO;
-        break;
-    case MediaSourceType::VIDEO:
-        protoMediaSourceType = firebolt::rialto::AttachSourceRequest_MediaSourceType_VIDEO;
-        break;
-    default:
-        break;
-    }
-
-    return protoMediaSourceType;
-}
-
 firebolt::rialto::AttachSourceRequest_SegmentAlignment
 MediaPipelineIpc::convertSegmentAlignment(const firebolt::rialto::SegmentAlignment &alignment)
 {
