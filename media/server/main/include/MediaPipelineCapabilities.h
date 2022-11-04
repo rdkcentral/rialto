@@ -23,8 +23,8 @@
 #include "IGstCapabilities.h"
 #include "IMediaPipelineCapabilities.h"
 #include <memory>
-#include <vector>
 #include <string>
+#include <vector>
 
 namespace firebolt::rialto
 {

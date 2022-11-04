@@ -20,8 +20,8 @@
 #ifndef FIREBOLT_RIALTO_SERVER_GST_CAPABILITIES_H_
 #define FIREBOLT_RIALTO_SERVER_GST_CAPABILITIES_H_
 
-#include "IGstWrapper.h"
 #include "IGstCapabilities.h"
+#include "IGstWrapper.h"
 #include <memory>
 #include <string>
 #include <unordered_set>

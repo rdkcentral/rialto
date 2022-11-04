@@ -22,8 +22,8 @@
 
 #include "IGstCapabilities.h"
 #include <gmock/gmock.h>
-#include <vector>
 #include <string>
+#include <vector>
 
 namespace firebolt::rialto::server
 {
