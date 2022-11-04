@@ -20,6 +20,7 @@
 syntax = "proto2";
 
 import "google/protobuf/descriptor.proto";
+import "rialtocommon.proto";
 
 package firebolt.rialto;
 
@@ -106,14 +107,8 @@ message LoadResponse {
  * @returns a unique numeric media source id value that should be used for all subsequent operations on the media source.
  */
 message AttachSourceRequest {
-    enum MediaSourceType {
-        UNKNOWN = 0;        ///< Media source type not known.
-        AUDIO = 1;          ///< Media source is AUDIO.
-        VIDEO = 2;          ///< Media source is VIDEO.
-    }
-
     required int32 session_id = 1;
-    required MediaSourceType media_type = 2;
+    required ProtoMediaSourceType media_type = 2;
     required string caps = 3;
 }
 message AttachSourceResponse {

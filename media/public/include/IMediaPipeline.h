@@ -622,17 +622,6 @@ public:
     virtual std::weak_ptr<IMediaPipelineClient> getClient() = 0;
 
     /**
-     * @brief Returns caps supported by Rialto Server.
-     *
-     * @warning API is likely to change to be MIME-type based.
-     *
-     * @param[in] type: media source type for which supported caps should be returned
-     *
-     * @retval caps supported by Rialto Server
-     */
-    virtual std::vector<std::string> getSupportedCaps(MediaSourceType type) = 0;
-
-    /**
      * @brief Loads the media and backend delegate.
      *
      * This method loads the media and backend appropriate for the media.

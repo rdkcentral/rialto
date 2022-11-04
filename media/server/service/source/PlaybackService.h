@@ -22,6 +22,7 @@
 
 #include "IDecryptionService.h"
 #include "IMainThread.h"
+#include "IMediaPipelineCapabilities.h"
 #include "IMediaPipelineServerInternal.h"
 #include "IPlaybackService.h"
 #include "ISharedMemoryBuffer.h"
@@ -33,6 +34,7 @@
 #include <queue>
 #include <string>
 #include <thread>
+#include <vector>
 
 namespace firebolt::rialto::server::service
 {
@@ -40,6 +42,7 @@ class PlaybackService : public IPlaybackService
 {
 public:
     PlaybackService(IMainThread &mainThread, std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
+                    std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
                     std::unique_ptr<ISharedMemoryBufferFactory> &&shmBufferFactory,
                     IDecryptionService &decryptionService);
     ~PlaybackService() override;
@@ -69,10 +72,13 @@ public:
     bool haveData(int sessionId, MediaSourceStatus status, std::uint32_t numFrames,
                   std::uint32_t needDataRequestId) override;
     bool getSharedMemory(int32_t &fd, uint32_t &size) override;
+    std::vector<std::string> getSupportedMimeTypes(MediaSourceType type) override;
+    bool isMimeTypeSupported(const std::string &mimeType) override;
 
 private:
     IMainThread &m_mainThread;
     std::shared_ptr<IMediaPipelineServerInternalFactory> m_mediaPipelineFactory;
+    std::shared_ptr<IMediaPipelineCapabilities> m_mediaPipelineCapabilities;
     std::unique_ptr<ISharedMemoryBufferFactory> m_shmBufferFactory;
     IDecryptionService &m_decryptionService;
     bool m_isActive;

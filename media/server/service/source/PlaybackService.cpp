@@ -30,12 +30,19 @@ namespace firebolt::rialto::server::service
 {
 PlaybackService::PlaybackService(IMainThread &mainThread,
                                  std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
+                                 std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
                                  std::unique_ptr<ISharedMemoryBufferFactory> &&shmBufferFactory,
                                  IDecryptionService &decryptionService)
-    : m_mainThread{mainThread}, m_mediaPipelineFactory{mediaPipelineFactory}, m_shmBufferFactory{std::move(
-                                                                                  shmBufferFactory)},
-      m_decryptionService{decryptionService}, m_isActive{false}, m_maxPlaybacks{0}
+    : m_mainThread{mainThread}, m_mediaPipelineFactory{mediaPipelineFactory},
+      m_mediaPipelineCapabilities{mediaPipelineCapabilitiesFactory->createMediaPipelineCapabilities()},
+      m_shmBufferFactory{std::move(shmBufferFactory)}, m_decryptionService{decryptionService}, m_isActive{false},
+      m_maxPlaybacks{0}
 {
+    if (!m_mediaPipelineCapabilities)
+    {
+        throw std::runtime_error("Could not create Media Pipeline Capabilities");
+    }
+
     RIALTO_SERVER_LOG_DEBUG("PlaybackService is constructed");
 }
 
@@ -354,5 +361,15 @@ bool PlaybackService::getSharedMemory(int32_t &fd, uint32_t &size)
     };
     m_mainThread.enqueueTask(task);
     return future.get();
+}
+
+std::vector<std::string> PlaybackService::getSupportedMimeTypes(MediaSourceType type)
+{
+    return m_mediaPipelineCapabilities->getSupportedMimeTypes(type);
+}
+
+bool PlaybackService::isMimeTypeSupported(const std::string &mimeType)
+{
+    return m_mediaPipelineCapabilities->isMimeTypeSupported(mimeType);
 }
 } // namespace firebolt::rialto::server::service

@@ -20,8 +20,10 @@
 # Run the protoc tool to generate the code
 
 set( Protobuf_IMPORT_DIRS "${CMAKE_SYSROOT}/usr/include" "${CMAKE_CURRENT_LIST_DIR}/../../../../ipc/common/proto/" )
-protobuf_generate_cpp( PROTO_SRCS PROTO_HEADERS ../../../../media/client/ipc/proto/mediapipelinemodule.proto ../../../../media/client/ipc/proto/rialtocontrolmodule.proto
-        ../../../../media/client/ipc/proto/mediakeysmodule.proto ../../../../media/client/ipc/proto/mediakeyscapabilitiesmodule.proto)
+protobuf_generate_cpp( PROTO_SRCS PROTO_HEADERS ../../../../media/client/ipc/proto/mediapipelinemodule.proto 
+        ../../../../media/client/ipc/proto/mediapipelinecapabilitiesmodule.proto ../../../../media/client/ipc/proto/rialtocontrolmodule.proto 
+        ../../../../media/client/ipc/proto/mediakeysmodule.proto ../../../../media/client/ipc/proto/mediakeyscapabilitiesmodule.proto
+        ../../../../media/client/ipc/proto/rialtocommon.proto)
 
 list( GET PROTO_HEADERS 0 MEDIA_PIPELINE_PROTO_HEADER )
 list( GET PROTO_HEADERS 1 RIALTO_CONTROL_PROTO_HEADER )
@@ -50,6 +52,9 @@ add_gtests (
         mediaPipelineIpc/SetPositionTest.cpp
         mediaPipelineIpc/SetPlaybackRateTest.cpp
         mediaPipelineIpc/GetPositionTest.cpp
+
+        # MediaPipelineCapabilitiesIpc tests
+        mediaPipelineCapabilitiesIpc/MediaPipelineCapabilitiesIpcTest.cpp
 
         # RialtoControlIpc tests
         rialtoControlIpc/base/RialtoControlIpcTestBase.cpp

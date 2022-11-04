@@ -20,6 +20,7 @@
 #include "MediaPipelineIpc.h"
 #include "IIpcClient.h"
 #include "RialtoClientLogging.h"
+#include "RialtoCommonIpc.h"
 
 namespace firebolt::rialto::client
 {
@@ -199,7 +200,7 @@ bool MediaPipelineIpc::attachSource(MediaSourceType type, const std::string &cap
     firebolt::rialto::AttachSourceRequest request;
 
     request.set_session_id(m_sessionId);
-    request.set_media_type(convertAttachSourceRequestMediaSourceType(type));
+    request.set_media_type(convertProtoMediaSourceType(type));
     request.set_caps(caps);
 
     firebolt::rialto::AttachSourceResponse response;
@@ -719,26 +720,6 @@ MediaPipelineIpc::convertHaveDataRequestMediaSourceStatus(MediaSourceStatus stat
     }
 
     return protoMediaSourceStatus;
-}
-
-firebolt::rialto::AttachSourceRequest_MediaSourceType
-MediaPipelineIpc::convertAttachSourceRequestMediaSourceType(MediaSourceType mediaSourceType)
-{
-    firebolt::rialto::AttachSourceRequest_MediaSourceType protoMediaSourceType =
-        firebolt::rialto::AttachSourceRequest_MediaSourceType_UNKNOWN;
-    switch (mediaSourceType)
-    {
-    case MediaSourceType::AUDIO:
-        protoMediaSourceType = firebolt::rialto::AttachSourceRequest_MediaSourceType_AUDIO;
-        break;
-    case MediaSourceType::VIDEO:
-        protoMediaSourceType = firebolt::rialto::AttachSourceRequest_MediaSourceType_VIDEO;
-        break;
-    default:
-        break;
-    }
-
-    return protoMediaSourceType;
 }
 
 }; // namespace firebolt::rialto::client

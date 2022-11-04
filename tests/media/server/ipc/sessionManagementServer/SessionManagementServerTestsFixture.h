@@ -26,6 +26,7 @@
 #include "IpcServerMock.h"
 #include "MediaKeysCapabilitiesModuleServiceMock.h"
 #include "MediaKeysModuleServiceMock.h"
+#include "MediaPipelineCapabilitiesModuleServiceMock.h"
 #include "MediaPipelineModuleServiceMock.h"
 #include "PlaybackServiceMock.h"
 #include "RialtoControlModuleServiceMock.h"
@@ -60,6 +61,8 @@ private:
     StrictMock<firebolt::rialto::server::service::CdmServiceMock> m_cdmServiceMock;
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::mock::ServerMock>> m_serverMock;
     std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::mock::MediaPipelineModuleServiceMock>> m_mediaPipelineModuleMock;
+    std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::MediaPipelineCapabilitiesModuleServiceMock>>
+        m_mediaPipelineCapabilitiesModuleMock;
     std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::mock::MediaKeysModuleServiceMock>> m_mediaKeysModuleMock;
     std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::mock::MediaKeysCapabilitiesModuleServiceMock>>
         m_mediaKeysCapabilitiesModuleMock;

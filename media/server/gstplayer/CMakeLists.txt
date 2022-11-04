@@ -56,6 +56,7 @@ add_library(
         source/GstSrc.cpp
         source/Utils.cpp
         source/WorkerThread.cpp
+        source/GstCapabilities.cpp
         )
 
 target_include_directories(

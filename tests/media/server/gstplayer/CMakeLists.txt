@@ -51,6 +51,7 @@ add_gtests(RialtoServerGstPlayerUnitTests
     player/GstPlayerTest.cpp
     player/InitTest.cpp
     player/WorkerThreadTest.cpp
+    player/GstCapabilitiesTest.cpp
 
     #GstSrc unittests
     rialtoSrc/CreateTest.cpp
