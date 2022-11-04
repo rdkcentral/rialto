@@ -115,6 +115,13 @@ public:
     MOCK_METHOD(gboolean, gstByteWriterPutUint32Be, (GstByteWriter * writer, guint32 val), (const, override));
     MOCK_METHOD(GstBuffer *, gstBufferNewWrapped, (gpointer data, gsize size), (const, override));
     MOCK_METHOD(GstCaps *, gstCodecUtilsOpusCreateCapsFromHeader, (gconstpointer data, gsize size), (const, override));
+    MOCK_METHOD(gboolean, gstCapsIsSubset, (const GstCaps *subset, const GstCaps *superset), (const));
+    MOCK_METHOD(gboolean, gstCapsIsStrictlyEqual, (const GstCaps *caps1, const GstCaps *caps2), (const));
+    MOCK_METHOD(gboolean, gstCapsCanIntersect, (const GstCaps *caps1, const GstCaps *caps2), (const));
+    MOCK_METHOD(GstCaps *, gstStaticCapsGet, (GstStaticCaps * staticCaps), (const));
+    MOCK_METHOD(GList *, gstElementFactoryListGetElements, (GstElementFactoryListType type, GstRank minrank), (const));
+    MOCK_METHOD(const GList *, gstElementFactoryGetStaticPadTemplates, (GstElementFactory * factory), (const));
+    MOCK_METHOD(void, gstPluginFeatureListFree, (GList * list), (const));
 
     void gstCapsSetSimple(GstCaps *caps, const gchar *field, ...) const override
     {

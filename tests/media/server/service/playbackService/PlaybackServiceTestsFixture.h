@@ -22,6 +22,8 @@
 
 #include "DecryptionServiceMock.h"
 #include "MainThreadMock.h"
+#include "MediaPipelineCapabilitiesFactoryMock.h"
+#include "MediaPipelineCapabilitiesMock.h"
 #include "MediaPipelineServerInternalFactoryMock.h"
 #include "MediaPipelineServerInternalMock.h"
 #include "PlaybackService.h"
@@ -70,6 +72,9 @@ public:
     void mediaPipelineFactoryWillCreateMediaPipeline();
     void mediaPipelineFactoryWillReturnNullptr();
 
+    void mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
+    void mediaPipelineCapabilitiesFactoryWillReturnNullptr();
+
     void triggerSwitchToActive();
     void triggerSwitchToInactive();
     void triggerSetMaxPlaybacks(int maxPlaybacks = 1);
@@ -102,10 +107,16 @@ public:
     void getSharedMemoryShouldFail();
     void getPositionShouldSucceed();
     void getPositionShouldFail();
+    void getSupportedMimeTypesSucceed();
+    void isMimeTypeSupportedSucceed();
 
 private:
     StrictMock<firebolt::rialto::server::service::MainThreadMock> m_mainThreadMock;
     std::shared_ptr<StrictMock<firebolt::rialto::server::MediaPipelineServerInternalFactoryMock>> m_mediaPipelineFactoryMock;
+    std::shared_ptr<StrictMock<firebolt::rialto::server::MediaPipelineCapabilitiesFactoryMock>>
+        m_mediaPipelineCapabilitiesFactoryMock;
+    std::unique_ptr<StrictMock<firebolt::rialto::server::MediaPipelineCapabilitiesMock>> m_mediaPipelineCapabilities;
+    StrictMock<firebolt::rialto::server::MediaPipelineCapabilitiesMock> &m_mediaPipelineCapabilitiesMock;
     std::unique_ptr<firebolt::rialto::server::ISharedMemoryBufferFactory> m_shmBufferFactory;
     StrictMock<firebolt::rialto::server::SharedMemoryBufferFactoryMock> &m_shmBufferFactoryMock;
     std::shared_ptr<firebolt::rialto::server::ISharedMemoryBuffer> m_shmBuffer;
@@ -113,7 +124,7 @@ private:
     std::unique_ptr<firebolt::rialto::server::IMediaPipelineServerInternal> m_mediaPipeline;
     StrictMock<firebolt::rialto::server::MediaPipelineServerInternalMock> &m_mediaPipelineMock;
     StrictMock<firebolt::rialto::server::mock::DecryptionServiceMock> m_decryptionServiceMock;
-    firebolt::rialto::server::service::PlaybackService m_sut;
+    std::unique_ptr<firebolt::rialto::server::service::PlaybackService> m_sut;
 };
 
 #endif // PLAYBACK_SERVICE_TESTS_FIXTURE_H_

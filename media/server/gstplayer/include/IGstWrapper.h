@@ -749,6 +749,72 @@ public:
      * @retval pointer to the new caps
      */
     virtual GstCaps *gstCodecUtilsOpusCreateCapsFromHeader(gconstpointer data, gsize size) const = 0;
+
+    /**
+     * @brief Checks if all caps represented by subset are in superset.
+     *
+     * @param[in] subset    : subset caps
+     * @param[in] superset  : superset caps, potentially broader
+     *
+     * @retval true if subset is a subset of superset
+     */
+    virtual gboolean gstCapsIsSubset(const GstCaps *subset, const GstCaps *superset) const = 0;
+
+    /**
+     * @brief Checks if the given caps are exactly the same set of caps.
+     *
+     * @param[in] caps1  : caps
+     * @param[in] caps2  : another caps
+     *
+     * @retval true if caps are strictly equal
+     */
+    virtual gboolean gstCapsIsStrictlyEqual(const GstCaps *caps1, const GstCaps *caps2) const = 0;
+
+    /**
+     * @brief Tries intersecting caps1 and caps2 and reports whether the result would not be empty
+     *
+     * @param[in] caps1  : caps
+     * @param[in] caps2  : another caps
+     *
+     * @retval true if intersection would be not empty
+     */
+    virtual gboolean gstCapsCanIntersect(const GstCaps *caps1, const GstCaps *caps2) const = 0;
+
+    /**
+     * @brief Converts a GstStaticCaps to a GstCaps.
+     *
+     * @param[in] staticCaps : static caps to convert
+     *
+     * @retval true if caps are strictly equal
+     */
+    virtual GstCaps *gstStaticCapsGet(GstStaticCaps *staticCaps) const = 0;
+
+    /**
+     * @brief Get a list of factories that match the given type. Only elements with a rank greater or equal to minrank
+     * will be returned. The list of factories is returned by decreasing rank.
+     *
+     * @param[in] type    : a GstElementFactoryListType
+     * @param[in] minrank : a minimum rank of factory
+     *
+     * @retval a GList of GstElementFactory elements.
+     */
+    virtual GList *gstElementFactoryListGetElements(GstElementFactoryListType type, GstRank minrank) const = 0;
+
+    /**
+     * @brief Gets the GList of GstStaticPadTemplate for this factory.
+     *
+     * @param[in] factory : a GstElementFactory
+     *
+     * @retval the static pad templates
+     */
+    virtual const GList *gstElementFactoryGetStaticPadTemplates(GstElementFactory *factory) const = 0;
+
+    /**
+     * @brief Unrefs each member of list, then frees the list.
+     *
+     * @param[in] list : list of GstPluginFeature
+     */
+    virtual void gstPluginFeatureListFree(GList *list) const = 0;
 };
 
 }; // namespace firebolt::rialto::server

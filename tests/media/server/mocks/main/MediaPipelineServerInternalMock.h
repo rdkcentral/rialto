@@ -32,7 +32,6 @@ class MediaPipelineServerInternalMock : public IMediaPipelineServerInternal
 {
 public:
     MOCK_METHOD(std::weak_ptr<IMediaPipelineClient>, getClient, (), (override));
-    MOCK_METHOD(std::vector<std::string>, getSupportedCaps, (MediaSourceType type), (override));
     MOCK_METHOD(bool, load, (MediaType type, const std::string &mimeType, const std::string &url), (override));
     MOCK_METHOD(bool, attachSource, (MediaSource & source), (override));
     MOCK_METHOD(bool, removeSource, (int32_t id), (override));

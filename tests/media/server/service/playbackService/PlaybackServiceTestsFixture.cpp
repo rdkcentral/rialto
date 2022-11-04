@@ -18,8 +18,10 @@
  */
 
 #include "PlaybackServiceTestsFixture.h"
+#include "MediaCommon.h"
 #include <string>
 #include <utility>
+#include <vector>
 
 using testing::_;
 using testing::ByMove;
@@ -60,6 +62,11 @@ bool operator==(const VideoRequirements &lhs, const VideoRequirements &rhs)
 PlaybackServiceTests::PlaybackServiceTests()
     : m_mediaPipelineFactoryMock{std::make_shared<
           StrictMock<firebolt::rialto::server::MediaPipelineServerInternalFactoryMock>>()},
+      m_mediaPipelineCapabilitiesFactoryMock{
+          std::make_shared<StrictMock<firebolt::rialto::server::MediaPipelineCapabilitiesFactoryMock>>()},
+      m_mediaPipelineCapabilities{std::make_unique<StrictMock<firebolt::rialto::server::MediaPipelineCapabilitiesMock>>()},
+      m_mediaPipelineCapabilitiesMock{dynamic_cast<StrictMock<firebolt::rialto::server::MediaPipelineCapabilitiesMock> &>(
+          *m_mediaPipelineCapabilities)},
       m_shmBufferFactory{std::make_unique<StrictMock<firebolt::rialto::server::SharedMemoryBufferFactoryMock>>()},
       m_shmBufferFactoryMock{
           dynamic_cast<StrictMock<firebolt::rialto::server::SharedMemoryBufferFactoryMock> &>(*m_shmBufferFactory)},
@@ -67,8 +74,7 @@ PlaybackServiceTests::PlaybackServiceTests()
       m_shmBufferMock{dynamic_cast<StrictMock<firebolt::rialto::server::SharedMemoryBufferMock> &>(*m_shmBuffer)},
       m_mediaPipeline{std::make_unique<StrictMock<firebolt::rialto::server::MediaPipelineServerInternalMock>>()},
       m_mediaPipelineMock{
-          dynamic_cast<StrictMock<firebolt::rialto::server::MediaPipelineServerInternalMock> &>(*m_mediaPipeline)},
-      m_sut{m_mainThreadMock, m_mediaPipelineFactoryMock, std::move(m_shmBufferFactory), m_decryptionServiceMock}
+          dynamic_cast<StrictMock<firebolt::rialto::server::MediaPipelineServerInternalMock> &>(*m_mediaPipeline)}
 {
 }
 
@@ -246,148 +252,172 @@ void PlaybackServiceTests::mediaPipelineFactoryWillReturnNullptr()
         .WillOnce(Return(ByMove(std::unique_ptr<firebolt::rialto::server::IMediaPipelineServerInternal>())));
 }
 
+void PlaybackServiceTests::mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities()
+{
+    EXPECT_CALL(*m_mediaPipelineCapabilitiesFactoryMock, createMediaPipelineCapabilities())
+        .WillOnce(Return(ByMove(std::move(m_mediaPipelineCapabilities))));
+    m_sut = std::make_unique<firebolt::rialto::server::service::PlaybackService>(m_mainThreadMock,
+                                                                                 m_mediaPipelineFactoryMock,
+                                                                                 m_mediaPipelineCapabilitiesFactoryMock,
+                                                                                 std::move(m_shmBufferFactory),
+                                                                                 m_decryptionServiceMock);
+}
+
+void PlaybackServiceTests::mediaPipelineCapabilitiesFactoryWillReturnNullptr()
+{
+    EXPECT_CALL(*m_mediaPipelineCapabilitiesFactoryMock, createMediaPipelineCapabilities())
+        .WillOnce(Return(ByMove(std::move(std::unique_ptr<firebolt::rialto::IMediaPipelineCapabilities>()))));
+    EXPECT_THROW(m_sut =
+                     std::make_unique<firebolt::rialto::server::service::PlaybackService>(m_mainThreadMock,
+                                                                                          m_mediaPipelineFactoryMock,
+                                                                                          m_mediaPipelineCapabilitiesFactoryMock,
+                                                                                          std::move(m_shmBufferFactory),
+                                                                                          m_decryptionServiceMock),
+                 std::runtime_error);
+}
+
 void PlaybackServiceTests::triggerSwitchToActive()
 {
-    m_sut.switchToActive();
+    m_sut->switchToActive();
 }
 
 void PlaybackServiceTests::triggerSwitchToInactive()
 {
-    m_sut.switchToInactive();
+    m_sut->switchToInactive();
 }
 
 void PlaybackServiceTests::triggerSetMaxPlaybacks(int maxPlaybacks)
 {
-    m_sut.setMaxPlaybacks(maxPlaybacks);
+    m_sut->setMaxPlaybacks(maxPlaybacks);
 }
 
 void PlaybackServiceTests::createSessionShouldSucceed()
 {
-    EXPECT_TRUE(m_sut.createSession(sessionId, mediaPipelineClient, width, height));
+    EXPECT_TRUE(m_sut->createSession(sessionId, mediaPipelineClient, width, height));
 }
 
 void PlaybackServiceTests::createSessionShouldFail()
 {
-    EXPECT_FALSE(m_sut.createSession(sessionId, mediaPipelineClient, width, height));
+    EXPECT_FALSE(m_sut->createSession(sessionId, mediaPipelineClient, width, height));
 }
 
 void PlaybackServiceTests::destroySessionShouldSucceed()
 {
-    EXPECT_TRUE(m_sut.destroySession(sessionId));
+    EXPECT_TRUE(m_sut->destroySession(sessionId));
 }
 
 void PlaybackServiceTests::destroySessionShouldFail()
 {
-    EXPECT_FALSE(m_sut.destroySession(sessionId));
+    EXPECT_FALSE(m_sut->destroySession(sessionId));
 }
 
 void PlaybackServiceTests::loadShouldSucceed()
 {
-    EXPECT_TRUE(m_sut.load(sessionId, type, mimeType, url));
+    EXPECT_TRUE(m_sut->load(sessionId, type, mimeType, url));
 }
 
 void PlaybackServiceTests::loadShouldFail()
 {
-    EXPECT_FALSE(m_sut.load(sessionId, type, mimeType, url));
+    EXPECT_FALSE(m_sut->load(sessionId, type, mimeType, url));
 }
 
 void PlaybackServiceTests::attachSourceShouldSucceed()
 {
     firebolt::rialto::IMediaPipeline::MediaSource mediaSource{};
-    EXPECT_TRUE(m_sut.attachSource(sessionId, mediaSource));
+    EXPECT_TRUE(m_sut->attachSource(sessionId, mediaSource));
 }
 
 void PlaybackServiceTests::attachSourceShouldFail()
 {
     firebolt::rialto::IMediaPipeline::MediaSource mediaSource{};
-    EXPECT_FALSE(m_sut.attachSource(sessionId, mediaSource));
+    EXPECT_FALSE(m_sut->attachSource(sessionId, mediaSource));
 }
 
 void PlaybackServiceTests::removeSourceShouldSucceed()
 {
-    EXPECT_TRUE(m_sut.removeSource(sessionId, sourceId));
+    EXPECT_TRUE(m_sut->removeSource(sessionId, sourceId));
 }
 
 void PlaybackServiceTests::removeSourceShouldFail()
 {
-    EXPECT_FALSE(m_sut.removeSource(sessionId, sourceId));
+    EXPECT_FALSE(m_sut->removeSource(sessionId, sourceId));
 }
 
 void PlaybackServiceTests::playShouldSucceed()
 {
-    EXPECT_TRUE(m_sut.play(sessionId));
+    EXPECT_TRUE(m_sut->play(sessionId));
 }
 
 void PlaybackServiceTests::playShouldFail()
 {
-    EXPECT_FALSE(m_sut.play(sessionId));
+    EXPECT_FALSE(m_sut->play(sessionId));
 }
 
 void PlaybackServiceTests::pauseShouldSucceed()
 {
-    EXPECT_TRUE(m_sut.pause(sessionId));
+    EXPECT_TRUE(m_sut->pause(sessionId));
 }
 
 void PlaybackServiceTests::pauseShouldFail()
 {
-    EXPECT_FALSE(m_sut.pause(sessionId));
+    EXPECT_FALSE(m_sut->pause(sessionId));
 }
 
 void PlaybackServiceTests::stopShouldSucceed()
 {
-    EXPECT_TRUE(m_sut.stop(sessionId));
+    EXPECT_TRUE(m_sut->stop(sessionId));
 }
 
 void PlaybackServiceTests::stopShouldFail()
 {
-    EXPECT_FALSE(m_sut.stop(sessionId));
+    EXPECT_FALSE(m_sut->stop(sessionId));
 }
 
 void PlaybackServiceTests::setPlaybackRateShouldSucceed()
 {
-    EXPECT_TRUE(m_sut.setPlaybackRate(sessionId, rate));
+    EXPECT_TRUE(m_sut->setPlaybackRate(sessionId, rate));
 }
 
 void PlaybackServiceTests::setPlaybackRateShouldFail()
 {
-    EXPECT_FALSE(m_sut.setPlaybackRate(sessionId, rate));
+    EXPECT_FALSE(m_sut->setPlaybackRate(sessionId, rate));
 }
 
 void PlaybackServiceTests::setPositionShouldSucceed()
 {
-    EXPECT_TRUE(m_sut.setPosition(sessionId, position));
+    EXPECT_TRUE(m_sut->setPosition(sessionId, position));
 }
 
 void PlaybackServiceTests::setPositionShouldFail()
 {
-    EXPECT_FALSE(m_sut.setPosition(sessionId, position));
+    EXPECT_FALSE(m_sut->setPosition(sessionId, position));
 }
 
 void PlaybackServiceTests::setVideoWindowShouldSucceed()
 {
-    EXPECT_TRUE(m_sut.setVideoWindow(sessionId, x, y, width, height));
+    EXPECT_TRUE(m_sut->setVideoWindow(sessionId, x, y, width, height));
 }
 
 void PlaybackServiceTests::setVideoWindowShouldFail()
 {
-    EXPECT_FALSE(m_sut.setVideoWindow(sessionId, x, y, width, height));
+    EXPECT_FALSE(m_sut->setVideoWindow(sessionId, x, y, width, height));
 }
 
 void PlaybackServiceTests::haveDataShouldSucceed()
 {
-    EXPECT_TRUE(m_sut.haveData(sessionId, status, numFrames, needDataRequestId));
+    EXPECT_TRUE(m_sut->haveData(sessionId, status, numFrames, needDataRequestId));
 }
 
 void PlaybackServiceTests::haveDataShouldFail()
 {
-    EXPECT_FALSE(m_sut.haveData(sessionId, status, numFrames, needDataRequestId));
+    EXPECT_FALSE(m_sut->haveData(sessionId, status, numFrames, needDataRequestId));
 }
 
 void PlaybackServiceTests::getSharedMemoryShouldSucceed()
 {
     int32_t returnedFd = 0;
     uint32_t returnedSize = 0;
-    EXPECT_TRUE(m_sut.getSharedMemory(returnedFd, returnedSize));
+    EXPECT_TRUE(m_sut->getSharedMemory(returnedFd, returnedSize));
     EXPECT_EQ(returnedFd, shmFd);
     EXPECT_EQ(returnedSize, shmSize);
 }
@@ -396,7 +426,7 @@ void PlaybackServiceTests::getSharedMemoryShouldFail()
 {
     int32_t returnedFd = 0;
     uint32_t returnedSize = 0;
-    EXPECT_FALSE(m_sut.getSharedMemory(returnedFd, returnedSize));
+    EXPECT_FALSE(m_sut->getSharedMemory(returnedFd, returnedSize));
     EXPECT_EQ(returnedFd, 0);
     EXPECT_EQ(returnedSize, 0);
 }
@@ -404,12 +434,27 @@ void PlaybackServiceTests::getSharedMemoryShouldFail()
 void PlaybackServiceTests::getPositionShouldSucceed()
 {
     std::int64_t targetPosition{};
-    EXPECT_TRUE(m_sut.getPosition(sessionId, targetPosition));
+    EXPECT_TRUE(m_sut->getPosition(sessionId, targetPosition));
     EXPECT_EQ(targetPosition, position);
 }
 
 void PlaybackServiceTests::getPositionShouldFail()
 {
     std::int64_t targetPosition{};
-    EXPECT_FALSE(m_sut.getPosition(sessionId, targetPosition));
+    EXPECT_FALSE(m_sut->getPosition(sessionId, targetPosition));
+}
+
+void PlaybackServiceTests::getSupportedMimeTypesSucceed()
+{
+    firebolt::rialto::MediaSourceType type = firebolt::rialto::MediaSourceType::VIDEO;
+    std::vector<std::string> mimeTypes = {"video/h264", "video/h265"};
+    EXPECT_CALL(m_mediaPipelineCapabilitiesMock, getSupportedMimeTypes(type)).WillOnce(Return(mimeTypes));
+    EXPECT_THAT(m_sut->getSupportedMimeTypes(firebolt::rialto::MediaSourceType::VIDEO), mimeTypes);
+}
+
+void PlaybackServiceTests::isMimeTypeSupportedSucceed()
+{
+    std::string mimeType = "video/h264";
+    EXPECT_CALL(m_mediaPipelineCapabilitiesMock, isMimeTypeSupported(mimeType)).WillOnce(Return(true));
+    EXPECT_TRUE(m_sut->isMimeTypeSupported(mimeType));
 }

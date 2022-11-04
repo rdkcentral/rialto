@@ -20,6 +20,7 @@
 syntax = "proto2";
 
 import "google/protobuf/descriptor.proto";
+import "rialtocommon.proto";
 
 package firebolt.rialto;
 
@@ -106,11 +107,6 @@ message LoadResponse {
  * @returns a unique numeric media source id value that should be used for all subsequent operations on the media source.
  */
 message AttachSourceRequest {
-    enum MediaSourceType {
-        UNKNOWN = 0;        ///< Media source type not known.
-        AUDIO = 1;          ///< Media source is AUDIO.
-        VIDEO = 2;          ///< Media source is VIDEO.
-    }
     enum SegmentAlignment {
         ALIGNMENT_UNDEFINED = 0;
         ALIGNMENT_NAL       = 1;
@@ -124,7 +120,7 @@ message AttachSourceRequest {
     }
 
     required int32 session_id = 1;
-    required MediaSourceType media_type = 2;
+    required ProtoMediaSourceType media_type = 2;
     required string mime_type = 3;
     optional SegmentAlignment segment_alignment    = 4; /* Segment alignment can be specified for H264/H265, will use NAL if not set */
     optional AudioConfig audio_config    = 5;

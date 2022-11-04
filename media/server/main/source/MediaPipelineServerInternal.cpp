@@ -138,11 +138,6 @@ MediaPipelineServerInternal::~MediaPipelineServerInternal()
     m_shmBuffer->unmapPartition(m_sessionId);
 }
 
-std::vector<std::string> MediaPipelineServerInternal::getSupportedCaps(MediaSourceType type)
-{
-    return {};
-}
-
 bool MediaPipelineServerInternal::load(MediaType type, const std::string &mimeType, const std::string &url)
 {
     /* If gstreamer player already created, destroy the old one first */

@@ -21,6 +21,7 @@
 #include "IGstPlayer.h"
 #include "IMediaKeysCapabilities.h"
 #include "IMediaKeysServerInternal.h"
+#include "IMediaPipelineCapabilities.h"
 #include "IMediaPipelineServerInternal.h"
 #include "ISharedMemoryBuffer.h"
 #include "IpcFactory.h"
@@ -43,6 +44,7 @@ int main(int argc, char *argv[])
                    firebolt::rialto::IMediaKeysCapabilitiesFactory::createFactory()};
     firebolt::rialto::server::service::PlaybackService
         playbackService{mainThread, firebolt::rialto::server::IMediaPipelineServerInternalFactory::createFactory(),
+                        firebolt::rialto::IMediaPipelineCapabilitiesFactory::createFactory(),
                         firebolt::rialto::server::ISharedMemoryBufferFactory::createFactory(), cdmService};
     firebolt::rialto::server::service::SessionServerManager serviceManager{ipcFactory, playbackService, cdmService};
     if (!serviceManager.initialize(argc, argv))

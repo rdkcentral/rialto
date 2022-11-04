@@ -22,6 +22,7 @@
 
 #include "IMediaKeysCapabilitiesModuleService.h"
 #include "IMediaKeysModuleService.h"
+#include "IMediaPipelineCapabilitiesModuleService.h"
 #include "IMediaPipelineModuleService.h"
 #include "IPlaybackService.h"
 #include "IRialtoControlModuleService.h"
@@ -42,6 +43,7 @@ public:
     SessionManagementServer(
         const std::shared_ptr<firebolt::rialto::ipc::IServerFactory> &serverFactory,
         const std::shared_ptr<IMediaPipelineModuleServiceFactory> &mediaPipelineModuleFactory,
+        const std::shared_ptr<IMediaPipelineCapabilitiesModuleServiceFactory> &mediaPipelineCapabilitiesModuleFactory,
         const std::shared_ptr<IMediaKeysModuleServiceFactory> &mediaKeysModuleFactory,
         const std::shared_ptr<IMediaKeysCapabilitiesModuleServiceFactory> &mediaKeysCapabilitiesModuleFactory,
         const std::shared_ptr<IRialtoControlModuleServiceFactory> &rialtoControlModuleFactory,
@@ -67,6 +69,7 @@ private:
     std::thread m_ipcServerThread;
     std::shared_ptr<::firebolt::rialto::ipc::IServer> m_ipcServer;
     std::shared_ptr<IMediaPipelineModuleService> m_mediaPipelineModule;
+    std::shared_ptr<IMediaPipelineCapabilitiesModuleService> m_mediaPipelineCapabilitiesModule;
     std::shared_ptr<IMediaKeysModuleService> m_mediaKeysModule;
     std::shared_ptr<IMediaKeysCapabilitiesModuleService> m_mediaKeysCapabilitiesModule;
     std::shared_ptr<IRialtoControlModuleService> m_rialtoControlModule;

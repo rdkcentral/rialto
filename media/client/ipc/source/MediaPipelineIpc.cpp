@@ -21,6 +21,7 @@
 #include "RialtoClientLogging.h"
 #include "mediapipelinemodule.pb.h"
 #include <IMediaPipeline.h>
+#include "RialtoCommonIpc.h"
 
 namespace firebolt::rialto::client
 {
@@ -201,7 +202,7 @@ bool MediaPipelineIpc::attachSource(const IMediaPipeline::MediaSource &source, i
 
     request.set_session_id(m_sessionId);
     auto mediaType = source.getType();
-    request.set_media_type(convertAttachSourceRequestMediaSourceType(mediaType));
+    request.set_media_type(convertProtoMediaSourceType(mediaType));
     request.set_mime_type(source.getMimeType());
     if (SegmentAlignment::UNDEFINED != source.getSegmentAlignment())
     {

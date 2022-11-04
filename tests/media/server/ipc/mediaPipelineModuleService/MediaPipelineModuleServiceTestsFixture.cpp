@@ -121,25 +121,24 @@ firebolt::rialto::LoadRequest_MediaType convertMediaType(const firebolt::rialto:
     return firebolt::rialto::LoadRequest_MediaType::LoadRequest_MediaType_UNKNOWN;
 }
 
-firebolt::rialto::AttachSourceRequest_MediaSourceType
-convertAttachSourceRequestMediaSourceType(const firebolt::rialto::MediaSourceType &mediaSourceType)
+firebolt::rialto::ProtoMediaSourceType convertProtoMediaSourceType(const firebolt::rialto::MediaSourceType &mediaSourceType)
 {
     switch (mediaSourceType)
     {
     case firebolt::rialto::MediaSourceType::UNKNOWN:
     {
-        return firebolt::rialto::AttachSourceRequest_MediaSourceType::AttachSourceRequest_MediaSourceType_UNKNOWN;
+        return firebolt::rialto::ProtoMediaSourceType::UNKNOWN;
     }
     case firebolt::rialto::MediaSourceType::AUDIO:
     {
-        return firebolt::rialto::AttachSourceRequest_MediaSourceType::AttachSourceRequest_MediaSourceType_AUDIO;
+        return firebolt::rialto::ProtoMediaSourceType::AUDIO;
     }
     case firebolt::rialto::MediaSourceType::VIDEO:
     {
-        return firebolt::rialto::AttachSourceRequest_MediaSourceType::AttachSourceRequest_MediaSourceType_VIDEO;
+        return firebolt::rialto::ProtoMediaSourceType::VIDEO;
     }
     }
-    return firebolt::rialto::AttachSourceRequest_MediaSourceType::AttachSourceRequest_MediaSourceType_UNKNOWN;
+    return firebolt::rialto::ProtoMediaSourceType::UNKNOWN;
 }
 
 firebolt::rialto::HaveDataRequest_MediaSourceStatus
@@ -533,7 +532,7 @@ void MediaPipelineModuleServiceTests::sendAttachSourceRequestAndReceiveResponse(
     firebolt::rialto::AttachSourceResponse response;
 
     request.set_session_id(hardcodedSessionId);
-    request.set_media_type(convertAttachSourceRequestMediaSourceType(mediaSourceType));
+    request.set_media_type(convertProtoMediaSourceType(mediaSourceType));
     request.set_mime_type(mimeType);
 
     m_service->attachSource(m_controllerMock.get(), &request, &response, m_closureMock.get());
@@ -545,8 +544,7 @@ void MediaPipelineModuleServiceTests::sendAttachAudioSourceWithCodecConfigReques
     firebolt::rialto::AttachSourceResponse response;
 
     request.set_session_id(hardcodedSessionId);
-    request.set_media_type(
-        firebolt::rialto::AttachSourceRequest_MediaSourceType::AttachSourceRequest_MediaSourceType_AUDIO);
+    request.set_media_type(firebolt::rialto::ProtoMediaSourceType::AUDIO);
     request.set_mime_type(mimeType);
     request.mutable_audio_config()->set_number_of_channels(numberOfChannels);
     request.mutable_audio_config()->set_sample_rate(sampleRate);

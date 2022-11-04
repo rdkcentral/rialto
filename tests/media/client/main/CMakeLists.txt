@@ -33,6 +33,9 @@ add_gtests (
         mediaPipeline/SetPlaybackRateTest.cpp
         mediaPipeline/GetPositionTest.cpp
 
+        # MediaPipelineCapabilities tests
+        mediaPipelineCapabilities/MediaPipelineCapabilitiesTest.cpp
+
         # RialtoControl tests
         rialtoControl/CreateTest.cpp
         rialtoControl/SetAppStateTest.cpp
