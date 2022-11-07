@@ -101,7 +101,7 @@ public:
          * @param[in] mimeType : The mime type string.
          */
         explicit MediaSource(int32_t id = 0, MediaSourceType type = MediaSourceType::UNKNOWN, const char *mimeType = "")
-            : m_id(id), m_type(type), m_mimeType(mimeType)
+            : m_id(id), m_type(type), m_mimeType(mimeType), m_alignment(SegmentAlignment::UNDEFINED)
         {
         }
 
@@ -113,7 +113,8 @@ public:
          * @param[in] audioConfig : The audio specific configuration.
          */
         MediaSource(int32_t id, const std::string &mimeType, const AudioConfig &audioConfig)
-            : m_id(id), m_type(MediaSourceType::AUDIO), m_mimeType(mimeType), m_audioConfig(audioConfig)
+            : m_id(id), m_type(MediaSourceType::AUDIO), m_mimeType(mimeType), m_alignment(SegmentAlignment::UNDEFINED),
+              m_audioConfig(audioConfig)
         {
         }
 
