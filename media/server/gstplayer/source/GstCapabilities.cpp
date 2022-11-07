@@ -17,6 +17,8 @@
  * limitations under the License.
  */
 
+#include <stdexcept>
+
 #include "RialtoServerLogging.h"
 #include <GstCapabilities.h>
 #include <algorithm>

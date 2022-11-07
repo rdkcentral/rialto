@@ -17,8 +17,10 @@
  * limitations under the License.
  */
 
-#include "MediaPipelineCapabilities.h"
+#include <stdexcept>
+
 #include "IMediaPipelineCapabilitiesIpcFactory.h"
+#include "MediaPipelineCapabilities.h"
 #include "RialtoClientLogging.h"
 
 namespace firebolt::rialto
