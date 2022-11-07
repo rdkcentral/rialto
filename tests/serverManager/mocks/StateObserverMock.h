@@ -17,14 +17,14 @@
  * limitations under the License.
  */
 
-#ifndef RIALTO_SERVERMANAGER_SERVICE_MOCKS_STATE_OBSERVER_MOCK_H_
-#define RIALTO_SERVERMANAGER_SERVICE_MOCKS_STATE_OBSERVER_MOCK_H_
+#ifndef RIALTO_SERVERMANAGER_SERVICE_STATE_OBSERVER_MOCK_H_
+#define RIALTO_SERVERMANAGER_SERVICE_STATE_OBSERVER_MOCK_H_
 
 #include "IStateObserver.h"
 #include <gmock/gmock.h>
 #include <string>
 
-namespace rialto::servermanager::service::mocks
+namespace rialto::servermanager::service
 {
 class StateObserverMock : public IStateObserver
 {
@@ -34,6 +34,6 @@ public:
 
     MOCK_METHOD(void, stateChanged, (const std::string &, const SessionServerState &), (override));
 };
-} // namespace rialto::servermanager::service::mocks
+} // namespace rialto::servermanager::service
 
-#endif // RIALTO_SERVERMANAGER_SERVICE_MOCKS_STATE_OBSERVER_MOCK_H_
+#endif // RIALTO_SERVERMANAGER_SERVICE_STATE_OBSERVER_MOCK_H_

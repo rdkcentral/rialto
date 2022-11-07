@@ -17,14 +17,14 @@
  * limitations under the License.
  */
 
-#ifndef RIALTO_SERVERMANAGER_COMMON_MOCKS_SESSION_SERVER_APP_MANAGER_MOCK_H_
-#define RIALTO_SERVERMANAGER_COMMON_MOCKS_SESSION_SERVER_APP_MANAGER_MOCK_H_
+#ifndef RIALTO_SERVERMANAGER_COMMON_SESSION_SERVER_APP_MANAGER_MOCK_H_
+#define RIALTO_SERVERMANAGER_COMMON_SESSION_SERVER_APP_MANAGER_MOCK_H_
 
 #include "ISessionServerAppManager.h"
 #include <gmock/gmock.h>
 #include <string>
 
-namespace rialto::servermanager::common::mocks
+namespace rialto::servermanager::common
 {
 class SessionServerAppManagerMock : public ISessionServerAppManager
 {
@@ -38,6 +38,6 @@ public:
     MOCK_METHOD(std::string, getAppConnectionInfo, (const std::string &), (const, override));
     MOCK_METHOD(bool, setLogLevels, (const service::LoggingLevels &), (const, override));
 };
-} // namespace rialto::servermanager::common::mocks
+} // namespace rialto::servermanager::common
 
-#endif // RIALTO_SERVERMANAGER_COMMON_MOCKS_SESSION_SERVER_APP_MANAGER_MOCK_H_
+#endif // RIALTO_SERVERMANAGER_COMMON_SESSION_SERVER_APP_MANAGER_MOCK_H_

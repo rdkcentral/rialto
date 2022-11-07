@@ -17,14 +17,14 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_IPC_MOCK_IPC_CLIENT_MOCK_H_
-#define FIREBOLT_RIALTO_IPC_MOCK_IPC_CLIENT_MOCK_H_
+#ifndef FIREBOLT_RIALTO_IPC_IPC_CLIENT_MOCK_H_
+#define FIREBOLT_RIALTO_IPC_IPC_CLIENT_MOCK_H_
 
 #include "IIpcServer.h"
 #include <gmock/gmock.h>
 #include <memory>
 
-namespace firebolt::rialto::ipc::mock
+namespace firebolt::rialto::ipc
 {
 class ClientMock : public IClient
 {
@@ -40,6 +40,6 @@ public:
     MOCK_METHOD(bool, sendEvent, (const std::shared_ptr<google::protobuf::Message> &message), (override));
     MOCK_METHOD(bool, isConnected, (), (override, const));
 };
-} // namespace firebolt::rialto::ipc::mock
+} // namespace firebolt::rialto::ipc
 
-#endif // FIREBOLT_RIALTO_IPC_MOCK_IPC_CLIENT_MOCK_H_
+#endif // FIREBOLT_RIALTO_IPC_IPC_CLIENT_MOCK_H_

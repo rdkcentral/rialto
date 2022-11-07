@@ -17,14 +17,14 @@
  * limitations under the License.
  */
 
-#ifndef RIALTO_SERVERMANAGER_COMMON_MOCKS_SESSION_SERVER_APP_MOCK_H_
-#define RIALTO_SERVERMANAGER_COMMON_MOCKS_SESSION_SERVER_APP_MOCK_H_
+#ifndef RIALTO_SERVERMANAGER_COMMON_SESSION_SERVER_APP_MOCK_H_
+#define RIALTO_SERVERMANAGER_COMMON_SESSION_SERVER_APP_MOCK_H_
 
 #include "ISessionServerApp.h"
 #include <gmock/gmock.h>
 #include <string>
 
-namespace rialto::servermanager::common::mocks
+namespace rialto::servermanager::common
 {
 class SessionServerAppMock : public ISessionServerApp
 {
@@ -40,6 +40,6 @@ public:
     MOCK_METHOD(void, cancelStartupTimer, (), (override));
     MOCK_METHOD(void, kill, (), (const, override));
 };
-} // namespace rialto::servermanager::common::mocks
+} // namespace rialto::servermanager::common
 
-#endif // RIALTO_SERVERMANAGER_COMMON_MOCKS_SESSION_SERVER_APP_MOCK_H_
+#endif // RIALTO_SERVERMANAGER_COMMON_SESSION_SERVER_APP_MOCK_H_

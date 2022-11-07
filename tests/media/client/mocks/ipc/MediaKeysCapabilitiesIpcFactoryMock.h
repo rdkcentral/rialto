@@ -17,15 +17,15 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_CLIENT_MOCK_MEDIA_KEYS_CAPABILITIES_IPC_FACTORY_MOCK_H_
-#define FIREBOLT_RIALTO_CLIENT_MOCK_MEDIA_KEYS_CAPABILITIES_IPC_FACTORY_MOCK_H_
+#ifndef FIREBOLT_RIALTO_CLIENT_MEDIA_KEYS_CAPABILITIES_IPC_FACTORY_MOCK_H_
+#define FIREBOLT_RIALTO_CLIENT_MEDIA_KEYS_CAPABILITIES_IPC_FACTORY_MOCK_H_
 
 #include "IMediaKeysCapabilitiesIpcFactory.h"
 #include <gmock/gmock.h>
 #include <memory>
 #include <string>
 
-namespace firebolt::rialto::client::mock
+namespace firebolt::rialto::client
 {
 class MediaKeysCapabilitiesIpcFactoryMock : public IMediaKeysCapabilitiesIpcFactory
 {
@@ -35,6 +35,6 @@ public:
 
     MOCK_METHOD(std::shared_ptr<IMediaKeysCapabilities>, getMediaKeysCapabilitiesIpc, (), (override, const));
 };
-} // namespace firebolt::rialto::client::mock
+} // namespace firebolt::rialto::client
 
-#endif // FIREBOLT_RIALTO_CLIENT_MOCK_MEDIA_KEYS_CAPABILITIES_IPC_FACTORY_MOCK_H_
+#endif // FIREBOLT_RIALTO_CLIENT_MEDIA_KEYS_CAPABILITIES_IPC_FACTORY_MOCK_H_

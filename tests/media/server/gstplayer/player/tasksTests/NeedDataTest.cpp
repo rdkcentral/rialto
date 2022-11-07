@@ -29,7 +29,7 @@ using testing::StrictMock;
 struct NeedDataTest : public testing::Test
 {
     firebolt::rialto::server::PlayerContext m_context{};
-    StrictMock<firebolt::rialto::server::mock::GstPlayerClientMock> m_gstPlayerClient;
+    StrictMock<firebolt::rialto::server::GstPlayerClientMock> m_gstPlayerClient;
     GstAppSrc m_audioSrc{};
     GstAppSrc m_videoSrc{};
 

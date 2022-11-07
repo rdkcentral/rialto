@@ -39,10 +39,10 @@ const firebolt::rialto::MediaSourceType sourceType{firebolt::rialto::MediaSource
 } // namespace
 
 MediaPipelineCapabilitiesModuleServiceTests::MediaPipelineCapabilitiesModuleServiceTests()
-    : m_clientMock{std::make_shared<StrictMock<firebolt::rialto::ipc::mock::ClientMock>>()},
-      m_closureMock{std::make_shared<StrictMock<firebolt::rialto::ipc::mock::ClosureMock>>()},
-      m_controllerMock{std::make_shared<StrictMock<firebolt::rialto::ipc::mock::ControllerMock>>()},
-      m_invalidControllerMock{std::make_shared<StrictMock<firebolt::rialto::ipc::mock::RpcControllerMock>>()}
+    : m_clientMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ClientMock>>()},
+      m_closureMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ClosureMock>>()},
+      m_controllerMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ControllerMock>>()},
+      m_invalidControllerMock{std::make_shared<StrictMock<firebolt::rialto::ipc::RpcControllerMock>>()}
 {
     m_service =
         std::make_shared<firebolt::rialto::server::ipc::MediaPipelineCapabilitiesModuleService>(m_playbackServiceMock);

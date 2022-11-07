@@ -17,13 +17,13 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_IPC_MOCK_BLOCKING_CLOSURE_MOCK_H_
-#define FIREBOLT_RIALTO_IPC_MOCK_BLOCKING_CLOSURE_MOCK_H_
+#ifndef FIREBOLT_RIALTO_IPC_BLOCKING_CLOSURE_MOCK_H_
+#define FIREBOLT_RIALTO_IPC_BLOCKING_CLOSURE_MOCK_H_
 
 #include "IBlockingClosure.h"
 #include <gmock/gmock.h>
 
-namespace firebolt::rialto::ipc::mock
+namespace firebolt::rialto::ipc
 {
 class BlockingClosureMock : public IBlockingClosure
 {
@@ -34,6 +34,6 @@ public:
     MOCK_METHOD(void, wait, (), (override));
     MOCK_METHOD(void, Run, (), (override));
 };
-} // namespace firebolt::rialto::ipc::mock
+} // namespace firebolt::rialto::ipc
 
-#endif // FIREBOLT_RIALTO_IPC_MOCK_BLOCKING_CLOSURE_MOCK_H_
+#endif // FIREBOLT_RIALTO_IPC_BLOCKING_CLOSURE_MOCK_H_

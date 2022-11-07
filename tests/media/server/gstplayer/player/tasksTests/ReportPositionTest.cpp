@@ -36,9 +36,9 @@ gint64 position{1234};
 struct ReportPositionTest : public testing::Test
 {
     firebolt::rialto::server::PlayerContext m_context{};
-    StrictMock<firebolt::rialto::server::mock::GstPlayerClientMock> m_gstPlayerClient;
-    std::shared_ptr<firebolt::rialto::server::mock::GstWrapperMock> m_gstWrapper{
-        std::make_shared<StrictMock<firebolt::rialto::server::mock::GstWrapperMock>>()};
+    StrictMock<firebolt::rialto::server::GstPlayerClientMock> m_gstPlayerClient;
+    std::shared_ptr<firebolt::rialto::server::GstWrapperMock> m_gstWrapper{
+        std::make_shared<StrictMock<firebolt::rialto::server::GstWrapperMock>>()};
     GstElement m_pipeline{};
 
     ReportPositionTest() { m_context.pipeline = &m_pipeline; }

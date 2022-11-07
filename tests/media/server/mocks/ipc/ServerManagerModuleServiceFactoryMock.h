@@ -17,14 +17,14 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_IPC_MOCK_SERVER_MANAGER_MODULE_SERVICE_FACTORY_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_IPC_MOCK_SERVER_MANAGER_MODULE_SERVICE_FACTORY_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_IPC_SERVER_MANAGER_MODULE_SERVICE_FACTORY_MOCK_H_
+#define FIREBOLT_RIALTO_SERVER_IPC_SERVER_MANAGER_MODULE_SERVICE_FACTORY_MOCK_H_
 
 #include "IServerManagerModuleServiceFactory.h"
 #include <gmock/gmock.h>
 #include <memory>
 
-namespace firebolt::rialto::server::ipc::mock
+namespace firebolt::rialto::server::ipc
 {
 class ServerManagerModuleServiceFactoryMock : public IServerManagerModuleServiceFactory
 {
@@ -35,6 +35,6 @@ public:
     MOCK_METHOD(std::shared_ptr<::rialto::ServerManagerModule>, create,
                 (service::ISessionServerManager & sessionServerManager), (override, const));
 };
-} // namespace firebolt::rialto::server::ipc::mock
+} // namespace firebolt::rialto::server::ipc
 
-#endif // FIREBOLT_RIALTO_SERVER_IPC_MOCK_SERVER_MANAGER_MODULE_SERVICE_FACTORY_MOCK_H_
+#endif // FIREBOLT_RIALTO_SERVER_IPC_SERVER_MANAGER_MODULE_SERVICE_FACTORY_MOCK_H_

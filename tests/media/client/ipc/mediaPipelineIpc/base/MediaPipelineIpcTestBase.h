@@ -30,11 +30,11 @@
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::ipc;
-using namespace firebolt::rialto::ipc::mock;
+using namespace firebolt::rialto::ipc;
 using namespace firebolt::rialto::client;
-using namespace firebolt::rialto::client::mock;
+using namespace firebolt::rialto::client;
 using namespace firebolt::rialto::common;
-using namespace firebolt::rialto::common::mock;
+using namespace firebolt::rialto::common;
 
 using ::testing::_;
 using ::testing::ByMove;

@@ -17,14 +17,14 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_IPC_MOCK_IPC_SERVER_FACTORY_MOCK_H_
-#define FIREBOLT_RIALTO_IPC_MOCK_IPC_SERVER_FACTORY_MOCK_H_
+#ifndef FIREBOLT_RIALTO_IPC_IPC_SERVER_FACTORY_MOCK_H_
+#define FIREBOLT_RIALTO_IPC_IPC_SERVER_FACTORY_MOCK_H_
 
 #include "IIpcServerFactory.h"
 #include <gmock/gmock.h>
 #include <memory>
 
-namespace firebolt::rialto::ipc::mock
+namespace firebolt::rialto::ipc
 {
 class ServerFactoryMock : public IServerFactory
 {
@@ -34,6 +34,6 @@ public:
 
     MOCK_METHOD(std::shared_ptr<IServer>, create, (unsigned flags), (override));
 };
-} // namespace firebolt::rialto::ipc::mock
+} // namespace firebolt::rialto::ipc
 
-#endif // FIREBOLT_RIALTO_IPC_MOCK_IPC_SERVER_FACTORY_MOCK_H_
+#endif // FIREBOLT_RIALTO_IPC_IPC_SERVER_FACTORY_MOCK_H_

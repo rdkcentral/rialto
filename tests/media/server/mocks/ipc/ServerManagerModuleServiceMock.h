@@ -17,13 +17,13 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_IPC_MOCK_SERVER_MANAGER_MODULE_SERVICE_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_IPC_MOCK_SERVER_MANAGER_MODULE_SERVICE_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_IPC_SERVER_MANAGER_MODULE_SERVICE_MOCK_H_
+#define FIREBOLT_RIALTO_SERVER_IPC_SERVER_MANAGER_MODULE_SERVICE_MOCK_H_
 
 #include "servermanagermodule.pb.h"
 #include <gmock/gmock.h>
 
-namespace firebolt::rialto::server::ipc::mock
+namespace firebolt::rialto::server::ipc
 {
 class ServerManagerModuleServiceMock : public ::rialto::ServerManagerModule
 {
@@ -44,6 +44,6 @@ public:
                  ::rialto::SetLogLevelsResponse *response, ::google::protobuf::Closure *done),
                 (override));
 };
-} // namespace firebolt::rialto::server::ipc::mock
+} // namespace firebolt::rialto::server::ipc
 
-#endif // FIREBOLT_RIALTO_SERVER_IPC_MOCK_SERVER_MANAGER_MODULE_SERVICE_MOCK_H_
+#endif // FIREBOLT_RIALTO_SERVER_IPC_SERVER_MANAGER_MODULE_SERVICE_MOCK_H_

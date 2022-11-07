@@ -252,10 +252,10 @@ convertNetworkState(const firebolt::rialto::NetworkState &networkState)
 } // namespace firebolt::rialto
 
 MediaPipelineModuleServiceTests::MediaPipelineModuleServiceTests()
-    : m_clientMock{std::make_shared<StrictMock<firebolt::rialto::ipc::mock::ClientMock>>()},
-      m_serverMock{std::make_shared<StrictMock<firebolt::rialto::ipc::mock::ServerMock>>()},
-      m_closureMock{std::make_shared<StrictMock<firebolt::rialto::ipc::mock::ClosureMock>>()},
-      m_controllerMock{std::make_shared<StrictMock<firebolt::rialto::ipc::mock::ControllerMock>>()}
+    : m_clientMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ClientMock>>()},
+      m_serverMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ServerMock>>()},
+      m_closureMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ClosureMock>>()},
+      m_controllerMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ControllerMock>>()}
 {
     m_service = std::make_shared<firebolt::rialto::server::ipc::MediaPipelineModuleService>(m_playbackServiceMock);
 }

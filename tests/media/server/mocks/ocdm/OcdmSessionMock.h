@@ -17,15 +17,15 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_MOCK_OCDM_SESSION_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_MOCK_OCDM_SESSION_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_OCDM_SESSION_MOCK_H_
+#define FIREBOLT_RIALTO_SERVER_OCDM_SESSION_MOCK_H_
 
 #include "IOcdmSession.h"
 #include <gmock/gmock.h>
 #include <memory>
 #include <string>
 
-namespace firebolt::rialto::server::mock
+namespace firebolt::rialto::server
 {
 class OcdmSessionMock : public IOcdmSession
 {
@@ -51,6 +51,6 @@ public:
     MOCK_METHOD(KeyStatus, getStatus, (const uint8_t keyId[], const uint8_t keyIdLength), (override));
     MOCK_METHOD(MediaKeyErrorStatus, getCdmKeySessionId, (std::string & cdmKeySessionId), (override));
 };
-} // namespace firebolt::rialto::server::mock
+} // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_MOCK_OCDM_SESSION_MOCK_H_
+#endif // FIREBOLT_RIALTO_SERVER_OCDM_SESSION_MOCK_H_

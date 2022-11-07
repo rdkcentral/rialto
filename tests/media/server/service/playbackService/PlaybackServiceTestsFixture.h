@@ -123,7 +123,7 @@ private:
     StrictMock<firebolt::rialto::server::SharedMemoryBufferMock> &m_shmBufferMock;
     std::unique_ptr<firebolt::rialto::server::IMediaPipelineServerInternal> m_mediaPipeline;
     StrictMock<firebolt::rialto::server::MediaPipelineServerInternalMock> &m_mediaPipelineMock;
-    StrictMock<firebolt::rialto::server::mock::DecryptionServiceMock> m_decryptionServiceMock;
+    StrictMock<firebolt::rialto::server::DecryptionServiceMock> m_decryptionServiceMock;
     std::unique_ptr<firebolt::rialto::server::service::PlaybackService> m_sut;
 };
 

@@ -32,7 +32,7 @@
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::ipc;
-using namespace firebolt::rialto::ipc::mock;
+using namespace firebolt::rialto::ipc;
 using namespace firebolt::rialto::client;
 
 using ::testing::_;

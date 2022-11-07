@@ -17,14 +17,14 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_MOCK_WORKER_THREAD_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_MOCK_WORKER_THREAD_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_WORKER_THREAD_MOCK_H_
+#define FIREBOLT_RIALTO_SERVER_WORKER_THREAD_MOCK_H_
 
 #include "IWorkerThread.h"
 #include <gmock/gmock.h>
 #include <memory>
 
-namespace firebolt::rialto::server::mock
+namespace firebolt::rialto::server
 {
 class WorkerThreadMock : public IWorkerThread
 {
@@ -33,6 +33,6 @@ public:
     MOCK_METHOD(void, join, (), (override));
     MOCK_METHOD(void, enqueueTask, (std::unique_ptr<IPlayerTask> && task), (override));
 };
-} // namespace firebolt::rialto::server::mock
+} // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_MOCK_WORKER_THREAD_MOCK_H_
+#endif // FIREBOLT_RIALTO_SERVER_WORKER_THREAD_MOCK_H_

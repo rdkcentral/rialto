@@ -17,14 +17,14 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_COMMON_MOCK_MEDIA_FRAME_WRITER_MOCK_H_
-#define FIREBOLT_RIALTO_COMMON_MOCK_MEDIA_FRAME_WRITER_MOCK_H_
+#ifndef FIREBOLT_RIALTO_COMMON_MEDIA_FRAME_WRITER_MOCK_H_
+#define FIREBOLT_RIALTO_COMMON_MEDIA_FRAME_WRITER_MOCK_H_
 
 #include "IMediaFrameWriter.h"
 #include <gmock/gmock.h>
 #include <memory>
 
-namespace firebolt::rialto::common::mock
+namespace firebolt::rialto::common
 {
 class MediaFrameWriterMock : public IMediaFrameWriter
 {
@@ -35,6 +35,6 @@ public:
     MOCK_METHOD(AddSegmentStatus, writeFrame, (const std::unique_ptr<IMediaPipeline::MediaSegment> &data), (override));
     MOCK_METHOD(uint32_t, getNumFrames, (), (override));
 };
-} // namespace firebolt::rialto::common::mock
+} // namespace firebolt::rialto::common
 
-#endif // FIREBOLT_RIALTO_COMMON_MOCK_MEDIA_FRAME_WRITER_MOCK_H_
+#endif // FIREBOLT_RIALTO_COMMON_MEDIA_FRAME_WRITER_MOCK_H_
