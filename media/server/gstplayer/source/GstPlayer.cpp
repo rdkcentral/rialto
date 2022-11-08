@@ -476,15 +476,26 @@ void GstPlayer::updateAudioCaps(int32_t rate, int32_t channels)
 
     if (m_context.audioAppSrc)
     {
+        constexpr int kInvalidRate{0}, kInvalidChannels{0};
+        bool capsChanged{false};
         GstCaps *currentCaps = m_gstWrapper->gstAppSrcGetCaps(GST_APP_SRC(m_context.audioAppSrc));
         GstCaps *newCaps = m_gstWrapper->gstCapsCopy(currentCaps);
-
-        m_gstWrapper->gstCapsSetSimple(newCaps, "rate", G_TYPE_INT, rate, "channels", G_TYPE_INT, channels, NULL);
-
-        m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(m_context.audioAppSrc), newCaps);
-
-        m_gstWrapper->gstCapsUnref(currentCaps);
+        if (rate != kInvalidRate)
+        {
+            m_gstWrapper->gstCapsSetSimple(newCaps, "rate", G_TYPE_INT, rate, NULL);
+            capsChanged = true;
+        }
+        if (channels != kInvalidChannels)
+        {
+            m_gstWrapper->gstCapsSetSimple(newCaps, "channels", G_TYPE_INT, channels, NULL);
+            capsChanged = true;
+        }
+        if (capsChanged)
+        {
+            m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(m_context.audioAppSrc), newCaps);
+        }
         m_gstWrapper->gstCapsUnref(newCaps);
+        m_gstWrapper->gstCapsUnref(currentCaps);
     }
 }
 
