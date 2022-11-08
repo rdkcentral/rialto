@@ -35,7 +35,7 @@ namespace firebolt::rialto
 class IMediaKeysCapabilities;
 
 /**
- * @brief IMediaKeysCapabilities factory class, for getting the IMediaKeysCapabilities singleton object.
+ * @brief TEST IMediaKeysCapabilities factory class, for getting the IMediaKeysCapabilities singleton object.
  */
 class IMediaKeysCapabilitiesFactory
 {
