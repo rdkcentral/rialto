@@ -477,16 +477,24 @@ void GstPlayer::updateAudioCaps(int32_t rate, int32_t channels)
     if (m_context.audioAppSrc)
     {
         constexpr int kInvalidRate{0}, kInvalidChannels{0};
+        bool capsChanged{false};
         GstCaps *currentCaps = m_gstWrapper->gstAppSrcGetCaps(GST_APP_SRC(m_context.audioAppSrc));
-        gchar *currentCapsStr = m_gstWrapper->gstCapsToString(currentCaps);
-        if (std::string(currentCapsStr) != "audio/x-eac3" && rate != kInvalidRate && channels != kInvalidChannels)
+        GstCaps *newCaps = m_gstWrapper->gstCapsCopy(currentCaps);
+        if (rate != kInvalidRate)
         {
-            GstCaps *newCaps = m_gstWrapper->gstCapsCopy(currentCaps);
-            m_gstWrapper->gstCapsSetSimple(newCaps, "rate", G_TYPE_INT, rate, "channels", G_TYPE_INT, channels, NULL);
-            m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(m_context.audioAppSrc), newCaps);
-            m_gstWrapper->gstCapsUnref(newCaps);
+            m_gstWrapper->gstCapsSetSimple(newCaps, "rate", G_TYPE_INT, rate, NULL);
+            capsChanged = true;
         }
-        m_glibWrapper->gFree(currentCapsStr);
+        if (channels != kInvalidChannels)
+        {
+            m_gstWrapper->gstCapsSetSimple(newCaps, "channels", G_TYPE_INT, channels, NULL);
+            capsChanged = true;
+        }
+        if (capsChanged)
+        {
+            m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(m_context.audioAppSrc), newCaps);
+        }
+        m_gstWrapper->gstCapsUnref(newCaps);
         m_gstWrapper->gstCapsUnref(currentCaps);
     }
 }
