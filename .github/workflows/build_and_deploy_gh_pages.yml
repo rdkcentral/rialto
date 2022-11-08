@@ -24,8 +24,6 @@ on:
   # Triggers the workflow on push to the "master" branch
   push:
     branches: [ "master", "rdkcentral:master" ]
-  pull_request:
-    branches: [ "master", "rdkcentral:master" ]
     paths:
       - 'media/public/**'
 jobs:
@@ -34,14 +32,20 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Install and Build 
+
+      - name: Install dependencies 
         run: |
           sudo apt install doxygen graphviz
+
+      - name: Generate doxygen documentation
+        run: |
           doxygen
-      - name: Deploy 🚀
+
+      - name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: doc/html # The folder the action should deploy.
