@@ -41,9 +41,9 @@ std::string getSampleRateAndChannelsAsCapsStr(const firebolt::rialto::IMediaPipe
     return capsStr;
 }
 
-std::string getAudioSpecificConfiguratuionAsCapsStr(std::shared_ptr<firebolt::rialto::server::IGstWrapper> gstWrapper,
-                                                    std::shared_ptr<firebolt::rialto::server::IGlibWrapper> glibWrapper,
-                                                    const firebolt::rialto::IMediaPipeline::MediaSource &source)
+std::string getAudioSpecificConfigurationAsCapsStr(std::shared_ptr<firebolt::rialto::server::IGstWrapper> gstWrapper,
+                                                   std::shared_ptr<firebolt::rialto::server::IGlibWrapper> glibWrapper,
+                                                   const firebolt::rialto::IMediaPipeline::MediaSource &source)
 {
     std::string capsStr;
     firebolt::rialto::AudioConfig audioConfig;
@@ -80,16 +80,16 @@ std::string createCapsStr(std::shared_ptr<firebolt::rialto::server::IGstWrapper>
         case firebolt::rialto::SegmentAlignment::NAL:
             return "video/x-h264, stream-format=byte-stream, alignment=nal";
         default:
-            return "video/x-h265";
+            return "video/x-h264";
         }
     }
     else if (mimeType.compare("video/mpeg2") == 0)
     {
         return "video/mpeg, mpegversion=(int) 2";
     }
-    else if (mimeType.compare("ideo/x-theora") == 0)
+    else if (mimeType.compare("video/x-theora") == 0)
     {
-        return "ideo/x-theora";
+        return "video/x-theora";
     }
     else if (mimeType.compare("video/x-vc1") == 0)
     {
@@ -125,7 +125,7 @@ std::string createCapsStr(std::shared_ptr<firebolt::rialto::server::IGstWrapper>
     }
     else if (mimeType.compare("audio/x-opus") == 0)
     {
-        std::string capsStr = getAudioSpecificConfiguratuionAsCapsStr(gstWrapper, glibWrapper, source);
+        std::string capsStr = getAudioSpecificConfigurationAsCapsStr(gstWrapper, glibWrapper, source);
         if (capsStr.empty())
             return "audio/x-opus, channel-mapping-family=0";
         else
@@ -187,10 +187,9 @@ void AttachSource::execute() const
         GstCaps *appsrcCaps = m_gstWrapper->gstAppSrcGetCaps(GST_APP_SRC(elem->second));
         if ((!appsrcCaps) || (!m_gstWrapper->gstCapsIsEqual(appsrcCaps, caps)))
         {
-            gchar *capsStr = m_gstWrapper->gstCapsToString(caps);
             RIALTO_SERVER_LOG_MIL("Updating %s appsrc caps to '%s'",
-                                  m_attachedSource.getType() == MediaSourceType::AUDIO ? "Audio" : "Video", capsStr);
-            m_glibWrapper->gFree(capsStr);
+                                  m_attachedSource.getType() == MediaSourceType::AUDIO ? "Audio" : "Video",
+                                  strCaps.c_str());
             m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(elem->second), caps);
         }
 

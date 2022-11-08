@@ -99,9 +99,11 @@ public:
          * @param[in] id   : The source id.
          * @param[in] type : The source type.
          * @param[in] mimeType : The mime type string.
+         * @param[in] alignment : The alignment of media segment.
          */
-        explicit MediaSource(int32_t id = 0, MediaSourceType type = MediaSourceType::UNKNOWN, const char *mimeType = "")
-            : m_id(id), m_type(type), m_mimeType(mimeType), m_alignment(SegmentAlignment::UNDEFINED)
+        explicit MediaSource(int32_t id = 0, MediaSourceType type = MediaSourceType::UNKNOWN, const char *mimeType = "",
+                             SegmentAlignment alignment = SegmentAlignment::UNDEFINED)
+            : m_id(id), m_type(type), m_mimeType(mimeType), m_alignment(alignment)
         {
         }
 
@@ -111,9 +113,11 @@ public:
          * @param[in] id   : The source id.
          * @param[in] mimeType : The mime type string.
          * @param[in] audioConfig : The audio specific configuration.
+         * @param[in] alignment : The alignment of media segment.
          */
-        MediaSource(int32_t id, const std::string &mimeType, const AudioConfig &audioConfig)
-            : m_id(id), m_type(MediaSourceType::AUDIO), m_mimeType(mimeType), m_alignment(SegmentAlignment::UNDEFINED),
+        MediaSource(int32_t id, const std::string &mimeType, const AudioConfig &audioConfig,
+                    SegmentAlignment alignment = SegmentAlignment::UNDEFINED)
+            : m_id(id), m_type(MediaSourceType::AUDIO), m_mimeType(mimeType), m_alignment(alignment),
               m_audioConfig(audioConfig)
         {
         }
@@ -147,13 +151,6 @@ public:
          * @brief Gets the segment alignment
          */
         SegmentAlignment getSegmentAlignment() const { return m_alignment; }
-
-        /**
-         * @brief Sets the segment alignment
-         *
-         * @param[in] alignment : The new segment alignment
-         */
-        void setSegmentAlignment(const SegmentAlignment &alignment) { m_alignment = alignment; }
 
         /**
          * @brief Gets the audio specific configuration

@@ -204,26 +204,16 @@ bool MediaPipelineIpc::attachSource(const IMediaPipeline::MediaSource &source, i
     auto mediaType = source.getType();
     request.set_media_type(convertProtoMediaSourceType(mediaType));
     request.set_mime_type(source.getMimeType());
-    if (SegmentAlignment::UNDEFINED != source.getSegmentAlignment())
-    {
-        request.set_segment_alignment(convertSegmentAlignment(source.getSegmentAlignment()));
-    }
+    request.set_segment_alignment(convertSegmentAlignment(source.getSegmentAlignment()));
+
     AudioConfig audioConfig;
-    if (source.getAudioConfig(audioConfig))
+    source.getAudioConfig(audioConfig);
+    request.mutable_audio_config()->set_number_of_channels(audioConfig.numberOfChannels);
+    request.mutable_audio_config()->set_sample_rate(audioConfig.sampleRate);
+    if (!audioConfig.codecSpecificConfig.empty())
     {
-        if (audioConfig.numberOfChannels != kInvalidAudioChannels)
-        {
-            request.mutable_audio_config()->set_number_of_channels(audioConfig.numberOfChannels);
-        }
-        if (audioConfig.sampleRate != kInvalidAudioSampleRate)
-        {
-            request.mutable_audio_config()->set_sample_rate(audioConfig.sampleRate);
-        }
-        if (!audioConfig.codecSpecificConfig.empty())
-        {
-            request.mutable_audio_config()->set_codec_specific_config(audioConfig.codecSpecificConfig.data(),
-                                                                      audioConfig.codecSpecificConfig.size());
-        }
+        request.mutable_audio_config()->set_codec_specific_config(audioConfig.codecSpecificConfig.data(),
+                                                                  audioConfig.codecSpecificConfig.size());
     }
 
     firebolt::rialto::AttachSourceResponse response;

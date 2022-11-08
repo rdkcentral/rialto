@@ -278,21 +278,14 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
                             firebolt::rialto::ProtoMediaSourceType::AUDIO == request->media_type() ? "audio" : "video",
                             request->mime_type().c_str());
     IMediaPipeline::MediaSource mediaSource{0, convertMediaSourceType(request->media_type()),
-                                            request->mime_type().c_str()};
+                                            request->mime_type().c_str(),
+                                            convertSegmentAlignment(request->segment_alignment())};
 
-    if (request->has_audio_config())
+    if (request->media_type() == firebolt::rialto::ProtoMediaSourceType::AUDIO)
     {
         const auto &audioConfig = request->audio_config();
-        uint32_t numberofchannels = kInvalidAudioChannels;
-        if (audioConfig.has_number_of_channels())
-        {
-            numberofchannels = audioConfig.number_of_channels();
-        }
-        uint32_t sampleRate = kInvalidAudioSampleRate;
-        if (audioConfig.has_sample_rate())
-        {
-            sampleRate = audioConfig.sample_rate();
-        }
+        uint32_t numberofchannels = audioConfig.number_of_channels();
+        uint32_t sampleRate = audioConfig.sample_rate();
 
         std::vector<uint8_t> codecSpecificConfig;
         if (audioConfig.has_codec_specific_config())
@@ -301,13 +294,9 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
             codecSpecificConfig.assign(codecSpecificConfigStr.begin(), codecSpecificConfigStr.end());
         }
 
-        mediaSource =
-            IMediaPipeline::MediaSource(0, request->mime_type(), {numberofchannels, sampleRate, codecSpecificConfig});
-    }
-
-    if (request->has_segment_alignment())
-    {
-        mediaSource.setSegmentAlignment(convertSegmentAlignment(request->segment_alignment()));
+        mediaSource = IMediaPipeline::MediaSource(0, request->mime_type(),
+                                                  {numberofchannels, sampleRate, codecSpecificConfig},
+                                                  convertSegmentAlignment(request->segment_alignment()));
     }
 
     if (!m_playbackService.attachSource(request->session_id(), mediaSource))

@@ -94,9 +94,6 @@ TEST_F(AttachSourceTest, shouldUpdateEmptyCapsInAudioSource)
     firebolt::rialto::server::AttachSource task{m_context, m_gstWrapper, m_glibWrapper, source};
     EXPECT_CALL(*m_gstWrapper, gstCapsFromString(_)).WillOnce(Return(&m_gstCaps2));
     EXPECT_CALL(*m_gstWrapper, gstAppSrcGetCaps(GST_APP_SRC(&m_appSrc))).WillOnce(Return(nullptr));
-    EXPECT_CALL(*m_gstWrapper, gstCapsToString(&m_gstCaps2))
-        .WillOnce(Return(const_cast<gchar *>(reinterpret_cast<const gchar *>(m_mimeType2.c_str()))));
-    EXPECT_CALL(*m_glibWrapper, gFree(reinterpret_cast<gpointer *>(&m_mimeType2[0])));
     EXPECT_CALL(*m_gstWrapper, gstAppSrcSetCaps(GST_APP_SRC(&m_appSrc), &m_gstCaps2));
     EXPECT_CALL(*m_gstWrapper, gstCapsUnref(&m_gstCaps2));
     task.execute();
@@ -113,9 +110,6 @@ TEST_F(AttachSourceTest, shouldUpdateExistingCapsInAudioSource)
     EXPECT_CALL(*m_gstWrapper, gstCapsFromString(_)).WillOnce(Return(&m_gstCaps2));
     EXPECT_CALL(*m_gstWrapper, gstAppSrcGetCaps(GST_APP_SRC(&m_appSrc))).WillOnce(Return(&m_gstCaps1));
     EXPECT_CALL(*m_gstWrapper, gstCapsIsEqual(&m_gstCaps1, &m_gstCaps2)).WillOnce(Return(false));
-    EXPECT_CALL(*m_gstWrapper, gstCapsToString(&m_gstCaps2))
-        .WillOnce(Return(const_cast<gchar *>(reinterpret_cast<const gchar *>(m_mimeType2.c_str()))));
-    EXPECT_CALL(*m_glibWrapper, gFree(reinterpret_cast<gpointer *>(&m_mimeType2[0])));
     EXPECT_CALL(*m_gstWrapper, gstAppSrcSetCaps(GST_APP_SRC(&m_appSrc), &m_gstCaps2));
     EXPECT_CALL(*m_gstWrapper, gstCapsUnref(&m_gstCaps1));
     EXPECT_CALL(*m_gstWrapper, gstCapsUnref(&m_gstCaps2));
@@ -132,9 +126,6 @@ TEST_F(AttachSourceTest, shouldUpdateEmptyCapsInVideoSource)
     firebolt::rialto::server::AttachSource task{m_context, m_gstWrapper, m_glibWrapper, source};
     EXPECT_CALL(*m_gstWrapper, gstCapsFromString(_)).WillOnce(Return(&m_gstCaps2));
     EXPECT_CALL(*m_gstWrapper, gstAppSrcGetCaps(GST_APP_SRC(&m_appSrc))).WillOnce(Return(nullptr));
-    EXPECT_CALL(*m_gstWrapper, gstCapsToString(&m_gstCaps2))
-        .WillOnce(Return(const_cast<gchar *>(reinterpret_cast<const gchar *>(m_mimeType2.c_str()))));
-    EXPECT_CALL(*m_glibWrapper, gFree(reinterpret_cast<gpointer *>(&m_mimeType2[0])));
     EXPECT_CALL(*m_gstWrapper, gstAppSrcSetCaps(GST_APP_SRC(&m_appSrc), &m_gstCaps2));
     EXPECT_CALL(*m_gstWrapper, gstCapsUnref(&m_gstCaps2));
     task.execute();
@@ -151,9 +142,6 @@ TEST_F(AttachSourceTest, shouldUpdateExistingCapsInVideoSource)
     EXPECT_CALL(*m_gstWrapper, gstCapsFromString(_)).WillOnce(Return(&m_gstCaps2));
     EXPECT_CALL(*m_gstWrapper, gstAppSrcGetCaps(GST_APP_SRC(&m_appSrc))).WillOnce(Return(&m_gstCaps1));
     EXPECT_CALL(*m_gstWrapper, gstCapsIsEqual(&m_gstCaps1, &m_gstCaps2)).WillOnce(Return(false));
-    EXPECT_CALL(*m_gstWrapper, gstCapsToString(&m_gstCaps2))
-        .WillOnce(Return(const_cast<gchar *>(reinterpret_cast<const gchar *>(m_mimeType2.c_str()))));
-    EXPECT_CALL(*m_glibWrapper, gFree(reinterpret_cast<gpointer *>(&m_mimeType2[0])));
     EXPECT_CALL(*m_gstWrapper, gstAppSrcSetCaps(GST_APP_SRC(&m_appSrc), &m_gstCaps2));
     EXPECT_CALL(*m_gstWrapper, gstCapsUnref(&m_gstCaps1));
     EXPECT_CALL(*m_gstWrapper, gstCapsUnref(&m_gstCaps2));
