@@ -20,6 +20,13 @@
 #ifndef FIREBOLT_RIALTO_MEDIA_COMMON_H_
 #define FIREBOLT_RIALTO_MEDIA_COMMON_H_
 
+/**
+ * @file MediaCommon.h
+ *
+ * The definition of the Rialto Common types
+ *
+ */
+
 #include <stddef.h>
 #include <stdint.h>
 #include <utility>
