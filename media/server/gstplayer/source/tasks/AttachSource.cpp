@@ -67,11 +67,11 @@ std::string createCapsStr(std::shared_ptr<firebolt::rialto::server::IGstWrapper>
                           const firebolt::rialto::IMediaPipeline::MediaSource &source)
 {
     auto mimeType = source.getMimeType();
-    if (mimeType.compare("video/x-h265") == 0)
+    if (mimeType.compare("video/h265") == 0)
     {
         return "video/x-h265";
     }
-    else if (mimeType.compare("video/x-h264") == 0)
+    else if (mimeType.compare("video/h264") == 0)
     {
         switch (source.getSegmentAlignment())
         {
@@ -83,33 +83,23 @@ std::string createCapsStr(std::shared_ptr<firebolt::rialto::server::IGstWrapper>
             return "video/x-h264";
         }
     }
-    else if (mimeType.compare("video/mpeg2") == 0)
-    {
-        return "video/mpeg, mpegversion=(int) 2";
-    }
-    else if (mimeType.compare("video/x-theora") == 0)
-    {
-        return "video/x-theora";
-    }
-    else if (mimeType.compare("video/x-vc1") == 0)
-    {
-        return "video/x-vc1";
-    }
     else if (mimeType.compare("video/x-av1") == 0)
     {
         return "video/x-av1";
-    }
-    else if (mimeType.compare("video/x-vp8") == 0)
-    {
-        return "video/x-vp8";
     }
     else if (mimeType.compare("video/x-vp9") == 0)
     {
         return "video/x-vp9";
     }
-    else if (mimeType.compare("audio/mpeg") == 0)
+    else if (mimeType.compare("audio/mp4") == 0)
     {
         std::string capsStr = "audio/mpeg, mpegversion=4";
+        capsStr += getSampleRateAndChannelsAsCapsStr(source);
+        return capsStr;
+    }
+    else if (mimeType.compare("audio/aac") == 0)
+    {
+        std::string capsStr = "audio/aac";
         capsStr += getSampleRateAndChannelsAsCapsStr(source);
         return capsStr;
     }
@@ -119,10 +109,6 @@ std::string createCapsStr(std::shared_ptr<firebolt::rialto::server::IGstWrapper>
         capsStr += getSampleRateAndChannelsAsCapsStr(source);
         return capsStr;
     }
-    else if (mimeType.compare("audio/x-vorbis") == 0)
-    {
-        return "audio/x-vorbis";
-    }
     else if (mimeType.compare("audio/x-opus") == 0)
     {
         std::string capsStr = getAudioSpecificConfigurationAsCapsStr(gstWrapper, glibWrapper, source);
@@ -131,6 +117,8 @@ std::string createCapsStr(std::shared_ptr<firebolt::rialto::server::IGstWrapper>
         else
             return capsStr;
     }
+
+    RIALTO_SERVER_LOG_ERROR("Unknown mime type: %s!", mimeType.c_str());
     return "";
 }
 
