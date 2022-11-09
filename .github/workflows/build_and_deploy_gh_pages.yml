@@ -54,19 +54,44 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
       - name: Install dependencies 
         run: |
           sudo apt install doxygen graphviz
+
       - name: Generate doxygen documentation
         run: |
-          mkdir build
+          mkdir -p build/gh_pages
           doxygen
+
+      - name: Wait for coverage report generation
+        uses: lewagon/wait-on-check-action@v1.2.0
+        with:
+          ref: ${{ github.ref }}
+          check-name: 'Build and test build_ut'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 20
+
+      - name: Download Coverage Report
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: build_ut.yml
+          workflow_conclusion: success
+          pr: ${{github.event.pull_request.number}}
+          name: coverage_report
+          path: build/gh_pages/coverage_report
+
+      - name: Copy Main Page Index
+        run: cp docs/index.html build/gh_pages
+
       - name: Setup Pages
         uses: actions/configure-pages@v2
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
-          path: 'build/doxygen_doc/html'
+          path: 'build/gh_pages'
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v1
