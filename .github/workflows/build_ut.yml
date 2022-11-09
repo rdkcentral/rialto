@@ -181,7 +181,7 @@ jobs:
         if: success()
         with:
           name: coverage_report
-          path: build/coverage_report
+          path: build/gh_pages/coverage_report
 
       # Upload coverage statistics on success
       - name: Upload Coverage Statistics
