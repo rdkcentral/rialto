@@ -24,11 +24,6 @@ on:
   # Triggers the workflow on push to the "master" branch
   push:
     branches: [ "master", "rdkcentral:master" ]
-    paths:
-      - '**/build_and_deploy_gh_pages.yml'
-      - 'media/public/**'
-      - 'Doxyfile'
-      - 'DoxygenLayout.xml'
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -63,6 +58,14 @@ jobs:
         run: |
           mkdir -p build/gh_pages
           doxygen
+
+      - name: Wait for protobuf installation to prevent race in next step
+        uses: lewagon/wait-on-check-action@v1.2.0
+        with:
+          ref: ${{ github.ref }}
+          check-name: 'Download and Cache Protobuf'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 90
 
       - name: Wait for coverage report generation
         uses: lewagon/wait-on-check-action@v1.2.0
