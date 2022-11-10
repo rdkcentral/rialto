@@ -107,7 +107,8 @@ void SessionManagementServerTests::serverWillInitialize()
         .WillOnce(Invoke(
             [this](const std::string &socketPath,
                    std::function<void(const std::shared_ptr<firebolt::rialto::ipc::IClient> &)> clientConnectedCb,
-                   std::function<void(const std::shared_ptr<firebolt::rialto::ipc::IClient> &)> clientDisconnectedCb) {
+                   std::function<void(const std::shared_ptr<firebolt::rialto::ipc::IClient> &)> clientDisconnectedCb)
+            {
                 m_clientConnectedCb = clientConnectedCb;
                 m_clientDisconnectedCb = clientDisconnectedCb;
                 return true;

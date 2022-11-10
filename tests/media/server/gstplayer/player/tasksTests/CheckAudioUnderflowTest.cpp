@@ -47,10 +47,12 @@ struct CheckAudioUnderflowTest : public testing::Test
 TEST_F(CheckAudioUnderflowTest, shouldNotTriggerAudioUnderflow)
 {
     EXPECT_CALL(*m_gstWrapper, gstElementQueryPosition(&m_pipeline, GST_FORMAT_TIME, NotNullMatcher()))
-        .WillOnce(Invoke([this](GstElement *element, GstFormat format, gint64 *cur) {
-            *cur = 0;
-            return TRUE;
-        }));
+        .WillOnce(Invoke(
+            [this](GstElement *element, GstFormat format, gint64 *cur)
+            {
+                *cur = 0;
+                return TRUE;
+            }));
     GstElement audioAppSrc;
     m_context.audioAppSrc = &audioAppSrc;
     m_context.lastAudioSampleTimestamps = position;
@@ -64,16 +66,16 @@ TEST_F(CheckAudioUnderflowTest, shouldNotTriggerAudioUnderflow)
 TEST_F(CheckAudioUnderflowTest, shouldTriggerAudioUnderflow)
 {
     EXPECT_CALL(*m_gstWrapper, gstElementQueryPosition(&m_pipeline, GST_FORMAT_TIME, NotNullMatcher()))
-        .WillOnce(Invoke([this](GstElement *element, GstFormat format, gint64 *cur) {
-            *cur = position;
-            return TRUE;
-        }));
-    EXPECT_CALL(*m_gstWrapper, gstElementGetState(&m_pipeline)).WillOnce(Invoke([this](GstElement *element) {
-        return GST_STATE_PLAYING;
-    }));
-    EXPECT_CALL(*m_gstWrapper, gstElementGetPendingState(&m_pipeline)).WillOnce(Invoke([this](GstElement *element) {
-        return GST_STATE_VOID_PENDING;
-    }));
+        .WillOnce(Invoke(
+            [this](GstElement *element, GstFormat format, gint64 *cur)
+            {
+                *cur = position;
+                return TRUE;
+            }));
+    EXPECT_CALL(*m_gstWrapper, gstElementGetState(&m_pipeline))
+        .WillOnce(Invoke([this](GstElement *element) { return GST_STATE_PLAYING; }));
+    EXPECT_CALL(*m_gstWrapper, gstElementGetPendingState(&m_pipeline))
+        .WillOnce(Invoke([this](GstElement *element) { return GST_STATE_VOID_PENDING; }));
     EXPECT_CALL(m_gstPlayer, stopPositionReportingAndCheckAudioUnderflowTimer());
     EXPECT_CALL(m_gstPlayer, changePipelineState(GST_STATE_PAUSED));
     EXPECT_CALL(m_gstPlayerClient, notifyNetworkState(firebolt::rialto::NetworkState::STALLED));

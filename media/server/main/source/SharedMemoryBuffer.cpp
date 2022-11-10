@@ -266,9 +266,9 @@ std::uint32_t SharedMemoryBuffer::getSize() const
 
 size_t SharedMemoryBuffer::calculateBufferSize() const
 {
-    return std::accumulate(m_partitions.begin(), m_partitions.end(), 0, [](size_t sum, const Partition &p) {
-        return sum + p.dataBufferAudioLen + p.dataBufferVideoLen;
-    });
+    return std::accumulate(m_partitions.begin(), m_partitions.end(), 0,
+                           [](size_t sum, const Partition &p)
+                           { return sum + p.dataBufferAudioLen + p.dataBufferVideoLen; });
 }
 
 std::uint8_t *SharedMemoryBuffer::getBufferForSession(int sessionId) const

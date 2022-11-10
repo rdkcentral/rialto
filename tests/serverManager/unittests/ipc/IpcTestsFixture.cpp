@@ -63,11 +63,13 @@ void IpcTests::sessionServerAppManagerWillBeNotifiedAboutSessionServerStateChang
     const rialto::servermanager::service::SessionServerState &newState)
 {
     EXPECT_CALL(m_sessionServerAppManagerMock, onSessionServerStateChanged(APP_NAME, newState))
-        .WillOnce(Invoke([this](const auto &, const auto &) {
-            std::unique_lock<std::mutex> lock{m_expectationsMetMutex};
-            m_expectationsFlag = true;
-            m_expectationsCv.notify_one();
-        }));
+        .WillOnce(Invoke(
+            [this](const auto &, const auto &)
+            {
+                std::unique_lock<std::mutex> lock{m_expectationsMetMutex};
+                m_expectationsFlag = true;
+                m_expectationsCv.notify_one();
+            }));
 }
 
 void IpcTests::waitForExpectationsMet()

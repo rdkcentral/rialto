@@ -164,32 +164,36 @@ protected:
     void startAddSegmentThread()
     {
         // Call haveData on a separate thread.
-        m_haveDataThread = std::thread([this]() {
-            std::unique_ptr<StrictMock<MediaFrameWriterMock>> mediaFrameWriterMock =
-                std::make_unique<StrictMock<MediaFrameWriterMock>>();
+        m_haveDataThread = std::thread(
+            [this]()
+            {
+                std::unique_ptr<StrictMock<MediaFrameWriterMock>> mediaFrameWriterMock =
+                    std::make_unique<StrictMock<MediaFrameWriterMock>>();
 
-            std::vector<uint8_t> data{'T', 'E', 'S', 'T'};
-            std::unique_ptr<IMediaPipeline::MediaSegment> frame =
-                createFrame(MediaSourceType::VIDEO, data.size(), data.data());
-            // Save a raw pointer to the unique object for use when testing mocks
-            // Object shall be freed by the holder of the unique ptr on destruction
-            m_mediaFrameWriterMock = mediaFrameWriterMock.get();
+                std::vector<uint8_t> data{'T', 'E', 'S', 'T'};
+                std::unique_ptr<IMediaPipeline::MediaSegment> frame =
+                    createFrame(MediaSourceType::VIDEO, data.size(), data.data());
+                // Save a raw pointer to the unique object for use when testing mocks
+                // Object shall be freed by the holder of the unique ptr on destruction
+                m_mediaFrameWriterMock = mediaFrameWriterMock.get();
 
-            EXPECT_CALL(*m_sharedMemoryManagerMock, getSharedMemoryBuffer()).WillOnce(Return(&m_shmBuffer));
+                EXPECT_CALL(*m_sharedMemoryManagerMock, getSharedMemoryBuffer()).WillOnce(Return(&m_shmBuffer));
 
-            EXPECT_CALL(*m_mediaFrameWriterFactoryMock, createFrameWriter(&m_shmBuffer, ShmInfoMatcher(m_shmInfo)))
-                .WillOnce(DoAll(Invoke([this](uint8_t *shmBuffer, const std::shared_ptr<ShmInfo> &shminfo) {
-                                    m_haveDataCond.notify_all();
+                EXPECT_CALL(*m_mediaFrameWriterFactoryMock, createFrameWriter(&m_shmBuffer, ShmInfoMatcher(m_shmInfo)))
+                    .WillOnce(DoAll(Invoke(
+                                        [this](uint8_t *shmBuffer, const std::shared_ptr<ShmInfo> &shminfo)
+                                        {
+                                            m_haveDataCond.notify_all();
 
-                                    // Sleep for 0.1 sec so that notifyBufferTerm can be called
-                                    usleep(10000);
-                                }),
-                                Return(ByMove(std::move(mediaFrameWriterMock)))));
+                                            // Sleep for 0.1 sec so that notifyBufferTerm can be called
+                                            usleep(10000);
+                                        }),
+                                    Return(ByMove(std::move(mediaFrameWriterMock)))));
 
-            // haveData should still write all the frames if the MediaPipeline has been notified of termination
-            EXPECT_CALL(*m_mediaFrameWriterMock, writeFrame(Ref(frame))).WillOnce(Return(AddSegmentStatus::OK));
-            EXPECT_EQ(m_mediaPipeline->addSegment(m_requestId, frame), AddSegmentStatus::OK);
-        });
+                // haveData should still write all the frames if the MediaPipeline has been notified of termination
+                EXPECT_CALL(*m_mediaFrameWriterMock, writeFrame(Ref(frame))).WillOnce(Return(AddSegmentStatus::OK));
+                EXPECT_EQ(m_mediaPipeline->addSegment(m_requestId, frame), AddSegmentStatus::OK);
+            });
     }
 };
 

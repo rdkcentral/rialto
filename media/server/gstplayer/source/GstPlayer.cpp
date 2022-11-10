@@ -263,12 +263,16 @@ void GstPlayer::setupSource(GstElement *pipeline, GstElement *source, GstPlayer 
 
 void GstPlayer::scheduleSourceSetupFinish()
 {
-    m_finishSourceSetupTimer = m_timerFactory->createTimer(kSourceSetupFinishTimeoutMs, [this]() {
-        if (m_workerThread)
-        {
-            m_workerThread->enqueueTask(m_taskFactory->createFinishSetupSource(m_context, *this));
-        }
-    });
+    m_finishSourceSetupTimer =
+        m_timerFactory->createTimer(kSourceSetupFinishTimeoutMs,
+                                    [this]()
+                                    {
+                                        if (m_workerThread)
+                                        {
+                                            m_workerThread->enqueueTask(
+                                                m_taskFactory->createFinishSetupSource(m_context, *this));
+                                        }
+                                    });
 }
 
 void GstPlayer::setupElement(GstElement *pipeline, GstElement *element, GstPlayer *self)
@@ -659,7 +663,8 @@ void GstPlayer::startPositionReportingAndCheckAudioUnderflowTimer()
 
     m_positionReportingAndCheckAudioUnderflowTimer = m_timerFactory->createTimer(
         kPositionReportTimerMs,
-        [this]() {
+        [this]()
+        {
             if (m_workerThread)
             {
                 m_workerThread->enqueueTask(m_taskFactory->createReportPosition(m_context));

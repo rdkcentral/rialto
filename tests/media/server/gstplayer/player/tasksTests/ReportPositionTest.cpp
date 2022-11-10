@@ -47,10 +47,12 @@ struct ReportPositionTest : public testing::Test
 TEST_F(ReportPositionTest, shouldReportPosition)
 {
     EXPECT_CALL(*m_gstWrapper, gstElementQueryPosition(&m_pipeline, GST_FORMAT_TIME, NotNullMatcher()))
-        .WillOnce(Invoke([this](GstElement *element, GstFormat format, gint64 *cur) {
-            *cur = position;
-            return TRUE;
-        }));
+        .WillOnce(Invoke(
+            [this](GstElement *element, GstFormat format, gint64 *cur)
+            {
+                *cur = position;
+                return TRUE;
+            }));
     EXPECT_CALL(m_gstPlayerClient, notifyPosition(position));
     firebolt::rialto::server::ReportPosition task{m_context, &m_gstPlayerClient, m_gstWrapper};
     task.execute();
@@ -59,10 +61,12 @@ TEST_F(ReportPositionTest, shouldReportPosition)
 TEST_F(ReportPositionTest, shouldFailToReportPosition)
 {
     EXPECT_CALL(*m_gstWrapper, gstElementQueryPosition(&m_pipeline, GST_FORMAT_TIME, NotNullMatcher()))
-        .WillOnce(Invoke([this](GstElement *element, GstFormat format, gint64 *cur) {
-            *cur = -1;
-            return TRUE;
-        }));
+        .WillOnce(Invoke(
+            [this](GstElement *element, GstFormat format, gint64 *cur)
+            {
+                *cur = -1;
+                return TRUE;
+            }));
     firebolt::rialto::server::ReportPosition task{m_context, &m_gstPlayerClient, m_gstWrapper};
     task.execute();
 }

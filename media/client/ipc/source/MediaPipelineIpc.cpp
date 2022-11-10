@@ -115,41 +115,36 @@ bool MediaPipelineIpc::subscribeToEvents()
     }
 
     int eventTag = m_ipcChannel->subscribe<firebolt::rialto::PlaybackStateChangeEvent>(
-        [this](const std::shared_ptr<firebolt::rialto::PlaybackStateChangeEvent> &event) {
-            m_eventThread->add(&MediaPipelineIpc::onPlaybackStateUpdated, this, event);
-        });
+        [this](const std::shared_ptr<firebolt::rialto::PlaybackStateChangeEvent> &event)
+        { m_eventThread->add(&MediaPipelineIpc::onPlaybackStateUpdated, this, event); });
     if (eventTag < 0)
         return false;
     m_eventTags.push_back(eventTag);
 
     eventTag = m_ipcChannel->subscribe<firebolt::rialto::PositionChangeEvent>(
-        [this](const std::shared_ptr<firebolt::rialto::PositionChangeEvent> &event) {
-            m_eventThread->add(&MediaPipelineIpc::onPositionUpdated, this, event);
-        });
+        [this](const std::shared_ptr<firebolt::rialto::PositionChangeEvent> &event)
+        { m_eventThread->add(&MediaPipelineIpc::onPositionUpdated, this, event); });
     if (eventTag < 0)
         return false;
     m_eventTags.push_back(eventTag);
 
     eventTag = m_ipcChannel->subscribe<firebolt::rialto::NetworkStateChangeEvent>(
-        [this](const std::shared_ptr<firebolt::rialto::NetworkStateChangeEvent> &event) {
-            m_eventThread->add(&MediaPipelineIpc::onNetworkStateUpdated, this, event);
-        });
+        [this](const std::shared_ptr<firebolt::rialto::NetworkStateChangeEvent> &event)
+        { m_eventThread->add(&MediaPipelineIpc::onNetworkStateUpdated, this, event); });
     if (eventTag < 0)
         return false;
     m_eventTags.push_back(eventTag);
 
     eventTag = m_ipcChannel->subscribe<firebolt::rialto::NeedMediaDataEvent>(
-        [this](const std::shared_ptr<firebolt::rialto::NeedMediaDataEvent> &event) {
-            m_eventThread->add(&MediaPipelineIpc::onNeedMediaData, this, event);
-        });
+        [this](const std::shared_ptr<firebolt::rialto::NeedMediaDataEvent> &event)
+        { m_eventThread->add(&MediaPipelineIpc::onNeedMediaData, this, event); });
     if (eventTag < 0)
         return false;
     m_eventTags.push_back(eventTag);
 
     eventTag = m_ipcChannel->subscribe<firebolt::rialto::QosEvent>(
-        [this](const std::shared_ptr<firebolt::rialto::QosEvent> &event) {
-            m_eventThread->add(&MediaPipelineIpc::onQos, this, event);
-        });
+        [this](const std::shared_ptr<firebolt::rialto::QosEvent> &event)
+        { m_eventThread->add(&MediaPipelineIpc::onQos, this, event); });
     if (eventTag < 0)
         return false;
     m_eventTags.push_back(eventTag);

@@ -60,25 +60,31 @@ void MediaKeysIpcTestBase::destroyMediaKeysIpc()
 void MediaKeysIpcTestBase::expectSubscribeEvents()
 {
     EXPECT_CALL(*m_channelMock, subscribeImpl("firebolt.rialto.LicenseRequestEvent", _, _))
-        .WillOnce(Invoke([this](const std::string &eventName, const google::protobuf::Descriptor *descriptor,
-                                std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> &&handler) {
-            m_licenseRequestCb = std::move(handler);
-            return static_cast<int>(EventTags::LicenseRequestEvent);
-        }))
+        .WillOnce(Invoke(
+            [this](const std::string &eventName, const google::protobuf::Descriptor *descriptor,
+                   std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> &&handler)
+            {
+                m_licenseRequestCb = std::move(handler);
+                return static_cast<int>(EventTags::LicenseRequestEvent);
+            }))
         .RetiresOnSaturation();
     EXPECT_CALL(*m_channelMock, subscribeImpl("firebolt.rialto.LicenseRenewalEvent", _, _))
-        .WillOnce(Invoke([this](const std::string &eventName, const google::protobuf::Descriptor *descriptor,
-                                std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> &&handler) {
-            m_licenseRenewalCb = std::move(handler);
-            return static_cast<int>(EventTags::LicenseRenewalEvent);
-        }))
+        .WillOnce(Invoke(
+            [this](const std::string &eventName, const google::protobuf::Descriptor *descriptor,
+                   std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> &&handler)
+            {
+                m_licenseRenewalCb = std::move(handler);
+                return static_cast<int>(EventTags::LicenseRenewalEvent);
+            }))
         .RetiresOnSaturation();
     EXPECT_CALL(*m_channelMock, subscribeImpl("firebolt.rialto.KeyStatusesChangedEvent", _, _))
-        .WillOnce(Invoke([this](const std::string &eventName, const google::protobuf::Descriptor *descriptor,
-                                std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> &&handler) {
-            m_KeyStatusesChangeCb = std::move(handler);
-            return static_cast<int>(EventTags::KeyStatusesChangedEvent);
-        }))
+        .WillOnce(Invoke(
+            [this](const std::string &eventName, const google::protobuf::Descriptor *descriptor,
+                   std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> &&handler)
+            {
+                m_KeyStatusesChangeCb = std::move(handler);
+                return static_cast<int>(EventTags::KeyStatusesChangedEvent);
+            }))
         .RetiresOnSaturation();
 }
 
