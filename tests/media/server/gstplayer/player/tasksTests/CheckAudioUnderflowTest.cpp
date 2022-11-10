@@ -32,8 +32,9 @@ namespace
 {
 constexpr gint64 position = 350 * 1000000 + 1;
 } // namespace
-struct CheckAudioUnderflowTest : public testing::Test
+class CheckAudioUnderflowTest : public testing::Test
 {
+protected:
     firebolt::rialto::server::PlayerContext m_context{};
     StrictMock<firebolt::rialto::server::GstPlayerClientMock> m_gstPlayerClient;
     StrictMock<firebolt::rialto::server::GstPlayerPrivateMock> m_gstPlayer;

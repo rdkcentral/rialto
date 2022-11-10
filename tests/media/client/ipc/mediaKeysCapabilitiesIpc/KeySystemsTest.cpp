@@ -24,7 +24,6 @@
 #include <string>
 
 using namespace firebolt::rialto::client;
-using namespace firebolt::rialto::client;
 
 using ::testing::_;
 using ::testing::Invoke;
