@@ -19,6 +19,7 @@
 
 #include <stdexcept>
 
+#include "KeyIdMap.h"
 #include "MediaKeys.h"
 #include "RialtoClientLogging.h"
 
@@ -79,9 +80,8 @@ MediaKeys::~MediaKeys()
 
 MediaKeyErrorStatus MediaKeys::selectKeyId(int32_t keySessionId, const std::vector<uint8_t> &keyId)
 {
-    RIALTO_CLIENT_LOG_ERROR("Not Implemented");
-
-    return MediaKeyErrorStatus::FAIL;
+    KeyIdMap::instance().add(keySessionId, keyId);
+    return MediaKeyErrorStatus::OK;
 }
 
 bool MediaKeys::containsKey(int32_t keySessionId, const std::vector<uint8_t> &keyId)
