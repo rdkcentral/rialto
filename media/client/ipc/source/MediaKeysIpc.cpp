@@ -276,16 +276,68 @@ void MediaKeysIpc::destroyMediaKeys()
 
 MediaKeyErrorStatus MediaKeysIpc::selectKeyId(int32_t keySessionId, const std::vector<uint8_t> &keyId)
 {
-    RIALTO_CLIENT_LOG_ERROR("Not Implemented");
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return MediaKeyErrorStatus::FAIL;
+    }
 
-    return MediaKeyErrorStatus::FAIL;
+    firebolt::rialto::SelectKeyIdRequest request;
+    request.set_media_keys_handle(m_mediaKeysHandle);
+    request.set_key_session_id(keySessionId);
+    for (const auto &keyIdItem : keyId)
+    {
+        request.add_key_id(keyIdItem);
+    }
+
+    firebolt::rialto::SelectKeyIdResponse response;
+    // Default error status to FAIL
+    response.set_error_status(ProtoMediaKeyErrorStatus::FAIL);
+
+    auto ipcController = m_ipc->createRpcController();
+    auto blockingClosure = m_ipc->createBlockingClosure();
+    m_mediaKeysStub->selectKeyId(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    return getMediaKeyErrorStatusFromResponse("selectKeyId", ipcController, response.error_status());
 }
 
 bool MediaKeysIpc::containsKey(int32_t keySessionId, const std::vector<uint8_t> &keyId)
 {
-    RIALTO_CLIENT_LOG_ERROR("Not Implemented");
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
 
-    return false;
+    firebolt::rialto::ContainsKeyRequest request;
+    request.set_media_keys_handle(m_mediaKeysHandle);
+    request.set_key_session_id(keySessionId);
+    for (const auto &keyIdItem : keyId)
+    {
+        request.add_key_id(keyIdItem);
+    }
+
+    firebolt::rialto::ContainsKeyResponse response;
+    // Default return value to false
+    response.set_contains_key(false);
+
+    auto ipcController = m_ipc->createRpcController();
+    auto blockingClosure = m_ipc->createBlockingClosure();
+    m_mediaKeysStub->containsKey(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("containsKey failed due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    return response.contains_key();
 }
 
 MediaKeyErrorStatus MediaKeysIpc::createKeySession(KeySessionType sessionType, std::weak_ptr<IMediaKeysClient> client,
@@ -453,9 +505,32 @@ MediaKeyErrorStatus MediaKeysIpc::updateSession(int32_t keySessionId, const std:
 
 MediaKeyErrorStatus MediaKeysIpc::setDrmHeader(int32_t keySessionId, const std::vector<uint8_t> &requestData)
 {
-    RIALTO_CLIENT_LOG_ERROR("Not Implemented");
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return MediaKeyErrorStatus::FAIL;
+    }
 
-    return MediaKeyErrorStatus::FAIL;
+    firebolt::rialto::SetDrmHeaderRequest request;
+    request.set_media_keys_handle(m_mediaKeysHandle);
+    request.set_key_session_id(keySessionId);
+    for (const auto &requestDataItem : requestData)
+    {
+        request.add_request_data(requestDataItem);
+    }
+
+    firebolt::rialto::SetDrmHeaderResponse response;
+    // Default error status to FAIL
+    response.set_error_status(ProtoMediaKeyErrorStatus::FAIL);
+
+    auto ipcController = m_ipc->createRpcController();
+    auto blockingClosure = m_ipc->createBlockingClosure();
+    m_mediaKeysStub->setDrmHeader(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    return getMediaKeyErrorStatusFromResponse("setDrmHeader", ipcController, response.error_status());
 }
 
 MediaKeyErrorStatus MediaKeysIpc::closeKeySession(int32_t keySessionId)
@@ -515,51 +590,210 @@ MediaKeyErrorStatus MediaKeysIpc::removeKeySession(int32_t keySessionId)
 
 MediaKeyErrorStatus MediaKeysIpc::deleteDrmStore()
 {
-    RIALTO_CLIENT_LOG_ERROR("Not Implemented");
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return MediaKeyErrorStatus::FAIL;
+    }
 
-    return MediaKeyErrorStatus::FAIL;
+    firebolt::rialto::DeleteDrmStoreRequest request;
+    request.set_media_keys_handle(m_mediaKeysHandle);
+
+    firebolt::rialto::DeleteDrmStoreResponse response;
+    // Default error status to FAIL
+    response.set_error_status(ProtoMediaKeyErrorStatus::FAIL);
+
+    auto ipcController = m_ipc->createRpcController();
+    auto blockingClosure = m_ipc->createBlockingClosure();
+    m_mediaKeysStub->deleteDrmStore(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    return getMediaKeyErrorStatusFromResponse("deleteDrmStore", ipcController, response.error_status());
 }
 
 MediaKeyErrorStatus MediaKeysIpc::deleteKeyStore()
 {
-    RIALTO_CLIENT_LOG_ERROR("Not Implemented");
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return MediaKeyErrorStatus::FAIL;
+    }
 
-    return MediaKeyErrorStatus::FAIL;
+    firebolt::rialto::DeleteKeyStoreRequest request;
+    request.set_media_keys_handle(m_mediaKeysHandle);
+
+    firebolt::rialto::DeleteKeyStoreResponse response;
+    // Default error status to FAIL
+    response.set_error_status(ProtoMediaKeyErrorStatus::FAIL);
+
+    auto ipcController = m_ipc->createRpcController();
+    auto blockingClosure = m_ipc->createBlockingClosure();
+    m_mediaKeysStub->deleteKeyStore(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    return getMediaKeyErrorStatusFromResponse("deleteKeyStore", ipcController, response.error_status());
 }
 
 MediaKeyErrorStatus MediaKeysIpc::getDrmStoreHash(std::vector<unsigned char> &drmStoreHash)
 {
-    RIALTO_CLIENT_LOG_ERROR("Not Implemented");
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return MediaKeyErrorStatus::FAIL;
+    }
 
-    return MediaKeyErrorStatus::FAIL;
+    firebolt::rialto::GetDrmStoreHashRequest request;
+    request.set_media_keys_handle(m_mediaKeysHandle);
+
+    firebolt::rialto::GetDrmStoreHashResponse response;
+    // Default error status to FAIL
+    response.set_error_status(ProtoMediaKeyErrorStatus::FAIL);
+
+    auto ipcController = m_ipc->createRpcController();
+    auto blockingClosure = m_ipc->createBlockingClosure();
+    m_mediaKeysStub->getDrmStoreHash(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    if (ProtoMediaKeyErrorStatus::OK == response.error_status())
+    {
+        drmStoreHash.reserve(response.drm_store_hash().size());
+        for (const auto &drmStoreHashItem : response.drm_store_hash())
+        {
+            drmStoreHash.push_back(drmStoreHashItem);
+        }
+    }
+
+    return getMediaKeyErrorStatusFromResponse("getDrmStoreHash", ipcController, response.error_status());
 }
 
 MediaKeyErrorStatus MediaKeysIpc::getKeyStoreHash(std::vector<unsigned char> &keyStoreHash)
 {
-    RIALTO_CLIENT_LOG_ERROR("Not Implemented");
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return MediaKeyErrorStatus::FAIL;
+    }
 
-    return MediaKeyErrorStatus::FAIL;
+    firebolt::rialto::GetKeyStoreHashRequest request;
+    request.set_media_keys_handle(m_mediaKeysHandle);
+
+    firebolt::rialto::GetKeyStoreHashResponse response;
+    // Default error status to FAIL
+    response.set_error_status(ProtoMediaKeyErrorStatus::FAIL);
+
+    auto ipcController = m_ipc->createRpcController();
+    auto blockingClosure = m_ipc->createBlockingClosure();
+    m_mediaKeysStub->getKeyStoreHash(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    if (ProtoMediaKeyErrorStatus::OK == response.error_status())
+    {
+        keyStoreHash.reserve(response.key_store_hash().size());
+        for (const auto &keyStoreHashItem : response.key_store_hash())
+        {
+            keyStoreHash.push_back(keyStoreHashItem);
+        }
+    }
+
+    return getMediaKeyErrorStatusFromResponse("getKeyStoreHash", ipcController, response.error_status());
 }
 
 MediaKeyErrorStatus MediaKeysIpc::getLdlSessionsLimit(uint32_t &ldlLimit)
 {
-    RIALTO_CLIENT_LOG_ERROR("Not Implemented");
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return MediaKeyErrorStatus::FAIL;
+    }
 
-    return MediaKeyErrorStatus::FAIL;
+    firebolt::rialto::GetLdlSessionsLimitRequest request;
+    request.set_media_keys_handle(m_mediaKeysHandle);
+
+    firebolt::rialto::GetLdlSessionsLimitResponse response;
+    // Default error status to FAIL
+    response.set_error_status(ProtoMediaKeyErrorStatus::FAIL);
+
+    auto ipcController = m_ipc->createRpcController();
+    auto blockingClosure = m_ipc->createBlockingClosure();
+    m_mediaKeysStub->getLdlSessionsLimit(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    if (ProtoMediaKeyErrorStatus::OK == response.error_status())
+    {
+        ldlLimit = response.ldl_limit();
+    }
+
+    return getMediaKeyErrorStatusFromResponse("getLdlSessionsLimit", ipcController, response.error_status());
 }
 
 MediaKeyErrorStatus MediaKeysIpc::getLastDrmError(uint32_t &errorCode)
 {
-    RIALTO_CLIENT_LOG_ERROR("Not Implemented");
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return MediaKeyErrorStatus::FAIL;
+    }
 
-    return MediaKeyErrorStatus::FAIL;
+    firebolt::rialto::GetLastDrmErrorRequest request;
+    request.set_media_keys_handle(m_mediaKeysHandle);
+
+    firebolt::rialto::GetLastDrmErrorResponse response;
+    // Default error status to FAIL
+    response.set_error_status(ProtoMediaKeyErrorStatus::FAIL);
+
+    auto ipcController = m_ipc->createRpcController();
+    auto blockingClosure = m_ipc->createBlockingClosure();
+    m_mediaKeysStub->getLastDrmError(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    if (ProtoMediaKeyErrorStatus::OK == response.error_status())
+    {
+        errorCode = response.error_code();
+    }
+
+    return getMediaKeyErrorStatusFromResponse("getLastDrmError", ipcController, response.error_status());
 }
 
 MediaKeyErrorStatus MediaKeysIpc::getDrmTime(uint64_t &drmTime)
 {
-    RIALTO_CLIENT_LOG_ERROR("Not Implemented");
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return MediaKeyErrorStatus::FAIL;
+    }
 
-    return MediaKeyErrorStatus::FAIL;
+    firebolt::rialto::GetDrmTimeRequest request;
+    request.set_media_keys_handle(m_mediaKeysHandle);
+
+    firebolt::rialto::GetDrmTimeResponse response;
+    // Default error status to FAIL
+    response.set_error_status(ProtoMediaKeyErrorStatus::FAIL);
+
+    auto ipcController = m_ipc->createRpcController();
+    auto blockingClosure = m_ipc->createBlockingClosure();
+    m_mediaKeysStub->getDrmTime(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    if (ProtoMediaKeyErrorStatus::OK == response.error_status())
+    {
+        drmTime = response.drm_time();
+    }
+
+    return getMediaKeyErrorStatusFromResponse("getDrmTime", ipcController, response.error_status());
 }
 
 MediaKeyErrorStatus MediaKeysIpc::getCdmKeySessionId(int32_t keySessionId, std::string &cdmKeySessionId)

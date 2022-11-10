@@ -369,10 +369,10 @@ void MediaKeysModuleService::deleteKeyStore(::google::protobuf::RpcController *c
     return;
 }
 
-void MediaKeysModuleService::getDrmStoreHashStore(::google::protobuf::RpcController *controller,
-                                                  const ::firebolt::rialto::GetDrmStoreHashRequest *request,
-                                                  ::firebolt::rialto::GetDrmStoreHashResponse *response,
-                                                  ::google::protobuf::Closure *done)
+void MediaKeysModuleService::getDrmStoreHash(::google::protobuf::RpcController *controller,
+                                             const ::firebolt::rialto::GetDrmStoreHashRequest *request,
+                                             ::firebolt::rialto::GetDrmStoreHashResponse *response,
+                                             ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_ERROR("Not implemented");
     controller->SetFailed("Not implemented");
@@ -380,10 +380,10 @@ void MediaKeysModuleService::getDrmStoreHashStore(::google::protobuf::RpcControl
     return;
 }
 
-void MediaKeysModuleService::getKeyStoreHashStore(::google::protobuf::RpcController *controller,
-                                                  const ::firebolt::rialto::GetKeyStoreHashRequest *request,
-                                                  ::firebolt::rialto::GetKeyStoreHashResponse *response,
-                                                  ::google::protobuf::Closure *done)
+void MediaKeysModuleService::getKeyStoreHash(::google::protobuf::RpcController *controller,
+                                             const ::firebolt::rialto::GetKeyStoreHashRequest *request,
+                                             ::firebolt::rialto::GetKeyStoreHashResponse *response,
+                                             ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_ERROR("Not implemented");
     controller->SetFailed("Not implemented");
@@ -402,10 +402,10 @@ void MediaKeysModuleService::getLdlSessionsLimit(::google::protobuf::RpcControll
     return;
 }
 
-void MediaKeysModuleService::getLastDrmErrorLimit(::google::protobuf::RpcController *controller,
-                                                  const ::firebolt::rialto::GetLastDrmErrorRequest *request,
-                                                  ::firebolt::rialto::GetLastDrmErrorResponse *response,
-                                                  ::google::protobuf::Closure *done)
+void MediaKeysModuleService::getLastDrmError(::google::protobuf::RpcController *controller,
+                                             const ::firebolt::rialto::GetLastDrmErrorRequest *request,
+                                             ::firebolt::rialto::GetLastDrmErrorResponse *response,
+                                             ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_ERROR("Not implemented");
     controller->SetFailed("Not implemented");
