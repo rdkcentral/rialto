@@ -86,9 +86,9 @@ MediaKeyErrorStatus MediaKeys::selectKeyId(int32_t keySessionId, const std::vect
 
 bool MediaKeys::containsKey(int32_t keySessionId, const std::vector<uint8_t> &keyId)
 {
-    RIALTO_CLIENT_LOG_ERROR("Not Implemented");
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    return false;
+    return m_mediaKeysIpc->containsKey(keySessionId, keyId);
 }
 
 MediaKeyErrorStatus MediaKeys::createKeySession(KeySessionType sessionType, std::weak_ptr<IMediaKeysClient> client,
@@ -123,9 +123,9 @@ MediaKeyErrorStatus MediaKeys::updateSession(int32_t keySessionId, const std::ve
 
 MediaKeyErrorStatus MediaKeys::setDrmHeader(int32_t keySessionId, const std::vector<uint8_t> &requestData)
 {
-    RIALTO_CLIENT_LOG_ERROR("Not Implemented");
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    return MediaKeyErrorStatus::FAIL;
+    return m_mediaKeysIpc->setDrmHeader(keySessionId, requestData);
 }
 
 MediaKeyErrorStatus MediaKeys::closeKeySession(int32_t keySessionId)
@@ -144,51 +144,51 @@ MediaKeyErrorStatus MediaKeys::removeKeySession(int32_t keySessionId)
 
 MediaKeyErrorStatus MediaKeys::deleteDrmStore()
 {
-    RIALTO_CLIENT_LOG_ERROR("Not Implemented");
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    return MediaKeyErrorStatus::FAIL;
+    return m_mediaKeysIpc->deleteDrmStore();
 }
 
 MediaKeyErrorStatus MediaKeys::deleteKeyStore()
 {
-    RIALTO_CLIENT_LOG_ERROR("Not Implemented");
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    return MediaKeyErrorStatus::FAIL;
+    return m_mediaKeysIpc->deleteKeyStore();
 }
 
 MediaKeyErrorStatus MediaKeys::getDrmStoreHash(std::vector<unsigned char> &drmStoreHash)
 {
-    RIALTO_CLIENT_LOG_ERROR("Not Implemented");
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    return MediaKeyErrorStatus::FAIL;
+    return m_mediaKeysIpc->getDrmStoreHash(drmStoreHash);
 }
 
 MediaKeyErrorStatus MediaKeys::getKeyStoreHash(std::vector<unsigned char> &keyStoreHash)
 {
-    RIALTO_CLIENT_LOG_ERROR("Not Implemented");
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    return MediaKeyErrorStatus::FAIL;
+    return m_mediaKeysIpc->getKeyStoreHash(keyStoreHash);
 }
 
 MediaKeyErrorStatus MediaKeys::getLdlSessionsLimit(uint32_t &ldlLimit)
 {
-    RIALTO_CLIENT_LOG_ERROR("Not Implemented");
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    return MediaKeyErrorStatus::FAIL;
+    return m_mediaKeysIpc->getLdlSessionsLimit(ldlLimit);
 }
 
 MediaKeyErrorStatus MediaKeys::getLastDrmError(uint32_t &errorCode)
 {
-    RIALTO_CLIENT_LOG_ERROR("Not Implemented");
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    return MediaKeyErrorStatus::FAIL;
+    return m_mediaKeysIpc->getLastDrmError(errorCode);
 }
 
 MediaKeyErrorStatus MediaKeys::getDrmTime(uint64_t &drmTime)
 {
-    RIALTO_CLIENT_LOG_ERROR("Not Implemented");
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    return MediaKeyErrorStatus::FAIL;
+    return m_mediaKeysIpc->getDrmTime(drmTime);
 }
 
 MediaKeyErrorStatus MediaKeys::getCdmKeySessionId(int32_t keySessionId, std::string &cdmKeySessionId)
