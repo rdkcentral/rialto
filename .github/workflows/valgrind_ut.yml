@@ -43,9 +43,12 @@ on:
       - '**/cpplint.yml'
       - '**/clang-format.yml'
       - '**/cppcheck.yml'
+      - '**/build_and_deploy_gh_pages.yml'
       - 'docs/**'
       - 'scripts/cpplint/**'
       - 'scripts/clang-format/**'
+      - 'Doxyfile'
+      - 'DoxygenLayout.xml'
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:

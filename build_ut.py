@@ -237,7 +237,7 @@ def generateCoverageReport(outputDir, resultsFile):
         lcovStatus = subprocess.run(lcovCmd, cwd=os.getcwd() + '/' + outputDir, stderr=subprocess.STDOUT)
     if not lcovStatus:
         return False
-    genHtmlCmd = ["genhtml", "coverage.info", "--output-directory", "coverage_report"]
+    genHtmlCmd = ["genhtml", "coverage.info", "--output-directory", "gh_pages/coverage_report"]
     if resultsFile:
         genHtmlStatus = subprocess.run(genHtmlCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
     else:
