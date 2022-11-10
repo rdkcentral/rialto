@@ -19,6 +19,7 @@
 
 #include "GstPlayerTestCommon.h"
 #include "Matchers.h"
+#include "MediaSourceUtil.h"
 #include "PlayerTaskMock.h"
 #include "TimerMock.h"
 

@@ -19,6 +19,7 @@
 
 #include "MediaPipelineModuleServiceTestsFixture.h"
 #include "MediaPipelineModuleService.h"
+#include "MediaSourceUtil.h"
 #include <fcntl.h>
 #include <string>
 #include <sys/stat.h>
@@ -39,8 +40,10 @@ constexpr std::uint32_t height{1080};
 constexpr int hardcodedSessionId{2};
 const firebolt::rialto::MediaType mediaType{firebolt::rialto::MediaType::MSE};
 const std::string mimeType{"exampleMimeType"};
+constexpr uint32_t numberOfChannels{6};
+constexpr uint32_t sampleRate{48000};
+const std::string codecSpecificConfigStr("1243567");
 const std::string url{"https://example.url.com"};
-const std::string caps{"exampleCaps"};
 constexpr int64_t position{2000000000};
 constexpr std::uint32_t requestId{2};
 const firebolt::rialto::MediaSourceStatus mediaSourceStatus{firebolt::rialto::MediaSourceStatus::CODEC_CHANGED};
@@ -102,12 +105,6 @@ MATCHER_P(NetworkStateChangeEventMatcher, networkState, "")
 
 namespace firebolt::rialto
 {
-bool operator==(const firebolt::rialto::IMediaPipeline::MediaSource &lhs,
-                const firebolt::rialto::IMediaPipeline::MediaSource &rhs)
-{
-    return lhs.getId() == rhs.getId() && lhs.getType() == rhs.getType() && lhs.getCaps() == rhs.getCaps();
-}
-
 firebolt::rialto::LoadRequest_MediaType convertMediaType(const firebolt::rialto::MediaType &mediaType)
 {
     switch (mediaType)
@@ -317,14 +314,24 @@ void MediaPipelineModuleServiceTests::playbackServiceWillFailToLoadSession()
 
 void MediaPipelineModuleServiceTests::playbackServiceWillAttachSource()
 {
-    firebolt::rialto::IMediaPipeline::MediaSource source{0, mediaSourceType, caps.c_str()};
+    firebolt::rialto::IMediaPipeline::MediaSource source{0, mediaSourceType, mimeType.c_str()};
+    expectRequestSuccess();
+    EXPECT_CALL(m_playbackServiceMock, attachSource(hardcodedSessionId, source)).WillOnce(Return(true));
+}
+
+void MediaPipelineModuleServiceTests::playbackServiceWillAttachAudioSourceWithCodecConfig()
+{
+    std::vector<uint8_t> codecSpecificConfig;
+    codecSpecificConfig.assign(codecSpecificConfigStr.begin(), codecSpecificConfigStr.end());
+    firebolt::rialto::AudioConfig audioConfig{numberOfChannels, sampleRate, codecSpecificConfig};
+    firebolt::rialto::IMediaPipeline::MediaSource source{0, mimeType, audioConfig};
     expectRequestSuccess();
     EXPECT_CALL(m_playbackServiceMock, attachSource(hardcodedSessionId, source)).WillOnce(Return(true));
 }
 
 void MediaPipelineModuleServiceTests::playbackServiceWillFailToAttachSource()
 {
-    firebolt::rialto::IMediaPipeline::MediaSource source{0, mediaSourceType, caps.c_str()};
+    firebolt::rialto::IMediaPipeline::MediaSource source{0, mediaSourceType, mimeType.c_str()};
     expectRequestFailure();
     EXPECT_CALL(m_playbackServiceMock, attachSource(hardcodedSessionId, source)).WillOnce(Return(false));
 }
@@ -526,7 +533,22 @@ void MediaPipelineModuleServiceTests::sendAttachSourceRequestAndReceiveResponse(
 
     request.set_session_id(hardcodedSessionId);
     request.set_media_type(convertProtoMediaSourceType(mediaSourceType));
-    request.set_caps(caps);
+    request.set_mime_type(mimeType);
+
+    m_service->attachSource(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void MediaPipelineModuleServiceTests::sendAttachAudioSourceWithCodecConfigRequestAndReceiveResponse()
+{
+    firebolt::rialto::AttachSourceRequest request;
+    firebolt::rialto::AttachSourceResponse response;
+
+    request.set_session_id(hardcodedSessionId);
+    request.set_media_type(firebolt::rialto::ProtoMediaSourceType::AUDIO);
+    request.set_mime_type(mimeType);
+    request.mutable_audio_config()->set_number_of_channels(numberOfChannels);
+    request.mutable_audio_config()->set_sample_rate(sampleRate);
+    request.mutable_audio_config()->set_codec_specific_config(codecSpecificConfigStr);
 
     m_service->attachSource(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }

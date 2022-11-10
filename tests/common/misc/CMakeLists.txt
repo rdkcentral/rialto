@@ -17,5 +17,23 @@
 # limitations under the License.
 #
 
-add_subdirectory(mocks)
-add_subdirectory(misc)
+set( CMAKE_CXX_STANDARD 14 )
+
+set( CMAKE_CXX_STANDARD_REQUIRED ON )
+include( CheckCXXCompilerFlag )
+
+add_library(
+        RialtoCommonMisc
+        STATIC
+        MediaSourceUtil.cpp
+    )
+
+target_include_directories(
+        RialtoCommonMisc
+
+        PRIVATE
+        $<TARGET_PROPERTY:RialtoPlayerPublic,INTERFACE_INCLUDE_DIRECTORIES>
+
+        INTERFACE
+        .
+    )

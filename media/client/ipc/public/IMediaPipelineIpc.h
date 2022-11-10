@@ -25,6 +25,7 @@
 #include <memory>
 #include <string>
 
+#include <IMediaPipeline.h>
 #include <MediaCommon.h>
 
 #include "IMediaPipelineIpcClient.h"
@@ -80,13 +81,12 @@ public:
     /**
      * @brief Request to attach the source to the server backend.
      *
-     * @param[in] type      : The type of media.
-     * @param[in] caps      : The capabilities of the media type.
+     * @param[in] source    : The source.
      * @param[out] sourceId : The unique id of the media source.
      *
      * @retval true on success.
      */
-    virtual bool attachSource(MediaSourceType type, const std::string &caps, int32_t &sourceId) = 0;
+    virtual bool attachSource(const IMediaPipeline::MediaSource &source, int32_t &sourceId) = 0;
 
     /**
      * @brief Request to remove the source to the server backend.

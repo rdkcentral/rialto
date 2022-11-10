@@ -40,6 +40,16 @@ namespace firebolt::rialto
 constexpr int32_t kInvalidSessionId{-1};
 
 /**
+ * @brief The value of an invalid audio channels number.
+ */
+constexpr uint32_t kInvalidAudioChannels{0};
+
+/**
+ * @brief The value of an invalid audio sampling rate.
+ */
+constexpr uint32_t kInvalidAudioSampleRate{0};
+
+/**
  * @brief The supported types of media source.
  */
 enum class MediaSourceType
@@ -126,6 +136,16 @@ enum class PlaybackState
     STOPPED,       /**< The backend player has stopped playback. */
     END_OF_STREAM, /**< The backend player has got to the end of playback. */
     FAILURE        /**< The backend player failed to set playback state. */
+};
+
+/**
+ * @brief Audio specific configuration
+ */
+struct AudioConfig
+{
+    uint32_t numberOfChannels = kInvalidAudioChannels; /**< The number of channels. */
+    uint32_t sampleRate = kInvalidAudioSampleRate;     /**< The sampling rate.*/
+    std::vector<uint8_t> codecSpecificConfig;          /**The audio specific config. Zero length if no specific config*/
 };
 
 /**

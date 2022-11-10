@@ -81,6 +81,12 @@ TEST_F(MediaPipelineModuleServiceTests, shouldAttachSource)
     sendAttachSourceRequestAndReceiveResponse();
 }
 
+TEST_F(MediaPipelineModuleServiceTests, shouldAttachAudioSourceWithCodecConfig)
+{
+    playbackServiceWillAttachAudioSourceWithCodecConfig();
+    sendAttachAudioSourceWithCodecConfigRequestAndReceiveResponse();
+}
+
 TEST_F(MediaPipelineModuleServiceTests, shouldFailToAttachSource)
 {
     playbackServiceWillFailToAttachSource();

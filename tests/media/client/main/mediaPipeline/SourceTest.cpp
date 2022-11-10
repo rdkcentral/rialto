@@ -18,13 +18,14 @@
  */
 
 #include "MediaPipelineTestBase.h"
+#include "MediaSourceUtil.h"
 
 class RialtoClientMediaPipelineSourceTest : public MediaPipelineTestBase
 {
 protected:
     int32_t m_id = 456;
     MediaSourceType m_type = MediaSourceType::AUDIO;
-    const char *m_kCaps = "CAPS";
+    const char *m_kMimeType = "video/mpeg";
 
     virtual void SetUp()
     {
@@ -47,13 +48,13 @@ protected:
 TEST_F(RialtoClientMediaPipelineSourceTest, AttachSourceSuccess)
 {
     int32_t m_newId = 123;
-    IMediaPipeline::MediaSource m_mediaSource(m_id, m_type, m_kCaps);
+    IMediaPipeline::MediaSource mediaSource(m_id, m_type, m_kMimeType);
 
-    EXPECT_CALL(*m_mediaPipelineIpcMock, attachSource(m_type, m_kCaps, _))
-        .WillOnce(DoAll(SetArgReferee<2>(m_newId), Return(true)));
+    EXPECT_CALL(*m_mediaPipelineIpcMock, attachSource(mediaSource, _))
+        .WillOnce(DoAll(SetArgReferee<1>(m_newId), Return(true)));
 
-    EXPECT_EQ(m_mediaPipeline->attachSource(m_mediaSource), true);
-    EXPECT_EQ(m_mediaSource.getId(), m_newId);
+    EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), true);
+    EXPECT_EQ(mediaSource.getId(), m_newId);
 }
 
 /**
@@ -62,13 +63,13 @@ TEST_F(RialtoClientMediaPipelineSourceTest, AttachSourceSuccess)
 TEST_F(RialtoClientMediaPipelineSourceTest, AttachSourceFailure)
 {
     int32_t m_newId = 123;
-    IMediaPipeline::MediaSource m_mediaSource(m_id, m_type, m_kCaps);
+    IMediaPipeline::MediaSource mediaSource(m_id, m_type, m_kMimeType);
 
-    EXPECT_CALL(*m_mediaPipelineIpcMock, attachSource(m_type, m_kCaps, _))
-        .WillOnce(DoAll(SetArgReferee<2>(m_newId), Return(false)));
+    EXPECT_CALL(*m_mediaPipelineIpcMock, attachSource(mediaSource, _))
+        .WillOnce(DoAll(SetArgReferee<1>(m_newId), Return(false)));
 
-    EXPECT_EQ(m_mediaPipeline->attachSource(m_mediaSource), false);
-    EXPECT_NE(m_mediaSource.getId(), m_newId);
+    EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), false);
+    EXPECT_NE(mediaSource.getId(), m_newId);
 }
 
 /**
