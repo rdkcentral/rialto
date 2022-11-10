@@ -17,7 +17,6 @@
  * limitations under the License.
  */
 
-#include "KeyIdMap.h"
 #include "MediaKeys.h"
 #include "MediaKeysClientMock.h"
 #include "MediaKeysIpcFactoryMock.h"
@@ -239,18 +238,4 @@ TEST_F(RialtoClientMediaKeysKeySessionTest, GetDrmTime)
     EXPECT_CALL(*m_mediaKeysIpcMock, getDrmTime(drmTime)).WillOnce(Return(m_mediaKeyErrorStatus));
 
     EXPECT_EQ(m_mediaKeys->getDrmTime(drmTime), m_mediaKeyErrorStatus);
-}
-
-/**
- * Test that a SelectKeyId adds KeySession <-> KeyId mapping.
- */
-TEST_F(RialtoClientMediaKeysKeySessionTest, SelectKeyId)
-{
-    std::vector<uint8_t> keyId{1, 2, 3};
-    EXPECT_TRUE(KeyIdMap::instance().get(m_keySessionId).empty());
-    EXPECT_EQ(m_mediaKeys->selectKeyId(m_keySessionId, keyId), MediaKeyErrorStatus::OK);
-    EXPECT_FALSE(KeyIdMap::instance().get(m_keySessionId).empty());
-    EXPECT_EQ(KeyIdMap::instance().get(m_keySessionId), keyId);
-    KeyIdMap::instance().erase(m_keySessionId);
-    EXPECT_TRUE(KeyIdMap::instance().get(m_keySessionId).empty());
 }

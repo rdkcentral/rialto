@@ -44,6 +44,7 @@ add_gtests (
         # MediaKeys tests
         mediaKeys/CreateTest.cpp
         mediaKeys/KeySessionTest.cpp
+        mediaKeys/NetflixKeySessionTest.cpp
 
         # MediaKeysCapabilities tests
         mediaKeysCapabilities/CreateTest.cpp

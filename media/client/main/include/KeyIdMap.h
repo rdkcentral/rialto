@@ -31,7 +31,8 @@ class KeyIdMap
 {
 public:
     static KeyIdMap &instance();
-    void add(std::int32_t keySessionId, const std::vector<std::uint8_t> &keyId);
+    void addSession(std::int32_t keySessionId);
+    bool updateKey(std::int32_t keySessionId, const std::vector<std::uint8_t> &keyId);
     std::vector<std::uint8_t> get(std::int32_t keySessionId) const;
     void erase(std::int32_t keySessionId);
 

@@ -104,6 +104,11 @@ private:
      * @brief The media keys ipc object.
      */
     std::unique_ptr<IMediaKeys> m_mediaKeysIpc;
+
+    /**
+     * @brief The key system.
+     */
+    std::string m_keySystem;
 };
 
 }; // namespace firebolt::rialto::client

@@ -55,12 +55,13 @@ std::unique_ptr<IMediaKeys> MediaKeysFactory::createMediaKeys(const std::string 
 
     return mediaKeys;
 }
-
+const std::string kNetflixKeySystem{"com.netflix.playready"};
 }; // namespace firebolt::rialto
 
 namespace firebolt::rialto::client
 {
 MediaKeys::MediaKeys(const std::string &keySystem, const std::shared_ptr<IMediaKeysIpcFactory> &mediaKeysIpcFactory)
+    : m_keySystem{keySystem}
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
@@ -80,8 +81,13 @@ MediaKeys::~MediaKeys()
 
 MediaKeyErrorStatus MediaKeys::selectKeyId(int32_t keySessionId, const std::vector<uint8_t> &keyId)
 {
-    KeyIdMap::instance().add(keySessionId, keyId);
-    return MediaKeyErrorStatus::OK;
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    if (KeyIdMap::instance().updateKey(keySessionId, keyId))
+    {
+        return MediaKeyErrorStatus::OK;
+    }
+    return MediaKeyErrorStatus::FAIL;
 }
 
 bool MediaKeys::containsKey(int32_t keySessionId, const std::vector<uint8_t> &keyId)
@@ -96,7 +102,12 @@ MediaKeyErrorStatus MediaKeys::createKeySession(KeySessionType sessionType, std:
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    return m_mediaKeysIpc->createKeySession(sessionType, client, isLDL, keySessionId);
+    auto result{m_mediaKeysIpc->createKeySession(sessionType, client, isLDL, keySessionId)};
+    if (kNetflixKeySystem == m_keySystem && MediaKeyErrorStatus::OK == result)
+    {
+        KeyIdMap::instance().addSession(keySessionId);
+    }
+    return result;
 }
 
 MediaKeyErrorStatus MediaKeys::generateRequest(int32_t keySessionId, InitDataType initDataType,
@@ -131,7 +142,10 @@ MediaKeyErrorStatus MediaKeys::setDrmHeader(int32_t keySessionId, const std::vec
 MediaKeyErrorStatus MediaKeys::closeKeySession(int32_t keySessionId)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
-
+    if (kNetflixKeySystem == m_keySystem)
+    {
+        KeyIdMap::instance().erase(keySessionId);
+    }
     return m_mediaKeysIpc->closeKeySession(keySessionId);
 }
 

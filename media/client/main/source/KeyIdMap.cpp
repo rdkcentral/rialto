@@ -27,21 +27,33 @@ KeyIdMap &KeyIdMap::instance()
     return keyIdMap;
 }
 
-void KeyIdMap::add(std::int32_t keySessionId, const std::vector<std::uint8_t> &keyId)
+void KeyIdMap::addSession(std::int32_t keySessionId)
 {
     std::unique_lock<std::mutex> lock{m_mutex};
-    m_keyIdMap[keySessionId] = keyId;
+    m_keyIdMap.insert(std::make_pair(keySessionId, std::vector<uint8_t>()));
+}
+
+bool KeyIdMap::updateKey(std::int32_t keySessionId, const std::vector<std::uint8_t> &keyId)
+{
+    std::unique_lock<std::mutex> lock{m_mutex};
+    auto keyIdIter{m_keyIdMap.find(keySessionId)};
+    if (m_keyIdMap.end() == keyIdIter)
+    {
+        return false;
+    }
+    keyIdIter->second = keyId;
+    return true;
 }
 
 std::vector<std::uint8_t> KeyIdMap::get(std::int32_t keySessionId) const
 {
     std::unique_lock<std::mutex> lock{m_mutex};
-    auto keyId{m_keyIdMap.find(keySessionId)};
-    if (m_keyIdMap.end() == keyId)
+    auto keyIdIter{m_keyIdMap.find(keySessionId)};
+    if (m_keyIdMap.end() == keyIdIter)
     {
         return std::vector<std::uint8_t>();
     }
-    return keyId->second;
+    return keyIdIter->second;
 }
 
 void KeyIdMap::erase(std::int32_t keySessionId)
