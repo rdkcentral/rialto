@@ -40,6 +40,8 @@ constexpr int keySessionId{3};
 constexpr firebolt::rialto::InitDataType initDataType{firebolt::rialto::InitDataType::CENC};
 const std::vector<std::uint8_t> initData{6, 7, 2};
 const std::vector<std::uint8_t> responseData{9, 7, 8};
+const std::vector<uint8_t> keyId{1, 4, 7};
+const std::vector<uint8_t> drmHeader{4, 9, 3};
 const std::vector<unsigned char> licenseRequestMessage{3, 2, 1};
 const std::vector<unsigned char> licenseRenewalMessage{0, 4, 8};
 const std::string url{"http://"};
@@ -150,6 +152,60 @@ void CdmServiceTests::mediaKeysWillGetCdmKeySessionIdWithStatus(firebolt::rialto
     EXPECT_CALL(m_mediaKeysMock, getCdmKeySessionId(keySessionId, _)).WillOnce(Return(status));
 }
 
+void CdmServiceTests::mediaKeysWillCheckIfKeyIsPresent(bool result)
+{
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(m_mediaKeysMock, containsKey(keySessionId, keyId)).WillOnce(Return(result));
+}
+
+void CdmServiceTests::mediaKeysWillSetDrmHeaderWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
+{
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(m_mediaKeysMock, setDrmHeader(keySessionId, drmHeader)).WillOnce(Return(status));
+}
+
+void CdmServiceTests::mediaKeysWillDeleteDrmStoreWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
+{
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(m_mediaKeysMock, deleteDrmStore()).WillOnce(Return(status));
+}
+
+void CdmServiceTests::mediaKeysWillDeleteKeyStoreWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
+{
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(m_mediaKeysMock, deleteKeyStore()).WillOnce(Return(status));
+}
+
+void CdmServiceTests::mediaKeysWillGetDrmStoreHashWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
+{
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(m_mediaKeysMock, getDrmStoreHash(_)).WillOnce(Return(status));
+}
+
+void CdmServiceTests::mediaKeysWillGetKeyStoreHashWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
+{
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(m_mediaKeysMock, getKeyStoreHash(_)).WillOnce(Return(status));
+}
+
+void CdmServiceTests::mediaKeysWillGetLdlSessionsLimitWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
+{
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(m_mediaKeysMock, getLdlSessionsLimit(_)).WillOnce(Return(status));
+}
+
+void CdmServiceTests::mediaKeysWillGetLastDrmErrorWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
+{
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(m_mediaKeysMock, getLastDrmError(_)).WillOnce(Return(status));
+}
+
+void CdmServiceTests::mediaKeysWillGetDrmTimeWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
+{
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(m_mediaKeysMock, getDrmTime(_)).WillOnce(Return(status));
+}
+
 void CdmServiceTests::mediaKeysWillDecryptWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
 {
     EXPECT_CALL(m_mediaKeysMock, hasSession(keySessionId)).WillOnce(Return(true));
@@ -235,6 +291,56 @@ void CdmServiceTests::decryptShouldReturnStatus(firebolt::rialto::MediaKeyErrorS
     GstBuffer keyId{};
     EXPECT_EQ(status,
               m_sut.decrypt(keySessionId, &encryptedData, &subSample, subSampleCount, &IV, &keyId, initWithLast15));
+}
+
+void CdmServiceTests::containsKeyShouldReturn(bool result)
+{
+    EXPECT_EQ(result, m_sut.containsKey(mediaKeysHandle, keySessionId, keyId));
+}
+
+void CdmServiceTests::setDrmHeaderShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status)
+{
+    EXPECT_EQ(status, m_sut.setDrmHeader(mediaKeysHandle, keySessionId, drmHeader));
+}
+
+void CdmServiceTests::deleteDrmStoreShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status)
+{
+    EXPECT_EQ(status, m_sut.deleteDrmStore(mediaKeysHandle));
+}
+
+void CdmServiceTests::deleteKeyStoreShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status)
+{
+    EXPECT_EQ(status, m_sut.deleteKeyStore(mediaKeysHandle));
+}
+
+void CdmServiceTests::getDrmStoreHashShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status)
+{
+    std::vector<unsigned char> drmStoreHash;
+    EXPECT_EQ(status, m_sut.getDrmStoreHash(mediaKeysHandle, drmStoreHash));
+}
+
+void CdmServiceTests::getKeyStoreHashShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status)
+{
+    std::vector<unsigned char> keyStoreHash;
+    EXPECT_EQ(status, m_sut.getKeyStoreHash(mediaKeysHandle, keyStoreHash));
+}
+
+void CdmServiceTests::getLdlSessionsLimitShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status)
+{
+    uint32_t ldlLimit;
+    EXPECT_EQ(status, m_sut.getLdlSessionsLimit(mediaKeysHandle, ldlLimit));
+}
+
+void CdmServiceTests::getLastDrmErrorShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status)
+{
+    uint32_t errorCode;
+    EXPECT_EQ(status, m_sut.getLastDrmError(mediaKeysHandle, errorCode));
+}
+
+void CdmServiceTests::getDrmTimeShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status)
+{
+    uint64_t drmTime;
+    EXPECT_EQ(status, m_sut.getDrmTime(mediaKeysHandle, drmTime));
 }
 
 void CdmServiceTests::getSupportedKeySystemsShouldSucceed()

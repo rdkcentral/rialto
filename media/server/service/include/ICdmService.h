@@ -58,6 +58,16 @@ public:
     virtual MediaKeyErrorStatus removeKeySession(int mediaKeysHandle, int32_t keySessionId) = 0;
     virtual MediaKeyErrorStatus getCdmKeySessionId(int mediaKeysHandle, int32_t keySessionId,
                                                    std::string &cdmKeySessionId) = 0;
+    virtual bool containsKey(int mediaKeysHandle, int32_t keySessionId, const std::vector<uint8_t> &keyId) = 0;
+    virtual MediaKeyErrorStatus setDrmHeader(int mediaKeysHandle, int32_t keySessionId,
+                                             const std::vector<uint8_t> &requestData) = 0;
+    virtual MediaKeyErrorStatus deleteDrmStore(int mediaKeysHandle) = 0;
+    virtual MediaKeyErrorStatus deleteKeyStore(int mediaKeysHandle) = 0;
+    virtual MediaKeyErrorStatus getDrmStoreHash(int mediaKeysHandle, std::vector<unsigned char> &drmStoreHash) = 0;
+    virtual MediaKeyErrorStatus getKeyStoreHash(int mediaKeysHandle, std::vector<unsigned char> &keyStoreHash) = 0;
+    virtual MediaKeyErrorStatus getLdlSessionsLimit(int mediaKeysHandle, uint32_t &ldlLimit) = 0;
+    virtual MediaKeyErrorStatus getLastDrmError(int mediaKeysHandle, uint32_t &errorCode) = 0;
+    virtual MediaKeyErrorStatus getDrmTime(int mediaKeysHandle, uint64_t &drmTime) = 0;
 
     virtual std::vector<std::string> getSupportedKeySystems() = 0;
     virtual bool supportsKeySystem(const std::string &keySystem) = 0;

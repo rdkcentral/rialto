@@ -240,6 +240,187 @@ MediaKeyErrorStatus CdmService::getCdmKeySessionId(int mediaKeysHandle, int32_t 
     return status;
 }
 
+bool CdmService::containsKey(int mediaKeysHandle, int32_t keySessionId, const std::vector<uint8_t> &keyId)
+{
+    std::promise<bool> promise;
+    std::future<bool> future = promise.get_future();
+    auto task = [&]() {
+        RIALTO_SERVER_LOG_DEBUG("CdmService requested to check if key is present: %d", mediaKeysHandle);
+        auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
+        if (mediaKeysIter == m_mediaKeys.end())
+        {
+            RIALTO_SERVER_LOG_ERROR("Media keys handle: %d does not exists", mediaKeysHandle);
+            return promise.set_value(false);
+        }
+
+        bool result = mediaKeysIter->second->containsKey(keySessionId, keyId);
+        return promise.set_value(result);
+    };
+    m_mainThread.enqueueTask(task);
+    return future.get();
+}
+
+MediaKeyErrorStatus CdmService::setDrmHeader(int mediaKeysHandle, int32_t keySessionId,
+                                             const std::vector<uint8_t> &requestData)
+{
+    std::promise<MediaKeyErrorStatus> promise;
+    std::future<MediaKeyErrorStatus> future = promise.get_future();
+    auto task = [&]() {
+        RIALTO_SERVER_LOG_DEBUG("CdmService requested to set drm header: %d", mediaKeysHandle);
+        auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
+        if (mediaKeysIter == m_mediaKeys.end())
+        {
+            RIALTO_SERVER_LOG_ERROR("Media keys handle: %d does not exists", mediaKeysHandle);
+            return promise.set_value(MediaKeyErrorStatus::FAIL);
+        }
+
+        MediaKeyErrorStatus status = mediaKeysIter->second->setDrmHeader(keySessionId, requestData);
+        return promise.set_value(status);
+    };
+    m_mainThread.enqueueTask(task);
+    return future.get();
+}
+
+MediaKeyErrorStatus CdmService::deleteDrmStore(int mediaKeysHandle)
+{
+    std::promise<MediaKeyErrorStatus> promise;
+    std::future<MediaKeyErrorStatus> future = promise.get_future();
+    auto task = [&]() {
+        RIALTO_SERVER_LOG_DEBUG("CdmService requested to delete drm store: %d", mediaKeysHandle);
+        auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
+        if (mediaKeysIter == m_mediaKeys.end())
+        {
+            RIALTO_SERVER_LOG_ERROR("Media keys handle: %d does not exists", mediaKeysHandle);
+            return promise.set_value(MediaKeyErrorStatus::FAIL);
+        }
+
+        MediaKeyErrorStatus status = mediaKeysIter->second->deleteDrmStore();
+        return promise.set_value(status);
+    };
+    m_mainThread.enqueueTask(task);
+    return future.get();
+}
+
+MediaKeyErrorStatus CdmService::deleteKeyStore(int mediaKeysHandle)
+{
+    std::promise<MediaKeyErrorStatus> promise;
+    std::future<MediaKeyErrorStatus> future = promise.get_future();
+    auto task = [&]() {
+        RIALTO_SERVER_LOG_DEBUG("CdmService requested to delete key store: %d", mediaKeysHandle);
+        auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
+        if (mediaKeysIter == m_mediaKeys.end())
+        {
+            RIALTO_SERVER_LOG_ERROR("Media keys handle: %d does not exists", mediaKeysHandle);
+            return promise.set_value(MediaKeyErrorStatus::FAIL);
+        }
+
+        MediaKeyErrorStatus status = mediaKeysIter->second->deleteKeyStore();
+        return promise.set_value(status);
+    };
+    m_mainThread.enqueueTask(task);
+    return future.get();
+}
+
+MediaKeyErrorStatus CdmService::getDrmStoreHash(int mediaKeysHandle, std::vector<unsigned char> &drmStoreHash)
+{
+    std::promise<MediaKeyErrorStatus> promise;
+    std::future<MediaKeyErrorStatus> future = promise.get_future();
+    auto task = [&]() {
+        RIALTO_SERVER_LOG_DEBUG("CdmService requested to get drm store hash: %d", mediaKeysHandle);
+        auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
+        if (mediaKeysIter == m_mediaKeys.end())
+        {
+            RIALTO_SERVER_LOG_ERROR("Media keys handle: %d does not exists", mediaKeysHandle);
+            return promise.set_value(MediaKeyErrorStatus::FAIL);
+        }
+
+        MediaKeyErrorStatus status = mediaKeysIter->second->getDrmStoreHash(drmStoreHash);
+        return promise.set_value(status);
+    };
+    m_mainThread.enqueueTask(task);
+    return future.get();
+}
+
+MediaKeyErrorStatus CdmService::getKeyStoreHash(int mediaKeysHandle, std::vector<unsigned char> &keyStoreHash)
+{
+    std::promise<MediaKeyErrorStatus> promise;
+    std::future<MediaKeyErrorStatus> future = promise.get_future();
+    auto task = [&]() {
+        RIALTO_SERVER_LOG_DEBUG("CdmService requested to get key store hash: %d", mediaKeysHandle);
+        auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
+        if (mediaKeysIter == m_mediaKeys.end())
+        {
+            RIALTO_SERVER_LOG_ERROR("Media keys handle: %d does not exists", mediaKeysHandle);
+            return promise.set_value(MediaKeyErrorStatus::FAIL);
+        }
+
+        MediaKeyErrorStatus status = mediaKeysIter->second->getKeyStoreHash(keyStoreHash);
+        return promise.set_value(status);
+    };
+    m_mainThread.enqueueTask(task);
+    return future.get();
+}
+
+MediaKeyErrorStatus CdmService::getLdlSessionsLimit(int mediaKeysHandle, uint32_t &ldlLimit)
+{
+    std::promise<MediaKeyErrorStatus> promise;
+    std::future<MediaKeyErrorStatus> future = promise.get_future();
+    auto task = [&]() {
+        RIALTO_SERVER_LOG_DEBUG("CdmService requested to get ldl sessions limit: %d", mediaKeysHandle);
+        auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
+        if (mediaKeysIter == m_mediaKeys.end())
+        {
+            RIALTO_SERVER_LOG_ERROR("Media keys handle: %d does not exists", mediaKeysHandle);
+            return promise.set_value(MediaKeyErrorStatus::FAIL);
+        }
+
+        MediaKeyErrorStatus status = mediaKeysIter->second->getLdlSessionsLimit(ldlLimit);
+        return promise.set_value(status);
+    };
+    m_mainThread.enqueueTask(task);
+    return future.get();
+}
+
+MediaKeyErrorStatus CdmService::getLastDrmError(int mediaKeysHandle, uint32_t &errorCode)
+{
+    std::promise<MediaKeyErrorStatus> promise;
+    std::future<MediaKeyErrorStatus> future = promise.get_future();
+    auto task = [&]() {
+        RIALTO_SERVER_LOG_DEBUG("CdmService requested to get last drm error: %d", mediaKeysHandle);
+        auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
+        if (mediaKeysIter == m_mediaKeys.end())
+        {
+            RIALTO_SERVER_LOG_ERROR("Media keys handle: %d does not exists", mediaKeysHandle);
+            return promise.set_value(MediaKeyErrorStatus::FAIL);
+        }
+
+        MediaKeyErrorStatus status = mediaKeysIter->second->getLastDrmError(errorCode);
+        return promise.set_value(status);
+    };
+    m_mainThread.enqueueTask(task);
+    return future.get();
+}
+
+MediaKeyErrorStatus CdmService::getDrmTime(int mediaKeysHandle, uint64_t &drmTime)
+{
+    std::promise<MediaKeyErrorStatus> promise;
+    std::future<MediaKeyErrorStatus> future = promise.get_future();
+    auto task = [&]() {
+        RIALTO_SERVER_LOG_DEBUG("CdmService requested to get drm time: %d", mediaKeysHandle);
+        auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
+        if (mediaKeysIter == m_mediaKeys.end())
+        {
+            RIALTO_SERVER_LOG_ERROR("Media keys handle: %d does not exists", mediaKeysHandle);
+            return promise.set_value(MediaKeyErrorStatus::FAIL);
+        }
+
+        MediaKeyErrorStatus status = mediaKeysIter->second->getDrmTime(drmTime);
+        return promise.set_value(status);
+    };
+    m_mainThread.enqueueTask(task);
+    return future.get();
+}
+
 std::vector<std::string> CdmService::getSupportedKeySystems()
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to getSupportedKeySystems");

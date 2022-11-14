@@ -50,6 +50,19 @@ public:
     MOCK_METHOD(MediaKeyErrorStatus, removeKeySession, (int mediaKeysHandle, int32_t keySessionId), (override));
     MOCK_METHOD(MediaKeyErrorStatus, getCdmKeySessionId,
                 (int mediaKeysHandle, int32_t keySessionId, std::string &cdmKeySessionId), (override));
+    MOCK_METHOD(bool, containsKey, (int mediaKeysHandle, int32_t keySessionId, const std::vector<uint8_t> &keyId),
+                (override));
+    MOCK_METHOD(MediaKeyErrorStatus, setDrmHeader,
+                (int mediaKeysHandle, int32_t keySessionId, const std::vector<uint8_t> &requestData), (override));
+    MOCK_METHOD(MediaKeyErrorStatus, deleteDrmStore, (int mediaKeysHandle), (override));
+    MOCK_METHOD(MediaKeyErrorStatus, deleteKeyStore, (int mediaKeysHandle), (override));
+    MOCK_METHOD(MediaKeyErrorStatus, getDrmStoreHash, (int mediaKeysHandle, std::vector<unsigned char> &drmStoreHash),
+                (override));
+    MOCK_METHOD(MediaKeyErrorStatus, getKeyStoreHash, (int mediaKeysHandle, std::vector<unsigned char> &keyStoreHash),
+                (override));
+    MOCK_METHOD(MediaKeyErrorStatus, getLdlSessionsLimit, (int mediaKeysHandle, uint32_t &ldlLimit), (override));
+    MOCK_METHOD(MediaKeyErrorStatus, getLastDrmError, (int mediaKeysHandle, uint32_t &errorCode), (override));
+    MOCK_METHOD(MediaKeyErrorStatus, getDrmTime, (int mediaKeysHandle, uint64_t &drmTime), (override));
     MOCK_METHOD(std::vector<std::string>, getSupportedKeySystems, (), (override));
     MOCK_METHOD(bool, supportsKeySystem, (const std::string &keySystem), (override));
     MOCK_METHOD(bool, getSupportedKeySystemVersion, (const std::string &keySystem, std::string &version), (override));
