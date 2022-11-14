@@ -65,6 +65,7 @@ public:
      * @param[in] videoRequirements : The video decoder requirements for the MediaPipeline session
      * @param[in] sessionId         : The session id for this MediaPipeline.
      * @param[in] shmBuffer         : The shared buffer object.
+     * @param[in] decryptionService : The decryption service object.
      *
      * @retval the new backend instance or null on error.
      */

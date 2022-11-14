@@ -456,11 +456,7 @@ TEST_F(PlaybackServiceTests, shouldHaveData)
 
 TEST_F(PlaybackServiceTests, shouldFailToGetSharedMemoryInInactiveState)
 {
-<<<<<<< HEAD
-=======
     mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
-    mainThreadWillEnqueueTask();
->>>>>>> master
     getSharedMemoryShouldFail();
 }
 

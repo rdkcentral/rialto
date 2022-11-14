@@ -147,7 +147,6 @@ void CdmServiceTests::mediaKeysWillRemoveKeySessionWithStatus(firebolt::rialto::
 
 void CdmServiceTests::mediaKeysWillGetCdmKeySessionIdWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
 {
-    mainThreadWillEnqueueTask();
     EXPECT_CALL(m_mediaKeysMock, getCdmKeySessionId(keySessionId, _)).WillOnce(Return(status));
 }
 
@@ -159,7 +158,6 @@ void CdmServiceTests::mediaKeysWillDecryptWithStatus(firebolt::rialto::MediaKeyE
 
 void CdmServiceTests::mediaKeysWillNotFindMediaKeySession()
 {
-    mainThreadWillEnqueueTask();
     EXPECT_CALL(m_mediaKeysMock, hasSession(keySessionId)).WillOnce(Return(false));
 }
 

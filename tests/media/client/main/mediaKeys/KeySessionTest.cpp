@@ -140,7 +140,7 @@ TEST_F(RialtoClientMediaKeysKeySessionTest, RemoveKeySession)
 TEST_F(RialtoClientMediaKeysKeySessionTest, GetCdmKeySessionIdSession)
 {
     std::string cdmKeySessionId;
-    EXPECT_CALL(*m_mediaKeysIpcMock, getCdmKeySessionId(m_keySessionId, _)).WillOnce(Return(m_mediaKeyErrorStatus));
+    EXPECT_CALL(*m_mediaKeysIpcMock, getCdmKeySessionId(m_kKeySessionId, _)).WillOnce(Return(m_mediaKeyErrorStatus));
 
-    EXPECT_EQ(m_mediaKeys->getCdmKeySessionId(m_keySessionId, cdmKeySessionId), m_mediaKeyErrorStatus);
+    EXPECT_EQ(m_mediaKeys->getCdmKeySessionId(m_kKeySessionId, cdmKeySessionId), m_mediaKeyErrorStatus);
 }

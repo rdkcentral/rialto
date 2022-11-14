@@ -246,33 +246,27 @@ TEST_F(CdmServiceTests, shouldFailToRemoveKeySessionWhenMediaKeysFails)
 
 TEST_F(CdmServiceTests, shouldGetCdmKeySessionId)
 {
-    mediaKeysCapabilitiesFactoryWillCreateMediaKeysCapabilities();
     triggerSwitchToActiveSuccess();
     mediaKeysFactoryWillCreateMediaKeys();
     createMediaKeysShouldSucceed();
     mediaKeysWillGetCdmKeySessionIdWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
     getCdmKeySessionIdShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
-    mainThreadWillEnqueueTask();
     destroyMediaKeysShouldSucceed();
 }
 
 TEST_F(CdmServiceTests, shouldFailToGetCdmKeySessionIdWhenNoMediaKeys)
 {
-    mediaKeysCapabilitiesFactoryWillCreateMediaKeysCapabilities();
     triggerSwitchToActiveSuccess();
-    mainThreadWillEnqueueTask();
     getCdmKeySessionIdShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::FAIL);
 }
 
 TEST_F(CdmServiceTests, shouldFailToGetCdmKeySessionIdWhenMediaKeysFails)
 {
-    mediaKeysCapabilitiesFactoryWillCreateMediaKeysCapabilities();
     triggerSwitchToActiveSuccess();
     mediaKeysFactoryWillCreateMediaKeys();
     createMediaKeysShouldSucceed();
     mediaKeysWillGetCdmKeySessionIdWithStatus(firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE);
     getCdmKeySessionIdShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE);
-    mainThreadWillEnqueueTask();
     destroyMediaKeysShouldSucceed();
 }
 
@@ -304,13 +298,11 @@ TEST_F(CdmServiceTests, shouldFailToDecryptWhenMediaKeysFails)
 
 TEST_F(CdmServiceTests, shouldFailToDecryptWhenMediaKeysIsNotFoundForSession)
 {
-    mediaKeysCapabilitiesFactoryWillCreateMediaKeysCapabilities();
     triggerSwitchToActiveSuccess();
     mediaKeysFactoryWillCreateMediaKeys();
     createMediaKeysShouldSucceed();
     mediaKeysWillNotFindMediaKeySession();
     decryptShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::FAIL);
-    mainThreadWillEnqueueTask();
     destroyMediaKeysShouldSucceed();
 }
 

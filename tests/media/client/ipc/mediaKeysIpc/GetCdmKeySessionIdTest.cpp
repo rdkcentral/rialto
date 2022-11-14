@@ -66,12 +66,12 @@ TEST_F(RialtoClientMediaKeysIpcGetCdmKeySessionIdTest, Success)
     expectIpcApiCallSuccess();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getCdmKeySessionId"), m_controllerMock.get(),
-                                           getCdmKeySessionIdRequestMatcher(m_mediaKeysHandle, m_keySessionId), _,
+                                           getCdmKeySessionIdRequestMatcher(m_mediaKeysHandle, m_kKeySessionId), _,
                                            m_blockingClosureMock.get()))
         .WillOnce(WithArgs<3>(
             Invoke(this, &RialtoClientMediaKeysIpcGetCdmKeySessionIdTest::setGetCdmKeySessionIdResponseSuccess)));
 
-    EXPECT_EQ(m_mediaKeysIpc->getCdmKeySessionId(m_keySessionId, responseCdmKeySessionId), MediaKeyErrorStatus::OK);
+    EXPECT_EQ(m_mediaKeysIpc->getCdmKeySessionId(m_kKeySessionId, responseCdmKeySessionId), MediaKeyErrorStatus::OK);
     EXPECT_EQ(kCdmKeySessionId, responseCdmKeySessionId);
 }
 
@@ -85,7 +85,7 @@ TEST_F(RialtoClientMediaKeysIpcGetCdmKeySessionIdTest, ChannelDisconnected)
     expectIpcApiCallDisconnected();
     expectUnsubscribeEvents();
 
-    EXPECT_EQ(m_mediaKeysIpc->getCdmKeySessionId(m_keySessionId, responseCdmKeySessionId), MediaKeyErrorStatus::FAIL);
+    EXPECT_EQ(m_mediaKeysIpc->getCdmKeySessionId(m_kKeySessionId, responseCdmKeySessionId), MediaKeyErrorStatus::FAIL);
 
     // Reattach channel on destroySession
     EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
@@ -104,12 +104,12 @@ TEST_F(RialtoClientMediaKeysIpcGetCdmKeySessionIdTest, ReconnectChannel)
     expectSubscribeEvents();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getCdmKeySessionId"), m_controllerMock.get(),
-                                           getCdmKeySessionIdRequestMatcher(m_mediaKeysHandle, m_keySessionId), _,
+                                           getCdmKeySessionIdRequestMatcher(m_mediaKeysHandle, m_kKeySessionId), _,
                                            m_blockingClosureMock.get()))
         .WillOnce(WithArgs<3>(
             Invoke(this, &RialtoClientMediaKeysIpcGetCdmKeySessionIdTest::setGetCdmKeySessionIdResponseSuccess)));
 
-    EXPECT_EQ(m_mediaKeysIpc->getCdmKeySessionId(m_keySessionId, responseCdmKeySessionId), MediaKeyErrorStatus::OK);
+    EXPECT_EQ(m_mediaKeysIpc->getCdmKeySessionId(m_kKeySessionId, responseCdmKeySessionId), MediaKeyErrorStatus::OK);
     EXPECT_EQ(kCdmKeySessionId, responseCdmKeySessionId);
 }
 
@@ -124,7 +124,7 @@ TEST_F(RialtoClientMediaKeysIpcGetCdmKeySessionIdTest, Failure)
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getCdmKeySessionId"), _, _, _, _));
 
-    EXPECT_EQ(m_mediaKeysIpc->getCdmKeySessionId(m_keySessionId, responseCdmKeySessionId), MediaKeyErrorStatus::FAIL);
+    EXPECT_EQ(m_mediaKeysIpc->getCdmKeySessionId(m_kKeySessionId, responseCdmKeySessionId), MediaKeyErrorStatus::FAIL);
 }
 
 /**
@@ -137,10 +137,10 @@ TEST_F(RialtoClientMediaKeysIpcGetCdmKeySessionIdTest, ErrorReturn)
     expectIpcApiCallSuccess();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getCdmKeySessionId"), m_controllerMock.get(),
-                                           getCdmKeySessionIdRequestMatcher(m_mediaKeysHandle, m_keySessionId), _,
+                                           getCdmKeySessionIdRequestMatcher(m_mediaKeysHandle, m_kKeySessionId), _,
                                            m_blockingClosureMock.get()))
         .WillOnce(WithArgs<3>(
             Invoke(this, &RialtoClientMediaKeysIpcGetCdmKeySessionIdTest::setGetCdmKeySessionIdResponseFailed)));
 
-    EXPECT_EQ(m_mediaKeysIpc->getCdmKeySessionId(m_keySessionId, responseCdmKeySessionId), m_errorStatus);
+    EXPECT_EQ(m_mediaKeysIpc->getCdmKeySessionId(m_kKeySessionId, responseCdmKeySessionId), m_errorStatus);
 }

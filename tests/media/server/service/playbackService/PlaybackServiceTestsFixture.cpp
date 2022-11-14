@@ -225,8 +225,7 @@ void PlaybackServiceTests::mediaPipelineCapabilitiesFactoryWillCreateMediaPipeli
 {
     EXPECT_CALL(*m_mediaPipelineCapabilitiesFactoryMock, createMediaPipelineCapabilities())
         .WillOnce(Return(ByMove(std::move(m_mediaPipelineCapabilities))));
-    m_sut = std::make_unique<firebolt::rialto::server::service::PlaybackService>(m_mainThreadMock,
-                                                                                 m_mediaPipelineFactoryMock,
+    m_sut = std::make_unique<firebolt::rialto::server::service::PlaybackService>(m_mediaPipelineFactoryMock,
                                                                                  m_mediaPipelineCapabilitiesFactoryMock,
                                                                                  std::move(m_shmBufferFactory),
                                                                                  m_decryptionServiceMock);
@@ -237,8 +236,7 @@ void PlaybackServiceTests::mediaPipelineCapabilitiesFactoryWillReturnNullptr()
     EXPECT_CALL(*m_mediaPipelineCapabilitiesFactoryMock, createMediaPipelineCapabilities())
         .WillOnce(Return(ByMove(std::move(std::unique_ptr<firebolt::rialto::IMediaPipelineCapabilities>()))));
     EXPECT_THROW(m_sut =
-                     std::make_unique<firebolt::rialto::server::service::PlaybackService>(m_mainThreadMock,
-                                                                                          m_mediaPipelineFactoryMock,
+                     std::make_unique<firebolt::rialto::server::service::PlaybackService>(m_mediaPipelineFactoryMock,
                                                                                           m_mediaPipelineCapabilitiesFactoryMock,
                                                                                           std::move(m_shmBufferFactory),
                                                                                           m_decryptionServiceMock),
