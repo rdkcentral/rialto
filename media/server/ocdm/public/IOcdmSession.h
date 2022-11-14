@@ -165,6 +165,45 @@ public:
      * @retval the return status.
      */
     virtual MediaKeyErrorStatus getCdmKeySessionId(std::string &cdmKeySessionId) = 0;
+
+    /**
+     * @brief Selects the specified keyId for the key session. Netflix specific API.
+     *
+     * @param[out]  keyId     : The key id to select.
+     * @param[out]  keyIdSize : The size of key id
+     *
+     * @retval the return status.
+     */
+    virtual MediaKeyErrorStatus selectKeyId(uint8_t *keyId, uint32_t *keyIdSize) = 0;
+
+    /**
+     * @brief Returns true if the Key Session object contains the specified key.
+     *
+     * @param[out]  keyId     : The key id to check.
+     * @param[out]  keyIdSize : The size of key id
+     *
+     * @retval true if it contains the key.
+     */
+    virtual uint32_t hasKeyId(const uint8_t keyId[], const uint8_t keyIdSize) = 0;
+
+    /**
+     * @brief Set DRM Header for a key session
+     *
+     * @param[out]  drmHeader     : The drm header to be set
+     * @param[out]  drmHeaderSize : The size of drm header
+     *
+     * @retval the return status.
+     */
+    virtual MediaKeyErrorStatus setDrmHeader(const uint8_t drmHeader[], uint32_t drmHeaderSize) = 0;
+
+    /**
+     * @brief Get the last cdm specific DRM error code
+     *
+     * @param[out] errorCode : the error code.
+     *
+     * @retval the return status value.
+     */
+    virtual MediaKeyErrorStatus getLastDrmError(uint32_t &errorCode) = 0;
 };
 
 }; // namespace firebolt::rialto::server

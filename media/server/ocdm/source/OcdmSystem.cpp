@@ -86,6 +86,63 @@ MediaKeyErrorStatus OcdmSystem::getVersion(std::string &version)
     return convertOpenCdmError(status);
 }
 
+MediaKeyErrorStatus OcdmSystem::getLdlSessionsLimit(uint32_t *ldlLimit)
+{
+    OpenCDMError status = opencdm_system_ext_get_ldl_session_limit(m_systemHandle, ldlLimit);
+
+    RIALTO_SERVER_LOG_INFO("opencdm_system_ext_get_ldl_session_limit returned with status %s",
+                           openCdmErrorToString(status).c_str());
+
+    return convertOpenCdmError(status);
+}
+
+MediaKeyErrorStatus OcdmSystem::deleteKeyStore()
+{
+    OpenCDMError status = opencdm_delete_key_store(m_systemHandle);
+
+    RIALTO_SERVER_LOG_INFO("opencdm_delete_key_store returned with status %s", openCdmErrorToString(status).c_str());
+
+    return convertOpenCdmError(status);
+}
+
+MediaKeyErrorStatus OcdmSystem::deleteSecureStore()
+{
+    OpenCDMError status = opencdm_delete_secure_store(m_systemHandle);
+
+    RIALTO_SERVER_LOG_INFO("opencdm_delete_secure_store returned with status %s", openCdmErrorToString(status).c_str());
+
+    return convertOpenCdmError(status);
+}
+
+MediaKeyErrorStatus OcdmSystem::getKeyStoreHash(uint8_t keyStoreHash[], uint32_t keyStoreHashLength)
+{
+    OpenCDMError status = opencdm_get_key_store_hash_ext(m_systemHandle, keyStoreHash, keyStoreHashLength);
+
+    RIALTO_SERVER_LOG_INFO("opencdm_get_key_store_hash_ext returned with status %s",
+                           openCdmErrorToString(status).c_str());
+
+    return convertOpenCdmError(status);
+}
+
+MediaKeyErrorStatus OcdmSystem::getSecureStoreHash(uint8_t secureStoreHash[], uint32_t secureStoreHashLength)
+{
+    OpenCDMError status = opencdm_get_secure_store_hash_ext(m_systemHandle, secureStoreHash, secureStoreHashLength);
+
+    RIALTO_SERVER_LOG_INFO("opencdm_get_secure_store_hash_ext returned with status %s",
+                           openCdmErrorToString(status).c_str());
+
+    return convertOpenCdmError(status);
+}
+
+MediaKeyErrorStatus OcdmSystem::getDrmTime(uint64_t *time)
+{
+    OpenCDMError status = opencdm_system_get_drm_time(m_systemHandle, time);
+
+    RIALTO_SERVER_LOG_INFO("opencdm_system_get_drm_time returned with status %s", openCdmErrorToString(status).c_str());
+
+    return convertOpenCdmError(status);
+}
+
 std::unique_ptr<IOcdmSession> OcdmSystem::createSession(IOcdmSessionClient *client) const
 {
     std::unique_ptr<IOcdmSession> ocdmSession;

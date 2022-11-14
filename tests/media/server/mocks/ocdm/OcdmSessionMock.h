@@ -50,6 +50,10 @@ public:
     MOCK_METHOD(MediaKeyErrorStatus, destructSession, (), (override));
     MOCK_METHOD(KeyStatus, getStatus, (const uint8_t keyId[], const uint8_t keyIdLength), (override));
     MOCK_METHOD(MediaKeyErrorStatus, getCdmKeySessionId, (std::string & cdmKeySessionId), (override));
+    MOCK_METHOD(MediaKeyErrorStatus, selectKeyId, (uint8_t * keyId, uint32_t *keyIdSize), (override));
+    MOCK_METHOD(uint32_t, hasKeyId, (const uint8_t keyId[], const uint8_t keyIdSize), (override));
+    MOCK_METHOD(MediaKeyErrorStatus, setDrmHeader, (const uint8_t drmHeader[], uint32_t drmHeaderSize), (override));
+    MOCK_METHOD(MediaKeyErrorStatus, getLastDrmError, (uint32_t & errorCode), (override));
 };
 } // namespace firebolt::rialto::server
 

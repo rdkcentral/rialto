@@ -306,6 +306,50 @@ MediaKeyErrorStatus OcdmSession::getCdmKeySessionId(std::string &cdmKeySessionId
     return MediaKeyErrorStatus::OK;
 }
 
+MediaKeyErrorStatus OcdmSession::selectKeyId(uint8_t *keyId, uint32_t *keyIdSize)
+{
+    if (!m_session)
+    {
+        RIALTO_SERVER_LOG_ERROR("Session does not exist");
+        return MediaKeyErrorStatus::FAIL;
+    }
+    OpenCDMError status = opencdm_session_select_key_id(m_session, keyIdSize, keyId);
+    return convertOpenCdmError(status);
+}
+
+uint32_t OcdmSession::hasKeyId(const uint8_t keyId[], const uint8_t keyIdSize)
+{
+    if (!m_session)
+    {
+        RIALTO_SERVER_LOG_ERROR("Session does not exist");
+        return 0;
+    }
+    return opencdm_session_has_key_id(m_session, keyIdSize, keyId);
+}
+
+MediaKeyErrorStatus OcdmSession::setDrmHeader(const uint8_t drmHeader[], uint32_t drmHeaderSize)
+{
+    if (!m_session)
+    {
+        RIALTO_SERVER_LOG_ERROR("Session does not exist");
+        return MediaKeyErrorStatus::FAIL;
+    }
+    OpenCDMError status = opencdm_session_set_drm_header(m_session, drmHeader, drmHeaderSize);
+    return convertOpenCdmError(status);
+}
+
+MediaKeyErrorStatus OcdmSession::getLastDrmError(uint32_t &errorCode)
+{
+    if (!m_session)
+    {
+        RIALTO_SERVER_LOG_ERROR("Session does not exist");
+        return MediaKeyErrorStatus::FAIL;
+    }
+    OpenCDMError returnedError = opencdm_session_system_error(m_session);
+    errorCode = static_cast<uint32_t>(returnedError);
+    return MediaKeyErrorStatus::OK;
+}
+
 void OcdmSession::handleProcessChallenge(struct OpenCDMSession *session, const char url[], const uint8_t challenge[],
                                          const uint16_t challengeLength)
 {

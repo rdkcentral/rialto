@@ -78,6 +78,56 @@ public:
     virtual MediaKeyErrorStatus getVersion(std::string &version) = 0;
 
     /**
+     * @brief Get the limit on the number of ldl key sessions for the object's key system
+     *
+     * @param[out] ldlLimit : the limit on the number of ldl key sessions.
+     *
+     * @retval the return status value.
+     */
+    virtual MediaKeyErrorStatus getLdlSessionsLimit(uint32_t *ldlLimit) = 0;
+
+    /**
+     * @brief Delete the key store for the object's key system
+     *
+     * @retval the return status value.
+     */
+    virtual MediaKeyErrorStatus deleteKeyStore() = 0;
+
+    /**
+     * @brief Delete the DRM store for the object's key system
+     *
+     * @retval the return status value.
+     */
+    virtual MediaKeyErrorStatus deleteSecureStore() = 0;
+
+    /**
+     * @brief Gets a hash of the Key store for the object's key system
+     *
+     * @param[out] keyStoreHash : the hash value
+     *
+     * @retval the return status value.
+     */
+    virtual MediaKeyErrorStatus getKeyStoreHash(uint8_t keyStoreHash[], uint32_t keyStoreHashLength) = 0;
+
+    /**
+     * @brief Gets a hash of the DRM store for the object's key system
+     *
+     * @param[out] drmStoreHash : the hash value
+     *
+     * @retval the return status value.
+     */
+    virtual MediaKeyErrorStatus getSecureStoreHash(uint8_t secureStoreHash[], uint32_t secureStoreHashLength) = 0;
+
+    /**
+     * @brief Get the DRM system time for the object's key system
+     *
+     * @param[out]  time : the DRM system time
+     *
+     * @retval the return status value.
+     */
+    virtual MediaKeyErrorStatus getDrmTime(uint64_t *time) = 0;
+
+    /**
      * @brief Creates a IOcdmSession and returns a pointer to that object.
      *
      * @param[in]  client       : Client object for callbacks.
