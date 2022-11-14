@@ -28,12 +28,32 @@ class RialtoServerCreateMediaKeySessionTest : public MediaKeySessionTestBase
  */
 TEST_F(RialtoServerCreateMediaKeySessionTest, Create)
 {
+    EXPECT_CALL(*m_mainThreadFactoryMock, getMainThread()).WillOnce(Return(m_mainThreadMock));
+    EXPECT_CALL(*m_mainThreadMock, registerClient()).WillOnce(Return(m_kMainThreadClientId));
     EXPECT_CALL(*m_ocdmSystemMock, createSession(_)).WillOnce(Return(ByMove(std::move(m_ocdmSession))));
 
-    EXPECT_NO_THROW(m_mediaKeySession = std::make_unique<MediaKeySession>(kNetflixKeySystem, m_keySessionId,
+    EXPECT_NO_THROW(m_mediaKeySession = std::make_unique<MediaKeySession>(kNetflixKeySystem, m_kKeySessionId,
                                                                           *m_ocdmSystemMock, m_keySessionType,
-                                                                          m_mediaKeysClientMock, m_isLDL));
+                                                                          m_mediaKeysClientMock, m_isLDL,
+                                                                          m_mainThreadFactoryMock));
     EXPECT_NE(m_mediaKeySession, nullptr);
+
+    destroyKeySession();
+}
+
+/**
+ * Test that a MediaKeySession object throws an exeption if failure occurs during construction.
+ * In this case, createMainThread fails, returning a nullptr.
+ */
+TEST_F(RialtoServerCreateMediaKeySessionTest, CreateMainThreadFailure)
+{
+    EXPECT_CALL(*m_mainThreadFactoryMock, getMainThread()).WillOnce(Return(nullptr));
+
+    EXPECT_THROW(m_mediaKeySession = std::make_unique<MediaKeySession>(kNetflixKeySystem, m_kKeySessionId,
+                                                                       *m_ocdmSystemMock, m_keySessionType,
+                                                                       m_mediaKeysClientMock, m_isLDL,
+                                                                       m_mainThreadFactoryMock),
+                 std::runtime_error);
 }
 
 /**
@@ -42,10 +62,13 @@ TEST_F(RialtoServerCreateMediaKeySessionTest, Create)
  */
 TEST_F(RialtoServerCreateMediaKeySessionTest, CreateOcdmSessionFailure)
 {
+    EXPECT_CALL(*m_mainThreadFactoryMock, getMainThread()).WillOnce(Return(m_mainThreadMock));
+    EXPECT_CALL(*m_mainThreadMock, registerClient()).WillOnce(Return(m_kMainThreadClientId));
     EXPECT_CALL(*m_ocdmSystemMock, createSession(_)).WillOnce(Return(ByMove(std::move(nullptr))));
 
-    EXPECT_THROW(m_mediaKeySession = std::make_unique<MediaKeySession>(kNetflixKeySystem, m_keySessionId,
+    EXPECT_THROW(m_mediaKeySession = std::make_unique<MediaKeySession>(kNetflixKeySystem, m_kKeySessionId,
                                                                        *m_ocdmSystemMock, m_keySessionType,
-                                                                       m_mediaKeysClientMock, m_isLDL),
+                                                                       m_mediaKeysClientMock, m_isLDL,
+                                                                       m_mainThreadFactoryMock),
                  std::runtime_error);
 }

@@ -27,6 +27,7 @@ protected:
         createMediaKeys(kNetflixKeySystem);
         createKeySession(kNetflixKeySystem);
     }
+    ~RialtoServerMediaKeysCloseKeySessionTest() { destroyMediaKeys(); }
 };
 
 /**
@@ -34,9 +35,10 @@ protected:
  */
 TEST_F(RialtoServerMediaKeysCloseKeySessionTest, Success)
 {
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_mediaKeySessionMock, closeKeySession()).WillOnce(Return(MediaKeyErrorStatus::OK));
 
-    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeys->closeKeySession(m_keySessionId));
+    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeys->closeKeySession(m_kKeySessionId));
 }
 
 /**
@@ -44,7 +46,8 @@ TEST_F(RialtoServerMediaKeysCloseKeySessionTest, Success)
  */
 TEST_F(RialtoServerMediaKeysCloseKeySessionTest, SessionDoesNotExistFailure)
 {
-    EXPECT_EQ(MediaKeyErrorStatus::BAD_SESSION_ID, m_mediaKeys->closeKeySession(m_keySessionId + 1));
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_EQ(MediaKeyErrorStatus::BAD_SESSION_ID, m_mediaKeys->closeKeySession(m_kKeySessionId + 1));
 }
 
 /**
@@ -52,7 +55,8 @@ TEST_F(RialtoServerMediaKeysCloseKeySessionTest, SessionDoesNotExistFailure)
  */
 TEST_F(RialtoServerMediaKeysCloseKeySessionTest, SessionFailure)
 {
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_mediaKeySessionMock, closeKeySession()).WillOnce(Return(MediaKeyErrorStatus::INVALID_STATE));
 
-    EXPECT_EQ(MediaKeyErrorStatus::INVALID_STATE, m_mediaKeys->closeKeySession(m_keySessionId));
+    EXPECT_EQ(MediaKeyErrorStatus::INVALID_STATE, m_mediaKeys->closeKeySession(m_kKeySessionId));
 }

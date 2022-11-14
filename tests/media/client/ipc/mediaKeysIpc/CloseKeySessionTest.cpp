@@ -62,12 +62,12 @@ TEST_F(RialtoClientMediaKeysIpcCloseKeySessionTest, Success)
     expectIpcApiCallSuccess();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("closeKeySession"), m_controllerMock.get(),
-                                           closeKeySessionRequestMatcher(m_mediaKeysHandle, m_keySessionId), _,
+                                           closeKeySessionRequestMatcher(m_mediaKeysHandle, m_kKeySessionId), _,
                                            m_blockingClosureMock.get()))
         .WillOnce(
             WithArgs<3>(Invoke(this, &RialtoClientMediaKeysIpcCloseKeySessionTest::setCloseKeySessionResponseSuccess)));
 
-    EXPECT_EQ(m_mediaKeysIpc->closeKeySession(m_keySessionId), MediaKeyErrorStatus::OK);
+    EXPECT_EQ(m_mediaKeysIpc->closeKeySession(m_kKeySessionId), MediaKeyErrorStatus::OK);
 
     // Check client object has been removed, no call to the client mock
     EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
@@ -82,7 +82,7 @@ TEST_F(RialtoClientMediaKeysIpcCloseKeySessionTest, ChannelDisconnected)
     expectIpcApiCallDisconnected();
     expectUnsubscribeEvents();
 
-    EXPECT_EQ(m_mediaKeysIpc->closeKeySession(m_keySessionId), MediaKeyErrorStatus::FAIL);
+    EXPECT_EQ(m_mediaKeysIpc->closeKeySession(m_kKeySessionId), MediaKeyErrorStatus::FAIL);
 
     // Reattach channel on destroySession
     EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
@@ -102,7 +102,7 @@ TEST_F(RialtoClientMediaKeysIpcCloseKeySessionTest, ReconnectChannel)
         .WillOnce(
             WithArgs<3>(Invoke(this, &RialtoClientMediaKeysIpcCloseKeySessionTest::setCloseKeySessionResponseSuccess)));
 
-    EXPECT_EQ(m_mediaKeysIpc->closeKeySession(m_keySessionId), MediaKeyErrorStatus::OK);
+    EXPECT_EQ(m_mediaKeysIpc->closeKeySession(m_kKeySessionId), MediaKeyErrorStatus::OK);
 }
 
 /**
@@ -114,7 +114,7 @@ TEST_F(RialtoClientMediaKeysIpcCloseKeySessionTest, Failure)
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("closeKeySession"), _, _, _, _));
 
-    EXPECT_EQ(m_mediaKeysIpc->closeKeySession(m_keySessionId), MediaKeyErrorStatus::FAIL);
+    EXPECT_EQ(m_mediaKeysIpc->closeKeySession(m_kKeySessionId), MediaKeyErrorStatus::FAIL);
 }
 
 /**
@@ -128,5 +128,5 @@ TEST_F(RialtoClientMediaKeysIpcCloseKeySessionTest, ErrorReturn)
         .WillOnce(
             WithArgs<3>(Invoke(this, &RialtoClientMediaKeysIpcCloseKeySessionTest::setCloseKeySessionResponseFailed)));
 
-    EXPECT_EQ(m_mediaKeysIpc->closeKeySession(m_keySessionId), m_errorStatus);
+    EXPECT_EQ(m_mediaKeysIpc->closeKeySession(m_kKeySessionId), m_errorStatus);
 }

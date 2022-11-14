@@ -23,6 +23,7 @@ class RialtoServerMediaKeysCreateKeySessionTest : public MediaKeysTestBase
 {
 protected:
     RialtoServerMediaKeysCreateKeySessionTest() { createMediaKeys(kNetflixKeySystem); }
+    ~RialtoServerMediaKeysCreateKeySessionTest() { destroyMediaKeys(); }
 };
 
 /**
@@ -31,6 +32,8 @@ protected:
 TEST_F(RialtoServerMediaKeysCreateKeySessionTest, Success)
 {
     int32_t returnKeySessionId = -1;
+
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_mediaKeySessionFactoryMock,
                 createMediaKeySession(kNetflixKeySystem, _, _, m_keySessionType, _, m_isLDL))
         .WillOnce(Return(ByMove(std::move(m_mediaKeySession))));
@@ -47,6 +50,8 @@ TEST_F(RialtoServerMediaKeysCreateKeySessionTest, Success)
 TEST_F(RialtoServerMediaKeysCreateKeySessionTest, OcdmSystemFailure)
 {
     int32_t returnKeySessionId = -1;
+
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_mediaKeySessionFactoryMock,
                 createMediaKeySession(kNetflixKeySystem, _, _, m_keySessionType, _, m_isLDL))
         .WillOnce(Return(ByMove(nullptr)));

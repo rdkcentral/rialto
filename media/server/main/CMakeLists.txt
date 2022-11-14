@@ -45,6 +45,7 @@ add_library(
         source/MediaKeysServerInternal.cpp
         source/MediaKeysCapabilities.cpp
         source/MediaKeySession.cpp
+        source/MainThread.cpp
         )
 
 target_include_directories(

@@ -87,7 +87,7 @@ protected:
         auto licenseRequestEvent = std::make_shared<firebolt::rialto::LicenseRequestEvent>();
         licenseRequestEvent->set_media_keys_handle(m_mediaKeysHandle);
         licenseRequestEvent->set_url(m_url);
-        licenseRequestEvent->set_key_session_id(m_keySessionId);
+        licenseRequestEvent->set_key_session_id(m_kKeySessionId);
 
         for (auto it = m_licenseRequestMessage.begin(); it != m_licenseRequestMessage.end(); it++)
         {
@@ -101,7 +101,7 @@ protected:
     {
         auto keyStatusesChangedEvent = std::make_shared<firebolt::rialto::KeyStatusesChangedEvent>();
         keyStatusesChangedEvent->set_media_keys_handle(m_mediaKeysHandle);
-        keyStatusesChangedEvent->set_key_session_id(m_keySessionId);
+        keyStatusesChangedEvent->set_key_session_id(m_kKeySessionId);
 
         for (auto it = m_keyStatuses.begin(); it != m_keyStatuses.end(); it++)
         {
@@ -126,7 +126,7 @@ TEST_F(RialtoClientMediaKeysIpcCallbackTest, NotifyLicenseRequest)
     createKeySession();
 
     EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
-    EXPECT_CALL(*m_mediaKeysClientMock, onLicenseRequest(m_keySessionId, m_licenseRequestMessage, m_url));
+    EXPECT_CALL(*m_mediaKeysClientMock, onLicenseRequest(m_kKeySessionId, m_licenseRequestMessage, m_url));
 
     m_licenseRequestCb(createLicenseRequestEvent());
 }
@@ -162,7 +162,7 @@ TEST_F(RialtoClientMediaKeysIpcCallbackTest, NotifyLicenseRenewal)
     createKeySession();
 
     EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
-    EXPECT_CALL(*m_mediaKeysClientMock, onLicenseRenewal(m_keySessionId, m_licenseRenewalMessage));
+    EXPECT_CALL(*m_mediaKeysClientMock, onLicenseRenewal(m_kKeySessionId, m_licenseRenewalMessage));
 
     m_licenseRenewalCb(createLicenseRenewalEvent());
 }
@@ -199,7 +199,7 @@ TEST_F(RialtoClientMediaKeysIpcCallbackTest, NotifyKeyStatusesChanged)
     addPairsToKeyStatusVector(3);
 
     EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
-    EXPECT_CALL(*m_mediaKeysClientMock, onKeyStatusesChanged(m_keySessionId, m_keyStatuses));
+    EXPECT_CALL(*m_mediaKeysClientMock, onKeyStatusesChanged(m_kKeySessionId, m_keyStatuses));
 
     m_KeyStatusesChangeCb(createKeyStatusesChangedEvent());
 }

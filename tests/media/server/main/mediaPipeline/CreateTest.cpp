@@ -17,52 +17,10 @@
  * limitations under the License.
  */
 
-#include "ActiveRequestsMock.h"
-#include "DataReaderFactoryMock.h"
-#include "DecryptionServiceMock.h"
-#include "GstPlayerFactoryMock.h"
-#include "MediaPipelineClientMock.h"
-#include "MediaPipelineServerInternal.h"
-#include "SharedMemoryBufferMock.h"
-#include <gtest/gtest.h>
+#include "MediaPipelineTestBase.h"
 
-using namespace firebolt::rialto;
-using namespace firebolt::rialto::server;
-using namespace firebolt::rialto::server::mock;
-
-using ::testing::Return;
-using ::testing::StrictMock;
-
-namespace
+class RialtoServerCreateMediaPipelineTest : public MediaPipelineTestBase
 {
-constexpr int sessionId{1};
-} // namespace
-
-class RialtoServerCreateMediaPipelineTest : public ::testing::Test
-{
-protected:
-    std::shared_ptr<IMediaPipelineClient> m_mediaPipelineClient;
-    std::shared_ptr<StrictMock<GstPlayerFactoryMock>> m_gstPlayerFactoryMock;
-    VideoRequirements m_videoReq = {};
-    std::shared_ptr<StrictMock<SharedMemoryBufferMock>> m_sharedMemoryBufferMock;
-    std::unique_ptr<IDataReaderFactory> m_dataReaderFactoryMock;
-    std::unique_ptr<IActiveRequests> m_activeRequestsMock;
-    StrictMock<DecryptionServiceMock> m_decryptionServiceMock;
-
-    virtual void SetUp()
-    {
-        m_mediaPipelineClient = std::make_shared<StrictMock<MediaPipelineClientMock>>();
-
-        m_gstPlayerFactoryMock = std::make_shared<StrictMock<GstPlayerFactoryMock>>();
-        m_sharedMemoryBufferMock = std::make_shared<StrictMock<SharedMemoryBufferMock>>();
-    }
-
-    virtual void TearDown()
-    {
-        m_gstPlayerFactoryMock.reset();
-
-        m_mediaPipelineClient.reset();
-    }
 };
 
 /**
@@ -70,15 +28,20 @@ protected:
  */
 TEST_F(RialtoServerCreateMediaPipelineTest, Create)
 {
-    std::unique_ptr<IMediaPipeline> mediaPipeline;
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_mainThreadFactoryMock, getMainThread()).WillOnce(Return(m_mainThreadMock));
+    EXPECT_CALL(*m_mainThreadMock, registerClient()).WillOnce(Return(m_kMainThreadClientId));
+    EXPECT_CALL(*m_sharedMemoryBufferMock, mapPartition(m_kSessionId)).WillOnce(Return(true));
+    EXPECT_NO_THROW(
+        m_mediaPipeline =
+            std::make_unique<MediaPipelineServerInternal>(m_mediaPipelineClientMock, m_videoReq, m_gstPlayerFactoryMock,
+                                                          m_kSessionId, m_sharedMemoryBufferMock,
+                                                          m_mainThreadFactoryMock, std::move(m_dataReaderFactory),
+                                                          std::move(m_activeRequests), m_decryptionServiceMock););
+    EXPECT_NE(m_mediaPipeline, nullptr);
 
-    EXPECT_CALL(*m_sharedMemoryBufferMock, mapPartition(sessionId)).WillOnce(Return(true));
-    EXPECT_NO_THROW(mediaPipeline = std::make_unique<MediaPipelineServerInternal>(m_mediaPipelineClient, m_videoReq,
-                                                                                  m_gstPlayerFactoryMock, sessionId,
-                                                                                  m_sharedMemoryBufferMock,
-                                                                                  std::move(m_dataReaderFactoryMock),
-                                                                                  std::move(m_activeRequestsMock),
-                                                                                  m_decryptionServiceMock););
-    EXPECT_NE(mediaPipeline, nullptr);
-    EXPECT_CALL(*m_sharedMemoryBufferMock, unmapPartition(sessionId)).WillOnce(Return(true));
+    EXPECT_CALL(*m_sharedMemoryBufferMock, unmapPartition(m_kSessionId)).WillOnce(Return(true));
+    EXPECT_CALL(*m_mainThreadMock, unregisterClient(m_kMainThreadClientId));
+    // Objects are destroyed on the main thread
+    mainThreadWillEnqueueTaskAndWait();
 }

@@ -34,6 +34,7 @@ protected:
         createMediaKeys(kNetflixKeySystem);
         createKeySession(kNetflixKeySystem);
     }
+    ~RialtoServerMediaKeysDecryptTest() { destroyMediaKeys(); }
 };
 
 /**
@@ -41,11 +42,12 @@ protected:
  */
 TEST_F(RialtoServerMediaKeysDecryptTest, Success)
 {
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_mediaKeySessionMock,
                 decrypt(&m_encrypted, &m_subSample, m_subSampleCount, &m_IV, &m_keyId, m_initWithLast15))
         .WillOnce(Return(MediaKeyErrorStatus::OK));
 
-    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeys->decrypt(m_keySessionId, &m_encrypted, &m_subSample,
+    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeys->decrypt(m_kKeySessionId, &m_encrypted, &m_subSample,
                                                             m_subSampleCount, &m_IV, &m_keyId, m_initWithLast15));
 }
 
@@ -54,8 +56,9 @@ TEST_F(RialtoServerMediaKeysDecryptTest, Success)
  */
 TEST_F(RialtoServerMediaKeysDecryptTest, SessionDoesNotExistFailure)
 {
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_EQ(MediaKeyErrorStatus::BAD_SESSION_ID,
-              m_mediaKeys->decrypt(m_keySessionId + 1, &m_encrypted, &m_subSample, m_subSampleCount, &m_IV, &m_keyId,
+              m_mediaKeys->decrypt(m_kKeySessionId + 1, &m_encrypted, &m_subSample, m_subSampleCount, &m_IV, &m_keyId,
                                    m_initWithLast15));
 }
 
@@ -64,11 +67,12 @@ TEST_F(RialtoServerMediaKeysDecryptTest, SessionDoesNotExistFailure)
  */
 TEST_F(RialtoServerMediaKeysDecryptTest, DecryptFailure)
 {
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_mediaKeySessionMock,
                 decrypt(&m_encrypted, &m_subSample, m_subSampleCount, &m_IV, &m_keyId, m_initWithLast15))
         .WillOnce(Return(MediaKeyErrorStatus::INVALID_STATE));
 
     EXPECT_EQ(MediaKeyErrorStatus::INVALID_STATE,
-              m_mediaKeys->decrypt(m_keySessionId, &m_encrypted, &m_subSample, m_subSampleCount, &m_IV, &m_keyId,
+              m_mediaKeys->decrypt(m_kKeySessionId, &m_encrypted, &m_subSample, m_subSampleCount, &m_IV, &m_keyId,
                                    m_initWithLast15));
 }

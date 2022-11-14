@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_MEDIA_KEY_SESSION_H_
 #define FIREBOLT_RIALTO_SERVER_MEDIA_KEY_SESSION_H_
 
+#include "IMainThread.h"
 #include "IMediaKeySession.h"
 #include "IOcdmSessionClient.h"
 #include <atomic>
@@ -53,15 +54,17 @@ public:
     /**
      * @brief The constructor.
      *
-     * @param[in]  keySystem    : The key system for this session.
-     * @param[in]  keySessionId : The key session id for this session.
-     * @param[in]  ocdmSystem   : The ocdm system object to create the session on.
-     * @param[in]  sessionType  : The session type.
-     * @param[in]  client       : Client object for callbacks.
-     * @param[in]  isLDL        : Is this an LDL.
+     * @param[in]  keySystem            : The key system for this session.
+     * @param[in]  keySessionId         : The key session id for this session.
+     * @param[in]  ocdmSystem           : The ocdm system object to create the session on.
+     * @param[in]  sessionType          : The session type.
+     * @param[in]  client               : Client object for callbacks.
+     * @param[in]  isLDL                : Is this an LDL.
+     * @param[in]  mainThreadFactory    : The main thread factory.
      */
     MediaKeySession(const std::string &keySystem, int32_t keySessionId, const IOcdmSystem &ocdmSystem,
-                    KeySessionType sessionType, std::weak_ptr<IMediaKeysClient> client, bool isLDL);
+                    KeySessionType sessionType, std::weak_ptr<IMediaKeysClient> client, bool isLDL,
+                    const std::shared_ptr<IMainThreadFactory> &mainThreadFactory);
 
     /**
      * @brief Virtual destructor.
@@ -95,17 +98,17 @@ private:
     /**
      * @brief KeySystem type of the MediaKeys.
      */
-    const std::string m_keySystem;
+    const std::string m_kKeySystem;
 
     /**
      * @brief The key session id for this session.
      */
-    const int32_t m_keySessionId;
+    const int32_t m_kKeySessionId;
 
     /**
      * @brief The key session type of this session.
      */
-    const KeySessionType m_sessionType;
+    const KeySessionType m_kSessionType;
 
     /**
      * @brief The media keys client object.
@@ -118,9 +121,14 @@ private:
     std::unique_ptr<IOcdmSession> m_ocdmSession;
 
     /**
+     * @brief The mainThread object.
+     */
+    std::shared_ptr<IMainThread> m_mainThread;
+
+    /**
      * @brief Is the session LDL.
      */
-    const bool m_isLDL;
+    const bool m_kIsLDL;
 
     /**
      * @brief Is the ocdm session constructed.
@@ -136,6 +144,18 @@ private:
      * @brief Store of the updated key statuses from a onKeyUpdated.
      */
     KeyStatusVector m_updatedKeyStatuses;
+
+    /**
+     * @brief This objects id registered on the main thread
+     */
+    uint32_t m_mainThreadClientId;
+
+    /**
+     * @brief Posts a getChallenge task onto the main thread.
+     *
+     * The challenge data is retrieved from ocdm and notified on a onLicenseRequest.
+     */
+    void getChallenge();
 };
 } // namespace firebolt::rialto::server
 

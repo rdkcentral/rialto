@@ -17,91 +17,19 @@
  * limitations under the License.
  */
 
-#include "ActiveRequestsMock.h"
-#include "DataReaderFactoryMock.h"
-#include "DecryptionServiceMock.h"
-#include "GstPlayerFactoryMock.h"
-#include "GstPlayerMock.h"
-#include "MediaPipelineClientMock.h"
-#include "MediaPipelineServerInternal.h"
-#include "SharedMemoryBufferMock.h"
-#include <gtest/gtest.h>
+#include "MediaPipelineTestBase.h"
 
-using namespace firebolt::rialto;
-using namespace firebolt::rialto::server;
-using namespace firebolt::rialto::server::mock;
-
-using ::testing::_;
 using ::testing::ByMove;
-using ::testing::Invoke;
-using ::testing::Return;
-using ::testing::StrictMock;
 
-class RialtoServerMediaPipelineMiscellaneousFunctionsTest : public ::testing::Test
+class RialtoServerMediaPipelineMiscellaneousFunctionsTest : public MediaPipelineTestBase
 {
 protected:
-    std::shared_ptr<IMediaPipelineClient> m_mediaPipelineClient;
-    std::unique_ptr<IMediaPipelineServerInternal> m_mediaPipeline;
-    std::shared_ptr<StrictMock<GstPlayerFactoryMock>> m_gstPlayerFactoryMock;
-    StrictMock<GstPlayerMock> *m_gstPlayerMock = nullptr;
-    std::shared_ptr<StrictMock<SharedMemoryBufferMock>> m_sharedMemoryBufferMock;
-    std::unique_ptr<IDataReaderFactory> m_dataReaderFactoryMock;
-    std::unique_ptr<IActiveRequests> m_activeRequestsMock;
-    StrictMock<DecryptionServiceMock> m_decryptionServiceMock;
-    const int m_kSessionId{1};
     const int64_t m_kPosition{4028596027};
     const double m_kPlaybackRate{1.5};
 
-    virtual void SetUp()
-    {
-        m_mediaPipelineClient = std::make_shared<StrictMock<MediaPipelineClientMock>>();
+    RialtoServerMediaPipelineMiscellaneousFunctionsTest() { createMediaPipeline(); }
 
-        m_gstPlayerFactoryMock = std::make_shared<StrictMock<GstPlayerFactoryMock>>();
-        m_sharedMemoryBufferMock = std::make_shared<StrictMock<SharedMemoryBufferMock>>();
-
-        createMediaPipeline();
-    }
-
-    virtual void TearDown()
-    {
-        EXPECT_CALL(*m_sharedMemoryBufferMock, unmapPartition(m_kSessionId)).WillOnce(Return(true));
-        m_mediaPipeline.reset();
-
-        m_gstPlayerFactoryMock.reset();
-        m_gstPlayerMock = nullptr;
-
-        m_mediaPipelineClient.reset();
-    }
-
-    void createMediaPipeline()
-    {
-        VideoRequirements videoReq = {};
-
-        EXPECT_CALL(*m_sharedMemoryBufferMock, mapPartition(m_kSessionId)).WillOnce(Return(true));
-        EXPECT_NO_THROW(
-            m_mediaPipeline =
-                std::make_unique<MediaPipelineServerInternal>(m_mediaPipelineClient, videoReq, m_gstPlayerFactoryMock,
-                                                              m_kSessionId, m_sharedMemoryBufferMock,
-                                                              std::move(m_dataReaderFactoryMock),
-                                                              std::move(m_activeRequestsMock), m_decryptionServiceMock););
-        EXPECT_NE(m_mediaPipeline, nullptr);
-    }
-
-    void LoadGstPlayer()
-    {
-        std::unique_ptr<StrictMock<GstPlayerMock>> gstPlayerMock = std::make_unique<StrictMock<GstPlayerMock>>();
-
-        // Save a raw pointer to the unique object for use when testing mocks
-        // Object shall be freed by the holder of the unique ptr on destruction
-        m_gstPlayerMock = gstPlayerMock.get();
-
-        EXPECT_CALL(*m_gstPlayerFactoryMock, createGstPlayer(_, _, _)).WillOnce(Return(ByMove(std::move(gstPlayerMock))));
-        MediaPipelineClientMock &mediaPipelineClientMock =
-            dynamic_cast<MediaPipelineClientMock &>(*m_mediaPipelineClient);
-        EXPECT_CALL(mediaPipelineClientMock, notifyNetworkState(NetworkState::BUFFERING));
-
-        EXPECT_EQ(m_mediaPipeline->load(MediaType::MSE, "mime", "mse://1"), true);
-    }
+    ~RialtoServerMediaPipelineMiscellaneousFunctionsTest() { destroyMediaPipeline(); }
 };
 
 /**
@@ -109,7 +37,8 @@ protected:
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, PlaySuccess)
 {
-    LoadGstPlayer();
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
 
     EXPECT_CALL(*m_gstPlayerMock, play());
     EXPECT_TRUE(m_mediaPipeline->play());
@@ -120,6 +49,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, PlaySuccess)
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, PlayFailureDueToUninitializedPlayer)
 {
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_FALSE(m_mediaPipeline->play());
 }
 
@@ -128,7 +58,8 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, PlayFailureDueToUnin
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, StopSuccess)
 {
-    LoadGstPlayer();
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
 
     EXPECT_CALL(*m_gstPlayerMock, stop());
     EXPECT_TRUE(m_mediaPipeline->stop());
@@ -139,6 +70,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, StopSuccess)
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, StopFailureDueToUninitializedPlayer)
 {
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_FALSE(m_mediaPipeline->stop());
 }
 
@@ -147,7 +79,8 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, StopFailureDueToUnin
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, PauseSuccess)
 {
-    LoadGstPlayer();
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
 
     EXPECT_CALL(*m_gstPlayerMock, pause());
     EXPECT_TRUE(m_mediaPipeline->pause());
@@ -158,6 +91,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, PauseSuccess)
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, PauseFailureDueToUninitializedPlayer)
 {
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_FALSE(m_mediaPipeline->pause());
 }
 
@@ -170,7 +104,8 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetVideoWindowSucces
     uint32_t y{4};
     uint32_t width{640};
     uint32_t height{480};
-    LoadGstPlayer();
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
 
     EXPECT_CALL(*m_gstPlayerMock, setVideoGeometry(x, y, width, height));
     EXPECT_TRUE(m_mediaPipeline->setVideoWindow(x, y, width, height));
@@ -185,6 +120,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetVideoWindowFailur
     uint32_t y{4};
     uint32_t width{640};
     uint32_t height{480};
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_FALSE(m_mediaPipeline->setVideoWindow(x, y, width, height));
 }
 
@@ -193,6 +129,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetVideoWindowFailur
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetPositionFailureDueToUninitializedPlayer)
 {
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_FALSE(m_mediaPipeline->setPosition(m_kPosition));
 }
 
@@ -201,7 +138,8 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetPositionFailureDu
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetPositionSuccess)
 {
-    LoadGstPlayer();
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
 
     EXPECT_CALL(*m_gstPlayerMock, setPosition(m_kPosition));
     EXPECT_TRUE(m_mediaPipeline->setPosition(m_kPosition));
@@ -212,6 +150,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetPositionSuccess)
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetPlaybackRateFailureDueToUninitializedPlayer)
 {
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_FALSE(m_mediaPipeline->setPlaybackRate(m_kPlaybackRate));
 }
 
@@ -220,6 +159,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetPlaybackRateFailu
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetPlaybackRateFailureDueToWrongRateValue)
 {
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_FALSE(m_mediaPipeline->setPlaybackRate(0.0));
 }
 
@@ -228,7 +168,8 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetPlaybackRateFailu
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetPlaybackRateSuccess)
 {
-    LoadGstPlayer();
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
 
     EXPECT_CALL(*m_gstPlayerMock, setPlaybackRate(m_kPlaybackRate));
     EXPECT_TRUE(m_mediaPipeline->setPlaybackRate(m_kPlaybackRate));
@@ -239,6 +180,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetPlaybackRateSucce
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetPositionFailureDueToUninitializedPlayer)
 {
+    mainThreadWillEnqueueTaskAndWait();
     int64_t targetPosition{};
     EXPECT_FALSE(m_mediaPipeline->getPosition(targetPosition));
 }
@@ -248,7 +190,8 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetPositionFailureDu
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetPositionFailure)
 {
-    LoadGstPlayer();
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
     int64_t targetPosition{};
     EXPECT_CALL(*m_gstPlayerMock, getPosition(_)).WillOnce(Return(false));
     EXPECT_FALSE(m_mediaPipeline->getPosition(targetPosition));
@@ -259,7 +202,8 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetPositionFailure)
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetPositionSuccess)
 {
-    LoadGstPlayer();
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
     int64_t targetPosition{};
     EXPECT_CALL(*m_gstPlayerMock, getPosition(_)).WillOnce(Invoke([&](int64_t &pos) {
         pos = m_kPosition;

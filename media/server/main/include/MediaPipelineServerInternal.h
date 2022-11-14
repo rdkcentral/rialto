@@ -23,6 +23,7 @@
 #include "DataReaderFactory.h"
 #include "IActiveRequests.h"
 #include "IGstPlayer.h"
+#include "IMainThread.h"
 #include "IMediaPipelineServerInternal.h"
 #include <memory>
 #include <string>
@@ -70,6 +71,7 @@ public:
      * @param[in] gstPlayerFactory  : The gstreamer player factory.
      * @param[in] sessionId         : The session id
      * @param[in] shmBuffer         : The shared memory buffer
+     * @param[in] mainThreadFactory : The main thread factory.
      * @param[in] dataReaderFactory : The data reader factory
      * @param[in] activeRequests    : The active requests
      * @param[in] decryptionService : The decryption service
@@ -77,6 +79,7 @@ public:
     MediaPipelineServerInternal(std::shared_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements,
                                 const std::shared_ptr<IGstPlayerFactory> &gstPlayerFactory, int sessionId,
                                 const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer,
+                                const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
                                 std::unique_ptr<IDataReaderFactory> &&dataReaderFactory,
                                 std::unique_ptr<IActiveRequests> &&activeRequests, IDecryptionService &decryptionService);
 
@@ -134,6 +137,11 @@ protected:
     std::shared_ptr<IMediaPipelineClient> m_mediaPipelineClient;
 
     /**
+     * @brief The mainThread object.
+     */
+    std::shared_ptr<IMainThread> m_mainThread;
+
+    /**
      * @brief The gstreamer player factory object.
      */
     const std::shared_ptr<IGstPlayerFactory> m_kGstPlayerFactory;
@@ -169,9 +177,132 @@ protected:
     std::unique_ptr<IActiveRequests> m_activeRequests;
 
     /**
+     * @brief This objects id registered on the main thread
+     */
+    uint32_t m_mainThreadClientId;
+
+    /**
      * @brief Decryption service
      */
     IDecryptionService &m_decryptionService;
+
+    /**
+     * @brief Load internally, only to be called on the main thread.
+     *
+     * @param[in] type     : The media type.
+     * @param[in] mimeType : The MIME type.
+     * @param[in] url      : The URL.
+     *
+     * @retval true on success.
+     */
+    bool loadInternal(MediaType type, const std::string &mimeType, const std::string &url);
+
+    /**
+     * @brief Attach source internally, only to be called on the main thread.
+     *
+     * @param[in] source : The source.
+     *
+     * @retval true on success.
+     */
+    bool attachSourceInternal(MediaSource &source);
+
+    /**
+     * @brief Play internally, only to be called on the main thread.
+     *
+     * @retval true on success.
+     */
+    bool playInternal();
+
+    /**
+     * @brief Pause internally, only to be called on the main thread.
+     *
+     * @retval true on success.
+     */
+    bool pauseInternal();
+
+    /**
+     * @brief Stop internally, only to be called on the main thread.
+     *
+     * @retval true on success.
+     */
+    bool stopInternal();
+
+    /**
+     * @brief Set the playback rate internally, only to be called on the main thread.
+     *
+     * @param[in] rate : The playback rate.
+     *
+     * @retval true on success.
+     */
+    bool setPlaybackRateInternal(double rate);
+
+    /**
+     * @brief Set the position internally, only to be called on the main thread.
+     *
+     * @param[in] position : The playback position in nanoseconds.
+     *
+     * @retval true on success.
+     */
+    bool setPositionInternal(int64_t position);
+
+    /**
+     * @brief Get position internally, only to be called on the main thread.
+     *
+     * @param[out] position : The playback position in nanoseconds
+     *
+     * @retval true on success.
+     */
+    bool getPositionInternal(int64_t &position);
+
+    /**
+     * @brief Set video window internally, only to be called on the main thread.
+     *
+     * @param[in] x      : The x position in pixels.
+     * @param[in] y      : The y position in pixels.
+     * @param[in] width  : The width in pixels.
+     * @param[in] height : The height in pixels.
+     *
+     * @retval true on success.
+     */
+    bool setVideoWindowInternal(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
+
+    /**
+     * @brief Have data internally, only to be called on the main thread.
+     *
+     * @param[in] status : The status
+     * @param[in] needDataRequestId : Need data request id
+     *
+     * @retval true on success.
+     */
+    bool haveDataInternal(MediaSourceStatus status, uint32_t needDataRequestId);
+
+    /**
+     * @brief Have data internally, only to be called on the main thread.
+     *
+     * @param[in] status            : The status
+     * @param[in] numFrames         : The number of frames written.
+     * @param[in] needDataRequestId : Need data request id
+     *
+     * @retval true on success.
+     */
+    bool haveDataInternal(MediaSourceStatus status, uint32_t numFrames, uint32_t needDataRequestId);
+
+    /**
+     * @brief Add segment internally, only to be called on the main thread.
+     *
+     * @param[in] needDataRequestId : The status
+     * @param[in] mediaSegment : The data returned.
+     *
+     * @retval status of adding segment
+     */
+    AddSegmentStatus addSegmentInternal(uint32_t needDataRequestId, const std::unique_ptr<MediaSegment> &mediaSegment);
+
+    /**
+     * @brief Notify need media data internally, only to be called on the main thread.
+     *
+     * @param[in] mediaSourceType    : The media source type.
+     */
+    bool notifyNeedMediaDataInternal(MediaSourceType mediaSourceType);
 };
 
 }; // namespace firebolt::rialto::server

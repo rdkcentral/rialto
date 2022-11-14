@@ -21,7 +21,6 @@
 #define PLAYBACK_SERVICE_TESTS_FIXTURE_H_
 
 #include "DecryptionServiceMock.h"
-#include "MainThreadMock.h"
 #include "MediaPipelineServerInternalFactoryMock.h"
 #include "MediaPipelineServerInternalMock.h"
 #include "PlaybackService.h"
@@ -41,8 +40,6 @@ public:
     void sharedMemoryBufferWillBeInitialized(int maxPlaybacks = 1);
     void sharedMemoryBufferWillFailToInitialize(int maxPlaybacks = 1);
     void sharedMemoryBufferWillReturnFdAndSize();
-
-    void mainThreadWillEnqueueTask();
 
     void mediaPipelineWillLoad();
     void mediaPipelineWillFailToLoad();
@@ -104,7 +101,6 @@ public:
     void getPositionShouldFail();
 
 private:
-    StrictMock<firebolt::rialto::server::service::MainThreadMock> m_mainThreadMock;
     std::shared_ptr<StrictMock<firebolt::rialto::server::MediaPipelineServerInternalFactoryMock>> m_mediaPipelineFactoryMock;
     std::unique_ptr<firebolt::rialto::server::ISharedMemoryBufferFactory> m_shmBufferFactory;
     StrictMock<firebolt::rialto::server::SharedMemoryBufferFactoryMock> &m_shmBufferFactoryMock;
