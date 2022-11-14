@@ -17,14 +17,14 @@
  * limitations under the License.
  */
 
-#ifndef RIALTO_SERVERMANAGER_IPC_MOCKS_CONTROLLER_MOCK_H_
-#define RIALTO_SERVERMANAGER_IPC_MOCKS_CONTROLLER_MOCK_H_
+#ifndef RIALTO_SERVERMANAGER_IPC_CONTROLLER_MOCK_H_
+#define RIALTO_SERVERMANAGER_IPC_CONTROLLER_MOCK_H_
 
 #include "IController.h"
 #include <gmock/gmock.h>
 #include <string>
 
-namespace rialto::servermanager::ipc::mocks
+namespace rialto::servermanager::ipc
 {
 class ControllerMock : public IController
 {
@@ -39,6 +39,6 @@ public:
     MOCK_METHOD(bool, performSetState, (const std::string &, const service::SessionServerState &), (override));
     MOCK_METHOD(bool, setLogLevels, (const service::LoggingLevels &), (const, override));
 };
-} // namespace rialto::servermanager::ipc::mocks
+} // namespace rialto::servermanager::ipc
 
-#endif // RIALTO_SERVERMANAGER_IPC_MOCKS_CONTROLLER_MOCK_H_
+#endif // RIALTO_SERVERMANAGER_IPC_CONTROLLER_MOCK_H_

@@ -26,7 +26,7 @@ using testing::StrictMock;
 
 struct PlayTest : public testing::Test
 {
-    StrictMock<firebolt::rialto::server::mock::GstPlayerPrivateMock> m_gstPlayer;
+    StrictMock<firebolt::rialto::server::GstPlayerPrivateMock> m_gstPlayer;
 };
 
 TEST_F(PlayTest, shouldPlay)

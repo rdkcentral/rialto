@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_GST_WRAPPER_H_
 
 #include "IGstWrapper.h"
+#include <gst/pbutils/pbutils.h>
 #include <memory>
 #include <string>
 
@@ -301,6 +302,42 @@ public:
     {
         return gst_buffer_new_wrapped(data, size);
     }
+
+    GstCaps *gstCodecUtilsOpusCreateCapsFromHeader(gconstpointer data, gsize size) const override
+    {
+        GstBuffer *tmp = gst_buffer_new_wrapped(g_memdup(data, size), size);
+        GstCaps *gst_caps = gst_codec_utils_opus_create_caps_from_header(tmp, NULL);
+        gst_buffer_unref(tmp);
+        return gst_caps;
+    }
+    gboolean gstCapsIsSubset(const GstCaps *subset, const GstCaps *superset) const override
+    {
+        return gst_caps_is_subset(subset, superset);
+    }
+
+    gboolean gstCapsIsStrictlyEqual(const GstCaps *caps1, const GstCaps *caps2) const override
+    {
+        return gst_caps_is_strictly_equal(caps1, caps2);
+    }
+
+    gboolean gstCapsCanIntersect(const GstCaps *caps1, const GstCaps *caps2) const override
+    {
+        return gst_caps_can_intersect(caps1, caps2);
+    }
+
+    GstCaps *gstStaticCapsGet(GstStaticCaps *staticCaps) const override { return gst_static_caps_get(staticCaps); }
+
+    GList *gstElementFactoryListGetElements(GstElementFactoryListType type, GstRank minrank) const override
+    {
+        return gst_element_factory_list_get_elements(type, minrank);
+    }
+
+    const GList *gstElementFactoryGetStaticPadTemplates(GstElementFactory *factory) const override
+    {
+        return gst_element_factory_get_static_pad_templates(factory);
+    }
+
+    void gstPluginFeatureListFree(GList *list) const override { gst_plugin_feature_list_free(list); }
 };
 
 }; // namespace firebolt::rialto::server

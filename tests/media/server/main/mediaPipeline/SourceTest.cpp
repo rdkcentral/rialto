@@ -24,7 +24,7 @@ class RialtoServerMediaPipelineSourceTest : public MediaPipelineTestBase
 protected:
     int32_t m_id = 456;
     MediaSourceType m_type = MediaSourceType::AUDIO;
-    const char *m_kCaps = "CAPS";
+    const char *m_kMimeType = "video/mpeg";
 
     RialtoServerMediaPipelineSourceTest() { createMediaPipeline(); }
 
@@ -36,15 +36,31 @@ protected:
  */
 TEST_F(RialtoServerMediaPipelineSourceTest, AttachSourceSuccess)
 {
-    IMediaPipeline::MediaSource m_mediaSource(m_id, m_type, m_kCaps);
+    IMediaPipeline::MediaSource mediaSource(-1, m_type, m_kMimeType);
+
+    loadGstPlayer();
+
+    EXPECT_CALL(*m_gstPlayerMock, attachSource(mediaSource));
+
+    EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), true);
+    EXPECT_EQ(mediaSource.getId(), static_cast<int32_t>(m_type));
+}
+
+/**
+ * Test attach audio source with a specific configuration.
+ */
+TEST_F(RialtoServerMediaPipelineSourceTest, AttachAudioSourceWitSpecificConfiguration)
+{
+    AudioConfig audioConfig{6, 48000, {1, 2, 3}};
+    IMediaPipeline::MediaSource mediaSource(-1, m_kMimeType, audioConfig);
 
     loadGstPlayer();
     mainThreadWillEnqueueTaskAndWait();
 
-    EXPECT_CALL(*m_gstPlayerMock, attachSource(m_type, m_kCaps));
+    EXPECT_CALL(*m_gstPlayerMock, attachSource(mediaSource));
 
-    EXPECT_EQ(m_mediaPipeline->attachSource(m_mediaSource), true);
-    EXPECT_EQ(m_mediaSource.getId(), static_cast<int32_t>(m_type));
+    EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), true);
+    EXPECT_EQ(mediaSource.getId(), static_cast<int32_t>(m_type));
 }
 
 /**
@@ -52,11 +68,11 @@ TEST_F(RialtoServerMediaPipelineSourceTest, AttachSourceSuccess)
  */
 TEST_F(RialtoServerMediaPipelineSourceTest, NoGstPlayerFailure)
 {
-    IMediaPipeline::MediaSource m_mediaSource(m_id, m_type, m_kCaps);
+    IMediaPipeline::MediaSource mediaSource(m_id, m_type, m_kMimeType);
 
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_EQ(m_mediaPipeline->attachSource(m_mediaSource), false);
-    EXPECT_EQ(m_mediaSource.getId(), -1);
+    EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), false);
+    EXPECT_EQ(mediaSource.getId(), -1);
 }
 
 /**
@@ -64,13 +80,13 @@ TEST_F(RialtoServerMediaPipelineSourceTest, NoGstPlayerFailure)
  */
 TEST_F(RialtoServerMediaPipelineSourceTest, TypeUnknownFailure)
 {
-    IMediaPipeline::MediaSource m_mediaSource(m_id, MediaSourceType::UNKNOWN, m_kCaps);
+    IMediaPipeline::MediaSource mediaSource(m_id, MediaSourceType::UNKNOWN, m_kMimeType);
 
     loadGstPlayer();
     mainThreadWillEnqueueTaskAndWait();
 
-    EXPECT_CALL(*m_gstPlayerMock, attachSource(_, _)).Times(0);
+    EXPECT_CALL(*m_gstPlayerMock, attachSource(mediaSource)).Times(0);
 
-    EXPECT_EQ(m_mediaPipeline->attachSource(m_mediaSource), false);
-    EXPECT_EQ(m_mediaSource.getId(), -1);
+    EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), false);
+    EXPECT_EQ(mediaSource.getId(), -1);
 }

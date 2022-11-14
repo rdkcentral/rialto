@@ -38,15 +38,6 @@ constexpr double kNoPendingPlaybackRate{0.0};
 using StreamInfoMap = std::map<MediaSourceType, GstElement *>;
 
 /**
- * @brief Definition of a source.
- */
-struct Source
-{
-    MediaSourceType type;
-    GstCaps *caps;
-};
-
-/**
  * @brief Structure used for video geometry
  */
 struct Rectangle

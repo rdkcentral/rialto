@@ -38,6 +38,7 @@ set (
         RIALTO_PLAYER_PUBLIC_HEADERS
         include/IMediaPipeline.h
         include/IMediaPipelineClient.h
+        include/IMediaPipelineCapabilities.h
         include/IMediaKeys.h
         include/IMediaKeysClient.h
         include/IMediaKeysCapabilities.h

@@ -33,12 +33,12 @@ using testing::StrictMock;
 struct AttachSourceTest : public testing::Test
 {
     firebolt::rialto::server::PlayerContext m_context{};
-    std::shared_ptr<firebolt::rialto::server::mock::GlibWrapperMock> m_glibWrapper{
-        std::make_shared<StrictMock<firebolt::rialto::server::mock::GlibWrapperMock>>()};
-    std::shared_ptr<firebolt::rialto::server::mock::GstWrapperMock> m_gstWrapper{
-        std::make_shared<StrictMock<firebolt::rialto::server::mock::GstWrapperMock>>()};
+    std::shared_ptr<firebolt::rialto::server::GlibWrapperMock> m_glibWrapper{
+        std::make_shared<StrictMock<firebolt::rialto::server::GlibWrapperMock>>()};
+    std::shared_ptr<firebolt::rialto::server::GstWrapperMock> m_gstWrapper{
+        std::make_shared<StrictMock<firebolt::rialto::server::GstWrapperMock>>()};
     GstCaps m_gstCaps1{};
-    std::string m_capsStr2{"caps2"};
+    std::string m_mimeType2{"video/mpeg"};
     GstCaps m_gstCaps2{};
     GstElement m_appSrc{};
     std::string m_vidName{"vidsrc"};
@@ -47,17 +47,21 @@ struct AttachSourceTest : public testing::Test
 
 TEST_F(AttachSourceTest, shouldNotAttachUnknownSource)
 {
-    firebolt::rialto::server::Source source{firebolt::rialto::MediaSourceType::UNKNOWN, &m_gstCaps1};
+    firebolt::rialto::IMediaPipeline::MediaSource source(-1, firebolt::rialto::MediaSourceType::UNKNOWN,
+                                                         m_mimeType2.c_str());
     firebolt::rialto::server::AttachSource task{m_context, m_gstWrapper, m_glibWrapper, source};
-    EXPECT_CALL(*m_gstWrapper, gstCapsUnref(&m_gstCaps1));
+    EXPECT_CALL(*m_gstWrapper, gstCapsFromString(_)).WillOnce(Return(&m_gstCaps1));
+    EXPECT_CALL(*m_gstWrapper, gstCapsUnref(_));
     task.execute();
     EXPECT_EQ(0, m_context.streamInfo.size());
 }
 
 TEST_F(AttachSourceTest, shouldAttachAudioSource)
 {
-    firebolt::rialto::server::Source source{firebolt::rialto::MediaSourceType::AUDIO, &m_gstCaps1};
+    firebolt::rialto::IMediaPipeline::MediaSource source(-1, firebolt::rialto::MediaSourceType::AUDIO,
+                                                         m_mimeType2.c_str());
     firebolt::rialto::server::AttachSource task{m_context, m_gstWrapper, m_glibWrapper, source};
+    EXPECT_CALL(*m_gstWrapper, gstCapsFromString(_)).WillOnce(Return(&m_gstCaps1));
     EXPECT_CALL(*m_gstWrapper, gstElementFactoryMake(_, CharStrMatcher(m_audName.c_str()))).WillOnce(Return(&m_appSrc));
     EXPECT_CALL(*m_gstWrapper, gstAppSrcSetCaps(GST_APP_SRC(&m_appSrc), &m_gstCaps1));
     EXPECT_CALL(*m_gstWrapper, gstCapsUnref(&m_gstCaps1));
@@ -69,8 +73,10 @@ TEST_F(AttachSourceTest, shouldAttachAudioSource)
 
 TEST_F(AttachSourceTest, shouldAttachVideoSource)
 {
-    firebolt::rialto::server::Source source{firebolt::rialto::MediaSourceType::VIDEO, &m_gstCaps1};
+    firebolt::rialto::IMediaPipeline::MediaSource source(-1, firebolt::rialto::MediaSourceType::VIDEO,
+                                                         m_mimeType2.c_str());
     firebolt::rialto::server::AttachSource task{m_context, m_gstWrapper, m_glibWrapper, source};
+    EXPECT_CALL(*m_gstWrapper, gstCapsFromString(_)).WillOnce(Return(&m_gstCaps1));
     EXPECT_CALL(*m_gstWrapper, gstElementFactoryMake(_, CharStrMatcher(m_vidName.c_str()))).WillOnce(Return(&m_appSrc));
     EXPECT_CALL(*m_gstWrapper, gstAppSrcSetCaps(GST_APP_SRC(&m_appSrc), &m_gstCaps1));
     EXPECT_CALL(*m_gstWrapper, gstCapsUnref(&m_gstCaps1));
@@ -83,12 +89,11 @@ TEST_F(AttachSourceTest, shouldAttachVideoSource)
 TEST_F(AttachSourceTest, shouldUpdateEmptyCapsInAudioSource)
 {
     m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, &m_appSrc);
-    firebolt::rialto::server::Source source{firebolt::rialto::MediaSourceType::AUDIO, &m_gstCaps2};
+    firebolt::rialto::IMediaPipeline::MediaSource source(-1, firebolt::rialto::MediaSourceType::AUDIO,
+                                                         m_mimeType2.c_str());
     firebolt::rialto::server::AttachSource task{m_context, m_gstWrapper, m_glibWrapper, source};
+    EXPECT_CALL(*m_gstWrapper, gstCapsFromString(_)).WillOnce(Return(&m_gstCaps2));
     EXPECT_CALL(*m_gstWrapper, gstAppSrcGetCaps(GST_APP_SRC(&m_appSrc))).WillOnce(Return(nullptr));
-    EXPECT_CALL(*m_gstWrapper, gstCapsToString(&m_gstCaps2))
-        .WillOnce(Return(const_cast<gchar *>(reinterpret_cast<const gchar *>(m_capsStr2.c_str()))));
-    EXPECT_CALL(*m_glibWrapper, gFree(reinterpret_cast<gpointer *>(&m_capsStr2[0])));
     EXPECT_CALL(*m_gstWrapper, gstAppSrcSetCaps(GST_APP_SRC(&m_appSrc), &m_gstCaps2));
     EXPECT_CALL(*m_gstWrapper, gstCapsUnref(&m_gstCaps2));
     task.execute();
@@ -99,13 +104,12 @@ TEST_F(AttachSourceTest, shouldUpdateEmptyCapsInAudioSource)
 TEST_F(AttachSourceTest, shouldUpdateExistingCapsInAudioSource)
 {
     m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, &m_appSrc);
-    firebolt::rialto::server::Source source{firebolt::rialto::MediaSourceType::AUDIO, &m_gstCaps2};
+    firebolt::rialto::IMediaPipeline::MediaSource source(-1, firebolt::rialto::MediaSourceType::AUDIO,
+                                                         m_mimeType2.c_str());
     firebolt::rialto::server::AttachSource task{m_context, m_gstWrapper, m_glibWrapper, source};
+    EXPECT_CALL(*m_gstWrapper, gstCapsFromString(_)).WillOnce(Return(&m_gstCaps2));
     EXPECT_CALL(*m_gstWrapper, gstAppSrcGetCaps(GST_APP_SRC(&m_appSrc))).WillOnce(Return(&m_gstCaps1));
     EXPECT_CALL(*m_gstWrapper, gstCapsIsEqual(&m_gstCaps1, &m_gstCaps2)).WillOnce(Return(false));
-    EXPECT_CALL(*m_gstWrapper, gstCapsToString(&m_gstCaps2))
-        .WillOnce(Return(const_cast<gchar *>(reinterpret_cast<const gchar *>(m_capsStr2.c_str()))));
-    EXPECT_CALL(*m_glibWrapper, gFree(reinterpret_cast<gpointer *>(&m_capsStr2[0])));
     EXPECT_CALL(*m_gstWrapper, gstAppSrcSetCaps(GST_APP_SRC(&m_appSrc), &m_gstCaps2));
     EXPECT_CALL(*m_gstWrapper, gstCapsUnref(&m_gstCaps1));
     EXPECT_CALL(*m_gstWrapper, gstCapsUnref(&m_gstCaps2));
@@ -117,12 +121,11 @@ TEST_F(AttachSourceTest, shouldUpdateExistingCapsInAudioSource)
 TEST_F(AttachSourceTest, shouldUpdateEmptyCapsInVideoSource)
 {
     m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::VIDEO, &m_appSrc);
-    firebolt::rialto::server::Source source{firebolt::rialto::MediaSourceType::VIDEO, &m_gstCaps2};
+    firebolt::rialto::IMediaPipeline::MediaSource source(-1, firebolt::rialto::MediaSourceType::VIDEO,
+                                                         m_mimeType2.c_str());
     firebolt::rialto::server::AttachSource task{m_context, m_gstWrapper, m_glibWrapper, source};
+    EXPECT_CALL(*m_gstWrapper, gstCapsFromString(_)).WillOnce(Return(&m_gstCaps2));
     EXPECT_CALL(*m_gstWrapper, gstAppSrcGetCaps(GST_APP_SRC(&m_appSrc))).WillOnce(Return(nullptr));
-    EXPECT_CALL(*m_gstWrapper, gstCapsToString(&m_gstCaps2))
-        .WillOnce(Return(const_cast<gchar *>(reinterpret_cast<const gchar *>(m_capsStr2.c_str()))));
-    EXPECT_CALL(*m_glibWrapper, gFree(reinterpret_cast<gpointer *>(&m_capsStr2[0])));
     EXPECT_CALL(*m_gstWrapper, gstAppSrcSetCaps(GST_APP_SRC(&m_appSrc), &m_gstCaps2));
     EXPECT_CALL(*m_gstWrapper, gstCapsUnref(&m_gstCaps2));
     task.execute();
@@ -133,13 +136,12 @@ TEST_F(AttachSourceTest, shouldUpdateEmptyCapsInVideoSource)
 TEST_F(AttachSourceTest, shouldUpdateExistingCapsInVideoSource)
 {
     m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::VIDEO, &m_appSrc);
-    firebolt::rialto::server::Source source{firebolt::rialto::MediaSourceType::VIDEO, &m_gstCaps2};
+    firebolt::rialto::IMediaPipeline::MediaSource source(-1, firebolt::rialto::MediaSourceType::VIDEO,
+                                                         m_mimeType2.c_str());
     firebolt::rialto::server::AttachSource task{m_context, m_gstWrapper, m_glibWrapper, source};
+    EXPECT_CALL(*m_gstWrapper, gstCapsFromString(_)).WillOnce(Return(&m_gstCaps2));
     EXPECT_CALL(*m_gstWrapper, gstAppSrcGetCaps(GST_APP_SRC(&m_appSrc))).WillOnce(Return(&m_gstCaps1));
     EXPECT_CALL(*m_gstWrapper, gstCapsIsEqual(&m_gstCaps1, &m_gstCaps2)).WillOnce(Return(false));
-    EXPECT_CALL(*m_gstWrapper, gstCapsToString(&m_gstCaps2))
-        .WillOnce(Return(const_cast<gchar *>(reinterpret_cast<const gchar *>(m_capsStr2.c_str()))));
-    EXPECT_CALL(*m_glibWrapper, gFree(reinterpret_cast<gpointer *>(&m_capsStr2[0])));
     EXPECT_CALL(*m_gstWrapper, gstAppSrcSetCaps(GST_APP_SRC(&m_appSrc), &m_gstCaps2));
     EXPECT_CALL(*m_gstWrapper, gstCapsUnref(&m_gstCaps1));
     EXPECT_CALL(*m_gstWrapper, gstCapsUnref(&m_gstCaps2));
@@ -151,8 +153,10 @@ TEST_F(AttachSourceTest, shouldUpdateExistingCapsInVideoSource)
 TEST_F(AttachSourceTest, shouldNotUpdateAudioSource)
 {
     m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, &m_appSrc);
-    firebolt::rialto::server::Source source{firebolt::rialto::MediaSourceType::AUDIO, &m_gstCaps2};
+    firebolt::rialto::IMediaPipeline::MediaSource source(-1, firebolt::rialto::MediaSourceType::AUDIO,
+                                                         m_mimeType2.c_str());
     firebolt::rialto::server::AttachSource task{m_context, m_gstWrapper, m_glibWrapper, source};
+    EXPECT_CALL(*m_gstWrapper, gstCapsFromString(_)).WillOnce(Return(&m_gstCaps2));
     EXPECT_CALL(*m_gstWrapper, gstAppSrcGetCaps(GST_APP_SRC(&m_appSrc))).WillOnce(Return(&m_gstCaps1));
     EXPECT_CALL(*m_gstWrapper, gstCapsIsEqual(&m_gstCaps1, &m_gstCaps2)).WillOnce(Return(true));
     EXPECT_CALL(*m_gstWrapper, gstCapsUnref(&m_gstCaps1));
@@ -165,8 +169,10 @@ TEST_F(AttachSourceTest, shouldNotUpdateAudioSource)
 TEST_F(AttachSourceTest, shouldNotUpdateVideoSource)
 {
     m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::VIDEO, &m_appSrc);
-    firebolt::rialto::server::Source source{firebolt::rialto::MediaSourceType::VIDEO, &m_gstCaps2};
+    firebolt::rialto::IMediaPipeline::MediaSource source(-1, firebolt::rialto::MediaSourceType::VIDEO,
+                                                         m_mimeType2.c_str());
     firebolt::rialto::server::AttachSource task{m_context, m_gstWrapper, m_glibWrapper, source};
+    EXPECT_CALL(*m_gstWrapper, gstCapsFromString(_)).WillOnce(Return(&m_gstCaps2));
     EXPECT_CALL(*m_gstWrapper, gstAppSrcGetCaps(GST_APP_SRC(&m_appSrc))).WillOnce(Return(&m_gstCaps1));
     EXPECT_CALL(*m_gstWrapper, gstCapsIsEqual(&m_gstCaps1, &m_gstCaps2)).WillOnce(Return(true));
     EXPECT_CALL(*m_gstWrapper, gstCapsUnref(&m_gstCaps1));

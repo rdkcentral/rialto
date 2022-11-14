@@ -42,9 +42,12 @@ on:
       - '**/cpplint.yml'
       - '**/clang-format.yml'
       - '**/cppcheck.yml'
+      - '**/build_and_deploy_gh_pages.yml'
       - 'docs/**'
       - 'rialto.supp'
       - 'scripts/**'
+      - 'Doxyfile'
+      - 'DoxygenLayout.xml'
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -178,7 +181,7 @@ jobs:
         if: success()
         with:
           name: coverage_report
-          path: build/coverage_report
+          path: build/gh_pages/coverage_report
 
       # Upload coverage statistics on success
       - name: Upload Coverage Statistics

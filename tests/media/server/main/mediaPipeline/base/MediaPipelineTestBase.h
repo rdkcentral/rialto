@@ -32,6 +32,7 @@
 #include "MediaPipelineClientMock.h"
 #include "MediaPipelineServerInternal.h"
 #include "SharedMemoryBufferMock.h"
+#include "MediaSourceUtil.h"
 #include <gtest/gtest.h>
 #include <memory>
 

@@ -23,7 +23,7 @@
 #include <gtest/gtest.h>
 #include <mutex>
 
-using firebolt::rialto::server::mock::PlayerTaskMock;
+using firebolt::rialto::server::PlayerTaskMock;
 using testing::Invoke;
 using testing::StrictMock;
 

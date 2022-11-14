@@ -21,13 +21,13 @@
 #define FIREBOLT_RIALTO_SERVER_MATCHERS_H_
 
 #include "PlayerContext.h"
+
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <string>
 
 namespace firebolt::rialto::server
 {
-bool operator==(const Source &lhs, const Source &rhs);
 bool operator==(const Rectangle &lhs, const Rectangle &rhs);
 } // namespace firebolt::rialto::server
 

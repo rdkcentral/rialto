@@ -17,15 +17,15 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_CLIENT_MOCK_MEDIA_PIPELINE_IPC_MOCK_H_
-#define FIREBOLT_RIALTO_CLIENT_MOCK_MEDIA_PIPELINE_IPC_MOCK_H_
+#ifndef FIREBOLT_RIALTO_CLIENT_MEDIA_PIPELINE_IPC_MOCK_H_
+#define FIREBOLT_RIALTO_CLIENT_MEDIA_PIPELINE_IPC_MOCK_H_
 
 #include "IMediaPipelineIpc.h"
 #include <gmock/gmock.h>
 #include <memory>
 #include <string>
 
-namespace firebolt::rialto::client::mock
+namespace firebolt::rialto::client
 {
 class MediaPipelineIpcMock : public IMediaPipelineIpc
 {
@@ -33,7 +33,7 @@ public:
     MediaPipelineIpcMock() = default;
     virtual ~MediaPipelineIpcMock() = default;
 
-    MOCK_METHOD(bool, attachSource, (MediaSourceType type, const std::string &caps, int32_t &sourceId), (override));
+    MOCK_METHOD(bool, attachSource, (const IMediaPipeline::MediaSource &source, int32_t &sourceId), (override));
     MOCK_METHOD(bool, removeSource, (int32_t sourceId), (override));
     MOCK_METHOD(bool, load, (MediaType type, const std::string &mimeType, const std::string &url), (override));
     MOCK_METHOD(bool, setVideoWindow, (uint32_t x, uint32_t y, uint32_t width, uint32_t height), (override));
@@ -45,6 +45,6 @@ public:
     MOCK_METHOD(bool, getPosition, (int64_t & position), (override));
     MOCK_METHOD(bool, setPlaybackRate, (double rate), (override));
 };
-} // namespace firebolt::rialto::client::mock
+} // namespace firebolt::rialto::client
 
-#endif // FIREBOLT_RIALTO_CLIENT_MOCK_MEDIA_PIPELINE_IPC_MOCK_H_
+#endif // FIREBOLT_RIALTO_CLIENT_MEDIA_PIPELINE_IPC_MOCK_H_

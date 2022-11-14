@@ -17,13 +17,13 @@
  * limitations under the License.
  */
 
-#ifndef RIALTO_SERVERMANAGER_SERVICE_MOCKS_SERVICE_CONTEXT_MOCK_H_
-#define RIALTO_SERVERMANAGER_SERVICE_MOCKS_SERVICE_CONTEXT_MOCK_H_
+#ifndef RIALTO_SERVERMANAGER_SERVICE_SERVICE_CONTEXT_MOCK_H_
+#define RIALTO_SERVERMANAGER_SERVICE_SERVICE_CONTEXT_MOCK_H_
 
 #include "IServiceContext.h"
 #include <gmock/gmock.h>
 
-namespace rialto::servermanager::service::mocks
+namespace rialto::servermanager::service
 {
 class ServiceContextMock : public IServiceContext
 {
@@ -33,6 +33,6 @@ public:
 
     MOCK_METHOD(common::ISessionServerAppManager &, getSessionServerAppManager, (), (override));
 };
-} // namespace rialto::servermanager::service::mocks
+} // namespace rialto::servermanager::service
 
-#endif // RIALTO_SERVERMANAGER_SERVICE_MOCKS_SERVICE_CONTEXT_MOCK_H_
+#endif // RIALTO_SERVERMANAGER_SERVICE_SERVICE_CONTEXT_MOCK_H_

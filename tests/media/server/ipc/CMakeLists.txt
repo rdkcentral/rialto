@@ -19,7 +19,9 @@
 
 set( Protobuf_IMPORT_DIRS "${CMAKE_SYSROOT}/usr/include" "${CMAKE_CURRENT_LIST_DIR}/../../../../ipc/common/proto/" )
 protobuf_generate_cpp( PROTO_SRCS PROTO_HEADERS ../../../../proto/servermanagermodule.proto ../../../../proto/mediapipelinemodule.proto
-        ../../../../proto/mediakeysmodule.proto ../../../../proto/mediakeyscapabilitiesmodule.proto ../../../../proto/rialtocontrolmodule.proto )
+        ../../../../proto/mediapipelinecapabilitiesmodule.proto ../../../../proto/mediakeysmodule.proto 
+        ../../../../proto/mediakeyscapabilitiesmodule.proto ../../../../proto/rialtocontrolmodule.proto
+        ../../../../proto/rialtocommon.proto )
 
 set( CMAKE_INCLUDE_CURRENT_DIR ON )
 
@@ -56,6 +58,10 @@ add_gtests (
         # MediaKeysModuleService unittests
         mediaKeysCapabilitiesModuleService/MediaKeysCapabilitiesModuleServiceTestsFixture.cpp
         mediaKeysCapabilitiesModuleService/MediaKeysCapabilitiesModuleServiceTests.cpp
+
+        # MediaPipelineCapabilitiesModuleService unittests
+        mediaPipelineCapabilitiesModule/MediaPipelineCapabilitiesModuleServiceTestsFixture.cpp
+        mediaPipelineCapabilitiesModule/MediaPipelineCapabilitiesModuleServiceTests.cpp
         )
 
 target_include_directories(
@@ -70,7 +76,8 @@ target_include_directories(
         $<TARGET_PROPERTY:RialtoLogging,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoServerMocks,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoIpcMocks,INTERFACE_INCLUDE_DIRECTORIES>
-
+        $<TARGET_PROPERTY:RialtoCommonMisc,INTERFACE_INCLUDE_DIRECTORIES>
+        
         stubs
         )
 
@@ -81,6 +88,7 @@ target_link_libraries(
         RialtoServerIpc
         RialtoIpcClient
         RialtoIpcCommon
+        RialtoCommonMisc
         protobuf::libprotobuf
         )
 

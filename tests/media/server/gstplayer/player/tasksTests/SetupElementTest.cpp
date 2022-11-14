@@ -34,11 +34,11 @@ using testing::StrictMock;
 struct SetupElementTest : public testing::Test
 {
     firebolt::rialto::server::PlayerContext m_context{};
-    std::shared_ptr<firebolt::rialto::server::mock::GlibWrapperMock> m_glibWrapper{
-        std::make_shared<StrictMock<firebolt::rialto::server::mock::GlibWrapperMock>>()};
-    std::shared_ptr<firebolt::rialto::server::mock::GstWrapperMock> m_gstWrapper{
-        std::make_shared<StrictMock<firebolt::rialto::server::mock::GstWrapperMock>>()};
-    StrictMock<firebolt::rialto::server::mock::GstPlayerPrivateMock> m_gstPlayer;
+    std::shared_ptr<firebolt::rialto::server::GlibWrapperMock> m_glibWrapper{
+        std::make_shared<StrictMock<firebolt::rialto::server::GlibWrapperMock>>()};
+    std::shared_ptr<firebolt::rialto::server::GstWrapperMock> m_gstWrapper{
+        std::make_shared<StrictMock<firebolt::rialto::server::GstWrapperMock>>()};
+    StrictMock<firebolt::rialto::server::GstPlayerPrivateMock> m_gstPlayer;
     GstElement m_element{};
     GstElementFactory *m_elementFactory{};
     guint m_signals[1]{123};

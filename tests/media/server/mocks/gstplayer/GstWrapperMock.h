@@ -17,14 +17,14 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_MOCK_GST_WRAPPER_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_MOCK_GST_WRAPPER_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_GST_WRAPPER_MOCK_H_
+#define FIREBOLT_RIALTO_SERVER_GST_WRAPPER_MOCK_H_
 
 #include "IGstWrapper.h"
 #include <gmock/gmock.h>
 #include <string>
 
-namespace firebolt::rialto::server::mock
+namespace firebolt::rialto::server
 {
 class GstWrapperMock : public IGstWrapper
 {
@@ -114,6 +114,14 @@ public:
     MOCK_METHOD(gboolean, gstByteWriterPutUint16Be, (GstByteWriter * writer, guint16 val), (const, override));
     MOCK_METHOD(gboolean, gstByteWriterPutUint32Be, (GstByteWriter * writer, guint32 val), (const, override));
     MOCK_METHOD(GstBuffer *, gstBufferNewWrapped, (gpointer data, gsize size), (const, override));
+    MOCK_METHOD(GstCaps *, gstCodecUtilsOpusCreateCapsFromHeader, (gconstpointer data, gsize size), (const, override));
+    MOCK_METHOD(gboolean, gstCapsIsSubset, (const GstCaps *subset, const GstCaps *superset), (const));
+    MOCK_METHOD(gboolean, gstCapsIsStrictlyEqual, (const GstCaps *caps1, const GstCaps *caps2), (const));
+    MOCK_METHOD(gboolean, gstCapsCanIntersect, (const GstCaps *caps1, const GstCaps *caps2), (const));
+    MOCK_METHOD(GstCaps *, gstStaticCapsGet, (GstStaticCaps * staticCaps), (const));
+    MOCK_METHOD(GList *, gstElementFactoryListGetElements, (GstElementFactoryListType type, GstRank minrank), (const));
+    MOCK_METHOD(const GList *, gstElementFactoryGetStaticPadTemplates, (GstElementFactory * factory), (const));
+    MOCK_METHOD(void, gstPluginFeatureListFree, (GList * list), (const));
 
     void gstCapsSetSimple(GstCaps *caps, const gchar *field, ...) const override
     {
@@ -153,6 +161,6 @@ public:
         return structure;
     }
 };
-} // namespace firebolt::rialto::server::mock
+} // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_MOCK_GST_WRAPPER_MOCK_H_
+#endif // FIREBOLT_RIALTO_SERVER_GST_WRAPPER_MOCK_H_

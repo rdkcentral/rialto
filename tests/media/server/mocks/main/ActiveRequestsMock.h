@@ -17,14 +17,14 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_MOCK_ACTIVE_REQUESTS_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_MOCK_ACTIVE_REQUESTS_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_ACTIVE_REQUESTS_MOCK_H_
+#define FIREBOLT_RIALTO_SERVER_ACTIVE_REQUESTS_MOCK_H_
 
 #include "IActiveRequests.h"
 #include <gmock/gmock.h>
 #include <memory>
 
-namespace firebolt::rialto::server::mock
+namespace firebolt::rialto::server
 {
 class ActiveRequestsMock : public IActiveRequests
 {
@@ -37,6 +37,6 @@ public:
                 (std::uint32_t requestId, const std::unique_ptr<IMediaPipeline::MediaSegment> &segment), (override));
     MOCK_METHOD(const IMediaPipeline::MediaSegmentVector &, getSegments, (std::uint32_t requestId), (const, override));
 };
-} // namespace firebolt::rialto::server::mock
+} // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_MOCK_ACTIVE_REQUESTS_MOCK_H_
+#endif // FIREBOLT_RIALTO_SERVER_ACTIVE_REQUESTS_MOCK_H_

@@ -16,8 +16,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #include "tasks/PlayerTaskFactory.h"
+#include "IMediaPipeline.h"
 #include "tasks/AttachSamples.h"
 #include "tasks/AttachSource.h"
 #include "tasks/CheckAudioUnderflow.h"
@@ -54,7 +54,8 @@ PlayerTaskFactory::createAttachSamples(PlayerContext &context, IGstPlayerPrivate
     return std::make_unique<AttachSamples>(context, player, mediaSegments);
 }
 
-std::unique_ptr<IPlayerTask> PlayerTaskFactory::createAttachSource(PlayerContext &context, const Source &source) const
+std::unique_ptr<IPlayerTask> PlayerTaskFactory::createAttachSource(PlayerContext &context,
+                                                                   const IMediaPipeline::MediaSource &source) const
 {
     return std::make_unique<AttachSource>(context, m_gstWrapper, m_glibWrapper, source);
 }

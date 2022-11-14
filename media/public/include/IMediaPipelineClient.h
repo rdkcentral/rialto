@@ -37,12 +37,16 @@
 
 namespace firebolt::rialto
 {
+/* Values representing custom duration values, used by IMediaPipelineClient::notifyDuration() method*/
 /**
- * @brief Values representing custom duration values, used by IMediaPipelineClient::notifyDuration() method
+ * @brief Stream duration is unknown or undefined
  *
  */
-constexpr int64_t kDurationUnknown{-1};  // Stream duration is unknown or undefined
-constexpr int64_t kDurationUnending{-2}; // Stream duration is unending or live
+constexpr int64_t kDurationUnknown{-1};
+/**
+ * @brief Stream duration is unending or live
+ */
+constexpr int64_t kDurationUnending{-2};
 
 /**
  * @brief The Rialto media player client interface.
@@ -155,10 +159,10 @@ public:
      *     numFramesSent <= frameCount
      *     numBytesSent <= maxMediaBytes
      *
-     * @param[in] sourceId      : The source to read data from.
-     * @param[in] frameCount    : The number of frames to read.
-     * @param[in] requestId     : Need data request id.
-     * @param[in] shmInfo       : Information for populating the shared memory (null if not applicable to the client).
+     * @param[in] sourceId          : The source to read data from.
+     * @param[in] frameCount        : The number of frames to read.
+     * @param[in] needDataRequestId : Need data request id.
+     * @param[in] shmInfo           : Information for populating the shared memory (null if not applicable to the client).
      */
     virtual void notifyNeedMediaData(int32_t sourceId, size_t frameCount, uint32_t needDataRequestId,
                                      const std::shared_ptr<ShmInfo> &shmInfo) = 0;

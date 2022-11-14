@@ -53,12 +53,12 @@ using testing::StrictMock;
 struct PlayerTaskFactoryTest : public testing::Test
 {
     firebolt::rialto::server::PlayerContext m_context;
-    StrictMock<firebolt::rialto::server::mock::GstPlayerPrivateMock> m_gstPlayer;
-    StrictMock<firebolt::rialto::server::mock::GstPlayerClientMock> m_gstPlayerClient;
-    std::shared_ptr<firebolt::rialto::server::mock::GlibWrapperMock> m_glibWrapper{
-        std::make_shared<StrictMock<firebolt::rialto::server::mock::GlibWrapperMock>>()};
-    std::shared_ptr<firebolt::rialto::server::mock::GstWrapperMock> m_gstWrapper{
-        std::make_shared<StrictMock<firebolt::rialto::server::mock::GstWrapperMock>>()};
+    StrictMock<firebolt::rialto::server::GstPlayerPrivateMock> m_gstPlayer;
+    StrictMock<firebolt::rialto::server::GstPlayerClientMock> m_gstPlayerClient;
+    std::shared_ptr<firebolt::rialto::server::GlibWrapperMock> m_glibWrapper{
+        std::make_shared<StrictMock<firebolt::rialto::server::GlibWrapperMock>>()};
+    std::shared_ptr<firebolt::rialto::server::GstWrapperMock> m_gstWrapper{
+        std::make_shared<StrictMock<firebolt::rialto::server::GstWrapperMock>>()};
     firebolt::rialto::server::PlayerTaskFactory m_sut{&m_gstPlayerClient, m_gstWrapper, m_glibWrapper};
 };
 
@@ -71,7 +71,11 @@ TEST_F(PlayerTaskFactoryTest, ShouldCreateAttachSamples)
 
 TEST_F(PlayerTaskFactoryTest, ShouldCreateAttachSource)
 {
-    auto task = m_sut.createAttachSource(m_context, firebolt::rialto::server::Source{});
+    auto task =
+        m_sut.createAttachSource(m_context,
+                                 firebolt::rialto::IMediaPipeline::MediaSource{-1,
+                                                                               firebolt::rialto::MediaSourceType::VIDEO,
+                                                                               "video/mpeg"});
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::AttachSource &>(*task));
 }

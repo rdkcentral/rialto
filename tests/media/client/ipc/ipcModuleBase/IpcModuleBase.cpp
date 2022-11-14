@@ -38,6 +38,17 @@ void IpcModuleBase::expectInitIpc()
     expectAttachChannel();
 }
 
+void IpcModuleBase::expectInitIpcFailure()
+{
+    EXPECT_CALL(*m_ipcClientFactoryMock, getIpcClient()).WillOnce(Return(nullptr)).RetiresOnSaturation();
+}
+
+void IpcModuleBase::expectInitIpcButAttachChannelFailure()
+{
+    EXPECT_CALL(*m_ipcClientFactoryMock, getIpcClient()).WillOnce(Return(m_ipcClientMock)).RetiresOnSaturation();
+    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(nullptr)).RetiresOnSaturation();
+}
+
 void IpcModuleBase::expectAttachChannel()
 {
     EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();

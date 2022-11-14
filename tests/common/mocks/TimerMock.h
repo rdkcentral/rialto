@@ -17,14 +17,14 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_MOCK_TIMER_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_MOCK_TIMER_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_TIMER_MOCK_H_
+#define FIREBOLT_RIALTO_SERVER_TIMER_MOCK_H_
 
 #include "ITimer.h"
 
 #include <gmock/gmock.h>
 
-namespace firebolt::rialto::server::mock
+namespace firebolt::rialto::server
 {
 class TimerMock : public common::ITimer
 {
@@ -35,6 +35,6 @@ public:
     MOCK_METHOD(void, cancel, (), (override));
     MOCK_METHOD(bool, isActive, (), (const, override));
 };
-} // namespace firebolt::rialto::server::mock
+} // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_MOCK_TIMER_MOCK_H_
+#endif // FIREBOLT_RIALTO_SERVER_TIMER_MOCK_H_

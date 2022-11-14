@@ -52,11 +52,11 @@ CdmServiceTests::CdmServiceTests()
       m_mediaKeys{std::make_unique<StrictMock<firebolt::rialto::server::MediaKeysServerInternalMock>>()},
       m_mediaKeysMock{dynamic_cast<StrictMock<firebolt::rialto::server::MediaKeysServerInternalMock> &>(*m_mediaKeys)},
       m_mediaKeysCapabilitiesFactoryMock{
-          std::make_shared<StrictMock<firebolt::rialto::mock::MediaKeysCapabilitiesFactoryMock>>()},
-      m_mediaKeysCapabilities{std::make_shared<StrictMock<firebolt::rialto::mock::MediaKeysCapabilitiesMock>>()},
+          std::make_shared<StrictMock<firebolt::rialto::MediaKeysCapabilitiesFactoryMock>>()},
+      m_mediaKeysCapabilities{std::make_shared<StrictMock<firebolt::rialto::MediaKeysCapabilitiesMock>>()},
       m_mediaKeysCapabilitiesMock{
-          dynamic_cast<StrictMock<firebolt::rialto::mock::MediaKeysCapabilitiesMock> &>(*m_mediaKeysCapabilities)},
-      m_mediaKeysClientMock{std::make_shared<StrictMock<firebolt::rialto::mock::MediaKeysClientMock>>()},
+          dynamic_cast<StrictMock<firebolt::rialto::MediaKeysCapabilitiesMock> &>(*m_mediaKeysCapabilities)},
+      m_mediaKeysClientMock{std::make_shared<StrictMock<firebolt::rialto::MediaKeysClientMock>>()},
       m_sut{m_mediaKeysFactoryMock, m_mediaKeysCapabilitiesFactoryMock}
 {
 }

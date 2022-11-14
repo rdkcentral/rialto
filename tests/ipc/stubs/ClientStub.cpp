@@ -31,7 +31,7 @@ void onMessageReceived(bool *done)
 }
 }; // namespace
 
-ClientStub::ClientStub(const std::shared_ptr<firebolt::rialto::ipc::mock::TestClientMock> &clientMock,
+ClientStub::ClientStub(const std::shared_ptr<firebolt::rialto::ipc::TestClientMock> &clientMock,
                        const std::string &socketName)
     : m_socketName{socketName}, m_clientMock{clientMock}, m_messageReceived{false}
 {

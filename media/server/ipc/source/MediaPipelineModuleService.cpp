@@ -20,6 +20,7 @@
 #include "MediaPipelineModuleService.h"
 #include "IPlaybackService.h"
 #include "MediaPipelineClient.h"
+#include "RialtoCommonModule.h"
 #include "RialtoServerLogging.h"
 #include <IIpcController.h>
 #include <algorithm>
@@ -31,27 +32,6 @@ int generateSessionId()
 {
     static int sessionId{0};
     return sessionId++;
-}
-
-firebolt::rialto::MediaSourceType
-convertMediaSourceType(const firebolt::rialto::AttachSourceRequest_MediaSourceType &mediaSourceType)
-{
-    switch (mediaSourceType)
-    {
-    case firebolt::rialto::AttachSourceRequest_MediaSourceType::AttachSourceRequest_MediaSourceType_UNKNOWN:
-    {
-        return firebolt::rialto::MediaSourceType::UNKNOWN;
-    }
-    case firebolt::rialto::AttachSourceRequest_MediaSourceType::AttachSourceRequest_MediaSourceType_AUDIO:
-    {
-        return firebolt::rialto::MediaSourceType::AUDIO;
-    }
-    case firebolt::rialto::AttachSourceRequest_MediaSourceType::AttachSourceRequest_MediaSourceType_VIDEO:
-    {
-        return firebolt::rialto::MediaSourceType::VIDEO;
-    }
-    }
-    return firebolt::rialto::MediaSourceType::UNKNOWN;
 }
 
 firebolt::rialto::MediaType convertMediaType(const firebolt::rialto::LoadRequest_MediaType &mediaType)
@@ -102,6 +82,29 @@ convertMediaSourceStatus(const firebolt::rialto::HaveDataRequest_MediaSourceStat
     }
     return firebolt::rialto::MediaSourceStatus::ERROR;
 }
+
+firebolt::rialto::SegmentAlignment
+convertSegmentAlignment(const firebolt::rialto::AttachSourceRequest_SegmentAlignment &alignment)
+{
+    switch (alignment)
+    {
+    case firebolt::rialto::AttachSourceRequest_SegmentAlignment_ALIGNMENT_UNDEFINED:
+    {
+        return firebolt::rialto::SegmentAlignment::UNDEFINED;
+    }
+    case firebolt::rialto::AttachSourceRequest_SegmentAlignment_ALIGNMENT_NAL:
+    {
+        return firebolt::rialto::SegmentAlignment::NAL;
+    }
+    case firebolt::rialto::AttachSourceRequest_SegmentAlignment_ALIGNMENT_AU:
+    {
+        return firebolt::rialto::SegmentAlignment::AU;
+    }
+    }
+
+    return firebolt::rialto::SegmentAlignment::UNDEFINED;
+}
+
 } // namespace
 
 namespace firebolt::rialto::server::ipc
@@ -271,8 +274,31 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
                                               ::firebolt::rialto::AttachSourceResponse *response,
                                               ::google::protobuf::Closure *done)
 {
-    RIALTO_SERVER_LOG_DEBUG("%s requested.", __func__);
-    IMediaPipeline::MediaSource mediaSource{0, convertMediaSourceType(request->media_type()), request->caps().c_str()};
+    RIALTO_SERVER_LOG_DEBUG("%s requested. media type %s, mime_type: %s", __func__,
+                            firebolt::rialto::ProtoMediaSourceType::AUDIO == request->media_type() ? "audio" : "video",
+                            request->mime_type().c_str());
+    IMediaPipeline::MediaSource mediaSource{0, convertMediaSourceType(request->media_type()),
+                                            request->mime_type().c_str(),
+                                            convertSegmentAlignment(request->segment_alignment())};
+
+    if (request->media_type() == firebolt::rialto::ProtoMediaSourceType::AUDIO)
+    {
+        const auto &audioConfig = request->audio_config();
+        uint32_t numberofchannels = audioConfig.number_of_channels();
+        uint32_t sampleRate = audioConfig.sample_rate();
+
+        std::vector<uint8_t> codecSpecificConfig;
+        if (audioConfig.has_codec_specific_config())
+        {
+            auto codecSpecificConfigStr = audioConfig.codec_specific_config();
+            codecSpecificConfig.assign(codecSpecificConfigStr.begin(), codecSpecificConfigStr.end());
+        }
+
+        mediaSource = IMediaPipeline::MediaSource(0, request->mime_type(),
+                                                  {numberofchannels, sampleRate, codecSpecificConfig},
+                                                  convertSegmentAlignment(request->segment_alignment()));
+    }
+
     if (!m_playbackService.attachSource(request->session_id(), mediaSource))
     {
         RIALTO_SERVER_LOG_ERROR("Attach source failed");

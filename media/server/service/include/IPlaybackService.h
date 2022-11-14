@@ -26,6 +26,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace firebolt::rialto::server::service
 {
@@ -61,6 +62,8 @@ public:
     virtual bool haveData(int sessionId, MediaSourceStatus status, std::uint32_t numFrames,
                           std::uint32_t needDataRequestId) = 0;
     virtual bool getSharedMemory(int32_t &fd, uint32_t &size) = 0;
+    virtual std::vector<std::string> getSupportedMimeTypes(MediaSourceType type) = 0;
+    virtual bool isMimeTypeSupported(const std::string &mimeType) = 0;
 };
 } // namespace firebolt::rialto::server::service
 

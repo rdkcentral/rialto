@@ -22,6 +22,7 @@
 #include "IIpcServer.h"
 #include "IMediaKeysCapabilitiesModuleService.h"
 #include "IMediaKeysModuleService.h"
+#include "IMediaPipelineCapabilitiesModuleService.h"
 #include "IMediaPipelineModuleService.h"
 #include "IRialtoControlModuleService.h"
 #include "IServerManagerModuleServiceFactory.h"
@@ -44,6 +45,7 @@ IpcFactory::createSessionManagementServer(service::IPlaybackService &playbackSer
     return std::make_unique<
         SessionManagementServer>(firebolt::rialto::ipc::IServerFactory::createFactory(),
                                  firebolt::rialto::server::ipc::IMediaPipelineModuleServiceFactory::createFactory(),
+                                 firebolt::rialto::server::ipc::IMediaPipelineCapabilitiesModuleServiceFactory::createFactory(),
                                  firebolt::rialto::server::ipc::IMediaKeysModuleServiceFactory::createFactory(),
                                  firebolt::rialto::server::ipc::IMediaKeysCapabilitiesModuleServiceFactory::createFactory(),
                                  firebolt::rialto::server::ipc::IRialtoControlModuleServiceFactory::createFactory(),

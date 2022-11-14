@@ -17,15 +17,15 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_MOCK_GST_PLAYER_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_MOCK_GST_PLAYER_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_GST_PLAYER_MOCK_H_
+#define FIREBOLT_RIALTO_SERVER_GST_PLAYER_MOCK_H_
 
 #include "IGstPlayer.h"
 #include <gmock/gmock.h>
 #include <memory>
 #include <string>
 
-namespace firebolt::rialto::server::mock
+namespace firebolt::rialto::server
 {
 class GstPlayerMock : public IGstPlayer
 {
@@ -33,7 +33,7 @@ public:
     GstPlayerMock() = default;
     virtual ~GstPlayerMock() = default;
 
-    MOCK_METHOD(void, attachSource, (MediaSourceType type, const std::string &caps), (override));
+    MOCK_METHOD(void, attachSource, (const IMediaPipeline::MediaSource &mediaSource), (override));
     MOCK_METHOD(void, play, (), (override));
     MOCK_METHOD(void, pause, (), (override));
     MOCK_METHOD(void, stop, (), (override));
@@ -45,6 +45,6 @@ public:
     MOCK_METHOD(void, setEos, (const firebolt::rialto::MediaSourceType &type), (override));
     MOCK_METHOD(void, setPlaybackRate, (double rate), (override));
 };
-} // namespace firebolt::rialto::server::mock
+} // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_MOCK_GST_PLAYER_MOCK_H_
+#endif // FIREBOLT_RIALTO_SERVER_GST_PLAYER_MOCK_H_

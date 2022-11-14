@@ -17,14 +17,14 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_IPC_MOCK_TEST_MODULE_MOCK_H_
-#define FIREBOLT_RIALTO_IPC_MOCK_TEST_MODULE_MOCK_H_
+#ifndef FIREBOLT_RIALTO_IPC_TEST_MODULE_MOCK_H_
+#define FIREBOLT_RIALTO_IPC_TEST_MODULE_MOCK_H_
 
 #include "testmodule.pb.h"
 #include <gmock/gmock.h>
 #include <string>
 
-namespace firebolt::rialto::ipc::mock
+namespace firebolt::rialto::ipc
 {
 class TestModuleMock : public ::firebolt::rialto::TestModule
 {
@@ -74,6 +74,6 @@ public:
     TestModuleMock() {}
     virtual ~TestModuleMock() = default;
 };
-} // namespace firebolt::rialto::ipc::mock
+} // namespace firebolt::rialto::ipc
 
-#endif // FIREBOLT_RIALTO_IPC_MOCK_TEST_MODULE_MOCK_H_
+#endif // FIREBOLT_RIALTO_IPC_TEST_MODULE_MOCK_H_

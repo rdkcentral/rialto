@@ -87,10 +87,10 @@ private:
     std::shared_ptr<StrictMock<firebolt::rialto::server::MediaKeysServerInternalFactoryMock>> m_mediaKeysFactoryMock;
     std::unique_ptr<firebolt::rialto::server::IMediaKeysServerInternal> m_mediaKeys;
     StrictMock<firebolt::rialto::server::MediaKeysServerInternalMock> &m_mediaKeysMock;
-    std::shared_ptr<StrictMock<firebolt::rialto::mock::MediaKeysCapabilitiesFactoryMock>> m_mediaKeysCapabilitiesFactoryMock;
+    std::shared_ptr<StrictMock<firebolt::rialto::MediaKeysCapabilitiesFactoryMock>> m_mediaKeysCapabilitiesFactoryMock;
     std::shared_ptr<firebolt::rialto::IMediaKeysCapabilities> m_mediaKeysCapabilities;
-    StrictMock<firebolt::rialto::mock::MediaKeysCapabilitiesMock> &m_mediaKeysCapabilitiesMock;
-    std::shared_ptr<StrictMock<firebolt::rialto::mock::MediaKeysClientMock>> m_mediaKeysClientMock;
+    StrictMock<firebolt::rialto::MediaKeysCapabilitiesMock> &m_mediaKeysCapabilitiesMock;
+    std::shared_ptr<StrictMock<firebolt::rialto::MediaKeysClientMock>> m_mediaKeysClientMock;
     firebolt::rialto::server::service::CdmService m_sut;
 };
 

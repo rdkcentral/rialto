@@ -32,10 +32,9 @@ const std::string APP_NAME{"YouTube"};
 IpcTests::IpcTests()
     : m_expectationsFlag{false},
       m_sessionServerAppManager{
-          std::make_unique<StrictMock<rialto::servermanager::common::mocks::SessionServerAppManagerMock>>()},
-      m_sessionServerAppManagerMock{
-          dynamic_cast<StrictMock<rialto::servermanager::common::mocks::SessionServerAppManagerMock> &>(
-              *m_sessionServerAppManager)},
+          std::make_unique<StrictMock<rialto::servermanager::common::SessionServerAppManagerMock>>()},
+      m_sessionServerAppManagerMock{dynamic_cast<StrictMock<rialto::servermanager::common::SessionServerAppManagerMock> &>(
+          *m_sessionServerAppManager)},
       m_sut{std::make_unique<rialto::servermanager::ipc::Controller>(m_sessionServerAppManager)}
 {
 }

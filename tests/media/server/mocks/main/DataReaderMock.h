@@ -17,19 +17,19 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_MOCK_DATA_READER_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_MOCK_DATA_READER_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_DATA_READER_MOCK_H_
+#define FIREBOLT_RIALTO_SERVER_DATA_READER_MOCK_H_
 
 #include "IDataReader.h"
 #include <gmock/gmock.h>
 
-namespace firebolt::rialto::server::mock
+namespace firebolt::rialto::server
 {
 class DataReaderMock : public IDataReader
 {
 public:
     MOCK_METHOD(IMediaPipeline::MediaSegmentVector, readData, (), (const, override));
 };
-} // namespace firebolt::rialto::server::mock
+} // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_MOCK_DATA_READER_MOCK_H_
+#endif // FIREBOLT_RIALTO_SERVER_DATA_READER_MOCK_H_

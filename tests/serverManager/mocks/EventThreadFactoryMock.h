@@ -17,15 +17,15 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_COMMON_MOCKS_EVENT_THREAD_FACTORY_MOCK_H_
-#define FIREBOLT_RIALTO_COMMON_MOCKS_EVENT_THREAD_FACTORY_MOCK_H_
+#ifndef FIREBOLT_RIALTO_COMMON_EVENT_THREAD_FACTORY_MOCK_H_
+#define FIREBOLT_RIALTO_COMMON_EVENT_THREAD_FACTORY_MOCK_H_
 
 #include "IEventThread.h"
 #include <gmock/gmock.h>
 #include <memory>
 #include <string>
 
-namespace firebolt::rialto::common::mocks
+namespace firebolt::rialto::common
 {
 class EventThreadFactoryMock : public IEventThreadFactory
 {
@@ -35,6 +35,6 @@ public:
 
     MOCK_METHOD(std::unique_ptr<IEventThread>, createEventThread, (std::string threadName), (override, const));
 };
-} // namespace firebolt::rialto::common::mocks
+} // namespace firebolt::rialto::common
 
-#endif // FIREBOLT_RIALTO_COMMON_MOCKS_EVENT_THREAD_FACTORY_MOCK_H_
+#endif // FIREBOLT_RIALTO_COMMON_EVENT_THREAD_FACTORY_MOCK_H_

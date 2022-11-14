@@ -1,5 +1,8 @@
 # rialto
 
+## Project webpage (with current coverage report and Doxygen)
+https://rdkcentral.github.io/rialto/
+
 ## Coding Guidelines:
 https://wiki.rdkcentral.com/display/ASP/Rialto+Coding+Guidelines
 

@@ -17,15 +17,15 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_IPC_MOCK_IPC_CHANNEL_MOCK_H_
-#define FIREBOLT_RIALTO_IPC_MOCK_IPC_CHANNEL_MOCK_H_
+#ifndef FIREBOLT_RIALTO_IPC_IPC_CHANNEL_MOCK_H_
+#define FIREBOLT_RIALTO_IPC_IPC_CHANNEL_MOCK_H_
 
 #include "IIpcChannel.h"
 #include <gmock/gmock.h>
 #include <memory>
 #include <string>
 
-namespace firebolt::rialto::ipc::mock
+namespace firebolt::rialto::ipc
 {
 class ChannelMock : public IChannel
 {
@@ -49,6 +49,6 @@ public:
                  google::protobuf::Closure *done),
                 (override));
 };
-} // namespace firebolt::rialto::ipc::mock
+} // namespace firebolt::rialto::ipc
 
-#endif // FIREBOLT_RIALTO_IPC_MOCK_IPC_CHANNEL_MOCK_H_
+#endif // FIREBOLT_RIALTO_IPC_IPC_CHANNEL_MOCK_H_

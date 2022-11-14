@@ -37,7 +37,7 @@ TEST_F(RialtoServerMediaKeysGetCdmKeySessionIdTest, Success)
     std::string cdmKeySessionId;
     EXPECT_CALL(*m_mediaKeySessionMock, getCdmKeySessionId(cdmKeySessionId)).WillOnce(Return(MediaKeyErrorStatus::OK));
 
-    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeys->getCdmKeySessionId(m_keySessionId, cdmKeySessionId));
+    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeys->getCdmKeySessionId(m_kKeySessionId, cdmKeySessionId));
 }
 
 /**
@@ -46,7 +46,7 @@ TEST_F(RialtoServerMediaKeysGetCdmKeySessionIdTest, Success)
 TEST_F(RialtoServerMediaKeysGetCdmKeySessionIdTest, SessionDoesNotExistFailure)
 {
     std::string cdmKeySessionId;
-    EXPECT_EQ(MediaKeyErrorStatus::BAD_SESSION_ID, m_mediaKeys->getCdmKeySessionId(m_keySessionId + 1, cdmKeySessionId));
+    EXPECT_EQ(MediaKeyErrorStatus::BAD_SESSION_ID, m_mediaKeys->getCdmKeySessionId(m_kKeySessionId + 1, cdmKeySessionId));
 }
 
 /**
@@ -57,5 +57,5 @@ TEST_F(RialtoServerMediaKeysGetCdmKeySessionIdTest, SessionFailure)
     std::string cdmKeySessionId;
     EXPECT_CALL(*m_mediaKeySessionMock, getCdmKeySessionId(cdmKeySessionId)).WillOnce(Return(MediaKeyErrorStatus::FAIL));
 
-    EXPECT_EQ(MediaKeyErrorStatus::FAIL, m_mediaKeys->getCdmKeySessionId(m_keySessionId, cdmKeySessionId));
+    EXPECT_EQ(MediaKeyErrorStatus::FAIL, m_mediaKeys->getCdmKeySessionId(m_kKeySessionId, cdmKeySessionId));
 }

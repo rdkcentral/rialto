@@ -170,11 +170,6 @@ MediaPipelineServerInternal::~MediaPipelineServerInternal()
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
 }
 
-std::vector<std::string> MediaPipelineServerInternal::getSupportedCaps(MediaSourceType type)
-{
-    return {};
-}
-
 bool MediaPipelineServerInternal::load(MediaType type, const std::string &mimeType, const std::string &url)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
@@ -233,7 +228,7 @@ bool MediaPipelineServerInternal::attachSourceInternal(MediaSource &source)
         return false;
     }
 
-    m_gstPlayer->attachSource(source.getType(), source.getCaps());
+    m_gstPlayer->attachSource(source);
     source.setId(static_cast<int32_t>(source.getType()));
 
     return true;

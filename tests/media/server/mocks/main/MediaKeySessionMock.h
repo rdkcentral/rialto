@@ -17,15 +17,15 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_MOCK_MEDIA_KEY_SESSION_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_MOCK_MEDIA_KEY_SESSION_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_MEDIA_KEY_SESSION_MOCK_H_
+#define FIREBOLT_RIALTO_SERVER_MEDIA_KEY_SESSION_MOCK_H_
 
 #include "IMediaKeySession.h"
 #include <gmock/gmock.h>
 #include <string>
 #include <vector>
 
-namespace firebolt::rialto::server::mock
+namespace firebolt::rialto::server
 {
 class MediaKeySessionMock : public IMediaKeySession
 {
@@ -42,6 +42,6 @@ public:
     MOCK_METHOD(MediaKeyErrorStatus, removeKeySession, (), (override));
     MOCK_METHOD(MediaKeyErrorStatus, getCdmKeySessionId, (std::string & cdmKeySessionId), (override));
 };
-} // namespace firebolt::rialto::server::mock
+} // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_MOCK_MEDIA_KEY_SESSION_MOCK_H_
+#endif // FIREBOLT_RIALTO_SERVER_MEDIA_KEY_SESSION_MOCK_H_

@@ -34,7 +34,6 @@
 #include <string>
 
 using namespace firebolt::rialto;
-using namespace firebolt::rialto::mock;
 using namespace firebolt::rialto::server;
 using namespace firebolt::rialto::server::mock;
 

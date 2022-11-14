@@ -17,13 +17,13 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_MOCK_DECRYPTION_SERVICE_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_MOCK_DECRYPTION_SERVICE_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_DECRYPTION_SERVICE_MOCK_H_
+#define FIREBOLT_RIALTO_SERVER_DECRYPTION_SERVICE_MOCK_H_
 
 #include "IDecryptionService.h"
 #include <gmock/gmock.h>
 
-namespace firebolt::rialto::server::mock
+namespace firebolt::rialto::server
 {
 class DecryptionServiceMock : public IDecryptionService
 {
@@ -33,6 +33,6 @@ public:
                  GstBuffer *IV, GstBuffer *keyId, uint32_t initWithLast15),
                 (override));
 };
-} // namespace firebolt::rialto::server::mock
+} // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_MOCK_DECRYPTION_SERVICE_MOCK_H_
+#endif // FIREBOLT_RIALTO_SERVER_DECRYPTION_SERVICE_MOCK_H_

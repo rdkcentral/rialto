@@ -29,7 +29,7 @@ using testing::StrictMock;
 struct SetVideoGeometryTest : public testing::Test
 {
     firebolt::rialto::server::PlayerContext m_context{};
-    StrictMock<firebolt::rialto::server::mock::GstPlayerPrivateMock> m_gstPlayer;
+    StrictMock<firebolt::rialto::server::GstPlayerPrivateMock> m_gstPlayer;
     firebolt::rialto::server::Rectangle m_rectangle{1, 2, 3, 4};
     GstElement m_pipeline{};
 

@@ -20,12 +20,114 @@
 #include "tasks/AttachSource.h"
 #include "IGlibWrapper.h"
 #include "IGstWrapper.h"
+#include "IMediaPipeline.h"
 #include "RialtoServerLogging.h"
+
+namespace
+{
+std::string getSampleRateAndChannelsAsCapsStr(const firebolt::rialto::IMediaPipeline::MediaSource &source)
+{
+    std::string capsStr;
+    firebolt::rialto::AudioConfig audioConfig;
+    if (source.getAudioConfig(audioConfig))
+    {
+        if (audioConfig.numberOfChannels != firebolt::rialto::kInvalidAudioChannels)
+            capsStr += ", channels=" + std::to_string(audioConfig.numberOfChannels);
+
+        if (audioConfig.sampleRate != firebolt::rialto::kInvalidAudioSampleRate)
+            capsStr += ", rate=" + std::to_string(audioConfig.sampleRate);
+    }
+
+    return capsStr;
+}
+
+std::string getAudioSpecificConfigurationAsCapsStr(std::shared_ptr<firebolt::rialto::server::IGstWrapper> gstWrapper,
+                                                   std::shared_ptr<firebolt::rialto::server::IGlibWrapper> glibWrapper,
+                                                   const firebolt::rialto::IMediaPipeline::MediaSource &source)
+{
+    std::string capsStr;
+    firebolt::rialto::AudioConfig audioConfig;
+    if (source.getAudioConfig(audioConfig) && audioConfig.codecSpecificConfig.size())
+    {
+        gsize codec_priv_size = audioConfig.codecSpecificConfig.size();
+        gconstpointer codec_priv = audioConfig.codecSpecificConfig.data();
+
+        GstCaps *gst_caps = gstWrapper->gstCodecUtilsOpusCreateCapsFromHeader(codec_priv, codec_priv_size);
+        gchar *caps_str = gstWrapper->gstCapsToString(gst_caps);
+        capsStr = caps_str;
+        glibWrapper->gFree(caps_str);
+        gstWrapper->gstCapsUnref(gst_caps);
+    }
+
+    return capsStr;
+}
+
+std::string createCapsStr(std::shared_ptr<firebolt::rialto::server::IGstWrapper> gstWrapper,
+                          std::shared_ptr<firebolt::rialto::server::IGlibWrapper> glibWrapper,
+                          const firebolt::rialto::IMediaPipeline::MediaSource &source)
+{
+    auto mimeType = source.getMimeType();
+    if (mimeType.compare("video/h265") == 0)
+    {
+        return "video/x-h265";
+    }
+    else if (mimeType.compare("video/h264") == 0)
+    {
+        switch (source.getSegmentAlignment())
+        {
+        case firebolt::rialto::SegmentAlignment::AU:
+            return "video/x-h264, stream-format=byte-stream, alignment=au";
+        case firebolt::rialto::SegmentAlignment::NAL:
+            return "video/x-h264, stream-format=byte-stream, alignment=nal";
+        default:
+            return "video/x-h264";
+        }
+    }
+    else if (mimeType.compare("video/x-av1") == 0)
+    {
+        return "video/x-av1";
+    }
+    else if (mimeType.compare("video/x-vp9") == 0)
+    {
+        return "video/x-vp9";
+    }
+    else if (mimeType.compare("audio/mp4") == 0)
+    {
+        std::string capsStr = "audio/mpeg, mpegversion=4";
+        capsStr += getSampleRateAndChannelsAsCapsStr(source);
+        return capsStr;
+    }
+    else if (mimeType.compare("audio/aac") == 0)
+    {
+        std::string capsStr = "audio/aac";
+        capsStr += getSampleRateAndChannelsAsCapsStr(source);
+        return capsStr;
+    }
+    else if (mimeType.compare("audio/x-eac3") == 0)
+    {
+        std::string capsStr = "audio/x-eac3";
+        capsStr += getSampleRateAndChannelsAsCapsStr(source);
+        return capsStr;
+    }
+    else if (mimeType.compare("audio/x-opus") == 0)
+    {
+        std::string capsStr = getAudioSpecificConfigurationAsCapsStr(gstWrapper, glibWrapper, source);
+        if (capsStr.empty())
+            return "audio/x-opus, channel-mapping-family=0";
+        else
+            return capsStr;
+    }
+
+    RIALTO_SERVER_LOG_ERROR("Unknown mime type: %s!", mimeType.c_str());
+    return "";
+}
+
+} // namespace
 
 namespace firebolt::rialto::server
 {
 AttachSource::AttachSource(PlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper,
-                           std::shared_ptr<IGlibWrapper> glibWrapper, const Source &source)
+                           std::shared_ptr<IGlibWrapper> glibWrapper, const IMediaPipeline::MediaSource &source)
     : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_attachedSource{source}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing AttachSource");
@@ -39,16 +141,20 @@ AttachSource::~AttachSource()
 void AttachSource::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing AttachSource");
-    auto elem = m_context.streamInfo.find(m_attachedSource.type);
+    auto strCaps = createCapsStr(m_gstWrapper, m_glibWrapper, m_attachedSource);
+    RIALTO_SERVER_LOG_DEBUG("caps str: %s ", strCaps.c_str());
+    GstCaps *caps = m_gstWrapper->gstCapsFromString(strCaps.c_str());
+
+    auto elem = m_context.streamInfo.find(m_attachedSource.getType());
     if (elem == m_context.streamInfo.end())
     {
         GstElement *appSrc = nullptr;
-        if (m_attachedSource.type == MediaSourceType::AUDIO)
+        if (m_attachedSource.getType() == MediaSourceType::AUDIO)
         {
             RIALTO_SERVER_LOG_MIL("Adding Audio appsrc");
             appSrc = m_gstWrapper->gstElementFactoryMake("appsrc", "audsrc");
         }
-        else if (m_attachedSource.type == MediaSourceType::VIDEO)
+        else if (m_attachedSource.getType() == MediaSourceType::VIDEO)
         {
             RIALTO_SERVER_LOG_MIL("Adding Video appsrc");
             appSrc = m_gstWrapper->gstElementFactoryMake("appsrc", "vidsrc");
@@ -56,31 +162,30 @@ void AttachSource::execute() const
         else
         {
             RIALTO_SERVER_LOG_ERROR("Unknown media source type");
-            if (m_attachedSource.caps)
-                m_gstWrapper->gstCapsUnref(m_attachedSource.caps);
+            if (caps)
+                m_gstWrapper->gstCapsUnref(caps);
             return;
         }
 
-        m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(appSrc), m_attachedSource.caps);
-        m_context.streamInfo.emplace(m_attachedSource.type, appSrc);
+        m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(appSrc), caps);
+        m_context.streamInfo.emplace(m_attachedSource.getType(), appSrc);
     }
     else
     {
         GstCaps *appsrcCaps = m_gstWrapper->gstAppSrcGetCaps(GST_APP_SRC(elem->second));
-        if ((!appsrcCaps) || (!m_gstWrapper->gstCapsIsEqual(appsrcCaps, m_attachedSource.caps)))
+        if ((!appsrcCaps) || (!m_gstWrapper->gstCapsIsEqual(appsrcCaps, caps)))
         {
-            gchar *capsStr = m_gstWrapper->gstCapsToString(m_attachedSource.caps);
             RIALTO_SERVER_LOG_MIL("Updating %s appsrc caps to '%s'",
-                                  m_attachedSource.type == MediaSourceType::AUDIO ? "Audio" : "Video", capsStr);
-            m_glibWrapper->gFree(capsStr);
-            m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(elem->second), m_attachedSource.caps);
+                                  m_attachedSource.getType() == MediaSourceType::AUDIO ? "Audio" : "Video",
+                                  strCaps.c_str());
+            m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(elem->second), caps);
         }
 
         if (appsrcCaps)
             m_gstWrapper->gstCapsUnref(appsrcCaps);
     }
 
-    if (m_attachedSource.caps)
-        m_gstWrapper->gstCapsUnref(m_attachedSource.caps);
+    if (caps)
+        m_gstWrapper->gstCapsUnref(caps);
 }
 } // namespace firebolt::rialto::server

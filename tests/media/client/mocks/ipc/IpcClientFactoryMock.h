@@ -17,14 +17,14 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_CLIENT_MOCK_IPC_CLIENT_FACTORY_MOCK_H_
-#define FIREBOLT_RIALTO_CLIENT_MOCK_IPC_CLIENT_FACTORY_MOCK_H_
+#ifndef FIREBOLT_RIALTO_CLIENT_IPC_CLIENT_FACTORY_MOCK_H_
+#define FIREBOLT_RIALTO_CLIENT_IPC_CLIENT_FACTORY_MOCK_H_
 
 #include "IIpcClient.h"
 #include <gmock/gmock.h>
 #include <memory>
 
-namespace firebolt::rialto::client::mock
+namespace firebolt::rialto::client
 {
 class IpcClientFactoryMock : public IIpcClientFactory
 {
@@ -34,6 +34,6 @@ public:
 
     MOCK_METHOD(std::shared_ptr<IIpcClient>, getIpcClient, (), (override));
 };
-} // namespace firebolt::rialto::client::mock
+} // namespace firebolt::rialto::client
 
-#endif // FIREBOLT_RIALTO_CLIENT_MOCK_IPC_CLIENT_FACTORY_MOCK_H_
+#endif // FIREBOLT_RIALTO_CLIENT_IPC_CLIENT_FACTORY_MOCK_H_

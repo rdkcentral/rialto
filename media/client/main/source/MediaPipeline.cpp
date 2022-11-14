@@ -176,13 +176,6 @@ MediaPipeline::~MediaPipeline()
     m_sharedMemoryManager.reset();
 }
 
-std::vector<std::string> MediaPipeline::getSupportedCaps(MediaSourceType type)
-{
-    RIALTO_CLIENT_LOG_DEBUG("entry:");
-
-    return {};
-}
-
 bool MediaPipeline::load(MediaType type, const std::string &mimeType, const std::string &url)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
@@ -196,7 +189,7 @@ bool MediaPipeline::attachSource(MediaSource &source)
 
     int32_t sourceId = -1;
 
-    bool status = m_mediaPipelineIpc->attachSource(source.getType(), source.getCaps(), sourceId);
+    bool status = m_mediaPipelineIpc->attachSource(source, sourceId);
     if (status)
     {
         source.setId(sourceId);

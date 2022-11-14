@@ -17,14 +17,14 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_CLIENT_MOCK_MEDIA_PIPELINE_IPC_CLIENT_MOCK_H_
-#define FIREBOLT_RIALTO_CLIENT_MOCK_MEDIA_PIPELINE_IPC_CLIENT_MOCK_H_
+#ifndef FIREBOLT_RIALTO_CLIENT_MEDIA_PIPELINE_IPC_CLIENT_MOCK_H_
+#define FIREBOLT_RIALTO_CLIENT_MEDIA_PIPELINE_IPC_CLIENT_MOCK_H_
 
 #include "IMediaPipelineIpcClient.h"
 #include <gmock/gmock.h>
 #include <memory>
 
-namespace firebolt::rialto::client::mock
+namespace firebolt::rialto::client
 {
 class MediaPipelineIpcClientMock : public IMediaPipelineIpcClient
 {
@@ -40,6 +40,6 @@ public:
     MOCK_METHOD(void, notifyPosition, (int64_t position), (override));
     MOCK_METHOD(void, notifyQos, (int32_t sourceId, const QosInfo &qosInfo), (override));
 };
-} // namespace firebolt::rialto::client::mock
+} // namespace firebolt::rialto::client
 
-#endif // FIREBOLT_RIALTO_CLIENT_MOCK_MEDIA_PIPELINE_IPC_CLIENT_MOCK_H_
+#endif // FIREBOLT_RIALTO_CLIENT_MEDIA_PIPELINE_IPC_CLIENT_MOCK_H_

@@ -59,7 +59,7 @@ private:
     bool m_expectationsFlag;
     RialtoSessionServerStub m_appStub;
     std::unique_ptr<rialto::servermanager::common::ISessionServerAppManager> m_sessionServerAppManager;
-    StrictMock<rialto::servermanager::common::mocks::SessionServerAppManagerMock> &m_sessionServerAppManagerMock;
+    StrictMock<rialto::servermanager::common::SessionServerAppManagerMock> &m_sessionServerAppManagerMock;
     std::unique_ptr<rialto::servermanager::ipc::IController> m_sut;
 };
 
