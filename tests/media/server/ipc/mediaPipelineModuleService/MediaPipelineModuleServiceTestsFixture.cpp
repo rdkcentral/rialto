@@ -425,10 +425,13 @@ void MediaPipelineModuleServiceTests::playbackServiceWillFailToSetPlaybackRate()
 void MediaPipelineModuleServiceTests::playbackServiceWillGetPosition()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_playbackServiceMock, getPosition(hardcodedSessionId, _)).WillOnce(Invoke([&](int, std::int64_t &pos) {
-        pos = position;
-        return true;
-    }));
+    EXPECT_CALL(m_playbackServiceMock, getPosition(hardcodedSessionId, _))
+        .WillOnce(Invoke(
+            [&](int, std::int64_t &pos)
+            {
+                pos = position;
+                return true;
+            }));
 }
 
 void MediaPipelineModuleServiceTests::playbackServiceWillFailToGetPosition()

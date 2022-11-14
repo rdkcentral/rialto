@@ -81,12 +81,12 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install clang-format
+          sudo apt-get install clang-format-12
 
       # Run the prgram with rialto config
       - name: Run clang-format
         run: |
-              find . -regex '.*\.\(cpp\|hpp\|cu\|c\|h\)' -exec clang-format -style=file -n --Werror {} \; &> clang-format_errors.log
+              find . -regex '.*\.\(cpp\|hpp\|cu\|c\|h\)' -exec clang-format-12 -style=file -n --Werror {} \; &> clang-format_errors.log
 
       # Process the clang-format errors and generate a junit xml file
       # Generate a failure if errors detected

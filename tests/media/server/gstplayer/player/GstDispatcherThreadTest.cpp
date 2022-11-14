@@ -75,16 +75,18 @@ TEST_F(GstDispatcherThreadTest, PollTimeout)
         EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(nullptr));
         EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(&m_message));
         EXPECT_CALL(m_taskFactoryMock, createHandleBusMessage(_, _, _)).WillOnce(Return(ByMove(std::move(eosTask))));
-        EXPECT_CALL(m_workerThreadMock, enqueueTask(_)).WillOnce(Invoke([](std::unique_ptr<IPlayerTask> &&task) {
-            task->execute();
-        }));
+        EXPECT_CALL(m_workerThreadMock, enqueueTask(_))
+            .WillOnce(Invoke([](std::unique_ptr<IPlayerTask> &&task) { task->execute(); }));
     }
 
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus)).WillOnce(Invoke([this](gpointer bus) {
-        std::unique_lock<std::mutex> lock(m_dispatcherThreadMutex);
-        m_dispatcherThreadDone = true;
-        m_dispatcherThreadCond.notify_all();
-    }));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus))
+        .WillOnce(Invoke(
+            [this](gpointer bus)
+            {
+                std::unique_lock<std::mutex> lock(m_dispatcherThreadMutex);
+                m_dispatcherThreadDone = true;
+                m_dispatcherThreadCond.notify_all();
+            }));
 
     auto sut = std::make_unique<GstDispatcherThread>(m_context, m_gstPlayer, m_gstWrapperMock, m_workerThreadMock,
                                                      m_taskFactoryMock);
@@ -120,9 +122,8 @@ TEST_F(GstDispatcherThreadTest, StateChangedToPaused)
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*stateChangeTask), execute());
     std::unique_ptr<IPlayerTask> eosTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*eosTask), execute());
-    EXPECT_CALL(m_workerThreadMock, enqueueTask(_)).WillRepeatedly(Invoke([](std::unique_ptr<IPlayerTask> &&task) {
-        task->execute();
-    }));
+    EXPECT_CALL(m_workerThreadMock, enqueueTask(_))
+        .WillRepeatedly(Invoke([](std::unique_ptr<IPlayerTask> &&task) { task->execute(); }));
 
     {
         InSequence seq;
@@ -132,11 +133,14 @@ TEST_F(GstDispatcherThreadTest, StateChangedToPaused)
         EXPECT_CALL(m_taskFactoryMock, createHandleBusMessage(_, _, _)).WillOnce(Return(ByMove(std::move(eosTask))));
     }
 
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus)).WillOnce(Invoke([this](gpointer bus) {
-        std::unique_lock<std::mutex> lock(m_dispatcherThreadMutex);
-        m_dispatcherThreadDone = true;
-        m_dispatcherThreadCond.notify_all();
-    }));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus))
+        .WillOnce(Invoke(
+            [this](gpointer bus)
+            {
+                std::unique_lock<std::mutex> lock(m_dispatcherThreadMutex);
+                m_dispatcherThreadDone = true;
+                m_dispatcherThreadCond.notify_all();
+            }));
 
     auto sut = std::make_unique<GstDispatcherThread>(m_context, m_gstPlayer, m_gstWrapperMock, m_workerThreadMock,
                                                      m_taskFactoryMock);
@@ -163,18 +167,20 @@ TEST_F(GstDispatcherThreadTest, StateChangedToStop)
     EXPECT_CALL(*m_gstWrapperMock, gstMessageParseStateChanged(&m_message, _, _, _))
         .WillOnce(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
     std::unique_ptr<IPlayerTask> stateChangeTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
-    EXPECT_CALL(m_workerThreadMock, enqueueTask(_)).WillOnce(Invoke([](std::unique_ptr<IPlayerTask> &&task) {
-        task->execute();
-    }));
+    EXPECT_CALL(m_workerThreadMock, enqueueTask(_))
+        .WillOnce(Invoke([](std::unique_ptr<IPlayerTask> &&task) { task->execute(); }));
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*stateChangeTask), execute());
     EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(&m_pipeline))).WillOnce(Return(&m_bus));
     EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(&m_message));
     EXPECT_CALL(m_taskFactoryMock, createHandleBusMessage(_, _, _)).WillOnce(Return(ByMove(std::move(stateChangeTask))));
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus)).WillOnce(Invoke([this](gpointer bus) {
-        std::unique_lock<std::mutex> lock(m_dispatcherThreadMutex);
-        m_dispatcherThreadDone = true;
-        m_dispatcherThreadCond.notify_all();
-    }));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus))
+        .WillOnce(Invoke(
+            [this](gpointer bus)
+            {
+                std::unique_lock<std::mutex> lock(m_dispatcherThreadMutex);
+                m_dispatcherThreadDone = true;
+                m_dispatcherThreadCond.notify_all();
+            }));
 
     auto sut = std::make_unique<GstDispatcherThread>(m_context, m_gstPlayer, m_gstWrapperMock, m_workerThreadMock,
                                                      m_taskFactoryMock);
@@ -195,17 +201,19 @@ TEST_F(GstDispatcherThreadTest, Eos)
     GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_EOS;
     std::unique_ptr<IPlayerTask> eosTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*eosTask), execute());
-    EXPECT_CALL(m_workerThreadMock, enqueueTask(_)).WillOnce(Invoke([](std::unique_ptr<IPlayerTask> &&task) {
-        task->execute();
-    }));
+    EXPECT_CALL(m_workerThreadMock, enqueueTask(_))
+        .WillOnce(Invoke([](std::unique_ptr<IPlayerTask> &&task) { task->execute(); }));
     EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(&m_pipeline))).WillOnce(Return(&m_bus));
     EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(&m_message));
     EXPECT_CALL(m_taskFactoryMock, createHandleBusMessage(_, _, _)).WillOnce(Return(ByMove(std::move(eosTask))));
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus)).WillOnce(Invoke([this](gpointer bus) {
-        std::unique_lock<std::mutex> lock(m_dispatcherThreadMutex);
-        m_dispatcherThreadDone = true;
-        m_dispatcherThreadCond.notify_all();
-    }));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus))
+        .WillOnce(Invoke(
+            [this](gpointer bus)
+            {
+                std::unique_lock<std::mutex> lock(m_dispatcherThreadMutex);
+                m_dispatcherThreadDone = true;
+                m_dispatcherThreadCond.notify_all();
+            }));
 
     auto sut = std::make_unique<GstDispatcherThread>(m_context, m_gstPlayer, m_gstWrapperMock, m_workerThreadMock,
                                                      m_taskFactoryMock);

@@ -114,10 +114,12 @@ TEST_F(SetPlaybackRateTest, shouldSetPlaybackRateAudioSinkOtherThanAmlhala)
     m_context.pipeline = &m_pipeline;
     firebolt::rialto::server::SetPlaybackRate task{m_context, m_gstWrapper, m_glibWrapper, kRate};
     EXPECT_CALL(*m_glibWrapper, gObjectGetStub(_, CharStrMatcher("audio-sink"), _))
-        .WillOnce(Invoke([&](gpointer object, const gchar *first_property_name, void *element) {
-            GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
-            *elementPtr = &m_audioSink;
-        }));
+        .WillOnce(Invoke(
+            [&](gpointer object, const gchar *first_property_name, void *element)
+            {
+                GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
+                *elementPtr = &m_audioSink;
+            }));
     EXPECT_CALL(*m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("amlhalasink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*m_gstWrapper, gstStructureNewStub(CharStrMatcher("custom-instant-rate-change"), CharStrMatcher("rate"),
                                                    G_TYPE_DOUBLE, kRate))
@@ -136,10 +138,12 @@ TEST_F(SetPlaybackRateTest, shouldFailToSetPlaybackRateAudioSinkOtherThanAmlhala
     m_context.pipeline = &m_pipeline;
     firebolt::rialto::server::SetPlaybackRate task{m_context, m_gstWrapper, m_glibWrapper, kRate};
     EXPECT_CALL(*m_glibWrapper, gObjectGetStub(_, CharStrMatcher("audio-sink"), _))
-        .WillOnce(Invoke([&](gpointer object, const gchar *first_property_name, void *element) {
-            GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
-            *elementPtr = &m_audioSink;
-        }));
+        .WillOnce(Invoke(
+            [&](gpointer object, const gchar *first_property_name, void *element)
+            {
+                GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
+                *elementPtr = &m_audioSink;
+            }));
     EXPECT_CALL(*m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("amlhalasink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*m_gstWrapper, gstStructureNewStub(CharStrMatcher("custom-instant-rate-change"), CharStrMatcher("rate"),
                                                    G_TYPE_DOUBLE, kRate))
@@ -158,10 +162,12 @@ TEST_F(SetPlaybackRateTest, shouldSetPlaybackRateAmlhalaAudioSink)
     m_context.pipeline = &m_pipeline;
     firebolt::rialto::server::SetPlaybackRate task{m_context, m_gstWrapper, m_glibWrapper, kRate};
     EXPECT_CALL(*m_glibWrapper, gObjectGetStub(_, CharStrMatcher("audio-sink"), _))
-        .WillOnce(Invoke([&](gpointer object, const gchar *first_property_name, void *element) {
-            GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
-            *elementPtr = &m_audioSink;
-        }));
+        .WillOnce(Invoke(
+            [&](gpointer object, const gchar *first_property_name, void *element)
+            {
+                GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
+                *elementPtr = &m_audioSink;
+            }));
     EXPECT_CALL(*m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("amlhalasink"))).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapper, gstSegmentNew()).WillOnce(Return(&m_segment));
     EXPECT_CALL(*m_gstWrapper, gstSegmentInit(&m_segment, GST_FORMAT_TIME));
@@ -183,10 +189,12 @@ TEST_F(SetPlaybackRateTest, shouldFailToSetPlaybackRateAmlhalaAudioSink)
     m_context.pipeline = &m_pipeline;
     firebolt::rialto::server::SetPlaybackRate task{m_context, m_gstWrapper, m_glibWrapper, kRate};
     EXPECT_CALL(*m_glibWrapper, gObjectGetStub(_, CharStrMatcher("audio-sink"), _))
-        .WillOnce(Invoke([&](gpointer object, const gchar *first_property_name, void *element) {
-            GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
-            *elementPtr = &m_audioSink;
-        }));
+        .WillOnce(Invoke(
+            [&](gpointer object, const gchar *first_property_name, void *element)
+            {
+                GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
+                *elementPtr = &m_audioSink;
+            }));
     EXPECT_CALL(*m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("amlhalasink"))).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapper, gstSegmentNew()).WillOnce(Return(&m_segment));
     EXPECT_CALL(*m_gstWrapper, gstSegmentInit(&m_segment, GST_FORMAT_TIME));

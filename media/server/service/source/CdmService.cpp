@@ -46,7 +46,8 @@ bool CdmService::switchToActive()
 {
     std::promise<bool> promise;
     std::future<bool> future = promise.get_future();
-    auto task = [this, &promise]() {
+    auto task = [this, &promise]()
+    {
         RIALTO_SERVER_LOG_INFO("Switching SessionServer to Active state.");
 
         m_mediaKeysCapabilities = m_mediaKeysCapabilitiesFactory->getMediaKeysCapabilities();
@@ -64,7 +65,8 @@ bool CdmService::switchToActive()
 
 void CdmService::switchToInactive()
 {
-    auto task = [this]() {
+    auto task = [this]()
+    {
         RIALTO_SERVER_LOG_INFO("Switching SessionServer to Inactive state. Cleaning resources...");
         m_isActive = false;
         m_mediaKeysCapabilities.reset();
@@ -77,7 +79,8 @@ bool CdmService::createMediaKeys(int mediaKeysHandle, std::string keySystem)
 {
     std::promise<bool> promise;
     std::future<bool> future = promise.get_future();
-    auto task = [&]() {
+    auto task = [&]()
+    {
         RIALTO_SERVER_LOG_DEBUG("CdmService requested to create new media keys handle: %d", mediaKeysHandle);
         if (!m_isActive)
         {
@@ -108,7 +111,8 @@ bool CdmService::destroyMediaKeys(int mediaKeysHandle)
 {
     std::promise<bool> promise;
     std::future<bool> future = promise.get_future();
-    auto task = [&]() {
+    auto task = [&]()
+    {
         RIALTO_SERVER_LOG_DEBUG("CdmService requested to destroy media keys handle: %d", mediaKeysHandle);
         auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
         if (mediaKeysIter == m_mediaKeys.end())
@@ -130,7 +134,8 @@ MediaKeyErrorStatus CdmService::createKeySession(int mediaKeysHandle, KeySession
 {
     std::promise<MediaKeyErrorStatus> promise;
     std::future<MediaKeyErrorStatus> future = promise.get_future();
-    auto task = [&]() {
+    auto task = [&]()
+    {
         RIALTO_SERVER_LOG_DEBUG("CdmService requested to create key session: %d", mediaKeysHandle);
         auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
         if (mediaKeysIter == m_mediaKeys.end())
@@ -161,7 +166,8 @@ MediaKeyErrorStatus CdmService::generateRequest(int mediaKeysHandle, int32_t key
 {
     std::promise<MediaKeyErrorStatus> promise;
     std::future<MediaKeyErrorStatus> future = promise.get_future();
-    auto task = [&]() {
+    auto task = [&]()
+    {
         RIALTO_SERVER_LOG_DEBUG("CdmService requested to generate request: %d", mediaKeysHandle);
         auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
         if (mediaKeysIter == m_mediaKeys.end())
@@ -179,7 +185,8 @@ MediaKeyErrorStatus CdmService::loadSession(int mediaKeysHandle, int32_t keySess
 {
     std::promise<MediaKeyErrorStatus> promise;
     std::future<MediaKeyErrorStatus> future = promise.get_future();
-    auto task = [&]() {
+    auto task = [&]()
+    {
         RIALTO_SERVER_LOG_DEBUG("CdmService requested to load session: %d", mediaKeysHandle);
         auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
         if (mediaKeysIter == m_mediaKeys.end())
@@ -198,7 +205,8 @@ MediaKeyErrorStatus CdmService::updateSession(int mediaKeysHandle, int32_t keySe
 {
     std::promise<MediaKeyErrorStatus> promise;
     std::future<MediaKeyErrorStatus> future = promise.get_future();
-    auto task = [&]() {
+    auto task = [&]()
+    {
         RIALTO_SERVER_LOG_DEBUG("CdmService requested to update session: %d", mediaKeysHandle);
         auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
         if (mediaKeysIter == m_mediaKeys.end())
@@ -216,7 +224,8 @@ MediaKeyErrorStatus CdmService::closeKeySession(int mediaKeysHandle, int32_t key
 {
     std::promise<MediaKeyErrorStatus> promise;
     std::future<MediaKeyErrorStatus> future = promise.get_future();
-    auto task = [&]() {
+    auto task = [&]()
+    {
         RIALTO_SERVER_LOG_DEBUG("CdmService requested to close key session: %d", mediaKeysHandle);
         auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
         if (mediaKeysIter == m_mediaKeys.end())
@@ -234,7 +243,8 @@ MediaKeyErrorStatus CdmService::removeKeySession(int mediaKeysHandle, int32_t ke
 {
     std::promise<MediaKeyErrorStatus> promise;
     std::future<MediaKeyErrorStatus> future = promise.get_future();
-    auto task = [&]() {
+    auto task = [&]()
+    {
         RIALTO_SERVER_LOG_DEBUG("CdmService requested to remove key session: %d", mediaKeysHandle);
         auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
         if (mediaKeysIter == m_mediaKeys.end())
@@ -262,7 +272,8 @@ MediaKeyErrorStatus CdmService::getCdmKeySessionId(int mediaKeysHandle, int32_t 
 {
     std::promise<MediaKeyErrorStatus> promise;
     std::future<MediaKeyErrorStatus> future = promise.get_future();
-    auto task = [&]() {
+    auto task = [&]()
+    {
         RIALTO_SERVER_LOG_DEBUG("CdmService requested to get cdm key session id: %d", mediaKeysHandle);
         auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
         if (mediaKeysIter == m_mediaKeys.end())
@@ -282,7 +293,8 @@ std::vector<std::string> CdmService::getSupportedKeySystems()
 {
     std::promise<std::vector<std::string>> promise;
     std::future<std::vector<std::string>> future = promise.get_future();
-    auto task = [&]() {
+    auto task = [&]()
+    {
         RIALTO_SERVER_LOG_DEBUG("CdmService requested to getSupportedKeySystems");
         if (!m_mediaKeysCapabilities)
         {
@@ -298,7 +310,8 @@ bool CdmService::supportsKeySystem(const std::string &keySystem)
 {
     std::promise<bool> promise;
     std::future<bool> future = promise.get_future();
-    auto task = [&]() {
+    auto task = [&]()
+    {
         RIALTO_SERVER_LOG_DEBUG("CdmService requested to supportsKeySystem");
         if (!m_mediaKeysCapabilities)
         {
@@ -314,7 +327,8 @@ bool CdmService::getSupportedKeySystemVersion(const std::string &keySystem, std:
 {
     std::promise<bool> promise;
     std::future<bool> future = promise.get_future();
-    auto task = [&]() {
+    auto task = [&]()
+    {
         RIALTO_SERVER_LOG_DEBUG("CdmService requested to getSupportedKeySystemVersion");
         if (!m_mediaKeysCapabilities)
         {
@@ -332,7 +346,8 @@ MediaKeyErrorStatus CdmService::decrypt(int32_t keySessionId, GstBuffer *encrypt
 {
     std::promise<MediaKeyErrorStatus> promise;
     std::future<MediaKeyErrorStatus> future = promise.get_future();
-    auto task = [&]() {
+    auto task = [&]()
+    {
         RIALTO_SERVER_LOG_DEBUG("CdmService requested to decrypt, key session id: %d", keySessionId);
         auto mediaKeysIter = std::find_if(m_mediaKeys.begin(), m_mediaKeys.end(),
                                           [&](const auto &iter) { return iter.second->hasSession(keySessionId); });

@@ -60,14 +60,14 @@ bool ClientStub::connect()
     }
     m_testModuleStub = std::make_unique<firebolt::rialto::TestModule::Stub>(m_channel.get());
     int eventTag = m_channel->subscribe<firebolt::rialto::TestEventSingleVar>(
-        [this](const std::shared_ptr<firebolt::rialto::TestEventSingleVar> &event) {
-            onTestEventSingleVarReceived(event);
-        });
+        [this](const std::shared_ptr<firebolt::rialto::TestEventSingleVar> &event)
+        { onTestEventSingleVarReceived(event); });
     EXPECT_GE(eventTag, 0);
     m_eventTags.push_back(eventTag);
 
     eventTag = m_channel->subscribe<firebolt::rialto::TestEventMultiVar>(
-        [this](const std::shared_ptr<firebolt::rialto::TestEventMultiVar> &event) { onTestEventMultiVarReceived(event); });
+        [this](const std::shared_ptr<firebolt::rialto::TestEventMultiVar> &event)
+        { onTestEventMultiVarReceived(event); });
     EXPECT_GE(eventTag, 0);
     m_eventTags.push_back(eventTag);
 
@@ -204,15 +204,16 @@ bool ClientStub::sendRequestWithMultiVarResponse(int32_t &var1, uint32_t &var2,
 
 void ClientStub::startMessageThread()
 {
-    m_eventThread = std::thread{[this]() {
-        while (m_channel->process() && !m_messageReceived.load())
-        {
-            m_startThreadCond.notify_one();
-            m_channel->wait(10);
-        }
-        EXPECT_TRUE(m_messageReceived.load());
-        m_messageCond.notify_one();
-    }};
+    m_eventThread = std::thread{[this]()
+                                {
+                                    while (m_channel->process() && !m_messageReceived.load())
+                                    {
+                                        m_startThreadCond.notify_one();
+                                        m_channel->wait(10);
+                                    }
+                                    EXPECT_TRUE(m_messageReceived.load());
+                                    m_messageCond.notify_one();
+                                }};
 
     std::unique_lock<std::mutex> startThreadLock(m_startThreadMutex);
     std::cv_status status = m_startThreadCond.wait_for(startThreadLock, std::chrono::milliseconds(100));

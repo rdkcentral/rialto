@@ -70,9 +70,10 @@ TEST(UtilsTest, ShouldSetLocalLogLevels)
     {
         int counter{0};
         RIALTO_COMPONENT component = static_cast<RIALTO_COMPONENT>(i);
-        firebolt::rialto::logging::setLogHandler(component, [&counter](RIALTO_DEBUG_LEVEL level, const char *file,
-                                                                       int line, const char *function, const char *message,
-                                                                       size_t messageLen) { ++counter; });
+        firebolt::rialto::logging::setLogHandler(component,
+                                                 [&counter](RIALTO_DEBUG_LEVEL level, const char *file, int line,
+                                                            const char *function, const char *message, size_t messageLen)
+                                                 { ++counter; });
         RIALTO_LOG_FATAL(component, "RIALTO_LOG_FATAL");
         RIALTO_LOG_ERROR(component, "RIALTO_LOG_ERROR");
         RIALTO_LOG_WARN(component, "RIALTO_LOG_WARN");

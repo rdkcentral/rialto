@@ -59,39 +59,49 @@ void MediaPipelineIpcTestBase::createMediaPipelineIpc()
 void MediaPipelineIpcTestBase::expectSubscribeEvents()
 {
     EXPECT_CALL(*m_channelMock, subscribeImpl("firebolt.rialto.PlaybackStateChangeEvent", _, _))
-        .WillOnce(Invoke([this](const std::string &eventName, const google::protobuf::Descriptor *descriptor,
-                                std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> &&handler) {
-            m_playbackStateCb = std::move(handler);
-            return static_cast<int>(EventTags::PlaybackStateChangeEvent);
-        }))
+        .WillOnce(Invoke(
+            [this](const std::string &eventName, const google::protobuf::Descriptor *descriptor,
+                   std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> &&handler)
+            {
+                m_playbackStateCb = std::move(handler);
+                return static_cast<int>(EventTags::PlaybackStateChangeEvent);
+            }))
         .RetiresOnSaturation();
     EXPECT_CALL(*m_channelMock, subscribeImpl("firebolt.rialto.PositionChangeEvent", _, _))
-        .WillOnce(Invoke([this](const std::string &eventName, const google::protobuf::Descriptor *descriptor,
-                                std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> &&handler) {
-            m_positionChangeCb = std::move(handler);
-            return static_cast<int>(EventTags::PositionChangeEvent);
-        }))
+        .WillOnce(Invoke(
+            [this](const std::string &eventName, const google::protobuf::Descriptor *descriptor,
+                   std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> &&handler)
+            {
+                m_positionChangeCb = std::move(handler);
+                return static_cast<int>(EventTags::PositionChangeEvent);
+            }))
         .RetiresOnSaturation();
     EXPECT_CALL(*m_channelMock, subscribeImpl("firebolt.rialto.NetworkStateChangeEvent", _, _))
-        .WillOnce(Invoke([this](const std::string &eventName, const google::protobuf::Descriptor *descriptor,
-                                std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> &&handler) {
-            m_networkStateCb = std::move(handler);
-            return static_cast<int>(EventTags::NetworkStateChangeEvent);
-        }))
+        .WillOnce(Invoke(
+            [this](const std::string &eventName, const google::protobuf::Descriptor *descriptor,
+                   std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> &&handler)
+            {
+                m_networkStateCb = std::move(handler);
+                return static_cast<int>(EventTags::NetworkStateChangeEvent);
+            }))
         .RetiresOnSaturation();
     EXPECT_CALL(*m_channelMock, subscribeImpl("firebolt.rialto.NeedMediaDataEvent", _, _))
-        .WillOnce(Invoke([this](const std::string &eventName, const google::protobuf::Descriptor *descriptor,
-                                std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> &&handler) {
-            m_needDataCb = std::move(handler);
-            return static_cast<int>(EventTags::NeedMediaDataEvent);
-        }))
+        .WillOnce(Invoke(
+            [this](const std::string &eventName, const google::protobuf::Descriptor *descriptor,
+                   std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> &&handler)
+            {
+                m_needDataCb = std::move(handler);
+                return static_cast<int>(EventTags::NeedMediaDataEvent);
+            }))
         .RetiresOnSaturation();
     EXPECT_CALL(*m_channelMock, subscribeImpl("firebolt.rialto.QosEvent", _, _))
-        .WillOnce(Invoke([this](const std::string &eventName, const google::protobuf::Descriptor *descriptor,
-                                std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> &&handler) {
-            m_qosCb = std::move(handler);
-            return static_cast<int>(EventTags::QosEvent);
-        }))
+        .WillOnce(Invoke(
+            [this](const std::string &eventName, const google::protobuf::Descriptor *descriptor,
+                   std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> &&handler)
+            {
+                m_qosCb = std::move(handler);
+                return static_cast<int>(EventTags::QosEvent);
+            }))
         .RetiresOnSaturation();
 }
 

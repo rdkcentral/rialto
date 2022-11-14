@@ -54,20 +54,22 @@ std::unique_ptr<ITimer> TimerFactory::createTimer(const std::chrono::millisecond
 Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void()> &callback, TimerType timerType)
     : m_active{true}, m_timeout{timeout}, m_callback{callback}
 {
-    m_thread = std::thread([this, timerType]() {
-        do
+    m_thread = std::thread(
+        [this, timerType]()
         {
-            std::unique_lock<std::mutex> lock{m_mutex};
-            if (!m_cv.wait_until(lock, std::chrono::system_clock::now() + m_timeout, [this]() { return !m_active; }))
+            do
             {
-                if (m_active && m_callback)
+                std::unique_lock<std::mutex> lock{m_mutex};
+                if (!m_cv.wait_until(lock, std::chrono::system_clock::now() + m_timeout, [this]() { return !m_active; }))
                 {
-                    lock.unlock();
-                    m_callback();
+                    if (m_active && m_callback)
+                    {
+                        lock.unlock();
+                        m_callback();
+                    }
                 }
-            }
-        } while (timerType == TimerType::PERIODIC && m_active);
-    });
+            } while (timerType == TimerType::PERIODIC && m_active);
+        });
 }
 
 Timer::~Timer()
