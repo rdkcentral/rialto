@@ -41,8 +41,8 @@ class DataReaderV1 : public IDataReader
         std::uint32_t streamId;      /* stream id (unique ID for ES, as defined in attachSource()) */
         std::uint32_t extraDataSize; /* extraData size */
         std::uint8_t extraData[32];  /* buffer containing extradata */
-        std::uint32_t
-            mediaKeysId; /* Identifier of MediaKeys instance to use for decryption. If 0 use any CDM containing the MKS ID */
+        std::uint32_t mediaKeysId;   /* Identifier of MediaKeys instance to use for decryption. If 0 use any CDM
+                                        containing the MKS ID */
         std::uint32_t mediaKeySessionIdentifierOffset; /* Offset to the location of the MediaKeySessionIdentifier */
         std::uint32_t mediaKeySessionIdentifierLength; /* Length of the MediaKeySessionIdentifier */
         std::uint32_t initVectorOffset;                /* Offset to the location of the initialization vector */
