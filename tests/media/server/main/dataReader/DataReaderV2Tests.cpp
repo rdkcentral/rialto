@@ -55,8 +55,9 @@ constexpr size_t kNumEncryptedBytes{7};
 constexpr uint32_t kInitWithLast15{1};
 constexpr SegmentAlignment kSegmentAlignment{SegmentAlignment::AU};
 
-struct Check
+class Check
 {
+public:
     explicit Check(std::unique_ptr<IMediaPipeline::MediaSegment> &segment) : m_segment{segment}
     {
         EXPECT_TRUE(segment);
@@ -136,8 +137,9 @@ private:
     std::unique_ptr<IMediaPipeline::MediaSegment> &m_segment;
 };
 
-struct Build
+class Build
 {
+public:
     Build &basicVideoSegment()
     {
         m_segment =
@@ -178,8 +180,9 @@ private:
 };
 } // namespace
 
-struct DataReaderV2Tests : public testing::Test
+class DataReaderV2Tests : public testing::Test
 {
+protected:
     DataReaderV2Tests() = default;
 
     std::unique_ptr<IMediaPipeline::MediaSegment> readData(const firebolt::rialto::MediaSourceType &sourceType)
