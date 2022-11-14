@@ -23,8 +23,9 @@
 
 using testing::StrictMock;
 
-struct PauseTest : public testing::Test
+class PauseTest : public testing::Test
 {
+protected:
     StrictMock<firebolt::rialto::server::GstPlayerPrivateMock> m_gstPlayer;
 };
 

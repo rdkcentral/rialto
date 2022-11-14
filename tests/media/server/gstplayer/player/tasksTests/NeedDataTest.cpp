@@ -26,8 +26,9 @@
 using testing::Return;
 using testing::StrictMock;
 
-struct NeedDataTest : public testing::Test
+class NeedDataTest : public testing::Test
 {
+protected:
     firebolt::rialto::server::PlayerContext m_context{};
     StrictMock<firebolt::rialto::server::GstPlayerClientMock> m_gstPlayerClient;
     GstAppSrc m_audioSrc{};

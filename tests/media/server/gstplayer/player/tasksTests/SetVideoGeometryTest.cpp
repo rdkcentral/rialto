@@ -26,8 +26,9 @@
 
 using testing::StrictMock;
 
-struct SetVideoGeometryTest : public testing::Test
+class SetVideoGeometryTest : public testing::Test
 {
+protected:
     firebolt::rialto::server::PlayerContext m_context{};
     StrictMock<firebolt::rialto::server::GstPlayerPrivateMock> m_gstPlayer;
     firebolt::rialto::server::Rectangle m_rectangle{1, 2, 3, 4};

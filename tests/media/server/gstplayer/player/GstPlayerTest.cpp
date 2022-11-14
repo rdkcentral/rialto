@@ -29,8 +29,9 @@ using testing::ByMove;
 using testing::Invoke;
 using testing::Return;
 
-struct GstPlayerTest : public GstPlayerTestCommon
+class GstPlayerTest : public GstPlayerTestCommon
 {
+protected:
     std::unique_ptr<IGstPlayer> m_sut;
 
     GstPlayerTest()

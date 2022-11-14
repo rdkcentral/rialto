@@ -31,7 +31,6 @@
 #include <mutex>
 
 using namespace firebolt::rialto::server;
-using namespace firebolt::rialto::server;
 
 using ::testing::_;
 using ::testing::ByMove;
@@ -42,8 +41,9 @@ using ::testing::Return;
 using ::testing::SetArgPointee;
 using ::testing::StrictMock;
 
-struct GstDispatcherThreadTest : public ::testing::Test
+class GstDispatcherThreadTest : public ::testing::Test
 {
+protected:
     GstElement m_pipeline{};
     PlayerContext m_context{};
     StrictMock<firebolt::rialto::server::GstPlayerPrivateMock> m_gstPlayer;

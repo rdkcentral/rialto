@@ -48,8 +48,9 @@ constexpr size_t kNumClearBytes{3};
 constexpr size_t kNumEncryptedBytes{5};
 } // namespace
 
-struct GstPlayerPrivateTest : public GstPlayerTestCommon
+class GstPlayerPrivateTest : public GstPlayerTestCommon
 {
+protected:
     std::unique_ptr<IGstPlayerPrivate> m_sut;
 
     GstPlayerPrivateTest()

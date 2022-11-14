@@ -33,8 +33,9 @@ namespace
 gint64 position{1234};
 } // namespace
 
-struct ReportPositionTest : public testing::Test
+class ReportPositionTest : public testing::Test
 {
+protected:
     firebolt::rialto::server::PlayerContext m_context{};
     StrictMock<firebolt::rialto::server::GstPlayerClientMock> m_gstPlayerClient;
     std::shared_ptr<firebolt::rialto::server::GstWrapperMock> m_gstWrapper{

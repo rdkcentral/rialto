@@ -30,8 +30,9 @@ using testing::Invoke;
 using testing::Return;
 using testing::StrictMock;
 
-struct FinishSetupSourceTest : public testing::Test
+class FinishSetupSourceTest : public testing::Test
 {
+protected:
     firebolt::rialto::server::PlayerContext m_context;
     StrictMock<firebolt::rialto::server::GstPlayerPrivateMock> m_gstPlayer;
     StrictMock<firebolt::rialto::server::GstPlayerClientMock> m_gstPlayerClient;

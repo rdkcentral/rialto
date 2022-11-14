@@ -25,8 +25,9 @@
 
 using testing::StrictMock;
 
-struct StopTest : public testing::Test
+class StopTest : public testing::Test
 {
+protected:
     firebolt::rialto::server::PlayerContext m_context{};
     StrictMock<firebolt::rialto::server::GstPlayerPrivateMock> m_gstPlayer;
 

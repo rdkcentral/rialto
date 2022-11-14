@@ -35,8 +35,9 @@ using testing::Invoke;
 using testing::Return;
 using testing::StrictMock;
 
-struct SetPlaybackRateTest : public testing::Test
+class SetPlaybackRateTest : public testing::Test
 {
+protected:
     firebolt::rialto::server::PlayerContext m_context{};
     std::shared_ptr<firebolt::rialto::server::GlibWrapperMock> m_glibWrapper{
         std::make_shared<StrictMock<firebolt::rialto::server::GlibWrapperMock>>()};
