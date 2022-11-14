@@ -306,14 +306,14 @@ MediaKeyErrorStatus OcdmSession::getCdmKeySessionId(std::string &cdmKeySessionId
     return MediaKeyErrorStatus::OK;
 }
 
-MediaKeyErrorStatus OcdmSession::selectKeyId(uint8_t *keyId, uint32_t *keyIdSize)
+MediaKeyErrorStatus OcdmSession::selectKeyId(uint8_t keyLength, const uint8_t keyId[])
 {
     if (!m_session)
     {
         RIALTO_SERVER_LOG_ERROR("Session does not exist");
         return MediaKeyErrorStatus::FAIL;
     }
-    OpenCDMError status = opencdm_session_select_key_id(m_session, keyIdSize, keyId);
+    OpenCDMError status = opencdm_session_select_key_id(m_session, keyLength, keyId);
     return convertOpenCdmError(status);
 }
 

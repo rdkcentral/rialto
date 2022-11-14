@@ -169,12 +169,12 @@ public:
     /**
      * @brief Selects the specified keyId for the key session. Netflix specific API.
      *
+     * @param[out]  keyLength : The size of key id
      * @param[out]  keyId     : The key id to select.
-     * @param[out]  keyIdSize : The size of key id
      *
      * @retval the return status.
      */
-    virtual MediaKeyErrorStatus selectKeyId(uint8_t *keyId, uint32_t *keyIdSize) = 0;
+    virtual MediaKeyErrorStatus selectKeyId(uint8_t keyLength, const uint8_t keyId[]) = 0;
 
     /**
      * @brief Returns true if the Key Session object contains the specified key.

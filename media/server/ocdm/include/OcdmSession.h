@@ -77,7 +77,7 @@ public:
 
     MediaKeyErrorStatus getCdmKeySessionId(std::string &cdmKeySessionId) override;
 
-    MediaKeyErrorStatus selectKeyId(uint8_t *keyId, uint32_t *keyIdSize) override;
+    MediaKeyErrorStatus selectKeyId(uint8_t keyLength, const uint8_t keyId[]) override;
 
     uint32_t hasKeyId(const uint8_t keyId[], const uint8_t keyIdSize) override;
 
