@@ -252,11 +252,12 @@ public:
     /**
      * @brief Get the last cdm specific DRM error code
      *
+     * @param[in] keySessionId : The key session id.
      * @param[out] errorCode : the error code.
      *
      * @retval the return status value.
      */
-    virtual MediaKeyErrorStatus getLastDrmError(uint32_t &errorCode) = 0;
+    virtual MediaKeyErrorStatus getLastDrmError(int32_t keySessionId, uint32_t &errorCode) = 0;
 
     /**
      * @brief Get the DRM system time for the object's key system

@@ -279,9 +279,17 @@ MediaKeyErrorStatus MediaKeySession::setDrmHeader(const std::vector<uint8_t> &re
     if (MediaKeyErrorStatus::OK != status)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to set drm header");
-        return status;
     }
+    return status;
+}
 
+MediaKeyErrorStatus MediaKeySession::getLastDrmError(uint32_t &errorCode)
+{
+    MediaKeyErrorStatus status = m_ocdmSession->getLastDrmError(errorCode);
+    if (MediaKeyErrorStatus::OK != status)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get last drm error");
+    }
     return status;
 }
 

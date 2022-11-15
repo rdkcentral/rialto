@@ -53,7 +53,7 @@ public:
     MOCK_METHOD(MediaKeyErrorStatus, getDrmStoreHash, (std::vector<unsigned char> & drmStoreHash), (override));
     MOCK_METHOD(MediaKeyErrorStatus, getKeyStoreHash, (std::vector<unsigned char> & keyStoreHash), (override));
     MOCK_METHOD(MediaKeyErrorStatus, getLdlSessionsLimit, (uint32_t & ldlLimit), (override));
-    MOCK_METHOD(MediaKeyErrorStatus, getLastDrmError, (uint32_t & errorCode), (override));
+    MOCK_METHOD(MediaKeyErrorStatus, getLastDrmError, (int32_t keySessionId, uint32_t &errorCode), (override));
     MOCK_METHOD(MediaKeyErrorStatus, getDrmTime, (uint64_t & drmTime), (override));
     MOCK_METHOD(MediaKeyErrorStatus, getCdmKeySessionId, (int32_t keySessionId, std::string &cdmKeySessionId),
                 (override));

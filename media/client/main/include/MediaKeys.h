@@ -93,7 +93,7 @@ public:
 
     MediaKeyErrorStatus getLdlSessionsLimit(uint32_t &ldlLimit) override;
 
-    MediaKeyErrorStatus getLastDrmError(uint32_t &errorCode) override;
+    MediaKeyErrorStatus getLastDrmError(int32_t keySessionId, uint32_t &errorCode) override;
 
     MediaKeyErrorStatus getDrmTime(uint64_t &drmTime) override;
 

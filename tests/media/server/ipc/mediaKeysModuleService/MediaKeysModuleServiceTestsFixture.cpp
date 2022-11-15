@@ -419,14 +419,14 @@ void MediaKeysModuleServiceTests::cdmServiceWillFailToGetLdlSessionsLimit()
 void MediaKeysModuleServiceTests::cdmServiceWillGetLastDrmError()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_cdmServiceMock, getLastDrmError(hardcodedMediaKeysHandle, _))
+    EXPECT_CALL(m_cdmServiceMock, getLastDrmError(hardcodedMediaKeysHandle, keySessionId, _))
         .WillOnce(Return(firebolt::rialto::MediaKeyErrorStatus::OK));
 }
 
 void MediaKeysModuleServiceTests::cdmServiceWillFailToGetLastDrmError()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_cdmServiceMock, getLastDrmError(hardcodedMediaKeysHandle, _)).WillOnce(Return(errorStatus));
+    EXPECT_CALL(m_cdmServiceMock, getLastDrmError(hardcodedMediaKeysHandle, keySessionId, _)).WillOnce(Return(errorStatus));
 }
 
 void MediaKeysModuleServiceTests::cdmServiceWillGetDrmTime()
@@ -925,6 +925,7 @@ void MediaKeysModuleServiceTests::sendGetLastDrmErrorRequestAndReceiveResponse()
     firebolt::rialto::GetLastDrmErrorResponse response;
 
     request.set_media_keys_handle(hardcodedMediaKeysHandle);
+    request.set_key_session_id(keySessionId);
 
     m_service->getLastDrmError(m_controllerMock.get(), &request, &response, m_closureMock.get());
     EXPECT_EQ(firebolt::rialto::MediaKeyErrorStatus::OK, convertMediaKeyErrorStatus(response.error_status()));
@@ -936,6 +937,7 @@ void MediaKeysModuleServiceTests::sendGetLastDrmErrorRequestAndReceiveErrorRespo
     firebolt::rialto::GetLastDrmErrorResponse response;
 
     request.set_media_keys_handle(hardcodedMediaKeysHandle);
+    request.set_key_session_id(keySessionId);
 
     m_service->getLastDrmError(m_controllerMock.get(), &request, &response, m_closureMock.get());
     EXPECT_EQ(errorStatus, convertMediaKeyErrorStatus(response.error_status()));

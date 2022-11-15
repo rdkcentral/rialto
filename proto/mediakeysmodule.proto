@@ -451,11 +451,13 @@ message GetLdlSessionsLimitResponse {
  * @brief Get the last cdm specific DRM error code.
  *
  * @param[in] media_keys_handle The handle of the media keys.
+ * @param[in] key_session_id    The key session id for the session.
  *
  * @retval an error status & the error code.
  */
 message GetLastDrmErrorRequest {
   required int32 media_keys_handle = 1;
+  required int32 key_session_id = 2;
 }
 message GetLastDrmErrorResponse {
   required ProtoMediaKeyErrorStatus error_status = 1;

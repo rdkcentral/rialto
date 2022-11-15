@@ -389,11 +389,24 @@ MediaKeyErrorStatus MediaKeysServerInternal::getLdlSessionsLimit(uint32_t &ldlLi
     return m_ocdmSystem->getLdlSessionsLimit(&ldlLimit);
 }
 
-MediaKeyErrorStatus MediaKeysServerInternal::getLastDrmError(uint32_t &errorCode)
+MediaKeyErrorStatus MediaKeysServerInternal::getLastDrmError(int32_t keySessionId, uint32_t &errorCode)
 {
-    RIALTO_SERVER_LOG_ERROR("Not Implemented");
+    RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    return MediaKeyErrorStatus::FAIL;
+    auto sessionIter = m_mediaKeySessions.find(keySessionId);
+    if (sessionIter == m_mediaKeySessions.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to find the session");
+        return MediaKeyErrorStatus::BAD_SESSION_ID;
+    }
+
+    MediaKeyErrorStatus status = sessionIter->second->getLastDrmError(errorCode);
+    if (MediaKeyErrorStatus::OK != status)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get last drm error");
+    }
+
+    return status;
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::getDrmTime(uint64_t &drmTime)

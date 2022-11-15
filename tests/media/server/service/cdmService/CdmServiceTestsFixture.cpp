@@ -197,7 +197,7 @@ void CdmServiceTests::mediaKeysWillGetLdlSessionsLimitWithStatus(firebolt::rialt
 void CdmServiceTests::mediaKeysWillGetLastDrmErrorWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
 {
     mainThreadWillEnqueueTask();
-    EXPECT_CALL(m_mediaKeysMock, getLastDrmError(_)).WillOnce(Return(status));
+    EXPECT_CALL(m_mediaKeysMock, getLastDrmError(keySessionId, _)).WillOnce(Return(status));
 }
 
 void CdmServiceTests::mediaKeysWillGetDrmTimeWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
@@ -334,7 +334,7 @@ void CdmServiceTests::getLdlSessionsLimitShouldReturnStatus(firebolt::rialto::Me
 void CdmServiceTests::getLastDrmErrorShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status)
 {
     uint32_t errorCode;
-    EXPECT_EQ(status, m_sut.getLastDrmError(mediaKeysHandle, errorCode));
+    EXPECT_EQ(status, m_sut.getLastDrmError(mediaKeysHandle, keySessionId, errorCode));
 }
 
 void CdmServiceTests::getDrmTimeShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status)

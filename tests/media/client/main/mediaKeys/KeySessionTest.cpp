@@ -224,9 +224,9 @@ TEST_F(RialtoClientMediaKeysKeySessionTest, GetLdlSessionsLimit)
 TEST_F(RialtoClientMediaKeysKeySessionTest, GetLastDrmError)
 {
     std::uint32_t lastDrmError;
-    EXPECT_CALL(*m_mediaKeysIpcMock, getLastDrmError(lastDrmError)).WillOnce(Return(m_mediaKeyErrorStatus));
+    EXPECT_CALL(*m_mediaKeysIpcMock, getLastDrmError(m_keySessionId, lastDrmError)).WillOnce(Return(m_mediaKeyErrorStatus));
 
-    EXPECT_EQ(m_mediaKeys->getLastDrmError(lastDrmError), m_mediaKeyErrorStatus);
+    EXPECT_EQ(m_mediaKeys->getLastDrmError(m_keySessionId, lastDrmError), m_mediaKeyErrorStatus);
 }
 
 /**

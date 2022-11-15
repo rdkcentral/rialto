@@ -381,7 +381,7 @@ MediaKeyErrorStatus CdmService::getLdlSessionsLimit(int mediaKeysHandle, uint32_
     return future.get();
 }
 
-MediaKeyErrorStatus CdmService::getLastDrmError(int mediaKeysHandle, uint32_t &errorCode)
+MediaKeyErrorStatus CdmService::getLastDrmError(int mediaKeysHandle, int32_t keySessionId, uint32_t &errorCode)
 {
     std::promise<MediaKeyErrorStatus> promise;
     std::future<MediaKeyErrorStatus> future = promise.get_future();
@@ -394,7 +394,7 @@ MediaKeyErrorStatus CdmService::getLastDrmError(int mediaKeysHandle, uint32_t &e
             return promise.set_value(MediaKeyErrorStatus::FAIL);
         }
 
-        MediaKeyErrorStatus status = mediaKeysIter->second->getLastDrmError(errorCode);
+        MediaKeyErrorStatus status = mediaKeysIter->second->getLastDrmError(keySessionId, errorCode);
         return promise.set_value(status);
     };
     m_mainThread.enqueueTask(task);

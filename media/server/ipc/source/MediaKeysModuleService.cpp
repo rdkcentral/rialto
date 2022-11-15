@@ -432,7 +432,8 @@ void MediaKeysModuleService::getLastDrmError(::google::protobuf::RpcController *
     uint32_t errorCode{0};
     RIALTO_SERVER_LOG_DEBUG("%s requested.", __func__);
 
-    MediaKeyErrorStatus status = m_cdmService.getLastDrmError(request->media_keys_handle(), errorCode);
+    MediaKeyErrorStatus status =
+        m_cdmService.getLastDrmError(request->media_keys_handle(), request->key_session_id(), errorCode);
     response->set_error_status(convertMediaKeyErrorStatus(status));
     response->set_error_code(errorCode);
     done->Run();

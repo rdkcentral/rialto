@@ -64,7 +64,7 @@ public:
     MediaKeyErrorStatus getDrmStoreHash(int mediaKeysHandle, std::vector<unsigned char> &drmStoreHash) override;
     MediaKeyErrorStatus getKeyStoreHash(int mediaKeysHandle, std::vector<unsigned char> &keyStoreHash) override;
     MediaKeyErrorStatus getLdlSessionsLimit(int mediaKeysHandle, uint32_t &ldlLimit) override;
-    MediaKeyErrorStatus getLastDrmError(int mediaKeysHandle, uint32_t &errorCode) override;
+    MediaKeyErrorStatus getLastDrmError(int mediaKeysHandle, int32_t keySessionId, uint32_t &errorCode) override;
     MediaKeyErrorStatus getDrmTime(int mediaKeysHandle, uint64_t &drmTime) override;
 
     std::vector<std::string> getSupportedKeySystems() override;

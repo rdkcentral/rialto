@@ -736,7 +736,7 @@ MediaKeyErrorStatus MediaKeysIpc::getLdlSessionsLimit(uint32_t &ldlLimit)
     return getMediaKeyErrorStatusFromResponse("getLdlSessionsLimit", ipcController, response.error_status());
 }
 
-MediaKeyErrorStatus MediaKeysIpc::getLastDrmError(uint32_t &errorCode)
+MediaKeyErrorStatus MediaKeysIpc::getLastDrmError(int32_t keySessionId, uint32_t &errorCode)
 {
     if (!reattachChannelIfRequired())
     {
@@ -746,6 +746,7 @@ MediaKeyErrorStatus MediaKeysIpc::getLastDrmError(uint32_t &errorCode)
 
     firebolt::rialto::GetLastDrmErrorRequest request;
     request.set_media_keys_handle(m_mediaKeysHandle);
+    request.set_key_session_id(keySessionId);
 
     firebolt::rialto::GetLastDrmErrorResponse response;
     // Default error status to FAIL

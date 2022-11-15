@@ -191,11 +191,11 @@ MediaKeyErrorStatus MediaKeys::getLdlSessionsLimit(uint32_t &ldlLimit)
     return m_mediaKeysIpc->getLdlSessionsLimit(ldlLimit);
 }
 
-MediaKeyErrorStatus MediaKeys::getLastDrmError(uint32_t &errorCode)
+MediaKeyErrorStatus MediaKeys::getLastDrmError(int32_t keySessionId, uint32_t &errorCode)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    return m_mediaKeysIpc->getLastDrmError(errorCode);
+    return m_mediaKeysIpc->getLastDrmError(keySessionId, errorCode);
 }
 
 MediaKeyErrorStatus MediaKeys::getDrmTime(uint64_t &drmTime)

@@ -167,6 +167,15 @@ public:
      * @retval an error status.
      */
     virtual MediaKeyErrorStatus setDrmHeader(const std::vector<uint8_t> &requestData) = 0;
+
+    /**
+     * @brief Get the last cdm specific DRM error code
+     *
+     * @param[out] errorCode : the error code.
+     *
+     * @retval the return status value.
+     */
+    virtual MediaKeyErrorStatus getLastDrmError(uint32_t &errorCode) = 0;
 };
 } // namespace firebolt::rialto::server
 

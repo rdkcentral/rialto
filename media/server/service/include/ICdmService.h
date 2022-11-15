@@ -66,7 +66,7 @@ public:
     virtual MediaKeyErrorStatus getDrmStoreHash(int mediaKeysHandle, std::vector<unsigned char> &drmStoreHash) = 0;
     virtual MediaKeyErrorStatus getKeyStoreHash(int mediaKeysHandle, std::vector<unsigned char> &keyStoreHash) = 0;
     virtual MediaKeyErrorStatus getLdlSessionsLimit(int mediaKeysHandle, uint32_t &ldlLimit) = 0;
-    virtual MediaKeyErrorStatus getLastDrmError(int mediaKeysHandle, uint32_t &errorCode) = 0;
+    virtual MediaKeyErrorStatus getLastDrmError(int mediaKeysHandle, int32_t keySessionId, uint32_t &errorCode) = 0;
     virtual MediaKeyErrorStatus getDrmTime(int mediaKeysHandle, uint64_t &drmTime) = 0;
 
     virtual std::vector<std::string> getSupportedKeySystems() = 0;
