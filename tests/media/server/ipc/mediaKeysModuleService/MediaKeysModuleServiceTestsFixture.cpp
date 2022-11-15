@@ -44,6 +44,8 @@ constexpr firebolt::rialto::MediaKeyErrorStatus errorStatus{firebolt::rialto::Me
 constexpr firebolt::rialto::InitDataType initDataType{firebolt::rialto::InitDataType::CENC};
 const std::vector<std::uint8_t> initData{6, 7, 2};
 const std::vector<std::uint8_t> responseData{9, 7, 8};
+const std::vector<uint8_t> keyId{1, 2, 3};
+const std::vector<uint8_t> drmHeader{6, 3, 8};
 const std::vector<unsigned char> licenseRequestMessage{3, 2, 1};
 const std::vector<unsigned char> licenseRenewalMessage{0, 4, 8};
 const std::string url{"http://"};
@@ -321,6 +323,123 @@ void MediaKeysModuleServiceTests::cdmServiceWillFailToGetCdmKeySessionId()
     expectRequestSuccess();
     EXPECT_CALL(m_cdmServiceMock, getCdmKeySessionId(hardcodedMediaKeysHandle, keySessionId, _))
         .WillOnce(Return(errorStatus));
+}
+
+void MediaKeysModuleServiceTests::cdmServiceWillGetExistingKey()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_cdmServiceMock, containsKey(hardcodedMediaKeysHandle, keySessionId, keyId)).WillOnce(Return(true));
+}
+
+void MediaKeysModuleServiceTests::cdmServiceWillFailToGetExistingKey()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_cdmServiceMock, containsKey(hardcodedMediaKeysHandle, keySessionId, keyId)).WillOnce(Return(false));
+}
+
+void MediaKeysModuleServiceTests::cdmServiceWillSetDrmHeader()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_cdmServiceMock, setDrmHeader(hardcodedMediaKeysHandle, keySessionId, drmHeader))
+        .WillOnce(Return(firebolt::rialto::MediaKeyErrorStatus::OK));
+}
+
+void MediaKeysModuleServiceTests::cdmServiceWillFailToSetDrmHeader()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_cdmServiceMock, setDrmHeader(hardcodedMediaKeysHandle, keySessionId, drmHeader))
+        .WillOnce(Return(errorStatus));
+}
+
+void MediaKeysModuleServiceTests::cdmServiceWillDeleteDrmStore()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_cdmServiceMock, deleteDrmStore(hardcodedMediaKeysHandle))
+        .WillOnce(Return(firebolt::rialto::MediaKeyErrorStatus::OK));
+}
+
+void MediaKeysModuleServiceTests::cdmServiceWillFailToDeleteDrmStore()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_cdmServiceMock, deleteDrmStore(hardcodedMediaKeysHandle)).WillOnce(Return(errorStatus));
+}
+
+void MediaKeysModuleServiceTests::cdmServiceWillDeleteKeyStore()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_cdmServiceMock, deleteKeyStore(hardcodedMediaKeysHandle))
+        .WillOnce(Return(firebolt::rialto::MediaKeyErrorStatus::OK));
+}
+
+void MediaKeysModuleServiceTests::cdmServiceWillFailToDeleteKeyStore()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_cdmServiceMock, deleteKeyStore(hardcodedMediaKeysHandle)).WillOnce(Return(errorStatus));
+}
+
+void MediaKeysModuleServiceTests::cdmServiceWillGetDrmStoreHash()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_cdmServiceMock, getDrmStoreHash(hardcodedMediaKeysHandle, _))
+        .WillOnce(Return(firebolt::rialto::MediaKeyErrorStatus::OK));
+}
+
+void MediaKeysModuleServiceTests::cdmServiceWillFailToGetDrmStoreHash()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_cdmServiceMock, getDrmStoreHash(hardcodedMediaKeysHandle, _)).WillOnce(Return(errorStatus));
+}
+
+void MediaKeysModuleServiceTests::cdmServiceWillGetKeyStoreHash()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_cdmServiceMock, getKeyStoreHash(hardcodedMediaKeysHandle, _))
+        .WillOnce(Return(firebolt::rialto::MediaKeyErrorStatus::OK));
+}
+
+void MediaKeysModuleServiceTests::cdmServiceWillFailToGetKeyStoreHash()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_cdmServiceMock, getKeyStoreHash(hardcodedMediaKeysHandle, _)).WillOnce(Return(errorStatus));
+}
+
+void MediaKeysModuleServiceTests::cdmServiceWillGetLdlSessionsLimit()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_cdmServiceMock, getLdlSessionsLimit(hardcodedMediaKeysHandle, _))
+        .WillOnce(Return(firebolt::rialto::MediaKeyErrorStatus::OK));
+}
+
+void MediaKeysModuleServiceTests::cdmServiceWillFailToGetLdlSessionsLimit()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_cdmServiceMock, getLdlSessionsLimit(hardcodedMediaKeysHandle, _)).WillOnce(Return(errorStatus));
+}
+
+void MediaKeysModuleServiceTests::cdmServiceWillGetLastDrmError()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_cdmServiceMock, getLastDrmError(hardcodedMediaKeysHandle, _))
+        .WillOnce(Return(firebolt::rialto::MediaKeyErrorStatus::OK));
+}
+
+void MediaKeysModuleServiceTests::cdmServiceWillFailToGetLastDrmError()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_cdmServiceMock, getLastDrmError(hardcodedMediaKeysHandle, _)).WillOnce(Return(errorStatus));
+}
+
+void MediaKeysModuleServiceTests::cdmServiceWillGetDrmTime()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_cdmServiceMock, getDrmTime(hardcodedMediaKeysHandle, _))
+        .WillOnce(Return(firebolt::rialto::MediaKeyErrorStatus::OK));
+}
+
+void MediaKeysModuleServiceTests::cdmServiceWillFailToGetDrmTime()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_cdmServiceMock, getDrmTime(hardcodedMediaKeysHandle, _)).WillOnce(Return(errorStatus));
 }
 
 void MediaKeysModuleServiceTests::mediaClientWillSendLicenseRequestEvent()
@@ -623,6 +742,224 @@ void MediaKeysModuleServiceTests::sendGetCdmKeySessionIdRequestAndReceiveErrorRe
     request.set_key_session_id(keySessionId);
 
     m_service->getCdmKeySessionId(m_controllerMock.get(), &request, &response, m_closureMock.get());
+    EXPECT_EQ(errorStatus, convertMediaKeyErrorStatus(response.error_status()));
+}
+
+void MediaKeysModuleServiceTests::sendContainsKeyRequestAndReceiveResponse()
+{
+    firebolt::rialto::ContainsKeyRequest request;
+    firebolt::rialto::ContainsKeyResponse response;
+
+    request.set_media_keys_handle(hardcodedMediaKeysHandle);
+    request.set_key_session_id(keySessionId);
+    for (const auto &item : keyId)
+    {
+        request.add_key_id(item);
+    }
+
+    m_service->containsKey(m_controllerMock.get(), &request, &response, m_closureMock.get());
+    EXPECT_TRUE(response.contains_key());
+}
+
+void MediaKeysModuleServiceTests::sendContainsKeyRequestAndReceiveErrorResponse()
+{
+    firebolt::rialto::ContainsKeyRequest request;
+    firebolt::rialto::ContainsKeyResponse response;
+
+    request.set_media_keys_handle(hardcodedMediaKeysHandle);
+    request.set_key_session_id(keySessionId);
+    for (const auto &item : keyId)
+    {
+        request.add_key_id(item);
+    }
+
+    m_service->containsKey(m_controllerMock.get(), &request, &response, m_closureMock.get());
+    EXPECT_FALSE(response.contains_key());
+}
+
+void MediaKeysModuleServiceTests::sendSetDrmHeaderRequestAndReceiveResponse()
+{
+    firebolt::rialto::SetDrmHeaderRequest request;
+    firebolt::rialto::SetDrmHeaderResponse response;
+
+    request.set_media_keys_handle(hardcodedMediaKeysHandle);
+    request.set_key_session_id(keySessionId);
+    for (const auto &item : drmHeader)
+    {
+        request.add_request_data(item);
+    }
+
+    m_service->setDrmHeader(m_controllerMock.get(), &request, &response, m_closureMock.get());
+    EXPECT_EQ(firebolt::rialto::MediaKeyErrorStatus::OK, convertMediaKeyErrorStatus(response.error_status()));
+}
+
+void MediaKeysModuleServiceTests::sendSetDrmHeaderRequestAndReceiveErrorResponse()
+{
+    firebolt::rialto::SetDrmHeaderRequest request;
+    firebolt::rialto::SetDrmHeaderResponse response;
+
+    request.set_media_keys_handle(hardcodedMediaKeysHandle);
+    request.set_key_session_id(keySessionId);
+    for (const auto &item : drmHeader)
+    {
+        request.add_request_data(item);
+    }
+
+    m_service->setDrmHeader(m_controllerMock.get(), &request, &response, m_closureMock.get());
+    EXPECT_EQ(errorStatus, convertMediaKeyErrorStatus(response.error_status()));
+}
+
+void MediaKeysModuleServiceTests::sendDeleteDrmStoreRequestAndReceiveResponse()
+{
+    firebolt::rialto::DeleteDrmStoreRequest request;
+    firebolt::rialto::DeleteDrmStoreResponse response;
+
+    request.set_media_keys_handle(hardcodedMediaKeysHandle);
+
+    m_service->deleteDrmStore(m_controllerMock.get(), &request, &response, m_closureMock.get());
+    EXPECT_EQ(firebolt::rialto::MediaKeyErrorStatus::OK, convertMediaKeyErrorStatus(response.error_status()));
+}
+
+void MediaKeysModuleServiceTests::sendDeleteDrmStoreRequestAndReceiveErrorResponse()
+{
+    firebolt::rialto::DeleteDrmStoreRequest request;
+    firebolt::rialto::DeleteDrmStoreResponse response;
+
+    request.set_media_keys_handle(hardcodedMediaKeysHandle);
+
+    m_service->deleteDrmStore(m_controllerMock.get(), &request, &response, m_closureMock.get());
+    EXPECT_EQ(errorStatus, convertMediaKeyErrorStatus(response.error_status()));
+}
+
+void MediaKeysModuleServiceTests::sendDeleteKeyStoreRequestAndReceiveResponse()
+{
+    firebolt::rialto::DeleteKeyStoreRequest request;
+    firebolt::rialto::DeleteKeyStoreResponse response;
+
+    request.set_media_keys_handle(hardcodedMediaKeysHandle);
+
+    m_service->deleteKeyStore(m_controllerMock.get(), &request, &response, m_closureMock.get());
+    EXPECT_EQ(firebolt::rialto::MediaKeyErrorStatus::OK, convertMediaKeyErrorStatus(response.error_status()));
+}
+
+void MediaKeysModuleServiceTests::sendDeleteKeyStoreRequestAndReceiveErrorResponse()
+{
+    firebolt::rialto::DeleteKeyStoreRequest request;
+    firebolt::rialto::DeleteKeyStoreResponse response;
+
+    request.set_media_keys_handle(hardcodedMediaKeysHandle);
+
+    m_service->deleteKeyStore(m_controllerMock.get(), &request, &response, m_closureMock.get());
+    EXPECT_EQ(errorStatus, convertMediaKeyErrorStatus(response.error_status()));
+}
+
+void MediaKeysModuleServiceTests::sendGetDrmStoreHashRequestAndReceiveResponse()
+{
+    firebolt::rialto::GetDrmStoreHashRequest request;
+    firebolt::rialto::GetDrmStoreHashResponse response;
+
+    request.set_media_keys_handle(hardcodedMediaKeysHandle);
+
+    m_service->getDrmStoreHash(m_controllerMock.get(), &request, &response, m_closureMock.get());
+    EXPECT_EQ(firebolt::rialto::MediaKeyErrorStatus::OK, convertMediaKeyErrorStatus(response.error_status()));
+}
+
+void MediaKeysModuleServiceTests::sendGetDrmStoreHashRequestAndReceiveErrorResponse()
+{
+    firebolt::rialto::GetDrmStoreHashRequest request;
+    firebolt::rialto::GetDrmStoreHashResponse response;
+
+    request.set_media_keys_handle(hardcodedMediaKeysHandle);
+
+    m_service->getDrmStoreHash(m_controllerMock.get(), &request, &response, m_closureMock.get());
+    EXPECT_EQ(errorStatus, convertMediaKeyErrorStatus(response.error_status()));
+}
+
+void MediaKeysModuleServiceTests::sendGetKeyStoreHashRequestAndReceiveResponse()
+{
+    firebolt::rialto::GetKeyStoreHashRequest request;
+    firebolt::rialto::GetKeyStoreHashResponse response;
+
+    request.set_media_keys_handle(hardcodedMediaKeysHandle);
+
+    m_service->getKeyStoreHash(m_controllerMock.get(), &request, &response, m_closureMock.get());
+    EXPECT_EQ(firebolt::rialto::MediaKeyErrorStatus::OK, convertMediaKeyErrorStatus(response.error_status()));
+}
+
+void MediaKeysModuleServiceTests::sendGetKeyStoreHashRequestAndReceiveErrorResponse()
+{
+    firebolt::rialto::GetKeyStoreHashRequest request;
+    firebolt::rialto::GetKeyStoreHashResponse response;
+
+    request.set_media_keys_handle(hardcodedMediaKeysHandle);
+
+    m_service->getKeyStoreHash(m_controllerMock.get(), &request, &response, m_closureMock.get());
+    EXPECT_EQ(errorStatus, convertMediaKeyErrorStatus(response.error_status()));
+}
+
+void MediaKeysModuleServiceTests::sendGetLdlSessionsLimitRequestAndReceiveResponse()
+{
+    firebolt::rialto::GetLdlSessionsLimitRequest request;
+    firebolt::rialto::GetLdlSessionsLimitResponse response;
+
+    request.set_media_keys_handle(hardcodedMediaKeysHandle);
+
+    m_service->getLdlSessionsLimit(m_controllerMock.get(), &request, &response, m_closureMock.get());
+    EXPECT_EQ(firebolt::rialto::MediaKeyErrorStatus::OK, convertMediaKeyErrorStatus(response.error_status()));
+}
+
+void MediaKeysModuleServiceTests::sendGetLdlSessionsLimitRequestAndReceiveErrorResponse()
+{
+    firebolt::rialto::GetLdlSessionsLimitRequest request;
+    firebolt::rialto::GetLdlSessionsLimitResponse response;
+
+    request.set_media_keys_handle(hardcodedMediaKeysHandle);
+
+    m_service->getLdlSessionsLimit(m_controllerMock.get(), &request, &response, m_closureMock.get());
+    EXPECT_EQ(errorStatus, convertMediaKeyErrorStatus(response.error_status()));
+}
+
+void MediaKeysModuleServiceTests::sendGetLastDrmErrorRequestAndReceiveResponse()
+{
+    firebolt::rialto::GetLastDrmErrorRequest request;
+    firebolt::rialto::GetLastDrmErrorResponse response;
+
+    request.set_media_keys_handle(hardcodedMediaKeysHandle);
+
+    m_service->getLastDrmError(m_controllerMock.get(), &request, &response, m_closureMock.get());
+    EXPECT_EQ(firebolt::rialto::MediaKeyErrorStatus::OK, convertMediaKeyErrorStatus(response.error_status()));
+}
+
+void MediaKeysModuleServiceTests::sendGetLastDrmErrorRequestAndReceiveErrorResponse()
+{
+    firebolt::rialto::GetLastDrmErrorRequest request;
+    firebolt::rialto::GetLastDrmErrorResponse response;
+
+    request.set_media_keys_handle(hardcodedMediaKeysHandle);
+
+    m_service->getLastDrmError(m_controllerMock.get(), &request, &response, m_closureMock.get());
+    EXPECT_EQ(errorStatus, convertMediaKeyErrorStatus(response.error_status()));
+}
+
+void MediaKeysModuleServiceTests::sendGetDrmTimeRequestAndReceiveResponse()
+{
+    firebolt::rialto::GetDrmTimeRequest request;
+    firebolt::rialto::GetDrmTimeResponse response;
+
+    request.set_media_keys_handle(hardcodedMediaKeysHandle);
+
+    m_service->getDrmTime(m_controllerMock.get(), &request, &response, m_closureMock.get());
+    EXPECT_EQ(firebolt::rialto::MediaKeyErrorStatus::OK, convertMediaKeyErrorStatus(response.error_status()));
+}
+
+void MediaKeysModuleServiceTests::sendGetDrmTimeRequestAndReceiveErrorResponse()
+{
+    firebolt::rialto::GetDrmTimeRequest request;
+    firebolt::rialto::GetDrmTimeResponse response;
+
+    request.set_media_keys_handle(hardcodedMediaKeysHandle);
+
+    m_service->getDrmTime(m_controllerMock.get(), &request, &response, m_closureMock.get());
     EXPECT_EQ(errorStatus, convertMediaKeyErrorStatus(response.error_status()));
 }
 
