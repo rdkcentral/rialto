@@ -73,7 +73,6 @@ add_gtests (
         mediaKeysIpc/RemoveKeySessionTest.cpp
         mediaKeysIpc/CallbackTest.cpp
         mediaKeysIpc/GetCdmKeySessionIdTest.cpp
-        mediaKeysIpc/SelectKeyIdTest.cpp
         mediaKeysIpc/ContainsKeyTest.cpp
         mediaKeysIpc/SetDrmHeaderTest.cpp
         mediaKeysIpc/DeleteDrmStoreTest.cpp

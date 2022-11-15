@@ -276,32 +276,8 @@ void MediaKeysIpc::destroyMediaKeys()
 
 MediaKeyErrorStatus MediaKeysIpc::selectKeyId(int32_t keySessionId, const std::vector<uint8_t> &keyId)
 {
-    if (!reattachChannelIfRequired())
-    {
-        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
-        return MediaKeyErrorStatus::FAIL;
-    }
-
-    firebolt::rialto::SelectKeyIdRequest request;
-    request.set_media_keys_handle(m_mediaKeysHandle);
-    request.set_key_session_id(keySessionId);
-    for (const auto &keyIdItem : keyId)
-    {
-        request.add_key_id(keyIdItem);
-    }
-
-    firebolt::rialto::SelectKeyIdResponse response;
-    // Default error status to FAIL
-    response.set_error_status(ProtoMediaKeyErrorStatus::FAIL);
-
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
-    m_mediaKeysStub->selectKeyId(ipcController.get(), &request, &response, blockingClosure.get());
-
-    // wait for the call to complete
-    blockingClosure->wait();
-
-    return getMediaKeyErrorStatusFromResponse("selectKeyId", ipcController, response.error_status());
+    RIALTO_CLIENT_LOG_ERROR("Not Implemented");
+    return MediaKeyErrorStatus::FAIL;
 }
 
 bool MediaKeysIpc::containsKey(int32_t keySessionId, const std::vector<uint8_t> &keyId)
