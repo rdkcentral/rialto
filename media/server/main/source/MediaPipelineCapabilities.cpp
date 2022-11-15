@@ -17,6 +17,8 @@
  * limitations under the License.
  */
 
+#include <stdexcept>
+
 #include "MediaPipelineCapabilities.h"
 #include "RialtoServerLogging.h"
 #include <MediaCommon.h>
