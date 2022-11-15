@@ -244,7 +244,8 @@ bool CdmService::containsKey(int mediaKeysHandle, int32_t keySessionId, const st
 {
     std::promise<bool> promise;
     std::future<bool> future = promise.get_future();
-    auto task = [&]() {
+    auto task = [&]()
+    {
         RIALTO_SERVER_LOG_DEBUG("CdmService requested to check if key is present: %d", mediaKeysHandle);
         auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
         if (mediaKeysIter == m_mediaKeys.end())
@@ -265,7 +266,8 @@ MediaKeyErrorStatus CdmService::setDrmHeader(int mediaKeysHandle, int32_t keySes
 {
     std::promise<MediaKeyErrorStatus> promise;
     std::future<MediaKeyErrorStatus> future = promise.get_future();
-    auto task = [&]() {
+    auto task = [&]()
+    {
         RIALTO_SERVER_LOG_DEBUG("CdmService requested to set drm header: %d", mediaKeysHandle);
         auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
         if (mediaKeysIter == m_mediaKeys.end())
@@ -285,7 +287,8 @@ MediaKeyErrorStatus CdmService::deleteDrmStore(int mediaKeysHandle)
 {
     std::promise<MediaKeyErrorStatus> promise;
     std::future<MediaKeyErrorStatus> future = promise.get_future();
-    auto task = [&]() {
+    auto task = [&]()
+    {
         RIALTO_SERVER_LOG_DEBUG("CdmService requested to delete drm store: %d", mediaKeysHandle);
         auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
         if (mediaKeysIter == m_mediaKeys.end())
@@ -305,7 +308,8 @@ MediaKeyErrorStatus CdmService::deleteKeyStore(int mediaKeysHandle)
 {
     std::promise<MediaKeyErrorStatus> promise;
     std::future<MediaKeyErrorStatus> future = promise.get_future();
-    auto task = [&]() {
+    auto task = [&]()
+    {
         RIALTO_SERVER_LOG_DEBUG("CdmService requested to delete key store: %d", mediaKeysHandle);
         auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
         if (mediaKeysIter == m_mediaKeys.end())
@@ -325,7 +329,8 @@ MediaKeyErrorStatus CdmService::getDrmStoreHash(int mediaKeysHandle, std::vector
 {
     std::promise<MediaKeyErrorStatus> promise;
     std::future<MediaKeyErrorStatus> future = promise.get_future();
-    auto task = [&]() {
+    auto task = [&]()
+    {
         RIALTO_SERVER_LOG_DEBUG("CdmService requested to get drm store hash: %d", mediaKeysHandle);
         auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
         if (mediaKeysIter == m_mediaKeys.end())
@@ -345,7 +350,8 @@ MediaKeyErrorStatus CdmService::getKeyStoreHash(int mediaKeysHandle, std::vector
 {
     std::promise<MediaKeyErrorStatus> promise;
     std::future<MediaKeyErrorStatus> future = promise.get_future();
-    auto task = [&]() {
+    auto task = [&]()
+    {
         RIALTO_SERVER_LOG_DEBUG("CdmService requested to get key store hash: %d", mediaKeysHandle);
         auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
         if (mediaKeysIter == m_mediaKeys.end())
@@ -365,7 +371,8 @@ MediaKeyErrorStatus CdmService::getLdlSessionsLimit(int mediaKeysHandle, uint32_
 {
     std::promise<MediaKeyErrorStatus> promise;
     std::future<MediaKeyErrorStatus> future = promise.get_future();
-    auto task = [&]() {
+    auto task = [&]()
+    {
         RIALTO_SERVER_LOG_DEBUG("CdmService requested to get ldl sessions limit: %d", mediaKeysHandle);
         auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
         if (mediaKeysIter == m_mediaKeys.end())
@@ -385,7 +392,8 @@ MediaKeyErrorStatus CdmService::getLastDrmError(int mediaKeysHandle, int32_t key
 {
     std::promise<MediaKeyErrorStatus> promise;
     std::future<MediaKeyErrorStatus> future = promise.get_future();
-    auto task = [&]() {
+    auto task = [&]()
+    {
         RIALTO_SERVER_LOG_DEBUG("CdmService requested to get last drm error: %d", mediaKeysHandle);
         auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
         if (mediaKeysIter == m_mediaKeys.end())
@@ -405,7 +413,8 @@ MediaKeyErrorStatus CdmService::getDrmTime(int mediaKeysHandle, uint64_t &drmTim
 {
     std::promise<MediaKeyErrorStatus> promise;
     std::future<MediaKeyErrorStatus> future = promise.get_future();
-    auto task = [&]() {
+    auto task = [&]()
+    {
         RIALTO_SERVER_LOG_DEBUG("CdmService requested to get drm time: %d", mediaKeysHandle);
         auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
         if (mediaKeysIter == m_mediaKeys.end())
