@@ -266,6 +266,25 @@ MediaKeyErrorStatus MediaKeySession::getCdmKeySessionId(std::string &cdmKeySessi
     return status;
 }
 
+bool MediaKeySession::containsKey(const std::vector<uint8_t> &keyId)
+{
+    uint32_t result = m_ocdmSession->hasKeyId(keyId.data(), keyId.size());
+
+    return static_cast<bool>(result);
+}
+
+MediaKeyErrorStatus MediaKeySession::setDrmHeader(const std::vector<uint8_t> &requestData)
+{
+    MediaKeyErrorStatus status = m_ocdmSession->setDrmHeader(requestData.data(), requestData.size());
+    if (MediaKeyErrorStatus::OK != status)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to set drm header");
+        return status;
+    }
+
+    return status;
+}
+
 void MediaKeySession::onProcessChallenge(const char url[], const uint8_t challenge[], const uint16_t challengeLength)
 {
     std::string urlStr = url;

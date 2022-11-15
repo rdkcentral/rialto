@@ -141,9 +141,16 @@ MediaKeyErrorStatus MediaKeysServerInternal::selectKeyId(int32_t keySessionId, c
 
 bool MediaKeysServerInternal::containsKey(int32_t keySessionId, const std::vector<uint8_t> &keyId)
 {
-    RIALTO_SERVER_LOG_ERROR("Not Implemented");
+    RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    return false;
+    auto sessionIter = m_mediaKeySessions.find(keySessionId);
+    if (sessionIter == m_mediaKeySessions.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to find the session");
+        return false;
+    }
+
+    return sessionIter->second->containsKey(keyId);
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::createKeySession(KeySessionType sessionType,
@@ -270,9 +277,23 @@ MediaKeyErrorStatus MediaKeysServerInternal::updateSessionInternal(int32_t keySe
 
 MediaKeyErrorStatus MediaKeysServerInternal::setDrmHeader(int32_t keySessionId, const std::vector<uint8_t> &requestData)
 {
-    RIALTO_SERVER_LOG_ERROR("Not Implemented");
+    RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    return MediaKeyErrorStatus::FAIL;
+    auto sessionIter = m_mediaKeySessions.find(keySessionId);
+    if (sessionIter == m_mediaKeySessions.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to find the session");
+        return MediaKeyErrorStatus::BAD_SESSION_ID;
+    }
+
+    MediaKeyErrorStatus status = sessionIter->second->setDrmHeader(requestData);
+    if (MediaKeyErrorStatus::OK != status)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to set drm header");
+        return status;
+    }
+
+    return status;
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::closeKeySession(int32_t keySessionId)
@@ -336,37 +357,36 @@ MediaKeyErrorStatus MediaKeysServerInternal::removeKeySessionInternal(int32_t ke
 
 MediaKeyErrorStatus MediaKeysServerInternal::deleteDrmStore()
 {
-    RIALTO_SERVER_LOG_ERROR("Not Implemented");
-
-    return MediaKeyErrorStatus::FAIL;
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    return m_ocdmSystem->deleteSecureStore();
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::deleteKeyStore()
 {
-    RIALTO_SERVER_LOG_ERROR("Not Implemented");
-
-    return MediaKeyErrorStatus::FAIL;
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    return m_ocdmSystem->deleteKeyStore();
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::getDrmStoreHash(std::vector<unsigned char> &drmStoreHash)
 {
-    RIALTO_SERVER_LOG_ERROR("Not Implemented");
-
-    return MediaKeyErrorStatus::FAIL;
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    constexpr size_t kHashSize{256};
+    drmStoreHash.reserve(kHashSize);
+    return m_ocdmSystem->getSecureStoreHash(&drmStoreHash[0], kHashSize);
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::getKeyStoreHash(std::vector<unsigned char> &keyStoreHash)
 {
-    RIALTO_SERVER_LOG_ERROR("Not Implemented");
-
-    return MediaKeyErrorStatus::FAIL;
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    constexpr size_t kHashSize{256};
+    keyStoreHash.reserve(kHashSize);
+    return m_ocdmSystem->getKeyStoreHash(&keyStoreHash[0], kHashSize);
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::getLdlSessionsLimit(uint32_t &ldlLimit)
 {
-    RIALTO_SERVER_LOG_ERROR("Not Implemented");
-
-    return MediaKeyErrorStatus::FAIL;
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    return m_ocdmSystem->getLdlSessionsLimit(&ldlLimit);
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::getLastDrmError(uint32_t &errorCode)
@@ -378,9 +398,8 @@ MediaKeyErrorStatus MediaKeysServerInternal::getLastDrmError(uint32_t &errorCode
 
 MediaKeyErrorStatus MediaKeysServerInternal::getDrmTime(uint64_t &drmTime)
 {
-    RIALTO_SERVER_LOG_ERROR("Not Implemented");
-
-    return MediaKeyErrorStatus::FAIL;
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    return m_ocdmSystem->getDrmTime(&drmTime);
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::getCdmKeySessionId(int32_t keySessionId, std::string &cdmKeySessionId)
