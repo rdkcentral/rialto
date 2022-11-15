@@ -27,8 +27,9 @@ using testing::Invoke;
 using testing::Return;
 using testing::StrictMock;
 
-struct UnderflowTest : public testing::Test
+class UnderflowTest : public testing::Test
 {
+protected:
     StrictMock<firebolt::rialto::server::GstPlayerPrivateMock> m_gstPlayer;
     StrictMock<firebolt::rialto::server::GstPlayerClientMock> m_gstPlayerClient;
 };

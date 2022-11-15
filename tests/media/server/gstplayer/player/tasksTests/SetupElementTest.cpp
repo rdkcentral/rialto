@@ -31,8 +31,9 @@ using testing::Invoke;
 using testing::Return;
 using testing::StrictMock;
 
-struct SetupElementTest : public testing::Test
+class SetupElementTest : public testing::Test
 {
+protected:
     firebolt::rialto::server::PlayerContext m_context{};
     std::shared_ptr<firebolt::rialto::server::GlibWrapperMock> m_glibWrapper{
         std::make_shared<StrictMock<firebolt::rialto::server::GlibWrapperMock>>()};
@@ -61,18 +62,20 @@ struct SetupElementTest : public testing::Test
         EXPECT_CALL(*m_gstWrapper, gstElementFactoryListIsType(m_elementFactory, GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
             .WillOnce(Return(TRUE));
         EXPECT_CALL(*m_glibWrapper, gObjectType(&m_element)).WillRepeatedly(Return(G_TYPE_PARAM));
-        EXPECT_CALL(*m_glibWrapper, gSignalListIds(_, _)).WillOnce(Invoke([&](GType itype, guint *n_ids) {
-            *n_ids = 1;
-            return m_signals;
-        }));
-        EXPECT_CALL(*m_glibWrapper, gSignalQuery(m_signals[0], _)).WillOnce(Invoke([&](guint signal_id, GSignalQuery *query) {
-            query->signal_name = "buffer-underflow-callback";
-        }));
+        EXPECT_CALL(*m_glibWrapper, gSignalListIds(_, _))
+            .WillOnce(Invoke(
+                [&](GType itype, guint *n_ids)
+                {
+                    *n_ids = 1;
+                    return m_signals;
+                }));
+        EXPECT_CALL(*m_glibWrapper, gSignalQuery(m_signals[0], _))
+            .WillOnce(Invoke([&](guint signal_id, GSignalQuery *query)
+                             { query->signal_name = "buffer-underflow-callback"; }));
         EXPECT_CALL(*m_glibWrapper, gFree(m_signals));
         EXPECT_CALL(*m_glibWrapper, gSignalConnect(_, CharStrMatcher("buffer-underflow-callback"), _, _))
-            .WillOnce(Invoke([&](gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data) {
-                m_videoUnderflowCallback = c_handler;
-            }));
+            .WillOnce(Invoke([&](gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data)
+                             { m_videoUnderflowCallback = c_handler; }));
         EXPECT_CALL(*m_gstWrapper, gstObjectUnref(_));
     }
 
@@ -86,18 +89,20 @@ struct SetupElementTest : public testing::Test
         EXPECT_CALL(*m_gstWrapper, gstElementFactoryListIsType(m_elementFactory, GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
             .WillOnce(Return(TRUE));
         EXPECT_CALL(*m_glibWrapper, gObjectType(&m_element)).WillRepeatedly(Return(G_TYPE_PARAM));
-        EXPECT_CALL(*m_glibWrapper, gSignalListIds(_, _)).WillOnce(Invoke([&](GType itype, guint *n_ids) {
-            *n_ids = 1;
-            return m_signals;
-        }));
-        EXPECT_CALL(*m_glibWrapper, gSignalQuery(m_signals[0], _)).WillOnce(Invoke([&](guint signal_id, GSignalQuery *query) {
-            query->signal_name = "buffer-underflow-callback";
-        }));
+        EXPECT_CALL(*m_glibWrapper, gSignalListIds(_, _))
+            .WillOnce(Invoke(
+                [&](GType itype, guint *n_ids)
+                {
+                    *n_ids = 1;
+                    return m_signals;
+                }));
+        EXPECT_CALL(*m_glibWrapper, gSignalQuery(m_signals[0], _))
+            .WillOnce(Invoke([&](guint signal_id, GSignalQuery *query)
+                             { query->signal_name = "buffer-underflow-callback"; }));
         EXPECT_CALL(*m_glibWrapper, gFree(m_signals));
         EXPECT_CALL(*m_glibWrapper, gSignalConnect(_, _, _, _))
-            .WillOnce(Invoke([&](gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data) {
-                m_audioUnderflowCallback = c_handler;
-            }));
+            .WillOnce(Invoke([&](gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data)
+                             { m_audioUnderflowCallback = c_handler; }));
         EXPECT_CALL(*m_gstWrapper, gstObjectUnref(_));
     }
 };

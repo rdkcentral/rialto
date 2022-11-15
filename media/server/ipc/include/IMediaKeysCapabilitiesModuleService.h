@@ -30,7 +30,8 @@ namespace firebolt::rialto::server::ipc
 class IMediaKeysCapabilitiesModuleService;
 
 /**
- * @brief IMediaKeysCapabilitiesModuleService factory class, returns a concrete implementation of IMediaKeysCapabilitiesModuleService
+ * @brief IMediaKeysCapabilitiesModuleService factory class, returns a concrete implementation of
+ * IMediaKeysCapabilitiesModuleService
  */
 class IMediaKeysCapabilitiesModuleServiceFactory
 {

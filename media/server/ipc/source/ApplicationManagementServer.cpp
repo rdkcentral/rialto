@@ -96,12 +96,14 @@ bool ApplicationManagementServer::sendStateChangedEvent(const SessionServerState
 
 void ApplicationManagementServer::start()
 {
-    m_ipcServerThread = std::thread([this]() {
-        while (m_ipcServer->process() && m_ipcClient && m_ipcClient->isConnected())
+    m_ipcServerThread = std::thread(
+        [this]()
         {
-            m_ipcServer->wait(-1);
-        }
-    });
+            while (m_ipcServer->process() && m_ipcClient && m_ipcClient->isConnected())
+            {
+                m_ipcServer->wait(-1);
+            }
+        });
 }
 
 void ApplicationManagementServer::stop()

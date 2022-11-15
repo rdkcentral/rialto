@@ -105,11 +105,13 @@ TEST_F(RialtoClientCreateMediaKeysIpcTest, SubscribeEventFailure)
     EXPECT_CALL(*m_eventThreadFactoryMock, createEventThread(_)).WillOnce(Return(ByMove(std::move(m_eventThread))));
 
     EXPECT_CALL(*m_channelMock, subscribeImpl("firebolt.rialto.LicenseRequestEvent", _, _))
-        .WillOnce(Invoke([this](const std::string &eventName, const google::protobuf::Descriptor *descriptor,
-                                std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> &&handler) {
-            m_licenseRequestCb = std::move(handler);
-            return static_cast<int>(EventTags::LicenseRequestEvent);
-        }));
+        .WillOnce(Invoke(
+            [this](const std::string &eventName, const google::protobuf::Descriptor *descriptor,
+                   std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> &&handler)
+            {
+                m_licenseRequestCb = std::move(handler);
+                return static_cast<int>(EventTags::LicenseRequestEvent);
+            }));
     EXPECT_CALL(*m_channelMock, subscribeImpl("firebolt.rialto.LicenseRenewalEvent", _, _)).WillOnce(Return(-1));
     EXPECT_CALL(*m_channelMock, unsubscribe(static_cast<int>(EventTags::LicenseRequestEvent)));
 

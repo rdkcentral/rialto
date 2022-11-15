@@ -33,8 +33,9 @@ namespace
 std::int64_t position{12345};
 } // namespace
 
-struct SetPositionTest : public testing::Test
+class SetPositionTest : public testing::Test
 {
+protected:
     firebolt::rialto::server::PlayerContext m_context;
     StrictMock<firebolt::rialto::server::GstPlayerPrivateMock> m_gstPlayer;
     StrictMock<firebolt::rialto::server::GstPlayerClientMock> m_gstPlayerClient;

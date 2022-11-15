@@ -98,10 +98,27 @@ public:
          *
          * @param[in] id   : The source id.
          * @param[in] type : The source type.
-         * @param[in] caps : The mime type string.
+         * @param[in] mimeType : The mime type string.
+         * @param[in] alignment : The alignment of media segment.
          */
-        explicit MediaSource(int32_t id = 0, MediaSourceType type = MediaSourceType::UNKNOWN, const char *caps = "")
-            : m_id(id), m_type(type), m_caps(caps)
+        explicit MediaSource(int32_t id = 0, MediaSourceType type = MediaSourceType::UNKNOWN, const char *mimeType = "",
+                             SegmentAlignment alignment = SegmentAlignment::UNDEFINED)
+            : m_id(id), m_type(type), m_mimeType(mimeType), m_alignment(alignment)
+        {
+        }
+
+        /**
+         * @brief Constructor for audio specific configuration.
+         *
+         * @param[in] id   : The source id.
+         * @param[in] mimeType : The mime type string.
+         * @param[in] audioConfig : The audio specific configuration.
+         * @param[in] alignment : The alignment of media segment.
+         */
+        MediaSource(int32_t id, const std::string &mimeType, const AudioConfig &audioConfig,
+                    SegmentAlignment alignment = SegmentAlignment::UNDEFINED)
+            : m_id(id), m_type(MediaSourceType::AUDIO), m_mimeType(mimeType), m_alignment(alignment),
+              m_audioConfig(audioConfig)
         {
         }
 
@@ -127,10 +144,29 @@ public:
 
         /**
          * @brief Return the MIME type.
-         *
-         * @warning API is likely to change to be MIME-type based
          */
-        std::string getCaps() const { return m_caps; }
+        std::string getMimeType() const { return m_mimeType; }
+
+        /**
+         * @brief Gets the segment alignment
+         */
+        SegmentAlignment getSegmentAlignment() const { return m_alignment; }
+
+        /**
+         * @brief Gets the audio specific configuration
+         *
+         * @param[in] ac : The audio specific configuration
+         * @retval true, if media source type is audio. Otherwise false
+         */
+        bool getAudioConfig(AudioConfig &ac) const
+        {
+            if (m_type == MediaSourceType::AUDIO)
+            {
+                ac = m_audioConfig;
+                return true;
+            }
+            return false;
+        }
 
     protected:
         /**
@@ -145,10 +181,18 @@ public:
 
         /**
          * @brief The MIME type.
-         *
-         * @warning Parameter is likely to change to be MIME-type based
          */
-        std::string m_caps;
+        std::string m_mimeType;
+
+        /**
+         * @brief The alignment of media segment
+         */
+        SegmentAlignment m_alignment;
+
+        /**
+         * @brief The audio specific configuration
+         */
+        AudioConfig m_audioConfig;
     };
 
     /**
@@ -422,7 +466,7 @@ public:
         /**
          * @brief Sets the encryption initialisation vector.
          *
-         * @param[in] initVect : The initialisation vector.
+         * @param[in] initVector : The initialisation vector.
          */
         void setInitVector(const std::vector<uint8_t> &initVector) { m_initVector = initVector; }
 

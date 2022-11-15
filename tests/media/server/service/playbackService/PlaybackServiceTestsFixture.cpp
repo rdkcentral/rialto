@@ -227,10 +227,13 @@ void PlaybackServiceTests::mediaPipelineWillFailToHaveData()
 
 void PlaybackServiceTests::mediaPipelineWillGetPosition()
 {
-    EXPECT_CALL(m_mediaPipelineMock, getPosition(_)).WillOnce(Invoke([&](int64_t &pos) {
-        pos = position;
-        return true;
-    }));
+    EXPECT_CALL(m_mediaPipelineMock, getPosition(_))
+        .WillOnce(Invoke(
+            [&](int64_t &pos)
+            {
+                pos = position;
+                return true;
+            }));
 }
 
 void PlaybackServiceTests::mediaPipelineWillFailToGetPosition()

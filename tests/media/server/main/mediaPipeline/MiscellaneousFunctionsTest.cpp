@@ -29,7 +29,6 @@
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::server;
-using namespace firebolt::rialto::server;
 
 using ::testing::_;
 using ::testing::ByMove;
@@ -261,10 +260,13 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetPositionSuccess)
 {
     LoadGstPlayer();
     int64_t targetPosition{};
-    EXPECT_CALL(*m_gstPlayerMock, getPosition(_)).WillOnce(Invoke([&](int64_t &pos) {
-        pos = m_kPosition;
-        return true;
-    }));
+    EXPECT_CALL(*m_gstPlayerMock, getPosition(_))
+        .WillOnce(Invoke(
+            [&](int64_t &pos)
+            {
+                pos = m_kPosition;
+                return true;
+            }));
     EXPECT_TRUE(m_mediaPipeline->getPosition(targetPosition));
     EXPECT_EQ(targetPosition, m_kPosition);
 }

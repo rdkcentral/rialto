@@ -22,10 +22,10 @@
 #include "GstSrc.h"
 #include "GstWrapperFactoryMock.h"
 #include "GstWrapperMock.h"
+#include "MediaSourceUtil.h"
 #include <gtest/gtest.h>
 
 using namespace firebolt::rialto;
-using namespace firebolt::rialto::server;
 using namespace firebolt::rialto::server;
 
 using ::testing::_;

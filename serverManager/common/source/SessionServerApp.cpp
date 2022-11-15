@@ -167,11 +167,15 @@ void SessionServerApp::setupStartupTimer()
 {
     std::unique_lock<std::mutex> lock{m_timerMutex};
     auto factory = firebolt::rialto::common::ITimerFactory::getFactory();
-    m_startupTimer = factory->createTimer(startupTimeout, [this]() {
-        RIALTO_SERVER_MANAGER_LOG_WARN("Killing: %s", m_kAppId.c_str());
-        m_sessionServerAppManager.onSessionServerStateChanged(m_kAppId, service::SessionServerState::ERROR);
-        kill();
-    });
+    m_startupTimer =
+        factory->createTimer(startupTimeout,
+                             [this]()
+                             {
+                                 RIALTO_SERVER_MANAGER_LOG_WARN("Killing: %s", m_kAppId.c_str());
+                                 m_sessionServerAppManager.onSessionServerStateChanged(m_kAppId,
+                                                                                       service::SessionServerState::ERROR);
+                                 kill();
+                             });
 }
 
 bool SessionServerApp::spawnSessionServer()

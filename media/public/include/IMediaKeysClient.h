@@ -55,7 +55,7 @@ public:
      * @brief Notification that a license is required
      *
      * @param[in] keySessionId  : The idea of the session triggering the callback
-     * @param[in] licenseRenewalMessage : The license renewal message blob
+     * @param[in] licenseRequestMessage : The license request message blob
      * @param[in] url                   : URL to which the message should be sent or empty string
      */
     virtual void onLicenseRequest(int32_t keySessionId, const std::vector<unsigned char> &licenseRequestMessage,

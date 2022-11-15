@@ -79,6 +79,7 @@ target_include_directories(
         $<TARGET_PROPERTY:RialtoServerMocks,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoPlayerCommonMocks,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoPlayerPublicMocks,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoCommonMisc,INTERFACE_INCLUDE_DIRECTORIES>
 
         # Test Bases
         mediaKeys/base
@@ -92,6 +93,7 @@ target_link_libraries(
         RialtoServerMain
         RialtoPlayerCommon
         RialtoServerStubs
+        RialtoCommonMisc
         )
 
 if ( COVERAGE_ENABLED )

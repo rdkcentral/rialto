@@ -24,8 +24,6 @@
 #include <gtest/gtest.h>
 
 using namespace firebolt::rialto;
-using namespace firebolt::rialto;
-using namespace firebolt::rialto::client;
 using namespace firebolt::rialto::client;
 
 using ::testing::_;

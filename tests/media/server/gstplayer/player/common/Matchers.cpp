@@ -21,11 +21,6 @@
 
 namespace firebolt::rialto::server
 {
-bool operator==(const Source &lhs, const Source &rhs)
-{
-    return lhs.type == rhs.type && lhs.caps == rhs.caps;
-}
-
 bool operator==(const Rectangle &lhs, const Rectangle &rhs)
 {
     return lhs.x == rhs.x && lhs.y == rhs.y && lhs.width == rhs.width && lhs.height == rhs.height;

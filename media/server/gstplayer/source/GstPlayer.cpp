@@ -23,6 +23,7 @@
 #include "RialtoServerLogging.h"
 #include "WorkerThread.h"
 #include "tasks/PlayerTaskFactory.h"
+#include <IMediaPipeline.h>
 #include <chrono>
 
 namespace
@@ -262,12 +263,16 @@ void GstPlayer::setupSource(GstElement *pipeline, GstElement *source, GstPlayer 
 
 void GstPlayer::scheduleSourceSetupFinish()
 {
-    m_finishSourceSetupTimer = m_timerFactory->createTimer(kSourceSetupFinishTimeoutMs, [this]() {
-        if (m_workerThread)
-        {
-            m_workerThread->enqueueTask(m_taskFactory->createFinishSetupSource(m_context, *this));
-        }
-    });
+    m_finishSourceSetupTimer =
+        m_timerFactory->createTimer(kSourceSetupFinishTimeoutMs,
+                                    [this]()
+                                    {
+                                        if (m_workerThread)
+                                        {
+                                            m_workerThread->enqueueTask(
+                                                m_taskFactory->createFinishSetupSource(m_context, *this));
+                                        }
+                                    });
 }
 
 void GstPlayer::setupElement(GstElement *pipeline, GstElement *element, GstPlayer *self)
@@ -280,10 +285,8 @@ void GstPlayer::setupElement(GstElement *pipeline, GstElement *element, GstPlaye
     }
 }
 
-void GstPlayer::attachSource(MediaSourceType type, const std::string &caps)
+void GstPlayer::attachSource(const IMediaPipeline::MediaSource &attachedSource)
 {
-    GstCaps *gstCaps = m_gstWrapper->gstCapsFromString(caps.c_str());
-    Source attachedSource{type, gstCaps};
     if (m_workerThread)
     {
         m_workerThread->enqueueTask(m_taskFactory->createAttachSource(m_context, attachedSource));
@@ -476,15 +479,26 @@ void GstPlayer::updateAudioCaps(int32_t rate, int32_t channels)
 
     if (m_context.audioAppSrc)
     {
+        constexpr int kInvalidRate{0}, kInvalidChannels{0};
+        bool capsChanged{false};
         GstCaps *currentCaps = m_gstWrapper->gstAppSrcGetCaps(GST_APP_SRC(m_context.audioAppSrc));
         GstCaps *newCaps = m_gstWrapper->gstCapsCopy(currentCaps);
-
-        m_gstWrapper->gstCapsSetSimple(newCaps, "rate", G_TYPE_INT, rate, "channels", G_TYPE_INT, channels, NULL);
-
-        m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(m_context.audioAppSrc), newCaps);
-
-        m_gstWrapper->gstCapsUnref(currentCaps);
+        if (rate != kInvalidRate)
+        {
+            m_gstWrapper->gstCapsSetSimple(newCaps, "rate", G_TYPE_INT, rate, NULL);
+            capsChanged = true;
+        }
+        if (channels != kInvalidChannels)
+        {
+            m_gstWrapper->gstCapsSetSimple(newCaps, "channels", G_TYPE_INT, channels, NULL);
+            capsChanged = true;
+        }
+        if (capsChanged)
+        {
+            m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(m_context.audioAppSrc), newCaps);
+        }
         m_gstWrapper->gstCapsUnref(newCaps);
+        m_gstWrapper->gstCapsUnref(currentCaps);
     }
 }
 
@@ -649,7 +663,8 @@ void GstPlayer::startPositionReportingAndCheckAudioUnderflowTimer()
 
     m_positionReportingAndCheckAudioUnderflowTimer = m_timerFactory->createTimer(
         kPositionReportTimerMs,
-        [this]() {
+        [this]()
+        {
             if (m_workerThread)
             {
                 m_workerThread->enqueueTask(m_taskFactory->createReportPosition(m_context));

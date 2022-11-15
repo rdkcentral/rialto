@@ -76,12 +76,14 @@ void ServerStub::init()
     m_server->addSocket(rialtoPath, std::bind(&ServerStub::clientConnected, this, std::placeholders::_1),
                         std::bind(&ServerStub::clientDisconnected, this, std::placeholders::_1));
 
-    m_serverThread = std::thread([this]() {
-        while (m_server->process() && m_running)
+    m_serverThread = std::thread(
+        [this]()
         {
-            m_server->wait(1);
-        }
-    });
+            while (m_server->process() && m_running)
+            {
+                m_server->wait(1);
+            }
+        });
 }
 
 ServerStub::~ServerStub()
