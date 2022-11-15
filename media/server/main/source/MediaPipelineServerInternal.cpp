@@ -174,7 +174,7 @@ bool MediaPipelineServerInternal::attachSource(MediaSource &source)
         return false;
     }
 
-    m_gstPlayer->attachSource(source.getType(), source.getCaps());
+    m_gstPlayer->attachSource(source);
     source.setId(static_cast<int32_t>(source.getType()));
 
     return true;

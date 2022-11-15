@@ -19,6 +19,7 @@
 
 #include "GstPlayerTestCommon.h"
 #include "Matchers.h"
+#include "MediaSourceUtil.h"
 #include "PlayerTaskMock.h"
 #include "TimerMock.h"
 
@@ -32,6 +33,8 @@ namespace
 constexpr std::chrono::milliseconds positionReportTimerMs{250};
 constexpr int32_t kSampleRate{13};
 constexpr int32_t kNumberOfChannels{4};
+constexpr int32_t kInvalidSampleRate{0};
+constexpr int32_t kInvalidNumberOfChannels{0};
 constexpr int32_t kWidth{1024};
 constexpr int32_t kHeight{768};
 constexpr int32_t kSourceId{2};
@@ -45,8 +48,9 @@ constexpr size_t kNumClearBytes{3};
 constexpr size_t kNumEncryptedBytes{5};
 } // namespace
 
-struct GstPlayerPrivateTest : public GstPlayerTestCommon
+class GstPlayerPrivateTest : public GstPlayerTestCommon
 {
+protected:
     std::unique_ptr<IGstPlayerPrivate> m_sut;
 
     GstPlayerPrivateTest()
@@ -71,10 +75,12 @@ struct GstPlayerPrivateTest : public GstPlayerTestCommon
         std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
         EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
         EXPECT_CALL(m_taskFactoryMock, createNeedData(_, &appSrc))
-            .WillOnce(Invoke([&](PlayerContext &context, GstAppSrc *src) {
-                fun(context);
-                return std::move(task);
-            }));
+            .WillOnce(Invoke(
+                [&](PlayerContext &context, GstAppSrc *src)
+                {
+                    fun(context);
+                    return std::move(task);
+                }));
 
         m_sut->scheduleNeedMediaData(&appSrc);
     }
@@ -87,10 +93,12 @@ TEST_F(GstPlayerPrivateTest, shouldScheduleSourceSetupFinish)
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
 
     EXPECT_CALL(*m_timerFactoryMock, createTimer(expectedTimeout, _, common::TimerType::ONE_SHOT))
-        .WillOnce(Invoke([](const std::chrono::milliseconds &, const std::function<void()> &callback, common::TimerType) {
-            callback();
-            return std::unique_ptr<common::ITimer>();
-        }));
+        .WillOnce(Invoke(
+            [](const std::chrono::milliseconds &, const std::function<void()> &callback, common::TimerType)
+            {
+                callback();
+                return std::unique_ptr<common::ITimer>();
+            }));
     EXPECT_CALL(m_taskFactoryMock, createFinishSetupSource(_, _)).WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->scheduleSourceSetupFinish();
@@ -144,10 +152,12 @@ TEST_F(GstPlayerPrivateTest, shouldNotSetVideoRectangleWhenVideoSinkDoesNotHaveR
 {
     GstElement videoSink{};
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, CharStrMatcher("video-sink"), _))
-        .WillOnce(Invoke([&](gpointer object, const gchar *first_property_name, void *element) {
-            GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
-            *elementPtr = &videoSink;
-        }));
+        .WillOnce(Invoke(
+            [&](gpointer object, const gchar *first_property_name, void *element)
+            {
+                GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
+                *elementPtr = &videoSink;
+            }));
     EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, CharStrMatcher("rectangle"))).WillOnce(Return(nullptr));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&videoSink));
     EXPECT_FALSE(m_sut->setWesterossinkRectangle());
@@ -158,10 +168,12 @@ TEST_F(GstPlayerPrivateTest, shouldSetVideoRectangle)
     GstElement videoSink{};
     GParamSpec rectangleSpec{};
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, CharStrMatcher("video-sink"), _))
-        .WillOnce(Invoke([&](gpointer object, const gchar *first_property_name, void *element) {
-            GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
-            *elementPtr = &videoSink;
-        }));
+        .WillOnce(Invoke(
+            [&](gpointer object, const gchar *first_property_name, void *element)
+            {
+                GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
+                *elementPtr = &videoSink;
+            }));
     EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, CharStrMatcher("rectangle")))
         .WillOnce(Return(&rectangleSpec));
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(_, CharStrMatcher("rectangle")));
@@ -258,10 +270,12 @@ TEST_F(GstPlayerPrivateTest, shouldNotAttachAudioDataWhenItIsNotNeeded)
 TEST_F(GstPlayerPrivateTest, shouldNotAttachAudioWhenSourceIsNotPresent)
 {
     GstBuffer buffer{};
-    modifyContext([&](PlayerContext &context) {
-        context.audioBuffers.emplace_back(&buffer);
-        context.audioNeedData = true;
-    });
+    modifyContext(
+        [&](PlayerContext &context)
+        {
+            context.audioBuffers.emplace_back(&buffer);
+            context.audioNeedData = true;
+        });
     m_sut->attachAudioData();
     EXPECT_CALL(*m_gstWrapperMock, gstBufferUnref(&buffer)); // In destructor
 }
@@ -270,11 +284,13 @@ TEST_F(GstPlayerPrivateTest, shouldAttachAudioData)
 {
     GstBuffer buffer{};
     GstAppSrc audioSrc{};
-    modifyContext([&](PlayerContext &context) {
-        context.audioBuffers.emplace_back(&buffer);
-        context.audioNeedData = true;
-        context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO] = GST_ELEMENT(&audioSrc);
-    });
+    modifyContext(
+        [&](PlayerContext &context)
+        {
+            context.audioBuffers.emplace_back(&buffer);
+            context.audioNeedData = true;
+            context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO] = GST_ELEMENT(&audioSrc);
+        });
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(_, &buffer));
     m_sut->attachAudioData();
 }
@@ -284,12 +300,14 @@ TEST_F(GstPlayerPrivateTest, shouldCancelAudioUnderflow)
     GstBuffer buffer{};
     GstAppSrc audioSrc{};
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
-    modifyContext([&](PlayerContext &context) {
-        context.audioBuffers.emplace_back(&buffer);
-        context.audioNeedData = true;
-        context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO] = GST_ELEMENT(&audioSrc);
-        context.audioUnderflowOccured = true;
-    });
+    modifyContext(
+        [&](PlayerContext &context)
+        {
+            context.audioBuffers.emplace_back(&buffer);
+            context.audioNeedData = true;
+            context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO] = GST_ELEMENT(&audioSrc);
+            context.audioUnderflowOccured = true;
+        });
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(_, &buffer));
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
     EXPECT_CALL(m_taskFactoryMock, createPlay(_)).WillOnce(Return(ByMove(std::move(task))));
@@ -301,13 +319,15 @@ TEST_F(GstPlayerPrivateTest, shouldNotCancelAudioUnderflowWhenVideoUnderflowIsAc
 {
     GstBuffer buffer{};
     GstAppSrc audioSrc{};
-    modifyContext([&](PlayerContext &context) {
-        context.audioBuffers.emplace_back(&buffer);
-        context.audioNeedData = true;
-        context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO] = GST_ELEMENT(&audioSrc);
-        context.audioUnderflowOccured = true;
-        context.videoUnderflowOccured = true;
-    });
+    modifyContext(
+        [&](PlayerContext &context)
+        {
+            context.audioBuffers.emplace_back(&buffer);
+            context.audioNeedData = true;
+            context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO] = GST_ELEMENT(&audioSrc);
+            context.audioUnderflowOccured = true;
+            context.videoUnderflowOccured = true;
+        });
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(_, &buffer));
     m_sut->attachAudioData();
 }
@@ -328,10 +348,12 @@ TEST_F(GstPlayerPrivateTest, shouldNotAttachVideoDataWhenItIsNotNeeded)
 TEST_F(GstPlayerPrivateTest, shouldNotAttachVideoWhenSourceIsNotPresent)
 {
     GstBuffer buffer{};
-    modifyContext([&](PlayerContext &context) {
-        context.videoBuffers.emplace_back(&buffer);
-        context.videoNeedData = true;
-    });
+    modifyContext(
+        [&](PlayerContext &context)
+        {
+            context.videoBuffers.emplace_back(&buffer);
+            context.videoNeedData = true;
+        });
     m_sut->attachVideoData();
     EXPECT_CALL(*m_gstWrapperMock, gstBufferUnref(&buffer)); // In destructor
 }
@@ -340,11 +362,13 @@ TEST_F(GstPlayerPrivateTest, shouldAttachVideoData)
 {
     GstBuffer buffer{};
     GstAppSrc videoSrc{};
-    modifyContext([&](PlayerContext &context) {
-        context.videoBuffers.emplace_back(&buffer);
-        context.videoNeedData = true;
-        context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO] = GST_ELEMENT(&videoSrc);
-    });
+    modifyContext(
+        [&](PlayerContext &context)
+        {
+            context.videoBuffers.emplace_back(&buffer);
+            context.videoNeedData = true;
+            context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO] = GST_ELEMENT(&videoSrc);
+        });
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(_, &buffer));
     m_sut->attachVideoData();
 }
@@ -354,12 +378,14 @@ TEST_F(GstPlayerPrivateTest, shouldCancelVideoUnderflow)
     GstBuffer buffer{};
     GstAppSrc videoSrc{};
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
-    modifyContext([&](PlayerContext &context) {
-        context.videoBuffers.emplace_back(&buffer);
-        context.videoNeedData = true;
-        context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO] = GST_ELEMENT(&videoSrc);
-        context.videoUnderflowOccured = true;
-    });
+    modifyContext(
+        [&](PlayerContext &context)
+        {
+            context.videoBuffers.emplace_back(&buffer);
+            context.videoNeedData = true;
+            context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO] = GST_ELEMENT(&videoSrc);
+            context.videoUnderflowOccured = true;
+        });
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(_, &buffer));
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
     EXPECT_CALL(m_taskFactoryMock, createPlay(_)).WillOnce(Return(ByMove(std::move(task))));
@@ -371,13 +397,15 @@ TEST_F(GstPlayerPrivateTest, shouldNotCancelVideoUnderflowWhenAudioUnderflowIsAc
 {
     GstBuffer buffer{};
     GstAppSrc videoSrc{};
-    modifyContext([&](PlayerContext &context) {
-        context.videoBuffers.emplace_back(&buffer);
-        context.videoNeedData = true;
-        context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO] = GST_ELEMENT(&videoSrc);
-        context.audioUnderflowOccured = true;
-        context.videoUnderflowOccured = true;
-    });
+    modifyContext(
+        [&](PlayerContext &context)
+        {
+            context.videoBuffers.emplace_back(&buffer);
+            context.videoNeedData = true;
+            context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO] = GST_ELEMENT(&videoSrc);
+            context.audioUnderflowOccured = true;
+            context.videoUnderflowOccured = true;
+        });
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(_, &buffer));
     m_sut->attachVideoData();
 }
@@ -388,14 +416,16 @@ TEST_F(GstPlayerPrivateTest, shouldAttachAudioAndVideoData)
     GstBuffer videoBuffer{};
     GstAppSrc audioSrc{};
     GstAppSrc videoSrc{};
-    modifyContext([&](PlayerContext &context) {
-        context.audioBuffers.emplace_back(&audioBuffer);
-        context.videoBuffers.emplace_back(&videoBuffer);
-        context.audioNeedData = true;
-        context.videoNeedData = true;
-        context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO] = GST_ELEMENT(&audioSrc);
-        context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO] = GST_ELEMENT(&videoSrc);
-    });
+    modifyContext(
+        [&](PlayerContext &context)
+        {
+            context.audioBuffers.emplace_back(&audioBuffer);
+            context.videoBuffers.emplace_back(&videoBuffer);
+            context.audioNeedData = true;
+            context.videoNeedData = true;
+            context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO] = GST_ELEMENT(&audioSrc);
+            context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO] = GST_ELEMENT(&videoSrc);
+        });
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(_, &audioBuffer));
     m_sut->attachAudioData();
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(_, &videoBuffer));
@@ -410,17 +440,19 @@ TEST_F(GstPlayerPrivateTest, shouldCancelAudioAndVideoUnderflow)
     GstAppSrc audioSrc{};
     GstAppSrc videoSrc{};
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
-    modifyContext([&](PlayerContext &context) {
-        context.bufferedNotificationSent = true;
-        context.audioBuffers.emplace_back(&audioBuffer);
-        context.videoBuffers.emplace_back(&videoBuffer);
-        context.audioNeedData = true;
-        context.videoNeedData = true;
-        context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO] = GST_ELEMENT(&audioSrc);
-        context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO] = GST_ELEMENT(&videoSrc);
-        context.audioUnderflowOccured = true;
-        context.videoUnderflowOccured = true;
-    });
+    modifyContext(
+        [&](PlayerContext &context)
+        {
+            context.bufferedNotificationSent = true;
+            context.audioBuffers.emplace_back(&audioBuffer);
+            context.videoBuffers.emplace_back(&videoBuffer);
+            context.audioNeedData = true;
+            context.videoNeedData = true;
+            context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO] = GST_ELEMENT(&audioSrc);
+            context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO] = GST_ELEMENT(&videoSrc);
+            context.audioUnderflowOccured = true;
+            context.videoUnderflowOccured = true;
+        });
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(_, &audioBuffer));
     m_sut->attachAudioData();
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(_, &videoBuffer));
@@ -436,9 +468,8 @@ TEST_F(GstPlayerPrivateTest, shouldUpdateAudioCaps)
     GstCaps dummyCaps1;
     GstCaps dummyCaps2;
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
-    modifyContext([&](PlayerContext &context) {
-        context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO] = GST_ELEMENT(&audioSrc);
-    });
+    modifyContext([&](PlayerContext &context)
+                  { context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO] = GST_ELEMENT(&audioSrc); });
 
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(GST_APP_SRC(&audioSrc))).WillOnce(Return(&dummyCaps1));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsCopy(&dummyCaps1)).WillOnce(Return(&dummyCaps2));
@@ -452,6 +483,62 @@ TEST_F(GstPlayerPrivateTest, shouldUpdateAudioCaps)
     m_sut->updateAudioCaps(kSampleRate, kNumberOfChannels);
 }
 
+TEST_F(GstPlayerPrivateTest, shouldUpdateAudioCapsSampleRateOnly)
+{
+    GstAppSrc audioSrc{};
+    GstCaps dummyCaps1;
+    GstCaps dummyCaps2;
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    modifyContext([&](PlayerContext &context)
+                  { context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO] = GST_ELEMENT(&audioSrc); });
+
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(GST_APP_SRC(&audioSrc))).WillOnce(Return(&dummyCaps1));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCopy(&dummyCaps1)).WillOnce(Return(&dummyCaps2));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&dummyCaps2, CharStrMatcher("rate"), G_TYPE_INT, kSampleRate));
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(GST_APP_SRC(&audioSrc), &dummyCaps2));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps1));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps2));
+
+    m_sut->updateAudioCaps(kSampleRate, kInvalidNumberOfChannels);
+}
+
+TEST_F(GstPlayerPrivateTest, shouldUpdateAudioCapsNumOfChannelsOnly)
+{
+    GstAppSrc audioSrc{};
+    GstCaps dummyCaps1;
+    GstCaps dummyCaps2;
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    modifyContext([&](PlayerContext &context)
+                  { context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO] = GST_ELEMENT(&audioSrc); });
+
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(GST_APP_SRC(&audioSrc))).WillOnce(Return(&dummyCaps1));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCopy(&dummyCaps1)).WillOnce(Return(&dummyCaps2));
+    EXPECT_CALL(*m_gstWrapperMock,
+                gstCapsSetSimpleIntStub(&dummyCaps2, CharStrMatcher("channels"), G_TYPE_INT, kNumberOfChannels));
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(GST_APP_SRC(&audioSrc), &dummyCaps2));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps1));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps2));
+
+    m_sut->updateAudioCaps(kInvalidSampleRate, kNumberOfChannels);
+}
+
+TEST_F(GstPlayerPrivateTest, shouldNotUpdateAudioCapsWhenValuesAreInvalid)
+{
+    GstAppSrc audioSrc{};
+    GstCaps dummyCaps1;
+    GstCaps dummyCaps2;
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    modifyContext([&](PlayerContext &context)
+                  { context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO] = GST_ELEMENT(&audioSrc); });
+
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(GST_APP_SRC(&audioSrc))).WillOnce(Return(&dummyCaps1));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCopy(&dummyCaps1)).WillOnce(Return(&dummyCaps2));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps1));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps2));
+
+    m_sut->updateAudioCaps(kInvalidSampleRate, kInvalidNumberOfChannels);
+}
+
 TEST_F(GstPlayerPrivateTest, shouldNotUpdateAudioCapsWhenNoSrc)
 {
     m_sut->updateAudioCaps(kSampleRate, kNumberOfChannels);
@@ -463,9 +550,8 @@ TEST_F(GstPlayerPrivateTest, shouldUpdateVideoCaps)
     GstCaps dummyCaps1;
     GstCaps dummyCaps2;
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
-    modifyContext([&](PlayerContext &context) {
-        context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO] = GST_ELEMENT(&videoSrc);
-    });
+    modifyContext([&](PlayerContext &context)
+                  { context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO] = GST_ELEMENT(&videoSrc); });
 
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(GST_APP_SRC(&videoSrc))).WillOnce(Return(&dummyCaps1));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsCopy(&dummyCaps1)).WillOnce(Return(&dummyCaps2));
@@ -486,10 +572,12 @@ TEST_F(GstPlayerPrivateTest, shouldNotUpdateAudioVideoCapsWhenNoSrc)
 TEST_F(GstPlayerPrivateTest, shouldFailToChangePlaybackStateWhenPipelineIsNull)
 {
     GstElement *pipelineCopy; // to make generic test destructor happy :-)
-    modifyContext([&](PlayerContext &context) {
-        pipelineCopy = context.pipeline;
-        context.pipeline = nullptr;
-    });
+    modifyContext(
+        [&](PlayerContext &context)
+        {
+            pipelineCopy = context.pipeline;
+            context.pipeline = nullptr;
+        });
     EXPECT_CALL(m_gstPlayerClient, notifyPlaybackState(PlaybackState::FAILURE));
     EXPECT_FALSE(m_sut->changePipelineState(GST_STATE_PLAYING));
     modifyContext([&](PlayerContext &context) { context.pipeline = pipelineCopy; });
@@ -536,11 +624,12 @@ TEST_F(GstPlayerPrivateTest, shouldScheduleReportPositionWhenPositionReportingTi
     EXPECT_CALL(m_taskFactoryMock, createReportPosition(_)).WillOnce(Return(ByMove(std::move(task))));
     EXPECT_CALL(m_taskFactoryMock, createCheckAudioUnderflow(_, _)).WillOnce(Return(ByMove(std::move(task2))));
     EXPECT_CALL(*m_timerFactoryMock, createTimer(positionReportTimerMs, _, common::TimerType::PERIODIC))
-        .WillOnce(Invoke([&](const std::chrono::milliseconds &timeout, const std::function<void()> &callback,
-                             common::TimerType timerType) {
-            callback();
-            return std::move(timerMock);
-        }));
+        .WillOnce(Invoke(
+            [&](const std::chrono::milliseconds &timeout, const std::function<void()> &callback, common::TimerType timerType)
+            {
+                callback();
+                return std::move(timerMock);
+            }));
     m_sut->startPositionReportingAndCheckAudioUnderflowTimer();
 }
 

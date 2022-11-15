@@ -20,6 +20,13 @@
 #ifndef FIREBOLT_RIALTO_RIALTO_CONTROL_COMMON_H_
 #define FIREBOLT_RIALTO_RIALTO_CONTROL_COMMON_H_
 
+/**
+ * @file RialtoControlCommon.h
+ *
+ * The definition of the Rialto Control Common types
+ *
+ */
+
 #include <stddef.h>
 #include <stdint.h>
 

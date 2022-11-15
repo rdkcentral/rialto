@@ -37,8 +37,9 @@ MATCHER_P2(QosInfoMatcher, expectedProcessed, expectedSropped, "")
     return ((expectedProcessed == arg.processed) && (expectedSropped == arg.dropped));
 }
 
-struct HandleBusMessageTest : public testing::Test
+class HandleBusMessageTest : public testing::Test
 {
+protected:
     firebolt::rialto::server::PlayerContext m_context;
     StrictMock<firebolt::rialto::server::GstPlayerPrivateMock> m_gstPlayer;
     StrictMock<firebolt::rialto::server::GstPlayerClientMock> m_gstPlayerClient;

@@ -20,8 +20,9 @@
 #include "ActiveRequests.h"
 #include <gtest/gtest.h>
 
-struct ActiveRequestsTests : public testing::Test
+class ActiveRequestsTests : public testing::Test
 {
+protected:
     firebolt::rialto::server::ActiveRequests m_sut;
 };
 

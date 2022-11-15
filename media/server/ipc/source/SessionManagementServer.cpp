@@ -90,14 +90,16 @@ void SessionManagementServer::start()
     }
     RIALTO_SERVER_LOG_DEBUG("Starting Session Management Server event loop");
     m_isRunning.store(true);
-    m_ipcServerThread = std::thread([this]() {
-        constexpr int pollInterval{100};
-        while (m_ipcServer->process() && m_isRunning.load())
+    m_ipcServerThread = std::thread(
+        [this]()
         {
-            m_ipcServer->wait(pollInterval);
-        }
-        RIALTO_SERVER_LOG_DEBUG("Session Management Server event loop finished.");
-    });
+            constexpr int pollInterval{100};
+            while (m_ipcServer->process() && m_isRunning.load())
+            {
+                m_ipcServer->wait(pollInterval);
+            }
+            RIALTO_SERVER_LOG_DEBUG("Session Management Server event loop finished.");
+        });
 }
 
 void SessionManagementServer::stop()

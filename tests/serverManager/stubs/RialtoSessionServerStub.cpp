@@ -102,12 +102,14 @@ void RialtoSessionServerStub::start(StubResponse stubResponse)
     EXPECT_TRUE(m_client);
     // export the example service to the m_client
     m_client->exportService(std::make_shared<Service>(stubResponse));
-    m_serverThread = std::thread([this]() {
-        while (m_server->process() && m_client->isConnected())
+    m_serverThread = std::thread(
+        [this]()
         {
-            m_server->wait(-1);
-        }
-    });
+            while (m_server->process() && m_client->isConnected())
+            {
+                m_server->wait(-1);
+            }
+        });
 }
 
 int RialtoSessionServerStub::getClientSocket() const

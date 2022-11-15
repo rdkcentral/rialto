@@ -22,8 +22,9 @@
 #include "DataReaderV2.h"
 #include <gtest/gtest.h>
 
-struct DataReaderFactoryTests : public testing::Test
+class DataReaderFactoryTests : public testing::Test
 {
+protected:
     firebolt::rialto::server::DataReaderFactory m_sut;
 };
 

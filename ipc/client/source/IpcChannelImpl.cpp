@@ -606,9 +606,9 @@ void ChannelImpl::updateTimeoutTimer()
         // otherwise, find the next soonest timeout
         std::chrono::steady_clock::time_point nextTimeout = std::chrono::steady_clock::time_point::max();
         auto nextTimeoutCall =
-            std::min_element(m_methodCalls.begin(), m_methodCalls.end(), [](const auto &elem, const auto &currentMin) {
-                return elem.second.timeoutDeadline < currentMin.second.timeoutDeadline;
-            });
+            std::min_element(m_methodCalls.begin(), m_methodCalls.end(),
+                             [](const auto &elem, const auto &currentMin)
+                             { return elem.second.timeoutDeadline < currentMin.second.timeoutDeadline; });
         if (nextTimeoutCall != m_methodCalls.end())
         {
             nextTimeout = nextTimeoutCall->second.timeoutDeadline;

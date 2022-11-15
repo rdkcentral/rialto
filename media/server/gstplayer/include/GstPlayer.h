@@ -31,6 +31,7 @@
 #include "PlayerContext.h"
 #include "tasks/IPlayerTask.h"
 #include "tasks/IPlayerTaskFactory.h"
+#include <IMediaPipeline.h>
 #include <memory>
 #include <string>
 
@@ -82,7 +83,7 @@ public:
      */
     virtual ~GstPlayer();
 
-    void attachSource(MediaSourceType type, const std::string &caps) override;
+    void attachSource(const IMediaPipeline::MediaSource &mediaSource) override;
     void play() override;
     void pause() override;
     void stop() override;

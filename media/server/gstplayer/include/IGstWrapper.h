@@ -741,6 +741,16 @@ public:
     virtual GstBuffer *gstBufferNewWrapped(gpointer data, gsize size) const = 0;
 
     /**
+     * @brief Creates Opus caps from the given Opus header.
+     *
+     * @param[in] data : a pointer to an Opus header
+     * @param[in] size : the size of the header
+     *
+     * @retval pointer to the new caps
+     */
+    virtual GstCaps *gstCodecUtilsOpusCreateCapsFromHeader(gconstpointer data, gsize size) const = 0;
+
+    /**
      * @brief Checks if all caps represented by subset are in superset.
      *
      * @param[in] subset    : subset caps

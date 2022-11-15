@@ -234,7 +234,7 @@ public:
     /**
      * @brief Gets a hash of the Key store for the object's key system
      *
-     * @param[out] drmStoreHash : the hash value
+     * @param[out] keyStoreHash : the hash value
      *
      * @retval the return status value.
      */

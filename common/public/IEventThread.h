@@ -90,7 +90,7 @@ public:
      * @param[in] func  : Function to call on event.
      * @param[in] args  : Arguments to pass into the function.
      */
-    template <class Function, class... Args> inline void add(Function &&func, Args &&... args)
+    template <class Function, class... Args> inline void add(Function &&func, Args &&...args)
     {
         this->addImpl(std::bind(std::forward<Function>(func), std::forward<Args>(args)...));
     }

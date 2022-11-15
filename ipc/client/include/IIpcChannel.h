@@ -147,9 +147,8 @@ public:
             return -1;
 
         return this->subscribeImpl(Message::default_instance().GetTypeName(), Message::default_instance().GetDescriptor(),
-                                   [handler_ = std::move(handler)](const std::shared_ptr<google::protobuf::Message> &msg) {
-                                       handler_(std::dynamic_pointer_cast<Message>(msg));
-                                   });
+                                   [handler_ = std::move(handler)](const std::shared_ptr<google::protobuf::Message> &msg)
+                                   { handler_(std::dynamic_pointer_cast<Message>(msg)); });
     }
 
     /**

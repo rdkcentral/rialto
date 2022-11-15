@@ -24,8 +24,9 @@
 using testing::Return;
 using testing::StrictMock;
 
-struct PlayTest : public testing::Test
+class PlayTest : public testing::Test
 {
+protected:
     StrictMock<firebolt::rialto::server::GstPlayerPrivateMock> m_gstPlayer;
 };
 

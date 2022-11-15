@@ -68,8 +68,9 @@ firebolt::rialto::IMediaPipeline::MediaSegmentVector buildVideoSamples()
 }
 } // namespace
 
-struct ReadShmDataAndAttachSamplesTest : public testing::Test
+class ReadShmDataAndAttachSamplesTest : public testing::Test
 {
+protected:
     firebolt::rialto::server::PlayerContext m_context{};
     StrictMock<firebolt::rialto::server::GstPlayerPrivateMock> m_gstPlayer;
     std::shared_ptr<StrictMock<firebolt::rialto::server::DataReaderMock>> m_dataReader{

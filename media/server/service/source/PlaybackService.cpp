@@ -55,7 +55,8 @@ bool PlaybackService::switchToActive()
 {
     std::promise<bool> promise;
     std::future<bool> future = promise.get_future();
-    auto task = [this, &promise]() {
+    auto task = [this, &promise]()
+    {
         try
         {
             RIALTO_SERVER_LOG_INFO("Switching SessionServer to Active state.");
@@ -76,7 +77,8 @@ bool PlaybackService::switchToActive()
 
 void PlaybackService::switchToInactive()
 {
-    auto task = [this]() {
+    auto task = [this]()
+    {
         RIALTO_SERVER_LOG_INFO("Switching SessionServer to Inactive state. Cleaning resources...");
         m_isActive = false;
         m_mediaPipelines.clear();
@@ -96,7 +98,8 @@ bool PlaybackService::createSession(int sessionId, const std::shared_ptr<IMediaP
 {
     std::promise<bool> promise;
     std::future<bool> future = promise.get_future();
-    auto task = [&]() {
+    auto task = [&]()
+    {
         RIALTO_SERVER_LOG_DEBUG("PlaybackService requested to create new session with id: %d", sessionId);
         if (!m_isActive)
         {
@@ -136,7 +139,8 @@ bool PlaybackService::destroySession(int sessionId)
 {
     std::promise<bool> promise;
     std::future<bool> future = promise.get_future();
-    auto task = [&]() {
+    auto task = [&]()
+    {
         RIALTO_SERVER_LOG_DEBUG("PlaybackService requested to destroy session with id: %d", sessionId);
         auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
         if (mediaPipelineIter == m_mediaPipelines.end())
@@ -156,7 +160,8 @@ bool PlaybackService::load(int sessionId, MediaType type, const std::string &mim
 {
     std::promise<bool> promise;
     std::future<bool> future = promise.get_future();
-    auto task = [&]() {
+    auto task = [&]()
+    {
         RIALTO_SERVER_LOG_INFO("PlaybackService requested to load session with id: %d", sessionId);
         auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
         if (mediaPipelineIter == m_mediaPipelines.end())
@@ -174,7 +179,8 @@ bool PlaybackService::attachSource(int sessionId, IMediaPipeline::MediaSource &s
 {
     std::promise<bool> promise;
     std::future<bool> future = promise.get_future();
-    auto task = [&]() {
+    auto task = [&]()
+    {
         RIALTO_SERVER_LOG_INFO("PlaybackService requested to attach source, session id: %d", sessionId);
         auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
         if (mediaPipelineIter == m_mediaPipelines.end())
@@ -192,7 +198,8 @@ bool PlaybackService::removeSource(int sessionId, std::int32_t sourceId)
 {
     std::promise<bool> promise;
     std::future<bool> future = promise.get_future();
-    auto task = [&]() {
+    auto task = [&]()
+    {
         RIALTO_SERVER_LOG_INFO("PlaybackService requested to remove source, session id: %d", sessionId);
         auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
         if (mediaPipelineIter == m_mediaPipelines.end())
@@ -210,7 +217,8 @@ bool PlaybackService::play(int sessionId)
 {
     std::promise<bool> promise;
     std::future<bool> future = promise.get_future();
-    auto task = [&]() {
+    auto task = [&]()
+    {
         RIALTO_SERVER_LOG_INFO("PlaybackService requested to play, session id: %d", sessionId);
         auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
         if (mediaPipelineIter == m_mediaPipelines.end())
@@ -228,7 +236,8 @@ bool PlaybackService::pause(int sessionId)
 {
     std::promise<bool> promise;
     std::future<bool> future = promise.get_future();
-    auto task = [&]() {
+    auto task = [&]()
+    {
         RIALTO_SERVER_LOG_INFO("PlaybackService requested to pause, session id: %d", sessionId);
         auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
         if (mediaPipelineIter == m_mediaPipelines.end())
@@ -246,7 +255,8 @@ bool PlaybackService::stop(int sessionId)
 {
     std::promise<bool> promise;
     std::future<bool> future = promise.get_future();
-    auto task = [&]() {
+    auto task = [&]()
+    {
         RIALTO_SERVER_LOG_INFO("PlaybackService requested to stop, session id: %d", sessionId);
         auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
         if (mediaPipelineIter == m_mediaPipelines.end())
@@ -264,7 +274,8 @@ bool PlaybackService::setPlaybackRate(int sessionId, double rate)
 {
     std::promise<bool> promise;
     std::future<bool> future = promise.get_future();
-    auto task = [&]() {
+    auto task = [&]()
+    {
         RIALTO_SERVER_LOG_INFO("PlaybackService requested to set playback rate, session id: %d", sessionId);
         auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
         if (mediaPipelineIter == m_mediaPipelines.end())
@@ -282,7 +293,8 @@ bool PlaybackService::setPosition(int sessionId, std::int64_t position)
 {
     std::promise<bool> promise;
     std::future<bool> future = promise.get_future();
-    auto task = [&]() {
+    auto task = [&]()
+    {
         RIALTO_SERVER_LOG_INFO("PlaybackService requested to set position, session id: %d", sessionId);
         auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
         if (mediaPipelineIter == m_mediaPipelines.end())
@@ -313,7 +325,8 @@ bool PlaybackService::setVideoWindow(int sessionId, std::uint32_t x, std::uint32
 {
     std::promise<bool> promise;
     std::future<bool> future = promise.get_future();
-    auto task = [&]() {
+    auto task = [&]()
+    {
         RIALTO_SERVER_LOG_INFO("PlaybackService requested to set video window, session id: %d", sessionId);
         auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
         if (mediaPipelineIter == m_mediaPipelines.end())
@@ -332,7 +345,8 @@ bool PlaybackService::haveData(int sessionId, MediaSourceStatus status, std::uin
 {
     std::promise<bool> promise;
     std::future<bool> future = promise.get_future();
-    auto task = [&]() {
+    auto task = [&]()
+    {
         RIALTO_SERVER_LOG_DEBUG("New data available, session id: %d", sessionId);
         auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
         if (mediaPipelineIter == m_mediaPipelines.end())
@@ -350,7 +364,8 @@ bool PlaybackService::getSharedMemory(int32_t &fd, uint32_t &size)
 {
     std::promise<bool> promise;
     std::future<bool> future = promise.get_future();
-    auto task = [&]() {
+    auto task = [&]()
+    {
         if (!m_shmBuffer)
         {
             return promise.set_value(false);

@@ -24,7 +24,6 @@
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::client;
-using namespace firebolt::rialto::client;
 
 using ::testing::ByMove;
 using ::testing::Return;

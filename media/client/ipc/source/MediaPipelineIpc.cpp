@@ -16,11 +16,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 #include "MediaPipelineIpc.h"
 #include "IIpcClient.h"
 #include "RialtoClientLogging.h"
 #include "RialtoCommonIpc.h"
+#include "mediapipelinemodule.pb.h"
+#include <IMediaPipeline.h>
 
 namespace firebolt::rialto::client
 {
@@ -114,41 +115,36 @@ bool MediaPipelineIpc::subscribeToEvents()
     }
 
     int eventTag = m_ipcChannel->subscribe<firebolt::rialto::PlaybackStateChangeEvent>(
-        [this](const std::shared_ptr<firebolt::rialto::PlaybackStateChangeEvent> &event) {
-            m_eventThread->add(&MediaPipelineIpc::onPlaybackStateUpdated, this, event);
-        });
+        [this](const std::shared_ptr<firebolt::rialto::PlaybackStateChangeEvent> &event)
+        { m_eventThread->add(&MediaPipelineIpc::onPlaybackStateUpdated, this, event); });
     if (eventTag < 0)
         return false;
     m_eventTags.push_back(eventTag);
 
     eventTag = m_ipcChannel->subscribe<firebolt::rialto::PositionChangeEvent>(
-        [this](const std::shared_ptr<firebolt::rialto::PositionChangeEvent> &event) {
-            m_eventThread->add(&MediaPipelineIpc::onPositionUpdated, this, event);
-        });
+        [this](const std::shared_ptr<firebolt::rialto::PositionChangeEvent> &event)
+        { m_eventThread->add(&MediaPipelineIpc::onPositionUpdated, this, event); });
     if (eventTag < 0)
         return false;
     m_eventTags.push_back(eventTag);
 
     eventTag = m_ipcChannel->subscribe<firebolt::rialto::NetworkStateChangeEvent>(
-        [this](const std::shared_ptr<firebolt::rialto::NetworkStateChangeEvent> &event) {
-            m_eventThread->add(&MediaPipelineIpc::onNetworkStateUpdated, this, event);
-        });
+        [this](const std::shared_ptr<firebolt::rialto::NetworkStateChangeEvent> &event)
+        { m_eventThread->add(&MediaPipelineIpc::onNetworkStateUpdated, this, event); });
     if (eventTag < 0)
         return false;
     m_eventTags.push_back(eventTag);
 
     eventTag = m_ipcChannel->subscribe<firebolt::rialto::NeedMediaDataEvent>(
-        [this](const std::shared_ptr<firebolt::rialto::NeedMediaDataEvent> &event) {
-            m_eventThread->add(&MediaPipelineIpc::onNeedMediaData, this, event);
-        });
+        [this](const std::shared_ptr<firebolt::rialto::NeedMediaDataEvent> &event)
+        { m_eventThread->add(&MediaPipelineIpc::onNeedMediaData, this, event); });
     if (eventTag < 0)
         return false;
     m_eventTags.push_back(eventTag);
 
     eventTag = m_ipcChannel->subscribe<firebolt::rialto::QosEvent>(
-        [this](const std::shared_ptr<firebolt::rialto::QosEvent> &event) {
-            m_eventThread->add(&MediaPipelineIpc::onQos, this, event);
-        });
+        [this](const std::shared_ptr<firebolt::rialto::QosEvent> &event)
+        { m_eventThread->add(&MediaPipelineIpc::onQos, this, event); });
     if (eventTag < 0)
         return false;
     m_eventTags.push_back(eventTag);
@@ -189,7 +185,7 @@ bool MediaPipelineIpc::load(MediaType type, const std::string &mimeType, const s
     return true;
 }
 
-bool MediaPipelineIpc::attachSource(MediaSourceType type, const std::string &caps, int32_t &sourceId)
+bool MediaPipelineIpc::attachSource(const IMediaPipeline::MediaSource &source, int32_t &sourceId)
 {
     if (!reattachChannelIfRequired())
     {
@@ -200,8 +196,20 @@ bool MediaPipelineIpc::attachSource(MediaSourceType type, const std::string &cap
     firebolt::rialto::AttachSourceRequest request;
 
     request.set_session_id(m_sessionId);
-    request.set_media_type(convertProtoMediaSourceType(type));
-    request.set_caps(caps);
+    auto mediaType = source.getType();
+    request.set_media_type(convertProtoMediaSourceType(mediaType));
+    request.set_mime_type(source.getMimeType());
+    request.set_segment_alignment(convertSegmentAlignment(source.getSegmentAlignment()));
+
+    AudioConfig audioConfig;
+    source.getAudioConfig(audioConfig);
+    request.mutable_audio_config()->set_number_of_channels(audioConfig.numberOfChannels);
+    request.mutable_audio_config()->set_sample_rate(audioConfig.sampleRate);
+    if (!audioConfig.codecSpecificConfig.empty())
+    {
+        request.mutable_audio_config()->set_codec_specific_config(audioConfig.codecSpecificConfig.data(),
+                                                                  audioConfig.codecSpecificConfig.size());
+    }
 
     firebolt::rialto::AttachSourceResponse response;
     auto ipcController = m_ipc->createRpcController();
@@ -720,6 +728,27 @@ MediaPipelineIpc::convertHaveDataRequestMediaSourceStatus(MediaSourceStatus stat
     }
 
     return protoMediaSourceStatus;
+}
+
+firebolt::rialto::AttachSourceRequest_SegmentAlignment
+MediaPipelineIpc::convertSegmentAlignment(const firebolt::rialto::SegmentAlignment &alignment)
+{
+    switch (alignment)
+    {
+    case firebolt::rialto::SegmentAlignment::UNDEFINED:
+    {
+        return firebolt::rialto::AttachSourceRequest_SegmentAlignment_ALIGNMENT_UNDEFINED;
+    }
+    case firebolt::rialto::SegmentAlignment::NAL:
+    {
+        return firebolt::rialto::AttachSourceRequest_SegmentAlignment_ALIGNMENT_NAL;
+    }
+    case firebolt::rialto::SegmentAlignment::AU:
+    {
+        return firebolt::rialto::AttachSourceRequest_SegmentAlignment_ALIGNMENT_AU;
+    }
+    }
+    return firebolt::rialto::AttachSourceRequest_SegmentAlignment_ALIGNMENT_UNDEFINED;
 }
 
 }; // namespace firebolt::rialto::client
