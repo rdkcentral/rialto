@@ -17,6 +17,8 @@
  * limitations under the License.
  */
 
+#include <stdexcept>
+
 #include "RialtoServerLogging.h"
 #include <GstCapabilities.h>
 #include <algorithm>
@@ -226,9 +228,9 @@ void GstCapabilities::addAllUniqueSinkPadsCapsToVector(std::vector<GstCaps *> &c
 
 bool GstCapabilities::isCapsInVector(const std::vector<GstCaps *> &capsVector, GstCaps *caps) const
 {
-    return std::find_if(capsVector.begin(), capsVector.end(), [&](const GstCaps *comparedCaps) {
-               return m_gstWrapper->gstCapsIsStrictlyEqual(caps, comparedCaps);
-           }) != capsVector.end();
+    return std::find_if(capsVector.begin(), capsVector.end(),
+                        [&](const GstCaps *comparedCaps)
+                        { return m_gstWrapper->gstCapsIsStrictlyEqual(caps, comparedCaps); }) != capsVector.end();
 }
 
 std::unordered_set<std::string> GstCapabilities::convertFromCapsVectorToMimeSet(std::vector<GstCaps *> &supportedCaps)

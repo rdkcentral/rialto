@@ -101,10 +101,12 @@ void EventThread::flush()
     sem_init(&semaphore, 0, 0);
 
     // add a simple function to release the semaphore in the context of the event thread
-    addImpl([sem = &semaphore]() {
-        if (sem_post(sem) != 0)
-            RIALTO_COMMON_LOG_SYS_ERROR(errno, "failed to signal semaphore");
-    });
+    addImpl(
+        [sem = &semaphore]()
+        {
+            if (sem_post(sem) != 0)
+                RIALTO_COMMON_LOG_SYS_ERROR(errno, "failed to signal semaphore");
+        });
 
     // wait for the above call to unblock the semaphore
     TEMP_FAILURE_RETRY(sem_wait(&semaphore));

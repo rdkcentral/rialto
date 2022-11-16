@@ -33,8 +33,9 @@ namespace
 gint64 position{1234};
 } // namespace
 
-struct ReportPositionTest : public testing::Test
+class ReportPositionTest : public testing::Test
 {
+protected:
     firebolt::rialto::server::PlayerContext m_context{};
     StrictMock<firebolt::rialto::server::GstPlayerClientMock> m_gstPlayerClient;
     std::shared_ptr<firebolt::rialto::server::GstWrapperMock> m_gstWrapper{
@@ -47,10 +48,12 @@ struct ReportPositionTest : public testing::Test
 TEST_F(ReportPositionTest, shouldReportPosition)
 {
     EXPECT_CALL(*m_gstWrapper, gstElementQueryPosition(&m_pipeline, GST_FORMAT_TIME, NotNullMatcher()))
-        .WillOnce(Invoke([this](GstElement *element, GstFormat format, gint64 *cur) {
-            *cur = position;
-            return TRUE;
-        }));
+        .WillOnce(Invoke(
+            [this](GstElement *element, GstFormat format, gint64 *cur)
+            {
+                *cur = position;
+                return TRUE;
+            }));
     EXPECT_CALL(m_gstPlayerClient, notifyPosition(position));
     firebolt::rialto::server::ReportPosition task{m_context, &m_gstPlayerClient, m_gstWrapper};
     task.execute();
@@ -59,10 +62,12 @@ TEST_F(ReportPositionTest, shouldReportPosition)
 TEST_F(ReportPositionTest, shouldFailToReportPosition)
 {
     EXPECT_CALL(*m_gstWrapper, gstElementQueryPosition(&m_pipeline, GST_FORMAT_TIME, NotNullMatcher()))
-        .WillOnce(Invoke([this](GstElement *element, GstFormat format, gint64 *cur) {
-            *cur = -1;
-            return TRUE;
-        }));
+        .WillOnce(Invoke(
+            [this](GstElement *element, GstFormat format, gint64 *cur)
+            {
+                *cur = -1;
+                return TRUE;
+            }));
     firebolt::rialto::server::ReportPosition task{m_context, &m_gstPlayerClient, m_gstWrapper};
     task.execute();
 }

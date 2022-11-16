@@ -127,11 +127,13 @@ TEST_F(RialtoClientCreateMediaPipelineIpcTest, SubscribeEventFailure)
     EXPECT_CALL(*m_eventThreadFactoryMock, createEventThread(_)).WillOnce(Return(ByMove(std::move(m_eventThread))));
 
     EXPECT_CALL(*m_channelMock, subscribeImpl("firebolt.rialto.PlaybackStateChangeEvent", _, _))
-        .WillOnce(Invoke([this](const std::string &eventName, const google::protobuf::Descriptor *descriptor,
-                                std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> &&handler) {
-            m_playbackStateCb = std::move(handler);
-            return static_cast<int>(EventTags::PlaybackStateChangeEvent);
-        }));
+        .WillOnce(Invoke(
+            [this](const std::string &eventName, const google::protobuf::Descriptor *descriptor,
+                   std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> &&handler)
+            {
+                m_playbackStateCb = std::move(handler);
+                return static_cast<int>(EventTags::PlaybackStateChangeEvent);
+            }));
     EXPECT_CALL(*m_channelMock, subscribeImpl("firebolt.rialto.PositionChangeEvent", _, _)).WillOnce(Return(-1));
     EXPECT_CALL(*m_channelMock, unsubscribe(static_cast<int>(EventTags::PlaybackStateChangeEvent)));
 

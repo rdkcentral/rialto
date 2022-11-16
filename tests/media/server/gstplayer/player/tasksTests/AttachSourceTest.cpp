@@ -30,8 +30,9 @@ using testing::_;
 using testing::Return;
 using testing::StrictMock;
 
-struct AttachSourceTest : public testing::Test
+class AttachSourceTest : public testing::Test
 {
+protected:
     firebolt::rialto::server::PlayerContext m_context{};
     std::shared_ptr<firebolt::rialto::server::GlibWrapperMock> m_glibWrapper{
         std::make_shared<StrictMock<firebolt::rialto::server::GlibWrapperMock>>()};

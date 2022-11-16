@@ -205,10 +205,13 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetPositionSuccess)
     loadGstPlayer();
     mainThreadWillEnqueueTaskAndWait();
     int64_t targetPosition{};
-    EXPECT_CALL(*m_gstPlayerMock, getPosition(_)).WillOnce(Invoke([&](int64_t &pos) {
-        pos = m_kPosition;
-        return true;
-    }));
+    EXPECT_CALL(*m_gstPlayerMock, getPosition(_))
+        .WillOnce(Invoke(
+            [&](int64_t &pos)
+            {
+                pos = m_kPosition;
+                return true;
+            }));
     EXPECT_TRUE(m_mediaPipeline->getPosition(targetPosition));
     EXPECT_EQ(targetPosition, m_kPosition);
 }

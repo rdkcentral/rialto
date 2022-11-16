@@ -29,8 +29,9 @@ using testing::ByMove;
 using testing::Invoke;
 using testing::Return;
 
-struct GstPlayerTest : public GstPlayerTestCommon
+class GstPlayerTest : public GstPlayerTestCommon
 {
+protected:
     std::unique_ptr<IGstPlayer> m_sut;
 
     GstPlayerTest()
@@ -190,10 +191,12 @@ TEST_F(GstPlayerTest, shouldReturnPosition)
     int64_t targetPosition{};
     setPipelineState(GST_STATE_PLAYING);
     EXPECT_CALL(*m_gstWrapperMock, gstElementQueryPosition(_, GST_FORMAT_TIME, _))
-        .WillOnce(Invoke([&](GstElement *element, GstFormat format, gint64 *cur) {
-            *cur = expectedPosition;
-            return TRUE;
-        }));
+        .WillOnce(Invoke(
+            [&](GstElement *element, GstFormat format, gint64 *cur)
+            {
+                *cur = expectedPosition;
+                return TRUE;
+            }));
     EXPECT_TRUE(m_sut->getPosition(targetPosition));
     EXPECT_EQ(expectedPosition, targetPosition);
 }

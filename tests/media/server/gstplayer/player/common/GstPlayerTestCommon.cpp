@@ -47,16 +47,20 @@ void GstPlayerTestCommon::gstPlayerWillBeCreated()
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_pipeline, CharStrMatcher("flags")));
     EXPECT_CALL(*m_glibWrapperMock,
                 gSignalConnect(&m_pipeline, CharStrMatcher("source-setup"), NotNullMatcher(), NotNullMatcher()))
-        .WillOnce(Invoke([this](gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data) {
-            m_setupSourceFunc = c_handler;
-            m_setupSourceUserData = data;
-        }));
+        .WillOnce(Invoke(
+            [this](gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data)
+            {
+                m_setupSourceFunc = c_handler;
+                m_setupSourceUserData = data;
+            }));
     EXPECT_CALL(*m_glibWrapperMock,
                 gSignalConnect(&m_pipeline, CharStrMatcher("element-setup"), NotNullMatcher(), NotNullMatcher()))
-        .WillOnce(Invoke([this](gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data) {
-            m_setupElementFunc = c_handler;
-            m_setupElementUserData = data;
-        }));
+        .WillOnce(Invoke(
+            [this](gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data)
+            {
+                m_setupElementFunc = c_handler;
+                m_setupElementUserData = data;
+            }));
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_pipeline, CharStrMatcher("uri")));
     EXPECT_CALL(*m_gstWrapperMock, gstBinGetByName(GST_BIN(&m_pipeline), CharStrMatcher("playsink")))
         .WillOnce(Return(&m_playsink));
@@ -87,9 +91,8 @@ void GstPlayerTestCommon::executeTaskWhenEnqueued()
     // It's hard to match std::unique_ptr<IPlayerTask> &&, so we will just execute task, when it's enqueued to check
     // if proper task was enqueued (EXPECT_CALL(task, execute())) has to be added for each task, which is expected to
     // be enqueued)
-    EXPECT_CALL(m_workerThreadMock, enqueueTask(_)).WillRepeatedly(Invoke([](std::unique_ptr<IPlayerTask> &&task) {
-        task->execute();
-    }));
+    EXPECT_CALL(m_workerThreadMock, enqueueTask(_))
+        .WillRepeatedly(Invoke([](std::unique_ptr<IPlayerTask> &&task) { task->execute(); }));
 }
 
 void GstPlayerTestCommon::triggerSetupSource(GstElement *element)

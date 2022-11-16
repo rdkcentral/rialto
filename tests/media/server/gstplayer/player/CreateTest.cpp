@@ -36,7 +36,6 @@
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::server;
-using namespace firebolt::rialto::server;
 
 using ::testing::_;
 using ::testing::ByMove;
@@ -134,9 +133,8 @@ protected:
         std::unique_ptr<IPlayerTask> shutdownTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
         EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*stopTask), execute());
         EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*shutdownTask), execute());
-        EXPECT_CALL(m_workerThreadMock, enqueueTask(_)).WillRepeatedly(Invoke([](std::unique_ptr<IPlayerTask> &&task) {
-            task->execute();
-        }));
+        EXPECT_CALL(m_workerThreadMock, enqueueTask(_))
+            .WillRepeatedly(Invoke([](std::unique_ptr<IPlayerTask> &&task) { task->execute(); }));
         EXPECT_CALL(m_workerThreadMock, join());
         EXPECT_CALL(m_taskFactoryMock, createShutdown(_)).WillOnce(Return(ByMove(std::move(shutdownTask))));
         EXPECT_CALL(m_taskFactoryMock, createStop(_, _)).WillOnce(Return(ByMove(std::move(stopTask))));

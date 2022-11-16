@@ -22,8 +22,9 @@
 #include <gst/gst.h>
 #include <gtest/gtest.h>
 
-struct EnoughDataTest : public testing::Test
+class EnoughDataTest : public testing::Test
 {
+protected:
     firebolt::rialto::server::PlayerContext m_context{};
     GstAppSrc m_audioSrc{};
     GstAppSrc m_videoSrc{};

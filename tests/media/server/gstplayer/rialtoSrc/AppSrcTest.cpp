@@ -27,7 +27,6 @@
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::server;
-using namespace firebolt::rialto::server;
 
 using ::testing::_;
 using ::testing::Return;

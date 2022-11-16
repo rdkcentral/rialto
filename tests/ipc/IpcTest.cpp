@@ -25,7 +25,6 @@
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::ipc;
-using namespace firebolt::rialto::ipc;
 
 using ::testing::_;
 using ::testing::ByMove;

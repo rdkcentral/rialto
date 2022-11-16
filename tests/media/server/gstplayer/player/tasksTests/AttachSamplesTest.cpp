@@ -66,8 +66,9 @@ firebolt::rialto::IMediaPipeline::MediaSegmentVector buildVideoSamples()
 }
 } // namespace
 
-struct AttachSamplesTest : public testing::Test
+class AttachSamplesTest : public testing::Test
 {
+public:
     firebolt::rialto::server::PlayerContext m_context;
     StrictMock<firebolt::rialto::server::GstPlayerPrivateMock> m_gstPlayer;
     GstBuffer m_gstBuffer{};

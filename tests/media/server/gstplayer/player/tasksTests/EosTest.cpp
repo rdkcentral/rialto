@@ -28,8 +28,9 @@ using testing::_;
 using testing::Return;
 using testing::StrictMock;
 
-struct EosTest : public testing::Test
+class EosTest : public testing::Test
 {
+protected:
     firebolt::rialto::server::PlayerContext m_context{};
     StrictMock<firebolt::rialto::server::GstPlayerPrivateMock> m_gstPlayer;
     std::shared_ptr<firebolt::rialto::server::GstWrapperMock> m_gstWrapper{

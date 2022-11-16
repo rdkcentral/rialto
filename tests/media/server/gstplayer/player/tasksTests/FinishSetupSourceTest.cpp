@@ -30,8 +30,9 @@ using testing::Invoke;
 using testing::Return;
 using testing::StrictMock;
 
-struct FinishSetupSourceTest : public testing::Test
+class FinishSetupSourceTest : public testing::Test
 {
+protected:
     firebolt::rialto::server::PlayerContext m_context;
     StrictMock<firebolt::rialto::server::GstPlayerPrivateMock> m_gstPlayer;
     StrictMock<firebolt::rialto::server::GstPlayerClientMock> m_gstPlayerClient;
@@ -59,19 +60,23 @@ struct FinishSetupSourceTest : public testing::Test
     {
         EXPECT_CALL(*m_gstSrc, setupAndAddAppArc(&m_source, GST_ELEMENT(&m_audioAppSrc), _, &m_gstPlayer,
                                                  firebolt::rialto::MediaSourceType::AUDIO))
-            .WillOnce(Invoke([this](GstElement *element, GstElement *appsrc, GstAppSrcCallbacks *callbacks,
-                                    gpointer userData, firebolt::rialto::MediaSourceType type) {
-                m_audioCallbacks = *callbacks;
-                m_audioUserData = userData;
-            }));
+            .WillOnce(Invoke(
+                [this](GstElement *element, GstElement *appsrc, GstAppSrcCallbacks *callbacks, gpointer userData,
+                       firebolt::rialto::MediaSourceType type)
+                {
+                    m_audioCallbacks = *callbacks;
+                    m_audioUserData = userData;
+                }));
         EXPECT_CALL(m_gstPlayer, notifyNeedMediaData(true, false));
         EXPECT_CALL(*m_gstSrc, setupAndAddAppArc(&m_source, GST_ELEMENT(&m_videoAppSrc), _, &m_gstPlayer,
                                                  firebolt::rialto::MediaSourceType::VIDEO))
-            .WillOnce(Invoke([this](GstElement *element, GstElement *appsrc, GstAppSrcCallbacks *callbacks,
-                                    gpointer userData, firebolt::rialto::MediaSourceType type) {
-                m_videoCallbacks = *callbacks;
-                m_videoUserData = userData;
-            }));
+            .WillOnce(Invoke(
+                [this](GstElement *element, GstElement *appsrc, GstAppSrcCallbacks *callbacks, gpointer userData,
+                       firebolt::rialto::MediaSourceType type)
+                {
+                    m_videoCallbacks = *callbacks;
+                    m_videoUserData = userData;
+                }));
         EXPECT_CALL(m_gstPlayer, notifyNeedMediaData(false, true));
         EXPECT_CALL(*m_gstSrc, allAppSrcsAdded(&m_source));
         EXPECT_CALL(m_gstPlayerClient, notifyPlaybackState(firebolt::rialto::PlaybackState::IDLE));
