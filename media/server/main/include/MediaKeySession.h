@@ -92,6 +92,8 @@ public:
 
     MediaKeyErrorStatus getLastDrmError(uint32_t &errorCode) override;
 
+    void getChallengeData() override;
+
     void onProcessChallenge(const char url[], const uint8_t challenge[], const uint16_t challengeLength) override;
 
     void onKeyUpdated(const uint8_t keyId[], const uint8_t keyIdLength) override;

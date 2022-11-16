@@ -114,6 +114,8 @@ public:
 
     bool hasSession(int32_t keySessionId) const override;
 
+    void getChallengeData(int32_t keySessionId) override;
+
 private:
     /**
      * @brief The mainThread object.

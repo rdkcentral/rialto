@@ -217,6 +217,12 @@ void CdmServiceTests::mediaKeysWillNotFindMediaKeySession()
     EXPECT_CALL(m_mediaKeysMock, hasSession(keySessionId)).WillOnce(Return(false));
 }
 
+void CdmServiceTests::mediaKeysWillGetChallengeData()
+{
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(m_mediaKeysMock, getChallengeData(keySessionId));
+}
+
 void CdmServiceTests::createMediaKeysShouldSucceed()
 {
     EXPECT_TRUE(m_sut.createMediaKeys(mediaKeysHandle, keySystems[0]));

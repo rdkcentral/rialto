@@ -120,6 +120,7 @@ TEST_F(CdmServiceTests, shouldGenerateRequest)
     mediaKeysFactoryWillCreateMediaKeys();
     createMediaKeysShouldSucceed();
     mediaKeysWillGenerateRequestWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    mediaKeysWillGetChallengeData();
     generateRequestShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
     destroyMediaKeysShouldSucceed();
 }

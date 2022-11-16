@@ -102,6 +102,14 @@ public:
      * @retval true if session is handled by this MediaKeys instance
      */
     virtual bool hasSession(int32_t keySessionId) const = 0;
+
+    /**
+     * @brief Gets challenge data for session.
+     * 
+     * @param[in] keySessionId    : The session id for the session.
+     * 
+     */
+    virtual void getChallengeData(int32_t keySessionId) = 0;
 };
 } // namespace firebolt::rialto::server
 

@@ -485,4 +485,16 @@ bool MediaKeysServerInternal::hasSession(int32_t keySessionId) const
 {
     return m_mediaKeySessions.find(keySessionId) != m_mediaKeySessions.end();
 }
+
+void MediaKeysServerInternal::getChallengeData(int32_t keySessionId)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    auto sessionIter = m_mediaKeySessions.find(keySessionId);
+    if (sessionIter == m_mediaKeySessions.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to find the session");
+        return;
+    }
+    sessionIter->second->getChallengeData();
+}
 }; // namespace firebolt::rialto::server

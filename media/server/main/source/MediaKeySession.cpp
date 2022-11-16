@@ -293,6 +293,39 @@ MediaKeyErrorStatus MediaKeySession::getLastDrmError(uint32_t &errorCode)
     return status;
 }
 
+void MediaKeySession::getChallengeData()
+{
+    if (kNetflixKeySystem != m_keySystem)
+    {
+        return;
+    }
+
+    RIALTO_SERVER_LOG_INFO("Getting challenge data for Netflix");
+    uint32_t challengeSize{};
+    MediaKeyErrorStatus err{m_ocdmSession->getChallengeData(m_isLDL, nullptr, &challengeSize)};
+    if (err != MediaKeyErrorStatus::OK)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get challenge data - unable to get challenge size");
+        return;
+    }
+
+    std::vector<uint8_t> challenge(challengeSize, 0x00);
+    err = m_ocdmSession->getChallengeData(m_isLDL, challenge.data(), &challengeSize);
+    if (err != MediaKeyErrorStatus::OK)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get challenge data - unable to get challenge");
+        return;
+    }
+
+    std::shared_ptr<IMediaKeysClient> client = m_mediaKeysClient.lock();
+    if (!client)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get challenge data - client is NULL");
+        return;
+    }
+    client->onLicenseRequest(m_keySessionId, challenge, "dummy_text");
+}
+
 void MediaKeySession::onProcessChallenge(const char url[], const uint8_t challenge[], const uint16_t challengeLength)
 {
     std::string urlStr = url;

@@ -56,6 +56,7 @@ add_gtests (
         mediaKeys/GetLdlSessionsLimitTest.cpp
         mediaKeys/GetDrmTimeTest.cpp
         mediaKeys/GetLastDrmErrorTest.cpp
+        mediaKeys/GetChallengeDataTest.cpp
 
         mediaKeysCapabilities/CreateTest.cpp
         mediaKeysCapabilities/KeySystemsTest.cpp
@@ -73,6 +74,7 @@ add_gtests (
         mediaKeySession/ContainsKeyTest.cpp
         mediaKeySession/SetDrmHeaderTest.cpp
         mediaKeySession/GetLastDrmErrorTest.cpp
+        mediaKeySession/GetChallengeDataTest.cpp
 
         sharedMemoryBuffer/SharedMemoryBufferTestsFixture.cpp
         sharedMemoryBuffer/SharedMemoryBufferTests.cpp

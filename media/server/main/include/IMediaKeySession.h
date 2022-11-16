@@ -176,6 +176,11 @@ public:
      * @retval the return status value.
      */
     virtual MediaKeyErrorStatus getLastDrmError(uint32_t &errorCode) = 0;
+
+    /**
+     * @brief Gets challenge data for session.
+     */
+    virtual void getChallengeData() = 0;
 };
 } // namespace firebolt::rialto::server
 
