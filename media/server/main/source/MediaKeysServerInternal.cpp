@@ -98,7 +98,8 @@ MediaKeysServerInternal::MediaKeysServerInternal(const std::string &keySystem,
     m_mainThreadClientId = m_mainThread->registerClient();
 
     bool result = false;
-    auto task = [&]() {
+    auto task = [&]()
+    {
         m_ocdmSystem = ocdmSystemFactory->createOcdmSystem(keySystem);
         if (!m_ocdmSystem)
         {
@@ -121,7 +122,8 @@ MediaKeysServerInternal::~MediaKeysServerInternal()
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    auto task = [&]() {
+    auto task = [&]()
+    {
         m_ocdmSystem.reset();
 
         m_mainThread->unregisterClient(m_mainThreadClientId);
@@ -418,9 +420,8 @@ MediaKeyErrorStatus MediaKeysServerInternal::decrypt(int32_t keySessionId, GstBu
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
     MediaKeyErrorStatus status;
-    auto task = [&]() {
-        status = decryptInternal(keySessionId, encrypted, subSample, subSampleCount, IV, keyId, initWithLast15);
-    };
+    auto task = [&]()
+    { status = decryptInternal(keySessionId, encrypted, subSample, subSampleCount, IV, keyId, initWithLast15); };
 
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return status;

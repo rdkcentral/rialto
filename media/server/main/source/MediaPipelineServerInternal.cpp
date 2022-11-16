@@ -136,7 +136,8 @@ MediaPipelineServerInternal::MediaPipelineServerInternal(
     m_mainThreadClientId = m_mainThread->registerClient();
 
     bool result = false;
-    auto task = [&]() {
+    auto task = [&]()
+    {
         if (!m_shmBuffer->mapPartition(m_sessionId))
         {
             RIALTO_SERVER_LOG_ERROR("Unable to map shm partition");
@@ -158,7 +159,8 @@ MediaPipelineServerInternal::~MediaPipelineServerInternal()
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    auto task = [&]() {
+    auto task = [&]()
+    {
         if (!m_shmBuffer->unmapPartition(m_sessionId))
         {
             RIALTO_SERVER_LOG_ERROR("Unable to unmap shm partition");
@@ -566,7 +568,8 @@ void MediaPipelineServerInternal::notifyPlaybackState(PlaybackState state)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    auto task = [&, state]() {
+    auto task = [&, state]()
+    {
         if (m_mediaPipelineClient)
         {
             m_mediaPipelineClient->notifyPlaybackState(state);
@@ -603,7 +606,8 @@ void MediaPipelineServerInternal::notifyPosition(std::int64_t position)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    auto task = [&, position]() {
+    auto task = [&, position]()
+    {
         if (m_mediaPipelineClient)
         {
             m_mediaPipelineClient->notifyPosition(position);
@@ -617,7 +621,8 @@ void MediaPipelineServerInternal::notifyNetworkState(NetworkState state)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    auto task = [&, state]() {
+    auto task = [&, state]()
+    {
         if (m_mediaPipelineClient)
         {
             m_mediaPipelineClient->notifyNetworkState(state);
@@ -640,7 +645,8 @@ void MediaPipelineServerInternal::notifyQos(MediaSourceType mediaSourceType, con
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    auto task = [&, mediaSourceType, qosInfo]() {
+    auto task = [&, mediaSourceType, qosInfo]()
+    {
         if (m_mediaPipelineClient)
         {
             auto sourceId = static_cast<std::uint64_t>(mediaSourceType);

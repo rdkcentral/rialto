@@ -132,7 +132,8 @@ MediaKeyErrorStatus MediaKeySession::generateRequest(InitDataType initDataType, 
 
 void MediaKeySession::getChallenge()
 {
-    auto task = [&]() {
+    auto task = [&]()
+    {
         uint32_t challengeSize = 0;
         MediaKeyErrorStatus status = m_ocdmSession->getChallengeData(m_kIsLDL, nullptr, &challengeSize);
         if (MediaKeyErrorStatus::OK != status)
@@ -269,7 +270,8 @@ void MediaKeySession::onProcessChallenge(const char url[], const uint8_t challen
 {
     std::string urlStr = url;
     std::vector<unsigned char> challengeVec = std::vector<unsigned char>{challenge, challenge + challengeLength};
-    auto task = [&, urlStr, challengeVec]() {
+    auto task = [&, urlStr, challengeVec]()
+    {
         std::shared_ptr<IMediaKeysClient> client = m_mediaKeysClient.lock();
         if (client)
         {
@@ -290,7 +292,8 @@ void MediaKeySession::onProcessChallenge(const char url[], const uint8_t challen
 void MediaKeySession::onKeyUpdated(const uint8_t keyId[], const uint8_t keyIdLength)
 {
     std::vector<unsigned char> keyIdVec = std::vector<unsigned char>{keyId, keyId + keyIdLength};
-    auto task = [&, keyIdVec]() {
+    auto task = [&, keyIdVec]()
+    {
         std::shared_ptr<IMediaKeysClient> client = m_mediaKeysClient.lock();
         if (client)
         {
@@ -303,7 +306,8 @@ void MediaKeySession::onKeyUpdated(const uint8_t keyId[], const uint8_t keyIdLen
 
 void MediaKeySession::onAllKeysUpdated()
 {
-    auto task = [&]() {
+    auto task = [&]()
+    {
         std::shared_ptr<IMediaKeysClient> client = m_mediaKeysClient.lock();
         if (client)
         {

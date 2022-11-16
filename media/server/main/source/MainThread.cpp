@@ -117,7 +117,8 @@ int32_t MainThread::registerClient()
 {
     uint32_t clientId = m_nextClientId++;
 
-    auto task = [&, clientId]() {
+    auto task = [&, clientId]()
+    {
         RIALTO_SERVER_LOG_INFO("Registering client '%u'", clientId);
         m_registeredClients.insert(clientId);
     };

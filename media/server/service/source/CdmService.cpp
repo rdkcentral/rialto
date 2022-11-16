@@ -311,7 +311,6 @@ MediaKeyErrorStatus CdmService::decrypt(int32_t keySessionId, GstBuffer *encrypt
         RIALTO_SERVER_LOG_ERROR("Media keys handle for mksId: %d does not exists", keySessionId);
         return MediaKeyErrorStatus::FAIL;
     }
-    return mediaKeysIter->second->decrypt(keySessionId, encrypted, subSample, subSampleCount, IV,
-                                          keyId, initWithLast15);
+    return mediaKeysIter->second->decrypt(keySessionId, encrypted, subSample, subSampleCount, IV, keyId, initWithLast15);
 }
 } // namespace firebolt::rialto::server::service
