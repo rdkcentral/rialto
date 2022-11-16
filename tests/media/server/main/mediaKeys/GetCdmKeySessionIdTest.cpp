@@ -27,6 +27,7 @@ protected:
         createMediaKeys(kNetflixKeySystem);
         createKeySession(kNetflixKeySystem);
     }
+    ~RialtoServerMediaKeysGetCdmKeySessionIdTest() { destroyMediaKeys(); }
 };
 
 /**
@@ -34,6 +35,8 @@ protected:
  */
 TEST_F(RialtoServerMediaKeysGetCdmKeySessionIdTest, Success)
 {
+    mainThreadWillEnqueueTaskAndWait();
+
     std::string cdmKeySessionId;
     EXPECT_CALL(*m_mediaKeySessionMock, getCdmKeySessionId(cdmKeySessionId)).WillOnce(Return(MediaKeyErrorStatus::OK));
 
@@ -45,6 +48,8 @@ TEST_F(RialtoServerMediaKeysGetCdmKeySessionIdTest, Success)
  */
 TEST_F(RialtoServerMediaKeysGetCdmKeySessionIdTest, SessionDoesNotExistFailure)
 {
+    mainThreadWillEnqueueTaskAndWait();
+
     std::string cdmKeySessionId;
     EXPECT_EQ(MediaKeyErrorStatus::BAD_SESSION_ID, m_mediaKeys->getCdmKeySessionId(m_kKeySessionId + 1, cdmKeySessionId));
 }
@@ -54,6 +59,8 @@ TEST_F(RialtoServerMediaKeysGetCdmKeySessionIdTest, SessionDoesNotExistFailure)
  */
 TEST_F(RialtoServerMediaKeysGetCdmKeySessionIdTest, SessionFailure)
 {
+    mainThreadWillEnqueueTaskAndWait();
+
     std::string cdmKeySessionId;
     EXPECT_CALL(*m_mediaKeySessionMock, getCdmKeySessionId(cdmKeySessionId)).WillOnce(Return(MediaKeyErrorStatus::FAIL));
 

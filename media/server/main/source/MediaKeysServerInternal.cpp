@@ -385,6 +385,15 @@ MediaKeyErrorStatus MediaKeysServerInternal::getCdmKeySessionId(int32_t keySessi
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
+    MediaKeyErrorStatus status;
+    auto task = [&]() { status = getCdmKeySessionIdInternal(keySessionId, cdmKeySessionId); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return status;
+}
+
+MediaKeyErrorStatus MediaKeysServerInternal::getCdmKeySessionIdInternal(int32_t keySessionId, std::string &cdmKeySessionId)
+{
     auto sessionIter = m_mediaKeySessions.find(keySessionId);
     if (sessionIter == m_mediaKeySessions.end())
     {

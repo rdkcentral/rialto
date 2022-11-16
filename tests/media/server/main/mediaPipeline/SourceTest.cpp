@@ -39,6 +39,7 @@ TEST_F(RialtoServerMediaPipelineSourceTest, AttachSourceSuccess)
     IMediaPipeline::MediaSource mediaSource(-1, m_type, m_kMimeType);
 
     loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
 
     EXPECT_CALL(*m_gstPlayerMock, attachSource(mediaSource));
 

@@ -208,6 +208,16 @@ private:
     MediaKeyErrorStatus removeKeySessionInternal(int32_t keySessionId);
 
     /**
+     * @brief Get the key session id internally, only to be called on the main thread.
+     *
+     * @param[in]   keySessionId    : The key session id for the session.
+     * @param[out]  cdmKeySessionId : The internal CDM key session ID
+     *
+     * @retval an error status.
+     */
+    MediaKeyErrorStatus getCdmKeySessionIdInternal(int32_t keySessionId, std::string &cdmKeySessionId);
+
+    /**
      * @brief Decrypt internally, only to be called on the main thread.
      *
      * @param[in] keySessionId    : The session id for the session.

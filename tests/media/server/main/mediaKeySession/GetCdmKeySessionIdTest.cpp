@@ -23,6 +23,7 @@ class RialtoServerMediaKeySessionGetCdmKeySessionIdTest : public MediaKeySession
 {
 protected:
     RialtoServerMediaKeySessionGetCdmKeySessionIdTest() { createKeySession(kNetflixKeySystem); }
+    ~RialtoServerMediaKeySessionGetCdmKeySessionIdTest() { destroyKeySession(); }
 };
 
 /**

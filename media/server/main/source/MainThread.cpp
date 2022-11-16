@@ -94,7 +94,10 @@ void MainThread::mainThreadLoop()
         }
 
         if (nullptr != taskInfo->cv)
+        {
+            std::unique_lock<std::mutex> lockTask(*(taskInfo->mutex));
             taskInfo->cv->notify_one();
+        }
     }
 }
 
