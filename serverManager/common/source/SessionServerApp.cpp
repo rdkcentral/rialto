@@ -56,14 +56,14 @@ std::string getSessionServerPath()
 
 std::chrono::milliseconds getStartupTimeout()
 {
-    const char *customTimeout = getenv("RIALTO_SESSION_SERVER_TIMEOUT");
+    const char *customTimeout = getenv("RIALTO_SESSION_SERVER_TIMEOUT_MS");
     std::chrono::milliseconds timeout{0};
     if (customTimeout)
     {
         try
         {
-            timeout = std::chrono::milliseconds(std::stoll(customTimeout));
-            RIALTO_SERVER_MANAGER_LOG_WARN("Using custom SessionServer startup timeout: %s", customTimeout);
+            timeout = std::chrono::milliseconds(std::stoull(customTimeout));
+            RIALTO_SERVER_MANAGER_LOG_WARN("Using custom SessionServer startup timeout: %sms", customTimeout);
         }
         catch (const std::exception &e)
         {
@@ -184,7 +184,7 @@ bool SessionServerApp::initializeSockets()
 void SessionServerApp::setupStartupTimer()
 {
     std::chrono::milliseconds timeout = getStartupTimeout();
-    if (std::chrono::milliseconds(0) != timeout)
+    if (std::chrono::milliseconds(0) < timeout)
     {
         std::unique_lock<std::mutex> lock{m_timerMutex};
         auto factory = firebolt::rialto::common::ITimerFactory::getFactory();
