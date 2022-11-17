@@ -19,42 +19,99 @@
 
 #include "MediaKeySessionTestBase.h"
 
+using ::testing::DoAll;
+using ::testing::SetArgPointee;
+
+MATCHER(nullptrMatcher, "")
+{
+    return arg == nullptr;
+}
+
+MATCHER(notNullptrMatcher, "")
+{
+    return arg != nullptr;
+}
+
+ACTION_P(memcpyChallenge, vec)
+{
+    memcpy(arg1, &vec[0], vec.size());
+}
+
 class RialtoServerMediaKeySessionGenerateRequestTest : public MediaKeySessionTestBase
 {
 protected:
-    InitDataType m_initDataType = InitDataType::CENC;
-    std::vector<uint8_t> m_initData{1, 2, 3};
+    const InitDataType m_kInitDataType = InitDataType::CENC;
+    const std::vector<uint8_t> m_kInitData{1, 2, 3};
+    const std::vector<unsigned char> m_kChallenge{'d', 'e', 'f'};
 
-    RialtoServerMediaKeySessionGenerateRequestTest() { createKeySession(kNetflixKeySystem); }
+    ~RialtoServerMediaKeySessionGenerateRequestTest() { destroyKeySession(); }
 };
 
 /**
- * Test that GenerateRequest can generate request successfully.
+ * Test that GenerateRequest can generate request successfully for an none netflix keysystem.
  */
-TEST_F(RialtoServerMediaKeySessionGenerateRequestTest, Success)
+TEST_F(RialtoServerMediaKeySessionGenerateRequestTest, SuccessNoneNetflix)
 {
-    EXPECT_CALL(*m_ocdmSessionMock, constructSession(m_keySessionType, m_initDataType, &m_initData[0], m_initData.size()))
+    createKeySession(kWidevineKeySystem);
+
+    EXPECT_CALL(*m_ocdmSessionMock,
+                constructSession(m_keySessionType, m_kInitDataType, &m_kInitData[0], m_kInitData.size()))
         .WillOnce(Return(MediaKeyErrorStatus::OK));
 
-    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->generateRequest(m_initDataType, m_initData));
+    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->generateRequest(m_kInitDataType, m_kInitData));
+
+    // Close ocdm before destroying
+    expectCloseKeySession(kWidevineKeySystem);
+}
+
+/**
+ * Test that GenerateRequest can generate request successfully for a netflix keysystem.
+ */
+TEST_F(RialtoServerMediaKeySessionGenerateRequestTest, SuccessNetflix)
+{
+    createKeySession(kNetflixKeySystem);
+
+    EXPECT_CALL(*m_ocdmSessionMock,
+                constructSession(m_keySessionType, m_kInitDataType, &m_kInitData[0], m_kInitData.size()))
+        .WillOnce(Return(MediaKeyErrorStatus::OK));
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(*m_ocdmSessionMock, getChallengeData(m_isLDL, nullptrMatcher(), _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_kChallenge.size()), Return(MediaKeyErrorStatus::OK)));
+    EXPECT_CALL(*m_ocdmSessionMock, getChallengeData(m_isLDL, notNullptrMatcher(), _))
+        .WillOnce(DoAll(memcpyChallenge(m_kChallenge), Return(MediaKeyErrorStatus::OK)));
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(*m_mediaKeysClientMock, onLicenseRequest(m_kKeySessionId, m_kChallenge, _));
+
+    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->generateRequest(m_kInitDataType, m_kInitData));
 
     // Close ocdm before destroying
     expectCloseKeySession(kNetflixKeySystem);
 }
 
 /**
- * Test that GenerateRequest fails if session already constructed.
+ * Test that GenerateRequest manually fetches the challenge if the session has already been constructed.
  */
-TEST_F(RialtoServerMediaKeySessionGenerateRequestTest, SessionAlreadyConstructedFailure)
+TEST_F(RialtoServerMediaKeySessionGenerateRequestTest, SessionAlreadyConstructed)
 {
-    EXPECT_CALL(*m_ocdmSessionMock, constructSession(m_keySessionType, m_initDataType, &m_initData[0], m_initData.size()))
+    // Generate inital request
+    createKeySession(kWidevineKeySystem);
+    EXPECT_CALL(*m_ocdmSessionMock,
+                constructSession(m_keySessionType, m_kInitDataType, &m_kInitData[0], m_kInitData.size()))
         .WillOnce(Return(MediaKeyErrorStatus::OK));
-    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->generateRequest(m_initDataType, m_initData));
+    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->generateRequest(m_kInitDataType, m_kInitData));
 
-    EXPECT_EQ(MediaKeyErrorStatus::FAIL, m_mediaKeySession->generateRequest(m_initDataType, m_initData));
+    // Generate request again should not call constructSession and trigger a onLicenseRequest
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(*m_ocdmSessionMock, getChallengeData(m_isLDL, nullptrMatcher(), _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_kChallenge.size()), Return(MediaKeyErrorStatus::OK)));
+    EXPECT_CALL(*m_ocdmSessionMock, getChallengeData(m_isLDL, notNullptrMatcher(), _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_kChallenge.size()), Return(MediaKeyErrorStatus::OK)));
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(*m_mediaKeysClientMock, onLicenseRequest(m_kKeySessionId, _, _));
+    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->generateRequest(m_kInitDataType, m_kInitData));
 
     // OcdmSession will be closed on destruction
-    expectCloseKeySession(kNetflixKeySystem);
+    expectCloseKeySession(kWidevineKeySystem);
 }
 
 /**
@@ -62,7 +119,9 @@ TEST_F(RialtoServerMediaKeySessionGenerateRequestTest, SessionAlreadyConstructed
  */
 TEST_F(RialtoServerMediaKeySessionGenerateRequestTest, OcdmSessionFailure)
 {
-    EXPECT_CALL(*m_ocdmSessionMock, constructSession(m_keySessionType, m_initDataType, &m_initData[0], m_initData.size()))
+    createKeySession(kWidevineKeySystem);
+    EXPECT_CALL(*m_ocdmSessionMock,
+                constructSession(m_keySessionType, m_kInitDataType, &m_kInitData[0], m_kInitData.size()))
         .WillOnce(Return(MediaKeyErrorStatus::NOT_SUPPORTED));
-    EXPECT_EQ(MediaKeyErrorStatus::NOT_SUPPORTED, m_mediaKeySession->generateRequest(m_initDataType, m_initData));
+    EXPECT_EQ(MediaKeyErrorStatus::NOT_SUPPORTED, m_mediaKeySession->generateRequest(m_kInitDataType, m_kInitData));
 }

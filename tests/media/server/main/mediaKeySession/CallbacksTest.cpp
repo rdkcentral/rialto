@@ -19,15 +19,24 @@
 
 #include "MediaKeySessionTestBase.h"
 
+MATCHER_P2(keyIdMatcher, keyId, keyIdLength, "")
+{
+    if (0 == memcmp(arg, keyId, keyIdLength))
+        return true;
+
+    return false;
+}
+
 class RialtoServerMediaKeySessionCallbacksTest : public MediaKeySessionTestBase
 {
 protected:
-    const std::string m_url{"http://"};
-    const std::vector<unsigned char> m_licenseRequestMessage{'d', 'e', 'f'};
-    const std::vector<unsigned char> m_licenseRenewalMessage{'a', 'b', 'c'};
+    const std::string m_kUrl{"http://"};
+    const std::vector<unsigned char> m_kLicenseRequestMessage{'d', 'e', 'f'};
+    const std::vector<unsigned char> m_kLicenseRenewalMessage{'a', 'b', 'c'};
     KeyStatusVector m_keyStatusVec;
 
     RialtoServerMediaKeySessionCallbacksTest() { createKeySession(kWidevineKeySystem); }
+    ~RialtoServerMediaKeySessionCallbacksTest() { destroyKeySession(); }
 
     void createKeyStatusVec()
     {
@@ -42,9 +51,10 @@ protected:
  */
 TEST_F(RialtoServerMediaKeySessionCallbacksTest, ProcessChallengeNoGenerateRequest)
 {
-    EXPECT_CALL(*m_mediaKeysClientMock, onLicenseRenewal(m_keySessionId, m_licenseRenewalMessage));
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(*m_mediaKeysClientMock, onLicenseRenewal(m_kKeySessionId, m_kLicenseRenewalMessage));
 
-    m_mediaKeySession->onProcessChallenge(m_url.c_str(), &m_licenseRenewalMessage[0], m_licenseRenewalMessage.size());
+    m_mediaKeySession->onProcessChallenge(m_kUrl.c_str(), &m_kLicenseRenewalMessage[0], m_kLicenseRenewalMessage.size());
 }
 
 /**
@@ -53,9 +63,10 @@ TEST_F(RialtoServerMediaKeySessionCallbacksTest, ProcessChallengeNoGenerateReque
 TEST_F(RialtoServerMediaKeySessionCallbacksTest, ProcessChallengeGenerateRequestNoneNetflix)
 {
     generateRequest();
-    EXPECT_CALL(*m_mediaKeysClientMock, onLicenseRequest(m_keySessionId, m_licenseRequestMessage, m_url));
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(*m_mediaKeysClientMock, onLicenseRequest(m_kKeySessionId, m_kLicenseRequestMessage, m_kUrl));
 
-    m_mediaKeySession->onProcessChallenge(m_url.c_str(), &m_licenseRequestMessage[0], m_licenseRequestMessage.size());
+    m_mediaKeySession->onProcessChallenge(m_kUrl.c_str(), &m_kLicenseRequestMessage[0], m_kLicenseRequestMessage.size());
 
     // OcdmSession will be closed on destruction
     expectCloseKeySession(kWidevineKeySystem);
@@ -70,10 +81,13 @@ TEST_F(RialtoServerMediaKeySessionCallbacksTest, KeyStatusUpdate)
 
     for (auto it = m_keyStatusVec.begin(); it != m_keyStatusVec.end(); it++)
     {
-        EXPECT_CALL(*m_ocdmSessionMock, getStatus(&it->first[0], it->first.size())).WillOnce(Return(it->second));
+        mainThreadWillEnqueueTask();
+        EXPECT_CALL(*m_ocdmSessionMock, getStatus(keyIdMatcher(&it->first[0], it->first.size()), it->first.size()))
+            .WillOnce(Return(it->second));
         m_mediaKeySession->onKeyUpdated(&it->first[0], it->first.size());
     }
 
-    EXPECT_CALL(*m_mediaKeysClientMock, onKeyStatusesChanged(m_keySessionId, m_keyStatusVec));
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(*m_mediaKeysClientMock, onKeyStatusesChanged(m_kKeySessionId, m_keyStatusVec));
     m_mediaKeySession->onAllKeysUpdated();
 }

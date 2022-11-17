@@ -23,6 +23,7 @@ class RialtoServerMediaKeySessionRemoveKeySessionTest : public MediaKeySessionTe
 {
 protected:
     RialtoServerMediaKeySessionRemoveKeySessionTest() { createKeySession(kNetflixKeySystem); }
+    ~RialtoServerMediaKeySessionRemoveKeySessionTest() { destroyKeySession(); }
 };
 
 /**

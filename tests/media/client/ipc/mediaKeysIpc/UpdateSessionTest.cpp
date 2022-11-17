@@ -60,11 +60,11 @@ TEST_F(RialtoClientMediaKeysIpcUpdateSessionTest, Success)
     expectIpcApiCallSuccess();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("updateSession"), m_controllerMock.get(),
-                                           updateSessionRequestMatcher(m_mediaKeysHandle, m_keySessionId, m_requestData),
+                                           updateSessionRequestMatcher(m_mediaKeysHandle, m_kKeySessionId, m_requestData),
                                            _, m_blockingClosureMock.get()))
         .WillOnce(WithArgs<3>(Invoke(this, &RialtoClientMediaKeysIpcUpdateSessionTest::setUpdateSessionResponseSuccess)));
 
-    EXPECT_EQ(m_mediaKeysIpc->updateSession(m_keySessionId, m_requestData), MediaKeyErrorStatus::OK);
+    EXPECT_EQ(m_mediaKeysIpc->updateSession(m_kKeySessionId, m_requestData), MediaKeyErrorStatus::OK);
 }
 
 /**
@@ -75,7 +75,7 @@ TEST_F(RialtoClientMediaKeysIpcUpdateSessionTest, ChannelDisconnected)
     expectIpcApiCallDisconnected();
     expectUnsubscribeEvents();
 
-    EXPECT_EQ(m_mediaKeysIpc->updateSession(m_keySessionId, m_requestData), MediaKeyErrorStatus::FAIL);
+    EXPECT_EQ(m_mediaKeysIpc->updateSession(m_kKeySessionId, m_requestData), MediaKeyErrorStatus::FAIL);
 
     // Reattach channel on destroySession
     EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
@@ -94,7 +94,7 @@ TEST_F(RialtoClientMediaKeysIpcUpdateSessionTest, ReconnectChannel)
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("updateSession"), _, _, _, _))
         .WillOnce(WithArgs<3>(Invoke(this, &RialtoClientMediaKeysIpcUpdateSessionTest::setUpdateSessionResponseSuccess)));
 
-    EXPECT_EQ(m_mediaKeysIpc->updateSession(m_keySessionId, m_requestData), MediaKeyErrorStatus::OK);
+    EXPECT_EQ(m_mediaKeysIpc->updateSession(m_kKeySessionId, m_requestData), MediaKeyErrorStatus::OK);
 }
 
 /**
@@ -106,7 +106,7 @@ TEST_F(RialtoClientMediaKeysIpcUpdateSessionTest, Failure)
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("updateSession"), _, _, _, _));
 
-    EXPECT_EQ(m_mediaKeysIpc->updateSession(m_keySessionId, m_requestData), MediaKeyErrorStatus::FAIL);
+    EXPECT_EQ(m_mediaKeysIpc->updateSession(m_kKeySessionId, m_requestData), MediaKeyErrorStatus::FAIL);
 }
 
 /**
@@ -119,5 +119,5 @@ TEST_F(RialtoClientMediaKeysIpcUpdateSessionTest, ErrorReturn)
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("updateSession"), _, _, _, _))
         .WillOnce(WithArgs<3>(Invoke(this, &RialtoClientMediaKeysIpcUpdateSessionTest::setUpdateSessionResponseFailed)));
 
-    EXPECT_EQ(m_mediaKeysIpc->updateSession(m_keySessionId, m_requestData), m_errorStatus);
+    EXPECT_EQ(m_mediaKeysIpc->updateSession(m_kKeySessionId, m_requestData), m_errorStatus);
 }

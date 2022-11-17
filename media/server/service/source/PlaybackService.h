@@ -21,11 +21,11 @@
 #define FIREBOLT_RIALTO_SERVER_SERVICE_PLAYBACK_SERVICE_H_
 
 #include "IDecryptionService.h"
-#include "IMainThread.h"
 #include "IMediaPipelineCapabilities.h"
 #include "IMediaPipelineServerInternal.h"
 #include "IPlaybackService.h"
 #include "ISharedMemoryBuffer.h"
+#include <atomic>
 #include <condition_variable>
 #include <functional>
 #include <map>
@@ -41,7 +41,7 @@ namespace firebolt::rialto::server::service
 class PlaybackService : public IPlaybackService
 {
 public:
-    PlaybackService(IMainThread &mainThread, std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
+    PlaybackService(std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
                     std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
                     std::unique_ptr<ISharedMemoryBufferFactory> &&shmBufferFactory,
                     IDecryptionService &decryptionService);
@@ -76,15 +76,15 @@ public:
     bool isMimeTypeSupported(const std::string &mimeType) override;
 
 private:
-    IMainThread &m_mainThread;
     std::shared_ptr<IMediaPipelineServerInternalFactory> m_mediaPipelineFactory;
     std::shared_ptr<IMediaPipelineCapabilities> m_mediaPipelineCapabilities;
     std::unique_ptr<ISharedMemoryBufferFactory> m_shmBufferFactory;
     IDecryptionService &m_decryptionService;
-    bool m_isActive;
-    int m_maxPlaybacks;
+    std::atomic<bool> m_isActive;
+    std::atomic<int> m_maxPlaybacks;
     std::map<int, std::unique_ptr<IMediaPipelineServerInternal>> m_mediaPipelines;
     std::shared_ptr<ISharedMemoryBuffer> m_shmBuffer;
+    std::mutex m_mediaPipelineMutex;
 };
 } // namespace firebolt::rialto::server::service
 

@@ -112,7 +112,7 @@ std::shared_ptr<firebolt::rialto::LicenseRenewalEvent> MediaKeysIpcTestBase::cre
 {
     auto licenseRenewalEvent = std::make_shared<firebolt::rialto::LicenseRenewalEvent>();
     licenseRenewalEvent->set_media_keys_handle(m_mediaKeysHandle);
-    licenseRenewalEvent->set_key_session_id(m_keySessionId);
+    licenseRenewalEvent->set_key_session_id(m_kKeySessionId);
 
     for (auto it = m_licenseRenewalMessage.begin(); it != m_licenseRenewalMessage.end(); it++)
     {
@@ -133,7 +133,7 @@ void MediaKeysIpcTestBase::setCreateKeySessionResponseSuccess(google::protobuf::
 {
     firebolt::rialto::CreateKeySessionResponse *createKeySessionResponse =
         dynamic_cast<firebolt::rialto::CreateKeySessionResponse *>(response);
-    createKeySessionResponse->set_key_session_id(m_keySessionId);
+    createKeySessionResponse->set_key_session_id(m_kKeySessionId);
     createKeySessionResponse->set_error_status(MediaKeysIpcTestBase::convertMediaKeyErrorStatus(MediaKeyErrorStatus::OK));
 }
 

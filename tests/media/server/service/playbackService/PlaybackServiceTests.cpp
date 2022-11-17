@@ -27,7 +27,6 @@ TEST_F(PlaybackServiceTests, shouldFailToCreatePlaybackService)
 TEST_F(PlaybackServiceTests, shouldFailToCreateSessionInInactiveState)
 {
     mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
-    mainThreadWillEnqueueTask();
     createSessionShouldFail();
 }
 
@@ -37,9 +36,7 @@ TEST_F(PlaybackServiceTests, shouldFailToCreateSessionAfterSwitchToInactive)
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
-    mainThreadWillEnqueueTask();
     triggerSwitchToInactive();
-    mainThreadWillEnqueueTask();
     createSessionShouldFail();
 }
 
@@ -49,7 +46,6 @@ TEST_F(PlaybackServiceTests, shouldFailToCreateSessionAfterFailedSwitchToActive)
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillFailToInitialize();
     triggerSwitchToActive();
-    mainThreadWillEnqueueTask();
     createSessionShouldFail();
 }
 
@@ -60,7 +56,6 @@ TEST_F(PlaybackServiceTests, shouldFailToCreateSessionWhenMaxPlaybackSessionsIsR
     triggerSetMaxPlaybacks(maxPlaybacks);
     sharedMemoryBufferWillBeInitialized(maxPlaybacks);
     triggerSwitchToActive();
-    mainThreadWillEnqueueTask();
     createSessionShouldFail();
 }
 
@@ -94,7 +89,6 @@ TEST_F(PlaybackServiceTests, shouldFailToCreateSessionWithTheSameIdTwice)
     triggerSwitchToActive();
     mediaPipelineFactoryWillCreateMediaPipeline();
     createSessionShouldSucceed();
-    mainThreadWillEnqueueTask();
     createSessionShouldFail();
 }
 
@@ -104,7 +98,6 @@ TEST_F(PlaybackServiceTests, shouldFailToDestroyNotExistingSession)
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
-    mainThreadWillEnqueueTask();
     destroySessionShouldFail();
 }
 
@@ -116,7 +109,6 @@ TEST_F(PlaybackServiceTests, shouldDestroySession)
     triggerSwitchToActive();
     mediaPipelineFactoryWillCreateMediaPipeline();
     createSessionShouldSucceed();
-    mainThreadWillEnqueueTask();
     destroySessionShouldSucceed();
 }
 
@@ -128,9 +120,7 @@ TEST_F(PlaybackServiceTests, shouldDestroySessionWhenSwitchedToInactive)
     triggerSwitchToActive();
     mediaPipelineFactoryWillCreateMediaPipeline();
     createSessionShouldSucceed();
-    mainThreadWillEnqueueTask();
     triggerSwitchToInactive();
-    mainThreadWillEnqueueTask();
     destroySessionShouldFail();
 }
 
@@ -140,7 +130,6 @@ TEST_F(PlaybackServiceTests, shouldFailToLoadNotExistingSession)
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
-    mainThreadWillEnqueueTask();
     loadShouldFail();
 }
 
@@ -174,7 +163,6 @@ TEST_F(PlaybackServiceTests, shouldFailToAttachSourceForNotExistingSession)
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
-    mainThreadWillEnqueueTask();
     attachSourceShouldFail();
 }
 
@@ -208,7 +196,6 @@ TEST_F(PlaybackServiceTests, shouldFailToRemoveSourceForNotExistingSession)
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
-    mainThreadWillEnqueueTask();
     removeSourceShouldFail();
 }
 
@@ -242,7 +229,6 @@ TEST_F(PlaybackServiceTests, shouldFailToPlayForNotExistingSession)
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
-    mainThreadWillEnqueueTask();
     playShouldFail();
 }
 
@@ -276,7 +262,6 @@ TEST_F(PlaybackServiceTests, shouldFailToStopForNotExistingSession)
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
-    mainThreadWillEnqueueTask();
     stopShouldFail();
 }
 
@@ -310,7 +295,6 @@ TEST_F(PlaybackServiceTests, shouldFailToPauseForNotExistingSession)
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
-    mainThreadWillEnqueueTask();
     pauseShouldFail();
 }
 
@@ -344,7 +328,6 @@ TEST_F(PlaybackServiceTests, shouldFailToSetPlaybackRateForNotExistingSession)
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
-    mainThreadWillEnqueueTask();
     setPlaybackRateShouldFail();
 }
 
@@ -378,7 +361,6 @@ TEST_F(PlaybackServiceTests, shouldFailToSetPositionForNotExistingSession)
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
-    mainThreadWillEnqueueTask();
     setPositionShouldFail();
 }
 
@@ -412,7 +394,6 @@ TEST_F(PlaybackServiceTests, shouldFailToSetVideoWindowForNotExistingSession)
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
-    mainThreadWillEnqueueTask();
     setVideoWindowShouldFail();
 }
 
@@ -446,7 +427,6 @@ TEST_F(PlaybackServiceTests, shouldFailToHaveDataForNotExistingSession)
     triggerSetMaxPlaybacks();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
-    mainThreadWillEnqueueTask();
     haveDataShouldFail();
 }
 
@@ -477,7 +457,6 @@ TEST_F(PlaybackServiceTests, shouldHaveData)
 TEST_F(PlaybackServiceTests, shouldFailToGetSharedMemoryInInactiveState)
 {
     mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
-    mainThreadWillEnqueueTask();
     getSharedMemoryShouldFail();
 }
 

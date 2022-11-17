@@ -27,6 +27,7 @@ add_gtests (
         dataReader/DataReaderV1Tests.cpp
         dataReader/DataReaderV2Tests.cpp
 
+        mediaPipeline/base/MediaPipelineTestBase.cpp
         mediaPipeline/CreateTest.cpp
         mediaPipeline/LoadTest.cpp
         mediaPipeline/SourceTest.cpp
@@ -66,6 +67,8 @@ add_gtests (
 
         needMediaData/NeedMediaDataTestsFixture.cpp
         needMediaData/NeedMediaDataTests.cpp
+
+        mainThread/MainThreadTest.cpp
         )
 
 target_include_directories(
@@ -84,6 +87,7 @@ target_include_directories(
         # Test Bases
         mediaKeys/base
         mediaKeySession/base
+        mediaPipeline/base
         )
 
 target_link_libraries(

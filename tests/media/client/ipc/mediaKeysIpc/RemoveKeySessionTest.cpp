@@ -58,12 +58,12 @@ TEST_F(RialtoClientMediaKeysIpcRemoveKeySessionTest, Success)
     expectIpcApiCallSuccess();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("removeKeySession"), m_controllerMock.get(),
-                                           removeKeySessionRequestMatcher(m_mediaKeysHandle, m_keySessionId), _,
+                                           removeKeySessionRequestMatcher(m_mediaKeysHandle, m_kKeySessionId), _,
                                            m_blockingClosureMock.get()))
         .WillOnce(WithArgs<3>(
             Invoke(this, &RialtoClientMediaKeysIpcRemoveKeySessionTest::setRemoveKeySessionResponseSuccess)));
 
-    EXPECT_EQ(m_mediaKeysIpc->removeKeySession(m_keySessionId), MediaKeyErrorStatus::OK);
+    EXPECT_EQ(m_mediaKeysIpc->removeKeySession(m_kKeySessionId), MediaKeyErrorStatus::OK);
 }
 
 /**
@@ -74,7 +74,7 @@ TEST_F(RialtoClientMediaKeysIpcRemoveKeySessionTest, ChannelDisconnected)
     expectIpcApiCallDisconnected();
     expectUnsubscribeEvents();
 
-    EXPECT_EQ(m_mediaKeysIpc->removeKeySession(m_keySessionId), MediaKeyErrorStatus::FAIL);
+    EXPECT_EQ(m_mediaKeysIpc->removeKeySession(m_kKeySessionId), MediaKeyErrorStatus::FAIL);
 
     // Reattach channel on destroySession
     EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
@@ -94,7 +94,7 @@ TEST_F(RialtoClientMediaKeysIpcRemoveKeySessionTest, ReconnectChannel)
         .WillOnce(WithArgs<3>(
             Invoke(this, &RialtoClientMediaKeysIpcRemoveKeySessionTest::setRemoveKeySessionResponseSuccess)));
 
-    EXPECT_EQ(m_mediaKeysIpc->removeKeySession(m_keySessionId), MediaKeyErrorStatus::OK);
+    EXPECT_EQ(m_mediaKeysIpc->removeKeySession(m_kKeySessionId), MediaKeyErrorStatus::OK);
 }
 
 /**
@@ -106,7 +106,7 @@ TEST_F(RialtoClientMediaKeysIpcRemoveKeySessionTest, Failure)
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("removeKeySession"), _, _, _, _));
 
-    EXPECT_EQ(m_mediaKeysIpc->removeKeySession(m_keySessionId), MediaKeyErrorStatus::FAIL);
+    EXPECT_EQ(m_mediaKeysIpc->removeKeySession(m_kKeySessionId), MediaKeyErrorStatus::FAIL);
 }
 
 /**
@@ -120,5 +120,5 @@ TEST_F(RialtoClientMediaKeysIpcRemoveKeySessionTest, ErrorReturn)
         .WillOnce(
             WithArgs<3>(Invoke(this, &RialtoClientMediaKeysIpcRemoveKeySessionTest::setRemoveKeySessionResponseFailed)));
 
-    EXPECT_EQ(m_mediaKeysIpc->removeKeySession(m_keySessionId), m_errorStatus);
+    EXPECT_EQ(m_mediaKeysIpc->removeKeySession(m_kKeySessionId), m_errorStatus);
 }

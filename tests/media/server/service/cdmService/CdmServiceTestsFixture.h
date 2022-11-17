@@ -21,7 +21,6 @@
 #define CDM_SERVICE_TESTS_FIXTURE_H_
 
 #include "CdmService.h"
-#include "MainThreadMock.h"
 #include "MediaKeysCapabilitiesFactoryMock.h"
 #include "MediaKeysCapabilitiesMock.h"
 #include "MediaKeysClientMock.h"
@@ -40,8 +39,6 @@ class CdmServiceTests : public testing::Test
 public:
     CdmServiceTests();
     ~CdmServiceTests() = default;
-
-    void mainThreadWillEnqueueTask();
 
     void mediaKeysFactoryWillCreateMediaKeys();
     void mediaKeysFactoryWillReturnNullptr();
@@ -63,7 +60,6 @@ public:
     void getSupportedKeySystemVersionWillFail();
 
     void triggerSwitchToActiveSuccess();
-    void triggerSwitchToActiveFail();
     void triggerSwitchToInactive();
 
     void createMediaKeysShouldSucceed();
@@ -88,7 +84,6 @@ public:
     void getSupportedKeySystemVersionShouldFail();
 
 private:
-    StrictMock<firebolt::rialto::server::service::MainThreadMock> m_mainThreadMock;
     std::shared_ptr<StrictMock<firebolt::rialto::server::MediaKeysServerInternalFactoryMock>> m_mediaKeysFactoryMock;
     std::unique_ptr<firebolt::rialto::server::IMediaKeysServerInternal> m_mediaKeys;
     StrictMock<firebolt::rialto::server::MediaKeysServerInternalMock> &m_mediaKeysMock;

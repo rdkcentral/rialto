@@ -20,6 +20,8 @@
 #ifndef MEDIA_KEY_SESSION_TEST_BASE_H_
 #define MEDIA_KEY_SESSION_TEST_BASE_H_
 
+#include "MainThreadFactoryMock.h"
+#include "MainThreadMock.h"
 #include "MediaKeySession.h"
 #include "MediaKeysClientMock.h"
 #include "MediaKeysCommon.h"
@@ -31,9 +33,11 @@
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::server;
+using namespace firebolt::rialto::server::mock;
 
 using ::testing::_;
 using ::testing::ByMove;
+using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::StrictMock;
 
@@ -52,15 +56,20 @@ protected:
     std::unique_ptr<StrictMock<OcdmSystemMock>> m_ocdmSystemMock;
     std::unique_ptr<StrictMock<OcdmSessionMock>> m_ocdmSession;
     StrictMock<OcdmSessionMock> *m_ocdmSessionMock;
+    std::shared_ptr<StrictMock<MainThreadFactoryMock>> m_mainThreadFactoryMock;
+    std::shared_ptr<StrictMock<MainThreadMock>> m_mainThreadMock;
 
     // Common variables
-    const int32_t m_keySessionId = 123;
+    const int32_t m_kKeySessionId = 123;
+    const int32_t m_kMainThreadClientId = {5};
     KeySessionType m_keySessionType = KeySessionType::PERSISTENT_RELEASE_MESSAGE;
     bool m_isLDL = false;
 
     void createKeySession(const std::string &keySystem);
+    void destroyKeySession();
     void expectCloseKeySession(const std::string &keySystem);
     void generateRequest();
+    void mainThreadWillEnqueueTask();
 };
 
 #endif // MEDIA_KEY_SESSION_TEST_BASE_H_
