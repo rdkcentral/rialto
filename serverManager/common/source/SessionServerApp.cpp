@@ -67,7 +67,7 @@ std::chrono::milliseconds getStartupTimeout()
         }
         catch (const std::exception &e)
         {
-            RIALTO_SERVER_MANAGER_LOG_ERROR("Custom SessionServer startup timeout invalid, ignoring: %s", e.what());
+            RIALTO_SERVER_MANAGER_LOG_ERROR("Custom SessionServer startup timeout invalid, ignoring: %s", customTimeout);
         }
     }
     return timeout;
