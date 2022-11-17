@@ -638,11 +638,7 @@ MediaKeyErrorStatus MediaKeysIpc::getDrmStoreHash(std::vector<unsigned char> &dr
 
     if (ProtoMediaKeyErrorStatus::OK == response.error_status())
     {
-        drmStoreHash.reserve(response.drm_store_hash().size());
-        for (const auto &drmStoreHashItem : response.drm_store_hash())
-        {
-            drmStoreHash.push_back(drmStoreHashItem);
-        }
+        drmStoreHash = std::vector<unsigned char>(response.drm_store_hash().begin(), response.drm_store_hash().end());
     }
 
     return getMediaKeyErrorStatusFromResponse("getDrmStoreHash", ipcController, response.error_status());
@@ -672,11 +668,7 @@ MediaKeyErrorStatus MediaKeysIpc::getKeyStoreHash(std::vector<unsigned char> &ke
 
     if (ProtoMediaKeyErrorStatus::OK == response.error_status())
     {
-        keyStoreHash.reserve(response.key_store_hash().size());
-        for (const auto &keyStoreHashItem : response.key_store_hash())
-        {
-            keyStoreHash.push_back(keyStoreHashItem);
-        }
+        keyStoreHash = std::vector<unsigned char>(response.key_store_hash().begin(), response.key_store_hash().end());
     }
 
     return getMediaKeyErrorStatusFromResponse("getKeyStoreHash", ipcController, response.error_status());
