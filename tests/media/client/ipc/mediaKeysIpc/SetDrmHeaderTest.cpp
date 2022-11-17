@@ -71,8 +71,8 @@ TEST_F(RialtoClientMediaKeysIpcSetDrmHeaderTest, Success)
     expectIpcApiCallSuccess();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("setDrmHeader"), m_controllerMock.get(),
-                                           setDrmHeaderRequestMatcher(m_mediaKeysHandle, m_kKeySessionId, kDrmHeader), _,
-                                           m_blockingClosureMock.get()))
+                                           setDrmHeaderRequestMatcher(m_mediaKeysHandle, m_kKeySessionId, kDrmHeader),
+                                           _, m_blockingClosureMock.get()))
         .WillOnce(WithArgs<3>(Invoke(this, &RialtoClientMediaKeysIpcSetDrmHeaderTest::setSetDrmHeaderResponseSuccess)));
 
     EXPECT_EQ(m_mediaKeysIpc->setDrmHeader(m_kKeySessionId, kDrmHeader), MediaKeyErrorStatus::OK);

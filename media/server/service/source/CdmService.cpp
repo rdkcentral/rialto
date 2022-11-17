@@ -428,8 +428,7 @@ MediaKeyErrorStatus CdmService::decrypt(int32_t keySessionId, GstBuffer *encrypt
 
 bool CdmService::isNetflixKeySystem(int32_t keySessionId) const
 {
-    RIALTO_SERVER_LOG_DEBUG("CdmService requested to check if key system is Netflix, key session id: %d",
-                            keySessionId);
+    RIALTO_SERVER_LOG_DEBUG("CdmService requested to check if key system is Netflix, key session id: %d", keySessionId);
     auto mediaKeysIter = std::find_if(m_mediaKeys.begin(), m_mediaKeys.end(),
                                       [&](const auto &iter) { return iter.second->hasSession(keySessionId); });
     if (mediaKeysIter == m_mediaKeys.end())
