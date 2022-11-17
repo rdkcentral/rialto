@@ -22,6 +22,7 @@
 
 #include "IDecryptionService.h"
 #include <gmock/gmock.h>
+#include <vector>
 
 namespace firebolt::rialto::server
 {

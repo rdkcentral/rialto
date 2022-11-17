@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_CLIENT_KEY_ID_MAP_H_
-#define FIREBOLT_RIALTO_CLIENT_KEY_ID_MAP_H_
+#ifndef FIREBOLT_RIALTO_CLIENT_KEY_IDMAP_H_
+#define FIREBOLT_RIALTO_CLIENT_KEY_IDMAP_H_
 
 #include <cstdint>
 #include <map>
@@ -50,4 +50,4 @@ private:
 };
 } // namespace firebolt::rialto::client
 
-#endif // FIREBOLT_RIALTO_CLIENT_KEY_ID_MAP_H_
+#endif // FIREBOLT_RIALTO_CLIENT_KEY_IDMAP_H_
