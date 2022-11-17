@@ -486,6 +486,13 @@ public:
     virtual void gstCapsUnref(GstCaps *caps) = 0;
 
     /**
+     * @brief Creates a newly allocated buffer without any data.
+     *
+     * @retval the new GstBuffer.
+     */
+    virtual GstBuffer *gstBufferNew() = 0;
+
+    /**
      * @brief Tries to create a newly allocated buffer with data of the given size and extra parameters from allocator.
      *
      * If the requested amount of memory can't be allocated, NULL will be returned.

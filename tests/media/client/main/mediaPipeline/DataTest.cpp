@@ -17,11 +17,13 @@
  * limitations under the License.
  */
 
+#include "KeyIdMap.h"
 #include "MediaFrameWriterMock.h"
 #include "MediaPipelineTestBase.h"
 #include <condition_variable>
 #include <mutex>
 #include <thread>
+#include <vector>
 
 MATCHER_P(ShmInfoMatcher, shmInfo, "")
 {
@@ -38,6 +40,8 @@ protected:
     size_t m_frameCount = 2;
     uint32_t m_requestId = 4U;
     uint32_t m_numFrames = 5U;
+    int32_t m_mksId{6};
+    std::vector<uint8_t> m_keyId{1, 2, 3, 4};
     uint8_t m_shmBuffer;
     std::shared_ptr<ShmInfo> m_shmInfo;
     MediaSourceStatus m_status = MediaSourceStatus::NO_AVAILABLE_SAMPLES;
@@ -436,6 +440,77 @@ TEST_F(RialtoClientMediaPipelineDataTest, AddSegmentAudioSuccess)
     EXPECT_CALL(*m_mediaFrameWriterMock, writeFrame(_)).WillOnce(Return(AddSegmentStatus::OK));
 
     EXPECT_EQ(m_mediaPipeline->addSegment(m_requestId, frame), AddSegmentStatus::OK);
+}
+
+/**
+ * Test that a an add segment call with encrypted frame does not update keyId when KeyId is not found in map
+ */
+TEST_F(RialtoClientMediaPipelineDataTest, AddEncryptedCobaltSegmentSuccess)
+{
+    needDataGeneric();
+
+    std::vector<uint8_t> data{'T', 'E', 'S', 'T'};
+    std::unique_ptr<IMediaPipeline::MediaSegment> frame = createFrame(MediaSourceType::VIDEO, data.size(), data.data());
+    frame->setEncrypted(true);
+    frame->setMediaKeySessionId(m_mksId);
+
+    std::unique_ptr<StrictMock<MediaFrameWriterMock>> mediaFrameWriterMock =
+        std::make_unique<StrictMock<MediaFrameWriterMock>>();
+
+    // Save a raw pointer to the unique object for use when testing mocks
+    // Object shall be freed by the holder of the unique ptr on destruction
+    m_mediaFrameWriterMock = mediaFrameWriterMock.get();
+
+    EXPECT_CALL(*m_sharedMemoryManagerMock, getSharedMemoryBuffer()).WillOnce(Return(&m_shmBuffer));
+
+    EXPECT_CALL(*m_mediaFrameWriterFactoryMock, createFrameWriter(&m_shmBuffer, ShmInfoMatcher(m_shmInfo)))
+        .WillOnce(Return(ByMove(std::move(mediaFrameWriterMock))));
+
+    EXPECT_CALL(*m_mediaFrameWriterMock, writeFrame(_)).WillOnce(Return(AddSegmentStatus::OK));
+
+    EXPECT_EQ(m_mediaPipeline->addSegment(m_requestId, frame), AddSegmentStatus::OK);
+
+    // For non-netflix segment, key ID should not be updated
+    EXPECT_TRUE(frame->isEncrypted());
+    EXPECT_TRUE(frame->getKeyId().empty());
+}
+
+/**
+ * Test that a an add segment call with encrypted frame updates keyId when KeyId is found in map
+ */
+TEST_F(RialtoClientMediaPipelineDataTest, AddEncryptedNetflixSegmentSuccess)
+{
+    needDataGeneric();
+
+    std::vector<uint8_t> data{'T', 'E', 'S', 'T'};
+    KeyIdMap::instance().addSession(m_mksId);
+    KeyIdMap::instance().updateKey(m_mksId, m_keyId);
+    std::unique_ptr<IMediaPipeline::MediaSegment> frame = createFrame(MediaSourceType::VIDEO, data.size(), data.data());
+    frame->setEncrypted(true);
+    frame->setMediaKeySessionId(m_mksId);
+
+    std::unique_ptr<StrictMock<MediaFrameWriterMock>> mediaFrameWriterMock =
+        std::make_unique<StrictMock<MediaFrameWriterMock>>();
+
+    // Save a raw pointer to the unique object for use when testing mocks
+    // Object shall be freed by the holder of the unique ptr on destruction
+    m_mediaFrameWriterMock = mediaFrameWriterMock.get();
+
+    EXPECT_CALL(*m_sharedMemoryManagerMock, getSharedMemoryBuffer()).WillOnce(Return(&m_shmBuffer));
+
+    EXPECT_CALL(*m_mediaFrameWriterFactoryMock, createFrameWriter(&m_shmBuffer, ShmInfoMatcher(m_shmInfo)))
+        .WillOnce(Return(ByMove(std::move(mediaFrameWriterMock))));
+
+    EXPECT_CALL(*m_mediaFrameWriterMock, writeFrame(_)).WillOnce(Return(AddSegmentStatus::OK));
+
+    EXPECT_EQ(m_mediaPipeline->addSegment(m_requestId, frame), AddSegmentStatus::OK);
+
+    // For non-netflix segment, key ID should not be updated
+    EXPECT_TRUE(frame->isEncrypted());
+    EXPECT_EQ(frame->getKeyId(), m_keyId);
+
+    // Cleanup
+    KeyIdMap::instance().erase(m_mksId);
 }
 
 /**

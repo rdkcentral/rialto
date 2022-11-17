@@ -77,6 +77,14 @@ public:
 
     MediaKeyErrorStatus getCdmKeySessionId(std::string &cdmKeySessionId) override;
 
+    MediaKeyErrorStatus selectKeyId(uint8_t keyLength, const uint8_t keyId[]) override;
+
+    uint32_t hasKeyId(const uint8_t keyId[], const uint8_t keyIdSize) override;
+
+    MediaKeyErrorStatus setDrmHeader(const uint8_t drmHeader[], uint32_t drmHeaderSize) override;
+
+    MediaKeyErrorStatus getLastDrmError(uint32_t &errorCode) override;
+
     void handleProcessChallenge(struct OpenCDMSession *session, const char url[], const uint8_t challenge[],
                                 const uint16_t challengeLength);
 

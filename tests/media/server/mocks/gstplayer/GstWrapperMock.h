@@ -81,6 +81,7 @@ public:
     MOCK_METHOD(GstFlowReturn, gstAppSrcEndOfStream, (GstAppSrc *), (override));
     MOCK_METHOD(gboolean, gstElementQueryPosition, (GstElement *, GstFormat, gint64 *), (override));
     MOCK_METHOD(GstFlowReturn, gstAppSrcPushBuffer, (GstAppSrc *, GstBuffer *), (override));
+    MOCK_METHOD(GstBuffer *, gstBufferNew, (), (override));
     MOCK_METHOD(GstBuffer *, gstBufferNewAllocate, (GstAllocator *, gsize, GstAllocationParams *), (override));
     MOCK_METHOD(gsize, gstBufferFill, (GstBuffer *, gsize, gconstpointer, gsize), (override));
     MOCK_METHOD(void, gstBufferUnref, (GstBuffer *), (override));

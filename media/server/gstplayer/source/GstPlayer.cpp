@@ -347,8 +347,17 @@ GstBuffer *GstPlayer::createDecryptedBuffer(const IMediaPipeline::MediaSegment &
 
     if (mediaSegment.isEncrypted())
     {
-        GstBuffer *keyId = m_gstWrapper->gstBufferNewAllocate(nullptr, mediaSegment.getKeyId().size(), nullptr);
-        m_gstWrapper->gstBufferFill(keyId, 0, mediaSegment.getKeyId().data(), mediaSegment.getKeyId().size());
+        GstBuffer *keyId = nullptr;
+        if (m_decryptionService.isNetflixKeySystem(mediaSegment.getMediaKeySessionId()))
+        {
+            keyId = m_gstWrapper->gstBufferNew();
+            m_decryptionService.selectKeyId(mediaSegment.getMediaKeySessionId(), mediaSegment.getKeyId());
+        }
+        else
+        {
+            keyId = m_gstWrapper->gstBufferNewAllocate(nullptr, mediaSegment.getKeyId().size(), nullptr);
+            m_gstWrapper->gstBufferFill(keyId, 0, mediaSegment.getKeyId().data(), mediaSegment.getKeyId().size());
+        }
         GstBuffer *initVector = m_gstWrapper->gstBufferNewAllocate(nullptr, mediaSegment.getInitVector().size(), nullptr);
         m_gstWrapper->gstBufferFill(initVector, 0, mediaSegment.getInitVector().data(),
                                     mediaSegment.getInitVector().size());

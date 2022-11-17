@@ -266,6 +266,53 @@ MediaKeyErrorStatus MediaKeySession::getCdmKeySessionId(std::string &cdmKeySessi
     return status;
 }
 
+bool MediaKeySession::containsKey(const std::vector<uint8_t> &keyId)
+{
+    uint32_t result = m_ocdmSession->hasKeyId(keyId.data(), keyId.size());
+
+    return static_cast<bool>(result);
+}
+
+MediaKeyErrorStatus MediaKeySession::setDrmHeader(const std::vector<uint8_t> &requestData)
+{
+    MediaKeyErrorStatus status = m_ocdmSession->setDrmHeader(requestData.data(), requestData.size());
+    if (MediaKeyErrorStatus::OK != status)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to set drm header");
+    }
+    return status;
+}
+
+MediaKeyErrorStatus MediaKeySession::getLastDrmError(uint32_t &errorCode)
+{
+    MediaKeyErrorStatus status = m_ocdmSession->getLastDrmError(errorCode);
+    if (MediaKeyErrorStatus::OK != status)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get last drm error");
+    }
+    return status;
+}
+
+MediaKeyErrorStatus MediaKeySession::selectKeyId(const std::vector<uint8_t> &keyId)
+{
+    if (m_selectedKeyId == keyId)
+    {
+        return MediaKeyErrorStatus::OK;
+    }
+    MediaKeyErrorStatus status = m_ocdmSession->selectKeyId(keyId.size(), keyId.data());
+    if (MediaKeyErrorStatus::OK == status)
+    {
+        RIALTO_SERVER_LOG_INFO("New keyId selected successfully");
+        m_selectedKeyId = keyId;
+    }
+    return status;
+}
+
+bool MediaKeySession::isNetflixKeySystem() const
+{
+    return (kNetflixKeySystem == m_kKeySystem);
+}
+
 void MediaKeySession::onProcessChallenge(const char url[], const uint8_t challenge[], const uint16_t challengeLength)
 {
     std::string urlStr = url;

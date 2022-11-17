@@ -202,6 +202,8 @@ public:
 
     void gstCapsUnref(GstCaps *caps) override { gst_caps_unref(caps); }
 
+    GstBuffer *gstBufferNew() override { return gst_buffer_new(); }
+
     GstBuffer *gstBufferNewAllocate(GstAllocator *allocator, gsize size, GstAllocationParams *params) override
     {
         return gst_buffer_new_allocate(allocator, size, params);

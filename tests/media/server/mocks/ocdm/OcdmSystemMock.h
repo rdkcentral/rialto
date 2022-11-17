@@ -31,6 +31,13 @@ class OcdmSystemMock : public IOcdmSystem
 {
 public:
     MOCK_METHOD(MediaKeyErrorStatus, getVersion, (std::string & version), (override));
+    MOCK_METHOD(MediaKeyErrorStatus, getLdlSessionsLimit, (uint32_t * ldlLimit), (override));
+    MOCK_METHOD(MediaKeyErrorStatus, deleteKeyStore, (), (override));
+    MOCK_METHOD(MediaKeyErrorStatus, deleteSecureStore, (), (override));
+    MOCK_METHOD(MediaKeyErrorStatus, getKeyStoreHash, (uint8_t keyStoreHash[], uint32_t keyStoreHashLength), (override));
+    MOCK_METHOD(MediaKeyErrorStatus, getSecureStoreHash, (uint8_t secureStoreHash[], uint32_t secureStoreHashLength),
+                (override));
+    MOCK_METHOD(MediaKeyErrorStatus, getDrmTime, (uint64_t * time), (override));
     MOCK_METHOD(std::unique_ptr<IOcdmSession>, createSession, (IOcdmSessionClient * client), (override, const));
 };
 } // namespace firebolt::rialto::server

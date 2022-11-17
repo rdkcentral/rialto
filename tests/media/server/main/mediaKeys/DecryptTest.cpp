@@ -31,8 +31,8 @@ protected:
 
     RialtoServerMediaKeysDecryptTest()
     {
-        createMediaKeys(kNetflixKeySystem);
-        createKeySession(kNetflixKeySystem);
+        createMediaKeys(kWidevineKeySystem);
+        createKeySession(kWidevineKeySystem);
     }
     ~RialtoServerMediaKeysDecryptTest() { destroyMediaKeys(); }
 };

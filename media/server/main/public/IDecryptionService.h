@@ -34,6 +34,8 @@ public:
     virtual MediaKeyErrorStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstBuffer *subSample,
                                         const uint32_t subSampleCount, GstBuffer *IV, GstBuffer *keyId,
                                         uint32_t initWithLast15) = 0;
+    virtual bool isNetflixKeySystem(int32_t keySessionId) const = 0;
+    virtual MediaKeyErrorStatus selectKeyId(int32_t keySessionId, const std::vector<uint8_t> &keyId) = 0;
 };
 } // namespace firebolt::rialto::server
 

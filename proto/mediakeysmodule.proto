@@ -443,7 +443,7 @@ message GetLdlSessionsLimitRequest {
 }
 message GetLdlSessionsLimitResponse {
   required ProtoMediaKeyErrorStatus error_status = 1;
-  repeated uint32 ldl_limit = 2;
+  required uint32 ldl_limit = 2;
 }
 
 /**
@@ -451,15 +451,17 @@ message GetLdlSessionsLimitResponse {
  * @brief Get the last cdm specific DRM error code.
  *
  * @param[in] media_keys_handle The handle of the media keys.
+ * @param[in] key_session_id    The key session id for the session.
  *
  * @retval an error status & the error code.
  */
 message GetLastDrmErrorRequest {
   required int32 media_keys_handle = 1;
+  required int32 key_session_id = 2;
 }
 message GetLastDrmErrorResponse {
   required ProtoMediaKeyErrorStatus error_status = 1;
-  repeated uint32 error_code = 2;
+  required uint32 error_code = 2;
 }
 
 /**
@@ -475,7 +477,7 @@ message GetDrmTimeRequest {
 }
 message GetDrmTimeResponse {
   required ProtoMediaKeyErrorStatus error_status = 1;
-  repeated uint64 drm_time = 2;
+  required uint64 drm_time = 2;
 }
 
 /**
@@ -594,14 +596,14 @@ service MediaKeysModule {
      * @brief Gets a hash of the DRM store for the object's key system.
      * @see GetDrmStoreHashRequest
      */
-    rpc getDrmStoreHashStore(GetDrmStoreHashRequest) returns (GetDrmStoreHashResponse) {
+    rpc getDrmStoreHash(GetDrmStoreHashRequest) returns (GetDrmStoreHashResponse) {
     }
 
     /**
      * @brief Gets a hash of the Key store for the object's key system.
      * @see GetKeyStoreHashRequest
      */
-    rpc getKeyStoreHashStore(GetKeyStoreHashRequest) returns (GetKeyStoreHashResponse) {
+    rpc getKeyStoreHash(GetKeyStoreHashRequest) returns (GetKeyStoreHashResponse) {
     }
 
     /**
@@ -615,7 +617,7 @@ service MediaKeysModule {
      * @brief Get the last cdm specific DRM error code.
      * @see GetLastDrmErrorRequest
      */
-    rpc getLastDrmErrorLimit(GetLastDrmErrorRequest) returns (GetLastDrmErrorResponse) {
+    rpc getLastDrmError(GetLastDrmErrorRequest) returns (GetLastDrmErrorResponse) {
     }
 
     /**

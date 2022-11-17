@@ -88,22 +88,22 @@ public:
     void deleteKeyStore(::google::protobuf::RpcController *controller,
                         const ::firebolt::rialto::DeleteKeyStoreRequest *request,
                         ::firebolt::rialto::DeleteKeyStoreResponse *response, ::google::protobuf::Closure *done) override;
-    void getDrmStoreHashStore(::google::protobuf::RpcController *controller,
-                              const ::firebolt::rialto::GetDrmStoreHashRequest *request,
-                              ::firebolt::rialto::GetDrmStoreHashResponse *response,
-                              ::google::protobuf::Closure *done) override;
-    void getKeyStoreHashStore(::google::protobuf::RpcController *controller,
-                              const ::firebolt::rialto::GetKeyStoreHashRequest *request,
-                              ::firebolt::rialto::GetKeyStoreHashResponse *response,
-                              ::google::protobuf::Closure *done) override;
+    void getDrmStoreHash(::google::protobuf::RpcController *controller,
+                         const ::firebolt::rialto::GetDrmStoreHashRequest *request,
+                         ::firebolt::rialto::GetDrmStoreHashResponse *response,
+                         ::google::protobuf::Closure *done) override;
+    void getKeyStoreHash(::google::protobuf::RpcController *controller,
+                         const ::firebolt::rialto::GetKeyStoreHashRequest *request,
+                         ::firebolt::rialto::GetKeyStoreHashResponse *response,
+                         ::google::protobuf::Closure *done) override;
     void getLdlSessionsLimit(::google::protobuf::RpcController *controller,
                              const ::firebolt::rialto::GetLdlSessionsLimitRequest *request,
                              ::firebolt::rialto::GetLdlSessionsLimitResponse *response,
                              ::google::protobuf::Closure *done) override;
-    void getLastDrmErrorLimit(::google::protobuf::RpcController *controller,
-                              const ::firebolt::rialto::GetLastDrmErrorRequest *request,
-                              ::firebolt::rialto::GetLastDrmErrorResponse *response,
-                              ::google::protobuf::Closure *done) override;
+    void getLastDrmError(::google::protobuf::RpcController *controller,
+                         const ::firebolt::rialto::GetLastDrmErrorRequest *request,
+                         ::firebolt::rialto::GetLastDrmErrorResponse *response,
+                         ::google::protobuf::Closure *done) override;
     void getDrmTime(::google::protobuf::RpcController *controller, const ::firebolt::rialto::GetDrmTimeRequest *request,
                     ::firebolt::rialto::GetDrmTimeResponse *response, ::google::protobuf::Closure *done) override;
     void getCdmKeySessionId(::google::protobuf::RpcController *controller,
