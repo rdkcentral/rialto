@@ -48,7 +48,7 @@ std::string getSessionServerPath()
     const char *customPath = getenv("RIALTO_SESSION_SERVER_PATH");
     if (customPath)
     {
-        RIALTO_SERVER_MANAGER_LOG_WARN("Using custom SessionServer path: %s", customPath);
+        RIALTO_SERVER_MANAGER_LOG_INFO("Using custom SessionServer path: %s", customPath);
         return std::string(customPath);
     }
     return "/usr/bin/RialtoServer";
@@ -56,14 +56,14 @@ std::string getSessionServerPath()
 
 std::chrono::milliseconds getStartupTimeout()
 {
-    const char *customTimeout = getenv("RIALTO_SESSION_SERVER_TIMEOUT_MS");
+    const char *customTimeout = getenv("RIALTO_SESSION_SERVER_STARTUP_TIMEOUT_MS");
     std::chrono::milliseconds timeout{0};
     if (customTimeout)
     {
         try
         {
             timeout = std::chrono::milliseconds(std::stoull(customTimeout));
-            RIALTO_SERVER_MANAGER_LOG_WARN("Using custom SessionServer startup timeout: %sms", customTimeout);
+            RIALTO_SERVER_MANAGER_LOG_INFO("Using custom SessionServer startup timeout: %sms", customTimeout);
         }
         catch (const std::exception &e)
         {
@@ -197,6 +197,10 @@ void SessionServerApp::setupStartupTimer()
                                          .onSessionServerStateChanged(m_kAppId, service::SessionServerState::ERROR);
                                      kill();
                                  });
+    }
+    else
+    {
+        RIALTO_SERVER_MANAGER_LOG_INFO("Startup timer disabled");
     }
 }
 
