@@ -181,6 +181,22 @@ public:
      * @brief Gets challenge data for session.
      */
     virtual void getChallengeData() = 0;
+
+    /**
+     * @brief Selects the specified keyId for the key session. Netflix specific API.
+     *
+     * @param[in] keyId        : The key id to select.
+     *
+     * @retval an error status.
+     */
+    virtual MediaKeyErrorStatus selectKeyId(const std::vector<uint8_t> &keyId) = 0;
+
+    /**
+     * @brief Checks, if key system of media key session is Netflix.
+     *
+     * @retval true if key system is Netflix
+     */
+    virtual bool isNetflixKeySystem() const = 0;
 };
 } // namespace firebolt::rialto::server
 

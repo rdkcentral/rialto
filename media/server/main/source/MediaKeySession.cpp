@@ -326,6 +326,26 @@ void MediaKeySession::getChallengeData()
     client->onLicenseRequest(m_keySessionId, challenge, "dummy_text");
 }
 
+MediaKeyErrorStatus MediaKeySession::selectKeyId(const std::vector<uint8_t> &keyId)
+{
+    if (m_selectedKeyId == keyId)
+    {
+        return MediaKeyErrorStatus::OK;
+    }
+    MediaKeyErrorStatus status = m_ocdmSession->selectKeyId(keyId.size(), keyId.data());
+    if (MediaKeyErrorStatus::OK == status)
+    {
+        RIALTO_SERVER_LOG_INFO("New keyId selected successfully");
+        m_selectedKeyId = keyId;
+    }
+    return status;
+}
+
+bool MediaKeySession::isNetflixKeySystem() const
+{
+    return (kNetflixKeySystem == m_keySystem);
+}
+
 void MediaKeySession::onProcessChallenge(const char url[], const uint8_t challenge[], const uint16_t challengeLength)
 {
     std::string urlStr = url;

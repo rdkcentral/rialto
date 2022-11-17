@@ -212,6 +212,13 @@ void CdmServiceTests::mediaKeysWillDecryptWithStatus(firebolt::rialto::MediaKeyE
     EXPECT_CALL(m_mediaKeysMock, decrypt(keySessionId, _, _, subSampleCount, _, _, initWithLast15)).WillOnce(Return(status));
 }
 
+void CdmServiceTests::mediaKeysWillSelectKeyIdWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
+{
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(m_mediaKeysMock, hasSession(keySessionId)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaKeysMock, selectKeyId(keySessionId, keyId)).WillOnce(Return(status));
+}
+
 void CdmServiceTests::mediaKeysWillNotFindMediaKeySession()
 {
     EXPECT_CALL(m_mediaKeysMock, hasSession(keySessionId)).WillOnce(Return(false));
@@ -221,6 +228,13 @@ void CdmServiceTests::mediaKeysWillGetChallengeData()
 {
     mainThreadWillEnqueueTask();
     EXPECT_CALL(m_mediaKeysMock, getChallengeData(keySessionId));
+}
+
+void CdmServiceTests::mediaKeysWillCheckIfKeySystemIsNetflix(bool result)
+{
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(m_mediaKeysMock, hasSession(keySessionId)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaKeysMock, isNetflixKeySystem(keySessionId)).WillOnce(Return(result));
 }
 
 void CdmServiceTests::createMediaKeysShouldSucceed()
@@ -299,6 +313,11 @@ void CdmServiceTests::decryptShouldReturnStatus(firebolt::rialto::MediaKeyErrorS
               m_sut.decrypt(keySessionId, &encryptedData, &subSample, subSampleCount, &IV, &keyId, initWithLast15));
 }
 
+void CdmServiceTests::selectKeyIdShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status)
+{
+    EXPECT_EQ(status, m_sut.selectKeyId(keySessionId, keyId));
+}
+
 void CdmServiceTests::containsKeyShouldReturn(bool result)
 {
     EXPECT_EQ(result, m_sut.containsKey(mediaKeysHandle, keySessionId, keyId));
@@ -347,6 +366,11 @@ void CdmServiceTests::getDrmTimeShouldReturnStatus(firebolt::rialto::MediaKeyErr
 {
     uint64_t drmTime;
     EXPECT_EQ(status, m_sut.getDrmTime(mediaKeysHandle, drmTime));
+}
+
+void CdmServiceTests::isNetflixKeySystemShouldReturn(bool result)
+{
+    EXPECT_EQ(result, m_sut.isNetflixKeySystem(keySessionId));
 }
 
 void CdmServiceTests::getSupportedKeySystemsShouldSucceed()

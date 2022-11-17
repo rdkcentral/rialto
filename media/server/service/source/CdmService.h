@@ -73,6 +73,8 @@ public:
     MediaKeyErrorStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstBuffer *subSample,
                                 const uint32_t subSampleCount, GstBuffer *IV, GstBuffer *keyId,
                                 uint32_t initWithLast15) override;
+    bool isNetflixKeySystem(int32_t keySessionId) const override;
+    MediaKeyErrorStatus selectKeyId(int32_t keySessionId, const std::vector<uint8_t> &keyId) override;
 
 private:
     std::shared_ptr<IMediaKeysServerInternalFactory> m_mediaKeysFactory;

@@ -503,4 +503,45 @@ MediaKeyErrorStatus CdmService::decrypt(int32_t keySessionId, GstBuffer *encrypt
     }
     return mediaKeysIter->second->decrypt(keySessionId, encrypted, subSample, subSampleCount, IV, keyId, initWithLast15);
 }
+
+bool CdmService::isNetflixKeySystem(int32_t keySessionId) const
+{
+    std::promise<bool> promise;
+    std::future<bool> future = promise.get_future();
+    auto task = [&]()
+    {
+        RIALTO_SERVER_LOG_DEBUG("CdmService requested to check if key system is Netflix, key session id: %d",
+                                keySessionId);
+        auto mediaKeysIter = std::find_if(m_mediaKeys.begin(), m_mediaKeys.end(),
+                                          [&](const auto &iter) { return iter.second->hasSession(keySessionId); });
+        if (mediaKeysIter == m_mediaKeys.end())
+        {
+            RIALTO_SERVER_LOG_ERROR("Media keys handle for mksId: %d does not exists", keySessionId);
+            return promise.set_value(false);
+        }
+        return promise.set_value(mediaKeysIter->second->isNetflixKeySystem(keySessionId));
+    };
+    m_mainThread.enqueueTask(task);
+    return future.get();
+}
+
+MediaKeyErrorStatus CdmService::selectKeyId(int32_t keySessionId, const std::vector<uint8_t> &keyId)
+{
+    std::promise<MediaKeyErrorStatus> promise;
+    std::future<MediaKeyErrorStatus> future = promise.get_future();
+    auto task = [&]()
+    {
+        RIALTO_SERVER_LOG_DEBUG("CdmService requested to select key id, key session id: %d", keySessionId);
+        auto mediaKeysIter = std::find_if(m_mediaKeys.begin(), m_mediaKeys.end(),
+                                          [&](const auto &iter) { return iter.second->hasSession(keySessionId); });
+        if (mediaKeysIter == m_mediaKeys.end())
+        {
+            RIALTO_SERVER_LOG_ERROR("Media keys handle for mksId: %d does not exists", keySessionId);
+            return promise.set_value(MediaKeyErrorStatus::FAIL);
+        }
+        return promise.set_value(mediaKeysIter->second->selectKeyId(keySessionId, keyId));
+    };
+    m_mainThread.enqueueTask(task);
+    return future.get();
+}
 } // namespace firebolt::rialto::server::service

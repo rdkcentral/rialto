@@ -116,6 +116,8 @@ public:
 
     void getChallengeData(int32_t keySessionId) override;
 
+    bool isNetflixKeySystem(int32_t keySessionId) const override;
+
 private:
     /**
      * @brief The mainThread object.

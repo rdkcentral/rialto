@@ -63,6 +63,7 @@ public:
                 (override));
     MOCK_METHOD(bool, hasSession, (int32_t keySessionId), (const, override));
     MOCK_METHOD(void, getChallengeData, (int32_t keySessionId), (override));
+    MOCK_METHOD(bool, isNetflixKeySystem, (int32_t keySessionId), (const, override));
 };
 } // namespace firebolt::rialto::server
 

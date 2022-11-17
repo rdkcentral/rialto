@@ -307,6 +307,50 @@ TEST_F(CdmServiceTests, shouldFailToDecryptWhenMediaKeysIsNotFoundForSession)
     destroyMediaKeysShouldSucceed();
 }
 
+TEST_F(CdmServiceTests, shouldSelectKeyId)
+{
+    mediaKeysCapabilitiesFactoryWillCreateMediaKeysCapabilities();
+    triggerSwitchToActiveSuccess();
+    mediaKeysFactoryWillCreateMediaKeys();
+    createMediaKeysShouldSucceed();
+    mediaKeysWillSelectKeyIdWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    selectKeyIdShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    mainThreadWillEnqueueTask();
+    destroyMediaKeysShouldSucceed();
+}
+
+TEST_F(CdmServiceTests, shouldFailToSelectKeyIdWhenNoMediaKeys)
+{
+    mediaKeysCapabilitiesFactoryWillCreateMediaKeysCapabilities();
+    triggerSwitchToActiveSuccess();
+    mainThreadWillEnqueueTask();
+    selectKeyIdShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::FAIL);
+}
+
+TEST_F(CdmServiceTests, shouldFailToSelectKeyIdWhenMediaKeysFails)
+{
+    mediaKeysCapabilitiesFactoryWillCreateMediaKeysCapabilities();
+    triggerSwitchToActiveSuccess();
+    mediaKeysFactoryWillCreateMediaKeys();
+    createMediaKeysShouldSucceed();
+    mediaKeysWillSelectKeyIdWithStatus(firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE);
+    selectKeyIdShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE);
+    mainThreadWillEnqueueTask();
+    destroyMediaKeysShouldSucceed();
+}
+
+TEST_F(CdmServiceTests, shouldFailToSelectKeyIdWhenMediaKeysIsNotFoundForSession)
+{
+    mediaKeysCapabilitiesFactoryWillCreateMediaKeysCapabilities();
+    triggerSwitchToActiveSuccess();
+    mediaKeysFactoryWillCreateMediaKeys();
+    createMediaKeysShouldSucceed();
+    mediaKeysWillNotFindMediaKeySession();
+    selectKeyIdShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::FAIL);
+    mainThreadWillEnqueueTask();
+    destroyMediaKeysShouldSucceed();
+}
+
 TEST_F(CdmServiceTests, shouldCheckIfKeyIsPresentAndReturnTrue)
 {
     mediaKeysCapabilitiesFactoryWillCreateMediaKeysCapabilities();
@@ -661,4 +705,48 @@ TEST_F(CdmServiceTests, shouldGetSupportedKeySystemVersionInActiveState)
     mediaKeysCapabilitiesFactoryWillCreateMediaKeysCapabilities();
     getSupportedKeySystemVersionWillSucceed();
     getSupportedKeySystemVersionShouldSucceed();
+}
+
+TEST_F(CdmServiceTests, shouldCheckThatKeySystemIsNetflix)
+{
+    mediaKeysCapabilitiesFactoryWillCreateMediaKeysCapabilities();
+    triggerSwitchToActiveSuccess();
+    mediaKeysFactoryWillCreateMediaKeys();
+    createMediaKeysShouldSucceed();
+    mediaKeysWillCheckIfKeySystemIsNetflix(true);
+    isNetflixKeySystemShouldReturn(true);
+    mainThreadWillEnqueueTask();
+    destroyMediaKeysShouldSucceed();
+}
+
+TEST_F(CdmServiceTests, shouldReturnFalseWhenCheckingNetflixKeySystemWhenNoMediaKeys)
+{
+    mediaKeysCapabilitiesFactoryWillCreateMediaKeysCapabilities();
+    triggerSwitchToActiveSuccess();
+    mainThreadWillEnqueueTask();
+    isNetflixKeySystemShouldReturn(false);
+}
+
+TEST_F(CdmServiceTests, shouldReturnFalseWhenCheckingNetflixKeySystemWhenMediaKeysFails)
+{
+    mediaKeysCapabilitiesFactoryWillCreateMediaKeysCapabilities();
+    triggerSwitchToActiveSuccess();
+    mediaKeysFactoryWillCreateMediaKeys();
+    createMediaKeysShouldSucceed();
+    mediaKeysWillCheckIfKeySystemIsNetflix(false);
+    isNetflixKeySystemShouldReturn(false);
+    mainThreadWillEnqueueTask();
+    destroyMediaKeysShouldSucceed();
+}
+
+TEST_F(CdmServiceTests, shouldReturnFalseWhenCheckingNetflixKeySystemWhenMediaKeysIsNotFoundForSession)
+{
+    mediaKeysCapabilitiesFactoryWillCreateMediaKeysCapabilities();
+    triggerSwitchToActiveSuccess();
+    mediaKeysFactoryWillCreateMediaKeys();
+    createMediaKeysShouldSucceed();
+    mediaKeysWillNotFindMediaKeySession();
+    isNetflixKeySystemShouldReturn(false);
+    mainThreadWillEnqueueTask();
+    destroyMediaKeysShouldSucceed();
 }

@@ -134,9 +134,23 @@ MediaKeysServerInternal::~MediaKeysServerInternal()
 
 MediaKeyErrorStatus MediaKeysServerInternal::selectKeyId(int32_t keySessionId, const std::vector<uint8_t> &keyId)
 {
-    RIALTO_SERVER_LOG_ERROR("Not Implemented");
+    RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    return MediaKeyErrorStatus::FAIL;
+    auto sessionIter = m_mediaKeySessions.find(keySessionId);
+    if (sessionIter == m_mediaKeySessions.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to find the session");
+        return MediaKeyErrorStatus::BAD_SESSION_ID;
+    }
+
+    MediaKeyErrorStatus status = sessionIter->second->selectKeyId(keyId);
+    if (MediaKeyErrorStatus::OK != status)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to select key id");
+        return status;
+    }
+
+    return status;
 }
 
 bool MediaKeysServerInternal::containsKey(int32_t keySessionId, const std::vector<uint8_t> &keyId)
@@ -496,5 +510,17 @@ void MediaKeysServerInternal::getChallengeData(int32_t keySessionId)
         return;
     }
     sessionIter->second->getChallengeData();
+}
+
+bool MediaKeysServerInternal::isNetflixKeySystem(int32_t keySessionId) const
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    auto sessionIter = m_mediaKeySessions.find(keySessionId);
+    if (sessionIter == m_mediaKeySessions.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to find the session");
+        return false;
+    }
+    return sessionIter->second->isNetflixKeySystem();
 }
 }; // namespace firebolt::rialto::server
