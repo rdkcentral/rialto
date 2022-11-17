@@ -28,12 +28,34 @@ class RialtoServerCreateMediaKeysTest : public MediaKeysTestBase
  */
 TEST_F(RialtoServerCreateMediaKeysTest, Create)
 {
+    EXPECT_CALL(*m_mainThreadFactoryMock, getMainThread()).WillOnce(Return(m_mainThreadMock));
+    EXPECT_CALL(*m_mainThreadMock, registerClient()).WillOnce(Return(m_kMainThreadClientId));
     EXPECT_CALL(*m_ocdmSystemFactoryMock, createOcdmSystem(kWidevineKeySystem))
         .WillOnce(Return(ByMove(std::move(m_ocdmSystem))));
+    mainThreadWillEnqueueTaskAndWait();
 
-    EXPECT_NO_THROW(m_mediaKeys = std::make_unique<MediaKeysServerInternal>(kWidevineKeySystem, m_ocdmSystemFactoryMock,
+    EXPECT_NO_THROW(m_mediaKeys = std::make_unique<MediaKeysServerInternal>(kWidevineKeySystem, m_mainThreadFactoryMock,
+                                                                            m_ocdmSystemFactoryMock,
                                                                             m_mediaKeySessionFactoryMock));
     EXPECT_NE(m_mediaKeys, nullptr);
+
+    EXPECT_CALL(*m_mainThreadMock, unregisterClient(m_kMainThreadClientId));
+    // Objects are destroyed on the main thread
+    mainThreadWillEnqueueTaskAndWait();
+}
+
+/**
+ * Test that a MediaKeys object throws an exeption if failure occurs during construction.
+ * In this case, getMainThread fails, returning a nullptr.
+ */
+TEST_F(RialtoServerCreateMediaKeysTest, GetMainThreadFailure)
+{
+    EXPECT_CALL(*m_mainThreadFactoryMock, getMainThread()).WillOnce(Return(nullptr));
+
+    EXPECT_THROW(m_mediaKeys = std::make_unique<MediaKeysServerInternal>(kWidevineKeySystem, m_mainThreadFactoryMock,
+                                                                         m_ocdmSystemFactoryMock,
+                                                                         m_mediaKeySessionFactoryMock),
+                 std::runtime_error);
 }
 
 /**
@@ -42,9 +64,13 @@ TEST_F(RialtoServerCreateMediaKeysTest, Create)
  */
 TEST_F(RialtoServerCreateMediaKeysTest, CreateOcdmSystemFailure)
 {
+    EXPECT_CALL(*m_mainThreadFactoryMock, getMainThread()).WillOnce(Return(m_mainThreadMock));
+    EXPECT_CALL(*m_mainThreadMock, registerClient()).WillOnce(Return(m_kMainThreadClientId));
     EXPECT_CALL(*m_ocdmSystemFactoryMock, createOcdmSystem(kWidevineKeySystem)).WillOnce(Return(ByMove(std::move(nullptr))));
+    mainThreadWillEnqueueTaskAndWait();
 
-    EXPECT_THROW(m_mediaKeys = std::make_unique<MediaKeysServerInternal>(kWidevineKeySystem, m_ocdmSystemFactoryMock,
+    EXPECT_THROW(m_mediaKeys = std::make_unique<MediaKeysServerInternal>(kWidevineKeySystem, m_mainThreadFactoryMock,
+                                                                         m_ocdmSystemFactoryMock,
                                                                          m_mediaKeySessionFactoryMock),
                  std::runtime_error);
 }

@@ -21,6 +21,8 @@
 
 class RialtoServerMediaKeySessionCloseKeySessionTest : public MediaKeySessionTestBase
 {
+protected:
+    ~RialtoServerMediaKeySessionCloseKeySessionTest() { destroyKeySession(); }
 };
 
 /**

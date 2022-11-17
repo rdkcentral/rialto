@@ -17,33 +17,24 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_SERVICE_I_MAIN_THREAD_H_
-#define FIREBOLT_RIALTO_SERVER_SERVICE_I_MAIN_THREAD_H_
+#ifndef FIREBOLT_RIALTO_SERVER_MOCK_MAIN_THREAD_MOCK_H_
+#define FIREBOLT_RIALTO_SERVER_MOCK_MAIN_THREAD_MOCK_H_
 
 #include "IMainThread.h"
-#include <functional>
-#include <utility>
+#include <gmock/gmock.h>
+#include <memory>
+#include <string>
 
-namespace firebolt::rialto::server::service
+namespace firebolt::rialto::server::mock
 {
-/**
- * @brief The definition of the IMainThread interface.
- */
-class IMainThread
+class MainThreadMock : public IMainThread
 {
 public:
-    using Task = std::function<void()>;
-
-    IMainThread() = default;
-    virtual ~IMainThread() = default;
-
-    IMainThread(const IMainThread &) = delete;
-    IMainThread(IMainThread &&) = delete;
-    IMainThread &operator=(const IMainThread &) = delete;
-    IMainThread &operator=(IMainThread &&) = delete;
-
-    virtual void enqueueTask(Task task) = 0;
+    MOCK_METHOD(int32_t, registerClient, (), (override));
+    MOCK_METHOD(void, unregisterClient, (uint32_t clientId), (override));
+    MOCK_METHOD(void, enqueueTask, (uint32_t clientId, Task task), (override));
+    MOCK_METHOD(void, enqueueTaskAndWait, (uint32_t clientId, Task task), (override));
 };
-} // namespace firebolt::rialto::server::service
+} // namespace firebolt::rialto::server::mock
 
-#endif // FIREBOLT_RIALTO_SERVER_SERVICE_I_MAIN_THREAD_H_
+#endif // FIREBOLT_RIALTO_SERVER_MOCK_MAIN_THREAD_MOCK_H_

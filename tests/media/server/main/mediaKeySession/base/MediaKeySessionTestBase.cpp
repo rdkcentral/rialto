@@ -26,7 +26,9 @@
 MediaKeySessionTestBase::MediaKeySessionTestBase()
     : m_mediaKeysClientMock{std::make_shared<StrictMock<MediaKeysClientMock>>()},
       m_ocdmSystemMock{std::make_unique<StrictMock<OcdmSystemMock>>()},
-      m_ocdmSession{std::make_unique<StrictMock<OcdmSessionMock>>()}, m_ocdmSessionMock{m_ocdmSession.get()}
+      m_ocdmSession{std::make_unique<StrictMock<OcdmSessionMock>>()}, m_ocdmSessionMock{m_ocdmSession.get()},
+      m_mainThreadFactoryMock{std::make_shared<StrictMock<MainThreadFactoryMock>>()},
+      m_mainThreadMock{std::make_shared<StrictMock<MainThreadMock>>()}
 {
 }
 
@@ -34,12 +36,19 @@ MediaKeySessionTestBase::~MediaKeySessionTestBase() {}
 
 void MediaKeySessionTestBase::createKeySession(const std::string &keySystem)
 {
+    EXPECT_CALL(*m_mainThreadFactoryMock, getMainThread()).WillOnce(Return(m_mainThreadMock));
+    EXPECT_CALL(*m_mainThreadMock, registerClient()).WillOnce(Return(m_kMainThreadClientId));
     EXPECT_CALL(*m_ocdmSystemMock, createSession(_)).WillOnce(Return(ByMove(std::move(m_ocdmSession))));
 
-    EXPECT_NO_THROW(m_mediaKeySession = std::make_unique<MediaKeySession>(keySystem, m_keySessionId, *m_ocdmSystemMock,
+    EXPECT_NO_THROW(m_mediaKeySession = std::make_unique<MediaKeySession>(keySystem, m_kKeySessionId, *m_ocdmSystemMock,
                                                                           m_keySessionType, m_mediaKeysClientMock,
-                                                                          m_isLDL));
+                                                                          m_isLDL, m_mainThreadFactoryMock));
     EXPECT_NE(m_mediaKeySession, nullptr);
+}
+
+void MediaKeySessionTestBase::destroyKeySession()
+{
+    EXPECT_CALL(*m_mainThreadMock, unregisterClient(m_kMainThreadClientId));
 }
 
 void MediaKeySessionTestBase::expectCloseKeySession(const std::string &keySystem)
@@ -66,4 +75,11 @@ void MediaKeySessionTestBase::generateRequest()
         .WillOnce(Return(MediaKeyErrorStatus::OK));
 
     EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->generateRequest(m_initDataType, m_initData));
+}
+
+void MediaKeySessionTestBase::mainThreadWillEnqueueTask()
+{
+    EXPECT_CALL(*m_mainThreadMock, enqueueTask(m_kMainThreadClientId, _))
+        .WillOnce(Invoke([](uint32_t clientId, firebolt::rialto::server::IMainThread::Task task) { task(); }))
+        .RetiresOnSaturation();
 }

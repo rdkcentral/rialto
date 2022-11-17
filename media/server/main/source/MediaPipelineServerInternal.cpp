@@ -104,7 +104,8 @@ std::unique_ptr<server::IMediaPipelineServerInternal> MediaPipelineServerInterna
         mediaPipeline =
             std::make_unique<server::MediaPipelineServerInternal>(sharedClient, videoRequirements,
                                                                   server::IGstPlayerFactory::getFactory(), sessionId,
-                                                                  shmBuffer, std::make_unique<DataReaderFactory>(),
+                                                                  shmBuffer, server::IMainThreadFactory::createFactory(),
+                                                                  std::make_unique<DataReaderFactory>(),
                                                                   std::make_unique<ActiveRequests>(), decryptionService);
     }
     catch (const std::exception &e)
@@ -118,27 +119,71 @@ std::unique_ptr<server::IMediaPipelineServerInternal> MediaPipelineServerInterna
 MediaPipelineServerInternal::MediaPipelineServerInternal(
     std::shared_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements,
     const std::shared_ptr<IGstPlayerFactory> &gstPlayerFactory, int sessionId,
-    const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, std::unique_ptr<IDataReaderFactory> &&dataReaderFactory,
-    std::unique_ptr<IActiveRequests> &&activeRequests, IDecryptionService &decryptionService)
+    const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
+    std::unique_ptr<IDataReaderFactory> &&dataReaderFactory, std::unique_ptr<IActiveRequests> &&activeRequests,
+    IDecryptionService &decryptionService)
     : m_mediaPipelineClient(client), m_kGstPlayerFactory(gstPlayerFactory), m_kVideoRequirements(videoRequirements),
       m_sessionId{sessionId}, m_shmBuffer{shmBuffer}, m_dataReaderFactory{std::move(dataReaderFactory)},
       m_activeRequests{std::move(activeRequests)}, m_decryptionService{decryptionService}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    if (!m_shmBuffer->mapPartition(m_sessionId))
+
+    m_mainThread = mainThreadFactory->getMainThread();
+    if (!m_mainThread)
     {
-        RIALTO_SERVER_LOG_ERROR("Unable to create a session with id: %d. Unable to map shm partition.", m_sessionId);
-        throw std::runtime_error("Unable to map partition");
+        throw std::runtime_error("Failed to get the main thread");
+    }
+    m_mainThreadClientId = m_mainThread->registerClient();
+
+    bool result = false;
+    auto task = [&]()
+    {
+        if (!m_shmBuffer->mapPartition(m_sessionId))
+        {
+            RIALTO_SERVER_LOG_ERROR("Unable to map shm partition");
+        }
+        else
+        {
+            result = true;
+        }
+    };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    if (!result)
+    {
+        throw std::runtime_error("MediaPipelineServerInternal construction failed");
     }
 }
 
 MediaPipelineServerInternal::~MediaPipelineServerInternal()
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    m_shmBuffer->unmapPartition(m_sessionId);
+
+    auto task = [&]()
+    {
+        if (!m_shmBuffer->unmapPartition(m_sessionId))
+        {
+            RIALTO_SERVER_LOG_ERROR("Unable to unmap shm partition");
+        }
+
+        m_shmBuffer.reset();
+        m_mainThread->unregisterClient(m_mainThreadClientId);
+    };
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
 }
 
 bool MediaPipelineServerInternal::load(MediaType type, const std::string &mimeType, const std::string &url)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = loadInternal(type, mimeType, url); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::loadInternal(MediaType type, const std::string &mimeType, const std::string &url)
 {
     /* If gstreamer player already created, destroy the old one first */
     if (m_gstPlayer)
@@ -159,6 +204,17 @@ bool MediaPipelineServerInternal::load(MediaType type, const std::string &mimeTy
 }
 
 bool MediaPipelineServerInternal::attachSource(MediaSource &source)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = attachSourceInternal(source); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::attachSourceInternal(MediaSource &source)
 {
     source.setId(-1);
 
@@ -188,66 +244,140 @@ bool MediaPipelineServerInternal::removeSource(int32_t id)
 
 bool MediaPipelineServerInternal::play()
 {
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = playInternal(); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::playInternal()
+{
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to play - Gstreamer player has not been loaded");
         return false;
     }
+
     m_gstPlayer->play();
     return true;
 }
 
 bool MediaPipelineServerInternal::pause()
 {
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = pauseInternal(); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::pauseInternal()
+{
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to pause - Gstreamer player has not been loaded");
         return false;
     }
+
     m_gstPlayer->pause();
     return true;
 }
 
 bool MediaPipelineServerInternal::stop()
 {
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = stopInternal(); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::stopInternal()
+{
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to stop - Gstreamer player has not been loaded");
         return false;
     }
+
     m_gstPlayer->stop();
     return true;
 }
 
 bool MediaPipelineServerInternal::setPlaybackRate(double rate)
 {
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = setPlaybackRateInternal(rate); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::setPlaybackRateInternal(double rate)
+{
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to set playback rate - Gstreamer player has not been loaded");
         return false;
     }
+
     if (0.0 == rate)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to set playback rate to 0.0 - pause method should be used instead.");
         return false;
     }
+
     m_gstPlayer->setPlaybackRate(rate);
     return true;
 }
 
 bool MediaPipelineServerInternal::setPosition(int64_t position)
 {
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = setPositionInternal(position); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::setPositionInternal(int64_t position)
+{
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to set position - Gstreamer player has not been loaded");
         return false;
     }
+
     m_gstPlayer->setPosition(position);
     return true;
 }
 
 bool MediaPipelineServerInternal::getPosition(int64_t &position)
 {
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = getPositionInternal(position); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::getPositionInternal(int64_t &position)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to get position - Gstreamer player has not been loaded");
@@ -258,16 +388,39 @@ bool MediaPipelineServerInternal::getPosition(int64_t &position)
 
 bool MediaPipelineServerInternal::setVideoWindow(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
 {
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = setVideoWindowInternal(x, y, width, height); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::setVideoWindowInternal(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
+{
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to set video window - Gstreamer player has not been loaded");
         return false;
     }
+
     m_gstPlayer->setVideoGeometry(x, y, width, height);
     return true;
 }
 
 bool MediaPipelineServerInternal::haveData(MediaSourceStatus status, uint32_t needDataRequestId)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = haveDataInternal(status, needDataRequestId); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uint32_t needDataRequestId)
 {
     if (!m_gstPlayer)
     {
@@ -287,7 +440,7 @@ bool MediaPipelineServerInternal::haveData(MediaSourceStatus status, uint32_t ne
         RIALTO_SERVER_LOG_WARN("Data request for needDataRequestId: %u received with wrong status: %s",
                                needDataRequestId, toString(status));
         m_activeRequests->erase(needDataRequestId);
-        return notifyNeedMediaData(mediaSourceType); // Resend NeedMediaData
+        return notifyNeedMediaDataInternal(mediaSourceType); // Resend NeedMediaData
     }
 
     try
@@ -313,6 +466,18 @@ bool MediaPipelineServerInternal::haveData(MediaSourceStatus status, uint32_t ne
 
 bool MediaPipelineServerInternal::haveData(MediaSourceStatus status, uint32_t numFrames, uint32_t needDataRequestId)
 {
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = haveDataInternal(status, numFrames, needDataRequestId); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uint32_t numFrames,
+                                                   uint32_t needDataRequestId)
+{
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("HaveData failed - Gstreamer player has not been loaded");
@@ -328,7 +493,7 @@ bool MediaPipelineServerInternal::haveData(MediaSourceStatus status, uint32_t nu
     if (status != MediaSourceStatus::OK && status != MediaSourceStatus::EOS)
     {
         RIALTO_SERVER_LOG_WARN("Data request for needDataRequestId: %u received with wrong status", needDataRequestId);
-        return notifyNeedMediaData(mediaSourceType); // Resend NeedMediaData
+        return notifyNeedMediaDataInternal(mediaSourceType); // Resend NeedMediaData
     }
     uint8_t *data = m_shmBuffer->getBufferForSession(m_sessionId);
     if (!data)
@@ -373,6 +538,18 @@ bool MediaPipelineServerInternal::haveData(MediaSourceStatus status, uint32_t nu
 AddSegmentStatus MediaPipelineServerInternal::addSegment(uint32_t needDataRequestId,
                                                          const std::unique_ptr<MediaSegment> &mediaSegment)
 {
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    AddSegmentStatus status;
+    auto task = [&]() { status = addSegmentInternal(needDataRequestId, mediaSegment); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return status;
+}
+
+AddSegmentStatus MediaPipelineServerInternal::addSegmentInternal(uint32_t needDataRequestId,
+                                                                 const std::unique_ptr<MediaSegment> &mediaSegment)
+{
     AddSegmentStatus status = m_activeRequests->addSegment(needDataRequestId, mediaSegment);
     if (status != AddSegmentStatus::OK)
     {
@@ -391,15 +568,30 @@ void MediaPipelineServerInternal::notifyPlaybackState(PlaybackState state)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    if (m_mediaPipelineClient)
+    auto task = [&, state]()
     {
-        m_mediaPipelineClient->notifyPlaybackState(state);
-    }
+        if (m_mediaPipelineClient)
+        {
+            m_mediaPipelineClient->notifyPlaybackState(state);
+        }
+    };
+
+    m_mainThread->enqueueTask(m_mainThreadClientId, task);
 }
 
 bool MediaPipelineServerInternal::notifyNeedMediaData(MediaSourceType mediaSourceType)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = notifyNeedMediaDataInternal(mediaSourceType); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::notifyNeedMediaDataInternal(MediaSourceType mediaSourceType)
+{
     m_shmBuffer->clearBuffer(m_sessionId, mediaSourceType);
     NeedMediaData event{m_mediaPipelineClient, *m_activeRequests, *m_shmBuffer, m_sessionId, mediaSourceType};
     if (!event.send())
@@ -414,36 +606,55 @@ void MediaPipelineServerInternal::notifyPosition(std::int64_t position)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    if (m_mediaPipelineClient)
+    auto task = [&, position]()
     {
-        m_mediaPipelineClient->notifyPosition(position);
-    }
+        if (m_mediaPipelineClient)
+        {
+            m_mediaPipelineClient->notifyPosition(position);
+        }
+    };
+
+    m_mainThread->enqueueTask(m_mainThreadClientId, task);
 }
 
 void MediaPipelineServerInternal::notifyNetworkState(NetworkState state)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    if (m_mediaPipelineClient)
+    auto task = [&, state]()
     {
-        m_mediaPipelineClient->notifyNetworkState(state);
-    }
+        if (m_mediaPipelineClient)
+        {
+            m_mediaPipelineClient->notifyNetworkState(state);
+        }
+    };
+
+    m_mainThread->enqueueTask(m_mainThreadClientId, task);
 }
 
 void MediaPipelineServerInternal::clearActiveRequestsCache()
 {
-    m_activeRequests->clear();
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    auto task = [&]() { m_activeRequests->clear(); };
+
+    m_mainThread->enqueueTask(m_mainThreadClientId, task);
 }
 
 void MediaPipelineServerInternal::notifyQos(MediaSourceType mediaSourceType, const QosInfo &qosInfo)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    if (m_mediaPipelineClient)
+    auto task = [&, mediaSourceType, qosInfo]()
     {
-        auto sourceId = static_cast<std::uint64_t>(mediaSourceType);
-        m_mediaPipelineClient->notifyQos(sourceId, qosInfo);
-    }
+        if (m_mediaPipelineClient)
+        {
+            auto sourceId = static_cast<std::uint64_t>(mediaSourceType);
+            m_mediaPipelineClient->notifyQos(sourceId, qosInfo);
+        }
+    };
+
+    m_mainThread->enqueueTask(m_mainThreadClientId, task);
 }
 
 }; // namespace firebolt::rialto::server

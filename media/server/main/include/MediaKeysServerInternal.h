@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_MEDIA_KEYS_SERVER_INTERNAL_H_
 #define FIREBOLT_RIALTO_SERVER_MEDIA_KEYS_SERVER_INTERNAL_H_
 
+#include "IMainThread.h"
 #include "IMediaKeySession.h"
 #include "IMediaKeysServerInternal.h"
 #include "IOcdmSystem.h"
@@ -57,11 +58,13 @@ public:
      * @brief The constructor.
      *
      * @param[in] keySystem                 : The key system for which to create a Media Keys instance.
+     * @param[in] mainThreadFactory         : The main thread factory.
      * @param[in] ocdmSystemFactory         : The ocdm system factory.
      * @param[in] mediaKeySessionFactory    : The media key session factory.
      *
      */
-    MediaKeysServerInternal(const std::string &keySystem, std::shared_ptr<IOcdmSystemFactory> ocdmSystemFactory,
+    MediaKeysServerInternal(const std::string &keySystem, const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
+                            std::shared_ptr<IOcdmSystemFactory> ocdmSystemFactory,
                             std::shared_ptr<IMediaKeySessionFactory> mediaKeySessionFactory);
 
     /**
@@ -113,6 +116,11 @@ public:
 
 private:
     /**
+     * @brief The mainThread object.
+     */
+    std::shared_ptr<IMainThread> m_mainThread;
+
+    /**
      * @brief The factory for creating MediaKeySessions.
      */
     std::shared_ptr<IMediaKeySessionFactory> m_mediaKeySessionFactory;
@@ -131,6 +139,103 @@ private:
      * @brief KeySystem type of the MediaKeysServerInternal.
      */
     const std::string m_keySystem;
+
+    /**
+     * @brief This objects id registered on the main thread
+     */
+    uint32_t m_mainThreadClientId;
+
+    /**
+     * @brief Creates a session internally, only to be called on the main thread.
+     *
+     * @param[in]  sessionType : The session type.
+     * @param[in]  client      : Client object for callbacks
+     * @param[in]  isLDL       : Is this an LDL
+     * @param[out] keySessionId: The key session id
+     *
+     * @retval an error status.
+     */
+    MediaKeyErrorStatus createKeySessionInternal(KeySessionType sessionType, std::weak_ptr<IMediaKeysClient> client,
+                                                 bool isLDL, int32_t &keySessionId);
+
+    /**
+     * @brief Generate internally, only to be called on the main thread.
+     *
+     * @param[in]  keySessionId : The key session id for the session.
+     * @param[in]  initDataType : The init data type.
+     * @param[in]  initData     : The init data.
+     *
+     * @retval an error status.
+     */
+    MediaKeyErrorStatus generateRequestInternal(int32_t keySessionId, InitDataType initDataType,
+                                                const std::vector<uint8_t> &initData);
+
+    /**
+     * @brief Load internally, only to be called on the main thread.
+     *
+     * @param[in] keySessionId : The key session id for the session.
+     *
+     * @retval an error status.
+     */
+    MediaKeyErrorStatus loadSessionInternal(int32_t keySessionId);
+
+    /**
+     * @brief Update internally, only to be called on the main thread.
+     *
+     * @param[in] keySessionId : The key session id for the session.
+     * @param[in] responseData : The license response data.
+     *
+     * @retval an error status.
+     */
+    MediaKeyErrorStatus updateSessionInternal(int32_t keySessionId, const std::vector<uint8_t> &responseData);
+
+    /**
+     * @brief Close a key session internally, only to be called on the main thread.
+     *
+     * @param[in] keySessionId : The key session id.
+     *
+     * @retval an error status.
+     */
+    MediaKeyErrorStatus closeKeySessionInternal(int32_t keySessionId);
+
+    /**
+     * @brief Removes a key session internally, only to be called on the main thread.
+     *
+     * @param[in] keySessionId : The key session id.
+     *
+     * @retval an error status.
+     */
+    MediaKeyErrorStatus removeKeySessionInternal(int32_t keySessionId);
+
+    /**
+     * @brief Get the key session id internally, only to be called on the main thread.
+     *
+     * @param[in]   keySessionId    : The key session id for the session.
+     * @param[out]  cdmKeySessionId : The internal CDM key session ID
+     *
+     * @retval an error status.
+     */
+    MediaKeyErrorStatus getCdmKeySessionIdInternal(int32_t keySessionId, std::string &cdmKeySessionId);
+
+    /**
+     * @brief Decrypt internally, only to be called on the main thread.
+     *
+     * @param[in] keySessionId    : The session id for the session.
+     * @param[in]  encrypted      : Gstreamer buffer containing encrypted data and related meta data. If applicable,
+     *                              decrypted data will be stored here after this call returns.
+     * @param[in]  subSample      : Gstreamer buffer containing subsamples size which has been parsed from protection
+     *                              meta data.
+     * @param[in]  subSampleCount : count of subsamples
+     * @param[in]  IV             : Gstreamer buffer containing initial vector (IV) used during decryption.
+     * @param[in]  keyId          : Gstreamer buffer containing keyID to use for decryption
+     * @param[in]  initWithLast15 : The value deciding whether decryption context needs to be initialized with
+     *                              last 15 bytes. Currently this only applies to PlayReady DRM.
+     *
+     * @retval an error status.
+     */
+    MediaKeyErrorStatus decryptInternal(int32_t keySessionId, GstBuffer *encrypted, GstBuffer *subSample,
+                                        const uint32_t subSampleCount, GstBuffer *IV, GstBuffer *keyId,
+                                        uint32_t initWithLast15);
 };
 
 }; // namespace firebolt::rialto::server

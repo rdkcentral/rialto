@@ -22,7 +22,7 @@
 
 #include "ICdmService.h"
 #include "IDecryptionService.h"
-#include "IMainThread.h"
+#include <atomic>
 #include <condition_variable>
 #include <functional>
 #include <map>
@@ -35,7 +35,7 @@ namespace firebolt::rialto::server::service
 class CdmService : public ICdmService, public IDecryptionService
 {
 public:
-    CdmService(IMainThread &mainThread, std::shared_ptr<IMediaKeysServerInternalFactory> &&mediaKeysFactory,
+    CdmService(std::shared_ptr<IMediaKeysServerInternalFactory> &&mediaKeysFactory,
                std::shared_ptr<IMediaKeysCapabilitiesFactory> &&mediaKeysCapabilitiesFactory);
     virtual ~CdmService();
 
@@ -65,13 +65,14 @@ public:
                                 uint32_t initWithLast15) override;
 
 private:
-    IMainThread &m_mainThread;
     std::shared_ptr<IMediaKeysServerInternalFactory> m_mediaKeysFactory;
     std::shared_ptr<IMediaKeysCapabilitiesFactory> m_mediaKeysCapabilitiesFactory;
-    bool m_isActive;
+    std::atomic<bool> m_isActive;
     std::map<int, std::unique_ptr<IMediaKeysServerInternal>> m_mediaKeys;
     std::map<int, std::shared_ptr<IMediaKeysClient>> m_mediaKeysClients;
-    std::shared_ptr<IMediaKeysCapabilities> m_mediaKeysCapabilities;
+    std::mutex m_mediaKeysMutex;
+
+    MediaKeyErrorStatus removeKeySessionInternal(int mediaKeysHandle, int32_t keySessionId);
 };
 } // namespace firebolt::rialto::server::service
 

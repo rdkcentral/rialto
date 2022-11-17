@@ -22,7 +22,6 @@ set( CMAKE_INCLUDE_CURRENT_DIR ON )
 add_library (
         RialtoServerService STATIC
 
-        source/MainThread.cpp
         source/PlaybackService.cpp
         source/CdmService.cpp
         source/SessionServerManager.cpp

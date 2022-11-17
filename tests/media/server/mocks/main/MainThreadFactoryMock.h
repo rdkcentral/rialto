@@ -17,21 +17,21 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_SERVICE_MAIN_THREAD_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_SERVICE_MAIN_THREAD_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_MOCK_MAIN_THREAD_FACTORY_MOCK_H_
+#define FIREBOLT_RIALTO_SERVER_MOCK_MAIN_THREAD_FACTORY_MOCK_H_
 
 #include "IMainThread.h"
 #include <gmock/gmock.h>
 #include <memory>
 #include <string>
 
-namespace firebolt::rialto::server::service
+namespace firebolt::rialto::server::mock
 {
-class MainThreadMock : public IMainThread
+class MainThreadFactoryMock : public IMainThreadFactory
 {
 public:
-    MOCK_METHOD(void, enqueueTask, (Task task), (override));
+    MOCK_METHOD(std::shared_ptr<IMainThread>, getMainThread, (), (const, override));
 };
-} // namespace firebolt::rialto::server::service
+} // namespace firebolt::rialto::server::mock
 
-#endif // FIREBOLT_RIALTO_SERVER_SERVICE_MAIN_THREAD_MOCK_H_
+#endif // FIREBOLT_RIALTO_SERVER_MOCK_MAIN_THREAD_FACTORY_MOCK_H_

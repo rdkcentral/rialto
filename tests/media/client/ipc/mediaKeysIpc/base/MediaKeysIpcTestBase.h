@@ -80,7 +80,7 @@ protected:
     // Common variables
     int32_t m_mediaKeysHandle = 123;
     std::string m_keySystem = "keySystem";
-    int32_t m_keySessionId = 456;
+    int32_t m_kKeySessionId = 456;
     MediaKeyErrorStatus m_errorStatus = MediaKeyErrorStatus::BAD_SESSION_ID;
     std::vector<unsigned char> m_licenseRenewalMessage{'a', 'b', 'c'};
 

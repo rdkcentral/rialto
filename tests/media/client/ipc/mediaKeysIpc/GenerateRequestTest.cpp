@@ -81,12 +81,12 @@ TEST_F(RialtoClientMediaKeysIpcGenerateRequestTest, Success)
 
     EXPECT_CALL(*m_channelMock,
                 CallMethod(methodMatcher("generateRequest"), m_controllerMock.get(),
-                           generateRequestRequestMatcher(m_mediaKeysHandle, m_keySessionId, m_initDataType, m_initData),
+                           generateRequestRequestMatcher(m_mediaKeysHandle, m_kKeySessionId, m_initDataType, m_initData),
                            _, m_blockingClosureMock.get()))
         .WillOnce(
             WithArgs<3>(Invoke(this, &RialtoClientMediaKeysIpcGenerateRequestTest::setGenerateRequestResponseSuccess)));
 
-    EXPECT_EQ(m_mediaKeysIpc->generateRequest(m_keySessionId, m_initDataType, m_initData), MediaKeyErrorStatus::OK);
+    EXPECT_EQ(m_mediaKeysIpc->generateRequest(m_kKeySessionId, m_initDataType, m_initData), MediaKeyErrorStatus::OK);
 }
 
 /**
@@ -97,7 +97,7 @@ TEST_F(RialtoClientMediaKeysIpcGenerateRequestTest, ChannelDisconnected)
     expectIpcApiCallDisconnected();
     expectUnsubscribeEvents();
 
-    EXPECT_EQ(m_mediaKeysIpc->generateRequest(m_keySessionId, m_initDataType, m_initData), MediaKeyErrorStatus::FAIL);
+    EXPECT_EQ(m_mediaKeysIpc->generateRequest(m_kKeySessionId, m_initDataType, m_initData), MediaKeyErrorStatus::FAIL);
 
     // Reattach channel on destroySession
     EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
@@ -117,7 +117,7 @@ TEST_F(RialtoClientMediaKeysIpcGenerateRequestTest, ReconnectChannel)
         .WillOnce(
             WithArgs<3>(Invoke(this, &RialtoClientMediaKeysIpcGenerateRequestTest::setGenerateRequestResponseSuccess)));
 
-    EXPECT_EQ(m_mediaKeysIpc->generateRequest(m_keySessionId, m_initDataType, m_initData), MediaKeyErrorStatus::OK);
+    EXPECT_EQ(m_mediaKeysIpc->generateRequest(m_kKeySessionId, m_initDataType, m_initData), MediaKeyErrorStatus::OK);
 }
 
 /**
@@ -129,7 +129,7 @@ TEST_F(RialtoClientMediaKeysIpcGenerateRequestTest, Failure)
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("generateRequest"), _, _, _, _));
 
-    EXPECT_EQ(m_mediaKeysIpc->generateRequest(m_keySessionId, m_initDataType, m_initData), MediaKeyErrorStatus::FAIL);
+    EXPECT_EQ(m_mediaKeysIpc->generateRequest(m_kKeySessionId, m_initDataType, m_initData), MediaKeyErrorStatus::FAIL);
 }
 
 /**
@@ -143,5 +143,5 @@ TEST_F(RialtoClientMediaKeysIpcGenerateRequestTest, ErrorReturn)
         .WillOnce(
             WithArgs<3>(Invoke(this, &RialtoClientMediaKeysIpcGenerateRequestTest::setGenerateRequestResponseFailed)));
 
-    EXPECT_EQ(m_mediaKeysIpc->generateRequest(m_keySessionId, m_initDataType, m_initData), m_errorStatus);
+    EXPECT_EQ(m_mediaKeysIpc->generateRequest(m_kKeySessionId, m_initDataType, m_initData), m_errorStatus);
 }

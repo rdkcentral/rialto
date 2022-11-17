@@ -28,7 +28,9 @@ MediaKeysTestBase::MediaKeysTestBase()
       m_mediaKeySession{std::make_unique<StrictMock<MediaKeySessionMock>>()},
       m_mediaKeySessionMock{m_mediaKeySession.get()},
       m_ocdmSystemFactoryMock{std::make_shared<StrictMock<OcdmSystemFactoryMock>>()},
-      m_ocdmSystem{std::make_unique<StrictMock<OcdmSystemMock>>()}, m_ocdmSystemMock{m_ocdmSystem.get()}
+      m_ocdmSystem{std::make_unique<StrictMock<OcdmSystemMock>>()}, m_ocdmSystemMock{m_ocdmSystem.get()},
+      m_mainThreadFactoryMock{std::make_shared<StrictMock<MainThreadFactoryMock>>()},
+      m_mainThreadMock{std::make_shared<StrictMock<MainThreadMock>>()}
 {
 }
 
@@ -36,18 +38,39 @@ MediaKeysTestBase::~MediaKeysTestBase() {}
 
 void MediaKeysTestBase::createMediaKeys(std::string keySystem)
 {
+    EXPECT_CALL(*m_mainThreadFactoryMock, getMainThread()).WillOnce(Return(m_mainThreadMock));
+    EXPECT_CALL(*m_mainThreadMock, registerClient()).WillOnce(Return(m_kMainThreadClientId));
     EXPECT_CALL(*m_ocdmSystemFactoryMock, createOcdmSystem(keySystem)).WillOnce(Return(ByMove(std::move(m_ocdmSystem))));
+    mainThreadWillEnqueueTaskAndWait();
 
-    EXPECT_NO_THROW(m_mediaKeys = std::make_unique<MediaKeysServerInternal>(keySystem, m_ocdmSystemFactoryMock,
+    EXPECT_NO_THROW(m_mediaKeys = std::make_unique<MediaKeysServerInternal>(keySystem, m_mainThreadFactoryMock,
+                                                                            m_ocdmSystemFactoryMock,
                                                                             m_mediaKeySessionFactoryMock));
     EXPECT_NE(m_mediaKeys, nullptr);
 }
 
+void MediaKeysTestBase::destroyMediaKeys()
+{
+    EXPECT_CALL(*m_mainThreadMock, unregisterClient(m_kMainThreadClientId));
+    // Objects are destroyed on the main thread
+    mainThreadWillEnqueueTaskAndWait();
+
+    m_mediaKeys.reset();
+}
+
 void MediaKeysTestBase::createKeySession(std::string keySystem)
 {
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_mediaKeySessionFactoryMock, createMediaKeySession(keySystem, _, _, m_keySessionType, _, m_isLDL))
         .WillOnce(Return(ByMove(std::move(m_mediaKeySession))));
 
     EXPECT_EQ(MediaKeyErrorStatus::OK,
-              m_mediaKeys->createKeySession(m_keySessionType, m_mediaKeysClientMock, m_isLDL, m_keySessionId));
+              m_mediaKeys->createKeySession(m_keySessionType, m_mediaKeysClientMock, m_isLDL, m_kKeySessionId));
+}
+
+void MediaKeysTestBase::mainThreadWillEnqueueTaskAndWait()
+{
+    EXPECT_CALL(*m_mainThreadMock, enqueueTaskAndWait(m_kMainThreadClientId, _))
+        .WillOnce(Invoke([](uint32_t clientId, firebolt::rialto::server::IMainThread::Task task) { task(); }))
+        .RetiresOnSaturation();
 }

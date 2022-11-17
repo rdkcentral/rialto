@@ -57,7 +57,7 @@ public:
     {
         firebolt::rialto::CreateKeySessionResponse *createKeySessionResponse =
             dynamic_cast<firebolt::rialto::CreateKeySessionResponse *>(response);
-        createKeySessionResponse->set_key_session_id(m_keySessionId);
+        createKeySessionResponse->set_key_session_id(m_kKeySessionId);
         createKeySessionResponse->set_error_status(MediaKeysIpcTestBase::convertMediaKeyErrorStatus(m_errorStatus));
     }
 };
@@ -78,7 +78,7 @@ TEST_F(RialtoClientMediaKeysIpcCreateKeySessionTest, Success)
 
     EXPECT_EQ(m_mediaKeysIpc->createKeySession(m_keySessionType, m_mediaKeysClientMock, m_isLdl, returnKeySessionid),
               MediaKeyErrorStatus::OK);
-    EXPECT_EQ(returnKeySessionid, m_keySessionId);
+    EXPECT_EQ(returnKeySessionid, m_kKeySessionId);
 
     // Check client object has been stored
     EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));

@@ -42,7 +42,7 @@ protected:
     std::unique_ptr<IMediaKeys> m_mediaKeys;
 
     std::string m_keySystem{"keySystem"};
-    int32_t m_keySessionId{123};
+    int32_t m_kKeySessionId{123};
     MediaKeyErrorStatus m_mediaKeyErrorStatus{MediaKeyErrorStatus::OK};
 
     RialtoClientMediaKeysKeySessionTest()
@@ -69,11 +69,11 @@ TEST_F(RialtoClientMediaKeysKeySessionTest, CreateKeySession)
     int32_t returnKeySessionId;
 
     EXPECT_CALL(*m_mediaKeysIpcMock, createKeySession(sessionType, _, isLDL, _))
-        .WillOnce(DoAll(SetArgReferee<3>(m_keySessionId), Return(m_mediaKeyErrorStatus)));
+        .WillOnce(DoAll(SetArgReferee<3>(m_kKeySessionId), Return(m_mediaKeyErrorStatus)));
 
     EXPECT_EQ(m_mediaKeys->createKeySession(sessionType, mediaKeysClientMock, isLDL, returnKeySessionId),
               m_mediaKeyErrorStatus);
-    EXPECT_EQ(returnKeySessionId, m_keySessionId);
+    EXPECT_EQ(returnKeySessionId, m_kKeySessionId);
 }
 
 /**
@@ -84,10 +84,10 @@ TEST_F(RialtoClientMediaKeysKeySessionTest, GenerateRequest)
     InitDataType initDataType = InitDataType::KEY_IDS;
     std::vector<uint8_t> initData{7, 8, 9};
 
-    EXPECT_CALL(*m_mediaKeysIpcMock, generateRequest(m_keySessionId, initDataType, initData))
+    EXPECT_CALL(*m_mediaKeysIpcMock, generateRequest(m_kKeySessionId, initDataType, initData))
         .WillOnce(Return(m_mediaKeyErrorStatus));
 
-    EXPECT_EQ(m_mediaKeys->generateRequest(m_keySessionId, initDataType, initData), m_mediaKeyErrorStatus);
+    EXPECT_EQ(m_mediaKeys->generateRequest(m_kKeySessionId, initDataType, initData), m_mediaKeyErrorStatus);
 }
 
 /**
@@ -95,9 +95,9 @@ TEST_F(RialtoClientMediaKeysKeySessionTest, GenerateRequest)
  */
 TEST_F(RialtoClientMediaKeysKeySessionTest, LoadSession)
 {
-    EXPECT_CALL(*m_mediaKeysIpcMock, loadSession(m_keySessionId)).WillOnce(Return(m_mediaKeyErrorStatus));
+    EXPECT_CALL(*m_mediaKeysIpcMock, loadSession(m_kKeySessionId)).WillOnce(Return(m_mediaKeyErrorStatus));
 
-    EXPECT_EQ(m_mediaKeys->loadSession(m_keySessionId), m_mediaKeyErrorStatus);
+    EXPECT_EQ(m_mediaKeys->loadSession(m_kKeySessionId), m_mediaKeyErrorStatus);
 }
 
 /**
@@ -107,9 +107,9 @@ TEST_F(RialtoClientMediaKeysKeySessionTest, UpdateSession)
 {
     std::vector<uint8_t> responseData{10, 11, 12};
 
-    EXPECT_CALL(*m_mediaKeysIpcMock, updateSession(m_keySessionId, responseData)).WillOnce(Return(m_mediaKeyErrorStatus));
+    EXPECT_CALL(*m_mediaKeysIpcMock, updateSession(m_kKeySessionId, responseData)).WillOnce(Return(m_mediaKeyErrorStatus));
 
-    EXPECT_EQ(m_mediaKeys->updateSession(m_keySessionId, responseData), m_mediaKeyErrorStatus);
+    EXPECT_EQ(m_mediaKeys->updateSession(m_kKeySessionId, responseData), m_mediaKeyErrorStatus);
 }
 
 /**
@@ -117,9 +117,9 @@ TEST_F(RialtoClientMediaKeysKeySessionTest, UpdateSession)
  */
 TEST_F(RialtoClientMediaKeysKeySessionTest, CloseKeySession)
 {
-    EXPECT_CALL(*m_mediaKeysIpcMock, closeKeySession(m_keySessionId)).WillOnce(Return(m_mediaKeyErrorStatus));
+    EXPECT_CALL(*m_mediaKeysIpcMock, closeKeySession(m_kKeySessionId)).WillOnce(Return(m_mediaKeyErrorStatus));
 
-    EXPECT_EQ(m_mediaKeys->closeKeySession(m_keySessionId), m_mediaKeyErrorStatus);
+    EXPECT_EQ(m_mediaKeys->closeKeySession(m_kKeySessionId), m_mediaKeyErrorStatus);
 }
 
 /**
@@ -127,9 +127,9 @@ TEST_F(RialtoClientMediaKeysKeySessionTest, CloseKeySession)
  */
 TEST_F(RialtoClientMediaKeysKeySessionTest, RemoveKeySession)
 {
-    EXPECT_CALL(*m_mediaKeysIpcMock, removeKeySession(m_keySessionId)).WillOnce(Return(m_mediaKeyErrorStatus));
+    EXPECT_CALL(*m_mediaKeysIpcMock, removeKeySession(m_kKeySessionId)).WillOnce(Return(m_mediaKeyErrorStatus));
 
-    EXPECT_EQ(m_mediaKeys->removeKeySession(m_keySessionId), m_mediaKeyErrorStatus);
+    EXPECT_EQ(m_mediaKeys->removeKeySession(m_kKeySessionId), m_mediaKeyErrorStatus);
 }
 
 /**
@@ -138,7 +138,7 @@ TEST_F(RialtoClientMediaKeysKeySessionTest, RemoveKeySession)
 TEST_F(RialtoClientMediaKeysKeySessionTest, GetCdmKeySessionIdSession)
 {
     std::string cdmKeySessionId;
-    EXPECT_CALL(*m_mediaKeysIpcMock, getCdmKeySessionId(m_keySessionId, _)).WillOnce(Return(m_mediaKeyErrorStatus));
+    EXPECT_CALL(*m_mediaKeysIpcMock, getCdmKeySessionId(m_kKeySessionId, _)).WillOnce(Return(m_mediaKeyErrorStatus));
 
-    EXPECT_EQ(m_mediaKeys->getCdmKeySessionId(m_keySessionId, cdmKeySessionId), m_mediaKeyErrorStatus);
+    EXPECT_EQ(m_mediaKeys->getCdmKeySessionId(m_kKeySessionId, cdmKeySessionId), m_mediaKeyErrorStatus);
 }
