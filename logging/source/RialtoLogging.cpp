@@ -110,7 +110,8 @@ static void consoleLogHandler(RIALTO_DEBUG_LEVEL level, const char *file, int li
     iov[3].iov_len = messageLen;
     iov[4].iov_base = const_cast<void *>(reinterpret_cast<const void *>("\n"));
     iov[4].iov_len = 1;
-    writev(STDERR_FILENO, iov, 5);
+    // TODO(RIALTO-38): consider using standard write(2) and handle EINTR properly.
+    std::ignore = writev(STDERR_FILENO, iov, 5);
 }
 
 /**
