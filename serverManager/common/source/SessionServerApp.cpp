@@ -190,13 +190,13 @@ void SessionServerApp::setupStartupTimer()
         auto factory = firebolt::rialto::common::ITimerFactory::getFactory();
         m_startupTimer =
             factory->createTimer(timeout,
-                                [this]()
-                                {
-                                    RIALTO_SERVER_MANAGER_LOG_WARN("Killing: %s", m_kAppId.c_str());
-                                    m_sessionServerAppManager.onSessionServerStateChanged(m_kAppId,
-                                                                                        service::SessionServerState::ERROR);
-                                    kill();
-                                });
+                                 [this]()
+                                 {
+                                     RIALTO_SERVER_MANAGER_LOG_WARN("Killing: %s", m_kAppId.c_str());
+                                     m_sessionServerAppManager
+                                         .onSessionServerStateChanged(m_kAppId, service::SessionServerState::ERROR);
+                                     kill();
+                                 });
     }
 }
 
