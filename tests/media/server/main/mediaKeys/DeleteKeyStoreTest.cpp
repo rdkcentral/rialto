@@ -27,6 +27,7 @@ protected:
         createMediaKeys(kNetflixKeySystem);
         createKeySession(kNetflixKeySystem);
     }
+    ~RialtoServerMediaKeysDeleteKeyStoreTest() { destroyMediaKeys(); }
 };
 
 /**
@@ -34,6 +35,7 @@ protected:
  */
 TEST_F(RialtoServerMediaKeysDeleteKeyStoreTest, Success)
 {
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_ocdmSystemMock, deleteKeyStore()).WillOnce(Return(MediaKeyErrorStatus::OK));
 
     EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeys->deleteKeyStore());
@@ -44,6 +46,7 @@ TEST_F(RialtoServerMediaKeysDeleteKeyStoreTest, Success)
  */
 TEST_F(RialtoServerMediaKeysDeleteKeyStoreTest, Failure)
 {
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_ocdmSystemMock, deleteKeyStore()).WillOnce(Return(MediaKeyErrorStatus::NOT_SUPPORTED));
 
     EXPECT_EQ(MediaKeyErrorStatus::NOT_SUPPORTED, m_mediaKeys->deleteKeyStore());

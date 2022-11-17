@@ -23,6 +23,7 @@ class RialtoServerMediaKeySessionSetDrmHeaderTest : public MediaKeySessionTestBa
 {
 protected:
     const std::vector<uint8_t> m_kDrmHeader{3, 2, 1};
+    ~RialtoServerMediaKeySessionSetDrmHeaderTest() { destroyKeySession(); }
 };
 
 /**

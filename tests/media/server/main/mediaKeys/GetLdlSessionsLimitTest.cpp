@@ -28,6 +28,7 @@ protected:
         createMediaKeys(kNetflixKeySystem);
         createKeySession(kNetflixKeySystem);
     }
+    ~RialtoServerMediaKeysGetLdlSessionsLimitTest() { destroyMediaKeys(); }
 };
 
 /**
@@ -35,6 +36,7 @@ protected:
  */
 TEST_F(RialtoServerMediaKeysGetLdlSessionsLimitTest, Success)
 {
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_ocdmSystemMock, getLdlSessionsLimit(&m_ldlSessionsLimit)).WillOnce(Return(MediaKeyErrorStatus::OK));
 
     EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeys->getLdlSessionsLimit(m_ldlSessionsLimit));
@@ -45,6 +47,7 @@ TEST_F(RialtoServerMediaKeysGetLdlSessionsLimitTest, Success)
  */
 TEST_F(RialtoServerMediaKeysGetLdlSessionsLimitTest, Failure)
 {
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_ocdmSystemMock, getLdlSessionsLimit(&m_ldlSessionsLimit))
         .WillOnce(Return(MediaKeyErrorStatus::NOT_SUPPORTED));
 

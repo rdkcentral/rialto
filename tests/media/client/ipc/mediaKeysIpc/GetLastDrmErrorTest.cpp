@@ -59,12 +59,12 @@ TEST_F(RialtoClientMediaKeysIpcGetLastDrmErrorTest, Success)
     expectIpcApiCallSuccess();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getLastDrmError"), m_controllerMock.get(),
-                                           getLastDrmErrorRequestMatcher(m_mediaKeysHandle, m_keySessionId), _,
+                                           getLastDrmErrorRequestMatcher(m_mediaKeysHandle, m_kKeySessionId), _,
                                            m_blockingClosureMock.get()))
         .WillOnce(
             WithArgs<3>(Invoke(this, &RialtoClientMediaKeysIpcGetLastDrmErrorTest::setGetLastDrmErrorResponseSuccess)));
 
-    EXPECT_EQ(m_mediaKeysIpc->getLastDrmError(m_keySessionId, lastDrmError), MediaKeyErrorStatus::OK);
+    EXPECT_EQ(m_mediaKeysIpc->getLastDrmError(m_kKeySessionId, lastDrmError), MediaKeyErrorStatus::OK);
 }
 
 /**
@@ -76,7 +76,7 @@ TEST_F(RialtoClientMediaKeysIpcGetLastDrmErrorTest, ChannelDisconnected)
     expectIpcApiCallDisconnected();
     expectUnsubscribeEvents();
 
-    EXPECT_EQ(m_mediaKeysIpc->getLastDrmError(m_keySessionId, lastDrmError), MediaKeyErrorStatus::FAIL);
+    EXPECT_EQ(m_mediaKeysIpc->getLastDrmError(m_kKeySessionId, lastDrmError), MediaKeyErrorStatus::FAIL);
 
     // Reattach channel on destroySession
     EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
@@ -97,7 +97,7 @@ TEST_F(RialtoClientMediaKeysIpcGetLastDrmErrorTest, ReconnectChannel)
         .WillOnce(
             WithArgs<3>(Invoke(this, &RialtoClientMediaKeysIpcGetLastDrmErrorTest::setGetLastDrmErrorResponseSuccess)));
 
-    EXPECT_EQ(m_mediaKeysIpc->getLastDrmError(m_keySessionId, lastDrmError), MediaKeyErrorStatus::OK);
+    EXPECT_EQ(m_mediaKeysIpc->getLastDrmError(m_kKeySessionId, lastDrmError), MediaKeyErrorStatus::OK);
 }
 
 /**
@@ -110,7 +110,7 @@ TEST_F(RialtoClientMediaKeysIpcGetLastDrmErrorTest, Failure)
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getLastDrmError"), _, _, _, _));
 
-    EXPECT_EQ(m_mediaKeysIpc->getLastDrmError(m_keySessionId, lastDrmError), MediaKeyErrorStatus::FAIL);
+    EXPECT_EQ(m_mediaKeysIpc->getLastDrmError(m_kKeySessionId, lastDrmError), MediaKeyErrorStatus::FAIL);
 }
 
 /**
@@ -125,5 +125,5 @@ TEST_F(RialtoClientMediaKeysIpcGetLastDrmErrorTest, ErrorReturn)
         .WillOnce(
             WithArgs<3>(Invoke(this, &RialtoClientMediaKeysIpcGetLastDrmErrorTest::setGetLastDrmErrorResponseFailed)));
 
-    EXPECT_EQ(m_mediaKeysIpc->getLastDrmError(m_keySessionId, lastDrmError), m_errorStatus);
+    EXPECT_EQ(m_mediaKeysIpc->getLastDrmError(m_kKeySessionId, lastDrmError), m_errorStatus);
 }

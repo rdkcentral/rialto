@@ -92,8 +92,6 @@ public:
 
     MediaKeyErrorStatus getLastDrmError(uint32_t &errorCode) override;
 
-    void getChallengeData() override;
-
     MediaKeyErrorStatus selectKeyId(const std::vector<uint8_t> &keyId) override;
 
     bool isNetflixKeySystem() const override;

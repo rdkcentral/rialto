@@ -149,9 +149,9 @@ TEST_F(RialtoClientMediaKeysKeySessionTest, GetCdmKeySessionIdSession)
 TEST_F(RialtoClientMediaKeysKeySessionTest, ContainsKey)
 {
     std::vector<uint8_t> keyId{1, 2, 3};
-    EXPECT_CALL(*m_mediaKeysIpcMock, containsKey(m_keySessionId, keyId)).WillOnce(Return(true));
+    EXPECT_CALL(*m_mediaKeysIpcMock, containsKey(m_kKeySessionId, keyId)).WillOnce(Return(true));
 
-    EXPECT_TRUE(m_mediaKeys->containsKey(m_keySessionId, keyId));
+    EXPECT_TRUE(m_mediaKeys->containsKey(m_kKeySessionId, keyId));
 }
 
 /**
@@ -160,9 +160,9 @@ TEST_F(RialtoClientMediaKeysKeySessionTest, ContainsKey)
 TEST_F(RialtoClientMediaKeysKeySessionTest, SetDrmHeader)
 {
     std::vector<uint8_t> drmHeader{3, 2, 1};
-    EXPECT_CALL(*m_mediaKeysIpcMock, setDrmHeader(m_keySessionId, drmHeader)).WillOnce(Return(m_mediaKeyErrorStatus));
+    EXPECT_CALL(*m_mediaKeysIpcMock, setDrmHeader(m_kKeySessionId, drmHeader)).WillOnce(Return(m_mediaKeyErrorStatus));
 
-    EXPECT_EQ(m_mediaKeys->setDrmHeader(m_keySessionId, drmHeader), m_mediaKeyErrorStatus);
+    EXPECT_EQ(m_mediaKeys->setDrmHeader(m_kKeySessionId, drmHeader), m_mediaKeyErrorStatus);
 }
 
 /**
@@ -224,9 +224,9 @@ TEST_F(RialtoClientMediaKeysKeySessionTest, GetLdlSessionsLimit)
 TEST_F(RialtoClientMediaKeysKeySessionTest, GetLastDrmError)
 {
     std::uint32_t lastDrmError;
-    EXPECT_CALL(*m_mediaKeysIpcMock, getLastDrmError(m_keySessionId, lastDrmError)).WillOnce(Return(m_mediaKeyErrorStatus));
+    EXPECT_CALL(*m_mediaKeysIpcMock, getLastDrmError(m_kKeySessionId, lastDrmError)).WillOnce(Return(m_mediaKeyErrorStatus));
 
-    EXPECT_EQ(m_mediaKeys->getLastDrmError(m_keySessionId, lastDrmError), m_mediaKeyErrorStatus);
+    EXPECT_EQ(m_mediaKeys->getLastDrmError(m_kKeySessionId, lastDrmError), m_mediaKeyErrorStatus);
 }
 
 /**

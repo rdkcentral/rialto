@@ -29,6 +29,7 @@ protected:
         createMediaKeys(kNetflixKeySystem);
         createKeySession(kNetflixKeySystem);
     }
+    ~RialtoServerMediaKeysContainsKeyTest() { destroyMediaKeys(); }
 };
 
 /**
@@ -36,9 +37,10 @@ protected:
  */
 TEST_F(RialtoServerMediaKeysContainsKeyTest, containsKeyTrue)
 {
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_mediaKeySessionMock, containsKey(m_kKeyId)).WillOnce(Return(true));
 
-    EXPECT_TRUE(m_mediaKeys->containsKey(m_keySessionId, m_kKeyId));
+    EXPECT_TRUE(m_mediaKeys->containsKey(m_kKeySessionId, m_kKeyId));
 }
 
 /**
@@ -46,7 +48,8 @@ TEST_F(RialtoServerMediaKeysContainsKeyTest, containsKeyTrue)
  */
 TEST_F(RialtoServerMediaKeysContainsKeyTest, SessionDoesNotExistFailure)
 {
-    EXPECT_FALSE(m_mediaKeys->containsKey(m_keySessionId + 1, m_kKeyId));
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_FALSE(m_mediaKeys->containsKey(m_kKeySessionId + 1, m_kKeyId));
 }
 
 /**
@@ -54,7 +57,8 @@ TEST_F(RialtoServerMediaKeysContainsKeyTest, SessionDoesNotExistFailure)
  */
 TEST_F(RialtoServerMediaKeysContainsKeyTest, containsKeyFalse)
 {
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_mediaKeySessionMock, containsKey(m_kKeyId)).WillOnce(Return(false));
 
-    EXPECT_FALSE(m_mediaKeys->containsKey(m_keySessionId, m_kKeyId));
+    EXPECT_FALSE(m_mediaKeys->containsKey(m_kKeySessionId, m_kKeyId));
 }

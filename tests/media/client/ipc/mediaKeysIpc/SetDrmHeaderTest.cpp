@@ -71,11 +71,11 @@ TEST_F(RialtoClientMediaKeysIpcSetDrmHeaderTest, Success)
     expectIpcApiCallSuccess();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("setDrmHeader"), m_controllerMock.get(),
-                                           setDrmHeaderRequestMatcher(m_mediaKeysHandle, m_keySessionId, kDrmHeader), _,
+                                           setDrmHeaderRequestMatcher(m_mediaKeysHandle, m_kKeySessionId, kDrmHeader), _,
                                            m_blockingClosureMock.get()))
         .WillOnce(WithArgs<3>(Invoke(this, &RialtoClientMediaKeysIpcSetDrmHeaderTest::setSetDrmHeaderResponseSuccess)));
 
-    EXPECT_EQ(m_mediaKeysIpc->setDrmHeader(m_keySessionId, kDrmHeader), MediaKeyErrorStatus::OK);
+    EXPECT_EQ(m_mediaKeysIpc->setDrmHeader(m_kKeySessionId, kDrmHeader), MediaKeyErrorStatus::OK);
 }
 
 /**
@@ -86,7 +86,7 @@ TEST_F(RialtoClientMediaKeysIpcSetDrmHeaderTest, ChannelDisconnected)
     expectIpcApiCallDisconnected();
     expectUnsubscribeEvents();
 
-    EXPECT_EQ(m_mediaKeysIpc->setDrmHeader(m_keySessionId, kDrmHeader), MediaKeyErrorStatus::FAIL);
+    EXPECT_EQ(m_mediaKeysIpc->setDrmHeader(m_kKeySessionId, kDrmHeader), MediaKeyErrorStatus::FAIL);
 
     // Reattach channel on destroySession
     EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
@@ -105,7 +105,7 @@ TEST_F(RialtoClientMediaKeysIpcSetDrmHeaderTest, ReconnectChannel)
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("setDrmHeader"), _, _, _, _))
         .WillOnce(WithArgs<3>(Invoke(this, &RialtoClientMediaKeysIpcSetDrmHeaderTest::setSetDrmHeaderResponseSuccess)));
 
-    EXPECT_EQ(m_mediaKeysIpc->setDrmHeader(m_keySessionId, kDrmHeader), MediaKeyErrorStatus::OK);
+    EXPECT_EQ(m_mediaKeysIpc->setDrmHeader(m_kKeySessionId, kDrmHeader), MediaKeyErrorStatus::OK);
 }
 
 /**
@@ -117,7 +117,7 @@ TEST_F(RialtoClientMediaKeysIpcSetDrmHeaderTest, Failure)
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("setDrmHeader"), _, _, _, _));
 
-    EXPECT_EQ(m_mediaKeysIpc->setDrmHeader(m_keySessionId, kDrmHeader), MediaKeyErrorStatus::FAIL);
+    EXPECT_EQ(m_mediaKeysIpc->setDrmHeader(m_kKeySessionId, kDrmHeader), MediaKeyErrorStatus::FAIL);
 }
 
 /**
@@ -130,5 +130,5 @@ TEST_F(RialtoClientMediaKeysIpcSetDrmHeaderTest, ErrorReturn)
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("setDrmHeader"), _, _, _, _))
         .WillOnce(WithArgs<3>(Invoke(this, &RialtoClientMediaKeysIpcSetDrmHeaderTest::setSetDrmHeaderResponseFailed)));
 
-    EXPECT_EQ(m_mediaKeysIpc->setDrmHeader(m_keySessionId, kDrmHeader), m_errorStatus);
+    EXPECT_EQ(m_mediaKeysIpc->setDrmHeader(m_kKeySessionId, kDrmHeader), m_errorStatus);
 }

@@ -28,6 +28,7 @@ protected:
         createMediaKeys(kNetflixKeySystem);
         createKeySession(kNetflixKeySystem);
     }
+    ~RialtoServerMediaKeysGetKeyStoreHashTest() { destroyMediaKeys(); }
 };
 
 /**
@@ -35,6 +36,7 @@ protected:
  */
 TEST_F(RialtoServerMediaKeysGetKeyStoreHashTest, Success)
 {
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_ocdmSystemMock, getKeyStoreHash(_, _)).WillOnce(Return(MediaKeyErrorStatus::OK));
 
     EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeys->getKeyStoreHash(m_keyStoreHash));
@@ -45,6 +47,7 @@ TEST_F(RialtoServerMediaKeysGetKeyStoreHashTest, Success)
  */
 TEST_F(RialtoServerMediaKeysGetKeyStoreHashTest, Failure)
 {
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_ocdmSystemMock, getKeyStoreHash(_, _)).WillOnce(Return(MediaKeyErrorStatus::NOT_SUPPORTED));
 
     EXPECT_EQ(MediaKeyErrorStatus::NOT_SUPPORTED, m_mediaKeys->getKeyStoreHash(m_keyStoreHash));

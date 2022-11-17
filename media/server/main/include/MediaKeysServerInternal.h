@@ -114,8 +114,6 @@ public:
 
     bool hasSession(int32_t keySessionId) const override;
 
-    void getChallengeData(int32_t keySessionId) override;
-
     bool isNetflixKeySystem(int32_t keySessionId) const override;
 
 private:
@@ -240,6 +238,56 @@ private:
     MediaKeyErrorStatus decryptInternal(int32_t keySessionId, GstBuffer *encrypted, GstBuffer *subSample,
                                         const uint32_t subSampleCount, GstBuffer *IV, GstBuffer *keyId,
                                         uint32_t initWithLast15);
+
+    /**
+     * @brief Selects the specified keyId for the key session internally, only to be called on the main thread.
+     *
+     * @param[in] keySessionId : The key session id for the session.
+     * @param[in] keyId        : The key id to select.
+     *
+     * @retval an error status.
+     */
+    MediaKeyErrorStatus selectKeyIdInternal(int32_t keySessionId, const std::vector<uint8_t> &keyId);
+
+    /**
+     * @brief Returns true if the Key Session object contains the specified key internally,
+     *        only to be called on the main thread.
+     *
+     * @param[in] keySessionId : The key session id for the session.
+     * @param[in] keyId        : The key id.
+     *
+     * @retval true if it contains the key.
+     */
+    bool containsKeyInternal(int32_t keySessionId, const std::vector<uint8_t> &keyId);
+
+    /**
+     * @brief Set DRM Header for a key session internally, only to be called on the main thread.
+     *
+     * @param[in] keySessionId : The session id for the session.
+     * @param[in] requestData  : The request data.
+     *
+     * @retval an error status.
+     */
+    MediaKeyErrorStatus setDrmHeaderInternal(int32_t keySessionId, const std::vector<uint8_t> &requestData);
+
+    /**
+     * @brief Get the last cdm specific DRM error code internally, only to be called on the main thread.
+     *
+     * @param[in] keySessionId : The key session id.
+     * @param[out] errorCode : the error code.
+     *
+     * @retval the return status value.
+     */
+    MediaKeyErrorStatus getLastDrmErrorInternal(int32_t keySessionId, uint32_t &errorCode);
+
+    /**
+     * @brief Checks, if key system of media key session is Netflix internally, only to be called on the main thread.
+     *
+     * @param[in] keySessionId    : The session id for the session.
+     *
+     * @retval true if key system is Netflix
+     */
+    bool isNetflixKeySystemInternal(int32_t keySessionId) const;
 };
 
 }; // namespace firebolt::rialto::server

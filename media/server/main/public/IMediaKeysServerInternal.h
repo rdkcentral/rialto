@@ -104,14 +104,6 @@ public:
     virtual bool hasSession(int32_t keySessionId) const = 0;
 
     /**
-     * @brief Gets challenge data for session.
-     *
-     * @param[in] keySessionId    : The session id for the session.
-     *
-     */
-    virtual void getChallengeData(int32_t keySessionId) = 0;
-
-    /**
      * @brief Checks, if key system of media key session is Netflix.
      *
      * @param[in] keySessionId    : The session id for the session.

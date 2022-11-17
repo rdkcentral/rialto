@@ -61,7 +61,6 @@ public:
     void mediaKeysWillDecryptWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillSelectKeyIdWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillNotFindMediaKeySession();
-    void mediaKeysWillGetChallengeData();
     void mediaKeysWillCheckIfKeySystemIsNetflix(bool result);
 
     void mediaKeysCapabilitiesFactoryWillCreateMediaKeysCapabilities();

@@ -28,6 +28,7 @@ protected:
         createMediaKeys(kNetflixKeySystem);
         createKeySession(kNetflixKeySystem);
     }
+    ~RialtoServerMediaKeysGetLastDrmErrorTest() { destroyMediaKeys(); }
 };
 
 /**
@@ -35,9 +36,10 @@ protected:
  */
 TEST_F(RialtoServerMediaKeysGetLastDrmErrorTest, Success)
 {
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_mediaKeySessionMock, getLastDrmError(m_lastDrmError)).WillOnce(Return(MediaKeyErrorStatus::OK));
 
-    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeys->getLastDrmError(m_keySessionId, m_lastDrmError));
+    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeys->getLastDrmError(m_kKeySessionId, m_lastDrmError));
 }
 
 /**
@@ -45,7 +47,8 @@ TEST_F(RialtoServerMediaKeysGetLastDrmErrorTest, Success)
  */
 TEST_F(RialtoServerMediaKeysGetLastDrmErrorTest, SessionDoesNotExistFailure)
 {
-    EXPECT_EQ(MediaKeyErrorStatus::BAD_SESSION_ID, m_mediaKeys->getLastDrmError(m_keySessionId + 1, m_lastDrmError));
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_EQ(MediaKeyErrorStatus::BAD_SESSION_ID, m_mediaKeys->getLastDrmError(m_kKeySessionId + 1, m_lastDrmError));
 }
 
 /**
@@ -53,7 +56,8 @@ TEST_F(RialtoServerMediaKeysGetLastDrmErrorTest, SessionDoesNotExistFailure)
  */
 TEST_F(RialtoServerMediaKeysGetLastDrmErrorTest, getLastDrmErrorFailure)
 {
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_mediaKeySessionMock, getLastDrmError(m_lastDrmError)).WillOnce(Return(MediaKeyErrorStatus::NOT_SUPPORTED));
 
-    EXPECT_EQ(MediaKeyErrorStatus::NOT_SUPPORTED, m_mediaKeys->getLastDrmError(m_keySessionId, m_lastDrmError));
+    EXPECT_EQ(MediaKeyErrorStatus::NOT_SUPPORTED, m_mediaKeys->getLastDrmError(m_kKeySessionId, m_lastDrmError));
 }

@@ -29,6 +29,7 @@ protected:
         createMediaKeys(kWidevineKeySystem);
         createKeySession(kWidevineKeySystem);
     }
+    ~RialtoServerMediaKeysSelectKeyIdTest() { destroyMediaKeys(); }
 };
 
 /**
@@ -36,9 +37,10 @@ protected:
  */
 TEST_F(RialtoServerMediaKeysSelectKeyIdTest, Success)
 {
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_mediaKeySessionMock, selectKeyId(m_kKeyId)).WillOnce(Return(MediaKeyErrorStatus::OK));
 
-    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeys->selectKeyId(m_keySessionId, m_kKeyId));
+    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeys->selectKeyId(m_kKeySessionId, m_kKeyId));
 }
 
 /**
@@ -46,7 +48,8 @@ TEST_F(RialtoServerMediaKeysSelectKeyIdTest, Success)
  */
 TEST_F(RialtoServerMediaKeysSelectKeyIdTest, SessionDoesNotExistFailure)
 {
-    EXPECT_EQ(MediaKeyErrorStatus::BAD_SESSION_ID, m_mediaKeys->selectKeyId(m_keySessionId + 1, m_kKeyId));
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_EQ(MediaKeyErrorStatus::BAD_SESSION_ID, m_mediaKeys->selectKeyId(m_kKeySessionId + 1, m_kKeyId));
 }
 
 /**
@@ -54,7 +57,8 @@ TEST_F(RialtoServerMediaKeysSelectKeyIdTest, SessionDoesNotExistFailure)
  */
 TEST_F(RialtoServerMediaKeysSelectKeyIdTest, SelectKeyIdFailure)
 {
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_mediaKeySessionMock, selectKeyId(m_kKeyId)).WillOnce(Return(MediaKeyErrorStatus::INVALID_STATE));
 
-    EXPECT_EQ(MediaKeyErrorStatus::INVALID_STATE, m_mediaKeys->selectKeyId(m_keySessionId, m_kKeyId));
+    EXPECT_EQ(MediaKeyErrorStatus::INVALID_STATE, m_mediaKeys->selectKeyId(m_kKeySessionId, m_kKeyId));
 }

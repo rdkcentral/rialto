@@ -28,6 +28,7 @@ protected:
         createMediaKeys(kNetflixKeySystem);
         createKeySession(kNetflixKeySystem);
     }
+    ~RialtoServerMediaKeysGetDrmTimeTest() { destroyMediaKeys(); }
 };
 
 /**
@@ -35,6 +36,7 @@ protected:
  */
 TEST_F(RialtoServerMediaKeysGetDrmTimeTest, Success)
 {
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_ocdmSystemMock, getDrmTime(&m_drmTime)).WillOnce(Return(MediaKeyErrorStatus::OK));
 
     EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeys->getDrmTime(m_drmTime));
@@ -45,6 +47,7 @@ TEST_F(RialtoServerMediaKeysGetDrmTimeTest, Success)
  */
 TEST_F(RialtoServerMediaKeysGetDrmTimeTest, Failure)
 {
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_ocdmSystemMock, getDrmTime(&m_drmTime)).WillOnce(Return(MediaKeyErrorStatus::NOT_SUPPORTED));
 
     EXPECT_EQ(MediaKeyErrorStatus::NOT_SUPPORTED, m_mediaKeys->getDrmTime(m_drmTime));

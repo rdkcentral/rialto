@@ -23,6 +23,7 @@ class RialtoServerMediaKeySessionContainsKeyTest : public MediaKeySessionTestBas
 {
 protected:
     const std::vector<uint8_t> m_kKeyId{1, 2, 3};
+    ~RialtoServerMediaKeySessionContainsKeyTest() { destroyKeySession(); }
 };
 
 /**

@@ -22,6 +22,7 @@
 class RialtoServerMediaKeySessionIsNetflixKeySystemTest : public MediaKeySessionTestBase
 {
 protected:
+    ~RialtoServerMediaKeySessionIsNetflixKeySystemTest() { destroyKeySession(); }
 };
 
 /**

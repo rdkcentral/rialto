@@ -56,7 +56,6 @@ add_gtests (
         mediaKeys/GetLdlSessionsLimitTest.cpp
         mediaKeys/GetDrmTimeTest.cpp
         mediaKeys/GetLastDrmErrorTest.cpp
-        mediaKeys/GetChallengeDataTest.cpp
         mediaKeys/SelectKeyIdTest.cpp
         mediaKeys/IsNetflixKeySystemTest.cpp
 
@@ -76,7 +75,6 @@ add_gtests (
         mediaKeySession/ContainsKeyTest.cpp
         mediaKeySession/SetDrmHeaderTest.cpp
         mediaKeySession/GetLastDrmErrorTest.cpp
-        mediaKeySession/GetChallengeDataTest.cpp
         mediaKeySession/SelectKeyIdTest.cpp
         mediaKeySession/IsNetflixKeySystemTest.cpp
 

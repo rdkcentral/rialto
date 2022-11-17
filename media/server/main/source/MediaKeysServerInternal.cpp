@@ -136,6 +136,15 @@ MediaKeyErrorStatus MediaKeysServerInternal::selectKeyId(int32_t keySessionId, c
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
+    MediaKeyErrorStatus status;
+    auto task = [&]() { status = selectKeyIdInternal(keySessionId, keyId); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return status;
+}
+
+MediaKeyErrorStatus MediaKeysServerInternal::selectKeyIdInternal(int32_t keySessionId, const std::vector<uint8_t> &keyId)
+{
     auto sessionIter = m_mediaKeySessions.find(keySessionId);
     if (sessionIter == m_mediaKeySessions.end())
     {
@@ -157,6 +166,15 @@ bool MediaKeysServerInternal::containsKey(int32_t keySessionId, const std::vecto
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
+    bool result{false};
+    auto task = [&]() { result = containsKeyInternal(keySessionId, keyId); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaKeysServerInternal::containsKeyInternal(int32_t keySessionId, const std::vector<uint8_t> &keyId)
+{
     auto sessionIter = m_mediaKeySessions.find(keySessionId);
     if (sessionIter == m_mediaKeySessions.end())
     {
@@ -293,6 +311,16 @@ MediaKeyErrorStatus MediaKeysServerInternal::setDrmHeader(int32_t keySessionId, 
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
+    MediaKeyErrorStatus status;
+    auto task = [&]() { status = setDrmHeaderInternal(keySessionId, requestData); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return status;
+}
+
+MediaKeyErrorStatus MediaKeysServerInternal::setDrmHeaderInternal(int32_t keySessionId,
+                                                                  const std::vector<uint8_t> &requestData)
+{
     auto sessionIter = m_mediaKeySessions.find(keySessionId);
     if (sessionIter == m_mediaKeySessions.end())
     {
@@ -372,13 +400,23 @@ MediaKeyErrorStatus MediaKeysServerInternal::removeKeySessionInternal(int32_t ke
 MediaKeyErrorStatus MediaKeysServerInternal::deleteDrmStore()
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    return m_ocdmSystem->deleteSecureStore();
+
+    MediaKeyErrorStatus status;
+    auto task = [&]() { status = m_ocdmSystem->deleteSecureStore(); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return status;
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::deleteKeyStore()
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    return m_ocdmSystem->deleteKeyStore();
+
+    MediaKeyErrorStatus status;
+    auto task = [&]() { status = m_ocdmSystem->deleteKeyStore(); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return status;
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::getDrmStoreHash(std::vector<unsigned char> &drmStoreHash)
@@ -386,7 +424,11 @@ MediaKeyErrorStatus MediaKeysServerInternal::getDrmStoreHash(std::vector<unsigne
     RIALTO_SERVER_LOG_DEBUG("entry:");
     constexpr size_t kHashSize{256};
     drmStoreHash.reserve(kHashSize);
-    return m_ocdmSystem->getSecureStoreHash(&drmStoreHash[0], kHashSize);
+    MediaKeyErrorStatus status;
+    auto task = [&]() { status = m_ocdmSystem->getSecureStoreHash(&drmStoreHash[0], kHashSize); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return status;
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::getKeyStoreHash(std::vector<unsigned char> &keyStoreHash)
@@ -394,19 +436,37 @@ MediaKeyErrorStatus MediaKeysServerInternal::getKeyStoreHash(std::vector<unsigne
     RIALTO_SERVER_LOG_DEBUG("entry:");
     constexpr size_t kHashSize{256};
     keyStoreHash.reserve(kHashSize);
-    return m_ocdmSystem->getKeyStoreHash(&keyStoreHash[0], kHashSize);
+    MediaKeyErrorStatus status;
+    auto task = [&]() { status = m_ocdmSystem->getKeyStoreHash(&keyStoreHash[0], kHashSize); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return status;
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::getLdlSessionsLimit(uint32_t &ldlLimit)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    return m_ocdmSystem->getLdlSessionsLimit(&ldlLimit);
+
+    MediaKeyErrorStatus status;
+    auto task = [&]() { status = m_ocdmSystem->getLdlSessionsLimit(&ldlLimit); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return status;
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::getLastDrmError(int32_t keySessionId, uint32_t &errorCode)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
+    MediaKeyErrorStatus status;
+    auto task = [&]() { status = getLastDrmErrorInternal(keySessionId, errorCode); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return status;
+}
+
+MediaKeyErrorStatus MediaKeysServerInternal::getLastDrmErrorInternal(int32_t keySessionId, uint32_t &errorCode)
+{
     auto sessionIter = m_mediaKeySessions.find(keySessionId);
     if (sessionIter == m_mediaKeySessions.end())
     {
@@ -425,8 +485,11 @@ MediaKeyErrorStatus MediaKeysServerInternal::getLastDrmError(int32_t keySessionI
 
 MediaKeyErrorStatus MediaKeysServerInternal::getDrmTime(uint64_t &drmTime)
 {
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-    return m_ocdmSystem->getDrmTime(&drmTime);
+    MediaKeyErrorStatus status;
+    auto task = [&]() { status = m_ocdmSystem->getDrmTime(&drmTime); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return status;
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::getCdmKeySessionId(int32_t keySessionId, std::string &cdmKeySessionId)
@@ -497,24 +560,27 @@ MediaKeyErrorStatus MediaKeysServerInternal::decryptInternal(int32_t keySessionI
 
 bool MediaKeysServerInternal::hasSession(int32_t keySessionId) const
 {
-    return m_mediaKeySessions.find(keySessionId) != m_mediaKeySessions.end();
-}
-
-void MediaKeysServerInternal::getChallengeData(int32_t keySessionId)
-{
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    auto sessionIter = m_mediaKeySessions.find(keySessionId);
-    if (sessionIter == m_mediaKeySessions.end())
-    {
-        RIALTO_SERVER_LOG_ERROR("Failed to find the session");
-        return;
-    }
-    sessionIter->second->getChallengeData();
+
+    bool result;
+    auto task = [&]() { result = m_mediaKeySessions.find(keySessionId) != m_mediaKeySessions.end(); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
 }
 
 bool MediaKeysServerInternal::isNetflixKeySystem(int32_t keySessionId) const
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
+    bool result;
+    auto task = [&]() { result = isNetflixKeySystemInternal(keySessionId); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaKeysServerInternal::isNetflixKeySystemInternal(int32_t keySessionId) const
+{
     auto sessionIter = m_mediaKeySessions.find(keySessionId);
     if (sessionIter == m_mediaKeySessions.end())
     {

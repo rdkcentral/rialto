@@ -71,11 +71,11 @@ TEST_F(RialtoClientMediaKeysIpcContainsKeyTest, Success)
     expectIpcApiCallSuccess();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("containsKey"), m_controllerMock.get(),
-                                           containsKeyRequestMatcher(m_mediaKeysHandle, m_keySessionId, kKeyId), _,
+                                           containsKeyRequestMatcher(m_mediaKeysHandle, m_kKeySessionId, kKeyId), _,
                                            m_blockingClosureMock.get()))
         .WillOnce(WithArgs<3>(Invoke(this, &RialtoClientMediaKeysIpcContainsKeyTest::setContainsKeyResponseTrue)));
 
-    EXPECT_TRUE(m_mediaKeysIpc->containsKey(m_keySessionId, kKeyId));
+    EXPECT_TRUE(m_mediaKeysIpc->containsKey(m_kKeySessionId, kKeyId));
 }
 
 /**
@@ -86,7 +86,7 @@ TEST_F(RialtoClientMediaKeysIpcContainsKeyTest, ChannelDisconnected)
     expectIpcApiCallDisconnected();
     expectUnsubscribeEvents();
 
-    EXPECT_FALSE(m_mediaKeysIpc->containsKey(m_keySessionId, kKeyId));
+    EXPECT_FALSE(m_mediaKeysIpc->containsKey(m_kKeySessionId, kKeyId));
 
     // Reattach channel on destroySession
     EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
@@ -105,7 +105,7 @@ TEST_F(RialtoClientMediaKeysIpcContainsKeyTest, ReconnectChannel)
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("containsKey"), _, _, _, _))
         .WillOnce(WithArgs<3>(Invoke(this, &RialtoClientMediaKeysIpcContainsKeyTest::setContainsKeyResponseTrue)));
 
-    EXPECT_TRUE(m_mediaKeysIpc->containsKey(m_keySessionId, kKeyId));
+    EXPECT_TRUE(m_mediaKeysIpc->containsKey(m_kKeySessionId, kKeyId));
 }
 
 /**
@@ -117,7 +117,7 @@ TEST_F(RialtoClientMediaKeysIpcContainsKeyTest, Failure)
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("containsKey"), _, _, _, _));
 
-    EXPECT_FALSE(m_mediaKeysIpc->containsKey(m_keySessionId, kKeyId));
+    EXPECT_FALSE(m_mediaKeysIpc->containsKey(m_kKeySessionId, kKeyId));
 }
 
 /**
@@ -130,5 +130,5 @@ TEST_F(RialtoClientMediaKeysIpcContainsKeyTest, ReturnFalse)
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("containsKey"), _, _, _, _))
         .WillOnce(WithArgs<3>(Invoke(this, &RialtoClientMediaKeysIpcContainsKeyTest::setContainsKeyResponseFalse)));
 
-    EXPECT_FALSE(m_mediaKeysIpc->containsKey(m_keySessionId, kKeyId));
+    EXPECT_FALSE(m_mediaKeysIpc->containsKey(m_kKeySessionId, kKeyId));
 }

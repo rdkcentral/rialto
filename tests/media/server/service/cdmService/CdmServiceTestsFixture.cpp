@@ -154,55 +154,46 @@ void CdmServiceTests::mediaKeysWillGetCdmKeySessionIdWithStatus(firebolt::rialto
 
 void CdmServiceTests::mediaKeysWillCheckIfKeyIsPresent(bool result)
 {
-    mainThreadWillEnqueueTask();
     EXPECT_CALL(m_mediaKeysMock, containsKey(keySessionId, keyId)).WillOnce(Return(result));
 }
 
 void CdmServiceTests::mediaKeysWillSetDrmHeaderWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
 {
-    mainThreadWillEnqueueTask();
     EXPECT_CALL(m_mediaKeysMock, setDrmHeader(keySessionId, drmHeader)).WillOnce(Return(status));
 }
 
 void CdmServiceTests::mediaKeysWillDeleteDrmStoreWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
 {
-    mainThreadWillEnqueueTask();
     EXPECT_CALL(m_mediaKeysMock, deleteDrmStore()).WillOnce(Return(status));
 }
 
 void CdmServiceTests::mediaKeysWillDeleteKeyStoreWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
 {
-    mainThreadWillEnqueueTask();
     EXPECT_CALL(m_mediaKeysMock, deleteKeyStore()).WillOnce(Return(status));
 }
 
 void CdmServiceTests::mediaKeysWillGetDrmStoreHashWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
 {
-    mainThreadWillEnqueueTask();
     EXPECT_CALL(m_mediaKeysMock, getDrmStoreHash(_)).WillOnce(Return(status));
 }
 
 void CdmServiceTests::mediaKeysWillGetKeyStoreHashWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
 {
-    mainThreadWillEnqueueTask();
     EXPECT_CALL(m_mediaKeysMock, getKeyStoreHash(_)).WillOnce(Return(status));
 }
 
 void CdmServiceTests::mediaKeysWillGetLdlSessionsLimitWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
 {
-    mainThreadWillEnqueueTask();
     EXPECT_CALL(m_mediaKeysMock, getLdlSessionsLimit(_)).WillOnce(Return(status));
 }
 
 void CdmServiceTests::mediaKeysWillGetLastDrmErrorWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
 {
-    mainThreadWillEnqueueTask();
     EXPECT_CALL(m_mediaKeysMock, getLastDrmError(keySessionId, _)).WillOnce(Return(status));
 }
 
 void CdmServiceTests::mediaKeysWillGetDrmTimeWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
 {
-    mainThreadWillEnqueueTask();
     EXPECT_CALL(m_mediaKeysMock, getDrmTime(_)).WillOnce(Return(status));
 }
 
@@ -214,7 +205,6 @@ void CdmServiceTests::mediaKeysWillDecryptWithStatus(firebolt::rialto::MediaKeyE
 
 void CdmServiceTests::mediaKeysWillSelectKeyIdWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
 {
-    mainThreadWillEnqueueTask();
     EXPECT_CALL(m_mediaKeysMock, hasSession(keySessionId)).WillOnce(Return(true));
     EXPECT_CALL(m_mediaKeysMock, selectKeyId(keySessionId, keyId)).WillOnce(Return(status));
 }
@@ -224,15 +214,8 @@ void CdmServiceTests::mediaKeysWillNotFindMediaKeySession()
     EXPECT_CALL(m_mediaKeysMock, hasSession(keySessionId)).WillOnce(Return(false));
 }
 
-void CdmServiceTests::mediaKeysWillGetChallengeData()
-{
-    mainThreadWillEnqueueTask();
-    EXPECT_CALL(m_mediaKeysMock, getChallengeData(keySessionId));
-}
-
 void CdmServiceTests::mediaKeysWillCheckIfKeySystemIsNetflix(bool result)
 {
-    mainThreadWillEnqueueTask();
     EXPECT_CALL(m_mediaKeysMock, hasSession(keySessionId)).WillOnce(Return(true));
     EXPECT_CALL(m_mediaKeysMock, isNetflixKeySystem(keySessionId)).WillOnce(Return(result));
 }

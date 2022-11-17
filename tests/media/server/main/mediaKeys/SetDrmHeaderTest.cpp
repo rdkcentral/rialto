@@ -28,6 +28,7 @@ protected:
         createMediaKeys(kNetflixKeySystem);
         createKeySession(kNetflixKeySystem);
     }
+    ~RialtoServerMediaKeysSetDrmHeaderTest() { destroyMediaKeys(); }
 };
 
 /**
@@ -35,9 +36,10 @@ protected:
  */
 TEST_F(RialtoServerMediaKeysSetDrmHeaderTest, Success)
 {
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_mediaKeySessionMock, setDrmHeader(m_kDrmHeader)).WillOnce(Return(MediaKeyErrorStatus::OK));
 
-    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeys->setDrmHeader(m_keySessionId, m_kDrmHeader));
+    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeys->setDrmHeader(m_kKeySessionId, m_kDrmHeader));
 }
 
 /**
@@ -45,7 +47,8 @@ TEST_F(RialtoServerMediaKeysSetDrmHeaderTest, Success)
  */
 TEST_F(RialtoServerMediaKeysSetDrmHeaderTest, SessionDoesNotExistFailure)
 {
-    EXPECT_EQ(MediaKeyErrorStatus::BAD_SESSION_ID, m_mediaKeys->setDrmHeader(m_keySessionId + 1, m_kDrmHeader));
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_EQ(MediaKeyErrorStatus::BAD_SESSION_ID, m_mediaKeys->setDrmHeader(m_kKeySessionId + 1, m_kDrmHeader));
 }
 
 /**
@@ -53,7 +56,8 @@ TEST_F(RialtoServerMediaKeysSetDrmHeaderTest, SessionDoesNotExistFailure)
  */
 TEST_F(RialtoServerMediaKeysSetDrmHeaderTest, SetDrmHeaderFailure)
 {
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_mediaKeySessionMock, setDrmHeader(m_kDrmHeader)).WillOnce(Return(MediaKeyErrorStatus::NOT_SUPPORTED));
 
-    EXPECT_EQ(MediaKeyErrorStatus::NOT_SUPPORTED, m_mediaKeys->setDrmHeader(m_keySessionId, m_kDrmHeader));
+    EXPECT_EQ(MediaKeyErrorStatus::NOT_SUPPORTED, m_mediaKeys->setDrmHeader(m_kKeySessionId, m_kDrmHeader));
 }

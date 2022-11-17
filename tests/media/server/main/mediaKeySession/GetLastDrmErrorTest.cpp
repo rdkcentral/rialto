@@ -23,6 +23,7 @@ class RialtoServerMediaKeySessionGetLastDrmErrorTest : public MediaKeySessionTes
 {
 protected:
     uint32_t m_lastDrmError{0};
+    ~RialtoServerMediaKeySessionGetLastDrmErrorTest() { destroyKeySession(); }
 };
 
 /**
