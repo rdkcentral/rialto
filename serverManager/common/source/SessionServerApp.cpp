@@ -35,7 +35,6 @@
 namespace
 {
 constexpr char sessionManagementPrefix[]{"/tmp/rialto-"};
-constexpr std::chrono::milliseconds startupTimeout{2000};
 constexpr int maxPlaybackSessions{2};
 
 std::string generateSessionManagementSocket()
@@ -49,10 +48,29 @@ std::string getSessionServerPath()
     const char *customPath = getenv("RIALTO_SESSION_SERVER_PATH");
     if (customPath)
     {
-        RIALTO_SERVER_MANAGER_LOG_WARN("Using custom SessionServer path: %s", customPath);
+        RIALTO_SERVER_MANAGER_LOG_INFO("Using custom SessionServer path: %s", customPath);
         return std::string(customPath);
     }
     return "/usr/bin/RialtoServer";
+}
+
+std::chrono::milliseconds getStartupTimeout()
+{
+    const char *customTimeout = getenv("RIALTO_SESSION_SERVER_STARTUP_TIMEOUT_MS");
+    std::chrono::milliseconds timeout{0};
+    if (customTimeout)
+    {
+        try
+        {
+            timeout = std::chrono::milliseconds(std::stoull(customTimeout));
+            RIALTO_SERVER_MANAGER_LOG_INFO("Using custom SessionServer startup timeout: %sms", customTimeout);
+        }
+        catch (const std::exception &e)
+        {
+            RIALTO_SERVER_MANAGER_LOG_ERROR("Custom SessionServer startup timeout invalid, ignoring: %s", customTimeout);
+        }
+    }
+    return timeout;
 }
 } // namespace
 
@@ -165,17 +183,25 @@ bool SessionServerApp::initializeSockets()
 
 void SessionServerApp::setupStartupTimer()
 {
-    std::unique_lock<std::mutex> lock{m_timerMutex};
-    auto factory = firebolt::rialto::common::ITimerFactory::getFactory();
-    m_startupTimer =
-        factory->createTimer(startupTimeout,
-                             [this]()
-                             {
-                                 RIALTO_SERVER_MANAGER_LOG_WARN("Killing: %s", m_kAppId.c_str());
-                                 m_sessionServerAppManager.onSessionServerStateChanged(m_kAppId,
-                                                                                       service::SessionServerState::ERROR);
-                                 kill();
-                             });
+    std::chrono::milliseconds timeout = getStartupTimeout();
+    if (std::chrono::milliseconds(0) < timeout)
+    {
+        std::unique_lock<std::mutex> lock{m_timerMutex};
+        auto factory = firebolt::rialto::common::ITimerFactory::getFactory();
+        m_startupTimer =
+            factory->createTimer(timeout,
+                                 [this]()
+                                 {
+                                     RIALTO_SERVER_MANAGER_LOG_WARN("Killing: %s", m_kAppId.c_str());
+                                     m_sessionServerAppManager
+                                         .onSessionServerStateChanged(m_kAppId, service::SessionServerState::ERROR);
+                                     kill();
+                                 });
+    }
+    else
+    {
+        RIALTO_SERVER_MANAGER_LOG_INFO("Startup timer disabled");
+    }
 }
 
 bool SessionServerApp::spawnSessionServer()
