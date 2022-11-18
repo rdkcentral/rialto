@@ -340,6 +340,24 @@ public:
     }
 
     void gstPluginFeatureListFree(GList *list) const override { gst_plugin_feature_list_free(list); }
+
+    GstCaps *gstCapsNewSimple(const char *media_type, const char *fieldname, ...) const override
+    {
+        /* there's no valist equivalent of gst_caps_new_simple */
+        va_list varArgs;
+        va_start(varArgs, fieldname);
+        GstStructure *structure = gst_structure_new_valist(media_type, fieldname, varArgs);
+        va_end(varArgs);
+
+        if (structure)
+        {
+            GstCaps *caps = gst_caps_new_empty();
+            gst_caps_append_structure(caps, structure);
+            return caps;
+        }
+
+        return nullptr;
+    }
 };
 
 }; // namespace firebolt::rialto::server

@@ -210,6 +210,8 @@ bool MediaPipelineIpc::attachSource(const IMediaPipeline::MediaSource &source, i
         request.mutable_audio_config()->set_codec_specific_config(audioConfig.codecSpecificConfig.data(),
                                                                   audioConfig.codecSpecificConfig.size());
     }
+    request.set_codec_data(source.getCodecData().data(), source.getCodecData().size());
+    request.set_stream_format(convertStreamFormat(source.getStreamFormat()));
 
     firebolt::rialto::AttachSourceResponse response;
     auto ipcController = m_ipc->createRpcController();
@@ -749,6 +751,31 @@ MediaPipelineIpc::convertSegmentAlignment(const firebolt::rialto::SegmentAlignme
     }
     }
     return firebolt::rialto::AttachSourceRequest_SegmentAlignment_ALIGNMENT_UNDEFINED;
+}
+
+firebolt::rialto::AttachSourceRequest_StreamFormat
+MediaPipelineIpc::convertStreamFormat(const firebolt::rialto::StreamFormat &streamFormat)
+{
+    switch (streamFormat)
+    {
+    case firebolt::rialto::StreamFormat::UNDEFINED:
+    {
+        return firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_UNDEFINED;
+    }
+    case firebolt::rialto::StreamFormat::RAW:
+    {
+        return firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_RAW;
+    }
+    case firebolt::rialto::StreamFormat::AVC:
+    {
+        return firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_AVC;
+    }
+    case firebolt::rialto::StreamFormat::BYTE_STREAM:
+    {
+        return firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_BYTE_STREAM;
+    }
+    }
+    return firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_UNDEFINED;
 }
 
 }; // namespace firebolt::rialto::client

@@ -100,10 +100,15 @@ public:
          * @param[in] type : The source type.
          * @param[in] mimeType : The mime type string.
          * @param[in] alignment : The alignment of media segment.
+         * @param[in] codecData : The additional data for decoder
+         * @param[in] streamFormat : The stream format
          */
         explicit MediaSource(int32_t id = 0, MediaSourceType type = MediaSourceType::UNKNOWN, const char *mimeType = "",
-                             SegmentAlignment alignment = SegmentAlignment::UNDEFINED)
-            : m_id(id), m_type(type), m_mimeType(mimeType), m_alignment(alignment)
+                             SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
+                             const std::vector<uint8_t> &codecData = std::vector<uint8_t>(),
+                             StreamFormat streamFormat = StreamFormat::UNDEFINED)
+            : m_id(id), m_type(type), m_mimeType(mimeType), m_alignment(alignment), m_codecData(codecData),
+              m_streamFormat(streamFormat)
         {
         }
 
@@ -114,11 +119,15 @@ public:
          * @param[in] mimeType : The mime type string.
          * @param[in] audioConfig : The audio specific configuration.
          * @param[in] alignment : The alignment of media segment.
+         * @param[in] codecData : The additional data for decoder
+         * @param[in] streamFormat : The stream format
          */
         MediaSource(int32_t id, const std::string &mimeType, const AudioConfig &audioConfig,
-                    SegmentAlignment alignment = SegmentAlignment::UNDEFINED)
+                    SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
+                    const std::vector<uint8_t> &codecData = std::vector<uint8_t>(),
+                    StreamFormat streamFormat = StreamFormat::UNDEFINED)
             : m_id(id), m_type(MediaSourceType::AUDIO), m_mimeType(mimeType), m_alignment(alignment),
-              m_audioConfig(audioConfig)
+              m_audioConfig(audioConfig), m_codecData(codecData), m_streamFormat(streamFormat)
         {
         }
 
@@ -168,6 +177,16 @@ public:
             return false;
         }
 
+        /**
+         * @brief Gets the codec data
+         */
+        const std::vector<uint8_t> &getCodecData() const { return m_codecData; }
+
+        /**
+         * @brief Gets the stream format
+         */
+        StreamFormat getStreamFormat() const { return m_streamFormat; }
+
     protected:
         /**
          * @brief The source id.
@@ -193,6 +212,16 @@ public:
          * @brief The audio specific configuration
          */
         AudioConfig m_audioConfig;
+
+        /**
+         * @brief Additional data for decoder
+         */
+        std::vector<uint8_t> m_codecData;
+
+        /**
+         * @brief The stream format
+         */
+        StreamFormat m_streamFormat;
     };
 
     /**

@@ -38,6 +38,15 @@ public:
     void execute() const override;
 
 private:
+    GstCaps *createSimpleCapsFromMimeType(const std::string &mimeType) const;
+    GstCaps *getAudioSpecificConfiguration() const;
+    void addAlignmentToCaps(GstCaps *caps) const;
+    void addCodecDataToCaps(GstCaps *caps) const;
+    void addStreamFormatToCaps(GstCaps *caps) const;
+    void addSampleRateAndChannelsToCaps(GstCaps *caps) const;
+    void addMpegVersionToCaps(GstCaps *caps) const;
+    GstCaps *createCapsFromMediaSource() const;
+
     PlayerContext &m_context;
     std::shared_ptr<IGstWrapper> m_gstWrapper;
     std::shared_ptr<IGlibWrapper> m_glibWrapper;

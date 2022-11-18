@@ -113,6 +113,13 @@ message AttachSourceRequest {
         ALIGNMENT_AU        = 2;
     }
 
+    enum StreamFormat {
+        STREAM_FORMAT_UNDEFINED   = 0;
+        STREAM_FORMAT_RAW         = 1;
+        STREAM_FORMAT_AVC         = 2;
+        STREAM_FORMAT_BYTE_STREAM = 3;
+    }
+
     message AudioConfig {
         required uint32 number_of_channels = 1;   ///< The number of channels. 
         required uint32 sample_rate = 2;         ///< The sampling rate.
@@ -124,6 +131,8 @@ message AttachSourceRequest {
     required string mime_type = 3;
     required SegmentAlignment segment_alignment    = 4; /* Segment alignment can be specified for H264/H265, will use NAL if not set */
     required AudioConfig audio_config    = 5;
+    required bytes codec_data = 6;
+    required StreamFormat stream_format = 7;
 }
 message AttachSourceResponse {
     required int32 source_id = 1;
