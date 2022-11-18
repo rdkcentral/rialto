@@ -166,7 +166,7 @@ void MediaKeysModuleService::createMediaKeys(::google::protobuf::RpcController *
                                              ::firebolt::rialto::CreateMediaKeysResponse *response,
                                              ::google::protobuf::Closure *done)
 {
-    RIALTO_SERVER_LOG_DEBUG("%s requested.", __func__);
+    RIALTO_SERVER_LOG_DEBUG("entry:");
     auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
     if (!ipcController)
     {
@@ -196,7 +196,7 @@ void MediaKeysModuleService::destroyMediaKeys(::google::protobuf::RpcController 
                                               ::firebolt::rialto::DestroyMediaKeysResponse *response,
                                               ::google::protobuf::Closure *done)
 {
-    RIALTO_SERVER_LOG_DEBUG("%s requested.", __func__);
+    RIALTO_SERVER_LOG_DEBUG("entry:");
     auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
     if (!ipcController)
     {
@@ -236,7 +236,7 @@ void MediaKeysModuleService::containsKey(::google::protobuf::RpcController *cont
                                          ::firebolt::rialto::ContainsKeyResponse *response,
                                          ::google::protobuf::Closure *done)
 {
-    RIALTO_SERVER_LOG_DEBUG("%s requested.", __func__);
+    RIALTO_SERVER_LOG_DEBUG("entry:");
 
     bool result = m_cdmService.containsKey(request->media_keys_handle(), request->key_session_id(),
                                            std::vector<std::uint8_t>{request->key_id().begin(), request->key_id().end()});
@@ -249,7 +249,7 @@ void MediaKeysModuleService::createKeySession(::google::protobuf::RpcController 
                                               ::firebolt::rialto::CreateKeySessionResponse *response,
                                               ::google::protobuf::Closure *done)
 {
-    RIALTO_SERVER_LOG_DEBUG("%s requested.", __func__);
+    RIALTO_SERVER_LOG_DEBUG("entry:");
     auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
     if (!ipcController)
     {
@@ -278,7 +278,7 @@ void MediaKeysModuleService::generateRequest(::google::protobuf::RpcController *
                                              ::firebolt::rialto::GenerateRequestResponse *response,
                                              ::google::protobuf::Closure *done)
 {
-    RIALTO_SERVER_LOG_DEBUG("%s requested.", __func__);
+    RIALTO_SERVER_LOG_DEBUG("entry:");
 
     MediaKeyErrorStatus status = m_cdmService.generateRequest(request->media_keys_handle(), request->key_session_id(),
                                                               covertInitDataType(request->init_data_type()),
@@ -293,7 +293,7 @@ void MediaKeysModuleService::loadSession(::google::protobuf::RpcController *cont
                                          ::firebolt::rialto::LoadSessionResponse *response,
                                          ::google::protobuf::Closure *done)
 {
-    RIALTO_SERVER_LOG_DEBUG("%s requested.", __func__);
+    RIALTO_SERVER_LOG_DEBUG("entry:");
 
     MediaKeyErrorStatus status = m_cdmService.loadSession(request->media_keys_handle(), request->key_session_id());
     response->set_error_status(convertMediaKeyErrorStatus(status));
@@ -305,7 +305,7 @@ void MediaKeysModuleService::updateSession(::google::protobuf::RpcController *co
                                            ::firebolt::rialto::UpdateSessionResponse *response,
                                            ::google::protobuf::Closure *done)
 {
-    RIALTO_SERVER_LOG_DEBUG("%s requested.", __func__);
+    RIALTO_SERVER_LOG_DEBUG("entry:");
 
     MediaKeyErrorStatus status = m_cdmService.updateSession(request->media_keys_handle(), request->key_session_id(),
                                                             std::vector<std::uint8_t>{request->response_data().begin(),
@@ -319,7 +319,7 @@ void MediaKeysModuleService::setDrmHeader(::google::protobuf::RpcController *con
                                           ::firebolt::rialto::SetDrmHeaderResponse *response,
                                           ::google::protobuf::Closure *done)
 {
-    RIALTO_SERVER_LOG_DEBUG("%s requested.", __func__);
+    RIALTO_SERVER_LOG_DEBUG("entry:");
 
     MediaKeyErrorStatus status = m_cdmService.setDrmHeader(request->media_keys_handle(), request->key_session_id(),
                                                            std::vector<std::uint8_t>{request->request_data().begin(),
@@ -333,7 +333,7 @@ void MediaKeysModuleService::closeKeySession(::google::protobuf::RpcController *
                                              ::firebolt::rialto::CloseKeySessionResponse *response,
                                              ::google::protobuf::Closure *done)
 {
-    RIALTO_SERVER_LOG_DEBUG("%s requested.", __func__);
+    RIALTO_SERVER_LOG_DEBUG("entry:");
 
     MediaKeyErrorStatus status = m_cdmService.closeKeySession(request->media_keys_handle(), request->key_session_id());
     response->set_error_status(convertMediaKeyErrorStatus(status));
@@ -345,7 +345,7 @@ void MediaKeysModuleService::removeKeySession(::google::protobuf::RpcController 
                                               ::firebolt::rialto::RemoveKeySessionResponse *response,
                                               ::google::protobuf::Closure *done)
 {
-    RIALTO_SERVER_LOG_DEBUG("%s requested.", __func__);
+    RIALTO_SERVER_LOG_DEBUG("entry:");
 
     MediaKeyErrorStatus status = m_cdmService.removeKeySession(request->media_keys_handle(), request->key_session_id());
     response->set_error_status(convertMediaKeyErrorStatus(status));
@@ -357,7 +357,7 @@ void MediaKeysModuleService::deleteDrmStore(::google::protobuf::RpcController *c
                                             ::firebolt::rialto::DeleteDrmStoreResponse *response,
                                             ::google::protobuf::Closure *done)
 {
-    RIALTO_SERVER_LOG_DEBUG("%s requested.", __func__);
+    RIALTO_SERVER_LOG_DEBUG("entry:");
 
     MediaKeyErrorStatus status = m_cdmService.deleteDrmStore(request->media_keys_handle());
     response->set_error_status(convertMediaKeyErrorStatus(status));
@@ -369,7 +369,7 @@ void MediaKeysModuleService::deleteKeyStore(::google::protobuf::RpcController *c
                                             ::firebolt::rialto::DeleteKeyStoreResponse *response,
                                             ::google::protobuf::Closure *done)
 {
-    RIALTO_SERVER_LOG_DEBUG("%s requested.", __func__);
+    RIALTO_SERVER_LOG_DEBUG("entry:");
 
     MediaKeyErrorStatus status = m_cdmService.deleteKeyStore(request->media_keys_handle());
     response->set_error_status(convertMediaKeyErrorStatus(status));
@@ -382,7 +382,7 @@ void MediaKeysModuleService::getDrmStoreHash(::google::protobuf::RpcController *
                                              ::google::protobuf::Closure *done)
 {
     std::vector<unsigned char> drmStoreHash;
-    RIALTO_SERVER_LOG_DEBUG("%s requested.", __func__);
+    RIALTO_SERVER_LOG_DEBUG("entry:");
 
     MediaKeyErrorStatus status = m_cdmService.getDrmStoreHash(request->media_keys_handle(), drmStoreHash);
     response->set_error_status(convertMediaKeyErrorStatus(status));
@@ -399,7 +399,7 @@ void MediaKeysModuleService::getKeyStoreHash(::google::protobuf::RpcController *
                                              ::google::protobuf::Closure *done)
 {
     std::vector<unsigned char> keyStoreHash;
-    RIALTO_SERVER_LOG_DEBUG("%s requested.", __func__);
+    RIALTO_SERVER_LOG_DEBUG("entry:");
 
     MediaKeyErrorStatus status = m_cdmService.getKeyStoreHash(request->media_keys_handle(), keyStoreHash);
     response->set_error_status(convertMediaKeyErrorStatus(status));
@@ -416,7 +416,7 @@ void MediaKeysModuleService::getLdlSessionsLimit(::google::protobuf::RpcControll
                                                  ::google::protobuf::Closure *done)
 {
     uint32_t ldlLimit{0};
-    RIALTO_SERVER_LOG_DEBUG("%s requested.", __func__);
+    RIALTO_SERVER_LOG_DEBUG("entry:");
 
     MediaKeyErrorStatus status = m_cdmService.getLdlSessionsLimit(request->media_keys_handle(), ldlLimit);
     response->set_error_status(convertMediaKeyErrorStatus(status));
@@ -430,7 +430,7 @@ void MediaKeysModuleService::getLastDrmError(::google::protobuf::RpcController *
                                              ::google::protobuf::Closure *done)
 {
     uint32_t errorCode{0};
-    RIALTO_SERVER_LOG_DEBUG("%s requested.", __func__);
+    RIALTO_SERVER_LOG_DEBUG("entry:");
 
     MediaKeyErrorStatus status =
         m_cdmService.getLastDrmError(request->media_keys_handle(), request->key_session_id(), errorCode);
@@ -445,7 +445,7 @@ void MediaKeysModuleService::getDrmTime(::google::protobuf::RpcController *contr
                                         ::google::protobuf::Closure *done)
 {
     uint64_t drmTime{0};
-    RIALTO_SERVER_LOG_DEBUG("%s requested.", __func__);
+    RIALTO_SERVER_LOG_DEBUG("entry:");
 
     MediaKeyErrorStatus status = m_cdmService.getDrmTime(request->media_keys_handle(), drmTime);
     response->set_error_status(convertMediaKeyErrorStatus(status));
@@ -458,7 +458,7 @@ void MediaKeysModuleService::getCdmKeySessionId(::google::protobuf::RpcControlle
                                                 ::firebolt::rialto::GetCdmKeySessionIdResponse *response,
                                                 ::google::protobuf::Closure *done)
 {
-    RIALTO_SERVER_LOG_DEBUG("%s requested.", __func__);
+    RIALTO_SERVER_LOG_DEBUG("entry:");
 
     std::string cdmKeySessionId;
     MediaKeyErrorStatus status =
