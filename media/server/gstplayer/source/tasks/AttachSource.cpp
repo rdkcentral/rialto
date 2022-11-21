@@ -105,8 +105,7 @@ GstCaps *AttachSource::createSimpleCapsFromMimeType(const std::string &mimeType)
         return m_gstWrapper->gstCapsNewEmptySimple(mimeToMediaTypeIt->second.c_str());
     }
 
-    RIALTO_SERVER_LOG_ERROR("Failed to create caps from mime type '%s'", mimeType.c_str());
-    return nullptr;
+    return m_gstWrapper->gstCapsNewEmpty();
 }
 
 GstCaps *AttachSource::getAudioSpecificConfiguration() const
@@ -197,10 +196,6 @@ GstCaps *AttachSource::createCapsFromMediaSource() const
     }
 
     GstCaps *caps = createSimpleCapsFromMimeType(mimeType);
-    if (!caps)
-    {
-        return m_gstWrapper->gstCapsNewEmpty();
-    }
 
     if (mimeType == "audio/mp4" || mimeType == "audio/aac")
     {

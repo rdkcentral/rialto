@@ -59,7 +59,7 @@ protected:
     GstElement m_appSrc{};
     std::string m_vidName{"vidsrc"};
     std::string m_audName{"audsrc"};
-    gchar m_capsStr;
+    gchar m_capsStr{};
 };
 
 TEST_F(AttachSourceTest, shouldNotAttachUnknownSource)
