@@ -199,15 +199,13 @@ MediaKeyErrorStatus MediaKeySession::closeKeySession()
         status = m_ocdmSession->cancelChallengeData();
         if (MediaKeyErrorStatus::OK != status)
         {
-            RIALTO_SERVER_LOG_ERROR("Failed to cancel the challenge data for the key session");
-            return status;
+            RIALTO_SERVER_LOG_WARN("Failed to cancel the challenge data for the key session");
         }
 
         status = m_ocdmSession->cleanDecryptContext();
         if (MediaKeyErrorStatus::OK != status)
         {
-            RIALTO_SERVER_LOG_ERROR("Failed to clean the decrypt context for the key session");
-            return status;
+            RIALTO_SERVER_LOG_WARN("Failed to clean the decrypt context for the key session");
         }
     }
     else
