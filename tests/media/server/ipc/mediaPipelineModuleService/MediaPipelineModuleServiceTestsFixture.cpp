@@ -43,6 +43,7 @@ const std::string mimeType{"exampleMimeType"};
 constexpr uint32_t numberOfChannels{6};
 constexpr uint32_t sampleRate{48000};
 const std::string codecSpecificConfigStr("1243567");
+std::vector<uint8_t> codecData{'T', 'E', 'S', 'T'};
 const std::string url{"https://example.url.com"};
 constexpr int64_t position{2000000000};
 constexpr std::uint32_t requestId{2};
@@ -139,6 +140,30 @@ firebolt::rialto::ProtoMediaSourceType convertProtoMediaSourceType(const firebol
     }
     }
     return firebolt::rialto::ProtoMediaSourceType::UNKNOWN;
+}
+
+firebolt::rialto::AttachSourceRequest_StreamFormat convertStreamFormat(const firebolt::rialto::StreamFormat &streamFormat)
+{
+    switch (streamFormat)
+    {
+    case firebolt::rialto::StreamFormat::UNDEFINED:
+    {
+        return firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_UNDEFINED;
+    }
+    case firebolt::rialto::StreamFormat::RAW:
+    {
+        return firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_RAW;
+    }
+    case firebolt::rialto::StreamFormat::AVC:
+    {
+        return firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_AVC;
+    }
+    case firebolt::rialto::StreamFormat::BYTE_STREAM:
+    {
+        return firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_BYTE_STREAM;
+    }
+    }
+    return firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_UNDEFINED;
 }
 
 firebolt::rialto::HaveDataRequest_MediaSourceStatus
@@ -319,12 +344,14 @@ void MediaPipelineModuleServiceTests::playbackServiceWillAttachSource()
     EXPECT_CALL(m_playbackServiceMock, attachSource(hardcodedSessionId, source)).WillOnce(Return(true));
 }
 
-void MediaPipelineModuleServiceTests::playbackServiceWillAttachAudioSourceWithCodecConfig()
+void MediaPipelineModuleServiceTests::playbackServiceWillAttachAudioSourceWithAdditionaldata()
 {
     std::vector<uint8_t> codecSpecificConfig;
     codecSpecificConfig.assign(codecSpecificConfigStr.begin(), codecSpecificConfigStr.end());
     firebolt::rialto::AudioConfig audioConfig{numberOfChannels, sampleRate, codecSpecificConfig};
-    firebolt::rialto::IMediaPipeline::MediaSource source{0, mimeType, audioConfig};
+    firebolt::rialto::IMediaPipeline::MediaSource source{0,           mimeType,
+                                                         audioConfig, firebolt::rialto::SegmentAlignment::UNDEFINED,
+                                                         codecData,   firebolt::rialto::StreamFormat::RAW};
     expectRequestSuccess();
     EXPECT_CALL(m_playbackServiceMock, attachSource(hardcodedSessionId, source)).WillOnce(Return(true));
 }
@@ -541,7 +568,7 @@ void MediaPipelineModuleServiceTests::sendAttachSourceRequestAndReceiveResponse(
     m_service->attachSource(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
 
-void MediaPipelineModuleServiceTests::sendAttachAudioSourceWithCodecConfigRequestAndReceiveResponse()
+void MediaPipelineModuleServiceTests::sendAttachAudioSourceWithAdditionalDataRequestAndReceiveResponse()
 {
     firebolt::rialto::AttachSourceRequest request;
     firebolt::rialto::AttachSourceResponse response;
@@ -552,6 +579,8 @@ void MediaPipelineModuleServiceTests::sendAttachAudioSourceWithCodecConfigReques
     request.mutable_audio_config()->set_number_of_channels(numberOfChannels);
     request.mutable_audio_config()->set_sample_rate(sampleRate);
     request.mutable_audio_config()->set_codec_specific_config(codecSpecificConfigStr);
+    request.set_codec_data(codecData.data(), codecData.size());
+    request.set_stream_format(convertStreamFormat(firebolt::rialto::StreamFormat::RAW));
 
     m_service->attachSource(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }

@@ -358,6 +358,14 @@ public:
 
         return nullptr;
     }
+
+    GstCaps *gstCapsNewEmptySimple(const char *media_type) const override
+    {
+        return gst_caps_new_empty_simple(media_type);
+    }
+
+    GstCaps *gstCapsNewEmpty() const override { return gst_caps_new_empty(); }
+
 };
 
 }; // namespace firebolt::rialto::server

@@ -95,6 +95,11 @@ public:
                 (const, override));
     MOCK_METHOD(GstCaps *, gstCapsCopy, (const GstCaps *caps), (const, override));
     MOCK_METHOD(void, gstCapsSetSimpleIntStub, (GstCaps * caps, const gchar *field, GType type, int value), (const));
+    MOCK_METHOD(void, gstCapsSetSimpleStringStub, (GstCaps * caps, const gchar *field, GType type, const char *value),
+                (const));
+    MOCK_METHOD(void, gstCapsSetSimpleBufferStub, (GstCaps * caps, const gchar *field, GType type, GstBuffer *value),
+                (const));
+    MOCK_METHOD(GstCaps *, gstCapsNewSimpleIntStub, (const char *media_type, const char *fieldname, GType type, int value), (const));
     MOCK_METHOD(void, gstMessageParseQos,
                 (GstMessage * message, gboolean *live, guint64 *running_time, guint64 *stream_time, guint64 *timestamp,
                  guint64 *duration),
@@ -123,6 +128,23 @@ public:
     MOCK_METHOD(GList *, gstElementFactoryListGetElements, (GstElementFactoryListType type, GstRank minrank), (const));
     MOCK_METHOD(const GList *, gstElementFactoryGetStaticPadTemplates, (GstElementFactory * factory), (const));
     MOCK_METHOD(void, gstPluginFeatureListFree, (GList * list), (const));
+    MOCK_METHOD(GstCaps *, gstCapsNewEmptySimple, (const char *media_type), (const));
+    MOCK_METHOD(GstCaps *, gstCapsNewEmpty, (), (const));
+    GstCaps * gstCapsNewSimple(const char *media_type, const char *fieldname, ...) const override
+    {
+        va_list args;
+        const gchar *property = fieldname;
+
+        va_start(args, fieldname);
+
+        GType intType = va_arg(args, GType);
+        int intValue = va_arg(args, int);
+        GstCaps *result = gstCapsNewSimpleIntStub(media_type, property, intType, intValue);
+
+        va_end(args);
+
+        return result;
+    }
 
     void gstCapsSetSimple(GstCaps *caps, const gchar *field, ...) const override
     {
@@ -133,9 +155,22 @@ public:
 
         while (NULL != property)
         {
-            GType intType = va_arg(args, GType);
-            int intValue = va_arg(args, int);
-            gstCapsSetSimpleIntStub(caps, property, intType, intValue);
+            GType type = va_arg(args, GType);
+            if (g_type_is_a(type, G_TYPE_INT))
+            {
+                int intValue = va_arg(args, int);
+                gstCapsSetSimpleIntStub(caps, property, type, intValue);
+            }
+            else if (g_type_is_a(type, G_TYPE_STRING))
+            {
+                const char *val = va_arg(args, const char *);
+                gstCapsSetSimpleStringStub(caps, property, type, val);
+            }
+            else if (g_type_is_a(type, GST_TYPE_BUFFER))
+            {
+                GstBuffer *buf = va_arg(args, GstBuffer *);
+                gstCapsSetSimpleBufferStub(caps, property, type, buf);
+            }
             property = va_arg(args, const gchar *);
         }
 

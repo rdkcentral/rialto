@@ -41,6 +41,13 @@ AttachSource::~AttachSource()
 void AttachSource::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing AttachSource");
+
+    if (m_attachedSource.getType() == MediaSourceType::UNKNOWN)
+    {
+        RIALTO_SERVER_LOG_ERROR("Unknown media source type");
+        return;
+    }
+
     GstCaps *caps = createCapsFromMediaSource();
     gchar *capsStr = m_gstWrapper->gstCapsToString(caps);
     std::string strCaps = capsStr;
@@ -61,13 +68,6 @@ void AttachSource::execute() const
         {
             RIALTO_SERVER_LOG_MIL("Adding Video appsrc");
             appSrc = m_gstWrapper->gstElementFactoryMake("appsrc", "vidsrc");
-        }
-        else
-        {
-            RIALTO_SERVER_LOG_ERROR("Unknown media source type");
-            if (caps)
-                m_gstWrapper->gstCapsUnref(caps);
-            return;
         }
 
         m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(appSrc), caps);
@@ -102,7 +102,7 @@ GstCaps *AttachSource::createSimpleCapsFromMimeType(const std::string &mimeType)
     auto mimeToMediaTypeIt = mimeToMediaType.find(mimeType);
     if (mimeToMediaTypeIt != mimeToMediaType.end())
     {
-        return gst_caps_new_empty_simple(mimeToMediaTypeIt->second.c_str());
+        return m_gstWrapper->gstCapsNewEmptySimple(mimeToMediaTypeIt->second.c_str());
     }
 
     RIALTO_SERVER_LOG_ERROR("Failed to create caps from mime type '%s'", mimeType.c_str());
@@ -199,7 +199,7 @@ GstCaps *AttachSource::createCapsFromMediaSource() const
     GstCaps *caps = createSimpleCapsFromMimeType(mimeType);
     if (!caps)
     {
-        return nullptr;
+        return m_gstWrapper->gstCapsNewEmpty();
     }
 
     if (mimeType == "audio/mp4" || mimeType == "audio/aac")
