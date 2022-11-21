@@ -96,6 +96,7 @@ MediaKeySession::~MediaKeySession()
 
 MediaKeyErrorStatus MediaKeySession::generateRequest(InitDataType initDataType, const std::vector<uint8_t> &initData)
 {
+    RIALTO_SERVER_LOG_DEBUG("entry:");
     // Set the request flag for the onLicenseRequest callback
     m_licenseRequested = true;
 
@@ -121,28 +122,18 @@ MediaKeyErrorStatus MediaKeySession::generateRequest(InitDataType initDataType, 
         }
         return status;
     }
-    else
-    {
-        // Get the challenge manually and notify onLicenseRequest
-        getChallenge();
-    }
 
     return MediaKeyErrorStatus::OK;
 }
 
 void MediaKeySession::getChallenge()
 {
+    RIALTO_SERVER_LOG_DEBUG("entry:");
     auto task = [&]()
     {
         uint32_t challengeSize = 0;
         MediaKeyErrorStatus status = m_ocdmSession->getChallengeData(m_kIsLDL, nullptr, &challengeSize);
-        if (MediaKeyErrorStatus::OK != status)
-        {
-            RIALTO_SERVER_LOG_ERROR("Failed to get the challenge data, no onLicenseRequest will be generated");
-            return;
-        }
-
-        std::vector<uint8_t> challenge(challengeSize);
+        std::vector<uint8_t> challenge(challengeSize, 0x00);
         status = m_ocdmSession->getChallengeData(m_kIsLDL, &challenge[0], &challengeSize);
         if (MediaKeyErrorStatus::OK != status)
         {
@@ -208,15 +199,13 @@ MediaKeyErrorStatus MediaKeySession::closeKeySession()
         status = m_ocdmSession->cancelChallengeData();
         if (MediaKeyErrorStatus::OK != status)
         {
-            RIALTO_SERVER_LOG_ERROR("Failed to cancel the challenge data for the key session");
-            return status;
+            RIALTO_SERVER_LOG_WARN("Failed to cancel the challenge data for the key session");
         }
 
         status = m_ocdmSession->cleanDecryptContext();
         if (MediaKeyErrorStatus::OK != status)
         {
-            RIALTO_SERVER_LOG_ERROR("Failed to clean the decrypt context for the key session");
-            return status;
+            RIALTO_SERVER_LOG_WARN("Failed to clean the decrypt context for the key session");
         }
     }
     else

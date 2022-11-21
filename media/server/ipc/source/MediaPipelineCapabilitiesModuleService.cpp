@@ -82,7 +82,7 @@ void MediaPipelineCapabilitiesModuleService::getSupportedMimeTypes(
     ::google::protobuf::RpcController *controller, const ::firebolt::rialto::GetSupportedMimeTypesRequest *request,
     ::firebolt::rialto::GetSupportedMimeTypesResponse *response, ::google::protobuf::Closure *done)
 {
-    RIALTO_SERVER_LOG_DEBUG("%s requested.", __func__);
+    RIALTO_SERVER_LOG_DEBUG("entry:");
     auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
     if (!ipcController)
     {
@@ -107,7 +107,7 @@ void MediaPipelineCapabilitiesModuleService::isMimeTypeSupported(
     ::google::protobuf::RpcController *controller, const ::firebolt::rialto::IsMimeTypeSupportedRequest *request,
     ::firebolt::rialto::IsMimeTypeSupportedResponse *response, ::google::protobuf::Closure *done)
 {
-    RIALTO_SERVER_LOG_DEBUG("%s requested.", __func__);
+    RIALTO_SERVER_LOG_DEBUG("entry:");
     auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
     if (!ipcController)
     {

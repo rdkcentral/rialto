@@ -53,19 +53,21 @@ TEST_F(RialtoServerMediaKeySessionCloseKeySessionTest, SuccessNoneNetflix)
 }
 
 /**
- * Test that CloseKeySession fails if the ocdm session api cancelChallengeData fails.
+ * Test that CloseKeySession succeeds even if the ocdm session api cancelChallengeData fails.
  */
 TEST_F(RialtoServerMediaKeySessionCloseKeySessionTest, OcdmSessionCancelChallengeDataFailure)
 {
     createKeySession(kNetflixKeySystem);
 
     EXPECT_CALL(*m_ocdmSessionMock, cancelChallengeData()).WillOnce(Return(MediaKeyErrorStatus::INVALID_STATE));
+    EXPECT_CALL(*m_ocdmSessionMock, cleanDecryptContext()).WillOnce(Return(MediaKeyErrorStatus::OK));
+    EXPECT_CALL(*m_ocdmSessionMock, destructSession()).WillOnce(Return(MediaKeyErrorStatus::OK));
 
-    EXPECT_EQ(MediaKeyErrorStatus::INVALID_STATE, m_mediaKeySession->closeKeySession());
+    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->closeKeySession());
 }
 
 /**
- * Test that CloseKeySession fails if the ocdm session api cleanDecryptContext fails.
+ * Test that CloseKeySession succeeds even if the ocdm session api cleanDecryptContext fails.
  */
 TEST_F(RialtoServerMediaKeySessionCloseKeySessionTest, OcdmSessionCleanDecryptContextFailure)
 {
@@ -73,8 +75,9 @@ TEST_F(RialtoServerMediaKeySessionCloseKeySessionTest, OcdmSessionCleanDecryptCo
 
     EXPECT_CALL(*m_ocdmSessionMock, cancelChallengeData()).WillOnce(Return(MediaKeyErrorStatus::OK));
     EXPECT_CALL(*m_ocdmSessionMock, cleanDecryptContext()).WillOnce(Return(MediaKeyErrorStatus::NOT_SUPPORTED));
+    EXPECT_CALL(*m_ocdmSessionMock, destructSession()).WillOnce(Return(MediaKeyErrorStatus::OK));
 
-    EXPECT_EQ(MediaKeyErrorStatus::NOT_SUPPORTED, m_mediaKeySession->closeKeySession());
+    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->closeKeySession());
 }
 
 /**

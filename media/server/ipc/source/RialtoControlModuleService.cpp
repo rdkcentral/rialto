@@ -83,7 +83,7 @@ void RialtoControlModuleService::getSharedMemory(::google::protobuf::RpcControll
                                                  ::firebolt::rialto::GetSharedMemoryResponse *response,
                                                  ::google::protobuf::Closure *done)
 {
-    RIALTO_SERVER_LOG_DEBUG("%s requested.", __func__);
+    RIALTO_SERVER_LOG_DEBUG("entry:");
 
     int32_t fd;
     uint32_t size;
