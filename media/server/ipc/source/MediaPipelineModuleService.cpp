@@ -208,7 +208,7 @@ void MediaPipelineModuleService::createSession(::google::protobuf::RpcController
                                                ::firebolt::rialto::CreateSessionResponse *response,
                                                ::google::protobuf::Closure *done)
 {
-    RIALTO_SERVER_LOG_DEBUG("%s requested.", __func__);
+    RIALTO_SERVER_LOG_DEBUG("entry:");
     auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
     if (!ipcController)
     {
@@ -241,7 +241,7 @@ void MediaPipelineModuleService::destroySession(::google::protobuf::RpcControlle
                                                 ::firebolt::rialto::DestroySessionResponse *response,
                                                 ::google::protobuf::Closure *done)
 {
-    RIALTO_SERVER_LOG_DEBUG("%s requested.", __func__);
+    RIALTO_SERVER_LOG_DEBUG("entry:");
     auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
     if (!ipcController)
     {
@@ -269,7 +269,7 @@ void MediaPipelineModuleService::load(::google::protobuf::RpcController *control
                                       const ::firebolt::rialto::LoadRequest *request,
                                       ::firebolt::rialto::LoadResponse *response, ::google::protobuf::Closure *done)
 {
-    RIALTO_SERVER_LOG_DEBUG("%s requested.", __func__);
+    RIALTO_SERVER_LOG_DEBUG("entry:");
     if (!m_playbackService.load(request->session_id(), convertMediaType(request->type()), request->mime_type(),
                                 request->url()))
     {
@@ -284,7 +284,7 @@ void MediaPipelineModuleService::setVideoWindow(::google::protobuf::RpcControlle
                                                 ::firebolt::rialto::SetVideoWindowResponse *response,
                                                 ::google::protobuf::Closure *done)
 {
-    RIALTO_SERVER_LOG_DEBUG("%s requested.", __func__);
+    RIALTO_SERVER_LOG_DEBUG("entry:");
     if (!m_playbackService.setVideoWindow(request->session_id(), request->x(), request->y(), request->width(),
                                           request->height()))
     {
@@ -345,7 +345,7 @@ void MediaPipelineModuleService::removeSource(::google::protobuf::RpcController 
                                               ::firebolt::rialto::RemoveSourceResponse *response,
                                               ::google::protobuf::Closure *done)
 {
-    RIALTO_SERVER_LOG_DEBUG("%s requested.", __func__);
+    RIALTO_SERVER_LOG_DEBUG("entry:");
     if (!m_playbackService.removeSource(request->session_id(), request->source_id()))
     {
         RIALTO_SERVER_LOG_ERROR("Remove source failed");
@@ -358,7 +358,7 @@ void MediaPipelineModuleService::play(::google::protobuf::RpcController *control
                                       const ::firebolt::rialto::PlayRequest *request,
                                       ::firebolt::rialto::PlayResponse *response, ::google::protobuf::Closure *done)
 {
-    RIALTO_SERVER_LOG_DEBUG("%s requested.", __func__);
+    RIALTO_SERVER_LOG_DEBUG("entry:");
     if (!m_playbackService.play(request->session_id()))
     {
         RIALTO_SERVER_LOG_ERROR("Play failed");
@@ -371,7 +371,7 @@ void MediaPipelineModuleService::pause(::google::protobuf::RpcController *contro
                                        const ::firebolt::rialto::PauseRequest *request,
                                        ::firebolt::rialto::PauseResponse *response, ::google::protobuf::Closure *done)
 {
-    RIALTO_SERVER_LOG_DEBUG("%s requested.", __func__);
+    RIALTO_SERVER_LOG_DEBUG("entry:");
     if (!m_playbackService.pause(request->session_id()))
     {
         RIALTO_SERVER_LOG_ERROR("pause failed");
@@ -384,7 +384,7 @@ void MediaPipelineModuleService::stop(::google::protobuf::RpcController *control
                                       const ::firebolt::rialto::StopRequest *request,
                                       ::firebolt::rialto::StopResponse *response, ::google::protobuf::Closure *done)
 {
-    RIALTO_SERVER_LOG_DEBUG("%s requested.", __func__);
+    RIALTO_SERVER_LOG_DEBUG("entry:");
     if (!m_playbackService.stop(request->session_id()))
     {
         RIALTO_SERVER_LOG_ERROR("Stop failed");
@@ -398,7 +398,7 @@ void MediaPipelineModuleService::setPosition(::google::protobuf::RpcController *
                                              ::firebolt::rialto::SetPositionResponse *response,
                                              ::google::protobuf::Closure *done)
 {
-    RIALTO_SERVER_LOG_DEBUG("%s requested.", __func__);
+    RIALTO_SERVER_LOG_DEBUG("entry:");
     if (!m_playbackService.setPosition(request->session_id(), request->position()))
     {
         RIALTO_SERVER_LOG_ERROR("Set Position failed");
@@ -412,7 +412,7 @@ void MediaPipelineModuleService::haveData(::google::protobuf::RpcController *con
                                           ::firebolt::rialto::HaveDataResponse *response,
                                           ::google::protobuf::Closure *done)
 {
-    RIALTO_SERVER_LOG_DEBUG("%s requested.", __func__);
+    RIALTO_SERVER_LOG_DEBUG("entry:");
     firebolt::rialto::MediaSourceStatus status{convertMediaSourceStatus(request->status())};
     if (!m_playbackService.haveData(request->session_id(), status, request->num_frames(), request->request_id()))
     {
@@ -427,7 +427,7 @@ void MediaPipelineModuleService::setPlaybackRate(::google::protobuf::RpcControll
                                                  ::firebolt::rialto::SetPlaybackRateResponse *response,
                                                  ::google::protobuf::Closure *done)
 {
-    RIALTO_SERVER_LOG_DEBUG("%s requested.", __func__);
+    RIALTO_SERVER_LOG_DEBUG("entry:");
     if (!m_playbackService.setPlaybackRate(request->session_id(), request->rate()))
     {
         RIALTO_SERVER_LOG_ERROR("Set playback rate failed");
@@ -441,7 +441,7 @@ void MediaPipelineModuleService::getPosition(::google::protobuf::RpcController *
                                              ::firebolt::rialto::GetPositionResponse *response,
                                              ::google::protobuf::Closure *done)
 {
-    RIALTO_SERVER_LOG_DEBUG("%s requested.", __func__);
+    RIALTO_SERVER_LOG_DEBUG("entry:");
     int64_t position{};
     if (!m_playbackService.getPosition(request->session_id(), position))
     {

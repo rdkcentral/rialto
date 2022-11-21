@@ -82,7 +82,7 @@ void MediaKeysCapabilitiesModuleService::getSupportedKeySystems(
     ::google::protobuf::RpcController *controller, const ::firebolt::rialto::GetSupportedKeySystemsRequest *request,
     ::firebolt::rialto::GetSupportedKeySystemsResponse *response, ::google::protobuf::Closure *done)
 {
-    RIALTO_SERVER_LOG_DEBUG("%s requested.", __func__);
+    RIALTO_SERVER_LOG_DEBUG("entry:");
     auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
     if (!ipcController)
     {
@@ -106,7 +106,7 @@ void MediaKeysCapabilitiesModuleService::supportsKeySystem(::google::protobuf::R
                                                            ::firebolt::rialto::SupportsKeySystemResponse *response,
                                                            ::google::protobuf::Closure *done)
 {
-    RIALTO_SERVER_LOG_DEBUG("%s requested.", __func__);
+    RIALTO_SERVER_LOG_DEBUG("entry:");
     auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
     if (!ipcController)
     {
@@ -124,7 +124,7 @@ void MediaKeysCapabilitiesModuleService::getSupportedKeySystemVersion(
     ::google::protobuf::RpcController *controller, const ::firebolt::rialto::GetSupportedKeySystemVersionRequest *request,
     ::firebolt::rialto::GetSupportedKeySystemVersionResponse *response, ::google::protobuf::Closure *done)
 {
-    RIALTO_SERVER_LOG_DEBUG("%s requested.", __func__);
+    RIALTO_SERVER_LOG_DEBUG("entry:");
     auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
     if (!ipcController)
     {
