@@ -237,7 +237,7 @@ public:
      *
      * @retval A pointer to the newly-allocated copy of the memory or null in case of failure
      */
-    virtual gpointer gMemdup(gconstpointer mem, guint  byte_size) const = 0;
+    virtual gpointer gMemdup(gconstpointer mem, guint byte_size) const = 0;
 };
 
 }; // namespace firebolt::rialto::server

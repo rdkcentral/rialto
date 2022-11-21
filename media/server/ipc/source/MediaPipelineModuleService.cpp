@@ -105,8 +105,7 @@ convertSegmentAlignment(const firebolt::rialto::AttachSourceRequest_SegmentAlign
     return firebolt::rialto::SegmentAlignment::UNDEFINED;
 }
 
-firebolt::rialto::StreamFormat
-convertStreamFormat(const firebolt::rialto::AttachSourceRequest_StreamFormat &streamFormat)
+firebolt::rialto::StreamFormat convertStreamFormat(const firebolt::rialto::AttachSourceRequest_StreamFormat &streamFormat)
 {
     switch (streamFormat)
     {

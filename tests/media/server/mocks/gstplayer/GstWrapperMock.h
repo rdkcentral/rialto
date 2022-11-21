@@ -99,7 +99,8 @@ public:
                 (const));
     MOCK_METHOD(void, gstCapsSetSimpleBufferStub, (GstCaps * caps, const gchar *field, GType type, GstBuffer *value),
                 (const));
-    MOCK_METHOD(GstCaps *, gstCapsNewSimpleIntStub, (const char *media_type, const char *fieldname, GType type, int value), (const));
+    MOCK_METHOD(GstCaps *, gstCapsNewSimpleIntStub,
+                (const char *media_type, const char *fieldname, GType type, int value), (const));
     MOCK_METHOD(void, gstMessageParseQos,
                 (GstMessage * message, gboolean *live, guint64 *running_time, guint64 *stream_time, guint64 *timestamp,
                  guint64 *duration),
@@ -130,7 +131,7 @@ public:
     MOCK_METHOD(void, gstPluginFeatureListFree, (GList * list), (const));
     MOCK_METHOD(GstCaps *, gstCapsNewEmptySimple, (const char *media_type), (const));
     MOCK_METHOD(GstCaps *, gstCapsNewEmpty, (), (const));
-    GstCaps * gstCapsNewSimple(const char *media_type, const char *fieldname, ...) const override
+    GstCaps *gstCapsNewSimple(const char *media_type, const char *fieldname, ...) const override
     {
         va_list args;
         const gchar *property = fieldname;

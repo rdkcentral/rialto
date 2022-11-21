@@ -32,8 +32,7 @@ MATCHER_P8(attachSourceRequestMatcher2, sessionId, mimeType, numberOfChannels, s
             (request->audio_config().number_of_channels() == numberOfChannels) &&
             (request->audio_config().sample_rate() == sampleRate) &&
             (request->audio_config().codec_specific_config() == codecSpecificConfig) &&
-            (request->segment_alignment() == alignment) &&
-            (codecDataFromReq == codecData) &&
+            (request->segment_alignment() == alignment) && (codecDataFromReq == codecData) &&
             (request->stream_format() == streamFormat));
 }
 

@@ -365,7 +365,6 @@ public:
     }
 
     GstCaps *gstCapsNewEmpty() const override { return gst_caps_new_empty(); }
-
 };
 
 }; // namespace firebolt::rialto::server

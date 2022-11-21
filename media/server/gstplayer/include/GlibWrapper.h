@@ -105,7 +105,7 @@ public:
 
     gpointer gMalloc(gsize n_bytes) const override { return g_malloc(n_bytes); }
 
-    gpointer gMemdup(gconstpointer mem, guint  byte_size) const override { return g_memdup(mem, byte_size); }
+    gpointer gMemdup(gconstpointer mem, guint byte_size) const override { return g_memdup(mem, byte_size); }
 };
 
 }; // namespace firebolt::rialto::server
