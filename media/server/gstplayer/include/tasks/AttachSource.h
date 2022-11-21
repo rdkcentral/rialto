@@ -26,6 +26,7 @@
 #include "IPlayerTask.h"
 #include "PlayerContext.h"
 #include <memory>
+#include <string>
 
 namespace firebolt::rialto::server
 {
