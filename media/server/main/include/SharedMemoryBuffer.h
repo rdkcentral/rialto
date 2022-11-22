@@ -52,7 +52,6 @@ public:
     std::uint32_t getDataOffset(int sessionId, const MediaSourceType &mediaSourceType) const override;
     std::uint32_t getMaxDataLen(int sessionId, const MediaSourceType &mediaSourceType) const override;
     std::uint8_t *getDataPtr(int sessionId, const MediaSourceType &mediaSourceType) const override;
-    std::uint8_t *getDataPtrForSession(int sessionId) const override;
 
     int getFd() const override;
     std::uint32_t getSize() const override;
@@ -67,6 +66,7 @@ public:
 
 private:
     size_t calculateBufferSize() const;
+    std::uint8_t *getDataPtrForSession(int sessionId) const;
 
 private:
     std::vector<Partition> m_partitions;

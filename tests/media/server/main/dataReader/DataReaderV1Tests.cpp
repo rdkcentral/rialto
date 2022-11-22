@@ -90,7 +90,7 @@ public:
     void readVideoData()
     {
         ASSERT_TRUE(m_shm);
-        std::uint8_t *buffer = m_shm->getDataPtrForSession(sessionId);
+        std::uint8_t *buffer = m_shm->getBuffer();
         m_sut = std::make_unique<DataReaderV1>(videoMediaSourceType, buffer, 4, numFrames);
         auto result = m_sut->readData();
         ASSERT_EQ(1, result.size());
@@ -126,7 +126,7 @@ public:
     void readAudioData()
     {
         ASSERT_TRUE(m_shm);
-        std::uint8_t *buffer = m_shm->getDataPtrForSession(sessionId);
+        std::uint8_t *buffer = m_shm->getBuffer();
         std::uint32_t regionOffset = m_shm->getDataOffset(sessionId, audioMediaSourceType);
         m_sut = std::make_unique<DataReaderV1>(audioMediaSourceType, buffer, regionOffset + 4, numFrames);
         auto result = m_sut->readData();

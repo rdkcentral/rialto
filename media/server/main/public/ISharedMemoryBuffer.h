@@ -57,7 +57,6 @@ public:
     virtual std::uint32_t getDataOffset(int sessionId, const MediaSourceType &mediaSourceType) const = 0;
     virtual std::uint32_t getMaxDataLen(int sessionId, const MediaSourceType &mediaSourceType) const = 0;
     virtual std::uint8_t *getDataPtr(int sessionId, const MediaSourceType &mediaSourceType) const = 0;
-    virtual std::uint8_t *getDataPtrForSession(int sessionId) const = 0;
 
     virtual int getFd() const = 0;
     virtual std::uint32_t getSize() const = 0;

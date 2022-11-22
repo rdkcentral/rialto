@@ -34,7 +34,6 @@ public:
     MOCK_METHOD(std::uint32_t, getDataOffset, (int sessionId, const MediaSourceType &mediaSourceType), (const, override));
     MOCK_METHOD(std::uint32_t, getMaxDataLen, (int sessionId, const MediaSourceType &mediaSourceType), (const, override));
     MOCK_METHOD(std::uint8_t *, getDataPtr, (int sessionId, const MediaSourceType &mediaSourceType), (const, override));
-    MOCK_METHOD(std::uint8_t *, getDataPtrForSession, (int sessionId), (const, override));
     MOCK_METHOD(int, getFd, (), (const, override));
     MOCK_METHOD(std::uint32_t, getSize, (), (const, override));
     MOCK_METHOD(std::uint8_t *, getBuffer, (), (const, override));
