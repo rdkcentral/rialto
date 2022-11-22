@@ -30,6 +30,7 @@ set(LIB_RIALTO_CLIENT_SOURCES
         source/RialtoControl.cpp
         source/MediaKeys.cpp
         source/MediaKeysCapabilities.cpp
+        source/KeyIdMap.cpp
         )
 
 add_library( RialtoClient

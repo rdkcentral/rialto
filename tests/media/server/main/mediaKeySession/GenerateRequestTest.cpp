@@ -100,14 +100,7 @@ TEST_F(RialtoServerMediaKeySessionGenerateRequestTest, SessionAlreadyConstructed
         .WillOnce(Return(MediaKeyErrorStatus::OK));
     EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->generateRequest(m_kInitDataType, m_kInitData));
 
-    // Generate request again should not call constructSession and trigger a onLicenseRequest
-    mainThreadWillEnqueueTask();
-    EXPECT_CALL(*m_ocdmSessionMock, getChallengeData(m_isLDL, nullptrMatcher(), _))
-        .WillOnce(DoAll(SetArgPointee<2>(m_kChallenge.size()), Return(MediaKeyErrorStatus::OK)));
-    EXPECT_CALL(*m_ocdmSessionMock, getChallengeData(m_isLDL, notNullptrMatcher(), _))
-        .WillOnce(DoAll(SetArgPointee<2>(m_kChallenge.size()), Return(MediaKeyErrorStatus::OK)));
-    mainThreadWillEnqueueTask();
-    EXPECT_CALL(*m_mediaKeysClientMock, onLicenseRequest(m_kKeySessionId, _, _));
+    // Generate request again should just return OK
     EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->generateRequest(m_kInitDataType, m_kInitData));
 
     // OcdmSession will be closed on destruction

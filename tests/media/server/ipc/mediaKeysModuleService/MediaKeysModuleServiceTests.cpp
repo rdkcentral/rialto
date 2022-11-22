@@ -165,6 +165,114 @@ TEST_F(MediaKeysModuleServiceTests, shouldFailToGetCdmKeySessionId)
     sendGetCdmKeySessionIdRequestAndReceiveErrorResponse();
 }
 
+TEST_F(MediaKeysModuleServiceTests, shouldGetExistingKey)
+{
+    cdmServiceWillGetExistingKey();
+    sendContainsKeyRequestAndReceiveResponse();
+}
+
+TEST_F(MediaKeysModuleServiceTests, shouldFailToGetExistingKey)
+{
+    cdmServiceWillFailToGetExistingKey();
+    sendContainsKeyRequestAndReceiveErrorResponse();
+}
+
+TEST_F(MediaKeysModuleServiceTests, shouldSetDrmHeader)
+{
+    cdmServiceWillSetDrmHeader();
+    sendSetDrmHeaderRequestAndReceiveResponse();
+}
+
+TEST_F(MediaKeysModuleServiceTests, shouldFailToSetDrmHeader)
+{
+    cdmServiceWillFailToSetDrmHeader();
+    sendSetDrmHeaderRequestAndReceiveErrorResponse();
+}
+
+TEST_F(MediaKeysModuleServiceTests, shouldDeleteDrmStore)
+{
+    cdmServiceWillDeleteDrmStore();
+    sendDeleteDrmStoreRequestAndReceiveResponse();
+}
+
+TEST_F(MediaKeysModuleServiceTests, shouldFailToDeleteDrmStore)
+{
+    cdmServiceWillFailToDeleteDrmStore();
+    sendDeleteDrmStoreRequestAndReceiveErrorResponse();
+}
+
+TEST_F(MediaKeysModuleServiceTests, shouldDeleteKeyStore)
+{
+    cdmServiceWillDeleteKeyStore();
+    sendDeleteKeyStoreRequestAndReceiveResponse();
+}
+
+TEST_F(MediaKeysModuleServiceTests, shouldFailToDeleteKeyStore)
+{
+    cdmServiceWillFailToDeleteKeyStore();
+    sendDeleteKeyStoreRequestAndReceiveErrorResponse();
+}
+
+TEST_F(MediaKeysModuleServiceTests, shouldGetDrmStoreHash)
+{
+    cdmServiceWillGetDrmStoreHash();
+    sendGetDrmStoreHashRequestAndReceiveResponse();
+}
+
+TEST_F(MediaKeysModuleServiceTests, shouldFailToGetDrmStoreHash)
+{
+    cdmServiceWillFailToGetDrmStoreHash();
+    sendGetDrmStoreHashRequestAndReceiveErrorResponse();
+}
+
+TEST_F(MediaKeysModuleServiceTests, shouldGetKeyStoreHash)
+{
+    cdmServiceWillGetKeyStoreHash();
+    sendGetKeyStoreHashRequestAndReceiveResponse();
+}
+
+TEST_F(MediaKeysModuleServiceTests, shouldFailToGetKeyStoreHash)
+{
+    cdmServiceWillFailToGetKeyStoreHash();
+    sendGetKeyStoreHashRequestAndReceiveErrorResponse();
+}
+
+TEST_F(MediaKeysModuleServiceTests, shouldGetLdlSessionsLimit)
+{
+    cdmServiceWillGetLdlSessionsLimit();
+    sendGetLdlSessionsLimitRequestAndReceiveResponse();
+}
+
+TEST_F(MediaKeysModuleServiceTests, shouldFailToGetLdlSessionsLimit)
+{
+    cdmServiceWillFailToGetLdlSessionsLimit();
+    sendGetLdlSessionsLimitRequestAndReceiveErrorResponse();
+}
+
+TEST_F(MediaKeysModuleServiceTests, shouldGetLastDrmError)
+{
+    cdmServiceWillGetLastDrmError();
+    sendGetLastDrmErrorRequestAndReceiveResponse();
+}
+
+TEST_F(MediaKeysModuleServiceTests, shouldFailToGetLastDrmError)
+{
+    cdmServiceWillFailToGetLastDrmError();
+    sendGetLastDrmErrorRequestAndReceiveErrorResponse();
+}
+
+TEST_F(MediaKeysModuleServiceTests, shouldGetDrmTime)
+{
+    cdmServiceWillGetDrmTime();
+    sendGetDrmTimeRequestAndReceiveResponse();
+}
+
+TEST_F(MediaKeysModuleServiceTests, shouldFailToGetDrmTime)
+{
+    cdmServiceWillFailToGetDrmTime();
+    sendGetDrmTimeRequestAndReceiveErrorResponse();
+}
+
 TEST_F(MediaKeysModuleServiceTests, shouldSendLicenseRequest)
 {
     mediaClientWillSendLicenseRequestEvent();

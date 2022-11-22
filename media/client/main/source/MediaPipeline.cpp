@@ -18,6 +18,7 @@
  */
 
 #include "MediaPipeline.h"
+#include "KeyIdMap.h"
 #include "RialtoClientLogging.h"
 #include <inttypes.h>
 #include <stdint.h>
@@ -356,6 +357,16 @@ AddSegmentStatus MediaPipeline::addSegment(uint32_t needDataRequestId, const std
     {
         RIALTO_CLIENT_LOG_ERROR("Shared buffer no longer valid");
         return AddSegmentStatus::ERROR;
+    }
+
+    if (mediaSegment->isEncrypted())
+    {
+        auto keyId = KeyIdMap::instance().get(mediaSegment->getMediaKeySessionId());
+        if (!keyId.empty())
+        {
+            RIALTO_CLIENT_LOG_DEBUG("Adding Netflix keyID to media segment");
+            mediaSegment->setKeyId(keyId);
+        }
     }
 
     if (!needDataRequest->frameWriter)

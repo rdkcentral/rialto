@@ -90,11 +90,11 @@ public:
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::DeleteKeyStoreRequest *request,
                  ::firebolt::rialto::DeleteKeyStoreResponse *response, ::google::protobuf::Closure *done),
                 (override));
-    MOCK_METHOD(void, getDrmStoreHashStore,
+    MOCK_METHOD(void, getDrmStoreHash,
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::GetDrmStoreHashRequest *request,
                  ::firebolt::rialto::GetDrmStoreHashResponse *response, ::google::protobuf::Closure *done),
                 (override));
-    MOCK_METHOD(void, getKeyStoreHashStore,
+    MOCK_METHOD(void, getKeyStoreHash,
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::GetKeyStoreHashRequest *request,
                  ::firebolt::rialto::GetKeyStoreHashResponse *response, ::google::protobuf::Closure *done),
                 (override));
@@ -103,7 +103,7 @@ public:
                  const ::firebolt::rialto::GetLdlSessionsLimitRequest *request,
                  ::firebolt::rialto::GetLdlSessionsLimitResponse *response, ::google::protobuf::Closure *done),
                 (override));
-    MOCK_METHOD(void, getLastDrmErrorLimit,
+    MOCK_METHOD(void, getLastDrmError,
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::GetLastDrmErrorRequest *request,
                  ::firebolt::rialto::GetLastDrmErrorResponse *response, ::google::protobuf::Closure *done),
                 (override));

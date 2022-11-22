@@ -102,6 +102,15 @@ public:
      * @retval true if session is handled by this MediaKeys instance
      */
     virtual bool hasSession(int32_t keySessionId) const = 0;
+
+    /**
+     * @brief Checks, if key system of media key session is Netflix.
+     *
+     * @param[in] keySessionId    : The session id for the session.
+     *
+     * @retval true if key system is Netflix
+     */
+    virtual bool isNetflixKeySystem(int32_t keySessionId) const = 0;
 };
 } // namespace firebolt::rialto::server
 

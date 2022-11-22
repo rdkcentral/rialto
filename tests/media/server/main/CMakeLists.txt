@@ -47,6 +47,17 @@ add_gtests (
         mediaKeys/CloseKeySessionTest.cpp
         mediaKeys/RemoveKeySessionTest.cpp
         mediaKeys/GetCdmKeySessionIdTest.cpp
+        mediaKeys/ContainsKeyTest.cpp
+        mediaKeys/SetDrmHeaderTest.cpp
+        mediaKeys/DeleteDrmStoreTest.cpp
+        mediaKeys/DeleteKeyStoreTest.cpp
+        mediaKeys/GetDrmStoreHashTest.cpp
+        mediaKeys/GetKeyStoreHashTest.cpp
+        mediaKeys/GetLdlSessionsLimitTest.cpp
+        mediaKeys/GetDrmTimeTest.cpp
+        mediaKeys/GetLastDrmErrorTest.cpp
+        mediaKeys/SelectKeyIdTest.cpp
+        mediaKeys/IsNetflixKeySystemTest.cpp
 
         mediaKeysCapabilities/CreateTest.cpp
         mediaKeysCapabilities/KeySystemsTest.cpp
@@ -61,6 +72,11 @@ add_gtests (
         mediaKeySession/RemoveKeySessionTest.cpp
         mediaKeySession/CallbacksTest.cpp
         mediaKeySession/GetCdmKeySessionIdTest.cpp
+        mediaKeySession/ContainsKeyTest.cpp
+        mediaKeySession/SetDrmHeaderTest.cpp
+        mediaKeySession/GetLastDrmErrorTest.cpp
+        mediaKeySession/SelectKeyIdTest.cpp
+        mediaKeySession/IsNetflixKeySystemTest.cpp
 
         sharedMemoryBuffer/SharedMemoryBufferTestsFixture.cpp
         sharedMemoryBuffer/SharedMemoryBufferTests.cpp

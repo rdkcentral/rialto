@@ -56,6 +56,16 @@ public:
     MediaKeyErrorStatus removeKeySession(int mediaKeysHandle, int32_t keySessionId) override;
     MediaKeyErrorStatus getCdmKeySessionId(int mediaKeysHandle, int32_t keySessionId,
                                            std::string &cdmKeySessionId) override;
+    bool containsKey(int mediaKeysHandle, int32_t keySessionId, const std::vector<uint8_t> &keyId) override;
+    MediaKeyErrorStatus setDrmHeader(int mediaKeysHandle, int32_t keySessionId,
+                                     const std::vector<uint8_t> &requestData) override;
+    MediaKeyErrorStatus deleteDrmStore(int mediaKeysHandle) override;
+    MediaKeyErrorStatus deleteKeyStore(int mediaKeysHandle) override;
+    MediaKeyErrorStatus getDrmStoreHash(int mediaKeysHandle, std::vector<unsigned char> &drmStoreHash) override;
+    MediaKeyErrorStatus getKeyStoreHash(int mediaKeysHandle, std::vector<unsigned char> &keyStoreHash) override;
+    MediaKeyErrorStatus getLdlSessionsLimit(int mediaKeysHandle, uint32_t &ldlLimit) override;
+    MediaKeyErrorStatus getLastDrmError(int mediaKeysHandle, int32_t keySessionId, uint32_t &errorCode) override;
+    MediaKeyErrorStatus getDrmTime(int mediaKeysHandle, uint64_t &drmTime) override;
 
     std::vector<std::string> getSupportedKeySystems() override;
     bool supportsKeySystem(const std::string &keySystem) override;
@@ -63,6 +73,8 @@ public:
     MediaKeyErrorStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstBuffer *subSample,
                                 const uint32_t subSampleCount, GstBuffer *IV, GstBuffer *keyId,
                                 uint32_t initWithLast15) override;
+    bool isNetflixKeySystem(int32_t keySessionId) const override;
+    MediaKeyErrorStatus selectKeyId(int32_t keySessionId, const std::vector<uint8_t> &keyId) override;
 
 private:
     std::shared_ptr<IMediaKeysServerInternalFactory> m_mediaKeysFactory;

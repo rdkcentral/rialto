@@ -86,6 +86,16 @@ public:
 
     MediaKeyErrorStatus getCdmKeySessionId(std::string &cdmKeySessionId) override;
 
+    bool containsKey(const std::vector<uint8_t> &keyId) override;
+
+    MediaKeyErrorStatus setDrmHeader(const std::vector<uint8_t> &requestData) override;
+
+    MediaKeyErrorStatus getLastDrmError(uint32_t &errorCode) override;
+
+    MediaKeyErrorStatus selectKeyId(const std::vector<uint8_t> &keyId) override;
+
+    bool isNetflixKeySystem() const override;
+
     void onProcessChallenge(const char url[], const uint8_t challenge[], const uint16_t challengeLength) override;
 
     void onKeyUpdated(const uint8_t keyId[], const uint8_t keyIdLength) override;
@@ -149,6 +159,11 @@ private:
      * @brief This objects id registered on the main thread
      */
     uint32_t m_mainThreadClientId;
+
+    /**
+     * @brief Currently selected key id (Netflix specific)
+     */
+    std::vector<uint8_t> m_selectedKeyId;
 
     /**
      * @brief Posts a getChallenge task onto the main thread.

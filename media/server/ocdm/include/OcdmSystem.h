@@ -55,7 +55,12 @@ public:
     virtual ~OcdmSystem();
 
     MediaKeyErrorStatus getVersion(std::string &version) override;
-
+    MediaKeyErrorStatus getLdlSessionsLimit(uint32_t *ldlLimit) override;
+    MediaKeyErrorStatus deleteKeyStore() override;
+    MediaKeyErrorStatus deleteSecureStore() override;
+    MediaKeyErrorStatus getKeyStoreHash(uint8_t keyStoreHash[], uint32_t keyStoreHashLength) override;
+    MediaKeyErrorStatus getSecureStoreHash(uint8_t secureStoreHash[], uint32_t secureStoreHashLength) override;
+    MediaKeyErrorStatus getDrmTime(uint64_t *time) override;
     std::unique_ptr<IOcdmSession> createSession(IOcdmSessionClient *client) const override;
 
 private:

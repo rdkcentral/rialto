@@ -49,8 +49,19 @@ public:
     void mediaKeysWillCloseKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillRemoveKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillGetCdmKeySessionIdWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
+    void mediaKeysWillCheckIfKeyIsPresent(bool result);
+    void mediaKeysWillSetDrmHeaderWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
+    void mediaKeysWillDeleteDrmStoreWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
+    void mediaKeysWillDeleteKeyStoreWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
+    void mediaKeysWillGetDrmStoreHashWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
+    void mediaKeysWillGetKeyStoreHashWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
+    void mediaKeysWillGetLdlSessionsLimitWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
+    void mediaKeysWillGetLastDrmErrorWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
+    void mediaKeysWillGetDrmTimeWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillDecryptWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
+    void mediaKeysWillSelectKeyIdWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillNotFindMediaKeySession();
+    void mediaKeysWillCheckIfKeySystemIsNetflix(bool result);
 
     void mediaKeysCapabilitiesFactoryWillCreateMediaKeysCapabilities();
     void mediaKeysCapabilitiesFactoryWillReturnNullptr();
@@ -75,6 +86,17 @@ public:
     void removeKeySessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void getCdmKeySessionIdShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void decryptShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
+    void selectKeyIdShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
+    void containsKeyShouldReturn(bool result);
+    void setDrmHeaderShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
+    void deleteDrmStoreShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
+    void deleteKeyStoreShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
+    void getDrmStoreHashShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
+    void getKeyStoreHashShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
+    void getLdlSessionsLimitShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
+    void getLastDrmErrorShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
+    void getDrmTimeShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
+    void isNetflixKeySystemShouldReturn(bool result);
 
     void getSupportedKeySystemsShouldSucceed();
     void getSupportedKeySystemsReturnNon();

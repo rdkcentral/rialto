@@ -142,3 +142,100 @@ TEST_F(RialtoClientMediaKeysKeySessionTest, GetCdmKeySessionIdSession)
 
     EXPECT_EQ(m_mediaKeys->getCdmKeySessionId(m_kKeySessionId, cdmKeySessionId), m_mediaKeyErrorStatus);
 }
+
+/**
+ * Test that a containsKey forwards the request to IPC and returns the result.
+ */
+TEST_F(RialtoClientMediaKeysKeySessionTest, ContainsKey)
+{
+    std::vector<uint8_t> keyId{1, 2, 3};
+    EXPECT_CALL(*m_mediaKeysIpcMock, containsKey(m_kKeySessionId, keyId)).WillOnce(Return(true));
+
+    EXPECT_TRUE(m_mediaKeys->containsKey(m_kKeySessionId, keyId));
+}
+
+/**
+ * Test that a SetDrmHeader forwards the request to IPC and returns the error status.
+ */
+TEST_F(RialtoClientMediaKeysKeySessionTest, SetDrmHeader)
+{
+    std::vector<uint8_t> drmHeader{3, 2, 1};
+    EXPECT_CALL(*m_mediaKeysIpcMock, setDrmHeader(m_kKeySessionId, drmHeader)).WillOnce(Return(m_mediaKeyErrorStatus));
+
+    EXPECT_EQ(m_mediaKeys->setDrmHeader(m_kKeySessionId, drmHeader), m_mediaKeyErrorStatus);
+}
+
+/**
+ * Test that a DeleteDrmStore forwards the request to IPC and returns the error status.
+ */
+TEST_F(RialtoClientMediaKeysKeySessionTest, DeleteDrmStore)
+{
+    EXPECT_CALL(*m_mediaKeysIpcMock, deleteDrmStore()).WillOnce(Return(m_mediaKeyErrorStatus));
+
+    EXPECT_EQ(m_mediaKeys->deleteDrmStore(), m_mediaKeyErrorStatus);
+}
+
+/**
+ * Test that a DeleteKeyStore forwards the request to IPC and returns the error status.
+ */
+TEST_F(RialtoClientMediaKeysKeySessionTest, DeleteKeyStore)
+{
+    EXPECT_CALL(*m_mediaKeysIpcMock, deleteKeyStore()).WillOnce(Return(m_mediaKeyErrorStatus));
+
+    EXPECT_EQ(m_mediaKeys->deleteKeyStore(), m_mediaKeyErrorStatus);
+}
+
+/**
+ * Test that a GetDrmStoreHash forwards the request to IPC and returns the error status.
+ */
+TEST_F(RialtoClientMediaKeysKeySessionTest, GetDrmStoreHash)
+{
+    std::vector<unsigned char> drmStoreHash;
+    EXPECT_CALL(*m_mediaKeysIpcMock, getDrmStoreHash(drmStoreHash)).WillOnce(Return(m_mediaKeyErrorStatus));
+
+    EXPECT_EQ(m_mediaKeys->getDrmStoreHash(drmStoreHash), m_mediaKeyErrorStatus);
+}
+
+/**
+ * Test that a GetKeyStoreHash forwards the request to IPC and returns the error status.
+ */
+TEST_F(RialtoClientMediaKeysKeySessionTest, GetKeyStoreHash)
+{
+    std::vector<unsigned char> keyStoreHash;
+    EXPECT_CALL(*m_mediaKeysIpcMock, getKeyStoreHash(keyStoreHash)).WillOnce(Return(m_mediaKeyErrorStatus));
+
+    EXPECT_EQ(m_mediaKeys->getKeyStoreHash(keyStoreHash), m_mediaKeyErrorStatus);
+}
+
+/**
+ * Test that a GetLdlSessionsLimit forwards the request to IPC and returns the error status.
+ */
+TEST_F(RialtoClientMediaKeysKeySessionTest, GetLdlSessionsLimit)
+{
+    std::uint32_t ldlSessionsLimit{0};
+    EXPECT_CALL(*m_mediaKeysIpcMock, getLdlSessionsLimit(ldlSessionsLimit)).WillOnce(Return(m_mediaKeyErrorStatus));
+
+    EXPECT_EQ(m_mediaKeys->getLdlSessionsLimit(ldlSessionsLimit), m_mediaKeyErrorStatus);
+}
+
+/**
+ * Test that a GetLastDrmError forwards the request to IPC and returns the error status.
+ */
+TEST_F(RialtoClientMediaKeysKeySessionTest, GetLastDrmError)
+{
+    std::uint32_t lastDrmError{0};
+    EXPECT_CALL(*m_mediaKeysIpcMock, getLastDrmError(m_kKeySessionId, lastDrmError)).WillOnce(Return(m_mediaKeyErrorStatus));
+
+    EXPECT_EQ(m_mediaKeys->getLastDrmError(m_kKeySessionId, lastDrmError), m_mediaKeyErrorStatus);
+}
+
+/**
+ * Test that a GetDrmTime forwards the request to IPC and returns the error status.
+ */
+TEST_F(RialtoClientMediaKeysKeySessionTest, GetDrmTime)
+{
+    std::uint64_t drmTime{0};
+    EXPECT_CALL(*m_mediaKeysIpcMock, getDrmTime(drmTime)).WillOnce(Return(m_mediaKeyErrorStatus));
+
+    EXPECT_EQ(m_mediaKeys->getDrmTime(drmTime), m_mediaKeyErrorStatus);
+}
