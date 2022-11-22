@@ -250,6 +250,9 @@ TEST_F(GstPlayerPrivateTest, shouldCreateAndDecryptGstBuffer)
     EXPECT_CALL(m_decryptionServiceMock,
                 decrypt(kMediaKeySessionId, &buffer, &subSamplesBuffer, mediaSegment.getSubSamples().size(),
                         &initVectorBuffer, &keyIdBuffer, kInitWithLast15));
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferUnref(&subSamplesBuffer));
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferUnref(&initVectorBuffer));
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferUnref(&keyIdBuffer));
     m_sut->createDecryptedBuffer(mediaSegment);
     EXPECT_EQ(GST_BUFFER_TIMESTAMP(&buffer), kTimeStamp);
     EXPECT_EQ(GST_BUFFER_DURATION(&buffer), kDuration);
@@ -285,6 +288,9 @@ TEST_F(GstPlayerPrivateTest, shouldCreateAndDecryptGstBufferForNetflix)
     EXPECT_CALL(m_decryptionServiceMock,
                 decrypt(kMediaKeySessionId, &buffer, &subSamplesBuffer, mediaSegment.getSubSamples().size(),
                         &initVectorBuffer, &keyIdBuffer, kInitWithLast15));
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferUnref(&subSamplesBuffer));
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferUnref(&initVectorBuffer));
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferUnref(&keyIdBuffer));
     m_sut->createDecryptedBuffer(mediaSegment);
     EXPECT_EQ(GST_BUFFER_TIMESTAMP(&buffer), kTimeStamp);
     EXPECT_EQ(GST_BUFFER_DURATION(&buffer), kDuration);
