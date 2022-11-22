@@ -23,9 +23,9 @@
 
 namespace firebolt::rialto::server
 {
-DataReaderV1::DataReaderV1(const MediaSourceType &mediaSourceType, std::uint8_t *sessionData,
+DataReaderV1::DataReaderV1(const MediaSourceType &mediaSourceType, std::uint8_t *buffer,
                            std::uint32_t metadataOffset, std::uint32_t numFrames)
-    : m_mediaSourceType{mediaSourceType}, m_sessionData{sessionData}, m_metadataOffset{metadataOffset}, m_numFrames{
+    : m_mediaSourceType{mediaSourceType}, m_buffer{buffer}, m_metadataOffset{metadataOffset}, m_numFrames{
                                                                                                             numFrames}
 {
     RIALTO_SERVER_LOG_DEBUG("Detected Metadata in Version 1.");
@@ -55,7 +55,7 @@ IMediaPipeline::MediaSegmentVector DataReaderV1::readData() const
 std::vector<DataReaderV1::MetadataV1> DataReaderV1::readMetadata() const
 {
     std::vector<DataReaderV1::MetadataV1> result;
-    std::uint8_t *regionMetadataOffset = m_sessionData + m_metadataOffset;
+    std::uint8_t *regionMetadataOffset = m_buffer + m_metadataOffset;
     for (std::uint32_t frame = 0; frame < m_numFrames; ++frame)
     {
         std::uint8_t *frameMetadataOffset = regionMetadataOffset + (frame * common::METADATA_V1_SIZE_PER_FRAME_BYTES);

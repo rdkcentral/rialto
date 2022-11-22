@@ -495,8 +495,8 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
         RIALTO_SERVER_LOG_WARN("Data request for needDataRequestId: %u received with wrong status", needDataRequestId);
         return notifyNeedMediaDataInternal(mediaSourceType); // Resend NeedMediaData
     }
-    uint8_t *data = m_shmBuffer->getBuffer();
-    if (!data)
+    uint8_t *buffer = m_shmBuffer->getBuffer();
+    if (!buffer)
     {
         RIALTO_SERVER_LOG_ERROR("No buffer available");
         notifyPlaybackState(PlaybackState::FAILURE);
@@ -518,7 +518,7 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
     if (0 != numFrames)
     {
         std::shared_ptr<IDataReader> dataReader =
-            m_dataReaderFactory->createDataReader(mediaSourceType, data, regionOffset, numFrames);
+            m_dataReaderFactory->createDataReader(mediaSourceType, buffer, regionOffset, numFrames);
         if (!dataReader)
         {
             RIALTO_SERVER_LOG_ERROR("Metadata version not supported for request id: %u", needDataRequestId);

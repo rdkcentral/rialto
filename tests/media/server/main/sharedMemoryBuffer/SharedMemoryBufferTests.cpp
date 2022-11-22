@@ -200,7 +200,7 @@ TEST_F(SharedMemoryBufferTests, shouldFailToGetDataPtrForUnknownSourceType)
     constexpr int session1{0};
     initialize();
     mapPartitionShouldSucceed(session1);
-    shouldFailToGetBufDataPtr(session1, firebolt::rialto::MediaSourceType::UNKNOWN);
+    shouldFailToGetDataPtr(session1, firebolt::rialto::MediaSourceType::UNKNOWN);
 }
 
 TEST_F(SharedMemoryBufferTests, shouldGetDataPtr)
