@@ -61,7 +61,7 @@ jobs:
   run-clang-format:
     name: Run clang-format
     # Runs on ubuntu
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     # Timeout after
     timeout-minutes: 2
 
