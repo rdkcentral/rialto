@@ -134,7 +134,7 @@ uint8_t *SharedMemoryBufferTests::shouldGetDataPtr(int sessionId, const firebolt
 }
 
 void SharedMemoryBufferTests::shouldFailToGetDataPtr(int sessionId,
-                                                    const firebolt::rialto::MediaSourceType &mediaSourceType)
+                                                     const firebolt::rialto::MediaSourceType &mediaSourceType)
 {
     ASSERT_TRUE(m_sut);
     EXPECT_EQ(nullptr, m_sut->getDataPtr(sessionId, mediaSourceType));
