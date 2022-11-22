@@ -131,8 +131,8 @@ TEST_F(AttachSourceTest, shouldAttachVideoSource)
     GstBuffer buf;
     std::vector<uint8_t> codecData{'T', 'E', 'S', 'T'};
     firebolt::rialto::IMediaPipeline::MediaSource source(-1, firebolt::rialto::MediaSourceType::VIDEO, "video/h264",
-                                                         firebolt::rialto::SegmentAlignment::AU, codecData,
-                                                         firebolt::rialto::StreamFormat::AVC);
+                                                         firebolt::rialto::SegmentAlignment::AU,
+                                                         firebolt::rialto::StreamFormat::AVC, codecData);
     firebolt::rialto::server::AttachSource task{m_context, m_gstWrapper, m_glibWrapper, source};
     EXPECT_CALL(*m_gstWrapper, gstCapsNewEmptySimple(StrEq("video/x-h264"))).WillOnce(Return(&m_gstCaps1));
     EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleStringStub(&m_gstCaps1, StrEq("alignment"), _, StrEq("au")));

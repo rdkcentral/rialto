@@ -309,8 +309,8 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
                                             convertMediaSourceType(request->media_type()),
                                             request->mime_type().c_str(),
                                             convertSegmentAlignment(request->segment_alignment()),
-                                            codecData,
-                                            convertStreamFormat(request->stream_format())};
+                                            convertStreamFormat(request->stream_format()),
+                                            codecData};
 
     if (request->media_type() == firebolt::rialto::ProtoMediaSourceType::AUDIO)
     {
@@ -327,8 +327,8 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
 
         mediaSource = IMediaPipeline::MediaSource(0, request->mime_type(),
                                                   {numberofchannels, sampleRate, codecSpecificConfig},
-                                                  convertSegmentAlignment(request->segment_alignment()), codecData,
-                                                  convertStreamFormat(request->stream_format()));
+                                                  convertSegmentAlignment(request->segment_alignment()),
+                                                  convertStreamFormat(request->stream_format()), codecData);
     }
 
     if (!m_playbackService.attachSource(request->session_id(), mediaSource))

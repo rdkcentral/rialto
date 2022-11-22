@@ -20,7 +20,7 @@
 #include "MediaPipelineIpcTestBase.h"
 
 MATCHER_P8(attachSourceRequestMatcher2, sessionId, mimeType, numberOfChannels, sampleRate, codecSpecificConfig,
-           alignment, codecData, streamFormat, "")
+           alignment, streamFormat, codecData, "")
 {
     const ::firebolt::rialto::AttachSourceRequest *request =
         dynamic_cast<const ::firebolt::rialto::AttachSourceRequest *>(arg);
@@ -32,8 +32,8 @@ MATCHER_P8(attachSourceRequestMatcher2, sessionId, mimeType, numberOfChannels, s
             (request->audio_config().number_of_channels() == numberOfChannels) &&
             (request->audio_config().sample_rate() == sampleRate) &&
             (request->audio_config().codec_specific_config() == codecSpecificConfig) &&
-            (request->segment_alignment() == alignment) && (codecDataFromReq == codecData) &&
-            (request->stream_format() == streamFormat));
+            (request->segment_alignment() == alignment) && (request->stream_format() == streamFormat) &&
+            (codecDataFromReq == codecData));
 }
 
 MATCHER_P3(attachSourceRequestMatcher, sessionId, mediaType, mimeType, "")
@@ -117,8 +117,8 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachAudioSourceWithAdditionalda
                            attachSourceRequestMatcher2(m_sessionId, m_kMimeType, numberOfChannels, sampleRate,
                                                        codecSpecificConfigStr,
                                                        firebolt::rialto::AttachSourceRequest_SegmentAlignment_ALIGNMENT_UNDEFINED,
-                                                       codecData,
-                                                       firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_RAW),
+                                                       firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_RAW,
+                                                       codecData),
                            _, m_blockingClosureMock.get()))
         .WillOnce(WithArgs<3>(Invoke(this, &RialtoClientMediaPipelineIpcSourceTest::setAttachSourceResponse)));
 
@@ -126,7 +126,7 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachAudioSourceWithAdditionalda
     codecSpecificConfig.assign(codecSpecificConfigStr.begin(), codecSpecificConfigStr.end());
     AudioConfig audioConfig{6, 48000, codecSpecificConfig};
 
-    IMediaPipeline::MediaSource mediaSource(m_id, m_kMimeType, audioConfig, alignment, codecData, streamFormat);
+    IMediaPipeline::MediaSource mediaSource(m_id, m_kMimeType, audioConfig, alignment, streamFormat, codecData);
 
     EXPECT_EQ(m_mediaPipelineIpc->attachSource(mediaSource, m_id), true);
 }

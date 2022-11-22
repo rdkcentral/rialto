@@ -349,9 +349,12 @@ void MediaPipelineModuleServiceTests::playbackServiceWillAttachAudioSourceWithAd
     std::vector<uint8_t> codecSpecificConfig;
     codecSpecificConfig.assign(codecSpecificConfigStr.begin(), codecSpecificConfigStr.end());
     firebolt::rialto::AudioConfig audioConfig{numberOfChannels, sampleRate, codecSpecificConfig};
-    firebolt::rialto::IMediaPipeline::MediaSource source{0,           mimeType,
-                                                         audioConfig, firebolt::rialto::SegmentAlignment::UNDEFINED,
-                                                         codecData,   firebolt::rialto::StreamFormat::RAW};
+    firebolt::rialto::IMediaPipeline::MediaSource source{0,
+                                                         mimeType,
+                                                         audioConfig,
+                                                         firebolt::rialto::SegmentAlignment::UNDEFINED,
+                                                         firebolt::rialto::StreamFormat::RAW,
+                                                         codecData};
     expectRequestSuccess();
     EXPECT_CALL(m_playbackServiceMock, attachSource(hardcodedSessionId, source)).WillOnce(Return(true));
 }
