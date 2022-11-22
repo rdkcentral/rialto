@@ -495,10 +495,10 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
         RIALTO_SERVER_LOG_WARN("Data request for needDataRequestId: %u received with wrong status", needDataRequestId);
         return notifyNeedMediaDataInternal(mediaSourceType); // Resend NeedMediaData
     }
-    uint8_t *data = m_shmBuffer->getDataPtrForSession(m_sessionId);
+    uint8_t *data = m_shmBuffer->getBuffer();
     if (!data)
     {
-        RIALTO_SERVER_LOG_ERROR("No buffer available for session: %d", m_sessionId);
+        RIALTO_SERVER_LOG_ERROR("No buffer available");
         notifyPlaybackState(PlaybackState::FAILURE);
         return false;
     }
