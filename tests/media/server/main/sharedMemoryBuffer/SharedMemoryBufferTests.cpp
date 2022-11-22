@@ -68,101 +68,101 @@ TEST_F(SharedMemoryBufferTests, shouldFailToUnmapNotExistingSession)
     unmapPartitionShouldFail(session1);
 }
 
-TEST_F(SharedMemoryBufferTests, shouldReturnAudioBufferLen)
+TEST_F(SharedMemoryBufferTests, shouldReturnMaxAudioDataLen)
 {
     constexpr int session1{0};
     initialize();
     mapPartitionShouldSucceed(session1);
-    shouldReturnAudioBufferLen(session1);
+    shouldReturnMaxAudioDataLen(session1);
 }
 
-TEST_F(SharedMemoryBufferTests, shouldNotReturnAudioBufferLenForNotMappedSession)
+TEST_F(SharedMemoryBufferTests, shouldNotReturnMaxAudioDataLenForNotMappedSession)
 {
     constexpr int session1{0};
     initialize();
-    shouldFailToReturnAudioBufferLen(session1);
+    shouldFailToReturnMaxAudioDataLen(session1);
 }
 
-TEST_F(SharedMemoryBufferTests, shouldReturnVideoBufferLen)
-{
-    constexpr int session1{0};
-    initialize();
-    mapPartitionShouldSucceed(session1);
-    shouldReturnVideoBufferLen(session1);
-}
-
-TEST_F(SharedMemoryBufferTests, shouldNotReturnVideoBufferLenForNotMappedSession)
-{
-    constexpr int session1{0};
-    initialize();
-    shouldFailToReturnVideoBufferLen(session1);
-}
-
-TEST_F(SharedMemoryBufferTests, shouldClearAudioBuffer)
+TEST_F(SharedMemoryBufferTests, shouldReturnMaxVideoDataLen)
 {
     constexpr int session1{0};
     initialize();
     mapPartitionShouldSucceed(session1);
-    shouldClearAudioBuffer(session1);
+    shouldReturnMaxVideoDataLen(session1);
 }
 
-TEST_F(SharedMemoryBufferTests, shouldNotClearAudioBufferForNotMappedSession)
+TEST_F(SharedMemoryBufferTests, shouldNotReturnMaxVideoDataLenForNotMappedSession)
 {
     constexpr int session1{0};
     initialize();
-    shouldFailToClearAudioBuffer(session1);
+    shouldFailToReturnMaxVideoDataLen(session1);
 }
 
-TEST_F(SharedMemoryBufferTests, shouldClearVideoBuffer)
+TEST_F(SharedMemoryBufferTests, shouldClearAudioData)
 {
     constexpr int session1{0};
     initialize();
     mapPartitionShouldSucceed(session1);
-    shouldClearVideoBuffer(session1);
+    shouldClearAudioData(session1);
 }
 
-TEST_F(SharedMemoryBufferTests, shouldNotClearVideoBufferForNotMappedSession)
+TEST_F(SharedMemoryBufferTests, shouldNotClearAudioDataForNotMappedSession)
 {
     constexpr int session1{0};
     initialize();
-    shouldFailToClearVideoBuffer(session1);
+    shouldFailToClearAudioData(session1);
 }
 
-TEST_F(SharedMemoryBufferTests, shouldFailToReturnVideoBufferOffset)
+TEST_F(SharedMemoryBufferTests, shouldClearVideoData)
 {
     constexpr int session1{0};
     initialize();
-    shouldFailToReturnVideoBufferOffset(session1);
+    mapPartitionShouldSucceed(session1);
+    shouldClearVideoData(session1);
 }
 
-TEST_F(SharedMemoryBufferTests, shouldFailToReturnAudioBufferOffset)
+TEST_F(SharedMemoryBufferTests, shouldNotClearVideoDataForNotMappedSession)
 {
     constexpr int session1{0};
     initialize();
-    shouldFailToReturnAudioBufferOffset(session1);
+    shouldFailToClearVideoData(session1);
 }
 
-TEST_F(SharedMemoryBufferTests, shouldReturnVideoBufferOffsetForOneSession)
+TEST_F(SharedMemoryBufferTests, shouldFailToReturnVideoDataOffset)
+{
+    constexpr int session1{0};
+    initialize();
+    shouldFailToReturnVideoDataOffset(session1);
+}
+
+TEST_F(SharedMemoryBufferTests, shouldFailToReturnAudioDataOffset)
+{
+    constexpr int session1{0};
+    initialize();
+    shouldFailToReturnAudioDataOffset(session1);
+}
+
+TEST_F(SharedMemoryBufferTests, shouldReturnVideoDataOffsetForOneSession)
 {
     constexpr int session1{0};
     // Video buffer for first mapped session is at the beginning of shm
     constexpr std::uint32_t expectedOffset{0};
     initialize();
     mapPartitionShouldSucceed(session1);
-    shouldReturnVideoBufferOffset(session1, expectedOffset);
+    shouldReturnVideoDataOffset(session1, expectedOffset);
 }
 
-TEST_F(SharedMemoryBufferTests, shouldReturnAudioBufferOffsetForOneSession)
+TEST_F(SharedMemoryBufferTests, shouldReturnAudioDataOffsetForOneSession)
 {
     constexpr int session1{0};
     // Audio buffer for first mapped session is after video buffer - 7MB
     constexpr std::uint32_t expectedOffset{7 * 1024 * 1024};
     initialize();
     mapPartitionShouldSucceed(session1);
-    shouldReturnAudioBufferOffset(session1, expectedOffset);
+    shouldReturnAudioDataOffset(session1, expectedOffset);
 }
 
-TEST_F(SharedMemoryBufferTests, shouldReturnVideoBufferOffsetForTwoSessions)
+TEST_F(SharedMemoryBufferTests, shouldReturnVideoDataOffsetForTwoSessions)
 {
     constexpr int maxPlaybacks{2};
     constexpr int session1{0}, session2{1};
@@ -171,10 +171,10 @@ TEST_F(SharedMemoryBufferTests, shouldReturnVideoBufferOffsetForTwoSessions)
     initialize(maxPlaybacks);
     mapPartitionShouldSucceed(session1);
     mapPartitionShouldSucceed(session2);
-    shouldReturnVideoBufferOffset(session2, expectedOffset);
+    shouldReturnVideoDataOffset(session2, expectedOffset);
 }
 
-TEST_F(SharedMemoryBufferTests, shouldReturnAudioBufferOffsetForTwoSessions)
+TEST_F(SharedMemoryBufferTests, shouldReturnAudioDataOffsetForTwoSessions)
 {
     constexpr int maxPlaybacks{2};
     constexpr int session1{0}, session2{1};
@@ -184,36 +184,36 @@ TEST_F(SharedMemoryBufferTests, shouldReturnAudioBufferOffsetForTwoSessions)
     initialize(maxPlaybacks);
     mapPartitionShouldSucceed(session1);
     mapPartitionShouldSucceed(session2);
-    shouldReturnAudioBufferOffset(session2, expectedOffset);
+    shouldReturnAudioDataOffset(session2, expectedOffset);
 }
 
-TEST_F(SharedMemoryBufferTests, shouldFailToGetBufferForUnmappedSession)
+TEST_F(SharedMemoryBufferTests, shouldFailToGetDataPtrForUnmappedSession)
 {
     constexpr int session1{0};
     initialize();
-    shouldFailToGetBuffer(session1, firebolt::rialto::MediaSourceType::VIDEO);
-    shouldFailToGetBuffer(session1, firebolt::rialto::MediaSourceType::AUDIO);
+    shouldFailToGetDataPtr(session1, firebolt::rialto::MediaSourceType::VIDEO);
+    shouldFailToGetDataPtr(session1, firebolt::rialto::MediaSourceType::AUDIO);
 }
 
-TEST_F(SharedMemoryBufferTests, shouldFailToGetBufferForUnknownSourceType)
+TEST_F(SharedMemoryBufferTests, shouldFailToGetDataPtrForUnknownSourceType)
 {
     constexpr int session1{0};
     initialize();
     mapPartitionShouldSucceed(session1);
-    shouldFailToGetBuffer(session1, firebolt::rialto::MediaSourceType::UNKNOWN);
+    shouldFailToGetBufDataPtr(session1, firebolt::rialto::MediaSourceType::UNKNOWN);
 }
 
-TEST_F(SharedMemoryBufferTests, shouldGetBuffer)
+TEST_F(SharedMemoryBufferTests, shouldGetDataPtr)
 {
     constexpr int maxPlaybacks{2};
     constexpr int session1{0}, session2{1};
     initialize(maxPlaybacks);
     mapPartitionShouldSucceed(session1);
     mapPartitionShouldSucceed(session2);
-    uint8_t *session1Video = shouldGetBuffer(session1, firebolt::rialto::MediaSourceType::VIDEO);
-    uint8_t *session1Audio = shouldGetBuffer(session1, firebolt::rialto::MediaSourceType::AUDIO);
-    uint8_t *session2Video = shouldGetBuffer(session2, firebolt::rialto::MediaSourceType::VIDEO);
-    uint8_t *session2Audio = shouldGetBuffer(session2, firebolt::rialto::MediaSourceType::AUDIO);
+    uint8_t *session1Video = shouldGetDataPtr(session1, firebolt::rialto::MediaSourceType::VIDEO);
+    uint8_t *session1Audio = shouldGetDataPtr(session1, firebolt::rialto::MediaSourceType::AUDIO);
+    uint8_t *session2Video = shouldGetDataPtr(session2, firebolt::rialto::MediaSourceType::VIDEO);
+    uint8_t *session2Audio = shouldGetDataPtr(session2, firebolt::rialto::MediaSourceType::AUDIO);
     EXPECT_NE(nullptr, session1Video);
     EXPECT_NE(nullptr, session1Audio);
     EXPECT_NE(nullptr, session2Video);
@@ -238,4 +238,10 @@ TEST_F(SharedMemoryBufferTests, shouldGetSize)
 {
     initialize();
     shouldGetSize();
+}
+
+TEST_F(SharedMemoryBufferTests, shouldGetBuffer)
+{
+    initialize();
+    shouldGetBuffer();
 }

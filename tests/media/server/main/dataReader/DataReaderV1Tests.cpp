@@ -77,12 +77,12 @@ public:
     {
         ASSERT_TRUE(m_shm);
         EXPECT_TRUE(m_shm->mapPartition(sessionId));
-        std::uint32_t maxMediaBytes = m_shm->getBufferLen(sessionId, videoMediaSourceType) - maxMetadataBytes;
-        auto metadataOffset = m_shm->getBufferOffset(sessionId, videoMediaSourceType);
+        std::uint32_t maxMediaBytes = m_shm->getMaxDataLen(sessionId, videoMediaSourceType) - maxMetadataBytes;
+        auto metadataOffset = m_shm->getDataOffset(sessionId, videoMediaSourceType);
         auto mediadataOffset = metadataOffset + maxMetadataBytes;
         auto shmInfo =
             std::make_shared<ShmInfo>(ShmInfo{maxMetadataBytes, metadataOffset, mediadataOffset, maxMediaBytes});
-        auto *shmBegin{m_shm->getBuffer(sessionId, videoMediaSourceType)};
+        auto *shmBegin{m_shm->getDataPtr(sessionId, videoMediaSourceType)};
         auto mediaFrameWriter = IMediaFrameWriterFactory::getFactory()->createFrameWriter(shmBegin, shmInfo);
         EXPECT_EQ(mediaFrameWriter->writeFrame(videoSegment), AddSegmentStatus::OK);
     }
@@ -90,7 +90,7 @@ public:
     void readVideoData()
     {
         ASSERT_TRUE(m_shm);
-        std::uint8_t *buffer = m_shm->getBufferForSession(sessionId);
+        std::uint8_t *buffer = m_shm->getDataPtrForSession(sessionId);
         m_sut = std::make_unique<DataReaderV1>(videoMediaSourceType, buffer, 4, numFrames);
         auto result = m_sut->readData();
         ASSERT_EQ(1, result.size());
@@ -112,12 +112,12 @@ public:
     {
         ASSERT_TRUE(m_shm);
         EXPECT_TRUE(m_shm->mapPartition(sessionId));
-        std::uint32_t maxMediaBytes = m_shm->getBufferLen(sessionId, audioMediaSourceType) - maxMetadataBytes;
-        auto metadataOffset = m_shm->getBufferOffset(sessionId, audioMediaSourceType);
+        std::uint32_t maxMediaBytes = m_shm->getMaxDataLen(sessionId, audioMediaSourceType) - maxMetadataBytes;
+        auto metadataOffset = m_shm->getDataOffset(sessionId, audioMediaSourceType);
         auto mediadataOffset = metadataOffset + maxMetadataBytes;
         auto shmInfo =
             std::make_shared<ShmInfo>(ShmInfo{maxMetadataBytes, metadataOffset, mediadataOffset, maxMediaBytes});
-        auto *shmBegin{m_shm->getBuffer(sessionId, videoMediaSourceType)};
+        auto *shmBegin{m_shm->getDataPtr(sessionId, videoMediaSourceType)};
         auto mediaFrameWriter = IMediaFrameWriterFactory::getFactory()->createFrameWriter(shmBegin, shmInfo);
         ASSERT_TRUE(mediaFrameWriter);
         EXPECT_EQ(mediaFrameWriter->writeFrame(audioSegment), AddSegmentStatus::OK);
@@ -126,8 +126,8 @@ public:
     void readAudioData()
     {
         ASSERT_TRUE(m_shm);
-        std::uint8_t *buffer = m_shm->getBufferForSession(sessionId);
-        std::uint32_t regionOffset = m_shm->getBufferOffset(sessionId, audioMediaSourceType);
+        std::uint8_t *buffer = m_shm->getDataPtrForSession(sessionId);
+        std::uint32_t regionOffset = m_shm->getDataOffset(sessionId, audioMediaSourceType);
         m_sut = std::make_unique<DataReaderV1>(audioMediaSourceType, buffer, regionOffset + 4, numFrames);
         auto result = m_sut->readData();
         ASSERT_EQ(1, result.size());

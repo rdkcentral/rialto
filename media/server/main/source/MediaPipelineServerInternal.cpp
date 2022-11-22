@@ -495,7 +495,7 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
         RIALTO_SERVER_LOG_WARN("Data request for needDataRequestId: %u received with wrong status", needDataRequestId);
         return notifyNeedMediaDataInternal(mediaSourceType); // Resend NeedMediaData
     }
-    uint8_t *data = m_shmBuffer->getBufferForSession(m_sessionId);
+    uint8_t *data = m_shmBuffer->getDataPtrForSession(m_sessionId);
     if (!data)
     {
         RIALTO_SERVER_LOG_ERROR("No buffer available for session: %d", m_sessionId);
@@ -506,7 +506,7 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
     std::uint32_t regionOffset = 0;
     try
     {
-        regionOffset = m_shmBuffer->getBufferOffset(m_sessionId, mediaSourceType);
+        regionOffset = m_shmBuffer->getDataOffset(m_sessionId, mediaSourceType);
     }
     catch (const std::runtime_error &e)
     {
@@ -592,7 +592,7 @@ bool MediaPipelineServerInternal::notifyNeedMediaData(MediaSourceType mediaSourc
 
 bool MediaPipelineServerInternal::notifyNeedMediaDataInternal(MediaSourceType mediaSourceType)
 {
-    m_shmBuffer->clearBuffer(m_sessionId, mediaSourceType);
+    m_shmBuffer->clearData(m_sessionId, mediaSourceType);
     NeedMediaData event{m_mediaPipelineClient, *m_activeRequests, *m_shmBuffer, m_sessionId, mediaSourceType};
     if (!event.send())
     {
