@@ -135,7 +135,7 @@ GstPlayer::GstPlayer(IGstPlayerClient *client, IDecryptionService &decryptionSer
     : m_gstPlayerClient(client), m_decryptionService{decryptionService}, m_gstWrapper{gstWrapper},
       m_glibWrapper{glibWrapper}, m_timerFactory{timerFactory}, m_taskFactory{std::move(taskFactory)}
 {
-    RIALTO_SERVER_LOG_DEBUG("GstPlayer is constructed.");
+    RIALTO_SERVER_LOG_ERROR("lukewill: GstPlayer is constructed.");
     if ((!gstSrcFactory) || (!(m_context.gstSrc = gstSrcFactory->getGstSrc())))
     {
         throw std::runtime_error("Cannot create GstSrc");
@@ -171,7 +171,7 @@ GstPlayer::GstPlayer(IGstPlayerClient *client, IDecryptionService &decryptionSer
 
 GstPlayer::~GstPlayer()
 {
-    RIALTO_SERVER_LOG_DEBUG("GstPlayer is destructed.");
+    RIALTO_SERVER_LOG_ERROR("lukewill: GstPlayer is destructed.");
 
     m_gstDispatcherThread.reset();
 
@@ -627,6 +627,7 @@ bool GstPlayer::changePipelineState(GstState newState)
 
 void GstPlayer::setVideoGeometry(int x, int y, int width, int height)
 {
+    RIALTO_SERVER_LOG_ERROR("lukewill: x %u, y %u, width %u, height %u", x, y, width, height);
     if (m_workerThread)
     {
         m_workerThread->enqueueTask(
@@ -644,17 +645,35 @@ void GstPlayer::setEos(const firebolt::rialto::MediaSourceType &type)
 
 bool GstPlayer::setWesterossinkRectangle()
 {
+    RIALTO_SERVER_LOG_ERROR("lukewill:");
     bool result = false;
     GstElement *videoSink = nullptr;
     m_glibWrapper->gObjectGet(m_context.pipeline, "video-sink", &videoSink, nullptr);
-    if (videoSink && m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink), "rectangle"))
+    if (videoSink)
     {
-        char rect[64];
-        snprintf(rect, sizeof(rect), "%d,%d,%d,%d", m_context.pendingGeometry.x, m_context.pendingGeometry.y,
-                 m_context.pendingGeometry.width, m_context.pendingGeometry.height);
-        m_glibWrapper->gObjectSet(videoSink, "rectangle", rect, nullptr);
-        m_context.pendingGeometry.clear();
-        result = true;
+        if (m_context.pendingGeometry.x != 0 || m_context.pendingGeometry.y != 0)
+        {
+            // By default this is set to full resolution, quality and performance.
+            // To enable multiple video playback this must be disabled for the secondary video.
+            if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink), "res-usage"))
+            {
+                m_glibWrapper->gObjectSet(videoSink, "res-usage", 0x0u, nullptr);
+            }
+            else
+            {
+                RIALTO_SERVER_LOG_ERROR("no 'res-usage' property, secondary video may steal decoder");
+            }
+        }
+        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink), "rectangle"))
+        {
+            RIALTO_SERVER_LOG_ERROR("lukewill: x %u, y %u, width %u, height %u", m_context.pendingGeometry.x, m_context.pendingGeometry.y, m_context.pendingGeometry.width, m_context.pendingGeometry.height);
+            char rect[64];
+            snprintf(rect, sizeof(rect), "%d,%d,%d,%d", m_context.pendingGeometry.x, m_context.pendingGeometry.y,
+                    m_context.pendingGeometry.width, m_context.pendingGeometry.height);
+            m_glibWrapper->gObjectSet(videoSink, "rectangle", rect, nullptr);
+            m_context.pendingGeometry.clear();
+            result = true;
+        }
     }
 
     if (videoSink)
