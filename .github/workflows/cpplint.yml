@@ -61,7 +61,7 @@ jobs:
   run-cpplint:
     name: Run cpplint.py
     # Runs on ubuntu
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     # Timeout after
     timeout-minutes: 2
 
