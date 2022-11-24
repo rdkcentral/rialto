@@ -6,6 +6,9 @@ https://rdkcentral.github.io/rialto/
 ## Coding Guidelines:
 https://wiki.rdkcentral.com/display/ASP/Rialto+Coding+Guidelines
 
+## Commit message template:
+https://wiki.rdkcentral.com/display/ASP/Commit+message+template
+
 ## Building and Running Unit Tests:
 https://wiki.rdkcentral.com/display/ASP/Unit+Tests
 
