@@ -60,7 +60,7 @@ jobs:
   download-protobuf:
     name: Download and Cache Protobuf
     # Runs on ubuntu
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     # Timeout after
     timeout-minutes: 90
 
@@ -105,7 +105,7 @@ jobs:
   download-valgrind:
     name: Download and Cache Valgrind
     # Runs on ubuntu
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     # Timeout after
     timeout-minutes: 10
 
@@ -134,7 +134,7 @@ jobs:
     # Wait for protobuf and valgrind to be cached first
     needs: [download-protobuf, download-valgrind]
     # Runs on ubuntu
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     # Timeout after
     timeout-minutes: 20
 
