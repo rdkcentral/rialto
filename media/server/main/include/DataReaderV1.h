@@ -55,7 +55,7 @@ class DataReaderV1 : public IDataReader
     };
 
 public:
-    DataReaderV1(const MediaSourceType &mediaSourceType, std::uint8_t *sessionData, std::uint32_t metadataOffset,
+    DataReaderV1(const MediaSourceType &mediaSourceType, std::uint8_t *buffer, std::uint32_t metadataOffset,
                  std::uint32_t numFrames);
     ~DataReaderV1() override = default;
 
@@ -66,7 +66,7 @@ private:
 
 private:
     MediaSourceType m_mediaSourceType;
-    std::uint8_t *m_sessionData;
+    std::uint8_t *m_buffer;
     std::uint32_t m_metadataOffset;
     std::uint32_t m_numFrames;
 
@@ -75,7 +75,7 @@ private:
         std::unique_ptr<SegmentType> mediaSegment{std::make_unique<SegmentType>(0, metadata.timePosition,
                                                                                 metadata.sampleDuration,
                                                                                 metadata.extra1, metadata.extra2)};
-        mediaSegment->setData(metadata.length, m_sessionData + metadata.offset);
+        mediaSegment->setData(metadata.length, m_buffer + metadata.offset);
         std::vector<std::uint8_t> extraDataVec;
         std::copy(&metadata.extraData[0], &metadata.extraData[metadata.extraDataSize], std::back_inserter(extraDataVec));
         mediaSegment->setExtraData(extraDataVec);

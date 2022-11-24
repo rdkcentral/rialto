@@ -47,15 +47,15 @@ public:
     bool mapPartition(int sessionId) override;
     bool unmapPartition(int sessionId) override;
 
-    bool clearBuffer(int sessionId, const MediaSourceType &mediaSourceType) const override;
+    bool clearData(int sessionId, const MediaSourceType &mediaSourceType) const override;
 
-    std::uint32_t getBufferOffset(int sessionId, const MediaSourceType &mediaSourceType) const override;
-    std::uint32_t getBufferLen(int sessionId, const MediaSourceType &mediaSourceType) const override;
-    std::uint8_t *getBuffer(int sessionId, const MediaSourceType &mediaSourceType) const override;
-    std::uint8_t *getBufferForSession(int sessionId) const;
+    std::uint32_t getDataOffset(int sessionId, const MediaSourceType &mediaSourceType) const override;
+    std::uint32_t getMaxDataLen(int sessionId, const MediaSourceType &mediaSourceType) const override;
+    std::uint8_t *getDataPtr(int sessionId, const MediaSourceType &mediaSourceType) const override;
 
     int getFd() const override;
     std::uint32_t getSize() const override;
+    std::uint8_t *getBuffer() const override;
 
     struct Partition
     {
@@ -66,6 +66,7 @@ public:
 
 private:
     size_t calculateBufferSize() const;
+    std::uint8_t *getDataPtrForSession(int sessionId) const;
 
 private:
     std::vector<Partition> m_partitions;
