@@ -543,6 +543,9 @@ void MediaPipelineIpc::onPlaybackStateUpdated(const std::shared_ptr<firebolt::ri
         case firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_END_OF_STREAM:
             playbackState = PlaybackState::END_OF_STREAM;
             break;
+        case firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_FAILURE:
+            playbackState = PlaybackState::FAILURE;
+            break;
         default:
             RIALTO_CLIENT_LOG_WARN("Recieved unknown playback state");
             break;
