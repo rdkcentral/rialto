@@ -70,7 +70,7 @@ std::shared_ptr<IGstPlayerFactory> IGstPlayerFactory::getFactory()
 }
 
 std::unique_ptr<IGstPlayer> GstPlayerFactory::createGstPlayer(IGstPlayerClient *client,
-                                                              IDecryptionService &decryptionService, MediaType type)
+                                                              IDecryptionService &decryptionService, MediaType type, const VideoRequirements &videoRequirements)
 {
     std::unique_ptr<IGstPlayer> gstPlayer;
 
@@ -88,7 +88,7 @@ std::unique_ptr<IGstPlayer> GstPlayerFactory::createGstPlayer(IGstPlayerClient *
         {
             throw std::runtime_error("Cannot create GlibWrapper");
         }
-        gstPlayer = std::make_unique<GstPlayer>(client, decryptionService, type, gstWrapper, glibWrapper,
+        gstPlayer = std::make_unique<GstPlayer>(client, decryptionService, type, videoRequirements, gstWrapper, glibWrapper,
                                                 IGstSrcFactory::getFactory(), common::ITimerFactory::getFactory(),
                                                 std::make_unique<PlayerTaskFactory>(client, gstWrapper, glibWrapper),
                                                 std::make_unique<WorkerThreadFactory>(),
@@ -126,7 +126,7 @@ bool IGstPlayer::initalise(int argc, char **argv)
     return true;
 }
 
-GstPlayer::GstPlayer(IGstPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
+GstPlayer::GstPlayer(IGstPlayerClient *client, IDecryptionService &decryptionService, MediaType type, const VideoRequirements &videoRequirements,
                      const std::shared_ptr<IGstWrapper> &gstWrapper, const std::shared_ptr<IGlibWrapper> &glibWrapper,
                      const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
                      std::shared_ptr<common::ITimerFactory> timerFactory, std::unique_ptr<IPlayerTaskFactory> taskFactory,
@@ -136,6 +136,16 @@ GstPlayer::GstPlayer(IGstPlayerClient *client, IDecryptionService &decryptionSer
       m_glibWrapper{glibWrapper}, m_timerFactory{timerFactory}, m_taskFactory{std::move(taskFactory)}
 {
     RIALTO_SERVER_LOG_ERROR("lukewill: GstPlayer is constructed.");
+
+    // Check the video requirements for a limited video.
+    // If the video requirements are set to anything other than the default, this playback is assumed to be a secondary
+    // video in a dual video scenario.
+    if ((DEFAULT_MAX_VIDEO_WIDTH != videoRequirements.maxWidth) ||
+        (DEFAULT_MAX_VIDEO_HEIGHT != videoRequirements.maxHeight))
+    {
+        m_context.isSecondaryVideo = true;
+    }
+
     if ((!gstSrcFactory) || (!(m_context.gstSrc = gstSrcFactory->getGstSrc())))
     {
         throw std::runtime_error("Cannot create GstSrc");
@@ -640,7 +650,6 @@ bool GstPlayer::changePipelineState(GstState newState)
 
 void GstPlayer::setVideoGeometry(int x, int y, int width, int height)
 {
-    RIALTO_SERVER_LOG_ERROR("lukewill: x %u, y %u, width %u, height %u", x, y, width, height);
     if (m_workerThread)
     {
         m_workerThread->enqueueTask(
@@ -658,35 +667,42 @@ void GstPlayer::setEos(const firebolt::rialto::MediaSourceType &type)
 
 bool GstPlayer::setWesterossinkRectangle()
 {
-    RIALTO_SERVER_LOG_ERROR("lukewill:");
     bool result = false;
     GstElement *videoSink = nullptr;
     m_glibWrapper->gObjectGet(m_context.pipeline, "video-sink", &videoSink, nullptr);
-    if (videoSink)
+    if (videoSink && m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink), "rectangle"))
     {
-        if (m_context.pendingGeometry.x != 0 || m_context.pendingGeometry.y != 0)
-        {
-            // By default this is set to full resolution, quality and performance.
-            // To enable multiple video playback this must be disabled for the secondary video.
-            if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink), "res-usage"))
-            {
-                m_glibWrapper->gObjectSet(videoSink, "res-usage", 0x0u, nullptr);
-            }
-            else
-            {
-                RIALTO_SERVER_LOG_ERROR("no 'res-usage' property, secondary video may steal decoder");
-            }
-        }
-        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink), "rectangle"))
-        {
-            RIALTO_SERVER_LOG_ERROR("lukewill: x %u, y %u, width %u, height %u", m_context.pendingGeometry.x, m_context.pendingGeometry.y, m_context.pendingGeometry.width, m_context.pendingGeometry.height);
-            char rect[64];
-            snprintf(rect, sizeof(rect), "%d,%d,%d,%d", m_context.pendingGeometry.x, m_context.pendingGeometry.y,
-                    m_context.pendingGeometry.width, m_context.pendingGeometry.height);
-            m_glibWrapper->gObjectSet(videoSink, "rectangle", rect, nullptr);
-            m_context.pendingGeometry.clear();
-            result = true;
-        }
+        char rect[64];
+        snprintf(rect, sizeof(rect), "%d,%d,%d,%d", m_context.pendingGeometry.x, m_context.pendingGeometry.y,
+                m_context.pendingGeometry.width, m_context.pendingGeometry.height);
+        m_glibWrapper->gObjectSet(videoSink, "rectangle", rect, nullptr);
+        m_context.pendingGeometry.clear();
+        result = true;
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to set the westerossink rectangle");
+    }
+
+    if (videoSink)
+        m_gstWrapper->gstObjectUnref(GST_OBJECT(videoSink));
+
+    return result;
+}
+
+bool GstPlayer::setWesterossinkSecondaryVideo()
+{
+    bool result = false;
+    GstElement *videoSink = nullptr;
+    m_glibWrapper->gObjectGet(m_context.pipeline, "video-sink", &videoSink, nullptr);
+    if (videoSink && m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink), "res-usage"))
+    {
+        m_glibWrapper->gObjectSet(videoSink, "res-usage", 0x0u, nullptr);
+        result = true;
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to set the westerossink res-usage");
     }
 
     if (videoSink)

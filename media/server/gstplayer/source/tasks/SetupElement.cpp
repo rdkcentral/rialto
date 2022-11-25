@@ -79,6 +79,18 @@ SetupElement::~SetupElement()
 void SetupElement::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing SetupElement");
+    if (m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "westerossink"))
+    {
+        if (m_context.isSecondaryVideo)
+        {
+            m_player.setWesterossinkSecondaryVideo();
+        }
+        if (!m_context.pendingGeometry.empty())
+        {
+            m_player.setWesterossinkRectangle();
+        }
+    }
+
     if (!m_context.pendingGeometry.empty() && m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "westerossink"))
     {
         m_player.setWesterossinkRectangle();

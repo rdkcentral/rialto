@@ -37,6 +37,9 @@
 
 namespace firebolt::rialto::server
 {
+#define DEFAULT_MAX_VIDEO_WIDTH 3840
+#define DEFAULT_MAX_VIDEO_HEIGHT 2160
+
 /**
  * @brief IGstPlayer factory class definition.
  */
@@ -49,7 +52,7 @@ public:
     static std::weak_ptr<IGstPlayerFactory> m_factory;
 
     std::unique_ptr<IGstPlayer> createGstPlayer(IGstPlayerClient *client, IDecryptionService &decryptionService,
-                                                MediaType type) override;
+                                                MediaType type, const VideoRequirements &videoRequirements) override;
 };
 
 /**
@@ -64,6 +67,7 @@ public:
      * @param[in] client                       : The gstreamer player client.
      * @param[in] decryptionService            : The decryption service
      * @param[in] type                         : The media type the gstreamer player shall support.
+     * @param[in] videoRequirements            : The video requirements for the playback.
      * @param[in] gstWrapper                   : The gstreamer wrapper.
      * @param[in] glibWrapper                  : The glib wrapper.
      * @param[in] gstSrcFactory                : The gstreamer rialto src factory.
@@ -72,7 +76,7 @@ public:
      * @param[in] workerThreadFactory          : The worker thread factory
      * @param[in] gstDispatcherThreadFactory   : The gst dispatcher thread factory
      */
-    GstPlayer(IGstPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
+    GstPlayer(IGstPlayerClient *client, IDecryptionService &decryptionService, MediaType type, const VideoRequirements &videoRequirements,
               const std::shared_ptr<IGstWrapper> &gstWrapper, const std::shared_ptr<IGlibWrapper> &glibWrapper,
               const std::shared_ptr<IGstSrcFactory> &gstSrcFactory, std::shared_ptr<common::ITimerFactory> timerFactory,
               std::unique_ptr<IPlayerTaskFactory> taskFactory, std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
@@ -102,6 +106,7 @@ private:
     void scheduleAudioUnderflow() override;
     void scheduleVideoUnderflow() override;
     bool setWesterossinkRectangle() override;
+    bool setWesterossinkSecondaryVideo() override;
     void notifyNeedMediaData(bool audioNotificationNeeded, bool videoNotificationNeeded) override;
     GstBuffer *createDecryptedBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const override;
     void attachAudioData() override;
