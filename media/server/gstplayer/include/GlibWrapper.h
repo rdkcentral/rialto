@@ -104,6 +104,15 @@ public:
     GType gObjectType(gpointer object) const override { return G_OBJECT_TYPE(object); }
 
     gpointer gMalloc(gsize n_bytes) const override { return g_malloc(n_bytes); }
+
+    gpointer gMemdup(gconstpointer mem, guint byte_size) const override
+    {
+#if (GLIB_CHECK_VERSION(2, 67, 3))
+        return g_memdup2(mem, byte_size);
+#else
+        return g_memdup(mem, byte_size);
+#endif
+    }
 };
 
 }; // namespace firebolt::rialto::server
