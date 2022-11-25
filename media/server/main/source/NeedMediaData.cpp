@@ -38,8 +38,8 @@ NeedMediaData::NeedMediaData(std::weak_ptr<IMediaPipelineClient> client, IActive
     }
     try
     {
-        m_maxMediaBytes = shmBuffer.getBufferLen(sessionId, mediaSourceType) - getMaxMetadataBytes();
-        auto metadataOffset = shmBuffer.getBufferOffset(sessionId, mediaSourceType);
+        m_maxMediaBytes = shmBuffer.getMaxDataLen(sessionId, mediaSourceType) - getMaxMetadataBytes();
+        auto metadataOffset = shmBuffer.getDataOffset(sessionId, mediaSourceType);
         auto mediadataOffset = metadataOffset + getMaxMetadataBytes();
         m_shmInfo =
             std::make_shared<ShmInfo>(ShmInfo{getMaxMetadataBytes(), metadataOffset, mediadataOffset, m_maxMediaBytes});

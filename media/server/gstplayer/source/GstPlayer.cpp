@@ -376,6 +376,19 @@ GstBuffer *GstPlayer::createDecryptedBuffer(const IMediaPipeline::MediaSegment &
         m_decryptionService.decrypt(mediaSegment.getMediaKeySessionId(), gstBuffer, subsamples,
                                     mediaSegment.getSubSamples().size(), initVector, keyId,
                                     mediaSegment.getInitWithLast15());
+
+        if (subsamples)
+        {
+            m_gstWrapper->gstBufferUnref(subsamples);
+        }
+        if (initVector)
+        {
+            m_gstWrapper->gstBufferUnref(initVector);
+        }
+        if (keyId)
+        {
+            m_gstWrapper->gstBufferUnref(keyId);
+        }
     }
 
     GST_BUFFER_TIMESTAMP(gstBuffer) = mediaSegment.getTimeStamp();

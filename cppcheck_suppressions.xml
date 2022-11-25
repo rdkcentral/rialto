@@ -26,4 +26,8 @@
         <id>unusedFunction</id>
         <symbolName>MATCHER_P5</symbolName>
     </suppress>
+    <suppress>
+        <id>unusedFunction</id>
+        <symbolName>MATCHER_P8</symbolName>
+    </suppress>
 </suppressions>

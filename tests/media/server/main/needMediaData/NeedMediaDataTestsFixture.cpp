@@ -57,8 +57,8 @@ NeedMediaDataTests::NeedMediaDataTests()
 
 void NeedMediaDataTests::initialize()
 {
-    EXPECT_CALL(shmBufferMock, getBufferLen(sessionId, validMediaSourceType)).WillOnce(Return(bufferLen));
-    EXPECT_CALL(shmBufferMock, getBufferOffset(sessionId, validMediaSourceType)).WillOnce(Return(metadataOffset));
+    EXPECT_CALL(shmBufferMock, getMaxDataLen(sessionId, validMediaSourceType)).WillOnce(Return(bufferLen));
+    EXPECT_CALL(shmBufferMock, getDataOffset(sessionId, validMediaSourceType)).WillOnce(Return(metadataOffset));
     m_sut = std::make_unique<firebolt::rialto::server::NeedMediaData>(m_clientMock, activeRequestsMock, shmBufferMock,
                                                                       sessionId, validMediaSourceType);
 }
