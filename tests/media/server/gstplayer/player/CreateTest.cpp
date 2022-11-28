@@ -78,6 +78,7 @@ protected:
     GFlagsValue m_audioFlag{1, "audio", "audio"};
     GFlagsValue m_videoFlag{2, "video", "video"};
     GFlagsValue m_nativeVideoFlag{3, "native-video", "native-video"};
+    VideoRequirements m_videoReq = {DEFAULT_MAX_VIDEO_WIDTH, DEFAULT_MAX_VIDEO_HEIGHT};
 
     void initFactories() { EXPECT_CALL(*m_gstSrcFactoryMock, getGstSrc()).WillOnce(Return(m_gstSrcMock)); }
 
@@ -163,7 +164,7 @@ TEST_F(RialtoServerCreateGstPlayerTest, CreateDestroySuccess)
     EXPECT_CALL(*m_gstSrcMock, initSrc());
     EXPECT_CALL(m_workerThreadFactoryMock, createWorkerThread()).WillOnce(Return(ByMove(std::move(workerThread))));
 
-    EXPECT_NO_THROW(gstPlayer = std::make_unique<GstPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, m_type,
+    EXPECT_NO_THROW(gstPlayer = std::make_unique<GstPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, m_type, m_videoReq,
                                                             m_gstWrapperMock, m_glibWrapperMock, m_gstSrcFactoryMock,
                                                             m_timerFactoryMock, std::move(m_taskFactory),
                                                             std::move(workerThreadFactory),
@@ -183,7 +184,7 @@ TEST_F(RialtoServerCreateGstPlayerTest, GstSrcFactoryNull)
 {
     std::unique_ptr<IGstPlayer> gstPlayer;
 
-    EXPECT_THROW(gstPlayer = std::make_unique<GstPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, m_type,
+    EXPECT_THROW(gstPlayer = std::make_unique<GstPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, m_type, m_videoReq,
                                                          m_gstWrapperMock, m_glibWrapperMock, nullptr, m_timerFactoryMock,
                                                          std::move(m_taskFactory), std::move(workerThreadFactory),
                                                          std::move(gstDispatcherThreadFactory)),
@@ -200,7 +201,7 @@ TEST_F(RialtoServerCreateGstPlayerTest, TimerFactoryFails)
 
     initFactories();
 
-    EXPECT_THROW(gstPlayer = std::make_unique<GstPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, m_type,
+    EXPECT_THROW(gstPlayer = std::make_unique<GstPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, m_type, m_videoReq,
                                                          m_gstWrapperMock, m_glibWrapperMock, m_gstSrcFactoryMock, nullptr,
                                                          std::move(m_taskFactory), std::move(workerThreadFactory),
                                                          std::move(gstDispatcherThreadFactory)),
@@ -217,7 +218,7 @@ TEST_F(RialtoServerCreateGstPlayerTest, GstSrcFactoryFails)
 
     EXPECT_CALL(*m_gstSrcFactoryMock, getGstSrc()).WillOnce(Return(nullptr));
 
-    EXPECT_THROW(gstPlayer = std::make_unique<GstPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, m_type,
+    EXPECT_THROW(gstPlayer = std::make_unique<GstPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, m_type, m_videoReq,
                                                          m_gstWrapperMock, m_glibWrapperMock, m_gstSrcFactoryMock,
                                                          m_timerFactoryMock, std::move(m_taskFactory),
                                                          std::move(workerThreadFactory),
@@ -236,7 +237,7 @@ TEST_F(RialtoServerCreateGstPlayerTest, UnknownMediaType)
     EXPECT_CALL(*m_gstSrcFactoryMock, getGstSrc()).WillOnce(Return(nullptr));
 
     EXPECT_THROW(gstPlayer = std::make_unique<GstPlayer>(&m_gstPlayerClient, m_decryptionServiceMock,
-                                                         MediaType::UNKNOWN, m_gstWrapperMock, m_glibWrapperMock,
+                                                         MediaType::UNKNOWN, m_videoReq, m_gstWrapperMock, m_glibWrapperMock,
                                                          m_gstSrcFactoryMock, m_timerFactoryMock,
                                                          std::move(m_taskFactory), std::move(workerThreadFactory),
                                                          std::move(gstDispatcherThreadFactory)),
@@ -265,7 +266,7 @@ TEST_F(RialtoServerCreateGstPlayerTest, PlaysinkNotFound)
     EXPECT_CALL(*m_gstWrapperMock, gstBinGetByName(GST_BIN(&m_pipeline), CharStrMatcher("playsink")))
         .WillOnce(Return(nullptr));
 
-    EXPECT_NO_THROW(gstPlayer = std::make_unique<GstPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, m_type,
+    EXPECT_NO_THROW(gstPlayer = std::make_unique<GstPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, m_type, m_videoReq,
                                                             m_gstWrapperMock, m_glibWrapperMock, m_gstSrcFactoryMock,
                                                             m_timerFactoryMock, std::move(m_taskFactory),
                                                             std::move(workerThreadFactory),

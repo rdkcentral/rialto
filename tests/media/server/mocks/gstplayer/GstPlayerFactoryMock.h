@@ -33,7 +33,7 @@ public:
     virtual ~GstPlayerFactoryMock() = default;
 
     MOCK_METHOD(std::unique_ptr<IGstPlayer>, createGstPlayer,
-                (IGstPlayerClient * client, IDecryptionService &decryptionService, MediaType type), (override));
+                (IGstPlayerClient * client, IDecryptionService &decryptionService, MediaType type, const VideoRequirements &videoRequirements), (override));
 };
 } // namespace firebolt::rialto::server
 

@@ -50,6 +50,7 @@ protected:
     {
         gst_init(nullptr, nullptr);
         m_elementFactory = gst_element_factory_find("fakesrc");
+        m_context.isSecondaryVideo = false;
     }
 
     ~SetupElementTest() { gst_object_unref(m_elementFactory); }
@@ -81,6 +82,7 @@ protected:
 
     void expectSetupAudioElement()
     {
+        EXPECT_CALL(*m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("westerossink"))).WillOnce(Return(false));
         EXPECT_CALL(*m_gstWrapper, gstElementGetFactory(_)).WillRepeatedly(Return(m_elementFactory));
         EXPECT_CALL(*m_gstWrapper, gstElementFactoryListIsType(m_elementFactory, GST_ELEMENT_FACTORY_TYPE_DECODER))
             .WillRepeatedly(Return(TRUE));
@@ -110,6 +112,7 @@ protected:
 TEST_F(SetupElementTest, shouldSetupVideoElement)
 {
     firebolt::rialto::server::SetupElement task{m_context, m_gstWrapper, m_glibWrapper, m_gstPlayer, &m_element};
+    EXPECT_CALL(*m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("westerossink"))).WillOnce(Return(false));
     expectSetupVideoElement();
     task.execute();
 }
@@ -124,9 +127,28 @@ TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingGeometry)
     task.execute();
 }
 
+TEST_F(SetupElementTest, shouldSetupVideoElementForSecondaryVideo)
+{
+    m_context.isSecondaryVideo = true;
+    firebolt::rialto::server::SetupElement task{m_context, m_gstWrapper, m_glibWrapper, m_gstPlayer, &m_element};
+    EXPECT_CALL(*m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("westerossink"))).WillOnce(Return(true));
+    EXPECT_CALL(m_gstPlayer, setWesterossinkSecondaryVideo());
+    expectSetupVideoElement();
+    task.execute();
+}
+
 TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingGeometryOtherThanWesterosSink)
 {
     m_context.pendingGeometry = firebolt::rialto::server::Rectangle{1, 2, 3, 4};
+    firebolt::rialto::server::SetupElement task{m_context, m_gstWrapper, m_glibWrapper, m_gstPlayer, &m_element};
+    EXPECT_CALL(*m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("westerossink"))).WillOnce(Return(false));
+    expectSetupVideoElement();
+    task.execute();
+}
+
+TEST_F(SetupElementTest, shouldSetupVideoElementForSecondaryVideoOtherThanWesterosSink)
+{
+    m_context.isSecondaryVideo = true;
     firebolt::rialto::server::SetupElement task{m_context, m_gstWrapper, m_glibWrapper, m_gstPlayer, &m_element};
     EXPECT_CALL(*m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("westerossink"))).WillOnce(Return(false));
     expectSetupVideoElement();
@@ -143,6 +165,7 @@ TEST_F(SetupElementTest, shouldSetupAudioElement)
 TEST_F(SetupElementTest, shouldReportVideoUnderflow)
 {
     firebolt::rialto::server::SetupElement task{m_context, m_gstWrapper, m_glibWrapper, m_gstPlayer, &m_element};
+    EXPECT_CALL(*m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("westerossink"))).WillOnce(Return(false));
     expectSetupVideoElement();
     task.execute();
     EXPECT_TRUE(m_videoUnderflowCallback);

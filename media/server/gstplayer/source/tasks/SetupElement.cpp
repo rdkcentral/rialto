@@ -91,11 +91,6 @@ void SetupElement::execute() const
         }
     }
 
-    if (!m_context.pendingGeometry.empty() && m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "westerossink"))
-    {
-        m_player.setWesterossinkRectangle();
-    }
-
     if (isVideoDecoder(*m_gstWrapper, m_element))
     {
         std::string underflowSignalName = getUnderflowSignalName(*m_glibWrapper, m_element);
