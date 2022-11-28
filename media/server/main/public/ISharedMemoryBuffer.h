@@ -52,15 +52,15 @@ public:
     virtual bool mapPartition(int sessionId) = 0;
     virtual bool unmapPartition(int sessionId) = 0;
 
-    virtual bool clearBuffer(int sessionId, const MediaSourceType &mediaSourceType) const = 0;
+    virtual bool clearData(int sessionId, const MediaSourceType &mediaSourceType) const = 0;
 
-    virtual std::uint32_t getBufferOffset(int sessionId, const MediaSourceType &mediaSourceType) const = 0;
-    virtual std::uint32_t getBufferLen(int sessionId, const MediaSourceType &mediaSourceType) const = 0;
-    virtual std::uint8_t *getBuffer(int sessionId, const MediaSourceType &mediaSourceType) const = 0;
-    virtual std::uint8_t *getBufferForSession(int sessionId) const = 0;
+    virtual std::uint32_t getDataOffset(int sessionId, const MediaSourceType &mediaSourceType) const = 0;
+    virtual std::uint32_t getMaxDataLen(int sessionId, const MediaSourceType &mediaSourceType) const = 0;
+    virtual std::uint8_t *getDataPtr(int sessionId, const MediaSourceType &mediaSourceType) const = 0;
 
     virtual int getFd() const = 0;
     virtual std::uint32_t getSize() const = 0;
+    virtual std::uint8_t *getBuffer() const = 0;
 };
 } // namespace firebolt::rialto::server
 

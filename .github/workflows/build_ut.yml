@@ -59,7 +59,7 @@ jobs:
   download-protobuf:
     name: Download and Cache Protobuf
     # Runs on ubuntu
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     # Timeout after
     timeout-minutes: 90
 
@@ -104,9 +104,9 @@ jobs:
     # Wait for protobuf to be cached first
     needs: download-protobuf
     # Runs on ubuntu
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     # Timeout after
-    timeout-minutes: 20
+    timeout-minutes: 60
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
