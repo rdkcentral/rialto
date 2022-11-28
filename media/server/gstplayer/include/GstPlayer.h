@@ -76,10 +76,11 @@ public:
      * @param[in] workerThreadFactory          : The worker thread factory
      * @param[in] gstDispatcherThreadFactory   : The gst dispatcher thread factory
      */
-    GstPlayer(IGstPlayerClient *client, IDecryptionService &decryptionService, MediaType type, const VideoRequirements &videoRequirements,
-              const std::shared_ptr<IGstWrapper> &gstWrapper, const std::shared_ptr<IGlibWrapper> &glibWrapper,
-              const std::shared_ptr<IGstSrcFactory> &gstSrcFactory, std::shared_ptr<common::ITimerFactory> timerFactory,
-              std::unique_ptr<IPlayerTaskFactory> taskFactory, std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
+    GstPlayer(IGstPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
+              const VideoRequirements &videoRequirements, const std::shared_ptr<IGstWrapper> &gstWrapper,
+              const std::shared_ptr<IGlibWrapper> &glibWrapper, const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
+              std::shared_ptr<common::ITimerFactory> timerFactory, std::unique_ptr<IPlayerTaskFactory> taskFactory,
+              std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
               std::unique_ptr<IGstDispatcherThreadFactory> gstDispatcherThreadFactory);
 
     /**

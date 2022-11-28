@@ -70,7 +70,8 @@ std::shared_ptr<IGstPlayerFactory> IGstPlayerFactory::getFactory()
 }
 
 std::unique_ptr<IGstPlayer> GstPlayerFactory::createGstPlayer(IGstPlayerClient *client,
-                                                              IDecryptionService &decryptionService, MediaType type, const VideoRequirements &videoRequirements)
+                                                              IDecryptionService &decryptionService, MediaType type,
+                                                              const VideoRequirements &videoRequirements)
 {
     std::unique_ptr<IGstPlayer> gstPlayer;
 
@@ -88,8 +89,9 @@ std::unique_ptr<IGstPlayer> GstPlayerFactory::createGstPlayer(IGstPlayerClient *
         {
             throw std::runtime_error("Cannot create GlibWrapper");
         }
-        gstPlayer = std::make_unique<GstPlayer>(client, decryptionService, type, videoRequirements, gstWrapper, glibWrapper,
-                                                IGstSrcFactory::getFactory(), common::ITimerFactory::getFactory(),
+        gstPlayer = std::make_unique<GstPlayer>(client, decryptionService, type, videoRequirements, gstWrapper,
+                                                glibWrapper, IGstSrcFactory::getFactory(),
+                                                common::ITimerFactory::getFactory(),
                                                 std::make_unique<PlayerTaskFactory>(client, gstWrapper, glibWrapper),
                                                 std::make_unique<WorkerThreadFactory>(),
                                                 std::make_unique<GstDispatcherThreadFactory>());
@@ -126,8 +128,9 @@ bool IGstPlayer::initalise(int argc, char **argv)
     return true;
 }
 
-GstPlayer::GstPlayer(IGstPlayerClient *client, IDecryptionService &decryptionService, MediaType type, const VideoRequirements &videoRequirements,
-                     const std::shared_ptr<IGstWrapper> &gstWrapper, const std::shared_ptr<IGlibWrapper> &glibWrapper,
+GstPlayer::GstPlayer(IGstPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
+                     const VideoRequirements &videoRequirements, const std::shared_ptr<IGstWrapper> &gstWrapper,
+                     const std::shared_ptr<IGlibWrapper> &glibWrapper,
                      const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
                      std::shared_ptr<common::ITimerFactory> timerFactory, std::unique_ptr<IPlayerTaskFactory> taskFactory,
                      std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
@@ -135,7 +138,7 @@ GstPlayer::GstPlayer(IGstPlayerClient *client, IDecryptionService &decryptionSer
     : m_gstPlayerClient(client), m_decryptionService{decryptionService}, m_gstWrapper{gstWrapper},
       m_glibWrapper{glibWrapper}, m_timerFactory{timerFactory}, m_taskFactory{std::move(taskFactory)}
 {
-    RIALTO_SERVER_LOG_ERROR("lukewill: GstPlayer is constructed.");
+    RIALTO_SERVER_LOG_DEBUG("GstPlayer is constructed.");
 
     // Check the video requirements for a limited video.
     // If the video requirements are set to anything other than the default, this playback is assumed to be a secondary
@@ -181,7 +184,7 @@ GstPlayer::GstPlayer(IGstPlayerClient *client, IDecryptionService &decryptionSer
 
 GstPlayer::~GstPlayer()
 {
-    RIALTO_SERVER_LOG_ERROR("lukewill: GstPlayer is destructed.");
+    RIALTO_SERVER_LOG_DEBUG("GstPlayer is destructed.");
 
     m_gstDispatcherThread.reset();
 
@@ -674,7 +677,7 @@ bool GstPlayer::setWesterossinkRectangle()
     {
         char rect[64];
         snprintf(rect, sizeof(rect), "%d,%d,%d,%d", m_context.pendingGeometry.x, m_context.pendingGeometry.y,
-                m_context.pendingGeometry.width, m_context.pendingGeometry.height);
+                 m_context.pendingGeometry.width, m_context.pendingGeometry.height);
         m_glibWrapper->gObjectSet(videoSink, "rectangle", rect, nullptr);
         m_context.pendingGeometry.clear();
         result = true;
