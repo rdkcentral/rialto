@@ -143,8 +143,7 @@ GstPlayer::GstPlayer(IGstPlayerClient *client, IDecryptionService &decryptionSer
     // Check the video requirements for a limited video.
     // If the video requirements are set to anything lower than the minimum, this playback is assumed to be a secondary
     // video in a dual video scenario.
-    if ((kMinPrimaryVideoWidth > videoRequirements.maxWidth) ||
-        (kMinPrimaryVideoHeight > videoRequirements.maxHeight))
+    if ((kMinPrimaryVideoWidth > videoRequirements.maxWidth) || (kMinPrimaryVideoHeight > videoRequirements.maxHeight))
     {
         RIALTO_SERVER_LOG_INFO("Secondary video playback selected");
         m_context.isSecondaryVideo = true;
