@@ -112,6 +112,8 @@ public:
 
     bool haveData(MediaSourceStatus status, uint32_t numFrames, uint32_t needDataRequestId) override;
 
+    bool renderFrame() override;
+
     AddSegmentStatus addSegment(uint32_t needDataRequestId, const std::unique_ptr<MediaSegment> &mediaSegment) override;
 
     std::weak_ptr<IMediaPipelineClient> getClient() override;

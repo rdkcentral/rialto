@@ -475,6 +475,11 @@ bool MediaPipelineServerInternal::haveData(MediaSourceStatus status, uint32_t nu
     return result;
 }
 
+bool MediaPipelineServerInternal::renderFrame()
+{
+    return false;
+}
+
 bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uint32_t numFrames,
                                                    uint32_t needDataRequestId)
 {

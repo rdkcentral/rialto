@@ -305,6 +305,18 @@ message HaveDataResponse {
 }
 
 /**
+ * @fn void renderFrame(int session_id)
+ * @brief Requests to render a prerolled frame
+ *
+ * @param session_id        The id of the A/V session the request is for.
+ */
+message RenderFrameRequest {
+    required int32 session_id = 1;
+}
+message RenderFrameResponse {
+}
+
+/**
  * @brief Event sent the playback state has changed.
  *
  * @param session_id   The id of the A/V session the status is for.
@@ -522,5 +534,12 @@ service MediaPipelineModule {
      * @see HaveDataRequest
      */
     rpc haveData(HaveDataRequest) returns (HaveDataResponse) {
+    }
+
+    /**
+     * @brief Requests to render a prerolled frame
+     * @see RenderFrameRequest
+     */
+    rpc renderFrame(RenderFrameRequest) returns (RenderFrameResponse) {
     }
 }

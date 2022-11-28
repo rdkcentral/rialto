@@ -876,6 +876,11 @@ public:
      * @retval status of adding segment
      */
     virtual AddSegmentStatus addSegment(uint32_t needDataRequestId, const std::unique_ptr<MediaSegment> &mediaSegment) = 0;
+
+    /**
+     * @brief Requests to render a prerolled frame
+     */
+    virtual bool renderFrame() = 0;
 };
 
 }; // namespace firebolt::rialto

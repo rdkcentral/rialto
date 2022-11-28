@@ -179,6 +179,11 @@ public:
      * @retval true on success.
      */
     virtual bool setPlaybackRate(double rate) = 0;
+
+    /**
+     * @brief Requests to render a prerolled frame
+     */
+    virtual bool renderFrame() = 0;
 };
 
 }; // namespace firebolt::rialto::client
