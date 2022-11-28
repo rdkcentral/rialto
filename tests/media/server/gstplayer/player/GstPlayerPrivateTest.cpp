@@ -46,7 +46,7 @@ const std::vector<uint8_t> kInitVector{5, 6, 7, 8};
 constexpr uint32_t kInitWithLast15{1};
 constexpr size_t kNumClearBytes{3};
 constexpr size_t kNumEncryptedBytes{5};
-constexpr VideoRequirements m_videoReq{MIN_PRIMARY_VIDEO_WIDTH, MIN_PRIMARY_VIDEO_HEIGHT};
+constexpr VideoRequirements m_videoReq{kMinPrimaryVideoWidth, kMinPrimaryVideoHeight};
 } // namespace
 
 class GstPlayerPrivateTest : public GstPlayerTestCommon

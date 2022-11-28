@@ -37,8 +37,8 @@
 
 namespace firebolt::rialto::server
 {
-#define MIN_PRIMARY_VIDEO_WIDTH 1920
-#define MIN_PRIMARY_VIDEO_HEIGHT 1080
+constexpr uint32_t kMinPrimaryVideoWidth {1920};
+constexpr uint32_t kMinPrimaryVideoHeight {1080};
 
 /**
  * @brief IGstPlayer factory class definition.

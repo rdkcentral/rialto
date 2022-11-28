@@ -81,7 +81,7 @@ protected:
     GFlagsValue m_audioFlag{1, "audio", "audio"};
     GFlagsValue m_videoFlag{2, "video", "video"};
     GFlagsValue m_nativeVideoFlag{3, "native-video", "native-video"};
-    VideoRequirements m_videoReq = {MIN_PRIMARY_VIDEO_WIDTH, MIN_PRIMARY_VIDEO_HEIGHT};
+    VideoRequirements m_videoReq = {kMinPrimaryVideoWidth, kMinPrimaryVideoHeight};
     PlayerContext m_storedPlayerContext;
 
     void initFactories() { EXPECT_CALL(*m_gstSrcFactoryMock, getGstSrc()).WillOnce(Return(m_gstSrcMock)); }
@@ -198,8 +198,8 @@ TEST_F(RialtoServerCreateGstPlayerTest, CreateDestroyPrimaryVideoSuccess)
 TEST_F(RialtoServerCreateGstPlayerTest, CreateDestroySecondaryVideoMinWidthSuccess)
 {
     // Width < minimum
-    m_videoReq.maxWidth = MIN_PRIMARY_VIDEO_WIDTH - 1;
-    m_videoReq.maxHeight = MIN_PRIMARY_VIDEO_HEIGHT;
+    m_videoReq.maxWidth = kMinPrimaryVideoWidth - 1;
+    m_videoReq.maxHeight = kMinPrimaryVideoHeight;
     createGstPlayerSuccess();
     EXPECT_EQ(true, m_storedPlayerContext.isSecondaryVideo);
 
@@ -212,8 +212,8 @@ TEST_F(RialtoServerCreateGstPlayerTest, CreateDestroySecondaryVideoMinWidthSucce
 TEST_F(RialtoServerCreateGstPlayerTest, CreateDestroySecondaryVideoMinHeightSuccess)
 {
     // Height < minimum
-    m_videoReq.maxWidth = MIN_PRIMARY_VIDEO_WIDTH;
-    m_videoReq.maxHeight = MIN_PRIMARY_VIDEO_HEIGHT - 1;
+    m_videoReq.maxWidth = kMinPrimaryVideoWidth;
+    m_videoReq.maxHeight = kMinPrimaryVideoHeight - 1;
     createGstPlayerSuccess();
     EXPECT_EQ(true, m_storedPlayerContext.isSecondaryVideo);
 
