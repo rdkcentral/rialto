@@ -755,7 +755,7 @@ public:
      *
      * @retval pointer to the new caps
      */
-    virtual GstCaps *gstCodecUtilsOpusCreateCapsFromHeader(gconstpointer data, gsize size) const = 0;
+    virtual GstCaps *gstCodecUtilsOpusCreateCapsFromHeader(gconstpointer data, guint size) const = 0;
 
     /**
      * @brief Checks if all caps represented by subset are in superset.
