@@ -37,8 +37,8 @@
 
 namespace firebolt::rialto::server
 {
-#define DEFAULT_MAX_VIDEO_WIDTH 3840
-#define DEFAULT_MAX_VIDEO_HEIGHT 2160
+#define MIN_PRIMARY_VIDEO_WIDTH 1920
+#define MIN_PRIMARY_VIDEO_HEIGHT 1080
 
 /**
  * @brief IGstPlayer factory class definition.

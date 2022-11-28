@@ -141,12 +141,17 @@ GstPlayer::GstPlayer(IGstPlayerClient *client, IDecryptionService &decryptionSer
     RIALTO_SERVER_LOG_DEBUG("GstPlayer is constructed.");
 
     // Check the video requirements for a limited video.
-    // If the video requirements are set to anything other than the default, this playback is assumed to be a secondary
+    // If the video requirements are set to anything lower than the minimum, this playback is assumed to be a secondary
     // video in a dual video scenario.
-    if ((DEFAULT_MAX_VIDEO_WIDTH != videoRequirements.maxWidth) ||
-        (DEFAULT_MAX_VIDEO_HEIGHT != videoRequirements.maxHeight))
+    if ((MIN_PRIMARY_VIDEO_WIDTH > videoRequirements.maxWidth) ||
+        (MIN_PRIMARY_VIDEO_HEIGHT > videoRequirements.maxHeight))
     {
+        RIALTO_SERVER_LOG_INFO("Secondary video playback selected");
         m_context.isSecondaryVideo = true;
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_INFO("Primary video playback selected");
     }
 
     if ((!gstSrcFactory) || (!(m_context.gstSrc = gstSrcFactory->getGstSrc())))
