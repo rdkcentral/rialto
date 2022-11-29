@@ -755,7 +755,7 @@ public:
      *
      * @retval pointer to the new caps
      */
-    virtual GstCaps *gstCodecUtilsOpusCreateCapsFromHeader(gconstpointer data, gsize size) const = 0;
+    virtual GstCaps *gstCodecUtilsOpusCreateCapsFromHeader(gconstpointer data, guint size) const = 0;
 
     /**
      * @brief Checks if all caps represented by subset are in superset.
@@ -822,6 +822,32 @@ public:
      * @param[in] list : list of GstPluginFeature
      */
     virtual void gstPluginFeatureListFree(GList *list) const = 0;
+
+    /**
+     * @brief Creates a new GstCaps with one GstStructure.
+     *
+     * @param[in] media_type : the media type of the structure
+     * @param[in] fieldname  : first field to set
+     *
+     * @retval new caps
+     */
+    virtual GstCaps *gstCapsNewSimple(const char *media_type, const char *fieldname, ...) const = 0;
+
+    /**
+     * @brief Creates a new GstCaps with media_type
+     *
+     * @param[in] media_type : the media type of the structure
+     *
+     * @retval new caps
+     */
+    virtual GstCaps *gstCapsNewEmptySimple(const char *media_type) const = 0;
+
+    /**
+     * @brief Creates a new empty GstCaps
+     *
+     * @retval new caps
+     */
+    virtual GstCaps *gstCapsNewEmpty() const = 0;
 };
 
 }; // namespace firebolt::rialto::server

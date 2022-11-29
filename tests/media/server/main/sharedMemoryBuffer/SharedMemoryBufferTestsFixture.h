@@ -36,22 +36,23 @@ public:
     void mapPartitionShouldFail(int sessionId);
     void unmapPartitionShouldSucceed(int sessionId);
     void unmapPartitionShouldFail(int sessionId);
-    void shouldReturnAudioBufferLen(int sessionId);
-    void shouldFailToReturnAudioBufferLen(int sessionId);
-    void shouldReturnVideoBufferLen(int sessionId);
-    void shouldFailToReturnVideoBufferLen(int sessionId);
-    void shouldReturnVideoBufferOffset(int sessionId, std::uint32_t expectedOffset);
-    void shouldFailToReturnVideoBufferOffset(int sessionId);
-    void shouldReturnAudioBufferOffset(int sessionId, std::uint32_t expectedOffset);
-    void shouldFailToReturnAudioBufferOffset(int sessionId);
-    void shouldClearAudioBuffer(int sessionId);
-    void shouldFailToClearAudioBuffer(int sessionId);
-    void shouldClearVideoBuffer(int sessionId);
-    void shouldFailToClearVideoBuffer(int sessionId);
-    uint8_t *shouldGetBuffer(int sessionId, const firebolt::rialto::MediaSourceType &mediaSourceType);
-    void shouldFailToGetBuffer(int sessionId, const firebolt::rialto::MediaSourceType &mediaSourceType);
+    void shouldReturnMaxAudioDataLen(int sessionId);
+    void shouldFailToReturnMaxAudioDataLen(int sessionId);
+    void shouldReturnMaxVideoDataLen(int sessionId);
+    void shouldFailToReturnMaxVideoDataLen(int sessionId);
+    void shouldReturnVideoDataOffset(int sessionId, std::uint32_t expectedOffset);
+    void shouldFailToReturnVideoDataOffset(int sessionId);
+    void shouldReturnAudioDataOffset(int sessionId, std::uint32_t expectedOffset);
+    void shouldFailToReturnAudioDataOffset(int sessionId);
+    void shouldClearAudioData(int sessionId);
+    void shouldFailToClearAudioData(int sessionId);
+    void shouldClearVideoData(int sessionId);
+    void shouldFailToClearVideoData(int sessionId);
+    uint8_t *shouldGetDataPtr(int sessionId, const firebolt::rialto::MediaSourceType &mediaSourceType);
+    void shouldFailToGetDataPtr(int sessionId, const firebolt::rialto::MediaSourceType &mediaSourceType);
     void shouldGetFd();
     void shouldGetSize();
+    void shouldGetBuffer();
 
 private:
     std::shared_ptr<firebolt::rialto::server::ISharedMemoryBuffer> m_sut;

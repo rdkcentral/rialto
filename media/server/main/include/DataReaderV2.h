@@ -29,7 +29,7 @@ namespace firebolt::rialto::server
 class DataReaderV2 : public IDataReader
 {
 public:
-    DataReaderV2(const MediaSourceType &mediaSourceType, std::uint8_t *sessionData, std::uint32_t dataOffset,
+    DataReaderV2(const MediaSourceType &mediaSourceType, std::uint8_t *buffer, std::uint32_t dataOffset,
                  std::uint32_t numFrames);
     ~DataReaderV2() override = default;
 
@@ -37,7 +37,7 @@ public:
 
 private:
     MediaSourceType m_mediaSourceType;
-    std::uint8_t *m_sessionData;
+    std::uint8_t *m_buffer;
     std::uint32_t m_dataOffset;
     std::uint32_t m_numFrames;
 };
