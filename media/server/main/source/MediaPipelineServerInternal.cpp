@@ -477,7 +477,14 @@ bool MediaPipelineServerInternal::haveData(MediaSourceStatus status, uint32_t nu
 
 bool MediaPipelineServerInternal::renderFrame()
 {
-    return false;
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("renderFrame failed - Gstreamer player has not been loaded");
+        return false;
+    }
+
+    m_gstPlayer->renderFrame();
+    return true;
 }
 
 bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uint32_t numFrames,

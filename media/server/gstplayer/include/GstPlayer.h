@@ -114,6 +114,7 @@ private:
     void stopWorkerThread() override;
     void cancelUnderflow(bool &underflowFlag) override;
     void setPendingPlaybackRate() override;
+    void renderFrame() override;
 
 private:
     /**

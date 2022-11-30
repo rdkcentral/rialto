@@ -718,4 +718,12 @@ void GstPlayer::setPendingPlaybackRate()
     RIALTO_SERVER_LOG_INFO("Setting pending playback rate");
     setPlaybackRate(m_context.pendingPlaybackRate);
 }
+
+void GstPlayer::renderFrame()
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(m_taskFactory->createRenderFrame(m_context));
+    }
+}
 }; // namespace firebolt::rialto::server

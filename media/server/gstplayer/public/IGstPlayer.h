@@ -192,6 +192,8 @@ public:
      *
      */
     virtual void setPlaybackRate(double rate) = 0;
+
+    virtual void renderFrame() = 0;
 };
 
 }; // namespace firebolt::rialto::server
