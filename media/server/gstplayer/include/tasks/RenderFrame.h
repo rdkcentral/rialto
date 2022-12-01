@@ -20,8 +20,6 @@
 #ifndef FIREBOLT_RIALTO_SERVER_RENDER_FRAME_H_
 #define FIREBOLT_RIALTO_SERVER_RENDER_FRAME_H_
 
-#include "IGstPlayerClient.h"
-#include "IGstPlayerPrivate.h"
 #include "IGlibWrapper.h"
 #include "IGstWrapper.h"
 #include "IPlayerTask.h"

@@ -19,19 +19,19 @@
 
 #include "tasks/RenderFrame.h"
 
-#include "GstPlayerClientMock.h"
 #include "GlibWrapperMock.h"
+#include "GstPlayerClientMock.h"
 #include "GstWrapperMock.h"
 #include "Matchers.h"
 #include "PlayerContext.h"
 #include <gst/gst.h>
 #include <gtest/gtest.h>
 
+using testing::_;
 using testing::Invoke;
 using testing::Return;
 using testing::StrEq;
 using testing::StrictMock;
-using testing::_;
 
 class RenderFrameTest : public testing::Test
 {

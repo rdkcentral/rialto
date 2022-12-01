@@ -29,8 +29,6 @@ MATCHER_P(RenderFrameRequestMatcher, sessionId, "")
 class RialtoClientMediaPipelineIpcRenderFrameTest : public MediaPipelineIpcTestBase
 {
 protected:
-    double m_rate = 1.5;
-
     virtual void SetUp()
     {
         MediaPipelineIpcTestBase::SetUp();
@@ -63,7 +61,6 @@ TEST_F(RialtoClientMediaPipelineIpcRenderFrameTest, ChannelDisconnected)
 
     EXPECT_FALSE(m_mediaPipelineIpc->renderFrame());
 
-    // Reattach channel on destroySession
     EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
     expectSubscribeEvents();
 }

@@ -21,8 +21,8 @@
 #include "IGstPlayerClient.h"
 #include "IGstWrapper.h"
 #include "PlayerContext.h"
-#include <gst/gst.h>
 #include "RialtoServerLogging.h"
+#include <gst/gst.h>
 
 namespace firebolt::rialto::server
 {
@@ -34,7 +34,7 @@ RenderFrame::RenderFrame(PlayerContext &context, std::shared_ptr<IGstWrapper> gs
 
 void RenderFrame::execute() const
 {
-    const static std::string kStepOnPrerollPropertyName = "frame-step-on-preroll";
+    static const std::string kStepOnPrerollPropertyName = "frame-step-on-preroll";
     GstElement *videoSink = nullptr;
 
     m_glibWrapper->gObjectGet(m_context.pipeline, "video-sink", &videoSink, nullptr);
