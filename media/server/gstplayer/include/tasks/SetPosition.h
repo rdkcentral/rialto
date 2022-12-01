@@ -40,7 +40,6 @@ public:
 
 private:
     PlayerContext &m_context;
-    IGstPlayerPrivate &m_player;
     IGstPlayerClient *m_gstPlayerClient;
     std::shared_ptr<IGstWrapper> m_gstWrapper;
     std::int64_t m_position;

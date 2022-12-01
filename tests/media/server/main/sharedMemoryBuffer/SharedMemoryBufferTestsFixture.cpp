@@ -21,7 +21,6 @@
 
 namespace
 {
-constexpr int maxPlaybacks{1};
 constexpr std::uint32_t audioBufferLen{1 * 1024 * 1024}; // 1MB
 constexpr std::uint32_t videoBufferLen{7 * 1024 * 1024}; // 7MB
 } // namespace

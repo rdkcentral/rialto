@@ -32,7 +32,6 @@ constexpr std::uint32_t metadataOffset{1024};
 constexpr int requestId{0};
 constexpr int maxFrames{24};
 constexpr int maxMetadataBytes{2500};
-constexpr int maxMediaBytes{7337532};
 } // namespace
 
 namespace firebolt::rialto
