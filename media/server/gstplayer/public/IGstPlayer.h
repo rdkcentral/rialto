@@ -193,6 +193,10 @@ public:
      */
     virtual void setPlaybackRate(double rate) = 0;
 
+    /**
+     * @brief Requests to render a prerolled frame
+     *
+     */
     virtual void renderFrame() = 0;
 };
 

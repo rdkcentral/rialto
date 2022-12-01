@@ -48,6 +48,7 @@ public:
     MOCK_METHOD(bool, getPosition, (int sessionId, int64_t &position), (override));
     MOCK_METHOD(bool, setVideoWindow, (int, std::uint32_t, std::uint32_t, std::uint32_t, std::uint32_t), (override));
     MOCK_METHOD(bool, haveData, (int, MediaSourceStatus, std::uint32_t, std::uint32_t), (override));
+    MOCK_METHOD(bool, renderFrame, (int), (override));
     MOCK_METHOD(bool, getSharedMemory, (int32_t & fd, uint32_t &size), (override));
     MOCK_METHOD(std::vector<std::string>, getSupportedMimeTypes, (MediaSourceType type), (override));
     MOCK_METHOD(bool, isMimeTypeSupported, (const std::string &mimeType), (override));

@@ -64,6 +64,8 @@ public:
     void playbackServiceWillFailToSetPlaybackRate();
     void playbackServiceWillGetPosition();
     void playbackServiceWillFailToGetPosition();
+    void playbackServiceWillRenderFrame();
+    void playbackServiceWillFailToRenderFrame();
     void mediaClientWillSendPlaybackStateChangedEvent();
     void mediaClientWillSendNetworkStateChangedEvent();
     void mediaClientWillSendNeedMediaDataEvent(int sessionId);
@@ -92,6 +94,7 @@ public:
     void sendNeedMediaDataEvent();
     void sendPostionChangeEvent();
     void sendQosEvent();
+    void sendRenderFrameRequestAndReceiveResponse();
 
 private:
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ClientMock>> m_clientMock;

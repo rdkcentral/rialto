@@ -200,3 +200,12 @@ TEST_F(GstPlayerTest, shouldReturnPosition)
     EXPECT_TRUE(m_sut->getPosition(targetPosition));
     EXPECT_EQ(expectedPosition, targetPosition);
 }
+
+TEST_F(GstPlayerTest, shouldRenderFrame)
+{
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(m_taskFactoryMock, createRenderFrame(_)).WillOnce(Return(ByMove(std::move(task))));
+
+    m_sut->renderFrame();
+}

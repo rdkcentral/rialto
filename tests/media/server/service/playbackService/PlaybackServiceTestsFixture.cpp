@@ -428,3 +428,9 @@ void PlaybackServiceTests::isMimeTypeSupportedSucceed()
     EXPECT_CALL(m_mediaPipelineCapabilitiesMock, isMimeTypeSupported(mimeType)).WillOnce(Return(true));
     EXPECT_TRUE(m_sut->isMimeTypeSupported(mimeType));
 }
+
+void PlaybackServiceTests::renderFrameSucceed()
+{
+    EXPECT_CALL(m_mediaPipelineMock, renderFrame()).WillOnce(Return(true));
+    EXPECT_TRUE(m_sut->renderFrame(sessionId));
+}
