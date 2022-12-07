@@ -17,6 +17,7 @@
 #ifndef THIRD_PARTY_STARBOARD_RDK_SHARED_DRM_GST_DECRYPTOR_OCDM_H_
 #define THIRD_PARTY_STARBOARD_RDK_SHARED_DRM_GST_DECRYPTOR_OCDM_H_
 
+#include "IDecryptionService.h"
 #include <gst/gst.h>
 
 namespace third_party {
@@ -25,7 +26,7 @@ namespace rdk {
 namespace shared {
 namespace drm {
 
-GstElement *CreateDecryptorElement(const gchar* name, IDecryptionService &decryptionService);
+GstElement *CreateDecryptorElement(const gchar* name, firebolt::rialto::server::IDecryptionService *decryptionService);
 
 }  // namespace drm
 }  // namespace shared

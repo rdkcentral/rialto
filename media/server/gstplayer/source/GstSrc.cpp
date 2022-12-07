@@ -356,7 +356,7 @@ void GstSrc::initSrc()
         src_factory = nullptr;
     }
 }
-void GstSrc::setupAndAddAppArc(IDecryptionService &decryptionService, GstElement *element, GstElement *appsrc, GstAppSrcCallbacks *callbacks,
+void GstSrc::setupAndAddAppArc(IDecryptionService *decryptionService, GstElement *element, GstElement *appsrc, GstAppSrcCallbacks *callbacks,
                                gpointer userData, firebolt::rialto::MediaSourceType type)
 {
     m_glibWrapper->gObjectSet(appsrc, "block", FALSE, "format", GST_FORMAT_TIME, "stream-type",
@@ -379,7 +379,7 @@ void GstSrc::setupAndAddAppArc(IDecryptionService &decryptionService, GstElement
 
     GstElement *src_elem = appsrc;
 
-    GstElement* decryptor = inject_decryptor ? CreateDecryptorElement(nullptr, decryptionService) : nullptr;
+    GstElement* decryptor = CreateDecryptorElement(nullptr, decryptionService);
     if (decryptor) {
         GST_DEBUG("Injecting decryptor element %" GST_PTR_FORMAT, decryptor);
 

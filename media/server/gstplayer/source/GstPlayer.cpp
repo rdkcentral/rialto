@@ -140,7 +140,7 @@ GstPlayer::GstPlayer(IGstPlayerClient *client, IDecryptionService &decryptionSer
 {
     RIALTO_SERVER_LOG_DEBUG("GstPlayer is constructed.");
 
-    m_context.decryptionService = decryptionService;
+    m_context.decryptionService = &decryptionService;
 
     // Check the video requirements for a limited video.
     // If the video requirements are set to anything lower than the minimum, this playback is assumed to be a secondary
@@ -367,10 +367,11 @@ GstBuffer *GstPlayer::createDecryptedBuffer(const IMediaPipeline::MediaSegment &
     if (mediaSegment.isEncrypted())
     {
         GstBuffer *keyId = nullptr;
-        if (m_context.decryptionService.isNetflixKeySystem(mediaSegment.getMediaKeySessionId()))
+        // TODO: Check for null
+        if (m_context.decryptionService->isNetflixKeySystem(mediaSegment.getMediaKeySessionId()))
         {
             keyId = m_gstWrapper->gstBufferNew();
-            m_context.decryptionService.selectKeyId(mediaSegment.getMediaKeySessionId(), mediaSegment.getKeyId());
+            m_context.decryptionService->selectKeyId(mediaSegment.getMediaKeySessionId(), mediaSegment.getKeyId());
         }
         else
         {
@@ -392,7 +393,7 @@ GstBuffer *GstPlayer::createDecryptedBuffer(const IMediaPipeline::MediaSegment &
         }
         GstBuffer *subsamples = m_gstWrapper->gstBufferNewWrapped(subsamplesRaw, subsamplesRawSize);
 
-        m_context.decryptionService.decrypt(mediaSegment.getMediaKeySessionId(), gstBuffer, subsamples,
+        m_context.decryptionService->decrypt(mediaSegment.getMediaKeySessionId(), gstBuffer, subsamples,
                                     mediaSegment.getSubSamples().size(), initVector, keyId,
                                     mediaSegment.getInitWithLast15());
 
@@ -423,10 +424,10 @@ GstBuffer *GstPlayer::createBuffer(const IMediaPipeline::MediaSegment &mediaSegm
     if (mediaSegment.isEncrypted())
     {
         GstBuffer *keyId = nullptr;
-        if (m_context.decryptionService.isNetflixKeySystem(mediaSegment.getMediaKeySessionId()))
+        if (m_context.decryptionService->isNetflixKeySystem(mediaSegment.getMediaKeySessionId()))
         {
             keyId = m_gstWrapper->gstBufferNew();
-            m_context.decryptionService.selectKeyId(mediaSegment.getMediaKeySessionId(), mediaSegment.getKeyId());
+            m_context.decryptionService->selectKeyId(mediaSegment.getMediaKeySessionId(), mediaSegment.getKeyId());
         }
         else
         {
@@ -458,6 +459,8 @@ GstBuffer *GstPlayer::createBuffer(const IMediaPipeline::MediaSegment &mediaSegm
             "subsample_count", G_TYPE_UINT, mediaSegment.getSubSamples().size(),
             "subsamples", GST_TYPE_BUFFER, subsamples,
             "key_session_id", G_TYPE_UINT, mediaSegment.getMediaKeySessionId(),
+            "encryption_scheme", G_TYPE_UINT, 0, // AES Counter
+            "init_with_last_15", G_TYPE_UINT, mediaSegment.getInitWithLast15(),
             NULL);
 
         gst_buffer_add_protection_meta(gstBuffer, info);

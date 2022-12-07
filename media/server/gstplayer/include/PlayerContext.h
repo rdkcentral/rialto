@@ -186,9 +186,9 @@ struct PlayerContext
     int64_t isSecondaryVideo{false};
 
     /**
-     * @brief The decryption service
+     * @brief The decryption service.
      */
-    IDecryptionService &decryptionService;
+    IDecryptionService *decryptionService{nullptr};
 };
 } // namespace firebolt::rialto::server
 

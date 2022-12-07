@@ -46,7 +46,7 @@ void ReadShmDataAndAttachSamples::execute() const
 
     for (const auto &mediaSegment : mediaSegments)
     {
-        GstBuffer *gstBuffer
+        GstBuffer *gstBuffer;
 #if 0
         gstBuffer = m_player.createDecryptedBuffer(*mediaSegment);
 #endif

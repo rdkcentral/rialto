@@ -70,38 +70,7 @@ GST_DEBUG_CATEGORY(cobalt_ocdm_decryptor_debug_category);
 #define GST_CAT_DEFAULT cobalt_ocdm_decryptor_debug_category
 
 struct _CobaltOcdmDecryptorPrivate {
-  _CobaltOcdmDecryptorPrivate() {}
-
-  ~_CobaltOcdmDecryptorPrivate() {}
-
-  void SetCachedCaps(GstCaps* caps) {
-    gst_caps_replace(&cached_caps_, caps);
-
-    if ( caps ) {
-      const GstStructure *s;
-      const gchar *media_type;
-      s = gst_caps_get_structure (caps, 0);
-      media_type = gst_structure_get_name (s);
-
-      is_video_ = g_str_has_prefix(media_type, "video");
-    }
-  }
-
-  void SetDecrypterService(IDecryptionService &decryptionService)
-  {
-    m_decryptionService = decryptionService;
-  }
-
-  bool IsVideo() const { return is_video_; }
-
-private:
-  std::mutex mutex_;
-  std::condition_variable condition_ { mutex_ };
-
-  GstCaps*    cached_caps_ { nullptr };
-  IDecryptionService &m_decryptionService;
-
-  bool is_video_ { false };
+  firebolt::rialto::server::IDecryptionService* m_decryptionService;
 };
 
 #define cobalt_ocdm_decryptor_parent_class parent_class
@@ -159,13 +128,9 @@ static GstCaps* cobalt_ocdm_decryptor_transform_caps(GstBaseTransform* base, Gst
     return nullptr;
 
   CobaltOcdmDecryptor* self = COBALT_OCDM_DECRYPTOR(base);
-  CobaltOcdmDecryptorPrivate* priv = reinterpret_cast<CobaltOcdmDecryptorPrivate*>(
-    cobalt_ocdm_decryptor_get_instance_private(self));
 
   GST_DEBUG_OBJECT(self, "Transform in direction: %s, caps %" GST_PTR_FORMAT ", filter %" GST_PTR_FORMAT,
                    direction == GST_PAD_SINK ? "GST_PAD_SINK" : "GST_PAD_SRC", caps, filter);
-
-  priv->SetCachedCaps( nullptr );
 
   return GST_BASE_TRANSFORM_CLASS(parent_class)->transform_caps(base, direction, caps, filter);
 }
@@ -190,8 +155,17 @@ static GstFlowReturn cobalt_ocdm_decryptor_transform_ip(GstBaseTransform* base, 
   GstBuffer* key = nullptr;
   uint32_t subsample_count = 0u;
   uint32_t key_session_id = 0u;
+  uint32_t encryption_scheme = 0u;
+  uint32_t init_with_last_15 = 0u;
 
   const GValue* value = nullptr;
+
+  if ( gst_structure_get_uint(info, "encryption_scheme", &encryption_scheme) ) {
+    if (encryption_scheme != 0) { // AES Counter
+      GST_ELEMENT_ERROR (self, STREAM, DECRYPT, ("Decryption failed"), ("Unsupported encryption scheme = %d", encryption_scheme));
+      goto exit;
+    }
+  }
 
   if (!gst_structure_get_uint(info, "key_session_id", &key_session_id) )
   {
@@ -227,9 +201,24 @@ static GstFlowReturn cobalt_ocdm_decryptor_transform_ip(GstBaseTransform* base, 
     subsamples = gst_value_get_buffer(value);
   }
 
-  ret = priv->m_decryptionService->decrypt(key_session_id, buffer, subsamples, subsample_count, iv, key);
+  if (!gst_structure_get_uint(info, "init_with_last_15", &init_with_last_15) )
+  {
+    GST_ELEMENT_ERROR (self, STREAM, DECRYPT, ("Decryption failed"), ("Could not get init_with_last_15"));
+    goto exit;
+  }
+
+  firebolt::rialto::MediaKeyErrorStatus status;
+  status = priv->m_decryptionService->decrypt(key_session_id, buffer, subsamples, subsample_count, iv, key, init_with_last_15);
+  if (firebolt::rialto::MediaKeyErrorStatus::OK != status)
+  {
+    // TODO: error to string
+    GST_ELEMENT_ERROR (self, STREAM, DECRYPT, ("Decryption failed"), ("Decrypt return error:"));
+    ret = GST_FLOW_ERROR;
+    goto exit;
+  }
 
   GST_TRACE_OBJECT(self, "ret=%s", gst_flow_get_name(ret));
+  ret = GST_FLOW_OK;
 
 exit:
   gst_buffer_remove_meta(buffer, reinterpret_cast<GstMeta*>(protection_meta));
@@ -238,13 +227,13 @@ exit:
 
 }  // namespace
 
-GstElement *CreateDecryptorElement(const gchar* name, IDecryptionService &decryptionService) {
+GstElement *CreateDecryptorElement(const gchar* name, firebolt::rialto::server::IDecryptionService *decryptionService) {
   CobaltOcdmDecryptor *decrypter = COBALT_OCDM_DECRYPTOR(g_object_new (COBALT_OCDM_DECRYPTOR_TYPE, name));
   CobaltOcdmDecryptorPrivate* priv = reinterpret_cast<CobaltOcdmDecryptorPrivate*>(
-    cobalt_ocdm_decryptor_get_instance_private(self));
+    cobalt_ocdm_decryptor_get_instance_private(decrypter));
   if (priv)
   {
-    priv->SetDecrypterService(decryptionService);
+    priv->m_decryptionService = decryptionService;
   }
   return GST_ELEMENT ( decrypter );
 }
