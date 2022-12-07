@@ -70,7 +70,8 @@ std::shared_ptr<IGstPlayerFactory> IGstPlayerFactory::getFactory()
 }
 
 std::unique_ptr<IGstPlayer> GstPlayerFactory::createGstPlayer(IGstPlayerClient *client,
-                                                              IDecryptionService &decryptionService, MediaType type)
+                                                              IDecryptionService &decryptionService, MediaType type,
+                                                              const VideoRequirements &videoRequirements)
 {
     std::unique_ptr<IGstPlayer> gstPlayer;
 
@@ -88,8 +89,9 @@ std::unique_ptr<IGstPlayer> GstPlayerFactory::createGstPlayer(IGstPlayerClient *
         {
             throw std::runtime_error("Cannot create GlibWrapper");
         }
-        gstPlayer = std::make_unique<GstPlayer>(client, decryptionService, type, gstWrapper, glibWrapper,
-                                                IGstSrcFactory::getFactory(), common::ITimerFactory::getFactory(),
+        gstPlayer = std::make_unique<GstPlayer>(client, decryptionService, type, videoRequirements, gstWrapper,
+                                                glibWrapper, IGstSrcFactory::getFactory(),
+                                                common::ITimerFactory::getFactory(),
                                                 std::make_unique<PlayerTaskFactory>(client, gstWrapper, glibWrapper),
                                                 std::make_unique<WorkerThreadFactory>(),
                                                 std::make_unique<GstDispatcherThreadFactory>());
@@ -127,7 +129,8 @@ bool IGstPlayer::initalise(int argc, char **argv)
 }
 
 GstPlayer::GstPlayer(IGstPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
-                     const std::shared_ptr<IGstWrapper> &gstWrapper, const std::shared_ptr<IGlibWrapper> &glibWrapper,
+                     const VideoRequirements &videoRequirements, const std::shared_ptr<IGstWrapper> &gstWrapper,
+                     const std::shared_ptr<IGlibWrapper> &glibWrapper,
                      const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
                      std::shared_ptr<common::ITimerFactory> timerFactory, std::unique_ptr<IPlayerTaskFactory> taskFactory,
                      std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
@@ -737,6 +740,31 @@ bool GstPlayer::setWesterossinkRectangle()
         m_glibWrapper->gObjectSet(videoSink, "rectangle", rect, nullptr);
         m_context.pendingGeometry.clear();
         result = true;
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to set the westerossink rectangle");
+    }
+
+    if (videoSink)
+        m_gstWrapper->gstObjectUnref(GST_OBJECT(videoSink));
+
+    return result;
+}
+
+bool GstPlayer::setWesterossinkSecondaryVideo()
+{
+    bool result = false;
+    GstElement *videoSink = nullptr;
+    m_glibWrapper->gObjectGet(m_context.pipeline, "video-sink", &videoSink, nullptr);
+    if (videoSink && m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink), "res-usage"))
+    {
+        m_glibWrapper->gObjectSet(videoSink, "res-usage", 0x0u, nullptr);
+        result = true;
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to set the westerossink res-usage");
     }
 
     if (videoSink)

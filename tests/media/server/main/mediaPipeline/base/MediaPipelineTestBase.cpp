@@ -82,7 +82,7 @@ void MediaPipelineTestBase::loadGstPlayer()
 {
     mainThreadWillEnqueueTaskAndWait();
     mainThreadWillEnqueueTask();
-    EXPECT_CALL(*m_gstPlayerFactoryMock, createGstPlayer(_, _, _)).WillOnce(Return(ByMove(std::move(m_gstPlayer))));
+    EXPECT_CALL(*m_gstPlayerFactoryMock, createGstPlayer(_, _, _, _)).WillOnce(Return(ByMove(std::move(m_gstPlayer))));
     EXPECT_CALL(*m_mediaPipelineClientMock, notifyNetworkState(NetworkState::BUFFERING));
 
     EXPECT_EQ(m_mediaPipeline->load(MediaType::MSE, "mime", "mse://1"), true);
