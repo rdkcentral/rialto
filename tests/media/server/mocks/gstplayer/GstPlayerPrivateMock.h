@@ -34,6 +34,7 @@ public:
     MOCK_METHOD(void, scheduleAudioUnderflow, (), (override));
     MOCK_METHOD(void, scheduleVideoUnderflow, (), (override));
     MOCK_METHOD(bool, setWesterossinkRectangle, (), (override));
+    MOCK_METHOD(bool, setWesterossinkSecondaryVideo, (), (override));
     MOCK_METHOD(void, notifyNeedMediaData, (bool audioNotificationNeeded, bool videoNotificationNeeded), (override));
     MOCK_METHOD(GstBuffer *, createDecryptedBuffer, (const IMediaPipeline::MediaSegment &mediaSegment),
                 (const, override));
