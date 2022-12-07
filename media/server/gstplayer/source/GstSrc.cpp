@@ -405,22 +405,18 @@ void GstSrc::setupAndAddAppArc(IDecryptionService *decryptionService, GstElement
         }
     }
 
-#if 0 //needed?
-    if (decryptor || payloader) {
-        GstElement* queue = gst_element_factory_make("queue", nullptr);
-        g_object_set (
+    GstElement* queue = gst_element_factory_make("queue", nullptr);
+    g_object_set (
         G_OBJECT (queue),
-        "max-size-buffers", 60,
+        "max-size-buffers", 10,
         "max-size-bytes", 0,
         "max-size-time", (gint64) 0,
         "silent", TRUE,
         nullptr);
-        gst_bin_add(GST_BIN(element), queue);
-        gst_element_sync_state_with_parent(queue);
-        gst_element_link(src_elem, queue);
-        src_elem = queue;
-    }
-#endif
+    gst_bin_add(GST_BIN(element), queue);
+    gst_element_sync_state_with_parent(queue);
+    gst_element_link(src_elem, queue);
+    src_elem = queue;
 
     GstPad *target = m_gstWrapper->gstElementGetStaticPad(src_elem, "src");
     GstPad *pad = m_gstWrapper->gstGhostPadNew(name, target);
