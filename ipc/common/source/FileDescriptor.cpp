@@ -30,7 +30,6 @@ FileDescriptor::FileDescriptor() : m_fd(-1) {}
 
 FileDescriptor::FileDescriptor(int fd) : m_fd(-1)
 {
-    RIALTO_IPC_LOG_ERROR("lukewill: create FileDescriptor %d", fd);
     if (fd >= 0)
     {
         m_fd = fcntl(fd, F_DUPFD_CLOEXEC, 3);
@@ -41,7 +40,6 @@ FileDescriptor::FileDescriptor(int fd) : m_fd(-1)
 
 FileDescriptor::FileDescriptor(const FileDescriptor &other) : m_fd(-1)
 {
-    RIALTO_IPC_LOG_ERROR("lukewill: create FileDescriptor %d", other.m_fd);
     if (other.m_fd >= 0)
     {
         m_fd = fcntl(other.m_fd, F_DUPFD_CLOEXEC, 3);
@@ -83,7 +81,6 @@ FileDescriptor &FileDescriptor::operator=(const FileDescriptor &other)
 
 FileDescriptor::~FileDescriptor()
 {
-    RIALTO_IPC_LOG_ERROR("lukewill: create FileDescriptor %d", m_fd);
     reset();
 }
 
@@ -108,7 +105,6 @@ void FileDescriptor::reset(int fd)
     }
     else
     {
-        RIALTO_IPC_LOG_ERROR("lukewill: reset and create new");
         m_fd = fcntl(fd, F_DUPFD_CLOEXEC, 3);
         if (m_fd < 0)
             RIALTO_IPC_LOG_SYS_WARN(errno, "failed to dup supplied fd");
