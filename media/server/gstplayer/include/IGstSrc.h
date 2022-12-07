@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_I_GST_SRC_H_
 #define FIREBOLT_RIALTO_SERVER_I_GST_SRC_H_
 
+#include "IDecryptionService.h"
 #include <MediaCommon.h>
 #include <gst/app/gstappsrc.h>
 #include <gst/gst.h>
@@ -79,7 +80,7 @@ public:
      * @param[in] userData  : Data to be passed to the callbacks.
      * @param[in] type      : The media type of the source.
      */
-    virtual void setupAndAddAppArc(GstElement *element, GstElement *appsrc, GstAppSrcCallbacks *callbacks,
+    virtual void setupAndAddAppArc(IDecryptionService &decryptionService, GstElement *element, GstElement *appsrc, GstAppSrcCallbacks *callbacks,
                                    gpointer userData, firebolt::rialto::MediaSourceType type) = 0;
 
     /**

@@ -81,6 +81,12 @@ public:
     virtual GstBuffer *createDecryptedBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const = 0;
 
     /**
+     * @brief Constructs a new buffer with data from media segment. Performs decryption, if needed.
+     *        Called by the worker thread.
+     */
+    virtual GstBuffer *createBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const = 0;
+
+    /**
      * @brief Attach audio data. Called by the worker thread
      */
     virtual void attachAudioData() = 0;

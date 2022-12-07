@@ -104,6 +104,7 @@ private:
     bool setWesterossinkRectangle() override;
     void notifyNeedMediaData(bool audioNotificationNeeded, bool videoNotificationNeeded) override;
     GstBuffer *createDecryptedBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const override;
+    GstBuffer *createBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const override;
     void attachAudioData() override;
     void attachVideoData() override;
     void updateAudioCaps(int32_t rate, int32_t channels) override;
@@ -158,11 +159,6 @@ private:
      * @brief The gstreamer player client.
      */
     IGstPlayerClient *m_gstPlayerClient = nullptr;
-
-    /**
-     * @brief The decryption service
-     */
-    IDecryptionService &m_decryptionService;
 
     /**
      * @brief The gstreamer wrapper object.

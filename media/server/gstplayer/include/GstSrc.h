@@ -113,7 +113,7 @@ public:
 
     void initSrc() override;
 
-    void setupAndAddAppArc(GstElement *element, GstElement *appsrc, GstAppSrcCallbacks *callbacks, gpointer userData,
+    void setupAndAddAppArc(IDecryptionService &decryptionService, GstElement *element, GstElement *appsrc, GstAppSrcCallbacks *callbacks, gpointer userData,
                            firebolt::rialto::MediaSourceType type) override;
 
     void allAppSrcsAdded(GstElement *element) override;

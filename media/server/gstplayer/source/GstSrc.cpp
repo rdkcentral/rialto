@@ -22,6 +22,9 @@
 #include "GstSrc.h"
 #include "RialtoServerLogging.h"
 #include <MediaCommon.h>
+#include "gst_decryptor_ocdm.h"
+
+using third_party::starboard::rdk::shared::drm::CreateDecryptorElement;
 
 static void gstRialtoSrcUriHandlerInit(gpointer gIface, gpointer ifaceData);
 
@@ -353,7 +356,7 @@ void GstSrc::initSrc()
         src_factory = nullptr;
     }
 }
-void GstSrc::setupAndAddAppArc(GstElement *element, GstElement *appsrc, GstAppSrcCallbacks *callbacks,
+void GstSrc::setupAndAddAppArc(IDecryptionService &decryptionService, GstElement *element, GstElement *appsrc, GstAppSrcCallbacks *callbacks,
                                gpointer userData, firebolt::rialto::MediaSourceType type)
 {
     m_glibWrapper->gObjectSet(appsrc, "block", FALSE, "format", GST_FORMAT_TIME, "stream-type",
@@ -375,6 +378,17 @@ void GstSrc::setupAndAddAppArc(GstElement *element, GstElement *appsrc, GstAppSr
     m_gstWrapper->gstBinAdd(GST_BIN(element), appsrc);
 
     GstElement *src_elem = appsrc;
+
+    GstElement* decryptor = inject_decryptor ? CreateDecryptorElement(nullptr, decryptionService) : nullptr;
+    if (decryptor) {
+        GST_DEBUG("Injecting decryptor element %" GST_PTR_FORMAT, decryptor);
+
+        gst_bin_add(GST_BIN(element), decryptor);
+        gst_element_sync_state_with_parent(decryptor);
+        gst_element_link(src_elem, decryptor);
+        src_elem = decryptor;
+    }
+
     if (type == firebolt::rialto::MediaSourceType::VIDEO)
     {
         GstElement *payloader = createPayloader();
@@ -390,6 +404,23 @@ void GstSrc::setupAndAddAppArc(GstElement *element, GstElement *appsrc, GstAppSr
             src_elem = payloader;
         }
     }
+
+#if 0 //needed?
+    if (decryptor || payloader) {
+        GstElement* queue = gst_element_factory_make("queue", nullptr);
+        g_object_set (
+        G_OBJECT (queue),
+        "max-size-buffers", 60,
+        "max-size-bytes", 0,
+        "max-size-time", (gint64) 0,
+        "silent", TRUE,
+        nullptr);
+        gst_bin_add(GST_BIN(element), queue);
+        gst_element_sync_state_with_parent(queue);
+        gst_element_link(src_elem, queue);
+        src_elem = queue;
+    }
+#endif
 
     GstPad *target = m_gstWrapper->gstElementGetStaticPad(src_elem, "src");
     GstPad *pad = m_gstWrapper->gstGhostPadNew(name, target);
