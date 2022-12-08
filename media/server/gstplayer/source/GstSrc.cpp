@@ -22,9 +22,7 @@
 #include "GstSrc.h"
 #include "RialtoServerLogging.h"
 #include <MediaCommon.h>
-#include "gst_decryptor_ocdm.h"
-
-using third_party::starboard::rdk::shared::drm::CreateDecryptorElement;
+#include "IGstDecryptorElementFactory.h"
 
 static void gstRialtoSrcUriHandlerInit(gpointer gIface, gpointer ifaceData);
 
@@ -359,6 +357,7 @@ void GstSrc::initSrc()
 void GstSrc::setupAndAddAppArc(IDecryptionService *decryptionService, GstElement *element, GstElement *appsrc, GstAppSrcCallbacks *callbacks,
                                gpointer userData, firebolt::rialto::MediaSourceType type)
 {
+    // Configure and add appsrc
     m_glibWrapper->gObjectSet(appsrc, "block", FALSE, "format", GST_FORMAT_TIME, "stream-type",
                               GST_APP_STREAM_TYPE_STREAM, "min-percent", 20, nullptr);
     m_gstWrapper->gstAppSrcSetCallbacks(GST_APP_SRC(appsrc), callbacks, userData, nullptr);
@@ -379,18 +378,27 @@ void GstSrc::setupAndAddAppArc(IDecryptionService *decryptionService, GstElement
 
     GstElement *src_elem = appsrc;
 
-    GstElement* decryptor = CreateDecryptorElement(nullptr, decryptionService);
-    if (decryptor) {
+    // Configure and add decryptor
+    GstElement* decryptor = nullptr;
+    std::shared_ptr<IGstDecryptorElementFactory> decryptorFactory = IGstDecryptorElementFactory::createFactory();
+    if (decryptorFactory)
+    {
+        decryptor = decryptorFactory->createDecryptorElement(nullptr, decryptionService);
+    }
+
+    if (decryptor)
+    {
         GST_DEBUG("Injecting decryptor element %" GST_PTR_FORMAT, decryptor);
 
-        gst_bin_add(GST_BIN(element), decryptor);
-        gst_element_sync_state_with_parent(decryptor);
-        gst_element_link(src_elem, decryptor);
+        m_gstWrapper->gstBinAdd(GST_BIN(element), decryptor);
+        m_gstWrapper->gstElementSyncStateWithParent(decryptor);
+        m_gstWrapper->gstElementLink(src_elem, decryptor);
         src_elem = decryptor;
     }
 
     if (type == firebolt::rialto::MediaSourceType::VIDEO)
     {
+        // Configure and add payloader
         GstElement *payloader = createPayloader();
         if (payloader)
         {
@@ -405,17 +413,18 @@ void GstSrc::setupAndAddAppArc(IDecryptionService *decryptionService, GstElement
         }
     }
 
-    GstElement* queue = gst_element_factory_make("queue", nullptr);
-    g_object_set (
+    // Configure and add buffer queue
+    GstElement* queue = m_gstWrapper->gstElementFactoryMake("queue", nullptr);
+    m_glibWrapper->gObjectSet(
         G_OBJECT (queue),
         "max-size-buffers", 10,
         "max-size-bytes", 0,
         "max-size-time", (gint64) 0,
         "silent", TRUE,
         nullptr);
-    gst_bin_add(GST_BIN(element), queue);
-    gst_element_sync_state_with_parent(queue);
-    gst_element_link(src_elem, queue);
+    m_gstWrapper->gstBinAdd(GST_BIN(element), queue);
+    m_gstWrapper->gstElementSyncStateWithParent(queue);
+    m_gstWrapper->gstElementLink(src_elem, queue);
     src_elem = queue;
 
     GstPad *target = m_gstWrapper->gstElementGetStaticPad(src_elem, "src");

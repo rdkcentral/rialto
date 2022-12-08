@@ -86,6 +86,7 @@ void ReadShmDataAndAttachSamples::execute() const
         }
     }
     // All segments in vector have the same type
+    RIALTO_SERVER_LOG_ERROR("lukewill %p: notifyNeedMediaData %s %s", &m_player, (!mediaSegments.empty() && mediaSegments.front()->getType() == firebolt::rialto::MediaSourceType::AUDIO) ? "" : "Audio", (!mediaSegments.empty() && mediaSegments.front()->getType() == firebolt::rialto::MediaSourceType::VIDEO) ? "" : "Audio");
     m_player.notifyNeedMediaData((!mediaSegments.empty() &&
                                   mediaSegments.front()->getType() == firebolt::rialto::MediaSourceType::AUDIO),
                                  (!mediaSegments.empty() &&

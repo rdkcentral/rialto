@@ -373,6 +373,31 @@ public:
     }
 
     GstCaps *gstCapsNewEmpty() const override { return gst_caps_new_empty(); }
+
+    GstProtectionMeta *gstBufferGetProtectionMeta(GstBuffer *buffer) const override
+    {
+        return gst_buffer_get_protection_meta(buffer);
+    }
+
+    gboolean gstBufferRemoveMeta(GstBuffer *buffer, GstMeta *meta) const override
+    {
+        return gst_buffer_remove_meta(buffer, meta);
+    }
+
+    gboolean gstStructureGetUint(const GstStructure *structure, const gchar *fieldname, guint *value) const override
+    {
+        return gst_structure_get_uint(structure, fieldname, value);
+    }
+
+    const GValue *gstStructureGetValue(const GstStructure *structure, const gchar *fieldname) const override
+    {
+        return gst_structure_get_value(structure, fieldname);
+    }
+
+    GstBuffer *gstValueGetBuffer(const GValue *value) const override
+    {
+        return gst_value_get_buffer(value);
+    }
 };
 
 }; // namespace firebolt::rialto::server

@@ -103,8 +103,8 @@ public:
      * @param[in] gstWrapperFactory     : The gstreamer wrapper factory.
      * @param[in] glibWrapperFactory    : The glib wrapper factory.
      */
-    explicit GstSrc(const std::shared_ptr<IGstWrapperFactory> &gstWrapperFactory,
-                    const std::shared_ptr<IGlibWrapperFactory> &glibWrapperFactory);
+    GstSrc(const std::shared_ptr<IGstWrapperFactory> &gstWrapperFactory,
+           const std::shared_ptr<IGlibWrapperFactory> &glibWrapperFactory);
 
     /**
      * @brief Virtual destructor.

@@ -458,9 +458,8 @@ GstBuffer *GstPlayer::createBuffer(const IMediaPipeline::MediaSegment &mediaSegm
             "iv", GST_TYPE_BUFFER, initVector,
             "subsample_count", G_TYPE_UINT, mediaSegment.getSubSamples().size(),
             "subsamples", GST_TYPE_BUFFER, subsamples,
-            "key_session_id", G_TYPE_UINT, mediaSegment.getMediaKeySessionId(),
-            "encryption_scheme", G_TYPE_UINT, 0, // AES Counter
             "init_with_last_15", G_TYPE_UINT, mediaSegment.getInitWithLast15(),
+            "key_session_id", G_TYPE_UINT, mediaSegment.getMediaKeySessionId(),
             NULL);
 
         gst_buffer_add_protection_meta(gstBuffer, info);
@@ -480,6 +479,7 @@ void GstPlayer::notifyNeedMediaData(bool audioNotificationNeeded, bool videoNoti
         // Send new NeedMediaData if we still need it
         if (m_gstPlayerClient && m_context.audioNeedData)
         {
+            RIALTO_SERVER_LOG_ERROR("lukewill %p: notifyNeedMediaData AUDIO", m_gstPlayerClient);
             m_context.audioNeedDataPending = m_gstPlayerClient->notifyNeedMediaData(MediaSourceType::AUDIO);
         }
     }
@@ -490,6 +490,7 @@ void GstPlayer::notifyNeedMediaData(bool audioNotificationNeeded, bool videoNoti
         // Send new NeedMediaData if we still need it
         if (m_gstPlayerClient && m_context.videoNeedData)
         {
+            RIALTO_SERVER_LOG_ERROR("lukewill %p: notifyNeedMediaData VIDEO", m_gstPlayerClient);
             m_context.videoNeedDataPending = m_gstPlayerClient->notifyNeedMediaData(MediaSourceType::VIDEO);
         }
     }

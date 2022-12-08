@@ -131,6 +131,12 @@ public:
     MOCK_METHOD(void, gstPluginFeatureListFree, (GList * list), (const));
     MOCK_METHOD(GstCaps *, gstCapsNewEmptySimple, (const char *media_type), (const));
     MOCK_METHOD(GstCaps *, gstCapsNewEmpty, (), (const));
+    MOCK_METHOD(GstProtectionMeta *, gstBufferGetProtectionMeta, (GstBuffer * buffer), (const));
+    MOCK_METHOD(gboolean, gstBufferRemoveMeta, (GstBuffer *buffer, GstMeta *meta), (const));
+    MOCK_METHOD(gboolean, gstStructureGetUint, (const GstStructure *structure, const gchar *fieldname, guint *value), (const));
+    MOCK_METHOD(const GValue *, gstStructureGetValue, (const GstStructure *structure, const gchar *fieldname), (const));
+    MOCK_METHOD(GstBuffer *, gstValueGetBuffer, (const GValue *value), (const));
+
     GstCaps *gstCapsNewSimple(const char *media_type, const char *fieldname, ...) const override
     {
         va_list args;
