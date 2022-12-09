@@ -90,11 +90,11 @@ MediaPipelineIpc::~MediaPipelineIpc()
     // destroy media player session
     destroySession();
 
-    // destroy the thread processing async notifications
-    m_eventThread.reset();
-
     // detach the Ipc channel
     detachChannel();
+
+    // destroy the thread processing async notifications
+    m_eventThread.reset();
 }
 
 bool MediaPipelineIpc::createRpcStubs()
