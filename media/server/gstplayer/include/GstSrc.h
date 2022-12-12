@@ -23,6 +23,7 @@
 #include "IGlibWrapper.h"
 #include "IGstSrc.h"
 #include "IGstWrapper.h"
+#include "IGstDecryptorElementFactory.h"
 
 #include <gst/app/gstappsrc.h>
 #include <gst/base/gstbasetransform.h>
@@ -102,9 +103,10 @@ public:
      *
      * @param[in] gstWrapperFactory     : The gstreamer wrapper factory.
      * @param[in] glibWrapperFactory    : The glib wrapper factory.
+     * @param[in] decryptorFactory      : The decryptor factory.
      */
     GstSrc(const std::shared_ptr<IGstWrapperFactory> &gstWrapperFactory,
-           const std::shared_ptr<IGlibWrapperFactory> &glibWrapperFactory);
+           const std::shared_ptr<IGlibWrapperFactory> &glibWrapperFactory, const std::shared_ptr<IGstDecryptorElementFactory> &decryptorFactory);
 
     /**
      * @brief Virtual destructor.
@@ -128,6 +130,18 @@ protected:
      * @brief The glib wrapper object.
      */
     std::shared_ptr<IGlibWrapper> m_glibWrapper;
+
+    /**
+     * @brief The gst decryptor element factory object.
+     */
+    std::shared_ptr<IGstDecryptorElementFactory> m_decryptorFactory;
+
+    /**
+     * @brief Create a payloader element.
+     *
+     * @retval the payloader element.
+     */
+    GstElement *createPayloader();
 };
 
 }; // namespace firebolt::rialto::server

@@ -88,7 +88,7 @@ public:
     virtual GstBuffer *createDecryptedBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const = 0;
 
     /**
-     * @brief Constructs a new buffer with data from media segment. Performs decryption, if needed.
+     * @brief Constructs a new buffer with data from media segment. Does not perform decryption.
      *        Called by the worker thread.
      */
     virtual GstBuffer *createBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const = 0;

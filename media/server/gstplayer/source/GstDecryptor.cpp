@@ -205,6 +205,7 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer* buffer)
 
         GstStructure* info = protectionMeta->info;
 
+        RIALTO_SERVER_LOG_ERROR("here");
         if (!m_gstWrapper->gstStructureGetUint(info, "key_session_id", &keySessionId) )
         {
             GST_ERROR_OBJECT(self, "Failed to get the key_session_id");
@@ -231,23 +232,33 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer* buffer)
         }
         else
         {
-            GstBuffer* key = m_gstWrapper->gstValueGetBuffer(keyValue);
-            GstBuffer* iv = m_gstWrapper->gstValueGetBuffer(ivValue);
+            GstBuffer* key = nullptr;
+            GstBuffer* iv = nullptr;
             GstBuffer* subsamples = nullptr;
-            if (subsamplesValue)
+            if (!(key = m_gstWrapper->gstValueGetBuffer(keyValue)))
             {
-                subsamples = m_gstWrapper->gstValueGetBuffer(subsamplesValue);
+                GST_ERROR_OBJECT(self, "Failed to extract key from GValue");
             }
-
-            firebolt::rialto::MediaKeyErrorStatus status = m_decryptionService->decrypt(keySessionId, buffer, subsamples, subsampleCount, iv, key, initWithLast15);
-            if (firebolt::rialto::MediaKeyErrorStatus::OK != status)
+            else if (!(iv = m_gstWrapper->gstValueGetBuffer(ivValue)))
             {
-                GST_ERROR_OBJECT(self, "Failed decrypt the buffer");
+                GST_ERROR_OBJECT(self, "Failed to extract iv from GValue");
+            }
+            else if ((subsamplesValue) && !(subsamples = m_gstWrapper->gstValueGetBuffer(subsamplesValue)))
+            {
+                GST_ERROR_OBJECT(self, "Failed to extract subsamples from GValue");
             }
             else
             {
-                GST_TRACE_OBJECT(self, "Decryption successful");
-                ret = GST_FLOW_OK;
+                firebolt::rialto::MediaKeyErrorStatus status = m_decryptionService->decrypt(keySessionId, buffer, subsamples, subsampleCount, iv, key, initWithLast15);
+                if (firebolt::rialto::MediaKeyErrorStatus::OK != status)
+                {
+                    GST_ERROR_OBJECT(self, "Failed decrypt the buffer");
+                }
+                else
+                {
+                    GST_TRACE_OBJECT(self, "Decryption successful");
+                    ret = GST_FLOW_OK;
+                }
             }
         }
 

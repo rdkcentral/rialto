@@ -22,7 +22,6 @@
 #include "GstSrc.h"
 #include "RialtoServerLogging.h"
 #include <MediaCommon.h>
-#include "IGstDecryptorElementFactory.h"
 
 static void gstRialtoSrcUriHandlerInit(gpointer gIface, gpointer ifaceData);
 
@@ -38,23 +37,6 @@ G_DEFINE_TYPE_WITH_CODE(GstRialtoSrc, gst_rialto_src, GST_TYPE_BIN,
                         G_ADD_PRIVATE(GstRialtoSrc)
                             G_IMPLEMENT_INTERFACE(GST_TYPE_URI_HANDLER, gstRialtoSrcUriHandlerInit);
                         RIALTO_SRC_CATEGORY_INIT);
-
-static GstElement *createPayloader()
-{
-    static GstElementFactory *factory = nullptr;
-    static gsize init = 0;
-    if (g_once_init_enter(&init))
-    {
-        factory = gst_element_factory_find("svppay");
-        g_once_init_leave(&init, 1);
-    }
-    if (!factory)
-    {
-        GST_WARNING("svppay not found");
-        return nullptr;
-    }
-    return gst_element_factory_create(factory, nullptr);
-}
 
 static void gstRialtoSrcDispose(GObject *object)
 {
@@ -315,7 +297,7 @@ std::shared_ptr<IGstSrc> GstSrcFactory::getGstSrc()
     {
         try
         {
-            gstSrc = std::make_shared<GstSrc>(IGstWrapperFactory::getFactory(), IGlibWrapperFactory::getFactory());
+            gstSrc = std::make_shared<GstSrc>(IGstWrapperFactory::getFactory(), IGlibWrapperFactory::getFactory(), IGstDecryptorElementFactory::createFactory());
         }
         catch (const std::exception &e)
         {
@@ -329,7 +311,8 @@ std::shared_ptr<IGstSrc> GstSrcFactory::getGstSrc()
 }
 
 GstSrc::GstSrc(const std::shared_ptr<IGstWrapperFactory> &gstWrapperFactory,
-               const std::shared_ptr<IGlibWrapperFactory> &glibWrapperFactory)
+               const std::shared_ptr<IGlibWrapperFactory> &glibWrapperFactory, const std::shared_ptr<IGstDecryptorElementFactory> &decryptorFactory)
+    : m_decryptorFactory(decryptorFactory)
 {
     if ((!gstWrapperFactory) || (!(m_gstWrapper = gstWrapperFactory->getGstWrapper())))
     {
@@ -338,6 +321,10 @@ GstSrc::GstSrc(const std::shared_ptr<IGstWrapperFactory> &gstWrapperFactory,
     if ((!glibWrapperFactory) || (!(m_glibWrapper = glibWrapperFactory->getGlibWrapper())))
     {
         throw std::runtime_error("Cannot create GlibWrapper");
+    }
+    if (!m_decryptorFactory)
+    {
+        throw std::runtime_error("No decryptor factory provided");
     }
 }
 
@@ -379,13 +366,7 @@ void GstSrc::setupAndAddAppArc(IDecryptionService *decryptionService, GstElement
     GstElement *src_elem = appsrc;
 
     // Configure and add decryptor
-    GstElement* decryptor = nullptr;
-    std::shared_ptr<IGstDecryptorElementFactory> decryptorFactory = IGstDecryptorElementFactory::createFactory();
-    if (decryptorFactory)
-    {
-        decryptor = decryptorFactory->createDecryptorElement(nullptr, decryptionService);
-    }
-
+    GstElement* decryptor = m_decryptorFactory->createDecryptorElement(nullptr, decryptionService);
     if (decryptor)
     {
         GST_DEBUG("Injecting decryptor element %" GST_PTR_FORMAT, decryptor);
@@ -394,6 +375,10 @@ void GstSrc::setupAndAddAppArc(IDecryptionService *decryptionService, GstElement
         m_gstWrapper->gstElementSyncStateWithParent(decryptor);
         m_gstWrapper->gstElementLink(src_elem, decryptor);
         src_elem = decryptor;
+    }
+    else
+    {
+        GST_WARNING("Could not create decryptor element");
     }
 
     if (type == firebolt::rialto::MediaSourceType::VIDEO)
@@ -411,22 +396,34 @@ void GstSrc::setupAndAddAppArc(IDecryptionService *decryptionService, GstElement
             m_gstWrapper->gstElementLink(src_elem, payloader);
             src_elem = payloader;
         }
+        else
+        {
+            GST_WARNING("Could not create payloader element");
+        }
     }
 
     // Configure and add buffer queue
     GstElement* queue = m_gstWrapper->gstElementFactoryMake("queue", nullptr);
-    m_glibWrapper->gObjectSet(
-        G_OBJECT (queue),
-        "max-size-buffers", 10,
-        "max-size-bytes", 0,
-        "max-size-time", (gint64) 0,
-        "silent", TRUE,
-        nullptr);
-    m_gstWrapper->gstBinAdd(GST_BIN(element), queue);
-    m_gstWrapper->gstElementSyncStateWithParent(queue);
-    m_gstWrapper->gstElementLink(src_elem, queue);
-    src_elem = queue;
+    if (queue)
+    {
+        m_glibWrapper->gObjectSet(
+            G_OBJECT (queue),
+            "max-size-buffers", 10,
+            "max-size-bytes", 0,
+            "max-size-time", (gint64) 0,
+            "silent", TRUE,
+            nullptr);
+        m_gstWrapper->gstBinAdd(GST_BIN(element), queue);
+        m_gstWrapper->gstElementSyncStateWithParent(queue);
+        m_gstWrapper->gstElementLink(src_elem, queue);
+        src_elem = queue;
+    }
+    else
+    {
+        GST_WARNING("Could not create buffer queue element");
+    }
 
+    // Setup pad
     GstPad *target = m_gstWrapper->gstElementGetStaticPad(src_elem, "src");
     GstPad *pad = m_gstWrapper->gstGhostPadNew(name, target);
     m_gstWrapper->gstPadSetQueryFunction(pad, gstRialtoSrcQueryWithParent);
@@ -446,6 +443,23 @@ void GstSrc::allAppSrcsAdded(GstElement *element)
     GstRialtoSrc *src = GST_RIALTO_SRC(element);
     m_gstWrapper->gstElementNoMorePads(element);
     gstRialtoSrcDoAsyncDone(src);
+}
+
+GstElement *GstSrc::createPayloader()
+{
+    static GstElementFactory *factory = nullptr;
+    static gsize init = 0;
+    if (m_glibWrapper->gOnceInitEnter(&init))
+    {
+        factory = m_gstWrapper->gstElementFactoryFind("svppay");
+        m_glibWrapper->gOnceInitLeave(&init, 1);
+    }
+    if (!factory)
+    {
+        GST_WARNING("svppay not found");
+        return nullptr;
+    }
+    return m_gstWrapper->gstElementFactoryCreate(factory, nullptr);
 }
 
 }; // namespace firebolt::rialto::server

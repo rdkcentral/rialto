@@ -493,7 +493,6 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
     if (status != MediaSourceStatus::OK && status != MediaSourceStatus::EOS)
     {
         RIALTO_SERVER_LOG_WARN("Data request for needDataRequestId: %u received with wrong status", needDataRequestId);
-        RIALTO_SERVER_LOG_ERROR("lukewill %p: needDataRequestId %s: %u ", this, MediaSourceType::VIDEO == mediaSourceType ? "Video" : "Audio");
         return notifyNeedMediaDataInternal(mediaSourceType); // Resend NeedMediaData
     }
     uint8_t *buffer = m_shmBuffer->getBuffer();
@@ -594,7 +593,6 @@ bool MediaPipelineServerInternal::notifyNeedMediaData(MediaSourceType mediaSourc
 bool MediaPipelineServerInternal::notifyNeedMediaDataInternal(MediaSourceType mediaSourceType)
 {
     m_shmBuffer->clearData(m_sessionId, mediaSourceType);
-    RIALTO_SERVER_LOG_ERROR("lukewill %p: %s ", this, MediaSourceType::VIDEO == mediaSourceType ? "Video" : "Audio");
     NeedMediaData event{m_mediaPipelineClient, *m_activeRequests, *m_shmBuffer, m_sessionId, mediaSourceType};
     if (!event.send())
     {

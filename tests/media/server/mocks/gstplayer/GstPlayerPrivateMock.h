@@ -38,6 +38,8 @@ public:
     MOCK_METHOD(void, notifyNeedMediaData, (bool audioNotificationNeeded, bool videoNotificationNeeded), (override));
     MOCK_METHOD(GstBuffer *, createDecryptedBuffer, (const IMediaPipeline::MediaSegment &mediaSegment),
                 (const, override));
+    MOCK_METHOD(GstBuffer *, createBuffer, (const IMediaPipeline::MediaSegment &mediaSegment),
+                (const, override));
     MOCK_METHOD(void, attachAudioData, (), (override));
     MOCK_METHOD(void, attachVideoData, (), (override));
     MOCK_METHOD(void, updateAudioCaps, (int32_t rate, int32_t channels), (override));

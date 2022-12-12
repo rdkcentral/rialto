@@ -16,13 +16,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#include "GlibWrapperFactoryMock.h"
-#include "GlibWrapperMock.h"
-#include "GstSrc.h"
+#include "GstDecryptorPrivate.h"
 #include "GstWrapperFactoryMock.h"
 #include "GstWrapperMock.h"
-#include "GstDecryptorElementFactoryMock.h"
 #include <gtest/gtest.h>
 
 using namespace firebolt::rialto;
@@ -31,41 +27,42 @@ using namespace firebolt::rialto::server;
 using ::testing::Return;
 using ::testing::StrictMock;
 
-class RialtoServerCreateGstSrcTest : public ::testing::Test
+class RialtoServerCreateDecryptorPrivateTest : public ::testing::Test
 {
 protected:
     std::shared_ptr<StrictMock<GstWrapperFactoryMock>> m_gstWrapperFactoryMock;
     std::shared_ptr<StrictMock<GstWrapperMock>> m_gstWrapperMock;
-    std::shared_ptr<StrictMock<GlibWrapperFactoryMock>> m_glibWrapperFactoryMock;
-    std::shared_ptr<StrictMock<GlibWrapperMock>> m_glibWrapperMock;
-    std::shared_ptr<StrictMock<GstDecryptorElementFactoryMock>> m_decryptorFactoryMock;
+    GstBaseTransform m_decryptorBase = {};
 
-    virtual void SetUp()
+    RialtoServerCreateDecryptorPrivateTest()
     {
         m_gstWrapperFactoryMock = std::make_shared<StrictMock<GstWrapperFactoryMock>>();
         m_gstWrapperMock = std::make_shared<StrictMock<GstWrapperMock>>();
-
-        m_glibWrapperFactoryMock = std::make_shared<StrictMock<GlibWrapperFactoryMock>>();
-        m_glibWrapperMock = std::make_shared<StrictMock<GlibWrapperMock>>();
-
-        m_decryptorFactoryMock = std::make_shared<StrictMock<GstDecryptorElementFactoryMock>>();
-    }
-
-    virtual void TearDown()
-    {
     }
 };
 
 /**
- * Test that a GstSrc object can be created successfully.
+ * Test that a GstRialtoDecryptorPrivate object can be created successfully.
  */
-TEST_F(RialtoServerCreateGstSrcTest, Create)
+TEST_F(RialtoServerCreateDecryptorPrivateTest, Create)
 {
-    std::unique_ptr<IGstSrc> gstSrc;
+    std::unique_ptr<GstRialtoDecryptorPrivate> gstRialtoDecryptorPrivate;
 
     EXPECT_CALL(*m_gstWrapperFactoryMock, getGstWrapper()).WillOnce(Return(m_gstWrapperMock));
-    EXPECT_CALL(*m_glibWrapperFactoryMock, getGlibWrapper()).WillOnce(Return(m_glibWrapperMock));
 
-    EXPECT_NO_THROW(gstSrc = std::make_unique<GstSrc>(m_gstWrapperFactoryMock, m_glibWrapperFactoryMock, m_decryptorFactoryMock););
-    EXPECT_NE(gstSrc, nullptr);
+    EXPECT_NO_THROW(gstRialtoDecryptorPrivate = std::make_unique<GstRialtoDecryptorPrivate>(&m_decryptorBase, m_gstWrapperFactoryMock););
+    EXPECT_NE(gstRialtoDecryptorPrivate, nullptr);
+}
+
+/**
+ * Test that GstRialtoDecryptorPrivate throws and execption if getGstWrapper fails.
+ */
+TEST_F(RialtoServerCreateDecryptorPrivateTest, getGstWrapperFails)
+{
+    std::unique_ptr<GstRialtoDecryptorPrivate> gstRialtoDecryptorPrivate;
+
+    EXPECT_CALL(*m_gstWrapperFactoryMock, getGstWrapper()).WillOnce(Return(nullptr));
+
+    EXPECT_THROW(gstRialtoDecryptorPrivate = std::make_unique<GstRialtoDecryptorPrivate>(&m_decryptorBase, m_gstWrapperFactoryMock),
+                 std::runtime_error);
 }

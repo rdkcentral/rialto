@@ -22,6 +22,7 @@
 #include "GstPlayerPrivateMock.h"
 #include "GstSrcMock.h"
 #include "PlayerContext.h"
+#include "DecryptionServiceMock.h"
 #include <gst/gst.h>
 #include <gtest/gtest.h>
 
@@ -36,6 +37,8 @@ protected:
     firebolt::rialto::server::PlayerContext m_context;
     StrictMock<firebolt::rialto::server::GstPlayerPrivateMock> m_gstPlayer;
     StrictMock<firebolt::rialto::server::GstPlayerClientMock> m_gstPlayerClient;
+    std::shared_ptr<StrictMock<firebolt::rialto::server::DecryptionServiceMock>> m_decryptionServiceMock{
+        std::make_shared<StrictMock<firebolt::rialto::server::DecryptionServiceMock>>()};
     std::shared_ptr<StrictMock<firebolt::rialto::server::GstSrcMock>> m_gstSrc{
         std::make_shared<StrictMock<firebolt::rialto::server::GstSrcMock>>()};
     GstElement m_source{};
@@ -52,26 +55,28 @@ protected:
     {
         m_context.gstSrc = m_gstSrc;
         m_context.source = &m_source;
+        m_context.decryptionService = m_decryptionServiceMock.get();
         m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, GST_ELEMENT(&m_audioAppSrc));
         m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::VIDEO, GST_ELEMENT(&m_videoAppSrc));
     }
 
     void expectFinishSetupSource()
     {
-        EXPECT_CALL(*m_gstSrc, setupAndAddAppArc(&m_source, GST_ELEMENT(&m_audioAppSrc), _, &m_gstPlayer,
+        // TODO add decryption service
+        EXPECT_CALL(*m_gstSrc, setupAndAddAppArc(std::dynamic_pointer_cast<firebolt::rialto::server::IDecryptionService>(m_decryptionServiceMock).get(), &m_source, GST_ELEMENT(&m_audioAppSrc), _, &m_gstPlayer,
                                                  firebolt::rialto::MediaSourceType::AUDIO))
             .WillOnce(Invoke(
-                [this](GstElement *element, GstElement *appsrc, GstAppSrcCallbacks *callbacks, gpointer userData,
+                [this](firebolt::rialto::server::IDecryptionService *decryptionService, GstElement *element, GstElement *appsrc, GstAppSrcCallbacks *callbacks, gpointer userData,
                        firebolt::rialto::MediaSourceType type)
                 {
                     m_audioCallbacks = *callbacks;
                     m_audioUserData = userData;
                 }));
         EXPECT_CALL(m_gstPlayer, notifyNeedMediaData(true, false));
-        EXPECT_CALL(*m_gstSrc, setupAndAddAppArc(&m_source, GST_ELEMENT(&m_videoAppSrc), _, &m_gstPlayer,
+        EXPECT_CALL(*m_gstSrc, setupAndAddAppArc(std::dynamic_pointer_cast<firebolt::rialto::server::IDecryptionService>(m_decryptionServiceMock).get(), &m_source, GST_ELEMENT(&m_videoAppSrc), _, &m_gstPlayer,
                                                  firebolt::rialto::MediaSourceType::VIDEO))
             .WillOnce(Invoke(
-                [this](GstElement *element, GstElement *appsrc, GstAppSrcCallbacks *callbacks, gpointer userData,
+                [this](firebolt::rialto::server::IDecryptionService *decryptionService, GstElement *element, GstElement *appsrc, GstAppSrcCallbacks *callbacks, gpointer userData,
                        firebolt::rialto::MediaSourceType type)
                 {
                     m_videoCallbacks = *callbacks;
