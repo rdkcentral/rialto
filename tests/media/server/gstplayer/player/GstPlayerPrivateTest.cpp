@@ -325,12 +325,12 @@ TEST_F(GstPlayerPrivateTest, shouldCreateEncryptedGstBuffer)
     EXPECT_CALL(*m_gstWrapperMock, gstByteWriterPutUint16Be(_, kNumClearBytes));
     EXPECT_CALL(*m_gstWrapperMock, gstByteWriterPutUint32Be(_, kNumEncryptedBytes));
     EXPECT_CALL(*m_gstWrapperMock, gstBufferNewWrapped(&subSamplesData, subSamplesSize)).WillOnce(Return(&subSamplesBuffer));
-    EXPECT_CALL(*m_gstWrapperMock, gstBufferUnref(&subSamplesBuffer));
-    EXPECT_CALL(*m_gstWrapperMock, gstBufferUnref(&initVectorBuffer));
-    EXPECT_CALL(*m_gstWrapperMock, gstBufferUnref(&keyIdBuffer));
     expectAddProtectionMeta(&buffer, mediaSegment.isEncrypted(), &keyIdBuffer, mediaSegment.getInitVector().size(),
                             &initVectorBuffer, mediaSegment.getSubSamples().size(), &subSamplesBuffer,
                             mediaSegment.getInitWithLast15(), mediaSegment.getMediaKeySessionId());
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferUnref(&subSamplesBuffer));
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferUnref(&initVectorBuffer));
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferUnref(&keyIdBuffer));
 
     m_sut->createBuffer(mediaSegment);
     EXPECT_EQ(GST_BUFFER_TIMESTAMP(&buffer), kTimeStamp);
@@ -364,12 +364,12 @@ TEST_F(GstPlayerPrivateTest, shouldCreateAndDecryptGstBufferForNetflix)
     EXPECT_CALL(*m_gstWrapperMock, gstByteWriterPutUint16Be(_, kNumClearBytes));
     EXPECT_CALL(*m_gstWrapperMock, gstByteWriterPutUint32Be(_, kNumEncryptedBytes));
     EXPECT_CALL(*m_gstWrapperMock, gstBufferNewWrapped(&subSamplesData, subSamplesSize)).WillOnce(Return(&subSamplesBuffer));
-    EXPECT_CALL(*m_gstWrapperMock, gstBufferUnref(&subSamplesBuffer));
-    EXPECT_CALL(*m_gstWrapperMock, gstBufferUnref(&initVectorBuffer));
-    EXPECT_CALL(*m_gstWrapperMock, gstBufferUnref(&keyIdBuffer));
     expectAddProtectionMeta(&buffer, mediaSegment.isEncrypted(), &keyIdBuffer, mediaSegment.getInitVector().size(),
                             &initVectorBuffer, mediaSegment.getSubSamples().size(), &subSamplesBuffer,
                             mediaSegment.getInitWithLast15(), mediaSegment.getMediaKeySessionId());
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferUnref(&subSamplesBuffer));
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferUnref(&initVectorBuffer));
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferUnref(&keyIdBuffer));
 
     m_sut->createBuffer(mediaSegment);
     EXPECT_EQ(GST_BUFFER_TIMESTAMP(&buffer), kTimeStamp);
