@@ -35,6 +35,8 @@ protected:
     GstBaseTransform m_decryptorBase = {};
 
     RialtoServerCreateDecryptorPrivateTest()
+        : m_gstWrapperFactoryMock(std::make_shared<StrictMock<GstWrapperFactoryMock>>()),
+          m_gstWrapperMock(std::make_shared<StrictMock<GstWrapperMock>>())
     {
         m_gstWrapperFactoryMock = std::make_shared<StrictMock<GstWrapperFactoryMock>>();
         m_gstWrapperMock = std::make_shared<StrictMock<GstWrapperMock>>();

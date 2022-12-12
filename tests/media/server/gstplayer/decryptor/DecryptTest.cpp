@@ -59,12 +59,10 @@ protected:
     GstBuffer m_subsamples = {};
 
     RialtoServerDecryptorPrivateDecryptTest()
+        : m_gstWrapperFactoryMock(std::make_shared<StrictMock<GstWrapperFactoryMock>>()),
+          m_gstWrapperMock(std::make_shared<StrictMock<GstWrapperMock>>()),
+          m_decryptionServiceMock(std::make_shared<StrictMock<DecryptionServiceMock>>())
     {
-        m_gstWrapperFactoryMock = std::make_shared<StrictMock<GstWrapperFactoryMock>>();
-        m_gstWrapperMock = std::make_shared<StrictMock<GstWrapperMock>>();
-
-        m_decryptionServiceMock = std::make_shared<StrictMock<DecryptionServiceMock>>();
-
         createDecryptorPrivate();
 
         m_gstRialtoDecryptorPrivate->setDecryptionService(m_decryptionServiceMock.get());
