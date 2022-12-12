@@ -62,11 +62,11 @@ GST_DEBUG_CATEGORY(gst_rialto_decryptor_debug_category);
 #define gst_rialto_decryptor_parent_class parent_class
 G_DEFINE_TYPE_WITH_PRIVATE(GstRialtoDecryptor, gst_rialto_decryptor, GST_TYPE_BASE_TRANSFORM);
 
-static void gst_rialto_decryptor_finalize(GObject *); // NOLINT(build/function_format)
-static GstCaps *gst_rialto_decryptor_transform_caps(GstBaseTransform *, GstPadDirection, GstCaps *,
-                                                    GstCaps *); // NOLINT(build/function_format)
-static GstFlowReturn gst_rialto_decryptor_transform_ip(GstBaseTransform *base,
-                                                       GstBuffer *buffer); // NOLINT(build/function_format)
+static void gst_rialto_decryptor_finalize(GObject *);                   // NOLINT(build/function_format)
+static GstCaps *gst_rialto_decryptor_transform_caps(GstBaseTransform *, // NOLINT(build/function_format)
+                                                    GstPadDirection, GstCaps *, GstCaps *);
+static GstFlowReturn gst_rialto_decryptor_transform_ip(GstBaseTransform *base, // NOLINT(build/function_format)
+                                                       GstBuffer *buffer);
 
 static void gst_rialto_decryptor_class_init(GstRialtoDecryptorClass *klass) // NOLINT(build/function_format)
 {
@@ -111,8 +111,8 @@ static void gst_rialto_decryptor_finalize(GObject *object) // NOLINT(build/funct
     GST_CALL_PARENT(G_OBJECT_CLASS, finalize, (object));
 }
 
-static GstCaps *gst_rialto_decryptor_transform_caps(GstBaseTransform *base, GstPadDirection direction, GstCaps *caps,
-                                                    GstCaps *filter) // NOLINT(build/function_format)
+static GstCaps *gst_rialto_decryptor_transform_caps(GstBaseTransform *base, // NOLINT(build/function_format)
+                                                    GstPadDirection direction, GstCaps *caps, GstCaps *filter)
 {
     if (direction == GST_PAD_UNKNOWN)
         return nullptr;
@@ -125,8 +125,8 @@ static GstCaps *gst_rialto_decryptor_transform_caps(GstBaseTransform *base, GstP
     return GST_BASE_TRANSFORM_CLASS(parent_class)->transform_caps(base, direction, caps, filter);
 }
 
-static GstFlowReturn gst_rialto_decryptor_transform_ip(GstBaseTransform *base,
-                                                       GstBuffer *buffer) // NOLINT(build/function_format)
+static GstFlowReturn gst_rialto_decryptor_transform_ip(GstBaseTransform *base, // NOLINT(build/function_format)
+                                                       GstBuffer *buffer)
 {
     GstRialtoDecryptor *self = GST_RIALTO_DECRYPTOR(base);
     GstRialtoDecryptorPrivate *priv =
