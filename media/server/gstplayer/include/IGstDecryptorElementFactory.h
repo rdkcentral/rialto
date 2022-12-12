@@ -36,7 +36,7 @@ public:
     virtual ~IGstDecryptorElementFactory() = default;
 
     /**
-     * @brief Gets the IGstDecryptorElementFactory instance.
+     * @brief Creates a IGstDecryptorElementFactory instance.
      *
      * @retval the factory instance or null on error.
      */

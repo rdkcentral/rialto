@@ -47,7 +47,6 @@ void NeedData::execute() const
             m_context.audioNeedData = true;
             if (m_gstPlayerClient && !m_context.audioNeedDataPending)
             {
-                RIALTO_SERVER_LOG_ERROR("lukewill %p: notifyNeedMediaData AUDIO", m_gstPlayerClient);
                 m_context.audioNeedDataPending = m_gstPlayerClient->notifyNeedMediaData(MediaSourceType::AUDIO);
             }
         }
@@ -60,7 +59,6 @@ void NeedData::execute() const
             m_context.videoNeedData = true;
             if (m_gstPlayerClient && !m_context.videoNeedDataPending)
             {
-                RIALTO_SERVER_LOG_ERROR("lukewill %p: notifyNeedMediaData VIDEO", m_gstPlayerClient);
                 m_context.videoNeedDataPending = m_gstPlayerClient->notifyNeedMediaData(MediaSourceType::VIDEO);
             }
         }

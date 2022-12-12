@@ -62,7 +62,6 @@ protected:
 
     void expectFinishSetupSource()
     {
-        // TODO add decryption service
         EXPECT_CALL(*m_gstSrc, setupAndAddAppArc(std::dynamic_pointer_cast<firebolt::rialto::server::IDecryptionService>(m_decryptionServiceMock).get(), &m_source, GST_ELEMENT(&m_audioAppSrc), _, &m_gstPlayer,
                                                  firebolt::rialto::MediaSourceType::AUDIO))
             .WillOnce(Invoke(

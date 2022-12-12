@@ -374,14 +374,14 @@ public:
 
     GstCaps *gstCapsNewEmpty() const override { return gst_caps_new_empty(); }
 
-    GstProtectionMeta *gstBufferGetProtectionMeta(GstBuffer *buffer) const override
-    {
-        return gst_buffer_get_protection_meta(buffer);
-    }
-
     GstProtectionMeta *gstBufferAddProtectionMeta(GstBuffer * buffer, GstStructure *info) const override
     {
         return gst_buffer_add_protection_meta(buffer, info);
+    }
+
+    GstProtectionMeta *gstBufferGetProtectionMeta(GstBuffer *buffer) const override
+    {
+        return gst_buffer_get_protection_meta(buffer);
     }
 
     gboolean gstBufferRemoveMeta(GstBuffer *buffer, GstMeta *meta) const override

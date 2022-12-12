@@ -435,7 +435,6 @@ void GstPlayer::notifyNeedMediaData(bool audioNotificationNeeded, bool videoNoti
         // Send new NeedMediaData if we still need it
         if (m_gstPlayerClient && m_context.audioNeedData)
         {
-            RIALTO_SERVER_LOG_ERROR("lukewill %p: notifyNeedMediaData AUDIO", m_gstPlayerClient);
             m_context.audioNeedDataPending = m_gstPlayerClient->notifyNeedMediaData(MediaSourceType::AUDIO);
         }
     }
@@ -446,7 +445,6 @@ void GstPlayer::notifyNeedMediaData(bool audioNotificationNeeded, bool videoNoti
         // Send new NeedMediaData if we still need it
         if (m_gstPlayerClient && m_context.videoNeedData)
         {
-            RIALTO_SERVER_LOG_ERROR("lukewill %p: notifyNeedMediaData VIDEO", m_gstPlayerClient);
             m_context.videoNeedDataPending = m_gstPlayerClient->notifyNeedMediaData(MediaSourceType::VIDEO);
         }
     }
