@@ -857,7 +857,7 @@ public:
      *
      * @retval the protected metadata, null on failure
      */
-    virtual GstProtectionMeta *gstBufferAddProtectionMeta(GstBuffer * buffer, GstStructure *info) const = 0;
+    virtual GstProtectionMeta *gstBufferAddProtectionMeta(GstBuffer *buffer, GstStructure *info) const = 0;
 
     /**
      * @brief Gets the metadata used for decryption of a sample.
@@ -866,7 +866,7 @@ public:
      *
      * @retval the protected metadata
      */
-    virtual GstProtectionMeta *gstBufferGetProtectionMeta(GstBuffer * buffer) const = 0;
+    virtual GstProtectionMeta *gstBufferGetProtectionMeta(GstBuffer *buffer) const = 0;
 
     /**
      * @brief Removes the metadata from the buffer.

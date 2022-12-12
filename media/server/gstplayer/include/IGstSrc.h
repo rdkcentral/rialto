@@ -80,8 +80,9 @@ public:
      * @param[in] userData  : Data to be passed to the callbacks.
      * @param[in] type      : The media type of the source.
      */
-    virtual void setupAndAddAppArc(IDecryptionService *decryptionService, GstElement *element, GstElement *appsrc, GstAppSrcCallbacks *callbacks,
-                                   gpointer userData, firebolt::rialto::MediaSourceType type) = 0;
+    virtual void setupAndAddAppArc(IDecryptionService *decryptionService, GstElement *element, GstElement *appsrc,
+                                   GstAppSrcCallbacks *callbacks, gpointer userData,
+                                   firebolt::rialto::MediaSourceType type) = 0;
 
     /**
      * @brief Notify rialto source that all app sources have been added.

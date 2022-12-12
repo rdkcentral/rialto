@@ -93,16 +93,16 @@ void FinishSetupSource::execute() const
     auto elem = m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO);
     if (elem != m_context.streamInfo.end())
     {
-        m_context.gstSrc->setupAndAddAppArc(m_context.decryptionService, m_context.source, elem->second, &callbacks, &m_player,
-                                            firebolt::rialto::MediaSourceType::AUDIO);
+        m_context.gstSrc->setupAndAddAppArc(m_context.decryptionService, m_context.source, elem->second, &callbacks,
+                                            &m_player, firebolt::rialto::MediaSourceType::AUDIO);
         m_player.notifyNeedMediaData(true, false);
     }
 
     elem = m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO);
     if (elem != m_context.streamInfo.end())
     {
-        m_context.gstSrc->setupAndAddAppArc(m_context.decryptionService, m_context.source, elem->second, &callbacks, &m_player,
-                                            firebolt::rialto::MediaSourceType::VIDEO);
+        m_context.gstSrc->setupAndAddAppArc(m_context.decryptionService, m_context.source, elem->second, &callbacks,
+                                            &m_player, firebolt::rialto::MediaSourceType::VIDEO);
         m_player.notifyNeedMediaData(false, true);
     }
 

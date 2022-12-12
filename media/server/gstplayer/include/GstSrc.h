@@ -21,9 +21,9 @@
 #define FIREBOLT_RIALTO_SERVER_GST_SRC_H_
 
 #include "IGlibWrapper.h"
+#include "IGstDecryptorElementFactory.h"
 #include "IGstSrc.h"
 #include "IGstWrapper.h"
-#include "IGstDecryptorElementFactory.h"
 
 #include <gst/app/gstappsrc.h>
 #include <gst/base/gstbasetransform.h>
@@ -106,7 +106,8 @@ public:
      * @param[in] decryptorFactory      : The decryptor factory.
      */
     GstSrc(const std::shared_ptr<IGstWrapperFactory> &gstWrapperFactory,
-           const std::shared_ptr<IGlibWrapperFactory> &glibWrapperFactory, const std::shared_ptr<IGstDecryptorElementFactory> &decryptorFactory);
+           const std::shared_ptr<IGlibWrapperFactory> &glibWrapperFactory,
+           const std::shared_ptr<IGstDecryptorElementFactory> &decryptorFactory);
 
     /**
      * @brief Virtual destructor.
@@ -115,7 +116,8 @@ public:
 
     void initSrc() override;
 
-    void setupAndAddAppArc(IDecryptionService *decryptionService, GstElement *element, GstElement *appsrc, GstAppSrcCallbacks *callbacks, gpointer userData,
+    void setupAndAddAppArc(IDecryptionService *decryptionService, GstElement *element, GstElement *appsrc,
+                           GstAppSrcCallbacks *callbacks, gpointer userData,
                            firebolt::rialto::MediaSourceType type) override;
 
     void allAppSrcsAdded(GstElement *element) override;

@@ -33,8 +33,7 @@ public:
     virtual ~GstDecryptorElementFactoryMock() = default;
 
     MOCK_METHOD(GstElement *, createDecryptorElement,
-                (const gchar* name, firebolt::rialto::server::IDecryptionService *decryptionService),
-                (const, override));
+                (const gchar *name, firebolt::rialto::server::IDecryptionService *decryptionService), (const, override));
 };
 } // namespace firebolt::rialto::server
 

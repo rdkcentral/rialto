@@ -19,10 +19,10 @@
 
 #include "GlibWrapperFactoryMock.h"
 #include "GlibWrapperMock.h"
+#include "GstDecryptorElementFactoryMock.h"
 #include "GstSrc.h"
 #include "GstWrapperFactoryMock.h"
 #include "GstWrapperMock.h"
-#include "GstDecryptorElementFactoryMock.h"
 #include <gtest/gtest.h>
 
 using namespace firebolt::rialto;
@@ -51,9 +51,7 @@ protected:
         m_decryptorFactoryMock = std::make_shared<StrictMock<GstDecryptorElementFactoryMock>>();
     }
 
-    virtual void TearDown()
-    {
-    }
+    virtual void TearDown() {}
 };
 
 /**
@@ -66,6 +64,7 @@ TEST_F(RialtoServerCreateGstSrcTest, Create)
     EXPECT_CALL(*m_gstWrapperFactoryMock, getGstWrapper()).WillOnce(Return(m_gstWrapperMock));
     EXPECT_CALL(*m_glibWrapperFactoryMock, getGlibWrapper()).WillOnce(Return(m_glibWrapperMock));
 
-    EXPECT_NO_THROW(gstSrc = std::make_unique<GstSrc>(m_gstWrapperFactoryMock, m_glibWrapperFactoryMock, m_decryptorFactoryMock););
+    EXPECT_NO_THROW(
+        gstSrc = std::make_unique<GstSrc>(m_gstWrapperFactoryMock, m_glibWrapperFactoryMock, m_decryptorFactoryMock););
     EXPECT_NE(gstSrc, nullptr);
 }

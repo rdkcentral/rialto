@@ -50,7 +50,8 @@ TEST_F(RialtoServerCreateDecryptorPrivateTest, Create)
 
     EXPECT_CALL(*m_gstWrapperFactoryMock, getGstWrapper()).WillOnce(Return(m_gstWrapperMock));
 
-    EXPECT_NO_THROW(gstRialtoDecryptorPrivate = std::make_unique<GstRialtoDecryptorPrivate>(&m_decryptorBase, m_gstWrapperFactoryMock););
+    EXPECT_NO_THROW(gstRialtoDecryptorPrivate =
+                        std::make_unique<GstRialtoDecryptorPrivate>(&m_decryptorBase, m_gstWrapperFactoryMock););
     EXPECT_NE(gstRialtoDecryptorPrivate, nullptr);
 }
 
@@ -63,6 +64,7 @@ TEST_F(RialtoServerCreateDecryptorPrivateTest, getGstWrapperFails)
 
     EXPECT_CALL(*m_gstWrapperFactoryMock, getGstWrapper()).WillOnce(Return(nullptr));
 
-    EXPECT_THROW(gstRialtoDecryptorPrivate = std::make_unique<GstRialtoDecryptorPrivate>(&m_decryptorBase, m_gstWrapperFactoryMock),
+    EXPECT_THROW(gstRialtoDecryptorPrivate =
+                     std::make_unique<GstRialtoDecryptorPrivate>(&m_decryptorBase, m_gstWrapperFactoryMock),
                  std::runtime_error);
 }

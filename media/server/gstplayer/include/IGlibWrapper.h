@@ -247,7 +247,7 @@ public:
      *
      * @retval If the initalisation section can be entered.
      */
-    virtual gboolean gOnceInitEnter(gsize* location) const = 0;
+    virtual gboolean gOnceInitEnter(gsize *location) const = 0;
 
     /**
      * @brief Sets the init variable to the initalised value and releases threads blocking on
@@ -258,7 +258,7 @@ public:
      *
      * @retval A pointer to the newly-allocated copy of the memory or null in case of failure
      */
-    virtual void gOnceInitLeave(gsize* location, gsize result) const = 0;
+    virtual void gOnceInitLeave(gsize *location, gsize result) const = 0;
 };
 
 }; // namespace firebolt::rialto::server

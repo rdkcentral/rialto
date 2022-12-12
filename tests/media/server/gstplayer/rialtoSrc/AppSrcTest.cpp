@@ -17,14 +17,14 @@
  * limitations under the License.
  */
 
+#include "DecryptionServiceMock.h"
 #include "GlibWrapperFactoryMock.h"
 #include "GlibWrapperMock.h"
+#include "GstDecryptorElementFactoryMock.h"
 #include "GstSrc.h"
 #include "GstWrapperFactoryMock.h"
 #include "GstWrapperMock.h"
 #include "MediaSourceUtil.h"
-#include "GstDecryptorElementFactoryMock.h"
-#include "DecryptionServiceMock.h"
 #include <gtest/gtest.h>
 
 using namespace firebolt::rialto;
@@ -83,16 +83,15 @@ protected:
         createGstSrc();
     }
 
-    virtual void TearDown()
-    {
-    }
+    virtual void TearDown() {}
 
     void createGstSrc()
     {
         EXPECT_CALL(*m_gstWrapperFactoryMock, getGstWrapper()).WillOnce(Return(m_gstWrapperMock));
         EXPECT_CALL(*m_glibWrapperFactoryMock, getGlibWrapper()).WillOnce(Return(m_glibWrapperMock));
 
-        EXPECT_NO_THROW(m_gstSrc = std::make_unique<GstSrc>(m_gstWrapperFactoryMock, m_glibWrapperFactoryMock, m_decryptorFactoryMock););
+        EXPECT_NO_THROW(m_gstSrc = std::make_unique<GstSrc>(m_gstWrapperFactoryMock, m_glibWrapperFactoryMock,
+                                                            m_decryptorFactoryMock););
         EXPECT_NE(m_gstSrc, nullptr);
     }
 
@@ -108,13 +107,17 @@ protected:
         EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetStreamType(GST_APP_SRC(&m_appsrc), GST_APP_STREAM_TYPE_SEEKABLE));
     }
 
-    void expectBin(GstElement *expectedElement) { EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_rialtoSrc), expectedElement)); }
+    void expectBin(GstElement *expectedElement)
+    {
+        EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_rialtoSrc), expectedElement));
+    }
 
     void expectSetupPad(GstElement *expectedSrcElement)
     {
         EXPECT_CALL(*m_glibWrapperMock, gStrdupPrintfStub(_)).WillOnce(Return(m_name));
 
-        EXPECT_CALL(*m_gstWrapperMock, gstElementGetStaticPad(expectedSrcElement, CharStrMatcher("src"))).WillOnce(Return(&m_target));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementGetStaticPad(expectedSrcElement, CharStrMatcher("src")))
+            .WillOnce(Return(&m_target));
         EXPECT_CALL(*m_gstWrapperMock, gstGhostPadNew(CharStrMatcher(m_name), &m_target)).WillOnce(Return(&m_pad));
         EXPECT_CALL(*m_gstWrapperMock, gstPadSetQueryFunction(&m_pad, NotNullMatcher()));
         EXPECT_CALL(*m_gstWrapperMock, gstPadSetActive(&m_pad, TRUE));
@@ -124,11 +127,15 @@ protected:
         EXPECT_CALL(*m_glibWrapperMock, gFree(CharStrMatcher(m_name)));
     }
 
-    void expectSyncElement(GstElement *expectedElement) { EXPECT_CALL(*m_gstWrapperMock, gstElementSyncStateWithParent(expectedElement)); }
+    void expectSyncElement(GstElement *expectedElement)
+    {
+        EXPECT_CALL(*m_gstWrapperMock, gstElementSyncStateWithParent(expectedElement));
+    }
 
     void expectLinkDecryptor(GstElement *expectedSrcElement)
     {
-        EXPECT_CALL(*m_decryptorFactoryMock, createDecryptorElement(_, reinterpret_cast<IDecryptionService*>(m_decryptionServiceMock.get())))
+        EXPECT_CALL(*m_decryptorFactoryMock,
+                    createDecryptorElement(_, reinterpret_cast<IDecryptionService *>(m_decryptionServiceMock.get())))
             .WillOnce(Return(&m_decryptor));
         expectBin(&m_decryptor);
         expectSyncElement(&m_decryptor);
@@ -138,14 +145,15 @@ protected:
     void expectLinkPayloader(GstElement *expectedSrcElement)
     {
         EXPECT_CALL(*m_glibWrapperMock, gOnceInitEnter(_)).WillOnce(Return(TRUE));
-        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(CharStrMatcher("svppay"))).WillOnce(Return(reinterpret_cast<GstElementFactory *>(&m_factory)));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(CharStrMatcher("svppay")))
+            .WillOnce(Return(reinterpret_cast<GstElementFactory *>(&m_factory)));
         EXPECT_CALL(*m_glibWrapperMock, gOnceInitLeave(_, 1));
-        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryCreate(reinterpret_cast<GstElementFactory *>(&m_factory), _)).WillOnce(Return(&m_payloader));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryCreate(reinterpret_cast<GstElementFactory *>(&m_factory), _))
+            .WillOnce(Return(&m_payloader));
 
         expectBin(&m_payloader);
         expectSyncElement(&m_payloader);
         EXPECT_CALL(*m_gstWrapperMock, gstElementLink(expectedSrcElement, &m_payloader));
-
     }
 
     void expectLinkQueue(GstElement *expectedSrcElement)
@@ -178,7 +186,8 @@ TEST_F(RialtoServerAppSrcGstSrcTest, SetupVideo)
     expectLinkQueue(&m_payloader);
     expectSetupPad(&m_queue);
 
-    m_gstSrc->setupAndAddAppArc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), &m_appsrc, &m_callbacks, this, MediaSourceType::VIDEO);
+    m_gstSrc->setupAndAddAppArc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), &m_appsrc, &m_callbacks, this,
+                                MediaSourceType::VIDEO);
 }
 
 /**
@@ -195,7 +204,8 @@ TEST_F(RialtoServerAppSrcGstSrcTest, SetupAudio)
     expectLinkQueue(&m_decryptor);
     expectSetupPad(&m_queue);
 
-    m_gstSrc->setupAndAddAppArc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), &m_appsrc, &m_callbacks, this, MediaSourceType::AUDIO);
+    m_gstSrc->setupAndAddAppArc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), &m_appsrc, &m_callbacks, this,
+                                MediaSourceType::AUDIO);
 }
 
 /**
@@ -205,7 +215,8 @@ TEST_F(RialtoServerAppSrcGstSrcTest, DecryptorFailure)
 {
     guint64 videoMaxBytes = 8 * 1024 * 1024;
 
-    EXPECT_CALL(*m_decryptorFactoryMock, createDecryptorElement(_, reinterpret_cast<IDecryptionService*>(m_decryptionServiceMock.get())))
+    EXPECT_CALL(*m_decryptorFactoryMock,
+                createDecryptorElement(_, reinterpret_cast<IDecryptionService *>(m_decryptionServiceMock.get())))
         .WillOnce(Return(nullptr));
 
     expectSettings(videoMaxBytes);
@@ -215,7 +226,8 @@ TEST_F(RialtoServerAppSrcGstSrcTest, DecryptorFailure)
     expectLinkQueue(&m_payloader);
     expectSetupPad(&m_queue);
 
-    m_gstSrc->setupAndAddAppArc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), &m_appsrc, &m_callbacks, this, MediaSourceType::VIDEO);
+    m_gstSrc->setupAndAddAppArc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), &m_appsrc, &m_callbacks, this,
+                                MediaSourceType::VIDEO);
 }
 
 /**
@@ -226,9 +238,11 @@ TEST_F(RialtoServerAppSrcGstSrcTest, PayloaderFailure)
     guint64 videoMaxBytes = 8 * 1024 * 1024;
 
     EXPECT_CALL(*m_glibWrapperMock, gOnceInitEnter(_)).WillOnce(Return(TRUE));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(CharStrMatcher("svppay"))).WillOnce(Return(reinterpret_cast<GstElementFactory *>(&m_factory)));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(CharStrMatcher("svppay")))
+        .WillOnce(Return(reinterpret_cast<GstElementFactory *>(&m_factory)));
     EXPECT_CALL(*m_glibWrapperMock, gOnceInitLeave(_, 1));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryCreate(reinterpret_cast<GstElementFactory *>(&m_factory), _)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryCreate(reinterpret_cast<GstElementFactory *>(&m_factory), _))
+        .WillOnce(Return(nullptr));
 
     expectSettings(videoMaxBytes);
     expectBin(&m_appsrc);
@@ -237,7 +251,8 @@ TEST_F(RialtoServerAppSrcGstSrcTest, PayloaderFailure)
     expectLinkQueue(&m_decryptor);
     expectSetupPad(&m_queue);
 
-    m_gstSrc->setupAndAddAppArc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), &m_appsrc, &m_callbacks, this, MediaSourceType::VIDEO);
+    m_gstSrc->setupAndAddAppArc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), &m_appsrc, &m_callbacks, this,
+                                MediaSourceType::VIDEO);
 }
 
 /**
@@ -256,7 +271,8 @@ TEST_F(RialtoServerAppSrcGstSrcTest, QueueFailure)
     expectLinkPayloader(&m_decryptor);
     expectSetupPad(&m_payloader);
 
-    m_gstSrc->setupAndAddAppArc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), &m_appsrc, &m_callbacks, this, MediaSourceType::VIDEO);
+    m_gstSrc->setupAndAddAppArc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), &m_appsrc, &m_callbacks, this,
+                                MediaSourceType::VIDEO);
 }
 
 /**

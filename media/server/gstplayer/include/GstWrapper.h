@@ -374,7 +374,7 @@ public:
 
     GstCaps *gstCapsNewEmpty() const override { return gst_caps_new_empty(); }
 
-    GstProtectionMeta *gstBufferAddProtectionMeta(GstBuffer * buffer, GstStructure *info) const override
+    GstProtectionMeta *gstBufferAddProtectionMeta(GstBuffer *buffer, GstStructure *info) const override
     {
         return gst_buffer_add_protection_meta(buffer, info);
     }
@@ -399,10 +399,7 @@ public:
         return gst_structure_get_value(structure, fieldname);
     }
 
-    GstBuffer *gstValueGetBuffer(const GValue *value) const override
-    {
-        return gst_value_get_buffer(value);
-    }
+    GstBuffer *gstValueGetBuffer(const GValue *value) const override { return gst_value_get_buffer(value); }
 };
 
 }; // namespace firebolt::rialto::server

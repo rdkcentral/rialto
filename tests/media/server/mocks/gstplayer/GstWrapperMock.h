@@ -119,7 +119,7 @@ public:
     MOCK_METHOD(GstStructure *, gstStructureNewBoolStub,
                 (const gchar *name, const gchar *firstfield, GType type, gboolean value), (const));
     MOCK_METHOD(GstStructure *, gstStructureNewBufferStub,
-                (const gchar *name, const gchar *firstfield, GType type, GstBuffer* value), (const));
+                (const gchar *name, const gchar *firstfield, GType type, GstBuffer *value), (const));
     MOCK_METHOD(GstStructure *, gstStructureNewUintStub,
                 (const gchar *name, const gchar *firstfield, GType type, uint32_t value), (const));
     MOCK_METHOD(void, gstByteWriterInitWithData,
@@ -139,8 +139,9 @@ public:
     MOCK_METHOD(GstCaps *, gstCapsNewEmpty, (), (const));
     MOCK_METHOD(GstProtectionMeta *, gstBufferAddProtectionMeta, (GstBuffer * buffer, GstStructure *info), (const));
     MOCK_METHOD(GstProtectionMeta *, gstBufferGetProtectionMeta, (GstBuffer * buffer), (const));
-    MOCK_METHOD(gboolean, gstBufferRemoveMeta, (GstBuffer *buffer, GstMeta *meta), (const));
-    MOCK_METHOD(gboolean, gstStructureGetUint, (const GstStructure *structure, const gchar *fieldname, guint *value), (const));
+    MOCK_METHOD(gboolean, gstBufferRemoveMeta, (GstBuffer * buffer, GstMeta *meta), (const));
+    MOCK_METHOD(gboolean, gstStructureGetUint, (const GstStructure *structure, const gchar *fieldname, guint *value),
+                (const));
     MOCK_METHOD(const GValue *, gstStructureGetValue, (const GstStructure *structure, const gchar *fieldname), (const));
     MOCK_METHOD(GstBuffer *, gstValueGetBuffer, (const GValue *value), (const));
 

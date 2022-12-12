@@ -47,9 +47,10 @@ public:
      *
      * @retval a decryptor element instance or null on error.
      */
-    virtual GstElement *createDecryptorElement(const gchar* name, firebolt::rialto::server::IDecryptionService *decryptionService) const = 0;
+    virtual GstElement *createDecryptorElement(const gchar *name,
+                                               firebolt::rialto::server::IDecryptionService *decryptionService) const = 0;
 };
 
 }; // namespace firebolt::rialto::server
 
-#endif  // FIREBOLT_RIALTO_SERVER_I_GST_DECRYPTOR_ELEMENT_FACTORY_H_
+#endif // FIREBOLT_RIALTO_SERVER_I_GST_DECRYPTOR_ELEMENT_FACTORY_H_

@@ -33,9 +33,10 @@ public:
     GstDecryptorElementFactory() = default;
     ~GstDecryptorElementFactory() override = default;
 
-    GstElement *createDecryptorElement(const gchar* name, firebolt::rialto::server::IDecryptionService *decryptionService) const override;
+    GstElement *createDecryptorElement(const gchar *name,
+                                       firebolt::rialto::server::IDecryptionService *decryptionService) const override;
 };
 
 }; // namespace firebolt::rialto::server
 
-#endif  // FIREBOLT_RIALTO_SERVER_GST_DECRYPTOR_ELEMENT_FACTORY_H_
+#endif // FIREBOLT_RIALTO_SERVER_GST_DECRYPTOR_ELEMENT_FACTORY_H_

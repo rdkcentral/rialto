@@ -297,7 +297,8 @@ std::shared_ptr<IGstSrc> GstSrcFactory::getGstSrc()
     {
         try
         {
-            gstSrc = std::make_shared<GstSrc>(IGstWrapperFactory::getFactory(), IGlibWrapperFactory::getFactory(), IGstDecryptorElementFactory::createFactory());
+            gstSrc = std::make_shared<GstSrc>(IGstWrapperFactory::getFactory(), IGlibWrapperFactory::getFactory(),
+                                              IGstDecryptorElementFactory::createFactory());
         }
         catch (const std::exception &e)
         {
@@ -311,7 +312,8 @@ std::shared_ptr<IGstSrc> GstSrcFactory::getGstSrc()
 }
 
 GstSrc::GstSrc(const std::shared_ptr<IGstWrapperFactory> &gstWrapperFactory,
-               const std::shared_ptr<IGlibWrapperFactory> &glibWrapperFactory, const std::shared_ptr<IGstDecryptorElementFactory> &decryptorFactory)
+               const std::shared_ptr<IGlibWrapperFactory> &glibWrapperFactory,
+               const std::shared_ptr<IGstDecryptorElementFactory> &decryptorFactory)
     : m_decryptorFactory(decryptorFactory)
 {
     if ((!gstWrapperFactory) || (!(m_gstWrapper = gstWrapperFactory->getGstWrapper())))
@@ -341,8 +343,8 @@ void GstSrc::initSrc()
         src_factory = nullptr;
     }
 }
-void GstSrc::setupAndAddAppArc(IDecryptionService *decryptionService, GstElement *element, GstElement *appsrc, GstAppSrcCallbacks *callbacks,
-                               gpointer userData, firebolt::rialto::MediaSourceType type)
+void GstSrc::setupAndAddAppArc(IDecryptionService *decryptionService, GstElement *element, GstElement *appsrc,
+                               GstAppSrcCallbacks *callbacks, gpointer userData, firebolt::rialto::MediaSourceType type)
 {
     // Configure and add appsrc
     m_glibWrapper->gObjectSet(appsrc, "block", FALSE, "format", GST_FORMAT_TIME, "stream-type",
@@ -366,7 +368,7 @@ void GstSrc::setupAndAddAppArc(IDecryptionService *decryptionService, GstElement
     GstElement *src_elem = appsrc;
 
     // Configure and add decryptor
-    GstElement* decryptor = m_decryptorFactory->createDecryptorElement(nullptr, decryptionService);
+    GstElement *decryptor = m_decryptorFactory->createDecryptorElement(nullptr, decryptionService);
     if (decryptor)
     {
         GST_DEBUG("Injecting decryptor element %" GST_PTR_FORMAT, decryptor);
@@ -403,16 +405,11 @@ void GstSrc::setupAndAddAppArc(IDecryptionService *decryptionService, GstElement
     }
 
     // Configure and add buffer queue
-    GstElement* queue = m_gstWrapper->gstElementFactoryMake("queue", nullptr);
+    GstElement *queue = m_gstWrapper->gstElementFactoryMake("queue", nullptr);
     if (queue)
     {
-        m_glibWrapper->gObjectSet(
-            G_OBJECT (queue),
-            "max-size-buffers", 10,
-            "max-size-bytes", 0,
-            "max-size-time", (gint64) 0,
-            "silent", TRUE,
-            nullptr);
+        m_glibWrapper->gObjectSet(G_OBJECT(queue), "max-size-buffers", 10, "max-size-bytes", 0, "max-size-time",
+                                  (gint64)0, "silent", TRUE, nullptr);
         m_gstWrapper->gstBinAdd(GST_BIN(element), queue);
         m_gstWrapper->gstElementSyncStateWithParent(queue);
         m_gstWrapper->gstElementLink(src_elem, queue);
