@@ -109,7 +109,6 @@ private:
     bool setWesterossinkRectangle() override;
     bool setWesterossinkSecondaryVideo() override;
     void notifyNeedMediaData(bool audioNotificationNeeded, bool videoNotificationNeeded) override;
-    GstBuffer *createDecryptedBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const override;
     GstBuffer *createBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const override;
     void attachAudioData() override;
     void attachVideoData() override;

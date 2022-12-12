@@ -31,7 +31,7 @@ AttachSamples::AttachSamples(PlayerContext &context, IGstPlayerPrivate &player,
     RIALTO_SERVER_LOG_DEBUG("Constructing AttachSamples");
     for (const auto &mediaSegment : mediaSegments)
     {
-        GstBuffer *gstBuffer = m_player.createDecryptedBuffer(*mediaSegment);
+        GstBuffer *gstBuffer = m_player.createBuffer(*mediaSegment);
         if (mediaSegment->getType() == firebolt::rialto::MediaSourceType::VIDEO)
         {
             try
@@ -85,7 +85,6 @@ void AttachSamples::execute() const
         m_context.videoBuffers.push_back(videoData.buffer);
         m_player.attachVideoData();
     }
-    RIALTO_SERVER_LOG_ERROR("lukewill %p: notifyNeedMediaData %s %s", &m_player, m_audioData.empty() ? "" : "Audio", m_videoData.empty() ? "" : "Audio");
     m_player.notifyNeedMediaData(!m_audioData.empty(), !m_videoData.empty());
 }
 } // namespace firebolt::rialto::server

@@ -82,7 +82,7 @@ TEST_F(SetPlaybackRateTest, shouldSetPlaybackRateAudioSinkNull)
     m_context.pipeline = &m_pipeline;
     firebolt::rialto::server::SetPlaybackRate task{m_context, m_gstWrapper, m_glibWrapper, kRate};
     EXPECT_CALL(*m_glibWrapper, gObjectGetStub(_, CharStrMatcher("audio-sink"), _));
-    EXPECT_CALL(*m_gstWrapper, gstStructureNewStub(CharStrMatcher("custom-instant-rate-change"), CharStrMatcher("rate"),
+    EXPECT_CALL(*m_gstWrapper, gstStructureNewDoubleStub(CharStrMatcher("custom-instant-rate-change"), CharStrMatcher("rate"),
                                                    G_TYPE_DOUBLE, kRate))
         .WillOnce(Return(&m_structure));
     EXPECT_CALL(*m_gstWrapper, gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB, &m_structure)).WillOnce(Return(&m_event));
@@ -98,7 +98,7 @@ TEST_F(SetPlaybackRateTest, shouldFailToSetPlaybackRateAudioSinkNull)
     m_context.pipeline = &m_pipeline;
     firebolt::rialto::server::SetPlaybackRate task{m_context, m_gstWrapper, m_glibWrapper, kRate};
     EXPECT_CALL(*m_glibWrapper, gObjectGetStub(_, CharStrMatcher("audio-sink"), _));
-    EXPECT_CALL(*m_gstWrapper, gstStructureNewStub(CharStrMatcher("custom-instant-rate-change"), CharStrMatcher("rate"),
+    EXPECT_CALL(*m_gstWrapper, gstStructureNewDoubleStub(CharStrMatcher("custom-instant-rate-change"), CharStrMatcher("rate"),
                                                    G_TYPE_DOUBLE, kRate))
         .WillOnce(Return(&m_structure));
     EXPECT_CALL(*m_gstWrapper, gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB, &m_structure)).WillOnce(Return(&m_event));
@@ -121,7 +121,7 @@ TEST_F(SetPlaybackRateTest, shouldSetPlaybackRateAudioSinkOtherThanAmlhala)
                 *elementPtr = &m_audioSink;
             }));
     EXPECT_CALL(*m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("amlhalasink"))).WillOnce(Return(FALSE));
-    EXPECT_CALL(*m_gstWrapper, gstStructureNewStub(CharStrMatcher("custom-instant-rate-change"), CharStrMatcher("rate"),
+    EXPECT_CALL(*m_gstWrapper, gstStructureNewDoubleStub(CharStrMatcher("custom-instant-rate-change"), CharStrMatcher("rate"),
                                                    G_TYPE_DOUBLE, kRate))
         .WillOnce(Return(&m_structure));
     EXPECT_CALL(*m_gstWrapper, gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB, &m_structure)).WillOnce(Return(&m_event));
@@ -145,7 +145,7 @@ TEST_F(SetPlaybackRateTest, shouldFailToSetPlaybackRateAudioSinkOtherThanAmlhala
                 *elementPtr = &m_audioSink;
             }));
     EXPECT_CALL(*m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("amlhalasink"))).WillOnce(Return(FALSE));
-    EXPECT_CALL(*m_gstWrapper, gstStructureNewStub(CharStrMatcher("custom-instant-rate-change"), CharStrMatcher("rate"),
+    EXPECT_CALL(*m_gstWrapper, gstStructureNewDoubleStub(CharStrMatcher("custom-instant-rate-change"), CharStrMatcher("rate"),
                                                    G_TYPE_DOUBLE, kRate))
         .WillOnce(Return(&m_structure));
     EXPECT_CALL(*m_gstWrapper, gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB, &m_structure)).WillOnce(Return(&m_event));

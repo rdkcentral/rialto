@@ -95,7 +95,6 @@ void FinishSetupSource::execute() const
     {
         m_context.gstSrc->setupAndAddAppArc(m_context.decryptionService, m_context.source, elem->second, &callbacks, &m_player,
                                             firebolt::rialto::MediaSourceType::AUDIO);
-        RIALTO_SERVER_LOG_ERROR("lukewill %p: notifyNeedMediaData Audio", &m_player);
         m_player.notifyNeedMediaData(true, false);
     }
 
@@ -104,7 +103,6 @@ void FinishSetupSource::execute() const
     {
         m_context.gstSrc->setupAndAddAppArc(m_context.decryptionService, m_context.source, elem->second, &callbacks, &m_player,
                                             firebolt::rialto::MediaSourceType::VIDEO);
-        RIALTO_SERVER_LOG_ERROR("lukewill %p: notifyNeedMediaData Video", &m_player);
         m_player.notifyNeedMediaData(false, true);
     }
 

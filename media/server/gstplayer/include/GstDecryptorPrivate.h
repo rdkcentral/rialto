@@ -32,8 +32,8 @@ public:
     /**
      * @brief The constructor.
 
-     * @param[in] parentElement   : The parent decryptor element.
-     * @param[in] gstWrapperFactory     : The gstreamer wrapper factory.y
+     * @param[in] parentElement     : The parent decryptor element.
+     * @param[in] gstWrapperFactory : The gstreamer wrapper factory.
      */
     GstRialtoDecryptorPrivate(GstBaseTransform* parentElement, const std::shared_ptr<IGstWrapperFactory> &gstWrapperFactory);
 
@@ -68,6 +68,23 @@ private:
      * @brief The service to perform decryption.
      */
     IDecryptionService* m_decryptionService;
+
+    /**
+     * @brief Extract decryption data from protection meta.
+     *
+     * @param[in]  protectionMetaInfo   : The protection meta info to extract data from.
+     * @param[out] keySessionId         : The session id for the session.
+     * @param[out] subSampleCount       : count of subsamples
+     * @param[out] initWithLast15       : The value deciding whether decryption context needs to be initialized with
+     *                                  last 15 bytes. Currently this only applies to PlayReady DRM.
+     * @param[out] key                  : Gstreamer buffer containing keyID to use for decryption
+     * @param[out] iv                   : Gstreamer buffer containing initial vector (IV) used during decryption.
+     * @param[out] subSample            : Gstreamer buffer containing subsamples size which has been parsed from protection
+     *                                  meta data.
+     *
+     * @retval the gst flow return status.
+     */
+    GstFlowReturn extractDecryptionData(GstStructure* protectionMetaInfo, uint32_t &keySessionId, uint32_t &subsampleCount, uint32_t &initWithLast15, GstBuffer** key, GstBuffer** iv, GstBuffer** subsamples);
 };
 }; // namespace firebolt::rialto::server
 

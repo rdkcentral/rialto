@@ -85,6 +85,37 @@ protected:
 
         m_sut->scheduleNeedMediaData(&appSrc);
     }
+
+    void expectAddProtectionMeta(GstBuffer* buffer, bool isEncrypted, GstBuffer* keyId, uint32_t ivSize, GstBuffer* iv, uint32_t subsampleSize, GstBuffer* subsamples, uint32_t initWithLast15, uint32_t keySessionId)
+    {
+        GstStructure structure{};
+
+        EXPECT_CALL(*m_gstWrapperMock, gstStructureNewBoolStub(CharStrMatcher("application/x-cenc"), CharStrMatcher("encrypted"),
+                                                   G_TYPE_BOOLEAN, isEncrypted ? TRUE : FALSE))
+        .WillOnce(Return(&structure));
+        EXPECT_CALL(*m_gstWrapperMock, gstStructureNewBufferStub(CharStrMatcher("application/x-cenc"), CharStrMatcher("kid"),
+                                                    GST_TYPE_BUFFER, keyId))
+            .WillOnce(Return(&structure));
+        EXPECT_CALL(*m_gstWrapperMock, gstStructureNewUintStub(CharStrMatcher("application/x-cenc"), CharStrMatcher("iv_size"),
+                                                    G_TYPE_UINT, ivSize))
+            .WillOnce(Return(&structure));
+        EXPECT_CALL(*m_gstWrapperMock, gstStructureNewBufferStub(CharStrMatcher("application/x-cenc"), CharStrMatcher("iv"),
+                                                    GST_TYPE_BUFFER, iv))
+            .WillOnce(Return(&structure));
+        EXPECT_CALL(*m_gstWrapperMock, gstStructureNewUintStub(CharStrMatcher("application/x-cenc"), CharStrMatcher("subsample_count"),
+                                                    G_TYPE_UINT, subsampleSize))
+            .WillOnce(Return(&structure));
+        EXPECT_CALL(*m_gstWrapperMock, gstStructureNewBufferStub(CharStrMatcher("application/x-cenc"), CharStrMatcher("subsamples"),
+                                                    GST_TYPE_BUFFER, subsamples))
+            .WillOnce(Return(&structure));
+        EXPECT_CALL(*m_gstWrapperMock, gstStructureNewUintStub(CharStrMatcher("application/x-cenc"), CharStrMatcher("init_with_last_15"),
+                                                    G_TYPE_UINT, initWithLast15))
+            .WillOnce(Return(&structure));
+        EXPECT_CALL(*m_gstWrapperMock, gstStructureNewUintStub(CharStrMatcher("application/x-cenc"), CharStrMatcher("key_session_id"),
+                                                    G_TYPE_UINT, keySessionId))
+            .WillOnce(Return(&structure));
+        EXPECT_CALL(*m_gstWrapperMock, gstBufferAddProtectionMeta(buffer, &structure));
+    }
 };
 
 TEST_F(GstPlayerPrivateTest, shouldScheduleSourceSetupFinish)
@@ -247,19 +278,19 @@ TEST_F(GstPlayerPrivateTest, shouldNotNotifyNeedVideoDataWhenNotNeeded)
     m_sut->notifyNeedMediaData(false, true);
 }
 
-TEST_F(GstPlayerPrivateTest, shouldCreateGstBuffer)
+TEST_F(GstPlayerPrivateTest, shouldCreateClearGstBuffer)
 {
     GstBuffer buffer{};
     IMediaPipeline::MediaSegmentVideo mediaSegment{kSourceId, kTimeStamp, kDuration, kWidth, kHeight};
     EXPECT_CALL(*m_gstWrapperMock, gstBufferNewAllocate(nullptr, mediaSegment.getDataLength(), nullptr))
         .WillOnce(Return(&buffer));
     EXPECT_CALL(*m_gstWrapperMock, gstBufferFill(&buffer, 0, mediaSegment.getData(), mediaSegment.getDataLength()));
-    m_sut->createDecryptedBuffer(mediaSegment);
+    m_sut->createBuffer(mediaSegment);
     EXPECT_EQ(GST_BUFFER_TIMESTAMP(&buffer), kTimeStamp);
     EXPECT_EQ(GST_BUFFER_DURATION(&buffer), kDuration);
 }
 
-TEST_F(GstPlayerPrivateTest, shouldCreateAndDecryptGstBuffer)
+TEST_F(GstPlayerPrivateTest, shouldCreateEncryptedGstBuffer)
 {
     GstBuffer buffer{}, initVectorBuffer{}, keyIdBuffer{}, subSamplesBuffer{};
     guint8 subSamplesData{0};
@@ -287,13 +318,12 @@ TEST_F(GstPlayerPrivateTest, shouldCreateAndDecryptGstBuffer)
     EXPECT_CALL(*m_gstWrapperMock, gstByteWriterPutUint16Be(_, kNumClearBytes));
     EXPECT_CALL(*m_gstWrapperMock, gstByteWriterPutUint32Be(_, kNumEncryptedBytes));
     EXPECT_CALL(*m_gstWrapperMock, gstBufferNewWrapped(&subSamplesData, subSamplesSize)).WillOnce(Return(&subSamplesBuffer));
-    EXPECT_CALL(m_decryptionServiceMock,
-                decrypt(kMediaKeySessionId, &buffer, &subSamplesBuffer, mediaSegment.getSubSamples().size(),
-                        &initVectorBuffer, &keyIdBuffer, kInitWithLast15));
     EXPECT_CALL(*m_gstWrapperMock, gstBufferUnref(&subSamplesBuffer));
     EXPECT_CALL(*m_gstWrapperMock, gstBufferUnref(&initVectorBuffer));
     EXPECT_CALL(*m_gstWrapperMock, gstBufferUnref(&keyIdBuffer));
-    m_sut->createDecryptedBuffer(mediaSegment);
+    expectAddProtectionMeta(&buffer, mediaSegment.isEncrypted(), &keyIdBuffer, mediaSegment.getInitVector().size(), &initVectorBuffer, mediaSegment.getSubSamples().size(), &subSamplesBuffer, mediaSegment.getInitWithLast15(), mediaSegment.getMediaKeySessionId());
+
+    m_sut->createBuffer(mediaSegment);
     EXPECT_EQ(GST_BUFFER_TIMESTAMP(&buffer), kTimeStamp);
     EXPECT_EQ(GST_BUFFER_DURATION(&buffer), kDuration);
 }
@@ -325,13 +355,12 @@ TEST_F(GstPlayerPrivateTest, shouldCreateAndDecryptGstBufferForNetflix)
     EXPECT_CALL(*m_gstWrapperMock, gstByteWriterPutUint16Be(_, kNumClearBytes));
     EXPECT_CALL(*m_gstWrapperMock, gstByteWriterPutUint32Be(_, kNumEncryptedBytes));
     EXPECT_CALL(*m_gstWrapperMock, gstBufferNewWrapped(&subSamplesData, subSamplesSize)).WillOnce(Return(&subSamplesBuffer));
-    EXPECT_CALL(m_decryptionServiceMock,
-                decrypt(kMediaKeySessionId, &buffer, &subSamplesBuffer, mediaSegment.getSubSamples().size(),
-                        &initVectorBuffer, &keyIdBuffer, kInitWithLast15));
     EXPECT_CALL(*m_gstWrapperMock, gstBufferUnref(&subSamplesBuffer));
     EXPECT_CALL(*m_gstWrapperMock, gstBufferUnref(&initVectorBuffer));
     EXPECT_CALL(*m_gstWrapperMock, gstBufferUnref(&keyIdBuffer));
-    m_sut->createDecryptedBuffer(mediaSegment);
+    expectAddProtectionMeta(&buffer, mediaSegment.isEncrypted(), &keyIdBuffer, mediaSegment.getInitVector().size(), &initVectorBuffer, mediaSegment.getSubSamples().size(), &subSamplesBuffer, mediaSegment.getInitWithLast15(), mediaSegment.getMediaKeySessionId());
+
+    m_sut->createBuffer(mediaSegment);
     EXPECT_EQ(GST_BUFFER_TIMESTAMP(&buffer), kTimeStamp);
     EXPECT_EQ(GST_BUFFER_DURATION(&buffer), kDuration);
 }

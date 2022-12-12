@@ -379,6 +379,11 @@ public:
         return gst_buffer_get_protection_meta(buffer);
     }
 
+    GstProtectionMeta *gstBufferAddProtectionMeta(GstBuffer * buffer, GstStructure *info) const override
+    {
+        return gst_buffer_add_protection_meta(buffer, info);
+    }
+
     gboolean gstBufferRemoveMeta(GstBuffer *buffer, GstMeta *meta) const override
     {
         return gst_buffer_remove_meta(buffer, meta);

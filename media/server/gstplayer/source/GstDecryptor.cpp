@@ -1,19 +1,22 @@
-//
-// Copyright 2020 Comcast Cable Communications Management, LLC
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//
-// SPDX-License-Identifier: Apache-2.0
+/*
+ * If not stated otherwise in this file or this component's LICENSE file the
+ * following copyright and licenses apply:
+ *
+ * Copyright 2022 Sky UK
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "GstDecryptorElementFactory.h"
 #include "GstDecryptorPrivate.h"
 #include "RialtoServerLogging.h"
@@ -34,29 +37,29 @@ typedef struct firebolt::rialto::server::GstRialtoDecryptorPrivate GstRialtoDecr
 GType gst_rialto_decryptor_get_type(void);
 
 struct _GstRialtoDecryptor {
-  GstBaseTransform parent;
-  GstRialtoDecryptorPrivate *priv;
+    GstBaseTransform parent;
+    GstRialtoDecryptorPrivate *priv;
 };
 
 struct _GstRialtoDecryptorClass {
-  GstBaseTransformClass parentClass;
+    GstBaseTransformClass parentClass;
 };
 
 G_END_DECLS
 
 static GstStaticPadTemplate sinkTemplate =
-  GST_STATIC_PAD_TEMPLATE(
-    "sink",
-    GST_PAD_SINK,
-    GST_PAD_ALWAYS,
-    GST_STATIC_CAPS_ANY);
+    GST_STATIC_PAD_TEMPLATE(
+        "sink",
+        GST_PAD_SINK,
+        GST_PAD_ALWAYS,
+        GST_STATIC_CAPS_ANY);
 
 static GstStaticPadTemplate srcTemplate =
-  GST_STATIC_PAD_TEMPLATE(
-    "src",
-    GST_PAD_SRC,
-    GST_PAD_ALWAYS,
-    GST_STATIC_CAPS_ANY);
+    GST_STATIC_PAD_TEMPLATE(
+        "src",
+        GST_PAD_SRC,
+        GST_PAD_ALWAYS,
+        GST_STATIC_CAPS_ANY);
 
 GST_DEBUG_CATEGORY(gst_rialto_decryptor_debug_category);
 #define GST_CAT_DEFAULT gst_rialto_decryptor_debug_category
@@ -69,69 +72,69 @@ static GstCaps* gst_rialto_decryptor_transform_caps(GstBaseTransform*, GstPadDir
 static GstFlowReturn gst_rialto_decryptor_transform_ip(GstBaseTransform* base, GstBuffer* buffer);
 
 static void gst_rialto_decryptor_class_init(GstRialtoDecryptorClass* klass) {
-  GST_DEBUG_CATEGORY_INIT(
-    gst_rialto_decryptor_debug_category,
-    "rialtodecryptor", 0, "Decryptor for Rialto");
+    GST_DEBUG_CATEGORY_INIT(
+        gst_rialto_decryptor_debug_category,
+        "rialtodecryptor", 0, "Decryptor for Rialto");
 
-  GObjectClass* gobject_class = G_OBJECT_CLASS(klass);
-  gobject_class->finalize = GST_DEBUG_FUNCPTR(gst_rialto_decryptor_finalize);
+    GObjectClass* gobject_class = G_OBJECT_CLASS(klass);
+    gobject_class->finalize = GST_DEBUG_FUNCPTR(gst_rialto_decryptor_finalize);
 
-  GstElementClass* element_class = GST_ELEMENT_CLASS(klass);
-  gst_element_class_add_pad_template(element_class, gst_static_pad_template_get(&sinkTemplate));
-  gst_element_class_add_pad_template(element_class, gst_static_pad_template_get(&srcTemplate));
-  gst_element_class_set_static_metadata(
-    element_class, "Rialto Decryptor",
-    GST_ELEMENT_FACTORY_KLASS_DECRYPTOR,
-    "Decryptor for Rialto.", "Sky");
+    GstElementClass* element_class = GST_ELEMENT_CLASS(klass);
+    gst_element_class_add_pad_template(element_class, gst_static_pad_template_get(&sinkTemplate));
+    gst_element_class_add_pad_template(element_class, gst_static_pad_template_get(&srcTemplate));
+    gst_element_class_set_static_metadata(
+        element_class, "Rialto Decryptor",
+        GST_ELEMENT_FACTORY_KLASS_DECRYPTOR,
+        "Decryptor for Rialto.", "Sky");
 
-  GstBaseTransformClass* base_transform_class = GST_BASE_TRANSFORM_CLASS(klass);
-  base_transform_class->transform_caps = GST_DEBUG_FUNCPTR(gst_rialto_decryptor_transform_caps);
-  base_transform_class->transform_ip = GST_DEBUG_FUNCPTR(gst_rialto_decryptor_transform_ip);
-  base_transform_class->transform_ip_on_passthrough = FALSE;
+    GstBaseTransformClass* base_transform_class = GST_BASE_TRANSFORM_CLASS(klass);
+    base_transform_class->transform_caps = GST_DEBUG_FUNCPTR(gst_rialto_decryptor_transform_caps);
+    base_transform_class->transform_ip = GST_DEBUG_FUNCPTR(gst_rialto_decryptor_transform_ip);
+    base_transform_class->transform_ip_on_passthrough = FALSE;
 }
 
 static void gst_rialto_decryptor_init(GstRialtoDecryptor* self) {
-  GstRialtoDecryptorPrivate* priv = reinterpret_cast<GstRialtoDecryptorPrivate*>(
-    gst_rialto_decryptor_get_instance_private(self));
-  GstBaseTransform* base = GST_BASE_TRANSFORM(self);
+    GstRialtoDecryptorPrivate* priv = reinterpret_cast<GstRialtoDecryptorPrivate*>(
+        gst_rialto_decryptor_get_instance_private(self));
+    GstBaseTransform* base = GST_BASE_TRANSFORM(self);
 
-  self->priv = new (priv) GstRialtoDecryptorPrivate(base, firebolt::rialto::server::IGstWrapperFactory::getFactory());
+    self->priv = new (priv) GstRialtoDecryptorPrivate(base, firebolt::rialto::server::IGstWrapperFactory::getFactory());
 
-  gst_base_transform_set_in_place(base, TRUE);
-  gst_base_transform_set_passthrough(base, FALSE);
-  gst_base_transform_set_gap_aware(base, FALSE);
+    gst_base_transform_set_in_place(base, TRUE);
+    gst_base_transform_set_passthrough(base, FALSE);
+    gst_base_transform_set_gap_aware(base, FALSE);
 }
 
 static void gst_rialto_decryptor_finalize(GObject* object) {
-  GstRialtoDecryptor* self = GST_RIALTO_DECRYPTOR(object);
-  GstRialtoDecryptorPrivate* priv = reinterpret_cast<GstRialtoDecryptorPrivate*>(
-    gst_rialto_decryptor_get_instance_private(self));
+    GstRialtoDecryptor* self = GST_RIALTO_DECRYPTOR(object);
+    GstRialtoDecryptorPrivate* priv = reinterpret_cast<GstRialtoDecryptorPrivate*>(
+        gst_rialto_decryptor_get_instance_private(self));
 
-  priv->~GstRialtoDecryptorPrivate();
+    priv->~GstRialtoDecryptorPrivate();
 
-  GST_CALL_PARENT(G_OBJECT_CLASS, finalize, (object));
+    GST_CALL_PARENT(G_OBJECT_CLASS, finalize, (object));
 }
 
 static GstCaps* gst_rialto_decryptor_transform_caps(GstBaseTransform* base, GstPadDirection direction, GstCaps* caps, GstCaps* filter) {
-  if (direction == GST_PAD_UNKNOWN)
-    return nullptr;
+    if (direction == GST_PAD_UNKNOWN)
+        return nullptr;
 
-  GstRialtoDecryptor* self = GST_RIALTO_DECRYPTOR(base);
+    GstRialtoDecryptor* self = GST_RIALTO_DECRYPTOR(base);
 
-  GST_DEBUG_OBJECT(self, "Transform in direction: %s, caps %" GST_PTR_FORMAT ", filter %" GST_PTR_FORMAT,
-                   direction == GST_PAD_SINK ? "GST_PAD_SINK" : "GST_PAD_SRC", caps, filter);
+    GST_DEBUG_OBJECT(self, "Transform in direction: %s, caps %" GST_PTR_FORMAT ", filter %" GST_PTR_FORMAT,
+                    direction == GST_PAD_SINK ? "GST_PAD_SINK" : "GST_PAD_SRC", caps, filter);
 
-  return GST_BASE_TRANSFORM_CLASS(parent_class)->transform_caps(base, direction, caps, filter);
+    return GST_BASE_TRANSFORM_CLASS(parent_class)->transform_caps(base, direction, caps, filter);
 }
 
 static GstFlowReturn gst_rialto_decryptor_transform_ip(GstBaseTransform* base, GstBuffer* buffer) {
-  GstRialtoDecryptor* self = GST_RIALTO_DECRYPTOR(base);
-  GstRialtoDecryptorPrivate* priv = reinterpret_cast<GstRialtoDecryptorPrivate*>(
-    gst_rialto_decryptor_get_instance_private(self));
+    GstRialtoDecryptor* self = GST_RIALTO_DECRYPTOR(base);
+    GstRialtoDecryptorPrivate* priv = reinterpret_cast<GstRialtoDecryptorPrivate*>(
+        gst_rialto_decryptor_get_instance_private(self));
 
-  GST_TRACE_OBJECT(self, "Transform in place buf=(%" GST_PTR_FORMAT ")", buffer);
+    GST_TRACE_OBJECT(self, "Transform in place buf=(%" GST_PTR_FORMAT ")", buffer);
 
-  return (priv->decrypt(buffer));
+    return (priv->decrypt(buffer));
 }
 
 namespace firebolt::rialto::server
@@ -189,80 +192,91 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer* buffer)
         GST_TRACE_OBJECT(self, "Clear sample");
         ret = GST_FLOW_OK;
     }
-    else if (!m_decryptionService)
-    {
-        GST_ERROR_OBJECT(self, "No decryption service object");
-        m_gstWrapper->gstBufferRemoveMeta(buffer, reinterpret_cast<GstMeta*>(protectionMeta));
-    }
     else
     {
-        uint32_t keySessionId = 0u;
-        uint32_t subsampleCount = 0u;
-        uint32_t initWithLast15 = 0u;
-        const GValue* keyValue = nullptr;
-        const GValue* ivValue = nullptr;
-        const GValue* subsamplesValue = nullptr;
+        uint32_t keySessionId = 0;
+        uint32_t subsampleCount = 0;
+        uint32_t initWithLast15 = 0;
+        GstBuffer* key = nullptr;
+        GstBuffer* iv = nullptr;
+        GstBuffer* subsamples = nullptr;
 
-        GstStructure* info = protectionMeta->info;
-
-        RIALTO_SERVER_LOG_ERROR("here");
-        if (!m_gstWrapper->gstStructureGetUint(info, "key_session_id", &keySessionId) )
+        if (!m_decryptionService)
         {
-            GST_ERROR_OBJECT(self, "Failed to get the key_session_id");
+            GST_ERROR_OBJECT(self, "No decryption service object");
         }
-        else if (!m_gstWrapper->gstStructureGetUint(info, "subsample_count", &subsampleCount))
+        else if (GST_FLOW_OK != extractDecryptionData(protectionMeta->info, keySessionId, subsampleCount, initWithLast15, &key, &iv, &subsamples))
         {
-            GST_ERROR_OBJECT(self, "Failed to get subsamples_count");
-        }
-        else if (!m_gstWrapper->gstStructureGetUint(info, "init_with_last_15", &initWithLast15))
-        {
-            GST_ERROR_OBJECT(self, "Failed to get init_with_last_15");
-        }
-        else if (!(keyValue = m_gstWrapper->gstStructureGetValue(info, "kid")))
-        {
-            GST_ERROR_OBJECT(self, "Failed to get the key ID");
-        }
-        else if (!(ivValue = m_gstWrapper->gstStructureGetValue(info, "iv")))
-        {
-            GST_ERROR_OBJECT(self, "Failed to get IV buffer");
-        }
-        else if ((0u != subsampleCount) && !(subsamplesValue = m_gstWrapper->gstStructureGetValue(info, "subsamples")))
-        {
-            GST_ERROR_OBJECT(self, "Failed to get subsamples buffer");
+            GST_ERROR_OBJECT(self, "Extraction of decryption data from the protection meta failed");
         }
         else
         {
-            GstBuffer* key = nullptr;
-            GstBuffer* iv = nullptr;
-            GstBuffer* subsamples = nullptr;
-            if (!(key = m_gstWrapper->gstValueGetBuffer(keyValue)))
+            firebolt::rialto::MediaKeyErrorStatus status = m_decryptionService->decrypt(keySessionId, buffer, subsamples, subsampleCount, iv, key, initWithLast15);
+            if (firebolt::rialto::MediaKeyErrorStatus::OK != status)
             {
-                GST_ERROR_OBJECT(self, "Failed to extract key from GValue");
-            }
-            else if (!(iv = m_gstWrapper->gstValueGetBuffer(ivValue)))
-            {
-                GST_ERROR_OBJECT(self, "Failed to extract iv from GValue");
-            }
-            else if ((subsamplesValue) && !(subsamples = m_gstWrapper->gstValueGetBuffer(subsamplesValue)))
-            {
-                GST_ERROR_OBJECT(self, "Failed to extract subsamples from GValue");
+                GST_ERROR_OBJECT(self, "Failed decrypt the buffer");
             }
             else
             {
-                firebolt::rialto::MediaKeyErrorStatus status = m_decryptionService->decrypt(keySessionId, buffer, subsamples, subsampleCount, iv, key, initWithLast15);
-                if (firebolt::rialto::MediaKeyErrorStatus::OK != status)
-                {
-                    GST_ERROR_OBJECT(self, "Failed decrypt the buffer");
-                }
-                else
-                {
-                    GST_TRACE_OBJECT(self, "Decryption successful");
-                    ret = GST_FLOW_OK;
-                }
+                GST_TRACE_OBJECT(self, "Decryption successful");
+                ret = GST_FLOW_OK;
             }
         }
 
         m_gstWrapper->gstBufferRemoveMeta(buffer, reinterpret_cast<GstMeta*>(protectionMeta));
+    }
+
+    return ret;
+}
+
+GstFlowReturn GstRialtoDecryptorPrivate::extractDecryptionData(GstStructure* protectionMetaInfo, uint32_t &keySessionId, uint32_t &subsampleCount, uint32_t &initWithLast15, GstBuffer** key, GstBuffer** iv, GstBuffer** subsamples)
+{
+    GstFlowReturn ret = GST_FLOW_ERROR;
+    GstRialtoDecryptor* self = GST_RIALTO_DECRYPTOR(m_decryptorElement);
+    const GValue* keyValue = nullptr;
+    const GValue* ivValue = nullptr;
+    const GValue* subsamplesValue = nullptr;
+
+    if (!m_gstWrapper->gstStructureGetUint(protectionMetaInfo, "key_session_id", &keySessionId) )
+    {
+        GST_ERROR_OBJECT(self, "Failed to get the key_session_id");
+    }
+    else if (!m_gstWrapper->gstStructureGetUint(protectionMetaInfo, "subsample_count", &subsampleCount))
+    {
+        GST_ERROR_OBJECT(self, "Failed to get subsamples_count");
+    }
+    else if (!m_gstWrapper->gstStructureGetUint(protectionMetaInfo, "init_with_last_15", &initWithLast15))
+    {
+        GST_ERROR_OBJECT(self, "Failed to get init_with_last_15");
+    }
+    else if (!(keyValue = m_gstWrapper->gstStructureGetValue(protectionMetaInfo, "kid")))
+    {
+        GST_ERROR_OBJECT(self, "Failed to get the key ID");
+    }
+    else if (!(ivValue = m_gstWrapper->gstStructureGetValue(protectionMetaInfo, "iv")))
+    {
+        GST_ERROR_OBJECT(self, "Failed to get IV buffer");
+    }
+    else if ((0u != subsampleCount) && !(subsamplesValue = m_gstWrapper->gstStructureGetValue(protectionMetaInfo, "subsamples")))
+    {
+        GST_ERROR_OBJECT(self, "Failed to get subsamples buffer");
+    }
+    else if (!(*key = m_gstWrapper->gstValueGetBuffer(keyValue)))
+    {
+        GST_ERROR_OBJECT(self, "Failed to extract key from GValue");
+    }
+    else if (!(*iv = m_gstWrapper->gstValueGetBuffer(ivValue)))
+    {
+        GST_ERROR_OBJECT(self, "Failed to extract iv from GValue");
+    }
+    else if ((subsamplesValue) && !(*subsamples = m_gstWrapper->gstValueGetBuffer(subsamplesValue)))
+    {
+        GST_ERROR_OBJECT(self, "Failed to extract subsamples from GValue");
+    }
+    else
+    {
+        GST_TRACE_OBJECT(self, "Successfully extracted the decryption info");
+        ret = GST_FLOW_OK;
     }
 
     return ret;

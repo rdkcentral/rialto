@@ -850,6 +850,16 @@ public:
     virtual GstCaps *gstCapsNewEmpty() const = 0;
 
     /**
+     * @brief Adds the metadata to a buffer for decryption.
+     *
+     * @param[in] buffer : the gst encrypted buffer to add the protection meta to.
+     * @param[in] info   : the information for decryption.
+     *
+     * @retval the protected metadata, null on failure
+     */
+    virtual GstProtectionMeta *gstBufferAddProtectionMeta(GstBuffer * buffer, GstStructure *info) const = 0;
+
+    /**
      * @brief Gets the metadata used for decryption of a sample.
      *
      * @param[in] buffer : the gst buffer to retrieve the protection meta from

@@ -359,63 +359,6 @@ bool GstPlayer::getPosition(std::int64_t &position)
     return true;
 }
 
-GstBuffer *GstPlayer::createDecryptedBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const
-{
-    GstBuffer *gstBuffer = m_gstWrapper->gstBufferNewAllocate(nullptr, mediaSegment.getDataLength(), nullptr);
-    m_gstWrapper->gstBufferFill(gstBuffer, 0, mediaSegment.getData(), mediaSegment.getDataLength());
-
-    if (mediaSegment.isEncrypted())
-    {
-        GstBuffer *keyId = nullptr;
-        // TODO: Check for null
-        if (m_context.decryptionService->isNetflixKeySystem(mediaSegment.getMediaKeySessionId()))
-        {
-            keyId = m_gstWrapper->gstBufferNew();
-            m_context.decryptionService->selectKeyId(mediaSegment.getMediaKeySessionId(), mediaSegment.getKeyId());
-        }
-        else
-        {
-            keyId = m_gstWrapper->gstBufferNewAllocate(nullptr, mediaSegment.getKeyId().size(), nullptr);
-            m_gstWrapper->gstBufferFill(keyId, 0, mediaSegment.getKeyId().data(), mediaSegment.getKeyId().size());
-        }
-        GstBuffer *initVector = m_gstWrapper->gstBufferNewAllocate(nullptr, mediaSegment.getInitVector().size(), nullptr);
-        m_gstWrapper->gstBufferFill(initVector, 0, mediaSegment.getInitVector().data(),
-                                    mediaSegment.getInitVector().size());
-        auto subsamplesRawSize = mediaSegment.getSubSamples().size() * (sizeof(guint16) + sizeof(guint32));
-        guint8 *subsamplesRaw = static_cast<guint8 *>(m_glibWrapper->gMalloc(subsamplesRawSize));
-        GstByteWriter writer;
-        m_gstWrapper->gstByteWriterInitWithData(&writer, subsamplesRaw, subsamplesRawSize, FALSE);
-
-        for (const auto &subSample : mediaSegment.getSubSamples())
-        {
-            m_gstWrapper->gstByteWriterPutUint16Be(&writer, subSample.numClearBytes);
-            m_gstWrapper->gstByteWriterPutUint32Be(&writer, subSample.numEncryptedBytes);
-        }
-        GstBuffer *subsamples = m_gstWrapper->gstBufferNewWrapped(subsamplesRaw, subsamplesRawSize);
-
-        m_context.decryptionService->decrypt(mediaSegment.getMediaKeySessionId(), gstBuffer, subsamples,
-                                    mediaSegment.getSubSamples().size(), initVector, keyId,
-                                    mediaSegment.getInitWithLast15());
-
-        if (subsamples)
-        {
-            m_gstWrapper->gstBufferUnref(subsamples);
-        }
-        if (initVector)
-        {
-            m_gstWrapper->gstBufferUnref(initVector);
-        }
-        if (keyId)
-        {
-            m_gstWrapper->gstBufferUnref(keyId);
-        }
-    }
-
-    GST_BUFFER_TIMESTAMP(gstBuffer) = mediaSegment.getTimeStamp();
-    GST_BUFFER_DURATION(gstBuffer) = mediaSegment.getDuration();
-    return gstBuffer;
-}
-
 GstBuffer *GstPlayer::createBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const
 {
     GstBuffer *gstBuffer = m_gstWrapper->gstBufferNewAllocate(nullptr, mediaSegment.getDataLength(), nullptr);
@@ -450,7 +393,7 @@ GstBuffer *GstPlayer::createBuffer(const IMediaPipeline::MediaSegment &mediaSegm
         }
         GstBuffer *subsamples = m_gstWrapper->gstBufferNewWrapped(subsamplesRaw, subsamplesRawSize);
 
-        GstStructure* info = gst_structure_new (
+        GstStructure* info = m_gstWrapper->gstStructureNew(
             "application/x-cenc",
             "encrypted", G_TYPE_BOOLEAN, TRUE,
             "kid", GST_TYPE_BUFFER, keyId,
@@ -462,7 +405,20 @@ GstBuffer *GstPlayer::createBuffer(const IMediaPipeline::MediaSegment &mediaSegm
             "key_session_id", G_TYPE_UINT, mediaSegment.getMediaKeySessionId(),
             NULL);
 
-        gst_buffer_add_protection_meta(gstBuffer, info);
+        m_gstWrapper->gstBufferAddProtectionMeta(gstBuffer, info);
+
+        if (subsamples)
+        {
+            m_gstWrapper->gstBufferUnref(subsamples);
+        }
+        if (initVector)
+        {
+            m_gstWrapper->gstBufferUnref(initVector);
+        }
+        if (keyId)
+        {
+            m_gstWrapper->gstBufferUnref(keyId);
+        }
     }
 
     GST_BUFFER_TIMESTAMP(gstBuffer) = mediaSegment.getTimeStamp();
