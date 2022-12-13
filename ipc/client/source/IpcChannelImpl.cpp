@@ -598,7 +598,7 @@ void ChannelImpl::processWakeEvent()
  */
 void ChannelImpl::updateTimeoutTimer()
 {
-    struct itimerspec ts = {0};
+    struct itimerspec ts = {{0}};
 
     // if no method calls then just disarm the timer
     if (!m_methodCalls.empty())

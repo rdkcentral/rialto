@@ -109,10 +109,6 @@ firebolt::rialto::StreamFormat convertStreamFormat(const firebolt::rialto::Attac
 {
     switch (streamFormat)
     {
-    case firebolt::rialto::AttachSourceRequest_SegmentAlignment_ALIGNMENT_UNDEFINED:
-    {
-        return firebolt::rialto::StreamFormat::UNDEFINED;
-    }
     case firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_RAW:
     {
         return firebolt::rialto::StreamFormat::RAW;
@@ -125,9 +121,9 @@ firebolt::rialto::StreamFormat convertStreamFormat(const firebolt::rialto::Attac
     {
         return firebolt::rialto::StreamFormat::BYTE_STREAM;
     }
+    default:
+        return firebolt::rialto::StreamFormat::UNDEFINED;
     }
-
-    return firebolt::rialto::StreamFormat::UNDEFINED;
 }
 
 } // namespace

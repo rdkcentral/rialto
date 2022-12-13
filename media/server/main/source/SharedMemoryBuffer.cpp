@@ -156,7 +156,7 @@ bool SharedMemoryBuffer::mapPartition(int sessionId)
         return true;
     }
     auto freePartition = std::find_if(m_partitions.begin(), m_partitions.end(),
-                                      [sessionId](const auto &p) { return p.sessionId == NO_SESSION_ASSIGNED; });
+                                      [](const auto &p) { return p.sessionId == NO_SESSION_ASSIGNED; });
     if (freePartition == m_partitions.end())
     {
         RIALTO_SERVER_LOG_ERROR("Failed to map Shm partition for session: %d. No free partition available.", sessionId);

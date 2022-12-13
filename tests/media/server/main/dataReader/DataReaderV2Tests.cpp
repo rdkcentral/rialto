@@ -46,7 +46,6 @@ constexpr int32_t kNumberOfChannels{4};
 std::vector<uint8_t> kMediaData{'T', 'E', 'S', 'T', '_', 'M', 'E', 'D', 'I', 'A'};
 std::uint32_t kNumFrames{1};
 const std::vector<uint8_t> kExtraData{1, 2, 3, 4};
-constexpr uint32_t kMediaKeysId{54354};
 const int32_t kMksId{43};
 const std::vector<uint8_t> kKeyId{9, 2, 6, 2, 0, 1};
 const std::vector<uint8_t> kInitVector{34, 53, 54, 62, 56};
