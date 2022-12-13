@@ -170,9 +170,9 @@ MediaKeysIpc::~MediaKeysIpc()
 
     destroyMediaKeys();
 
-    m_eventThread.reset();
-
     detachChannel();
+
+    m_eventThread.reset();
 }
 
 bool MediaKeysIpc::createRpcStubs()
