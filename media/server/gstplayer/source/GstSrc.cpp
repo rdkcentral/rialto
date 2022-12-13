@@ -371,7 +371,7 @@ void GstSrc::setupAndAddAppArc(IDecryptionService *decryptionService, GstElement
     GstElement *decryptor = m_decryptorFactory->createDecryptorElement(nullptr, decryptionService);
     if (decryptor)
     {
-        GST_DEBUG("Injecting decryptor element %" GST_PTR_FORMAT, decryptor);
+        GST_DEBUG_OBJECT(src, "Injecting decryptor element %" GST_PTR_FORMAT, decryptor);
 
         m_gstWrapper->gstBinAdd(GST_BIN(element), decryptor);
         m_gstWrapper->gstElementSyncStateWithParent(decryptor);
@@ -380,7 +380,7 @@ void GstSrc::setupAndAddAppArc(IDecryptionService *decryptionService, GstElement
     }
     else
     {
-        GST_WARNING("Could not create decryptor element");
+        GST_WARNING_OBJECT(src, "Could not create decryptor element");
     }
 
     if (type == firebolt::rialto::MediaSourceType::VIDEO)
@@ -400,7 +400,7 @@ void GstSrc::setupAndAddAppArc(IDecryptionService *decryptionService, GstElement
         }
         else
         {
-            GST_WARNING("Could not create payloader element");
+            GST_WARNING_OBJECT(src, "Could not create payloader element");
         }
     }
 
@@ -417,7 +417,7 @@ void GstSrc::setupAndAddAppArc(IDecryptionService *decryptionService, GstElement
     }
     else
     {
-        GST_WARNING("Could not create buffer queue element");
+        GST_WARNING_OBJECT(src, "Could not create buffer queue element");
     }
 
     // Setup pad
