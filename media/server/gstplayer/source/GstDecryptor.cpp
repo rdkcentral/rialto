@@ -80,7 +80,7 @@ static void gst_rialto_decryptor_class_init(GstRialtoDecryptorClass *klass) // N
     gst_element_class_add_pad_template(element_class, gst_static_pad_template_get(&srcTemplate));
     gst_element_class_set_static_metadata(element_class, "Rialto Decryptor", GST_ELEMENT_FACTORY_KLASS_DECRYPTOR,
                                           "Decryptor for Rialto.",
-                                          "Luke Williamson <luke.williamson@sky.com>\n"
+                                          "Luke Williamson <luke.williamson@sky.uk>\n"
                                           "Adam Czynszak <adam.czynszak@sky.uk>");
 
     GstBaseTransformClass *base_transform_class = GST_BASE_TRANSFORM_CLASS(klass);
