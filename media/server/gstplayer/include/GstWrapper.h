@@ -406,7 +406,6 @@ public:
     {
         return gst_event_new_step(format, amount, rate, flush, intermediate);
     }
-
 };
 
 }; // namespace firebolt::rialto::server
