@@ -179,6 +179,11 @@ struct PlayerContext
      * TODO(LLDEV-31012) Needed to detect audio stream underflow
      */
     int64_t lastAudioSampleTimestamps{0};
+
+    /**
+     * @brief Whether this playback is the secondary video in a dual video scenario.
+     */
+    int64_t isSecondaryVideo{false};
 };
 } // namespace firebolt::rialto::server
 
