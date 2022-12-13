@@ -18,7 +18,7 @@
 #
 
 cmake_minimum_required( VERSION 3.10 )
-project( Rialto LANGUAGES C CXX VERSION 1.0 )
+project( Rialto LANGUAGES C CXX VERSION 1.0.0 )
 
 if ( COVERAGE_ENABLED )
     add_compile_options(-coverage)
