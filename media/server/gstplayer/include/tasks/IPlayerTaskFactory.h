@@ -255,6 +255,8 @@ public:
      * @retval the new Underflow task instance.
      */
     virtual std::unique_ptr<IPlayerTask> createUnderflow(IGstPlayerPrivate &player, bool &underflowFlag) const = 0;
+
+    virtual std::unique_ptr<IPlayerTask> createRenderFrame(PlayerContext &context) const = 0;
 };
 
 } // namespace firebolt::rialto::server

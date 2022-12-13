@@ -514,6 +514,35 @@ bool MediaPipelineIpc::setPlaybackRate(double rate)
     return true;
 }
 
+bool MediaPipelineIpc::renderFrame()
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::RenderFrameRequest request;
+    request.set_session_id(m_sessionId);
+
+    firebolt::rialto::RenderFrameResponse response;
+    auto ipcController = m_ipc->createRpcController();
+    auto blockingClosure = m_ipc->createBlockingClosure();
+    m_mediaPipelineStub->renderFrame(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to render frame due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    return true;
+}
+
 void MediaPipelineIpc::onPlaybackStateUpdated(const std::shared_ptr<firebolt::rialto::PlaybackStateChangeEvent> &event)
 {
     /* Ignore event if not for this session */

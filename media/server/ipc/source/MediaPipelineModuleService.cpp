@@ -454,4 +454,20 @@ void MediaPipelineModuleService::getPosition(::google::protobuf::RpcController *
     }
     done->Run();
 }
+
+void MediaPipelineModuleService::renderFrame(::google::protobuf::RpcController *controller,
+                                             const ::firebolt::rialto::RenderFrameRequest *request,
+                                             ::firebolt::rialto::RenderFrameResponse *response,
+                                             ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    if (!m_playbackService.renderFrame(request->session_id()))
+    {
+        RIALTO_SERVER_LOG_ERROR("Render frame");
+        controller->SetFailed("Operation failed");
+    }
+
+    done->Run();
+}
 } // namespace firebolt::rialto::server::ipc

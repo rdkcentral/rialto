@@ -400,6 +400,13 @@ public:
     }
 
     GstBuffer *gstValueGetBuffer(const GValue *value) const override { return gst_value_get_buffer(value); }
+
+    GstEvent *gstEventNewStep(GstFormat format, guint64 amount, gdouble rate, gboolean flush,
+                              gboolean intermediate) const override
+    {
+        return gst_event_new_step(format, amount, rate, flush, intermediate);
+    }
+
 };
 
 }; // namespace firebolt::rialto::server

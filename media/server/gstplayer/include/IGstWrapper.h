@@ -907,6 +907,21 @@ public:
      * @retval pointer to the buffer, the caller does not own a reference to the buffer.
      */
     virtual GstBuffer *gstValueGetBuffer(const GValue *value) const = 0;
+
+    /**
+     * @brief Create a new step event. The purpose of the step event is to instruct a sink to skip amount (expressed in
+     * format) of media. It can be used to implement stepping through the video frame by frame or for doing fast trick modes.
+     *
+     * @param[in] format : the the format of amount
+     * @param[in] amount : the amount of data to step
+     * @param[in] rate : the step rate
+     * @param[in] flush : flushing steps
+     * @param[in] intermediate : intermediate steps
+     *
+     * @retval new event
+     */
+    virtual GstEvent *gstEventNewStep(GstFormat format, guint64 amount, gdouble rate, gboolean flush,
+                                      gboolean intermediate) const = 0;
 };
 
 }; // namespace firebolt::rialto::server

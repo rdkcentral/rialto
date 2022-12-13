@@ -144,6 +144,8 @@ public:
                 (const));
     MOCK_METHOD(const GValue *, gstStructureGetValue, (const GstStructure *structure, const gchar *fieldname), (const));
     MOCK_METHOD(GstBuffer *, gstValueGetBuffer, (const GValue *value), (const));
+    MOCK_METHOD(GstEvent *, gstEventNewStep,
+                (GstFormat format, guint64 amount, gdouble rate, gboolean flush, gboolean intermediate), (const));
 
     GstCaps *gstCapsNewSimple(const char *media_type, const char *fieldname, ...) const override
     {

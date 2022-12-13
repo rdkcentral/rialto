@@ -470,6 +470,18 @@ void MediaPipelineModuleServiceTests::playbackServiceWillFailToGetPosition()
     EXPECT_CALL(m_playbackServiceMock, getPosition(hardcodedSessionId, _)).WillOnce(Return(false));
 }
 
+void MediaPipelineModuleServiceTests::playbackServiceWillRenderFrame()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_playbackServiceMock, renderFrame(hardcodedSessionId)).WillOnce(Return(true));
+}
+
+void MediaPipelineModuleServiceTests::playbackServiceWillFailToRenderFrame()
+{
+    expectRequestFailure();
+    EXPECT_CALL(m_playbackServiceMock, renderFrame(hardcodedSessionId)).WillOnce(Return(false));
+}
+
 void MediaPipelineModuleServiceTests::mediaClientWillSendPlaybackStateChangedEvent()
 {
     EXPECT_CALL(*m_clientMock, sendEvent(PlaybackStateChangeEventMatcher(convertPlaybackState(playbackState))));
@@ -729,4 +741,14 @@ void MediaPipelineModuleServiceTests::expectRequestFailure()
 {
     EXPECT_CALL(*m_controllerMock, SetFailed(_));
     EXPECT_CALL(*m_closureMock, Run());
+}
+
+void MediaPipelineModuleServiceTests::sendRenderFrameRequestAndReceiveResponse()
+{
+    firebolt::rialto::RenderFrameRequest request;
+    firebolt::rialto::RenderFrameResponse response;
+
+    request.set_session_id(hardcodedSessionId);
+
+    m_service->renderFrame(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }

@@ -514,3 +514,14 @@ TEST_F(PlaybackServiceTests, shouldCheckSupportedMimeType)
     mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
     isMimeTypeSupportedSucceed();
 }
+
+TEST_F(PlaybackServiceTests, shouldRenderframe)
+{
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
+    triggerSetMaxPlaybacks();
+    sharedMemoryBufferWillBeInitialized();
+    triggerSwitchToActive();
+    mediaPipelineFactoryWillCreateMediaPipeline();
+    createSessionShouldSucceed();
+    renderFrameSucceed();
+}

@@ -29,6 +29,7 @@
 #include "tasks/Pause.h"
 #include "tasks/Play.h"
 #include "tasks/ReadShmDataAndAttachSamples.h"
+#include "tasks/RenderFrame.h"
 #include "tasks/ReportPosition.h"
 #include "tasks/SetPlaybackRate.h"
 #include "tasks/SetPosition.h"
@@ -159,4 +160,10 @@ std::unique_ptr<IPlayerTask> PlayerTaskFactory::createUnderflow(IGstPlayerPrivat
 {
     return std::make_unique<Underflow>(player, m_client, underflowFlag);
 }
+
+std::unique_ptr<IPlayerTask> PlayerTaskFactory::createRenderFrame(PlayerContext &context) const
+{
+    return std::make_unique<RenderFrame>(context, m_gstWrapper, m_glibWrapper);
+}
+
 } // namespace firebolt::rialto::server

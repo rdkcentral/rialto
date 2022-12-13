@@ -44,6 +44,7 @@ public:
     MOCK_METHOD(bool, setPosition, (int64_t position), (override));
     MOCK_METHOD(bool, getPosition, (int64_t & position), (override));
     MOCK_METHOD(bool, setPlaybackRate, (double rate), (override));
+    MOCK_METHOD(bool, renderFrame, (), (override));
 };
 } // namespace firebolt::rialto::client
 
