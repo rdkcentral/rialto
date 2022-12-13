@@ -31,6 +31,7 @@
 #include <stdint.h>
 #include <utility>
 #include <vector>
+#include <variant>
 
 namespace firebolt::rialto
 {
@@ -48,6 +49,11 @@ constexpr uint32_t kInvalidAudioChannels{0};
  * @brief The value of an invalid audio sampling rate.
  */
 constexpr uint32_t kInvalidAudioSampleRate{0};
+
+/**
+ * @brief The value of an invalid dobly vision profile.
+ */
+constexpr int32_t kInvalidDolbyVisionProfile{-1};
 
 /**
  * @brief The supported types of media source.
@@ -146,6 +152,14 @@ struct AudioConfig
     uint32_t numberOfChannels = kInvalidAudioChannels; /**< The number of channels. */
     uint32_t sampleRate = kInvalidAudioSampleRate;     /**< The sampling rate.*/
     std::vector<uint8_t> codecSpecificConfig;          /**The audio specific config. Zero length if no specific config*/
+};
+
+/**
+ * @brief Video specific configuration
+ */
+struct VideoConfig
+{
+    uint32_t dolbyVisionProfile = kInvalidDolbyVisionProfile; /**< The Dolby Vision profile. */
 };
 
 /**

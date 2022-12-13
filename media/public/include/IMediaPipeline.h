@@ -132,6 +132,25 @@ public:
         }
 
         /**
+         * @brief Constructor for video specific configuration.
+         *
+         * @param[in] id   : The source id.
+         * @param[in] mimeType : The mime type string.
+         * @param[in] videoConfig : The video specific configuration.
+         * @param[in] alignment : The alignment of media segment.
+         * @param[in] streamFormat : The stream format
+         * @param[in] codecData : The additional data for decoder
+         */
+        MediaSource(int32_t id, const std::string &mimeType, const VideoConfig &videoConfig,
+                    SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
+                    StreamFormat streamFormat = StreamFormat::UNDEFINED,
+                    const std::vector<uint8_t> &codecData = std::vector<uint8_t>())
+            : m_id(id), m_type(MediaSourceType::VIDEO), m_mimeType(mimeType), m_alignment(alignment),
+              m_videoConfig(videoConfig), m_streamFormat(streamFormat), m_codecData(codecData)
+        {
+        }
+
+        /**
          * @brief Virtual destructor.
          */
         virtual ~MediaSource() {}
@@ -212,6 +231,11 @@ public:
          * @brief The audio specific configuration
          */
         AudioConfig m_audioConfig;
+
+        /**
+         * @brief The video specific configuration
+         */
+        VideoConfig m_videoConfig;
 
         /**
          * @brief The stream format
