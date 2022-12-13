@@ -60,7 +60,7 @@ public:
      *
      * @retval number of written frames
      */
-    uint32_t getNumFrames() { return m_numFrames; }
+    uint32_t getNumFrames() override { return m_numFrames; }
 
     /**
      * @brief The version of metadata this object shall write.

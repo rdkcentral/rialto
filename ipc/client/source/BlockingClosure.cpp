@@ -90,7 +90,7 @@ void BlockingClosurePoll::wait()
     }
 }
 
-BlockingClosureSemaphore::BlockingClosureSemaphore() : m_sem{0}
+BlockingClosureSemaphore::BlockingClosureSemaphore() : m_sem{{0}}
 {
     sem_init(&m_sem, 0, 0);
 }
