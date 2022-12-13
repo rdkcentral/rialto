@@ -298,6 +298,20 @@ bool PlaybackService::haveData(int sessionId, MediaSourceStatus status, std::uin
     return mediaPipelineIter->second->haveData(status, numFrames, needDataRequestId);
 }
 
+bool PlaybackService::renderFrame(int sessionId)
+{
+    RIALTO_SERVER_LOG_DEBUG("Render frame requested, session id: %d", sessionId);
+
+    std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+    auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
+    if (mediaPipelineIter == m_mediaPipelines.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
+        return false;
+    }
+    return mediaPipelineIter->second->renderFrame();
+}
+
 bool PlaybackService::getSharedMemory(int32_t &fd, uint32_t &size)
 {
     auto shmBuffer = m_shmBuffer;

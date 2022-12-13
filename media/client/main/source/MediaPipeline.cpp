@@ -392,6 +392,12 @@ AddSegmentStatus MediaPipeline::addSegment(uint32_t needDataRequestId, const std
     return needDataRequest->frameWriter->writeFrame(mediaSegment);
 }
 
+bool MediaPipeline::renderFrame()
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+    return m_mediaPipelineIpc->renderFrame();
+}
+
 void MediaPipeline::discardNeedDataRequest(uint32_t needDataRequestId)
 {
     // Find the needDataRequest for this needDataRequestId

@@ -215,3 +215,15 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetPositionSuccess)
     EXPECT_TRUE(m_mediaPipeline->getPosition(targetPosition));
     EXPECT_EQ(targetPosition, m_kPosition);
 }
+
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, RenderFrameSuccess)
+{
+    loadGstPlayer();
+    EXPECT_CALL(*m_gstPlayerMock, renderFrame()).Times(1);
+    EXPECT_TRUE(m_mediaPipeline->renderFrame());
+}
+
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, RenderFrameFail)
+{
+    EXPECT_FALSE(m_mediaPipeline->renderFrame());
+}

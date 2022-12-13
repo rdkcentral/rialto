@@ -131,6 +131,8 @@ public:
     MOCK_METHOD(void, gstPluginFeatureListFree, (GList * list), (const));
     MOCK_METHOD(GstCaps *, gstCapsNewEmptySimple, (const char *media_type), (const));
     MOCK_METHOD(GstCaps *, gstCapsNewEmpty, (), (const));
+    MOCK_METHOD(GstEvent *, gstEventNewStep,
+                (GstFormat format, guint64 amount, gdouble rate, gboolean flush, gboolean intermediate), (const));
     GstCaps *gstCapsNewSimple(const char *media_type, const char *fieldname, ...) const override
     {
         va_list args;

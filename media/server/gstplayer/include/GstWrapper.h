@@ -373,6 +373,12 @@ public:
     }
 
     GstCaps *gstCapsNewEmpty() const override { return gst_caps_new_empty(); }
+
+    GstEvent *gstEventNewStep(GstFormat format, guint64 amount, gdouble rate, gboolean flush,
+                              gboolean intermediate) const override
+    {
+        return gst_event_new_step(format, amount, rate, flush, intermediate);
+    }
 };
 
 }; // namespace firebolt::rialto::server
