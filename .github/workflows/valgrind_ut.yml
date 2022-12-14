@@ -75,10 +75,11 @@ jobs:
           sudo ldconfig
 
       # If this job was cancelled by protobuf install, the cache is likely corrupt
+      # See instructions on how to reset the cache - https://wiki.rdkcentral.com/display/ASP/Github+workflow+Failures
       - name: Is Cancelled
         if: cancelled()
         run: |
-          echo "If this job was cancelled due to 'Install protobuf library' timeout, the cache is likely corrupt and needs deleting!" >> $GITHUB_STEP_SUMMARY
+          echo "If this job was cancelled due to 'Install protobuf library' timeout, the cache is likely corrupt and needs deleting! (see https://wiki.rdkcentral.com/display/ASP/Github+workflow+Failures)" >> $GITHUB_STEP_SUMMARY
 
   # This job downloads and caches valgrind to speed up execution
   # An updated version of valgrind is required, the default version for ubuntu-18.04 is
@@ -183,10 +184,11 @@ jobs:
           sudo ldconfig
 
       # If this job was cancelled by protobuf install, the cache is likely corrupt
+      # See instructions on how to reset the cache - https://wiki.rdkcentral.com/display/ASP/Github+workflow+Failures
       - name: Is Cancelled
         if: cancelled()
         run: |
-          echo "If this job was cancelled due to 'Install protobuf library' timeout, the cache is likely corrupt and needs deleting!" >> $GITHUB_STEP_SUMMARY
+          echo "If this job was cancelled due to 'Install protobuf library' timeout, the cache is likely corrupt and needs deleting! (see https://wiki.rdkcentral.com/display/ASP/Github+workflow+Failures)" >> $GITHUB_STEP_SUMMARY
 
       # Run the build script with valgrind
       - name: Run unittests with valgrind
