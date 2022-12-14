@@ -17,27 +17,26 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_GST_SRC_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_GST_SRC_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_GST_DECRYPTOR_ELEMENT_FACTORY_H_
+#define FIREBOLT_RIALTO_SERVER_GST_DECRYPTOR_ELEMENT_FACTORY_H_
 
-#include "IGstSrc.h"
-#include <gmock/gmock.h>
+#include "IGstDecryptorElementFactory.h"
 
 namespace firebolt::rialto::server
 {
-class GstSrcMock : public IGstSrc
+/**
+ * @brief IGstDecryptorElement factory class definition.
+ */
+class GstDecryptorElementFactory : public IGstDecryptorElementFactory
 {
 public:
-    GstSrcMock() = default;
-    virtual ~GstSrcMock() = default;
+    GstDecryptorElementFactory() = default;
+    ~GstDecryptorElementFactory() override = default;
 
-    MOCK_METHOD(void, initSrc, (), (override));
-    MOCK_METHOD(void, setupAndAddAppArc,
-                (IDecryptionService * decryptionService, GstElement *element, GstElement *appsrc,
-                 GstAppSrcCallbacks *callbacks, gpointer userData, firebolt::rialto::MediaSourceType type),
-                (override));
-    MOCK_METHOD(void, allAppSrcsAdded, (GstElement * element), (override));
+    GstElement *createDecryptorElement(const gchar *name,
+                                       firebolt::rialto::server::IDecryptionService *decryptionService) const override;
 };
-} // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_GST_SRC_MOCK_H_
+}; // namespace firebolt::rialto::server
+
+#endif // FIREBOLT_RIALTO_SERVER_GST_DECRYPTOR_ELEMENT_FACTORY_H_

@@ -113,6 +113,10 @@ public:
         return g_memdup(mem, byte_size);
 #endif
     }
+
+    gboolean gOnceInitEnter(gsize *location) const override { return g_once_init_enter(location); }
+
+    void gOnceInitLeave(gsize *location, gsize result) const override { g_once_init_leave(location, result); }
 };
 
 }; // namespace firebolt::rialto::server
