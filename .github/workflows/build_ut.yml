@@ -74,10 +74,11 @@ jobs:
           sudo ldconfig
 
       # If this job was cancelled by protobuf install, the cache is likely corrupt
+      # See instructions on how to reset the cache - https://wiki.rdkcentral.com/display/ASP/Github+workflow+Failures
       - name: Is Cancelled
         if: cancelled()
         run: |
-          echo "If this job was cancelled due to 'Install protobuf library' timeout, the cache is likely corrupt and needs deleting!" >> $GITHUB_STEP_SUMMARY
+          echo "If this job was cancelled due to 'Install protobuf library' timeout, the cache is likely corrupt and needs deleting! (see https://wiki.rdkcentral.com/display/ASP/Github+workflow+Failures)" >> $GITHUB_STEP_SUMMARY
 
   # This job sets up the repo with the dependancies then runs the tests
   build-test:
@@ -127,10 +128,11 @@ jobs:
           sudo ldconfig
 
       # If this job was cancelled by protobuf install, the cache is likely corrupt
+      # See instructions on how to reset the cache - https://wiki.rdkcentral.com/display/ASP/Github+workflow+Failures
       - name: Is Cancelled
         if: cancelled()
         run: |
-          echo "If this job was cancelled due to 'Install protobuf library' timeout, the cache is likely corrupt and needs deleting!" >> $GITHUB_STEP_SUMMARY
+          echo "If this job was cancelled due to 'Install protobuf library' timeout, the cache is likely corrupt and needs deleting! (see https://wiki.rdkcentral.com/display/ASP/Github+workflow+Failures)" >> $GITHUB_STEP_SUMMARY
 
       # Run the build script
       - name: build_ut.py script
