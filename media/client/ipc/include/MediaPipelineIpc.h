@@ -69,7 +69,7 @@ public:
      */
     virtual ~MediaPipelineIpc();
 
-    bool attachSource(const IMediaPipeline::MediaSource &source, int32_t &sourceId) override;
+    bool attachSource(std::unique_ptr<IMediaPipeline::MediaSource> &source, int32_t &sourceId) override;
 
     bool removeSource(int32_t sourceId) override;
 

@@ -34,7 +34,7 @@ class AttachSource : public IPlayerTask
 {
 public:
     AttachSource(PlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper,
-                 std::shared_ptr<IGlibWrapper> glibWrapper, const IMediaPipeline::MediaSource &source);
+                 std::shared_ptr<IGlibWrapper> glibWrapper, std::unique_ptr<IMediaPipeline::MediaSource> &source);
     ~AttachSource() override;
     void execute() const override;
 
@@ -51,7 +51,7 @@ private:
     PlayerContext &m_context;
     std::shared_ptr<IGstWrapper> m_gstWrapper;
     std::shared_ptr<IGlibWrapper> m_glibWrapper;
-    IMediaPipeline::MediaSource m_attachedSource;
+    std::unique_ptr<IMediaPipeline::MediaSource> &m_attachedSource; //TODO: change to normal and move
 };
 } // namespace firebolt::rialto::server
 

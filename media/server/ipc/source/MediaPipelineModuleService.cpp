@@ -301,30 +301,34 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
 
     auto codecDataProto = request->codec_data();
     std::vector<uint8_t> codecData(codecDataProto.begin(), codecDataProto.end());
-    IMediaPipeline::MediaSource mediaSource{0,
-                                            convertMediaSourceType(request->media_type()),
-                                            request->mime_type().c_str(),
-                                            convertSegmentAlignment(request->segment_alignment()),
-                                            convertStreamFormat(request->stream_format()),
-                                            codecData};
+    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource;
 
     if (request->media_type() == firebolt::rialto::ProtoMediaSourceType::AUDIO)
     {
-        const auto &audioConfig = request->audio_config();
-        uint32_t numberofchannels = audioConfig.number_of_channels();
-        uint32_t sampleRate = audioConfig.sample_rate();
+        const auto &config = request->audio_config();
+        uint32_t numberofchannels = config.number_of_channels();
+        uint32_t sampleRate = config.sample_rate();
 
         std::vector<uint8_t> codecSpecificConfig;
-        if (audioConfig.has_codec_specific_config())
+        if (config.has_codec_specific_config())
         {
-            auto codecSpecificConfigStr = audioConfig.codec_specific_config();
+            auto codecSpecificConfigStr = config.codec_specific_config();
             codecSpecificConfig.assign(codecSpecificConfigStr.begin(), codecSpecificConfigStr.end());
         }
+        AudioConfig audioConfig{numberofchannels, sampleRate, codecSpecificConfig};
 
-        mediaSource = IMediaPipeline::MediaSource(0, request->mime_type(),
-                                                  {numberofchannels, sampleRate, codecSpecificConfig},
-                                                  convertSegmentAlignment(request->segment_alignment()),
-                                                  convertStreamFormat(request->stream_format()), codecData);
+        mediaSource =
+            std::make_unique<IMediaPipeline::MediaSourceAudio>(0, request->mime_type(), audioConfig,
+                                                               convertSegmentAlignment(request->segment_alignment()),
+                                                               convertStreamFormat(request->stream_format()), codecData);
+    }
+    else
+    {
+        mediaSource =
+            std::make_unique<IMediaPipeline::MediaSource>(0, convertMediaSourceType(request->media_type()),
+                                                          request->mime_type().c_str(),
+                                                          convertSegmentAlignment(request->segment_alignment()),
+                                                          convertStreamFormat(request->stream_format()), codecData);
     }
 
     if (!m_playbackService.attachSource(request->session_id(), mediaSource))
@@ -332,7 +336,7 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
         RIALTO_SERVER_LOG_ERROR("Attach source failed");
         controller->SetFailed("Operation failed");
     }
-    response->set_source_id(mediaSource.getId());
+    response->set_source_id(mediaSource->getId());
     done->Run();
 }
 

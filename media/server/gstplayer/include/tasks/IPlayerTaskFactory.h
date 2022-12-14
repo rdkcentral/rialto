@@ -63,7 +63,7 @@ public:
      * @retval the new AttachSource task instance.
      */
     virtual std::unique_ptr<IPlayerTask> createAttachSource(PlayerContext &context,
-                                                            const IMediaPipeline::MediaSource &source) const = 0;
+                                                            std::unique_ptr<IMediaPipeline::MediaSource> &source) const = 0;
 
     /**
      * @brief Creates a EnoughData task.

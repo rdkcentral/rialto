@@ -185,7 +185,7 @@ bool MediaPipelineIpc::load(MediaType type, const std::string &mimeType, const s
     return true;
 }
 
-bool MediaPipelineIpc::attachSource(const IMediaPipeline::MediaSource &source, int32_t &sourceId)
+bool MediaPipelineIpc::attachSource(std::unique_ptr<IMediaPipeline::MediaSource> &source, int32_t &sourceId)
 {
     if (!reattachChannelIfRequired())
     {
@@ -196,13 +196,13 @@ bool MediaPipelineIpc::attachSource(const IMediaPipeline::MediaSource &source, i
     firebolt::rialto::AttachSourceRequest request;
 
     request.set_session_id(m_sessionId);
-    auto mediaType = source.getType();
+    auto mediaType = source->getType();
     request.set_media_type(convertProtoMediaSourceType(mediaType));
-    request.set_mime_type(source.getMimeType());
-    request.set_segment_alignment(convertSegmentAlignment(source.getSegmentAlignment()));
+    request.set_mime_type(source->getMimeType());
+    request.set_segment_alignment(convertSegmentAlignment(source->getSegmentAlignment()));
 
     AudioConfig audioConfig;
-    source.getAudioConfig(audioConfig);
+    source->getAudioConfig(audioConfig);
     request.mutable_audio_config()->set_number_of_channels(audioConfig.numberOfChannels);
     request.mutable_audio_config()->set_sample_rate(audioConfig.sampleRate);
     if (!audioConfig.codecSpecificConfig.empty())
@@ -210,8 +210,8 @@ bool MediaPipelineIpc::attachSource(const IMediaPipeline::MediaSource &source, i
         request.mutable_audio_config()->set_codec_specific_config(audioConfig.codecSpecificConfig.data(),
                                                                   audioConfig.codecSpecificConfig.size());
     }
-    request.set_codec_data(source.getCodecData().data(), source.getCodecData().size());
-    request.set_stream_format(convertStreamFormat(source.getStreamFormat()));
+    request.set_codec_data(source->getCodecData().data(), source->getCodecData().size());
+    request.set_stream_format(convertStreamFormat(source->getStreamFormat()));
 
     firebolt::rialto::AttachSourceResponse response;
     auto ipcController = m_ipc->createRpcController();

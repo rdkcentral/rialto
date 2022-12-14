@@ -203,7 +203,7 @@ bool MediaPipelineServerInternal::loadInternal(MediaType type, const std::string
     return true;
 }
 
-bool MediaPipelineServerInternal::attachSource(MediaSource &source)
+bool MediaPipelineServerInternal::attachSource(std::unique_ptr<MediaSource> &source)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
@@ -214,9 +214,9 @@ bool MediaPipelineServerInternal::attachSource(MediaSource &source)
     return result;
 }
 
-bool MediaPipelineServerInternal::attachSourceInternal(MediaSource &source)
+bool MediaPipelineServerInternal::attachSourceInternal(std::unique_ptr<MediaSource> &source)
 {
-    source.setId(-1);
+    source->setId(-1);
 
     if (!m_gstPlayer)
     {
@@ -224,14 +224,14 @@ bool MediaPipelineServerInternal::attachSourceInternal(MediaSource &source)
         return false;
     }
 
-    if (source.getType() == MediaSourceType::UNKNOWN)
+    if (source->getType() == MediaSourceType::UNKNOWN)
     {
         RIALTO_SERVER_LOG_ERROR("Media source type unknown");
         return false;
     }
 
     m_gstPlayer->attachSource(source);
-    source.setId(static_cast<int32_t>(source.getType()));
+    source->setId(static_cast<int32_t>(source->getType()));
 
     return true;
 }

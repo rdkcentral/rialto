@@ -56,7 +56,7 @@ PlayerTaskFactory::createAttachSamples(PlayerContext &context, IGstPlayerPrivate
 }
 
 std::unique_ptr<IPlayerTask> PlayerTaskFactory::createAttachSource(PlayerContext &context,
-                                                                   const IMediaPipeline::MediaSource &source) const
+                                                                   std::unique_ptr<IMediaPipeline::MediaSource> &source) const
 {
     return std::make_unique<AttachSource>(context, m_gstWrapper, m_glibWrapper, source);
 }

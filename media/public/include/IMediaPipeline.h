@@ -103,7 +103,7 @@ public:
          * @param[in] streamFormat : The stream format
          * @param[in] codecData : The additional data for decoder
          */
-        explicit MediaSource(int32_t id = 0, MediaSourceType type = MediaSourceType::UNKNOWN, const char *mimeType = "",
+        explicit MediaSource(int32_t id = 0, MediaSourceType type = MediaSourceType::UNKNOWN, const std::string &mimeType = std::string(),
                              SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                              StreamFormat streamFormat = StreamFormat::UNDEFINED,
                              const std::vector<uint8_t> &codecData = std::vector<uint8_t>())
@@ -128,25 +128,6 @@ public:
                     const std::vector<uint8_t> &codecData = std::vector<uint8_t>())
             : m_id(id), m_type(MediaSourceType::AUDIO), m_mimeType(mimeType), m_alignment(alignment),
               m_audioConfig(audioConfig), m_streamFormat(streamFormat), m_codecData(codecData)
-        {
-        }
-
-        /**
-         * @brief Constructor for video specific configuration.
-         *
-         * @param[in] id   : The source id.
-         * @param[in] mimeType : The mime type string.
-         * @param[in] videoConfig : The video specific configuration.
-         * @param[in] alignment : The alignment of media segment.
-         * @param[in] streamFormat : The stream format
-         * @param[in] codecData : The additional data for decoder
-         */
-        MediaSource(int32_t id, const std::string &mimeType, const VideoConfig &videoConfig,
-                    SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
-                    StreamFormat streamFormat = StreamFormat::UNDEFINED,
-                    const std::vector<uint8_t> &codecData = std::vector<uint8_t>())
-            : m_id(id), m_type(MediaSourceType::VIDEO), m_mimeType(mimeType), m_alignment(alignment),
-              m_videoConfig(videoConfig), m_streamFormat(streamFormat), m_codecData(codecData)
         {
         }
 
@@ -230,12 +211,7 @@ public:
         /**
          * @brief The audio specific configuration
          */
-        AudioConfig m_audioConfig;
-
-        /**
-         * @brief The video specific configuration
-         */
-        VideoConfig m_videoConfig;
+        AudioConfig m_audioConfig; //TODO: remove it
 
         /**
          * @brief The stream format
@@ -246,6 +222,107 @@ public:
          * @brief Additional data for decoder
          */
         std::vector<uint8_t> m_codecData;
+    };
+
+    class MediaSourceAudio : public MediaSource
+    {
+    public:
+        /**
+         * @brief Constructor for audio specific configuration.
+         *
+         * @param[in] id   : The source id.
+         * @param[in] mimeType : The mime type string.
+         * @param[in] audioConfig : The audio specific configuration.
+         * @param[in] alignment : The alignment of media segment.
+         * @param[in] streamFormat : The stream format
+         * @param[in] codecData : The additional data for decoder
+         */
+        MediaSourceAudio(int32_t id, const std::string &mimeType, const AudioConfig &audioConfig,
+                         SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
+                         StreamFormat streamFormat = StreamFormat::UNDEFINED,
+                         const std::vector<uint8_t> &codecData = std::vector<uint8_t>())
+            : MediaSource(id, MediaSourceType::AUDIO, mimeType, alignment, streamFormat, codecData),
+              m_audioConfig(audioConfig)
+        {
+        }
+        ~MediaSourceAudio() {}
+
+    protected:
+        AudioConfig m_audioConfig;
+    };
+
+    class MediaSourceVideo : public MediaSource
+    {
+    public:
+        /**
+         * @brief Constructor for video specific configuration.
+         *
+         * @param[in] id   : The source id.
+         * @param[in] mimeType : The mime type string.
+         * @param[in] alignment : The alignment of media segment.
+         * @param[in] streamFormat : The stream format
+         * @param[in] codecData : The additional data for decoder
+         */
+        MediaSourceVideo(int32_t id, const std::string &mimeType, SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
+                         StreamFormat streamFormat = StreamFormat::UNDEFINED,
+                         const std::vector<uint8_t> &codecData = std::vector<uint8_t>())
+            : MediaSource(id, MediaSourceType::VIDEO, mimeType, alignment, streamFormat, codecData),
+              m_videoSourceType(VideoSourceType::DEFAULT)
+        {
+        }
+        ~MediaSourceVideo() {}
+
+        virtual VideoSourceType getVideoSourceType() { return m_videoSourceType; }
+
+    protected:
+        /**
+         * @brief Constructor for video specific configuration.
+         *
+         * @param[in] id   : The source id.
+         * @param[in] mimeType : The mime type string.
+         * @param[in] videoSourceType : The video source type
+         * @param[in] alignment : The alignment of media segment.
+         * @param[in] streamFormat : The stream format
+         * @param[in] codecData : The additional data for decoder
+         */
+        MediaSourceVideo(int32_t id, const char *mimeType, VideoSourceType videoSourceType,
+                         SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
+                         StreamFormat streamFormat = StreamFormat::UNDEFINED,
+                         const std::vector<uint8_t> &codecData = std::vector<uint8_t>())
+            : MediaSource(id, MediaSourceType::VIDEO, mimeType, alignment, streamFormat, codecData),
+              m_videoSourceType(videoSourceType)
+        {
+        }
+
+        VideoSourceType m_videoSourceType;
+    };
+
+    class MediaSourceVideoDolbyVision : public MediaSourceVideo
+    {
+    public:
+        /**
+         * @brief Constructor for video specific configuration.
+         *
+         * @param[in] id   : The source id.
+         * @param[in] mimeType : The mime type string.
+         * @param[in] dolbyVisionProfile : The dolby vision profile
+         * @param[in] alignment : The alignment of media segment.
+         * @param[in] streamFormat : The stream format
+         * @param[in] codecData : The additional data for decoder
+         */
+        MediaSourceVideoDolbyVision(int32_t id, const char *mimeType, int32_t dolbyVisionProfile,
+                                    SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
+                                    StreamFormat streamFormat = StreamFormat::UNDEFINED,
+                                    const std::vector<uint8_t> &codecData = std::vector<uint8_t>())
+            : MediaSourceVideo(id, mimeType, VideoSourceType::DOLBY_VISION, alignment, streamFormat, codecData)
+        {
+        }
+        ~MediaSourceVideoDolbyVision() {}
+
+        virtual int32_t getDolbyVisionProfile() { return m_dolbyVisionProfile; }
+
+    protected:
+        int32_t m_dolbyVisionProfile;
     };
 
     /**
@@ -746,7 +823,7 @@ public:
      *
      * @retval true on success.
      */
-    virtual bool attachSource(MediaSource &source) = 0;
+    virtual bool attachSource(std::unique_ptr<MediaSource> &source) = 0;
 
     /**
      * @brief Unattaches a source.

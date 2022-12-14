@@ -304,7 +304,7 @@ void GstPlayer::setupElement(GstElement *pipeline, GstElement *element, GstPlaye
     }
 }
 
-void GstPlayer::attachSource(const IMediaPipeline::MediaSource &attachedSource)
+void GstPlayer::attachSource(std::unique_ptr<IMediaPipeline::MediaSource> &attachedSource)
 {
     if (m_workerThread)
     {

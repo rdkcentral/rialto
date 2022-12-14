@@ -86,7 +86,7 @@ public:
      *
      * @retval true on success.
      */
-    virtual bool attachSource(const IMediaPipeline::MediaSource &source, int32_t &sourceId) = 0;
+    virtual bool attachSource(std::unique_ptr<IMediaPipeline::MediaSource> &source, int32_t &sourceId) = 0;
 
     /**
      * @brief Request to remove the source to the server backend.

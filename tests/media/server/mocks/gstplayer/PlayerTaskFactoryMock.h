@@ -33,7 +33,7 @@ public:
                  const IMediaPipeline::MediaSegmentVector &mediaSegments),
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createAttachSource,
-                (PlayerContext & context, const IMediaPipeline::MediaSource &source), (const, override));
+                (PlayerContext & context, std::unique_ptr<IMediaPipeline::MediaSource> &source), (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createEnoughData, (PlayerContext & context, GstAppSrc *src),
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createEos,
