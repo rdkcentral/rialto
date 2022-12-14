@@ -96,7 +96,6 @@ void GstDispatcherThread::gstBusEventHandler(GstElement *pipeline)
                     }
                     break;
                 }
-                case GST_MESSAGE_EOS:
                 case GST_MESSAGE_ERROR:
                 {
                     m_isGstreamerDispatcherActive = false;
