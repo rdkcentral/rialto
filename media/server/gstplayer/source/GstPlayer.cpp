@@ -135,10 +135,12 @@ GstPlayer::GstPlayer(IGstPlayerClient *client, IDecryptionService &decryptionSer
                      std::shared_ptr<common::ITimerFactory> timerFactory, std::unique_ptr<IPlayerTaskFactory> taskFactory,
                      std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
                      std::unique_ptr<IGstDispatcherThreadFactory> gstDispatcherThreadFactory)
-    : m_gstPlayerClient(client), m_decryptionService{decryptionService}, m_gstWrapper{gstWrapper},
-      m_glibWrapper{glibWrapper}, m_timerFactory{timerFactory}, m_taskFactory{std::move(taskFactory)}
+    : m_gstPlayerClient(client), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_timerFactory{timerFactory},
+      m_taskFactory{std::move(taskFactory)}
 {
     RIALTO_SERVER_LOG_DEBUG("GstPlayer is constructed.");
+
+    m_context.decryptionService = &decryptionService;
 
     // Check the video requirements for a limited video.
     // If the video requirements are set to anything lower than the minimum, this playback is assumed to be a secondary
@@ -357,7 +359,7 @@ bool GstPlayer::getPosition(std::int64_t &position)
     return true;
 }
 
-GstBuffer *GstPlayer::createDecryptedBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const
+GstBuffer *GstPlayer::createBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const
 {
     GstBuffer *gstBuffer = m_gstWrapper->gstBufferNewAllocate(nullptr, mediaSegment.getDataLength(), nullptr);
     m_gstWrapper->gstBufferFill(gstBuffer, 0, mediaSegment.getData(), mediaSegment.getDataLength());
@@ -365,16 +367,17 @@ GstBuffer *GstPlayer::createDecryptedBuffer(const IMediaPipeline::MediaSegment &
     if (mediaSegment.isEncrypted())
     {
         GstBuffer *keyId = nullptr;
-        if (m_decryptionService.isNetflixKeySystem(mediaSegment.getMediaKeySessionId()))
+        if (m_context.decryptionService->isNetflixKeySystem(mediaSegment.getMediaKeySessionId()))
         {
             keyId = m_gstWrapper->gstBufferNew();
-            m_decryptionService.selectKeyId(mediaSegment.getMediaKeySessionId(), mediaSegment.getKeyId());
+            m_context.decryptionService->selectKeyId(mediaSegment.getMediaKeySessionId(), mediaSegment.getKeyId());
         }
         else
         {
             keyId = m_gstWrapper->gstBufferNewAllocate(nullptr, mediaSegment.getKeyId().size(), nullptr);
             m_gstWrapper->gstBufferFill(keyId, 0, mediaSegment.getKeyId().data(), mediaSegment.getKeyId().size());
         }
+
         GstBuffer *initVector = m_gstWrapper->gstBufferNewAllocate(nullptr, mediaSegment.getInitVector().size(), nullptr);
         m_gstWrapper->gstBufferFill(initVector, 0, mediaSegment.getInitVector().data(),
                                     mediaSegment.getInitVector().size());
@@ -390,9 +393,15 @@ GstBuffer *GstPlayer::createDecryptedBuffer(const IMediaPipeline::MediaSegment &
         }
         GstBuffer *subsamples = m_gstWrapper->gstBufferNewWrapped(subsamplesRaw, subsamplesRawSize);
 
-        m_decryptionService.decrypt(mediaSegment.getMediaKeySessionId(), gstBuffer, subsamples,
-                                    mediaSegment.getSubSamples().size(), initVector, keyId,
-                                    mediaSegment.getInitWithLast15());
+        GstStructure *info =
+            m_gstWrapper->gstStructureNew("decryption_metadata", "kid", GST_TYPE_BUFFER, keyId, "iv_size", G_TYPE_UINT,
+                                          mediaSegment.getInitVector().size(), "iv", GST_TYPE_BUFFER, initVector,
+                                          "subsample_count", G_TYPE_UINT, mediaSegment.getSubSamples().size(),
+                                          "subsamples", GST_TYPE_BUFFER, subsamples, "init_with_last_15", G_TYPE_UINT,
+                                          mediaSegment.getInitWithLast15(), "key_session_id", G_TYPE_UINT,
+                                          mediaSegment.getMediaKeySessionId(), NULL);
+
+        m_gstWrapper->gstBufferAddProtectionMeta(gstBuffer, info);
 
         if (subsamples)
         {

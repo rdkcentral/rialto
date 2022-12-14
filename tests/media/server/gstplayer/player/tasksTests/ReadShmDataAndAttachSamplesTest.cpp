@@ -81,7 +81,7 @@ TEST_F(ReadShmDataAndAttachSamplesTest, shouldAttachAllAudioSamples)
 {
     firebolt::rialto::IMediaPipeline::MediaSegmentVector dataVec = buildAudioSamples();
     EXPECT_CALL(*m_dataReader, readData()).WillOnce(Return(ByMove(std::move(dataVec))));
-    EXPECT_CALL(m_gstPlayer, createDecryptedBuffer(_)).Times(2).WillRepeatedly(Return(&m_gstBuffer));
+    EXPECT_CALL(m_gstPlayer, createBuffer(_)).Times(2).WillRepeatedly(Return(&m_gstBuffer));
     EXPECT_CALL(m_gstPlayer, updateAudioCaps(sampleRate, numberOfChannels)).Times(2);
     EXPECT_CALL(m_gstPlayer, attachAudioData()).Times(2);
     EXPECT_CALL(m_gstPlayer, notifyNeedMediaData(true, false));
@@ -94,7 +94,7 @@ TEST_F(ReadShmDataAndAttachSamplesTest, shouldAttachAllVideoSamples)
 {
     firebolt::rialto::IMediaPipeline::MediaSegmentVector dataVec = buildVideoSamples();
     EXPECT_CALL(*m_dataReader, readData()).WillOnce(Return(ByMove(std::move(dataVec))));
-    EXPECT_CALL(m_gstPlayer, createDecryptedBuffer(_)).Times(2).WillRepeatedly(Return(&m_gstBuffer));
+    EXPECT_CALL(m_gstPlayer, createBuffer(_)).Times(2).WillRepeatedly(Return(&m_gstBuffer));
     EXPECT_CALL(m_gstPlayer, updateVideoCaps(width, height)).Times(2);
     EXPECT_CALL(m_gstPlayer, attachVideoData()).Times(2);
     EXPECT_CALL(m_gstPlayer, notifyNeedMediaData(false, true));

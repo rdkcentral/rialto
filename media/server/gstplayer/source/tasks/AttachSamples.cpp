@@ -31,7 +31,7 @@ AttachSamples::AttachSamples(PlayerContext &context, IGstPlayerPrivate &player,
     RIALTO_SERVER_LOG_DEBUG("Constructing AttachSamples");
     for (const auto &mediaSegment : mediaSegments)
     {
-        GstBuffer *gstBuffer = m_player.createDecryptedBuffer(*mediaSegment);
+        GstBuffer *gstBuffer = m_player.createBuffer(*mediaSegment);
         if (mediaSegment->getType() == firebolt::rialto::MediaSourceType::VIDEO)
         {
             try

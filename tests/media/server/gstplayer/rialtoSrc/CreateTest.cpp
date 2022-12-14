@@ -19,6 +19,7 @@
 
 #include "GlibWrapperFactoryMock.h"
 #include "GlibWrapperMock.h"
+#include "GstDecryptorElementFactoryMock.h"
 #include "GstSrc.h"
 #include "GstWrapperFactoryMock.h"
 #include "GstWrapperMock.h"
@@ -37,6 +38,7 @@ protected:
     std::shared_ptr<StrictMock<GstWrapperMock>> m_gstWrapperMock;
     std::shared_ptr<StrictMock<GlibWrapperFactoryMock>> m_glibWrapperFactoryMock;
     std::shared_ptr<StrictMock<GlibWrapperMock>> m_glibWrapperMock;
+    std::shared_ptr<StrictMock<GstDecryptorElementFactoryMock>> m_decryptorFactoryMock;
 
     virtual void SetUp()
     {
@@ -45,16 +47,11 @@ protected:
 
         m_glibWrapperFactoryMock = std::make_shared<StrictMock<GlibWrapperFactoryMock>>();
         m_glibWrapperMock = std::make_shared<StrictMock<GlibWrapperMock>>();
+
+        m_decryptorFactoryMock = std::make_shared<StrictMock<GstDecryptorElementFactoryMock>>();
     }
 
-    virtual void TearDown()
-    {
-        m_glibWrapperMock.reset();
-        m_glibWrapperFactoryMock.reset();
-
-        m_gstWrapperMock.reset();
-        m_gstWrapperFactoryMock.reset();
-    }
+    virtual void TearDown() {}
 };
 
 /**
@@ -67,6 +64,7 @@ TEST_F(RialtoServerCreateGstSrcTest, Create)
     EXPECT_CALL(*m_gstWrapperFactoryMock, getGstWrapper()).WillOnce(Return(m_gstWrapperMock));
     EXPECT_CALL(*m_glibWrapperFactoryMock, getGlibWrapper()).WillOnce(Return(m_glibWrapperMock));
 
-    EXPECT_NO_THROW(gstSrc = std::make_unique<GstSrc>(m_gstWrapperFactoryMock, m_glibWrapperFactoryMock););
+    EXPECT_NO_THROW(
+        gstSrc = std::make_unique<GstSrc>(m_gstWrapperFactoryMock, m_glibWrapperFactoryMock, m_decryptorFactoryMock););
     EXPECT_NE(gstSrc, nullptr);
 }
