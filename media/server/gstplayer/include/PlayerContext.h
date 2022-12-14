@@ -184,6 +184,11 @@ struct PlayerContext
      * @brief Whether this playback is the secondary video in a dual video scenario.
      */
     int64_t isSecondaryVideo{false};
+
+    /**
+     * @brief The decryption service.
+     */
+    IDecryptionService *decryptionService{nullptr};
 };
 } // namespace firebolt::rialto::server
 

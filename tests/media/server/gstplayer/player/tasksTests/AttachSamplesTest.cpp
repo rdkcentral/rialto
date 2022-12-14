@@ -76,7 +76,7 @@ public:
 TEST_F(AttachSamplesTest, shouldAttachAllAudioSamples)
 {
     auto samples = buildAudioSamples();
-    EXPECT_CALL(m_gstPlayer, createDecryptedBuffer(_)).Times(2).WillRepeatedly(Return(&m_gstBuffer));
+    EXPECT_CALL(m_gstPlayer, createBuffer(_)).Times(2).WillRepeatedly(Return(&m_gstBuffer));
     firebolt::rialto::server::AttachSamples task{m_context, m_gstPlayer, samples};
     EXPECT_CALL(m_gstPlayer, updateAudioCaps(sampleRate, numberOfChannels)).Times(2);
     EXPECT_CALL(m_gstPlayer, attachAudioData()).Times(2);
@@ -88,7 +88,7 @@ TEST_F(AttachSamplesTest, shouldAttachAllAudioSamples)
 TEST_F(AttachSamplesTest, shouldAttachAllVideoSamples)
 {
     auto samples = buildVideoSamples();
-    EXPECT_CALL(m_gstPlayer, createDecryptedBuffer(_)).Times(2).WillRepeatedly(Return(&m_gstBuffer));
+    EXPECT_CALL(m_gstPlayer, createBuffer(_)).Times(2).WillRepeatedly(Return(&m_gstBuffer));
     firebolt::rialto::server::AttachSamples task{m_context, m_gstPlayer, samples};
     EXPECT_CALL(m_gstPlayer, updateVideoCaps(width, height)).Times(2);
     EXPECT_CALL(m_gstPlayer, attachVideoData()).Times(2);

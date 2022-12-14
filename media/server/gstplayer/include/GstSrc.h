@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_GST_SRC_H_
 
 #include "IGlibWrapper.h"
+#include "IGstDecryptorElementFactory.h"
 #include "IGstSrc.h"
 #include "IGstWrapper.h"
 
@@ -102,9 +103,11 @@ public:
      *
      * @param[in] gstWrapperFactory     : The gstreamer wrapper factory.
      * @param[in] glibWrapperFactory    : The glib wrapper factory.
+     * @param[in] decryptorFactory      : The decryptor factory.
      */
-    explicit GstSrc(const std::shared_ptr<IGstWrapperFactory> &gstWrapperFactory,
-                    const std::shared_ptr<IGlibWrapperFactory> &glibWrapperFactory);
+    GstSrc(const std::shared_ptr<IGstWrapperFactory> &gstWrapperFactory,
+           const std::shared_ptr<IGlibWrapperFactory> &glibWrapperFactory,
+           const std::shared_ptr<IGstDecryptorElementFactory> &decryptorFactory);
 
     /**
      * @brief Virtual destructor.
@@ -113,7 +116,8 @@ public:
 
     void initSrc() override;
 
-    void setupAndAddAppArc(GstElement *element, GstElement *appsrc, GstAppSrcCallbacks *callbacks, gpointer userData,
+    void setupAndAddAppArc(IDecryptionService *decryptionService, GstElement *element, GstElement *appsrc,
+                           GstAppSrcCallbacks *callbacks, gpointer userData,
                            firebolt::rialto::MediaSourceType type) override;
 
     void allAppSrcsAdded(GstElement *element) override;
@@ -128,6 +132,18 @@ protected:
      * @brief The glib wrapper object.
      */
     std::shared_ptr<IGlibWrapper> m_glibWrapper;
+
+    /**
+     * @brief The gst decryptor element factory object.
+     */
+    std::shared_ptr<IGstDecryptorElementFactory> m_decryptorFactory;
+
+    /**
+     * @brief Create a payloader element.
+     *
+     * @retval the payloader element.
+     */
+    GstElement *createPayloader();
 };
 
 }; // namespace firebolt::rialto::server
