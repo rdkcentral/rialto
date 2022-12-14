@@ -157,7 +157,7 @@ public:
         return gst_element_get_static_pad(element, name);
     }
 
-    gboolean gstElementQueryPosition(GstElement *element, GstFormat format, gint64 *cur)
+    gboolean gstElementQueryPosition(GstElement *element, GstFormat format, gint64 *cur) override
     {
         return gst_element_query_position(element, format, cur);
     }
@@ -176,7 +176,7 @@ public:
     gboolean gstElementAddPad(GstElement *element, GstPad *pad) override { return gst_element_add_pad(element, pad); }
 
     gboolean gstElementSeek(GstElement *element, gdouble rate, GstFormat format, GstSeekFlags flags,
-                            GstSeekType start_type, gint64 start, GstSeekType stop_type, gint64 stop)
+                            GstSeekType start_type, gint64 start, GstSeekType stop_type, gint64 stop) override
     {
         return gst_element_seek(element, rate, format, flags, start_type, start, stop_type, stop);
     }
@@ -271,7 +271,7 @@ public:
 
     const gchar *gstFormatGetName(GstFormat format) const override { return gst_format_get_name(format); }
 
-    GstSegment *gstSegmentNew() const { return gst_segment_new(); }
+    GstSegment *gstSegmentNew() const override { return gst_segment_new(); }
 
     void gstSegmentInit(GstSegment *segment, GstFormat format) const override { gst_segment_init(segment, format); }
 
@@ -286,7 +286,7 @@ public:
 
     GstStructure *gstStructureNew(const gchar *name, const gchar *firstfield, ...) const override;
 
-    void gstByteWriterInitWithData(GstByteWriter *writer, guint8 *data, guint size, gboolean initialized) const
+    void gstByteWriterInitWithData(GstByteWriter *writer, guint8 *data, guint size, gboolean initialized) const override
     {
         return gst_byte_writer_init_with_data(writer, data, size, initialized);
     }

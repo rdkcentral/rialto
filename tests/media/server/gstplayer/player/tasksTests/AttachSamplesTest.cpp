@@ -33,7 +33,6 @@ namespace
 constexpr auto audioSourceId{static_cast<std::int32_t>(firebolt::rialto::MediaSourceType::AUDIO)};
 constexpr auto videoSourceId{static_cast<std::int32_t>(firebolt::rialto::MediaSourceType::VIDEO)};
 constexpr gint64 itHappenedInThePast = 1238450934;
-constexpr gint64 currentTimestamp = 2340538204;
 constexpr gint64 itWillHappenInTheFuture = 3823530248;
 constexpr int64_t duration{9000000000};
 constexpr int32_t sampleRate{13};

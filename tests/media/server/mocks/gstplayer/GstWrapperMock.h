@@ -194,7 +194,7 @@ public:
         va_end(args);
     }
 
-    GstStructure *gstStructureNew(const gchar *name, const gchar *firstfield, ...) const
+    GstStructure *gstStructureNew(const gchar *name, const gchar *firstfield, ...) const override
     {
         GstStructure *structure{nullptr};
         va_list args;

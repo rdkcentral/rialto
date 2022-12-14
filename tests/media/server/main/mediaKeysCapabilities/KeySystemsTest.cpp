@@ -22,6 +22,7 @@
 #include "OcdmMock.h"
 #include "OcdmSystemFactoryMock.h"
 #include "OcdmSystemMock.h"
+#include <array>
 #include <gtest/gtest.h>
 
 using namespace firebolt::rialto;
