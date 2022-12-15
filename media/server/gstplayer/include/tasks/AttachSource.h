@@ -51,7 +51,7 @@ private:
     PlayerContext &m_context;
     std::shared_ptr<IGstWrapper> m_gstWrapper;
     std::shared_ptr<IGlibWrapper> m_glibWrapper;
-    std::unique_ptr<IMediaPipeline::MediaSource> &m_attachedSource; //TODO: change to normal and move
+    std::unique_ptr<IMediaPipeline::MediaSource> m_attachedSource; //TODO: change to normal and move
 };
 } // namespace firebolt::rialto::server
 

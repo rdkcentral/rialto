@@ -107,9 +107,17 @@ public:
                              SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                              StreamFormat streamFormat = StreamFormat::UNDEFINED,
                              const std::vector<uint8_t> &codecData = std::vector<uint8_t>())
-            : m_id(id), m_type(type), m_mimeType(mimeType), m_alignment(alignment), m_streamFormat(streamFormat),
+            : m_id(id), m_type(type), m_configType(SourceConfigType::UNKNOWN), m_mimeType(mimeType), m_alignment(alignment), m_streamFormat(streamFormat),
               m_codecData(codecData)
         {
+            if (type == MediaSourceType::AUDIO)
+            {
+                m_configType = SourceConfigType::AUDIO_DEFAULT;
+            }
+            else if (type == MediaSourceType::VIDEO)
+            {
+                m_configType = SourceConfigType::VIDEO_DEFAULT;
+            }
         }
 
         /**
@@ -135,6 +143,8 @@ public:
          * @brief Virtual destructor.
          */
         virtual ~MediaSource() {}
+
+        virtual std::unique_ptr<MediaSource> copy() const { return std::make_unique<MediaSource>(*this); }
 
         /**
          * @brief Return the source id.
@@ -188,6 +198,32 @@ public:
         StreamFormat getStreamFormat() const { return m_streamFormat; }
 
     protected:
+            /**
+         * @brief Default constructor.
+         *
+         * @param[in] id   : The source id.
+         * @param[in] configType : The source config type.
+         * @param[in] mimeType : The mime type string.
+         * @param[in] alignment : The alignment of media segment.
+         * @param[in] streamFormat : The stream format
+         * @param[in] codecData : The additional data for decoder
+         */
+        explicit MediaSource(int32_t id = 0, SourceConfigType configType = SourceConfigType::UNKNOWN, const std::string &mimeType = std::string(),
+                             SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
+                             StreamFormat streamFormat = StreamFormat::UNDEFINED,
+                             const std::vector<uint8_t> &codecData = std::vector<uint8_t>())
+            : m_id(id), m_type(MediaSourceType::UNKNOWN), m_configType(configType), m_mimeType(mimeType), m_alignment(alignment), m_streamFormat(streamFormat),
+              m_codecData(codecData)
+        {
+            if (m_configType == SourceConfigType::VIDEO_DEFAULT || m_configType == SourceConfigType::VIDEO_DOLBY_VISION)
+            {
+                m_type = MediaSourceType::VIDEO;
+            }
+            else if (m_configType == SourceConfigType::AUDIO_DEFAULT)
+            {
+                m_type = MediaSourceType::AUDIO;
+            }
+        }
         /**
          * @brief The source id.
          */
@@ -197,6 +233,8 @@ public:
          * @brief The source type.
          */
         MediaSourceType m_type;
+
+        SourceConfigType m_configType;
 
         /**
          * @brief The MIME type.
@@ -241,11 +279,12 @@ public:
                          SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                          StreamFormat streamFormat = StreamFormat::UNDEFINED,
                          const std::vector<uint8_t> &codecData = std::vector<uint8_t>())
-            : MediaSource(id, MediaSourceType::AUDIO, mimeType, alignment, streamFormat, codecData),
+            : MediaSource(id, SourceConfigType::AUDIO_DEFAULT, mimeType, alignment, streamFormat, codecData),
               m_audioConfig(audioConfig)
         {
         }
         ~MediaSourceAudio() {}
+        std::unique_ptr<MediaSource> copy() const { return std::make_unique<MediaSourceAudio>(*this); }
 
     protected:
         AudioConfig m_audioConfig;
@@ -266,35 +305,29 @@ public:
         MediaSourceVideo(int32_t id, const std::string &mimeType, SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                          StreamFormat streamFormat = StreamFormat::UNDEFINED,
                          const std::vector<uint8_t> &codecData = std::vector<uint8_t>())
-            : MediaSource(id, MediaSourceType::VIDEO, mimeType, alignment, streamFormat, codecData),
-              m_videoSourceType(VideoSourceType::DEFAULT)
+            : MediaSource(id, SourceConfigType::VIDEO_DEFAULT, mimeType, alignment, streamFormat, codecData)
         {
         }
         ~MediaSourceVideo() {}
-
-        virtual VideoSourceType getVideoSourceType() { return m_videoSourceType; }
-
+        std::unique_ptr<MediaSource> copy() const { return std::make_unique<MediaSourceVideo>(*this); }
     protected:
         /**
          * @brief Constructor for video specific configuration.
          *
          * @param[in] id   : The source id.
          * @param[in] mimeType : The mime type string.
-         * @param[in] videoSourceType : The video source type
+         * @param[in] sourceConfigType : The source config type
          * @param[in] alignment : The alignment of media segment.
          * @param[in] streamFormat : The stream format
          * @param[in] codecData : The additional data for decoder
          */
-        MediaSourceVideo(int32_t id, const char *mimeType, VideoSourceType videoSourceType,
+        MediaSourceVideo(int32_t id, SourceConfigType sourceConfigType, const std::string &mimeType,
                          SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                          StreamFormat streamFormat = StreamFormat::UNDEFINED,
                          const std::vector<uint8_t> &codecData = std::vector<uint8_t>())
-            : MediaSource(id, MediaSourceType::VIDEO, mimeType, alignment, streamFormat, codecData),
-              m_videoSourceType(videoSourceType)
+            : MediaSource(id, sourceConfigType, mimeType, alignment, streamFormat, codecData)
         {
         }
-
-        VideoSourceType m_videoSourceType;
     };
 
     class MediaSourceVideoDolbyVision : public MediaSourceVideo
@@ -310,14 +343,15 @@ public:
          * @param[in] streamFormat : The stream format
          * @param[in] codecData : The additional data for decoder
          */
-        MediaSourceVideoDolbyVision(int32_t id, const char *mimeType, int32_t dolbyVisionProfile,
+        MediaSourceVideoDolbyVision(int32_t id, const std::string &mimeType, int32_t dolbyVisionProfile,
                                     SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                                     StreamFormat streamFormat = StreamFormat::UNDEFINED,
                                     const std::vector<uint8_t> &codecData = std::vector<uint8_t>())
-            : MediaSourceVideo(id, mimeType, VideoSourceType::DOLBY_VISION, alignment, streamFormat, codecData)
+            : MediaSourceVideo(id, SourceConfigType::VIDEO_DOLBY_VISION, mimeType, alignment, streamFormat, codecData)
         {
         }
         ~MediaSourceVideoDolbyVision() {}
+        std::unique_ptr<MediaSource> copy() const { return std::make_unique<MediaSourceVideoDolbyVision>(*this); }
 
         virtual int32_t getDolbyVisionProfile() { return m_dolbyVisionProfile; }
 
