@@ -45,6 +45,10 @@ endif()
 # Import protobuf package
 find_package( Protobuf REQUIRED )
 
+# Options to disable building some of the components
+option(ENABLE_SERVER "Enable building RialtoServer" ON)
+option(ENABLE_SERVER_MANAGER "Enable building RialtoServerManagerSim" ON)
+
 # Include the new IPC library components
 add_subdirectory( ipc )
 
@@ -52,8 +56,10 @@ add_subdirectory( ipc )
 add_subdirectory( common )
 add_subdirectory( media )
 add_subdirectory( logging )
-add_subdirectory( serverManager )
 
+if( ENABLE_SERVER_MANAGER )
+    add_subdirectory( serverManager )
+endif()
 
 # Config and target for building the unit tests
 if( CMAKE_BUILD_FLAG STREQUAL "UnitTests" )
