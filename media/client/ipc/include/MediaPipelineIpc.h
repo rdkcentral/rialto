@@ -188,6 +188,9 @@ private:
      */
     firebolt::rialto::AttachSourceRequest_StreamFormat
     convertStreamFormat(const firebolt::rialto::StreamFormat &streamFormat);
+
+    firebolt::rialto::AttachSourceRequest_ConfigType
+    convertConfigType(const firebolt::rialto::SourceConfigType &configType);
 };
 
 }; // namespace firebolt::rialto::client

@@ -121,29 +121,15 @@ public:
         }
 
         /**
-         * @brief Constructor for audio specific configuration.
-         *
-         * @param[in] id   : The source id.
-         * @param[in] mimeType : The mime type string.
-         * @param[in] audioConfig : The audio specific configuration.
-         * @param[in] alignment : The alignment of media segment.
-         * @param[in] streamFormat : The stream format
-         * @param[in] codecData : The additional data for decoder
-         */
-        MediaSource(int32_t id, const std::string &mimeType, const AudioConfig &audioConfig,
-                    SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
-                    StreamFormat streamFormat = StreamFormat::UNDEFINED,
-                    const std::vector<uint8_t> &codecData = std::vector<uint8_t>())
-            : m_id(id), m_type(MediaSourceType::AUDIO), m_mimeType(mimeType), m_alignment(alignment),
-              m_audioConfig(audioConfig), m_streamFormat(streamFormat), m_codecData(codecData)
-        {
-        }
-
-        /**
          * @brief Virtual destructor.
          */
         virtual ~MediaSource() {}
 
+        SourceConfigType getConfigType() const { return m_configType; }
+
+        /**
+         * @brief Create copy
+         */
         virtual std::unique_ptr<MediaSource> copy() const { return std::make_unique<MediaSource>(*this); }
 
         /**
@@ -170,22 +156,6 @@ public:
          * @brief Gets the segment alignment
          */
         SegmentAlignment getSegmentAlignment() const { return m_alignment; }
-
-        /**
-         * @brief Gets the audio specific configuration
-         *
-         * @param[in] ac : The audio specific configuration
-         * @retval true, if media source type is audio. Otherwise false
-         */
-        bool getAudioConfig(AudioConfig &ac) const
-        {
-            if (m_type == MediaSourceType::AUDIO)
-            {
-                ac = m_audioConfig;
-                return true;
-            }
-            return false;
-        }
 
         /**
          * @brief Gets the codec data
@@ -247,11 +217,6 @@ public:
         SegmentAlignment m_alignment;
 
         /**
-         * @brief The audio specific configuration
-         */
-        AudioConfig m_audioConfig; //TODO: remove it
-
-        /**
          * @brief The stream format
          */
         StreamFormat m_streamFormat;
@@ -275,7 +240,7 @@ public:
          * @param[in] streamFormat : The stream format
          * @param[in] codecData : The additional data for decoder
          */
-        MediaSourceAudio(int32_t id, const std::string &mimeType, const AudioConfig &audioConfig,
+        MediaSourceAudio(int32_t id, const std::string &mimeType, const AudioConfig &audioConfig = AudioConfig(),
                          SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                          StreamFormat streamFormat = StreamFormat::UNDEFINED,
                          const std::vector<uint8_t> &codecData = std::vector<uint8_t>())
@@ -283,6 +248,14 @@ public:
               m_audioConfig(audioConfig)
         {
         }
+
+        /**
+         * @brief Gets the audio specific configuration
+         *
+         * @retval audio specific configuration
+         */
+        const AudioConfig& getAudioConfig() const { return m_audioConfig; }
+
         ~MediaSourceAudio() {}
         std::unique_ptr<MediaSource> copy() const { return std::make_unique<MediaSourceAudio>(*this); }
 
@@ -353,7 +326,7 @@ public:
         ~MediaSourceVideoDolbyVision() {}
         std::unique_ptr<MediaSource> copy() const { return std::make_unique<MediaSourceVideoDolbyVision>(*this); }
 
-        virtual int32_t getDolbyVisionProfile() { return m_dolbyVisionProfile; }
+        int32_t getDolbyVisionProfile() const { return m_dolbyVisionProfile; }
 
     protected:
         int32_t m_dolbyVisionProfile;

@@ -120,6 +120,13 @@ message AttachSourceRequest {
         STREAM_FORMAT_BYTE_STREAM = 3;
     }
 
+    enum ConfigType {
+        CONFIG_TYPE_UNKNOWN            = 0;
+        CONFIG_TYPE_AUDIO_DEFAULT      = 1;
+        CONFIG_TYPE_VIDEO_DEFAULT      = 2;
+        CONFIG_TYPE_VIDEO_DOLBY_VISION = 3;
+    }
+
     message AudioConfig {
         required uint32 number_of_channels = 1;   ///< The number of channels. 
         required uint32 sample_rate = 2;         ///< The sampling rate.
@@ -127,12 +134,13 @@ message AttachSourceRequest {
     }
 
     required int32 session_id = 1;
-    required ProtoMediaSourceType media_type = 2;
+    required ConfigType config_type = 2;
     required string mime_type = 3;
     required SegmentAlignment segment_alignment    = 4; /* Segment alignment can be specified for H264/H265, will use NAL if not set */
-    required AudioConfig audio_config    = 5;
+    optional AudioConfig audio_config    = 5;
     required bytes codec_data = 6;
     required StreamFormat stream_format = 7;
+    optional int32 dolby_vision_profile = 8;
 }
 message AttachSourceResponse {
     required int32 source_id = 1;
