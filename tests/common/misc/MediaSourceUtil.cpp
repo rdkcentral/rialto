@@ -30,12 +30,11 @@ bool operator==(const AudioConfig &lac, const AudioConfig &rac)
 
 bool operator==(const IMediaPipeline::MediaSource &lms, const IMediaPipeline::MediaSource &rms)
 {
-    AudioConfig lac;
-    AudioConfig rac;
-    lms.getAudioConfig(lac);
-    rms.getAudioConfig(rac);
+    // AudioConfig lac;
+    // AudioConfig rac;
+    // lms.getAudioConfig(lac);
+    // rms.getAudioConfig(rac);
 
-    return lms.getId() == rms.getId() && lms.getType() == rms.getType() && lms.getMimeType() == rms.getMimeType() &&
-           lac == rac;
+    return lms.getId() == rms.getId() && lms.getType() == rms.getType() && lms.getMimeType() == rms.getMimeType();
 }
 } // namespace firebolt::rialto

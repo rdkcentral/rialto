@@ -26,7 +26,8 @@
 
 namespace firebolt::rialto::server
 {
-
+namespace
+{
 class MediaSourceCapsBuilder
 {
 public:
@@ -212,6 +213,7 @@ public:
 protected:
     const IMediaPipeline::MediaSourceVideoDolbyVision &m_attachedSource;
 };
+}; //namespace
 
 
 AttachSource::AttachSource(PlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper,

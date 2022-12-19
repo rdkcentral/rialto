@@ -26,6 +26,7 @@
 #include <vector>
 
 using testing::_;
+using testing::ByRef;
 using testing::DoAll;
 using testing::Invoke;
 using testing::Return;
@@ -62,6 +63,39 @@ constexpr firebolt::rialto::NetworkState networkState{firebolt::rialto::NetworkS
 constexpr firebolt::rialto::QosInfo qosInfo{5u, 2u};
 constexpr double rate{1.5};
 } // namespace
+
+MATCHER_P(AttachedSourceMatcher, source, "")
+{
+    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> &src = source.get();
+    bool baseCompare =  arg->getConfigType() == src->getConfigType() && 
+    arg->getMimeType() == src->getMimeType() &&
+    arg->getSegmentAlignment() == src->getSegmentAlignment() &&
+    arg->getCodecData() == src->getCodecData() &&
+    arg->getStreamFormat() == src->getStreamFormat();
+
+    bool extraCompare = true;
+
+    if (arg->getConfigType() == firebolt::rialto::SourceConfigType::AUDIO_DEFAULT)
+    {
+        firebolt::rialto::IMediaPipeline::MediaSourceAudio &audioArg =
+            dynamic_cast<firebolt::rialto::IMediaPipeline::MediaSourceAudio &>(*arg);
+        firebolt::rialto::IMediaPipeline::MediaSourceAudio &audioSrc =
+            dynamic_cast<firebolt::rialto::IMediaPipeline::MediaSourceAudio &>(*src);
+
+        extraCompare = audioArg.getStreamFormat() == audioSrc.getStreamFormat();
+    }
+    else if (arg->getConfigType() == firebolt::rialto::SourceConfigType::VIDEO_DOLBY_VISION)
+    {
+        firebolt::rialto::IMediaPipeline::MediaSourceVideoDolbyVision &dolbyArg =
+            dynamic_cast<firebolt::rialto::IMediaPipeline::MediaSourceVideoDolbyVision &>(*arg);
+        firebolt::rialto::IMediaPipeline::MediaSourceVideoDolbyVision &dolbySrc =
+            dynamic_cast<firebolt::rialto::IMediaPipeline::MediaSourceVideoDolbyVision &>(*src);
+
+        extraCompare = dolbyArg.getDolbyVisionProfile() == dolbySrc.getDolbyVisionProfile();
+    }
+
+    return baseCompare && extraCompare;
+}
 
 MATCHER_P6(NeedMediaDataEventMatcher, sessionId, sourceId, needDataRequestId, frameCount, maxMediaBytes, shmInfo, "")
 {
@@ -339,9 +373,9 @@ void MediaPipelineModuleServiceTests::playbackServiceWillFailToLoadSession()
 
 void MediaPipelineModuleServiceTests::playbackServiceWillAttachSource()
 {
-    firebolt::rialto::IMediaPipeline::MediaSource source{0, mediaSourceType, mimeType.c_str()};
+    m_source = std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(0, mimeType);
     expectRequestSuccess();
-    EXPECT_CALL(m_playbackServiceMock, attachSource(hardcodedSessionId, source)).WillOnce(Return(true));
+    EXPECT_CALL(m_playbackServiceMock, attachSource(hardcodedSessionId, AttachedSourceMatcher(ByRef(m_source)))).WillOnce(Return(true));
 }
 
 void MediaPipelineModuleServiceTests::playbackServiceWillAttachAudioSourceWithAdditionaldata()
@@ -349,21 +383,20 @@ void MediaPipelineModuleServiceTests::playbackServiceWillAttachAudioSourceWithAd
     std::vector<uint8_t> codecSpecificConfig;
     codecSpecificConfig.assign(codecSpecificConfigStr.begin(), codecSpecificConfigStr.end());
     firebolt::rialto::AudioConfig audioConfig{numberOfChannels, sampleRate, codecSpecificConfig};
-    firebolt::rialto::IMediaPipeline::MediaSource source{0,
-                                                         mimeType,
-                                                         audioConfig,
-                                                         firebolt::rialto::SegmentAlignment::UNDEFINED,
-                                                         firebolt::rialto::StreamFormat::RAW,
-                                                         codecData};
+    m_source =
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(0, mimeType, audioConfig,
+                                                                             firebolt::rialto::SegmentAlignment::UNDEFINED,
+                                                                             firebolt::rialto::StreamFormat::RAW,
+                                                                             codecData);
     expectRequestSuccess();
-    EXPECT_CALL(m_playbackServiceMock, attachSource(hardcodedSessionId, source)).WillOnce(Return(true));
+    EXPECT_CALL(m_playbackServiceMock, attachSource(hardcodedSessionId, AttachedSourceMatcher(ByRef(m_source)))).WillOnce(Return(true));
 }
 
 void MediaPipelineModuleServiceTests::playbackServiceWillFailToAttachSource()
 {
-    firebolt::rialto::IMediaPipeline::MediaSource source{0, mediaSourceType, mimeType.c_str()};
+    m_source = std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(0, mimeType);
     expectRequestFailure();
-    EXPECT_CALL(m_playbackServiceMock, attachSource(hardcodedSessionId, source)).WillOnce(Return(false));
+    EXPECT_CALL(m_playbackServiceMock, attachSource(hardcodedSessionId, AttachedSourceMatcher(ByRef(m_source)))).WillOnce(Return(false));
 }
 
 void MediaPipelineModuleServiceTests::playbackServiceWillPlay()
@@ -577,7 +610,7 @@ void MediaPipelineModuleServiceTests::sendAttachSourceRequestAndReceiveResponse(
     firebolt::rialto::AttachSourceResponse response;
 
     request.set_session_id(hardcodedSessionId);
-    request.set_media_type(convertProtoMediaSourceType(mediaSourceType));
+    request.set_config_type(firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_AUDIO_DEFAULT);
     request.set_mime_type(mimeType);
 
     m_service->attachSource(m_controllerMock.get(), &request, &response, m_closureMock.get());
@@ -589,7 +622,7 @@ void MediaPipelineModuleServiceTests::sendAttachAudioSourceWithAdditionalDataReq
     firebolt::rialto::AttachSourceResponse response;
 
     request.set_session_id(hardcodedSessionId);
-    request.set_media_type(firebolt::rialto::ProtoMediaSourceType::AUDIO);
+    request.set_config_type(firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_AUDIO_DEFAULT);
     request.set_mime_type(mimeType);
     request.mutable_audio_config()->set_number_of_channels(numberOfChannels);
     request.mutable_audio_config()->set_sample_rate(sampleRate);
