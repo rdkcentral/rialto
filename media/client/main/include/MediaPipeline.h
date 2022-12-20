@@ -91,7 +91,7 @@ public:
 
     bool load(MediaType type, const std::string &mimeType, const std::string &url) override;
 
-    bool attachSource(std::unique_ptr<IMediaPipeline::MediaSource> &source) override;
+    bool attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source) override;
 
     bool removeSource(int32_t id) override;
 

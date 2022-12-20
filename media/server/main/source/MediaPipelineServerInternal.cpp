@@ -203,7 +203,7 @@ bool MediaPipelineServerInternal::loadInternal(MediaType type, const std::string
     return true;
 }
 
-bool MediaPipelineServerInternal::attachSource(std::unique_ptr<MediaSource> &source)
+bool MediaPipelineServerInternal::attachSource(const std::unique_ptr<MediaSource> &source)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
@@ -214,7 +214,7 @@ bool MediaPipelineServerInternal::attachSource(std::unique_ptr<MediaSource> &sou
     return result;
 }
 
-bool MediaPipelineServerInternal::attachSourceInternal(std::unique_ptr<MediaSource> &source)
+bool MediaPipelineServerInternal::attachSourceInternal(const std::unique_ptr<MediaSource> &source)
 {
     source->setId(-1);
 

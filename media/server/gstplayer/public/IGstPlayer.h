@@ -93,7 +93,7 @@ public:
      * @param[in] mediaSource : The media source.
      *
      */
-    virtual void attachSource(std::unique_ptr<IMediaPipeline::MediaSource> &mediaSource) = 0;
+    virtual void attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &mediaSource) = 0;
 
     /**
      * @brief Starts playback of the media.

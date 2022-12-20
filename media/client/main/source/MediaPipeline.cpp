@@ -184,7 +184,7 @@ bool MediaPipeline::load(MediaType type, const std::string &mimeType, const std:
     return m_mediaPipelineIpc->load(type, mimeType, url);
 }
 
-bool MediaPipeline::attachSource(std::unique_ptr<IMediaPipeline::MediaSource> &source)
+bool MediaPipeline::attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 

@@ -94,43 +94,29 @@ public:
     {
     public:
         /**
-         * @brief Default constructor.
-         *
-         * @param[in] id   : The source id.
-         * @param[in] type : The source type.
-         * @param[in] mimeType : The mime type string.
-         * @param[in] alignment : The alignment of media segment.
-         * @param[in] streamFormat : The stream format
-         * @param[in] codecData : The additional data for decoder
-         */
-        explicit MediaSource(int32_t id = 0, MediaSourceType type = MediaSourceType::UNKNOWN, const std::string &mimeType = std::string(),
-                             SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
-                             StreamFormat streamFormat = StreamFormat::UNDEFINED,
-                             const std::vector<uint8_t> &codecData = std::vector<uint8_t>())
-            : m_id(id), m_type(type), m_configType(SourceConfigType::UNKNOWN), m_mimeType(mimeType), m_alignment(alignment), m_streamFormat(streamFormat),
-              m_codecData(codecData)
-        {
-            if (type == MediaSourceType::AUDIO)
-            {
-                m_configType = SourceConfigType::AUDIO_DEFAULT;
-            }
-            else if (type == MediaSourceType::VIDEO)
-            {
-                m_configType = SourceConfigType::VIDEO_DEFAULT;
-            }
-        }
-
-        /**
          * @brief Virtual destructor.
          */
         virtual ~MediaSource() {}
 
-        SourceConfigType getConfigType() const { return m_configType; }
+        /**
+         * @brief Create a copy
+         */
+        virtual std::unique_ptr<MediaSource> copy() const = 0;
 
         /**
-         * @brief Create copy
+         * @brief Return the source type.
          */
-        virtual std::unique_ptr<MediaSource> copy() const { return std::make_unique<MediaSource>(*this); }
+        virtual MediaSourceType getType() const = 0;
+
+        /**
+         * @brief Return the MIME type.
+         */
+        std::string getMimeType() const { return m_mimeType; }
+
+        /**
+         * @brief Return the source config type.
+         */
+        SourceConfigType getConfigType() const { return m_configType; }
 
         /**
          * @brief Return the source id.
@@ -141,16 +127,6 @@ public:
          * @brief Set the source id.
          */
         void setId(int32_t id) { m_id = id; }
-
-        /**
-         * @brief Return the source type.
-         */
-        MediaSourceType getType() const { return m_type; }
-
-        /**
-         * @brief Return the MIME type.
-         */
-        std::string getMimeType() const { return m_mimeType; }
 
         /**
          * @brief Gets the segment alignment
@@ -182,28 +158,19 @@ public:
                              SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                              StreamFormat streamFormat = StreamFormat::UNDEFINED,
                              const std::vector<uint8_t> &codecData = std::vector<uint8_t>())
-            : m_id(id), m_type(MediaSourceType::UNKNOWN), m_configType(configType), m_mimeType(mimeType), m_alignment(alignment), m_streamFormat(streamFormat),
+            : m_id(id), m_configType(configType), m_mimeType(mimeType), m_alignment(alignment), m_streamFormat(streamFormat),
               m_codecData(codecData)
         {
-            if (m_configType == SourceConfigType::VIDEO_DEFAULT || m_configType == SourceConfigType::VIDEO_DOLBY_VISION)
-            {
-                m_type = MediaSourceType::VIDEO;
-            }
-            else if (m_configType == SourceConfigType::AUDIO_DEFAULT)
-            {
-                m_type = MediaSourceType::AUDIO;
-            }
         }
         /**
          * @brief The source id.
          */
         int32_t m_id;
 
-        /**
-         * @brief The source type.
-         */
-        MediaSourceType m_type;
 
+        /**
+         * @brief The source config type.
+         */
         SourceConfigType m_configType;
 
         /**
@@ -249,15 +216,18 @@ public:
         {
         }
 
-        /**
+        ~MediaSourceAudio() {}
+
+        MediaSourceType getType() const override { return MediaSourceType::AUDIO; }
+        std::unique_ptr<MediaSource> copy() const override { return std::make_unique<MediaSourceAudio>(*this); }
+
+                /**
          * @brief Gets the audio specific configuration
          *
          * @retval audio specific configuration
          */
         const AudioConfig& getAudioConfig() const { return m_audioConfig; }
 
-        ~MediaSourceAudio() {}
-        std::unique_ptr<MediaSource> copy() const { return std::make_unique<MediaSourceAudio>(*this); }
 
     protected:
         AudioConfig m_audioConfig;
@@ -282,6 +252,8 @@ public:
         {
         }
         ~MediaSourceVideo() {}
+
+        MediaSourceType getType() const override { return MediaSourceType::VIDEO; }
         std::unique_ptr<MediaSource> copy() const { return std::make_unique<MediaSourceVideo>(*this); }
     protected:
         /**
@@ -831,7 +803,7 @@ public:
      *
      * @retval true on success.
      */
-    virtual bool attachSource(std::unique_ptr<MediaSource> &source) = 0;
+    virtual bool attachSource(const std::unique_ptr<MediaSource> &source) = 0;
 
     /**
      * @brief Unattaches a source.

@@ -39,7 +39,7 @@ public:
     std::unique_ptr<IPlayerTask> createAttachSamples(PlayerContext &context, IGstPlayerPrivate &player,
                                                      const IMediaPipeline::MediaSegmentVector &mediaSegments) const override;
     std::unique_ptr<IPlayerTask> createAttachSource(PlayerContext &context,
-                                                    std::unique_ptr<IMediaPipeline::MediaSource> &source) const override;
+                                                    const std::unique_ptr<IMediaPipeline::MediaSource> &source) const override;
     std::unique_ptr<IPlayerTask> createEnoughData(PlayerContext &context, GstAppSrc *src) const override;
     std::unique_ptr<IPlayerTask> createEos(PlayerContext &context, IGstPlayerPrivate &player,
                                            const firebolt::rialto::MediaSourceType &type) const override;

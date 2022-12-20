@@ -185,7 +185,7 @@ bool MediaPipelineIpc::load(MediaType type, const std::string &mimeType, const s
     return true;
 }
 
-bool MediaPipelineIpc::attachSource(std::unique_ptr<IMediaPipeline::MediaSource> &source, int32_t &sourceId)
+bool MediaPipelineIpc::attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source, int32_t &sourceId)
 {
     if (!reattachChannelIfRequired())
     {
