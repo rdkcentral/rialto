@@ -62,8 +62,8 @@ enum class MediaSourceType
 enum class SourceConfigType
 {
     UNKNOWN,
-    AUDIO_DEFAULT,
-    VIDEO_DEFAULT,
+    AUDIO_BASE,
+    VIDEO_BASE,
     VIDEO_DOLBY_VISION
 };
 

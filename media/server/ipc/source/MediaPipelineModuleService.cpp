@@ -92,13 +92,13 @@ convertConfigType(const firebolt::rialto::AttachSourceRequest_ConfigType &config
     {
         return firebolt::rialto::SourceConfigType::UNKNOWN;
     }
-    case firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_AUDIO_DEFAULT:
+    case firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_AUDIO_BASE:
     {
-        return firebolt::rialto::SourceConfigType::AUDIO_DEFAULT;
+        return firebolt::rialto::SourceConfigType::AUDIO_BASE;
     }
-    case firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_VIDEO_DEFAULT:
+    case firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_VIDEO_BASE:
     {
-        return firebolt::rialto::SourceConfigType::VIDEO_DEFAULT;
+        return firebolt::rialto::SourceConfigType::VIDEO_BASE;
     }
     case firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_VIDEO_DOLBY_VISION:
     {
@@ -327,7 +327,7 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource;
     firebolt::rialto::SourceConfigType configType = convertConfigType(request->config_type());
 
-    if (configType == firebolt::rialto::SourceConfigType::AUDIO_DEFAULT)
+    if (configType == firebolt::rialto::SourceConfigType::AUDIO_BASE)
     {
         const auto &config = request->audio_config();
         uint32_t numberofchannels = config.number_of_channels();
@@ -346,7 +346,7 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
                                                                convertSegmentAlignment(request->segment_alignment()),
                                                                convertStreamFormat(request->stream_format()), codecData);
     }
-    else if (configType == firebolt::rialto::SourceConfigType::VIDEO_DEFAULT)
+    else if (configType == firebolt::rialto::SourceConfigType::VIDEO_BASE)
     {
         mediaSource =
             std::make_unique<IMediaPipeline::MediaSourceVideo>(0, request->mime_type().c_str(),

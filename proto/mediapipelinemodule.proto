@@ -122,8 +122,8 @@ message AttachSourceRequest {
 
     enum ConfigType {
         CONFIG_TYPE_UNKNOWN            = 0;
-        CONFIG_TYPE_AUDIO_DEFAULT      = 1;
-        CONFIG_TYPE_VIDEO_DEFAULT      = 2;
+        CONFIG_TYPE_AUDIO_BASE      = 1;
+        CONFIG_TYPE_VIDEO_BASE      = 2;
         CONFIG_TYPE_VIDEO_DOLBY_VISION = 3;
     }
 

@@ -285,14 +285,14 @@ GstCaps *AttachSource::createCapsFromMediaSource() const
     std::unique_ptr<MediaSourceCapsBuilder> capsBuilder;
 
     firebolt::rialto::SourceConfigType configType = m_attachedSource->getConfigType();
-    if (configType == firebolt::rialto::SourceConfigType::AUDIO_DEFAULT)
+    if (configType == firebolt::rialto::SourceConfigType::AUDIO_BASE)
     {
         const IMediaPipeline::MediaSourceAudio &source =
             dynamic_cast<IMediaPipeline::MediaSourceAudio &>(*m_attachedSource);
 
         capsBuilder = std::make_unique<MediaSourceAudioCapsBuilder>(m_gstWrapper, m_glibWrapper, source);
     }
-    else if (configType == firebolt::rialto::SourceConfigType::VIDEO_DEFAULT)
+    else if (configType == firebolt::rialto::SourceConfigType::VIDEO_BASE)
     {
         capsBuilder = std::make_unique<MediaSourceCapsBuilder>(m_gstWrapper, m_glibWrapper, *m_attachedSource);
     }

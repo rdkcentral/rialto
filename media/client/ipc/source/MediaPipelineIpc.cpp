@@ -211,7 +211,7 @@ bool MediaPipelineIpc::attachSource(const std::unique_ptr<IMediaPipeline::MediaS
 
         request.set_dolby_vision_profile(mediaSourceDolby.getDolbyVisionProfile());
     }
-    else if (configType == SourceConfigType::AUDIO_DEFAULT)
+    else if (configType == SourceConfigType::AUDIO_BASE)
     {
         IMediaPipeline::MediaSourceAudio &mediaSourceAudio = dynamic_cast<IMediaPipeline::MediaSourceAudio &>(*source);
         request.mutable_audio_config()->set_number_of_channels(mediaSourceAudio.getAudioConfig().numberOfChannels);
@@ -784,13 +784,13 @@ MediaPipelineIpc::convertConfigType(const firebolt::rialto::SourceConfigType &co
     {
         return firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_UNKNOWN;
     }
-    case firebolt::rialto::SourceConfigType::AUDIO_DEFAULT:
+    case firebolt::rialto::SourceConfigType::AUDIO_BASE:
     {
-        return firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_AUDIO_DEFAULT;
+        return firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_AUDIO_BASE;
     }
-    case firebolt::rialto::SourceConfigType::VIDEO_DEFAULT:
+    case firebolt::rialto::SourceConfigType::VIDEO_BASE:
     {
-        return firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_VIDEO_DEFAULT;
+        return firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_VIDEO_BASE;
     }
     case firebolt::rialto::SourceConfigType::VIDEO_DOLBY_VISION:
     {

@@ -75,7 +75,7 @@ MATCHER_P(AttachedSourceMatcher, source, "")
 
     bool extraCompare = true;
 
-    if (arg->getConfigType() == firebolt::rialto::SourceConfigType::AUDIO_DEFAULT)
+    if (arg->getConfigType() == firebolt::rialto::SourceConfigType::AUDIO_BASE)
     {
         firebolt::rialto::IMediaPipeline::MediaSourceAudio &audioArg =
             dynamic_cast<firebolt::rialto::IMediaPipeline::MediaSourceAudio &>(*arg);
@@ -610,7 +610,7 @@ void MediaPipelineModuleServiceTests::sendAttachSourceRequestAndReceiveResponse(
     firebolt::rialto::AttachSourceResponse response;
 
     request.set_session_id(hardcodedSessionId);
-    request.set_config_type(firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_AUDIO_DEFAULT);
+    request.set_config_type(firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_AUDIO_BASE);
     request.set_mime_type(mimeType);
 
     m_service->attachSource(m_controllerMock.get(), &request, &response, m_closureMock.get());
@@ -622,7 +622,7 @@ void MediaPipelineModuleServiceTests::sendAttachAudioSourceWithAdditionalDataReq
     firebolt::rialto::AttachSourceResponse response;
 
     request.set_session_id(hardcodedSessionId);
-    request.set_config_type(firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_AUDIO_DEFAULT);
+    request.set_config_type(firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_AUDIO_BASE);
     request.set_mime_type(mimeType);
     request.mutable_audio_config()->set_number_of_channels(numberOfChannels);
     request.mutable_audio_config()->set_sample_rate(sampleRate);
