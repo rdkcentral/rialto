@@ -206,7 +206,6 @@ bool MediaPipelineIpc::attachSource(std::unique_ptr<IMediaPipeline::MediaSource>
 
     if (configType == SourceConfigType::VIDEO_DOLBY_VISION)
     {
-        //catch??
         IMediaPipeline::MediaSourceVideoDolbyVision &mediaSourceDolby =
             dynamic_cast<IMediaPipeline::MediaSourceVideoDolbyVision &>(*source);
 

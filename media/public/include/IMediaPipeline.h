@@ -320,7 +320,8 @@ public:
                                     SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                                     StreamFormat streamFormat = StreamFormat::UNDEFINED,
                                     const std::vector<uint8_t> &codecData = std::vector<uint8_t>())
-            : MediaSourceVideo(id, SourceConfigType::VIDEO_DOLBY_VISION, mimeType, alignment, streamFormat, codecData)
+            : MediaSourceVideo(id, SourceConfigType::VIDEO_DOLBY_VISION, mimeType, alignment, streamFormat, codecData),
+            m_dolbyVisionProfile(dolbyVisionProfile)
         {
         }
         ~MediaSourceVideoDolbyVision() {}

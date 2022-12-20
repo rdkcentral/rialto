@@ -203,10 +203,8 @@ public:
     GstCaps* buildCaps() override
     {
         GstCaps *caps = buildCommonCaps();
-
         m_gstWrapper->gstCapsSetSimple(caps, "dovi-stream", G_TYPE_BOOLEAN, true, nullptr);
         m_gstWrapper->gstCapsSetSimple(caps, "dv_profile", G_TYPE_INT, m_attachedSource.getDolbyVisionProfile(), nullptr);
-
         return caps;
     }
 
