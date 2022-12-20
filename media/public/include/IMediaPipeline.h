@@ -305,10 +305,10 @@ public:
          *
          * @retval dolby vision profile
          */
-        int32_t getDolbyVisionProfile() const { return m_dolbyVisionProfile; }
+        uint32_t getDolbyVisionProfile() const { return m_dolbyVisionProfile; }
 
     protected:
-        int32_t m_dolbyVisionProfile;
+        uint32_t m_dolbyVisionProfile;
     };
 
     /**

@@ -154,7 +154,7 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachDolbyVisionSourceWithSucces
 {
     expectIpcApiCallSuccess();
 
-    int32_t dolbyVisionProfile = 5;
+    uint32_t dolbyVisionProfile = 5;
     firebolt::rialto::SegmentAlignment alignment = firebolt::rialto::SegmentAlignment::UNDEFINED;
     std::vector<uint8_t> codecData{'T', 'E', 'S', 'T'};
     firebolt::rialto::StreamFormat streamFormat = firebolt::rialto::StreamFormat::RAW;

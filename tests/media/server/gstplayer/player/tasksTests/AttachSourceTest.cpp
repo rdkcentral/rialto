@@ -277,7 +277,7 @@ TEST_F(AttachSourceTest, shouldAttachVideoDolbyVisionSource)
     EXPECT_CALL(*m_gstWrapper, gstBufferUnref(&buf));
     EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleStringStub(&m_gstCaps1, StrEq("stream-format"), _, StrEq("avc")));
     EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleBooleanStub(&m_gstCaps1, StrEq("dovi-stream"), _, true));
-    EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleIntStub(&m_gstCaps1, StrEq("dv_profile"), _, dolbyVisionProfile));
+    EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleUintStub(&m_gstCaps1, StrEq("dv_profile"), _, dolbyVisionProfile));
     EXPECT_CALL(*m_gstWrapper, gstCapsToString(&m_gstCaps1)).WillOnce(Return(&m_capsStr));
     EXPECT_CALL(*m_glibWrapper, gFree(&m_capsStr));
     EXPECT_CALL(*m_gstWrapper, gstElementFactoryMake(_, CharStrMatcher(m_vidName.c_str()))).WillOnce(Return(&m_appSrc));

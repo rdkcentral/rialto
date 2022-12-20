@@ -140,7 +140,7 @@ message AttachSourceRequest {
     optional AudioConfig audio_config    = 5;
     required bytes codec_data = 6;
     required StreamFormat stream_format = 7;
-    optional int32 dolby_vision_profile = 8;
+    optional uint32 dolby_vision_profile = 8;
 }
 message AttachSourceResponse {
     required int32 source_id = 1;

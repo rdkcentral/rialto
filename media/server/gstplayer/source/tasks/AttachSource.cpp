@@ -201,7 +201,7 @@ public:
     {
         GstCaps *caps = buildCommonCaps();
         m_gstWrapper->gstCapsSetSimple(caps, "dovi-stream", G_TYPE_BOOLEAN, true, nullptr);
-        m_gstWrapper->gstCapsSetSimple(caps, "dv_profile", G_TYPE_INT, m_attachedDolbySource.getDolbyVisionProfile(),
+        m_gstWrapper->gstCapsSetSimple(caps, "dv_profile", G_TYPE_UINT, m_attachedDolbySource.getDolbyVisionProfile(),
                                        nullptr);
         return caps;
     }
