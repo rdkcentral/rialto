@@ -48,6 +48,16 @@ valgrindOutput = "valgrind_report"
 valgrindErrorCode = 101
 valgrindIgnore = "rialto.supp"
 
+
+def runcmd(*args, **kwargs):
+    status = subprocess.run(*args, **kwargs)
+    if status.returncode == 0 or status.returncode == valgrindErrorCode:
+        return status
+    else:
+        args = ' '.join(status.args) if type(status.args) == list else status.args
+        sys.exit(f'Command: "{args}" returned with {status.returncode} error code!')
+
+
 def main ():
     # Get arguments
     argParser = argparse.ArgumentParser(description='Run the rialto unittests.', formatter_class=argparse.RawTextHelpFormatter)
@@ -93,7 +103,7 @@ def main ():
     # Clean if required
     if args['clean'] == True:
         executeCmd = ["rm", "-rf", args['output'], resultOutput + ".log", valgrindOutput + ".log"]
-        subprocess.run(executeCmd, cwd=os.getcwd())
+        runcmd(executeCmd, cwd=os.getcwd())
 
     # Get output file name if any
     if args['file'] != None:
@@ -154,7 +164,7 @@ def buildTargets (suites, outputDir, resultsFile, debug, coverage):
         cmakeCmd.append("-DCMAKE_BUILD_TYPE=Debug")
     if coverage:
         cmakeCmd.append("-DCOVERAGE_ENABLED=1")
-    subprocess.run(cmakeCmd, cwd=os.getcwd())
+    runcmd(cmakeCmd, cwd=os.getcwd())
 
     # Make targets
     jarg = "-j" + str(multiprocessing.cpu_count())
@@ -162,10 +172,11 @@ def buildTargets (suites, outputDir, resultsFile, debug, coverage):
     for key in suites:
         makeCmd.append(suites[key]["suite"])
 
+    print(f"+ {' '.join(makeCmd)}")
     if resultsFile != None:
-        subprocess.run(makeCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
+        runcmd(makeCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
     else:
-        subprocess.run(makeCmd, cwd=os.getcwd() + '/' + outputDir )
+        runcmd(makeCmd, cwd=os.getcwd() + '/' + outputDir )
 
 # Run the googletests
 def runTests (suites, doListTests, gtestFilter, outputDir, resultsFile, xmlFile, valgrind, coverage):
@@ -192,9 +203,9 @@ def runTests (suites, doListTests, gtestFilter, outputDir, resultsFile, xmlFile,
 
         # Run the command
         if resultsFile != None:
-            status = subprocess.run(executeCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
+            status = runcmd(executeCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
         else:
-            status = subprocess.run(executeCmd, cwd=os.getcwd() + '/' + outputDir, stderr=subprocess.STDOUT)
+            status = runcmd(executeCmd, cwd=os.getcwd() + '/' + outputDir, stderr=subprocess.STDOUT)
 
         # Check for error code
         if status.returncode == valgrindErrorCode:
@@ -232,20 +243,20 @@ def generateCoverageReport(outputDir, resultsFile):
     lcovCmd = ["lcov", "--capture", "--directory", ".", "--output-file", "coverage.info", "--exclude", "/usr/*",
                "--exclude", "*build/*", "--exclude", "*tests/*"]
     if resultsFile:
-        lcovStatus = subprocess.run(lcovCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
+        lcovStatus = runcmd(lcovCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
     else:
-        lcovStatus = subprocess.run(lcovCmd, cwd=os.getcwd() + '/' + outputDir, stderr=subprocess.STDOUT)
+        lcovStatus = runcmd(lcovCmd, cwd=os.getcwd() + '/' + outputDir, stderr=subprocess.STDOUT)
     if not lcovStatus:
         return False
     genHtmlCmd = ["genhtml", "coverage.info", "--output-directory", "gh_pages/coverage_report"]
     if resultsFile:
-        genHtmlStatus = subprocess.run(genHtmlCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
+        genHtmlStatus = runcmd(genHtmlCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
     else:
-        genHtmlStatus = subprocess.run(genHtmlCmd, cwd=os.getcwd() + '/' + outputDir, stderr=subprocess.STDOUT)
+        genHtmlStatus = runcmd(genHtmlCmd, cwd=os.getcwd() + '/' + outputDir, stderr=subprocess.STDOUT)
     genStatsCmd = ["lcov", "--summary", "coverage.info"]
     statsFile = open(os.getcwd() + '/' + outputDir + '/' + "coverage_statistics.txt", "w")
     if statsFile:
-        genStatsStatus = subprocess.run(genStatsCmd, cwd=os.getcwd() + '/' + outputDir, stdout=statsFile, stderr=subprocess.STDOUT)
+        genStatsStatus = runcmd(genStatsCmd, cwd=os.getcwd() + '/' + outputDir, stdout=statsFile, stderr=subprocess.STDOUT)
     else:
         genStatsStatus = False
     statsFile.close()
