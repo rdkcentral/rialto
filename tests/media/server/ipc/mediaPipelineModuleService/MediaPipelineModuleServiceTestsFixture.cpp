@@ -67,11 +67,9 @@ constexpr double rate{1.5};
 MATCHER_P(AttachedSourceMatcher, source, "")
 {
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> &src = source.get();
-    bool baseCompare =  arg->getConfigType() == src->getConfigType() && 
-    arg->getMimeType() == src->getMimeType() &&
-    arg->getSegmentAlignment() == src->getSegmentAlignment() &&
-    arg->getCodecData() == src->getCodecData() &&
-    arg->getStreamFormat() == src->getStreamFormat();
+    bool baseCompare = arg->getConfigType() == src->getConfigType() && arg->getMimeType() == src->getMimeType() &&
+                       arg->getSegmentAlignment() == src->getSegmentAlignment() &&
+                       arg->getCodecData() == src->getCodecData() && arg->getStreamFormat() == src->getStreamFormat();
 
     bool extraCompare = true;
 
@@ -375,7 +373,8 @@ void MediaPipelineModuleServiceTests::playbackServiceWillAttachSource()
 {
     m_source = std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(0, mimeType);
     expectRequestSuccess();
-    EXPECT_CALL(m_playbackServiceMock, attachSource(hardcodedSessionId, AttachedSourceMatcher(ByRef(m_source)))).WillOnce(Return(true));
+    EXPECT_CALL(m_playbackServiceMock, attachSource(hardcodedSessionId, AttachedSourceMatcher(ByRef(m_source))))
+        .WillOnce(Return(true));
 }
 
 void MediaPipelineModuleServiceTests::playbackServiceWillAttachAudioSourceWithAdditionaldata()
@@ -389,14 +388,16 @@ void MediaPipelineModuleServiceTests::playbackServiceWillAttachAudioSourceWithAd
                                                                              firebolt::rialto::StreamFormat::RAW,
                                                                              codecData);
     expectRequestSuccess();
-    EXPECT_CALL(m_playbackServiceMock, attachSource(hardcodedSessionId, AttachedSourceMatcher(ByRef(m_source)))).WillOnce(Return(true));
+    EXPECT_CALL(m_playbackServiceMock, attachSource(hardcodedSessionId, AttachedSourceMatcher(ByRef(m_source))))
+        .WillOnce(Return(true));
 }
 
 void MediaPipelineModuleServiceTests::playbackServiceWillFailToAttachSource()
 {
     m_source = std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(0, mimeType);
     expectRequestFailure();
-    EXPECT_CALL(m_playbackServiceMock, attachSource(hardcodedSessionId, AttachedSourceMatcher(ByRef(m_source)))).WillOnce(Return(false));
+    EXPECT_CALL(m_playbackServiceMock, attachSource(hardcodedSessionId, AttachedSourceMatcher(ByRef(m_source))))
+        .WillOnce(Return(false));
 }
 
 void MediaPipelineModuleServiceTests::playbackServiceWillPlay()

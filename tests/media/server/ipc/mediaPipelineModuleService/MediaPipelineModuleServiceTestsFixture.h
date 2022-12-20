@@ -106,7 +106,6 @@ private:
     std::shared_ptr<firebolt::rialto::server::ipc::IMediaPipelineModuleService> m_service;
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> m_source;
 
-
     void expectRequestSuccess();
     void expectRequestFailure();
 };

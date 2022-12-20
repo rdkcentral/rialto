@@ -144,7 +144,7 @@ public:
         StreamFormat getStreamFormat() const { return m_streamFormat; }
 
     protected:
-            /**
+        /**
          * @brief Default constructor.
          *
          * @param[in] id   : The source id.
@@ -154,19 +154,19 @@ public:
          * @param[in] streamFormat : The stream format
          * @param[in] codecData : The additional data for decoder
          */
-        explicit MediaSource(int32_t id = 0, SourceConfigType configType = SourceConfigType::UNKNOWN, const std::string &mimeType = std::string(),
+        explicit MediaSource(int32_t id = 0, SourceConfigType configType = SourceConfigType::UNKNOWN,
+                             const std::string &mimeType = std::string(),
                              SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                              StreamFormat streamFormat = StreamFormat::UNDEFINED,
                              const std::vector<uint8_t> &codecData = std::vector<uint8_t>())
-            : m_id(id), m_configType(configType), m_mimeType(mimeType), m_alignment(alignment), m_streamFormat(streamFormat),
-              m_codecData(codecData)
+            : m_id(id), m_configType(configType), m_mimeType(mimeType), m_alignment(alignment),
+              m_streamFormat(streamFormat), m_codecData(codecData)
         {
         }
         /**
          * @brief The source id.
          */
         int32_t m_id;
-
 
         /**
          * @brief The source config type.
@@ -221,13 +221,12 @@ public:
         MediaSourceType getType() const override { return MediaSourceType::AUDIO; }
         std::unique_ptr<MediaSource> copy() const override { return std::make_unique<MediaSourceAudio>(*this); }
 
-                /**
+        /**
          * @brief Gets the audio specific configuration
          *
          * @retval audio specific configuration
          */
-        const AudioConfig& getAudioConfig() const { return m_audioConfig; }
-
+        const AudioConfig &getAudioConfig() const { return m_audioConfig; }
 
     protected:
         AudioConfig m_audioConfig;
@@ -245,7 +244,8 @@ public:
          * @param[in] streamFormat : The stream format
          * @param[in] codecData : The additional data for decoder
          */
-        MediaSourceVideo(int32_t id, const std::string &mimeType, SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
+        MediaSourceVideo(int32_t id, const std::string &mimeType,
+                         SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                          StreamFormat streamFormat = StreamFormat::UNDEFINED,
                          const std::vector<uint8_t> &codecData = std::vector<uint8_t>())
             : MediaSource(id, SourceConfigType::VIDEO_BASE, mimeType, alignment, streamFormat, codecData)
@@ -255,6 +255,7 @@ public:
 
         MediaSourceType getType() const override { return MediaSourceType::VIDEO; }
         std::unique_ptr<MediaSource> copy() const { return std::make_unique<MediaSourceVideo>(*this); }
+
     protected:
         /**
          * @brief Constructor for video specific configuration.
@@ -279,7 +280,7 @@ public:
     {
     public:
         /**
-         * @brief Constructor for video specific configuration.
+         * @brief Constructor for dolby vision specific configuration.
          *
          * @param[in] id   : The source id.
          * @param[in] mimeType : The mime type string.
@@ -293,12 +294,17 @@ public:
                                     StreamFormat streamFormat = StreamFormat::UNDEFINED,
                                     const std::vector<uint8_t> &codecData = std::vector<uint8_t>())
             : MediaSourceVideo(id, SourceConfigType::VIDEO_DOLBY_VISION, mimeType, alignment, streamFormat, codecData),
-            m_dolbyVisionProfile(dolbyVisionProfile)
+              m_dolbyVisionProfile(dolbyVisionProfile)
         {
         }
         ~MediaSourceVideoDolbyVision() {}
         std::unique_ptr<MediaSource> copy() const { return std::make_unique<MediaSourceVideoDolbyVision>(*this); }
 
+        /**
+         * @brief Gets the dolby vision profile
+         *
+         * @retval dolby vision profile
+         */
         int32_t getDolbyVisionProfile() const { return m_dolbyVisionProfile; }
 
     protected:

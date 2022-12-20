@@ -80,19 +80,3 @@ TEST_F(RialtoServerMediaPipelineSourceTest, NoGstPlayerFailure)
     EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), false);
     EXPECT_EQ(mediaSource->getId(), -1);
 }
-
-/**
- * Test that AttachSource fails if the media source type is unknown.
- */
-// TEST_F(RialtoServerMediaPipelineSourceTest, TypeUnknownFailure)
-// {
-//     IMediaPipeline::MediaSource mediaSource(m_id, MediaSourceType::UNKNOWN, m_kMimeType);
-
-//     loadGstPlayer();
-//     mainThreadWillEnqueueTaskAndWait();
-
-//     EXPECT_CALL(*m_gstPlayerMock, attachSource(mediaSource)).Times(0);
-
-//     EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), false);
-//     EXPECT_EQ(mediaSource.getId(), -1);
-// }

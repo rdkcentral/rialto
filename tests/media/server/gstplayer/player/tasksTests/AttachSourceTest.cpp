@@ -62,15 +62,6 @@ protected:
     gchar m_capsStr{};
 };
 
-// TEST_F(AttachSourceTest, shouldNotAttachUnknownSource)
-// {
-//     firebolt::rialto::IMediaPipeline::MediaSource source(-1, firebolt::rialto::MediaSourceType::UNKNOWN,
-//                                                          m_mimeType2.c_str());
-//     firebolt::rialto::server::AttachSource task{m_context, m_gstWrapper, m_glibWrapper, source};
-//     task.execute();
-//     EXPECT_EQ(0, m_context.streamInfo.size());
-// }
-
 TEST_F(AttachSourceTest, shouldAttachAudioSource)
 {
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
@@ -296,6 +287,4 @@ TEST_F(AttachSourceTest, shouldAttachVideoDolbyVisionSource)
     EXPECT_EQ(1, m_context.streamInfo.size());
     EXPECT_NE(m_context.streamInfo.end(), m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO));
     EXPECT_EQ(&m_appSrc, m_context.streamInfo.at(firebolt::rialto::MediaSourceType::VIDEO));
-
-
 }

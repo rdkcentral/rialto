@@ -83,8 +83,7 @@ convertMediaSourceStatus(const firebolt::rialto::HaveDataRequest_MediaSourceStat
     return firebolt::rialto::MediaSourceStatus::ERROR;
 }
 
-firebolt::rialto::SourceConfigType
-convertConfigType(const firebolt::rialto::AttachSourceRequest_ConfigType &configType)
+firebolt::rialto::SourceConfigType convertConfigType(const firebolt::rialto::AttachSourceRequest_ConfigType &configType)
 {
     switch (configType)
     {

@@ -32,17 +32,14 @@ class MediaSourceCapsBuilder
 {
 public:
     MediaSourceCapsBuilder(std::shared_ptr<IGstWrapper> gstWrapper, std::shared_ptr<IGlibWrapper> glibWrapper,
-                          const IMediaPipeline::MediaSource &source)
+                           const IMediaPipeline::MediaSource &source)
         : m_gstWrapper(gstWrapper), m_glibWrapper(glibWrapper), m_attachedSource(source)
     {
     }
-    virtual GstCaps* buildCaps()
-    {
-        return buildCommonCaps();
-    }
+    virtual GstCaps *buildCaps() { return buildCommonCaps(); }
 
-protected :
-    GstCaps* buildCommonCaps()
+protected:
+    GstCaps *buildCommonCaps()
     {
         GstCaps *caps = createSimpleCapsFromMimeType();
 
@@ -117,11 +114,11 @@ class MediaSourceAudioCapsBuilder : public MediaSourceCapsBuilder
 public:
     MediaSourceAudioCapsBuilder(std::shared_ptr<IGstWrapper> gstWrapper, std::shared_ptr<IGlibWrapper> glibWrapper,
                                 const IMediaPipeline::MediaSourceAudio &source)
-        : MediaSourceCapsBuilder(gstWrapper, glibWrapper, source), m_attachedSource(source)
+        : MediaSourceCapsBuilder(gstWrapper, glibWrapper, source), m_attachedAudioSource(source)
     {
     }
 
-    GstCaps* buildCaps() override
+    GstCaps *buildCaps() override
     {
         std::string mimeType = m_attachedSource.getMimeType();
         if (mimeType == "audio/x-opus")
@@ -155,7 +152,7 @@ protected:
     GstCaps *getAudioSpecificConfiguration() const
     {
         GstCaps *caps = nullptr;
-        firebolt::rialto::AudioConfig audioConfig = m_attachedSource.getAudioConfig();
+        firebolt::rialto::AudioConfig audioConfig = m_attachedAudioSource.getAudioConfig();
         if (audioConfig.codecSpecificConfig.size())
         {
             gsize codec_priv_size = audioConfig.codecSpecificConfig.size();
@@ -173,7 +170,7 @@ protected:
 
     void addSampleRateAndChannelsToCaps(GstCaps *caps) const
     {
-        firebolt::rialto::AudioConfig audioConfig = m_attachedSource.getAudioConfig();
+        firebolt::rialto::AudioConfig audioConfig = m_attachedAudioSource.getAudioConfig();
 
         if (audioConfig.numberOfChannels != firebolt::rialto::kInvalidAudioChannels)
             m_gstWrapper->gstCapsSetSimple(caps, "channels", G_TYPE_INT, audioConfig.numberOfChannels, nullptr);
@@ -187,7 +184,7 @@ protected:
         m_gstWrapper->gstCapsSetSimple(caps, "mpegversion", G_TYPE_INT, 4, nullptr);
     }
 
-    const IMediaPipeline::MediaSourceAudio &m_attachedSource;
+    const IMediaPipeline::MediaSourceAudio &m_attachedAudioSource;
 };
 
 class MediaSourceVideoDolbyVisionCapsBuilder : public MediaSourceCapsBuilder
@@ -196,26 +193,27 @@ public:
     MediaSourceVideoDolbyVisionCapsBuilder(std::shared_ptr<IGstWrapper> gstWrapper,
                                            std::shared_ptr<IGlibWrapper> glibWrapper,
                                            const IMediaPipeline::MediaSourceVideoDolbyVision &source)
-        : MediaSourceCapsBuilder(gstWrapper, glibWrapper, source), m_attachedSource(source)
+        : MediaSourceCapsBuilder(gstWrapper, glibWrapper, source), m_attachedDolbySource(source)
     {
     }
 
-    GstCaps* buildCaps() override
+    GstCaps *buildCaps() override
     {
         GstCaps *caps = buildCommonCaps();
         m_gstWrapper->gstCapsSetSimple(caps, "dovi-stream", G_TYPE_BOOLEAN, true, nullptr);
-        m_gstWrapper->gstCapsSetSimple(caps, "dv_profile", G_TYPE_INT, m_attachedSource.getDolbyVisionProfile(), nullptr);
+        m_gstWrapper->gstCapsSetSimple(caps, "dv_profile", G_TYPE_INT, m_attachedDolbySource.getDolbyVisionProfile(),
+                                       nullptr);
         return caps;
     }
 
 protected:
-    const IMediaPipeline::MediaSourceVideoDolbyVision &m_attachedSource;
+    const IMediaPipeline::MediaSourceVideoDolbyVision &m_attachedDolbySource;
 };
-}; //namespace
-
+}; // namespace
 
 AttachSource::AttachSource(PlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper,
-                           std::shared_ptr<IGlibWrapper> glibWrapper, const std::unique_ptr<IMediaPipeline::MediaSource> &source)
+                           std::shared_ptr<IGlibWrapper> glibWrapper,
+                           const std::unique_ptr<IMediaPipeline::MediaSource> &source)
     : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_attachedSource{source->copy()}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing AttachSource");
@@ -305,7 +303,7 @@ GstCaps *AttachSource::createCapsFromMediaSource() const
     }
     else
     {
-        //log
+        RIALTO_SERVER_LOG_WARN("Invalid config type %u", static_cast<uint32_t>(configType));
         return nullptr;
     }
 
