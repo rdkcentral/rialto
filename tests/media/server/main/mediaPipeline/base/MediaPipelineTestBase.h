@@ -33,6 +33,8 @@
 #include "MediaPipelineServerInternal.h"
 #include "MediaSourceUtil.h"
 #include "SharedMemoryBufferMock.h"
+#include "TimerFactoryMock.h"
+#include "TimerMock.h"
 #include <gtest/gtest.h>
 #include <memory>
 
@@ -72,6 +74,8 @@ protected:
     StrictMock<ActiveRequestsMock> *m_activeRequestsMock;
     std::shared_ptr<StrictMock<MainThreadFactoryMock>> m_mainThreadFactoryMock;
     std::shared_ptr<StrictMock<MainThreadMock>> m_mainThreadMock;
+    std::shared_ptr<StrictMock<TimerFactoryMock>> m_timerFactoryMock;
+    std::unique_ptr<StrictMock<TimerMock>> m_timerMock;
     StrictMock<DecryptionServiceMock> m_decryptionServiceMock;
 
     // Common variables
