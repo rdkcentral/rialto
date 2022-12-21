@@ -318,7 +318,8 @@ protected:
     bool notifyNeedMediaDataInternal(MediaSourceType mediaSourceType);
 
     /**
-     * @brief Schedules resending of NeedMediaData, when haveData with incorrect status is received
+     * @brief Schedules resending of NeedMediaData, when haveData with incorrect status is received, only to be called
+     *        on the main thread.
      *
      * @param[in] mediaSourceType    : The media source type.
      */
