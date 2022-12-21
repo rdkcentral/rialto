@@ -46,7 +46,7 @@ void ReadShmDataAndAttachSamples::execute() const
 
     for (const auto &mediaSegment : mediaSegments)
     {
-        GstBuffer *gstBuffer = m_player.createDecryptedBuffer(*mediaSegment);
+        GstBuffer *gstBuffer = m_player.createBuffer(*mediaSegment);
         if (mediaSegment->getType() == firebolt::rialto::MediaSourceType::VIDEO)
         {
             try

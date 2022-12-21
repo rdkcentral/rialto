@@ -31,6 +31,7 @@ add_gtests(RialtoServerGstPlayerUnitTests
     player/tasksTests/PlayerTaskFactoryTest.cpp
     player/tasksTests/PlayTest.cpp
     player/tasksTests/ReadShmDataAndAttachSamplesTest.cpp
+    player/tasksTests/RenderFrameTest.cpp
     player/tasksTests/ReportPositionTest.cpp
     player/tasksTests/CheckAudioUnderflowTest.cpp
     player/tasksTests/SetPlaybackRateTest.cpp
@@ -57,6 +58,10 @@ add_gtests(RialtoServerGstPlayerUnitTests
     rialtoSrc/CreateTest.cpp
     rialtoSrc/InitTest.cpp
     rialtoSrc/AppSrcTest.cpp
+
+    #Decyptor unittests
+    decryptor/CreateTest.cpp
+    decryptor/DecryptTest.cpp
 )
 
 target_include_directories(RialtoServerGstPlayerUnitTests
@@ -67,7 +72,7 @@ target_include_directories(RialtoServerGstPlayerUnitTests
         $<TARGET_PROPERTY:RialtoServerMocks,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoCommonMocks,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoCommonMisc,INTERFACE_INCLUDE_DIRECTORIES>
-        
+
         player/common/
 
 )

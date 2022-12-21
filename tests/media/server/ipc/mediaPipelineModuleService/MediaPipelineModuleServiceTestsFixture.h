@@ -46,7 +46,7 @@ public:
     void playbackServiceWillLoadSession();
     void playbackServiceWillFailToLoadSession();
     void playbackServiceWillAttachSource();
-    void playbackServiceWillAttachAudioSourceWithCodecConfig();
+    void playbackServiceWillAttachAudioSourceWithAdditionaldata();
     void playbackServiceWillFailToAttachSource();
     void playbackServiceWillPlay();
     void playbackServiceWillFailToPlay();
@@ -64,6 +64,8 @@ public:
     void playbackServiceWillFailToSetPlaybackRate();
     void playbackServiceWillGetPosition();
     void playbackServiceWillFailToGetPosition();
+    void playbackServiceWillRenderFrame();
+    void playbackServiceWillFailToRenderFrame();
     void mediaClientWillSendPlaybackStateChangedEvent();
     void mediaClientWillSendNetworkStateChangedEvent();
     void mediaClientWillSendNeedMediaDataEvent(int sessionId);
@@ -77,7 +79,7 @@ public:
     void sendDestroySessionRequestAndReceiveResponse();
     void sendLoadRequestAndReceiveResponse();
     void sendAttachSourceRequestAndReceiveResponse();
-    void sendAttachAudioSourceWithCodecConfigRequestAndReceiveResponse();
+    void sendAttachAudioSourceWithAdditionalDataRequestAndReceiveResponse();
     void sendPlayRequestAndReceiveResponse();
     void sendPauseRequestAndReceiveResponse();
     void sendStopRequestAndReceiveResponse();
@@ -92,6 +94,7 @@ public:
     void sendNeedMediaDataEvent();
     void sendPostionChangeEvent();
     void sendQosEvent();
+    void sendRenderFrameRequestAndReceiveResponse();
 
 private:
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ClientMock>> m_clientMock;

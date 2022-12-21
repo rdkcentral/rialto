@@ -128,6 +128,8 @@ public:
 
     void notifyQos(int32_t sourceId, const QosInfo &qosInfo) override;
 
+    bool renderFrame() override;
+
 protected:
     /**
      * @brief The need data request data.

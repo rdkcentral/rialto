@@ -30,25 +30,6 @@ on:
     branches: [ "master", "rdkcentral:master" ]
   pull_request:
     branches: [ "master", "rdkcentral:master" ]
-    paths-ignore:
-      - 'README.md'
-      - 'CPPLINT.cfg'
-      - 'CONTRIBUTING.md'
-      - 'COPYING'
-      - 'LICENSE'
-      - 'NOTICE'
-      - '.gitignore'
-      - '.clang-format'
-      - '**/build_ut.yml'
-      - '**/cpplint.yml'
-      - '**/clang-format.yml'
-      - '**/cppcheck.yml'
-      - '**/build_and_deploy_gh_pages.yml'
-      - 'docs/**'
-      - 'scripts/cpplint/**'
-      - 'scripts/clang-format/**'
-      - 'Doxyfile'
-      - 'DoxygenLayout.xml'
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -60,7 +41,7 @@ jobs:
   download-protobuf:
     name: Download and Cache Protobuf
     # Runs on ubuntu
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     # Timeout after
     timeout-minutes: 90
 
@@ -94,10 +75,11 @@ jobs:
           sudo ldconfig
 
       # If this job was cancelled by protobuf install, the cache is likely corrupt
+      # See instructions on how to reset the cache - https://wiki.rdkcentral.com/display/ASP/Github+workflow+Failures
       - name: Is Cancelled
         if: cancelled()
         run: |
-          echo "If this job was cancelled due to 'Install protobuf library' timeout, the cache is likely corrupt and needs deleting!" >> $GITHUB_STEP_SUMMARY
+          echo "If this job was cancelled due to 'Install protobuf library' timeout, the cache is likely corrupt and needs deleting! (see https://wiki.rdkcentral.com/display/ASP/Github+workflow+Failures)" >> $GITHUB_STEP_SUMMARY
 
   # This job downloads and caches valgrind to speed up execution
   # An updated version of valgrind is required, the default version for ubuntu-18.04 is
@@ -105,7 +87,7 @@ jobs:
   download-valgrind:
     name: Download and Cache Valgrind
     # Runs on ubuntu
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     # Timeout after
     timeout-minutes: 10
 
@@ -134,9 +116,9 @@ jobs:
     # Wait for protobuf and valgrind to be cached first
     needs: [download-protobuf, download-valgrind]
     # Runs on ubuntu
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     # Timeout after
-    timeout-minutes: 20
+    timeout-minutes: 60
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -202,10 +184,11 @@ jobs:
           sudo ldconfig
 
       # If this job was cancelled by protobuf install, the cache is likely corrupt
+      # See instructions on how to reset the cache - https://wiki.rdkcentral.com/display/ASP/Github+workflow+Failures
       - name: Is Cancelled
         if: cancelled()
         run: |
-          echo "If this job was cancelled due to 'Install protobuf library' timeout, the cache is likely corrupt and needs deleting!" >> $GITHUB_STEP_SUMMARY
+          echo "If this job was cancelled due to 'Install protobuf library' timeout, the cache is likely corrupt and needs deleting! (see https://wiki.rdkcentral.com/display/ASP/Github+workflow+Failures)" >> $GITHUB_STEP_SUMMARY
 
       # Run the build script with valgrind
       - name: Run unittests with valgrind

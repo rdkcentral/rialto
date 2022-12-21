@@ -32,7 +32,6 @@ constexpr std::uint32_t metadataOffset{1024};
 constexpr int requestId{0};
 constexpr int maxFrames{24};
 constexpr int maxMetadataBytes{2500};
-constexpr int maxMediaBytes{7337532};
 } // namespace
 
 namespace firebolt::rialto
@@ -57,8 +56,8 @@ NeedMediaDataTests::NeedMediaDataTests()
 
 void NeedMediaDataTests::initialize()
 {
-    EXPECT_CALL(shmBufferMock, getBufferLen(sessionId, validMediaSourceType)).WillOnce(Return(bufferLen));
-    EXPECT_CALL(shmBufferMock, getBufferOffset(sessionId, validMediaSourceType)).WillOnce(Return(metadataOffset));
+    EXPECT_CALL(shmBufferMock, getMaxDataLen(sessionId, validMediaSourceType)).WillOnce(Return(bufferLen));
+    EXPECT_CALL(shmBufferMock, getDataOffset(sessionId, validMediaSourceType)).WillOnce(Return(metadataOffset));
     m_sut = std::make_unique<firebolt::rialto::server::NeedMediaData>(m_clientMock, activeRequestsMock, shmBufferMock,
                                                                       sessionId, validMediaSourceType);
 }

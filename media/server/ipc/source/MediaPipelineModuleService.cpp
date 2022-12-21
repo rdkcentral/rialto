@@ -105,6 +105,27 @@ convertSegmentAlignment(const firebolt::rialto::AttachSourceRequest_SegmentAlign
     return firebolt::rialto::SegmentAlignment::UNDEFINED;
 }
 
+firebolt::rialto::StreamFormat convertStreamFormat(const firebolt::rialto::AttachSourceRequest_StreamFormat &streamFormat)
+{
+    switch (streamFormat)
+    {
+    case firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_RAW:
+    {
+        return firebolt::rialto::StreamFormat::RAW;
+    }
+    case firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_AVC:
+    {
+        return firebolt::rialto::StreamFormat::AVC;
+    }
+    case firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_BYTE_STREAM:
+    {
+        return firebolt::rialto::StreamFormat::BYTE_STREAM;
+    }
+    default:
+        return firebolt::rialto::StreamFormat::UNDEFINED;
+    }
+}
+
 } // namespace
 
 namespace firebolt::rialto::server::ipc
@@ -277,9 +298,15 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
     RIALTO_SERVER_LOG_DEBUG("%s requested. media type %s, mime_type: %s", __func__,
                             firebolt::rialto::ProtoMediaSourceType::AUDIO == request->media_type() ? "audio" : "video",
                             request->mime_type().c_str());
-    IMediaPipeline::MediaSource mediaSource{0, convertMediaSourceType(request->media_type()),
+
+    auto codecDataProto = request->codec_data();
+    std::vector<uint8_t> codecData(codecDataProto.begin(), codecDataProto.end());
+    IMediaPipeline::MediaSource mediaSource{0,
+                                            convertMediaSourceType(request->media_type()),
                                             request->mime_type().c_str(),
-                                            convertSegmentAlignment(request->segment_alignment())};
+                                            convertSegmentAlignment(request->segment_alignment()),
+                                            convertStreamFormat(request->stream_format()),
+                                            codecData};
 
     if (request->media_type() == firebolt::rialto::ProtoMediaSourceType::AUDIO)
     {
@@ -296,7 +323,8 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
 
         mediaSource = IMediaPipeline::MediaSource(0, request->mime_type(),
                                                   {numberofchannels, sampleRate, codecSpecificConfig},
-                                                  convertSegmentAlignment(request->segment_alignment()));
+                                                  convertSegmentAlignment(request->segment_alignment()),
+                                                  convertStreamFormat(request->stream_format()), codecData);
     }
 
     if (!m_playbackService.attachSource(request->session_id(), mediaSource))
@@ -420,6 +448,22 @@ void MediaPipelineModuleService::getPosition(::google::protobuf::RpcController *
     {
         response->set_position(position);
     }
+    done->Run();
+}
+
+void MediaPipelineModuleService::renderFrame(::google::protobuf::RpcController *controller,
+                                             const ::firebolt::rialto::RenderFrameRequest *request,
+                                             ::firebolt::rialto::RenderFrameResponse *response,
+                                             ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    if (!m_playbackService.renderFrame(request->session_id()))
+    {
+        RIALTO_SERVER_LOG_ERROR("Render frame");
+        controller->SetFailed("Operation failed");
+    }
+
     done->Run();
 }
 } // namespace firebolt::rialto::server::ipc

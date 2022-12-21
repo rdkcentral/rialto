@@ -91,6 +91,8 @@ public:
 
     bool setPlaybackRate(double rate) override;
 
+    bool renderFrame() override;
+
 private:
     /**
      * @brief The media player client ipc.
@@ -180,6 +182,12 @@ private:
      */
     firebolt::rialto::AttachSourceRequest_SegmentAlignment
     convertSegmentAlignment(const firebolt::rialto::SegmentAlignment &alignment);
+
+    /**
+     * @brief Converts the StreamFormat enum to protobuf AttachSourceRequest StreamFormat.
+     */
+    firebolt::rialto::AttachSourceRequest_StreamFormat
+    convertStreamFormat(const firebolt::rialto::StreamFormat &streamFormat);
 };
 
 }; // namespace firebolt::rialto::client

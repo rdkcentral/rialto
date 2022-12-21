@@ -33,7 +33,6 @@ namespace
 constexpr auto audioSourceId{static_cast<std::int32_t>(firebolt::rialto::MediaSourceType::AUDIO)};
 constexpr auto videoSourceId{static_cast<std::int32_t>(firebolt::rialto::MediaSourceType::VIDEO)};
 constexpr gint64 itHappenedInThePast = 1238450934;
-constexpr gint64 currentTimestamp = 2340538204;
 constexpr gint64 itWillHappenInTheFuture = 3823530248;
 constexpr int64_t duration{9000000000};
 constexpr int32_t sampleRate{13};
@@ -77,7 +76,7 @@ public:
 TEST_F(AttachSamplesTest, shouldAttachAllAudioSamples)
 {
     auto samples = buildAudioSamples();
-    EXPECT_CALL(m_gstPlayer, createDecryptedBuffer(_)).Times(2).WillRepeatedly(Return(&m_gstBuffer));
+    EXPECT_CALL(m_gstPlayer, createBuffer(_)).Times(2).WillRepeatedly(Return(&m_gstBuffer));
     firebolt::rialto::server::AttachSamples task{m_context, m_gstPlayer, samples};
     EXPECT_CALL(m_gstPlayer, updateAudioCaps(sampleRate, numberOfChannels)).Times(2);
     EXPECT_CALL(m_gstPlayer, attachAudioData()).Times(2);
@@ -89,7 +88,7 @@ TEST_F(AttachSamplesTest, shouldAttachAllAudioSamples)
 TEST_F(AttachSamplesTest, shouldAttachAllVideoSamples)
 {
     auto samples = buildVideoSamples();
-    EXPECT_CALL(m_gstPlayer, createDecryptedBuffer(_)).Times(2).WillRepeatedly(Return(&m_gstBuffer));
+    EXPECT_CALL(m_gstPlayer, createBuffer(_)).Times(2).WillRepeatedly(Return(&m_gstBuffer));
     firebolt::rialto::server::AttachSamples task{m_context, m_gstPlayer, samples};
     EXPECT_CALL(m_gstPlayer, updateVideoCaps(width, height)).Times(2);
     EXPECT_CALL(m_gstPlayer, attachVideoData()).Times(2);

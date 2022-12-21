@@ -35,7 +35,6 @@ namespace
 constexpr auto audioSourceId{static_cast<std::int32_t>(firebolt::rialto::MediaSourceType::AUDIO)};
 constexpr auto videoSourceId{static_cast<std::int32_t>(firebolt::rialto::MediaSourceType::VIDEO)};
 constexpr gint64 itHappenedInThePast = 1238450934;
-constexpr gint64 currentTimestamp = 2340538204;
 constexpr gint64 itWillHappenInTheFuture = 3823530248;
 constexpr int64_t duration{9000000000};
 constexpr int32_t sampleRate{13};
@@ -82,7 +81,7 @@ TEST_F(ReadShmDataAndAttachSamplesTest, shouldAttachAllAudioSamples)
 {
     firebolt::rialto::IMediaPipeline::MediaSegmentVector dataVec = buildAudioSamples();
     EXPECT_CALL(*m_dataReader, readData()).WillOnce(Return(ByMove(std::move(dataVec))));
-    EXPECT_CALL(m_gstPlayer, createDecryptedBuffer(_)).Times(2).WillRepeatedly(Return(&m_gstBuffer));
+    EXPECT_CALL(m_gstPlayer, createBuffer(_)).Times(2).WillRepeatedly(Return(&m_gstBuffer));
     EXPECT_CALL(m_gstPlayer, updateAudioCaps(sampleRate, numberOfChannels)).Times(2);
     EXPECT_CALL(m_gstPlayer, attachAudioData()).Times(2);
     EXPECT_CALL(m_gstPlayer, notifyNeedMediaData(true, false));
@@ -95,7 +94,7 @@ TEST_F(ReadShmDataAndAttachSamplesTest, shouldAttachAllVideoSamples)
 {
     firebolt::rialto::IMediaPipeline::MediaSegmentVector dataVec = buildVideoSamples();
     EXPECT_CALL(*m_dataReader, readData()).WillOnce(Return(ByMove(std::move(dataVec))));
-    EXPECT_CALL(m_gstPlayer, createDecryptedBuffer(_)).Times(2).WillRepeatedly(Return(&m_gstBuffer));
+    EXPECT_CALL(m_gstPlayer, createBuffer(_)).Times(2).WillRepeatedly(Return(&m_gstBuffer));
     EXPECT_CALL(m_gstPlayer, updateVideoCaps(width, height)).Times(2);
     EXPECT_CALL(m_gstPlayer, attachVideoData()).Times(2);
     EXPECT_CALL(m_gstPlayer, notifyNeedMediaData(false, true));

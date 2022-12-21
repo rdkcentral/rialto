@@ -46,7 +46,7 @@ protected:
     void GetGstPlayerClient()
     {
         mainThreadWillEnqueueTaskAndWait();
-        EXPECT_CALL(*m_gstPlayerFactoryMock, createGstPlayer(_, _, _))
+        EXPECT_CALL(*m_gstPlayerFactoryMock, createGstPlayer(_, _, _, _))
             .WillOnce(DoAll(SaveArg<0>(&m_gstPlayerCallback), Return(ByMove(std::move(m_gstPlayer)))));
 
         // notifyNetworkState posts a task onto the main thread but doesnt wait
@@ -106,9 +106,9 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyNeedMediaData)
     mainThreadWillEnqueueTaskAndWait();
     ASSERT_TRUE(m_sharedMemoryBufferMock);
     ASSERT_TRUE(m_activeRequestsMock);
-    EXPECT_CALL(*m_sharedMemoryBufferMock, clearBuffer(m_kSessionId, mediaSourceType)).WillOnce(Return(true));
-    EXPECT_CALL(*m_sharedMemoryBufferMock, getBufferLen(m_kSessionId, mediaSourceType)).WillOnce(Return(7 * 1024 * 1024));
-    EXPECT_CALL(*m_sharedMemoryBufferMock, getBufferOffset(m_kSessionId, mediaSourceType)).WillOnce(Return(0));
+    EXPECT_CALL(*m_sharedMemoryBufferMock, clearData(m_kSessionId, mediaSourceType)).WillOnce(Return(true));
+    EXPECT_CALL(*m_sharedMemoryBufferMock, getMaxDataLen(m_kSessionId, mediaSourceType)).WillOnce(Return(7 * 1024 * 1024));
+    EXPECT_CALL(*m_sharedMemoryBufferMock, getDataOffset(m_kSessionId, mediaSourceType)).WillOnce(Return(0));
     EXPECT_CALL(*m_activeRequestsMock, insert(mediaSourceType, _)).WillOnce(Return(0));
     EXPECT_CALL(*m_mediaPipelineClientMock,
                 notifyNeedMediaData(sourceId, numFrames, 0, _)); // params tested in NeedMediaDataTests

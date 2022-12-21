@@ -70,7 +70,8 @@ std::shared_ptr<IGstPlayerFactory> IGstPlayerFactory::getFactory()
 }
 
 std::unique_ptr<IGstPlayer> GstPlayerFactory::createGstPlayer(IGstPlayerClient *client,
-                                                              IDecryptionService &decryptionService, MediaType type)
+                                                              IDecryptionService &decryptionService, MediaType type,
+                                                              const VideoRequirements &videoRequirements)
 {
     std::unique_ptr<IGstPlayer> gstPlayer;
 
@@ -88,8 +89,9 @@ std::unique_ptr<IGstPlayer> GstPlayerFactory::createGstPlayer(IGstPlayerClient *
         {
             throw std::runtime_error("Cannot create GlibWrapper");
         }
-        gstPlayer = std::make_unique<GstPlayer>(client, decryptionService, type, gstWrapper, glibWrapper,
-                                                IGstSrcFactory::getFactory(), common::ITimerFactory::getFactory(),
+        gstPlayer = std::make_unique<GstPlayer>(client, decryptionService, type, videoRequirements, gstWrapper,
+                                                glibWrapper, IGstSrcFactory::getFactory(),
+                                                common::ITimerFactory::getFactory(),
                                                 std::make_unique<PlayerTaskFactory>(client, gstWrapper, glibWrapper),
                                                 std::make_unique<WorkerThreadFactory>(),
                                                 std::make_unique<GstDispatcherThreadFactory>());
@@ -127,15 +129,32 @@ bool IGstPlayer::initalise(int argc, char **argv)
 }
 
 GstPlayer::GstPlayer(IGstPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
-                     const std::shared_ptr<IGstWrapper> &gstWrapper, const std::shared_ptr<IGlibWrapper> &glibWrapper,
+                     const VideoRequirements &videoRequirements, const std::shared_ptr<IGstWrapper> &gstWrapper,
+                     const std::shared_ptr<IGlibWrapper> &glibWrapper,
                      const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
                      std::shared_ptr<common::ITimerFactory> timerFactory, std::unique_ptr<IPlayerTaskFactory> taskFactory,
                      std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
                      std::unique_ptr<IGstDispatcherThreadFactory> gstDispatcherThreadFactory)
-    : m_gstPlayerClient(client), m_decryptionService{decryptionService}, m_gstWrapper{gstWrapper},
-      m_glibWrapper{glibWrapper}, m_timerFactory{timerFactory}, m_taskFactory{std::move(taskFactory)}
+    : m_gstPlayerClient(client), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_timerFactory{timerFactory},
+      m_taskFactory{std::move(taskFactory)}
 {
     RIALTO_SERVER_LOG_DEBUG("GstPlayer is constructed.");
+
+    m_context.decryptionService = &decryptionService;
+
+    // Check the video requirements for a limited video.
+    // If the video requirements are set to anything lower than the minimum, this playback is assumed to be a secondary
+    // video in a dual video scenario.
+    if ((kMinPrimaryVideoWidth > videoRequirements.maxWidth) || (kMinPrimaryVideoHeight > videoRequirements.maxHeight))
+    {
+        RIALTO_SERVER_LOG_INFO("Secondary video playback selected");
+        m_context.isSecondaryVideo = true;
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_INFO("Primary video playback selected");
+    }
+
     if ((!gstSrcFactory) || (!(m_context.gstSrc = gstSrcFactory->getGstSrc())))
     {
         throw std::runtime_error("Cannot create GstSrc");
@@ -340,7 +359,7 @@ bool GstPlayer::getPosition(std::int64_t &position)
     return true;
 }
 
-GstBuffer *GstPlayer::createDecryptedBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const
+GstBuffer *GstPlayer::createBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const
 {
     GstBuffer *gstBuffer = m_gstWrapper->gstBufferNewAllocate(nullptr, mediaSegment.getDataLength(), nullptr);
     m_gstWrapper->gstBufferFill(gstBuffer, 0, mediaSegment.getData(), mediaSegment.getDataLength());
@@ -348,16 +367,17 @@ GstBuffer *GstPlayer::createDecryptedBuffer(const IMediaPipeline::MediaSegment &
     if (mediaSegment.isEncrypted())
     {
         GstBuffer *keyId = nullptr;
-        if (m_decryptionService.isNetflixKeySystem(mediaSegment.getMediaKeySessionId()))
+        if (m_context.decryptionService->isNetflixKeySystem(mediaSegment.getMediaKeySessionId()))
         {
             keyId = m_gstWrapper->gstBufferNew();
-            m_decryptionService.selectKeyId(mediaSegment.getMediaKeySessionId(), mediaSegment.getKeyId());
+            m_context.decryptionService->selectKeyId(mediaSegment.getMediaKeySessionId(), mediaSegment.getKeyId());
         }
         else
         {
             keyId = m_gstWrapper->gstBufferNewAllocate(nullptr, mediaSegment.getKeyId().size(), nullptr);
             m_gstWrapper->gstBufferFill(keyId, 0, mediaSegment.getKeyId().data(), mediaSegment.getKeyId().size());
         }
+
         GstBuffer *initVector = m_gstWrapper->gstBufferNewAllocate(nullptr, mediaSegment.getInitVector().size(), nullptr);
         m_gstWrapper->gstBufferFill(initVector, 0, mediaSegment.getInitVector().data(),
                                     mediaSegment.getInitVector().size());
@@ -373,9 +393,28 @@ GstBuffer *GstPlayer::createDecryptedBuffer(const IMediaPipeline::MediaSegment &
         }
         GstBuffer *subsamples = m_gstWrapper->gstBufferNewWrapped(subsamplesRaw, subsamplesRawSize);
 
-        m_decryptionService.decrypt(mediaSegment.getMediaKeySessionId(), gstBuffer, subsamples,
-                                    mediaSegment.getSubSamples().size(), initVector, keyId,
-                                    mediaSegment.getInitWithLast15());
+        GstStructure *info =
+            m_gstWrapper->gstStructureNew("decryption_metadata", "kid", GST_TYPE_BUFFER, keyId, "iv_size", G_TYPE_UINT,
+                                          mediaSegment.getInitVector().size(), "iv", GST_TYPE_BUFFER, initVector,
+                                          "subsample_count", G_TYPE_UINT, mediaSegment.getSubSamples().size(),
+                                          "subsamples", GST_TYPE_BUFFER, subsamples, "init_with_last_15", G_TYPE_UINT,
+                                          mediaSegment.getInitWithLast15(), "key_session_id", G_TYPE_UINT,
+                                          mediaSegment.getMediaKeySessionId(), NULL);
+
+        m_gstWrapper->gstBufferAddProtectionMeta(gstBuffer, info);
+
+        if (subsamples)
+        {
+            m_gstWrapper->gstBufferUnref(subsamples);
+        }
+        if (initVector)
+        {
+            m_gstWrapper->gstBufferUnref(initVector);
+        }
+        if (keyId)
+        {
+            m_gstWrapper->gstBufferUnref(keyId);
+        }
     }
 
     GST_BUFFER_TIMESTAMP(gstBuffer) = mediaSegment.getTimeStamp();
@@ -656,6 +695,31 @@ bool GstPlayer::setWesterossinkRectangle()
         m_context.pendingGeometry.clear();
         result = true;
     }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to set the westerossink rectangle");
+    }
+
+    if (videoSink)
+        m_gstWrapper->gstObjectUnref(GST_OBJECT(videoSink));
+
+    return result;
+}
+
+bool GstPlayer::setWesterossinkSecondaryVideo()
+{
+    bool result = false;
+    GstElement *videoSink = nullptr;
+    m_glibWrapper->gObjectGet(m_context.pipeline, "video-sink", &videoSink, nullptr);
+    if (videoSink && m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink), "res-usage"))
+    {
+        m_glibWrapper->gObjectSet(videoSink, "res-usage", 0x0u, nullptr);
+        result = true;
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to set the westerossink res-usage");
+    }
 
     if (videoSink)
         m_gstWrapper->gstObjectUnref(GST_OBJECT(videoSink));
@@ -704,5 +768,13 @@ void GstPlayer::setPendingPlaybackRate()
 {
     RIALTO_SERVER_LOG_INFO("Setting pending playback rate");
     setPlaybackRate(m_context.pendingPlaybackRate);
+}
+
+void GstPlayer::renderFrame()
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(m_taskFactory->createRenderFrame(m_context));
+    }
 }
 }; // namespace firebolt::rialto::server

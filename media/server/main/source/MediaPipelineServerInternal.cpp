@@ -191,7 +191,7 @@ bool MediaPipelineServerInternal::loadInternal(MediaType type, const std::string
         m_gstPlayer.reset();
     }
 
-    m_gstPlayer = m_kGstPlayerFactory->createGstPlayer(this, m_decryptionService, type);
+    m_gstPlayer = m_kGstPlayerFactory->createGstPlayer(this, m_decryptionService, type, m_kVideoRequirements);
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to load gstreamer player");
@@ -475,6 +475,18 @@ bool MediaPipelineServerInternal::haveData(MediaSourceStatus status, uint32_t nu
     return result;
 }
 
+bool MediaPipelineServerInternal::renderFrame()
+{
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("renderFrame failed - Gstreamer player has not been loaded");
+        return false;
+    }
+
+    m_gstPlayer->renderFrame();
+    return true;
+}
+
 bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uint32_t numFrames,
                                                    uint32_t needDataRequestId)
 {
@@ -495,10 +507,10 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
         RIALTO_SERVER_LOG_WARN("Data request for needDataRequestId: %u received with wrong status", needDataRequestId);
         return notifyNeedMediaDataInternal(mediaSourceType); // Resend NeedMediaData
     }
-    uint8_t *data = m_shmBuffer->getBufferForSession(m_sessionId);
-    if (!data)
+    uint8_t *buffer = m_shmBuffer->getBuffer();
+    if (!buffer)
     {
-        RIALTO_SERVER_LOG_ERROR("No buffer available for session: %d", m_sessionId);
+        RIALTO_SERVER_LOG_ERROR("No buffer available");
         notifyPlaybackState(PlaybackState::FAILURE);
         return false;
     }
@@ -506,7 +518,7 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
     std::uint32_t regionOffset = 0;
     try
     {
-        regionOffset = m_shmBuffer->getBufferOffset(m_sessionId, mediaSourceType);
+        regionOffset = m_shmBuffer->getDataOffset(m_sessionId, mediaSourceType);
     }
     catch (const std::runtime_error &e)
     {
@@ -518,7 +530,7 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
     if (0 != numFrames)
     {
         std::shared_ptr<IDataReader> dataReader =
-            m_dataReaderFactory->createDataReader(mediaSourceType, data, regionOffset, numFrames);
+            m_dataReaderFactory->createDataReader(mediaSourceType, buffer, regionOffset, numFrames);
         if (!dataReader)
         {
             RIALTO_SERVER_LOG_ERROR("Metadata version not supported for request id: %u", needDataRequestId);
@@ -592,7 +604,7 @@ bool MediaPipelineServerInternal::notifyNeedMediaData(MediaSourceType mediaSourc
 
 bool MediaPipelineServerInternal::notifyNeedMediaDataInternal(MediaSourceType mediaSourceType)
 {
-    m_shmBuffer->clearBuffer(m_sessionId, mediaSourceType);
+    m_shmBuffer->clearData(m_sessionId, mediaSourceType);
     NeedMediaData event{m_mediaPipelineClient, *m_activeRequests, *m_shmBuffer, m_sessionId, mediaSourceType};
     if (!event.send())
     {

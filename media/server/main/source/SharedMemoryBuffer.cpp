@@ -156,7 +156,7 @@ bool SharedMemoryBuffer::mapPartition(int sessionId)
         return true;
     }
     auto freePartition = std::find_if(m_partitions.begin(), m_partitions.end(),
-                                      [sessionId](const auto &p) { return p.sessionId == NO_SESSION_ASSIGNED; });
+                                      [](const auto &p) { return p.sessionId == NO_SESSION_ASSIGNED; });
     if (freePartition == m_partitions.end())
     {
         RIALTO_SERVER_LOG_ERROR("Failed to map Shm partition for session: %d. No free partition available.", sessionId);
@@ -180,7 +180,7 @@ bool SharedMemoryBuffer::unmapPartition(int sessionId)
     return true;
 }
 
-bool SharedMemoryBuffer::clearBuffer(int sessionId, const MediaSourceType &mediaSourceType) const
+bool SharedMemoryBuffer::clearData(int sessionId, const MediaSourceType &mediaSourceType) const
 {
     auto sessionPartition = std::find_if(m_partitions.begin(), m_partitions.end(),
                                          [sessionId](const auto &p) { return p.sessionId == sessionId; });
@@ -191,22 +191,22 @@ bool SharedMemoryBuffer::clearBuffer(int sessionId, const MediaSourceType &media
     }
     if (MediaSourceType::AUDIO == mediaSourceType)
     {
-        std::uint8_t *audioData = getBufferForSession(sessionId) + sessionPartition->dataBufferVideoLen;
+        std::uint8_t *audioData = getDataPtrForSession(sessionId) + sessionPartition->dataBufferVideoLen;
         memset(audioData, 0x00, sessionPartition->dataBufferAudioLen);
         return true;
     }
     if (MediaSourceType::VIDEO == mediaSourceType)
     {
-        std::uint8_t *videoData = getBufferForSession(sessionId);
+        std::uint8_t *videoData = getDataPtrForSession(sessionId);
         memset(videoData, 0x00, sessionPartition->dataBufferVideoLen);
         return true;
     }
     return false;
 }
 
-std::uint32_t SharedMemoryBuffer::getBufferOffset(int sessionId, const MediaSourceType &mediaSourceType) const
+std::uint32_t SharedMemoryBuffer::getDataOffset(int sessionId, const MediaSourceType &mediaSourceType) const
 {
-    std::uint8_t *sessionBuffer = getBuffer(sessionId, mediaSourceType);
+    std::uint8_t *sessionBuffer = getDataPtr(sessionId, mediaSourceType);
     if (!sessionBuffer)
     {
         throw std::runtime_error("Buffer not found for session: " + std::to_string(sessionId));
@@ -214,7 +214,7 @@ std::uint32_t SharedMemoryBuffer::getBufferOffset(int sessionId, const MediaSour
     return sessionBuffer - m_dataBuffer;
 }
 
-std::uint32_t SharedMemoryBuffer::getBufferLen(int sessionId, const MediaSourceType &mediaSourceType) const
+std::uint32_t SharedMemoryBuffer::getMaxDataLen(int sessionId, const MediaSourceType &mediaSourceType) const
 {
     auto sessionPartition = std::find_if(m_partitions.begin(), m_partitions.end(),
                                          [sessionId](const auto &p) { return p.sessionId == sessionId; });
@@ -234,7 +234,7 @@ std::uint32_t SharedMemoryBuffer::getBufferLen(int sessionId, const MediaSourceT
     return 0;
 }
 
-std::uint8_t *SharedMemoryBuffer::getBuffer(int sessionId, const MediaSourceType &mediaSourceType) const
+std::uint8_t *SharedMemoryBuffer::getDataPtr(int sessionId, const MediaSourceType &mediaSourceType) const
 {
     auto sessionPartition = std::find_if(m_partitions.begin(), m_partitions.end(),
                                          [sessionId](const auto &p) { return p.sessionId == sessionId; });
@@ -245,11 +245,11 @@ std::uint8_t *SharedMemoryBuffer::getBuffer(int sessionId, const MediaSourceType
     }
     if (MediaSourceType::AUDIO == mediaSourceType)
     {
-        return getBufferForSession(sessionId) + sessionPartition->dataBufferVideoLen;
+        return getDataPtrForSession(sessionId) + sessionPartition->dataBufferVideoLen;
     }
     if (MediaSourceType::VIDEO == mediaSourceType)
     {
-        return getBufferForSession(sessionId);
+        return getDataPtrForSession(sessionId);
     }
     return nullptr;
 }
@@ -264,6 +264,11 @@ std::uint32_t SharedMemoryBuffer::getSize() const
     return m_dataBufferLen;
 }
 
+std::uint8_t *SharedMemoryBuffer::getBuffer() const
+{
+    return m_dataBuffer;
+}
+
 size_t SharedMemoryBuffer::calculateBufferSize() const
 {
     return std::accumulate(m_partitions.begin(), m_partitions.end(), 0,
@@ -271,7 +276,7 @@ size_t SharedMemoryBuffer::calculateBufferSize() const
                            { return sum + p.dataBufferAudioLen + p.dataBufferVideoLen; });
 }
 
-std::uint8_t *SharedMemoryBuffer::getBufferForSession(int sessionId) const
+std::uint8_t *SharedMemoryBuffer::getDataPtrForSession(int sessionId) const
 {
     // IMPORTANT: Function assumes, that session exists in Partitions vector!
     std::uint8_t *result = m_dataBuffer;

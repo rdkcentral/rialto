@@ -258,6 +258,17 @@ enum class SegmentAlignment
 };
 
 /**
+ * @brief The Stream Format of media segment
+ */
+enum class StreamFormat
+{
+    UNDEFINED,
+    RAW,
+    AVC,
+    BYTE_STREAM
+};
+
+/**
  * @brief A vector of key ID/key status pairs.
  */
 typedef std::vector<std::pair<std::vector<unsigned char>, KeyStatus>> KeyStatusVector;

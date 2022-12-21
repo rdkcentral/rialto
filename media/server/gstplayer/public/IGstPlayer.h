@@ -56,11 +56,12 @@ public:
      * @param[in] client            : The gstreamer player client.
      * @param[in] decryptionService : The decryption service.
      * @param[in] type              : The media type the gstreamer player shall support.
+     * @param[in] videoRequirements : The video requirements for the playback.
      *
      * @retval the new player instance or null on error.
      */
     virtual std::unique_ptr<IGstPlayer> createGstPlayer(IGstPlayerClient *client, IDecryptionService &decryptionService,
-                                                        MediaType type) = 0;
+                                                        MediaType type, const VideoRequirements &videoRequirements) = 0;
 };
 
 class IGstPlayer
@@ -192,6 +193,12 @@ public:
      *
      */
     virtual void setPlaybackRate(double rate) = 0;
+
+    /**
+     * @brief Requests to render a prerolled frame
+     *
+     */
+    virtual void renderFrame() = 0;
 };
 
 }; // namespace firebolt::rialto::server

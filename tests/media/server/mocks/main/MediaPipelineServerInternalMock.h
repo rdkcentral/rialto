@@ -44,6 +44,7 @@ public:
     MOCK_METHOD(bool, setVideoWindow, (uint32_t x, uint32_t y, uint32_t width, uint32_t height), (override));
     MOCK_METHOD(bool, haveData, (MediaSourceStatus status, uint32_t numFrames, uint32_t needDataRequestId), (override));
     MOCK_METHOD(bool, haveData, (MediaSourceStatus status, uint32_t needDataRequestId), (override));
+    MOCK_METHOD(bool, renderFrame, (), (override));
     MOCK_METHOD(AddSegmentStatus, addSegment,
                 (uint32_t needDataRequestId, const std::unique_ptr<MediaSegment> &mediaSegment), (override));
 };

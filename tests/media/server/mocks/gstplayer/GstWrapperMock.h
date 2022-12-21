@@ -95,6 +95,12 @@ public:
                 (const, override));
     MOCK_METHOD(GstCaps *, gstCapsCopy, (const GstCaps *caps), (const, override));
     MOCK_METHOD(void, gstCapsSetSimpleIntStub, (GstCaps * caps, const gchar *field, GType type, int value), (const));
+    MOCK_METHOD(void, gstCapsSetSimpleStringStub, (GstCaps * caps, const gchar *field, GType type, const char *value),
+                (const));
+    MOCK_METHOD(void, gstCapsSetSimpleBufferStub, (GstCaps * caps, const gchar *field, GType type, GstBuffer *value),
+                (const));
+    MOCK_METHOD(GstCaps *, gstCapsNewSimpleIntStub,
+                (const char *media_type, const char *fieldname, GType type, int value), (const));
     MOCK_METHOD(void, gstMessageParseQos,
                 (GstMessage * message, gboolean *live, guint64 *running_time, guint64 *stream_time, guint64 *timestamp,
                  guint64 *duration),
@@ -108,14 +114,20 @@ public:
     MOCK_METHOD(void, gstSegmentFree, (GstSegment * segment), (const, override));
     MOCK_METHOD(GstEvent *, gstEventNewSegment, (const GstSegment *segment), (const, override));
     MOCK_METHOD(GstEvent *, gstEventNewCustom, (GstEventType type, GstStructure *structure), (const, override));
-    MOCK_METHOD(GstStructure *, gstStructureNewStub,
+    MOCK_METHOD(GstStructure *, gstStructureNewDoubleStub,
                 (const gchar *name, const gchar *firstfield, GType type, double value), (const));
+    MOCK_METHOD(GstStructure *, gstStructureNewBoolStub,
+                (const gchar *name, const gchar *firstfield, GType type, gboolean value), (const));
+    MOCK_METHOD(GstStructure *, gstStructureNewBufferStub,
+                (const gchar *name, const gchar *firstfield, GType type, GstBuffer *value), (const));
+    MOCK_METHOD(GstStructure *, gstStructureNewUintStub,
+                (const gchar *name, const gchar *firstfield, GType type, uint32_t value), (const));
     MOCK_METHOD(void, gstByteWriterInitWithData,
                 (GstByteWriter * writer, guint8 *data, guint size, gboolean initialized), (const, override));
     MOCK_METHOD(gboolean, gstByteWriterPutUint16Be, (GstByteWriter * writer, guint16 val), (const, override));
     MOCK_METHOD(gboolean, gstByteWriterPutUint32Be, (GstByteWriter * writer, guint32 val), (const, override));
     MOCK_METHOD(GstBuffer *, gstBufferNewWrapped, (gpointer data, gsize size), (const, override));
-    MOCK_METHOD(GstCaps *, gstCodecUtilsOpusCreateCapsFromHeader, (gconstpointer data, gsize size), (const, override));
+    MOCK_METHOD(GstCaps *, gstCodecUtilsOpusCreateCapsFromHeader, (gconstpointer data, guint size), (const, override));
     MOCK_METHOD(gboolean, gstCapsIsSubset, (const GstCaps *subset, const GstCaps *superset), (const));
     MOCK_METHOD(gboolean, gstCapsIsStrictlyEqual, (const GstCaps *caps1, const GstCaps *caps2), (const));
     MOCK_METHOD(gboolean, gstCapsCanIntersect, (const GstCaps *caps1, const GstCaps *caps2), (const));
@@ -123,6 +135,33 @@ public:
     MOCK_METHOD(GList *, gstElementFactoryListGetElements, (GstElementFactoryListType type, GstRank minrank), (const));
     MOCK_METHOD(const GList *, gstElementFactoryGetStaticPadTemplates, (GstElementFactory * factory), (const));
     MOCK_METHOD(void, gstPluginFeatureListFree, (GList * list), (const));
+    MOCK_METHOD(GstCaps *, gstCapsNewEmptySimple, (const char *media_type), (const));
+    MOCK_METHOD(GstCaps *, gstCapsNewEmpty, (), (const));
+    MOCK_METHOD(GstProtectionMeta *, gstBufferAddProtectionMeta, (GstBuffer * buffer, GstStructure *info), (const));
+    MOCK_METHOD(GstProtectionMeta *, gstBufferGetProtectionMeta, (GstBuffer * buffer), (const));
+    MOCK_METHOD(gboolean, gstBufferRemoveMeta, (GstBuffer * buffer, GstMeta *meta), (const));
+    MOCK_METHOD(gboolean, gstStructureGetUint, (const GstStructure *structure, const gchar *fieldname, guint *value),
+                (const));
+    MOCK_METHOD(const GValue *, gstStructureGetValue, (const GstStructure *structure, const gchar *fieldname), (const));
+    MOCK_METHOD(GstBuffer *, gstValueGetBuffer, (const GValue *value), (const));
+    MOCK_METHOD(GstEvent *, gstEventNewStep,
+                (GstFormat format, guint64 amount, gdouble rate, gboolean flush, gboolean intermediate), (const));
+
+    GstCaps *gstCapsNewSimple(const char *media_type, const char *fieldname, ...) const override
+    {
+        va_list args;
+        const gchar *property = fieldname;
+
+        va_start(args, fieldname);
+
+        GType intType = va_arg(args, GType);
+        int intValue = va_arg(args, int);
+        GstCaps *result = gstCapsNewSimpleIntStub(media_type, property, intType, intValue);
+
+        va_end(args);
+
+        return result;
+    }
 
     void gstCapsSetSimple(GstCaps *caps, const gchar *field, ...) const override
     {
@@ -133,16 +172,29 @@ public:
 
         while (NULL != property)
         {
-            GType intType = va_arg(args, GType);
-            int intValue = va_arg(args, int);
-            gstCapsSetSimpleIntStub(caps, property, intType, intValue);
+            GType type = va_arg(args, GType);
+            if (g_type_is_a(type, G_TYPE_INT))
+            {
+                int intValue = va_arg(args, int);
+                gstCapsSetSimpleIntStub(caps, property, type, intValue);
+            }
+            else if (g_type_is_a(type, G_TYPE_STRING))
+            {
+                const char *val = va_arg(args, const char *);
+                gstCapsSetSimpleStringStub(caps, property, type, val);
+            }
+            else if (g_type_is_a(type, GST_TYPE_BUFFER))
+            {
+                GstBuffer *buf = va_arg(args, GstBuffer *);
+                gstCapsSetSimpleBufferStub(caps, property, type, buf);
+            }
             property = va_arg(args, const gchar *);
         }
 
         va_end(args);
     }
 
-    GstStructure *gstStructureNew(const gchar *name, const gchar *firstfield, ...) const
+    GstStructure *gstStructureNew(const gchar *name, const gchar *firstfield, ...) const override
     {
         GstStructure *structure{nullptr};
         va_list args;
@@ -153,8 +205,26 @@ public:
         while (NULL != property)
         {
             GType valueType = va_arg(args, GType);
-            double value = va_arg(args, double);
-            structure = gstStructureNewStub(name, property, valueType, value);
+            if (g_type_is_a(valueType, G_TYPE_DOUBLE))
+            {
+                double value = va_arg(args, double);
+                structure = gstStructureNewDoubleStub(name, property, valueType, value);
+            }
+            else if (g_type_is_a(valueType, G_TYPE_BOOLEAN))
+            {
+                gboolean value = va_arg(args, gboolean);
+                structure = gstStructureNewBoolStub(name, property, valueType, value);
+            }
+            else if (g_type_is_a(valueType, GST_TYPE_BUFFER))
+            {
+                GstBuffer *value = va_arg(args, GstBuffer *);
+                structure = gstStructureNewBufferStub(name, property, valueType, value);
+            }
+            else if (g_type_is_a(valueType, G_TYPE_UINT))
+            {
+                uint32_t value = va_arg(args, guint32);
+                structure = gstStructureNewUintStub(name, property, valueType, value);
+            }
             property = va_arg(args, const gchar *);
         }
 

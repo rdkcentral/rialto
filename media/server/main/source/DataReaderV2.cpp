@@ -128,9 +128,9 @@ createSegment(const firebolt::rialto::MediaSegmentMetadata &metadata, const fire
 
 namespace firebolt::rialto::server
 {
-DataReaderV2::DataReaderV2(const MediaSourceType &mediaSourceType, std::uint8_t *sessionData, std::uint32_t dataOffset,
+DataReaderV2::DataReaderV2(const MediaSourceType &mediaSourceType, std::uint8_t *buffer, std::uint32_t dataOffset,
                            std::uint32_t numFrames)
-    : m_mediaSourceType{mediaSourceType}, m_sessionData{sessionData}, m_dataOffset{dataOffset}, m_numFrames{numFrames}
+    : m_mediaSourceType{mediaSourceType}, m_buffer{buffer}, m_dataOffset{dataOffset}, m_numFrames{numFrames}
 {
     RIALTO_SERVER_LOG_DEBUG("Detected Metadata in Version 2.");
 }
@@ -138,7 +138,7 @@ DataReaderV2::DataReaderV2(const MediaSourceType &mediaSourceType, std::uint8_t 
 IMediaPipeline::MediaSegmentVector DataReaderV2::readData() const
 {
     IMediaPipeline::MediaSegmentVector mediaSegments;
-    uint8_t *currentReadPosition{m_sessionData + m_dataOffset};
+    uint8_t *currentReadPosition{m_buffer + m_dataOffset};
     for (auto i = 0U; i < m_numFrames; ++i)
     {
         std::uint32_t *metadataSize{reinterpret_cast<uint32_t *>(currentReadPosition)};

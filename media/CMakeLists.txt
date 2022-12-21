@@ -25,4 +25,7 @@ include( CheckCXXCompilerFlag )
 add_subdirectory(public)
 add_subdirectory(common)
 add_subdirectory(client)
-add_subdirectory(server)
+
+if( ENABLE_SERVER )
+    add_subdirectory(server)
+endif()

@@ -38,6 +38,7 @@ add_library(
         source/tasks/Play.cpp
         source/tasks/PlayerTaskFactory.cpp
         source/tasks/ReadShmDataAndAttachSamples.cpp
+        source/tasks/RenderFrame.cpp
         source/tasks/ReportPosition.cpp
         source/tasks/CheckAudioUnderflow.cpp
         source/tasks/SetPlaybackRate.cpp
@@ -57,6 +58,7 @@ add_library(
         source/Utils.cpp
         source/WorkerThread.cpp
         source/GstCapabilities.cpp
+        source/GstDecryptor.cpp
         )
 
 target_include_directories(

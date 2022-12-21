@@ -228,6 +228,37 @@ public:
      * @retval A pointer to the allocated memory.
      */
     virtual gpointer gMalloc(gsize n_bytes) const = 0;
+
+    /**
+     * @brief Allocates byte_size bytes of memory, and copies byte_size bytes into it from mem.
+     *
+     * @param[in] mem : The memory to copy from
+     * @param[in] byte_size : The number of bytes to copy.
+     *
+     * @retval A pointer to the newly-allocated copy of the memory or null in case of failure
+     */
+    virtual gpointer gMemdup(gconstpointer mem, guint byte_size) const = 0;
+
+    /**
+     * @brief Called when executing a critical initalisation section. Ensures that the init is
+     *        only performed once and all other threads wait for the execution.
+     *
+     * @param[in] location : Location of initalised variable.
+     *
+     * @retval If the initalisation section can be entered.
+     */
+    virtual gboolean gOnceInitEnter(gsize *location) const = 0;
+
+    /**
+     * @brief Sets the init variable to the initalised value and releases threads blocking on
+     *        gOnceInitEnter.
+     *
+     * @param[in] location : Location of initalised variable.
+     * @param[in] result : New value for the location.
+     *
+     * @retval A pointer to the newly-allocated copy of the memory or null in case of failure
+     */
+    virtual void gOnceInitLeave(gsize *location, gsize result) const = 0;
 };
 
 }; // namespace firebolt::rialto::server

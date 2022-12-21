@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_GST_WRAPPER_H_
 
 #include "IGstWrapper.h"
+#include <cassert>
 #include <gst/pbutils/pbutils.h>
 #include <memory>
 #include <string>
@@ -156,7 +157,7 @@ public:
         return gst_element_get_static_pad(element, name);
     }
 
-    gboolean gstElementQueryPosition(GstElement *element, GstFormat format, gint64 *cur)
+    gboolean gstElementQueryPosition(GstElement *element, GstFormat format, gint64 *cur) override
     {
         return gst_element_query_position(element, format, cur);
     }
@@ -175,7 +176,7 @@ public:
     gboolean gstElementAddPad(GstElement *element, GstPad *pad) override { return gst_element_add_pad(element, pad); }
 
     gboolean gstElementSeek(GstElement *element, gdouble rate, GstFormat format, GstSeekFlags flags,
-                            GstSeekType start_type, gint64 start, GstSeekType stop_type, gint64 stop)
+                            GstSeekType start_type, gint64 start, GstSeekType stop_type, gint64 stop) override
     {
         return gst_element_seek(element, rate, format, flags, start_type, start, stop_type, stop);
     }
@@ -270,7 +271,7 @@ public:
 
     const gchar *gstFormatGetName(GstFormat format) const override { return gst_format_get_name(format); }
 
-    GstSegment *gstSegmentNew() const { return gst_segment_new(); }
+    GstSegment *gstSegmentNew() const override { return gst_segment_new(); }
 
     void gstSegmentInit(GstSegment *segment, GstFormat format) const override { gst_segment_init(segment, format); }
 
@@ -285,7 +286,7 @@ public:
 
     GstStructure *gstStructureNew(const gchar *name, const gchar *firstfield, ...) const override;
 
-    void gstByteWriterInitWithData(GstByteWriter *writer, guint8 *data, guint size, gboolean initialized) const
+    void gstByteWriterInitWithData(GstByteWriter *writer, guint8 *data, guint size, gboolean initialized) const override
     {
         return gst_byte_writer_init_with_data(writer, data, size, initialized);
     }
@@ -305,13 +306,20 @@ public:
         return gst_buffer_new_wrapped(data, size);
     }
 
-    GstCaps *gstCodecUtilsOpusCreateCapsFromHeader(gconstpointer data, gsize size) const override
+    GstCaps *gstCodecUtilsOpusCreateCapsFromHeader(gconstpointer data, guint size) const override
     {
-        GstBuffer *tmp = gst_buffer_new_wrapped(g_memdup(data, size), size);
+#if (GLIB_CHECK_VERSION(2, 67, 3))
+        GstBuffer *tmp = gst_buffer_new_wrapped(g_memdup2(data, size), size);
+#else
+        const gsize byte_size = static_cast<gsize>(size);
+        assert(byte_size >= 0);
+        GstBuffer *tmp = gst_buffer_new_wrapped(g_memdup(data, byte_size), size);
+#endif
         GstCaps *gst_caps = gst_codec_utils_opus_create_caps_from_header(tmp, NULL);
         gst_buffer_unref(tmp);
         return gst_caps;
     }
+
     gboolean gstCapsIsSubset(const GstCaps *subset, const GstCaps *superset) const override
     {
         return gst_caps_is_subset(subset, superset);
@@ -340,6 +348,64 @@ public:
     }
 
     void gstPluginFeatureListFree(GList *list) const override { gst_plugin_feature_list_free(list); }
+
+    GstCaps *gstCapsNewSimple(const char *media_type, const char *fieldname, ...) const override
+    {
+        /* there's no valist equivalent of gst_caps_new_simple */
+        va_list varArgs;
+        va_start(varArgs, fieldname);
+        GstStructure *structure = gst_structure_new_valist(media_type, fieldname, varArgs);
+        va_end(varArgs);
+
+        if (structure)
+        {
+            GstCaps *caps = gst_caps_new_empty();
+            gst_caps_append_structure(caps, structure);
+            return caps;
+        }
+
+        return nullptr;
+    }
+
+    GstCaps *gstCapsNewEmptySimple(const char *media_type) const override
+    {
+        return gst_caps_new_empty_simple(media_type);
+    }
+
+    GstCaps *gstCapsNewEmpty() const override { return gst_caps_new_empty(); }
+
+    GstProtectionMeta *gstBufferAddProtectionMeta(GstBuffer *buffer, GstStructure *info) const override
+    {
+        return gst_buffer_add_protection_meta(buffer, info);
+    }
+
+    GstProtectionMeta *gstBufferGetProtectionMeta(GstBuffer *buffer) const override
+    {
+        return gst_buffer_get_protection_meta(buffer);
+    }
+
+    gboolean gstBufferRemoveMeta(GstBuffer *buffer, GstMeta *meta) const override
+    {
+        return gst_buffer_remove_meta(buffer, meta);
+    }
+
+    gboolean gstStructureGetUint(const GstStructure *structure, const gchar *fieldname, guint *value) const override
+    {
+        return gst_structure_get_uint(structure, fieldname, value);
+    }
+
+    const GValue *gstStructureGetValue(const GstStructure *structure, const gchar *fieldname) const override
+    {
+        return gst_structure_get_value(structure, fieldname);
+    }
+
+    GstBuffer *gstValueGetBuffer(const GValue *value) const override { return gst_value_get_buffer(value); }
+
+    GstEvent *gstEventNewStep(GstFormat format, guint64 amount, gdouble rate, gboolean flush,
+                              gboolean intermediate) const override
+    {
+        return gst_event_new_step(format, amount, rate, flush, intermediate);
+    }
 };
 
 }; // namespace firebolt::rialto::server

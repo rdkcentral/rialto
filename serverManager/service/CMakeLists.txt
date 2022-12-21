@@ -27,7 +27,10 @@ add_library (
 set_target_properties (
         RialtoServerManager
         PROPERTIES LINK_FLAGS "-Wl,--unresolved-symbols=report-all"
+                   SOVERSION  ${PROJECT_VERSION_MAJOR}
+                   VERSION    ${CMAKE_PROJECT_VERSION}
 )
+
 target_include_directories (
         RialtoServerManager
         PUBLIC

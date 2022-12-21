@@ -21,7 +21,6 @@
 
 namespace
 {
-constexpr int maxPlaybacks{1};
 constexpr std::uint32_t audioBufferLen{1 * 1024 * 1024}; // 1MB
 constexpr std::uint32_t videoBufferLen{7 * 1024 * 1024}; // 7MB
 } // namespace
@@ -55,89 +54,89 @@ void SharedMemoryBufferTests::unmapPartitionShouldFail(int sessionId)
     EXPECT_FALSE(m_sut->unmapPartition(sessionId));
 }
 
-void SharedMemoryBufferTests::shouldReturnAudioBufferLen(int sessionId)
+void SharedMemoryBufferTests::shouldReturnMaxAudioDataLen(int sessionId)
 {
     ASSERT_TRUE(m_sut);
-    EXPECT_EQ(m_sut->getBufferLen(sessionId, firebolt::rialto::MediaSourceType::AUDIO), audioBufferLen);
+    EXPECT_EQ(m_sut->getMaxDataLen(sessionId, firebolt::rialto::MediaSourceType::AUDIO), audioBufferLen);
 }
 
-void SharedMemoryBufferTests::shouldFailToReturnAudioBufferLen(int sessionId)
+void SharedMemoryBufferTests::shouldFailToReturnMaxAudioDataLen(int sessionId)
 {
     ASSERT_TRUE(m_sut);
-    EXPECT_EQ(m_sut->getBufferLen(sessionId, firebolt::rialto::MediaSourceType::AUDIO), 0);
+    EXPECT_EQ(m_sut->getMaxDataLen(sessionId, firebolt::rialto::MediaSourceType::AUDIO), 0);
 }
 
-void SharedMemoryBufferTests::shouldReturnVideoBufferLen(int sessionId)
+void SharedMemoryBufferTests::shouldReturnMaxVideoDataLen(int sessionId)
 {
     ASSERT_TRUE(m_sut);
-    EXPECT_EQ(m_sut->getBufferLen(sessionId, firebolt::rialto::MediaSourceType::VIDEO), videoBufferLen);
+    EXPECT_EQ(m_sut->getMaxDataLen(sessionId, firebolt::rialto::MediaSourceType::VIDEO), videoBufferLen);
 }
 
-void SharedMemoryBufferTests::shouldFailToReturnVideoBufferLen(int sessionId)
+void SharedMemoryBufferTests::shouldFailToReturnMaxVideoDataLen(int sessionId)
 {
     ASSERT_TRUE(m_sut);
-    EXPECT_EQ(m_sut->getBufferLen(sessionId, firebolt::rialto::MediaSourceType::VIDEO), 0);
+    EXPECT_EQ(m_sut->getMaxDataLen(sessionId, firebolt::rialto::MediaSourceType::VIDEO), 0);
 }
 
-void SharedMemoryBufferTests::shouldReturnVideoBufferOffset(int sessionId, std::uint32_t expectedOffset)
+void SharedMemoryBufferTests::shouldReturnVideoDataOffset(int sessionId, std::uint32_t expectedOffset)
 {
     ASSERT_TRUE(m_sut);
-    EXPECT_EQ(m_sut->getBufferOffset(sessionId, firebolt::rialto::MediaSourceType::VIDEO), expectedOffset);
+    EXPECT_EQ(m_sut->getDataOffset(sessionId, firebolt::rialto::MediaSourceType::VIDEO), expectedOffset);
 }
 
-void SharedMemoryBufferTests::shouldFailToReturnVideoBufferOffset(int sessionId)
+void SharedMemoryBufferTests::shouldFailToReturnVideoDataOffset(int sessionId)
 {
     ASSERT_TRUE(m_sut);
-    EXPECT_THROW(m_sut->getBufferOffset(sessionId, firebolt::rialto::MediaSourceType::VIDEO), std::runtime_error);
+    EXPECT_THROW(m_sut->getDataOffset(sessionId, firebolt::rialto::MediaSourceType::VIDEO), std::runtime_error);
 }
 
-void SharedMemoryBufferTests::shouldReturnAudioBufferOffset(int sessionId, std::uint32_t expectedOffset)
+void SharedMemoryBufferTests::shouldReturnAudioDataOffset(int sessionId, std::uint32_t expectedOffset)
 {
     ASSERT_TRUE(m_sut);
-    EXPECT_EQ(m_sut->getBufferOffset(sessionId, firebolt::rialto::MediaSourceType::AUDIO), expectedOffset);
+    EXPECT_EQ(m_sut->getDataOffset(sessionId, firebolt::rialto::MediaSourceType::AUDIO), expectedOffset);
 }
 
-void SharedMemoryBufferTests::shouldFailToReturnAudioBufferOffset(int sessionId)
+void SharedMemoryBufferTests::shouldFailToReturnAudioDataOffset(int sessionId)
 {
     ASSERT_TRUE(m_sut);
-    EXPECT_THROW(m_sut->getBufferOffset(sessionId, firebolt::rialto::MediaSourceType::AUDIO), std::runtime_error);
+    EXPECT_THROW(m_sut->getDataOffset(sessionId, firebolt::rialto::MediaSourceType::AUDIO), std::runtime_error);
 }
 
-void SharedMemoryBufferTests::shouldClearAudioBuffer(int sessionId)
+void SharedMemoryBufferTests::shouldClearAudioData(int sessionId)
 {
     ASSERT_TRUE(m_sut);
-    EXPECT_TRUE(m_sut->clearBuffer(sessionId, firebolt::rialto::MediaSourceType::AUDIO));
+    EXPECT_TRUE(m_sut->clearData(sessionId, firebolt::rialto::MediaSourceType::AUDIO));
 }
 
-void SharedMemoryBufferTests::shouldFailToClearAudioBuffer(int sessionId)
+void SharedMemoryBufferTests::shouldFailToClearAudioData(int sessionId)
 {
     ASSERT_TRUE(m_sut);
-    EXPECT_FALSE(m_sut->clearBuffer(sessionId, firebolt::rialto::MediaSourceType::AUDIO));
+    EXPECT_FALSE(m_sut->clearData(sessionId, firebolt::rialto::MediaSourceType::AUDIO));
 }
 
-void SharedMemoryBufferTests::shouldClearVideoBuffer(int sessionId)
+void SharedMemoryBufferTests::shouldClearVideoData(int sessionId)
 {
     ASSERT_TRUE(m_sut);
-    EXPECT_TRUE(m_sut->clearBuffer(sessionId, firebolt::rialto::MediaSourceType::VIDEO));
+    EXPECT_TRUE(m_sut->clearData(sessionId, firebolt::rialto::MediaSourceType::VIDEO));
 }
 
-void SharedMemoryBufferTests::shouldFailToClearVideoBuffer(int sessionId)
+void SharedMemoryBufferTests::shouldFailToClearVideoData(int sessionId)
 {
     ASSERT_TRUE(m_sut);
-    EXPECT_FALSE(m_sut->clearBuffer(sessionId, firebolt::rialto::MediaSourceType::VIDEO));
+    EXPECT_FALSE(m_sut->clearData(sessionId, firebolt::rialto::MediaSourceType::VIDEO));
 }
 
-uint8_t *SharedMemoryBufferTests::shouldGetBuffer(int sessionId, const firebolt::rialto::MediaSourceType &mediaSourceType)
+uint8_t *SharedMemoryBufferTests::shouldGetDataPtr(int sessionId, const firebolt::rialto::MediaSourceType &mediaSourceType)
 {
     EXPECT_TRUE(m_sut);
-    return m_sut->getBuffer(sessionId, mediaSourceType);
+    return m_sut->getDataPtr(sessionId, mediaSourceType);
 }
 
-void SharedMemoryBufferTests::shouldFailToGetBuffer(int sessionId,
-                                                    const firebolt::rialto::MediaSourceType &mediaSourceType)
+void SharedMemoryBufferTests::shouldFailToGetDataPtr(int sessionId,
+                                                     const firebolt::rialto::MediaSourceType &mediaSourceType)
 {
     ASSERT_TRUE(m_sut);
-    EXPECT_EQ(nullptr, m_sut->getBuffer(sessionId, mediaSourceType));
+    EXPECT_EQ(nullptr, m_sut->getDataPtr(sessionId, mediaSourceType));
 }
 
 void SharedMemoryBufferTests::shouldGetFd()
@@ -150,4 +149,10 @@ void SharedMemoryBufferTests::shouldGetSize()
 {
     ASSERT_TRUE(m_sut);
     EXPECT_EQ(8 * 1024 * 1024, m_sut->getSize()); // Size for one session should be 8 MB
+}
+
+void SharedMemoryBufferTests::shouldGetBuffer()
+{
+    ASSERT_TRUE(m_sut);
+    EXPECT_NE(nullptr, m_sut->getBuffer());
 }

@@ -755,7 +755,7 @@ public:
      *
      * @retval pointer to the new caps
      */
-    virtual GstCaps *gstCodecUtilsOpusCreateCapsFromHeader(gconstpointer data, gsize size) const = 0;
+    virtual GstCaps *gstCodecUtilsOpusCreateCapsFromHeader(gconstpointer data, guint size) const = 0;
 
     /**
      * @brief Checks if all caps represented by subset are in superset.
@@ -822,6 +822,106 @@ public:
      * @param[in] list : list of GstPluginFeature
      */
     virtual void gstPluginFeatureListFree(GList *list) const = 0;
+
+    /**
+     * @brief Creates a new GstCaps with one GstStructure.
+     *
+     * @param[in] media_type : the media type of the structure
+     * @param[in] fieldname  : first field to set
+     *
+     * @retval new caps
+     */
+    virtual GstCaps *gstCapsNewSimple(const char *media_type, const char *fieldname, ...) const = 0;
+
+    /**
+     * @brief Creates a new GstCaps with media_type
+     *
+     * @param[in] media_type : the media type of the structure
+     *
+     * @retval new caps
+     */
+    virtual GstCaps *gstCapsNewEmptySimple(const char *media_type) const = 0;
+
+    /**
+     * @brief Creates a new empty GstCaps
+     *
+     * @retval new caps
+     */
+    virtual GstCaps *gstCapsNewEmpty() const = 0;
+
+    /**
+     * @brief Adds the metadata to a buffer for decryption.
+     *
+     * @param[in] buffer : the gst encrypted buffer to add the protection meta to.
+     * @param[in] info   : the information for decryption.
+     *
+     * @retval the protected metadata, null on failure
+     */
+    virtual GstProtectionMeta *gstBufferAddProtectionMeta(GstBuffer *buffer, GstStructure *info) const = 0;
+
+    /**
+     * @brief Gets the metadata used for decryption of a sample.
+     *
+     * @param[in] buffer : the gst buffer to retrieve the protection meta from
+     *
+     * @retval the protected metadata
+     */
+    virtual GstProtectionMeta *gstBufferGetProtectionMeta(GstBuffer *buffer) const = 0;
+
+    /**
+     * @brief Removes the metadata from the buffer.
+     *
+     * @param[in] buffer : the gst buffer containing meta
+     * @param[in] meta : the meta to remove
+     *
+     * @retval true if removed successfully, false if no meta does not exist in buffer.
+     */
+    virtual gboolean gstBufferRemoveMeta(GstBuffer *buffer, GstMeta *meta) const = 0;
+
+    /**
+     * @brief Gets the uint of the field with name 'fieldname'.
+     *
+     * @param[in] structure : the gst structure to search
+     * @param[in] fieldname : the name of the field
+     * @param[in] value : the value of the field
+     *
+     * @retval true on success, false if 'fieldname' does not exist or is not a uint.
+     */
+    virtual gboolean gstStructureGetUint(const GstStructure *structure, const gchar *fieldname, guint *value) const = 0;
+
+    /**
+     * @brief Gets the value of the field with name 'fieldname'.
+     *
+     * @param[in] structure : the gst structure to search
+     * @param[in] fieldname : the name of the field
+     *
+     * @retval the field value
+     */
+    virtual const GValue *gstStructureGetValue(const GstStructure *structure, const gchar *fieldname) const = 0;
+
+    /**
+     * @brief Get a buffer from the given value.
+     *
+     * @param[in] value : the value
+     *
+     * @retval pointer to the buffer, the caller does not own a reference to the buffer.
+     */
+    virtual GstBuffer *gstValueGetBuffer(const GValue *value) const = 0;
+
+    /**
+     * @brief Create a new step event. The purpose of the step event is to instruct a sink to skip amount (expressed in
+     * format) of media. It can be used to implement stepping through the video frame by frame or for doing fast trick modes.
+     *
+     * @param[in] format : the the format of amount
+     * @param[in] amount : the amount of data to step
+     * @param[in] rate : the step rate
+     * @param[in] flush : flushing steps
+     * @param[in] intermediate : intermediate steps
+     *
+     * @retval new event
+     */
+    virtual GstEvent *gstEventNewStep(GstFormat format, guint64 amount, gdouble rate, gboolean flush,
+                                      gboolean intermediate) const = 0;
 };
 
 }; // namespace firebolt::rialto::server

@@ -25,7 +25,7 @@
 
 namespace firebolt::rialto::server
 {
-struct IGstPlayerPrivate;
+class IGstPlayerPrivate;
 } // namespace firebolt::rialto::server
 
 namespace firebolt::rialto::server

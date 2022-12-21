@@ -70,15 +70,22 @@ public:
     virtual bool setWesterossinkRectangle() = 0;
 
     /**
+     * @brief Sets Westeros sink res-usage flag for a secondary video.
+     *
+     * @retval true on success.
+     */
+    virtual bool setWesterossinkSecondaryVideo() = 0;
+
+    /**
      * @brief Sends NeedMediaData notification. Called by the worker thread.
      */
     virtual void notifyNeedMediaData(bool audioNotificationNeeded, bool videoNotificationNeeded) = 0;
 
     /**
-     * @brief Constructs a new buffer with data from media segment. Performs decryption, if needed.
+     * @brief Constructs a new buffer with data from media segment. Does not perform decryption.
      *        Called by the worker thread.
      */
-    virtual GstBuffer *createDecryptedBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const = 0;
+    virtual GstBuffer *createBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const = 0;
 
     /**
      * @brief Attach audio data. Called by the worker thread

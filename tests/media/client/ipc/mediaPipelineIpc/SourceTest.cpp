@@ -19,17 +19,21 @@
 
 #include "MediaPipelineIpcTestBase.h"
 
-MATCHER_P5(attachSourceRequestMatcher2, sessionId, mimeType, numberOfChannels, sampleRate, codecSpecificConfig, "")
+MATCHER_P8(attachSourceRequestMatcher2, sessionId, mimeType, numberOfChannels, sampleRate, codecSpecificConfig,
+           alignment, streamFormat, codecData, "")
 {
     const ::firebolt::rialto::AttachSourceRequest *request =
         dynamic_cast<const ::firebolt::rialto::AttachSourceRequest *>(arg);
+    std::vector<uint8_t> codecDataFromReq(request->codec_data().begin(), request->codec_data().end());
     return ((request->session_id() == sessionId) &&
             (static_cast<const unsigned int>(request->media_type()) ==
              static_cast<const unsigned int>(MediaSourceType::AUDIO)) &&
             (request->mime_type() == mimeType) && (request->has_audio_config()) &&
             (request->audio_config().number_of_channels() == numberOfChannels) &&
             (request->audio_config().sample_rate() == sampleRate) &&
-            (request->audio_config().codec_specific_config() == codecSpecificConfig));
+            (request->audio_config().codec_specific_config() == codecSpecificConfig) &&
+            (request->segment_alignment() == alignment) && (request->stream_format() == streamFormat) &&
+            (codecDataFromReq == codecData));
 }
 
 MATCHER_P3(attachSourceRequestMatcher, sessionId, mediaType, mimeType, "")
@@ -98,24 +102,31 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachSourceSuccess)
 /**
  * Test attach audio source with codec specific config.
  */
-TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachAudioSourceWithCodecConfigSuccess)
+TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachAudioSourceWithAdditionaldataSuccess)
 {
     expectIpcApiCallSuccess();
 
     uint32_t numberOfChannels = 6;
     uint32_t sampleRate = 48000;
     std::string codecSpecificConfigStr("1243567");
-    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("attachSource"), m_controllerMock.get(),
-                                           attachSourceRequestMatcher2(m_sessionId, m_kMimeType, numberOfChannels,
-                                                                       sampleRate, codecSpecificConfigStr),
-                                           _, m_blockingClosureMock.get()))
+    firebolt::rialto::SegmentAlignment alignment = firebolt::rialto::SegmentAlignment::UNDEFINED;
+    std::vector<uint8_t> codecData{'T', 'E', 'S', 'T'};
+    firebolt::rialto::StreamFormat streamFormat = firebolt::rialto::StreamFormat::RAW;
+    EXPECT_CALL(*m_channelMock,
+                CallMethod(methodMatcher("attachSource"), m_controllerMock.get(),
+                           attachSourceRequestMatcher2(m_sessionId, m_kMimeType, numberOfChannels, sampleRate,
+                                                       codecSpecificConfigStr,
+                                                       firebolt::rialto::AttachSourceRequest_SegmentAlignment_ALIGNMENT_UNDEFINED,
+                                                       firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_RAW,
+                                                       codecData),
+                           _, m_blockingClosureMock.get()))
         .WillOnce(WithArgs<3>(Invoke(this, &RialtoClientMediaPipelineIpcSourceTest::setAttachSourceResponse)));
 
     std::vector<uint8_t> codecSpecificConfig;
     codecSpecificConfig.assign(codecSpecificConfigStr.begin(), codecSpecificConfigStr.end());
     AudioConfig audioConfig{6, 48000, codecSpecificConfig};
 
-    IMediaPipeline::MediaSource mediaSource(m_id, m_kMimeType, audioConfig);
+    IMediaPipeline::MediaSource mediaSource(m_id, m_kMimeType, audioConfig, alignment, streamFormat, codecData);
 
     EXPECT_EQ(m_mediaPipelineIpc->attachSource(mediaSource, m_id), true);
 }

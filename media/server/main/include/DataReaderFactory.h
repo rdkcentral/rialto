@@ -30,7 +30,7 @@ class DataReaderFactory : public IDataReaderFactory
 public:
     DataReaderFactory() = default;
     ~DataReaderFactory() override = default;
-    std::shared_ptr<IDataReader> createDataReader(const MediaSourceType &mediaSourceType, std::uint8_t *data,
+    std::shared_ptr<IDataReader> createDataReader(const MediaSourceType &mediaSourceType, std::uint8_t *buffer,
                                                   std::uint32_t dataOffset, std::uint32_t numFrames) const override;
 };
 } // namespace firebolt::rialto::server

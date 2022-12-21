@@ -81,10 +81,10 @@ TEST_F(MediaPipelineModuleServiceTests, shouldAttachSource)
     sendAttachSourceRequestAndReceiveResponse();
 }
 
-TEST_F(MediaPipelineModuleServiceTests, shouldAttachAudioSourceWithCodecConfig)
+TEST_F(MediaPipelineModuleServiceTests, shouldAttachAudioSourceWithAdditionalData)
 {
-    playbackServiceWillAttachAudioSourceWithCodecConfig();
-    sendAttachAudioSourceWithCodecConfigRequestAndReceiveResponse();
+    playbackServiceWillAttachAudioSourceWithAdditionaldata();
+    sendAttachAudioSourceWithAdditionalDataRequestAndReceiveResponse();
 }
 
 TEST_F(MediaPipelineModuleServiceTests, shouldFailToAttachSource)
@@ -231,4 +231,20 @@ TEST_F(MediaPipelineModuleServiceTests, shouldSendQosEvent)
     sendCreateSessionRequestAndReceiveResponse();
     mediaClientWillSendQosEvent();
     sendQosEvent();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldRenderFrame)
+{
+    playbackServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    playbackServiceWillRenderFrame();
+    sendRenderFrameRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, renderFrameFails)
+{
+    playbackServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    playbackServiceWillFailToRenderFrame();
+    sendRenderFrameRequestAndReceiveResponse();
 }

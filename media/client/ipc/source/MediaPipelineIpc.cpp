@@ -90,11 +90,11 @@ MediaPipelineIpc::~MediaPipelineIpc()
     // destroy media player session
     destroySession();
 
-    // destroy the thread processing async notifications
-    m_eventThread.reset();
-
     // detach the Ipc channel
     detachChannel();
+
+    // destroy the thread processing async notifications
+    m_eventThread.reset();
 }
 
 bool MediaPipelineIpc::createRpcStubs()
@@ -210,6 +210,8 @@ bool MediaPipelineIpc::attachSource(const IMediaPipeline::MediaSource &source, i
         request.mutable_audio_config()->set_codec_specific_config(audioConfig.codecSpecificConfig.data(),
                                                                   audioConfig.codecSpecificConfig.size());
     }
+    request.set_codec_data(source.getCodecData().data(), source.getCodecData().size());
+    request.set_stream_format(convertStreamFormat(source.getStreamFormat()));
 
     firebolt::rialto::AttachSourceResponse response;
     auto ipcController = m_ipc->createRpcController();
@@ -512,6 +514,35 @@ bool MediaPipelineIpc::setPlaybackRate(double rate)
     return true;
 }
 
+bool MediaPipelineIpc::renderFrame()
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::RenderFrameRequest request;
+    request.set_session_id(m_sessionId);
+
+    firebolt::rialto::RenderFrameResponse response;
+    auto ipcController = m_ipc->createRpcController();
+    auto blockingClosure = m_ipc->createBlockingClosure();
+    m_mediaPipelineStub->renderFrame(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to render frame due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    return true;
+}
+
 void MediaPipelineIpc::onPlaybackStateUpdated(const std::shared_ptr<firebolt::rialto::PlaybackStateChangeEvent> &event)
 {
     /* Ignore event if not for this session */
@@ -540,6 +571,9 @@ void MediaPipelineIpc::onPlaybackStateUpdated(const std::shared_ptr<firebolt::ri
             break;
         case firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_END_OF_STREAM:
             playbackState = PlaybackState::END_OF_STREAM;
+            break;
+        case firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_FAILURE:
+            playbackState = PlaybackState::FAILURE;
             break;
         default:
             RIALTO_CLIENT_LOG_WARN("Recieved unknown playback state");
@@ -749,6 +783,31 @@ MediaPipelineIpc::convertSegmentAlignment(const firebolt::rialto::SegmentAlignme
     }
     }
     return firebolt::rialto::AttachSourceRequest_SegmentAlignment_ALIGNMENT_UNDEFINED;
+}
+
+firebolt::rialto::AttachSourceRequest_StreamFormat
+MediaPipelineIpc::convertStreamFormat(const firebolt::rialto::StreamFormat &streamFormat)
+{
+    switch (streamFormat)
+    {
+    case firebolt::rialto::StreamFormat::UNDEFINED:
+    {
+        return firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_UNDEFINED;
+    }
+    case firebolt::rialto::StreamFormat::RAW:
+    {
+        return firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_RAW;
+    }
+    case firebolt::rialto::StreamFormat::AVC:
+    {
+        return firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_AVC;
+    }
+    case firebolt::rialto::StreamFormat::BYTE_STREAM:
+    {
+        return firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_BYTE_STREAM;
+    }
+    }
+    return firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_UNDEFINED;
 }
 
 }; // namespace firebolt::rialto::client

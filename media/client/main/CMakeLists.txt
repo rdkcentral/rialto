@@ -67,7 +67,8 @@ target_include_directories(
 set_target_properties(
         RialtoClient
         PROPERTIES LINK_FLAGS "-Wl,--unresolved-symbols=report-all"
-
+                   SOVERSION  ${PROJECT_VERSION_MAJOR}
+                   VERSION    ${CMAKE_PROJECT_VERSION}
         )
 
 target_link_libraries(

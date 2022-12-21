@@ -29,7 +29,7 @@ namespace firebolt::rialto::server
 {
 SetPosition::SetPosition(PlayerContext &context, IGstPlayerPrivate &player, IGstPlayerClient *client,
                          std::shared_ptr<IGstWrapper> gstWrapper, std::int64_t position)
-    : m_context{context}, m_player{player}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}, m_position{position}
+    : m_context{context}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}, m_position{position}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetPosition");
 }
