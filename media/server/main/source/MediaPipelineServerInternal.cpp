@@ -28,7 +28,7 @@
 
 namespace
 {
-constexpr std::chrono::milliseconds kNeedMediaDataResendTime{100};
+constexpr std::chrono::milliseconds kNeedMediaDataResendTimeMs{100};
 const char *toString(const firebolt::rialto::MediaSourceStatus &status)
 {
     switch (status)
@@ -690,7 +690,7 @@ void MediaPipelineServerInternal::scheduleNotifyNeedMediaData(MediaSourceType me
         return;
     }
     m_needMediaDataTimers[mediaSourceType] =
-        m_timerFactory->createTimer(kNeedMediaDataResendTime,
+        m_timerFactory->createTimer(kNeedMediaDataResendTimeMs,
                                     [this, mediaSourceType]()
                                     {
                                         m_mainThread->enqueueTask(m_mainThreadClientId,
