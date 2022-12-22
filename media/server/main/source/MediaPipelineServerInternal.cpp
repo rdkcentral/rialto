@@ -693,14 +693,18 @@ void MediaPipelineServerInternal::scheduleNotifyNeedMediaData(MediaSourceType me
         m_timerFactory->createTimer(kNeedMediaDataResendTime,
                                     [this, mediaSourceType]()
                                     {
-                                        if (!notifyNeedMediaData(mediaSourceType))
-                                        {
-                                            RIALTO_SERVER_LOG_WARN(
-                                                "Scheduled Need media data sending failed. Scheduling again...");
-                                            m_mainThread->enqueueTask(m_mainThreadClientId, [this, mediaSourceType]()
-                                                                      { scheduleNotifyNeedMediaData(mediaSourceType); });
-                                        }
+                                        m_mainThread->enqueueTask(m_mainThreadClientId,
+                                                                  [this, mediaSourceType]()
+                                                                  {
+                                                                      m_needMediaDataTimers.erase(mediaSourceType);
+                                                                      if (!notifyNeedMediaDataInternal(mediaSourceType))
+                                                                      {
+                                                                          RIALTO_SERVER_LOG_WARN(
+                                                                              "Scheduled Need media data sending "
+                                                                              "failed. Scheduling again...");
+                                                                          scheduleNotifyNeedMediaData(mediaSourceType);
+                                                                      }
+                                                                  });
                                     });
 }
-
 }; // namespace firebolt::rialto::server

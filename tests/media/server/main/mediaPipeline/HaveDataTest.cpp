@@ -213,7 +213,6 @@ TEST_F(RialtoServerMediaPipelineHaveDataTest, ServerInternalHaveDataSuccessWithR
     ASSERT_TRUE(m_activeRequestsMock);
     EXPECT_CALL(*m_activeRequestsMock, getType(m_kNeedDataRequestId)).WillOnce(Return(mediaSourceType));
     EXPECT_CALL(*m_activeRequestsMock, erase(m_kNeedDataRequestId));
-    EXPECT_CALL(*m_timerMock, isActive()).WillOnce(Return(false));
     EXPECT_CALL(*m_timerFactoryMock, createTimer(m_kNeedMediaDataResendTimeout, _, _))
         .WillOnce(Invoke(
             [&](const std::chrono::milliseconds &timeout, const std::function<void()> &callback,
@@ -232,7 +231,7 @@ TEST_F(RialtoServerMediaPipelineHaveDataTest, ServerInternalHaveDataSuccessWithR
     EXPECT_CALL(*m_activeRequestsMock, insert(mediaSourceType, _)).WillOnce(Return(0));
     EXPECT_CALL(*m_mediaPipelineClientMock,
                 notifyNeedMediaData(sourceId, m_kNumFrames, 0, _)); // params tested in NeedMediaDataTests
-    mainThreadWillEnqueueTaskAndWait();
+    mainThreadWillEnqueueTask();
     resendCallback();
 }
 
