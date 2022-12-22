@@ -62,18 +62,10 @@ protected:
     gchar m_capsStr{};
 };
 
-TEST_F(AttachSourceTest, shouldNotAttachUnknownSource)
-{
-    firebolt::rialto::IMediaPipeline::MediaSource source(-1, firebolt::rialto::MediaSourceType::UNKNOWN,
-                                                         m_mimeType2.c_str());
-    firebolt::rialto::server::AttachSource task{m_context, m_gstWrapper, m_glibWrapper, source};
-    task.execute();
-    EXPECT_EQ(0, m_context.streamInfo.size());
-}
-
 TEST_F(AttachSourceTest, shouldAttachAudioSource)
 {
-    firebolt::rialto::IMediaPipeline::MediaSource source(-1, firebolt::rialto::MediaSourceType::AUDIO, "audio/aac");
+    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(-1, "audio/aac");
     firebolt::rialto::server::AttachSource task{m_context, m_gstWrapper, m_glibWrapper, source};
     EXPECT_CALL(*m_gstWrapper, gstCapsNewEmptySimple(StrEq("audio/mpeg"))).WillOnce(Return(&m_gstCaps1));
     EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleIntStub(&m_gstCaps1, StrEq("mpegversion"), G_TYPE_INT, 4));
@@ -91,7 +83,8 @@ TEST_F(AttachSourceTest, shouldAttachAudioSource)
 TEST_F(AttachSourceTest, shouldAttachAudioSourceWithChannelsAndRate)
 {
     firebolt::rialto::AudioConfig audioConfig{6, 48000, {}};
-    firebolt::rialto::IMediaPipeline::MediaSource source(-1, "audio/x-eac3", audioConfig);
+    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(-1, "audio/x-eac3", audioConfig);
     firebolt::rialto::server::AttachSource task{m_context, m_gstWrapper, m_glibWrapper, source};
     EXPECT_CALL(*m_gstWrapper, gstCapsNewEmptySimple(StrEq("audio/x-eac3"))).WillOnce(Return(&m_gstCaps1));
     EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleIntStub(&m_gstCaps1, StrEq("channels"), G_TYPE_INT, 6));
@@ -110,7 +103,8 @@ TEST_F(AttachSourceTest, shouldAttachAudioSourceWithChannelsAndRate)
 TEST_F(AttachSourceTest, shouldAttachOpusWithAudioSpecificConf)
 {
     firebolt::rialto::AudioConfig audioConfig{0, 0, {'T', 'E', 'S', 'T'}};
-    firebolt::rialto::IMediaPipeline::MediaSource source(-1, "audio/x-opus", audioConfig);
+    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(-1, "audio/x-opus", audioConfig);
     firebolt::rialto::server::AttachSource task{m_context, m_gstWrapper, m_glibWrapper, source};
     EXPECT_CALL(*m_gstWrapper, gstCodecUtilsOpusCreateCapsFromHeader(arrayMatcher(audioConfig.codecSpecificConfig), 4))
         .WillOnce(Return(&m_gstCaps1));
@@ -130,9 +124,11 @@ TEST_F(AttachSourceTest, shouldAttachVideoSource)
     gpointer memory = nullptr;
     GstBuffer buf;
     std::vector<uint8_t> codecData{'T', 'E', 'S', 'T'};
-    firebolt::rialto::IMediaPipeline::MediaSource source(-1, firebolt::rialto::MediaSourceType::VIDEO, "video/h264",
-                                                         firebolt::rialto::SegmentAlignment::AU,
-                                                         firebolt::rialto::StreamFormat::AVC, codecData);
+    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>(-1, "video/h264",
+                                                                             firebolt::rialto::SegmentAlignment::AU,
+                                                                             firebolt::rialto::StreamFormat::AVC,
+                                                                             codecData);
     firebolt::rialto::server::AttachSource task{m_context, m_gstWrapper, m_glibWrapper, source};
     EXPECT_CALL(*m_gstWrapper, gstCapsNewEmptySimple(StrEq("video/x-h264"))).WillOnce(Return(&m_gstCaps1));
     EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleStringStub(&m_gstCaps1, StrEq("alignment"), _, StrEq("au")));
@@ -155,7 +151,8 @@ TEST_F(AttachSourceTest, shouldAttachVideoSource)
 TEST_F(AttachSourceTest, shouldUpdateEmptyCapsInAudioSource)
 {
     m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, &m_appSrc);
-    firebolt::rialto::IMediaPipeline::MediaSource source(-1, firebolt::rialto::MediaSourceType::AUDIO, "");
+    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(-1, "");
     firebolt::rialto::server::AttachSource task{m_context, m_gstWrapper, m_glibWrapper, source};
     EXPECT_CALL(*m_gstWrapper, gstCapsNewEmpty()).WillOnce(Return(&m_gstCaps2));
     EXPECT_CALL(*m_gstWrapper, gstCapsToString(&m_gstCaps2)).WillOnce(Return(&m_capsStr));
@@ -171,7 +168,8 @@ TEST_F(AttachSourceTest, shouldUpdateEmptyCapsInAudioSource)
 TEST_F(AttachSourceTest, shouldUpdateExistingCapsInAudioSource)
 {
     m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, &m_appSrc);
-    firebolt::rialto::IMediaPipeline::MediaSource source(-1, firebolt::rialto::MediaSourceType::AUDIO, "audio/aac");
+    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(-1, "audio/aac");
     firebolt::rialto::server::AttachSource task{m_context, m_gstWrapper, m_glibWrapper, source};
     EXPECT_CALL(*m_gstWrapper, gstCapsNewEmptySimple(StrEq("audio/mpeg"))).WillOnce(Return(&m_gstCaps2));
     EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleIntStub(&m_gstCaps2, StrEq("mpegversion"), G_TYPE_INT, 4));
@@ -190,7 +188,8 @@ TEST_F(AttachSourceTest, shouldUpdateExistingCapsInAudioSource)
 TEST_F(AttachSourceTest, shouldUpdateEmptyCapsInVideoSource)
 {
     m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::VIDEO, &m_appSrc);
-    firebolt::rialto::IMediaPipeline::MediaSource source(-1, firebolt::rialto::MediaSourceType::VIDEO, "");
+    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>(-1, "");
     firebolt::rialto::server::AttachSource task{m_context, m_gstWrapper, m_glibWrapper, source};
     EXPECT_CALL(*m_gstWrapper, gstCapsNewEmpty()).WillOnce(Return(&m_gstCaps2));
     EXPECT_CALL(*m_gstWrapper, gstCapsToString(&m_gstCaps2)).WillOnce(Return(&m_capsStr));
@@ -206,7 +205,8 @@ TEST_F(AttachSourceTest, shouldUpdateEmptyCapsInVideoSource)
 TEST_F(AttachSourceTest, shouldUpdateExistingCapsInVideoSource)
 {
     m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::VIDEO, &m_appSrc);
-    firebolt::rialto::IMediaPipeline::MediaSource source(-1, firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
+    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>(-1, "video/h264");
     firebolt::rialto::server::AttachSource task{m_context, m_gstWrapper, m_glibWrapper, source};
     EXPECT_CALL(*m_gstWrapper, gstCapsNewEmptySimple(StrEq("video/x-h264"))).WillOnce(Return(&m_gstCaps2));
     EXPECT_CALL(*m_gstWrapper, gstCapsToString(&m_gstCaps2)).WillOnce(Return(&m_capsStr));
@@ -224,7 +224,8 @@ TEST_F(AttachSourceTest, shouldUpdateExistingCapsInVideoSource)
 TEST_F(AttachSourceTest, shouldNotUpdateAudioSource)
 {
     m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, &m_appSrc);
-    firebolt::rialto::IMediaPipeline::MediaSource source(-1, firebolt::rialto::MediaSourceType::AUDIO, "audio/aac");
+    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(-1, "audio/aac");
     firebolt::rialto::server::AttachSource task{m_context, m_gstWrapper, m_glibWrapper, source};
     EXPECT_CALL(*m_gstWrapper, gstCapsNewEmptySimple(StrEq("audio/mpeg"))).WillOnce(Return(&m_gstCaps2));
     EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleIntStub(&m_gstCaps2, StrEq("mpegversion"), G_TYPE_INT, 4));
@@ -242,7 +243,8 @@ TEST_F(AttachSourceTest, shouldNotUpdateAudioSource)
 TEST_F(AttachSourceTest, shouldNotUpdateVideoSource)
 {
     m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::VIDEO, &m_appSrc);
-    firebolt::rialto::IMediaPipeline::MediaSource source(-1, firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
+    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>(-1, "video/h264");
     firebolt::rialto::server::AttachSource task{m_context, m_gstWrapper, m_glibWrapper, source};
     EXPECT_CALL(*m_gstWrapper, gstCapsNewEmptySimple(StrEq("video/x-h264"))).WillOnce(Return(&m_gstCaps2));
     EXPECT_CALL(*m_gstWrapper, gstCapsToString(&m_gstCaps2)).WillOnce(Return(&m_capsStr));
@@ -254,4 +256,35 @@ TEST_F(AttachSourceTest, shouldNotUpdateVideoSource)
     task.execute();
     EXPECT_EQ(1, m_context.streamInfo.size());
     EXPECT_NE(m_context.streamInfo.end(), m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO));
+}
+
+TEST_F(AttachSourceTest, shouldAttachVideoDolbyVisionSource)
+{
+    gpointer memory = nullptr;
+    int32_t dolbyVisionProfile = 5;
+    GstBuffer buf;
+    std::vector<uint8_t> codecData{'T', 'E', 'S', 'T'};
+    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source = std::make_unique<
+        firebolt::rialto::IMediaPipeline::MediaSourceVideoDolbyVision>(-1, "video/h265", dolbyVisionProfile,
+                                                                       firebolt::rialto::SegmentAlignment::AU,
+                                                                       firebolt::rialto::StreamFormat::AVC, codecData);
+    firebolt::rialto::server::AttachSource task{m_context, m_gstWrapper, m_glibWrapper, source};
+    EXPECT_CALL(*m_gstWrapper, gstCapsNewEmptySimple(StrEq("video/x-h265"))).WillOnce(Return(&m_gstCaps1));
+    EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleStringStub(&m_gstCaps1, StrEq("alignment"), _, StrEq("au")));
+    EXPECT_CALL(*m_glibWrapper, gMemdup(arrayMatcher(codecData), codecData.size())).WillOnce(Return(memory));
+    EXPECT_CALL(*m_gstWrapper, gstBufferNewWrapped(memory, codecData.size())).WillOnce(Return(&buf));
+    EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleBufferStub(&m_gstCaps1, StrEq("codec_data"), _, &buf));
+    EXPECT_CALL(*m_gstWrapper, gstBufferUnref(&buf));
+    EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleStringStub(&m_gstCaps1, StrEq("stream-format"), _, StrEq("avc")));
+    EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleBooleanStub(&m_gstCaps1, StrEq("dovi-stream"), _, true));
+    EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleUintStub(&m_gstCaps1, StrEq("dv_profile"), _, dolbyVisionProfile));
+    EXPECT_CALL(*m_gstWrapper, gstCapsToString(&m_gstCaps1)).WillOnce(Return(&m_capsStr));
+    EXPECT_CALL(*m_glibWrapper, gFree(&m_capsStr));
+    EXPECT_CALL(*m_gstWrapper, gstElementFactoryMake(_, CharStrMatcher(m_vidName.c_str()))).WillOnce(Return(&m_appSrc));
+    EXPECT_CALL(*m_gstWrapper, gstAppSrcSetCaps(GST_APP_SRC(&m_appSrc), &m_gstCaps1));
+    EXPECT_CALL(*m_gstWrapper, gstCapsUnref(&m_gstCaps1));
+    task.execute();
+    EXPECT_EQ(1, m_context.streamInfo.size());
+    EXPECT_NE(m_context.streamInfo.end(), m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO));
+    EXPECT_EQ(&m_appSrc, m_context.streamInfo.at(firebolt::rialto::MediaSourceType::VIDEO));
 }

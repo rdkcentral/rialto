@@ -185,7 +185,7 @@ bool MediaPipelineIpc::load(MediaType type, const std::string &mimeType, const s
     return true;
 }
 
-bool MediaPipelineIpc::attachSource(const IMediaPipeline::MediaSource &source, int32_t &sourceId)
+bool MediaPipelineIpc::attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source, int32_t &sourceId)
 {
     if (!reattachChannelIfRequired())
     {
@@ -196,22 +196,33 @@ bool MediaPipelineIpc::attachSource(const IMediaPipeline::MediaSource &source, i
     firebolt::rialto::AttachSourceRequest request;
 
     request.set_session_id(m_sessionId);
-    auto mediaType = source.getType();
-    request.set_media_type(convertProtoMediaSourceType(mediaType));
-    request.set_mime_type(source.getMimeType());
-    request.set_segment_alignment(convertSegmentAlignment(source.getSegmentAlignment()));
+    SourceConfigType configType = source->getConfigType();
+    request.set_config_type(convertConfigType(configType));
+    request.set_mime_type(source->getMimeType());
+    request.set_segment_alignment(convertSegmentAlignment(source->getSegmentAlignment()));
 
-    AudioConfig audioConfig;
-    source.getAudioConfig(audioConfig);
-    request.mutable_audio_config()->set_number_of_channels(audioConfig.numberOfChannels);
-    request.mutable_audio_config()->set_sample_rate(audioConfig.sampleRate);
-    if (!audioConfig.codecSpecificConfig.empty())
+    request.set_codec_data(source->getCodecData().data(), source->getCodecData().size());
+    request.set_stream_format(convertStreamFormat(source->getStreamFormat()));
+
+    if (configType == SourceConfigType::VIDEO_DOLBY_VISION)
     {
-        request.mutable_audio_config()->set_codec_specific_config(audioConfig.codecSpecificConfig.data(),
-                                                                  audioConfig.codecSpecificConfig.size());
+        IMediaPipeline::MediaSourceVideoDolbyVision &mediaSourceDolby =
+            dynamic_cast<IMediaPipeline::MediaSourceVideoDolbyVision &>(*source);
+
+        request.set_dolby_vision_profile(mediaSourceDolby.getDolbyVisionProfile());
     }
-    request.set_codec_data(source.getCodecData().data(), source.getCodecData().size());
-    request.set_stream_format(convertStreamFormat(source.getStreamFormat()));
+    else if (configType == SourceConfigType::AUDIO)
+    {
+        IMediaPipeline::MediaSourceAudio &mediaSourceAudio = dynamic_cast<IMediaPipeline::MediaSourceAudio &>(*source);
+        request.mutable_audio_config()->set_number_of_channels(mediaSourceAudio.getAudioConfig().numberOfChannels);
+        request.mutable_audio_config()->set_sample_rate(mediaSourceAudio.getAudioConfig().sampleRate);
+        if (!mediaSourceAudio.getAudioConfig().codecSpecificConfig.empty())
+        {
+            request.mutable_audio_config()
+                ->set_codec_specific_config(mediaSourceAudio.getAudioConfig().codecSpecificConfig.data(),
+                                            mediaSourceAudio.getAudioConfig().codecSpecificConfig.size());
+        }
+    }
 
     firebolt::rialto::AttachSourceResponse response;
     auto ipcController = m_ipc->createRpcController();
@@ -762,6 +773,31 @@ MediaPipelineIpc::convertHaveDataRequestMediaSourceStatus(MediaSourceStatus stat
     }
 
     return protoMediaSourceStatus;
+}
+
+firebolt::rialto::AttachSourceRequest_ConfigType
+MediaPipelineIpc::convertConfigType(const firebolt::rialto::SourceConfigType &configType)
+{
+    switch (configType)
+    {
+    case firebolt::rialto::SourceConfigType::UNKNOWN:
+    {
+        return firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_UNKNOWN;
+    }
+    case firebolt::rialto::SourceConfigType::AUDIO:
+    {
+        return firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_AUDIO;
+    }
+    case firebolt::rialto::SourceConfigType::VIDEO:
+    {
+        return firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_VIDEO;
+    }
+    case firebolt::rialto::SourceConfigType::VIDEO_DOLBY_VISION:
+    {
+        return firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_VIDEO_DOLBY_VISION;
+    }
+    }
+    return firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_UNKNOWN;
 }
 
 firebolt::rialto::AttachSourceRequest_SegmentAlignment

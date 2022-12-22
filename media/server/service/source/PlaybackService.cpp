@@ -156,7 +156,7 @@ bool PlaybackService::load(int sessionId, MediaType type, const std::string &mim
     return mediaPipelineIter->second->load(type, mimeType, url);
 }
 
-bool PlaybackService::attachSource(int sessionId, IMediaPipeline::MediaSource &source)
+bool PlaybackService::attachSource(int sessionId, const std::unique_ptr<IMediaPipeline::MediaSource> &source)
 {
     RIALTO_SERVER_LOG_INFO("PlaybackService requested to attach source, session id: %d", sessionId);
 

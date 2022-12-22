@@ -93,7 +93,7 @@ public:
 
     bool load(MediaType type, const std::string &mimeType, const std::string &url) override;
 
-    bool attachSource(MediaSource &source) override;
+    bool attachSource(const std::unique_ptr<MediaSource> &source) override;
 
     bool removeSource(int32_t id) override;
 
@@ -217,7 +217,7 @@ protected:
      *
      * @retval true on success.
      */
-    bool attachSourceInternal(MediaSource &source);
+    bool attachSourceInternal(const std::unique_ptr<MediaSource> &source);
 
     /**
      * @brief Play internally, only to be called on the main thread.

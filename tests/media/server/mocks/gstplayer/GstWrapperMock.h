@@ -99,6 +99,10 @@ public:
                 (const));
     MOCK_METHOD(void, gstCapsSetSimpleBufferStub, (GstCaps * caps, const gchar *field, GType type, GstBuffer *value),
                 (const));
+    MOCK_METHOD(void, gstCapsSetSimpleBooleanStub,
+                (GstCaps * caps, const gchar *field, GType type, const gboolean value), (const));
+    MOCK_METHOD(void, gstCapsSetSimpleUintStub, (GstCaps * caps, const gchar *field, GType type, const unsigned value),
+                (const));
     MOCK_METHOD(GstCaps *, gstCapsNewSimpleIntStub,
                 (const char *media_type, const char *fieldname, GType type, int value), (const));
     MOCK_METHOD(void, gstMessageParseQos,
@@ -187,6 +191,16 @@ public:
             {
                 GstBuffer *buf = va_arg(args, GstBuffer *);
                 gstCapsSetSimpleBufferStub(caps, property, type, buf);
+            }
+            else if (g_type_is_a(type, G_TYPE_BOOLEAN))
+            {
+                gboolean val = va_arg(args, gboolean);
+                gstCapsSetSimpleBooleanStub(caps, property, type, val);
+            }
+            else if (g_type_is_a(type, G_TYPE_UINT))
+            {
+                unsigned val = va_arg(args, unsigned);
+                gstCapsSetSimpleUintStub(caps, property, type, val);
             }
             property = va_arg(args, const gchar *);
         }

@@ -83,6 +83,30 @@ convertMediaSourceStatus(const firebolt::rialto::HaveDataRequest_MediaSourceStat
     return firebolt::rialto::MediaSourceStatus::ERROR;
 }
 
+firebolt::rialto::SourceConfigType convertConfigType(const firebolt::rialto::AttachSourceRequest_ConfigType &configType)
+{
+    switch (configType)
+    {
+    case firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_UNKNOWN:
+    {
+        return firebolt::rialto::SourceConfigType::UNKNOWN;
+    }
+    case firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_AUDIO:
+    {
+        return firebolt::rialto::SourceConfigType::AUDIO;
+    }
+    case firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_VIDEO:
+    {
+        return firebolt::rialto::SourceConfigType::VIDEO;
+    }
+    case firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_VIDEO_DOLBY_VISION:
+    {
+        return firebolt::rialto::SourceConfigType::VIDEO_DOLBY_VISION;
+    }
+    }
+    return firebolt::rialto::SourceConfigType::UNKNOWN;
+}
+
 firebolt::rialto::SegmentAlignment
 convertSegmentAlignment(const firebolt::rialto::AttachSourceRequest_SegmentAlignment &alignment)
 {
@@ -295,36 +319,48 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
                                               ::firebolt::rialto::AttachSourceResponse *response,
                                               ::google::protobuf::Closure *done)
 {
-    RIALTO_SERVER_LOG_DEBUG("%s requested. media type %s, mime_type: %s", __func__,
-                            firebolt::rialto::ProtoMediaSourceType::AUDIO == request->media_type() ? "audio" : "video",
-                            request->mime_type().c_str());
+    RIALTO_SERVER_LOG_DEBUG("mime_type: %s", request->mime_type().c_str());
 
     auto codecDataProto = request->codec_data();
     std::vector<uint8_t> codecData(codecDataProto.begin(), codecDataProto.end());
-    IMediaPipeline::MediaSource mediaSource{0,
-                                            convertMediaSourceType(request->media_type()),
-                                            request->mime_type().c_str(),
-                                            convertSegmentAlignment(request->segment_alignment()),
-                                            convertStreamFormat(request->stream_format()),
-                                            codecData};
+    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource;
+    firebolt::rialto::SourceConfigType configType = convertConfigType(request->config_type());
 
-    if (request->media_type() == firebolt::rialto::ProtoMediaSourceType::AUDIO)
+    if (configType == firebolt::rialto::SourceConfigType::AUDIO)
     {
-        const auto &audioConfig = request->audio_config();
-        uint32_t numberofchannels = audioConfig.number_of_channels();
-        uint32_t sampleRate = audioConfig.sample_rate();
+        const auto &config = request->audio_config();
+        uint32_t numberofchannels = config.number_of_channels();
+        uint32_t sampleRate = config.sample_rate();
 
         std::vector<uint8_t> codecSpecificConfig;
-        if (audioConfig.has_codec_specific_config())
+        if (config.has_codec_specific_config())
         {
-            auto codecSpecificConfigStr = audioConfig.codec_specific_config();
+            auto codecSpecificConfigStr = config.codec_specific_config();
             codecSpecificConfig.assign(codecSpecificConfigStr.begin(), codecSpecificConfigStr.end());
         }
+        AudioConfig audioConfig{numberofchannels, sampleRate, codecSpecificConfig};
 
-        mediaSource = IMediaPipeline::MediaSource(0, request->mime_type(),
-                                                  {numberofchannels, sampleRate, codecSpecificConfig},
-                                                  convertSegmentAlignment(request->segment_alignment()),
-                                                  convertStreamFormat(request->stream_format()), codecData);
+        mediaSource =
+            std::make_unique<IMediaPipeline::MediaSourceAudio>(0, request->mime_type(), audioConfig,
+                                                               convertSegmentAlignment(request->segment_alignment()),
+                                                               convertStreamFormat(request->stream_format()), codecData);
+    }
+    else if (configType == firebolt::rialto::SourceConfigType::VIDEO)
+    {
+        mediaSource =
+            std::make_unique<IMediaPipeline::MediaSourceVideo>(0, request->mime_type().c_str(),
+                                                               convertSegmentAlignment(request->segment_alignment()),
+                                                               convertStreamFormat(request->stream_format()), codecData);
+    }
+    else if (configType == firebolt::rialto::SourceConfigType::VIDEO_DOLBY_VISION)
+    {
+        mediaSource =
+            std::make_unique<IMediaPipeline::MediaSourceVideoDolbyVision>(0, request->mime_type().c_str(),
+                                                                          request->dolby_vision_profile(),
+                                                                          convertSegmentAlignment(
+                                                                              request->segment_alignment()),
+                                                                          convertStreamFormat(request->stream_format()),
+                                                                          codecData);
     }
 
     if (!m_playbackService.attachSource(request->session_id(), mediaSource))
@@ -332,7 +368,7 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
         RIALTO_SERVER_LOG_ERROR("Attach source failed");
         controller->SetFailed("Operation failed");
     }
-    response->set_source_id(mediaSource.getId());
+    response->set_source_id(mediaSource->getId());
     done->Run();
 }
 

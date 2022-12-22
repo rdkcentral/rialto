@@ -69,7 +69,7 @@ public:
      */
     virtual ~MediaPipelineIpc();
 
-    bool attachSource(const IMediaPipeline::MediaSource &source, int32_t &sourceId) override;
+    bool attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source, int32_t &sourceId) override;
 
     bool removeSource(int32_t sourceId) override;
 
@@ -188,6 +188,9 @@ private:
      */
     firebolt::rialto::AttachSourceRequest_StreamFormat
     convertStreamFormat(const firebolt::rialto::StreamFormat &streamFormat);
+
+    firebolt::rialto::AttachSourceRequest_ConfigType
+    convertConfigType(const firebolt::rialto::SourceConfigType &configType);
 };
 
 }; // namespace firebolt::rialto::client

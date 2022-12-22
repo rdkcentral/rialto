@@ -26,8 +26,8 @@ MATCHER_P8(attachSourceRequestMatcher2, sessionId, mimeType, numberOfChannels, s
         dynamic_cast<const ::firebolt::rialto::AttachSourceRequest *>(arg);
     std::vector<uint8_t> codecDataFromReq(request->codec_data().begin(), request->codec_data().end());
     return ((request->session_id() == sessionId) &&
-            (static_cast<const unsigned int>(request->media_type()) ==
-             static_cast<const unsigned int>(MediaSourceType::AUDIO)) &&
+            (static_cast<const unsigned int>(request->config_type()) ==
+             static_cast<const unsigned int>(SourceConfigType::AUDIO)) &&
             (request->mime_type() == mimeType) && (request->has_audio_config()) &&
             (request->audio_config().number_of_channels() == numberOfChannels) &&
             (request->audio_config().sample_rate() == sampleRate) &&
@@ -36,12 +36,27 @@ MATCHER_P8(attachSourceRequestMatcher2, sessionId, mimeType, numberOfChannels, s
             (codecDataFromReq == codecData));
 }
 
-MATCHER_P3(attachSourceRequestMatcher, sessionId, mediaType, mimeType, "")
+MATCHER_P6(attachSourceRequestMatcherDolby, sessionId, mimeType, dolbyVisionProfile, alignment, streamFormat, codecData,
+           "")
+{
+    const ::firebolt::rialto::AttachSourceRequest *request =
+        dynamic_cast<const ::firebolt::rialto::AttachSourceRequest *>(arg);
+    std::vector<uint8_t> codecDataFromReq(request->codec_data().begin(), request->codec_data().end());
+    return ((request->session_id() == sessionId) &&
+            (static_cast<const unsigned int>(request->config_type()) ==
+             static_cast<const unsigned int>(SourceConfigType::VIDEO_DOLBY_VISION)) &&
+            (request->mime_type() == mimeType) && (request->segment_alignment() == alignment) &&
+            (request->stream_format() == streamFormat) && (request->has_dolby_vision_profile()) &&
+            (request->dolby_vision_profile() == dolbyVisionProfile) && (codecDataFromReq == codecData));
+}
+
+MATCHER_P3(attachSourceRequestMatcher, sessionId, configType, mimeType, "")
 {
     const ::firebolt::rialto::AttachSourceRequest *request =
         dynamic_cast<const ::firebolt::rialto::AttachSourceRequest *>(arg);
     return ((request->session_id() == sessionId) &&
-            (static_cast<const unsigned int>(request->media_type()) == mediaType) && (request->mime_type() == mimeType));
+            (static_cast<const unsigned int>(request->config_type()) == configType) &&
+            (request->mime_type() == mimeType));
 }
 
 MATCHER_P2(removeSourceRequestMatcher, sessionId, sourceId, "")
@@ -90,11 +105,13 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachSourceSuccess)
 
     EXPECT_CALL(*m_channelMock,
                 CallMethod(methodMatcher("attachSource"), m_controllerMock.get(),
-                           attachSourceRequestMatcher(m_sessionId, static_cast<uint32_t>(m_type), m_kMimeType), _,
-                           m_blockingClosureMock.get()))
+                           attachSourceRequestMatcher(m_sessionId, static_cast<uint32_t>(SourceConfigType::AUDIO),
+                                                      m_kMimeType),
+                           _, m_blockingClosureMock.get()))
         .WillOnce(WithArgs<3>(Invoke(this, &RialtoClientMediaPipelineIpcSourceTest::setAttachSourceResponse)));
 
-    IMediaPipeline::MediaSource mediaSource(m_id, m_type, m_kMimeType);
+    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_id, m_kMimeType);
 
     EXPECT_EQ(m_mediaPipelineIpc->attachSource(mediaSource, m_id), true);
 }
@@ -126,7 +143,33 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachAudioSourceWithAdditionalda
     codecSpecificConfig.assign(codecSpecificConfigStr.begin(), codecSpecificConfigStr.end());
     AudioConfig audioConfig{6, 48000, codecSpecificConfig};
 
-    IMediaPipeline::MediaSource mediaSource(m_id, m_kMimeType, audioConfig, alignment, streamFormat, codecData);
+    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_id, m_kMimeType, audioConfig, alignment, streamFormat,
+                                                           codecData);
+
+    EXPECT_EQ(m_mediaPipelineIpc->attachSource(mediaSource, m_id), true);
+}
+
+TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachDolbyVisionSourceWithSuccess)
+{
+    expectIpcApiCallSuccess();
+
+    uint32_t dolbyVisionProfile = 5;
+    firebolt::rialto::SegmentAlignment alignment = firebolt::rialto::SegmentAlignment::UNDEFINED;
+    std::vector<uint8_t> codecData{'T', 'E', 'S', 'T'};
+    firebolt::rialto::StreamFormat streamFormat = firebolt::rialto::StreamFormat::RAW;
+    EXPECT_CALL(*m_channelMock,
+                CallMethod(methodMatcher("attachSource"), m_controllerMock.get(),
+                           attachSourceRequestMatcherDolby(m_sessionId, m_kMimeType, dolbyVisionProfile,
+                                                           firebolt::rialto::AttachSourceRequest_SegmentAlignment_ALIGNMENT_UNDEFINED,
+                                                           firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_RAW,
+                                                           codecData),
+                           _, m_blockingClosureMock.get()))
+        .WillOnce(WithArgs<3>(Invoke(this, &RialtoClientMediaPipelineIpcSourceTest::setAttachSourceResponse)));
+
+    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
+        std::make_unique<IMediaPipeline::MediaSourceVideoDolbyVision>(m_id, m_kMimeType, dolbyVisionProfile, alignment,
+                                                                      streamFormat, codecData);
 
     EXPECT_EQ(m_mediaPipelineIpc->attachSource(mediaSource, m_id), true);
 }
@@ -139,7 +182,8 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachSourceFailure)
     expectIpcApiCallFailure();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("attachSource"), _, _, _, _));
-    IMediaPipeline::MediaSource mediaSource(m_id, m_type, m_kMimeType);
+    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_id, m_kMimeType);
 
     EXPECT_EQ(m_mediaPipelineIpc->attachSource(mediaSource, m_id), false);
 }
@@ -152,7 +196,8 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachSourceChannelDisconnected)
     expectIpcApiCallDisconnected();
     expectUnsubscribeEvents();
 
-    IMediaPipeline::MediaSource mediaSource(m_id, m_type, m_kMimeType);
+    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_id, m_kMimeType);
     EXPECT_EQ(m_mediaPipelineIpc->attachSource(mediaSource, m_id), false);
 
     // Reattach channel on destroySession
@@ -171,7 +216,8 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachSourceReconnectChannel)
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("attachSource"), _, _, _, _));
 
-    IMediaPipeline::MediaSource mediaSource(m_id, m_type, m_kMimeType);
+    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_id, m_kMimeType);
     EXPECT_EQ(m_mediaPipelineIpc->attachSource(mediaSource, m_id), true);
 }
 

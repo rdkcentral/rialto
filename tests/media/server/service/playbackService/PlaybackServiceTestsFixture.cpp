@@ -293,13 +293,15 @@ void PlaybackServiceTests::loadShouldFail()
 
 void PlaybackServiceTests::attachSourceShouldSucceed()
 {
-    firebolt::rialto::IMediaPipeline::MediaSource mediaSource{};
+    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> mediaSource =
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>(-1, "video/h264");
     EXPECT_TRUE(m_sut->attachSource(sessionId, mediaSource));
 }
 
 void PlaybackServiceTests::attachSourceShouldFail()
 {
-    firebolt::rialto::IMediaPipeline::MediaSource mediaSource{};
+    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> mediaSource =
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>(-1, "video/h264");
     EXPECT_FALSE(m_sut->attachSource(sessionId, mediaSource));
 }
 

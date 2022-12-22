@@ -59,6 +59,14 @@ enum class MediaSourceType
     VIDEO
 };
 
+enum class SourceConfigType
+{
+    UNKNOWN,
+    AUDIO,
+    VIDEO,
+    VIDEO_DOLBY_VISION
+};
+
 /**
  * @brief The supported audio ease types.
  */

@@ -104,6 +104,7 @@ private:
     StrictMock<firebolt::rialto::server::service::PlaybackServiceMock> m_playbackServiceMock;
     std::shared_ptr<firebolt::rialto::IMediaPipelineClient> m_mediaPipelineClient;
     std::shared_ptr<firebolt::rialto::server::ipc::IMediaPipelineModuleService> m_service;
+    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> m_source;
 
     void expectRequestSuccess();
     void expectRequestFailure();

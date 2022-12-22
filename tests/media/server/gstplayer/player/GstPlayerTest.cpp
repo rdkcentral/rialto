@@ -27,6 +27,7 @@
 using testing::_;
 using testing::ByMove;
 using testing::Invoke;
+using testing::Ref;
 using testing::Return;
 
 class GstPlayerTest : public GstPlayerTestCommon
@@ -53,11 +54,12 @@ protected:
 
 TEST_F(GstPlayerTest, shouldAttachSource)
 {
-    firebolt::rialto::IMediaPipeline::MediaSource source{-1, firebolt::rialto::MediaSourceType::VIDEO, "video/mpeg"};
+    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>(-1, "video/mpeg");
 
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createAttachSource(_, source)).WillOnce(Return(ByMove(std::move(task))));
+    EXPECT_CALL(m_taskFactoryMock, createAttachSource(_, Ref(source))).WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->attachSource(source);
 }
