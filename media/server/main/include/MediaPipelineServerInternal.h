@@ -25,8 +25,10 @@
 #include "IGstPlayer.h"
 #include "IMainThread.h"
 #include "IMediaPipelineServerInternal.h"
+#include "ITimer.h"
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace firebolt::rialto::server
@@ -80,6 +82,7 @@ public:
                                 const std::shared_ptr<IGstPlayerFactory> &gstPlayerFactory, int sessionId,
                                 const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer,
                                 const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
+                                std::shared_ptr<common::ITimerFactory> timerFactory,
                                 std::unique_ptr<IDataReaderFactory> &&dataReaderFactory,
                                 std::unique_ptr<IActiveRequests> &&activeRequests, IDecryptionService &decryptionService);
 
@@ -172,6 +175,11 @@ protected:
     std::unique_ptr<IDataReaderFactory> m_dataReaderFactory;
 
     /**
+     * @brief Factory creating timers
+     */
+    std::shared_ptr<common::ITimerFactory> m_timerFactory;
+
+    /**
      * @brief Object containing all active NeedDataRequests
      */
     std::unique_ptr<IActiveRequests> m_activeRequests;
@@ -185,6 +193,11 @@ protected:
      * @brief Decryption service
      */
     IDecryptionService &m_decryptionService;
+
+    /**
+     * @brief Map containing scheduled need media data requests.
+     */
+    std::unordered_map<MediaSourceType, std::unique_ptr<firebolt::rialto::common::ITimer>> m_needMediaDataTimers;
 
     /**
      * @brief Load internally, only to be called on the main thread.
@@ -303,6 +316,14 @@ protected:
      * @param[in] mediaSourceType    : The media source type.
      */
     bool notifyNeedMediaDataInternal(MediaSourceType mediaSourceType);
+
+    /**
+     * @brief Schedules resending of NeedMediaData after a short delay. Used when no segments were received in the
+     * haveData() call to prevent a storm of needData()/haveData() calls, only to be called on the main thread.
+     *
+     * @param[in] mediaSourceType    : The media source type.
+     */
+    void scheduleNotifyNeedMediaData(MediaSourceType mediaSourceType);
 };
 
 }; // namespace firebolt::rialto::server
