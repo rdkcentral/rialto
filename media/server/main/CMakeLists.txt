@@ -63,6 +63,7 @@ target_include_directories(
         $<TARGET_PROPERTY:RialtoServerCommon,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoPlayerCommon,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoServerOcdm,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoCommon,INTERFACE_INCLUDE_DIRECTORIES>
         )
 
 set_target_properties(
@@ -84,6 +85,7 @@ target_link_libraries(
         RialtoLogging
         RialtoServerGstPlayer
         RialtoServerOcdm
+        RialtoCommon
 
         Threads::Threads
         protobuf::libprotobuf

@@ -35,8 +35,8 @@ TEST_F(RialtoServerCreateMediaPipelineTest, Create)
     EXPECT_NO_THROW(
         m_mediaPipeline =
             std::make_unique<MediaPipelineServerInternal>(m_mediaPipelineClientMock, m_videoReq, m_gstPlayerFactoryMock,
-                                                          m_kSessionId, m_sharedMemoryBufferMock,
-                                                          m_mainThreadFactoryMock, std::move(m_dataReaderFactory),
+                                                          m_kSessionId, m_sharedMemoryBufferMock, m_mainThreadFactoryMock,
+                                                          m_timerFactoryMock, std::move(m_dataReaderFactory),
                                                           std::move(m_activeRequests), m_decryptionServiceMock););
     EXPECT_NE(m_mediaPipeline, nullptr);
 

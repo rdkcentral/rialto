@@ -33,7 +33,9 @@ MediaPipelineTestBase::MediaPipelineTestBase()
       m_activeRequests{std::make_unique<StrictMock<ActiveRequestsMock>>()},
       m_activeRequestsMock{static_cast<StrictMock<ActiveRequestsMock> *>(m_activeRequests.get())},
       m_mainThreadFactoryMock{std::make_shared<StrictMock<MainThreadFactoryMock>>()},
-      m_mainThreadMock{std::make_shared<StrictMock<MainThreadMock>>()}
+      m_mainThreadMock{std::make_shared<StrictMock<MainThreadMock>>()},
+      m_timerFactoryMock{std::make_shared<StrictMock<TimerFactoryMock>>()}, m_timerMock{
+                                                                                std::make_unique<StrictMock<TimerMock>>()}
 {
 }
 
@@ -48,8 +50,8 @@ void MediaPipelineTestBase::createMediaPipeline()
     EXPECT_NO_THROW(
         m_mediaPipeline =
             std::make_unique<MediaPipelineServerInternal>(m_mediaPipelineClientMock, m_videoReq, m_gstPlayerFactoryMock,
-                                                          m_kSessionId, m_sharedMemoryBufferMock,
-                                                          m_mainThreadFactoryMock, std::move(m_dataReaderFactory),
+                                                          m_kSessionId, m_sharedMemoryBufferMock, m_mainThreadFactoryMock,
+                                                          m_timerFactoryMock, std::move(m_dataReaderFactory),
                                                           std::move(m_activeRequests), m_decryptionServiceMock););
     EXPECT_NE(m_mediaPipeline, nullptr);
 }

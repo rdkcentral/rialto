@@ -28,6 +28,7 @@
 
 namespace
 {
+constexpr std::chrono::milliseconds kNeedMediaDataResendTimeMs{100};
 const char *toString(const firebolt::rialto::MediaSourceStatus &status)
 {
     switch (status)
@@ -105,6 +106,7 @@ std::unique_ptr<server::IMediaPipelineServerInternal> MediaPipelineServerInterna
             std::make_unique<server::MediaPipelineServerInternal>(sharedClient, videoRequirements,
                                                                   server::IGstPlayerFactory::getFactory(), sessionId,
                                                                   shmBuffer, server::IMainThreadFactory::createFactory(),
+                                                                  common::ITimerFactory::getFactory(),
                                                                   std::make_unique<DataReaderFactory>(),
                                                                   std::make_unique<ActiveRequests>(), decryptionService);
     }
@@ -120,11 +122,11 @@ MediaPipelineServerInternal::MediaPipelineServerInternal(
     std::shared_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements,
     const std::shared_ptr<IGstPlayerFactory> &gstPlayerFactory, int sessionId,
     const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
-    std::unique_ptr<IDataReaderFactory> &&dataReaderFactory, std::unique_ptr<IActiveRequests> &&activeRequests,
-    IDecryptionService &decryptionService)
+    std::shared_ptr<common::ITimerFactory> timerFactory, std::unique_ptr<IDataReaderFactory> &&dataReaderFactory,
+    std::unique_ptr<IActiveRequests> &&activeRequests, IDecryptionService &decryptionService)
     : m_mediaPipelineClient(client), m_kGstPlayerFactory(gstPlayerFactory), m_kVideoRequirements(videoRequirements),
       m_sessionId{sessionId}, m_shmBuffer{shmBuffer}, m_dataReaderFactory{std::move(dataReaderFactory)},
-      m_activeRequests{std::move(activeRequests)}, m_decryptionService{decryptionService}
+      m_timerFactory{timerFactory}, m_activeRequests{std::move(activeRequests)}, m_decryptionService{decryptionService}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
@@ -161,6 +163,13 @@ MediaPipelineServerInternal::~MediaPipelineServerInternal()
 
     auto task = [&]()
     {
+        for (const auto &timer : m_needMediaDataTimers)
+        {
+            if (timer.second && timer.second->isActive())
+            {
+                timer.second->cancel();
+            }
+        }
         if (!m_shmBuffer->unmapPartition(m_sessionId))
         {
             RIALTO_SERVER_LOG_ERROR("Unable to unmap shm partition");
@@ -440,7 +449,8 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
         RIALTO_SERVER_LOG_WARN("Data request for needDataRequestId: %u received with wrong status: %s",
                                needDataRequestId, toString(status));
         m_activeRequests->erase(needDataRequestId);
-        return notifyNeedMediaDataInternal(mediaSourceType); // Resend NeedMediaData
+        scheduleNotifyNeedMediaData(mediaSourceType);
+        return true;
     }
 
     try
@@ -505,7 +515,8 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
     if (status != MediaSourceStatus::OK && status != MediaSourceStatus::EOS)
     {
         RIALTO_SERVER_LOG_WARN("Data request for needDataRequestId: %u received with wrong status", needDataRequestId);
-        return notifyNeedMediaDataInternal(mediaSourceType); // Resend NeedMediaData
+        scheduleNotifyNeedMediaData(mediaSourceType);
+        return true;
     }
     uint8_t *buffer = m_shmBuffer->getBuffer();
     if (!buffer)
@@ -669,4 +680,31 @@ void MediaPipelineServerInternal::notifyQos(MediaSourceType mediaSourceType, con
     m_mainThread->enqueueTask(m_mainThreadClientId, task);
 }
 
+void MediaPipelineServerInternal::scheduleNotifyNeedMediaData(MediaSourceType mediaSourceType)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    auto timer = m_needMediaDataTimers.find(mediaSourceType);
+    if (m_needMediaDataTimers.end() != timer && timer->second && timer->second->isActive())
+    {
+        RIALTO_SERVER_LOG_DEBUG("Skip scheduling need media data - it is already scheduled");
+        return;
+    }
+    m_needMediaDataTimers[mediaSourceType] =
+        m_timerFactory->createTimer(kNeedMediaDataResendTimeMs,
+                                    [this, mediaSourceType]()
+                                    {
+                                        m_mainThread->enqueueTask(m_mainThreadClientId,
+                                                                  [this, mediaSourceType]()
+                                                                  {
+                                                                      m_needMediaDataTimers.erase(mediaSourceType);
+                                                                      if (!notifyNeedMediaDataInternal(mediaSourceType))
+                                                                      {
+                                                                          RIALTO_SERVER_LOG_WARN(
+                                                                              "Scheduled Need media data sending "
+                                                                              "failed. Scheduling again...");
+                                                                          scheduleNotifyNeedMediaData(mediaSourceType);
+                                                                      }
+                                                                  });
+                                    });
+}
 }; // namespace firebolt::rialto::server

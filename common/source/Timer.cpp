@@ -69,6 +69,7 @@ Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void(
                     }
                 }
             } while (timerType == TimerType::PERIODIC && m_active);
+            m_active = false;
         });
 }
 
