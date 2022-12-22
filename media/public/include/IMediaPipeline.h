@@ -211,7 +211,7 @@ public:
                          SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                          StreamFormat streamFormat = StreamFormat::UNDEFINED,
                          const std::vector<uint8_t> &codecData = std::vector<uint8_t>())
-            : MediaSource(id, SourceConfigType::AUDIO_BASE, mimeType, alignment, streamFormat, codecData),
+            : MediaSource(id, SourceConfigType::AUDIO, mimeType, alignment, streamFormat, codecData),
               m_audioConfig(audioConfig)
         {
         }
@@ -248,7 +248,7 @@ public:
                          SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                          StreamFormat streamFormat = StreamFormat::UNDEFINED,
                          const std::vector<uint8_t> &codecData = std::vector<uint8_t>())
-            : MediaSource(id, SourceConfigType::VIDEO_BASE, mimeType, alignment, streamFormat, codecData)
+            : MediaSource(id, SourceConfigType::VIDEO, mimeType, alignment, streamFormat, codecData)
         {
         }
         ~MediaSourceVideo() {}

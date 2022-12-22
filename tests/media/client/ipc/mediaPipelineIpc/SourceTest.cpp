@@ -27,7 +27,7 @@ MATCHER_P8(attachSourceRequestMatcher2, sessionId, mimeType, numberOfChannels, s
     std::vector<uint8_t> codecDataFromReq(request->codec_data().begin(), request->codec_data().end());
     return ((request->session_id() == sessionId) &&
             (static_cast<const unsigned int>(request->config_type()) ==
-             static_cast<const unsigned int>(SourceConfigType::AUDIO_BASE)) &&
+             static_cast<const unsigned int>(SourceConfigType::AUDIO)) &&
             (request->mime_type() == mimeType) && (request->has_audio_config()) &&
             (request->audio_config().number_of_channels() == numberOfChannels) &&
             (request->audio_config().sample_rate() == sampleRate) &&
@@ -105,7 +105,7 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachSourceSuccess)
 
     EXPECT_CALL(*m_channelMock,
                 CallMethod(methodMatcher("attachSource"), m_controllerMock.get(),
-                           attachSourceRequestMatcher(m_sessionId, static_cast<uint32_t>(SourceConfigType::AUDIO_BASE),
+                           attachSourceRequestMatcher(m_sessionId, static_cast<uint32_t>(SourceConfigType::AUDIO),
                                                       m_kMimeType),
                            _, m_blockingClosureMock.get()))
         .WillOnce(WithArgs<3>(Invoke(this, &RialtoClientMediaPipelineIpcSourceTest::setAttachSourceResponse)));
