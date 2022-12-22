@@ -303,7 +303,7 @@ GstCaps *AttachSource::createCapsFromMediaSource() const
     }
     else
     {
-        RIALTO_SERVER_LOG_WARN("Invalid config type %u", static_cast<uint32_t>(configType));
+        RIALTO_SERVER_LOG_ERROR("Invalid config type %u", static_cast<uint32_t>(configType));
         return nullptr;
     }
 
