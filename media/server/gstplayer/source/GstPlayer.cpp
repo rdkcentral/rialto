@@ -19,6 +19,7 @@
 
 #include "GstPlayer.h"
 #include "GstDispatcherThread.h"
+#include "GstLogForwarding.h"
 #include "ITimer.h"
 #include "RialtoServerLogging.h"
 #include "WorkerThread.h"
@@ -124,6 +125,8 @@ bool IGstPlayer::initalise(int argc, char **argv)
         gstWrapper->gstRegistryRemovePlugin(gstWrapper->gstRegistryGet(), rialtoPlugin);
         gstWrapper->gstObjectUnref(rialtoPlugin);
     }
+
+    enableGstLogForwarding();
 
     return true;
 }
