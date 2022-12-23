@@ -81,7 +81,23 @@ void gstreamerLogFunction(GstDebugCategory *category, GstDebugLevel level, const
         break;
     }
     }
-    ss << "M:" << file << " F:" << function << ":" << line << ": " << gst_debug_message_get(message);
+    ss << "M:" << file << " F:" << function << ":" << line;
+    if (object)
+    {
+        if (GST_IS_OBJECT(object) && GST_OBJECT_NAME(object))
+        {
+            ss << " <" << GST_OBJECT_NAME(object) << ">";
+        }
+        else if (G_IS_OBJECT(object))
+        {
+            ss << " <" << G_OBJECT_TYPE_NAME(object) << "@" << static_cast<void *>(object) << ">";
+        }
+        else
+        {
+            ss << " <" << static_cast<void *>(object) << ">";
+        }
+    }
+    ss << ": " << gst_debug_message_get(message);
     RIALTO_LOG_EXTERNAL("%s", ss.str().c_str());
 }
 } // namespace
