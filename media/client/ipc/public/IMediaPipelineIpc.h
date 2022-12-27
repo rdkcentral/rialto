@@ -186,22 +186,19 @@ public:
     virtual bool renderFrame() = 0;
 
     /**
-     * @brief Set level and transition of audio attenuation
+     * @brief Set level and transition of audio attenuation.
+     *        Sets the current volume for the pipeline (0.0 silent -> 1.0 full volume)
      *
-     * @param[in] target Target volume level (0.0 - 1.0)
-     *
-     * Sets the current volume for the pipeline (0.0 silent -> 1.0 full volume)
+     * @param[in] volume Target volume level (0.0 - 1.0)
      *
      * @retval true on success false otherwise
      */
     virtual bool setVolume(double volume) = 0;
 
     /**
-     * @brief Get current audio level
+     * @brief Get current audio level. Fetches the current volume level for the pipeline.
      *
      * @param[out] volume Current volume level (range 0.0 - 1.0)
-     *
-     * Fetches the current volume level for the pipeline.
      *
      * @retval true on success false otherwise
      */
