@@ -777,4 +777,8 @@ void GstPlayer::renderFrame()
         m_workerThread->enqueueTask(m_taskFactory->createRenderFrame(m_context));
     }
 }
+
+void GstPlayer::setVolume(double volume) {}
+
+void GstPlayer::getVolume(double &volume) {}
 }; // namespace firebolt::rialto::server

@@ -45,6 +45,8 @@ public:
     MOCK_METHOD(void, setEos, (const firebolt::rialto::MediaSourceType &type), (override));
     MOCK_METHOD(void, setPlaybackRate, (double rate), (override));
     MOCK_METHOD(void, renderFrame, (), (override));
+    MOCK_METHOD(void, setVolume, (double volume), (override));
+    MOCK_METHOD(void, getVolume, (double &volume), (override));
 };
 } // namespace firebolt::rialto::server
 

@@ -227,3 +227,49 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, RenderFrameFail)
 {
     EXPECT_FALSE(m_mediaPipeline->renderFrame());
 }
+
+/**
+ * Test that SetVolume returns failure if the gstreamer player is not initialized
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetVolumeFailureDueToUninitializedPlayer)
+{
+    const double kVolume{0.7};
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_FALSE(m_mediaPipeline->setVolume(kVolume));
+}
+
+/**
+ * Test that SetVolume returns failure if the gstreamer player is not initialized
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetVolumeSuccess)
+{
+    const double kVolume{0.7};
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+
+    EXPECT_CALL(*m_gstPlayerMock, setVolume(kVolume));
+    EXPECT_TRUE(m_mediaPipeline->setVolume(kVolume));
+}
+
+/**
+ * Test that GetVolume returns failure if the gstreamer player is not initialized
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetVolumeFailureDueToUninitializedPlayer)
+{
+    double volume{};
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_FALSE(m_mediaPipeline->getVolume(volume));
+}
+
+/**
+ * Test that GetVolume returns failure if the gstreamer player is not initialized
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetVolumeSuccess)
+{
+    double volume{};
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+
+    EXPECT_CALL(*m_gstPlayerMock, getVolume(volume));
+    EXPECT_TRUE(m_mediaPipeline->getVolume(volume));
+}
