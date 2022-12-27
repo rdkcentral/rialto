@@ -312,6 +312,16 @@ bool PlaybackService::renderFrame(int sessionId)
     return mediaPipelineIter->second->renderFrame();
 }
 
+bool PlaybackService::setVolume(int sessionId, double volume)
+{
+    return false;
+}
+
+bool PlaybackService::getVolume(int sessionId, double &volume)
+{
+    return false;
+}
+
 bool PlaybackService::getSharedMemory(int32_t &fd, uint32_t &size)
 {
     auto shmBuffer = m_shmBuffer;

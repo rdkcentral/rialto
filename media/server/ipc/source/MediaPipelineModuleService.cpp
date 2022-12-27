@@ -502,4 +502,41 @@ void MediaPipelineModuleService::renderFrame(::google::protobuf::RpcController *
 
     done->Run();
 }
+
+void MediaPipelineModuleService::setVolume(::google::protobuf::RpcController *controller,
+                                           const ::firebolt::rialto::SetVolumeRequest *request,
+                                           ::firebolt::rialto::SetVolumeResponse *response,
+                                           ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    if (!m_playbackService.setVolume(request->session_id(), request->volume()))
+    {
+        RIALTO_SERVER_LOG_ERROR("Set volume failed.");
+        controller->SetFailed("Operation failed");
+    }
+
+    done->Run();
+}
+
+void MediaPipelineModuleService::getVolume(::google::protobuf::RpcController *controller,
+                                           const ::firebolt::rialto::GetVolumeRequest *request,
+                                           ::firebolt::rialto::GetVolumeResponse *response,
+                                           ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    double volume{};
+
+    if (!m_playbackService.getVolume(request->session_id(), volume))
+    {
+        RIALTO_SERVER_LOG_ERROR("Get volume failed.");
+        controller->SetFailed("Operation failed");
+    }
+    else
+    {
+        response->set_volume(volume);
+    }
+
+    done->Run();
+}
 } // namespace firebolt::rialto::server::ipc
