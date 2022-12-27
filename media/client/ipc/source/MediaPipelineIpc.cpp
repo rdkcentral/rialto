@@ -554,6 +554,16 @@ bool MediaPipelineIpc::renderFrame()
     return true;
 }
 
+bool MediaPipelineIpc::setVolume(double volume)
+{
+    return false;
+}
+
+bool MediaPipelineIpc::getVolume(double &volume)
+{
+    return false;
+}
+
 void MediaPipelineIpc::onPlaybackStateUpdated(const std::shared_ptr<firebolt::rialto::PlaybackStateChangeEvent> &event)
 {
     /* Ignore event if not for this session */
