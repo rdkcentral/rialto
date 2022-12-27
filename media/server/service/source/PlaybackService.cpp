@@ -314,12 +314,30 @@ bool PlaybackService::renderFrame(int sessionId)
 
 bool PlaybackService::setVolume(int sessionId, double volume)
 {
-    return false;
+    RIALTO_SERVER_LOG_DEBUG("Set volume requested, session id: %d", sessionId);
+
+    std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+    auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
+    if (mediaPipelineIter == m_mediaPipelines.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
+        return false;
+    }
+    return mediaPipelineIter->second->setVolume(volume);
 }
 
 bool PlaybackService::getVolume(int sessionId, double &volume)
 {
-    return false;
+    RIALTO_SERVER_LOG_DEBUG("Get volume requested, session id: %d", sessionId);
+
+    std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+    auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
+    if (mediaPipelineIter == m_mediaPipelines.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
+        return false;
+    }
+    return mediaPipelineIter->second->getVolume(volume);
 }
 
 bool PlaybackService::getSharedMemory(int32_t &fd, uint32_t &size)

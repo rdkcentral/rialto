@@ -65,6 +65,10 @@ public:
     void mediaPipelineWillFailToHaveData();
     void mediaPipelineWillGetPosition();
     void mediaPipelineWillFailToGetPosition();
+    void mediaPipelineWillSetVolume();
+    void mediaPipelineWillFailToSetVolume();
+    void mediaPipelineWillGetVolume();
+    void mediaPipelineWillFailToGetVolume();
 
     void mediaPipelineFactoryWillCreateMediaPipeline();
     void mediaPipelineFactoryWillReturnNullptr();
@@ -107,6 +111,10 @@ public:
     void getSupportedMimeTypesSucceed();
     void isMimeTypeSupportedSucceed();
     void renderFrameSucceed();
+    void setVolumeShouldSucceed();
+    void setVolumeShouldFail();
+    void getVolumeShouldSucceed();
+    void getVolumeShouldFail();
 
 private:
     std::shared_ptr<StrictMock<firebolt::rialto::server::MediaPipelineServerInternalFactoryMock>> m_mediaPipelineFactoryMock;
