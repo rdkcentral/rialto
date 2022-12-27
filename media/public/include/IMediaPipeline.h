@@ -968,6 +968,28 @@ public:
      * @brief Requests to render a prerolled frame
      */
     virtual bool renderFrame() = 0;
+
+    /**
+     * @brief Set level and transition of audio attenuation
+     *
+     * @param[in] target Target volume level (0.0 - 1.0)
+     *
+     * Sets the current volume for the pipeline (0.0 silent -> 1.0 full volume)
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool setVolume(double volume) = 0;
+
+    /**
+     * @brief Get current audio level
+     *
+     * @param[out] volume Current volume level (range 0.0 - 1.0)
+     *
+     * Fetches the current volume level for the pipeline.
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool getVolume(double &volume) = 0;
 };
 
 }; // namespace firebolt::rialto

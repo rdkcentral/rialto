@@ -398,6 +398,16 @@ bool MediaPipeline::renderFrame()
     return m_mediaPipelineIpc->renderFrame();
 }
 
+bool MediaPipeline::setVolume(double volume)
+{
+    return true;
+}
+
+bool MediaPipeline::getVolume(double &volume)
+{
+    return true;
+}
+
 void MediaPipeline::discardNeedDataRequest(uint32_t needDataRequestId)
 {
     // Find the needDataRequest for this needDataRequestId

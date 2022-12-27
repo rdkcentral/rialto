@@ -497,6 +497,16 @@ bool MediaPipelineServerInternal::renderFrame()
     return true;
 }
 
+bool MediaPipelineServerInternal::setVolume(double volume)
+{
+    return true;
+}
+
+bool MediaPipelineServerInternal::getVolume(double &volume)
+{
+    return true;
+}
+
 bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uint32_t numFrames,
                                                    uint32_t needDataRequestId)
 {

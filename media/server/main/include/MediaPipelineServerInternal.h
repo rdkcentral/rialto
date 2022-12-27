@@ -117,6 +117,10 @@ public:
 
     bool renderFrame() override;
 
+    bool setVolume(double volume) override;
+
+    bool getVolume(double &volume) override;
+
     AddSegmentStatus addSegment(uint32_t needDataRequestId, const std::unique_ptr<MediaSegment> &mediaSegment) override;
 
     std::weak_ptr<IMediaPipelineClient> getClient() override;
