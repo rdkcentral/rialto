@@ -122,7 +122,7 @@ private:
     void setPendingPlaybackRate() override;
     void renderFrame() override;
     void setVolume(double volume) override;
-    void getVolume(double &volume) override;
+    bool getVolume(double &volume) override;
 
 private:
     /**

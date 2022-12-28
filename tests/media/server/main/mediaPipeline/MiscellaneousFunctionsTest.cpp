@@ -256,20 +256,40 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetVolumeSuccess)
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetVolumeFailureDueToUninitializedPlayer)
 {
-    double volume{};
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_FALSE(m_mediaPipeline->getVolume(volume));
+    double resultVolume{};
+    EXPECT_FALSE(m_mediaPipeline->getVolume(resultVolume));
 }
 
 /**
- * Test that GetVolume returns failure if the gstreamer player is not initialized
+ * Test that GetVolume returns failure if the gstreamer API fails
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetVolumeFailure)
+{
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+    double resultVolume{};
+    EXPECT_CALL(*m_gstPlayerMock, getVolume(_)).WillOnce(Return(false));
+    EXPECT_FALSE(m_mediaPipeline->getVolume(resultVolume));
+}
+
+/**
+ * Test that GetVolume returns success if the gstreamer API succeeds and gets volume
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetVolumeSuccess)
 {
-    double volume{};
+    constexpr double kCurrentVolume{0.7};
+    double resultVolume{};
+
     loadGstPlayer();
     mainThreadWillEnqueueTaskAndWait();
-
-    EXPECT_CALL(*m_gstPlayerMock, getVolume(volume));
-    EXPECT_TRUE(m_mediaPipeline->getVolume(volume));
+    EXPECT_CALL(*m_gstPlayerMock, getVolume(_))
+        .WillOnce(Invoke(
+            [&](double &vol)
+            {
+                vol = kCurrentVolume;
+                return true;
+            }));
+    EXPECT_TRUE(m_mediaPipeline->getVolume(resultVolume));
+    EXPECT_EQ(resultVolume, kCurrentVolume);
 }

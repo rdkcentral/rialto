@@ -46,7 +46,7 @@ public:
     MOCK_METHOD(void, setPlaybackRate, (double rate), (override));
     MOCK_METHOD(void, renderFrame, (), (override));
     MOCK_METHOD(void, setVolume, (double volume), (override));
-    MOCK_METHOD(void, getVolume, (double &volume), (override));
+    MOCK_METHOD(bool, getVolume, (double &volume), (override));
 };
 } // namespace firebolt::rialto::server
 

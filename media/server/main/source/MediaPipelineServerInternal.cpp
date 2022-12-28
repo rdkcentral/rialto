@@ -602,8 +602,7 @@ bool MediaPipelineServerInternal::getVolumeInternal(double &volume)
         RIALTO_SERVER_LOG_ERROR("Failed to get volume - Gstreamer player has not been loaded");
         return false;
     }
-    m_gstPlayer->getVolume(volume);
-    return true;
+    return m_gstPlayer->getVolume(volume);
 }
 
 AddSegmentStatus MediaPipelineServerInternal::addSegment(uint32_t needDataRequestId,

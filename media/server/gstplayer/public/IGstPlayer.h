@@ -212,8 +212,10 @@ public:
      * @brief Get current audio level. Fetches the current volume level for the pipeline.
      *
      * @param[out] volume Current volume level (range 0.0 - 1.0)
+     *
+     * @retval True on success
      */
-    virtual void getVolume(double &volume) = 0;
+    virtual bool getVolume(double &volume) = 0;
 };
 
 }; // namespace firebolt::rialto::server
