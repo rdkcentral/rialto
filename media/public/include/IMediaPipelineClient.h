@@ -165,7 +165,7 @@ public:
      * @param[in] shmInfo           : Information for populating the shared memory (null if not applicable to the client).
      */
     virtual void notifyNeedMediaData(int32_t sourceId, size_t frameCount, uint32_t needDataRequestId,
-                                     const std::shared_ptr<ShmInfo> &shmInfo) = 0;
+                                     const std::shared_ptr<MediaPlayerShmInfo> &shmInfo) = 0;
 
     /**
      * @brief Notifies the client to cancel any outstand need request.

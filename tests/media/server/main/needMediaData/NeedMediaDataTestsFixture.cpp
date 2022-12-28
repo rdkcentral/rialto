@@ -36,7 +36,7 @@ constexpr int maxMetadataBytes{2500};
 
 namespace firebolt::rialto
 {
-bool operator==(const std::shared_ptr<ShmInfo> lhs, const std::shared_ptr<ShmInfo> rhs)
+bool operator==(const std::shared_ptr<MediaPlayerShmInfo> lhs, const std::shared_ptr<MediaPlayerShmInfo> rhs)
 {
     if (!lhs && !rhs)
         return true;
@@ -71,7 +71,7 @@ void NeedMediaDataTests::initializeWithWrongType()
 
 void NeedMediaDataTests::needMediaDataWillBeSent()
 {
-    std::shared_ptr<firebolt::rialto::ShmInfo> expectedShmInfo{std::make_shared<firebolt::rialto::ShmInfo>()};
+    std::shared_ptr<firebolt::rialto::MediaPlayerShmInfo> expectedShmInfo{std::make_shared<firebolt::rialto::MediaPlayerShmInfo>()};
     expectedShmInfo->maxMetadataBytes = maxMetadataBytes;
     expectedShmInfo->metadataOffset = metadataOffset;
     expectedShmInfo->mediaDataOffset = metadataOffset + maxMetadataBytes;

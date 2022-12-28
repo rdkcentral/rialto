@@ -178,7 +178,7 @@ void MediaPipelineClient::notifyAudioData(bool hasData)
 }
 
 void MediaPipelineClient::notifyNeedMediaData(int32_t sourceId, size_t frameCount, uint32_t needDataRequestId,
-                                              const std::shared_ptr<ShmInfo> &shmInfo)
+                                              const std::shared_ptr<MediaPlayerShmInfo> &shmInfo)
 {
     RIALTO_SERVER_LOG_DEBUG("Sending NeedMediaDataEvent...");
 

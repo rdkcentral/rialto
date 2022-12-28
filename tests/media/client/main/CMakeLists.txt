@@ -50,6 +50,9 @@ add_gtests (
         # MediaKeysCapabilities tests
         mediaKeysCapabilities/CreateTest.cpp
         mediaKeysCapabilities/KeySystemsTest.cpp
+
+        # WebAudioPlayer tests
+        webAudioPlayer/CreateTest.cpp
         )
 
 target_include_directories(

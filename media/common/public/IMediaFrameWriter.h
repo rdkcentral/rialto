@@ -58,7 +58,7 @@ public:
      * @retval the new media frame writer audio instance or null on error.
      */
     virtual std::unique_ptr<IMediaFrameWriter> createFrameWriter(uint8_t *shmBuffer,
-                                                                 const std::shared_ptr<ShmInfo> &shminfo) = 0;
+                                                                 const std::shared_ptr<MediaPlayerShmInfo> &shminfo) = 0;
 };
 
 /**

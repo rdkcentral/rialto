@@ -190,7 +190,7 @@ struct VideoRequirements
 /**
  * @brief Information about the shared memory required for writting data.
  */
-struct ShmInfo
+struct MediaPlayerShmInfo
 {
     uint32_t maxMetadataBytes; /**< The maximum amount of metadata that can be written. */
     uint32_t metadataOffset;   /**< The offset to write the metadata. */
@@ -280,6 +280,51 @@ enum class StreamFormat
  * @brief A vector of key ID/key status pairs.
  */
 typedef std::vector<std::pair<std::vector<unsigned char>, KeyStatus>> KeyStatusVector;
+
+/**
+ * @brief Information about the shared memory required for writting data for the web audio playback.
+ */
+struct WebAudioShmInfo
+{
+    uint32_t offsetMain;   /**< The offset to start writing the audio data. */
+    uint32_t lengthMain;   /**< The maximum number of bytes to write at offsetMain. */
+    uint32_t offsetWrap;   /**< The offset to continue writing the audio data if buffer wrapped. */
+    uint32_t lengthWrap;   /**< The maximum number of bytes to write at offsetWrap. */
+};
+
+/**
+ * @brief Pcm config information.
+ */
+struct WebAudioPcmConfig
+{
+    uint32_t rate;
+    uint32_t channels;
+    uint32_t sampleSize;
+    bool isBigEndian;
+    bool isSigned;
+    bool isFloat;
+};
+
+/**
+ * @brief Type dependent configuration data.
+ */
+union WebAudioConfig
+{
+    WebAudioPcmConfig pcm;
+};
+
+/**
+ * @brief The Web Audio Player State.
+ */
+enum class WebAudioPlayerState
+{
+    UNKNOWN,       /**< An unknown or undefined playback state. */
+    IDLE,          /**< The player is ready to play media. */
+    PLAYING,       /**< The player is playing media. */
+    PAUSED,        /**< The player is has paused media playback. */
+    END_OF_STREAM, /**< The player has got to the end of playback. */
+    FAILURE        /**< The player failed to set playback state. */
+};
 
 } // namespace firebolt::rialto
 
