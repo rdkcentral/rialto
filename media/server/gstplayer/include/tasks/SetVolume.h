@@ -23,6 +23,7 @@
 #include "IGstWrapper.h"
 #include "IPlayerTask.h"
 #include "PlayerContext.h"
+#include <memory>
 
 namespace firebolt::rialto::server
 {
