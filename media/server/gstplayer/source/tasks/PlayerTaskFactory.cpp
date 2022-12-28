@@ -150,7 +150,7 @@ std::unique_ptr<IPlayerTask> PlayerTaskFactory::createSetVideoGeometry(PlayerCon
 
 std::unique_ptr<IPlayerTask> PlayerTaskFactory::createSetVolume(PlayerContext &context, double volume) const
 {
-    return std::make_unique<SetVolume>(context, volume);
+    return std::make_unique<SetVolume>(context, m_gstWrapper, volume);
 }
 
 std::unique_ptr<IPlayerTask> PlayerTaskFactory::createShutdown(IGstPlayerPrivate &player) const

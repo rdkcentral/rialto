@@ -794,6 +794,8 @@ bool GstPlayer::getVolume(double &volume)
     {
         return false;
     }
+    volume =
+        m_gstWrapper->gstStreamVolumeGetVolume(GST_STREAM_VOLUME(m_context.pipeline), GST_STREAM_VOLUME_FORMAT_LINEAR);
     return true;
 }
 }; // namespace firebolt::rialto::server

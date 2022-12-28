@@ -39,6 +39,7 @@ add_gtests(RialtoServerGstPlayerUnitTests
     player/tasksTests/SetupElementTest.cpp
     player/tasksTests/SetupSourceTest.cpp
     player/tasksTests/SetVideoGeometryTest.cpp
+    player/tasksTests/SetVolumeTest.cpp
     player/tasksTests/ShutdownTest.cpp
     player/tasksTests/StopTest.cpp
     player/tasksTests/UnderflowTest.cpp

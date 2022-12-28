@@ -23,7 +23,8 @@
 
 namespace firebolt::rialto::server
 {
-SetVolume::SetVolume(PlayerContext &context, double volume) : m_context{context}, m_volume{volume}
+SetVolume::SetVolume(PlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper, double volume)
+    : m_context{context}, m_gstWrapper{gstWrapper}, m_volume{volume}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetVolume");
 }
@@ -36,5 +37,12 @@ SetVolume::~SetVolume()
 void SetVolume::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing SetVolume");
+    if (!m_context.pipeline)
+    {
+        RIALTO_SERVER_LOG_ERROR("Setting volume failed. Pipeline is NULL");
+        return;
+    }
+    m_gstWrapper->gstStreamVolumeSetVolume(GST_STREAM_VOLUME(m_context.pipeline), GST_STREAM_VOLUME_FORMAT_LINEAR,
+                                           m_volume);
 }
 } // namespace firebolt::rialto::server

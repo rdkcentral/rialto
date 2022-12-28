@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_SET_VOLUME_H_
 #define FIREBOLT_RIALTO_SERVER_SET_VOLUME_H_
 
+#include "IGstWrapper.h"
 #include "IPlayerTask.h"
 #include "PlayerContext.h"
 
@@ -28,12 +29,13 @@ namespace firebolt::rialto::server
 class SetVolume : public IPlayerTask
 {
 public:
-    SetVolume(PlayerContext &context, double volume);
+    SetVolume(PlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper, double volume);
     ~SetVolume() override;
     void execute() const override;
 
 private:
     PlayerContext &m_context;
+    std::shared_ptr<IGstWrapper> m_gstWrapper;
     double m_volume;
 };
 } // namespace firebolt::rialto::server
