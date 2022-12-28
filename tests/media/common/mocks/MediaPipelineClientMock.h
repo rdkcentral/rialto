@@ -40,7 +40,8 @@ public:
     MOCK_METHOD(void, notifyVideoData, (bool hasData), (override));
     MOCK_METHOD(void, notifyAudioData, (bool hasData), (override));
     MOCK_METHOD(void, notifyNeedMediaData,
-                (int32_t sourceId, size_t frameCount, uint32_t requestId, const std::shared_ptr<ShmInfo> &shmInfo),
+                (int32_t sourceId, size_t frameCount, uint32_t requestId,
+                 const std::shared_ptr<MediaPlayerShmInfo> &shmInfo),
                 (override));
     MOCK_METHOD(void, notifyCancelNeedMediaData, (int32_t sourceId), (override));
     MOCK_METHOD(void, notifyQos, (int32_t sourceId, const QosInfo &qosInfo), (override));

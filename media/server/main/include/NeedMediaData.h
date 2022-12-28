@@ -44,7 +44,7 @@ private:
     MediaSourceType m_mediaSourceType;
     std::uint32_t m_frameCount;
     std::uint32_t m_maxMediaBytes;
-    std::shared_ptr<ShmInfo> m_shmInfo;
+    std::shared_ptr<MediaPlayerShmInfo> m_shmInfo;
     bool m_isValid;
 };
 } // namespace firebolt::rialto::server
