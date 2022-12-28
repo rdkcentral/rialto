@@ -400,7 +400,7 @@ message PositionChangeEvent {
  */
 message NeedMediaDataEvent {
 
-    message MediaPlayerShmInfo
+    message MediaPlayerShmInfo {
         required uint32 max_metadata_bytes = 1;
         required uint32 metadata_offset = 2;
         required uint32 media_data_offset = 3;
@@ -412,7 +412,7 @@ message NeedMediaDataEvent {
     required uint32 request_id = 3;
 
     required uint32 frame_count = 4;
-    optional MediaPlayerShmInfo
+    optional MediaPlayerShmInfo shm_info = 5;
 }
 
 /**
