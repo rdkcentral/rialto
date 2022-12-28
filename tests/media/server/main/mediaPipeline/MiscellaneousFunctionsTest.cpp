@@ -219,11 +219,13 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetPositionSuccess)
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, RenderFrameSuccess)
 {
     loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_gstPlayerMock, renderFrame()).Times(1);
     EXPECT_TRUE(m_mediaPipeline->renderFrame());
 }
 
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, RenderFrameFail)
 {
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_FALSE(m_mediaPipeline->renderFrame());
 }
