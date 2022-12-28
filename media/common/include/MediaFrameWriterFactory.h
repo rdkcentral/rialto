@@ -33,7 +33,7 @@ class MediaFrameWriterFactory : public IMediaFrameWriterFactory
 public:
     MediaFrameWriterFactory();
     std::unique_ptr<IMediaFrameWriter> createFrameWriter(uint8_t *shmBuffer,
-                                                         const std::shared_ptr<MediaPlayerShmInfo> &shminfo) override;
+                                                         const std::shared_ptr<ShmInfo> &shminfo) override;
 
 private:
     int m_metadataVersion;

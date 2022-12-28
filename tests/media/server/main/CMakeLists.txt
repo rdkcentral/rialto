@@ -85,8 +85,6 @@ add_gtests (
         needMediaData/NeedMediaDataTests.cpp
 
         mainThread/MainThreadTest.cpp
-
-        webAudioPlayer/CreateTest.cpp
         )
 
 target_include_directories(

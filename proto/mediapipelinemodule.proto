@@ -128,7 +128,7 @@ message AttachSourceRequest {
     }
 
     message AudioConfig {
-        required uint32 number_of_channels = 1;   ///< The number of channels.
+        required uint32 number_of_channels = 1;   ///< The number of channels. 
         required uint32 sample_rate = 2;         ///< The sampling rate.
         optional bytes codec_specific_config = 3; ///The audio specific config. Zero length if no specific config
     }
@@ -400,7 +400,7 @@ message PositionChangeEvent {
  */
 message NeedMediaDataEvent {
 
-    message MediaPlayerShmInfo {
+    message ShmInfo {
         required uint32 max_metadata_bytes = 1;
         required uint32 metadata_offset = 2;
         required uint32 media_data_offset = 3;
@@ -412,7 +412,7 @@ message NeedMediaDataEvent {
     required uint32 request_id = 3;
 
     required uint32 frame_count = 4;
-    optional MediaPlayerShmInfo shm_info = 5;
+    optional ShmInfo shm_info = 5;
 }
 
 /**

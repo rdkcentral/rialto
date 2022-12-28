@@ -648,10 +648,10 @@ void MediaPipelineIpc::onNeedMediaData(const std::shared_ptr<firebolt::rialto::N
     // Ignore event if not for this session
     if (event->session_id() == m_sessionId)
     {
-        std::shared_ptr<MediaPlayerShmInfo> shmInfo;
+        std::shared_ptr<ShmInfo> shmInfo;
         if (event->has_shm_info())
         {
-            shmInfo = std::make_shared<MediaPlayerShmInfo>();
+            shmInfo = std::make_shared<ShmInfo>();
             shmInfo->maxMetadataBytes = event->shm_info().max_metadata_bytes();
             shmInfo->metadataOffset = event->shm_info().metadata_offset();
             shmInfo->mediaDataOffset = event->shm_info().media_data_offset();

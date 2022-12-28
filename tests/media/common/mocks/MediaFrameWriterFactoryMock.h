@@ -33,7 +33,7 @@ public:
     virtual ~MediaFrameWriterFactoryMock() = default;
 
     MOCK_METHOD(std::unique_ptr<IMediaFrameWriter>, createFrameWriter,
-                (uint8_t * shmBuffer, const std::shared_ptr<MediaPlayerShmInfo> &shmInfo), (override));
+                (uint8_t * shmBuffer, const std::shared_ptr<ShmInfo> &shmInfo), (override));
 };
 } // namespace firebolt::rialto::common
 

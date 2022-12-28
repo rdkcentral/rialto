@@ -35,12 +35,12 @@ protected:
     uint8_t m_shmBuffer[MAX_METADATA_BYTES + MAX_MEDIA_BYTES] = {0};
     IMediaPipeline::MediaSegmentVector m_dataVec;
     int32_t m_sourceId = 1;
-    std::shared_ptr<MediaPlayerShmInfo> m_shmInfo;
+    std::shared_ptr<ShmInfo> m_shmInfo;
 
     virtual void SetUp()
     {
         // Init shm info
-        m_shmInfo = std::make_shared<MediaPlayerShmInfo>();
+        m_shmInfo = std::make_shared<ShmInfo>();
         m_shmInfo->maxMetadataBytes = MAX_METADATA_BYTES;
         m_shmInfo->metadataOffset = 0;
         m_shmInfo->mediaDataOffset = MAX_METADATA_BYTES;
@@ -84,7 +84,7 @@ protected:
         m_dataVec.clear();
     }
 
-    void CheckSharedBuffer(MediaSourceType sourceType, const std::shared_ptr<MediaPlayerShmInfo> &shmInfo)
+    void CheckSharedBuffer(MediaSourceType sourceType, const std::shared_ptr<ShmInfo> &shmInfo)
     {
         uint8_t *metadataOffsetPtr = m_shmBuffer + shmInfo->metadataOffset;
         uint32_t dataOffset = shmInfo->mediaDataOffset;

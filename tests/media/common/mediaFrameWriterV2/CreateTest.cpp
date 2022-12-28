@@ -34,14 +34,14 @@ protected:
     std::shared_ptr<IMediaFrameWriterFactory> m_mediaFrameWriterFactory;
 
     uint8_t m_shmBuffer[MAX_METADATA_BYTES + MAX_MEDIA_BYTES] = {0};
-    std::shared_ptr<MediaPlayerShmInfo> m_shmInfo;
+    std::shared_ptr<ShmInfo> m_shmInfo;
 
     virtual void SetUp()
     {
         m_mediaFrameWriterFactory = IMediaFrameWriterFactory::getFactory();
 
         // init shm info
-        m_shmInfo = std::make_shared<MediaPlayerShmInfo>();
+        m_shmInfo = std::make_shared<ShmInfo>();
         m_shmInfo->maxMetadataBytes = MAX_METADATA_BYTES;
         m_shmInfo->metadataOffset = 0;
         m_shmInfo->mediaDataOffset = MAX_METADATA_BYTES;

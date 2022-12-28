@@ -23,8 +23,8 @@
 
 using firebolt::rialto::AddSegmentStatus;
 using firebolt::rialto::IMediaPipeline;
-using firebolt::rialto::MediaPlayerShmInfo;
 using firebolt::rialto::SegmentAlignment;
+using firebolt::rialto::ShmInfo;
 using firebolt::rialto::common::IMediaFrameWriter;
 using firebolt::rialto::common::IMediaFrameWriterFactory;
 using firebolt::rialto::server::DataReaderV2;
@@ -195,8 +195,7 @@ protected:
 
     void writeData(const std::unique_ptr<IMediaPipeline::MediaSegment> &segment)
     {
-        auto shmInfo =
-            std::make_shared<MediaPlayerShmInfo>(MediaPlayerShmInfo{kMetaDataSize, 0, kMetaDataSize, kDataSize});
+        auto shmInfo = std::make_shared<ShmInfo>(ShmInfo{kMetaDataSize, 0, kMetaDataSize, kDataSize});
         auto mediaFrameWriter = IMediaFrameWriterFactory::getFactory()->createFrameWriter(m_shm, shmInfo);
         EXPECT_EQ(mediaFrameWriter->writeFrame(segment), AddSegmentStatus::OK);
     }

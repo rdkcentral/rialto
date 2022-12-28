@@ -40,7 +40,7 @@ public:
      * @param[in] shmBuffer     : The shared buffer pointer.
      * @param[in] shmInfo       : The information for populating the shared memory.
      */
-    MediaFrameWriterV2(uint8_t *shmBuffer, const std::shared_ptr<MediaPlayerShmInfo> &shmInfo);
+    MediaFrameWriterV2(uint8_t *shmBuffer, const std::shared_ptr<ShmInfo> &shmInfo);
 
     /**
      * @brief Virtual destructor.

@@ -43,7 +43,7 @@ protected:
     int32_t m_mksId{6};
     std::vector<uint8_t> m_keyId{1, 2, 3, 4};
     uint8_t m_shmBuffer;
-    std::shared_ptr<MediaPlayerShmInfo> m_shmInfo;
+    std::shared_ptr<ShmInfo> m_shmInfo;
     MediaSourceStatus m_status = MediaSourceStatus::NO_AVAILABLE_SAMPLES;
     IMediaPipeline::MediaSegmentVector m_dataVec;
 
@@ -58,7 +58,7 @@ protected:
         createMediaPipeline();
 
         // InitShm
-        m_shmInfo = std::make_shared<MediaPlayerShmInfo>();
+        m_shmInfo = std::make_shared<ShmInfo>();
         m_shmInfo->maxMetadataBytes = 5;
         m_shmInfo->metadataOffset = 6;
         m_shmInfo->mediaDataOffset = 7;
@@ -185,7 +185,7 @@ protected:
 
                 EXPECT_CALL(*m_mediaFrameWriterFactoryMock, createFrameWriter(&m_shmBuffer, ShmInfoMatcher(m_shmInfo)))
                     .WillOnce(DoAll(Invoke(
-                                        [this](uint8_t *shmBuffer, const std::shared_ptr<MediaPlayerShmInfo> &shminfo)
+                                        [this](uint8_t *shmBuffer, const std::shared_ptr<ShmInfo> &shminfo)
                                         {
                                             m_haveDataCond.notify_all();
 

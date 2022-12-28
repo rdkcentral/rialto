@@ -47,7 +47,6 @@ add_library(
         source/MediaKeysCapabilities.cpp
         source/MediaKeySession.cpp
         source/MainThread.cpp
-        source/WebAudioPlayer.cpp
         )
 
 target_include_directories(
