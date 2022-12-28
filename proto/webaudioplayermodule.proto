@@ -1,0 +1,317 @@
+/*
+ * If not stated otherwise in this file or this component's LICENSE file the
+ * following copyright and licenses apply:
+ *
+ * Copyright 2022 Sky UK
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+syntax = "proto2";
+
+import "google/protobuf/descriptor.proto";
+
+package firebolt.rialto;
+
+// You need this to generate the rpc service stubs
+option cc_generic_services = true;
+
+/**
+ * @brief Event to notify the playback state.
+ *
+ * @param state   The new playback state..
+ *
+ */
+message WebAudioPlayerStateEvent {
+    enum WebAudioPlayerState
+    {
+        USABLE = 0;
+        IDLE = 1;
+        PLAYING = 2;
+        PAUSED = 3;
+        END_OF_STREAM = 4;
+        FAILURE = 5;
+    };
+
+    required WebAudioPlayerState state = 1;
+}
+
+/**
+ * @fn int createWebAudioPlayer(string audio_mime_type, uint32 priority, WebAudioConfig config)
+ * @brief Creates a new web audio player instance.
+ *
+ * @param[in]  audio_mime_type  The audio encoding format, currently only "audio/x-raw" (PCM).
+ * @param[in]  priority         Priority value for this pipeline.
+ * @param[in]  config           Additional type dependent configuration data.
+ *
+ * A client can have multiple web audio players.
+ *
+ * WebAudioPlayerHandles are unique to a single IPC connection to the server, it is not possible to use a handle created on
+ * one IPC connection with another IPC connection.  When an IPC connection is closed the handles are invalidated
+ * and the resource allocated to the session on the server are freed.
+ *
+ * @returns a unique numeric web audio player handle value that should be used for all subsequent operations on the web audio player.
+ */
+message CreateWebAudioPlayerRequest {
+    message WebAudioConfig {
+        oneof config {
+            WebAudioPcmConfig pcm = 1;
+        }
+    }
+
+    required string audio_mime_type = 1;
+    required uint32 priority = 2;
+    optional WebAudioConfig config = 3;
+}
+message CreateWebAudioPlayerResponse {
+    required int32 web_audio_player_handle = 1;
+}
+
+/**
+ * @fn void destroyWebAudioPlayer(int32 web_audio_player_handle)
+ * @brief Destroys a web audio player instance.
+ *
+ * @param[in] web_audio_player_handle    The handle of the web audio player.
+ *
+ * Destroys a web audio player instance freeing all resources on the server.
+ *
+ */
+message DestroyWebAudioPlayerRequest {
+    required int32 web_audio_player_handle = 1;
+}
+message DestroyWebAudioPlayerResponse {
+}
+
+/**
+ * @fn bool play()
+ * @brief Play the web audio.
+ *
+ * @retval true on success.
+ */
+message WebAudioPlayRequest {
+}
+message WebAudioPlayResponse {
+    required bool status = 1;
+}
+
+/**
+ * @fn bool pause()
+ * @brief Pause the web audio.
+ *
+ * @retval true on success.
+ */
+message WebAudioPauseRequest {
+}
+message WebAudioPauseResponse {
+    required bool status = 1;
+}
+
+/**
+ * @fn bool setEos()
+ * @brief Notify EOS.
+ *
+ * @retval true on success.
+ */
+message WebAudioSetEosRequest {
+}
+message WebAudioSetEosResponse {
+    required bool status = 1;
+}
+
+/**
+ * @fn bool, uint32, WebAudioShmInfo getBufferAvailable()
+ * @brief Get the available frames.
+ *
+ * Gets the available buffer space for sending more frames. Client should not
+ * write more than the number of frames returned by this API.
+ *
+ * @retval Number of available frames, shm info and true on success.
+ */
+message WebAudioGetBufferAvailableRequest {
+}
+message WebAudioGetBufferAvailableResponse {
+    message WebAudioShmInfo {
+        required uint32 offset_main = 1;
+        required uint32 length_main = 2;
+        required uint32 offset_wrap = 3;
+        required uint32 length_wrap = 4;
+    }
+
+    required bool status = 1;
+    required uint32 available_frames = 2;
+    required WebAudioShmInfo shm_info = 3;
+}
+
+/**
+ * @fn bool, uint32 getBufferDelay()
+ * @brief Get the delay frames.
+ *
+ * Gets the frame delay of the playback from Rialto. Frame delay is the number
+ * of frames left to play by the server.
+ *
+ * @retval Number of delayed frames and true on success.
+ */
+message WebAudioGetBufferDelayRequest {
+}
+message WebAudioGetBufferDelayResponse {
+    required bool status = 1;
+    required uint32 delay_frames = 2;
+}
+
+/**
+ * @fn bool writeBuffer(uint32 number_of_frames)
+ * @brief Write audio frames.
+ *
+ * Sends a buffer of audio data for playback
+ *
+ * @param[in] number_of_frames  Number of frames of audio data written to the shm.
+ *
+ * @retval true on success.
+ */
+message WebAudioWriteBufferRequest {
+    required uint32 number_of_frames = 1;
+}
+message WebAudioWriteBufferResponse {
+    required bool status = 1;
+}
+
+/**
+ * @fn bool, uint32, uint32, uint32 getDeviceInfo()
+ * @brief Get device infomation.
+ *
+ * Gets information for the web audio playback.
+ * This information is used to determine the preferred buffer size to commit,
+ * the maximum buffer size an application can commit and whether buffers can
+ * be committed before a Play request.
+ *
+ * @retval the number of preferred frames, maximum frames, whether defered play is supported and true on success.
+ */
+message WebAudioGetDeviceInfoRequest {
+}
+message WebAudioGetDeviceInfoResponse {
+    required bool status = 1;
+    required uint32 preferred_frames = 2;
+    required uint32 maximum_rames = 3;
+    required uint32 support_deferred_play = 4;
+}
+
+/**
+ * @fn bool setVolume(double volume)
+ * @brief Set level and transition of audio attenuation.
+ *
+ * Sets the current volume for the pipeline (0.0 silent -> 1.0 full volume).
+ *
+ * @param[in] volume    Target volume level (0.0 - 1.0)
+ *
+ * @retval true on success.
+ */
+message WebAudioSetVolumeRequest {
+    required uint32 volume = 1;
+}
+message WebAudioSetVolumeResponse {
+    required bool status = 1;
+}
+
+/**
+ * @fn bool, double getVolume()
+ * @brief Get current audio level.
+ *
+ * Fetches the current volume level for the pipeline.
+ *
+ * @retval The current volume and true on success.
+ */
+message WebAudioGetVolumeRequest {
+}
+message WebAudioGetVolumeResponse {
+    required bool status = 1;
+    required uint32 volume = 2;
+}
+
+service WebAudioPlayerModule {
+    /**
+     * @brief Creates a new web audio player instance.
+     * @see CreateWebAudioPlayerRequest
+     */
+    rpc createWebAudioPlayer(CreateWebAudioPlayerRequest) returns (CreateWebAudioPlayerResponse) {
+    }
+
+    /**
+     * @brief Destroys a web audio player instance.
+     * @see DestroyWebAudioPlayerRequest
+     */
+    rpc destroyWebAudioPlayer(DestroyWebAudioPlayerRequest) returns (DestroyWebAudioPlayerResponse) {
+    }
+
+    /**
+     * @brief Play the web audio.
+     * @see WebAudioPlayRequest
+     */
+    rpc play(WebAudioPlayRequest) returns (WebAudioPlayResponse) {
+    }
+
+    /**
+     * @brief Pause the web audio.
+     * @see WebAudioPauseRequest
+     */
+    rpc pause(WebAudioPauseRequest) returns (WebAudioPauseResponse) {
+    }
+
+    /**
+     * @brief Notify EOS.
+     * @see WebAudioSetEosRequest
+     */
+    rpc setEos(WebAudioSetEosRequest) returns (WebAudioSetEosResponse) {
+    }
+
+    /**
+     * @brief Get the available frames.
+     * @see WebAudioGetBufferAvailableRequest
+     */
+    rpc getBufferAvailable(WebAudioGetBufferAvailableRequest) returns (WebAudioGetBufferAvailableResponse) {
+    }
+
+    /**
+     * @brief Get the delay frames.
+     * @see WebAudioGetBufferDelayRequest
+     */
+    rpc getBufferDelay(WebAudioGetBufferDelayRequest) returns (WebAudioGetBufferDelayResponse) {
+    }
+
+    /**
+     * @brief Write audio frames.
+     * @see WebAudioWriteBufferRequest
+     */
+    rpc writeBuffer(WebAudioWriteBufferRequest) returns (WebAudioWriteBufferResponse) {
+    }
+
+    /**
+     * @brief Get device infomation.
+     * @see WebAudioGetDeviceInfoRequest
+     */
+    rpc getDeviceInfo(WebAudioGetDeviceInfoRequest) returns (WebAudioGetDeviceInfoResponse) {
+    }
+
+    /**
+     * @brief Set level and transition of audio attenuation.
+     * @see WebAudioSetVolumeRequest
+     */
+    rpc setVolume(WebAudioSetVolumeRequest) returns (WebAudioSetVolumeResponse) {
+    }
+
+    /**
+     * @brief Get current audio level.
+     * @see WebAudioGetVolumeRequest
+     */
+    rpc getVolume(WebAudioGetVolumeRequest) returns (WebAudioGetVolumeResponse) {
+    }
+}
