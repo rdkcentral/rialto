@@ -32,6 +32,13 @@
 
 namespace firebolt::rialto::server::service
 {
+
+struct MediaKeysUsage
+{
+    std::unique_ptr<IMediaKeysServerInternal> mediaKeysServer;
+    uint32_t counter = 0;
+    bool shouldBeDestroyed = false;
+};
 class CdmService : public ICdmService, public IDecryptionService
 {
 public:
@@ -75,12 +82,14 @@ public:
                                 uint32_t initWithLast15) override;
     bool isNetflixKeySystem(int32_t keySessionId) const override;
     MediaKeyErrorStatus selectKeyId(int32_t keySessionId, const std::vector<uint8_t> &keyId) override;
+    void incrementSessionIdUsageCounter(int32_t keySessionId);
+    void decrementSessionIdUsageCounter(int32_t keySessionId);
 
 private:
     std::shared_ptr<IMediaKeysServerInternalFactory> m_mediaKeysFactory;
     std::shared_ptr<IMediaKeysCapabilitiesFactory> m_mediaKeysCapabilitiesFactory;
     std::atomic<bool> m_isActive;
-    std::map<int, std::unique_ptr<IMediaKeysServerInternal>> m_mediaKeys;
+    std::map<int, MediaKeysUsage> m_mediaKeys;
     std::map<int, std::shared_ptr<IMediaKeysClient>> m_mediaKeysClients;
     std::mutex m_mediaKeysMutex;
 

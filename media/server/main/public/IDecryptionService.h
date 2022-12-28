@@ -36,6 +36,8 @@ public:
                                         uint32_t initWithLast15) = 0;
     virtual bool isNetflixKeySystem(int32_t keySessionId) const = 0;
     virtual MediaKeyErrorStatus selectKeyId(int32_t keySessionId, const std::vector<uint8_t> &keyId) = 0;
+    virtual void incrementSessionIdUsageCounter(int32_t keySessionId) = 0;
+    virtual void decrementSessionIdUsageCounter(int32_t keySessionId) = 0;
 };
 } // namespace firebolt::rialto::server
 

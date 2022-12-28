@@ -25,6 +25,7 @@
 #include "tasks/PlayerTaskFactory.h"
 #include <IMediaPipeline.h>
 #include <chrono>
+#include "GstProtectionMetadata.h"
 
 namespace
 {
@@ -400,6 +401,14 @@ GstBuffer *GstPlayer::createBuffer(const IMediaPipeline::MediaSegment &mediaSegm
                                           "subsamples", GST_TYPE_BUFFER, subsamples, "init_with_last_15", G_TYPE_UINT,
                                           mediaSegment.getInitWithLast15(), "key_session_id", G_TYPE_UINT,
                                           mediaSegment.getMediaKeySessionId(), NULL);
+
+        GstRialtoProtectionData data = {mediaSegment.getMediaKeySessionId(),
+                                        mediaSegment.getSubSamples().size(),
+                                        mediaSegment.getInitWithLast15(),
+                                        keyId,
+                                        initVector,
+                                        subsamples};
+        rialto_mse_add_protection_metadata(gstBuffer, data);
 
         m_gstWrapper->gstBufferAddProtectionMeta(gstBuffer, info);
 
