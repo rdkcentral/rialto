@@ -39,7 +39,7 @@ std::shared_ptr<IWebAudioPlayerFactory> IWebAudioPlayerFactory::createFactory()
 }
 
 std::unique_ptr<IWebAudioPlayer> WebAudioPlayerFactory::createWebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client,
-                                                                             const std::string& audioMimeType,
+                                                                             const std::string &audioMimeType,
                                                                              const uint32_t priority,
                                                                              const WebAudioConfig *config) const
 {
@@ -59,10 +59,8 @@ std::unique_ptr<IWebAudioPlayer> WebAudioPlayerFactory::createWebAudioPlayer(std
 
 namespace firebolt::rialto::server
 {
-WebAudioPlayer::WebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client,
-                               const std::string& audioMimeType,
-                               const uint32_t priority,
-                               const WebAudioConfig *config)
+WebAudioPlayer::WebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
+                               const uint32_t priority, const WebAudioConfig *config)
     : m_webAudioPlayerClient(client)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
@@ -94,14 +92,14 @@ bool WebAudioPlayer::setEos()
     return false;
 }
 
-bool WebAudioPlayer::getBufferAvailable(uint32_t& availableFrames, const std::shared_ptr<WebAudioShmInfo> &webAudioShmInfo)
+bool WebAudioPlayer::getBufferAvailable(uint32_t &availableFrames, const std::shared_ptr<WebAudioShmInfo> &webAudioShmInfo)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
     return false;
 }
 
-bool WebAudioPlayer::getBufferDelay(uint32_t& delayFrames)
+bool WebAudioPlayer::getBufferDelay(uint32_t &delayFrames)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
@@ -129,7 +127,7 @@ bool WebAudioPlayer::setVolume(double volume)
     return false;
 }
 
-bool WebAudioPlayer::getVolume(double& volume)
+bool WebAudioPlayer::getVolume(double &volume)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 

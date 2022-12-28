@@ -528,7 +528,8 @@ void MediaPipelineModuleServiceTests::mediaClientWillSendNetworkStateChangedEven
 
 void MediaPipelineModuleServiceTests::mediaClientWillSendNeedMediaDataEvent(int sessionId)
 {
-    std::shared_ptr<firebolt::rialto::MediaPlayerShmInfo> shmInfoPtr{std::make_shared<firebolt::rialto::MediaPlayerShmInfo>(shmInfo)};
+    std::shared_ptr<firebolt::rialto::MediaPlayerShmInfo> shmInfoPtr{
+        std::make_shared<firebolt::rialto::MediaPlayerShmInfo>(shmInfo)};
 
     EXPECT_CALL(*m_clientMock, sendEvent(NeedMediaDataEventMatcher(sessionId, sourceId, needDataRequestId, frameCount,
                                                                    maxBytes, shmInfoPtr)));
@@ -750,7 +751,8 @@ void MediaPipelineModuleServiceTests::sendNetworkStateChangedEvent()
 void MediaPipelineModuleServiceTests::sendNeedMediaDataEvent()
 {
     ASSERT_TRUE(m_mediaPipelineClient);
-    std::shared_ptr<firebolt::rialto::MediaPlayerShmInfo> shmInfoPtr{std::make_shared<firebolt::rialto::MediaPlayerShmInfo>(shmInfo)};
+    std::shared_ptr<firebolt::rialto::MediaPlayerShmInfo> shmInfoPtr{
+        std::make_shared<firebolt::rialto::MediaPlayerShmInfo>(shmInfo)};
     m_mediaPipelineClient->notifyNeedMediaData(sourceId, frameCount, needDataRequestId, shmInfoPtr);
 }
 

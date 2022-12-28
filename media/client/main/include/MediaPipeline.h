@@ -136,7 +136,7 @@ protected:
      */
     struct NeedDataRequest
     {
-        std::shared_ptr<MediaPlayerShmInfo> shmInfo;                       /**< The shared memory information. */
+        std::shared_ptr<MediaPlayerShmInfo> shmInfo;            /**< The shared memory information. */
         std::unique_ptr<common::IMediaFrameWriter> frameWriter; /**< The frame writer used to add segments. */
     };
 

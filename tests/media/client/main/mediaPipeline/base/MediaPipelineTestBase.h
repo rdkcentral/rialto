@@ -72,7 +72,8 @@ protected:
     void destroyMediaPipeline();
     void setPlaybackState(PlaybackState state);
     void setNetworkState(NetworkState state);
-    void needData(int32_t sourceId, size_t frameCount, uint32_t requestId, const std::shared_ptr<MediaPlayerShmInfo> &shmInfo);
+    void needData(int32_t sourceId, size_t frameCount, uint32_t requestId,
+                  const std::shared_ptr<MediaPlayerShmInfo> &shmInfo);
 };
 
 #endif // MEDIA_PIPELINE_TEST_BASE_H_

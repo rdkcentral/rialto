@@ -22,8 +22,9 @@
 
 #include "IWebAudioPlayer.h"
 
-#include <stdint.h>
 #include <memory>
+#include <stdint.h>
+#include <string>
 
 namespace firebolt::rialto
 {
@@ -37,8 +38,7 @@ public:
     ~WebAudioPlayerFactory() override = default;
 
     std::unique_ptr<IWebAudioPlayer> createWebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client,
-                                                          const std::string& audioMimeType,
-                                                          const uint32_t priority,
+                                                          const std::string &audioMimeType, const uint32_t priority,
                                                           const WebAudioConfig *config) const override;
 };
 
@@ -60,10 +60,8 @@ public:
      * @param[in] priority:      Priority value for this pipeline.
      * @param[in] config:        Additional type dependent configuration data or nullptr
      */
-    WebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client,
-                  const std::string& audioMimeType,
-                  const uint32_t priority,
-                  const WebAudioConfig *config);
+    WebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
+                   const uint32_t priority, const WebAudioConfig *config);
 
     /**
      * @brief Virtual destructor.
@@ -76,9 +74,9 @@ public:
 
     bool setEos() override;
 
-    bool getBufferAvailable(uint32_t& availableFrames, const std::shared_ptr<WebAudioShmInfo> &webAudioShmInfo) override;
+    bool getBufferAvailable(uint32_t &availableFrames, const std::shared_ptr<WebAudioShmInfo> &webAudioShmInfo) override;
 
-    bool getBufferDelay(uint32_t& delayFrames) override;
+    bool getBufferDelay(uint32_t &delayFrames) override;
 
     bool writeBuffer(const uint32_t numberOfFrames, void *data) override;
 
@@ -86,7 +84,7 @@ public:
 
     bool setVolume(double volume) override;
 
-    bool getVolume(double& volume) override;
+    bool getVolume(double &volume) override;
 
     std::weak_ptr<IWebAudioPlayerClient> getClient() override;
 

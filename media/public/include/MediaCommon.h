@@ -286,10 +286,10 @@ typedef std::vector<std::pair<std::vector<unsigned char>, KeyStatus>> KeyStatusV
  */
 struct WebAudioShmInfo
 {
-    uint32_t offsetMain;   /**< The offset to start writing the audio data. */
-    uint32_t lengthMain;   /**< The maximum number of bytes to write at offsetMain. */
-    uint32_t offsetWrap;   /**< The offset to continue writing the audio data if buffer wrapped. */
-    uint32_t lengthWrap;   /**< The maximum number of bytes to write at offsetWrap. */
+    uint32_t offsetMain; /**< The offset to start writing the audio data. */
+    uint32_t lengthMain; /**< The maximum number of bytes to write at offsetMain. */
+    uint32_t offsetWrap; /**< The offset to continue writing the audio data if buffer wrapped. */
+    uint32_t lengthWrap; /**< The maximum number of bytes to write at offsetWrap. */
 };
 
 /**

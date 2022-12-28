@@ -30,9 +30,10 @@
  */
 
 #include "IWebAudioPlayerClient.h"
-#include <stdint.h>
-#include <memory>
 #include <MediaCommon.h>
+#include <memory>
+#include <stdint.h>
+#include <string>
 
 namespace firebolt::rialto
 {
@@ -72,7 +73,7 @@ public:
      * @retval the new Web Audio Player instance or null on error.
      */
     virtual std::unique_ptr<IWebAudioPlayer> createWebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client,
-                                                                  const std::string& audioMimeType,
+                                                                  const std::string &audioMimeType,
                                                                   const uint32_t priority,
                                                                   const WebAudioConfig *config) const = 0;
 };
@@ -134,7 +135,8 @@ public:
      *
      * @retval true on success.
      */
-    virtual bool getBufferAvailable(uint32_t& availableFrames, const std::shared_ptr<WebAudioShmInfo> &webAudioShmInfo) = 0;
+    virtual bool getBufferAvailable(uint32_t &availableFrames,
+                                    const std::shared_ptr<WebAudioShmInfo> &webAudioShmInfo) = 0;
 
     /**
      * @brief Get the delay frames.
@@ -146,7 +148,7 @@ public:
      *
      * @retval true on success.
      */
-    virtual bool getBufferDelay(uint32_t& delayFrames) = 0;
+    virtual bool getBufferDelay(uint32_t &delayFrames) = 0;
 
     /**
      * @brief Write audio frames
@@ -197,7 +199,7 @@ public:
      *
      * @retval true on success false otherwise
      */
-    virtual bool getVolume(double& volume) = 0;
+    virtual bool getVolume(double &volume) = 0;
 
     /**
      * @brief Returns the web audio player client.

@@ -71,7 +71,8 @@ void NeedMediaDataTests::initializeWithWrongType()
 
 void NeedMediaDataTests::needMediaDataWillBeSent()
 {
-    std::shared_ptr<firebolt::rialto::MediaPlayerShmInfo> expectedShmInfo{std::make_shared<firebolt::rialto::MediaPlayerShmInfo>()};
+    std::shared_ptr<firebolt::rialto::MediaPlayerShmInfo> expectedShmInfo{
+        std::make_shared<firebolt::rialto::MediaPlayerShmInfo>()};
     expectedShmInfo->maxMetadataBytes = maxMetadataBytes;
     expectedShmInfo->metadataOffset = metadataOffset;
     expectedShmInfo->mediaDataOffset = metadataOffset + maxMetadataBytes;

@@ -49,6 +49,7 @@ TEST_F(RialtoClientCreateWebAudioPlayerTest, Create)
 {
     std::unique_ptr<IWebAudioPlayer> webAudioPlayer;
 
-    EXPECT_NO_THROW(webAudioPlayer = std::make_unique<WebAudioPlayer>(m_webAudioPlayerClientMock, m_audioMimeType, m_priority, &m_config));
+    EXPECT_NO_THROW(webAudioPlayer = std::make_unique<WebAudioPlayer>(m_webAudioPlayerClientMock, m_audioMimeType,
+                                                                      m_priority, &m_config));
     EXPECT_NE(webAudioPlayer, nullptr);
 }

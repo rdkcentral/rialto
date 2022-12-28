@@ -20,7 +20,6 @@
 #ifndef FIREBOLT_RIALTO_I_WEB_AUDIO_PLAYER_CLIENT_H_
 #define FIREBOLT_RIALTO_I_WEB_AUDIO_PLAYER_CLIENT_H_
 
-
 /**
  * @file IWebAudioPlayerClient.h
  *
@@ -30,9 +29,9 @@
  * pass notifications to its client.
  */
 
-#include <stdint.h>
-#include <memory>
 #include <MediaCommon.h>
+#include <memory>
+#include <stdint.h>
 
 namespace firebolt::rialto
 {
@@ -69,4 +68,3 @@ public:
 } // namespace firebolt::rialto
 
 #endif // FIREBOLT_RIALTO_I_WEB_AUDIO_PLAYER_CLIENT_H_
-

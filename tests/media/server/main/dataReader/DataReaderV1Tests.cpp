@@ -80,8 +80,8 @@ public:
         std::uint32_t maxMediaBytes = m_shm->getMaxDataLen(sessionId, videoMediaSourceType) - maxMetadataBytes;
         auto metadataOffset = m_shm->getDataOffset(sessionId, videoMediaSourceType);
         auto mediadataOffset = metadataOffset + maxMetadataBytes;
-        auto shmInfo =
-            std::make_shared<MediaPlayerShmInfo>(MediaPlayerShmInfo{maxMetadataBytes, metadataOffset, mediadataOffset, maxMediaBytes});
+        auto shmInfo = std::make_shared<MediaPlayerShmInfo>(
+            MediaPlayerShmInfo{maxMetadataBytes, metadataOffset, mediadataOffset, maxMediaBytes});
         auto *shmBegin{m_shm->getDataPtr(sessionId, videoMediaSourceType)};
         auto mediaFrameWriter = IMediaFrameWriterFactory::getFactory()->createFrameWriter(shmBegin, shmInfo);
         EXPECT_EQ(mediaFrameWriter->writeFrame(videoSegment), AddSegmentStatus::OK);
@@ -115,8 +115,8 @@ public:
         std::uint32_t maxMediaBytes = m_shm->getMaxDataLen(sessionId, audioMediaSourceType) - maxMetadataBytes;
         auto metadataOffset = m_shm->getDataOffset(sessionId, audioMediaSourceType);
         auto mediadataOffset = metadataOffset + maxMetadataBytes;
-        auto shmInfo =
-            std::make_shared<MediaPlayerShmInfo>(MediaPlayerShmInfo{maxMetadataBytes, metadataOffset, mediadataOffset, maxMediaBytes});
+        auto shmInfo = std::make_shared<MediaPlayerShmInfo>(
+            MediaPlayerShmInfo{maxMetadataBytes, metadataOffset, mediadataOffset, maxMediaBytes});
         auto *shmBegin{m_shm->getDataPtr(sessionId, videoMediaSourceType)};
         auto mediaFrameWriter = IMediaFrameWriterFactory::getFactory()->createFrameWriter(shmBegin, shmInfo);
         ASSERT_TRUE(mediaFrameWriter);
