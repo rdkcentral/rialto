@@ -48,13 +48,23 @@ protected:
  */
 TEST_F(RialtoClientMediaPipelineIpcGetVolumeTest, Success)
 {
+    constexpr double kVolume{0.7};
     expectIpcApiCallSuccess();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getVolume"), m_controllerMock.get(),
-                                           GetVolumeRequestMatcher(m_sessionId), _, m_blockingClosureMock.get()));
+                                           GetVolumeRequestMatcher(m_sessionId), _, m_blockingClosureMock.get()))
+        .WillOnce(Invoke(
+            [&](const google::protobuf::MethodDescriptor *, google::protobuf::RpcController *,
+                const google::protobuf::Message *, google::protobuf::Message *response, google::protobuf::Closure *)
+            {
+                ::firebolt::rialto::GetVolumeResponse *resp =
+                    dynamic_cast<::firebolt::rialto::GetVolumeResponse *>(response);
+                resp->set_volume(kVolume);
+            }));
 
-    double volume;
-    EXPECT_TRUE(m_mediaPipelineIpc->getVolume(volume));
+    double resultVolume;
+    EXPECT_TRUE(m_mediaPipelineIpc->getVolume(resultVolume));
+    EXPECT_EQ(resultVolume, kVolume);
 }
 
 /**
