@@ -20,6 +20,7 @@
 #include "GstDecryptorElementFactory.h"
 #include "GstDecryptorPrivate.h"
 #include "RialtoServerLogging.h"
+#include "GstProtectionMetadata.h"
 
 #include <gst/base/gstbasetransform.h>
 #include <gst/gst.h>
@@ -187,36 +188,28 @@ GstRialtoDecryptorPrivate::GstRialtoDecryptorPrivate(GstBaseTransform *parentEle
 
 GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer)
 {
-    GstFlowReturn ret = GST_FLOW_ERROR;
     GstRialtoDecryptor *self = GST_RIALTO_DECRYPTOR(m_decryptorElement);
 
-    GstProtectionMeta *protectionMeta =
-        reinterpret_cast<GstProtectionMeta *>(m_gstWrapper->gstBufferGetProtectionMeta(buffer));
+    GstRialtoProtectionMetadata *protectionMeta = rialto_mse_protection_metadata_get_protection_metadata(buffer);
     if (!protectionMeta)
     {
         GST_TRACE_OBJECT(self, "Clear sample");
-        ret = GST_FLOW_OK;
     }
     else
     {
-        uint32_t keySessionId = 0;
-        uint32_t subsampleCount = 0;
-        uint32_t initWithLast15 = 0;
-        GstBuffer *key = nullptr;
-        GstBuffer *iv = nullptr;
-        GstBuffer *subsamples = nullptr;
-
         if (!m_decryptionService)
         {
             GST_ERROR_OBJECT(self, "No decryption service object");
         }
-        else if (GST_FLOW_OK != extractDecryptionData(protectionMeta->info, keySessionId, subsampleCount,
-                                                      initWithLast15, &key, &iv, &subsamples))
-        {
-            GST_ERROR_OBJECT(self, "Extraction of decryption data from the protection meta failed");
-        }
         else
         {
+            int32_t keySessionId = protectionMeta->data.keySessionId;
+            uint32_t subsampleCount = protectionMeta->data.subsampleCount;
+            uint32_t initWithLast15 = protectionMeta->data.initWithLast15;
+            GstBuffer *key = protectionMeta->data.key;
+            GstBuffer *iv = protectionMeta->data.iv;
+            GstBuffer *subsamples = protectionMeta->data.subsamples;
+
             firebolt::rialto::MediaKeyErrorStatus status =
                 m_decryptionService->decrypt(keySessionId, buffer, subsamples, subsampleCount, iv, key, initWithLast15);
             if (firebolt::rialto::MediaKeyErrorStatus::OK != status)
@@ -226,14 +219,14 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer)
             else
             {
                 GST_TRACE_OBJECT(self, "Decryption successful");
-                ret = GST_FLOW_OK;
             }
         }
 
         m_gstWrapper->gstBufferRemoveMeta(buffer, reinterpret_cast<GstMeta *>(protectionMeta));
     }
 
-    return ret;
+    //pass it through even in case of failed decryption
+    return GST_FLOW_OK;
 }
 
 GstFlowReturn GstRialtoDecryptorPrivate::extractDecryptionData(GstStructure *protectionMetaInfo, uint32_t &keySessionId,

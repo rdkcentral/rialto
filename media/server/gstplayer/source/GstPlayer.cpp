@@ -394,36 +394,28 @@ GstBuffer *GstPlayer::createBuffer(const IMediaPipeline::MediaSegment &mediaSegm
         }
         GstBuffer *subsamples = m_gstWrapper->gstBufferNewWrapped(subsamplesRaw, subsamplesRawSize);
 
-        GstStructure *info =
-            m_gstWrapper->gstStructureNew("decryption_metadata", "kid", GST_TYPE_BUFFER, keyId, "iv_size", G_TYPE_UINT,
-                                          mediaSegment.getInitVector().size(), "iv", GST_TYPE_BUFFER, initVector,
-                                          "subsample_count", G_TYPE_UINT, mediaSegment.getSubSamples().size(),
-                                          "subsamples", GST_TYPE_BUFFER, subsamples, "init_with_last_15", G_TYPE_UINT,
-                                          mediaSegment.getInitWithLast15(), "key_session_id", G_TYPE_UINT,
-                                          mediaSegment.getMediaKeySessionId(), NULL);
-
         GstRialtoProtectionData data = {mediaSegment.getMediaKeySessionId(),
                                         mediaSegment.getSubSamples().size(),
                                         mediaSegment.getInitWithLast15(),
                                         keyId,
                                         initVector,
-                                        subsamples};
+                                        subsamples,
+                                        m_context.decryptionService};
+
         rialto_mse_add_protection_metadata(gstBuffer, data);
 
-        m_gstWrapper->gstBufferAddProtectionMeta(gstBuffer, info);
-
-        if (subsamples)
-        {
-            m_gstWrapper->gstBufferUnref(subsamples);
-        }
-        if (initVector)
-        {
-            m_gstWrapper->gstBufferUnref(initVector);
-        }
-        if (keyId)
-        {
-            m_gstWrapper->gstBufferUnref(keyId);
-        }
+        // if (subsamples)
+        // {
+        //     m_gstWrapper->gstBufferUnref(subsamples);
+        // }
+        // if (initVector)
+        // {
+        //     m_gstWrapper->gstBufferUnref(initVector);
+        // }
+        // if (keyId)
+        // {
+        //     m_gstWrapper->gstBufferUnref(keyId);
+        // }
     }
 
     GST_BUFFER_TIMESTAMP(gstBuffer) = mediaSegment.getTimeStamp();

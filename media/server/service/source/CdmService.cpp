@@ -197,7 +197,9 @@ MediaKeyErrorStatus CdmService::closeKeySession(int mediaKeysHandle, int32_t key
         return mediaKeysIter->second.mediaKeysServer->closeKeySession(keySessionId);
     }
 
+    RIALTO_SERVER_LOG_INFO("Deferring closing mks %d", keySessionId);
     mediaKeysIter->second.shouldBeDestroyed = true;
+
     return MediaKeyErrorStatus::OK;
 
 }
@@ -488,6 +490,7 @@ void CdmService::decrementSessionIdUsageCounter(int32_t keySessionId)
     mediaKeysIter->second.counter--;
     if (mediaKeysIter->second.counter == 0 && mediaKeysIter->second.shouldBeDestroyed)
     {
+        RIALTO_SERVER_LOG_INFO("Deferred closing of mksId %d", keySessionId);
         mediaKeysIter->second.mediaKeysServer->closeKeySession(keySessionId);
     }
 }
