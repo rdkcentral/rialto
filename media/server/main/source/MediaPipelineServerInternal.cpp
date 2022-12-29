@@ -485,18 +485,6 @@ bool MediaPipelineServerInternal::haveData(MediaSourceStatus status, uint32_t nu
     return result;
 }
 
-bool MediaPipelineServerInternal::renderFrame()
-{
-    if (!m_gstPlayer)
-    {
-        RIALTO_SERVER_LOG_ERROR("renderFrame failed - Gstreamer player has not been loaded");
-        return false;
-    }
-
-    m_gstPlayer->renderFrame();
-    return true;
-}
-
 bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uint32_t numFrames,
                                                    uint32_t needDataRequestId)
 {
@@ -555,6 +543,29 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
         m_gstPlayer->setEos(mediaSourceType);
     }
 
+    return true;
+}
+
+bool MediaPipelineServerInternal::renderFrame()
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = renderFrameInternal(); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::renderFrameInternal()
+{
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("renderFrame failed - Gstreamer player has not been loaded");
+        return false;
+    }
+
+    m_gstPlayer->renderFrame();
     return true;
 }
 
