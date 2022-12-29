@@ -117,6 +117,10 @@ public:
 
     bool renderFrame() override;
 
+    bool setVolume(double volume) override;
+
+    bool getVolume(double &volume) override;
+
     AddSegmentStatus addSegment(uint32_t needDataRequestId, const std::unique_ptr<MediaSegment> &mediaSegment) override;
 
     std::weak_ptr<IMediaPipelineClient> getClient() override;
@@ -331,6 +335,24 @@ protected:
      * @param[in] mediaSourceType    : The media source type.
      */
     void scheduleNotifyNeedMediaData(MediaSourceType mediaSourceType);
+
+    /**
+     * @brief Set volume internally, only to be called on the main thread.
+     *
+     * @param[in] volume Target volume level (0.0 - 1.0)
+     *
+     * @retval true on success false otherwise
+     */
+    bool setVolumeInternal(double volume);
+
+    /**
+     * @brief Get volume internally, only to be called on the main thread.
+     *
+     * @param[out] volume Current volume level (range 0.0 - 1.0)
+     *
+     * @retval true on success false otherwise
+     */
+    bool getVolumeInternal(double &volume);
 };
 
 }; // namespace firebolt::rialto::server

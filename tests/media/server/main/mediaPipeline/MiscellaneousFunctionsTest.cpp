@@ -229,3 +229,69 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, RenderFrameFail)
     mainThreadWillEnqueueTaskAndWait();
     EXPECT_FALSE(m_mediaPipeline->renderFrame());
 }
+
+/**
+ * Test that SetVolume returns failure if the gstreamer player is not initialized
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetVolumeFailureDueToUninitializedPlayer)
+{
+    const double kVolume{0.7};
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_FALSE(m_mediaPipeline->setVolume(kVolume));
+}
+
+/**
+ * Test that SetVolume returns failure if the gstreamer player is not initialized
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetVolumeSuccess)
+{
+    const double kVolume{0.7};
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+
+    EXPECT_CALL(*m_gstPlayerMock, setVolume(kVolume));
+    EXPECT_TRUE(m_mediaPipeline->setVolume(kVolume));
+}
+
+/**
+ * Test that GetVolume returns failure if the gstreamer player is not initialized
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetVolumeFailureDueToUninitializedPlayer)
+{
+    mainThreadWillEnqueueTaskAndWait();
+    double resultVolume{};
+    EXPECT_FALSE(m_mediaPipeline->getVolume(resultVolume));
+}
+
+/**
+ * Test that GetVolume returns failure if the gstreamer API fails
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetVolumeFailure)
+{
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+    double resultVolume{};
+    EXPECT_CALL(*m_gstPlayerMock, getVolume(_)).WillOnce(Return(false));
+    EXPECT_FALSE(m_mediaPipeline->getVolume(resultVolume));
+}
+
+/**
+ * Test that GetVolume returns success if the gstreamer API succeeds and gets volume
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetVolumeSuccess)
+{
+    constexpr double kCurrentVolume{0.7};
+    double resultVolume{};
+
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, getVolume(_))
+        .WillOnce(Invoke(
+            [&](double &vol)
+            {
+                vol = kCurrentVolume;
+                return true;
+            }));
+    EXPECT_TRUE(m_mediaPipeline->getVolume(resultVolume));
+    EXPECT_EQ(resultVolume, kCurrentVolume);
+}

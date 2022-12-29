@@ -82,6 +82,10 @@ public:
                      ::firebolt::rialto::GetPositionResponse *response, ::google::protobuf::Closure *done) override;
     void renderFrame(::google::protobuf::RpcController *controller, const ::firebolt::rialto::RenderFrameRequest *request,
                      ::firebolt::rialto::RenderFrameResponse *response, ::google::protobuf::Closure *done) override;
+    void setVolume(::google::protobuf::RpcController *controller, const ::firebolt::rialto::SetVolumeRequest *request,
+                   ::firebolt::rialto::SetVolumeResponse *response, ::google::protobuf::Closure *done) override;
+    void getVolume(::google::protobuf::RpcController *controller, const ::firebolt::rialto::GetVolumeRequest *request,
+                   ::firebolt::rialto::GetVolumeResponse *response, ::google::protobuf::Closure *done) override;
 
 private:
     service::IPlaybackService &m_playbackService;

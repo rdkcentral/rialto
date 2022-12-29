@@ -62,6 +62,7 @@ constexpr firebolt::rialto::PlaybackState playbackState{firebolt::rialto::Playba
 constexpr firebolt::rialto::NetworkState networkState{firebolt::rialto::NetworkState::BUFFERED};
 constexpr firebolt::rialto::QosInfo qosInfo{5u, 2u};
 constexpr double rate{1.5};
+constexpr double volume{0.7};
 } // namespace
 
 MATCHER_P(AttachedSourceMatcher, source, "")
@@ -516,6 +517,36 @@ void MediaPipelineModuleServiceTests::playbackServiceWillFailToRenderFrame()
     EXPECT_CALL(m_playbackServiceMock, renderFrame(hardcodedSessionId)).WillOnce(Return(false));
 }
 
+void MediaPipelineModuleServiceTests::playbackServiceWillSetVolume()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_playbackServiceMock, setVolume(hardcodedSessionId, volume)).WillOnce(Return(true));
+}
+
+void MediaPipelineModuleServiceTests::playbackServiceWillFailToSetVolume()
+{
+    expectRequestFailure();
+    EXPECT_CALL(m_playbackServiceMock, setVolume(hardcodedSessionId, volume)).WillOnce(Return(false));
+}
+
+void MediaPipelineModuleServiceTests::playbackServiceWillGetVolume()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_playbackServiceMock, getVolume(hardcodedSessionId, _))
+        .WillOnce(Invoke(
+            [&](int, double &vol)
+            {
+                vol = volume;
+                return true;
+            }));
+}
+
+void MediaPipelineModuleServiceTests::playbackServiceWillFailToGetVolume()
+{
+    expectRequestFailure();
+    EXPECT_CALL(m_playbackServiceMock, getVolume(hardcodedSessionId, _)).WillOnce(Return(false));
+}
+
 void MediaPipelineModuleServiceTests::mediaClientWillSendPlaybackStateChangedEvent()
 {
     EXPECT_CALL(*m_clientMock, sendEvent(PlaybackStateChangeEventMatcher(convertPlaybackState(playbackState))));
@@ -734,6 +765,39 @@ void MediaPipelineModuleServiceTests::sendSetVideoWindowRequestAndReceiveRespons
     request.set_height(height);
 
     m_service->setVideoWindow(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void MediaPipelineModuleServiceTests::sendSetVolumeRequestAndReceiveResponse()
+{
+    firebolt::rialto::SetVolumeRequest request;
+    firebolt::rialto::SetVolumeResponse response;
+
+    request.set_session_id(hardcodedSessionId);
+    request.set_volume(volume);
+
+    m_service->setVolume(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void MediaPipelineModuleServiceTests::sendGetVolumeRequestAndReceiveResponse()
+{
+    firebolt::rialto::GetVolumeRequest request;
+    firebolt::rialto::GetVolumeResponse response;
+
+    request.set_session_id(hardcodedSessionId);
+
+    m_service->getVolume(m_controllerMock.get(), &request, &response, m_closureMock.get());
+
+    EXPECT_EQ(response.volume(), volume);
+}
+
+void MediaPipelineModuleServiceTests::sendGetVolumeRequestAndReceiveResponseWithoutVolumeMatch()
+{
+    firebolt::rialto::GetVolumeRequest request;
+    firebolt::rialto::GetVolumeResponse response;
+
+    request.set_session_id(hardcodedSessionId);
+
+    m_service->getVolume(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
 
 void MediaPipelineModuleServiceTests::sendPlaybackStateChangedEvent()

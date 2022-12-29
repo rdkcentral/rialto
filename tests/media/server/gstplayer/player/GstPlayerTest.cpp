@@ -212,3 +212,12 @@ TEST_F(GstPlayerTest, shouldRenderFrame)
 
     m_sut->renderFrame();
 }
+
+TEST_F(GstPlayerTest, shouldReturnVolume)
+{
+    constexpr double kVolume{0.7};
+    double resultVolume{};
+    EXPECT_CALL(*m_gstWrapperMock, gstStreamVolumeGetVolume(_, GST_STREAM_VOLUME_FORMAT_LINEAR)).WillOnce(Return(kVolume));
+    EXPECT_TRUE(m_sut->getVolume(resultVolume));
+    EXPECT_EQ(resultVolume, kVolume);
+}

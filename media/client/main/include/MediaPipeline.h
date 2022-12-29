@@ -130,6 +130,10 @@ public:
 
     bool renderFrame() override;
 
+    bool setVolume(double volume) override;
+
+    bool getVolume(double &volume) override;
+
 protected:
     /**
      * @brief The need data request data.

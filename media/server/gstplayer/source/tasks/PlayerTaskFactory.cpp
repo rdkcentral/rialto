@@ -34,6 +34,7 @@
 #include "tasks/SetPlaybackRate.h"
 #include "tasks/SetPosition.h"
 #include "tasks/SetVideoGeometry.h"
+#include "tasks/SetVolume.h"
 #include "tasks/SetupElement.h"
 #include "tasks/SetupSource.h"
 #include "tasks/Shutdown.h"
@@ -145,6 +146,11 @@ std::unique_ptr<IPlayerTask> PlayerTaskFactory::createSetVideoGeometry(PlayerCon
                                                                        const Rectangle &rectangle) const
 {
     return std::make_unique<SetVideoGeometry>(context, player, rectangle);
+}
+
+std::unique_ptr<IPlayerTask> PlayerTaskFactory::createSetVolume(PlayerContext &context, double volume) const
+{
+    return std::make_unique<SetVolume>(context, m_gstWrapper, volume);
 }
 
 std::unique_ptr<IPlayerTask> PlayerTaskFactory::createShutdown(IGstPlayerPrivate &player) const

@@ -554,6 +554,68 @@ bool MediaPipelineIpc::renderFrame()
     return true;
 }
 
+bool MediaPipelineIpc::setVolume(double volume)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::SetVolumeRequest request;
+
+    request.set_session_id(m_sessionId);
+    request.set_volume(volume);
+
+    firebolt::rialto::SetVolumeResponse response;
+    auto ipcController = m_ipc->createRpcController();
+    auto blockingClosure = m_ipc->createBlockingClosure();
+    m_mediaPipelineStub->setVolume(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to set volume due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    return true;
+}
+
+bool MediaPipelineIpc::getVolume(double &volume)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::GetVolumeRequest request;
+
+    request.set_session_id(m_sessionId);
+
+    firebolt::rialto::GetVolumeResponse response;
+    auto ipcController = m_ipc->createRpcController();
+    auto blockingClosure = m_ipc->createBlockingClosure();
+    m_mediaPipelineStub->getVolume(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to get volume due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+    volume = response.volume();
+
+    return true;
+}
+
 void MediaPipelineIpc::onPlaybackStateUpdated(const std::shared_ptr<firebolt::rialto::PlaybackStateChangeEvent> &event)
 {
     /* Ignore event if not for this session */

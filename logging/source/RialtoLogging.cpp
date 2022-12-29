@@ -89,6 +89,7 @@ static void consoleLogHandler(RIALTO_DEBUG_LEVEL level, const char *file, int li
         iov[1].iov_base = const_cast<void *>(reinterpret_cast<const void *>("DBG: "));
         iov[1].iov_len = 5;
         break;
+    case RIALTO_DEBUG_LEVEL_EXTERNAL:
     default:
         iov[1].iov_base = const_cast<void *>(reinterpret_cast<const void *>(": "));
         iov[1].iov_len = 2;
@@ -100,11 +101,19 @@ static void consoleLogHandler(RIALTO_DEBUG_LEVEL level, const char *file, int li
         threadId = syscall(SYS_gettid);
     char fbuf[180];
     iov[2].iov_base = reinterpret_cast<void *>(fbuf);
-    if (!file || !function || (line <= 0))
+    if (RIALTO_DEBUG_LEVEL_EXTERNAL == level)
+    {
+        snprintf(fbuf, sizeof(fbuf), "< T:%d >", threadId);
+    }
+    else if (!file || !function || (line <= 0))
+    {
         iov[2].iov_len = snprintf(fbuf, sizeof(fbuf), "< T:%d M:? F:? L:? > ", threadId);
+    }
     else
+    {
         iov[2].iov_len =
             snprintf(fbuf, sizeof(fbuf), "< T:%d M:%.*s F:%.*s L:%d > ", threadId, 64, file, 64, function, line);
+    }
     iov[2].iov_len = std::min(iov[2].iov_len, sizeof(fbuf));
     iov[3].iov_base = const_cast<void *>(reinterpret_cast<const void *>(message));
     iov[3].iov_len = messageLen;
@@ -124,7 +133,11 @@ static void journaldLogHandler(RIALTO_DEBUG_LEVEL level, const char *file, int l
     if (threadId <= 0)
         threadId = syscall(SYS_gettid);
     char fbuf[180];
-    if (!file || !function || (line <= 0))
+    if (RIALTO_DEBUG_LEVEL_EXTERNAL == level)
+    {
+        snprintf(fbuf, sizeof(fbuf), "< T:%d >", threadId);
+    }
+    else if (!file || !function || (line <= 0))
     {
         snprintf(fbuf, sizeof(fbuf), "< T:%d M:? F:? L:? >", threadId);
     }
@@ -152,6 +165,9 @@ static void journaldLogHandler(RIALTO_DEBUG_LEVEL level, const char *file, int l
         break;
     case RIALTO_DEBUG_LEVEL_DEBUG:
         syslog(LOG_DEBUG, "%s %s", fbuf, message);
+        break;
+    case RIALTO_DEBUG_LEVEL_EXTERNAL:
+        syslog(LOG_INFO, "%s %s", fbuf, message);
         break;
     default:
         break;
@@ -291,6 +307,11 @@ RialtoLoggingStatus setLogHandler(RIALTO_COMPONENT component, LogHandler handler
     }
 
     return status;
+}
+
+bool isConsoleLoggingEnabled()
+{
+    return g_envVariableParser.isConsoleLoggingEnabled();
 }
 
 } // namespace firebolt::rialto::logging

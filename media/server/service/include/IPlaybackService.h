@@ -62,6 +62,8 @@ public:
     virtual bool haveData(int sessionId, MediaSourceStatus status, std::uint32_t numFrames,
                           std::uint32_t needDataRequestId) = 0;
     virtual bool renderFrame(int sessionId) = 0;
+    virtual bool setVolume(int sessionId, double volume) = 0;
+    virtual bool getVolume(int sessionId, double &volume) = 0;
     virtual bool getSharedMemory(int32_t &fd, uint32_t &size) = 0;
     virtual std::vector<std::string> getSupportedMimeTypes(MediaSourceType type) = 0;
     virtual bool isMimeTypeSupported(const std::string &mimeType) = 0;

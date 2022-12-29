@@ -64,6 +64,7 @@ public:
                                                    GstElement *source) const override;
     std::unique_ptr<IPlayerTask> createSetVideoGeometry(PlayerContext &context, IGstPlayerPrivate &player,
                                                         const Rectangle &rectangle) const override;
+    std::unique_ptr<IPlayerTask> createSetVolume(PlayerContext &context, double volume) const override;
     std::unique_ptr<IPlayerTask> createShutdown(IGstPlayerPrivate &player) const override;
     std::unique_ptr<IPlayerTask> createStop(PlayerContext &context, IGstPlayerPrivate &player) const override;
     std::unique_ptr<IPlayerTask> createUnderflow(IGstPlayerPrivate &player, bool &underflowFlag) const override;
