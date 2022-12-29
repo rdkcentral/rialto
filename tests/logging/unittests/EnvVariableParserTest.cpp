@@ -34,11 +34,13 @@ TEST_F(EnvVariableParserTest, SetDefaultForAllComponentsWhenEnvVariableNotSet)
 {
     unsetenv("RIALTO_DEBUG");
     EnvVariableParser parser;
-    for (uint32_t i = RIALTO_COMPONENT_DEFAULT; i < RIALTO_COMPONENT_LAST; i++)
+    for (uint32_t i = RIALTO_COMPONENT_DEFAULT; i < RIALTO_COMPONENT_EXTERNAL; i++)
     {
         RIALTO_COMPONENT component = static_cast<RIALTO_COMPONENT>(i);
         EXPECT_EQ(RIALTO_DEBUG_LEVEL_DEFAULT, parser.getLevel(component));
     }
+    // External component log level should not by affected by RIALTO_DEBUG flag
+    EXPECT_EQ(RIALTO_DEBUG_LEVEL_EXTERNAL, parser.getLevel(RIALTO_COMPONENT_EXTERNAL));
 }
 
 TEST_F(EnvVariableParserTest, SetErrorForAllComponentsUsingIntValue)
@@ -46,11 +48,13 @@ TEST_F(EnvVariableParserTest, SetErrorForAllComponentsUsingIntValue)
     const RIALTO_DEBUG_LEVEL expectedLevel = RIALTO_DEBUG_LEVEL(RIALTO_DEBUG_LEVEL_FATAL | RIALTO_DEBUG_LEVEL_ERROR);
     setenv("RIALTO_DEBUG", "1", 1);
     EnvVariableParser parser;
-    for (uint32_t i = RIALTO_COMPONENT_CLIENT; i < RIALTO_COMPONENT_LAST; i++)
+    for (uint32_t i = RIALTO_COMPONENT_CLIENT; i < RIALTO_COMPONENT_EXTERNAL; i++)
     {
         RIALTO_COMPONENT component = static_cast<RIALTO_COMPONENT>(i);
         EXPECT_EQ(expectedLevel, parser.getLevel(component));
     }
+    // External component log level should not by affected by RIALTO_DEBUG flag
+    EXPECT_EQ(RIALTO_DEBUG_LEVEL_EXTERNAL, parser.getLevel(RIALTO_COMPONENT_EXTERNAL));
 }
 
 TEST_F(EnvVariableParserTest, SetErrorForAllComponentsUsingStringValue)
@@ -58,11 +62,13 @@ TEST_F(EnvVariableParserTest, SetErrorForAllComponentsUsingStringValue)
     const RIALTO_DEBUG_LEVEL expectedLevel = RIALTO_DEBUG_LEVEL(RIALTO_DEBUG_LEVEL_FATAL | RIALTO_DEBUG_LEVEL_ERROR);
     setenv("RIALTO_DEBUG", "*:1", 1);
     EnvVariableParser parser;
-    for (uint32_t i = RIALTO_COMPONENT_CLIENT; i < RIALTO_COMPONENT_LAST; i++)
+    for (uint32_t i = RIALTO_COMPONENT_CLIENT; i < RIALTO_COMPONENT_EXTERNAL; i++)
     {
         RIALTO_COMPONENT component = static_cast<RIALTO_COMPONENT>(i);
         EXPECT_EQ(expectedLevel, parser.getLevel(component));
     }
+    // External component log level should not by affected by RIALTO_DEBUG flag
+    EXPECT_EQ(RIALTO_DEBUG_LEVEL_EXTERNAL, parser.getLevel(RIALTO_COMPONENT_EXTERNAL));
 }
 
 TEST_F(EnvVariableParserTest, SetFakeComponentShouldNotCauseError)
@@ -70,11 +76,13 @@ TEST_F(EnvVariableParserTest, SetFakeComponentShouldNotCauseError)
     const RIALTO_DEBUG_LEVEL expectedLevel = RIALTO_DEBUG_LEVEL(RIALTO_DEBUG_LEVEL_FATAL | RIALTO_DEBUG_LEVEL_ERROR);
     setenv("RIALTO_DEBUG", "*:1;fakecomponent:3", 1);
     EnvVariableParser parser;
-    for (uint32_t i = RIALTO_COMPONENT_CLIENT; i < RIALTO_COMPONENT_LAST; i++)
+    for (uint32_t i = RIALTO_COMPONENT_CLIENT; i < RIALTO_COMPONENT_EXTERNAL; i++)
     {
         RIALTO_COMPONENT component = static_cast<RIALTO_COMPONENT>(i);
         EXPECT_EQ(expectedLevel, parser.getLevel(component));
     }
+    // External component log level should not by affected by RIALTO_DEBUG flag
+    EXPECT_EQ(RIALTO_DEBUG_LEVEL_EXTERNAL, parser.getLevel(RIALTO_COMPONENT_EXTERNAL));
 }
 
 TEST_F(EnvVariableParserTest, SetWithSyntaxErrorShouldNotCauseError)
@@ -82,11 +90,13 @@ TEST_F(EnvVariableParserTest, SetWithSyntaxErrorShouldNotCauseError)
     const RIALTO_DEBUG_LEVEL expectedLevel = RIALTO_DEBUG_LEVEL(RIALTO_DEBUG_LEVEL_FATAL | RIALTO_DEBUG_LEVEL_ERROR);
     setenv("RIALTO_DEBUG", "*:1;syntaxError1;syntax:error:2;ipc:error3;sessionserver=4", 1);
     EnvVariableParser parser;
-    for (uint32_t i = RIALTO_COMPONENT_CLIENT; i < RIALTO_COMPONENT_LAST; i++)
+    for (uint32_t i = RIALTO_COMPONENT_CLIENT; i < RIALTO_COMPONENT_EXTERNAL; i++)
     {
         RIALTO_COMPONENT component = static_cast<RIALTO_COMPONENT>(i);
         EXPECT_EQ(expectedLevel, parser.getLevel(component));
     }
+    // External component log level should not by affected by RIALTO_DEBUG flag
+    EXPECT_EQ(RIALTO_DEBUG_LEVEL_EXTERNAL, parser.getLevel(RIALTO_COMPONENT_EXTERNAL));
 }
 
 TEST_F(EnvVariableParserTest, SetFatalAndErrorForIpcDefaultForRest)
@@ -99,6 +109,8 @@ TEST_F(EnvVariableParserTest, SetFatalAndErrorForIpcDefaultForRest)
     EXPECT_EQ(expectedLevel, parser.getLevel(RIALTO_COMPONENT_IPC));
     EXPECT_EQ(RIALTO_DEBUG_LEVEL_DEFAULT, parser.getLevel(RIALTO_COMPONENT_SERVER_MANAGER));
     EXPECT_EQ(RIALTO_DEBUG_LEVEL_DEFAULT, parser.getLevel(RIALTO_COMPONENT_COMMON));
+    // External component log level should not by affected by RIALTO_DEBUG flag
+    EXPECT_EQ(RIALTO_DEBUG_LEVEL_EXTERNAL, parser.getLevel(RIALTO_COMPONENT_EXTERNAL));
 }
 
 TEST_F(EnvVariableParserTest, SetFatalAndErrorForIpcFatalForRestVersion1)
@@ -111,6 +123,8 @@ TEST_F(EnvVariableParserTest, SetFatalAndErrorForIpcFatalForRestVersion1)
     EXPECT_EQ(expectedLevel, parser.getLevel(RIALTO_COMPONENT_IPC));
     EXPECT_EQ(RIALTO_DEBUG_LEVEL_FATAL, parser.getLevel(RIALTO_COMPONENT_SERVER_MANAGER));
     EXPECT_EQ(RIALTO_DEBUG_LEVEL_FATAL, parser.getLevel(RIALTO_COMPONENT_COMMON));
+    // External component log level should not by affected by RIALTO_DEBUG flag
+    EXPECT_EQ(RIALTO_DEBUG_LEVEL_EXTERNAL, parser.getLevel(RIALTO_COMPONENT_EXTERNAL));
 }
 
 TEST_F(EnvVariableParserTest, SetFatalAndErrorForIpcFatalForRestVersion2)
@@ -123,6 +137,8 @@ TEST_F(EnvVariableParserTest, SetFatalAndErrorForIpcFatalForRestVersion2)
     EXPECT_EQ(expectedLevel, parser.getLevel(RIALTO_COMPONENT_IPC));
     EXPECT_EQ(RIALTO_DEBUG_LEVEL_FATAL, parser.getLevel(RIALTO_COMPONENT_SERVER_MANAGER));
     EXPECT_EQ(RIALTO_DEBUG_LEVEL_FATAL, parser.getLevel(RIALTO_COMPONENT_COMMON));
+    // External component log level should not by affected by RIALTO_DEBUG flag
+    EXPECT_EQ(RIALTO_DEBUG_LEVEL_EXTERNAL, parser.getLevel(RIALTO_COMPONENT_EXTERNAL));
 }
 
 TEST_F(EnvVariableParserTest, LogToConsoleDisabledWhenNoVarSet)

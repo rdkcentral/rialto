@@ -18,6 +18,7 @@
  */
 
 #include "SessionServerApp.h"
+#include "RialtoLogging.h"
 #include "RialtoServerManagerLogging.h"
 #include "SessionServerAppManager.h"
 #include "Utils.h"
@@ -225,18 +226,21 @@ bool SessionServerApp::spawnSessionServer()
         int newSocket = dup(m_socks[0]);
         close(m_socks[0]);
         m_socks[0] = newSocket;
-        int devNull = open("/dev/null", O_RDWR, 0);
-        if (devNull < 0)
+        if (!firebolt::rialto::logging::isConsoleLoggingEnabled())
         {
-            _exit(EXIT_FAILURE);
-        }
-        dup2(devNull, STDIN_FILENO);
-        dup2(devNull, STDOUT_FILENO);
-        dup2(devNull, STDERR_FILENO);
-        if (devNull > STDERR_FILENO)
-        {
-            close(devNull);
-            devNull = -1;
+            int devNull = open("/dev/null", O_RDWR, 0);
+            if (devNull < 0)
+            {
+                _exit(EXIT_FAILURE);
+            }
+            dup2(devNull, STDIN_FILENO);
+            dup2(devNull, STDOUT_FILENO);
+            dup2(devNull, STDERR_FILENO);
+            if (devNull > STDERR_FILENO)
+            {
+                close(devNull);
+                devNull = -1;
+            }
         }
         const std::string appName{getSessionServerPath()};
         const std::string appMgmtSocketStr{std::to_string(m_socks[0])};
