@@ -294,6 +294,13 @@ protected:
     bool haveDataInternal(MediaSourceStatus status, uint32_t needDataRequestId);
 
     /**
+     * @brief Render frame internally, only to be called on the main thread.
+     *
+     * @retval true on success.
+     */
+    bool renderFrameInternal();
+
+    /**
      * @brief Have data internally, only to be called on the main thread.
      *
      * @param[in] status            : The status
