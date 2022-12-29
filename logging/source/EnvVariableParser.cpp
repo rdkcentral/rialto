@@ -181,6 +181,10 @@ void EnvVariableParser::configureRialtoConsoleLog()
 
 RIALTO_DEBUG_LEVEL EnvVariableParser::getLevel(const RIALTO_COMPONENT &component) const
 {
+    if (RIALTO_COMPONENT_EXTERNAL == component)
+    {
+        return RIALTO_DEBUG_LEVEL_EXTERNAL;
+    }
     auto levelIter = m_debugLevels.find(component);
     if (levelIter == m_debugLevels.end())
         return RIALTO_DEBUG_LEVEL_DEFAULT;

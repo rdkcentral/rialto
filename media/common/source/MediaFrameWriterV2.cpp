@@ -54,7 +54,7 @@ convertSegmentAlignment(const firebolt::rialto::SegmentAlignment &alignment)
 
 namespace firebolt::rialto::common
 {
-MediaFrameWriterV2::MediaFrameWriterV2(uint8_t *shmBuffer, const std::shared_ptr<ShmInfo> &shmInfo)
+MediaFrameWriterV2::MediaFrameWriterV2(uint8_t *shmBuffer, const std::shared_ptr<MediaPlayerShmInfo> &shmInfo)
     : m_shmBuffer(shmBuffer), m_kMaxBytes(shmInfo->maxMediaBytes), m_bytesWritten(0U),
       m_dataOffset(shmInfo->mediaDataOffset), m_numFrames{0}
 {

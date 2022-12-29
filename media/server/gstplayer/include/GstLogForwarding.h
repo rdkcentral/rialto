@@ -17,28 +17,12 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_COMMON_MEDIA_FRAME_WRITER_FACTORY_H_
-#define FIREBOLT_RIALTO_COMMON_MEDIA_FRAME_WRITER_FACTORY_H_
+#ifndef FIREBOLT_RIALTO_SERVER_GST_LOG_FORWARDING_H_
+#define FIREBOLT_RIALTO_SERVER_GST_LOG_FORWARDING_H_
 
-#include "IMediaFrameWriter.h"
-#include <memory>
-
-namespace firebolt::rialto::common
+namespace firebolt::rialto::server
 {
-/**
- * @brief IMediaFrameWriter factory class definition.
- */
-class MediaFrameWriterFactory : public IMediaFrameWriterFactory
-{
-public:
-    MediaFrameWriterFactory();
-    std::unique_ptr<IMediaFrameWriter> createFrameWriter(uint8_t *shmBuffer,
-                                                         const std::shared_ptr<MediaPlayerShmInfo> &shminfo) override;
+void enableGstLogForwarding();
+} // namespace firebolt::rialto::server
 
-private:
-    int m_metadataVersion;
-};
-
-} // namespace firebolt::rialto::common
-
-#endif // FIREBOLT_RIALTO_COMMON_MEDIA_FRAME_WRITER_FACTORY_H_
+#endif // FIREBOLT_RIALTO_SERVER_GST_LOG_FORWARDING_H_

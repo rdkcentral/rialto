@@ -23,7 +23,7 @@
 
 namespace firebolt::rialto::common
 {
-MediaFrameWriterV1::MediaFrameWriterV1(uint8_t *shmBuffer, const std::shared_ptr<ShmInfo> &shmInfo)
+MediaFrameWriterV1::MediaFrameWriterV1(uint8_t *shmBuffer, const std::shared_ptr<MediaPlayerShmInfo> &shmInfo)
     : m_shmBuffer(shmBuffer), m_kMaxMediaBytes(shmInfo->maxMediaBytes), m_kMaxMetadataBytes(shmInfo->maxMetadataBytes),
       m_mediaBytesWritten(0U), m_mediaDataOffset(shmInfo->mediaDataOffset), m_metadataOffset(shmInfo->metadataOffset)
 {

@@ -17,28 +17,25 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_COMMON_MEDIA_FRAME_WRITER_FACTORY_H_
-#define FIREBOLT_RIALTO_COMMON_MEDIA_FRAME_WRITER_FACTORY_H_
+#ifndef FIREBOLT_RIALTO_WEB_AUDIO_PLAYER_CLIENT_MOCK_H_
+#define FIREBOLT_RIALTO_WEB_AUDIO_PLAYER_CLIENT_MOCK_H_
 
-#include "IMediaFrameWriter.h"
+#include "IWebAudioPlayerClient.h"
+#include <gmock/gmock.h>
 #include <memory>
+#include <string>
+#include <vector>
 
-namespace firebolt::rialto::common
+namespace firebolt::rialto
 {
-/**
- * @brief IMediaFrameWriter factory class definition.
- */
-class MediaFrameWriterFactory : public IMediaFrameWriterFactory
+class WebAudioPlayerClientMock : public IWebAudioPlayerClient
 {
 public:
-    MediaFrameWriterFactory();
-    std::unique_ptr<IMediaFrameWriter> createFrameWriter(uint8_t *shmBuffer,
-                                                         const std::shared_ptr<MediaPlayerShmInfo> &shminfo) override;
+    WebAudioPlayerClientMock() = default;
+    virtual ~WebAudioPlayerClientMock() = default;
 
-private:
-    int m_metadataVersion;
+    MOCK_METHOD(void, notifyState, (WebAudioPlayerState state), (override));
 };
+} // namespace firebolt::rialto
 
-} // namespace firebolt::rialto::common
-
-#endif // FIREBOLT_RIALTO_COMMON_MEDIA_FRAME_WRITER_FACTORY_H_
+#endif // FIREBOLT_RIALTO_WEB_AUDIO_PLAYER_CLIENT_MOCK_H_

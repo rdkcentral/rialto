@@ -31,6 +31,7 @@ set(LIB_RIALTO_CLIENT_SOURCES
         source/MediaKeys.cpp
         source/MediaKeysCapabilities.cpp
         source/KeyIdMap.cpp
+        source/WebAudioPlayer.cpp
         )
 
 add_library( RialtoClient

@@ -550,7 +550,7 @@ void MediaPipeline::notifyNetworkState(NetworkState state)
 }
 
 void MediaPipeline::notifyNeedMediaData(int32_t sourceId, size_t frameCount, uint32_t requestId,
-                                        const std::shared_ptr<ShmInfo> &shmInfo)
+                                        const std::shared_ptr<MediaPlayerShmInfo> &shmInfo)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
