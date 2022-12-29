@@ -395,7 +395,7 @@ GstBuffer *GstPlayer::createBuffer(const IMediaPipeline::MediaSegment &mediaSegm
         GstBuffer *subsamples = m_gstWrapper->gstBufferNewWrapped(subsamplesRaw, subsamplesRawSize);
 
         GstRialtoProtectionData data = {mediaSegment.getMediaKeySessionId(),
-                                        mediaSegment.getSubSamples().size(),
+                                        static_cast<uint32_t>(mediaSegment.getSubSamples().size()),
                                         mediaSegment.getInitWithLast15(),
                                         keyId,
                                         initVector,
@@ -404,18 +404,6 @@ GstBuffer *GstPlayer::createBuffer(const IMediaPipeline::MediaSegment &mediaSegm
 
         rialto_mse_add_protection_metadata(gstBuffer, data);
 
-        // if (subsamples)
-        // {
-        //     m_gstWrapper->gstBufferUnref(subsamples);
-        // }
-        // if (initVector)
-        // {
-        //     m_gstWrapper->gstBufferUnref(initVector);
-        // }
-        // if (keyId)
-        // {
-        //     m_gstWrapper->gstBufferUnref(keyId);
-        // }
     }
 
     GST_BUFFER_TIMESTAMP(gstBuffer) = mediaSegment.getTimeStamp();

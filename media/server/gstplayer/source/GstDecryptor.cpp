@@ -20,7 +20,7 @@
 #include "GstDecryptorElementFactory.h"
 #include "GstDecryptorPrivate.h"
 #include "RialtoServerLogging.h"
-#include "GstProtectionMetadata.h"
+#include "GstProtectionMetadataFactory.h"
 
 #include <gst/base/gstbasetransform.h>
 #include <gst/gst.h>
@@ -164,9 +164,12 @@ GstElement *GstDecryptorElementFactory::createDecryptorElement(
     GstRialtoDecryptor *decrypter = GST_RIALTO_DECRYPTOR(g_object_new(GST_RIALTO_DECRYPTOR_TYPE, name));
     GstRialtoDecryptorPrivate *priv =
         reinterpret_cast<GstRialtoDecryptorPrivate *>(gst_rialto_decryptor_get_instance_private(decrypter));
+    std::shared_ptr<firebolt::rialto::server::IGstProtectionMetadataFactory> metadataFactory =
+        firebolt::rialto::server::IGstProtectionMetadataFactory::createFactory();
     if (priv)
     {
         priv->setDecryptionService(decryptionService);
+        priv->setProtectionMetadataWrapper(metadataFactory->createProtectionMetadataWrapper());
         return GST_ELEMENT(decrypter);
     }
     else
@@ -288,6 +291,11 @@ GstFlowReturn GstRialtoDecryptorPrivate::extractDecryptionData(GstStructure *pro
 void GstRialtoDecryptorPrivate::setDecryptionService(IDecryptionService *decryptionService)
 {
     m_decryptionService = decryptionService;
+}
+
+void GstRialtoDecryptorPrivate::setProtectionMetadataWrapper(std::unique_ptr<IGstProtectionMetadataWrapper> &&metadataWrapper)
+{
+    m_metadataWrapper = std::move(metadataWrapper);
 }
 
 }; // namespace firebolt::rialto::server

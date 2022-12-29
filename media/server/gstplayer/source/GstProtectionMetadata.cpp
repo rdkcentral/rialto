@@ -27,7 +27,6 @@ static gboolean rialto_eme_protection_metadata_init(GstMeta *meta, gpointer para
     GstRialtoProtectionMetadata *emeta = reinterpret_cast<GstRialtoProtectionMetadata *>(meta);
     GstRialtoProtectionData *data = static_cast<GstRialtoProtectionData *>(params);
     emeta->data = *data;
-    //TODO: meta took ownership of gstbuffer, make sure there are no leak
 
     if (emeta->data.decryptionService)
     {
@@ -40,19 +39,6 @@ static gboolean rialto_eme_protection_metadata_init(GstMeta *meta, gpointer para
 static gboolean rialto_eme_protection_metadata_free(GstMeta *meta, GstBuffer *buffer)
 {
     GstRialtoProtectionMetadata *emeta = reinterpret_cast<GstRialtoProtectionMetadata *>(meta);
-
-    if (emeta->data.key)
-    {
-        gst_buffer_unref(emeta->data.key);
-    }
-    if (emeta->data.iv)
-    {
-        gst_buffer_unref(emeta->data.iv);
-    }
-    if (emeta->data.subsamples)
-    {
-        gst_buffer_unref(emeta->data.subsamples);
-    }
 
     if (emeta->data.decryptionService)
     {
