@@ -139,4 +139,9 @@ std::weak_ptr<IWebAudioPlayerClient> WebAudioPlayer::getClient()
     return m_webAudioPlayerClient;
 }
 
+void WebAudioPlayer::notifyState(WebAudioPlayerState state) 
+{
+
+}
+
 }; // namespace firebolt::rialto::client

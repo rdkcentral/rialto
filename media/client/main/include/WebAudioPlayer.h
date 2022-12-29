@@ -21,7 +21,7 @@
 #define FIREBOLT_RIALTO_CLIENT_WEB_AUDIO_PLAYER_H_
 
 #include "IWebAudioPlayer.h"
-
+#include "IWebAudioPlayerIpc.h"
 #include <memory>
 #include <stdint.h>
 #include <string>
@@ -49,7 +49,7 @@ namespace firebolt::rialto::client
 /**
  * @brief The definition of the WebAudioPlayer.
  */
-class WebAudioPlayer : public IWebAudioPlayer
+class WebAudioPlayer : public IWebAudioPlayer, public IWebAudioPlayerIpcClient
 {
 public:
     /**
@@ -87,6 +87,8 @@ public:
     bool getVolume(double &volume) override;
 
     std::weak_ptr<IWebAudioPlayerClient> getClient() override;
+
+    void notifyState(WebAudioPlayerState state) override;
 
 protected:
     /**

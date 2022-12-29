@@ -39,6 +39,7 @@ add_library (
         source/MediaKeysIpc.cpp
         source/MediaKeysCapabilitiesIpc.cpp
         source/RialtoCommonIpc.cpp
+        source/WebAudioPlayerIpc.cpp
 )
 
 set_property (
