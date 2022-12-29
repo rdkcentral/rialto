@@ -96,7 +96,8 @@ std::unique_ptr<IGstPlayer> GstPlayerFactory::createGstPlayer(IGstPlayerClient *
                                                 common::ITimerFactory::getFactory(),
                                                 std::make_unique<PlayerTaskFactory>(client, gstWrapper, glibWrapper),
                                                 std::make_unique<WorkerThreadFactory>(),
-                                                std::make_unique<GstDispatcherThreadFactory>());
+                                                std::make_unique<GstDispatcherThreadFactory>(),
+                                                IGstProtectionMetadataFactory::createFactory());
     }
     catch (const std::exception &e)
     {
@@ -138,7 +139,8 @@ GstPlayer::GstPlayer(IGstPlayerClient *client, IDecryptionService &decryptionSer
                      const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
                      std::shared_ptr<common::ITimerFactory> timerFactory, std::unique_ptr<IPlayerTaskFactory> taskFactory,
                      std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
-                     std::unique_ptr<IGstDispatcherThreadFactory> gstDispatcherThreadFactory)
+                     std::unique_ptr<IGstDispatcherThreadFactory> gstDispatcherThreadFactory,
+                     std::shared_ptr<IGstProtectionMetadataFactory> gstProtectionMetadataFactory)
     : m_gstPlayerClient(client), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_timerFactory{timerFactory},
       m_taskFactory{std::move(taskFactory)}
 {
@@ -163,9 +165,16 @@ GstPlayer::GstPlayer(IGstPlayerClient *client, IDecryptionService &decryptionSer
     {
         throw std::runtime_error("Cannot create GstSrc");
     }
+
     if (!timerFactory)
     {
         throw std::runtime_error("TimeFactory is invalid");
+    }
+
+    if ((!gstProtectionMetadataFactory) ||
+        (!(m_protectionMetadataWrapper = gstProtectionMetadataFactory->createProtectionMetadataWrapper(m_gstWrapper))))
+    {
+        throw std::runtime_error("Cannot create protection metadata wrapper");
     }
 
     // Ensure that rialtosrc has been initalised

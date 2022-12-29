@@ -158,8 +158,10 @@ std::shared_ptr<IGstDecryptorElementFactory> IGstDecryptorElementFactory::create
     return factory;
 }
 
-GstElement *GstDecryptorElementFactory::createDecryptorElement(
-    const gchar *name, firebolt::rialto::server::IDecryptionService *decryptionService) const
+GstElement *
+GstDecryptorElementFactory::createDecryptorElement(const gchar *name,
+                                                   firebolt::rialto::server::IDecryptionService *decryptionService,
+                                                   const std::shared_ptr<IGstWrapper> &gstWrapper) const
 {
     GstRialtoDecryptor *decrypter = GST_RIALTO_DECRYPTOR(g_object_new(GST_RIALTO_DECRYPTOR_TYPE, name));
     GstRialtoDecryptorPrivate *priv =
@@ -169,7 +171,7 @@ GstElement *GstDecryptorElementFactory::createDecryptorElement(
     if (priv)
     {
         priv->setDecryptionService(decryptionService);
-        priv->setProtectionMetadataWrapper(metadataFactory->createProtectionMetadataWrapper());
+        priv->setProtectionMetadataWrapper(metadataFactory->createProtectionMetadataWrapper(gstWrapper));
         return GST_ELEMENT(decrypter);
     }
     else
@@ -193,8 +195,8 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer)
 {
     GstRialtoDecryptor *self = GST_RIALTO_DECRYPTOR(m_decryptorElement);
 
-    GstRialtoProtectionMetadata *protectionMeta = rialto_mse_protection_metadata_get_protection_metadata(buffer);
-    if (!protectionMeta)
+    GstRialtoProtectionData *protectionData = m_metadataWrapper->getProtectionMetadataData(buffer);
+    if (!protectionData)
     {
         GST_TRACE_OBJECT(self, "Clear sample");
     }
@@ -206,12 +208,12 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer)
         }
         else
         {
-            int32_t keySessionId = protectionMeta->data.keySessionId;
-            uint32_t subsampleCount = protectionMeta->data.subsampleCount;
-            uint32_t initWithLast15 = protectionMeta->data.initWithLast15;
-            GstBuffer *key = protectionMeta->data.key;
-            GstBuffer *iv = protectionMeta->data.iv;
-            GstBuffer *subsamples = protectionMeta->data.subsamples;
+            int32_t keySessionId = protectionData->keySessionId;
+            uint32_t subsampleCount = protectionData->subsampleCount;
+            uint32_t initWithLast15 = protectionData->initWithLast15;
+            GstBuffer *key = protectionData->key;
+            GstBuffer *iv = protectionData->iv;
+            GstBuffer *subsamples = protectionData->subsamples;
 
             firebolt::rialto::MediaKeyErrorStatus status =
                 m_decryptionService->decrypt(keySessionId, buffer, subsamples, subsampleCount, iv, key, initWithLast15);
@@ -225,7 +227,7 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer)
             }
         }
 
-        m_gstWrapper->gstBufferRemoveMeta(buffer, reinterpret_cast<GstMeta *>(protectionMeta));
+        m_metadataWrapper->removeProtectionMetadata(buffer);
     }
 
     //pass it through even in case of failed decryption

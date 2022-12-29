@@ -39,18 +39,33 @@ std::shared_ptr<IGstProtectionMetadataFactory> IGstProtectionMetadataFactory::cr
     return factory;
 }
 
-std::unique_ptr<IGstProtectionMetadataWrapper> GstProtectionMetadataFactory::createProtectionMetadataWrapper() const
+std::unique_ptr<IGstProtectionMetadataWrapper>
+GstProtectionMetadataFactory::createProtectionMetadataWrapper(const std::shared_ptr<IGstWrapper> &gstWrapper) const
 {
-    return std::make_unique<GstProtectionMetadataWrapper>();
+    return std::make_unique<GstProtectionMetadataWrapper>(gstWrapper);
 }
 
-GstMeta *GstProtectionMetadataWrapper::addProtectionMetadata(GstBuffer *gstBuffer, GstRialtoProtectionData &/*data*/)
+GstMeta *GstProtectionMetadataWrapper::addProtectionMetadata(GstBuffer *gstBuffer, GstRialtoProtectionData &data)
 {
-    return nullptr;
+    return m_gstWrapper->gstBufferAddMeta(gstBuffer, GST_RIALTO_PROTECTION_METADATA_INFO, &data);
 }
 
 GstRialtoProtectionData *GstProtectionMetadataWrapper::getProtectionMetadataData(GstBuffer *gstBuffer)
 {
-    return nullptr;
+    GstMeta *meta = m_gstWrapper->gstBufferGetMeta(gstBuffer, GST_RIALTO_PROTECTION_METADATA_GET_TYPE);
+    if (!meta)
+    {
+        return nullptr;
+    }
+
+    GstRialtoProtectionMetadata *protectionMetadata = reinterpret_cast<GstRialtoProtectionMetadata *>(meta);
+    return &protectionMetadata->data;
 }
+
+void GstProtectionMetadataWrapper::removeProtectionMetadata(GstBuffer *gstBuffer)
+{
+    GstMeta *meta = m_gstWrapper->gstBufferGetMeta(gstBuffer, GST_RIALTO_PROTECTION_METADATA_GET_TYPE);
+    m_gstWrapper->gstBufferRemoveMeta(gstBuffer, meta);
+}
+
 }

@@ -143,7 +143,10 @@ public:
     MOCK_METHOD(GstCaps *, gstCapsNewEmpty, (), (const));
     MOCK_METHOD(GstProtectionMeta *, gstBufferAddProtectionMeta, (GstBuffer * buffer, GstStructure *info), (const));
     MOCK_METHOD(GstProtectionMeta *, gstBufferGetProtectionMeta, (GstBuffer * buffer), (const));
-    MOCK_METHOD(gboolean, gstBufferRemoveMeta, (GstBuffer * buffer, GstMeta *meta), (const));
+    MOCK_METHOD(GstMeta *, gstBufferAddMeta, (GstBuffer * buffer, const GstMetaInfo *info, gpointer params),
+                (const, override));
+    MOCK_METHOD(GstMeta *, gstBufferGetMeta, (GstBuffer * buffer, GType api), (const, override));
+    MOCK_METHOD(gboolean, gstBufferRemoveMeta, (GstBuffer * buffer, GstMeta *meta), (const, override));
     MOCK_METHOD(gboolean, gstStructureGetUint, (const GstStructure *structure, const gchar *fieldname, guint *value),
                 (const));
     MOCK_METHOD(const GValue *, gstStructureGetValue, (const GstStructure *structure, const gchar *fieldname), (const));

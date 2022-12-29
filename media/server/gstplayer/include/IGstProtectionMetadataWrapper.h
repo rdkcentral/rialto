@@ -31,7 +31,7 @@ namespace firebolt::rialto::server
         virtual ~IGstProtectionMetadataWrapper() = default;
         virtual GstMeta* addProtectionMetadata(GstBuffer *gstBuffer, GstRialtoProtectionData &data) = 0;
         virtual GstRialtoProtectionData* getProtectionMetadataData(GstBuffer *gstBuffer) = 0;
-
+        virtual void removeProtectionMetadata(GstBuffer *gstBuffer) = 0;
     };
 };
 

@@ -26,6 +26,8 @@
 #include "GstDispatcherThreadMock.h"
 #include "GstPlayer.h"
 #include "GstPlayerClientMock.h"
+#include "GstProtectionMetadataFactoryMock.h"
+#include "GstProtectionMetadataWrapperMock.h"
 #include "GstSrcFactoryMock.h"
 #include "GstSrcMock.h"
 #include "GstWrapperMock.h"
@@ -71,6 +73,10 @@ public:
     StrictMock<GstDispatcherThreadMock> &m_gstDispatcherThreadMock{
         dynamic_cast<StrictMock<GstDispatcherThreadMock> &>(*gstDispatcherThread)};
     StrictMock<DecryptionServiceMock> m_decryptionServiceMock;
+    std::shared_ptr<StrictMock<GstProtectionMetadataFactoryMock>> m_gstProtectionMetadataFactoryMock{
+        std::make_shared<StrictMock<GstProtectionMetadataFactoryMock>>()};
+    std::shared_ptr<StrictMock<GstProtectionMetadataWrapperMock>> m_gstProtectionMetadataWrapperMock{
+        std::make_shared<StrictMock<GstProtectionMetadataWrapperMock>>()};
 
 public:
     void setPipelineState(const GstState &state);

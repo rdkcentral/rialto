@@ -76,16 +76,12 @@ const GstMetaInfo *rialto_mse_protection_metadata_get_info()
     return metainfo;
 }
 
-GstRialtoProtectionMetadata *rialto_mse_add_protection_metadata(GstBuffer *gstBuffer, GstRialtoProtectionData &data)
+GstMeta *rialto_mse_add_protection_metadata(GstBuffer *gstBuffer, GstRialtoProtectionData &data)
 {
-    GstRialtoProtectionMetadata *metadata = reinterpret_cast<GstRialtoProtectionMetadata *>(
-        gst_buffer_add_meta(gstBuffer, GST_RIALTO_PROTECTION_METADATA_INFO, &data));
-
-    return metadata;
+    return gst_buffer_add_meta(gstBuffer, GST_RIALTO_PROTECTION_METADATA_INFO, &data);
 }
 
-GstRialtoProtectionMetadata *rialto_mse_protection_metadata_get_protection_metadata(GstBuffer *gstBuffer)
+GstMeta *rialto_mse_protection_metadata_get_protection_metadata(GstBuffer *gstBuffer)
 {
-    return reinterpret_cast<GstRialtoProtectionMetadata *>(
-        gst_buffer_get_meta(gstBuffer, GST_RIALTO_PROTECTION_METADATA_GET_TYPE));
+    return gst_buffer_get_meta(gstBuffer, GST_RIALTO_PROTECTION_METADATA_GET_TYPE);
 }
