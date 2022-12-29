@@ -780,4 +780,25 @@ void GstPlayer::renderFrame()
         m_workerThread->enqueueTask(m_taskFactory->createRenderFrame(m_context));
     }
 }
+
+void GstPlayer::setVolume(double volume)
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(m_taskFactory->createSetVolume(m_context, volume));
+    }
+}
+
+bool GstPlayer::getVolume(double &volume)
+{
+    // We are on main thread here, but m_context.pipeline can be used, because it's modified only in GstPlayer
+    // constructor and destructor. GstPlayer is created/destructed on main thread, so we won't have a crash here.
+    if (!m_context.pipeline)
+    {
+        return false;
+    }
+    volume =
+        m_gstWrapper->gstStreamVolumeGetVolume(GST_STREAM_VOLUME(m_context.pipeline), GST_STREAM_VOLUME_FORMAT_LINEAR);
+    return true;
+}
 }; // namespace firebolt::rialto::server

@@ -93,6 +93,10 @@ public:
 
     bool renderFrame() override;
 
+    bool setVolume(double volume) override;
+
+    bool getVolume(double &volume) override;
+
 private:
     /**
      * @brief The media player client ipc.

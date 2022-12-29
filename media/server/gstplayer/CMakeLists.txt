@@ -46,6 +46,7 @@ add_library(
         source/tasks/SetupElement.cpp
         source/tasks/SetupSource.cpp
         source/tasks/SetVideoGeometry.cpp
+        source/tasks/SetVolume.cpp
         source/tasks/Shutdown.cpp
         source/tasks/Stop.cpp
         source/tasks/Underflow.cpp

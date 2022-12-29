@@ -49,6 +49,7 @@ constexpr std::uint32_t needDataRequestId{17};
 constexpr std::uint32_t numFrames{1};
 constexpr std::int32_t shmFd{234};
 constexpr std::uint32_t shmSize{2048};
+constexpr double volume{0.7};
 } // namespace
 
 namespace firebolt::rialto
@@ -210,6 +211,32 @@ void PlaybackServiceTests::mediaPipelineWillGetPosition()
 void PlaybackServiceTests::mediaPipelineWillFailToGetPosition()
 {
     EXPECT_CALL(m_mediaPipelineMock, getPosition(_)).WillOnce(Return(false));
+}
+
+void PlaybackServiceTests::mediaPipelineWillSetVolume()
+{
+    EXPECT_CALL(m_mediaPipelineMock, setVolume(_)).WillOnce(Return(true));
+}
+
+void PlaybackServiceTests::mediaPipelineWillFailToSetVolume()
+{
+    EXPECT_CALL(m_mediaPipelineMock, setVolume(_)).WillOnce(Return(false));
+}
+
+void PlaybackServiceTests::mediaPipelineWillGetVolume()
+{
+    EXPECT_CALL(m_mediaPipelineMock, getVolume(_))
+        .WillOnce(Invoke(
+            [&](double &vol)
+            {
+                vol = volume;
+                return true;
+            }));
+}
+
+void PlaybackServiceTests::mediaPipelineWillFailToGetVolume()
+{
+    EXPECT_CALL(m_mediaPipelineMock, getVolume(_)).WillOnce(Return(false));
 }
 
 void PlaybackServiceTests::mediaPipelineFactoryWillCreateMediaPipeline()
@@ -435,4 +462,27 @@ void PlaybackServiceTests::renderFrameSucceed()
 {
     EXPECT_CALL(m_mediaPipelineMock, renderFrame()).WillOnce(Return(true));
     EXPECT_TRUE(m_sut->renderFrame(sessionId));
+}
+
+void PlaybackServiceTests::setVolumeShouldSucceed()
+{
+    EXPECT_TRUE(m_sut->setVolume(sessionId, volume));
+}
+
+void PlaybackServiceTests::setVolumeShouldFail()
+{
+    EXPECT_FALSE(m_sut->setVolume(sessionId, volume));
+}
+
+void PlaybackServiceTests::getVolumeShouldSucceed()
+{
+    double targetVolume{};
+    EXPECT_TRUE(m_sut->getVolume(sessionId, targetVolume));
+    EXPECT_EQ(targetVolume, volume);
+}
+
+void PlaybackServiceTests::getVolumeShouldFail()
+{
+    double targetVolume{};
+    EXPECT_FALSE(m_sut->getVolume(sessionId, targetVolume));
 }

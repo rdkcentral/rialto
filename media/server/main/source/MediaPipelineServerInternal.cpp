@@ -558,6 +558,53 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
     return true;
 }
 
+bool MediaPipelineServerInternal::setVolume(double volume)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = setVolumeInternal(volume); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::setVolumeInternal(double volume)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to set volume - Gstreamer player has not been loaded");
+        return false;
+    }
+    m_gstPlayer->setVolume(volume);
+    return true;
+}
+
+bool MediaPipelineServerInternal::getVolume(double &volume)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = getVolumeInternal(volume); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::getVolumeInternal(double &volume)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get volume - Gstreamer player has not been loaded");
+        return false;
+    }
+    return m_gstPlayer->getVolume(volume);
+}
+
 AddSegmentStatus MediaPipelineServerInternal::addSegment(uint32_t needDataRequestId,
                                                          const std::unique_ptr<MediaSegment> &mediaSegment)
 {
