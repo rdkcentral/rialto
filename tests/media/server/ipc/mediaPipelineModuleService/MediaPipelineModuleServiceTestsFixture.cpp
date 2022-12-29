@@ -57,7 +57,7 @@ constexpr std::uint64_t sourceId{12};
 constexpr size_t frameCount{5};
 constexpr std::uint32_t maxBytes{2};
 constexpr std::uint32_t needDataRequestId{32};
-constexpr firebolt::rialto::ShmInfo shmInfo{15, 16, 17};
+constexpr firebolt::rialto::MediaPlayerShmInfo shmInfo{15, 16, 17};
 constexpr firebolt::rialto::PlaybackState playbackState{firebolt::rialto::PlaybackState::PLAYING};
 constexpr firebolt::rialto::NetworkState networkState{firebolt::rialto::NetworkState::BUFFERED};
 constexpr firebolt::rialto::QosInfo qosInfo{5u, 2u};
@@ -528,7 +528,8 @@ void MediaPipelineModuleServiceTests::mediaClientWillSendNetworkStateChangedEven
 
 void MediaPipelineModuleServiceTests::mediaClientWillSendNeedMediaDataEvent(int sessionId)
 {
-    std::shared_ptr<firebolt::rialto::ShmInfo> shmInfoPtr{std::make_shared<firebolt::rialto::ShmInfo>(shmInfo)};
+    std::shared_ptr<firebolt::rialto::MediaPlayerShmInfo> shmInfoPtr{
+        std::make_shared<firebolt::rialto::MediaPlayerShmInfo>(shmInfo)};
 
     EXPECT_CALL(*m_clientMock, sendEvent(NeedMediaDataEventMatcher(sessionId, sourceId, needDataRequestId, frameCount,
                                                                    maxBytes, shmInfoPtr)));
@@ -750,7 +751,8 @@ void MediaPipelineModuleServiceTests::sendNetworkStateChangedEvent()
 void MediaPipelineModuleServiceTests::sendNeedMediaDataEvent()
 {
     ASSERT_TRUE(m_mediaPipelineClient);
-    std::shared_ptr<firebolt::rialto::ShmInfo> shmInfoPtr{std::make_shared<firebolt::rialto::ShmInfo>(shmInfo)};
+    std::shared_ptr<firebolt::rialto::MediaPlayerShmInfo> shmInfoPtr{
+        std::make_shared<firebolt::rialto::MediaPlayerShmInfo>(shmInfo)};
     m_mediaPipelineClient->notifyNeedMediaData(sourceId, frameCount, needDataRequestId, shmInfoPtr);
 }
 

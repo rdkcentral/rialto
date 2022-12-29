@@ -85,7 +85,7 @@ void MediaPipelineTestBase::setNetworkState(NetworkState state)
 }
 
 void MediaPipelineTestBase::needData(int32_t sourceId, size_t frameCount, uint32_t requestId,
-                                     const std::shared_ptr<ShmInfo> &shmInfo)
+                                     const std::shared_ptr<MediaPlayerShmInfo> &shmInfo)
 {
     EXPECT_CALL(*m_mediaPipelineClientMock, notifyNeedMediaData(sourceId, frameCount, requestId, IsNull()))
         .RetiresOnSaturation();
