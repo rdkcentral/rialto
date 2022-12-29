@@ -398,6 +398,18 @@ bool MediaPipeline::renderFrame()
     return m_mediaPipelineIpc->renderFrame();
 }
 
+bool MediaPipeline::setVolume(double volume)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+    return m_mediaPipelineIpc->setVolume(volume);
+}
+
+bool MediaPipeline::getVolume(double &volume)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+    return m_mediaPipelineIpc->getVolume(volume);
+}
+
 void MediaPipeline::discardNeedDataRequest(uint32_t needDataRequestId)
 {
     // Find the needDataRequest for this needDataRequestId
@@ -538,7 +550,7 @@ void MediaPipeline::notifyNetworkState(NetworkState state)
 }
 
 void MediaPipeline::notifyNeedMediaData(int32_t sourceId, size_t frameCount, uint32_t requestId,
-                                        const std::shared_ptr<ShmInfo> &shmInfo)
+                                        const std::shared_ptr<MediaPlayerShmInfo> &shmInfo)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 

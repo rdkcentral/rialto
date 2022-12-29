@@ -33,6 +33,8 @@ add_gtests (
         mediaPipeline/SetPlaybackRateTest.cpp
         mediaPipeline/GetPositionTest.cpp
         mediaPipeline/RenderFrameTest.cpp
+        mediaPipeline/SetVolumeTest.cpp
+        mediaPipeline/GetVolumeTest.cpp
 
         # MediaPipelineCapabilities tests
         mediaPipelineCapabilities/MediaPipelineCapabilitiesTest.cpp
@@ -50,6 +52,9 @@ add_gtests (
         # MediaKeysCapabilities tests
         mediaKeysCapabilities/CreateTest.cpp
         mediaKeysCapabilities/KeySystemsTest.cpp
+
+        # WebAudioPlayer tests
+        webAudioPlayer/CreateTest.cpp
         )
 
 target_include_directories(

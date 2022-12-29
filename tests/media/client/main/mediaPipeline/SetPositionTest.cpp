@@ -56,7 +56,7 @@ protected:
         uint32_t requestId1 = 4U;
         uint32_t requestId2 = 5U;
         MediaSourceStatus status = MediaSourceStatus::NO_AVAILABLE_SAMPLES;
-        std::shared_ptr<ShmInfo> shmInfo = std::make_shared<ShmInfo>();
+        std::shared_ptr<MediaPlayerShmInfo> shmInfo = std::make_shared<MediaPlayerShmInfo>();
         IMediaPipeline::MediaSegmentVector dataVec;
         shmInfo->maxMetadataBytes = 5;
         shmInfo->metadataOffset = 6;
@@ -87,7 +87,7 @@ protected:
         uint32_t requestId1 = 4U;
         uint32_t requestId2 = 5U;
         MediaSourceStatus status = MediaSourceStatus::NO_AVAILABLE_SAMPLES;
-        std::shared_ptr<ShmInfo> shmInfo = std::make_shared<ShmInfo>();
+        std::shared_ptr<MediaPlayerShmInfo> shmInfo = std::make_shared<MediaPlayerShmInfo>();
         IMediaPipeline::MediaSegmentVector dataVec;
         shmInfo->maxMetadataBytes = 5;
         shmInfo->metadataOffset = 6;

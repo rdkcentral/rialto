@@ -66,6 +66,10 @@ public:
     void playbackServiceWillFailToGetPosition();
     void playbackServiceWillRenderFrame();
     void playbackServiceWillFailToRenderFrame();
+    void playbackServiceWillSetVolume();
+    void playbackServiceWillFailToSetVolume();
+    void playbackServiceWillGetVolume();
+    void playbackServiceWillFailToGetVolume();
     void mediaClientWillSendPlaybackStateChangedEvent();
     void mediaClientWillSendNetworkStateChangedEvent();
     void mediaClientWillSendNeedMediaDataEvent(int sessionId);
@@ -89,6 +93,9 @@ public:
     void sendHaveDataRequestAndReceiveResponse();
     void sendSetPlaybackRateRequestAndReceiveResponse();
     void sendSetVideoWindowRequestAndReceiveResponse();
+    void sendSetVolumeRequestAndReceiveResponse();
+    void sendGetVolumeRequestAndReceiveResponse();
+    void sendGetVolumeRequestAndReceiveResponseWithoutVolumeMatch();
     void sendPlaybackStateChangedEvent();
     void sendNetworkStateChangedEvent();
     void sendNeedMediaDataEvent();

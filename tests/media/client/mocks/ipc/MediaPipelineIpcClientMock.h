@@ -35,7 +35,8 @@ public:
     MOCK_METHOD(void, notifyPlaybackState, (PlaybackState state), (override));
     MOCK_METHOD(void, notifyNetworkState, (NetworkState state), (override));
     MOCK_METHOD(void, notifyNeedMediaData,
-                (int32_t sourceId, size_t frameCount, uint32_t requestId, const std::shared_ptr<ShmInfo> &shmInfo),
+                (int32_t sourceId, size_t frameCount, uint32_t requestId,
+                 const std::shared_ptr<MediaPlayerShmInfo> &shmInfo),
                 (override));
     MOCK_METHOD(void, notifyPosition, (int64_t position), (override));
     MOCK_METHOD(void, notifyQos, (int32_t sourceId, const QosInfo &qosInfo), (override));

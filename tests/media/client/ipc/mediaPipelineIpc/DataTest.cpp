@@ -44,7 +44,7 @@ protected:
     uint32_t m_requestId = 2U;
     size_t m_frameCount = 3U;
     uint32_t m_numFrames = 5U;
-    std::shared_ptr<ShmInfo> m_shmInfo;
+    std::shared_ptr<MediaPlayerShmInfo> m_shmInfo;
 
     std::mutex m_notifyMutex;
     std::condition_variable m_notifyCond;
@@ -67,7 +67,7 @@ protected:
 
     void initShmInfo()
     {
-        m_shmInfo = std::make_shared<ShmInfo>();
+        m_shmInfo = std::make_shared<MediaPlayerShmInfo>();
         m_shmInfo->maxMetadataBytes = 5;
         m_shmInfo->metadataOffset = 6;
         m_shmInfo->mediaDataOffset = 7;

@@ -47,6 +47,8 @@ public:
     MOCK_METHOD(bool, renderFrame, (), (override));
     MOCK_METHOD(AddSegmentStatus, addSegment,
                 (uint32_t needDataRequestId, const std::unique_ptr<MediaSegment> &mediaSegment), (override));
+    MOCK_METHOD(bool, setVolume, (double volume), (override));
+    MOCK_METHOD(bool, getVolume, (double &volume), (override));
 };
 } // namespace firebolt::rialto::server
 

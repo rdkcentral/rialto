@@ -128,7 +128,7 @@ message AttachSourceRequest {
     }
 
     message AudioConfig {
-        required uint32 number_of_channels = 1;   ///< The number of channels. 
+        required uint32 number_of_channels = 1;   ///< The number of channels.
         required uint32 sample_rate = 2;         ///< The sampling rate.
         optional bytes codec_specific_config = 3; ///The audio specific config. Zero length if no specific config
     }
@@ -325,6 +325,37 @@ message RenderFrameResponse {
 }
 
 /**
+ * @fn void setVolume(double volume)
+ * @brief Set level and transition of audio attenuation
+ *
+ * @param[in] session_id  The id of the A/V session the request is for.
+ * @param[in] volume      Target volume level (0.0 - 1.0)
+ *
+ */
+message SetVolumeRequest {
+    required int32 session_id = 1;
+    required double volume = 2;
+}
+message SetVolumeResponse {
+}
+
+/**
+ * @fn void getVolume(double &volume)
+ * @brief Get current audio level. Fetches the current volume level for the pipeline.
+ *
+ * @param[in]  session_id  The id of the A/V session the request is for.
+ * @param[out] volume      Current volume level (range 0.0 - 1.0)
+ *
+ * @retval true on success false otherwise
+ */
+message GetVolumeRequest {
+    required int32 session_id = 1;
+}
+message GetVolumeResponse {
+    required double volume = 1;
+}
+
+/**
  * @brief Event sent the playback state has changed.
  *
  * @param session_id   The id of the A/V session the status is for.
@@ -400,7 +431,7 @@ message PositionChangeEvent {
  */
 message NeedMediaDataEvent {
 
-    message ShmInfo {
+    message MediaPlayerShmInfo {
         required uint32 max_metadata_bytes = 1;
         required uint32 metadata_offset = 2;
         required uint32 media_data_offset = 3;
@@ -412,7 +443,7 @@ message NeedMediaDataEvent {
     required uint32 request_id = 3;
 
     required uint32 frame_count = 4;
-    optional ShmInfo shm_info = 5;
+    optional MediaPlayerShmInfo shm_info = 5;
 }
 
 /**
@@ -549,5 +580,19 @@ service MediaPipelineModule {
      * @see RenderFrameRequest
      */
     rpc renderFrame(RenderFrameRequest) returns (RenderFrameResponse) {
+    }
+
+    /**
+     * @brief Set level and transition of audio attenuation
+     * @see SetVolumeRequest
+     */
+    rpc setVolume(SetVolumeRequest) returns (SetVolumeResponse) {
+    } 
+
+    /**
+     * @brief Get current audio level. Fetches the current volume level for the pipeline.
+     * @see GetVolumeRequest
+     */
+    rpc getVolume(GetVolumeRequest) returns (GetVolumeResponse) {
     }
 }

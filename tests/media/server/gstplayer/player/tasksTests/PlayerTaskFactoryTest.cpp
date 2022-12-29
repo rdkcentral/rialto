@@ -39,6 +39,7 @@
 #include "tasks/SetPlaybackRate.h"
 #include "tasks/SetPosition.h"
 #include "tasks/SetVideoGeometry.h"
+#include "tasks/SetVolume.h"
 #include "tasks/SetupElement.h"
 #include "tasks/SetupSource.h"
 #include "tasks/Shutdown.h"
@@ -175,6 +176,14 @@ TEST_F(PlayerTaskFactoryTest, ShouldCreateSetVideoGeometry)
     auto task = m_sut.createSetVideoGeometry(m_context, m_gstPlayer, firebolt::rialto::server::Rectangle{});
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::SetVideoGeometry &>(*task));
+}
+
+TEST_F(PlayerTaskFactoryTest, ShouldCreateSetVolume)
+{
+    constexpr double kVolume{0.7};
+    auto task = m_sut.createSetVolume(m_context, kVolume);
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::SetVolume &>(*task));
 }
 
 TEST_F(PlayerTaskFactoryTest, ShouldCreateShutdown)

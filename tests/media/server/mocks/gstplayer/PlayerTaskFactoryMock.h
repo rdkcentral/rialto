@@ -63,6 +63,8 @@ public:
                 (PlayerContext & context, IGstPlayerPrivate &player, GstElement *source), (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetVideoGeometry,
                 (PlayerContext & context, IGstPlayerPrivate &player, const Rectangle &rectangle), (const, override));
+    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetVolume, (PlayerContext & context, double volume),
+                (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createShutdown, (IGstPlayerPrivate & player), (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createStop, (PlayerContext & context, IGstPlayerPrivate &player),
                 (const, override));

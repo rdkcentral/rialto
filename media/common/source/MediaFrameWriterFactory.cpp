@@ -65,8 +65,8 @@ MediaFrameWriterFactory::MediaFrameWriterFactory() : m_metadataVersion{kLatestMe
     }
 }
 
-std::unique_ptr<IMediaFrameWriter> MediaFrameWriterFactory::createFrameWriter(uint8_t *shmBuffer,
-                                                                              const std::shared_ptr<ShmInfo> &shmInfo)
+std::unique_ptr<IMediaFrameWriter>
+MediaFrameWriterFactory::createFrameWriter(uint8_t *shmBuffer, const std::shared_ptr<MediaPlayerShmInfo> &shmInfo)
 try
 {
     if (1 == m_metadataVersion)

@@ -122,7 +122,7 @@ public:
     void notifyNetworkState(NetworkState state) override;
 
     void notifyNeedMediaData(int32_t sourceId, size_t frameCount, uint32_t requestId,
-                             const std::shared_ptr<ShmInfo> &shmInfo) override;
+                             const std::shared_ptr<MediaPlayerShmInfo> &shmInfo) override;
 
     void notifyBufferTerm() override;
 
@@ -130,13 +130,17 @@ public:
 
     bool renderFrame() override;
 
+    bool setVolume(double volume) override;
+
+    bool getVolume(double &volume) override;
+
 protected:
     /**
      * @brief The need data request data.
      */
     struct NeedDataRequest
     {
-        std::shared_ptr<ShmInfo> shmInfo;                       /**< The shared memory information. */
+        std::shared_ptr<MediaPlayerShmInfo> shmInfo;            /**< The shared memory information. */
         std::unique_ptr<common::IMediaFrameWriter> frameWriter; /**< The frame writer used to add segments. */
     };
 
