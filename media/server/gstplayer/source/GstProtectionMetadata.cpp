@@ -75,13 +75,3 @@ const GstMetaInfo *rialto_mse_protection_metadata_get_info()
     }
     return metainfo;
 }
-
-GstMeta *rialto_mse_add_protection_metadata(GstBuffer *gstBuffer, GstRialtoProtectionData &data)
-{
-    return gst_buffer_add_meta(gstBuffer, GST_RIALTO_PROTECTION_METADATA_INFO, &data);
-}
-
-GstMeta *rialto_mse_protection_metadata_get_protection_metadata(GstBuffer *gstBuffer)
-{
-    return gst_buffer_get_meta(gstBuffer, GST_RIALTO_PROTECTION_METADATA_GET_TYPE);
-}

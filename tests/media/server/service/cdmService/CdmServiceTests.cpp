@@ -202,6 +202,71 @@ TEST_F(CdmServiceTests, shouldCloseKeySession)
     destroyMediaKeysShouldSucceed();
 }
 
+TEST_F(CdmServiceTests, shouldNotCloseKeySessionWhenBuffersUsed)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysFactoryWillCreateMediaKeys();
+    createMediaKeysShouldSucceed();
+    incrementSessionIdUsageCounter();
+    closeKeySessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    destroyMediaKeysShouldSucceed();
+}
+
+TEST_F(CdmServiceTests, shouldCloseKeySessionWhenIncrementFails)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysFactoryWillCreateMediaKeys();
+    createMediaKeysShouldSucceed();
+    mediaKeysWillCloseKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    incrementSessionIdUsageCounterSessionNotFound();
+    closeKeySessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    destroyMediaKeysShouldSucceed();
+}
+
+TEST_F(CdmServiceTests, shouldCloseKeySessionAfterDecrement)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysFactoryWillCreateMediaKeys();
+    createMediaKeysShouldSucceed();
+    incrementSessionIdUsageCounter();
+    closeKeySessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    decrementSessionIdUsageCounterAndCloseSession();
+    destroyMediaKeysShouldSucceed();
+}
+
+TEST_F(CdmServiceTests, shouldNotCloseKeySessionAfterDecrementWhenNoPreviousClose)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysFactoryWillCreateMediaKeys();
+    createMediaKeysShouldSucceed();
+    incrementSessionIdUsageCounter();
+    decrementSessionIdUsageCounterAndNoCloseSession();
+    destroyMediaKeysShouldSucceed();
+}
+
+TEST_F(CdmServiceTests, shouldNotCloseKeySessionAfterDecrementWhenBuffersStillUsed)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysFactoryWillCreateMediaKeys();
+    createMediaKeysShouldSucceed();
+    incrementSessionIdUsageCounter();
+    incrementSessionIdUsageCounter();
+    closeKeySessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    decrementSessionIdUsageCounterAndNoCloseSession();
+    destroyMediaKeysShouldSucceed();
+}
+
+TEST_F(CdmServiceTests, shouldNotCloseKeySessionAfterDecrementFails)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysFactoryWillCreateMediaKeys();
+    createMediaKeysShouldSucceed();
+    incrementSessionIdUsageCounter();
+    closeKeySessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    decrementSessionIdUsageCounterSessionNotFound();
+    destroyMediaKeysShouldSucceed();
+}
+
 TEST_F(CdmServiceTests, shouldFailToCloseKeySessionWhenNoMediaKeys)
 {
     triggerSwitchToActiveSuccess();

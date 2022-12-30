@@ -68,8 +68,6 @@ typedef struct _GstRialtoProtectionMetadata GstRialtoProtectionMetadata;
 
 GType rialto_eme_protection_metadata_get_type();
 const GstMetaInfo *rialto_mse_protection_metadata_get_info();
-GstMeta *rialto_mse_protection_metadata_get_protection_metadata(GstBuffer *gstBuffer);
-GstMeta *rialto_mse_add_protection_metadata(GstBuffer *gstBuffer, GstRialtoProtectionData &data);
 G_END_DECLS
 
 #endif // FIREBOLT_RIALTO_SERVER_GST_PROTECTION_METADATA_H_
