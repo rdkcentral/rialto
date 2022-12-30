@@ -194,7 +194,6 @@ GstRialtoDecryptorPrivate::GstRialtoDecryptorPrivate(GstBaseTransform *parentEle
 GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer)
 {
     GstRialtoDecryptor *self = GST_RIALTO_DECRYPTOR(m_decryptorElement);
-
     GstRialtoProtectionData *protectionData = m_metadataWrapper->getProtectionMetadataData(buffer);
     if (!protectionData)
     {

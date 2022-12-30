@@ -33,18 +33,19 @@ struct GstRialtoProtectionData
 {
     ~GstRialtoProtectionData()
     {
-        if (subsamples)
-        {
-            m_gstWrapper->gstBufferUnref(subsamples);
-        }
-        if (iv)
-        {
-            m_gstWrapper->gstBufferUnref(iv);
-        }
-        if (key)
-        {
-            m_gstWrapper->gstBufferUnref(key);
-        }
+        //TODO:
+        // if (subsamples)
+        // {
+        //     m_gstWrapper->gstBufferUnref(subsamples);
+        // }
+        // if (iv)
+        // {
+        //     m_gstWrapper->gstBufferUnref(iv);
+        // }
+        // if (key)
+        // {
+        //     m_gstWrapper->gstBufferUnref(key);
+        // }
     }
 
     int32_t keySessionId = 0;

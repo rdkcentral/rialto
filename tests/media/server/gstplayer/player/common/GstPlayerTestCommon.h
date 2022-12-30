@@ -75,8 +75,10 @@ public:
     StrictMock<DecryptionServiceMock> m_decryptionServiceMock;
     std::shared_ptr<StrictMock<GstProtectionMetadataFactoryMock>> m_gstProtectionMetadataFactoryMock{
         std::make_shared<StrictMock<GstProtectionMetadataFactoryMock>>()};
-    std::shared_ptr<StrictMock<GstProtectionMetadataWrapperMock>> m_gstProtectionMetadataWrapperMock{
-        std::make_shared<StrictMock<GstProtectionMetadataWrapperMock>>()};
+    std::unique_ptr<StrictMock<GstProtectionMetadataWrapperMock>> m_gstProtectionMetadataWrapper{
+        std::make_unique<StrictMock<GstProtectionMetadataWrapperMock>>()};
+    StrictMock<GstProtectionMetadataWrapperMock> *m_gstProtectionMetadataWrapperMock{m_gstProtectionMetadataWrapper.get()};
+
 
 public:
     void setPipelineState(const GstState &state);

@@ -75,8 +75,9 @@ protected:
     StrictMock<DecryptionServiceMock> m_decryptionServiceMock;
     std::shared_ptr<StrictMock<GstProtectionMetadataFactoryMock>> m_gstProtectionMetadataFactoryMock{
         std::make_shared<StrictMock<GstProtectionMetadataFactoryMock>>()};
-    std::unique_ptr<StrictMock<GstProtectionMetadataWrapperMock>> m_gstProtectionMetadataWrapperMock{
+    std::unique_ptr<StrictMock<GstProtectionMetadataWrapperMock>> m_gstProtectionMetadataWrapper{
         std::make_unique<StrictMock<GstProtectionMetadataWrapperMock>>()};
+    StrictMock<GstProtectionMetadataWrapperMock> *m_gstProtectionMetadataWrapperMock{m_gstProtectionMetadataWrapper.get()};
 
     MediaType m_type{MediaType::MSE};
     GstElement m_pipeline{};
@@ -168,7 +169,7 @@ protected:
         EXPECT_CALL(*m_gstSrcMock, initSrc());
         EXPECT_CALL(m_workerThreadFactoryMock, createWorkerThread()).WillOnce(Return(ByMove(std::move(workerThread))));
         EXPECT_CALL(*m_gstProtectionMetadataFactoryMock, createProtectionMetadataWrapper(_))
-            .WillOnce(Return(ByMove(std::move(m_gstProtectionMetadataWrapperMock))));
+            .WillOnce(Return(ByMove(std::move(m_gstProtectionMetadataWrapper))));
 
         EXPECT_NO_THROW(m_gstPlayer = std::make_unique<GstPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, m_type,
                                                                   m_videoReq, m_gstWrapperMock, m_glibWrapperMock,
@@ -306,10 +307,13 @@ TEST_F(RialtoServerCreateGstPlayerTest, PlaysinkNotFound)
     expectSetFlags();
     expectSetSignalCallbacks();
     expectSetUri();
+    
     expectSetMessageCallback();
 
     EXPECT_CALL(*m_gstSrcMock, initSrc());
     EXPECT_CALL(m_workerThreadFactoryMock, createWorkerThread()).WillOnce(Return(ByMove(std::move(workerThread))));
+    EXPECT_CALL(*m_gstProtectionMetadataFactoryMock, createProtectionMetadataWrapper(_))
+        .WillOnce(Return(ByMove(std::move(m_gstProtectionMetadataWrapper))));
 
     EXPECT_CALL(*m_gstWrapperMock, gstBinGetByName(GST_BIN(&m_pipeline), CharStrMatcher("playsink")))
         .WillOnce(Return(nullptr));
