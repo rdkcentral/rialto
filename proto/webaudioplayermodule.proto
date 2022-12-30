@@ -35,7 +35,7 @@ option cc_generic_services = true;
 message WebAudioPlayerStateEvent {
     enum WebAudioPlayerState
     {
-        USABLE = 0;
+        UNKNOWN = 0;
         IDLE = 1;
         PLAYING = 2;
         PAUSED = 3;
@@ -222,7 +222,7 @@ message WebAudioGetDeviceInfoResponse {
  */
 message WebAudioSetVolumeRequest {
     required int32 web_audio_player_handle = 1;
-    required uint32 volume = 2;
+    required double volume = 2;
 }
 message WebAudioSetVolumeResponse {
 }
@@ -239,7 +239,7 @@ message WebAudioGetVolumeRequest {
     required int32 web_audio_player_handle = 1;
 }
 message WebAudioGetVolumeResponse {
-    required uint32 volume = 1;
+    required double volume = 1;
 }
 
 service WebAudioPlayerModule {

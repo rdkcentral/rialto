@@ -45,7 +45,7 @@ MediaPipelineCapabilitiesModuleServiceTests::MediaPipelineCapabilitiesModuleServ
       m_invalidControllerMock{std::make_shared<StrictMock<firebolt::rialto::ipc::RpcControllerMock>>()}
 {
     m_service =
-        std::make_shared<firebolt::rialto::server::ipc::MediaPipelineCapabilitiesModuleService>(m_playbackServiceMock);
+        std::make_shared<firebolt::rialto::server::ipc::MediaPipelineCapabilitiesModuleService>(m_mediaPipelineServiceMock);
 }
 
 MediaPipelineCapabilitiesModuleServiceTests::~MediaPipelineCapabilitiesModuleServiceTests() {}
@@ -55,16 +55,16 @@ void MediaPipelineCapabilitiesModuleServiceTests::clientWillConnect()
     EXPECT_CALL(*m_clientMock, exportService(_));
 }
 
-void MediaPipelineCapabilitiesModuleServiceTests::playbackServiceWillGetSupportedMimeTypes()
+void MediaPipelineCapabilitiesModuleServiceTests::mediaPipelineServiceWillGetSupportedMimeTypes()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_playbackServiceMock, getSupportedMimeTypes(sourceType)).WillOnce(Return(mimeTypes));
+    EXPECT_CALL(m_mediaPipelineServiceMock, getSupportedMimeTypes(sourceType)).WillOnce(Return(mimeTypes));
 }
 
-void MediaPipelineCapabilitiesModuleServiceTests::playbackWillCheckIfMimeTypeIsSupported()
+void MediaPipelineCapabilitiesModuleServiceTests::mediaPipelineWillCheckIfMimeTypeIsSupported()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_playbackServiceMock, isMimeTypeSupported(mimeTypes[0])).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineServiceMock, isMimeTypeSupported(mimeTypes[0])).WillOnce(Return(true));
 }
 
 void MediaPipelineCapabilitiesModuleServiceTests::expectRequestSuccess()

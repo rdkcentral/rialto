@@ -17,24 +17,24 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_IPC_MEDIA_PIPELINE_MODULE_SERVICE_FACTORY_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_IPC_MEDIA_PIPELINE_MODULE_SERVICE_FACTORY_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_IPC_WEB_AUDIO_PLAYER_MODULE_SERVICE_FACTORY_MOCK_H_
+#define FIREBOLT_RIALTO_SERVER_IPC_WEB_AUDIO_PLAYER_MODULE_SERVICE_FACTORY_MOCK_H_
 
-#include "IMediaPipelineModuleService.h"
+#include "IWebAudioPlayerModuleService.h"
 #include <gmock/gmock.h>
 #include <memory>
 
 namespace firebolt::rialto::server::ipc
 {
-class MediaPipelineModuleServiceFactoryMock : public IMediaPipelineModuleServiceFactory
+class WebAudioPlayerModuleServiceFactoryMock : public IWebAudioPlayerModuleServiceFactory
 {
 public:
-    MediaPipelineModuleServiceFactoryMock() = default;
-    virtual ~MediaPipelineModuleServiceFactoryMock() = default;
+    WebAudioPlayerModuleServiceFactoryMock() = default;
+    virtual ~WebAudioPlayerModuleServiceFactoryMock() = default;
 
-    MOCK_METHOD(std::shared_ptr<IMediaPipelineModuleService>, create, (service::IMediaPipelineService & mediaPipelineService),
+    MOCK_METHOD(std::shared_ptr<IWebAudioPlayerModuleService>, create, (service::IWebAudioPlayerService & webAudioPlayerService),
                 (override, const));
 };
 } // namespace firebolt::rialto::server::ipc
 
-#endif // FIREBOLT_RIALTO_SERVER_IPC_MEDIA_PIPELINE_MODULE_SERVICE_FACTORY_MOCK_H_
+#endif // FIREBOLT_RIALTO_SERVER_IPC_WEB_AUDIO_PLAYER_MODULE_SERVICE_FACTORY_MOCK_H_

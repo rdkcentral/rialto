@@ -24,6 +24,9 @@ add_gtests (
         playbackService/PlaybackServiceTestsFixture.cpp
         playbackService/PlaybackServiceTests.cpp
 
+        mediaPipelineService/MediaPipelineServiceTestsFixture.cpp
+        mediaPipelineService/MediaPipelineServiceTests.cpp
+
         cdmService/CdmServiceTestsFixture.cpp
         cdmService/CdmServiceTests.cpp
 

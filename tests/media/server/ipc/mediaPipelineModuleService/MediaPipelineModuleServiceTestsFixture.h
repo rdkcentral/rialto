@@ -25,7 +25,7 @@
 #include "IpcClientMock.h"
 #include "IpcControllerMock.h"
 #include "IpcServerMock.h"
-#include "PlaybackServiceMock.h"
+#include "MediaPipelineServiceMock.h"
 #include <gtest/gtest.h>
 #include <memory>
 
@@ -39,33 +39,33 @@ public:
 
     void clientWillConnect();
     void clientWillDisconnect();
-    void playbackServiceWillCreateSession();
-    void playbackServiceWillFailToCreateSession();
-    void playbackServiceWillDestroySession();
-    void playbackServiceWillFailToDestroySession();
-    void playbackServiceWillLoadSession();
-    void playbackServiceWillFailToLoadSession();
-    void playbackServiceWillAttachSource();
-    void playbackServiceWillAttachAudioSourceWithAdditionaldata();
-    void playbackServiceWillFailToAttachSource();
-    void playbackServiceWillPlay();
-    void playbackServiceWillFailToPlay();
-    void playbackServiceWillPause();
-    void playbackServiceWillFailToPause();
-    void playbackServiceWillStop();
-    void playbackServiceWillFailToStop();
-    void playbackServiceWillSetPosition();
-    void playbackServiceWillFailToSetPosition();
-    void playbackServiceWillSetVideoWindow();
-    void playbackServiceWillFailToSetVideoWindow();
-    void playbackServiceWillHaveData();
-    void playbackServiceWillFailToHaveData();
-    void playbackServiceWillSetPlaybackRate();
-    void playbackServiceWillFailToSetPlaybackRate();
-    void playbackServiceWillGetPosition();
-    void playbackServiceWillFailToGetPosition();
-    void playbackServiceWillRenderFrame();
-    void playbackServiceWillFailToRenderFrame();
+    void mediaPipelineServiceWillCreateSession();
+    void mediaPipelineServiceWillFailToCreateSession();
+    void mediaPipelineServiceWillDestroySession();
+    void mediaPipelineServiceWillFailToDestroySession();
+    void mediaPipelineServiceWillLoadSession();
+    void mediaPipelineServiceWillFailToLoadSession();
+    void mediaPipelineServiceWillAttachSource();
+    void mediaPipelineServiceWillAttachAudioSourceWithAdditionaldata();
+    void mediaPipelineServiceWillFailToAttachSource();
+    void mediaPipelineServiceWillPlay();
+    void mediaPipelineServiceWillFailToPlay();
+    void mediaPipelineServiceWillPause();
+    void mediaPipelineServiceWillFailToPause();
+    void mediaPipelineServiceWillStop();
+    void mediaPipelineServiceWillFailToStop();
+    void mediaPipelineServiceWillSetPosition();
+    void mediaPipelineServiceWillFailToSetPosition();
+    void mediaPipelineServiceWillSetVideoWindow();
+    void mediaPipelineServiceWillFailToSetVideoWindow();
+    void mediaPipelineServiceWillHaveData();
+    void mediaPipelineServiceWillFailToHaveData();
+    void mediaPipelineServiceWillSetPlaybackRate();
+    void mediaPipelineServiceWillFailToSetPlaybackRate();
+    void mediaPipelineServiceWillGetPosition();
+    void mediaPipelineServiceWillFailToGetPosition();
+    void mediaPipelineServiceWillRenderFrame();
+    void mediaPipelineServiceWillFailToRenderFrame();
     void mediaClientWillSendPlaybackStateChangedEvent();
     void mediaClientWillSendNetworkStateChangedEvent();
     void mediaClientWillSendNeedMediaDataEvent(int sessionId);
@@ -101,7 +101,7 @@ private:
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ServerMock>> m_serverMock;
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ClosureMock>> m_closureMock;
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ControllerMock>> m_controllerMock;
-    StrictMock<firebolt::rialto::server::service::PlaybackServiceMock> m_playbackServiceMock;
+    StrictMock<firebolt::rialto::server::service::MediaPipelineServiceMock> m_mediaPipelineServiceMock;
     std::shared_ptr<firebolt::rialto::IMediaPipelineClient> m_mediaPipelineClient;
     std::shared_ptr<firebolt::rialto::server::ipc::IMediaPipelineModuleService> m_service;
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> m_source;

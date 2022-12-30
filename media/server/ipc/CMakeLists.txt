@@ -45,6 +45,8 @@ add_library (
         source/SessionManagementServer.cpp
         source/SetLogLevelsService.cpp
         source/RialtoCommonModule.cpp
+        source/WebAudioPlayerClient.cpp
+        source/WebAudioPlayerModuleService.cpp
 )
 
 set_property (TARGET

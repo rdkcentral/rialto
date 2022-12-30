@@ -27,13 +27,13 @@ TEST_F(MediaPipelineCapabilitiesModuleServiceTests, shouldConnectClient)
 
 TEST_F(MediaPipelineCapabilitiesModuleServiceTests, shouldGetSupportedMimeTypes)
 {
-    playbackServiceWillGetSupportedMimeTypes();
+    mediaPipelineServiceWillGetSupportedMimeTypes();
     sendGetSupportedMimeTypesRequestAndReceiveResponse();
 }
 
 TEST_F(MediaPipelineCapabilitiesModuleServiceTests, shouldIfMimeTypeIsSupported)
 {
-    playbackWillCheckIfMimeTypeIsSupported();
+    mediaPipelineWillCheckIfMimeTypeIsSupported();
     sendIsMimeTypeSupportedRequestAndReceiveResponse();
 }
 

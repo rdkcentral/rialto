@@ -23,8 +23,11 @@
 #include "IDecryptionService.h"
 #include "IMediaPipelineCapabilities.h"
 #include "IMediaPipelineServerInternal.h"
+#include "IWebAudioPlayer.h"
 #include "IPlaybackService.h"
 #include "ISharedMemoryBuffer.h"
+#include "MediaPipelineService.h"
+#include "WebAudioPlayerService.h"
 #include <atomic>
 #include <condition_variable>
 #include <functional>
@@ -43,6 +46,7 @@ class PlaybackService : public IPlaybackService
 public:
     PlaybackService(std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
                     std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
+                    std::shared_ptr<IWebAudioPlayerFactory> &&webAudioPlayerFactory,
                     std::unique_ptr<ISharedMemoryBufferFactory> &&shmBufferFactory,
                     IDecryptionService &decryptionService);
     ~PlaybackService() override;
@@ -54,38 +58,24 @@ public:
     bool switchToActive() override;
     void switchToInactive() override;
     void setMaxPlaybacks(int maxPlaybacks) override;
+    void setMaxWebAudioInstances(int maxWebAudio) override;
 
-    bool createSession(int sessionId, const std::shared_ptr<IMediaPipelineClient> &mediaPipelineClient,
-                       std::uint32_t maxWidth, std::uint32_t maxHeight) override;
-    bool destroySession(int sessionId) override;
-    bool load(int sessionId, MediaType type, const std::string &mimeType, const std::string &url) override;
-    bool attachSource(int sessionId, const std::unique_ptr<IMediaPipeline::MediaSource> &source) override;
-    bool removeSource(int sessionId, std::int32_t sourceId) override;
-    bool play(int sessionId) override;
-    bool pause(int sessionId) override;
-    bool stop(int sessionId) override;
-    bool setPlaybackRate(int sessionId, double rate) override;
-    bool setPosition(int sessionId, std::int64_t position) override;
-    bool getPosition(int sessionId, std::int64_t &position) override;
-    bool setVideoWindow(int sessionId, std::uint32_t x, std::uint32_t y, std::uint32_t width,
-                        std::uint32_t height) override;
-    bool haveData(int sessionId, MediaSourceStatus status, std::uint32_t numFrames,
-                  std::uint32_t needDataRequestId) override;
-    bool renderFrame(int sessionId) override;
-    bool getSharedMemory(int32_t &fd, uint32_t &size) override;
-    std::vector<std::string> getSupportedMimeTypes(MediaSourceType type) override;
-    bool isMimeTypeSupported(const std::string &mimeType) override;
+    bool isActive() const override;
+    bool getSharedMemory(int32_t &fd, uint32_t &size) const override;
+    int getMaxPlaybacks() const override;
+    int getMaxWebAudioInstances() const override;
+    std::shared_ptr<ISharedMemoryBuffer> getShmBuffer() const override;
+    IMediaPipelineService& getMediaPipelineService() const override;
+    IWebAudioPlayerService& getWebAudioPlayerService() const override;
 
 private:
-    std::shared_ptr<IMediaPipelineServerInternalFactory> m_mediaPipelineFactory;
-    std::shared_ptr<IMediaPipelineCapabilities> m_mediaPipelineCapabilities;
     std::unique_ptr<ISharedMemoryBufferFactory> m_shmBufferFactory;
-    IDecryptionService &m_decryptionService;
     std::atomic<bool> m_isActive;
     std::atomic<int> m_maxPlaybacks;
-    std::map<int, std::unique_ptr<IMediaPipelineServerInternal>> m_mediaPipelines;
+    std::atomic<int> m_maxWebAudioInstances;
     std::shared_ptr<ISharedMemoryBuffer> m_shmBuffer;
-    std::mutex m_mediaPipelineMutex;
+    std::unique_ptr<MediaPipelineService> m_mediaPipelineService;
+    std::unique_ptr<WebAudioPlayerService> m_webAudioPlayerService;
 };
 } // namespace firebolt::rialto::server::service
 

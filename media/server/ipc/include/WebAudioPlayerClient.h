@@ -17,24 +17,27 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_IPC_MEDIA_PIPELINE_MODULE_SERVICE_FACTORY_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_IPC_MEDIA_PIPELINE_MODULE_SERVICE_FACTORY_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_IPC_WEB_AUDIO_PLAYER_CLIENT_H_
+#define FIREBOLT_RIALTO_SERVER_IPC_WEB_AUDIO_PLAYER_CLIENT_H_
 
-#include "IMediaPipelineModuleService.h"
-#include <gmock/gmock.h>
+#include "IIpcServer.h"
+#include "IWebAudioPlayerClient.h"
 #include <memory>
 
 namespace firebolt::rialto::server::ipc
 {
-class MediaPipelineModuleServiceFactoryMock : public IMediaPipelineModuleServiceFactory
+class WebAudioPlayerClient : public IWebAudioPlayerClient
 {
 public:
-    MediaPipelineModuleServiceFactoryMock() = default;
-    virtual ~MediaPipelineModuleServiceFactoryMock() = default;
+    WebAudioPlayerClient(int webAudioPlayerHandle, const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient);
+    ~WebAudioPlayerClient() override;
 
-    MOCK_METHOD(std::shared_ptr<IMediaPipelineModuleService>, create, (service::IMediaPipelineService & mediaPipelineService),
-                (override, const));
+    void notifyState(WebAudioPlayerState state) override;
+
+private:
+    int m_webAudioPlayerHandle;
+    std::shared_ptr<::firebolt::rialto::ipc::IClient> m_ipcClient;
 };
 } // namespace firebolt::rialto::server::ipc
 
-#endif // FIREBOLT_RIALTO_SERVER_IPC_MEDIA_PIPELINE_MODULE_SERVICE_FACTORY_MOCK_H_
+#endif // FIREBOLT_RIALTO_SERVER_IPC_WEB_AUDIO_PLAYER_CLIENT_H_

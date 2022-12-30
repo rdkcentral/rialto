@@ -20,8 +20,9 @@
 #ifndef FIREBOLT_RIALTO_SERVER_SERVICE_I_PLAYBACK_SERVICE_H_
 #define FIREBOLT_RIALTO_SERVER_SERVICE_I_PLAYBACK_SERVICE_H_
 
-#include "IMediaPipeline.h"
-#include "IMediaPipelineClient.h"
+#include "IMediaPipelineService.h"
+#include "IWebAudioPlayerService.h"
+#include "ISharedMemoryBuffer.h"
 #include "MediaCommon.h"
 #include <cstdint>
 #include <memory>
@@ -44,27 +45,15 @@ public:
     virtual bool switchToActive() = 0;
     virtual void switchToInactive() = 0;
     virtual void setMaxPlaybacks(int maxPlaybacks) = 0;
+    virtual void setMaxWebAudioInstances(int maxWebAudio) = 0;
 
-    virtual bool createSession(int sessionId, const std::shared_ptr<IMediaPipelineClient> &mediaPipelineClient,
-                               std::uint32_t maxWidth, std::uint32_t maxHeight) = 0;
-    virtual bool destroySession(int sessionId) = 0;
-    virtual bool load(int sessionId, MediaType type, const std::string &mimeType, const std::string &url) = 0;
-    virtual bool attachSource(int sessionId, const std::unique_ptr<IMediaPipeline::MediaSource> &source) = 0;
-    virtual bool removeSource(int sessionId, std::int32_t sourceId) = 0;
-    virtual bool play(int sessionId) = 0;
-    virtual bool pause(int sessionId) = 0;
-    virtual bool stop(int sessionId) = 0;
-    virtual bool setPlaybackRate(int sessionId, double rate) = 0;
-    virtual bool setPosition(int sessionId, std::int64_t position) = 0;
-    virtual bool getPosition(int sessionId, std::int64_t &position) = 0;
-    virtual bool setVideoWindow(int sessionId, std::uint32_t x, std::uint32_t y, std::uint32_t width,
-                                std::uint32_t height) = 0;
-    virtual bool haveData(int sessionId, MediaSourceStatus status, std::uint32_t numFrames,
-                          std::uint32_t needDataRequestId) = 0;
-    virtual bool renderFrame(int sessionId) = 0;
-    virtual bool getSharedMemory(int32_t &fd, uint32_t &size) = 0;
-    virtual std::vector<std::string> getSupportedMimeTypes(MediaSourceType type) = 0;
-    virtual bool isMimeTypeSupported(const std::string &mimeType) = 0;
+    virtual bool isActive() const = 0;
+    virtual bool getSharedMemory(int32_t &fd, uint32_t &size) const = 0;
+    virtual int getMaxPlaybacks() const = 0;
+    virtual int getMaxWebAudioInstances() const = 0;
+    virtual std::shared_ptr<ISharedMemoryBuffer> getShmBuffer() const = 0;
+    virtual IMediaPipelineService& getMediaPipelineService() const = 0;
+    virtual IWebAudioPlayerService& getWebAudioPlayerService() const = 0;
 };
 } // namespace firebolt::rialto::server::service
 

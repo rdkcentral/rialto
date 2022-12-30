@@ -21,6 +21,7 @@
 #include "IMediaKeysCapabilitiesModuleService.h"
 #include "IMediaKeysModuleService.h"
 #include "IMediaPipelineModuleService.h"
+#include "IWebAudioPlayerModuleService.h"
 #include "IRialtoControlModuleService.h"
 #include "RialtoServerLogging.h"
 #include <IIpcServerFactory.h>
@@ -34,12 +35,14 @@ SessionManagementServer::SessionManagementServer(
     const std::shared_ptr<IMediaPipelineCapabilitiesModuleServiceFactory> &mediaPipelineCapabilitiesModuleFactory,
     const std::shared_ptr<IMediaKeysModuleServiceFactory> &mediaKeysModuleFactory,
     const std::shared_ptr<IMediaKeysCapabilitiesModuleServiceFactory> &mediaKeysCapabilitiesModuleFactory,
+    const std::shared_ptr<IWebAudioPlayerModuleServiceFactory> &webAudioPlayerModuleFactory,
     const std::shared_ptr<IRialtoControlModuleServiceFactory> &rialtoControlModuleFactory,
     service::IPlaybackService &playbackService, service::ICdmService &cdmService)
-    : m_isRunning{false}, m_mediaPipelineModule{mediaPipelineModuleFactory->create(playbackService)},
-      m_mediaPipelineCapabilitiesModule{mediaPipelineCapabilitiesModuleFactory->create(playbackService)},
+    : m_isRunning{false}, m_mediaPipelineModule{mediaPipelineModuleFactory->create(playbackService.getMediaPipelineService())},
+      m_mediaPipelineCapabilitiesModule{mediaPipelineCapabilitiesModuleFactory->create(playbackService.getMediaPipelineService())},
       m_mediaKeysModule{mediaKeysModuleFactory->create(cdmService)},
       m_mediaKeysCapabilitiesModule{mediaKeysCapabilitiesModuleFactory->create(cdmService)},
+      m_webAudioPlayerModule{webAudioPlayerModuleFactory->create(playbackService.getWebAudioPlayerService())},
       m_rialtoControlModule{rialtoControlModuleFactory->create(playbackService)}
 {
     m_ipcServer = ipcFactory->create();
@@ -120,6 +123,7 @@ void SessionManagementServer::onClientConnected(const std::shared_ptr<::firebolt
     m_mediaPipelineCapabilitiesModule->clientConnected(client);
     m_mediaKeysModule->clientConnected(client);
     m_mediaKeysCapabilitiesModule->clientConnected(client);
+    m_webAudioPlayerModule->clientConnected(client);
     m_setLogLevelsService.clientConnected(client);
 }
 
@@ -130,6 +134,7 @@ void SessionManagementServer::onClientDisconnected(const std::shared_ptr<::fireb
     m_mediaKeysModule->clientDisconnected(client);
     m_mediaPipelineCapabilitiesModule->clientDisconnected(client);
     m_mediaPipelineModule->clientDisconnected(client);
+    m_webAudioPlayerModule->clientDisconnected(client);
     m_rialtoControlModule->clientDisconnected(client);
 }
 } // namespace firebolt::rialto::server::ipc

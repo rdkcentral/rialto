@@ -24,6 +24,7 @@
 #include "MediaKeysModuleServiceFactoryMock.h"
 #include "MediaPipelineCapabilitiesModuleServiceFactoryMock.h"
 #include "MediaPipelineModuleServiceFactoryMock.h"
+#include "WebAudioPlayerModuleServiceFactoryMock.h"
 #include "RialtoControlModuleServiceFactoryMock.h"
 #include "SessionManagementServer.h"
 #include <fcntl.h>
@@ -35,6 +36,7 @@ using testing::_;
 using testing::Invoke;
 using testing::Return;
 using testing::SetArgReferee;
+using testing::ReturnRef;
 
 namespace
 {
@@ -63,6 +65,8 @@ SessionManagementServerTests::SessionManagementServerTests()
       m_mediaKeysModuleMock{std::make_shared<StrictMock<firebolt::rialto::server::ipc::MediaKeysModuleServiceMock>>()},
       m_mediaKeysCapabilitiesModuleMock{
           std::make_shared<StrictMock<firebolt::rialto::server::ipc::MediaKeysCapabilitiesModuleServiceMock>>()},
+      m_webAudioPlayerModuleMock{
+          std::make_shared<StrictMock<firebolt::rialto::server::ipc::WebAudioPlayerModuleServiceMock>>()},
       m_rialtoControlModuleMock{
           std::make_shared<StrictMock<firebolt::rialto::server::ipc::RialtoControlModuleServiceMock>>()}
 {
@@ -73,11 +77,14 @@ SessionManagementServerTests::SessionManagementServerTests()
         mediaPipelineModuleFactoryMock =
             std::make_shared<StrictMock<firebolt::rialto::server::ipc::MediaPipelineModuleServiceFactoryMock>>();
     EXPECT_CALL(*mediaPipelineModuleFactoryMock, create(_)).WillOnce(Return(m_mediaPipelineModuleMock));
+    EXPECT_CALL(m_playbackServiceMock, getMediaPipelineService()).WillOnce(ReturnRef(m_mediaPipelineServiceMock)).RetiresOnSaturation();
+
     std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::MediaPipelineCapabilitiesModuleServiceFactoryMock>>
         mediaPipelineCapabilitiesModuleFactoryMock =
             std::make_shared<StrictMock<firebolt::rialto::server::ipc::MediaPipelineCapabilitiesModuleServiceFactoryMock>>();
     EXPECT_CALL(*mediaPipelineCapabilitiesModuleFactoryMock, create(_))
         .WillOnce(Return(m_mediaPipelineCapabilitiesModuleMock));
+    EXPECT_CALL(m_playbackServiceMock, getMediaPipelineService()).WillOnce(ReturnRef(m_mediaPipelineServiceMock)).RetiresOnSaturation();
     std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::MediaKeysModuleServiceFactoryMock>> mediaKeysModuleFactoryMock =
         std::make_shared<StrictMock<firebolt::rialto::server::ipc::MediaKeysModuleServiceFactoryMock>>();
     EXPECT_CALL(*mediaKeysModuleFactoryMock, create(_)).WillOnce(Return(m_mediaKeysModuleMock));
@@ -85,6 +92,11 @@ SessionManagementServerTests::SessionManagementServerTests()
         mediaKeysCapabilitiesModuleFactoryMock =
             std::make_shared<StrictMock<firebolt::rialto::server::ipc::MediaKeysCapabilitiesModuleServiceFactoryMock>>();
     EXPECT_CALL(*mediaKeysCapabilitiesModuleFactoryMock, create(_)).WillOnce(Return(m_mediaKeysCapabilitiesModuleMock));
+    std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::WebAudioPlayerModuleServiceFactoryMock>>
+        webAudioPlayerModuleFactoryMock =
+            std::make_shared<StrictMock<firebolt::rialto::server::ipc::WebAudioPlayerModuleServiceFactoryMock>>();
+    EXPECT_CALL(*webAudioPlayerModuleFactoryMock, create(_)).WillOnce(Return(m_webAudioPlayerModuleMock));
+    EXPECT_CALL(m_playbackServiceMock, getWebAudioPlayerService()).WillOnce(ReturnRef(m_webAudioPlayerServiceMock));
     std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::RialtoControlModuleServiceFactoryMock>>
         rialtoControlModuleFactoryMock =
             std::make_shared<StrictMock<firebolt::rialto::server::ipc::RialtoControlModuleServiceFactoryMock>>();
@@ -95,6 +107,7 @@ SessionManagementServerTests::SessionManagementServerTests()
                                                                                  mediaPipelineCapabilitiesModuleFactoryMock,
                                                                                  mediaKeysModuleFactoryMock,
                                                                                  mediaKeysCapabilitiesModuleFactoryMock,
+                                                                                 webAudioPlayerModuleFactoryMock,
                                                                                  rialtoControlModuleFactoryMock,
                                                                                  m_playbackServiceMock, m_cdmServiceMock);
 }
@@ -135,6 +148,8 @@ void SessionManagementServerTests::clientWillConnect()
                 clientConnected(std::dynamic_pointer_cast<::firebolt::rialto::ipc::IClient>(m_clientMock)));
     EXPECT_CALL(*m_mediaKeysCapabilitiesModuleMock,
                 clientConnected(std::dynamic_pointer_cast<::firebolt::rialto::ipc::IClient>(m_clientMock)));
+    EXPECT_CALL(*m_webAudioPlayerModuleMock,
+                clientConnected(std::dynamic_pointer_cast<::firebolt::rialto::ipc::IClient>(m_clientMock)));
     EXPECT_CALL(*m_rialtoControlModuleMock,
                 clientConnected(std::dynamic_pointer_cast<::firebolt::rialto::ipc::IClient>(m_clientMock)));
 }
@@ -148,6 +163,8 @@ void SessionManagementServerTests::clientWillDisconnect()
     EXPECT_CALL(*m_mediaPipelineCapabilitiesModuleMock,
                 clientDisconnected(std::dynamic_pointer_cast<::firebolt::rialto::ipc::IClient>(m_clientMock)));
     EXPECT_CALL(*m_mediaPipelineModuleMock,
+                clientDisconnected(std::dynamic_pointer_cast<::firebolt::rialto::ipc::IClient>(m_clientMock)));
+    EXPECT_CALL(*m_webAudioPlayerModuleMock,
                 clientDisconnected(std::dynamic_pointer_cast<::firebolt::rialto::ipc::IClient>(m_clientMock)));
     EXPECT_CALL(*m_rialtoControlModuleMock,
                 clientDisconnected(std::dynamic_pointer_cast<::firebolt::rialto::ipc::IClient>(m_clientMock)));
