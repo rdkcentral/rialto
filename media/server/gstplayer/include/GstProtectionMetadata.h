@@ -31,23 +31,6 @@ G_BEGIN_DECLS
 
 struct GstRialtoProtectionData
 {
-    ~GstRialtoProtectionData()
-    {
-        //TODO:
-        // if (subsamples)
-        // {
-        //     m_gstWrapper->gstBufferUnref(subsamples);
-        // }
-        // if (iv)
-        // {
-        //     m_gstWrapper->gstBufferUnref(iv);
-        // }
-        // if (key)
-        // {
-        //     m_gstWrapper->gstBufferUnref(key);
-        // }
-    }
-
     int32_t keySessionId = 0;
     uint32_t subsampleCount = 0;
     uint32_t initWithLast15 = 0;
@@ -55,7 +38,6 @@ struct GstRialtoProtectionData
     GstBuffer *iv = nullptr;
     GstBuffer *subsamples = nullptr;
     firebolt::rialto::server::IDecryptionService *decryptionService = nullptr;
-    std::shared_ptr<firebolt::rialto::server::IGstWrapper> m_gstWrapper;
 };
 
 struct _GstRialtoProtectionMetadata

@@ -414,7 +414,22 @@ GstBuffer *GstPlayer::createBuffer(const IMediaPipeline::MediaSegment &mediaSegm
                                         subsamples,
                                         m_context.decryptionService};
 
-        m_protectionMetadataWrapper->addProtectionMetadata(gstBuffer, data);
+        if (!m_protectionMetadataWrapper->addProtectionMetadata(gstBuffer, data))
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to add protection metadata");
+            if (keyId)
+            {
+                m_gstWrapper->gstBufferUnref(keyId);
+            }
+            if (initVector)
+            {
+                m_gstWrapper->gstBufferUnref(initVector);
+            }
+            if (subsamples)
+            {
+                m_gstWrapper->gstBufferUnref(subsamples);
+            }
+        }
     }
 
     GST_BUFFER_TIMESTAMP(gstBuffer) = mediaSegment.getTimeStamp();

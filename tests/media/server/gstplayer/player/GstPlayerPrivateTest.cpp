@@ -344,6 +344,51 @@ TEST_F(GstPlayerPrivateTest, shouldCreateEncryptedGstBuffer)
     EXPECT_EQ(GST_BUFFER_DURATION(&buffer), kDuration);
 }
 
+TEST_F(GstPlayerPrivateTest, shouldFailToAddProtectionMetadata)
+{
+    GstBuffer buffer{}, initVectorBuffer{}, keyIdBuffer{}, subSamplesBuffer{};
+    guint8 subSamplesData{0};
+    auto subSamplesSize{sizeof(guint16) + sizeof(guint32)};
+    IMediaPipeline::MediaSegmentVideo mediaSegment{kSourceId, kTimeStamp, kDuration, kWidth, kHeight};
+    mediaSegment.setEncrypted(true);
+    mediaSegment.setMediaKeySessionId(kMediaKeySessionId);
+    mediaSegment.setKeyId(kKeyId);
+    mediaSegment.setInitVector(kInitVector);
+    mediaSegment.addSubSample(kNumClearBytes, kNumEncryptedBytes);
+    mediaSegment.setInitWithLast15(kInitWithLast15);
+    testing::InSequence s;
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferNewAllocate(nullptr, mediaSegment.getDataLength(), nullptr))
+        .WillOnce(Return(&buffer));
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferFill(&buffer, 0, mediaSegment.getData(), mediaSegment.getDataLength()));
+    EXPECT_CALL(m_decryptionServiceMock, isNetflixKeySystem(kMediaKeySessionId)).WillOnce(Return(false));
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferNewAllocate(nullptr, mediaSegment.getKeyId().size(), nullptr))
+        .WillOnce(Return(&keyIdBuffer));
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferFill(&keyIdBuffer, 0, _, mediaSegment.getKeyId().size()));
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferNewAllocate(nullptr, mediaSegment.getInitVector().size(), nullptr))
+        .WillOnce(Return(&initVectorBuffer));
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferFill(&initVectorBuffer, 0, _, mediaSegment.getInitVector().size()));
+    EXPECT_CALL(*m_glibWrapperMock, gMalloc(subSamplesSize)).WillOnce(Return(&subSamplesData));
+    EXPECT_CALL(*m_gstWrapperMock, gstByteWriterInitWithData(_, &subSamplesData, subSamplesSize, FALSE));
+    EXPECT_CALL(*m_gstWrapperMock, gstByteWriterPutUint16Be(_, kNumClearBytes));
+    EXPECT_CALL(*m_gstWrapperMock, gstByteWriterPutUint32Be(_, kNumEncryptedBytes));
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferNewWrapped(&subSamplesData, subSamplesSize)).WillOnce(Return(&subSamplesBuffer));
+    GstRialtoProtectionData data = {mediaSegment.getMediaKeySessionId(),
+                                    static_cast<uint32_t>(mediaSegment.getSubSamples().size()),
+                                    mediaSegment.getInitWithLast15(),
+                                    &keyIdBuffer,
+                                    &initVectorBuffer,
+                                    &subSamplesBuffer,
+                                    &m_decryptionServiceMock};
+    EXPECT_CALL(*m_gstProtectionMetadataWrapperMock, addProtectionMetadata(&buffer, data)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferUnref(&keyIdBuffer));
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferUnref(&initVectorBuffer));
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferUnref(&subSamplesBuffer));
+
+    m_sut->createBuffer(mediaSegment);
+    EXPECT_EQ(GST_BUFFER_TIMESTAMP(&buffer), kTimeStamp);
+    EXPECT_EQ(GST_BUFFER_DURATION(&buffer), kDuration);
+}
+
 TEST_F(GstPlayerPrivateTest, shouldCreateAndDecryptGstBufferForNetflix)
 {
     GstBuffer buffer{}, initVectorBuffer{}, keyIdBuffer{}, subSamplesBuffer{};

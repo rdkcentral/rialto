@@ -38,11 +38,24 @@ static gboolean rialto_eme_protection_metadata_init(GstMeta *meta, gpointer para
 
 static gboolean rialto_eme_protection_metadata_free(GstMeta *meta, GstBuffer *buffer)
 {
-    GstRialtoProtectionMetadata *emeta = reinterpret_cast<GstRialtoProtectionMetadata *>(meta);
+    GstRialtoProtectionMetadata *protectionMeta = reinterpret_cast<GstRialtoProtectionMetadata *>(meta);
 
-    if (emeta->data.decryptionService)
+    if (protectionMeta->data.decryptionService)
     {
-        emeta->data.decryptionService->decrementSessionIdUsageCounter(emeta->data.keySessionId);
+        protectionMeta->data.decryptionService->decrementSessionIdUsageCounter(protectionMeta->data.keySessionId);
+    }
+
+    if (protectionMeta->data.subsamples)
+    {
+        gst_buffer_unref(protectionMeta->data.subsamples);
+    }
+    if (protectionMeta->data.iv)
+    {
+        gst_buffer_unref(protectionMeta->data.iv);
+    }
+    if (protectionMeta->data.key)
+    {
+        gst_buffer_unref(protectionMeta->data.key);
     }
 
     return true;
