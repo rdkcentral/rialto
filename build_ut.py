@@ -241,7 +241,8 @@ def AddValgrind(suite, outputToFile, outputToXml):
 
 def generateCoverageReport(outputDir, resultsFile):
     lcovCmd = ["lcov", "--capture", "--directory", ".", "--output-file", "coverage.info", "--exclude", "/usr/*",
-               "--exclude", "*build/*", "--exclude", "*tests/*"]
+               "--exclude", "*build/*", "--exclude", "*tests/*", "--exclude", "*GstWrapper*", "--exclude",
+               "*GlibWrapper*"]
     if resultsFile:
         lcovStatus = runcmd(lcovCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
     else:
