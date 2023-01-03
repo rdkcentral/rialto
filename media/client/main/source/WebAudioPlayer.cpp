@@ -88,7 +88,7 @@ WebAudioPlayer::WebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, cons
         throw std::runtime_error("Web audio player ipc factory could not be null");
     }
 
-    m_webAudioPlayerIpc = webAudioPlayerIpcFactory->createWebAudioPlayerIpc(this);
+    m_webAudioPlayerIpc = webAudioPlayerIpcFactory->createWebAudioPlayerIpc(this, audioMimeType, priority, config);
     if (!m_webAudioPlayerIpc)
     {
         (void)m_sharedMemoryManager->unregisterClient(this);

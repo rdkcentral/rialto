@@ -57,7 +57,10 @@ public:
      *
      * @retval the new media player ipc instance or null on error.
      */
-    virtual std::unique_ptr<IWebAudioPlayerIpc> createWebAudioPlayerIpc(IWebAudioPlayerIpcClient *client) = 0;
+    virtual std::unique_ptr<IWebAudioPlayerIpc> createWebAudioPlayerIpc(IWebAudioPlayerIpcClient *client,
+                                                                        const std::string &audioMimeType,
+                                                                        const uint32_t priority,
+                                                                        const WebAudioConfig *config) = 0;
 };
 
 /**

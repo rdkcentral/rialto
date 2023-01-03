@@ -42,13 +42,17 @@ std::shared_ptr<IWebAudioPlayerIpcFactory> IWebAudioPlayerIpcFactory::getFactory
     return factory;
 }
 
-std::unique_ptr<IWebAudioPlayerIpc> WebAudioPlayerIpcFactory::createWebAudioPlayerIpc(IWebAudioPlayerIpcClient *client)
+std::unique_ptr<IWebAudioPlayerIpc> WebAudioPlayerIpcFactory::createWebAudioPlayerIpc(IWebAudioPlayerIpcClient *client,
+                                                                                      const std::string &audioMimeType,
+                                                                                      const uint32_t priority,
+                                                                                      const WebAudioConfig *config)
 {
     std::unique_ptr<IWebAudioPlayerIpc> webAudioPlayerIpc;
     try
     {
         webAudioPlayerIpc =
-            std::make_unique<WebAudioPlayerIpc>(client, IIpcClientFactory::createFactory(),
+            std::make_unique<WebAudioPlayerIpc>(client, audioMimeType, priority, config,
+                                                IIpcClientFactory::createFactory(),
                                                 firebolt::rialto::common::IEventThreadFactory::createFactory());
     }
     catch (const std::exception &e)
@@ -59,7 +63,8 @@ std::unique_ptr<IWebAudioPlayerIpc> WebAudioPlayerIpcFactory::createWebAudioPlay
     return webAudioPlayerIpc;
 }
 
-WebAudioPlayerIpc::WebAudioPlayerIpc(IWebAudioPlayerIpcClient *client,
+WebAudioPlayerIpc::WebAudioPlayerIpc(IWebAudioPlayerIpcClient *client, const std::string &audioMimeType,
+                                     const uint32_t priority, const WebAudioConfig *config,
                                      const std::shared_ptr<IIpcClientFactory> &ipcClientFactory,
                                      const std::shared_ptr<common::IEventThreadFactory> &eventThreadFactory)
     : IpcModule(ipcClientFactory), m_WebAudioPlayerIpcClient(client),
@@ -70,7 +75,7 @@ WebAudioPlayerIpc::WebAudioPlayerIpc(IWebAudioPlayerIpcClient *client,
         throw std::runtime_error("Failed attach to the ipc channel");
     }
 
-    if (!createWebAudioPlayer())
+    if (!createWebAudioPlayer(audioMimeType, priority, config))
     {
         throw std::runtime_error("Could not create the web audio playersession");
     }
@@ -425,7 +430,8 @@ bool WebAudioPlayerIpc::getVolume(double &volume)
     return true;
 }
 
-bool WebAudioPlayerIpc::createWebAudioPlayer()
+bool WebAudioPlayerIpc::createWebAudioPlayer(const std::string &audioMimeType, const uint32_t priority,
+                                             const WebAudioConfig *config)
 {
     if (!reattachChannelIfRequired())
     {
@@ -434,6 +440,19 @@ bool WebAudioPlayerIpc::createWebAudioPlayer()
     }
 
     firebolt::rialto::CreateWebAudioPlayerRequest request;
+    request.set_audio_mime_type(audioMimeType);
+    request.set_priority(priority);
+    if(config)
+    {   
+        ::firebolt::rialto::CreateWebAudioPlayerRequest_WebAudioPcmConfig pcm_config;
+        pcm_config.set_rate(config->pcm.rate);
+        pcm_config.set_channels(config->pcm.channels);
+        pcm_config.set_sample_size(config->pcm.sampleSize);
+        pcm_config.set_is_big_endian(config->pcm.isBigEndian);
+        pcm_config.set_is_signed(config->pcm.isSigned);
+        pcm_config.set_is_float(config->pcm.isFloat);
+        request.mutable_config()->mutable_pcm()->CopyFrom(pcm_config);
+    }
 
     firebolt::rialto::CreateWebAudioPlayerResponse response;
     auto ipcController = m_ipc->createRpcController();

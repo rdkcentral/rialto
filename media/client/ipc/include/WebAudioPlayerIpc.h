@@ -37,7 +37,9 @@ namespace firebolt::rialto::client
 class WebAudioPlayerIpcFactory : public IWebAudioPlayerIpcFactory
 {
 public:
-    std::unique_ptr<IWebAudioPlayerIpc> createWebAudioPlayerIpc(IWebAudioPlayerIpcClient *client) override;
+    std::unique_ptr<IWebAudioPlayerIpc> createWebAudioPlayerIpc(IWebAudioPlayerIpcClient *client,
+                                                                const std::string &audioMimeType, const uint32_t priority,
+                                                                const WebAudioConfig *config) override;
 };
 
 /**
@@ -54,7 +56,8 @@ public:
      * @param[in] ipcClientFactory      : The ipc factory for getting the singleton Ipc client object.
      * @param[in] eventThreadFactory    : The event thread factory
      */
-    WebAudioPlayerIpc(IWebAudioPlayerIpcClient *client, const std::shared_ptr<IIpcClientFactory> &ipcClientFactory,
+    WebAudioPlayerIpc(IWebAudioPlayerIpcClient *client, const std::string &audioMimeType, const uint32_t priority,
+                      const WebAudioConfig *config, const std::shared_ptr<IIpcClientFactory> &ipcClientFactory,
                       const std::shared_ptr<common::IEventThreadFactory> &eventThreadFactory);
 
     /**
@@ -81,7 +84,7 @@ public:
     bool getVolume(double &volume) override;
 
 private:
-    bool createWebAudioPlayer();
+    bool createWebAudioPlayer(const std::string &audioMimeType, const uint32_t priority, const WebAudioConfig *config);
 
     void destroyWebAudioPlayer();
 
