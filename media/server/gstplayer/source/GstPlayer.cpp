@@ -97,7 +97,7 @@ std::unique_ptr<IGstPlayer> GstPlayerFactory::createGstPlayer(IGstPlayerClient *
                                                 std::make_unique<PlayerTaskFactory>(client, gstWrapper, glibWrapper),
                                                 std::make_unique<WorkerThreadFactory>(),
                                                 std::make_unique<GstDispatcherThreadFactory>(),
-                                                IGstProtectionMetadataFactory::createFactory());
+                                                IGstProtectionMetadataWrapperFactory::createFactory());
     }
     catch (const std::exception &e)
     {
@@ -140,7 +140,7 @@ GstPlayer::GstPlayer(IGstPlayerClient *client, IDecryptionService &decryptionSer
                      std::shared_ptr<common::ITimerFactory> timerFactory, std::unique_ptr<IPlayerTaskFactory> taskFactory,
                      std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
                      std::unique_ptr<IGstDispatcherThreadFactory> gstDispatcherThreadFactory,
-                     std::shared_ptr<IGstProtectionMetadataFactory> gstProtectionMetadataFactory)
+                     std::shared_ptr<IGstProtectionMetadataWrapperFactory> gstProtectionMetadataFactory)
     : m_gstPlayerClient(client), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_timerFactory{timerFactory},
       m_taskFactory{std::move(taskFactory)}
 {

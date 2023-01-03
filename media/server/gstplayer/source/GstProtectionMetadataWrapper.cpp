@@ -18,18 +18,18 @@
  */
 
 #include "GstProtectionMetadataWrapper.h"
-#include "GstProtectionMetadataFactory.h"
+#include "GstProtectionMetadataWrapperFactory.h"
 #include "RialtoServerLogging.h"
 
 namespace firebolt::rialto::server
 {
-std::shared_ptr<IGstProtectionMetadataFactory> IGstProtectionMetadataFactory::createFactory()
+std::shared_ptr<IGstProtectionMetadataWrapperFactory> IGstProtectionMetadataWrapperFactory::createFactory()
 {
-    std::shared_ptr<IGstProtectionMetadataFactory> factory;
+    std::shared_ptr<IGstProtectionMetadataWrapperFactory> factory;
 
     try
     {
-        factory = std::make_shared<GstProtectionMetadataFactory>();
+        factory = std::make_shared<GstProtectionMetadataWrapperFactory>();
     }
     catch (const std::exception &e)
     {
@@ -40,7 +40,7 @@ std::shared_ptr<IGstProtectionMetadataFactory> IGstProtectionMetadataFactory::cr
 }
 
 std::unique_ptr<IGstProtectionMetadataWrapper>
-GstProtectionMetadataFactory::createProtectionMetadataWrapper(const std::shared_ptr<IGstWrapper> &gstWrapper) const
+GstProtectionMetadataWrapperFactory::createProtectionMetadataWrapper(const std::shared_ptr<IGstWrapper> &gstWrapper) const
 {
     return std::make_unique<GstProtectionMetadataWrapper>(gstWrapper);
 }

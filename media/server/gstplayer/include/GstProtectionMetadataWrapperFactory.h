@@ -17,21 +17,21 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_GST_PROTECTION_METADATA_FACTORY_H_
-#define FIREBOLT_RIALTO_SERVER_GST_PROTECTION_METADATA_FACTORY_H_
+#ifndef FIREBOLT_RIALTO_SERVER_GST_PROTECTION_METADATA_WRAPPER_FACTORY_H_
+#define FIREBOLT_RIALTO_SERVER_GST_PROTECTION_METADATA_WRAPPER_FACTORY_H_
 
-#include "IGstProtectionMetadataFactory.h"
+#include "IGstProtectionMetadataWrapperFactory.h"
 
 namespace firebolt::rialto::server
 {
 /**
  * @brief IGstDecryptorElement factory class, for the creation of a GstDecryptorElement.
  */
-class GstProtectionMetadataFactory : public IGstProtectionMetadataFactory
+class GstProtectionMetadataWrapperFactory : public IGstProtectionMetadataWrapperFactory
 {
 public:
-    GstProtectionMetadataFactory() = default;
-    virtual ~GstProtectionMetadataFactory() override = default;
+    GstProtectionMetadataWrapperFactory() = default;
+    virtual ~GstProtectionMetadataWrapperFactory() override = default;
 
     std::unique_ptr<IGstProtectionMetadataWrapper>
     createProtectionMetadataWrapper(const std::shared_ptr<IGstWrapper> &gstWrapper) const override;
@@ -39,4 +39,4 @@ public:
 
 }; // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_I_GST_PROTECTION_METADATA_FACTORY_H_
+#endif // FIREBOLT_RIALTO_SERVER_GST_PROTECTION_METADATA_WRAPPER_FACTORY_H_

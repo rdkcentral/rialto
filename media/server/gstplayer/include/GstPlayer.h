@@ -24,7 +24,7 @@
 #include "IGstDispatcherThread.h"
 #include "IGstPlayer.h"
 #include "IGstPlayerPrivate.h"
-#include "IGstProtectionMetadataFactory.h"
+#include "IGstProtectionMetadataWrapperFactory.h"
 #include "IGstSrc.h"
 #include "IGstWrapper.h"
 #include "ITimer.h"
@@ -83,7 +83,7 @@ public:
               std::shared_ptr<common::ITimerFactory> timerFactory, std::unique_ptr<IPlayerTaskFactory> taskFactory,
               std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
               std::unique_ptr<IGstDispatcherThreadFactory> gstDispatcherThreadFactory,
-              std::shared_ptr<IGstProtectionMetadataFactory> gstProtectionMetadataFactory);
+              std::shared_ptr<IGstProtectionMetadataWrapperFactory> gstProtectionMetadataFactory);
 
     /**
      * @brief Virtual destructor.

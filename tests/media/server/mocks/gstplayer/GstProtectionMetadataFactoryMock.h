@@ -20,12 +20,12 @@
 #ifndef FIREBOLT_RIALTO_SERVER_GST_PROTECTION_METADATA_FACTORY_MOCK_H_
 #define FIREBOLT_RIALTO_SERVER_GST_PROTECTION_METADATA_FACTORY_MOCK_H_
 
-#include "IGstProtectionMetadataFactory.h"
+#include "IGstProtectionMetadataWrapperFactory.h"
 #include <gmock/gmock.h>
 
 namespace firebolt::rialto::server
 {
-class GstProtectionMetadataFactoryMock : public IGstProtectionMetadataFactory
+class GstProtectionMetadataWrapperFactoryMock : public IGstProtectionMetadataWrapperFactory
 {
 public:
     MOCK_METHOD(std::unique_ptr<IGstProtectionMetadataWrapper>, createProtectionMetadataWrapper,

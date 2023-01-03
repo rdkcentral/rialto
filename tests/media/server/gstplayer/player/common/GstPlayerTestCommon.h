@@ -26,7 +26,7 @@
 #include "GstDispatcherThreadMock.h"
 #include "GstPlayer.h"
 #include "GstPlayerClientMock.h"
-#include "GstProtectionMetadataFactoryMock.h"
+#include "GstProtectionMetadataWrapperFactoryMock.h"
 #include "GstProtectionMetadataWrapperMock.h"
 #include "GstSrcFactoryMock.h"
 #include "GstSrcMock.h"
@@ -73,8 +73,8 @@ public:
     StrictMock<GstDispatcherThreadMock> &m_gstDispatcherThreadMock{
         dynamic_cast<StrictMock<GstDispatcherThreadMock> &>(*gstDispatcherThread)};
     StrictMock<DecryptionServiceMock> m_decryptionServiceMock;
-    std::shared_ptr<StrictMock<GstProtectionMetadataFactoryMock>> m_gstProtectionMetadataFactoryMock{
-        std::make_shared<StrictMock<GstProtectionMetadataFactoryMock>>()};
+    std::shared_ptr<StrictMock<GstProtectionMetadataWrapperFactoryMock>> m_gstProtectionMetadataFactoryMock{
+        std::make_shared<StrictMock<GstProtectionMetadataWrapperFactoryMock>>()};
     std::unique_ptr<StrictMock<GstProtectionMetadataWrapperMock>> m_gstProtectionMetadataWrapper{
         std::make_unique<StrictMock<GstProtectionMetadataWrapperMock>>()};
     StrictMock<GstProtectionMetadataWrapperMock> *m_gstProtectionMetadataWrapperMock{m_gstProtectionMetadataWrapper.get()};

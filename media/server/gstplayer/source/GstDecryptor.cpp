@@ -20,7 +20,7 @@
 #include "GstDecryptorElementFactory.h"
 #include "GstDecryptorPrivate.h"
 #include "RialtoServerLogging.h"
-#include "GstProtectionMetadataFactory.h"
+#include "GstProtectionMetadataWrapperFactory.h"
 
 #include <gst/base/gstbasetransform.h>
 #include <gst/gst.h>
@@ -166,8 +166,8 @@ GstDecryptorElementFactory::createDecryptorElement(const gchar *name,
     GstRialtoDecryptor *decrypter = GST_RIALTO_DECRYPTOR(g_object_new(GST_RIALTO_DECRYPTOR_TYPE, name));
     GstRialtoDecryptorPrivate *priv =
         reinterpret_cast<GstRialtoDecryptorPrivate *>(gst_rialto_decryptor_get_instance_private(decrypter));
-    std::shared_ptr<firebolt::rialto::server::IGstProtectionMetadataFactory> metadataFactory =
-        firebolt::rialto::server::IGstProtectionMetadataFactory::createFactory();
+    std::shared_ptr<firebolt::rialto::server::IGstProtectionMetadataWrapperFactory> metadataFactory =
+        firebolt::rialto::server::IGstProtectionMetadataWrapperFactory::createFactory();
     if (priv)
     {
         priv->setDecryptionService(decryptionService);

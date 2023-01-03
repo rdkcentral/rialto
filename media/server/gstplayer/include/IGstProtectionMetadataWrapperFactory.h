@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_I_GST_PROTECTION_METADATA_FACTORY_H_
-#define FIREBOLT_RIALTO_SERVER_I_GST_PROTECTION_METADATA_FACTORY_H_
+#ifndef FIREBOLT_RIALTO_SERVER_I_GST_PROTECTION_METADATA_WRAPPER_FACTORY_H_
+#define FIREBOLT_RIALTO_SERVER_I_GST_PROTECTION_METADATA_WRAPPER_FACTORY_H_
 
 #include "IDecryptionService.h"
 #include <gst/gst.h>
@@ -29,23 +29,23 @@
 namespace firebolt::rialto::server
 {
 /**
- * @brief IGstDecryptorElement factory class, for the creation of a GstDecryptorElement.
+ * @brief IGstProtectionMetadataWrapperFactory factory class, for the creation of a GstProtectionMetadataWrapper.
  */
-class IGstProtectionMetadataFactory
+class IGstProtectionMetadataWrapperFactory
 {
 public:
-    IGstProtectionMetadataFactory() = default;
-    virtual ~IGstProtectionMetadataFactory() = default;
+    IGstProtectionMetadataWrapperFactory() = default;
+    virtual ~IGstProtectionMetadataWrapperFactory() = default;
 
     /**
-     * @brief Creates a IGstProtectionMetadataFactory instance.
+     * @brief Creates a IGstProtectionMetadataWrapperFactory instance.
      *
      * @retval the factory instance or null on error.
      */
-    static std::shared_ptr<IGstProtectionMetadataFactory> createFactory();
+    static std::shared_ptr<IGstProtectionMetadataWrapperFactory> createFactory();
 
     /**
-     * @brief Creates a IGstProtectionMetadataFactory.
+     * @brief Creates a IGstProtectionMetadataWrapperFactory.
      *
      * @retval a decryptor element instance or null on error.
      */
@@ -54,4 +54,4 @@ public:
 
 }; // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_I_GST_PROTECTION_METADATA_FACTORY_H_
+#endif // FIREBOLT_RIALTO_SERVER_I_GST_PROTECTION_METADATA_WRAPPER_FACTORY_H_
