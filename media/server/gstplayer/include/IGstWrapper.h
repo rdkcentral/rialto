@@ -878,17 +878,17 @@ public:
      *
      * @retval the metadata for the api in info, nullptr if operation fails
      */
-    virtual GstMeta* gstBufferAddMeta(GstBuffer *buffer, const GstMetaInfo *info, gpointer params) const = 0;
+    virtual GstMeta *gstBufferAddMeta(GstBuffer *buffer, const GstMetaInfo *info, gpointer params) const = 0;
 
     /**
-     * @brief Gets the metadata for api on buffer. 
+     * @brief Gets the metadata for api on buffer.
      *
      * @param[in] buffer : the gst buffer containing meta
      * @param[in] api : the GType of an API
      *
      * @retval the metadata for api on buffer, nullptr if operation fails
      */
-    virtual GstMeta* gstBufferGetMeta(GstBuffer *buffer, GType api) const = 0;
+    virtual GstMeta *gstBufferGetMeta(GstBuffer *buffer, GType api) const = 0;
 
     /**
      * @brief Removes the metadata from the buffer.

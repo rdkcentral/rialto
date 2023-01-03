@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_GST_DECRYPTOR_ELEMENT_FACTORY_H_
 
 #include "IGstDecryptorElementFactory.h"
+#include <memory>
 
 namespace firebolt::rialto::server
 {

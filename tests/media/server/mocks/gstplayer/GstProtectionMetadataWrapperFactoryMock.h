@@ -17,11 +17,12 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_GST_PROTECTION_METADATA_FACTORY_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_GST_PROTECTION_METADATA_FACTORY_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_GST_PROTECTION_METADATA_WRAPPER_FACTORY_MOCK_H_
+#define FIREBOLT_RIALTO_SERVER_GST_PROTECTION_METADATA_WRAPPER_FACTORY_MOCK_H_
 
 #include "IGstProtectionMetadataWrapperFactory.h"
 #include <gmock/gmock.h>
+#include <memory>
 
 namespace firebolt::rialto::server
 {
@@ -33,4 +34,4 @@ public:
 };
 } // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_GST_PROTECTION_METADATA_FACTORY_MOCK_H_
+#endif // FIREBOLT_RIALTO_SERVER_GST_PROTECTION_METADATA_WRAPPER_FACTORY_MOCK_H_

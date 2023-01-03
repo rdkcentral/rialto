@@ -67,11 +67,11 @@ void GstProtectionMetadataWrapper::removeProtectionMetadata(GstBuffer *gstBuffer
     GstMeta *meta = m_gstWrapper->gstBufferGetMeta(gstBuffer, GST_RIALTO_PROTECTION_METADATA_GET_TYPE);
     if (meta)
     {
-        if(!m_gstWrapper->gstBufferRemoveMeta(gstBuffer, meta))
+        if (!m_gstWrapper->gstBufferRemoveMeta(gstBuffer, meta))
         {
             RIALTO_SERVER_LOG_ERROR("Failed to remove metadata");
         }
     }
 }
 
-}
+} // namespace firebolt::rialto::server

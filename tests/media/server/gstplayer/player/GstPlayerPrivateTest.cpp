@@ -67,8 +67,7 @@ protected:
         m_sut = std::make_unique<GstPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, MediaType::MSE, m_videoReq,
                                             m_gstWrapperMock, m_glibWrapperMock, m_gstSrcFactoryMock,
                                             m_timerFactoryMock, std::move(taskFactory), std::move(workerThreadFactory),
-                                            std::move(gstDispatcherThreadFactory),
-                                            m_gstProtectionMetadataFactoryMock);
+                                            std::move(gstDispatcherThreadFactory), m_gstProtectionMetadataFactoryMock);
     }
 
     ~GstPlayerPrivateTest() override
@@ -92,40 +91,6 @@ protected:
                 }));
 
         m_sut->scheduleNeedMediaData(&appSrc);
-    }
-
-    void expectAddProtectionMeta(GstBuffer *buffer, bool isEncrypted, GstBuffer *keyId, uint32_t ivSize, GstBuffer *iv,
-                                 uint32_t subsampleSize, GstBuffer *subsamples, uint32_t initWithLast15,
-                                 uint32_t keySessionId)
-    {
-        GstStructure structure{};
-
-        EXPECT_CALL(*m_gstWrapperMock, gstStructureNewBufferStub(CharStrMatcher("decryption_metadata"),
-                                                                 CharStrMatcher("kid"), GST_TYPE_BUFFER, keyId))
-            .WillOnce(Return(&structure));
-        EXPECT_CALL(*m_gstWrapperMock, gstStructureNewUintStub(CharStrMatcher("decryption_metadata"),
-                                                               CharStrMatcher("iv_size"), G_TYPE_UINT, ivSize))
-            .WillOnce(Return(&structure));
-        EXPECT_CALL(*m_gstWrapperMock, gstStructureNewBufferStub(CharStrMatcher("decryption_metadata"),
-                                                                 CharStrMatcher("iv"), GST_TYPE_BUFFER, iv))
-            .WillOnce(Return(&structure));
-        EXPECT_CALL(*m_gstWrapperMock,
-                    gstStructureNewUintStub(CharStrMatcher("decryption_metadata"), CharStrMatcher("subsample_count"),
-                                            G_TYPE_UINT, subsampleSize))
-            .WillOnce(Return(&structure));
-        EXPECT_CALL(*m_gstWrapperMock,
-                    gstStructureNewBufferStub(CharStrMatcher("decryption_metadata"), CharStrMatcher("subsamples"),
-                                              GST_TYPE_BUFFER, subsamples))
-            .WillOnce(Return(&structure));
-        EXPECT_CALL(*m_gstWrapperMock,
-                    gstStructureNewUintStub(CharStrMatcher("decryption_metadata"), CharStrMatcher("init_with_last_15"),
-                                            G_TYPE_UINT, initWithLast15))
-            .WillOnce(Return(&structure));
-        EXPECT_CALL(*m_gstWrapperMock,
-                    gstStructureNewUintStub(CharStrMatcher("decryption_metadata"), CharStrMatcher("key_session_id"),
-                                            G_TYPE_UINT, keySessionId))
-            .WillOnce(Return(&structure));
-        EXPECT_CALL(*m_gstWrapperMock, gstBufferAddProtectionMeta(buffer, &structure));
     }
 };
 

@@ -36,7 +36,8 @@ protected:
     RialtoProtectionMetadataTest()
         : m_gstWrapperMock(std::make_shared<StrictMock<GstWrapperMock>>()), m_sut(m_gstWrapperMock)
 
-    {}
+    {
+    }
 
     std::shared_ptr<StrictMock<GstWrapperMock>> m_gstWrapperMock;
     GstProtectionMetadataWrapper m_sut;
@@ -59,7 +60,7 @@ TEST_F(RialtoProtectionMetadataTest, getProtectionMetadataDataSuccess)
     GstRialtoProtectionMetadata meta = {};
 
     EXPECT_CALL(*m_gstWrapperMock, gstBufferGetMeta(&buffer, GST_RIALTO_PROTECTION_METADATA_GET_TYPE))
-        .WillOnce(Return(reinterpret_cast<GstMeta*>(&meta)));
+        .WillOnce(Return(reinterpret_cast<GstMeta *>(&meta)));
 
     EXPECT_EQ(&meta.data, m_sut.getProtectionMetadataData(&buffer));
 }
@@ -83,7 +84,7 @@ TEST_F(RialtoProtectionMetadataTest, removeProtectionMetadataSuccess)
         .WillOnce(Return(&meta));
     EXPECT_CALL(*m_gstWrapperMock, gstBufferRemoveMeta(&buffer, &meta)).WillOnce(Return(true));
 
-   m_sut.removeProtectionMetadata(&buffer);
+    m_sut.removeProtectionMetadata(&buffer);
 }
 
 TEST_F(RialtoProtectionMetadataTest, removeProtectionMetadataFail)
@@ -95,7 +96,7 @@ TEST_F(RialtoProtectionMetadataTest, removeProtectionMetadataFail)
         .WillOnce(Return(&meta));
     EXPECT_CALL(*m_gstWrapperMock, gstBufferRemoveMeta(&buffer, &meta)).WillOnce(Return(false));
 
-   m_sut.removeProtectionMetadata(&buffer);
+    m_sut.removeProtectionMetadata(&buffer);
 }
 
 TEST_F(RialtoProtectionMetadataTest, removeProtectionMetadataNoMeta)
@@ -105,5 +106,5 @@ TEST_F(RialtoProtectionMetadataTest, removeProtectionMetadataNoMeta)
     EXPECT_CALL(*m_gstWrapperMock, gstBufferGetMeta(&buffer, GST_RIALTO_PROTECTION_METADATA_GET_TYPE))
         .WillOnce(Return(nullptr));
 
-   m_sut.removeProtectionMetadata(&buffer);
+    m_sut.removeProtectionMetadata(&buffer);
 }

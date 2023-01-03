@@ -17,12 +17,12 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_GST_PROTECTION_METADATA_H_
+#ifndef FIREBOLT_RIALTO_SERVER_GST_PROTECTION_METADATA_H_ // NOLINT(build/header_guard)
 #define FIREBOLT_RIALTO_SERVER_GST_PROTECTION_METADATA_H_
 
-#include <gst/gst.h>
 #include "IDecryptionService.h"
 #include "IGstWrapper.h"
+#include <gst/gst.h>
 
 G_BEGIN_DECLS
 
@@ -48,8 +48,8 @@ struct _GstRialtoProtectionMetadata
 
 typedef struct _GstRialtoProtectionMetadata GstRialtoProtectionMetadata;
 
-GType rialto_eme_protection_metadata_get_type();
-const GstMetaInfo *rialto_mse_protection_metadata_get_info();
+GType rialto_eme_protection_metadata_get_type();              // NOLINT(build/function_format)
+const GstMetaInfo *rialto_mse_protection_metadata_get_info(); // NOLINT(build/function_format)
 G_END_DECLS
 
 #endif // FIREBOLT_RIALTO_SERVER_GST_PROTECTION_METADATA_H_

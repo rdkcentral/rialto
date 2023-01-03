@@ -18,11 +18,12 @@
  */
 
 #include "GstProtectionMetadata.h"
+#include "RialtoServerLogging.h"
 #include <gst/gstconfig.h>
 #include <stdio.h>
-#include "RialtoServerLogging.h"
 
-static gboolean rialto_eme_protection_metadata_init(GstMeta *meta, gpointer params, GstBuffer *buffer)
+static gboolean rialto_eme_protection_metadata_init(GstMeta *meta, gpointer params,
+                                                    GstBuffer *buffer) // NOLINT(build/function_format)
 {
     GstRialtoProtectionMetadata *emeta = reinterpret_cast<GstRialtoProtectionMetadata *>(meta);
     GstRialtoProtectionData *data = static_cast<GstRialtoProtectionData *>(params);
@@ -36,7 +37,7 @@ static gboolean rialto_eme_protection_metadata_init(GstMeta *meta, gpointer para
     return true;
 }
 
-static gboolean rialto_eme_protection_metadata_free(GstMeta *meta, GstBuffer *buffer)
+static gboolean rialto_eme_protection_metadata_free(GstMeta *meta, GstBuffer *buffer) // NOLINT(build/function_format)
 {
     GstRialtoProtectionMetadata *protectionMeta = reinterpret_cast<GstRialtoProtectionMetadata *>(meta);
 
@@ -61,7 +62,7 @@ static gboolean rialto_eme_protection_metadata_free(GstMeta *meta, GstBuffer *bu
     return true;
 }
 
-GST_EXPORT GType rialto_eme_protection_metadata_get_type()
+GST_EXPORT GType rialto_eme_protection_metadata_get_type() // NOLINT(build/function_format)
 {
     static volatile GType g_type;
     static const gchar *api_tags[] = {"rialto", "protection", NULL};
@@ -74,15 +75,16 @@ GST_EXPORT GType rialto_eme_protection_metadata_get_type()
     return g_type;
 }
 
-const GstMetaInfo *rialto_mse_protection_metadata_get_info()
+const GstMetaInfo *rialto_mse_protection_metadata_get_info() // NOLINT(build/function_format)
 {
     static const GstMetaInfo *metainfo = NULL;
     if (g_once_init_enter(&metainfo))
     {
-        const GstMetaInfo *gstMeta = gst_meta_register(GST_RIALTO_PROTECTION_METADATA_GET_TYPE,
-                                                       "GstRialtoProtectionMetadata", sizeof(GstRialtoProtectionMetadata),
-                                                       (GstMetaInitFunction)rialto_eme_protection_metadata_init,
-                                                       (GstMetaFreeFunction)rialto_eme_protection_metadata_free, (GstMetaTransformFunction)NULL);
+        const GstMetaInfo *gstMeta =
+            gst_meta_register(GST_RIALTO_PROTECTION_METADATA_GET_TYPE, "GstRialtoProtectionMetadata",
+                              sizeof(GstRialtoProtectionMetadata),
+                              (GstMetaInitFunction)rialto_eme_protection_metadata_init,
+                              (GstMetaFreeFunction)rialto_eme_protection_metadata_free, (GstMetaTransformFunction)NULL);
 
         g_once_init_leave(&metainfo, gstMeta);
     }

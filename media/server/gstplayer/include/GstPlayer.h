@@ -213,6 +213,9 @@ private:
      */
     std::unique_ptr<IPlayerTaskFactory> m_taskFactory;
 
+    /**
+     * @brief The protection metadata wrapper
+     */
     std::unique_ptr<IGstProtectionMetadataWrapper> m_protectionMetadataWrapper;
 };
 } // namespace firebolt::rialto::server

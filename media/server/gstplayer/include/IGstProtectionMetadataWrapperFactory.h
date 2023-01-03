@@ -21,10 +21,10 @@
 #define FIREBOLT_RIALTO_SERVER_I_GST_PROTECTION_METADATA_WRAPPER_FACTORY_H_
 
 #include "IDecryptionService.h"
-#include <gst/gst.h>
-#include <memory>
 #include "IGstProtectionMetadataWrapper.h"
 #include "IGstWrapper.h"
+#include <gst/gst.h>
+#include <memory>
 
 namespace firebolt::rialto::server
 {
@@ -49,7 +49,8 @@ public:
      *
      * @retval a decryptor element instance or null on error.
      */
-    virtual std::unique_ptr<IGstProtectionMetadataWrapper> createProtectionMetadataWrapper(const std::shared_ptr<IGstWrapper> &gstWrapper) const = 0;
+    virtual std::unique_ptr<IGstProtectionMetadataWrapper>
+    createProtectionMetadataWrapper(const std::shared_ptr<IGstWrapper> &gstWrapper) const = 0;
 };
 
 }; // namespace firebolt::rialto::server

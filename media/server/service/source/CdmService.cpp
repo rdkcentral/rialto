@@ -75,7 +75,9 @@ bool CdmService::createMediaKeys(int mediaKeysHandle, std::string keySystem)
             RIALTO_SERVER_LOG_ERROR("Media keys handle: %d already exists", mediaKeysHandle);
             return false;
         }
-        m_mediaKeys.emplace(std::make_pair(mediaKeysHandle, MediaKeysUsage{m_mediaKeysFactory->createMediaKeysServerInternal(keySystem), 0, false}));
+        m_mediaKeys.emplace(
+            std::make_pair(mediaKeysHandle,
+                           MediaKeysUsage{m_mediaKeysFactory->createMediaKeysServerInternal(keySystem), 0, false}));
         if (!m_mediaKeys.at(mediaKeysHandle).mediaKeysServer)
         {
             RIALTO_SERVER_LOG_ERROR("Could not create MediaKeys for media keys handle: %d", mediaKeysHandle);
@@ -121,7 +123,8 @@ MediaKeyErrorStatus CdmService::createKeySession(int mediaKeysHandle, KeySession
         return MediaKeyErrorStatus::FAIL;
     }
 
-    MediaKeyErrorStatus status = mediaKeysIter->second.mediaKeysServer->createKeySession(sessionType, client, isLDL, keySessionId);
+    MediaKeyErrorStatus status =
+        mediaKeysIter->second.mediaKeysServer->createKeySession(sessionType, client, isLDL, keySessionId);
     if (MediaKeyErrorStatus::OK == status)
     {
         if (m_mediaKeysClients.find(keySessionId) != m_mediaKeysClients.end())
@@ -201,7 +204,6 @@ MediaKeyErrorStatus CdmService::closeKeySession(int mediaKeysHandle, int32_t key
     mediaKeysIter->second.shouldBeDestroyed = true;
 
     return MediaKeyErrorStatus::OK;
-
 }
 
 MediaKeyErrorStatus CdmService::removeKeySession(int mediaKeysHandle, int32_t keySessionId)
@@ -427,20 +429,23 @@ MediaKeyErrorStatus CdmService::decrypt(int32_t keySessionId, GstBuffer *encrypt
 
     std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
     auto mediaKeysIter = std::find_if(m_mediaKeys.begin(), m_mediaKeys.end(),
-                                      [&](const auto &iter) { return iter.second.mediaKeysServer->hasSession(keySessionId); });
+                                      [&](const auto &iter)
+                                      { return iter.second.mediaKeysServer->hasSession(keySessionId); });
     if (mediaKeysIter == m_mediaKeys.end())
     {
         RIALTO_SERVER_LOG_ERROR("Media keys handle for mksId: %d does not exists", keySessionId);
         return MediaKeyErrorStatus::FAIL;
     }
-    return mediaKeysIter->second.mediaKeysServer->decrypt(keySessionId, encrypted, subSample, subSampleCount, IV, keyId, initWithLast15);
+    return mediaKeysIter->second.mediaKeysServer->decrypt(keySessionId, encrypted, subSample, subSampleCount, IV, keyId,
+                                                          initWithLast15);
 }
 
 bool CdmService::isNetflixKeySystem(int32_t keySessionId) const
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to check if key system is Netflix, key session id: %d", keySessionId);
     auto mediaKeysIter = std::find_if(m_mediaKeys.begin(), m_mediaKeys.end(),
-                                      [&](const auto &iter) { return iter.second.mediaKeysServer->hasSession(keySessionId); });
+                                      [&](const auto &iter)
+                                      { return iter.second.mediaKeysServer->hasSession(keySessionId); });
     if (mediaKeysIter == m_mediaKeys.end())
     {
         RIALTO_SERVER_LOG_ERROR("Media keys handle for mksId: %d does not exists", keySessionId);
@@ -453,7 +458,8 @@ MediaKeyErrorStatus CdmService::selectKeyId(int32_t keySessionId, const std::vec
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to select key id, key session id: %d", keySessionId);
     auto mediaKeysIter = std::find_if(m_mediaKeys.begin(), m_mediaKeys.end(),
-                                      [&](const auto &iter) { return iter.second.mediaKeysServer->hasSession(keySessionId); });
+                                      [&](const auto &iter)
+                                      { return iter.second.mediaKeysServer->hasSession(keySessionId); });
     if (mediaKeysIter == m_mediaKeys.end())
     {
         RIALTO_SERVER_LOG_ERROR("Media keys handle for mksId: %d does not exists", keySessionId);
@@ -462,11 +468,12 @@ MediaKeyErrorStatus CdmService::selectKeyId(int32_t keySessionId, const std::vec
     return mediaKeysIter->second.mediaKeysServer->selectKeyId(keySessionId, keyId);
 }
 
-void CdmService::incrementSessionIdUsageCounter(int32_t keySessionId) 
+void CdmService::incrementSessionIdUsageCounter(int32_t keySessionId)
 {
     std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
     auto mediaKeysIter = std::find_if(m_mediaKeys.begin(), m_mediaKeys.end(),
-                                      [&](const auto &iter) { return iter.second.mediaKeysServer->hasSession(keySessionId); });
+                                      [&](const auto &iter)
+                                      { return iter.second.mediaKeysServer->hasSession(keySessionId); });
     if (mediaKeysIter == m_mediaKeys.end())
     {
         RIALTO_SERVER_LOG_ERROR("Media keys handle for mksId: %d does not exists", keySessionId);
@@ -480,14 +487,18 @@ void CdmService::decrementSessionIdUsageCounter(int32_t keySessionId)
 {
     std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
     auto mediaKeysIter = std::find_if(m_mediaKeys.begin(), m_mediaKeys.end(),
-                                      [&](const auto &iter) { return iter.second.mediaKeysServer->hasSession(keySessionId); });
+                                      [&](const auto &iter)
+                                      { return iter.second.mediaKeysServer->hasSession(keySessionId); });
     if (mediaKeysIter == m_mediaKeys.end())
     {
         RIALTO_SERVER_LOG_ERROR("Media keys handle for mksId: %d does not exists", keySessionId);
         return;
     }
 
-    mediaKeysIter->second.bufCounter--;
+    if (mediaKeysIter->second.bufCounter > 0)
+    {
+        mediaKeysIter->second.bufCounter--;
+    }
     if (mediaKeysIter->second.bufCounter == 0 && mediaKeysIter->second.shouldBeDestroyed)
     {
         RIALTO_SERVER_LOG_INFO("Deferred closing of mksId %d", keySessionId);

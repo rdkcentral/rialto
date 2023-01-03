@@ -21,10 +21,10 @@
 #define FIREBOLT_RIALTO_SERVER_GST_DECRYPTOR_PRIVATE_H_
 
 #include "IDecryptionService.h"
+#include "IGstProtectionMetadataWrapper.h"
 #include "IGstWrapper.h"
 #include <gst/gst.h>
 #include <memory>
-#include "IGstProtectionMetadataWrapper.h"
 
 namespace firebolt::rialto::server
 {

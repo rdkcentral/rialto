@@ -32,8 +32,6 @@
 
 namespace firebolt::rialto::server::service
 {
-
-
 class CdmService : public ICdmService, public IDecryptionService
 {
 public:

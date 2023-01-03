@@ -19,8 +19,8 @@
 
 #include "GstDecryptorElementFactory.h"
 #include "GstDecryptorPrivate.h"
-#include "RialtoServerLogging.h"
 #include "GstProtectionMetadataWrapperFactory.h"
+#include "RialtoServerLogging.h"
 
 #include <gst/base/gstbasetransform.h>
 #include <gst/gst.h>
@@ -229,7 +229,7 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer)
         m_metadataWrapper->removeProtectionMetadata(buffer);
     }
 
-    //pass it through even in case of failed decryption
+    // pass it through even in case of failed decryption
     return GST_FLOW_OK;
 }
 

@@ -20,13 +20,13 @@
 #include "GstPlayer.h"
 #include "GstDispatcherThread.h"
 #include "GstLogForwarding.h"
+#include "GstProtectionMetadata.h"
 #include "ITimer.h"
 #include "RialtoServerLogging.h"
 #include "WorkerThread.h"
 #include "tasks/PlayerTaskFactory.h"
 #include <IMediaPipeline.h>
 #include <chrono>
-#include "GstProtectionMetadata.h"
 
 namespace
 {

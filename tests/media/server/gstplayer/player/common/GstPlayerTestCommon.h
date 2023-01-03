@@ -79,7 +79,6 @@ public:
         std::make_unique<StrictMock<GstProtectionMetadataWrapperMock>>()};
     StrictMock<GstProtectionMetadataWrapperMock> *m_gstProtectionMetadataWrapperMock{m_gstProtectionMetadataWrapper.get()};
 
-
 public:
     void setPipelineState(const GstState &state);
 

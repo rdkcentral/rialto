@@ -18,9 +18,9 @@
  */
 #include "DecryptionServiceMock.h"
 #include "GstDecryptorPrivate.h"
+#include "GstProtectionMetadataWrapperMock.h"
 #include "GstWrapperFactoryMock.h"
 #include "GstWrapperMock.h"
-#include "GstProtectionMetadataWrapperMock.h"
 #include <gtest/gtest.h>
 
 using namespace firebolt::rialto;
@@ -64,8 +64,8 @@ protected:
 
     RialtoServerDecryptorPrivateDecryptTest()
         : m_gstWrapperFactoryMock(std::make_shared<StrictMock<GstWrapperFactoryMock>>()),
-                            m_gstWrapperMock(std::make_shared<StrictMock<GstWrapperMock>>()),
-                            m_decryptionServiceMock(std::make_shared<StrictMock<DecryptionServiceMock>>())
+          m_gstWrapperMock(std::make_shared<StrictMock<GstWrapperMock>>()),
+          m_decryptionServiceMock(std::make_shared<StrictMock<DecryptionServiceMock>>())
     {
         createDecryptorPrivate();
 

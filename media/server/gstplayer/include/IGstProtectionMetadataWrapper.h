@@ -24,15 +24,15 @@
 
 namespace firebolt::rialto::server
 {
-    class IGstProtectionMetadataWrapper
-    {
-    public:
-        IGstProtectionMetadataWrapper() = default;
-        virtual ~IGstProtectionMetadataWrapper() = default;
-        virtual GstMeta* addProtectionMetadata(GstBuffer *gstBuffer, GstRialtoProtectionData &data) = 0;
-        virtual GstRialtoProtectionData* getProtectionMetadataData(GstBuffer *gstBuffer) = 0;
-        virtual void removeProtectionMetadata(GstBuffer *gstBuffer) = 0;
-    };
+class IGstProtectionMetadataWrapper
+{
+public:
+    IGstProtectionMetadataWrapper() = default;
+    virtual ~IGstProtectionMetadataWrapper() = default;
+    virtual GstMeta *addProtectionMetadata(GstBuffer *gstBuffer, GstRialtoProtectionData &data) = 0;
+    virtual GstRialtoProtectionData *getProtectionMetadataData(GstBuffer *gstBuffer) = 0;
+    virtual void removeProtectionMetadata(GstBuffer *gstBuffer) = 0;
 };
+}; // namespace firebolt::rialto::server
 
 #endif // FIREBOLT_RIALTO_SERVER_I_GST_PROTECTION_METADATA_WRAPPER_H_

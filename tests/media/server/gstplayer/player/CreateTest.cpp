@@ -171,12 +171,12 @@ protected:
         EXPECT_CALL(*m_gstProtectionMetadataFactoryMock, createProtectionMetadataWrapper(_))
             .WillOnce(Return(ByMove(std::move(m_gstProtectionMetadataWrapper))));
 
-        EXPECT_NO_THROW(m_gstPlayer = std::make_unique<GstPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, m_type,
-                                                                  m_videoReq, m_gstWrapperMock, m_glibWrapperMock,
-                                                                  m_gstSrcFactoryMock, m_timerFactoryMock,
-                                                                  std::move(m_taskFactory), std::move(workerThreadFactory),
-                                                                  std::move(gstDispatcherThreadFactory),
-                                                                  m_gstProtectionMetadataFactoryMock););
+        EXPECT_NO_THROW(
+            m_gstPlayer =
+                std::make_unique<GstPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, m_type, m_videoReq,
+                                            m_gstWrapperMock, m_glibWrapperMock, m_gstSrcFactoryMock,
+                                            m_timerFactoryMock, std::move(m_taskFactory), std::move(workerThreadFactory),
+                                            std::move(gstDispatcherThreadFactory), m_gstProtectionMetadataFactoryMock););
         EXPECT_NE(m_gstPlayer, nullptr);
     }
 
@@ -307,7 +307,7 @@ TEST_F(RialtoServerCreateGstPlayerTest, PlaysinkNotFound)
     expectSetFlags();
     expectSetSignalCallbacks();
     expectSetUri();
-    
+
     expectSetMessageCallback();
 
     EXPECT_CALL(*m_gstSrcMock, initSrc());
