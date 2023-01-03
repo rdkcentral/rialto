@@ -22,6 +22,8 @@
 
 #include "IWebAudioPlayer.h"
 #include "IWebAudioPlayerIpc.h"
+#include "IWebAudioPlayerIpcClient.h"
+#include "ISharedMemoryManager.h"
 #include <memory>
 #include <stdint.h>
 #include <string>
@@ -49,7 +51,7 @@ namespace firebolt::rialto::client
 /**
  * @brief The definition of the WebAudioPlayer.
  */
-class WebAudioPlayer : public IWebAudioPlayer, public IWebAudioPlayerIpcClient
+class WebAudioPlayer : public IWebAudioPlayer, public IWebAudioPlayerIpcClient, public ISharedMemoryManagerClient
 {
 public:
     /**
@@ -61,7 +63,9 @@ public:
      * @param[in] config:        Additional type dependent configuration data or nullptr
      */
     WebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
-                   const uint32_t priority, const WebAudioConfig *config);
+                   const uint32_t priority, const WebAudioConfig *config,
+                   const std::shared_ptr<IWebAudioPlayerIpcFactory> &webAudioPlayerIpcFactory,
+                   const std::shared_ptr<ISharedMemoryManagerFactory> &sharedMemoryManagerFactory);
 
     /**
      * @brief Virtual destructor.
@@ -90,11 +94,24 @@ public:
 
     void notifyState(WebAudioPlayerState state) override;
 
+    void notifyBufferTerm() override;
 protected:
     /**
      * @brief The web audio player client.
      */
     std::weak_ptr<IWebAudioPlayerClient> m_webAudioPlayerClient;
+
+    /**
+     * @brief The media player ipc object.
+     */
+    std::unique_ptr<IWebAudioPlayerIpc> m_webAudioPlayerIpc;
+
+    /**
+     * @brief The rialto shared memory manager object.
+     */
+    std::shared_ptr<ISharedMemoryManager> m_sharedMemoryManager;
+
+    std::shared_ptr<WebAudioShmInfo> m_webAudioShmInfo;
 };
 
 }; // namespace firebolt::rialto::client
