@@ -485,18 +485,6 @@ bool MediaPipelineServerInternal::haveData(MediaSourceStatus status, uint32_t nu
     return result;
 }
 
-bool MediaPipelineServerInternal::renderFrame()
-{
-    if (!m_gstPlayer)
-    {
-        RIALTO_SERVER_LOG_ERROR("renderFrame failed - Gstreamer player has not been loaded");
-        return false;
-    }
-
-    m_gstPlayer->renderFrame();
-    return true;
-}
-
 bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uint32_t numFrames,
                                                    uint32_t needDataRequestId)
 {
@@ -558,6 +546,76 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
     return true;
 }
 
+bool MediaPipelineServerInternal::renderFrame()
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = renderFrameInternal(); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::renderFrameInternal()
+{
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("renderFrame failed - Gstreamer player has not been loaded");
+        return false;
+    }
+
+    m_gstPlayer->renderFrame();
+    return true;
+}
+
+bool MediaPipelineServerInternal::setVolume(double volume)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = setVolumeInternal(volume); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::setVolumeInternal(double volume)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to set volume - Gstreamer player has not been loaded");
+        return false;
+    }
+    m_gstPlayer->setVolume(volume);
+    return true;
+}
+
+bool MediaPipelineServerInternal::getVolume(double &volume)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = getVolumeInternal(volume); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::getVolumeInternal(double &volume)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get volume - Gstreamer player has not been loaded");
+        return false;
+    }
+    return m_gstPlayer->getVolume(volume);
+}
+
 AddSegmentStatus MediaPipelineServerInternal::addSegment(uint32_t needDataRequestId,
                                                          const std::unique_ptr<MediaSegment> &mediaSegment)
 {
@@ -615,6 +673,7 @@ bool MediaPipelineServerInternal::notifyNeedMediaData(MediaSourceType mediaSourc
 
 bool MediaPipelineServerInternal::notifyNeedMediaDataInternal(MediaSourceType mediaSourceType)
 {
+    m_needMediaDataTimers.erase(mediaSourceType);
     m_shmBuffer->clearData(m_sessionId, mediaSourceType);
     NeedMediaData event{m_mediaPipelineClient, *m_activeRequests, *m_shmBuffer, m_sessionId, mediaSourceType};
     if (!event.send())

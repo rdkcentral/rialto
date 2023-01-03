@@ -525,3 +525,69 @@ TEST_F(PlaybackServiceTests, shouldRenderframe)
     createSessionShouldSucceed();
     renderFrameSucceed();
 }
+
+TEST_F(PlaybackServiceTests, shouldFailToSetVolumeForNotExistingSession)
+{
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
+    triggerSetMaxPlaybacks();
+    sharedMemoryBufferWillBeInitialized();
+    triggerSwitchToActive();
+    setVolumeShouldFail();
+}
+
+TEST_F(PlaybackServiceTests, shouldFailToSetVolume)
+{
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
+    triggerSetMaxPlaybacks();
+    sharedMemoryBufferWillBeInitialized();
+    triggerSwitchToActive();
+    mediaPipelineFactoryWillCreateMediaPipeline();
+    createSessionShouldSucceed();
+    mediaPipelineWillFailToSetVolume();
+    setVolumeShouldFail();
+}
+
+TEST_F(PlaybackServiceTests, shouldSetVolume)
+{
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
+    triggerSetMaxPlaybacks();
+    sharedMemoryBufferWillBeInitialized();
+    triggerSwitchToActive();
+    mediaPipelineFactoryWillCreateMediaPipeline();
+    createSessionShouldSucceed();
+    mediaPipelineWillSetVolume();
+    setVolumeShouldSucceed();
+}
+
+TEST_F(PlaybackServiceTests, shouldFailToGetVolumeForNotExistingSession)
+{
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
+    triggerSetMaxPlaybacks();
+    sharedMemoryBufferWillBeInitialized();
+    triggerSwitchToActive();
+    getVolumeShouldFail();
+}
+
+TEST_F(PlaybackServiceTests, shouldFailToGetVolume)
+{
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
+    triggerSetMaxPlaybacks();
+    sharedMemoryBufferWillBeInitialized();
+    triggerSwitchToActive();
+    mediaPipelineFactoryWillCreateMediaPipeline();
+    createSessionShouldSucceed();
+    mediaPipelineWillFailToGetVolume();
+    getVolumeShouldFail();
+}
+
+TEST_F(PlaybackServiceTests, shouldGetVolume)
+{
+    mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
+    triggerSetMaxPlaybacks();
+    sharedMemoryBufferWillBeInitialized();
+    triggerSwitchToActive();
+    mediaPipelineFactoryWillCreateMediaPipeline();
+    createSessionShouldSucceed();
+    mediaPipelineWillGetVolume();
+    getVolumeShouldSucceed();
+}

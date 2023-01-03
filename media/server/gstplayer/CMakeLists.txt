@@ -21,7 +21,7 @@
 set( CMAKE_INCLUDE_CURRENT_DIR ON )
 
 find_package( PkgConfig REQUIRED )
-pkg_check_modules( GStreamerApp REQUIRED IMPORTED_TARGET gstreamer-app-1.0 gstreamer-pbutils-1.0 )
+pkg_check_modules( GStreamerApp REQUIRED IMPORTED_TARGET gstreamer-app-1.0 gstreamer-pbutils-1.0 gstreamer-audio-1.0)
 
 add_library(
         RialtoServerGstPlayer
@@ -46,6 +46,7 @@ add_library(
         source/tasks/SetupElement.cpp
         source/tasks/SetupSource.cpp
         source/tasks/SetVideoGeometry.cpp
+        source/tasks/SetVolume.cpp
         source/tasks/Shutdown.cpp
         source/tasks/Stop.cpp
         source/tasks/Underflow.cpp
@@ -59,6 +60,7 @@ add_library(
         source/WorkerThread.cpp
         source/GstCapabilities.cpp
         source/GstDecryptor.cpp
+        source/GstLogForwarding.cpp
         )
 
 target_include_directories(

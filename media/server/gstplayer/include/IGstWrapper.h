@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_I_GST_WRAPPER_H_
 
 #include <gst/app/gstappsrc.h>
+#include <gst/audio/streamvolume.h>
 #include <gst/base/gstbasetransform.h>
 #include <gst/base/gstbytewriter.h>
 #include <gst/gst.h>
@@ -922,6 +923,27 @@ public:
      */
     virtual GstEvent *gstEventNewStep(GstFormat format, guint64 amount, gdouble rate, gboolean flush,
                                       gboolean intermediate) const = 0;
+
+    /**
+     * @brief Returns current volume
+     *
+     * @param[in] volume : GstStreamVolume that should be used
+     * @param[in] format : GstStreamVolumeFormat which should be returned
+     *
+     * @retval The current stream volume as linear factor
+     */
+    virtual gdouble gstStreamVolumeGetVolume(GstStreamVolume *volume, GstStreamVolumeFormat format) const = 0;
+
+    /**
+     * @brief Sets new volume
+     *
+     * @param[in] volume : GstStreamVolume that should be used
+     * @param[in] format : GstStreamVolumeFormat of val
+     * @param[in] val    : Linear volume factor that should be set
+     *
+     * @retval The current stream volume as linear factor
+     */
+    virtual void gstStreamVolumeSetVolume(GstStreamVolume *volume, GstStreamVolumeFormat format, gdouble val) const = 0;
 };
 
 }; // namespace firebolt::rialto::server

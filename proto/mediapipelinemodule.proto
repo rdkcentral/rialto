@@ -325,6 +325,37 @@ message RenderFrameResponse {
 }
 
 /**
+ * @fn void setVolume(double volume)
+ * @brief Set level and transition of audio attenuation
+ *
+ * @param[in] session_id  The id of the A/V session the request is for.
+ * @param[in] volume      Target volume level (0.0 - 1.0)
+ *
+ */
+message SetVolumeRequest {
+    required int32 session_id = 1;
+    required double volume = 2;
+}
+message SetVolumeResponse {
+}
+
+/**
+ * @fn void getVolume(double &volume)
+ * @brief Get current audio level. Fetches the current volume level for the pipeline.
+ *
+ * @param[in]  session_id  The id of the A/V session the request is for.
+ * @param[out] volume      Current volume level (range 0.0 - 1.0)
+ *
+ * @retval true on success false otherwise
+ */
+message GetVolumeRequest {
+    required int32 session_id = 1;
+}
+message GetVolumeResponse {
+    required double volume = 1;
+}
+
+/**
  * @brief Event sent the playback state has changed.
  *
  * @param session_id   The id of the A/V session the status is for.
@@ -549,5 +580,19 @@ service MediaPipelineModule {
      * @see RenderFrameRequest
      */
     rpc renderFrame(RenderFrameRequest) returns (RenderFrameResponse) {
+    }
+
+    /**
+     * @brief Set level and transition of audio attenuation
+     * @see SetVolumeRequest
+     */
+    rpc setVolume(SetVolumeRequest) returns (SetVolumeResponse) {
+    } 
+
+    /**
+     * @brief Get current audio level. Fetches the current volume level for the pipeline.
+     * @see GetVolumeRequest
+     */
+    rpc getVolume(GetVolumeRequest) returns (GetVolumeResponse) {
     }
 }

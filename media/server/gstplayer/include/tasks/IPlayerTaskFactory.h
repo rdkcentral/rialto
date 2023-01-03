@@ -228,6 +228,16 @@ public:
                                                                 const Rectangle &rectangle) const = 0;
 
     /**
+     * @brief Creates a SetVolume task.
+     *
+     * @param[in] context       : The GstPlayer context
+     * @param[in] volume        : The volume to be set
+     *
+     * @retval the new SetVolume task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createSetVolume(PlayerContext &context, double volume) const = 0;
+
+    /**
      * @brief Creates a Shutdown task.
      *
      * @param[in] context       : The GstPlayer context
