@@ -178,7 +178,7 @@ bool WebAudioPlayer::writeBuffer(const uint32_t numberOfFrames, void *data)
     {
         std::memcpy(shmBuffer + m_webAudioShmInfo->offsetMain, data, m_webAudioShmInfo->lengthMain);
     }
-    return m_webAudioPlayerIpc->writeBuffer(numberOfFrames, data);
+    return m_webAudioPlayerIpc->writeBuffer(numberOfFrames);
 }
 
 bool WebAudioPlayer::getDeviceInfo(uint32_t &preferredFrames, uint32_t &maximumFrames, bool &supportDeferredPlay)

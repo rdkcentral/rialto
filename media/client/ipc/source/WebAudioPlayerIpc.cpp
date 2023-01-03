@@ -117,32 +117,34 @@ bool WebAudioPlayerIpc::subscribeToEvents()
 
 void WebAudioPlayerIpc::onPlaybackStateUpdated(const std::shared_ptr<firebolt::rialto::WebAudioPlayerStateEvent> &event)
 {
-
-    firebolt::rialto::WebAudioPlayerState playerState = firebolt::rialto::WebAudioPlayerState::UNKNOWN;
-    switch (event->state())
+    if (event->web_audio_player_handle() == m_webAudioPlayerHandle)
     {
-    case firebolt::rialto::WebAudioPlayerStateEvent_WebAudioPlayerState_USABLE:
-    case firebolt::rialto::WebAudioPlayerStateEvent_WebAudioPlayerState_IDLE:
-        playerState = firebolt::rialto::WebAudioPlayerState::IDLE;
-        break;
-    case firebolt::rialto::WebAudioPlayerStateEvent_WebAudioPlayerState_PLAYING:
-        playerState = firebolt::rialto::WebAudioPlayerState::PLAYING;
-        break;
-    case firebolt::rialto::WebAudioPlayerStateEvent_WebAudioPlayerState_PAUSED:
-        playerState = firebolt::rialto::WebAudioPlayerState::PAUSED;
-        break;
-    case firebolt::rialto::WebAudioPlayerStateEvent_WebAudioPlayerState_END_OF_STREAM:
-        playerState = firebolt::rialto::WebAudioPlayerState::END_OF_STREAM;
-        break;
-    case firebolt::rialto::WebAudioPlayerStateEvent_WebAudioPlayerState_FAILURE:
-        playerState = firebolt::rialto::WebAudioPlayerState::FAILURE;
-        break;
-    default:
-        RIALTO_CLIENT_LOG_WARN("Recieved unknown web audio player state");
-        break;
-    }
+        firebolt::rialto::WebAudioPlayerState playerState = firebolt::rialto::WebAudioPlayerState::UNKNOWN;
+        switch (event->state())
+        {
+        case firebolt::rialto::WebAudioPlayerStateEvent_WebAudioPlayerState_USABLE:
+        case firebolt::rialto::WebAudioPlayerStateEvent_WebAudioPlayerState_IDLE:
+            playerState = firebolt::rialto::WebAudioPlayerState::IDLE;
+            break;
+        case firebolt::rialto::WebAudioPlayerStateEvent_WebAudioPlayerState_PLAYING:
+            playerState = firebolt::rialto::WebAudioPlayerState::PLAYING;
+            break;
+        case firebolt::rialto::WebAudioPlayerStateEvent_WebAudioPlayerState_PAUSED:
+            playerState = firebolt::rialto::WebAudioPlayerState::PAUSED;
+            break;
+        case firebolt::rialto::WebAudioPlayerStateEvent_WebAudioPlayerState_END_OF_STREAM:
+            playerState = firebolt::rialto::WebAudioPlayerState::END_OF_STREAM;
+            break;
+        case firebolt::rialto::WebAudioPlayerStateEvent_WebAudioPlayerState_FAILURE:
+            playerState = firebolt::rialto::WebAudioPlayerState::FAILURE;
+            break;
+        default:
+            RIALTO_CLIENT_LOG_WARN("Recieved unknown web audio player state");
+            break;
+        }
 
-    m_WebAudioPlayerIpcClient->notifyState(playerState);
+        m_WebAudioPlayerIpcClient->notifyState(playerState);
+    }
 }
 
 bool WebAudioPlayerIpc::play()
@@ -154,6 +156,7 @@ bool WebAudioPlayerIpc::play()
     }
 
     firebolt::rialto::WebAudioPlayRequest request;
+    request.set_web_audio_player_handle(m_webAudioPlayerHandle);
 
     firebolt::rialto::WebAudioPlayResponse response;
     auto ipcController = m_ipc->createRpcController();
@@ -182,6 +185,7 @@ bool WebAudioPlayerIpc::pause()
     }
 
     firebolt::rialto::WebAudioPauseRequest request;
+    request.set_web_audio_player_handle(m_webAudioPlayerHandle);
 
     firebolt::rialto::WebAudioPauseResponse response;
     auto ipcController = m_ipc->createRpcController();
@@ -210,6 +214,7 @@ bool WebAudioPlayerIpc::setEos()
     }
 
     firebolt::rialto::WebAudioSetEosRequest request;
+    request.set_web_audio_player_handle(m_webAudioPlayerHandle);
 
     firebolt::rialto::WebAudioSetEosResponse response;
     auto ipcController = m_ipc->createRpcController();
@@ -239,6 +244,7 @@ bool WebAudioPlayerIpc::getBufferAvailable(uint32_t &availableFrames,
     }
 
     firebolt::rialto::WebAudioGetBufferAvailableRequest request;
+    request.set_web_audio_player_handle(m_webAudioPlayerHandle);
 
     firebolt::rialto::WebAudioGetBufferAvailableResponse response;
     auto ipcController = m_ipc->createRpcController();
@@ -273,6 +279,7 @@ bool WebAudioPlayerIpc::getBufferDelay(uint32_t &delayFrames)
     }
 
     firebolt::rialto::WebAudioGetBufferDelayRequest request;
+    request.set_web_audio_player_handle(m_webAudioPlayerHandle);
 
     firebolt::rialto::WebAudioGetBufferDelayResponse response;
     auto ipcController = m_ipc->createRpcController();
@@ -294,7 +301,7 @@ bool WebAudioPlayerIpc::getBufferDelay(uint32_t &delayFrames)
     return true;
 }
 
-bool WebAudioPlayerIpc::writeBuffer(const uint32_t numberOfFrames, void *data)
+bool WebAudioPlayerIpc::writeBuffer(const uint32_t numberOfFrames)
 {
     if (!reattachChannelIfRequired())
     {
@@ -305,6 +312,7 @@ bool WebAudioPlayerIpc::writeBuffer(const uint32_t numberOfFrames, void *data)
     firebolt::rialto::WebAudioWriteBufferRequest request;
 
     request.set_number_of_frames(numberOfFrames);
+    request.set_web_audio_player_handle(m_webAudioPlayerHandle);
 
     firebolt::rialto::WebAudioWriteBufferResponse response;
     auto ipcController = m_ipc->createRpcController();
@@ -333,6 +341,7 @@ bool WebAudioPlayerIpc::getDeviceInfo(uint32_t &preferredFrames, uint32_t &maxim
     }
 
     firebolt::rialto::WebAudioGetDeviceInfoRequest request;
+    request.set_web_audio_player_handle(m_webAudioPlayerHandle);
 
     firebolt::rialto::WebAudioGetDeviceInfoResponse response;
     auto ipcController = m_ipc->createRpcController();
@@ -350,7 +359,7 @@ bool WebAudioPlayerIpc::getDeviceInfo(uint32_t &preferredFrames, uint32_t &maxim
     }
 
     preferredFrames = response.preferred_frames();
-    maximumFrames = response.maximum_rames();
+    maximumFrames = response.maximum_frames();
     supportDeferredPlay = response.support_deferred_play();
 
     return true;
@@ -366,6 +375,7 @@ bool WebAudioPlayerIpc::setVolume(double volume)
 
     firebolt::rialto::WebAudioSetVolumeRequest request;
     request.set_volume(volume);
+    request.set_web_audio_player_handle(m_webAudioPlayerHandle);
 
     firebolt::rialto::WebAudioSetVolumeResponse response;
     auto ipcController = m_ipc->createRpcController();
@@ -394,6 +404,7 @@ bool WebAudioPlayerIpc::getVolume(double &volume)
     }
 
     firebolt::rialto::WebAudioGetVolumeRequest request;
+    request.set_web_audio_player_handle(m_webAudioPlayerHandle);
 
     firebolt::rialto::WebAudioGetVolumeResponse response;
     auto ipcController = m_ipc->createRpcController();

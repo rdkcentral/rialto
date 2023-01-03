@@ -37,7 +37,6 @@ namespace firebolt::rialto::client
 class WebAudioPlayerIpcFactory : public IWebAudioPlayerIpcFactory
 {
 public:
-
     std::unique_ptr<IWebAudioPlayerIpc> createWebAudioPlayerIpc(IWebAudioPlayerIpcClient *client) override;
 };
 
@@ -55,8 +54,7 @@ public:
      * @param[in] ipcClientFactory      : The ipc factory for getting the singleton Ipc client object.
      * @param[in] eventThreadFactory    : The event thread factory
      */
-    WebAudioPlayerIpc(IWebAudioPlayerIpcClient *client, 
-                      const std::shared_ptr<IIpcClientFactory> &ipcClientFactory,
+    WebAudioPlayerIpc(IWebAudioPlayerIpcClient *client, const std::shared_ptr<IIpcClientFactory> &ipcClientFactory,
                       const std::shared_ptr<common::IEventThreadFactory> &eventThreadFactory);
 
     /**
@@ -74,7 +72,7 @@ public:
 
     bool getBufferDelay(uint32_t &delayFrames) override;
 
-    bool writeBuffer(const uint32_t numberOfFrames, void *data) override;
+    bool writeBuffer(const uint32_t numberOfFrames) override;
 
     bool getDeviceInfo(uint32_t &preferredFrames, uint32_t &maximumFrames, bool &supportDeferredPlay) override;
 
@@ -83,7 +81,6 @@ public:
     bool getVolume(double &volume) override;
 
 private:
-
     bool createWebAudioPlayer();
 
     void destroyWebAudioPlayer();
@@ -91,7 +88,6 @@ private:
     bool createRpcStubs() override;
 
     bool subscribeToEvents() override;
-
 
     void onPlaybackStateUpdated(const std::shared_ptr<firebolt::rialto::WebAudioPlayerStateEvent> &event);
     /**
@@ -109,6 +105,9 @@ private:
      */
     std::unique_ptr<common::IEventThread> m_eventThread;
 
+    /**
+     * @brief Handle to a IPC connection to the server.
+     */
     int32_t m_webAudioPlayerHandle;
 };
 

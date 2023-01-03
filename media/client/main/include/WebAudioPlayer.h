@@ -20,10 +20,10 @@
 #ifndef FIREBOLT_RIALTO_CLIENT_WEB_AUDIO_PLAYER_H_
 #define FIREBOLT_RIALTO_CLIENT_WEB_AUDIO_PLAYER_H_
 
+#include "ISharedMemoryManager.h"
 #include "IWebAudioPlayer.h"
 #include "IWebAudioPlayerIpc.h"
 #include "IWebAudioPlayerIpcClient.h"
-#include "ISharedMemoryManager.h"
 #include <memory>
 #include <stdint.h>
 #include <string>
@@ -95,6 +95,7 @@ public:
     void notifyState(WebAudioPlayerState state) override;
 
     void notifyBufferTerm() override;
+
 protected:
     /**
      * @brief The web audio player client.
@@ -111,6 +112,9 @@ protected:
      */
     std::shared_ptr<ISharedMemoryManager> m_sharedMemoryManager;
 
+    /**
+     * @brief The shared memory region info.
+     */
     std::shared_ptr<WebAudioShmInfo> m_webAudioShmInfo;
 };
 

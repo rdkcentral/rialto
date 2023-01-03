@@ -126,11 +126,10 @@ public:
      * Sends a buffer of audio data for playback
      *
      * @param[in]  numberOfFrames : Number of frames of audio in 'data'.
-     * @param[in]  data           : Pointer to the data, byte length = numberOfFrames*sampleSize
      *
      * @retval true on success.
      */
-    virtual bool writeBuffer(const uint32_t numberOfFrames, void *data) = 0;
+    virtual bool writeBuffer(const uint32_t numberOfFrames) = 0;
 
     /**
      * @brief Get device infomation.
