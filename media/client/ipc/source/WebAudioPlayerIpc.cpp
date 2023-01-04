@@ -442,8 +442,8 @@ bool WebAudioPlayerIpc::createWebAudioPlayer(const std::string &audioMimeType, c
     firebolt::rialto::CreateWebAudioPlayerRequest request;
     request.set_audio_mime_type(audioMimeType);
     request.set_priority(priority);
-    if(config)
-    {   
+    if (config)
+    {
         ::firebolt::rialto::CreateWebAudioPlayerRequest_WebAudioPcmConfig pcm_config;
         pcm_config.set_rate(config->pcm.rate);
         pcm_config.set_channels(config->pcm.channels);

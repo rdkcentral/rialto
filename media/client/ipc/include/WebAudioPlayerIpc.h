@@ -52,7 +52,9 @@ public:
      * @brief The constructor.
      *
      * @param[in] client                : The Rialto ipc web audio player client.
-     * @param[in] videoRequirements     : The video decoder requirements for the WebAudioPlayer session.
+     * @param[in] audioMimeType         : The audio encoding format, currently only "audio/x-raw" (PCM)
+     * @param[in] priority              : Priority value for this pipeline.
+     * @param[in] config                : Additional type dependent configuration data or nullptr
      * @param[in] ipcClientFactory      : The ipc factory for getting the singleton Ipc client object.
      * @param[in] eventThreadFactory    : The event thread factory
      */
@@ -60,9 +62,6 @@ public:
                       const WebAudioConfig *config, const std::shared_ptr<IIpcClientFactory> &ipcClientFactory,
                       const std::shared_ptr<common::IEventThreadFactory> &eventThreadFactory);
 
-    /**
-     * @brief Virtual destructor.
-     */
     virtual ~WebAudioPlayerIpc();
 
     bool play() override;
@@ -109,7 +108,7 @@ private:
     std::unique_ptr<common::IEventThread> m_eventThread;
 
     /**
-     * @brief Handle to a IPC connection to the server.
+     * @brief Handle to an IPC connection to the server.
      */
     int32_t m_webAudioPlayerHandle;
 };

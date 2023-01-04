@@ -31,7 +31,7 @@
 namespace firebolt::rialto::client
 {
 /**
- * @brief The Rialto media player client ipc interface.
+ * @brief The Rialto web audio player client ipc interface.
  */
 class IWebAudioPlayerIpcClient
 {
@@ -46,12 +46,6 @@ public:
 
     /**
      * @brief Notifies the client of the playback state.
-     *
-     * The player will start IDLE. Once play() has been called the player
-     * will be PLAYING. When pause() is call3d the player will be PAUSED.
-     * When no further frames available for playout and setEos() has been
-     * called the player will be END_OF_STREAM.
-     *
      * @param[in] state : The new playback state.
      *
      * @retval true on success.

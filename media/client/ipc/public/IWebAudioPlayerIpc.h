@@ -53,9 +53,9 @@ public:
     /**
      * @brief Creates a IWebAudioPlayerIpc object.
      *
-     * @param[in] client            : The Rialto ipc media player client.
+     * @param[in] client            : The Rialto ipc web audio player client.
      *
-     * @retval the new media player ipc instance or null on error.
+     * @retval the new web audio player ipc instance or null on error.
      */
     virtual std::unique_ptr<IWebAudioPlayerIpc> createWebAudioPlayerIpc(IWebAudioPlayerIpcClient *client,
                                                                         const std::string &audioMimeType,
@@ -66,7 +66,7 @@ public:
 /**
  * @brief The definition of the IWebAudioPlayerIpc interface.
  *
- * This interface defines the media player ipc APIs that are used to communicate with the Rialto server.
+ * This interface defines the web audio player ipc APIs that are used to communicate with the Rialto server.
  */
 class IWebAudioPlayerIpc
 {
