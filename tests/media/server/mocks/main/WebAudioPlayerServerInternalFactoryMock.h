@@ -17,16 +17,17 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_WEB_AUDIO_PLAYER_FACTORY_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_WEB_AUDIO_PLAYER_FACTORY_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_WEB_AUDIO_PLAYER_SERVER_INTERNAL_FACTORY_MOCK_H_
+#define FIREBOLT_RIALTO_SERVER_WEB_AUDIO_PLAYER_SERVER_INTERNAL_FACTORY_MOCK_H_
 
 #include "IWebAudioPlayer.h"
+#include "IWebAudioPlayerServerInternalFactory.h"
 #include <gmock/gmock.h>
 #include <memory>
 
 namespace firebolt::rialto::server
 {
-class WebAudioPlayerFactoryMock : public IWebAudioPlayerFactory
+class WebAudioPlayerServerInternalFactoryMock : public IWebAudioPlayerServerInternalFactory
 {
 public:
     MOCK_METHOD(std::unique_ptr<IWebAudioPlayer>, createWebAudioPlayer,
@@ -35,7 +36,14 @@ public:
                                                                   const uint32_t priority,
                                                                   const WebAudioConfig *config),
                 (const, override));
+    MOCK_METHOD(std::unique_ptr<IWebAudioPlayer>, createWebAudioPlayerServerInternal,
+                (std::weak_ptr<IWebAudioPlayerClient> client,
+                                                                  const std::string &audioMimeType,
+                                                                  const uint32_t priority,
+                                                                  const WebAudioConfig *config,
+                                                                 const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer),
+                (const, override));
 };
 } // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_WEB_AUDIO_PLAYER_FACTORY_MOCK_H_
+#endif // FIREBOLT_RIALTO_SERVER_WEB_AUDIO_PLAYER_SERVER_INTERNAL_FACTORY_MOCK_H_

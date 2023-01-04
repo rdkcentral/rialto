@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_WEB_AUDIO_PLAYER_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_WEB_AUDIO_PLAYER_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_WEB_AUDIO_PLAYER_SERVER_INTERNAL_MOCK_H_
+#define FIREBOLT_RIALTO_SERVER_WEB_AUDIO_PLAYER_SERVER_INTERNAL_MOCK_H_
 
 #include "IWebAudioPlayer.h"
 #include <gmock/gmock.h>
@@ -28,7 +28,7 @@
 
 namespace firebolt::rialto::server
 {
-class WebAudioPlayerMock : public IWebAudioPlayer
+class WebAudioPlayerServerInternalMock : public IWebAudioPlayer
 {
 public:
     MOCK_METHOD(bool, play, (), (override));
@@ -44,4 +44,4 @@ public:
 };
 } // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_WEB_AUDIO_PLAYER_MOCK_H_
+#endif // FIREBOLT_RIALTO_SERVER_WEB_AUDIO_PLAYER_SERVER_INTERNAL_MOCK_H_

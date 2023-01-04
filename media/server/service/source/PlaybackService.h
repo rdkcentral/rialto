@@ -23,7 +23,7 @@
 #include "IDecryptionService.h"
 #include "IMediaPipelineCapabilities.h"
 #include "IMediaPipelineServerInternal.h"
-#include "IWebAudioPlayer.h"
+#include "IWebAudioPlayerServerInternalFactory.h"
 #include "IPlaybackService.h"
 #include "ISharedMemoryBuffer.h"
 #include "MediaPipelineService.h"
@@ -46,7 +46,7 @@ class PlaybackService : public IPlaybackService
 public:
     PlaybackService(std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
                     std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
-                    std::shared_ptr<IWebAudioPlayerFactory> &&webAudioPlayerFactory,
+                    std::shared_ptr<IWebAudioPlayerServerInternalFactory> &&webAudioPlayerFactory,
                     std::unique_ptr<ISharedMemoryBufferFactory> &&shmBufferFactory,
                     IDecryptionService &decryptionService);
     ~PlaybackService() override;

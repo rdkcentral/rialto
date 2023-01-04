@@ -24,9 +24,7 @@
 #include "MediaPipelineCapabilitiesFactoryMock.h"
 #include "MediaPipelineCapabilitiesMock.h"
 #include "MediaPipelineServerInternalFactoryMock.h"
-#include "MediaPipelineServerInternalMock.h"
-#include "WebAudioPlayerFactoryMock.h"
-#include "WebAudioPlayerMock.h"
+#include "WebAudioPlayerServerInternalFactoryMock.h"
 #include "PlaybackService.h"
 #include "SharedMemoryBufferFactoryMock.h"
 #include "SharedMemoryBufferMock.h"
@@ -62,7 +60,7 @@ private:
     std::shared_ptr<StrictMock<firebolt::rialto::server::MediaPipelineServerInternalFactoryMock>> m_mediaPipelineFactoryMock;
     std::shared_ptr<StrictMock<firebolt::rialto::server::MediaPipelineCapabilitiesFactoryMock>>
         m_mediaPipelineCapabilitiesFactoryMock;
-    std::shared_ptr<StrictMock<firebolt::rialto::server::WebAudioPlayerFactoryMock>> m_webAudioPlayerFactoryMock;
+    std::shared_ptr<StrictMock<firebolt::rialto::server::WebAudioPlayerServerInternalFactoryMock>> m_webAudioPlayerFactoryMock;
     std::unique_ptr<StrictMock<firebolt::rialto::server::MediaPipelineCapabilitiesMock>> m_mediaPipelineCapabilities;
     StrictMock<firebolt::rialto::server::MediaPipelineCapabilitiesMock> &m_mediaPipelineCapabilitiesMock;
     std::unique_ptr<firebolt::rialto::server::ISharedMemoryBufferFactory> m_shmBufferFactory;

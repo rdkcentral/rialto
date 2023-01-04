@@ -43,7 +43,7 @@ PlaybackServiceTests::PlaybackServiceTests()
       m_mediaPipelineCapabilitiesFactoryMock{
           std::make_shared<StrictMock<firebolt::rialto::server::MediaPipelineCapabilitiesFactoryMock>>()},
       m_webAudioPlayerFactoryMock{
-          std::make_shared<StrictMock<firebolt::rialto::server::WebAudioPlayerFactoryMock>>()},
+          std::make_shared<StrictMock<firebolt::rialto::server::WebAudioPlayerServerInternalFactoryMock>>()},
       m_mediaPipelineCapabilities{std::make_unique<StrictMock<firebolt::rialto::server::MediaPipelineCapabilitiesMock>>()},
       m_mediaPipelineCapabilitiesMock{dynamic_cast<StrictMock<firebolt::rialto::server::MediaPipelineCapabilitiesMock> &>(
           *m_mediaPipelineCapabilities)},

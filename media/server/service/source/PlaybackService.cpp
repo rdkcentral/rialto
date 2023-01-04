@@ -19,7 +19,7 @@
 
 #include "PlaybackService.h"
 #include "IMediaPipelineServerInternal.h"
-#include "IWebAudioPlayer.h"
+#include "IWebAudioPlayerServerInternalFactory.h"
 #include "RialtoServerLogging.h"
 #include <exception>
 #include <future>
@@ -31,7 +31,7 @@ namespace firebolt::rialto::server::service
 {
 PlaybackService::PlaybackService(std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
                                  std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
-                                 std::shared_ptr<IWebAudioPlayerFactory> &&webAudioPlayerFactory,
+                                 std::shared_ptr<IWebAudioPlayerServerInternalFactory> &&webAudioPlayerFactory,
                                  std::unique_ptr<ISharedMemoryBufferFactory> &&shmBufferFactory,
                                  IDecryptionService &decryptionService)
     : m_shmBufferFactory{std::move(shmBufferFactory)}, m_isActive{false}, m_maxPlaybacks{0}, m_maxWebAudioInstances{1}, //TODO

@@ -19,6 +19,7 @@
 
 #include "WebAudioPlayerService.h"
 #include "IWebAudioPlayer.h"
+#include "IWebAudioPlayerServerInternalFactory.h"
 #include "RialtoServerLogging.h"
 #include <exception>
 #include <future>
@@ -28,7 +29,7 @@
 
 namespace firebolt::rialto::server::service
 {
-WebAudioPlayerService::WebAudioPlayerService(IPlaybackService& playbackService, std::shared_ptr<IWebAudioPlayerFactory> &&webAudioPlayerFactory)
+WebAudioPlayerService::WebAudioPlayerService(IPlaybackService& playbackService, std::shared_ptr<IWebAudioPlayerServerInternalFactory> &&webAudioPlayerFactory)
     : m_playbackService{playbackService},
       m_webAudioPlayerFactory{webAudioPlayerFactory}
 {
@@ -70,9 +71,9 @@ bool WebAudioPlayerService::createWebAudioPlayer(int handle, const std::shared_p
         auto shmBuffer = m_playbackService.getShmBuffer();
         m_webAudioPlayers.emplace(
             std::make_pair(handle,
-                           m_webAudioPlayerFactory->createWebAudioPlayer(webAudioPlayerClient,
-                                                                         audioMimeType,
-                                                                         priority, config)));
+                           m_webAudioPlayerFactory->createWebAudioPlayerServerInternal(webAudioPlayerClient,
+                                                                                       audioMimeType,
+                                                                                       priority, config, shmBuffer)));
         if (!m_webAudioPlayers.at(handle))
         {
             RIALTO_SERVER_LOG_ERROR("Could not create WebAudioPlayer for handle: %d", handle);
@@ -104,47 +105,128 @@ bool WebAudioPlayerService::destroyWebAudioPlayer(int handle)
 
 bool WebAudioPlayerService::play(int handle)
 {
-    return false;
+    RIALTO_SERVER_LOG_INFO("WebAudioPlayerService requested to play WebAudioPlayer with handle: %d", handle);
+
+    std::lock_guard<std::mutex> lock{m_webAudioPlayerMutex};
+    auto webAudioPlayerIter = m_webAudioPlayers.find(handle);
+    if (webAudioPlayerIter == m_webAudioPlayers.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("WebAudioPlayer with handle: %d does not exists", handle);
+        return false;
+    }
+    return webAudioPlayerIter->second->play();
 }
 
 bool WebAudioPlayerService::pause(int handle)
 {
-    return false;
+    RIALTO_SERVER_LOG_INFO("WebAudioPlayerService requested to pause WebAudioPlayer with handle: %d", handle);
+
+    std::lock_guard<std::mutex> lock{m_webAudioPlayerMutex};
+    auto webAudioPlayerIter = m_webAudioPlayers.find(handle);
+    if (webAudioPlayerIter == m_webAudioPlayers.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("WebAudioPlayer with handle: %d does not exists", handle);
+        return false;
+    }
+    return webAudioPlayerIter->second->pause();
 }
 
 bool WebAudioPlayerService::setEos(int handle)
 {
-    return false;
+    RIALTO_SERVER_LOG_INFO("WebAudioPlayerService requested to setEos WebAudioPlayer with handle: %d", handle);
+
+    std::lock_guard<std::mutex> lock{m_webAudioPlayerMutex};
+    auto webAudioPlayerIter = m_webAudioPlayers.find(handle);
+    if (webAudioPlayerIter == m_webAudioPlayers.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("WebAudioPlayer with handle: %d does not exists", handle);
+        return false;
+    }
+    return webAudioPlayerIter->second->setEos();
 }
 
 bool WebAudioPlayerService::getBufferAvailable(int handle, uint32_t &availableFrames, std::shared_ptr<WebAudioShmInfo> &webAudioShmInfo)
 {
-    return false;
+    RIALTO_SERVER_LOG_INFO("WebAudioPlayerService requested to getBufferAvailable WebAudioPlayer with handle: %d", handle);
+
+    std::lock_guard<std::mutex> lock{m_webAudioPlayerMutex};
+    auto webAudioPlayerIter = m_webAudioPlayers.find(handle);
+    if (webAudioPlayerIter == m_webAudioPlayers.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("WebAudioPlayer with handle: %d does not exists", handle);
+        return false;
+    }
+    return webAudioPlayerIter->second->getBufferAvailable(availableFrames, webAudioShmInfo);
 }
 
 bool WebAudioPlayerService::getBufferDelay(int handle, uint32_t &delayFrames)
 {
-    return false;
+    RIALTO_SERVER_LOG_INFO("WebAudioPlayerService requested to getBufferDelay WebAudioPlayer with handle: %d", handle);
+
+    std::lock_guard<std::mutex> lock{m_webAudioPlayerMutex};
+    auto webAudioPlayerIter = m_webAudioPlayers.find(handle);
+    if (webAudioPlayerIter == m_webAudioPlayers.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("WebAudioPlayer with handle: %d does not exists", handle);
+        return false;
+    }
+    return webAudioPlayerIter->second->getBufferDelay(delayFrames);
 }
 
 bool WebAudioPlayerService::writeBuffer(int handle, const uint32_t numberOfFrames, void *data)
 {
-    return false;
+    RIALTO_SERVER_LOG_INFO("WebAudioPlayerService requested to writeBuffer WebAudioPlayer with handle: %d", handle);
+
+    std::lock_guard<std::mutex> lock{m_webAudioPlayerMutex};
+    auto webAudioPlayerIter = m_webAudioPlayers.find(handle);
+    if (webAudioPlayerIter == m_webAudioPlayers.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("WebAudioPlayer with handle: %d does not exists", handle);
+        return false;
+    }
+    return webAudioPlayerIter->second->writeBuffer(numberOfFrames, data);
 }
 
 bool WebAudioPlayerService::getDeviceInfo(int handle, uint32_t &preferredFrames, uint32_t &maximumFrames, bool &supportDeferredPlay)
 {
-    return false;
+    RIALTO_SERVER_LOG_INFO("WebAudioPlayerService requested to getDeviceInfo WebAudioPlayer with handle: %d", handle);
+
+    std::lock_guard<std::mutex> lock{m_webAudioPlayerMutex};
+    auto webAudioPlayerIter = m_webAudioPlayers.find(handle);
+    if (webAudioPlayerIter == m_webAudioPlayers.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("WebAudioPlayer with handle: %d does not exists", handle);
+        return false;
+    }
+    return webAudioPlayerIter->second->getDeviceInfo(preferredFrames, maximumFrames, supportDeferredPlay);
 }
 
 bool WebAudioPlayerService::setVolume(int handle, double volume)
 {
-    return false;
+    RIALTO_SERVER_LOG_INFO("WebAudioPlayerService requested to setVolume WebAudioPlayer with handle: %d", handle);
+
+    std::lock_guard<std::mutex> lock{m_webAudioPlayerMutex};
+    auto webAudioPlayerIter = m_webAudioPlayers.find(handle);
+    if (webAudioPlayerIter == m_webAudioPlayers.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("WebAudioPlayer with handle: %d does not exists", handle);
+        return false;
+    }
+    return webAudioPlayerIter->second->setVolume(volume);
 }
 
 bool WebAudioPlayerService::getVolume(int handle, double &volume)
 {
-    return false;
+    RIALTO_SERVER_LOG_INFO("WebAudioPlayerService requested to getVolume WebAudioPlayer with handle: %d", handle);
+
+    std::lock_guard<std::mutex> lock{m_webAudioPlayerMutex};
+    auto webAudioPlayerIter = m_webAudioPlayers.find(handle);
+    if (webAudioPlayerIter == m_webAudioPlayers.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("WebAudioPlayer with handle: %d does not exists", handle);
+        return false;
+    }
+    return webAudioPlayerIter->second->getVolume(volume);
 }
 
 } // namespace firebolt::rialto::server::service
