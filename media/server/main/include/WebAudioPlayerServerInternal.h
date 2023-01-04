@@ -77,7 +77,7 @@ public:
 
     bool setEos() override;
 
-    bool getBufferAvailable(uint32_t &availableFrames, const std::shared_ptr<WebAudioShmInfo> &webAudioShmInfo) override;
+    bool getBufferAvailable(uint32_t &availableFrames, std::shared_ptr<WebAudioShmInfo> &webAudioShmInfo) override;
 
     bool getBufferDelay(uint32_t &delayFrames) override;
 

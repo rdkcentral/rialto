@@ -32,6 +32,9 @@ add_gtests (
 
         sessionServerManager/SessionServerManagerTestsFixture.cpp
         sessionServerManager/SessionServerManagerTests.cpp
+
+        webAudioPlayerService/WebAudioPlayerServiceTestsFixture.cpp
+        webAudioPlayerService/WebAudioPlayerServiceTests.cpp
         )
 
 target_include_directories(
