@@ -68,6 +68,8 @@ public:
     bool haveData(int sessionId, MediaSourceStatus status, std::uint32_t numFrames,
                 std::uint32_t needDataRequestId) override;
     bool renderFrame(int sessionId) override;
+    bool setVolume(int sessionId, double volume) override;
+    bool getVolume(int sessionId, double &volume) override;
     std::vector<std::string> getSupportedMimeTypes(MediaSourceType type) override;
     bool isMimeTypeSupported(const std::string &mimeType) override;
 

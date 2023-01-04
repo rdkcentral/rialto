@@ -406,6 +406,16 @@ public:
     {
         return gst_event_new_step(format, amount, rate, flush, intermediate);
     }
+
+    gdouble gstStreamVolumeGetVolume(GstStreamVolume *volume, GstStreamVolumeFormat format) const override
+    {
+        return gst_stream_volume_get_volume(volume, format);
+    }
+
+    void gstStreamVolumeSetVolume(GstStreamVolume *volume, GstStreamVolumeFormat format, gdouble val) const
+    {
+        gst_stream_volume_set_volume(volume, format, val);
+    }
 };
 
 }; // namespace firebolt::rialto::server

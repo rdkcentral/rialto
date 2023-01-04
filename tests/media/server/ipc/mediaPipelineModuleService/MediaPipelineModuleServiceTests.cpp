@@ -248,3 +248,27 @@ TEST_F(MediaPipelineModuleServiceTests, renderFrameFails)
     mediaPipelineServiceWillFailToRenderFrame();
     sendRenderFrameRequestAndReceiveResponse();
 }
+
+TEST_F(MediaPipelineModuleServiceTests, shouldSetVolume)
+{
+    mediaPipelineServiceWillSetVolume();
+    sendSetVolumeRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToSetVolume)
+{
+    mediaPipelineServiceWillFailToSetVolume();
+    sendSetVolumeRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldGetVolume)
+{
+    mediaPipelineServiceWillGetVolume();
+    sendGetVolumeRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetVolume)
+{
+    mediaPipelineServiceWillFailToGetVolume();
+    sendGetVolumeRequestAndReceiveResponseWithoutVolumeMatch();
+}

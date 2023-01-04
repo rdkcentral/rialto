@@ -42,7 +42,6 @@ public:
     MOCK_METHOD(std::shared_ptr<ISharedMemoryBuffer>, getShmBuffer, (), (const, override));
     MOCK_METHOD(IMediaPipelineService&, getMediaPipelineService, (), (const, override));
     MOCK_METHOD(IWebAudioPlayerService&, getWebAudioPlayerService, (), (const, override));
-
 };
 } // namespace firebolt::rialto::server::service
 

@@ -47,6 +47,7 @@ constexpr std::uint32_t y{7};
 constexpr firebolt::rialto::MediaSourceStatus status{firebolt::rialto::MediaSourceStatus::CODEC_CHANGED};
 constexpr std::uint32_t needDataRequestId{17};
 constexpr std::uint32_t numFrames{1};
+constexpr double volume{0.7};
 } // namespace
 
 namespace firebolt::rialto
@@ -197,6 +198,32 @@ void MediaPipelineServiceTests::mediaPipelineWillRenderFrame()
 void MediaPipelineServiceTests::mediaPipelineWillFailToRenderFrame()
 {
     EXPECT_CALL(m_mediaPipelineMock, renderFrame()).WillOnce(Return(false));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillSetVolume()
+{
+    EXPECT_CALL(m_mediaPipelineMock, setVolume(_)).WillOnce(Return(true));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillFailToSetVolume()
+{
+    EXPECT_CALL(m_mediaPipelineMock, setVolume(_)).WillOnce(Return(false));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillGetVolume()
+{
+    EXPECT_CALL(m_mediaPipelineMock, getVolume(_))
+        .WillOnce(Invoke(
+            [&](double &vol)
+            {
+                vol = volume;
+                return true;
+            }));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillFailToGetVolume()
+{
+    EXPECT_CALL(m_mediaPipelineMock, getVolume(_)).WillOnce(Return(false));
 }
 
 void MediaPipelineServiceTests::mediaPipelineFactoryWillCreateMediaPipeline()
@@ -411,6 +438,30 @@ void MediaPipelineServiceTests::renderFrameShouldSucceed()
 void MediaPipelineServiceTests::renderFrameShouldFail()
 {
     EXPECT_FALSE(m_sut->renderFrame(sessionId));
+}
+
+
+void MediaPipelineServiceTests::setVolumeShouldSucceed()
+{
+    EXPECT_TRUE(m_sut->setVolume(sessionId, volume));
+}
+
+void MediaPipelineServiceTests::setVolumeShouldFail()
+{
+    EXPECT_FALSE(m_sut->setVolume(sessionId, volume));
+}
+
+void MediaPipelineServiceTests::getVolumeShouldSucceed()
+{
+    double targetVolume{};
+    EXPECT_TRUE(m_sut->getVolume(sessionId, targetVolume));
+    EXPECT_EQ(targetVolume, volume);
+}
+
+void MediaPipelineServiceTests::getVolumeShouldFail()
+{
+    double targetVolume{};
+    EXPECT_FALSE(m_sut->getVolume(sessionId, targetVolume));
 }
 
 void MediaPipelineServiceTests::clearMediaPipelines()

@@ -64,6 +64,10 @@ public:
     void mediaPipelineWillFailToGetPosition();
     void mediaPipelineWillRenderFrame();
     void mediaPipelineWillFailToRenderFrame();
+    void mediaPipelineWillSetVolume();
+    void mediaPipelineWillFailToSetVolume();
+    void mediaPipelineWillGetVolume();
+    void mediaPipelineWillFailToGetVolume();
 
     void mediaPipelineFactoryWillCreateMediaPipeline();
     void mediaPipelineFactoryWillReturnNullptr();
@@ -106,6 +110,10 @@ public:
     void isMimeTypeSupportedSucceed();
     void renderFrameShouldSucceed();
     void renderFrameShouldFail();
+    void setVolumeShouldSucceed();
+    void setVolumeShouldFail();
+    void getVolumeShouldSucceed();
+    void getVolumeShouldFail();
     void clearMediaPipelines();
     void initSession();
 

@@ -39,6 +39,8 @@ extern "C"
         RIALTO_DEBUG_LEVEL_MILESTONE = (1u << 3),
         RIALTO_DEBUG_LEVEL_INFO = (1u << 4),
         RIALTO_DEBUG_LEVEL_DEBUG = (1u << 5),
+        RIALTO_DEBUG_LEVEL_EXTERNAL =
+            (1u << 6), // Level controlled by an external variable, like e.g. GST_DEBUG. Keep it as last level.
 
         RIALTO_DEBUG_LEVEL_DEFAULT = (RIALTO_DEBUG_LEVEL_FATAL | RIALTO_DEBUG_LEVEL_ERROR | RIALTO_DEBUG_LEVEL_WARNING |
                                       RIALTO_DEBUG_LEVEL_MILESTONE)
@@ -55,6 +57,7 @@ extern "C"
         RIALTO_COMPONENT_IPC,
         RIALTO_COMPONENT_SERVER_MANAGER,
         RIALTO_COMPONENT_COMMON,
+        RIALTO_COMPONENT_EXTERNAL, // External component, like e.g. GStreamer. Keep it as last component.
         RIALTO_COMPONENT_LAST,
     };
 
@@ -118,6 +121,12 @@ extern "C"
     {                                                                                                                  \
         rialtoLogPrintf(component, RIALTO_DEBUG_LEVEL_DEBUG, __FILE__, __FUNCTION__, __LINE__, fmt, ##args);           \
     } while (false)
+#define RIALTO_LOG_EXTERNAL(fmt, args...)                                                                              \
+    do                                                                                                                 \
+    {                                                                                                                  \
+        rialtoLogPrintf(RIALTO_COMPONENT_EXTERNAL, RIALTO_DEBUG_LEVEL_EXTERNAL, __FILE__, __FUNCTION__, __LINE__, fmt, \
+                        ##args);                                                                                       \
+    } while (false)
 
 #ifdef __cplusplus
 }
@@ -168,6 +177,13 @@ RIALTO_DEBUG_LEVEL getLogLevels(RIALTO_COMPONENT component);
 using LogHandler = std::function<void(RIALTO_DEBUG_LEVEL level, const char *file, int line, const char *function,
                                       const char *message, std::size_t messageLen)>;
 RialtoLoggingStatus setLogHandler(RIALTO_COMPONENT component, LogHandler handler);
+
+/**
+ * @brief Checks if rialto logs to console.
+ *
+ * @retval: Returns true, if rialto is logging to console
+ */
+bool isConsoleLoggingEnabled();
 
 } // namespace firebolt::rialto::logging
 
