@@ -456,8 +456,7 @@ void CdmService::incrementSessionIdUsageCounter(int32_t keySessionId)
 {
     std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
     auto mediaKeysIter = std::find_if(m_mediaKeys.begin(), m_mediaKeys.end(),
-                                      [&](const auto &iter)
-                                      {  return iter.second->hasSession(keySessionId); });
+                                      [&](const auto &iter) { return iter.second->hasSession(keySessionId); });
     if (mediaKeysIter == m_mediaKeys.end())
     {
         RIALTO_SERVER_LOG_ERROR("Media keys handle for mksId: %d does not exists", keySessionId);
@@ -471,8 +470,7 @@ void CdmService::decrementSessionIdUsageCounter(int32_t keySessionId)
 {
     std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
     auto mediaKeysIter = std::find_if(m_mediaKeys.begin(), m_mediaKeys.end(),
-                                      [&](const auto &iter)
-                                      {  return iter.second->hasSession(keySessionId); });
+                                      [&](const auto &iter) { return iter.second->hasSession(keySessionId); });
     if (mediaKeysIter == m_mediaKeys.end())
     {
         RIALTO_SERVER_LOG_ERROR("Media keys handle for mksId: %d does not exists", keySessionId);

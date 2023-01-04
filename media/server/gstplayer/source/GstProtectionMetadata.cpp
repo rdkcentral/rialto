@@ -22,8 +22,8 @@
 #include <gst/gstconfig.h>
 #include <stdio.h>
 
-static gboolean rialto_eme_protection_metadata_init(GstMeta *meta, gpointer params,
-                                                    GstBuffer *buffer) // NOLINT(build/function_format)
+static gboolean rialto_eme_protection_metadata_init(GstMeta *meta, gpointer params, // NOLINT(build/function_format)
+                                                    GstBuffer *buffer)
 {
     GstRialtoProtectionMetadata *emeta = reinterpret_cast<GstRialtoProtectionMetadata *>(meta);
     GstRialtoProtectionData *data = static_cast<GstRialtoProtectionData *>(params);

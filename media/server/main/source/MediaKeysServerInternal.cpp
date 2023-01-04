@@ -625,7 +625,7 @@ void MediaKeysServerInternal::decrementSessionIdUsageCounter(int32_t keySessionI
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
 }
 
-void MediaKeysServerInternal::decrementSessionIdUsageCounterInternal(int32_t keySessionId) 
+void MediaKeysServerInternal::decrementSessionIdUsageCounterInternal(int32_t keySessionId)
 {
     auto sessionIter = m_mediaKeySessions.find(keySessionId);
     if (sessionIter == m_mediaKeySessions.end())
