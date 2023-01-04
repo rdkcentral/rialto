@@ -40,8 +40,8 @@ public:
     MOCK_METHOD(int, getMaxPlaybacks, (), (const, override));
     MOCK_METHOD(int, getMaxWebAudioInstances, (), (const, override));
     MOCK_METHOD(std::shared_ptr<ISharedMemoryBuffer>, getShmBuffer, (), (const, override));
-    MOCK_METHOD(IMediaPipelineService&, getMediaPipelineService, (), (const, override));
-    MOCK_METHOD(IWebAudioPlayerService&, getWebAudioPlayerService, (), (const, override));
+    MOCK_METHOD(IMediaPipelineService &, getMediaPipelineService, (), (const, override));
+    MOCK_METHOD(IWebAudioPlayerService &, getWebAudioPlayerService, (), (const, override));
 };
 } // namespace firebolt::rialto::server::service
 

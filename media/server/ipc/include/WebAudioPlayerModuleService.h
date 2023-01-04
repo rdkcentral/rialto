@@ -35,7 +35,8 @@ public:
     WebAudioPlayerModuleServiceFactory() = default;
     virtual ~WebAudioPlayerModuleServiceFactory() = default;
 
-    std::shared_ptr<IWebAudioPlayerModuleService> create(service::IWebAudioPlayerService &webAudioPlayerService) const override;
+    std::shared_ptr<IWebAudioPlayerModuleService>
+    create(service::IWebAudioPlayerService &webAudioPlayerService) const override;
 };
 
 class WebAudioPlayerModuleService : public IWebAudioPlayerModuleService
@@ -48,38 +49,41 @@ public:
     void clientDisconnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient) override;
 
     void createWebAudioPlayer(::google::protobuf::RpcController *controller,
-                       const ::firebolt::rialto::CreateWebAudioPlayerRequest *request,
-                       ::firebolt::rialto::CreateWebAudioPlayerResponse *response, ::google::protobuf::Closure *done) override;
+                              const ::firebolt::rialto::CreateWebAudioPlayerRequest *request,
+                              ::firebolt::rialto::CreateWebAudioPlayerResponse *response,
+                              ::google::protobuf::Closure *done) override;
     void destroyWebAudioPlayer(::google::protobuf::RpcController *controller,
-                        const ::firebolt::rialto::DestroyWebAudioPlayerRequest *request,
-                        ::firebolt::rialto::DestroyWebAudioPlayerResponse *response, ::google::protobuf::Closure *done) override;
-    void play(::google::protobuf::RpcController *controller,
-                       const ::firebolt::rialto::WebAudioPlayRequest *request,
-                       ::firebolt::rialto::WebAudioPlayResponse *response, ::google::protobuf::Closure *done) override;
-    void pause(::google::protobuf::RpcController *controller,
-                       const ::firebolt::rialto::WebAudioPauseRequest *request,
-                       ::firebolt::rialto::WebAudioPauseResponse *response, ::google::protobuf::Closure *done) override;
-    void setEos(::google::protobuf::RpcController *controller,
-                       const ::firebolt::rialto::WebAudioSetEosRequest *request,
-                       ::firebolt::rialto::WebAudioSetEosResponse *response, ::google::protobuf::Closure *done) override;
+                               const ::firebolt::rialto::DestroyWebAudioPlayerRequest *request,
+                               ::firebolt::rialto::DestroyWebAudioPlayerResponse *response,
+                               ::google::protobuf::Closure *done) override;
+    void play(::google::protobuf::RpcController *controller, const ::firebolt::rialto::WebAudioPlayRequest *request,
+              ::firebolt::rialto::WebAudioPlayResponse *response, ::google::protobuf::Closure *done) override;
+    void pause(::google::protobuf::RpcController *controller, const ::firebolt::rialto::WebAudioPauseRequest *request,
+               ::firebolt::rialto::WebAudioPauseResponse *response, ::google::protobuf::Closure *done) override;
+    void setEos(::google::protobuf::RpcController *controller, const ::firebolt::rialto::WebAudioSetEosRequest *request,
+                ::firebolt::rialto::WebAudioSetEosResponse *response, ::google::protobuf::Closure *done) override;
     void getBufferAvailable(::google::protobuf::RpcController *controller,
-                       const ::firebolt::rialto::WebAudioGetBufferAvailableRequest *request,
-                       ::firebolt::rialto::WebAudioGetBufferAvailableResponse *response, ::google::protobuf::Closure *done) override;
+                            const ::firebolt::rialto::WebAudioGetBufferAvailableRequest *request,
+                            ::firebolt::rialto::WebAudioGetBufferAvailableResponse *response,
+                            ::google::protobuf::Closure *done) override;
     void getBufferDelay(::google::protobuf::RpcController *controller,
-                       const ::firebolt::rialto::WebAudioGetBufferDelayRequest *request,
-                       ::firebolt::rialto::WebAudioGetBufferDelayResponse *response, ::google::protobuf::Closure *done) override;
+                        const ::firebolt::rialto::WebAudioGetBufferDelayRequest *request,
+                        ::firebolt::rialto::WebAudioGetBufferDelayResponse *response,
+                        ::google::protobuf::Closure *done) override;
     void writeBuffer(::google::protobuf::RpcController *controller,
-                       const ::firebolt::rialto::WebAudioWriteBufferRequest *request,
-                       ::firebolt::rialto::WebAudioWriteBufferResponse *response, ::google::protobuf::Closure *done) override;
+                     const ::firebolt::rialto::WebAudioWriteBufferRequest *request,
+                     ::firebolt::rialto::WebAudioWriteBufferResponse *response,
+                     ::google::protobuf::Closure *done) override;
     void getDeviceInfo(::google::protobuf::RpcController *controller,
                        const ::firebolt::rialto::WebAudioGetDeviceInfoRequest *request,
-                       ::firebolt::rialto::WebAudioGetDeviceInfoResponse *response, ::google::protobuf::Closure *done) override;
+                       ::firebolt::rialto::WebAudioGetDeviceInfoResponse *response,
+                       ::google::protobuf::Closure *done) override;
     void setVolume(::google::protobuf::RpcController *controller,
-                       const ::firebolt::rialto::WebAudioSetVolumeRequest *request,
-                       ::firebolt::rialto::WebAudioSetVolumeResponse *response, ::google::protobuf::Closure *done) override;
+                   const ::firebolt::rialto::WebAudioSetVolumeRequest *request,
+                   ::firebolt::rialto::WebAudioSetVolumeResponse *response, ::google::protobuf::Closure *done) override;
     void getVolume(::google::protobuf::RpcController *controller,
-                       const ::firebolt::rialto::WebAudioGetVolumeRequest *request,
-                       ::firebolt::rialto::WebAudioGetVolumeResponse *response, ::google::protobuf::Closure *done) override;
+                   const ::firebolt::rialto::WebAudioGetVolumeRequest *request,
+                   ::firebolt::rialto::WebAudioGetVolumeResponse *response, ::google::protobuf::Closure *done) override;
 
 private:
     service::IWebAudioPlayerService &m_webAudioPlayerService;

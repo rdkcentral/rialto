@@ -41,7 +41,7 @@ public:
     IMediaPipelineService &operator=(IMediaPipelineService &&) = delete;
 
     virtual bool createSession(int sessionId, const std::shared_ptr<IMediaPipelineClient> &mediaPipelineClient,
-                            std::uint32_t maxWidth, std::uint32_t maxHeight) = 0;
+                               std::uint32_t maxWidth, std::uint32_t maxHeight) = 0;
     virtual bool destroySession(int sessionId) = 0;
     virtual bool load(int sessionId, MediaType type, const std::string &mimeType, const std::string &url) = 0;
     virtual bool attachSource(int sessionId, const std::unique_ptr<IMediaPipeline::MediaSource> &source) = 0;
@@ -55,7 +55,7 @@ public:
     virtual bool setVideoWindow(int sessionId, std::uint32_t x, std::uint32_t y, std::uint32_t width,
                                 std::uint32_t height) = 0;
     virtual bool haveData(int sessionId, MediaSourceStatus status, std::uint32_t numFrames,
-                        std::uint32_t needDataRequestId) = 0;
+                          std::uint32_t needDataRequestId) = 0;
     virtual bool renderFrame(int sessionId) = 0;
     virtual bool setVolume(int sessionId, double volume) = 0;
     virtual bool getVolume(int sessionId, double &volume) = 0;

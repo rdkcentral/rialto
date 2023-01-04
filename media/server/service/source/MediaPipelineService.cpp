@@ -28,11 +28,11 @@
 
 namespace firebolt::rialto::server::service
 {
-MediaPipelineService::MediaPipelineService(IPlaybackService& playbackService, std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
-                                 std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
-                                 IDecryptionService &decryptionService)
-    : m_playbackService{playbackService},
-      m_mediaPipelineFactory{mediaPipelineFactory},
+MediaPipelineService::MediaPipelineService(
+    IPlaybackService &playbackService, std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
+    std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
+    IDecryptionService &decryptionService)
+    : m_playbackService{playbackService}, m_mediaPipelineFactory{mediaPipelineFactory},
       m_mediaPipelineCapabilities{mediaPipelineCapabilitiesFactory->createMediaPipelineCapabilities()},
       m_decryptionService{decryptionService}
 {
@@ -56,7 +56,7 @@ void MediaPipelineService::clearMediaPipelines()
 }
 
 bool MediaPipelineService::createSession(int sessionId, const std::shared_ptr<IMediaPipelineClient> &mediaPipelineClient,
-                                    std::uint32_t maxWidth, std::uint32_t maxHeight)
+                                         std::uint32_t maxWidth, std::uint32_t maxHeight)
 {
     RIALTO_SERVER_LOG_DEBUG("MediaPipelineService requested to create new session with id: %d", sessionId);
     if (!m_playbackService.isActive())
@@ -240,7 +240,7 @@ bool MediaPipelineService::getPosition(int sessionId, std::int64_t &position)
 }
 
 bool MediaPipelineService::setVideoWindow(int sessionId, std::uint32_t x, std::uint32_t y, std::uint32_t width,
-                                     std::uint32_t height)
+                                          std::uint32_t height)
 {
     RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to set video window, session id: %d", sessionId);
 
@@ -255,7 +255,7 @@ bool MediaPipelineService::setVideoWindow(int sessionId, std::uint32_t x, std::u
 }
 
 bool MediaPipelineService::haveData(int sessionId, MediaSourceStatus status, std::uint32_t numFrames,
-                               std::uint32_t needDataRequestId)
+                                    std::uint32_t needDataRequestId)
 {
     RIALTO_SERVER_LOG_DEBUG("New data available, session id: %d", sessionId);
 

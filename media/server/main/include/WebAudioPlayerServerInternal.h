@@ -42,10 +42,10 @@ public:
                                                           const std::string &audioMimeType, const uint32_t priority,
                                                           const WebAudioConfig *config) const override;
 
-    std::unique_ptr<IWebAudioPlayer> createWebAudioPlayerServerInternal(std::weak_ptr<IWebAudioPlayerClient> client,
-                                                                        const std::string &audioMimeType, const uint32_t priority,
-                                                                        const WebAudioConfig *config,
-                                                                        const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer) const override;
+    std::unique_ptr<IWebAudioPlayer>
+    createWebAudioPlayerServerInternal(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
+                                       const uint32_t priority, const WebAudioConfig *config,
+                                       const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer) const override;
 };
 
 /**
@@ -64,7 +64,8 @@ public:
      * @param[in] shmBuffer         : The shared memory buffer
      */
     WebAudioPlayerServerInternal(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
-                   const uint32_t priority, const WebAudioConfig *config, const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer);
+                                 const uint32_t priority, const WebAudioConfig *config,
+                                 const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer);
 
     /**
      * @brief Virtual destructor.

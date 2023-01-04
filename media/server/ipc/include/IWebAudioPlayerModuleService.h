@@ -50,7 +50,8 @@ public:
      *
      * @retval the web audio player ipc instance or null on error.
      */
-    virtual std::shared_ptr<IWebAudioPlayerModuleService> create(service::IWebAudioPlayerService &webAudioPlayerService) const = 0;
+    virtual std::shared_ptr<IWebAudioPlayerModuleService>
+    create(service::IWebAudioPlayerService &webAudioPlayerService) const = 0;
 };
 
 /**

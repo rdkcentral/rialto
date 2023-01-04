@@ -240,8 +240,8 @@ void MediaPipelineModuleService::createSession(::google::protobuf::RpcController
     int sessionId = generateSessionId();
     bool sessionCreated =
         m_mediaPipelineService.createSession(sessionId,
-                                        std::make_shared<MediaPipelineClient>(sessionId, ipcController->getClient()),
-                                        request->max_width(), request->max_height());
+                                             std::make_shared<MediaPipelineClient>(sessionId, ipcController->getClient()),
+                                             request->max_width(), request->max_height());
     if (sessionCreated)
     {
         // Assume that IPC library works well and client is present
@@ -291,7 +291,7 @@ void MediaPipelineModuleService::load(::google::protobuf::RpcController *control
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
     if (!m_mediaPipelineService.load(request->session_id(), convertMediaType(request->type()), request->mime_type(),
-                                request->url()))
+                                     request->url()))
     {
         RIALTO_SERVER_LOG_ERROR("Load failed");
         controller->SetFailed("Operation failed");
@@ -306,7 +306,7 @@ void MediaPipelineModuleService::setVideoWindow(::google::protobuf::RpcControlle
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
     if (!m_mediaPipelineService.setVideoWindow(request->session_id(), request->x(), request->y(), request->width(),
-                                          request->height()))
+                                               request->height()))
     {
         RIALTO_SERVER_LOG_ERROR("Set Video Window failed");
         controller->SetFailed("Operation failed");

@@ -21,8 +21,8 @@
 #include "IMediaKeysCapabilitiesModuleService.h"
 #include "IMediaKeysModuleService.h"
 #include "IMediaPipelineModuleService.h"
-#include "IWebAudioPlayerModuleService.h"
 #include "IRialtoControlModuleService.h"
+#include "IWebAudioPlayerModuleService.h"
 #include "RialtoServerLogging.h"
 #include <IIpcServerFactory.h>
 #include <sys/stat.h>
@@ -38,8 +38,10 @@ SessionManagementServer::SessionManagementServer(
     const std::shared_ptr<IWebAudioPlayerModuleServiceFactory> &webAudioPlayerModuleFactory,
     const std::shared_ptr<IRialtoControlModuleServiceFactory> &rialtoControlModuleFactory,
     service::IPlaybackService &playbackService, service::ICdmService &cdmService)
-    : m_isRunning{false}, m_mediaPipelineModule{mediaPipelineModuleFactory->create(playbackService.getMediaPipelineService())},
-      m_mediaPipelineCapabilitiesModule{mediaPipelineCapabilitiesModuleFactory->create(playbackService.getMediaPipelineService())},
+    : m_isRunning{false}, m_mediaPipelineModule{mediaPipelineModuleFactory->create(
+                              playbackService.getMediaPipelineService())},
+      m_mediaPipelineCapabilitiesModule{
+          mediaPipelineCapabilitiesModuleFactory->create(playbackService.getMediaPipelineService())},
       m_mediaKeysModule{mediaKeysModuleFactory->create(cdmService)},
       m_mediaKeysCapabilitiesModule{mediaKeysCapabilitiesModuleFactory->create(cdmService)},
       m_webAudioPlayerModule{webAudioPlayerModuleFactory->create(playbackService.getWebAudioPlayerService())},

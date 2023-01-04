@@ -35,8 +35,8 @@
 #include <vector>
 
 #include "IDecryptionService.h"
-#include "IWebAudioPlayer.h"
 #include "ISharedMemoryBuffer.h"
+#include "IWebAudioPlayer.h"
 #include <MediaCommon.h>
 
 namespace firebolt::rialto::server
@@ -57,7 +57,8 @@ public:
     static std::shared_ptr<IWebAudioPlayerServerInternalFactory> createFactory();
 
     /**
-     * @brief IWebAudioPlayerServerInternalFactory method, returns a concrete implementation of IWebAudioPlayer for internal server use
+     * @brief IWebAudioPlayerServerInternalFactory method, returns a concrete implementation of IWebAudioPlayer for
+     * internal server use
      *
      * @param[in] client            : The Web Audio Player client
      * @param[in] audioMimeType     : The audio encoding format, currently only "audio/x-raw" (PCM)
@@ -67,11 +68,10 @@ public:
      *
      * @retval the new backend instance or null on error.
      */
-    virtual std::unique_ptr<IWebAudioPlayer> createWebAudioPlayerServerInternal(std::weak_ptr<IWebAudioPlayerClient> client,
-                                                                  const std::string &audioMimeType,
-                                                                  const uint32_t priority,
-                                                                  const WebAudioConfig *config,
-        const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer) const = 0;
+    virtual std::unique_ptr<IWebAudioPlayer>
+    createWebAudioPlayerServerInternal(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
+                                       const uint32_t priority, const WebAudioConfig *config,
+                                       const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer) const = 0;
 };
 }; // namespace firebolt::rialto::server
 

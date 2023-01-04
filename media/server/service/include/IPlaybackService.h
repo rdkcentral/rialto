@@ -21,8 +21,8 @@
 #define FIREBOLT_RIALTO_SERVER_SERVICE_I_PLAYBACK_SERVICE_H_
 
 #include "IMediaPipelineService.h"
-#include "IWebAudioPlayerService.h"
 #include "ISharedMemoryBuffer.h"
+#include "IWebAudioPlayerService.h"
 #include "MediaCommon.h"
 #include <cstdint>
 #include <memory>
@@ -52,8 +52,8 @@ public:
     virtual int getMaxPlaybacks() const = 0;
     virtual int getMaxWebAudioInstances() const = 0;
     virtual std::shared_ptr<ISharedMemoryBuffer> getShmBuffer() const = 0;
-    virtual IMediaPipelineService& getMediaPipelineService() const = 0;
-    virtual IWebAudioPlayerService& getWebAudioPlayerService() const = 0;
+    virtual IMediaPipelineService &getMediaPipelineService() const = 0;
+    virtual IWebAudioPlayerService &getWebAudioPlayerService() const = 0;
 };
 } // namespace firebolt::rialto::server::service
 

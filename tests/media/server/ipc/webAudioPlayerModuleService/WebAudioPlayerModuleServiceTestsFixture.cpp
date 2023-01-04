@@ -39,14 +39,14 @@ const std::string audioMimeType{"audio/x-raw"};
 constexpr uint32_t priority{4};
 constexpr firebolt::rialto::WebAudioPcmConfig pcmConfig{1, 2, 3, false, true, false};
 constexpr firebolt::rialto::WebAudioPlayerState webAudioPlayerState{firebolt::rialto::WebAudioPlayerState::END_OF_STREAM};
-constexpr uint32_t availableFrames = 11;
-const firebolt::rialto::WebAudioShmInfo shmInfo{12,13,14,15};
-constexpr uint32_t delayFrames = 16;
-constexpr uint32_t numberOfFrames = 17;
-constexpr uint32_t preferredFrames = 18;
-constexpr uint32_t maximumFrames = 19;
-constexpr bool supportDeferredPlay = true;
-constexpr double volume = 1.5;
+constexpr uint32_t availableFrames{11};
+const firebolt::rialto::WebAudioShmInfo shmInfo{12, 13, 14, 15};
+constexpr uint32_t delayFrames{16};
+constexpr uint32_t numberOfFrames{17};
+constexpr uint32_t preferredFrames{18};
+constexpr uint32_t maximumFrames{19};
+constexpr bool supportDeferredPlay{true};
+constexpr double volume{1.5};
 } // namespace
 
 MATCHER_P(WebAudioPlayerStateEventMatcher, playerState, "")
@@ -59,8 +59,7 @@ MATCHER_P(WebAudioPlayerStateEventMatcher, playerState, "")
 MATCHER_P(PcmConfigMatcher, expectedPcmConfig, "")
 {
     firebolt::rialto::WebAudioPcmConfig actualPcmConfig = arg->pcm;
-    return ((actualPcmConfig.rate == expectedPcmConfig.rate) &&
-            (actualPcmConfig.channels == expectedPcmConfig.channels) &&
+    return ((actualPcmConfig.rate == expectedPcmConfig.rate) && (actualPcmConfig.channels == expectedPcmConfig.channels) &&
             (actualPcmConfig.sampleSize == expectedPcmConfig.sampleSize) &&
             (actualPcmConfig.isBigEndian == expectedPcmConfig.isBigEndian) &&
             (actualPcmConfig.isSigned == expectedPcmConfig.isSigned) &&
@@ -69,7 +68,8 @@ MATCHER_P(PcmConfigMatcher, expectedPcmConfig, "")
 
 namespace firebolt::rialto
 {
-firebolt::rialto::WebAudioPlayerStateEvent_WebAudioPlayerState convertWebAudioPlayerState(const firebolt::rialto::WebAudioPlayerState &mediaType)
+firebolt::rialto::WebAudioPlayerStateEvent_WebAudioPlayerState
+convertWebAudioPlayerState(const firebolt::rialto::WebAudioPlayerState &mediaType)
 {
     switch (mediaType)
     {
@@ -136,7 +136,8 @@ void WebAudioPlayerModuleServiceTests::webAudioPlayerServiceWillCreateWebAudioPl
 {
     expectRequestSuccess();
     EXPECT_CALL(*m_controllerMock, getClient()).Times(2).WillRepeatedly(Return(m_clientMock));
-    EXPECT_CALL(m_webAudioPlayerServiceMock, createWebAudioPlayer(_, _, audioMimeType, priority, PcmConfigMatcher(pcmConfig)))
+    EXPECT_CALL(m_webAudioPlayerServiceMock,
+                createWebAudioPlayer(_, _, audioMimeType, priority, PcmConfigMatcher(pcmConfig)))
         .WillOnce(DoAll(SaveArg<1>(&m_webAudioPlayerClient), Return(true)));
 }
 
@@ -238,7 +239,8 @@ void WebAudioPlayerModuleServiceTests::webAudioPlayerServiceWillGetDeviceInfo()
 {
     expectRequestSuccess();
     EXPECT_CALL(m_webAudioPlayerServiceMock, getDeviceInfo(webAudioPlayerHandle, _, _, _))
-        .WillOnce(DoAll(SetArgReferee<1>(preferredFrames), SetArgReferee<2>(maximumFrames), SetArgReferee<3>(supportDeferredPlay), Return(true)));
+        .WillOnce(DoAll(SetArgReferee<1>(preferredFrames), SetArgReferee<2>(maximumFrames),
+                        SetArgReferee<3>(supportDeferredPlay), Return(true)));
 }
 
 void WebAudioPlayerModuleServiceTests::webAudioPlayerServiceWillFailToGetDeviceInfo()
@@ -274,7 +276,8 @@ void WebAudioPlayerModuleServiceTests::webAudioPlayerServiceWillFailToGetVolume(
 
 void WebAudioPlayerModuleServiceTests::webAudioPlayerClientWillSendPlayerStateEvent()
 {
-    EXPECT_CALL(*m_clientMock, sendEvent(WebAudioPlayerStateEventMatcher(convertWebAudioPlayerState(webAudioPlayerState))));
+    EXPECT_CALL(*m_clientMock,
+                sendEvent(WebAudioPlayerStateEventMatcher(convertWebAudioPlayerState(webAudioPlayerState))));
 }
 
 void WebAudioPlayerModuleServiceTests::sendClientConnected()
@@ -315,8 +318,8 @@ int WebAudioPlayerModuleServiceTests::sendCreateWebAudioPlayerRequestWithPcmConf
     request.set_audio_mime_type(audioMimeType);
     request.set_priority(priority);
 
-    firebolt::rialto::CreateWebAudioPlayerRequest_WebAudioConfig* configProto = request.mutable_config();
-    firebolt::rialto::CreateWebAudioPlayerRequest_WebAudioPcmConfig* pcmConfigProto = configProto->mutable_pcm();
+    firebolt::rialto::CreateWebAudioPlayerRequest_WebAudioConfig *configProto = request.mutable_config();
+    firebolt::rialto::CreateWebAudioPlayerRequest_WebAudioPcmConfig *pcmConfigProto = configProto->mutable_pcm();
     pcmConfigProto->set_rate(pcmConfig.rate);
     pcmConfigProto->set_channels(pcmConfig.channels);
     pcmConfigProto->set_sample_size(pcmConfig.sampleSize);

@@ -314,7 +314,6 @@ TEST_F(MediaPipelineServiceTests, shouldCheckSupportedMimeType)
     isMimeTypeSupportedSucceed();
 }
 
-
 TEST_F(MediaPipelineServiceTests, shouldFailToRenderframeForNotExistingSession)
 {
     createMediaPipelineShouldSuccess();

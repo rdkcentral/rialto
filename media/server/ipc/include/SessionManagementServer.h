@@ -24,10 +24,10 @@
 #include "IMediaKeysModuleService.h"
 #include "IMediaPipelineCapabilitiesModuleService.h"
 #include "IMediaPipelineModuleService.h"
-#include "IWebAudioPlayerModuleService.h"
 #include "IPlaybackService.h"
 #include "IRialtoControlModuleService.h"
 #include "ISessionManagementServer.h"
+#include "IWebAudioPlayerModuleService.h"
 #include "SetLogLevelsService.h"
 #include <IIpcServer.h>
 #include <IIpcServerFactory.h>

@@ -24,9 +24,9 @@
 #include "IMediaKeysModuleService.h"
 #include "IMediaPipelineCapabilitiesModuleService.h"
 #include "IMediaPipelineModuleService.h"
-#include "IWebAudioPlayerModuleService.h"
 #include "IRialtoControlModuleService.h"
 #include "IServerManagerModuleServiceFactory.h"
+#include "IWebAudioPlayerModuleService.h"
 #include "SessionManagementServer.h"
 
 namespace firebolt::rialto::server::ipc

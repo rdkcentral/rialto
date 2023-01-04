@@ -20,10 +20,10 @@
 #ifndef FIREBOLT_RIALTO_SERVER_SERVICE_WEB_AUDIO_PLAYER_SERVICE_H_
 #define FIREBOLT_RIALTO_SERVER_SERVICE_WEB_AUDIO_PLAYER_SERVICE_H_
 
+#include "IPlaybackService.h"
 #include "IWebAudioPlayer.h"
 #include "IWebAudioPlayerServerInternalFactory.h"
 #include "IWebAudioPlayerService.h"
-#include "IPlaybackService.h"
 #include <atomic>
 #include <condition_variable>
 #include <functional>
@@ -40,19 +40,23 @@ namespace firebolt::rialto::server::service
 class WebAudioPlayerService : public IWebAudioPlayerService
 {
 public:
-    WebAudioPlayerService(IPlaybackService& playbackService, std::shared_ptr<IWebAudioPlayerServerInternalFactory> &&webAudioPlayerFactory);
+    WebAudioPlayerService(IPlaybackService &playbackService,
+                          std::shared_ptr<IWebAudioPlayerServerInternalFactory> &&webAudioPlayerFactory);
     ~WebAudioPlayerService() override;
     WebAudioPlayerService(const WebAudioPlayerService &) = delete;
     WebAudioPlayerService(WebAudioPlayerService &&) = delete;
     WebAudioPlayerService &operator=(const WebAudioPlayerService &) = delete;
     WebAudioPlayerService &operator=(WebAudioPlayerService &&) = delete;
 
-    bool createWebAudioPlayer(int handle, const std::shared_ptr<IWebAudioPlayerClient> &webAudioPlayerClient, const std::string &audioMimeType, const uint32_t priority, const WebAudioConfig *config) override;
+    bool createWebAudioPlayer(int handle, const std::shared_ptr<IWebAudioPlayerClient> &webAudioPlayerClient,
+                              const std::string &audioMimeType, const uint32_t priority,
+                              const WebAudioConfig *config) override;
     bool destroyWebAudioPlayer(int handle) override;
     bool play(int handle) override;
     bool pause(int handle) override;
     bool setEos(int handle) override;
-    bool getBufferAvailable(int handle, uint32_t &availableFrames, std::shared_ptr<WebAudioShmInfo> &webAudioShmInfo) override;
+    bool getBufferAvailable(int handle, uint32_t &availableFrames,
+                            std::shared_ptr<WebAudioShmInfo> &webAudioShmInfo) override;
     bool getBufferDelay(int handle, uint32_t &delayFrames) override;
     bool writeBuffer(int handle, const uint32_t numberOfFrames, void *data) override;
     bool getDeviceInfo(int handle, uint32_t &preferredFrames, uint32_t &maximumFrames, bool &supportDeferredPlay) override;
@@ -62,7 +66,7 @@ public:
     void clearWebAudioPlayers();
 
 private:
-    IPlaybackService& m_playbackService;
+    IPlaybackService &m_playbackService;
     std::shared_ptr<IWebAudioPlayerServerInternalFactory> m_webAudioPlayerFactory;
     std::map<int, std::unique_ptr<IWebAudioPlayer>> m_webAudioPlayers;
     std::mutex m_webAudioPlayerMutex;

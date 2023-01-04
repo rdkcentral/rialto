@@ -60,7 +60,8 @@ convertWebAudioPlayerState(const firebolt::rialto::WebAudioPlayerState &state)
 
 namespace firebolt::rialto::server::ipc
 {
-WebAudioPlayerClient::WebAudioPlayerClient(int webAudioPlayerHandle, const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient)
+WebAudioPlayerClient::WebAudioPlayerClient(int webAudioPlayerHandle,
+                                           const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient)
     : m_webAudioPlayerHandle{webAudioPlayerHandle}, m_ipcClient{ipcClient}
 {
 }

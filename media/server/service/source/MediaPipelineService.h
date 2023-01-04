@@ -42,7 +42,8 @@ namespace firebolt::rialto::server::service
 class MediaPipelineService : public IMediaPipelineService
 {
 public:
-    MediaPipelineService(IPlaybackService& playbackService, std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
+    MediaPipelineService(IPlaybackService &playbackService,
+                         std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
                          std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
                          IDecryptionService &decryptionService);
     ~MediaPipelineService() override;
@@ -52,7 +53,7 @@ public:
     MediaPipelineService &operator=(MediaPipelineService &&) = delete;
 
     bool createSession(int sessionId, const std::shared_ptr<IMediaPipelineClient> &mediaPipelineClient,
-                    std::uint32_t maxWidth, std::uint32_t maxHeight) override;
+                       std::uint32_t maxWidth, std::uint32_t maxHeight) override;
     bool destroySession(int sessionId) override;
     bool load(int sessionId, MediaType type, const std::string &mimeType, const std::string &url) override;
     bool attachSource(int sessionId, const std::unique_ptr<IMediaPipeline::MediaSource> &source) override;
@@ -66,7 +67,7 @@ public:
     bool setVideoWindow(int sessionId, std::uint32_t x, std::uint32_t y, std::uint32_t width,
                         std::uint32_t height) override;
     bool haveData(int sessionId, MediaSourceStatus status, std::uint32_t numFrames,
-                std::uint32_t needDataRequestId) override;
+                  std::uint32_t needDataRequestId) override;
     bool renderFrame(int sessionId) override;
     bool setVolume(int sessionId, double volume) override;
     bool getVolume(int sessionId, double &volume) override;
@@ -76,7 +77,7 @@ public:
     void clearMediaPipelines();
 
 private:
-    IPlaybackService& m_playbackService;
+    IPlaybackService &m_playbackService;
     std::shared_ptr<IMediaPipelineServerInternalFactory> m_mediaPipelineFactory;
     std::shared_ptr<IMediaPipelineCapabilities> m_mediaPipelineCapabilities;
     IDecryptionService &m_decryptionService;

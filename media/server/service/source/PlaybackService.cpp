@@ -34,8 +34,11 @@ PlaybackService::PlaybackService(std::shared_ptr<IMediaPipelineServerInternalFac
                                  std::shared_ptr<IWebAudioPlayerServerInternalFactory> &&webAudioPlayerFactory,
                                  std::unique_ptr<ISharedMemoryBufferFactory> &&shmBufferFactory,
                                  IDecryptionService &decryptionService)
-    : m_shmBufferFactory{std::move(shmBufferFactory)}, m_isActive{false}, m_maxPlaybacks{0}, m_maxWebAudioInstances{1}, //TODO
-      m_mediaPipelineService{std::make_unique<MediaPipelineService>(*this, std::move(mediaPipelineFactory), std::move(mediaPipelineCapabilitiesFactory), decryptionService)},
+    : m_shmBufferFactory{std::move(shmBufferFactory)}, m_isActive{false}, m_maxPlaybacks{0},
+      m_maxWebAudioInstances{1}, // TODO(RIALTO-2)
+      m_mediaPipelineService{std::make_unique<MediaPipelineService>(*this, std::move(mediaPipelineFactory),
+                                                                    std::move(mediaPipelineCapabilitiesFactory),
+                                                                    decryptionService)},
       m_webAudioPlayerService{std::make_unique<WebAudioPlayerService>(*this, std::move(webAudioPlayerFactory))}
 {
     RIALTO_SERVER_LOG_DEBUG("PlaybackService is constructed");
@@ -117,12 +120,12 @@ std::shared_ptr<ISharedMemoryBuffer> PlaybackService::getShmBuffer() const
     return m_shmBuffer;
 }
 
-IMediaPipelineService& PlaybackService::getMediaPipelineService() const
+IMediaPipelineService &PlaybackService::getMediaPipelineService() const
 {
     return *m_mediaPipelineService;
 }
 
-IWebAudioPlayerService& PlaybackService::getWebAudioPlayerService() const
+IWebAudioPlayerService &PlaybackService::getWebAudioPlayerService() const
 {
     return *m_webAudioPlayerService;
 }

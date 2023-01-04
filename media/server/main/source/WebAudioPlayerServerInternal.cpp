@@ -41,26 +41,25 @@ std::shared_ptr<IWebAudioPlayerFactory> IWebAudioPlayerFactory::createFactory()
 
 namespace firebolt::rialto::server
 {
-std::unique_ptr<IWebAudioPlayer> WebAudioPlayerServerInternalFactory::createWebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client,
-                                                                             const std::string &audioMimeType,
-                                                                             const uint32_t priority,
-                                                                             const WebAudioConfig *config) const
+std::unique_ptr<IWebAudioPlayer>
+WebAudioPlayerServerInternalFactory::createWebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client,
+                                                          const std::string &audioMimeType, const uint32_t priority,
+                                                          const WebAudioConfig *config) const
 {
     RIALTO_SERVER_LOG_ERROR(
         "This function can't be used by rialto server. Please use createWebAudioPlayerServerInternal");
     return nullptr;
 }
 
-std::unique_ptr<IWebAudioPlayer> WebAudioPlayerServerInternalFactory::createWebAudioPlayerServerInternal(std::weak_ptr<IWebAudioPlayerClient> client,
-                                                                                           const std::string &audioMimeType,
-                                                                                           const uint32_t priority,
-                                                                                           const WebAudioConfig *config,
-                                                                        const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer) const
+std::unique_ptr<IWebAudioPlayer> WebAudioPlayerServerInternalFactory::createWebAudioPlayerServerInternal(
+    std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType, const uint32_t priority,
+    const WebAudioConfig *config, const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer) const
 {
     std::unique_ptr<IWebAudioPlayer> webAudioPlayer;
     try
     {
-        webAudioPlayer = std::make_unique<server::WebAudioPlayerServerInternal>(client, audioMimeType, priority, config, shmBuffer);
+        webAudioPlayer =
+            std::make_unique<server::WebAudioPlayerServerInternal>(client, audioMimeType, priority, config, shmBuffer);
     }
     catch (const std::exception &e)
     {
@@ -70,8 +69,10 @@ std::unique_ptr<IWebAudioPlayer> WebAudioPlayerServerInternalFactory::createWebA
     return webAudioPlayer;
 }
 
-WebAudioPlayerServerInternal::WebAudioPlayerServerInternal(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
-                               const uint32_t priority, const WebAudioConfig *config, const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer)
+WebAudioPlayerServerInternal::WebAudioPlayerServerInternal(std::weak_ptr<IWebAudioPlayerClient> client,
+                                                           const std::string &audioMimeType, const uint32_t priority,
+                                                           const WebAudioConfig *config,
+                                                           const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer)
     : m_webAudioPlayerClient(client), m_shmBuffer{shmBuffer}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
@@ -103,7 +104,8 @@ bool WebAudioPlayerServerInternal::setEos()
     return false;
 }
 
-bool WebAudioPlayerServerInternal::getBufferAvailable(uint32_t &availableFrames, std::shared_ptr<WebAudioShmInfo> &webAudioShmInfo)
+bool WebAudioPlayerServerInternal::getBufferAvailable(uint32_t &availableFrames,
+                                                      std::shared_ptr<WebAudioShmInfo> &webAudioShmInfo)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
@@ -124,7 +126,8 @@ bool WebAudioPlayerServerInternal::writeBuffer(const uint32_t numberOfFrames, vo
     return false;
 }
 
-bool WebAudioPlayerServerInternal::getDeviceInfo(uint32_t &preferredFrames, uint32_t &maximumFrames, bool &supportDeferredPlay)
+bool WebAudioPlayerServerInternal::getDeviceInfo(uint32_t &preferredFrames, uint32_t &maximumFrames,
+                                                 bool &supportDeferredPlay)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 

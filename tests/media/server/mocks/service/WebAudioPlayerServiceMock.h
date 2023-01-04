@@ -31,15 +31,20 @@ namespace firebolt::rialto::server::service
 class WebAudioPlayerServiceMock : public IWebAudioPlayerService
 {
 public:
-    MOCK_METHOD(bool, createWebAudioPlayer, (int handle, const std::shared_ptr<IWebAudioPlayerClient> &webAudioPlayerClient, const std::string &audioMimeType, const uint32_t priority, const WebAudioConfig *config), (override));
+    MOCK_METHOD(bool, createWebAudioPlayer,
+                (int handle, const std::shared_ptr<IWebAudioPlayerClient> &webAudioPlayerClient,
+                 const std::string &audioMimeType, const uint32_t priority, const WebAudioConfig *config),
+                (override));
     MOCK_METHOD(bool, destroyWebAudioPlayer, (int handle), (override));
     MOCK_METHOD(bool, play, (int handle), (override));
     MOCK_METHOD(bool, pause, (int handle), (override));
     MOCK_METHOD(bool, setEos, (int handle), (override));
-    MOCK_METHOD(bool, getBufferAvailable, (int handle, uint32_t &availableFrames, std::shared_ptr<WebAudioShmInfo> &webAudioShmInfo), (override));
+    MOCK_METHOD(bool, getBufferAvailable,
+                (int handle, uint32_t &availableFrames, std::shared_ptr<WebAudioShmInfo> &webAudioShmInfo), (override));
     MOCK_METHOD(bool, getBufferDelay, (int handle, uint32_t &delayFrames), (override));
     MOCK_METHOD(bool, writeBuffer, (int handle, const uint32_t numberOfFrames, void *data), (override));
-    MOCK_METHOD(bool, getDeviceInfo, (int handle, uint32_t &preferredFrames, uint32_t &maximumFrames, bool &supportDeferredPlay), (override));
+    MOCK_METHOD(bool, getDeviceInfo,
+                (int handle, uint32_t &preferredFrames, uint32_t &maximumFrames, bool &supportDeferredPlay), (override));
     MOCK_METHOD(bool, setVolume, (int handle, double volume), (override));
     MOCK_METHOD(bool, getVolume, (int handle, double &volume), (override));
 };

@@ -23,9 +23,9 @@
 #include "IDecryptionService.h"
 #include "IMediaPipelineCapabilities.h"
 #include "IMediaPipelineServerInternal.h"
-#include "IWebAudioPlayerServerInternalFactory.h"
 #include "IPlaybackService.h"
 #include "ISharedMemoryBuffer.h"
+#include "IWebAudioPlayerServerInternalFactory.h"
 #include "MediaPipelineService.h"
 #include "WebAudioPlayerService.h"
 #include <atomic>
@@ -65,8 +65,8 @@ public:
     int getMaxPlaybacks() const override;
     int getMaxWebAudioInstances() const override;
     std::shared_ptr<ISharedMemoryBuffer> getShmBuffer() const override;
-    IMediaPipelineService& getMediaPipelineService() const override;
-    IWebAudioPlayerService& getWebAudioPlayerService() const override;
+    IMediaPipelineService &getMediaPipelineService() const override;
+    IWebAudioPlayerService &getWebAudioPlayerService() const override;
 
 private:
     std::unique_ptr<ISharedMemoryBufferFactory> m_shmBufferFactory;

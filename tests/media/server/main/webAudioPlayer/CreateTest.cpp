@@ -17,9 +17,9 @@
  * limitations under the License.
  */
 
-#include "WebAudioPlayerServerInternal.h"
-#include "WebAudioPlayerClientMock.h"
 #include "SharedMemoryBufferMock.h"
+#include "WebAudioPlayerClientMock.h"
+#include "WebAudioPlayerServerInternal.h"
 #include <gtest/gtest.h>
 
 using namespace firebolt::rialto;
@@ -52,7 +52,8 @@ TEST_F(RialtoServerCreateWebAudioPlayerTest, Create)
 {
     std::unique_ptr<IWebAudioPlayer> webAudioPlayer;
 
-    EXPECT_NO_THROW(webAudioPlayer = std::make_unique<WebAudioPlayerServerInternal>(m_webAudioPlayerClientMock, m_audioMimeType,
-                                                                      m_priority, &m_config, m_sharedMemoryBufferMock));
+    EXPECT_NO_THROW(webAudioPlayer =
+                        std::make_unique<WebAudioPlayerServerInternal>(m_webAudioPlayerClientMock, m_audioMimeType,
+                                                                       m_priority, &m_config, m_sharedMemoryBufferMock));
     EXPECT_NE(webAudioPlayer, nullptr);
 }

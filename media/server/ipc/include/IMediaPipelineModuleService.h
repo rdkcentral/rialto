@@ -50,7 +50,8 @@ public:
      *
      * @retval the rialto controller ipc instance or null on error.
      */
-    virtual std::shared_ptr<IMediaPipelineModuleService> create(service::IMediaPipelineService &mediaPipelineService) const = 0;
+    virtual std::shared_ptr<IMediaPipelineModuleService>
+    create(service::IMediaPipelineService &mediaPipelineService) const = 0;
 };
 
 /**

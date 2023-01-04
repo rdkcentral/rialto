@@ -20,10 +20,10 @@
 #ifndef WEB_AUDIO_PLAYER_SERVICE_TESTS_FIXTURE_H_
 #define WEB_AUDIO_PLAYER_SERVICE_TESTS_FIXTURE_H_
 
+#include "PlaybackServiceMock.h"
+#include "SharedMemoryBufferMock.h"
 #include "WebAudioPlayerServerInternalFactoryMock.h"
 #include "WebAudioPlayerServerInternalMock.h"
-#include "SharedMemoryBufferMock.h"
-#include "PlaybackServiceMock.h"
 #include "WebAudioPlayerService.h"
 #include <gtest/gtest.h>
 #include <memory>

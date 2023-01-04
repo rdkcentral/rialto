@@ -40,15 +40,19 @@ public:
     IWebAudioPlayerService &operator=(const IWebAudioPlayerService &) = delete;
     IWebAudioPlayerService &operator=(IWebAudioPlayerService &&) = delete;
 
-    virtual bool createWebAudioPlayer(int handle, const std::shared_ptr<IWebAudioPlayerClient> &webAudioPlayerClient, const std::string &audioMimeType, const uint32_t priority, const WebAudioConfig *config) = 0;
+    virtual bool createWebAudioPlayer(int handle, const std::shared_ptr<IWebAudioPlayerClient> &webAudioPlayerClient,
+                                      const std::string &audioMimeType, const uint32_t priority,
+                                      const WebAudioConfig *config) = 0;
     virtual bool destroyWebAudioPlayer(int handle) = 0;
     virtual bool play(int handle) = 0;
     virtual bool pause(int handle) = 0;
     virtual bool setEos(int handle) = 0;
-    virtual bool getBufferAvailable(int handle, uint32_t &availableFrames, std::shared_ptr<WebAudioShmInfo> &webAudioShmInfo) = 0;
+    virtual bool getBufferAvailable(int handle, uint32_t &availableFrames,
+                                    std::shared_ptr<WebAudioShmInfo> &webAudioShmInfo) = 0;
     virtual bool getBufferDelay(int handle, uint32_t &delayFrames) = 0;
     virtual bool writeBuffer(int handle, const uint32_t numberOfFrames, void *data) = 0;
-    virtual bool getDeviceInfo(int handle, uint32_t &preferredFrames, uint32_t &maximumFrames, bool &supportDeferredPlay) = 0;
+    virtual bool getDeviceInfo(int handle, uint32_t &preferredFrames, uint32_t &maximumFrames,
+                               bool &supportDeferredPlay) = 0;
     virtual bool setVolume(int handle, double volume) = 0;
     virtual bool getVolume(int handle, double &volume) = 0;
 };

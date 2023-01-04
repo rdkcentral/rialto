@@ -59,7 +59,8 @@ MediaPipelineCapabilitiesModuleServiceFactory::create(service::IMediaPipelineSer
     return mediaPipelineCapabilitiesModule;
 }
 
-MediaPipelineCapabilitiesModuleService::MediaPipelineCapabilitiesModuleService(service::IMediaPipelineService &mediaPipelineService)
+MediaPipelineCapabilitiesModuleService::MediaPipelineCapabilitiesModuleService(
+    service::IMediaPipelineService &mediaPipelineService)
     : m_mediaPipelineService{mediaPipelineService}
 {
 }

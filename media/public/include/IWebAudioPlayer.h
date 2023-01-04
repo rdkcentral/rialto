@@ -140,8 +140,7 @@ public:
      *
      * @retval true on success.
      */
-    virtual bool getBufferAvailable(uint32_t &availableFrames,
-                                    std::shared_ptr<WebAudioShmInfo> &webAudioShmInfo) = 0;
+    virtual bool getBufferAvailable(uint32_t &availableFrames, std::shared_ptr<WebAudioShmInfo> &webAudioShmInfo) = 0;
 
     /**
      * @brief Get the delay frames.

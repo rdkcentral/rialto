@@ -29,9 +29,9 @@
 
 namespace firebolt::rialto::server::service
 {
-WebAudioPlayerService::WebAudioPlayerService(IPlaybackService& playbackService, std::shared_ptr<IWebAudioPlayerServerInternalFactory> &&webAudioPlayerFactory)
-    : m_playbackService{playbackService},
-      m_webAudioPlayerFactory{webAudioPlayerFactory}
+WebAudioPlayerService::WebAudioPlayerService(IPlaybackService &playbackService,
+                                             std::shared_ptr<IWebAudioPlayerServerInternalFactory> &&webAudioPlayerFactory)
+    : m_playbackService{playbackService}, m_webAudioPlayerFactory{webAudioPlayerFactory}
 {
     RIALTO_SERVER_LOG_DEBUG("WebAudioPlayerService is constructed");
 }
@@ -47,7 +47,10 @@ void WebAudioPlayerService::clearWebAudioPlayers()
     m_webAudioPlayers.clear();
 }
 
-bool WebAudioPlayerService::createWebAudioPlayer(int handle, const std::shared_ptr<IWebAudioPlayerClient> &webAudioPlayerClient, const std::string &audioMimeType, const uint32_t priority, const WebAudioConfig *config)
+bool WebAudioPlayerService::createWebAudioPlayer(int handle,
+                                                 const std::shared_ptr<IWebAudioPlayerClient> &webAudioPlayerClient,
+                                                 const std::string &audioMimeType, const uint32_t priority,
+                                                 const WebAudioConfig *config)
 {
     RIALTO_SERVER_LOG_DEBUG("WebAudioPlayerService requested to create new WebAudioPlayer with id: %d", handle);
     if (!m_playbackService.isActive())
@@ -70,10 +73,9 @@ bool WebAudioPlayerService::createWebAudioPlayer(int handle, const std::shared_p
         }
         auto shmBuffer = m_playbackService.getShmBuffer();
         m_webAudioPlayers.emplace(
-            std::make_pair(handle,
-                           m_webAudioPlayerFactory->createWebAudioPlayerServerInternal(webAudioPlayerClient,
-                                                                                       audioMimeType,
-                                                                                       priority, config, shmBuffer)));
+            std::make_pair(handle, m_webAudioPlayerFactory->createWebAudioPlayerServerInternal(webAudioPlayerClient,
+                                                                                               audioMimeType, priority,
+                                                                                               config, shmBuffer)));
         if (!m_webAudioPlayers.at(handle))
         {
             RIALTO_SERVER_LOG_ERROR("Could not create WebAudioPlayer for handle: %d", handle);
@@ -145,9 +147,11 @@ bool WebAudioPlayerService::setEos(int handle)
     return webAudioPlayerIter->second->setEos();
 }
 
-bool WebAudioPlayerService::getBufferAvailable(int handle, uint32_t &availableFrames, std::shared_ptr<WebAudioShmInfo> &webAudioShmInfo)
+bool WebAudioPlayerService::getBufferAvailable(int handle, uint32_t &availableFrames,
+                                               std::shared_ptr<WebAudioShmInfo> &webAudioShmInfo)
 {
-    RIALTO_SERVER_LOG_INFO("WebAudioPlayerService requested to getBufferAvailable WebAudioPlayer with handle: %d", handle);
+    RIALTO_SERVER_LOG_INFO("WebAudioPlayerService requested to getBufferAvailable WebAudioPlayer with handle: %d",
+                           handle);
 
     std::lock_guard<std::mutex> lock{m_webAudioPlayerMutex};
     auto webAudioPlayerIter = m_webAudioPlayers.find(handle);
@@ -187,7 +191,8 @@ bool WebAudioPlayerService::writeBuffer(int handle, const uint32_t numberOfFrame
     return webAudioPlayerIter->second->writeBuffer(numberOfFrames, data);
 }
 
-bool WebAudioPlayerService::getDeviceInfo(int handle, uint32_t &preferredFrames, uint32_t &maximumFrames, bool &supportDeferredPlay)
+bool WebAudioPlayerService::getDeviceInfo(int handle, uint32_t &preferredFrames, uint32_t &maximumFrames,
+                                          bool &supportDeferredPlay)
 {
     RIALTO_SERVER_LOG_INFO("WebAudioPlayerService requested to getDeviceInfo WebAudioPlayer with handle: %d", handle);
 

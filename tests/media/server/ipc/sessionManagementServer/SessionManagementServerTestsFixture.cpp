@@ -24,9 +24,9 @@
 #include "MediaKeysModuleServiceFactoryMock.h"
 #include "MediaPipelineCapabilitiesModuleServiceFactoryMock.h"
 #include "MediaPipelineModuleServiceFactoryMock.h"
-#include "WebAudioPlayerModuleServiceFactoryMock.h"
 #include "RialtoControlModuleServiceFactoryMock.h"
 #include "SessionManagementServer.h"
+#include "WebAudioPlayerModuleServiceFactoryMock.h"
 #include <fcntl.h>
 #include <string>
 #include <sys/stat.h>
@@ -35,8 +35,8 @@
 using testing::_;
 using testing::Invoke;
 using testing::Return;
-using testing::SetArgReferee;
 using testing::ReturnRef;
+using testing::SetArgReferee;
 
 namespace
 {
@@ -77,14 +77,18 @@ SessionManagementServerTests::SessionManagementServerTests()
         mediaPipelineModuleFactoryMock =
             std::make_shared<StrictMock<firebolt::rialto::server::ipc::MediaPipelineModuleServiceFactoryMock>>();
     EXPECT_CALL(*mediaPipelineModuleFactoryMock, create(_)).WillOnce(Return(m_mediaPipelineModuleMock));
-    EXPECT_CALL(m_playbackServiceMock, getMediaPipelineService()).WillOnce(ReturnRef(m_mediaPipelineServiceMock)).RetiresOnSaturation();
+    EXPECT_CALL(m_playbackServiceMock, getMediaPipelineService())
+        .WillOnce(ReturnRef(m_mediaPipelineServiceMock))
+        .RetiresOnSaturation();
 
     std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::MediaPipelineCapabilitiesModuleServiceFactoryMock>>
         mediaPipelineCapabilitiesModuleFactoryMock =
             std::make_shared<StrictMock<firebolt::rialto::server::ipc::MediaPipelineCapabilitiesModuleServiceFactoryMock>>();
     EXPECT_CALL(*mediaPipelineCapabilitiesModuleFactoryMock, create(_))
         .WillOnce(Return(m_mediaPipelineCapabilitiesModuleMock));
-    EXPECT_CALL(m_playbackServiceMock, getMediaPipelineService()).WillOnce(ReturnRef(m_mediaPipelineServiceMock)).RetiresOnSaturation();
+    EXPECT_CALL(m_playbackServiceMock, getMediaPipelineService())
+        .WillOnce(ReturnRef(m_mediaPipelineServiceMock))
+        .RetiresOnSaturation();
     std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::MediaKeysModuleServiceFactoryMock>> mediaKeysModuleFactoryMock =
         std::make_shared<StrictMock<firebolt::rialto::server::ipc::MediaKeysModuleServiceFactoryMock>>();
     EXPECT_CALL(*mediaKeysModuleFactoryMock, create(_)).WillOnce(Return(m_mediaKeysModuleMock));

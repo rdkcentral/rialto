@@ -19,8 +19,8 @@
 
 #include "WebAudioPlayerModuleService.h"
 #include "IWebAudioPlayerService.h"
-#include "WebAudioPlayerClient.h"
 #include "RialtoServerLogging.h"
+#include "WebAudioPlayerClient.h"
 #include <IIpcController.h>
 #include <algorithm>
 #include <cstdint>
@@ -106,10 +106,10 @@ void WebAudioPlayerModuleService::clientDisconnected(const std::shared_ptr<::fir
 }
 
 void WebAudioPlayerModuleService::createWebAudioPlayer(::google::protobuf::RpcController *controller,
-                                                        const ::firebolt::rialto::CreateWebAudioPlayerRequest *request,
-                                                        ::firebolt::rialto::CreateWebAudioPlayerResponse *response,
-                                                        ::google::protobuf::Closure *done)
-            {
+                                                       const ::firebolt::rialto::CreateWebAudioPlayerRequest *request,
+                                                       ::firebolt::rialto::CreateWebAudioPlayerResponse *response,
+                                                       ::google::protobuf::Closure *done)
+{
     RIALTO_SERVER_LOG_DEBUG("entry:");
     auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
     if (!ipcController)
@@ -136,8 +136,9 @@ void WebAudioPlayerModuleService::createWebAudioPlayer(::google::protobuf::RpcCo
     int handle = generateHandle();
     bool webAudioPlayerCreated =
         m_webAudioPlayerService.createWebAudioPlayer(handle,
-                                        std::make_shared<WebAudioPlayerClient>(handle, ipcController->getClient()),
-                                        request->audio_mime_type(), request->priority(), &config);
+                                                     std::make_shared<WebAudioPlayerClient>(handle,
+                                                                                            ipcController->getClient()),
+                                                     request->audio_mime_type(), request->priority(), &config);
     if (webAudioPlayerCreated)
     {
         // Assume that IPC library works well and client is present
@@ -153,9 +154,9 @@ void WebAudioPlayerModuleService::createWebAudioPlayer(::google::protobuf::RpcCo
 }
 
 void WebAudioPlayerModuleService::destroyWebAudioPlayer(::google::protobuf::RpcController *controller,
-                                                const ::firebolt::rialto::DestroyWebAudioPlayerRequest *request,
-                                                ::firebolt::rialto::DestroyWebAudioPlayerResponse *response,
-                                                ::google::protobuf::Closure *done)
+                                                        const ::firebolt::rialto::DestroyWebAudioPlayerRequest *request,
+                                                        ::firebolt::rialto::DestroyWebAudioPlayerResponse *response,
+                                                        ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
     auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
@@ -182,8 +183,9 @@ void WebAudioPlayerModuleService::destroyWebAudioPlayer(::google::protobuf::RpcC
 }
 
 void WebAudioPlayerModuleService::play(::google::protobuf::RpcController *controller,
-                    const ::firebolt::rialto::WebAudioPlayRequest *request,
-                    ::firebolt::rialto::WebAudioPlayResponse *response, ::google::protobuf::Closure *done)
+                                       const ::firebolt::rialto::WebAudioPlayRequest *request,
+                                       ::firebolt::rialto::WebAudioPlayResponse *response,
+                                       ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
     if (!m_webAudioPlayerService.play(request->web_audio_player_handle()))
@@ -195,8 +197,9 @@ void WebAudioPlayerModuleService::play(::google::protobuf::RpcController *contro
 }
 
 void WebAudioPlayerModuleService::pause(::google::protobuf::RpcController *controller,
-                    const ::firebolt::rialto::WebAudioPauseRequest *request,
-                    ::firebolt::rialto::WebAudioPauseResponse *response, ::google::protobuf::Closure *done)
+                                        const ::firebolt::rialto::WebAudioPauseRequest *request,
+                                        ::firebolt::rialto::WebAudioPauseResponse *response,
+                                        ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
     if (!m_webAudioPlayerService.pause(request->web_audio_player_handle()))
@@ -208,8 +211,9 @@ void WebAudioPlayerModuleService::pause(::google::protobuf::RpcController *contr
 }
 
 void WebAudioPlayerModuleService::setEos(::google::protobuf::RpcController *controller,
-                    const ::firebolt::rialto::WebAudioSetEosRequest *request,
-                    ::firebolt::rialto::WebAudioSetEosResponse *response, ::google::protobuf::Closure *done)
+                                         const ::firebolt::rialto::WebAudioSetEosRequest *request,
+                                         ::firebolt::rialto::WebAudioSetEosResponse *response,
+                                         ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
     if (!m_webAudioPlayerService.setEos(request->web_audio_player_handle()))
@@ -221,8 +225,9 @@ void WebAudioPlayerModuleService::setEos(::google::protobuf::RpcController *cont
 }
 
 void WebAudioPlayerModuleService::getBufferAvailable(::google::protobuf::RpcController *controller,
-                    const ::firebolt::rialto::WebAudioGetBufferAvailableRequest *request,
-                    ::firebolt::rialto::WebAudioGetBufferAvailableResponse *response, ::google::protobuf::Closure *done)
+                                                     const ::firebolt::rialto::WebAudioGetBufferAvailableRequest *request,
+                                                     ::firebolt::rialto::WebAudioGetBufferAvailableResponse *response,
+                                                     ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
@@ -245,8 +250,9 @@ void WebAudioPlayerModuleService::getBufferAvailable(::google::protobuf::RpcCont
 }
 
 void WebAudioPlayerModuleService::getBufferDelay(::google::protobuf::RpcController *controller,
-                    const ::firebolt::rialto::WebAudioGetBufferDelayRequest *request,
-                    ::firebolt::rialto::WebAudioGetBufferDelayResponse *response, ::google::protobuf::Closure *done)
+                                                 const ::firebolt::rialto::WebAudioGetBufferDelayRequest *request,
+                                                 ::firebolt::rialto::WebAudioGetBufferDelayResponse *response,
+                                                 ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
@@ -264,8 +270,9 @@ void WebAudioPlayerModuleService::getBufferDelay(::google::protobuf::RpcControll
 }
 
 void WebAudioPlayerModuleService::writeBuffer(::google::protobuf::RpcController *controller,
-                    const ::firebolt::rialto::WebAudioWriteBufferRequest *request,
-                    ::firebolt::rialto::WebAudioWriteBufferResponse *response, ::google::protobuf::Closure *done)
+                                              const ::firebolt::rialto::WebAudioWriteBufferRequest *request,
+                                              ::firebolt::rialto::WebAudioWriteBufferResponse *response,
+                                              ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
     if (!m_webAudioPlayerService.writeBuffer(request->web_audio_player_handle(), request->number_of_frames(), nullptr))
@@ -277,15 +284,17 @@ void WebAudioPlayerModuleService::writeBuffer(::google::protobuf::RpcController 
 }
 
 void WebAudioPlayerModuleService::getDeviceInfo(::google::protobuf::RpcController *controller,
-                    const ::firebolt::rialto::WebAudioGetDeviceInfoRequest *request,
-                    ::firebolt::rialto::WebAudioGetDeviceInfoResponse *response, ::google::protobuf::Closure *done)
+                                                const ::firebolt::rialto::WebAudioGetDeviceInfoRequest *request,
+                                                ::firebolt::rialto::WebAudioGetDeviceInfoResponse *response,
+                                                ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
     uint32_t preferredFrames{};
     uint32_t maximumFrames{};
     bool supportDeferredPlay{};
-    if (!m_webAudioPlayerService.getDeviceInfo(request->web_audio_player_handle(), preferredFrames, maximumFrames, supportDeferredPlay))
+    if (!m_webAudioPlayerService.getDeviceInfo(request->web_audio_player_handle(), preferredFrames, maximumFrames,
+                                               supportDeferredPlay))
     {
         RIALTO_SERVER_LOG_ERROR("getDeviceInfo failed");
         controller->SetFailed("Operation failed");
@@ -300,8 +309,9 @@ void WebAudioPlayerModuleService::getDeviceInfo(::google::protobuf::RpcControlle
 }
 
 void WebAudioPlayerModuleService::setVolume(::google::protobuf::RpcController *controller,
-                    const ::firebolt::rialto::WebAudioSetVolumeRequest *request,
-                    ::firebolt::rialto::WebAudioSetVolumeResponse *response, ::google::protobuf::Closure *done)
+                                            const ::firebolt::rialto::WebAudioSetVolumeRequest *request,
+                                            ::firebolt::rialto::WebAudioSetVolumeResponse *response,
+                                            ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
     if (!m_webAudioPlayerService.setVolume(request->web_audio_player_handle(), request->volume()))
@@ -313,8 +323,9 @@ void WebAudioPlayerModuleService::setVolume(::google::protobuf::RpcController *c
 }
 
 void WebAudioPlayerModuleService::getVolume(::google::protobuf::RpcController *controller,
-                    const ::firebolt::rialto::WebAudioGetVolumeRequest *request,
-                    ::firebolt::rialto::WebAudioGetVolumeResponse *response, ::google::protobuf::Closure *done)
+                                            const ::firebolt::rialto::WebAudioGetVolumeRequest *request,
+                                            ::firebolt::rialto::WebAudioGetVolumeResponse *response,
+                                            ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 

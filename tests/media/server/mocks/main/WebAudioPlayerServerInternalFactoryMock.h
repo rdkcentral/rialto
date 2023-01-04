@@ -24,6 +24,7 @@
 #include "IWebAudioPlayerServerInternalFactory.h"
 #include <gmock/gmock.h>
 #include <memory>
+#include <string>
 
 namespace firebolt::rialto::server
 {
@@ -31,17 +32,12 @@ class WebAudioPlayerServerInternalFactoryMock : public IWebAudioPlayerServerInte
 {
 public:
     MOCK_METHOD(std::unique_ptr<IWebAudioPlayer>, createWebAudioPlayer,
-                (std::weak_ptr<IWebAudioPlayerClient> client,
-                                                                  const std::string &audioMimeType,
-                                                                  const uint32_t priority,
-                                                                  const WebAudioConfig *config),
+                (std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType, const uint32_t priority,
+                 const WebAudioConfig *config),
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IWebAudioPlayer>, createWebAudioPlayerServerInternal,
-                (std::weak_ptr<IWebAudioPlayerClient> client,
-                                                                  const std::string &audioMimeType,
-                                                                  const uint32_t priority,
-                                                                  const WebAudioConfig *config,
-                                                                 const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer),
+                (std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType, const uint32_t priority,
+                 const WebAudioConfig *config, const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer),
                 (const, override));
 };
 } // namespace firebolt::rialto::server

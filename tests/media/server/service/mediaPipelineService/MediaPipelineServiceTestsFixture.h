@@ -25,9 +25,9 @@
 #include "MediaPipelineCapabilitiesMock.h"
 #include "MediaPipelineServerInternalFactoryMock.h"
 #include "MediaPipelineServerInternalMock.h"
-#include "SharedMemoryBufferMock.h"
-#include "PlaybackServiceMock.h"
 #include "MediaPipelineService.h"
+#include "PlaybackServiceMock.h"
+#include "SharedMemoryBufferMock.h"
 #include <gtest/gtest.h>
 #include <memory>
 

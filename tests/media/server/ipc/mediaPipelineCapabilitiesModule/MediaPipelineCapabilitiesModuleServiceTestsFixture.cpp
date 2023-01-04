@@ -44,8 +44,8 @@ MediaPipelineCapabilitiesModuleServiceTests::MediaPipelineCapabilitiesModuleServ
       m_controllerMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ControllerMock>>()},
       m_invalidControllerMock{std::make_shared<StrictMock<firebolt::rialto::ipc::RpcControllerMock>>()}
 {
-    m_service =
-        std::make_shared<firebolt::rialto::server::ipc::MediaPipelineCapabilitiesModuleService>(m_mediaPipelineServiceMock);
+    m_service = std::make_shared<firebolt::rialto::server::ipc::MediaPipelineCapabilitiesModuleService>(
+        m_mediaPipelineServiceMock);
 }
 
 MediaPipelineCapabilitiesModuleServiceTests::~MediaPipelineCapabilitiesModuleServiceTests() {}

@@ -32,8 +32,8 @@ public:
     WebAudioPlayerModuleServiceFactoryMock() = default;
     virtual ~WebAudioPlayerModuleServiceFactoryMock() = default;
 
-    MOCK_METHOD(std::shared_ptr<IWebAudioPlayerModuleService>, create, (service::IWebAudioPlayerService & webAudioPlayerService),
-                (override, const));
+    MOCK_METHOD(std::shared_ptr<IWebAudioPlayerModuleService>, create,
+                (service::IWebAudioPlayerService & webAudioPlayerService), (override, const));
 };
 } // namespace firebolt::rialto::server::ipc
 
