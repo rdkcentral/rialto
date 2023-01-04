@@ -392,29 +392,24 @@ void CdmServiceTests::getSupportedKeySystemVersionShouldFail()
 void CdmServiceTests::incrementSessionIdUsageCounter()
 {
     EXPECT_CALL(m_mediaKeysMock, hasSession(keySessionId)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaKeysMock, incrementSessionIdUsageCounter(keySessionId));
     m_sut.incrementSessionIdUsageCounter(keySessionId);
 }
 
-void CdmServiceTests::incrementSessionIdUsageCounterSessionNotFound()
+void CdmServiceTests::incrementSessionIdUsageCounterFails()
 {
     EXPECT_CALL(m_mediaKeysMock, hasSession(keySessionId)).WillOnce(Return(false));
     m_sut.incrementSessionIdUsageCounter(keySessionId);
 }
 
-void CdmServiceTests::decrementSessionIdUsageCounterAndCloseSession()
+void CdmServiceTests::decrementSessionIdUsageCounter()
 {
     EXPECT_CALL(m_mediaKeysMock, hasSession(keySessionId)).WillOnce(Return(true));
-    EXPECT_CALL(m_mediaKeysMock, closeKeySession(keySessionId)).WillOnce(Return(firebolt::rialto::MediaKeyErrorStatus::OK));
+    EXPECT_CALL(m_mediaKeysMock, decrementSessionIdUsageCounter(keySessionId));
     m_sut.decrementSessionIdUsageCounter(keySessionId);
 }
 
-void CdmServiceTests::decrementSessionIdUsageCounterAndNoCloseSession()
-{
-    EXPECT_CALL(m_mediaKeysMock, hasSession(keySessionId)).WillOnce(Return(true));
-    m_sut.decrementSessionIdUsageCounter(keySessionId);
-}
-
-void CdmServiceTests::decrementSessionIdUsageCounterSessionNotFound()
+void CdmServiceTests::decrementSessionIdUsageCounterFails()
 {
     EXPECT_CALL(m_mediaKeysMock, hasSession(keySessionId)).WillOnce(Return(false));
     m_sut.decrementSessionIdUsageCounter(keySessionId);

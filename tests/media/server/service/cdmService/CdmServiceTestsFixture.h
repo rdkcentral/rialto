@@ -98,10 +98,9 @@ public:
     void getDrmTimeShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void isNetflixKeySystemShouldReturn(bool result);
     void incrementSessionIdUsageCounter();
-    void incrementSessionIdUsageCounterSessionNotFound();
-    void decrementSessionIdUsageCounterAndCloseSession();
-    void decrementSessionIdUsageCounterAndNoCloseSession();
-    void decrementSessionIdUsageCounterSessionNotFound();
+    void decrementSessionIdUsageCounter();
+    void incrementSessionIdUsageCounterFails();
+    void decrementSessionIdUsageCounterFails();
 
     void getSupportedKeySystemsShouldSucceed();
     void getSupportedKeySystemsReturnNon();

@@ -35,13 +35,6 @@ namespace firebolt::rialto::server::service
 class CdmService : public ICdmService, public IDecryptionService
 {
 public:
-    struct MediaKeysUsage
-    {
-        std::unique_ptr<IMediaKeysServerInternal> mediaKeysServer;
-        uint32_t bufCounter = 0;
-        bool shouldBeDestroyed = false;
-    };
-
     CdmService(std::shared_ptr<IMediaKeysServerInternalFactory> &&mediaKeysFactory,
                std::shared_ptr<IMediaKeysCapabilitiesFactory> &&mediaKeysCapabilitiesFactory);
     virtual ~CdmService();
@@ -89,7 +82,7 @@ private:
     std::shared_ptr<IMediaKeysServerInternalFactory> m_mediaKeysFactory;
     std::shared_ptr<IMediaKeysCapabilitiesFactory> m_mediaKeysCapabilitiesFactory;
     std::atomic<bool> m_isActive;
-    std::map<int, MediaKeysUsage> m_mediaKeys;
+    std::map<int, std::unique_ptr<IMediaKeysServerInternal>> m_mediaKeys;
     std::map<int, std::shared_ptr<IMediaKeysClient>> m_mediaKeysClients;
     std::mutex m_mediaKeysMutex;
 
