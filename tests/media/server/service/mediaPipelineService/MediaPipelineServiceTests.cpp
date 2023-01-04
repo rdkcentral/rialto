@@ -334,3 +334,43 @@ TEST_F(MediaPipelineServiceTests, shouldRenderframe)
     mediaPipelineWillRenderFrame();
     renderFrameShouldSucceed();
 }
+
+TEST_F(MediaPipelineServiceTests, shouldFailToSetVolumeForNotExistingSession)
+{
+    createMediaPipelineShouldSuccess();
+    setVolumeShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToSetVolume)
+{
+    initSession();
+    mediaPipelineWillFailToSetVolume();
+    setVolumeShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldSetVolume)
+{
+    initSession();
+    mediaPipelineWillSetVolume();
+    setVolumeShouldSucceed();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToGetVolumeForNotExistingSession)
+{
+    createMediaPipelineShouldSuccess();
+    getVolumeShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToGetVolume)
+{
+    initSession();
+    mediaPipelineWillFailToGetVolume();
+    getVolumeShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldGetVolume)
+{
+    initSession();
+    mediaPipelineWillGetVolume();
+    getVolumeShouldSucceed();
+}
