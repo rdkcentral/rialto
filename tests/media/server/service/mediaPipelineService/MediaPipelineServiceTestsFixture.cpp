@@ -241,25 +241,21 @@ void MediaPipelineServiceTests::mediaPipelineFactoryWillReturnNullptr()
 void MediaPipelineServiceTests::playbackServiceWillReturnActive()
 {
     EXPECT_CALL(m_playbackServiceMock, isActive()).WillOnce(Return(true)).RetiresOnSaturation();
-    ;
 }
 
 void MediaPipelineServiceTests::playbackServiceWillReturnInactive()
 {
     EXPECT_CALL(m_playbackServiceMock, isActive()).WillOnce(Return(false)).RetiresOnSaturation();
-    ;
 }
 
 void MediaPipelineServiceTests::playbackServiceWillReturnMaxPlaybacks(int maxPlaybacks)
 {
     EXPECT_CALL(m_playbackServiceMock, getMaxPlaybacks()).WillOnce(Return(maxPlaybacks)).RetiresOnSaturation();
-    ;
 }
 
 void MediaPipelineServiceTests::playbackServiceWillReturnSharedMemoryBuffer()
 {
     EXPECT_CALL(m_playbackServiceMock, getShmBuffer()).WillOnce(Return(m_shmBuffer)).RetiresOnSaturation();
-    ;
 }
 
 void MediaPipelineServiceTests::createMediaPipelineShouldSuccess()

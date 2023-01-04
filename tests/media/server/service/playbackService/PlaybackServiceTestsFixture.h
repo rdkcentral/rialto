@@ -40,7 +40,6 @@ public:
     ~PlaybackServiceTests() = default;
 
     void sharedMemoryBufferWillBeInitialized();
-    void sharedMemoryBufferWillFailToInitialize();
     void sharedMemoryBufferWillReturnFdAndSize();
 
     void triggerSwitchToActive();

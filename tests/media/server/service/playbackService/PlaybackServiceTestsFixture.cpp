@@ -61,12 +61,6 @@ void PlaybackServiceTests::sharedMemoryBufferWillBeInitialized()
         .WillOnce(Return(ByMove(std::move(m_shmBuffer))));
 }
 
-void PlaybackServiceTests::sharedMemoryBufferWillFailToInitialize()
-{
-    EXPECT_CALL(m_shmBufferFactoryMock, createSharedMemoryBuffer(maxPlaybacks))
-        .WillOnce(Throw(std::runtime_error("Buffer creation failed")));
-}
-
 void PlaybackServiceTests::sharedMemoryBufferWillReturnFdAndSize()
 {
     EXPECT_CALL(m_shmBufferMock, getFd()).WillOnce(Return(shmFd));

@@ -57,10 +57,10 @@ public:
     /**
      * @brief The constructor.
      *
-     * @param[in] client:        The Web Audio Player client
-     * @param[in] audioMimeType: The audio encoding format, currently only "audio/x-raw" (PCM)
-     * @param[in] priority:      Priority value for this pipeline.
-     * @param[in] config:        Additional type dependent configuration data or nullptr
+     * @param[in] client            : The Web Audio Player client
+     * @param[in] audioMimeType     : The audio encoding format, currently only "audio/x-raw" (PCM)
+     * @param[in] priority          : Priority value for this pipeline.
+     * @param[in] config            : Additional type dependent configuration data or nullptr
      * @param[in] shmBuffer         : The shared memory buffer
      */
     WebAudioPlayerServerInternal(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
