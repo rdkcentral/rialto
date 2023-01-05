@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
     firebolt::rialto::server::service::PlaybackService
         playbackService{firebolt::rialto::server::IMediaPipelineServerInternalFactory::createFactory(),
                         firebolt::rialto::IMediaPipelineCapabilitiesFactory::createFactory(),
-                        firebolt::rialto::IWebAudioPlayerServerInternalFactory::createFactory(),
+                        firebolt::rialto::server::IWebAudioPlayerServerInternalFactory::createFactory(),
                         firebolt::rialto::server::ISharedMemoryBufferFactory::createFactory(), cdmService};
     firebolt::rialto::server::service::SessionServerManager serviceManager{ipcFactory, playbackService, cdmService};
     if (!serviceManager.initialize(argc, argv))
