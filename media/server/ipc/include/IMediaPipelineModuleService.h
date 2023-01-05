@@ -20,7 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_IPC_I_MEDIA_PIPELINE_MODULE_SERVICE_H_
 #define FIREBOLT_RIALTO_SERVER_IPC_I_MEDIA_PIPELINE_MODULE_SERVICE_H_
 
-#include "IPlaybackService.h"
+#include "IMediaPipelineService.h"
 #include "mediapipelinemodule.pb.h"
 #include <IIpcServer.h>
 #include <memory>
@@ -50,7 +50,8 @@ public:
      *
      * @retval the rialto controller ipc instance or null on error.
      */
-    virtual std::shared_ptr<IMediaPipelineModuleService> create(service::IPlaybackService &playbackService) const = 0;
+    virtual std::shared_ptr<IMediaPipelineModuleService>
+    create(service::IMediaPipelineService &mediaPipelineService) const = 0;
 };
 
 /**

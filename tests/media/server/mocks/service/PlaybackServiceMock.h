@@ -34,26 +34,14 @@ public:
     MOCK_METHOD(bool, switchToActive, (), (override));
     MOCK_METHOD(void, switchToInactive, (), (override));
     MOCK_METHOD(void, setMaxPlaybacks, (int maxPlaybacks), (override));
-    MOCK_METHOD(bool, createSession, (int, const std::shared_ptr<IMediaPipelineClient> &, std::uint32_t, std::uint32_t),
-                (override));
-    MOCK_METHOD(bool, destroySession, (int), (override));
-    MOCK_METHOD(bool, load, (int, MediaType, const std::string &, const std::string &), (override));
-    MOCK_METHOD(bool, attachSource, (int, const std::unique_ptr<IMediaPipeline::MediaSource> &), (override));
-    MOCK_METHOD(bool, removeSource, (int, std::int32_t), (override));
-    MOCK_METHOD(bool, play, (int), (override));
-    MOCK_METHOD(bool, pause, (int), (override));
-    MOCK_METHOD(bool, stop, (int), (override));
-    MOCK_METHOD(bool, setPlaybackRate, (int, double), (override));
-    MOCK_METHOD(bool, setPosition, (int, int64_t), (override));
-    MOCK_METHOD(bool, getPosition, (int sessionId, int64_t &position), (override));
-    MOCK_METHOD(bool, setVideoWindow, (int, std::uint32_t, std::uint32_t, std::uint32_t, std::uint32_t), (override));
-    MOCK_METHOD(bool, haveData, (int, MediaSourceStatus, std::uint32_t, std::uint32_t), (override));
-    MOCK_METHOD(bool, renderFrame, (int), (override));
-    MOCK_METHOD(bool, setVolume, (int sessionId, double volume), (override));
-    MOCK_METHOD(bool, getVolume, (int sessionId, double &volume), (override));
-    MOCK_METHOD(bool, getSharedMemory, (int32_t & fd, uint32_t &size), (override));
-    MOCK_METHOD(std::vector<std::string>, getSupportedMimeTypes, (MediaSourceType type), (override));
-    MOCK_METHOD(bool, isMimeTypeSupported, (const std::string &mimeType), (override));
+    MOCK_METHOD(void, setMaxWebAudioPlayers, (int maxWebAudio), (override));
+    MOCK_METHOD(bool, isActive, (), (const, override));
+    MOCK_METHOD(bool, getSharedMemory, (int32_t & fd, uint32_t &size), (const, override));
+    MOCK_METHOD(int, getMaxPlaybacks, (), (const, override));
+    MOCK_METHOD(int, getMaxWebAudioPlayers, (), (const, override));
+    MOCK_METHOD(std::shared_ptr<ISharedMemoryBuffer>, getShmBuffer, (), (const, override));
+    MOCK_METHOD(IMediaPipelineService &, getMediaPipelineService, (), (const, override));
+    MOCK_METHOD(IWebAudioPlayerService &, getWebAudioPlayerService, (), (const, override));
 };
 } // namespace firebolt::rialto::server::service
 

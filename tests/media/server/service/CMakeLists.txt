@@ -24,11 +24,17 @@ add_gtests (
         playbackService/PlaybackServiceTestsFixture.cpp
         playbackService/PlaybackServiceTests.cpp
 
+        mediaPipelineService/MediaPipelineServiceTestsFixture.cpp
+        mediaPipelineService/MediaPipelineServiceTests.cpp
+
         cdmService/CdmServiceTestsFixture.cpp
         cdmService/CdmServiceTests.cpp
 
         sessionServerManager/SessionServerManagerTestsFixture.cpp
         sessionServerManager/SessionServerManagerTests.cpp
+
+        webAudioPlayerService/WebAudioPlayerServiceTestsFixture.cpp
+        webAudioPlayerService/WebAudioPlayerServiceTests.cpp
         )
 
 target_include_directories(

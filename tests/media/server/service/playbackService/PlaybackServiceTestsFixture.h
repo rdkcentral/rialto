@@ -24,10 +24,10 @@
 #include "MediaPipelineCapabilitiesFactoryMock.h"
 #include "MediaPipelineCapabilitiesMock.h"
 #include "MediaPipelineServerInternalFactoryMock.h"
-#include "MediaPipelineServerInternalMock.h"
 #include "PlaybackService.h"
 #include "SharedMemoryBufferFactoryMock.h"
 #include "SharedMemoryBufferMock.h"
+#include "WebAudioPlayerServerInternalFactoryMock.h"
 #include <gtest/gtest.h>
 #include <memory>
 
@@ -39,95 +39,33 @@ public:
     PlaybackServiceTests();
     ~PlaybackServiceTests() = default;
 
-    void sharedMemoryBufferWillBeInitialized(int maxPlaybacks = 1);
-    void sharedMemoryBufferWillFailToInitialize(int maxPlaybacks = 1);
+    void sharedMemoryBufferWillBeInitialized();
     void sharedMemoryBufferWillReturnFdAndSize();
-
-    void mediaPipelineWillLoad();
-    void mediaPipelineWillFailToLoad();
-    void mediaPipelineWillAttachSource();
-    void mediaPipelineWillFailToAttachSource();
-    void mediaPipelineWillRemoveSource();
-    void mediaPipelineWillFailToRemoveSource();
-    void mediaPipelineWillPlay();
-    void mediaPipelineWillFailToPlay();
-    void mediaPipelineWillPause();
-    void mediaPipelineWillFailToPause();
-    void mediaPipelineWillStop();
-    void mediaPipelineWillFailToStop();
-    void mediaPipelineWillSetPlaybackRate();
-    void mediaPipelineWillFailToSetPlaybackRate();
-    void mediaPipelineWillSetPosition();
-    void mediaPipelineWillFailToSetPosition();
-    void mediaPipelineWillSetVideoWindow();
-    void mediaPipelineWillFailToSetVideoWindow();
-    void mediaPipelineWillHaveData();
-    void mediaPipelineWillFailToHaveData();
-    void mediaPipelineWillGetPosition();
-    void mediaPipelineWillFailToGetPosition();
-    void mediaPipelineWillSetVolume();
-    void mediaPipelineWillFailToSetVolume();
-    void mediaPipelineWillGetVolume();
-    void mediaPipelineWillFailToGetVolume();
-
-    void mediaPipelineFactoryWillCreateMediaPipeline();
-    void mediaPipelineFactoryWillReturnNullptr();
-
-    void mediaPipelineCapabilitiesFactoryWillCreateMediaPipelineCapabilities();
-    void mediaPipelineCapabilitiesFactoryWillReturnNullptr();
 
     void triggerSwitchToActive();
     void triggerSwitchToInactive();
-    void triggerSetMaxPlaybacks(int maxPlaybacks = 1);
+    void triggerSetMaxPlaybacks();
+    void triggerSetMaxWebAudioPlayers();
 
-    void createSessionShouldSucceed();
-    void createSessionShouldFail();
-    void destroySessionShouldSucceed();
-    void destroySessionShouldFail();
-    void loadShouldSucceed();
-    void loadShouldFail();
-    void attachSourceShouldSucceed();
-    void attachSourceShouldFail();
-    void removeSourceShouldSucceed();
-    void removeSourceShouldFail();
-    void playShouldSucceed();
-    void playShouldFail();
-    void pauseShouldSucceed();
-    void pauseShouldFail();
-    void stopShouldSucceed();
-    void stopShouldFail();
-    void setPlaybackRateShouldSucceed();
-    void setPlaybackRateShouldFail();
-    void setPositionShouldSucceed();
-    void setPositionShouldFail();
-    void setVideoWindowShouldSucceed();
-    void setVideoWindowShouldFail();
-    void haveDataShouldSucceed();
-    void haveDataShouldFail();
+    void createPlaybackServiceShouldSuccess();
     void getSharedMemoryShouldSucceed();
     void getSharedMemoryShouldFail();
-    void getPositionShouldSucceed();
-    void getPositionShouldFail();
-    void getSupportedMimeTypesSucceed();
-    void isMimeTypeSupportedSucceed();
-    void renderFrameSucceed();
-    void setVolumeShouldSucceed();
-    void setVolumeShouldFail();
-    void getVolumeShouldSucceed();
-    void getVolumeShouldFail();
+    void getShmBufferShouldSucceed();
+    void getShmBufferShouldFail();
+    void getMaxPlaybacksShouldSucceed();
+    void getMaxWebAudioPlayersShouldSucceed();
 
 private:
     std::shared_ptr<StrictMock<firebolt::rialto::server::MediaPipelineServerInternalFactoryMock>> m_mediaPipelineFactoryMock;
     std::shared_ptr<StrictMock<firebolt::rialto::server::MediaPipelineCapabilitiesFactoryMock>>
         m_mediaPipelineCapabilitiesFactoryMock;
+    std::shared_ptr<StrictMock<firebolt::rialto::server::WebAudioPlayerServerInternalFactoryMock>> m_webAudioPlayerFactoryMock;
     std::unique_ptr<StrictMock<firebolt::rialto::server::MediaPipelineCapabilitiesMock>> m_mediaPipelineCapabilities;
     StrictMock<firebolt::rialto::server::MediaPipelineCapabilitiesMock> &m_mediaPipelineCapabilitiesMock;
     std::unique_ptr<firebolt::rialto::server::ISharedMemoryBufferFactory> m_shmBufferFactory;
     StrictMock<firebolt::rialto::server::SharedMemoryBufferFactoryMock> &m_shmBufferFactoryMock;
     std::shared_ptr<firebolt::rialto::server::ISharedMemoryBuffer> m_shmBuffer;
     StrictMock<firebolt::rialto::server::SharedMemoryBufferMock> &m_shmBufferMock;
-    std::unique_ptr<firebolt::rialto::server::IMediaPipelineServerInternal> m_mediaPipeline;
-    StrictMock<firebolt::rialto::server::MediaPipelineServerInternalMock> &m_mediaPipelineMock;
     StrictMock<firebolt::rialto::server::DecryptionServiceMock> m_decryptionServiceMock;
     std::unique_ptr<firebolt::rialto::server::service::PlaybackService> m_sut;
 };

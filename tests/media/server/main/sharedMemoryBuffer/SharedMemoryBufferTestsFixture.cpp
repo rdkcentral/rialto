@@ -25,9 +25,10 @@ constexpr std::uint32_t audioBufferLen{1 * 1024 * 1024}; // 1MB
 constexpr std::uint32_t videoBufferLen{7 * 1024 * 1024}; // 7MB
 } // namespace
 
-void SharedMemoryBufferTests::initialize(int maxPlaybacks)
+void SharedMemoryBufferTests::initialize(int maxPlaybacks, int maxWebAudioPlayers)
 {
-    m_sut = firebolt::rialto::server::SharedMemoryBufferFactory().createSharedMemoryBuffer(maxPlaybacks);
+    m_sut = firebolt::rialto::server::SharedMemoryBufferFactory().createSharedMemoryBuffer(maxPlaybacks,
+                                                                                           maxWebAudioPlayers);
 }
 
 void SharedMemoryBufferTests::mapPartitionShouldSucceed(int sessionId)

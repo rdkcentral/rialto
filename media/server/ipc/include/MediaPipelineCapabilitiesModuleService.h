@@ -21,7 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_IPC_MEDIA_PIPELINE_CAPABILITIES_MODULE_SERVICE_H_
 
 #include "IMediaPipelineCapabilitiesModuleService.h"
-#include "IPlaybackService.h"
+#include "IMediaPipelineService.h"
 #include <map>
 #include <memory>
 #include <set>
@@ -35,13 +35,13 @@ public:
     virtual ~MediaPipelineCapabilitiesModuleServiceFactory() = default;
 
     std::shared_ptr<IMediaPipelineCapabilitiesModuleService>
-    create(service::IPlaybackService &playbackService) const override;
+    create(service::IMediaPipelineService &mediaPipelineService) const override;
 };
 
 class MediaPipelineCapabilitiesModuleService : public IMediaPipelineCapabilitiesModuleService
 {
 public:
-    explicit MediaPipelineCapabilitiesModuleService(service::IPlaybackService &playbackService);
+    explicit MediaPipelineCapabilitiesModuleService(service::IMediaPipelineService &mediaPipelineService);
     ~MediaPipelineCapabilitiesModuleService() override;
 
     void clientConnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient) override;
@@ -57,7 +57,7 @@ public:
                              ::google::protobuf::Closure *done) override;
 
 private:
-    service::IPlaybackService &m_playbackService;
+    service::IMediaPipelineService &m_mediaPipelineService;
 };
 } // namespace firebolt::rialto::server::ipc
 

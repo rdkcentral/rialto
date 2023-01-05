@@ -17,56 +17,60 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_WEB_AUDIO_PLAYER_H_
-#define FIREBOLT_RIALTO_SERVER_WEB_AUDIO_PLAYER_H_
+#ifndef FIREBOLT_RIALTO_SERVER_WEB_AUDIO_PLAYER_SERVER_INTERNAL_H_
+#define FIREBOLT_RIALTO_SERVER_WEB_AUDIO_PLAYER_SERVER_INTERNAL_H_
 
 #include "IWebAudioPlayer.h"
+#include "IWebAudioPlayerServerInternalFactory.h"
 
 #include <memory>
 #include <stdint.h>
 #include <string>
 
-namespace firebolt::rialto
+namespace firebolt::rialto::server
 {
 /**
  * @brief IWebAudioPlayer factory class definition.
  */
-class WebAudioPlayerFactory : public IWebAudioPlayerFactory
+class WebAudioPlayerServerInternalFactory : public IWebAudioPlayerServerInternalFactory
 {
 public:
-    WebAudioPlayerFactory() = default;
-    ~WebAudioPlayerFactory() override = default;
+    WebAudioPlayerServerInternalFactory() = default;
+    ~WebAudioPlayerServerInternalFactory() override = default;
 
     std::unique_ptr<IWebAudioPlayer> createWebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client,
                                                           const std::string &audioMimeType, const uint32_t priority,
                                                           const WebAudioConfig *config) const override;
+
+    std::unique_ptr<IWebAudioPlayer>
+    createWebAudioPlayerServerInternal(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
+                                       const uint32_t priority, const WebAudioConfig *config,
+                                       const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer) const override;
 };
 
-}; // namespace firebolt::rialto
-
-namespace firebolt::rialto::server
-{
 /**
- * @brief The definition of the WebAudioPlayer.
+ * @brief The definition of the WebAudioPlayerServerInternal.
  */
-class WebAudioPlayer : public IWebAudioPlayer
+class WebAudioPlayerServerInternal : public IWebAudioPlayer
 {
 public:
     /**
      * @brief The constructor.
      *
-     * @param[in] client:        The Web Audio Player client
-     * @param[in] audioMimeType: The audio encoding format, currently only "audio/x-raw" (PCM)
-     * @param[in] priority:      Priority value for this pipeline.
-     * @param[in] config:        Additional type dependent configuration data or nullptr
+     * @param[in] client            : The Web Audio Player client
+     * @param[in] audioMimeType     : The audio encoding format, currently only "audio/x-raw" (PCM)
+     * @param[in] priority          : Priority value for this pipeline.
+     * @param[in] config            : Additional type dependent configuration data or nullptr
+     * @param[in] shmBuffer         : The shared memory buffer
      */
-    WebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
-                   const uint32_t priority, const WebAudioConfig *config);
+    WebAudioPlayerServerInternal(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
+                                 const uint32_t priority, const WebAudioConfig *config,
+                                 const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer);
 
     /**
      * @brief Virtual destructor.
      */
-    virtual ~WebAudioPlayer();
+    virtual ~WebAudioPlayerServerInternal();
 
     bool play() override;
 
@@ -74,7 +78,7 @@ public:
 
     bool setEos() override;
 
-    bool getBufferAvailable(uint32_t &availableFrames, const std::shared_ptr<WebAudioShmInfo> &webAudioShmInfo) override;
+    bool getBufferAvailable(uint32_t &availableFrames, std::shared_ptr<WebAudioShmInfo> &webAudioShmInfo) override;
 
     bool getBufferDelay(uint32_t &delayFrames) override;
 
@@ -93,8 +97,13 @@ protected:
      * @brief The web audio player client.
      */
     std::weak_ptr<IWebAudioPlayerClient> m_webAudioPlayerClient;
+
+    /**
+     * @brief Shared memory buffer
+     */
+    std::shared_ptr<ISharedMemoryBuffer> m_shmBuffer;
 };
 
 }; // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_WEB_AUDIO_PLAYER_H_
+#endif // FIREBOLT_RIALTO_SERVER_WEB_AUDIO_PLAYER_SERVER_INTERNAL_H_
