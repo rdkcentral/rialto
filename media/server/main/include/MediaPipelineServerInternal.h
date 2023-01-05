@@ -135,6 +135,8 @@ public:
 
     void clearActiveRequestsCache() override;
 
+    void invalidateActiveRequests(const MediaSourceType &type) override;
+
     void notifyQos(MediaSourceType mediaSourceType, const QosInfo &qosInfo) override;
 
 protected:

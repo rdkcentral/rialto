@@ -725,6 +725,15 @@ void MediaPipelineServerInternal::clearActiveRequestsCache()
     m_mainThread->enqueueTask(m_mainThreadClientId, task);
 }
 
+void MediaPipelineServerInternal::invalidateActiveRequests(const MediaSourceType &type)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    auto task = [&, type]() { m_activeRequests->erase(type); };
+
+    m_mainThread->enqueueTask(m_mainThreadClientId, task);
+}
+
 void MediaPipelineServerInternal::notifyQos(MediaSourceType mediaSourceType, const QosInfo &qosInfo)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
