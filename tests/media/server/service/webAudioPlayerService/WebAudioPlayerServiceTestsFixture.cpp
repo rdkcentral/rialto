@@ -176,9 +176,9 @@ void WebAudioPlayerServiceTests::playbackServiceWillReturnInactive()
     EXPECT_CALL(m_playbackServiceMock, isActive()).WillOnce(Return(false)).RetiresOnSaturation();
 }
 
-void WebAudioPlayerServiceTests::playbackServiceWillReturnMaxWebAudioInstances(int maxWebAudioInstances)
+void WebAudioPlayerServiceTests::playbackServiceWillReturnMaxWebAudioPlayers(int maxWebAudioPlayers)
 {
-    EXPECT_CALL(m_playbackServiceMock, getMaxWebAudioInstances()).WillOnce(Return(maxWebAudioInstances)).RetiresOnSaturation();
+    EXPECT_CALL(m_playbackServiceMock, getMaxWebAudioPlayers()).WillOnce(Return(maxWebAudioPlayers)).RetiresOnSaturation();
 }
 
 void WebAudioPlayerServiceTests::playbackServiceWillReturnSharedMemoryBuffer()
@@ -335,7 +335,7 @@ void WebAudioPlayerServiceTests::initWebAudioPlayer()
 {
     createWebAudioPlayerService();
     playbackServiceWillReturnActive();
-    playbackServiceWillReturnMaxWebAudioInstances(1);
+    playbackServiceWillReturnMaxWebAudioPlayers(1);
     playbackServiceWillReturnSharedMemoryBuffer();
     webAudioPlayerFactoryWillCreateWebAudioPlayer();
     createWebAudioPlayerShouldSucceed();

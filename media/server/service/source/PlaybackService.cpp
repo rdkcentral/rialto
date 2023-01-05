@@ -34,8 +34,7 @@ PlaybackService::PlaybackService(std::shared_ptr<IMediaPipelineServerInternalFac
                                  std::shared_ptr<IWebAudioPlayerServerInternalFactory> &&webAudioPlayerFactory,
                                  std::unique_ptr<ISharedMemoryBufferFactory> &&shmBufferFactory,
                                  IDecryptionService &decryptionService)
-    : m_shmBufferFactory{std::move(shmBufferFactory)}, m_isActive{false}, m_maxPlaybacks{0},
-      m_maxWebAudioInstances{1}, // TODO(RIALTO-2)
+    : m_shmBufferFactory{std::move(shmBufferFactory)}, m_isActive{false}, m_maxPlaybacks{0}, m_maxWebAudioPlayers{0},
       m_mediaPipelineService{std::make_unique<MediaPipelineService>(*this, std::move(mediaPipelineFactory),
                                                                     std::move(mediaPipelineCapabilitiesFactory),
                                                                     decryptionService)},
@@ -54,7 +53,7 @@ bool PlaybackService::switchToActive()
     try
     {
         RIALTO_SERVER_LOG_INFO("Switching SessionServer to Active state.");
-        m_shmBuffer = m_shmBufferFactory->createSharedMemoryBuffer(m_maxPlaybacks);
+        m_shmBuffer = m_shmBufferFactory->createSharedMemoryBuffer(m_maxPlaybacks, m_maxWebAudioPlayers);
         m_isActive = true;
         return true;
     }
@@ -81,10 +80,10 @@ void PlaybackService::setMaxPlaybacks(int maxPlaybacks)
     m_maxPlaybacks = maxPlaybacks;
 }
 
-void PlaybackService::setMaxWebAudioInstances(int maxWebAudio)
+void PlaybackService::setMaxWebAudioPlayers(int maxWebAudio)
 {
     // Method called during initialization only (before setting any state), no need to execute it on a task thread.
-    m_maxWebAudioInstances = maxWebAudio;
+    m_maxWebAudioPlayers = maxWebAudio;
 }
 
 bool PlaybackService::getSharedMemory(int32_t &fd, uint32_t &size) const
@@ -110,9 +109,9 @@ int PlaybackService::getMaxPlaybacks() const
     return m_maxPlaybacks;
 }
 
-int PlaybackService::getMaxWebAudioInstances() const
+int PlaybackService::getMaxWebAudioPlayers() const
 {
-    return m_maxWebAudioInstances;
+    return m_maxWebAudioPlayers;
 }
 
 std::shared_ptr<ISharedMemoryBuffer> PlaybackService::getShmBuffer() const

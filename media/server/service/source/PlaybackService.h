@@ -58,12 +58,12 @@ public:
     bool switchToActive() override;
     void switchToInactive() override;
     void setMaxPlaybacks(int maxPlaybacks) override;
-    void setMaxWebAudioInstances(int maxWebAudio) override;
+    void setMaxWebAudioPlayers(int maxWebAudio) override;
 
     bool isActive() const override;
     bool getSharedMemory(int32_t &fd, uint32_t &size) const override;
     int getMaxPlaybacks() const override;
-    int getMaxWebAudioInstances() const override;
+    int getMaxWebAudioPlayers() const override;
     std::shared_ptr<ISharedMemoryBuffer> getShmBuffer() const override;
     IMediaPipelineService &getMediaPipelineService() const override;
     IWebAudioPlayerService &getWebAudioPlayerService() const override;
@@ -72,7 +72,7 @@ private:
     std::unique_ptr<ISharedMemoryBufferFactory> m_shmBufferFactory;
     std::atomic<bool> m_isActive;
     std::atomic<int> m_maxPlaybacks;
-    std::atomic<int> m_maxWebAudioInstances;
+    std::atomic<int> m_maxWebAudioPlayers;
     std::shared_ptr<ISharedMemoryBuffer> m_shmBuffer;
     std::unique_ptr<MediaPipelineService> m_mediaPipelineService;
     std::unique_ptr<WebAudioPlayerService> m_webAudioPlayerService;

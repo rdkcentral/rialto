@@ -80,12 +80,14 @@ std::unique_ptr<ISharedMemoryBufferFactory> ISharedMemoryBufferFactory::createFa
     return std::make_unique<SharedMemoryBufferFactory>();
 }
 
-std::shared_ptr<ISharedMemoryBuffer> SharedMemoryBufferFactory::createSharedMemoryBuffer(unsigned numOfPlaybacks) const
+std::shared_ptr<ISharedMemoryBuffer>
+SharedMemoryBufferFactory::createSharedMemoryBuffer(unsigned numOfPlaybacks, unsigned numOfWebAudioPlayers) const
 {
-    return std::make_shared<SharedMemoryBuffer>(numOfPlaybacks);
+    return std::make_shared<SharedMemoryBuffer>(numOfPlaybacks, numOfWebAudioPlayers);
 }
 
-SharedMemoryBuffer::SharedMemoryBuffer(unsigned numOfPlaybacks)
+SharedMemoryBuffer::SharedMemoryBuffer(
+    unsigned numOfPlaybacks, unsigned numOfWebAudioPlayers) // TODO(RIALTO-2): Increase partition numOfWebAudioPlayers
     : m_partitions{calculatePartitionSize(numOfPlaybacks)}, m_dataBufferLen{0}, m_dataBufferFd{-1}, m_dataBuffer{nullptr}
 {
     int fd = syscall(SYS_memfd_create, memoryBufferName, MFD_CLOEXEC | MFD_ALLOW_SEALING);

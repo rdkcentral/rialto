@@ -34,11 +34,11 @@ public:
     MOCK_METHOD(bool, switchToActive, (), (override));
     MOCK_METHOD(void, switchToInactive, (), (override));
     MOCK_METHOD(void, setMaxPlaybacks, (int maxPlaybacks), (override));
-    MOCK_METHOD(void, setMaxWebAudioInstances, (int maxWebAudio), (override));
+    MOCK_METHOD(void, setMaxWebAudioPlayers, (int maxWebAudio), (override));
     MOCK_METHOD(bool, isActive, (), (const, override));
     MOCK_METHOD(bool, getSharedMemory, (int32_t & fd, uint32_t &size), (const, override));
     MOCK_METHOD(int, getMaxPlaybacks, (), (const, override));
-    MOCK_METHOD(int, getMaxWebAudioInstances, (), (const, override));
+    MOCK_METHOD(int, getMaxWebAudioPlayers, (), (const, override));
     MOCK_METHOD(std::shared_ptr<ISharedMemoryBuffer>, getShmBuffer, (), (const, override));
     MOCK_METHOD(IMediaPipelineService &, getMediaPipelineService, (), (const, override));
     MOCK_METHOD(IWebAudioPlayerService &, getWebAudioPlayerService, (), (const, override));

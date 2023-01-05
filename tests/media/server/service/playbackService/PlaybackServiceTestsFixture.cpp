@@ -34,7 +34,7 @@ namespace
 constexpr std::int32_t shmFd{234};
 constexpr std::uint32_t shmSize{2048};
 constexpr std::int32_t maxPlaybacks{2};
-constexpr std::int32_t maxWebAudioInstances{2};
+constexpr std::int32_t maxWebAudioPlayers{2};
 } // namespace
 
 PlaybackServiceTests::PlaybackServiceTests()
@@ -57,7 +57,7 @@ PlaybackServiceTests::PlaybackServiceTests()
 
 void PlaybackServiceTests::sharedMemoryBufferWillBeInitialized()
 {
-    EXPECT_CALL(m_shmBufferFactoryMock, createSharedMemoryBuffer(maxPlaybacks))
+    EXPECT_CALL(m_shmBufferFactoryMock, createSharedMemoryBuffer(maxPlaybacks, maxWebAudioPlayers))
         .WillOnce(Return(ByMove(std::move(m_shmBuffer))));
 }
 
@@ -93,9 +93,9 @@ void PlaybackServiceTests::triggerSetMaxPlaybacks()
     m_sut->setMaxPlaybacks(maxPlaybacks);
 }
 
-void PlaybackServiceTests::triggerSetMaxWebAudioInstances()
+void PlaybackServiceTests::triggerSetMaxWebAudioPlayers()
 {
-    m_sut->setMaxWebAudioInstances(maxWebAudioInstances);
+    m_sut->setMaxWebAudioPlayers(maxWebAudioPlayers);
 }
 
 void PlaybackServiceTests::getSharedMemoryShouldSucceed()
@@ -131,7 +131,7 @@ void PlaybackServiceTests::getMaxPlaybacksShouldSucceed()
     EXPECT_EQ(m_sut->getMaxPlaybacks(), maxPlaybacks);
 }
 
-void PlaybackServiceTests::getMaxWebAudioInstancesShouldSucceed()
+void PlaybackServiceTests::getMaxWebAudioPlayersShouldSucceed()
 {
-    EXPECT_EQ(m_sut->getMaxWebAudioInstances(), maxWebAudioInstances);
+    EXPECT_EQ(m_sut->getMaxWebAudioPlayers(), maxWebAudioPlayers);
 }

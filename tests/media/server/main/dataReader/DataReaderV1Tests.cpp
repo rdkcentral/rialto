@@ -36,6 +36,7 @@ using firebolt::rialto::server::ISharedMemoryBufferFactory;
 namespace
 {
 constexpr int numOfPlaybacks{1};
+constexpr int numOfWebAudioPlayers{2};
 constexpr int sessionId{0};
 constexpr auto videoMediaSourceType{firebolt::rialto::MediaSourceType::VIDEO};
 constexpr auto videoSourceId{static_cast<std::int32_t>(videoMediaSourceType)};
@@ -60,7 +61,9 @@ const std::unique_ptr<IMediaPipeline::MediaSegment> audioSegment{
 class DataReaderV1Tests : public testing::Test
 {
 public:
-    DataReaderV1Tests() : m_shm{ISharedMemoryBufferFactory::createFactory()->createSharedMemoryBuffer(numOfPlaybacks)}
+    DataReaderV1Tests()
+        : m_shm{ISharedMemoryBufferFactory::createFactory()->createSharedMemoryBuffer(numOfPlaybacks,
+                                                                                      numOfWebAudioPlayers)}
     {
     }
 

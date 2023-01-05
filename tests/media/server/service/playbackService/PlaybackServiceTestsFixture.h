@@ -45,7 +45,7 @@ public:
     void triggerSwitchToActive();
     void triggerSwitchToInactive();
     void triggerSetMaxPlaybacks();
-    void triggerSetMaxWebAudioInstances();
+    void triggerSetMaxWebAudioPlayers();
 
     void createPlaybackServiceShouldSuccess();
     void getSharedMemoryShouldSucceed();
@@ -53,7 +53,7 @@ public:
     void getShmBufferShouldSucceed();
     void getShmBufferShouldFail();
     void getMaxPlaybacksShouldSucceed();
-    void getMaxWebAudioInstancesShouldSucceed();
+    void getMaxWebAudioPlayersShouldSucceed();
 
 private:
     std::shared_ptr<StrictMock<firebolt::rialto::server::MediaPipelineServerInternalFactoryMock>> m_mediaPipelineFactoryMock;

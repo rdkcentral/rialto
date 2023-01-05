@@ -30,6 +30,7 @@ TEST_F(PlaybackServiceTests, shouldGetSharedMemory)
 {
     createPlaybackServiceShouldSuccess();
     triggerSetMaxPlaybacks();
+    triggerSetMaxWebAudioPlayers();
     sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
     sharedMemoryBufferWillReturnFdAndSize();
@@ -44,9 +45,9 @@ TEST_F(PlaybackServiceTests, shouldSetMaxPlaybacks)
     getMaxPlaybacksShouldSucceed();
 }
 
-TEST_F(PlaybackServiceTests, shouldSetMaxWebAudioInstances)
+TEST_F(PlaybackServiceTests, shouldSetMaxWebAudioPlayers)
 {
     createPlaybackServiceShouldSuccess();
-    triggerSetMaxWebAudioInstances();
-    getMaxWebAudioInstancesShouldSucceed();
+    triggerSetMaxWebAudioPlayers();
+    getMaxWebAudioPlayersShouldSucceed();
 }

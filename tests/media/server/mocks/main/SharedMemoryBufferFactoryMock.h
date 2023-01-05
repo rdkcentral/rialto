@@ -30,8 +30,8 @@ namespace firebolt::rialto::server
 class SharedMemoryBufferFactoryMock : public ISharedMemoryBufferFactory
 {
 public:
-    MOCK_METHOD(std::shared_ptr<ISharedMemoryBuffer>, createSharedMemoryBuffer, (unsigned numOfPlaybacks),
-                (const, override));
+    MOCK_METHOD(std::shared_ptr<ISharedMemoryBuffer>, createSharedMemoryBuffer,
+                (unsigned numOfPlaybacks, unsigned numOfWebAudioPlayers), (const, override));
 };
 } // namespace firebolt::rialto::server
 

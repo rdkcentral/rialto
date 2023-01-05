@@ -45,12 +45,12 @@ public:
     virtual bool switchToActive() = 0;
     virtual void switchToInactive() = 0;
     virtual void setMaxPlaybacks(int maxPlaybacks) = 0;
-    virtual void setMaxWebAudioInstances(int maxWebAudio) = 0;
+    virtual void setMaxWebAudioPlayers(int maxWebAudio) = 0;
 
     virtual bool isActive() const = 0;
     virtual bool getSharedMemory(int32_t &fd, uint32_t &size) const = 0;
     virtual int getMaxPlaybacks() const = 0;
-    virtual int getMaxWebAudioInstances() const = 0;
+    virtual int getMaxWebAudioPlayers() const = 0;
     virtual std::shared_ptr<ISharedMemoryBuffer> getShmBuffer() const = 0;
     virtual IMediaPipelineService &getMediaPipelineService() const = 0;
     virtual IWebAudioPlayerService &getWebAudioPlayerService() const = 0;

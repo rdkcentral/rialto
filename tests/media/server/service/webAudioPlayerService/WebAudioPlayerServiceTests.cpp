@@ -30,7 +30,7 @@ TEST_F(WebAudioPlayerServiceTests, shouldFailToCreateWebAudioPlayerWhenMaxPlayba
 {
     createWebAudioPlayerService();
     playbackServiceWillReturnActive();
-    playbackServiceWillReturnMaxWebAudioInstances(0);
+    playbackServiceWillReturnMaxWebAudioPlayers(0);
     createWebAudioPlayerShouldFail();
 }
 
@@ -38,7 +38,7 @@ TEST_F(WebAudioPlayerServiceTests, shouldFailToCreateWebAudioPlayerWhenFactoryRe
 {
     createWebAudioPlayerService();
     playbackServiceWillReturnActive();
-    playbackServiceWillReturnMaxWebAudioInstances(1);
+    playbackServiceWillReturnMaxWebAudioPlayers(1);
     playbackServiceWillReturnSharedMemoryBuffer();
     webAudioPlayerFactoryWillReturnNullptr();
     createWebAudioPlayerShouldFail();
@@ -53,7 +53,7 @@ TEST_F(WebAudioPlayerServiceTests, shouldFailToCreateWebAudioPlayerWithTheSameId
 {
     initWebAudioPlayer();
     playbackServiceWillReturnActive();
-    playbackServiceWillReturnMaxWebAudioInstances(2);
+    playbackServiceWillReturnMaxWebAudioPlayers(2);
     createWebAudioPlayerShouldFail();
 }
 

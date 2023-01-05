@@ -60,7 +60,7 @@ public:
 
     void playbackServiceWillReturnActive();
     void playbackServiceWillReturnInactive();
-    void playbackServiceWillReturnMaxWebAudioInstances(int maxWebAudioInstances);
+    void playbackServiceWillReturnMaxWebAudioPlayers(int maxWebAudioPlayers);
     void playbackServiceWillReturnSharedMemoryBuffer();
 
     void createWebAudioPlayerService();
