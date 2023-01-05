@@ -130,9 +130,6 @@ public:
      * Gets the available buffer space for sending more frames. Client should not
      * write more than the number of frames returned by this API.
      *
-     * Calls to getBufferAvailable should always be followed by writeBuffer. Subsequent calls
-     * to getBufferAvailable without a writeBuffer will result in an error.
-     *
      * webAudioShmInfo is not required by the client application and can be ignored.
      *
      * @param[out] availableFrames : Number of frames available to be written.
@@ -158,9 +155,6 @@ public:
      * @brief Write audio frames
      *
      * Sends a buffer of audio data for playback
-     *
-     * A call to writeBuffer should always follow a getBufferAvailable. If no frames are written
-     * writeBuffer should still be called with 0 numberOfFrames.
      *
      * @param[in]  numberOfFrames : Number of frames of audio in 'data'.
      * @param[in]  data           : Pointer to the data, byte length = numberOfFrames*sampleSize
