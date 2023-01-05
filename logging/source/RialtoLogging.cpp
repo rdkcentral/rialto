@@ -103,7 +103,7 @@ static void consoleLogHandler(RIALTO_DEBUG_LEVEL level, const char *file, int li
     iov[2].iov_base = reinterpret_cast<void *>(fbuf);
     if (RIALTO_DEBUG_LEVEL_EXTERNAL == level)
     {
-        snprintf(fbuf, sizeof(fbuf), "< T:%d >", threadId);
+        iov[2].iov_len = snprintf(fbuf, sizeof(fbuf), "< T:%d >", threadId);
     }
     else if (!file || !function || (line <= 0))
     {

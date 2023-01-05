@@ -17,27 +17,22 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_GST_DECRYPTOR_ELEMENT_FACTORY_H_
-#define FIREBOLT_RIALTO_SERVER_GST_DECRYPTOR_ELEMENT_FACTORY_H_
+#ifndef FIREBOLT_RIALTO_SERVER_I_GST_PROTECTION_METADATA_WRAPPER_H_
+#define FIREBOLT_RIALTO_SERVER_I_GST_PROTECTION_METADATA_WRAPPER_H_
 
-#include "IGstDecryptorElementFactory.h"
-#include <memory>
+#include "GstProtectionMetadata.h"
 
 namespace firebolt::rialto::server
 {
-/**
- * @brief IGstDecryptorElement factory class definition.
- */
-class GstDecryptorElementFactory : public IGstDecryptorElementFactory
+class IGstProtectionMetadataWrapper
 {
 public:
-    GstDecryptorElementFactory() = default;
-    ~GstDecryptorElementFactory() override = default;
-
-    GstElement *createDecryptorElement(const gchar *name, firebolt::rialto::server::IDecryptionService *decryptionService,
-                                       const std::shared_ptr<IGstWrapper> &gstWrapper) const override;
+    IGstProtectionMetadataWrapper() = default;
+    virtual ~IGstProtectionMetadataWrapper() = default;
+    virtual GstMeta *addProtectionMetadata(GstBuffer *gstBuffer, GstRialtoProtectionData &data) = 0;
+    virtual GstRialtoProtectionData *getProtectionMetadataData(GstBuffer *gstBuffer) = 0;
+    virtual void removeProtectionMetadata(GstBuffer *gstBuffer) = 0;
 };
-
 }; // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_GST_DECRYPTOR_ELEMENT_FACTORY_H_
+#endif // FIREBOLT_RIALTO_SERVER_I_GST_PROTECTION_METADATA_WRAPPER_H_

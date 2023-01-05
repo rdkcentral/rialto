@@ -17,27 +17,21 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_GST_DECRYPTOR_ELEMENT_FACTORY_H_
-#define FIREBOLT_RIALTO_SERVER_GST_DECRYPTOR_ELEMENT_FACTORY_H_
+#ifndef FIREBOLT_RIALTO_SERVER_GST_PROTECTION_METADATA_WRAPPER_MOCK_H_
+#define FIREBOLT_RIALTO_SERVER_GST_PROTECTION_METADATA_WRAPPER_MOCK_H_
 
-#include "IGstDecryptorElementFactory.h"
-#include <memory>
+#include "IGstProtectionMetadataWrapper.h"
+#include <gmock/gmock.h>
 
 namespace firebolt::rialto::server
 {
-/**
- * @brief IGstDecryptorElement factory class definition.
- */
-class GstDecryptorElementFactory : public IGstDecryptorElementFactory
+class GstProtectionMetadataWrapperMock : public IGstProtectionMetadataWrapper
 {
 public:
-    GstDecryptorElementFactory() = default;
-    ~GstDecryptorElementFactory() override = default;
-
-    GstElement *createDecryptorElement(const gchar *name, firebolt::rialto::server::IDecryptionService *decryptionService,
-                                       const std::shared_ptr<IGstWrapper> &gstWrapper) const override;
+    MOCK_METHOD(GstMeta *, addProtectionMetadata, (GstBuffer * gstBuffer, GstRialtoProtectionData &data), (override));
+    MOCK_METHOD(GstRialtoProtectionData *, getProtectionMetadataData, (GstBuffer * gstBuffer), (override));
+    MOCK_METHOD(void, removeProtectionMetadata, (GstBuffer * gstBuffer), (override));
 };
+} // namespace firebolt::rialto::server
 
-}; // namespace firebolt::rialto::server
-
-#endif // FIREBOLT_RIALTO_SERVER_GST_DECRYPTOR_ELEMENT_FACTORY_H_
+#endif // FIREBOLT_RIALTO_SERVER_GST_PROTECTION_METADATA_WRAPPER_MOCK_H_

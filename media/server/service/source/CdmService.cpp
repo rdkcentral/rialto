@@ -451,4 +451,32 @@ MediaKeyErrorStatus CdmService::selectKeyId(int32_t keySessionId, const std::vec
     }
     return mediaKeysIter->second->selectKeyId(keySessionId, keyId);
 }
+
+void CdmService::incrementSessionIdUsageCounter(int32_t keySessionId)
+{
+    std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
+    auto mediaKeysIter = std::find_if(m_mediaKeys.begin(), m_mediaKeys.end(),
+                                      [&](const auto &iter) { return iter.second->hasSession(keySessionId); });
+    if (mediaKeysIter == m_mediaKeys.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Media keys handle for mksId: %d does not exists", keySessionId);
+        return;
+    }
+
+    mediaKeysIter->second->incrementSessionIdUsageCounter(keySessionId);
+}
+
+void CdmService::decrementSessionIdUsageCounter(int32_t keySessionId)
+{
+    std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
+    auto mediaKeysIter = std::find_if(m_mediaKeys.begin(), m_mediaKeys.end(),
+                                      [&](const auto &iter) { return iter.second->hasSession(keySessionId); });
+    if (mediaKeysIter == m_mediaKeys.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Media keys handle for mksId: %d does not exists", keySessionId);
+        return;
+    }
+
+    mediaKeysIter->second->decrementSessionIdUsageCounter(keySessionId);
+}
 } // namespace firebolt::rialto::server::service

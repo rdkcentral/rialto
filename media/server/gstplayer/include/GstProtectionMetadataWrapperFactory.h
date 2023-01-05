@@ -17,27 +17,27 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_GST_DECRYPTOR_ELEMENT_FACTORY_H_
-#define FIREBOLT_RIALTO_SERVER_GST_DECRYPTOR_ELEMENT_FACTORY_H_
+#ifndef FIREBOLT_RIALTO_SERVER_GST_PROTECTION_METADATA_WRAPPER_FACTORY_H_
+#define FIREBOLT_RIALTO_SERVER_GST_PROTECTION_METADATA_WRAPPER_FACTORY_H_
 
-#include "IGstDecryptorElementFactory.h"
+#include "IGstProtectionMetadataWrapperFactory.h"
 #include <memory>
 
 namespace firebolt::rialto::server
 {
 /**
- * @brief IGstDecryptorElement factory class definition.
+ * @brief GstProtectionMetadataWrapperFactory factory class, for the creation of a GstProtectionMetadataWrapper.
  */
-class GstDecryptorElementFactory : public IGstDecryptorElementFactory
+class GstProtectionMetadataWrapperFactory : public IGstProtectionMetadataWrapperFactory
 {
 public:
-    GstDecryptorElementFactory() = default;
-    ~GstDecryptorElementFactory() override = default;
+    GstProtectionMetadataWrapperFactory() = default;
+    ~GstProtectionMetadataWrapperFactory() override = default;
 
-    GstElement *createDecryptorElement(const gchar *name, firebolt::rialto::server::IDecryptionService *decryptionService,
-                                       const std::shared_ptr<IGstWrapper> &gstWrapper) const override;
+    std::unique_ptr<IGstProtectionMetadataWrapper>
+    createProtectionMetadataWrapper(const std::shared_ptr<IGstWrapper> &gstWrapper) const override;
 };
 
 }; // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_GST_DECRYPTOR_ELEMENT_FACTORY_H_
+#endif // FIREBOLT_RIALTO_SERVER_GST_PROTECTION_METADATA_WRAPPER_FACTORY_H_

@@ -148,11 +148,11 @@ MediaKeyErrorStatus MediaKeysServerInternal::selectKeyIdInternal(int32_t keySess
     auto sessionIter = m_mediaKeySessions.find(keySessionId);
     if (sessionIter == m_mediaKeySessions.end())
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to find the session");
+        RIALTO_SERVER_LOG_ERROR("Failed to find the session %d", keySessionId);
         return MediaKeyErrorStatus::BAD_SESSION_ID;
     }
 
-    MediaKeyErrorStatus status = sessionIter->second->selectKeyId(keyId);
+    MediaKeyErrorStatus status = sessionIter->second.mediaKeySession->selectKeyId(keyId);
     if (MediaKeyErrorStatus::OK != status)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to select key id");
@@ -178,11 +178,11 @@ bool MediaKeysServerInternal::containsKeyInternal(int32_t keySessionId, const st
     auto sessionIter = m_mediaKeySessions.find(keySessionId);
     if (sessionIter == m_mediaKeySessions.end())
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to find the session");
+        RIALTO_SERVER_LOG_ERROR("Failed to find the session %d", keySessionId);
         return false;
     }
 
-    return sessionIter->second->containsKey(keyId);
+    return sessionIter->second.mediaKeySession->containsKey(keyId);
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::createKeySession(KeySessionType sessionType,
@@ -212,7 +212,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::createKeySessionInternal(KeySession
         return MediaKeyErrorStatus::FAIL;
     }
     keySessionId = keySessionIdTemp;
-    m_mediaKeySessions.emplace(std::make_pair(keySessionId, std::move(mediaKeySession)));
+    m_mediaKeySessions.emplace(std::make_pair(keySessionId, MediaKeySessionUsage{std::move(mediaKeySession)}));
 
     return MediaKeyErrorStatus::OK;
 }
@@ -235,14 +235,14 @@ MediaKeyErrorStatus MediaKeysServerInternal::generateRequestInternal(int32_t key
     auto sessionIter = m_mediaKeySessions.find(keySessionId);
     if (sessionIter == m_mediaKeySessions.end())
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to find the session");
+        RIALTO_SERVER_LOG_ERROR("Failed to find the session %d", keySessionId);
         return MediaKeyErrorStatus::BAD_SESSION_ID;
     }
 
-    MediaKeyErrorStatus status = sessionIter->second->generateRequest(initDataType, initData);
+    MediaKeyErrorStatus status = sessionIter->second.mediaKeySession->generateRequest(initDataType, initData);
     if (MediaKeyErrorStatus::OK != status)
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to generate request for the key session");
+        RIALTO_SERVER_LOG_ERROR("Failed to generate request for the key session %d", keySessionId);
         return status;
     }
     return status;
@@ -264,14 +264,14 @@ MediaKeyErrorStatus MediaKeysServerInternal::loadSessionInternal(int32_t keySess
     auto sessionIter = m_mediaKeySessions.find(keySessionId);
     if (sessionIter == m_mediaKeySessions.end())
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to find the session");
+        RIALTO_SERVER_LOG_ERROR("Failed to find the session %d", keySessionId);
         return MediaKeyErrorStatus::BAD_SESSION_ID;
     }
 
-    MediaKeyErrorStatus status = sessionIter->second->loadSession();
+    MediaKeyErrorStatus status = sessionIter->second.mediaKeySession->loadSession();
     if (MediaKeyErrorStatus::OK != status)
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to load the session");
+        RIALTO_SERVER_LOG_ERROR("Failed to load the session %d", keySessionId);
         return status;
     }
     return status;
@@ -294,14 +294,14 @@ MediaKeyErrorStatus MediaKeysServerInternal::updateSessionInternal(int32_t keySe
     auto sessionIter = m_mediaKeySessions.find(keySessionId);
     if (sessionIter == m_mediaKeySessions.end())
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to find the session");
+        RIALTO_SERVER_LOG_ERROR("Failed to find the session %d", keySessionId);
         return MediaKeyErrorStatus::BAD_SESSION_ID;
     }
 
-    MediaKeyErrorStatus status = sessionIter->second->updateSession(responseData);
+    MediaKeyErrorStatus status = sessionIter->second.mediaKeySession->updateSession(responseData);
     if (MediaKeyErrorStatus::OK != status)
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to update the session");
+        RIALTO_SERVER_LOG_ERROR("Failed to update the session %d", keySessionId);
         return status;
     }
     return status;
@@ -324,11 +324,11 @@ MediaKeyErrorStatus MediaKeysServerInternal::setDrmHeaderInternal(int32_t keySes
     auto sessionIter = m_mediaKeySessions.find(keySessionId);
     if (sessionIter == m_mediaKeySessions.end())
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to find the session");
+        RIALTO_SERVER_LOG_ERROR("Failed to find the session %d", keySessionId);
         return MediaKeyErrorStatus::BAD_SESSION_ID;
     }
 
-    MediaKeyErrorStatus status = sessionIter->second->setDrmHeader(requestData);
+    MediaKeyErrorStatus status = sessionIter->second.mediaKeySession->setDrmHeader(requestData);
     if (MediaKeyErrorStatus::OK != status)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to set drm header");
@@ -354,18 +354,25 @@ MediaKeyErrorStatus MediaKeysServerInternal::closeKeySessionInternal(int32_t key
     auto sessionIter = m_mediaKeySessions.find(keySessionId);
     if (sessionIter == m_mediaKeySessions.end())
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to find the session");
+        RIALTO_SERVER_LOG_ERROR("Failed to find the session %d", keySessionId);
         return MediaKeyErrorStatus::BAD_SESSION_ID;
     }
 
-    MediaKeyErrorStatus status = sessionIter->second->closeKeySession();
-    if (MediaKeyErrorStatus::OK != status)
+    if (sessionIter->second.bufCounter == 0)
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to close the key session");
+        MediaKeyErrorStatus status = sessionIter->second.mediaKeySession->closeKeySession();
+        if (MediaKeyErrorStatus::OK != status)
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to close the key session %d", keySessionId);
+            return status;
+        }
+        m_mediaKeySessions.erase(sessionIter);
         return status;
     }
-    m_mediaKeySessions.erase(sessionIter);
-    return status;
+
+    RIALTO_SERVER_LOG_INFO("Deferring closing of key session %d", keySessionId);
+    sessionIter->second.shouldBeDestroyed = true;
+    return MediaKeyErrorStatus::OK;
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::removeKeySession(int32_t keySessionId)
@@ -384,14 +391,14 @@ MediaKeyErrorStatus MediaKeysServerInternal::removeKeySessionInternal(int32_t ke
     auto sessionIter = m_mediaKeySessions.find(keySessionId);
     if (sessionIter == m_mediaKeySessions.end())
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to find the session");
+        RIALTO_SERVER_LOG_ERROR("Failed to find the session %d", keySessionId);
         return MediaKeyErrorStatus::BAD_SESSION_ID;
     }
 
-    MediaKeyErrorStatus status = sessionIter->second->removeKeySession();
+    MediaKeyErrorStatus status = sessionIter->second.mediaKeySession->removeKeySession();
     if (MediaKeyErrorStatus::OK != status)
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to remove the key session");
+        RIALTO_SERVER_LOG_ERROR("Failed to remove the key session %d", keySessionId);
         return status;
     }
     return status;
@@ -470,11 +477,11 @@ MediaKeyErrorStatus MediaKeysServerInternal::getLastDrmErrorInternal(int32_t key
     auto sessionIter = m_mediaKeySessions.find(keySessionId);
     if (sessionIter == m_mediaKeySessions.end())
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to find the session");
+        RIALTO_SERVER_LOG_ERROR("Failed to find the session %d", keySessionId);
         return MediaKeyErrorStatus::BAD_SESSION_ID;
     }
 
-    MediaKeyErrorStatus status = sessionIter->second->getLastDrmError(errorCode);
+    MediaKeyErrorStatus status = sessionIter->second.mediaKeySession->getLastDrmError(errorCode);
     if (MediaKeyErrorStatus::OK != status)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to get last drm error");
@@ -508,11 +515,11 @@ MediaKeyErrorStatus MediaKeysServerInternal::getCdmKeySessionIdInternal(int32_t 
     auto sessionIter = m_mediaKeySessions.find(keySessionId);
     if (sessionIter == m_mediaKeySessions.end())
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to find the session");
+        RIALTO_SERVER_LOG_ERROR("Failed to find the session %d", keySessionId);
         return MediaKeyErrorStatus::BAD_SESSION_ID;
     }
 
-    MediaKeyErrorStatus status = sessionIter->second->getCdmKeySessionId(cdmKeySessionId);
+    MediaKeyErrorStatus status = sessionIter->second.mediaKeySession->getCdmKeySessionId(cdmKeySessionId);
     if (MediaKeyErrorStatus::OK != status)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to get cdm key session id");
@@ -543,12 +550,12 @@ MediaKeyErrorStatus MediaKeysServerInternal::decryptInternal(int32_t keySessionI
     auto sessionIter = m_mediaKeySessions.find(keySessionId);
     if (sessionIter == m_mediaKeySessions.end())
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to find the session");
+        RIALTO_SERVER_LOG_ERROR("Failed to find the session %d", keySessionId);
         return MediaKeyErrorStatus::BAD_SESSION_ID;
     }
 
     MediaKeyErrorStatus status =
-        sessionIter->second->decrypt(encrypted, subSample, subSampleCount, IV, keyId, initWithLast15);
+        sessionIter->second.mediaKeySession->decrypt(encrypted, subSample, subSampleCount, IV, keyId, initWithLast15);
     if (MediaKeyErrorStatus::OK != status)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to decrypt buffer.");
@@ -584,9 +591,64 @@ bool MediaKeysServerInternal::isNetflixKeySystemInternal(int32_t keySessionId) c
     auto sessionIter = m_mediaKeySessions.find(keySessionId);
     if (sessionIter == m_mediaKeySessions.end())
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to find the session");
+        RIALTO_SERVER_LOG_ERROR("Failed to find the session %d", keySessionId);
         return false;
     }
-    return sessionIter->second->isNetflixKeySystem();
+    return sessionIter->second.mediaKeySession->isNetflixKeySystem();
+}
+
+void MediaKeysServerInternal::incrementSessionIdUsageCounter(int32_t keySessionId)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    auto task = [&]() { incrementSessionIdUsageCounterInternal(keySessionId); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+}
+
+void MediaKeysServerInternal::incrementSessionIdUsageCounterInternal(int32_t keySessionId)
+{
+    auto sessionIter = m_mediaKeySessions.find(keySessionId);
+    if (sessionIter == m_mediaKeySessions.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to find the session %d", keySessionId);
+        return;
+    }
+
+    sessionIter->second.bufCounter++;
+}
+
+void MediaKeysServerInternal::decrementSessionIdUsageCounter(int32_t keySessionId)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    auto task = [&]() { decrementSessionIdUsageCounterInternal(keySessionId); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+}
+
+void MediaKeysServerInternal::decrementSessionIdUsageCounterInternal(int32_t keySessionId)
+{
+    auto sessionIter = m_mediaKeySessions.find(keySessionId);
+    if (sessionIter == m_mediaKeySessions.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to find the session %d", keySessionId);
+        return;
+    }
+
+    if (sessionIter->second.bufCounter > 0)
+    {
+        sessionIter->second.bufCounter--;
+    }
+
+    if (sessionIter->second.bufCounter == 0 && sessionIter->second.shouldBeDestroyed)
+    {
+        RIALTO_SERVER_LOG_INFO("Deferred closing of mksId %d", keySessionId);
+        MediaKeyErrorStatus status = sessionIter->second.mediaKeySession->closeKeySession();
+        if (MediaKeyErrorStatus::OK != status)
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to close the key session %d", keySessionId);
+            return;
+        }
+        m_mediaKeySessions.erase(sessionIter);
+    }
 }
 }; // namespace firebolt::rialto::server

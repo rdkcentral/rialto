@@ -54,6 +54,12 @@ namespace firebolt::rialto::server
 class MediaKeysServerInternal : public IMediaKeysServerInternal
 {
 public:
+    struct MediaKeySessionUsage
+    {
+        std::unique_ptr<IMediaKeySession> mediaKeySession;
+        uint32_t bufCounter = 0;
+        bool shouldBeDestroyed = false;
+    };
     /**
      * @brief The constructor.
      *
@@ -116,6 +122,9 @@ public:
 
     bool isNetflixKeySystem(int32_t keySessionId) const override;
 
+    void incrementSessionIdUsageCounter(int32_t keySessionId) override;
+    void decrementSessionIdUsageCounter(int32_t keySessionId) override;
+
 private:
     /**
      * @brief The mainThread object.
@@ -135,7 +144,7 @@ private:
     /**
      * @brief Map containing created sessions.
      */
-    std::map<int32_t, std::unique_ptr<IMediaKeySession>> m_mediaKeySessions;
+    std::map<int32_t, MediaKeySessionUsage> m_mediaKeySessions;
 
     /**
      * @brief KeySystem type of the MediaKeysServerInternal.
@@ -288,6 +297,9 @@ private:
      * @retval true if key system is Netflix
      */
     bool isNetflixKeySystemInternal(int32_t keySessionId) const;
+
+    void incrementSessionIdUsageCounterInternal(int32_t keySessionId);
+    void decrementSessionIdUsageCounterInternal(int32_t keySessionId);
 };
 
 }; // namespace firebolt::rialto::server

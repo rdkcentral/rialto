@@ -17,10 +17,11 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_I_GST_DECRYPTOR_ELEMENT_FACTORY_H_
-#define FIREBOLT_RIALTO_SERVER_I_GST_DECRYPTOR_ELEMENT_FACTORY_H_
+#ifndef FIREBOLT_RIALTO_SERVER_I_GST_PROTECTION_METADATA_WRAPPER_FACTORY_H_
+#define FIREBOLT_RIALTO_SERVER_I_GST_PROTECTION_METADATA_WRAPPER_FACTORY_H_
 
 #include "IDecryptionService.h"
+#include "IGstProtectionMetadataWrapper.h"
 #include "IGstWrapper.h"
 #include <gst/gst.h>
 #include <memory>
@@ -28,31 +29,30 @@
 namespace firebolt::rialto::server
 {
 /**
- * @brief IGstDecryptorElement factory class, for the creation of a GstDecryptorElement.
+ * @brief IGstProtectionMetadataWrapperFactory factory class, for the creation of a GstProtectionMetadataWrapper.
  */
-class IGstDecryptorElementFactory
+class IGstProtectionMetadataWrapperFactory
 {
 public:
-    IGstDecryptorElementFactory() = default;
-    virtual ~IGstDecryptorElementFactory() = default;
+    IGstProtectionMetadataWrapperFactory() = default;
+    virtual ~IGstProtectionMetadataWrapperFactory() = default;
 
     /**
-     * @brief Creates a IGstDecryptorElementFactory instance.
+     * @brief Creates a IGstProtectionMetadataWrapperFactory instance.
      *
      * @retval the factory instance or null on error.
      */
-    static std::shared_ptr<IGstDecryptorElementFactory> createFactory();
+    static std::shared_ptr<IGstProtectionMetadataWrapperFactory> createFactory();
 
     /**
-     * @brief Creates a IGstDecryptorElement.
+     * @brief Creates a IGstProtectionMetadataWrapperFactory.
      *
      * @retval a decryptor element instance or null on error.
      */
-    virtual GstElement *createDecryptorElement(const gchar *name,
-                                               firebolt::rialto::server::IDecryptionService *decryptionService,
-                                               const std::shared_ptr<IGstWrapper> &gstWrapper) const = 0;
+    virtual std::unique_ptr<IGstProtectionMetadataWrapper>
+    createProtectionMetadataWrapper(const std::shared_ptr<IGstWrapper> &gstWrapper) const = 0;
 };
 
 }; // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_I_GST_DECRYPTOR_ELEMENT_FACTORY_H_
+#endif // FIREBOLT_RIALTO_SERVER_I_GST_PROTECTION_METADATA_WRAPPER_FACTORY_H_

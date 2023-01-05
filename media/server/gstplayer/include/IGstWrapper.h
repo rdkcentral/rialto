@@ -870,6 +870,27 @@ public:
     virtual GstProtectionMeta *gstBufferGetProtectionMeta(GstBuffer *buffer) const = 0;
 
     /**
+     * @brief Adds metadata for info to buffer using the parameters in params.
+     *
+     * @param[in] buffer : the gst buffer
+     * @param[in] meta   : the GstMetaInfo
+     * @param[in] params : the additional params for the info
+     *
+     * @retval the metadata for the api in info, nullptr if operation fails
+     */
+    virtual GstMeta *gstBufferAddMeta(GstBuffer *buffer, const GstMetaInfo *info, gpointer params) const = 0;
+
+    /**
+     * @brief Gets the metadata for api on buffer.
+     *
+     * @param[in] buffer : the gst buffer containing meta
+     * @param[in] api : the GType of an API
+     *
+     * @retval the metadata for api on buffer, nullptr if operation fails
+     */
+    virtual GstMeta *gstBufferGetMeta(GstBuffer *buffer, GType api) const = 0;
+
+    /**
      * @brief Removes the metadata from the buffer.
      *
      * @param[in] buffer : the gst buffer containing meta
