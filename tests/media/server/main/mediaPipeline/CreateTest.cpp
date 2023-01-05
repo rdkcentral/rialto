@@ -31,7 +31,7 @@ TEST_F(RialtoServerCreateMediaPipelineTest, Create)
     mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_mainThreadFactoryMock, getMainThread()).WillOnce(Return(m_mainThreadMock));
     EXPECT_CALL(*m_mainThreadMock, registerClient()).WillOnce(Return(m_kMainThreadClientId));
-    EXPECT_CALL(*m_sharedMemoryBufferMock, mapPartition(m_kSessionId)).WillOnce(Return(true));
+    EXPECT_CALL(*m_sharedMemoryBufferMock, mapPartition(MediaPlaybackType::GENERIC, m_kSessionId)).WillOnce(Return(true));
     EXPECT_NO_THROW(
         m_mediaPipeline =
             std::make_unique<MediaPipelineServerInternal>(m_mediaPipelineClientMock, m_videoReq, m_gstPlayerFactoryMock,
@@ -40,7 +40,7 @@ TEST_F(RialtoServerCreateMediaPipelineTest, Create)
                                                           std::move(m_activeRequests), m_decryptionServiceMock););
     EXPECT_NE(m_mediaPipeline, nullptr);
 
-    EXPECT_CALL(*m_sharedMemoryBufferMock, unmapPartition(m_kSessionId)).WillOnce(Return(true));
+    EXPECT_CALL(*m_sharedMemoryBufferMock, unmapPartition(MediaPlaybackType::GENERIC, m_kSessionId)).WillOnce(Return(true));
     EXPECT_CALL(*m_mainThreadMock, unregisterClient(m_kMainThreadClientId));
     // Objects are destroyed on the main thread
     mainThreadWillEnqueueTaskAndWait();

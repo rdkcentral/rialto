@@ -22,7 +22,7 @@
 
 #include "DataReaderFactory.h"
 #include "IActiveRequests.h"
-#include "IGstPlayer.h"
+#include "IGstGenericPlayer.h"
 #include "IMainThread.h"
 #include "IMediaPipelineServerInternal.h"
 #include "ITimer.h"
@@ -62,7 +62,7 @@ public:
 /**
  * @brief The definition of the MediaPipelineServerInternal.
  */
-class MediaPipelineServerInternal : public IMediaPipelineServerInternal, public IGstPlayerClient
+class MediaPipelineServerInternal : public IMediaPipelineServerInternal, public IGstGenericPlayerClient
 {
 public:
     /**
@@ -79,7 +79,7 @@ public:
      * @param[in] decryptionService : The decryption service
      */
     MediaPipelineServerInternal(std::shared_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements,
-                                const std::shared_ptr<IGstPlayerFactory> &gstPlayerFactory, int sessionId,
+                                const std::shared_ptr<IGstGenericPlayerFactory> &gstPlayerFactory, int sessionId,
                                 const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer,
                                 const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
                                 std::shared_ptr<common::ITimerFactory> timerFactory,
@@ -151,12 +151,12 @@ protected:
     /**
      * @brief The gstreamer player factory object.
      */
-    const std::shared_ptr<IGstPlayerFactory> m_kGstPlayerFactory;
+    const std::shared_ptr<IGstGenericPlayerFactory> m_kGstPlayerFactory;
 
     /**
      * @brief The gstreamer player.
      */
-    std::unique_ptr<IGstPlayer> m_gstPlayer;
+    std::unique_ptr<IGstGenericPlayer> m_gstPlayer;
 
     /**
      * @brief The video decoder requirements for the MediaPipeline session.

@@ -20,7 +20,7 @@
 #ifndef RIALTO_SERVERMANAGER_COMMON_I_SESSION_SERVER_APP_H_
 #define RIALTO_SERVERMANAGER_COMMON_I_SESSION_SERVER_APP_H_
 
-#include "SessionServerState.h"
+#include "MediaServerCommon.h"
 #include <string>
 
 namespace rialto::servermanager::common

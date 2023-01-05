@@ -18,30 +18,21 @@
  */
 
 #include "GstDispatcherThread.h"
-#include "IGstWrapper.h"
-#include "IWorkerThread.h"
-#include "PlayerContext.h"
 #include "RialtoServerLogging.h"
-#include "tasks/IPlayerTask.h"
-#include "tasks/IPlayerTaskFactory.h"
 
 namespace firebolt::rialto::server
 {
 std::unique_ptr<IGstDispatcherThread> GstDispatcherThreadFactory::createGstDispatcherThread(
-    PlayerContext &playerContext, IGstPlayerPrivate &player, const std::shared_ptr<IGstWrapper> &gstWrapper,
-    IWorkerThread &workerThread, const IPlayerTaskFactory &taskFactory) const
+    IGstDispatcherThreadClient& client, GstElement *pipeline, const std::shared_ptr<IGstWrapper> &gstWrapper) const
 {
-    return std::make_unique<GstDispatcherThread>(playerContext, player, gstWrapper, workerThread, taskFactory);
+    return std::make_unique<GstDispatcherThread>(client, pipeline, gstWrapper);
 }
 
-GstDispatcherThread::GstDispatcherThread(PlayerContext &playerContext, IGstPlayerPrivate &player,
-                                         const std::shared_ptr<IGstWrapper> &gstWrapper, IWorkerThread &workerThread,
-                                         const IPlayerTaskFactory &taskFactory)
-    : m_context{playerContext}, m_player{player}, m_gstWrapper{gstWrapper}, m_workerThread{workerThread},
-      m_kTaskFactory{taskFactory}, m_isGstreamerDispatcherActive{true}
+GstDispatcherThread::GstDispatcherThread(IGstDispatcherThreadClient& client, GstElement *pipeline, const std::shared_ptr<IGstWrapper> &gstWrapper)
+    : m_client{client}, m_gstWrapper{gstWrapper}, m_isGstreamerDispatcherActive{true}
 {
     RIALTO_SERVER_LOG_INFO("GstDispatcherThread is starting");
-    m_gstBusDispatcherThread = std::thread(&GstDispatcherThread::gstBusEventHandler, this, m_context.pipeline);
+    m_gstBusDispatcherThread = std::thread(&GstDispatcherThread::gstBusEventHandler, this, pipeline);
 }
 
 GstDispatcherThread::~GstDispatcherThread()
@@ -56,7 +47,7 @@ GstDispatcherThread::~GstDispatcherThread()
 
 void GstDispatcherThread::gstBusEventHandler(GstElement *pipeline)
 {
-    GstBus *bus = m_gstWrapper->gstPipelineGetBus(GST_PIPELINE(m_context.pipeline));
+    GstBus *bus = m_gstWrapper->gstPipelineGetBus(GST_PIPELINE(pipeline));
     if (!bus)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to get gst bus");
@@ -72,7 +63,7 @@ void GstDispatcherThread::gstBusEventHandler(GstElement *pipeline)
 
         if (message)
         {
-            if (GST_MESSAGE_SRC(message) == GST_OBJECT(m_context.pipeline))
+            if (GST_MESSAGE_SRC(message) == GST_OBJECT(pipeline))
             {
                 switch (GST_MESSAGE_TYPE(message))
                 {
@@ -108,7 +99,7 @@ void GstDispatcherThread::gstBusEventHandler(GstElement *pipeline)
                 }
             }
 
-            m_workerThread.enqueueTask(m_kTaskFactory.createHandleBusMessage(m_context, m_player, message));
+            m_client.handleBusMessage(message);
         }
     }
 

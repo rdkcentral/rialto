@@ -33,51 +33,33 @@ class GstDispatcherThreadFactory : public IGstDispatcherThreadFactory
 public:
     ~GstDispatcherThreadFactory() override = default;
     std::unique_ptr<IGstDispatcherThread>
-    createGstDispatcherThread(PlayerContext &playerContext, IGstPlayerPrivate &player,
-                              const std::shared_ptr<IGstWrapper> &gstWrapper, IWorkerThread &workerThread,
-                              const IPlayerTaskFactory &taskFactory) const override;
+    createGstDispatcherThread(IGstDispatcherThreadClient& client, GstElement *pipeline, const std::shared_ptr<IGstWrapper> &gstWrapper) const override;
 };
 
 class GstDispatcherThread : public IGstDispatcherThread
 {
 public:
-    GstDispatcherThread(PlayerContext &playerContext, IGstPlayerPrivate &player,
-                        const std::shared_ptr<IGstWrapper> &gstWrapper, IWorkerThread &workerThread,
-                        const IPlayerTaskFactory &taskFactory);
+    GstDispatcherThread(IGstDispatcherThreadClient& client, GstElement *pipeline, const std::shared_ptr<IGstWrapper> &gstWrapper);
     ~GstDispatcherThread() override;
 
 private:
     /**
      * @brief For handling gst bus messages in Gstreamer dispatcher thread
+     *
      * @param[in] pipeline : The pipeline
      */
     void gstBusEventHandler(GstElement *pipeline);
 
 private:
     /**
-     * @brief The player context.
+     * @brief The listening client.
      */
-    PlayerContext &m_context;
-
-    /**
-     * @brief The gst player instance.
-     */
-    IGstPlayerPrivate &m_player;
+    IGstDispatcherThreadClient &m_client;
 
     /**
      * @brief The gstreamer wrapper object.
      */
     std::shared_ptr<IGstWrapper> m_gstWrapper;
-
-    /**
-     * @brief Thread for handling player tasks.
-     */
-    IWorkerThread &m_workerThread;
-
-    /**
-     * @brief The GstPlayer task factory
-     */
-    const IPlayerTaskFactory &m_kTaskFactory;
 
     /**
      * @brief Flag used to check, if task thread is active

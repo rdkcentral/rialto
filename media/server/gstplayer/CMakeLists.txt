@@ -27,32 +27,35 @@ add_library(
         RialtoServerGstPlayer
         STATIC
 
-        source/tasks/AttachSamples.cpp
-        source/tasks/AttachSource.cpp
-        source/tasks/EnoughData.cpp
-        source/tasks/Eos.cpp
-        source/tasks/FinishSetupSource.cpp
-        source/tasks/HandleBusMessage.cpp
-        source/tasks/NeedData.cpp
-        source/tasks/Pause.cpp
-        source/tasks/Play.cpp
-        source/tasks/PlayerTaskFactory.cpp
-        source/tasks/ReadShmDataAndAttachSamples.cpp
-        source/tasks/RenderFrame.cpp
-        source/tasks/ReportPosition.cpp
-        source/tasks/CheckAudioUnderflow.cpp
-        source/tasks/SetPlaybackRate.cpp
-        source/tasks/SetPosition.cpp
-        source/tasks/SetupElement.cpp
-        source/tasks/SetupSource.cpp
-        source/tasks/SetVideoGeometry.cpp
-        source/tasks/SetVolume.cpp
-        source/tasks/Shutdown.cpp
-        source/tasks/Stop.cpp
-        source/tasks/Underflow.cpp
+        source/tasks/generic/GenericPlayerTaskFactory.cpp
+        source/tasks/generic/AttachSamples.cpp
+        source/tasks/generic/AttachSource.cpp
+        source/tasks/generic/EnoughData.cpp
+        source/tasks/generic/Eos.cpp
+        source/tasks/generic/FinishSetupSource.cpp
+        source/tasks/generic/HandleBusMessage.cpp
+        source/tasks/generic/NeedData.cpp
+        source/tasks/generic/Pause.cpp
+        source/tasks/generic/Play.cpp
+        source/tasks/generic/ReadShmDataAndAttachSamples.cpp
+        source/tasks/generic/RenderFrame.cpp
+        source/tasks/generic/ReportPosition.cpp
+        source/tasks/generic/CheckAudioUnderflow.cpp
+        source/tasks/generic/SetPlaybackRate.cpp
+        source/tasks/generic/SetPosition.cpp
+        source/tasks/generic/SetupElement.cpp
+        source/tasks/generic/SetupSource.cpp
+        source/tasks/generic/SetVideoGeometry.cpp
+        source/tasks/generic/SetVolume.cpp
+        source/tasks/generic/Shutdown.cpp
+        source/tasks/generic/Stop.cpp
+        source/tasks/generic/Underflow.cpp
+
+        source/tasks/webAudio/WebAudioPlayerTaskFactory.cpp
 
         source/GstDispatcherThread.cpp
-        source/GstPlayer.cpp
+        source/GstGenericPlayer.cpp
+        source/GstWebAudioPlayer.cpp
         source/GstProtectionMetadata.cpp
         source/GstProtectionMetadataWrapper.cpp
         source/GstWrapper.cpp
@@ -74,6 +77,8 @@ target_include_directories(
         PRIVATE
         include
         include/tasks
+        include/tasks/generic
+        include/tasks/webAudio
         $<TARGET_PROPERTY:RialtoPlayerPublic,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoServerCommon,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoServerMain,INTERFACE_INCLUDE_DIRECTORIES>

@@ -65,13 +65,14 @@ public:
      * @param[in] priority          : Priority value for this pipeline.
      * @param[in] config            : Additional type dependent configuration data or nullptr
      * @param[in] shmBuffer         : The shared buffer object.
+     * @param[in] handle            : The handle for this WebAudioPlayer.
      *
      * @retval the new backend instance or null on error.
      */
     virtual std::unique_ptr<IWebAudioPlayer>
     createWebAudioPlayerServerInternal(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
                                        const uint32_t priority, const WebAudioConfig *config,
-                                       const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer) const = 0;
+                                       const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle) const = 0;
 };
 }; // namespace firebolt::rialto::server
 

@@ -156,13 +156,13 @@ void WebAudioPlayerServiceTests::webAudioPlayerWillFailToGetVolume()
 
 void WebAudioPlayerServiceTests::webAudioPlayerFactoryWillCreateWebAudioPlayer()
 {
-    EXPECT_CALL(*m_webAudioPlayerFactoryMock, createWebAudioPlayerServerInternal(_, audioMimeType, priority, _, _))
+    EXPECT_CALL(*m_webAudioPlayerFactoryMock, createWebAudioPlayerServerInternal(_, audioMimeType, priority, _, _, webAudioPlayerHandle))
         .WillOnce(Return(ByMove(std::move(m_webAudioPlayer))));
 }
 
 void WebAudioPlayerServiceTests::webAudioPlayerFactoryWillReturnNullptr()
 {
-    EXPECT_CALL(*m_webAudioPlayerFactoryMock, createWebAudioPlayerServerInternal(_, audioMimeType, priority, _, _))
+    EXPECT_CALL(*m_webAudioPlayerFactoryMock, createWebAudioPlayerServerInternal(_, audioMimeType, priority, _, _, webAudioPlayerHandle))
         .WillOnce(Return(ByMove(std::unique_ptr<firebolt::rialto::IWebAudioPlayer>())));
 }
 

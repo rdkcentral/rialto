@@ -17,32 +17,10 @@
  * limitations under the License.
  */
 
-#include "SharedMemoryBufferMock.h"
-#include "WebAudioPlayerClientMock.h"
-#include "WebAudioPlayerServerInternal.h"
-#include <gtest/gtest.h>
+#include "WebAudioPlayerTestBase.h"
 
-using namespace firebolt::rialto;
-using namespace firebolt::rialto::server;
-
-using ::testing::Return;
-using ::testing::StrictMock;
-
-class RialtoServerCreateWebAudioPlayerTest : public ::testing::Test
+class RialtoServerCreateWebAudioPlayerTest : public WebAudioPlayerTestBase
 {
-protected:
-    const std::string m_audioMimeType{"audio/x-raw"};
-    const uint32_t m_priority{5};
-    const WebAudioConfig m_config{};
-
-    std::shared_ptr<StrictMock<WebAudioPlayerClientMock>> m_webAudioPlayerClientMock;
-    std::shared_ptr<StrictMock<SharedMemoryBufferMock>> m_sharedMemoryBufferMock;
-
-    RialtoServerCreateWebAudioPlayerTest()
-        : m_webAudioPlayerClientMock{std::make_shared<StrictMock<WebAudioPlayerClientMock>>()},
-          m_sharedMemoryBufferMock{std::make_shared<StrictMock<SharedMemoryBufferMock>>()}
-    {
-    }
 };
 
 /**
@@ -50,10 +28,14 @@ protected:
  */
 TEST_F(RialtoServerCreateWebAudioPlayerTest, Create)
 {
-    std::unique_ptr<IWebAudioPlayer> webAudioPlayer;
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_mainThreadFactoryMock, getMainThread()).WillOnce(Return(m_mainThreadMock));
+    EXPECT_CALL(*m_mainThreadMock, registerClient()).WillOnce(Return(m_kMainThreadClientId));
+    EXPECT_CALL(*m_sharedMemoryBufferMock, mapPartition(MediaPlaybackType::WEB_AUDIO, m_webAudioPlayerHandle)).WillOnce(Return(true));
+    EXPECT_CALL(*m_gstPlayerFactoryMock, createGstWebAudioPlayer(_)).WillOnce(Return(ByMove(std::move(m_gstPlayer))));
 
-    EXPECT_NO_THROW(webAudioPlayer =
+    EXPECT_NO_THROW(m_webAudioPlayer =
                         std::make_unique<WebAudioPlayerServerInternal>(m_webAudioPlayerClientMock, m_audioMimeType,
-                                                                       m_priority, &m_config, m_sharedMemoryBufferMock));
-    EXPECT_NE(webAudioPlayer, nullptr);
+                                                                       m_priority, &m_config, m_sharedMemoryBufferMock, m_webAudioPlayerHandle, m_mainThreadFactoryMock, m_gstPlayerFactoryMock));
+    EXPECT_NE(m_webAudioPlayer, nullptr);
 }

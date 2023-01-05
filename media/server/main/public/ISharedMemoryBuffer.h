@@ -24,6 +24,7 @@
 #include <memory>
 
 #include "MediaCommon.h"
+#include "MediaServerCommon.h"
 
 namespace firebolt::rialto::server
 {
@@ -50,14 +51,22 @@ public:
     ISharedMemoryBuffer &operator=(const ISharedMemoryBuffer &) = delete;
     ISharedMemoryBuffer &operator=(ISharedMemoryBuffer &&) = delete;
 
-    virtual bool mapPartition(int sessionId) = 0;
-    virtual bool unmapPartition(int sessionId) = 0;
+    /**
+     * @brief Maps the partition for playback.
+     *
+     * @param[in] playbackType  : The type of playback to map the partion for.
+     * @param[in] id            : The id for this type of playback.
+     *
+     * @retval true on success.
+     */
+    virtual bool mapPartition(MediaPlaybackType playbackType, int id) = 0;
+    virtual bool unmapPartition(MediaPlaybackType playbackType, int id) = 0;
 
-    virtual bool clearData(int sessionId, const MediaSourceType &mediaSourceType) const = 0;
+    virtual bool clearData(MediaPlaybackType playbackType, int id, const MediaSourceType &mediaSourceType) const = 0;
 
-    virtual std::uint32_t getDataOffset(int sessionId, const MediaSourceType &mediaSourceType) const = 0;
-    virtual std::uint32_t getMaxDataLen(int sessionId, const MediaSourceType &mediaSourceType) const = 0;
-    virtual std::uint8_t *getDataPtr(int sessionId, const MediaSourceType &mediaSourceType) const = 0;
+    virtual std::uint32_t getDataOffset(MediaPlaybackType playbackType, int id, const MediaSourceType &mediaSourceType) const = 0;
+    virtual std::uint32_t getMaxDataLen(MediaPlaybackType playbackType, int id, const MediaSourceType &mediaSourceType) const = 0;
+    virtual std::uint8_t *getDataPtr(MediaPlaybackType playbackType, int id, const MediaSourceType &mediaSourceType) const = 0;
 
     virtual int getFd() const = 0;
     virtual std::uint32_t getSize() const = 0;

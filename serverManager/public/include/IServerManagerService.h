@@ -26,7 +26,7 @@
 #define RIALTO_SERVERMANAGER_SERVICE_I_SERVER_MANAGER_SERVICE_H_
 
 #include "LoggingLevels.h"
-#include "SessionServerState.h"
+#include "MediaServerCommon.h"
 #include <string>
 
 namespace rialto::servermanager::service

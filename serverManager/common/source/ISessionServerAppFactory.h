@@ -21,7 +21,7 @@
 #define RIALTO_SERVERMANAGER_COMMON_I_SESSION_SERVER_APP_FACTORY_H_
 
 #include "ISessionServerApp.h"
-#include "SessionServerState.h"
+#include "MediaServerCommon.h"
 #include <memory>
 #include <string>
 

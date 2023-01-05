@@ -19,41 +19,41 @@
 
 add_gtests(RialtoServerGstPlayerUnitTests
 
-    #GstPlayer unittests
-    player/tasksTests/AttachSamplesTest.cpp
-    player/tasksTests/AttachSourceTest.cpp
-    player/tasksTests/EnoughDataTest.cpp
-    player/tasksTests/EosTest.cpp
-    player/tasksTests/FinishSetupSourceTest.cpp
-    player/tasksTests/HandleBusMessageTest.cpp
-    player/tasksTests/NeedDataTest.cpp
-    player/tasksTests/PauseTest.cpp
-    player/tasksTests/PlayerTaskFactoryTest.cpp
-    player/tasksTests/PlayTest.cpp
-    player/tasksTests/ReadShmDataAndAttachSamplesTest.cpp
-    player/tasksTests/RenderFrameTest.cpp
-    player/tasksTests/ReportPositionTest.cpp
-    player/tasksTests/CheckAudioUnderflowTest.cpp
-    player/tasksTests/SetPlaybackRateTest.cpp
-    player/tasksTests/SetPositionTest.cpp
-    player/tasksTests/SetupElementTest.cpp
-    player/tasksTests/SetupSourceTest.cpp
-    player/tasksTests/SetVideoGeometryTest.cpp
-    player/tasksTests/SetVolumeTest.cpp
-    player/tasksTests/ShutdownTest.cpp
-    player/tasksTests/StopTest.cpp
-    player/tasksTests/UnderflowTest.cpp
+    #GstGenericPlayer unittests
+    genericPlayer/tasksTests/AttachSamplesTest.cpp
+    genericPlayer/tasksTests/AttachSourceTest.cpp
+    genericPlayer/tasksTests/EnoughDataTest.cpp
+    genericPlayer/tasksTests/EosTest.cpp
+    genericPlayer/tasksTests/FinishSetupSourceTest.cpp
+    genericPlayer/tasksTests/HandleBusMessageTest.cpp
+    genericPlayer/tasksTests/NeedDataTest.cpp
+    genericPlayer/tasksTests/PauseTest.cpp
+    genericPlayer/tasksTests/GenericPlayerTaskFactoryTest.cpp
+    genericPlayer/tasksTests/PlayTest.cpp
+    genericPlayer/tasksTests/ReadShmDataAndAttachSamplesTest.cpp
+    genericPlayer/tasksTests/RenderFrameTest.cpp
+    genericPlayer/tasksTests/ReportPositionTest.cpp
+    genericPlayer/tasksTests/CheckAudioUnderflowTest.cpp
+    genericPlayer/tasksTests/SetPlaybackRateTest.cpp
+    genericPlayer/tasksTests/SetPositionTest.cpp
+    genericPlayer/tasksTests/SetupElementTest.cpp
+    genericPlayer/tasksTests/SetupSourceTest.cpp
+    genericPlayer/tasksTests/SetVideoGeometryTest.cpp
+    genericPlayer/tasksTests/SetVolumeTest.cpp
+    genericPlayer/tasksTests/ShutdownTest.cpp
+    genericPlayer/tasksTests/StopTest.cpp
+    genericPlayer/tasksTests/UnderflowTest.cpp
 
-    player/common/Matchers.cpp
-    player/common/GstPlayerTestCommon.cpp
+    genericPlayer/common/Matchers.cpp
+    genericPlayer/common/GstGenericPlayerTestCommon.cpp
 
-    player/CreateTest.cpp
-    player/GstDispatcherThreadTest.cpp
-    player/GstPlayerPrivateTest.cpp
-    player/GstPlayerTest.cpp
-    player/InitTest.cpp
-    player/WorkerThreadTest.cpp
-    player/GstCapabilitiesTest.cpp
+    genericPlayer/CreateTest.cpp
+    genericPlayer/GstDispatcherThreadTest.cpp
+    genericPlayer/GstGenericPlayerPrivateTest.cpp
+    genericPlayer/GstGenericPlayerTest.cpp
+    genericPlayer/InitTest.cpp
+    genericPlayer/WorkerThreadTest.cpp
+    genericPlayer/GstCapabilitiesTest.cpp
 
     #GstSrc unittests
     rialtoSrc/CreateTest.cpp
@@ -77,7 +77,7 @@ target_include_directories(RialtoServerGstPlayerUnitTests
         $<TARGET_PROPERTY:RialtoCommonMocks,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoCommonMisc,INTERFACE_INCLUDE_DIRECTORIES>
 
-        player/common/
+        genericPlayer/common/
 
 )
 

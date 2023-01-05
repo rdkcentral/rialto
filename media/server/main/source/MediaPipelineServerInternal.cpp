@@ -104,7 +104,7 @@ std::unique_ptr<server::IMediaPipelineServerInternal> MediaPipelineServerInterna
     {
         mediaPipeline =
             std::make_unique<server::MediaPipelineServerInternal>(sharedClient, videoRequirements,
-                                                                  server::IGstPlayerFactory::getFactory(), sessionId,
+                                                                  server::IGstGenericPlayerFactory::getFactory(), sessionId,
                                                                   shmBuffer, server::IMainThreadFactory::createFactory(),
                                                                   common::ITimerFactory::getFactory(),
                                                                   std::make_unique<DataReaderFactory>(),
@@ -120,7 +120,7 @@ std::unique_ptr<server::IMediaPipelineServerInternal> MediaPipelineServerInterna
 
 MediaPipelineServerInternal::MediaPipelineServerInternal(
     std::shared_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements,
-    const std::shared_ptr<IGstPlayerFactory> &gstPlayerFactory, int sessionId,
+    const std::shared_ptr<IGstGenericPlayerFactory> &gstPlayerFactory, int sessionId,
     const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
     std::shared_ptr<common::ITimerFactory> timerFactory, std::unique_ptr<IDataReaderFactory> &&dataReaderFactory,
     std::unique_ptr<IActiveRequests> &&activeRequests, IDecryptionService &decryptionService)
@@ -140,7 +140,7 @@ MediaPipelineServerInternal::MediaPipelineServerInternal(
     bool result = false;
     auto task = [&]()
     {
-        if (!m_shmBuffer->mapPartition(m_sessionId))
+        if (!m_shmBuffer->mapPartition(MediaPlaybackType::GENERIC, m_sessionId))
         {
             RIALTO_SERVER_LOG_ERROR("Unable to map shm partition");
         }
@@ -170,7 +170,7 @@ MediaPipelineServerInternal::~MediaPipelineServerInternal()
                 timer.second->cancel();
             }
         }
-        if (!m_shmBuffer->unmapPartition(m_sessionId))
+        if (!m_shmBuffer->unmapPartition(MediaPlaybackType::GENERIC, m_sessionId))
         {
             RIALTO_SERVER_LOG_ERROR("Unable to unmap shm partition");
         }
@@ -200,7 +200,7 @@ bool MediaPipelineServerInternal::loadInternal(MediaType type, const std::string
         m_gstPlayer.reset();
     }
 
-    m_gstPlayer = m_kGstPlayerFactory->createGstPlayer(this, m_decryptionService, type, m_kVideoRequirements);
+    m_gstPlayer = m_kGstPlayerFactory->createGstGenericPlayer(this, m_decryptionService, type, m_kVideoRequirements);
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to load gstreamer player");
@@ -517,7 +517,7 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
     std::uint32_t regionOffset = 0;
     try
     {
-        regionOffset = m_shmBuffer->getDataOffset(m_sessionId, mediaSourceType);
+        regionOffset = m_shmBuffer->getDataOffset(MediaPlaybackType::GENERIC, m_sessionId, mediaSourceType);
     }
     catch (const std::runtime_error &e)
     {
@@ -674,7 +674,7 @@ bool MediaPipelineServerInternal::notifyNeedMediaData(MediaSourceType mediaSourc
 bool MediaPipelineServerInternal::notifyNeedMediaDataInternal(MediaSourceType mediaSourceType)
 {
     m_needMediaDataTimers.erase(mediaSourceType);
-    m_shmBuffer->clearData(m_sessionId, mediaSourceType);
+    m_shmBuffer->clearData(MediaPlaybackType::GENERIC, m_sessionId, mediaSourceType);
     NeedMediaData event{m_mediaPipelineClient, *m_activeRequests, *m_shmBuffer, m_sessionId, mediaSourceType};
     if (!event.send())
     {

@@ -20,7 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_IPC_I_APPLICATION_MANAGEMENT_SERVER_H_
 #define FIREBOLT_RIALTO_SERVER_IPC_I_APPLICATION_MANAGEMENT_SERVER_H_
 
-#include "SessionServerState.h"
+#include "MediaServerCommon.h"
 #include <string>
 
 namespace firebolt::rialto::server::ipc

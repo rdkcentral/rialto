@@ -45,14 +45,14 @@ public:
     SharedMemoryBuffer &operator=(const SharedMemoryBuffer &) = delete;
     SharedMemoryBuffer &operator=(SharedMemoryBuffer &&) = delete;
 
-    bool mapPartition(int sessionId) override;
-    bool unmapPartition(int sessionId) override;
+    bool mapPartition(MediaPlaybackType playbackType, int id) override;
+    bool unmapPartition(MediaPlaybackType playbackType, int id) override;
 
-    bool clearData(int sessionId, const MediaSourceType &mediaSourceType) const override;
+    bool clearData(MediaPlaybackType playbackType, int id, const MediaSourceType &mediaSourceType) const override;
 
-    std::uint32_t getDataOffset(int sessionId, const MediaSourceType &mediaSourceType) const override;
-    std::uint32_t getMaxDataLen(int sessionId, const MediaSourceType &mediaSourceType) const override;
-    std::uint8_t *getDataPtr(int sessionId, const MediaSourceType &mediaSourceType) const override;
+    std::uint32_t getDataOffset(MediaPlaybackType playbackType, int id, const MediaSourceType &mediaSourceType) const override;
+    std::uint32_t getMaxDataLen(MediaPlaybackType playbackType, int id, const MediaSourceType &mediaSourceType) const override;
+    std::uint8_t *getDataPtr(MediaPlaybackType playbackType, int id, const MediaSourceType &mediaSourceType) const override;
 
     int getFd() const override;
     std::uint32_t getSize() const override;
@@ -60,17 +60,20 @@ public:
 
     struct Partition
     {
-        int sessionId;
+        int id;
         std::uint32_t dataBufferAudioLen;
         std::uint32_t dataBufferVideoLen;
     };
 
 private:
     size_t calculateBufferSize() const;
-    std::uint8_t *getDataPtrForSession(int sessionId) const;
+    bool getDataPtrForPartition(MediaPlaybackType playbackType, int id, std::uint8_t **ptr) const;
+    const std::vector<Partition>* getPlaybackTypePartition(MediaPlaybackType playbackType) const;
+    std::vector<Partition>* getPlaybackTypePartition(MediaPlaybackType playbackType);
 
 private:
-    std::vector<Partition> m_partitions;
+    std::vector<Partition> m_genericPartitions;
+    std::vector<Partition> m_webAudioPartitions;
     std::uint32_t m_dataBufferLen;
     int m_dataBufferFd;
     std::uint8_t *m_dataBuffer;
