@@ -24,7 +24,15 @@ namespace firebolt::rialto
 {
 std::shared_ptr<IWebAudioPlayerFactory> IWebAudioPlayerFactory::createFactory()
 {
-    std::shared_ptr<IWebAudioPlayerFactory> factory;
+    return server::IWebAudioPlayerServerInternalFactory::createFactory();
+}
+}; // namespace firebolt::rialto
+
+namespace firebolt::rialto::server
+{
+std::shared_ptr<IWebAudioPlayerServerInternalFactory> IWebAudioPlayerServerInternalFactory::createFactory()
+{
+    std::shared_ptr<IWebAudioPlayerServerInternalFactory> factory;
 
     try
     {
@@ -37,10 +45,7 @@ std::shared_ptr<IWebAudioPlayerFactory> IWebAudioPlayerFactory::createFactory()
 
     return factory;
 }
-}; // namespace firebolt::rialto
 
-namespace firebolt::rialto::server
-{
 std::unique_ptr<IWebAudioPlayer>
 WebAudioPlayerServerInternalFactory::createWebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client,
                                                           const std::string &audioMimeType, const uint32_t priority,
