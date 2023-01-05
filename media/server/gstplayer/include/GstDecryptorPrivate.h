@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_GST_DECRYPTOR_PRIVATE_H_
 
 #include "IDecryptionService.h"
+#include "IGstProtectionMetadataWrapper.h"
 #include "IGstWrapper.h"
 #include <gst/gst.h>
 #include <memory>
@@ -55,6 +56,13 @@ public:
      */
     void setDecryptionService(IDecryptionService *decryptionService);
 
+    /**
+     * @brief Set the protection metadata object
+     *
+     * @param[in] metadataWrapper     : The protection metadata object
+     */
+    void setProtectionMetadataWrapper(std::unique_ptr<IGstProtectionMetadataWrapper> &&metadataWrapper);
+
 private:
     /**
      * @brief The gstreamer wrapper object.
@@ -71,6 +79,10 @@ private:
      */
     IDecryptionService *m_decryptionService;
 
+    /**
+     * @brief The protection metadata object
+     */
+    std::unique_ptr<IGstProtectionMetadataWrapper> m_metadataWrapper;
     /**
      * @brief Extract decryption data from protection meta.
      *

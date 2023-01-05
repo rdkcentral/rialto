@@ -35,6 +35,8 @@ public:
                 (override));
     MOCK_METHOD(bool, isNetflixKeySystem, (int32_t keySessionId), (const, override));
     MOCK_METHOD(MediaKeyErrorStatus, selectKeyId, (int32_t keySessionId, const std::vector<uint8_t> &keyId), (override));
+    MOCK_METHOD(void, incrementSessionIdUsageCounter, (int32_t keySessionId), (override));
+    MOCK_METHOD(void, decrementSessionIdUsageCounter, (int32_t keySessionId), (override));
 };
 } // namespace firebolt::rialto::server
 

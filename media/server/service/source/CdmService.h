@@ -75,6 +75,8 @@ public:
                                 uint32_t initWithLast15) override;
     bool isNetflixKeySystem(int32_t keySessionId) const override;
     MediaKeyErrorStatus selectKeyId(int32_t keySessionId, const std::vector<uint8_t> &keyId) override;
+    void incrementSessionIdUsageCounter(int32_t keySessionId) override;
+    void decrementSessionIdUsageCounter(int32_t keySessionId) override;
 
 private:
     std::shared_ptr<IMediaKeysServerInternalFactory> m_mediaKeysFactory;

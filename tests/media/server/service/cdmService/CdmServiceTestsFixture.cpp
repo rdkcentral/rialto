@@ -388,3 +388,29 @@ void CdmServiceTests::getSupportedKeySystemVersionShouldFail()
     std::string returnVersion;
     EXPECT_FALSE(m_sut.getSupportedKeySystemVersion(keySystems[0], returnVersion));
 }
+
+void CdmServiceTests::incrementSessionIdUsageCounter()
+{
+    EXPECT_CALL(m_mediaKeysMock, hasSession(keySessionId)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaKeysMock, incrementSessionIdUsageCounter(keySessionId));
+    m_sut.incrementSessionIdUsageCounter(keySessionId);
+}
+
+void CdmServiceTests::incrementSessionIdUsageCounterFails()
+{
+    EXPECT_CALL(m_mediaKeysMock, hasSession(keySessionId)).WillOnce(Return(false));
+    m_sut.incrementSessionIdUsageCounter(keySessionId);
+}
+
+void CdmServiceTests::decrementSessionIdUsageCounter()
+{
+    EXPECT_CALL(m_mediaKeysMock, hasSession(keySessionId)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaKeysMock, decrementSessionIdUsageCounter(keySessionId));
+    m_sut.decrementSessionIdUsageCounter(keySessionId);
+}
+
+void CdmServiceTests::decrementSessionIdUsageCounterFails()
+{
+    EXPECT_CALL(m_mediaKeysMock, hasSession(keySessionId)).WillOnce(Return(false));
+    m_sut.decrementSessionIdUsageCounter(keySessionId);
+}
