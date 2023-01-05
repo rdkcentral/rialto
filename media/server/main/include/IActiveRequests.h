@@ -41,6 +41,7 @@ public:
     virtual std::uint32_t insert(const MediaSourceType &mediaSourceType, std::uint32_t maxMediaBytes) = 0;
     virtual MediaSourceType getType(std::uint32_t requestId) const = 0;
     virtual void erase(std::uint32_t requestId) = 0;
+    virtual void erase(const MediaSourceType &mediaSourceType) = 0;
     virtual void clear() = 0;
     virtual AddSegmentStatus addSegment(std::uint32_t requestId,
                                         const std::unique_ptr<IMediaPipeline::MediaSegment> &segment) = 0;

@@ -66,6 +66,7 @@ public:
     std::uint32_t insert(const MediaSourceType &mediaSourceType, std::uint32_t maxMediaBytes) override;
     MediaSourceType getType(std::uint32_t requestId) const override;
     void erase(std::uint32_t requestId) override;
+    void erase(const MediaSourceType &mediaSourceType) override;
     void clear() override;
     AddSegmentStatus addSegment(std::uint32_t requestId,
                                 const std::unique_ptr<IMediaPipeline::MediaSegment> &segment) override;
