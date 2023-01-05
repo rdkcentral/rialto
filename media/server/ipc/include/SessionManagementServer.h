@@ -27,6 +27,7 @@
 #include "IPlaybackService.h"
 #include "IRialtoControlModuleService.h"
 #include "ISessionManagementServer.h"
+#include "IWebAudioPlayerModuleService.h"
 #include "SetLogLevelsService.h"
 #include <IIpcServer.h>
 #include <IIpcServerFactory.h>
@@ -46,6 +47,7 @@ public:
         const std::shared_ptr<IMediaPipelineCapabilitiesModuleServiceFactory> &mediaPipelineCapabilitiesModuleFactory,
         const std::shared_ptr<IMediaKeysModuleServiceFactory> &mediaKeysModuleFactory,
         const std::shared_ptr<IMediaKeysCapabilitiesModuleServiceFactory> &mediaKeysCapabilitiesModuleFactory,
+        const std::shared_ptr<IWebAudioPlayerModuleServiceFactory> &webAudioPlayerModuleFactory,
         const std::shared_ptr<IRialtoControlModuleServiceFactory> &rialtoControlModuleFactory,
         service::IPlaybackService &playbackService, service::ICdmService &cdmService);
     ~SessionManagementServer() override;
@@ -72,6 +74,7 @@ private:
     std::shared_ptr<IMediaPipelineCapabilitiesModuleService> m_mediaPipelineCapabilitiesModule;
     std::shared_ptr<IMediaKeysModuleService> m_mediaKeysModule;
     std::shared_ptr<IMediaKeysCapabilitiesModuleService> m_mediaKeysCapabilitiesModule;
+    std::shared_ptr<IWebAudioPlayerModuleService> m_webAudioPlayerModule;
     std::shared_ptr<IRialtoControlModuleService> m_rialtoControlModule;
     SetLogLevelsService m_setLogLevelsService;
 };

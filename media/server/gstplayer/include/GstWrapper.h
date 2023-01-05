@@ -384,6 +384,13 @@ public:
         return gst_buffer_get_protection_meta(buffer);
     }
 
+    GstMeta *gstBufferAddMeta(GstBuffer *buffer, const GstMetaInfo *info, gpointer params) const override
+    {
+        return gst_buffer_add_meta(buffer, info, params);
+    }
+
+    GstMeta *gstBufferGetMeta(GstBuffer *buffer, GType api) const override { return gst_buffer_get_meta(buffer, api); }
+
     gboolean gstBufferRemoveMeta(GstBuffer *buffer, GstMeta *meta) const override
     {
         return gst_buffer_remove_meta(buffer, meta);

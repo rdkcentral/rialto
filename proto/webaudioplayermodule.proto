@@ -35,7 +35,7 @@ option cc_generic_services = true;
 message WebAudioPlayerStateEvent {
     enum WebAudioPlayerState
     {
-        USABLE = 0;
+        UNKNOWN = 0;
         IDLE = 1;
         PLAYING = 2;
         PAUSED = 3;
@@ -43,7 +43,8 @@ message WebAudioPlayerStateEvent {
         FAILURE = 5;
     };
 
-    required WebAudioPlayerState state = 1;
+    required int32 web_audio_player_handle = 1;
+    required WebAudioPlayerState state = 2;
 }
 
 /**
@@ -102,37 +103,40 @@ message DestroyWebAudioPlayerResponse {
 }
 
 /**
- * @fn void play()
+ * @fn void play(int32 web_audio_player_handle)
  * @brief Play the web audio.
  *
  */
 message WebAudioPlayRequest {
+    required int32 web_audio_player_handle = 1;
 }
 message WebAudioPlayResponse {
 }
 
 /**
- * @fn void pause()
+ * @fn void pause(int32 web_audio_player_handle)
  * @brief Pause the web audio.
  *
  */
 message WebAudioPauseRequest {
+    required int32 web_audio_player_handle = 1;
 }
 message WebAudioPauseResponse {
 }
 
 /**
- * @fn void setEos()
+ * @fn void setEos(int32 web_audio_player_handle)
  * @brief Notify EOS.
  *
  */
 message WebAudioSetEosRequest {
+    required int32 web_audio_player_handle = 1;
 }
 message WebAudioSetEosResponse {
 }
 
 /**
- * @fn uint32, WebAudioShmInfo getBufferAvailable()
+ * @fn uint32, WebAudioShmInfo getBufferAvailable(int32 web_audio_player_handle)
  * @brief Get the available frames.
  *
  * Gets the available buffer space for sending more frames. Client should not
@@ -141,6 +145,7 @@ message WebAudioSetEosResponse {
  * @retval Number of available frames and shm info.
  */
 message WebAudioGetBufferAvailableRequest {
+    required int32 web_audio_player_handle = 1;
 }
 message WebAudioGetBufferAvailableResponse {
     message WebAudioShmInfo {
@@ -155,7 +160,7 @@ message WebAudioGetBufferAvailableResponse {
 }
 
 /**
- * @fn uint32 getBufferDelay()
+ * @fn uint32 getBufferDelay(int32 web_audio_player_handle)
  * @brief Get the delay frames.
  *
  * Gets the frame delay of the playback from Rialto. Frame delay is the number
@@ -164,13 +169,14 @@ message WebAudioGetBufferAvailableResponse {
  * @retval Number of delayed frames.
  */
 message WebAudioGetBufferDelayRequest {
+    required int32 web_audio_player_handle = 1;
 }
 message WebAudioGetBufferDelayResponse {
     required uint32 delay_frames = 1;
 }
 
 /**
- * @fn void writeBuffer(uint32 number_of_frames)
+ * @fn void writeBuffer(int32 web_audio_player_handle, uint32 number_of_frames)
  * @brief Write audio frames.
  *
  * Sends a buffer of audio data for playback
@@ -179,13 +185,14 @@ message WebAudioGetBufferDelayResponse {
  *
  */
 message WebAudioWriteBufferRequest {
-    required uint32 number_of_frames = 1;
+    required int32 web_audio_player_handle = 1;
+    required uint32 number_of_frames = 2;
 }
 message WebAudioWriteBufferResponse {
 }
 
 /**
- * @fn uint32, uint32, uint32 getDeviceInfo()
+ * @fn uint32, uint32, uint32 getDeviceInfo(int32 web_audio_player_handle)
  * @brief Get device infomation.
  *
  * Gets information for the web audio playback.
@@ -196,15 +203,16 @@ message WebAudioWriteBufferResponse {
  * @retval the number of preferred frames, maximum frames and whether defered play is supported.
  */
 message WebAudioGetDeviceInfoRequest {
+    required int32 web_audio_player_handle = 1;
 }
 message WebAudioGetDeviceInfoResponse {
     required uint32 preferred_frames = 1;
-    required uint32 maximum_rames = 2;
+    required uint32 maximum_frames = 2;
     required uint32 support_deferred_play = 3;
 }
 
 /**
- * @fn void setVolume(double volume)
+ * @fn void setVolume(int32 web_audio_player_handle, double volume)
  * @brief Set level and transition of audio attenuation.
  *
  * Sets the current volume for the pipeline (0.0 silent -> 1.0 full volume).
@@ -213,13 +221,14 @@ message WebAudioGetDeviceInfoResponse {
  *
  */
 message WebAudioSetVolumeRequest {
-    required uint32 volume = 1;
+    required int32 web_audio_player_handle = 1;
+    required double volume = 2;
 }
 message WebAudioSetVolumeResponse {
 }
 
 /**
- * @fn double getVolume()
+ * @fn double getVolume(int32 web_audio_player_handle)
  * @brief Get current audio level.
  *
  * Fetches the current volume level for the pipeline.
@@ -227,9 +236,10 @@ message WebAudioSetVolumeResponse {
  * @retval The current volume.
  */
 message WebAudioGetVolumeRequest {
+    required int32 web_audio_player_handle = 1;
 }
 message WebAudioGetVolumeResponse {
-    required uint32 volume = 1;
+    required double volume = 1;
 }
 
 service WebAudioPlayerModule {

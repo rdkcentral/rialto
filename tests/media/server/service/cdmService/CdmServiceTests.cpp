@@ -202,6 +202,42 @@ TEST_F(CdmServiceTests, shouldCloseKeySession)
     destroyMediaKeysShouldSucceed();
 }
 
+TEST_F(CdmServiceTests, incrementSessionUsage)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysFactoryWillCreateMediaKeys();
+    createMediaKeysShouldSucceed();
+    incrementSessionIdUsageCounter();
+    destroyMediaKeysShouldSucceed();
+}
+
+TEST_F(CdmServiceTests, deccrementSessionUsage)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysFactoryWillCreateMediaKeys();
+    createMediaKeysShouldSucceed();
+    decrementSessionIdUsageCounter();
+    destroyMediaKeysShouldSucceed();
+}
+
+TEST_F(CdmServiceTests, incrementSessionUsageFails)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysFactoryWillCreateMediaKeys();
+    createMediaKeysShouldSucceed();
+    incrementSessionIdUsageCounterFails();
+    destroyMediaKeysShouldSucceed();
+}
+
+TEST_F(CdmServiceTests, deccrementSessionUsageFails)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysFactoryWillCreateMediaKeys();
+    createMediaKeysShouldSucceed();
+    decrementSessionIdUsageCounterFails();
+    destroyMediaKeysShouldSucceed();
+}
+
 TEST_F(CdmServiceTests, shouldFailToCloseKeySessionWhenNoMediaKeys)
 {
     triggerSwitchToActiveSuccess();

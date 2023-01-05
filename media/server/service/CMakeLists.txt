@@ -25,6 +25,8 @@ add_library (
         source/PlaybackService.cpp
         source/CdmService.cpp
         source/SessionServerManager.cpp
+        source/MediaPipelineService.cpp
+        source/WebAudioPlayerService.cpp
 )
 set_target_properties (
         RialtoServerService

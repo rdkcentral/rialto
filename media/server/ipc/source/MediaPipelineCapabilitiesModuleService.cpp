@@ -43,13 +43,13 @@ IMediaPipelineCapabilitiesModuleServiceFactory::createFactory()
 }
 
 std::shared_ptr<IMediaPipelineCapabilitiesModuleService>
-MediaPipelineCapabilitiesModuleServiceFactory::create(service::IPlaybackService &playbackService) const
+MediaPipelineCapabilitiesModuleServiceFactory::create(service::IMediaPipelineService &mediaPipelineService) const
 {
     std::shared_ptr<IMediaPipelineCapabilitiesModuleService> mediaPipelineCapabilitiesModule;
 
     try
     {
-        mediaPipelineCapabilitiesModule = std::make_shared<MediaPipelineCapabilitiesModuleService>(playbackService);
+        mediaPipelineCapabilitiesModule = std::make_shared<MediaPipelineCapabilitiesModuleService>(mediaPipelineService);
     }
     catch (const std::exception &e)
     {
@@ -59,8 +59,9 @@ MediaPipelineCapabilitiesModuleServiceFactory::create(service::IPlaybackService 
     return mediaPipelineCapabilitiesModule;
 }
 
-MediaPipelineCapabilitiesModuleService::MediaPipelineCapabilitiesModuleService(service::IPlaybackService &playbackService)
-    : m_playbackService{playbackService}
+MediaPipelineCapabilitiesModuleService::MediaPipelineCapabilitiesModuleService(
+    service::IMediaPipelineService &mediaPipelineService)
+    : m_mediaPipelineService{mediaPipelineService}
 {
 }
 
@@ -93,7 +94,7 @@ void MediaPipelineCapabilitiesModuleService::getSupportedMimeTypes(
     }
 
     firebolt::rialto::MediaSourceType sourceType = convertMediaSourceType(request->media_type());
-    std::vector<std::string> supportedMimeTypes = m_playbackService.getSupportedMimeTypes(sourceType);
+    std::vector<std::string> supportedMimeTypes = m_mediaPipelineService.getSupportedMimeTypes(sourceType);
 
     for (std::string &mimeType : supportedMimeTypes)
     {
@@ -117,7 +118,7 @@ void MediaPipelineCapabilitiesModuleService::isMimeTypeSupported(
         return;
     }
 
-    bool isSupported = m_playbackService.isMimeTypeSupported(request->mime_type());
+    bool isSupported = m_mediaPipelineService.isMimeTypeSupported(request->mime_type());
     response->set_is_supported(isSupported);
 
     done->Run();

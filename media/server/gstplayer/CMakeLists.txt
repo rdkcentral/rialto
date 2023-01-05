@@ -53,6 +53,8 @@ add_library(
 
         source/GstDispatcherThread.cpp
         source/GstPlayer.cpp
+        source/GstProtectionMetadata.cpp
+        source/GstProtectionMetadataWrapper.cpp
         source/GstWrapper.cpp
         source/GlibWrapper.cpp
         source/GstSrc.cpp

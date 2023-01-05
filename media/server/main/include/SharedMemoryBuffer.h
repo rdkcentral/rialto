@@ -31,13 +31,14 @@ class SharedMemoryBufferFactory : public ISharedMemoryBufferFactory
 {
 public:
     ~SharedMemoryBufferFactory() override = default;
-    std::shared_ptr<ISharedMemoryBuffer> createSharedMemoryBuffer(unsigned numOfPlaybacks) const override;
+    std::shared_ptr<ISharedMemoryBuffer> createSharedMemoryBuffer(unsigned numOfPlaybacks,
+                                                                  unsigned numOfWebAudioPlayers) const override;
 };
 
 class SharedMemoryBuffer : public ISharedMemoryBuffer
 {
 public:
-    explicit SharedMemoryBuffer(unsigned numOfPlaybacks);
+    explicit SharedMemoryBuffer(unsigned numOfPlaybacks, unsigned numOfWebAudioPlayers);
     ~SharedMemoryBuffer() override;
     SharedMemoryBuffer(const SharedMemoryBuffer &) = delete;
     SharedMemoryBuffer(SharedMemoryBuffer &&) = delete;

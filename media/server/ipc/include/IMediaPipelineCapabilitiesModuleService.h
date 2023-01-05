@@ -20,7 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_IPC_I_MEDIA_PIPELINE_CAPABILITIES_MODULE_SERVICE_H_
 #define FIREBOLT_RIALTO_SERVER_IPC_I_MEDIA_PIPELINE_CAPABILITIES_MODULE_SERVICE_H_
 
-#include "IPlaybackService.h"
+#include "IMediaPipelineService.h"
 #include "mediapipelinecapabilitiesmodule.pb.h"
 #include <IIpcServer.h>
 #include <memory>
@@ -49,10 +49,10 @@ public:
     /**
      * @brief Creates a MediaPipelineCapabilitiesModuleService object.
      *
-     * @param[in] playbackService : The service for playback objects
+     * @param[in] mediaPipelineService : The service for media pipeline objects
      */
     virtual std::shared_ptr<IMediaPipelineCapabilitiesModuleService>
-    create(service::IPlaybackService &playbackService) const = 0;
+    create(service::IMediaPipelineService &mediaPipelineService) const = 0;
 };
 
 /**

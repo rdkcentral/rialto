@@ -130,13 +130,14 @@ public:
      * Gets the available buffer space for sending more frames. Client should not
      * write more than the number of frames returned by this API.
      *
+     * webAudioShmInfo is not required by the client application and can be ignored.
+     *
      * @param[out] availableFrames : Number of frames available to be written.
-     * @param[out] webAudioShmInfo : Location in shm to write the data.
+     * @param[out] webAudioShmInfo : Location in shm to write the data (Server only).
      *
      * @retval true on success.
      */
-    virtual bool getBufferAvailable(uint32_t &availableFrames,
-                                    const std::shared_ptr<WebAudioShmInfo> &webAudioShmInfo) = 0;
+    virtual bool getBufferAvailable(uint32_t &availableFrames, std::shared_ptr<WebAudioShmInfo> &webAudioShmInfo) = 0;
 
     /**
      * @brief Get the delay frames.

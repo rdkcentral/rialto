@@ -25,7 +25,7 @@
 #include "IpcClientMock.h"
 #include "IpcControllerMock.h"
 #include "IpcServerMock.h"
-#include "PlaybackServiceMock.h"
+#include "MediaPipelineServiceMock.h"
 #include "RpcControllerMock.h"
 #include <gtest/gtest.h>
 #include <memory>
@@ -39,10 +39,8 @@ public:
     ~MediaPipelineCapabilitiesModuleServiceTests() override;
 
     void clientWillConnect();
-    void playbackServiceWillGetSupportedMimeTypes();
-    void playbackWillCheckIfMimeTypeIsSupported();
-    void playbackServiceWillFailToGetSupportedMimeTypes();
-    void playbackWillFailToCheckIfMimeTypeIsSupported();
+    void mediaPipelineServiceWillGetSupportedMimeTypes();
+    void mediaPipelineWillCheckIfMimeTypeIsSupported();
 
     void sendClientConnected();
     void sendClientDisconnected();
@@ -57,7 +55,7 @@ private:
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ClosureMock>> m_closureMock;
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ControllerMock>> m_controllerMock;
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::RpcControllerMock>> m_invalidControllerMock;
-    StrictMock<firebolt::rialto::server::service::PlaybackServiceMock> m_playbackServiceMock;
+    StrictMock<firebolt::rialto::server::service::MediaPipelineServiceMock> m_mediaPipelineServiceMock;
     std::shared_ptr<firebolt::rialto::server::ipc::IMediaPipelineCapabilitiesModuleService> m_service;
 
     void expectRequestSuccess();
