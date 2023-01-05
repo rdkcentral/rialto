@@ -29,11 +29,18 @@
 #include "SessionServerManager.h"
 #include <cstdlib>
 #include <thread>
-
+#include "RialtoServerLogging.h"
+#ifdef PERFETTO_TRACING
+#include "RialtoPerfetto.h"
+#endif
 // NOLINT(build/filename_format)
 
 int main(int argc, char *argv[])
 {
+
+#ifdef PERFETTO_TRACING
+    std::shared_ptr<firebolt::rialto::server::RialtoPerfetto> rialtoPerfetto =  initializePerfetto();
+#endif
     firebolt::rialto::server::IGstPlayer::initalise(argc, argv);
 
     firebolt::rialto::server::ipc::IpcFactory ipcFactory;
@@ -50,5 +57,6 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
     serviceManager.startService();
+
     return EXIT_SUCCESS;
 }

@@ -20,11 +20,17 @@
 cmake_minimum_required( VERSION 3.10 )
 project( Rialto LANGUAGES C CXX VERSION 1.0.0 )
 
+option(PERFETTO_TRACING "Build with Perfetto" ON)
+
 if ( COVERAGE_ENABLED )
     add_compile_options(-coverage)
 endif()
 
-add_compile_options(-Wall -Werror)
+if(PERFETTO_TRACING)
+    add_compile_options(-Wall)
+else()
+    add_compile_options(-Wall -Werror)
+endif()
 
 # Add our local cmake directory to search for components
 set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake )

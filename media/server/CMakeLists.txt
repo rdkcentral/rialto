@@ -22,6 +22,10 @@ set( CMAKE_CXX_STANDARD 14 )
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
 include( CheckCXXCompilerFlag )
 
+
+if(PERFETTO_TRACING)
+add_subdirectory(perfetto)
+endif()
 add_subdirectory(common)
 add_subdirectory(gstplayer)
 add_subdirectory(main)
@@ -34,7 +38,6 @@ add_executable (
 
         service/source/main.cpp
 )
-
 
 target_include_directories (
         RialtoServer
@@ -49,6 +52,15 @@ target_include_directories (
         $<TARGET_PROPERTY:RialtoPlayerPublic,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
+if(PERFETTO_TRACING)
+target_include_directories (
+        RialtoServer
+
+        PRIVATE
+        $<TARGET_PROPERTY:RialtoPerfetto,INTERFACE_INCLUDE_DIRECTORIES>
+)
+endif()
+
 set_target_properties(
         RialtoServer
         PROPERTIES LINK_FLAGS "-Wl,--unresolved-symbols=report-all"
@@ -62,6 +74,22 @@ target_link_libraries(
         RialtoServerMain
         RialtoServerService
 )
+
+if(PERFETTO_TRACING)
+target_link_libraries (
+        RialtoServer
+
+        PRIVATE
+        RialtoPerfetto
+)
+
+target_compile_definitions(
+        RialtoServer
+
+        PRIVATE
+        PERFETTO_TRACING=1
+    )
+endif()
 
 install(
         TARGETS RialtoServer

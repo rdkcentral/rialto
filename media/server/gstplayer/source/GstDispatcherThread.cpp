@@ -24,6 +24,9 @@
 #include "RialtoServerLogging.h"
 #include "tasks/IPlayerTask.h"
 #include "tasks/IPlayerTaskFactory.h"
+#ifdef PERFETTO_TRACING
+#include "TracingCategories.h"
+#endif
 
 namespace firebolt::rialto::server
 {
@@ -41,6 +44,7 @@ GstDispatcherThread::GstDispatcherThread(PlayerContext &playerContext, IGstPlaye
       m_kTaskFactory{taskFactory}, m_isGstreamerDispatcherActive{true}
 {
     RIALTO_SERVER_LOG_INFO("GstDispatcherThread is starting");
+
     m_gstBusDispatcherThread = std::thread(&GstDispatcherThread::gstBusEventHandler, this, m_context.pipeline);
 }
 
@@ -56,6 +60,11 @@ GstDispatcherThread::~GstDispatcherThread()
 
 void GstDispatcherThread::gstBusEventHandler(GstElement *pipeline)
 {
+#ifdef PERFETTO_TRACING
+    auto desc = perfetto::ThreadTrack::Current().Serialize();
+    desc.mutable_thread()->set_thread_name("GstDispatcherThread");
+    perfetto::TrackEvent::SetTrackDescriptor(perfetto::ThreadTrack::Current(), desc);
+#endif
     GstBus *bus = m_gstWrapper->gstPipelineGetBus(GST_PIPELINE(m_context.pipeline));
     if (!bus)
     {
@@ -74,6 +83,9 @@ void GstDispatcherThread::gstBusEventHandler(GstElement *pipeline)
         {
             if (GST_MESSAGE_SRC(message) == GST_OBJECT(m_context.pipeline))
             {
+#ifdef PERFETTO_TRACING
+                TRACE_EVENT("GstMediaPipeline", "EventHandler");
+#endif
                 switch (GST_MESSAGE_TYPE(message))
                 {
                 case GST_MESSAGE_STATE_CHANGED:

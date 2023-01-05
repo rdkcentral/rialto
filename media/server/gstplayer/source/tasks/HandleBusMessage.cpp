@@ -22,6 +22,8 @@
 #include "IGstWrapper.h"
 #include "PlayerContext.h"
 #include "RialtoServerLogging.h"
+#include "RialtoPerfetto.h"
+#include "TracingCategories.h"
 
 namespace firebolt::rialto::server
 {
@@ -39,6 +41,12 @@ HandleBusMessage::~HandleBusMessage()
 
 void HandleBusMessage::execute() const
 {
+    auto desc = perfetto::ThreadTrack::Current().Serialize();
+    desc.mutable_thread()->set_thread_name("WorkerThread");
+    perfetto::TrackEvent::SetTrackDescriptor(perfetto::ThreadTrack::Current(), desc);
+
+    TRACE_EVENT("GstMediaPipeline", "HandleBusMessage");
+
     RIALTO_SERVER_LOG_DEBUG("Executing HandleBusMessage");
     switch (GST_MESSAGE_TYPE(m_message))
     {

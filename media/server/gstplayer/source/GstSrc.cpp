@@ -22,7 +22,9 @@
 #include "GstSrc.h"
 #include "RialtoServerLogging.h"
 #include <MediaCommon.h>
-
+#ifdef PERFETTO_TRACING
+#include "TracingCategories.h"
+#endif
 static void gstRialtoSrcUriHandlerInit(gpointer gIface, gpointer ifaceData);
 
 static GstStaticPadTemplate rialto_src_template =
@@ -125,6 +127,7 @@ static gboolean gstRialtoSrcQueryWithParent(GstPad *pad, GstObject *parent, GstQ
 void gstRialtoSrcHandleMessage(GstBin *bin, GstMessage *message)
 {
     GstRialtoSrc *src = GST_RIALTO_SRC(GST_ELEMENT(bin));
+
     switch (GST_MESSAGE_TYPE(message))
     {
     case GST_MESSAGE_EOS:
@@ -346,6 +349,9 @@ void GstSrc::initSrc()
 void GstSrc::setupAndAddAppArc(IDecryptionService *decryptionService, GstElement *element, GstElement *appsrc,
                                GstAppSrcCallbacks *callbacks, gpointer userData, firebolt::rialto::MediaSourceType type)
 {
+#ifdef PERFETTO_TRACING
+    TRACE_EVENT("GstMediaPipeline", "setupAndAddAppSrc");
+#endif
     // Configure and add appsrc
     m_glibWrapper->gObjectSet(appsrc, "block", FALSE, "format", GST_FORMAT_TIME, "stream-type",
                               GST_APP_STREAM_TYPE_STREAM, "min-percent", 20, nullptr);

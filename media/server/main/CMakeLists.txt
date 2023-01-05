@@ -67,6 +67,15 @@ target_include_directories(
         $<TARGET_PROPERTY:RialtoCommon,INTERFACE_INCLUDE_DIRECTORIES>
         )
 
+if(PERFETTO_TRACING)
+target_include_directories(
+        RialtoServerMain
+
+        PRIVATE
+        $<TARGET_PROPERTY:RialtoPerfetto,INTERFACE_INCLUDE_DIRECTORIES>
+        )
+endif()
+
 set_target_properties(
         RialtoServerMain
         PROPERTIES LINK_FLAGS "-Wl,--unresolved-symbols=report-all"
@@ -91,6 +100,21 @@ target_link_libraries(
         Threads::Threads
         protobuf::libprotobuf
         )
+
+if(PERFETTO_TRACING)
+target_link_libraries(
+        RialtoServerMain
+
+        PRIVATE
+        RialtoPerfetto
+)
+target_compile_definitions(
+        RialtoServerGstPlayer
+
+        PRIVATE
+        PERFETTO_TRACING=1
+    )
+endif()
 
 install(
         TARGETS RialtoServerMain

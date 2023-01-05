@@ -26,7 +26,10 @@
 #include "tasks/PlayerTaskFactory.h"
 #include <IMediaPipeline.h>
 #include <chrono>
-
+#ifdef PERFETTO_TRACING
+#include "RialtoPerfetto.h"
+#include "TracingCategories.h"
+#endif
 namespace
 {
 /**
@@ -127,7 +130,11 @@ bool IGstPlayer::initalise(int argc, char **argv)
     }
 
     enableGstLogForwarding();
-
+#ifdef PERFETTO_TRACING
+    auto desc = perfetto::ThreadTrack::Current().Serialize();
+    desc.mutable_thread()->set_thread_name("RailtoServerMainThread");
+    perfetto::TrackEvent::SetTrackDescriptor(perfetto::ThreadTrack::Current(), desc);
+#endif
     return true;
 }
 
@@ -143,6 +150,7 @@ GstPlayer::GstPlayer(IGstPlayerClient *client, IDecryptionService &decryptionSer
 {
     RIALTO_SERVER_LOG_DEBUG("GstPlayer is constructed.");
 
+    //setTraceEvent("GST Init");
     m_context.decryptionService = &decryptionService;
 
     // Check the video requirements for a limited video.
@@ -178,7 +186,13 @@ GstPlayer::GstPlayer(IGstPlayerClient *client, IDecryptionService &decryptionSer
     {
     case MediaType::MSE:
     {
+#ifdef PERFETTO_TRACING
+        TRACE_EVENT_BEGIN("GstMediaPipeline", "initMsePipeline", perfetto::Track(1234));
+#endif
         initMsePipeline();
+#ifdef PERFETTO_TRACING
+        TRACE_EVENT_END("GstMediaPipeline", perfetto::Track(1234));
+#endif
         break;
     }
     default:
@@ -236,6 +250,9 @@ GstPlayer::~GstPlayer()
 
 void GstPlayer::initMsePipeline()
 {
+#ifdef PERFETTO_TRACING
+    TRACE_EVENT("GstMediaPipeline", "MsePipelineInit");
+#endif
     // Make playbin
     m_context.pipeline = m_gstWrapper->gstElementFactoryMake("playbin", "media_pipeline");
     // Set pipeline flags
@@ -300,6 +317,13 @@ void GstPlayer::scheduleSourceSetupFinish()
 void GstPlayer::setupElement(GstElement *pipeline, GstElement *element, GstPlayer *self)
 {
     RIALTO_SERVER_LOG_DEBUG("Element %s added to the pipeline", GST_ELEMENT_NAME(element));
+#ifdef PERFETTO_TRACING
+    auto desc = perfetto::ThreadTrack::Current().Serialize();
+    desc.mutable_thread()->set_thread_name("GstCallbackThread");
+    perfetto::TrackEvent::SetTrackDescriptor(perfetto::ThreadTrack::Current(), desc);
+
+    TRACE_EVENT("GstMediaPipeline", "setupElement", "Element", GST_ELEMENT_NAME(element));
+#endif
     self->m_gstWrapper->gstObjectRef(element);
     if (self->m_workerThread)
     {
@@ -311,6 +335,9 @@ void GstPlayer::attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> 
 {
     if (m_workerThread)
     {
+#ifdef PERFETTO_TRACING
+        TRACE_EVENT("GstMediaPipeline", "attachSource");
+#endif
         m_workerThread->enqueueTask(m_taskFactory->createAttachSource(m_context, attachedSource));
     }
 }
