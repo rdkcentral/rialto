@@ -62,6 +62,10 @@ add_gtests (
         # MediaPipelineCapabilitiesModuleService unittests
         mediaPipelineCapabilitiesModule/MediaPipelineCapabilitiesModuleServiceTestsFixture.cpp
         mediaPipelineCapabilitiesModule/MediaPipelineCapabilitiesModuleServiceTests.cpp
+
+        # WebAudioPlayerModuleService unittests
+        webAudioPlayerModuleService/WebAudioPlayerModuleServiceTestsFixture.cpp
+        webAudioPlayerModuleService/WebAudioPlayerModuleServiceTests.cpp
         )
 
 target_include_directories(

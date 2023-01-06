@@ -32,8 +32,8 @@ public:
     MediaPipelineModuleServiceFactoryMock() = default;
     virtual ~MediaPipelineModuleServiceFactoryMock() = default;
 
-    MOCK_METHOD(std::shared_ptr<IMediaPipelineModuleService>, create, (service::IPlaybackService & playbackService),
-                (override, const));
+    MOCK_METHOD(std::shared_ptr<IMediaPipelineModuleService>, create,
+                (service::IMediaPipelineService & mediaPipelineService), (override, const));
 };
 } // namespace firebolt::rialto::server::ipc
 

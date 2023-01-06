@@ -20,6 +20,7 @@
 #include "GstPlayer.h"
 #include "GstDispatcherThread.h"
 #include "GstLogForwarding.h"
+#include "GstProtectionMetadata.h"
 #include "ITimer.h"
 #include "RialtoServerLogging.h"
 #include "WorkerThread.h"
@@ -95,7 +96,8 @@ std::unique_ptr<IGstPlayer> GstPlayerFactory::createGstPlayer(IGstPlayerClient *
                                                 common::ITimerFactory::getFactory(),
                                                 std::make_unique<PlayerTaskFactory>(client, gstWrapper, glibWrapper),
                                                 std::make_unique<WorkerThreadFactory>(),
-                                                std::make_unique<GstDispatcherThreadFactory>());
+                                                std::make_unique<GstDispatcherThreadFactory>(),
+                                                IGstProtectionMetadataWrapperFactory::createFactory());
     }
     catch (const std::exception &e)
     {
@@ -137,7 +139,8 @@ GstPlayer::GstPlayer(IGstPlayerClient *client, IDecryptionService &decryptionSer
                      const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
                      std::shared_ptr<common::ITimerFactory> timerFactory, std::unique_ptr<IPlayerTaskFactory> taskFactory,
                      std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
-                     std::unique_ptr<IGstDispatcherThreadFactory> gstDispatcherThreadFactory)
+                     std::unique_ptr<IGstDispatcherThreadFactory> gstDispatcherThreadFactory,
+                     std::shared_ptr<IGstProtectionMetadataWrapperFactory> gstProtectionMetadataFactory)
     : m_gstPlayerClient(client), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_timerFactory{timerFactory},
       m_taskFactory{std::move(taskFactory)}
 {
@@ -162,9 +165,16 @@ GstPlayer::GstPlayer(IGstPlayerClient *client, IDecryptionService &decryptionSer
     {
         throw std::runtime_error("Cannot create GstSrc");
     }
+
     if (!timerFactory)
     {
         throw std::runtime_error("TimeFactory is invalid");
+    }
+
+    if ((!gstProtectionMetadataFactory) ||
+        (!(m_protectionMetadataWrapper = gstProtectionMetadataFactory->createProtectionMetadataWrapper(m_gstWrapper))))
+    {
+        throw std::runtime_error("Cannot create protection metadata wrapper");
     }
 
     // Ensure that rialtosrc has been initalised
@@ -396,27 +406,29 @@ GstBuffer *GstPlayer::createBuffer(const IMediaPipeline::MediaSegment &mediaSegm
         }
         GstBuffer *subsamples = m_gstWrapper->gstBufferNewWrapped(subsamplesRaw, subsamplesRawSize);
 
-        GstStructure *info =
-            m_gstWrapper->gstStructureNew("decryption_metadata", "kid", GST_TYPE_BUFFER, keyId, "iv_size", G_TYPE_UINT,
-                                          mediaSegment.getInitVector().size(), "iv", GST_TYPE_BUFFER, initVector,
-                                          "subsample_count", G_TYPE_UINT, mediaSegment.getSubSamples().size(),
-                                          "subsamples", GST_TYPE_BUFFER, subsamples, "init_with_last_15", G_TYPE_UINT,
-                                          mediaSegment.getInitWithLast15(), "key_session_id", G_TYPE_UINT,
-                                          mediaSegment.getMediaKeySessionId(), NULL);
+        GstRialtoProtectionData data = {mediaSegment.getMediaKeySessionId(),
+                                        static_cast<uint32_t>(mediaSegment.getSubSamples().size()),
+                                        mediaSegment.getInitWithLast15(),
+                                        keyId,
+                                        initVector,
+                                        subsamples,
+                                        m_context.decryptionService};
 
-        m_gstWrapper->gstBufferAddProtectionMeta(gstBuffer, info);
-
-        if (subsamples)
+        if (!m_protectionMetadataWrapper->addProtectionMetadata(gstBuffer, data))
         {
-            m_gstWrapper->gstBufferUnref(subsamples);
-        }
-        if (initVector)
-        {
-            m_gstWrapper->gstBufferUnref(initVector);
-        }
-        if (keyId)
-        {
-            m_gstWrapper->gstBufferUnref(keyId);
+            RIALTO_SERVER_LOG_ERROR("Failed to add protection metadata");
+            if (keyId)
+            {
+                m_gstWrapper->gstBufferUnref(keyId);
+            }
+            if (initVector)
+            {
+                m_gstWrapper->gstBufferUnref(initVector);
+            }
+            if (subsamples)
+            {
+                m_gstWrapper->gstBufferUnref(subsamples);
+            }
         }
     }
 

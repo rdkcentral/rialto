@@ -22,7 +22,7 @@
 
 #include "IMediaPipelineClient.h"
 #include "IMediaPipelineModuleService.h"
-#include "IPlaybackService.h"
+#include "IMediaPipelineService.h"
 #include <map>
 #include <memory>
 #include <set>
@@ -35,13 +35,13 @@ public:
     MediaPipelineModuleServiceFactory() = default;
     virtual ~MediaPipelineModuleServiceFactory() = default;
 
-    std::shared_ptr<IMediaPipelineModuleService> create(service::IPlaybackService &playbackService) const override;
+    std::shared_ptr<IMediaPipelineModuleService> create(service::IMediaPipelineService &mediaPipelineService) const override;
 };
 
 class MediaPipelineModuleService : public IMediaPipelineModuleService
 {
 public:
-    explicit MediaPipelineModuleService(service::IPlaybackService &playbackService);
+    explicit MediaPipelineModuleService(service::IMediaPipelineService &mediaPipelineService);
     ~MediaPipelineModuleService() override;
 
     void clientConnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient) override;
@@ -88,7 +88,7 @@ public:
                    ::firebolt::rialto::GetVolumeResponse *response, ::google::protobuf::Closure *done) override;
 
 private:
-    service::IPlaybackService &m_playbackService;
+    service::IMediaPipelineService &m_mediaPipelineService;
     std::map<std::shared_ptr<::firebolt::rialto::ipc::IClient>, std::set<int>> m_clientSessions;
 };
 } // namespace firebolt::rialto::server::ipc

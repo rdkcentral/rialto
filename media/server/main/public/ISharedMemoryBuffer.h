@@ -35,7 +35,8 @@ public:
     virtual ~ISharedMemoryBufferFactory() = default;
 
     static std::unique_ptr<ISharedMemoryBufferFactory> createFactory();
-    virtual std::shared_ptr<ISharedMemoryBuffer> createSharedMemoryBuffer(unsigned numOfPlaybacks) const = 0;
+    virtual std::shared_ptr<ISharedMemoryBuffer> createSharedMemoryBuffer(unsigned numOfPlaybacks,
+                                                                          unsigned numOfWebAudioPlayers) const = 0;
 };
 
 class ISharedMemoryBuffer

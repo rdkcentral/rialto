@@ -24,6 +24,7 @@
 #include "IGstDispatcherThread.h"
 #include "IGstPlayer.h"
 #include "IGstPlayerPrivate.h"
+#include "IGstProtectionMetadataWrapperFactory.h"
 #include "IGstSrc.h"
 #include "IGstWrapper.h"
 #include "ITimer.h"
@@ -81,7 +82,8 @@ public:
               const std::shared_ptr<IGlibWrapper> &glibWrapper, const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
               std::shared_ptr<common::ITimerFactory> timerFactory, std::unique_ptr<IPlayerTaskFactory> taskFactory,
               std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
-              std::unique_ptr<IGstDispatcherThreadFactory> gstDispatcherThreadFactory);
+              std::unique_ptr<IGstDispatcherThreadFactory> gstDispatcherThreadFactory,
+              std::shared_ptr<IGstProtectionMetadataWrapperFactory> gstProtectionMetadataFactory);
 
     /**
      * @brief Virtual destructor.
@@ -210,6 +212,11 @@ private:
      * @brief The GstPlayer task factory
      */
     std::unique_ptr<IPlayerTaskFactory> m_taskFactory;
+
+    /**
+     * @brief The protection metadata wrapper
+     */
+    std::unique_ptr<IGstProtectionMetadataWrapper> m_protectionMetadataWrapper;
 };
 } // namespace firebolt::rialto::server
 

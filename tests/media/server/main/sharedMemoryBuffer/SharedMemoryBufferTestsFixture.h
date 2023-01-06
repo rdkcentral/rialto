@@ -30,7 +30,7 @@ public:
     SharedMemoryBufferTests() = default;
     virtual ~SharedMemoryBufferTests() = default;
 
-    void initialize(int maxPlaybacks = 1);
+    void initialize(int maxPlaybacks = 1, int maxWebAudioPlayers = 2);
 
     void mapPartitionShouldSucceed(int sessionId);
     void mapPartitionShouldFail(int sessionId);

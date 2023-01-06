@@ -111,6 +111,22 @@ public:
      * @retval true if key system is Netflix
      */
     virtual bool isNetflixKeySystem(int32_t keySessionId) const = 0;
+
+    /**
+     * @brief Increments number of buffers using keySessionId
+     *
+     * @param[in] keySessionId    : The session id for the session.
+     *
+     */
+
+    virtual void incrementSessionIdUsageCounter(int32_t keySessionId) = 0;
+    /**
+     * @brief Decrements number of buffers using keySessionId
+     *
+     * @param[in] keySessionId    : The session id for the session.
+     *
+     */
+    virtual void decrementSessionIdUsageCounter(int32_t keySessionId) = 0;
 };
 } // namespace firebolt::rialto::server
 

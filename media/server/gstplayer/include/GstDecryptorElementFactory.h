@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_GST_DECRYPTOR_ELEMENT_FACTORY_H_
 
 #include "IGstDecryptorElementFactory.h"
+#include <memory>
 
 namespace firebolt::rialto::server
 {
@@ -33,8 +34,8 @@ public:
     GstDecryptorElementFactory() = default;
     ~GstDecryptorElementFactory() override = default;
 
-    GstElement *createDecryptorElement(const gchar *name,
-                                       firebolt::rialto::server::IDecryptionService *decryptionService) const override;
+    GstElement *createDecryptorElement(const gchar *name, firebolt::rialto::server::IDecryptionService *decryptionService,
+                                       const std::shared_ptr<IGstWrapper> &gstWrapper) const override;
 };
 
 }; // namespace firebolt::rialto::server

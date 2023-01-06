@@ -63,6 +63,9 @@ add_gtests(RialtoServerGstPlayerUnitTests
     #Decyptor unittests
     decryptor/CreateTest.cpp
     decryptor/DecryptTest.cpp
+
+    #ProtectionMetadata unittests
+    protectionMetadata/ProtectionMetadataTest.cpp
 )
 
 target_include_directories(RialtoServerGstPlayerUnitTests

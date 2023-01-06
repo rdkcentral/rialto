@@ -130,7 +130,7 @@ bool WebAudioPlayer::setEos()
     return m_webAudioPlayerIpc->setEos();
 }
 
-bool WebAudioPlayer::getBufferAvailable(uint32_t &availableFrames, const std::shared_ptr<WebAudioShmInfo> &)
+bool WebAudioPlayer::getBufferAvailable(uint32_t &availableFrames, std::shared_ptr<WebAudioShmInfo> &)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
     if (!m_webAudioShmInfo)

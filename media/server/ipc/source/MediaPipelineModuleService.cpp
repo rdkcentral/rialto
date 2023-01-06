@@ -18,7 +18,7 @@
  */
 
 #include "MediaPipelineModuleService.h"
-#include "IPlaybackService.h"
+#include "IMediaPipelineService.h"
 #include "MediaPipelineClient.h"
 #include "RialtoCommonModule.h"
 #include "RialtoServerLogging.h"
@@ -171,13 +171,13 @@ std::shared_ptr<IMediaPipelineModuleServiceFactory> IMediaPipelineModuleServiceF
 }
 
 std::shared_ptr<IMediaPipelineModuleService>
-MediaPipelineModuleServiceFactory::create(service::IPlaybackService &playbackService) const
+MediaPipelineModuleServiceFactory::create(service::IMediaPipelineService &mediaPipelineService) const
 {
     std::shared_ptr<IMediaPipelineModuleService> mediaPipelineModule;
 
     try
     {
-        mediaPipelineModule = std::make_shared<MediaPipelineModuleService>(playbackService);
+        mediaPipelineModule = std::make_shared<MediaPipelineModuleService>(mediaPipelineService);
     }
     catch (const std::exception &e)
     {
@@ -187,8 +187,8 @@ MediaPipelineModuleServiceFactory::create(service::IPlaybackService &playbackSer
     return mediaPipelineModule;
 }
 
-MediaPipelineModuleService::MediaPipelineModuleService(service::IPlaybackService &playbackService)
-    : m_playbackService{playbackService}
+MediaPipelineModuleService::MediaPipelineModuleService(service::IMediaPipelineService &mediaPipelineService)
+    : m_mediaPipelineService{mediaPipelineService}
 {
 }
 
@@ -219,7 +219,7 @@ void MediaPipelineModuleService::clientDisconnected(const std::shared_ptr<::fire
     }
     for (const auto &sessionId : sessionIds)
     {
-        m_playbackService.destroySession(sessionId);
+        m_mediaPipelineService.destroySession(sessionId);
     }
 }
 
@@ -239,9 +239,9 @@ void MediaPipelineModuleService::createSession(::google::protobuf::RpcController
     }
     int sessionId = generateSessionId();
     bool sessionCreated =
-        m_playbackService.createSession(sessionId,
-                                        std::make_shared<MediaPipelineClient>(sessionId, ipcController->getClient()),
-                                        request->max_width(), request->max_height());
+        m_mediaPipelineService.createSession(sessionId,
+                                             std::make_shared<MediaPipelineClient>(sessionId, ipcController->getClient()),
+                                             request->max_width(), request->max_height());
     if (sessionCreated)
     {
         // Assume that IPC library works well and client is present
@@ -270,7 +270,7 @@ void MediaPipelineModuleService::destroySession(::google::protobuf::RpcControlle
         done->Run();
         return;
     }
-    if (!m_playbackService.destroySession(request->session_id()))
+    if (!m_mediaPipelineService.destroySession(request->session_id()))
     {
         RIALTO_SERVER_LOG_ERROR("Destroy session failed");
         controller->SetFailed("Operation failed");
@@ -290,8 +290,8 @@ void MediaPipelineModuleService::load(::google::protobuf::RpcController *control
                                       ::firebolt::rialto::LoadResponse *response, ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    if (!m_playbackService.load(request->session_id(), convertMediaType(request->type()), request->mime_type(),
-                                request->url()))
+    if (!m_mediaPipelineService.load(request->session_id(), convertMediaType(request->type()), request->mime_type(),
+                                     request->url()))
     {
         RIALTO_SERVER_LOG_ERROR("Load failed");
         controller->SetFailed("Operation failed");
@@ -305,8 +305,8 @@ void MediaPipelineModuleService::setVideoWindow(::google::protobuf::RpcControlle
                                                 ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    if (!m_playbackService.setVideoWindow(request->session_id(), request->x(), request->y(), request->width(),
-                                          request->height()))
+    if (!m_mediaPipelineService.setVideoWindow(request->session_id(), request->x(), request->y(), request->width(),
+                                               request->height()))
     {
         RIALTO_SERVER_LOG_ERROR("Set Video Window failed");
         controller->SetFailed("Operation failed");
@@ -363,7 +363,7 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
                                                                           codecData);
     }
 
-    if (!m_playbackService.attachSource(request->session_id(), mediaSource))
+    if (!m_mediaPipelineService.attachSource(request->session_id(), mediaSource))
     {
         RIALTO_SERVER_LOG_ERROR("Attach source failed");
         controller->SetFailed("Operation failed");
@@ -378,7 +378,7 @@ void MediaPipelineModuleService::removeSource(::google::protobuf::RpcController 
                                               ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    if (!m_playbackService.removeSource(request->session_id(), request->source_id()))
+    if (!m_mediaPipelineService.removeSource(request->session_id(), request->source_id()))
     {
         RIALTO_SERVER_LOG_ERROR("Remove source failed");
         controller->SetFailed("Operation failed");
@@ -391,7 +391,7 @@ void MediaPipelineModuleService::play(::google::protobuf::RpcController *control
                                       ::firebolt::rialto::PlayResponse *response, ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    if (!m_playbackService.play(request->session_id()))
+    if (!m_mediaPipelineService.play(request->session_id()))
     {
         RIALTO_SERVER_LOG_ERROR("Play failed");
         controller->SetFailed("Operation failed");
@@ -404,7 +404,7 @@ void MediaPipelineModuleService::pause(::google::protobuf::RpcController *contro
                                        ::firebolt::rialto::PauseResponse *response, ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    if (!m_playbackService.pause(request->session_id()))
+    if (!m_mediaPipelineService.pause(request->session_id()))
     {
         RIALTO_SERVER_LOG_ERROR("pause failed");
         controller->SetFailed("Operation failed");
@@ -417,7 +417,7 @@ void MediaPipelineModuleService::stop(::google::protobuf::RpcController *control
                                       ::firebolt::rialto::StopResponse *response, ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    if (!m_playbackService.stop(request->session_id()))
+    if (!m_mediaPipelineService.stop(request->session_id()))
     {
         RIALTO_SERVER_LOG_ERROR("Stop failed");
         controller->SetFailed("Operation failed");
@@ -431,7 +431,7 @@ void MediaPipelineModuleService::setPosition(::google::protobuf::RpcController *
                                              ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    if (!m_playbackService.setPosition(request->session_id(), request->position()))
+    if (!m_mediaPipelineService.setPosition(request->session_id(), request->position()))
     {
         RIALTO_SERVER_LOG_ERROR("Set Position failed");
         controller->SetFailed("Operation failed");
@@ -446,7 +446,7 @@ void MediaPipelineModuleService::haveData(::google::protobuf::RpcController *con
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
     firebolt::rialto::MediaSourceStatus status{convertMediaSourceStatus(request->status())};
-    if (!m_playbackService.haveData(request->session_id(), status, request->num_frames(), request->request_id()))
+    if (!m_mediaPipelineService.haveData(request->session_id(), status, request->num_frames(), request->request_id()))
     {
         RIALTO_SERVER_LOG_ERROR("Have data failed");
         controller->SetFailed("Operation failed");
@@ -460,7 +460,7 @@ void MediaPipelineModuleService::setPlaybackRate(::google::protobuf::RpcControll
                                                  ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    if (!m_playbackService.setPlaybackRate(request->session_id(), request->rate()))
+    if (!m_mediaPipelineService.setPlaybackRate(request->session_id(), request->rate()))
     {
         RIALTO_SERVER_LOG_ERROR("Set playback rate failed");
         controller->SetFailed("Operation failed");
@@ -475,7 +475,7 @@ void MediaPipelineModuleService::getPosition(::google::protobuf::RpcController *
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
     int64_t position{};
-    if (!m_playbackService.getPosition(request->session_id(), position))
+    if (!m_mediaPipelineService.getPosition(request->session_id(), position))
     {
         RIALTO_SERVER_LOG_ERROR("Get position failed");
         controller->SetFailed("Operation failed");
@@ -494,7 +494,7 @@ void MediaPipelineModuleService::renderFrame(::google::protobuf::RpcController *
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    if (!m_playbackService.renderFrame(request->session_id()))
+    if (!m_mediaPipelineService.renderFrame(request->session_id()))
     {
         RIALTO_SERVER_LOG_ERROR("Render frame");
         controller->SetFailed("Operation failed");
@@ -510,7 +510,7 @@ void MediaPipelineModuleService::setVolume(::google::protobuf::RpcController *co
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    if (!m_playbackService.setVolume(request->session_id(), request->volume()))
+    if (!m_mediaPipelineService.setVolume(request->session_id(), request->volume()))
     {
         RIALTO_SERVER_LOG_ERROR("Set volume failed.");
         controller->SetFailed("Operation failed");
@@ -527,7 +527,7 @@ void MediaPipelineModuleService::getVolume(::google::protobuf::RpcController *co
     RIALTO_SERVER_LOG_DEBUG("entry:");
     double volume{};
 
-    if (!m_playbackService.getVolume(request->session_id(), volume))
+    if (!m_mediaPipelineService.getVolume(request->session_id(), volume))
     {
         RIALTO_SERVER_LOG_ERROR("Get volume failed.");
         controller->SetFailed("Operation failed");

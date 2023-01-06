@@ -368,7 +368,7 @@ void GstSrc::setupAndAddAppArc(IDecryptionService *decryptionService, GstElement
     GstElement *src_elem = appsrc;
 
     // Configure and add decryptor
-    GstElement *decryptor = m_decryptorFactory->createDecryptorElement(nullptr, decryptionService);
+    GstElement *decryptor = m_decryptorFactory->createDecryptorElement(nullptr, decryptionService, m_gstWrapper);
     if (decryptor)
     {
         GST_DEBUG_OBJECT(src, "Injecting decryptor element %" GST_PTR_FORMAT, decryptor);

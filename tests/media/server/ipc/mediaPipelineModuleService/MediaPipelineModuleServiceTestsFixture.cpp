@@ -315,7 +315,7 @@ MediaPipelineModuleServiceTests::MediaPipelineModuleServiceTests()
       m_closureMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ClosureMock>>()},
       m_controllerMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ControllerMock>>()}
 {
-    m_service = std::make_shared<firebolt::rialto::server::ipc::MediaPipelineModuleService>(m_playbackServiceMock);
+    m_service = std::make_shared<firebolt::rialto::server::ipc::MediaPipelineModuleService>(m_mediaPipelineServiceMock);
 }
 
 MediaPipelineModuleServiceTests::~MediaPipelineModuleServiceTests() {}
@@ -327,58 +327,58 @@ void MediaPipelineModuleServiceTests::clientWillConnect()
 
 void MediaPipelineModuleServiceTests::clientWillDisconnect()
 {
-    EXPECT_CALL(m_playbackServiceMock, destroySession(hardcodedSessionId));
+    EXPECT_CALL(m_mediaPipelineServiceMock, destroySession(hardcodedSessionId));
 }
 
-void MediaPipelineModuleServiceTests::playbackServiceWillCreateSession()
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillCreateSession()
 {
     expectRequestSuccess();
     EXPECT_CALL(*m_controllerMock, getClient()).Times(2).WillRepeatedly(Return(m_clientMock));
-    EXPECT_CALL(m_playbackServiceMock, createSession(_, _, width, height))
+    EXPECT_CALL(m_mediaPipelineServiceMock, createSession(_, _, width, height))
         .WillOnce(DoAll(SaveArg<1>(&m_mediaPipelineClient), Return(true)));
 }
 
-void MediaPipelineModuleServiceTests::playbackServiceWillFailToCreateSession()
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToCreateSession()
 {
     expectRequestFailure();
     EXPECT_CALL(*m_controllerMock, getClient()).WillOnce(Return(m_clientMock));
-    EXPECT_CALL(m_playbackServiceMock, createSession(_, _, width, height)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineServiceMock, createSession(_, _, width, height)).WillOnce(Return(false));
 }
 
-void MediaPipelineModuleServiceTests::playbackServiceWillDestroySession()
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillDestroySession()
 {
     expectRequestSuccess();
     EXPECT_CALL(*m_controllerMock, getClient()).WillOnce(Return(m_clientMock));
-    EXPECT_CALL(m_playbackServiceMock, destroySession(hardcodedSessionId)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineServiceMock, destroySession(hardcodedSessionId)).WillOnce(Return(true));
 }
 
-void MediaPipelineModuleServiceTests::playbackServiceWillFailToDestroySession()
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToDestroySession()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_playbackServiceMock, destroySession(hardcodedSessionId)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineServiceMock, destroySession(hardcodedSessionId)).WillOnce(Return(false));
 }
 
-void MediaPipelineModuleServiceTests::playbackServiceWillLoadSession()
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillLoadSession()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_playbackServiceMock, load(hardcodedSessionId, mediaType, mimeType, url)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineServiceMock, load(hardcodedSessionId, mediaType, mimeType, url)).WillOnce(Return(true));
 }
 
-void MediaPipelineModuleServiceTests::playbackServiceWillFailToLoadSession()
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToLoadSession()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_playbackServiceMock, load(hardcodedSessionId, mediaType, mimeType, url)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineServiceMock, load(hardcodedSessionId, mediaType, mimeType, url)).WillOnce(Return(false));
 }
 
-void MediaPipelineModuleServiceTests::playbackServiceWillAttachSource()
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillAttachSource()
 {
     m_source = std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(0, mimeType);
     expectRequestSuccess();
-    EXPECT_CALL(m_playbackServiceMock, attachSource(hardcodedSessionId, AttachedSourceMatcher(ByRef(m_source))))
+    EXPECT_CALL(m_mediaPipelineServiceMock, attachSource(hardcodedSessionId, AttachedSourceMatcher(ByRef(m_source))))
         .WillOnce(Return(true));
 }
 
-void MediaPipelineModuleServiceTests::playbackServiceWillAttachAudioSourceWithAdditionaldata()
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillAttachAudioSourceWithAdditionaldata()
 {
     std::vector<uint8_t> codecSpecificConfig;
     codecSpecificConfig.assign(codecSpecificConfigStr.begin(), codecSpecificConfigStr.end());
@@ -389,108 +389,108 @@ void MediaPipelineModuleServiceTests::playbackServiceWillAttachAudioSourceWithAd
                                                                              firebolt::rialto::StreamFormat::RAW,
                                                                              codecData);
     expectRequestSuccess();
-    EXPECT_CALL(m_playbackServiceMock, attachSource(hardcodedSessionId, AttachedSourceMatcher(ByRef(m_source))))
+    EXPECT_CALL(m_mediaPipelineServiceMock, attachSource(hardcodedSessionId, AttachedSourceMatcher(ByRef(m_source))))
         .WillOnce(Return(true));
 }
 
-void MediaPipelineModuleServiceTests::playbackServiceWillFailToAttachSource()
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToAttachSource()
 {
     m_source = std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(0, mimeType);
     expectRequestFailure();
-    EXPECT_CALL(m_playbackServiceMock, attachSource(hardcodedSessionId, AttachedSourceMatcher(ByRef(m_source))))
+    EXPECT_CALL(m_mediaPipelineServiceMock, attachSource(hardcodedSessionId, AttachedSourceMatcher(ByRef(m_source))))
         .WillOnce(Return(false));
 }
 
-void MediaPipelineModuleServiceTests::playbackServiceWillPlay()
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillPlay()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_playbackServiceMock, play(hardcodedSessionId)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineServiceMock, play(hardcodedSessionId)).WillOnce(Return(true));
 }
 
-void MediaPipelineModuleServiceTests::playbackServiceWillFailToPlay()
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToPlay()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_playbackServiceMock, play(hardcodedSessionId)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineServiceMock, play(hardcodedSessionId)).WillOnce(Return(false));
 }
 
-void MediaPipelineModuleServiceTests::playbackServiceWillPause()
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillPause()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_playbackServiceMock, pause(hardcodedSessionId)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineServiceMock, pause(hardcodedSessionId)).WillOnce(Return(true));
 }
 
-void MediaPipelineModuleServiceTests::playbackServiceWillFailToPause()
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToPause()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_playbackServiceMock, pause(hardcodedSessionId)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineServiceMock, pause(hardcodedSessionId)).WillOnce(Return(false));
 }
 
-void MediaPipelineModuleServiceTests::playbackServiceWillStop()
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillStop()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_playbackServiceMock, stop(hardcodedSessionId)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineServiceMock, stop(hardcodedSessionId)).WillOnce(Return(true));
 }
 
-void MediaPipelineModuleServiceTests::playbackServiceWillFailToStop()
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToStop()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_playbackServiceMock, stop(hardcodedSessionId)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineServiceMock, stop(hardcodedSessionId)).WillOnce(Return(false));
 }
 
-void MediaPipelineModuleServiceTests::playbackServiceWillSetPosition()
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSetPosition()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_playbackServiceMock, setPosition(hardcodedSessionId, position)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineServiceMock, setPosition(hardcodedSessionId, position)).WillOnce(Return(true));
 }
 
-void MediaPipelineModuleServiceTests::playbackServiceWillFailToSetPosition()
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToSetPosition()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_playbackServiceMock, setPosition(hardcodedSessionId, position)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineServiceMock, setPosition(hardcodedSessionId, position)).WillOnce(Return(false));
 }
 
-void MediaPipelineModuleServiceTests::playbackServiceWillSetVideoWindow()
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSetVideoWindow()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_playbackServiceMock, setVideoWindow(hardcodedSessionId, x, y, width, height)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineServiceMock, setVideoWindow(hardcodedSessionId, x, y, width, height)).WillOnce(Return(true));
 }
 
-void MediaPipelineModuleServiceTests::playbackServiceWillFailToSetVideoWindow()
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToSetVideoWindow()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_playbackServiceMock, setVideoWindow(hardcodedSessionId, x, y, width, height)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineServiceMock, setVideoWindow(hardcodedSessionId, x, y, width, height)).WillOnce(Return(false));
 }
 
-void MediaPipelineModuleServiceTests::playbackServiceWillHaveData()
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillHaveData()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_playbackServiceMock, haveData(hardcodedSessionId, mediaSourceStatus, numFrames, requestId))
+    EXPECT_CALL(m_mediaPipelineServiceMock, haveData(hardcodedSessionId, mediaSourceStatus, numFrames, requestId))
         .WillOnce(Return(true));
 }
 
-void MediaPipelineModuleServiceTests::playbackServiceWillFailToHaveData()
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToHaveData()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_playbackServiceMock, haveData(hardcodedSessionId, mediaSourceStatus, numFrames, requestId))
+    EXPECT_CALL(m_mediaPipelineServiceMock, haveData(hardcodedSessionId, mediaSourceStatus, numFrames, requestId))
         .WillOnce(Return(false));
 }
 
-void MediaPipelineModuleServiceTests::playbackServiceWillSetPlaybackRate()
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSetPlaybackRate()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_playbackServiceMock, setPlaybackRate(hardcodedSessionId, rate)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineServiceMock, setPlaybackRate(hardcodedSessionId, rate)).WillOnce(Return(true));
 }
 
-void MediaPipelineModuleServiceTests::playbackServiceWillFailToSetPlaybackRate()
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToSetPlaybackRate()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_playbackServiceMock, setPlaybackRate(hardcodedSessionId, rate)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineServiceMock, setPlaybackRate(hardcodedSessionId, rate)).WillOnce(Return(false));
 }
 
-void MediaPipelineModuleServiceTests::playbackServiceWillGetPosition()
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillGetPosition()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_playbackServiceMock, getPosition(hardcodedSessionId, _))
+    EXPECT_CALL(m_mediaPipelineServiceMock, getPosition(hardcodedSessionId, _))
         .WillOnce(Invoke(
             [&](int, std::int64_t &pos)
             {
@@ -499,40 +499,40 @@ void MediaPipelineModuleServiceTests::playbackServiceWillGetPosition()
             }));
 }
 
-void MediaPipelineModuleServiceTests::playbackServiceWillFailToGetPosition()
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToGetPosition()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_playbackServiceMock, getPosition(hardcodedSessionId, _)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineServiceMock, getPosition(hardcodedSessionId, _)).WillOnce(Return(false));
 }
 
-void MediaPipelineModuleServiceTests::playbackServiceWillRenderFrame()
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillRenderFrame()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_playbackServiceMock, renderFrame(hardcodedSessionId)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineServiceMock, renderFrame(hardcodedSessionId)).WillOnce(Return(true));
 }
 
-void MediaPipelineModuleServiceTests::playbackServiceWillFailToRenderFrame()
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToRenderFrame()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_playbackServiceMock, renderFrame(hardcodedSessionId)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineServiceMock, renderFrame(hardcodedSessionId)).WillOnce(Return(false));
 }
 
-void MediaPipelineModuleServiceTests::playbackServiceWillSetVolume()
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSetVolume()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_playbackServiceMock, setVolume(hardcodedSessionId, volume)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineServiceMock, setVolume(hardcodedSessionId, volume)).WillOnce(Return(true));
 }
 
-void MediaPipelineModuleServiceTests::playbackServiceWillFailToSetVolume()
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToSetVolume()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_playbackServiceMock, setVolume(hardcodedSessionId, volume)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineServiceMock, setVolume(hardcodedSessionId, volume)).WillOnce(Return(false));
 }
 
-void MediaPipelineModuleServiceTests::playbackServiceWillGetVolume()
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillGetVolume()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_playbackServiceMock, getVolume(hardcodedSessionId, _))
+    EXPECT_CALL(m_mediaPipelineServiceMock, getVolume(hardcodedSessionId, _))
         .WillOnce(Invoke(
             [&](int, double &vol)
             {
@@ -541,10 +541,10 @@ void MediaPipelineModuleServiceTests::playbackServiceWillGetVolume()
             }));
 }
 
-void MediaPipelineModuleServiceTests::playbackServiceWillFailToGetVolume()
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToGetVolume()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_playbackServiceMock, getVolume(hardcodedSessionId, _)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineServiceMock, getVolume(hardcodedSessionId, _)).WillOnce(Return(false));
 }
 
 void MediaPipelineModuleServiceTests::mediaClientWillSendPlaybackStateChangedEvent()

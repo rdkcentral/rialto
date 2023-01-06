@@ -31,13 +31,13 @@ TEST_F(MediaPipelineModuleServiceTests, shouldConnectClient)
 
 TEST_F(MediaPipelineModuleServiceTests, shouldCreateSession)
 {
-    playbackServiceWillCreateSession();
+    mediaPipelineServiceWillCreateSession();
     sendCreateSessionRequestAndReceiveResponse();
 }
 
 TEST_F(MediaPipelineModuleServiceTests, shouldFailToCreateSession)
 {
-    playbackServiceWillFailToCreateSession();
+    mediaPipelineServiceWillFailToCreateSession();
     sendCreateSessionRequestAndExpectFailure();
 }
 
@@ -45,7 +45,7 @@ TEST_F(MediaPipelineModuleServiceTests, shouldDestroySessionWhenDisconnectClient
 {
     clientWillConnect();
     sendClientConnected();
-    playbackServiceWillCreateSession();
+    mediaPipelineServiceWillCreateSession();
     sendCreateSessionRequestAndReceiveResponse();
     clientWillDisconnect();
     sendClientDisconnected();
@@ -53,149 +53,149 @@ TEST_F(MediaPipelineModuleServiceTests, shouldDestroySessionWhenDisconnectClient
 
 TEST_F(MediaPipelineModuleServiceTests, shouldDestroySession)
 {
-    playbackServiceWillDestroySession();
+    mediaPipelineServiceWillDestroySession();
     sendDestroySessionRequestAndReceiveResponse();
 }
 
 TEST_F(MediaPipelineModuleServiceTests, shouldFailToDestroySession)
 {
-    playbackServiceWillFailToDestroySession();
+    mediaPipelineServiceWillFailToDestroySession();
     sendDestroySessionRequestAndReceiveResponse();
 }
 
 TEST_F(MediaPipelineModuleServiceTests, shouldLoadSession)
 {
-    playbackServiceWillLoadSession();
+    mediaPipelineServiceWillLoadSession();
     sendLoadRequestAndReceiveResponse();
 }
 
 TEST_F(MediaPipelineModuleServiceTests, shouldFailToLoadSession)
 {
-    playbackServiceWillFailToLoadSession();
+    mediaPipelineServiceWillFailToLoadSession();
     sendLoadRequestAndReceiveResponse();
 }
 
 TEST_F(MediaPipelineModuleServiceTests, shouldAttachSource)
 {
-    playbackServiceWillAttachSource();
+    mediaPipelineServiceWillAttachSource();
     sendAttachSourceRequestAndReceiveResponse();
 }
 
 TEST_F(MediaPipelineModuleServiceTests, shouldAttachAudioSourceWithAdditionalData)
 {
-    playbackServiceWillAttachAudioSourceWithAdditionaldata();
+    mediaPipelineServiceWillAttachAudioSourceWithAdditionaldata();
     sendAttachAudioSourceWithAdditionalDataRequestAndReceiveResponse();
 }
 
 TEST_F(MediaPipelineModuleServiceTests, shouldFailToAttachSource)
 {
-    playbackServiceWillFailToAttachSource();
+    mediaPipelineServiceWillFailToAttachSource();
     sendAttachSourceRequestAndReceiveResponse();
 }
 
 TEST_F(MediaPipelineModuleServiceTests, shouldPlay)
 {
-    playbackServiceWillPlay();
+    mediaPipelineServiceWillPlay();
     sendPlayRequestAndReceiveResponse();
 }
 
 TEST_F(MediaPipelineModuleServiceTests, shouldFailToPlay)
 {
-    playbackServiceWillFailToPlay();
+    mediaPipelineServiceWillFailToPlay();
     sendPlayRequestAndReceiveResponse();
 }
 
 TEST_F(MediaPipelineModuleServiceTests, shouldPause)
 {
-    playbackServiceWillPause();
+    mediaPipelineServiceWillPause();
     sendPauseRequestAndReceiveResponse();
 }
 
 TEST_F(MediaPipelineModuleServiceTests, shouldFailToPause)
 {
-    playbackServiceWillFailToPause();
+    mediaPipelineServiceWillFailToPause();
     sendPauseRequestAndReceiveResponse();
 }
 
 TEST_F(MediaPipelineModuleServiceTests, shouldStop)
 {
-    playbackServiceWillStop();
+    mediaPipelineServiceWillStop();
     sendStopRequestAndReceiveResponse();
 }
 
 TEST_F(MediaPipelineModuleServiceTests, shouldFailToStop)
 {
-    playbackServiceWillFailToStop();
+    mediaPipelineServiceWillFailToStop();
     sendStopRequestAndReceiveResponse();
 }
 
 TEST_F(MediaPipelineModuleServiceTests, shouldSetPosition)
 {
-    playbackServiceWillSetPosition();
+    mediaPipelineServiceWillSetPosition();
     sendSetPositionRequestAndReceiveResponse();
 }
 
 TEST_F(MediaPipelineModuleServiceTests, shouldFailToSetPosition)
 {
-    playbackServiceWillFailToSetPosition();
+    mediaPipelineServiceWillFailToSetPosition();
     sendSetPositionRequestAndReceiveResponse();
 }
 
 TEST_F(MediaPipelineModuleServiceTests, shouldHaveData)
 {
-    playbackServiceWillHaveData();
+    mediaPipelineServiceWillHaveData();
     sendHaveDataRequestAndReceiveResponse();
 }
 
 TEST_F(MediaPipelineModuleServiceTests, shouldFailWhenHaveDataIsReceived)
 {
-    playbackServiceWillFailToHaveData();
+    mediaPipelineServiceWillFailToHaveData();
     sendHaveDataRequestAndReceiveResponse();
 }
 
 TEST_F(MediaPipelineModuleServiceTests, shouldSetPlaybackRate)
 {
-    playbackServiceWillSetPlaybackRate();
+    mediaPipelineServiceWillSetPlaybackRate();
     sendSetPlaybackRateRequestAndReceiveResponse();
 }
 
 TEST_F(MediaPipelineModuleServiceTests, shouldFailWhenSetPlaybackRateIsReceived)
 {
-    playbackServiceWillFailToSetPlaybackRate();
+    mediaPipelineServiceWillFailToSetPlaybackRate();
     sendSetPlaybackRateRequestAndReceiveResponse();
 }
 
 TEST_F(MediaPipelineModuleServiceTests, shouldSetVideoWindow)
 {
-    playbackServiceWillSetVideoWindow();
+    mediaPipelineServiceWillSetVideoWindow();
     sendSetVideoWindowRequestAndReceiveResponse();
 }
 
 TEST_F(MediaPipelineModuleServiceTests, shouldFailToSetVideoWindow)
 {
-    playbackServiceWillFailToSetVideoWindow();
+    mediaPipelineServiceWillFailToSetVideoWindow();
     sendSetVideoWindowRequestAndReceiveResponse();
 }
 
 TEST_F(MediaPipelineModuleServiceTests, shouldGetPosition)
 {
-    playbackServiceWillCreateSession();
+    mediaPipelineServiceWillCreateSession();
     sendCreateSessionRequestAndReceiveResponse();
-    playbackServiceWillGetPosition();
+    mediaPipelineServiceWillGetPosition();
     sendGetPositionRequestAndReceiveResponse();
 }
 
 TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetPosition)
 {
-    playbackServiceWillCreateSession();
+    mediaPipelineServiceWillCreateSession();
     sendCreateSessionRequestAndReceiveResponse();
-    playbackServiceWillFailToGetPosition();
+    mediaPipelineServiceWillFailToGetPosition();
     sendGetPositionRequestAndReceiveResponseWithoutPositionMatch();
 }
 
 TEST_F(MediaPipelineModuleServiceTests, shouldSendPlaybackStateChangedEvent)
 {
-    playbackServiceWillCreateSession();
+    mediaPipelineServiceWillCreateSession();
     sendCreateSessionRequestAndReceiveResponse();
     mediaClientWillSendPlaybackStateChangedEvent();
     sendPlaybackStateChangedEvent();
@@ -203,7 +203,7 @@ TEST_F(MediaPipelineModuleServiceTests, shouldSendPlaybackStateChangedEvent)
 
 TEST_F(MediaPipelineModuleServiceTests, shouldSendNetworkStateChangedEvent)
 {
-    playbackServiceWillCreateSession();
+    mediaPipelineServiceWillCreateSession();
     sendCreateSessionRequestAndReceiveResponse();
     mediaClientWillSendNetworkStateChangedEvent();
     sendNetworkStateChangedEvent();
@@ -211,7 +211,7 @@ TEST_F(MediaPipelineModuleServiceTests, shouldSendNetworkStateChangedEvent)
 
 TEST_F(MediaPipelineModuleServiceTests, shouldSendNeedMediaDataEvent)
 {
-    playbackServiceWillCreateSession();
+    mediaPipelineServiceWillCreateSession();
     int sessionId = sendCreateSessionRequestAndReceiveResponse();
     mediaClientWillSendNeedMediaDataEvent(sessionId);
     sendNeedMediaDataEvent();
@@ -219,7 +219,7 @@ TEST_F(MediaPipelineModuleServiceTests, shouldSendNeedMediaDataEvent)
 
 TEST_F(MediaPipelineModuleServiceTests, shouldSendPositionChangeEvent)
 {
-    playbackServiceWillCreateSession();
+    mediaPipelineServiceWillCreateSession();
     sendCreateSessionRequestAndReceiveResponse();
     mediaClientWillSendPostionChangeEvent();
     sendPostionChangeEvent();
@@ -227,7 +227,7 @@ TEST_F(MediaPipelineModuleServiceTests, shouldSendPositionChangeEvent)
 
 TEST_F(MediaPipelineModuleServiceTests, shouldSendQosEvent)
 {
-    playbackServiceWillCreateSession();
+    mediaPipelineServiceWillCreateSession();
     sendCreateSessionRequestAndReceiveResponse();
     mediaClientWillSendQosEvent();
     sendQosEvent();
@@ -235,40 +235,40 @@ TEST_F(MediaPipelineModuleServiceTests, shouldSendQosEvent)
 
 TEST_F(MediaPipelineModuleServiceTests, shouldRenderFrame)
 {
-    playbackServiceWillCreateSession();
+    mediaPipelineServiceWillCreateSession();
     sendCreateSessionRequestAndReceiveResponse();
-    playbackServiceWillRenderFrame();
+    mediaPipelineServiceWillRenderFrame();
     sendRenderFrameRequestAndReceiveResponse();
 }
 
 TEST_F(MediaPipelineModuleServiceTests, renderFrameFails)
 {
-    playbackServiceWillCreateSession();
+    mediaPipelineServiceWillCreateSession();
     sendCreateSessionRequestAndReceiveResponse();
-    playbackServiceWillFailToRenderFrame();
+    mediaPipelineServiceWillFailToRenderFrame();
     sendRenderFrameRequestAndReceiveResponse();
 }
 
 TEST_F(MediaPipelineModuleServiceTests, shouldSetVolume)
 {
-    playbackServiceWillSetVolume();
+    mediaPipelineServiceWillSetVolume();
     sendSetVolumeRequestAndReceiveResponse();
 }
 
 TEST_F(MediaPipelineModuleServiceTests, shouldFailToSetVolume)
 {
-    playbackServiceWillFailToSetVolume();
+    mediaPipelineServiceWillFailToSetVolume();
     sendSetVolumeRequestAndReceiveResponse();
 }
 
 TEST_F(MediaPipelineModuleServiceTests, shouldGetVolume)
 {
-    playbackServiceWillGetVolume();
+    mediaPipelineServiceWillGetVolume();
     sendGetVolumeRequestAndReceiveResponse();
 }
 
 TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetVolume)
 {
-    playbackServiceWillFailToGetVolume();
+    mediaPipelineServiceWillFailToGetVolume();
     sendGetVolumeRequestAndReceiveResponseWithoutVolumeMatch();
 }
