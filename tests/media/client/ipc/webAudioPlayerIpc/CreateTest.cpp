@@ -72,7 +72,7 @@ TEST_F(RialtoClientCreateWebAudioPlayerIpcTest, CreateDestroy)
     expectUnsubscribeEvents();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("destroyWebAudioPlayer"), m_controllerMock.get(),
-                                           destroyWebAudioPlayerRequestMatcher(m_web_audio_player_handle), _, m_blockingClosureMock.get()));
+                                           destroyWebAudioPlayerRequestMatcher(m_webAaudioPlayerHandle), _, m_blockingClosureMock.get()));
 
     m_webAudioPlayerIpc.reset();
     EXPECT_EQ(m_webAudioPlayerIpc, nullptr);

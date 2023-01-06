@@ -88,5 +88,5 @@ void WebAudioPlayerIpcTestBase::setCreateWebAudioPlayerResponse(google::protobuf
 {
     firebolt::rialto::CreateWebAudioPlayerResponse *createWebAudioPlayerResponse =
         dynamic_cast<firebolt::rialto::CreateWebAudioPlayerResponse *>(response);
-    createWebAudioPlayerResponse->set_web_audio_player_handle(m_web_audio_player_handle);
+    createWebAudioPlayerResponse->set_web_audio_player_handle(m_webAaudioPlayerHandle);
 }

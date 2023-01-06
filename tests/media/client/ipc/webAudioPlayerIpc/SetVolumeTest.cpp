@@ -21,13 +21,9 @@
 
 MATCHER_P2(WebAudioSetVolumeRequestMatcher, web_audio_player_handle, volume, "")
 {
-    std::cout << "vlume: " << volume << std::endl;
     const ::firebolt::rialto::WebAudioSetVolumeRequest *request =
         dynamic_cast<const ::firebolt::rialto::WebAudioSetVolumeRequest *>(arg);
-    std::cout << "vlume2: " << request->volume() << std::endl;    
-    std::cout << "web_audio_player_handle: " << request->web_audio_player_handle() << "\n";   
-    return ((request->web_audio_player_handle() == web_audio_player_handle) && (request->volume() < volume + 0.001) &&
-            (request->volume() > volume - 0.001));
+    return ((request->web_audio_player_handle() == web_audio_player_handle) && (request->volume() == volume));
 }
 
 class RialtoClientWebAudioPlayerIpcSetVolumeTest : public WebAudioPlayerIpcTestBase
@@ -58,7 +54,7 @@ TEST_F(RialtoClientWebAudioPlayerIpcSetVolumeTest, Success)
     expectIpcApiCallSuccess();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("setVolume"), m_controllerMock.get(),
-                                           WebAudioSetVolumeRequestMatcher(m_web_audio_player_handle, m_volume), _,
+                                           WebAudioSetVolumeRequestMatcher(m_webAaudioPlayerHandle, m_volume), _,
                                            m_blockingClosureMock.get()));
 
     EXPECT_EQ(m_webAudioPlayerIpc->setVolume(m_volume), true);

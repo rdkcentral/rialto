@@ -59,7 +59,7 @@ TEST_F(RialtoClientWebAudioPlayerIpcPlayPauseTest, PlaySuccess)
 {
     expectIpcApiCallSuccess();
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("play"), m_controllerMock.get(),
-                                           WebAudioPlayRequestMatcher(m_web_audio_player_handle), _, m_blockingClosureMock.get()));
+                                           WebAudioPlayRequestMatcher(m_webAaudioPlayerHandle), _, m_blockingClosureMock.get()));
     EXPECT_EQ(m_webAudioPlayerIpc->play(), true);
 }
 
@@ -112,7 +112,7 @@ TEST_F(RialtoClientWebAudioPlayerIpcPlayPauseTest, PauseSuccess)
     expectIpcApiCallSuccess();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("pause"), m_controllerMock.get(),
-                                           WebAudioPauseRequestMatcher(m_web_audio_player_handle), _, m_blockingClosureMock.get()));
+                                           WebAudioPauseRequestMatcher(m_webAaudioPlayerHandle), _, m_blockingClosureMock.get()));
 
     EXPECT_EQ(m_webAudioPlayerIpc->pause(), true);
 }

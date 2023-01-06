@@ -47,7 +47,7 @@ protected:
 TEST_F(RialtoClientWebAudioPlayerIpcCallbackTest, NotifyPlaybackState)
 {
     auto updatePlaybackStateEvent = std::make_shared<firebolt::rialto::WebAudioPlayerStateEvent>();
-    updatePlaybackStateEvent->set_web_audio_player_handle(m_web_audio_player_handle);
+    updatePlaybackStateEvent->set_web_audio_player_handle(m_webAaudioPlayerHandle);
     updatePlaybackStateEvent->set_state(firebolt::rialto::WebAudioPlayerStateEvent_WebAudioPlayerState_PLAYING);
 
     EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));

@@ -59,7 +59,7 @@ protected:
     StrictMock<EventThreadMock> *m_eventThreadMock;
 
     // Common variables
-    int32_t m_web_audio_player_handle = 123;
+    int32_t m_webAaudioPlayerHandle = 123;
 
     enum class EventTags
     {

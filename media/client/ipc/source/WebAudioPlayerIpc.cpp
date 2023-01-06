@@ -127,7 +127,9 @@ void WebAudioPlayerIpc::onPlaybackStateUpdated(const std::shared_ptr<firebolt::r
         firebolt::rialto::WebAudioPlayerState playerState = firebolt::rialto::WebAudioPlayerState::UNKNOWN;
         switch (event->state())
         {
-        case firebolt::rialto::WebAudioPlayerStateEvent_WebAudioPlayerState_USABLE:
+        case firebolt::rialto::WebAudioPlayerStateEvent_WebAudioPlayerState_UNKNOWN:
+            playerState = firebolt::rialto::WebAudioPlayerState::UNKNOWN;
+            break;
         case firebolt::rialto::WebAudioPlayerStateEvent_WebAudioPlayerState_IDLE:
             playerState = firebolt::rialto::WebAudioPlayerState::IDLE;
             break;
@@ -242,6 +244,13 @@ bool WebAudioPlayerIpc::setEos()
 bool WebAudioPlayerIpc::getBufferAvailable(uint32_t &availableFrames,
                                            const std::shared_ptr<WebAudioShmInfo> &webAudioShmInfo)
 {
+
+    if (!webAudioShmInfo)
+    {
+        RIALTO_CLIENT_LOG_ERROR("webAudioShmInfo parameter can't be null!");
+        return false;
+    }
+
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -270,7 +279,7 @@ bool WebAudioPlayerIpc::getBufferAvailable(uint32_t &availableFrames,
     webAudioShmInfo->offsetMain = response.shm_info().offset_main();
     webAudioShmInfo->lengthMain = response.shm_info().length_main();
     webAudioShmInfo->offsetWrap = response.shm_info().offset_wrap();
-    webAudioShmInfo->offsetWrap = response.shm_info().length_wrap();
+    webAudioShmInfo->lengthWrap = response.shm_info().length_wrap();
 
     return true;
 }
