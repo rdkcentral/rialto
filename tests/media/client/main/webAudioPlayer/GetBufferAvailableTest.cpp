@@ -23,7 +23,6 @@ class RialtoClientWebAudioPlayerGetBufferAvailableTest : public WebAudioPlayerTe
 {
 protected:
     uint32_t m_availableFrames{51};
-    std::shared_ptr<WebAudioShmInfo> m_webAudioShmInfo;
 
     virtual void SetUp()
     {
@@ -45,9 +44,11 @@ protected:
  */
 TEST_F(RialtoClientWebAudioPlayerGetBufferAvailableTest, getBufferAvailableSuccess)
 {
-    EXPECT_CALL(*m_webAudioPlayerIpcMock, getBufferAvailable(m_availableFrames, m_webAudioShmInfo)).WillOnce(Return(true));
+    std::shared_ptr<WebAudioShmInfo> webAudioShmInfo;
 
-    EXPECT_EQ(m_webAudioPlayer->getBufferAvailable(m_availableFrames, m_webAudioShmInfo), true);
+    EXPECT_CALL(*m_webAudioPlayerIpcMock, getBufferAvailable(m_availableFrames, _)).WillOnce(Return(true));
+
+    EXPECT_EQ(m_webAudioPlayer->getBufferAvailable(m_availableFrames, webAudioShmInfo), true);
 }
 
 /**
@@ -55,7 +56,9 @@ TEST_F(RialtoClientWebAudioPlayerGetBufferAvailableTest, getBufferAvailableSucce
  */
 TEST_F(RialtoClientWebAudioPlayerGetBufferAvailableTest, getBufferAvailableFailure)
 {
-    EXPECT_CALL(*m_webAudioPlayerIpcMock, getBufferAvailable(m_availableFrames, m_webAudioShmInfo)).WillOnce(Return(false));
+    std::shared_ptr<WebAudioShmInfo> webAudioShmInfo;
 
-    EXPECT_EQ(m_webAudioPlayer->getBufferAvailable(m_availableFrames, m_webAudioShmInfo), false);
+    EXPECT_CALL(*m_webAudioPlayerIpcMock, getBufferAvailable(m_availableFrames, _)).WillOnce(Return(false));
+
+    EXPECT_EQ(m_webAudioPlayer->getBufferAvailable(m_availableFrames, webAudioShmInfo), false);
 }

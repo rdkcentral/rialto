@@ -89,6 +89,14 @@ add_gtests (
         # MediaKeysCapabilitiesIpc tests
         mediaKeysCapabilitiesIpc/CreateTest.cpp
         mediaKeysCapabilitiesIpc/KeySystemsTest.cpp
+
+        # WebAudioPlayer tests
+        webAudioPlayer/base/WebAudioPlayerIpcTestBase.cpp
+        webAudioPlayer/CallbackTest.cpp
+        webAudioPlayer/CreateTest.cpp
+        webAudioPlayer/CreateTest.cpp
+        webAudioPlayer/PlayPauseTest.cpp
+        webAudioPlayer/SetVolumeTest.cpp
         )
 
 target_include_directories(
@@ -110,6 +118,7 @@ target_include_directories(
         mediaPipelineIpc/base
         rialtoControlIpc/base
         mediaKeysIpc/base
+        webAudioPlayer/base
         )
 
 target_link_libraries(
