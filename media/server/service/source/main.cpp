@@ -31,17 +31,22 @@
 #include <cstdlib>
 #include <thread>
 #include "RialtoServerLogging.h"
-#ifdef PERFETTO_TRACING
-#include "RialtoPerfetto.h"
+#ifdef RIALTO_ENABLE_TRACING
+#include "RialtoPerfettoTracing.h"
 #endif
+
 // NOLINT(build/filename_format)
+//
 
 int main(int argc, char *argv[])
 {
-
-#ifdef PERFETTO_TRACING
-    std::shared_ptr<firebolt::rialto::server::RialtoPerfetto> rialtoPerfetto =  initializePerfetto();
+#if defined(RIALTO_ENABLE_TRACING)
+    RialtoPerfettoTracing::initialise(RialtoPerfettoTracing::InProcessBackend | RialtoPerfettoTracing::SystemBackend);
+    RialtoPerfettoTracing::startInProcessTracing("/tmp/gst_mediapipeline.pftrace",
+                                                 "GstMediaPipeline",
+                                                 20480);
 #endif
+
     firebolt::rialto::server::IGstPlayer::initalise(argc, argv);
 
     firebolt::rialto::server::ipc::IpcFactory ipcFactory;

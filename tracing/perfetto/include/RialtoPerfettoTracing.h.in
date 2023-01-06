@@ -1,0 +1,97 @@
+//
+//  RialtoPerfettoTracing.h
+//
+//  Copyright © 2023 Sky UK. All rights reserved.
+//
+#ifndef RIALTOPERFETTOTRACING_H
+#define RIALTOPERFETTOTRACING_H
+
+#include <perfetto.h>
+
+#include <string>
+#include <chrono>
+
+//namespace firebolt::rialto::server
+class RialtoPerfettoTracing
+{
+public:
+    enum Backend : unsigned
+    {
+        SystemBackend = 0x1,
+        InProcessBackend = 0x2,
+    };
+
+    static bool initialise(unsigned backends = (SystemBackend | InProcessBackend));
+
+    static bool isTracing();
+
+    static bool startInProcessTracing(const std::string &traceFile,
+                                      const std::string &categoryFilter = std::string(),
+                                      size_t maxSizeKb = SIZE_MAX);
+    static bool startInProcessTracing(int fd,
+                                      const std::string &categoryFilter = std::string(),
+                                      size_t maxSizeKb = SIZE_MAX);
+    static void stopInProcessTracing();
+
+    static bool flushInProcessTrace(const std::chrono::milliseconds &timeout = std::chrono::milliseconds(0));
+};
+
+
+#if defined(RIALTO_ENABLE_TRACING)
+
+    // TRACING_CATEGORIES_HEADER should be defined in the top level cmake file
+    // and it should contain the absolute path to a header file which includes
+    // the categories you want in the trace, see below for an example or
+    // https://perfetto.dev/docs/instrumentation/track-events
+    #include "@TRACING_CATEGORIES_HEADER@"
+
+    /* the following is some example category config
+    PERFETTO_DEFINE_CATEGORIES(
+        perfetto::Category("WindowManager")
+            .SetDescription("Events from the WindowManager component"),
+        perfetto::Category("RuntimeManager")
+            .SetDescription("Events from the RuntimeManager component"),
+        perfetto::Category("PackageManager")
+            .SetDescription("Events from the PackageManager component"),
+    );
+    */
+
+
+    // wrapper macros so we can fully disable tracing on release builds
+    #define RIALTO_TRACE_EVENT_BEGIN(category, name, args...) \
+        TRACE_EVENT_BEGIN(category, name, ##args)
+
+    #define RIALTO_TRACE_EVENT_END(category, args...) \
+        TRACE_EVENT_END(category, ##args)
+
+    #define RIALTO_TRACE_EVENT(category, name, args...) \
+        TRACE_EVENT(category, name, ##args)
+
+    #define RIALTO_TRACE_EVENT_INSTANT(category, name, args...) \
+        TRACE_EVENT_INSTANT(category, name, ##args)
+
+    /*
+    #define RIALTO_TRACE_COUNTER(category, name, value) \
+        PERFETTO_INTERNAL_TRACK_EVENT(              \
+            category, PERFETTO_GET_STATIC_STRING(name), \
+            ::perfetto::protos::pbzero::TrackEvent::TYPE_COUNTER, \
+            "value", static_cast<int>(value))
+    */
+
+#if 0
+    class LoggingDataSource : public perfetto::DataSource<LoggingDataSource>
+    {
+    };
+
+    PERFETTO_DECLARE_DATA_SOURCE_STATIC_MEMBERS(LoggingDataSource);
+#endif
+#else // defined(RIALTO_ENABLE_TRACING)
+
+    #define RIALTO_TRACE_EVENT_BEGIN(category, name, args...)
+    #define RIALTO_TRACE_EVENT_END(category, args...)
+    #define RIALTO_TRACE_EVENT(category, name, args...)
+    #define RIALTO_TRACE_EVENT_INSTANT(category, name, args...)
+
+#endif // defined(RIALTO_ENABLE_TRACING)
+
+#endif // RIALTOPERFETTOTRACING_H

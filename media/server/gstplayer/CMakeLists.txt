@@ -81,14 +81,14 @@ target_include_directories(
         ${GStreamerApp_INCLUDE_DIRS}
         )
 
-if(PERFETTO_TRACING)
-    MESSAGE("Perfetto Tracing") 
-target_include_directories(
+if(ENABLE_PERFETTO_TRACING)
+    target_include_directories(
         RialtoServerGstPlayer
 
         PRIVATE
-        $<TARGET_PROPERTY:RialtoPerfetto,INTERFACE_INCLUDE_DIRECTORIES>
-        )
+        $<TARGET_PROPERTY:RialtoTracing,INTERFACE_INCLUDE_DIRECTORIES>
+    )
+
 endif()
 
 set_property(
@@ -107,18 +107,12 @@ target_link_libraries(
         ${GStreamerApp_LIBRARIES}
         )
 
-if(PERFETTO_TRACING)
-target_link_libraries(
-        RialtoServerGstPlayer
 
-        PRIVATE 
-        RialtoPerfetto
-        )
-
-target_compile_definitions(
+if(ENABLE_PERFETTO_TRACING)
+    target_link_libraries(
         RialtoServerGstPlayer
 
         PRIVATE
-        PERFETTO_TRACING=1
+        RialtoTracing
     )
 endif()

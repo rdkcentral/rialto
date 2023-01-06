@@ -57,6 +57,7 @@ extern "C"
         RIALTO_COMPONENT_IPC,
         RIALTO_COMPONENT_SERVER_MANAGER,
         RIALTO_COMPONENT_COMMON,
+        RIALTO_COMPONENT_TRACING,
         RIALTO_COMPONENT_EXTERNAL, // External component, like e.g. GStreamer. Keep it as last component.
         RIALTO_COMPONENT_LAST,
     };

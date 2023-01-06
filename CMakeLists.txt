@@ -20,16 +20,33 @@
 cmake_minimum_required( VERSION 3.10 )
 project( Rialto LANGUAGES C CXX VERSION 1.0.0 )
 
-option(PERFETTO_TRACING "Build with Perfetto" ON)
+# Option to enable / disable the Perfetto tracing support
+if( CMAKE_BUILD_FLAG STREQUAL "RELEASE" )
+    set( ENABLE_PERFETTO_TRACING_DEFAULT OFF )
+else()
+    set( ENABLE_PERFETTO_TRACING_DEFAULT ON )
+endif()
+
+option(ENABLE_PERFETTO_TRACING "Enable Perfetto Tracing for Rialto" ${ENABLE_PERFETTO_TRACING_DEFAULT})
+
+message( WARNING "value ${CMAKE_BUILD_FLAG} and ${ENABLE_PERFETTO_TRACING}")
+if( CMAKE_BUILD_FLAG STREQUAL "RELEASE" AND ENABLE_PERFETTO_TRACING )
+    message( WARNING "Cannot enable tracing on release builds ")
+    set( ENABLE_PERFETTO_TRACING OFF )
+endif()
+
+if(ENABLE_PERFETTO_TRACING)
+    add_compile_options(-Wall)
+else()
+    add_compile_options(-Wall -Werror)
+endif()
 
 if ( COVERAGE_ENABLED )
     add_compile_options(-coverage)
 endif()
 
-if(PERFETTO_TRACING)
-    add_compile_options(-Wall)
-else()
-    add_compile_options(-Wall -Werror)
+if(ENABLE_PERFETTO_TRACING)
+    add_definitions( -DRIALTO_ENABLE_TRACING=1 )
 endif()
 
 # Add our local cmake directory to search for components
@@ -55,6 +72,10 @@ find_package( Protobuf REQUIRED )
 option(ENABLE_SERVER "Enable building RialtoServer" ON)
 option(ENABLE_SERVER_MANAGER "Enable building RialtoServerManagerSim" ON)
 
+# For tracing, the trace categories need to be supplied in a separate header
+# from the main trace code, the following tells cmake where to get that header
+set( TRACING_CATEGORIES_HEADER "${CMAKE_CURRENT_LIST_DIR}/media/server/common/include/RialtoServerTraceCategories.h" )
+
 # Include the new IPC library components
 add_subdirectory( ipc )
 
@@ -62,10 +83,13 @@ add_subdirectory( ipc )
 add_subdirectory( common )
 add_subdirectory( media )
 add_subdirectory( logging )
-
+if(ENABLE_PERFETTO_TRACING)
+    add_subdirectory( tracing )
+endif()
 if( ENABLE_SERVER_MANAGER )
     add_subdirectory( serverManager )
 endif()
+
 
 # Config and target for building the unit tests
 if( CMAKE_BUILD_FLAG STREQUAL "UnitTests" )

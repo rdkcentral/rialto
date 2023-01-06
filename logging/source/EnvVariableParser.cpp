@@ -122,6 +122,11 @@ RIALTO_COMPONENT componentFromStr(const std::string &component)
     {
         return RIALTO_COMPONENT_COMMON;
     }
+    if ("tracing" == component)
+    {
+        return RIALTO_COMPONENT_TRACING;
+    }
+
     return RIALTO_COMPONENT_LAST;
 }
 } // namespace
@@ -133,8 +138,9 @@ EnvVariableParser::EnvVariableParser()
                     {RIALTO_COMPONENT_SERVER, RIALTO_DEBUG_LEVEL_DEFAULT},
                     {RIALTO_COMPONENT_IPC, RIALTO_DEBUG_LEVEL_DEFAULT},
                     {RIALTO_COMPONENT_SERVER_MANAGER, RIALTO_DEBUG_LEVEL_DEFAULT},
-                    {RIALTO_COMPONENT_COMMON, RIALTO_DEBUG_LEVEL_DEFAULT}},
-      m_logToConsole{false}
+                    {RIALTO_COMPONENT_COMMON, RIALTO_DEBUG_LEVEL_DEFAULT},
+                    {RIALTO_COMPONENT_TRACING, RIALTO_DEBUG_LEVEL_DEFAULT}},
+      m_logToConsole{true}
 {
     configureRialtoDebug();
     configureRialtoConsoleLog();
