@@ -29,7 +29,6 @@ MATCHER_P(WebAudioSetWosRequestMatcher, web_audio_player_handle, "")
 class RialtoClientWebAudioPlayerIpcSetEosTest : public WebAudioPlayerIpcTestBase
 {
 protected:
-
     virtual void SetUp()
     {
         WebAudioPlayerIpcTestBase::SetUp();
@@ -52,9 +51,9 @@ TEST_F(RialtoClientWebAudioPlayerIpcSetEosTest, Success)
 {
     expectIpcApiCallSuccess();
 
-    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("setEos"), m_controllerMock.get(),
-                                           WebAudioSetWosRequestMatcher(m_webAaudioPlayerHandle), _,
-                                           m_blockingClosureMock.get()));
+    EXPECT_CALL(*m_channelMock,
+                CallMethod(methodMatcher("setEos"), m_controllerMock.get(),
+                           WebAudioSetWosRequestMatcher(m_webAaudioPlayerHandle), _, m_blockingClosureMock.get()));
 
     EXPECT_EQ(m_webAudioPlayerIpc->setEos(), true);
 }

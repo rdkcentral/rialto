@@ -23,7 +23,6 @@
 class RialtoClientWebAudioPlayerIpcCallbackTest : public WebAudioPlayerIpcTestBase
 {
 protected:
-
     QosInfo m_qosInfo = {5U, 2U};
 
     virtual void SetUp()
@@ -57,10 +56,10 @@ TEST_F(RialtoClientWebAudioPlayerIpcCallbackTest, NotifyPlaybackState)
 }
 
 /**
- * Test that if the session id of the event is not the same as the playback session the event will be ignored.
+ * Test that if the web_audio_player_handle( of the event is not the same as the playback session the event will be ignored.
  */
-/*
-TEST_F(RialtoClientWebAudioPlayerIpcCallbackTest, InvalidSessionIdPlaybackState)
+
+TEST_F(RialtoClientWebAudioPlayerIpcCallbackTest, InvalidWebAudioPlayerHandle)
 {
     auto updatePlaybackStateEvent = std::make_shared<firebolt::rialto::WebAudioPlayerStateEvent>();
     updatePlaybackStateEvent->set_web_audio_player_handle(-1);
@@ -70,4 +69,3 @@ TEST_F(RialtoClientWebAudioPlayerIpcCallbackTest, InvalidSessionIdPlaybackState)
 
     m_notifyStateCb(updatePlaybackStateEvent);
 }
-*/

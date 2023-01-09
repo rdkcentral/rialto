@@ -21,12 +21,12 @@
 #define WEB_AUDIO_PLAYER_TEST_BASE_H_
 
 #include "IWebAudioPlayerIpcClient.h"
+#include "SharedMemoryManagerFactoryMock.h"
+#include "SharedMemoryManagerMock.h"
 #include "WebAudioPlayer.h"
 #include "WebAudioPlayerClientMock.h"
 #include "WebAudioPlayerIpcFactoryMock.h"
 #include "WebAudioPlayerIpcMock.h"
-#include "SharedMemoryManagerFactoryMock.h"
-#include "SharedMemoryManagerMock.h"
 #include <gtest/gtest.h>
 #include <memory>
 
@@ -52,7 +52,6 @@ MATCHER(IsNull, "")
 class WebAudioPlayerTestBase : public ::testing::Test
 {
 protected:
-
     const std::string m_audioMimeType{"audio/x-raw"};
     const uint32_t m_priority{5};
     const WebAudioConfig m_config{};
@@ -71,7 +70,6 @@ protected:
     void TearDown();
     void createWebAudioPlayer();
     void destroyWebAudioPlayer();
-
 };
 
 #endif // WEB_AUDIO_PLAYER_TEST_BASE_H_

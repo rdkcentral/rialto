@@ -25,6 +25,7 @@
 #include "IWebAudioPlayerIpc.h"
 #include "IWebAudioPlayerIpcClient.h"
 #include <memory>
+#include <mutex>
 #include <stdint.h>
 #include <string>
 
@@ -116,6 +117,11 @@ protected:
      * @brief The shared memory region info.
      */
     std::shared_ptr<WebAudioShmInfo> m_webAudioShmInfo;
+
+    /**
+     * @brief Ensure thread safety for clients by preventing concurrent writing to the buffer.
+     */
+    std::mutex m_bufLock;
 };
 
 }; // namespace firebolt::rialto::client

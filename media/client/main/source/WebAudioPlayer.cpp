@@ -23,6 +23,7 @@
 #include "IWebAudioPlayerIpcClient.h"
 #include "RialtoClientLogging.h"
 #include <cstring>
+#include <mutex>
 
 namespace firebolt::rialto
 {
@@ -137,6 +138,7 @@ bool WebAudioPlayer::getBufferAvailable(uint32_t &availableFrames, std::shared_p
     {
         m_webAudioShmInfo = std::make_shared<WebAudioShmInfo>();
     }
+    std::lock_guard<std::mutex> bufLocker(m_bufLock);
     return m_webAudioPlayerIpc->getBufferAvailable(availableFrames, m_webAudioShmInfo);
 }
 
@@ -171,7 +173,7 @@ bool WebAudioPlayer::writeBuffer(const uint32_t numberOfFrames, void *data)
         RIALTO_CLIENT_LOG_ERROR("Shared buffer no longer valid");
         return false;
     }
-    
+
     if (dataLength > m_webAudioShmInfo->lengthMain)
     {
         std::memcpy(shmBuffer + m_webAudioShmInfo->offsetMain, data, m_webAudioShmInfo->lengthMain);
@@ -182,6 +184,7 @@ bool WebAudioPlayer::writeBuffer(const uint32_t numberOfFrames, void *data)
     {
         std::memcpy(shmBuffer + m_webAudioShmInfo->offsetMain, data, m_webAudioShmInfo->lengthMain);
     }
+    std::lock_guard<std::mutex> bufLocker(m_bufLock);
     return m_webAudioPlayerIpc->writeBuffer(numberOfFrames);
 }
 

@@ -21,7 +21,8 @@
 
 MATCHER_P(WebAudioGetVolumeRequestMatcher, webAaudioPlayerHandle, "")
 {
-    const ::firebolt::rialto::WebAudioGetVolumeRequest *request = dynamic_cast<const ::firebolt::rialto::WebAudioGetVolumeRequest *>(arg);
+    const ::firebolt::rialto::WebAudioGetVolumeRequest *request =
+        dynamic_cast<const ::firebolt::rialto::WebAudioGetVolumeRequest *>(arg);
     return ((request->web_audio_player_handle() == webAaudioPlayerHandle));
 }
 
@@ -51,8 +52,9 @@ TEST_F(RialtoClientWebAudioPlayerIpcGetVolumeTest, Success)
     constexpr double kVolume{0.7};
     expectIpcApiCallSuccess();
 
-    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getVolume"), m_controllerMock.get(),
-                                           WebAudioGetVolumeRequestMatcher(m_webAaudioPlayerHandle), _, m_blockingClosureMock.get()))
+    EXPECT_CALL(*m_channelMock,
+                CallMethod(methodMatcher("getVolume"), m_controllerMock.get(),
+                           WebAudioGetVolumeRequestMatcher(m_webAaudioPlayerHandle), _, m_blockingClosureMock.get()))
         .WillOnce(Invoke(
             [&](const google::protobuf::MethodDescriptor *, google::protobuf::RpcController *,
                 const google::protobuf::Message *, google::protobuf::Message *response, google::protobuf::Closure *)

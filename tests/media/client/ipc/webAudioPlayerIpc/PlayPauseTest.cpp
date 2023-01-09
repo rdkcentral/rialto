@@ -24,13 +24,15 @@
 
 MATCHER_P(WebAudioPlayRequestMatcher, web_audio_player_handle, "")
 {
-    const ::firebolt::rialto::WebAudioPlayRequest *request = dynamic_cast<const ::firebolt::rialto::WebAudioPlayRequest *>(arg);
+    const ::firebolt::rialto::WebAudioPlayRequest *request =
+        dynamic_cast<const ::firebolt::rialto::WebAudioPlayRequest *>(arg);
     return (request->web_audio_player_handle() == web_audio_player_handle);
 }
 
 MATCHER_P(WebAudioPauseRequestMatcher, web_audio_player_handle, "")
 {
-    const ::firebolt::rialto::WebAudioPauseRequest *request = dynamic_cast<const ::firebolt::rialto::WebAudioPauseRequest *>(arg);
+    const ::firebolt::rialto::WebAudioPauseRequest *request =
+        dynamic_cast<const ::firebolt::rialto::WebAudioPauseRequest *>(arg);
     return (request->web_audio_player_handle() == web_audio_player_handle);
 }
 
@@ -58,8 +60,9 @@ protected:
 TEST_F(RialtoClientWebAudioPlayerIpcPlayPauseTest, PlaySuccess)
 {
     expectIpcApiCallSuccess();
-    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("play"), m_controllerMock.get(),
-                                           WebAudioPlayRequestMatcher(m_webAaudioPlayerHandle), _, m_blockingClosureMock.get()));
+    EXPECT_CALL(*m_channelMock,
+                CallMethod(methodMatcher("play"), m_controllerMock.get(),
+                           WebAudioPlayRequestMatcher(m_webAaudioPlayerHandle), _, m_blockingClosureMock.get()));
     EXPECT_EQ(m_webAudioPlayerIpc->play(), true);
 }
 
@@ -111,8 +114,9 @@ TEST_F(RialtoClientWebAudioPlayerIpcPlayPauseTest, PauseSuccess)
 {
     expectIpcApiCallSuccess();
 
-    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("pause"), m_controllerMock.get(),
-                                           WebAudioPauseRequestMatcher(m_webAaudioPlayerHandle), _, m_blockingClosureMock.get()));
+    EXPECT_CALL(*m_channelMock,
+                CallMethod(methodMatcher("pause"), m_controllerMock.get(),
+                           WebAudioPauseRequestMatcher(m_webAaudioPlayerHandle), _, m_blockingClosureMock.get()));
 
     EXPECT_EQ(m_webAudioPlayerIpc->pause(), true);
 }

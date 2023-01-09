@@ -22,7 +22,6 @@
 class RialtoClientWebAudioPlayerSetEosTest : public WebAudioPlayerTestBase
 {
 protected:
-
     virtual void SetUp()
     {
         WebAudioPlayerTestBase::SetUp();

@@ -21,7 +21,8 @@
 
 MATCHER_P(WebAudioGetBufferDelayRequestMatcher, webAaudioPlayerHandle, "")
 {
-    const ::firebolt::rialto::WebAudioGetBufferDelayRequest *request = dynamic_cast<const ::firebolt::rialto::WebAudioGetBufferDelayRequest *>(arg);
+    const ::firebolt::rialto::WebAudioGetBufferDelayRequest *request =
+        dynamic_cast<const ::firebolt::rialto::WebAudioGetBufferDelayRequest *>(arg);
     return ((request->web_audio_player_handle() == webAaudioPlayerHandle));
 }
 
@@ -52,7 +53,8 @@ TEST_F(RialtoClientWebAudioPlayerIpcGetBufferDelayTest, Success)
     expectIpcApiCallSuccess();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getBufferDelay"), m_controllerMock.get(),
-                                           WebAudioGetBufferDelayRequestMatcher(m_webAaudioPlayerHandle), _, m_blockingClosureMock.get()))
+                                           WebAudioGetBufferDelayRequestMatcher(m_webAaudioPlayerHandle), _,
+                                           m_blockingClosureMock.get()))
         .WillOnce(Invoke(
             [&](const google::protobuf::MethodDescriptor *, google::protobuf::RpcController *,
                 const google::protobuf::Message *, google::protobuf::Message *response, google::protobuf::Closure *)

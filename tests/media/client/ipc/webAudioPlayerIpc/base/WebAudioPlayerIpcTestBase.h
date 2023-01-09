@@ -44,7 +44,6 @@ using ::testing::WithArgs;
 class WebAudioPlayerIpcTestBase : public IpcModuleBase, public ::testing::Test
 {
 protected:
-
     const std::string m_audioMimeType{"audio/x-raw"};
     const uint32_t m_priority{5};
     const WebAudioConfig m_config{};
