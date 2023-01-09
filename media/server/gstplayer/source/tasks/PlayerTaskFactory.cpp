@@ -163,9 +163,10 @@ std::unique_ptr<IPlayerTask> PlayerTaskFactory::createStop(PlayerContext &contex
     return std::make_unique<Stop>(context, player);
 }
 
-std::unique_ptr<IPlayerTask> PlayerTaskFactory::createUnderflow(IGstPlayerPrivate &player, bool &underflowFlag) const
+std::unique_ptr<IPlayerTask> PlayerTaskFactory::createUnderflow(IGstPlayerPrivate &player, bool &underflowFlag,
+                                                                bool underflowEnabled) const
 {
-    return std::make_unique<Underflow>(player, m_client, underflowFlag);
+    return std::make_unique<Underflow>(player, m_client, underflowFlag, underflowEnabled);
 }
 
 std::unique_ptr<IPlayerTask> PlayerTaskFactory::createRenderFrame(PlayerContext &context) const

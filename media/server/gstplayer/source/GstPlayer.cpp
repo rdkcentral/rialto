@@ -610,7 +610,8 @@ void GstPlayer::scheduleAudioUnderflow()
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createUnderflow(*this, m_context.audioUnderflowOccured));
+        m_workerThread->enqueueTask(
+            m_taskFactory->createUnderflow(*this, m_context.audioUnderflowOccured, m_context.audioUnderflowEnabled));
     }
 }
 
@@ -618,7 +619,8 @@ void GstPlayer::scheduleVideoUnderflow()
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createUnderflow(*this, m_context.videoUnderflowOccured));
+        m_workerThread->enqueueTask(
+            m_taskFactory->createUnderflow(*this, m_context.videoUnderflowOccured, m_context.videoUnderflowEnabled));
     }
 }
 

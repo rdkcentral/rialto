@@ -67,7 +67,8 @@ public:
     std::unique_ptr<IPlayerTask> createSetVolume(PlayerContext &context, double volume) const override;
     std::unique_ptr<IPlayerTask> createShutdown(IGstPlayerPrivate &player) const override;
     std::unique_ptr<IPlayerTask> createStop(PlayerContext &context, IGstPlayerPrivate &player) const override;
-    std::unique_ptr<IPlayerTask> createUnderflow(IGstPlayerPrivate &player, bool &underflowFlag) const override;
+    std::unique_ptr<IPlayerTask> createUnderflow(IGstPlayerPrivate &player, bool &underflowFlag,
+                                                 bool underflowEnabled) const override;
     std::unique_ptr<IPlayerTask> createRenderFrame(PlayerContext &context) const override;
 
 private:

@@ -68,8 +68,8 @@ public:
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createShutdown, (IGstPlayerPrivate & player), (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createStop, (PlayerContext & context, IGstPlayerPrivate &player),
                 (const, override));
-    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createUnderflow, (IGstPlayerPrivate & player, bool &underflowFlag),
-                (const, override));
+    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createUnderflow,
+                (IGstPlayerPrivate & player, bool &underflowFlag, bool underflowEnabled), (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createRenderFrame, (PlayerContext & context), (const, override));
 };
 } // namespace firebolt::rialto::server

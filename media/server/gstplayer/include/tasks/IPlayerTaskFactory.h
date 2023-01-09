@@ -259,12 +259,14 @@ public:
     /**
      * @brief Creates an Underflow task.
      *
-     * @param[in] player          : The GstPlayer instance
-     * @param[in] underflowFlag   : The underflow flag (audio or video).
+     * @param[in] player           : The GstPlayer instance
+     * @param[in] underflowFlag    : The underflow flag (audio or video).
+     * @param[in] underflowEnabled : The underflow enabled flag (audio or video).
      *
      * @retval the new Underflow task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createUnderflow(IGstPlayerPrivate &player, bool &underflowFlag) const = 0;
+    virtual std::unique_ptr<IPlayerTask> createUnderflow(IGstPlayerPrivate &player, bool &underflowFlag,
+                                                         bool underflowEnabled) const = 0;
 
     virtual std::unique_ptr<IPlayerTask> createRenderFrame(PlayerContext &context) const = 0;
 };
