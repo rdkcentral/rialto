@@ -46,9 +46,17 @@ TEST_F(RialtoClientWebAudioPlayerGetBufferAvailableTest, getBufferAvailableSucce
 {
     std::shared_ptr<WebAudioShmInfo> webAudioShmInfo;
 
-    EXPECT_CALL(*m_webAudioPlayerIpcMock, getBufferAvailable(m_availableFrames, _)).WillOnce(Return(true));
+    constexpr uint32_t kAvailableFrames{12};
+    EXPECT_CALL(*m_webAudioPlayerIpcMock, getBufferAvailable(_, _))
+        .WillOnce(Invoke(
+            [&](uint32_t &availableFrames, const std::shared_ptr<WebAudioShmInfo> &)
+            {
+                availableFrames = kAvailableFrames;
+                return true;
+            }));
 
     EXPECT_EQ(m_webAudioPlayer->getBufferAvailable(m_availableFrames, webAudioShmInfo), true);
+    EXPECT_EQ(kAvailableFrames, m_availableFrames);
 }
 
 /**

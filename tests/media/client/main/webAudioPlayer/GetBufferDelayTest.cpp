@@ -44,9 +44,17 @@ protected:
  */
 TEST_F(RialtoClientWebAudioPlayerGetBufferDelayTest, getBufferDelaySuccess)
 {
-    EXPECT_CALL(*m_webAudioPlayerIpcMock, getBufferDelay(m_bufferDelay)).WillOnce(Return(true));
+    constexpr uint32_t kBufferDelay{12};
+    EXPECT_CALL(*m_webAudioPlayerIpcMock, getBufferDelay(_))
+        .WillOnce(Invoke(
+            [&](uint32_t &bufferDelay)
+            {
+                bufferDelay = kBufferDelay;
+                return true;
+            }));
 
     EXPECT_EQ(m_webAudioPlayer->getBufferDelay(m_bufferDelay), true);
+    EXPECT_EQ(kBufferDelay, m_bufferDelay);
 }
 
 /**

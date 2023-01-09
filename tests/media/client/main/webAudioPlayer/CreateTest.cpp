@@ -53,7 +53,7 @@ TEST_F(RialtoClientCreateWebAudioPlayerTest, Create)
 
     EXPECT_CALL(*m_sharedMemoryManagerFactoryMock, getSharedMemoryManager()).WillOnce(Return(m_sharedMemoryManagerMock));
     EXPECT_CALL(*m_sharedMemoryManagerMock, registerClient(_)).WillOnce(Return(true));
-    EXPECT_CALL(*m_webAudioPlayerIpcFactoryMock, createWebAudioPlayerIpc(_, _, _, _))
+    EXPECT_CALL(*m_webAudioPlayerIpcFactoryMock, createWebAudioPlayerIpc(_, m_audioMimeType, m_priority, &m_config))
         .WillOnce(Return(ByMove(std::move(webAudioPlayerIpcMock))));
     EXPECT_CALL(*m_sharedMemoryManagerMock, unregisterClient(_)).WillOnce(Return(true));
 

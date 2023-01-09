@@ -77,7 +77,7 @@ WebAudioPlayerIpc::WebAudioPlayerIpc(IWebAudioPlayerIpcClient *client, const std
 
     if (!createWebAudioPlayer(audioMimeType, priority, config))
     {
-        throw std::runtime_error("Could not create the web audio playersession");
+        throw std::runtime_error("Could not create the web audio player");
     }
 }
 
@@ -95,8 +95,8 @@ WebAudioPlayerIpc::~WebAudioPlayerIpc()
 
 bool WebAudioPlayerIpc::createRpcStubs()
 {
-    m_WebAudioPlayerStub = std::make_unique<::firebolt::rialto::WebAudioPlayerModule_Stub>(m_ipcChannel.get());
-    if (!m_WebAudioPlayerStub)
+    m_webAudioPlayerStub = std::make_unique<::firebolt::rialto::WebAudioPlayerModule_Stub>(m_ipcChannel.get());
+    if (!m_webAudioPlayerStub)
     {
         return false;
     }
@@ -168,7 +168,7 @@ bool WebAudioPlayerIpc::play()
     firebolt::rialto::WebAudioPlayResponse response;
     auto ipcController = m_ipc->createRpcController();
     auto blockingClosure = m_ipc->createBlockingClosure();
-    m_WebAudioPlayerStub->play(ipcController.get(), &request, &response, blockingClosure.get());
+    m_webAudioPlayerStub->play(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
     blockingClosure->wait();
@@ -176,7 +176,7 @@ bool WebAudioPlayerIpc::play()
     // check the result
     if (ipcController->Failed())
     {
-        RIALTO_CLIENT_LOG_ERROR("failed to load media due to '%s'", ipcController->ErrorText().c_str());
+        RIALTO_CLIENT_LOG_ERROR("Failed to play due to '%s'", ipcController->ErrorText().c_str());
         return false;
     }
 
@@ -197,7 +197,7 @@ bool WebAudioPlayerIpc::pause()
     firebolt::rialto::WebAudioPauseResponse response;
     auto ipcController = m_ipc->createRpcController();
     auto blockingClosure = m_ipc->createBlockingClosure();
-    m_WebAudioPlayerStub->pause(ipcController.get(), &request, &response, blockingClosure.get());
+    m_webAudioPlayerStub->pause(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
     blockingClosure->wait();
@@ -205,7 +205,7 @@ bool WebAudioPlayerIpc::pause()
     // check the result
     if (ipcController->Failed())
     {
-        RIALTO_CLIENT_LOG_ERROR("failed to load media due to '%s'", ipcController->ErrorText().c_str());
+        RIALTO_CLIENT_LOG_ERROR("Failed to pause due to '%s'", ipcController->ErrorText().c_str());
         return false;
     }
 
@@ -226,7 +226,7 @@ bool WebAudioPlayerIpc::setEos()
     firebolt::rialto::WebAudioSetEosResponse response;
     auto ipcController = m_ipc->createRpcController();
     auto blockingClosure = m_ipc->createBlockingClosure();
-    m_WebAudioPlayerStub->setEos(ipcController.get(), &request, &response, blockingClosure.get());
+    m_webAudioPlayerStub->setEos(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
     blockingClosure->wait();
@@ -234,7 +234,7 @@ bool WebAudioPlayerIpc::setEos()
     // check the result
     if (ipcController->Failed())
     {
-        RIALTO_CLIENT_LOG_ERROR("failed to load media due to '%s'", ipcController->ErrorText().c_str());
+        RIALTO_CLIENT_LOG_ERROR("Failed to set eos due to '%s'", ipcController->ErrorText().c_str());
         return false;
     }
 
@@ -262,7 +262,7 @@ bool WebAudioPlayerIpc::getBufferAvailable(uint32_t &availableFrames,
     firebolt::rialto::WebAudioGetBufferAvailableResponse response;
     auto ipcController = m_ipc->createRpcController();
     auto blockingClosure = m_ipc->createBlockingClosure();
-    m_WebAudioPlayerStub->getBufferAvailable(ipcController.get(), &request, &response, blockingClosure.get());
+    m_webAudioPlayerStub->getBufferAvailable(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
     blockingClosure->wait();
@@ -270,7 +270,7 @@ bool WebAudioPlayerIpc::getBufferAvailable(uint32_t &availableFrames,
     // check the result
     if (ipcController->Failed())
     {
-        RIALTO_CLIENT_LOG_ERROR("failed to attach source due to '%s'", ipcController->ErrorText().c_str());
+        RIALTO_CLIENT_LOG_ERROR("Failed to get buffer available due to '%s'", ipcController->ErrorText().c_str());
         return false;
     }
 
@@ -297,7 +297,7 @@ bool WebAudioPlayerIpc::getBufferDelay(uint32_t &delayFrames)
     firebolt::rialto::WebAudioGetBufferDelayResponse response;
     auto ipcController = m_ipc->createRpcController();
     auto blockingClosure = m_ipc->createBlockingClosure();
-    m_WebAudioPlayerStub->getBufferDelay(ipcController.get(), &request, &response, blockingClosure.get());
+    m_webAudioPlayerStub->getBufferDelay(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
     blockingClosure->wait();
@@ -305,7 +305,7 @@ bool WebAudioPlayerIpc::getBufferDelay(uint32_t &delayFrames)
     // check the result
     if (ipcController->Failed())
     {
-        RIALTO_CLIENT_LOG_ERROR("failed to attach source due to '%s'", ipcController->ErrorText().c_str());
+        RIALTO_CLIENT_LOG_ERROR("Failed to get buffer delay source due to '%s'", ipcController->ErrorText().c_str());
         return false;
     }
 
@@ -330,7 +330,7 @@ bool WebAudioPlayerIpc::writeBuffer(const uint32_t numberOfFrames)
     firebolt::rialto::WebAudioWriteBufferResponse response;
     auto ipcController = m_ipc->createRpcController();
     auto blockingClosure = m_ipc->createBlockingClosure();
-    m_WebAudioPlayerStub->writeBuffer(ipcController.get(), &request, &response, blockingClosure.get());
+    m_webAudioPlayerStub->writeBuffer(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
     blockingClosure->wait();
@@ -338,7 +338,7 @@ bool WebAudioPlayerIpc::writeBuffer(const uint32_t numberOfFrames)
     // check the result
     if (ipcController->Failed())
     {
-        RIALTO_CLIENT_LOG_ERROR("failed to set the video window due to '%s'", ipcController->ErrorText().c_str());
+        RIALTO_CLIENT_LOG_ERROR("Failed to write to the buffer due to '%s'", ipcController->ErrorText().c_str());
         return false;
     }
 
@@ -359,7 +359,7 @@ bool WebAudioPlayerIpc::getDeviceInfo(uint32_t &preferredFrames, uint32_t &maxim
     firebolt::rialto::WebAudioGetDeviceInfoResponse response;
     auto ipcController = m_ipc->createRpcController();
     auto blockingClosure = m_ipc->createBlockingClosure();
-    m_WebAudioPlayerStub->getDeviceInfo(ipcController.get(), &request, &response, blockingClosure.get());
+    m_webAudioPlayerStub->getDeviceInfo(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
     blockingClosure->wait();
@@ -367,7 +367,7 @@ bool WebAudioPlayerIpc::getDeviceInfo(uint32_t &preferredFrames, uint32_t &maxim
     // check the result
     if (ipcController->Failed())
     {
-        RIALTO_CLIENT_LOG_ERROR("failed to attach source due to '%s'", ipcController->ErrorText().c_str());
+        RIALTO_CLIENT_LOG_ERROR("Failed to get device info source due to '%s'", ipcController->ErrorText().c_str());
         return false;
     }
 
@@ -393,7 +393,7 @@ bool WebAudioPlayerIpc::setVolume(double volume)
     firebolt::rialto::WebAudioSetVolumeResponse response;
     auto ipcController = m_ipc->createRpcController();
     auto blockingClosure = m_ipc->createBlockingClosure();
-    m_WebAudioPlayerStub->setVolume(ipcController.get(), &request, &response, blockingClosure.get());
+    m_webAudioPlayerStub->setVolume(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
     blockingClosure->wait();
@@ -401,7 +401,7 @@ bool WebAudioPlayerIpc::setVolume(double volume)
     // check the result
     if (ipcController->Failed())
     {
-        RIALTO_CLIENT_LOG_ERROR("failed to stop due to '%s'", ipcController->ErrorText().c_str());
+        RIALTO_CLIENT_LOG_ERROR("Failed to set volume due to '%s'", ipcController->ErrorText().c_str());
         return false;
     }
 
@@ -422,7 +422,7 @@ bool WebAudioPlayerIpc::getVolume(double &volume)
     firebolt::rialto::WebAudioGetVolumeResponse response;
     auto ipcController = m_ipc->createRpcController();
     auto blockingClosure = m_ipc->createBlockingClosure();
-    m_WebAudioPlayerStub->getVolume(ipcController.get(), &request, &response, blockingClosure.get());
+    m_webAudioPlayerStub->getVolume(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
     blockingClosure->wait();
@@ -430,7 +430,7 @@ bool WebAudioPlayerIpc::getVolume(double &volume)
     // check the result
     if (ipcController->Failed())
     {
-        RIALTO_CLIENT_LOG_ERROR("failed to stop due to '%s'", ipcController->ErrorText().c_str());
+        RIALTO_CLIENT_LOG_ERROR("Failed to get volume due to '%s'", ipcController->ErrorText().c_str());
         return false;
     }
 
@@ -465,7 +465,7 @@ bool WebAudioPlayerIpc::createWebAudioPlayer(const std::string &audioMimeType, c
     firebolt::rialto::CreateWebAudioPlayerResponse response;
     auto ipcController = m_ipc->createRpcController();
     auto blockingClosure = m_ipc->createBlockingClosure();
-    m_WebAudioPlayerStub->createWebAudioPlayer(ipcController.get(), &request, &response, blockingClosure.get());
+    m_webAudioPlayerStub->createWebAudioPlayer(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
     blockingClosure->wait();
@@ -473,7 +473,7 @@ bool WebAudioPlayerIpc::createWebAudioPlayer(const std::string &audioMimeType, c
     // check the result
     if (ipcController->Failed())
     {
-        RIALTO_CLIENT_LOG_ERROR("failed to create session due to '%s'", ipcController->ErrorText().c_str());
+        RIALTO_CLIENT_LOG_ERROR("Failed to create web audio player due to '%s'", ipcController->ErrorText().c_str());
         return false;
     }
 
@@ -496,7 +496,7 @@ void WebAudioPlayerIpc::destroyWebAudioPlayer()
     firebolt::rialto::DestroyWebAudioPlayerResponse response;
     auto ipcController = m_ipc->createRpcController();
     auto blockingClosure = m_ipc->createBlockingClosure();
-    m_WebAudioPlayerStub->destroyWebAudioPlayer(ipcController.get(), &request, &response, blockingClosure.get());
+    m_webAudioPlayerStub->destroyWebAudioPlayer(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
     blockingClosure->wait();
@@ -504,7 +504,7 @@ void WebAudioPlayerIpc::destroyWebAudioPlayer()
     // check the result
     if (ipcController->Failed())
     {
-        RIALTO_CLIENT_LOG_ERROR("failed to destroy session due to '%s'", ipcController->ErrorText().c_str());
+        RIALTO_CLIENT_LOG_ERROR("Failed to destroy web audio player due to '%s'", ipcController->ErrorText().c_str());
     }
 }
 

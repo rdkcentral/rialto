@@ -22,8 +22,7 @@
 class RialtoClientWebAudioPlayerGetVolumeTest : public WebAudioPlayerTestBase
 {
 protected:
-    double m_volume{};
-
+    double m_volume{0};
     virtual void SetUp()
     {
         WebAudioPlayerTestBase::SetUp();
@@ -44,9 +43,16 @@ protected:
  */
 TEST_F(RialtoClientWebAudioPlayerGetVolumeTest, getVolumeSuccess)
 {
-    EXPECT_CALL(*m_webAudioPlayerIpcMock, getVolume(m_volume)).WillOnce(Return(true));
-
+    constexpr double kVolume{0.7};
+    EXPECT_CALL(*m_webAudioPlayerIpcMock, getVolume(_))
+        .WillOnce(Invoke(
+            [&](double &vol)
+            {
+                vol = kVolume;
+                return true;
+            }));
     EXPECT_EQ(m_webAudioPlayer->getVolume(m_volume), true);
+    EXPECT_EQ(kVolume, m_volume);
 }
 
 /**

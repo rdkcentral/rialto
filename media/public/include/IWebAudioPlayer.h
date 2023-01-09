@@ -164,7 +164,7 @@ public:
     virtual bool writeBuffer(const uint32_t numberOfFrames, void *data) = 0;
 
     /**
-     * @brief Get device infomation.
+     * @brief Get device information.
      *
      * Gets information for the web audio playback.
      * This information is used to determine the preferred buffer size to commit,
