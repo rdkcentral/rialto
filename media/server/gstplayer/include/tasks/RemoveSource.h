@@ -17,27 +17,31 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_ATTACH_SOURCE_H_
-#define FIREBOLT_RIALTO_SERVER_ATTACH_SOURCE_H_
+#ifndef FIREBOLT_RIALTO_SERVER_REMOVE_SOURCE_H_
+#define FIREBOLT_RIALTO_SERVER_REMOVE_SOURCE_H_
 
 #include "IGstPlayerClient.h"
+#include "IGstWrapper.h"
 #include "IPlayerTask.h"
 #include "PlayerContext.h"
+#include <memory>
 
 namespace firebolt::rialto::server
 {
 class RemoveSource : public IPlayerTask
 {
 public:
-    RemoveSource(PlayerContext &context, IGstPlayerClient *client, const MediaSourceType &type);
+    RemoveSource(PlayerContext &context, IGstPlayerClient *client, std::shared_ptr<IGstWrapper> gstWrapper,
+                 const MediaSourceType &type);
     ~RemoveSource() override;
     void execute() const override;
 
 private:
     PlayerContext &m_context;
     IGstPlayerClient *m_gstPlayerClient;
+    std::shared_ptr<IGstWrapper> m_gstWrapper;
     MediaSourceType m_type;
 };
 } // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_ATTACH_SOURCE_H_
+#endif // FIREBOLT_RIALTO_SERVER_REMOVE_SOURCE_H_

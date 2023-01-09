@@ -423,6 +423,10 @@ public:
     {
         gst_stream_volume_set_volume(volume, format, val);
     }
+
+    GstEvent *gstEventNewFlushStart() const override { return gst_event_new_flush_start(); }
+
+    GstEvent *gstEventNewFlushStop(gboolean reset_time) const override { return gst_event_new_flush_stop(reset_time); }
 };
 
 }; // namespace firebolt::rialto::server

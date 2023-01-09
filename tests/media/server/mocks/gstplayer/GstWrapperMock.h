@@ -157,6 +157,8 @@ public:
                 (const, override));
     MOCK_METHOD(void, gstStreamVolumeSetVolume, (GstStreamVolume * volume, GstStreamVolumeFormat format, gdouble val),
                 (const, override));
+    MOCK_METHOD(GstEvent *, gstEventNewFlushStart, (), (const, override));
+    MOCK_METHOD(GstEvent *, gstEventNewFlushStop, (gboolean reset_time), (const, override));
 
     GstCaps *gstCapsNewSimple(const char *media_type, const char *fieldname, ...) const override
     {

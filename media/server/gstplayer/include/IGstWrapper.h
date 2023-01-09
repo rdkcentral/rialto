@@ -965,6 +965,25 @@ public:
      * @retval The current stream volume as linear factor
      */
     virtual void gstStreamVolumeSetVolume(GstStreamVolume *volume, GstStreamVolumeFormat format, gdouble val) const = 0;
+
+    /**
+     * @brief Allocate a new flush start event. The flush start event can be sent upstream and downstream and travels
+     * out-of-bounds with the dataflow.
+     *
+     * @retval a new flush start event.
+     */
+    virtual GstEvent *gstEventNewFlushStart() const = 0;
+
+    /**
+     * @brief Allocate a new flush stop event. The flush stop event can be sent upstream and downstream and travels
+     * serialized with the dataflow. It is typically sent after sending a FLUSH_START event to make the pads accept data
+     * again.
+     *
+     * @param[in] reset_time : if time should be reset
+     *
+     * @retval a new flush stop event.
+     */
+    virtual GstEvent *gstEventNewFlushStop(gboolean reset_time) const = 0;
 };
 
 }; // namespace firebolt::rialto::server

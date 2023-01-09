@@ -35,6 +35,7 @@
 #include "tasks/Pause.h"
 #include "tasks/Play.h"
 #include "tasks/ReadShmDataAndAttachSamples.h"
+#include "tasks/RemoveSource.h"
 #include "tasks/ReportPosition.h"
 #include "tasks/SetPlaybackRate.h"
 #include "tasks/SetPosition.h"
@@ -134,6 +135,13 @@ TEST_F(PlayerTaskFactoryTest, ShouldCreateReadShmDataAndAttachSamples)
     auto task = m_sut.createReadShmDataAndAttachSamples(m_context, m_gstPlayer, nullptr);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::ReadShmDataAndAttachSamples &>(*task));
+}
+
+TEST_F(PlayerTaskFactoryTest, ShouldCreateRemoveSource)
+{
+    auto task = m_sut.createRemoveSource(m_context, firebolt::rialto::MediaSourceType::AUDIO);
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::RemoveSource &>(*task));
 }
 
 TEST_F(PlayerTaskFactoryTest, ShouldCreateReportPosition)

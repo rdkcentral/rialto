@@ -29,6 +29,7 @@
 #include "tasks/Pause.h"
 #include "tasks/Play.h"
 #include "tasks/ReadShmDataAndAttachSamples.h"
+#include "tasks/RemoveSource.h"
 #include "tasks/RenderFrame.h"
 #include "tasks/ReportPosition.h"
 #include "tasks/SetPlaybackRate.h"
@@ -106,6 +107,12 @@ PlayerTaskFactory::createReadShmDataAndAttachSamples(PlayerContext &context, IGs
                                                      const std::shared_ptr<IDataReader> &dataReader) const
 {
     return std::make_unique<ReadShmDataAndAttachSamples>(context, player, dataReader);
+}
+
+std::unique_ptr<IPlayerTask> PlayerTaskFactory::createRemoveSource(PlayerContext &context,
+                                                                   const firebolt::rialto::MediaSourceType &type) const
+{
+    return std::make_unique<RemoveSource>(context, m_client, m_gstWrapper, type);
 }
 
 std::unique_ptr<IPlayerTask> PlayerTaskFactory::createReportPosition(PlayerContext &context) const

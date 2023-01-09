@@ -295,3 +295,16 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetVolumeSuccess)
     EXPECT_TRUE(m_mediaPipeline->getVolume(resultVolume));
     EXPECT_EQ(resultVolume, kCurrentVolume);
 }
+
+/**
+ * Test that active requests are invalidated successfully
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, InvalidateActiveRequestsSuccess)
+{
+    constexpr auto kMediaSourceType{firebolt::rialto::MediaSourceType::AUDIO};
+    loadGstPlayer();
+    mainThreadWillEnqueueTask();
+
+    EXPECT_CALL(*m_activeRequestsMock, erase(kMediaSourceType));
+    m_mediaPipeline->invalidateActiveRequests(kMediaSourceType);
+}
