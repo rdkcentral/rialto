@@ -152,6 +152,17 @@ public:
                                       const std::shared_ptr<IDataReader> &dataReader) const = 0;
 
     /**
+     * @brief Creates a Remove Source task.
+     *
+     * @param[in] context : The GstPlayer context
+     * @param[in] type    : The media source type to remove
+     *
+     * @retval the new Remove Source task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createRemoveSource(PlayerContext &context,
+                                                            const firebolt::rialto::MediaSourceType &type) const = 0;
+
+    /**
      * @brief Creates a ReportPosition task.
      *
      * @param[in] context       : The GstGenericPlayer context

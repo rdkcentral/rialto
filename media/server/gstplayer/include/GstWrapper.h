@@ -439,6 +439,10 @@ public:
     {
         return gst_app_src_get_current_level_bytes(appsrc);
     }
+
+    GstEvent *gstEventNewFlushStart() const override { return gst_event_new_flush_start(); }
+
+    GstEvent *gstEventNewFlushStop(gboolean reset_time) const override { return gst_event_new_flush_stop(reset_time); }
 };
 
 }; // namespace firebolt::rialto::server

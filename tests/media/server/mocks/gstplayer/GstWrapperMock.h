@@ -163,6 +163,8 @@ public:
     MOCK_METHOD(void, gstBinAddManyStub, (GstBin * bin, GstElement *element), (const));
     MOCK_METHOD(gboolean, gstElementLinkManyStub, (GstElement * element_1, GstElement *element_2), (const));
     MOCK_METHOD(guint64, gstAppSrcGetCurrentLevelBytes, (GstAppSrc * appsrc), (const, override));
+    MOCK_METHOD(GstEvent *, gstEventNewFlushStart, (), (const, override));
+    MOCK_METHOD(GstEvent *, gstEventNewFlushStop, (gboolean reset_time), (const, override));
 
     GstCaps *gstCapsNewSimple(const char *media_type, const char *fieldname, ...) const override
     {

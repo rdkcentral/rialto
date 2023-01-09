@@ -22,8 +22,9 @@
 
 namespace firebolt::rialto::server
 {
-RemoveSource::RemoveSource(PlayerContext &context, IGstPlayerClient *client, const MediaSourceType &type)
-    : m_context{context}, m_gstPlayerClient{client}, m_type{type}
+RemoveSource::RemoveSource(PlayerContext &context, IGstPlayerClient *client, std::shared_ptr<IGstWrapper> gstWrapper,
+                           const MediaSourceType &type)
+    : m_context{context}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}, m_type{type}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing RemoveSource");
 }
@@ -51,5 +52,26 @@ void RemoveSource::execute() const
         m_context.videoSourceRemoved = true;
     }
     m_gstPlayerClient->invalidateActiveRequests(m_type);
+    GstElement *source{nullptr};
+    auto sourceElem = m_context.streamInfo.find(m_type);
+    if (sourceElem != m_context.streamInfo.end())
+    {
+        source = sourceElem->second;
+    }
+    if (!source)
+    {
+        RIALTO_SERVER_LOG_WARN("failed to flush - source is NULL");
+        return;
+    }
+    GstEvent *flushStart = m_gstWrapper->gstEventNewFlushStart();
+    if (!m_gstWrapper->gstElementSendEvent(source, flushStart))
+    {
+        RIALTO_SERVER_LOG_WARN("failed to send flush-start event");
+    }
+    GstEvent *flushStop = m_gstWrapper->gstEventNewFlushStop(FALSE);
+    if (!m_gstWrapper->gstElementSendEvent(source, flushStop))
+    {
+        RIALTO_SERVER_LOG_WARN("failed to send flush-stop event");
+    }
 }
 } // namespace firebolt::rialto::server
