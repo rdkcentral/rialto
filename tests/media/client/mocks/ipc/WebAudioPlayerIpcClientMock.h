@@ -34,7 +34,6 @@ public:
     virtual ~WebAudioPlayerIpcClientMock() = default;
 
     MOCK_METHOD(void, notifyState, (WebAudioPlayerState state), (override));
-    
 };
 } // namespace firebolt::rialto::client
 

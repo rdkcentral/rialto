@@ -46,7 +46,6 @@ protected:
  */
 TEST_F(RialtoClientWebAudioPlayerGetDeviceInfoTest, getDeviceInfoSuccess)
 {
-
     EXPECT_CALL(*m_webAudioPlayerIpcMock, getDeviceInfo(m_preferredFrames, m_maximumFrames, m_supportDeferredPlay))
         .WillOnce(Return(true));
 

@@ -29,6 +29,7 @@
 #include "WebAudioPlayerIpcMock.h"
 #include <gtest/gtest.h>
 #include <memory>
+#include <string>
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::client;
@@ -43,11 +44,6 @@ using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::SetArgReferee;
 using ::testing::StrictMock;
-
-MATCHER(IsNull, "")
-{
-    return arg == nullptr;
-}
 
 class WebAudioPlayerTestBase : public ::testing::Test
 {

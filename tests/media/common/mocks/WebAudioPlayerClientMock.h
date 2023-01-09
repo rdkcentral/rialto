@@ -32,9 +32,8 @@ class WebAudioPlayerClientMock : public IWebAudioPlayerClient
 public:
     WebAudioPlayerClientMock() = default;
     virtual ~WebAudioPlayerClientMock() = default;
- 
     MOCK_METHOD(void, notifyState, (WebAudioPlayerState state), (override));
- };
+};
 } // namespace firebolt::rialto
 
 #endif // FIREBOLT_RIALTO_WEB_AUDIO_PLAYER_CLIENT_MOCK_H_

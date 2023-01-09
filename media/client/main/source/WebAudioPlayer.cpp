@@ -177,7 +177,8 @@ bool WebAudioPlayer::writeBuffer(const uint32_t numberOfFrames, void *data)
     if (dataLength > m_webAudioShmInfo->lengthMain)
     {
         std::memcpy(shmBuffer + m_webAudioShmInfo->offsetMain, data, m_webAudioShmInfo->lengthMain);
-        std::memcpy(shmBuffer + m_webAudioShmInfo->offsetWrap, (uint8_t *)data + m_webAudioShmInfo->lengthMain,
+        std::memcpy(shmBuffer + m_webAudioShmInfo->offsetWrap,
+                    reinterpret_cast<uint8_t *>(data) + m_webAudioShmInfo->lengthMain,
                     dataLength - m_webAudioShmInfo->lengthMain);
     }
     else

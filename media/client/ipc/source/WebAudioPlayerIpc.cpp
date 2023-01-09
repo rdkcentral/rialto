@@ -244,7 +244,6 @@ bool WebAudioPlayerIpc::setEos()
 bool WebAudioPlayerIpc::getBufferAvailable(uint32_t &availableFrames,
                                            const std::shared_ptr<WebAudioShmInfo> &webAudioShmInfo)
 {
-
     if (!webAudioShmInfo)
     {
         RIALTO_CLIENT_LOG_ERROR("webAudioShmInfo parameter can't be null!");

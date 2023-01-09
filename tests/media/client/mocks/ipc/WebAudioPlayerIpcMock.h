@@ -36,11 +36,12 @@ public:
     MOCK_METHOD(bool, play, (), (override));
     MOCK_METHOD(bool, pause, (), (override));
     MOCK_METHOD(bool, setEos, (), (override));
-    MOCK_METHOD(bool, getBufferAvailable, (uint32_t &availableFrames,
-                                    const std::shared_ptr<WebAudioShmInfo> &webAudioShmInfo), (override));
-    MOCK_METHOD(bool, getBufferDelay, (uint32_t &delayFrames), (override));
+    MOCK_METHOD(bool, getBufferAvailable,
+                (uint32_t & availableFrames, const std::shared_ptr<WebAudioShmInfo> &webAudioShmInfo), (override));
+    MOCK_METHOD(bool, getBufferDelay, (uint32_t & delayFrames), (override));
     MOCK_METHOD(bool, writeBuffer, (const uint32_t numberOfFrames), (override));
-    MOCK_METHOD(bool, getDeviceInfo, (uint32_t &preferredFrames, uint32_t &maximumFrames, bool &supportDeferredPlay), (override));
+    MOCK_METHOD(bool, getDeviceInfo, (uint32_t & preferredFrames, uint32_t &maximumFrames, bool &supportDeferredPlay),
+                (override));
     MOCK_METHOD(bool, setVolume, (double volume), (override));
     MOCK_METHOD(bool, getVolume, (double &volume), (override));
 };
