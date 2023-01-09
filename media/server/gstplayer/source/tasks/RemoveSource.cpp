@@ -40,12 +40,16 @@ void RemoveSource::execute() const
     {
         m_context.audioNeedData = false;
         m_context.audioNeedDataPending = false;
+        m_context.audioUnderflowEnabled = false;
+        m_context.audioSourceRemoved = true;
     }
     else if (MediaSourceType::VIDEO == m_type)
     {
         m_context.videoNeedData = false;
         m_context.videoNeedDataPending = false;
+        m_context.videoUnderflowEnabled = false;
+        m_context.videoSourceRemoved = true;
     }
-    // m_gstPlayerClient->invalidateActiveRequests(m_type);
+    m_gstPlayerClient->invalidateActiveRequests(m_type);
 }
 } // namespace firebolt::rialto::server

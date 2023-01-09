@@ -97,6 +97,7 @@ void SetupElement::execute() const
         std::string underflowSignalName = getUnderflowSignalName(*m_glibWrapper, m_element);
         if (!underflowSignalName.empty())
         {
+            m_context.videoUnderflowEnabled = true;
             m_glibWrapper->gSignalConnect(m_element, underflowSignalName.c_str(), G_CALLBACK(videoUnderflowCallback),
                                           &m_player);
         }
@@ -106,6 +107,7 @@ void SetupElement::execute() const
         std::string underflowSignalName = getUnderflowSignalName(*m_glibWrapper, m_element);
         if (!underflowSignalName.empty())
         {
+            m_context.audioUnderflowEnabled = true;
             m_glibWrapper->gSignalConnect(m_element, underflowSignalName.c_str(), G_CALLBACK(audioUnderflowCallback),
                                           &m_player);
         }

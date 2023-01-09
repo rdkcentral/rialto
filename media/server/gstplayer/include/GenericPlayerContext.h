@@ -159,6 +159,20 @@ struct GenericPlayerContext
     bool videoUnderflowOccured{false};
 
     /**
+     * @brief Flag used to check, if audio underflow reporting is enabled
+     *
+     * Flag can be used only in worker thread
+     */
+    bool audioUnderflowEnabled{false};
+
+    /**
+     * @brief Flag used to check, if video underflow reporting is enabled
+     *
+     * Flag can be used only in worker thread
+     */
+    bool videoUnderflowEnabled{false};
+
+    /**
      * @brief Pending video geometry
      */
     Rectangle pendingGeometry;
@@ -188,6 +202,20 @@ struct GenericPlayerContext
      * @brief The decryption service.
      */
     IDecryptionService *decryptionService{nullptr};
+
+    /**
+     * @brief Flag used to check, if audio source has been recently removed
+     *
+     * Flag can be used only in worker thread
+     */
+    bool audioSourceRemoved{false};
+
+    /**
+     * @brief Flag used to check, if video source has been recently removed
+     *
+     * Flag can be used only in worker thread
+     */
+    bool videoSourceRemoved{false};
 };
 } // namespace firebolt::rialto::server
 

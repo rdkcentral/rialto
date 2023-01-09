@@ -30,7 +30,7 @@ namespace firebolt::rialto::server
 class Underflow : public IPlayerTask
 {
 public:
-    Underflow(IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client, bool &underflowFlag);
+    Underflow(IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client, bool &underflowFlag, bool underflowEnabled);
     ~Underflow() override;
     void execute() const override;
 
@@ -38,6 +38,7 @@ private:
     IGstGenericPlayerPrivate &m_player;
     IGstGenericPlayerClient *m_gstPlayerClient;
     bool &m_underflowFlag;
+    bool m_underflowEnabled;
 };
 } // namespace firebolt::rialto::server
 
