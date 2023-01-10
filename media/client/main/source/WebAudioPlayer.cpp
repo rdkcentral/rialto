@@ -155,7 +155,7 @@ bool WebAudioPlayer::writeBuffer(const uint32_t numberOfFrames, void *data)
 
     if (!m_webAudioShmInfo)
     {
-        RIALTO_CLIENT_LOG_ERROR("Web audo shared info is null!");
+        RIALTO_CLIENT_LOG_ERROR("Web audio shared info is null!");
         return false;
     }
 

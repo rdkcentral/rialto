@@ -67,7 +67,7 @@ WebAudioPlayerIpc::WebAudioPlayerIpc(IWebAudioPlayerIpcClient *client, const std
                                      const uint32_t priority, const WebAudioConfig *config,
                                      const std::shared_ptr<IIpcClientFactory> &ipcClientFactory,
                                      const std::shared_ptr<common::IEventThreadFactory> &eventThreadFactory)
-    : IpcModule(ipcClientFactory), m_WebAudioPlayerIpcClient(client),
+    : IpcModule(ipcClientFactory), m_webAudioPlayerIpcClient(client),
       m_eventThread(eventThreadFactory->createEventThread("rialto-web-audio-player-events")), m_webAudioPlayerHandle(-1)
 {
     if (!attachChannel())
@@ -150,7 +150,7 @@ void WebAudioPlayerIpc::onPlaybackStateUpdated(const std::shared_ptr<firebolt::r
             break;
         }
 
-        m_WebAudioPlayerIpcClient->notifyState(playerState);
+        m_webAudioPlayerIpcClient->notifyState(playerState);
     }
 }
 

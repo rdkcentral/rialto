@@ -95,7 +95,7 @@ private:
     /**
      * @brief The web audio player client ipc.
      */
-    IWebAudioPlayerIpcClient *m_WebAudioPlayerIpcClient;
+    IWebAudioPlayerIpcClient *m_webAudioPlayerIpcClient;
 
     /**
      * @brief The ipc protobuf web audio player stub.
