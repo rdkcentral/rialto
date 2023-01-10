@@ -17,26 +17,25 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_GST_GENERIC_PLAYER_FACTORY_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_GST_GENERIC_PLAYER_FACTORY_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_RDK_GSTREAMER_UTILS_WRAPPER_MOCK_H_
+#define FIREBOLT_RIALTO_SERVER_RDK_GSTREAMER_UTILS_WRAPPER_MOCK_H_
 
-#include "IGstGenericPlayer.h"
+#include "IRdkGstreamerUtilsWrapper.h"
 #include <gmock/gmock.h>
 #include <memory>
 
 namespace firebolt::rialto::server
 {
-class GstGenericPlayerFactoryMock : public IGstGenericPlayerFactory
+class RdkGstreamerUtilsWrapperMock : public IRdkGstreamerUtilsWrapper
 {
 public:
-    GstGenericPlayerFactoryMock() = default;
-    virtual ~GstGenericPlayerFactoryMock() = default;
-
-    MOCK_METHOD(std::unique_ptr<IGstGenericPlayer>, createGstGenericPlayer,
-                (IGstGenericPlayerClient * client, IDecryptionService &decryptionService, MediaType type,
-                 const VideoRequirements &videoRequirements, const std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactory),
-                (override));
+    MOCK_METHOD(bool, performAudioTrackCodecChannelSwitch,
+                (PlaybackGroupPrivate * gstUtilsPlaybackGroup, const void *sampleAttr,
+                 AudioAttributesPrivate *audioAttr, std::uint32_t *status, unsigned int *ui32Delay,
+                 long long *audioChangeTargetPts, const long long *currentDispPts, unsigned int *audioChangeStage,
+                 GstCaps **appsrcCaps, bool *audioaac, bool svpEnabled, GstElement *aSrc, bool *ret),
+                (const, override));
 };
 } // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_GST_GENERIC_PLAYER_FACTORY_MOCK_H_
+#endif // FIREBOLT_RIALTO_SERVER_RDK_GSTREAMER_UTILS_WRAPPER_MOCK_H_

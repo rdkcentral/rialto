@@ -28,6 +28,7 @@ add_library(
 
     wrappers/OcdmFactory.cpp
     wrappers/OcdmSystemFactory.cpp
+    wrappers/RdkGstreamerUtilsWrapperFactory.cpp
     )
 
 target_include_directories(

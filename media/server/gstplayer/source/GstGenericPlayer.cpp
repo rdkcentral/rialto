@@ -71,7 +71,8 @@ std::shared_ptr<IGstGenericPlayerFactory> IGstGenericPlayerFactory::getFactory()
 
 std::unique_ptr<IGstGenericPlayer>
 GstGenericPlayerFactory::createGstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionService &decryptionService,
-                                                MediaType type, const VideoRequirements &videoRequirements)
+                                                MediaType type, const VideoRequirements &videoRequirements,
+                                                const std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactory)
 {
     std::unique_ptr<IGstGenericPlayer> gstPlayer;
 
@@ -81,6 +82,7 @@ GstGenericPlayerFactory::createGstGenericPlayer(IGstGenericPlayerClient *client,
         auto glibWrapperFactory = IGlibWrapperFactory::getFactory();
         std::shared_ptr<IGstWrapper> gstWrapper;
         std::shared_ptr<IGlibWrapper> glibWrapper;
+        std::shared_ptr<IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper;
         if ((!gstWrapperFactory) || (!(gstWrapper = gstWrapperFactory->getGstWrapper())))
         {
             throw std::runtime_error("Cannot create GstWrapper");
@@ -89,8 +91,13 @@ GstGenericPlayerFactory::createGstGenericPlayer(IGstGenericPlayerClient *client,
         {
             throw std::runtime_error("Cannot create GlibWrapper");
         }
+        if ((!rdkGstreamerUtilsWrapperFactory) ||
+            (!(rdkGstreamerUtilsWrapper = rdkGstreamerUtilsWrapperFactory->createRdkGstreamerUtilsWrapper())))
+        {
+            throw std::runtime_error("Cannot create RdkGstreamerUtilsWrapper");
+        }
         gstPlayer = std::make_unique<GstGenericPlayer>(client, decryptionService, type, videoRequirements, gstWrapper,
-                                                       glibWrapper, IGstSrcFactory::getFactory(),
+                                                       glibWrapper, rdkGstreamerUtilsWrapper, IGstSrcFactory::getFactory(),
                                                        common::ITimerFactory::getFactory(),
                                                        std::make_unique<GenericPlayerTaskFactory>(client, gstWrapper,
                                                                                                   glibWrapper),
@@ -110,13 +117,14 @@ GstGenericPlayer::GstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionS
                                    MediaType type, const VideoRequirements &videoRequirements,
                                    const std::shared_ptr<IGstWrapper> &gstWrapper,
                                    const std::shared_ptr<IGlibWrapper> &glibWrapper,
+                                   const std::shared_ptr<IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
                                    const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
                                    std::shared_ptr<common::ITimerFactory> timerFactory,
                                    std::unique_ptr<IGenericPlayerTaskFactory> taskFactory,
                                    std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
                                    std::unique_ptr<IGstDispatcherThreadFactory> gstDispatcherThreadFactory,
                                    std::shared_ptr<IGstProtectionMetadataWrapperFactory> gstProtectionMetadataFactory)
-    : m_gstPlayerClient(client), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_timerFactory{timerFactory},
+    : m_gstPlayerClient(client), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}, m_timerFactory{timerFactory},
       m_taskFactory{std::move(taskFactory)}
 {
     RIALTO_SERVER_LOG_DEBUG("GstGenericPlayer is constructed.");

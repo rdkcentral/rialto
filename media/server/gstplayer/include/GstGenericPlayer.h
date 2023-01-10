@@ -55,7 +55,8 @@ public:
 
     std::unique_ptr<IGstGenericPlayer> createGstGenericPlayer(IGstGenericPlayerClient *client,
                                                               IDecryptionService &decryptionService, MediaType type,
-                                                              const VideoRequirements &videoRequirements) override;
+                                                              const VideoRequirements &videoRequirements,
+                                                              const std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactory) override;
 };
 
 /**
@@ -82,6 +83,7 @@ public:
     GstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
                      const VideoRequirements &videoRequirements, const std::shared_ptr<IGstWrapper> &gstWrapper,
                      const std::shared_ptr<IGlibWrapper> &glibWrapper,
+                     const std::shared_ptr<IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
                      const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
                      std::shared_ptr<common::ITimerFactory> timerFactory,
                      std::unique_ptr<IGenericPlayerTaskFactory> taskFactory,
@@ -184,6 +186,11 @@ private:
      * @brief The glib wrapper object.
      */
     std::shared_ptr<IGlibWrapper> m_glibWrapper;
+
+    /**
+     * @brief The rdk gstreamer utils wrapper object.
+     */
+    std::shared_ptr<IRdkGstreamerUtilsWrapper> m_rdkGstreamerUtilsWrapper;
 
     /**
      * @brief Thread for handling player tasks.

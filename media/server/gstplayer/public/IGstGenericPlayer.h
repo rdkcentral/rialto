@@ -29,6 +29,7 @@
 #include "IDecryptionService.h"
 #include "IGstGenericPlayerClient.h"
 #include "IMediaPipeline.h"
+#include "IRdkGstreamerUtilsWrapper.h"
 
 namespace firebolt::rialto::server
 {
@@ -63,7 +64,8 @@ public:
     virtual std::unique_ptr<IGstGenericPlayer> createGstGenericPlayer(IGstGenericPlayerClient *client,
                                                                       IDecryptionService &decryptionService,
                                                                       MediaType type,
-                                                                      const VideoRequirements &videoRequirements) = 0;
+                                                                      const VideoRequirements &videoRequirements,
+                                                                      const std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactory) = 0;
 };
 
 class IGstGenericPlayer

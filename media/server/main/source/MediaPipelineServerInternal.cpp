@@ -21,6 +21,7 @@
 #include "ActiveRequests.h"
 #include "DataReaderFactory.h"
 #include "IDataReader.h"
+#include "IRdkGstreamerUtilsWrapper.h"
 #include "ISharedMemoryBuffer.h"
 #include "NeedMediaData.h"
 #include "RialtoServerLogging.h"
@@ -201,7 +202,8 @@ bool MediaPipelineServerInternal::loadInternal(MediaType type, const std::string
         m_gstPlayer.reset();
     }
 
-    m_gstPlayer = m_kGstPlayerFactory->createGstGenericPlayer(this, m_decryptionService, type, m_kVideoRequirements);
+    m_gstPlayer = m_kGstPlayerFactory->createGstGenericPlayer(this, m_decryptionService, type, m_kVideoRequirements,
+                                                              IRdkGstreamerUtilsWrapperFactory::getFactory());
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to load gstreamer player");
