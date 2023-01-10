@@ -18,7 +18,7 @@
  */
 
 #include "CdmService.h"
-#include "GstPlayerInit.h"
+#include "GstInit.h"
 #include "IMediaKeysCapabilities.h"
 #include "IMediaKeysServerInternal.h"
 #include "IMediaPipelineCapabilities.h"
@@ -35,7 +35,7 @@
 
 int main(int argc, char *argv[])
 {
-    firebolt::rialto::server::GstPlayerInit::initalise(argc, argv);
+    firebolt::rialto::server::gstInitalise(argc, argv);
 
     firebolt::rialto::server::ipc::IpcFactory ipcFactory;
     firebolt::rialto::server::service::CdmService

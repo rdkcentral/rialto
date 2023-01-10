@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2022 Sky UK
+ * Copyright 2023 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@
 #ifndef FIREBOLT_RIALTO_SERVER_I_GST_WEB_AUDIO_PLAYER_PRIVATE_H_
 #define FIREBOLT_RIALTO_SERVER_I_GST_WEB_AUDIO_PLAYER_PRIVATE_H_
 
-#include <gst/app/gstappsrc.h>
 #include <gst/gst.h>
 
 namespace firebolt::rialto::server

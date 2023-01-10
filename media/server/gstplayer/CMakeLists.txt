@@ -53,6 +53,7 @@ add_library(
 
         source/tasks/webAudio/WebAudioPlayerTaskFactory.cpp
 
+        source/GstInit.cpp
         source/GstDispatcherThread.cpp
         source/GstGenericPlayer.cpp
         source/GstWebAudioPlayer.cpp

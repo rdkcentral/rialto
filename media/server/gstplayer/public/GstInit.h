@@ -17,29 +17,22 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_SHUTDOWN_H_
-#define FIREBOLT_RIALTO_SERVER_SHUTDOWN_H_
-
-#include "IPlayerTask.h"
-#include <gst/gst.h>
+#ifndef FIREBOLT_RIALTO_SERVER_GST_INIT_H_
+#define FIREBOLT_RIALTO_SERVER_GST_INIT_H_
 
 namespace firebolt::rialto::server
 {
-class IGstGenericPlayerPrivate;
-} // namespace firebolt::rialto::server
+/**
+    * @brief Initialise gstreamer player.
+    *
+    * Gstreamer should be initalised at the start of the program.
+    * Gstreamer shall be passed the pointers to the main argc and argv
+    * variables so that it can process its own command line options.
+    *
+    * @param[in] argc    : The count of command line arguments.
+    * @param[in] argv    : Vector of C strings each containing a command line argument.
+    */
+bool gstInitalise(int argc, char **argv);
+}; // namespace firebolt::rialto::server
 
-namespace firebolt::rialto::server
-{
-class Shutdown : public IPlayerTask
-{
-public:
-    explicit Shutdown(IGstGenericPlayerPrivate &player);
-    ~Shutdown() override;
-    void execute() const override;
-
-private:
-    IGstGenericPlayerPrivate &m_player;
-};
-} // namespace firebolt::rialto::server
-
-#endif // FIREBOLT_RIALTO_SERVER_SHUTDOWN_H_
+#endif // FIREBOLT_RIALTO_SERVER_GST_INIT_H_

@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2022 Sky UK
+ * Copyright 2023 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,6 @@
 
 #ifndef FIREBOLT_RIALTO_SERVER_I_WEB_AUDIO_PLAYER_TASK_FACTORY_H_
 #define FIREBOLT_RIALTO_SERVER_I_WEB_AUDIO_PLAYER_TASK_FACTORY_H_
-
-#include "IGstWebAudioPlayerPrivate.h"
-#include "IPlayerTask.h"
-#include "MediaCommon.h"
-#include "WebAudioPlayerContext.h"
-#include <cstdint>
-#include <gst/app/gstappsrc.h>
-#include <memory>
 
 namespace firebolt::rialto::server
 {
