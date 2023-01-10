@@ -23,10 +23,10 @@
 #include "PlayerContext.h"
 #include "RialtoServerLogging.h"
 
-#ifdef RIALTO_ENABLE_TRACING 
+#ifdef RIALTO_ENABLE_TRACING
 #include "RialtoPerfettoTracing.h"
-//#include "RialtoServerTraceCategories.h"
 #endif
+
 namespace firebolt::rialto::server
 {
 HandleBusMessage::HandleBusMessage(PlayerContext &context, IGstPlayerPrivate &player, IGstPlayerClient *client,
@@ -43,12 +43,11 @@ HandleBusMessage::~HandleBusMessage()
 
 void HandleBusMessage::execute() const
 {
-#ifdef RIALTO_ENABLE_TRACING 
+#ifdef RIALTO_ENABLE_TRACING
     auto desc = perfetto::ThreadTrack::Current().Serialize();
-    desc.mutable_thread()->set_thread_name("WorkerThread");
+    desc.mutable_thread()->set_thread_name("GstWorkerThread");
     perfetto::TrackEvent::SetTrackDescriptor(perfetto::ThreadTrack::Current(), desc);
 
-    RIALTO_TRACE_EVENT_BEGIN("GstMediaPipeline", "HandleBusMessage");
 #endif
 
     RIALTO_SERVER_LOG_DEBUG("Executing HandleBusMessage");
@@ -56,19 +55,33 @@ void HandleBusMessage::execute() const
     {
     case GST_MESSAGE_STATE_CHANGED:
     {
-        if (m_context.pipeline && GST_MESSAGE_SRC(m_message) == GST_OBJECT(m_context.pipeline))
-        {
-            GstState oldState, newState, pending;
-            m_gstWrapper->gstMessageParseStateChanged(m_message, &oldState, &newState, &pending);
-            RIALTO_SERVER_LOG_INFO("State changed (old: %s, new: %s, pending: %s)",
-                                   m_gstWrapper->gstElementStateGetName(oldState),
-                                   m_gstWrapper->gstElementStateGetName(newState),
-                                   m_gstWrapper->gstElementStateGetName(pending));
+        GstState oldState, newState, pending;
+        m_gstWrapper->gstMessageParseStateChanged(m_message, &oldState, &newState, &pending);
+        RIALTO_SERVER_LOG_INFO("State changed (old: %s, new: %s, pending: %s, name: %s)",
+                m_gstWrapper->gstElementStateGetName(oldState),
+                m_gstWrapper->gstElementStateGetName(newState),
+                m_gstWrapper->gstElementStateGetName(pending),
+                gst_object_get_name(GST_MESSAGE_SRC(m_message)));
 
-            std::string filename = std::string(m_gstWrapper->gstElementStateGetName(oldState)) + "-" +
-                                   std::string(m_gstWrapper->gstElementStateGetName(newState));
-            m_gstWrapper->gstDebugBinToDotFileWithTs(GST_BIN(m_context.pipeline), GST_DEBUG_GRAPH_SHOW_ALL,
-                                                     filename.c_str());
+        std::string filename = std::string(m_gstWrapper->gstElementStateGetName(oldState)) + "-" +
+            std::string(m_gstWrapper->gstElementStateGetName(newState));
+        m_gstWrapper->gstDebugBinToDotFileWithTs(GST_BIN(m_context.pipeline), GST_DEBUG_GRAPH_SHOW_ALL,
+                filename.c_str());
+
+#ifdef RIALTO_ENABLE_TRACING
+        std::string element_name = std::string(gst_object_get_name(GST_MESSAGE_SRC(m_message)));
+        RIALTO_TRACE_EVENT("GstMediaPipeline", "HandleBusMessage::execute",
+                "oldState", m_gstWrapper->gstElementStateGetName(oldState),
+                "newState", m_gstWrapper->gstElementStateGetName(newState),
+                "pending", m_gstWrapper->gstElementStateGetName(pending),
+                [element_name](perfetto::EventContext ctx) {
+                    ctx.AddDebugAnnotation("name", element_name);
+                });
+
+#endif
+
+        //if (m_context.pipeline && GST_MESSAGE_SRC(m_message) == GST_OBJECT(m_context.pipeline))
+        {
             if (!m_gstPlayerClient)
             {
                 break;
@@ -78,6 +91,18 @@ void HandleBusMessage::execute() const
             case GST_STATE_NULL:
             {
                 m_gstPlayerClient->notifyPlaybackState(PlaybackState::STOPPED);
+#ifdef RIALTO_ENABLE_TRACING
+#if 0
+                if (m_context.pipeline && GST_MESSAGE_SRC(m_message) == GST_OBJECT(m_context.pipeline))
+                {
+                    RIALTO_TRACE_EVENT_INSTANT("GstMediaPipeline", "HandleBusMessage", "name", "media_pipeline");
+                }
+#endif
+                RIALTO_TRACE_EVENT("GstMediaPipeline", "HandleBusMessage", [element_name](perfetto::EventContext ctx) {
+                    auto* log = ctx.event()->set_log_message();
+                    ctx.AddDebugAnnotation("name", element_name);
+                });
+#endif
                 break;
             }
             case GST_STATE_PAUSED:
@@ -88,7 +113,15 @@ void HandleBusMessage::execute() const
                     // waiting for preroll after seek.
                     // Subsequent newState==GST_STATE_PAUSED, pending!=GST_STATE_PAUSED transition will
                     // indicate that the pipeline is prerolled and it reached GST_STATE_PAUSED state after seek.
-                    m_gstPlayerClient->notifyPlaybackState(PlaybackState::PAUSED);
+                    if (m_context.pipeline && GST_MESSAGE_SRC(m_message) == GST_OBJECT(m_context.pipeline))
+                    {
+                         m_gstPlayerClient->notifyPlaybackState(PlaybackState::PAUSED);
+                    }
+#ifdef RIALTO_ENABLE_TRACING
+                    RIALTO_TRACE_EVENT("GstMediaPipeline", "HandleBusMessage", [element_name](perfetto::EventContext ctx) {
+                            ctx.AddDebugAnnotation("name", element_name);
+                            });
+#endif
                 }
                 break;
             }
@@ -100,6 +133,11 @@ void HandleBusMessage::execute() const
                     m_player.setPendingPlaybackRate();
                 }
                 m_player.startPositionReportingAndCheckAudioUnderflowTimer();
+#ifdef RIALTO_ENABLE_TRACING
+                RIALTO_TRACE_EVENT("GstMediaPipeline", "HandleBusMessage", [element_name](perfetto::EventContext ctx) {
+                        ctx.AddDebugAnnotation("name", element_name);
+                        });
+#endif
                 break;
             }
             case GST_STATE_VOID_PENDING:

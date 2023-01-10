@@ -139,12 +139,6 @@ bool PerfettoTracingSingleton::initialise(unsigned int backends)
 
     // register all the track events
     perfetto::TrackEvent::Register();
-#if 0
-    // register the logging data source
-    perfetto::DataSourceDescriptor dsd;
-    dsd.set_name("com.sky.logging_data_source");
-    LoggingDataSource::Register(dsd);
-#endif
 
     // save the backends and initialised flag
     mBackends = backends;
@@ -215,17 +209,126 @@ bool PerfettoTracingSingleton::startInProcessTracing(int fd,
 
         dataSourceConfig->set_track_event_config_raw(trackEventConfig.SerializeAsString());
     }
-#if 0
-    // enable the logging data source
-    auto* loggingDataSourceConfig = config.add_data_sources()->mutable_config();
-    loggingDataSourceConfig->set_name("com.sky.logging_data_source");
-#endif
 
     // start tracing
     mInProcessSession = perfetto::Tracing::NewTrace(perfetto::kInProcessBackend);
     if (!mInProcessSession)
     {
         RIALTO_LOG_ERROR(RIALTO_COMPONENT_TRACING, "failed to create new in-process tracing session");
+        return false;
+    }
+
+    mInProcessSession->Setup(config, mTraceFileFd);
+    mInProcessSession->StartBlocking();
+
+    return true;
+}
+
+bool PerfettoTracingSingleton::startTracing(int fd,
+                                            const std::string &categories,
+                                            size_t maxSizeKb)
+{
+    std::lock_guard<std::mutex> locker(mLock);
+
+    if (mBackends == 0)
+    {
+        RIALTO_LOG_ERROR(RIALTO_COMPONENT_TRACING, "at least one backend must be enabled");
+        return false;
+    }
+
+    // We assume mBack
+    if (mInProcessSession)
+    {
+        RIALTO_LOG_ERROR(RIALTO_COMPONENT_TRACING, "tracing session already running");
+        return false;
+    }
+
+    // dup the supplied fd because perfetto doesn't
+    mTraceFileFd = fcntl(fd, F_DUPFD_CLOEXEC, 3);
+    if (mTraceFileFd < 0)
+    {
+        RIALTO_LOG_ERROR(RIALTO_COMPONENT_TRACING, "failed to dup trace file fd");
+        return false;
+    }
+
+    // the trace config defines which types of data sources are enabled for
+    // recording. We just need the "track_event" data source, which corresponds
+    // to the TRACE_EVENT trace points.
+    perfetto::TraceConfig config;
+    config.add_buffers()->set_size_kb(1024);
+
+    if (maxSizeKb != SIZE_MAX)
+    {
+        config.set_max_file_size_bytes(maxSizeKb * 1024);
+    }
+
+    // enable ftrace events
+    auto* ds_cfg_2 = config.add_data_sources()->mutable_config();
+    ds_cfg_2->set_name("linux.ftrace");
+    ds_cfg_2->set_target_buffer(0);
+
+    perfetto::protos::gen::FtraceConfig ftrace_config;
+    ftrace_config.add_ftrace_events("sched/sched_switch");
+    ftrace_config.add_ftrace_events("sched/sched_waking");
+    ftrace_config.add_ftrace_events("sched/sched_wakeup_new");
+    ftrace_config.add_ftrace_events("task/task_newtask");
+    ftrace_config.add_ftrace_events("task/task_rename");
+    ftrace_config.add_ftrace_events("sched/sched_process_exec");
+    ftrace_config.add_ftrace_events("sched/sched_process_exit");
+    ftrace_config.add_ftrace_events("sched/sched_process_fork");
+    ftrace_config.add_ftrace_events("sched/sched_process_free");
+    ftrace_config.add_ftrace_events("sched/sched_process_hang");
+    ftrace_config.add_ftrace_events("sched/sched_process_wait");
+    ftrace_config.add_ftrace_events("power/suspend_resume");
+    ftrace_config.add_ftrace_events("power/cpu_frequency");
+    ftrace_config.add_ftrace_events("power/cpu_idle");
+
+    ds_cfg_2->set_ftrace_config_raw(ftrace_config.SerializeAsString());
+
+    // enable sys_stats
+    auto* ds_cfg_4 = config.add_data_sources()->mutable_config();
+    ds_cfg_4->set_name("linux.sys_stats");
+
+    perfetto::protos::gen::SysStatsConfig sys_stats_config;
+    sys_stats_config.set_stat_period_ms(1000);
+    sys_stats_config.add_stat_counters(perfetto::protos::gen::SysStatsConfig::STAT_FORK_COUNT);
+    sys_stats_config.add_stat_counters(perfetto::protos::gen::SysStatsConfig::STAT_CPU_TIMES);
+    ds_cfg_4->set_sys_stats_config_raw(sys_stats_config.SerializeAsString());
+
+    // enable process_stats
+    auto* ds_cfg_5 = config.add_data_sources()->mutable_config();
+    ds_cfg_5->set_name("linux.process_stats");
+
+    perfetto::protos::gen::ProcessStatsConfig process_stats_config;
+    process_stats_config.set_scan_all_processes_on_start(true);
+    ds_cfg_5->set_process_stats_config_raw(process_stats_config.SerializeAsString());
+
+    // enable the standard track events
+    auto *dataSourceConfig = config.add_data_sources()->mutable_config();
+    dataSourceConfig->set_name("track_event");
+
+    if (!categories.empty() && (categories != "*"))
+    {
+        RIALTO_LOG_INFO(RIALTO_COMPONENT_TRACING, "setting trace category filters to '%s'", categories.c_str());
+
+        perfetto::protos::gen::TrackEventConfig trackEventConfig;
+        trackEventConfig.add_disabled_categories("*");
+
+        std::istringstream categoriesStream(categories);
+        std::string category;
+        while (std::getline(categoriesStream, category, ','))
+        {
+            trackEventConfig.add_enabled_categories(category);
+        }
+
+        dataSourceConfig->set_track_event_config_raw(trackEventConfig.SerializeAsString());
+    }
+
+    // start tracing
+    mInProcessSession = perfetto::Tracing::NewTrace(perfetto::kSystemBackend);
+    if (!mInProcessSession)
+    {
+        RIALTO_LOG_ERROR(RIALTO_COMPONENT_TRACING, "failed to create new tracing session");
         return false;
     }
 

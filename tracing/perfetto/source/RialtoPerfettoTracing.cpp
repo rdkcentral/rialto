@@ -76,6 +76,41 @@ bool RialtoPerfettoTracing::startInProcessTracing(const std::string &traceFile,
     return result;
 }
 
+bool RialtoPerfettoTracing::startTracing(const std::string &traceFile,
+                                            const std::string &categoryFilter,
+                                            size_t maxSizeKb)
+{
+    if (isTracing())
+    {
+        RIALTO_LOG_WARN(RIALTO_COMPONENT_TRACING, "trace already running");
+        return false;
+    }
+
+    // open / create the trace file
+    int fd = open(traceFile.c_str(), O_CLOEXEC | O_CREAT | O_TRUNC | O_RDWR, 0644);
+    if (fd < 0)
+    {
+        RIALTO_LOG_ERROR(RIALTO_COMPONENT_TRACING, "failed to open / create trace file @ '%s'", traceFile.c_str());
+        return false;
+    }
+
+    // start tracing to the file
+    bool result = PerfettoTracingSingleton::instance()->startTracing(fd, categoryFilter, maxSizeKb);
+    if (!result)
+    {
+        // delete the file if we failed to start the trace
+        unlink(traceFile.c_str());
+    }
+
+    // close the trace file, as the instance will dup it if tracing started
+    if (close(fd) != 0)
+    {
+        RIALTO_LOG_ERROR(RIALTO_COMPONENT_TRACING, "failed to close trace file");
+    }
+
+    return result;
+}
+
 void RialtoPerfettoTracing::stopInProcessTracing()
 {
     PerfettoTracingSingleton::instance()->stopInProcessTracing();

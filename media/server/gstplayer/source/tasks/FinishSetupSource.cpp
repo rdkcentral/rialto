@@ -24,6 +24,9 @@
 #include "RialtoServerLogging.h"
 #include <gst/app/gstappsrc.h>
 #include <gst/gst.h>
+#ifdef RIALTO_ENABLE_TRACING
+#include "RialtoPerfettoTracing.h"
+#endif
 
 namespace
 {
@@ -93,6 +96,12 @@ void FinishSetupSource::execute() const
     auto elem = m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO);
     if (elem != m_context.streamInfo.end())
     {
+#ifdef RIALTO_ENABLE_TRACING 
+        RIALTO_TRACE_EVENT("GstMediaPipeline", "SetupAppSrc", [](perfetto::EventContext ctx)     { 
+           ctx.AddDebugAnnotation("name", "AUDIO");
+        });
+#endif
+
         m_context.gstSrc->setupAndAddAppArc(m_context.decryptionService, m_context.source, elem->second, &callbacks,
                                             &m_player, firebolt::rialto::MediaSourceType::AUDIO);
         m_player.notifyNeedMediaData(true, false);
@@ -101,6 +110,12 @@ void FinishSetupSource::execute() const
     elem = m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO);
     if (elem != m_context.streamInfo.end())
     {
+#ifdef RIALTO_ENABLE_TRACING 
+        RIALTO_TRACE_EVENT("GstMediaPipeline", "SetupAppSrc", [](perfetto::EventContext ctx)     { 
+           ctx.AddDebugAnnotation("name", "VIDEO");
+        });
+#endif
+
         m_context.gstSrc->setupAndAddAppArc(m_context.decryptionService, m_context.source, elem->second, &callbacks,
                                             &m_player, firebolt::rialto::MediaSourceType::VIDEO);
         m_player.notifyNeedMediaData(false, true);

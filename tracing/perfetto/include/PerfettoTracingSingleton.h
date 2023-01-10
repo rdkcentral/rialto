@@ -41,6 +41,9 @@ public:
 
     bool startInProcessTracing(int fd, const std::string &categoryFilter,
                                size_t maxSize = SIZE_MAX);
+    bool startTracing(int fd, const std::string &categoryFilter,
+                      size_t maxSize = SIZE_MAX);
+ 
     void stopInProcessTracing();
 
     bool flushInProcessTrace(const std::chrono::milliseconds &timeout);

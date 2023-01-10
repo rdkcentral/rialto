@@ -23,6 +23,9 @@
 #include "IMediaPipeline.h"
 #include "RialtoServerLogging.h"
 #include <unordered_map>
+#ifdef RIALTO_ENABLE_TRACING
+#include "RialtoPerfettoTracing.h"
+#endif
 
 namespace firebolt::rialto::server
 {
@@ -247,11 +250,17 @@ void AttachSource::execute() const
         GstElement *appSrc = nullptr;
         if (m_attachedSource->getType() == MediaSourceType::AUDIO)
         {
+#ifdef RIALTO_ENABLE_TRACING
+            RIALTO_TRACE_EVENT("GstMediaPipeline", "AttachSource::Add", "source", "Audio");
+#endif
             RIALTO_SERVER_LOG_MIL("Adding Audio appsrc");
             appSrc = m_gstWrapper->gstElementFactoryMake("appsrc", "audsrc");
         }
         else if (m_attachedSource->getType() == MediaSourceType::VIDEO)
         {
+#ifdef RIALTO_ENABLE_TRACING
+            RIALTO_TRACE_EVENT("GstMediaPipeline", "AttachSource::Add", "source", "Video");
+#endif
             RIALTO_SERVER_LOG_MIL("Adding Video appsrc");
             appSrc = m_gstWrapper->gstElementFactoryMake("appsrc", "vidsrc");
         }
@@ -264,6 +273,11 @@ void AttachSource::execute() const
         GstCaps *appsrcCaps = m_gstWrapper->gstAppSrcGetCaps(GST_APP_SRC(elem->second));
         if ((!appsrcCaps) || (!m_gstWrapper->gstCapsIsEqual(appsrcCaps, caps)))
         {
+#ifdef RIALTO_ENABLE_TRACING
+            std::string src = m_attachedSource->getType() == MediaSourceType::AUDIO ? "Audio": "Video";
+            RIALTO_TRACE_EVENT("GstMediaPipeline", "AttachSource::Update", "source", src.c_str());
+#endif
+
             RIALTO_SERVER_LOG_MIL("Updating %s appsrc caps to '%s'",
                                   m_attachedSource->getType() == MediaSourceType::AUDIO ? "Audio" : "Video",
                                   strCaps.c_str());

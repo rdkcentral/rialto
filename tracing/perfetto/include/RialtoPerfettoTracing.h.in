@@ -31,6 +31,11 @@ public:
     static bool startInProcessTracing(int fd,
                                       const std::string &categoryFilter = std::string(),
                                       size_t maxSizeKb = SIZE_MAX);
+
+    static bool startTracing(const std::string &traceFile,
+                             const std::string &categoryFilter = std::string(),
+                             size_t maxSizeKb = SIZE_MAX);
+
     static void stopInProcessTracing();
 
     static bool flushInProcessTrace(const std::chrono::milliseconds &timeout = std::chrono::milliseconds(0));

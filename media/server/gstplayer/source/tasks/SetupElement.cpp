@@ -24,6 +24,9 @@
 #include "PlayerContext.h"
 #include "RialtoServerLogging.h"
 #include "Utils.h"
+#ifdef RIALTO_ENABLE_TRACING
+#include "RialtoPerfettoTracing.h"
+#endif
 
 namespace
 {
@@ -78,6 +81,13 @@ SetupElement::~SetupElement()
 
 void SetupElement::execute() const
 {
+#ifdef RIALTO_ENABLE_TRACING
+    std::string element_name = GST_ELEMENT_NAME(m_element);
+    RIALTO_TRACE_EVENT("GstMediaPipeline", "SetupElement", [element_name](perfetto::EventContext ctx)    {
+        ctx.AddDebugAnnotation("name", element_name);
+    });
+#endif
+
     RIALTO_SERVER_LOG_DEBUG("Executing SetupElement");
     if (m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "westerossink"))
     {

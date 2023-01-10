@@ -196,14 +196,8 @@ GstPlayer::GstPlayer(IGstPlayerClient *client, IDecryptionService &decryptionSer
     {
     case MediaType::MSE:
     {
-#ifdef RIALTO_ENABLE_TRACING
-        RIALTO_TRACE_EVENT_BEGIN("GstMediaPipeline", "initMsePipeline", perfetto::Track(1234));
-#endif
-        initMsePipeline();
-#ifdef RIALTO_ENABLE_TRACING
-        RIALTO_TRACE_EVENT_END("GstMediaPipeline", perfetto::Track(1234));
-#endif
-        break;
+       initMsePipeline();
+       break;
     }
     default:
     {
@@ -261,7 +255,7 @@ GstPlayer::~GstPlayer()
 void GstPlayer::initMsePipeline()
 {
 #ifdef RIALTO_ENABLE_TRACING
-    RIALTO_TRACE_EVENT_BEGIN("GstMediaPipeline", "MsePipelineInit");
+    RIALTO_TRACE_EVENT_INSTANT("GstMediaPipeline", "Pipeline Start"); 
 #endif
 
     // Make playbin
@@ -328,13 +322,6 @@ void GstPlayer::scheduleSourceSetupFinish()
 void GstPlayer::setupElement(GstElement *pipeline, GstElement *element, GstPlayer *self)
 {
     RIALTO_SERVER_LOG_DEBUG("Element %s added to the pipeline", GST_ELEMENT_NAME(element));
-#ifdef RIALTO_ENABLE_TRACING
-    auto desc = perfetto::ThreadTrack::Current().Serialize();
-    desc.mutable_thread()->set_thread_name("GstCallbackThread");
-    perfetto::TrackEvent::SetTrackDescriptor(perfetto::ThreadTrack::Current(), desc);
-
-    RIALTO_TRACE_EVENT_BEGIN("GstMediaPipeline", "setupElement", "Element", GST_ELEMENT_NAME(element));
-#endif
 
     self->m_gstWrapper->gstObjectRef(element);
     if (self->m_workerThread)
@@ -347,9 +334,6 @@ void GstPlayer::attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> 
 {
     if (m_workerThread)
     {
-#ifdef RIALTO_ENABLE_TRACING
-        RIALTO_TRACE_EVENT_BEGIN("GstMediaPipeline", "attachSource");
-#endif
         m_workerThread->enqueueTask(m_taskFactory->createAttachSource(m_context, attachedSource));
     }
 }
