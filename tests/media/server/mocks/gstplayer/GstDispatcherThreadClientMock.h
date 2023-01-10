@@ -17,22 +17,22 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_GST_DISPATCHER_THREAD_FACTORY_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_GST_DISPATCHER_THREAD_FACTORY_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_GST_DISPATCHER_THREAD_CLIENT_MOCK_H_
+#define FIREBOLT_RIALTO_SERVER_GST_DISPATCHER_THREAD_CLIENT_MOCK_H_
 
-#include "IGstDispatcherThread.h"
+#include "IGstDispatcherThreadClient.h"
 #include <gmock/gmock.h>
-#include <memory>
 
 namespace firebolt::rialto::server
 {
-class GstDispatcherThreadFactoryMock : public IGstDispatcherThreadFactory
+class GstDispatcherThreadClientMock : public IGstDispatcherThreadClient
 {
 public:
-    MOCK_METHOD(std::unique_ptr<IGstDispatcherThread>, createGstDispatcherThread,
-                (IGstDispatcherThreadClient& client, GstElement *pipeline, const std::shared_ptr<IGstWrapper> &gstWrapper),
-                (const, override));
+    GstDispatcherThreadClientMock() = default;
+    virtual ~GstDispatcherThreadClientMock() = default;
+
+    MOCK_METHOD(void, handleBusMessage, (GstMessage *message), (override));
 };
 } // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_GST_DISPATCHER_THREAD_FACTORY_MOCK_H_
+#endif // FIREBOLT_RIALTO_SERVER_GST_DISPATCHER_THREAD_CLIENT_MOCK_H_

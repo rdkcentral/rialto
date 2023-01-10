@@ -48,7 +48,6 @@ add_gtests(RialtoServerGstPlayerUnitTests
     genericPlayer/common/GstGenericPlayerTestCommon.cpp
 
     genericPlayer/CreateTest.cpp
-    genericPlayer/GstDispatcherThreadTest.cpp
     genericPlayer/GstGenericPlayerPrivateTest.cpp
     genericPlayer/GstGenericPlayerTest.cpp
     genericPlayer/InitTest.cpp
@@ -66,6 +65,9 @@ add_gtests(RialtoServerGstPlayerUnitTests
 
     #ProtectionMetadata unittests
     protectionMetadata/ProtectionMetadataTest.cpp
+
+    #ProtectionMetadata unittests
+    dispatcherThread/GstDispatcherThreadTest.cpp
 )
 
 target_include_directories(RialtoServerGstPlayerUnitTests

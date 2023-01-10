@@ -101,8 +101,8 @@ public:
      * This method is considered to be asychronous and MUST NOT block
      * but should request the playback pause and then return.
      *
-     * Once the backend is successfully playing it should notify the
-     * media player client of state PAUSED.
+     * Once the backend is successfully paused it should notify the
+     * media player client of playback state PlaybackState::PAUSED.
      *
      */
     virtual void pause() = 0;

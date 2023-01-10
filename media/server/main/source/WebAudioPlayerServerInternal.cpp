@@ -122,7 +122,7 @@ bool WebAudioPlayerServerInternal::initWebAudioPlayerInternal(int handle, const 
     {
         RIALTO_SERVER_LOG_ERROR("Unable to map shm partition");
     }
-    else if (!initGstPlayer(gstPlayerFactory))
+    else if (!initGstWebAudioPlayer(gstPlayerFactory))
     {
         RIALTO_SERVER_LOG_ERROR("Failed to initalise the GstPlayer");
     }
@@ -214,7 +214,7 @@ void WebAudioPlayerServerInternal::notifyState(WebAudioPlayerState state)
 
 }
 
-bool WebAudioPlayerServerInternal::initGstPlayer(const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory)
+bool WebAudioPlayerServerInternal::initGstWebAudioPlayer(const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory)
 {
     m_gstPlayer = gstPlayerFactory->createGstWebAudioPlayer(this);
     if (!m_gstPlayer)
@@ -222,6 +222,7 @@ bool WebAudioPlayerServerInternal::initGstPlayer(const std::shared_ptr<IGstWebAu
         RIALTO_SERVER_LOG_ERROR("Failed to load gstreamer player");
         return false;
     }
+    // TODO(RIALTO-2): Add audio source
     return true;
 }
 

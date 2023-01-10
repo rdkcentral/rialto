@@ -30,7 +30,7 @@
  * The definition of the IGstGenericPlayerClient interface.
  *
  * This file comprises the definition of the IGstGenericPlayerClient abstract
- * class. This is the API by which a IGstPlayer implementation will
+ * class. This is the API by which a IGstGenericPlayer implementation will
  * pass notifications to its client.
  */
 

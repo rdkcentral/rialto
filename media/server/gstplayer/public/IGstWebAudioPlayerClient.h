@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2022 Sky UK
+ * Copyright 2023 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,15 +22,14 @@
 
 #include <MediaCommon.h>
 #include <stdint.h>
-#include <string>
 
 /**
- * @file IGstGenericPlayerClient.h
+ * @file IGstWebAudioPlayerClient.h
  *
- * The definition of the IGstGenericPlayerClient interface.
+ * The definition of the IGstWebAudioPlayerClient interface.
  *
- * This file comprises the definition of the IGstGenericPlayerClient abstract
- * class. This is the API by which a IGstPlayer implementation will
+ * This file comprises the definition of the IGstWebAudioPlayerClient abstract
+ * class. This is the API by which a IGstWebAudioPlayer implementation will
  * pass notifications to its client.
  */
 
@@ -55,9 +54,13 @@ public:
     IGstWebAudioPlayerClient &operator=(IGstWebAudioPlayerClient &&) = delete;
 
     /**
-     * @brief TODO
+     * @brief Notifies the client of the web audio state.
      *
-     * @param[in] state : The new playback state.
+     * The player will start IDLE. Once play() has been called the player
+     * will be PLAYING, or once pause() has been called the player will be
+     * PAUSED. Once the stream has reached end of the media EOS wibe notified.
+     *
+     * @param[in] state : The new web audio state.
      */
     virtual void notifyState(WebAudioPlayerState state) = 0;
 };

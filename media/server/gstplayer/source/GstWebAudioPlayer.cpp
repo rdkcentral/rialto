@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2022 Sky UK
+ * Copyright 2023 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -111,12 +111,11 @@ GstWebAudioPlayer::~GstWebAudioPlayer()
 
     m_gstDispatcherThread.reset();
 
+    // TODO(RIALTO-2): Add shutdown task
     // Shutdown task thread
-    //m_workerThread->enqueueTask(m_taskFactory->createShutdown(*this));
     m_workerThread->join();
     m_workerThread.reset();
 
-    //m_taskFactory->createStop(m_context, *this)->execute();
     GstBus *bus = m_gstWrapper->gstPipelineGetBus(GST_PIPELINE(m_context.pipeline));
     m_gstWrapper->gstBusSetSyncHandler(bus, nullptr, nullptr, nullptr);
     m_gstWrapper->gstObjectUnref(bus);
@@ -133,67 +132,18 @@ GstWebAudioPlayer::~GstWebAudioPlayer()
 
 void GstWebAudioPlayer::initWebAudioPipeline()
 {
-    m_context.pipeline = gst_pipeline_new("pipeline");
-
-    // Create and initalise appsrc
-    m_context.source = gst_element_factory_make("appsrc", "audsrc");
-
-    gst_app_src_set_max_bytes(GST_APP_SRC(m_context.source), 10 * 1024);
-    g_object_set(m_context.source, "format", GST_FORMAT_TIME, nullptr);
-
-    // Perform sink specific initalisation
-    GstRegistry *reg = gst_registry_get();
-    GstElement *sink = nullptr;
-    GstPluginFeature *feature = nullptr;
-    if (nullptr != (feature = gst_registry_lookup_feature(reg, "amlhalasink")))
-    {
-        // LLama
-        RIALTO_SERVER_LOG_INFO("Use amlhalasink");
-        sink = gst_element_factory_make("amlhalasink", "uiaudiosink");
-        g_object_set(G_OBJECT(sink), "direct-mode", FALSE, NULL);
-        gst_bin_add_many(GST_BIN(m_context.pipeline), m_context.source, sink, NULL);
-        gst_element_link_many(m_context.source, sink, NULL);
-        gst_object_unref(feature);
-    }
-    else if (nullptr != (feature = gst_registry_lookup_feature(reg, "rtkaudiosink")))
-    {
-        // XiOne
-        RIALTO_SERVER_LOG_INFO("Use rtkaudiosink");
-        sink = gst_element_factory_make("rtkaudiosink", "uiaudiosink");
-        g_object_set(G_OBJECT(sink), "media-tunnel", FALSE, NULL);
-        g_object_set(G_OBJECT(sink), "audio-service", TRUE, NULL);
-        GstElement *convert = NULL;
-        GstElement *resample = NULL;
-        //GstElement *volume = NULL;
-        convert = gst_element_factory_make("audioconvert", NULL);
-        resample = gst_element_factory_make("audioresample", NULL);
-        //volume = gst_element_factory_make("volume", NULL);
-        gst_bin_add_many(GST_BIN(m_context.pipeline), m_context.source, convert, resample, sink, nullptr);
-        gst_element_link_many(m_context.source, convert, resample, sink, nullptr);
-        gst_object_unref(feature);
-    }
-    else
-    {
-        RIALTO_SERVER_LOG_INFO("Use autoaudiosink");
-        sink = gst_element_factory_make("autoaudiosink", "autoaudiosink");
-        gst_bin_add_many(GST_BIN(m_context.pipeline), m_context.source, sink, NULL);
-        gst_element_link_many(m_context.source, sink, NULL);
-    }
 }
 
 void GstWebAudioPlayer::play()
 {
-
 }
 
 void GstWebAudioPlayer::pause()
 {
-
 }
 
 void GstWebAudioPlayer::setVolume(double volume)
 {
-
 }
 
 bool GstWebAudioPlayer::getVolume(double &volume)
@@ -203,28 +153,10 @@ bool GstWebAudioPlayer::getVolume(double &volume)
 
 void GstWebAudioPlayer::handleBusMessage(GstMessage *message)
 {
-    //m_workerThread->enqueueTask(m_taskFactory->createHandleBusMessage(m_context, *this, message));
 }
 
 bool GstWebAudioPlayer::changePipelineState(GstState newState)
 {
-#if 0
-    if (!m_context.pipeline)
-    {
-        RIALTO_SERVER_LOG_ERROR("Change state failed - pipeline is nullptr");
-        if (m_gstPlayerClient)
-            m_gstPlayerClient->notifyPlaybackState(PlaybackState::FAILURE);
-        return false;
-    }
-    if (m_gstWrapper->gstElementSetState(m_context.pipeline, newState) == GST_STATE_CHANGE_FAILURE)
-    {
-        RIALTO_SERVER_LOG_ERROR("Change state failed - Gstreamer returned an error");
-        if (m_gstPlayerClient)
-            m_gstPlayerClient->notifyPlaybackState(PlaybackState::FAILURE);
-        return false;
-    }
-    return true;
-#endif
     return false;
 }
 }; // namespace firebolt::rialto::server

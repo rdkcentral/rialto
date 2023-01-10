@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2022 Sky UK
+ * Copyright 2023 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,8 @@
 #ifndef FIREBOLT_RIALTO_SERVER_I_GST_WEB_AUDIO_PLAYER_H_
 #define FIREBOLT_RIALTO_SERVER_I_GST_WEB_AUDIO_PLAYER_H_
 
-#include <MediaCommon.h>
 #include <memory>
 #include <stdint.h>
-#include <string>
-
 #include "IGstWebAudioPlayerClient.h"
 
 namespace firebolt::rialto::server
@@ -69,27 +66,41 @@ public:
     IGstWebAudioPlayer &operator=(IGstWebAudioPlayer &&) = delete;
 
     /**
-     * @brief Starts playback of the media.
+     * @brief Starts playback of the web audio.
      *
-     * TODO
+     * This method is considered to be asychronous and MUST NOT block
+     * but should request playback and then return.
+     *
+     * Once the backend is successfully playing it should notify the
+     * web audio player client of state WebAudioPlayerState::PLAYING.
      */
     virtual void play() = 0;
 
     /**
-     * @brief Pauses playback of the media.
+     * @brief Pauses playback of the web audio.
      *
-     * TODO
+     * This method is considered to be asychronous and MUST NOT block
+     * but should request the playback pause and then return.
+     *
+     * Once the backend is successfully paused it should notify the
+     * web audio player client of state WebAudioPlayerState::PAUSED.
      */
     virtual void pause() = 0;
 
     /**
-     * @brief TODO
+     * @brief Set level and transition of audio attenuation.
+     *        Sets the current volume for the pipeline (0.0 silent -> 1.0 full volume).
+     *
+     * @param[in] volume : Target volume level (0.0 - 1.0)
      */
     virtual void setVolume(double volume) = 0;
 
     /**
-     * @brief TODO
-     * @retval True on success
+     * @brief Get current audio level. Fetches the current volume level for the pipeline.
+     *
+     * @param[out] volume : Current volume level (range 0.0 - 1.0)
+     *
+     * @retval True on success.
      */
     virtual bool getVolume(double &volume) = 0;
 };

@@ -18,7 +18,7 @@
  */
 
 #include "GstWrapperMock.h"
-#include "GstPlayerInit.h"
+#include "GstInit.h"
 #include <gtest/gtest.h>
 
 using namespace firebolt::rialto;
@@ -38,11 +38,11 @@ protected:
 };
 
 /**
- * Test that the initialisation of GstPlayer initialises gstreamer.
+ * Test the initialisation of gstreamer.
  */
 TEST_F(RialtoServerInitGstPlayerTest, Init)
 {
     bool status = false;
-    EXPECT_NO_THROW(status = IGstPlayer::initalise(argc, static_cast<char **>(argv)););
+    EXPECT_NO_THROW(status = gstInitalise(argc, static_cast<char **>(argv)););
     EXPECT_EQ(status, true);
 }

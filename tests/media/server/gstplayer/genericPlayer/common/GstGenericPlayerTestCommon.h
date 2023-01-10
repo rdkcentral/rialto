@@ -58,8 +58,8 @@ public:
     std::shared_ptr<StrictMock<GstSrcFactoryMock>> m_gstSrcFactoryMock{std::make_shared<StrictMock<GstSrcFactoryMock>>()};
     std::shared_ptr<StrictMock<GstSrcMock>> m_gstSrcMock{std::make_shared<StrictMock<GstSrcMock>>()};
     std::shared_ptr<StrictMock<TimerFactoryMock>> m_timerFactoryMock{std::make_shared<StrictMock<TimerFactoryMock>>()};
-    std::unique_ptr<IGenericPlayerTaskFactory> taskFactory{std::make_unique<StrictMock<GenericPlayerTaskFactoryMock>>()};
-    StrictMock<GenericPlayerTaskFactoryMock> &m_taskFactoryMock{dynamic_cast<StrictMock<GenericPlayerTaskFactoryMock> &>(*taskFactory)};
+    std::unique_ptr<IGenericPlayerTaskFactory> m_taskFactory{std::make_unique<StrictMock<GenericPlayerTaskFactoryMock>>()};
+    StrictMock<GenericPlayerTaskFactoryMock> &m_taskFactoryMock{dynamic_cast<StrictMock<GenericPlayerTaskFactoryMock> &>(*m_taskFactory)};
     std::unique_ptr<IWorkerThreadFactory> workerThreadFactory{std::make_unique<StrictMock<WorkerThreadFactoryMock>>()};
     StrictMock<WorkerThreadFactoryMock> &m_workerThreadFactoryMock{
         dynamic_cast<StrictMock<WorkerThreadFactoryMock> &>(*workerThreadFactory)};
@@ -86,6 +86,13 @@ protected:
     void gstPlayerWillBeCreated();
     void gstPlayerWillBeDestroyed();
     void executeTaskWhenEnqueued();
+    void initFactories();
+    void expectMakePlaybin();
+    void expectSetFlags();
+    void expectSetSignalCallbacks();
+    void expectSetUri();
+    void expectCheckPlaySink();
+    void expectSetMessageCallback();
 
 private:
     GstElement m_pipeline{};

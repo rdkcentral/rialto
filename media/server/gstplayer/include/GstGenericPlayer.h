@@ -211,7 +211,7 @@ private:
     std::unique_ptr<firebolt::rialto::common::ITimer> m_positionReportingAndCheckAudioUnderflowTimer{nullptr};
 
     /**
-     * @brief The GstPlayer task factory
+     * @brief The GstGenericPlayer task factory
      */
     std::unique_ptr<IGenericPlayerTaskFactory> m_taskFactory;
 

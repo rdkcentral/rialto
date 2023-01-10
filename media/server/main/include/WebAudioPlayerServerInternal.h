@@ -140,13 +140,13 @@ protected:
     bool initWebAudioPlayerInternal(int handle, const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory);
 
     /**
-     * @brief Initalises the GstPlayer.
+     * @brief Initalises the GstWebAudioPlayer.
      *
      * @param[in] gstPlayerFactory  : The gstreamer player factory.
      *
      * @retval true on success.
      */
-    bool initGstPlayer(const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory);
+    bool initGstWebAudioPlayer(const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory);
 };
 
 }; // namespace firebolt::rialto::server

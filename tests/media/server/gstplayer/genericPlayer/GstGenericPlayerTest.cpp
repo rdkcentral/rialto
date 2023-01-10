@@ -30,29 +30,29 @@ using testing::Invoke;
 using testing::Ref;
 using testing::Return;
 
-class GstPlayerTest : public GstGenericPlayerTestCommon
+class GstGenericPlayerTest : public GstGenericPlayerTestCommon
 {
 protected:
-    std::unique_ptr<IGstPlayer> m_sut;
+    std::unique_ptr<IGstGenericPlayer> m_sut;
     VideoRequirements m_videoReq = {};
 
-    GstPlayerTest()
+    GstGenericPlayerTest()
     {
         gstPlayerWillBeCreated();
-        m_sut = std::make_unique<GstPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, MediaType::MSE, m_videoReq,
+        m_sut = std::make_unique<GstGenericPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, MediaType::MSE, m_videoReq,
                                             m_gstWrapperMock, m_glibWrapperMock, m_gstSrcFactoryMock,
-                                            m_timerFactoryMock, std::move(taskFactory), std::move(workerThreadFactory),
+                                            m_timerFactoryMock, std::move(m_taskFactory), std::move(workerThreadFactory),
                                             std::move(gstDispatcherThreadFactory), m_gstProtectionMetadataFactoryMock);
     }
 
-    ~GstPlayerTest() override
+    ~GstGenericPlayerTest() override
     {
         gstPlayerWillBeDestroyed();
         m_sut.reset();
     }
 };
 
-TEST_F(GstPlayerTest, shouldAttachSource)
+TEST_F(GstGenericPlayerTest, shouldAttachSource)
 {
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
         std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>(-1, "video/mpeg");
@@ -64,7 +64,7 @@ TEST_F(GstPlayerTest, shouldAttachSource)
     m_sut->attachSource(source);
 }
 
-TEST_F(GstPlayerTest, shouldPlay)
+TEST_F(GstGenericPlayerTest, shouldPlay)
 {
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*task), execute());
@@ -73,7 +73,7 @@ TEST_F(GstPlayerTest, shouldPlay)
     m_sut->play();
 }
 
-TEST_F(GstPlayerTest, shouldPause)
+TEST_F(GstGenericPlayerTest, shouldPause)
 {
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*task), execute());
@@ -82,7 +82,7 @@ TEST_F(GstPlayerTest, shouldPause)
     m_sut->pause();
 }
 
-TEST_F(GstPlayerTest, shouldStop)
+TEST_F(GstGenericPlayerTest, shouldStop)
 {
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*task), execute());
@@ -91,7 +91,7 @@ TEST_F(GstPlayerTest, shouldStop)
     m_sut->stop();
 }
 
-TEST_F(GstPlayerTest, shouldAttachSamplesFromVector)
+TEST_F(GstGenericPlayerTest, shouldAttachSamplesFromVector)
 {
     IMediaPipeline::MediaSegmentVector mediaSegments;
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
@@ -101,7 +101,7 @@ TEST_F(GstPlayerTest, shouldAttachSamplesFromVector)
     m_sut->attachSamples(mediaSegments);
 }
 
-TEST_F(GstPlayerTest, shouldAttachSamplesFromShm)
+TEST_F(GstGenericPlayerTest, shouldAttachSamplesFromShm)
 {
     std::shared_ptr<IDataReader> dataReader{std::make_shared<DataReaderMock>()};
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
@@ -112,7 +112,7 @@ TEST_F(GstPlayerTest, shouldAttachSamplesFromShm)
     m_sut->attachSamples(dataReader);
 }
 
-TEST_F(GstPlayerTest, shouldSetPlaybackRate)
+TEST_F(GstGenericPlayerTest, shouldSetPlaybackRate)
 {
     double playbackRate{1.5};
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
@@ -122,7 +122,7 @@ TEST_F(GstPlayerTest, shouldSetPlaybackRate)
     m_sut->setPlaybackRate(playbackRate);
 }
 
-TEST_F(GstPlayerTest, shouldSetPosition)
+TEST_F(GstGenericPlayerTest, shouldSetPosition)
 {
     std::int64_t position{12345};
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
@@ -132,7 +132,7 @@ TEST_F(GstPlayerTest, shouldSetPosition)
     m_sut->setPosition(position);
 }
 
-TEST_F(GstPlayerTest, shouldSetVideoGeometry)
+TEST_F(GstGenericPlayerTest, shouldSetVideoGeometry)
 {
     Rectangle rectangle{1, 2, 3, 4};
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
@@ -142,7 +142,7 @@ TEST_F(GstPlayerTest, shouldSetVideoGeometry)
     m_sut->setVideoGeometry(rectangle.x, rectangle.y, rectangle.width, rectangle.height);
 }
 
-TEST_F(GstPlayerTest, shouldSetEos)
+TEST_F(GstGenericPlayerTest, shouldSetEos)
 {
     MediaSourceType type{MediaSourceType::AUDIO};
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
@@ -152,7 +152,7 @@ TEST_F(GstPlayerTest, shouldSetEos)
     m_sut->setEos(type);
 }
 
-TEST_F(GstPlayerTest, shouldSetupSource)
+TEST_F(GstGenericPlayerTest, shouldSetupSource)
 {
     GstElement source{};
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
@@ -163,7 +163,7 @@ TEST_F(GstPlayerTest, shouldSetupSource)
     triggerSetupSource(&source);
 }
 
-TEST_F(GstPlayerTest, shouldSetupElement)
+TEST_F(GstGenericPlayerTest, shouldSetupElement)
 {
     GstElement element{};
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
@@ -174,13 +174,13 @@ TEST_F(GstPlayerTest, shouldSetupElement)
     triggerSetupElement(&element);
 }
 
-TEST_F(GstPlayerTest, shouldReturnInvalidPositionWhenPipelineIsBelowPlayingState)
+TEST_F(GstGenericPlayerTest, shouldReturnInvalidPositionWhenPipelineIsBelowPlayingState)
 {
     int64_t targetPosition{};
     EXPECT_FALSE(m_sut->getPosition(targetPosition));
 }
 
-TEST_F(GstPlayerTest, shouldReturnInvalidPositionWhenQueryFails)
+TEST_F(GstGenericPlayerTest, shouldReturnInvalidPositionWhenQueryFails)
 {
     int64_t targetPosition{};
     setPipelineState(GST_STATE_PLAYING);
@@ -188,7 +188,7 @@ TEST_F(GstPlayerTest, shouldReturnInvalidPositionWhenQueryFails)
     EXPECT_FALSE(m_sut->getPosition(targetPosition));
 }
 
-TEST_F(GstPlayerTest, shouldReturnPosition)
+TEST_F(GstGenericPlayerTest, shouldReturnPosition)
 {
     constexpr gint64 expectedPosition{123};
     int64_t targetPosition{};
@@ -204,7 +204,7 @@ TEST_F(GstPlayerTest, shouldReturnPosition)
     EXPECT_EQ(expectedPosition, targetPosition);
 }
 
-TEST_F(GstPlayerTest, shouldRenderFrame)
+TEST_F(GstGenericPlayerTest, shouldRenderFrame)
 {
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*task), execute());
@@ -213,7 +213,7 @@ TEST_F(GstPlayerTest, shouldRenderFrame)
     m_sut->renderFrame();
 }
 
-TEST_F(GstPlayerTest, shouldReturnVolume)
+TEST_F(GstGenericPlayerTest, shouldReturnVolume)
 {
     constexpr double kVolume{0.7};
     double resultVolume{};

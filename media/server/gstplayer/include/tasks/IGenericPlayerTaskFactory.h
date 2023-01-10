@@ -44,8 +44,8 @@ public:
     /**
      * @brief Creates a AttachSamples task.
      *
-     * @param[in] context       : The GstPlayer context
-     * @param[in] player        : The GstPlayer instance
+     * @param[in] context       : The GstGenericPlayer context
+     * @param[in] player        : The GstGenericPlayer instance
      * @param[in] mediaSegments : The media segments to attach
      *
      * @retval the new AttachSamples task instance.
@@ -57,7 +57,7 @@ public:
     /**
      * @brief Creates a AttachSource task.
      *
-     * @param[in] context   : The GstPlayer context
+     * @param[in] context   : The GstGenericPlayer context
      * @param[in] source    : The source to attach.
      *
      * @retval the new AttachSource task instance.
@@ -68,7 +68,7 @@ public:
     /**
      * @brief Creates a EnoughData task.
      *
-     * @param[in] context : The GstPlayer context
+     * @param[in] context : The GstGenericPlayer context
      * @param[in] src     : The source, which reports enough data.
      *
      * @retval the new EnoughData task instance.
@@ -78,7 +78,7 @@ public:
     /**
      * @brief Creates a Eos task.
      *
-     * @param[in] context : The GstPlayer context
+     * @param[in] context : The GstGenericPlayer context
      * @param[in] type    : The media source type, which reports eos.
      *
      * @retval the new Eos task instance.
@@ -89,8 +89,8 @@ public:
     /**
      * @brief Creates a FinishSetupSource task.
      *
-     * @param[in] context       : The GstPlayer context
-     * @param[in] player        : The GstPlayer instance
+     * @param[in] context       : The GstGenericPlayer context
+     * @param[in] player        : The GstGenericPlayer instance
      *
      * @retval the new FinishSetupSource task instance.
      */
@@ -100,7 +100,7 @@ public:
     /**
      * @brief Creates a HandleBusMessage task.
      *
-     * @param[in] context    : The GstPlayer context
+     * @param[in] context    : The GstGenericPlayer context
      * @param[in] message    : The message to be handled.
      *
      * @retval the new HandleBusMessage task instance.
@@ -111,7 +111,7 @@ public:
     /**
      * @brief Creates a NeedData task.
      *
-     * @param[in] context : The GstPlayer context
+     * @param[in] context : The GstGenericPlayer context
      * @param[in] src     : The source, which reports need data.
      *
      * @retval the new NeedData task instance.
@@ -121,7 +121,7 @@ public:
     /**
      * @brief Creates a Pause task.
      *
-     * @param[in] player        : The GstPlayer instance
+     * @param[in] player        : The GstGenericPlayer instance
      *
      * @retval the new Pause task instance.
      */
@@ -130,7 +130,7 @@ public:
     /**
      * @brief Creates a Play task.
      *
-     * @param[in] player        : The GstPlayer instance
+     * @param[in] player        : The GstGenericPlayer instance
      *
      * @retval the new Play task instance.
      */
@@ -139,8 +139,8 @@ public:
     /**
      * @brief Creates a ReadShmDataAndAttachSamples task.
      *
-     * @param[in] context       : The GstPlayer context
-     * @param[in] player        : The GstPlayer instance
+     * @param[in] context       : The GstGenericPlayer context
+     * @param[in] player        : The GstGenericPlayer instance
      * @param[in] dataReader    : The shared memory data reader
      *
      * @retval the new ReadShmDataAndAttachSamples task instance.
@@ -152,7 +152,7 @@ public:
     /**
      * @brief Creates a ReportPosition task.
      *
-     * @param[in] context       : The GstPlayer context
+     * @param[in] context       : The GstGenericPlayer context
      *
      * @retval the new ReportPosition task instance.
      */
@@ -161,8 +161,8 @@ public:
     /**
      * @brief Creates a CheckAudioUnderflow task.
      *
-     * @param[in] context       : The GstPlayer context
-     * @param[in] player        : The GstPlayer instance
+     * @param[in] context       : The GstGenericPlayer context
+     * @param[in] player        : The GstGenericPlayer instance
      *
      * @retval the new CheckAudioUnderflow task instance.
      */
@@ -172,7 +172,7 @@ public:
     /**
      * @brief Creates a SetPlaybackRate task.
      *
-     * @param[in] context   : The GstPlayer context
+     * @param[in] context   : The GstGenericPlayer context
      * @param[in] rate      : The new playback rate.
      *
      * @retval the new SetPlaybackRate task instance.
@@ -182,8 +182,8 @@ public:
     /**
      * @brief Creates a SetPosition task.
      *
-     * @param[in] context     : The GstPlayer context
-     * @param[in] player      : The GstPlayer instance
+     * @param[in] context     : The GstGenericPlayer context
+     * @param[in] player      : The GstGenericPlayer instance
      * @param[in] position    : The position to be set
      *
      * @retval the new SetPosition task instance.
@@ -194,8 +194,8 @@ public:
     /**
      * @brief Creates a SetupElement task.
      *
-     * @param[in] context    : The GstPlayer context
-     * @param[in] player     : The GstPlayer instance
+     * @param[in] context    : The GstGenericPlayer context
+     * @param[in] player     : The GstGenericPlayer instance
      * @param[in] element    : The element to be setup.
      *
      * @retval the new SetupElement task instance.
@@ -206,8 +206,8 @@ public:
     /**
      * @brief Creates a SetupSource task.
      *
-     * @param[in] context   : The GstPlayer context
-     * @param[in] player    : The GstPlayer instance
+     * @param[in] context   : The GstGenericPlayer context
+     * @param[in] player    : The GstGenericPlayer instance
      * @param[in] source    : The source to be setup.
      *
      * @retval the new SetupSource task instance.
@@ -218,8 +218,8 @@ public:
     /**
      * @brief Creates a SetVideoGeometry task.
      *
-     * @param[in] context      : The GstPlayer context
-     * @param[in] player       : The GstPlayer instance
+     * @param[in] context      : The GstGenericPlayer context
+     * @param[in] player       : The GstGenericPlayer instance
      * @param[in] rectangle    : The video geometry data.
      *
      * @retval the new SetVideoGeometry task instance.
@@ -230,7 +230,7 @@ public:
     /**
      * @brief Creates a SetVolume task.
      *
-     * @param[in] context       : The GstPlayer context
+     * @param[in] context       : The GstGenericPlayer context
      * @param[in] volume        : The volume to be set
      *
      * @retval the new SetVolume task instance.
@@ -240,7 +240,7 @@ public:
     /**
      * @brief Creates a Shutdown task.
      *
-     * @param[in] context       : The GstPlayer context
+     * @param[in] context       : The GstGenericPlayer context
      *
      * @retval the new Shutdown task instance.
      */
@@ -249,8 +249,8 @@ public:
     /**
      * @brief Creates a Stop task.
      *
-     * @param[in] context    : The GstPlayer context
-     * @param[in] player     : The GstPlayer instance
+     * @param[in] context    : The GstGenericPlayer context
+     * @param[in] player     : The GstGenericPlayer instance
      *
      * @retval the new Stop  task instance.
      */
@@ -259,7 +259,7 @@ public:
     /**
      * @brief Creates an Underflow task.
      *
-     * @param[in] player          : The GstPlayer instance
+     * @param[in] player          : The GstGenericPlayer instance
      * @param[in] underflowFlag   : The underflow flag (audio or video).
      *
      * @retval the new Underflow task instance.

@@ -56,21 +56,21 @@ bool operator==(const GstRialtoProtectionData &lhs, const GstRialtoProtectionDat
            lhs.subsamples == rhs.subsamples;
 }
 
-class GstPlayerPrivateTest : public GstGenericPlayerTestCommon
+class GstGenericPlayerPrivateTest : public GstGenericPlayerTestCommon
 {
 protected:
     std::unique_ptr<IGstGenericPlayerPrivate> m_sut;
 
-    GstPlayerPrivateTest()
+    GstGenericPlayerPrivateTest()
     {
         gstPlayerWillBeCreated();
-        m_sut = std::make_unique<GstPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, MediaType::MSE, m_videoReq,
+        m_sut = std::make_unique<GstGenericPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, MediaType::MSE, m_videoReq,
                                             m_gstWrapperMock, m_glibWrapperMock, m_gstSrcFactoryMock,
-                                            m_timerFactoryMock, std::move(taskFactory), std::move(workerThreadFactory),
+                                            m_timerFactoryMock, std::move(m_taskFactory), std::move(workerThreadFactory),
                                             std::move(gstDispatcherThreadFactory), m_gstProtectionMetadataFactoryMock);
     }
 
-    ~GstPlayerPrivateTest() override
+    ~GstGenericPlayerPrivateTest() override
     {
         gstPlayerWillBeDestroyed();
         m_sut.reset();
@@ -78,7 +78,7 @@ protected:
 
     void modifyContext(const std::function<void(GenericPlayerContext &)> &fun)
     {
-        // Call any method to modify GstPlayer context
+        // Call any method to modify GstGenericPlayer context
         GstAppSrc appSrc{};
         std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
         EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*task), execute());
@@ -94,7 +94,7 @@ protected:
     }
 };
 
-TEST_F(GstPlayerPrivateTest, shouldScheduleSourceSetupFinish)
+TEST_F(GstGenericPlayerPrivateTest, shouldScheduleSourceSetupFinish)
 {
     std::chrono::milliseconds expectedTimeout{200};
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
@@ -112,7 +112,7 @@ TEST_F(GstPlayerPrivateTest, shouldScheduleSourceSetupFinish)
     m_sut->scheduleSourceSetupFinish();
 }
 
-TEST_F(GstPlayerPrivateTest, shouldScheduleNeedData)
+TEST_F(GstGenericPlayerPrivateTest, shouldScheduleNeedData)
 {
     GstAppSrc appSrc{};
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
@@ -122,7 +122,7 @@ TEST_F(GstPlayerPrivateTest, shouldScheduleNeedData)
     m_sut->scheduleNeedMediaData(&appSrc);
 }
 
-TEST_F(GstPlayerPrivateTest, shouldScheduleEnoughDataData)
+TEST_F(GstGenericPlayerPrivateTest, shouldScheduleEnoughDataData)
 {
     GstAppSrc appSrc{};
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
@@ -132,7 +132,7 @@ TEST_F(GstPlayerPrivateTest, shouldScheduleEnoughDataData)
     m_sut->scheduleEnoughData(&appSrc);
 }
 
-TEST_F(GstPlayerPrivateTest, shouldScheduleAudioUnderflow)
+TEST_F(GstGenericPlayerPrivateTest, shouldScheduleAudioUnderflow)
 {
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*task), execute());
@@ -141,7 +141,7 @@ TEST_F(GstPlayerPrivateTest, shouldScheduleAudioUnderflow)
     m_sut->scheduleAudioUnderflow();
 }
 
-TEST_F(GstPlayerPrivateTest, shouldScheduleVideoUnderflow)
+TEST_F(GstGenericPlayerPrivateTest, shouldScheduleVideoUnderflow)
 {
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*task), execute());
@@ -150,13 +150,13 @@ TEST_F(GstPlayerPrivateTest, shouldScheduleVideoUnderflow)
     m_sut->scheduleVideoUnderflow();
 }
 
-TEST_F(GstPlayerPrivateTest, shouldNotSetVideoRectangleWhenVideoSinkIsNull)
+TEST_F(GstGenericPlayerPrivateTest, shouldNotSetVideoRectangleWhenVideoSinkIsNull)
 {
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, CharStrMatcher("video-sink"), _));
     EXPECT_FALSE(m_sut->setWesterossinkRectangle());
 }
 
-TEST_F(GstPlayerPrivateTest, shouldNotSetVideoRectangleWhenVideoSinkDoesNotHaveRectangleProperty)
+TEST_F(GstGenericPlayerPrivateTest, shouldNotSetVideoRectangleWhenVideoSinkDoesNotHaveRectangleProperty)
 {
     GstElement videoSink{};
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, CharStrMatcher("video-sink"), _))
@@ -171,7 +171,7 @@ TEST_F(GstPlayerPrivateTest, shouldNotSetVideoRectangleWhenVideoSinkDoesNotHaveR
     EXPECT_FALSE(m_sut->setWesterossinkRectangle());
 }
 
-TEST_F(GstPlayerPrivateTest, shouldSetVideoRectangle)
+TEST_F(GstGenericPlayerPrivateTest, shouldSetVideoRectangle)
 {
     GstElement videoSink{};
     GParamSpec rectangleSpec{};
@@ -189,13 +189,13 @@ TEST_F(GstPlayerPrivateTest, shouldSetVideoRectangle)
     EXPECT_TRUE(m_sut->setWesterossinkRectangle());
 }
 
-TEST_F(GstPlayerPrivateTest, shouldNotSetSecondaryVideoWhenVideoSinkIsNull)
+TEST_F(GstGenericPlayerPrivateTest, shouldNotSetSecondaryVideoWhenVideoSinkIsNull)
 {
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, CharStrMatcher("video-sink"), _));
     EXPECT_FALSE(m_sut->setWesterossinkSecondaryVideo());
 }
 
-TEST_F(GstPlayerPrivateTest, shouldNotSetSecondaryVideoWhenVideoSinkDoesNotHaveRectangleProperty)
+TEST_F(GstGenericPlayerPrivateTest, shouldNotSetSecondaryVideoWhenVideoSinkDoesNotHaveRectangleProperty)
 {
     GstElement videoSink{};
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, CharStrMatcher("video-sink"), _))
@@ -210,7 +210,7 @@ TEST_F(GstPlayerPrivateTest, shouldNotSetSecondaryVideoWhenVideoSinkDoesNotHaveR
     EXPECT_FALSE(m_sut->setWesterossinkSecondaryVideo());
 }
 
-TEST_F(GstPlayerPrivateTest, shouldSetSecondaryVideo)
+TEST_F(GstGenericPlayerPrivateTest, shouldSetSecondaryVideo)
 {
     GstElement videoSink{};
     GParamSpec rectangleSpec{};
@@ -228,7 +228,7 @@ TEST_F(GstPlayerPrivateTest, shouldSetSecondaryVideo)
     EXPECT_TRUE(m_sut->setWesterossinkSecondaryVideo());
 }
 
-TEST_F(GstPlayerPrivateTest, shouldNotifyNeedAudioData)
+TEST_F(GstGenericPlayerPrivateTest, shouldNotifyNeedAudioData)
 {
     modifyContext([&](GenericPlayerContext &context) { context.audioNeedData = true; });
 
@@ -236,7 +236,7 @@ TEST_F(GstPlayerPrivateTest, shouldNotifyNeedAudioData)
     m_sut->notifyNeedMediaData(true, false);
 }
 
-TEST_F(GstPlayerPrivateTest, shouldNotifyNeedVideoData)
+TEST_F(GstGenericPlayerPrivateTest, shouldNotifyNeedVideoData)
 {
     modifyContext([&](GenericPlayerContext &context) { context.videoNeedData = true; });
 
@@ -244,17 +244,17 @@ TEST_F(GstPlayerPrivateTest, shouldNotifyNeedVideoData)
     m_sut->notifyNeedMediaData(false, true);
 }
 
-TEST_F(GstPlayerPrivateTest, shouldNotNotifyNeedAudioDataWhenNotNeeded)
+TEST_F(GstGenericPlayerPrivateTest, shouldNotNotifyNeedAudioDataWhenNotNeeded)
 {
     m_sut->notifyNeedMediaData(true, false);
 }
 
-TEST_F(GstPlayerPrivateTest, shouldNotNotifyNeedVideoDataWhenNotNeeded)
+TEST_F(GstGenericPlayerPrivateTest, shouldNotNotifyNeedVideoDataWhenNotNeeded)
 {
     m_sut->notifyNeedMediaData(false, true);
 }
 
-TEST_F(GstPlayerPrivateTest, shouldCreateClearGstBuffer)
+TEST_F(GstGenericPlayerPrivateTest, shouldCreateClearGstBuffer)
 {
     GstBuffer buffer{};
     IMediaPipeline::MediaSegmentVideo mediaSegment{kSourceId, kTimeStamp, kDuration, kWidth, kHeight};
@@ -266,7 +266,7 @@ TEST_F(GstPlayerPrivateTest, shouldCreateClearGstBuffer)
     EXPECT_EQ(GST_BUFFER_DURATION(&buffer), kDuration);
 }
 
-TEST_F(GstPlayerPrivateTest, shouldCreateEncryptedGstBuffer)
+TEST_F(GstGenericPlayerPrivateTest, shouldCreateEncryptedGstBuffer)
 {
     GstBuffer buffer{}, initVectorBuffer{}, keyIdBuffer{}, subSamplesBuffer{};
     guint8 subSamplesData{0};
@@ -309,7 +309,7 @@ TEST_F(GstPlayerPrivateTest, shouldCreateEncryptedGstBuffer)
     EXPECT_EQ(GST_BUFFER_DURATION(&buffer), kDuration);
 }
 
-TEST_F(GstPlayerPrivateTest, shouldFailToAddProtectionMetadata)
+TEST_F(GstGenericPlayerPrivateTest, shouldFailToAddProtectionMetadata)
 {
     GstBuffer buffer{}, initVectorBuffer{}, keyIdBuffer{}, subSamplesBuffer{};
     guint8 subSamplesData{0};
@@ -354,7 +354,7 @@ TEST_F(GstPlayerPrivateTest, shouldFailToAddProtectionMetadata)
     EXPECT_EQ(GST_BUFFER_DURATION(&buffer), kDuration);
 }
 
-TEST_F(GstPlayerPrivateTest, shouldCreateAndDecryptGstBufferForNetflix)
+TEST_F(GstGenericPlayerPrivateTest, shouldCreateAndDecryptGstBufferForNetflix)
 {
     GstBuffer buffer{}, initVectorBuffer{}, keyIdBuffer{}, subSamplesBuffer{};
     guint8 subSamplesData{0};
@@ -396,12 +396,12 @@ TEST_F(GstPlayerPrivateTest, shouldCreateAndDecryptGstBufferForNetflix)
     EXPECT_EQ(GST_BUFFER_DURATION(&buffer), kDuration);
 }
 
-TEST_F(GstPlayerPrivateTest, shouldNotAttachAudioDataWhenBuffersAreEmpty)
+TEST_F(GstGenericPlayerPrivateTest, shouldNotAttachAudioDataWhenBuffersAreEmpty)
 {
     m_sut->attachAudioData();
 }
 
-TEST_F(GstPlayerPrivateTest, shouldNotAttachAudioDataWhenItIsNotNeeded)
+TEST_F(GstGenericPlayerPrivateTest, shouldNotAttachAudioDataWhenItIsNotNeeded)
 {
     GstBuffer buffer{};
     modifyContext([&](GenericPlayerContext &context) { context.audioBuffers.emplace_back(&buffer); });
@@ -409,7 +409,7 @@ TEST_F(GstPlayerPrivateTest, shouldNotAttachAudioDataWhenItIsNotNeeded)
     EXPECT_CALL(*m_gstWrapperMock, gstBufferUnref(&buffer)); // In destructor
 }
 
-TEST_F(GstPlayerPrivateTest, shouldNotAttachAudioWhenSourceIsNotPresent)
+TEST_F(GstGenericPlayerPrivateTest, shouldNotAttachAudioWhenSourceIsNotPresent)
 {
     GstBuffer buffer{};
     modifyContext(
@@ -422,7 +422,7 @@ TEST_F(GstPlayerPrivateTest, shouldNotAttachAudioWhenSourceIsNotPresent)
     EXPECT_CALL(*m_gstWrapperMock, gstBufferUnref(&buffer)); // In destructor
 }
 
-TEST_F(GstPlayerPrivateTest, shouldAttachAudioData)
+TEST_F(GstGenericPlayerPrivateTest, shouldAttachAudioData)
 {
     GstBuffer buffer{};
     GstAppSrc audioSrc{};
@@ -437,7 +437,7 @@ TEST_F(GstPlayerPrivateTest, shouldAttachAudioData)
     m_sut->attachAudioData();
 }
 
-TEST_F(GstPlayerPrivateTest, shouldCancelAudioUnderflow)
+TEST_F(GstGenericPlayerPrivateTest, shouldCancelAudioUnderflow)
 {
     GstBuffer buffer{};
     GstAppSrc audioSrc{};
@@ -457,7 +457,7 @@ TEST_F(GstPlayerPrivateTest, shouldCancelAudioUnderflow)
     m_sut->attachAudioData();
 }
 
-TEST_F(GstPlayerPrivateTest, shouldNotCancelAudioUnderflowWhenVideoUnderflowIsActive)
+TEST_F(GstGenericPlayerPrivateTest, shouldNotCancelAudioUnderflowWhenVideoUnderflowIsActive)
 {
     GstBuffer buffer{};
     GstAppSrc audioSrc{};
@@ -474,12 +474,12 @@ TEST_F(GstPlayerPrivateTest, shouldNotCancelAudioUnderflowWhenVideoUnderflowIsAc
     m_sut->attachAudioData();
 }
 
-TEST_F(GstPlayerPrivateTest, shouldNotAttachVideoDataWhenBuffersAreEmpty)
+TEST_F(GstGenericPlayerPrivateTest, shouldNotAttachVideoDataWhenBuffersAreEmpty)
 {
     m_sut->attachVideoData();
 }
 
-TEST_F(GstPlayerPrivateTest, shouldNotAttachVideoDataWhenItIsNotNeeded)
+TEST_F(GstGenericPlayerPrivateTest, shouldNotAttachVideoDataWhenItIsNotNeeded)
 {
     GstBuffer buffer{};
     modifyContext([&](GenericPlayerContext &context) { context.videoBuffers.emplace_back(&buffer); });
@@ -487,7 +487,7 @@ TEST_F(GstPlayerPrivateTest, shouldNotAttachVideoDataWhenItIsNotNeeded)
     EXPECT_CALL(*m_gstWrapperMock, gstBufferUnref(&buffer)); // In destructor
 }
 
-TEST_F(GstPlayerPrivateTest, shouldNotAttachVideoWhenSourceIsNotPresent)
+TEST_F(GstGenericPlayerPrivateTest, shouldNotAttachVideoWhenSourceIsNotPresent)
 {
     GstBuffer buffer{};
     modifyContext(
@@ -500,7 +500,7 @@ TEST_F(GstPlayerPrivateTest, shouldNotAttachVideoWhenSourceIsNotPresent)
     EXPECT_CALL(*m_gstWrapperMock, gstBufferUnref(&buffer)); // In destructor
 }
 
-TEST_F(GstPlayerPrivateTest, shouldAttachVideoData)
+TEST_F(GstGenericPlayerPrivateTest, shouldAttachVideoData)
 {
     GstBuffer buffer{};
     GstAppSrc videoSrc{};
@@ -515,7 +515,7 @@ TEST_F(GstPlayerPrivateTest, shouldAttachVideoData)
     m_sut->attachVideoData();
 }
 
-TEST_F(GstPlayerPrivateTest, shouldCancelVideoUnderflow)
+TEST_F(GstGenericPlayerPrivateTest, shouldCancelVideoUnderflow)
 {
     GstBuffer buffer{};
     GstAppSrc videoSrc{};
@@ -535,7 +535,7 @@ TEST_F(GstPlayerPrivateTest, shouldCancelVideoUnderflow)
     m_sut->attachVideoData();
 }
 
-TEST_F(GstPlayerPrivateTest, shouldNotCancelVideoUnderflowWhenAudioUnderflowIsActive)
+TEST_F(GstGenericPlayerPrivateTest, shouldNotCancelVideoUnderflowWhenAudioUnderflowIsActive)
 {
     GstBuffer buffer{};
     GstAppSrc videoSrc{};
@@ -552,7 +552,7 @@ TEST_F(GstPlayerPrivateTest, shouldNotCancelVideoUnderflowWhenAudioUnderflowIsAc
     m_sut->attachVideoData();
 }
 
-TEST_F(GstPlayerPrivateTest, shouldAttachAudioAndVideoData)
+TEST_F(GstGenericPlayerPrivateTest, shouldAttachAudioAndVideoData)
 {
     GstBuffer audioBuffer{};
     GstBuffer videoBuffer{};
@@ -575,7 +575,7 @@ TEST_F(GstPlayerPrivateTest, shouldAttachAudioAndVideoData)
     m_sut->attachVideoData();
 }
 
-TEST_F(GstPlayerPrivateTest, shouldCancelAudioAndVideoUnderflow)
+TEST_F(GstGenericPlayerPrivateTest, shouldCancelAudioAndVideoUnderflow)
 {
     GstBuffer audioBuffer{};
     GstBuffer videoBuffer{};
@@ -604,7 +604,7 @@ TEST_F(GstPlayerPrivateTest, shouldCancelAudioAndVideoUnderflow)
     m_sut->attachVideoData();
 }
 
-TEST_F(GstPlayerPrivateTest, shouldUpdateAudioCaps)
+TEST_F(GstGenericPlayerPrivateTest, shouldUpdateAudioCaps)
 {
     GstAppSrc audioSrc{};
     GstCaps dummyCaps1;
@@ -625,7 +625,7 @@ TEST_F(GstPlayerPrivateTest, shouldUpdateAudioCaps)
     m_sut->updateAudioCaps(kSampleRate, kNumberOfChannels);
 }
 
-TEST_F(GstPlayerPrivateTest, shouldUpdateAudioCapsSampleRateOnly)
+TEST_F(GstGenericPlayerPrivateTest, shouldUpdateAudioCapsSampleRateOnly)
 {
     GstAppSrc audioSrc{};
     GstCaps dummyCaps1;
@@ -644,7 +644,7 @@ TEST_F(GstPlayerPrivateTest, shouldUpdateAudioCapsSampleRateOnly)
     m_sut->updateAudioCaps(kSampleRate, kInvalidNumberOfChannels);
 }
 
-TEST_F(GstPlayerPrivateTest, shouldUpdateAudioCapsNumOfChannelsOnly)
+TEST_F(GstGenericPlayerPrivateTest, shouldUpdateAudioCapsNumOfChannelsOnly)
 {
     GstAppSrc audioSrc{};
     GstCaps dummyCaps1;
@@ -664,7 +664,7 @@ TEST_F(GstPlayerPrivateTest, shouldUpdateAudioCapsNumOfChannelsOnly)
     m_sut->updateAudioCaps(kInvalidSampleRate, kNumberOfChannels);
 }
 
-TEST_F(GstPlayerPrivateTest, shouldNotUpdateAudioCapsWhenValuesAreInvalid)
+TEST_F(GstGenericPlayerPrivateTest, shouldNotUpdateAudioCapsWhenValuesAreInvalid)
 {
     GstAppSrc audioSrc{};
     GstCaps dummyCaps1;
@@ -681,12 +681,12 @@ TEST_F(GstPlayerPrivateTest, shouldNotUpdateAudioCapsWhenValuesAreInvalid)
     m_sut->updateAudioCaps(kInvalidSampleRate, kInvalidNumberOfChannels);
 }
 
-TEST_F(GstPlayerPrivateTest, shouldNotUpdateAudioCapsWhenNoSrc)
+TEST_F(GstGenericPlayerPrivateTest, shouldNotUpdateAudioCapsWhenNoSrc)
 {
     m_sut->updateAudioCaps(kSampleRate, kNumberOfChannels);
 }
 
-TEST_F(GstPlayerPrivateTest, shouldUpdateVideoCaps)
+TEST_F(GstGenericPlayerPrivateTest, shouldUpdateVideoCaps)
 {
     GstAppSrc videoSrc{};
     GstCaps dummyCaps1;
@@ -706,12 +706,12 @@ TEST_F(GstPlayerPrivateTest, shouldUpdateVideoCaps)
     m_sut->updateVideoCaps(kWidth, kHeight);
 }
 
-TEST_F(GstPlayerPrivateTest, shouldNotUpdateAudioVideoCapsWhenNoSrc)
+TEST_F(GstGenericPlayerPrivateTest, shouldNotUpdateAudioVideoCapsWhenNoSrc)
 {
     m_sut->updateVideoCaps(kWidth, kHeight);
 }
 
-TEST_F(GstPlayerPrivateTest, shouldFailToChangePlaybackStateWhenPipelineIsNull)
+TEST_F(GstGenericPlayerPrivateTest, shouldFailToChangePlaybackStateWhenPipelineIsNull)
 {
     GstElement *pipelineCopy; // to make generic test destructor happy :-)
     modifyContext(
@@ -725,20 +725,20 @@ TEST_F(GstPlayerPrivateTest, shouldFailToChangePlaybackStateWhenPipelineIsNull)
     modifyContext([&](GenericPlayerContext &context) { context.pipeline = pipelineCopy; });
 }
 
-TEST_F(GstPlayerPrivateTest, shouldFailToChangePlaybackStateWhenSetStateFails)
+TEST_F(GstGenericPlayerPrivateTest, shouldFailToChangePlaybackStateWhenSetStateFails)
 {
     EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(_, GST_STATE_PLAYING)).WillOnce(Return(GST_STATE_CHANGE_FAILURE));
     EXPECT_CALL(m_gstPlayerClient, notifyPlaybackState(PlaybackState::FAILURE));
     EXPECT_FALSE(m_sut->changePipelineState(GST_STATE_PLAYING));
 }
 
-TEST_F(GstPlayerPrivateTest, shouldChangePlaybackState)
+TEST_F(GstGenericPlayerPrivateTest, shouldChangePlaybackState)
 {
     EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(_, GST_STATE_PLAYING)).WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
     EXPECT_TRUE(m_sut->changePipelineState(GST_STATE_PLAYING));
 }
 
-TEST_F(GstPlayerPrivateTest, shouldStartPositionReportingTimer)
+TEST_F(GstGenericPlayerPrivateTest, shouldStartPositionReportingTimer)
 {
     std::unique_ptr<common::ITimer> timerMock = std::make_unique<StrictMock<TimerMock>>();
     EXPECT_CALL(*m_timerFactoryMock, createTimer(positionReportTimerMs, _, common::TimerType::PERIODIC))
@@ -746,7 +746,7 @@ TEST_F(GstPlayerPrivateTest, shouldStartPositionReportingTimer)
     m_sut->startPositionReportingAndCheckAudioUnderflowTimer();
 }
 
-TEST_F(GstPlayerPrivateTest, shouldNotStartPositionReportingTimerWhenItIsActive)
+TEST_F(GstGenericPlayerPrivateTest, shouldNotStartPositionReportingTimerWhenItIsActive)
 {
     std::unique_ptr<common::ITimer> timerMock = std::make_unique<StrictMock<TimerMock>>();
     EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*timerMock), isActive()).WillOnce(Return(true));
@@ -756,7 +756,7 @@ TEST_F(GstPlayerPrivateTest, shouldNotStartPositionReportingTimerWhenItIsActive)
     m_sut->startPositionReportingAndCheckAudioUnderflowTimer();
 }
 
-TEST_F(GstPlayerPrivateTest, shouldScheduleReportPositionWhenPositionReportingTimerIsFired)
+TEST_F(GstGenericPlayerPrivateTest, shouldScheduleReportPositionWhenPositionReportingTimerIsFired)
 {
     std::unique_ptr<common::ITimer> timerMock = std::make_unique<StrictMock<TimerMock>>();
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
@@ -775,7 +775,7 @@ TEST_F(GstPlayerPrivateTest, shouldScheduleReportPositionWhenPositionReportingTi
     m_sut->startPositionReportingAndCheckAudioUnderflowTimer();
 }
 
-TEST_F(GstPlayerPrivateTest, shouldStopActivePositionReportingTimer)
+TEST_F(GstGenericPlayerPrivateTest, shouldStopActivePositionReportingTimer)
 {
     std::unique_ptr<common::ITimer> timerMock = std::make_unique<StrictMock<TimerMock>>();
     EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*timerMock), isActive()).WillOnce(Return(true));
@@ -786,7 +786,7 @@ TEST_F(GstPlayerPrivateTest, shouldStopActivePositionReportingTimer)
     m_sut->stopPositionReportingAndCheckAudioUnderflowTimer();
 }
 
-TEST_F(GstPlayerPrivateTest, shouldNotStopInactivePositionReportingTimer)
+TEST_F(GstGenericPlayerPrivateTest, shouldNotStopInactivePositionReportingTimer)
 {
     std::unique_ptr<common::ITimer> timerMock = std::make_unique<StrictMock<TimerMock>>();
     EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*timerMock), isActive()).WillOnce(Return(false));
@@ -796,12 +796,12 @@ TEST_F(GstPlayerPrivateTest, shouldNotStopInactivePositionReportingTimer)
     m_sut->stopPositionReportingAndCheckAudioUnderflowTimer();
 }
 
-TEST_F(GstPlayerPrivateTest, shouldNotStopInactivePositionReportingTimerWhenThereIsNoTimer)
+TEST_F(GstGenericPlayerPrivateTest, shouldNotStopInactivePositionReportingTimerWhenThereIsNoTimer)
 {
     m_sut->stopPositionReportingAndCheckAudioUnderflowTimer();
 }
 
-TEST_F(GstPlayerPrivateTest, shouldStopWorkerThread)
+TEST_F(GstGenericPlayerPrivateTest, shouldStopWorkerThread)
 {
     EXPECT_CALL(m_workerThreadMock, stop());
     m_sut->stopWorkerThread();
