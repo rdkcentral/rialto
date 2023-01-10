@@ -40,9 +40,10 @@ protected:
     {
         gstPlayerWillBeCreated();
         m_sut = std::make_unique<GstPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, MediaType::MSE, m_videoReq,
-                                            m_gstWrapperMock, m_glibWrapperMock, m_gstSrcFactoryMock,
-                                            m_timerFactoryMock, std::move(taskFactory), std::move(workerThreadFactory),
-                                            std::move(gstDispatcherThreadFactory), m_gstProtectionMetadataFactoryMock);
+                                            m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
+                                            m_gstSrcFactoryMock, m_timerFactoryMock, std::move(taskFactory),
+                                            std::move(workerThreadFactory), std::move(gstDispatcherThreadFactory),
+                                            m_gstProtectionMetadataFactoryMock);
     }
 
     ~GstPlayerTest() override

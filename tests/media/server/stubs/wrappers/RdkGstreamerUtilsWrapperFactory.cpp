@@ -17,27 +17,14 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_GST_PLAYER_FACTORY_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_GST_PLAYER_FACTORY_MOCK_H_
-
-#include "IGstPlayer.h"
-#include <gmock/gmock.h>
+#include "IRdkGstreamerUtilsWrapper.h"
 #include <memory>
 
 namespace firebolt::rialto::server
 {
-class GstPlayerFactoryMock : public IGstPlayerFactory
+// Stub create factory for compilation.
+std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> IRdkGstreamerUtilsWrapperFactory::getFactory()
 {
-public:
-    GstPlayerFactoryMock() = default;
-    virtual ~GstPlayerFactoryMock() = default;
-
-    MOCK_METHOD(std::unique_ptr<IGstPlayer>, createGstPlayer,
-                (IGstPlayerClient * client, IDecryptionService &decryptionService, MediaType type,
-                 const VideoRequirements &videoRequirements,
-                 const std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactory),
-                (override));
-};
+    return nullptr;
+}
 } // namespace firebolt::rialto::server
-
-#endif // FIREBOLT_RIALTO_SERVER_GST_PLAYER_FACTORY_MOCK_H_

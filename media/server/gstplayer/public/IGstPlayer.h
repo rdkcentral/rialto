@@ -29,6 +29,7 @@
 #include "IDecryptionService.h"
 #include "IGstPlayerClient.h"
 #include "IMediaPipeline.h"
+#include "IRdkGstreamerUtilsWrapper.h"
 
 namespace firebolt::rialto::server
 {
@@ -60,8 +61,10 @@ public:
      *
      * @retval the new player instance or null on error.
      */
-    virtual std::unique_ptr<IGstPlayer> createGstPlayer(IGstPlayerClient *client, IDecryptionService &decryptionService,
-                                                        MediaType type, const VideoRequirements &videoRequirements) = 0;
+    virtual std::unique_ptr<IGstPlayer>
+    createGstPlayer(IGstPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
+                    const VideoRequirements &videoRequirements,
+                    const std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactory) = 0;
 };
 
 class IGstPlayer
