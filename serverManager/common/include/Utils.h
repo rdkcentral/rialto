@@ -22,7 +22,7 @@
 
 #include "LoggingLevels.h"
 #include "RialtoServerManagerLogging.h"
-#include "MediaServerCommon.h"
+#include "SessionServerState.h"
 
 namespace rialto::servermanager::common
 {

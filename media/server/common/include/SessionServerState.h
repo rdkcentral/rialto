@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2023 Sky UK
+ * Copyright 2022 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,21 +17,11 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_MEDIA_SERVER_COMMON_H_
-#define FIREBOLT_RIALTO_MEDIA_SERVER_COMMON_H_
-
-/**
- * @file MediaCommon.h
- *
- * The definition of the Rialto Media Server Common types
- *
- */
+#ifndef FIREBOLT_RIALTO_SERVER_SESSION_SERVER_STATE_H_
+#define FIREBOLT_RIALTO_SERVER_SESSION_SERVER_STATE_H_
 
 namespace firebolt::rialto::server
 {
-/**
- * @brief The State of the Session Server.
- */
 enum class SessionServerState
 {
     UNINITIALIZED,
@@ -40,16 +30,6 @@ enum class SessionServerState
     NOT_RUNNING,
     ERROR
 };
-
-/**
- * @brief The type of media playback.
- */
-enum class MediaPlaybackType
-{
-    GENERIC,
-    WEB_AUDIO
-};
-
 } // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_MEDIA_SERVER_COMMON_H_
+#endif // FIREBOLT_RIALTO_SERVER_SESSION_SERVER_STATE_H_

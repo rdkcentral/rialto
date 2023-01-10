@@ -23,7 +23,7 @@
 #include "ISessionServerApp.h"
 #include "ITimer.h"
 #include "SessionServerAppManager.h"
-#include "MediaServerCommon.h"
+#include "SessionServerState.h"
 #include <array>
 #include <list>
 #include <memory>

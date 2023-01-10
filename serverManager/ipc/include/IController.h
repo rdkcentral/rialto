@@ -21,7 +21,7 @@
 #define RIALTO_SERVERMANAGER_IPC_I_CONTROLLER_H_
 
 #include "LoggingLevels.h"
-#include "MediaServerCommon.h"
+#include "SessionServerState.h"
 #include <memory>
 #include <string>
 

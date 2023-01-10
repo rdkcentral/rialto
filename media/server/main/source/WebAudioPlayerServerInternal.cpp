@@ -118,7 +118,7 @@ WebAudioPlayerServerInternal::WebAudioPlayerServerInternal(std::weak_ptr<IWebAud
 bool WebAudioPlayerServerInternal::initWebAudioPlayerInternal(int handle, const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory)
 {
     bool status = false;
-    if (!m_shmBuffer->mapPartition(MediaPlaybackType::WEB_AUDIO, handle))
+    if (!m_shmBuffer->mapPartition(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, handle))
     {
         RIALTO_SERVER_LOG_ERROR("Unable to map shm partition");
     }

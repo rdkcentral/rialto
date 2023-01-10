@@ -40,7 +40,7 @@ void WebAudioPlayerTestBase::createWebAudioPlayer()
     mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_mainThreadFactoryMock, getMainThread()).WillOnce(Return(m_mainThreadMock));
     EXPECT_CALL(*m_mainThreadMock, registerClient()).WillOnce(Return(m_kMainThreadClientId));
-    EXPECT_CALL(*m_sharedMemoryBufferMock, mapPartition(MediaPlaybackType::WEB_AUDIO, m_webAudioPlayerHandle)).WillOnce(Return(true));
+    EXPECT_CALL(*m_sharedMemoryBufferMock, mapPartition(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, m_webAudioPlayerHandle)).WillOnce(Return(true));
     EXPECT_CALL(*m_gstPlayerFactoryMock, createGstWebAudioPlayer(_)).WillOnce(Return(ByMove(std::move(m_gstPlayer))));
 
     EXPECT_NO_THROW(m_webAudioPlayer =

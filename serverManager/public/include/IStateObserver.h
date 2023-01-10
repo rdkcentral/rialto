@@ -25,7 +25,7 @@
 #ifndef RIALTO_SERVERMANAGER_SERVICE_I_STATE_OBSERVER_H_
 #define RIALTO_SERVERMANAGER_SERVICE_I_STATE_OBSERVER_H_
 
-#include "MediaServerCommon.h"
+#include "SessionServerState.h"
 #include <string>
 
 namespace rialto::servermanager::service

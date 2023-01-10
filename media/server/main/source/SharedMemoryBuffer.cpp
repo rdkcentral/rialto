@@ -65,16 +65,16 @@ constexpr uint32_t videoRegionSize = 7 * 1024 * 1024; // 7MB
 constexpr uint32_t audioRegionSize = 1 * 1024 * 1024; // 1MB
 constexpr uint32_t webAudioRegionSize = 10 * 1024; // 10KB
 
-std::vector<firebolt::rialto::server::SharedMemoryBuffer::Partition> calculatePartitionSize(firebolt::rialto::server::MediaPlaybackType playbackType, int num)
+std::vector<firebolt::rialto::server::SharedMemoryBuffer::Partition> calculatePartitionSize(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType, int num)
 {
-    if (firebolt::rialto::server::MediaPlaybackType::GENERIC == playbackType)
+    if (firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC == playbackType)
     {
         // As (for now) resolution of playback (for example HD or UHD) is not known, partitions have the same size.
         firebolt::rialto::server::SharedMemoryBuffer::Partition singlePlaybackDataBuffer{NO_ID_ASSIGNED,
                                                                                         audioRegionSize, videoRegionSize};
         return std::vector<firebolt::rialto::server::SharedMemoryBuffer::Partition>(num, singlePlaybackDataBuffer);
     }
-    else if (firebolt::rialto::server::MediaPlaybackType::WEB_AUDIO == playbackType)
+    else if (firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO == playbackType)
     {
         firebolt::rialto::server::SharedMemoryBuffer::Partition webAudioDataBuffer{NO_ID_ASSIGNED,
                                                                                    webAudioRegionSize, 0};
@@ -86,15 +86,15 @@ std::vector<firebolt::rialto::server::SharedMemoryBuffer::Partition> calculatePa
     }
 }
 
-const char *toString(const firebolt::rialto::server::MediaPlaybackType &type)
+const char *toString(const firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType &type)
 {
     switch (type)
     {
-    case firebolt::rialto::server::MediaPlaybackType::GENERIC:
+    case firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC:
     {
         return "GENERIC";
     }
-    case firebolt::rialto::server::MediaPlaybackType::WEB_AUDIO:
+    case firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO:
     {
         return "WEB_AUDIO";
     }
@@ -390,11 +390,11 @@ bool SharedMemoryBuffer::getDataPtrForPartition(MediaPlaybackType playbackType, 
 }
 const std::vector<SharedMemoryBuffer::Partition>* SharedMemoryBuffer::getPlaybackTypePartition(MediaPlaybackType playbackType) const
 {
-    if (firebolt::rialto::server::MediaPlaybackType::GENERIC == playbackType)
+    if (firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC == playbackType)
     {
         return &m_genericPartitions;
     }
-    else if (firebolt::rialto::server::MediaPlaybackType::WEB_AUDIO == playbackType)
+    else if (firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO == playbackType)
     {
         return &m_webAudioPartitions;
     }

@@ -41,7 +41,7 @@ if( NOT CMAKE_BUILD_TYPE STREQUAL "UnitTests" )
                 include/IStateObserver.h
                 include/LoggingLevels.h
                 include/ServerManagerServiceFactory.h
-                include/MediaServerCommon.h
+                include/SessionServerState.h
         )
         install (
                 FILES ${LIB_RIALTO_SERVER_MANAGER_PUBLIC_HEADERS}

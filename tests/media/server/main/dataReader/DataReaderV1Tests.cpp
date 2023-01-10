@@ -32,7 +32,6 @@ using firebolt::rialto::common::IMediaFrameWriterFactory;
 using firebolt::rialto::server::DataReaderV1;
 using firebolt::rialto::server::ISharedMemoryBuffer;
 using firebolt::rialto::server::ISharedMemoryBufferFactory;
-using firebolt::rialto::server::MediaPlaybackType;
 
 namespace
 {
@@ -80,13 +79,13 @@ public:
     void writeVideoData()
     {
         ASSERT_TRUE(m_shm);
-        EXPECT_TRUE(m_shm->mapPartition(MediaPlaybackType::GENERIC, sessionId));
-        std::uint32_t maxMediaBytes = m_shm->getMaxDataLen(MediaPlaybackType::GENERIC, sessionId, videoMediaSourceType) - maxMetadataBytes;
-        auto metadataOffset = m_shm->getDataOffset(MediaPlaybackType::GENERIC, sessionId , videoMediaSourceType);
+        EXPECT_TRUE(m_shm->mapPartition(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, sessionId));
+        std::uint32_t maxMediaBytes = m_shm->getMaxDataLen(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, sessionId, videoMediaSourceType) - maxMetadataBytes;
+        auto metadataOffset = m_shm->getDataOffset(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, sessionId , videoMediaSourceType);
         auto mediadataOffset = metadataOffset + maxMetadataBytes;
         auto shmInfo = std::make_shared<MediaPlayerShmInfo>(
             MediaPlayerShmInfo{maxMetadataBytes, metadataOffset, mediadataOffset, maxMediaBytes});
-        auto *shmBegin{m_shm->getDataPtr(MediaPlaybackType::GENERIC, sessionId, videoMediaSourceType)};
+        auto *shmBegin{m_shm->getDataPtr(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, sessionId, videoMediaSourceType)};
         auto mediaFrameWriter = IMediaFrameWriterFactory::getFactory()->createFrameWriter(shmBegin, shmInfo);
         EXPECT_EQ(mediaFrameWriter->writeFrame(videoSegment), AddSegmentStatus::OK);
     }
@@ -115,13 +114,13 @@ public:
     void writeAudioData()
     {
         ASSERT_TRUE(m_shm);
-        EXPECT_TRUE(m_shm->mapPartition(MediaPlaybackType::GENERIC, sessionId));
-        std::uint32_t maxMediaBytes = m_shm->getMaxDataLen(MediaPlaybackType::GENERIC, sessionId, audioMediaSourceType) - maxMetadataBytes;
-        auto metadataOffset = m_shm->getDataOffset(MediaPlaybackType::GENERIC, sessionId , audioMediaSourceType);
+        EXPECT_TRUE(m_shm->mapPartition(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, sessionId));
+        std::uint32_t maxMediaBytes = m_shm->getMaxDataLen(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, sessionId, audioMediaSourceType) - maxMetadataBytes;
+        auto metadataOffset = m_shm->getDataOffset(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, sessionId , audioMediaSourceType);
         auto mediadataOffset = metadataOffset + maxMetadataBytes;
         auto shmInfo = std::make_shared<MediaPlayerShmInfo>(
             MediaPlayerShmInfo{maxMetadataBytes, metadataOffset, mediadataOffset, maxMediaBytes});
-        auto *shmBegin{m_shm->getDataPtr(MediaPlaybackType::GENERIC, sessionId, videoMediaSourceType)};
+        auto *shmBegin{m_shm->getDataPtr(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, sessionId, videoMediaSourceType)};
         auto mediaFrameWriter = IMediaFrameWriterFactory::getFactory()->createFrameWriter(shmBegin, shmInfo);
         ASSERT_TRUE(mediaFrameWriter);
         EXPECT_EQ(mediaFrameWriter->writeFrame(audioSegment), AddSegmentStatus::OK);
@@ -131,7 +130,7 @@ public:
     {
         ASSERT_TRUE(m_shm);
         std::uint8_t *buffer = m_shm->getBuffer();
-        std::uint32_t regionOffset = m_shm->getDataOffset(MediaPlaybackType::GENERIC, sessionId , audioMediaSourceType);
+        std::uint32_t regionOffset = m_shm->getDataOffset(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, sessionId , audioMediaSourceType);
         m_sut = std::make_unique<DataReaderV1>(audioMediaSourceType, buffer, regionOffset + 4, numFrames);
         auto result = m_sut->readData();
         ASSERT_EQ(1, result.size());

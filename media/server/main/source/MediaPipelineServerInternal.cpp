@@ -140,7 +140,7 @@ MediaPipelineServerInternal::MediaPipelineServerInternal(
     bool result = false;
     auto task = [&]()
     {
-        if (!m_shmBuffer->mapPartition(MediaPlaybackType::GENERIC, m_sessionId))
+        if (!m_shmBuffer->mapPartition(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_sessionId))
         {
             RIALTO_SERVER_LOG_ERROR("Unable to map shm partition");
         }
@@ -170,7 +170,7 @@ MediaPipelineServerInternal::~MediaPipelineServerInternal()
                 timer.second->cancel();
             }
         }
-        if (!m_shmBuffer->unmapPartition(MediaPlaybackType::GENERIC, m_sessionId))
+        if (!m_shmBuffer->unmapPartition(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_sessionId))
         {
             RIALTO_SERVER_LOG_ERROR("Unable to unmap shm partition");
         }
@@ -517,7 +517,7 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
     std::uint32_t regionOffset = 0;
     try
     {
-        regionOffset = m_shmBuffer->getDataOffset(MediaPlaybackType::GENERIC, m_sessionId, mediaSourceType);
+        regionOffset = m_shmBuffer->getDataOffset(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_sessionId, mediaSourceType);
     }
     catch (const std::runtime_error &e)
     {
@@ -674,7 +674,7 @@ bool MediaPipelineServerInternal::notifyNeedMediaData(MediaSourceType mediaSourc
 bool MediaPipelineServerInternal::notifyNeedMediaDataInternal(MediaSourceType mediaSourceType)
 {
     m_needMediaDataTimers.erase(mediaSourceType);
-    m_shmBuffer->clearData(MediaPlaybackType::GENERIC, m_sessionId, mediaSourceType);
+    m_shmBuffer->clearData(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_sessionId, mediaSourceType);
     NeedMediaData event{m_mediaPipelineClient, *m_activeRequests, *m_shmBuffer, m_sessionId, mediaSourceType};
     if (!event.send())
     {

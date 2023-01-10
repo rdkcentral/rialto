@@ -21,7 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_SERVICE_I_SESSION_SERVER_MANAGER_H_
 
 #include "RialtoLogging.h"
-#include "MediaServerCommon.h"
+#include "SessionServerState.h"
 #include <memory>
 #include <string>
 

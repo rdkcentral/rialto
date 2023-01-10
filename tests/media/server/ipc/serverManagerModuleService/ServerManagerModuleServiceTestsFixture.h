@@ -25,7 +25,7 @@
 #include "IpcControllerMock.h"
 #include "IpcServerMock.h"
 #include "SessionServerManagerMock.h"
-#include "MediaServerCommon.h"
+#include "SessionServerState.h"
 #include <gtest/gtest.h>
 #include <memory>
 

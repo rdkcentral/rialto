@@ -21,7 +21,7 @@
 #define RIALTO_SERVERMANAGER_COMMON_I_SESSION_SERVER_APP_MANAGER_H_
 
 #include "LoggingLevels.h"
-#include "MediaServerCommon.h"
+#include "SessionServerState.h"
 #include <string>
 #include <sys/types.h>
 

@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * @file MediaServerCommon.h
+ * @file SessionServerState.h
  *
  * This file comprises the enum class definition of SessionServerState.
  * Enum represents all possible states of session server.

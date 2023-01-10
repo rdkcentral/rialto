@@ -38,8 +38,8 @@ NeedMediaData::NeedMediaData(std::weak_ptr<IMediaPipelineClient> client, IActive
     }
     try
     {
-        m_maxMediaBytes = shmBuffer.getMaxDataLen(MediaPlaybackType::GENERIC, sessionId, mediaSourceType) - getMaxMetadataBytes();
-        auto metadataOffset = shmBuffer.getDataOffset(MediaPlaybackType::GENERIC, sessionId, mediaSourceType);
+        m_maxMediaBytes = shmBuffer.getMaxDataLen(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, sessionId, mediaSourceType) - getMaxMetadataBytes();
+        auto metadataOffset = shmBuffer.getDataOffset(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, sessionId, mediaSourceType);
         auto mediadataOffset = metadataOffset + getMaxMetadataBytes();
         m_shmInfo = std::make_shared<MediaPlayerShmInfo>(
             MediaPlayerShmInfo{getMaxMetadataBytes(), metadataOffset, mediadataOffset, m_maxMediaBytes});
