@@ -21,6 +21,7 @@
 #define GST_GENERIC_PLAYER_TEST_COMMON_H_
 
 #include "DecryptionServiceMock.h"
+#include "GenericPlayerTaskFactoryMock.h"
 #include "GlibWrapperMock.h"
 #include "GstDispatcherThreadFactoryMock.h"
 #include "GstDispatcherThreadMock.h"
@@ -31,7 +32,6 @@
 #include "GstSrcFactoryMock.h"
 #include "GstSrcMock.h"
 #include "GstWrapperMock.h"
-#include "GenericPlayerTaskFactoryMock.h"
 #include "TimerFactoryMock.h"
 #include "WorkerThreadFactoryMock.h"
 #include "WorkerThreadMock.h"
@@ -59,7 +59,8 @@ public:
     std::shared_ptr<StrictMock<GstSrcMock>> m_gstSrcMock{std::make_shared<StrictMock<GstSrcMock>>()};
     std::shared_ptr<StrictMock<TimerFactoryMock>> m_timerFactoryMock{std::make_shared<StrictMock<TimerFactoryMock>>()};
     std::unique_ptr<IGenericPlayerTaskFactory> m_taskFactory{std::make_unique<StrictMock<GenericPlayerTaskFactoryMock>>()};
-    StrictMock<GenericPlayerTaskFactoryMock> &m_taskFactoryMock{dynamic_cast<StrictMock<GenericPlayerTaskFactoryMock> &>(*m_taskFactory)};
+    StrictMock<GenericPlayerTaskFactoryMock> &m_taskFactoryMock{
+        dynamic_cast<StrictMock<GenericPlayerTaskFactoryMock> &>(*m_taskFactory)};
     std::unique_ptr<IWorkerThreadFactory> workerThreadFactory{std::make_unique<StrictMock<WorkerThreadFactoryMock>>()};
     StrictMock<WorkerThreadFactoryMock> &m_workerThreadFactoryMock{
         dynamic_cast<StrictMock<WorkerThreadFactoryMock> &>(*workerThreadFactory)};

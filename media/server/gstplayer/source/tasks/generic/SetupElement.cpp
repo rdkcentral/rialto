@@ -18,10 +18,10 @@
  */
 
 #include "tasks/generic/SetupElement.h"
+#include "GenericPlayerContext.h"
 #include "IGlibWrapper.h"
 #include "IGstGenericPlayerPrivate.h"
 #include "IGstWrapper.h"
-#include "GenericPlayerContext.h"
 #include "RialtoServerLogging.h"
 #include "Utils.h"
 
@@ -65,7 +65,8 @@ void videoUnderflowCallback(GstElement *object, guint fifoDepth, gpointer queueD
 namespace firebolt::rialto::server
 {
 SetupElement::SetupElement(GenericPlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper,
-                           std::shared_ptr<IGlibWrapper> glibWrapper, IGstGenericPlayerPrivate &player, GstElement *element)
+                           std::shared_ptr<IGlibWrapper> glibWrapper, IGstGenericPlayerPrivate &player,
+                           GstElement *element)
     : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_player{player}, m_element{element}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetupElement");

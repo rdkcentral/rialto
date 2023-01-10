@@ -26,7 +26,7 @@
 
 constexpr std::uint32_t m_audioBufferLen{1 * 1024 * 1024}; // 1MB
 constexpr std::uint32_t m_videoBufferLen{7 * 1024 * 1024}; // 7MB
-constexpr std::uint32_t m_webAudioBufferLen{10 * 1024}; // 10KB
+constexpr std::uint32_t m_webAudioBufferLen{10 * 1024};    // 10KB
 
 class SharedMemoryBufferTests : public testing::Test
 {
@@ -38,23 +38,34 @@ public:
 
     void mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType, int id);
     void mapPartitionShouldFail(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType, int id);
-    void unmapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType, int id);
+    void unmapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType,
+                                     int id);
     void unmapPartitionShouldFail(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType, int id);
     void shouldReturnMaxGenericAudioDataLen(int id);
-    void shouldFailToReturnMaxAudioDataLen(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType, int id);
+    void shouldFailToReturnMaxAudioDataLen(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType,
+                                           int id);
     void shouldReturnMaxGenericVideoDataLen(int id);
-    void shouldFailToReturnMaxVideoDataLen(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType, int id);
+    void shouldFailToReturnMaxVideoDataLen(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType,
+                                           int id);
     void shouldReturnMaxWebAudioDataLen(int id);
-    void shouldReturnVideoDataOffset(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType, int id, std::uint32_t expectedOffset);
-    void shouldFailToReturnVideoDataOffset(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType, int id);
-    void shouldReturnAudioDataOffset(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType, int id, std::uint32_t expectedOffset);
-    void shouldFailToReturnAudioDataOffset(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType, int id);
+    void shouldReturnVideoDataOffset(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType,
+                                     int id, std::uint32_t expectedOffset);
+    void shouldFailToReturnVideoDataOffset(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType,
+                                           int id);
+    void shouldReturnAudioDataOffset(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType,
+                                     int id, std::uint32_t expectedOffset);
+    void shouldFailToReturnAudioDataOffset(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType,
+                                           int id);
     void shouldClearAudioData(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType, int id);
-    void shouldFailToClearAudioData(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType, int id);
+    void shouldFailToClearAudioData(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType,
+                                    int id);
     void shouldClearVideoData(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType, int id);
-    void shouldFailToClearVideoData(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType, int id);
-    uint8_t *shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType, int id, const firebolt::rialto::MediaSourceType &mediaSourceType);
-    void shouldFailToGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType, int id, const firebolt::rialto::MediaSourceType &mediaSourceType);
+    void shouldFailToClearVideoData(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType,
+                                    int id);
+    uint8_t *shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType, int id,
+                              const firebolt::rialto::MediaSourceType &mediaSourceType);
+    void shouldFailToGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType, int id,
+                                const firebolt::rialto::MediaSourceType &mediaSourceType);
     void shouldGetFd();
     void shouldGetSize();
     void shouldGetBuffer();

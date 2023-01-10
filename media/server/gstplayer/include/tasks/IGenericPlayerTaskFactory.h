@@ -20,12 +20,12 @@
 #ifndef FIREBOLT_RIALTO_SERVER_I_GENERIC_PLAYER_TASK_FACTORY_H_
 #define FIREBOLT_RIALTO_SERVER_I_GENERIC_PLAYER_TASK_FACTORY_H_
 
+#include "GenericPlayerContext.h"
 #include "IDataReader.h"
 #include "IGstGenericPlayerPrivate.h"
 #include "IMediaPipeline.h"
 #include "IPlayerTask.h"
 #include "MediaCommon.h"
-#include "GenericPlayerContext.h"
 #include <cstdint>
 #include <gst/app/gstappsrc.h>
 #include <memory>
@@ -63,7 +63,8 @@ public:
      * @retval the new AttachSource task instance.
      */
     virtual std::unique_ptr<IPlayerTask>
-    createAttachSource(GenericPlayerContext &context, const std::unique_ptr<IMediaPipeline::MediaSource> &source) const = 0;
+    createAttachSource(GenericPlayerContext &context,
+                       const std::unique_ptr<IMediaPipeline::MediaSource> &source) const = 0;
 
     /**
      * @brief Creates a EnoughData task.
@@ -105,7 +106,8 @@ public:
      *
      * @retval the new HandleBusMessage task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createHandleBusMessage(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+    virtual std::unique_ptr<IPlayerTask> createHandleBusMessage(GenericPlayerContext &context,
+                                                                IGstGenericPlayerPrivate &player,
                                                                 GstMessage *message) const = 0;
 
     /**
@@ -188,8 +190,8 @@ public:
      *
      * @retval the new SetPosition task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createSetPosition(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                                           std::int64_t position) const = 0;
+    virtual std::unique_ptr<IPlayerTask>
+    createSetPosition(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, std::int64_t position) const = 0;
 
     /**
      * @brief Creates a SetupElement task.
@@ -200,8 +202,8 @@ public:
      *
      * @retval the new SetupElement task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createSetupElement(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                                            GstElement *element) const = 0;
+    virtual std::unique_ptr<IPlayerTask>
+    createSetupElement(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, GstElement *element) const = 0;
 
     /**
      * @brief Creates a SetupSource task.
@@ -212,8 +214,8 @@ public:
      *
      * @retval the new SetupSource task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createSetupSource(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                                           GstElement *source) const = 0;
+    virtual std::unique_ptr<IPlayerTask>
+    createSetupSource(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, GstElement *source) const = 0;
 
     /**
      * @brief Creates a SetVideoGeometry task.
@@ -224,7 +226,8 @@ public:
      *
      * @retval the new SetVideoGeometry task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createSetVideoGeometry(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+    virtual std::unique_ptr<IPlayerTask> createSetVideoGeometry(GenericPlayerContext &context,
+                                                                IGstGenericPlayerPrivate &player,
                                                                 const Rectangle &rectangle) const = 0;
 
     /**
@@ -254,7 +257,8 @@ public:
      *
      * @retval the new Stop  task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createStop(GenericPlayerContext &context, IGstGenericPlayerPrivate &player) const = 0;
+    virtual std::unique_ptr<IPlayerTask> createStop(GenericPlayerContext &context,
+                                                    IGstGenericPlayerPrivate &player) const = 0;
 
     /**
      * @brief Creates an Underflow task.

@@ -18,10 +18,10 @@
  */
 
 #include "tasks/generic/ReportPosition.h"
+#include "GenericPlayerContext.h"
 #include "GstGenericPlayerClientMock.h"
 #include "GstWrapperMock.h"
 #include "Matchers.h"
-#include "GenericPlayerContext.h"
 #include <gst/gst.h>
 #include <gtest/gtest.h>
 

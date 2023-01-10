@@ -20,8 +20,10 @@
 #ifndef FIREBOLT_RIALTO_SERVER_GST_GENERIC_PLAYER_H_
 #define FIREBOLT_RIALTO_SERVER_GST_GENERIC_PLAYER_H_
 
+#include "GenericPlayerContext.h"
 #include "IGlibWrapper.h"
 #include "IGstDispatcherThread.h"
+#include "IGstDispatcherThreadClient.h"
 #include "IGstGenericPlayer.h"
 #include "IGstGenericPlayerPrivate.h"
 #include "IGstProtectionMetadataWrapperFactory.h"
@@ -29,10 +31,8 @@
 #include "IGstWrapper.h"
 #include "ITimer.h"
 #include "IWorkerThread.h"
-#include "GenericPlayerContext.h"
-#include "tasks/IPlayerTask.h"
 #include "tasks/IGenericPlayerTaskFactory.h"
-#include "IGstDispatcherThreadClient.h"
+#include "tasks/IPlayerTask.h"
 #include <IMediaPipeline.h>
 #include <memory>
 #include <string>
@@ -53,8 +53,9 @@ public:
      */
     static std::weak_ptr<IGstGenericPlayerFactory> m_factory;
 
-    std::unique_ptr<IGstGenericPlayer> createGstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionService &decryptionService,
-                                                              MediaType type, const VideoRequirements &videoRequirements) override;
+    std::unique_ptr<IGstGenericPlayer> createGstGenericPlayer(IGstGenericPlayerClient *client,
+                                                              IDecryptionService &decryptionService, MediaType type,
+                                                              const VideoRequirements &videoRequirements) override;
 };
 
 /**
@@ -79,12 +80,14 @@ public:
      * @param[in] gstDispatcherThreadFactory   : The gst dispatcher thread factory
      */
     GstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
-              const VideoRequirements &videoRequirements, const std::shared_ptr<IGstWrapper> &gstWrapper,
-              const std::shared_ptr<IGlibWrapper> &glibWrapper, const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
-              std::shared_ptr<common::ITimerFactory> timerFactory, std::unique_ptr<IGenericPlayerTaskFactory> taskFactory,
-              std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
-              std::unique_ptr<IGstDispatcherThreadFactory> gstDispatcherThreadFactory,
-              std::shared_ptr<IGstProtectionMetadataWrapperFactory> gstProtectionMetadataFactory);
+                     const VideoRequirements &videoRequirements, const std::shared_ptr<IGstWrapper> &gstWrapper,
+                     const std::shared_ptr<IGlibWrapper> &glibWrapper,
+                     const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
+                     std::shared_ptr<common::ITimerFactory> timerFactory,
+                     std::unique_ptr<IGenericPlayerTaskFactory> taskFactory,
+                     std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
+                     std::unique_ptr<IGstDispatcherThreadFactory> gstDispatcherThreadFactory,
+                     std::shared_ptr<IGstProtectionMetadataWrapperFactory> gstProtectionMetadataFactory);
 
     /**
      * @brief Virtual destructor.

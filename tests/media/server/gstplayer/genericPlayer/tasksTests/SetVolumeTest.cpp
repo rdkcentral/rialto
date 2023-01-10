@@ -18,8 +18,8 @@
  */
 
 #include "tasks/generic/SetVolume.h"
-#include "GstWrapperMock.h"
 #include "GenericPlayerContext.h"
+#include "GstWrapperMock.h"
 #include <gst/gst.h>
 #include <gtest/gtest.h>
 

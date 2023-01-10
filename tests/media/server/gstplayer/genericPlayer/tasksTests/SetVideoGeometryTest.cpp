@@ -18,9 +18,9 @@
  */
 
 #include "tasks/generic/SetVideoGeometry.h"
+#include "GenericPlayerContext.h"
 #include "GstGenericPlayerPrivateMock.h"
 #include "Matchers.h"
-#include "GenericPlayerContext.h"
 #include <gst/gst.h>
 #include <gtest/gtest.h>
 

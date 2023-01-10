@@ -23,7 +23,8 @@
 
 namespace firebolt::rialto::server
 {
-SetVideoGeometry::SetVideoGeometry(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, const Rectangle &rectangle)
+SetVideoGeometry::SetVideoGeometry(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                                   const Rectangle &rectangle)
     : m_context{context}, m_player{player}, m_rectangle{rectangle}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetVideoGeometry");

@@ -18,9 +18,9 @@
  */
 
 #include "tasks/generic/CheckAudioUnderflow.h"
+#include "GenericPlayerContext.h"
 #include "IGstGenericPlayerClient.h"
 #include "IGstWrapper.h"
-#include "GenericPlayerContext.h"
 #include "RialtoServerLogging.h"
 #include "tasks/generic/Underflow.h"
 #include <gst/gst.h>
@@ -29,8 +29,8 @@
 
 namespace firebolt::rialto::server
 {
-CheckAudioUnderflow::CheckAudioUnderflow(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client,
-                                         std::shared_ptr<IGstWrapper> gstWrapper)
+CheckAudioUnderflow::CheckAudioUnderflow(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                                         IGstGenericPlayerClient *client, std::shared_ptr<IGstWrapper> gstWrapper)
     : m_context{context}, m_player(player), m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}
 {
 }

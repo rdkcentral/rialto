@@ -18,15 +18,16 @@
  */
 
 #include "tasks/generic/HandleBusMessage.h"
+#include "GenericPlayerContext.h"
 #include "IGstGenericPlayerClient.h"
 #include "IGstWrapper.h"
-#include "GenericPlayerContext.h"
 #include "RialtoServerLogging.h"
 
 namespace firebolt::rialto::server
 {
-HandleBusMessage::HandleBusMessage(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client,
-                                   std::shared_ptr<IGstWrapper> gstWrapper, GstMessage *message)
+HandleBusMessage::HandleBusMessage(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                                   IGstGenericPlayerClient *client, std::shared_ptr<IGstWrapper> gstWrapper,
+                                   GstMessage *message)
     : m_context{context}, m_player{player}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}, m_message{message}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing HandleBusMessage");

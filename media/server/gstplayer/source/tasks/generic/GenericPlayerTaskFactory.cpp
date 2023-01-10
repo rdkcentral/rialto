@@ -43,22 +43,23 @@
 
 namespace firebolt::rialto::server
 {
-GenericPlayerTaskFactory::GenericPlayerTaskFactory(IGstGenericPlayerClient *client, const std::shared_ptr<IGstWrapper> &gstWrapper,
-                                     const std::shared_ptr<IGlibWrapper> &glibWrapper)
+GenericPlayerTaskFactory::GenericPlayerTaskFactory(IGstGenericPlayerClient *client,
+                                                   const std::shared_ptr<IGstWrapper> &gstWrapper,
+                                                   const std::shared_ptr<IGlibWrapper> &glibWrapper)
     : m_client{client}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}
 {
 }
 
 std::unique_ptr<IPlayerTask>
 GenericPlayerTaskFactory::createAttachSamples(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                       const IMediaPipeline::MediaSegmentVector &mediaSegments) const
+                                              const IMediaPipeline::MediaSegmentVector &mediaSegments) const
 {
     return std::make_unique<AttachSamples>(context, player, mediaSegments);
 }
 
 std::unique_ptr<IPlayerTask>
 GenericPlayerTaskFactory::createAttachSource(GenericPlayerContext &context,
-                                      const std::unique_ptr<IMediaPipeline::MediaSource> &source) const
+                                             const std::unique_ptr<IMediaPipeline::MediaSource> &source) const
 {
     return std::make_unique<AttachSource>(context, m_gstWrapper, m_glibWrapper, source);
 }
@@ -68,20 +69,22 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createEnoughData(GenericP
     return std::make_unique<EnoughData>(context, src);
 }
 
-std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createEos(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                                          const firebolt::rialto::MediaSourceType &type) const
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createEos(GenericPlayerContext &context,
+                                                                 IGstGenericPlayerPrivate &player,
+                                                                 const firebolt::rialto::MediaSourceType &type) const
 {
     return std::make_unique<Eos>(context, player, m_gstWrapper, type);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createFinishSetupSource(GenericPlayerContext &context,
-                                                                        IGstGenericPlayerPrivate &player) const
+                                                                               IGstGenericPlayerPrivate &player) const
 {
     return std::make_unique<FinishSetupSource>(context, player, m_client);
 }
 
-std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createHandleBusMessage(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                                                       GstMessage *message) const
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createHandleBusMessage(GenericPlayerContext &context,
+                                                                              IGstGenericPlayerPrivate &player,
+                                                                              GstMessage *message) const
 {
     return std::make_unique<HandleBusMessage>(context, player, m_client, m_gstWrapper, message);
 }
@@ -101,9 +104,8 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createPlay(IGstGenericPla
     return std::make_unique<Play>(player);
 }
 
-std::unique_ptr<IPlayerTask>
-GenericPlayerTaskFactory::createReadShmDataAndAttachSamples(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                                     const std::shared_ptr<IDataReader> &dataReader) const
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createReadShmDataAndAttachSamples(
+    GenericPlayerContext &context, IGstGenericPlayerPrivate &player, const std::shared_ptr<IDataReader> &dataReader) const
 {
     return std::make_unique<ReadShmDataAndAttachSamples>(context, player, dataReader);
 }
@@ -114,36 +116,41 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createReportPosition(Gene
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createCheckAudioUnderflow(GenericPlayerContext &context,
-                                                                          IGstGenericPlayerPrivate &player) const
+                                                                                 IGstGenericPlayerPrivate &player) const
 {
     return std::make_unique<CheckAudioUnderflow>(context, player, m_client, m_gstWrapper);
 }
 
-std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetPlaybackRate(GenericPlayerContext &context, double rate) const
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetPlaybackRate(GenericPlayerContext &context,
+                                                                             double rate) const
 {
     return std::make_unique<SetPlaybackRate>(context, m_gstWrapper, m_glibWrapper, rate);
 }
 
-std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetPosition(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                                                  std::int64_t position) const
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetPosition(GenericPlayerContext &context,
+                                                                         IGstGenericPlayerPrivate &player,
+                                                                         std::int64_t position) const
 {
     return std::make_unique<SetPosition>(context, player, m_client, m_gstWrapper, position);
 }
 
-std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetupElement(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                                                   GstElement *element) const
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetupElement(GenericPlayerContext &context,
+                                                                          IGstGenericPlayerPrivate &player,
+                                                                          GstElement *element) const
 {
     return std::make_unique<SetupElement>(context, m_gstWrapper, m_glibWrapper, player, element);
 }
 
-std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetupSource(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                                                  GstElement *source) const
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetupSource(GenericPlayerContext &context,
+                                                                         IGstGenericPlayerPrivate &player,
+                                                                         GstElement *source) const
 {
     return std::make_unique<SetupSource>(context, player, source);
 }
 
-std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetVideoGeometry(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                                                       const Rectangle &rectangle) const
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetVideoGeometry(GenericPlayerContext &context,
+                                                                              IGstGenericPlayerPrivate &player,
+                                                                              const Rectangle &rectangle) const
 {
     return std::make_unique<SetVideoGeometry>(context, player, rectangle);
 }
@@ -158,12 +165,14 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createShutdown(IGstGeneri
     return std::make_unique<Shutdown>(player);
 }
 
-std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createStop(GenericPlayerContext &context, IGstGenericPlayerPrivate &player) const
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createStop(GenericPlayerContext &context,
+                                                                  IGstGenericPlayerPrivate &player) const
 {
     return std::make_unique<Stop>(context, player);
 }
 
-std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createUnderflow(IGstGenericPlayerPrivate &player, bool &underflowFlag) const
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createUnderflow(IGstGenericPlayerPrivate &player,
+                                                                       bool &underflowFlag) const
 {
     return std::make_unique<Underflow>(player, m_client, underflowFlag);
 }

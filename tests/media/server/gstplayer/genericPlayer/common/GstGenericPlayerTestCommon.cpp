@@ -18,8 +18,8 @@
  */
 
 #include "GstGenericPlayerTestCommon.h"
-#include "Matchers.h"
 #include "GenericPlayerTaskMock.h"
+#include "Matchers.h"
 #include <memory>
 #include <utility>
 
@@ -73,16 +73,16 @@ void GstGenericPlayerTestCommon::triggerSetupSource(GstElement *element)
 {
     ASSERT_TRUE(m_setupSourceFunc);
     ((void (*)(GstElement *, GstElement *, GstGenericPlayer *))m_setupSourceFunc)(&m_pipeline, element,
-                                                                           reinterpret_cast<GstGenericPlayer *>(
-                                                                               m_setupSourceUserData));
+                                                                                  reinterpret_cast<GstGenericPlayer *>(
+                                                                                      m_setupSourceUserData));
 }
 
 void GstGenericPlayerTestCommon::triggerSetupElement(GstElement *element)
 {
     ASSERT_TRUE(m_setupElementFunc);
     ((void (*)(GstElement *, GstElement *, GstGenericPlayer *))m_setupElementFunc)(&m_pipeline, element,
-                                                                            reinterpret_cast<GstGenericPlayer *>(
-                                                                                m_setupElementUserData));
+                                                                                   reinterpret_cast<GstGenericPlayer *>(
+                                                                                       m_setupElementUserData));
 }
 
 void GstGenericPlayerTestCommon::setPipelineState(const GstState &state)
@@ -90,7 +90,10 @@ void GstGenericPlayerTestCommon::setPipelineState(const GstState &state)
     GST_STATE(&m_pipeline) = state;
 }
 
-void GstGenericPlayerTestCommon::initFactories() { EXPECT_CALL(*m_gstSrcFactoryMock, getGstSrc()).WillOnce(Return(m_gstSrcMock)); }
+void GstGenericPlayerTestCommon::initFactories()
+{
+    EXPECT_CALL(*m_gstSrcFactoryMock, getGstSrc()).WillOnce(Return(m_gstSrcMock));
+}
 
 void GstGenericPlayerTestCommon::expectMakePlaybin()
 {
@@ -134,7 +137,10 @@ void GstGenericPlayerTestCommon::expectSetSignalCallbacks()
             }));
 }
 
-void GstGenericPlayerTestCommon::expectSetUri() { EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_pipeline, CharStrMatcher("uri"))); }
+void GstGenericPlayerTestCommon::expectSetUri()
+{
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_pipeline, CharStrMatcher("uri")));
+}
 
 void GstGenericPlayerTestCommon::expectCheckPlaySink()
 {

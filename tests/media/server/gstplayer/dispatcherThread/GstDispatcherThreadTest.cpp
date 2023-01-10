@@ -18,8 +18,8 @@
  */
 
 #include "GstDispatcherThread.h"
-#include "GstWrapperMock.h"
 #include "GstDispatcherThreadClientMock.h"
+#include "GstWrapperMock.h"
 #include <condition_variable>
 #include <gst/gst.h>
 #include <gtest/gtest.h>

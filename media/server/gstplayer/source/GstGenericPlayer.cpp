@@ -69,9 +69,9 @@ std::shared_ptr<IGstGenericPlayerFactory> IGstGenericPlayerFactory::getFactory()
     return factory;
 }
 
-std::unique_ptr<IGstGenericPlayer> GstGenericPlayerFactory::createGstGenericPlayer(IGstGenericPlayerClient *client,
-                                                              IDecryptionService &decryptionService, MediaType type,
-                                                              const VideoRequirements &videoRequirements)
+std::unique_ptr<IGstGenericPlayer>
+GstGenericPlayerFactory::createGstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionService &decryptionService,
+                                                MediaType type, const VideoRequirements &videoRequirements)
 {
     std::unique_ptr<IGstGenericPlayer> gstPlayer;
 
@@ -90,12 +90,13 @@ std::unique_ptr<IGstGenericPlayer> GstGenericPlayerFactory::createGstGenericPlay
             throw std::runtime_error("Cannot create GlibWrapper");
         }
         gstPlayer = std::make_unique<GstGenericPlayer>(client, decryptionService, type, videoRequirements, gstWrapper,
-                                                glibWrapper, IGstSrcFactory::getFactory(),
-                                                common::ITimerFactory::getFactory(),
-                                                std::make_unique<GenericPlayerTaskFactory>(client, gstWrapper, glibWrapper),
-                                                std::make_unique<WorkerThreadFactory>(),
-                                                std::make_unique<GstDispatcherThreadFactory>(),
-                                                IGstProtectionMetadataWrapperFactory::createFactory());
+                                                       glibWrapper, IGstSrcFactory::getFactory(),
+                                                       common::ITimerFactory::getFactory(),
+                                                       std::make_unique<GenericPlayerTaskFactory>(client, gstWrapper,
+                                                                                                  glibWrapper),
+                                                       std::make_unique<WorkerThreadFactory>(),
+                                                       std::make_unique<GstDispatcherThreadFactory>(),
+                                                       IGstProtectionMetadataWrapperFactory::createFactory());
     }
     catch (const std::exception &e)
     {
@@ -105,14 +106,16 @@ std::unique_ptr<IGstGenericPlayer> GstGenericPlayerFactory::createGstGenericPlay
     return gstPlayer;
 }
 
-GstGenericPlayer::GstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
-                     const VideoRequirements &videoRequirements, const std::shared_ptr<IGstWrapper> &gstWrapper,
-                     const std::shared_ptr<IGlibWrapper> &glibWrapper,
-                     const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
-                     std::shared_ptr<common::ITimerFactory> timerFactory, std::unique_ptr<IGenericPlayerTaskFactory> taskFactory,
-                     std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
-                     std::unique_ptr<IGstDispatcherThreadFactory> gstDispatcherThreadFactory,
-                     std::shared_ptr<IGstProtectionMetadataWrapperFactory> gstProtectionMetadataFactory)
+GstGenericPlayer::GstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionService &decryptionService,
+                                   MediaType type, const VideoRequirements &videoRequirements,
+                                   const std::shared_ptr<IGstWrapper> &gstWrapper,
+                                   const std::shared_ptr<IGlibWrapper> &glibWrapper,
+                                   const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
+                                   std::shared_ptr<common::ITimerFactory> timerFactory,
+                                   std::unique_ptr<IGenericPlayerTaskFactory> taskFactory,
+                                   std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
+                                   std::unique_ptr<IGstDispatcherThreadFactory> gstDispatcherThreadFactory,
+                                   std::shared_ptr<IGstProtectionMetadataWrapperFactory> gstProtectionMetadataFactory)
     : m_gstPlayerClient(client), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_timerFactory{timerFactory},
       m_taskFactory{std::move(taskFactory)}
 {
@@ -169,7 +172,8 @@ GstGenericPlayer::GstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionS
     }
     }
 
-    m_gstDispatcherThread = gstDispatcherThreadFactory->createGstDispatcherThread(*this, m_context.pipeline, m_gstWrapper);
+    m_gstDispatcherThread =
+        gstDispatcherThreadFactory->createGstDispatcherThread(*this, m_context.pipeline, m_gstWrapper);
 }
 
 GstGenericPlayer::~GstGenericPlayer()

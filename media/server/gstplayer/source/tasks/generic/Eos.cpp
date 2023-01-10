@@ -18,8 +18,8 @@
  */
 
 #include "tasks/generic/Eos.h"
-#include "IGstWrapper.h"
 #include "GenericPlayerContext.h"
+#include "IGstWrapper.h"
 #include "RialtoServerLogging.h"
 
 namespace firebolt::rialto::server

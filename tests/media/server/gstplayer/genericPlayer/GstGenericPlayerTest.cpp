@@ -18,11 +18,11 @@
  */
 
 #include "DataReaderMock.h"
+#include "GenericPlayerTaskMock.h"
 #include "GstGenericPlayerTestCommon.h"
 #include "IMediaPipeline.h"
 #include "Matchers.h"
 #include "MediaSourceUtil.h"
-#include "GenericPlayerTaskMock.h"
 
 using testing::_;
 using testing::ByMove;
@@ -39,10 +39,11 @@ protected:
     GstGenericPlayerTest()
     {
         gstPlayerWillBeCreated();
-        m_sut = std::make_unique<GstGenericPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, MediaType::MSE, m_videoReq,
-                                            m_gstWrapperMock, m_glibWrapperMock, m_gstSrcFactoryMock,
-                                            m_timerFactoryMock, std::move(m_taskFactory), std::move(workerThreadFactory),
-                                            std::move(gstDispatcherThreadFactory), m_gstProtectionMetadataFactoryMock);
+        m_sut = std::make_unique<GstGenericPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, MediaType::MSE,
+                                                   m_videoReq, m_gstWrapperMock, m_glibWrapperMock, m_gstSrcFactoryMock,
+                                                   m_timerFactoryMock, std::move(m_taskFactory),
+                                                   std::move(workerThreadFactory), std::move(gstDispatcherThreadFactory),
+                                                   m_gstProtectionMetadataFactoryMock);
     }
 
     ~GstGenericPlayerTest() override

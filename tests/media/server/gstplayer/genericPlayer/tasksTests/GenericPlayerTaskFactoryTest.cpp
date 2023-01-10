@@ -18,11 +18,12 @@
  */
 
 #include "tasks/generic/GenericPlayerTaskFactory.h"
+#include "GenericPlayerContext.h"
 #include "GlibWrapperMock.h"
 #include "GstGenericPlayerClientMock.h"
 #include "GstGenericPlayerPrivateMock.h"
 #include "GstWrapperMock.h"
-#include "GenericPlayerContext.h"
+#include "tasks/IPlayerTask.h"
 #include "tasks/generic/AttachSamples.h"
 #include "tasks/generic/AttachSource.h"
 #include "tasks/generic/CheckAudioUnderflow.h"
@@ -30,7 +31,6 @@
 #include "tasks/generic/Eos.h"
 #include "tasks/generic/FinishSetupSource.h"
 #include "tasks/generic/HandleBusMessage.h"
-#include "tasks/IPlayerTask.h"
 #include "tasks/generic/NeedData.h"
 #include "tasks/generic/Pause.h"
 #include "tasks/generic/Play.h"

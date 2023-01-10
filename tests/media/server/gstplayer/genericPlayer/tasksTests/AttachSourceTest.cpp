@@ -18,10 +18,10 @@
  */
 
 #include "tasks/generic/AttachSource.h"
+#include "GenericPlayerContext.h"
 #include "GlibWrapperMock.h"
 #include "GstWrapperMock.h"
 #include "Matchers.h"
-#include "GenericPlayerContext.h"
 #include <gst/gst.h>
 #include <gtest/gtest.h>
 #include <string>

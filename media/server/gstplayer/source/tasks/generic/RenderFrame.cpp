@@ -18,9 +18,9 @@
  */
 
 #include "tasks/generic/RenderFrame.h"
+#include "GenericPlayerContext.h"
 #include "IGstGenericPlayerClient.h"
 #include "IGstWrapper.h"
-#include "GenericPlayerContext.h"
 #include "RialtoServerLogging.h"
 #include <gst/gst.h>
 

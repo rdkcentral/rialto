@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_PLAYER_TASK_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_PLAYER_TASK_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_GENERIC_PLAYER_TASK_MOCK_H_
+#define FIREBOLT_RIALTO_SERVER_GENERIC_PLAYER_TASK_MOCK_H_
 
 #include "IGstGenericPlayerPrivate.h"
 #include "tasks/IPlayerTask.h"
@@ -33,4 +33,4 @@ public:
 };
 } // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_PLAYER_TASK_MOCK_H_
+#endif // FIREBOLT_RIALTO_SERVER_GENERIC_PLAYER_TASK_MOCK_H_

@@ -20,10 +20,10 @@
 #ifndef FIREBOLT_RIALTO_SERVER_SET_PLAYBACK_RATE_H_
 #define FIREBOLT_RIALTO_SERVER_SET_PLAYBACK_RATE_H_
 
+#include "GenericPlayerContext.h"
 #include "IGlibWrapper.h"
 #include "IGstWrapper.h"
 #include "IPlayerTask.h"
-#include "GenericPlayerContext.h"
 #include <memory>
 
 namespace firebolt::rialto::server

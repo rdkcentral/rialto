@@ -60,8 +60,10 @@ public:
      *
      * @retval the new player instance or null on error.
      */
-    virtual std::unique_ptr<IGstGenericPlayer> createGstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionService &decryptionService,
-                                                        MediaType type, const VideoRequirements &videoRequirements) = 0;
+    virtual std::unique_ptr<IGstGenericPlayer> createGstGenericPlayer(IGstGenericPlayerClient *client,
+                                                                      IDecryptionService &decryptionService,
+                                                                      MediaType type,
+                                                                      const VideoRequirements &videoRequirements) = 0;
 };
 
 class IGstGenericPlayer

@@ -19,9 +19,9 @@
 
 #include "tasks/generic/ReadShmDataAndAttachSamples.h"
 #include "DataReaderMock.h"
+#include "GenericPlayerContext.h"
 #include "GstGenericPlayerPrivateMock.h"
 #include "IMediaPipeline.h"
-#include "GenericPlayerContext.h"
 #include <gst/gst.h>
 #include <gtest/gtest.h>
 

@@ -23,15 +23,15 @@
 namespace firebolt::rialto::server
 {
 /**
-    * @brief Initialise gstreamer.
-    *
-    * Gstreamer should be initalised at the start of the program.
-    * Gstreamer shall be passed the pointers to the main argc and argv
-    * variables so that it can process its own command line options.
-    *
-    * @param[in] argc    : The count of command line arguments.
-    * @param[in] argv    : Vector of C strings each containing a command line argument.
-    */
+ * @brief Initialise gstreamer.
+ *
+ * Gstreamer should be initalised at the start of the program.
+ * Gstreamer shall be passed the pointers to the main argc and argv
+ * variables so that it can process its own command line options.
+ *
+ * @param[in] argc    : The count of command line arguments.
+ * @param[in] argv    : Vector of C strings each containing a command line argument.
+ */
 bool gstInitalise(int argc, char **argv);
 }; // namespace firebolt::rialto::server
 

@@ -19,11 +19,11 @@
 
 #include "tasks/generic/RenderFrame.h"
 
+#include "GenericPlayerContext.h"
 #include "GlibWrapperMock.h"
 #include "GstGenericPlayerClientMock.h"
 #include "GstWrapperMock.h"
 #include "Matchers.h"
-#include "GenericPlayerContext.h"
 #include <gst/gst.h>
 #include <gtest/gtest.h>
 

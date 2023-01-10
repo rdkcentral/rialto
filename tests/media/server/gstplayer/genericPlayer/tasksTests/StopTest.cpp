@@ -18,8 +18,8 @@
  */
 
 #include "tasks/generic/Stop.h"
-#include "GstGenericPlayerPrivateMock.h"
 #include "GenericPlayerContext.h"
+#include "GstGenericPlayerPrivateMock.h"
 #include <gst/gst.h>
 #include <gtest/gtest.h>
 

@@ -33,13 +33,15 @@ class GstDispatcherThreadFactory : public IGstDispatcherThreadFactory
 public:
     ~GstDispatcherThreadFactory() override = default;
     std::unique_ptr<IGstDispatcherThread>
-    createGstDispatcherThread(IGstDispatcherThreadClient& client, GstElement *pipeline, const std::shared_ptr<IGstWrapper> &gstWrapper) const override;
+    createGstDispatcherThread(IGstDispatcherThreadClient &client, GstElement *pipeline,
+                              const std::shared_ptr<IGstWrapper> &gstWrapper) const override;
 };
 
 class GstDispatcherThread : public IGstDispatcherThread
 {
 public:
-    GstDispatcherThread(IGstDispatcherThreadClient& client, GstElement *pipeline, const std::shared_ptr<IGstWrapper> &gstWrapper);
+    GstDispatcherThread(IGstDispatcherThreadClient &client, GstElement *pipeline,
+                        const std::shared_ptr<IGstWrapper> &gstWrapper);
     ~GstDispatcherThread() override;
 
 private:

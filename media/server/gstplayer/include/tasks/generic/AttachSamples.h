@@ -20,10 +20,10 @@
 #ifndef FIREBOLT_RIALTO_SERVER_ATTACH_SAMPLES_H_
 #define FIREBOLT_RIALTO_SERVER_ATTACH_SAMPLES_H_
 
+#include "GenericPlayerContext.h"
 #include "IGstGenericPlayerPrivate.h"
 #include "IMediaPipeline.h"
 #include "IPlayerTask.h"
-#include "GenericPlayerContext.h"
 #include <gst/gst.h>
 #include <vector>
 

@@ -20,9 +20,9 @@
 #ifndef FIREBOLT_RIALTO_SERVER_SET_VOLUME_H_
 #define FIREBOLT_RIALTO_SERVER_SET_VOLUME_H_
 
+#include "GenericPlayerContext.h"
 #include "IGstWrapper.h"
 #include "IPlayerTask.h"
-#include "GenericPlayerContext.h"
 #include <memory>
 
 namespace firebolt::rialto::server

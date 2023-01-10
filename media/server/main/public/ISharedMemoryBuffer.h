@@ -51,8 +51,8 @@ public:
     ISharedMemoryBuffer &operator=(ISharedMemoryBuffer &&) = delete;
 
     /**
-    * @brief The type of media playback.
-    */
+     * @brief The type of media playback.
+     */
     enum class MediaPlaybackType
     {
         GENERIC,
@@ -99,7 +99,8 @@ public:
      *
      * @retval true on success.
      */
-    virtual std::uint32_t getDataOffset(MediaPlaybackType playbackType, int id, const MediaSourceType &mediaSourceType) const = 0;
+    virtual std::uint32_t getDataOffset(MediaPlaybackType playbackType, int id,
+                                        const MediaSourceType &mediaSourceType) const = 0;
 
     /**
      * @brief Gets the maximum length of the specified data partition.
@@ -110,7 +111,8 @@ public:
      *
      * @retval true on success.
      */
-    virtual std::uint32_t getMaxDataLen(MediaPlaybackType playbackType, int id, const MediaSourceType &mediaSourceType) const = 0;
+    virtual std::uint32_t getMaxDataLen(MediaPlaybackType playbackType, int id,
+                                        const MediaSourceType &mediaSourceType) const = 0;
 
     /**
      * @brief Gets the pointer to the start of the specified data partition.
@@ -121,7 +123,8 @@ public:
      *
      * @retval true on success.
      */
-    virtual std::uint8_t *getDataPtr(MediaPlaybackType playbackType, int id, const MediaSourceType &mediaSourceType) const = 0;
+    virtual std::uint8_t *getDataPtr(MediaPlaybackType playbackType, int id,
+                                     const MediaSourceType &mediaSourceType) const = 0;
 
     /**
      * @brief Gets file descriptor of the shared memory.

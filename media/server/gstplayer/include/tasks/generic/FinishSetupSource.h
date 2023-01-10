@@ -20,10 +20,10 @@
 #ifndef FIREBOLT_RIALTO_SERVER_FINISH_SETUP_SOURCE_H_
 #define FIREBOLT_RIALTO_SERVER_FINISH_SETUP_SOURCE_H_
 
+#include "GenericPlayerContext.h"
 #include "IGstGenericPlayerClient.h"
 #include "IGstGenericPlayerPrivate.h"
 #include "IPlayerTask.h"
-#include "GenericPlayerContext.h"
 
 namespace firebolt::rialto::server
 {

@@ -20,11 +20,11 @@
 #ifndef FIREBOLT_RIALTO_SERVER_EOS_H_
 #define FIREBOLT_RIALTO_SERVER_EOS_H_
 
+#include "GenericPlayerContext.h"
 #include "IGstGenericPlayerPrivate.h"
 #include "IGstWrapper.h"
 #include "IPlayerTask.h"
 #include "MediaCommon.h"
-#include "GenericPlayerContext.h"
 #include <memory>
 
 namespace firebolt::rialto::server

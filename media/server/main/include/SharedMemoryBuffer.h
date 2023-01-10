@@ -50,9 +50,12 @@ public:
 
     bool clearData(MediaPlaybackType playbackType, int id, const MediaSourceType &mediaSourceType) const override;
 
-    std::uint32_t getDataOffset(MediaPlaybackType playbackType, int id, const MediaSourceType &mediaSourceType) const override;
-    std::uint32_t getMaxDataLen(MediaPlaybackType playbackType, int id, const MediaSourceType &mediaSourceType) const override;
-    std::uint8_t *getDataPtr(MediaPlaybackType playbackType, int id, const MediaSourceType &mediaSourceType) const override;
+    std::uint32_t getDataOffset(MediaPlaybackType playbackType, int id,
+                                const MediaSourceType &mediaSourceType) const override;
+    std::uint32_t getMaxDataLen(MediaPlaybackType playbackType, int id,
+                                const MediaSourceType &mediaSourceType) const override;
+    std::uint8_t *getDataPtr(MediaPlaybackType playbackType, int id,
+                             const MediaSourceType &mediaSourceType) const override;
 
     int getFd() const override;
     std::uint32_t getSize() const override;
@@ -68,8 +71,8 @@ public:
 private:
     size_t calculateBufferSize() const;
     bool getDataPtrForPartition(MediaPlaybackType playbackType, int id, std::uint8_t **ptr) const;
-    const std::vector<Partition>* getPlaybackTypePartition(MediaPlaybackType playbackType) const;
-    std::vector<Partition>* getPlaybackTypePartition(MediaPlaybackType playbackType);
+    const std::vector<Partition> *getPlaybackTypePartition(MediaPlaybackType playbackType) const;
+    std::vector<Partition> *getPlaybackTypePartition(MediaPlaybackType playbackType);
 
 private:
     std::vector<Partition> m_genericPartitions;

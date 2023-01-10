@@ -17,9 +17,9 @@
  * limitations under the License.
  */
 
+#include "GstLogForwarding.h"
 #include "IGlibWrapper.h"
 #include "IGstWrapper.h"
-#include "GstLogForwarding.h"
 #include "RialtoServerLogging.h"
 
 namespace firebolt::rialto::server

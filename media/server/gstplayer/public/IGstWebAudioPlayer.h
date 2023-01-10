@@ -20,9 +20,9 @@
 #ifndef FIREBOLT_RIALTO_SERVER_I_GST_WEB_AUDIO_PLAYER_H_
 #define FIREBOLT_RIALTO_SERVER_I_GST_WEB_AUDIO_PLAYER_H_
 
+#include "IGstWebAudioPlayerClient.h"
 #include <memory>
 #include <stdint.h>
-#include "IGstWebAudioPlayerClient.h"
 
 namespace firebolt::rialto::server
 {

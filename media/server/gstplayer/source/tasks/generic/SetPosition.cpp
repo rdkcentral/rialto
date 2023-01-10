@@ -18,17 +18,17 @@
  */
 
 #include "tasks/generic/SetPosition.h"
+#include "GenericPlayerContext.h"
 #include "IGstGenericPlayerClient.h"
 #include "IGstGenericPlayerPrivate.h"
 #include "IGstWrapper.h"
-#include "GenericPlayerContext.h"
 #include "RialtoServerLogging.h"
 #include "tasks/generic/NeedData.h"
 
 namespace firebolt::rialto::server
 {
-SetPosition::SetPosition(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client,
-                         std::shared_ptr<IGstWrapper> gstWrapper, std::int64_t position)
+SetPosition::SetPosition(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                         IGstGenericPlayerClient *client, std::shared_ptr<IGstWrapper> gstWrapper, std::int64_t position)
     : m_context{context}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}, m_position{position}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetPosition");

@@ -20,10 +20,10 @@
 #ifndef FIREBOLT_RIALTO_SERVER_REPORT_POSITION_H_
 #define FIREBOLT_RIALTO_SERVER_REPORT_POSITION_H_
 
+#include "GenericPlayerContext.h"
 #include "IGstGenericPlayerClient.h"
 #include "IGstWrapper.h"
 #include "IPlayerTask.h"
-#include "GenericPlayerContext.h"
 #include <memory>
 
 namespace firebolt::rialto::server
@@ -31,7 +31,8 @@ namespace firebolt::rialto::server
 class ReportPosition : public IPlayerTask
 {
 public:
-    ReportPosition(GenericPlayerContext &context, IGstGenericPlayerClient *client, std::shared_ptr<IGstWrapper> gstWrapper);
+    ReportPosition(GenericPlayerContext &context, IGstGenericPlayerClient *client,
+                   std::shared_ptr<IGstWrapper> gstWrapper);
     ~ReportPosition() override = default;
     void execute() const override;
 

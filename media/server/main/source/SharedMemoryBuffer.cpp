@@ -63,21 +63,21 @@ const char *memoryBufferName{"rialto_avbuf"};
 constexpr int NO_ID_ASSIGNED{-1};
 constexpr uint32_t videoRegionSize = 7 * 1024 * 1024; // 7MB
 constexpr uint32_t audioRegionSize = 1 * 1024 * 1024; // 1MB
-constexpr uint32_t webAudioRegionSize = 10 * 1024; // 10KB
+constexpr uint32_t webAudioRegionSize = 10 * 1024;    // 10KB
 
-std::vector<firebolt::rialto::server::SharedMemoryBuffer::Partition> calculatePartitionSize(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType, int num)
+std::vector<firebolt::rialto::server::SharedMemoryBuffer::Partition>
+calculatePartitionSize(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType, int num)
 {
     if (firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC == playbackType)
     {
         // As (for now) resolution of playback (for example HD or UHD) is not known, partitions have the same size.
-        firebolt::rialto::server::SharedMemoryBuffer::Partition singlePlaybackDataBuffer{NO_ID_ASSIGNED,
-                                                                                        audioRegionSize, videoRegionSize};
+        firebolt::rialto::server::SharedMemoryBuffer::Partition singlePlaybackDataBuffer{NO_ID_ASSIGNED, audioRegionSize,
+                                                                                         videoRegionSize};
         return std::vector<firebolt::rialto::server::SharedMemoryBuffer::Partition>(num, singlePlaybackDataBuffer);
     }
     else if (firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO == playbackType)
     {
-        firebolt::rialto::server::SharedMemoryBuffer::Partition webAudioDataBuffer{NO_ID_ASSIGNED,
-                                                                                   webAudioRegionSize, 0};
+        firebolt::rialto::server::SharedMemoryBuffer::Partition webAudioDataBuffer{NO_ID_ASSIGNED, webAudioRegionSize, 0};
         return std::vector<firebolt::rialto::server::SharedMemoryBuffer::Partition>(num, webAudioDataBuffer);
     }
     else
@@ -116,9 +116,10 @@ SharedMemoryBufferFactory::createSharedMemoryBuffer(unsigned numOfPlaybacks, uns
     return std::make_shared<SharedMemoryBuffer>(numOfPlaybacks, numOfWebAudioPlayers);
 }
 
-SharedMemoryBuffer::SharedMemoryBuffer(
-    unsigned numOfPlaybacks, unsigned numOfWebAudioPlayers)
-    : m_genericPartitions{calculatePartitionSize(MediaPlaybackType::GENERIC, numOfPlaybacks)}, m_webAudioPartitions{calculatePartitionSize(MediaPlaybackType::WEB_AUDIO, numOfWebAudioPlayers)}, m_dataBufferLen{0}, m_dataBufferFd{-1}, m_dataBuffer{nullptr}
+SharedMemoryBuffer::SharedMemoryBuffer(unsigned numOfPlaybacks, unsigned numOfWebAudioPlayers)
+    : m_genericPartitions{calculatePartitionSize(MediaPlaybackType::GENERIC, numOfPlaybacks)},
+      m_webAudioPartitions{calculatePartitionSize(MediaPlaybackType::WEB_AUDIO, numOfWebAudioPlayers)},
+      m_dataBufferLen{0}, m_dataBufferFd{-1}, m_dataBuffer{nullptr}
 {
     int fd = syscall(SYS_memfd_create, memoryBufferName, MFD_CLOEXEC | MFD_ALLOW_SEALING);
     if (fd < 0)
@@ -180,22 +181,21 @@ SharedMemoryBuffer::~SharedMemoryBuffer()
 
 bool SharedMemoryBuffer::mapPartition(MediaPlaybackType playbackType, int id)
 {
-    std::vector<Partition>* partitions = getPlaybackTypePartition(playbackType);
+    std::vector<Partition> *partitions = getPlaybackTypePartition(playbackType);
     if (!partitions)
     {
         RIALTO_SERVER_LOG_ERROR("Cannot map the partition for playback type %s with id: %d", toString(playbackType), id);
         return false;
     }
 
-    auto partition = std::find_if(partitions->begin(), partitions->end(),
-                                  [id](const auto &p) { return p.id == id; });
+    auto partition = std::find_if(partitions->begin(), partitions->end(), [id](const auto &p) { return p.id == id; });
     if (partition != partitions->end())
     {
         RIALTO_SERVER_LOG_DEBUG("Skip to map shm partition for id: %d. - partition already assigned", id);
         return true;
     }
-    auto freePartition = std::find_if(partitions->begin(), partitions->end(),
-                                      [](const auto &p) { return p.id == NO_ID_ASSIGNED; });
+    auto freePartition =
+        std::find_if(partitions->begin(), partitions->end(), [](const auto &p) { return p.id == NO_ID_ASSIGNED; });
     if (freePartition == partitions->end())
     {
         RIALTO_SERVER_LOG_ERROR("Failed to map Shm partition for id: %d. No free partition available.", id);
@@ -207,19 +207,18 @@ bool SharedMemoryBuffer::mapPartition(MediaPlaybackType playbackType, int id)
 
 bool SharedMemoryBuffer::unmapPartition(MediaPlaybackType playbackType, int id)
 {
-    std::vector<Partition>* partitions = getPlaybackTypePartition(playbackType);
+    std::vector<Partition> *partitions = getPlaybackTypePartition(playbackType);
     if (!partitions)
     {
-        RIALTO_SERVER_LOG_ERROR("Cannot unmap the partition for playback type %s with id: %d", toString(playbackType), id);
+        RIALTO_SERVER_LOG_ERROR("Cannot unmap the partition for playback type %s with id: %d", toString(playbackType),
+                                id);
         return false;
     }
 
-    auto partition = std::find_if(partitions->begin(), partitions->end(),
-                                  [id](const auto &p) { return p.id == id; });
+    auto partition = std::find_if(partitions->begin(), partitions->end(), [id](const auto &p) { return p.id == id; });
     if (partition == partitions->end())
     {
-        RIALTO_SERVER_LOG_WARN("Failed to unmap Shm partition for id: %d. - partition could not be found",
-                               id);
+        RIALTO_SERVER_LOG_WARN("Failed to unmap Shm partition for id: %d. - partition could not be found", id);
         return false;
     }
     partition->id = NO_ID_ASSIGNED;
@@ -228,24 +227,26 @@ bool SharedMemoryBuffer::unmapPartition(MediaPlaybackType playbackType, int id)
 
 bool SharedMemoryBuffer::clearData(MediaPlaybackType playbackType, int id, const MediaSourceType &mediaSourceType) const
 {
-    const std::vector<Partition>* partitions = getPlaybackTypePartition(playbackType);
+    const std::vector<Partition> *partitions = getPlaybackTypePartition(playbackType);
     if (!partitions)
     {
         RIALTO_SERVER_LOG_ERROR("Cannot clear the data for playback type %s with id: %d", toString(playbackType), id);
         return false;
     }
 
-    auto partition = std::find_if(partitions->begin(), partitions->end(),
-                                  [id](const auto &p) { return p.id == id; });
+    auto partition = std::find_if(partitions->begin(), partitions->end(), [id](const auto &p) { return p.id == id; });
     if (partition == partitions->end())
     {
-        RIALTO_SERVER_LOG_WARN("Failed to clear data for playback type %s with id: %d. - partition could not be found", toString(playbackType), id);
+        RIALTO_SERVER_LOG_WARN("Failed to clear data for playback type %s with id: %d. - partition could not be found",
+                               toString(playbackType), id);
         return false;
     }
     std::uint8_t *partitionDataPtr = nullptr;
     if (!getDataPtrForPartition(playbackType, id, &partitionDataPtr))
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to clear data for playback type %s with id: %d. - could not get partition data ptr", toString(playbackType), id);
+        RIALTO_SERVER_LOG_ERROR("Failed to clear data for playback type %s with id: %d. - could not get partition data "
+                                "ptr",
+                                toString(playbackType), id);
         return false;
     }
     if (MediaSourceType::AUDIO == mediaSourceType)
@@ -263,30 +264,35 @@ bool SharedMemoryBuffer::clearData(MediaPlaybackType playbackType, int id, const
     return false;
 }
 
-std::uint32_t SharedMemoryBuffer::getDataOffset(MediaPlaybackType playbackType, int id, const MediaSourceType &mediaSourceType) const
+std::uint32_t SharedMemoryBuffer::getDataOffset(MediaPlaybackType playbackType, int id,
+                                                const MediaSourceType &mediaSourceType) const
 {
     std::uint8_t *buffer = getDataPtr(playbackType, id, mediaSourceType);
     if (!buffer)
     {
-        throw std::runtime_error("Buffer not found for playback type " + std::string(toString(playbackType)) + " with id: " + std::to_string(id));
+        throw std::runtime_error("Buffer not found for playback type " + std::string(toString(playbackType)) +
+                                 " with id: " + std::to_string(id));
     }
     return buffer - m_dataBuffer;
 }
 
-std::uint32_t SharedMemoryBuffer::getMaxDataLen(MediaPlaybackType playbackType, int id, const MediaSourceType &mediaSourceType) const
+std::uint32_t SharedMemoryBuffer::getMaxDataLen(MediaPlaybackType playbackType, int id,
+                                                const MediaSourceType &mediaSourceType) const
 {
-    const std::vector<Partition>* partitions = getPlaybackTypePartition(playbackType);
+    const std::vector<Partition> *partitions = getPlaybackTypePartition(playbackType);
     if (!partitions)
     {
-        RIALTO_SERVER_LOG_ERROR("Cannot get the max data length for playback type %s with id: %d", toString(playbackType), id);
+        RIALTO_SERVER_LOG_ERROR("Cannot get the max data length for playback type %s with id: %d",
+                                toString(playbackType), id);
         return false;
     }
 
-    auto partition = std::find_if(partitions->begin(), partitions->end(),
-                                         [id](const auto &p) { return p.id == id; });
+    auto partition = std::find_if(partitions->begin(), partitions->end(), [id](const auto &p) { return p.id == id; });
     if (partition == partitions->end())
     {
-        RIALTO_SERVER_LOG_WARN("Failed to get buffer length for playback type %s with id: %d. - partition could not be found", toString(playbackType), id);
+        RIALTO_SERVER_LOG_WARN("Failed to get buffer length for playback type %s with id: %d. - partition could not be "
+                               "found",
+                               toString(playbackType), id);
         return 0;
     }
     if (MediaSourceType::AUDIO == mediaSourceType)
@@ -300,35 +306,38 @@ std::uint32_t SharedMemoryBuffer::getMaxDataLen(MediaPlaybackType playbackType, 
     return 0;
 }
 
-std::uint8_t *SharedMemoryBuffer::getDataPtr(MediaPlaybackType playbackType, int id, const MediaSourceType &mediaSourceType) const
+std::uint8_t *SharedMemoryBuffer::getDataPtr(MediaPlaybackType playbackType, int id,
+                                             const MediaSourceType &mediaSourceType) const
 {
-    const std::vector<Partition>* partitions = getPlaybackTypePartition(playbackType);
+    const std::vector<Partition> *partitions = getPlaybackTypePartition(playbackType);
     if (!partitions)
     {
-        RIALTO_SERVER_LOG_ERROR("Cannot get the buffer offset for playback type %s with id: %d", toString(playbackType), id);
+        RIALTO_SERVER_LOG_ERROR("Cannot get the buffer offset for playback type %s with id: %d", toString(playbackType),
+                                id);
         return nullptr;
     }
 
-    auto partition = std::find_if(partitions->begin(), partitions->end(),
-                                         [id](const auto &p) { return p.id == id; });
+    auto partition = std::find_if(partitions->begin(), partitions->end(), [id](const auto &p) { return p.id == id; });
     if (partition == partitions->end())
     {
-        RIALTO_SERVER_LOG_WARN("Failed to get buffer offset for playback type %s with id: %d. - partition could not be found", toString(playbackType), id);
+        RIALTO_SERVER_LOG_WARN("Failed to get buffer offset for playback type %s with id: %d. - partition could not be "
+                               "found",
+                               toString(playbackType), id);
         return nullptr;
     }
     std::uint8_t *partitionDataPtr = nullptr;
     if (!getDataPtrForPartition(playbackType, id, &partitionDataPtr))
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to get buffer offset for playback type %s with id: %d. - could not get partition data ptr", toString(playbackType), id);
+        RIALTO_SERVER_LOG_ERROR("Failed to get buffer offset for playback type %s with id: %d. - could not get "
+                                "partition data ptr",
+                                toString(playbackType), id);
         return nullptr;
     }
-    if ((MediaSourceType::AUDIO == mediaSourceType) &&
-        (0 != partition->dataBufferAudioLen))
+    if ((MediaSourceType::AUDIO == mediaSourceType) && (0 != partition->dataBufferAudioLen))
     {
         return partitionDataPtr + partition->dataBufferVideoLen;
     }
-    if ((MediaSourceType::VIDEO == mediaSourceType) &&
-        (0 != partition->dataBufferVideoLen))
+    if ((MediaSourceType::VIDEO == mediaSourceType) && (0 != partition->dataBufferVideoLen))
     {
         return partitionDataPtr;
     }
@@ -353,11 +362,11 @@ std::uint8_t *SharedMemoryBuffer::getBuffer() const
 size_t SharedMemoryBuffer::calculateBufferSize() const
 {
     size_t genericSum = std::accumulate(m_genericPartitions.begin(), m_genericPartitions.end(), 0,
-                           [](size_t sum, const Partition &p)
-                           { return sum + p.dataBufferAudioLen + p.dataBufferVideoLen; });
+                                        [](size_t sum, const Partition &p)
+                                        { return sum + p.dataBufferAudioLen + p.dataBufferVideoLen; });
     size_t webAudioSum = std::accumulate(m_webAudioPartitions.begin(), m_webAudioPartitions.end(), 0,
-                           [](size_t sum, const Partition &p)
-                           { return sum + p.dataBufferAudioLen + p.dataBufferVideoLen; });
+                                         [](size_t sum, const Partition &p)
+                                         { return sum + p.dataBufferAudioLen + p.dataBufferVideoLen; });
     return genericSum + webAudioSum;
 }
 
@@ -388,7 +397,8 @@ bool SharedMemoryBuffer::getDataPtrForPartition(MediaPlaybackType playbackType, 
     RIALTO_SERVER_LOG_ERROR("Could not find the data ptr for playback type %s with id: %d", toString(playbackType), id);
     return false;
 }
-const std::vector<SharedMemoryBuffer::Partition>* SharedMemoryBuffer::getPlaybackTypePartition(MediaPlaybackType playbackType) const
+const std::vector<SharedMemoryBuffer::Partition> *
+SharedMemoryBuffer::getPlaybackTypePartition(MediaPlaybackType playbackType) const
 {
     if (firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC == playbackType)
     {
@@ -405,8 +415,9 @@ const std::vector<SharedMemoryBuffer::Partition>* SharedMemoryBuffer::getPlaybac
     }
 }
 
-std::vector<SharedMemoryBuffer::Partition>* SharedMemoryBuffer::getPlaybackTypePartition(MediaPlaybackType playbackType)
+std::vector<SharedMemoryBuffer::Partition> *SharedMemoryBuffer::getPlaybackTypePartition(MediaPlaybackType playbackType)
 {
-    return const_cast<std::vector<SharedMemoryBuffer::Partition>*>(const_cast<const SharedMemoryBuffer*>(this)->getPlaybackTypePartition(playbackType));
+    return const_cast<std::vector<SharedMemoryBuffer::Partition> *>(
+        const_cast<const SharedMemoryBuffer *>(this)->getPlaybackTypePartition(playbackType));
 }
 } // namespace firebolt::rialto::server

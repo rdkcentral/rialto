@@ -20,11 +20,11 @@
 #ifndef FIREBOLT_RIALTO_SERVER_ATTACH_SOURCE_H_
 #define FIREBOLT_RIALTO_SERVER_ATTACH_SOURCE_H_
 
+#include "GenericPlayerContext.h"
 #include "IGlibWrapper.h"
 #include "IGstWrapper.h"
 #include "IMediaPipeline.h"
 #include "IPlayerTask.h"
-#include "GenericPlayerContext.h"
 #include <memory>
 #include <string>
 

@@ -22,15 +22,15 @@
 
 #include "IGlibWrapper.h"
 #include "IGstDispatcherThread.h"
+#include "IGstDispatcherThreadClient.h"
+#include "IGstSrc.h"
 #include "IGstWebAudioPlayer.h"
 #include "IGstWebAudioPlayerPrivate.h"
-#include "IGstSrc.h"
 #include "IGstWrapper.h"
 #include "IWorkerThread.h"
 #include "WebAudioPlayerContext.h"
 #include "tasks/IPlayerTask.h"
 #include "tasks/IWebAudioPlayerTaskFactory.h"
-#include "IGstDispatcherThreadClient.h"
 #include <memory>
 #include <string>
 
@@ -68,9 +68,11 @@ public:
      * @param[in] gstDispatcherThreadFactory   : The gst dispatcher thread factory
      */
     GstWebAudioPlayer(IGstWebAudioPlayerClient *client, const std::shared_ptr<IGstWrapper> &gstWrapper,
-              const std::shared_ptr<IGlibWrapper> &glibWrapper, const std::shared_ptr<IGstSrcFactory> &gstSrcFactory, std::unique_ptr<IWebAudioPlayerTaskFactory> taskFactory,
-              std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
-              std::unique_ptr<IGstDispatcherThreadFactory> gstDispatcherThreadFactory);
+                      const std::shared_ptr<IGlibWrapper> &glibWrapper,
+                      const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
+                      std::unique_ptr<IWebAudioPlayerTaskFactory> taskFactory,
+                      std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
+                      std::unique_ptr<IGstDispatcherThreadFactory> gstDispatcherThreadFactory);
 
     /**
      * @brief Virtual destructor.

@@ -18,9 +18,9 @@
  */
 
 #include "tasks/generic/FinishSetupSource.h"
+#include "GenericPlayerContext.h"
 #include "IGstGenericPlayerClient.h"
 #include "IGstGenericPlayerPrivate.h"
-#include "GenericPlayerContext.h"
 #include "RialtoServerLogging.h"
 #include <gst/app/gstappsrc.h>
 #include <gst/gst.h>
@@ -74,7 +74,8 @@ gboolean appSrcSeekData(GstAppSrc *src, guint64 offset, gpointer user_data)
 
 namespace firebolt::rialto::server
 {
-FinishSetupSource::FinishSetupSource(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client)
+FinishSetupSource::FinishSetupSource(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                                     IGstGenericPlayerClient *client)
     : m_context{context}, m_player{player}, m_gstPlayerClient{client}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing FinishSetupSource");

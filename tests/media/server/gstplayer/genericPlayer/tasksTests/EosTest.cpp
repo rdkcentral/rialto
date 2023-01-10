@@ -18,9 +18,9 @@
  */
 
 #include "tasks/generic/Eos.h"
+#include "GenericPlayerContext.h"
 #include "GstGenericPlayerPrivateMock.h"
 #include "GstWrapperMock.h"
-#include "GenericPlayerContext.h"
 #include <gst/gst.h>
 #include <gtest/gtest.h>
 

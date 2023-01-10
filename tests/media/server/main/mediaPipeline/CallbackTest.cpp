@@ -106,9 +106,15 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyNeedMediaData)
     mainThreadWillEnqueueTaskAndWait();
     ASSERT_TRUE(m_sharedMemoryBufferMock);
     ASSERT_TRUE(m_activeRequestsMock);
-    EXPECT_CALL(*m_sharedMemoryBufferMock, clearData(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId, mediaSourceType)).WillOnce(Return(true));
-    EXPECT_CALL(*m_sharedMemoryBufferMock, getMaxDataLen(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId, mediaSourceType)).WillOnce(Return(7 * 1024 * 1024));
-    EXPECT_CALL(*m_sharedMemoryBufferMock, getDataOffset(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId, mediaSourceType)).WillOnce(Return(0));
+    EXPECT_CALL(*m_sharedMemoryBufferMock,
+                clearData(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId, mediaSourceType))
+        .WillOnce(Return(true));
+    EXPECT_CALL(*m_sharedMemoryBufferMock,
+                getMaxDataLen(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId, mediaSourceType))
+        .WillOnce(Return(7 * 1024 * 1024));
+    EXPECT_CALL(*m_sharedMemoryBufferMock,
+                getDataOffset(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId, mediaSourceType))
+        .WillOnce(Return(0));
     EXPECT_CALL(*m_activeRequestsMock, insert(mediaSourceType, _)).WillOnce(Return(0));
     EXPECT_CALL(*m_mediaPipelineClientMock,
                 notifyNeedMediaData(sourceId, numFrames, 0, _)); // params tested in NeedMediaDataTests

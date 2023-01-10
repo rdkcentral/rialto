@@ -18,8 +18,8 @@
  */
 
 #include "tasks/generic/Stop.h"
-#include "IGstGenericPlayerPrivate.h"
 #include "GenericPlayerContext.h"
+#include "IGstGenericPlayerPrivate.h"
 #include "RialtoServerLogging.h"
 
 namespace firebolt::rialto::server

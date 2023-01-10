@@ -137,14 +137,16 @@ TEST_F(SharedMemoryBufferTests, shouldNotReturnMaxAudioDataLenForNotMappedGeneri
 {
     constexpr int session1{0};
     initialize();
-    shouldFailToReturnMaxAudioDataLen(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, session1);
+    shouldFailToReturnMaxAudioDataLen(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC,
+                                      session1);
 }
 
 TEST_F(SharedMemoryBufferTests, shouldNotReturnMaxAudioDataLenForNotMappedWebAudioPlayer)
 {
     constexpr int handle1{0};
     initialize();
-    shouldFailToReturnMaxAudioDataLen(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, handle1);
+    shouldFailToReturnMaxAudioDataLen(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO,
+                                      handle1);
 }
 
 TEST_F(SharedMemoryBufferTests, shouldReturnMaxGenericVideoDataLen)
@@ -160,14 +162,16 @@ TEST_F(SharedMemoryBufferTests, shouldReturnZeroForMaxWebAudioVideoDataLen)
     constexpr int handle1{0};
     initialize();
     mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, handle1);
-    shouldFailToReturnMaxVideoDataLen(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO,handle1);
+    shouldFailToReturnMaxVideoDataLen(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO,
+                                      handle1);
 }
 
 TEST_F(SharedMemoryBufferTests, shouldNotReturnMaxVideoDataLenForNotMappedGenericPlaybackSession)
 {
     constexpr int session1{0};
     initialize();
-    shouldFailToReturnMaxVideoDataLen(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, session1);
+    shouldFailToReturnMaxVideoDataLen(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC,
+                                      session1);
 }
 
 TEST_F(SharedMemoryBufferTests, shouldClearAudioDataForGenericPlaybackSession)
@@ -219,7 +223,8 @@ TEST_F(SharedMemoryBufferTests, shouldFailToReturnVideoDataOffsetForGenericPlayb
 {
     constexpr int session1{0};
     initialize();
-    shouldFailToReturnVideoDataOffset(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, session1);
+    shouldFailToReturnVideoDataOffset(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC,
+                                      session1);
 }
 
 TEST_F(SharedMemoryBufferTests, shouldFailToReturnVideoDataOffsetForWebAudioPlayer)
@@ -234,14 +239,16 @@ TEST_F(SharedMemoryBufferTests, shouldFailToReturnAudioDataOffsetForGenericPlayb
 {
     constexpr int session1{0};
     initialize();
-    shouldFailToReturnAudioDataOffset(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, session1);
+    shouldFailToReturnAudioDataOffset(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC,
+                                      session1);
 }
 
 TEST_F(SharedMemoryBufferTests, shouldFailToReturnAudioDataOffsetForWebAudioPlayer)
 {
     constexpr int handle1{0};
     initialize();
-    shouldFailToReturnAudioDataOffset(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, handle1);
+    shouldFailToReturnAudioDataOffset(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO,
+                                      handle1);
 }
 
 TEST_F(SharedMemoryBufferTests, shouldReturnVideoDataOffsetForOneGenericPlaybackSession)
@@ -251,7 +258,8 @@ TEST_F(SharedMemoryBufferTests, shouldReturnVideoDataOffsetForOneGenericPlayback
     constexpr std::uint32_t expectedOffset{0};
     initialize();
     mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, session1);
-    shouldReturnVideoDataOffset(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, session1, expectedOffset);
+    shouldReturnVideoDataOffset(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, session1,
+                                expectedOffset);
 }
 
 TEST_F(SharedMemoryBufferTests, shouldReturnAudioDataOffsetForOneGenericPlaybackSession)
@@ -261,7 +269,8 @@ TEST_F(SharedMemoryBufferTests, shouldReturnAudioDataOffsetForOneGenericPlayback
     constexpr std::uint32_t expectedOffset{m_videoBufferLen};
     initialize();
     mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, session1);
-    shouldReturnAudioDataOffset(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, session1, expectedOffset);
+    shouldReturnAudioDataOffset(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, session1,
+                                expectedOffset);
 }
 
 TEST_F(SharedMemoryBufferTests, shouldReturnAudioDataOffsetForOneWebAudioPlayer)
@@ -271,7 +280,8 @@ TEST_F(SharedMemoryBufferTests, shouldReturnAudioDataOffsetForOneWebAudioPlayer)
     constexpr std::uint32_t expectedOffset{m_audioBufferLen + m_videoBufferLen};
     initialize();
     mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, handle1);
-    shouldReturnAudioDataOffset(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, handle1, expectedOffset);
+    shouldReturnAudioDataOffset(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, handle1,
+                                expectedOffset);
 }
 
 TEST_F(SharedMemoryBufferTests, shouldReturnVideoDataOffsetForTwoGenericPlaybackSessions)
@@ -283,7 +293,8 @@ TEST_F(SharedMemoryBufferTests, shouldReturnVideoDataOffsetForTwoGenericPlayback
     initialize(maxPlaybacks);
     mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, session1);
     mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, session2);
-    shouldReturnVideoDataOffset(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, session2, expectedOffset);
+    shouldReturnVideoDataOffset(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, session2,
+                                expectedOffset);
 }
 
 TEST_F(SharedMemoryBufferTests, shouldReturnAudioDataOffsetForTwoGenericPlaybackSessionsAndTwoWebAudioPlayers)
@@ -294,32 +305,38 @@ TEST_F(SharedMemoryBufferTests, shouldReturnAudioDataOffsetForTwoGenericPlayback
     constexpr int handle1{0}, handle2{1};
     // Audio buffer for second mapped session is after video and audio buffer of 1st session
     // and video buffer of 2nd session
-    constexpr std::uint32_t expectedOffsetSecondGeneric{m_audioBufferLen + 2*m_videoBufferLen};
-    // Audio buffer for second mapped web audio player is after video and audio buffer of 1st and 2nd generic playback sessions
-    // and the audio buffer of the 1st web audio player
-    constexpr std::uint32_t expectedOffsetSecondWebAudio{2*m_audioBufferLen + 2*m_videoBufferLen + m_webAudioBufferLen};
+    constexpr std::uint32_t expectedOffsetSecondGeneric{m_audioBufferLen + 2 * m_videoBufferLen};
+    // Audio buffer for second mapped web audio player is after video and audio buffer of 1st and 2nd generic playback
+    // sessions and the audio buffer of the 1st web audio player
+    constexpr std::uint32_t expectedOffsetSecondWebAudio{2 * m_audioBufferLen + 2 * m_videoBufferLen +
+                                                         m_webAudioBufferLen};
     initialize(maxPlaybacks, maxWebAudioPlayers);
     mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, session1);
     mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, session2);
     mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, handle1);
     mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, handle2);
-    shouldReturnAudioDataOffset(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, session2, expectedOffsetSecondGeneric);
-    shouldReturnAudioDataOffset(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, handle2, expectedOffsetSecondWebAudio);
+    shouldReturnAudioDataOffset(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, session2,
+                                expectedOffsetSecondGeneric);
+    shouldReturnAudioDataOffset(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, handle2,
+                                expectedOffsetSecondWebAudio);
 }
 
 TEST_F(SharedMemoryBufferTests, shouldFailToGetDataPtrForUnmappedGenericPlaybackSession)
 {
     constexpr int session1{0};
     initialize();
-    shouldFailToGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, session1, firebolt::rialto::MediaSourceType::VIDEO);
-    shouldFailToGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, session1, firebolt::rialto::MediaSourceType::AUDIO);
+    shouldFailToGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, session1,
+                           firebolt::rialto::MediaSourceType::VIDEO);
+    shouldFailToGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, session1,
+                           firebolt::rialto::MediaSourceType::AUDIO);
 }
 
 TEST_F(SharedMemoryBufferTests, shouldFailToGetAudioDataPtrForUnmappedWebAudioPlayer)
 {
     constexpr int handle1{0};
     initialize();
-    shouldFailToGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, handle1, firebolt::rialto::MediaSourceType::AUDIO);
+    shouldFailToGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, handle1,
+                           firebolt::rialto::MediaSourceType::AUDIO);
 }
 
 TEST_F(SharedMemoryBufferTests, shouldFailToGetVideoDataPtrForWebAudioPlayer)
@@ -327,7 +344,8 @@ TEST_F(SharedMemoryBufferTests, shouldFailToGetVideoDataPtrForWebAudioPlayer)
     constexpr int handle1{0};
     initialize();
     mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, handle1);
-    shouldFailToGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, handle1, firebolt::rialto::MediaSourceType::VIDEO);
+    shouldFailToGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, handle1,
+                           firebolt::rialto::MediaSourceType::VIDEO);
 }
 
 TEST_F(SharedMemoryBufferTests, shouldFailToGetDataPtrForUnknownSourceType)
@@ -335,7 +353,8 @@ TEST_F(SharedMemoryBufferTests, shouldFailToGetDataPtrForUnknownSourceType)
     constexpr int session1{0};
     initialize();
     mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, session1);
-    shouldFailToGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, session1, firebolt::rialto::MediaSourceType::UNKNOWN);
+    shouldFailToGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, session1,
+                           firebolt::rialto::MediaSourceType::UNKNOWN);
 }
 
 TEST_F(SharedMemoryBufferTests, shouldGetDataPtrForGenericPlaybackSessions)
@@ -345,10 +364,14 @@ TEST_F(SharedMemoryBufferTests, shouldGetDataPtrForGenericPlaybackSessions)
     initialize(maxPlaybacks);
     mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, session1);
     mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, session2);
-    uint8_t *session1Video = shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, session1, firebolt::rialto::MediaSourceType::VIDEO);
-    uint8_t *session1Audio = shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, session1, firebolt::rialto::MediaSourceType::AUDIO);
-    uint8_t *session2Video = shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, session2, firebolt::rialto::MediaSourceType::VIDEO);
-    uint8_t *session2Audio = shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, session2, firebolt::rialto::MediaSourceType::AUDIO);
+    uint8_t *session1Video = shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC,
+                                              session1, firebolt::rialto::MediaSourceType::VIDEO);
+    uint8_t *session1Audio = shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC,
+                                              session1, firebolt::rialto::MediaSourceType::AUDIO);
+    uint8_t *session2Video = shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC,
+                                              session2, firebolt::rialto::MediaSourceType::VIDEO);
+    uint8_t *session2Audio = shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC,
+                                              session2, firebolt::rialto::MediaSourceType::AUDIO);
     EXPECT_NE(nullptr, session1Video);
     EXPECT_NE(nullptr, session1Audio);
     EXPECT_NE(nullptr, session2Video);
@@ -367,8 +390,10 @@ TEST_F(SharedMemoryBufferTests, shouldGetAudioDataPtrForWebAudioPlayers)
     initialize(maxPlaybacks, maxWebAudioPlayers);
     mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, handle1);
     mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, handle2);
-    uint8_t *handle1Audio = shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, handle1, firebolt::rialto::MediaSourceType::AUDIO);
-    uint8_t *handle2Audio = shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, handle2, firebolt::rialto::MediaSourceType::AUDIO);
+    uint8_t *handle1Audio = shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO,
+                                             handle1, firebolt::rialto::MediaSourceType::AUDIO);
+    uint8_t *handle2Audio = shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO,
+                                             handle2, firebolt::rialto::MediaSourceType::AUDIO);
     EXPECT_NE(nullptr, handle1Audio);
     EXPECT_NE(nullptr, handle2Audio);
     EXPECT_EQ((handle2Audio - handle1Audio), (m_webAudioBufferLen));

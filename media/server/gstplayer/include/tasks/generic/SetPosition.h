@@ -20,11 +20,11 @@
 #ifndef FIREBOLT_RIALTO_SERVER_SET_POSITION_H_
 #define FIREBOLT_RIALTO_SERVER_SET_POSITION_H_
 
+#include "GenericPlayerContext.h"
 #include "IGstGenericPlayerClient.h"
 #include "IGstGenericPlayerPrivate.h"
 #include "IGstWrapper.h"
 #include "IPlayerTask.h"
-#include "GenericPlayerContext.h"
 #include <cstdint>
 #include <memory>
 

@@ -66,11 +66,11 @@ std::unique_ptr<IGstWebAudioPlayer> GstWebAudioPlayerFactory::createGstWebAudioP
         {
             throw std::runtime_error("Cannot create GlibWrapper");
         }
-        gstPlayer = std::make_unique<GstWebAudioPlayer>(client, gstWrapper,
-                                                glibWrapper, IGstSrcFactory::getFactory(),
-                                                std::make_unique<WebAudioPlayerTaskFactory>(client, gstWrapper, glibWrapper),
-                                                std::make_unique<WorkerThreadFactory>(),
-                                                std::make_unique<GstDispatcherThreadFactory>());
+        gstPlayer = std::make_unique<GstWebAudioPlayer>(client, gstWrapper, glibWrapper, IGstSrcFactory::getFactory(),
+                                                        std::make_unique<WebAudioPlayerTaskFactory>(client, gstWrapper,
+                                                                                                    glibWrapper),
+                                                        std::make_unique<WorkerThreadFactory>(),
+                                                        std::make_unique<GstDispatcherThreadFactory>());
     }
     catch (const std::exception &e)
     {
@@ -81,11 +81,13 @@ std::unique_ptr<IGstWebAudioPlayer> GstWebAudioPlayerFactory::createGstWebAudioP
 }
 
 GstWebAudioPlayer::GstWebAudioPlayer(IGstWebAudioPlayerClient *client, const std::shared_ptr<IGstWrapper> &gstWrapper,
-                     const std::shared_ptr<IGlibWrapper> &glibWrapper,
-                     const std::shared_ptr<IGstSrcFactory> &gstSrcFactory, std::unique_ptr<IWebAudioPlayerTaskFactory> taskFactory,
-                     std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
-                     std::unique_ptr<IGstDispatcherThreadFactory> gstDispatcherThreadFactory)
-    : m_gstPlayerClient(client), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_taskFactory{std::move(taskFactory)}
+                                     const std::shared_ptr<IGlibWrapper> &glibWrapper,
+                                     const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
+                                     std::unique_ptr<IWebAudioPlayerTaskFactory> taskFactory,
+                                     std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
+                                     std::unique_ptr<IGstDispatcherThreadFactory> gstDispatcherThreadFactory)
+    : m_gstPlayerClient(client), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_taskFactory{
+                                                                                           std::move(taskFactory)}
 {
     RIALTO_SERVER_LOG_DEBUG("GstWebAudioPlayer is constructed.");
 
@@ -102,7 +104,8 @@ GstWebAudioPlayer::GstWebAudioPlayer(IGstWebAudioPlayerClient *client, const std
 
     initWebAudioPipeline();
 
-    m_gstDispatcherThread = gstDispatcherThreadFactory->createGstDispatcherThread(*this, m_context.pipeline, m_gstWrapper);
+    m_gstDispatcherThread =
+        gstDispatcherThreadFactory->createGstDispatcherThread(*this, m_context.pipeline, m_gstWrapper);
 }
 
 GstWebAudioPlayer::~GstWebAudioPlayer()
@@ -130,30 +133,20 @@ GstWebAudioPlayer::~GstWebAudioPlayer()
     m_glibWrapper->gObjectUnref(m_context.pipeline);
 }
 
-void GstWebAudioPlayer::initWebAudioPipeline()
-{
-}
+void GstWebAudioPlayer::initWebAudioPipeline() {}
 
-void GstWebAudioPlayer::play()
-{
-}
+void GstWebAudioPlayer::play() {}
 
-void GstWebAudioPlayer::pause()
-{
-}
+void GstWebAudioPlayer::pause() {}
 
-void GstWebAudioPlayer::setVolume(double volume)
-{
-}
+void GstWebAudioPlayer::setVolume(double volume) {}
 
 bool GstWebAudioPlayer::getVolume(double &volume)
 {
     return false;
 }
 
-void GstWebAudioPlayer::handleBusMessage(GstMessage *message)
-{
-}
+void GstWebAudioPlayer::handleBusMessage(GstMessage *message) {}
 
 bool GstWebAudioPlayer::changePipelineState(GstState newState)
 {

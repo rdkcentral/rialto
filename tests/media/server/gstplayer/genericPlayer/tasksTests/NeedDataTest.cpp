@@ -18,8 +18,8 @@
  */
 
 #include "tasks/generic/NeedData.h"
-#include "GstGenericPlayerClientMock.h"
 #include "GenericPlayerContext.h"
+#include "GstGenericPlayerClientMock.h"
 #include <gst/gst.h>
 #include <gtest/gtest.h>
 

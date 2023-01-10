@@ -20,10 +20,10 @@
 #ifndef FIREBOLT_RIALTO_SERVER_READ_SHM_DATA_AND_ATTACH_SAMPLES_H_
 #define FIREBOLT_RIALTO_SERVER_READ_SHM_DATA_AND_ATTACH_SAMPLES_H_
 
+#include "GenericPlayerContext.h"
 #include "IDataReader.h"
 #include "IGstGenericPlayerPrivate.h"
 #include "IPlayerTask.h"
-#include "GenericPlayerContext.h"
 #include <memory>
 
 namespace firebolt::rialto::server

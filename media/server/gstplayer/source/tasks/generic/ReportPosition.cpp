@@ -18,14 +18,15 @@
  */
 
 #include "tasks/generic/ReportPosition.h"
+#include "GenericPlayerContext.h"
 #include "IGstGenericPlayerClient.h"
 #include "IGstWrapper.h"
-#include "GenericPlayerContext.h"
 #include <gst/gst.h>
 
 namespace firebolt::rialto::server
 {
-ReportPosition::ReportPosition(GenericPlayerContext &context, IGstGenericPlayerClient *client, std::shared_ptr<IGstWrapper> gstWrapper)
+ReportPosition::ReportPosition(GenericPlayerContext &context, IGstGenericPlayerClient *client,
+                               std::shared_ptr<IGstWrapper> gstWrapper)
     : m_context{context}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}
 {
 }

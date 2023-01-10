@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#include "GstWrapperMock.h"
 #include "GstInit.h"
+#include "GstWrapperMock.h"
 #include <gtest/gtest.h>
 
 using namespace firebolt::rialto;

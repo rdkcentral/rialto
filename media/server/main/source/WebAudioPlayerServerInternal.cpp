@@ -63,9 +63,10 @@ std::unique_ptr<IWebAudioPlayer> WebAudioPlayerServerInternalFactory::createWebA
     std::unique_ptr<IWebAudioPlayer> webAudioPlayer;
     try
     {
-        webAudioPlayer =
-            std::make_unique<server::WebAudioPlayerServerInternal>(client, audioMimeType, priority, config,
-                                                                  shmBuffer, handle, IMainThreadFactory::createFactory(), IGstWebAudioPlayerFactory::getFactory());
+        webAudioPlayer = std::make_unique<server::WebAudioPlayerServerInternal>(client, audioMimeType, priority, config,
+                                                                                shmBuffer, handle,
+                                                                                IMainThreadFactory::createFactory(),
+                                                                                IGstWebAudioPlayerFactory::getFactory());
     }
     catch (const std::exception &e)
     {
@@ -75,10 +76,11 @@ std::unique_ptr<IWebAudioPlayer> WebAudioPlayerServerInternalFactory::createWebA
     return webAudioPlayer;
 }
 
-WebAudioPlayerServerInternal::WebAudioPlayerServerInternal(std::weak_ptr<IWebAudioPlayerClient> client,
-                                                           const std::string &audioMimeType, const uint32_t priority,
-                                                           const WebAudioConfig *config,
-                                                           const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle, const std::shared_ptr<IMainThreadFactory> &mainThreadFactory, const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory)
+WebAudioPlayerServerInternal::WebAudioPlayerServerInternal(
+    std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType, const uint32_t priority,
+    const WebAudioConfig *config, const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle,
+    const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
+    const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory)
     : m_webAudioPlayerClient(client), m_shmBuffer{shmBuffer}, m_priority{priority}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
@@ -103,10 +105,7 @@ WebAudioPlayerServerInternal::WebAudioPlayerServerInternal(std::weak_ptr<IWebAud
     m_mainThreadClientId = m_mainThread->registerClient();
 
     bool result = false;
-    auto task = [&]()
-    {
-        result = initWebAudioPlayerInternal(handle, gstPlayerFactory);
-    };
+    auto task = [&]() { result = initWebAudioPlayerInternal(handle, gstPlayerFactory); };
 
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     if (!result)
@@ -115,7 +114,8 @@ WebAudioPlayerServerInternal::WebAudioPlayerServerInternal(std::weak_ptr<IWebAud
     }
 }
 
-bool WebAudioPlayerServerInternal::initWebAudioPlayerInternal(int handle, const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory)
+bool WebAudioPlayerServerInternal::initWebAudioPlayerInternal(
+    int handle, const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory)
 {
     bool status = false;
     if (!m_shmBuffer->mapPartition(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, handle))
@@ -209,10 +209,7 @@ std::weak_ptr<IWebAudioPlayerClient> WebAudioPlayerServerInternal::getClient()
     return m_webAudioPlayerClient;
 }
 
-void WebAudioPlayerServerInternal::notifyState(WebAudioPlayerState state)
-{
-
-}
+void WebAudioPlayerServerInternal::notifyState(WebAudioPlayerState state) {}
 
 bool WebAudioPlayerServerInternal::initGstWebAudioPlayer(const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory)
 {

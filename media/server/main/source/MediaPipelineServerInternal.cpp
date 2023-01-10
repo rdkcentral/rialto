@@ -104,8 +104,9 @@ std::unique_ptr<server::IMediaPipelineServerInternal> MediaPipelineServerInterna
     {
         mediaPipeline =
             std::make_unique<server::MediaPipelineServerInternal>(sharedClient, videoRequirements,
-                                                                  server::IGstGenericPlayerFactory::getFactory(), sessionId,
-                                                                  shmBuffer, server::IMainThreadFactory::createFactory(),
+                                                                  server::IGstGenericPlayerFactory::getFactory(),
+                                                                  sessionId, shmBuffer,
+                                                                  server::IMainThreadFactory::createFactory(),
                                                                   common::ITimerFactory::getFactory(),
                                                                   std::make_unique<DataReaderFactory>(),
                                                                   std::make_unique<ActiveRequests>(), decryptionService);
@@ -517,7 +518,8 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
     std::uint32_t regionOffset = 0;
     try
     {
-        regionOffset = m_shmBuffer->getDataOffset(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_sessionId, mediaSourceType);
+        regionOffset =
+            m_shmBuffer->getDataOffset(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_sessionId, mediaSourceType);
     }
     catch (const std::runtime_error &e)
     {

@@ -20,16 +20,17 @@
 #ifndef WEB_AUDIO_PLAYER_TEST_BASE_H_
 #define WEB_AUDIO_PLAYER_TEST_BASE_H_
 
-#include "SharedMemoryBufferMock.h"
-#include "WebAudioPlayerClientMock.h"
-#include "WebAudioPlayerServerInternal.h"
-#include "MainThreadFactoryMock.h"
-#include "MainThreadMock.h"
 #include "GstWebAudioPlayerFactoryMock.h"
 #include "GstWebAudioPlayerMock.h"
 #include "IGstWebAudioPlayerClient.h"
+#include "MainThreadFactoryMock.h"
+#include "MainThreadMock.h"
+#include "SharedMemoryBufferMock.h"
+#include "WebAudioPlayerClientMock.h"
+#include "WebAudioPlayerServerInternal.h"
 #include <gtest/gtest.h>
 #include <memory>
+#include <string>
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::server;

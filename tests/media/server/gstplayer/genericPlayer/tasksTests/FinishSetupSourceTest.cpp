@@ -19,10 +19,10 @@
 
 #include "tasks/generic/FinishSetupSource.h"
 #include "DecryptionServiceMock.h"
+#include "GenericPlayerContext.h"
 #include "GstGenericPlayerClientMock.h"
 #include "GstGenericPlayerPrivateMock.h"
 #include "GstSrcMock.h"
-#include "GenericPlayerContext.h"
 #include <gst/gst.h>
 #include <gtest/gtest.h>
 

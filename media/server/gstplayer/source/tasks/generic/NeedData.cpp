@@ -18,8 +18,8 @@
  */
 
 #include "tasks/generic/NeedData.h"
-#include "IGstGenericPlayerClient.h"
 #include "GenericPlayerContext.h"
+#include "IGstGenericPlayerClient.h"
 #include "RialtoServerLogging.h"
 #include <gst/gst.h>
 

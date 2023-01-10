@@ -17,10 +17,10 @@
  * limitations under the License.
  */
 
+#include "GenericPlayerTaskMock.h"
 #include "GstGenericPlayerTestCommon.h"
 #include "Matchers.h"
 #include "MediaSourceUtil.h"
-#include "GenericPlayerTaskMock.h"
 #include "TimerMock.h"
 
 using testing::_;
@@ -64,10 +64,11 @@ protected:
     GstGenericPlayerPrivateTest()
     {
         gstPlayerWillBeCreated();
-        m_sut = std::make_unique<GstGenericPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, MediaType::MSE, m_videoReq,
-                                            m_gstWrapperMock, m_glibWrapperMock, m_gstSrcFactoryMock,
-                                            m_timerFactoryMock, std::move(m_taskFactory), std::move(workerThreadFactory),
-                                            std::move(gstDispatcherThreadFactory), m_gstProtectionMetadataFactoryMock);
+        m_sut = std::make_unique<GstGenericPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, MediaType::MSE,
+                                                   m_videoReq, m_gstWrapperMock, m_glibWrapperMock, m_gstSrcFactoryMock,
+                                                   m_timerFactoryMock, std::move(m_taskFactory),
+                                                   std::move(workerThreadFactory), std::move(gstDispatcherThreadFactory),
+                                                   m_gstProtectionMetadataFactoryMock);
     }
 
     ~GstGenericPlayerPrivateTest() override

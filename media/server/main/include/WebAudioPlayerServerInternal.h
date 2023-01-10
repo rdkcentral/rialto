@@ -20,10 +20,10 @@
 #ifndef FIREBOLT_RIALTO_SERVER_WEB_AUDIO_PLAYER_SERVER_INTERNAL_H_
 #define FIREBOLT_RIALTO_SERVER_WEB_AUDIO_PLAYER_SERVER_INTERNAL_H_
 
+#include "IGstWebAudioPlayer.h"
+#include "IMainThread.h"
 #include "IWebAudioPlayer.h"
 #include "IWebAudioPlayerServerInternalFactory.h"
-#include "IMainThread.h"
-#include "IGstWebAudioPlayer.h"
 
 #include <memory>
 #include <stdint.h>
@@ -70,7 +70,9 @@ public:
      */
     WebAudioPlayerServerInternal(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
                                  const uint32_t priority, const WebAudioConfig *config,
-                                 const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle, const std::shared_ptr<IMainThreadFactory> &mainThreadFactory, const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory);
+                                 const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle,
+                                 const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
+                                 const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory);
 
     /**
      * @brief Virtual destructor.
@@ -97,7 +99,8 @@ public:
 
     std::weak_ptr<IWebAudioPlayerClient> getClient() override;
 
-    virtual void notifyState(WebAudioPlayerState state) override;
+    void notifyState(WebAudioPlayerState state) override;
+
 protected:
     /**
      * @brief The web audio player client.
