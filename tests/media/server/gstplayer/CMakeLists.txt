@@ -50,6 +50,7 @@ add_gtests(RialtoServerGstPlayerUnitTests
     genericPlayer/CreateTest.cpp
     genericPlayer/GstGenericPlayerPrivateTest.cpp
     genericPlayer/GstGenericPlayerTest.cpp
+    genericPlayer/GstDispatcherThreadClientTest
     genericPlayer/InitTest.cpp
     genericPlayer/WorkerThreadTest.cpp
     genericPlayer/GstCapabilitiesTest.cpp
