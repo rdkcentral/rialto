@@ -20,6 +20,11 @@
 #include "WebAudioPlayerServerInternal.h"
 #include "RialtoServerLogging.h"
 
+namespace
+{
+constexpr uint32_t kPreferredFrames{640};
+} // namespace
+
 namespace firebolt::rialto
 {
 std::shared_ptr<IWebAudioPlayerFactory> IWebAudioPlayerFactory::createFactory()
@@ -206,7 +211,10 @@ bool WebAudioPlayerServerInternal::getBufferAvailable(uint32_t &availableFrames,
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
     *webAudioShmInfo = m_availableBuffer;
-    availableFrames = (m_availableBuffer.lengthMain + m_availableBuffer.lengthMain) / 4;
+    availableFrames = (m_availableBuffer.lengthMain + m_availableBuffer.lengthWrap) / 4;
+
+    // A new getBufferAvailable shall overwrite the previous if writeBuffer is not called inbetween
+    m_expectWriteBuffer = true;
 
     return true;
 }
@@ -215,23 +223,26 @@ bool WebAudioPlayerServerInternal::getBufferDelay(uint32_t &delayFrames)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    return false;
+    delayFrames = (m_maxDataLength - (m_availableBuffer.lengthMain + m_availableBuffer.lengthWrap)) / 4;
+
+    return true;
 }
 
 bool WebAudioPlayerServerInternal::writeBuffer(const uint32_t numberOfFrames, void *data)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    // data can be ignored in the server as the data should be written to the shared memory
+    // data can be ignored, the frames should be written to the shared memory
+    if (!m_expectWriteBuffer)
+    {
+        RIALTO_SERVER_LOG_ERROR("No getBufferAvailable to match with this writeBuffer call");
+        return false;
+    }
+    m_expectWriteBuffer = false;
+
     if (0 == numberOfFrames)
     {
         return true;
-    }
-
-    if (numberOfFrames * 4 > m_availableBuffer.lengthMain + m_availableBuffer.lengthWrap)
-    {
-        RIALTO_SERVER_LOG_ERROR("Number of frames written is too large!");
-        return false;
     }
 
     uint8_t *mainPtr = m_dataPtr + m_availableBuffer.offsetMain;
@@ -251,15 +262,14 @@ bool WebAudioPlayerServerInternal::writeBuffer(const uint32_t numberOfFrames, vo
 
     uint32_t bytesWritten = m_gstPlayer->writeBuffer(mainPtr, mainLength, wrapPtr, wrapLength);
 
-    if (bytesWritten < numberOfFrames * 4)
+    if (bytesWritten / 4 != numberOfFrames)
     {
-        if (bytesWritten < m_availableBuffer.lengthMain)
-        {
-            // m_availableBuffer.lengthMain =
-        }
+        // For now, all bytes must be written
+        // TODO(RIALTO-2): Write partial data and keep track of unwritten data
+        return false;
     }
 
-    return false;
+    return true;
 }
 
 bool WebAudioPlayerServerInternal::getDeviceInfo(uint32_t &preferredFrames, uint32_t &maximumFrames,
@@ -267,7 +277,11 @@ bool WebAudioPlayerServerInternal::getDeviceInfo(uint32_t &preferredFrames, uint
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    return false;
+    preferredFrames = kPreferredFrames;
+    maximumFrames = m_maxDataLength / 4;
+    supportDeferredPlay = true;
+
+    return true;
 }
 
 bool WebAudioPlayerServerInternal::setVolume(double volume)

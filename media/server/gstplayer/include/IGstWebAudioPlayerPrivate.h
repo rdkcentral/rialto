@@ -43,6 +43,11 @@ public:
      * @retval true on success.
      */
     virtual bool changePipelineState(GstState newState) = 0;
+
+    /**
+     * @brief Stops worker thread. Called by the worker thread.
+     */
+    virtual void stopWorkerThread() = 0;
 };
 } // namespace firebolt::rialto::server
 

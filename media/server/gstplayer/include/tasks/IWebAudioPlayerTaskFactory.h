@@ -20,6 +20,10 @@
 #ifndef FIREBOLT_RIALTO_SERVER_I_WEB_AUDIO_PLAYER_TASK_FACTORY_H_
 #define FIREBOLT_RIALTO_SERVER_I_WEB_AUDIO_PLAYER_TASK_FACTORY_H_
 
+#include "WebAudioPlayerContext.h"
+#include "IGstWebAudioPlayerPrivate.h"
+#include "IPlayerTask.h"
+
 namespace firebolt::rialto::server
 {
 /**
@@ -30,6 +34,25 @@ class IWebAudioPlayerTaskFactory
 public:
     IWebAudioPlayerTaskFactory() = default;
     virtual ~IWebAudioPlayerTaskFactory() = default;
+
+    /**
+     * @brief Creates a Shutdown task.
+     *
+     * @param[in] context       : The GstWebAudioPlayer context
+     *
+     * @retval the new Shutdown task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createShutdown(IGstWebAudioPlayerPrivate &player) const = 0;
+
+    /**
+     * @brief Creates a Stop task.
+     *
+     * @param[in] player     : The GstWebAudioPlayer instance
+     *
+     * @retval the new Stop task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createStop(IGstWebAudioPlayerPrivate &player) const = 0;
+
 };
 
 } // namespace firebolt::rialto::server

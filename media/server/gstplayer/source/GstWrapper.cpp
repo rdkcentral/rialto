@@ -84,4 +84,23 @@ GstStructure *GstWrapper::gstStructureNew(const gchar *name, const gchar *firstf
     va_end(vl);
     return structure;
 }
+
+void GstWrapper::gstBinAddMany(GstBin *bin, GstElement *element_1, ...) const
+{
+    va_list vl;
+    va_start(vl, element_1);
+    gst_bin_add_many(bin, element_1, vl, NULL);
+    va_end(vl);
+}
+
+gboolean GstWrapper::gstElementLinkMany(GstElement * element_1, GstElement * element_2, ...) const
+{
+    gboolean status{false};
+    va_list vl;
+    va_start(vl, element_2);
+    status = gst_element_link_many(element_1, element_2, vl, NULL);
+    va_end(vl);
+    return status;
+}
+
 }; // namespace firebolt::rialto::server

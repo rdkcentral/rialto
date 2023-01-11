@@ -153,6 +153,11 @@ protected:
     WebAudioShmInfo m_availableBuffer;
 
     /**
+     * @brief True if a writeBuffer call is expected.
+     */
+    bool m_expectWriteBuffer;
+
+    /**
      * @brief Initalises the WebAudioPlayer.
      *
      * @param[in] audioMimeType     : The audio encoding format.

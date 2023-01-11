@@ -17,6 +17,8 @@
  * limitations under the License.
  */
 #include "tasks/webAudio/WebAudioPlayerTaskFactory.h"
+#include "tasks/webAudio/Shutdown.h"
+#include "tasks/webAudio/Stop.h"
 
 namespace firebolt::rialto::server
 {
@@ -25,5 +27,15 @@ WebAudioPlayerTaskFactory::WebAudioPlayerTaskFactory(IGstWebAudioPlayerClient *c
                                                      const std::shared_ptr<IGlibWrapper> &glibWrapper)
     : m_client{client}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}
 {
+}
+
+std::unique_ptr<IPlayerTask> WebAudioPlayerTaskFactory::createShutdown(IGstWebAudioPlayerPrivate &player) const
+{
+    return std::make_unique<webaudio::Shutdown>(player);
+}
+
+std::unique_ptr<IPlayerTask> WebAudioPlayerTaskFactory::createStop(IGstWebAudioPlayerPrivate &player) const
+{
+    return std::make_unique<webaudio::Stop>(player);
 }
 } // namespace firebolt::rialto::server

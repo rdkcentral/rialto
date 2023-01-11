@@ -88,6 +88,7 @@ public:
     bool flush() override;
 
     bool changePipelineState(GstState newState) override;
+    void stopWorkerThread() override;
     void handleBusMessage(GstMessage *message) override;
 
 private:

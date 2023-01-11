@@ -423,6 +423,20 @@ public:
     {
         gst_stream_volume_set_volume(volume, format, val);
     }
+
+    GstElement *gstPipelineNew(const gchar *name) const override
+    {
+        return gst_pipeline_new(name);
+    }
+
+    GstPluginFeature *gstRegistryLookupFeature(GstRegistry * registry, const char* name) const override
+    {
+        return gst_registry_lookup_feature(registry, name);
+    }
+
+    void gstBinAddMany(GstBin *bin, GstElement *element_1, ...) const override;
+
+    gboolean gstElementLinkMany(GstElement * element_1, GstElement * element_2, ...) const override;
 };
 
 }; // namespace firebolt::rialto::server
