@@ -157,6 +157,14 @@ public:
                 (const, override));
     MOCK_METHOD(void, gstStreamVolumeSetVolume, (GstStreamVolume * volume, GstStreamVolumeFormat format, gdouble val),
                 (const, override));
+    MOCK_METHOD(GstElement *, gstPipelineNew, (const gchar *name),
+                (const, override));
+    MOCK_METHOD(GstPluginFeature *, gstRegistryLookupFeature, (GstRegistry * registry, const char* name),
+                (const, override));
+    MOCK_METHOD(void, gstBinAddManyStub, (GstBin *bin, GstElement *element),
+                (const));
+    MOCK_METHOD(gboolean, gstElementLinkManyStub, (GstElement * element_1, GstElement * element_2),
+                (const));
 
     GstCaps *gstCapsNewSimple(const char *media_type, const char *fieldname, ...) const override
     {
@@ -251,6 +259,41 @@ public:
 
         va_end(args);
         return structure;
+    }
+
+    void gstBinAddMany(GstBin *bin, GstElement *element_1, ...) const override
+    {
+        va_list args;
+        GstElement *element = element_1;
+
+        va_start(args, element_1);
+        while (NULL != element)
+        {
+            gstBinAddManyStub(bin, element);
+            element = va_arg(args, GstElement *);
+        }
+        va_end(args);
+    }
+
+    gboolean gstElementLinkMany(GstElement * element_1, GstElement * element_2, ...) const override
+    {
+        gboolean status{FALSE};
+        va_list args;
+        GstElement *lastElement = element_1;
+        GstElement *newElement = element_2;
+
+        va_start(args, element_2);
+        while (NULL != newElement)
+        {
+            status = gstElementLinkManyStub(lastElement, newElement);
+            if (TRUE != status)
+                break;
+            newElement = lastElement;
+            lastElement = va_arg(args, GstElement *);
+        }
+        va_end(args);
+
+        return status;
     }
 };
 } // namespace firebolt::rialto::server

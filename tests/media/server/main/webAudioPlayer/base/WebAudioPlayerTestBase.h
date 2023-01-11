@@ -40,6 +40,8 @@ using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::StrictMock;
+using ::testing::DoAll;
+using ::testing::SetArgReferee;
 
 class WebAudioPlayerTestBase : public ::testing::Test
 {
@@ -66,6 +68,8 @@ protected:
     const uint32_t m_priority{5};
     const WebAudioConfig m_config{};
     const int32_t m_kMainThreadClientId{65};
+    uint8_t m_dataPtr{4};
+    const uint32_t m_dataLen{80};
 
     void createWebAudioPlayer();
     void destroyWebAudioPlayer();

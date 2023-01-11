@@ -33,10 +33,14 @@ public:
     GstWebAudioPlayerMock() = default;
     virtual ~GstWebAudioPlayerMock() = default;
 
+    MOCK_METHOD(void, attachSource, (const std::string &audioMimeType, const WebAudioConfig *config), (override));
     MOCK_METHOD(void, play, (), (override));
     MOCK_METHOD(void, pause, (), (override));
     MOCK_METHOD(void, setVolume, (double volume), (override));
     MOCK_METHOD(bool, getVolume, (double &volume), (override));
+    MOCK_METHOD(uint32_t, writeBuffer, (uint8_t * mainPtr, uint32_t mainLength, uint8_t *wrapPtr, uint32_t wrapLength),
+                (override));
+    MOCK_METHOD(void, setEos, (), (override));
 };
 } // namespace firebolt::rialto::server
 

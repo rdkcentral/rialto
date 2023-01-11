@@ -23,6 +23,11 @@
 #include "WorkerThread.h"
 #include "tasks/webAudio/WebAudioPlayerTaskFactory.h"
 
+namespace
+{
+constexpr uint32_t kMaxWebAudioBytes{10 * 1024};
+} // namespace
+
 namespace firebolt::rialto::server
 {
 std::weak_ptr<IGstWebAudioPlayerFactory> GstWebAudioPlayerFactory::m_factory;
@@ -114,11 +119,12 @@ GstWebAudioPlayer::~GstWebAudioPlayer()
 
     m_gstDispatcherThread.reset();
 
-    // TODO(RIALTO-2): Add shutdown task
     // Shutdown task thread
+    m_workerThread->enqueueTask(m_taskFactory->createShutdown(*this));
     m_workerThread->join();
     m_workerThread.reset();
 
+    m_taskFactory->createStop(*this)->execute();
     GstBus *bus = m_gstWrapper->gstPipelineGetBus(GST_PIPELINE(m_context.pipeline));
     m_gstWrapper->gstBusSetSyncHandler(bus, nullptr, nullptr, nullptr);
     m_gstWrapper->gstObjectUnref(bus);
@@ -133,23 +139,107 @@ GstWebAudioPlayer::~GstWebAudioPlayer()
     m_glibWrapper->gObjectUnref(m_context.pipeline);
 }
 
-void GstWebAudioPlayer::initWebAudioPipeline() {}
+void GstWebAudioPlayer::initWebAudioPipeline()
+{
+    m_context.pipeline = m_gstWrapper->gstPipelineNew("webaudiopipeline");
 
-void GstWebAudioPlayer::play() {}
+    // Create and initalise appsrc
+    m_context.source = m_gstWrapper->gstElementFactoryMake("appsrc", "audsrc");
+    m_gstWrapper->gstAppSrcSetMaxBytes(GST_APP_SRC(m_context.source), kMaxWebAudioBytes);
+    m_glibWrapper->gObjectSet(m_context.source, "format", GST_FORMAT_TIME, nullptr);
 
-void GstWebAudioPlayer::pause() {}
+    // Perform sink specific initalisation
+    GstRegistry *reg = m_gstWrapper->gstRegistryGet();
+    GstElement *sink = nullptr;
+    GstPluginFeature *feature = nullptr;
+    if (nullptr != (feature = m_gstWrapper->gstRegistryLookupFeature(reg, "amlhalasink")))
+    {
+        // LLama
+        RIALTO_SERVER_LOG_INFO("Use amlhalasink");
 
-void GstWebAudioPlayer::setVolume(double volume) {}
+        sink = m_gstWrapper->gstElementFactoryMake("amlhalasink", "webaudiosink");
+        m_glibWrapper->gObjectSet(G_OBJECT(sink), "direct-mode", FALSE, NULL);
+
+        m_gstWrapper->gstBinAddMany(GST_BIN(m_context.pipeline), m_context.source, sink, NULL);
+        m_gstWrapper->gstElementLinkMany(m_context.source, sink, NULL);
+
+        m_gstWrapper->gstObjectUnref(feature);
+    }
+    else if (nullptr != (feature = m_gstWrapper->gstRegistryLookupFeature(reg, "rtkaudiosink")))
+    {
+        // XiOne
+        RIALTO_SERVER_LOG_INFO("Use rtkaudiosink");
+
+        sink = m_gstWrapper->gstElementFactoryMake("rtkaudiosink", "webaudiosink");
+        m_glibWrapper->gObjectSet(G_OBJECT(sink), "media-tunnel", FALSE, NULL);
+        m_glibWrapper->gObjectSet(G_OBJECT(sink), "audio-service", TRUE, NULL);
+
+        GstElement *convert = NULL;
+        GstElement *resample = NULL;
+
+        convert = m_gstWrapper->gstElementFactoryMake("audioconvert", NULL);
+        resample = m_gstWrapper->gstElementFactoryMake("audioresample", NULL);
+
+        m_gstWrapper->gstBinAddMany(GST_BIN(m_context.pipeline), m_context.source, convert, resample, sink, nullptr);
+        m_gstWrapper->gstElementLinkMany(m_context.source, convert, resample, sink, nullptr);
+
+        gst_object_unref(feature);
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_INFO("Use autoaudiosink");
+
+        sink = m_gstWrapper->gstElementFactoryMake("autoaudiosink", "webaudiosink");
+
+        m_gstWrapper->gstBinAddMany(GST_BIN(m_context.pipeline), m_context.source, sink, NULL);
+        m_gstWrapper->gstElementLinkMany(m_context.source, sink, NULL);
+    }
+}
+
+void GstWebAudioPlayer::attachSource(const std::string &audioMimeType, const WebAudioConfig *config)
+{
+
+}
+
+void GstWebAudioPlayer::play()
+{
+}
+
+void GstWebAudioPlayer::pause()
+{
+}
+
+void GstWebAudioPlayer::setVolume(double volume)
+{
+}
 
 bool GstWebAudioPlayer::getVolume(double &volume)
 {
     return false;
 }
 
-void GstWebAudioPlayer::handleBusMessage(GstMessage *message) {}
+uint32_t GstWebAudioPlayer::writeBuffer(uint8_t *mainPtr, uint32_t mainLength, uint8_t *wrapPtr, uint32_t wrapLength)
+{
+    return 0;
+}
+
+void GstWebAudioPlayer::setEos()
+{
+}
 
 bool GstWebAudioPlayer::changePipelineState(GstState newState)
 {
     return false;
 }
+
+void GstWebAudioPlayer::stopWorkerThread()
+{
+    if (m_workerThread)
+    {
+        m_workerThread->stop();
+    }
+}
+
+void GstWebAudioPlayer::handleBusMessage(GstMessage *message) {}
+
 }; // namespace firebolt::rialto::server

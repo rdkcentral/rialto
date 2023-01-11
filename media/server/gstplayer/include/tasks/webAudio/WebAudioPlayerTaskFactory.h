@@ -35,6 +35,8 @@ public:
                               const std::shared_ptr<IGlibWrapper> &glibWrapper);
     ~WebAudioPlayerTaskFactory() override = default;
 
+    std::unique_ptr<IPlayerTask> createShutdown(IGstWebAudioPlayerPrivate &player) const override;
+    std::unique_ptr<IPlayerTask> createStop(IGstWebAudioPlayerPrivate &player) const override;
 private:
     IGstWebAudioPlayerClient *m_client;
     std::shared_ptr<IGstWrapper> m_gstWrapper;

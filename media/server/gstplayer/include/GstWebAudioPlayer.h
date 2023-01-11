@@ -79,12 +79,17 @@ public:
      */
     virtual ~GstWebAudioPlayer();
 
+
+    void attachSource(const std::string &audioMimeType, const WebAudioConfig *config) override;
     void play() override;
     void pause() override;
     void setVolume(double volume) override;
     bool getVolume(double &volume) override;
+    uint32_t writeBuffer(uint8_t *mainPtr, uint32_t mainLength, uint8_t *wrapPtr, uint32_t wrapLength) override;
+    void setEos() override;
 
     bool changePipelineState(GstState newState) override;
+    void stopWorkerThread() override;
     void handleBusMessage(GstMessage *message) override;
 
 private:
