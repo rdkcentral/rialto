@@ -134,11 +134,11 @@ bool WebAudioPlayer::setEos()
 bool WebAudioPlayer::getBufferAvailable(uint32_t &availableFrames, std::shared_ptr<WebAudioShmInfo> &)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
+    std::lock_guard<std::mutex> bufLocker(m_bufLock);
     if (!m_webAudioShmInfo)
     {
         m_webAudioShmInfo = std::make_shared<WebAudioShmInfo>();
     }
-    std::lock_guard<std::mutex> bufLocker(m_bufLock);
     return m_webAudioPlayerIpc->getBufferAvailable(availableFrames, m_webAudioShmInfo);
 }
 
@@ -153,6 +153,7 @@ bool WebAudioPlayer::writeBuffer(const uint32_t numberOfFrames, void *data)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
+    std::lock_guard<std::mutex> bufLocker(m_bufLock);
     if (!m_webAudioShmInfo)
     {
         RIALTO_CLIENT_LOG_ERROR("Web audio shared info is null!");
@@ -185,7 +186,6 @@ bool WebAudioPlayer::writeBuffer(const uint32_t numberOfFrames, void *data)
     {
         std::memcpy(shmBuffer + m_webAudioShmInfo->offsetMain, data, m_webAudioShmInfo->lengthMain);
     }
-    std::lock_guard<std::mutex> bufLocker(m_bufLock);
     return m_webAudioPlayerIpc->writeBuffer(numberOfFrames);
 }
 
