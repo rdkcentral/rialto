@@ -66,6 +66,8 @@ protected:
     const uint32_t m_priority{5};
     const WebAudioConfig m_config{};
     const int32_t m_kMainThreadClientId{65};
+    uint8_t m_dataPtr{4};
+    const uint32_t m_dataLen{2};
 
     void createWebAudioPlayer();
     void destroyWebAudioPlayer();

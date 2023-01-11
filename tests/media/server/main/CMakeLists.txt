@@ -88,6 +88,7 @@ add_gtests (
 
         webAudioPlayer/base/WebAudioPlayerTestBase.cpp
         webAudioPlayer/CreateTest.cpp
+        webAudioPlayer/ApiTest.cpp
         )
 
 target_include_directories(

@@ -66,6 +66,14 @@ public:
     IGstWebAudioPlayer &operator=(IGstWebAudioPlayer &&) = delete;
 
     /**
+     * @brief Attaches a source to gstreamer.
+     *
+     * @param[in] audioMimeType     : The audio encoding format.
+     * @param[in] config            : Additional type dependent configuration data or nullptr.
+     */
+    virtual void attachSource(const std::string &audioMimeType, const WebAudioConfig *config) = 0;
+
+    /**
      * @brief Starts playback of the web audio.
      *
      * This method is considered to be asychronous and MUST NOT block
@@ -73,8 +81,10 @@ public:
      *
      * Once the backend is successfully playing it should notify the
      * web audio player client of state WebAudioPlayerState::PLAYING.
+     *
+     * @retval True on success
      */
-    virtual void play() = 0;
+    virtual bool play() = 0;
 
     /**
      * @brief Pauses playback of the web audio.
@@ -84,8 +94,10 @@ public:
      *
      * Once the backend is successfully paused it should notify the
      * web audio player client of state WebAudioPlayerState::PAUSED.
+     *
+     * @retval True on success
      */
-    virtual void pause() = 0;
+    virtual bool pause() = 0;
 
     /**
      * @brief Set level and transition of audio attenuation.
@@ -93,7 +105,7 @@ public:
      *
      * @param[in] volume : Target volume level (0.0 - 1.0)
      */
-    virtual void setVolume(double volume) = 0;
+    virtual bool setVolume(double volume) = 0;
 
     /**
      * @brief Get current audio level. Fetches the current volume level for the pipeline.
@@ -103,6 +115,25 @@ public:
      * @retval True on success.
      */
     virtual bool getVolume(double &volume) = 0;
+
+    /**
+     * @brief Write the buffer to gstreamer buffer.
+     *
+     * @param[in] mainPtr       : Pointer to the start of the data.
+     * @param[in] mainLength    : Amount of bytes to write from the mainPtr.
+     * @param[in] wrapPtr       : Pointer to the start of the wrapped data.
+     * @param[in] wrapLength    : Amount of bytes to write from the wrapPtr.
+     *
+     * @retval The number of bytes written to gstreamer.
+     */
+    virtual uint32_t writeBuffer(uint8_t* mainPtr, uint32_t mainLength, uint8_t* wrapPtr, uint32_t wrapLength) = 0;
+
+    /**
+     * @brief Flush the gstreamer pipeline.
+     *
+     * @retval True on success.
+     */
+    virtual bool flush() = 0;
 };
 
 }; // namespace firebolt::rialto::server

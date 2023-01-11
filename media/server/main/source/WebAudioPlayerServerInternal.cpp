@@ -81,7 +81,7 @@ WebAudioPlayerServerInternal::WebAudioPlayerServerInternal(
     const WebAudioConfig *config, const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle,
     const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
     const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory)
-    : m_webAudioPlayerClient(client), m_shmBuffer{shmBuffer}, m_priority{priority}
+    : m_webAudioPlayerClient(client), m_shmBuffer{shmBuffer}, m_priority{priority}, m_shmId{handle}, m_dataPtr{nullptr}, m_maxDataLength{0}, m_availableBuffer{}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
@@ -105,7 +105,7 @@ WebAudioPlayerServerInternal::WebAudioPlayerServerInternal(
     m_mainThreadClientId = m_mainThread->registerClient();
 
     bool result = false;
-    auto task = [&]() { result = initWebAudioPlayerInternal(handle, gstPlayerFactory); };
+    auto task = [&]() { result = initWebAudioPlayerInternal(audioMimeType, config, gstPlayerFactory); };
 
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     if (!result)
@@ -115,23 +115,36 @@ WebAudioPlayerServerInternal::WebAudioPlayerServerInternal(
 }
 
 bool WebAudioPlayerServerInternal::initWebAudioPlayerInternal(
-    int handle, const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory)
+    const std::string &audioMimeType, const WebAudioConfig *config, const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory)
 {
-    bool status = false;
-    if (!m_shmBuffer->mapPartition(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, handle))
+    if (!m_shmBuffer->mapPartition(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, m_shmId))
     {
         RIALTO_SERVER_LOG_ERROR("Unable to map shm partition");
-    }
-    else if (!initGstWebAudioPlayer(gstPlayerFactory))
-    {
-        RIALTO_SERVER_LOG_ERROR("Failed to initalise the GstPlayer");
-    }
-    else
-    {
-        status = true;
+        return false;
     }
 
-    return status;
+    if (!(m_dataPtr = m_shmBuffer->getDataPtr(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, m_shmId, MediaSourceType::AUDIO)))
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get the data pointer of the partition");
+        return false;
+    }
+
+    if (!(m_maxDataLength = m_shmBuffer->getMaxDataLen(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, m_shmId, MediaSourceType::AUDIO)))
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get the length of the partition");
+        return false;
+    }
+
+    if (!initGstWebAudioPlayer(audioMimeType, config, gstPlayerFactory))
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to initalise the GstPlayer");
+        return false;
+    }
+
+    // Set the available bytes
+    m_availableBuffer.lengthMain = m_maxDataLength;
+
+    return true;
 }
 
 WebAudioPlayerServerInternal::~WebAudioPlayerServerInternal()
@@ -143,21 +156,44 @@ bool WebAudioPlayerServerInternal::play()
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    return false;
+    if (!m_gstPlayer->play())
+    {
+        RIALTO_SERVER_LOG_ERROR("Play failed");
+        return false;
+    }
+
+    return true;
 }
 
 bool WebAudioPlayerServerInternal::pause()
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    return false;
+    if (!m_gstPlayer->pause())
+    {
+        RIALTO_SERVER_LOG_ERROR("Pause failed");
+        return false;
+    }
+
+    return true;
 }
 
 bool WebAudioPlayerServerInternal::setEos()
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    return false;
+    if (pause())
+    {
+        return false;
+    }
+
+    if (!m_gstPlayer->flush())
+    {
+        RIALTO_SERVER_LOG_ERROR("Flushing of the gst player failed");
+        return false;
+    }
+
+    return true;
 }
 
 bool WebAudioPlayerServerInternal::getBufferAvailable(uint32_t &availableFrames,
@@ -165,7 +201,10 @@ bool WebAudioPlayerServerInternal::getBufferAvailable(uint32_t &availableFrames,
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    return false;
+    *webAudioShmInfo = m_availableBuffer;
+    availableFrames = (m_availableBuffer.lengthMain + m_availableBuffer.lengthMain) /  4;
+
+    return true;
 }
 
 bool WebAudioPlayerServerInternal::getBufferDelay(uint32_t &delayFrames)
@@ -178,6 +217,43 @@ bool WebAudioPlayerServerInternal::getBufferDelay(uint32_t &delayFrames)
 bool WebAudioPlayerServerInternal::writeBuffer(const uint32_t numberOfFrames, void *data)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    //data can be ignored in the server as the data should be written to the shared memory
+    if (0 == numberOfFrames)
+    {
+        return true;
+    }
+
+    if (numberOfFrames * 4 > m_availableBuffer.lengthMain + m_availableBuffer.lengthWrap)
+    {
+        RIALTO_SERVER_LOG_ERROR("Number of frames written is too large!");
+        return false;
+    }
+
+    uint8_t* mainPtr = m_dataPtr + m_availableBuffer.offsetMain;
+    uint32_t mainLength = 0;
+    uint8_t* wrapPtr = nullptr;
+    uint32_t wrapLength = 0;
+    if (numberOfFrames * 4 < m_availableBuffer.lengthMain)
+    {
+        mainLength = numberOfFrames * 4;
+    }
+    else
+    {
+        mainLength = m_availableBuffer.lengthMain;
+        wrapPtr = m_dataPtr + m_availableBuffer.offsetWrap;
+        wrapLength = numberOfFrames * 4 - mainLength;
+    }
+
+    uint32_t bytesWritten = m_gstPlayer->writeBuffer(mainPtr, mainLength, wrapPtr, wrapLength);
+
+    if (bytesWritten < numberOfFrames * 4)
+    {
+        if (bytesWritten < m_availableBuffer.lengthMain)
+        {
+            //m_availableBuffer.lengthMain =
+        }
+    }
 
     return false;
 }
@@ -194,14 +270,26 @@ bool WebAudioPlayerServerInternal::setVolume(double volume)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    return false;
+    if (!m_gstPlayer->setVolume(volume))
+    {
+        RIALTO_SERVER_LOG_ERROR("SetVolume failed");
+        return false;
+    }
+
+    return true;
 }
 
 bool WebAudioPlayerServerInternal::getVolume(double &volume)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    return false;
+    if (!m_gstPlayer->getVolume(volume))
+    {
+        RIALTO_SERVER_LOG_ERROR("GetVolume failed");
+        return false;
+    }
+
+    return true;
 }
 
 std::weak_ptr<IWebAudioPlayerClient> WebAudioPlayerServerInternal::getClient()
@@ -211,7 +299,7 @@ std::weak_ptr<IWebAudioPlayerClient> WebAudioPlayerServerInternal::getClient()
 
 void WebAudioPlayerServerInternal::notifyState(WebAudioPlayerState state) {}
 
-bool WebAudioPlayerServerInternal::initGstWebAudioPlayer(const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory)
+bool WebAudioPlayerServerInternal::initGstWebAudioPlayer(const std::string &audioMimeType, const WebAudioConfig *config, const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory)
 {
     m_gstPlayer = gstPlayerFactory->createGstWebAudioPlayer(this);
     if (!m_gstPlayer)
@@ -219,7 +307,9 @@ bool WebAudioPlayerServerInternal::initGstWebAudioPlayer(const std::shared_ptr<I
         RIALTO_SERVER_LOG_ERROR("Failed to load gstreamer player");
         return false;
     }
-    // TODO(RIALTO-2): Add audio source
+
+    m_gstPlayer->attachSource(audioMimeType, config);
+
     return true;
 }
 
