@@ -22,26 +22,18 @@
 class RialtoServerWebAudioPlayerApiTest : public WebAudioPlayerTestBase
 {
 protected:
-    RialtoServerWebAudioPlayerApiTest()
-    {
-        createWebAudioPlayer();
-    }
+    RialtoServerWebAudioPlayerApiTest() { createWebAudioPlayer(); }
 
-    ~RialtoServerWebAudioPlayerApiTest()
-    {
-        destroyWebAudioPlayer();
-    }
+    ~RialtoServerWebAudioPlayerApiTest() { destroyWebAudioPlayer(); }
 };
 
 // Play tests
-TEST_F(RialtoServerWebAudioPlayerApiTest, playSuccess)
-{
-}
+TEST_F(RialtoServerWebAudioPlayerApiTest, playSuccess) {}
 
-//Pause tests
+// Pause tests
 
-//SetEos tests
+// SetEos tests
 
-//GetVolume tests
+// GetVolume tests
 
-//SetVolume tests
+// SetVolume tests

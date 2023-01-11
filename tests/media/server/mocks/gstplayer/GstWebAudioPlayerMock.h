@@ -38,7 +38,8 @@ public:
     MOCK_METHOD(bool, pause, (), (override));
     MOCK_METHOD(bool, setVolume, (double volume), (override));
     MOCK_METHOD(bool, getVolume, (double &volume), (override));
-    MOCK_METHOD(uint32_t, writeBuffer, (uint8_t* mainPtr, uint32_t mainLength, uint8_t* wrapPtr, uint32_t wrapLength), (override));
+    MOCK_METHOD(uint32_t, writeBuffer, (uint8_t * mainPtr, uint32_t mainLength, uint8_t *wrapPtr, uint32_t wrapLength),
+                (override));
     MOCK_METHOD(bool, flush, (), (override));
 };
 } // namespace firebolt::rialto::server

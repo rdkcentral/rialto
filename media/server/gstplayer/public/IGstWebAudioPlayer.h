@@ -23,6 +23,7 @@
 #include "IGstWebAudioPlayerClient.h"
 #include <memory>
 #include <stdint.h>
+#include <string>
 
 namespace firebolt::rialto::server
 {
@@ -126,7 +127,7 @@ public:
      *
      * @retval The number of bytes written to gstreamer.
      */
-    virtual uint32_t writeBuffer(uint8_t* mainPtr, uint32_t mainLength, uint8_t* wrapPtr, uint32_t wrapLength) = 0;
+    virtual uint32_t writeBuffer(uint8_t *mainPtr, uint32_t mainLength, uint8_t *wrapPtr, uint32_t wrapLength) = 0;
 
     /**
      * @brief Flush the gstreamer pipeline.

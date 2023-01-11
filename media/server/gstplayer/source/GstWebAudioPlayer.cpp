@@ -135,9 +135,7 @@ GstWebAudioPlayer::~GstWebAudioPlayer()
 
 void GstWebAudioPlayer::initWebAudioPipeline() {}
 
-void GstWebAudioPlayer::attachSource(const std::string &audioMimeType, const WebAudioConfig *config)
-{
-}
+void GstWebAudioPlayer::attachSource(const std::string &audioMimeType, const WebAudioConfig *config) {}
 
 bool GstWebAudioPlayer::play()
 {
@@ -159,7 +157,7 @@ bool GstWebAudioPlayer::getVolume(double &volume)
     return false;
 }
 
-uint32_t GstWebAudioPlayer::writeBuffer(uint8_t* mainPtr, uint32_t mainLength, uint8_t* wrapPtr, uint32_t wrapLength)
+uint32_t GstWebAudioPlayer::writeBuffer(uint8_t *mainPtr, uint32_t mainLength, uint8_t *wrapPtr, uint32_t wrapLength)
 {
     return 0;
 }

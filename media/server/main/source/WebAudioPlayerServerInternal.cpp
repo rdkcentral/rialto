@@ -81,7 +81,8 @@ WebAudioPlayerServerInternal::WebAudioPlayerServerInternal(
     const WebAudioConfig *config, const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle,
     const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
     const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory)
-    : m_webAudioPlayerClient(client), m_shmBuffer{shmBuffer}, m_priority{priority}, m_shmId{handle}, m_dataPtr{nullptr}, m_maxDataLength{0}, m_availableBuffer{}
+    : m_webAudioPlayerClient(client), m_shmBuffer{shmBuffer}, m_priority{priority}, m_shmId{handle}, m_dataPtr{nullptr},
+      m_maxDataLength{0}, m_availableBuffer{}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
@@ -115,7 +116,8 @@ WebAudioPlayerServerInternal::WebAudioPlayerServerInternal(
 }
 
 bool WebAudioPlayerServerInternal::initWebAudioPlayerInternal(
-    const std::string &audioMimeType, const WebAudioConfig *config, const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory)
+    const std::string &audioMimeType, const WebAudioConfig *config,
+    const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory)
 {
     if (!m_shmBuffer->mapPartition(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, m_shmId))
     {
@@ -123,13 +125,15 @@ bool WebAudioPlayerServerInternal::initWebAudioPlayerInternal(
         return false;
     }
 
-    if (!(m_dataPtr = m_shmBuffer->getDataPtr(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, m_shmId, MediaSourceType::AUDIO)))
+    if (!(m_dataPtr = m_shmBuffer->getDataPtr(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, m_shmId,
+                                              MediaSourceType::AUDIO)))
     {
         RIALTO_SERVER_LOG_ERROR("Failed to get the data pointer of the partition");
         return false;
     }
 
-    if (!(m_maxDataLength = m_shmBuffer->getMaxDataLen(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, m_shmId, MediaSourceType::AUDIO)))
+    if (!(m_maxDataLength = m_shmBuffer->getMaxDataLen(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, m_shmId,
+                                                       MediaSourceType::AUDIO)))
     {
         RIALTO_SERVER_LOG_ERROR("Failed to get the length of the partition");
         return false;
@@ -202,7 +206,7 @@ bool WebAudioPlayerServerInternal::getBufferAvailable(uint32_t &availableFrames,
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
     *webAudioShmInfo = m_availableBuffer;
-    availableFrames = (m_availableBuffer.lengthMain + m_availableBuffer.lengthMain) /  4;
+    availableFrames = (m_availableBuffer.lengthMain + m_availableBuffer.lengthMain) / 4;
 
     return true;
 }
@@ -218,7 +222,7 @@ bool WebAudioPlayerServerInternal::writeBuffer(const uint32_t numberOfFrames, vo
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    //data can be ignored in the server as the data should be written to the shared memory
+    // data can be ignored in the server as the data should be written to the shared memory
     if (0 == numberOfFrames)
     {
         return true;
@@ -230,9 +234,9 @@ bool WebAudioPlayerServerInternal::writeBuffer(const uint32_t numberOfFrames, vo
         return false;
     }
 
-    uint8_t* mainPtr = m_dataPtr + m_availableBuffer.offsetMain;
+    uint8_t *mainPtr = m_dataPtr + m_availableBuffer.offsetMain;
     uint32_t mainLength = 0;
-    uint8_t* wrapPtr = nullptr;
+    uint8_t *wrapPtr = nullptr;
     uint32_t wrapLength = 0;
     if (numberOfFrames * 4 < m_availableBuffer.lengthMain)
     {
@@ -251,7 +255,7 @@ bool WebAudioPlayerServerInternal::writeBuffer(const uint32_t numberOfFrames, vo
     {
         if (bytesWritten < m_availableBuffer.lengthMain)
         {
-            //m_availableBuffer.lengthMain =
+            // m_availableBuffer.lengthMain =
         }
     }
 
@@ -299,7 +303,8 @@ std::weak_ptr<IWebAudioPlayerClient> WebAudioPlayerServerInternal::getClient()
 
 void WebAudioPlayerServerInternal::notifyState(WebAudioPlayerState state) {}
 
-bool WebAudioPlayerServerInternal::initGstWebAudioPlayer(const std::string &audioMimeType, const WebAudioConfig *config, const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory)
+bool WebAudioPlayerServerInternal::initGstWebAudioPlayer(const std::string &audioMimeType, const WebAudioConfig *config,
+                                                         const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory)
 {
     m_gstPlayer = gstPlayerFactory->createGstWebAudioPlayer(this);
     if (!m_gstPlayer)

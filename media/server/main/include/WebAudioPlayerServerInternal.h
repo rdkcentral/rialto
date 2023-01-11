@@ -140,7 +140,7 @@ protected:
     /**
      * @brief Pointer to the started of the shared buffer partition.
      */
-    uint8_t* m_dataPtr;
+    uint8_t *m_dataPtr;
 
     /**
      * @brief Length of the shared buffer partition.
@@ -161,7 +161,8 @@ protected:
      *
      * @retval true on success.
      */
-    bool initWebAudioPlayerInternal(const std::string &audioMimeType, const WebAudioConfig *config, const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory);
+    bool initWebAudioPlayerInternal(const std::string &audioMimeType, const WebAudioConfig *config,
+                                    const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory);
 
     /**
      * @brief Initalises the GstWebAudioPlayer.
@@ -172,7 +173,8 @@ protected:
      *
      * @retval true on success.
      */
-    bool initGstWebAudioPlayer(const std::string &audioMimeType, const WebAudioConfig *config, const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory);
+    bool initGstWebAudioPlayer(const std::string &audioMimeType, const WebAudioConfig *config,
+                               const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory);
 };
 
 }; // namespace firebolt::rialto::server
