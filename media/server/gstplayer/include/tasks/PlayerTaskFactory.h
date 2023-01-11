@@ -25,6 +25,7 @@
 #include "IGstWrapper.h"
 #include "IMediaPipeline.h"
 #include "IPlayerTaskFactory.h"
+#include "IRdkGstreamerUtilsWrapper.h"
 #include <memory>
 
 namespace firebolt::rialto::server
@@ -33,7 +34,8 @@ class PlayerTaskFactory : public IPlayerTaskFactory
 {
 public:
     PlayerTaskFactory(IGstPlayerClient *client, const std::shared_ptr<IGstWrapper> &gstWrapper,
-                      const std::shared_ptr<IGlibWrapper> &glibWrapper);
+                      const std::shared_ptr<IGlibWrapper> &glibWrapper,
+                      const std::shared_ptr<IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper);
     ~PlayerTaskFactory() override = default;
 
     std::unique_ptr<IPlayerTask> createAttachSamples(PlayerContext &context, IGstPlayerPrivate &player,
@@ -77,6 +79,7 @@ private:
     IGstPlayerClient *m_client;
     std::shared_ptr<IGstWrapper> m_gstWrapper;
     std::shared_ptr<IGlibWrapper> m_glibWrapper;
+    std::shared_ptr<IRdkGstreamerUtilsWrapper> m_rdkGstreamerUtilsWrapper;
 };
 } // namespace firebolt::rialto::server
 

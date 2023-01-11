@@ -23,6 +23,7 @@
 #include "GstPlayerPrivateMock.h"
 #include "GstWrapperMock.h"
 #include "PlayerContext.h"
+#include "RdkGstreamerUtilsWrapperMock.h"
 #include "tasks/AttachSamples.h"
 #include "tasks/AttachSource.h"
 #include "tasks/CheckAudioUnderflow.h"
@@ -62,7 +63,10 @@ protected:
         std::make_shared<StrictMock<firebolt::rialto::server::GlibWrapperMock>>()};
     std::shared_ptr<firebolt::rialto::server::GstWrapperMock> m_gstWrapper{
         std::make_shared<StrictMock<firebolt::rialto::server::GstWrapperMock>>()};
-    firebolt::rialto::server::PlayerTaskFactory m_sut{&m_gstPlayerClient, m_gstWrapper, m_glibWrapper};
+    std::shared_ptr<firebolt::rialto::server::RdkGstreamerUtilsWrapperMock> m_rdkGstreamerUtilsWrapper{
+        std::make_shared<StrictMock<firebolt::rialto::server::RdkGstreamerUtilsWrapperMock>>()};
+    firebolt::rialto::server::PlayerTaskFactory m_sut{&m_gstPlayerClient, m_gstWrapper, m_glibWrapper,
+                                                      m_rdkGstreamerUtilsWrapper};
 };
 
 TEST_F(PlayerTaskFactoryTest, ShouldCreateAttachSamples)

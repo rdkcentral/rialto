@@ -45,8 +45,10 @@
 namespace firebolt::rialto::server
 {
 PlayerTaskFactory::PlayerTaskFactory(IGstPlayerClient *client, const std::shared_ptr<IGstWrapper> &gstWrapper,
-                                     const std::shared_ptr<IGlibWrapper> &glibWrapper)
-    : m_client{client}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}
+                                     const std::shared_ptr<IGlibWrapper> &glibWrapper,
+                                     const std::shared_ptr<IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper)
+    : m_client{client}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_rdkGstreamerUtilsWrapper{
+                                                                                  rdkGstreamerUtilsWrapper}
 {
 }
 
@@ -61,7 +63,7 @@ std::unique_ptr<IPlayerTask>
 PlayerTaskFactory::createAttachSource(PlayerContext &context,
                                       const std::unique_ptr<IMediaPipeline::MediaSource> &source) const
 {
-    return std::make_unique<AttachSource>(context, m_gstWrapper, m_glibWrapper, source);
+    return std::make_unique<AttachSource>(context, m_gstWrapper, m_glibWrapper, m_rdkGstreamerUtilsWrapper, source);
 }
 
 std::unique_ptr<IPlayerTask> PlayerTaskFactory::createEnoughData(PlayerContext &context, GstAppSrc *src) const

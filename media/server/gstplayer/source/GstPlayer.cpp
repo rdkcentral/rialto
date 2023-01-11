@@ -99,9 +99,10 @@ GstPlayerFactory::createGstPlayer(IGstPlayerClient *client, IDecryptionService &
             throw std::runtime_error("Cannot create RdkGstreamerUtilsWrapper");
         }
         gstPlayer = std::make_unique<GstPlayer>(client, decryptionService, type, videoRequirements, gstWrapper,
-                                                glibWrapper, rdkGstreamerUtilsWrapper, IGstSrcFactory::getFactory(),
+                                                glibWrapper, IGstSrcFactory::getFactory(),
                                                 common::ITimerFactory::getFactory(),
-                                                std::make_unique<PlayerTaskFactory>(client, gstWrapper, glibWrapper),
+                                                std::make_unique<PlayerTaskFactory>(client, gstWrapper, glibWrapper,
+                                                                                    rdkGstreamerUtilsWrapper),
                                                 std::make_unique<WorkerThreadFactory>(),
                                                 std::make_unique<GstDispatcherThreadFactory>(),
                                                 IGstProtectionMetadataWrapperFactory::createFactory());
@@ -143,15 +144,13 @@ bool IGstPlayer::initalise(int argc, char **argv)
 GstPlayer::GstPlayer(IGstPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
                      const VideoRequirements &videoRequirements, const std::shared_ptr<IGstWrapper> &gstWrapper,
                      const std::shared_ptr<IGlibWrapper> &glibWrapper,
-                     const std::shared_ptr<IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
                      const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
                      std::shared_ptr<common::ITimerFactory> timerFactory, std::unique_ptr<IPlayerTaskFactory> taskFactory,
                      std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
                      std::unique_ptr<IGstDispatcherThreadFactory> gstDispatcherThreadFactory,
                      std::shared_ptr<IGstProtectionMetadataWrapperFactory> gstProtectionMetadataFactory)
-    : m_gstPlayerClient(client), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
-      m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}, m_timerFactory{timerFactory}, m_taskFactory{
-                                                                                              std::move(taskFactory)}
+    : m_gstPlayerClient(client), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_timerFactory{timerFactory},
+      m_taskFactory{std::move(taskFactory)}
 {
     RIALTO_SERVER_LOG_DEBUG("GstPlayer is constructed.");
 

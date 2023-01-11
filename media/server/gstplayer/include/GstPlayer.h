@@ -81,10 +81,9 @@ public:
      */
     GstPlayer(IGstPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
               const VideoRequirements &videoRequirements, const std::shared_ptr<IGstWrapper> &gstWrapper,
-              const std::shared_ptr<IGlibWrapper> &glibWrapper,
-              const std::shared_ptr<IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
-              const std::shared_ptr<IGstSrcFactory> &gstSrcFactory, std::shared_ptr<common::ITimerFactory> timerFactory,
-              std::unique_ptr<IPlayerTaskFactory> taskFactory, std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
+              const std::shared_ptr<IGlibWrapper> &glibWrapper, const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
+              std::shared_ptr<common::ITimerFactory> timerFactory, std::unique_ptr<IPlayerTaskFactory> taskFactory,
+              std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
               std::unique_ptr<IGstDispatcherThreadFactory> gstDispatcherThreadFactory,
               std::shared_ptr<IGstProtectionMetadataWrapperFactory> gstProtectionMetadataFactory);
 
@@ -182,11 +181,6 @@ private:
      * @brief The glib wrapper object.
      */
     std::shared_ptr<IGlibWrapper> m_glibWrapper;
-
-    /**
-     * @brief The rdk gstreamer utils wrapper object.
-     */
-    std::shared_ptr<IRdkGstreamerUtilsWrapper> m_rdkGstreamerUtilsWrapper;
 
     /**
      * @brief Thread for handling player tasks.

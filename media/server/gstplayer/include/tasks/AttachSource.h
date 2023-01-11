@@ -24,6 +24,7 @@
 #include "IGstWrapper.h"
 #include "IMediaPipeline.h"
 #include "IPlayerTask.h"
+#include "IRdkGstreamerUtilsWrapper.h"
 #include "PlayerContext.h"
 #include <memory>
 #include <string>
@@ -34,7 +35,9 @@ class AttachSource : public IPlayerTask
 {
 public:
     AttachSource(PlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper,
-                 std::shared_ptr<IGlibWrapper> glibWrapper, const std::unique_ptr<IMediaPipeline::MediaSource> &source);
+                 std::shared_ptr<IGlibWrapper> glibWrapper,
+                 const std::shared_ptr<IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper,
+                 const std::unique_ptr<IMediaPipeline::MediaSource> &source);
     ~AttachSource() override;
     void execute() const override;
 
@@ -44,6 +47,7 @@ private:
     PlayerContext &m_context;
     std::shared_ptr<IGstWrapper> m_gstWrapper;
     std::shared_ptr<IGlibWrapper> m_glibWrapper;
+    std::shared_ptr<IRdkGstreamerUtilsWrapper> m_rdkGstreamerUtilsWrapper;
     std::unique_ptr<IMediaPipeline::MediaSource> m_attachedSource;
 };
 } // namespace firebolt::rialto::server
