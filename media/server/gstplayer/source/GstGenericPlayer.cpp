@@ -97,10 +97,10 @@ GstGenericPlayerFactory::createGstGenericPlayer(IGstGenericPlayerClient *client,
             throw std::runtime_error("Cannot create RdkGstreamerUtilsWrapper");
         }
         gstPlayer = std::make_unique<GstGenericPlayer>(client, decryptionService, type, videoRequirements, gstWrapper,
-                                                       glibWrapper, rdkGstreamerUtilsWrapper, IGstSrcFactory::getFactory(),
+                                                       glibWrapper, IGstSrcFactory::getFactory(),
                                                        common::ITimerFactory::getFactory(),
                                                        std::make_unique<GenericPlayerTaskFactory>(client, gstWrapper,
-                                                                                                  glibWrapper),
+                                                                                                  glibWrapper, rdkGstreamerUtilsWrapper),
                                                        std::make_unique<WorkerThreadFactory>(),
                                                        std::make_unique<GstDispatcherThreadFactory>(),
                                                        IGstProtectionMetadataWrapperFactory::createFactory());
@@ -117,7 +117,6 @@ GstGenericPlayer::GstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionS
                                    MediaType type, const VideoRequirements &videoRequirements,
                                    const std::shared_ptr<IGstWrapper> &gstWrapper,
                                    const std::shared_ptr<IGlibWrapper> &glibWrapper,
-                                   const std::shared_ptr<IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
                                    const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
                                    std::shared_ptr<common::ITimerFactory> timerFactory,
                                    std::unique_ptr<IGenericPlayerTaskFactory> taskFactory,

@@ -213,8 +213,10 @@ protected:
 
 AttachSource::AttachSource(GenericPlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper,
                            std::shared_ptr<IGlibWrapper> glibWrapper,
+                           const std::shared_ptr<IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper,
                            const std::unique_ptr<IMediaPipeline::MediaSource> &source)
-    : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_attachedSource{source->copy()}
+    : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
+      m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}, m_attachedSource{source->copy()}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing AttachSource");
 }
