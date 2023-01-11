@@ -54,7 +54,17 @@ add_gtests (
         mediaKeysCapabilities/KeySystemsTest.cpp
 
         # WebAudioPlayer tests
+        webAudioPlayer/base/WebAudioPlayerTestBase.cpp
         webAudioPlayer/CreateTest.cpp
+        webAudioPlayer/CallbackTest.cpp
+        webAudioPlayer/PlayPauseTest.cpp
+        webAudioPlayer/SetVolumeTest.cpp
+        webAudioPlayer/GetVolumeTest.cpp
+        webAudioPlayer/SetEosTest.cpp
+        webAudioPlayer/GetBufferDelayTest.cpp
+        webAudioPlayer/GetDeviceInfoTest.cpp
+        webAudioPlayer/GetBufferAvailableTest.cpp
+        webAudioPlayer/WriteBufferTest.cpp
         )
 
 target_include_directories(
@@ -75,6 +85,7 @@ target_include_directories(
 
         # Test Bases
         mediaPipeline/base
+        webAudioPlayer/base
         )
 
 target_link_libraries(
