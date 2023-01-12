@@ -24,9 +24,9 @@
 #include "DataReaderFactoryMock.h"
 #include "DataReaderMock.h"
 #include "DecryptionServiceMock.h"
-#include "GstPlayerFactoryMock.h"
-#include "GstPlayerMock.h"
-#include "IGstPlayerClient.h"
+#include "GstGenericPlayerFactoryMock.h"
+#include "GstGenericPlayerMock.h"
+#include "IGstGenericPlayerClient.h"
 #include "MainThreadFactoryMock.h"
 #include "MainThreadMock.h"
 #include "MediaPipelineClientMock.h"
@@ -64,9 +64,9 @@ protected:
 
     // Strict Mocks
     std::shared_ptr<StrictMock<MediaPipelineClientMock>> m_mediaPipelineClientMock;
-    std::shared_ptr<StrictMock<GstPlayerFactoryMock>> m_gstPlayerFactoryMock;
-    std::unique_ptr<StrictMock<GstPlayerMock>> m_gstPlayer;
-    StrictMock<GstPlayerMock> *m_gstPlayerMock;
+    std::shared_ptr<StrictMock<GstGenericPlayerFactoryMock>> m_gstPlayerFactoryMock;
+    std::unique_ptr<StrictMock<GstGenericPlayerMock>> m_gstPlayer;
+    StrictMock<GstGenericPlayerMock> *m_gstPlayerMock;
     std::shared_ptr<StrictMock<SharedMemoryBufferMock>> m_sharedMemoryBufferMock;
     std::unique_ptr<StrictMock<DataReaderFactoryMock>> m_dataReaderFactory;
     StrictMock<DataReaderFactoryMock> *m_dataReaderFactoryMock;

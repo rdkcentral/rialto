@@ -50,17 +50,101 @@ public:
     ISharedMemoryBuffer &operator=(const ISharedMemoryBuffer &) = delete;
     ISharedMemoryBuffer &operator=(ISharedMemoryBuffer &&) = delete;
 
-    virtual bool mapPartition(int sessionId) = 0;
-    virtual bool unmapPartition(int sessionId) = 0;
+    /**
+     * @brief The type of media playback.
+     */
+    enum class MediaPlaybackType
+    {
+        GENERIC,
+        WEB_AUDIO
+    };
 
-    virtual bool clearData(int sessionId, const MediaSourceType &mediaSourceType) const = 0;
+    /**
+     * @brief Maps the partition for playback.
+     *
+     * @param[in] playbackType  : The type of playback partition.
+     * @param[in] id            : The id for the partition of playbackType.
+     *
+     * @retval true on success.
+     */
+    virtual bool mapPartition(MediaPlaybackType playbackType, int id) = 0;
 
-    virtual std::uint32_t getDataOffset(int sessionId, const MediaSourceType &mediaSourceType) const = 0;
-    virtual std::uint32_t getMaxDataLen(int sessionId, const MediaSourceType &mediaSourceType) const = 0;
-    virtual std::uint8_t *getDataPtr(int sessionId, const MediaSourceType &mediaSourceType) const = 0;
+    /**
+     * @brief Unmaps the partition for playback.
+     *
+     * @param[in] playbackType  : The type of playback partition.
+     * @param[in] id            : The id for the partition of playbackType.
+     *
+     * @retval true on success.
+     */
+    virtual bool unmapPartition(MediaPlaybackType playbackType, int id) = 0;
 
+    /**
+     * @brief Clears the data in the specified partition.
+     *
+     * @param[in] playbackType      : The type of playback partition.
+     * @param[in] id                : The id for the partition of playbackType.
+     * @param[in] mediaSourceType   : The type of media source partition.
+     *
+     * @retval true on success.
+     */
+    virtual bool clearData(MediaPlaybackType playbackType, int id, const MediaSourceType &mediaSourceType) const = 0;
+
+    /**
+     * @brief Gets the offset of the specified data partition.
+     *
+     * @param[in] playbackType      : The type of playback partition.
+     * @param[in] id                : The id for the partition of playbackType.
+     * @param[in] mediaSourceType   : The type of media source partition.
+     *
+     * @retval true on success.
+     */
+    virtual std::uint32_t getDataOffset(MediaPlaybackType playbackType, int id,
+                                        const MediaSourceType &mediaSourceType) const = 0;
+
+    /**
+     * @brief Gets the maximum length of the specified data partition.
+     *
+     * @param[in] playbackType      : The type of playback partition.
+     * @param[in] id                : The id for the partition of playbackType.
+     * @param[in] mediaSourceType   : The type of media source partition.
+     *
+     * @retval true on success.
+     */
+    virtual std::uint32_t getMaxDataLen(MediaPlaybackType playbackType, int id,
+                                        const MediaSourceType &mediaSourceType) const = 0;
+
+    /**
+     * @brief Gets the pointer to the start of the specified data partition.
+     *
+     * @param[in] playbackType      : The type of playback partition.
+     * @param[in] id                : The id for the partition of playbackType.
+     * @param[in] mediaSourceType   : The type of media source partition.
+     *
+     * @retval true on success.
+     */
+    virtual std::uint8_t *getDataPtr(MediaPlaybackType playbackType, int id,
+                                     const MediaSourceType &mediaSourceType) const = 0;
+
+    /**
+     * @brief Gets file descriptor of the shared memory.
+     *
+     * @retval > -1 on success.
+     */
     virtual int getFd() const = 0;
+
+    /**
+     * @brief Gets the allocated size of the shared memory.
+     *
+     * @retval > 0 on success.
+     */
     virtual std::uint32_t getSize() const = 0;
+
+    /**
+     * @brief Gets the pointer to the shared memory.
+     *
+     * @retval None null ptr value on success.
+     */
     virtual std::uint8_t *getBuffer() const = 0;
 };
 } // namespace firebolt::rialto::server

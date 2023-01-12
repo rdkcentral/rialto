@@ -20,6 +20,8 @@
 #ifndef FIREBOLT_RIALTO_SERVER_WEB_AUDIO_PLAYER_SERVER_INTERNAL_H_
 #define FIREBOLT_RIALTO_SERVER_WEB_AUDIO_PLAYER_SERVER_INTERNAL_H_
 
+#include "IGstWebAudioPlayer.h"
+#include "IMainThread.h"
 #include "IWebAudioPlayer.h"
 #include "IWebAudioPlayerServerInternalFactory.h"
 
@@ -45,27 +47,32 @@ public:
     std::unique_ptr<IWebAudioPlayer>
     createWebAudioPlayerServerInternal(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
                                        const uint32_t priority, const WebAudioConfig *config,
-                                       const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer) const override;
+                                       const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle) const override;
 };
 
 /**
  * @brief The definition of the WebAudioPlayerServerInternal.
  */
-class WebAudioPlayerServerInternal : public IWebAudioPlayer
+class WebAudioPlayerServerInternal : public IWebAudioPlayer, public IGstWebAudioPlayerClient
 {
 public:
     /**
      * @brief The constructor.
      *
-     * @param[in] client            : The Web Audio Player client
-     * @param[in] audioMimeType     : The audio encoding format, currently only "audio/x-raw" (PCM)
+     * @param[in] client            : The Web Audio Player client.
+     * @param[in] audioMimeType     : The audio encoding format, currently only "audio/x-raw" (PCM).
      * @param[in] priority          : Priority value for this pipeline.
-     * @param[in] config            : Additional type dependent configuration data or nullptr
-     * @param[in] shmBuffer         : The shared memory buffer
+     * @param[in] config            : Additional type dependent configuration data or nullptr.
+     * @param[in] shmBuffer         : The shared memory buffer.
+     * @param[in] handle            : The handle for this WebAudioPlayer.
+     * @param[in] mainThreadFactory : The main thread factory.
+     * @param[in] gstPlayerFactory  : The gstreamer player factory.
      */
     WebAudioPlayerServerInternal(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
                                  const uint32_t priority, const WebAudioConfig *config,
-                                 const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer);
+                                 const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle,
+                                 const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
+                                 const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory);
 
     /**
      * @brief Virtual destructor.
@@ -92,6 +99,8 @@ public:
 
     std::weak_ptr<IWebAudioPlayerClient> getClient() override;
 
+    void notifyState(WebAudioPlayerState state) override;
+
 protected:
     /**
      * @brief The web audio player client.
@@ -99,9 +108,48 @@ protected:
     std::weak_ptr<IWebAudioPlayerClient> m_webAudioPlayerClient;
 
     /**
-     * @brief Shared memory buffer
+     * @brief Shared memory buffer.
      */
     std::shared_ptr<ISharedMemoryBuffer> m_shmBuffer;
+
+    /**
+     * @brief The mainThread object.
+     */
+    std::shared_ptr<IMainThread> m_mainThread;
+
+    /**
+     * @brief This objects id registered on the main thread.
+     */
+    uint32_t m_mainThreadClientId;
+
+    /**
+     * @brief This priority of the WebAudioPlayer object.
+     */
+    const uint32_t m_priority;
+
+    /**
+     * @brief The gstreamer player.
+     */
+    std::unique_ptr<IGstWebAudioPlayer> m_gstPlayer;
+
+    /**
+     * @brief Initalises the WebAudioPlayer.
+     *
+     * @param[in] handle            : The handle for this WebAudioPlayer.
+     * @param[in] gstPlayerFactory  : The gstreamer player factory.
+     *
+     * @retval true on success.
+     */
+    bool initWebAudioPlayerInternal(int handle, const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory);
+
+    /**
+     * @brief Initalises the GstWebAudioPlayer.
+     *
+     * @param[in] gstPlayerFactory  : The gstreamer player factory.
+     *
+     * @retval true on success.
+     */
+    bool initGstWebAudioPlayer(const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory);
 };
 
 }; // namespace firebolt::rialto::server

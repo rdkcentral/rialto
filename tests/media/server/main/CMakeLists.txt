@@ -86,6 +86,7 @@ add_gtests (
 
         mainThread/MainThreadTest.cpp
 
+        webAudioPlayer/base/WebAudioPlayerTestBase.cpp
         webAudioPlayer/CreateTest.cpp
         )
 
@@ -107,6 +108,7 @@ target_include_directories(
         mediaKeys/base
         mediaKeySession/base
         mediaPipeline/base
+        webAudioPlayer/base
         )
 
 target_link_libraries(
