@@ -37,7 +37,7 @@ public:
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IWebAudioPlayer>, createWebAudioPlayerServerInternal,
                 (std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType, const uint32_t priority,
-                 const WebAudioConfig *config, const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer),
+                 const WebAudioConfig *config, const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle),
                 (const, override));
 };
 } // namespace firebolt::rialto::server

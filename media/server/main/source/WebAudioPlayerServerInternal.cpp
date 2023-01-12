@@ -58,13 +58,15 @@ WebAudioPlayerServerInternalFactory::createWebAudioPlayer(std::weak_ptr<IWebAudi
 
 std::unique_ptr<IWebAudioPlayer> WebAudioPlayerServerInternalFactory::createWebAudioPlayerServerInternal(
     std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType, const uint32_t priority,
-    const WebAudioConfig *config, const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer) const
+    const WebAudioConfig *config, const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle) const
 {
     std::unique_ptr<IWebAudioPlayer> webAudioPlayer;
     try
     {
-        webAudioPlayer =
-            std::make_unique<server::WebAudioPlayerServerInternal>(client, audioMimeType, priority, config, shmBuffer);
+        webAudioPlayer = std::make_unique<server::WebAudioPlayerServerInternal>(client, audioMimeType, priority, config,
+                                                                                shmBuffer, handle,
+                                                                                IMainThreadFactory::createFactory(),
+                                                                                IGstWebAudioPlayerFactory::getFactory());
     }
     catch (const std::exception &e)
     {
@@ -74,13 +76,62 @@ std::unique_ptr<IWebAudioPlayer> WebAudioPlayerServerInternalFactory::createWebA
     return webAudioPlayer;
 }
 
-WebAudioPlayerServerInternal::WebAudioPlayerServerInternal(std::weak_ptr<IWebAudioPlayerClient> client,
-                                                           const std::string &audioMimeType, const uint32_t priority,
-                                                           const WebAudioConfig *config,
-                                                           const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer)
-    : m_webAudioPlayerClient(client), m_shmBuffer{shmBuffer}
+WebAudioPlayerServerInternal::WebAudioPlayerServerInternal(
+    std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType, const uint32_t priority,
+    const WebAudioConfig *config, const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle,
+    const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
+    const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory)
+    : m_webAudioPlayerClient(client), m_shmBuffer{shmBuffer}, m_priority{priority}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    if (audioMimeType == "audio/x-raw")
+    {
+        if (config == nullptr)
+        {
+            throw std::runtime_error("Config is null for 'audio/x-raw'");
+        }
+    }
+    else
+    {
+        throw std::runtime_error("Mimetype '" + audioMimeType + "' not supported");
+    }
+
+    m_mainThread = mainThreadFactory->getMainThread();
+    if (!m_mainThread)
+    {
+        throw std::runtime_error("Failed to get the main thread");
+    }
+    m_mainThreadClientId = m_mainThread->registerClient();
+
+    bool result = false;
+    auto task = [&]() { result = initWebAudioPlayerInternal(handle, gstPlayerFactory); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    if (!result)
+    {
+        throw std::runtime_error("WebAudioPlayerServerInternal construction failed");
+    }
+}
+
+bool WebAudioPlayerServerInternal::initWebAudioPlayerInternal(
+    int handle, const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory)
+{
+    bool status = false;
+    if (!m_shmBuffer->mapPartition(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, handle))
+    {
+        RIALTO_SERVER_LOG_ERROR("Unable to map shm partition");
+    }
+    else if (!initGstWebAudioPlayer(gstPlayerFactory))
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to initalise the GstPlayer");
+    }
+    else
+    {
+        status = true;
+    }
+
+    return status;
 }
 
 WebAudioPlayerServerInternal::~WebAudioPlayerServerInternal()
@@ -156,6 +207,20 @@ bool WebAudioPlayerServerInternal::getVolume(double &volume)
 std::weak_ptr<IWebAudioPlayerClient> WebAudioPlayerServerInternal::getClient()
 {
     return m_webAudioPlayerClient;
+}
+
+void WebAudioPlayerServerInternal::notifyState(WebAudioPlayerState state) {}
+
+bool WebAudioPlayerServerInternal::initGstWebAudioPlayer(const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory)
+{
+    m_gstPlayer = gstPlayerFactory->createGstWebAudioPlayer(this);
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to load gstreamer player");
+        return false;
+    }
+    // TODO(RIALTO-2): Add audio source
+    return true;
 }
 
 }; // namespace firebolt::rialto::server

@@ -20,11 +20,8 @@
 #ifndef FIREBOLT_RIALTO_SERVER_I_GST_DISPATCHER_THREAD_H_
 #define FIREBOLT_RIALTO_SERVER_I_GST_DISPATCHER_THREAD_H_
 
-#include "IGstPlayerPrivate.h"
+#include "IGstDispatcherThreadClient.h"
 #include "IGstWrapper.h"
-#include "IPlayerTaskFactory.h"
-#include "IWorkerThread.h"
-#include "PlayerContext.h"
 #include <memory>
 
 namespace firebolt::rialto::server
@@ -38,9 +35,8 @@ public:
     virtual ~IGstDispatcherThreadFactory() = default;
 
     virtual std::unique_ptr<IGstDispatcherThread>
-    createGstDispatcherThread(PlayerContext &playerContext, IGstPlayerPrivate &player,
-                              const std::shared_ptr<IGstWrapper> &gstWrapper, IWorkerThread &workerThread,
-                              const IPlayerTaskFactory &taskFactory) const = 0;
+    createGstDispatcherThread(IGstDispatcherThreadClient &client, GstElement *pipeline,
+                              const std::shared_ptr<IGstWrapper> &gstWrapper) const = 0;
 };
 
 class IGstDispatcherThread

@@ -24,9 +24,9 @@
 
 MediaPipelineTestBase::MediaPipelineTestBase()
     : m_mediaPipelineClientMock{std::make_shared<StrictMock<MediaPipelineClientMock>>()},
-      m_gstPlayerFactoryMock{std::make_shared<StrictMock<GstPlayerFactoryMock>>()},
-      m_gstPlayer{std::make_unique<StrictMock<GstPlayerMock>>()},
-      m_gstPlayerMock{static_cast<StrictMock<GstPlayerMock> *>(m_gstPlayer.get())},
+      m_gstPlayerFactoryMock{std::make_shared<StrictMock<GstGenericPlayerFactoryMock>>()},
+      m_gstPlayer{std::make_unique<StrictMock<GstGenericPlayerMock>>()},
+      m_gstPlayerMock{static_cast<StrictMock<GstGenericPlayerMock> *>(m_gstPlayer.get())},
       m_sharedMemoryBufferMock{std::make_shared<StrictMock<SharedMemoryBufferMock>>()},
       m_dataReaderFactory{std::make_unique<StrictMock<DataReaderFactoryMock>>()},
       m_dataReaderFactoryMock{static_cast<StrictMock<DataReaderFactoryMock> *>(m_dataReaderFactory.get())},
@@ -46,7 +46,8 @@ void MediaPipelineTestBase::createMediaPipeline()
     mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_mainThreadFactoryMock, getMainThread()).WillOnce(Return(m_mainThreadMock));
     EXPECT_CALL(*m_mainThreadMock, registerClient()).WillOnce(Return(m_kMainThreadClientId));
-    EXPECT_CALL(*m_sharedMemoryBufferMock, mapPartition(m_kSessionId)).WillOnce(Return(true));
+    EXPECT_CALL(*m_sharedMemoryBufferMock, mapPartition(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId))
+        .WillOnce(Return(true));
     EXPECT_NO_THROW(
         m_mediaPipeline =
             std::make_unique<MediaPipelineServerInternal>(m_mediaPipelineClientMock, m_videoReq, m_gstPlayerFactoryMock,
@@ -58,7 +59,8 @@ void MediaPipelineTestBase::createMediaPipeline()
 
 void MediaPipelineTestBase::destroyMediaPipeline()
 {
-    EXPECT_CALL(*m_sharedMemoryBufferMock, unmapPartition(m_kSessionId)).WillOnce(Return(true));
+    EXPECT_CALL(*m_sharedMemoryBufferMock, unmapPartition(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId))
+        .WillOnce(Return(true));
     EXPECT_CALL(*m_mainThreadMock, unregisterClient(m_kMainThreadClientId));
     // Objects are destroyed on the main thread
     mainThreadWillEnqueueTaskAndWait();
@@ -84,7 +86,8 @@ void MediaPipelineTestBase::loadGstPlayer()
 {
     mainThreadWillEnqueueTaskAndWait();
     mainThreadWillEnqueueTask();
-    EXPECT_CALL(*m_gstPlayerFactoryMock, createGstPlayer(_, _, _, _)).WillOnce(Return(ByMove(std::move(m_gstPlayer))));
+    EXPECT_CALL(*m_gstPlayerFactoryMock, createGstGenericPlayer(_, _, _, _))
+        .WillOnce(Return(ByMove(std::move(m_gstPlayer))));
     EXPECT_CALL(*m_mediaPipelineClientMock, notifyNetworkState(NetworkState::BUFFERING));
 
     EXPECT_EQ(m_mediaPipeline->load(MediaType::MSE, "mime", "mse://1"), true);
