@@ -84,7 +84,12 @@ void gstreamerLogFunction(GstDebugCategory *category, GstDebugLevel level, const
     ss << "M:" << file << " F:" << function << ":" << line;
     if (object)
     {
-        if (GST_IS_OBJECT(object) && GST_OBJECT_NAME(object))
+        if (GST_IS_PAD(object) && GST_OBJECT_NAME(object) && GST_OBJECT_PARENT(object) &&
+            GST_OBJECT_NAME(GST_OBJECT_PARENT(object)))
+        {
+            ss << " <" << GST_OBJECT_NAME(GST_OBJECT_PARENT(object)) << ":" << GST_OBJECT_NAME(object) << ">";
+        }
+        else if (GST_IS_OBJECT(object) && GST_OBJECT_NAME(object))
         {
             ss << " <" << GST_OBJECT_NAME(object) << ">";
         }
