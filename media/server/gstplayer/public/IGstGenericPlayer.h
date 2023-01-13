@@ -88,6 +88,14 @@ public:
     virtual void attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &mediaSource) = 0;
 
     /**
+     * @brief Unattaches a source.
+     *
+     * @param[in] id : The source id.
+     *
+     */
+    virtual void removeSource(int32_t id) = 0;
+
+    /**
      * @brief Starts playback of the media.
      *
      * This method is considered to be asychronous and MUST NOT block

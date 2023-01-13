@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_GENERIC_PLAYER_CONTEXT_H_
 
 #include "IGstSrc.h"
+#include "IRdkGstreamerUtilsWrapper.h"
 #include "ITimer.h"
 #include "MediaCommon.h"
 #include <gst/gst.h>
@@ -166,13 +167,6 @@ struct GenericPlayerContext
     bool audioUnderflowEnabled{false};
 
     /**
-     * @brief Flag used to check, if video underflow reporting is enabled
-     *
-     * Flag can be used only in worker thread
-     */
-    bool videoUnderflowEnabled{false};
-
-    /**
      * @brief Pending video geometry
      */
     Rectangle pendingGeometry;
@@ -211,11 +205,11 @@ struct GenericPlayerContext
     bool audioSourceRemoved{false};
 
     /**
-     * @brief Flag used to check, if video source has been recently removed
+     * @brief Audio elements of gst pipeline.
      *
-     * Flag can be used only in worker thread
+     * Attribute can be used only in worker thread
      */
-    bool videoSourceRemoved{false};
+    PlaybackGroupPrivate playbackGroup;
 };
 } // namespace firebolt::rialto::server
 

@@ -39,18 +39,11 @@ protected:
     GstGenericPlayerTest()
     {
         gstPlayerWillBeCreated();
-<<<<<<< HEAD:tests/media/server/gstplayer/genericPlayer/GstGenericPlayerTest.cpp
         m_sut = std::make_unique<GstGenericPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, MediaType::MSE,
-                                                   m_videoReq, m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock, m_gstSrcFactoryMock,
+                                                   m_videoReq, m_gstWrapperMock, m_glibWrapperMock, m_gstSrcFactoryMock,
                                                    m_timerFactoryMock, std::move(m_taskFactory),
                                                    std::move(workerThreadFactory), std::move(gstDispatcherThreadFactory),
                                                    m_gstProtectionMetadataFactoryMock);
-=======
-        m_sut = std::make_unique<GstPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, MediaType::MSE, m_videoReq,
-                                            m_gstWrapperMock, m_glibWrapperMock, m_gstSrcFactoryMock,
-                                            m_timerFactoryMock, std::move(taskFactory), std::move(workerThreadFactory),
-                                            std::move(gstDispatcherThreadFactory), m_gstProtectionMetadataFactoryMock);
->>>>>>> rdk gstreamer utils stored in proper place:tests/media/server/gstplayer/player/GstPlayerTest.cpp
     }
 
     ~GstGenericPlayerTest() override
@@ -67,9 +60,19 @@ TEST_F(GstGenericPlayerTest, shouldAttachSource)
 
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createAttachSource(_, Ref(source))).WillOnce(Return(ByMove(std::move(task))));
+    EXPECT_CALL(m_taskFactoryMock, createAttachSource(_, _, Ref(source))).WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->attachSource(source);
+}
+
+TEST_F(GstGenericPlayerTest, shouldRemoveSource)
+{
+    constexpr std::uint32_t audioSourceId{1};
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(m_taskFactoryMock, createRemoveSource(_, MediaSourceType::AUDIO)).WillOnce(Return(ByMove(std::move(task))));
+
+    m_sut->removeSource(audioSourceId);
 }
 
 TEST_F(GstGenericPlayerTest, shouldPlay)
@@ -182,7 +185,17 @@ TEST_F(GstGenericPlayerTest, shouldSetupElement)
     triggerSetupElement(&element);
 }
 
-TEST_F(GstGenericPlayerTest, shouldReturnInvalidPositionWhenPipelineIsBelowPlayingState)
+TEST_F(GstPlayerTest, shouldAddDeepElement)
+{
+    GstElement element{};
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(m_taskFactoryMock, createDeepElementAdded(_, _, _, &element)).WillOnce(Return(ByMove(std::move(task))));
+
+    triggerDeepElementAdded(&element);
+}
+
+TEST_F(GstPlayerTest, shouldReturnInvalidPositionWhenPipelineIsBelowPlayingState)
 {
     int64_t targetPosition{};
     EXPECT_FALSE(m_sut->getPosition(targetPosition));

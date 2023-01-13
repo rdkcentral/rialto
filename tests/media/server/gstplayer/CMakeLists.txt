@@ -22,6 +22,7 @@ add_gtests(RialtoServerGstPlayerUnitTests
     #GstGenericPlayer unittests
     genericPlayer/tasksTests/AttachSamplesTest.cpp
     genericPlayer/tasksTests/AttachSourceTest.cpp
+    genericPlayer/tasksTests/DeepElementAddedTest.cpp
     genericPlayer/tasksTests/EnoughDataTest.cpp
     genericPlayer/tasksTests/EosTest.cpp
     genericPlayer/tasksTests/FinishSetupSourceTest.cpp

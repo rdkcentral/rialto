@@ -85,6 +85,13 @@ void GstGenericPlayerTestCommon::triggerSetupElement(GstElement *element)
                                                                                        m_setupElementUserData));
 }
 
+void GstGenericPlayerTestCommon::triggerDeepElementAdded(GstElement *element)
+{
+    ASSERT_TRUE(m_deepElementAddedFunc);
+    ((void (*)(GstBin * pipeline, GstBin * bin, GstElement * element, GstPlayer * self))
+         m_deepElementAddedFunc)(&m_bin, &m_bin, element, reinterpret_cast<GstPlayer *>(m_setupElementUserData));
+}
+
 void GstGenericPlayerTestCommon::setPipelineState(const GstState &state)
 {
     GST_STATE(&m_pipeline) = state;
@@ -134,6 +141,14 @@ void GstGenericPlayerTestCommon::expectSetSignalCallbacks()
             {
                 m_setupElementFunc = c_handler;
                 m_setupElementUserData = data;
+            }));
+    EXPECT_CALL(*m_glibWrapperMock,
+                gSignalConnect(&m_pipeline, CharStrMatcher("deep-element-added"), NotNullMatcher(), NotNullMatcher()))
+        .WillOnce(Invoke(
+            [this](gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data)
+            {
+                m_deepElementAddedFunc = c_handler;
+                m_deepElementAddedUserData = data;
             }));
 }
 

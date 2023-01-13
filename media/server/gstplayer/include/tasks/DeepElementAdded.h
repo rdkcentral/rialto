@@ -17,31 +17,32 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_REMOVE_SOURCE_H_
-#define FIREBOLT_RIALTO_SERVER_REMOVE_SOURCE_H_
+#ifndef FIREBOLT_RIALTO_SERVER_DEEP_ELEMENT_ADDED_H_
+#define FIREBOLT_RIALTO_SERVER_DEEP_ELEMENT_ADDED_H_
 
-#include "IGstPlayerClient.h"
-#include "IGstWrapper.h"
 #include "IPlayerTask.h"
+#include "IRdkGstreamerUtilsWrapper.h"
 #include "PlayerContext.h"
+#include <gst/gst.h>
 #include <memory>
 
 namespace firebolt::rialto::server
 {
-class RemoveSource : public IPlayerTask
+class DeepElementAdded : public IPlayerTask
 {
 public:
-    RemoveSource(PlayerContext &context, IGstPlayerClient *client, std::shared_ptr<IGstWrapper> gstWrapper,
-                 const MediaSourceType &type);
-    ~RemoveSource() override;
+    DeepElementAdded(PlayerContext &context, const std::shared_ptr<IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper,
+                     GstBin *pipeline, GstBin *bin, GstElement *element);
+    ~DeepElementAdded() override;
     void execute() const override;
 
 private:
     PlayerContext &m_context;
-    IGstPlayerClient *m_gstPlayerClient;
-    std::shared_ptr<IGstWrapper> m_gstWrapper;
-    MediaSourceType m_type;
+    std::shared_ptr<IRdkGstreamerUtilsWrapper> m_rdkGstreamerUtilsWrapper;
+    GstBin *m_pipeline;
+    GstBin *m_bin;
+    GstElement *m_element;
 };
 } // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_REMOVE_SOURCE_H_
+#endif // FIREBOLT_RIALTO_SERVER_DEEP_ELEMENT_ADDED_H_

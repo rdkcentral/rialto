@@ -226,6 +226,15 @@ protected:
     bool attachSourceInternal(const std::unique_ptr<MediaSource> &source);
 
     /**
+     * @brief Remove source internally, only to be called on the main thread.
+     *
+     * @param[in] id : The source id.
+     *
+     * @retval true on success.
+     */
+    bool removeSourceInternal(int32_t id);
+
+    /**
      * @brief Play internally, only to be called on the main thread.
      *
      * @retval true on success.

@@ -214,9 +214,9 @@ protected:
 AttachSource::AttachSource(GenericPlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper,
                            std::shared_ptr<IGlibWrapper> glibWrapper,
                            const std::shared_ptr<IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper,
-                           const std::unique_ptr<IMediaPipeline::MediaSource> &source)
+                           IGstPlayerPrivate &player, const std::unique_ptr<IMediaPipeline::MediaSource> &source)
     : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
-      m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}, m_attachedSource{source->copy()}
+      m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}, m_player{player}, m_attachedSource{source->copy()}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing AttachSource");
 }
@@ -243,41 +243,91 @@ void AttachSource::execute() const
 
     RIALTO_SERVER_LOG_DEBUG("caps str: '%s'", strCaps.c_str());
 
-    auto elem = m_context.streamInfo.find(m_attachedSource->getType());
-    if (elem == m_context.streamInfo.end())
+    if (m_context.streamInfo.find(m_attachedSource->getType()) == m_context.streamInfo.end())
     {
-        GstElement *appSrc = nullptr;
-        if (m_attachedSource->getType() == MediaSourceType::AUDIO)
-        {
-            RIALTO_SERVER_LOG_MIL("Adding Audio appsrc");
-            appSrc = m_gstWrapper->gstElementFactoryMake("appsrc", "audsrc");
-        }
-        else if (m_attachedSource->getType() == MediaSourceType::VIDEO)
-        {
-            RIALTO_SERVER_LOG_MIL("Adding Video appsrc");
-            appSrc = m_gstWrapper->gstElementFactoryMake("appsrc", "vidsrc");
-        }
-
-        m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(appSrc), caps);
-        m_context.streamInfo.emplace(m_attachedSource->getType(), appSrc);
+        addSource(caps);
+    }
+    else if (m_attachedSource->getType() == MediaSourceType::AUDIO && m_context.audioSourceRemoved)
+    {
+        switchAudioSource(caps);
     }
     else
     {
-        GstCaps *appsrcCaps = m_gstWrapper->gstAppSrcGetCaps(GST_APP_SRC(elem->second));
-        if ((!appsrcCaps) || (!m_gstWrapper->gstCapsIsEqual(appsrcCaps, caps)))
-        {
-            RIALTO_SERVER_LOG_MIL("Updating %s appsrc caps to '%s'",
-                                  m_attachedSource->getType() == MediaSourceType::AUDIO ? "Audio" : "Video",
-                                  strCaps.c_str());
-            m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(elem->second), caps);
-        }
-
-        if (appsrcCaps)
-            m_gstWrapper->gstCapsUnref(appsrcCaps);
+        updateSource(caps, strCaps);
     }
 
     if (caps)
         m_gstWrapper->gstCapsUnref(caps);
+}
+
+void AttachSource::addSource(GstCaps *caps) const
+{
+    GstElement *appSrc = nullptr;
+    if (m_attachedSource->getType() == MediaSourceType::AUDIO)
+    {
+        RIALTO_SERVER_LOG_MIL("Adding Audio appsrc");
+        appSrc = m_gstWrapper->gstElementFactoryMake("appsrc", "audsrc");
+    }
+    else if (m_attachedSource->getType() == MediaSourceType::VIDEO)
+    {
+        RIALTO_SERVER_LOG_MIL("Adding Video appsrc");
+        appSrc = m_gstWrapper->gstElementFactoryMake("appsrc", "vidsrc");
+    }
+
+    m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(appSrc), caps);
+    m_context.streamInfo.emplace(m_attachedSource->getType(), appSrc);
+}
+
+void AttachSource::updateSource(GstCaps *caps, const std::string &strCaps) const
+{
+    GstAppSrc *appSrc{GST_APP_SRC(m_context.streamInfo[m_attachedSource->getType()])};
+    GstCaps *appsrcCaps = m_gstWrapper->gstAppSrcGetCaps(appSrc);
+    if ((!appsrcCaps) || (!m_gstWrapper->gstCapsIsEqual(appsrcCaps, caps)))
+    {
+        RIALTO_SERVER_LOG_MIL("Updating %s appsrc caps to '%s'",
+                              m_attachedSource->getType() == MediaSourceType::AUDIO ? "Audio" : "Video", strCaps.c_str());
+        m_gstWrapper->gstAppSrcSetCaps(appSrc, caps);
+    }
+
+    if (appsrcCaps)
+        m_gstWrapper->gstCapsUnref(appsrcCaps);
+}
+
+void AttachSource::switchAudioSource(GstCaps *caps) const
+{
+    RIALTO_SERVER_LOG_INFO("Switching audio source");
+    AudioAttributesPrivate audioAttributes{createAudioAttributes()};
+    int sampleAttributes{0}; // rdk_gstreamer_utils::performAudioTrackCodecChannelSwitch checks if this param != NULL only.
+    std::uint32_t status{0};   // must be 0 to make rdk_gstreamer_utils::performAudioTrackCodecChannelSwitch work
+    unsigned int ui32Delay{0}; // output param
+    long long audioChangeTargetPts{
+        -1}; // output param. Set audioChangeTargetPts = currentDispPts in rdk_gstreamer_utils function stub
+    std::int64_t currentPosition;
+    m_gstWrapper->gstElementQueryPosition(m_context.pipeline, GST_FORMAT_TIME, &currentPosition);
+    long long currentDispPts{
+        static_cast<long long>(currentPosition)}; // In netflix code it's currentDisplayPosition + offset
+    unsigned int audioChangeStage{0}; // Output param. Set to AUDCHG_ALIGN in rdk_gstreamer_utils function stub
+    bool audioAac{(m_attachedSource->getMimeType() == "audio/mp4" || m_attachedSource->getMimeType() == "audio/aac")};
+    bool svpEnabled{true}; // assume always true
+    bool retVal{false};    // Output param. Set to TRUE in rdk_gstreamer_utils function stub
+
+    bool result = m_rdkGstreamerUtilsWrapper
+                      ->performAudioTrackCodecChannelSwitch(&m_context.playbackGroup, &sampleAttributes,
+                                                            &audioAttributes, &status, &ui32Delay,
+                                                            &audioChangeTargetPts, &currentDispPts, &audioChangeStage,
+                                                            &caps, // may fail for amlogic - that implementation changes
+                                                                   // this parameter, it's probably used by Netflix later
+                                                            &audioAac, svpEnabled,
+                                                            m_context.streamInfo[m_attachedSource->getType()], &retVal);
+    if (!result || !retVal)
+    {
+        RIALTO_SERVER_LOG_WARN("performAudioTrackCodecChannelSwitch failed! Result: %d, retval %d", result, retVal);
+    }
+
+    m_context.audioNeedData = true;
+    m_context.audioUnderflowEnabled = true;
+    m_context.audioSourceRemoved = false;
+    m_player.notifyNeedMediaData(true, false);
 }
 
 GstCaps *AttachSource::createCapsFromMediaSource() const
@@ -310,5 +360,27 @@ GstCaps *AttachSource::createCapsFromMediaSource() const
     }
 
     return capsBuilder->buildCaps();
+}
+
+AudioAttributesPrivate AttachSource::createAudioAttributes() const
+{
+    const IMediaPipeline::MediaSourceAudio &source = dynamic_cast<IMediaPipeline::MediaSourceAudio &>(*m_attachedSource);
+    firebolt::rialto::AudioConfig audioConfig = source.getAudioConfig();
+    AudioAttributesPrivate audioAttributes{"", // param set below.
+                                           audioConfig.numberOfChannels,
+                                           audioConfig.sampleRate,
+                                           0, // used only in one of logs in rdk_gstreamer_utils, no need to set this param.
+                                           0, // used only in one of logs in rdk_gstreamer_utils, no need to set this param.
+                                           audioConfig.codecSpecificConfig.data(),
+                                           static_cast<std::uint32_t>(audioConfig.codecSpecificConfig.size())};
+    if (m_attachedSource->getMimeType() == "audio/mp4" || m_attachedSource->getMimeType() == "audio/aac")
+    {
+        audioAttributes.m_codecParam = "mp4a.40.2, mp4a.40.5";
+    }
+    else if (m_attachedSource->getMimeType() == "audio/x-eac3")
+    {
+        audioAttributes.m_codecParam = std::string("ec-3.A") + std::to_string(audioConfig.numberOfChannels);
+    }
+    return audioAttributes;
 }
 } // namespace firebolt::rialto::server

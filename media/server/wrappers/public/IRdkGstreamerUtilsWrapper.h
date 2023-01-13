@@ -41,13 +41,13 @@ struct PlaybackGroupPrivate
 
 struct AudioAttributesPrivate
 {
-    std::string m_CodecParam{};
-    std::uint32_t m_NumberOfChannels{0};
-    std::uint32_t m_SamplesPerSecond{0};
-    std::uint32_t m_Bitrate{0};
-    std::uint32_t m_BlockAlignment{0};
-    const std::uint8_t *m_CodecSpecificData{nullptr};
-    std::uint32_t m_CodecSpecificDataLen{0};
+    std::string m_codecParam{};
+    std::uint32_t m_numberOfChannels{0};
+    std::uint32_t m_samplesPerSecond{0};
+    std::uint32_t m_bitrate{0};
+    std::uint32_t m_blockAlignment{0};
+    const std::uint8_t *m_codecSpecificData{nullptr};
+    std::uint32_t m_codecSpecificDataLen{0};
 };
 
 class IRdkGstreamerUtilsWrapper;
@@ -84,6 +84,8 @@ public:
                                                      const long long *currentDispPts, unsigned int *audioChangeStage,
                                                      GstCaps **appsrcCaps, bool *audioaac, bool svpEnabled,
                                                      GstElement *aSrc, bool *ret) const = 0;
+    virtual void deepElementAdded(PlaybackGroupPrivate *pgstUtilsPlaybackGroup, GstBin *pipeline, GstBin *bin,
+                                  GstElement *element) = 0;
 };
 } // namespace firebolt::rialto::server
 

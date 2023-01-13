@@ -24,6 +24,7 @@
 #include "GstGenericPlayerPrivateMock.h"
 #include "GstWrapperMock.h"
 #include "RdkGstreamerUtilsWrapperMock.h"
+#include "tasks/generic/DeepElementAdded.h"
 #include "tasks/IPlayerTask.h"
 #include "tasks/generic/AttachSamples.h"
 #include "tasks/generic/AttachSource.h"
@@ -79,9 +80,16 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateAttachSource)
 {
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
         std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>(-1, "video/mpeg");
-    auto task = m_sut.createAttachSource(m_context, source);
+    auto task = m_sut.createAttachSource(m_context, m_gstPlayer, source);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::AttachSource &>(*task));
+}
+
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateDeepElementAdded)
+{
+    auto task = m_sut.createDeepElementAdded(m_context, nullptr, nullptr, nullptr);
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::DeepElementAdded &>(*task));
 }
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateEnoughData)

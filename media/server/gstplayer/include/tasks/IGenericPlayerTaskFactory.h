@@ -58,13 +58,27 @@ public:
      * @brief Creates a AttachSource task.
      *
      * @param[in] context   : The GstGenericPlayer context
+     * @param[in] player    : The GstGenericPlayer instance
      * @param[in] source    : The source to attach.
      *
      * @retval the new AttachSource task instance.
      */
     virtual std::unique_ptr<IPlayerTask>
-    createAttachSource(GenericPlayerContext &context,
+    createAttachSource(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                        const std::unique_ptr<IMediaPipeline::MediaSource> &source) const = 0;
+
+    /**
+     * @brief Creates a DeepElementAdded task.
+     *
+     * @param[in] context  : The GstPlayer context
+     * @param[in] pipeline : The pipeline the signal was fired from.
+     * @param[in] bin      : the GstBin the element was added to
+     * @param[in] element  : an element that was added to the playbin hierarchy
+     *
+     * @retval the new DeepElementAdded task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createDeepElementAdded(GenericPlayerContext &context, GstBin *pipeline, GstBin *bin,
+                                                                GstElement *element) const = 0;
 
     /**
      * @brief Creates a EnoughData task.

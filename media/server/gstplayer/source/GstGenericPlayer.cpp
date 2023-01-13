@@ -244,6 +244,8 @@ void GstGenericPlayer::initMsePipeline()
     // Set callbacks
     m_glibWrapper->gSignalConnect(m_context.pipeline, "source-setup", G_CALLBACK(&GstGenericPlayer::setupSource), this);
     m_glibWrapper->gSignalConnect(m_context.pipeline, "element-setup", G_CALLBACK(&GstGenericPlayer::setupElement), this);
+    m_glibWrapper->gSignalConnect(m_context.pipeline, "deep-element-added", G_CALLBACK(&GstGenericPlayer::deepElementAdded),
+                                  this);
 
     // Set uri
     m_glibWrapper->gObjectSet(m_context.pipeline, "uri", "rialto://", nullptr);
@@ -302,11 +304,29 @@ void GstGenericPlayer::setupElement(GstElement *pipeline, GstElement *element, G
     }
 }
 
+void GstGenericPlayer::deepElementAdded(GstBin *pipeline, GstBin *bin, GstElement *element, GstPlayer *self)
+{
+    RIALTO_SERVER_LOG_DEBUG("Deep element %s added to the pipeline", GST_ELEMENT_NAME(element));
+    if (self->m_workerThread)
+    {
+        self->m_workerThread->enqueueTask(
+            self->m_taskFactory->createDeepElementAdded(self->m_context, pipeline, bin, element));
+    }
+}
+
 void GstGenericPlayer::attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &attachedSource)
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createAttachSource(m_context, attachedSource));
+        m_workerThread->enqueueTask(m_taskFactory->createAttachSource(m_context, *this, attachedSource));
+    }
+}
+
+void GstPlayer::removeSource(int32_t id)
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(m_taskFactory->createRemoveSource(m_context, static_cast<MediaSourceType>(id)));
     }
 }
 
@@ -604,8 +624,7 @@ void GstGenericPlayer::scheduleVideoUnderflow()
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(
-            m_taskFactory->createUnderflow(*this, m_context.videoUnderflowOccured, m_context.videoUnderflowEnabled));
+        m_workerThread->enqueueTask(m_taskFactory->createUnderflow(*this, m_context.videoUnderflowOccured));
     }
 }
 

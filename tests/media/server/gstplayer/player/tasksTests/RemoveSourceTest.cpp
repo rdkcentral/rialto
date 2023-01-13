@@ -35,7 +35,6 @@ protected:
     std::shared_ptr<firebolt::rialto::server::GstWrapperMock> m_gstWrapper{
         std::make_shared<StrictMock<firebolt::rialto::server::GstWrapperMock>>()};
     GstElement m_audioSrc{};
-    GstElement m_videoSrc{};
     GstEvent m_flushStartEvent{};
     GstEvent m_flushStopEvent{};
 
@@ -45,31 +44,9 @@ protected:
         m_context.audioNeedDataPending = true;
         m_context.audioUnderflowEnabled = true;
         m_context.audioSourceRemoved = false;
-        m_context.videoNeedData = true;
-        m_context.videoNeedDataPending = true;
-        m_context.videoUnderflowEnabled = true;
-        m_context.videoSourceRemoved = false;
         m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, &m_audioSrc);
-        m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::VIDEO, &m_videoSrc);
     }
 };
-
-TEST_F(RemoveSourceTest, shouldRemoveVideoSourceWithoutFlushing)
-{
-    m_context.streamInfo.clear();
-    constexpr auto kMediaSourceType{firebolt::rialto::MediaSourceType::VIDEO};
-    EXPECT_CALL(m_gstPlayerClient, invalidateActiveRequests(kMediaSourceType));
-    firebolt::rialto::server::RemoveSource task{m_context, &m_gstPlayerClient, m_gstWrapper, kMediaSourceType};
-    task.execute();
-    EXPECT_TRUE(m_context.audioNeedData);
-    EXPECT_TRUE(m_context.audioNeedDataPending);
-    EXPECT_TRUE(m_context.audioUnderflowEnabled);
-    EXPECT_FALSE(m_context.audioSourceRemoved);
-    EXPECT_FALSE(m_context.videoNeedData);
-    EXPECT_FALSE(m_context.videoNeedDataPending);
-    EXPECT_FALSE(m_context.videoUnderflowEnabled);
-    EXPECT_TRUE(m_context.videoSourceRemoved);
-}
 
 TEST_F(RemoveSourceTest, shouldRemoveAudioSourceWithoutFlushing)
 {
@@ -82,30 +59,17 @@ TEST_F(RemoveSourceTest, shouldRemoveAudioSourceWithoutFlushing)
     EXPECT_FALSE(m_context.audioNeedDataPending);
     EXPECT_FALSE(m_context.audioUnderflowEnabled);
     EXPECT_TRUE(m_context.audioSourceRemoved);
-    EXPECT_TRUE(m_context.videoNeedData);
-    EXPECT_TRUE(m_context.videoNeedDataPending);
-    EXPECT_TRUE(m_context.videoUnderflowEnabled);
-    EXPECT_FALSE(m_context.videoSourceRemoved);
 }
 
-TEST_F(RemoveSourceTest, shouldRemoveVideoSource)
+TEST_F(RemoveSourceTest, shouldNotRemoveVideoSource)
 {
     constexpr auto kMediaSourceType{firebolt::rialto::MediaSourceType::VIDEO};
-    EXPECT_CALL(m_gstPlayerClient, invalidateActiveRequests(kMediaSourceType));
-    EXPECT_CALL(*m_gstWrapper, gstEventNewFlushStart()).WillOnce(Return(&m_flushStartEvent));
-    EXPECT_CALL(*m_gstWrapper, gstElementSendEvent(&m_videoSrc, &m_flushStartEvent)).WillOnce(Return(TRUE));
-    EXPECT_CALL(*m_gstWrapper, gstEventNewFlushStop(FALSE)).WillOnce(Return(&m_flushStopEvent));
-    EXPECT_CALL(*m_gstWrapper, gstElementSendEvent(&m_videoSrc, &m_flushStopEvent)).WillOnce(Return(TRUE));
     firebolt::rialto::server::RemoveSource task{m_context, &m_gstPlayerClient, m_gstWrapper, kMediaSourceType};
     task.execute();
     EXPECT_TRUE(m_context.audioNeedData);
     EXPECT_TRUE(m_context.audioNeedDataPending);
     EXPECT_TRUE(m_context.audioUnderflowEnabled);
     EXPECT_FALSE(m_context.audioSourceRemoved);
-    EXPECT_FALSE(m_context.videoNeedData);
-    EXPECT_FALSE(m_context.videoNeedDataPending);
-    EXPECT_FALSE(m_context.videoUnderflowEnabled);
-    EXPECT_TRUE(m_context.videoSourceRemoved);
 }
 
 TEST_F(RemoveSourceTest, shouldRemoveAudioSource)
@@ -122,28 +86,20 @@ TEST_F(RemoveSourceTest, shouldRemoveAudioSource)
     EXPECT_FALSE(m_context.audioNeedDataPending);
     EXPECT_FALSE(m_context.audioUnderflowEnabled);
     EXPECT_TRUE(m_context.audioSourceRemoved);
-    EXPECT_TRUE(m_context.videoNeedData);
-    EXPECT_TRUE(m_context.videoNeedDataPending);
-    EXPECT_TRUE(m_context.videoUnderflowEnabled);
-    EXPECT_FALSE(m_context.videoSourceRemoved);
 }
 
-TEST_F(RemoveSourceTest, shouldRemoveVideoSourceFlushEventError)
+TEST_F(RemoveSourceTest, shouldRemoveAudioSourceFlushEventError)
 {
-    constexpr auto kMediaSourceType{firebolt::rialto::MediaSourceType::VIDEO};
+    constexpr auto kMediaSourceType{firebolt::rialto::MediaSourceType::AUDIO};
     EXPECT_CALL(m_gstPlayerClient, invalidateActiveRequests(kMediaSourceType));
     EXPECT_CALL(*m_gstWrapper, gstEventNewFlushStart()).WillOnce(Return(&m_flushStartEvent));
-    EXPECT_CALL(*m_gstWrapper, gstElementSendEvent(&m_videoSrc, &m_flushStartEvent)).WillOnce(Return(FALSE));
+    EXPECT_CALL(*m_gstWrapper, gstElementSendEvent(&m_audioSrc, &m_flushStartEvent)).WillOnce(Return(FALSE));
     EXPECT_CALL(*m_gstWrapper, gstEventNewFlushStop(FALSE)).WillOnce(Return(&m_flushStopEvent));
-    EXPECT_CALL(*m_gstWrapper, gstElementSendEvent(&m_videoSrc, &m_flushStopEvent)).WillOnce(Return(FALSE));
+    EXPECT_CALL(*m_gstWrapper, gstElementSendEvent(&m_audioSrc, &m_flushStopEvent)).WillOnce(Return(FALSE));
     firebolt::rialto::server::RemoveSource task{m_context, &m_gstPlayerClient, m_gstWrapper, kMediaSourceType};
     task.execute();
-    EXPECT_TRUE(m_context.audioNeedData);
-    EXPECT_TRUE(m_context.audioNeedDataPending);
-    EXPECT_TRUE(m_context.audioUnderflowEnabled);
-    EXPECT_FALSE(m_context.audioSourceRemoved);
-    EXPECT_FALSE(m_context.videoNeedData);
-    EXPECT_FALSE(m_context.videoNeedDataPending);
-    EXPECT_FALSE(m_context.videoUnderflowEnabled);
-    EXPECT_TRUE(m_context.videoSourceRemoved);
+    EXPECT_FALSE(m_context.audioNeedData);
+    EXPECT_FALSE(m_context.audioNeedDataPending);
+    EXPECT_FALSE(m_context.audioUnderflowEnabled);
+    EXPECT_TRUE(m_context.audioSourceRemoved);
 }

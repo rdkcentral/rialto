@@ -52,6 +52,7 @@ public:
 
     void triggerSetupSource(GstElement *element);
     void triggerSetupElement(GstElement *element);
+    void triggerDeepElementAdded(GstElement *element);
 
     StrictMock<GstGenericPlayerClientMock> m_gstPlayerClient;
     std::shared_ptr<StrictMock<GstWrapperMock>> m_gstWrapperMock{std::make_shared<StrictMock<GstWrapperMock>>()};
@@ -101,6 +102,7 @@ private:
     GFlagsClass m_flagsClass{};
     GstElement m_playsink{};
     GstBus m_bus{};
+    GstBin m_bin{};
     GType m_gstPlayFlagsType = static_cast<GType>(123);
     GFlagsValue m_audioFlag{1, "audio", "audio"};
     GFlagsValue m_videoFlag{2, "video", "video"};
@@ -109,6 +111,8 @@ private:
     GCallback m_setupSourceFunc;
     gpointer m_setupElementUserData;
     GCallback m_setupElementFunc;
+    gpointer m_deepElementAddedUserData;
+    GCallback m_deepElementAddedFunc;
 };
 
 #endif // GST_GENERIC_PLAYER_TEST_COMMON_H_

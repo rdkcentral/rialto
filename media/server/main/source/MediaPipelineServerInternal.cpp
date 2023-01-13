@@ -250,8 +250,25 @@ bool MediaPipelineServerInternal::attachSourceInternal(const std::unique_ptr<Med
 
 bool MediaPipelineServerInternal::removeSource(int32_t id)
 {
-    RIALTO_SERVER_LOG_ERROR("Can't remove source with id: %d - operation not supported", id);
-    return false;
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = removeSourceInternal(id); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::removeSourceInternal(int32_t id)
+{
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to remove source - Gstreamer player has not been loaded");
+        return false;
+    }
+
+    m_gstPlayer->removeSource(id);
+    return true;
 }
 
 bool MediaPipelineServerInternal::play()

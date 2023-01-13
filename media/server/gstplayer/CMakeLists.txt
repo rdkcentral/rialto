@@ -30,6 +30,7 @@ add_library(
         source/tasks/generic/GenericPlayerTaskFactory.cpp
         source/tasks/generic/AttachSamples.cpp
         source/tasks/generic/AttachSource.cpp
+        source/tasks/generic/DeepElementAdded.cpp
         source/tasks/generic/EnoughData.cpp
         source/tasks/generic/Eos.cpp
         source/tasks/generic/FinishSetupSource.cpp

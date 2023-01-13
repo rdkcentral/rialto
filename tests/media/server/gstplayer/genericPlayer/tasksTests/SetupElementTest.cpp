@@ -115,7 +115,6 @@ TEST_F(SetupElementTest, shouldSetupVideoElement)
     EXPECT_CALL(*m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("westerossink"))).WillOnce(Return(false));
     expectSetupVideoElement();
     task.execute();
-    EXPECT_TRUE(m_context.videoUnderflowEnabled);
     EXPECT_FALSE(m_context.audioUnderflowEnabled);
 }
 
@@ -127,7 +126,6 @@ TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingGeometry)
     EXPECT_CALL(m_gstPlayer, setWesterossinkRectangle());
     expectSetupVideoElement();
     task.execute();
-    EXPECT_TRUE(m_context.videoUnderflowEnabled);
     EXPECT_FALSE(m_context.audioUnderflowEnabled);
 }
 
@@ -139,7 +137,6 @@ TEST_F(SetupElementTest, shouldSetupVideoElementForSecondaryVideo)
     EXPECT_CALL(m_gstPlayer, setWesterossinkSecondaryVideo());
     expectSetupVideoElement();
     task.execute();
-    EXPECT_TRUE(m_context.videoUnderflowEnabled);
     EXPECT_FALSE(m_context.audioUnderflowEnabled);
 }
 
@@ -150,7 +147,6 @@ TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingGeometryOtherThanWest
     EXPECT_CALL(*m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("westerossink"))).WillOnce(Return(false));
     expectSetupVideoElement();
     task.execute();
-    EXPECT_TRUE(m_context.videoUnderflowEnabled);
     EXPECT_FALSE(m_context.audioUnderflowEnabled);
 }
 
@@ -161,7 +157,6 @@ TEST_F(SetupElementTest, shouldSetupVideoElementForSecondaryVideoOtherThanWester
     EXPECT_CALL(*m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("westerossink"))).WillOnce(Return(false));
     expectSetupVideoElement();
     task.execute();
-    EXPECT_TRUE(m_context.videoUnderflowEnabled);
     EXPECT_FALSE(m_context.audioUnderflowEnabled);
 }
 
@@ -170,7 +165,6 @@ TEST_F(SetupElementTest, shouldSetupAudioElement)
     firebolt::rialto::server::SetupElement task{m_context, m_gstWrapper, m_glibWrapper, m_gstPlayer, &m_element};
     expectSetupAudioElement();
     task.execute();
-    EXPECT_FALSE(m_context.videoUnderflowEnabled);
     EXPECT_TRUE(m_context.audioUnderflowEnabled);
 }
 
@@ -180,7 +174,6 @@ TEST_F(SetupElementTest, shouldReportVideoUnderflow)
     EXPECT_CALL(*m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("westerossink"))).WillOnce(Return(false));
     expectSetupVideoElement();
     task.execute();
-    EXPECT_TRUE(m_context.videoUnderflowEnabled);
     EXPECT_FALSE(m_context.audioUnderflowEnabled);
     EXPECT_TRUE(m_videoUnderflowCallback);
     EXPECT_CALL(m_gstPlayer, scheduleVideoUnderflow());
@@ -192,7 +185,6 @@ TEST_F(SetupElementTest, shouldReportAudioUnderflow)
     firebolt::rialto::server::SetupElement task{m_context, m_gstWrapper, m_glibWrapper, m_gstPlayer, &m_element};
     expectSetupAudioElement();
     task.execute();
-    EXPECT_FALSE(m_context.videoUnderflowEnabled);
     EXPECT_TRUE(m_context.audioUnderflowEnabled);
     EXPECT_TRUE(m_audioUnderflowCallback);
     EXPECT_CALL(m_gstPlayer, scheduleAudioUnderflow());
