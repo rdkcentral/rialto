@@ -17,12 +17,12 @@
  * limitations under the License.
  */
 
-#include "tasks/DeepElementAdded.h"
+#include "tasks/generic/DeepElementAdded.h"
 #include "RialtoServerLogging.h"
 
 namespace firebolt::rialto::server
 {
-DeepElementAdded::DeepElementAdded(PlayerContext &context,
+DeepElementAdded::DeepElementAdded(GenericPlayerContext &context,
                                    const std::shared_ptr<IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper,
                                    GstBin *pipeline, GstBin *bin, GstElement *element)
     : m_context{context}, m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper},

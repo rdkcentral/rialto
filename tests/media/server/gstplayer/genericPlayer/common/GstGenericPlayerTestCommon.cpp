@@ -88,8 +88,8 @@ void GstGenericPlayerTestCommon::triggerSetupElement(GstElement *element)
 void GstGenericPlayerTestCommon::triggerDeepElementAdded(GstElement *element)
 {
     ASSERT_TRUE(m_deepElementAddedFunc);
-    ((void (*)(GstBin * pipeline, GstBin * bin, GstElement * element, GstPlayer * self))
-         m_deepElementAddedFunc)(&m_bin, &m_bin, element, reinterpret_cast<GstPlayer *>(m_setupElementUserData));
+    ((void (*)(GstBin * pipeline, GstBin * bin, GstElement * element, GstGenericPlayer * self))
+         m_deepElementAddedFunc)(&m_bin, &m_bin, element, reinterpret_cast<GstGenericPlayer *>(m_setupElementUserData));
 }
 
 void GstGenericPlayerTestCommon::setPipelineState(const GstState &state)

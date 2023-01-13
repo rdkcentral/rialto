@@ -17,10 +17,10 @@
  * limitations under the License.
  */
 
-#include "tasks/RemoveSource.h"
-#include "GstPlayerClientMock.h"
+#include "tasks/generic/RemoveSource.h"
+#include "GenericPlayerContext.h"
+#include "GstGenericPlayerClientMock.h"
 #include "GstWrapperMock.h"
-#include "PlayerContext.h"
 #include <gst/gst.h>
 #include <gtest/gtest.h>
 
@@ -30,8 +30,8 @@ using testing::StrictMock;
 class RemoveSourceTest : public testing::Test
 {
 protected:
-    firebolt::rialto::server::PlayerContext m_context;
-    StrictMock<firebolt::rialto::server::GstPlayerClientMock> m_gstPlayerClient;
+    firebolt::rialto::server::GenericPlayerContext m_context;
+    StrictMock<firebolt::rialto::server::GstGenericPlayerClientMock> m_gstPlayerClient;
     std::shared_ptr<firebolt::rialto::server::GstWrapperMock> m_gstWrapper{
         std::make_shared<StrictMock<firebolt::rialto::server::GstWrapperMock>>()};
     GstElement m_audioSrc{};

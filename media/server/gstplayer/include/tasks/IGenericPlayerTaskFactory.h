@@ -77,8 +77,8 @@ public:
      *
      * @retval the new DeepElementAdded task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createDeepElementAdded(GenericPlayerContext &context, GstBin *pipeline, GstBin *bin,
-                                                                GstElement *element) const = 0;
+    virtual std::unique_ptr<IPlayerTask> createDeepElementAdded(GenericPlayerContext &context, GstBin *pipeline,
+                                                                GstBin *bin, GstElement *element) const = 0;
 
     /**
      * @brief Creates a EnoughData task.
@@ -173,7 +173,7 @@ public:
      *
      * @retval the new Remove Source task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createRemoveSource(PlayerContext &context,
+    virtual std::unique_ptr<IPlayerTask> createRemoveSource(GenericPlayerContext &context,
                                                             const firebolt::rialto::MediaSourceType &type) const = 0;
 
     /**
@@ -295,7 +295,7 @@ public:
      * @retval the new Underflow task instance.
      */
     virtual std::unique_ptr<IPlayerTask> createUnderflow(IGstGenericPlayerPrivate &player, bool &underflowFlag,
-                                                         bool underflowEnabled) const = 0;
+                                                         bool underflowEnabled = true) const = 0;
 
     virtual std::unique_ptr<IPlayerTask> createRenderFrame(GenericPlayerContext &context) const = 0;
 };

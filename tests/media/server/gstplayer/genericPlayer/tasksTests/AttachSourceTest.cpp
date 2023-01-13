@@ -20,7 +20,7 @@
 #include "tasks/generic/AttachSource.h"
 #include "GenericPlayerContext.h"
 #include "GlibWrapperMock.h"
-#include "GstPlayerPrivateMock.h"
+#include "GstGenericPlayerPrivateMock.h"
 #include "GstWrapperMock.h"
 #include "Matchers.h"
 #include "RdkGstreamerUtilsWrapperMock.h"
@@ -57,7 +57,7 @@ protected:
         std::make_shared<StrictMock<firebolt::rialto::server::GstWrapperMock>>()};
     std::shared_ptr<firebolt::rialto::server::RdkGstreamerUtilsWrapperMock> m_rdkGstreamerUtilsWrapper{
         std::make_shared<StrictMock<firebolt::rialto::server::RdkGstreamerUtilsWrapperMock>>()};
-    StrictMock<firebolt::rialto::server::GstPlayerPrivateMock> m_gstPlayer;
+    StrictMock<firebolt::rialto::server::GstGenericPlayerPrivateMock> m_gstPlayer;
     GstCaps m_gstCaps1{};
     std::string m_mimeType2{"video/mpeg"};
     GstCaps m_gstCaps2{};

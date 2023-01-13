@@ -20,9 +20,9 @@
 #ifndef FIREBOLT_RIALTO_SERVER_DEEP_ELEMENT_ADDED_H_
 #define FIREBOLT_RIALTO_SERVER_DEEP_ELEMENT_ADDED_H_
 
+#include "GenericPlayerContext.h"
 #include "IPlayerTask.h"
 #include "IRdkGstreamerUtilsWrapper.h"
-#include "PlayerContext.h"
 #include <gst/gst.h>
 #include <memory>
 
@@ -31,13 +31,14 @@ namespace firebolt::rialto::server
 class DeepElementAdded : public IPlayerTask
 {
 public:
-    DeepElementAdded(PlayerContext &context, const std::shared_ptr<IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper,
-                     GstBin *pipeline, GstBin *bin, GstElement *element);
+    DeepElementAdded(GenericPlayerContext &context,
+                     const std::shared_ptr<IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper, GstBin *pipeline,
+                     GstBin *bin, GstElement *element);
     ~DeepElementAdded() override;
     void execute() const override;
 
 private:
-    PlayerContext &m_context;
+    GenericPlayerContext &m_context;
     std::shared_ptr<IRdkGstreamerUtilsWrapper> m_rdkGstreamerUtilsWrapper;
     GstBin *m_pipeline;
     GstBin *m_bin;

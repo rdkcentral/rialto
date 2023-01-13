@@ -17,13 +17,13 @@
  * limitations under the License.
  */
 
-#include "tasks/RemoveSource.h"
+#include "tasks/generic/RemoveSource.h"
 #include "RialtoServerLogging.h"
 
 namespace firebolt::rialto::server
 {
-RemoveSource::RemoveSource(PlayerContext &context, IGstPlayerClient *client, std::shared_ptr<IGstWrapper> gstWrapper,
-                           const MediaSourceType &type)
+RemoveSource::RemoveSource(GenericPlayerContext &context, IGstGenericPlayerClient *client,
+                           std::shared_ptr<IGstWrapper> gstWrapper, const MediaSourceType &type)
     : m_context{context}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}, m_type{type}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing RemoveSource");

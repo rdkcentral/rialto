@@ -69,10 +69,10 @@ std::shared_ptr<IGstGenericPlayerFactory> IGstGenericPlayerFactory::getFactory()
     return factory;
 }
 
-std::unique_ptr<IGstGenericPlayer>
-GstGenericPlayerFactory::createGstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionService &decryptionService,
-                                                MediaType type, const VideoRequirements &videoRequirements,
-                                                const std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactory)
+std::unique_ptr<IGstGenericPlayer> GstGenericPlayerFactory::createGstGenericPlayer(
+    IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
+    const VideoRequirements &videoRequirements,
+    const std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactory)
 {
     std::unique_ptr<IGstGenericPlayer> gstPlayer;
 
@@ -96,14 +96,15 @@ GstGenericPlayerFactory::createGstGenericPlayer(IGstGenericPlayerClient *client,
         {
             throw std::runtime_error("Cannot create RdkGstreamerUtilsWrapper");
         }
-        gstPlayer = std::make_unique<GstGenericPlayer>(client, decryptionService, type, videoRequirements, gstWrapper,
-                                                       glibWrapper, IGstSrcFactory::getFactory(),
-                                                       common::ITimerFactory::getFactory(),
-                                                       std::make_unique<GenericPlayerTaskFactory>(client, gstWrapper,
-                                                                                                  glibWrapper, rdkGstreamerUtilsWrapper),
-                                                       std::make_unique<WorkerThreadFactory>(),
-                                                       std::make_unique<GstDispatcherThreadFactory>(),
-                                                       IGstProtectionMetadataWrapperFactory::createFactory());
+        gstPlayer =
+            std::make_unique<GstGenericPlayer>(client, decryptionService, type, videoRequirements, gstWrapper,
+                                               glibWrapper, IGstSrcFactory::getFactory(),
+                                               common::ITimerFactory::getFactory(),
+                                               std::make_unique<GenericPlayerTaskFactory>(client, gstWrapper, glibWrapper,
+                                                                                          rdkGstreamerUtilsWrapper),
+                                               std::make_unique<WorkerThreadFactory>(),
+                                               std::make_unique<GstDispatcherThreadFactory>(),
+                                               IGstProtectionMetadataWrapperFactory::createFactory());
     }
     catch (const std::exception &e)
     {
@@ -123,7 +124,7 @@ GstGenericPlayer::GstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionS
                                    std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
                                    std::unique_ptr<IGstDispatcherThreadFactory> gstDispatcherThreadFactory,
                                    std::shared_ptr<IGstProtectionMetadataWrapperFactory> gstProtectionMetadataFactory)
-    : m_gstPlayerClient(client), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}, m_timerFactory{timerFactory},
+    : m_gstPlayerClient(client), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_timerFactory{timerFactory},
       m_taskFactory{std::move(taskFactory)}
 {
     RIALTO_SERVER_LOG_DEBUG("GstGenericPlayer is constructed.");
@@ -244,8 +245,8 @@ void GstGenericPlayer::initMsePipeline()
     // Set callbacks
     m_glibWrapper->gSignalConnect(m_context.pipeline, "source-setup", G_CALLBACK(&GstGenericPlayer::setupSource), this);
     m_glibWrapper->gSignalConnect(m_context.pipeline, "element-setup", G_CALLBACK(&GstGenericPlayer::setupElement), this);
-    m_glibWrapper->gSignalConnect(m_context.pipeline, "deep-element-added", G_CALLBACK(&GstGenericPlayer::deepElementAdded),
-                                  this);
+    m_glibWrapper->gSignalConnect(m_context.pipeline, "deep-element-added",
+                                  G_CALLBACK(&GstGenericPlayer::deepElementAdded), this);
 
     // Set uri
     m_glibWrapper->gObjectSet(m_context.pipeline, "uri", "rialto://", nullptr);
@@ -304,7 +305,7 @@ void GstGenericPlayer::setupElement(GstElement *pipeline, GstElement *element, G
     }
 }
 
-void GstGenericPlayer::deepElementAdded(GstBin *pipeline, GstBin *bin, GstElement *element, GstPlayer *self)
+void GstGenericPlayer::deepElementAdded(GstBin *pipeline, GstBin *bin, GstElement *element, GstGenericPlayer *self)
 {
     RIALTO_SERVER_LOG_DEBUG("Deep element %s added to the pipeline", GST_ELEMENT_NAME(element));
     if (self->m_workerThread)
@@ -322,7 +323,7 @@ void GstGenericPlayer::attachSource(const std::unique_ptr<IMediaPipeline::MediaS
     }
 }
 
-void GstPlayer::removeSource(int32_t id)
+void GstGenericPlayer::removeSource(int32_t id)
 {
     if (m_workerThread)
     {

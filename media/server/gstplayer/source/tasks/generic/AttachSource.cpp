@@ -214,7 +214,7 @@ protected:
 AttachSource::AttachSource(GenericPlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper,
                            std::shared_ptr<IGlibWrapper> glibWrapper,
                            const std::shared_ptr<IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper,
-                           IGstPlayerPrivate &player, const std::unique_ptr<IMediaPipeline::MediaSource> &source)
+                           IGstGenericPlayerPrivate &player, const std::unique_ptr<IMediaPipeline::MediaSource> &source)
     : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
       m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}, m_player{player}, m_attachedSource{source->copy()}
 {

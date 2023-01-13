@@ -53,10 +53,10 @@ public:
      */
     static std::weak_ptr<IGstGenericPlayerFactory> m_factory;
 
-    std::unique_ptr<IGstGenericPlayer> createGstGenericPlayer(IGstGenericPlayerClient *client,
-                                                              IDecryptionService &decryptionService, MediaType type,
-                                                              const VideoRequirements &videoRequirements,
-                                                              const std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactory) override;
+    std::unique_ptr<IGstGenericPlayer> createGstGenericPlayer(
+        IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
+        const VideoRequirements &videoRequirements,
+        const std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactory) override;
 };
 
 /**
@@ -174,7 +174,7 @@ private:
      * @param[in] element   : an element that was added to the playbin hierarchy
      * @param[in] self      : Reference to the calling object.
      */
-    static void deepElementAdded(GstBin *pipeline, GstBin *bin, GstElement *element, GstPlayer *self);
+    static void deepElementAdded(GstBin *pipeline, GstBin *bin, GstElement *element, GstGenericPlayer *self);
 
 private:
     /**

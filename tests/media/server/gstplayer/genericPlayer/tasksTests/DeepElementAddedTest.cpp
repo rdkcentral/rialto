@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#include "tasks/DeepElementAdded.h"
-#include "PlayerContext.h"
+#include "tasks/generic/DeepElementAdded.h"
+#include "GenericPlayerContext.h"
 #include "RdkGstreamerUtilsWrapperMock.h"
 #include <gst/gst.h>
 #include <gtest/gtest.h>
@@ -29,7 +29,7 @@ using testing::StrictMock;
 class DeepElementAddedTest : public testing::Test
 {
 protected:
-    firebolt::rialto::server::PlayerContext m_context{};
+    firebolt::rialto::server::GenericPlayerContext m_context{};
     GstBin m_pipeline{};
     GstBin m_bin{};
     GstElement m_element{};
