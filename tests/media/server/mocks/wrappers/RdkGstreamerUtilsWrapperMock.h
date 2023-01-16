@@ -30,14 +30,14 @@ class RdkGstreamerUtilsWrapperMock : public IRdkGstreamerUtilsWrapper
 {
 public:
     MOCK_METHOD(bool, performAudioTrackCodecChannelSwitch,
-                (PlaybackGroupPrivate * gstUtilsPlaybackGroup, const void *sampleAttr,
-                 AudioAttributesPrivate *audioAttr, std::uint32_t *status, unsigned int *ui32Delay,
-                 long long *audioChangeTargetPts, const long long *currentDispPts, unsigned int *audioChangeStage,
-                 GstCaps **appsrcCaps, bool *audioaac, bool svpEnabled, GstElement *aSrc, bool *ret),
+                (PlaybackGroupPrivate * playbackGroup, const void *sampleAttr, AudioAttributesPrivate *audioAttr,
+                 std::uint32_t *status, unsigned int *ui32Delay, long long *audioChangeTargetPts,
+                 const long long *currentDispPts, unsigned int *audioChangeStage, GstCaps **appsrcCaps, bool *audioaac,
+                 bool svpEnabled, GstElement *aSrc, bool *ret),
                 (const, override));
     MOCK_METHOD(void, deepElementAdded,
-                (PlaybackGroupPrivate * pgstUtilsPlaybackGroup, GstBin *pipeline, GstBin *bin, GstElement *element),
-                (override));
+                (PlaybackGroupPrivate * playbackGroup, GstBin *pipeline, GstBin *bin, GstElement *element),
+                (const, override));
 };
 } // namespace firebolt::rialto::server
 

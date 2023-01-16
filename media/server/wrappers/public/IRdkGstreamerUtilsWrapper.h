@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2022 Sky UK
+ * Copyright 2023 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,14 +78,14 @@ public:
     IRdkGstreamerUtilsWrapper() = default;
     virtual ~IRdkGstreamerUtilsWrapper() = default;
 
-    virtual bool performAudioTrackCodecChannelSwitch(PlaybackGroupPrivate *gstUtilsPlaybackGroup, const void *sampleAttr,
+    virtual bool performAudioTrackCodecChannelSwitch(PlaybackGroupPrivate *playbackGroup, const void *sampleAttr,
                                                      AudioAttributesPrivate *audioAttr, std::uint32_t *status,
                                                      unsigned int *ui32Delay, long long *audioChangeTargetPts,
                                                      const long long *currentDispPts, unsigned int *audioChangeStage,
                                                      GstCaps **appsrcCaps, bool *audioaac, bool svpEnabled,
                                                      GstElement *aSrc, bool *ret) const = 0;
-    virtual void deepElementAdded(PlaybackGroupPrivate *pgstUtilsPlaybackGroup, GstBin *pipeline, GstBin *bin,
-                                  GstElement *element) = 0;
+    virtual void deepElementAdded(PlaybackGroupPrivate *playbackGroup, GstBin *pipeline, GstBin *bin,
+                                  GstElement *element) const = 0;
 };
 } // namespace firebolt::rialto::server
 

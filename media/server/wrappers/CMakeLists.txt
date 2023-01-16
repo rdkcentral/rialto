@@ -32,6 +32,7 @@ if( NOT CMAKE_BUILD_FLAG STREQUAL "UnitTests" )
         source/OcdmCommon.cpp
         source/OcdmSystem.cpp
         source/OcdmSession.cpp
+        source/RdkGstreamerUtilsWrapper.cpp
         )
 
     target_include_directories(
@@ -62,6 +63,7 @@ if( NOT CMAKE_BUILD_FLAG STREQUAL "UnitTests" )
         PRIVATE
         RialtoLogging
         ocdm::ocdm
+        rdkgstreamerutils
 
         )
 
