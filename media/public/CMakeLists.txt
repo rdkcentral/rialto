@@ -45,6 +45,8 @@ set (
         include/IRialtoControl.h
         include/MediaCommon.h
         include/RialtoControlCommon.h
+        include/IWebAudioPlayer.h
+        include/IWebAudioPlayerClient.h
 )
 
 install (
