@@ -17,208 +17,103 @@
  * limitations under the License.
  */
 
-#include "DataReaderMock.h"
+#include "GstWebAudioPlayerTestCommon.h"
 #include "PlayerTaskMock.h"
-#include "GstGenericPlayerTestCommon.h"
-#include "IMediaPipeline.h"
-#include "Matchers.h"
-#include "MediaSourceUtil.h"
 
-using testing::_;
-using testing::ByMove;
-using testing::Invoke;
-using testing::Ref;
-using testing::Return;
-
-class GstGenericPlayerTest : public GstGenericPlayerTestCommon
+class GstWebAudioPlayerTest : public GstWebAudioPlayerTestCommon
 {
 protected:
-    std::unique_ptr<IGstGenericPlayer> m_sut;
-    VideoRequirements m_videoReq = {};
+    std::unique_ptr<IGstWebAudioPlayer> m_sut;
 
-    GstGenericPlayerTest()
+    GstWebAudioPlayerTest()
     {
-        gstPlayerWillBeCreated();
-        m_sut = std::make_unique<GstGenericPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, MediaType::MSE,
-                                                   m_videoReq, m_gstWrapperMock, m_glibWrapperMock, m_gstSrcFactoryMock,
-                                                   m_timerFactoryMock, std::move(m_taskFactory),
-                                                   std::move(workerThreadFactory), std::move(gstDispatcherThreadFactory),
-                                                   m_gstProtectionMetadataFactoryMock);
+        gstPlayerWillBeCreatedForGenericPlatform();
+        m_sut = std::make_unique<GstWebAudioPlayer>(&m_gstPlayerClient, m_gstWrapperMock,
+                                                                        m_glibWrapperMock, m_gstSrcFactoryMock,
+                                                                        std::move(m_taskFactory),
+                                                                        std::move(workerThreadFactory),
+                                                                        std::move(gstDispatcherThreadFactory));
     }
 
-    ~GstGenericPlayerTest() override
+    ~GstWebAudioPlayerTest() override
     {
         gstPlayerWillBeDestroyed();
         m_sut.reset();
     }
 };
 
-TEST_F(GstGenericPlayerTest, shouldAttachSource)
+TEST_F(GstWebAudioPlayerTest, shouldSetCaps)
 {
-    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
-        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>(-1, "video/mpeg");
-
+    const std::string audioMimeType{"audio/x-raw"};
+    const WebAudioConfig config{};
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createAttachSource(_, Ref(source))).WillOnce(Return(ByMove(std::move(task))));
+    EXPECT_CALL(m_taskFactoryMock, createSetCaps(_, audioMimeType, &config)).WillOnce(Return(ByMove(std::move(task))));
+    executeTaskWhenEnqueued();
 
-    m_sut->attachSource(source);
+    m_sut->setCaps(audioMimeType, &config);
 }
 
-TEST_F(GstGenericPlayerTest, shouldPlay)
+TEST_F(GstWebAudioPlayerTest, shouldPlay)
 {
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
     EXPECT_CALL(m_taskFactoryMock, createPlay(_)).WillOnce(Return(ByMove(std::move(task))));
+    executeTaskWhenEnqueued();
 
     m_sut->play();
 }
 
-TEST_F(GstGenericPlayerTest, shouldPause)
+TEST_F(GstWebAudioPlayerTest, shouldPause)
 {
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
     EXPECT_CALL(m_taskFactoryMock, createPause(_)).WillOnce(Return(ByMove(std::move(task))));
+    executeTaskWhenEnqueued();
 
     m_sut->pause();
 }
 
-TEST_F(GstGenericPlayerTest, shouldStop)
+TEST_F(GstWebAudioPlayerTest, shouldSetEos)
 {
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createStop(_, _)).WillOnce(Return(ByMove(std::move(task))));
+    EXPECT_CALL(m_taskFactoryMock, createEos(_)).WillOnce(Return(ByMove(std::move(task))));
+    executeTaskWhenEnqueued();
 
-    m_sut->stop();
+    m_sut->setEos();
 }
 
-TEST_F(GstGenericPlayerTest, shouldAttachSamplesFromVector)
+TEST_F(GstWebAudioPlayerTest, shouldSetVolume)
 {
-    IMediaPipeline::MediaSegmentVector mediaSegments;
+    constexpr double kVolume{0.7};
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createAttachSamples(_, _, _)).WillOnce(Return(ByMove(std::move(task))));
+    EXPECT_CALL(m_taskFactoryMock, createSetVolume(_, kVolume)).WillOnce(Return(ByMove(std::move(task))));
+    executeTaskWhenEnqueued();
 
-    m_sut->attachSamples(mediaSegments);
+    m_sut->setVolume(kVolume);
 }
 
-TEST_F(GstGenericPlayerTest, shouldAttachSamplesFromShm)
-{
-    std::shared_ptr<IDataReader> dataReader{std::make_shared<DataReaderMock>()};
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createReadShmDataAndAttachSamples(_, _, dataReader))
-        .WillOnce(Return(ByMove(std::move(task))));
-
-    m_sut->attachSamples(dataReader);
-}
-
-TEST_F(GstGenericPlayerTest, shouldSetPlaybackRate)
-{
-    double playbackRate{1.5};
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createSetPlaybackRate(_, playbackRate)).WillOnce(Return(ByMove(std::move(task))));
-
-    m_sut->setPlaybackRate(playbackRate);
-}
-
-TEST_F(GstGenericPlayerTest, shouldSetPosition)
-{
-    std::int64_t position{12345};
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createSetPosition(_, _, position)).WillOnce(Return(ByMove(std::move(task))));
-
-    m_sut->setPosition(position);
-}
-
-TEST_F(GstGenericPlayerTest, shouldSetVideoGeometry)
-{
-    Rectangle rectangle{1, 2, 3, 4};
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createSetVideoGeometry(_, _, rectangle)).WillOnce(Return(ByMove(std::move(task))));
-
-    m_sut->setVideoGeometry(rectangle.x, rectangle.y, rectangle.width, rectangle.height);
-}
-
-TEST_F(GstGenericPlayerTest, shouldSetEos)
-{
-    MediaSourceType type{MediaSourceType::AUDIO};
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createEos(_, _, type)).WillOnce(Return(ByMove(std::move(task))));
-
-    m_sut->setEos(type);
-}
-
-TEST_F(GstGenericPlayerTest, shouldSetupSource)
-{
-    GstElement source{};
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(&source));
-    EXPECT_CALL(m_taskFactoryMock, createSetupSource(_, _, &source)).WillOnce(Return(ByMove(std::move(task))));
-
-    triggerSetupSource(&source);
-}
-
-TEST_F(GstGenericPlayerTest, shouldSetupElement)
-{
-    GstElement element{};
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(&element));
-    EXPECT_CALL(m_taskFactoryMock, createSetupElement(_, _, &element)).WillOnce(Return(ByMove(std::move(task))));
-
-    triggerSetupElement(&element);
-}
-
-TEST_F(GstGenericPlayerTest, shouldReturnInvalidPositionWhenPipelineIsBelowPlayingState)
-{
-    int64_t targetPosition{};
-    EXPECT_FALSE(m_sut->getPosition(targetPosition));
-}
-
-TEST_F(GstGenericPlayerTest, shouldReturnInvalidPositionWhenQueryFails)
-{
-    int64_t targetPosition{};
-    setPipelineState(GST_STATE_PLAYING);
-    EXPECT_CALL(*m_gstWrapperMock, gstElementQueryPosition(_, GST_FORMAT_TIME, _)).WillOnce(Return(FALSE));
-    EXPECT_FALSE(m_sut->getPosition(targetPosition));
-}
-
-TEST_F(GstGenericPlayerTest, shouldReturnPosition)
-{
-    constexpr gint64 expectedPosition{123};
-    int64_t targetPosition{};
-    setPipelineState(GST_STATE_PLAYING);
-    EXPECT_CALL(*m_gstWrapperMock, gstElementQueryPosition(_, GST_FORMAT_TIME, _))
-        .WillOnce(Invoke(
-            [&](GstElement *element, GstFormat format, gint64 *cur)
-            {
-                *cur = expectedPosition;
-                return TRUE;
-            }));
-    EXPECT_TRUE(m_sut->getPosition(targetPosition));
-    EXPECT_EQ(expectedPosition, targetPosition);
-}
-
-TEST_F(GstGenericPlayerTest, shouldRenderFrame)
-{
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createRenderFrame(_)).WillOnce(Return(ByMove(std::move(task))));
-
-    m_sut->renderFrame();
-}
-
-TEST_F(GstGenericPlayerTest, shouldReturnVolume)
+TEST_F(GstWebAudioPlayerTest, shouldReturnVolume)
 {
     constexpr double kVolume{0.7};
     double resultVolume{};
     EXPECT_CALL(*m_gstWrapperMock, gstStreamVolumeGetVolume(_, GST_STREAM_VOLUME_FORMAT_LINEAR)).WillOnce(Return(kVolume));
     EXPECT_TRUE(m_sut->getVolume(resultVolume));
     EXPECT_EQ(resultVolume, kVolume);
+}
+
+TEST_F(GstWebAudioPlayerTest, shouldWriteBuffer)
+{
+    uint8_t mainPtr{};
+    uint32_t mainLength = 1;
+    uint8_t wrapPtr{};
+    uint32_t wrapLength = 2;
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(m_taskFactoryMock, createWriteBuffer(_, _, &mainPtr, mainLength, &wrapPtr, wrapLength)).WillOnce(Return(ByMove(std::move(task))));
+    executeTaskWhenEnqueued();
+
+    m_sut->writeBuffer(&mainPtr, mainLength, &wrapPtr, wrapLength);
 }

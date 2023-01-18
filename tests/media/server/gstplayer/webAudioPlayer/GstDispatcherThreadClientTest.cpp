@@ -18,7 +18,7 @@
  */
 
 #include "PlayerTaskMock.h"
-#include "GstGenericPlayerTestCommon.h"
+#include "GstWebAudioPlayerTestCommon.h"
 #include "IGstDispatcherThreadClient.h"
 
 using testing::_;
@@ -27,30 +27,29 @@ using testing::Invoke;
 using testing::Ref;
 using testing::Return;
 
-class GstDispatcherThreadClientTest : public GstGenericPlayerTestCommon
+class WebAudioGstDispatcherThreadClientTest : public GstWebAudioPlayerTestCommon
 {
 protected:
     std::unique_ptr<IGstDispatcherThreadClient> m_sut;
-    VideoRequirements m_videoReq = {};
 
-    GstDispatcherThreadClientTest()
+    WebAudioGstDispatcherThreadClientTest()
     {
-        gstPlayerWillBeCreated();
-        m_sut = std::make_unique<GstGenericPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, MediaType::MSE,
-                                                   m_videoReq, m_gstWrapperMock, m_glibWrapperMock, m_gstSrcFactoryMock,
-                                                   m_timerFactoryMock, std::move(m_taskFactory),
-                                                   std::move(workerThreadFactory), std::move(gstDispatcherThreadFactory),
-                                                   m_gstProtectionMetadataFactoryMock);
+        gstPlayerWillBeCreatedForGenericPlatform();
+        m_sut = std::make_unique<GstWebAudioPlayer>(&m_gstPlayerClient, m_gstWrapperMock,
+                                                                        m_glibWrapperMock, m_gstSrcFactoryMock,
+                                                                        std::move(m_taskFactory),
+                                                                        std::move(workerThreadFactory),
+                                                                        std::move(gstDispatcherThreadFactory));
     }
 
-    ~GstDispatcherThreadClientTest() override
+    ~WebAudioGstDispatcherThreadClientTest() override
     {
         gstPlayerWillBeDestroyed();
         m_sut.reset();
     }
 };
 
-TEST_F(GstDispatcherThreadClientTest, shouldHandleBusMessage)
+TEST_F(WebAudioGstDispatcherThreadClientTest, shouldHandleBusMessage)
 {
     GstMessage message{};
     std::unique_ptr<IPlayerTask> messageTask{std::make_unique<StrictMock<PlayerTaskMock>>()};

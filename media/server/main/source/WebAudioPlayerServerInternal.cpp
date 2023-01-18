@@ -303,6 +303,7 @@ bool WebAudioPlayerServerInternal::getDeviceInfo(uint32_t &preferredFrames, uint
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
+    // TODO(RIALTO-2) Remove ipc
     // Can be called from any thread
     preferredFrames = kPreferredFrames;
     maximumFrames = m_maxDataLength / 4;

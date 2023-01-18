@@ -50,11 +50,18 @@ add_gtests(RialtoServerGstPlayerUnitTests
     genericPlayer/CreateTest.cpp
     genericPlayer/GstGenericPlayerPrivateTest.cpp
     genericPlayer/GstGenericPlayerTest.cpp
-    genericPlayer/GstDispatcherThreadClientTest
+    genericPlayer/GstDispatcherThreadClientTest.cpp
     genericPlayer/GstCapabilitiesTest.cpp
 
     #GstWebAudioPlayer unittests
+    webAudioPlayer/tasksTests/WebAudioPlayerTaskFactoryTest.cpp
+    webAudioPlayer/tasksTests/PlayTest.cpp
+    webAudioPlayer/tasksTests/PauseTest.cpp
+
     webAudioPlayer/CreateTest.cpp
+    webAudioPlayer/GstWebAudioPlayerPrivateTest.cpp
+    webAudioPlayer/GstDispatcherThreadClientTest.cpp
+    webAudioPlayer/GstWebAudioPlayerTest.cpp
 
     webAudioPlayer/common/GstWebAudioPlayerTestCommon.cpp
 
