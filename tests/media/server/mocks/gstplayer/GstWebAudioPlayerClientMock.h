@@ -31,7 +31,7 @@ public:
     GstWebAudioPlayerClientMock() = default;
     virtual ~GstWebAudioPlayerClientMock() = default;
 
-    MOCK_METHOD(void, notifyPlaybackState, (PlaybackState state), (override));
+    MOCK_METHOD(void, notifyState, (WebAudioPlayerState state), (override));
 };
 } // namespace firebolt::rialto::server
 

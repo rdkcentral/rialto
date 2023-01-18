@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-#include "GenericPlayerTaskMock.h"
+#include "PlayerTaskMock.h"
 #include "GstGenericPlayerTestCommon.h"
 #include "Matchers.h"
 #include <gtest/gtest.h>
@@ -64,8 +64,8 @@ protected:
     void setupElementSuccess()
     {
         GstElement element{};
-        std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
-        EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*task), execute());
+        std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+        EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
         EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(&element));
         EXPECT_CALL(m_taskFactoryMock, createSetupElement(_, _, &element))
             .WillOnce(DoAll(SaveArg<0>(&m_storedPlayerContext), Return(ByMove(std::move(task)))));

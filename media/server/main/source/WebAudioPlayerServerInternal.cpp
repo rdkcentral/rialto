@@ -199,6 +199,7 @@ bool WebAudioPlayerServerInternal::setEos()
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
+    //TODO(RIALTO-2): Don't set eos if we still have frames to write
     auto task = [&](){m_gstPlayer->setEos();};
 
     m_mainThread->enqueueTask(m_mainThreadClientId, task);
@@ -366,7 +367,7 @@ bool WebAudioPlayerServerInternal::initGstWebAudioPlayer(const std::string &audi
         return false;
     }
 
-    m_gstPlayer->attachSource(audioMimeType, config);
+    m_gstPlayer->setCaps(audioMimeType, config);
 
     return true;
 }

@@ -18,7 +18,7 @@
  */
 
 #include "GstGenericPlayerTestCommon.h"
-#include "GenericPlayerTaskMock.h"
+#include "PlayerTaskMock.h"
 #include "Matchers.h"
 #include <memory>
 #include <utility>
@@ -47,10 +47,10 @@ void GstGenericPlayerTestCommon::gstPlayerWillBeCreated()
 
 void GstGenericPlayerTestCommon::gstPlayerWillBeDestroyed()
 {
-    std::unique_ptr<IPlayerTask> stopTask{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
-    std::unique_ptr<IPlayerTask> shutdownTask{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*stopTask), execute());
-    EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*shutdownTask), execute());
+    std::unique_ptr<IPlayerTask> stopTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    std::unique_ptr<IPlayerTask> shutdownTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*stopTask), execute());
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*shutdownTask), execute());
     EXPECT_CALL(m_taskFactoryMock, createShutdown(_)).WillOnce(Return(ByMove(std::move(shutdownTask))));
     EXPECT_CALL(m_workerThreadMock, join());
     EXPECT_CALL(m_taskFactoryMock, createStop(_, _)).WillOnce(Return(ByMove(std::move(stopTask))));

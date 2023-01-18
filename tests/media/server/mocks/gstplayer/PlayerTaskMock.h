@@ -17,22 +17,19 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_WEB_AUDIO_MATCHERS_H_
-#define FIREBOLT_RIALTO_SERVER_WEB_AUDIO_MATCHERS_H_
+#ifndef FIREBOLT_RIALTO_SERVER_PLAYER_TASK_MOCK_H_
+#define FIREBOLT_RIALTO_SERVER_PLAYER_TASK_MOCK_H_
 
+#include "tasks/IPlayerTask.h"
 #include <gmock/gmock.h>
-#include <gtest/gtest.h>
-#include <string>
 
-MATCHER_P(CharStrMatcher, expectedStr, "")
+namespace firebolt::rialto::server
 {
-    std::string actualStr = arg;
-    return expectedStr == actualStr;
-}
-
-MATCHER(NotNullMatcher, "")
+class PlayerTaskMock : public IPlayerTask
 {
-    return nullptr != arg;
-}
+public:
+    MOCK_METHOD(void, execute, (), (const, override));
+};
+} // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_WEB_AUDIO_MATCHERS_H_
+#endif // FIREBOLT_RIALTO_SERVER_PLAYER_TASK_MOCK_H_

@@ -17,20 +17,25 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_GENERIC_PLAYER_TASK_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_GENERIC_PLAYER_TASK_MOCK_H_
+#include "tasks/webAudio/Play.h"
+#include "IGstWebAudioPlayerPrivate.h"
+#include "RialtoServerLogging.h"
 
-#include "IGstGenericPlayerPrivate.h"
-#include "tasks/IPlayerTask.h"
-#include <gmock/gmock.h>
-
-namespace firebolt::rialto::server
+namespace firebolt::rialto::server::webaudio
 {
-class GenericPlayerTaskMock : public IPlayerTask
+Play::Play(IGstWebAudioPlayerPrivate &player) : m_player{player}
 {
-public:
-    MOCK_METHOD(void, execute, (), (const, override));
-};
-} // namespace firebolt::rialto::server
+    RIALTO_SERVER_LOG_DEBUG("Constructing Play");
+}
 
-#endif // FIREBOLT_RIALTO_SERVER_GENERIC_PLAYER_TASK_MOCK_H_
+Play::~Play()
+{
+    RIALTO_SERVER_LOG_DEBUG("Play finished");
+}
+
+void Play::execute() const
+{
+    RIALTO_SERVER_LOG_DEBUG("Executing Play");
+    m_player.changePipelineState(GST_STATE_PLAYING);
+}
+} // namespace firebolt::rialto::server::webaudio

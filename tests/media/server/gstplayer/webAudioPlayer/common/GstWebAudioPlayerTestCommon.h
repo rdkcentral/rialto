@@ -38,6 +38,10 @@ using namespace firebolt::rialto;
 using namespace firebolt::rialto::server;
 
 using ::testing::StrictMock;
+using ::testing::_;
+using ::testing::ByMove;
+using ::testing::Invoke;
+using ::testing::Return;
 
 class GstWebAudioPlayerTestCommon : public ::testing::Test
 {
@@ -72,18 +76,32 @@ protected:
     void gstPlayerWillBeCreatedForGenericPlatform();
     void gstPlayerWillBeDestroyed();
     void executeTaskWhenEnqueued();
+    void expectInitRialtoSrc();
+    void expectInitThreads();
     void expectCreatePipeline();
     void expectInitAppSrc();
     void expectAddElementsAmlhalaSink();
     void expectAddElementsRtkAudioSink();
     void expectAddElementsAutoAudioSink();
+    void expectMakeAmlhalaSink();
+    void expectInitAmlhalaSink();
+    void expectInitAmlhalaSinkFailure();
+    void expectMakeRtkAudioSink();
+    void expectInitRtkAudioSink();
+    void expectInitRtkAudioSinkFailure();
+    void expectMakeAutoAudioSink();
+    void expectInitAutoAudioSink();
+    void expectInitAutoAudioSinkFailure();
+    void expectTermPipeline();
+    void expectResetWorkerThread();
+    void expectTaskStop();
 
-private:
     GstElement m_pipeline{};
     GstElement m_appSrc{};
     GstRegistry m_reg{};
-    GstPluginFeature m_feature{};
+    GstObject m_feature{};
     GstElement m_sink{};
+    GstBus m_bus{};
 };
 
 #endif // GST_WEB_AUDIO_PLAYER_TEST_COMMON_H_

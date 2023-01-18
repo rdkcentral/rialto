@@ -18,62 +18,68 @@
  */
 
 #include "GstWebAudioPlayerTestCommon.h"
-#include "WebAudioPlayerTaskMock.h"
+#include "PlayerTaskMock.h"
 #include "Matchers.h"
 #include <memory>
 #include <utility>
 
-using ::testing::_;
-using ::testing::ByMove;
-using ::testing::Invoke;
-using ::testing::Return;
-
 void GstWebAudioPlayerTestCommon::gstPlayerWillBeCreatedForLlama()
 {
+    expectInitRialtoSrc();
+    expectInitThreads();
     expectCreatePipeline();
     expectInitAppSrc();
     expectAddElementsAmlhalaSink();
-
-    EXPECT_CALL(*m_gstSrcMock, initSrc());
-    EXPECT_CALL(m_workerThreadFactoryMock, createWorkerThread()).WillOnce(Return(ByMove(std::move(workerThread))));
-    executeTaskWhenEnqueued();
 }
 
 void GstWebAudioPlayerTestCommon::gstPlayerWillBeCreatedForXiOne()
 {
+    expectInitRialtoSrc();
+    expectInitThreads();
     expectCreatePipeline();
     expectInitAppSrc();
     expectAddElementsRtkAudioSink();
-
-    EXPECT_CALL(*m_gstSrcMock, initSrc());
-    EXPECT_CALL(m_workerThreadFactoryMock, createWorkerThread()).WillOnce(Return(ByMove(std::move(workerThread))));
-    executeTaskWhenEnqueued();
 }
 
 void GstWebAudioPlayerTestCommon::gstPlayerWillBeCreatedForGenericPlatform()
 {
+    expectInitRialtoSrc();
+    expectInitThreads();
     expectCreatePipeline();
     expectInitAppSrc();
     expectAddElementsAutoAudioSink();
-
-    EXPECT_CALL(*m_gstSrcMock, initSrc());
-    EXPECT_CALL(m_workerThreadFactoryMock, createWorkerThread()).WillOnce(Return(ByMove(std::move(workerThread))));
-    executeTaskWhenEnqueued();
 }
 
 void GstWebAudioPlayerTestCommon::gstPlayerWillBeDestroyed()
 {
-    std::unique_ptr<IPlayerTask> stopTask{std::make_unique<StrictMock<WebAudioPlayerTaskMock>>()};
-    std::unique_ptr<IPlayerTask> shutdownTask{std::make_unique<StrictMock<WebAudioPlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<WebAudioPlayerTaskMock> &>(*stopTask), execute());
-    EXPECT_CALL(dynamic_cast<StrictMock<WebAudioPlayerTaskMock> &>(*shutdownTask), execute());
+    expectResetWorkerThread();
+    expectTaskStop();
+    expectTermPipeline();
+}
+
+void GstWebAudioPlayerTestCommon::expectResetWorkerThread()
+{
+    std::unique_ptr<IPlayerTask> shutdownTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*shutdownTask), execute());
     EXPECT_CALL(m_taskFactoryMock, createShutdown(_)).WillOnce(Return(ByMove(std::move(shutdownTask))));
     EXPECT_CALL(m_workerThreadMock, join());
-    EXPECT_CALL(m_taskFactoryMock, createStop(_, _)).WillOnce(Return(ByMove(std::move(stopTask))));
+    executeTaskWhenEnqueued();
+}
+
+void GstWebAudioPlayerTestCommon::expectTermPipeline()
+{
     EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(&m_pipeline))).WillOnce(Return(&m_bus));
     EXPECT_CALL(*m_gstWrapperMock, gstBusSetSyncHandler(&m_bus, nullptr, nullptr, nullptr));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_appSrc));
     EXPECT_CALL(*m_glibWrapperMock, gObjectUnref(&m_pipeline));
+}
+
+void GstWebAudioPlayerTestCommon::expectTaskStop()
+{
+    std::unique_ptr<IPlayerTask> stopTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*stopTask), execute());
+    EXPECT_CALL(m_taskFactoryMock, createStop(_)).WillOnce(Return(ByMove(std::move(stopTask))));
 }
 
 void GstWebAudioPlayerTestCommon::executeTaskWhenEnqueued()
@@ -83,6 +89,19 @@ void GstWebAudioPlayerTestCommon::executeTaskWhenEnqueued()
     // be enqueued)
     EXPECT_CALL(m_workerThreadMock, enqueueTask(_))
         .WillRepeatedly(Invoke([](std::unique_ptr<IPlayerTask> &&task) { task->execute(); }));
+}
+
+void GstWebAudioPlayerTestCommon::expectInitRialtoSrc()
+{
+    EXPECT_CALL(*m_gstSrcFactoryMock, getGstSrc()).WillOnce(Return(m_gstSrcMock));
+    EXPECT_CALL(*m_gstSrcMock, initSrc());
+}
+
+void GstWebAudioPlayerTestCommon::expectInitThreads()
+{
+    EXPECT_CALL(m_workerThreadFactoryMock, createWorkerThread()).WillOnce(Return(ByMove(std::move(workerThread))));
+    EXPECT_CALL(m_gstDispatcherThreadFactoryMock, createGstDispatcherThread(_, _, _))
+        .WillOnce(Return(ByMove(std::move(gstDispatcherThread))));
 }
 
 void GstWebAudioPlayerTestCommon::expectCreatePipeline()
@@ -101,51 +120,109 @@ void GstWebAudioPlayerTestCommon::expectInitAppSrc()
 
 void GstWebAudioPlayerTestCommon::expectAddElementsAmlhalaSink()
 {
-    EXPECT_CALL(*m_gstWrapperMock, gstRegistryGet())
-        .WillOnce(Return(&m_reg));
-    EXPECT_CALL(*m_gstWrapperMock, gstRegistryLookupFeature(&m_reg, CharStrMatcher("amlhalasink")))
-        .WillOnce(Return(&m_feature));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(CharStrMatcher("amlhalasink"), CharStrMatcher("webaudiosink")))
-        .WillOnce(Return(&m_sink));
-    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(G_OBJECT(&m_sink), CharStrMatcher("direct-mode")));
-    EXPECT_CALL(*m_gstWrapperMock, gstBinAddManyStub(GST_BIN(&m_pipeline), &m_appSrc));
-    EXPECT_CALL(*m_gstWrapperMock, gstBinAddManyStub(GST_BIN(&m_pipeline), &m_sink));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementLinkMany(&m_appSrc, &m_sink));
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_feature));
+    expectMakeAmlhalaSink();
+    expectInitAmlhalaSink();
 }
 
 void GstWebAudioPlayerTestCommon::expectAddElementsRtkAudioSink()
+{
+    expectMakeRtkAudioSink();
+    expectInitRtkAudioSink();
+}
+
+void GstWebAudioPlayerTestCommon::expectAddElementsAutoAudioSink()
+{
+    expectMakeAutoAudioSink();
+    expectInitAutoAudioSink();
+}
+
+void GstWebAudioPlayerTestCommon::expectMakeAmlhalaSink()
+{
+    EXPECT_CALL(*m_gstWrapperMock, gstRegistryGet())
+        .WillOnce(Return(&m_reg));
+    EXPECT_CALL(*m_gstWrapperMock, gstRegistryLookupFeature(&m_reg, CharStrMatcher("amlhalasink")))
+        .WillOnce(Return(GST_PLUGIN_FEATURE(&m_feature)));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(CharStrMatcher("amlhalasink"), CharStrMatcher("webaudiosink")))
+        .WillOnce(Return(&m_sink));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(GST_PLUGIN_FEATURE(&m_feature)));
+}
+
+void GstWebAudioPlayerTestCommon::expectInitAmlhalaSink()
+{
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(G_OBJECT(&m_sink), CharStrMatcher("direct-mode")));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAddManyStub(GST_BIN(&m_pipeline), &m_appSrc));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAddManyStub(GST_BIN(&m_pipeline), &m_sink));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementLinkManyStub(&m_appSrc, &m_sink))
+        .WillOnce(Return(TRUE));
+}
+
+void GstWebAudioPlayerTestCommon::expectInitAmlhalaSinkFailure()
+{
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(G_OBJECT(&m_sink), CharStrMatcher("direct-mode")));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAddManyStub(GST_BIN(&m_pipeline), &m_appSrc));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAddManyStub(GST_BIN(&m_pipeline), &m_sink));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementLinkManyStub(&m_appSrc, &m_sink))
+        .WillOnce(Return(FALSE));
+}
+
+void GstWebAudioPlayerTestCommon::expectMakeRtkAudioSink()
 {
     EXPECT_CALL(*m_gstWrapperMock, gstRegistryGet())
         .WillOnce(Return(&m_reg));
     EXPECT_CALL(*m_gstWrapperMock, gstRegistryLookupFeature(&m_reg, CharStrMatcher("amlhalasink")))
         .WillOnce(Return(nullptr));
     EXPECT_CALL(*m_gstWrapperMock, gstRegistryLookupFeature(&m_reg, CharStrMatcher("rtkaudiosink")))
-        .WillOnce(Return(&m_feature));
+        .WillOnce(Return(GST_PLUGIN_FEATURE(&m_feature)));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(CharStrMatcher("rtkaudiosink"), CharStrMatcher("webaudiosink")))
         .WillOnce(Return(&m_sink));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(GST_PLUGIN_FEATURE(&m_feature)));
+}
+
+void GstWebAudioPlayerTestCommon::expectInitRtkAudioSink()
+{
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(G_OBJECT(&m_sink), CharStrMatcher("media-tunnel")));
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(G_OBJECT(&m_sink), CharStrMatcher("audio-service")));
 
     GstElement convert{};
     GstElement resample{};
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(CharStrMatcher("audioconvert"),_));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(CharStrMatcher("audioconvert"),_))
         .WillOnce(Return(&convert));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(CharStrMatcher("audioresample"),_));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(CharStrMatcher("audioresample"),_))
         .WillOnce(Return(&resample));
 
     EXPECT_CALL(*m_gstWrapperMock, gstBinAddManyStub(GST_BIN(&m_pipeline), &m_appSrc));
     EXPECT_CALL(*m_gstWrapperMock, gstBinAddManyStub(GST_BIN(&m_pipeline), &convert));
     EXPECT_CALL(*m_gstWrapperMock, gstBinAddManyStub(GST_BIN(&m_pipeline), &resample));
-    EXPECT_CALL(*m_gstWrapperMock, gstBinAddManyStub(GST_BIN(&m_pipeline), &sink));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementLinkMany(&m_appSrc, &convert));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementLinkMany(&convert, &resample));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementLinkMany(&resample, &sink));
-
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_feature));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAddManyStub(GST_BIN(&m_pipeline), &m_sink));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementLinkManyStub(&m_appSrc, &convert))
+        .WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementLinkManyStub(&convert, &resample))
+        .WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementLinkManyStub(&resample, &m_sink))
+        .WillOnce(Return(TRUE));
 }
 
-void GstWebAudioPlayerTestCommon::expectAddElementsAutoAudioSink()
+void GstWebAudioPlayerTestCommon::expectInitRtkAudioSinkFailure()
+{
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(G_OBJECT(&m_sink), CharStrMatcher("media-tunnel")));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(G_OBJECT(&m_sink), CharStrMatcher("audio-service")));
+
+    GstElement convert{};
+    GstElement resample{};
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(CharStrMatcher("audioconvert"),_))
+        .WillOnce(Return(&convert));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(CharStrMatcher("audioresample"),_))
+        .WillOnce(Return(&resample));
+
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAddManyStub(GST_BIN(&m_pipeline), &m_appSrc));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAddManyStub(GST_BIN(&m_pipeline), &convert));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAddManyStub(GST_BIN(&m_pipeline), &resample));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAddManyStub(GST_BIN(&m_pipeline), &m_sink));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementLinkManyStub(&m_appSrc, &convert))
+        .WillOnce(Return(FALSE));
+}
+
+void GstWebAudioPlayerTestCommon::expectMakeAutoAudioSink()
 {
     EXPECT_CALL(*m_gstWrapperMock, gstRegistryGet())
         .WillOnce(Return(&m_reg));
@@ -156,7 +233,20 @@ void GstWebAudioPlayerTestCommon::expectAddElementsAutoAudioSink()
 
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(CharStrMatcher("autoaudiosink"), CharStrMatcher("webaudiosink")))
         .WillOnce(Return(&m_sink));
+}
+
+void GstWebAudioPlayerTestCommon::expectInitAutoAudioSink()
+{
     EXPECT_CALL(*m_gstWrapperMock, gstBinAddManyStub(GST_BIN(&m_pipeline), &m_appSrc));
     EXPECT_CALL(*m_gstWrapperMock, gstBinAddManyStub(GST_BIN(&m_pipeline), &m_sink));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementLinkMany(&m_appSrc, &m_sink));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementLinkManyStub(&m_appSrc, &m_sink))
+        .WillOnce(Return(TRUE));
+}
+
+void GstWebAudioPlayerTestCommon::expectInitAutoAudioSinkFailure()
+{
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAddManyStub(GST_BIN(&m_pipeline), &m_appSrc));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAddManyStub(GST_BIN(&m_pipeline), &m_sink));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementLinkManyStub(&m_appSrc, &m_sink))
+        .WillOnce(Return(FALSE));
 }

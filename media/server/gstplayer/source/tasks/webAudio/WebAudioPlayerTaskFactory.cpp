@@ -19,6 +19,13 @@
 #include "tasks/webAudio/WebAudioPlayerTaskFactory.h"
 #include "tasks/webAudio/Shutdown.h"
 #include "tasks/webAudio/Stop.h"
+#include "tasks/webAudio/Play.h"
+#include "tasks/webAudio/Pause.h"
+#include "tasks/webAudio/Eos.h"
+#include "tasks/webAudio/SetVolume.h"
+#include "tasks/webAudio/SetCaps.h"
+#include "tasks/webAudio/WriteBuffer.h"
+#include "tasks/webAudio/HandleBusMessage.h"
 
 namespace firebolt::rialto::server
 {
@@ -37,5 +44,42 @@ std::unique_ptr<IPlayerTask> WebAudioPlayerTaskFactory::createShutdown(IGstWebAu
 std::unique_ptr<IPlayerTask> WebAudioPlayerTaskFactory::createStop(IGstWebAudioPlayerPrivate &player) const
 {
     return std::make_unique<webaudio::Stop>(player);
+}
+
+std::unique_ptr<IPlayerTask> WebAudioPlayerTaskFactory::createPlay(IGstWebAudioPlayerPrivate &player) const
+{
+    return std::make_unique<webaudio::Play>(player);
+}
+
+std::unique_ptr<IPlayerTask> WebAudioPlayerTaskFactory::createPause(IGstWebAudioPlayerPrivate &player) const
+{
+    return std::make_unique<webaudio::Pause>(player);
+}
+
+std::unique_ptr<IPlayerTask> WebAudioPlayerTaskFactory::createEos(WebAudioPlayerContext &context) const
+{
+    return std::make_unique<webaudio::Eos>(context, m_gstWrapper);
+}
+
+std::unique_ptr<IPlayerTask> WebAudioPlayerTaskFactory::createSetCaps(WebAudioPlayerContext &context, const std::string &audioMimeType, const WebAudioConfig *config) const
+{
+    return std::make_unique<webaudio::SetCaps>(context, m_gstWrapper, m_glibWrapper, audioMimeType, config);
+}
+
+std::unique_ptr<IPlayerTask> WebAudioPlayerTaskFactory::createSetVolume(WebAudioPlayerContext &context, double volume) const
+{
+    return std::make_unique<webaudio::SetVolume>(context, m_gstWrapper, volume);
+}
+
+std::unique_ptr<IPlayerTask> WebAudioPlayerTaskFactory::createWriteBuffer(WebAudioPlayerContext &context, IGstWebAudioPlayerPrivate &player, uint8_t *mainPtr, uint32_t mainLength, uint8_t *wrapPtr, uint32_t wrapLength) const
+{
+    return std::make_unique<webaudio::WriteBuffer>(context, player, m_gstWrapper, m_glibWrapper, mainPtr, mainLength, wrapPtr, wrapLength);
+}
+
+std::unique_ptr<IPlayerTask> WebAudioPlayerTaskFactory::createHandleBusMessage(WebAudioPlayerContext &context,
+                                                                               IGstWebAudioPlayerPrivate &player,
+                                                                               GstMessage *message) const
+{
+    return std::make_unique<webaudio::HandleBusMessage>(context, player, m_client, m_gstWrapper, message);
 }
 } // namespace firebolt::rialto::server

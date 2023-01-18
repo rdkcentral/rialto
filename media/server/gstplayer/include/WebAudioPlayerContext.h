@@ -24,9 +24,13 @@
 #include <gst/gst.h>
 #include <list>
 #include <memory>
+#include <mutex>
+#include <condition_variable>
 
 namespace firebolt::rialto::server
 {
+constexpr uint32_t kMaxWebAudioBytes{10 * 1024};
+
 struct WebAudioPlayerContext
 {
     /**
@@ -35,26 +39,29 @@ struct WebAudioPlayerContext
     std::shared_ptr<IGstSrc> gstSrc{nullptr};
 
     /**
-     * @brief The audio app source
-     */
-    GstElement *audioAppSrc{nullptr};
-
-    /**
      * @brief The gstreamer pipeline.
      */
     GstElement *pipeline{nullptr};
 
     /**
-     * @brief The gstreamer source.
+     * @brief The gstreamer audio source.
      */
     GstElement *source{nullptr};
 
     /**
-     * @brief List containing audio buffers to attach
-     *
-     * List can be used only in worker thread
+     * @brief Write buffer mutex.
      */
-    std::list<GstBuffer *> audioBuffers{};
+    std::mutex m_writeBufferMutex;
+
+    /**
+     * @brief Write buffer condition variable.
+     */
+    std::condition_variable m_writeBufferCond;
+
+    /**
+     * @brief Write buffer condition variable.
+     */
+    uint32_t m_lastBytesWritten{};
 };
 } // namespace firebolt::rialto::server
 

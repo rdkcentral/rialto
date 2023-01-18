@@ -17,22 +17,30 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_WEB_AUDIO_MATCHERS_H_
-#define FIREBOLT_RIALTO_SERVER_WEB_AUDIO_MATCHERS_H_
+#include "tasks/webAudio/Eos.h"
+#include "WebAudioPlayerContext.h"
+#include "IGstWrapper.h"
+#include "RialtoServerLogging.h"
 
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
-#include <string>
-
-MATCHER_P(CharStrMatcher, expectedStr, "")
+namespace firebolt::rialto::server::webaudio
 {
-    std::string actualStr = arg;
-    return expectedStr == actualStr;
+Eos::Eos(WebAudioPlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper)
+    : m_context{context}, m_gstWrapper{gstWrapper}
+{
+    RIALTO_SERVER_LOG_DEBUG("Constructing Eos");
 }
 
-MATCHER(NotNullMatcher, "")
+Eos::~Eos()
 {
-    return nullptr != arg;
+    RIALTO_SERVER_LOG_DEBUG("Eos finished");
 }
 
-#endif // FIREBOLT_RIALTO_SERVER_WEB_AUDIO_MATCHERS_H_
+void Eos::execute() const
+{
+    RIALTO_SERVER_LOG_DEBUG("Executing Eos");
+    if (m_gstWrapper->gstAppSrcEndOfStream(GST_APP_SRC(m_context.source)) != GST_FLOW_OK)
+    {
+        RIALTO_SERVER_LOG_WARN("Set eos failed - Gstreamer error");
+    }
+}
+} // namespace firebolt::rialto::server::webaudio

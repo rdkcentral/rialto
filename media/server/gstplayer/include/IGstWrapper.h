@@ -1004,6 +1004,15 @@ public:
      * @retval TRUE if successful, FALSE otherwise.
      */
     virtual gboolean gstElementLinkMany(GstElement * element_1, GstElement * element_2, ...) const = 0;
+
+    /**
+     * @brief Get the number of bytes queued in the appsrc.
+     *
+     * @param[in] appsrc : The app source.
+     *
+     * @retval The number of bytes queued.
+     */
+    virtual guint64 gstAppSrcGetCurrentLevelBytes(GstAppSrc * appsrc) const = 0;
 };
 
 }; // namespace firebolt::rialto::server

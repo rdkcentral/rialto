@@ -66,12 +66,12 @@ public:
     IGstWebAudioPlayer &operator=(IGstWebAudioPlayer &&) = delete;
 
     /**
-     * @brief Attaches a audio source to gstreamer.
+     * @brief Sets the capabilities on the audio source.
      *
      * @param[in] audioMimeType: The audio encoding format, currently only "audio/x-raw" (PCM).
      * @param[in] config:        Additional type dependent configuration data or nullptr,
      */
-    virtual void attachSource(const std::string &audioMimeType, const WebAudioConfig *config) = 0;
+    virtual void setCaps(const std::string &audioMimeType, const WebAudioConfig *config) = 0;
 
     /**
      * @brief Starts playback of the web audio.

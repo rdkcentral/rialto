@@ -18,12 +18,12 @@
  */
 
 #include "WorkerThread.h"
-#include "GenericPlayerTaskMock.h"
+#include "PlayerTaskMock.h"
 #include <condition_variable>
 #include <gtest/gtest.h>
 #include <mutex>
 
-using firebolt::rialto::server::GenericPlayerTaskMock;
+using firebolt::rialto::server::PlayerTaskMock;
 using testing::Invoke;
 using testing::StrictMock;
 
@@ -34,8 +34,8 @@ TEST(WorkerThreadTest, shouldEnqueueTaskAndExit)
     bool m_taskDone{false};
     auto sut = firebolt::rialto::server::WorkerThreadFactory().createWorkerThread();
 
-    std::unique_ptr<firebolt::rialto::server::IPlayerTask> someTask{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*someTask), execute())
+    std::unique_ptr<firebolt::rialto::server::IPlayerTask> someTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*someTask), execute())
         .WillOnce(Invoke(
             [&]()
             {
@@ -49,8 +49,8 @@ TEST(WorkerThreadTest, shouldEnqueueTaskAndExit)
     m_taskCv.wait_for(lock, std::chrono::milliseconds(200), [&]() { return m_taskDone; });
 
     std::unique_ptr<firebolt::rialto::server::IPlayerTask> shutdownTask{
-        std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*shutdownTask), execute())
+        std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*shutdownTask), execute())
         .WillOnce(Invoke([&]() { sut->stop(); }));
     sut->enqueueTask(std::move(shutdownTask));
 

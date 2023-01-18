@@ -17,22 +17,24 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_WEB_AUDIO_MATCHERS_H_
-#define FIREBOLT_RIALTO_SERVER_WEB_AUDIO_MATCHERS_H_
+#ifndef FIREBOLT_RIALTO_SERVER_WEBAUDIO_PLAY_H_
+#define FIREBOLT_RIALTO_SERVER_WEBAUDIO_PLAY_H_
 
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
-#include <string>
+#include "IGstWebAudioPlayerPrivate.h"
+#include "IPlayerTask.h"
 
-MATCHER_P(CharStrMatcher, expectedStr, "")
+namespace firebolt::rialto::server::webaudio
 {
-    std::string actualStr = arg;
-    return expectedStr == actualStr;
-}
-
-MATCHER(NotNullMatcher, "")
+class Play : public IPlayerTask
 {
-    return nullptr != arg;
-}
+public:
+    explicit Play(IGstWebAudioPlayerPrivate &player);
+    ~Play() override;
+    void execute() const override;
 
-#endif // FIREBOLT_RIALTO_SERVER_WEB_AUDIO_MATCHERS_H_
+private:
+    IGstWebAudioPlayerPrivate &m_player;
+};
+} // namespace firebolt::rialto::server::webaudio
+
+#endif // FIREBOLT_RIALTO_SERVER_WEBAUDIO_PLAY_H_

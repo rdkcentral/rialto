@@ -17,22 +17,28 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_WEB_AUDIO_MATCHERS_H_
-#define FIREBOLT_RIALTO_SERVER_WEB_AUDIO_MATCHERS_H_
+#ifndef FIREBOLT_RIALTO_SERVER_WEBAUDIO_SET_VOLUME_H_
+#define FIREBOLT_RIALTO_SERVER_WEBAUDIO_SET_VOLUME_H_
 
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
-#include <string>
+#include "WebAudioPlayerContext.h"
+#include "IGstWrapper.h"
+#include "IPlayerTask.h"
+#include <memory>
 
-MATCHER_P(CharStrMatcher, expectedStr, "")
+namespace firebolt::rialto::server::webaudio
 {
-    std::string actualStr = arg;
-    return expectedStr == actualStr;
-}
-
-MATCHER(NotNullMatcher, "")
+class SetVolume : public IPlayerTask
 {
-    return nullptr != arg;
-}
+public:
+    SetVolume(WebAudioPlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper, double volume);
+    ~SetVolume() override;
+    void execute() const override;
 
-#endif // FIREBOLT_RIALTO_SERVER_WEB_AUDIO_MATCHERS_H_
+private:
+    WebAudioPlayerContext &m_context;
+    std::shared_ptr<IGstWrapper> m_gstWrapper;
+    double m_volume;
+};
+} // namespace firebolt::rialto::server::webaudio
+
+#endif // FIREBOLT_RIALTO_SERVER_WEBAUDIO_SET_VOLUME_H_

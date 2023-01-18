@@ -437,6 +437,11 @@ public:
     void gstBinAddMany(GstBin *bin, GstElement *element_1, ...) const override;
 
     gboolean gstElementLinkMany(GstElement * element_1, GstElement * element_2, ...) const override;
+
+    guint64 gstAppSrcGetCurrentLevelBytes(GstAppSrc * appsrc) const override
+    {
+        return gst_app_src_get_current_level_bytes (appsrc);
+    }
 };
 
 }; // namespace firebolt::rialto::server

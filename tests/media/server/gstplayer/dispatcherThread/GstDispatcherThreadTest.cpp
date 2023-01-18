@@ -104,10 +104,10 @@ TEST_F(GstDispatcherThreadTest, StateChangedToPaused)
 
     EXPECT_CALL(*m_gstWrapperMock, gstMessageParseStateChanged(&m_message, _, _, _))
         .WillOnce(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
-    std::unique_ptr<IPlayerTask> stateChangeTask{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*stateChangeTask), execute());
-    std::unique_ptr<IPlayerTask> errorTask{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*errorTask), execute());
+    std::unique_ptr<IPlayerTask> stateChangeTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*stateChangeTask), execute());
+    std::unique_ptr<IPlayerTask> errorTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*errorTask), execute());
     EXPECT_CALL(m_workerThreadMock, enqueueTask(_))
         .WillRepeatedly(Invoke([](std::unique_ptr<IPlayerTask> &&task) { task->execute(); }));
 
@@ -151,10 +151,10 @@ TEST_F(GstDispatcherThreadTest, StateChangedToStop)
 
     EXPECT_CALL(*m_gstWrapperMock, gstMessageParseStateChanged(&m_message, _, _, _))
         .WillOnce(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
-    std::unique_ptr<IPlayerTask> stateChangeTask{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
+    std::unique_ptr<IPlayerTask> stateChangeTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(m_workerThreadMock, enqueueTask(_))
         .WillOnce(Invoke([](std::unique_ptr<IPlayerTask> &&task) { task->execute(); }));
-    EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*stateChangeTask), execute());
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*stateChangeTask), execute());
     EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(&m_pipeline))).WillOnce(Return(&m_bus));
     EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(&m_message));
     EXPECT_CALL(m_taskFactoryMock, createHandleBusMessage(_, _, _)).WillOnce(Return(ByMove(std::move(stateChangeTask))));
@@ -183,8 +183,8 @@ TEST_F(GstDispatcherThreadTest, Error)
 {
     GST_MESSAGE_SRC(&m_message) = GST_OBJECT(&m_pipeline);
     GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_ERROR;
-    std::unique_ptr<IPlayerTask> errorTask{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*errorTask), execute());
+    std::unique_ptr<IPlayerTask> errorTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*errorTask), execute());
     EXPECT_CALL(m_workerThreadMock, enqueueTask(_))
         .WillOnce(Invoke([](std::unique_ptr<IPlayerTask> &&task) { task->execute(); }));
     EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(&m_pipeline))).WillOnce(Return(&m_bus));

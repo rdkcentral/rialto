@@ -165,6 +165,8 @@ public:
                 (const));
     MOCK_METHOD(gboolean, gstElementLinkManyStub, (GstElement * element_1, GstElement * element_2),
                 (const));
+    MOCK_METHOD(guint64, gstAppSrcGetCurrentLevelBytes, (GstAppSrc * appsrc),
+                (const, override));
 
     GstCaps *gstCapsNewSimple(const char *media_type, const char *fieldname, ...) const override
     {
@@ -288,8 +290,8 @@ public:
             status = gstElementLinkManyStub(lastElement, newElement);
             if (TRUE != status)
                 break;
-            newElement = lastElement;
-            lastElement = va_arg(args, GstElement *);
+            lastElement = newElement;
+            newElement = va_arg(args, GstElement *);
         }
         va_end(args);
 
