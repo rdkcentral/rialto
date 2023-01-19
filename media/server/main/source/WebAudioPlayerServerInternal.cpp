@@ -87,7 +87,7 @@ WebAudioPlayerServerInternal::WebAudioPlayerServerInternal(
     const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
     const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory)
     : m_webAudioPlayerClient(client), m_shmBuffer{shmBuffer}, m_priority{priority}, m_shmId{handle}, m_dataPtr{nullptr},
-      m_maxDataLength{0}, m_availableBuffer{}
+      m_maxDataLength{0}, m_availableBuffer{}, m_expectWriteBuffer{false}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 

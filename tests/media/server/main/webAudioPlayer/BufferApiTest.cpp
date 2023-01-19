@@ -22,7 +22,7 @@
 class RialtoServerWebAudioPlayerBufferApiTest : public WebAudioPlayerTestBase
 {
 protected:
-    uint32_t m_availableFrames;
+    uint32_t m_availableFrames{12};
     std::shared_ptr<WebAudioShmInfo> m_webAudioShmInfo;
 
     RialtoServerWebAudioPlayerBufferApiTest() { createWebAudioPlayer(); }
