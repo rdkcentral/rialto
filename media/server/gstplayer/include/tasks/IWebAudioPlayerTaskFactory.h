@@ -20,9 +20,11 @@
 #ifndef FIREBOLT_RIALTO_SERVER_I_WEB_AUDIO_PLAYER_TASK_FACTORY_H_
 #define FIREBOLT_RIALTO_SERVER_I_WEB_AUDIO_PLAYER_TASK_FACTORY_H_
 
-#include "WebAudioPlayerContext.h"
 #include "IGstWebAudioPlayerPrivate.h"
 #include "IPlayerTask.h"
+#include "WebAudioPlayerContext.h"
+#include <memory>
+#include <string>
 
 namespace firebolt::rialto::server
 {
@@ -80,7 +82,8 @@ public:
      *
      * @retval the new SetCaps task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createSetCaps(WebAudioPlayerContext &context, const std::string &audioMimeType, const WebAudioConfig *config) const = 0;
+    virtual std::unique_ptr<IPlayerTask> createSetCaps(WebAudioPlayerContext &context, const std::string &audioMimeType,
+                                                       const WebAudioConfig *config) const = 0;
 
     /**
      * @brief Creates a Eos task.
@@ -89,7 +92,7 @@ public:
      *
      * @retval the new Eos task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createEos(WebAudioPlayerContext &context) const =  0;
+    virtual std::unique_ptr<IPlayerTask> createEos(WebAudioPlayerContext &context) const = 0;
 
     /**
      * @brief Creates a SetVolume task.
@@ -112,7 +115,9 @@ public:
      *
      * @retval the new SetVolume task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createWriteBuffer(WebAudioPlayerContext &context, uint8_t *mainPtr, uint32_t mainLength, uint8_t *wrapPtr, uint32_t wrapLength) const = 0;
+    virtual std::unique_ptr<IPlayerTask> createWriteBuffer(WebAudioPlayerContext &context, uint8_t *mainPtr,
+                                                           uint32_t mainLength, uint8_t *wrapPtr,
+                                                           uint32_t wrapLength) const = 0;
 
     /**
      * @brief Creates a HandleBusMessage task.

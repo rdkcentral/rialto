@@ -18,9 +18,9 @@
  */
 
 #include "tasks/webAudio/Eos.h"
-#include "WebAudioPlayerContext.h"
 #include "IGstWrapper.h"
 #include "RialtoServerLogging.h"
+#include "WebAudioPlayerContext.h"
 
 namespace firebolt::rialto::server::webaudio
 {

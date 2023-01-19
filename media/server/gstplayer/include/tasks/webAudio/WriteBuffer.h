@@ -20,12 +20,12 @@
 #ifndef FIREBOLT_RIALTO_SERVER_WEBAUDIO_WRITE_BUFFER_H_
 #define FIREBOLT_RIALTO_SERVER_WEBAUDIO_WRITE_BUFFER_H_
 
-#include "WebAudioPlayerContext.h"
+#include "IGlibWrapper.h"
 #include "IGstWebAudioPlayerPrivate.h"
 #include "IGstWrapper.h"
-#include "IGlibWrapper.h"
 #include "IPlayerTask.h"
 #include "MediaCommon.h"
+#include "WebAudioPlayerContext.h"
 #include <memory>
 
 namespace firebolt::rialto::server::webaudio
@@ -33,7 +33,8 @@ namespace firebolt::rialto::server::webaudio
 class WriteBuffer : public IPlayerTask
 {
 public:
-    WriteBuffer(WebAudioPlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper, uint8_t *mainPtr, uint32_t mainLength, uint8_t *wrapPtr, uint32_t wrapLength);
+    WriteBuffer(WebAudioPlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper, uint8_t *mainPtr,
+                uint32_t mainLength, uint8_t *wrapPtr, uint32_t wrapLength);
     ~WriteBuffer() override;
     void execute() const override;
 

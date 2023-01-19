@@ -18,9 +18,9 @@
  */
 
 #include "tasks/webAudio/Stop.h"
-#include "WebAudioPlayerContext.h"
 #include "IGstWebAudioPlayerPrivate.h"
 #include "RialtoServerLogging.h"
+#include "WebAudioPlayerContext.h"
 
 namespace firebolt::rialto::server::webaudio
 {

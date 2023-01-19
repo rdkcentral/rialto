@@ -424,23 +424,20 @@ public:
         gst_stream_volume_set_volume(volume, format, val);
     }
 
-    GstElement *gstPipelineNew(const gchar *name) const override
-    {
-        return gst_pipeline_new(name);
-    }
+    GstElement *gstPipelineNew(const gchar *name) const override { return gst_pipeline_new(name); }
 
-    GstPluginFeature *gstRegistryLookupFeature(GstRegistry * registry, const char* name) const override
+    GstPluginFeature *gstRegistryLookupFeature(GstRegistry *registry, const char *name) const override
     {
         return gst_registry_lookup_feature(registry, name);
     }
 
     void gstBinAddMany(GstBin *bin, GstElement *element_1, ...) const override;
 
-    gboolean gstElementLinkMany(GstElement * element_1, GstElement * element_2, ...) const override;
+    gboolean gstElementLinkMany(GstElement *element_1, GstElement *element_2, ...) const override;
 
-    guint64 gstAppSrcGetCurrentLevelBytes(GstAppSrc * appsrc) const override
+    guint64 gstAppSrcGetCurrentLevelBytes(GstAppSrc *appsrc) const override
     {
-        return gst_app_src_get_current_level_bytes (appsrc);
+        return gst_app_src_get_current_level_bytes(appsrc);
     }
 };
 

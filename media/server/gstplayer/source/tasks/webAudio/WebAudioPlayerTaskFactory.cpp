@@ -17,15 +17,15 @@
  * limitations under the License.
  */
 #include "tasks/webAudio/WebAudioPlayerTaskFactory.h"
+#include "tasks/webAudio/Eos.h"
+#include "tasks/webAudio/HandleBusMessage.h"
+#include "tasks/webAudio/Pause.h"
+#include "tasks/webAudio/Play.h"
+#include "tasks/webAudio/SetCaps.h"
+#include "tasks/webAudio/SetVolume.h"
 #include "tasks/webAudio/Shutdown.h"
 #include "tasks/webAudio/Stop.h"
-#include "tasks/webAudio/Play.h"
-#include "tasks/webAudio/Pause.h"
-#include "tasks/webAudio/Eos.h"
-#include "tasks/webAudio/SetVolume.h"
-#include "tasks/webAudio/SetCaps.h"
 #include "tasks/webAudio/WriteBuffer.h"
-#include "tasks/webAudio/HandleBusMessage.h"
 
 namespace firebolt::rialto::server
 {
@@ -61,7 +61,9 @@ std::unique_ptr<IPlayerTask> WebAudioPlayerTaskFactory::createEos(WebAudioPlayer
     return std::make_unique<webaudio::Eos>(context, m_gstWrapper);
 }
 
-std::unique_ptr<IPlayerTask> WebAudioPlayerTaskFactory::createSetCaps(WebAudioPlayerContext &context, const std::string &audioMimeType, const WebAudioConfig *config) const
+std::unique_ptr<IPlayerTask> WebAudioPlayerTaskFactory::createSetCaps(WebAudioPlayerContext &context,
+                                                                      const std::string &audioMimeType,
+                                                                      const WebAudioConfig *config) const
 {
     return std::make_unique<webaudio::SetCaps>(context, m_gstWrapper, m_glibWrapper, audioMimeType, config);
 }
@@ -71,7 +73,9 @@ std::unique_ptr<IPlayerTask> WebAudioPlayerTaskFactory::createSetVolume(WebAudio
     return std::make_unique<webaudio::SetVolume>(context, m_gstWrapper, volume);
 }
 
-std::unique_ptr<IPlayerTask> WebAudioPlayerTaskFactory::createWriteBuffer(WebAudioPlayerContext &context, uint8_t *mainPtr, uint32_t mainLength, uint8_t *wrapPtr, uint32_t wrapLength) const
+std::unique_ptr<IPlayerTask> WebAudioPlayerTaskFactory::createWriteBuffer(WebAudioPlayerContext &context,
+                                                                          uint8_t *mainPtr, uint32_t mainLength,
+                                                                          uint8_t *wrapPtr, uint32_t wrapLength) const
 {
     return std::make_unique<webaudio::WriteBuffer>(context, m_gstWrapper, mainPtr, mainLength, wrapPtr, wrapLength);
 }

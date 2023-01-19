@@ -23,6 +23,7 @@
 #include "IGstWebAudioPlayerClient.h"
 #include <memory>
 #include <stdint.h>
+#include <string>
 
 namespace firebolt::rialto::server
 {

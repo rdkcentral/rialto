@@ -40,8 +40,7 @@ protected:
     void writeBufferSuccess(uint32_t framesWritten)
     {
         mainThreadWillEnqueueTaskAndWait();
-        EXPECT_CALL(*m_gstPlayerMock, writeBuffer(_, _, _, _))
-            .WillOnce(Return(framesWritten * 4));
+        EXPECT_CALL(*m_gstPlayerMock, writeBuffer(_, _, _, _)).WillOnce(Return(framesWritten * 4));
         bool status = m_webAudioPlayer->writeBuffer(framesWritten, nullptr);
         EXPECT_EQ(status, true);
     }
@@ -127,8 +126,7 @@ TEST_F(RialtoServerWebAudioPlayerBufferApiTest, writeBufferBytesWrittenInvalid)
     getBufferAvailableSuccess();
 
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_gstPlayerMock, writeBuffer(_, _, _, _))
-        .WillOnce(Return(m_availableFrames));
+    EXPECT_CALL(*m_gstPlayerMock, writeBuffer(_, _, _, _)).WillOnce(Return(m_availableFrames));
     bool status = m_webAudioPlayer->writeBuffer(m_availableFrames, nullptr);
     EXPECT_EQ(status, false);
 }

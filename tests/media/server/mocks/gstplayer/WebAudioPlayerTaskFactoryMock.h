@@ -22,6 +22,7 @@
 #include "tasks/IWebAudioPlayerTaskFactory.h"
 #include <gmock/gmock.h>
 #include <memory>
+#include <string>
 
 namespace firebolt::rialto::server
 {
@@ -29,14 +30,22 @@ class WebAudioPlayerTaskFactoryMock : public IWebAudioPlayerTaskFactory
 {
 public:
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createShutdown, (IGstWebAudioPlayerPrivate & player), (const, override));
-    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createStop, (IGstWebAudioPlayerPrivate &player), (const, override));
-    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createPlay, (IGstWebAudioPlayerPrivate &player), (const, override));
-    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createPause, (IGstWebAudioPlayerPrivate &player), (const, override));
-    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetCaps, (WebAudioPlayerContext &context, const std::string &audioMimeType, const WebAudioConfig *config), (const, override));
-    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createEos, (WebAudioPlayerContext &context), (const, override));
-    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetVolume, (WebAudioPlayerContext &context, double volume), (const, override));
-    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createWriteBuffer, (WebAudioPlayerContext &context, uint8_t *mainPtr, uint32_t mainLength, uint8_t *wrapPtr, uint32_t wrapLength), (const, override));
-    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createHandleBusMessage, (WebAudioPlayerContext &context, IGstWebAudioPlayerPrivate &player, GstMessage *message), (const, override));
+    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createStop, (IGstWebAudioPlayerPrivate & player), (const, override));
+    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createPlay, (IGstWebAudioPlayerPrivate & player), (const, override));
+    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createPause, (IGstWebAudioPlayerPrivate & player), (const, override));
+    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetCaps,
+                (WebAudioPlayerContext & context, const std::string &audioMimeType, const WebAudioConfig *config),
+                (const, override));
+    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createEos, (WebAudioPlayerContext & context), (const, override));
+    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetVolume, (WebAudioPlayerContext & context, double volume),
+                (const, override));
+    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createWriteBuffer,
+                (WebAudioPlayerContext & context, uint8_t *mainPtr, uint32_t mainLength, uint8_t *wrapPtr,
+                 uint32_t wrapLength),
+                (const, override));
+    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createHandleBusMessage,
+                (WebAudioPlayerContext & context, IGstWebAudioPlayerPrivate &player, GstMessage *message),
+                (const, override));
 };
 } // namespace firebolt::rialto::server
 

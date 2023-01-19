@@ -93,7 +93,7 @@ void GstWrapper::gstBinAddMany(GstBin *bin, GstElement *element_1, ...) const
     va_end(vl);
 }
 
-gboolean GstWrapper::gstElementLinkMany(GstElement * element_1, GstElement * element_2, ...) const
+gboolean GstWrapper::gstElementLinkMany(GstElement *element_1, GstElement *element_2, ...) const
 {
     gboolean status{false};
     va_list vl;

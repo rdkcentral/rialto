@@ -18,18 +18,18 @@
  */
 
 #include "tasks/webAudio/SetCaps.h"
-#include "WebAudioPlayerContext.h"
+#include "GlibWrapperMock.h"
 #include "GstWebAudioPlayerPrivateMock.h"
 #include "GstWrapperMock.h"
-#include "GlibWrapperMock.h"
 #include "Matchers.h"
+#include "WebAudioPlayerContext.h"
 #include <gst/gst.h>
 #include <gtest/gtest.h>
 
-using testing::StrictMock;
-using testing::Return;
 using testing::_;
+using testing::Return;
 using testing::StrEq;
+using testing::StrictMock;
 
 class WebAudioSetCapsTest : public testing::Test
 {
@@ -41,7 +41,7 @@ protected:
     std::shared_ptr<firebolt::rialto::server::GlibWrapperMock> m_glibWrapper{
         std::make_shared<StrictMock<firebolt::rialto::server::GlibWrapperMock>>()};
 
-    const std::string m_kAudioMimeType {"audio/x-raw"};
+    const std::string m_kAudioMimeType{"audio/x-raw"};
     firebolt::rialto::WebAudioConfig m_config;
     GstCaps m_caps{};
     GstCaps m_capsAppSrc{};
@@ -94,11 +94,15 @@ protected:
     void expectBuildPcmCaps()
     {
         EXPECT_CALL(*m_gstWrapper, gstCapsNewEmptySimple(StrEq("audio/x-raw"))).WillOnce(Return(&m_caps));
-        EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleUintStub(&m_caps, StrEq("channels"), G_TYPE_UINT, m_config.pcm.channels));
-        EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleStringStub(&m_caps, StrEq("layout"), G_TYPE_STRING, StrEq("interleaved")));
+        EXPECT_CALL(*m_gstWrapper,
+                    gstCapsSetSimpleUintStub(&m_caps, StrEq("channels"), G_TYPE_UINT, m_config.pcm.channels));
+        EXPECT_CALL(*m_gstWrapper,
+                    gstCapsSetSimpleStringStub(&m_caps, StrEq("layout"), G_TYPE_STRING, StrEq("interleaved")));
         EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleUintStub(&m_caps, StrEq("rate"), G_TYPE_UINT, m_config.pcm.rate));
-        EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleStringStub(&m_caps, StrEq("format"), G_TYPE_STRING, StrEq(getPcmFormat().c_str())));
-    }    MOCK_METHOD(void, gstCapsSetSimpleStringStub, (GstCaps * caps, const gchar *field, GType type, const char *value),
+        EXPECT_CALL(*m_gstWrapper,
+                    gstCapsSetSimpleStringStub(&m_caps, StrEq("format"), G_TYPE_STRING, StrEq(getPcmFormat().c_str())));
+    }
+    MOCK_METHOD(void, gstCapsSetSimpleStringStub, (GstCaps * caps, const gchar *field, GType type, const char *value),
                 (const));
 
     void expectGetCapsStr()

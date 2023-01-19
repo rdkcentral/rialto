@@ -17,9 +17,9 @@
  * limitations under the License.
  */
 
-#include "PlayerTaskMock.h"
 #include "GstGenericPlayerTestCommon.h"
 #include "IGstDispatcherThreadClient.h"
+#include "PlayerTaskMock.h"
 
 using testing::_;
 using testing::ByMove;

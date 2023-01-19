@@ -21,11 +21,11 @@
 #define FIREBOLT_RIALTO_SERVER_WEB_AUDIO_PLAYER_CONTEXT_H_
 
 #include "IGstSrc.h"
+#include <condition_variable>
 #include <gst/gst.h>
 #include <list>
 #include <memory>
 #include <mutex>
-#include <condition_variable>
 
 namespace firebolt::rialto::server
 {

@@ -28,7 +28,7 @@ namespace firebolt::rialto::server::webaudio
 class Stop : public IPlayerTask
 {
 public:
-    Stop(IGstWebAudioPlayerPrivate &player);
+    explicit Stop(IGstWebAudioPlayerPrivate &player);
     ~Stop() override;
     void execute() const override;
 

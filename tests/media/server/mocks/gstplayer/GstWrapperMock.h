@@ -157,16 +157,12 @@ public:
                 (const, override));
     MOCK_METHOD(void, gstStreamVolumeSetVolume, (GstStreamVolume * volume, GstStreamVolumeFormat format, gdouble val),
                 (const, override));
-    MOCK_METHOD(GstElement *, gstPipelineNew, (const gchar *name),
+    MOCK_METHOD(GstElement *, gstPipelineNew, (const gchar *name), (const, override));
+    MOCK_METHOD(GstPluginFeature *, gstRegistryLookupFeature, (GstRegistry * registry, const char *name),
                 (const, override));
-    MOCK_METHOD(GstPluginFeature *, gstRegistryLookupFeature, (GstRegistry * registry, const char* name),
-                (const, override));
-    MOCK_METHOD(void, gstBinAddManyStub, (GstBin *bin, GstElement *element),
-                (const));
-    MOCK_METHOD(gboolean, gstElementLinkManyStub, (GstElement * element_1, GstElement * element_2),
-                (const));
-    MOCK_METHOD(guint64, gstAppSrcGetCurrentLevelBytes, (GstAppSrc * appsrc),
-                (const, override));
+    MOCK_METHOD(void, gstBinAddManyStub, (GstBin * bin, GstElement *element), (const));
+    MOCK_METHOD(gboolean, gstElementLinkManyStub, (GstElement * element_1, GstElement *element_2), (const));
+    MOCK_METHOD(guint64, gstAppSrcGetCurrentLevelBytes, (GstAppSrc * appsrc), (const, override));
 
     GstCaps *gstCapsNewSimple(const char *media_type, const char *fieldname, ...) const override
     {
@@ -277,7 +273,7 @@ public:
         va_end(args);
     }
 
-    gboolean gstElementLinkMany(GstElement * element_1, GstElement * element_2, ...) const override
+    gboolean gstElementLinkMany(GstElement *element_1, GstElement *element_2, ...) const override
     {
         gboolean status{FALSE};
         va_list args;

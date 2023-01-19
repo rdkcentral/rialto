@@ -37,11 +37,11 @@ using namespace firebolt::rialto::server;
 using namespace firebolt::rialto::server::mock;
 
 using ::testing::_;
+using ::testing::DoAll;
 using ::testing::Invoke;
 using ::testing::Return;
-using ::testing::StrictMock;
-using ::testing::DoAll;
 using ::testing::SetArgReferee;
+using ::testing::StrictMock;
 
 class WebAudioPlayerTestBase : public ::testing::Test
 {

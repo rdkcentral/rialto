@@ -23,7 +23,8 @@
 
 namespace firebolt::rialto::server::webaudio
 {
-Play::Play(IGstWebAudioPlayerPrivate &player, IGstWebAudioPlayerClient *client) : m_player{player}, m_gstPlayerClient{client}
+Play::Play(IGstWebAudioPlayerPrivate &player, IGstWebAudioPlayerClient *client)
+    : m_player{player}, m_gstPlayerClient{client}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing Play");
 }

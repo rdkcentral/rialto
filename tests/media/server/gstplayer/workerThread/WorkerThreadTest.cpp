@@ -48,8 +48,7 @@ TEST(WorkerThreadTest, shouldEnqueueTaskAndExit)
     std::unique_lock<std::mutex> lock{m_taskMutex};
     m_taskCv.wait_for(lock, std::chrono::milliseconds(200), [&]() { return m_taskDone; });
 
-    std::unique_ptr<firebolt::rialto::server::IPlayerTask> shutdownTask{
-        std::make_unique<StrictMock<PlayerTaskMock>>()};
+    std::unique_ptr<firebolt::rialto::server::IPlayerTask> shutdownTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*shutdownTask), execute())
         .WillOnce(Invoke([&]() { sut->stop(); }));
     sut->enqueueTask(std::move(shutdownTask));

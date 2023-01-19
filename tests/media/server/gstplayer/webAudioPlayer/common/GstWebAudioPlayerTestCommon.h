@@ -20,15 +20,15 @@
 #ifndef GST_WEB_AUDIO_PLAYER_TEST_COMMON_H_
 #define GST_WEB_AUDIO_PLAYER_TEST_COMMON_H_
 
-#include "WebAudioPlayerTaskFactoryMock.h"
 #include "GlibWrapperMock.h"
 #include "GstDispatcherThreadFactoryMock.h"
 #include "GstDispatcherThreadMock.h"
-#include "GstWebAudioPlayer.h"
-#include "GstWebAudioPlayerClientMock.h"
 #include "GstSrcFactoryMock.h"
 #include "GstSrcMock.h"
+#include "GstWebAudioPlayer.h"
+#include "GstWebAudioPlayerClientMock.h"
 #include "GstWrapperMock.h"
+#include "WebAudioPlayerTaskFactoryMock.h"
 #include "WorkerThreadFactoryMock.h"
 #include "WorkerThreadMock.h"
 #include <gtest/gtest.h>
@@ -37,11 +37,11 @@
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::server;
 
-using ::testing::StrictMock;
 using ::testing::_;
 using ::testing::ByMove;
 using ::testing::Invoke;
 using ::testing::Return;
+using ::testing::StrictMock;
 
 class GstWebAudioPlayerTestCommon : public ::testing::Test
 {
@@ -54,7 +54,8 @@ public:
     std::shared_ptr<StrictMock<GlibWrapperMock>> m_glibWrapperMock{std::make_shared<StrictMock<GlibWrapperMock>>()};
     std::shared_ptr<StrictMock<GstSrcFactoryMock>> m_gstSrcFactoryMock{std::make_shared<StrictMock<GstSrcFactoryMock>>()};
     std::shared_ptr<StrictMock<GstSrcMock>> m_gstSrcMock{std::make_shared<StrictMock<GstSrcMock>>()};
-    std::unique_ptr<IWebAudioPlayerTaskFactory> m_taskFactory{std::make_unique<StrictMock<WebAudioPlayerTaskFactoryMock>>()};
+    std::unique_ptr<IWebAudioPlayerTaskFactory> m_taskFactory{
+        std::make_unique<StrictMock<WebAudioPlayerTaskFactoryMock>>()};
     StrictMock<WebAudioPlayerTaskFactoryMock> &m_taskFactoryMock{
         dynamic_cast<StrictMock<WebAudioPlayerTaskFactoryMock> &>(*m_taskFactory)};
     std::unique_ptr<IWorkerThreadFactory> workerThreadFactory{std::make_unique<StrictMock<WorkerThreadFactoryMock>>()};

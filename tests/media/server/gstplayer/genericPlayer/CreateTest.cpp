@@ -17,9 +17,9 @@
  * limitations under the License.
  */
 
-#include "PlayerTaskMock.h"
 #include "GstGenericPlayerTestCommon.h"
 #include "Matchers.h"
+#include "PlayerTaskMock.h"
 #include <gtest/gtest.h>
 #include <memory>
 

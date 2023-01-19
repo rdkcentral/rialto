@@ -105,8 +105,7 @@ GstWebAudioPlayer::GstWebAudioPlayer(IGstWebAudioPlayerClient *client, const std
     m_context.gstSrc->initSrc();
 
     // Start task thread
-    if ((!workerThreadFactory) ||
-        (!(m_workerThread = workerThreadFactory->createWorkerThread())))
+    if ((!workerThreadFactory) || (!(m_workerThread = workerThreadFactory->createWorkerThread())))
     {
         throw std::runtime_error("Failed to create the worker thread");
     }
@@ -119,7 +118,8 @@ GstWebAudioPlayer::GstWebAudioPlayer(IGstWebAudioPlayerClient *client, const std
     }
 
     if ((!gstDispatcherThreadFactory) ||
-        (!(m_gstDispatcherThread = gstDispatcherThreadFactory->createGstDispatcherThread(*this, m_context.pipeline, m_gstWrapper))))
+        (!(m_gstDispatcherThread =
+               gstDispatcherThreadFactory->createGstDispatcherThread(*this, m_context.pipeline, m_gstWrapper))))
     {
         termWebAudioPipeline();
         resetWorkerThread();
@@ -328,9 +328,10 @@ uint32_t GstWebAudioPlayer::writeBuffer(uint8_t *mainPtr, uint32_t mainLength, u
 {
     m_workerThread->enqueueTask(m_taskFactory->createWriteBuffer(m_context, mainPtr, mainLength, wrapPtr, wrapLength));
 
-    //Must block and wait for the data to be written from the shared buffer.
+    // Must block and wait for the data to be written from the shared buffer.
     std::unique_lock<std::mutex> lock(m_context.m_writeBufferMutex);
-    std::cv_status status = m_context.m_writeBufferCond.wait_for(lock, std::chrono::milliseconds(kMaxWriteBufferTimeoutMs));
+    std::cv_status status =
+        m_context.m_writeBufferCond.wait_for(lock, std::chrono::milliseconds(kMaxWriteBufferTimeoutMs));
     if (std::cv_status::timeout == status)
     {
         RIALTO_SERVER_LOG_ERROR("Timed out writing to the gstreamer buffers");

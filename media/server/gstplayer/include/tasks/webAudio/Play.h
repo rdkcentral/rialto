@@ -20,8 +20,8 @@
 #ifndef FIREBOLT_RIALTO_SERVER_WEBAUDIO_PLAY_H_
 #define FIREBOLT_RIALTO_SERVER_WEBAUDIO_PLAY_H_
 
-#include "IGstWebAudioPlayerPrivate.h"
 #include "IGstWebAudioPlayerClient.h"
+#include "IGstWebAudioPlayerPrivate.h"
 #include "IPlayerTask.h"
 
 namespace firebolt::rialto::server::webaudio

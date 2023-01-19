@@ -18,8 +18,8 @@
  */
 
 #include "tasks/webAudio/Pause.h"
-#include "GstWebAudioPlayerPrivateMock.h"
 #include "GstWebAudioPlayerClientMock.h"
+#include "GstWebAudioPlayerPrivateMock.h"
 #include <gtest/gtest.h>
 
 using testing::Return;

@@ -18,10 +18,10 @@
  */
 
 #include "tasks/webAudio/HandleBusMessage.h"
-#include "WebAudioPlayerContext.h"
 #include "IGstWebAudioPlayerClient.h"
 #include "IGstWrapper.h"
 #include "RialtoServerLogging.h"
+#include "WebAudioPlayerContext.h"
 
 namespace firebolt::rialto::server::webaudio
 {

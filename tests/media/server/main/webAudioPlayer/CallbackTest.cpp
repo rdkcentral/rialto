@@ -27,10 +27,7 @@ using ::testing::SaveArg;
 class RialtoServerWebAudioPlayerCallbackTest : public WebAudioPlayerTestBase
 {
 protected:
-    RialtoServerWebAudioPlayerCallbackTest()
-    {
-        createWebAudioPlayer();
-    }
+    RialtoServerWebAudioPlayerCallbackTest() { createWebAudioPlayer(); }
 
     ~RialtoServerWebAudioPlayerCallbackTest() { destroyWebAudioPlayer(); }
 };

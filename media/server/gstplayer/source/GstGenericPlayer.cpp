@@ -156,8 +156,7 @@ GstGenericPlayer::GstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionS
     m_context.gstSrc->initSrc();
 
     // Start task thread
-    if ((!workerThreadFactory) ||
-        (!(m_workerThread = workerThreadFactory->createWorkerThread())))
+    if ((!workerThreadFactory) || (!(m_workerThread = workerThreadFactory->createWorkerThread())))
     {
         throw std::runtime_error("Failed to create the worker thread");
     }

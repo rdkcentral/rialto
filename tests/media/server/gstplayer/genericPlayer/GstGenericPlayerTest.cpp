@@ -18,11 +18,11 @@
  */
 
 #include "DataReaderMock.h"
-#include "PlayerTaskMock.h"
 #include "GstGenericPlayerTestCommon.h"
 #include "IMediaPipeline.h"
 #include "Matchers.h"
 #include "MediaSourceUtil.h"
+#include "PlayerTaskMock.h"
 
 using testing::_;
 using testing::ByMove;

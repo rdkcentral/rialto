@@ -17,10 +17,10 @@
  * limitations under the License.
  */
 
-#include "PlayerTaskMock.h"
 #include "GstGenericPlayerTestCommon.h"
 #include "Matchers.h"
 #include "MediaSourceUtil.h"
+#include "PlayerTaskMock.h"
 #include "TimerMock.h"
 
 using testing::_;

@@ -18,8 +18,8 @@
  */
 
 #include "GstGenericPlayerTestCommon.h"
-#include "PlayerTaskMock.h"
 #include "Matchers.h"
+#include "PlayerTaskMock.h"
 #include <memory>
 #include <utility>
 

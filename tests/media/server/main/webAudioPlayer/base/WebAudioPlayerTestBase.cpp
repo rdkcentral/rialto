@@ -62,7 +62,8 @@ void WebAudioPlayerTestBase::createWebAudioPlayer()
 
 void WebAudioPlayerTestBase::destroyWebAudioPlayer()
 {
-    EXPECT_CALL(*m_sharedMemoryBufferMock, unmapPartition(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, m_webAudioPlayerHandle))
+    EXPECT_CALL(*m_sharedMemoryBufferMock,
+                unmapPartition(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, m_webAudioPlayerHandle))
         .WillOnce(Return(true));
     EXPECT_CALL(*m_mainThreadMock, unregisterClient(m_kMainThreadClientId));
     // Objects are destroyed on the main thread

@@ -983,7 +983,7 @@ public:
      *
      * @retval A GstPluginFeature if successful, the refcount is incremented.
      */
-    virtual GstPluginFeature *gstRegistryLookupFeature(GstRegistry * registry, const char* name) const = 0;
+    virtual GstPluginFeature *gstRegistryLookupFeature(GstRegistry *registry, const char *name) const = 0;
 
     /**
      * @brief Adds a list of elements to the bin.
@@ -1003,7 +1003,7 @@ public:
      *
      * @retval TRUE if successful, FALSE otherwise.
      */
-    virtual gboolean gstElementLinkMany(GstElement * element_1, GstElement * element_2, ...) const = 0;
+    virtual gboolean gstElementLinkMany(GstElement *element_1, GstElement *element_2, ...) const = 0;
 
     /**
      * @brief Get the number of bytes queued in the appsrc.
@@ -1012,7 +1012,7 @@ public:
      *
      * @retval The number of bytes queued.
      */
-    virtual guint64 gstAppSrcGetCurrentLevelBytes(GstAppSrc * appsrc) const = 0;
+    virtual guint64 gstAppSrcGetCurrentLevelBytes(GstAppSrc *appsrc) const = 0;
 };
 
 }; // namespace firebolt::rialto::server

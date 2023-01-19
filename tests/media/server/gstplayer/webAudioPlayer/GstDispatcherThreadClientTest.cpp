@@ -17,9 +17,9 @@
  * limitations under the License.
  */
 
-#include "PlayerTaskMock.h"
 #include "GstWebAudioPlayerTestCommon.h"
 #include "IGstDispatcherThreadClient.h"
+#include "PlayerTaskMock.h"
 
 using testing::_;
 using testing::ByMove;
@@ -35,11 +35,10 @@ protected:
     WebAudioGstDispatcherThreadClientTest()
     {
         gstPlayerWillBeCreatedForGenericPlatform();
-        m_sut = std::make_unique<GstWebAudioPlayer>(&m_gstPlayerClient, m_gstWrapperMock,
-                                                                        m_glibWrapperMock, m_gstSrcFactoryMock,
-                                                                        std::move(m_taskFactory),
-                                                                        std::move(workerThreadFactory),
-                                                                        std::move(gstDispatcherThreadFactory));
+        m_sut = std::make_unique<GstWebAudioPlayer>(&m_gstPlayerClient, m_gstWrapperMock, m_glibWrapperMock,
+                                                    m_gstSrcFactoryMock, std::move(m_taskFactory),
+                                                    std::move(workerThreadFactory),
+                                                    std::move(gstDispatcherThreadFactory));
     }
 
     ~WebAudioGstDispatcherThreadClientTest() override

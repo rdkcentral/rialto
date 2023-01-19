@@ -18,15 +18,17 @@
  */
 
 #include "tasks/webAudio/WriteBuffer.h"
-#include "WebAudioPlayerContext.h"
 #include "IGstWrapper.h"
 #include "RialtoServerLogging.h"
+#include "WebAudioPlayerContext.h"
 #include <cinttypes>
 
 namespace firebolt::rialto::server::webaudio
 {
-WriteBuffer::WriteBuffer(WebAudioPlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper, uint8_t *mainPtr, uint32_t mainLength, uint8_t *wrapPtr, uint32_t wrapLength)
-    : m_context{context}, m_gstWrapper{gstWrapper}, m_mainPtr{mainPtr}, m_mainLength{mainLength}, m_wrapPtr{wrapPtr}, m_wrapLength{wrapLength}
+WriteBuffer::WriteBuffer(WebAudioPlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper, uint8_t *mainPtr,
+                         uint32_t mainLength, uint8_t *wrapPtr, uint32_t wrapLength)
+    : m_context{context}, m_gstWrapper{gstWrapper}, m_mainPtr{mainPtr}, m_mainLength{mainLength}, m_wrapPtr{wrapPtr},
+      m_wrapLength{wrapLength}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing WriteBuffer");
 }
@@ -41,14 +43,14 @@ void WriteBuffer::execute() const
     RIALTO_SERVER_LOG_DEBUG("Executing WriteBuffer");
 
     uint64_t freeBytes = kMaxWebAudioBytes - m_gstWrapper->gstAppSrcGetCurrentLevelBytes(GST_APP_SRC(m_context.source));
-#if 0 //TODO(RIALTO-2) Enable writing of partial data
+#if 0 // TODO(RIALTO-2) Enable writing of partial data
     uint64_t bytesToWrite = std::min(freeBytes, m_mainLength + m_wrapLength);
 #else
     uint64_t bytesToWrite = m_mainLength + m_wrapLength;
 #endif
     uint64_t bytesWritten = 0;
 
-#if 0 //TODO(RIALTO-2) Enable writing of partial data
+#if 0 // TODO(RIALTO-2) Enable writing of partial data
     GstBuffer *gstBuffer = m_gstWrapper->gstBufferNewAllocate(nullptr, bytesToWrite, nullptr);
     if (gstBuffer)
     {
@@ -67,18 +69,6 @@ void WriteBuffer::execute() const
             bytesWritten += m_gstWrapper->gstBufferFill(gstBuffer, 0, m_mainPtr, bytesToWrite);
         }
 
-#else
-    if (freeBytes >= m_mainLength + m_wrapLength)
-    {
-        GstBuffer *gstBuffer = m_gstWrapper->gstBufferNewAllocate(nullptr, bytesToWrite, nullptr);
-        if (gstBuffer)
-        {
-            bytesWritten += m_gstWrapper->gstBufferFill(gstBuffer, 0, m_mainPtr, m_mainLength);
-            bytesWritten += m_gstWrapper->gstBufferFill(gstBuffer, bytesWritten, m_wrapPtr, m_wrapLength);
-        }
-
-#endif
-
         if (bytesWritten != bytesToWrite)
         {
             RIALTO_SERVER_LOG_ERROR("Did not write the correct number of bytes! expected %" PRIu64 ", actual %" PRIu64, bytesToWrite, bytesWritten);
@@ -92,6 +82,34 @@ void WriteBuffer::execute() const
             bytesWritten = 0;
         }
     }
+
+#else
+    if (freeBytes >= m_mainLength + m_wrapLength)
+    {
+        GstBuffer *gstBuffer = m_gstWrapper->gstBufferNewAllocate(nullptr, bytesToWrite, nullptr);
+        if (gstBuffer)
+        {
+            bytesWritten += m_gstWrapper->gstBufferFill(gstBuffer, 0, m_mainPtr, m_mainLength);
+            bytesWritten += m_gstWrapper->gstBufferFill(gstBuffer, bytesWritten, m_wrapPtr, m_wrapLength);
+
+            if (bytesWritten != bytesToWrite)
+            {
+                RIALTO_SERVER_LOG_ERROR("Did not write the correct number of bytes! expected %" PRIu64
+                                        ", actual %" PRIu64,
+                                        bytesToWrite, bytesWritten);
+                m_gstWrapper->gstBufferUnref(gstBuffer);
+                bytesWritten = 0;
+            }
+            else if (GST_FLOW_OK != m_gstWrapper->gstAppSrcPushBuffer(GST_APP_SRC(m_context.source), gstBuffer))
+            {
+                RIALTO_SERVER_LOG_ERROR("Failed to push the buffers to the appsrc");
+                m_gstWrapper->gstBufferUnref(gstBuffer);
+                bytesWritten = 0;
+            }
+        }
+    }
+#endif
     m_context.m_lastBytesWritten = bytesWritten;
+    m_context.m_writeBufferCond.notify_one();
 }
 } // namespace firebolt::rialto::server::webaudio

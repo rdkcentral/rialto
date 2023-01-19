@@ -18,8 +18,8 @@
  */
 
 #include "tasks/webAudio/SetVolume.h"
-#include "WebAudioPlayerContext.h"
 #include "GstWrapperMock.h"
+#include "WebAudioPlayerContext.h"
 #include <gst/gst.h>
 #include <gtest/gtest.h>
 

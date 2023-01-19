@@ -20,9 +20,9 @@
 #ifndef FIREBOLT_RIALTO_SERVER_WEBAUDIO_SET_VOLUME_H_
 #define FIREBOLT_RIALTO_SERVER_WEBAUDIO_SET_VOLUME_H_
 
-#include "WebAudioPlayerContext.h"
 #include "IGstWrapper.h"
 #include "IPlayerTask.h"
+#include "WebAudioPlayerContext.h"
 #include <memory>
 
 namespace firebolt::rialto::server::webaudio

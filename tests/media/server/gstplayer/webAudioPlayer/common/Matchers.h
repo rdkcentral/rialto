@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_WEB_AUDIO_MATCHERS_H_
-#define FIREBOLT_RIALTO_SERVER_WEB_AUDIO_MATCHERS_H_
+#ifndef MATCHERS_H_
+#define MATCHERS_H_
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -35,4 +35,4 @@ MATCHER(NotNullMatcher, "")
     return nullptr != arg;
 }
 
-#endif // FIREBOLT_RIALTO_SERVER_WEB_AUDIO_MATCHERS_H_
+#endif // MATCHERS_H_

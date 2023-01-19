@@ -20,10 +20,10 @@
 #ifndef FIREBOLT_RIALTO_SERVER_WEBAUDIO_SET_CAPS_H_
 #define FIREBOLT_RIALTO_SERVER_WEBAUDIO_SET_CAPS_H_
 
-#include "WebAudioPlayerContext.h"
 #include "IGlibWrapper.h"
 #include "IGstWrapper.h"
 #include "IPlayerTask.h"
+#include "WebAudioPlayerContext.h"
 #include <memory>
 #include <string>
 
@@ -33,7 +33,7 @@ class SetCaps : public IPlayerTask
 {
 public:
     SetCaps(WebAudioPlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper,
-                 std::shared_ptr<IGlibWrapper> glibWrapper, const std::string &audioMimeType, const WebAudioConfig *config);
+            std::shared_ptr<IGlibWrapper> glibWrapper, const std::string &audioMimeType, const WebAudioConfig *config);
     ~SetCaps() override;
     void execute() const override;
 

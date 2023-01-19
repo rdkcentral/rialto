@@ -18,21 +18,21 @@
  */
 
 #include "tasks/webAudio/WebAudioPlayerTaskFactory.h"
-#include "WebAudioPlayerContext.h"
 #include "GlibWrapperMock.h"
 #include "GstWebAudioPlayerClientMock.h"
 #include "GstWebAudioPlayerPrivateMock.h"
 #include "GstWrapperMock.h"
+#include "WebAudioPlayerContext.h"
 #include "tasks/IPlayerTask.h"
+#include "tasks/webAudio/Eos.h"
+#include "tasks/webAudio/HandleBusMessage.h"
+#include "tasks/webAudio/Pause.h"
+#include "tasks/webAudio/Play.h"
+#include "tasks/webAudio/SetCaps.h"
+#include "tasks/webAudio/SetVolume.h"
 #include "tasks/webAudio/Shutdown.h"
 #include "tasks/webAudio/Stop.h"
-#include "tasks/webAudio/Play.h"
-#include "tasks/webAudio/Pause.h"
-#include "tasks/webAudio/Eos.h"
-#include "tasks/webAudio/SetVolume.h"
-#include "tasks/webAudio/SetCaps.h"
 #include "tasks/webAudio/WriteBuffer.h"
-#include "tasks/webAudio/HandleBusMessage.h"
 #include <gtest/gtest.h>
 
 using testing::_;
@@ -107,7 +107,7 @@ TEST_F(WebAudioPlayerTaskFactoryTest, ShouldWriteBuffer)
 {
     uint8_t mainPtr{};
     uint8_t wrapPtr{};
-    auto task = m_sut.createWriteBuffer(m_context, m_gstPlayer, &mainPtr, {}, &wrapPtr, {});
+    auto task = m_sut.createWriteBuffer(m_context, &mainPtr, {}, &wrapPtr, {});
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::webaudio::WriteBuffer &>(*task));
 }

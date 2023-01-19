@@ -36,7 +36,6 @@ public:
     virtual GstCaps *buildCaps() = 0;
 
 protected:
-
     std::shared_ptr<IGstWrapper> m_gstWrapper;
     std::shared_ptr<IGlibWrapper> m_glibWrapper;
 };
@@ -45,7 +44,7 @@ class WebAudioPcmCapsBuilder : public WebAudioCapsBuilder
 {
 public:
     WebAudioPcmCapsBuilder(std::shared_ptr<IGstWrapper> gstWrapper, std::shared_ptr<IGlibWrapper> glibWrapper,
-                                const WebAudioPcmConfig &pcmConfig)
+                           const WebAudioPcmConfig &pcmConfig)
         : WebAudioCapsBuilder(gstWrapper, glibWrapper), m_pcmConfig(pcmConfig)
     {
     }
@@ -54,7 +53,8 @@ public:
     {
         GstCaps *caps = m_gstWrapper->gstCapsNewEmptySimple("audio/x-raw");
         addFormat(caps);
-        m_gstWrapper->gstCapsSetSimple(caps, "channels", G_TYPE_UINT, m_pcmConfig.channels, "layout", G_TYPE_STRING, "interleaved", "rate", G_TYPE_UINT, m_pcmConfig.rate, nullptr);
+        m_gstWrapper->gstCapsSetSimple(caps, "channels", G_TYPE_UINT, m_pcmConfig.channels, "layout", G_TYPE_STRING,
+                                       "interleaved", "rate", G_TYPE_UINT, m_pcmConfig.rate, nullptr);
 
         return caps;
     }
@@ -96,8 +96,8 @@ protected:
 }; // namespace
 
 SetCaps::SetCaps(WebAudioPlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper,
-                           std::shared_ptr<IGlibWrapper> glibWrapper,
-                           const std::string &audioMimeType, const WebAudioConfig *config)
+                 std::shared_ptr<IGlibWrapper> glibWrapper, const std::string &audioMimeType,
+                 const WebAudioConfig *config)
     : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_audioMimeType{audioMimeType}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetCaps");
@@ -127,8 +127,7 @@ void SetCaps::execute() const
     GstCaps *appsrcCaps = m_gstWrapper->gstAppSrcGetCaps(GST_APP_SRC(m_context.source));
     if ((!appsrcCaps) || (!m_gstWrapper->gstCapsIsEqual(appsrcCaps, caps)))
     {
-        RIALTO_SERVER_LOG_MIL("Updating web audio appsrc caps to '%s'",
-                               strCaps.c_str());
+        RIALTO_SERVER_LOG_MIL("Updating web audio appsrc caps to '%s'", strCaps.c_str());
         m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(m_context.source), caps);
     }
 

@@ -30,8 +30,7 @@ protected:
 // Play tests
 TEST_F(RialtoServerWebAudioPlayerApiTest, playSuccess)
 {
-    EXPECT_CALL(*m_gstPlayerMock, play())
-        .WillOnce(Return(true));
+    EXPECT_CALL(*m_gstPlayerMock, play()).WillOnce(Return(true));
 
     bool status = m_webAudioPlayer->play();
     EXPECT_EQ(status, true);
@@ -39,33 +38,32 @@ TEST_F(RialtoServerWebAudioPlayerApiTest, playSuccess)
 
 TEST_F(RialtoServerWebAudioPlayerApiTest, playFailure)
 {
-    EXPECT_CALL(*m_gstPlayerMock, play())
-        .WillOnce(Return(false));
+    EXPECT_CALL(*m_gstPlayerMock, play()).WillOnce(Return(false));
 
     bool status = m_webAudioPlayer->play();
     EXPECT_EQ(status, false);
 }
 
 // Pause tests
-TEST_F(RialtoServerWebAudioPlayerApiTest, pauseSuccess){
-    EXPECT_CALL(*m_gstPlayerMock, pause())
-    .WillOnce(Return(true));
+TEST_F(RialtoServerWebAudioPlayerApiTest, pauseSuccess)
+{
+    EXPECT_CALL(*m_gstPlayerMock, pause()).WillOnce(Return(true));
 
     bool status = m_webAudioPlayer->pause();
     EXPECT_EQ(status, true);
 }
 
-TEST_F(RialtoServerWebAudioPlayerApiTest, pauseFailure){
-    EXPECT_CALL(*m_gstPlayerMock, pause())
-    .WillOnce(Return(false));
+TEST_F(RialtoServerWebAudioPlayerApiTest, pauseFailure)
+{
+    EXPECT_CALL(*m_gstPlayerMock, pause()).WillOnce(Return(false));
 
     bool status = m_webAudioPlayer->pause();
     EXPECT_EQ(status, false);
 }
 // SetEos tests
-TEST_F(RialtoServerWebAudioPlayerApiTest, setEosSuccess){
-    EXPECT_CALL(*m_gstPlayerMock, pause())
-    .WillOnce(Return(true));
+TEST_F(RialtoServerWebAudioPlayerApiTest, setEosSuccess)
+{
+    EXPECT_CALL(*m_gstPlayerMock, pause()).WillOnce(Return(true));
 
     bool status = m_webAudioPlayer->setEos();
     EXPECT_EQ(status, true);

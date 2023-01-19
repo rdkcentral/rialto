@@ -18,17 +18,17 @@
  */
 
 #include "tasks/webAudio/WriteBuffer.h"
-#include "WebAudioPlayerContext.h"
+#include "GlibWrapperMock.h"
 #include "GstWebAudioPlayerPrivateMock.h"
 #include "GstWrapperMock.h"
-#include "GlibWrapperMock.h"
 #include "Matchers.h"
+#include "WebAudioPlayerContext.h"
 #include <gst/gst.h>
 #include <gtest/gtest.h>
 
-using testing::StrictMock;
-using testing::Return;
 using testing::_;
+using testing::Return;
+using testing::StrictMock;
 
 class WebAudioWriteBufferTest : public testing::Test
 {
@@ -42,26 +42,75 @@ protected:
     uint8_t m_wrapPtr{};
     uint32_t m_wrapLength = 20;
     GstElement m_appSrc{};
+    GstBuffer m_buffer{};
 
-    WebAudioWriteBufferTest()
-    {
-        m_context.source = &m_appSrc;
-    }
+    WebAudioWriteBufferTest() { m_context.source = &m_appSrc; }
 };
 
 TEST_F(WebAudioWriteBufferTest, shouldWriteBuffer)
 {
     EXPECT_CALL(*m_gstWrapper, gstAppSrcGetCurrentLevelBytes(GST_APP_SRC(&m_appSrc))).WillOnce(Return(0));
+    EXPECT_CALL(*m_gstWrapper, gstBufferNewAllocate(_, m_mainLength + m_wrapLength, _)).WillOnce(Return(&m_buffer));
+    EXPECT_CALL(*m_gstWrapper, gstBufferFill(&m_buffer, 0, &m_mainPtr, m_mainLength)).WillOnce(Return(m_mainLength));
+    EXPECT_CALL(*m_gstWrapper, gstBufferFill(&m_buffer, m_mainLength, &m_wrapPtr, m_wrapLength))
+        .WillOnce(Return(m_wrapLength));
+    EXPECT_CALL(*m_gstWrapper, gstAppSrcPushBuffer(GST_APP_SRC(&m_appSrc), &m_buffer)).WillOnce(Return(GST_FLOW_OK));
+
+    firebolt::rialto::server::webaudio::WriteBuffer task{m_context,    m_gstWrapper, &m_mainPtr,
+                                                         m_mainLength, &m_wrapPtr,   m_wrapLength};
+    task.execute();
+    EXPECT_EQ(m_context.m_lastBytesWritten, m_mainLength + m_wrapLength);
 }
 
 TEST_F(WebAudioWriteBufferTest, shouldNotWriteBufferIfNoSpace)
 {
+    EXPECT_CALL(*m_gstWrapper, gstAppSrcGetCurrentLevelBytes(GST_APP_SRC(&m_appSrc)))
+        .WillOnce(Return(m_mainLength + m_wrapLength));
+
+    firebolt::rialto::server::webaudio::WriteBuffer task{m_context,    m_gstWrapper, &m_mainPtr,
+                                                         m_mainLength, &m_wrapPtr,   m_wrapLength};
+    task.execute();
+    EXPECT_EQ(m_context.m_lastBytesWritten, 0);
+}
+
+TEST_F(WebAudioWriteBufferTest, shouldNotWriteBufferIfNewAllocateFails)
+{
+    EXPECT_CALL(*m_gstWrapper, gstAppSrcGetCurrentLevelBytes(GST_APP_SRC(&m_appSrc))).WillOnce(Return(0));
+    EXPECT_CALL(*m_gstWrapper, gstBufferNewAllocate(_, m_mainLength + m_wrapLength, _)).WillOnce(Return(nullptr));
+
+    firebolt::rialto::server::webaudio::WriteBuffer task{m_context,    m_gstWrapper, &m_mainPtr,
+                                                         m_mainLength, &m_wrapPtr,   m_wrapLength};
+    task.execute();
+    EXPECT_EQ(m_context.m_lastBytesWritten, 0);
 }
 
 TEST_F(WebAudioWriteBufferTest, shouldNotWriteBufferIfBytesWrittenInvalid)
 {
+    EXPECT_CALL(*m_gstWrapper, gstAppSrcGetCurrentLevelBytes(GST_APP_SRC(&m_appSrc))).WillOnce(Return(0));
+    EXPECT_CALL(*m_gstWrapper, gstBufferNewAllocate(_, m_mainLength + m_wrapLength, _)).WillOnce(Return(&m_buffer));
+    EXPECT_CALL(*m_gstWrapper, gstBufferFill(&m_buffer, 0, &m_mainPtr, m_mainLength)).WillOnce(Return(m_mainLength - 1));
+    EXPECT_CALL(*m_gstWrapper, gstBufferFill(&m_buffer, m_mainLength - 1, &m_wrapPtr, m_wrapLength))
+        .WillOnce(Return(m_wrapLength));
+    EXPECT_CALL(*m_gstWrapper, gstBufferUnref(&m_buffer));
+
+    firebolt::rialto::server::webaudio::WriteBuffer task{m_context,    m_gstWrapper, &m_mainPtr,
+                                                         m_mainLength, &m_wrapPtr,   m_wrapLength};
+    task.execute();
+    EXPECT_EQ(m_context.m_lastBytesWritten, 0);
 }
 
 TEST_F(WebAudioWriteBufferTest, shouldNotWriteBufferIfPushBufferFails)
 {
+    EXPECT_CALL(*m_gstWrapper, gstAppSrcGetCurrentLevelBytes(GST_APP_SRC(&m_appSrc))).WillOnce(Return(0));
+    EXPECT_CALL(*m_gstWrapper, gstBufferNewAllocate(_, m_mainLength + m_wrapLength, _)).WillOnce(Return(&m_buffer));
+    EXPECT_CALL(*m_gstWrapper, gstBufferFill(&m_buffer, 0, &m_mainPtr, m_mainLength)).WillOnce(Return(m_mainLength));
+    EXPECT_CALL(*m_gstWrapper, gstBufferFill(&m_buffer, m_mainLength, &m_wrapPtr, m_wrapLength))
+        .WillOnce(Return(m_wrapLength));
+    EXPECT_CALL(*m_gstWrapper, gstAppSrcPushBuffer(GST_APP_SRC(&m_appSrc), &m_buffer)).WillOnce(Return(GST_FLOW_ERROR));
+    EXPECT_CALL(*m_gstWrapper, gstBufferUnref(&m_buffer));
+
+    firebolt::rialto::server::webaudio::WriteBuffer task{m_context,    m_gstWrapper, &m_mainPtr,
+                                                         m_mainLength, &m_wrapPtr,   m_wrapLength};
+    task.execute();
+    EXPECT_EQ(m_context.m_lastBytesWritten, 0);
 }

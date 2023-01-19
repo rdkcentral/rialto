@@ -20,11 +20,11 @@
 #ifndef FIREBOLT_RIALTO_SERVER_WEBAUDIO_EOS_H_
 #define FIREBOLT_RIALTO_SERVER_WEBAUDIO_EOS_H_
 
-#include "WebAudioPlayerContext.h"
 #include "IGstWebAudioPlayerPrivate.h"
 #include "IGstWrapper.h"
 #include "IPlayerTask.h"
 #include "MediaCommon.h"
+#include "WebAudioPlayerContext.h"
 #include <memory>
 
 namespace firebolt::rialto::server::webaudio

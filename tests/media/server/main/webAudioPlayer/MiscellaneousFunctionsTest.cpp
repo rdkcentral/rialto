@@ -42,8 +42,7 @@ public:
     void waitForApiCalled()
     {
         std::unique_lock<std::mutex> lock(m_apiMutex);
-        bool status = m_apiCond.wait_for(lock, std::chrono::milliseconds(200),
-                                        [this]() { return m_threadDone; });
+        bool status = m_apiCond.wait_for(lock, std::chrono::milliseconds(200), [this]() { return m_threadDone; });
         EXPECT_TRUE(status);
     }
 };
@@ -115,8 +114,7 @@ TEST_F(RialtoServerWebAudioPlayerMiscellaneousFunctionsTest, getVolumeSuccess)
 {
     double returnVolume = 0;
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_gstPlayerMock, getVolume(_))
-        .WillOnce(DoAll(SetArgReferee<0>(m_volume), Return(true)));
+    EXPECT_CALL(*m_gstPlayerMock, getVolume(_)).WillOnce(DoAll(SetArgReferee<0>(m_volume), Return(true)));
 
     bool status = m_webAudioPlayer->getVolume(returnVolume);
     EXPECT_EQ(status, true);
@@ -130,8 +128,7 @@ TEST_F(RialtoServerWebAudioPlayerMiscellaneousFunctionsTest, getVolumeFailure)
 {
     double returnVolume = 0;
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_gstPlayerMock, getVolume(_))
-        .WillOnce(Return(false));
+    EXPECT_CALL(*m_gstPlayerMock, getVolume(_)).WillOnce(Return(false));
 
     bool status = m_webAudioPlayer->getVolume(returnVolume);
     EXPECT_EQ(status, false);

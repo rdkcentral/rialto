@@ -199,8 +199,8 @@ bool WebAudioPlayerServerInternal::setEos()
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    //TODO(RIALTO-2): Don't set eos if we still have frames to write
-    auto task = [&](){m_gstPlayer->setEos();};
+    // TODO(RIALTO-2): Don't set eos if we still have frames to write
+    auto task = [&]() { m_gstPlayer->setEos(); };
 
     m_mainThread->enqueueTask(m_mainThreadClientId, task);
 
@@ -236,7 +236,7 @@ bool WebAudioPlayerServerInternal::getBufferDelay(uint32_t &delayFrames)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    //TODO(RIALTO-2): Calculate the delated frames
+    // TODO(RIALTO-2): Calculate the delated frames
     return false;
 }
 
@@ -316,7 +316,7 @@ bool WebAudioPlayerServerInternal::setVolume(double volume)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    auto task = [&](){m_gstPlayer->setVolume(volume);};
+    auto task = [&]() { m_gstPlayer->setVolume(volume); };
 
     m_mainThread->enqueueTask(m_mainThreadClientId, task);
 
@@ -328,10 +328,7 @@ bool WebAudioPlayerServerInternal::getVolume(double &volume)
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
     bool result = false;
-    auto task = [&]()
-    {
-        result = m_gstPlayer->getVolume(volume);
-    };
+    auto task = [&]() { result = m_gstPlayer->getVolume(volume); };
 
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
 
