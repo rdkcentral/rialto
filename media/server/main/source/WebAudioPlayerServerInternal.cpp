@@ -221,6 +221,7 @@ bool WebAudioPlayerServerInternal::getBufferAvailable(uint32_t &availableFrames,
     auto task = [&]()
     {
         *webAudioShmInfo = m_availableBuffer;
+        // TODO(RIALTO-2): Calculate bytes per frame instead of using '4'.
         availableFrames = (m_availableBuffer.lengthMain + m_availableBuffer.lengthWrap) / 4;
 
         // A new getBufferAvailable shall overwrite the previous if writeBuffer is not called inbetween
@@ -236,7 +237,7 @@ bool WebAudioPlayerServerInternal::getBufferDelay(uint32_t &delayFrames)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    // TODO(RIALTO-2): Calculate the delated frames
+    // TODO(RIALTO-2): Calculate the delayed frames based on bytes queued in shm and gst.
     return false;
 }
 
