@@ -17,22 +17,32 @@
  * limitations under the License.
  */
 
-#include "tasks/generic/Pause.h"
+#include "tasks/webAudio/Pause.h"
 #include "GstWebAudioPlayerPrivateMock.h"
+#include "GstWebAudioPlayerClientMock.h"
 #include <gtest/gtest.h>
 
+using testing::Return;
 using testing::StrictMock;
 
 class WebAudioPauseTest : public testing::Test
 {
 protected:
     StrictMock<firebolt::rialto::server::GstWebAudioPlayerPrivateMock> m_gstPlayer;
+    StrictMock<firebolt::rialto::server::GstWebAudioPlayerClientMock> m_gstPlayerClient;
 };
 
 TEST_F(WebAudioPauseTest, shouldPause)
 {
-    EXPECT_CALL(m_gstPlayer, stopPositionReportingAndCheckAudioUnderflowTimer());
-    EXPECT_CALL(m_gstPlayer, changePipelineState(GST_STATE_PAUSED));
-    firebolt::rialto::server::Pause task{m_gstPlayer};
+    EXPECT_CALL(m_gstPlayer, changePipelineState(GST_STATE_PAUSED)).WillOnce(Return(true));
+    firebolt::rialto::server::webaudio::Pause task{m_gstPlayer, &m_gstPlayerClient};
+    task.execute();
+}
+
+TEST_F(WebAudioPauseTest, shouldFailToPause)
+{
+    EXPECT_CALL(m_gstPlayer, changePipelineState(GST_STATE_PAUSED)).WillOnce(Return(false));
+    EXPECT_CALL(m_gstPlayerClient, notifyState(firebolt::rialto::WebAudioPlayerState::FAILURE));
+    firebolt::rialto::server::webaudio::Pause task{m_gstPlayer, &m_gstPlayerClient};
     task.execute();
 }

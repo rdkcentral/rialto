@@ -105,7 +105,6 @@ public:
      * @brief Creates a WriteBuffer task.
      *
      * @param[in] context       : The GstWebAudioPlayer context
-     * @param[in] player        : The GstWebAudioPlayer instance
      * @param[in] mainPtr       : Pointer to the start of the data
      * @param[in] mainLength    : Amount of bytes to write from the mainPtr
      * @param[in] wrapPtr       : Pointer to the start of the wrapped data
@@ -113,7 +112,7 @@ public:
      *
      * @retval the new SetVolume task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createWriteBuffer(WebAudioPlayerContext &context, IGstWebAudioPlayerPrivate &player, uint8_t *mainPtr, uint32_t mainLength, uint8_t *wrapPtr, uint32_t wrapLength) const = 0;
+    virtual std::unique_ptr<IPlayerTask> createWriteBuffer(WebAudioPlayerContext &context, uint8_t *mainPtr, uint32_t mainLength, uint8_t *wrapPtr, uint32_t wrapLength) const = 0;
 
     /**
      * @brief Creates a HandleBusMessage task.

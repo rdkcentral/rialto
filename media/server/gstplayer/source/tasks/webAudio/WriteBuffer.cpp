@@ -25,8 +25,8 @@
 
 namespace firebolt::rialto::server::webaudio
 {
-WriteBuffer::WriteBuffer(WebAudioPlayerContext &context, IGstWebAudioPlayerPrivate &player, std::shared_ptr<IGstWrapper> gstWrapper, std::shared_ptr<IGlibWrapper> glibWrapper, uint8_t *mainPtr, uint32_t mainLength, uint8_t *wrapPtr, uint32_t wrapLength)
-    : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_mainPtr{mainPtr}, m_mainLength{mainLength}, m_wrapPtr{wrapPtr}, m_wrapLength{wrapLength}
+WriteBuffer::WriteBuffer(WebAudioPlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper, uint8_t *mainPtr, uint32_t mainLength, uint8_t *wrapPtr, uint32_t wrapLength)
+    : m_context{context}, m_gstWrapper{gstWrapper}, m_mainPtr{mainPtr}, m_mainLength{mainLength}, m_wrapPtr{wrapPtr}, m_wrapLength{wrapLength}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing WriteBuffer");
 }

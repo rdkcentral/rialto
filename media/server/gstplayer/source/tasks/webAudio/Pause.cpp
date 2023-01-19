@@ -23,7 +23,7 @@
 
 namespace firebolt::rialto::server::webaudio
 {
-Pause::Pause(IGstWebAudioPlayerPrivate &player) : m_player{player}
+Pause::Pause(IGstWebAudioPlayerPrivate &player, IGstWebAudioPlayerClient *client) : m_player{player}, m_gstPlayerClient{client}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing Pause");
 }
@@ -36,6 +36,10 @@ Pause::~Pause()
 void Pause::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing Pause");
-    m_player.changePipelineState(GST_STATE_PAUSED);
+    if (!m_player.changePipelineState(GST_STATE_PAUSED))
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to pause the web audio player");
+        m_gstPlayerClient->notifyState(WebAudioPlayerState::FAILURE);
+    }
 }
 } // namespace firebolt::rialto::server::webaudio

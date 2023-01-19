@@ -23,7 +23,7 @@
 
 namespace firebolt::rialto::server::webaudio
 {
-Play::Play(IGstWebAudioPlayerPrivate &player) : m_player{player}
+Play::Play(IGstWebAudioPlayerPrivate &player, IGstWebAudioPlayerClient *client) : m_player{player}, m_gstPlayerClient{client}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing Play");
 }
@@ -36,6 +36,10 @@ Play::~Play()
 void Play::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing Play");
-    m_player.changePipelineState(GST_STATE_PLAYING);
+    if (!m_player.changePipelineState(GST_STATE_PLAYING))
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to play the web audio player");
+        m_gstPlayerClient->notifyState(WebAudioPlayerState::FAILURE);
+    }
 }
 } // namespace firebolt::rialto::server::webaudio

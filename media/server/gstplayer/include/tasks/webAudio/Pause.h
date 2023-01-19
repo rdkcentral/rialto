@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_WEBAUDIO_PAUSE_H_
 
 #include "IGstWebAudioPlayerPrivate.h"
+#include "IGstWebAudioPlayerClient.h"
 #include "IPlayerTask.h"
 
 namespace firebolt::rialto::server::webaudio
@@ -28,12 +29,13 @@ namespace firebolt::rialto::server::webaudio
 class Pause : public IPlayerTask
 {
 public:
-    explicit Pause(IGstWebAudioPlayerPrivate &player);
+    explicit Pause(IGstWebAudioPlayerPrivate &player, IGstWebAudioPlayerClient *client);
     ~Pause() override;
     void execute() const override;
 
 private:
     IGstWebAudioPlayerPrivate &m_player;
+    IGstWebAudioPlayerClient *m_gstPlayerClient;
 };
 } // namespace firebolt::rialto::server::webaudio
 

@@ -48,12 +48,12 @@ std::unique_ptr<IPlayerTask> WebAudioPlayerTaskFactory::createStop(IGstWebAudioP
 
 std::unique_ptr<IPlayerTask> WebAudioPlayerTaskFactory::createPlay(IGstWebAudioPlayerPrivate &player) const
 {
-    return std::make_unique<webaudio::Play>(player);
+    return std::make_unique<webaudio::Play>(player, m_client);
 }
 
 std::unique_ptr<IPlayerTask> WebAudioPlayerTaskFactory::createPause(IGstWebAudioPlayerPrivate &player) const
 {
-    return std::make_unique<webaudio::Pause>(player);
+    return std::make_unique<webaudio::Pause>(player, m_client);
 }
 
 std::unique_ptr<IPlayerTask> WebAudioPlayerTaskFactory::createEos(WebAudioPlayerContext &context) const
@@ -71,9 +71,9 @@ std::unique_ptr<IPlayerTask> WebAudioPlayerTaskFactory::createSetVolume(WebAudio
     return std::make_unique<webaudio::SetVolume>(context, m_gstWrapper, volume);
 }
 
-std::unique_ptr<IPlayerTask> WebAudioPlayerTaskFactory::createWriteBuffer(WebAudioPlayerContext &context, IGstWebAudioPlayerPrivate &player, uint8_t *mainPtr, uint32_t mainLength, uint8_t *wrapPtr, uint32_t wrapLength) const
+std::unique_ptr<IPlayerTask> WebAudioPlayerTaskFactory::createWriteBuffer(WebAudioPlayerContext &context, uint8_t *mainPtr, uint32_t mainLength, uint8_t *wrapPtr, uint32_t wrapLength) const
 {
-    return std::make_unique<webaudio::WriteBuffer>(context, player, m_gstWrapper, m_glibWrapper, mainPtr, mainLength, wrapPtr, wrapLength);
+    return std::make_unique<webaudio::WriteBuffer>(context, m_gstWrapper, mainPtr, mainLength, wrapPtr, wrapLength);
 }
 
 std::unique_ptr<IPlayerTask> WebAudioPlayerTaskFactory::createHandleBusMessage(WebAudioPlayerContext &context,

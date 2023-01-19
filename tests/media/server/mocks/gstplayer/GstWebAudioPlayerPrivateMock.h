@@ -25,10 +25,11 @@
 
 namespace firebolt::rialto::server
 {
-class GstWebAudioPlayerPrivateCommonMock : public IGstWebAudioPlayerPrivate
+class GstWebAudioPlayerPrivateMock : public IGstWebAudioPlayerPrivate
 {
 public:
     MOCK_METHOD(bool, changePipelineState, (GstState newState), (override));
+    MOCK_METHOD(void, stopWorkerThread, (), (override));
 };
 } // namespace firebolt::rialto::server
 

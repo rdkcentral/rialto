@@ -54,9 +54,7 @@ public:
     {
         GstCaps *caps = m_gstWrapper->gstCapsNewEmptySimple("audio/x-raw");
         addFormat(caps);
-        m_gstWrapper->gstCapsSetSimple(caps, "channels", G_TYPE_INT, m_pcmConfig.channels, nullptr);
-        m_gstWrapper->gstCapsSetSimple(caps, "layout", G_TYPE_STRING, "interleaved", nullptr);
-        m_gstWrapper->gstCapsSetSimple(caps, "rate", G_TYPE_INT, m_pcmConfig.rate, nullptr);
+        m_gstWrapper->gstCapsSetSimple(caps, "channels", G_TYPE_UINT, m_pcmConfig.channels, "layout", G_TYPE_STRING, "interleaved", "rate", G_TYPE_UINT, m_pcmConfig.rate, nullptr);
 
         return caps;
     }

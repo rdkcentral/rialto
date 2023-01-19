@@ -43,7 +43,7 @@ public:
     std::unique_ptr<IPlayerTask> createEos(WebAudioPlayerContext &context) const override;
     std::unique_ptr<IPlayerTask> createSetVolume(WebAudioPlayerContext &context, double volume) const override;
     std::unique_ptr<IPlayerTask> createWriteBuffer(WebAudioPlayerContext &context, IGstWebAudioPlayerPrivate &player, uint8_t *mainPtr, uint32_t mainLength, uint8_t *wrapPtr, uint32_t wrapLength) const override;
-    std::unique_ptr<IPlayerTask> createHandleBusMessage(WebAudioPlayerContext &context, IGstWebAudioPlayerPrivate &player, GstMessage *message) const override;
+    std::unique_ptr<IPlayerTask> createHandleBusMessage(WebAudioPlayerContext &context, GstMessage *message) const override;
 
 private:
     IGstWebAudioPlayerClient *m_client;

@@ -55,7 +55,7 @@ protected:
 TEST_F(WebAudioPlayerTaskFactoryTest, ShouldCreateSetCaps)
 {
     const std::string audioMimeType{"audio/x-raw"};
-    const WebAudioConfig config{};
+    const firebolt::rialto::WebAudioConfig config{};
     auto task = m_sut.createSetCaps(m_context, audioMimeType, &config);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::webaudio::SetCaps &>(*task));
@@ -63,14 +63,14 @@ TEST_F(WebAudioPlayerTaskFactoryTest, ShouldCreateSetCaps)
 
 TEST_F(WebAudioPlayerTaskFactoryTest, ShouldCreatePlay)
 {
-    auto task = m_sut.createPlay(m_context);
+    auto task = m_sut.createPlay(m_gstPlayer);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::webaudio::Play &>(*task));
 }
 
 TEST_F(WebAudioPlayerTaskFactoryTest, ShouldCreatePause)
 {
-    auto task = m_sut.createPause(m_context);
+    auto task = m_sut.createPause(m_gstPlayer);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::webaudio::Pause &>(*task));
 }

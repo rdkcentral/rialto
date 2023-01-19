@@ -17,26 +17,21 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_WEBAUDIO_PLAY_H_
-#define FIREBOLT_RIALTO_SERVER_WEBAUDIO_PLAY_H_
+#include "tasks/webAudio/Shutdown.h"
+#include "GstWebAudioPlayerPrivateMock.h"
+#include <gtest/gtest.h>
 
-#include "IGstWebAudioPlayerPrivate.h"
-#include "IGstWebAudioPlayerClient.h"
-#include "IPlayerTask.h"
+using testing::StrictMock;
 
-namespace firebolt::rialto::server::webaudio
+class WebAudioShutdownTest : public testing::Test
 {
-class Play : public IPlayerTask
-{
-public:
-    explicit Play(IGstWebAudioPlayerPrivate &player, IGstWebAudioPlayerClient *client);
-    ~Play() override;
-    void execute() const override;
-
-private:
-    IGstWebAudioPlayerPrivate &m_player;
-    IGstWebAudioPlayerClient *m_gstPlayerClient;
+protected:
+    StrictMock<firebolt::rialto::server::GstWebAudioPlayerPrivateMock> m_gstPlayer;
 };
-} // namespace firebolt::rialto::server::webaudio
 
-#endif // FIREBOLT_RIALTO_SERVER_WEBAUDIO_PLAY_H_
+TEST_F(WebAudioShutdownTest, shouldShutdown)
+{
+    firebolt::rialto::server::webaudio::Shutdown task{m_gstPlayer};
+    EXPECT_CALL(m_gstPlayer, stopWorkerThread());
+    task.execute();
+}
