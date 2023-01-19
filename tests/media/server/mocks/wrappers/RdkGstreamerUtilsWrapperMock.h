@@ -35,9 +35,6 @@ public:
                  const long long *currentDispPts, unsigned int *audioChangeStage, GstCaps **appsrcCaps, bool *audioaac,
                  bool svpEnabled, GstElement *aSrc, bool *ret),
                 (const, override));
-    MOCK_METHOD(void, deepElementAdded,
-                (PlaybackGroupPrivate * playbackGroup, GstBin *pipeline, GstBin *bin, GstElement *element),
-                (const, override));
 };
 } // namespace firebolt::rialto::server
 

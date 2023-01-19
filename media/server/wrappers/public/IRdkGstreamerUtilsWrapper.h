@@ -84,8 +84,6 @@ public:
                                                      const long long *currentDispPts, unsigned int *audioChangeStage,
                                                      GstCaps **appsrcCaps, bool *audioaac, bool svpEnabled,
                                                      GstElement *aSrc, bool *ret) const = 0;
-    virtual void deepElementAdded(PlaybackGroupPrivate *playbackGroup, GstBin *pipeline, GstBin *bin,
-                                  GstElement *element) const = 0;
 };
 } // namespace firebolt::rialto::server
 

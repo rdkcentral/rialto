@@ -59,17 +59,4 @@ bool RdkGstreamerUtilsWrapper::performAudioTrackCodecChannelSwitch(
                                                                          audioaac, svpEnabled, aSrc, ret)};
     return result;
 }
-
-void RdkGstreamerUtilsWrapper::deepElementAdded(PlaybackGroupPrivate *playbackGroup, GstBin *pipeline, GstBin *bin,
-                                                GstElement *element) const
-{
-    if (!playbackGroup)
-    {
-        RIALTO_SERVER_LOG_ERROR("Playback group is NULL");
-        return;
-    }
-    rdk_gstreamer_utils::rdkGstreamerUtilsPlaybackGrp *rdkPlaybackGroup{
-        reinterpret_cast<rdk_gstreamer_utils::rdkGstreamerUtilsPlaybackGrp *>(playbackGroup)};
-    rdk_gstreamer_utils::deepElementAdded(rdkPlaybackGroup, pipeline, bin, element);
-}
 } // namespace firebolt::rialto::server
