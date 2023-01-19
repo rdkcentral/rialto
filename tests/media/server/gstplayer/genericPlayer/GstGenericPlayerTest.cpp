@@ -190,7 +190,7 @@ TEST_F(GstGenericPlayerTest, shouldAddDeepElement)
     GstElement element{};
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createDeepElementAdded(_, _, _, &element)).WillOnce(Return(ByMove(std::move(task))));
+    EXPECT_CALL(m_taskFactoryMock, createDeepElementAdded(_, _, _, _, &element)).WillOnce(Return(ByMove(std::move(task))));
 
     triggerDeepElementAdded(&element);
 }

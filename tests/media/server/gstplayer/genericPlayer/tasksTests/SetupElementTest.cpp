@@ -42,6 +42,7 @@ protected:
     StrictMock<firebolt::rialto::server::GstGenericPlayerPrivateMock> m_gstPlayer;
     GstElement m_element{};
     GstElementFactory *m_elementFactory{};
+    gulong m_signalId{123};
     guint m_signals[1]{123};
     GCallback m_audioUnderflowCallback;
     GCallback m_videoUnderflowCallback;
@@ -75,8 +76,12 @@ protected:
                              { query->signal_name = "buffer-underflow-callback"; }));
         EXPECT_CALL(*m_glibWrapper, gFree(m_signals));
         EXPECT_CALL(*m_glibWrapper, gSignalConnect(_, CharStrMatcher("buffer-underflow-callback"), _, _))
-            .WillOnce(Invoke([&](gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data)
-                             { m_videoUnderflowCallback = c_handler; }));
+            .WillOnce(Invoke(
+                [&](gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data)
+                {
+                    m_videoUnderflowCallback = c_handler;
+                    return m_signalId;
+                }));
         EXPECT_CALL(*m_gstWrapper, gstObjectUnref(_));
     }
 
@@ -103,8 +108,12 @@ protected:
                              { query->signal_name = "buffer-underflow-callback"; }));
         EXPECT_CALL(*m_glibWrapper, gFree(m_signals));
         EXPECT_CALL(*m_glibWrapper, gSignalConnect(_, _, _, _))
-            .WillOnce(Invoke([&](gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data)
-                             { m_audioUnderflowCallback = c_handler; }));
+            .WillOnce(Invoke(
+                [&](gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data)
+                {
+                    m_audioUnderflowCallback = c_handler;
+                    return m_signalId;
+                }));
         EXPECT_CALL(*m_gstWrapper, gstObjectUnref(_));
     }
 };

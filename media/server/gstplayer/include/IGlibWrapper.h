@@ -135,8 +135,19 @@ public:
      * @param[in] detailed_signal   : The signal in the form of a string.
      * @param[in] c_handler         : The callback.
      * @param[in] data              : Data to be passed to the signal.
+     *
+     * @retval the handler ID, of type gulong (always greater than 0 for successful connections)
      */
-    virtual void gSignalConnect(gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data) = 0;
+    virtual gulong gSignalConnect(gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data) = 0;
+
+    /**
+     * @brief Disconnects a handler from an instance so it will not be called during any future or currently ongoing
+     * emissions of the signal it has been connected to. The handler_id becomes invalid and may be reused.
+     *
+     * @param[in] instance     : The instance to remove the signal handler from.
+     * @param[in] handler_id   : Handler id of the handler to be disconnected.
+     */
+    virtual void gSignalHandlerDisconnect(GObject *instance, gulong handler_id) const = 0;
 
     /**
      * @brief Sets a function to be called at every interval.
@@ -259,6 +270,16 @@ public:
      * @retval A pointer to the newly-allocated copy of the memory or null in case of failure
      */
     virtual void gOnceInitLeave(gsize *location, gsize result) const = 0;
+
+    /**
+     * @brief Searches the string haystack for the last occurrence of the string needle.
+     *
+     * @param[in] haystack : A nul-terminated string.
+     * @param[in] needle   : The nul-terminated string to search for.
+     *
+     * @retval A pointer to the found occurrence, or NULL if not found.
+     */
+    virtual gchar *gStrrstr(const gchar *haystack, const gchar *needle) const = 0;
 };
 
 }; // namespace firebolt::rialto::server

@@ -52,6 +52,7 @@ add_library(
         source/tasks/generic/Shutdown.cpp
         source/tasks/generic/Stop.cpp
         source/tasks/generic/Underflow.cpp
+        source/tasks/generic/UpdatePlaybackGroup.cpp
 
         source/tasks/webAudio/WebAudioPlayerTaskFactory.cpp
         source/tasks/webAudio/Shutdown.cpp

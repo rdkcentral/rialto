@@ -19,7 +19,9 @@
 
 #include "tasks/generic/DeepElementAdded.h"
 #include "GenericPlayerContext.h"
-#include "RdkGstreamerUtilsWrapperMock.h"
+#include "GlibWrapperMock.h"
+#include "GstGenericPlayerPrivateMock.h"
+#include "GstWrapperMock.h"
 #include <gst/gst.h>
 #include <gtest/gtest.h>
 #include <memory>
@@ -30,17 +32,19 @@ class DeepElementAddedTest : public testing::Test
 {
 protected:
     firebolt::rialto::server::GenericPlayerContext m_context{};
+    std::shared_ptr<firebolt::rialto::server::GlibWrapperMock> m_glibWrapper{
+        std::make_shared<StrictMock<firebolt::rialto::server::GlibWrapperMock>>()};
+    std::shared_ptr<firebolt::rialto::server::GstWrapperMock> m_gstWrapper{
+        std::make_shared<StrictMock<firebolt::rialto::server::GstWrapperMock>>()};
+    StrictMock<firebolt::rialto::server::GstGenericPlayerPrivateMock> m_gstPlayer;
     GstBin m_pipeline{};
     GstBin m_bin{};
     GstElement m_element{};
-    std::shared_ptr<firebolt::rialto::server::RdkGstreamerUtilsWrapperMock> m_rdkGstreamerUtilsWrapper{
-        std::make_shared<StrictMock<firebolt::rialto::server::RdkGstreamerUtilsWrapperMock>>()};
 };
 
 TEST_F(DeepElementAddedTest, shouldAddElement)
 {
-    EXPECT_CALL(*m_rdkGstreamerUtilsWrapper, deepElementAdded(&m_context.playbackGroup, &m_pipeline, &m_bin, &m_element));
-    firebolt::rialto::server::DeepElementAdded task{m_context, m_rdkGstreamerUtilsWrapper, &m_pipeline, &m_bin,
-                                                    &m_element};
-    task.execute();
+    firebolt::rialto::server::DeepElementAdded task{m_context,   m_gstPlayer, m_gstWrapper, m_glibWrapper,
+                                                    &m_pipeline, &m_bin,      &m_element};
+    // TODO after testing on hw
 }

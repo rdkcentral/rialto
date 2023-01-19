@@ -42,7 +42,8 @@ public:
     std::unique_ptr<IPlayerTask>
     createAttachSource(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                        const std::unique_ptr<IMediaPipeline::MediaSource> &source) const override;
-    std::unique_ptr<IPlayerTask> createDeepElementAdded(GenericPlayerContext &context, GstBin *pipeline, GstBin *bin,
+    std::unique_ptr<IPlayerTask> createDeepElementAdded(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                                                        GstBin *pipeline, GstBin *bin,
                                                         GstElement *element) const override;
     std::unique_ptr<IPlayerTask> createEnoughData(GenericPlayerContext &context, GstAppSrc *src) const override;
     std::unique_ptr<IPlayerTask> createEos(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
@@ -77,6 +78,8 @@ public:
                                             IGstGenericPlayerPrivate &player) const override;
     std::unique_ptr<IPlayerTask> createUnderflow(IGstGenericPlayerPrivate &player, bool &underflowFlag,
                                                  bool underflowEnabled) const override;
+    std::unique_ptr<IPlayerTask> createUpdatePlaybackGroup(GenericPlayerContext &context, GstElement *typefind,
+                                                           const GstCaps *caps) const override;
     std::unique_ptr<IPlayerTask> createRenderFrame(GenericPlayerContext &context) const override;
 
 private:

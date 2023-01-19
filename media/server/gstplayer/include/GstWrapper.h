@@ -95,6 +95,10 @@ public:
 
     gpointer gstObjectRef(gpointer object) override { return gst_object_ref(object); }
 
+    GstObject *gstObjectParent(gpointer object) const override { return GST_OBJECT_PARENT(object); }
+
+    GstObject *gstObjectCast(gpointer object) const override { return GST_OBJECT_CAST(object); }
+
     GstBus *gstPipelineGetBus(GstPipeline *pipeline) override { return gst_pipeline_get_bus(pipeline); }
 
     guint gstBusAddWatch(GstBus *bus, GstBusFunc func, gpointer user_data) override
@@ -117,6 +121,10 @@ public:
     GstState gstElementGetState(GstElement *element) override { return GST_STATE(element); }
 
     GstState gstElementGetPendingState(GstElement *element) override { return GST_STATE_PENDING(element); }
+
+    GstObject *gstElementGetParent(const GstElement *elem) const override { return gst_element_get_parent(elem); }
+
+    gchar *gstElementGetName(GstElement *element) const override { return gst_element_get_name(element); }
 
     gboolean gstElementSendEvent(GstElement *element, GstEvent *event) const override
     {

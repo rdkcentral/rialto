@@ -109,10 +109,13 @@ private:
     GFlagsValue m_nativeVideoFlag{3, "native-video", "native-video"};
     gpointer m_setupSourceUserData;
     GCallback m_setupSourceFunc;
+    gulong m_setupSourceSignalId{0};
     gpointer m_setupElementUserData;
     GCallback m_setupElementFunc;
+    gulong m_setupElementSignalId{1};
     gpointer m_deepElementAddedUserData;
     GCallback m_deepElementAddedFunc;
+    gulong m_deepElementAddedSignalId{2};
 };
 
 #endif // GST_GENERIC_PLAYER_TEST_COMMON_H_

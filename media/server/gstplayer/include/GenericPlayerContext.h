@@ -210,6 +210,13 @@ struct GenericPlayerContext
      * Attribute can be used only in worker thread
      */
     PlaybackGroupPrivate playbackGroup;
+
+    /**
+     * @brief Signals connected to pipeline elements
+     *
+     * Attribute can be used only in worker thread
+     */
+    std::map<GstElement *, gulong> connectedSignals;
 };
 } // namespace firebolt::rialto::server
 

@@ -71,13 +71,15 @@ public:
      * @brief Creates a DeepElementAdded task.
      *
      * @param[in] context  : The GstPlayer context
+     * @param[in] player        : The GstGenericPlayer instance
      * @param[in] pipeline : The pipeline the signal was fired from.
      * @param[in] bin      : the GstBin the element was added to
      * @param[in] element  : an element that was added to the playbin hierarchy
      *
      * @retval the new DeepElementAdded task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createDeepElementAdded(GenericPlayerContext &context, GstBin *pipeline,
+    virtual std::unique_ptr<IPlayerTask> createDeepElementAdded(GenericPlayerContext &context,
+                                                                IGstGenericPlayerPrivate &player, GstBin *pipeline,
                                                                 GstBin *bin, GstElement *element) const = 0;
 
     /**
@@ -296,6 +298,18 @@ public:
      */
     virtual std::unique_ptr<IPlayerTask> createUnderflow(IGstGenericPlayerPrivate &player, bool &underflowFlag,
                                                          bool underflowEnabled = true) const = 0;
+
+    /**
+     * @brief Creates an UpdatePlaybackGroup task.
+     *
+     * @param[in] context       : The GstGenericPlayer context
+     * @param[in] typefind      : The typefind element.
+     * @param[in] caps          : The GstCaps of added element
+     *
+     * @retval the new UpdatePlaybackGroup task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createUpdatePlaybackGroup(GenericPlayerContext &context, GstElement *typefind,
+                                                                   const GstCaps *caps) const = 0;
 
     virtual std::unique_ptr<IPlayerTask> createRenderFrame(GenericPlayerContext &context) const = 0;
 };

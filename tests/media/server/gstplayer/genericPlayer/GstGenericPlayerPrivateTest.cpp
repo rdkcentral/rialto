@@ -807,3 +807,14 @@ TEST_F(GstGenericPlayerPrivateTest, shouldStopWorkerThread)
     EXPECT_CALL(m_workerThreadMock, stop());
     m_sut->stopWorkerThread();
 }
+
+TEST_F(GstGenericPlayerPrivateTest, shouldUpdatePlaybackGroup)
+{
+    GstElement typefind;
+    GstCaps caps;
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(m_taskFactoryMock, createUpdatePlaybackGroup(_, &typefind, &caps)).WillOnce(Return(ByMove(std::move(task))));
+
+    m_sut->updatePlaybackGroup(&typefind, &caps);
+}

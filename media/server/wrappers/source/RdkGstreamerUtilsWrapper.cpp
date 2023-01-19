@@ -21,61 +21,6 @@
 #include "RialtoServerLogging.h"
 #include "rdk_gstreamer_utils.h"
 
-namespace
-{
-rdk_gstreamer_utils::rdkGstreamerUtilsPlaybackGrp
-convertPlaybackGroupPrivate(const firebolt::rialto::server::PlaybackGroupPrivate &playbackGroupPrivate)
-{
-    return rdk_gstreamer_utils::rdkGstreamerUtilsPlaybackGrp{playbackGroupPrivate.m_gstPipeline,
-                                                             playbackGroupPrivate.m_curAudioPlaysinkBin,
-                                                             playbackGroupPrivate.m_curAudioDecodeBin,
-                                                             playbackGroupPrivate.m_curAudioDecoder,
-                                                             playbackGroupPrivate.m_curAudioParse,
-                                                             playbackGroupPrivate.m_curAudioTypefind,
-                                                             playbackGroupPrivate.m_linkTypefindParser,
-                                                             playbackGroupPrivate.m_isAudioAAC};
-}
-
-rdk_gstreamer_utils::AudioAttributes
-convertAudioAttributesPrivate(const firebolt::rialto::server::AudioAttributesPrivate &audioAttributesPrivate)
-{
-    rdk_gstreamer_utils::AudioAttributes rdkAudioAttributes;
-    rdkAudioAttributes.mCodecParam = audioAttributesPrivate.m_codecParam;
-    rdkAudioAttributes.mNumberOfChannels = audioAttributesPrivate.m_numberOfChannels;
-    rdkAudioAttributes.mSamplesPerSecond = audioAttributesPrivate.m_samplesPerSecond;
-    rdkAudioAttributes.mBitrate = audioAttributesPrivate.m_bitrate;
-    rdkAudioAttributes.mBlockAlignment = audioAttributesPrivate.m_blockAlignment;
-    rdkAudioAttributes.mCodecSpecificData = audioAttributesPrivate.m_codecSpecificData;
-    rdkAudioAttributes.mCodecSpecificDataLen = audioAttributesPrivate.m_codecSpecificDataLen;
-    return rdkAudioAttributes;
-}
-
-void convertRdkPlaybackGroup(const rdk_gstreamer_utils::rdkGstreamerUtilsPlaybackGrp &rdkPlaybackGroup,
-                             firebolt::rialto::server::PlaybackGroupPrivate &playbackGroupPrivate)
-{
-    playbackGroupPrivate.m_gstPipeline = rdkPlaybackGroup.gstPipeline;
-    playbackGroupPrivate.m_curAudioPlaysinkBin = rdkPlaybackGroup.curAudioPlaysinkBin;
-    playbackGroupPrivate.m_curAudioDecodeBin = rdkPlaybackGroup.curAudioDecodeBin;
-    playbackGroupPrivate.m_curAudioDecoder = rdkPlaybackGroup.curAudioDecoder;
-    playbackGroupPrivate.m_curAudioParse = rdkPlaybackGroup.curAudioParse;
-    playbackGroupPrivate.m_curAudioTypefind = rdkPlaybackGroup.curAudioTypefind;
-    playbackGroupPrivate.m_linkTypefindParser = rdkPlaybackGroup.linkTypefindParser;
-    playbackGroupPrivate.m_isAudioAAC = rdkPlaybackGroup.isAudioAAC;
-}
-
-void convertRdkAudioAttributes(const rdk_gstreamer_utils::AudioAttributes &rdkAudioAttributes,
-                               firebolt::rialto::server::AudioAttributesPrivate &audioAttributesPrivate)
-{
-    audioAttributesPrivate.m_codecParam = rdkAudioAttributes.mCodecParam;
-    audioAttributesPrivate.m_numberOfChannels = rdkAudioAttributes.mNumberOfChannels;
-    audioAttributesPrivate.m_samplesPerSecond = rdkAudioAttributes.mSamplesPerSecond;
-    audioAttributesPrivate.m_bitrate = rdkAudioAttributes.mBitrate;
-    audioAttributesPrivate.m_blockAlignment = rdkAudioAttributes.mBlockAlignment;
-    audioAttributesPrivate.m_codecSpecificData = rdkAudioAttributes.mCodecSpecificData;
-    audioAttributesPrivate.m_codecSpecificDataLen = rdkAudioAttributes.mCodecSpecificDataLen;
-}
-} // namespace
-
 namespace firebolt::rialto::server
 {
 std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> IRdkGstreamerUtilsWrapperFactory::getFactory()
@@ -104,15 +49,14 @@ bool RdkGstreamerUtilsWrapper::performAudioTrackCodecChannelSwitch(
         RIALTO_SERVER_LOG_ERROR("Playback group or audio attributes is NULL");
         return false;
     }
-    auto rdkPlaybackGroup{convertPlaybackGroupPrivate(*playbackGroup)};
-    auto rdkAudioAttributes{convertAudioAttributesPrivate(*audioAttr)};
-    bool result{rdk_gstreamer_utils::performAudioTrackCodecChannelSwitch(&rdkPlaybackGroup, sampleAttr,
-                                                                         &rdkAudioAttributes, status, ui32Delay,
-                                                                         audioChangeTargetPts, currentDispPts,
-                                                                         audioChangeStage, appsrcCaps, audioaac,
-                                                                         svpEnabled, aSrc, ret)};
-    convertRdkPlaybackGroup(rdkPlaybackGroup, *playbackGroup);
-    convertRdkAudioAttributes(rdkAudioAttributes, *audioAttr);
+    rdk_gstreamer_utils::rdkGstreamerUtilsPlaybackGrp *rdkPlaybackGroup{
+        reinterpret_cast<rdk_gstreamer_utils::rdkGstreamerUtilsPlaybackGrp *>(playbackGroup)};
+    rdk_gstreamer_utils::AudioAttributes *rdkAudioAttributes{
+        reinterpret_cast<rdk_gstreamer_utils::AudioAttributes *>(audioAttr)};
+    bool result{rdk_gstreamer_utils::performAudioTrackCodecChannelSwitch(rdkPlaybackGroup, sampleAttr, rdkAudioAttributes,
+                                                                         status, ui32Delay, audioChangeTargetPts,
+                                                                         currentDispPts, audioChangeStage, appsrcCaps,
+                                                                         audioaac, svpEnabled, aSrc, ret)};
     return result;
 }
 
@@ -124,8 +68,8 @@ void RdkGstreamerUtilsWrapper::deepElementAdded(PlaybackGroupPrivate *playbackGr
         RIALTO_SERVER_LOG_ERROR("Playback group is NULL");
         return;
     }
-    auto rdkPlaybackGroup{convertPlaybackGroupPrivate(*playbackGroup)};
-    rdk_gstreamer_utils::deepElementAdded(&rdkPlaybackGroup, pipeline, bin, element);
-    convertRdkPlaybackGroup(rdkPlaybackGroup, *playbackGroup);
+    rdk_gstreamer_utils::rdkGstreamerUtilsPlaybackGrp *rdkPlaybackGroup{
+        reinterpret_cast<rdk_gstreamer_utils::rdkGstreamerUtilsPlaybackGrp *>(playbackGroup)};
+    rdk_gstreamer_utils::deepElementAdded(rdkPlaybackGroup, pipeline, bin, element);
 }
 } // namespace firebolt::rialto::server

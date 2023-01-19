@@ -193,6 +193,12 @@ GstGenericPlayer::~GstGenericPlayer()
 
     m_gstDispatcherThread.reset();
 
+    for (const auto &signal : m_context.connectedSignals)
+    {
+        m_glibWrapper->gSignalHandlerDisconnect(G_OBJECT(signal.first), signal.second);
+    }
+    m_context.connectedSignals.clear();
+
     // Shutdown task thread
     m_workerThread->enqueueTask(m_taskFactory->createShutdown(*this));
     m_workerThread->join();
@@ -311,7 +317,7 @@ void GstGenericPlayer::deepElementAdded(GstBin *pipeline, GstBin *bin, GstElemen
     if (self->m_workerThread)
     {
         self->m_workerThread->enqueueTask(
-            self->m_taskFactory->createDeepElementAdded(self->m_context, pipeline, bin, element));
+            self->m_taskFactory->createDeepElementAdded(self->m_context, *self, pipeline, bin, element));
     }
 }
 
@@ -824,5 +830,10 @@ bool GstGenericPlayer::getVolume(double &volume)
 void GstGenericPlayer::handleBusMessage(GstMessage *message)
 {
     m_workerThread->enqueueTask(m_taskFactory->createHandleBusMessage(m_context, *this, message));
+}
+
+void GstGenericPlayer::updatePlaybackGroup(GstElement *typefind, const GstCaps *caps)
+{
+    m_workerThread->enqueueTask(m_taskFactory->createUpdatePlaybackGroup(m_context, typefind, caps));
 }
 }; // namespace firebolt::rialto::server

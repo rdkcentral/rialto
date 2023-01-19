@@ -133,6 +133,7 @@ void GstGenericPlayerTestCommon::expectSetSignalCallbacks()
             {
                 m_setupSourceFunc = c_handler;
                 m_setupSourceUserData = data;
+                return m_setupSourceSignalId;
             }));
     EXPECT_CALL(*m_glibWrapperMock,
                 gSignalConnect(&m_pipeline, CharStrMatcher("element-setup"), NotNullMatcher(), NotNullMatcher()))
@@ -141,6 +142,7 @@ void GstGenericPlayerTestCommon::expectSetSignalCallbacks()
             {
                 m_setupElementFunc = c_handler;
                 m_setupElementUserData = data;
+                return m_setupElementSignalId;
             }));
     EXPECT_CALL(*m_glibWrapperMock,
                 gSignalConnect(&m_pipeline, CharStrMatcher("deep-element-added"), NotNullMatcher(), NotNullMatcher()))
@@ -149,6 +151,7 @@ void GstGenericPlayerTestCommon::expectSetSignalCallbacks()
             {
                 m_deepElementAddedFunc = c_handler;
                 m_deepElementAddedUserData = data;
+                return m_deepElementAddedSignalId;
             }));
 }
 

@@ -24,11 +24,11 @@
 #include "GstGenericPlayerPrivateMock.h"
 #include "GstWrapperMock.h"
 #include "RdkGstreamerUtilsWrapperMock.h"
-#include "tasks/generic/DeepElementAdded.h"
 #include "tasks/IPlayerTask.h"
 #include "tasks/generic/AttachSamples.h"
 #include "tasks/generic/AttachSource.h"
 #include "tasks/generic/CheckAudioUnderflow.h"
+#include "tasks/generic/DeepElementAdded.h"
 #include "tasks/generic/EnoughData.h"
 #include "tasks/generic/Eos.h"
 #include "tasks/generic/FinishSetupSource.h"
@@ -48,6 +48,7 @@
 #include "tasks/generic/Shutdown.h"
 #include "tasks/generic/Stop.h"
 #include "tasks/generic/Underflow.h"
+#include "tasks/generic/UpdatePlaybackGroup.h"
 #include <gtest/gtest.h>
 
 using testing::_;
@@ -66,7 +67,8 @@ protected:
         std::make_shared<StrictMock<firebolt::rialto::server::GstWrapperMock>>()};
     std::shared_ptr<firebolt::rialto::server::RdkGstreamerUtilsWrapperMock> m_rdkGstreamerUtilsWrapper{
         std::make_shared<StrictMock<firebolt::rialto::server::RdkGstreamerUtilsWrapperMock>>()};
-    firebolt::rialto::server::GenericPlayerTaskFactory m_sut{&m_gstPlayerClient, m_gstWrapper, m_glibWrapper, m_rdkGstreamerUtilsWrapper};
+    firebolt::rialto::server::GenericPlayerTaskFactory m_sut{&m_gstPlayerClient, m_gstWrapper, m_glibWrapper,
+                                                             m_rdkGstreamerUtilsWrapper};
 };
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateAttachSamples)
@@ -87,7 +89,7 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateAttachSource)
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateDeepElementAdded)
 {
-    auto task = m_sut.createDeepElementAdded(m_context, nullptr, nullptr, nullptr);
+    auto task = m_sut.createDeepElementAdded(m_context, m_gstPlayer, nullptr, nullptr, nullptr);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::DeepElementAdded &>(*task));
 }
@@ -233,4 +235,11 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetPlaybackRate)
     auto task = m_sut.createSetPlaybackRate(m_context, 1.25);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::SetPlaybackRate &>(*task));
+}
+
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateUpdatePlaybackGroup)
+{
+    auto task = m_sut.createUpdatePlaybackGroup(m_context, nullptr, nullptr);
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::UpdatePlaybackGroup &>(*task));
 }
