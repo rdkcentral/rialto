@@ -189,6 +189,23 @@ protected:
      * @retval true on success.
      */
     bool writeBufferInternal(const uint32_t numberOfFrames);
+
+    /**
+     * @brief Write the data that has been stored in the shared memory to gstreamer.
+     *
+     * Uses the available buffer variable to calculate the data to pass to gstreamer for writting.
+     *
+     * @retval true if all stored data was written to gstreamer.
+     */
+    bool writeStoredBuffers();
+
+    /**
+     * @brief Update the available buffer variable with the new bytes written to the shared memory and gstreamer.
+     *
+     * @param[in]  bytesWrittenToShm : Number of bytes newly written to the shared memory.
+     * @param[in]  bytesWrittenToGst : Number of bytes newly written to gstreamer.
+     */
+    void updateAvailableBuffer(uint32_t bytesWrittenToShm, uint32_t bytesWrittenToGst);
 };
 
 }; // namespace firebolt::rialto::server

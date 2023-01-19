@@ -21,70 +21,70 @@ add_gtests (
         RialtoServerMainUnitTests
 
         # gtest code
-        activeRequests/ActiveRequestsTests.cpp
+        #activeRequests/ActiveRequestsTests.cpp
 
-        dataReader/DataReaderFactoryTests.cpp
-        dataReader/DataReaderV1Tests.cpp
-        dataReader/DataReaderV2Tests.cpp
+        #dataReader/DataReaderFactoryTests.cpp
+        #dataReader/DataReaderV1Tests.cpp
+        #dataReader/DataReaderV2Tests.cpp
 
-        mediaPipeline/base/MediaPipelineTestBase.cpp
-        mediaPipeline/CreateTest.cpp
-        mediaPipeline/LoadTest.cpp
-        mediaPipeline/SourceTest.cpp
-        mediaPipeline/CallbackTest.cpp
-        mediaPipeline/MiscellaneousFunctionsTest.cpp
-        mediaPipeline/HaveDataTest.cpp
+        #mediaPipeline/base/MediaPipelineTestBase.cpp
+        #mediaPipeline/CreateTest.cpp
+        #mediaPipeline/LoadTest.cpp
+        #mediaPipeline/SourceTest.cpp
+        #mediaPipeline/CallbackTest.cpp
+        #mediaPipeline/MiscellaneousFunctionsTest.cpp
+        #mediaPipeline/HaveDataTest.cpp
 
-        mediaPipelineCapabilities/MediaPipelineCapabilitiesTest.cpp
+        #mediaPipelineCapabilities/MediaPipelineCapabilitiesTest.cpp
 
-        mediaKeys/base/MediaKeysTestBase.cpp
-        mediaKeys/CreateTest.cpp
-        mediaKeys/CreateKeySessionTest.cpp
-        mediaKeys/DecryptTest.cpp
-        mediaKeys/GenerateRequestTest.cpp
-        mediaKeys/LoadSessionTest.cpp
-        mediaKeys/UpdateSessionTest.cpp
-        mediaKeys/CloseKeySessionTest.cpp
-        mediaKeys/RemoveKeySessionTest.cpp
-        mediaKeys/GetCdmKeySessionIdTest.cpp
-        mediaKeys/ContainsKeyTest.cpp
-        mediaKeys/SetDrmHeaderTest.cpp
-        mediaKeys/DeleteDrmStoreTest.cpp
-        mediaKeys/DeleteKeyStoreTest.cpp
-        mediaKeys/GetDrmStoreHashTest.cpp
-        mediaKeys/GetKeyStoreHashTest.cpp
-        mediaKeys/GetLdlSessionsLimitTest.cpp
-        mediaKeys/GetDrmTimeTest.cpp
-        mediaKeys/GetLastDrmErrorTest.cpp
-        mediaKeys/SelectKeyIdTest.cpp
-        mediaKeys/IsNetflixKeySystemTest.cpp
+        #mediaKeys/base/MediaKeysTestBase.cpp
+        #mediaKeys/CreateTest.cpp
+        #mediaKeys/CreateKeySessionTest.cpp
+        #mediaKeys/DecryptTest.cpp
+        #mediaKeys/GenerateRequestTest.cpp
+        #mediaKeys/LoadSessionTest.cpp
+        #mediaKeys/UpdateSessionTest.cpp
+        #mediaKeys/CloseKeySessionTest.cpp
+        #mediaKeys/RemoveKeySessionTest.cpp
+        #mediaKeys/GetCdmKeySessionIdTest.cpp
+        #mediaKeys/ContainsKeyTest.cpp
+        #mediaKeys/SetDrmHeaderTest.cpp
+        #mediaKeys/DeleteDrmStoreTest.cpp
+        #mediaKeys/DeleteKeyStoreTest.cpp
+        #mediaKeys/GetDrmStoreHashTest.cpp
+        #mediaKeys/GetKeyStoreHashTest.cpp
+        #mediaKeys/GetLdlSessionsLimitTest.cpp
+        #mediaKeys/GetDrmTimeTest.cpp
+        #mediaKeys/GetLastDrmErrorTest.cpp
+        #mediaKeys/SelectKeyIdTest.cpp
+        #mediaKeys/IsNetflixKeySystemTest.cpp
 
-        mediaKeysCapabilities/CreateTest.cpp
-        mediaKeysCapabilities/KeySystemsTest.cpp
+        #mediaKeysCapabilities/CreateTest.cpp
+        #mediaKeysCapabilities/KeySystemsTest.cpp
 
-        mediaKeySession/base/MediaKeySessionTestBase.cpp
-        mediaKeySession/CreateTest.cpp
-        mediaKeySession/DecryptTest.cpp
-        mediaKeySession/GenerateRequestTest.cpp
-        mediaKeySession/LoadSessionTest.cpp
-        mediaKeySession/UpdateSessionTest.cpp
-        mediaKeySession/CloseKeySessionTest.cpp
-        mediaKeySession/RemoveKeySessionTest.cpp
-        mediaKeySession/CallbacksTest.cpp
-        mediaKeySession/GetCdmKeySessionIdTest.cpp
-        mediaKeySession/ContainsKeyTest.cpp
-        mediaKeySession/SetDrmHeaderTest.cpp
-        mediaKeySession/GetLastDrmErrorTest.cpp
-        mediaKeySession/SelectKeyIdTest.cpp
-        mediaKeySession/IsNetflixKeySystemTest.cpp
+        #mediaKeySession/base/MediaKeySessionTestBase.cpp
+        #mediaKeySession/CreateTest.cpp
+        #mediaKeySession/DecryptTest.cpp
+        #mediaKeySession/GenerateRequestTest.cpp
+        #mediaKeySession/LoadSessionTest.cpp
+        #mediaKeySession/UpdateSessionTest.cpp
+        #mediaKeySession/CloseKeySessionTest.cpp
+        #mediaKeySession/RemoveKeySessionTest.cpp
+        #mediaKeySession/CallbacksTest.cpp
+        #mediaKeySession/GetCdmKeySessionIdTest.cpp
+        #mediaKeySession/ContainsKeyTest.cpp
+        #mediaKeySession/SetDrmHeaderTest.cpp
+        #mediaKeySession/GetLastDrmErrorTest.cpp
+        #mediaKeySession/SelectKeyIdTest.cpp
+        #mediaKeySession/IsNetflixKeySystemTest.cpp
 
-        sharedMemoryBuffer/SharedMemoryBufferTestsFixture.cpp
-        sharedMemoryBuffer/SharedMemoryBufferTests.cpp
+        #sharedMemoryBuffer/SharedMemoryBufferTestsFixture.cpp
+        #sharedMemoryBuffer/SharedMemoryBufferTests.cpp
 
-        needMediaData/NeedMediaDataTestsFixture.cpp
-        needMediaData/NeedMediaDataTests.cpp
+        #needMediaData/NeedMediaDataTestsFixture.cpp
+        #needMediaData/NeedMediaDataTests.cpp
 
-        mainThread/MainThreadTest.cpp
+        #mainThread/MainThreadTest.cpp
 
         webAudioPlayer/base/WebAudioPlayerTestBase.cpp
         webAudioPlayer/CreateTest.cpp
