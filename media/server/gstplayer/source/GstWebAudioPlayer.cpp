@@ -23,6 +23,11 @@
 #include "WorkerThread.h"
 #include "tasks/webAudio/WebAudioPlayerTaskFactory.h"
 
+namespace
+{
+constexpr uint32_t kMaxWriteBufferTimeoutMs{2000};
+} // namespace
+
 namespace firebolt::rialto::server
 {
 std::weak_ptr<IGstWebAudioPlayerFactory> GstWebAudioPlayerFactory::m_factory;
@@ -100,12 +105,26 @@ GstWebAudioPlayer::GstWebAudioPlayer(IGstWebAudioPlayerClient *client, const std
     m_context.gstSrc->initSrc();
 
     // Start task thread
-    m_workerThread = workerThreadFactory->createWorkerThread();
+    if ((!workerThreadFactory) || (!(m_workerThread = workerThreadFactory->createWorkerThread())))
+    {
+        throw std::runtime_error("Failed to create the worker thread");
+    }
 
-    initWebAudioPipeline();
+    if (!initWebAudioPipeline())
+    {
+        termWebAudioPipeline();
+        resetWorkerThread();
+        throw std::runtime_error("Failed to initalise the pipeline");
+    }
 
-    m_gstDispatcherThread =
-        gstDispatcherThreadFactory->createGstDispatcherThread(*this, m_context.pipeline, m_gstWrapper);
+    if ((!gstDispatcherThreadFactory) ||
+        (!(m_gstDispatcherThread =
+               gstDispatcherThreadFactory->createGstDispatcherThread(*this, m_context.pipeline, m_gstWrapper))))
+    {
+        termWebAudioPipeline();
+        resetWorkerThread();
+        throw std::runtime_error("Failed to create the dispatcher thread");
+    }
 }
 
 GstWebAudioPlayer::~GstWebAudioPlayer()
@@ -114,42 +133,247 @@ GstWebAudioPlayer::~GstWebAudioPlayer()
 
     m_gstDispatcherThread.reset();
 
-    // TODO(RIALTO-2): Add shutdown task
-    // Shutdown task thread
-    m_workerThread->join();
-    m_workerThread.reset();
+    resetWorkerThread();
 
-    GstBus *bus = m_gstWrapper->gstPipelineGetBus(GST_PIPELINE(m_context.pipeline));
-    m_gstWrapper->gstBusSetSyncHandler(bus, nullptr, nullptr, nullptr);
-    m_gstWrapper->gstObjectUnref(bus);
-
-    if (m_context.source)
-    {
-        m_gstWrapper->gstObjectUnref(m_context.source);
-    }
-
-    // Delete the pipeline
-    m_glibWrapper->gObjectUnref(m_context.pipeline);
-    m_glibWrapper->gObjectUnref(m_context.pipeline);
+    termWebAudioPipeline();
 }
 
-void GstWebAudioPlayer::initWebAudioPipeline() {}
+bool GstWebAudioPlayer::initWebAudioPipeline()
+{
+    m_context.pipeline = m_gstWrapper->gstPipelineNew("webaudiopipeline");
+    if (!m_context.pipeline)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to create the webaudiopipeline");
+        return false;
+    }
 
-void GstWebAudioPlayer::play() {}
+    // Create and initalise appsrc
+    m_context.source = m_gstWrapper->gstElementFactoryMake("appsrc", "audsrc");
+    if (!m_context.source)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to create the appsrc");
+        return false;
+    }
+    m_gstWrapper->gstAppSrcSetMaxBytes(GST_APP_SRC(m_context.source), kMaxWebAudioBytes);
+    m_glibWrapper->gObjectSet(m_context.source, "format", GST_FORMAT_TIME, nullptr);
 
-void GstWebAudioPlayer::pause() {}
+    // Perform sink specific initalisation
+    GstPluginFeature *feature = nullptr;
+    GstRegistry *reg = m_gstWrapper->gstRegistryGet();
+    if (!reg)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed get the gst registry");
+        return false;
+    }
 
-void GstWebAudioPlayer::setVolume(double volume) {}
+    bool result = false;
+    if (nullptr != (feature = m_gstWrapper->gstRegistryLookupFeature(reg, "amlhalasink")))
+    {
+        // LLama
+        RIALTO_SERVER_LOG_INFO("Use amlhalasink");
+        result = createAmlhalaSink();
+        m_gstWrapper->gstObjectUnref(feature);
+    }
+    else if (nullptr != (feature = m_gstWrapper->gstRegistryLookupFeature(reg, "rtkaudiosink")))
+    {
+        // XiOne
+        RIALTO_SERVER_LOG_INFO("Use rtkaudiosink");
+        result = createRtkAudioSink();
+        m_gstWrapper->gstObjectUnref(feature);
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_INFO("Use autoaudiosink");
+        result = createAutoSink();
+    }
+    return result;
+}
+
+bool GstWebAudioPlayer::createAmlhalaSink()
+{
+    GstElement *sink = m_gstWrapper->gstElementFactoryMake("amlhalasink", "webaudiosink");
+    if (!sink)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed create the amlhalasink");
+        return false;
+    }
+    m_glibWrapper->gObjectSet(G_OBJECT(sink), "direct-mode", FALSE, NULL);
+
+    m_gstWrapper->gstBinAddMany(GST_BIN(m_context.pipeline), m_context.source, sink, NULL);
+    gboolean result = m_gstWrapper->gstElementLinkMany(m_context.source, sink, NULL);
+    if (!result)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed link elements");
+        return false;
+    }
+
+    return true;
+}
+
+bool GstWebAudioPlayer::createRtkAudioSink()
+{
+    GstElement *sink = m_gstWrapper->gstElementFactoryMake("rtkaudiosink", "webaudiosink");
+    if (!sink)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed create the rtkaudiosink");
+        return false;
+    }
+    m_glibWrapper->gObjectSet(G_OBJECT(sink), "media-tunnel", FALSE, NULL);
+    m_glibWrapper->gObjectSet(G_OBJECT(sink), "audio-service", TRUE, NULL);
+
+    GstElement *convert = NULL;
+    GstElement *resample = NULL;
+
+    convert = m_gstWrapper->gstElementFactoryMake("audioconvert", NULL);
+    if (!convert)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed create the audioconvert");
+        return false;
+    }
+    resample = m_gstWrapper->gstElementFactoryMake("audioresample", NULL);
+    if (!resample)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed create the audioresample");
+        return false;
+    }
+
+    m_gstWrapper->gstBinAddMany(GST_BIN(m_context.pipeline), m_context.source, convert, resample, sink, nullptr);
+    gboolean result = m_gstWrapper->gstElementLinkMany(m_context.source, convert, resample, sink, nullptr);
+    if (!result)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed link elements");
+        return false;
+    }
+
+    return true;
+}
+
+bool GstWebAudioPlayer::createAutoSink()
+{
+    GstElement *sink = m_gstWrapper->gstElementFactoryMake("autoaudiosink", "webaudiosink");
+    if (!sink)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed create the autoaudiosink");
+        return false;
+    }
+
+    m_gstWrapper->gstBinAddMany(GST_BIN(m_context.pipeline), m_context.source, sink, NULL);
+    gboolean result = m_gstWrapper->gstElementLinkMany(m_context.source, sink, NULL);
+    if (!result)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed link elements");
+        return false;
+    }
+
+    return true;
+}
+
+void GstWebAudioPlayer::termWebAudioPipeline()
+{
+    if (m_context.pipeline)
+    {
+        m_taskFactory->createStop(*this)->execute();
+        GstBus *bus = m_gstWrapper->gstPipelineGetBus(GST_PIPELINE(m_context.pipeline));
+        if (bus)
+        {
+            m_gstWrapper->gstBusSetSyncHandler(bus, nullptr, nullptr, nullptr);
+            m_gstWrapper->gstObjectUnref(bus);
+        }
+
+        if (m_context.source)
+        {
+            m_gstWrapper->gstObjectUnref(m_context.source);
+        }
+
+        m_glibWrapper->gObjectUnref(m_context.pipeline);
+    }
+}
+
+void GstWebAudioPlayer::resetWorkerThread()
+{
+    m_workerThread->enqueueTask(m_taskFactory->createShutdown(*this));
+    m_workerThread->join();
+    m_workerThread.reset();
+}
+
+void GstWebAudioPlayer::setCaps(const std::string &audioMimeType, const WebAudioConfig *config)
+{
+    m_workerThread->enqueueTask(m_taskFactory->createSetCaps(m_context, audioMimeType, config));
+}
+
+void GstWebAudioPlayer::play()
+{
+    m_workerThread->enqueueTask(m_taskFactory->createPlay(*this));
+}
+
+void GstWebAudioPlayer::pause()
+{
+    m_workerThread->enqueueTask(m_taskFactory->createPause(*this));
+}
+
+void GstWebAudioPlayer::setVolume(double volume)
+{
+    m_workerThread->enqueueTask(m_taskFactory->createSetVolume(m_context, volume));
+}
 
 bool GstWebAudioPlayer::getVolume(double &volume)
 {
-    return false;
+    // Must be called on the main thread, otherwise the pipeline can be destroyed during the query.
+    volume =
+        m_gstWrapper->gstStreamVolumeGetVolume(GST_STREAM_VOLUME(m_context.pipeline), GST_STREAM_VOLUME_FORMAT_LINEAR);
+    return true;
 }
 
-void GstWebAudioPlayer::handleBusMessage(GstMessage *message) {}
+uint32_t GstWebAudioPlayer::writeBuffer(uint8_t *mainPtr, uint32_t mainLength, uint8_t *wrapPtr, uint32_t wrapLength)
+{
+    m_workerThread->enqueueTask(m_taskFactory->createWriteBuffer(m_context, mainPtr, mainLength, wrapPtr, wrapLength));
+
+    // Must block and wait for the data to be written from the shared buffer.
+    std::unique_lock<std::mutex> lock(m_context.m_writeBufferMutex);
+    std::cv_status status =
+        m_context.m_writeBufferCond.wait_for(lock, std::chrono::milliseconds(kMaxWriteBufferTimeoutMs));
+    if (std::cv_status::timeout == status)
+    {
+        RIALTO_SERVER_LOG_ERROR("Timed out writing to the gstreamer buffers");
+        return 0;
+    }
+    else
+    {
+        return m_context.m_lastBytesWritten;
+    }
+}
+
+void GstWebAudioPlayer::setEos()
+{
+    m_workerThread->enqueueTask(m_taskFactory->createEos(m_context));
+}
 
 bool GstWebAudioPlayer::changePipelineState(GstState newState)
 {
-    return false;
+    if (m_gstWrapper->gstElementSetState(m_context.pipeline, newState) == GST_STATE_CHANGE_FAILURE)
+    {
+        RIALTO_SERVER_LOG_ERROR("Change state failed - Gstreamer returned an error");
+        if (m_gstPlayerClient)
+            m_gstPlayerClient->notifyState(WebAudioPlayerState::FAILURE);
+        return false;
+    }
+    return true;
 }
+
+void GstWebAudioPlayer::stopWorkerThread()
+{
+    if (m_workerThread)
+    {
+        m_workerThread->stop();
+    }
+}
+
+void GstWebAudioPlayer::handleBusMessage(GstMessage *message)
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(m_taskFactory->createHandleBusMessage(m_context, *this, message));
+    }
+}
+
 }; // namespace firebolt::rialto::server

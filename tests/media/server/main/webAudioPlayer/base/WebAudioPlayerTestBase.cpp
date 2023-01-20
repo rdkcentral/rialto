@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2022 Sky UK
+ * Copyright 2023 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,14 @@ void WebAudioPlayerTestBase::createWebAudioPlayer()
     EXPECT_CALL(*m_sharedMemoryBufferMock,
                 mapPartition(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, m_webAudioPlayerHandle))
         .WillOnce(Return(true));
+    EXPECT_CALL(*m_sharedMemoryBufferMock, getDataPtr(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO,
+                                                      m_webAudioPlayerHandle, MediaSourceType::AUDIO))
+        .WillOnce(Return(&m_dataPtr));
+    EXPECT_CALL(*m_sharedMemoryBufferMock, getMaxDataLen(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO,
+                                                         m_webAudioPlayerHandle, MediaSourceType::AUDIO))
+        .WillOnce(Return(m_dataLen));
     EXPECT_CALL(*m_gstPlayerFactoryMock, createGstWebAudioPlayer(_)).WillOnce(Return(ByMove(std::move(m_gstPlayer))));
+    EXPECT_CALL(*m_gstPlayerMock, setCaps(m_audioMimeType, &m_config));
 
     EXPECT_NO_THROW(m_webAudioPlayer =
                         std::make_unique<WebAudioPlayerServerInternal>(m_webAudioPlayerClientMock, m_audioMimeType,
@@ -55,6 +62,13 @@ void WebAudioPlayerTestBase::createWebAudioPlayer()
 
 void WebAudioPlayerTestBase::destroyWebAudioPlayer()
 {
+    EXPECT_CALL(*m_sharedMemoryBufferMock,
+                unmapPartition(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, m_webAudioPlayerHandle))
+        .WillOnce(Return(true));
+    EXPECT_CALL(*m_mainThreadMock, unregisterClient(m_kMainThreadClientId));
+    // Objects are destroyed on the main thread
+    mainThreadWillEnqueueTaskAndWait();
+
     m_webAudioPlayer.reset();
 }
 

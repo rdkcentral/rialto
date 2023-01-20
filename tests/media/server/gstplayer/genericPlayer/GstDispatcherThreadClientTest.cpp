@@ -17,9 +17,9 @@
  * limitations under the License.
  */
 
-#include "GenericPlayerTaskMock.h"
 #include "GstGenericPlayerTestCommon.h"
 #include "IGstDispatcherThreadClient.h"
+#include "PlayerTaskMock.h"
 
 using testing::_;
 using testing::ByMove;
@@ -53,8 +53,8 @@ protected:
 TEST_F(GstDispatcherThreadClientTest, shouldHandleBusMessage)
 {
     GstMessage message{};
-    std::unique_ptr<IPlayerTask> messageTask{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*messageTask), execute());
+    std::unique_ptr<IPlayerTask> messageTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*messageTask), execute());
     EXPECT_CALL(m_workerThreadMock, enqueueTask(_))
         .WillRepeatedly(Invoke([](std::unique_ptr<IPlayerTask> &&task) { task->execute(); }));
     EXPECT_CALL(m_taskFactoryMock, createHandleBusMessage(_, _, &message)).WillOnce(Return(ByMove(std::move(messageTask))));

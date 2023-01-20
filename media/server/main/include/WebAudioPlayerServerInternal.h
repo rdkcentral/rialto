@@ -105,7 +105,7 @@ protected:
     /**
      * @brief The web audio player client.
      */
-    std::weak_ptr<IWebAudioPlayerClient> m_webAudioPlayerClient;
+    std::shared_ptr<IWebAudioPlayerClient> m_webAudioPlayerClient;
 
     /**
      * @brief Shared memory buffer.
@@ -133,23 +133,62 @@ protected:
     std::unique_ptr<IGstWebAudioPlayer> m_gstPlayer;
 
     /**
+     * @brief The id of the shared memory partition.
+     */
+    const int m_shmId;
+
+    /**
+     * @brief Pointer to the started of the shared buffer partition.
+     */
+    uint8_t *m_dataPtr;
+
+    /**
+     * @brief Length of the shared buffer partition.
+     */
+    uint32_t m_maxDataLength;
+
+    /**
+     * @brief The details of the free space in the shared buffer partition.
+     */
+    WebAudioShmInfo m_availableBuffer;
+
+    /**
+     * @brief True if a writeBuffer call is expected.
+     */
+    bool m_expectWriteBuffer;
+
+    /**
      * @brief Initalises the WebAudioPlayer.
      *
-     * @param[in] handle            : The handle for this WebAudioPlayer.
+     * @param[in] audioMimeType     : The audio encoding format.
+     * @param[in] config            : Additional type dependent configuration data or nullptr.
      * @param[in] gstPlayerFactory  : The gstreamer player factory.
      *
      * @retval true on success.
      */
-    bool initWebAudioPlayerInternal(int handle, const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory);
+    bool initWebAudioPlayerInternal(const std::string &audioMimeType, const WebAudioConfig *config,
+                                    const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory);
 
     /**
      * @brief Initalises the GstWebAudioPlayer.
      *
+     * @param[in] audioMimeType     : The audio encoding format.
+     * @param[in] config            : Additional type dependent configuration data or nullptr.
      * @param[in] gstPlayerFactory  : The gstreamer player factory.
      *
      * @retval true on success.
      */
-    bool initGstWebAudioPlayer(const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory);
+    bool initGstWebAudioPlayer(const std::string &audioMimeType, const WebAudioConfig *config,
+                               const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory);
+
+    /**
+     * @brief Write audio frames internally, only to be called on the main thread.
+     *
+     * @param[in]  numberOfFrames : Number of frames of audio in the shared memory.
+     *
+     * @retval true on success.
+     */
+    bool writeBufferInternal(const uint32_t numberOfFrames);
 };
 
 }; // namespace firebolt::rialto::server

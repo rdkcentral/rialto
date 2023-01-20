@@ -17,10 +17,10 @@
  * limitations under the License.
  */
 
-#include "GenericPlayerTaskMock.h"
 #include "GstGenericPlayerTestCommon.h"
 #include "Matchers.h"
 #include "MediaSourceUtil.h"
+#include "PlayerTaskMock.h"
 #include "TimerMock.h"
 
 using testing::_;
@@ -81,8 +81,8 @@ protected:
     {
         // Call any method to modify GstGenericPlayer context
         GstAppSrc appSrc{};
-        std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
-        EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*task), execute());
+        std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+        EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
         EXPECT_CALL(m_taskFactoryMock, createNeedData(_, &appSrc))
             .WillOnce(Invoke(
                 [&](GenericPlayerContext &context, GstAppSrc *src)
@@ -98,8 +98,8 @@ protected:
 TEST_F(GstGenericPlayerPrivateTest, shouldScheduleSourceSetupFinish)
 {
     std::chrono::milliseconds expectedTimeout{200};
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*task), execute());
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
 
     EXPECT_CALL(*m_timerFactoryMock, createTimer(expectedTimeout, _, common::TimerType::ONE_SHOT))
         .WillOnce(Invoke(
@@ -116,8 +116,8 @@ TEST_F(GstGenericPlayerPrivateTest, shouldScheduleSourceSetupFinish)
 TEST_F(GstGenericPlayerPrivateTest, shouldScheduleNeedData)
 {
     GstAppSrc appSrc{};
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*task), execute());
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
     EXPECT_CALL(m_taskFactoryMock, createNeedData(_, &appSrc)).WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->scheduleNeedMediaData(&appSrc);
@@ -126,8 +126,8 @@ TEST_F(GstGenericPlayerPrivateTest, shouldScheduleNeedData)
 TEST_F(GstGenericPlayerPrivateTest, shouldScheduleEnoughDataData)
 {
     GstAppSrc appSrc{};
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*task), execute());
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
     EXPECT_CALL(m_taskFactoryMock, createEnoughData(_, &appSrc)).WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->scheduleEnoughData(&appSrc);
@@ -135,8 +135,8 @@ TEST_F(GstGenericPlayerPrivateTest, shouldScheduleEnoughDataData)
 
 TEST_F(GstGenericPlayerPrivateTest, shouldScheduleAudioUnderflow)
 {
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*task), execute());
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
     EXPECT_CALL(m_taskFactoryMock, createUnderflow(_, _)).WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->scheduleAudioUnderflow();
@@ -144,8 +144,8 @@ TEST_F(GstGenericPlayerPrivateTest, shouldScheduleAudioUnderflow)
 
 TEST_F(GstGenericPlayerPrivateTest, shouldScheduleVideoUnderflow)
 {
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*task), execute());
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
     EXPECT_CALL(m_taskFactoryMock, createUnderflow(_, _)).WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->scheduleVideoUnderflow();
@@ -442,7 +442,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldCancelAudioUnderflow)
 {
     GstBuffer buffer{};
     GstAppSrc audioSrc{};
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     modifyContext(
         [&](GenericPlayerContext &context)
         {
@@ -452,7 +452,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldCancelAudioUnderflow)
             context.audioUnderflowOccured = true;
         });
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(_, &buffer));
-    EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
     EXPECT_CALL(m_taskFactoryMock, createPlay(_)).WillOnce(Return(ByMove(std::move(task))));
     EXPECT_CALL(m_gstPlayerClient, notifyNetworkState(NetworkState::BUFFERED));
     m_sut->attachAudioData();
@@ -520,7 +520,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldCancelVideoUnderflow)
 {
     GstBuffer buffer{};
     GstAppSrc videoSrc{};
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     modifyContext(
         [&](GenericPlayerContext &context)
         {
@@ -530,7 +530,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldCancelVideoUnderflow)
             context.videoUnderflowOccured = true;
         });
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(_, &buffer));
-    EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
     EXPECT_CALL(m_taskFactoryMock, createPlay(_)).WillOnce(Return(ByMove(std::move(task))));
     EXPECT_CALL(m_gstPlayerClient, notifyNetworkState(NetworkState::BUFFERED));
     m_sut->attachVideoData();
@@ -582,7 +582,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldCancelAudioAndVideoUnderflow)
     GstBuffer videoBuffer{};
     GstAppSrc audioSrc{};
     GstAppSrc videoSrc{};
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     modifyContext(
         [&](GenericPlayerContext &context)
         {
@@ -599,7 +599,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldCancelAudioAndVideoUnderflow)
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(_, &audioBuffer));
     m_sut->attachAudioData();
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(_, &videoBuffer));
-    EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
     EXPECT_CALL(m_taskFactoryMock, createPlay(_)).WillOnce(Return(ByMove(std::move(task))));
     EXPECT_CALL(m_gstPlayerClient, notifyNetworkState(NetworkState::BUFFERED));
     m_sut->attachVideoData();
@@ -610,7 +610,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldUpdateAudioCaps)
     GstAppSrc audioSrc{};
     GstCaps dummyCaps1;
     GstCaps dummyCaps2;
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     modifyContext([&](GenericPlayerContext &context)
                   { context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO] = GST_ELEMENT(&audioSrc); });
 
@@ -631,7 +631,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldUpdateAudioCapsSampleRateOnly)
     GstAppSrc audioSrc{};
     GstCaps dummyCaps1;
     GstCaps dummyCaps2;
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     modifyContext([&](GenericPlayerContext &context)
                   { context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO] = GST_ELEMENT(&audioSrc); });
 
@@ -650,7 +650,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldUpdateAudioCapsNumOfChannelsOnly)
     GstAppSrc audioSrc{};
     GstCaps dummyCaps1;
     GstCaps dummyCaps2;
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     modifyContext([&](GenericPlayerContext &context)
                   { context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO] = GST_ELEMENT(&audioSrc); });
 
@@ -670,7 +670,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldNotUpdateAudioCapsWhenValuesAreInvalid
     GstAppSrc audioSrc{};
     GstCaps dummyCaps1;
     GstCaps dummyCaps2;
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     modifyContext([&](GenericPlayerContext &context)
                   { context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO] = GST_ELEMENT(&audioSrc); });
 
@@ -692,7 +692,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldUpdateVideoCaps)
     GstAppSrc videoSrc{};
     GstCaps dummyCaps1;
     GstCaps dummyCaps2;
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     modifyContext([&](GenericPlayerContext &context)
                   { context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO] = GST_ELEMENT(&videoSrc); });
 
@@ -760,10 +760,10 @@ TEST_F(GstGenericPlayerPrivateTest, shouldNotStartPositionReportingTimerWhenItIs
 TEST_F(GstGenericPlayerPrivateTest, shouldScheduleReportPositionWhenPositionReportingTimerIsFired)
 {
     std::unique_ptr<common::ITimer> timerMock = std::make_unique<StrictMock<TimerMock>>();
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
-    std::unique_ptr<IPlayerTask> task2{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*task2), execute());
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    std::unique_ptr<IPlayerTask> task2{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task2), execute());
     EXPECT_CALL(m_taskFactoryMock, createReportPosition(_)).WillOnce(Return(ByMove(std::move(task))));
     EXPECT_CALL(m_taskFactoryMock, createCheckAudioUnderflow(_, _)).WillOnce(Return(ByMove(std::move(task2))));
     EXPECT_CALL(*m_timerFactoryMock, createTimer(positionReportTimerMs, _, common::TimerType::PERIODIC))

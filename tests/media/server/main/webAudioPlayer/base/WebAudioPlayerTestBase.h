@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2022 Sky UK
+ * Copyright 2023 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,8 +37,10 @@ using namespace firebolt::rialto::server;
 using namespace firebolt::rialto::server::mock;
 
 using ::testing::_;
+using ::testing::DoAll;
 using ::testing::Invoke;
 using ::testing::Return;
+using ::testing::SetArgReferee;
 using ::testing::StrictMock;
 
 class WebAudioPlayerTestBase : public ::testing::Test
@@ -66,6 +68,8 @@ protected:
     const uint32_t m_priority{5};
     const WebAudioConfig m_config{};
     const int32_t m_kMainThreadClientId{65};
+    uint8_t m_dataPtr{4};
+    const uint32_t m_dataLen{80};
 
     void createWebAudioPlayer();
     void destroyWebAudioPlayer();

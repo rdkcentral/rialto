@@ -50,10 +50,27 @@ add_gtests(RialtoServerGstPlayerUnitTests
     genericPlayer/CreateTest.cpp
     genericPlayer/GstGenericPlayerPrivateTest.cpp
     genericPlayer/GstGenericPlayerTest.cpp
-    genericPlayer/GstDispatcherThreadClientTest
-    genericPlayer/InitTest.cpp
-    genericPlayer/WorkerThreadTest.cpp
+    genericPlayer/GstDispatcherThreadClientTest.cpp
     genericPlayer/GstCapabilitiesTest.cpp
+
+    #GstWebAudioPlayer unittests
+    webAudioPlayer/taskTests/WebAudioPlayerTaskFactoryTest.cpp
+    webAudioPlayer/taskTests/PlayTest.cpp
+    webAudioPlayer/taskTests/PauseTest.cpp
+    webAudioPlayer/taskTests/EosTest.cpp
+    webAudioPlayer/taskTests/HandleBusMessageTest.cpp
+    webAudioPlayer/taskTests/SetVolumeTest.cpp
+    webAudioPlayer/taskTests/ShutdownTest.cpp
+    webAudioPlayer/taskTests/StopTest.cpp
+    webAudioPlayer/taskTests/SetCapsTest.cpp
+    webAudioPlayer/taskTests/WriteBufferTest.cpp
+
+    webAudioPlayer/CreateTest.cpp
+    webAudioPlayer/GstWebAudioPlayerPrivateTest.cpp
+    webAudioPlayer/GstDispatcherThreadClientTest.cpp
+    webAudioPlayer/GstWebAudioPlayerTest.cpp
+
+    webAudioPlayer/common/GstWebAudioPlayerTestCommon.cpp
 
     #GstSrc unittests
     rialtoSrc/CreateTest.cpp
@@ -69,6 +86,13 @@ add_gtests(RialtoServerGstPlayerUnitTests
 
     #ProtectionMetadata unittests
     dispatcherThread/GstDispatcherThreadTest.cpp
+
+    #GstInit unittests
+    gstInit/InitTest.cpp
+
+    #WorkerThread unittests
+    workerThread/WorkerThreadTest.cpp
+
 )
 
 target_include_directories(RialtoServerGstPlayerUnitTests
@@ -81,6 +105,7 @@ target_include_directories(RialtoServerGstPlayerUnitTests
         $<TARGET_PROPERTY:RialtoCommonMisc,INTERFACE_INCLUDE_DIRECTORIES>
 
         genericPlayer/common/
+        webAudioPlayer/common/
 
 )
 

@@ -25,6 +25,7 @@
 #include "IGstWrapper.h"
 #include "IWebAudioPlayerTaskFactory.h"
 #include <memory>
+#include <string>
 
 namespace firebolt::rialto::server
 {
@@ -34,6 +35,19 @@ public:
     WebAudioPlayerTaskFactory(IGstWebAudioPlayerClient *client, const std::shared_ptr<IGstWrapper> &gstWrapper,
                               const std::shared_ptr<IGlibWrapper> &glibWrapper);
     ~WebAudioPlayerTaskFactory() override = default;
+
+    std::unique_ptr<IPlayerTask> createShutdown(IGstWebAudioPlayerPrivate &player) const override;
+    std::unique_ptr<IPlayerTask> createStop(IGstWebAudioPlayerPrivate &player) const override;
+    std::unique_ptr<IPlayerTask> createPlay(IGstWebAudioPlayerPrivate &player) const override;
+    std::unique_ptr<IPlayerTask> createPause(IGstWebAudioPlayerPrivate &player) const override;
+    std::unique_ptr<IPlayerTask> createSetCaps(WebAudioPlayerContext &context, const std::string &audioMimeType,
+                                               const WebAudioConfig *config) const override;
+    std::unique_ptr<IPlayerTask> createEos(WebAudioPlayerContext &context) const override;
+    std::unique_ptr<IPlayerTask> createSetVolume(WebAudioPlayerContext &context, double volume) const override;
+    std::unique_ptr<IPlayerTask> createWriteBuffer(WebAudioPlayerContext &context, uint8_t *mainPtr, uint32_t mainLength,
+                                                   uint8_t *wrapPtr, uint32_t wrapLength) const override;
+    std::unique_ptr<IPlayerTask> createHandleBusMessage(WebAudioPlayerContext &context, IGstWebAudioPlayerPrivate &player,
+                                                        GstMessage *message) const override;
 
 private:
     IGstWebAudioPlayerClient *m_client;

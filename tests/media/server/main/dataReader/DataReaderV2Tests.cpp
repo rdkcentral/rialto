@@ -193,7 +193,7 @@ protected:
         return std::move(result.front());
     }
 
-    void writeData(const std::unique_ptr<IMediaPipeline::MediaSegment> &segment)
+    void writeBuffer(const std::unique_ptr<IMediaPipeline::MediaSegment> &segment)
     {
         auto shmInfo =
             std::make_shared<MediaPlayerShmInfo>(MediaPlayerShmInfo{kMetaDataSize, 0, kMetaDataSize, kDataSize});
@@ -221,7 +221,7 @@ private:
 TEST_F(DataReaderV2Tests, shouldReadBasicVideoData)
 {
     auto inputSegment = Build().basicVideoSegment()();
-    writeData(inputSegment);
+    writeBuffer(inputSegment);
     auto resultSegment = readData(kVideoMediaSourceType);
     Check(resultSegment).mandatoryDataPresent().videoDataPresent().optionalDataNotPresent().encryptionDataNotPresent();
 }
@@ -229,7 +229,7 @@ TEST_F(DataReaderV2Tests, shouldReadBasicVideoData)
 TEST_F(DataReaderV2Tests, shouldReadBasicAudioData)
 {
     auto inputSegment = Build().basicAudioSegment()();
-    writeData(inputSegment);
+    writeBuffer(inputSegment);
     auto resultSegment = readData(kAudioMediaSourceType);
     Check(resultSegment).mandatoryDataPresent().audioDataPresent().optionalDataNotPresent().encryptionDataNotPresent();
 }
@@ -237,7 +237,7 @@ TEST_F(DataReaderV2Tests, shouldReadBasicAudioData)
 TEST_F(DataReaderV2Tests, shouldReadVideoDataWithOptionalParams)
 {
     auto inputSegment = Build().basicVideoSegment().withOptionalData()();
-    writeData(inputSegment);
+    writeBuffer(inputSegment);
     auto resultSegment = readData(kVideoMediaSourceType);
     Check(resultSegment).mandatoryDataPresent().videoDataPresent().optionalDataPresent().encryptionDataNotPresent();
 }
@@ -245,7 +245,7 @@ TEST_F(DataReaderV2Tests, shouldReadVideoDataWithOptionalParams)
 TEST_F(DataReaderV2Tests, shouldReadAudioDataWithOptionalParams)
 {
     auto inputSegment = Build().basicAudioSegment().withOptionalData()();
-    writeData(inputSegment);
+    writeBuffer(inputSegment);
     auto resultSegment = readData(kAudioMediaSourceType);
     Check(resultSegment).mandatoryDataPresent().audioDataPresent().optionalDataPresent().encryptionDataNotPresent();
 }
@@ -253,7 +253,7 @@ TEST_F(DataReaderV2Tests, shouldReadAudioDataWithOptionalParams)
 TEST_F(DataReaderV2Tests, shouldReadEncryptedVideoData)
 {
     auto inputSegment = Build().basicVideoSegment().withEncryptionData()();
-    writeData(inputSegment);
+    writeBuffer(inputSegment);
     auto resultSegment = readData(kVideoMediaSourceType);
     Check(resultSegment).mandatoryDataPresent().videoDataPresent().optionalDataNotPresent().encryptionDataPresent();
 }
@@ -261,7 +261,7 @@ TEST_F(DataReaderV2Tests, shouldReadEncryptedVideoData)
 TEST_F(DataReaderV2Tests, shouldReadEncryptedAudioData)
 {
     auto inputSegment = Build().basicAudioSegment().withEncryptionData()();
-    writeData(inputSegment);
+    writeBuffer(inputSegment);
     auto resultSegment = readData(kAudioMediaSourceType);
     Check(resultSegment).mandatoryDataPresent().audioDataPresent().optionalDataNotPresent().encryptionDataPresent();
 }
@@ -269,7 +269,7 @@ TEST_F(DataReaderV2Tests, shouldReadEncryptedAudioData)
 TEST_F(DataReaderV2Tests, shouldReturnEmptyVectorWhenVideoSourceTypeIsSelectedForAudioData)
 {
     auto inputSegment = Build().basicAudioSegment()();
-    writeData(inputSegment);
+    writeBuffer(inputSegment);
     auto resultSegment = readData(kVideoMediaSourceType);
     EXPECT_FALSE(resultSegment);
 }
@@ -277,7 +277,7 @@ TEST_F(DataReaderV2Tests, shouldReturnEmptyVectorWhenVideoSourceTypeIsSelectedFo
 TEST_F(DataReaderV2Tests, shouldReturnEmptyVectorWhenAudioSourceTypeIsSelectedForVideoData)
 {
     auto inputSegment = Build().basicVideoSegment()();
-    writeData(inputSegment);
+    writeBuffer(inputSegment);
     auto resultSegment = readData(kAudioMediaSourceType);
     EXPECT_FALSE(resultSegment);
 }
@@ -285,7 +285,7 @@ TEST_F(DataReaderV2Tests, shouldReturnEmptyVectorWhenAudioSourceTypeIsSelectedFo
 TEST_F(DataReaderV2Tests, shouldReturnEmptyVectorWhenMetadataParsingFails)
 {
     auto inputSegment = Build().basicAudioSegment()();
-    writeData(inputSegment);
+    writeBuffer(inputSegment);
     doSomeMessInMemory();
     auto resultSegment = readData(kAudioMediaSourceType);
     EXPECT_FALSE(resultSegment);

@@ -23,6 +23,7 @@
 #include "IGstWebAudioPlayerClient.h"
 #include <memory>
 #include <stdint.h>
+#include <string>
 
 namespace firebolt::rialto::server
 {
@@ -66,6 +67,14 @@ public:
     IGstWebAudioPlayer &operator=(IGstWebAudioPlayer &&) = delete;
 
     /**
+     * @brief Sets the capabilities on the audio source.
+     *
+     * @param[in] audioMimeType: The audio encoding format, currently only "audio/x-raw" (PCM).
+     * @param[in] config:        Additional type dependent configuration data or nullptr,
+     */
+    virtual void setCaps(const std::string &audioMimeType, const WebAudioConfig *config) = 0;
+
+    /**
      * @brief Starts playback of the web audio.
      *
      * This method is considered to be asychronous and MUST NOT block
@@ -103,6 +112,23 @@ public:
      * @retval True on success.
      */
     virtual bool getVolume(double &volume) = 0;
+
+    /**
+     * @brief Write the buffer to gstreamer buffer.
+     *
+     * @param[in] mainPtr       : Pointer to the start of the data.
+     * @param[in] mainLength    : Amount of bytes to write from the mainPtr.
+     * @param[in] wrapPtr       : Pointer to the start of the wrapped data.
+     * @param[in] wrapLength    : Amount of bytes to write from the wrapPtr.
+     *
+     * @retval The number of bytes written to gstreamer.
+     */
+    virtual uint32_t writeBuffer(uint8_t *mainPtr, uint32_t mainLength, uint8_t *wrapPtr, uint32_t wrapLength) = 0;
+
+    /**
+     * @brief Notify EOS at the end of the gstreamer buffers.
+     */
+    virtual void setEos() = 0;
 };
 
 }; // namespace firebolt::rialto::server

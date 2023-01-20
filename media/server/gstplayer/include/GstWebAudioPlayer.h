@@ -79,19 +79,56 @@ public:
      */
     virtual ~GstWebAudioPlayer();
 
+    void setCaps(const std::string &audioMimeType, const WebAudioConfig *config) override;
     void play() override;
     void pause() override;
     void setVolume(double volume) override;
     bool getVolume(double &volume) override;
+    uint32_t writeBuffer(uint8_t *mainPtr, uint32_t mainLength, uint8_t *wrapPtr, uint32_t wrapLength) override;
+    void setEos() override;
 
     bool changePipelineState(GstState newState) override;
+    void stopWorkerThread() override;
     void handleBusMessage(GstMessage *message) override;
 
 private:
     /**
-     * @brief Initialises the player pipeline for MSE playback.
+     * @brief Initialises the player pipeline for WebAudio playback.
+     *
+     * @retval true on success false otherwise.
      */
-    void initWebAudioPipeline();
+    bool initWebAudioPipeline();
+
+    /**
+     * @brief Creates a amlhalasink audio sink element and adds it to the pipeline.
+     *
+     * @retval true on success false otherwise.
+     */
+    bool createAmlhalaSink();
+
+    /**
+     * @brief Creates a rtkaudiosink audio sink element and adds it to the pipeline.
+     *
+     * @retval true on success false otherwise.
+     */
+    bool createRtkAudioSink();
+
+    /**
+     * @brief Creates a autoaudiosink sink element and adds it to the pipeline.
+     *
+     * @retval true on success false otherwise.
+     */
+    bool createAutoSink();
+
+    /**
+     * @brief Terminates the player pipeline for WebAudio playback.
+     */
+    void termWebAudioPipeline();
+
+    /**
+     * @brief Shutdown and destroys the worker thread.
+     */
+    void resetWorkerThread();
 
 private:
     /**

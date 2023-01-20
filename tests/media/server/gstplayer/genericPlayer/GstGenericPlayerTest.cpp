@@ -18,11 +18,11 @@
  */
 
 #include "DataReaderMock.h"
-#include "GenericPlayerTaskMock.h"
 #include "GstGenericPlayerTestCommon.h"
 #include "IMediaPipeline.h"
 #include "Matchers.h"
 #include "MediaSourceUtil.h"
+#include "PlayerTaskMock.h"
 
 using testing::_;
 using testing::ByMove;
@@ -58,8 +58,8 @@ TEST_F(GstGenericPlayerTest, shouldAttachSource)
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
         std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>(-1, "video/mpeg");
 
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*task), execute());
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
     EXPECT_CALL(m_taskFactoryMock, createAttachSource(_, Ref(source))).WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->attachSource(source);
@@ -67,8 +67,8 @@ TEST_F(GstGenericPlayerTest, shouldAttachSource)
 
 TEST_F(GstGenericPlayerTest, shouldPlay)
 {
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*task), execute());
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
     EXPECT_CALL(m_taskFactoryMock, createPlay(_)).WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->play();
@@ -76,8 +76,8 @@ TEST_F(GstGenericPlayerTest, shouldPlay)
 
 TEST_F(GstGenericPlayerTest, shouldPause)
 {
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*task), execute());
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
     EXPECT_CALL(m_taskFactoryMock, createPause(_)).WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->pause();
@@ -85,8 +85,8 @@ TEST_F(GstGenericPlayerTest, shouldPause)
 
 TEST_F(GstGenericPlayerTest, shouldStop)
 {
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*task), execute());
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
     EXPECT_CALL(m_taskFactoryMock, createStop(_, _)).WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->stop();
@@ -95,8 +95,8 @@ TEST_F(GstGenericPlayerTest, shouldStop)
 TEST_F(GstGenericPlayerTest, shouldAttachSamplesFromVector)
 {
     IMediaPipeline::MediaSegmentVector mediaSegments;
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*task), execute());
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
     EXPECT_CALL(m_taskFactoryMock, createAttachSamples(_, _, _)).WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->attachSamples(mediaSegments);
@@ -105,8 +105,8 @@ TEST_F(GstGenericPlayerTest, shouldAttachSamplesFromVector)
 TEST_F(GstGenericPlayerTest, shouldAttachSamplesFromShm)
 {
     std::shared_ptr<IDataReader> dataReader{std::make_shared<DataReaderMock>()};
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*task), execute());
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
     EXPECT_CALL(m_taskFactoryMock, createReadShmDataAndAttachSamples(_, _, dataReader))
         .WillOnce(Return(ByMove(std::move(task))));
 
@@ -116,8 +116,8 @@ TEST_F(GstGenericPlayerTest, shouldAttachSamplesFromShm)
 TEST_F(GstGenericPlayerTest, shouldSetPlaybackRate)
 {
     double playbackRate{1.5};
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*task), execute());
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
     EXPECT_CALL(m_taskFactoryMock, createSetPlaybackRate(_, playbackRate)).WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->setPlaybackRate(playbackRate);
@@ -126,8 +126,8 @@ TEST_F(GstGenericPlayerTest, shouldSetPlaybackRate)
 TEST_F(GstGenericPlayerTest, shouldSetPosition)
 {
     std::int64_t position{12345};
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*task), execute());
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
     EXPECT_CALL(m_taskFactoryMock, createSetPosition(_, _, position)).WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->setPosition(position);
@@ -136,8 +136,8 @@ TEST_F(GstGenericPlayerTest, shouldSetPosition)
 TEST_F(GstGenericPlayerTest, shouldSetVideoGeometry)
 {
     Rectangle rectangle{1, 2, 3, 4};
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*task), execute());
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
     EXPECT_CALL(m_taskFactoryMock, createSetVideoGeometry(_, _, rectangle)).WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->setVideoGeometry(rectangle.x, rectangle.y, rectangle.width, rectangle.height);
@@ -146,8 +146,8 @@ TEST_F(GstGenericPlayerTest, shouldSetVideoGeometry)
 TEST_F(GstGenericPlayerTest, shouldSetEos)
 {
     MediaSourceType type{MediaSourceType::AUDIO};
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*task), execute());
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
     EXPECT_CALL(m_taskFactoryMock, createEos(_, _, type)).WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->setEos(type);
@@ -156,8 +156,8 @@ TEST_F(GstGenericPlayerTest, shouldSetEos)
 TEST_F(GstGenericPlayerTest, shouldSetupSource)
 {
     GstElement source{};
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*task), execute());
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
     EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(&source));
     EXPECT_CALL(m_taskFactoryMock, createSetupSource(_, _, &source)).WillOnce(Return(ByMove(std::move(task))));
 
@@ -167,8 +167,8 @@ TEST_F(GstGenericPlayerTest, shouldSetupSource)
 TEST_F(GstGenericPlayerTest, shouldSetupElement)
 {
     GstElement element{};
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*task), execute());
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
     EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(&element));
     EXPECT_CALL(m_taskFactoryMock, createSetupElement(_, _, &element)).WillOnce(Return(ByMove(std::move(task))));
 
@@ -207,8 +207,8 @@ TEST_F(GstGenericPlayerTest, shouldReturnPosition)
 
 TEST_F(GstGenericPlayerTest, shouldRenderFrame)
 {
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*task), execute());
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
     EXPECT_CALL(m_taskFactoryMock, createRenderFrame(_)).WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->renderFrame();

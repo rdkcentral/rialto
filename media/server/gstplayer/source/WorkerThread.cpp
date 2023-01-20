@@ -24,7 +24,16 @@ namespace firebolt::rialto::server
 {
 std::unique_ptr<IWorkerThread> WorkerThreadFactory::createWorkerThread() const
 {
-    return std::make_unique<WorkerThread>();
+    std::unique_ptr<IWorkerThread> workerThread;
+    try
+    {
+        workerThread = std::make_unique<WorkerThread>();
+    }
+    catch (const std::exception &e)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to create the worker thread, reason: %s", e.what());
+    }
+    return workerThread;
 }
 
 WorkerThread::WorkerThread()

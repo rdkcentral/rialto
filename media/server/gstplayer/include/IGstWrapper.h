@@ -965,6 +965,54 @@ public:
      * @retval The current stream volume as linear factor
      */
     virtual void gstStreamVolumeSetVolume(GstStreamVolume *volume, GstStreamVolumeFormat format, gdouble val) const = 0;
+
+    /**
+     * @brief Create a new pipeline with given name.
+     *
+     * @param[in] name  : Name of new pipeline.
+     *
+     * @retval The new pipeline element.
+     */
+    virtual GstElement *gstPipelineNew(const gchar *name) const = 0;
+
+    /**
+     * @brief Find a GstPluginFeature in the registry.
+     *
+     * @param[in] registry  : Registry to search.
+     * @param[in] name      : Name of feature to lookup.
+     *
+     * @retval A GstPluginFeature if successful, the refcount is incremented.
+     */
+    virtual GstPluginFeature *gstRegistryLookupFeature(GstRegistry *registry, const char *name) const = 0;
+
+    /**
+     * @brief Adds a list of elements to the bin.
+     *
+     * @param[in] bin       : The bin to add the elements to.
+     * @param[in] element_1 : The first element to add.
+     * @param[in] ...       : Additional elements.
+     */
+    virtual void gstBinAddMany(GstBin *bin, GstElement *element_1, ...) const = 0;
+
+    /**
+     * @brief Chain together a series of elements.
+     *
+     * @param[in] element_1 : The first element to link.
+     * @param[in] element_2 : The second element to link.
+     * @param[in] ...       : NULL terminated list of elements.
+     *
+     * @retval TRUE if successful, FALSE otherwise.
+     */
+    virtual gboolean gstElementLinkMany(GstElement *element_1, GstElement *element_2, ...) const = 0;
+
+    /**
+     * @brief Get the number of bytes queued in the appsrc.
+     *
+     * @param[in] appsrc : The app source.
+     *
+     * @retval The number of bytes queued.
+     */
+    virtual guint64 gstAppSrcGetCurrentLevelBytes(GstAppSrc *appsrc) const = 0;
 };
 
 }; // namespace firebolt::rialto::server
