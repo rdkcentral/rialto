@@ -373,8 +373,9 @@ bool GstGenericPlayer::getPosition(std::int64_t &position)
 {
     // We are on main thread here, but m_context.pipeline can be used, because it's modified only in GstGenericPlayer
     // constructor and destructor. GstGenericPlayer is created/destructed on main thread, so we won't have a crash here.
-    if (!m_context.pipeline || GST_STATE(m_context.pipeline) < GST_STATE_PLAYING)
+    if (!m_context.pipeline || GST_STATE(m_context.pipeline) < GST_STATE_PAUSED)
     {
+        RIALTO_SERVER_LOG_WARN("GetPosition failed. Pipeline is null or state < PAUSED");
         return false;
     }
     if (!m_gstWrapper->gstElementQueryPosition(m_context.pipeline, GST_FORMAT_TIME, &position))

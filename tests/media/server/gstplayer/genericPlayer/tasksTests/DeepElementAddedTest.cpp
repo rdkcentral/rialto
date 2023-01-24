@@ -26,6 +26,8 @@
 #include <gtest/gtest.h>
 #include <memory>
 
+using testing::_;
+using testing::Return;
 using testing::StrictMock;
 
 class DeepElementAddedTest : public testing::Test
@@ -44,6 +46,10 @@ protected:
 
 TEST_F(DeepElementAddedTest, shouldAddElement)
 {
+    EXPECT_CALL(*m_gstWrapper, gstObjectParent(_)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_gstWrapper, gstObjectCast(_)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_gstWrapper, gstElementGetName(_)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_glibWrapper, gFree(nullptr));
     firebolt::rialto::server::DeepElementAdded task{m_context,   m_gstPlayer, m_gstWrapper, m_glibWrapper,
                                                     &m_pipeline, &m_bin,      &m_element};
     // TODO after testing on hw

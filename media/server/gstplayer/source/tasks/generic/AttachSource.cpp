@@ -295,6 +295,11 @@ void AttachSource::updateSource(GstCaps *caps, const std::string &strCaps) const
 
 void AttachSource::switchAudioSource(GstCaps *caps) const
 {
+    if (m_attachedSource->getMimeType().empty())
+    {
+        RIALTO_SERVER_LOG_WARN("SKIP switching audio source. Unknown mime type");
+        return;
+    }
     RIALTO_SERVER_LOG_INFO("Switching audio source");
     AudioAttributesPrivate audioAttributes{createAudioAttributes()};
     int sampleAttributes{0}; // rdk_gstreamer_utils::performAudioTrackCodecChannelSwitch checks if this param != NULL only.
@@ -327,6 +332,7 @@ void AttachSource::switchAudioSource(GstCaps *caps) const
     m_context.audioNeedData = true;
     m_context.audioUnderflowEnabled = true;
     m_context.audioSourceRemoved = false;
+    m_context.lastAudioSampleTimestamps = currentPosition;
     m_player.notifyNeedMediaData(true, false);
 }
 

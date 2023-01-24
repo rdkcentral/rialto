@@ -30,6 +30,7 @@
 
 using testing::_;
 using testing::ElementsAreArray;
+using testing::Invoke;
 using testing::Return;
 using testing::StrEq;
 using testing::StrictMock;
@@ -307,6 +308,38 @@ TEST_F(AttachSourceTest, shouldAttachVideoDolbyVisionSource)
 
 TEST_F(AttachSourceTest, shouldSwitchAudioSource)
 {
+    constexpr gint64 kPosition{1234};
+    m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, &m_appSrc);
+    m_context.audioSourceRemoved = true;
+    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(-1, "audio/aac");
+    firebolt::rialto::server::AttachSource task{m_context,   m_gstWrapper, m_glibWrapper, m_rdkGstreamerUtilsWrapper,
+                                                m_gstPlayer, source};
+    EXPECT_CALL(*m_gstWrapper, gstCapsNewEmptySimple(StrEq("audio/mpeg"))).WillOnce(Return(&m_gstCaps1));
+    EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleIntStub(&m_gstCaps1, StrEq("mpegversion"), G_TYPE_INT, 4));
+    EXPECT_CALL(*m_gstWrapper, gstCapsToString(&m_gstCaps1)).WillOnce(Return(&m_capsStr));
+    EXPECT_CALL(*m_glibWrapper, gFree(&m_capsStr));
+    EXPECT_CALL(*m_gstWrapper, gstElementQueryPosition(_, GST_FORMAT_TIME, _))
+        .WillOnce(Invoke(
+            [this](GstElement *element, GstFormat format, gint64 *cur)
+            {
+                *cur = kPosition;
+                return TRUE;
+            }));
+    EXPECT_CALL(*m_rdkGstreamerUtilsWrapper,
+                performAudioTrackCodecChannelSwitch(&m_context.playbackGroup, _, _, _, _, _, _, _, _, _, _, _, _))
+        .WillOnce(Return(true));
+    EXPECT_CALL(m_gstPlayer, notifyNeedMediaData(true, false));
+    EXPECT_CALL(*m_gstWrapper, gstCapsUnref(&m_gstCaps1));
+    task.execute();
+    EXPECT_TRUE(m_context.audioNeedData);
+    EXPECT_TRUE(m_context.audioUnderflowEnabled);
+    EXPECT_FALSE(m_context.audioSourceRemoved);
+    EXPECT_EQ(m_context.lastAudioSampleTimestamps, kPosition);
+}
+
+TEST_F(AttachSourceTest, shouldNotSwitchAudioSourceWhenMimeTypeIsEmpty)
+{
     m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, &m_appSrc);
     m_context.audioSourceRemoved = true;
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
@@ -316,11 +349,6 @@ TEST_F(AttachSourceTest, shouldSwitchAudioSource)
     EXPECT_CALL(*m_gstWrapper, gstCapsNewEmpty()).WillOnce(Return(&m_gstCaps2));
     EXPECT_CALL(*m_gstWrapper, gstCapsToString(&m_gstCaps2)).WillOnce(Return(&m_capsStr));
     EXPECT_CALL(*m_glibWrapper, gFree(&m_capsStr));
-    EXPECT_CALL(*m_gstWrapper, gstElementQueryPosition(_, GST_FORMAT_TIME, _)).WillOnce(Return(TRUE));
-    EXPECT_CALL(*m_rdkGstreamerUtilsWrapper,
-                performAudioTrackCodecChannelSwitch(&m_context.playbackGroup, _, _, _, _, _, _, _, _, _, _, _, _))
-        .WillOnce(Return(true));
-    EXPECT_CALL(m_gstPlayer, notifyNeedMediaData(true, false));
     EXPECT_CALL(*m_gstWrapper, gstCapsUnref(&m_gstCaps2));
     task.execute();
 }

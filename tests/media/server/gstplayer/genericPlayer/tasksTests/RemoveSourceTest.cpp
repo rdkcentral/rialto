@@ -34,12 +34,14 @@ protected:
     StrictMock<firebolt::rialto::server::GstGenericPlayerClientMock> m_gstPlayerClient;
     std::shared_ptr<firebolt::rialto::server::GstWrapperMock> m_gstWrapper{
         std::make_shared<StrictMock<firebolt::rialto::server::GstWrapperMock>>()};
+    GstBuffer m_gstBuffer{};
     GstElement m_audioSrc{};
     GstEvent m_flushStartEvent{};
     GstEvent m_flushStopEvent{};
 
     RemoveSourceTest()
     {
+        m_context.audioBuffers.push_back(&m_gstBuffer);
         m_context.audioNeedData = true;
         m_context.audioNeedDataPending = true;
         m_context.audioUnderflowEnabled = true;
@@ -59,6 +61,7 @@ TEST_F(RemoveSourceTest, shouldRemoveAudioSourceWithoutFlushing)
     EXPECT_FALSE(m_context.audioNeedDataPending);
     EXPECT_FALSE(m_context.audioUnderflowEnabled);
     EXPECT_TRUE(m_context.audioSourceRemoved);
+    EXPECT_TRUE(m_context.audioBuffers.empty());
 }
 
 TEST_F(RemoveSourceTest, shouldNotRemoveVideoSource)
@@ -86,6 +89,7 @@ TEST_F(RemoveSourceTest, shouldRemoveAudioSource)
     EXPECT_FALSE(m_context.audioNeedDataPending);
     EXPECT_FALSE(m_context.audioUnderflowEnabled);
     EXPECT_TRUE(m_context.audioSourceRemoved);
+    EXPECT_TRUE(m_context.audioBuffers.empty());
 }
 
 TEST_F(RemoveSourceTest, shouldRemoveAudioSourceFlushEventError)

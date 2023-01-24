@@ -29,14 +29,14 @@ namespace firebolt::rialto::server
 {
 struct PlaybackGroupPrivate
 {
-    GstElement *m_gstPipeline;
-    GstElement *m_curAudioPlaysinkBin;
-    GstElement *m_curAudioDecodeBin;
-    GstElement *m_curAudioDecoder;
-    GstElement *m_curAudioParse;
-    GstElement *m_curAudioTypefind;
-    bool m_linkTypefindParser;
-    bool m_isAudioAAC;
+    GstElement *m_gstPipeline{nullptr};
+    GstElement *m_curAudioPlaysinkBin{nullptr};
+    GstElement *m_curAudioDecodeBin{nullptr};
+    GstElement *m_curAudioDecoder{nullptr};
+    GstElement *m_curAudioParse{nullptr};
+    GstElement *m_curAudioTypefind{nullptr};
+    bool m_linkTypefindParser{false};
+    bool m_isAudioAAC{false};
 };
 
 struct AudioAttributesPrivate

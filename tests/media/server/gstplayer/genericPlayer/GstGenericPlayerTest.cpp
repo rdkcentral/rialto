@@ -195,7 +195,7 @@ TEST_F(GstGenericPlayerTest, shouldAddDeepElement)
     triggerDeepElementAdded(&element);
 }
 
-TEST_F(GstGenericPlayerTest, shouldReturnInvalidPositionWhenPipelineIsBelowPlayingState)
+TEST_F(GstGenericPlayerTest, shouldReturnInvalidPositionWhenPipelineIsBelowPausedState)
 {
     int64_t targetPosition{};
     EXPECT_FALSE(m_sut->getPosition(targetPosition));
@@ -209,11 +209,27 @@ TEST_F(GstGenericPlayerTest, shouldReturnInvalidPositionWhenQueryFails)
     EXPECT_FALSE(m_sut->getPosition(targetPosition));
 }
 
-TEST_F(GstGenericPlayerTest, shouldReturnPosition)
+TEST_F(GstGenericPlayerTest, shouldReturnPositionInPlayingState)
 {
     constexpr gint64 expectedPosition{123};
     int64_t targetPosition{};
     setPipelineState(GST_STATE_PLAYING);
+    EXPECT_CALL(*m_gstWrapperMock, gstElementQueryPosition(_, GST_FORMAT_TIME, _))
+        .WillOnce(Invoke(
+            [&](GstElement *element, GstFormat format, gint64 *cur)
+            {
+                *cur = expectedPosition;
+                return TRUE;
+            }));
+    EXPECT_TRUE(m_sut->getPosition(targetPosition));
+    EXPECT_EQ(expectedPosition, targetPosition);
+}
+
+TEST_F(GstGenericPlayerTest, shouldReturnPositionInPausedState)
+{
+    constexpr gint64 expectedPosition{123};
+    int64_t targetPosition{};
+    setPipelineState(GST_STATE_PAUSED);
     EXPECT_CALL(*m_gstWrapperMock, gstElementQueryPosition(_, GST_FORMAT_TIME, _))
         .WillOnce(Invoke(
             [&](GstElement *element, GstFormat format, gint64 *cur)

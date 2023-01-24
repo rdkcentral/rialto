@@ -42,6 +42,7 @@ void RemoveSource::execute() const
         RIALTO_SERVER_LOG_WARN("RemoveSource not supported for type != AUDIO");
         return;
     }
+    m_context.audioBuffers.clear();
     m_context.audioNeedData = false;
     m_context.audioNeedDataPending = false;
     m_context.audioUnderflowEnabled = false;

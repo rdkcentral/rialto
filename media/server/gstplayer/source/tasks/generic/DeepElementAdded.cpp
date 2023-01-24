@@ -36,15 +36,31 @@ DeepElementAdded::DeepElementAdded(GenericPlayerContext &context, IGstGenericPla
                                    const std::shared_ptr<IGstWrapper> &gstWrapper,
                                    const std::shared_ptr<IGlibWrapper> &glibWrapper, GstBin *pipeline, GstBin *bin,
                                    GstElement *element)
-    : m_context{context}, m_player{player}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
-      m_pipeline{pipeline}, m_bin{bin}, m_element{element}
+    : m_context{context}, m_player{player}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_pipeline{pipeline},
+      m_bin{bin}, m_element{element}, m_elementName{nullptr}, m_callbackRegistered{false}, m_signalId{0}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing DeepElementAdded");
+    // Signal connection has to happen immediately (we cannot wait for thread switch)
+    if (m_gstWrapper->gstObjectParent(m_element) == m_gstWrapper->gstObjectCast(m_bin))
+    {
+        m_elementName = m_gstWrapper->gstElementGetName(m_element);
+        if (m_elementName)
+        {
+            RIALTO_SERVER_LOG_DEBUG("Element Name = %s", m_elementName);
+            if (m_glibWrapper->gStrrstr(m_elementName, "typefind"))
+            {
+                RIALTO_SERVER_LOG_DEBUG("Registering onHaveType callback");
+                m_signalId =
+                    m_glibWrapper->gSignalConnect(G_OBJECT(m_element), "have-type", G_CALLBACK(onHaveType), &m_player);
+            }
+        }
+    }
 }
 
 DeepElementAdded::~DeepElementAdded()
 {
     RIALTO_SERVER_LOG_DEBUG("DeepElementAdded finished");
+    m_glibWrapper->gFree(m_elementName);
 }
 
 void DeepElementAdded::execute() const
@@ -53,45 +69,29 @@ void DeepElementAdded::execute() const
     m_context.playbackGroup.m_gstPipeline = GST_ELEMENT(m_pipeline);
 
     RIALTO_SERVER_LOG_DEBUG("Element = %p Bin = %p Pipeline = %p", m_element, m_bin, m_pipeline);
-    if (m_gstWrapper->gstObjectParent(m_element) == m_gstWrapper->gstObjectCast(m_bin))
+    if (m_callbackRegistered)
     {
-        gchar *elementName = m_gstWrapper->gstElementGetName(m_element);
-        if (elementName)
-        {
-            RIALTO_SERVER_LOG_DEBUG("Element Name = %s", elementName);
-            if (m_glibWrapper->gStrrstr(elementName, "typefind"))
-            {
-                m_context.playbackGroup.m_curAudioTypefind = m_element;
-                RIALTO_SERVER_LOG_DEBUG("Registering onHaveType callback");
-                m_context.connectedSignals[m_element] =
-                    m_glibWrapper->gSignalConnect(G_OBJECT(m_element), "have-type", G_CALLBACK(onHaveType), &m_player);
-            }
-            m_glibWrapper->gFree(elementName);
-        }
+        m_context.playbackGroup.m_curAudioTypefind = m_element;
+        m_context.connectedSignals[m_element] = m_signalId;
+    }
+    if (m_elementName)
+    {
         if (m_gstWrapper->gstObjectCast(m_bin) == m_gstWrapper->gstObjectCast(m_context.playbackGroup.m_curAudioDecodeBin))
         {
-            gchar *elementName = m_gstWrapper->gstElementGetName(m_element);
-            RIALTO_SERVER_LOG_DEBUG("Element Name = %s", elementName);
-            if (elementName)
+            if (m_glibWrapper->gStrrstr(m_elementName, "parse"))
             {
-                if (m_glibWrapper->gStrrstr(elementName, "parse"))
-                {
-                    RIALTO_SERVER_LOG_DEBUG("curAudioParse = %s", elementName);
-                    m_context.playbackGroup.m_curAudioParse = m_element;
-                }
-                else if (m_glibWrapper->gStrrstr(elementName, "dec"))
-                {
-                    RIALTO_SERVER_LOG_DEBUG("curAudioDecoder = %s", elementName);
-                    m_context.playbackGroup.m_curAudioDecoder = m_element;
-                }
-                m_glibWrapper->gFree(elementName);
+                RIALTO_SERVER_LOG_DEBUG("curAudioParse = %s", m_elementName);
+                m_context.playbackGroup.m_curAudioParse = m_element;
+            }
+            else if (m_glibWrapper->gStrrstr(m_elementName, "dec"))
+            {
+                RIALTO_SERVER_LOG_DEBUG("curAudioDecoder = %s", m_elementName);
+                m_context.playbackGroup.m_curAudioDecoder = m_element;
             }
         }
         else
         {
-            gchar *elementName = m_gstWrapper->gstElementGetName(m_element);
-            RIALTO_SERVER_LOG_DEBUG("Element Name = %s", elementName);
-            if (elementName && m_glibWrapper->gStrrstr(elementName, "audiosink"))
+            if (m_glibWrapper->gStrrstr(m_elementName, "audiosink"))
             {
                 GstElement *audioSinkParent =
                     reinterpret_cast<GstElement *>(m_gstWrapper->gstElementGetParent(m_element));
@@ -106,7 +106,6 @@ void DeepElementAdded::execute() const
                     }
                     m_glibWrapper->gFree(audioSinkParentName);
                 }
-                m_glibWrapper->gFree(elementName);
             }
         }
     }
