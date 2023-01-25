@@ -52,6 +52,7 @@ DeepElementAdded::DeepElementAdded(GenericPlayerContext &context, IGstGenericPla
                 RIALTO_SERVER_LOG_DEBUG("Registering onHaveType callback");
                 m_signalId =
                     m_glibWrapper->gSignalConnect(G_OBJECT(m_element), "have-type", G_CALLBACK(onHaveType), &m_player);
+                m_callbackRegistered = true;
             }
         }
     }
