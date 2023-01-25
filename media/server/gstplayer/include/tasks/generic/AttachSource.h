@@ -45,7 +45,7 @@ public:
 private:
     void addSource(GstCaps *caps) const;
     void updateSource(GstCaps *caps, const std::string &strCaps) const;
-    void switchAudioSource(GstCaps *caps) const;
+    void switchAudioSource(GstCaps *caps, const std::string &strCaps) const;
     GstCaps *createCapsFromMediaSource() const;
     AudioAttributesPrivate createAudioAttributes() const;
 

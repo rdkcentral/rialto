@@ -249,7 +249,7 @@ void AttachSource::execute() const
     }
     else if (m_attachedSource->getType() == MediaSourceType::AUDIO && m_context.audioSourceRemoved)
     {
-        switchAudioSource(caps);
+        switchAudioSource(caps, strCaps);
     }
     else
     {
@@ -293,14 +293,14 @@ void AttachSource::updateSource(GstCaps *caps, const std::string &strCaps) const
         m_gstWrapper->gstCapsUnref(appsrcCaps);
 }
 
-void AttachSource::switchAudioSource(GstCaps *caps) const
+void AttachSource::switchAudioSource(GstCaps *caps, const std::string &strCaps) const
 {
     if (m_attachedSource->getMimeType().empty())
     {
         RIALTO_SERVER_LOG_WARN("SKIP switching audio source. Unknown mime type");
         return;
     }
-    RIALTO_SERVER_LOG_INFO("Switching audio source");
+    RIALTO_SERVER_LOG_MIL("Switching audio source. New caps: %s", strCaps.c_str());
     AudioAttributesPrivate audioAttributes{createAudioAttributes()};
     int sampleAttributes{0}; // rdk_gstreamer_utils::performAudioTrackCodecChannelSwitch checks if this param != NULL only.
     std::uint32_t status{0};   // must be 0 to make rdk_gstreamer_utils::performAudioTrackCodecChannelSwitch work

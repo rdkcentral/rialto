@@ -274,8 +274,8 @@ public:
     /**
      * @brief Searches the string haystack for the last occurrence of the string needle.
      *
-     * @param[in] haystack : A nul-terminated string.
-     * @param[in] needle   : The nul-terminated string to search for.
+     * @param[in] haystack : A null-terminated string.
+     * @param[in] needle   : The null-terminated string to search for.
      *
      * @retval A pointer to the found occurrence, or NULL if not found.
      */
