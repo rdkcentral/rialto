@@ -237,13 +237,20 @@ bool GstWebAudioPlayer::createRtkAudioSink()
         return false;
     }
 
-    m_gstWrapper->gstBinAddMany(GST_BIN(m_context.pipeline), m_context.source, convert, resample, sink, nullptr);
-    gboolean result = m_gstWrapper->gstElementLinkMany(m_context.source, convert, resample, sink, nullptr);
-    if (!result)
-    {
-        RIALTO_SERVER_LOG_ERROR("Failed link elements");
-        return false;
-    }
+    m_gstWrapper->gstBinAdd(GST_BIN(m_context.pipeline), m_context.source);
+    m_gstWrapper->gstBinAdd(GST_BIN(m_context.pipeline), convert);
+    m_gstWrapper->gstBinAdd(GST_BIN(m_context.pipeline), resample);
+    m_gstWrapper->gstBinAdd(GST_BIN(m_context.pipeline), sink);
+
+    m_gstWrapper->gstElementLink(m_context.source, convert);
+    m_gstWrapper->gstElementLink(convert, resample);
+    m_gstWrapper->gstElementLink(resample, sink);
+    //gboolean result = m_gstWrapper->gstElementLinkMany(m_context.source, convert, resample, sink, nullptr);
+    //if (!result)
+    //{
+    //    RIALTO_SERVER_LOG_ERROR("Failed link elements");
+    //    return false;
+    //}
 
     return true;
 }
