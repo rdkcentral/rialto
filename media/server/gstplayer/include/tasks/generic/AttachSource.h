@@ -36,7 +36,9 @@ class AttachSource : public IPlayerTask
 {
 public:
     AttachSource(GenericPlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper,
-                 std::shared_ptr<IGlibWrapper> glibWrapper, const std::shared_ptr<IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper, IGstGenericPlayerPrivate &player, const std::unique_ptr<IMediaPipeline::MediaSource> &source);
+                 std::shared_ptr<IGlibWrapper> glibWrapper,
+                 const std::shared_ptr<IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper,
+                 IGstGenericPlayerPrivate &player, const std::unique_ptr<IMediaPipeline::MediaSource> &source);
     ~AttachSource() override;
     void execute() const override;
 

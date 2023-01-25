@@ -305,12 +305,10 @@ void AttachSource::switchAudioSource(GstCaps *caps) const
     int sampleAttributes{0}; // rdk_gstreamer_utils::performAudioTrackCodecChannelSwitch checks if this param != NULL only.
     std::uint32_t status{0};   // must be 0 to make rdk_gstreamer_utils::performAudioTrackCodecChannelSwitch work
     unsigned int ui32Delay{0}; // output param
-    long long audioChangeTargetPts{
+    std::int64_t audioChangeTargetPts{
         -1}; // output param. Set audioChangeTargetPts = currentDispPts in rdk_gstreamer_utils function stub
-    std::int64_t currentPosition;
-    m_gstWrapper->gstElementQueryPosition(m_context.pipeline, GST_FORMAT_TIME, &currentPosition);
-    long long currentDispPts{
-        static_cast<long long>(currentPosition)}; // In netflix code it's currentDisplayPosition + offset
+    std::int64_t currentDispPts; // In netflix code it's currentDisplayPosition + offset
+    m_gstWrapper->gstElementQueryPosition(m_context.pipeline, GST_FORMAT_TIME, &currentDispPts);
     unsigned int audioChangeStage{0}; // Output param. Set to AUDCHG_ALIGN in rdk_gstreamer_utils function stub
     bool audioAac{(m_attachedSource->getMimeType() == "audio/mp4" || m_attachedSource->getMimeType() == "audio/aac")};
     bool svpEnabled{true}; // assume always true
@@ -332,7 +330,7 @@ void AttachSource::switchAudioSource(GstCaps *caps) const
     m_context.audioNeedData = true;
     m_context.audioUnderflowEnabled = true;
     m_context.audioSourceRemoved = false;
-    m_context.lastAudioSampleTimestamps = currentPosition;
+    m_context.lastAudioSampleTimestamps = currentDispPts;
     m_player.notifyNeedMediaData(true, false);
 }
 

@@ -25,7 +25,8 @@
 
 namespace firebolt::rialto::server
 {
-Underflow::Underflow(IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client, bool &underflowFlag, bool underflowEnabled)
+Underflow::Underflow(IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client, bool &underflowFlag,
+                     bool underflowEnabled)
     : m_player{player}, m_gstPlayerClient{client}, m_underflowFlag{underflowFlag}, m_underflowEnabled{underflowEnabled}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing Underflow");

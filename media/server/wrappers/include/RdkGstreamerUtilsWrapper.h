@@ -38,8 +38,8 @@ public:
     ~RdkGstreamerUtilsWrapper() override = default;
     bool performAudioTrackCodecChannelSwitch(PlaybackGroupPrivate *playbackGroup, const void *sampleAttr,
                                              AudioAttributesPrivate *audioAttr, std::uint32_t *status,
-                                             unsigned int *ui32Delay, long long *audioChangeTargetPts,
-                                             const long long *currentDispPts, unsigned int *audioChangeStage,
+                                             unsigned int *ui32Delay, std::int64_t *audioChangeTargetPts,
+                                             const std::int64_t *currentDispPts, unsigned int *audioChangeStage,
                                              GstCaps **appsrcCaps, bool *audioaac, bool svpEnabled, GstElement *aSrc,
                                              bool *ret) const override;
 };
