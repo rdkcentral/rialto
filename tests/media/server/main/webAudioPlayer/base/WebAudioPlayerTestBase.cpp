@@ -29,8 +29,15 @@ WebAudioPlayerTestBase::WebAudioPlayerTestBase()
       m_mainThreadMock{std::make_shared<StrictMock<MainThreadMock>>()},
       m_gstPlayerFactoryMock{std::make_shared<StrictMock<GstWebAudioPlayerFactoryMock>>()},
       m_gstPlayer{std::make_unique<StrictMock<GstWebAudioPlayerMock>>()},
-      m_gstPlayerMock{static_cast<StrictMock<GstWebAudioPlayerMock> *>(m_gstPlayer.get())}
+      m_gstPlayerMock{static_cast<StrictMock<GstWebAudioPlayerMock> *>(m_gstPlayer.get())},
+      m_timerFactoryMock{std::make_shared<StrictMock<TimerFactoryMock>>()}
 {
+    m_config.pcm.rate = 1;
+    m_config.pcm.channels = 2;
+    m_config.pcm.sampleSize = 16;
+    m_config.pcm.isBigEndian = false;
+    m_config.pcm.isSigned = false;
+    m_config.pcm.isFloat = false;
 }
 
 WebAudioPlayerTestBase::~WebAudioPlayerTestBase() {}
@@ -56,7 +63,7 @@ void WebAudioPlayerTestBase::createWebAudioPlayer()
                         std::make_unique<WebAudioPlayerServerInternal>(m_webAudioPlayerClientMock, m_audioMimeType,
                                                                        m_priority, &m_config, m_sharedMemoryBufferMock,
                                                                        m_webAudioPlayerHandle, m_mainThreadFactoryMock,
-                                                                       m_gstPlayerFactoryMock));
+                                                                       m_gstPlayerFactoryMock, m_timerFactoryMock));
     EXPECT_NE(m_webAudioPlayer, nullptr);
 }
 

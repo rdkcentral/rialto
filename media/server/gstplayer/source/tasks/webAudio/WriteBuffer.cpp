@@ -66,16 +66,19 @@ void WriteBuffer::execute() const
 
         if (bytesWritten != bytesToWrite)
         {
-            RIALTO_SERVER_LOG_ERROR("Did not write the correct number of bytes! expected %" PRIu64 ", actual %" PRIu64, bytesToWrite, bytesWritten);
-            m_gstWrapper->gstBufferUnref(gstBuffer);
-            bytesWritten = 0;
+            RIALTO_SERVER_LOG_WARN("Did not write the correct number of bytes! expected %" PRIu64 ", actual %" PRIu64, bytesToWrite, bytesWritten);
         }
-        else if (GST_FLOW_OK != m_gstWrapper->gstAppSrcPushBuffer(GST_APP_SRC(m_context.source), gstBuffer))
+
+        if (GST_FLOW_OK != m_gstWrapper->gstAppSrcPushBuffer(GST_APP_SRC(m_context.source), gstBuffer))
         {
             RIALTO_SERVER_LOG_ERROR("Failed to push the buffers to the appsrc");
             m_gstWrapper->gstBufferUnref(gstBuffer);
             bytesWritten = 0;
         }
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to create the gst buffer");
     }
 
     {

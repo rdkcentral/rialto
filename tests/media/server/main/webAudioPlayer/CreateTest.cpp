@@ -48,7 +48,7 @@ TEST_F(RialtoServerCreateWebAudioPlayerTest, Create)
                         std::make_unique<WebAudioPlayerServerInternal>(m_webAudioPlayerClientMock, m_audioMimeType,
                                                                        m_priority, &m_config, m_sharedMemoryBufferMock,
                                                                        m_webAudioPlayerHandle, m_mainThreadFactoryMock,
-                                                                       m_gstPlayerFactoryMock));
+                                                                       m_gstPlayerFactoryMock, m_timerFactoryMock));
     EXPECT_NE(m_webAudioPlayer, nullptr);
 
     destroyWebAudioPlayer();
@@ -63,7 +63,7 @@ TEST_F(RialtoServerCreateWebAudioPlayerTest, InvalidPcmConfig)
                      std::make_unique<WebAudioPlayerServerInternal>(m_webAudioPlayerClientMock, m_audioMimeType,
                                                                     m_priority, nullptr, m_sharedMemoryBufferMock,
                                                                     m_webAudioPlayerHandle, m_mainThreadFactoryMock,
-                                                                    m_gstPlayerFactoryMock),
+                                                                    m_gstPlayerFactoryMock, m_timerFactoryMock),
                  std::runtime_error);
 }
 
@@ -78,7 +78,7 @@ TEST_F(RialtoServerCreateWebAudioPlayerTest, InvalidMimeType)
                      std::make_unique<WebAudioPlayerServerInternal>(m_webAudioPlayerClientMock, invalidMimeType,
                                                                     m_priority, &m_config, m_sharedMemoryBufferMock,
                                                                     m_webAudioPlayerHandle, m_mainThreadFactoryMock,
-                                                                    m_gstPlayerFactoryMock),
+                                                                    m_gstPlayerFactoryMock, m_timerFactoryMock),
                  std::runtime_error);
 }
 
@@ -92,7 +92,7 @@ TEST_F(RialtoServerCreateWebAudioPlayerTest, MainThreadFailure)
                      std::make_unique<WebAudioPlayerServerInternal>(m_webAudioPlayerClientMock, m_audioMimeType,
                                                                     m_priority, &m_config, m_sharedMemoryBufferMock,
                                                                     m_webAudioPlayerHandle, m_mainThreadFactoryMock,
-                                                                    m_gstPlayerFactoryMock),
+                                                                    m_gstPlayerFactoryMock, m_timerFactoryMock),
                  std::runtime_error);
 }
 
@@ -111,7 +111,7 @@ TEST_F(RialtoServerCreateWebAudioPlayerTest, MapPartitionFailure)
                      std::make_unique<WebAudioPlayerServerInternal>(m_webAudioPlayerClientMock, m_audioMimeType,
                                                                     m_priority, &m_config, m_sharedMemoryBufferMock,
                                                                     m_webAudioPlayerHandle, m_mainThreadFactoryMock,
-                                                                    m_gstPlayerFactoryMock),
+                                                                    m_gstPlayerFactoryMock, m_timerFactoryMock),
                  std::runtime_error);
 }
 
@@ -137,6 +137,6 @@ TEST_F(RialtoServerCreateWebAudioPlayerTest, GstPlayerFailure)
                      std::make_unique<WebAudioPlayerServerInternal>(m_webAudioPlayerClientMock, m_audioMimeType,
                                                                     m_priority, &m_config, m_sharedMemoryBufferMock,
                                                                     m_webAudioPlayerHandle, m_mainThreadFactoryMock,
-                                                                    m_gstPlayerFactoryMock),
+                                                                    m_gstPlayerFactoryMock, m_timerFactoryMock),
                  std::runtime_error);
 }

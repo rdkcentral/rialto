@@ -19,10 +19,12 @@
 
 #include "WebAudioPlayerServerInternal.h"
 #include "RialtoServerLogging.h"
+#include <limits.h>
 
 namespace
 {
 constexpr uint32_t kPreferredFrames{640};
+constexpr std::chrono::milliseconds kWriteDataTimeMs{100};
 } // namespace
 
 namespace firebolt::rialto
@@ -71,7 +73,8 @@ std::unique_ptr<IWebAudioPlayer> WebAudioPlayerServerInternalFactory::createWebA
         webAudioPlayer = std::make_unique<server::WebAudioPlayerServerInternal>(client, audioMimeType, priority, config,
                                                                                 shmBuffer, handle,
                                                                                 IMainThreadFactory::createFactory(),
-                                                                                IGstWebAudioPlayerFactory::getFactory());
+                                                                                IGstWebAudioPlayerFactory::getFactory(),
+                                                                                common::ITimerFactory::getFactory());
     }
     catch (const std::exception &e)
     {
@@ -85,9 +88,9 @@ WebAudioPlayerServerInternal::WebAudioPlayerServerInternal(
     std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType, const uint32_t priority,
     const WebAudioConfig *config, const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle,
     const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
-    const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory)
+    const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory, std::shared_ptr<common::ITimerFactory> timerFactory)
     : m_webAudioPlayerClient(client), m_shmBuffer{shmBuffer}, m_priority{priority}, m_shmId{handle}, m_dataPtr{nullptr},
-      m_maxDataLength{0}, m_availableBuffer{}, m_expectWriteBuffer{false}
+      m_maxDataLength{0}, m_availableBuffer{}, m_expectWriteBuffer{false}, m_timerFactory{timerFactory}, m_bytesPerFrame{0}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
@@ -97,6 +100,12 @@ WebAudioPlayerServerInternal::WebAudioPlayerServerInternal(
         {
             throw std::runtime_error("Config is null for 'audio/x-raw'");
         }
+        m_bytesPerFrame = config->pcm.channels * (config->pcm.sampleSize / CHAR_BIT);
+        if (m_bytesPerFrame == 0)
+        {
+            throw std::runtime_error("Bytes per frame cannot be 0, channels " + std::to_string(config->pcm.channels) + ", sampleSize " + std::to_string(config->pcm.sampleSize));
+        }
+
     }
     else
     {
@@ -162,6 +171,12 @@ WebAudioPlayerServerInternal::~WebAudioPlayerServerInternal()
 
     auto task = [&]()
     {
+        if (m_writeDataTimer &&
+           (m_writeDataTimer->isActive()))
+        {
+            m_writeDataTimer->cancel();
+        }
+
         if (!m_shmBuffer->unmapPartition(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, m_shmId))
         {
             RIALTO_SERVER_LOG_ERROR("Unable to unmap shm partition");
@@ -221,9 +236,7 @@ bool WebAudioPlayerServerInternal::getBufferAvailable(uint32_t &availableFrames,
     auto task = [&]()
     {
         *webAudioShmInfo = m_availableBuffer;
-        // TODO(RIALTO-2): Calculate bytes per frame instead of using '4'.
-        availableFrames = (m_availableBuffer.lengthMain + m_availableBuffer.lengthWrap) / 4;
-        RIALTO_SERVER_LOG_ERROR("lukewill: getBufferAvailable %u, %u, %u", availableFrames, m_availableBuffer.lengthMain,  m_availableBuffer.lengthWrap);
+        availableFrames = (m_availableBuffer.lengthMain + m_availableBuffer.lengthWrap) / m_bytesPerFrame;
 
         // A new getBufferAvailable shall overwrite the previous if writeBuffer is not called inbetween
         m_expectWriteBuffer = true;
@@ -268,12 +281,20 @@ bool WebAudioPlayerServerInternal::writeBufferInternal(const uint32_t numberOfFr
     m_expectWriteBuffer = false;
 
     // Cancel timer
+    if (m_writeDataTimer &&
+        (m_writeDataTimer->isActive()))
+    {
+        m_writeDataTimer->cancel();
+        m_writeDataTimer = nullptr;
+    }
 
-    // Write stored frames first, only write new frames if stored frames successful
+    // Write stored frames first
+    uint32_t numberOfBytesToWrite = numberOfFrames * m_bytesPerFrame;
     if (!writeStoredBuffers())
     {
         // Update the available buffer with the new data that will not be written to gst
-        updateAvailableBuffer(numberOfFrames * 4, 0);
+        updateAvailableBuffer(numberOfBytesToWrite, 0);
+        m_writeDataTimer = m_timerFactory->createTimer(kWriteDataTimeMs, std::bind(&WebAudioPlayerServerInternal::handleWriteDataTimer, this));
         return true;
     }
 
@@ -283,28 +304,27 @@ bool WebAudioPlayerServerInternal::writeBufferInternal(const uint32_t numberOfFr
         return true;
     }
 
+    // Write new frames
     uint8_t *mainPtr = m_dataPtr + m_availableBuffer.offsetMain;
     uint8_t *wrapPtr = m_dataPtr + m_availableBuffer.offsetWrap;
     uint32_t mainLength = 0;
     uint32_t wrapLength = 0;
-    if (numberOfFrames * 4 <= m_availableBuffer.lengthMain)
+    if (numberOfBytesToWrite <= m_availableBuffer.lengthMain)
     {
-        mainLength = numberOfFrames * 4;
+        mainLength = numberOfBytesToWrite;
     }
     else
     {
         mainLength = m_availableBuffer.lengthMain;
-        wrapLength = numberOfFrames * 4 - mainLength;
+        wrapLength = numberOfBytesToWrite - mainLength;
     }
 
-    RIALTO_SERVER_LOG_ERROR("lukewill: %p, %u, %p, %u", mainPtr, mainLength, wrapPtr, wrapLength);
     uint32_t newBytesWritten = m_gstPlayer->writeBuffer(mainPtr, mainLength, wrapPtr, wrapLength);
-    updateAvailableBuffer(numberOfFrames * 4, newBytesWritten);
-    if (newBytesWritten != numberOfFrames * 4)
+    updateAvailableBuffer(numberOfBytesToWrite, newBytesWritten);
+    if (newBytesWritten != numberOfBytesToWrite)
     {
-        // Start timer
+        m_writeDataTimer = m_timerFactory->createTimer(kWriteDataTimeMs, std::bind(&WebAudioPlayerServerInternal::handleWriteDataTimer, this));
     }
-    RIALTO_SERVER_LOG_ERROR("lukewill: %u", newBytesWritten);
 
     return true;
 }
@@ -323,29 +343,29 @@ bool WebAudioPlayerServerInternal::writeStoredBuffers()
     }
     else if (m_availableBuffer.lengthWrap != 0)
     {
-        // Data written to the shared memory has not wrapped, data only written in the middle of the shared memory region
-        uint32_t startOfBufferOffset = m_availableBuffer.offsetWrap + m_availableBuffer.lengthWrap;
-        mainPtr = m_dataPtr + startOfBufferOffset;
-        mainLength = m_availableBuffer.offsetMain - startOfBufferOffset;
+        // Data stored in the shared memory has not wrapped, data only stored in the middle of the shared memory region
+        uint32_t startOfDataOffset = m_availableBuffer.offsetWrap + m_availableBuffer.lengthWrap;
+        mainPtr = m_dataPtr + startOfDataOffset;
+        mainLength = m_availableBuffer.offsetMain - startOfDataOffset;
     }
     else
     {
-        // Data written to the shared memory has wrapped, data at the end and start of the shared memory region
-        mainPtr = m_dataPtr + m_availableBuffer.offsetMain + m_availableBuffer.lengthMain;
-        mainLength = m_maxDataLength - (m_availableBuffer.offsetMain + m_availableBuffer.lengthMain);
+        // Data stored in the shared memory has wrapped, data stored at the end and start of the shared memory region
+        uint32_t startOfDataOffset = m_availableBuffer.offsetMain + m_availableBuffer.lengthMain;
+        mainPtr = m_dataPtr + startOfDataOffset;
+        mainLength = m_maxDataLength - startOfDataOffset;
+        // Wrapped data stored at the start of the shared memory region up to where the availableBuffer starts
         wrapPtr = m_dataPtr;
-        wrapLength = m_availableBuffer.offsetMain - m_availableBuffer.offsetWrap;
+        wrapLength = m_availableBuffer.offsetMain;
     }
 
-    RIALTO_SERVER_LOG_ERROR("lukewill: %p, %u, %p, %u", mainPtr, mainLength, wrapPtr, wrapLength);
-    uint32_t bytesWritten = m_gstPlayer->writeBuffer(mainPtr, mainLength, wrapPtr, wrapLength);
-    RIALTO_SERVER_LOG_ERROR("lukewill: %u", bytesWritten);
+    uint32_t storedBytesWritten = m_gstPlayer->writeBuffer(mainPtr, mainLength, wrapPtr, wrapLength);
 
     // Update available buffer with the bytes written to gst.
     // Bytes written to shm is 0 becuase they have already been handled.
-    updateAvailableBuffer(0, bytesWritten);
+    updateAvailableBuffer(0, storedBytesWritten);
 
-    if (bytesWritten == mainLength + wrapLength)
+    if (storedBytesWritten == mainLength + wrapLength)
     {
         // All data written to gstreamer
         return true;
@@ -356,47 +376,43 @@ bool WebAudioPlayerServerInternal::writeStoredBuffers()
 
 void WebAudioPlayerServerInternal::updateAvailableBuffer(uint32_t bytesWrittenToShm, uint32_t bytesWrittenToGst)
 {
-    RIALTO_SERVER_LOG_ERROR("lukewill: updateAvailableBuffer bytesWrittenToShm %u, bytesWrittenToGst %u", bytesWrittenToShm, bytesWrittenToGst);
-    RIALTO_SERVER_LOG_ERROR("lukewill: updateAvailableBuffer lengthMain %u, lengthWrap %u", m_availableBuffer.lengthMain, m_availableBuffer.lengthWrap);
     if (bytesWrittenToShm < m_availableBuffer.lengthMain)
     {
-        uint32_t dataLengthAtEndOfShm = m_maxDataLength - (m_availableBuffer.offsetMain + m_availableBuffer.lengthMain);
-
         // Data written to the shared memory has not wrapped
+        uint32_t storedDataLengthAtEndOfShm = m_maxDataLength - (m_availableBuffer.offsetMain + m_availableBuffer.lengthMain);
+
         m_availableBuffer.offsetMain = m_availableBuffer.offsetMain + bytesWrittenToShm;
-        if (bytesWrittenToGst <= dataLengthAtEndOfShm)
+        if (bytesWrittenToGst <= storedDataLengthAtEndOfShm)
         {
-            // Data written to gstreamer has not wrapped, data written is taken from the main buffer only
+            // Data written to gst has not wrapped, data written is taken from the main buffer only
             m_availableBuffer.lengthMain = m_availableBuffer.lengthMain - bytesWrittenToShm + bytesWrittenToGst;
         }
         else
         {
-            // Data written to gstreamer has wrapped, data written is taken from the main buffer and wrapped buffer
-            m_availableBuffer.lengthMain = m_availableBuffer.lengthMain - bytesWrittenToShm + dataLengthAtEndOfShm;
-            m_availableBuffer.lengthWrap = m_availableBuffer.lengthWrap + (bytesWrittenToGst - dataLengthAtEndOfShm);
+            // Data written to gst has wrapped, data written is taken from the main buffer and wrapped buffer
+            m_availableBuffer.lengthMain = m_availableBuffer.lengthMain - bytesWrittenToShm + storedDataLengthAtEndOfShm;
+            m_availableBuffer.lengthWrap = m_availableBuffer.lengthWrap + (bytesWrittenToGst - storedDataLengthAtEndOfShm);
         }
     }
     else
     {
-        uint32_t dataLengthAtEndOfShm = m_maxDataLength - (m_availableBuffer.offsetMain + m_availableBuffer.lengthMain);
+        uint32_t newDataLengthAtEndOfShm = m_availableBuffer.lengthMain;
 
         // Data written to the shared memory has wrapped, available buffer should now point to where the wrapped buffer was
         m_availableBuffer.offsetMain = m_availableBuffer.offsetWrap + (bytesWrittenToShm - m_availableBuffer.lengthMain);
-
-        if (bytesWrittenToGst <= dataLengthAtEndOfShm)
+        if (bytesWrittenToGst <= m_availableBuffer.lengthMain)
         {
             // Data written to gstreamer has not wrapped, data written is taken from the main buffer only
-            m_availableBuffer.lengthMain = m_availableBuffer.lengthWrap + bytesWrittenToGst;
+            m_availableBuffer.lengthMain = (m_availableBuffer.lengthWrap - m_availableBuffer.offsetMain) + bytesWrittenToGst;
             m_availableBuffer.lengthWrap = 0;
         }
         else
         {
             // Data written to gstreamer has wrapped, data written is taken from the main buffer and wrapped buffer
-            m_availableBuffer.lengthMain = m_availableBuffer.lengthWrap + m_availableBuffer.lengthMain + dataLengthAtEndOfShm;
-            m_availableBuffer.lengthWrap = bytesWrittenToGst - dataLengthAtEndOfShm;
+            m_availableBuffer.lengthMain = m_maxDataLength - m_availableBuffer.offsetMain;
+            m_availableBuffer.lengthWrap = bytesWrittenToGst - newDataLengthAtEndOfShm;
         }
     }
-    RIALTO_SERVER_LOG_ERROR("lukewill: updateAvailableBuffer lengthMain %u, lengthWrap %u", m_availableBuffer.lengthMain, m_availableBuffer.lengthWrap);
 }
 
 bool WebAudioPlayerServerInternal::getDeviceInfo(uint32_t &preferredFrames, uint32_t &maximumFrames,
@@ -405,8 +421,8 @@ bool WebAudioPlayerServerInternal::getDeviceInfo(uint32_t &preferredFrames, uint
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
     // Can be called from any thread
-    preferredFrames = kPreferredFrames;
-    maximumFrames = m_maxDataLength / 4;
+    maximumFrames = m_maxDataLength / m_bytesPerFrame;
+    preferredFrames = std::min(kPreferredFrames, maximumFrames);
     supportDeferredPlay = true;
 
     return true;
@@ -468,6 +484,26 @@ bool WebAudioPlayerServerInternal::initGstWebAudioPlayer(const std::string &audi
     m_gstPlayer->setCaps(audioMimeType, config);
 
     return true;
+}
+
+void WebAudioPlayerServerInternal::handleWriteDataTimer()
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    auto task = [&]()
+    {
+        if (!writeStoredBuffers())
+        {
+            // Not all data was written to gstreamer, restart the timer
+            m_writeDataTimer = m_timerFactory->createTimer(kWriteDataTimeMs, std::bind(&WebAudioPlayerServerInternal::handleWriteDataTimer, this));
+        }
+        else
+        {
+            m_writeDataTimer = nullptr;
+        }
+    };
+
+    m_mainThread->enqueueTask(m_mainThreadClientId, task);
 }
 
 }; // namespace firebolt::rialto::server

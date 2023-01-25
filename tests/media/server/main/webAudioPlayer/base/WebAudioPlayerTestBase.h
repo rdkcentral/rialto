@@ -28,6 +28,8 @@
 #include "SharedMemoryBufferMock.h"
 #include "WebAudioPlayerClientMock.h"
 #include "WebAudioPlayerServerInternal.h"
+#include "TimerFactoryMock.h"
+#include "TimerMock.h"
 #include <gtest/gtest.h>
 #include <memory>
 #include <string>
@@ -42,6 +44,7 @@ using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::SetArgReferee;
 using ::testing::StrictMock;
+using ::testing::SaveArg;
 
 class WebAudioPlayerTestBase : public ::testing::Test
 {
@@ -61,15 +64,18 @@ protected:
     std::shared_ptr<StrictMock<GstWebAudioPlayerFactoryMock>> m_gstPlayerFactoryMock;
     std::unique_ptr<StrictMock<GstWebAudioPlayerMock>> m_gstPlayer;
     StrictMock<GstWebAudioPlayerMock> *m_gstPlayerMock;
+    std::shared_ptr<StrictMock<TimerFactoryMock>> m_timerFactoryMock;
+    std::unique_ptr<StrictMock<TimerMock>> m_timer;
+    StrictMock<TimerMock> *m_timerMock;
 
     // Common variables
     const int m_webAudioPlayerHandle{1};
     const std::string m_audioMimeType{"audio/x-raw"};
     const uint32_t m_priority{5};
-    const WebAudioConfig m_config{};
+    WebAudioConfig m_config{};
     const int32_t m_kMainThreadClientId{65};
     uint8_t m_dataPtr{4};
-    const uint32_t m_dataLen{80};
+    uint32_t m_dataLen{4000};
 
     void createWebAudioPlayer();
     void destroyWebAudioPlayer();
