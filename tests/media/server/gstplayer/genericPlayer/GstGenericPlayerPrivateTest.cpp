@@ -812,8 +812,8 @@ TEST_F(GstGenericPlayerPrivateTest, shouldUpdatePlaybackGroup)
 {
     GstElement typefind;
     GstCaps caps;
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*task), execute());
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
     EXPECT_CALL(m_taskFactoryMock, createUpdatePlaybackGroup(_, &typefind, &caps)).WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->updatePlaybackGroup(&typefind, &caps);

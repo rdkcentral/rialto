@@ -68,8 +68,8 @@ TEST_F(GstGenericPlayerTest, shouldAttachSource)
 TEST_F(GstGenericPlayerTest, shouldRemoveSource)
 {
     constexpr std::uint32_t audioSourceId{1};
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*task), execute());
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
     EXPECT_CALL(m_taskFactoryMock, createRemoveSource(_, MediaSourceType::AUDIO)).WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->removeSource(audioSourceId);
@@ -188,8 +188,8 @@ TEST_F(GstGenericPlayerTest, shouldSetupElement)
 TEST_F(GstGenericPlayerTest, shouldAddDeepElement)
 {
     GstElement element{};
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<GenericPlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<GenericPlayerTaskMock> &>(*task), execute());
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
     EXPECT_CALL(m_taskFactoryMock, createDeepElementAdded(_, _, _, _, &element)).WillOnce(Return(ByMove(std::move(task))));
 
     triggerDeepElementAdded(&element);
