@@ -215,7 +215,6 @@ bool WebAudioPlayerServerInternal::setEos()
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    // TODO(RIALTO-2): Don't set eos if we still have frames to write
     auto task = [&]()
     {
         if (0 != getQueuedFramesInShm())
@@ -401,6 +400,7 @@ bool WebAudioPlayerServerInternal::writeStoredBuffers()
         if (m_isEosRequested)
         {
             m_gstPlayer->setEos();
+            m_isEosRequested = false;
         }
         return true;
     }
@@ -432,9 +432,9 @@ void WebAudioPlayerServerInternal::updateAvailableBuffer(uint32_t bytesWrittenTo
     }
     else
     {
+        // Data written to the shared memory has wrapped, available buffer should now point to where the wrapped buffer was
         uint32_t newDataLengthAtEndOfShm = m_availableBuffer.lengthMain;
 
-        // Data written to the shared memory has wrapped, available buffer should now point to where the wrapped buffer was
         m_availableBuffer.offsetMain = m_availableBuffer.offsetWrap + (bytesWrittenToShm - m_availableBuffer.lengthMain);
         if (bytesWrittenToGst <= m_availableBuffer.lengthMain)
         {
