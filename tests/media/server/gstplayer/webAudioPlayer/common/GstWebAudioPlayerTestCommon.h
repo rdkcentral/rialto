@@ -86,13 +86,16 @@ protected:
     void expectAddElementsAutoAudioSink();
     void expectMakeAmlhalaSink();
     void expectInitAmlhalaSink();
-    void expectInitAmlhalaSinkFailure();
+    void expectInitAmlhalaSinkBinFailure();
+    void expectInitAmlhalaSinkElementFailure();
     void expectMakeRtkAudioSink();
     void expectInitRtkAudioSink();
-    void expectInitRtkAudioSinkFailure();
+    void expectInitRtkAudioSinkBinFailure();
+    void expectInitRtkAudioSinkElementFailure();
     void expectMakeAutoAudioSink();
     void expectInitAutoAudioSink();
-    void expectInitAutoAudioSinkFailure();
+    void expectInitAutoAudioSinkBinFailure();
+    void expectInitAutoAudioSinkElementFailure();
     void expectTermPipeline();
     void expectResetWorkerThread();
     void expectTaskStop();
@@ -103,6 +106,7 @@ protected:
     GstObject m_feature{};
     GstElement m_sink{};
     GstBus m_bus{};
+    const uint32_t m_priority{5};
 };
 
 #endif // GST_WEB_AUDIO_PLAYER_TEST_COMMON_H_

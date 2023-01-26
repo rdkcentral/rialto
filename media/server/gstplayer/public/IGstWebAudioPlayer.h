@@ -49,10 +49,11 @@ public:
      * @brief Creates a IGstWebAudioPlayer object.
      *
      * @param[in] client    : The gstreamer web audio player client.
+     * @param[in] priority  : Priority value for this pipeline.
      *
      * @retval the new player instance or null on error.
      */
-    virtual std::unique_ptr<IGstWebAudioPlayer> createGstWebAudioPlayer(IGstWebAudioPlayerClient *client) = 0;
+    virtual std::unique_ptr<IGstWebAudioPlayer> createGstWebAudioPlayer(IGstWebAudioPlayerClient *client, const uint32_t priority) = 0;
 };
 
 class IGstWebAudioPlayer
@@ -129,6 +130,13 @@ public:
      * @brief Notify EOS at the end of the gstreamer buffers.
      */
     virtual void setEos() = 0;
+
+    /**
+     * @brief Gets the amount of bytes queued for playback on the app source.
+     *
+     * @retval The number of bytes queued.
+     */
+    virtual uint64_t getQueuedBytes() = 0;
 };
 
 }; // namespace firebolt::rialto::server

@@ -34,7 +34,7 @@ protected:
     GstWebAudioPlayerTest()
     {
         gstPlayerWillBeCreatedForGenericPlatform();
-        m_sut = std::make_unique<GstWebAudioPlayer>(&m_gstPlayerClient, m_gstWrapperMock, m_glibWrapperMock,
+        m_sut = std::make_unique<GstWebAudioPlayer>(&m_gstPlayerClient, m_priority, m_gstWrapperMock, m_glibWrapperMock,
                                                     m_gstSrcFactoryMock, std::move(m_taskFactory),
                                                     std::move(workerThreadFactory),
                                                     std::move(gstDispatcherThreadFactory));

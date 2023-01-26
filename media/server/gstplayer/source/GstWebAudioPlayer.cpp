@@ -53,7 +53,7 @@ std::shared_ptr<IGstWebAudioPlayerFactory> IGstWebAudioPlayerFactory::getFactory
     return factory;
 }
 
-std::unique_ptr<IGstWebAudioPlayer> GstWebAudioPlayerFactory::createGstWebAudioPlayer(IGstWebAudioPlayerClient *client)
+std::unique_ptr<IGstWebAudioPlayer> GstWebAudioPlayerFactory::createGstWebAudioPlayer(IGstWebAudioPlayerClient *client, const uint32_t priority)
 {
     std::unique_ptr<IGstWebAudioPlayer> gstPlayer;
 
@@ -71,7 +71,7 @@ std::unique_ptr<IGstWebAudioPlayer> GstWebAudioPlayerFactory::createGstWebAudioP
         {
             throw std::runtime_error("Cannot create GlibWrapper");
         }
-        gstPlayer = std::make_unique<GstWebAudioPlayer>(client, gstWrapper, glibWrapper, IGstSrcFactory::getFactory(),
+        gstPlayer = std::make_unique<GstWebAudioPlayer>(client, priority, gstWrapper, glibWrapper, IGstSrcFactory::getFactory(),
                                                         std::make_unique<WebAudioPlayerTaskFactory>(client, gstWrapper,
                                                                                                     glibWrapper),
                                                         std::make_unique<WorkerThreadFactory>(),
@@ -85,7 +85,7 @@ std::unique_ptr<IGstWebAudioPlayer> GstWebAudioPlayerFactory::createGstWebAudioP
     return gstPlayer;
 }
 
-GstWebAudioPlayer::GstWebAudioPlayer(IGstWebAudioPlayerClient *client, const std::shared_ptr<IGstWrapper> &gstWrapper,
+GstWebAudioPlayer::GstWebAudioPlayer(IGstWebAudioPlayerClient *client, const uint32_t priority, const std::shared_ptr<IGstWrapper> &gstWrapper,
                                      const std::shared_ptr<IGlibWrapper> &glibWrapper,
                                      const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
                                      std::unique_ptr<IWebAudioPlayerTaskFactory> taskFactory,
@@ -110,7 +110,7 @@ GstWebAudioPlayer::GstWebAudioPlayer(IGstWebAudioPlayerClient *client, const std
         throw std::runtime_error("Failed to create the worker thread");
     }
 
-    if (!initWebAudioPipeline())
+    if (!initWebAudioPipeline(priority))
     {
         termWebAudioPipeline();
         resetWorkerThread();
@@ -138,9 +138,9 @@ GstWebAudioPlayer::~GstWebAudioPlayer()
     termWebAudioPipeline();
 }
 
-bool GstWebAudioPlayer::initWebAudioPipeline()
+bool GstWebAudioPlayer::initWebAudioPipeline(const uint32_t priority)
 {
-    m_context.pipeline = m_gstWrapper->gstPipelineNew("webaudiopipeline");
+    m_context.pipeline = m_gstWrapper->gstPipelineNew(std::string("webaudiopipeline" + std::to_string(priority)).c_str());
     if (!m_context.pipeline)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to create the webaudiopipeline");
@@ -199,11 +199,16 @@ bool GstWebAudioPlayer::createAmlhalaSink()
     }
     m_glibWrapper->gObjectSet(G_OBJECT(sink), "direct-mode", FALSE, NULL);
 
-    m_gstWrapper->gstBinAddMany(GST_BIN(m_context.pipeline), m_context.source, sink, NULL);
-    gboolean result = m_gstWrapper->gstElementLinkMany(m_context.source, sink, NULL);
-    if (!result)
+    if ((!m_gstWrapper->gstBinAdd(GST_BIN(m_context.pipeline), m_context.source)) ||
+        (!m_gstWrapper->gstBinAdd(GST_BIN(m_context.pipeline), sink)))
     {
-        RIALTO_SERVER_LOG_ERROR("Failed link elements");
+        RIALTO_SERVER_LOG_ERROR("Failed to add elements to the bin");
+        return false;
+    }
+
+    if (!m_gstWrapper->gstElementLink(m_context.source, sink))
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to link sink element");
         return false;
     }
 
@@ -237,20 +242,22 @@ bool GstWebAudioPlayer::createRtkAudioSink()
         return false;
     }
 
-    m_gstWrapper->gstBinAdd(GST_BIN(m_context.pipeline), m_context.source);
-    m_gstWrapper->gstBinAdd(GST_BIN(m_context.pipeline), convert);
-    m_gstWrapper->gstBinAdd(GST_BIN(m_context.pipeline), resample);
-    m_gstWrapper->gstBinAdd(GST_BIN(m_context.pipeline), sink);
+    if ((!m_gstWrapper->gstBinAdd(GST_BIN(m_context.pipeline), m_context.source)) ||
+        (!m_gstWrapper->gstBinAdd(GST_BIN(m_context.pipeline), convert)) ||
+        (!m_gstWrapper->gstBinAdd(GST_BIN(m_context.pipeline), resample)) ||
+        (!m_gstWrapper->gstBinAdd(GST_BIN(m_context.pipeline), sink)))
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to add elements to the bin");
+        return false;
+    }
 
-    m_gstWrapper->gstElementLink(m_context.source, convert);
-    m_gstWrapper->gstElementLink(convert, resample);
-    m_gstWrapper->gstElementLink(resample, sink);
-    //gboolean result = m_gstWrapper->gstElementLinkMany(m_context.source, convert, resample, sink, nullptr);
-    //if (!result)
-    //{
-    //    RIALTO_SERVER_LOG_ERROR("Failed link elements");
-    //    return false;
-    //}
+    if ((!m_gstWrapper->gstElementLink(m_context.source, convert)) ||
+        (!m_gstWrapper->gstElementLink(convert, resample)) ||
+        (!m_gstWrapper->gstElementLink(resample, sink)))
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to link elements");
+        return false;
+    }
 
     return true;
 }
@@ -264,11 +271,16 @@ bool GstWebAudioPlayer::createAutoSink()
         return false;
     }
 
-    m_gstWrapper->gstBinAddMany(GST_BIN(m_context.pipeline), m_context.source, sink, NULL);
-    gboolean result = m_gstWrapper->gstElementLinkMany(m_context.source, sink, NULL);
-    if (!result)
+    if ((!m_gstWrapper->gstBinAdd(GST_BIN(m_context.pipeline), m_context.source)) ||
+        (!m_gstWrapper->gstBinAdd(GST_BIN(m_context.pipeline), sink)))
     {
-        RIALTO_SERVER_LOG_ERROR("Failed link elements");
+        RIALTO_SERVER_LOG_ERROR("Failed to add elements to the bin");
+        return false;
+    }
+
+    if (!m_gstWrapper->gstElementLink(m_context.source, sink))
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to link sink element");
         return false;
     }
 
@@ -352,6 +364,12 @@ uint32_t GstWebAudioPlayer::writeBuffer(uint8_t *mainPtr, uint32_t mainLength, u
 void GstWebAudioPlayer::setEos()
 {
     m_workerThread->enqueueTask(m_taskFactory->createEos(m_context));
+}
+
+uint64_t GstWebAudioPlayer::getQueuedBytes()
+{
+    // Must be called on the main thread, otherwise the pipeline can be destroyed during the query.
+    return m_gstWrapper->gstAppSrcGetCurrentLevelBytes(GST_APP_SRC(m_context.source));
 }
 
 bool GstWebAudioPlayer::changePipelineState(GstState newState)

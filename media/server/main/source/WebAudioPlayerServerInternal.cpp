@@ -90,7 +90,7 @@ WebAudioPlayerServerInternal::WebAudioPlayerServerInternal(
     const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
     const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory, std::shared_ptr<common::ITimerFactory> timerFactory)
     : m_webAudioPlayerClient(client), m_shmBuffer{shmBuffer}, m_priority{priority}, m_shmId{handle}, m_dataPtr{nullptr},
-      m_maxDataLength{0}, m_availableBuffer{}, m_expectWriteBuffer{false}, m_timerFactory{timerFactory}, m_bytesPerFrame{0}
+      m_maxDataLength{0}, m_availableBuffer{}, m_expectWriteBuffer{false}, m_timerFactory{timerFactory}, m_bytesPerFrame{0}, m_isEosRequested{false}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
@@ -215,7 +215,17 @@ bool WebAudioPlayerServerInternal::setEos()
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
     // TODO(RIALTO-2): Don't set eos if we still have frames to write
-    auto task = [&]() { m_gstPlayer->setEos(); };
+    auto task = [&]()
+    {
+        if (0 != getQueuedFramesInShm())
+        {
+            m_isEosRequested = true;
+        }
+        else
+        {
+            m_gstPlayer->setEos();
+        }
+    };
 
     m_mainThread->enqueueTask(m_mainThreadClientId, task);
 
@@ -251,8 +261,24 @@ bool WebAudioPlayerServerInternal::getBufferDelay(uint32_t &delayFrames)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    // TODO(RIALTO-2): Calculate the delayed frames based on bytes queued in shm and gst.
-    return false;
+    bool status = false;
+    auto task = [&]()
+    {
+        // Gstreamer returns a uint64, so check the value first
+        uint64_t queuedFrames = (m_gstPlayer->getQueuedBytes() / m_bytesPerFrame) + getQueuedFramesInShm();
+        if (queuedFrames > std::numeric_limits<uint32_t>::max())
+        {
+            RIALTO_SERVER_LOG_ERROR("Queued frames are larger than the max uint32_t");
+        }
+        else
+        {
+            delayFrames = static_cast<uint32_t>(queuedFrames);
+            status = true;
+        }
+    };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return status;
 }
 
 bool WebAudioPlayerServerInternal::writeBuffer(const uint32_t numberOfFrames, void *data)
@@ -368,6 +394,10 @@ bool WebAudioPlayerServerInternal::writeStoredBuffers()
     if (storedBytesWritten == mainLength + wrapLength)
     {
         // All data written to gstreamer
+        if (m_isEosRequested)
+        {
+            m_gstPlayer->setEos();
+        }
         return true;
     }
 
@@ -474,7 +504,7 @@ void WebAudioPlayerServerInternal::notifyState(WebAudioPlayerState state)
 bool WebAudioPlayerServerInternal::initGstWebAudioPlayer(const std::string &audioMimeType, const WebAudioConfig *config,
                                                          const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory)
 {
-    m_gstPlayer = gstPlayerFactory->createGstWebAudioPlayer(this);
+    m_gstPlayer = gstPlayerFactory->createGstWebAudioPlayer(this, m_priority);
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to load gstreamer player");
@@ -506,4 +536,8 @@ void WebAudioPlayerServerInternal::handleWriteDataTimer()
     m_mainThread->enqueueTask(m_mainThreadClientId, task);
 }
 
+uint32_t WebAudioPlayerServerInternal::getQueuedFramesInShm()
+{
+    return (m_maxDataLength - (m_availableBuffer.lengthMain + m_availableBuffer.lengthWrap)) / m_bytesPerFrame;
+}
 }; // namespace firebolt::rialto::server

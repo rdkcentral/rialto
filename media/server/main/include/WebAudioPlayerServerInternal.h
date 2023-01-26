@@ -176,6 +176,11 @@ protected:
     uint32_t m_bytesPerFrame;
 
     /**
+     * @brief Whether EOS has been requested at the end of the buffer.
+     */
+    bool m_isEosRequested;
+
+    /**
      * @brief Initalises the WebAudioPlayer.
      *
      * @param[in] audioMimeType     : The audio encoding format.
@@ -226,9 +231,16 @@ protected:
     void updateAvailableBuffer(uint32_t bytesWrittenToShm, uint32_t bytesWrittenToGst);
 
     /**
-     * @brief Handles the timeout of teh write data timer.
+     * @brief Handles the timeout of the write data timer.
      */
     void handleWriteDataTimer();
+
+    /**
+     * @brief Gets the number of queued frames in the shared memory.
+     *
+     * @retval The number of frames queued.
+     */
+    uint32_t getQueuedFramesInShm();
 };
 
 }; // namespace firebolt::rialto::server
