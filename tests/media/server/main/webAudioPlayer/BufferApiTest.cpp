@@ -397,7 +397,7 @@ TEST_F(RialtoServerWebAudioPlayerBufferApiTest, getBufferDelayLargeQueuedBytes)
 
     mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_gstPlayerMock, getQueuedBytes())
-        .WillOnce(Return(std::numeric_limits<uint32_t>::max() * m_bytesPerFrame + m_bytesPerFrame));
+        .WillOnce(Return(4294967295*m_bytesPerFrame + m_bytesPerFrame));
 
     bool status = m_webAudioPlayer->getBufferDelay(returnDelayFrames);
     EXPECT_EQ(status, false);

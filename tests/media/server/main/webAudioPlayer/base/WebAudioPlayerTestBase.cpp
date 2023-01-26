@@ -30,7 +30,8 @@ WebAudioPlayerTestBase::WebAudioPlayerTestBase()
       m_gstPlayerFactoryMock{std::make_shared<StrictMock<GstWebAudioPlayerFactoryMock>>()},
       m_gstPlayer{std::make_unique<StrictMock<GstWebAudioPlayerMock>>()},
       m_gstPlayerMock{static_cast<StrictMock<GstWebAudioPlayerMock> *>(m_gstPlayer.get())},
-      m_timerFactoryMock{std::make_shared<StrictMock<TimerFactoryMock>>()}
+      m_timerFactoryMock{std::make_shared<StrictMock<TimerFactoryMock>>()},
+      m_timerMock{nullptr}
 {
     m_config.pcm.rate = 1;
     m_config.pcm.channels = 2;
