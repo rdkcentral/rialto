@@ -53,7 +53,8 @@ public:
      *
      * @retval the new player instance or null on error.
      */
-    virtual std::unique_ptr<IGstWebAudioPlayer> createGstWebAudioPlayer(IGstWebAudioPlayerClient *client, const uint32_t priority) = 0;
+    virtual std::unique_ptr<IGstWebAudioPlayer> createGstWebAudioPlayer(IGstWebAudioPlayerClient *client,
+                                                                        const uint32_t priority) = 0;
 };
 
 class IGstWebAudioPlayer

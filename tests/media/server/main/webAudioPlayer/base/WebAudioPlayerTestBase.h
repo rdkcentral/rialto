@@ -26,10 +26,10 @@
 #include "MainThreadFactoryMock.h"
 #include "MainThreadMock.h"
 #include "SharedMemoryBufferMock.h"
-#include "WebAudioPlayerClientMock.h"
-#include "WebAudioPlayerServerInternal.h"
 #include "TimerFactoryMock.h"
 #include "TimerMock.h"
+#include "WebAudioPlayerClientMock.h"
+#include "WebAudioPlayerServerInternal.h"
 #include <gtest/gtest.h>
 #include <memory>
 #include <string>
@@ -42,9 +42,9 @@ using ::testing::_;
 using ::testing::DoAll;
 using ::testing::Invoke;
 using ::testing::Return;
+using ::testing::SaveArg;
 using ::testing::SetArgReferee;
 using ::testing::StrictMock;
-using ::testing::SaveArg;
 
 class WebAudioPlayerTestBase : public ::testing::Test
 {
@@ -88,7 +88,8 @@ protected:
     void destroyWebAudioPlayer();
     void mainThreadWillEnqueueTask();
     void mainThreadWillEnqueueTaskAndWait();
-    void getBufferAvailableSuccess(uint32_t expectedAvailableFrames, const std::shared_ptr<WebAudioShmInfo>& expectedShmInfo = nullptr);
+    void getBufferAvailableSuccess(uint32_t expectedAvailableFrames,
+                                   const std::shared_ptr<WebAudioShmInfo> &expectedShmInfo = nullptr);
     void writeBufferSuccess(uint32_t newFramesToWrite);
     void expectWriteStoredFrames(uint32_t storedFramesToWrite, uint32_t storedFramesWritten);
     void expectWriteNewFrames(uint32_t newFramesToWrite, uint32_t newFramesWritten);

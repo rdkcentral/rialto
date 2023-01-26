@@ -47,7 +47,8 @@ public:
      */
     static std::weak_ptr<IGstWebAudioPlayerFactory> m_factory;
 
-    std::unique_ptr<IGstWebAudioPlayer> createGstWebAudioPlayer(IGstWebAudioPlayerClient *client, const uint32_t priority) override;
+    std::unique_ptr<IGstWebAudioPlayer> createGstWebAudioPlayer(IGstWebAudioPlayerClient *client,
+                                                                const uint32_t priority) override;
 };
 
 /**
@@ -68,8 +69,8 @@ public:
      * @param[in] workerThreadFactory          : The worker thread factory
      * @param[in] gstDispatcherThreadFactory   : The gst dispatcher thread factory
      */
-    GstWebAudioPlayer(IGstWebAudioPlayerClient *client, const uint32_t priority, const std::shared_ptr<IGstWrapper> &gstWrapper,
-                      const std::shared_ptr<IGlibWrapper> &glibWrapper,
+    GstWebAudioPlayer(IGstWebAudioPlayerClient *client, const uint32_t priority,
+                      const std::shared_ptr<IGstWrapper> &gstWrapper, const std::shared_ptr<IGlibWrapper> &glibWrapper,
                       const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
                       std::unique_ptr<IWebAudioPlayerTaskFactory> taskFactory,
                       std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,

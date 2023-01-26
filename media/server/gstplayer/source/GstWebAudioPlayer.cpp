@@ -53,7 +53,8 @@ std::shared_ptr<IGstWebAudioPlayerFactory> IGstWebAudioPlayerFactory::getFactory
     return factory;
 }
 
-std::unique_ptr<IGstWebAudioPlayer> GstWebAudioPlayerFactory::createGstWebAudioPlayer(IGstWebAudioPlayerClient *client, const uint32_t priority)
+std::unique_ptr<IGstWebAudioPlayer> GstWebAudioPlayerFactory::createGstWebAudioPlayer(IGstWebAudioPlayerClient *client,
+                                                                                      const uint32_t priority)
 {
     std::unique_ptr<IGstWebAudioPlayer> gstPlayer;
 
@@ -71,7 +72,8 @@ std::unique_ptr<IGstWebAudioPlayer> GstWebAudioPlayerFactory::createGstWebAudioP
         {
             throw std::runtime_error("Cannot create GlibWrapper");
         }
-        gstPlayer = std::make_unique<GstWebAudioPlayer>(client, priority, gstWrapper, glibWrapper, IGstSrcFactory::getFactory(),
+        gstPlayer = std::make_unique<GstWebAudioPlayer>(client, priority, gstWrapper, glibWrapper,
+                                                        IGstSrcFactory::getFactory(),
                                                         std::make_unique<WebAudioPlayerTaskFactory>(client, gstWrapper,
                                                                                                     glibWrapper),
                                                         std::make_unique<WorkerThreadFactory>(),
@@ -85,7 +87,8 @@ std::unique_ptr<IGstWebAudioPlayer> GstWebAudioPlayerFactory::createGstWebAudioP
     return gstPlayer;
 }
 
-GstWebAudioPlayer::GstWebAudioPlayer(IGstWebAudioPlayerClient *client, const uint32_t priority, const std::shared_ptr<IGstWrapper> &gstWrapper,
+GstWebAudioPlayer::GstWebAudioPlayer(IGstWebAudioPlayerClient *client, const uint32_t priority,
+                                     const std::shared_ptr<IGstWrapper> &gstWrapper,
                                      const std::shared_ptr<IGlibWrapper> &glibWrapper,
                                      const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
                                      std::unique_ptr<IWebAudioPlayerTaskFactory> taskFactory,
@@ -252,8 +255,7 @@ bool GstWebAudioPlayer::createRtkAudioSink()
     }
 
     if ((!m_gstWrapper->gstElementLink(m_context.source, convert)) ||
-        (!m_gstWrapper->gstElementLink(convert, resample)) ||
-        (!m_gstWrapper->gstElementLink(resample, sink)))
+        (!m_gstWrapper->gstElementLink(convert, resample)) || (!m_gstWrapper->gstElementLink(resample, sink)))
     {
         RIALTO_SERVER_LOG_ERROR("Failed to link elements");
         return false;

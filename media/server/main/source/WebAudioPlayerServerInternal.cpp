@@ -88,9 +88,11 @@ WebAudioPlayerServerInternal::WebAudioPlayerServerInternal(
     std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType, const uint32_t priority,
     const WebAudioConfig *config, const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle,
     const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
-    const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory, std::shared_ptr<common::ITimerFactory> timerFactory)
+    const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory,
+    std::shared_ptr<common::ITimerFactory> timerFactory)
     : m_webAudioPlayerClient(client), m_shmBuffer{shmBuffer}, m_priority{priority}, m_shmId{handle}, m_dataPtr{nullptr},
-      m_maxDataLength{0}, m_availableBuffer{}, m_expectWriteBuffer{false}, m_timerFactory{timerFactory}, m_bytesPerFrame{0}, m_isEosRequested{false}
+      m_maxDataLength{0}, m_availableBuffer{}, m_expectWriteBuffer{false}, m_timerFactory{timerFactory},
+      m_bytesPerFrame{0}, m_isEosRequested{false}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
@@ -103,9 +105,9 @@ WebAudioPlayerServerInternal::WebAudioPlayerServerInternal(
         m_bytesPerFrame = config->pcm.channels * (config->pcm.sampleSize / CHAR_BIT);
         if (m_bytesPerFrame == 0)
         {
-            throw std::runtime_error("Bytes per frame cannot be 0, channels " + std::to_string(config->pcm.channels) + ", sampleSize " + std::to_string(config->pcm.sampleSize));
+            throw std::runtime_error("Bytes per frame cannot be 0, channels " + std::to_string(config->pcm.channels) +
+                                     ", sampleSize " + std::to_string(config->pcm.sampleSize));
         }
-
     }
     else
     {
@@ -171,8 +173,7 @@ WebAudioPlayerServerInternal::~WebAudioPlayerServerInternal()
 
     auto task = [&]()
     {
-        if (m_writeDataTimer &&
-           (m_writeDataTimer->isActive()))
+        if (m_writeDataTimer && (m_writeDataTimer->isActive()))
         {
             m_writeDataTimer->cancel();
         }
@@ -307,8 +308,7 @@ bool WebAudioPlayerServerInternal::writeBufferInternal(const uint32_t numberOfFr
     m_expectWriteBuffer = false;
 
     // Cancel timer
-    if (m_writeDataTimer &&
-        (m_writeDataTimer->isActive()))
+    if (m_writeDataTimer && (m_writeDataTimer->isActive()))
     {
         m_writeDataTimer->cancel();
         m_writeDataTimer = nullptr;
@@ -320,7 +320,9 @@ bool WebAudioPlayerServerInternal::writeBufferInternal(const uint32_t numberOfFr
     {
         // Update the available buffer with the new data that will not be written to gst
         updateAvailableBuffer(numberOfBytesToWrite, 0);
-        m_writeDataTimer = m_timerFactory->createTimer(kWriteDataTimeMs, std::bind(&WebAudioPlayerServerInternal::handleWriteDataTimer, this));
+        m_writeDataTimer =
+            m_timerFactory->createTimer(kWriteDataTimeMs,
+                                        std::bind(&WebAudioPlayerServerInternal::handleWriteDataTimer, this));
         return true;
     }
 
@@ -349,7 +351,9 @@ bool WebAudioPlayerServerInternal::writeBufferInternal(const uint32_t numberOfFr
     updateAvailableBuffer(numberOfBytesToWrite, newBytesWritten);
     if (newBytesWritten != numberOfBytesToWrite)
     {
-        m_writeDataTimer = m_timerFactory->createTimer(kWriteDataTimeMs, std::bind(&WebAudioPlayerServerInternal::handleWriteDataTimer, this));
+        m_writeDataTimer =
+            m_timerFactory->createTimer(kWriteDataTimeMs,
+                                        std::bind(&WebAudioPlayerServerInternal::handleWriteDataTimer, this));
     }
 
     return true;
@@ -409,7 +413,8 @@ void WebAudioPlayerServerInternal::updateAvailableBuffer(uint32_t bytesWrittenTo
     if (bytesWrittenToShm < m_availableBuffer.lengthMain)
     {
         // Data written to the shared memory has not wrapped
-        uint32_t storedDataLengthAtEndOfShm = m_maxDataLength - (m_availableBuffer.offsetMain + m_availableBuffer.lengthMain);
+        uint32_t storedDataLengthAtEndOfShm = m_maxDataLength -
+                                              (m_availableBuffer.offsetMain + m_availableBuffer.lengthMain);
 
         m_availableBuffer.offsetMain = m_availableBuffer.offsetMain + bytesWrittenToShm;
         if (bytesWrittenToGst <= storedDataLengthAtEndOfShm)
@@ -421,7 +426,8 @@ void WebAudioPlayerServerInternal::updateAvailableBuffer(uint32_t bytesWrittenTo
         {
             // Data written to gst has wrapped, data written is taken from the main buffer and wrapped buffer
             m_availableBuffer.lengthMain = m_availableBuffer.lengthMain - bytesWrittenToShm + storedDataLengthAtEndOfShm;
-            m_availableBuffer.lengthWrap = m_availableBuffer.lengthWrap + (bytesWrittenToGst - storedDataLengthAtEndOfShm);
+            m_availableBuffer.lengthWrap = m_availableBuffer.lengthWrap +
+                                           (bytesWrittenToGst - storedDataLengthAtEndOfShm);
         }
     }
     else
@@ -433,7 +439,8 @@ void WebAudioPlayerServerInternal::updateAvailableBuffer(uint32_t bytesWrittenTo
         if (bytesWrittenToGst <= m_availableBuffer.lengthMain)
         {
             // Data written to gstreamer has not wrapped, data written is taken from the main buffer only
-            m_availableBuffer.lengthMain = (m_availableBuffer.lengthWrap - m_availableBuffer.offsetMain) + bytesWrittenToGst;
+            m_availableBuffer.lengthMain = (m_availableBuffer.lengthWrap - m_availableBuffer.offsetMain) +
+                                           bytesWrittenToGst;
             m_availableBuffer.lengthWrap = 0;
         }
         else
@@ -525,7 +532,9 @@ void WebAudioPlayerServerInternal::handleWriteDataTimer()
         if (!writeStoredBuffers())
         {
             // Not all data was written to gstreamer, restart the timer
-            m_writeDataTimer = m_timerFactory->createTimer(kWriteDataTimeMs, std::bind(&WebAudioPlayerServerInternal::handleWriteDataTimer, this));
+            m_writeDataTimer =
+                m_timerFactory->createTimer(kWriteDataTimeMs,
+                                            std::bind(&WebAudioPlayerServerInternal::handleWriteDataTimer, this));
         }
         else
         {

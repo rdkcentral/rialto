@@ -41,7 +41,8 @@ TEST_F(RialtoServerCreateWebAudioPlayerTest, Create)
     EXPECT_CALL(*m_sharedMemoryBufferMock, getMaxDataLen(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO,
                                                          m_webAudioPlayerHandle, MediaSourceType::AUDIO))
         .WillOnce(Return(m_dataLen));
-    EXPECT_CALL(*m_gstPlayerFactoryMock, createGstWebAudioPlayer(_, m_priority)).WillOnce(Return(ByMove(std::move(m_gstPlayer))));
+    EXPECT_CALL(*m_gstPlayerFactoryMock, createGstWebAudioPlayer(_, m_priority))
+        .WillOnce(Return(ByMove(std::move(m_gstPlayer))));
     EXPECT_CALL(*m_gstPlayerMock, setCaps(m_audioMimeType, &m_config));
 
     EXPECT_NO_THROW(m_webAudioPlayer =

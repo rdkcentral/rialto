@@ -22,9 +22,9 @@
 
 #include "IGstWebAudioPlayer.h"
 #include "IMainThread.h"
+#include "ITimer.h"
 #include "IWebAudioPlayer.h"
 #include "IWebAudioPlayerServerInternalFactory.h"
-#include "ITimer.h"
 
 #include <memory>
 #include <stdint.h>

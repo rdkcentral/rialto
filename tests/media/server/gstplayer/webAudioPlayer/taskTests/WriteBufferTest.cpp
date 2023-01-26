@@ -79,7 +79,8 @@ TEST_F(WebAudioWriteBufferTest, shouldWriteBufferForAllMainDataAndPartialWrapDat
 
 TEST_F(WebAudioWriteBufferTest, shouldWriteBufferForPartialMainDataAndNoWrapData)
 {
-    EXPECT_CALL(*m_gstWrapper, gstAppSrcGetCurrentLevelBytes(GST_APP_SRC(&m_appSrc))).WillOnce(Return(m_mainLength / 2 + m_wrapLength));
+    EXPECT_CALL(*m_gstWrapper, gstAppSrcGetCurrentLevelBytes(GST_APP_SRC(&m_appSrc)))
+        .WillOnce(Return(m_mainLength / 2 + m_wrapLength));
     EXPECT_CALL(*m_gstWrapper, gstBufferNewAllocate(_, m_mainLength / 2, _)).WillOnce(Return(&m_buffer));
     EXPECT_CALL(*m_gstWrapper, gstBufferFill(&m_buffer, 0, &m_mainPtr, m_mainLength / 2)).WillOnce(Return(m_mainLength / 2));
     EXPECT_CALL(*m_gstWrapper, gstAppSrcPushBuffer(GST_APP_SRC(&m_appSrc), &m_buffer)).WillOnce(Return(GST_FLOW_OK));

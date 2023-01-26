@@ -114,7 +114,6 @@ TEST_F(RialtoServerWebAudioPlayerMiscellaneousFunctionsTest, setEosDelayed)
     expectCancelTimer();
     EXPECT_CALL(*m_gstPlayerMock, setEos());
     writeBufferSuccess(0);
-
 }
 
 /**

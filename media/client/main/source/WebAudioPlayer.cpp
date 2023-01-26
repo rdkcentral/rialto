@@ -83,7 +83,8 @@ WebAudioPlayer::WebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, cons
         m_bytesPerFrame = config->pcm.channels * (config->pcm.sampleSize / CHAR_BIT);
         if (m_bytesPerFrame == 0)
         {
-            throw std::runtime_error("Bytes per frame cannot be 0, channels " + std::to_string(config->pcm.channels) + ", sampleSize " + std::to_string(config->pcm.sampleSize));
+            throw std::runtime_error("Bytes per frame cannot be 0, channels " + std::to_string(config->pcm.channels) +
+                                     ", sampleSize " + std::to_string(config->pcm.sampleSize));
         }
     }
 
