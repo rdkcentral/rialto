@@ -68,6 +68,20 @@ TEST_F(RialtoServerCreateWebAudioPlayerTest, InvalidPcmConfig)
 }
 
 /**
+ * Test that a WebAudioPlayer object throws an exeception if the bytes per frame is 0.
+ */
+TEST_F(RialtoServerCreateWebAudioPlayerTest, InvalidBytesPerFrame)
+{
+    m_config.pcm.channels = 0;
+    EXPECT_THROW(m_webAudioPlayer =
+                     std::make_unique<WebAudioPlayerServerInternal>(m_webAudioPlayerClientMock, m_audioMimeType,
+                                                                    m_priority, &m_config, m_sharedMemoryBufferMock,
+                                                                    m_webAudioPlayerHandle, m_mainThreadFactoryMock,
+                                                                    m_gstPlayerFactoryMock, m_timerFactoryMock),
+                 std::runtime_error);
+}
+
+/**
  * Test that a WebAudioPlayer object throws an exeception if the mime type is not supported.
  */
 TEST_F(RialtoServerCreateWebAudioPlayerTest, InvalidMimeType)

@@ -76,11 +76,24 @@ protected:
     const int32_t m_kMainThreadClientId{65};
     uint8_t m_dataPtr{4};
     uint32_t m_dataLen{4000};
+    uint32_t m_availableFrames{12};
+    uint32_t m_framesStored{0};
+    uint32_t m_bytesPerFrame{0};
+    uint32_t m_maxFrame{0};
+    const std::chrono::milliseconds m_kExpectedWriteDataTimeout{100};
+    std::shared_ptr<WebAudioShmInfo> m_webAudioShmInfo;
+    std::function<void()> m_writeBufferTimerCallback;
 
     void createWebAudioPlayer();
     void destroyWebAudioPlayer();
     void mainThreadWillEnqueueTask();
     void mainThreadWillEnqueueTaskAndWait();
+    void getBufferAvailableSuccess(uint32_t expectedAvailableFrames, const std::shared_ptr<WebAudioShmInfo>& expectedShmInfo = nullptr);
+    void writeBufferSuccess(uint32_t newFramesToWrite);
+    void expectWriteStoredFrames(uint32_t storedFramesToWrite, uint32_t storedFramesWritten);
+    void expectWriteNewFrames(uint32_t newFramesToWrite, uint32_t newFramesWritten);
+    void expectStartTimer();
+    void expectCancelTimer();
 };
 
 #endif // WEB_AUDIO_PLAYER_TEST_BASE_H_

@@ -22,11 +22,6 @@
 class RialtoServerWebAudioPlayerBufferApiTest : public WebAudioPlayerTestBase
 {
 protected:
-    uint32_t m_availableFrames{12};
-    uint32_t m_framesStored{0};
-    const std::chrono::milliseconds m_kExpectedWriteDataTimeout{100};
-    std::shared_ptr<WebAudioShmInfo> m_webAudioShmInfo;
-    std::function<void()> m_writeBufferTimerCallback;
 
     RialtoServerWebAudioPlayerBufferApiTest()
     {
@@ -34,98 +29,6 @@ protected:
     }
 
     ~RialtoServerWebAudioPlayerBufferApiTest() { destroyWebAudioPlayer(); }
-
-    void getBufferAvailableSuccess(uint32_t expectedAvailableFrames, const std::shared_ptr<WebAudioShmInfo>& expectedShmInfo = nullptr)
-    {
-        m_webAudioShmInfo = std::make_shared<WebAudioShmInfo>();
-        mainThreadWillEnqueueTaskAndWait();
-        bool status = m_webAudioPlayer->getBufferAvailable(m_availableFrames, m_webAudioShmInfo);
-        EXPECT_EQ(status, true);
-        EXPECT_EQ(m_availableFrames, expectedAvailableFrames);
-        if (expectedShmInfo)
-        {
-            EXPECT_EQ(m_webAudioShmInfo->lengthMain, expectedShmInfo->lengthMain);
-            EXPECT_EQ(m_webAudioShmInfo->offsetMain, expectedShmInfo->offsetMain);
-            EXPECT_EQ(m_webAudioShmInfo->lengthWrap, expectedShmInfo->lengthWrap);
-            EXPECT_EQ(m_webAudioShmInfo->offsetWrap, expectedShmInfo->offsetWrap);
-        }
-        std::cout << "getBufferAvailableSuccess: " << m_webAudioShmInfo->lengthMain << ", " << m_webAudioShmInfo->offsetMain << std::endl;
-        std::cout << "getBufferAvailableSuccess: " << m_webAudioShmInfo->lengthWrap << ", " << m_webAudioShmInfo->offsetWrap << std::endl;
-
-    }
-
-    void writeBufferSuccess(uint32_t newFramesToWrite)
-    {
-        mainThreadWillEnqueueTaskAndWait();
-        bool status = m_webAudioPlayer->writeBuffer(newFramesToWrite, nullptr);
-        EXPECT_EQ(status, true);
-    }
-
-    void expectWriteStoredFrames(uint32_t storedFramesToWrite, uint32_t storedFramesWritten)
-    {
-        uint8_t *expectedStoredMainPtr = nullptr;
-        uint8_t *expectedStoredWrapPtr = nullptr;
-        uint32_t expectedStoredMainLength = 0;
-        uint32_t expectedStoredWrapLength = 0;
-
-        if (m_webAudioShmInfo->lengthWrap != 0)
-        {
-            // Should start reading data from the end of the wrap free buffer
-            expectedStoredMainPtr = &m_dataPtr + m_webAudioShmInfo->offsetWrap + m_webAudioShmInfo->lengthWrap;
-            expectedStoredMainLength = storedFramesToWrite * 4;
-        }
-        else
-        {
-            // Should start reading data from the end of the main free buffer
-            expectedStoredMainPtr = &m_dataPtr + m_webAudioShmInfo->offsetMain + m_webAudioShmInfo->lengthMain;
-            std::cout << m_dataLen << ", " << m_webAudioShmInfo->offsetMain << ", " << m_webAudioShmInfo->lengthMain << std::endl;
-            expectedStoredMainLength = m_dataLen - (m_webAudioShmInfo->offsetMain + m_webAudioShmInfo->lengthMain);
-            // Continue reading data from the start of the buffer
-            expectedStoredWrapPtr = &m_dataPtr;
-            expectedStoredWrapLength = m_webAudioShmInfo->offsetMain - m_webAudioShmInfo->offsetWrap;
-        }
-
-        std::cout << expectedStoredMainLength << ", " << expectedStoredWrapLength << std::endl;
-        EXPECT_CALL(*m_gstPlayerMock, writeBuffer(expectedStoredMainPtr, expectedStoredMainLength, expectedStoredWrapPtr, expectedStoredWrapLength)).WillOnce(Return(storedFramesWritten * 4)).RetiresOnSaturation();
-
-        m_framesStored += - storedFramesWritten;
-    }
-
-    void expectWriteNewFrames(uint32_t newFramesToWrite, uint32_t newFramesWritten)
-    {
-        uint8_t *expectedNewMainPtr = &m_dataPtr + m_webAudioShmInfo->offsetMain;
-        uint8_t *expectedNewWrapPtr = &m_dataPtr + m_webAudioShmInfo->offsetWrap;
-        uint32_t expectedNewMainLength = 0;
-        uint32_t expectedNewWrapLength = 0;
-
-        if (newFramesToWrite * 4 <= m_webAudioShmInfo->lengthMain)
-        {
-            expectedNewMainLength = newFramesToWrite * 4;
-        }
-        else
-        {
-            expectedNewMainLength = m_webAudioShmInfo->lengthMain;
-            expectedNewWrapLength = newFramesToWrite * 4 - m_webAudioShmInfo->lengthMain;
-        }
-
-        EXPECT_CALL(*m_gstPlayerMock, writeBuffer(expectedNewMainPtr, expectedNewMainLength, expectedNewWrapPtr, expectedNewWrapLength)).WillOnce(Return(newFramesWritten * 4)).RetiresOnSaturation();
-
-        m_framesStored += newFramesToWrite - newFramesWritten;
-    }
-
-    void expectStartTimer()
-    {
-        m_timer = std::make_unique<StrictMock<TimerMock>>();
-        m_timerMock = static_cast<StrictMock<TimerMock> *>(m_timer.get());
-        EXPECT_CALL(*m_timerFactoryMock, createTimer(m_kExpectedWriteDataTimeout, _, _))
-            .WillOnce(DoAll(SaveArg<1>(&m_writeBufferTimerCallback), Return(ByMove(std::move(m_timer))))).RetiresOnSaturation();
-    }
-
-    void expectCancelTimer()
-    {
-        EXPECT_CALL(*m_timerMock, isActive()).WillOnce(Return(true)).RetiresOnSaturation();
-        EXPECT_CALL(*m_timerMock, cancel()).RetiresOnSaturation();
-    }
 
     void writeBufferFailure(uint32_t framesWritten)
     {
@@ -149,7 +52,7 @@ TEST_F(RialtoServerWebAudioPlayerBufferApiTest, getDeviceInfo)
     bool status = m_webAudioPlayer->getDeviceInfo(returnPreferredFrames, returnMaximumFrames, returnSupportDeferredPlay);
     EXPECT_EQ(status, true);
     EXPECT_EQ(640, returnPreferredFrames);
-    EXPECT_EQ(m_dataLen / 4, returnMaximumFrames);
+    EXPECT_EQ(m_maxFrame, returnMaximumFrames);
     EXPECT_EQ(true, returnSupportDeferredPlay);
 }
 
@@ -172,8 +75,8 @@ TEST_F(RialtoServerWebAudioPlayerBufferApiTest, getDeviceInfoSmallSharedBuffer)
 
     bool status = m_webAudioPlayer->getDeviceInfo(returnPreferredFrames, returnMaximumFrames, returnSupportDeferredPlay);
     EXPECT_EQ(status, true);
-    EXPECT_EQ(m_dataLen / 4, returnPreferredFrames);
-    EXPECT_EQ(m_dataLen / 4, returnMaximumFrames);
+    EXPECT_EQ(m_dataLen / m_bytesPerFrame, returnPreferredFrames);
+    EXPECT_EQ(m_dataLen / m_bytesPerFrame, returnMaximumFrames);
     EXPECT_EQ(true, returnSupportDeferredPlay);
 }
 
@@ -192,7 +95,7 @@ TEST_F(RialtoServerWebAudioPlayerBufferApiTest, initialGetBufferAvailable)
     // the default.
     bool status = m_webAudioPlayer->getBufferAvailable(returnAvailableFrames, returnWebAudioShmInfo);
     EXPECT_EQ(status, true);
-    EXPECT_EQ(m_dataLen / 4, returnAvailableFrames);
+    EXPECT_EQ(m_maxFrame, returnAvailableFrames);
     EXPECT_EQ(m_dataLen, returnWebAudioShmInfo->lengthMain);
     EXPECT_EQ(0, returnWebAudioShmInfo->offsetMain);
     EXPECT_EQ(0, returnWebAudioShmInfo->lengthWrap);
@@ -205,10 +108,25 @@ TEST_F(RialtoServerWebAudioPlayerBufferApiTest, initialGetBufferAvailable)
 TEST_F(RialtoServerWebAudioPlayerBufferApiTest, initialWriteBuffer)
 {
     // getBufferAvailable must be called before a writeBuffer call
-    getBufferAvailableSuccess(m_dataLen /  4);
+    getBufferAvailableSuccess(m_maxFrame);
 
     expectWriteNewFrames(m_availableFrames, m_availableFrames);
     writeBufferSuccess(m_availableFrames);
+}
+
+/**
+ * Test that getBufferDelay successfully returns 0 if no frames have been written.
+ */
+TEST_F(RialtoServerWebAudioPlayerBufferApiTest, initialGetBufferDelay)
+{
+    uint32_t returnDelayFrames{};
+
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, getQueuedBytes()).WillOnce(Return(0));
+
+    bool status = m_webAudioPlayer->getBufferDelay(returnDelayFrames);
+    EXPECT_EQ(status, true);
+    EXPECT_EQ(0, returnDelayFrames);
 }
 
 /**
@@ -225,7 +143,7 @@ TEST_F(RialtoServerWebAudioPlayerBufferApiTest, writeBufferWithNoGetBufferAvaila
  */
 TEST_F(RialtoServerWebAudioPlayerBufferApiTest, multipleWriteBufferWithOneGetBufferAvailableNoStoredData)
 {
-    getBufferAvailableSuccess(m_dataLen /  4);
+    getBufferAvailableSuccess(m_maxFrame);
 
     expectWriteNewFrames(m_availableFrames / 2, m_availableFrames / 2);
     writeBufferSuccess(m_availableFrames / 2);
@@ -241,11 +159,11 @@ TEST_F(RialtoServerWebAudioPlayerBufferApiTest, multipleWriteBufferWithOneGetBuf
  */
 TEST_F(RialtoServerWebAudioPlayerBufferApiTest, multipleGetBufferAvailableNoStoredData)
 {
-    getBufferAvailableSuccess(m_dataLen /  4);
+    getBufferAvailableSuccess(m_maxFrame);
 
-    getBufferAvailableSuccess(m_dataLen /  4);
+    getBufferAvailableSuccess(m_maxFrame);
 
-    getBufferAvailableSuccess(m_dataLen /  4);
+    getBufferAvailableSuccess(m_maxFrame);
 
     expectWriteNewFrames(m_availableFrames / 2, m_availableFrames / 2);
     writeBufferSuccess(m_availableFrames / 2);
@@ -258,7 +176,7 @@ TEST_F(RialtoServerWebAudioPlayerBufferApiTest, multipleGetBufferAvailableNoStor
  */
 TEST_F(RialtoServerWebAudioPlayerBufferApiTest, fullSharedMemory)
 {
-    getBufferAvailableSuccess(m_dataLen /  4);
+    getBufferAvailableSuccess(m_maxFrame);
     expectWriteNewFrames(m_availableFrames, 0);
     expectStartTimer();
     writeBufferSuccess(m_availableFrames);
@@ -285,7 +203,7 @@ TEST_F(RialtoServerWebAudioPlayerBufferApiTest, fullSharedMemory)
  */
 TEST_F(RialtoServerWebAudioPlayerBufferApiTest, writeAllStoredDataAndNoNewData)
 {
-    getBufferAvailableSuccess(m_dataLen /  4);
+    getBufferAvailableSuccess(m_maxFrame);
     uint32_t framesToWrite = m_availableFrames;
     uint32_t framesWritten = m_availableFrames / 2;
     expectWriteNewFrames(framesToWrite, framesWritten);
@@ -293,7 +211,7 @@ TEST_F(RialtoServerWebAudioPlayerBufferApiTest, writeAllStoredDataAndNoNewData)
     writeBufferSuccess(framesToWrite);
 
     std::shared_ptr<WebAudioShmInfo> expectedWebAudioShmInfo = std::make_shared<WebAudioShmInfo>();
-    expectedWebAudioShmInfo->lengthMain = framesWritten * 4;
+    expectedWebAudioShmInfo->lengthMain = framesWritten * m_bytesPerFrame;
     expectedWebAudioShmInfo->offsetMain = 0;
     expectedWebAudioShmInfo->lengthWrap = 0;
     expectedWebAudioShmInfo->offsetWrap = 0;
@@ -309,7 +227,7 @@ TEST_F(RialtoServerWebAudioPlayerBufferApiTest, writeAllStoredDataAndNoNewData)
  */
 TEST_F(RialtoServerWebAudioPlayerBufferApiTest, writeAllStoredDataAndNewData)
 {
-    getBufferAvailableSuccess(m_dataLen /  4);
+    getBufferAvailableSuccess(m_maxFrame);
     uint32_t framesToWrite = m_availableFrames;
     uint32_t framesWritten = m_availableFrames / 2;
     expectWriteNewFrames(framesToWrite, framesWritten);
@@ -317,7 +235,7 @@ TEST_F(RialtoServerWebAudioPlayerBufferApiTest, writeAllStoredDataAndNewData)
     writeBufferSuccess(framesToWrite);
 
     std::shared_ptr<WebAudioShmInfo> expectedWebAudioShmInfo = std::make_shared<WebAudioShmInfo>();
-    expectedWebAudioShmInfo->lengthMain = framesWritten * 4;
+    expectedWebAudioShmInfo->lengthMain = framesWritten * m_bytesPerFrame;
     expectedWebAudioShmInfo->offsetMain = 0;
     expectedWebAudioShmInfo->lengthWrap = 0;
     expectedWebAudioShmInfo->offsetWrap = 0;
@@ -334,33 +252,31 @@ TEST_F(RialtoServerWebAudioPlayerBufferApiTest, writeAllStoredDataAndNewData)
  */
 TEST_F(RialtoServerWebAudioPlayerBufferApiTest, writePartialStoredDataAndNoNewData)
 {
-    uint32_t maxFramesToWrite = m_dataLen /  4;
-
     // Store some data in the shared memory and dont write
-    getBufferAvailableSuccess(m_dataLen /  4);
-    expectWriteNewFrames(maxFramesToWrite / 2, maxFramesToWrite / 4);
+    getBufferAvailableSuccess(m_maxFrame);
+    expectWriteNewFrames(m_maxFrame / 2, m_maxFrame / 4);
     expectStartTimer();
-    writeBufferSuccess(maxFramesToWrite / 2);
+    writeBufferSuccess(m_maxFrame / 2);
 
     // Do not write all the stored data
     std::shared_ptr<WebAudioShmInfo> expectedWebAudioShmInfo = std::make_shared<WebAudioShmInfo>();
-    expectedWebAudioShmInfo->lengthMain = (maxFramesToWrite / 2) *4;
-    expectedWebAudioShmInfo->offsetMain = (maxFramesToWrite / 2) *4;
-    expectedWebAudioShmInfo->lengthWrap = (maxFramesToWrite / 4) *4;
+    expectedWebAudioShmInfo->lengthMain = (m_maxFrame / 2) *m_bytesPerFrame;
+    expectedWebAudioShmInfo->offsetMain = (m_maxFrame / 2) *m_bytesPerFrame;
+    expectedWebAudioShmInfo->lengthWrap = (m_maxFrame / 4) *m_bytesPerFrame;
     expectedWebAudioShmInfo->offsetWrap = 0;
-    getBufferAvailableSuccess(maxFramesToWrite - m_framesStored, expectedWebAudioShmInfo);
+    getBufferAvailableSuccess(m_maxFrame - m_framesStored, expectedWebAudioShmInfo);
     expectWriteStoredFrames(m_framesStored, m_framesStored / 2);
     expectCancelTimer();
     expectStartTimer();
-    m_framesStored += maxFramesToWrite / 4;
-    writeBufferSuccess(maxFramesToWrite / 4);
+    m_framesStored += m_maxFrame / 4;
+    writeBufferSuccess(m_maxFrame / 4);
 
     // Check available buffer correct
-    expectedWebAudioShmInfo->lengthMain = (maxFramesToWrite / 4) *4;
-    expectedWebAudioShmInfo->offsetMain = (maxFramesToWrite  *3 / 4) *4;
-    expectedWebAudioShmInfo->lengthWrap = (maxFramesToWrite / 4 + maxFramesToWrite / 8) *4;
+    expectedWebAudioShmInfo->lengthMain = (m_maxFrame / 4) *m_bytesPerFrame;
+    expectedWebAudioShmInfo->offsetMain = (m_maxFrame  *3 / 4) *m_bytesPerFrame;
+    expectedWebAudioShmInfo->lengthWrap = (m_maxFrame / 4 + m_maxFrame / 8) *m_bytesPerFrame;
     expectedWebAudioShmInfo->offsetWrap = 0;
-    getBufferAvailableSuccess(maxFramesToWrite - m_framesStored, expectedWebAudioShmInfo);
+    getBufferAvailableSuccess(m_maxFrame - m_framesStored, expectedWebAudioShmInfo);
 
     expectCancelTimer();
 }
@@ -371,44 +287,42 @@ TEST_F(RialtoServerWebAudioPlayerBufferApiTest, writePartialStoredDataAndNoNewDa
  */
 TEST_F(RialtoServerWebAudioPlayerBufferApiTest, writeAllStoredWrappedDataAndNewData)
 {
-    uint32_t maxFramesToWrite = m_dataLen /  4;
-
     // Store data in a quater of shared memory buffer at the end of the buffer
-    getBufferAvailableSuccess(m_dataLen /  4);
-    expectWriteNewFrames(maxFramesToWrite, maxFramesToWrite*3/4);
+    getBufferAvailableSuccess(m_maxFrame);
+    expectWriteNewFrames(m_maxFrame, m_maxFrame*3/4);
     expectStartTimer();
-    writeBufferSuccess(maxFramesToWrite);
+    writeBufferSuccess(m_maxFrame);
 
     // Store data in a quater of shared memory buffer at the start of the buffer
     std::shared_ptr<WebAudioShmInfo> expectedWebAudioShmInfo = std::make_shared<WebAudioShmInfo>();
-    expectedWebAudioShmInfo->lengthMain = (maxFramesToWrite*3/4) *4;
+    expectedWebAudioShmInfo->lengthMain = (m_maxFrame*3/4) *m_bytesPerFrame;
     expectedWebAudioShmInfo->offsetMain = 0;
     expectedWebAudioShmInfo->lengthWrap = 0;
     expectedWebAudioShmInfo->offsetWrap = 0;
-    getBufferAvailableSuccess(maxFramesToWrite*3/4, expectedWebAudioShmInfo);
+    getBufferAvailableSuccess(m_maxFrame*3/4, expectedWebAudioShmInfo);
     expectWriteStoredFrames(m_framesStored, 0);
     expectCancelTimer();
     expectStartTimer();
-    m_framesStored += maxFramesToWrite / 4;
-    writeBufferSuccess(maxFramesToWrite / 4);
+    m_framesStored += m_maxFrame / 4;
+    writeBufferSuccess(m_maxFrame / 4);
 
     // Write all stored data and new data
-    expectedWebAudioShmInfo->lengthMain = (maxFramesToWrite/2) *4;
-    expectedWebAudioShmInfo->offsetMain = (maxFramesToWrite/4) *4;
+    expectedWebAudioShmInfo->lengthMain = (m_maxFrame/2) *m_bytesPerFrame;
+    expectedWebAudioShmInfo->offsetMain = (m_maxFrame/4) *m_bytesPerFrame;
     expectedWebAudioShmInfo->lengthWrap = 0;
     expectedWebAudioShmInfo->offsetWrap = 0;
-    getBufferAvailableSuccess(maxFramesToWrite - m_framesStored, expectedWebAudioShmInfo);
+    getBufferAvailableSuccess(m_maxFrame - m_framesStored, expectedWebAudioShmInfo);
     expectWriteStoredFrames(m_framesStored, m_framesStored);
-    expectWriteNewFrames(maxFramesToWrite / 4, maxFramesToWrite / 4);
+    expectWriteNewFrames(m_maxFrame / 4, m_maxFrame / 4);
     expectCancelTimer();
-    writeBufferSuccess(maxFramesToWrite / 4);
+    writeBufferSuccess(m_maxFrame / 4);
 
     // Check buffer now empty
-    expectedWebAudioShmInfo->lengthMain = (maxFramesToWrite/2) *4;
-    expectedWebAudioShmInfo->offsetMain = (maxFramesToWrite/4) *4;
+    expectedWebAudioShmInfo->lengthMain = (m_maxFrame/2) *m_bytesPerFrame;
+    expectedWebAudioShmInfo->offsetMain = (m_maxFrame/4) *m_bytesPerFrame;
     expectedWebAudioShmInfo->lengthWrap = 0;
     expectedWebAudioShmInfo->offsetWrap = 0;
-    getBufferAvailableSuccess(m_dataLen /  4);
+    getBufferAvailableSuccess(m_maxFrame);
 }
 
 /**
@@ -417,32 +331,30 @@ TEST_F(RialtoServerWebAudioPlayerBufferApiTest, writeAllStoredWrappedDataAndNewD
  */
 TEST_F(RialtoServerWebAudioPlayerBufferApiTest, writeAllStoredDataAndWrappedNewData)
 {
-    uint32_t maxFramesToWrite = m_dataLen /  4;
-
     // Store data in the 3rd quater of the shared memory
-    getBufferAvailableSuccess(m_dataLen /  4);
-    expectWriteNewFrames(maxFramesToWrite*3/4, maxFramesToWrite/2);
+    getBufferAvailableSuccess(m_maxFrame);
+    expectWriteNewFrames(m_maxFrame*3/4, m_maxFrame/2);
     expectStartTimer();
-    writeBufferSuccess(maxFramesToWrite*3/4);
+    writeBufferSuccess(m_maxFrame*3/4);
 
     // Write data that wraps the shared memory
     std::shared_ptr<WebAudioShmInfo> expectedWebAudioShmInfo = std::make_shared<WebAudioShmInfo>();
-    expectedWebAudioShmInfo->lengthMain = (maxFramesToWrite/4) *4;
-    expectedWebAudioShmInfo->offsetMain = (maxFramesToWrite*3/4) *4;
-    expectedWebAudioShmInfo->lengthWrap = (maxFramesToWrite/2)*4;
+    expectedWebAudioShmInfo->lengthMain = (m_maxFrame/4) *m_bytesPerFrame;
+    expectedWebAudioShmInfo->offsetMain = (m_maxFrame*3/4) *m_bytesPerFrame;
+    expectedWebAudioShmInfo->lengthWrap = (m_maxFrame/2)*m_bytesPerFrame;
     expectedWebAudioShmInfo->offsetWrap = 0;
-    getBufferAvailableSuccess(maxFramesToWrite - m_framesStored, expectedWebAudioShmInfo);
+    getBufferAvailableSuccess(m_maxFrame - m_framesStored, expectedWebAudioShmInfo);
     expectWriteStoredFrames(m_framesStored, m_framesStored);
-    expectWriteNewFrames(maxFramesToWrite/2, maxFramesToWrite/2);
+    expectWriteNewFrames(m_maxFrame/2, m_maxFrame/2);
     expectCancelTimer();
-    writeBufferSuccess(maxFramesToWrite/2);
+    writeBufferSuccess(m_maxFrame/2);
 
     // Check buffer now empty
-    expectedWebAudioShmInfo->lengthMain = (maxFramesToWrite/2) *4;
-    expectedWebAudioShmInfo->offsetMain = (maxFramesToWrite/4) *4;
+    expectedWebAudioShmInfo->lengthMain = (m_maxFrame/2) *m_bytesPerFrame;
+    expectedWebAudioShmInfo->offsetMain = (m_maxFrame/4) *m_bytesPerFrame;
     expectedWebAudioShmInfo->lengthWrap = 0;
     expectedWebAudioShmInfo->offsetWrap = 0;
-    getBufferAvailableSuccess(m_dataLen /  4);
+    getBufferAvailableSuccess(m_maxFrame);
 }
 
 /**
@@ -450,7 +362,7 @@ TEST_F(RialtoServerWebAudioPlayerBufferApiTest, writeAllStoredDataAndWrappedNewD
  */
 TEST_F(RialtoServerWebAudioPlayerBufferApiTest, handleWriteBufferTimerAllData)
 {
-    getBufferAvailableSuccess(m_dataLen /  4);
+    getBufferAvailableSuccess(m_maxFrame);
     expectWriteNewFrames(m_availableFrames, 0);
     expectStartTimer();
     writeBufferSuccess(m_availableFrames);
@@ -466,7 +378,7 @@ TEST_F(RialtoServerWebAudioPlayerBufferApiTest, handleWriteBufferTimerAllData)
  */
 TEST_F(RialtoServerWebAudioPlayerBufferApiTest, handleWriteBufferTimerPartialData)
 {
-    getBufferAvailableSuccess(m_dataLen /  4);
+    getBufferAvailableSuccess(m_maxFrame);
     expectWriteNewFrames(m_availableFrames, 0);
     expectStartTimer();
     writeBufferSuccess(m_availableFrames);
@@ -476,6 +388,45 @@ TEST_F(RialtoServerWebAudioPlayerBufferApiTest, handleWriteBufferTimerPartialDat
     expectStartTimer();
     mainThreadWillEnqueueTask();
     m_writeBufferTimerCallback();
+
+    expectCancelTimer();
+}
+
+/**
+ * Test that getBufferDelay fails if gst player returns queued bytes larger than a uint32_t.
+ */
+TEST_F(RialtoServerWebAudioPlayerBufferApiTest, getBufferDelayLargeQueuedBytes)
+{
+    uint32_t returnDelayFrames{};
+
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, getQueuedBytes()).WillOnce(Return(std::numeric_limits<uint32_t>::max()*m_bytesPerFrame + m_bytesPerFrame));
+
+    bool status = m_webAudioPlayer->getBufferDelay(returnDelayFrames);
+    EXPECT_EQ(status, false);
+}
+
+/**
+ * Test that getBufferDelay returns the delayed frames if data queued in shm and gst.
+ */
+TEST_F(RialtoServerWebAudioPlayerBufferApiTest, getBufferDelayQueuedBytes)
+{
+    // Fill the shared memory with data
+    getBufferAvailableSuccess(m_maxFrame);
+    expectWriteNewFrames(m_maxFrame / 2, 0);
+    expectStartTimer();
+    writeBufferSuccess(m_maxFrame / 2);
+
+    uint32_t returnDelayFrames{};
+    const uint64_t kFramesInGst = 400;
+    const uint64_t kFramesInShm = m_maxFrame / 2;
+
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, getQueuedBytes()).WillOnce(Return(kFramesInGst * m_bytesPerFrame));
+
+    bool status = m_webAudioPlayer->getBufferDelay(returnDelayFrames);
+    EXPECT_EQ(status, true);
+    EXPECT_EQ(returnDelayFrames, kFramesInShm + kFramesInGst);
 
     expectCancelTimer();
 }

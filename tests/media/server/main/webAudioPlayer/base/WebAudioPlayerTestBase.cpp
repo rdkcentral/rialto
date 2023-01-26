@@ -38,6 +38,8 @@ WebAudioPlayerTestBase::WebAudioPlayerTestBase()
     m_config.pcm.isBigEndian = false;
     m_config.pcm.isSigned = false;
     m_config.pcm.isFloat = false;
+    m_bytesPerFrame = m_config.pcm.channels * (m_config.pcm.sampleSize / 8);
+    m_maxFrame = m_dataLen / m_bytesPerFrame;
 }
 
 WebAudioPlayerTestBase::~WebAudioPlayerTestBase() {}
@@ -91,4 +93,93 @@ void WebAudioPlayerTestBase::mainThreadWillEnqueueTaskAndWait()
     EXPECT_CALL(*m_mainThreadMock, enqueueTaskAndWait(m_kMainThreadClientId, _))
         .WillOnce(Invoke([](uint32_t clientId, firebolt::rialto::server::IMainThread::Task task) { task(); }))
         .RetiresOnSaturation();
+}
+
+void WebAudioPlayerTestBase::getBufferAvailableSuccess(uint32_t expectedAvailableFrames, const std::shared_ptr<WebAudioShmInfo>& expectedShmInfo)
+{
+    m_webAudioShmInfo = std::make_shared<WebAudioShmInfo>();
+    mainThreadWillEnqueueTaskAndWait();
+    bool status = m_webAudioPlayer->getBufferAvailable(m_availableFrames, m_webAudioShmInfo);
+    EXPECT_EQ(status, true);
+    EXPECT_EQ(m_availableFrames, expectedAvailableFrames);
+    if (expectedShmInfo)
+    {
+        EXPECT_EQ(m_webAudioShmInfo->lengthMain, expectedShmInfo->lengthMain);
+        EXPECT_EQ(m_webAudioShmInfo->offsetMain, expectedShmInfo->offsetMain);
+        EXPECT_EQ(m_webAudioShmInfo->lengthWrap, expectedShmInfo->lengthWrap);
+        EXPECT_EQ(m_webAudioShmInfo->offsetWrap, expectedShmInfo->offsetWrap);
+    }
+}
+
+void WebAudioPlayerTestBase::writeBufferSuccess(uint32_t newFramesToWrite)
+{
+    mainThreadWillEnqueueTaskAndWait();
+    bool status = m_webAudioPlayer->writeBuffer(newFramesToWrite, nullptr);
+    EXPECT_EQ(status, true);
+}
+
+void WebAudioPlayerTestBase::expectWriteStoredFrames(uint32_t storedFramesToWrite, uint32_t storedFramesWritten)
+{
+    uint8_t *expectedStoredMainPtr = nullptr;
+    uint8_t *expectedStoredWrapPtr = nullptr;
+    uint32_t expectedStoredMainLength = 0;
+    uint32_t expectedStoredWrapLength = 0;
+
+    if (m_webAudioShmInfo->lengthWrap != 0)
+    {
+        // Should start reading data from the end of the wrap free buffer
+        expectedStoredMainPtr = &m_dataPtr + m_webAudioShmInfo->offsetWrap + m_webAudioShmInfo->lengthWrap;
+        expectedStoredMainLength = storedFramesToWrite * 4;
+    }
+    else
+    {
+        // Should start reading data from the end of the main free buffer
+        expectedStoredMainPtr = &m_dataPtr + m_webAudioShmInfo->offsetMain + m_webAudioShmInfo->lengthMain;
+        std::cout << m_dataLen << ", " << m_webAudioShmInfo->offsetMain << ", " << m_webAudioShmInfo->lengthMain << std::endl;
+        expectedStoredMainLength = m_dataLen - (m_webAudioShmInfo->offsetMain + m_webAudioShmInfo->lengthMain);
+        // Continue reading data from the start of the buffer
+        expectedStoredWrapPtr = &m_dataPtr;
+        expectedStoredWrapLength = m_webAudioShmInfo->offsetMain - m_webAudioShmInfo->offsetWrap;
+    }
+
+    std::cout << expectedStoredMainLength << ", " << expectedStoredWrapLength << std::endl;
+    EXPECT_CALL(*m_gstPlayerMock, writeBuffer(expectedStoredMainPtr, expectedStoredMainLength, expectedStoredWrapPtr, expectedStoredWrapLength)).WillOnce(Return(storedFramesWritten * 4)).RetiresOnSaturation();
+
+    m_framesStored += - storedFramesWritten;
+}
+
+void WebAudioPlayerTestBase::expectWriteNewFrames(uint32_t newFramesToWrite, uint32_t newFramesWritten)
+{
+    uint8_t *expectedNewMainPtr = &m_dataPtr + m_webAudioShmInfo->offsetMain;
+    uint8_t *expectedNewWrapPtr = &m_dataPtr + m_webAudioShmInfo->offsetWrap;
+    uint32_t expectedNewMainLength = 0;
+    uint32_t expectedNewWrapLength = 0;
+
+    if (newFramesToWrite * 4 <= m_webAudioShmInfo->lengthMain)
+    {
+        expectedNewMainLength = newFramesToWrite * 4;
+    }
+    else
+    {
+        expectedNewMainLength = m_webAudioShmInfo->lengthMain;
+        expectedNewWrapLength = newFramesToWrite * 4 - m_webAudioShmInfo->lengthMain;
+    }
+
+    EXPECT_CALL(*m_gstPlayerMock, writeBuffer(expectedNewMainPtr, expectedNewMainLength, expectedNewWrapPtr, expectedNewWrapLength)).WillOnce(Return(newFramesWritten * 4)).RetiresOnSaturation();
+
+    m_framesStored += newFramesToWrite - newFramesWritten;
+}
+
+void WebAudioPlayerTestBase::expectStartTimer()
+{
+    m_timer = std::make_unique<StrictMock<TimerMock>>();
+    m_timerMock = static_cast<StrictMock<TimerMock> *>(m_timer.get());
+    EXPECT_CALL(*m_timerFactoryMock, createTimer(m_kExpectedWriteDataTimeout, _, _))
+        .WillOnce(DoAll(SaveArg<1>(&m_writeBufferTimerCallback), Return(ByMove(std::move(m_timer))))).RetiresOnSaturation();
+}
+
+void WebAudioPlayerTestBase::expectCancelTimer()
+{
+    EXPECT_CALL(*m_timerMock, isActive()).WillOnce(Return(true)).RetiresOnSaturation();
+    EXPECT_CALL(*m_timerMock, cancel()).RetiresOnSaturation();
 }

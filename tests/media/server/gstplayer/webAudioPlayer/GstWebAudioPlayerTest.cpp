@@ -155,3 +155,10 @@ TEST_F(GstWebAudioPlayerTest, shouldWriteBuffer)
 
     m_testThread.join();
 }
+
+TEST_F(GstWebAudioPlayerTest, shouldGetQueuedBytes)
+{
+    constexpr uint64_t kQueuedBytes{4567};
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCurrentLevelBytes(_)).WillOnce(Return(kQueuedBytes));
+    EXPECT_EQ(m_sut->getQueuedBytes(), kQueuedBytes);
+}
