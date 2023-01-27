@@ -59,7 +59,7 @@ struct WebAudioPlayerContext
     std::condition_variable m_writeBufferCond;
 
     /**
-     * @brief Write buffer condition variable.
+     * @brief The previous number of bytes written to the gstreamer buffers.
      */
     uint32_t m_lastBytesWritten{};
 };

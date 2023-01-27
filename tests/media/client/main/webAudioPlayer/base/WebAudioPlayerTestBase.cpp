@@ -28,6 +28,14 @@ void WebAudioPlayerTestBase::SetUp() // NOLINT(build/function_format)
     m_webAudioPlayerIpcFactoryMock = std::make_shared<StrictMock<WebAudioPlayerIpcFactoryMock>>();
     m_sharedMemoryManagerFactoryMock = std::make_shared<StrictMock<SharedMemoryManagerFactoryMock>>();
     m_sharedMemoryManagerMock = std::make_shared<StrictMock<SharedMemoryManagerMock>>();
+
+    // Init pcm config
+    m_config.pcm.rate = 1;
+    m_config.pcm.channels = 2;
+    m_config.pcm.sampleSize = 16;
+    m_config.pcm.isBigEndian = false;
+    m_config.pcm.isSigned = false;
+    m_config.pcm.isFloat = false;
 }
 
 void WebAudioPlayerTestBase::TearDown() // NOLINT(build/function_format)

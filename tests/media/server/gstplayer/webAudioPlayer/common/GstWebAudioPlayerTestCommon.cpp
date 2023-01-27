@@ -106,7 +106,7 @@ void GstWebAudioPlayerTestCommon::expectInitThreads()
 
 void GstWebAudioPlayerTestCommon::expectCreatePipeline()
 {
-    EXPECT_CALL(*m_gstWrapperMock, gstPipelineNew(CharStrMatcher("webaudiopipeline"))).WillOnce(Return(&m_pipeline));
+    EXPECT_CALL(*m_gstWrapperMock, gstPipelineNew(CharStrMatcher("webaudiopipeline5"))).WillOnce(Return(&m_pipeline));
 }
 
 void GstWebAudioPlayerTestCommon::expectInitAppSrc()
@@ -148,17 +148,24 @@ void GstWebAudioPlayerTestCommon::expectMakeAmlhalaSink()
 void GstWebAudioPlayerTestCommon::expectInitAmlhalaSink()
 {
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(G_OBJECT(&m_sink), CharStrMatcher("direct-mode")));
-    EXPECT_CALL(*m_gstWrapperMock, gstBinAddManyStub(GST_BIN(&m_pipeline), &m_appSrc));
-    EXPECT_CALL(*m_gstWrapperMock, gstBinAddManyStub(GST_BIN(&m_pipeline), &m_sink));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementLinkManyStub(&m_appSrc, &m_sink)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &m_appSrc)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &m_sink)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementLink(&m_appSrc, &m_sink)).WillOnce(Return(TRUE));
 }
 
-void GstWebAudioPlayerTestCommon::expectInitAmlhalaSinkFailure()
+void GstWebAudioPlayerTestCommon::expectInitAmlhalaSinkBinFailure()
 {
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(G_OBJECT(&m_sink), CharStrMatcher("direct-mode")));
-    EXPECT_CALL(*m_gstWrapperMock, gstBinAddManyStub(GST_BIN(&m_pipeline), &m_appSrc));
-    EXPECT_CALL(*m_gstWrapperMock, gstBinAddManyStub(GST_BIN(&m_pipeline), &m_sink));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementLinkManyStub(&m_appSrc, &m_sink)).WillOnce(Return(FALSE));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &m_appSrc)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &m_sink)).WillOnce(Return(FALSE));
+}
+
+void GstWebAudioPlayerTestCommon::expectInitAmlhalaSinkElementFailure()
+{
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(G_OBJECT(&m_sink), CharStrMatcher("direct-mode")));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &m_appSrc)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &m_sink)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementLink(&m_appSrc, &m_sink)).WillOnce(Return(FALSE));
 }
 
 void GstWebAudioPlayerTestCommon::expectMakeRtkAudioSink()
@@ -183,16 +190,16 @@ void GstWebAudioPlayerTestCommon::expectInitRtkAudioSink()
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(CharStrMatcher("audioconvert"), _)).WillOnce(Return(&convert));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(CharStrMatcher("audioresample"), _)).WillOnce(Return(&resample));
 
-    EXPECT_CALL(*m_gstWrapperMock, gstBinAddManyStub(GST_BIN(&m_pipeline), &m_appSrc));
-    EXPECT_CALL(*m_gstWrapperMock, gstBinAddManyStub(GST_BIN(&m_pipeline), &convert));
-    EXPECT_CALL(*m_gstWrapperMock, gstBinAddManyStub(GST_BIN(&m_pipeline), &resample));
-    EXPECT_CALL(*m_gstWrapperMock, gstBinAddManyStub(GST_BIN(&m_pipeline), &m_sink));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementLinkManyStub(&m_appSrc, &convert)).WillOnce(Return(TRUE));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementLinkManyStub(&convert, &resample)).WillOnce(Return(TRUE));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementLinkManyStub(&resample, &m_sink)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &m_appSrc)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &convert)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &resample)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &m_sink)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementLink(&m_appSrc, &convert)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementLink(&convert, &resample)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementLink(&resample, &m_sink)).WillOnce(Return(TRUE));
 }
 
-void GstWebAudioPlayerTestCommon::expectInitRtkAudioSinkFailure()
+void GstWebAudioPlayerTestCommon::expectInitRtkAudioSinkBinFailure()
 {
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(G_OBJECT(&m_sink), CharStrMatcher("media-tunnel")));
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(G_OBJECT(&m_sink), CharStrMatcher("audio-service")));
@@ -202,11 +209,27 @@ void GstWebAudioPlayerTestCommon::expectInitRtkAudioSinkFailure()
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(CharStrMatcher("audioconvert"), _)).WillOnce(Return(&convert));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(CharStrMatcher("audioresample"), _)).WillOnce(Return(&resample));
 
-    EXPECT_CALL(*m_gstWrapperMock, gstBinAddManyStub(GST_BIN(&m_pipeline), &m_appSrc));
-    EXPECT_CALL(*m_gstWrapperMock, gstBinAddManyStub(GST_BIN(&m_pipeline), &convert));
-    EXPECT_CALL(*m_gstWrapperMock, gstBinAddManyStub(GST_BIN(&m_pipeline), &resample));
-    EXPECT_CALL(*m_gstWrapperMock, gstBinAddManyStub(GST_BIN(&m_pipeline), &m_sink));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementLinkManyStub(&m_appSrc, &convert)).WillOnce(Return(FALSE));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &m_appSrc)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &convert)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &resample)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &m_sink)).WillOnce(Return(FALSE));
+}
+
+void GstWebAudioPlayerTestCommon::expectInitRtkAudioSinkElementFailure()
+{
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(G_OBJECT(&m_sink), CharStrMatcher("media-tunnel")));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(G_OBJECT(&m_sink), CharStrMatcher("audio-service")));
+
+    GstElement convert{};
+    GstElement resample{};
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(CharStrMatcher("audioconvert"), _)).WillOnce(Return(&convert));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(CharStrMatcher("audioresample"), _)).WillOnce(Return(&resample));
+
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &m_appSrc)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &convert)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &resample)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &m_sink)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementLink(&m_appSrc, &convert)).WillOnce(Return(FALSE));
 }
 
 void GstWebAudioPlayerTestCommon::expectMakeAutoAudioSink()
@@ -223,14 +246,20 @@ void GstWebAudioPlayerTestCommon::expectMakeAutoAudioSink()
 
 void GstWebAudioPlayerTestCommon::expectInitAutoAudioSink()
 {
-    EXPECT_CALL(*m_gstWrapperMock, gstBinAddManyStub(GST_BIN(&m_pipeline), &m_appSrc));
-    EXPECT_CALL(*m_gstWrapperMock, gstBinAddManyStub(GST_BIN(&m_pipeline), &m_sink));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementLinkManyStub(&m_appSrc, &m_sink)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &m_appSrc)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &m_sink)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementLink(&m_appSrc, &m_sink)).WillOnce(Return(TRUE));
 }
 
-void GstWebAudioPlayerTestCommon::expectInitAutoAudioSinkFailure()
+void GstWebAudioPlayerTestCommon::expectInitAutoAudioSinkElementFailure()
 {
-    EXPECT_CALL(*m_gstWrapperMock, gstBinAddManyStub(GST_BIN(&m_pipeline), &m_appSrc));
-    EXPECT_CALL(*m_gstWrapperMock, gstBinAddManyStub(GST_BIN(&m_pipeline), &m_sink));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementLinkManyStub(&m_appSrc, &m_sink)).WillOnce(Return(FALSE));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &m_appSrc)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &m_sink)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementLink(&m_appSrc, &m_sink)).WillOnce(Return(FALSE));
+}
+
+void GstWebAudioPlayerTestCommon::expectInitAutoAudioSinkBinFailure()
+{
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &m_appSrc)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &m_sink)).WillOnce(Return(FALSE));
 }

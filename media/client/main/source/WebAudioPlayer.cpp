@@ -23,6 +23,7 @@
 #include "IWebAudioPlayerIpcClient.h"
 #include "RialtoClientLogging.h"
 #include <cstring>
+#include <limits.h>
 #include <mutex>
 
 namespace firebolt::rialto
@@ -70,9 +71,24 @@ WebAudioPlayer::WebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, cons
                                const uint32_t priority, const WebAudioConfig *config,
                                const std::shared_ptr<IWebAudioPlayerIpcFactory> &webAudioPlayerIpcFactory,
                                const std::shared_ptr<ISharedMemoryManagerFactory> &sharedMemoryManagerFactory)
-    : m_webAudioPlayerClient(client)
+    : m_webAudioPlayerClient(client), m_bytesPerFrame{0}
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    if (audioMimeType == "audio/x-raw")
+    {
+        if (config == nullptr)
+        {
+            throw std::runtime_error("Config is null for 'audio/x-raw'");
+        }
+        m_bytesPerFrame = config->pcm.channels * (config->pcm.sampleSize / CHAR_BIT);
+        if (m_bytesPerFrame == 0)
+        {
+            throw std::runtime_error("Bytes per frame cannot be 0, channels " + std::to_string(config->pcm.channels) +
+                                     ", sampleSize " + std::to_string(config->pcm.sampleSize));
+        }
+    }
+
     m_sharedMemoryManager = sharedMemoryManagerFactory->getSharedMemoryManager();
     if (!m_sharedMemoryManager)
     {
@@ -160,7 +176,7 @@ bool WebAudioPlayer::writeBuffer(const uint32_t numberOfFrames, void *data)
         return false;
     }
 
-    uint32_t dataLength = numberOfFrames * 4;
+    uint32_t dataLength = numberOfFrames * m_bytesPerFrame;
     uint32_t availableDataLength = m_webAudioShmInfo->lengthMain + m_webAudioShmInfo->lengthWrap;
     if (dataLength > availableDataLength)
     {

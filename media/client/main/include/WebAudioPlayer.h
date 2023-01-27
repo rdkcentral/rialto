@@ -122,6 +122,11 @@ protected:
      * @brief Ensure thread safety for clients by preventing concurrent writing to the buffer.
      */
     std::mutex m_bufLock;
+
+    /**
+     * @brief The bytes per frame for this audio playback.
+     */
+    uint32_t m_bytesPerFrame;
 };
 
 }; // namespace firebolt::rialto::client
