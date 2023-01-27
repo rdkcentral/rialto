@@ -127,7 +127,7 @@ void SetCaps::execute() const
     GstCaps *appsrcCaps = m_gstWrapper->gstAppSrcGetCaps(GST_APP_SRC(m_context.source));
     if ((!appsrcCaps) || (!m_gstWrapper->gstCapsIsEqual(appsrcCaps, caps)))
     {
-        RIALTO_SERVER_LOG_MIL("Updating web audio appsrc caps to '%s'", strCaps.c_str());
+        RIALTO_SERVER_LOG_INFO("Updating web audio appsrc caps to '%s'", strCaps.c_str());
         m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(m_context.source), caps);
     }
 
