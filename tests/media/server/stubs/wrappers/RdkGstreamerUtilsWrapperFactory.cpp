@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2022 Sky UK
+ * Copyright 2023 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,30 +17,14 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_UNDERFLOW_H_
-#define FIREBOLT_RIALTO_SERVER_UNDERFLOW_H_
-
-#include "IGstGenericPlayerClient.h"
-#include "IGstGenericPlayerPrivate.h"
-#include "IPlayerTask.h"
-#include <gst/gst.h>
+#include "IRdkGstreamerUtilsWrapper.h"
+#include <memory>
 
 namespace firebolt::rialto::server
 {
-class Underflow : public IPlayerTask
+// Stub create factory for compilation.
+std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> IRdkGstreamerUtilsWrapperFactory::getFactory()
 {
-public:
-    Underflow(IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client, bool &underflowFlag,
-              bool underflowEnabled);
-    ~Underflow() override;
-    void execute() const override;
-
-private:
-    IGstGenericPlayerPrivate &m_player;
-    IGstGenericPlayerClient *m_gstPlayerClient;
-    bool &m_underflowFlag;
-    bool m_underflowEnabled;
-};
+    return nullptr;
+}
 } // namespace firebolt::rialto::server
-
-#endif // FIREBOLT_RIALTO_SERVER_UNDERFLOW_H_

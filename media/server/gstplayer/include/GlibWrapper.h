@@ -77,9 +77,14 @@ public:
 
     void gObjectUnref(gpointer object) override { g_object_unref(object); }
 
-    void gSignalConnect(gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data) override
+    gulong gSignalConnect(gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data) override
     {
-        g_signal_connect(instance, detailed_signal, c_handler, data);
+        return g_signal_connect(instance, detailed_signal, c_handler, data);
+    }
+
+    void gSignalHandlerDisconnect(GObject *instance, gulong handler_id) const override
+    {
+        g_signal_handler_disconnect(instance, handler_id);
     }
 
     guint gTimeoutAdd(guint interval, GSourceFunc function, gpointer data) override
@@ -117,6 +122,8 @@ public:
     gboolean gOnceInitEnter(gsize *location) const override { return g_once_init_enter(location); }
 
     void gOnceInitLeave(gsize *location, gsize result) const override { g_once_init_leave(location, result); }
+
+    gchar *gStrrstr(const gchar *haystack, const gchar *needle) const override { return g_strrstr(haystack, needle); }
 };
 
 }; // namespace firebolt::rialto::server

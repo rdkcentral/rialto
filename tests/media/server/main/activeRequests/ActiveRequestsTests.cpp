@@ -100,6 +100,42 @@ TEST_F(ActiveRequestsTests, shouldClearIds)
     EXPECT_EQ(firebolt::rialto::MediaSourceType::UNKNOWN, m_sut.getType(1));
 }
 
+TEST_F(ActiveRequestsTests, shouldEraseAudioIds)
+{
+    EXPECT_EQ(firebolt::rialto::MediaSourceType::UNKNOWN, m_sut.getType(0));
+    EXPECT_EQ(0, m_sut.insert(firebolt::rialto::MediaSourceType::AUDIO, std::numeric_limits<std::uint32_t>::max()));
+    EXPECT_EQ(1, m_sut.insert(firebolt::rialto::MediaSourceType::VIDEO, std::numeric_limits<std::uint32_t>::max()));
+    EXPECT_EQ(2, m_sut.insert(firebolt::rialto::MediaSourceType::AUDIO, std::numeric_limits<std::uint32_t>::max()));
+    EXPECT_EQ(3, m_sut.insert(firebolt::rialto::MediaSourceType::AUDIO, std::numeric_limits<std::uint32_t>::max()));
+    EXPECT_EQ(firebolt::rialto::MediaSourceType::AUDIO, m_sut.getType(0));
+    EXPECT_EQ(firebolt::rialto::MediaSourceType::VIDEO, m_sut.getType(1));
+    EXPECT_EQ(firebolt::rialto::MediaSourceType::AUDIO, m_sut.getType(2));
+    EXPECT_EQ(firebolt::rialto::MediaSourceType::AUDIO, m_sut.getType(3));
+    m_sut.erase(firebolt::rialto::MediaSourceType::AUDIO);
+    EXPECT_EQ(firebolt::rialto::MediaSourceType::UNKNOWN, m_sut.getType(0));
+    EXPECT_EQ(firebolt::rialto::MediaSourceType::VIDEO, m_sut.getType(1));
+    EXPECT_EQ(firebolt::rialto::MediaSourceType::UNKNOWN, m_sut.getType(2));
+    EXPECT_EQ(firebolt::rialto::MediaSourceType::UNKNOWN, m_sut.getType(3));
+}
+
+TEST_F(ActiveRequestsTests, shouldEraseVideoIds)
+{
+    EXPECT_EQ(firebolt::rialto::MediaSourceType::UNKNOWN, m_sut.getType(0));
+    EXPECT_EQ(0, m_sut.insert(firebolt::rialto::MediaSourceType::AUDIO, std::numeric_limits<std::uint32_t>::max()));
+    EXPECT_EQ(1, m_sut.insert(firebolt::rialto::MediaSourceType::VIDEO, std::numeric_limits<std::uint32_t>::max()));
+    EXPECT_EQ(2, m_sut.insert(firebolt::rialto::MediaSourceType::VIDEO, std::numeric_limits<std::uint32_t>::max()));
+    EXPECT_EQ(3, m_sut.insert(firebolt::rialto::MediaSourceType::VIDEO, std::numeric_limits<std::uint32_t>::max()));
+    EXPECT_EQ(firebolt::rialto::MediaSourceType::AUDIO, m_sut.getType(0));
+    EXPECT_EQ(firebolt::rialto::MediaSourceType::VIDEO, m_sut.getType(1));
+    EXPECT_EQ(firebolt::rialto::MediaSourceType::VIDEO, m_sut.getType(2));
+    EXPECT_EQ(firebolt::rialto::MediaSourceType::VIDEO, m_sut.getType(3));
+    m_sut.erase(firebolt::rialto::MediaSourceType::VIDEO);
+    EXPECT_EQ(firebolt::rialto::MediaSourceType::AUDIO, m_sut.getType(0));
+    EXPECT_EQ(firebolt::rialto::MediaSourceType::UNKNOWN, m_sut.getType(1));
+    EXPECT_EQ(firebolt::rialto::MediaSourceType::UNKNOWN, m_sut.getType(2));
+    EXPECT_EQ(firebolt::rialto::MediaSourceType::UNKNOWN, m_sut.getType(3));
+}
+
 TEST_F(ActiveRequestsTests, shouldAddAndGetSegments)
 {
     std::vector<uint8_t> data{'T', 'E', 'S', 'T'};

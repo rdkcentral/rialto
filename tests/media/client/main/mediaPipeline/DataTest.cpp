@@ -222,6 +222,46 @@ TEST_F(RialtoClientMediaPipelineDataTest, NeedDataEventBuffering)
 }
 
 /**
+ * Test that an audio need data notification is not forwarded to the client, when audio source switch is ongoing
+ */
+TEST_F(RialtoClientMediaPipelineDataTest, AudioNeedDataEventDuringAudioSourceSwitch)
+{
+    EXPECT_CALL(*m_mediaPipelineIpcMock, removeSource(m_sourceId)).WillOnce(Return(true));
+    EXPECT_EQ(m_mediaPipeline->removeSource(m_sourceId), true);
+    // Should not trigger any expect calls when audio source is removed
+    m_mediaPipelineCallback->notifyNeedMediaData(m_sourceId, m_frameCount, m_requestId, m_shmInfo);
+}
+
+/**
+ * Test that a video need data notification is forwarded to the client, when audio source switch is ongoing
+ */
+TEST_F(RialtoClientMediaPipelineDataTest, VideoNeedDataEventDuringAudioSourceSwitch)
+{
+    EXPECT_CALL(*m_mediaPipelineIpcMock, removeSource(m_sourceId)).WillOnce(Return(true));
+    EXPECT_EQ(m_mediaPipeline->removeSource(m_sourceId), true);
+    needData(m_sourceId + 1, m_frameCount, m_requestId, m_shmInfo);
+}
+
+/**
+ * Test that an audio need data notification is forwarded to the client, when audio source switch is finished
+ */
+TEST_F(RialtoClientMediaPipelineDataTest, AudioNeedDataEventAfterFinishOfAudioSourceSwitch)
+{
+    // Remove audio source
+    EXPECT_CALL(*m_mediaPipelineIpcMock, removeSource(m_sourceId)).WillOnce(Return(true));
+    EXPECT_EQ(m_mediaPipeline->removeSource(m_sourceId), true);
+
+    // Reattach audio source
+    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_sourceId, "audio/mp4");
+    EXPECT_CALL(*m_mediaPipelineIpcMock, attachSource(Ref(mediaSource), _)).WillOnce(Return(true));
+    EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), true);
+
+    // Need data should be forwarded to the client.
+    needDataGeneric();
+}
+
+/**
  * Test that a need data notification is forwarded to the client on the event thread in the FLUSHED state.
  * shmPosition is stored and invalid shmPosition is passed to the client.
  */

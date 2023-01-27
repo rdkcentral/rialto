@@ -46,7 +46,7 @@ protected:
     void GetGstPlayerClient()
     {
         mainThreadWillEnqueueTaskAndWait();
-        EXPECT_CALL(*m_gstPlayerFactoryMock, createGstGenericPlayer(_, _, _, _))
+        EXPECT_CALL(*m_gstPlayerFactoryMock, createGstGenericPlayer(_, _, _, _, _))
             .WillOnce(DoAll(SaveArg<0>(&m_gstPlayerCallback), Return(ByMove(std::move(m_gstPlayer)))));
 
         // notifyNetworkState posts a task onto the main thread but doesnt wait

@@ -25,17 +25,18 @@ if( NOT CMAKE_BUILD_FLAG STREQUAL "UnitTests" )
     find_package( ocdm REQUIRED )
 
     add_library(
-        RialtoServerOcdm
+        RialtoServerWrappers
         STATIC
 
         source/Ocdm.cpp
         source/OcdmCommon.cpp
         source/OcdmSystem.cpp
         source/OcdmSession.cpp
+        source/RdkGstreamerUtilsWrapper.cpp
         )
 
     target_include_directories(
-        RialtoServerOcdm
+        RialtoServerWrappers
 
         PUBLIC
         public
@@ -51,29 +52,30 @@ if( NOT CMAKE_BUILD_FLAG STREQUAL "UnitTests" )
 
 
     set_property(
-        TARGET RialtoServerOcdm
+        TARGET RialtoServerWrappers
         PROPERTY POSITION_INDEPENDENT_CODE ON
 
         )
 
     target_link_libraries(
-        RialtoServerOcdm
+        RialtoServerWrappers
 
         PRIVATE
         RialtoLogging
         ocdm::ocdm
+        rdkgstreamerutils
 
         )
 
 else()
 
     add_library(
-        RialtoServerOcdm
+        RialtoServerWrappers
         INTERFACE
     )
 
     target_include_directories(
-        RialtoServerOcdm
+        RialtoServerWrappers
 
         INTERFACE
         public

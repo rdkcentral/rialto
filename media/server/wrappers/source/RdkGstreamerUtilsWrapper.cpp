@@ -1,0 +1,62 @@
+/*
+ * If not stated otherwise in this file or this component's LICENSE file the
+ * following copyright and licenses apply:
+ *
+ * Copyright 2023 Sky UK
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#include "RdkGstreamerUtilsWrapper.h"
+#include "RialtoServerLogging.h"
+#include "rdk_gstreamer_utils.h"
+
+namespace firebolt::rialto::server
+{
+std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> IRdkGstreamerUtilsWrapperFactory::getFactory()
+{
+    static std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> factory;
+    if (!factory)
+    {
+        factory = std::make_shared<RdkGstreamerUtilsWrapperFactory>();
+    }
+    return factory;
+}
+
+std::shared_ptr<IRdkGstreamerUtilsWrapper> RdkGstreamerUtilsWrapperFactory::createRdkGstreamerUtilsWrapper() const
+{
+    return std::make_shared<RdkGstreamerUtilsWrapper>();
+}
+
+bool RdkGstreamerUtilsWrapper::performAudioTrackCodecChannelSwitch(
+    PlaybackGroupPrivate *playbackGroup, const void *sampleAttr, AudioAttributesPrivate *audioAttr,
+    std::uint32_t *status, unsigned int *ui32Delay, std::int64_t *audioChangeTargetPts,
+    const std::int64_t *currentDispPts, unsigned int *audioChangeStage, GstCaps **appsrcCaps, bool *audioaac,
+    bool svpEnabled, GstElement *aSrc, bool *ret) const
+{
+    if (!playbackGroup || !audioAttr)
+    {
+        RIALTO_SERVER_LOG_ERROR("Playback group or audio attributes is NULL");
+        return false;
+    }
+    rdk_gstreamer_utils::rdkGstreamerUtilsPlaybackGrp *rdkPlaybackGroup{
+        reinterpret_cast<rdk_gstreamer_utils::rdkGstreamerUtilsPlaybackGrp *>(playbackGroup)};
+    rdk_gstreamer_utils::AudioAttributes *rdkAudioAttributes{
+        reinterpret_cast<rdk_gstreamer_utils::AudioAttributes *>(audioAttr)};
+    bool result{rdk_gstreamer_utils::performAudioTrackCodecChannelSwitch(rdkPlaybackGroup, sampleAttr, rdkAudioAttributes,
+                                                                         status, ui32Delay, audioChangeTargetPts,
+                                                                         currentDispPts, audioChangeStage, appsrcCaps,
+                                                                         audioaac, svpEnabled, aSrc, ret)};
+    return result;
+}
+} // namespace firebolt::rialto::server

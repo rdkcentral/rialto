@@ -80,3 +80,25 @@ TEST_F(RialtoServerMediaPipelineSourceTest, NoGstPlayerFailure)
     EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), false);
     EXPECT_EQ(mediaSource->getId(), -1);
 }
+
+/**
+ * Test that RemoveSource returns success if the gstreamer player API succeeds.
+ */
+TEST_F(RialtoServerMediaPipelineSourceTest, RemoveSourceSuccess)
+{
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+
+    EXPECT_CALL(*m_gstPlayerMock, removeSource(m_id));
+
+    EXPECT_EQ(m_mediaPipeline->removeSource(m_id), true);
+}
+
+/**
+ * Test that RemoveSource fails if load has not been called (no gstreamer player).
+ */
+TEST_F(RialtoServerMediaPipelineSourceTest, RemoveSourceNoGstPlayerFailure)
+{
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_EQ(m_mediaPipeline->removeSource(m_id), false);
+}

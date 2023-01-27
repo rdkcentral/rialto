@@ -85,7 +85,7 @@ TEST_F(NeedDataTest, shouldFailToNotifyNeedAudioData)
     EXPECT_FALSE(m_context.videoNeedDataPending);
 }
 
-TEST_F(NeedDataTest, shouldSkipToNotifyNeedAudioData)
+TEST_F(NeedDataTest, shouldSkipToNotifyNeedAudioDataWhenAnotherOneIsPending)
 {
     setupAppSource();
     m_context.audioNeedDataPending = true;
@@ -93,6 +93,18 @@ TEST_F(NeedDataTest, shouldSkipToNotifyNeedAudioData)
     task.execute();
     EXPECT_TRUE(m_context.audioNeedData);
     EXPECT_TRUE(m_context.audioNeedDataPending);
+    EXPECT_FALSE(m_context.videoNeedData);
+    EXPECT_FALSE(m_context.videoNeedDataPending);
+}
+
+TEST_F(NeedDataTest, shouldSkipToNotifyNeedAudioDataWhenAudioSourceIsRemoved)
+{
+    setupAppSource();
+    m_context.audioSourceRemoved = true;
+    firebolt::rialto::server::NeedData task{m_context, &m_gstPlayerClient, &m_audioSrc};
+    task.execute();
+    EXPECT_TRUE(m_context.audioNeedData);
+    EXPECT_FALSE(m_context.audioNeedDataPending);
     EXPECT_FALSE(m_context.videoNeedData);
     EXPECT_FALSE(m_context.videoNeedDataPending);
 }

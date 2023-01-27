@@ -149,6 +149,25 @@ public:
     virtual gpointer gstObjectRef(gpointer object) = 0;
 
     /**
+     * @brief Get the parent of this object. This is not thread-safe by default (i.e. you will have to make sure the
+     *        object lock is taken yourself). If in doubt use gst_object_get_parent instead.
+     *
+     * @param[in] object   : a pointer to the object
+     *
+     * @retval parent of object, this can be NULL if object has no parent.
+     */
+    virtual GstObject *gstObjectParent(gpointer object) const = 0;
+
+    /**
+     * @brief Cast to GstObject pointer
+     *
+     * @param[in] object   : a GstObject
+     *
+     * @retval GstObject pointer
+     */
+    virtual GstObject *gstObjectCast(gpointer object) const = 0;
+
+    /**
      * @brief Get the element from the bin.
      *
      * @param[in] bin    : The bin to search.
@@ -226,6 +245,16 @@ public:
     virtual GstState gstElementGetState(GstElement *element) = 0;
 
     /**
+     * @brief Returns a copy of the name of elem. Caller should g_free the return value after usage. For a nameless
+     *        element, this returns NULL, which you can safely g_free as well.
+     *
+     * @param[in] element : a GstElement to get the name of elem.
+     *
+     * @retval the name of elem. g_free after usage. MT safe.
+     */
+    virtual gchar *gstElementGetName(GstElement *element) const = 0;
+
+    /**
      * @brief Gets the pending state of the element.
      *
      * @param[in] element : A GstElement to get pending state of.
@@ -233,6 +262,15 @@ public:
      * @retval The element's pending GstState.
      */
     virtual GstState gstElementGetPendingState(GstElement *element) = 0;
+
+    /**
+     * @brief Get the parent of an element.
+     *
+     * @param[in] element : a GstElement to get the parent of.
+     *
+     * @retval The parent of an element.
+     */
+    virtual GstObject *gstElementGetParent(const GstElement *elem) const = 0;
 
     /**
      * @brief Sends an event to an element.
@@ -993,6 +1031,25 @@ public:
      * @retval The number of bytes queued.
      */
     virtual guint64 gstAppSrcGetCurrentLevelBytes(GstAppSrc *appsrc) const = 0;
+
+    /**
+     * @brief Allocate a new flush start event. The flush start event can be sent upstream and downstream and travels
+     * out-of-bounds with the dataflow.
+     *
+     * @retval a new flush start event.
+     */
+    virtual GstEvent *gstEventNewFlushStart() const = 0;
+
+    /**
+     * @brief Allocate a new flush stop event. The flush stop event can be sent upstream and downstream and travels
+     * serialized with the dataflow. It is typically sent after sending a FLUSH_START event to make the pads accept data
+     * again.
+     *
+     * @param[in] reset_time : if time should be reset
+     *
+     * @retval a new flush stop event.
+     */
+    virtual GstEvent *gstEventNewFlushStop(gboolean reset_time) const = 0;
 };
 
 }; // namespace firebolt::rialto::server

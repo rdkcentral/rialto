@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2022 Sky UK
+ * Copyright 2023 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,30 +17,40 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_UNDERFLOW_H_
-#define FIREBOLT_RIALTO_SERVER_UNDERFLOW_H_
+#ifndef FIREBOLT_RIALTO_SERVER_DEEP_ELEMENT_ADDED_H_
+#define FIREBOLT_RIALTO_SERVER_DEEP_ELEMENT_ADDED_H_
 
-#include "IGstGenericPlayerClient.h"
+#include "GenericPlayerContext.h"
+#include "IGlibWrapper.h"
 #include "IGstGenericPlayerPrivate.h"
+#include "IGstWrapper.h"
 #include "IPlayerTask.h"
 #include <gst/gst.h>
+#include <memory>
 
 namespace firebolt::rialto::server
 {
-class Underflow : public IPlayerTask
+class DeepElementAdded : public IPlayerTask
 {
 public:
-    Underflow(IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client, bool &underflowFlag,
-              bool underflowEnabled);
-    ~Underflow() override;
+    DeepElementAdded(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                     const std::shared_ptr<IGstWrapper> &gstWrapper, const std::shared_ptr<IGlibWrapper> &glibWrapper,
+                     GstBin *pipeline, GstBin *bin, GstElement *element);
+    ~DeepElementAdded() override;
     void execute() const override;
 
 private:
+    GenericPlayerContext &m_context;
     IGstGenericPlayerPrivate &m_player;
-    IGstGenericPlayerClient *m_gstPlayerClient;
-    bool &m_underflowFlag;
-    bool m_underflowEnabled;
+    std::shared_ptr<IGstWrapper> m_gstWrapper;
+    std::shared_ptr<IGlibWrapper> m_glibWrapper;
+    GstBin *m_pipeline;
+    GstBin *m_bin;
+    GstElement *m_element;
+    gchar *m_elementName;
+    bool m_callbackRegistered;
+    gulong m_signalId;
 };
 } // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_UNDERFLOW_H_
+#endif // FIREBOLT_RIALTO_SERVER_DEEP_ELEMENT_ADDED_H_

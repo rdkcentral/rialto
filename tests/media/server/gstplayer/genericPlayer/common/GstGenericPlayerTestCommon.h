@@ -32,6 +32,7 @@
 #include "GstSrcFactoryMock.h"
 #include "GstSrcMock.h"
 #include "GstWrapperMock.h"
+#include "RdkGstreamerUtilsWrapperMock.h"
 #include "TimerFactoryMock.h"
 #include "WorkerThreadFactoryMock.h"
 #include "WorkerThreadMock.h"
@@ -51,6 +52,7 @@ public:
 
     void triggerSetupSource(GstElement *element);
     void triggerSetupElement(GstElement *element);
+    void triggerDeepElementAdded(GstElement *element);
 
     StrictMock<GstGenericPlayerClientMock> m_gstPlayerClient;
     std::shared_ptr<StrictMock<GstWrapperMock>> m_gstWrapperMock{std::make_shared<StrictMock<GstWrapperMock>>()};
@@ -100,14 +102,20 @@ private:
     GFlagsClass m_flagsClass{};
     GstElement m_playsink{};
     GstBus m_bus{};
+    GstBin m_bin{};
     GType m_gstPlayFlagsType = static_cast<GType>(123);
     GFlagsValue m_audioFlag{1, "audio", "audio"};
     GFlagsValue m_videoFlag{2, "video", "video"};
     GFlagsValue m_nativeVideoFlag{3, "native-video", "native-video"};
     gpointer m_setupSourceUserData;
     GCallback m_setupSourceFunc;
+    gulong m_setupSourceSignalId{0};
     gpointer m_setupElementUserData;
     GCallback m_setupElementFunc;
+    gulong m_setupElementSignalId{1};
+    gpointer m_deepElementAddedUserData;
+    GCallback m_deepElementAddedFunc;
+    gulong m_deepElementAddedSignalId{2};
 };
 
 #endif // GST_GENERIC_PLAYER_TEST_COMMON_H_

@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2022 Sky UK
+ * Copyright 2023 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,30 +17,31 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_UNDERFLOW_H_
-#define FIREBOLT_RIALTO_SERVER_UNDERFLOW_H_
+#ifndef FIREBOLT_RIALTO_SERVER_REMOVE_SOURCE_H_
+#define FIREBOLT_RIALTO_SERVER_REMOVE_SOURCE_H_
 
+#include "GenericPlayerContext.h"
 #include "IGstGenericPlayerClient.h"
-#include "IGstGenericPlayerPrivate.h"
+#include "IGstWrapper.h"
 #include "IPlayerTask.h"
-#include <gst/gst.h>
+#include <memory>
 
 namespace firebolt::rialto::server
 {
-class Underflow : public IPlayerTask
+class RemoveSource : public IPlayerTask
 {
 public:
-    Underflow(IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client, bool &underflowFlag,
-              bool underflowEnabled);
-    ~Underflow() override;
+    RemoveSource(GenericPlayerContext &context, IGstGenericPlayerClient *client,
+                 std::shared_ptr<IGstWrapper> gstWrapper, const MediaSourceType &type);
+    ~RemoveSource() override;
     void execute() const override;
 
 private:
-    IGstGenericPlayerPrivate &m_player;
+    GenericPlayerContext &m_context;
     IGstGenericPlayerClient *m_gstPlayerClient;
-    bool &m_underflowFlag;
-    bool m_underflowEnabled;
+    std::shared_ptr<IGstWrapper> m_gstWrapper;
+    MediaSourceType m_type;
 };
 } // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_UNDERFLOW_H_
+#endif // FIREBOLT_RIALTO_SERVER_REMOVE_SOURCE_H_
