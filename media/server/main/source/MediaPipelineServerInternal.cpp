@@ -21,6 +21,7 @@
 #include "ActiveRequests.h"
 #include "DataReaderFactory.h"
 #include "IDataReader.h"
+#include "IRdkGstreamerUtilsWrapper.h"
 #include "ISharedMemoryBuffer.h"
 #include "NeedMediaData.h"
 #include "RialtoServerLogging.h"
@@ -201,7 +202,8 @@ bool MediaPipelineServerInternal::loadInternal(MediaType type, const std::string
         m_gstPlayer.reset();
     }
 
-    m_gstPlayer = m_kGstPlayerFactory->createGstGenericPlayer(this, m_decryptionService, type, m_kVideoRequirements);
+    m_gstPlayer = m_kGstPlayerFactory->createGstGenericPlayer(this, m_decryptionService, type, m_kVideoRequirements,
+                                                              IRdkGstreamerUtilsWrapperFactory::getFactory());
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to load gstreamer player");
@@ -248,8 +250,25 @@ bool MediaPipelineServerInternal::attachSourceInternal(const std::unique_ptr<Med
 
 bool MediaPipelineServerInternal::removeSource(int32_t id)
 {
-    RIALTO_SERVER_LOG_ERROR("Can't remove source with id: %d - operation not supported", id);
-    return false;
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = removeSourceInternal(id); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::removeSourceInternal(int32_t id)
+{
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to remove source - Gstreamer player has not been loaded");
+        return false;
+    }
+
+    m_gstPlayer->removeSource(id);
+    return true;
 }
 
 bool MediaPipelineServerInternal::play()
@@ -721,6 +740,15 @@ void MediaPipelineServerInternal::clearActiveRequestsCache()
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
     auto task = [&]() { m_activeRequests->clear(); };
+
+    m_mainThread->enqueueTask(m_mainThreadClientId, task);
+}
+
+void MediaPipelineServerInternal::invalidateActiveRequests(const MediaSourceType &type)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    auto task = [&, type]() { m_activeRequests->erase(type); };
 
     m_mainThread->enqueueTask(m_mainThreadClientId, task);
 }

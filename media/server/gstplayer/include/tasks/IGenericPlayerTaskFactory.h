@@ -58,13 +58,29 @@ public:
      * @brief Creates a AttachSource task.
      *
      * @param[in] context   : The GstGenericPlayer context
+     * @param[in] player    : The GstGenericPlayer instance
      * @param[in] source    : The source to attach.
      *
      * @retval the new AttachSource task instance.
      */
     virtual std::unique_ptr<IPlayerTask>
-    createAttachSource(GenericPlayerContext &context,
+    createAttachSource(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                        const std::unique_ptr<IMediaPipeline::MediaSource> &source) const = 0;
+
+    /**
+     * @brief Creates a DeepElementAdded task.
+     *
+     * @param[in] context  : The GstPlayer context
+     * @param[in] player        : The GstGenericPlayer instance
+     * @param[in] pipeline : The pipeline the signal was fired from.
+     * @param[in] bin      : the GstBin the element was added to
+     * @param[in] element  : an element that was added to the playbin hierarchy
+     *
+     * @retval the new DeepElementAdded task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createDeepElementAdded(GenericPlayerContext &context,
+                                                                IGstGenericPlayerPrivate &player, GstBin *pipeline,
+                                                                GstBin *bin, GstElement *element) const = 0;
 
     /**
      * @brief Creates a EnoughData task.
@@ -150,6 +166,17 @@ public:
     virtual std::unique_ptr<IPlayerTask>
     createReadShmDataAndAttachSamples(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                       const std::shared_ptr<IDataReader> &dataReader) const = 0;
+
+    /**
+     * @brief Creates a Remove Source task.
+     *
+     * @param[in] context : The GstPlayer context
+     * @param[in] type    : The media source type to remove
+     *
+     * @retval the new Remove Source task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createRemoveSource(GenericPlayerContext &context,
+                                                            const firebolt::rialto::MediaSourceType &type) const = 0;
 
     /**
      * @brief Creates a ReportPosition task.
@@ -263,12 +290,26 @@ public:
     /**
      * @brief Creates an Underflow task.
      *
-     * @param[in] player          : The GstGenericPlayer instance
-     * @param[in] underflowFlag   : The underflow flag (audio or video).
+     * @param[in] player           : The GstPlayer instance
+     * @param[in] underflowFlag    : The underflow flag (audio or video).
+     * @param[in] underflowEnabled : The underflow enabled flag (audio or video).
      *
      * @retval the new Underflow task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createUnderflow(IGstGenericPlayerPrivate &player, bool &underflowFlag) const = 0;
+    virtual std::unique_ptr<IPlayerTask> createUnderflow(IGstGenericPlayerPrivate &player, bool &underflowFlag,
+                                                         bool underflowEnabled = true) const = 0;
+
+    /**
+     * @brief Creates an UpdatePlaybackGroup task.
+     *
+     * @param[in] context       : The GstGenericPlayer context
+     * @param[in] typefind      : The typefind element.
+     * @param[in] caps          : The GstCaps of added element
+     *
+     * @retval the new UpdatePlaybackGroup task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createUpdatePlaybackGroup(GenericPlayerContext &context, GstElement *typefind,
+                                                                   const GstCaps *caps) const = 0;
 
     virtual std::unique_ptr<IPlayerTask> createRenderFrame(GenericPlayerContext &context) const = 0;
 };

@@ -26,15 +26,16 @@ add_library(
     RialtoServerStubs
     STATIC
 
-    ocdm/OcdmFactory.cpp
-    ocdm/OcdmSystemFactory.cpp
+    wrappers/OcdmFactory.cpp
+    wrappers/OcdmSystemFactory.cpp
+    wrappers/RdkGstreamerUtilsWrapperFactory.cpp
     )
 
 target_include_directories(
     RialtoServerStubs
 
     PRIVATE
-    $<TARGET_PROPERTY:RialtoServerOcdm,INTERFACE_INCLUDE_DIRECTORIES>
+    $<TARGET_PROPERTY:RialtoServerWrappers,INTERFACE_INCLUDE_DIRECTORIES>
     $<TARGET_PROPERTY:RialtoPlayerPublic,INTERFACE_INCLUDE_DIRECTORIES>
     ${GStreamerApp_INCLUDE_DIRS}
     )

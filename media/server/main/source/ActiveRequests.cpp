@@ -73,6 +73,22 @@ void ActiveRequests::erase(std::uint32_t requestId)
     m_requestMap.erase(requestId);
 }
 
+void ActiveRequests::erase(const MediaSourceType &mediaSourceType)
+{
+    std::unique_lock<std::mutex> lock{m_mutex};
+    for (auto it = m_requestMap.begin(); it != m_requestMap.end();)
+    {
+        if (it->second.getType() == mediaSourceType)
+        {
+            it = m_requestMap.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
+    }
+}
+
 void ActiveRequests::clear()
 {
     std::unique_lock<std::mutex> lock{m_mutex};

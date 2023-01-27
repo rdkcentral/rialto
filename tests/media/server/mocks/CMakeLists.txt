@@ -35,5 +35,5 @@ target_include_directories(
         ipc
         main
         service
-        ocdm
+        wrappers
     )

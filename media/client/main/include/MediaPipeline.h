@@ -187,6 +187,11 @@ protected:
     std::atomic<State> m_currentState;
 
     /**
+     * @brief The flag indicating, if audio source switch is ongoing.
+     */
+    std::atomic_bool m_audioSourceSwitchOngoing;
+
+    /**
      * @brief Sets the new internal MediaPipeline state based on the NetworkState.
      *
      * @param[in] state : The new NeworkState.

@@ -21,6 +21,7 @@
 #include "tasks/generic/AttachSamples.h"
 #include "tasks/generic/AttachSource.h"
 #include "tasks/generic/CheckAudioUnderflow.h"
+#include "tasks/generic/DeepElementAdded.h"
 #include "tasks/generic/EnoughData.h"
 #include "tasks/generic/Eos.h"
 #include "tasks/generic/FinishSetupSource.h"
@@ -29,6 +30,7 @@
 #include "tasks/generic/Pause.h"
 #include "tasks/generic/Play.h"
 #include "tasks/generic/ReadShmDataAndAttachSamples.h"
+#include "tasks/generic/RemoveSource.h"
 #include "tasks/generic/RenderFrame.h"
 #include "tasks/generic/ReportPosition.h"
 #include "tasks/generic/SetPlaybackRate.h"
@@ -40,13 +42,16 @@
 #include "tasks/generic/Shutdown.h"
 #include "tasks/generic/Stop.h"
 #include "tasks/generic/Underflow.h"
+#include "tasks/generic/UpdatePlaybackGroup.h"
 
 namespace firebolt::rialto::server
 {
 GenericPlayerTaskFactory::GenericPlayerTaskFactory(IGstGenericPlayerClient *client,
                                                    const std::shared_ptr<IGstWrapper> &gstWrapper,
-                                                   const std::shared_ptr<IGlibWrapper> &glibWrapper)
-    : m_client{client}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}
+                                                   const std::shared_ptr<IGlibWrapper> &glibWrapper,
+                                                   const std::shared_ptr<IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper)
+    : m_client{client}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_rdkGstreamerUtilsWrapper{
+                                                                                  rdkGstreamerUtilsWrapper}
 {
 }
 
@@ -58,10 +63,19 @@ GenericPlayerTaskFactory::createAttachSamples(GenericPlayerContext &context, IGs
 }
 
 std::unique_ptr<IPlayerTask>
-GenericPlayerTaskFactory::createAttachSource(GenericPlayerContext &context,
+GenericPlayerTaskFactory::createAttachSource(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                              const std::unique_ptr<IMediaPipeline::MediaSource> &source) const
 {
-    return std::make_unique<AttachSource>(context, m_gstWrapper, m_glibWrapper, source);
+    return std::make_unique<AttachSource>(context, m_gstWrapper, m_glibWrapper, m_rdkGstreamerUtilsWrapper, player,
+                                          source);
+}
+
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createDeepElementAdded(GenericPlayerContext &context,
+                                                                              IGstGenericPlayerPrivate &player,
+                                                                              GstBin *pipeline, GstBin *bin,
+                                                                              GstElement *element) const
+{
+    return std::make_unique<DeepElementAdded>(context, player, m_gstWrapper, m_glibWrapper, pipeline, bin, element);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createEnoughData(GenericPlayerContext &context, GstAppSrc *src) const
@@ -108,6 +122,12 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createReadShmDataAndAttac
     GenericPlayerContext &context, IGstGenericPlayerPrivate &player, const std::shared_ptr<IDataReader> &dataReader) const
 {
     return std::make_unique<ReadShmDataAndAttachSamples>(context, player, dataReader);
+}
+
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createRemoveSource(GenericPlayerContext &context,
+                                                                          const firebolt::rialto::MediaSourceType &type) const
+{
+    return std::make_unique<RemoveSource>(context, m_client, m_gstWrapper, type);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createReportPosition(GenericPlayerContext &context) const
@@ -172,9 +192,16 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createStop(GenericPlayerC
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createUnderflow(IGstGenericPlayerPrivate &player,
-                                                                       bool &underflowFlag) const
+                                                                       bool &underflowFlag, bool underflowEnabled) const
 {
-    return std::make_unique<Underflow>(player, m_client, underflowFlag);
+    return std::make_unique<Underflow>(player, m_client, underflowFlag, underflowEnabled);
+}
+
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createUpdatePlaybackGroup(GenericPlayerContext &context,
+                                                                                 GstElement *typefind,
+                                                                                 const GstCaps *caps) const
+{
+    return std::make_unique<UpdatePlaybackGroup>(context, m_gstWrapper, m_glibWrapper, typefind, caps);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createRenderFrame(GenericPlayerContext &context) const

@@ -45,7 +45,7 @@ void NeedData::execute() const
         if (elem->second == GST_ELEMENT(m_src))
         {
             m_context.audioNeedData = true;
-            if (m_gstPlayerClient && !m_context.audioNeedDataPending)
+            if (m_gstPlayerClient && !m_context.audioNeedDataPending && !m_context.audioSourceRemoved)
             {
                 m_context.audioNeedDataPending = m_gstPlayerClient->notifyNeedMediaData(MediaSourceType::AUDIO);
             }
