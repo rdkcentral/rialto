@@ -311,6 +311,7 @@ TEST_F(AttachSourceTest, shouldSwitchAudioSource)
     constexpr gint64 kPosition{1234};
     m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, &m_appSrc);
     m_context.audioSourceRemoved = true;
+    gchar oldCapsStr[]{"audio/x-eac3"};
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
         std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(-1, "audio/aac");
     firebolt::rialto::server::AttachSource task{m_context,   m_gstWrapper, m_glibWrapper, m_rdkGstreamerUtilsWrapper,
@@ -319,6 +320,10 @@ TEST_F(AttachSourceTest, shouldSwitchAudioSource)
     EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleIntStub(&m_gstCaps1, StrEq("mpegversion"), G_TYPE_INT, 4));
     EXPECT_CALL(*m_gstWrapper, gstCapsToString(&m_gstCaps1)).WillOnce(Return(&m_capsStr));
     EXPECT_CALL(*m_glibWrapper, gFree(&m_capsStr));
+    EXPECT_CALL(*m_gstWrapper, gstAppSrcGetCaps(GST_APP_SRC(&m_appSrc))).WillOnce(Return(&m_gstCaps2));
+    EXPECT_CALL(*m_gstWrapper, gstCapsToString(&m_gstCaps2)).WillOnce(Return(oldCapsStr));
+    EXPECT_CALL(*m_glibWrapper, gFree(oldCapsStr));
+    EXPECT_CALL(*m_gstWrapper, gstCapsUnref(&m_gstCaps2));
     EXPECT_CALL(*m_gstWrapper, gstElementQueryPosition(_, GST_FORMAT_TIME, _))
         .WillOnce(Invoke(
             [this](GstElement *element, GstFormat format, gint64 *cur)

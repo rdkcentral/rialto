@@ -53,10 +53,9 @@ bool RdkGstreamerUtilsWrapper::performAudioTrackCodecChannelSwitch(
         reinterpret_cast<rdk_gstreamer_utils::rdkGstreamerUtilsPlaybackGrp *>(playbackGroup)};
     rdk_gstreamer_utils::AudioAttributes *rdkAudioAttributes{
         reinterpret_cast<rdk_gstreamer_utils::AudioAttributes *>(audioAttr)};
-    bool result{rdk_gstreamer_utils::performAudioTrackCodecChannelSwitch(rdkPlaybackGroup, sampleAttr, rdkAudioAttributes,
-                                                                         status, ui32Delay, audioChangeTargetPts,
-                                                                         currentDispPts, audioChangeStage, appsrcCaps,
-                                                                         audioaac, svpEnabled, aSrc, ret)};
-    return result;
+    return rdk_gstreamer_utils::performAudioTrackCodecChannelSwitch(rdkPlaybackGroup, sampleAttr, rdkAudioAttributes,
+                                                                    status, ui32Delay, audioChangeTargetPts,
+                                                                    currentDispPts, audioChangeStage, appsrcCaps,
+                                                                    audioaac, svpEnabled, aSrc, ret);
 }
 } // namespace firebolt::rialto::server
