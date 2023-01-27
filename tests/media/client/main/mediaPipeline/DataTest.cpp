@@ -64,6 +64,8 @@ protected:
         m_shmInfo->mediaDataOffset = 7;
         m_shmInfo->maxMediaBytes = 3U;
 
+        attachSource(m_sourceId);
+
         // Set the MediaPipeline state to playing by default
         setPlaybackState(PlaybackState::PLAYING);
     }
@@ -77,6 +79,15 @@ protected:
         destroyMediaPipeline();
 
         MediaPipelineTestBase::TearDown();
+    }
+
+    void attachSource(std::int32_t sourceId)
+    {
+        std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
+            std::make_unique<IMediaPipeline::MediaSourceAudio>(sourceId, "audio/mp4");
+        EXPECT_CALL(*m_mediaPipelineIpcMock, attachSource(Ref(mediaSource), _))
+            .WillOnce(DoAll(SetArgReferee<1>(sourceId), Return(true)));
+        EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), true);
     }
 
     void needDataGeneric() { needData(m_sourceId, m_frameCount, m_requestId, m_shmInfo); }
@@ -237,6 +248,7 @@ TEST_F(RialtoClientMediaPipelineDataTest, AudioNeedDataEventDuringAudioSourceSwi
  */
 TEST_F(RialtoClientMediaPipelineDataTest, VideoNeedDataEventDuringAudioSourceSwitch)
 {
+    attachSource(m_sourceId + 1);
     EXPECT_CALL(*m_mediaPipelineIpcMock, removeSource(m_sourceId)).WillOnce(Return(true));
     EXPECT_EQ(m_mediaPipeline->removeSource(m_sourceId), true);
     needData(m_sourceId + 1, m_frameCount, m_requestId, m_shmInfo);
@@ -252,10 +264,7 @@ TEST_F(RialtoClientMediaPipelineDataTest, AudioNeedDataEventAfterFinishOfAudioSo
     EXPECT_EQ(m_mediaPipeline->removeSource(m_sourceId), true);
 
     // Reattach audio source
-    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
-        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_sourceId, "audio/mp4");
-    EXPECT_CALL(*m_mediaPipelineIpcMock, attachSource(Ref(mediaSource), _)).WillOnce(Return(true));
-    EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), true);
+    attachSource(m_sourceId);
 
     // Need data should be forwarded to the client.
     needDataGeneric();
@@ -680,4 +689,13 @@ TEST_F(RialtoClientMediaPipelineDataTest, TermSharedMemoryDuringWrite)
     m_mediaPipeline->notifyBufferTerm();
 
     m_haveDataThread.join();
+}
+
+/**
+ * Test that a need data notification is skipped for uknown source
+ */
+TEST_F(RialtoClientMediaPipelineDataTest, NeedDataEventSkipForUnknownSource)
+{
+    // Should not trigger any expect calls when source is not present
+    m_mediaPipelineCallback->notifyNeedMediaData(m_sourceId + 1, m_frameCount, m_requestId, m_shmInfo);
 }
