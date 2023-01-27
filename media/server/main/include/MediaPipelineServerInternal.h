@@ -26,6 +26,7 @@
 #include "IMainThread.h"
 #include "IMediaPipelineServerInternal.h"
 #include "ITimer.h"
+#include <list>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -204,6 +205,11 @@ protected:
      * @brief Map containing scheduled need media data requests.
      */
     std::unordered_map<MediaSourceType, std::unique_ptr<firebolt::rialto::common::ITimer>> m_needMediaDataTimers;
+
+    /**
+     * @brief Currently attached sources
+     */
+    std::list<std::unique_ptr<MediaSource>> m_attachedSources;
 
     /**
      * @brief Load internally, only to be called on the main thread.

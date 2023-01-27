@@ -89,10 +89,10 @@ public:
     /**
      * @brief Unattaches a source.
      *
-     * @param[in] id : The source id.
+     * @param[in] mediaSource : The media source.
      *
      */
-    virtual void removeSource(int32_t id) = 0;
+    virtual void removeSource(const std::unique_ptr<IMediaPipeline::MediaSource> &mediaSource) = 0;
 
     /**
      * @brief Starts playback of the media.

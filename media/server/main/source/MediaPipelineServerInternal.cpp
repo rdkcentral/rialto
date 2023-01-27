@@ -25,7 +25,7 @@
 #include "ISharedMemoryBuffer.h"
 #include "NeedMediaData.h"
 #include "RialtoServerLogging.h"
-#include <iostream>
+#include <algorithm>
 
 namespace
 {
@@ -244,6 +244,7 @@ bool MediaPipelineServerInternal::attachSourceInternal(const std::unique_ptr<Med
 
     m_gstPlayer->attachSource(source);
     source->setId(static_cast<int32_t>(source->getType()));
+    m_attachedSources.emplace_back(source->copy());
 
     return true;
 }
@@ -266,8 +267,15 @@ bool MediaPipelineServerInternal::removeSourceInternal(int32_t id)
         RIALTO_SERVER_LOG_ERROR("Failed to remove source - Gstreamer player has not been loaded");
         return false;
     }
+    auto sourceIter = std::find_if(m_attachedSources.begin(), m_attachedSources.end(),
+                                   [id](const auto &src) { return src->getId() == id; });
+    if (sourceIter == m_attachedSources.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to remove source - Source not found");
+        return false;
+    }
 
-    m_gstPlayer->removeSource(id);
+    m_gstPlayer->removeSource(*sourceIter);
     return true;
 }
 

@@ -81,17 +81,29 @@ TEST_F(RialtoServerMediaPipelineSourceTest, NoGstPlayerFailure)
     EXPECT_EQ(mediaSource->getId(), -1);
 }
 
+MATCHER_P2(RemovedSourceMatcher, id, type, "")
+{
+    return (arg->getId() == id && arg->getType() == type);
+}
+
 /**
  * Test that RemoveSource returns success if the gstreamer player API succeeds.
  */
 TEST_F(RialtoServerMediaPipelineSourceTest, RemoveSourceSuccess)
 {
+    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(-1, m_kMimeType);
+
     loadGstPlayer();
     mainThreadWillEnqueueTaskAndWait();
 
-    EXPECT_CALL(*m_gstPlayerMock, removeSource(m_id));
+    EXPECT_CALL(*m_gstPlayerMock, attachSource(Ref(mediaSource)));
+    EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), true);
+    std::int32_t sourceId{mediaSource->getId()};
 
-    EXPECT_EQ(m_mediaPipeline->removeSource(m_id), true);
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, removeSource(RemovedSourceMatcher(sourceId, MediaSourceType::AUDIO)));
+    EXPECT_EQ(m_mediaPipeline->removeSource(sourceId), true);
 }
 
 /**
@@ -99,6 +111,23 @@ TEST_F(RialtoServerMediaPipelineSourceTest, RemoveSourceSuccess)
  */
 TEST_F(RialtoServerMediaPipelineSourceTest, RemoveSourceNoGstPlayerFailure)
 {
+    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_id, m_kMimeType);
+
     mainThreadWillEnqueueTaskAndWait();
     EXPECT_EQ(m_mediaPipeline->removeSource(m_id), false);
+}
+
+/**
+ * Test that RemoveSource fails if source is not present.
+ */
+TEST_F(RialtoServerMediaPipelineSourceTest, RemoveSourceNoSourcePresent)
+{
+    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_id, m_kMimeType);
+
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+
+    EXPECT_FALSE(m_mediaPipeline->removeSource(m_id));
 }

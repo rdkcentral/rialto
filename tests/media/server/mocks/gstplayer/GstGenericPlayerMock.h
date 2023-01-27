@@ -34,7 +34,7 @@ public:
     virtual ~GstGenericPlayerMock() = default;
 
     MOCK_METHOD(void, attachSource, (const std::unique_ptr<IMediaPipeline::MediaSource> &mediaSource), (override));
-    MOCK_METHOD(void, removeSource, (int32_t id), (override));
+    MOCK_METHOD(void, removeSource, (const std::unique_ptr<IMediaPipeline::MediaSource> &mediaSource), (override));
     MOCK_METHOD(void, play, (), (override));
     MOCK_METHOD(void, pause, (), (override));
     MOCK_METHOD(void, stop, (), (override));

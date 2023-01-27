@@ -24,7 +24,7 @@ namespace firebolt::rialto::client
 void AttachedSources::add(std::uint32_t id, const MediaSourceType &mediaSourceType)
 {
     std::unique_lock<std::mutex> lock{m_mutex};
-    m_attachedSources.insert(std::make_pair(id, mediaSourceType));
+    m_attachedSources.emplace(id, mediaSourceType);
 }
 
 void AttachedSources::remove(std::uint32_t id)
