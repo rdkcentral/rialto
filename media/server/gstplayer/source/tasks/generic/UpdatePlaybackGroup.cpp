@@ -49,7 +49,6 @@ void UpdatePlaybackGroup::execute() const
         RIALTO_SERVER_LOG_DEBUG("Typefind SRC Pad Strm Parsed Caps %s", typefindCaps);
         if (m_glibWrapper->gStrrstr(typefindCaps, "audio/"))
         {
-            RIALTO_SERVER_LOG_DEBUG("Typefind Audio Caps %s", typefindCaps);
             GstElement *typeFindParent = reinterpret_cast<GstElement *>(m_gstWrapper->gstElementGetParent(m_typefind));
             if (typeFindParent)
             {
