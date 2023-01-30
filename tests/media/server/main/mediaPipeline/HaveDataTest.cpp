@@ -207,7 +207,6 @@ TEST_F(RialtoServerMediaPipelineHaveDataTest, ServerInternalHaveDataSuccessWithR
     auto status = firebolt::rialto::MediaSourceStatus::ERROR;
     auto mediaSourceType = firebolt::rialto::MediaSourceType::VIDEO;
     std::function<void()> resendCallback;
-    int sourceId{static_cast<int>(mediaSourceType)};
     loadGstPlayer();
 
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
@@ -217,6 +216,7 @@ TEST_F(RialtoServerMediaPipelineHaveDataTest, ServerInternalHaveDataSuccessWithR
     EXPECT_CALL(*m_gstPlayerMock, attachSource(Ref(mediaSource)));
 
     EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), true);
+    int sourceId{mediaSource->getId()};
 
     mainThreadWillEnqueueTaskAndWait();
     ASSERT_TRUE(m_activeRequestsMock);

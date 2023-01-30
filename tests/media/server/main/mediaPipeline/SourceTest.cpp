@@ -47,7 +47,7 @@ TEST_F(RialtoServerMediaPipelineSourceTest, AttachSourceSuccess)
     EXPECT_CALL(*m_gstPlayerMock, attachSource(Ref(mediaSource)));
 
     EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), true);
-    EXPECT_EQ(mediaSource->getId(), static_cast<int32_t>(MediaSourceType::AUDIO));
+    EXPECT_NE(mediaSource->getId(), -1);
 }
 
 /**
@@ -65,7 +65,7 @@ TEST_F(RialtoServerMediaPipelineSourceTest, AttachAudioSourceWitSpecificConfigur
     EXPECT_CALL(*m_gstPlayerMock, attachSource(Ref(mediaSource)));
 
     EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), true);
-    EXPECT_EQ(mediaSource->getId(), static_cast<int32_t>(MediaSourceType::AUDIO));
+    EXPECT_NE(mediaSource->getId(), -1);
 }
 
 /**

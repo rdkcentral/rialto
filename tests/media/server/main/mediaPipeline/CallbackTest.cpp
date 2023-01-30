@@ -171,6 +171,19 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyQos)
 }
 
 /**
+ * Test a notification of qos fails when sourceid cannot be found.
+ */
+TEST_F(RialtoServerMediaPipelineCallbackTest, notifyQosFailureSourceIdNotFound)
+{
+    auto mediaSourceType = firebolt::rialto::MediaSourceType::VIDEO;
+    QosInfo qosInfo{5u, 2u};
+
+    mainThreadWillEnqueueTask();
+
+    m_gstPlayerCallback->notifyQos(mediaSourceType, qosInfo);
+}
+
+/**
  * Tests if active request cache is cleared.
  */
 TEST_F(RialtoServerMediaPipelineCallbackTest, clearActiveRequestsCache)

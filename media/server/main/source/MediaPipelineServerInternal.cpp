@@ -47,6 +47,12 @@ const char *toString(const firebolt::rialto::MediaSourceStatus &status)
     }
     return "Unknown";
 }
+
+std::int32_t generateSourceId()
+{
+    static std::int32_t sourceId{1};
+    return sourceId++;
+}
 } // namespace
 
 namespace firebolt::rialto
@@ -243,7 +249,7 @@ bool MediaPipelineServerInternal::attachSourceInternal(const std::unique_ptr<Med
     }
 
     m_gstPlayer->attachSource(source);
-    source->setId(static_cast<int32_t>(source->getType()));
+    source->setId(generateSourceId());
     m_attachedSources.emplace(source->getType(), source->getId());
 
     return true;
