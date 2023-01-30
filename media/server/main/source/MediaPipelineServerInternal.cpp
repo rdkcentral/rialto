@@ -249,8 +249,20 @@ bool MediaPipelineServerInternal::attachSourceInternal(const std::unique_ptr<Med
     }
 
     m_gstPlayer->attachSource(source);
-    source->setId(generateSourceId());
-    m_attachedSources.emplace(source->getType(), source->getId());
+
+    const auto kSourceIter = m_attachedSources.find(source->getType());
+    if (m_attachedSources.cend() == kSourceIter)
+    {
+        source->setId(generateSourceId());
+        RIALTO_SERVER_LOG_DEBUG("New ID generated for MediaSourceType: %s: %d",
+                                (MediaSourceType::AUDIO == source->getType() ? "AUDIO" : "VIDEO"), source->getId());
+        m_attachedSources.emplace(source->getType(), source->getId());
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_DEBUG("SourceId: %d updated", kSourceIter->second);
+        source->setId(kSourceIter->second);
+    }
 
     return true;
 }
