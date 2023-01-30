@@ -32,7 +32,9 @@ public:
     MOCK_METHOD(bool, initialize, (int argc, char *argv[]), (override));
     MOCK_METHOD(void, startService, (), (override));
     MOCK_METHOD(bool, setConfiguration,
-                (const std::string &socketName, const SessionServerState &state, int maxPlaybacks), (override));
+                (const std::string &socketName, const SessionServerState &state,
+                 const MaxResourceCapabilitites &maxResource),
+                (override));
     MOCK_METHOD(bool, setState, (const SessionServerState &state), (override));
     MOCK_METHOD(void, setLogLevels,
                 (RIALTO_DEBUG_LEVEL defaultLogLevels, RIALTO_DEBUG_LEVEL clientLogLevels,

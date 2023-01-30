@@ -85,7 +85,7 @@ TEST_F(ReadShmDataAndAttachSamplesTest, shouldAttachAllAudioSamples)
     EXPECT_CALL(m_gstPlayer, updateAudioCaps(sampleRate, numberOfChannels)).Times(2);
     EXPECT_CALL(m_gstPlayer, attachAudioData()).Times(2);
     EXPECT_CALL(m_gstPlayer, notifyNeedMediaData(true, false));
-    firebolt::rialto::server::ReadShmDataAndAttachSamples task{m_context, m_gstPlayer, m_dataReader};
+    firebolt::rialto::server::generic::ReadShmDataAndAttachSamples task{m_context, m_gstPlayer, m_dataReader};
     task.execute();
     EXPECT_EQ(m_context.audioBuffers.size(), 2);
 }
@@ -98,7 +98,7 @@ TEST_F(ReadShmDataAndAttachSamplesTest, shouldAttachAllVideoSamples)
     EXPECT_CALL(m_gstPlayer, updateVideoCaps(width, height)).Times(2);
     EXPECT_CALL(m_gstPlayer, attachVideoData()).Times(2);
     EXPECT_CALL(m_gstPlayer, notifyNeedMediaData(false, true));
-    firebolt::rialto::server::ReadShmDataAndAttachSamples task{m_context, m_gstPlayer, m_dataReader};
+    firebolt::rialto::server::generic::ReadShmDataAndAttachSamples task{m_context, m_gstPlayer, m_dataReader};
     task.execute();
     EXPECT_EQ(m_context.videoBuffers.size(), 2);
 }

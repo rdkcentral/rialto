@@ -40,14 +40,16 @@ protected:
 
 TEST_F(EosTest, shouldFailWhenStreamIsNotFound)
 {
-    firebolt::rialto::server::Eos task{m_context, m_gstPlayer, m_gstWrapper, firebolt::rialto::MediaSourceType::AUDIO};
+    firebolt::rialto::server::generic::Eos task{m_context, m_gstPlayer, m_gstWrapper,
+                                                firebolt::rialto::MediaSourceType::AUDIO};
     task.execute();
 }
 
 TEST_F(EosTest, shouldSetEos)
 {
     m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, &m_src);
-    firebolt::rialto::server::Eos task{m_context, m_gstPlayer, m_gstWrapper, firebolt::rialto::MediaSourceType::AUDIO};
+    firebolt::rialto::server::generic::Eos task{m_context, m_gstPlayer, m_gstWrapper,
+                                                firebolt::rialto::MediaSourceType::AUDIO};
     EXPECT_CALL(*m_gstWrapper, gstAppSrcEndOfStream(_)).WillOnce(Return(GST_FLOW_OK));
     task.execute();
 }
@@ -55,7 +57,8 @@ TEST_F(EosTest, shouldSetEos)
 TEST_F(EosTest, shouldFailToSetEos)
 {
     m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, &m_src);
-    firebolt::rialto::server::Eos task{m_context, m_gstPlayer, m_gstWrapper, firebolt::rialto::MediaSourceType::AUDIO};
+    firebolt::rialto::server::generic::Eos task{m_context, m_gstPlayer, m_gstWrapper,
+                                                firebolt::rialto::MediaSourceType::AUDIO};
     EXPECT_CALL(*m_gstWrapper, gstAppSrcEndOfStream(_)).WillOnce(Return(GST_FLOW_ERROR));
     task.execute();
 }
@@ -64,7 +67,8 @@ TEST_F(EosTest, shouldSetEosForAudioAndCancelAudioUnderflow)
 {
     m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, &m_src);
     m_context.audioUnderflowOccured = true;
-    firebolt::rialto::server::Eos task{m_context, m_gstPlayer, m_gstWrapper, firebolt::rialto::MediaSourceType::AUDIO};
+    firebolt::rialto::server::generic::Eos task{m_context, m_gstPlayer, m_gstWrapper,
+                                                firebolt::rialto::MediaSourceType::AUDIO};
     EXPECT_CALL(m_gstPlayer, cancelUnderflow(m_context.audioUnderflowOccured));
     EXPECT_CALL(*m_gstWrapper, gstAppSrcEndOfStream(_)).WillOnce(Return(GST_FLOW_OK));
     task.execute();
@@ -74,7 +78,8 @@ TEST_F(EosTest, shouldSetEosForAudioAndSkipCancellingVideoUnderflow)
 {
     m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, &m_src);
     m_context.videoUnderflowOccured = true;
-    firebolt::rialto::server::Eos task{m_context, m_gstPlayer, m_gstWrapper, firebolt::rialto::MediaSourceType::AUDIO};
+    firebolt::rialto::server::generic::Eos task{m_context, m_gstPlayer, m_gstWrapper,
+                                                firebolt::rialto::MediaSourceType::AUDIO};
     EXPECT_CALL(*m_gstWrapper, gstAppSrcEndOfStream(_)).WillOnce(Return(GST_FLOW_OK));
     task.execute();
 }
@@ -83,7 +88,8 @@ TEST_F(EosTest, shouldSetEosForVideoAndCancelVideoUnderflow)
 {
     m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::VIDEO, &m_src);
     m_context.videoUnderflowOccured = true;
-    firebolt::rialto::server::Eos task{m_context, m_gstPlayer, m_gstWrapper, firebolt::rialto::MediaSourceType::VIDEO};
+    firebolt::rialto::server::generic::Eos task{m_context, m_gstPlayer, m_gstWrapper,
+                                                firebolt::rialto::MediaSourceType::VIDEO};
     EXPECT_CALL(m_gstPlayer, cancelUnderflow(m_context.videoUnderflowOccured));
     EXPECT_CALL(*m_gstWrapper, gstAppSrcEndOfStream(_)).WillOnce(Return(GST_FLOW_OK));
     task.execute();
@@ -93,7 +99,8 @@ TEST_F(EosTest, shouldSetEosForVideoAndSkipCancellingAudioUnderflow)
 {
     m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::VIDEO, &m_src);
     m_context.audioUnderflowOccured = true;
-    firebolt::rialto::server::Eos task{m_context, m_gstPlayer, m_gstWrapper, firebolt::rialto::MediaSourceType::VIDEO};
+    firebolt::rialto::server::generic::Eos task{m_context, m_gstPlayer, m_gstWrapper,
+                                                firebolt::rialto::MediaSourceType::VIDEO};
     EXPECT_CALL(*m_gstWrapper, gstAppSrcEndOfStream(_)).WillOnce(Return(GST_FLOW_OK));
     task.execute();
 }

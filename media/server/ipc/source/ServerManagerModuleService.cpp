@@ -89,10 +89,11 @@ void ServerManagerModuleService::setConfiguration(::google::protobuf::RpcControl
                                                   ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("SetConfiguration received from ServerManager");
+    MaxResourceCapabilitites maxResource{request->resources().maxplaybacks(), request->resources().maxwebaudioplayers()};
     bool success =
         m_sessionServerManager.setConfiguration(request->sessionmanagementsocketname(),
                                                 convertSessionServerState(request->initialsessionserverstate()),
-                                                request->resources().maxplaybacks());
+                                                maxResource);
     m_sessionServerManager.setLogLevels(static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().defaultloglevels()),
                                         static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().clientloglevels()),
                                         static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().sessionserverloglevels()),

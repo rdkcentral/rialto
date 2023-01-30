@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_EOS_H_
-#define FIREBOLT_RIALTO_SERVER_EOS_H_
+#ifndef FIREBOLT_RIALTO_SERVER_GENERIC_EOS_H_
+#define FIREBOLT_RIALTO_SERVER_GENERIC_EOS_H_
 
 #include "GenericPlayerContext.h"
 #include "IGstGenericPlayerPrivate.h"
@@ -27,7 +27,7 @@
 #include "MediaCommon.h"
 #include <memory>
 
-namespace firebolt::rialto::server
+namespace firebolt::rialto::server::generic
 {
 class Eos : public IPlayerTask
 {
@@ -43,6 +43,6 @@ private:
     std::shared_ptr<IGstWrapper> m_gstWrapper;
     firebolt::rialto::MediaSourceType m_type;
 };
-} // namespace firebolt::rialto::server
+} // namespace firebolt::rialto::server::generic
 
-#endif // FIREBOLT_RIALTO_SERVER_EOS_H_
+#endif // FIREBOLT_RIALTO_SERVER_GENERIC_EOS_H_

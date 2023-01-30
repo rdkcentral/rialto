@@ -28,7 +28,7 @@ namespace
 const char kCustomInstantRateChangeEventName[] = "custom-instant-rate-change";
 } // namespace
 
-namespace firebolt::rialto::server
+namespace firebolt::rialto::server::generic
 {
 SetPlaybackRate::SetPlaybackRate(GenericPlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper,
                                  std::shared_ptr<IGlibWrapper> glibWrapper, double rate)
@@ -101,4 +101,4 @@ void SetPlaybackRate::execute() const
         m_glibWrapper->gObjectUnref(audioSink);
     }
 }
-} // namespace firebolt::rialto::server
+} // namespace firebolt::rialto::server::generic

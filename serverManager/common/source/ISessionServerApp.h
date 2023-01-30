@@ -41,6 +41,7 @@ public:
     virtual service::SessionServerState getInitialState() const = 0;
     virtual int getAppManagementSocketName() const = 0;
     virtual int getMaxPlaybackSessions() const = 0;
+    virtual int getMaxWebAudioPlayers() const = 0;
     virtual void cancelStartupTimer() = 0;
     virtual void kill() const = 0;
 };

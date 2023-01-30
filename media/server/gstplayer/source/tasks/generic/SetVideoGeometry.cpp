@@ -21,7 +21,7 @@
 #include "IGstGenericPlayerPrivate.h"
 #include "RialtoServerLogging.h"
 
-namespace firebolt::rialto::server
+namespace firebolt::rialto::server::generic
 {
 SetVideoGeometry::SetVideoGeometry(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                    const Rectangle &rectangle)
@@ -44,4 +44,4 @@ void SetVideoGeometry::execute() const
         m_player.setWesterossinkRectangle();
     }
 }
-} // namespace firebolt::rialto::server
+} // namespace firebolt::rialto::server::generic

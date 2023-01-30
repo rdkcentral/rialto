@@ -25,7 +25,7 @@
 #include "RialtoServerLogging.h"
 #include "tasks/generic/NeedData.h"
 
-namespace firebolt::rialto::server
+namespace firebolt::rialto::server::generic
 {
 SetPosition::SetPosition(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                          IGstGenericPlayerClient *client, std::shared_ptr<IGstWrapper> gstWrapper, std::int64_t position)
@@ -99,4 +99,4 @@ void SetPosition::execute() const
         }
     }
 }
-} // namespace firebolt::rialto::server
+} // namespace firebolt::rialto::server::generic

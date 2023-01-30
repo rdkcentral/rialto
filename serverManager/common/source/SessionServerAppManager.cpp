@@ -172,8 +172,9 @@ bool SessionServerAppManager::configureSessionServer(const std::string &appId)
     }
     const auto initialState{app->second->getInitialState()};
     const auto socketName{app->second->getSessionManagementSocketName()};
-    const auto maxPlaybackSessions{app->second->getMaxPlaybackSessions()};
-    if (!m_ipcController->performSetConfiguration(appId, initialState, socketName, maxPlaybackSessions))
+    const service::MaxResourceCapabilitites maxResource{app->second->getMaxPlaybackSessions(),
+                                                        app->second->getMaxWebAudioPlayers()};
+    if (!m_ipcController->performSetConfiguration(appId, initialState, socketName, maxResource))
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("Configuration of %s failed - ipc error.", appId.c_str());
         return false;

@@ -97,14 +97,14 @@ protected:
 
 TEST_F(FinishSetupSourceTest, shouldFinishSetupSource)
 {
-    firebolt::rialto::server::FinishSetupSource task{m_context, m_gstPlayer, &m_gstPlayerClient};
+    firebolt::rialto::server::generic::FinishSetupSource task{m_context, m_gstPlayer, &m_gstPlayerClient};
     expectFinishSetupSource();
     task.execute();
 }
 
 TEST_F(FinishSetupSourceTest, shouldScheduleAudioNeedData)
 {
-    firebolt::rialto::server::FinishSetupSource task{m_context, m_gstPlayer, &m_gstPlayerClient};
+    firebolt::rialto::server::generic::FinishSetupSource task{m_context, m_gstPlayer, &m_gstPlayerClient};
     expectFinishSetupSource();
     task.execute();
     EXPECT_CALL(m_gstPlayer, scheduleNeedMediaData(&m_audioAppSrc));
@@ -115,7 +115,7 @@ TEST_F(FinishSetupSourceTest, shouldScheduleAudioNeedData)
 
 TEST_F(FinishSetupSourceTest, shouldScheduleVideoNeedData)
 {
-    firebolt::rialto::server::FinishSetupSource task{m_context, m_gstPlayer, &m_gstPlayerClient};
+    firebolt::rialto::server::generic::FinishSetupSource task{m_context, m_gstPlayer, &m_gstPlayerClient};
     expectFinishSetupSource();
     task.execute();
     EXPECT_CALL(m_gstPlayer, scheduleNeedMediaData(&m_videoAppSrc));
@@ -126,7 +126,7 @@ TEST_F(FinishSetupSourceTest, shouldScheduleVideoNeedData)
 
 TEST_F(FinishSetupSourceTest, shouldScheduleAudioEnoughData)
 {
-    firebolt::rialto::server::FinishSetupSource task{m_context, m_gstPlayer, &m_gstPlayerClient};
+    firebolt::rialto::server::generic::FinishSetupSource task{m_context, m_gstPlayer, &m_gstPlayerClient};
     expectFinishSetupSource();
     task.execute();
     EXPECT_CALL(m_gstPlayer, scheduleEnoughData(&m_audioAppSrc));
@@ -137,7 +137,7 @@ TEST_F(FinishSetupSourceTest, shouldScheduleAudioEnoughData)
 
 TEST_F(FinishSetupSourceTest, shouldScheduleVideoEnoughData)
 {
-    firebolt::rialto::server::FinishSetupSource task{m_context, m_gstPlayer, &m_gstPlayerClient};
+    firebolt::rialto::server::generic::FinishSetupSource task{m_context, m_gstPlayer, &m_gstPlayerClient};
     expectFinishSetupSource();
     task.execute();
     EXPECT_CALL(m_gstPlayer, scheduleEnoughData(&m_videoAppSrc));
@@ -148,7 +148,7 @@ TEST_F(FinishSetupSourceTest, shouldScheduleVideoEnoughData)
 
 TEST_F(FinishSetupSourceTest, shouldScheduleAudioSeekData)
 {
-    firebolt::rialto::server::FinishSetupSource task{m_context, m_gstPlayer, &m_gstPlayerClient};
+    firebolt::rialto::server::generic::FinishSetupSource task{m_context, m_gstPlayer, &m_gstPlayerClient};
     expectFinishSetupSource();
     task.execute();
     EXPECT_CALL(m_gstPlayer, scheduleEnoughData(&m_audioAppSrc));
@@ -159,7 +159,7 @@ TEST_F(FinishSetupSourceTest, shouldScheduleAudioSeekData)
 
 TEST_F(FinishSetupSourceTest, shouldScheduleVideoSeekData)
 {
-    firebolt::rialto::server::FinishSetupSource task{m_context, m_gstPlayer, &m_gstPlayerClient};
+    firebolt::rialto::server::generic::FinishSetupSource task{m_context, m_gstPlayer, &m_gstPlayerClient};
     expectFinishSetupSource();
     task.execute();
     EXPECT_CALL(m_gstPlayer, scheduleEnoughData(&m_videoAppSrc));

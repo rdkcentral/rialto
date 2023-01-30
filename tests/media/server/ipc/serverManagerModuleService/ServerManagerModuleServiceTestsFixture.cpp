@@ -28,6 +28,7 @@ namespace
 {
 const std::string SOCKET_NAME{"/tmp/rialtotest-0"};
 constexpr int MAX_SESSIONS{5};
+constexpr int MAX_WEB_AUDIO_PLAYERS{3};
 constexpr int socket{2};
 
 rialto::SessionServerState convertSessionServerState(const firebolt::rialto::server::SessionServerState &state)
@@ -49,6 +50,11 @@ rialto::SessionServerState convertSessionServerState(const firebolt::rialto::ser
 }
 } // namespace
 
+MATCHER_P2(MaxResourceMatcher, maxPlaybacks, maxWebAudioPlayers, "")
+{
+    return ((maxPlaybacks == arg.maxPlaybacks) && (maxWebAudioPlayers == arg.maxWebAudioPlayers));
+}
+
 ServerManagerModuleServiceTests::ServerManagerModuleServiceTests()
     : m_clientMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ClientMock>>()},
       m_serverMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ServerMock>>()},
@@ -64,7 +70,9 @@ ServerManagerModuleServiceTests::~ServerManagerModuleServiceTests() {}
 void ServerManagerModuleServiceTests::sessionServerManagerWillSetConfiguration(
     const firebolt::rialto::server::SessionServerState &state)
 {
-    EXPECT_CALL(m_sessionServerManagerMock, setConfiguration(SOCKET_NAME, state, MAX_SESSIONS)).WillOnce(Return(true));
+    EXPECT_CALL(m_sessionServerManagerMock,
+                setConfiguration(SOCKET_NAME, state, MaxResourceMatcher(MAX_SESSIONS, MAX_WEB_AUDIO_PLAYERS)))
+        .WillOnce(Return(true));
 }
 
 void ServerManagerModuleServiceTests::sessionServerManagerWillSetState(
@@ -83,7 +91,9 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillSetLogLevels()
 void ServerManagerModuleServiceTests::sessionServerManagerWillFailToSetConfiguration(
     const firebolt::rialto::server::SessionServerState &state)
 {
-    EXPECT_CALL(m_sessionServerManagerMock, setConfiguration(SOCKET_NAME, state, MAX_SESSIONS)).WillOnce(Return(false));
+    EXPECT_CALL(m_sessionServerManagerMock,
+                setConfiguration(SOCKET_NAME, state, MaxResourceMatcher(MAX_SESSIONS, MAX_WEB_AUDIO_PLAYERS)))
+        .WillOnce(Return(false));
 }
 
 void ServerManagerModuleServiceTests::sessionServerManagerWillFailToSetState(
@@ -99,6 +109,7 @@ void ServerManagerModuleServiceTests::sendSetConfiguration(const firebolt::rialt
 
     request.set_sessionmanagementsocketname(SOCKET_NAME);
     request.mutable_resources()->set_maxplaybacks(MAX_SESSIONS);
+    request.mutable_resources()->set_maxwebaudioplayers(MAX_WEB_AUDIO_PLAYERS);
     request.mutable_loglevels()->set_defaultloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
     request.mutable_loglevels()->set_clientloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
     request.mutable_loglevels()->set_sessionserverloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));

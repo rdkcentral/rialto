@@ -30,7 +30,7 @@ void onHaveType(GstElement *typefind, guint probability, const GstCaps *caps, gp
 }
 } // namespace
 
-namespace firebolt::rialto::server
+namespace firebolt::rialto::server::generic
 {
 DeepElementAdded::DeepElementAdded(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                    const std::shared_ptr<IGstWrapper> &gstWrapper,
@@ -111,4 +111,4 @@ void DeepElementAdded::execute() const
         }
     }
 }
-} // namespace firebolt::rialto::server
+} // namespace firebolt::rialto::server::generic

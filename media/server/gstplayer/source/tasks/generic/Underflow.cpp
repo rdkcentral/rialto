@@ -23,7 +23,7 @@
 #include "RialtoServerLogging.h"
 #include "tasks/generic/Pause.h"
 
-namespace firebolt::rialto::server
+namespace firebolt::rialto::server::generic
 {
 Underflow::Underflow(IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client, bool &underflowFlag,
                      bool underflowEnabled)
@@ -56,4 +56,4 @@ void Underflow::execute() const
         m_gstPlayerClient->notifyNetworkState(NetworkState::STALLED);
     }
 }
-} // namespace firebolt::rialto::server
+} // namespace firebolt::rialto::server::generic

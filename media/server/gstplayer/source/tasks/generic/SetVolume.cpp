@@ -21,7 +21,7 @@
 #include "RialtoServerLogging.h"
 #include <gst/gst.h>
 
-namespace firebolt::rialto::server
+namespace firebolt::rialto::server::generic
 {
 SetVolume::SetVolume(GenericPlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper, double volume)
     : m_context{context}, m_gstWrapper{gstWrapper}, m_volume{volume}
@@ -45,4 +45,4 @@ void SetVolume::execute() const
     m_gstWrapper->gstStreamVolumeSetVolume(GST_STREAM_VOLUME(m_context.pipeline), GST_STREAM_VOLUME_FORMAT_LINEAR,
                                            m_volume);
 }
-} // namespace firebolt::rialto::server
+} // namespace firebolt::rialto::server::generic

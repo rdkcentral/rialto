@@ -17,15 +17,15 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_FINISH_SETUP_SOURCE_H_
-#define FIREBOLT_RIALTO_SERVER_FINISH_SETUP_SOURCE_H_
+#ifndef FIREBOLT_RIALTO_SERVER_GENERIC_FINISH_SETUP_SOURCE_H_
+#define FIREBOLT_RIALTO_SERVER_GENERIC_FINISH_SETUP_SOURCE_H_
 
 #include "GenericPlayerContext.h"
 #include "IGstGenericPlayerClient.h"
 #include "IGstGenericPlayerPrivate.h"
 #include "IPlayerTask.h"
 
-namespace firebolt::rialto::server
+namespace firebolt::rialto::server::generic
 {
 class FinishSetupSource : public IPlayerTask
 {
@@ -39,6 +39,6 @@ private:
     IGstGenericPlayerPrivate &m_player;
     IGstGenericPlayerClient *m_gstPlayerClient;
 };
-} // namespace firebolt::rialto::server
+} // namespace firebolt::rialto::server::generic
 
-#endif // FIREBOLT_RIALTO_SERVER_FINISH_SETUP_SOURCE_H_
+#endif // FIREBOLT_RIALTO_SERVER_GENERIC_FINISH_SETUP_SOURCE_H_

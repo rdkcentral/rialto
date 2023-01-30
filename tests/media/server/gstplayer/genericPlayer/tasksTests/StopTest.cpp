@@ -40,7 +40,7 @@ protected:
 
 TEST_F(StopTest, shouldStop)
 {
-    firebolt::rialto::server::Stop task{m_context, m_gstPlayer};
+    firebolt::rialto::server::generic::Stop task{m_context, m_gstPlayer};
     EXPECT_CALL(m_gstPlayer, stopPositionReportingAndCheckAudioUnderflowTimer());
     EXPECT_CALL(m_gstPlayer, changePipelineState(GST_STATE_NULL));
     task.execute();

@@ -45,7 +45,7 @@ public:
 
 TEST_F(SetVolumeTest, shouldFailToSetVolumeWhenPipelineIsNull)
 {
-    firebolt::rialto::server::SetVolume task{m_context, m_gstWrapper, kVolume};
+    firebolt::rialto::server::generic::SetVolume task{m_context, m_gstWrapper, kVolume};
     task.execute();
 }
 
@@ -53,6 +53,6 @@ TEST_F(SetVolumeTest, shouldSetVolume)
 {
     m_context.pipeline = &m_pipeline;
     EXPECT_CALL(*m_gstWrapper, gstStreamVolumeSetVolume(_, GST_STREAM_VOLUME_FORMAT_LINEAR, kVolume));
-    firebolt::rialto::server::SetVolume task{m_context, m_gstWrapper, kVolume};
+    firebolt::rialto::server::generic::SetVolume task{m_context, m_gstWrapper, kVolume};
     task.execute();
 }

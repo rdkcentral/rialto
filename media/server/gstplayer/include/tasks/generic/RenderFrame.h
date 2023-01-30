@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_RENDER_FRAME_H_
-#define FIREBOLT_RIALTO_SERVER_RENDER_FRAME_H_
+#ifndef FIREBOLT_RIALTO_SERVER_GENERIC_RENDER_FRAME_H_
+#define FIREBOLT_RIALTO_SERVER_GENERIC_RENDER_FRAME_H_
 
 #include "GenericPlayerContext.h"
 #include "IGlibWrapper.h"
@@ -27,7 +27,7 @@
 #include <cstdint>
 #include <memory>
 
-namespace firebolt::rialto::server
+namespace firebolt::rialto::server::generic
 {
 class RenderFrame : public IPlayerTask
 {
@@ -42,6 +42,6 @@ private:
     std::shared_ptr<IGstWrapper> m_gstWrapper;
     std::shared_ptr<IGlibWrapper> m_glibWrapper;
 };
-} // namespace firebolt::rialto::server
+} // namespace firebolt::rialto::server::generic
 
-#endif // FIREBOLT_RIALTO_SERVER_RENDER_FRAME_H_
+#endif // FIREBOLT_RIALTO_SERVER_GENERIC_RENDER_FRAME_H_

@@ -41,7 +41,8 @@ public:
     virtual bool createClient(const std::string &appId, int appMgmtSocket) = 0;
     virtual void removeClient(const std::string &appId) = 0;
     virtual bool performSetConfiguration(const std::string &appId, const service::SessionServerState &initialState,
-                                         const std::string &socketName, int maxPlaybackSessions) = 0;
+                                         const std::string &socketName,
+                                         const service::MaxResourceCapabilitites &maxResource) = 0;
     virtual bool performSetState(const std::string &appId, const service::SessionServerState &state) = 0;
     virtual bool setLogLevels(const service::LoggingLevels &logLevels) const = 0;
 };

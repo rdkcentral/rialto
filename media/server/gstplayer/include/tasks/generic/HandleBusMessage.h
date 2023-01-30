@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_HANDLE_BUS_MESSAGE_H_
-#define FIREBOLT_RIALTO_SERVER_HANDLE_BUS_MESSAGE_H_
+#ifndef FIREBOLT_RIALTO_SERVER_GENERIC_HANDLE_BUS_MESSAGE_H_
+#define FIREBOLT_RIALTO_SERVER_GENERIC_HANDLE_BUS_MESSAGE_H_
 
 #include "GenericPlayerContext.h"
 #include "IGstGenericPlayerClient.h"
@@ -28,7 +28,7 @@
 #include <gst/gst.h>
 #include <memory>
 
-namespace firebolt::rialto::server
+namespace firebolt::rialto::server::generic
 {
 class HandleBusMessage : public IPlayerTask
 {
@@ -45,6 +45,6 @@ private:
     std::shared_ptr<IGstWrapper> m_gstWrapper;
     GstMessage *m_message;
 };
-} // namespace firebolt::rialto::server
+} // namespace firebolt::rialto::server::generic
 
-#endif // FIREBOLT_RIALTO_SERVER_HANDLE_BUS_MESSAGE_H_
+#endif // FIREBOLT_RIALTO_SERVER_GENERIC_HANDLE_BUS_MESSAGE_H_

@@ -46,6 +46,7 @@ const std::string APP_NAME{"YouTube"};
 const int APP_MGMT_SOCKET{0};
 const std::string SESSION_SERVER_SOCKET_NAME{getenv("RIALTO_SOCKET_PATH")};
 constexpr int MAX_SESSIONS{2};
+constexpr int MAX_WEB_AUDIO_PLAYERS{3};
 constexpr rialto::servermanager::service::LoggingLevels
     EXAMPLE_LOGGING_LEVELS{rialto::servermanager::service::LoggingLevel::FATAL,
                            rialto::servermanager::service::LoggingLevel::ERROR,
@@ -53,6 +54,11 @@ constexpr rialto::servermanager::service::LoggingLevels
                            rialto::servermanager::service::LoggingLevel::MILESTONE,
                            rialto::servermanager::service::LoggingLevel::INFO};
 } // namespace
+
+MATCHER_P2(MaxResourceMatcher, maxPlaybacks, maxWebAudioPlayers, "")
+{
+    return ((maxPlaybacks == arg.maxPlaybacks) && (maxWebAudioPlayers == arg.maxWebAudioPlayers));
+}
 
 SessionServerAppManagerTests::SessionServerAppManagerTests()
     : m_controller{std::make_unique<StrictMock<rialto::servermanager::ipc::ControllerMock>>()},
@@ -124,9 +130,11 @@ void SessionServerAppManagerTests::sessionServerWillChangeStateToUninitialized()
         .WillOnce(Return(rialto::servermanager::service::SessionServerState::UNINITIALIZED));
     EXPECT_CALL(m_sessionServerAppMock, getSessionManagementSocketName()).WillOnce(Return(SESSION_SERVER_SOCKET_NAME));
     EXPECT_CALL(m_sessionServerAppMock, getMaxPlaybackSessions()).WillOnce(Return(MAX_SESSIONS));
+    EXPECT_CALL(m_sessionServerAppMock, getMaxWebAudioPlayers()).WillOnce(Return(MAX_WEB_AUDIO_PLAYERS));
     EXPECT_CALL(m_controllerMock,
                 performSetConfiguration(APP_NAME, rialto::servermanager::service::SessionServerState::UNINITIALIZED,
-                                        SESSION_SERVER_SOCKET_NAME, MAX_SESSIONS))
+                                        SESSION_SERVER_SOCKET_NAME,
+                                        MaxResourceMatcher(MAX_SESSIONS, MAX_WEB_AUDIO_PLAYERS)))
         .WillOnce(Return(true));
     EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
     EXPECT_CALL(*m_stateObserver,
@@ -146,9 +154,11 @@ void SessionServerAppManagerTests::sessionServerWillFailToSetConfiguration()
         .WillOnce(Return(rialto::servermanager::service::SessionServerState::UNINITIALIZED));
     EXPECT_CALL(m_sessionServerAppMock, getSessionManagementSocketName()).WillOnce(Return(SESSION_SERVER_SOCKET_NAME));
     EXPECT_CALL(m_sessionServerAppMock, getMaxPlaybackSessions()).WillOnce(Return(MAX_SESSIONS));
+    EXPECT_CALL(m_sessionServerAppMock, getMaxWebAudioPlayers()).WillOnce(Return(MAX_WEB_AUDIO_PLAYERS));
     EXPECT_CALL(m_controllerMock,
                 performSetConfiguration(APP_NAME, rialto::servermanager::service::SessionServerState::UNINITIALIZED,
-                                        SESSION_SERVER_SOCKET_NAME, MAX_SESSIONS))
+                                        SESSION_SERVER_SOCKET_NAME,
+                                        MaxResourceMatcher(MAX_SESSIONS, MAX_WEB_AUDIO_PLAYERS)))
         .WillOnce(Return(false));
 }
 

@@ -24,7 +24,7 @@
 #include "RialtoServerLogging.h"
 #include <unordered_map>
 
-namespace firebolt::rialto::server
+namespace firebolt::rialto::server::generic
 {
 namespace
 {
@@ -399,4 +399,4 @@ AudioAttributesPrivate AttachSource::createAudioAttributes() const
     }
     return audioAttributes;
 }
-} // namespace firebolt::rialto::server
+} // namespace firebolt::rialto::server::generic

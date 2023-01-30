@@ -89,7 +89,7 @@ void SessionServerManager::startService()
 }
 
 bool SessionServerManager::setConfiguration(const std::string &socketName, const SessionServerState &state,
-                                            int maxPlaybacks)
+                                            const MaxResourceCapabilitites &maxResource)
 {
     if (!m_sessionManagementServer->initialize(socketName))
     {
@@ -97,7 +97,8 @@ bool SessionServerManager::setConfiguration(const std::string &socketName, const
         return false;
     }
     m_sessionManagementServer->start();
-    m_playbackService.setMaxPlaybacks(maxPlaybacks);
+    m_playbackService.setMaxPlaybacks(maxResource.maxPlaybacks);
+    m_playbackService.setMaxWebAudioPlayers(maxResource.maxWebAudioPlayers);
     return setState(state);
 }
 

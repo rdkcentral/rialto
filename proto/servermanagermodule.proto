@@ -61,11 +61,13 @@ message LogLevels {
 /**
  * @brief Represents container application resources
  *
- * @param[in]  maxPlaybacks     Maximum number of playback sessions
+ * @param[in]  maxPlaybacks         Maximum number of playback sessions
+ * @param[in]  maxWebAudioPlayers   Maximum number of web audio players
  *
  */
 message Resources {
     required uint32 maxPlaybacks = 1;
+    required uint32 maxWebAudioPlayers = 2;
 }
 
 /**

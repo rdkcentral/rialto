@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_UPDATE_PLAYBACK_GROUP_H_
-#define FIREBOLT_RIALTO_SERVER_UPDATE_PLAYBACK_GROUP_H_
+#ifndef FIREBOLT_RIALTO_SERVER_GENERIC_UPDATE_PLAYBACK_GROUP_H_
+#define FIREBOLT_RIALTO_SERVER_GENERIC_UPDATE_PLAYBACK_GROUP_H_
 
 #include "GenericPlayerContext.h"
 #include "IGlibWrapper.h"
@@ -27,7 +27,7 @@
 #include <gst/gst.h>
 #include <memory>
 
-namespace firebolt::rialto::server
+namespace firebolt::rialto::server::generic
 {
 class UpdatePlaybackGroup : public IPlayerTask
 {
@@ -44,6 +44,6 @@ private:
     GstElement *m_typefind;
     const GstCaps *m_caps;
 };
-} // namespace firebolt::rialto::server
+} // namespace firebolt::rialto::server::generic
 
-#endif // FIREBOLT_RIALTO_SERVER_UPDATE_PLAYBACK_GROUP_H_
+#endif // FIREBOLT_RIALTO_SERVER_GENERIC_UPDATE_PLAYBACK_GROUP_H_

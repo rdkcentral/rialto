@@ -17,15 +17,15 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_NEED_DATA_H_
-#define FIREBOLT_RIALTO_SERVER_NEED_DATA_H_
+#ifndef FIREBOLT_RIALTO_SERVER_GENERIC_NEED_DATA_H_
+#define FIREBOLT_RIALTO_SERVER_GENERIC_NEED_DATA_H_
 
 #include "GenericPlayerContext.h"
 #include "IGstGenericPlayerClient.h"
 #include "IPlayerTask.h"
 #include <gst/app/gstappsrc.h>
 
-namespace firebolt::rialto::server
+namespace firebolt::rialto::server::generic
 {
 class NeedData : public IPlayerTask
 {
@@ -39,6 +39,6 @@ private:
     IGstGenericPlayerClient *m_gstPlayerClient;
     GstAppSrc *m_src;
 };
-} // namespace firebolt::rialto::server
+} // namespace firebolt::rialto::server::generic
 
-#endif // FIREBOLT_RIALTO_SERVER_NEED_DATA_H_
+#endif // FIREBOLT_RIALTO_SERVER_GENERIC_NEED_DATA_H_

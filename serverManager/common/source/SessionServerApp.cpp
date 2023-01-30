@@ -37,6 +37,7 @@ namespace
 {
 constexpr char sessionManagementPrefix[]{"/tmp/rialto-"};
 constexpr int maxPlaybackSessions{2};
+constexpr int maxWebAudioPlayers{1};
 
 std::string generateSessionManagementSocket()
 {
@@ -147,6 +148,11 @@ int SessionServerApp::getAppManagementSocketName() const
 int SessionServerApp::getMaxPlaybackSessions() const
 {
     return maxPlaybackSessions; // temporarily hardcoded
+}
+
+int SessionServerApp::getMaxWebAudioPlayers() const
+{
+    return maxWebAudioPlayers; // temporarily hardcoded
 }
 
 void SessionServerApp::cancelStartupTimer()

@@ -64,13 +64,14 @@ bool Controller::performSetState(const std::string &appId, const service::Sessio
 }
 
 bool Controller::performSetConfiguration(const std::string &appId, const service::SessionServerState &initialState,
-                                         const std::string &socketName, int maxPlaybackSessions)
+                                         const std::string &socketName,
+                                         const service::MaxResourceCapabilitites &maxResource)
 {
     std::unique_lock<std::mutex> lock{m_clientMutex};
     auto client = m_clients.find(appId);
     if (client != m_clients.end())
     {
-        return client->second->performSetConfiguration(initialState, socketName, maxPlaybackSessions);
+        return client->second->performSetConfiguration(initialState, socketName, maxResource);
     }
     return false;
 }

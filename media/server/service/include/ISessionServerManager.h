@@ -40,7 +40,8 @@ public:
 
     virtual bool initialize(int argc, char *argv[]) = 0;
     virtual void startService() = 0;
-    virtual bool setConfiguration(const std::string &socketName, const SessionServerState &state, int maxPlaybacks) = 0;
+    virtual bool setConfiguration(const std::string &socketName, const SessionServerState &state,
+                                  const MaxResourceCapabilitites &maxResource) = 0;
     virtual bool setState(const SessionServerState &state) = 0;
     virtual void setLogLevels(RIALTO_DEBUG_LEVEL defaultLogLevels, RIALTO_DEBUG_LEVEL clientLogLevels,
                               RIALTO_DEBUG_LEVEL sessionServerLogLevels, RIALTO_DEBUG_LEVEL ipcLogLevels,

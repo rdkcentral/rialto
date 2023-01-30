@@ -20,8 +20,13 @@
 #ifndef FIREBOLT_RIALTO_SERVER_SESSION_SERVER_STATE_H_
 #define FIREBOLT_RIALTO_SERVER_SESSION_SERVER_STATE_H_
 
+#include <stdint.h>
+
 namespace firebolt::rialto::server
 {
+/**
+ * @brief The possible states of the session server.
+ */
 enum class SessionServerState
 {
     UNINITIALIZED,
@@ -30,6 +35,16 @@ enum class SessionServerState
     NOT_RUNNING,
     ERROR
 };
+
+/**
+ * @brief The max resource capabilities of the platform.
+ */
+struct MaxResourceCapabilitites
+{
+    int maxPlaybacks;
+    int maxWebAudioPlayers;
+};
+
 } // namespace firebolt::rialto::server
 
 #endif // FIREBOLT_RIALTO_SERVER_SESSION_SERVER_STATE_H_

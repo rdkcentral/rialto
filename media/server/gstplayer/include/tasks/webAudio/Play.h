@@ -29,7 +29,7 @@ namespace firebolt::rialto::server::webaudio
 class Play : public IPlayerTask
 {
 public:
-    explicit Play(IGstWebAudioPlayerPrivate &player, IGstWebAudioPlayerClient *client);
+    Play(IGstWebAudioPlayerPrivate &player, IGstWebAudioPlayerClient *client);
     ~Play() override;
     void execute() const override;
 

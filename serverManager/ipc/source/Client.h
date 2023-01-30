@@ -49,7 +49,7 @@ public:
     bool connect();
     bool performSetState(const service::SessionServerState &state);
     bool performSetConfiguration(const service::SessionServerState &initialState, const std::string &socketName,
-                                 int maxPlaybackSessions) const;
+                                 const service::MaxResourceCapabilitites &maxResource) const;
     bool setLogLevels(const service::LoggingLevels &logLevels) const;
     void onDisconnected() const;
 

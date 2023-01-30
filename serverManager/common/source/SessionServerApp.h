@@ -47,6 +47,7 @@ public:
     service::SessionServerState getInitialState() const override;
     int getAppManagementSocketName() const override;
     int getMaxPlaybackSessions() const override;
+    int getMaxWebAudioPlayers() const override;
     void cancelStartupTimer() override;
     void kill() const override;
 

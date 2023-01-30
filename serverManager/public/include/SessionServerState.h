@@ -25,6 +25,8 @@
 #ifndef RIALTO_SERVERMANAGER_SERVICE_SESSION_SERVER_STATE_H_
 #define RIALTO_SERVERMANAGER_SERVICE_SESSION_SERVER_STATE_H_
 
+#include <stdint.h>
+
 namespace rialto::servermanager::service
 {
 /**
@@ -43,6 +45,15 @@ enum class SessionServerState
     ACTIVE,
     NOT_RUNNING,
     ERROR
+};
+
+/**
+ * @brief The max resource capabilities of the platform.
+ */
+struct MaxResourceCapabilitites
+{
+    int maxPlaybacks;
+    int maxWebAudioPlayers;
 };
 } // namespace rialto::servermanager::service
 #endif // RIALTO_SERVERMANAGER_SERVICE_SESSION_SERVER_STATE_H_

@@ -183,7 +183,7 @@ bool Client::performSetState(const service::SessionServerState &state)
 }
 
 bool Client::performSetConfiguration(const service::SessionServerState &initialState, const std::string &socketName,
-                                     int maxPlaybackSessions) const
+                                     const service::MaxResourceCapabilitites &maxResource) const
 {
     if (!m_ipcLoop || !m_serviceStub)
     {
@@ -193,7 +193,8 @@ bool Client::performSetConfiguration(const service::SessionServerState &initialS
     rialto::SetConfigurationRequest request;
     rialto::SetConfigurationResponse response;
     request.set_sessionmanagementsocketname(socketName);
-    request.mutable_resources()->set_maxplaybacks(maxPlaybackSessions);
+    request.mutable_resources()->set_maxplaybacks(maxResource.maxPlaybacks);
+    request.mutable_resources()->set_maxwebaudioplayers(maxResource.maxWebAudioPlayers);
     *(request.mutable_loglevels()) = getCurrentLogLevels();
     request.set_initialsessionserverstate(convert(initialState));
     auto ipcController = m_ipcLoop->createRpcController();

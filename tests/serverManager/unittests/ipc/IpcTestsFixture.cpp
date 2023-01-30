@@ -101,8 +101,8 @@ bool IpcTests::triggerPerformSetConfiguration()
     EXPECT_TRUE(m_sut);
     const auto initialState{rialto::servermanager::service::SessionServerState::INACTIVE};
     const std::string socketName{getenv("RIALTO_SOCKET_PATH")};
-    constexpr int maxPlaybackSessions{2};
-    return m_sut->performSetConfiguration(APP_NAME, initialState, socketName, maxPlaybackSessions);
+    constexpr rialto::servermanager::service::MaxResourceCapabilitites maxResource{2, 1};
+    return m_sut->performSetConfiguration(APP_NAME, initialState, socketName, maxResource);
 }
 
 bool IpcTests::triggerPerformSetState(const rialto::servermanager::service::SessionServerState &state)

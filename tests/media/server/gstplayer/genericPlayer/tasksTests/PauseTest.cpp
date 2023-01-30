@@ -33,6 +33,6 @@ TEST_F(PauseTest, shouldPause)
 {
     EXPECT_CALL(m_gstPlayer, stopPositionReportingAndCheckAudioUnderflowTimer());
     EXPECT_CALL(m_gstPlayer, changePipelineState(GST_STATE_PAUSED));
-    firebolt::rialto::server::Pause task{m_gstPlayer};
+    firebolt::rialto::server::generic::Pause task{m_gstPlayer};
     task.execute();
 }
