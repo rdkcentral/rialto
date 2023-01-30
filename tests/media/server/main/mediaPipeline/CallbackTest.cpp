@@ -110,7 +110,7 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyNeedMediaData)
     EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), true);
 
     auto mediaSourceType = firebolt::rialto::MediaSourceType::VIDEO;
-    int sourceId{static_cast<int>(firebolt::rialto::MediaSourceType::VIDEO)};
+    int sourceId{mediaSource->getId()};
     int numFrames{24};
     mainThreadWillEnqueueTaskAndWait();
     ASSERT_TRUE(m_sharedMemoryBufferMock);
@@ -152,8 +152,16 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyNeedMediaDataFailureDueToSou
  */
 TEST_F(RialtoServerMediaPipelineCallbackTest, notifyQos)
 {
+    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
+        std::make_unique<IMediaPipeline::MediaSourceVideo>(-1, "video/h264");
+    mainThreadWillEnqueueTaskAndWait();
+
+    EXPECT_CALL(*m_gstPlayerMock, attachSource(Ref(mediaSource)));
+
+    EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), true);
+
     auto mediaSourceType = firebolt::rialto::MediaSourceType::VIDEO;
-    int sourceId{static_cast<int>(firebolt::rialto::MediaSourceType::VIDEO)};
+    int sourceId{mediaSource->getId()};
     QosInfo qosInfo{5u, 2u};
 
     mainThreadWillEnqueueTask();

@@ -777,8 +777,13 @@ void MediaPipelineServerInternal::notifyQos(MediaSourceType mediaSourceType, con
     {
         if (m_mediaPipelineClient)
         {
-            auto sourceId = static_cast<std::uint64_t>(mediaSourceType);
-            m_mediaPipelineClient->notifyQos(sourceId, qosInfo);
+            const auto kSourceIter = m_attachedSources.find(mediaSourceType);
+            if (m_attachedSources.cend() == kSourceIter)
+            {
+                RIALTO_SERVER_LOG_WARN("Qos notification failed - sourceId not found");
+                return;
+            }
+            m_mediaPipelineClient->notifyQos(kSourceIter->second, qosInfo);
         }
     };
 
