@@ -36,8 +36,8 @@ TEST_F(ApplicationManagementServerTests, shouldChangeState)
 {
     clientWillBeInitialized();
     initializeApplicationManager();
-    clientWillReceiveStateChangedEvent(firebolt::rialto::server::SessionServerState::ACTIVE);
-    sendStateChangedEvent(firebolt::rialto::server::SessionServerState::ACTIVE);
+    clientWillReceiveStateChangedEvent(firebolt::rialto::common::SessionServerState::ACTIVE);
+    sendStateChangedEvent(firebolt::rialto::common::SessionServerState::ACTIVE);
     clientWillNotBeConnected();
 }
 
@@ -46,7 +46,7 @@ TEST_F(ApplicationManagementServerTests, shouldNotChangeStateIfClientNotConnecte
     clientWillBeInitialized();
     initializeApplicationManager();
     clientWillNotBeConnected();
-    sendStateChangedEventAndExpectFailure(firebolt::rialto::server::SessionServerState::ACTIVE);
+    sendStateChangedEventAndExpectFailure(firebolt::rialto::common::SessionServerState::ACTIVE);
     clientWillNotBeConnected();
 }
 

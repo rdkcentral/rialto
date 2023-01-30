@@ -66,8 +66,8 @@ message LogLevels {
  *
  */
 message Resources {
-    required uint32 maxPlaybacks = 1;
-    required uint32 maxWebAudioPlayers = 2;
+    required int32 maxPlaybacks = 1;
+    required int32 maxWebAudioPlayers = 2;
 }
 
 /**

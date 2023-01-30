@@ -22,7 +22,7 @@
 #include <string>
 #include <utility>
 
-using firebolt::rialto::server::SessionServerState;
+using firebolt::rialto::common::SessionServerState;
 using firebolt::rialto::server::ipc::ApplicationManagementServerMock;
 using firebolt::rialto::server::ipc::SessionManagementServerMock;
 using firebolt::rialto::server::service::SessionServerManager;
@@ -36,7 +36,7 @@ namespace
 constexpr int appManagementSocket{3};
 constexpr int maxPlaybacks{2};
 constexpr int maxWebAudioPlayers{1};
-constexpr firebolt::rialto::server::MaxResourceCapabilitites maxResource{maxPlaybacks, maxWebAudioPlayers};
+constexpr firebolt::rialto::common::MaxResourceCapabilitites maxResource{maxPlaybacks, maxWebAudioPlayers};
 constexpr RIALTO_DEBUG_LEVEL logLvl{RIALTO_DEBUG_LEVEL_DEFAULT};
 const std::string sessionManagementSocket{"/tmp/rialtosessionservermanagertests-0"};
 } // namespace
@@ -238,13 +238,13 @@ void SessionServerManagerTests::willSetLogLevels()
     EXPECT_CALL(m_sessionManagementServerMock, setLogLevels(logLvl, logLvl, logLvl, logLvl));
 }
 
-void SessionServerManagerTests::setStateShouldFail(const firebolt::rialto::server::SessionServerState &state)
+void SessionServerManagerTests::setStateShouldFail(const firebolt::rialto::common::SessionServerState &state)
 {
     EXPECT_TRUE(m_sut);
     EXPECT_FALSE(m_sut->setState(state));
 }
 
-void SessionServerManagerTests::setStateShouldSucceed(const firebolt::rialto::server::SessionServerState &state)
+void SessionServerManagerTests::setStateShouldSucceed(const firebolt::rialto::common::SessionServerState &state)
 {
     EXPECT_TRUE(m_sut);
     EXPECT_TRUE(m_sut->setState(state));

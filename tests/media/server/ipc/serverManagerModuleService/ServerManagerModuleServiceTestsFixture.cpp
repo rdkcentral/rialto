@@ -31,19 +31,19 @@ constexpr int MAX_SESSIONS{5};
 constexpr int MAX_WEB_AUDIO_PLAYERS{3};
 constexpr int socket{2};
 
-rialto::SessionServerState convertSessionServerState(const firebolt::rialto::server::SessionServerState &state)
+rialto::SessionServerState convertSessionServerState(const firebolt::rialto::common::SessionServerState &state)
 {
     switch (state)
     {
-    case firebolt::rialto::server::SessionServerState::UNINITIALIZED:
+    case firebolt::rialto::common::SessionServerState::UNINITIALIZED:
         return rialto::SessionServerState::UNINITIALIZED;
-    case firebolt::rialto::server::SessionServerState::INACTIVE:
+    case firebolt::rialto::common::SessionServerState::INACTIVE:
         return rialto::SessionServerState::INACTIVE;
-    case firebolt::rialto::server::SessionServerState::ACTIVE:
+    case firebolt::rialto::common::SessionServerState::ACTIVE:
         return rialto::SessionServerState::ACTIVE;
-    case firebolt::rialto::server::SessionServerState::NOT_RUNNING:
+    case firebolt::rialto::common::SessionServerState::NOT_RUNNING:
         return rialto::SessionServerState::NOT_RUNNING;
-    case firebolt::rialto::server::SessionServerState::ERROR:
+    case firebolt::rialto::common::SessionServerState::ERROR:
         return rialto::SessionServerState::ERROR;
     }
     return rialto::SessionServerState::ERROR;
@@ -68,7 +68,7 @@ ServerManagerModuleServiceTests::ServerManagerModuleServiceTests()
 ServerManagerModuleServiceTests::~ServerManagerModuleServiceTests() {}
 
 void ServerManagerModuleServiceTests::sessionServerManagerWillSetConfiguration(
-    const firebolt::rialto::server::SessionServerState &state)
+    const firebolt::rialto::common::SessionServerState &state)
 {
     EXPECT_CALL(m_sessionServerManagerMock,
                 setConfiguration(SOCKET_NAME, state, MaxResourceMatcher(MAX_SESSIONS, MAX_WEB_AUDIO_PLAYERS)))
@@ -76,7 +76,7 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillSetConfiguration(
 }
 
 void ServerManagerModuleServiceTests::sessionServerManagerWillSetState(
-    const firebolt::rialto::server::SessionServerState &state)
+    const firebolt::rialto::common::SessionServerState &state)
 {
     EXPECT_CALL(m_sessionServerManagerMock, setState(state)).WillOnce(Return(true));
 }
@@ -89,7 +89,7 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillSetLogLevels()
 }
 
 void ServerManagerModuleServiceTests::sessionServerManagerWillFailToSetConfiguration(
-    const firebolt::rialto::server::SessionServerState &state)
+    const firebolt::rialto::common::SessionServerState &state)
 {
     EXPECT_CALL(m_sessionServerManagerMock,
                 setConfiguration(SOCKET_NAME, state, MaxResourceMatcher(MAX_SESSIONS, MAX_WEB_AUDIO_PLAYERS)))
@@ -97,12 +97,12 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillFailToSetConfigura
 }
 
 void ServerManagerModuleServiceTests::sessionServerManagerWillFailToSetState(
-    const firebolt::rialto::server::SessionServerState &state)
+    const firebolt::rialto::common::SessionServerState &state)
 {
     EXPECT_CALL(m_sessionServerManagerMock, setState(state)).WillOnce(Return(false));
 }
 
-void ServerManagerModuleServiceTests::sendSetConfiguration(const firebolt::rialto::server::SessionServerState &state)
+void ServerManagerModuleServiceTests::sendSetConfiguration(const firebolt::rialto::common::SessionServerState &state)
 {
     rialto::SetConfigurationRequest request;
     rialto::SetConfigurationResponse response;
@@ -121,7 +121,7 @@ void ServerManagerModuleServiceTests::sendSetConfiguration(const firebolt::rialt
     m_sut->setConfiguration(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
 
-void ServerManagerModuleServiceTests::sendSetState(const firebolt::rialto::server::SessionServerState &state)
+void ServerManagerModuleServiceTests::sendSetState(const firebolt::rialto::common::SessionServerState &state)
 {
     rialto::SetStateRequest request;
     rialto::SetStateResponse response;

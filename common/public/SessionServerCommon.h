@@ -15,19 +15,14 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * @file SessionServerState.h
- *
- * This file comprises the enum class definition of SessionServerState.
- * Enum represents all possible states of session server.
  */
 
-#ifndef RIALTO_SERVERMANAGER_SERVICE_SESSION_SERVER_STATE_H_
-#define RIALTO_SERVERMANAGER_SERVICE_SESSION_SERVER_STATE_H_
+#ifndef FIREBOLT_RIALTO_COMMON_SESSION_SERVER_H_
+#define FIREBOLT_RIALTO_COMMON_SESSION_SERVER_H_
 
 #include <stdint.h>
 
-namespace rialto::servermanager::service
+namespace firebolt::rialto::common
 {
 /**
  * @brief Represents all possible states of session server.
@@ -55,5 +50,7 @@ struct MaxResourceCapabilitites
     int maxPlaybacks;
     int maxWebAudioPlayers;
 };
-} // namespace rialto::servermanager::service
-#endif // RIALTO_SERVERMANAGER_SERVICE_SESSION_SERVER_STATE_H_
+
+} // namespace firebolt::rialto::common
+
+#endif // FIREBOLT_RIALTO_COMMON_SESSION_SERVER_H_

@@ -78,7 +78,7 @@ std::chrono::milliseconds getStartupTimeout()
 
 namespace rialto::servermanager::common
 {
-SessionServerApp::SessionServerApp(const std::string &appId, const service::SessionServerState &initialState,
+SessionServerApp::SessionServerApp(const std::string &appId, const firebolt::rialto::common::SessionServerState &initialState,
                                    SessionServerAppManager &sessionServerAppManager,
                                    const std::list<std::string> &environmentVariables)
     : m_kAppId{appId}, m_kInitialState{initialState}, m_kSessionManagementSocketName{generateSessionManagementSocket()},
@@ -135,7 +135,7 @@ std::string SessionServerApp::getSessionManagementSocketName() const
     return m_kSessionManagementSocketName;
 }
 
-service::SessionServerState SessionServerApp::getInitialState() const
+firebolt::rialto::common::SessionServerState SessionServerApp::getInitialState() const
 {
     return m_kInitialState;
 }
@@ -201,7 +201,7 @@ void SessionServerApp::setupStartupTimer()
                                  {
                                      RIALTO_SERVER_MANAGER_LOG_WARN("Killing: %s", m_kAppId.c_str());
                                      m_sessionServerAppManager
-                                         .onSessionServerStateChanged(m_kAppId, service::SessionServerState::ERROR);
+                                         .onSessionServerStateChanged(m_kAppId, firebolt::rialto::common::SessionServerState::ERROR);
                                      kill();
                                  });
     }

@@ -36,7 +36,7 @@ ServerManagerServiceTests::ServerManagerServiceTests()
 }
 
 void ServerManagerServiceTests::setSessionServerStateWillBeCalled(
-    const std::string &appId, const rialto::servermanager::service::SessionServerState &state, bool returnValue)
+    const std::string &appId, const firebolt::rialto::common::SessionServerState &state, bool returnValue)
 {
     EXPECT_CALL(m_appManager, setSessionServerState(appId, state)).WillOnce(Return(returnValue));
 }
@@ -52,7 +52,7 @@ void ServerManagerServiceTests::setLogLevelsWillBeCalled(bool returnValue)
 }
 
 bool ServerManagerServiceTests::triggerChangeSessionServerState(
-    const std::string &appId, const rialto::servermanager::service::SessionServerState &state)
+    const std::string &appId, const firebolt::rialto::common::SessionServerState &state)
 {
     EXPECT_TRUE(m_sut);
     return m_sut->changeSessionServerState(appId, state);

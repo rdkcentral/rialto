@@ -25,7 +25,7 @@ using rialto::servermanager::common::setLocalLogLevels;
 using rialto::servermanager::common::toString;
 using rialto::servermanager::service::LoggingLevel;
 using rialto::servermanager::service::LoggingLevels;
-using rialto::servermanager::service::SessionServerState;
+using firebolt::rialto::common::SessionServerState;
 
 TEST(UtilsTest, ShouldReturnProperString)
 {

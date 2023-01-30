@@ -46,9 +46,9 @@ public:
 
     bool initialize(int argc, char *argv[]) override;
     void startService() override;
-    bool setConfiguration(const std::string &socketName, const SessionServerState &state,
-                          const MaxResourceCapabilitites &maxResource) override;
-    bool setState(const SessionServerState &state) override;
+    bool setConfiguration(const std::string &socketName, const common::SessionServerState &state,
+                          const common::MaxResourceCapabilitites &maxResource) override;
+    bool setState(const common::SessionServerState &state) override;
     void setLogLevels(RIALTO_DEBUG_LEVEL defaultLogLevels, RIALTO_DEBUG_LEVEL clientLogLevels,
                       RIALTO_DEBUG_LEVEL sessionServerLogLevels, RIALTO_DEBUG_LEVEL ipcLogLevels,
                       RIALTO_DEBUG_LEVEL serverManagerLogLevels, RIALTO_DEBUG_LEVEL commonLogLevels) override;
@@ -66,7 +66,7 @@ private:
     std::mutex m_serviceMutex;
     std::condition_variable m_serviceCv;
     bool m_isServiceRunning;
-    std::atomic<SessionServerState> m_currentState;
+    std::atomic<common::SessionServerState> m_currentState;
 };
 } // namespace firebolt::rialto::server::service
 

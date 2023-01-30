@@ -67,84 +67,84 @@ TEST_F(SessionServerManagerTests, shouldSetConfiguration)
 TEST_F(SessionServerManagerTests, shouldFailToSetUnsupportedState)
 {
     willFailToSetUnsupportedState();
-    setStateShouldFail(firebolt::rialto::server::SessionServerState::UNINITIALIZED);
-    setStateShouldFail(firebolt::rialto::server::SessionServerState::ERROR);
+    setStateShouldFail(firebolt::rialto::common::SessionServerState::UNINITIALIZED);
+    setStateShouldFail(firebolt::rialto::common::SessionServerState::ERROR);
 }
 
 TEST_F(SessionServerManagerTests, shouldFailToSetActiveStateDueToPlaybackServiceError)
 {
     willFailToSetStateActiveDueToPlaybackServiceError();
-    setStateShouldFail(firebolt::rialto::server::SessionServerState::ACTIVE);
+    setStateShouldFail(firebolt::rialto::common::SessionServerState::ACTIVE);
 }
 
 TEST_F(SessionServerManagerTests, shouldFailToSetActiveStateDueToCdmServiceError)
 {
     willFailToSetStateActiveDueToCdmServiceError();
-    setStateShouldFail(firebolt::rialto::server::SessionServerState::ACTIVE);
+    setStateShouldFail(firebolt::rialto::common::SessionServerState::ACTIVE);
 }
 
 TEST_F(SessionServerManagerTests, shouldFailToSetActiveStateDueToSessionServerError)
 {
     willFailToSetStateActiveDueToSessionServerError();
-    setStateShouldFail(firebolt::rialto::server::SessionServerState::ACTIVE);
+    setStateShouldFail(firebolt::rialto::common::SessionServerState::ACTIVE);
 }
 
 TEST_F(SessionServerManagerTests, shouldSetActiveState)
 {
     willSetStateActive();
-    setStateShouldSucceed(firebolt::rialto::server::SessionServerState::ACTIVE);
+    setStateShouldSucceed(firebolt::rialto::common::SessionServerState::ACTIVE);
 }
 
 TEST_F(SessionServerManagerTests, shouldSkipSettingActiveStateTwice)
 {
     willSetStateActive();
-    setStateShouldSucceed(firebolt::rialto::server::SessionServerState::ACTIVE);
-    setStateShouldSucceed(firebolt::rialto::server::SessionServerState::ACTIVE);
+    setStateShouldSucceed(firebolt::rialto::common::SessionServerState::ACTIVE);
+    setStateShouldSucceed(firebolt::rialto::common::SessionServerState::ACTIVE);
 }
 
 TEST_F(SessionServerManagerTests, shouldFailToSetInactiveState)
 {
     willFailToSetStateInactive();
-    setStateShouldFail(firebolt::rialto::server::SessionServerState::INACTIVE);
+    setStateShouldFail(firebolt::rialto::common::SessionServerState::INACTIVE);
 }
 
 TEST_F(SessionServerManagerTests, shouldSetInactiveState)
 {
     willSetStateInactive();
-    setStateShouldSucceed(firebolt::rialto::server::SessionServerState::INACTIVE);
+    setStateShouldSucceed(firebolt::rialto::common::SessionServerState::INACTIVE);
 }
 
 TEST_F(SessionServerManagerTests, shouldSkipSettingInactiveStateTwice)
 {
     willSetStateInactive();
-    setStateShouldSucceed(firebolt::rialto::server::SessionServerState::INACTIVE);
-    setStateShouldSucceed(firebolt::rialto::server::SessionServerState::INACTIVE);
+    setStateShouldSucceed(firebolt::rialto::common::SessionServerState::INACTIVE);
+    setStateShouldSucceed(firebolt::rialto::common::SessionServerState::INACTIVE);
 }
 
 TEST_F(SessionServerManagerTests, shouldFailToSetNotRunningState)
 {
     willFailToSetStateNotRunning();
-    setStateShouldFail(firebolt::rialto::server::SessionServerState::NOT_RUNNING);
+    setStateShouldFail(firebolt::rialto::common::SessionServerState::NOT_RUNNING);
 }
 
 TEST_F(SessionServerManagerTests, shouldSetNotRunningState)
 {
     willSetStateNotRunning();
-    setStateShouldSucceed(firebolt::rialto::server::SessionServerState::NOT_RUNNING);
+    setStateShouldSucceed(firebolt::rialto::common::SessionServerState::NOT_RUNNING);
 }
 
 TEST_F(SessionServerManagerTests, shouldSkipSettingNotRunningStateTwice)
 {
     willSetStateNotRunning();
-    setStateShouldSucceed(firebolt::rialto::server::SessionServerState::NOT_RUNNING);
-    setStateShouldSucceed(firebolt::rialto::server::SessionServerState::NOT_RUNNING);
+    setStateShouldSucceed(firebolt::rialto::common::SessionServerState::NOT_RUNNING);
+    setStateShouldSucceed(firebolt::rialto::common::SessionServerState::NOT_RUNNING);
 }
 
 TEST_F(SessionServerManagerTests, shouldStopServiceWhenNotRunningIsSet)
 {
     triggerStartService();
     willSetStateNotRunning();
-    setStateShouldSucceed(firebolt::rialto::server::SessionServerState::NOT_RUNNING);
+    setStateShouldSucceed(firebolt::rialto::common::SessionServerState::NOT_RUNNING);
 }
 
 TEST_F(SessionServerManagerTests, shouldSetLogLevels)

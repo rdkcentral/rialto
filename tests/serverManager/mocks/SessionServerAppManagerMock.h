@@ -32,8 +32,8 @@ public:
     SessionServerAppManagerMock() = default;
     virtual ~SessionServerAppManagerMock() = default;
 
-    MOCK_METHOD(bool, setSessionServerState, (const std::string &, const service::SessionServerState &), (override));
-    MOCK_METHOD(void, onSessionServerStateChanged, (const std::string &, const service::SessionServerState &),
+    MOCK_METHOD(bool, setSessionServerState, (const std::string &, const firebolt::rialto::common::SessionServerState &), (override));
+    MOCK_METHOD(void, onSessionServerStateChanged, (const std::string &, const firebolt::rialto::common::SessionServerState &),
                 (override));
     MOCK_METHOD(std::string, getAppConnectionInfo, (const std::string &), (const, override));
     MOCK_METHOD(bool, setLogLevels, (const service::LoggingLevels &), (const, override));

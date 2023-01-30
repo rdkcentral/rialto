@@ -30,19 +30,19 @@ namespace
 {
 constexpr int socket{2};
 
-rialto::SessionServerState convertSessionServerState(const firebolt::rialto::server::SessionServerState &state)
+rialto::SessionServerState convertSessionServerState(const firebolt::rialto::common::SessionServerState &state)
 {
     switch (state)
     {
-    case firebolt::rialto::server::SessionServerState::UNINITIALIZED:
+    case firebolt::rialto::common::SessionServerState::UNINITIALIZED:
         return rialto::SessionServerState::UNINITIALIZED;
-    case firebolt::rialto::server::SessionServerState::INACTIVE:
+    case firebolt::rialto::common::SessionServerState::INACTIVE:
         return rialto::SessionServerState::INACTIVE;
-    case firebolt::rialto::server::SessionServerState::ACTIVE:
+    case firebolt::rialto::common::SessionServerState::ACTIVE:
         return rialto::SessionServerState::ACTIVE;
-    case firebolt::rialto::server::SessionServerState::NOT_RUNNING:
+    case firebolt::rialto::common::SessionServerState::NOT_RUNNING:
         return rialto::SessionServerState::NOT_RUNNING;
-    case firebolt::rialto::server::SessionServerState::ERROR:
+    case firebolt::rialto::common::SessionServerState::ERROR:
         return rialto::SessionServerState::ERROR;
     }
     return rialto::SessionServerState::ERROR;
@@ -87,7 +87,7 @@ void ApplicationManagementServerTests::clientWillFailToInitialized()
 }
 
 void ApplicationManagementServerTests::clientWillReceiveStateChangedEvent(
-    const firebolt::rialto::server::SessionServerState &state)
+    const firebolt::rialto::common::SessionServerState &state)
 {
     EXPECT_CALL(*m_clientMock, isConnected()).WillOnce(Return(true));
     EXPECT_CALL(*m_clientMock, sendEvent(StateChangedEventMatcher(convertSessionServerState(state))));
@@ -119,13 +119,13 @@ void ApplicationManagementServerTests::initializeApplicationManagerAndExpectFail
     EXPECT_FALSE(m_sut->initialize(socket));
 }
 
-void ApplicationManagementServerTests::sendStateChangedEvent(const firebolt::rialto::server::SessionServerState &state)
+void ApplicationManagementServerTests::sendStateChangedEvent(const firebolt::rialto::common::SessionServerState &state)
 {
     EXPECT_TRUE(m_sut->sendStateChangedEvent(state));
 }
 
 void ApplicationManagementServerTests::sendStateChangedEventAndExpectFailure(
-    const firebolt::rialto::server::SessionServerState &state)
+    const firebolt::rialto::common::SessionServerState &state)
 {
     EXPECT_FALSE(m_sut->sendStateChangedEvent(state));
 }

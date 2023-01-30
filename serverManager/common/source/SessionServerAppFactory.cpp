@@ -30,7 +30,7 @@ SessionServerAppFactory::SessionServerAppFactory(const std::list<std::string> &e
 }
 
 std::unique_ptr<ISessionServerApp> SessionServerAppFactory::create(const std::string &appId,
-                                                                   const service::SessionServerState &initialState,
+                                                                   const firebolt::rialto::common::SessionServerState &initialState,
                                                                    SessionServerAppManager &sessionServerAppManager) const
 {
     return std::make_unique<SessionServerApp>(appId, initialState, sessionServerAppManager, m_kEnvironmentVariables);
