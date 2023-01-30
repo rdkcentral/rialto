@@ -705,7 +705,14 @@ bool MediaPipelineServerInternal::notifyNeedMediaDataInternal(MediaSourceType me
 {
     m_needMediaDataTimers.erase(mediaSourceType);
     m_shmBuffer->clearData(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_sessionId, mediaSourceType);
-    NeedMediaData event{m_mediaPipelineClient, *m_activeRequests, *m_shmBuffer, m_sessionId, mediaSourceType};
+    const auto kSourceIter = m_attachedSources.find(mediaSourceType);
+    if (m_attachedSources.cend() == kSourceIter)
+    {
+        RIALTO_SERVER_LOG_WARN("NeedMediaData event sending failed - sourceId not found");
+        return false;
+    }
+    NeedMediaData event{m_mediaPipelineClient, *m_activeRequests, *m_shmBuffer,
+                        m_sessionId,           mediaSourceType,   kSourceIter->second};
     if (!event.send())
     {
         RIALTO_SERVER_LOG_WARN("NeedMediaData event sending failed");

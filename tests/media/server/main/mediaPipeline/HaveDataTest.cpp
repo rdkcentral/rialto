@@ -209,6 +209,15 @@ TEST_F(RialtoServerMediaPipelineHaveDataTest, ServerInternalHaveDataSuccessWithR
     std::function<void()> resendCallback;
     int sourceId{static_cast<int>(mediaSourceType)};
     loadGstPlayer();
+
+    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
+        std::make_unique<IMediaPipeline::MediaSourceVideo>(-1, "video/h264");
+    mainThreadWillEnqueueTaskAndWait();
+
+    EXPECT_CALL(*m_gstPlayerMock, attachSource(Ref(mediaSource)));
+
+    EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), true);
+
     mainThreadWillEnqueueTaskAndWait();
     ASSERT_TRUE(m_activeRequestsMock);
     EXPECT_CALL(*m_activeRequestsMock, getType(m_kNeedDataRequestId)).WillOnce(Return(mediaSourceType));
