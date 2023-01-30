@@ -135,7 +135,7 @@ void SessionServerManagerTests::willFailToSetConfigurationWhenSessionManagementS
 {
     EXPECT_CALL(m_sessionManagementServerMock, initialize(sessionManagementSocket)).WillOnce(Return(false));
     EXPECT_TRUE(m_sut);
-    EXPECT_FALSE(m_sut->setConfiguration(sessionManagementSocket, common::SessionServerState::INACTIVE, maxResource));
+    EXPECT_FALSE(m_sut->setConfiguration(sessionManagementSocket, SessionServerState::INACTIVE, maxResource));
 }
 
 void SessionServerManagerTests::willFailToSetConfigurationWhenSessionManagementServerFailsToSetInitialState()
@@ -151,7 +151,7 @@ void SessionServerManagerTests::willFailToSetConfigurationWhenSessionManagementS
     EXPECT_CALL(m_playbackServiceMock, switchToActive()).WillOnce(Return(false));
     EXPECT_CALL(m_cdmServiceMock, switchToActive()).WillOnce(Return(false));
     EXPECT_TRUE(m_sut);
-    EXPECT_FALSE(m_sut->setConfiguration(sessionManagementSocket, common::SessionServerState::INACTIVE, maxResource));
+    EXPECT_FALSE(m_sut->setConfiguration(sessionManagementSocket, SessionServerState::INACTIVE, maxResource));
 }
 
 void SessionServerManagerTests::willSetConfiguration()
@@ -165,7 +165,7 @@ void SessionServerManagerTests::willSetConfiguration()
     EXPECT_CALL(m_applicationManagementServerMock, sendStateChangedEvent(SessionServerState::INACTIVE))
         .WillOnce(Return(true));
     EXPECT_TRUE(m_sut);
-    EXPECT_TRUE(m_sut->setConfiguration(sessionManagementSocket, common::SessionServerState::INACTIVE, maxResource));
+    EXPECT_TRUE(m_sut->setConfiguration(sessionManagementSocket, SessionServerState::INACTIVE, maxResource));
 }
 
 void SessionServerManagerTests::willFailToSetUnsupportedState()
@@ -238,13 +238,13 @@ void SessionServerManagerTests::willSetLogLevels()
     EXPECT_CALL(m_sessionManagementServerMock, setLogLevels(logLvl, logLvl, logLvl, logLvl));
 }
 
-void SessionServerManagerTests::setStateShouldFail(const firebolt::rialto::common::SessionServerState &state)
+void SessionServerManagerTests::setStateShouldFail(const SessionServerState &state)
 {
     EXPECT_TRUE(m_sut);
     EXPECT_FALSE(m_sut->setState(state));
 }
 
-void SessionServerManagerTests::setStateShouldSucceed(const firebolt::rialto::common::SessionServerState &state)
+void SessionServerManagerTests::setStateShouldSucceed(const SessionServerState &state)
 {
     EXPECT_TRUE(m_sut);
     EXPECT_TRUE(m_sut->setState(state));
