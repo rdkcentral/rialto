@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_COMMON_SESSION_SERVER_H_
-#define FIREBOLT_RIALTO_COMMON_SESSION_SERVER_H_
+#ifndef FIREBOLT_RIALTO_COMMON_SESSION_SERVER_COMMON_H_
+#define FIREBOLT_RIALTO_COMMON_SESSION_SERVER_COMMON_H_
 
 #include <stdint.h>
 
@@ -53,4 +53,4 @@ struct MaxResourceCapabilitites
 
 } // namespace firebolt::rialto::common
 
-#endif // FIREBOLT_RIALTO_COMMON_SESSION_SERVER_H_
+#endif // FIREBOLT_RIALTO_COMMON_SESSION_SERVER_COMMON_H_
