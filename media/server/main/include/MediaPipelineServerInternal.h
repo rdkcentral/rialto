@@ -26,7 +26,7 @@
 #include "IMainThread.h"
 #include "IMediaPipelineServerInternal.h"
 #include "ITimer.h"
-#include <list>
+#include <map>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -209,7 +209,7 @@ protected:
     /**
      * @brief Currently attached sources
      */
-    std::list<std::unique_ptr<MediaSource>> m_attachedSources;
+    std::map<MediaSourceType, std::int32_t> m_attachedSources;
 
     /**
      * @brief Load internally, only to be called on the main thread.

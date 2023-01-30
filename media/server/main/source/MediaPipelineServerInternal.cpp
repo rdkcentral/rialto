@@ -244,7 +244,7 @@ bool MediaPipelineServerInternal::attachSourceInternal(const std::unique_ptr<Med
 
     m_gstPlayer->attachSource(source);
     source->setId(static_cast<int32_t>(source->getType()));
-    m_attachedSources.emplace_back(source->copy());
+    m_attachedSources.emplace(source->getType(), source->getId());
 
     return true;
 }
@@ -268,14 +268,15 @@ bool MediaPipelineServerInternal::removeSourceInternal(int32_t id)
         return false;
     }
     auto sourceIter = std::find_if(m_attachedSources.begin(), m_attachedSources.end(),
-                                   [id](const auto &src) { return src->getId() == id; });
+                                   [id](const auto &src) { return src.second == id; });
     if (sourceIter == m_attachedSources.end())
     {
         RIALTO_SERVER_LOG_ERROR("Failed to remove source - Source not found");
         return false;
     }
 
-    m_gstPlayer->removeSource(*sourceIter);
+    m_gstPlayer->removeSource(sourceIter->first);
+    m_attachedSources.erase(sourceIter);
     return true;
 }
 
