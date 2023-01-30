@@ -38,8 +38,10 @@ public:
     ISessionServerAppManager &operator=(const ISessionServerAppManager &) = delete;
     ISessionServerAppManager &operator=(ISessionServerAppManager &&) = delete;
 
-    virtual bool setSessionServerState(const std::string &appId, const firebolt::rialto::common::SessionServerState &newState) = 0;
-    virtual void onSessionServerStateChanged(const std::string &appId, const firebolt::rialto::common::SessionServerState &newState) = 0;
+    virtual bool setSessionServerState(const std::string &appId,
+                                       const firebolt::rialto::common::SessionServerState &newState) = 0;
+    virtual void onSessionServerStateChanged(const std::string &appId,
+                                             const firebolt::rialto::common::SessionServerState &newState) = 0;
     virtual std::string getAppConnectionInfo(const std::string &appId) const = 0;
     virtual bool setLogLevels(const service::LoggingLevels &logLevels) const = 0;
 };

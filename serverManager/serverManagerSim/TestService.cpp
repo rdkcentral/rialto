@@ -71,7 +71,8 @@ bool TestService::setState(const std::string &appName, const firebolt::rialto::c
     {
         std::string activeApp = m_stateObserver->getActiveApp();
         if (!activeApp.empty() && activeApp != appName &&
-            !m_serverManagerService->changeSessionServerState(activeApp, firebolt::rialto::common::SessionServerState::INACTIVE))
+            !m_serverManagerService->changeSessionServerState(activeApp,
+                                                              firebolt::rialto::common::SessionServerState::INACTIVE))
         {
             fprintf(stderr, "Failed to switch active: %s to inactive", activeApp.c_str());
             return false;

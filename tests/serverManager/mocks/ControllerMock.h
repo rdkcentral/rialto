@@ -38,7 +38,8 @@ public:
                 (const std::string &, const firebolt::rialto::common::SessionServerState &, const std::string &,
                  const firebolt::rialto::common::MaxResourceCapabilitites &),
                 (override));
-    MOCK_METHOD(bool, performSetState, (const std::string &, const firebolt::rialto::common::SessionServerState &), (override));
+    MOCK_METHOD(bool, performSetState, (const std::string &, const firebolt::rialto::common::SessionServerState &),
+                (override));
     MOCK_METHOD(bool, setLogLevels, (const service::LoggingLevels &), (const, override));
 };
 } // namespace rialto::servermanager::ipc

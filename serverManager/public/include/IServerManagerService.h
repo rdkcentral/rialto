@@ -59,7 +59,8 @@ public:
      *
      * @retval true on success.
      */
-    virtual bool changeSessionServerState(const std::string &appId, const firebolt::rialto::common::SessionServerState &state) = 0;
+    virtual bool changeSessionServerState(const std::string &appId,
+                                          const firebolt::rialto::common::SessionServerState &state) = 0;
 
     /**
      * @brief Returns the name of a socket, which is used for RialtoSessionServer <-> Application communication

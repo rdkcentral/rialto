@@ -63,7 +63,8 @@ bool Controller::performSetState(const std::string &appId, const firebolt::rialt
     return false;
 }
 
-bool Controller::performSetConfiguration(const std::string &appId, const firebolt::rialto::common::SessionServerState &initialState,
+bool Controller::performSetConfiguration(const std::string &appId,
+                                         const firebolt::rialto::common::SessionServerState &initialState,
                                          const std::string &socketName,
                                          const firebolt::rialto::common::MaxResourceCapabilitites &maxResource)
 {

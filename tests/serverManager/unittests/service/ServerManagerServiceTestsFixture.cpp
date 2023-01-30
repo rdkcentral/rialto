@@ -51,8 +51,8 @@ void ServerManagerServiceTests::setLogLevelsWillBeCalled(bool returnValue)
     EXPECT_CALL(m_appManager, setLogLevels(_)).WillOnce(Return(returnValue));
 }
 
-bool ServerManagerServiceTests::triggerChangeSessionServerState(
-    const std::string &appId, const firebolt::rialto::common::SessionServerState &state)
+bool ServerManagerServiceTests::triggerChangeSessionServerState(const std::string &appId,
+                                                                const firebolt::rialto::common::SessionServerState &state)
 {
     EXPECT_TRUE(m_sut);
     return m_sut->changeSessionServerState(appId, state);

@@ -89,7 +89,8 @@ void ServerManagerModuleService::setConfiguration(::google::protobuf::RpcControl
                                                   ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("SetConfiguration received from ServerManager");
-    common::MaxResourceCapabilitites maxResource{request->resources().maxplaybacks(), request->resources().maxwebaudioplayers()};
+    common::MaxResourceCapabilitites maxResource{request->resources().maxplaybacks(),
+                                                 request->resources().maxwebaudioplayers()};
     bool success =
         m_sessionServerManager.setConfiguration(request->sessionmanagementsocketname(),
                                                 convertSessionServerState(request->initialsessionserverstate()),

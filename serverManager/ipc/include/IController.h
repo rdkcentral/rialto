@@ -40,7 +40,8 @@ public:
 
     virtual bool createClient(const std::string &appId, int appMgmtSocket) = 0;
     virtual void removeClient(const std::string &appId) = 0;
-    virtual bool performSetConfiguration(const std::string &appId, const firebolt::rialto::common::SessionServerState &initialState,
+    virtual bool performSetConfiguration(const std::string &appId,
+                                         const firebolt::rialto::common::SessionServerState &initialState,
                                          const std::string &socketName,
                                          const firebolt::rialto::common::MaxResourceCapabilitites &maxResource) = 0;
     virtual bool performSetState(const std::string &appId, const firebolt::rialto::common::SessionServerState &state) = 0;

@@ -182,7 +182,8 @@ bool Client::performSetState(const firebolt::rialto::common::SessionServerState 
     return true;
 }
 
-bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServerState &initialState, const std::string &socketName,
+bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServerState &initialState,
+                                     const std::string &socketName,
                                      const firebolt::rialto::common::MaxResourceCapabilitites &maxResource) const
 {
     if (!m_ipcLoop || !m_serviceStub)
@@ -240,7 +241,8 @@ bool Client::setLogLevels(const service::LoggingLevels &logLevels) const
 void Client::onDisconnected() const
 {
     RIALTO_SERVER_MANAGER_LOG_WARN("Connection to %s broken!", m_appId.c_str());
-    m_sessionServerAppManager->onSessionServerStateChanged(m_appId, firebolt::rialto::common::SessionServerState::NOT_RUNNING);
+    m_sessionServerAppManager->onSessionServerStateChanged(m_appId,
+                                                           firebolt::rialto::common::SessionServerState::NOT_RUNNING);
 }
 
 void Client::onStateChangedEvent(const std::shared_ptr<rialto::StateChangedEvent> &event) const

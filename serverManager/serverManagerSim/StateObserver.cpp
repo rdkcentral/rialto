@@ -43,7 +43,8 @@ std::string StateObserver::getActiveApp() const
 {
     std::unique_lock<std::mutex> lock{m_sessionServerStateMutex};
     auto app = std::find_if(m_sessionServerStates.begin(), m_sessionServerStates.end(),
-                            [](const auto &app) { return app.second == firebolt::rialto::common::SessionServerState::ACTIVE; });
+                            [](const auto &app)
+                            { return app.second == firebolt::rialto::common::SessionServerState::ACTIVE; });
     if (app != m_sessionServerStates.end())
     {
         return app->first;

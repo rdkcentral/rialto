@@ -24,8 +24,8 @@
 #include "IpcClientMock.h"
 #include "IpcServerMock.h"
 #include "ServerManagerModuleServiceMock.h"
-#include "SessionServerManagerMock.h"
 #include "SessionServerCommon.h"
+#include "SessionServerManagerMock.h"
 #include <gtest/gtest.h>
 #include <memory>
 

@@ -35,8 +35,7 @@ public:
     virtual ~ServerManagerServiceTests() = default;
 
     void setSessionServerStateWillBeCalled(const std::string &appId,
-                                           const firebolt::rialto::common::SessionServerState &state,
-                                           bool returnValue);
+                                           const firebolt::rialto::common::SessionServerState &state, bool returnValue);
     void getAppConnectionInfoWillBeCalled(const std::string &appId, const std::string &returnValue);
     void setLogLevelsWillBeCalled(bool returnValue);
 
