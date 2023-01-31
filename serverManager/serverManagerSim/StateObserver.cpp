@@ -28,7 +28,7 @@ void StateObserver::stateChanged(const std::string &appId, const firebolt::rialt
     m_sessionServerStates[appId] = state;
 }
 
-common::SessionServerState StateObserver::getCurrentState(const std::string &appId) const
+firebolt::rialto::common::SessionServerState StateObserver::getCurrentState(const std::string &appId) const
 {
     std::unique_lock<std::mutex> lock{m_sessionServerStateMutex};
     auto state = m_sessionServerStates.find(appId);

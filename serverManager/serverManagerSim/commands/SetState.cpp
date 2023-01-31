@@ -24,21 +24,21 @@
 
 namespace
 {
-rialto::common::SessionServerState convert(const std::string &state)
+firebolt::rialto::common::SessionServerState convert(const std::string &state)
 {
     if ("Inactive" == state)
     {
-        return rialto::common::SessionServerState::INACTIVE;
+        return firebolt::rialto::common::SessionServerState::INACTIVE;
     }
     else if ("Active" == state)
     {
-        return rialto::common::SessionServerState::ACTIVE;
+        return firebolt::rialto::common::SessionServerState::ACTIVE;
     }
     else if ("NotRunning" == state)
     {
-        return rialto::common::SessionServerState::NOT_RUNNING;
+        return firebolt::rialto::common::SessionServerState::NOT_RUNNING;
     }
-    return rialto::common::SessionServerState::ERROR;
+    return firebolt::rialto::common::SessionServerState::ERROR;
 }
 } // namespace
 
