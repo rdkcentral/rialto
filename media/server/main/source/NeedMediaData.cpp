@@ -27,8 +27,10 @@
 namespace firebolt::rialto::server
 {
 NeedMediaData::NeedMediaData(std::weak_ptr<IMediaPipelineClient> client, IActiveRequests &activeRequests,
-                             const ISharedMemoryBuffer &shmBuffer, int sessionId, MediaSourceType mediaSourceType)
-    : m_client{client}, m_activeRequests{activeRequests}, m_mediaSourceType{mediaSourceType}, m_frameCount{maxFrames}
+                             const ISharedMemoryBuffer &shmBuffer, int sessionId, MediaSourceType mediaSourceType,
+                             std::int32_t sourceId)
+    : m_client{client}, m_activeRequests{activeRequests}, m_mediaSourceType{mediaSourceType}, m_frameCount{maxFrames},
+      m_sourceId{sourceId}
 {
     if (MediaSourceType::AUDIO != mediaSourceType && MediaSourceType::VIDEO != mediaSourceType)
     {
@@ -60,9 +62,8 @@ bool NeedMediaData::send() const
     auto client = m_client.lock();
     if (client && m_isValid)
     {
-        auto sourceId = static_cast<std::uint64_t>(m_mediaSourceType);
-        client->notifyNeedMediaData(sourceId, m_frameCount, m_activeRequests.insert(m_mediaSourceType, m_maxMediaBytes),
-                                    m_shmInfo);
+        client->notifyNeedMediaData(m_sourceId, m_frameCount,
+                                    m_activeRequests.insert(m_mediaSourceType, m_maxMediaBytes), m_shmInfo);
         return true;
     }
     return false;

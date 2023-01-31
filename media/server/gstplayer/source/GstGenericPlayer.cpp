@@ -329,11 +329,11 @@ void GstGenericPlayer::attachSource(const std::unique_ptr<IMediaPipeline::MediaS
     }
 }
 
-void GstGenericPlayer::removeSource(int32_t id)
+void GstGenericPlayer::removeSource(const MediaSourceType &mediaSourceType)
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createRemoveSource(m_context, static_cast<MediaSourceType>(id)));
+        m_workerThread->enqueueTask(m_taskFactory->createRemoveSource(m_context, mediaSourceType));
     }
 }
 

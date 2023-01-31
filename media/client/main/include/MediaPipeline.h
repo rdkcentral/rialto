@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_MEDIA_PIPELINE_H_
 #define FIREBOLT_RIALTO_MEDIA_PIPELINE_H_
 
+#include "AttachedSources.h"
 #include "IMediaFrameWriter.h"
 #include "IMediaPipeline.h"
 #include "IMediaPipelineIpc.h"
@@ -187,9 +188,9 @@ protected:
     std::atomic<State> m_currentState;
 
     /**
-     * @brief The flag indicating, if audio source switch is ongoing.
+     * @brief The container with attached source id <-> MediaSourceType mapping
      */
-    std::atomic_bool m_audioSourceSwitchOngoing;
+    AttachedSources m_attachedSources;
 
     /**
      * @brief Sets the new internal MediaPipeline state based on the NetworkState.
