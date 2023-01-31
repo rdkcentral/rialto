@@ -81,7 +81,7 @@ bool TestService::setState(const std::string &appName, const firebolt::rialto::c
     return m_serverManagerService->changeSessionServerState(appName, state);
 }
 
-common::SessionServerState TestService::getState(const std::string &appName)
+firebolt::rialto::common::SessionServerState TestService::getState(const std::string &appName)
 {
     return m_stateObserver->getCurrentState(appName);
 }
