@@ -26,7 +26,7 @@ namespace
 {
 constexpr int sessionId{0};
 constexpr firebolt::rialto::MediaSourceType validMediaSourceType{firebolt::rialto::MediaSourceType::VIDEO};
-constexpr int sourceId = static_cast<int>(validMediaSourceType);
+constexpr int sourceId = 1;
 constexpr std::uint32_t bufferLen{7 * 1024 * 1024};
 constexpr std::uint32_t metadataOffset{1024};
 constexpr int requestId{0};
@@ -63,14 +63,15 @@ void NeedMediaDataTests::initialize()
                                              sessionId, validMediaSourceType))
         .WillOnce(Return(metadataOffset));
     m_sut = std::make_unique<firebolt::rialto::server::NeedMediaData>(m_clientMock, activeRequestsMock, shmBufferMock,
-                                                                      sessionId, validMediaSourceType);
+                                                                      sessionId, validMediaSourceType, sourceId);
 }
 
 void NeedMediaDataTests::initializeWithWrongType()
 {
     m_sut = std::make_unique<firebolt::rialto::server::NeedMediaData>(m_clientMock, activeRequestsMock, shmBufferMock,
                                                                       sessionId,
-                                                                      firebolt::rialto::MediaSourceType::UNKNOWN);
+                                                                      firebolt::rialto::MediaSourceType::UNKNOWN,
+                                                                      sourceId);
 }
 
 void NeedMediaDataTests::needMediaDataWillBeSent()

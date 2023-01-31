@@ -25,7 +25,7 @@
 #include "ISharedMemoryBuffer.h"
 #include "NeedMediaData.h"
 #include "RialtoServerLogging.h"
-#include <iostream>
+#include <algorithm>
 
 namespace
 {
@@ -46,6 +46,12 @@ const char *toString(const firebolt::rialto::MediaSourceStatus &status)
         return "NO_AVAILABLE_SAMPLES";
     }
     return "Unknown";
+}
+
+std::int32_t generateSourceId()
+{
+    static std::int32_t sourceId{1};
+    return sourceId++;
 }
 } // namespace
 
@@ -243,7 +249,20 @@ bool MediaPipelineServerInternal::attachSourceInternal(const std::unique_ptr<Med
     }
 
     m_gstPlayer->attachSource(source);
-    source->setId(static_cast<int32_t>(source->getType()));
+
+    const auto kSourceIter = m_attachedSources.find(source->getType());
+    if (m_attachedSources.cend() == kSourceIter)
+    {
+        source->setId(generateSourceId());
+        RIALTO_SERVER_LOG_DEBUG("New ID generated for MediaSourceType: %s: %d",
+                                (MediaSourceType::AUDIO == source->getType() ? "AUDIO" : "VIDEO"), source->getId());
+        m_attachedSources.emplace(source->getType(), source->getId());
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_DEBUG("SourceId: %d updated", kSourceIter->second);
+        source->setId(kSourceIter->second);
+    }
 
     return true;
 }
@@ -266,8 +285,16 @@ bool MediaPipelineServerInternal::removeSourceInternal(int32_t id)
         RIALTO_SERVER_LOG_ERROR("Failed to remove source - Gstreamer player has not been loaded");
         return false;
     }
+    auto sourceIter = std::find_if(m_attachedSources.begin(), m_attachedSources.end(),
+                                   [id](const auto &src) { return src.second == id; });
+    if (sourceIter == m_attachedSources.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to remove source - Source not found");
+        return false;
+    }
 
-    m_gstPlayer->removeSource(id);
+    m_gstPlayer->removeSource(sourceIter->first);
+    m_attachedSources.erase(sourceIter);
     return true;
 }
 
@@ -696,7 +723,14 @@ bool MediaPipelineServerInternal::notifyNeedMediaDataInternal(MediaSourceType me
 {
     m_needMediaDataTimers.erase(mediaSourceType);
     m_shmBuffer->clearData(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_sessionId, mediaSourceType);
-    NeedMediaData event{m_mediaPipelineClient, *m_activeRequests, *m_shmBuffer, m_sessionId, mediaSourceType};
+    const auto kSourceIter = m_attachedSources.find(mediaSourceType);
+    if (m_attachedSources.cend() == kSourceIter)
+    {
+        RIALTO_SERVER_LOG_WARN("NeedMediaData event sending failed - sourceId not found");
+        return false;
+    }
+    NeedMediaData event{m_mediaPipelineClient, *m_activeRequests, *m_shmBuffer,
+                        m_sessionId,           mediaSourceType,   kSourceIter->second};
     if (!event.send())
     {
         RIALTO_SERVER_LOG_WARN("NeedMediaData event sending failed");
@@ -761,8 +795,13 @@ void MediaPipelineServerInternal::notifyQos(MediaSourceType mediaSourceType, con
     {
         if (m_mediaPipelineClient)
         {
-            auto sourceId = static_cast<std::uint64_t>(mediaSourceType);
-            m_mediaPipelineClient->notifyQos(sourceId, qosInfo);
+            const auto kSourceIter = m_attachedSources.find(mediaSourceType);
+            if (m_attachedSources.cend() == kSourceIter)
+            {
+                RIALTO_SERVER_LOG_WARN("Qos notification failed - sourceId not found");
+                return;
+            }
+            m_mediaPipelineClient->notifyQos(kSourceIter->second, qosInfo);
         }
     };
 

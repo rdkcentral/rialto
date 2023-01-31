@@ -140,8 +140,7 @@ MediaPipeline::MediaPipeline(std::weak_ptr<IMediaPipelineClient> client, const V
                              const std::shared_ptr<IMediaPipelineIpcFactory> &mediaPipelineIpcFactory,
                              const std::shared_ptr<common::IMediaFrameWriterFactory> &mediaFrameWriterFactory,
                              const std::shared_ptr<ISharedMemoryManagerFactory> &sharedMemoryManagerFactory)
-    : m_mediaPipelineClient(client), m_mediaFrameWriterFactory(mediaFrameWriterFactory),
-      m_currentState(State::IDLE), m_audioSourceSwitchOngoing{false}
+    : m_mediaPipelineClient(client), m_mediaFrameWriterFactory(mediaFrameWriterFactory), m_currentState(State::IDLE)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
@@ -195,11 +194,7 @@ bool MediaPipeline::attachSource(const std::unique_ptr<IMediaPipeline::MediaSour
     if (status)
     {
         source->setId(sourceId);
-    }
-    if (m_audioSourceSwitchOngoing && MediaSourceType::AUDIO == source->getType())
-    {
-        RIALTO_CLIENT_LOG_DEBUG("Clearing Audio Source Switch Ongoing flag");
-        m_audioSourceSwitchOngoing = false;
+        m_attachedSources.add(sourceId, source->getType());
     }
     return status;
 }
@@ -207,13 +202,7 @@ bool MediaPipeline::attachSource(const std::unique_ptr<IMediaPipeline::MediaSour
 bool MediaPipeline::removeSource(int32_t id)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
-
-    if (MediaSourceType::AUDIO == static_cast<MediaSourceType>(id))
-    {
-        RIALTO_CLIENT_LOG_DEBUG("Setting Audio Source Switch Ongoing flag");
-        m_audioSourceSwitchOngoing = true;
-    }
-
+    m_attachedSources.remove(id);
     return m_mediaPipelineIpc->removeSource(id);
 }
 
@@ -566,9 +555,10 @@ void MediaPipeline::notifyNeedMediaData(int32_t sourceId, size_t frameCount, uin
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    if (m_audioSourceSwitchOngoing && MediaSourceType::AUDIO == static_cast<MediaSourceType>(sourceId))
+    if (MediaSourceType::UNKNOWN == m_attachedSources.get(sourceId))
     {
-        RIALTO_CLIENT_LOG_WARN("NeedMediaData received while switching audio source, ignoring request id %u", requestId);
+        RIALTO_CLIENT_LOG_WARN("NeedMediaData received for unknown source %d, ignoring request id %u", sourceId,
+                               requestId);
         return;
     }
 

@@ -89,10 +89,10 @@ public:
     /**
      * @brief Unattaches a source.
      *
-     * @param[in] id : The source id.
+     * @param[in] mediaSourceType : The media source type.
      *
      */
-    virtual void removeSource(int32_t id) = 0;
+    virtual void removeSource(const MediaSourceType &mediaSourceType) = 0;
 
     /**
      * @brief Starts playback of the media.

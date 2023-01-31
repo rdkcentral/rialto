@@ -23,6 +23,7 @@ class RialtoClientMediaPipelineSetPositionTest : public MediaPipelineTestBase
 {
 protected:
     int64_t m_position = 123;
+    int32_t m_sourceId = 1;
 
     virtual void SetUp()
     {
@@ -41,6 +42,15 @@ protected:
         MediaPipelineTestBase::TearDown();
     }
 
+    void attachSource()
+    {
+        std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
+            std::make_unique<IMediaPipeline::MediaSourceAudio>(m_sourceId, "audio/mp4");
+        EXPECT_CALL(*m_mediaPipelineIpcMock, attachSource(Ref(mediaSource), _))
+            .WillOnce(DoAll(SetArgReferee<1>(m_sourceId), Return(true)));
+        EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), true);
+    }
+
     void setPosition()
     {
         EXPECT_CALL(*m_mediaPipelineIpcMock, setPosition(m_position)).WillOnce(Return(true));
@@ -51,7 +61,6 @@ protected:
     void testNeedDataRequestRemovedOnSetPosition(PlaybackState state)
     {
         // Init data parameters
-        int32_t sourceId = 1;
         size_t frameCount = 2;
         uint32_t requestId1 = 4U;
         uint32_t requestId2 = 5U;
@@ -65,8 +74,8 @@ protected:
 
         // Notify needData so we can check they are discarded
         setPlaybackState(PlaybackState::PLAYING);
-        needData(sourceId, frameCount, requestId1, shmInfo);
-        needData(sourceId, frameCount, requestId2, shmInfo);
+        needData(m_sourceId, frameCount, requestId1, shmInfo);
+        needData(m_sourceId, frameCount, requestId2, shmInfo);
 
         // Set the position
         setPlaybackState(state);
@@ -82,7 +91,6 @@ protected:
     void testNeedDataRequestRemovedOnSetPosition(NetworkState state)
     {
         // Init data parameters
-        int32_t sourceId = 1;
         size_t frameCount = 2;
         uint32_t requestId1 = 4U;
         uint32_t requestId2 = 5U;
@@ -96,8 +104,8 @@ protected:
 
         // Notify needData so we can check they are discarded
         setPlaybackState(PlaybackState::PLAYING);
-        needData(sourceId, frameCount, requestId1, shmInfo);
-        needData(sourceId, frameCount, requestId2, shmInfo);
+        needData(m_sourceId, frameCount, requestId1, shmInfo);
+        needData(m_sourceId, frameCount, requestId2, shmInfo);
 
         // Set the position
         setNetworkState(state);
@@ -116,6 +124,8 @@ protected:
  */
 TEST_F(RialtoClientMediaPipelineSetPositionTest, ValidStates)
 {
+    attachSource();
+
     std::vector<PlaybackState> validPlaybackStates = {PlaybackState::PLAYING, PlaybackState::END_OF_STREAM,
                                                       PlaybackState::SEEKING, PlaybackState::FLUSHED};
     std::vector<NetworkState> validNetworkStates = {NetworkState::BUFFERING};
@@ -136,6 +146,8 @@ TEST_F(RialtoClientMediaPipelineSetPositionTest, ValidStates)
  */
 TEST_F(RialtoClientMediaPipelineSetPositionTest, InvalidStates)
 {
+    attachSource();
+
     std::vector<PlaybackState> invalidPlaybackStates = {PlaybackState::STOPPED, PlaybackState::FAILURE};
 
     for (auto it = invalidPlaybackStates.begin(); it != invalidPlaybackStates.end(); it++)

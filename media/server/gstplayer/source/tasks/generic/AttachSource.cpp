@@ -311,8 +311,8 @@ void AttachSource::switchAudioSource(GstCaps *caps, const std::string &strCaps) 
         m_gstWrapper->gstCapsUnref(oldCaps);
     }
     RIALTO_SERVER_LOG_MIL("Switching audio source.");
-    RIALTO_SERVER_LOG_DEBUG("Old caps: %s", oldCapsStr.c_str());
-    RIALTO_SERVER_LOG_DEBUG("New caps: %s", strCaps.c_str());
+    RIALTO_SERVER_LOG_MIL("Old caps: %s", oldCapsStr.c_str());
+    RIALTO_SERVER_LOG_MIL("New caps: %s", strCaps.c_str());
     AudioAttributesPrivate audioAttributes{createAudioAttributes()};
     int sampleAttributes{0}; // rdk_gstreamer_utils::performAudioTrackCodecChannelSwitch checks if this param != NULL only.
     std::uint32_t status{0};   // must be 0 to make rdk_gstreamer_utils::performAudioTrackCodecChannelSwitch work
