@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_GENERIC_ENOUGH_DATA_H_
-#define FIREBOLT_RIALTO_SERVER_GENERIC_ENOUGH_DATA_H_
+#ifndef FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_ENOUGH_DATA_H_
+#define FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_ENOUGH_DATA_H_
 
 #include "IPlayerTask.h"
 #include <gst/app/gstappsrc.h>
@@ -43,4 +43,4 @@ private:
 };
 } // namespace firebolt::rialto::server::tasks::generic
 
-#endif // FIREBOLT_RIALTO_SERVER_GENERIC_ENOUGH_DATA_H_
+#endif // FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_ENOUGH_DATA_H_

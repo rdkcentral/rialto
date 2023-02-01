@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_WEBAUDIO_STOP_H_
-#define FIREBOLT_RIALTO_SERVER_WEBAUDIO_STOP_H_
+#ifndef FIREBOLT_RIALTO_SERVER_TASKS_WEBAUDIO_STOP_H_
+#define FIREBOLT_RIALTO_SERVER_TASKS_WEBAUDIO_STOP_H_
 
 #include "IGstWebAudioPlayerPrivate.h"
 #include "IPlayerTask.h"
@@ -37,4 +37,4 @@ private:
 };
 } // namespace firebolt::rialto::server::tasks::webaudio
 
-#endif // FIREBOLT_RIALTO_SERVER_WEBAUDIO_STOP_H_
+#endif // FIREBOLT_RIALTO_SERVER_TASKS_WEBAUDIO_STOP_H_

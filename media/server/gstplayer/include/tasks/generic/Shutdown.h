@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_GENERIC_SHUTDOWN_H_
-#define FIREBOLT_RIALTO_SERVER_GENERIC_SHUTDOWN_H_
+#ifndef FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SHUTDOWN_H_
+#define FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SHUTDOWN_H_
 
 #include "IPlayerTask.h"
 #include <gst/gst.h>
@@ -42,4 +42,4 @@ private:
 };
 } // namespace firebolt::rialto::server::tasks::generic
 
-#endif // FIREBOLT_RIALTO_SERVER_GENERIC_SHUTDOWN_H_
+#endif // FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SHUTDOWN_H_

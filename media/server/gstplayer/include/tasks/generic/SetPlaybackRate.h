@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_GENERIC_SET_PLAYBACK_RATE_H_
-#define FIREBOLT_RIALTO_SERVER_GENERIC_SET_PLAYBACK_RATE_H_
+#ifndef FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SET_PLAYBACK_RATE_H_
+#define FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SET_PLAYBACK_RATE_H_
 
 #include "GenericPlayerContext.h"
 #include "IGlibWrapper.h"
@@ -44,4 +44,4 @@ private:
 };
 } // namespace firebolt::rialto::server::tasks::generic
 
-#endif // FIREBOLT_RIALTO_SERVER_GENERIC_SET_PLAYBACK_RATE_H_
+#endif // FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SET_PLAYBACK_RATE_H_

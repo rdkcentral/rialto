@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_GENERIC_PLAY_H_
-#define FIREBOLT_RIALTO_SERVER_GENERIC_PLAY_H_
+#ifndef FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_PLAY_H_
+#define FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_PLAY_H_
 
 #include "IGstGenericPlayerPrivate.h"
 #include "IPlayerTask.h"
@@ -37,4 +37,4 @@ private:
 };
 } // namespace firebolt::rialto::server::tasks::generic
 
-#endif // FIREBOLT_RIALTO_SERVER_GENERIC_PLAY_H_
+#endif // FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_PLAY_H_

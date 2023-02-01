@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_GENERIC_SET_VOLUME_H_
-#define FIREBOLT_RIALTO_SERVER_GENERIC_SET_VOLUME_H_
+#ifndef FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SET_VOLUME_H_
+#define FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SET_VOLUME_H_
 
 #include "GenericPlayerContext.h"
 #include "IGstWrapper.h"
@@ -41,4 +41,4 @@ private:
 };
 } // namespace firebolt::rialto::server::tasks::generic
 
-#endif // FIREBOLT_RIALTO_SERVER_GENERIC_SET_VOLUME_H_
+#endif // FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SET_VOLUME_H_

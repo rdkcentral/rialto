@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_WEBAUDIO_EOS_H_
-#define FIREBOLT_RIALTO_SERVER_WEBAUDIO_EOS_H_
+#ifndef FIREBOLT_RIALTO_SERVER_TASKS_WEBAUDIO_EOS_H_
+#define FIREBOLT_RIALTO_SERVER_TASKS_WEBAUDIO_EOS_H_
 
 #include "IGstWebAudioPlayerPrivate.h"
 #include "IGstWrapper.h"
@@ -42,4 +42,4 @@ private:
 };
 } // namespace firebolt::rialto::server::tasks::webaudio
 
-#endif // FIREBOLT_RIALTO_SERVER_WEBAUDIO_EOS_H_
+#endif // FIREBOLT_RIALTO_SERVER_TASKS_WEBAUDIO_EOS_H_
