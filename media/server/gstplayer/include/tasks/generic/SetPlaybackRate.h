@@ -26,7 +26,7 @@
 #include "IPlayerTask.h"
 #include <memory>
 
-namespace firebolt::rialto::server::generic
+namespace firebolt::rialto::server::tasks::generic
 {
 class SetPlaybackRate : public IPlayerTask
 {
@@ -42,6 +42,6 @@ private:
     std::shared_ptr<IGlibWrapper> m_glibWrapper;
     double m_rate;
 };
-} // namespace firebolt::rialto::server::generic
+} // namespace firebolt::rialto::server::tasks::generic
 
 #endif // FIREBOLT_RIALTO_SERVER_GENERIC_SET_PLAYBACK_RATE_H_

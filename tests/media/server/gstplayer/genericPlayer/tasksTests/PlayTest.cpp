@@ -33,13 +33,13 @@ protected:
 TEST_F(PlayTest, shouldPlay)
 {
     EXPECT_CALL(m_gstPlayer, changePipelineState(GST_STATE_PLAYING)).WillOnce(Return(true));
-    firebolt::rialto::server::generic::Play task{m_gstPlayer};
+    firebolt::rialto::server::tasks::generic::Play task{m_gstPlayer};
     task.execute();
 }
 
 TEST_F(PlayTest, shouldFailToPlay)
 {
     EXPECT_CALL(m_gstPlayer, changePipelineState(GST_STATE_PLAYING)).WillOnce(Return(false));
-    firebolt::rialto::server::generic::Play task{m_gstPlayer};
+    firebolt::rialto::server::tasks::generic::Play task{m_gstPlayer};
     task.execute();
 }

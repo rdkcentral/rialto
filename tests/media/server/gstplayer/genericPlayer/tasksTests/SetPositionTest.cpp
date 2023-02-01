@@ -63,7 +63,7 @@ protected:
 
 TEST_F(SetPositionTest, shouldFailToSetPositionWhenClientIsNull)
 {
-    firebolt::rialto::server::generic::SetPosition task{m_context, m_gstPlayer, nullptr, m_gstWrapper, position};
+    firebolt::rialto::server::tasks::generic::SetPosition task{m_context, m_gstPlayer, nullptr, m_gstWrapper, position};
     task.execute();
     EXPECT_TRUE(m_context.audioNeedData);
     EXPECT_TRUE(m_context.videoNeedData);
@@ -76,7 +76,7 @@ TEST_F(SetPositionTest, shouldFailToSetPositionWhenClientIsNull)
 TEST_F(SetPositionTest, shouldFailToSetPositionWhenPipelineIsNull)
 {
     m_context.pipeline = nullptr;
-    firebolt::rialto::server::generic::SetPosition task{m_context, m_gstPlayer, &m_gstPlayerClient, m_gstWrapper,
+    firebolt::rialto::server::tasks::generic::SetPosition task{m_context, m_gstPlayer, &m_gstPlayerClient, m_gstWrapper,
                                                         position};
     EXPECT_CALL(m_gstPlayerClient, notifyPlaybackState(firebolt::rialto::PlaybackState::SEEKING));
     EXPECT_CALL(m_gstPlayerClient, clearActiveRequestsCache());
@@ -94,7 +94,7 @@ TEST_F(SetPositionTest, shouldFailToSetPositionWhenPipelineIsNull)
 
 TEST_F(SetPositionTest, shouldFailToSetPositionWhenSeekFailed)
 {
-    firebolt::rialto::server::generic::SetPosition task{m_context, m_gstPlayer, &m_gstPlayerClient, m_gstWrapper,
+    firebolt::rialto::server::tasks::generic::SetPosition task{m_context, m_gstPlayer, &m_gstPlayerClient, m_gstWrapper,
                                                         position};
     EXPECT_CALL(m_gstPlayerClient, notifyPlaybackState(firebolt::rialto::PlaybackState::SEEKING));
     EXPECT_CALL(m_gstPlayerClient, clearActiveRequestsCache());
@@ -116,7 +116,7 @@ TEST_F(SetPositionTest, shouldFailToSetPositionWhenSeekFailed)
 
 TEST_F(SetPositionTest, shouldSetPosition)
 {
-    firebolt::rialto::server::generic::SetPosition task{m_context, m_gstPlayer, &m_gstPlayerClient, m_gstWrapper,
+    firebolt::rialto::server::tasks::generic::SetPosition task{m_context, m_gstPlayer, &m_gstPlayerClient, m_gstWrapper,
                                                         position};
     EXPECT_CALL(m_gstPlayerClient, notifyPlaybackState(firebolt::rialto::PlaybackState::SEEKING));
     EXPECT_CALL(m_gstPlayerClient, clearActiveRequestsCache());
@@ -142,7 +142,7 @@ TEST_F(SetPositionTest, shouldSetPositionWithChangedPlaybackRate)
 {
     constexpr double kRate{1.5};
     m_context.playbackRate = kRate;
-    firebolt::rialto::server::generic::SetPosition task{m_context, m_gstPlayer, &m_gstPlayerClient, m_gstWrapper,
+    firebolt::rialto::server::tasks::generic::SetPosition task{m_context, m_gstPlayer, &m_gstPlayerClient, m_gstWrapper,
                                                         position};
     EXPECT_CALL(m_gstPlayerClient, notifyPlaybackState(firebolt::rialto::PlaybackState::SEEKING));
     EXPECT_CALL(m_gstPlayerClient, clearActiveRequestsCache());

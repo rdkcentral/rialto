@@ -25,7 +25,7 @@
 #include "IPlayerTask.h"
 #include <gst/app/gstappsrc.h>
 
-namespace firebolt::rialto::server::generic
+namespace firebolt::rialto::server::tasks::generic
 {
 class NeedData : public IPlayerTask
 {
@@ -39,6 +39,6 @@ private:
     IGstGenericPlayerClient *m_gstPlayerClient;
     GstAppSrc *m_src;
 };
-} // namespace firebolt::rialto::server::generic
+} // namespace firebolt::rialto::server::tasks::generic
 
 #endif // FIREBOLT_RIALTO_SERVER_GENERIC_NEED_DATA_H_

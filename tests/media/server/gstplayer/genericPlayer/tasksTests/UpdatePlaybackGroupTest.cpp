@@ -43,7 +43,7 @@ protected:
 
 TEST_F(UpdatePlaybackGroupTest, shouldDoNothingWhenCapsAreNull)
 {
-    firebolt::rialto::server::generic::UpdatePlaybackGroup task{m_context, m_gstWrapper, m_glibWrapper, &m_typefind,
+    firebolt::rialto::server::tasks::generic::UpdatePlaybackGroup task{m_context, m_gstWrapper, m_glibWrapper, &m_typefind,
                                                                 nullptr};
     task.execute();
     EXPECT_EQ(m_context.playbackGroup.m_curAudioDecodeBin, nullptr);
@@ -52,7 +52,7 @@ TEST_F(UpdatePlaybackGroupTest, shouldDoNothingWhenCapsAreNull)
 
 TEST_F(UpdatePlaybackGroupTest, shouldDoNothingWhenCapsStrIsNull)
 {
-    firebolt::rialto::server::generic::UpdatePlaybackGroup task{m_context, m_gstWrapper, m_glibWrapper, &m_typefind,
+    firebolt::rialto::server::tasks::generic::UpdatePlaybackGroup task{m_context, m_gstWrapper, m_glibWrapper, &m_typefind,
                                                                 &m_caps};
     EXPECT_CALL(*m_gstWrapper, gstCapsToString(&m_caps)).WillOnce(Return(nullptr));
     task.execute();
@@ -63,7 +63,7 @@ TEST_F(UpdatePlaybackGroupTest, shouldDoNothingWhenCapsStrIsNull)
 TEST_F(UpdatePlaybackGroupTest, shouldDoNothingForVideoCaps)
 {
     gchar capsStr[]{"video/x-h264"};
-    firebolt::rialto::server::generic::UpdatePlaybackGroup task{m_context, m_gstWrapper, m_glibWrapper, &m_typefind,
+    firebolt::rialto::server::tasks::generic::UpdatePlaybackGroup task{m_context, m_gstWrapper, m_glibWrapper, &m_typefind,
                                                                 &m_caps};
     EXPECT_CALL(*m_gstWrapper, gstCapsToString(&m_caps)).WillOnce(Return(capsStr));
     EXPECT_CALL(*m_glibWrapper, gStrrstr(capsStr, CharStrMatcher("audio/"))).WillOnce(Return(nullptr));
@@ -76,7 +76,7 @@ TEST_F(UpdatePlaybackGroupTest, shouldDoNothingForVideoCaps)
 TEST_F(UpdatePlaybackGroupTest, shouldDoNothingWhenTypefindParentIsNull)
 {
     gchar capsStr[]{"audio/mp4"};
-    firebolt::rialto::server::generic::UpdatePlaybackGroup task{m_context, m_gstWrapper, m_glibWrapper, &m_typefind,
+    firebolt::rialto::server::tasks::generic::UpdatePlaybackGroup task{m_context, m_gstWrapper, m_glibWrapper, &m_typefind,
                                                                 &m_caps};
     EXPECT_CALL(*m_gstWrapper, gstCapsToString(&m_caps)).WillOnce(Return(capsStr));
     EXPECT_CALL(*m_glibWrapper, gStrrstr(capsStr, CharStrMatcher("audio/"))).WillOnce(Return(capsStr));
@@ -92,7 +92,7 @@ TEST_F(UpdatePlaybackGroupTest, shouldDoNothingWhenElementOtherThanDecodebin)
     gchar capsStr[]{"audio/mp4"};
     gchar elementName[]{"sink"};
     GstElement typefindParent{};
-    firebolt::rialto::server::generic::UpdatePlaybackGroup task{m_context, m_gstWrapper, m_glibWrapper, &m_typefind,
+    firebolt::rialto::server::tasks::generic::UpdatePlaybackGroup task{m_context, m_gstWrapper, m_glibWrapper, &m_typefind,
                                                                 &m_caps};
     EXPECT_CALL(*m_gstWrapper, gstCapsToString(&m_caps)).WillOnce(Return(capsStr));
     EXPECT_CALL(*m_glibWrapper, gStrrstr(capsStr, CharStrMatcher("audio/"))).WillOnce(Return(capsStr));
@@ -112,7 +112,7 @@ TEST_F(UpdatePlaybackGroupTest, shouldSuccessfullyFindTypefindAndParent)
     gchar elementName[]{"decodebin"};
     gchar typefindName[]{"typefind"};
     GstElement typefindParent{};
-    firebolt::rialto::server::generic::UpdatePlaybackGroup task{m_context, m_gstWrapper, m_glibWrapper, &m_typefind,
+    firebolt::rialto::server::tasks::generic::UpdatePlaybackGroup task{m_context, m_gstWrapper, m_glibWrapper, &m_typefind,
                                                                 &m_caps};
     EXPECT_CALL(*m_gstWrapper, gstCapsToString(&m_caps)).WillOnce(Return(capsStr));
     EXPECT_CALL(*m_glibWrapper, gStrrstr(capsStr, CharStrMatcher("audio/"))).WillOnce(Return(capsStr));

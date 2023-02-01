@@ -25,7 +25,7 @@
 #include "IPlayerTask.h"
 #include <gst/gst.h>
 
-namespace firebolt::rialto::server::generic
+namespace firebolt::rialto::server::tasks::generic
 {
 class Underflow : public IPlayerTask
 {
@@ -41,6 +41,6 @@ private:
     bool &m_underflowFlag;
     bool m_underflowEnabled;
 };
-} // namespace firebolt::rialto::server::generic
+} // namespace firebolt::rialto::server::tasks::generic
 
 #endif // FIREBOLT_RIALTO_SERVER_GENERIC_UNDERFLOW_H_

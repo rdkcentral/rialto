@@ -68,7 +68,7 @@ TEST_F(RenderFrameTest, shouldRenderFrame)
     EXPECT_CALL(*m_gstWrapper, gstElementSendEvent(&m_videoSink, &event));
     EXPECT_CALL(*m_gstWrapper, gstObjectUnref(GST_OBJECT(&m_videoSink)));
 
-    firebolt::rialto::server::generic::RenderFrame task{m_context, m_gstWrapper, m_glibWrapper};
+    firebolt::rialto::server::tasks::generic::RenderFrame task{m_context, m_gstWrapper, m_glibWrapper};
     task.execute();
 }
 
@@ -82,7 +82,7 @@ TEST_F(RenderFrameTest, RenderFrameFailsOnGettingSink)
                 *elementPtr = nullptr;
             }));
 
-    firebolt::rialto::server::generic::RenderFrame task{m_context, m_gstWrapper, m_glibWrapper};
+    firebolt::rialto::server::tasks::generic::RenderFrame task{m_context, m_gstWrapper, m_glibWrapper};
     task.execute();
 }
 
@@ -101,6 +101,6 @@ TEST_F(RenderFrameTest, RenderFrameFailsOnFindProperty)
         .WillOnce(Return(nullptr));
     EXPECT_CALL(*m_gstWrapper, gstObjectUnref(GST_OBJECT(&m_videoSink)));
 
-    firebolt::rialto::server::generic::RenderFrame task{m_context, m_gstWrapper, m_glibWrapper};
+    firebolt::rialto::server::tasks::generic::RenderFrame task{m_context, m_gstWrapper, m_glibWrapper};
     task.execute();
 }

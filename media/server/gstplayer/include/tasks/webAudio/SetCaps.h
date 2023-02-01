@@ -27,7 +27,7 @@
 #include <memory>
 #include <string>
 
-namespace firebolt::rialto::server::webaudio
+namespace firebolt::rialto::server::tasks::webaudio
 {
 class SetCaps : public IPlayerTask
 {
@@ -46,6 +46,6 @@ private:
     const std::string m_audioMimeType;
     WebAudioConfig m_config;
 };
-} // namespace firebolt::rialto::server::webaudio
+} // namespace firebolt::rialto::server::tasks::webaudio
 
 #endif // FIREBOLT_RIALTO_SERVER_WEBAUDIO_SET_CAPS_H_

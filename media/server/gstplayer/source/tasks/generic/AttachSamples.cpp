@@ -22,7 +22,7 @@
 #include "IGstGenericPlayerPrivate.h"
 #include "RialtoServerLogging.h"
 
-namespace firebolt::rialto::server::generic
+namespace firebolt::rialto::server::tasks::generic
 {
 AttachSamples::AttachSamples(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                              const IMediaPipeline::MediaSegmentVector &mediaSegments)
@@ -87,4 +87,4 @@ void AttachSamples::execute() const
     }
     m_player.notifyNeedMediaData(!m_audioData.empty(), !m_videoData.empty());
 }
-} // namespace firebolt::rialto::server::generic
+} // namespace firebolt::rialto::server::tasks::generic

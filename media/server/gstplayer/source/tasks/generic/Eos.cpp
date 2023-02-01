@@ -22,7 +22,7 @@
 #include "IGstWrapper.h"
 #include "RialtoServerLogging.h"
 
-namespace firebolt::rialto::server::generic
+namespace firebolt::rialto::server::tasks::generic
 {
 Eos::Eos(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, std::shared_ptr<IGstWrapper> gstWrapper,
          const firebolt::rialto::MediaSourceType &type)
@@ -60,4 +60,4 @@ void Eos::execute() const
         RIALTO_SERVER_LOG_WARN("Set eos failed - Gstreamer error");
     }
 }
-} // namespace firebolt::rialto::server::generic
+} // namespace firebolt::rialto::server::tasks::generic

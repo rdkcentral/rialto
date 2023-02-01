@@ -30,7 +30,7 @@
 #include <memory>
 #include <string>
 
-namespace firebolt::rialto::server::generic
+namespace firebolt::rialto::server::tasks::generic
 {
 class AttachSource : public IPlayerTask
 {
@@ -56,6 +56,6 @@ private:
     IGstGenericPlayerPrivate &m_player;
     std::unique_ptr<IMediaPipeline::MediaSource> m_attachedSource;
 };
-} // namespace firebolt::rialto::server::generic
+} // namespace firebolt::rialto::server::tasks::generic
 
 #endif // FIREBOLT_RIALTO_SERVER_GENERIC_ATTACH_SOURCE_H_

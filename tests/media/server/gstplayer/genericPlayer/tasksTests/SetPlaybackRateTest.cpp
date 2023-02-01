@@ -53,7 +53,7 @@ protected:
 TEST_F(SetPlaybackRateTest, shouldNotChangePlaybackRateIfItsAlreadySet)
 {
     m_context.playbackRate = kRate;
-    firebolt::rialto::server::generic::SetPlaybackRate task{m_context, m_gstWrapper, m_glibWrapper, kRate};
+    firebolt::rialto::server::tasks::generic::SetPlaybackRate task{m_context, m_gstWrapper, m_glibWrapper, kRate};
     task.execute();
     EXPECT_EQ(m_context.pendingPlaybackRate, firebolt::rialto::server::kNoPendingPlaybackRate);
     EXPECT_EQ(m_context.playbackRate, kRate);
@@ -61,7 +61,7 @@ TEST_F(SetPlaybackRateTest, shouldNotChangePlaybackRateIfItsAlreadySet)
 
 TEST_F(SetPlaybackRateTest, shouldNotChangePlaybackRateIfPipelineIsNull)
 {
-    firebolt::rialto::server::generic::SetPlaybackRate task{m_context, m_gstWrapper, m_glibWrapper, kRate};
+    firebolt::rialto::server::tasks::generic::SetPlaybackRate task{m_context, m_gstWrapper, m_glibWrapper, kRate};
     task.execute();
     EXPECT_EQ(m_context.pendingPlaybackRate, kRate);
     EXPECT_EQ(m_context.playbackRate, 1.0);
@@ -70,7 +70,7 @@ TEST_F(SetPlaybackRateTest, shouldNotChangePlaybackRateIfPipelineIsNull)
 TEST_F(SetPlaybackRateTest, shouldNotChangePlaybackRateIfPipelineStateIsBelowPlaying)
 {
     m_context.pipeline = &m_pipeline;
-    firebolt::rialto::server::generic::SetPlaybackRate task{m_context, m_gstWrapper, m_glibWrapper, kRate};
+    firebolt::rialto::server::tasks::generic::SetPlaybackRate task{m_context, m_gstWrapper, m_glibWrapper, kRate};
     task.execute();
     EXPECT_EQ(m_context.pendingPlaybackRate, kRate);
     EXPECT_EQ(m_context.playbackRate, 1.0);
@@ -80,7 +80,7 @@ TEST_F(SetPlaybackRateTest, shouldSetPlaybackRateAudioSinkNull)
 {
     GST_STATE(&m_pipeline) = GST_STATE_PLAYING;
     m_context.pipeline = &m_pipeline;
-    firebolt::rialto::server::generic::SetPlaybackRate task{m_context, m_gstWrapper, m_glibWrapper, kRate};
+    firebolt::rialto::server::tasks::generic::SetPlaybackRate task{m_context, m_gstWrapper, m_glibWrapper, kRate};
     EXPECT_CALL(*m_glibWrapper, gObjectGetStub(_, CharStrMatcher("audio-sink"), _));
     EXPECT_CALL(*m_gstWrapper, gstStructureNewDoubleStub(CharStrMatcher("custom-instant-rate-change"),
                                                          CharStrMatcher("rate"), G_TYPE_DOUBLE, kRate))
@@ -96,7 +96,7 @@ TEST_F(SetPlaybackRateTest, shouldFailToSetPlaybackRateAudioSinkNull)
 {
     GST_STATE(&m_pipeline) = GST_STATE_PLAYING;
     m_context.pipeline = &m_pipeline;
-    firebolt::rialto::server::generic::SetPlaybackRate task{m_context, m_gstWrapper, m_glibWrapper, kRate};
+    firebolt::rialto::server::tasks::generic::SetPlaybackRate task{m_context, m_gstWrapper, m_glibWrapper, kRate};
     EXPECT_CALL(*m_glibWrapper, gObjectGetStub(_, CharStrMatcher("audio-sink"), _));
     EXPECT_CALL(*m_gstWrapper, gstStructureNewDoubleStub(CharStrMatcher("custom-instant-rate-change"),
                                                          CharStrMatcher("rate"), G_TYPE_DOUBLE, kRate))
@@ -112,7 +112,7 @@ TEST_F(SetPlaybackRateTest, shouldSetPlaybackRateAudioSinkOtherThanAmlhala)
 {
     GST_STATE(&m_pipeline) = GST_STATE_PLAYING;
     m_context.pipeline = &m_pipeline;
-    firebolt::rialto::server::generic::SetPlaybackRate task{m_context, m_gstWrapper, m_glibWrapper, kRate};
+    firebolt::rialto::server::tasks::generic::SetPlaybackRate task{m_context, m_gstWrapper, m_glibWrapper, kRate};
     EXPECT_CALL(*m_glibWrapper, gObjectGetStub(_, CharStrMatcher("audio-sink"), _))
         .WillOnce(Invoke(
             [&](gpointer object, const gchar *first_property_name, void *element)
@@ -136,7 +136,7 @@ TEST_F(SetPlaybackRateTest, shouldFailToSetPlaybackRateAudioSinkOtherThanAmlhala
 {
     GST_STATE(&m_pipeline) = GST_STATE_PLAYING;
     m_context.pipeline = &m_pipeline;
-    firebolt::rialto::server::generic::SetPlaybackRate task{m_context, m_gstWrapper, m_glibWrapper, kRate};
+    firebolt::rialto::server::tasks::generic::SetPlaybackRate task{m_context, m_gstWrapper, m_glibWrapper, kRate};
     EXPECT_CALL(*m_glibWrapper, gObjectGetStub(_, CharStrMatcher("audio-sink"), _))
         .WillOnce(Invoke(
             [&](gpointer object, const gchar *first_property_name, void *element)
@@ -160,7 +160,7 @@ TEST_F(SetPlaybackRateTest, shouldSetPlaybackRateAmlhalaAudioSink)
 {
     GST_STATE(&m_pipeline) = GST_STATE_PLAYING;
     m_context.pipeline = &m_pipeline;
-    firebolt::rialto::server::generic::SetPlaybackRate task{m_context, m_gstWrapper, m_glibWrapper, kRate};
+    firebolt::rialto::server::tasks::generic::SetPlaybackRate task{m_context, m_gstWrapper, m_glibWrapper, kRate};
     EXPECT_CALL(*m_glibWrapper, gObjectGetStub(_, CharStrMatcher("audio-sink"), _))
         .WillOnce(Invoke(
             [&](gpointer object, const gchar *first_property_name, void *element)
@@ -187,7 +187,7 @@ TEST_F(SetPlaybackRateTest, shouldFailToSetPlaybackRateAmlhalaAudioSink)
 {
     GST_STATE(&m_pipeline) = GST_STATE_PLAYING;
     m_context.pipeline = &m_pipeline;
-    firebolt::rialto::server::generic::SetPlaybackRate task{m_context, m_gstWrapper, m_glibWrapper, kRate};
+    firebolt::rialto::server::tasks::generic::SetPlaybackRate task{m_context, m_gstWrapper, m_glibWrapper, kRate};
     EXPECT_CALL(*m_glibWrapper, gObjectGetStub(_, CharStrMatcher("audio-sink"), _))
         .WillOnce(Invoke(
             [&](gpointer object, const gchar *first_property_name, void *element)

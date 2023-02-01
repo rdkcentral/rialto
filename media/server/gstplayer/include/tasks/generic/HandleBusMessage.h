@@ -28,7 +28,7 @@
 #include <gst/gst.h>
 #include <memory>
 
-namespace firebolt::rialto::server::generic
+namespace firebolt::rialto::server::tasks::generic
 {
 class HandleBusMessage : public IPlayerTask
 {
@@ -45,6 +45,6 @@ private:
     std::shared_ptr<IGstWrapper> m_gstWrapper;
     GstMessage *m_message;
 };
-} // namespace firebolt::rialto::server::generic
+} // namespace firebolt::rialto::server::tasks::generic
 
 #endif // FIREBOLT_RIALTO_SERVER_GENERIC_HANDLE_BUS_MESSAGE_H_

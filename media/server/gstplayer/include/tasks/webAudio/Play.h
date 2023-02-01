@@ -24,7 +24,7 @@
 #include "IGstWebAudioPlayerPrivate.h"
 #include "IPlayerTask.h"
 
-namespace firebolt::rialto::server::webaudio
+namespace firebolt::rialto::server::tasks::webaudio
 {
 class Play : public IPlayerTask
 {
@@ -37,6 +37,6 @@ private:
     IGstWebAudioPlayerPrivate &m_player;
     IGstWebAudioPlayerClient *m_gstPlayerClient;
 };
-} // namespace firebolt::rialto::server::webaudio
+} // namespace firebolt::rialto::server::tasks::webaudio
 
 #endif // FIREBOLT_RIALTO_SERVER_WEBAUDIO_PLAY_H_

@@ -24,7 +24,7 @@
 #include "RialtoServerLogging.h"
 #include <gst/gst.h>
 
-namespace firebolt::rialto::server::generic
+namespace firebolt::rialto::server::tasks::generic
 {
 RenderFrame::RenderFrame(GenericPlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper,
                          std::shared_ptr<IGlibWrapper> glibWrapper)
@@ -61,4 +61,4 @@ void RenderFrame::execute() const
         RIALTO_SERVER_LOG_ERROR("There's no video sink");
     }
 }
-} // namespace firebolt::rialto::server::generic
+} // namespace firebolt::rialto::server::tasks::generic

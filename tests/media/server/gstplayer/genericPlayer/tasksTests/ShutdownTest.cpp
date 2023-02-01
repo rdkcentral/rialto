@@ -31,7 +31,7 @@ protected:
 
 TEST_F(ShutdownTest, shouldShutdown)
 {
-    firebolt::rialto::server::generic::Shutdown task{m_gstPlayer};
+    firebolt::rialto::server::tasks::generic::Shutdown task{m_gstPlayer};
     EXPECT_CALL(m_gstPlayer, stopWorkerThread());
     task.execute();
 }

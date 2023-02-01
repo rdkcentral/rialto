@@ -28,7 +28,7 @@ namespace firebolt::rialto::server
 struct GenericPlayerContext;
 } // namespace firebolt::rialto::server
 
-namespace firebolt::rialto::server::generic
+namespace firebolt::rialto::server::tasks::generic
 {
 class EnoughData : public IPlayerTask
 {
@@ -41,6 +41,6 @@ private:
     GenericPlayerContext &m_context;
     GstAppSrc *m_src;
 };
-} // namespace firebolt::rialto::server::generic
+} // namespace firebolt::rialto::server::tasks::generic
 
 #endif // FIREBOLT_RIALTO_SERVER_GENERIC_ENOUGH_DATA_H_

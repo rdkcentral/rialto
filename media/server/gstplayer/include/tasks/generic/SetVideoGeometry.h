@@ -24,7 +24,7 @@
 #include "IGstGenericPlayerPrivate.h"
 #include "IPlayerTask.h"
 
-namespace firebolt::rialto::server::generic
+namespace firebolt::rialto::server::tasks::generic
 {
 class SetVideoGeometry : public IPlayerTask
 {
@@ -38,6 +38,6 @@ private:
     IGstGenericPlayerPrivate &m_player;
     Rectangle m_rectangle;
 };
-} // namespace firebolt::rialto::server::generic
+} // namespace firebolt::rialto::server::tasks::generic
 
 #endif // FIREBOLT_RIALTO_SERVER_GENERIC_SET_VIDEO_GEOMETRY_H_

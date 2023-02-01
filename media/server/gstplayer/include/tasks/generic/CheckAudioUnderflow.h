@@ -27,7 +27,7 @@
 #include "IPlayerTask.h"
 #include <memory>
 
-namespace firebolt::rialto::server::generic
+namespace firebolt::rialto::server::tasks::generic
 {
 class CheckAudioUnderflow : public IPlayerTask
 {
@@ -43,6 +43,6 @@ private:
     IGstGenericPlayerClient *m_gstPlayerClient;
     std::shared_ptr<IGstWrapper> m_gstWrapper;
 };
-} // namespace firebolt::rialto::server::generic
+} // namespace firebolt::rialto::server::tasks::generic
 
 #endif // FIREBOLT_RIALTO_SERVER_GENERIC_CHECK_AUDIO_UNDERFLOW_H_

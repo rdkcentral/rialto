@@ -28,7 +28,7 @@
 #include "WebAudioPlayerContext.h"
 #include <memory>
 
-namespace firebolt::rialto::server::webaudio
+namespace firebolt::rialto::server::tasks::webaudio
 {
 class WriteBuffer : public IPlayerTask
 {
@@ -46,6 +46,6 @@ private:
     const uint8_t *m_wrapPtr;
     const uint64_t m_wrapLength;
 };
-} // namespace firebolt::rialto::server::webaudio
+} // namespace firebolt::rialto::server::tasks::webaudio
 
 #endif // FIREBOLT_RIALTO_SERVER_WEBAUDIO_WRITE_BUFFER_H_

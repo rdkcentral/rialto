@@ -27,7 +27,7 @@
 #include <gst/gst.h>
 #include <memory>
 
-namespace firebolt::rialto::server::generic
+namespace firebolt::rialto::server::tasks::generic
 {
 class UpdatePlaybackGroup : public IPlayerTask
 {
@@ -44,6 +44,6 @@ private:
     GstElement *m_typefind;
     const GstCaps *m_caps;
 };
-} // namespace firebolt::rialto::server::generic
+} // namespace firebolt::rialto::server::tasks::generic
 
 #endif // FIREBOLT_RIALTO_SERVER_GENERIC_UPDATE_PLAYBACK_GROUP_H_

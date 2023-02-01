@@ -28,7 +28,7 @@
 #include <gst/gst.h>
 #include <memory>
 
-namespace firebolt::rialto::server::generic
+namespace firebolt::rialto::server::tasks::generic
 {
 class DeepElementAdded : public IPlayerTask
 {
@@ -51,6 +51,6 @@ private:
     bool m_callbackRegistered;
     gulong m_signalId;
 };
-} // namespace firebolt::rialto::server::generic
+} // namespace firebolt::rialto::server::tasks::generic
 
 #endif // FIREBOLT_RIALTO_SERVER_GENERIC_DEEP_ELEMENT_ADDED_H_

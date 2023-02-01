@@ -27,7 +27,7 @@
 #include "MediaCommon.h"
 #include <memory>
 
-namespace firebolt::rialto::server::generic
+namespace firebolt::rialto::server::tasks::generic
 {
 class Eos : public IPlayerTask
 {
@@ -43,6 +43,6 @@ private:
     std::shared_ptr<IGstWrapper> m_gstWrapper;
     firebolt::rialto::MediaSourceType m_type;
 };
-} // namespace firebolt::rialto::server::generic
+} // namespace firebolt::rialto::server::tasks::generic
 
 #endif // FIREBOLT_RIALTO_SERVER_GENERIC_EOS_H_

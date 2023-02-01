@@ -27,7 +27,7 @@
 #include <gst/gst.h>
 #include <vector>
 
-namespace firebolt::rialto::server::generic
+namespace firebolt::rialto::server::tasks::generic
 {
 class AttachSamples : public IPlayerTask
 {
@@ -56,6 +56,6 @@ private:
     std::vector<AudioData> m_audioData;
     std::vector<VideoData> m_videoData;
 };
-} // namespace firebolt::rialto::server::generic
+} // namespace firebolt::rialto::server::tasks::generic
 
 #endif // FIREBOLT_RIALTO_SERVER_GENERIC_ATTACH_SAMPLES_H_

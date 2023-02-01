@@ -28,7 +28,7 @@
 #include <gst/gst.h>
 #include <memory>
 
-namespace firebolt::rialto::server::generic
+namespace firebolt::rialto::server::tasks::generic
 {
 class SetupElement : public IPlayerTask
 {
@@ -45,6 +45,6 @@ private:
     IGstGenericPlayerPrivate &m_player;
     GstElement *m_element;
 };
-} // namespace firebolt::rialto::server::generic
+} // namespace firebolt::rialto::server::tasks::generic
 
 #endif // FIREBOLT_RIALTO_SERVER_GENERIC_SETUP_ELEMENT_H_

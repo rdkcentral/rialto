@@ -20,7 +20,7 @@
 #include "tasks/generic/RemoveSource.h"
 #include "RialtoServerLogging.h"
 
-namespace firebolt::rialto::server::generic
+namespace firebolt::rialto::server::tasks::generic
 {
 RemoveSource::RemoveSource(GenericPlayerContext &context, IGstGenericPlayerClient *client,
                            std::shared_ptr<IGstWrapper> gstWrapper, const MediaSourceType &type)
@@ -70,4 +70,4 @@ void RemoveSource::execute() const
         RIALTO_SERVER_LOG_WARN("failed to send flush-stop event");
     }
 }
-} // namespace firebolt::rialto::server::generic
+} // namespace firebolt::rialto::server::tasks::generic

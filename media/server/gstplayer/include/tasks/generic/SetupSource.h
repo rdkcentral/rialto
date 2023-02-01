@@ -25,7 +25,7 @@
 #include "IPlayerTask.h"
 #include <gst/gst.h>
 
-namespace firebolt::rialto::server::generic
+namespace firebolt::rialto::server::tasks::generic
 {
 class SetupSource : public IPlayerTask
 {
@@ -39,6 +39,6 @@ private:
     IGstGenericPlayerPrivate &m_player;
     GstElement *m_source;
 };
-} // namespace firebolt::rialto::server::generic
+} // namespace firebolt::rialto::server::tasks::generic
 
 #endif // FIREBOLT_RIALTO_SERVER_GENERIC_SETUP_SOURCE_H_

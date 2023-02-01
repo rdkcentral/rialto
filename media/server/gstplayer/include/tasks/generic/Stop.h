@@ -24,7 +24,7 @@
 #include "IGstGenericPlayerPrivate.h"
 #include "IPlayerTask.h"
 
-namespace firebolt::rialto::server::generic
+namespace firebolt::rialto::server::tasks::generic
 {
 class Stop : public IPlayerTask
 {
@@ -37,6 +37,6 @@ private:
     GenericPlayerContext &m_context;
     IGstGenericPlayerPrivate &m_player;
 };
-} // namespace firebolt::rialto::server::generic
+} // namespace firebolt::rialto::server::tasks::generic
 
 #endif // FIREBOLT_RIALTO_SERVER_GENERIC_STOP_H_

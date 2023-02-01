@@ -23,7 +23,7 @@
 #include "RialtoServerLogging.h"
 #include <gst/gst.h>
 
-namespace firebolt::rialto::server::generic
+namespace firebolt::rialto::server::tasks::generic
 {
 NeedData::NeedData(GenericPlayerContext &context, IGstGenericPlayerClient *client, GstAppSrc *src)
     : m_context{context}, m_gstPlayerClient{client}, m_src{src}
@@ -64,4 +64,4 @@ void NeedData::execute() const
         }
     }
 }
-} // namespace firebolt::rialto::server::generic
+} // namespace firebolt::rialto::server::tasks::generic

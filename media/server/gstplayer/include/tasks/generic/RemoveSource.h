@@ -26,7 +26,7 @@
 #include "IPlayerTask.h"
 #include <memory>
 
-namespace firebolt::rialto::server::generic
+namespace firebolt::rialto::server::tasks::generic
 {
 class RemoveSource : public IPlayerTask
 {
@@ -42,6 +42,6 @@ private:
     std::shared_ptr<IGstWrapper> m_gstWrapper;
     MediaSourceType m_type;
 };
-} // namespace firebolt::rialto::server::generic
+} // namespace firebolt::rialto::server::tasks::generic
 
 #endif // FIREBOLT_RIALTO_SERVER_GENERIC_REMOVE_SOURCE_H_

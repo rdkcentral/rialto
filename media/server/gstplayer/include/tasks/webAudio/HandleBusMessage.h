@@ -28,7 +28,7 @@
 #include <gst/gst.h>
 #include <memory>
 
-namespace firebolt::rialto::server::webaudio
+namespace firebolt::rialto::server::tasks::webaudio
 {
 class HandleBusMessage : public IPlayerTask
 {
@@ -45,6 +45,6 @@ private:
     std::shared_ptr<IGstWrapper> m_gstWrapper;
     GstMessage *m_message;
 };
-} // namespace firebolt::rialto::server::webaudio
+} // namespace firebolt::rialto::server::tasks::webaudio
 
 #endif // FIREBOLT_RIALTO_SERVER_WEBAUDIO_HANDLE_BUS_MESSAGE_H_

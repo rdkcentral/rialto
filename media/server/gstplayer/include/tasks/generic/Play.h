@@ -23,7 +23,7 @@
 #include "IGstGenericPlayerPrivate.h"
 #include "IPlayerTask.h"
 
-namespace firebolt::rialto::server::generic
+namespace firebolt::rialto::server::tasks::generic
 {
 class Play : public IPlayerTask
 {
@@ -35,6 +35,6 @@ public:
 private:
     IGstGenericPlayerPrivate &m_player;
 };
-} // namespace firebolt::rialto::server::generic
+} // namespace firebolt::rialto::server::tasks::generic
 
 #endif // FIREBOLT_RIALTO_SERVER_GENERIC_PLAY_H_

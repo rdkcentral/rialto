@@ -62,7 +62,7 @@ void videoUnderflowCallback(GstElement *object, guint fifoDepth, gpointer queueD
 }
 } // namespace
 
-namespace firebolt::rialto::server::generic
+namespace firebolt::rialto::server::tasks::generic
 {
 SetupElement::SetupElement(GenericPlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper,
                            std::shared_ptr<IGlibWrapper> glibWrapper, IGstGenericPlayerPrivate &player,
@@ -114,4 +114,4 @@ void SetupElement::execute() const
 
     m_gstWrapper->gstObjectUnref(m_element);
 }
-} // namespace firebolt::rialto::server::generic
+} // namespace firebolt::rialto::server::tasks::generic

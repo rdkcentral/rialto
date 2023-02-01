@@ -55,7 +55,7 @@ TEST_F(ReportPositionTest, shouldReportPosition)
                 return TRUE;
             }));
     EXPECT_CALL(m_gstPlayerClient, notifyPosition(position));
-    firebolt::rialto::server::generic::ReportPosition task{m_context, &m_gstPlayerClient, m_gstWrapper};
+    firebolt::rialto::server::tasks::generic::ReportPosition task{m_context, &m_gstPlayerClient, m_gstWrapper};
     task.execute();
 }
 
@@ -68,6 +68,6 @@ TEST_F(ReportPositionTest, shouldFailToReportPosition)
                 *cur = -1;
                 return TRUE;
             }));
-    firebolt::rialto::server::generic::ReportPosition task{m_context, &m_gstPlayerClient, m_gstWrapper};
+    firebolt::rialto::server::tasks::generic::ReportPosition task{m_context, &m_gstPlayerClient, m_gstWrapper};
     task.execute();
 }

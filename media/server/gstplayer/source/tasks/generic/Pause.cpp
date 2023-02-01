@@ -21,7 +21,7 @@
 #include "IGstGenericPlayerPrivate.h"
 #include "RialtoServerLogging.h"
 
-namespace firebolt::rialto::server::generic
+namespace firebolt::rialto::server::tasks::generic
 {
 Pause::Pause(IGstGenericPlayerPrivate &player) : m_player{player}
 {
@@ -39,4 +39,4 @@ void Pause::execute() const
     m_player.stopPositionReportingAndCheckAudioUnderflowTimer();
     m_player.changePipelineState(GST_STATE_PAUSED);
 }
-} // namespace firebolt::rialto::server::generic
+} // namespace firebolt::rialto::server::tasks::generic

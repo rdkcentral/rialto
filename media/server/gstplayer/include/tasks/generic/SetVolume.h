@@ -25,7 +25,7 @@
 #include "IPlayerTask.h"
 #include <memory>
 
-namespace firebolt::rialto::server::generic
+namespace firebolt::rialto::server::tasks::generic
 {
 class SetVolume : public IPlayerTask
 {
@@ -39,6 +39,6 @@ private:
     std::shared_ptr<IGstWrapper> m_gstWrapper;
     double m_volume;
 };
-} // namespace firebolt::rialto::server::generic
+} // namespace firebolt::rialto::server::tasks::generic
 
 #endif // FIREBOLT_RIALTO_SERVER_GENERIC_SET_VOLUME_H_

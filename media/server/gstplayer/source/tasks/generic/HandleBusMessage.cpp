@@ -23,7 +23,7 @@
 #include "IGstWrapper.h"
 #include "RialtoServerLogging.h"
 
-namespace firebolt::rialto::server::generic
+namespace firebolt::rialto::server::tasks::generic
 {
 HandleBusMessage::HandleBusMessage(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                    IGstGenericPlayerClient *client, std::shared_ptr<IGstWrapper> gstWrapper,
@@ -167,4 +167,4 @@ void HandleBusMessage::execute() const
 
     m_gstWrapper->gstMessageUnref(m_message);
 }
-} // namespace firebolt::rialto::server::generic
+} // namespace firebolt::rialto::server::tasks::generic

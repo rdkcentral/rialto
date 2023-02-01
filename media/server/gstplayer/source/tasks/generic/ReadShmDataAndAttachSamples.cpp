@@ -24,7 +24,7 @@
 #include "IMediaPipeline.h"
 #include "RialtoServerLogging.h"
 
-namespace firebolt::rialto::server::generic
+namespace firebolt::rialto::server::tasks::generic
 {
 ReadShmDataAndAttachSamples::ReadShmDataAndAttachSamples(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                                          const std::shared_ptr<IDataReader> &dataReader)
@@ -86,4 +86,4 @@ void ReadShmDataAndAttachSamples::execute() const
                                  (!mediaSegments.empty() &&
                                   mediaSegments.front()->getType() == firebolt::rialto::MediaSourceType::VIDEO));
 }
-} // namespace firebolt::rialto::server::generic
+} // namespace firebolt::rialto::server::tasks::generic
