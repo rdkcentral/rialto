@@ -52,8 +52,9 @@ TEST_F(DeepElementAddedTest, shouldNotRegisterCallbackWhenPtrsAreNotEqual)
     EXPECT_CALL(*m_gstWrapper, gstObjectParent(&m_element)).WillOnce(Return(&obj1));
     EXPECT_CALL(*m_gstWrapper, gstObjectCast(&m_bin)).WillOnce(Return(&obj2));
     EXPECT_CALL(*m_glibWrapper, gFree(nullptr));
-    firebolt::rialto::server::tasks::generic::DeepElementAdded task{m_context,   m_gstPlayer, m_gstWrapper, m_glibWrapper,
-                                                             &m_pipeline, &m_bin,      &m_element};
+    firebolt::rialto::server::tasks::generic::DeepElementAdded task{m_context,     m_gstPlayer, m_gstWrapper,
+                                                                    m_glibWrapper, &m_pipeline, &m_bin,
+                                                                    &m_element};
 }
 
 TEST_F(DeepElementAddedTest, shouldNotRegisterCallbackWhenElementIsNull)
@@ -63,8 +64,9 @@ TEST_F(DeepElementAddedTest, shouldNotRegisterCallbackWhenElementIsNull)
     EXPECT_CALL(*m_gstWrapper, gstObjectCast(&m_bin)).WillOnce(Return(&obj));
     EXPECT_CALL(*m_gstWrapper, gstElementGetName(&m_element)).WillOnce(Return(nullptr));
     EXPECT_CALL(*m_glibWrapper, gFree(nullptr));
-    firebolt::rialto::server::tasks::generic::DeepElementAdded task{m_context,   m_gstPlayer, m_gstWrapper, m_glibWrapper,
-                                                             &m_pipeline, &m_bin,      &m_element};
+    firebolt::rialto::server::tasks::generic::DeepElementAdded task{m_context,     m_gstPlayer, m_gstWrapper,
+                                                                    m_glibWrapper, &m_pipeline, &m_bin,
+                                                                    &m_element};
 }
 
 TEST_F(DeepElementAddedTest, shouldNotRegisterCallbackWhenElementNameIsNotTypefind)
@@ -76,8 +78,9 @@ TEST_F(DeepElementAddedTest, shouldNotRegisterCallbackWhenElementNameIsNotTypefi
     EXPECT_CALL(*m_gstWrapper, gstElementGetName(&m_element)).WillOnce(Return(elementName));
     EXPECT_CALL(*m_glibWrapper, gStrrstr(elementName, CharStrMatcher("typefind"))).WillOnce(Return(nullptr));
     EXPECT_CALL(*m_glibWrapper, gFree(elementName));
-    firebolt::rialto::server::tasks::generic::DeepElementAdded task{m_context,   m_gstPlayer, m_gstWrapper, m_glibWrapper,
-                                                             &m_pipeline, &m_bin,      &m_element};
+    firebolt::rialto::server::tasks::generic::DeepElementAdded task{m_context,     m_gstPlayer, m_gstWrapper,
+                                                                    m_glibWrapper, &m_pipeline, &m_bin,
+                                                                    &m_element};
 }
 
 TEST_F(DeepElementAddedTest, shouldRegisterCallbackForTypefindElement)
@@ -92,8 +95,9 @@ TEST_F(DeepElementAddedTest, shouldRegisterCallbackForTypefindElement)
     EXPECT_CALL(*m_glibWrapper, gSignalConnect(G_OBJECT(&m_element), CharStrMatcher("have-type"), _, &m_gstPlayer))
         .WillOnce(Return(signalId));
     EXPECT_CALL(*m_glibWrapper, gFree(elementName));
-    firebolt::rialto::server::tasks::generic::DeepElementAdded task{m_context,   m_gstPlayer, m_gstWrapper, m_glibWrapper,
-                                                             &m_pipeline, &m_bin,      &m_element};
+    firebolt::rialto::server::tasks::generic::DeepElementAdded task{m_context,     m_gstPlayer, m_gstWrapper,
+                                                                    m_glibWrapper, &m_pipeline, &m_bin,
+                                                                    &m_element};
 }
 
 TEST_F(DeepElementAddedTest, shouldUpdatePlaybackGroupWhenCallbackIsCalled)
@@ -115,8 +119,9 @@ TEST_F(DeepElementAddedTest, shouldUpdatePlaybackGroupWhenCallbackIsCalled)
             }));
     EXPECT_CALL(m_gstPlayer, updatePlaybackGroup(&m_element, &caps));
     EXPECT_CALL(*m_glibWrapper, gFree(elementName));
-    firebolt::rialto::server::tasks::generic::DeepElementAdded task{m_context,   m_gstPlayer, m_gstWrapper, m_glibWrapper,
-                                                             &m_pipeline, &m_bin,      &m_element};
+    firebolt::rialto::server::tasks::generic::DeepElementAdded task{m_context,     m_gstPlayer, m_gstWrapper,
+                                                                    m_glibWrapper, &m_pipeline, &m_bin,
+                                                                    &m_element};
 }
 
 TEST_F(DeepElementAddedTest, shouldAddSignalIdOfRegisteredCallbackToPlayerContext)
@@ -133,8 +138,9 @@ TEST_F(DeepElementAddedTest, shouldAddSignalIdOfRegisteredCallbackToPlayerContex
     EXPECT_CALL(*m_glibWrapper, gSignalConnect(G_OBJECT(&m_element), CharStrMatcher("have-type"), _, &m_gstPlayer))
         .WillOnce(Return(signalId));
     EXPECT_CALL(*m_glibWrapper, gFree(elementName));
-    firebolt::rialto::server::tasks::generic::DeepElementAdded task{m_context,   m_gstPlayer, m_gstWrapper, m_glibWrapper,
-                                                             &m_pipeline, &m_bin,      &m_element};
+    firebolt::rialto::server::tasks::generic::DeepElementAdded task{m_context,     m_gstPlayer, m_gstWrapper,
+                                                                    m_glibWrapper, &m_pipeline, &m_bin,
+                                                                    &m_element};
     task.execute();
     EXPECT_EQ(m_context.playbackGroup.m_gstPipeline, GST_ELEMENT(&m_pipeline));
     EXPECT_EQ(m_context.playbackGroup.m_curAudioTypefind, &m_element);
@@ -151,8 +157,9 @@ TEST_F(DeepElementAddedTest, shouldAssignPipelineOnlyWhenElementNameIsNull)
     EXPECT_CALL(*m_gstWrapper, gstObjectParent(&m_element)).WillOnce(Return(&obj1));
     EXPECT_CALL(*m_gstWrapper, gstObjectCast(&m_bin)).WillOnce(Return(&obj2));
     EXPECT_CALL(*m_glibWrapper, gFree(nullptr));
-    firebolt::rialto::server::tasks::generic::DeepElementAdded task{m_context,   m_gstPlayer, m_gstWrapper, m_glibWrapper,
-                                                             &m_pipeline, &m_bin,      &m_element};
+    firebolt::rialto::server::tasks::generic::DeepElementAdded task{m_context,     m_gstPlayer, m_gstWrapper,
+                                                                    m_glibWrapper, &m_pipeline, &m_bin,
+                                                                    &m_element};
     task.execute();
     EXPECT_EQ(m_context.playbackGroup.m_curAudioTypefind, nullptr);
     EXPECT_TRUE(m_context.connectedSignals.empty());
@@ -175,8 +182,9 @@ TEST_F(DeepElementAddedTest, shouldDetectParseElement)
     EXPECT_CALL(*m_gstWrapper, gstObjectCast(&audioDecodeBin)).WillOnce(Return(&obj));
     EXPECT_CALL(*m_glibWrapper, gStrrstr(elementName, CharStrMatcher("parse"))).WillOnce(Return(elementName));
     EXPECT_CALL(*m_glibWrapper, gFree(elementName));
-    firebolt::rialto::server::tasks::generic::DeepElementAdded task{m_context,   m_gstPlayer, m_gstWrapper, m_glibWrapper,
-                                                             &m_pipeline, &m_bin,      &m_element};
+    firebolt::rialto::server::tasks::generic::DeepElementAdded task{m_context,     m_gstPlayer, m_gstWrapper,
+                                                                    m_glibWrapper, &m_pipeline, &m_bin,
+                                                                    &m_element};
     task.execute();
     EXPECT_EQ(m_context.playbackGroup.m_curAudioTypefind, nullptr);
     EXPECT_TRUE(m_context.connectedSignals.empty());
@@ -200,8 +208,9 @@ TEST_F(DeepElementAddedTest, shouldDetectDecElement)
     EXPECT_CALL(*m_glibWrapper, gStrrstr(elementName, CharStrMatcher("parse"))).WillOnce(Return(nullptr));
     EXPECT_CALL(*m_glibWrapper, gStrrstr(elementName, CharStrMatcher("dec"))).WillOnce(Return(elementName));
     EXPECT_CALL(*m_glibWrapper, gFree(elementName));
-    firebolt::rialto::server::tasks::generic::DeepElementAdded task{m_context,   m_gstPlayer, m_gstWrapper, m_glibWrapper,
-                                                             &m_pipeline, &m_bin,      &m_element};
+    firebolt::rialto::server::tasks::generic::DeepElementAdded task{m_context,     m_gstPlayer, m_gstWrapper,
+                                                                    m_glibWrapper, &m_pipeline, &m_bin,
+                                                                    &m_element};
     task.execute();
     EXPECT_EQ(m_context.playbackGroup.m_curAudioTypefind, nullptr);
     EXPECT_TRUE(m_context.connectedSignals.empty());
@@ -222,8 +231,9 @@ TEST_F(DeepElementAddedTest, shouldDoNothingForNotHandledElementName)
     EXPECT_CALL(*m_gstWrapper, gstObjectCast(nullptr)).WillOnce(Return(nullptr));
     EXPECT_CALL(*m_glibWrapper, gStrrstr(elementName, CharStrMatcher("audiosink"))).WillOnce(Return(nullptr));
     EXPECT_CALL(*m_glibWrapper, gFree(elementName));
-    firebolt::rialto::server::tasks::generic::DeepElementAdded task{m_context,   m_gstPlayer, m_gstWrapper, m_glibWrapper,
-                                                             &m_pipeline, &m_bin,      &m_element};
+    firebolt::rialto::server::tasks::generic::DeepElementAdded task{m_context,     m_gstPlayer, m_gstWrapper,
+                                                                    m_glibWrapper, &m_pipeline, &m_bin,
+                                                                    &m_element};
     task.execute();
     EXPECT_EQ(m_context.playbackGroup.m_curAudioTypefind, nullptr);
     EXPECT_TRUE(m_context.connectedSignals.empty());
@@ -248,8 +258,9 @@ TEST_F(DeepElementAddedTest, shouldDoNothingWhenAudiosinkParentNameIsNull)
     EXPECT_CALL(*m_gstWrapper, gstElementGetName(&audioSinkParent)).WillOnce(Return(nullptr));
     EXPECT_CALL(*m_glibWrapper, gFree(nullptr));
     EXPECT_CALL(*m_glibWrapper, gFree(elementName));
-    firebolt::rialto::server::tasks::generic::DeepElementAdded task{m_context,   m_gstPlayer, m_gstWrapper, m_glibWrapper,
-                                                             &m_pipeline, &m_bin,      &m_element};
+    firebolt::rialto::server::tasks::generic::DeepElementAdded task{m_context,     m_gstPlayer, m_gstWrapper,
+                                                                    m_glibWrapper, &m_pipeline, &m_bin,
+                                                                    &m_element};
     task.execute();
     EXPECT_EQ(m_context.playbackGroup.m_curAudioTypefind, nullptr);
     EXPECT_TRUE(m_context.connectedSignals.empty());
@@ -276,8 +287,9 @@ TEST_F(DeepElementAddedTest, shouldDoNothingWhenAudiosinkParentIsNotBin)
     EXPECT_CALL(*m_glibWrapper, gStrrstr(audioSinkParentName, CharStrMatcher("bin"))).WillOnce(Return(nullptr));
     EXPECT_CALL(*m_glibWrapper, gFree(audioSinkParentName));
     EXPECT_CALL(*m_glibWrapper, gFree(elementName));
-    firebolt::rialto::server::tasks::generic::DeepElementAdded task{m_context,   m_gstPlayer, m_gstWrapper, m_glibWrapper,
-                                                             &m_pipeline, &m_bin,      &m_element};
+    firebolt::rialto::server::tasks::generic::DeepElementAdded task{m_context,     m_gstPlayer, m_gstWrapper,
+                                                                    m_glibWrapper, &m_pipeline, &m_bin,
+                                                                    &m_element};
     task.execute();
     EXPECT_EQ(m_context.playbackGroup.m_curAudioTypefind, nullptr);
     EXPECT_TRUE(m_context.connectedSignals.empty());
@@ -304,8 +316,9 @@ TEST_F(DeepElementAddedTest, shouldFindAudioSinkBin)
     EXPECT_CALL(*m_glibWrapper, gStrrstr(audioSinkParentName, CharStrMatcher("bin"))).WillOnce(Return(audioSinkParentName));
     EXPECT_CALL(*m_glibWrapper, gFree(audioSinkParentName));
     EXPECT_CALL(*m_glibWrapper, gFree(elementName));
-    firebolt::rialto::server::tasks::generic::DeepElementAdded task{m_context,   m_gstPlayer, m_gstWrapper, m_glibWrapper,
-                                                             &m_pipeline, &m_bin,      &m_element};
+    firebolt::rialto::server::tasks::generic::DeepElementAdded task{m_context,     m_gstPlayer, m_gstWrapper,
+                                                                    m_glibWrapper, &m_pipeline, &m_bin,
+                                                                    &m_element};
     task.execute();
     EXPECT_EQ(m_context.playbackGroup.m_curAudioTypefind, nullptr);
     EXPECT_TRUE(m_context.connectedSignals.empty());

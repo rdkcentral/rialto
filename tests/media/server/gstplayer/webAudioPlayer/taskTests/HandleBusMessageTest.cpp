@@ -50,8 +50,8 @@ TEST_F(WebAudioHandleBusMessageTest, shouldNotHandleMessageWithUnknownType)
     GstMessage message{};
     GST_MESSAGE_SRC(&message) = GST_OBJECT(&m_pipeline);
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&message));
-    firebolt::rialto::server::tasks::webaudio::HandleBusMessage task{m_context, m_gstPlayer, &m_gstPlayerClient, m_gstWrapper,
-                                                              &message};
+    firebolt::rialto::server::tasks::webaudio::HandleBusMessage task{m_context, m_gstPlayer, &m_gstPlayerClient,
+                                                                     m_gstWrapper, &message};
     task.execute();
 }
 
@@ -60,8 +60,8 @@ TEST_F(WebAudioHandleBusMessageTest, shouldNotHandleEosMessageForAnotherPipeline
     GstMessage message{};
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&message));
     GST_MESSAGE_TYPE(&message) = GST_MESSAGE_EOS;
-    firebolt::rialto::server::tasks::webaudio::HandleBusMessage task{m_context, m_gstPlayer, &m_gstPlayerClient, m_gstWrapper,
-                                                              &message};
+    firebolt::rialto::server::tasks::webaudio::HandleBusMessage task{m_context, m_gstPlayer, &m_gstPlayerClient,
+                                                                     m_gstWrapper, &message};
     task.execute();
 }
 
@@ -72,8 +72,8 @@ TEST_F(WebAudioHandleBusMessageTest, shouldNotHandleMessageEosWhenPipelineIsNull
     GST_MESSAGE_SRC(&message) = GST_OBJECT(&m_pipeline);
     GST_MESSAGE_TYPE(&message) = GST_MESSAGE_EOS;
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&message));
-    firebolt::rialto::server::tasks::webaudio::HandleBusMessage task{m_context, m_gstPlayer, &m_gstPlayerClient, m_gstWrapper,
-                                                              &message};
+    firebolt::rialto::server::tasks::webaudio::HandleBusMessage task{m_context, m_gstPlayer, &m_gstPlayerClient,
+                                                                     m_gstWrapper, &message};
     task.execute();
 }
 
@@ -84,8 +84,8 @@ TEST_F(WebAudioHandleBusMessageTest, shouldHandleEosMessage)
     GST_MESSAGE_TYPE(&message) = GST_MESSAGE_EOS;
     EXPECT_CALL(m_gstPlayerClient, notifyState(firebolt::rialto::WebAudioPlayerState::END_OF_STREAM));
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&message));
-    firebolt::rialto::server::tasks::webaudio::HandleBusMessage task{m_context, m_gstPlayer, &m_gstPlayerClient, m_gstWrapper,
-                                                              &message};
+    firebolt::rialto::server::tasks::webaudio::HandleBusMessage task{m_context, m_gstPlayer, &m_gstPlayerClient,
+                                                                     m_gstWrapper, &message};
     task.execute();
 }
 
@@ -94,8 +94,8 @@ TEST_F(WebAudioHandleBusMessageTest, shouldNotHandleStateChangedMessageForAnothe
     GstMessage message{};
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&message));
     GST_MESSAGE_TYPE(&message) = GST_MESSAGE_STATE_CHANGED;
-    firebolt::rialto::server::tasks::webaudio::HandleBusMessage task{m_context, m_gstPlayer, &m_gstPlayerClient, m_gstWrapper,
-                                                              &message};
+    firebolt::rialto::server::tasks::webaudio::HandleBusMessage task{m_context, m_gstPlayer, &m_gstPlayerClient,
+                                                                     m_gstWrapper, &message};
     task.execute();
 }
 
@@ -106,8 +106,8 @@ TEST_F(WebAudioHandleBusMessageTest, shouldNotHandleMessageStateChangedWhenPipel
     GST_MESSAGE_SRC(&message) = GST_OBJECT(&m_pipeline);
     GST_MESSAGE_TYPE(&message) = GST_MESSAGE_STATE_CHANGED;
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&message));
-    firebolt::rialto::server::tasks::webaudio::HandleBusMessage task{m_context, m_gstPlayer, &m_gstPlayerClient, m_gstWrapper,
-                                                              &message};
+    firebolt::rialto::server::tasks::webaudio::HandleBusMessage task{m_context, m_gstPlayer, &m_gstPlayerClient,
+                                                                     m_gstWrapper, &message};
     task.execute();
 }
 
@@ -127,7 +127,8 @@ TEST_F(WebAudioHandleBusMessageTest, shouldNotHandleStateChangedMessageWhenGstPl
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(pending)).WillOnce(Return("Void"));
     EXPECT_CALL(*m_gstWrapper, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&message));
-    firebolt::rialto::server::tasks::webaudio::HandleBusMessage task{m_context, m_gstPlayer, nullptr, m_gstWrapper, &message};
+    firebolt::rialto::server::tasks::webaudio::HandleBusMessage task{m_context, m_gstPlayer, nullptr, m_gstWrapper,
+                                                                     &message};
     task.execute();
 }
 
@@ -148,8 +149,8 @@ TEST_F(WebAudioHandleBusMessageTest, shouldHandleStateChangedToPausedMessage)
     EXPECT_CALL(*m_gstWrapper, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
     EXPECT_CALL(m_gstPlayerClient, notifyState(firebolt::rialto::WebAudioPlayerState::PAUSED));
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&message));
-    firebolt::rialto::server::tasks::webaudio::HandleBusMessage task{m_context, m_gstPlayer, &m_gstPlayerClient, m_gstWrapper,
-                                                              &message};
+    firebolt::rialto::server::tasks::webaudio::HandleBusMessage task{m_context, m_gstPlayer, &m_gstPlayerClient,
+                                                                     m_gstWrapper, &message};
     task.execute();
 }
 
@@ -167,8 +168,8 @@ TEST_F(WebAudioHandleBusMessageTest, shouldHandleStateChangedToPausedAndPendingP
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(GST_STATE_PAUSED)).WillRepeatedly(Return("Paused"));
     EXPECT_CALL(*m_gstWrapper, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&message));
-    firebolt::rialto::server::tasks::webaudio::HandleBusMessage task{m_context, m_gstPlayer, &m_gstPlayerClient, m_gstWrapper,
-                                                              &message};
+    firebolt::rialto::server::tasks::webaudio::HandleBusMessage task{m_context, m_gstPlayer, &m_gstPlayerClient,
+                                                                     m_gstWrapper, &message};
     task.execute();
 }
 
@@ -189,7 +190,7 @@ TEST_F(WebAudioHandleBusMessageTest, shouldHandleStateChangedToPlayingMessage)
     EXPECT_CALL(*m_gstWrapper, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
     EXPECT_CALL(m_gstPlayerClient, notifyState(firebolt::rialto::WebAudioPlayerState::PLAYING));
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&message));
-    firebolt::rialto::server::tasks::webaudio::HandleBusMessage task{m_context, m_gstPlayer, &m_gstPlayerClient, m_gstWrapper,
-                                                              &message};
+    firebolt::rialto::server::tasks::webaudio::HandleBusMessage task{m_context, m_gstPlayer, &m_gstPlayerClient,
+                                                                     m_gstWrapper, &message};
     task.execute();
 }

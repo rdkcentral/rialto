@@ -66,8 +66,8 @@ std::unique_ptr<IPlayerTask>
 GenericPlayerTaskFactory::createAttachSource(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                              const std::unique_ptr<IMediaPipeline::MediaSource> &source) const
 {
-    return std::make_unique<tasks::generic::AttachSource>(context, m_gstWrapper, m_glibWrapper, m_rdkGstreamerUtilsWrapper,
-                                                   player, source);
+    return std::make_unique<tasks::generic::AttachSource>(context, m_gstWrapper, m_glibWrapper,
+                                                          m_rdkGstreamerUtilsWrapper, player, source);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createDeepElementAdded(GenericPlayerContext &context,
@@ -75,8 +75,8 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createDeepElementAdded(Ge
                                                                               GstBin *pipeline, GstBin *bin,
                                                                               GstElement *element) const
 {
-    return std::make_unique<tasks::generic::DeepElementAdded>(context, player, m_gstWrapper, m_glibWrapper, pipeline, bin,
-                                                       element);
+    return std::make_unique<tasks::generic::DeepElementAdded>(context, player, m_gstWrapper, m_glibWrapper, pipeline,
+                                                              bin, element);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createEnoughData(GenericPlayerContext &context, GstAppSrc *src) const

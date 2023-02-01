@@ -38,7 +38,8 @@ TEST_F(UnderflowTest, shouldNotReportUnderflowWhenItIsDisabled)
 {
     bool underflowFlag{false};
     bool underflowEnabled{false};
-    firebolt::rialto::server::tasks::generic::Underflow task{m_gstPlayer, &m_gstPlayerClient, underflowFlag, underflowEnabled};
+    firebolt::rialto::server::tasks::generic::Underflow task{m_gstPlayer, &m_gstPlayerClient, underflowFlag,
+                                                             underflowEnabled};
     task.execute();
 }
 
@@ -46,7 +47,8 @@ TEST_F(UnderflowTest, shouldNotReportUnderflowWhenItIsAlreadyActive)
 {
     bool underflowFlag{true};
     bool underflowEnabled{true};
-    firebolt::rialto::server::tasks::generic::Underflow task{m_gstPlayer, &m_gstPlayerClient, underflowFlag, underflowEnabled};
+    firebolt::rialto::server::tasks::generic::Underflow task{m_gstPlayer, &m_gstPlayerClient, underflowFlag,
+                                                             underflowEnabled};
     task.execute();
     EXPECT_TRUE(underflowFlag);
 }
@@ -55,7 +57,8 @@ TEST_F(UnderflowTest, shouldReportUnderflow)
 {
     bool underflowFlag{false};
     bool underflowEnabled{true};
-    firebolt::rialto::server::tasks::generic::Underflow task{m_gstPlayer, &m_gstPlayerClient, underflowFlag, underflowEnabled};
+    firebolt::rialto::server::tasks::generic::Underflow task{m_gstPlayer, &m_gstPlayerClient, underflowFlag,
+                                                             underflowEnabled};
     EXPECT_CALL(m_gstPlayer, stopPositionReportingAndCheckAudioUnderflowTimer());
     EXPECT_CALL(m_gstPlayer, changePipelineState(GST_STATE_PAUSED));
     EXPECT_CALL(m_gstPlayerClient, notifyNetworkState(firebolt::rialto::NetworkState::STALLED));

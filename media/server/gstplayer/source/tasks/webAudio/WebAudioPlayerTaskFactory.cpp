@@ -77,7 +77,8 @@ std::unique_ptr<IPlayerTask> WebAudioPlayerTaskFactory::createWriteBuffer(WebAud
                                                                           uint8_t *mainPtr, uint32_t mainLength,
                                                                           uint8_t *wrapPtr, uint32_t wrapLength) const
 {
-    return std::make_unique<tasks::webaudio::WriteBuffer>(context, m_gstWrapper, mainPtr, mainLength, wrapPtr, wrapLength);
+    return std::make_unique<tasks::webaudio::WriteBuffer>(context, m_gstWrapper, mainPtr, mainLength, wrapPtr,
+                                                          wrapLength);
 }
 
 std::unique_ptr<IPlayerTask> WebAudioPlayerTaskFactory::createHandleBusMessage(WebAudioPlayerContext &context,
