@@ -75,6 +75,7 @@ protected:
     WebAudioConfig m_config{};
     const int32_t m_kMainThreadClientId{65};
     uint8_t m_dataPtr{4};
+    uint32_t m_dataOffset{2000};
     uint32_t m_dataLen{4000};
     uint32_t m_availableFrames{12};
     uint32_t m_framesStored{0};

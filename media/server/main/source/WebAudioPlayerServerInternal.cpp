@@ -147,8 +147,12 @@ bool WebAudioPlayerServerInternal::initWebAudioPlayerInternal(
         return false;
     }
 
-    if (!(m_dataOffset = m_shmBuffer->getDataOffset(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, m_shmId,
-                                                    MediaSourceType::AUDIO)))
+    try
+    {
+        m_dataOffset = m_shmBuffer->getDataOffset(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, m_shmId,
+                                                  MediaSourceType::AUDIO);
+    }
+    catch (const std::exception &e)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to get the data pointer of the partition");
         return false;
