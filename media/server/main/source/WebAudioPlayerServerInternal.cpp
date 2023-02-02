@@ -90,7 +90,7 @@ WebAudioPlayerServerInternal::WebAudioPlayerServerInternal(
     const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
     const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory,
     std::shared_ptr<common::ITimerFactory> timerFactory)
-    : m_webAudioPlayerClient(client), m_shmBuffer{shmBuffer}, m_priority{priority}, m_shmId{handle}, m_dataPtr{nullptr},
+    : m_webAudioPlayerClient(client), m_shmBuffer{shmBuffer}, m_priority{priority}, m_shmId{handle}, m_shmPtr{nullptr}, m_dataOffset{0},
       m_maxDataLength{0}, m_availableBuffer{}, m_expectWriteBuffer{false}, m_timerFactory{timerFactory},
       m_bytesPerFrame{0}, m_isEosRequested{false}
 {
@@ -141,8 +141,14 @@ bool WebAudioPlayerServerInternal::initWebAudioPlayerInternal(
         return false;
     }
 
-    if (!(m_dataPtr = m_shmBuffer->getDataPtr(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, m_shmId,
-                                              MediaSourceType::AUDIO)))
+    if (!(m_shmPtr = m_shmBuffer->getBuffer()))
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get the data pointer for the shared memory");
+        return false;
+    }
+
+    if (!(m_dataOffset = m_shmBuffer->getDataOffset(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, m_shmId,
+                                                    MediaSourceType::AUDIO)))
     {
         RIALTO_SERVER_LOG_ERROR("Failed to get the data pointer of the partition");
         return false;
@@ -163,6 +169,8 @@ bool WebAudioPlayerServerInternal::initWebAudioPlayerInternal(
 
     // Set the available bytes
     m_availableBuffer.lengthMain = m_maxDataLength;
+    m_availableBuffer.offsetMain = m_dataOffset;
+    m_availableBuffer.offsetWrap = m_dataOffset;
 
     return true;
 }
@@ -332,8 +340,8 @@ bool WebAudioPlayerServerInternal::writeBufferInternal(const uint32_t numberOfFr
     }
 
     // Write new frames
-    uint8_t *mainPtr = m_dataPtr + m_availableBuffer.offsetMain;
-    uint8_t *wrapPtr = m_dataPtr + m_availableBuffer.offsetWrap;
+    uint8_t *mainPtr = m_shmPtr + m_availableBuffer.offsetMain;
+    uint8_t *wrapPtr = m_shmPtr + m_availableBuffer.offsetWrap;
     uint32_t mainLength = 0;
     uint32_t wrapLength = 0;
     if (numberOfBytesToWrite <= m_availableBuffer.lengthMain)
@@ -374,18 +382,18 @@ bool WebAudioPlayerServerInternal::writeStoredBuffers()
     {
         // Data stored in the shared memory has not wrapped, data only stored in the middle of the shared memory region
         uint32_t startOfDataOffset = m_availableBuffer.offsetWrap + m_availableBuffer.lengthWrap;
-        mainPtr = m_dataPtr + startOfDataOffset;
+        mainPtr = m_shmPtr + startOfDataOffset;
         mainLength = m_availableBuffer.offsetMain - startOfDataOffset;
     }
     else
     {
         // Data stored in the shared memory has wrapped, data stored at the end and start of the shared memory region
         uint32_t startOfDataOffset = m_availableBuffer.offsetMain + m_availableBuffer.lengthMain;
-        mainPtr = m_dataPtr + startOfDataOffset;
-        mainLength = m_maxDataLength - startOfDataOffset;
+        mainPtr = m_shmPtr + startOfDataOffset;
+        mainLength = m_maxDataLength - (startOfDataOffset - m_dataOffset);
         // Wrapped data stored at the start of the shared memory region up to where the availableBuffer starts
-        wrapPtr = m_dataPtr;
-        wrapLength = m_availableBuffer.offsetMain;
+        wrapPtr = m_shmPtr + m_dataOffset;
+        wrapLength = m_availableBuffer.offsetMain - m_dataOffset;
     }
 
     uint32_t storedBytesWritten = m_gstPlayer->writeBuffer(mainPtr, mainLength, wrapPtr, wrapLength);
@@ -410,11 +418,12 @@ bool WebAudioPlayerServerInternal::writeStoredBuffers()
 
 void WebAudioPlayerServerInternal::updateAvailableBuffer(uint32_t bytesWrittenToShm, uint32_t bytesWrittenToGst)
 {
-    if (bytesWrittenToShm < m_availableBuffer.lengthMain)
+    if (bytesWrittenToShm <= m_availableBuffer.lengthMain)
     {
         // Data written to the shared memory has not wrapped
+        uint32_t offetRelativeToPartition = m_availableBuffer.offsetMain - m_dataOffset;
         uint32_t storedDataLengthAtEndOfShm = m_maxDataLength -
-                                              (m_availableBuffer.offsetMain + m_availableBuffer.lengthMain);
+                                              (offetRelativeToPartition + m_availableBuffer.lengthMain);
 
         m_availableBuffer.offsetMain = m_availableBuffer.offsetMain + bytesWrittenToShm;
         if (bytesWrittenToGst <= storedDataLengthAtEndOfShm)
@@ -436,17 +445,18 @@ void WebAudioPlayerServerInternal::updateAvailableBuffer(uint32_t bytesWrittenTo
         uint32_t newDataLengthAtEndOfShm = m_availableBuffer.lengthMain;
 
         m_availableBuffer.offsetMain = m_availableBuffer.offsetWrap + (bytesWrittenToShm - m_availableBuffer.lengthMain);
+        uint32_t newOffetRelativeToPartition = m_availableBuffer.offsetMain - m_dataOffset;
         if (bytesWrittenToGst <= m_availableBuffer.lengthMain)
         {
             // Data written to gstreamer has not wrapped, data written is taken from the main buffer only
-            m_availableBuffer.lengthMain = (m_availableBuffer.lengthWrap - m_availableBuffer.offsetMain) +
+            m_availableBuffer.lengthMain = (m_availableBuffer.lengthWrap - newOffetRelativeToPartition) +
                                            bytesWrittenToGst;
             m_availableBuffer.lengthWrap = 0;
         }
         else
         {
             // Data written to gstreamer has wrapped, data written is taken from the main buffer and wrapped buffer
-            m_availableBuffer.lengthMain = m_maxDataLength - m_availableBuffer.offsetMain;
+            m_availableBuffer.lengthMain = m_maxDataLength - newOffetRelativeToPartition;
             m_availableBuffer.lengthWrap = bytesWrittenToGst - newDataLengthAtEndOfShm;
         }
     }
