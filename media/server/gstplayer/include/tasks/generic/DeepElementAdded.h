@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_DEEP_ELEMENT_ADDED_H_
-#define FIREBOLT_RIALTO_SERVER_DEEP_ELEMENT_ADDED_H_
+#ifndef FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_DEEP_ELEMENT_ADDED_H_
+#define FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_DEEP_ELEMENT_ADDED_H_
 
 #include "GenericPlayerContext.h"
 #include "IGlibWrapper.h"
@@ -28,7 +28,7 @@
 #include <gst/gst.h>
 #include <memory>
 
-namespace firebolt::rialto::server
+namespace firebolt::rialto::server::tasks::generic
 {
 class DeepElementAdded : public IPlayerTask
 {
@@ -51,6 +51,6 @@ private:
     bool m_callbackRegistered;
     gulong m_signalId;
 };
-} // namespace firebolt::rialto::server
+} // namespace firebolt::rialto::server::tasks::generic
 
-#endif // FIREBOLT_RIALTO_SERVER_DEEP_ELEMENT_ADDED_H_
+#endif // FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_DEEP_ELEMENT_ADDED_H_

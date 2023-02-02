@@ -44,7 +44,7 @@ public:
     ApplicationManagementServer &operator=(ApplicationManagementServer &&) = delete;
 
     bool initialize(int socket) override;
-    bool sendStateChangedEvent(const SessionServerState &state) override;
+    bool sendStateChangedEvent(const common::SessionServerState &state) override;
     void start() override;
     void stop() override;
 

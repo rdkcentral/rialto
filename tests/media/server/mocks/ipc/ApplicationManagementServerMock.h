@@ -29,7 +29,7 @@ class ApplicationManagementServerMock : public IApplicationManagementServer
 {
 public:
     MOCK_METHOD(bool, initialize, (int socket), (override));
-    MOCK_METHOD(bool, sendStateChangedEvent, (const SessionServerState &state), (override));
+    MOCK_METHOD(bool, sendStateChangedEvent, (const common::SessionServerState &state), (override));
     MOCK_METHOD(void, start, (), (override));
     MOCK_METHOD(void, stop, (), (override));
 };

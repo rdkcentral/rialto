@@ -21,7 +21,7 @@
 #include "GenericPlayerContext.h"
 #include "RialtoServerLogging.h"
 
-namespace firebolt::rialto::server
+namespace firebolt::rialto::server::tasks::generic
 {
 EnoughData::EnoughData(GenericPlayerContext &context, GstAppSrc *src) : m_context{context}, m_src{src}
 {
@@ -53,4 +53,4 @@ void EnoughData::execute() const
         }
     }
 }
-} // namespace firebolt::rialto::server
+} // namespace firebolt::rialto::server::tasks::generic

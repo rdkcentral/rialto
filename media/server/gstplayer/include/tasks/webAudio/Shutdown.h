@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_WEBAUDIO_SHUTDOWN_H_
-#define FIREBOLT_RIALTO_SERVER_WEBAUDIO_SHUTDOWN_H_
+#ifndef FIREBOLT_RIALTO_SERVER_TASKS_WEBAUDIO_SHUTDOWN_H_
+#define FIREBOLT_RIALTO_SERVER_TASKS_WEBAUDIO_SHUTDOWN_H_
 
 #include "IPlayerTask.h"
 #include <gst/gst.h>
@@ -28,7 +28,7 @@ namespace firebolt::rialto::server
 class IGstWebAudioPlayerPrivate;
 } // namespace firebolt::rialto::server
 
-namespace firebolt::rialto::server::webaudio
+namespace firebolt::rialto::server::tasks::webaudio
 {
 class Shutdown : public IPlayerTask
 {
@@ -40,6 +40,6 @@ public:
 private:
     IGstWebAudioPlayerPrivate &m_player;
 };
-} // namespace firebolt::rialto::server::webaudio
+} // namespace firebolt::rialto::server::tasks::webaudio
 
-#endif // FIREBOLT_RIALTO_SERVER_WEBAUDIO_SHUTDOWN_H_
+#endif // FIREBOLT_RIALTO_SERVER_TASKS_WEBAUDIO_SHUTDOWN_H_

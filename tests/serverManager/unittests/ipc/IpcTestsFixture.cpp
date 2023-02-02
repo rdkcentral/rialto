@@ -60,7 +60,7 @@ void IpcTests::simulateClientDisconnection()
 }
 
 void IpcTests::sessionServerAppManagerWillBeNotifiedAboutSessionServerStateChange(
-    const rialto::servermanager::service::SessionServerState &newState)
+    const firebolt::rialto::common::SessionServerState &newState)
 {
     EXPECT_CALL(m_sessionServerAppManagerMock, onSessionServerStateChanged(APP_NAME, newState))
         .WillOnce(Invoke(
@@ -99,13 +99,13 @@ void IpcTests::triggerRemoveClient()
 bool IpcTests::triggerPerformSetConfiguration()
 {
     EXPECT_TRUE(m_sut);
-    const auto initialState{rialto::servermanager::service::SessionServerState::INACTIVE};
+    const auto initialState{firebolt::rialto::common::SessionServerState::INACTIVE};
     const std::string socketName{getenv("RIALTO_SOCKET_PATH")};
-    constexpr int maxPlaybackSessions{2};
-    return m_sut->performSetConfiguration(APP_NAME, initialState, socketName, maxPlaybackSessions);
+    constexpr firebolt::rialto::common::MaxResourceCapabilitites maxResource{2, 1};
+    return m_sut->performSetConfiguration(APP_NAME, initialState, socketName, maxResource);
 }
 
-bool IpcTests::triggerPerformSetState(const rialto::servermanager::service::SessionServerState &state)
+bool IpcTests::triggerPerformSetState(const firebolt::rialto::common::SessionServerState &state)
 {
     EXPECT_TRUE(m_sut);
     return m_sut->performSetState(APP_NAME, state);

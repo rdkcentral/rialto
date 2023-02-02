@@ -21,7 +21,7 @@
 #include "IGstGenericPlayerPrivate.h"
 #include "RialtoServerLogging.h"
 
-namespace firebolt::rialto::server
+namespace firebolt::rialto::server::tasks::generic
 {
 Shutdown::Shutdown(IGstGenericPlayerPrivate &player) : m_player{player}
 {
@@ -38,4 +38,4 @@ void Shutdown::execute() const
     RIALTO_SERVER_LOG_DEBUG("Executing Shutdown");
     m_player.stopWorkerThread();
 }
-} // namespace firebolt::rialto::server
+} // namespace firebolt::rialto::server::tasks::generic

@@ -22,44 +22,44 @@
 TEST_F(ServerManagerModuleServiceTests, shouldSetConfiguration)
 {
     sessionServerManagerWillHandleRequestSuccess();
-    sessionServerManagerWillSetConfiguration(firebolt::rialto::server::SessionServerState::ACTIVE);
+    sessionServerManagerWillSetConfiguration(firebolt::rialto::common::SessionServerState::ACTIVE);
     sessionServerManagerWillSetLogLevels();
-    sendSetConfiguration(firebolt::rialto::server::SessionServerState::ACTIVE);
+    sendSetConfiguration(firebolt::rialto::common::SessionServerState::ACTIVE);
 }
 
 TEST_F(ServerManagerModuleServiceTests, shouldSetStateToUninitialized)
 {
     sessionServerManagerWillHandleRequestSuccess();
-    sessionServerManagerWillSetState(firebolt::rialto::server::SessionServerState::UNINITIALIZED);
-    sendSetState(firebolt::rialto::server::SessionServerState::UNINITIALIZED);
+    sessionServerManagerWillSetState(firebolt::rialto::common::SessionServerState::UNINITIALIZED);
+    sendSetState(firebolt::rialto::common::SessionServerState::UNINITIALIZED);
 }
 
 TEST_F(ServerManagerModuleServiceTests, shouldSetStateToInactive)
 {
     sessionServerManagerWillHandleRequestSuccess();
-    sessionServerManagerWillSetState(firebolt::rialto::server::SessionServerState::INACTIVE);
-    sendSetState(firebolt::rialto::server::SessionServerState::INACTIVE);
+    sessionServerManagerWillSetState(firebolt::rialto::common::SessionServerState::INACTIVE);
+    sendSetState(firebolt::rialto::common::SessionServerState::INACTIVE);
 }
 
 TEST_F(ServerManagerModuleServiceTests, shouldSetStateToActive)
 {
     sessionServerManagerWillHandleRequestSuccess();
-    sessionServerManagerWillSetState(firebolt::rialto::server::SessionServerState::ACTIVE);
-    sendSetState(firebolt::rialto::server::SessionServerState::ACTIVE);
+    sessionServerManagerWillSetState(firebolt::rialto::common::SessionServerState::ACTIVE);
+    sendSetState(firebolt::rialto::common::SessionServerState::ACTIVE);
 }
 
 TEST_F(ServerManagerModuleServiceTests, shouldSetStateToNotRunning)
 {
     sessionServerManagerWillHandleRequestSuccess();
-    sessionServerManagerWillSetState(firebolt::rialto::server::SessionServerState::NOT_RUNNING);
-    sendSetState(firebolt::rialto::server::SessionServerState::NOT_RUNNING);
+    sessionServerManagerWillSetState(firebolt::rialto::common::SessionServerState::NOT_RUNNING);
+    sendSetState(firebolt::rialto::common::SessionServerState::NOT_RUNNING);
 }
 
 TEST_F(ServerManagerModuleServiceTests, shouldSetStateToError)
 {
     sessionServerManagerWillHandleRequestSuccess();
-    sessionServerManagerWillSetState(firebolt::rialto::server::SessionServerState::ERROR);
-    sendSetState(firebolt::rialto::server::SessionServerState::ERROR);
+    sessionServerManagerWillSetState(firebolt::rialto::common::SessionServerState::ERROR);
+    sendSetState(firebolt::rialto::common::SessionServerState::ERROR);
 }
 
 TEST_F(ServerManagerModuleServiceTests, shouldSetLogLevels)
@@ -72,14 +72,14 @@ TEST_F(ServerManagerModuleServiceTests, shouldSetLogLevels)
 TEST_F(ServerManagerModuleServiceTests, shouldFailToSetConfiguration)
 {
     sessionServerManagerWillHandleRequestFailure();
-    sessionServerManagerWillFailToSetConfiguration(firebolt::rialto::server::SessionServerState::ACTIVE);
+    sessionServerManagerWillFailToSetConfiguration(firebolt::rialto::common::SessionServerState::ACTIVE);
     sessionServerManagerWillSetLogLevels();
-    sendSetConfiguration(firebolt::rialto::server::SessionServerState::ACTIVE);
+    sendSetConfiguration(firebolt::rialto::common::SessionServerState::ACTIVE);
 }
 
 TEST_F(ServerManagerModuleServiceTests, shouldFailToSetState)
 {
     sessionServerManagerWillHandleRequestFailure();
-    sessionServerManagerWillFailToSetState(firebolt::rialto::server::SessionServerState::ACTIVE);
-    sendSetState(firebolt::rialto::server::SessionServerState::ACTIVE);
+    sessionServerManagerWillFailToSetState(firebolt::rialto::common::SessionServerState::ACTIVE);
+    sendSetState(firebolt::rialto::common::SessionServerState::ACTIVE);
 }

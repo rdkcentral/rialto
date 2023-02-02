@@ -20,7 +20,7 @@
 #include "tasks/generic/UpdatePlaybackGroup.h"
 #include "RialtoServerLogging.h"
 
-namespace firebolt::rialto::server
+namespace firebolt::rialto::server::tasks::generic
 {
 UpdatePlaybackGroup::UpdatePlaybackGroup(GenericPlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper,
                                          std::shared_ptr<IGlibWrapper> glibWrapper, GstElement *typefind,
@@ -68,4 +68,4 @@ void UpdatePlaybackGroup::execute() const
         m_glibWrapper->gFree(typefindCaps);
     }
 }
-} // namespace firebolt::rialto::server
+} // namespace firebolt::rialto::server::tasks::generic

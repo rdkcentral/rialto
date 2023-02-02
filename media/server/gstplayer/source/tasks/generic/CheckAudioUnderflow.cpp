@@ -27,7 +27,7 @@
 
 #include <cinttypes>
 
-namespace firebolt::rialto::server
+namespace firebolt::rialto::server::tasks::generic
 {
 CheckAudioUnderflow::CheckAudioUnderflow(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                          IGstGenericPlayerClient *client, std::shared_ptr<IGstWrapper> gstWrapper)
@@ -55,4 +55,4 @@ void CheckAudioUnderflow::execute() const
     }
 }
 
-} // namespace firebolt::rialto::server
+} // namespace firebolt::rialto::server::tasks::generic

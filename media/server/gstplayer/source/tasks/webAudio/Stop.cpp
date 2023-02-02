@@ -22,7 +22,7 @@
 #include "RialtoServerLogging.h"
 #include "WebAudioPlayerContext.h"
 
-namespace firebolt::rialto::server::webaudio
+namespace firebolt::rialto::server::tasks::webaudio
 {
 Stop::Stop(IGstWebAudioPlayerPrivate &player) : m_player{player}
 {
@@ -39,4 +39,4 @@ void Stop::execute() const
     RIALTO_SERVER_LOG_DEBUG("Executing Stop");
     m_player.changePipelineState(GST_STATE_NULL);
 }
-} // namespace firebolt::rialto::server::webaudio
+} // namespace firebolt::rialto::server::tasks::webaudio

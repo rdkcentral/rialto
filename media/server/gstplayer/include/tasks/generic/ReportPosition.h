@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_REPORT_POSITION_H_
-#define FIREBOLT_RIALTO_SERVER_REPORT_POSITION_H_
+#ifndef FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_REPORT_POSITION_H_
+#define FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_REPORT_POSITION_H_
 
 #include "GenericPlayerContext.h"
 #include "IGstGenericPlayerClient.h"
@@ -26,7 +26,7 @@
 #include "IPlayerTask.h"
 #include <memory>
 
-namespace firebolt::rialto::server
+namespace firebolt::rialto::server::tasks::generic
 {
 class ReportPosition : public IPlayerTask
 {
@@ -41,6 +41,6 @@ private:
     IGstGenericPlayerClient *m_gstPlayerClient;
     std::shared_ptr<IGstWrapper> m_gstWrapper;
 };
-} // namespace firebolt::rialto::server
+} // namespace firebolt::rialto::server::tasks::generic
 
-#endif // FIREBOLT_RIALTO_SERVER_REPORT_POSITION_H_
+#endif // FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_REPORT_POSITION_H_

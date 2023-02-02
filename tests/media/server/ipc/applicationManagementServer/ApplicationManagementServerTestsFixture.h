@@ -24,8 +24,8 @@
 #include "IpcClientMock.h"
 #include "IpcServerMock.h"
 #include "ServerManagerModuleServiceMock.h"
+#include "SessionServerCommon.h"
 #include "SessionServerManagerMock.h"
-#include "SessionServerState.h"
 #include <gtest/gtest.h>
 #include <memory>
 
@@ -39,15 +39,15 @@ public:
 
     void clientWillBeInitialized();
     void clientWillFailToInitialized();
-    void clientWillReceiveStateChangedEvent(const firebolt::rialto::server::SessionServerState &state);
+    void clientWillReceiveStateChangedEvent(const firebolt::rialto::common::SessionServerState &state);
     void clientWillNotBeConnected();
     void serverThreadWillStart();
     void clientWillBeDisconnected();
 
     void initializeApplicationManager();
     void initializeApplicationManagerAndExpectFailure();
-    void sendStateChangedEvent(const firebolt::rialto::server::SessionServerState &state);
-    void sendStateChangedEventAndExpectFailure(const firebolt::rialto::server::SessionServerState &state);
+    void sendStateChangedEvent(const firebolt::rialto::common::SessionServerState &state);
+    void sendStateChangedEventAndExpectFailure(const firebolt::rialto::common::SessionServerState &state);
     void startApplicationManager();
     void stopApplicationManager();
 

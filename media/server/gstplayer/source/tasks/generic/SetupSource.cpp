@@ -22,7 +22,7 @@
 #include "IGstGenericPlayerPrivate.h"
 #include "RialtoServerLogging.h"
 
-namespace firebolt::rialto::server
+namespace firebolt::rialto::server::tasks::generic
 {
 SetupSource::SetupSource(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, GstElement *source)
     : m_context{context}, m_player{player}, m_source{source}
@@ -43,4 +43,4 @@ void SetupSource::execute() const
     // Wait for all appsrcs to be attached to playbin
     m_player.scheduleSourceSetupFinish();
 }
-} // namespace firebolt::rialto::server
+} // namespace firebolt::rialto::server::tasks::generic
