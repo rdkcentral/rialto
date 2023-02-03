@@ -95,10 +95,10 @@ protected:
     {
         EXPECT_CALL(*m_gstWrapper, gstCapsNewEmptySimple(StrEq("audio/x-raw"))).WillOnce(Return(&m_caps));
         EXPECT_CALL(*m_gstWrapper,
-                    gstCapsSetSimpleUintStub(&m_caps, StrEq("channels"), G_TYPE_UINT, m_config.pcm.channels));
+                    gstCapsSetSimpleIntStub(&m_caps, StrEq("channels"), G_TYPE_INT, m_config.pcm.channels));
         EXPECT_CALL(*m_gstWrapper,
                     gstCapsSetSimpleStringStub(&m_caps, StrEq("layout"), G_TYPE_STRING, StrEq("interleaved")));
-        EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleUintStub(&m_caps, StrEq("rate"), G_TYPE_UINT, m_config.pcm.rate));
+        EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleIntStub(&m_caps, StrEq("rate"), G_TYPE_INT, m_config.pcm.rate));
         EXPECT_CALL(*m_gstWrapper,
                     gstCapsSetSimpleStringStub(&m_caps, StrEq("format"), G_TYPE_STRING, StrEq(getPcmFormat().c_str())));
     }

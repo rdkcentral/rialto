@@ -141,9 +141,14 @@ protected:
     const int m_shmId;
 
     /**
-     * @brief Pointer to the started of the shared buffer partition.
+     * @brief Pointer to the start of the shared buffer.
      */
-    uint8_t *m_dataPtr;
+    uint8_t *m_shmPtr;
+
+    /**
+     * @brief Offset of the web audio partition relative to the start of the shared memory.
+     */
+    uint32_t m_partitionOffset;
 
     /**
      * @brief Length of the shared buffer partition.
