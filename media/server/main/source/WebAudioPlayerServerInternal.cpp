@@ -90,9 +90,9 @@ WebAudioPlayerServerInternal::WebAudioPlayerServerInternal(
     const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
     const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory,
     std::shared_ptr<common::ITimerFactory> timerFactory)
-    : m_webAudioPlayerClient(client), m_shmBuffer{shmBuffer}, m_priority{priority}, m_shmId{handle}, m_shmPtr{nullptr}, m_dataOffset{0},
-      m_maxDataLength{0}, m_availableBuffer{}, m_expectWriteBuffer{false}, m_timerFactory{timerFactory},
-      m_bytesPerFrame{0}, m_isEosRequested{false}
+    : m_webAudioPlayerClient(client), m_shmBuffer{shmBuffer}, m_priority{priority}, m_shmId{handle}, m_shmPtr{nullptr},
+      m_dataOffset{0}, m_maxDataLength{0}, m_availableBuffer{}, m_expectWriteBuffer{false},
+      m_timerFactory{timerFactory}, m_bytesPerFrame{0}, m_isEosRequested{false}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
@@ -426,8 +426,7 @@ void WebAudioPlayerServerInternal::updateAvailableBuffer(uint32_t bytesWrittenTo
     {
         // Data written to the shared memory has not wrapped
         uint32_t offetRelativeToPartition = m_availableBuffer.offsetMain - m_dataOffset;
-        uint32_t storedDataLengthAtEndOfShm = m_maxDataLength -
-                                              (offetRelativeToPartition + m_availableBuffer.lengthMain);
+        uint32_t storedDataLengthAtEndOfShm = m_maxDataLength - (offetRelativeToPartition + m_availableBuffer.lengthMain);
 
         m_availableBuffer.offsetMain = m_availableBuffer.offsetMain + bytesWrittenToShm;
         if (bytesWrittenToGst <= storedDataLengthAtEndOfShm)

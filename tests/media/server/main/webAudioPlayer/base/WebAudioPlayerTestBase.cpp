@@ -52,10 +52,9 @@ void WebAudioPlayerTestBase::createWebAudioPlayer()
     EXPECT_CALL(*m_sharedMemoryBufferMock,
                 mapPartition(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, m_webAudioPlayerHandle))
         .WillOnce(Return(true));
-    EXPECT_CALL(*m_sharedMemoryBufferMock, getBuffer())
-        .WillOnce(Return(&m_dataPtr));
+    EXPECT_CALL(*m_sharedMemoryBufferMock, getBuffer()).WillOnce(Return(&m_dataPtr));
     EXPECT_CALL(*m_sharedMemoryBufferMock, getDataOffset(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO,
-                                                      m_webAudioPlayerHandle, MediaSourceType::AUDIO))
+                                                         m_webAudioPlayerHandle, MediaSourceType::AUDIO))
         .WillOnce(Return(m_dataOffset));
     EXPECT_CALL(*m_sharedMemoryBufferMock, getMaxDataLen(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO,
                                                          m_webAudioPlayerHandle, MediaSourceType::AUDIO))
@@ -141,7 +140,8 @@ void WebAudioPlayerTestBase::expectWriteStoredFrames(uint32_t storedFramesToWrit
         expectedStoredMainPtr = &m_dataPtr + m_webAudioShmInfo->offsetMain + m_webAudioShmInfo->lengthMain;
         std::cout << m_dataLen << ", " << m_webAudioShmInfo->offsetMain << ", " << m_webAudioShmInfo->lengthMain
                   << std::endl;
-        expectedStoredMainLength = m_dataLen - ((m_webAudioShmInfo->offsetMain - m_dataOffset) + m_webAudioShmInfo->lengthMain);
+        expectedStoredMainLength = m_dataLen -
+                                   ((m_webAudioShmInfo->offsetMain - m_dataOffset) + m_webAudioShmInfo->lengthMain);
         // Continue reading data from the start of the buffer
         expectedStoredWrapPtr = &m_dataPtr + m_webAudioShmInfo->offsetWrap;
         expectedStoredWrapLength = m_webAudioShmInfo->offsetMain - m_webAudioShmInfo->offsetWrap;

@@ -285,7 +285,7 @@ TEST_F(RialtoServerWebAudioPlayerBufferApiTest, writePartialStoredDataAndNoNewDa
     expectedWebAudioShmInfo->lengthMain = (m_maxFrame / 4) * m_bytesPerFrame;
     expectedWebAudioShmInfo->offsetMain = (m_maxFrame * 3 / 4) * m_bytesPerFrame + m_dataOffset;
     expectedWebAudioShmInfo->lengthWrap = (m_maxFrame / 4 + m_maxFrame / 8) * m_bytesPerFrame;
-    expectedWebAudioShmInfo->offsetWrap =  m_dataOffset;
+    expectedWebAudioShmInfo->offsetWrap = m_dataOffset;
     getBufferAvailableSuccess(m_maxFrame - m_framesStored, expectedWebAudioShmInfo);
 
     expectCancelTimer();
