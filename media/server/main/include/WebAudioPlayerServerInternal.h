@@ -148,7 +148,7 @@ protected:
     /**
      * @brief Offset of the web audio partition relative to the start of the shared memory.
      */
-    uint32_t m_dataOffset;
+    uint32_t m_partitionOffset;
 
     /**
      * @brief Length of the shared buffer partition.
