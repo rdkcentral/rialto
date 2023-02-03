@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_WEBAUDIO_WRITE_BUFFER_H_
-#define FIREBOLT_RIALTO_SERVER_WEBAUDIO_WRITE_BUFFER_H_
+#ifndef FIREBOLT_RIALTO_SERVER_TASKS_WEBAUDIO_WRITE_BUFFER_H_
+#define FIREBOLT_RIALTO_SERVER_TASKS_WEBAUDIO_WRITE_BUFFER_H_
 
 #include "IGlibWrapper.h"
 #include "IGstWebAudioPlayerPrivate.h"
@@ -28,7 +28,7 @@
 #include "WebAudioPlayerContext.h"
 #include <memory>
 
-namespace firebolt::rialto::server::webaudio
+namespace firebolt::rialto::server::tasks::webaudio
 {
 class WriteBuffer : public IPlayerTask
 {
@@ -46,6 +46,6 @@ private:
     const uint8_t *m_wrapPtr;
     const uint64_t m_wrapLength;
 };
-} // namespace firebolt::rialto::server::webaudio
+} // namespace firebolt::rialto::server::tasks::webaudio
 
-#endif // FIREBOLT_RIALTO_SERVER_WEBAUDIO_WRITE_BUFFER_H_
+#endif // FIREBOLT_RIALTO_SERVER_TASKS_WEBAUDIO_WRITE_BUFFER_H_

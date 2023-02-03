@@ -21,7 +21,7 @@
 #include "IGstGenericPlayerPrivate.h"
 #include "RialtoServerLogging.h"
 
-namespace firebolt::rialto::server
+namespace firebolt::rialto::server::tasks::generic
 {
 Play::Play(IGstGenericPlayerPrivate &player) : m_player{player}
 {
@@ -38,4 +38,4 @@ void Play::execute() const
     RIALTO_SERVER_LOG_DEBUG("Executing Play");
     m_player.changePipelineState(GST_STATE_PLAYING);
 }
-} // namespace firebolt::rialto::server
+} // namespace firebolt::rialto::server::tasks::generic

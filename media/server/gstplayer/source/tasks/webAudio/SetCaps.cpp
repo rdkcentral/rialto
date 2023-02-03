@@ -22,7 +22,7 @@
 #include "IGstWrapper.h"
 #include "RialtoServerLogging.h"
 
-namespace firebolt::rialto::server::webaudio
+namespace firebolt::rialto::server::tasks::webaudio
 {
 namespace
 {
@@ -153,4 +153,4 @@ GstCaps *SetCaps::createCapsFromMimeType() const
 
     return capsBuilder->buildCaps();
 }
-} // namespace firebolt::rialto::server::webaudio
+} // namespace firebolt::rialto::server::tasks::webaudio

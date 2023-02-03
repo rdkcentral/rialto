@@ -20,7 +20,7 @@
 #include "tasks/generic/UpdatePlaybackGroup.h"
 #include "RialtoServerLogging.h"
 
-namespace firebolt::rialto::server
+namespace firebolt::rialto::server::tasks::generic
 {
 UpdatePlaybackGroup::UpdatePlaybackGroup(GenericPlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper,
                                          std::shared_ptr<IGlibWrapper> glibWrapper, GstElement *typefind,
@@ -49,7 +49,6 @@ void UpdatePlaybackGroup::execute() const
         RIALTO_SERVER_LOG_DEBUG("Typefind SRC Pad Strm Parsed Caps %s", typefindCaps);
         if (m_glibWrapper->gStrrstr(typefindCaps, "audio/"))
         {
-            RIALTO_SERVER_LOG_DEBUG("Typefind Audio Caps %s", typefindCaps);
             GstElement *typeFindParent = reinterpret_cast<GstElement *>(m_gstWrapper->gstElementGetParent(m_typefind));
             if (typeFindParent)
             {
@@ -69,4 +68,4 @@ void UpdatePlaybackGroup::execute() const
         m_glibWrapper->gFree(typefindCaps);
     }
 }
-} // namespace firebolt::rialto::server
+} // namespace firebolt::rialto::server::tasks::generic

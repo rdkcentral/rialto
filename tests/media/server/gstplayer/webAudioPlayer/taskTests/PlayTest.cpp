@@ -35,7 +35,7 @@ protected:
 TEST_F(WebAudioPlayTest, shouldPlay)
 {
     EXPECT_CALL(m_gstPlayer, changePipelineState(GST_STATE_PLAYING)).WillOnce(Return(true));
-    firebolt::rialto::server::webaudio::Play task{m_gstPlayer, &m_gstPlayerClient};
+    firebolt::rialto::server::tasks::webaudio::Play task{m_gstPlayer, &m_gstPlayerClient};
     task.execute();
 }
 
@@ -43,6 +43,6 @@ TEST_F(WebAudioPlayTest, shouldFailToPlay)
 {
     EXPECT_CALL(m_gstPlayer, changePipelineState(GST_STATE_PLAYING)).WillOnce(Return(false));
     EXPECT_CALL(m_gstPlayerClient, notifyState(firebolt::rialto::WebAudioPlayerState::FAILURE));
-    firebolt::rialto::server::webaudio::Play task{m_gstPlayer, &m_gstPlayerClient};
+    firebolt::rialto::server::tasks::webaudio::Play task{m_gstPlayer, &m_gstPlayerClient};
     task.execute();
 }

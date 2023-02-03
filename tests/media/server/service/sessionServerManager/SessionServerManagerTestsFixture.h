@@ -58,8 +58,8 @@ public:
     void willSetStateNotRunning();
     void willSetLogLevels();
 
-    void setStateShouldFail(const firebolt::rialto::server::SessionServerState &state);
-    void setStateShouldSucceed(const firebolt::rialto::server::SessionServerState &state);
+    void setStateShouldFail(const firebolt::rialto::common::SessionServerState &state);
+    void setStateShouldSucceed(const firebolt::rialto::common::SessionServerState &state);
     void triggerStartService();
     void triggerSetLogLevels();
 

@@ -40,13 +40,13 @@ protected:
 TEST_F(SetVideoGeometryTest, shouldNotSetVideoGeometryWhenPipelineIsNull)
 {
     m_context.pipeline = nullptr;
-    firebolt::rialto::server::SetVideoGeometry task{m_context, m_gstPlayer, m_rectangle};
+    firebolt::rialto::server::tasks::generic::SetVideoGeometry task{m_context, m_gstPlayer, m_rectangle};
     task.execute();
 }
 
 TEST_F(SetVideoGeometryTest, shouldSetVideoGeometry)
 {
-    firebolt::rialto::server::SetVideoGeometry task{m_context, m_gstPlayer, m_rectangle};
+    firebolt::rialto::server::tasks::generic::SetVideoGeometry task{m_context, m_gstPlayer, m_rectangle};
     EXPECT_CALL(m_gstPlayer, setWesterossinkRectangle());
     task.execute();
     EXPECT_EQ(m_context.pendingGeometry, m_rectangle);

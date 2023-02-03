@@ -147,12 +147,12 @@ public:
         /**
          * @brief Default constructor.
          *
-         * @param[in] id   : The source id.
-         * @param[in] configType : The source config type.
-         * @param[in] mimeType : The mime type string.
-         * @param[in] alignment : The alignment of media segment.
-         * @param[in] streamFormat : The stream format
-         * @param[in] codecData : The additional data for decoder
+         * @param[out] id           : The source ID will be set by a successful call to attachSource()
+         * @param[in]  configType   : The source config type.
+         * @param[in]  mimeType     : The mime type string.
+         * @param[in]  alignment    : The alignment of media segment.
+         * @param[in]  streamFormat : The stream format
+         * @param[in]  codecData    : The additional data for decoder
          */
         explicit MediaSource(int32_t id = 0, SourceConfigType configType = SourceConfigType::UNKNOWN,
                              const std::string &mimeType = std::string(),
@@ -164,7 +164,7 @@ public:
         {
         }
         /**
-         * @brief The source id.
+         * @brief The source id. Parameter will be set by a successful call to attachSource()
          */
         int32_t m_id;
 
@@ -200,12 +200,12 @@ public:
         /**
          * @brief Constructor for audio specific configuration.
          *
-         * @param[in] id   : The source id.
-         * @param[in] mimeType : The mime type string.
-         * @param[in] audioConfig : The audio specific configuration.
-         * @param[in] alignment : The alignment of media segment.
-         * @param[in] streamFormat : The stream format
-         * @param[in] codecData : The additional data for decoder
+         * @param[out] id           : The source ID will be set by a successful call to attachSource()
+         * @param[in]  mimeType     : The mime type string.
+         * @param[in]  audioConfig  : The audio specific configuration.
+         * @param[in]  alignment    : The alignment of media segment.
+         * @param[in]  streamFormat : The stream format
+         * @param[in]  codecData    : The additional data for decoder
          */
         MediaSourceAudio(int32_t id, const std::string &mimeType, const AudioConfig &audioConfig = AudioConfig(),
                          SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
@@ -238,11 +238,11 @@ public:
         /**
          * @brief Constructor for video specific configuration.
          *
-         * @param[in] id   : The source id.
-         * @param[in] mimeType : The mime type string.
-         * @param[in] alignment : The alignment of media segment.
-         * @param[in] streamFormat : The stream format
-         * @param[in] codecData : The additional data for decoder
+         * @param[out] id           : The source ID will be set by a successful call to attachSource()
+         * @param[in]  mimeType     : The mime type string.
+         * @param[in]  alignment    : The alignment of media segment.
+         * @param[in]  streamFormat : The stream format
+         * @param[in]  codecData    : The additional data for decoder
          */
         MediaSourceVideo(int32_t id, const std::string &mimeType,
                          SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
@@ -260,12 +260,12 @@ public:
         /**
          * @brief Constructor for video specific configuration.
          *
-         * @param[in] id   : The source id.
-         * @param[in] mimeType : The mime type string.
-         * @param[in] sourceConfigType : The source config type
-         * @param[in] alignment : The alignment of media segment.
-         * @param[in] streamFormat : The stream format
-         * @param[in] codecData : The additional data for decoder
+         * @param[out] id               : The source ID will be set by a successful call to attachSource()
+         * @param[in]  mimeType         : The mime type string.
+         * @param[in]  sourceConfigType : The source config type
+         * @param[in]  alignment        : The alignment of media segment.
+         * @param[in]  streamFormat     : The stream format
+         * @param[in]  codecData        : The additional data for decoder
          */
         MediaSourceVideo(int32_t id, SourceConfigType sourceConfigType, const std::string &mimeType,
                          SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
@@ -282,12 +282,12 @@ public:
         /**
          * @brief Constructor for dolby vision specific configuration.
          *
-         * @param[in] id   : The source id.
-         * @param[in] mimeType : The mime type string.
+         * @param[out] id                : The source ID will be set by a successful call to attachSource()
+         * @param[in] mimeType           : The mime type string.
          * @param[in] dolbyVisionProfile : The dolby vision profile
-         * @param[in] alignment : The alignment of media segment.
-         * @param[in] streamFormat : The stream format
-         * @param[in] codecData : The additional data for decoder
+         * @param[in] alignment          : The alignment of media segment.
+         * @param[in] streamFormat       : The stream format
+         * @param[in] codecData          : The additional data for decoder
          */
         MediaSourceVideoDolbyVision(int32_t id, const std::string &mimeType, int32_t dolbyVisionProfile,
                                     SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
@@ -320,7 +320,7 @@ public:
         /**
          * @brief Default constructor.
          *
-         * @param[in] sourceId      : The source id.
+         * @param[in] sourceId      : The source id. Value should be set to the MediaSource.id returned after attachSource()
          * @param[in] type          : The source type.
          * @param[in] timeStamp     : The timestamp in nanoseconds.
          * @param[in] duration      : The duration in nanoseconds.
@@ -619,7 +619,7 @@ public:
         /**
          * @brief Default constructor.
          *
-         * @param[in] sourceId         : The source id.
+         * @param[in] sourceId         : The source id. Value should be set to the MediaSource.id returned after attachSource()
          * @param[in] timeStamp        : The timestamp in nanoseconds.
          * @param[in] duration         : The duration in nanoseconds.
          * @param[in] sampleRate       : The sample rate in samples per second.
@@ -699,7 +699,7 @@ public:
         /**
          * @brief Default constructor.
          *
-         * @param[in] sourceId  : The source id.
+         * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
          * @param[in] timeStamp : The timestamp in nanoseconds.
          * @param[in] duration  : The duration in nanoseconds.
          * @param[in] width     : The video width in pixels.
@@ -819,7 +819,7 @@ public:
      * being used. I.e. if the MediaType value in load() is
      * MediaType::MSE.
      *
-     * @param[in] id : The source id.
+     * @param[in] id : The source id. Value should be set to the MediaSource.id returned after attachSource()
      *
      * @retval true on success.
      */

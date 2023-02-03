@@ -17,15 +17,15 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_UNDERFLOW_H_
-#define FIREBOLT_RIALTO_SERVER_UNDERFLOW_H_
+#ifndef FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_UNDERFLOW_H_
+#define FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_UNDERFLOW_H_
 
 #include "IGstGenericPlayerClient.h"
 #include "IGstGenericPlayerPrivate.h"
 #include "IPlayerTask.h"
 #include <gst/gst.h>
 
-namespace firebolt::rialto::server
+namespace firebolt::rialto::server::tasks::generic
 {
 class Underflow : public IPlayerTask
 {
@@ -41,6 +41,6 @@ private:
     bool &m_underflowFlag;
     bool m_underflowEnabled;
 };
-} // namespace firebolt::rialto::server
+} // namespace firebolt::rialto::server::tasks::generic
 
-#endif // FIREBOLT_RIALTO_SERVER_UNDERFLOW_H_
+#endif // FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_UNDERFLOW_H_

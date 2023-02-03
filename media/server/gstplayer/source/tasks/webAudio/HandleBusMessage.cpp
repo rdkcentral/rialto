@@ -23,7 +23,7 @@
 #include "RialtoServerLogging.h"
 #include "WebAudioPlayerContext.h"
 
-namespace firebolt::rialto::server::webaudio
+namespace firebolt::rialto::server::tasks::webaudio
 {
 HandleBusMessage::HandleBusMessage(WebAudioPlayerContext &context, IGstWebAudioPlayerPrivate &player,
                                    IGstWebAudioPlayerClient *client, std::shared_ptr<IGstWrapper> gstWrapper,
@@ -112,4 +112,4 @@ void HandleBusMessage::execute() const
 
     m_gstWrapper->gstMessageUnref(m_message);
 }
-} // namespace firebolt::rialto::server::webaudio
+} // namespace firebolt::rialto::server::tasks::webaudio

@@ -24,7 +24,7 @@
 #include "RialtoServerLogging.h"
 #include <unordered_map>
 
-namespace firebolt::rialto::server
+namespace firebolt::rialto::server::tasks::generic
 {
 namespace
 {
@@ -300,7 +300,19 @@ void AttachSource::switchAudioSource(GstCaps *caps, const std::string &strCaps) 
         RIALTO_SERVER_LOG_WARN("SKIP switching audio source. Unknown mime type");
         return;
     }
-    RIALTO_SERVER_LOG_MIL("Switching audio source. New caps: %s", strCaps.c_str());
+    GstAppSrc *appSrc{GST_APP_SRC(m_context.streamInfo[m_attachedSource->getType()])};
+    std::string oldCapsStr;
+    GstCaps *oldCaps = m_gstWrapper->gstAppSrcGetCaps(appSrc);
+    if (oldCaps)
+    {
+        gchar *oldCapsCStr = m_gstWrapper->gstCapsToString(oldCaps);
+        oldCapsStr = std::string(oldCapsCStr);
+        m_glibWrapper->gFree(oldCapsCStr);
+        m_gstWrapper->gstCapsUnref(oldCaps);
+    }
+    RIALTO_SERVER_LOG_MIL("Switching audio source.");
+    RIALTO_SERVER_LOG_MIL("Old caps: %s", oldCapsStr.c_str());
+    RIALTO_SERVER_LOG_MIL("New caps: %s", strCaps.c_str());
     AudioAttributesPrivate audioAttributes{createAudioAttributes()};
     int sampleAttributes{0}; // rdk_gstreamer_utils::performAudioTrackCodecChannelSwitch checks if this param != NULL only.
     std::uint32_t status{0};   // must be 0 to make rdk_gstreamer_utils::performAudioTrackCodecChannelSwitch work
@@ -310,7 +322,7 @@ void AttachSource::switchAudioSource(GstCaps *caps, const std::string &strCaps) 
     std::int64_t currentDispPts; // In netflix code it's currentDisplayPosition + offset
     m_gstWrapper->gstElementQueryPosition(m_context.pipeline, GST_FORMAT_TIME, &currentDispPts);
     unsigned int audioChangeStage{0}; // Output param. Set to AUDCHG_ALIGN in rdk_gstreamer_utils function stub
-    bool audioAac{(m_attachedSource->getMimeType() == "audio/mp4" || m_attachedSource->getMimeType() == "audio/aac")};
+    bool audioAac{oldCapsStr.find("audio/mpeg") != std::string::npos};
     bool svpEnabled{true}; // assume always true
     bool retVal{false};    // Output param. Set to TRUE in rdk_gstreamer_utils function stub
 
@@ -387,4 +399,4 @@ AudioAttributesPrivate AttachSource::createAudioAttributes() const
     }
     return audioAttributes;
 }
-} // namespace firebolt::rialto::server
+} // namespace firebolt::rialto::server::tasks::generic

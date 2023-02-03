@@ -17,25 +17,30 @@
  * limitations under the License.
  */
 
-#include "tasks/webAudio/Shutdown.h"
-#include "IGstWebAudioPlayerPrivate.h"
-#include "RialtoServerLogging.h"
+#include "AttachedSources.h"
 
-namespace firebolt::rialto::server::tasks::webaudio
+namespace firebolt::rialto::client
 {
-Shutdown::Shutdown(IGstWebAudioPlayerPrivate &player) : m_player{player}
+void AttachedSources::add(std::uint32_t id, const MediaSourceType &mediaSourceType)
 {
-    RIALTO_SERVER_LOG_DEBUG("Constructing Shutdown");
+    std::unique_lock<std::mutex> lock{m_mutex};
+    m_attachedSources.emplace(id, mediaSourceType);
 }
 
-Shutdown::~Shutdown()
+void AttachedSources::remove(std::uint32_t id)
 {
-    RIALTO_SERVER_LOG_DEBUG("Shutdown finished");
+    std::unique_lock<std::mutex> lock{m_mutex};
+    m_attachedSources.erase(id);
 }
 
-void Shutdown::execute() const
+MediaSourceType AttachedSources::get(std::uint32_t id) const
 {
-    RIALTO_SERVER_LOG_DEBUG("Executing Shutdown");
-    m_player.stopWorkerThread();
+    std::unique_lock<std::mutex> lock{m_mutex};
+    auto iter = m_attachedSources.find(id);
+    if (m_attachedSources.end() == iter)
+    {
+        return MediaSourceType::UNKNOWN;
+    }
+    return iter->second;
 }
-} // namespace firebolt::rialto::server::tasks::webaudio
+} // namespace firebolt::rialto::client

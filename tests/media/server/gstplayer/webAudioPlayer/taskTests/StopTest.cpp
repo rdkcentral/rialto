@@ -32,7 +32,7 @@ protected:
 
 TEST_F(WebAudioStopTest, shouldStop)
 {
-    firebolt::rialto::server::webaudio::Stop task{m_gstPlayer};
+    firebolt::rialto::server::tasks::webaudio::Stop task{m_gstPlayer};
     EXPECT_CALL(m_gstPlayer, changePipelineState(GST_STATE_NULL));
     task.execute();
 }

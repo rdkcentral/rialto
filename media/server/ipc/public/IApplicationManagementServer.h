@@ -20,7 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_IPC_I_APPLICATION_MANAGEMENT_SERVER_H_
 #define FIREBOLT_RIALTO_SERVER_IPC_I_APPLICATION_MANAGEMENT_SERVER_H_
 
-#include "SessionServerState.h"
+#include "SessionServerCommon.h"
 #include <string>
 
 namespace firebolt::rialto::server::ipc
@@ -37,7 +37,7 @@ public:
     IApplicationManagementServer &operator=(IApplicationManagementServer &&) = delete;
 
     virtual bool initialize(int socket) = 0;
-    virtual bool sendStateChangedEvent(const SessionServerState &state) = 0;
+    virtual bool sendStateChangedEvent(const common::SessionServerState &state) = 0;
     virtual void start() = 0;
     virtual void stop() = 0;
 };

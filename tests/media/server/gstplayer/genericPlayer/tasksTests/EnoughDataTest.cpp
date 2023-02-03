@@ -38,7 +38,7 @@ protected:
 
 TEST_F(EnoughDataTest, shouldDoNothingWhenAudioAppSourceIsNotPresent)
 {
-    firebolt::rialto::server::EnoughData task{m_context, &m_audioSrc};
+    firebolt::rialto::server::tasks::generic::EnoughData task{m_context, &m_audioSrc};
     task.execute();
     EXPECT_TRUE(m_context.audioNeedData);
     EXPECT_TRUE(m_context.videoNeedData);
@@ -46,7 +46,7 @@ TEST_F(EnoughDataTest, shouldDoNothingWhenAudioAppSourceIsNotPresent)
 
 TEST_F(EnoughDataTest, shouldDoNothingWhenVideoAppSourceIsNotPresent)
 {
-    firebolt::rialto::server::EnoughData task{m_context, &m_videoSrc};
+    firebolt::rialto::server::tasks::generic::EnoughData task{m_context, &m_videoSrc};
     task.execute();
     EXPECT_TRUE(m_context.audioNeedData);
     EXPECT_TRUE(m_context.videoNeedData);
@@ -55,7 +55,7 @@ TEST_F(EnoughDataTest, shouldDoNothingWhenVideoAppSourceIsNotPresent)
 TEST_F(EnoughDataTest, shouldMarkEnoughAudioData)
 {
     m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, GST_ELEMENT(&m_audioSrc));
-    firebolt::rialto::server::EnoughData task{m_context, &m_audioSrc};
+    firebolt::rialto::server::tasks::generic::EnoughData task{m_context, &m_audioSrc};
     task.execute();
     EXPECT_FALSE(m_context.audioNeedData);
     EXPECT_TRUE(m_context.videoNeedData);
@@ -64,7 +64,7 @@ TEST_F(EnoughDataTest, shouldMarkEnoughAudioData)
 TEST_F(EnoughDataTest, shouldMarkEnoughVideoData)
 {
     m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::VIDEO, GST_ELEMENT(&m_videoSrc));
-    firebolt::rialto::server::EnoughData task{m_context, &m_videoSrc};
+    firebolt::rialto::server::tasks::generic::EnoughData task{m_context, &m_videoSrc};
     task.execute();
     EXPECT_TRUE(m_context.audioNeedData);
     EXPECT_FALSE(m_context.videoNeedData);

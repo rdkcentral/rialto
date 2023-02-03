@@ -22,7 +22,7 @@
 #include "RialtoServerLogging.h"
 #include "WebAudioPlayerContext.h"
 
-namespace firebolt::rialto::server::webaudio
+namespace firebolt::rialto::server::tasks::webaudio
 {
 Eos::Eos(WebAudioPlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper)
     : m_context{context}, m_gstWrapper{gstWrapper}
@@ -43,4 +43,4 @@ void Eos::execute() const
         RIALTO_SERVER_LOG_WARN("Set eos failed - Gstreamer error");
     }
 }
-} // namespace firebolt::rialto::server::webaudio
+} // namespace firebolt::rialto::server::tasks::webaudio

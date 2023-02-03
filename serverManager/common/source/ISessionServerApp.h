@@ -20,7 +20,7 @@
 #ifndef RIALTO_SERVERMANAGER_COMMON_I_SESSION_SERVER_APP_H_
 #define RIALTO_SERVERMANAGER_COMMON_I_SESSION_SERVER_APP_H_
 
-#include "SessionServerState.h"
+#include "SessionServerCommon.h"
 #include <string>
 
 namespace rialto::servermanager::common
@@ -38,9 +38,10 @@ public:
 
     virtual bool launch() = 0;
     virtual std::string getSessionManagementSocketName() const = 0;
-    virtual service::SessionServerState getInitialState() const = 0;
+    virtual firebolt::rialto::common::SessionServerState getInitialState() const = 0;
     virtual int getAppManagementSocketName() const = 0;
     virtual int getMaxPlaybackSessions() const = 0;
+    virtual int getMaxWebAudioPlayers() const = 0;
     virtual void cancelStartupTimer() = 0;
     virtual void kill() const = 0;
 };

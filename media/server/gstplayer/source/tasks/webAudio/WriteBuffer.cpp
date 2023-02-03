@@ -23,7 +23,7 @@
 #include "WebAudioPlayerContext.h"
 #include <cinttypes>
 
-namespace firebolt::rialto::server::webaudio
+namespace firebolt::rialto::server::tasks::webaudio
 {
 WriteBuffer::WriteBuffer(WebAudioPlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper, uint8_t *mainPtr,
                          uint32_t mainLength, uint8_t *wrapPtr, uint32_t wrapLength)
@@ -88,4 +88,4 @@ void WriteBuffer::execute() const
     }
     m_context.m_writeBufferCond.notify_one();
 }
-} // namespace firebolt::rialto::server::webaudio
+} // namespace firebolt::rialto::server::tasks::webaudio

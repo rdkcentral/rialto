@@ -55,7 +55,8 @@ TEST_F(RemoveSourceTest, shouldRemoveAudioSourceWithoutFlushing)
     m_context.streamInfo.clear();
     constexpr auto kMediaSourceType{firebolt::rialto::MediaSourceType::AUDIO};
     EXPECT_CALL(m_gstPlayerClient, invalidateActiveRequests(kMediaSourceType));
-    firebolt::rialto::server::RemoveSource task{m_context, &m_gstPlayerClient, m_gstWrapper, kMediaSourceType};
+    firebolt::rialto::server::tasks::generic::RemoveSource task{m_context, &m_gstPlayerClient, m_gstWrapper,
+                                                                kMediaSourceType};
     task.execute();
     EXPECT_FALSE(m_context.audioNeedData);
     EXPECT_FALSE(m_context.audioNeedDataPending);
@@ -67,7 +68,8 @@ TEST_F(RemoveSourceTest, shouldRemoveAudioSourceWithoutFlushing)
 TEST_F(RemoveSourceTest, shouldNotRemoveVideoSource)
 {
     constexpr auto kMediaSourceType{firebolt::rialto::MediaSourceType::VIDEO};
-    firebolt::rialto::server::RemoveSource task{m_context, &m_gstPlayerClient, m_gstWrapper, kMediaSourceType};
+    firebolt::rialto::server::tasks::generic::RemoveSource task{m_context, &m_gstPlayerClient, m_gstWrapper,
+                                                                kMediaSourceType};
     task.execute();
     EXPECT_TRUE(m_context.audioNeedData);
     EXPECT_TRUE(m_context.audioNeedDataPending);
@@ -83,7 +85,8 @@ TEST_F(RemoveSourceTest, shouldRemoveAudioSource)
     EXPECT_CALL(*m_gstWrapper, gstElementSendEvent(&m_audioSrc, &m_flushStartEvent)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapper, gstEventNewFlushStop(FALSE)).WillOnce(Return(&m_flushStopEvent));
     EXPECT_CALL(*m_gstWrapper, gstElementSendEvent(&m_audioSrc, &m_flushStopEvent)).WillOnce(Return(TRUE));
-    firebolt::rialto::server::RemoveSource task{m_context, &m_gstPlayerClient, m_gstWrapper, kMediaSourceType};
+    firebolt::rialto::server::tasks::generic::RemoveSource task{m_context, &m_gstPlayerClient, m_gstWrapper,
+                                                                kMediaSourceType};
     task.execute();
     EXPECT_FALSE(m_context.audioNeedData);
     EXPECT_FALSE(m_context.audioNeedDataPending);
@@ -100,7 +103,8 @@ TEST_F(RemoveSourceTest, shouldRemoveAudioSourceFlushEventError)
     EXPECT_CALL(*m_gstWrapper, gstElementSendEvent(&m_audioSrc, &m_flushStartEvent)).WillOnce(Return(FALSE));
     EXPECT_CALL(*m_gstWrapper, gstEventNewFlushStop(FALSE)).WillOnce(Return(&m_flushStopEvent));
     EXPECT_CALL(*m_gstWrapper, gstElementSendEvent(&m_audioSrc, &m_flushStopEvent)).WillOnce(Return(FALSE));
-    firebolt::rialto::server::RemoveSource task{m_context, &m_gstPlayerClient, m_gstWrapper, kMediaSourceType};
+    firebolt::rialto::server::tasks::generic::RemoveSource task{m_context, &m_gstPlayerClient, m_gstWrapper,
+                                                                kMediaSourceType};
     task.execute();
     EXPECT_FALSE(m_context.audioNeedData);
     EXPECT_FALSE(m_context.audioNeedDataPending);
