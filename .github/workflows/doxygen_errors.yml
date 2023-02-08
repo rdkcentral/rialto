@@ -1,7 +1,7 @@
 name: Doxygen Documentation Check
 
 on:
-  push_request:
+  push:
     branches: [ "Aadit_Doxygen_Trial" ]
   workflow_dispatch:
 
