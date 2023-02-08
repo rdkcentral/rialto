@@ -15,7 +15,7 @@ jobs:
 
       - name: Generate doxygen documentation
         id: doxygen
-        run: /root/rialto/scripts/doxygen_errors/doxygen_errors.sh
+        run: ./rialto/scripts/doxygen_errors/doxygen_errors.sh
 
       - name: Report errors
         if: failure()
