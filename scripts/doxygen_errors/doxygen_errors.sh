@@ -10,7 +10,7 @@ results=$?
 if [ $results -eq 0 ];
    then
 	# If doxygen does not have any warnings, code exits with zero status
-	echo "Doxygen documentation succesfully generated"
+	echo "Doxygen documentation succesfully generated!"
 	exit 0
 elif [ $results -ne 0 ];
    then
