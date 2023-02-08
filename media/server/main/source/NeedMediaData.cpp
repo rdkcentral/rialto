@@ -28,10 +28,15 @@ namespace firebolt::rialto::server
 {
 NeedMediaData::NeedMediaData(std::weak_ptr<IMediaPipelineClient> client, IActiveRequests &activeRequests,
                              const ISharedMemoryBuffer &shmBuffer, int sessionId, MediaSourceType mediaSourceType,
-                             std::int32_t sourceId)
-    : m_client{client}, m_activeRequests{activeRequests}, m_mediaSourceType{mediaSourceType}, m_frameCount{maxFrames},
+                             std::int32_t sourceId, PlaybackState currentPlaybackState)
+    : m_client{client}, m_activeRequests{activeRequests}, m_mediaSourceType{mediaSourceType}, m_frameCount{kMaxFrames},
       m_sourceId{sourceId}
 {
+    if (PlaybackState::PLAYING != currentPlaybackState)
+    {
+        RIALTO_SERVER_LOG_DEBUG("Pipeline in prerolling state. Sending smaller frame count");
+        m_frameCount = kPrerollNumFrames;
+    }
     if (MediaSourceType::AUDIO != mediaSourceType && MediaSourceType::VIDEO != mediaSourceType)
     {
         RIALTO_SERVER_LOG_ERROR("Unable to initialize NeedMediaData - unknown mediaSourceType");

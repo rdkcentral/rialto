@@ -63,15 +63,16 @@ void NeedMediaDataTests::initialize()
                                              sessionId, validMediaSourceType))
         .WillOnce(Return(metadataOffset));
     m_sut = std::make_unique<firebolt::rialto::server::NeedMediaData>(m_clientMock, activeRequestsMock, shmBufferMock,
-                                                                      sessionId, validMediaSourceType, sourceId);
+                                                                      sessionId, validMediaSourceType, sourceId,
+                                                                      firebolt::rialto::PlaybackState::PLAYING);
 }
 
 void NeedMediaDataTests::initializeWithWrongType()
 {
-    m_sut = std::make_unique<firebolt::rialto::server::NeedMediaData>(m_clientMock, activeRequestsMock, shmBufferMock,
-                                                                      sessionId,
-                                                                      firebolt::rialto::MediaSourceType::UNKNOWN,
-                                                                      sourceId);
+    m_sut =
+        std::make_unique<firebolt::rialto::server::NeedMediaData>(m_clientMock, activeRequestsMock, shmBufferMock,
+                                                                  sessionId, firebolt::rialto::MediaSourceType::UNKNOWN,
+                                                                  sourceId, firebolt::rialto::PlaybackState::PLAYING);
 }
 
 void NeedMediaDataTests::needMediaDataWillBeSent()

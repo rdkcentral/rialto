@@ -202,6 +202,11 @@ protected:
     IDecryptionService &m_decryptionService;
 
     /**
+     * @brief Current playback state
+     */
+    PlaybackState m_currentPlaybackState;
+
+    /**
      * @brief Map containing scheduled need media data requests.
      */
     std::unordered_map<MediaSourceType, std::unique_ptr<firebolt::rialto::common::ITimer>> m_needMediaDataTimers;

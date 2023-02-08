@@ -132,9 +132,11 @@ MediaPipelineServerInternal::MediaPipelineServerInternal(
     const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
     std::shared_ptr<common::ITimerFactory> timerFactory, std::unique_ptr<IDataReaderFactory> &&dataReaderFactory,
     std::unique_ptr<IActiveRequests> &&activeRequests, IDecryptionService &decryptionService)
-    : m_mediaPipelineClient(client), m_kGstPlayerFactory(gstPlayerFactory), m_kVideoRequirements(videoRequirements),
-      m_sessionId{sessionId}, m_shmBuffer{shmBuffer}, m_dataReaderFactory{std::move(dataReaderFactory)},
-      m_timerFactory{timerFactory}, m_activeRequests{std::move(activeRequests)}, m_decryptionService{decryptionService}
+    : m_mediaPipelineClient(client), m_kGstPlayerFactory(gstPlayerFactory),
+      m_kVideoRequirements(videoRequirements), m_sessionId{sessionId}, m_shmBuffer{shmBuffer},
+      m_dataReaderFactory{std::move(dataReaderFactory)}, m_timerFactory{timerFactory},
+      m_activeRequests{std::move(activeRequests)}, m_decryptionService{decryptionService}, m_currentPlaybackState{
+                                                                                               PlaybackState::UNKNOWN}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
@@ -699,6 +701,7 @@ void MediaPipelineServerInternal::notifyPlaybackState(PlaybackState state)
 
     auto task = [&, state]()
     {
+        m_currentPlaybackState = state;
         if (m_mediaPipelineClient)
         {
             m_mediaPipelineClient->notifyPlaybackState(state);
@@ -729,8 +732,8 @@ bool MediaPipelineServerInternal::notifyNeedMediaDataInternal(MediaSourceType me
         RIALTO_SERVER_LOG_WARN("NeedMediaData event sending failed - sourceId not found");
         return false;
     }
-    NeedMediaData event{m_mediaPipelineClient, *m_activeRequests, *m_shmBuffer,
-                        m_sessionId,           mediaSourceType,   kSourceIter->second};
+    NeedMediaData event{m_mediaPipelineClient, *m_activeRequests,   *m_shmBuffer,          m_sessionId,
+                        mediaSourceType,       kSourceIter->second, m_currentPlaybackState};
     if (!event.send())
     {
         RIALTO_SERVER_LOG_WARN("NeedMediaData event sending failed");
