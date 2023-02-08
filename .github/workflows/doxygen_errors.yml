@@ -16,6 +16,7 @@ jobs:
       - name: Generate doxygen documentation
         id: doxygen
         run: |
+          sudo apt-get install doxygen
           cd $(pwd)/scripts/doxygen_errors
           ./doxygen_errors.sh
           
