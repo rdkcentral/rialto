@@ -2,36 +2,30 @@ name: Doxygen Documentation Check
 
 on:
   push:
-    branches: 
+    branches:
     - 'Aadit_Doxygen_Trial'
   workflow_dispatch:
 
 jobs:
-  build:
-    doxygen:
+  build-doxygen:
       runs-on: ubuntu-20.04 
-
       steps:
-        - name: Checkout code
-          uses: actions/checkout@v3
-
-        - name: Make doxygen documentation
-          id: doxygen
-          uses: ~/rialto/scripts/doxygen_errors.sh
-          on: error
-
-        - name: Report errors
-          if: failure()
-          uses: actions/github-script@v6
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          with:
-            script: |
-              const issueComment = 'WARNINGS GENERATED, PLEASE CHECK LOGS.';
-              github.issues.createComment({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: issueComment
-              });
-
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Make doxygen documentation
+        id: doxygen
+        uses: ~/rialto/scripts/doxygen_errors.sh
+      - name: Report errors
+        if: failure()
+        uses: actions/github-script@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          script: |
+            const issueComment = 'WARNINGS GENERATED, PLEASE CHECK LOGS.';
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: issueComment
+            });
