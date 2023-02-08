@@ -3,10 +3,10 @@ name: Doxygen Documentation Check
 # Controls when the workflow will run
 on:
   #Triggers the workflow on push or pull request events but only for the "master" branch
-  #push:
-    #branches: [ "master", "rdkcentral:master" ]
-  pull_request:
+  push:
     branches: [ "Aadit_Doxygen_Trial" ]
+    #pull_request:
+    #branches: [ "Aadit_Doxygen_Trial" ]
 
   #merge_group:
 	#type: [checks_requested]
