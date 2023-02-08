@@ -1,4 +1,4 @@
-name: Doxygen Documentation Check
+nama: Doxygen Documentation Check
 
 on:
   push:
@@ -13,9 +13,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Make doxygen documentation
+      - name: Generate doxygen documentation
         id: doxygen
-        run: ./doxygen_errors.sh
+        run: |
+          bash /path/to/doxygen_errors.sh
 
       - name: Report errors
         if: failure()
