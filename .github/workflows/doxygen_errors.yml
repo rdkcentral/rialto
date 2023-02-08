@@ -16,7 +16,8 @@ jobs:
       - name: Generate doxygen documentation
         id: doxygen
         run: 
-          ./scripts/doxygen_errors/doxygen_errors.sh
+          cd /scripts/doxygen_errors
+          ./doxygen_errors.sh
           
       - name: Report errors
         if: failure()
