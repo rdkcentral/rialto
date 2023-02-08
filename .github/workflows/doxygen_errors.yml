@@ -15,6 +15,12 @@ jobs:
 
       - name: Generate doxygen documentation
         id: doxygen
+        run: |
+          cd $(pwd)/scripts/doxygen_errors
+          ./doxygen_errors.sh
+
+      - name: Generate doxygen documentation
+        id: doxygen
         run: 
           cd /scripts/doxygen_errors
           ./doxygen_errors.sh
