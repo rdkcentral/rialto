@@ -19,19 +19,23 @@ jobs:
           sudo apt-get install doxygen
           cd $(pwd)/scripts/doxygen_errors
           ./doxygen_errors.sh
-          
-      - name: Report errors
-        if: success() 
-        uses: actions/github-script@v6
 
+      - name: Report errors
+        if: success()
+        uses: actions/github-script@v6
+  
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          script: |
-            const issueComment = 'WARNINGS GENERATED, PLEASE CHECK LOGS.';
-            github.issues.createComment({
+
+           script: |
+              const issueComment = 'WARNINGS GENERATED, PLEASE CHECK LOGS.';
+              const { context, github } = this;
+              const octokit = new github.GitHub(process.env.GITHUB_TOKEN);
+              octokit.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: issueComment
-            });
+              });
+
