@@ -16,7 +16,7 @@ jobs:
 
         - name: Make doxygen documentation
           id: doxygen
-          uses:./doxygen_errors.sh
+          uses:./scripts/doxygen_errors.sh
           on: error
 
         - name: Report errors
