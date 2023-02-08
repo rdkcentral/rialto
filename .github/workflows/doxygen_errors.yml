@@ -12,12 +12,15 @@ jobs:
       steps:
       - name: Checkout code
         uses: actions/checkout@v3
+
       - name: Make doxygen documentation
         id: doxygen
-        uses: ~/rialto/scripts/doxygen_errors.sh
+        run: ~/rialto/scripts/doxygen_errors.sh
+
       - name: Report errors
         if: failure()
         uses: actions/github-script@v6
+
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
