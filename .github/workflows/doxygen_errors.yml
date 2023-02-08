@@ -21,7 +21,7 @@ jobs:
           ./doxygen_errors.sh
           
       - name: Report errors
-        if: failure()
+        if: success() 
         uses: actions/github-script@v6
 
         env:
