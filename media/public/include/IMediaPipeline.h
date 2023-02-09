@@ -232,6 +232,10 @@ public:
         AudioConfig m_audioConfig;
     };
 
+/**
+* @brief A class that represents media source video derived from MediaSource class, which represents the source of media data
+ */
+
     class MediaSourceVideo : public MediaSource
     {
     public:
