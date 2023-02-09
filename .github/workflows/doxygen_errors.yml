@@ -19,5 +19,6 @@ jobs:
         id: doxygen
         run: |
           sudo apt-get install doxygen
+          doxygen
           
       
