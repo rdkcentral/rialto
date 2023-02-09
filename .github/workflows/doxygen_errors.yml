@@ -19,11 +19,16 @@ jobs:
           sudo apt-get update
           sudo apt-get install doxygen
 
+      - name: Make a doxygen_error.txt file
+        run: |
+          touch doxygen_errors.txt
+
       - name: Run through the Doxygen Documentation
         id: doxygen
         run: |
           mkdir -p build/gh_pages
-          doxygen || echo "doxygen failed with an exit code $?"
+          doxygen || doxygen 2> doxygen_errors.txt
+          cat doxygen_errors.txt
           
 
 
