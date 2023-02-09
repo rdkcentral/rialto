@@ -22,20 +22,17 @@ jobs:
       - name: Make a doxygen_error.txt file
         run: |
           touch doxygen_errors.txt
-          cat doxygen_errors.txt
 
       - name: Run through the Doxygen Documentation
         id: doxygen
         run: |
           mkdir -p build/gh_pages
-          doxygen 
+          doxygen 2> doxygen_errors.txt
 
       - name: Errors in the Doxygen Documentation
-        if: success()
+        if: failure()
         run:
-          echo "errors"
-          doxygen 2> doxygen_errors.txt
-          echo "errors moved to doxygen_errors.txt file. File displayed:"
+          echo "errors, File displayed:"
           cat doxygen_errors.txt
       
           
