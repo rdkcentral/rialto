@@ -18,7 +18,7 @@ jobs:
       - name: Run through the Doxygen Documentation
         id: doxygen
         run: |
-          sudo apt-get install doxygen
+#sudo apt-get install doxygen
           mkdir -p build/gh_pages
           doxygen
           
