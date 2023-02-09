@@ -27,7 +27,7 @@ jobs:
           doxygen 2> doxygen_errors.txt
 
       - name: Display any error messages
-        if: failure
+        if: failure()
         run: |
           echo "ERROR MESSAGES:"
           if [ -f "doxygen_errors.txt" ]; then
