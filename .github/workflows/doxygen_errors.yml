@@ -23,7 +23,7 @@ jobs:
         id: doxygen
         run: |
           mkdir -p build/gh_pages
-          doxygen || echo "DOXYGEN FAILED WITH EXIT CODE $?"
+          doxygen 
 
       - name: Display error messages
         if: failure()
