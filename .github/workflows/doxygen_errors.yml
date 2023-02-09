@@ -16,6 +16,8 @@ jobs:
 
       - name: Run through the Doxygen Documentation
         id: doxygen
-        run: doxygen
+        run: |
+          sudo apt-get install doxygen
+          doxygen
 
-    
+      
