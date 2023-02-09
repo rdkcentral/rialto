@@ -29,6 +29,8 @@ jobs:
       - name: Display any error messages
         if: failure()
         run: |
+          echo "Contents of doxygen_errors.txt:"
+          cat doxygen_errors.txt
           echo "ERROR MESSAGES:"
           if [ -f "doxygen_errors.txt" ]; then
             cat doxygen_errors.txt
