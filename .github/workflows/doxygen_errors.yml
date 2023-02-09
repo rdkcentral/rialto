@@ -14,6 +14,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+#Running the Doxygen Documentation
       - name: Run through the Doxygen Documentation
         id: doxygen
         run: |
