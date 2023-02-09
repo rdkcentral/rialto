@@ -23,7 +23,8 @@ jobs:
         id: doxygen
         run: |
           mkdir -p build/gh_pages
-          doxygen || doxygen 2> doxygen_errors.txt
+          doxygen || echo "doxygen failed with an exit code of $?"
+          doxygen 2> doxygen_errors.txt
           cat doxygen_errors.txt
 
 
