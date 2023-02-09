@@ -26,16 +26,23 @@ jobs:
           doxygen 
           doxygen 2> doxygen_errors.txt
 
+      - name: Create doxygen_errors.txt file
+        run: |
+          touch doxygen_errors.txt
+
+      - name: Check exit code
+        run: |
+          if [ "${id.doxygen.exit-code}" -ne "1" ]; then
+            echo "Doxygen completed with exit code ${id.doxygen.exit-code}, NOT displaying error messages!"
+            exit 0
+          fi
+
       - name: Display any error messages
         if: failure()
         run: |
-          echo "Contents of doxygen_errors.txt:"
-          cat doxygen_errors.txt
           echo "ERROR MESSAGES:"
-          if [ -f "doxygen_errors.txt" ]; then
-            cat doxygen_errors.txt
-          else
-            echo "NO ERROR MESSAGES FOUND!"
+          cat doxygen_errors.txt
+
 
 
 
