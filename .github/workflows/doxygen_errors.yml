@@ -23,6 +23,24 @@ jobs:
         id: doxygen
         run: |
           mkdir -p build/gh_pages
-          doxygen
+          doxygen || echo "DOXYGEN FAILED WITH EXIT CODE $?"
+
+      - name: Display error messages
+        if: failure()
+        run: | 
+          echo "ERROR MESSAGES:"
+          cat doxygen.log
+        env:
+          DOXYGEN_LOG_FILE: doxygen.log
+        
+      - name: Display success message
+        if: success()
+        run: echo "NO ERRORS FOUND!"
+
+
+
+
+
+
           
       
