@@ -19,7 +19,7 @@ jobs:
         id: doxygen
         run: |
           sudo apt-get install doxygen
-          mkdir -p build/gh_pages/doxygen_doc
+          mkdir -p build/gh_pages
           doxygen
           
       
