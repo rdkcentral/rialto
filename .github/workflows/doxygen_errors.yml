@@ -24,18 +24,17 @@ jobs:
         run: |
           mkdir -p build/gh_pages
           doxygen 
+          doxygen 2> doxygen_errors.txt
 
-      - name: Display error messages
-        if: failure()
-        run: | 
+      - name: Display any error messages
+        if: failure
+        run: |
           echo "ERROR MESSAGES:"
-          cat doxygen.log
-        env:
-          DOXYGEN_LOG_FILE: doxygen.log
-        
-      - name: Display success message
-        if: success()
-        run: echo "NO ERRORS FOUND!"
+          if [ -f "doxygen_errors.txt" ]; then
+            cat doxygen_errors.txt
+          else
+            echo "NO ERROR MESSAGES FOUND!"
+
 
 
 
