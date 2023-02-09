@@ -25,23 +25,9 @@ jobs:
           mkdir -p build/gh_pages
           doxygen 
           doxygen 2> doxygen_errors.txt
-
-      - name: Create doxygen_errors.txt file
-        run: |
-          touch doxygen_errors.txt
-
-      - name: Check exit code
-        run: |
-          if [ "${id.doxygen.exit-code}" -ne "1" ]; then
-            echo "Doxygen completed with exit code ${id.doxygen.exit-code}, NOT displaying error messages!"
-            exit 0
-          fi
-
-      - name: Display any error messages
-        if: failure()
-        run: |
-          echo "ERROR MESSAGES:"
           cat doxygen_errors.txt
+
+
 
 
 
