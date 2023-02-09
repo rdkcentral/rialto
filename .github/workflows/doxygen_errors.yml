@@ -31,7 +31,7 @@ jobs:
           doxygen 
 
       - name: Errors in the Doxygen Documentation
-        if: failure()
+        if: success()
         run:
           echo "errors"
           doxygen 2> doxygen_errors.txt
