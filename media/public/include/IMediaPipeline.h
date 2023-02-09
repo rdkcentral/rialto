@@ -194,6 +194,10 @@ public:
         std::vector<uint8_t> m_codecData;
     };
 
+/**
+* @brief A class that represents media source audio derived from MediaSource class, which represents the source of media data
+ */
+
     class MediaSourceAudio : public MediaSource
     {
     public:
