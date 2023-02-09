@@ -276,6 +276,10 @@ public:
         }
     };
 
+/**
+ * @brief A class that represents media source video dolby vision derived from media source video data
+ */
+
     class MediaSourceVideoDolbyVision : public MediaSourceVideo
     {
     public:
