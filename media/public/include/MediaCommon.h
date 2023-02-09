@@ -59,6 +59,9 @@ enum class MediaSourceType
     VIDEO
 };
 
+/**
+ * @brief The supported types of config types.
+ */
 enum class SourceConfigType
 {
     UNKNOWN,
