@@ -24,14 +24,14 @@ jobs:
           touch doxygen_errors.txt
 
       - name: Run through the Doxygen Documentation
-        id: doxygen
         run: |
           mkdir -p build/gh_pages
+          doxygen || echo "Doxygen failed with an exit code of $?"
           doxygen 2> doxygen_errors.txt
 
       - name: Errors in the Doxygen Documentation
         if: failure()
-        run:
+        run: |
           echo "errors, File displayed:"
           cat doxygen_errors.txt
       
