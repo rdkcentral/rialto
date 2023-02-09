@@ -9,30 +9,13 @@ on:
 jobs:
   build-doxygen:
       runs-on: ubuntu-20.04 
+      
       steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Generate doxygen documentation
+      - name: Run through the Doxygen Documentation
         id: doxygen
-        run: |
-          sudo apt-get install doxygen
-          cd $(pwd)/scripts/doxygen_errors
-          ./doxygen_errors.sh
+        run: doxygen
 
-      - name: Report errors
-        if: success() 
-        uses: actions/github-script@v6
-
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          script: |
-            const issueComment = 'WARNINGS GENERATED, PLEASE CHECK LOGS.';
-            github.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: issueComment
-            });
-
+    
