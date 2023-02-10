@@ -313,6 +313,9 @@ struct WebAudioPcmConfig
  */
 union WebAudioConfig
 {
+    /**
+    * @brief PCM adio configuration.
+    */
     WebAudioPcmConfig pcm;
 };
 
