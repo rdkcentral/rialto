@@ -33,8 +33,6 @@ jobs:
         if: failure()
         run: |
           echo "Errors in the Doxygen Documentation:"
-          errors=$(wc -l < doxygen_errors.txt)
-          echo "Number of errors: $errors"
           cat doxygen_errors.txt
 
       - name: No Doxygen Errors
