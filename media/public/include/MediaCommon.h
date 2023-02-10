@@ -300,12 +300,12 @@ struct WebAudioShmInfo
  */
 struct WebAudioPcmConfig
 {
-    uint32_t rate;
-    uint32_t channels;
-    uint32_t sampleSize;
-    bool isBigEndian;
-    bool isSigned;
-    bool isFloat;
+    uint32_t rate; /**< Rate of web audio (Hz) */
+    uint32_t channels; /**< Number of channels */
+    uint32_t sampleSize; /**< Size of each sample (bytes or bits) */
+    bool isBigEndian; /**< Specifies if sample is stored as big-endian or little-endian format - refers to the order in which bytes of data value are stored in memory*/
+    bool isSigned; /**< Specifies if samples are signed or unsigned */
+    bool isFloat; /**< Specifies if samples are float values or not float values*/
 };
 
 /**
@@ -314,7 +314,7 @@ struct WebAudioPcmConfig
 union WebAudioConfig
 {
     /**
-    * @brief PCM adio configuration.
+    * @brief PCM audio configuration.
     */
     WebAudioPcmConfig pcm;
 };
