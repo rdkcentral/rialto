@@ -232,10 +232,11 @@ public:
          */
         const AudioConfig &getAudioConfig() const { return m_audioConfig; }
 
-        /**
-         * @brief Constructor for audio specific configuration.
-         * There are no parameters in this constructor
-         */
+    protected:
+    /**
+    * @brief Constructor for audio specific configuration
+    * No parameters in this constructor
+    */
         AudioConfig m_audioConfig;
     };
 
@@ -323,6 +324,10 @@ public:
         uint32_t getDolbyVisionProfile() const { return m_dolbyVisionProfile; }
 
     protected:
+        /**
+        * @brief Constructor for dolby vision profile
+        * No parameters in this constructor
+        */
         uint32_t m_dolbyVisionProfile;
     };
 
