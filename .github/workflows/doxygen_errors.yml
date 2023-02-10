@@ -2,8 +2,7 @@ name: Doxygen Documentation Check
 
 on:
   push:
-    branches:
-    - 'Aadit_Doxygen_Trial'
+    branches: [ "master", "rdkcentral:master" ]
   workflow_dispatch:
 
 jobs:
