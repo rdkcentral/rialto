@@ -23,7 +23,7 @@
 /**
  * @file MediaCommon.h
  *
- * The definition of the Rialto Common types
+ * The definition of the Rialto Common types.
  *
  */
 
