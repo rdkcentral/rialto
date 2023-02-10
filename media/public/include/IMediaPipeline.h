@@ -232,7 +232,10 @@ public:
          */
         const AudioConfig &getAudioConfig() const { return m_audioConfig; }
 
-    protected:
+        /**
+         * @brief Constructor for audio specific configuration.
+         * There are no parameters in this constructor
+         */
         AudioConfig m_audioConfig;
     };
 
