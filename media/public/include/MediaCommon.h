@@ -156,7 +156,7 @@ struct AudioConfig
 {
     uint32_t numberOfChannels = kInvalidAudioChannels; /**< The number of channels. */
     uint32_t sampleRate = kInvalidAudioSampleRate;     /**< The sampling rate.*/
-    std::vector<uint8_t> codecSpecificConfig;          /**The audio specific config. Zero length if no specific config*/
+    std::vector<uint8_t> codecSpecificConfig;          /**< The audio specific config. Zero length if no specific config*/
 };
 
 /**
