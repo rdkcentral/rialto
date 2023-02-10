@@ -32,13 +32,13 @@ jobs:
       - name: Show Doxygen errors
         if: failure()
         run: |
-          echo "Errors in the Doxygen Documentation:"
+          echo "Errors found in the Doxygen Documentation:"
           cat doxygen_errors.txt
 
       - name: No Doxygen Errors
         if: success()
         run: |
-          echo "No errors in the Doxygen Documentation!"
+          echo "No errors found in the Doxygen Documentation!"
       
           
 
