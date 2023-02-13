@@ -20,12 +20,6 @@
 #ifndef FIREBOLT_RIALTO_MEDIA_COMMON_H_
 #define FIREBOLT_RIALTO_MEDIA_COMMON_H_
 
-/**
- * @file MediaCommon.h
- *
- * The definition of the Rialto Common types.
- *
- */
 
 #include <stddef.h>
 #include <stdint.h>
@@ -89,10 +83,7 @@ enum class MediaType
     MSE      /**< Media is MSE and will request data. */
 };
 
-/**
- * @brief The media source status. This is the status of the source
- *        after a read.
- */
+
 enum class MediaSourceStatus
 {
     OK,                  /**< Source data provided without error. */
@@ -138,9 +129,9 @@ enum class NetworkState
  */
 enum class PlaybackState
 {
-    UNKNOWN,       
-    IDLE,          
-    PLAYING,       
+    UNKNOWN,       /**< An unknown or undefined playback state. */
+    IDLE,          /**< The backend player is idle. */
+    PLAYING,       /**< The backend player is playing media. */
     PAUSED,        /**< The backend player is paused. */
     SEEKING,       /**< The backend player is seeking a new playback position. */
     FLUSHED,       /**< The backend player has flushed the media data. */

@@ -33,8 +33,8 @@ jobs:
         if: failure()
         run: |
           echo "Errors found in the Doxygen Documentation:"
-          cat doxygen_errors.txt || true
-
+          cat doxygen_errors.txt
+          
       - name: No Doxygen Errors
         if: success()
         run: |
