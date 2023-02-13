@@ -21,6 +21,7 @@
 #define NEED_MEDIA_DATA_TESTS_FIXTURE_H_
 
 #include "ActiveRequestsMock.h"
+#include "MediaCommon.h"
 #include "MediaPipelineClientMock.h"
 #include "NeedMediaData.h"
 #include "SharedMemoryBufferMock.h"
@@ -35,10 +36,11 @@ public:
     NeedMediaDataTests();
     ~NeedMediaDataTests() override = default;
 
-    void initialize();
+    void initialize(firebolt::rialto::PlaybackState playbackState);
     void initializeWithWrongType();
 
-    void needMediaDataWillBeSent();
+    void needMediaDataWillBeSentInPlayingState();
+    void needMediaDataWillBeSentBelowPlayingState();
     void needMediaDataWillNotBeSent();
 
 private:
