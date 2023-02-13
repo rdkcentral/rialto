@@ -2,7 +2,8 @@ name: Doxygen Documentation Check
 
 on:
   push:
-    branches: [ "master", "rdkcentral:master" ]
+    branches: 
+    - 'Aadit_Doxygen_Trial'
   workflow_dispatch:
 
 jobs:
@@ -32,7 +33,7 @@ jobs:
         if: failure()
         run: |
           echo "Errors found in the Doxygen Documentation:"
-          cat doxygen_errors.txt
+          cat doxygen_errors.txt || true
 
       - name: No Doxygen Errors
         if: success()

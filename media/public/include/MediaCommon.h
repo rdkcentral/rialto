@@ -138,9 +138,9 @@ enum class NetworkState
  */
 enum class PlaybackState
 {
-    UNKNOWN,       /**< An unknown or undefined playback state. */
-    IDLE,          /**< The backend player is idle. */
-    PLAYING,       /**< The backend player is playing media. */
+    UNKNOWN,       
+    IDLE,          
+    PLAYING,       
     PAUSED,        /**< The backend player is paused. */
     SEEKING,       /**< The backend player is seeking a new playback position. */
     FLUSHED,       /**< The backend player has flushed the media data. */
