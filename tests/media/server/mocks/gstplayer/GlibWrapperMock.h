@@ -35,8 +35,9 @@ public:
     MOCK_METHOD(GType, gTypeFromName, (const gchar *name), (override));
     MOCK_METHOD(GFlagsValue *, gFlagsGetValueByNick, (GFlagsClass * flags_class, const gchar *nick), (override));
     MOCK_METHOD(void, gObjectUnref, (gpointer object), (override));
-    MOCK_METHOD(void, gSignalConnect,
+    MOCK_METHOD(gulong, gSignalConnect,
                 (gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data), (override));
+    MOCK_METHOD(void, gSignalHandlerDisconnect, (GObject * instance, gulong handler_id), (const, override));
     MOCK_METHOD(guint, gTimeoutAdd, (guint interval, GSourceFunc function, gpointer data), (override));
     MOCK_METHOD(gboolean, gSourceRemove, (guint tag));
     MOCK_METHOD(void, gFree, (gpointer mem), (const, override));
@@ -92,6 +93,7 @@ public:
     MOCK_METHOD(gpointer, gMemdup, (gconstpointer mem, guint byte_size), (const, override));
     MOCK_METHOD(gboolean, gOnceInitEnter, (gsize * location), (const, override));
     MOCK_METHOD(void, gOnceInitLeave, (gsize * location, gsize result), (const, override));
+    MOCK_METHOD(gchar *, gStrrstr, (const gchar *haystack, const gchar *needle), (const, override));
 };
 } // namespace firebolt::rialto::server
 

@@ -53,9 +53,10 @@ public:
      */
     static std::weak_ptr<IGstGenericPlayerFactory> m_factory;
 
-    std::unique_ptr<IGstGenericPlayer> createGstGenericPlayer(IGstGenericPlayerClient *client,
-                                                              IDecryptionService &decryptionService, MediaType type,
-                                                              const VideoRequirements &videoRequirements) override;
+    std::unique_ptr<IGstGenericPlayer> createGstGenericPlayer(
+        IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
+        const VideoRequirements &videoRequirements,
+        const std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactory) override;
 };
 
 /**
@@ -95,6 +96,7 @@ public:
     virtual ~GstGenericPlayer();
 
     void attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &mediaSource) override;
+    void removeSource(const MediaSourceType &mediaSourceType) override;
     void play() override;
     void pause() override;
     void stop() override;
@@ -130,6 +132,7 @@ private:
     void setPendingPlaybackRate() override;
     void renderFrame() override;
     void handleBusMessage(GstMessage *message) override;
+    void updatePlaybackGroup(GstElement *typefind, const GstCaps *caps) override;
 
 private:
     /**
@@ -163,6 +166,16 @@ private:
      * @param[in] self      : Reference to the calling object.
      */
     static void setupElement(GstElement *pipeline, GstElement *element, GstGenericPlayer *self);
+
+    /**
+     * @brief Callback on element-setup. Called by the Gstreamer thread
+     *
+     * @param[in] pipeline  : The pipeline the signal was fired from.
+     * @param[in] bin       : the GstBin the element was added to
+     * @param[in] element   : an element that was added to the playbin hierarchy
+     * @param[in] self      : Reference to the calling object.
+     */
+    static void deepElementAdded(GstBin *pipeline, GstBin *bin, GstElement *element, GstGenericPlayer *self);
 
 private:
     /**

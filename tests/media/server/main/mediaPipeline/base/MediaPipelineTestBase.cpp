@@ -86,7 +86,7 @@ void MediaPipelineTestBase::loadGstPlayer()
 {
     mainThreadWillEnqueueTaskAndWait();
     mainThreadWillEnqueueTask();
-    EXPECT_CALL(*m_gstPlayerFactoryMock, createGstGenericPlayer(_, _, _, _))
+    EXPECT_CALL(*m_gstPlayerFactoryMock, createGstGenericPlayer(_, _, _, _, _))
         .WillOnce(Return(ByMove(std::move(m_gstPlayer))));
     EXPECT_CALL(*m_mediaPipelineClientMock, notifyNetworkState(NetworkState::BUFFERING));
 

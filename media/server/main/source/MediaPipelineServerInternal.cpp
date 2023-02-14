@@ -21,10 +21,11 @@
 #include "ActiveRequests.h"
 #include "DataReaderFactory.h"
 #include "IDataReader.h"
+#include "IRdkGstreamerUtilsWrapper.h"
 #include "ISharedMemoryBuffer.h"
 #include "NeedMediaData.h"
 #include "RialtoServerLogging.h"
-#include <iostream>
+#include <algorithm>
 
 namespace
 {
@@ -45,6 +46,12 @@ const char *toString(const firebolt::rialto::MediaSourceStatus &status)
         return "NO_AVAILABLE_SAMPLES";
     }
     return "Unknown";
+}
+
+std::int32_t generateSourceId()
+{
+    static std::int32_t sourceId{1};
+    return sourceId++;
 }
 } // namespace
 
@@ -125,9 +132,11 @@ MediaPipelineServerInternal::MediaPipelineServerInternal(
     const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
     std::shared_ptr<common::ITimerFactory> timerFactory, std::unique_ptr<IDataReaderFactory> &&dataReaderFactory,
     std::unique_ptr<IActiveRequests> &&activeRequests, IDecryptionService &decryptionService)
-    : m_mediaPipelineClient(client), m_kGstPlayerFactory(gstPlayerFactory), m_kVideoRequirements(videoRequirements),
-      m_sessionId{sessionId}, m_shmBuffer{shmBuffer}, m_dataReaderFactory{std::move(dataReaderFactory)},
-      m_timerFactory{timerFactory}, m_activeRequests{std::move(activeRequests)}, m_decryptionService{decryptionService}
+    : m_mediaPipelineClient(client), m_kGstPlayerFactory(gstPlayerFactory),
+      m_kVideoRequirements(videoRequirements), m_sessionId{sessionId}, m_shmBuffer{shmBuffer},
+      m_dataReaderFactory{std::move(dataReaderFactory)}, m_timerFactory{timerFactory},
+      m_activeRequests{std::move(activeRequests)}, m_decryptionService{decryptionService}, m_currentPlaybackState{
+                                                                                               PlaybackState::UNKNOWN}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
@@ -201,7 +210,8 @@ bool MediaPipelineServerInternal::loadInternal(MediaType type, const std::string
         m_gstPlayer.reset();
     }
 
-    m_gstPlayer = m_kGstPlayerFactory->createGstGenericPlayer(this, m_decryptionService, type, m_kVideoRequirements);
+    m_gstPlayer = m_kGstPlayerFactory->createGstGenericPlayer(this, m_decryptionService, type, m_kVideoRequirements,
+                                                              IRdkGstreamerUtilsWrapperFactory::getFactory());
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to load gstreamer player");
@@ -241,15 +251,53 @@ bool MediaPipelineServerInternal::attachSourceInternal(const std::unique_ptr<Med
     }
 
     m_gstPlayer->attachSource(source);
-    source->setId(static_cast<int32_t>(source->getType()));
+
+    const auto kSourceIter = m_attachedSources.find(source->getType());
+    if (m_attachedSources.cend() == kSourceIter)
+    {
+        source->setId(generateSourceId());
+        RIALTO_SERVER_LOG_DEBUG("New ID generated for MediaSourceType: %s: %d",
+                                (MediaSourceType::AUDIO == source->getType() ? "AUDIO" : "VIDEO"), source->getId());
+        m_attachedSources.emplace(source->getType(), source->getId());
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_DEBUG("SourceId: %d updated", kSourceIter->second);
+        source->setId(kSourceIter->second);
+    }
 
     return true;
 }
 
 bool MediaPipelineServerInternal::removeSource(int32_t id)
 {
-    RIALTO_SERVER_LOG_ERROR("Can't remove source with id: %d - operation not supported", id);
-    return false;
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = removeSourceInternal(id); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::removeSourceInternal(int32_t id)
+{
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to remove source - Gstreamer player has not been loaded");
+        return false;
+    }
+    auto sourceIter = std::find_if(m_attachedSources.begin(), m_attachedSources.end(),
+                                   [id](const auto &src) { return src.second == id; });
+    if (sourceIter == m_attachedSources.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to remove source - Source not found");
+        return false;
+    }
+
+    m_gstPlayer->removeSource(sourceIter->first);
+    m_attachedSources.erase(sourceIter);
+    return true;
 }
 
 bool MediaPipelineServerInternal::play()
@@ -653,6 +701,7 @@ void MediaPipelineServerInternal::notifyPlaybackState(PlaybackState state)
 
     auto task = [&, state]()
     {
+        m_currentPlaybackState = state;
         if (m_mediaPipelineClient)
         {
             m_mediaPipelineClient->notifyPlaybackState(state);
@@ -677,7 +726,14 @@ bool MediaPipelineServerInternal::notifyNeedMediaDataInternal(MediaSourceType me
 {
     m_needMediaDataTimers.erase(mediaSourceType);
     m_shmBuffer->clearData(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_sessionId, mediaSourceType);
-    NeedMediaData event{m_mediaPipelineClient, *m_activeRequests, *m_shmBuffer, m_sessionId, mediaSourceType};
+    const auto kSourceIter = m_attachedSources.find(mediaSourceType);
+    if (m_attachedSources.cend() == kSourceIter)
+    {
+        RIALTO_SERVER_LOG_WARN("NeedMediaData event sending failed - sourceId not found");
+        return false;
+    }
+    NeedMediaData event{m_mediaPipelineClient, *m_activeRequests,   *m_shmBuffer,          m_sessionId,
+                        mediaSourceType,       kSourceIter->second, m_currentPlaybackState};
     if (!event.send())
     {
         RIALTO_SERVER_LOG_WARN("NeedMediaData event sending failed");
@@ -725,6 +781,15 @@ void MediaPipelineServerInternal::clearActiveRequestsCache()
     m_mainThread->enqueueTask(m_mainThreadClientId, task);
 }
 
+void MediaPipelineServerInternal::invalidateActiveRequests(const MediaSourceType &type)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    auto task = [&, type]() { m_activeRequests->erase(type); };
+
+    m_mainThread->enqueueTask(m_mainThreadClientId, task);
+}
+
 void MediaPipelineServerInternal::notifyQos(MediaSourceType mediaSourceType, const QosInfo &qosInfo)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
@@ -733,8 +798,13 @@ void MediaPipelineServerInternal::notifyQos(MediaSourceType mediaSourceType, con
     {
         if (m_mediaPipelineClient)
         {
-            auto sourceId = static_cast<std::uint64_t>(mediaSourceType);
-            m_mediaPipelineClient->notifyQos(sourceId, qosInfo);
+            const auto kSourceIter = m_attachedSources.find(mediaSourceType);
+            if (m_attachedSources.cend() == kSourceIter)
+            {
+                RIALTO_SERVER_LOG_WARN("Qos notification failed - sourceId not found");
+                return;
+            }
+            m_mediaPipelineClient->notifyQos(kSourceIter->second, qosInfo);
         }
     };
 

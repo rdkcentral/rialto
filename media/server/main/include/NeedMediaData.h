@@ -33,7 +33,8 @@ class NeedMediaData
 {
 public:
     NeedMediaData(std::weak_ptr<IMediaPipelineClient> client, IActiveRequests &activeRequests,
-                  const ISharedMemoryBuffer &shmBuffer, int sessionId, MediaSourceType mediaSourceType);
+                  const ISharedMemoryBuffer &shmBuffer, int sessionId, MediaSourceType mediaSourceType,
+                  std::int32_t sourceId, PlaybackState currentPlaybackState);
     ~NeedMediaData() = default;
 
     bool send() const;
@@ -43,6 +44,7 @@ private:
     IActiveRequests &m_activeRequests;
     MediaSourceType m_mediaSourceType;
     std::uint32_t m_frameCount;
+    std::int32_t m_sourceId;
     std::uint32_t m_maxMediaBytes;
     std::shared_ptr<MediaPlayerShmInfo> m_shmInfo;
     bool m_isValid;

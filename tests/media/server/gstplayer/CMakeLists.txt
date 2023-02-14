@@ -22,6 +22,7 @@ add_gtests(RialtoServerGstPlayerUnitTests
     #GstGenericPlayer unittests
     genericPlayer/tasksTests/AttachSamplesTest.cpp
     genericPlayer/tasksTests/AttachSourceTest.cpp
+    genericPlayer/tasksTests/DeepElementAddedTest.cpp
     genericPlayer/tasksTests/EnoughDataTest.cpp
     genericPlayer/tasksTests/EosTest.cpp
     genericPlayer/tasksTests/FinishSetupSourceTest.cpp
@@ -31,6 +32,7 @@ add_gtests(RialtoServerGstPlayerUnitTests
     genericPlayer/tasksTests/GenericPlayerTaskFactoryTest.cpp
     genericPlayer/tasksTests/PlayTest.cpp
     genericPlayer/tasksTests/ReadShmDataAndAttachSamplesTest.cpp
+    genericPlayer/tasksTests/RemoveSourceTest.cpp
     genericPlayer/tasksTests/RenderFrameTest.cpp
     genericPlayer/tasksTests/ReportPositionTest.cpp
     genericPlayer/tasksTests/CheckAudioUnderflowTest.cpp
@@ -43,7 +45,7 @@ add_gtests(RialtoServerGstPlayerUnitTests
     genericPlayer/tasksTests/ShutdownTest.cpp
     genericPlayer/tasksTests/StopTest.cpp
     genericPlayer/tasksTests/UnderflowTest.cpp
-
+    genericPlayer/tasksTests/UpdatePlaybackGroupTest.cpp
     genericPlayer/common/Matchers.cpp
     genericPlayer/common/GstGenericPlayerTestCommon.cpp
 

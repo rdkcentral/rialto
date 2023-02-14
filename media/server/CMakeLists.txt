@@ -27,7 +27,7 @@ add_subdirectory(gstplayer)
 add_subdirectory(main)
 add_subdirectory(ipc)
 add_subdirectory(service)
-add_subdirectory(ocdm)
+add_subdirectory(wrappers)
 
 add_executable (
         RialtoServer
@@ -47,6 +47,7 @@ target_include_directories (
         $<TARGET_PROPERTY:RialtoServerMain,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoServerService,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoPlayerPublic,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoCommon,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
 set_target_properties(

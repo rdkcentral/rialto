@@ -17,19 +17,19 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_WEBAUDIO_PLAY_H_
-#define FIREBOLT_RIALTO_SERVER_WEBAUDIO_PLAY_H_
+#ifndef FIREBOLT_RIALTO_SERVER_TASKS_WEBAUDIO_PLAY_H_
+#define FIREBOLT_RIALTO_SERVER_TASKS_WEBAUDIO_PLAY_H_
 
 #include "IGstWebAudioPlayerClient.h"
 #include "IGstWebAudioPlayerPrivate.h"
 #include "IPlayerTask.h"
 
-namespace firebolt::rialto::server::webaudio
+namespace firebolt::rialto::server::tasks::webaudio
 {
 class Play : public IPlayerTask
 {
 public:
-    explicit Play(IGstWebAudioPlayerPrivate &player, IGstWebAudioPlayerClient *client);
+    Play(IGstWebAudioPlayerPrivate &player, IGstWebAudioPlayerClient *client);
     ~Play() override;
     void execute() const override;
 
@@ -37,6 +37,6 @@ private:
     IGstWebAudioPlayerPrivate &m_player;
     IGstWebAudioPlayerClient *m_gstPlayerClient;
 };
-} // namespace firebolt::rialto::server::webaudio
+} // namespace firebolt::rialto::server::tasks::webaudio
 
-#endif // FIREBOLT_RIALTO_SERVER_WEBAUDIO_PLAY_H_
+#endif // FIREBOLT_RIALTO_SERVER_TASKS_WEBAUDIO_PLAY_H_

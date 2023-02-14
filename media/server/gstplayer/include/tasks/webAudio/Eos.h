@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_WEBAUDIO_EOS_H_
-#define FIREBOLT_RIALTO_SERVER_WEBAUDIO_EOS_H_
+#ifndef FIREBOLT_RIALTO_SERVER_TASKS_WEBAUDIO_EOS_H_
+#define FIREBOLT_RIALTO_SERVER_TASKS_WEBAUDIO_EOS_H_
 
 #include "IGstWebAudioPlayerPrivate.h"
 #include "IGstWrapper.h"
@@ -27,7 +27,7 @@
 #include "WebAudioPlayerContext.h"
 #include <memory>
 
-namespace firebolt::rialto::server::webaudio
+namespace firebolt::rialto::server::tasks::webaudio
 {
 class Eos : public IPlayerTask
 {
@@ -40,6 +40,6 @@ private:
     WebAudioPlayerContext &m_context;
     std::shared_ptr<IGstWrapper> m_gstWrapper;
 };
-} // namespace firebolt::rialto::server::webaudio
+} // namespace firebolt::rialto::server::tasks::webaudio
 
-#endif // FIREBOLT_RIALTO_SERVER_WEBAUDIO_EOS_H_
+#endif // FIREBOLT_RIALTO_SERVER_TASKS_WEBAUDIO_EOS_H_

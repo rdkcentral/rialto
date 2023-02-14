@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_GENERIC_PLAYER_CONTEXT_H_
 
 #include "IGstSrc.h"
+#include "IRdkGstreamerUtilsWrapper.h"
 #include "ITimer.h"
 #include "MediaCommon.h"
 #include <gst/gst.h>
@@ -159,6 +160,13 @@ struct GenericPlayerContext
     bool videoUnderflowOccured{false};
 
     /**
+     * @brief Flag used to check, if audio underflow reporting is enabled
+     *
+     * Flag can be used only in worker thread
+     */
+    bool audioUnderflowEnabled{false};
+
+    /**
      * @brief Pending video geometry
      */
     Rectangle pendingGeometry;
@@ -188,6 +196,27 @@ struct GenericPlayerContext
      * @brief The decryption service.
      */
     IDecryptionService *decryptionService{nullptr};
+
+    /**
+     * @brief Flag used to check, if audio source has been recently removed
+     *
+     * Flag can be used only in worker thread
+     */
+    bool audioSourceRemoved{false};
+
+    /**
+     * @brief Audio elements of gst pipeline.
+     *
+     * Attribute can be used only in worker thread
+     */
+    PlaybackGroupPrivate playbackGroup;
+
+    /**
+     * @brief Signals connected to pipeline elements
+     *
+     * Attribute can be used only in worker thread
+     */
+    std::map<GstElement *, gulong> connectedSignals;
 };
 } // namespace firebolt::rialto::server
 

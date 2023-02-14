@@ -21,7 +21,7 @@
 #include "IGstWebAudioPlayerPrivate.h"
 #include "RialtoServerLogging.h"
 
-namespace firebolt::rialto::server::webaudio
+namespace firebolt::rialto::server::tasks::webaudio
 {
 Pause::Pause(IGstWebAudioPlayerPrivate &player, IGstWebAudioPlayerClient *client)
     : m_player{player}, m_gstPlayerClient{client}
@@ -43,4 +43,4 @@ void Pause::execute() const
         m_gstPlayerClient->notifyState(WebAudioPlayerState::FAILURE);
     }
 }
-} // namespace firebolt::rialto::server::webaudio
+} // namespace firebolt::rialto::server::tasks::webaudio

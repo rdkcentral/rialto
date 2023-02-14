@@ -69,9 +69,10 @@ std::shared_ptr<IGstGenericPlayerFactory> IGstGenericPlayerFactory::getFactory()
     return factory;
 }
 
-std::unique_ptr<IGstGenericPlayer>
-GstGenericPlayerFactory::createGstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionService &decryptionService,
-                                                MediaType type, const VideoRequirements &videoRequirements)
+std::unique_ptr<IGstGenericPlayer> GstGenericPlayerFactory::createGstGenericPlayer(
+    IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
+    const VideoRequirements &videoRequirements,
+    const std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactory)
 {
     std::unique_ptr<IGstGenericPlayer> gstPlayer;
 
@@ -81,6 +82,7 @@ GstGenericPlayerFactory::createGstGenericPlayer(IGstGenericPlayerClient *client,
         auto glibWrapperFactory = IGlibWrapperFactory::getFactory();
         std::shared_ptr<IGstWrapper> gstWrapper;
         std::shared_ptr<IGlibWrapper> glibWrapper;
+        std::shared_ptr<IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper;
         if ((!gstWrapperFactory) || (!(gstWrapper = gstWrapperFactory->getGstWrapper())))
         {
             throw std::runtime_error("Cannot create GstWrapper");
@@ -89,14 +91,20 @@ GstGenericPlayerFactory::createGstGenericPlayer(IGstGenericPlayerClient *client,
         {
             throw std::runtime_error("Cannot create GlibWrapper");
         }
-        gstPlayer = std::make_unique<GstGenericPlayer>(client, decryptionService, type, videoRequirements, gstWrapper,
-                                                       glibWrapper, IGstSrcFactory::getFactory(),
-                                                       common::ITimerFactory::getFactory(),
-                                                       std::make_unique<GenericPlayerTaskFactory>(client, gstWrapper,
-                                                                                                  glibWrapper),
-                                                       std::make_unique<WorkerThreadFactory>(),
-                                                       std::make_unique<GstDispatcherThreadFactory>(),
-                                                       IGstProtectionMetadataWrapperFactory::createFactory());
+        if ((!rdkGstreamerUtilsWrapperFactory) ||
+            (!(rdkGstreamerUtilsWrapper = rdkGstreamerUtilsWrapperFactory->createRdkGstreamerUtilsWrapper())))
+        {
+            throw std::runtime_error("Cannot create RdkGstreamerUtilsWrapper");
+        }
+        gstPlayer =
+            std::make_unique<GstGenericPlayer>(client, decryptionService, type, videoRequirements, gstWrapper,
+                                               glibWrapper, IGstSrcFactory::getFactory(),
+                                               common::ITimerFactory::getFactory(),
+                                               std::make_unique<GenericPlayerTaskFactory>(client, gstWrapper, glibWrapper,
+                                                                                          rdkGstreamerUtilsWrapper),
+                                               std::make_unique<WorkerThreadFactory>(),
+                                               std::make_unique<GstDispatcherThreadFactory>(),
+                                               IGstProtectionMetadataWrapperFactory::createFactory());
     }
     catch (const std::exception &e)
     {
@@ -185,6 +193,12 @@ GstGenericPlayer::~GstGenericPlayer()
 
     m_gstDispatcherThread.reset();
 
+    for (const auto &signal : m_context.connectedSignals)
+    {
+        m_glibWrapper->gSignalHandlerDisconnect(G_OBJECT(signal.first), signal.second);
+    }
+    m_context.connectedSignals.clear();
+
     // Shutdown task thread
     m_workerThread->enqueueTask(m_taskFactory->createShutdown(*this));
     m_workerThread->join();
@@ -237,6 +251,8 @@ void GstGenericPlayer::initMsePipeline()
     // Set callbacks
     m_glibWrapper->gSignalConnect(m_context.pipeline, "source-setup", G_CALLBACK(&GstGenericPlayer::setupSource), this);
     m_glibWrapper->gSignalConnect(m_context.pipeline, "element-setup", G_CALLBACK(&GstGenericPlayer::setupElement), this);
+    m_glibWrapper->gSignalConnect(m_context.pipeline, "deep-element-added",
+                                  G_CALLBACK(&GstGenericPlayer::deepElementAdded), this);
 
     // Set uri
     m_glibWrapper->gObjectSet(m_context.pipeline, "uri", "rialto://", nullptr);
@@ -295,11 +311,29 @@ void GstGenericPlayer::setupElement(GstElement *pipeline, GstElement *element, G
     }
 }
 
+void GstGenericPlayer::deepElementAdded(GstBin *pipeline, GstBin *bin, GstElement *element, GstGenericPlayer *self)
+{
+    RIALTO_SERVER_LOG_DEBUG("Deep element %s added to the pipeline", GST_ELEMENT_NAME(element));
+    if (self->m_workerThread)
+    {
+        self->m_workerThread->enqueueTask(
+            self->m_taskFactory->createDeepElementAdded(self->m_context, *self, pipeline, bin, element));
+    }
+}
+
 void GstGenericPlayer::attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &attachedSource)
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createAttachSource(m_context, attachedSource));
+        m_workerThread->enqueueTask(m_taskFactory->createAttachSource(m_context, *this, attachedSource));
+    }
+}
+
+void GstGenericPlayer::removeSource(const MediaSourceType &mediaSourceType)
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(m_taskFactory->createRemoveSource(m_context, mediaSourceType));
     }
 }
 
@@ -339,8 +373,9 @@ bool GstGenericPlayer::getPosition(std::int64_t &position)
 {
     // We are on main thread here, but m_context.pipeline can be used, because it's modified only in GstGenericPlayer
     // constructor and destructor. GstGenericPlayer is created/destructed on main thread, so we won't have a crash here.
-    if (!m_context.pipeline || GST_STATE(m_context.pipeline) < GST_STATE_PLAYING)
+    if (!m_context.pipeline || GST_STATE(m_context.pipeline) < GST_STATE_PAUSED)
     {
+        RIALTO_SERVER_LOG_WARN("GetPosition failed. Pipeline is null or state < PAUSED");
         return false;
     }
     if (!m_gstWrapper->gstElementQueryPosition(m_context.pipeline, GST_FORMAT_TIME, &position))
@@ -588,7 +623,8 @@ void GstGenericPlayer::scheduleAudioUnderflow()
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createUnderflow(*this, m_context.audioUnderflowOccured));
+        m_workerThread->enqueueTask(
+            m_taskFactory->createUnderflow(*this, m_context.audioUnderflowOccured, m_context.audioUnderflowEnabled));
     }
 }
 
@@ -795,5 +831,10 @@ bool GstGenericPlayer::getVolume(double &volume)
 void GstGenericPlayer::handleBusMessage(GstMessage *message)
 {
     m_workerThread->enqueueTask(m_taskFactory->createHandleBusMessage(m_context, *this, message));
+}
+
+void GstGenericPlayer::updatePlaybackGroup(GstElement *typefind, const GstCaps *caps)
+{
+    m_workerThread->enqueueTask(m_taskFactory->createUpdatePlaybackGroup(m_context, typefind, caps));
 }
 }; // namespace firebolt::rialto::server

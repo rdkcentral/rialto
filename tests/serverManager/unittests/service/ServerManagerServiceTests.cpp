@@ -23,8 +23,7 @@
 namespace
 {
 const std::string APP_NAME{"YouTube"};
-const rialto::servermanager::service::SessionServerState APP_STATE{
-    rialto::servermanager::service::SessionServerState::INACTIVE};
+const firebolt::rialto::common::SessionServerState APP_STATE{firebolt::rialto::common::SessionServerState::INACTIVE};
 const std::string APP_SOCKET{getenv("RIALTO_SOCKET_PATH")};
 } // namespace
 

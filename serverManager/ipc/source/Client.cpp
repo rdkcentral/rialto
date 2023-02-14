@@ -31,54 +31,54 @@
 
 namespace
 {
-rialto::servermanager::service::SessionServerState convert(const rialto::SessionServerState &sessionServerState)
+firebolt::rialto::common::SessionServerState convert(const rialto::SessionServerState &sessionServerState)
 {
     switch (sessionServerState)
     {
     case rialto::SessionServerState::UNINITIALIZED:
     {
-        return rialto::servermanager::service::SessionServerState::UNINITIALIZED;
+        return firebolt::rialto::common::SessionServerState::UNINITIALIZED;
     }
     case rialto::SessionServerState::INACTIVE:
     {
-        return rialto::servermanager::service::SessionServerState::INACTIVE;
+        return firebolt::rialto::common::SessionServerState::INACTIVE;
     }
     case rialto::SessionServerState::ACTIVE:
     {
-        return rialto::servermanager::service::SessionServerState::ACTIVE;
+        return firebolt::rialto::common::SessionServerState::ACTIVE;
     }
     case rialto::SessionServerState::NOT_RUNNING:
     {
-        return rialto::servermanager::service::SessionServerState::NOT_RUNNING;
+        return firebolt::rialto::common::SessionServerState::NOT_RUNNING;
     }
     case rialto::SessionServerState::ERROR:
     {
-        return rialto::servermanager::service::SessionServerState::ERROR;
+        return firebolt::rialto::common::SessionServerState::ERROR;
     }
     }
-    return rialto::servermanager::service::SessionServerState::ERROR;
+    return firebolt::rialto::common::SessionServerState::ERROR;
 }
-rialto::SessionServerState convert(const rialto::servermanager::service::SessionServerState &state)
+rialto::SessionServerState convert(const firebolt::rialto::common::SessionServerState &state)
 {
     switch (state)
     {
-    case rialto::servermanager::service::SessionServerState::UNINITIALIZED:
+    case firebolt::rialto::common::SessionServerState::UNINITIALIZED:
     {
         return rialto::SessionServerState::UNINITIALIZED;
     }
-    case rialto::servermanager::service::SessionServerState::INACTIVE:
+    case firebolt::rialto::common::SessionServerState::INACTIVE:
     {
         return rialto::SessionServerState::INACTIVE;
     }
-    case rialto::servermanager::service::SessionServerState::ACTIVE:
+    case firebolt::rialto::common::SessionServerState::ACTIVE:
     {
         return rialto::SessionServerState::ACTIVE;
     }
-    case rialto::servermanager::service::SessionServerState::NOT_RUNNING:
+    case firebolt::rialto::common::SessionServerState::NOT_RUNNING:
     {
         return rialto::SessionServerState::NOT_RUNNING;
     }
-    case rialto::servermanager::service::SessionServerState::ERROR:
+    case firebolt::rialto::common::SessionServerState::ERROR:
     {
         return rialto::SessionServerState::ERROR;
     }
@@ -157,7 +157,7 @@ bool Client::connect()
     return true;
 }
 
-bool Client::performSetState(const service::SessionServerState &state)
+bool Client::performSetState(const firebolt::rialto::common::SessionServerState &state)
 {
     if (!m_ipcLoop || !m_serviceStub)
     {
@@ -182,8 +182,9 @@ bool Client::performSetState(const service::SessionServerState &state)
     return true;
 }
 
-bool Client::performSetConfiguration(const service::SessionServerState &initialState, const std::string &socketName,
-                                     int maxPlaybackSessions) const
+bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServerState &initialState,
+                                     const std::string &socketName,
+                                     const firebolt::rialto::common::MaxResourceCapabilitites &maxResource) const
 {
     if (!m_ipcLoop || !m_serviceStub)
     {
@@ -193,7 +194,8 @@ bool Client::performSetConfiguration(const service::SessionServerState &initialS
     rialto::SetConfigurationRequest request;
     rialto::SetConfigurationResponse response;
     request.set_sessionmanagementsocketname(socketName);
-    request.mutable_resources()->set_maxplaybacks(maxPlaybackSessions);
+    request.mutable_resources()->set_maxplaybacks(maxResource.maxPlaybacks);
+    request.mutable_resources()->set_maxwebaudioplayers(maxResource.maxWebAudioPlayers);
     *(request.mutable_loglevels()) = getCurrentLogLevels();
     request.set_initialsessionserverstate(convert(initialState));
     auto ipcController = m_ipcLoop->createRpcController();
@@ -239,7 +241,8 @@ bool Client::setLogLevels(const service::LoggingLevels &logLevels) const
 void Client::onDisconnected() const
 {
     RIALTO_SERVER_MANAGER_LOG_WARN("Connection to %s broken!", m_appId.c_str());
-    m_sessionServerAppManager->onSessionServerStateChanged(m_appId, service::SessionServerState::NOT_RUNNING);
+    m_sessionServerAppManager->onSessionServerStateChanged(m_appId,
+                                                           firebolt::rialto::common::SessionServerState::NOT_RUNNING);
 }
 
 void Client::onStateChangedEvent(const std::shared_ptr<rialto::StateChangedEvent> &event) const

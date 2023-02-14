@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_READ_SHM_DATA_AND_ATTACH_SAMPLES_H_
-#define FIREBOLT_RIALTO_SERVER_READ_SHM_DATA_AND_ATTACH_SAMPLES_H_
+#ifndef FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_READ_SHM_DATA_AND_ATTACH_SAMPLES_H_
+#define FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_READ_SHM_DATA_AND_ATTACH_SAMPLES_H_
 
 #include "GenericPlayerContext.h"
 #include "IDataReader.h"
@@ -26,7 +26,7 @@
 #include "IPlayerTask.h"
 #include <memory>
 
-namespace firebolt::rialto::server
+namespace firebolt::rialto::server::tasks::generic
 {
 class ReadShmDataAndAttachSamples : public IPlayerTask
 {
@@ -41,6 +41,6 @@ private:
     IGstGenericPlayerPrivate &m_player;
     std::shared_ptr<IDataReader> m_dataReader;
 };
-} // namespace firebolt::rialto::server
+} // namespace firebolt::rialto::server::tasks::generic
 
-#endif // FIREBOLT_RIALTO_SERVER_READ_SHM_DATA_AND_ATTACH_SAMPLES_H_
+#endif // FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_READ_SHM_DATA_AND_ATTACH_SAMPLES_H_

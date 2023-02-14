@@ -21,7 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_SERVICE_I_SESSION_SERVER_MANAGER_H_
 
 #include "RialtoLogging.h"
-#include "SessionServerState.h"
+#include "SessionServerCommon.h"
 #include <memory>
 #include <string>
 
@@ -40,8 +40,9 @@ public:
 
     virtual bool initialize(int argc, char *argv[]) = 0;
     virtual void startService() = 0;
-    virtual bool setConfiguration(const std::string &socketName, const SessionServerState &state, int maxPlaybacks) = 0;
-    virtual bool setState(const SessionServerState &state) = 0;
+    virtual bool setConfiguration(const std::string &socketName, const common::SessionServerState &state,
+                                  const common::MaxResourceCapabilitites &maxResource) = 0;
+    virtual bool setState(const common::SessionServerState &state) = 0;
     virtual void setLogLevels(RIALTO_DEBUG_LEVEL defaultLogLevels, RIALTO_DEBUG_LEVEL clientLogLevels,
                               RIALTO_DEBUG_LEVEL sessionServerLogLevels, RIALTO_DEBUG_LEVEL ipcLogLevels,
                               RIALTO_DEBUG_LEVEL serverManagerLogLevels, RIALTO_DEBUG_LEVEL commonLogLevels) = 0;

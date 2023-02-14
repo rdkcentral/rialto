@@ -24,19 +24,19 @@
 
 namespace
 {
-rialto::SessionServerState convertSessionServerState(const firebolt::rialto::server::SessionServerState &state)
+rialto::SessionServerState convertSessionServerState(const firebolt::rialto::common::SessionServerState &state)
 {
     switch (state)
     {
-    case firebolt::rialto::server::SessionServerState::UNINITIALIZED:
+    case firebolt::rialto::common::SessionServerState::UNINITIALIZED:
         return rialto::SessionServerState::UNINITIALIZED;
-    case firebolt::rialto::server::SessionServerState::INACTIVE:
+    case firebolt::rialto::common::SessionServerState::INACTIVE:
         return rialto::SessionServerState::INACTIVE;
-    case firebolt::rialto::server::SessionServerState::ACTIVE:
+    case firebolt::rialto::common::SessionServerState::ACTIVE:
         return rialto::SessionServerState::ACTIVE;
-    case firebolt::rialto::server::SessionServerState::NOT_RUNNING:
+    case firebolt::rialto::common::SessionServerState::NOT_RUNNING:
         return rialto::SessionServerState::NOT_RUNNING;
-    case firebolt::rialto::server::SessionServerState::ERROR:
+    case firebolt::rialto::common::SessionServerState::ERROR:
         return rialto::SessionServerState::ERROR;
     }
     return rialto::SessionServerState::ERROR;
@@ -82,7 +82,7 @@ bool ApplicationManagementServer::initialize(int socket)
     return true;
 }
 
-bool ApplicationManagementServer::sendStateChangedEvent(const SessionServerState &state)
+bool ApplicationManagementServer::sendStateChangedEvent(const common::SessionServerState &state)
 {
     if (!m_ipcClient->isConnected())
     {

@@ -23,7 +23,7 @@
 #include "RialtoServerLogging.h"
 #include <gst/gst.h>
 
-namespace firebolt::rialto::server
+namespace firebolt::rialto::server::tasks::generic
 {
 NeedData::NeedData(GenericPlayerContext &context, IGstGenericPlayerClient *client, GstAppSrc *src)
     : m_context{context}, m_gstPlayerClient{client}, m_src{src}
@@ -45,7 +45,7 @@ void NeedData::execute() const
         if (elem->second == GST_ELEMENT(m_src))
         {
             m_context.audioNeedData = true;
-            if (m_gstPlayerClient && !m_context.audioNeedDataPending)
+            if (m_gstPlayerClient && !m_context.audioNeedDataPending && !m_context.audioSourceRemoved)
             {
                 m_context.audioNeedDataPending = m_gstPlayerClient->notifyNeedMediaData(MediaSourceType::AUDIO);
             }
@@ -64,4 +64,4 @@ void NeedData::execute() const
         }
     }
 }
-} // namespace firebolt::rialto::server
+} // namespace firebolt::rialto::server::tasks::generic

@@ -24,8 +24,8 @@
 #include "IpcClientMock.h"
 #include "IpcControllerMock.h"
 #include "IpcServerMock.h"
+#include "SessionServerCommon.h"
 #include "SessionServerManagerMock.h"
-#include "SessionServerState.h"
 #include <gtest/gtest.h>
 #include <memory>
 
@@ -44,14 +44,14 @@ public:
 
     void sessionServerManagerWillHandleRequestSuccess();
     void sessionServerManagerWillHandleRequestFailure();
-    void sessionServerManagerWillSetConfiguration(const firebolt::rialto::server::SessionServerState &state);
-    void sessionServerManagerWillSetState(const firebolt::rialto::server::SessionServerState &state);
+    void sessionServerManagerWillSetConfiguration(const firebolt::rialto::common::SessionServerState &state);
+    void sessionServerManagerWillSetState(const firebolt::rialto::common::SessionServerState &state);
     void sessionServerManagerWillSetLogLevels();
-    void sessionServerManagerWillFailToSetConfiguration(const firebolt::rialto::server::SessionServerState &state);
-    void sessionServerManagerWillFailToSetState(const firebolt::rialto::server::SessionServerState &state);
+    void sessionServerManagerWillFailToSetConfiguration(const firebolt::rialto::common::SessionServerState &state);
+    void sessionServerManagerWillFailToSetState(const firebolt::rialto::common::SessionServerState &state);
 
-    void sendSetConfiguration(const firebolt::rialto::server::SessionServerState &state);
-    void sendSetState(const firebolt::rialto::server::SessionServerState &state);
+    void sendSetConfiguration(const firebolt::rialto::common::SessionServerState &state);
+    void sendSetState(const firebolt::rialto::common::SessionServerState &state);
     void sendSetLogLevels();
 
 private:

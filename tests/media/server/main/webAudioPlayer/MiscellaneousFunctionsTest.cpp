@@ -78,7 +78,7 @@ TEST_F(RialtoServerWebAudioPlayerMiscellaneousFunctionsTest, pause)
 }
 
 /**
- * Test that setEos triggers a setEos on the WebAudioGstPlayer on the main thread.
+ * Test that setEos triggers a setEos on the WebAudioGstPlayer on the main thread if there are no bytes queued in the shm.
  */
 TEST_F(RialtoServerWebAudioPlayerMiscellaneousFunctionsTest, setEos)
 {
@@ -90,6 +90,30 @@ TEST_F(RialtoServerWebAudioPlayerMiscellaneousFunctionsTest, setEos)
 
     // Wait for setEos on main thread
     waitForApiCalled();
+}
+
+/**
+ * Test that setEos does not trigger a setEos on the WebAudioGstPlayer on the main thread if there are queued bytes.
+ * setEos then triggered once all the data has been written to gstreamer.
+ */
+TEST_F(RialtoServerWebAudioPlayerMiscellaneousFunctionsTest, setEosDelayed)
+{
+    // Fill the shared memory with data
+    getBufferAvailableSuccess(m_maxFrame);
+    expectWriteNewFrames(m_availableFrames, 0);
+    expectStartTimer();
+    writeBufferSuccess(m_availableFrames);
+
+    // setEos
+    mainThreadWillEnqueueTask();
+    m_webAudioPlayer->setEos();
+
+    // Write the stored frames
+    getBufferAvailableSuccess(0);
+    expectWriteStoredFrames(m_framesStored, m_framesStored);
+    expectCancelTimer();
+    EXPECT_CALL(*m_gstPlayerMock, setEos());
+    writeBufferSuccess(0);
 }
 
 /**

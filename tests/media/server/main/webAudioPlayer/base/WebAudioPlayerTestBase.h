@@ -26,6 +26,8 @@
 #include "MainThreadFactoryMock.h"
 #include "MainThreadMock.h"
 #include "SharedMemoryBufferMock.h"
+#include "TimerFactoryMock.h"
+#include "TimerMock.h"
 #include "WebAudioPlayerClientMock.h"
 #include "WebAudioPlayerServerInternal.h"
 #include <gtest/gtest.h>
@@ -40,6 +42,7 @@ using ::testing::_;
 using ::testing::DoAll;
 using ::testing::Invoke;
 using ::testing::Return;
+using ::testing::SaveArg;
 using ::testing::SetArgReferee;
 using ::testing::StrictMock;
 
@@ -61,20 +64,38 @@ protected:
     std::shared_ptr<StrictMock<GstWebAudioPlayerFactoryMock>> m_gstPlayerFactoryMock;
     std::unique_ptr<StrictMock<GstWebAudioPlayerMock>> m_gstPlayer;
     StrictMock<GstWebAudioPlayerMock> *m_gstPlayerMock;
+    std::shared_ptr<StrictMock<TimerFactoryMock>> m_timerFactoryMock;
+    std::unique_ptr<StrictMock<TimerMock>> m_timer;
+    StrictMock<TimerMock> *m_timerMock;
 
     // Common variables
     const int m_webAudioPlayerHandle{1};
     const std::string m_audioMimeType{"audio/x-raw"};
     const uint32_t m_priority{5};
-    const WebAudioConfig m_config{};
+    WebAudioConfig m_config{};
     const int32_t m_kMainThreadClientId{65};
     uint8_t m_dataPtr{4};
-    const uint32_t m_dataLen{80};
+    uint32_t m_dataOffset{2000};
+    uint32_t m_dataLen{4000};
+    uint32_t m_availableFrames{12};
+    uint32_t m_framesStored{0};
+    uint32_t m_bytesPerFrame{0};
+    uint32_t m_maxFrame{0};
+    const std::chrono::milliseconds m_kExpectedWriteDataTimeout{100};
+    std::shared_ptr<WebAudioShmInfo> m_webAudioShmInfo;
+    std::function<void()> m_writeBufferTimerCallback;
 
     void createWebAudioPlayer();
     void destroyWebAudioPlayer();
     void mainThreadWillEnqueueTask();
     void mainThreadWillEnqueueTaskAndWait();
+    void getBufferAvailableSuccess(uint32_t expectedAvailableFrames,
+                                   const std::shared_ptr<WebAudioShmInfo> &expectedShmInfo = nullptr);
+    void writeBufferSuccess(uint32_t newFramesToWrite);
+    void expectWriteStoredFrames(uint32_t storedFramesToWrite, uint32_t storedFramesWritten);
+    void expectWriteNewFrames(uint32_t newFramesToWrite, uint32_t newFramesWritten);
+    void expectStartTimer();
+    void expectCancelTimer();
 };
 
 #endif // WEB_AUDIO_PLAYER_TEST_BASE_H_

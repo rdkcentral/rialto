@@ -72,7 +72,7 @@ gboolean appSrcSeekData(GstAppSrc *src, guint64 offset, gpointer user_data)
 }
 } // namespace
 
-namespace firebolt::rialto::server
+namespace firebolt::rialto::server::tasks::generic
 {
 FinishSetupSource::FinishSetupSource(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                      IGstGenericPlayerClient *client)
@@ -113,4 +113,4 @@ void FinishSetupSource::execute() const
     if (m_gstPlayerClient)
         m_gstPlayerClient->notifyPlaybackState(PlaybackState::IDLE);
 }
-} // namespace firebolt::rialto::server
+} // namespace firebolt::rialto::server::tasks::generic

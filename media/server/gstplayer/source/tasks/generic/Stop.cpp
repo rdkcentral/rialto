@@ -22,7 +22,7 @@
 #include "IGstGenericPlayerPrivate.h"
 #include "RialtoServerLogging.h"
 
-namespace firebolt::rialto::server
+namespace firebolt::rialto::server::tasks::generic
 {
 Stop::Stop(GenericPlayerContext &context, IGstGenericPlayerPrivate &player) : m_context{context}, m_player{player}
 {
@@ -42,4 +42,4 @@ void Stop::execute() const
     m_context.videoNeedData = false;
     m_context.audioNeedData = false;
 }
-} // namespace firebolt::rialto::server
+} // namespace firebolt::rialto::server::tasks::generic

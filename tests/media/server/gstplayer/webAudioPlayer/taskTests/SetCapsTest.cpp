@@ -95,10 +95,10 @@ protected:
     {
         EXPECT_CALL(*m_gstWrapper, gstCapsNewEmptySimple(StrEq("audio/x-raw"))).WillOnce(Return(&m_caps));
         EXPECT_CALL(*m_gstWrapper,
-                    gstCapsSetSimpleUintStub(&m_caps, StrEq("channels"), G_TYPE_UINT, m_config.pcm.channels));
+                    gstCapsSetSimpleIntStub(&m_caps, StrEq("channels"), G_TYPE_INT, m_config.pcm.channels));
         EXPECT_CALL(*m_gstWrapper,
                     gstCapsSetSimpleStringStub(&m_caps, StrEq("layout"), G_TYPE_STRING, StrEq("interleaved")));
-        EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleUintStub(&m_caps, StrEq("rate"), G_TYPE_UINT, m_config.pcm.rate));
+        EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleIntStub(&m_caps, StrEq("rate"), G_TYPE_INT, m_config.pcm.rate));
         EXPECT_CALL(*m_gstWrapper,
                     gstCapsSetSimpleStringStub(&m_caps, StrEq("format"), G_TYPE_STRING, StrEq(getPcmFormat().c_str())));
     }
@@ -135,7 +135,8 @@ TEST_F(WebAudioSetCapsTest, shouldSetCapsWithFormatF15LE)
     expectSetCaps();
     expectUnref();
 
-    firebolt::rialto::server::webaudio::SetCaps task{m_context, m_gstWrapper, m_glibWrapper, m_kAudioMimeType, &m_config};
+    firebolt::rialto::server::tasks::webaudio::SetCaps task{m_context, m_gstWrapper, m_glibWrapper, m_kAudioMimeType,
+                                                            &m_config};
     task.execute();
 }
 
@@ -150,7 +151,8 @@ TEST_F(WebAudioSetCapsTest, shouldSetCapsWithWithFormatS14BE)
     expectSetCaps();
     expectUnref();
 
-    firebolt::rialto::server::webaudio::SetCaps task{m_context, m_gstWrapper, m_glibWrapper, m_kAudioMimeType, &m_config};
+    firebolt::rialto::server::tasks::webaudio::SetCaps task{m_context, m_gstWrapper, m_glibWrapper, m_kAudioMimeType,
+                                                            &m_config};
     task.execute();
 }
 
@@ -161,7 +163,8 @@ TEST_F(WebAudioSetCapsTest, shouldSetCapsWithFormatU3SLE)
     expectSetCaps();
     expectUnref();
 
-    firebolt::rialto::server::webaudio::SetCaps task{m_context, m_gstWrapper, m_glibWrapper, m_kAudioMimeType, &m_config};
+    firebolt::rialto::server::tasks::webaudio::SetCaps task{m_context, m_gstWrapper, m_glibWrapper, m_kAudioMimeType,
+                                                            &m_config};
     task.execute();
 }
 
@@ -173,7 +176,8 @@ TEST_F(WebAudioSetCapsTest, shouldSetCapsWhenAppSrcCapsNull)
     EXPECT_CALL(*m_gstWrapper, gstAppSrcSetCaps(GST_APP_SRC(&m_appSrc), &m_caps));
     EXPECT_CALL(*m_gstWrapper, gstCapsUnref(&m_caps));
 
-    firebolt::rialto::server::webaudio::SetCaps task{m_context, m_gstWrapper, m_glibWrapper, m_kAudioMimeType, &m_config};
+    firebolt::rialto::server::tasks::webaudio::SetCaps task{m_context, m_gstWrapper, m_glibWrapper, m_kAudioMimeType,
+                                                            &m_config};
     task.execute();
 }
 
@@ -185,6 +189,7 @@ TEST_F(WebAudioSetCapsTest, shouldNotSetCapsWhenCapsEqual)
     EXPECT_CALL(*m_gstWrapper, gstAppSrcGetCaps(GST_APP_SRC(&m_appSrc))).WillOnce(Return(&m_capsAppSrc));
     EXPECT_CALL(*m_gstWrapper, gstCapsIsEqual(&m_capsAppSrc, &m_caps)).WillOnce(Return(TRUE));
 
-    firebolt::rialto::server::webaudio::SetCaps task{m_context, m_gstWrapper, m_glibWrapper, m_kAudioMimeType, &m_config};
+    firebolt::rialto::server::tasks::webaudio::SetCaps task{m_context, m_gstWrapper, m_glibWrapper, m_kAudioMimeType,
+                                                            &m_config};
     task.execute();
 }
