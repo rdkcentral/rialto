@@ -194,9 +194,10 @@ public:
         std::vector<uint8_t> m_codecData;
     };
 
-        /**
-        * @brief A class that represents media source audio derived from MediaSource class, which represents the source of media data
-        */
+    /**
+     * @brief A class that represents media source audio derived from MediaSource class, which represents the source of
+     * media data
+     */
 
     class MediaSourceAudio : public MediaSource
     {
@@ -231,17 +232,19 @@ public:
          * @retval audio specific configuration
          */
         const AudioConfig &getAudioConfig() const { return m_audioConfig; }
+
     protected:
-    /**
-    * @brief Constructor for audio specific configuration
-    * No parameters in this constructor
-    */
+        /**
+         * @brief Constructor for audio specific configuration
+         * No parameters in this constructor
+         */
         AudioConfig m_audioConfig;
     };
 
-/**
-* @brief A class that represents media source video derived from MediaSource class, which represents the source of media data
- */
+    /**
+     * @brief A class that represents media source video derived from MediaSource class, which represents the source of
+     * media data
+     */
 
     class MediaSourceVideo : public MediaSource
     {
@@ -287,9 +290,9 @@ public:
         }
     };
 
-/**
- * @brief A class that represents media source video dolby vision derived from media source video data
- */
+    /**
+     * @brief A class that represents media source video dolby vision derived from media source video data
+     */
 
     class MediaSourceVideoDolbyVision : public MediaSourceVideo
     {
@@ -324,9 +327,9 @@ public:
 
     protected:
         /**
-        * @brief Constructor for dolby vision profile
-        * No parameters in this constructor
-        */
+         * @brief Constructor for dolby vision profile
+         * No parameters in this constructor
+         */
         uint32_t m_dolbyVisionProfile;
     };
 
