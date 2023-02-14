@@ -24,7 +24,11 @@ MATCHER_P8(attachSourceRequestMatcher2, sessionId, mimeType, numberOfChannels, s
 {
     const ::firebolt::rialto::AttachSourceRequest *request =
         dynamic_cast<const ::firebolt::rialto::AttachSourceRequest *>(arg);
-    std::vector<uint8_t> codecDataFromReq(request->codec_data().begin(), request->codec_data().end());
+    firebolt::rialto::CodecData codecDataFromReq{};
+    if (request->has_codec_data())
+    {
+        codecDataFromReq = firebolt::rialto::CodecData{{request->codec_data().begin(), request->codec_data().end()}};
+    }
     return ((request->session_id() == sessionId) &&
             (static_cast<const unsigned int>(request->config_type()) ==
              static_cast<const unsigned int>(SourceConfigType::AUDIO)) &&
@@ -41,7 +45,11 @@ MATCHER_P6(attachSourceRequestMatcherDolby, sessionId, mimeType, dolbyVisionProf
 {
     const ::firebolt::rialto::AttachSourceRequest *request =
         dynamic_cast<const ::firebolt::rialto::AttachSourceRequest *>(arg);
-    std::vector<uint8_t> codecDataFromReq(request->codec_data().begin(), request->codec_data().end());
+    firebolt::rialto::CodecData codecDataFromReq{};
+    if (request->has_codec_data())
+    {
+        codecDataFromReq = firebolt::rialto::CodecData{{request->codec_data().begin(), request->codec_data().end()}};
+    }
     return ((request->session_id() == sessionId) &&
             (static_cast<const unsigned int>(request->config_type()) ==
              static_cast<const unsigned int>(SourceConfigType::VIDEO_DOLBY_VISION)) &&
@@ -127,7 +135,42 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachAudioSourceWithAdditionalda
     uint32_t sampleRate = 48000;
     std::string codecSpecificConfigStr("1243567");
     firebolt::rialto::SegmentAlignment alignment = firebolt::rialto::SegmentAlignment::UNDEFINED;
-    std::vector<uint8_t> codecData{'T', 'E', 'S', 'T'};
+    firebolt::rialto::CodecData codecData{{'T', 'E', 'S', 'T'}};
+    firebolt::rialto::StreamFormat streamFormat = firebolt::rialto::StreamFormat::RAW;
+    EXPECT_CALL(*m_channelMock,
+                CallMethod(methodMatcher("attachSource"), m_controllerMock.get(),
+                           attachSourceRequestMatcher2(m_sessionId, m_kMimeType, numberOfChannels, sampleRate,
+                                                       codecSpecificConfigStr,
+                                                       firebolt::rialto::AttachSourceRequest_SegmentAlignment_ALIGNMENT_UNDEFINED,
+                                                       firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_RAW,
+                                                       codecData),
+                           _, m_blockingClosureMock.get()))
+        .WillOnce(WithArgs<3>(Invoke(this, &RialtoClientMediaPipelineIpcSourceTest::setAttachSourceResponse)));
+
+    std::vector<uint8_t> codecSpecificConfig;
+    codecSpecificConfig.assign(codecSpecificConfigStr.begin(), codecSpecificConfigStr.end());
+    AudioConfig audioConfig{6, 48000, codecSpecificConfig};
+
+    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_id, m_kMimeType, audioConfig, alignment, streamFormat,
+                                                           codecData);
+
+    EXPECT_EQ(m_mediaPipelineIpc->attachSource(mediaSource, m_id), true);
+}
+
+/**
+ * Test attach audio source with codec specific config.
+ */
+TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachAudioSourceWithEmptyCodecDataSuccess)
+{
+    expectIpcApiCallSuccess();
+
+    uint32_t numberOfChannels = 6;
+    uint32_t sampleRate = 48000;
+    std::string codecSpecificConfigStr("1243567");
+    firebolt::rialto::SegmentAlignment alignment = firebolt::rialto::SegmentAlignment::UNDEFINED;
+    firebolt::rialto::CodecData codecData{{}}; // Codec data present, but empty vector
+    EXPECT_TRUE(codecData);
     firebolt::rialto::StreamFormat streamFormat = firebolt::rialto::StreamFormat::RAW;
     EXPECT_CALL(*m_channelMock,
                 CallMethod(methodMatcher("attachSource"), m_controllerMock.get(),
@@ -156,7 +199,7 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachDolbyVisionSourceWithSucces
 
     uint32_t dolbyVisionProfile = 5;
     firebolt::rialto::SegmentAlignment alignment = firebolt::rialto::SegmentAlignment::UNDEFINED;
-    std::vector<uint8_t> codecData{'T', 'E', 'S', 'T'};
+    firebolt::rialto::CodecData codecData{{'T', 'E', 'S', 'T'}};
     firebolt::rialto::StreamFormat streamFormat = firebolt::rialto::StreamFormat::RAW;
     EXPECT_CALL(*m_channelMock,
                 CallMethod(methodMatcher("attachSource"), m_controllerMock.get(),

@@ -80,11 +80,11 @@ protected:
 
     void addCodecDataToCaps(GstCaps *caps) const
     {
-        const std::vector<uint8_t> &codecData = m_attachedSource.getCodecData();
-        if (!codecData.empty())
+        const CodecData &codecData = m_attachedSource.getCodecData();
+        if (codecData)
         {
-            gpointer memory = m_glibWrapper->gMemdup(codecData.data(), codecData.size());
-            GstBuffer *buf = m_gstWrapper->gstBufferNewWrapped(memory, codecData.size());
+            gpointer memory = m_glibWrapper->gMemdup(codecData->data(), codecData->size());
+            GstBuffer *buf = m_gstWrapper->gstBufferNewWrapped(memory, codecData->size());
             m_gstWrapper->gstCapsSetSimple(caps, "codec_data", GST_TYPE_BUFFER, buf, nullptr);
             m_gstWrapper->gstBufferUnref(buf);
         }

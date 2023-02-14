@@ -332,6 +332,23 @@ enum class WebAudioPlayerState
     FAILURE        /**< The player failed to set playback state. */
 };
 
+/**
+ * @brief Additional data for decoder.
+ */
+class CodecData
+{
+public:
+    CodecData() : m_present{false}, m_data{} {}
+    explicit CodecData(const std::vector<uint8_t> &data) : m_present{true}, m_data{data} {}
+    operator bool() const { return m_present; }
+    const std::vector<uint8_t> *const operator->() const { return &m_data; }
+    const std::vector<uint8_t> &operator*() const { return m_data; }
+    bool operator==(const CodecData &other) const { return m_present == other.m_present && m_data == other.m_data; }
+
+private:
+    bool m_present;
+    std::vector<uint8_t> m_data;
+};
 } // namespace firebolt::rialto
 
 #endif // FIREBOLT_RIALTO_MEDIA_COMMON_H_

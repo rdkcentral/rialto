@@ -135,7 +135,7 @@ TEST_F(AttachSourceTest, shouldAttachVideoSource)
 {
     gpointer memory = nullptr;
     GstBuffer buf;
-    std::vector<uint8_t> codecData{'T', 'E', 'S', 'T'};
+    firebolt::rialto::CodecData codecData{{'T', 'E', 'S', 'T'}};
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
         std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>(-1, "video/h264",
                                                                              firebolt::rialto::SegmentAlignment::AU,
@@ -146,8 +146,39 @@ TEST_F(AttachSourceTest, shouldAttachVideoSource)
                                                                 m_gstPlayer,   source};
     EXPECT_CALL(*m_gstWrapper, gstCapsNewEmptySimple(StrEq("video/x-h264"))).WillOnce(Return(&m_gstCaps1));
     EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleStringStub(&m_gstCaps1, StrEq("alignment"), _, StrEq("au")));
-    EXPECT_CALL(*m_glibWrapper, gMemdup(arrayMatcher(codecData), codecData.size())).WillOnce(Return(memory));
-    EXPECT_CALL(*m_gstWrapper, gstBufferNewWrapped(memory, codecData.size())).WillOnce(Return(&buf));
+    EXPECT_CALL(*m_glibWrapper, gMemdup(arrayMatcher(*codecData), codecData->size())).WillOnce(Return(memory));
+    EXPECT_CALL(*m_gstWrapper, gstBufferNewWrapped(memory, codecData->size())).WillOnce(Return(&buf));
+    EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleBufferStub(&m_gstCaps1, StrEq("codec_data"), _, &buf));
+    EXPECT_CALL(*m_gstWrapper, gstBufferUnref(&buf));
+    EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleStringStub(&m_gstCaps1, StrEq("stream-format"), _, StrEq("avc")));
+    EXPECT_CALL(*m_gstWrapper, gstCapsToString(&m_gstCaps1)).WillOnce(Return(&m_capsStr));
+    EXPECT_CALL(*m_glibWrapper, gFree(&m_capsStr));
+    EXPECT_CALL(*m_gstWrapper, gstElementFactoryMake(_, CharStrMatcher(m_vidName.c_str()))).WillOnce(Return(&m_appSrc));
+    EXPECT_CALL(*m_gstWrapper, gstAppSrcSetCaps(GST_APP_SRC(&m_appSrc), &m_gstCaps1));
+    EXPECT_CALL(*m_gstWrapper, gstCapsUnref(&m_gstCaps1));
+    task.execute();
+    EXPECT_EQ(1, m_context.streamInfo.size());
+    EXPECT_NE(m_context.streamInfo.end(), m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO));
+    EXPECT_EQ(&m_appSrc, m_context.streamInfo.at(firebolt::rialto::MediaSourceType::VIDEO));
+}
+
+TEST_F(AttachSourceTest, shouldAttachVideoSourceEmptyCodecData)
+{
+    gpointer memory = nullptr;
+    GstBuffer buf;
+    firebolt::rialto::CodecData codecData{{}};
+    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>(-1, "video/h264",
+                                                                             firebolt::rialto::SegmentAlignment::AU,
+                                                                             firebolt::rialto::StreamFormat::AVC,
+                                                                             codecData);
+    firebolt::rialto::server::tasks::generic::AttachSource task{m_context,     m_gstWrapper,
+                                                                m_glibWrapper, m_rdkGstreamerUtilsWrapper,
+                                                                m_gstPlayer,   source};
+    EXPECT_CALL(*m_gstWrapper, gstCapsNewEmptySimple(StrEq("video/x-h264"))).WillOnce(Return(&m_gstCaps1));
+    EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleStringStub(&m_gstCaps1, StrEq("alignment"), _, StrEq("au")));
+    EXPECT_CALL(*m_glibWrapper, gMemdup(arrayMatcher(*codecData), codecData->size())).WillOnce(Return(memory));
+    EXPECT_CALL(*m_gstWrapper, gstBufferNewWrapped(memory, codecData->size())).WillOnce(Return(&buf));
     EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleBufferStub(&m_gstCaps1, StrEq("codec_data"), _, &buf));
     EXPECT_CALL(*m_gstWrapper, gstBufferUnref(&buf));
     EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleStringStub(&m_gstCaps1, StrEq("stream-format"), _, StrEq("avc")));
@@ -289,7 +320,7 @@ TEST_F(AttachSourceTest, shouldAttachVideoDolbyVisionSource)
     gpointer memory = nullptr;
     int32_t dolbyVisionProfile = 5;
     GstBuffer buf;
-    std::vector<uint8_t> codecData{'T', 'E', 'S', 'T'};
+    firebolt::rialto::CodecData codecData{{'T', 'E', 'S', 'T'}};
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source = std::make_unique<
         firebolt::rialto::IMediaPipeline::MediaSourceVideoDolbyVision>(-1, "video/h265", dolbyVisionProfile,
                                                                        firebolt::rialto::SegmentAlignment::AU,
@@ -299,8 +330,8 @@ TEST_F(AttachSourceTest, shouldAttachVideoDolbyVisionSource)
                                                                 m_gstPlayer,   source};
     EXPECT_CALL(*m_gstWrapper, gstCapsNewEmptySimple(StrEq("video/x-h265"))).WillOnce(Return(&m_gstCaps1));
     EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleStringStub(&m_gstCaps1, StrEq("alignment"), _, StrEq("au")));
-    EXPECT_CALL(*m_glibWrapper, gMemdup(arrayMatcher(codecData), codecData.size())).WillOnce(Return(memory));
-    EXPECT_CALL(*m_gstWrapper, gstBufferNewWrapped(memory, codecData.size())).WillOnce(Return(&buf));
+    EXPECT_CALL(*m_glibWrapper, gMemdup(arrayMatcher(*codecData), codecData->size())).WillOnce(Return(memory));
+    EXPECT_CALL(*m_gstWrapper, gstBufferNewWrapped(memory, codecData->size())).WillOnce(Return(&buf));
     EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleBufferStub(&m_gstCaps1, StrEq("codec_data"), _, &buf));
     EXPECT_CALL(*m_gstWrapper, gstBufferUnref(&buf));
     EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleStringStub(&m_gstCaps1, StrEq("stream-format"), _, StrEq("avc")));

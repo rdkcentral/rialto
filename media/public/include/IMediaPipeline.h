@@ -136,7 +136,7 @@ public:
         /**
          * @brief Gets the codec data
          */
-        const std::vector<uint8_t> &getCodecData() const { return m_codecData; }
+        const CodecData &getCodecData() const { return m_codecData; }
 
         /**
          * @brief Gets the stream format
@@ -158,7 +158,7 @@ public:
                              const std::string &mimeType = std::string(),
                              SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                              StreamFormat streamFormat = StreamFormat::UNDEFINED,
-                             const std::vector<uint8_t> &codecData = std::vector<uint8_t>())
+                             const CodecData &codecData = CodecData())
             : m_id(id), m_configType(configType), m_mimeType(mimeType), m_alignment(alignment),
               m_streamFormat(streamFormat), m_codecData(codecData)
         {
@@ -191,7 +191,7 @@ public:
         /**
          * @brief Additional data for decoder
          */
-        std::vector<uint8_t> m_codecData;
+        CodecData m_codecData;
     };
 
     /**
@@ -214,8 +214,7 @@ public:
          */
         MediaSourceAudio(int32_t id, const std::string &mimeType, const AudioConfig &audioConfig = AudioConfig(),
                          SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
-                         StreamFormat streamFormat = StreamFormat::UNDEFINED,
-                         const std::vector<uint8_t> &codecData = std::vector<uint8_t>())
+                         StreamFormat streamFormat = StreamFormat::UNDEFINED, const CodecData &codecData = CodecData())
             : MediaSource(id, SourceConfigType::AUDIO, mimeType, alignment, streamFormat, codecData),
               m_audioConfig(audioConfig)
         {
@@ -259,8 +258,7 @@ public:
          */
         MediaSourceVideo(int32_t id, const std::string &mimeType,
                          SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
-                         StreamFormat streamFormat = StreamFormat::UNDEFINED,
-                         const std::vector<uint8_t> &codecData = std::vector<uint8_t>())
+                         StreamFormat streamFormat = StreamFormat::UNDEFINED, const CodecData &codecData = CodecData())
             : MediaSource(id, SourceConfigType::VIDEO, mimeType, alignment, streamFormat, codecData)
         {
         }
@@ -282,8 +280,7 @@ public:
          */
         MediaSourceVideo(int32_t id, SourceConfigType sourceConfigType, const std::string &mimeType,
                          SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
-                         StreamFormat streamFormat = StreamFormat::UNDEFINED,
-                         const std::vector<uint8_t> &codecData = std::vector<uint8_t>())
+                         StreamFormat streamFormat = StreamFormat::UNDEFINED, const CodecData &codecData = CodecData())
             : MediaSource(id, sourceConfigType, mimeType, alignment, streamFormat, codecData)
         {
         }
@@ -309,7 +306,7 @@ public:
         MediaSourceVideoDolbyVision(int32_t id, const std::string &mimeType, int32_t dolbyVisionProfile,
                                     SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                                     StreamFormat streamFormat = StreamFormat::UNDEFINED,
-                                    const std::vector<uint8_t> &codecData = std::vector<uint8_t>())
+                                    const CodecData &codecData = CodecData())
             : MediaSourceVideo(id, SourceConfigType::VIDEO_DOLBY_VISION, mimeType, alignment, streamFormat, codecData),
               m_dolbyVisionProfile(dolbyVisionProfile)
         {

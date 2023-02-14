@@ -44,7 +44,7 @@ const std::string mimeType{"exampleMimeType"};
 constexpr uint32_t numberOfChannels{6};
 constexpr uint32_t sampleRate{48000};
 const std::string codecSpecificConfigStr("1243567");
-std::vector<uint8_t> codecData{'T', 'E', 'S', 'T'};
+const firebolt::rialto::CodecData codecData{{'T', 'E', 'S', 'T'}};
 const std::string url{"https://example.url.com"};
 constexpr int64_t position{2000000000};
 constexpr std::uint32_t requestId{2};
@@ -660,7 +660,7 @@ void MediaPipelineModuleServiceTests::sendAttachAudioSourceWithAdditionalDataReq
     request.mutable_audio_config()->set_number_of_channels(numberOfChannels);
     request.mutable_audio_config()->set_sample_rate(sampleRate);
     request.mutable_audio_config()->set_codec_specific_config(codecSpecificConfigStr);
-    request.set_codec_data(codecData.data(), codecData.size());
+    request.set_codec_data(codecData->data(), codecData->size());
     request.set_stream_format(convertStreamFormat(firebolt::rialto::StreamFormat::RAW));
 
     m_service->attachSource(m_controllerMock.get(), &request, &response, m_closureMock.get());
