@@ -235,8 +235,7 @@ public:
 
     protected:
         /**
-         * @brief Constructor for audio specific configuration
-         * No parameters in this constructor
+         * @brief Variable that stores the audio specific configuration
          */
         AudioConfig m_audioConfig;
     };
@@ -327,8 +326,7 @@ public:
 
     protected:
         /**
-         * @brief Constructor for dolby vision profile
-         * No parameters in this constructor
+         * @brief Variable that stores the Dolby Vision Profile 
          */
         uint32_t m_dolbyVisionProfile;
     };

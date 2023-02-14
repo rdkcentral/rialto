@@ -1,7 +1,7 @@
 name: Doxygen Documentation Check
 
 on:
-  push:
+  pull_request:
     branches: [ "master", "rdkcentral:master" ]
   workflow_dispatch:
 
@@ -30,7 +30,7 @@ jobs:
         id: doxygen
         run: |
           mkdir -p build/gh_pages
-          doxygen 2> doxygen_errors.txt
+          doxygen 
       
       - name: Check for errors in the Doxygen Documentation
         run: |
@@ -43,14 +43,3 @@ jobs:
             echo "No errors found in the Doxygen Documentation!"
             exit 0
           fi
-
-
-
-
-
-
-
-
-
-          
-      

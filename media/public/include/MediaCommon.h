@@ -60,7 +60,7 @@ enum class MediaSourceType
 };
 
 /**
- * @brief The supported types of config types.
+ * @brief Shows the types of source configuration.
  */
 enum class SourceConfigType
 {
@@ -88,11 +88,11 @@ enum class MediaType
     UNKNOWN, /**< Media type not known. */
     MSE      /**< Media is MSE and will request data. */
 };
+
 /**
  * @brief The media source status. This is the status of the source
  *        after a read.
  */
-
 enum class MediaSourceStatus
 {
     OK,                  /**< Source data provided without error. */
@@ -302,11 +302,10 @@ struct WebAudioPcmConfig
 {
     uint32_t rate;       /**< Rate of web audio (Hz) */
     uint32_t channels;   /**< Number of channels */
-    uint32_t sampleSize; /**< Size of each sample (bytes or bits) */
-    bool isBigEndian; /**< Specifies if sample is stored as big-endian or little-endian format - refers to the order in
-                         which bytes of data value are stored in memory*/
+    uint32_t sampleSize; /**< Size of each sample (bits) */
+    bool isBigEndian; /**< Specifies if sample is stored as big-endian or little-endian format */
     bool isSigned;    /**< Specifies if samples are signed or unsigned */
-    bool isFloat;     /**< Specifies if samples are float values or not float values*/
+    bool isFloat;     /**< Specifies if samples are float values or interger values*/
 };
 
 /**
