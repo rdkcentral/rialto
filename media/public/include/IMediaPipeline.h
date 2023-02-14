@@ -326,7 +326,7 @@ public:
 
     protected:
         /**
-         * @brief Variable that stores the Dolby Vision Profile 
+         * @brief Variable that stores the Dolby Vision Profile
          */
         uint32_t m_dolbyVisionProfile;
     };

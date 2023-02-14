@@ -303,9 +303,9 @@ struct WebAudioPcmConfig
     uint32_t rate;       /**< Rate of web audio (Hz) */
     uint32_t channels;   /**< Number of channels */
     uint32_t sampleSize; /**< Size of each sample (bits) */
-    bool isBigEndian; /**< Specifies if sample is stored as big-endian or little-endian format */
-    bool isSigned;    /**< Specifies if samples are signed or unsigned */
-    bool isFloat;     /**< Specifies if samples are float values or interger values*/
+    bool isBigEndian;    /**< Specifies if sample is stored as big-endian or little-endian format */
+    bool isSigned;       /**< Specifies if samples are signed or unsigned */
+    bool isFloat;        /**< Specifies if samples are float values or interger values*/
 };
 
 /**
