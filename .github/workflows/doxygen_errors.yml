@@ -41,7 +41,7 @@ jobs:
             cat doxygen_errors.txt
             exit 1
           else
-            echo "No errors found in the Doxygen Documentation"
+            echo "No errors found in the Doxygen Documentation!"
             exit 0
           fi
 
