@@ -27,7 +27,7 @@ jobs:
         id: doxygen
         run: |
           mkdir -p build/gh_pages
-          doxygen > doxygen_errors.txt 2>&1
+          doxygen 2> doxygen_errors.txt
 
       - name: Show Doxygen errors
         if: failure()
