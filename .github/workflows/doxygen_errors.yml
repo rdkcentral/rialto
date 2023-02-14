@@ -27,20 +27,19 @@ jobs:
         id: doxygen
         run: |
           mkdir -p build/gh_pages
-          doxygen > doxygen_errors.txt 2>&1
-
-      - name: Show Doxygen errors
-        if: failure()
-        run: |
-          echo "Errors found in the Doxygen Documentation:"
-          cat doxygen_errors.txt
-          
-      - name: No Doxygen Errors
-        if: success()
-        run: |
-          echo "No errors found in the Doxygen Documentation!"
+          doxygen 2> doxygen_errors.txt
       
-          
+      - name: Check for errors in the Doxygen Documentation
+        run: |
+          if [ -s doxygen_errors.txt ]
+          then
+            echo "Errors found in the Doxygen Documentation:"
+            cat doxygen_errors.txt
+            exit 1
+          else
+            echo "No errors found in the Doxygen Documentation"
+            exit 0
+          fi
 
 
 
