@@ -194,7 +194,9 @@ public:
         std::vector<uint8_t> m_codecData;
     };
 
-
+        /**
+        * @brief A class that represents media source audio derived from MediaSource class, which represents the source of media data
+        */
 
     class MediaSourceAudio : public MediaSource
     {
@@ -229,9 +231,11 @@ public:
          * @retval audio specific configuration
          */
         const AudioConfig &getAudioConfig() const { return m_audioConfig; }
-
     protected:
-
+    /**
+    * @brief Constructor for audio specific configuration
+    * No parameters in this constructor
+    */
         AudioConfig m_audioConfig;
     };
 
