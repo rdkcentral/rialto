@@ -341,7 +341,6 @@ public:
          * @param[in] type          : The source type.
          * @param[in] timeStamp     : The timestamp in nanoseconds.
          * @param[in] duration      : The duration in nanoseconds.
-         * @param[in] codecData     : The additional data for decoder
          */
         MediaSegment(int32_t sourceId = 0, MediaSourceType type = MediaSourceType::UNKNOWN, int64_t timeStamp = 0,
                      int64_t duration = 0)
