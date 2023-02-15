@@ -31,8 +31,8 @@ class RdkGstreamerUtilsWrapperMock : public IRdkGstreamerUtilsWrapper
 public:
     MOCK_METHOD(bool, performAudioTrackCodecChannelSwitch,
                 (PlaybackGroupPrivate * playbackGroup, const void *sampleAttr, AudioAttributesPrivate *audioAttr,
-                 std::uint32_t *status, unsigned int *ui32Delay, long long *audioChangeTargetPts,
-                 const long long *currentDispPts, unsigned int *audioChangeStage, GstCaps **appsrcCaps, bool *audioaac,
+                 std::uint32_t *status, unsigned int *ui32Delay, long long *audioChangeTargetPts, // NOLINT(runtime/int)
+                 const long long *currentDispPts, unsigned int *audioChangeStage, GstCaps **appsrcCaps, bool *audioaac, // NOLINT(runtime/int)
                  bool svpEnabled, GstElement *aSrc, bool *ret),
                 (const, override));
 };
