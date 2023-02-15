@@ -39,8 +39,8 @@ std::shared_ptr<IRdkGstreamerUtilsWrapper> RdkGstreamerUtilsWrapperFactory::crea
 }
 
 bool RdkGstreamerUtilsWrapper::performAudioTrackCodecChannelSwitch(
-    PlaybackGroupPrivate *playbackGroup, const void *sampleAttr, AudioAttributesPrivate *audioAttr,
-    std::uint32_t *status, unsigned int *ui32Delay, long long *audioChangeTargetPts, const long long *currentDispPts, // NOLINT(runtime/int)
+    PlaybackGroupPrivate *playbackGroup, const void *sampleAttr, AudioAttributesPrivate *audioAttr, std::uint32_t *status,
+    unsigned int *ui32Delay, long long *audioChangeTargetPts, const long long *currentDispPts, // NOLINT(runtime/int)
     unsigned int *audioChangeStage, GstCaps **appsrcCaps, bool *audioaac, bool svpEnabled, GstElement *aSrc,
     bool *ret) const
 {

@@ -32,8 +32,8 @@ public:
     MOCK_METHOD(bool, performAudioTrackCodecChannelSwitch,
                 (PlaybackGroupPrivate * playbackGroup, const void *sampleAttr, AudioAttributesPrivate *audioAttr,
                  std::uint32_t *status, unsigned int *ui32Delay, long long *audioChangeTargetPts, // NOLINT(runtime/int)
-                 const long long *currentDispPts, unsigned int *audioChangeStage, GstCaps **appsrcCaps, bool *audioaac, // NOLINT(runtime/int)
-                 bool svpEnabled, GstElement *aSrc, bool *ret),
+                 const long long *currentDispPts, unsigned int *audioChangeStage,                 // NOLINT(runtime/int)
+                 GstCaps **appsrcCaps, bool *audioaac, bool svpEnabled, GstElement *aSrc, bool *ret),
                 (const, override));
 };
 } // namespace firebolt::rialto::server
