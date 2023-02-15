@@ -103,6 +103,14 @@ void HandleBusMessage::execute() const
             {
                 m_gstPlayerClient->notifyState(WebAudioPlayerState::END_OF_STREAM);
             }
+
+            // Flush to reset the pipeline
+            gboolean ret = gst_element_send_event(m_context.pipeline, gst_event_new_flush_start());
+            if ((!gst_element_send_event(m_context.pipeline, gst_event_new_flush_start())) ||
+                (!gst_element_send_event(m_context.pipeline, gst_event_new_flush_stop(TRUE))))
+            {
+                RIALTO_SERVER_LOG_ERROR("Failed to flush the pipeline");
+            }
         }
         break;
     }
