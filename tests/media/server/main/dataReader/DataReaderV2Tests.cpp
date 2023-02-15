@@ -46,6 +46,7 @@ constexpr int32_t kNumberOfChannels{4};
 std::vector<uint8_t> kMediaData{'T', 'E', 'S', 'T', '_', 'M', 'E', 'D', 'I', 'A'};
 std::uint32_t kNumFrames{1};
 const std::vector<uint8_t> kExtraData{1, 2, 3, 4};
+const firebolt::rialto::CodecData kCodecData{{4, 3, 2, 1}};
 const int32_t kMksId{43};
 const std::vector<uint8_t> kKeyId{9, 2, 6, 2, 0, 1};
 const std::vector<uint8_t> kInitVector{34, 53, 54, 62, 56};
@@ -98,6 +99,7 @@ public:
     {
         EXPECT_EQ(m_segment->getExtraData(), kExtraData);
         EXPECT_EQ(m_segment->getSegmentAlignment(), kSegmentAlignment);
+        EXPECT_EQ(m_segment->getCodecData(), kCodecData);
         return *this;
     }
 
@@ -105,6 +107,7 @@ public:
     {
         EXPECT_TRUE(m_segment->getExtraData().empty());
         EXPECT_EQ(m_segment->getSegmentAlignment(), firebolt::rialto::SegmentAlignment::UNDEFINED);
+        EXPECT_FALSE(m_segment->getCodecData());
         return *this;
     }
 
@@ -159,6 +162,7 @@ public:
     {
         m_segment->setExtraData(kExtraData);
         m_segment->setSegmentAlignment(kSegmentAlignment);
+        m_segment->setCodecData(kCodecData);
         return *this;
     }
 

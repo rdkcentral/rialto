@@ -91,6 +91,10 @@ createSegment(const firebolt::rialto::MediaSegmentMetadata &metadata, const fire
     {
         segment->setExtraData(std::vector<uint8_t>(metadata.extra_data().begin(), metadata.extra_data().end()));
     }
+    if (metadata.has_codec_data())
+    {
+        segment->setCodecData(firebolt::rialto::CodecData({metadata.codec_data().begin(), metadata.codec_data().end()}));
+    }
 
     // Read encryption data
     if (metadata.has_media_key_session_id() || metadata.has_key_id() || metadata.has_init_vector() ||
