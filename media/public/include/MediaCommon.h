@@ -59,6 +59,9 @@ enum class MediaSourceType
     VIDEO
 };
 
+/**
+ * @brief Shows the types of source configuration.
+ */
 enum class SourceConfigType
 {
     UNKNOWN,
@@ -153,7 +156,7 @@ struct AudioConfig
 {
     uint32_t numberOfChannels = kInvalidAudioChannels; /**< The number of channels. */
     uint32_t sampleRate = kInvalidAudioSampleRate;     /**< The sampling rate.*/
-    std::vector<uint8_t> codecSpecificConfig;          /**The audio specific config. Zero length if no specific config*/
+    std::vector<uint8_t> codecSpecificConfig; /**< The audio specific config. Zero length if no specific config*/
 };
 
 /**
@@ -297,12 +300,12 @@ struct WebAudioShmInfo
  */
 struct WebAudioPcmConfig
 {
-    uint32_t rate;
-    uint32_t channels;
-    uint32_t sampleSize;
-    bool isBigEndian;
-    bool isSigned;
-    bool isFloat;
+    uint32_t rate;       /**< Rate of web audio (Hz) */
+    uint32_t channels;   /**< Number of channels */
+    uint32_t sampleSize; /**< Size of each sample (bits) */
+    bool isBigEndian;    /**< Specifies if sample is stored as big-endian or little-endian format */
+    bool isSigned;       /**< Specifies if samples are signed or unsigned */
+    bool isFloat;        /**< Specifies if samples are float values or interger values*/
 };
 
 /**
@@ -310,6 +313,9 @@ struct WebAudioPcmConfig
  */
 union WebAudioConfig
 {
+    /**
+     * @brief PCM audio configuration.
+     */
     WebAudioPcmConfig pcm;
 };
 
