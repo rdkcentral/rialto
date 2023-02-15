@@ -344,9 +344,9 @@ public:
          * @param[in] codecData     : The additional data for decoder
          */
         MediaSegment(int32_t sourceId = 0, MediaSourceType type = MediaSourceType::UNKNOWN, int64_t timeStamp = 0,
-                     int64_t duration = 0, const CodecData &codecData = CodecData())
+                     int64_t duration = 0)
             : m_sourceId(sourceId), m_type(type), m_data(nullptr), m_dataLength(0u), m_timeStamp(timeStamp),
-              m_duration(duration), m_codecData{codecData},
+              m_duration(duration),
               m_encrypted(false), m_mediaKeySessionId{0}, m_initWithLast15{0}, m_alignment{SegmentAlignment::UNDEFINED}
         {
         }
@@ -589,6 +589,15 @@ public:
         void setSegmentAlignment(const SegmentAlignment &alignment) { m_alignment = alignment; }
 
         /**
+         * @brief Sets new codec_data for the source.
+         *
+         * @note Should only be called if the codec data changes
+         *
+         * @param[in] codecData  The updated codec data for the source
+         */
+        void setCodecData(const CodecData &codecData) { m_codecData = codecData; }
+
+        /**
          * @brief Sets the encrypted flag.
          *
          * @param[in] encrypted : Set true to indicated encrypted data.
@@ -654,11 +663,10 @@ public:
          * @param[in] duration         : The duration in nanoseconds.
          * @param[in] sampleRate       : The sample rate in samples per second.
          * @param[in] numberOfChannels : The number of audio channels.
-         * @param[in] codecData        : The additional data for decoder
          */
         MediaSegmentAudio(int32_t sourceId = 0, int64_t timeStamp = 0, int64_t duration = 0, int32_t sampleRate = 0,
-                          int32_t numberOfChannels = 0, const CodecData &codecData = CodecData())
-            : MediaSegment(sourceId, MediaSourceType::AUDIO, timeStamp, duration, codecData), m_sampleRate(sampleRate),
+                          int32_t numberOfChannels = 0)
+            : MediaSegment(sourceId, MediaSourceType::AUDIO, timeStamp, duration), m_sampleRate(sampleRate),
               m_numberOfChannels(numberOfChannels)
         {
         }
@@ -735,12 +743,10 @@ public:
          * @param[in] duration  : The duration in nanoseconds.
          * @param[in] width     : The video width in pixels.
          * @param[in] height    : The video height in pixels.
-         * @param[in] codecData : The additional data for decoder
          */
         MediaSegmentVideo(int32_t sourceId = 0, int64_t timeStamp = 0, int64_t duration = 0, int32_t width = 0,
-                          int32_t height = 0, const CodecData &codecData = CodecData())
-            : MediaSegment(sourceId, MediaSourceType::VIDEO, timeStamp, duration, codecData), m_width(width),
-              m_height(height)
+                          int32_t height = 0)
+            : MediaSegment(sourceId, MediaSourceType::VIDEO, timeStamp, duration), m_width(width), m_height(height)
         {
         }
 
