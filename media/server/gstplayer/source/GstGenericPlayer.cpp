@@ -542,7 +542,7 @@ void GstGenericPlayer::attachVideoData()
     }
 }
 
-void GstGenericPlayer::updateAudioCaps(int32_t rate, int32_t channels)
+void GstGenericPlayer::updateAudioCaps(int32_t rate, int32_t channels, const CodecData &codecData)
 {
     if (!m_context.audioAppSrc)
     {
@@ -569,6 +569,14 @@ void GstGenericPlayer::updateAudioCaps(int32_t rate, int32_t channels)
             m_gstWrapper->gstCapsSetSimple(newCaps, "channels", G_TYPE_INT, channels, NULL);
             capsChanged = true;
         }
+        if (codecData)
+        {
+            gpointer memory = m_glibWrapper->gMemdup(codecData->data(), codecData->size());
+            GstBuffer *buf = m_gstWrapper->gstBufferNewWrapped(memory, codecData->size());
+            m_gstWrapper->gstCapsSetSimple(newCaps, "codec_data", GST_TYPE_BUFFER, buf, nullptr);
+            m_gstWrapper->gstBufferUnref(buf);
+            capsChanged = true;
+        }
         if (capsChanged)
         {
             m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(m_context.audioAppSrc), newCaps);
@@ -578,7 +586,7 @@ void GstGenericPlayer::updateAudioCaps(int32_t rate, int32_t channels)
     }
 }
 
-void GstGenericPlayer::updateVideoCaps(int32_t width, int32_t height)
+void GstGenericPlayer::updateVideoCaps(int32_t width, int32_t height, const CodecData &codecData)
 {
     if (!m_context.videoAppSrc)
     {
@@ -595,6 +603,13 @@ void GstGenericPlayer::updateVideoCaps(int32_t width, int32_t height)
         GstCaps *newCaps = m_gstWrapper->gstCapsCopy(currentCaps);
 
         m_gstWrapper->gstCapsSetSimple(newCaps, "width", G_TYPE_INT, width, "height", G_TYPE_INT, height, NULL);
+        if (codecData)
+        {
+            gpointer memory = m_glibWrapper->gMemdup(codecData->data(), codecData->size());
+            GstBuffer *buf = m_gstWrapper->gstBufferNewWrapped(memory, codecData->size());
+            m_gstWrapper->gstCapsSetSimple(newCaps, "codec_data", GST_TYPE_BUFFER, buf, nullptr);
+            m_gstWrapper->gstBufferUnref(buf);
+        }
 
         m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(m_context.videoAppSrc), newCaps);
 

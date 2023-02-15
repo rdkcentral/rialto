@@ -35,19 +35,6 @@ using testing::Return;
 using testing::StrEq;
 using testing::StrictMock;
 
-MATCHER_P(arrayMatcher, vec, "")
-{
-    const uint8_t *array = static_cast<const uint8_t *>(arg);
-    for (unsigned int i = 0; i < vec.size(); ++i)
-    {
-        if (vec[i] != array[i])
-        {
-            return false;
-        }
-    }
-    return true;
-}
-
 class AttachSourceTest : public testing::Test
 {
 protected:

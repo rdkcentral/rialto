@@ -100,12 +100,12 @@ public:
     /**
      * @brief Checks the new audio mediaSegment metadata and updates the caps accordingly.
      */
-    virtual void updateAudioCaps(int32_t rate, int32_t channels) = 0;
+    virtual void updateAudioCaps(int32_t rate, int32_t channels, const CodecData &codecData) = 0;
 
     /**
      * @brief Checks the new video mediaSegment metadata and updates the caps accordingly.
      */
-    virtual void updateVideoCaps(int32_t width, int32_t height) = 0;
+    virtual void updateVideoCaps(int32_t width, int32_t height, const CodecData &codecData) = 0;
 
     /**
      * @brief Changes pipeline state.

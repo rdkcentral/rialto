@@ -27,6 +27,7 @@ using testing::_;
 using testing::ByMove;
 using testing::Invoke;
 using testing::Return;
+using testing::StrEq;
 
 namespace
 {
@@ -47,6 +48,8 @@ constexpr uint32_t kInitWithLast15{1};
 constexpr size_t kNumClearBytes{3};
 constexpr size_t kNumEncryptedBytes{5};
 constexpr VideoRequirements m_videoReq{kMinPrimaryVideoWidth, kMinPrimaryVideoHeight};
+const firebolt::rialto::CodecData kEmptyCodecData{};
+const firebolt::rialto::CodecData kCodecData{{4, 3, 2, 1}};
 } // namespace
 
 bool operator==(const GstRialtoProtectionData &lhs, const GstRialtoProtectionData &rhs)
@@ -610,6 +613,8 @@ TEST_F(GstGenericPlayerPrivateTest, shouldUpdateAudioCaps)
     GstAppSrc audioSrc{};
     GstCaps dummyCaps1;
     GstCaps dummyCaps2;
+    GstBuffer buf;
+    gpointer memory{nullptr};
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     modifyContext([&](GenericPlayerContext &context)
                   { context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO] = GST_ELEMENT(&audioSrc); });
@@ -619,11 +624,15 @@ TEST_F(GstGenericPlayerPrivateTest, shouldUpdateAudioCaps)
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&dummyCaps2, CharStrMatcher("rate"), G_TYPE_INT, kSampleRate));
     EXPECT_CALL(*m_gstWrapperMock,
                 gstCapsSetSimpleIntStub(&dummyCaps2, CharStrMatcher("channels"), G_TYPE_INT, kNumberOfChannels));
+    EXPECT_CALL(*m_glibWrapperMock, gMemdup(arrayMatcher(*kCodecData), kCodecData->size())).WillOnce(Return(memory));
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferNewWrapped(memory, kCodecData->size())).WillOnce(Return(&buf));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleBufferStub(&dummyCaps2, StrEq("codec_data"), _, &buf));
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferUnref(&buf));
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(GST_APP_SRC(&audioSrc), &dummyCaps2));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps1));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps2));
 
-    m_sut->updateAudioCaps(kSampleRate, kNumberOfChannels);
+    m_sut->updateAudioCaps(kSampleRate, kNumberOfChannels, kCodecData);
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldUpdateAudioCapsSampleRateOnly)
@@ -642,7 +651,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldUpdateAudioCapsSampleRateOnly)
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps1));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps2));
 
-    m_sut->updateAudioCaps(kSampleRate, kInvalidNumberOfChannels);
+    m_sut->updateAudioCaps(kSampleRate, kInvalidNumberOfChannels, kEmptyCodecData);
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldUpdateAudioCapsNumOfChannelsOnly)
@@ -662,7 +671,31 @@ TEST_F(GstGenericPlayerPrivateTest, shouldUpdateAudioCapsNumOfChannelsOnly)
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps1));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps2));
 
-    m_sut->updateAudioCaps(kInvalidSampleRate, kNumberOfChannels);
+    m_sut->updateAudioCaps(kInvalidSampleRate, kNumberOfChannels, kEmptyCodecData);
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldUpdateAudioCapsCodecDataOnly)
+{
+    GstAppSrc audioSrc{};
+    GstCaps dummyCaps1;
+    GstCaps dummyCaps2;
+    GstBuffer buf;
+    gpointer memory{nullptr};
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    modifyContext([&](GenericPlayerContext &context)
+                  { context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO] = GST_ELEMENT(&audioSrc); });
+
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(GST_APP_SRC(&audioSrc))).WillOnce(Return(&dummyCaps1));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCopy(&dummyCaps1)).WillOnce(Return(&dummyCaps2));
+    EXPECT_CALL(*m_glibWrapperMock, gMemdup(arrayMatcher(*kCodecData), kCodecData->size())).WillOnce(Return(memory));
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferNewWrapped(memory, kCodecData->size())).WillOnce(Return(&buf));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleBufferStub(&dummyCaps2, StrEq("codec_data"), _, &buf));
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferUnref(&buf));
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(GST_APP_SRC(&audioSrc), &dummyCaps2));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps1));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps2));
+
+    m_sut->updateAudioCaps(kInvalidSampleRate, kInvalidNumberOfChannels, kCodecData);
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldNotUpdateAudioCapsWhenValuesAreInvalid)
@@ -679,15 +712,41 @@ TEST_F(GstGenericPlayerPrivateTest, shouldNotUpdateAudioCapsWhenValuesAreInvalid
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps1));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps2));
 
-    m_sut->updateAudioCaps(kInvalidSampleRate, kInvalidNumberOfChannels);
+    m_sut->updateAudioCaps(kInvalidSampleRate, kInvalidNumberOfChannels, kEmptyCodecData);
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldNotUpdateAudioCapsWhenNoSrc)
 {
-    m_sut->updateAudioCaps(kSampleRate, kNumberOfChannels);
+    m_sut->updateAudioCaps(kSampleRate, kNumberOfChannels, kEmptyCodecData);
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldUpdateVideoCaps)
+{
+    GstAppSrc videoSrc{};
+    GstCaps dummyCaps1;
+    GstCaps dummyCaps2;
+    GstBuffer buf;
+    gpointer memory{nullptr};
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    modifyContext([&](GenericPlayerContext &context)
+                  { context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO] = GST_ELEMENT(&videoSrc); });
+
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(GST_APP_SRC(&videoSrc))).WillOnce(Return(&dummyCaps1));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCopy(&dummyCaps1)).WillOnce(Return(&dummyCaps2));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&dummyCaps2, CharStrMatcher("width"), G_TYPE_INT, kWidth));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&dummyCaps2, CharStrMatcher("height"), G_TYPE_INT, kHeight));
+    EXPECT_CALL(*m_glibWrapperMock, gMemdup(arrayMatcher(*kCodecData), kCodecData->size())).WillOnce(Return(memory));
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferNewWrapped(memory, kCodecData->size())).WillOnce(Return(&buf));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleBufferStub(&dummyCaps2, StrEq("codec_data"), _, &buf));
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferUnref(&buf));
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(GST_APP_SRC(&videoSrc), &dummyCaps2));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps1));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps2));
+
+    m_sut->updateVideoCaps(kWidth, kHeight, kCodecData);
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldUpdateVideoCapsWithoutCodecData)
 {
     GstAppSrc videoSrc{};
     GstCaps dummyCaps1;
@@ -704,12 +763,12 @@ TEST_F(GstGenericPlayerPrivateTest, shouldUpdateVideoCaps)
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps1));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps2));
 
-    m_sut->updateVideoCaps(kWidth, kHeight);
+    m_sut->updateVideoCaps(kWidth, kHeight, kEmptyCodecData);
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldNotUpdateAudioVideoCapsWhenNoSrc)
 {
-    m_sut->updateVideoCaps(kWidth, kHeight);
+    m_sut->updateVideoCaps(kWidth, kHeight, kEmptyCodecData);
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldFailToChangePlaybackStateWhenPipelineIsNull)

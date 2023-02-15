@@ -43,12 +43,14 @@ private:
         GstBuffer *buffer;
         int32_t rate;
         int32_t channels;
+        CodecData codecData;
     };
     struct VideoData
     {
         GstBuffer *buffer;
         int32_t width;
         int32_t height;
+        CodecData codecData;
     };
 
     GenericPlayerContext &m_context;

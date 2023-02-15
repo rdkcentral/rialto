@@ -39,8 +39,8 @@ public:
     MOCK_METHOD(GstBuffer *, createBuffer, (const IMediaPipeline::MediaSegment &mediaSegment), (const, override));
     MOCK_METHOD(void, attachAudioData, (), (override));
     MOCK_METHOD(void, attachVideoData, (), (override));
-    MOCK_METHOD(void, updateAudioCaps, (int32_t rate, int32_t channels), (override));
-    MOCK_METHOD(void, updateVideoCaps, (int32_t width, int32_t height), (override));
+    MOCK_METHOD(void, updateAudioCaps, (int32_t rate, int32_t channels, const CodecData &codecData), (override));
+    MOCK_METHOD(void, updateVideoCaps, (int32_t width, int32_t height, const CodecData &codecData), (override));
     MOCK_METHOD(bool, changePipelineState, (GstState newState), (override));
     MOCK_METHOD(void, startPositionReportingAndCheckAudioUnderflowTimer, (), (override));
     MOCK_METHOD(void, stopPositionReportingAndCheckAudioUnderflowTimer, (), (override));
