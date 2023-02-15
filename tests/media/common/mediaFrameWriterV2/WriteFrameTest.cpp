@@ -39,6 +39,7 @@ constexpr int32_t kNumberOfChannels{3};
 constexpr int32_t kWidth{1024};
 constexpr int32_t kHeight{768};
 const std::vector<uint8_t> kExtraData{1, 2, 3, 4};
+const std::vector<uint8_t> kCodecData{4, 3, 2, 1};
 const int32_t kMksId{43};
 const std::vector<uint8_t> kKeyId{9, 2, 6, 2, 0, 1};
 const std::vector<uint8_t> kInitVector{34, 53, 54, 62, 56};
@@ -71,6 +72,7 @@ void addOptionalData(std::unique_ptr<IMediaPipeline::MediaSegment> &segment)
 {
     segment->setSegmentAlignment(SegmentAlignment::NAL);
     segment->setExtraData(kExtraData);
+    segment->setCodecData(CodecData(kCodecData));
 }
 
 void addEncryptionData(std::unique_ptr<IMediaPipeline::MediaSegment> &segment)
@@ -111,6 +113,7 @@ void checkOptionalMetadataNotPresent(const MediaSegmentMetadata &metadata)
 {
     EXPECT_FALSE(metadata.has_segment_alignment());
     EXPECT_FALSE(metadata.has_extra_data());
+    EXPECT_FALSE(metadata.has_codec_data());
 }
 
 void checkOptionalMetadataPresent(const MediaSegmentMetadata &metadata)
@@ -119,6 +122,8 @@ void checkOptionalMetadataPresent(const MediaSegmentMetadata &metadata)
     EXPECT_EQ(metadata.segment_alignment(), MediaSegmentMetadata_SegmentAlignment_ALIGNMENT_NAL);
     EXPECT_TRUE(metadata.has_extra_data());
     EXPECT_EQ(metadata.extra_data(), std::string(kExtraData.begin(), kExtraData.end()));
+    EXPECT_TRUE(metadata.has_codec_data());
+    EXPECT_EQ(metadata.codec_data(), std::string(kCodecData.begin(), kCodecData.end()));
 }
 
 void checkEncryptionMetadataNotPresent(const MediaSegmentMetadata &metadata)
