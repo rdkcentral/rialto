@@ -25,6 +25,7 @@
 #include "IMediaPipeline.h"
 #include "IPlayerTask.h"
 #include <gst/gst.h>
+#include <memory>
 #include <vector>
 
 namespace firebolt::rialto::server::tasks::generic

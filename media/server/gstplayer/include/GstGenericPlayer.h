@@ -36,6 +36,7 @@
 #include <IMediaPipeline.h>
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace firebolt::rialto::server
 {

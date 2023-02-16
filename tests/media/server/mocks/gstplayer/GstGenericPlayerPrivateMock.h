@@ -22,6 +22,8 @@
 
 #include "IGstGenericPlayerPrivate.h"
 #include <gmock/gmock.h>
+#include <memory>
+#include <vector>
 
 namespace firebolt::rialto::server
 {
