@@ -42,17 +42,6 @@ void WriteBuffer::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing WriteBuffer");
 
-    // Should flush the pipeline if Eos has been previously set
-    if (m_context.m_shouldFlush)
-    {
-        if ((!m_gstWrapper->gstElementSendEvent(m_context.pipeline, m_gstWrapper->gstEventNewFlushStart())) ||
-            (!m_gstWrapper->gstElementSendEvent(m_context.pipeline, m_gstWrapper->gstEventNewFlushStop(TRUE))))
-        {
-            RIALTO_SERVER_LOG_ERROR("Failed to flush the pipeline");
-        }
-        m_context.m_shouldFlush = false;
-    }
-
     uint64_t freeBytes = kMaxWebAudioBytes - m_gstWrapper->gstAppSrcGetCurrentLevelBytes(GST_APP_SRC(m_context.source));
     uint64_t bytesToWrite = std::min(freeBytes, m_mainLength + m_wrapLength);
     uint64_t bytesWritten = 0;

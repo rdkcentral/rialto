@@ -62,14 +62,6 @@ struct WebAudioPlayerContext
      * @brief The previous number of bytes written to the gstreamer buffers.
      */
     uint32_t m_lastBytesWritten{};
-
-    /**
-     * @brief Whether the pipeline requires a flush.
-     *
-     * Set on a setEos. If the client starts pushing new data before and Eos has been reached,
-     * this flag ensures that the previous data is flushed correctly.
-     */
-    bool m_shouldFlush{false};
 };
 } // namespace firebolt::rialto::server
 
