@@ -588,7 +588,7 @@ public:
         void setSegmentAlignment(const SegmentAlignment &alignment) { m_alignment = alignment; }
 
         /**
-         * @brief Sets new codec_data for the source.
+         * @brief Sets new codec_data for the segment.
          *
          * @note Should only be called if the codec data changes
          *
