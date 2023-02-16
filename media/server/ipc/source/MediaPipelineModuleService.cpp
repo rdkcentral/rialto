@@ -321,11 +321,11 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
 {
     RIALTO_SERVER_LOG_DEBUG("mime_type: %s", request->mime_type().c_str());
 
-    CodecData codecData{};
+    std::shared_ptr<std::vector<std::uint8_t>> codecData{};
     if (request->has_codec_data())
     {
         auto codecDataProto = request->codec_data();
-        codecData = CodecData{{codecDataProto.begin(), codecDataProto.end()}};
+        codecData = std::make_shared<std::vector<std::uint8_t>>(codecDataProto.begin(), codecDataProto.end());
     }
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource;
     firebolt::rialto::SourceConfigType configType = convertConfigType(request->config_type());

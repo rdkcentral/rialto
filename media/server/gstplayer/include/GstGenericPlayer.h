@@ -122,8 +122,10 @@ private:
     GstBuffer *createBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const override;
     void attachAudioData() override;
     void attachVideoData() override;
-    void updateAudioCaps(int32_t rate, int32_t channels, const CodecData &codecData) override;
-    void updateVideoCaps(int32_t width, int32_t height, const CodecData &codecData) override;
+    void updateAudioCaps(int32_t rate, int32_t channels,
+                         const std::shared_ptr<std::vector<std::uint8_t>> &codecData) override;
+    void updateVideoCaps(int32_t width, int32_t height,
+                         const std::shared_ptr<std::vector<std::uint8_t>> &codecData) override;
     bool changePipelineState(GstState newState) override;
     void startPositionReportingAndCheckAudioUnderflowTimer() override;
     void stopPositionReportingAndCheckAudioUnderflowTimer() override;

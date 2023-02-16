@@ -122,7 +122,8 @@ TEST_F(AttachSourceTest, shouldAttachVideoSource)
 {
     gpointer memory = nullptr;
     GstBuffer buf;
-    firebolt::rialto::CodecData codecData{{'T', 'E', 'S', 'T'}};
+    std::shared_ptr<std::vector<std::uint8_t>> codecData{
+        std::make_shared<std::vector<std::uint8_t>>(std::vector<std::uint8_t>{'T', 'E', 'S', 'T'})};
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
         std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>(-1, "video/h264",
                                                                              firebolt::rialto::SegmentAlignment::AU,
@@ -153,7 +154,7 @@ TEST_F(AttachSourceTest, shouldAttachVideoSourceEmptyCodecData)
 {
     gpointer memory = nullptr;
     GstBuffer buf;
-    firebolt::rialto::CodecData codecData{{}};
+    std::shared_ptr<std::vector<std::uint8_t>> codecData{std::make_shared<std::vector<std::uint8_t>>()};
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
         std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>(-1, "video/h264",
                                                                              firebolt::rialto::SegmentAlignment::AU,
@@ -307,7 +308,8 @@ TEST_F(AttachSourceTest, shouldAttachVideoDolbyVisionSource)
     gpointer memory = nullptr;
     int32_t dolbyVisionProfile = 5;
     GstBuffer buf;
-    firebolt::rialto::CodecData codecData{{'T', 'E', 'S', 'T'}};
+    std::shared_ptr<std::vector<std::uint8_t>> codecData{
+        std::make_shared<std::vector<std::uint8_t>>(std::vector<std::uint8_t>{'T', 'E', 'S', 'T'})};
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source = std::make_unique<
         firebolt::rialto::IMediaPipeline::MediaSourceVideoDolbyVision>(-1, "video/h265", dolbyVisionProfile,
                                                                        firebolt::rialto::SegmentAlignment::AU,

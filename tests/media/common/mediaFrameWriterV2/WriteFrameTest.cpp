@@ -72,7 +72,7 @@ void addOptionalData(std::unique_ptr<IMediaPipeline::MediaSegment> &segment)
 {
     segment->setSegmentAlignment(SegmentAlignment::NAL);
     segment->setExtraData(kExtraData);
-    segment->setCodecData(CodecData(kCodecData));
+    segment->setCodecData(std::make_shared<std::vector<std::uint8_t>>(kCodecData));
 }
 
 void addEncryptionData(std::unique_ptr<IMediaPipeline::MediaSegment> &segment)

@@ -331,57 +331,6 @@ enum class WebAudioPlayerState
     END_OF_STREAM, /**< The player has got to the end of playback. */
     FAILURE        /**< The player failed to set playback state. */
 };
-
-/**
- * @brief Additional data for decoder.
- */
-class CodecData
-{
-public:
-    /**
-     * @brief Default constructor.
-     */
-    CodecData() : m_present{false}, m_data{} {}
-
-    /**
-     * @brief Constructor with data initialisation
-     *
-     * @param[in]  data   : Additional data for decoder.
-     */
-    explicit CodecData(const std::vector<uint8_t> &data) : m_present{true}, m_data{data} {}
-
-    /**
-     * @brief Conversion to bool operator
-     *
-     * @retval true if CodecData object is initialized
-     */
-    operator bool() const { return m_present; }
-
-    /**
-     * @brief arrow operator
-     *
-     * @retval Pointer to data vector
-     */
-    const std::vector<uint8_t> *const operator->() const { return &m_data; }
-
-    /**
-     * @brief star operator
-     *
-     * @retval Reference to data vector
-     */
-    const std::vector<uint8_t> &operator*() const { return m_data; }
-
-    /**
-     * @brief Equals operator
-     *
-     * @retval True if CodecData objects are equal
-     */
-    bool operator==(const CodecData &other) const { return m_present == other.m_present && m_data == other.m_data; }
-
-private:
-    bool m_present;
-    std::vector<uint8_t> m_data;
-};
 } // namespace firebolt::rialto
 
 #endif // FIREBOLT_RIALTO_MEDIA_COMMON_H_

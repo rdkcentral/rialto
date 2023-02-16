@@ -542,7 +542,8 @@ void GstGenericPlayer::attachVideoData()
     }
 }
 
-void GstGenericPlayer::updateAudioCaps(int32_t rate, int32_t channels, const CodecData &codecData)
+void GstGenericPlayer::updateAudioCaps(int32_t rate, int32_t channels,
+                                       const std::shared_ptr<std::vector<std::uint8_t>> &codecData)
 {
     if (!m_context.audioAppSrc)
     {
@@ -586,7 +587,8 @@ void GstGenericPlayer::updateAudioCaps(int32_t rate, int32_t channels, const Cod
     }
 }
 
-void GstGenericPlayer::updateVideoCaps(int32_t width, int32_t height, const CodecData &codecData)
+void GstGenericPlayer::updateVideoCaps(int32_t width, int32_t height,
+                                       const std::shared_ptr<std::vector<std::uint8_t>> &codecData)
 {
     if (!m_context.videoAppSrc)
     {

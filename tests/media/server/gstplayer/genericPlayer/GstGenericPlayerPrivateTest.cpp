@@ -48,8 +48,9 @@ constexpr uint32_t kInitWithLast15{1};
 constexpr size_t kNumClearBytes{3};
 constexpr size_t kNumEncryptedBytes{5};
 constexpr VideoRequirements m_videoReq{kMinPrimaryVideoWidth, kMinPrimaryVideoHeight};
-const firebolt::rialto::CodecData kEmptyCodecData{};
-const firebolt::rialto::CodecData kCodecData{{4, 3, 2, 1}};
+const std::shared_ptr<std::vector<std::uint8_t>> kEmptyCodecData{};
+const std::shared_ptr<std::vector<std::uint8_t>> kCodecData{
+    std::make_shared<std::vector<std::uint8_t>>(std::vector<std::uint8_t>{1, 2, 3, 4})};
 } // namespace
 
 bool operator==(const GstRialtoProtectionData &lhs, const GstRialtoProtectionData &rhs)

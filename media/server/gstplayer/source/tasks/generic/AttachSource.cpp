@@ -80,7 +80,7 @@ protected:
 
     void addCodecDataToCaps(GstCaps *caps) const
     {
-        const CodecData &codecData = m_attachedSource.getCodecData();
+        const std::shared_ptr<std::vector<std::uint8_t>> &codecData = m_attachedSource.getCodecData();
         if (codecData)
         {
             gpointer memory = m_glibWrapper->gMemdup(codecData->data(), codecData->size());

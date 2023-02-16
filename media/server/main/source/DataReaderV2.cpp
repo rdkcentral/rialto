@@ -93,7 +93,8 @@ createSegment(const firebolt::rialto::MediaSegmentMetadata &metadata, const fire
     }
     if (metadata.has_codec_data())
     {
-        segment->setCodecData(firebolt::rialto::CodecData({metadata.codec_data().begin(), metadata.codec_data().end()}));
+        segment->setCodecData(
+            std::make_shared<std::vector<uint8_t>>(metadata.codec_data().begin(), metadata.codec_data().end()));
     }
 
     // Read encryption data
