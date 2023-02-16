@@ -42,6 +42,5 @@ void Eos::execute() const
     {
         RIALTO_SERVER_LOG_WARN("Set eos failed - Gstreamer error");
     }
-    m_context.m_shouldFlush = true;
 }
 } // namespace firebolt::rialto::server::tasks::webaudio
