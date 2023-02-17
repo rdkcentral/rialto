@@ -72,7 +72,7 @@ void GstWebAudioPlayerTestCommon::expectTermPipeline()
     EXPECT_CALL(*m_gstWrapperMock, gstBusSetSyncHandler(&m_bus, nullptr, nullptr, nullptr));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_appSrc));
-    EXPECT_CALL(*m_glibWrapperMock, gObjectUnref(&m_pipeline));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_pipeline));
 }
 
 void GstWebAudioPlayerTestCommon::expectTaskStop()
