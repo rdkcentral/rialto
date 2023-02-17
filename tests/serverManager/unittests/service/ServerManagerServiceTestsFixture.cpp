@@ -28,11 +28,27 @@ using testing::AtLeast;
 using testing::Return;
 using testing::ReturnRef;
 
+namespace firebolt::rialto::common
+{
+bool operator==(const AppConfig &lhs, const AppConfig &rhs)
+{
+    return lhs.clientIpcSocketName == rhs.clientIpcSocketName;
+}
+} // namespace firebolt::rialto::common
+
 ServerManagerServiceTests::ServerManagerServiceTests()
 {
     auto serviceContext{std::make_unique<StrictMock<rialto::servermanager::service::ServiceContextMock>>()};
     EXPECT_CALL(*serviceContext, getSessionServerAppManager).Times(AtLeast(0)).WillRepeatedly(ReturnRef(m_appManager));
     m_sut = std::make_unique<rialto::servermanager::service::ServerManagerService>(std::move(serviceContext));
+}
+
+void ServerManagerServiceTests::initiateApplicationWillBeCalled(const std::string &appId,
+                                                                const firebolt::rialto::common::SessionServerState &state,
+                                                                const firebolt::rialto::common::AppConfig &appConfig,
+                                                                bool returnValue)
+{
+    EXPECT_CALL(m_appManager, initiateApplication(appId, state, appConfig)).WillOnce(Return(returnValue));
 }
 
 void ServerManagerServiceTests::setSessionServerStateWillBeCalled(
@@ -49,6 +65,14 @@ void ServerManagerServiceTests::getAppConnectionInfoWillBeCalled(const std::stri
 void ServerManagerServiceTests::setLogLevelsWillBeCalled(bool returnValue)
 {
     EXPECT_CALL(m_appManager, setLogLevels(_)).WillOnce(Return(returnValue));
+}
+
+bool ServerManagerServiceTests::triggerInitiateApplication(const std::string &appId,
+                                                           const firebolt::rialto::common::SessionServerState &state,
+                                                           const firebolt::rialto::common::AppConfig &appConfig)
+{
+    EXPECT_TRUE(m_sut);
+    return m_sut->initiateApplication(appId, state, appConfig);
 }
 
 bool ServerManagerServiceTests::triggerChangeSessionServerState(const std::string &appId,

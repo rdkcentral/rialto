@@ -46,6 +46,13 @@ SessionServerAppManager::~SessionServerAppManager()
     m_eventThread.reset();
 }
 
+bool SessionServerAppManager::initiateApplication(const std::string &appId,
+                                                  const firebolt::rialto::common::SessionServerState &state,
+                                                  const firebolt::rialto::common::AppConfig &appConfig)
+{
+    return false;
+}
+
 bool SessionServerAppManager::setSessionServerState(const std::string &appId,
                                                     const firebolt::rialto::common::SessionServerState &newState)
 {
