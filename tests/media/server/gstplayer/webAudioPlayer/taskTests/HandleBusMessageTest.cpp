@@ -77,12 +77,33 @@ TEST_F(WebAudioHandleBusMessageTest, shouldNotHandleMessageEosWhenPipelineIsNull
     task.execute();
 }
 
-TEST_F(WebAudioHandleBusMessageTest, shouldHandleEosMessage)
+TEST_F(WebAudioHandleBusMessageTest, shouldHandleEosMessageWhenFlushFails)
 {
     GstMessage message{};
+    GstEvent eventStart{};
     GST_MESSAGE_SRC(&message) = GST_OBJECT(&m_pipeline);
     GST_MESSAGE_TYPE(&message) = GST_MESSAGE_EOS;
     EXPECT_CALL(m_gstPlayerClient, notifyState(firebolt::rialto::WebAudioPlayerState::END_OF_STREAM));
+    EXPECT_CALL(*m_gstWrapper, gstElementSendEvent(&m_pipeline, &eventStart)).WillOnce(Return(FALSE));
+    EXPECT_CALL(*m_gstWrapper, gstEventNewFlushStart()).WillOnce(Return(&eventStart));
+    EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&message));
+    firebolt::rialto::server::tasks::webaudio::HandleBusMessage task{m_context, m_gstPlayer, &m_gstPlayerClient,
+                                                                     m_gstWrapper, &message};
+    task.execute();
+}
+
+TEST_F(WebAudioHandleBusMessageTest, shouldHandleEosMessage)
+{
+    GstMessage message{};
+    GstEvent eventStart{};
+    GstEvent eventStop{};
+    GST_MESSAGE_SRC(&message) = GST_OBJECT(&m_pipeline);
+    GST_MESSAGE_TYPE(&message) = GST_MESSAGE_EOS;
+    EXPECT_CALL(m_gstPlayerClient, notifyState(firebolt::rialto::WebAudioPlayerState::END_OF_STREAM));
+    EXPECT_CALL(*m_gstWrapper, gstElementSendEvent(&m_pipeline, &eventStart)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapper, gstElementSendEvent(&m_pipeline, &eventStop)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapper, gstEventNewFlushStart()).WillOnce(Return(&eventStart));
+    EXPECT_CALL(*m_gstWrapper, gstEventNewFlushStop(TRUE)).WillOnce(Return(&eventStop));
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&message));
     firebolt::rialto::server::tasks::webaudio::HandleBusMessage task{m_context, m_gstPlayer, &m_gstPlayerClient,
                                                                      m_gstWrapper, &message};
