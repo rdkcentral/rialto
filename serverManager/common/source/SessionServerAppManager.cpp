@@ -50,6 +50,13 @@ bool SessionServerAppManager::initiateApplication(const std::string &appId,
                                                   const firebolt::rialto::common::SessionServerState &state,
                                                   const firebolt::rialto::common::AppConfig &appConfig)
 {
+    RIALTO_SERVER_MANAGER_LOG_INFO("RialtoServerManager requests to launch %s with initial state: %s", appId.c_str(),
+                                   toString(state));
+    if (state != firebolt::rialto::common::SessionServerState::NOT_RUNNING && !isSessionServerLaunched(appId))
+    {
+        return addSessionServer(appId, state);
+    }
+    RIALTO_SERVER_MANAGER_LOG_ERROR("Initialization of %s failed.", appId.c_str());
     return false;
 }
 
@@ -58,21 +65,13 @@ bool SessionServerAppManager::setSessionServerState(const std::string &appId,
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("RialtoServerManager requests to change state of %s to %s", appId.c_str(),
                                    toString(newState));
-    const bool isLaunched{isSessionServerLaunched(appId)};
-    if (newState != firebolt::rialto::common::SessionServerState::NOT_RUNNING && !isLaunched)
-    {
-        return addSessionServer(appId, newState);
-    }
-    else if (isLaunched)
+    if (isSessionServerLaunched(appId))
     {
         return changeSessionServerState(appId, newState);
     }
-    else
-    {
-        RIALTO_SERVER_MANAGER_LOG_ERROR("Change state of %s to %s failed. App is not launched", appId.c_str(),
-                                        toString(newState));
-        return false;
-    }
+    RIALTO_SERVER_MANAGER_LOG_ERROR("Change state of %s to %s failed. App is not launched", appId.c_str(),
+                                    toString(newState));
+    return false;
 }
 
 void SessionServerAppManager::onSessionServerStateChanged(const std::string &appId,
