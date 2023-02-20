@@ -49,7 +49,9 @@ std::vector<std::string> splitUri(std::string uri)
 namespace rialto::servermanager
 {
 HttpRequest::HttpRequest(mg_connection *conn, const mg_request_info *request_info)
-    : m_connection{conn}, m_method{request_info->request_method}
+    : m_connection{conn}, m_method{request_info->request_method}, m_postData{request_info->post_data
+                                                                                 ? request_info->post_data
+                                                                                 : ""}
 {
     auto uri = splitUri(request_info->uri);
     if (uri.size() > 0)
@@ -70,6 +72,11 @@ std::string HttpRequest::getMethod() const
 std::string HttpRequest::getCommand() const
 {
     return m_command;
+}
+
+std::string HttpRequest::getPostData() const
+{
+    return m_postData;
 }
 
 std::vector<std::string> HttpRequest::getParams() const

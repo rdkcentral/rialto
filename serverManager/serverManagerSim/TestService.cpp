@@ -65,7 +65,8 @@ void TestService::shutdown()
     m_serverCv.notify_one();
 }
 
-bool TestService::setState(const std::string &appName, const firebolt::rialto::common::SessionServerState &state)
+bool TestService::setState(const std::string &appName, const firebolt::rialto::common::SessionServerState &state,
+                           const firebolt::rialto::common::AppConfig &appConfig)
 {
     if (state == firebolt::rialto::common::SessionServerState::ACTIVE)
     {
@@ -77,6 +78,10 @@ bool TestService::setState(const std::string &appName, const firebolt::rialto::c
             fprintf(stderr, "Failed to switch active: %s to inactive", activeApp.c_str());
             return false;
         }
+    }
+    if (getState(appName) == firebolt::rialto::common::SessionServerState::NOT_RUNNING)
+    {
+        return m_serverManagerService->initiateApplication(appName, state, appConfig);
     }
     return m_serverManagerService->changeSessionServerState(appName, state);
 }
