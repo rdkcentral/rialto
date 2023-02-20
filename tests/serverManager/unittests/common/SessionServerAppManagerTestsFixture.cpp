@@ -19,6 +19,7 @@
 
 #include "SessionServerAppManagerTestsFixture.h"
 #include "LoggingLevels.h"
+#include "Matchers.h"
 #include "SessionServerAppManager.h"
 #include <string>
 #include <utility>
@@ -85,7 +86,7 @@ SessionServerAppManagerTests::SessionServerAppManagerTests()
 void SessionServerAppManagerTests::sessionServerLaunchWillFail(const firebolt::rialto::common::SessionServerState &state)
 {
     ASSERT_TRUE(m_sessionServerAppFactoryMock);
-    EXPECT_CALL(*m_sessionServerAppFactoryMock, create(APP_NAME, state, _))
+    EXPECT_CALL(*m_sessionServerAppFactoryMock, create(APP_NAME, state, APP_CONFIG, _))
         .WillOnce(Return(ByMove(std::move(m_sessionServerApp))));
     EXPECT_CALL(m_sessionServerAppMock, launch()).WillOnce(Return(false));
 }
@@ -93,7 +94,7 @@ void SessionServerAppManagerTests::sessionServerLaunchWillFail(const firebolt::r
 void SessionServerAppManagerTests::sessionServerConnectWillFail(const firebolt::rialto::common::SessionServerState &state)
 {
     ASSERT_TRUE(m_sessionServerAppFactoryMock);
-    EXPECT_CALL(*m_sessionServerAppFactoryMock, create(APP_NAME, state, _))
+    EXPECT_CALL(*m_sessionServerAppFactoryMock, create(APP_NAME, state, APP_CONFIG, _))
         .WillOnce(Return(ByMove(std::move(m_sessionServerApp))));
     EXPECT_CALL(m_sessionServerAppMock, launch()).WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerAppMock, getAppManagementSocketName()).WillOnce(Return(APP_MGMT_SOCKET));
@@ -109,7 +110,7 @@ void SessionServerAppManagerTests::sessionServerChangeStateWillFail(const firebo
 void SessionServerAppManagerTests::sessionServerWillLaunch(const firebolt::rialto::common::SessionServerState &state)
 {
     ASSERT_TRUE(m_sessionServerAppFactoryMock);
-    EXPECT_CALL(*m_sessionServerAppFactoryMock, create(APP_NAME, state, _))
+    EXPECT_CALL(*m_sessionServerAppFactoryMock, create(APP_NAME, state, APP_CONFIG, _))
         .WillOnce(Return(ByMove(std::move(m_sessionServerApp))));
     EXPECT_CALL(m_sessionServerAppMock, launch()).WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerAppMock, getAppManagementSocketName()).WillOnce(Return(APP_MGMT_SOCKET));

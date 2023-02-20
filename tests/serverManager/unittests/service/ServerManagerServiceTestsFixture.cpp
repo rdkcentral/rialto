@@ -18,6 +18,7 @@
  */
 
 #include "ServerManagerServiceTestsFixture.h"
+#include "Matchers.h"
 #include "ServerManagerService.h"
 #include "ServiceContextMock.h"
 #include <string>
@@ -27,14 +28,6 @@ using testing::_;
 using testing::AtLeast;
 using testing::Return;
 using testing::ReturnRef;
-
-namespace firebolt::rialto::common
-{
-bool operator==(const AppConfig &lhs, const AppConfig &rhs)
-{
-    return lhs.clientIpcSocketName == rhs.clientIpcSocketName;
-}
-} // namespace firebolt::rialto::common
 
 ServerManagerServiceTests::ServerManagerServiceTests()
 {

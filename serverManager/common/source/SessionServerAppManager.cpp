@@ -54,7 +54,7 @@ bool SessionServerAppManager::initiateApplication(const std::string &appId,
                                    toString(state));
     if (state != firebolt::rialto::common::SessionServerState::NOT_RUNNING && !isSessionServerLaunched(appId))
     {
-        return addSessionServer(appId, state);
+        return addSessionServer(appId, state, appConfig);
     }
     RIALTO_SERVER_MANAGER_LOG_ERROR("Initialization of %s failed.", appId.c_str());
     return false;
@@ -107,10 +107,11 @@ bool SessionServerAppManager::setLogLevels(const service::LoggingLevels &logLeve
 }
 
 bool SessionServerAppManager::addSessionServer(const std::string &appId,
-                                               const firebolt::rialto::common::SessionServerState &initialState)
+                                               const firebolt::rialto::common::SessionServerState &initialState,
+                                               const firebolt::rialto::common::AppConfig &appConfig)
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("RialtoServerManager tries to launch %s", appId.c_str());
-    if (!launchSessionServer(appId, initialState))
+    if (!launchSessionServer(appId, initialState, appConfig))
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("RialtoServerManager unable to launch %s", appId.c_str());
         return false;
@@ -157,10 +158,11 @@ void SessionServerAppManager::cancelSessionServerStartupTimer(const std::string 
 }
 
 bool SessionServerAppManager::launchSessionServer(const std::string &appId,
-                                                  const firebolt::rialto::common::SessionServerState &initialState)
+                                                  const firebolt::rialto::common::SessionServerState &initialState,
+                                                  const firebolt::rialto::common::AppConfig &appConfig)
 {
     std::unique_lock<std::mutex> lock{m_sessionServerAppsMutex};
-    auto app = m_sessionServerAppFactory->create(appId, initialState, *this);
+    auto app = m_sessionServerAppFactory->create(appId, initialState, appConfig, *this);
     if (app->launch())
     {
         m_sessionServerApps.insert(std::make_pair(appId, std::move(app)));
