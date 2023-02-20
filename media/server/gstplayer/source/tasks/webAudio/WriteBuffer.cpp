@@ -43,49 +43,59 @@ void WriteBuffer::execute() const
     RIALTO_SERVER_LOG_DEBUG("Executing WriteBuffer");
 
     uint64_t freeBytes = kMaxWebAudioBytes - m_gstWrapper->gstAppSrcGetCurrentLevelBytes(GST_APP_SRC(m_context.source));
-    uint64_t bytesToWrite = std::min(freeBytes, m_mainLength + m_wrapLength);
+    uint64_t maxBytesToWrite = std::min(freeBytes, m_mainLength + m_wrapLength);
+    uint64_t bytesToWrite = maxBytesToWrite - (maxBytesToWrite % m_context.bytesPerSample);
     uint64_t bytesWritten = 0;
 
-    GstBuffer *gstBuffer = m_gstWrapper->gstBufferNewAllocate(nullptr, bytesToWrite, nullptr);
-    if (gstBuffer)
+    if (bytesToWrite > 0)
     {
-        if (bytesToWrite == m_mainLength + m_wrapLength)
+        GstBuffer *gstBuffer = m_gstWrapper->gstBufferNewAllocate(nullptr, bytesToWrite, nullptr);
+        if (gstBuffer)
         {
-            bytesWritten += m_gstWrapper->gstBufferFill(gstBuffer, 0, m_mainPtr, m_mainLength);
-            bytesWritten += m_gstWrapper->gstBufferFill(gstBuffer, bytesWritten, m_wrapPtr, m_wrapLength);
-        }
-        else if (bytesToWrite > m_mainLength)
-        {
-            bytesWritten += m_gstWrapper->gstBufferFill(gstBuffer, 0, m_mainPtr, m_mainLength);
-            bytesWritten += m_gstWrapper->gstBufferFill(gstBuffer, bytesWritten, m_wrapPtr, bytesToWrite - bytesWritten);
+            if (bytesToWrite == m_mainLength + m_wrapLength)
+            {
+                bytesWritten += m_gstWrapper->gstBufferFill(gstBuffer, 0, m_mainPtr, m_mainLength);
+                bytesWritten += m_gstWrapper->gstBufferFill(gstBuffer, bytesWritten, m_wrapPtr, m_wrapLength);
+            }
+            else if (bytesToWrite > m_mainLength)
+            {
+                bytesWritten += m_gstWrapper->gstBufferFill(gstBuffer, 0, m_mainPtr, m_mainLength);
+                bytesWritten += m_gstWrapper->gstBufferFill(gstBuffer, bytesWritten, m_wrapPtr, bytesToWrite - bytesWritten);
+            }
+            else
+            {
+                bytesWritten += m_gstWrapper->gstBufferFill(gstBuffer, 0, m_mainPtr, bytesToWrite);
+            }
+
+            if (bytesWritten != bytesToWrite)
+            {
+                RIALTO_SERVER_LOG_WARN("Did not write the correct number of bytes! expected %" PRIu64 ", actual %" PRIu64,
+                                    bytesToWrite, bytesWritten);
+            }
+
+            if (GST_FLOW_OK != m_gstWrapper->gstAppSrcPushBuffer(GST_APP_SRC(m_context.source), gstBuffer))
+            {
+                RIALTO_SERVER_LOG_ERROR("Failed to push the buffers to the appsrc");
+                m_gstWrapper->gstBufferUnref(gstBuffer);
+                bytesWritten = 0;
+            }
+
+            RIALTO_SERVER_LOG_INFO("%" PRIu64 "bytes written to gstreamer", bytesWritten);
         }
         else
         {
-            bytesWritten += m_gstWrapper->gstBufferFill(gstBuffer, 0, m_mainPtr, bytesToWrite);
-        }
-
-        if (bytesWritten != bytesToWrite)
-        {
-            RIALTO_SERVER_LOG_WARN("Did not write the correct number of bytes! expected %" PRIu64 ", actual %" PRIu64,
-                                   bytesToWrite, bytesWritten);
-        }
-
-        if (GST_FLOW_OK != m_gstWrapper->gstAppSrcPushBuffer(GST_APP_SRC(m_context.source), gstBuffer))
-        {
-            RIALTO_SERVER_LOG_ERROR("Failed to push the buffers to the appsrc");
-            m_gstWrapper->gstBufferUnref(gstBuffer);
-            bytesWritten = 0;
+            RIALTO_SERVER_LOG_ERROR("Failed to create the gst buffer");
         }
     }
     else
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to create the gst buffer");
+        RIALTO_SERVER_LOG_INFO("No space in gstreamer buffer to write samples");
     }
 
     {
-        std::unique_lock<std::mutex> lock(m_context.m_writeBufferMutex);
-        m_context.m_lastBytesWritten = bytesWritten;
+        std::unique_lock<std::mutex> lock(m_context.writeBufferMutex);
+        m_context.lastBytesWritten = bytesWritten;
     }
-    m_context.m_writeBufferCond.notify_one();
+    m_context.writeBufferCond.notify_one();
 }
 } // namespace firebolt::rialto::server::tasks::webaudio

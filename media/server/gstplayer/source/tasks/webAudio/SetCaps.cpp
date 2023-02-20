@@ -22,6 +22,9 @@
 #include "IGstWrapper.h"
 #include "RialtoServerLogging.h"
 
+#include <gst/audio/gstaudiobasesink.h>
+#include <limits.h>
+
 namespace firebolt::rialto::server::tasks::webaudio
 {
 namespace
@@ -54,7 +57,8 @@ public:
         GstCaps *caps = m_gstWrapper->gstCapsNewEmptySimple("audio/x-raw");
         addFormat(caps);
         m_gstWrapper->gstCapsSetSimple(caps, "channels", G_TYPE_INT, m_pcmConfig.channels, "layout", G_TYPE_STRING,
-                                       "interleaved", "rate", G_TYPE_INT, m_pcmConfig.rate, nullptr);
+                                       "interleaved", "rate", G_TYPE_INT, m_pcmConfig.rate, "channel-mask", GST_TYPE_BITMASK,
+                                       gst_audio_channel_get_fallback_mask(m_pcmConfig.channels), nullptr);
 
         return caps;
     }
@@ -135,6 +139,8 @@ void SetCaps::execute() const
         m_gstWrapper->gstCapsUnref(appsrcCaps);
     if (caps)
         m_gstWrapper->gstCapsUnref(caps);
+
+    setBytePerSample();
 }
 
 GstCaps *SetCaps::createCapsFromMimeType() const
@@ -153,4 +159,17 @@ GstCaps *SetCaps::createCapsFromMimeType() const
 
     return capsBuilder->buildCaps();
 }
+
+void SetCaps::setBytePerSample()
+{
+    if (m_audioMimeType == "audio/x-raw")
+    {
+        m_context.bytesPerSample = m_config.pcm.channels * (m_config.pcm.sampleSize / CHAR_BIT);
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_WARN("Cannot set bytes per sample, invalid audio mime type %s", m_audioMimeType.c_str());
+    }
+}
+
 } // namespace firebolt::rialto::server::tasks::webaudio

@@ -59,7 +59,7 @@ TEST_F(WebAudioWriteBufferTest, shouldWriteBufferForAllData)
     firebolt::rialto::server::tasks::webaudio::WriteBuffer task{m_context,    m_gstWrapper, &m_mainPtr,
                                                                 m_mainLength, &m_wrapPtr,   m_wrapLength};
     task.execute();
-    EXPECT_EQ(m_context.m_lastBytesWritten, m_mainLength + m_wrapLength);
+    EXPECT_EQ(m_context.lastBytesWritten, m_mainLength + m_wrapLength);
 }
 
 TEST_F(WebAudioWriteBufferTest, shouldWriteBufferForAllMainDataAndPartialWrapData)
@@ -74,7 +74,7 @@ TEST_F(WebAudioWriteBufferTest, shouldWriteBufferForAllMainDataAndPartialWrapDat
     firebolt::rialto::server::tasks::webaudio::WriteBuffer task{m_context,    m_gstWrapper, &m_mainPtr,
                                                                 m_mainLength, &m_wrapPtr,   m_wrapLength};
     task.execute();
-    EXPECT_EQ(m_context.m_lastBytesWritten, m_mainLength + m_wrapLength / 2);
+    EXPECT_EQ(m_context.lastBytesWritten, m_mainLength + m_wrapLength / 2);
 }
 
 TEST_F(WebAudioWriteBufferTest, shouldWriteBufferForPartialMainDataAndNoWrapData)
@@ -88,7 +88,7 @@ TEST_F(WebAudioWriteBufferTest, shouldWriteBufferForPartialMainDataAndNoWrapData
     firebolt::rialto::server::tasks::webaudio::WriteBuffer task{m_context,    m_gstWrapper, &m_mainPtr,
                                                                 m_mainLength, &m_wrapPtr,   m_wrapLength};
     task.execute();
-    EXPECT_EQ(m_context.m_lastBytesWritten, m_mainLength / 2);
+    EXPECT_EQ(m_context.lastBytesWritten, m_mainLength / 2);
 }
 
 TEST_F(WebAudioWriteBufferTest, shouldNotWriteBufferIfNewAllocateFails)
@@ -99,7 +99,7 @@ TEST_F(WebAudioWriteBufferTest, shouldNotWriteBufferIfNewAllocateFails)
     firebolt::rialto::server::tasks::webaudio::WriteBuffer task{m_context,    m_gstWrapper, &m_mainPtr,
                                                                 m_mainLength, &m_wrapPtr,   m_wrapLength};
     task.execute();
-    EXPECT_EQ(m_context.m_lastBytesWritten, 0);
+    EXPECT_EQ(m_context.lastBytesWritten, 0);
 }
 
 TEST_F(WebAudioWriteBufferTest, shouldWriteBufferIfBytesWrittenLessThanExpected)
@@ -114,7 +114,7 @@ TEST_F(WebAudioWriteBufferTest, shouldWriteBufferIfBytesWrittenLessThanExpected)
     firebolt::rialto::server::tasks::webaudio::WriteBuffer task{m_context,    m_gstWrapper, &m_mainPtr,
                                                                 m_mainLength, &m_wrapPtr,   m_wrapLength};
     task.execute();
-    EXPECT_EQ(m_context.m_lastBytesWritten, m_mainLength + m_wrapLength - 1);
+    EXPECT_EQ(m_context.lastBytesWritten, m_mainLength + m_wrapLength - 1);
 }
 
 TEST_F(WebAudioWriteBufferTest, shouldNotWriteBufferIfPushBufferFails)
@@ -130,5 +130,5 @@ TEST_F(WebAudioWriteBufferTest, shouldNotWriteBufferIfPushBufferFails)
     firebolt::rialto::server::tasks::webaudio::WriteBuffer task{m_context,    m_gstWrapper, &m_mainPtr,
                                                                 m_mainLength, &m_wrapPtr,   m_wrapLength};
     task.execute();
-    EXPECT_EQ(m_context.m_lastBytesWritten, 0);
+    EXPECT_EQ(m_context.lastBytesWritten, 0);
 }
