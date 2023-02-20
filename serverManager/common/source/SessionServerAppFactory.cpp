@@ -33,6 +33,7 @@ std::unique_ptr<ISessionServerApp> SessionServerAppFactory::create(
     const std::string &appId, const firebolt::rialto::common::SessionServerState &initialState,
     const firebolt::rialto::common::AppConfig &appConfig, SessionServerAppManager &sessionServerAppManager) const
 {
-    return std::make_unique<SessionServerApp>(appId, initialState, sessionServerAppManager, m_kEnvironmentVariables);
+    return std::make_unique<SessionServerApp>(appId, initialState, appConfig, sessionServerAppManager,
+                                              m_kEnvironmentVariables);
 }
 } // namespace rialto::servermanager::common

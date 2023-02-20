@@ -35,14 +35,33 @@
 
 namespace
 {
-constexpr char sessionManagementPrefix[]{"/tmp/rialto-"};
 constexpr int maxPlaybackSessions{2};
 constexpr int maxWebAudioPlayers{1};
+const std::string sessionManagementSocketDefaultDir{"/tmp"};
+const std::string sessionManagementSocketDefaultName{"/rialto-"};
 
 std::string generateSessionManagementSocket()
 {
     static int sessionNum{0};
-    return sessionManagementPrefix + std::to_string(sessionNum++);
+    return sessionManagementSocketDefaultDir + sessionManagementSocketDefaultName + std::to_string(sessionNum++);
+}
+
+std::string getSessionManagementSocket(const firebolt::rialto::common::AppConfig &appConfig)
+{
+    // Socket name can take the following forms:
+    //  - Empty string, in which case Rialto server will automatically allocate the socket name, e.g. "/tmp/rialto-12"
+    //  - Full path, such as "/foo/bar", in which case Rialto will use this name for the socket
+    //  - Socket name, such as "bar", in which case Rialto will create the named socket in the default dir, e.g.
+    if (appConfig.clientIpcSocketName.empty())
+    {
+        return generateSessionManagementSocket();
+    }
+    else if (appConfig.clientIpcSocketName.at(0) == '/') // full path
+    {
+        return appConfig.clientIpcSocketName;
+    }
+    // Socket name
+    return sessionManagementSocketDefaultDir + "/" + appConfig.clientIpcSocketName;
 }
 
 std::string getSessionServerPath()
@@ -80,10 +99,12 @@ namespace rialto::servermanager::common
 {
 SessionServerApp::SessionServerApp(const std::string &appId,
                                    const firebolt::rialto::common::SessionServerState &initialState,
+                                   const firebolt::rialto::common::AppConfig &appConfig,
                                    SessionServerAppManager &sessionServerAppManager,
                                    const std::list<std::string> &environmentVariables)
-    : m_kAppId{appId}, m_kInitialState{initialState}, m_kSessionManagementSocketName{generateSessionManagementSocket()},
-      m_socks{-1, -1}, m_sessionServerAppManager{sessionServerAppManager}, m_pid{-1}
+    : m_kAppId{appId}, m_kInitialState{initialState},
+      m_kSessionManagementSocketName{getSessionManagementSocket(appConfig)}, m_socks{-1, -1},
+      m_sessionServerAppManager{sessionServerAppManager}, m_pid{-1}
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("Application %s is created", m_kAppId.c_str());
     std::transform(environmentVariables.begin(), environmentVariables.end(), std::back_inserter(m_environmentVariables),

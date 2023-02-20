@@ -38,6 +38,7 @@ class SessionServerApp : public ISessionServerApp
 {
 public:
     SessionServerApp(const std::string &appId, const firebolt::rialto::common::SessionServerState &initialState,
+                     const firebolt::rialto::common::AppConfig &appConfig,
                      SessionServerAppManager &sessionServerAppManager,
                      const std::list<std::string> &environmentVariables);
     virtual ~SessionServerApp();
