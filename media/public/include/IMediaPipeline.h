@@ -136,7 +136,7 @@ public:
         /**
          * @brief Gets the codec data
          */
-        const std::vector<uint8_t> &getCodecData() const { return m_codecData; }
+        const std::shared_ptr<std::vector<std::uint8_t>> &getCodecData() const { return m_codecData; }
 
         /**
          * @brief Gets the stream format
@@ -158,7 +158,7 @@ public:
                              const std::string &mimeType = std::string(),
                              SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                              StreamFormat streamFormat = StreamFormat::UNDEFINED,
-                             const std::vector<uint8_t> &codecData = std::vector<uint8_t>())
+                             const std::shared_ptr<std::vector<std::uint8_t>> &codecData = nullptr)
             : m_id(id), m_configType(configType), m_mimeType(mimeType), m_alignment(alignment),
               m_streamFormat(streamFormat), m_codecData(codecData)
         {
@@ -191,7 +191,7 @@ public:
         /**
          * @brief Additional data for decoder
          */
-        std::vector<uint8_t> m_codecData;
+        std::shared_ptr<std::vector<std::uint8_t>> m_codecData;
     };
 
     /**
@@ -215,7 +215,7 @@ public:
         MediaSourceAudio(int32_t id, const std::string &mimeType, const AudioConfig &audioConfig = AudioConfig(),
                          SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                          StreamFormat streamFormat = StreamFormat::UNDEFINED,
-                         const std::vector<uint8_t> &codecData = std::vector<uint8_t>())
+                         const std::shared_ptr<std::vector<std::uint8_t>> &codecData = nullptr)
             : MediaSource(id, SourceConfigType::AUDIO, mimeType, alignment, streamFormat, codecData),
               m_audioConfig(audioConfig)
         {
@@ -260,7 +260,7 @@ public:
         MediaSourceVideo(int32_t id, const std::string &mimeType,
                          SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                          StreamFormat streamFormat = StreamFormat::UNDEFINED,
-                         const std::vector<uint8_t> &codecData = std::vector<uint8_t>())
+                         const std::shared_ptr<std::vector<std::uint8_t>> &codecData = nullptr)
             : MediaSource(id, SourceConfigType::VIDEO, mimeType, alignment, streamFormat, codecData)
         {
         }
@@ -283,7 +283,7 @@ public:
         MediaSourceVideo(int32_t id, SourceConfigType sourceConfigType, const std::string &mimeType,
                          SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                          StreamFormat streamFormat = StreamFormat::UNDEFINED,
-                         const std::vector<uint8_t> &codecData = std::vector<uint8_t>())
+                         const std::shared_ptr<std::vector<std::uint8_t>> &codecData = nullptr)
             : MediaSource(id, sourceConfigType, mimeType, alignment, streamFormat, codecData)
         {
         }
@@ -309,7 +309,7 @@ public:
         MediaSourceVideoDolbyVision(int32_t id, const std::string &mimeType, int32_t dolbyVisionProfile,
                                     SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                                     StreamFormat streamFormat = StreamFormat::UNDEFINED,
-                                    const std::vector<uint8_t> &codecData = std::vector<uint8_t>())
+                                    const std::shared_ptr<std::vector<std::uint8_t>> &codecData = nullptr)
             : MediaSourceVideo(id, SourceConfigType::VIDEO_DOLBY_VISION, mimeType, alignment, streamFormat, codecData),
               m_dolbyVisionProfile(dolbyVisionProfile)
         {
@@ -468,6 +468,13 @@ public:
          */
         const SegmentAlignment getSegmentAlignment() const { return m_alignment; }
 
+        /**
+         * @brief Gets the codec data
+         *
+         * @retval the codec data
+         */
+        const std::shared_ptr<std::vector<std::uint8_t>> &getCodecData() const { return m_codecData; }
+
     protected:
         /**
          * @brief The source id.
@@ -498,6 +505,11 @@ public:
          * @brief The duration.
          */
         int64_t m_duration;
+
+        /**
+         * @brief Additional data for decoder
+         */
+        std::shared_ptr<std::vector<std::uint8_t>> m_codecData;
 
         /**
          * @brief The data
@@ -577,6 +589,15 @@ public:
          * @param[in] alignment : The new segment alignment
          */
         void setSegmentAlignment(const SegmentAlignment &alignment) { m_alignment = alignment; }
+
+        /**
+         * @brief Sets new codec_data for the segment.
+         *
+         * @note Should only be called if the codec data changes
+         *
+         * @param[in] codecData  The updated codec data for the source
+         */
+        void setCodecData(const std::shared_ptr<std::vector<std::uint8_t>> &codecData) { m_codecData = codecData; }
 
         /**
          * @brief Sets the encrypted flag.

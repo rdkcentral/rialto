@@ -49,4 +49,5 @@ message MediaSegmentMetadata {
     optional uint32           init_with_last_15    = 14;      /* initWithLast15 value for decryption */
     repeated SubsamplePair    sub_sample_info      = 15;      /* If present, use gather/scatter decryption based on this list of clear/encrypted byte lengths. */
                                                               /* If not present and content is encrypted then entire media segment needs decryption.           */
+    optional bytes            codec_data           = 16;      /* Buffer containing updated codec data for video segments */
 }

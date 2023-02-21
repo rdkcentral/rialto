@@ -201,7 +201,10 @@ bool MediaPipelineIpc::attachSource(const std::unique_ptr<IMediaPipeline::MediaS
     request.set_mime_type(source->getMimeType());
     request.set_segment_alignment(convertSegmentAlignment(source->getSegmentAlignment()));
 
-    request.set_codec_data(source->getCodecData().data(), source->getCodecData().size());
+    if (source->getCodecData())
+    {
+        request.set_codec_data(source->getCodecData()->data(), source->getCodecData()->size());
+    }
     request.set_stream_format(convertStreamFormat(source->getStreamFormat()));
 
     if (configType == SourceConfigType::VIDEO_DOLBY_VISION)

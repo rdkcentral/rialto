@@ -331,7 +331,6 @@ enum class WebAudioPlayerState
     END_OF_STREAM, /**< The player has got to the end of playback. */
     FAILURE        /**< The player failed to set playback state. */
 };
-
 } // namespace firebolt::rialto
 
 #endif // FIREBOLT_RIALTO_MEDIA_COMMON_H_

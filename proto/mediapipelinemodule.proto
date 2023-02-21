@@ -138,7 +138,7 @@ message AttachSourceRequest {
     required string mime_type = 3;
     required SegmentAlignment segment_alignment    = 4; /* Segment alignment can be specified for H264/H265, will use NAL if not set */
     optional AudioConfig audio_config    = 5;
-    required bytes codec_data = 6;
+    optional bytes codec_data = 6;
     required StreamFormat stream_format = 7;
     optional uint32 dolby_vision_profile = 8;
 }

@@ -38,7 +38,8 @@ AttachSamples::AttachSamples(GenericPlayerContext &context, IGstGenericPlayerPri
             {
                 IMediaPipeline::MediaSegmentVideo &videoSegment =
                     dynamic_cast<IMediaPipeline::MediaSegmentVideo &>(*mediaSegment);
-                VideoData videoData = {gstBuffer, videoSegment.getWidth(), videoSegment.getHeight()};
+                VideoData videoData = {gstBuffer, videoSegment.getWidth(), videoSegment.getHeight(),
+                                       videoSegment.getCodecData()};
                 m_videoData.push_back(videoData);
             }
             catch (const std::exception &e)
@@ -52,7 +53,8 @@ AttachSamples::AttachSamples(GenericPlayerContext &context, IGstGenericPlayerPri
             {
                 IMediaPipeline::MediaSegmentAudio &audioSegment =
                     dynamic_cast<IMediaPipeline::MediaSegmentAudio &>(*mediaSegment);
-                AudioData audioData = {gstBuffer, audioSegment.getSampleRate(), audioSegment.getNumberOfChannels()};
+                AudioData audioData = {gstBuffer, audioSegment.getSampleRate(), audioSegment.getNumberOfChannels(),
+                                       audioSegment.getCodecData()};
                 m_audioData.push_back(audioData);
             }
             catch (const std::exception &e)
@@ -73,14 +75,14 @@ void AttachSamples::execute() const
     RIALTO_SERVER_LOG_DEBUG("Executing AttachSamples");
     for (AudioData audioData : m_audioData)
     {
-        m_player.updateAudioCaps(audioData.rate, audioData.channels);
+        m_player.updateAudioCaps(audioData.rate, audioData.channels, audioData.codecData);
 
         m_context.audioBuffers.push_back(audioData.buffer);
         m_player.attachAudioData();
     }
     for (VideoData videoData : m_videoData)
     {
-        m_player.updateVideoCaps(videoData.width, videoData.height);
+        m_player.updateVideoCaps(videoData.width, videoData.height, videoData.codecData);
 
         m_context.videoBuffers.push_back(videoData.buffer);
         m_player.attachVideoData();

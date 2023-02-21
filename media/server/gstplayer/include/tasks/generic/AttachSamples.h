@@ -25,6 +25,7 @@
 #include "IMediaPipeline.h"
 #include "IPlayerTask.h"
 #include <gst/gst.h>
+#include <memory>
 #include <vector>
 
 namespace firebolt::rialto::server::tasks::generic
@@ -43,12 +44,14 @@ private:
         GstBuffer *buffer;
         int32_t rate;
         int32_t channels;
+        std::shared_ptr<std::vector<std::uint8_t>> codecData;
     };
     struct VideoData
     {
         GstBuffer *buffer;
         int32_t width;
         int32_t height;
+        std::shared_ptr<std::vector<std::uint8_t>> codecData;
     };
 
     GenericPlayerContext &m_context;
