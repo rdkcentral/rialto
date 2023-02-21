@@ -48,7 +48,7 @@ public:
     IServerManagerService &operator=(IServerManagerService &&) = delete;
 
     /**
-     * @brief Moves an application from NOT_RUNNING to ACTIVE or INACTIVE_STATE
+     * @brief Moves an application from NOT_RUNNING to ACTIVE or INACTIVE state
      *
      * This method causes a new RialtoSessionServer instance is spawned for the application in the requested state.
      * This API will return error if the application is already in the ACTIVE or INACTIVE state (the

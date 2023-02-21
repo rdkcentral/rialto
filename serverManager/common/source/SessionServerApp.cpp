@@ -37,16 +37,16 @@ namespace
 {
 constexpr int maxPlaybackSessions{2};
 constexpr int maxWebAudioPlayers{1};
-const std::string sessionManagementSocketDefaultDir{"/tmp"};
-const std::string sessionManagementSocketDefaultName{"/rialto-"};
+const std::string sessionManagementSocketDefaultDir{"/tmp/"};
+const std::string sessionManagementSocketDefaultName{"rialto-"};
 
-std::string generateSessionManagementSocket()
+std::string generateSessionManagementSocketPath()
 {
     static int sessionNum{0};
     return sessionManagementSocketDefaultDir + sessionManagementSocketDefaultName + std::to_string(sessionNum++);
 }
 
-std::string getSessionManagementSocket(const firebolt::rialto::common::AppConfig &appConfig)
+std::string getSessionManagementSocketPath(const firebolt::rialto::common::AppConfig &appConfig)
 {
     // Socket name can take the following forms:
     //  - Empty string, in which case Rialto server will automatically allocate the socket name, e.g. "/tmp/rialto-12"
@@ -54,14 +54,14 @@ std::string getSessionManagementSocket(const firebolt::rialto::common::AppConfig
     //  - Socket name, such as "bar", in which case Rialto will create the named socket in the default dir, e.g.
     if (appConfig.clientIpcSocketName.empty())
     {
-        return generateSessionManagementSocket();
+        return generateSessionManagementSocketPath();
     }
     else if (appConfig.clientIpcSocketName.at(0) == '/') // full path
     {
         return appConfig.clientIpcSocketName;
     }
     // Socket name
-    return sessionManagementSocketDefaultDir + "/" + appConfig.clientIpcSocketName;
+    return sessionManagementSocketDefaultDir + appConfig.clientIpcSocketName;
 }
 
 std::string getSessionServerPath()
@@ -103,7 +103,7 @@ SessionServerApp::SessionServerApp(const std::string &appId,
                                    SessionServerAppManager &sessionServerAppManager,
                                    const std::list<std::string> &environmentVariables)
     : m_kAppId{appId}, m_kInitialState{initialState},
-      m_kSessionManagementSocketName{getSessionManagementSocket(appConfig)}, m_socks{-1, -1},
+      m_kSessionManagementSocketName{getSessionManagementSocketPath(appConfig)}, m_socks{-1, -1},
       m_sessionServerAppManager{sessionServerAppManager}, m_pid{-1}
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("Application %s is created", m_kAppId.c_str());

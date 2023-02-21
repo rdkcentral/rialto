@@ -56,7 +56,14 @@ bool SessionServerAppManager::initiateApplication(const std::string &appId,
     {
         return addSessionServer(appId, state, appConfig);
     }
-    RIALTO_SERVER_MANAGER_LOG_ERROR("Initialization of %s failed.", appId.c_str());
+    else if (state == firebolt::rialto::common::SessionServerState::NOT_RUNNING)
+    {
+        RIALTO_SERVER_MANAGER_LOG_ERROR("Initialization of %s failed - wrong state", appId.c_str());
+    }
+    else
+    {
+        RIALTO_SERVER_MANAGER_LOG_ERROR("Initialization of %s failed. App is already launched", appId.c_str());
+    }
     return false;
 }
 
