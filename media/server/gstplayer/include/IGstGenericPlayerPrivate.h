@@ -72,13 +72,6 @@ public:
     virtual bool setWesterossinkRectangle() = 0;
 
     /**
-     * @brief Sets Westeros sink res-usage flag for a secondary video.
-     *
-     * @retval true on success.
-     */
-    virtual bool setWesterossinkSecondaryVideo() = 0;
-
-    /**
      * @brief Sends NeedMediaData notification. Called by the worker thread.
      */
     virtual void notifyNeedMediaData(bool audioNotificationNeeded, bool videoNotificationNeeded) = 0;
