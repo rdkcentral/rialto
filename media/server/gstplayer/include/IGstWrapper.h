@@ -1050,6 +1050,17 @@ public:
      * @retval a new flush stop event.
      */
     virtual GstEvent *gstEventNewFlushStop(gboolean reset_time) const = 0;
+
+    /**
+     * @brief Returns a suitable channel mask for the number of channels.
+     * Should only be used when a channel mask is unknown.
+     *
+     * @param[in] channels : the number of channels
+     *
+     * @retval the channel mask or 0 if unknown.
+     */
+    virtual guint64 gstAudioChannelGetFallbackMask(gint channels) const = 0;
+
 };
 
 }; // namespace firebolt::rialto::server

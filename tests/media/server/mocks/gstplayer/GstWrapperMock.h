@@ -105,6 +105,8 @@ public:
                 (GstCaps * caps, const gchar *field, GType type, const gboolean value), (const));
     MOCK_METHOD(void, gstCapsSetSimpleUintStub, (GstCaps * caps, const gchar *field, GType type, const unsigned value),
                 (const));
+    MOCK_METHOD(void, gstCapsSetSimpleBitMaskStub, (GstCaps * caps, const gchar *field, GType type, const uint64_t value),
+                (const));
     MOCK_METHOD(GstCaps *, gstCapsNewSimpleIntStub,
                 (const char *media_type, const char *fieldname, GType type, int value), (const));
     MOCK_METHOD(void, gstMessageParseQos,
@@ -167,6 +169,7 @@ public:
     MOCK_METHOD(GstEvent *, gstEventNewFlushStop, (gboolean reset_time), (const, override));
     MOCK_METHOD(GstObject *, gstObjectParent, (gpointer object), (const, override));
     MOCK_METHOD(GstObject *, gstObjectCast, (gpointer object), (const, override));
+    MOCK_METHOD(guint64, gstAudioChannelGetFallbackMask, (gint channels), (const, override));
 
     GstCaps *gstCapsNewSimple(const char *media_type, const char *fieldname, ...) const override
     {
@@ -218,6 +221,11 @@ public:
             {
                 unsigned val = va_arg(args, unsigned);
                 gstCapsSetSimpleUintStub(caps, property, type, val);
+            }
+            else if (g_type_is_a(type, GST_TYPE_BITMASK))
+            {
+                uint64_t val = va_arg(args, uint64_t);
+                gstCapsSetSimpleBitMaskStub(caps, property, type, val);
             }
             property = va_arg(args, const gchar *);
         }

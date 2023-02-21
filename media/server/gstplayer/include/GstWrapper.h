@@ -447,6 +447,8 @@ public:
     GstEvent *gstEventNewFlushStart() const override { return gst_event_new_flush_start(); }
 
     GstEvent *gstEventNewFlushStop(gboolean reset_time) const override { return gst_event_new_flush_stop(reset_time); }
+
+    guint64 gstAudioChannelGetFallbackMask(gint channels) const override { return gst_audio_channel_get_fallback_mask(channels); }
 };
 
 }; // namespace firebolt::rialto::server
