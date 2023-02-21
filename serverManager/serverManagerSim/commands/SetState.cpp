@@ -60,8 +60,9 @@ void SetState::run() const
     }
     std::string appName{m_kRequest.getParams()[0]};
     firebolt::rialto::common::SessionServerState state{convert(m_kRequest.getParams()[1])};
+    firebolt::rialto::common::AppConfig appConfig{m_kRequest.getPostData()};
     std::string reply{"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n"};
-    if (m_service.setState(appName, state))
+    if (m_service.setState(appName, state, appConfig))
     {
         reply += "SetState command succeeded!\r\n";
     }
