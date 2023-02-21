@@ -19,6 +19,7 @@
 
 #include "SessionServerAppManagerTestsFixture.h"
 #include "LoggingLevels.h"
+#include "Matchers.h"
 #include "SessionServerAppManager.h"
 #include <string>
 #include <utility>
@@ -53,6 +54,7 @@ constexpr rialto::servermanager::service::LoggingLevels
                            rialto::servermanager::service::LoggingLevel::WARNING,
                            rialto::servermanager::service::LoggingLevel::MILESTONE,
                            rialto::servermanager::service::LoggingLevel::INFO};
+const firebolt::rialto::common::AppConfig APP_CONFIG{SESSION_SERVER_SOCKET_NAME};
 } // namespace
 
 MATCHER_P2(MaxResourceMatcher, maxPlaybacks, maxWebAudioPlayers, "")
@@ -84,7 +86,7 @@ SessionServerAppManagerTests::SessionServerAppManagerTests()
 void SessionServerAppManagerTests::sessionServerLaunchWillFail(const firebolt::rialto::common::SessionServerState &state)
 {
     ASSERT_TRUE(m_sessionServerAppFactoryMock);
-    EXPECT_CALL(*m_sessionServerAppFactoryMock, create(APP_NAME, state, _))
+    EXPECT_CALL(*m_sessionServerAppFactoryMock, create(APP_NAME, state, APP_CONFIG, _))
         .WillOnce(Return(ByMove(std::move(m_sessionServerApp))));
     EXPECT_CALL(m_sessionServerAppMock, launch()).WillOnce(Return(false));
 }
@@ -92,7 +94,7 @@ void SessionServerAppManagerTests::sessionServerLaunchWillFail(const firebolt::r
 void SessionServerAppManagerTests::sessionServerConnectWillFail(const firebolt::rialto::common::SessionServerState &state)
 {
     ASSERT_TRUE(m_sessionServerAppFactoryMock);
-    EXPECT_CALL(*m_sessionServerAppFactoryMock, create(APP_NAME, state, _))
+    EXPECT_CALL(*m_sessionServerAppFactoryMock, create(APP_NAME, state, APP_CONFIG, _))
         .WillOnce(Return(ByMove(std::move(m_sessionServerApp))));
     EXPECT_CALL(m_sessionServerAppMock, launch()).WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerAppMock, getAppManagementSocketName()).WillOnce(Return(APP_MGMT_SOCKET));
@@ -108,7 +110,7 @@ void SessionServerAppManagerTests::sessionServerChangeStateWillFail(const firebo
 void SessionServerAppManagerTests::sessionServerWillLaunch(const firebolt::rialto::common::SessionServerState &state)
 {
     ASSERT_TRUE(m_sessionServerAppFactoryMock);
-    EXPECT_CALL(*m_sessionServerAppFactoryMock, create(APP_NAME, state, _))
+    EXPECT_CALL(*m_sessionServerAppFactoryMock, create(APP_NAME, state, APP_CONFIG, _))
         .WillOnce(Return(ByMove(std::move(m_sessionServerApp))));
     EXPECT_CALL(m_sessionServerAppMock, launch()).WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerAppMock, getAppManagementSocketName()).WillOnce(Return(APP_MGMT_SOCKET));
@@ -184,6 +186,12 @@ void SessionServerAppManagerTests::sessionServerWillKillRunningApplicationAtTear
 void SessionServerAppManagerTests::sessionServerWillReturnAppSocketName(const std::string &socketName)
 {
     EXPECT_CALL(m_sessionServerAppMock, getSessionManagementSocketName()).WillOnce(Return(socketName));
+}
+
+bool SessionServerAppManagerTests::triggerInitiateApplication(const firebolt::rialto::common::SessionServerState &state)
+{
+    EXPECT_TRUE(m_sut);
+    return m_sut->initiateApplication(APP_NAME, state, APP_CONFIG);
 }
 
 bool SessionServerAppManagerTests::triggerSetSessionServerState(const firebolt::rialto::common::SessionServerState &newState)

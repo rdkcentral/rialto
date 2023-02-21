@@ -37,6 +37,7 @@ public:
 
     virtual std::unique_ptr<ISessionServerApp> create(const std::string &appId,
                                                       const firebolt::rialto::common::SessionServerState &initialState,
+                                                      const firebolt::rialto::common::AppConfig &appConfig,
                                                       SessionServerAppManager &sessionServerAppManager) const = 0;
 };
 } // namespace rialto::servermanager::common

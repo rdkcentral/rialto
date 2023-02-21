@@ -55,6 +55,7 @@ public:
     void sessionServerWillKillRunningApplicationAtTeardown();
     void clientWillBeRemovedAfterStateChangedIndication(const firebolt::rialto::common::SessionServerState &state);
 
+    bool triggerInitiateApplication(const firebolt::rialto::common::SessionServerState &state);
     bool triggerSetSessionServerState(const firebolt::rialto::common::SessionServerState &newState);
     void triggerOnSessionServerStateChanged(const firebolt::rialto::common::SessionServerState &newState);
     std::string triggerGetAppConnectionInfo();

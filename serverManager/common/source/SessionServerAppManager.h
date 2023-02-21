@@ -46,6 +46,8 @@ public:
     SessionServerAppManager &operator=(const SessionServerAppManager &) = delete;
     SessionServerAppManager &operator=(SessionServerAppManager &&) = delete;
 
+    bool initiateApplication(const std::string &appId, const firebolt::rialto::common::SessionServerState &state,
+                             const firebolt::rialto::common::AppConfig &appConfig) override;
     bool setSessionServerState(const std::string &appId,
                                const firebolt::rialto::common::SessionServerState &newState) override;
     void onSessionServerStateChanged(const std::string &appId,
@@ -54,8 +56,10 @@ public:
     bool setLogLevels(const service::LoggingLevels &logLevels) const override;
 
 private:
-    bool addSessionServer(const std::string &appId, const firebolt::rialto::common::SessionServerState &initialState);
-    bool launchSessionServer(const std::string &appId, const firebolt::rialto::common::SessionServerState &initialState);
+    bool addSessionServer(const std::string &appId, const firebolt::rialto::common::SessionServerState &initialState,
+                          const firebolt::rialto::common::AppConfig &appConfig);
+    bool launchSessionServer(const std::string &appId, const firebolt::rialto::common::SessionServerState &initialState,
+                             const firebolt::rialto::common::AppConfig &appConfig);
     void removeSessionServer(const std::string &appId, bool killApp = false);
     bool configureSessionServer(const std::string &appId);
     bool changeSessionServerState(const std::string &appId, const firebolt::rialto::common::SessionServerState &newState);

@@ -48,13 +48,29 @@ public:
     IServerManagerService &operator=(IServerManagerService &&) = delete;
 
     /**
+     * @brief Moves an application from NOT_RUNNING to ACTIVE or INACTIVE state
+     *
+     * This method causes a new RialtoSessionServer instance is spawned for the application in the requested state.
+     * This API will return error if the application is already in the ACTIVE or INACTIVE state (the
+     * changeSessionServerState() API should be used in this scenario).
+     *
+     * @param[in]     appId     : The ID of the application
+     * @param[in]     state     : Desired state, cannot be NOT_RUNNING
+     * @param[in]     appConfig : Configuration parameters for app
+     *
+     * @retval true on success.
+     */
+    virtual bool initiateApplication(const std::string &appId, const firebolt::rialto::common::SessionServerState &state,
+                                     const firebolt::rialto::common::AppConfig &appConfig) = 0;
+
+    /**
      * @brief Changes session server state
      *
-     * This method requests an session server to change its state. When session server state is changed from NotRunning
-     * to Inactive/Active state, new RialtoSessionServer instance is spawned. Otherwise SetState request is sent
-     * to RialtoSessionServer.
+     * This method requests an session server to change its state. This API will return an error if the application is
+     * currently in the NOT_RUNNING state (in this scenario the initApplication() API should be used otherwise SetState
+     * request is sent to RialtoSessionServer for the app.
      *
-     * @param[in]     appId     : The ID of an application
+     * @param[in]     appId     : The ID of the application
      * @param[in]     state     : Desired state
      *
      * @retval true on success.
