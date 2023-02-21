@@ -172,7 +172,7 @@ void SetCaps::setBytesPerSample() const
     }
     else
     {
-        RIALTO_SERVER_LOG_WARN("Cannot set bytes per sample, invalid audio mime type %s", m_audioMimeType.c_str());
+        RIALTO_SERVER_LOG_ERROR("Cannot set bytes per sample, invalid audio mime type %s", m_audioMimeType.c_str());
     }
 }
 

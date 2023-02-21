@@ -143,12 +143,9 @@ TEST_F(WebAudioSetCapsTest, shouldSetCapsWithFormatF64LE)
     expectSetCaps();
     expectUnref();
 
-    std::cout << "1" << std::endl;
     firebolt::rialto::server::tasks::webaudio::SetCaps task{m_context, m_gstWrapper, m_glibWrapper, m_kAudioMimeType,
                                                             &m_config};
-    std::cout << "2" << std::endl;
     task.execute();
-    std::cout << "3" << std::endl;
     expectSetBytesPerSamplePcm();
 }
 
