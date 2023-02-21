@@ -1060,7 +1060,6 @@ public:
      * @retval the channel mask or 0 if unknown.
      */
     virtual guint64 gstAudioChannelGetFallbackMask(gint channels) const = 0;
-
 };
 
 }; // namespace firebolt::rialto::server

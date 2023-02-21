@@ -105,8 +105,8 @@ public:
                 (GstCaps * caps, const gchar *field, GType type, const gboolean value), (const));
     MOCK_METHOD(void, gstCapsSetSimpleUintStub, (GstCaps * caps, const gchar *field, GType type, const unsigned value),
                 (const));
-    MOCK_METHOD(void, gstCapsSetSimpleBitMaskStub, (GstCaps * caps, const gchar *field, GType type, const uint64_t value),
-                (const));
+    MOCK_METHOD(void, gstCapsSetSimpleBitMaskStub,
+                (GstCaps * caps, const gchar *field, GType type, const uint64_t value), (const));
     MOCK_METHOD(GstCaps *, gstCapsNewSimpleIntStub,
                 (const char *media_type, const char *fieldname, GType type, int value), (const));
     MOCK_METHOD(void, gstMessageParseQos,

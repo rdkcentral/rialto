@@ -60,7 +60,8 @@ void WriteBuffer::execute() const
             else if (bytesToWrite > m_mainLength)
             {
                 bytesWritten += m_gstWrapper->gstBufferFill(gstBuffer, 0, m_mainPtr, m_mainLength);
-                bytesWritten += m_gstWrapper->gstBufferFill(gstBuffer, bytesWritten, m_wrapPtr, bytesToWrite - bytesWritten);
+                bytesWritten +=
+                    m_gstWrapper->gstBufferFill(gstBuffer, bytesWritten, m_wrapPtr, bytesToWrite - bytesWritten);
             }
             else
             {
@@ -69,8 +70,9 @@ void WriteBuffer::execute() const
 
             if (bytesWritten != bytesToWrite)
             {
-                RIALTO_SERVER_LOG_WARN("Did not write the correct number of bytes! expected %" PRIu64 ", actual %" PRIu64,
-                                    bytesToWrite, bytesWritten);
+                RIALTO_SERVER_LOG_WARN("Did not write the correct number of bytes! expected %" PRIu64
+                                       ", actual %" PRIu64,
+                                       bytesToWrite, bytesWritten);
             }
 
             if (GST_FLOW_OK != m_gstWrapper->gstAppSrcPushBuffer(GST_APP_SRC(m_context.source), gstBuffer))

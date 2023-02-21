@@ -57,7 +57,8 @@ public:
         GstCaps *caps = m_gstWrapper->gstCapsNewEmptySimple("audio/x-raw");
         addFormat(caps);
         m_gstWrapper->gstCapsSetSimple(caps, "channels", G_TYPE_INT, m_pcmConfig.channels, "layout", G_TYPE_STRING,
-                                       "interleaved", "rate", G_TYPE_INT, m_pcmConfig.rate, "channel-mask", GST_TYPE_BITMASK,
+                                       "interleaved", "rate", G_TYPE_INT, m_pcmConfig.rate, "channel-mask",
+                                       GST_TYPE_BITMASK,
                                        m_gstWrapper->gstAudioChannelGetFallbackMask(m_pcmConfig.channels), nullptr);
 
         return caps;
@@ -124,7 +125,6 @@ void SetCaps::execute() const
     GstCaps *caps = createCapsFromMimeType();
     if (caps)
     {
-
         gchar *capsStr = m_gstWrapper->gstCapsToString(caps);
         std::string strCaps = capsStr;
         m_glibWrapper->gFree(capsStr);
@@ -144,7 +144,6 @@ void SetCaps::execute() const
             m_gstWrapper->gstCapsUnref(caps);
 
         setBytesPerSample();
-
     }
 }
 

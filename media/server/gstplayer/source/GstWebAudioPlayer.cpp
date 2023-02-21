@@ -350,8 +350,7 @@ uint32_t GstWebAudioPlayer::writeBuffer(uint8_t *mainPtr, uint32_t mainLength, u
     // Must block and wait for the data to be written from the shared buffer.
     std::unique_lock<std::mutex> lock(m_context.writeBufferMutex);
     m_workerThread->enqueueTask(m_taskFactory->createWriteBuffer(m_context, mainPtr, mainLength, wrapPtr, wrapLength));
-    std::cv_status status =
-        m_context.writeBufferCond.wait_for(lock, std::chrono::milliseconds(kMaxWriteBufferTimeoutMs));
+    std::cv_status status = m_context.writeBufferCond.wait_for(lock, std::chrono::milliseconds(kMaxWriteBufferTimeoutMs));
     if (std::cv_status::timeout == status)
     {
         RIALTO_SERVER_LOG_ERROR("Timed out writing to the gstreamer buffers");
