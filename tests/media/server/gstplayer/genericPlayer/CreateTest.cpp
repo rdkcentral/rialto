@@ -79,18 +79,6 @@ protected:
         m_gstPlayer.reset();
     }
 
-    void setupElementSuccess()
-    {
-        GstElement element{};
-        std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
-        EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(&element));
-        EXPECT_CALL(m_taskFactoryMock, createSetupElement(_, _, &element))
-            .WillOnce(DoAll(SaveArg<0>(&m_storedPlayerContext), Return(ByMove(std::move(task)))));
-
-        triggerSetupElement(&element);
-    }
-
     void expectSetSecondaryVideo()
     {
         EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(CharStrMatcher("westerossink")))
