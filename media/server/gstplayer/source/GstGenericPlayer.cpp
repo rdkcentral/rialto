@@ -244,7 +244,6 @@ void GstGenericPlayer::resetWorkerThread()
     m_workerThread->enqueueTask(m_taskFactory->createShutdown(*this));
     m_workerThread->join();
     m_workerThread.reset();
-
 }
 
 void GstGenericPlayer::termPipeline()
@@ -772,13 +771,13 @@ bool GstGenericPlayer::setWesterossinkRectangle()
 bool GstGenericPlayer::setWesterossinkSecondaryVideo()
 {
     bool result = false;
-    GstElementFactory* factory = m_gstWrapper->gstElementFactoryFind("westerossink");
+    GstElementFactory *factory = m_gstWrapper->gstElementFactoryFind("westerossink");
     if (factory)
     {
-        GstElement* videoSink = m_gstWrapper->gstElementFactoryCreate(factory, nullptr);
+        GstElement *videoSink = m_gstWrapper->gstElementFactoryCreate(factory, nullptr);
         if (videoSink)
         {
-            if(m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink), "res-usage"))
+            if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink), "res-usage"))
             {
                 m_glibWrapper->gObjectSet(videoSink, "res-usage", 0x0u, nullptr);
                 m_glibWrapper->gObjectSet(m_context.pipeline, "video-sink", videoSink, nullptr);

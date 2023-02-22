@@ -194,7 +194,6 @@ TEST_F(GstGenericPlayerPrivateTest, shouldSetVideoRectangle)
     EXPECT_TRUE(m_sut->setWesterossinkRectangle());
 }
 
-
 TEST_F(GstGenericPlayerPrivateTest, shouldNotifyNeedAudioData)
 {
     modifyContext([&](GenericPlayerContext &context) { context.audioNeedData = true; });
