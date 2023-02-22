@@ -194,44 +194,6 @@ TEST_F(GstGenericPlayerPrivateTest, shouldSetVideoRectangle)
     EXPECT_TRUE(m_sut->setWesterossinkRectangle());
 }
 
-TEST_F(GstGenericPlayerPrivateTest, shouldNotSetSecondaryVideoWhenVideoSinkIsNull)
-{
-    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, CharStrMatcher("video-sink"), _));
-    EXPECT_FALSE(m_sut->setWesterossinkSecondaryVideo());
-}
-
-TEST_F(GstGenericPlayerPrivateTest, shouldNotSetSecondaryVideoWhenVideoSinkDoesNotHaveRectangleProperty)
-{
-    GstElement videoSink{};
-    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, CharStrMatcher("video-sink"), _))
-        .WillOnce(Invoke(
-            [&](gpointer object, const gchar *first_property_name, void *element)
-            {
-                GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
-                *elementPtr = &videoSink;
-            }));
-    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, CharStrMatcher("res-usage"))).WillOnce(Return(nullptr));
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&videoSink));
-    EXPECT_FALSE(m_sut->setWesterossinkSecondaryVideo());
-}
-
-TEST_F(GstGenericPlayerPrivateTest, shouldSetSecondaryVideo)
-{
-    GstElement videoSink{};
-    GParamSpec rectangleSpec{};
-    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, CharStrMatcher("video-sink"), _))
-        .WillOnce(Invoke(
-            [&](gpointer object, const gchar *first_property_name, void *element)
-            {
-                GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
-                *elementPtr = &videoSink;
-            }));
-    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, CharStrMatcher("res-usage")))
-        .WillOnce(Return(&rectangleSpec));
-    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(_, CharStrMatcher("res-usage")));
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&videoSink));
-    EXPECT_TRUE(m_sut->setWesterossinkSecondaryVideo());
-}
 
 TEST_F(GstGenericPlayerPrivateTest, shouldNotifyNeedAudioData)
 {

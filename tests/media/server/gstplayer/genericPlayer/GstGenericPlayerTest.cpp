@@ -34,7 +34,7 @@ class GstGenericPlayerTest : public GstGenericPlayerTestCommon
 {
 protected:
     std::unique_ptr<IGstGenericPlayer> m_sut;
-    VideoRequirements m_videoReq = {};
+    VideoRequirements m_videoReq = {kMinPrimaryVideoWidth, kMinPrimaryVideoHeight};
 
     GstGenericPlayerTest()
     {

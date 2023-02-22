@@ -186,6 +186,16 @@ private:
      */
     bool setWesterossinkSecondaryVideo();
 
+    /**
+     * @brief Terminates the player pipeline.
+     */
+    void termPipeline();
+
+    /**
+     * @brief Shutdown and destroys the worker thread.
+     */
+    void resetWorkerThread();
+
 private:
     /**
      * @brief The player context.
