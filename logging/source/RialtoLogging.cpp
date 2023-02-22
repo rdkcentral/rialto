@@ -42,21 +42,21 @@ static const firebolt::rialto::logging::EnvVariableParser g_envVariableParser;
 /**
  * Log handler for each component. By default will use journaldLogHandler.
  */
-static void consoleLogHandler(RIALTO_DEBUG_LEVEL level, const char *file, int line, const char *function,
+static void consoleLogHandler(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char *file, int line, const char *function,
                               const char *message, size_t messageLen);
-static void journaldLogHandler(RIALTO_DEBUG_LEVEL level, const char *file, int line, const char *function,
+static void journaldLogHandler(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char *file, int line, const char *function,
                                const char *message, size_t messageLen);
 static firebolt::rialto::logging::LogHandler g_logHandler[RIALTO_COMPONENT_LAST] = {};
 
 /**
  * Console logging function for the library.
  */
-static void consoleLogHandler(RIALTO_DEBUG_LEVEL level, const char *file, int line, const char *function,
+static void consoleLogHandler(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char *file, int line, const char *function,
                               const char *message, size_t messageLen)
 {
     timespec ts = {0, 0};
     clock_gettime(CLOCK_MONOTONIC, &ts);
-    struct iovec iov[5];
+    struct iovec iov[6];
     char tbuf[32];
 
     iov[0].iov_base = tbuf;
@@ -187,7 +187,7 @@ static void rialtoLog(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, cons
 
     if (!(level & g_rialtoLogLevels[component]))
         return;
-    char mbuf[256];
+    char mbuf[512];
     int len;
     len = vsnprintf(mbuf, sizeof(mbuf), fmt, ap);
     if (len < 1)
