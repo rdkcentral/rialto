@@ -118,7 +118,6 @@ private:
     void scheduleAudioUnderflow() override;
     void scheduleVideoUnderflow() override;
     bool setWesterossinkRectangle() override;
-    bool setWesterossinkSecondaryVideo() override;
     void notifyNeedMediaData(bool audioNotificationNeeded, bool videoNotificationNeeded) override;
     GstBuffer *createBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const override;
     void attachAudioData() override;
@@ -179,6 +178,23 @@ private:
      * @param[in] self      : Reference to the calling object.
      */
     static void deepElementAdded(GstBin *pipeline, GstBin *bin, GstElement *element, GstGenericPlayer *self);
+
+    /**
+     * @brief Creates a Westeros sink and sets the res-usage flag for a secondary video.
+     *
+     * @retval true on success.
+     */
+    bool setWesterossinkSecondaryVideo();
+
+    /**
+     * @brief Terminates the player pipeline.
+     */
+    void termPipeline();
+
+    /**
+     * @brief Shutdown and destroys the worker thread.
+     */
+    void resetWorkerThread();
 
 private:
     /**

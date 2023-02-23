@@ -131,19 +131,6 @@ GstGenericPlayer::GstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionS
 
     m_context.decryptionService = &decryptionService;
 
-    // Check the video requirements for a limited video.
-    // If the video requirements are set to anything lower than the minimum, this playback is assumed to be a secondary
-    // video in a dual video scenario.
-    if ((kMinPrimaryVideoWidth > videoRequirements.maxWidth) || (kMinPrimaryVideoHeight > videoRequirements.maxHeight))
-    {
-        RIALTO_SERVER_LOG_INFO("Secondary video playback selected");
-        m_context.isSecondaryVideo = true;
-    }
-    else
-    {
-        RIALTO_SERVER_LOG_INFO("Primary video playback selected");
-    }
-
     if ((!gstSrcFactory) || (!(m_context.gstSrc = gstSrcFactory->getGstSrc())))
     {
         throw std::runtime_error("Cannot create GstSrc");
@@ -179,8 +166,27 @@ GstGenericPlayer::GstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionS
     }
     default:
     {
+        resetWorkerThread();
         throw std::runtime_error("Media type not supported");
     }
+    }
+
+    // Check the video requirements for a limited video.
+    // If the video requirements are set to anything lower than the minimum, this playback is assumed to be a secondary
+    // video in a dual video scenario.
+    if ((kMinPrimaryVideoWidth > videoRequirements.maxWidth) || (kMinPrimaryVideoHeight > videoRequirements.maxHeight))
+    {
+        RIALTO_SERVER_LOG_INFO("Secondary video playback selected");
+        if (!setWesterossinkSecondaryVideo())
+        {
+            resetWorkerThread();
+            termPipeline();
+            throw std::runtime_error("Could not set secondary video");
+        }
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_INFO("Primary video playback selected");
     }
 
     m_gstDispatcherThread =
@@ -193,47 +199,9 @@ GstGenericPlayer::~GstGenericPlayer()
 
     m_gstDispatcherThread.reset();
 
-    for (const auto &signal : m_context.connectedSignals)
-    {
-        m_glibWrapper->gSignalHandlerDisconnect(G_OBJECT(signal.first), signal.second);
-    }
-    m_context.connectedSignals.clear();
+    resetWorkerThread();
 
-    // Shutdown task thread
-    m_workerThread->enqueueTask(m_taskFactory->createShutdown(*this));
-    m_workerThread->join();
-    m_workerThread.reset();
-
-    if (m_finishSourceSetupTimer && m_finishSourceSetupTimer->isActive())
-    {
-        m_finishSourceSetupTimer->cancel();
-    }
-
-    m_finishSourceSetupTimer.reset();
-
-    for (auto &buffer : m_context.audioBuffers)
-    {
-        m_gstWrapper->gstBufferUnref(buffer);
-    }
-    m_context.audioBuffers.clear();
-    for (auto &buffer : m_context.videoBuffers)
-    {
-        m_gstWrapper->gstBufferUnref(buffer);
-    }
-    m_context.videoBuffers.clear();
-
-    m_taskFactory->createStop(m_context, *this)->execute();
-    GstBus *bus = m_gstWrapper->gstPipelineGetBus(GST_PIPELINE(m_context.pipeline));
-    m_gstWrapper->gstBusSetSyncHandler(bus, nullptr, nullptr, nullptr);
-    m_gstWrapper->gstObjectUnref(bus);
-
-    if (m_context.source)
-    {
-        m_gstWrapper->gstObjectUnref(m_context.source);
-    }
-
-    // Delete the pipeline
-    m_glibWrapper->gObjectUnref(m_context.pipeline);
+    termPipeline();
 }
 
 void GstGenericPlayer::initMsePipeline()
@@ -268,6 +236,54 @@ void GstGenericPlayer::initMsePipeline()
     {
         GST_WARNING("No playsink ?!?!?");
     }
+}
+
+void GstGenericPlayer::resetWorkerThread()
+{
+    // Shutdown task thread
+    m_workerThread->enqueueTask(m_taskFactory->createShutdown(*this));
+    m_workerThread->join();
+    m_workerThread.reset();
+}
+
+void GstGenericPlayer::termPipeline()
+{
+    for (const auto &signal : m_context.connectedSignals)
+    {
+        m_glibWrapper->gSignalHandlerDisconnect(G_OBJECT(signal.first), signal.second);
+    }
+    m_context.connectedSignals.clear();
+
+    if (m_finishSourceSetupTimer && m_finishSourceSetupTimer->isActive())
+    {
+        m_finishSourceSetupTimer->cancel();
+    }
+
+    m_finishSourceSetupTimer.reset();
+
+    for (auto &buffer : m_context.audioBuffers)
+    {
+        m_gstWrapper->gstBufferUnref(buffer);
+    }
+    m_context.audioBuffers.clear();
+    for (auto &buffer : m_context.videoBuffers)
+    {
+        m_gstWrapper->gstBufferUnref(buffer);
+    }
+    m_context.videoBuffers.clear();
+
+    m_taskFactory->createStop(m_context, *this)->execute();
+    GstBus *bus = m_gstWrapper->gstPipelineGetBus(GST_PIPELINE(m_context.pipeline));
+    m_gstWrapper->gstBusSetSyncHandler(bus, nullptr, nullptr, nullptr);
+    m_gstWrapper->gstObjectUnref(bus);
+
+    if (m_context.source)
+    {
+        m_gstWrapper->gstObjectUnref(m_context.source);
+    }
+
+    // Delete the pipeline
+    m_glibWrapper->gObjectUnref(m_context.pipeline);
 }
 
 unsigned GstGenericPlayer::getGstPlayFlag(const char *nick)
@@ -755,20 +771,36 @@ bool GstGenericPlayer::setWesterossinkRectangle()
 bool GstGenericPlayer::setWesterossinkSecondaryVideo()
 {
     bool result = false;
-    GstElement *videoSink = nullptr;
-    m_glibWrapper->gObjectGet(m_context.pipeline, "video-sink", &videoSink, nullptr);
-    if (videoSink && m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink), "res-usage"))
+    GstElementFactory *factory = m_gstWrapper->gstElementFactoryFind("westerossink");
+    if (factory)
     {
-        m_glibWrapper->gObjectSet(videoSink, "res-usage", 0x0u, nullptr);
-        result = true;
+        GstElement *videoSink = m_gstWrapper->gstElementFactoryCreate(factory, nullptr);
+        if (videoSink)
+        {
+            if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink), "res-usage"))
+            {
+                m_glibWrapper->gObjectSet(videoSink, "res-usage", 0x0u, nullptr);
+                m_glibWrapper->gObjectSet(m_context.pipeline, "video-sink", videoSink, nullptr);
+                result = true;
+            }
+            else
+            {
+                RIALTO_SERVER_LOG_ERROR("Failed to set the westerossink res-usage");
+                m_gstWrapper->gstObjectUnref(GST_OBJECT(videoSink));
+            }
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to create the westerossink");
+        }
+
+        m_gstWrapper->gstObjectUnref(GST_OBJECT(factory));
     }
     else
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to set the westerossink res-usage");
+        // No westerous sink
+        result = true;
     }
-
-    if (videoSink)
-        m_gstWrapper->gstObjectUnref(GST_OBJECT(videoSink));
 
     return result;
 }
