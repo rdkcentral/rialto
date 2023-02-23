@@ -382,7 +382,7 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToLoadSession(
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillAttachSource()
 {
-    m_source = std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(0, mimeType);
+    m_source = std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(mimeType);
     expectRequestSuccess();
     EXPECT_CALL(m_mediaPipelineServiceMock, attachSource(hardcodedSessionId, AttachedSourceMatcher(ByRef(m_source))))
         .WillOnce(Return(true));
@@ -394,7 +394,7 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillAttachAudioSourceW
     codecSpecificConfig.assign(codecSpecificConfigStr.begin(), codecSpecificConfigStr.end());
     firebolt::rialto::AudioConfig audioConfig{numberOfChannels, sampleRate, codecSpecificConfig};
     m_source =
-        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(0, mimeType, audioConfig,
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(mimeType, audioConfig,
                                                                              firebolt::rialto::SegmentAlignment::UNDEFINED,
                                                                              firebolt::rialto::StreamFormat::RAW,
                                                                              codecData);
@@ -405,7 +405,7 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillAttachAudioSourceW
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToAttachSource()
 {
-    m_source = std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(0, mimeType);
+    m_source = std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(mimeType);
     expectRequestFailure();
     EXPECT_CALL(m_mediaPipelineServiceMock, attachSource(hardcodedSessionId, AttachedSourceMatcher(ByRef(m_source))))
         .WillOnce(Return(false));

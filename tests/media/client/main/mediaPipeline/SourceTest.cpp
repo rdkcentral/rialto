@@ -51,7 +51,7 @@ TEST_F(RialtoClientMediaPipelineSourceTest, AttachSourceSuccess)
 {
     int32_t m_newId = 123;
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
-        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_id, m_kMimeType);
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType);
 
     EXPECT_CALL(*m_mediaPipelineIpcMock, attachSource(Ref(mediaSource), _))
         .WillOnce(DoAll(SetArgReferee<1>(m_newId), Return(true)));
@@ -67,7 +67,7 @@ TEST_F(RialtoClientMediaPipelineSourceTest, AttachSourceFailure)
 {
     int32_t m_newId = 123;
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
-        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_id, m_kMimeType);
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType);
 
     EXPECT_CALL(*m_mediaPipelineIpcMock, attachSource(Ref(mediaSource), _))
         .WillOnce(DoAll(SetArgReferee<1>(m_newId), Return(false)));
