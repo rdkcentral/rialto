@@ -254,8 +254,7 @@ public:
          * @param[in]  streamFormat : The stream format
          * @param[in]  codecData    : The additional data for decoder
          */
-        MediaSourceVideo(const std::string &mimeType,
-                         SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
+        MediaSourceVideo(const std::string &mimeType, SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                          StreamFormat streamFormat = StreamFormat::UNDEFINED,
                          const std::shared_ptr<std::vector<std::uint8_t>> &codecData = nullptr)
             : MediaSource(SourceConfigType::VIDEO, mimeType, alignment, streamFormat, codecData)

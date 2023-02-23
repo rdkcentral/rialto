@@ -310,10 +310,11 @@ TEST_F(AttachSourceTest, shouldAttachVideoDolbyVisionSource)
     GstBuffer buf;
     std::shared_ptr<std::vector<std::uint8_t>> codecData{
         std::make_shared<std::vector<std::uint8_t>>(std::vector<std::uint8_t>{'T', 'E', 'S', 'T'})};
-    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source = std::make_unique<
-        firebolt::rialto::IMediaPipeline::MediaSourceVideoDolbyVision>("video/h265", dolbyVisionProfile,
-                                                                       firebolt::rialto::SegmentAlignment::AU,
-                                                                       firebolt::rialto::StreamFormat::AVC, codecData);
+    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideoDolbyVision>("video/h265", dolbyVisionProfile,
+                                                                                        firebolt::rialto::SegmentAlignment::AU,
+                                                                                        firebolt::rialto::StreamFormat::AVC,
+                                                                                        codecData);
     firebolt::rialto::server::tasks::generic::AttachSource task{m_context,     m_gstWrapper,
                                                                 m_glibWrapper, m_rdkGstreamerUtilsWrapper,
                                                                 m_gstPlayer,   source};
