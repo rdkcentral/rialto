@@ -39,6 +39,7 @@ public:
 
 private:
     GstCaps *createCapsFromMimeType() const;
+    void setBytesPerSample() const;
 
     WebAudioPlayerContext &m_context;
     std::shared_ptr<IGstWrapper> m_gstWrapper;
