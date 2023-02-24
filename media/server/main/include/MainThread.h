@@ -54,7 +54,6 @@ protected:
      * @brief Mutex protection for creation of the MainThread object.
      */
     static std::mutex m_creationMutex;
-
 };
 
 /**

@@ -24,8 +24,8 @@
 #include <cassert>
 #include <gst/pbutils/pbutils.h>
 #include <memory>
-#include <string>
 #include <mutex>
+#include <string>
 
 namespace firebolt::rialto::server
 {

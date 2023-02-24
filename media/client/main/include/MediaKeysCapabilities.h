@@ -23,9 +23,9 @@
 #include "IMediaKeysCapabilities.h"
 #include "IMediaKeysCapabilitiesIpcFactory.h"
 #include <memory>
+#include <mutex>
 #include <string>
 #include <vector>
-#include <mutex>
 
 namespace firebolt::rialto
 {
