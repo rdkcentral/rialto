@@ -345,21 +345,21 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
         AudioConfig audioConfig{numberofchannels, sampleRate, codecSpecificConfig};
 
         mediaSource =
-            std::make_unique<IMediaPipeline::MediaSourceAudio>(0, request->mime_type(), audioConfig,
+            std::make_unique<IMediaPipeline::MediaSourceAudio>(request->mime_type(), audioConfig,
                                                                convertSegmentAlignment(request->segment_alignment()),
                                                                convertStreamFormat(request->stream_format()), codecData);
     }
     else if (configType == firebolt::rialto::SourceConfigType::VIDEO)
     {
         mediaSource =
-            std::make_unique<IMediaPipeline::MediaSourceVideo>(0, request->mime_type().c_str(),
+            std::make_unique<IMediaPipeline::MediaSourceVideo>(request->mime_type().c_str(),
                                                                convertSegmentAlignment(request->segment_alignment()),
                                                                convertStreamFormat(request->stream_format()), codecData);
     }
     else if (configType == firebolt::rialto::SourceConfigType::VIDEO_DOLBY_VISION)
     {
         mediaSource =
-            std::make_unique<IMediaPipeline::MediaSourceVideoDolbyVision>(0, request->mime_type().c_str(),
+            std::make_unique<IMediaPipeline::MediaSourceVideoDolbyVision>(request->mime_type().c_str(),
                                                                           request->dolby_vision_profile(),
                                                                           convertSegmentAlignment(
                                                                               request->segment_alignment()),

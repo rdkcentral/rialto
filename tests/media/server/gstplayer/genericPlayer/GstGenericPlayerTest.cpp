@@ -56,7 +56,7 @@ protected:
 TEST_F(GstGenericPlayerTest, shouldAttachSource)
 {
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
-        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>(-1, "video/mpeg");
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>("video/mpeg");
 
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
