@@ -23,8 +23,6 @@
 
 namespace firebolt::rialto::client
 {
-std::weak_ptr<IMediaPipelineCapabilities> MediaPipelineCapabilitiesIpcFactory::m_mediaPipelineCapabilitiesIpc;
-
 std::shared_ptr<IMediaPipelineCapabilitiesIpcFactory> IMediaPipelineCapabilitiesIpcFactory::createFactory()
 {
     std::shared_ptr<IMediaPipelineCapabilitiesIpcFactory> factory;

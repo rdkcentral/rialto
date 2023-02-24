@@ -26,6 +26,7 @@
 namespace firebolt::rialto::server
 {
 std::weak_ptr<IMainThread> MainThreadFactory::m_mainThread;
+std::mutex MainThreadFactory::m_creationMutex;
 
 std::shared_ptr<IMainThreadFactory> IMainThreadFactory::createFactory()
 {
@@ -44,6 +45,8 @@ std::shared_ptr<IMainThreadFactory> IMainThreadFactory::createFactory()
 
 std::shared_ptr<IMainThread> MainThreadFactory::getMainThread() const
 {
+    std::lock_guard<std::mutex> lock{m_creationMutex};
+
     std::shared_ptr<IMainThread> mainThread = m_mainThread.lock();
     if (!mainThread)
     {

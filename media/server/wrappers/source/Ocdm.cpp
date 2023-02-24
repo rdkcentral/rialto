@@ -24,6 +24,7 @@
 namespace firebolt::rialto::server
 {
 std::weak_ptr<IOcdm> OcdmFactory::m_ocdm;
+std::mutex OcdmFactory::m_creationMutex;
 
 std::shared_ptr<IOcdmFactory> IOcdmFactory::createFactory()
 {
@@ -43,6 +44,8 @@ std::shared_ptr<IOcdmFactory> IOcdmFactory::createFactory()
 
 std::shared_ptr<IOcdm> OcdmFactory::getOcdm() const
 {
+    std::lock_guard<std::mutex> lock{m_creationMutex};
+
     std::shared_ptr<IOcdm> ocdm = OcdmFactory::m_ocdm.lock();
 
     if (!ocdm)

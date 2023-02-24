@@ -25,6 +25,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <mutex>
 
 namespace firebolt::rialto
 {
@@ -41,6 +42,11 @@ public:
      * @brief Weak pointer to the singleton object.
      */
     static std::weak_ptr<IMediaKeysCapabilities> m_mediaKeysCapabilities;
+
+    /**
+     * @brief Mutex protection for creation of the MediaKeysCapabilities object.
+     */
+    static std::mutex m_creationMutex;
 
     std::shared_ptr<IMediaKeysCapabilities> getMediaKeysCapabilities() const override;
 };

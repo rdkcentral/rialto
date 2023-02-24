@@ -25,6 +25,7 @@
 #include <gst/pbutils/pbutils.h>
 #include <memory>
 #include <string>
+#include <mutex>
 
 namespace firebolt::rialto::server
 {
@@ -43,6 +44,11 @@ public:
      * @brief Weak pointer to the singleton object.
      */
     static std::weak_ptr<IGstWrapper> m_gstWrapper;
+
+    /**
+     * @brief Mutex protection for creation of the RialtoControl object.
+     */
+    static std::mutex m_creationMutex;
 
     std::shared_ptr<IGstWrapper> getGstWrapper() override;
 };

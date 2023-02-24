@@ -29,6 +29,7 @@
 #include <gst/base/gstbasetransform.h>
 #include <gst/gst.h>
 #include <memory>
+#include <mutex>
 
 G_BEGIN_DECLS
 
@@ -88,6 +89,11 @@ public:
      * @brief Weak pointer to the singleton object.
      */
     static std::weak_ptr<IGstSrc> m_gstSrc;
+
+    /**
+     * @brief Mutex protection for creation of the GstSrc object.
+     */
+    static std::mutex m_creationMutex;
 
     std::shared_ptr<IGstSrc> getGstSrc() override;
 };
