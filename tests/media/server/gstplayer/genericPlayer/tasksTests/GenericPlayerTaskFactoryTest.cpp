@@ -81,7 +81,7 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateAttachSamples)
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateAttachSource)
 {
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
-        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>(-1, "video/mpeg");
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>("video/mpeg");
     auto task = m_sut.createAttachSource(m_context, m_gstPlayer, source);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::AttachSource &>(*task));
