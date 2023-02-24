@@ -51,6 +51,22 @@ struct MaxResourceCapabilitites
     int maxPlaybacks;
     int maxWebAudioPlayers;
 };
+
+/**
+ * @brief Configuration data for an application
+ */
+struct AppConfig
+{
+    std::string clientIpcSocketName; /**< Socket name that Rialto client should connect to */
+    /*
+     * @note Socket name can take the following forms:
+     *    - Empty string, in which case Rialto server will automatically allocate the socket name, e.g. "/tmp/rialto-12"
+     *    - Full path, such as "/foo/bar", in which case Rialto will use this name for the socket
+     *    - Socket name, such as "bar", in which case Rialto will create the named socket in the default dir, e.g.
+     * "/tmp/bar" In all cases the name can be retrieved with getAppConnectionInfo()
+     */
+};
+
 } // namespace firebolt::rialto::common
 
 #endif // FIREBOLT_RIALTO_COMMON_SESSION_SERVER_COMMON_H_

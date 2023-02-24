@@ -17,14 +17,14 @@
  * limitations under the License.
  */
 
-#ifndef RIALTO_SERVERMANAGER_SERVICE_MATCHERS_H_
-#define RIALTO_SERVERMANAGER_SERVICE_MATCHERS_H_
+#ifndef FIREBOLT_RIALTO_COMMON_MATCHERS_H_
+#define FIREBOLT_RIALTO_COMMON_MATCHERS_H_
 
-#include "ServerManagerTypes.h"
+#include "SessionServerCommon.h"
 
-namespace rialto::servermanager::service
+namespace firebolt::rialto::common
 {
 bool operator==(const AppConfig &lhs, const AppConfig &rhs);
-} // namespace rialto::servermanager::service
+} // namespace firebolt::rialto::common
 
-#endif // RIALTO_SERVERMANAGER_SERVICE_MATCHERS_H_
+#endif // FIREBOLT_RIALTO_COMMON_MATCHERS_H_

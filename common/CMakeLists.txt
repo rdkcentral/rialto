@@ -41,6 +41,7 @@ target_include_directories(
 
         PUBLIC
         public
+        interface
 
         PRIVATE
         include
@@ -55,7 +56,7 @@ target_link_libraries (
 
 set (
         RIALTO_COMMON_PUBLIC_HEADERS
-        public/IEventThread.h
+        public/SessionServerCommon.h
 )
 
 install (

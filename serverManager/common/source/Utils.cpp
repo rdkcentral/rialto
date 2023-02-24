@@ -21,19 +21,19 @@
 
 namespace rialto::servermanager::common
 {
-const char *toString(const service::SessionServerState &state)
+const char *toString(const firebolt::rialto::common::SessionServerState &state)
 {
     switch (state)
     {
-    case service::SessionServerState::UNINITIALIZED:
+    case firebolt::rialto::common::SessionServerState::UNINITIALIZED:
         return "Uninitialized";
-    case service::SessionServerState::INACTIVE:
+    case firebolt::rialto::common::SessionServerState::INACTIVE:
         return "Inactive";
-    case service::SessionServerState::ACTIVE:
+    case firebolt::rialto::common::SessionServerState::ACTIVE:
         return "Active";
-    case service::SessionServerState::NOT_RUNNING:
+    case firebolt::rialto::common::SessionServerState::NOT_RUNNING:
         return "NotRunning";
-    case service::SessionServerState::ERROR:
+    case firebolt::rialto::common::SessionServerState::ERROR:
         return "Error";
     }
     return "Unknown";

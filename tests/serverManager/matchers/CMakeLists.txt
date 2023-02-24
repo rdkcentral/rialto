@@ -34,7 +34,7 @@ target_include_directories (
         ${CMAKE_CURRENT_LIST_DIR}
 
         PRIVATE
-        $<TARGET_PROPERTY:RialtoServerManagerPublic,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoCommon,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
 target_link_libraries (

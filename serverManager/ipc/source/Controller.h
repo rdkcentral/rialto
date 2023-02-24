@@ -50,10 +50,11 @@ public:
 
     bool createClient(const std::string &appId, int appMgmtSocket) override;
     void removeClient(const std::string &appId) override;
-    bool performSetConfiguration(const std::string &appId, const service::SessionServerState &initialState,
+    bool performSetConfiguration(const std::string &appId,
+                                 const firebolt::rialto::common::SessionServerState &initialState,
                                  const std::string &socketName,
-                                 const service::MaxResourceCapabilitites &maxResource) override;
-    bool performSetState(const std::string &appId, const service::SessionServerState &state) override;
+                                 const firebolt::rialto::common::MaxResourceCapabilitites &maxResource) override;
+    bool performSetState(const std::string &appId, const firebolt::rialto::common::SessionServerState &state) override;
     bool setLogLevels(const service::LoggingLevels &logLevels) const override;
 
 private:

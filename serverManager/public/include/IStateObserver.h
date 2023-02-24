@@ -25,7 +25,7 @@
 #ifndef RIALTO_SERVERMANAGER_SERVICE_I_STATE_OBSERVER_H_
 #define RIALTO_SERVERMANAGER_SERVICE_I_STATE_OBSERVER_H_
 
-#include "ServerManagerTypes.h"
+#include "SessionServerCommon.h"
 #include <string>
 
 namespace rialto::servermanager::service
@@ -59,7 +59,7 @@ public:
      * @param[in]     state     : New session server state
      *
      */
-    virtual void stateChanged(const std::string &appId, const SessionServerState &state) = 0;
+    virtual void stateChanged(const std::string &appId, const firebolt::rialto::common::SessionServerState &state) = 0;
 };
 } // namespace rialto::servermanager::service
 

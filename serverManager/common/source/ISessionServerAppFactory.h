@@ -21,7 +21,7 @@
 #define RIALTO_SERVERMANAGER_COMMON_I_SESSION_SERVER_APP_FACTORY_H_
 
 #include "ISessionServerApp.h"
-#include "ServerManagerTypes.h"
+#include "SessionServerCommon.h"
 #include <memory>
 #include <string>
 
@@ -36,8 +36,8 @@ public:
     virtual ~ISessionServerAppFactory() = default;
 
     virtual std::unique_ptr<ISessionServerApp> create(const std::string &appId,
-                                                      const service::SessionServerState &initialState,
-                                                      const service::AppConfig &appConfig,
+                                                      const firebolt::rialto::common::SessionServerState &initialState,
+                                                      const firebolt::rialto::common::AppConfig &appConfig,
                                                       SessionServerAppManager &sessionServerAppManager) const = 0;
 };
 } // namespace rialto::servermanager::common

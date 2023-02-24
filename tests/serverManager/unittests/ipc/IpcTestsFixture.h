@@ -43,14 +43,14 @@ public:
     void simulateClientDisconnection();
 
     void sessionServerAppManagerWillBeNotifiedAboutSessionServerStateChange(
-        const rialto::servermanager::service::SessionServerState &newState);
+        const firebolt::rialto::common::SessionServerState &newState);
     void waitForExpectationsMet();
 
     bool triggerCreateClientConnectToFakeSocket();
     bool triggerCreateClient();
     void triggerRemoveClient();
     bool triggerPerformSetConfiguration();
-    bool triggerPerformSetState(const rialto::servermanager::service::SessionServerState &state);
+    bool triggerPerformSetState(const firebolt::rialto::common::SessionServerState &state);
     bool triggerSetLogLevels();
 
 private:

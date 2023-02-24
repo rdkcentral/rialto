@@ -26,7 +26,7 @@
 #define RIALTO_SERVERMANAGER_SERVICE_I_SERVER_MANAGER_SERVICE_H_
 
 #include "LoggingLevels.h"
-#include "ServerManagerTypes.h"
+#include "SessionServerCommon.h"
 #include <string>
 
 namespace rialto::servermanager::service
@@ -60,8 +60,8 @@ public:
      *
      * @retval true on success.
      */
-    virtual bool initiateApplication(const std::string &appId, const SessionServerState &state,
-                                     const AppConfig &appConfig) = 0;
+    virtual bool initiateApplication(const std::string &appId, const firebolt::rialto::common::SessionServerState &state,
+                                     const firebolt::rialto::common::AppConfig &appConfig) = 0;
 
     /**
      * @brief Changes session server state
@@ -75,7 +75,8 @@ public:
      *
      * @retval true on success.
      */
-    virtual bool changeSessionServerState(const std::string &appId, const SessionServerState &state) = 0;
+    virtual bool changeSessionServerState(const std::string &appId,
+                                          const firebolt::rialto::common::SessionServerState &state) = 0;
 
     /**
      * @brief Returns the name of a socket, which is used for RialtoSessionServer <-> Application communication

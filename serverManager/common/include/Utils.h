@@ -22,11 +22,11 @@
 
 #include "LoggingLevels.h"
 #include "RialtoServerManagerLogging.h"
-#include "ServerManagerTypes.h"
+#include "SessionServerCommon.h"
 
 namespace rialto::servermanager::common
 {
-const char *toString(const service::SessionServerState &state);
+const char *toString(const firebolt::rialto::common::SessionServerState &state);
 RIALTO_DEBUG_LEVEL convert(const service::LoggingLevel &loggingLevel);
 void setLocalLogLevels(const service::LoggingLevels &logLevels);
 } // namespace rialto::servermanager::common
