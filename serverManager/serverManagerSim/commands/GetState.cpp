@@ -24,27 +24,27 @@
 
 namespace
 {
-std::string toString(const SessionServerState &state)
+std::string toString(const rialto::servermanager::service::SessionServerState &state)
 {
     switch (state)
     {
-    case SessionServerState::UNINITIALIZED:
+    case rialto::servermanager::service::SessionServerState::UNINITIALIZED:
     {
         return "Uninitialized";
     }
-    case SessionServerState::INACTIVE:
+    case rialto::servermanager::service::SessionServerState::INACTIVE:
     {
         return "Inactive";
     }
-    case SessionServerState::ACTIVE:
+    case rialto::servermanager::service::SessionServerState::ACTIVE:
     {
         return "Active";
     }
-    case SessionServerState::NOT_RUNNING:
+    case rialto::servermanager::service::SessionServerState::NOT_RUNNING:
     {
         return "NotRunning";
     }
-    case SessionServerState::ERROR:
+    case rialto::servermanager::service::SessionServerState::ERROR:
     {
         return "Error";
     }

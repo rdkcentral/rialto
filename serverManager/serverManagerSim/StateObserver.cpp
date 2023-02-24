@@ -22,13 +22,13 @@
 
 namespace rialto::servermanager
 {
-void StateObserver::stateChanged(const std::string &appId, const SessionServerState &state)
+void StateObserver::stateChanged(const std::string &appId, const service::SessionServerState &state)
 {
     std::unique_lock<std::mutex> lock{m_sessionServerStateMutex};
     m_sessionServerStates[appId] = state;
 }
 
-SessionServerState StateObserver::getCurrentState(const std::string &appId) const
+service::SessionServerState StateObserver::getCurrentState(const std::string &appId) const
 {
     std::unique_lock<std::mutex> lock{m_sessionServerStateMutex};
     auto state = m_sessionServerStates.find(appId);
@@ -36,14 +36,14 @@ SessionServerState StateObserver::getCurrentState(const std::string &appId) cons
     {
         return state->second;
     }
-    return SessionServerState::NOT_RUNNING;
+    return service::SessionServerState::NOT_RUNNING;
 }
 
 std::string StateObserver::getActiveApp() const
 {
     std::unique_lock<std::mutex> lock{m_sessionServerStateMutex};
     auto app = std::find_if(m_sessionServerStates.begin(), m_sessionServerStates.end(),
-                            [](const auto &app) { return app.second == SessionServerState::ACTIVE; });
+                            [](const auto &app) { return app.second == service::SessionServerState::ACTIVE; });
     if (app != m_sessionServerStates.end())
     {
         return app->first;

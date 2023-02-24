@@ -24,21 +24,21 @@
 
 namespace
 {
-SessionServerState convert(const std::string &state)
+rialto::servermanager::service::SessionServerState convert(const std::string &state)
 {
     if ("Inactive" == state)
     {
-        return SessionServerState::INACTIVE;
+        return rialto::servermanager::service::SessionServerState::INACTIVE;
     }
     else if ("Active" == state)
     {
-        return SessionServerState::ACTIVE;
+        return rialto::servermanager::service::SessionServerState::ACTIVE;
     }
     else if ("NotRunning" == state)
     {
-        return SessionServerState::NOT_RUNNING;
+        return rialto::servermanager::service::SessionServerState::NOT_RUNNING;
     }
-    return SessionServerState::ERROR;
+    return rialto::servermanager::service::SessionServerState::ERROR;
 }
 } // namespace
 
@@ -59,8 +59,8 @@ void SetState::run() const
         return;
     }
     std::string appName{m_kRequest.getParams()[0]};
-    SessionServerState state{convert(m_kRequest.getParams()[1])};
-    AppConfig appConfig{m_kRequest.getPostData()};
+    service::SessionServerState state{convert(m_kRequest.getParams()[1])};
+    service::AppConfig appConfig{m_kRequest.getPostData()};
     std::string reply{"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n"};
     if (m_service.setState(appName, state, appConfig))
     {

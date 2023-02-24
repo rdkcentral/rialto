@@ -65,26 +65,27 @@ void TestService::shutdown()
     m_serverCv.notify_one();
 }
 
-bool TestService::setState(const std::string &appName, const SessionServerState &state, const AppConfig &appConfig)
+bool TestService::setState(const std::string &appName, const service::SessionServerState &state,
+                           const service::AppConfig &appConfig)
 {
-    if (state == SessionServerState::ACTIVE)
+    if (state == service::SessionServerState::ACTIVE)
     {
         std::string activeApp = m_stateObserver->getActiveApp();
         if (!activeApp.empty() && activeApp != appName &&
-            !m_serverManagerService->changeSessionServerState(activeApp, SessionServerState::INACTIVE))
+            !m_serverManagerService->changeSessionServerState(activeApp, service::SessionServerState::INACTIVE))
         {
             fprintf(stderr, "Failed to switch active: %s to inactive", activeApp.c_str());
             return false;
         }
     }
-    if (getState(appName) == SessionServerState::NOT_RUNNING)
+    if (getState(appName) == service::SessionServerState::NOT_RUNNING)
     {
         return m_serverManagerService->initiateApplication(appName, state, appConfig);
     }
     return m_serverManagerService->changeSessionServerState(appName, state);
 }
 
-SessionServerState TestService::getState(const std::string &appName)
+service::SessionServerState TestService::getState(const std::string &appName)
 {
     return m_stateObserver->getCurrentState(appName);
 }
