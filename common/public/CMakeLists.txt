@@ -2,7 +2,7 @@
 # If not stated otherwise in this file or this component's LICENSE file the
 # following copyright and licenses apply:
 #
-# Copyright 2022 Sky UK
+# Copyright 2023 Sky UK
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,37 +22,25 @@ set( CMAKE_CXX_STANDARD 14 )
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
 include( CheckCXXCompilerFlag )
 
-add_subdirectory(public)
-
 add_library(
-        RialtoCommon
-        STATIC
-
-        source/EventThread.cpp
-        source/Timer.cpp
+        RialtoCommonPublic
+        INTERFACE
     )
 
-set_property (
-        TARGET
-        RialtoCommon
-        PROPERTY POSITION_INDEPENDENT_CODE ON
-)
-
 target_include_directories(
-        RialtoCommon
+        RialtoCommonPublic
 
-        PUBLIC
-        interface
-        $<TARGET_PROPERTY:RialtoCommonPublic,INTERFACE_INCLUDE_DIRECTORIES>
-
-        PRIVATE
+        INTERFACE
         include
     )
 
-target_link_libraries (
-        RialtoCommon
-
-        PRIVATE
-        RialtoLogging
-    )
-
+if( NOT CMAKE_BUILD_TYPE STREQUAL "UnitTests" )
+        include( GNUInstallDirs )
+        set (LIB_RIALTO_COMMON_PUBLIC_HEADERS
+                include/SessionServerCommon.h
+        )
+        install (
+                FILES ${LIB_RIALTO_COMMON_PUBLIC_HEADERS}
+                DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/rialto
+        )
+endif()
