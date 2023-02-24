@@ -45,7 +45,7 @@ protected:
     void attachSource()
     {
         std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
-            std::make_unique<IMediaPipeline::MediaSourceAudio>(m_sourceId, "audio/mp4");
+            std::make_unique<IMediaPipeline::MediaSourceAudio>("audio/mp4");
         EXPECT_CALL(*m_mediaPipelineIpcMock, attachSource(Ref(mediaSource), _))
             .WillOnce(DoAll(SetArgReferee<1>(m_sourceId), Return(true)));
         EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), true);
