@@ -46,7 +46,7 @@ std::string generateSessionManagementSocketPath()
     return sessionManagementSocketDefaultDir + sessionManagementSocketDefaultName + std::to_string(sessionNum++);
 }
 
-std::string getSessionManagementSocketPath(const firebolt::rialto::common::AppConfig &appConfig)
+std::string getSessionManagementSocketPath(const rialto::servermanager::service::AppConfig &appConfig)
 {
     // Socket name can take the following forms:
     //  - Empty string, in which case Rialto server will automatically allocate the socket name, e.g. "/tmp/rialto-12"
@@ -97,10 +97,8 @@ std::chrono::milliseconds getStartupTimeout()
 
 namespace rialto::servermanager::common
 {
-SessionServerApp::SessionServerApp(const std::string &appId,
-                                   const firebolt::rialto::common::SessionServerState &initialState,
-                                   const firebolt::rialto::common::AppConfig &appConfig,
-                                   SessionServerAppManager &sessionServerAppManager,
+SessionServerApp::SessionServerApp(const std::string &appId, const service::SessionServerState &initialState,
+                                   const service::AppConfig &appConfig, SessionServerAppManager &sessionServerAppManager,
                                    const std::list<std::string> &environmentVariables)
     : m_kAppId{appId}, m_kInitialState{initialState},
       m_kSessionManagementSocketName{getSessionManagementSocketPath(appConfig)}, m_socks{-1, -1},
@@ -157,7 +155,7 @@ std::string SessionServerApp::getSessionManagementSocketName() const
     return m_kSessionManagementSocketName;
 }
 
-firebolt::rialto::common::SessionServerState SessionServerApp::getInitialState() const
+service::SessionServerState SessionServerApp::getInitialState() const
 {
     return m_kInitialState;
 }
@@ -223,8 +221,7 @@ void SessionServerApp::setupStartupTimer()
                                  {
                                      RIALTO_SERVER_MANAGER_LOG_WARN("Killing: %s", m_kAppId.c_str());
                                      m_sessionServerAppManager
-                                         .onSessionServerStateChanged(m_kAppId,
-                                                                      firebolt::rialto::common::SessionServerState::ERROR);
+                                         .onSessionServerStateChanged(m_kAppId, service::SessionServerState::ERROR);
                                      kill();
                                  });
     }

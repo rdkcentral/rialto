@@ -37,10 +37,9 @@ public:
     ServerManagerService &operator=(const ServerManagerService &) = delete;
     ServerManagerService &operator=(ServerManagerService &&) = delete;
 
-    bool initiateApplication(const std::string &appId, const firebolt::rialto::common::SessionServerState &state,
-                             const firebolt::rialto::common::AppConfig &appConfig) override;
-    bool changeSessionServerState(const std::string &appId,
-                                  const firebolt::rialto::common::SessionServerState &state) override;
+    bool initiateApplication(const std::string &appId, const SessionServerState &state,
+                             const AppConfig &appConfig) override;
+    bool changeSessionServerState(const std::string &appId, const SessionServerState &state) override;
     std::string getAppConnectionInfo(const std::string &appId) const override;
     bool setLogLevels(const LoggingLevels &logLevels) const override;
 

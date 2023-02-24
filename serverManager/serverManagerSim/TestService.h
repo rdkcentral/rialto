@@ -41,9 +41,8 @@ public:
     void run();
     void shutdown();
 
-    bool setState(const std::string &appName, const firebolt::rialto::common::SessionServerState &state,
-                  const firebolt::rialto::common::AppConfig &appConfig);
-    firebolt::rialto::common::SessionServerState getState(const std::string &appName);
+    bool setState(const std::string &appName, const SessionServerState &state, const AppConfig &appConfig);
+    SessionServerState getState(const std::string &appName);
     std::string getAppInfo(const std::string &appName);
     bool setLogLevels(const service::LoggingLevels &logLevels);
 

@@ -32,7 +32,7 @@ public:
     StateObserverMock() = default;
     virtual ~StateObserverMock() = default;
 
-    MOCK_METHOD(void, stateChanged, (const std::string &, const firebolt::rialto::common::SessionServerState &),
+    MOCK_METHOD(void, stateChanged, (const std::string &, const rialto::servermanager::service::SessionServerState &),
                 (override));
 };
 } // namespace rialto::servermanager::service

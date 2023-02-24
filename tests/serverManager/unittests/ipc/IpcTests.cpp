@@ -21,7 +21,7 @@
 
 TEST_F(IpcTests, PerformSetStateShouldReturnFalseWhenNoAppIsConnected)
 {
-    ASSERT_FALSE(triggerPerformSetState(firebolt::rialto::common::SessionServerState::INACTIVE));
+    ASSERT_FALSE(triggerPerformSetState(rialto::servermanager::service::SessionServerState::INACTIVE));
 }
 
 TEST_F(IpcTests, ShouldFailToCreateClientWhenServerIsNotRunning)
@@ -48,21 +48,21 @@ TEST_F(IpcTests, ShouldRemoveClient)
     ASSERT_TRUE(triggerCreateClient());
     triggerRemoveClient();
     // PerformSetState should fail, when client is removed
-    ASSERT_FALSE(triggerPerformSetState(firebolt::rialto::common::SessionServerState::INACTIVE));
+    ASSERT_FALSE(triggerPerformSetState(rialto::servermanager::service::SessionServerState::INACTIVE));
 }
 
 TEST_F(IpcTests, ShouldSuccessfullySetState)
 {
     configureServerToSendOkResponses();
     ASSERT_TRUE(triggerCreateClient());
-    ASSERT_TRUE(triggerPerformSetState(firebolt::rialto::common::SessionServerState::INACTIVE));
+    ASSERT_TRUE(triggerPerformSetState(rialto::servermanager::service::SessionServerState::INACTIVE));
 }
 
 TEST_F(IpcTests, ShouldFailToSetStateWhenFailResponseIsReceived)
 {
     configureServerToSendFailResponses();
     ASSERT_TRUE(triggerCreateClient());
-    ASSERT_FALSE(triggerPerformSetState(firebolt::rialto::common::SessionServerState::INACTIVE));
+    ASSERT_FALSE(triggerPerformSetState(rialto::servermanager::service::SessionServerState::INACTIVE));
 }
 
 TEST_F(IpcTests, ShouldForwardStateChangedIndicationToSessionServerAppManager)
@@ -70,7 +70,7 @@ TEST_F(IpcTests, ShouldForwardStateChangedIndicationToSessionServerAppManager)
     configureServerToSendOkResponses();
     ASSERT_TRUE(triggerCreateClient());
     sessionServerAppManagerWillBeNotifiedAboutSessionServerStateChange(
-        firebolt::rialto::common::SessionServerState::INACTIVE);
+        rialto::servermanager::service::SessionServerState::INACTIVE);
     simulateStateChangedEventInactive();
     waitForExpectationsMet();
 }
@@ -80,7 +80,7 @@ TEST_F(IpcTests, ShouldForwardNotRunningStateChangeToSessionServerAppManagerWhen
     configureServerToSendOkResponses();
     ASSERT_TRUE(triggerCreateClient());
     sessionServerAppManagerWillBeNotifiedAboutSessionServerStateChange(
-        firebolt::rialto::common::SessionServerState::NOT_RUNNING);
+        rialto::servermanager::service::SessionServerState::NOT_RUNNING);
     simulateClientDisconnection();
     waitForExpectationsMet();
 }

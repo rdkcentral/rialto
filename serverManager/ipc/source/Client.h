@@ -47,10 +47,9 @@ public:
     Client &operator=(Client &&) = delete;
 
     bool connect();
-    bool performSetState(const firebolt::rialto::common::SessionServerState &state);
-    bool performSetConfiguration(const firebolt::rialto::common::SessionServerState &initialState,
-                                 const std::string &socketName,
-                                 const firebolt::rialto::common::MaxResourceCapabilitites &maxResource) const;
+    bool performSetState(const service::SessionServerState &state);
+    bool performSetConfiguration(const service::SessionServerState &initialState, const std::string &socketName,
+                                 const service::MaxResourceCapabilitites &maxResource) const;
     bool setLogLevels(const service::LoggingLevels &logLevels) const;
     void onDisconnected() const;
 

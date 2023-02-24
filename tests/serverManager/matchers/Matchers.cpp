@@ -19,10 +19,10 @@
 
 #include "Matchers.h"
 
-namespace firebolt::rialto::common
+namespace rialto::servermanager::service
 {
 bool operator==(const AppConfig &lhs, const AppConfig &rhs)
 {
     return lhs.clientIpcSocketName == rhs.clientIpcSocketName;
 }
-} // namespace firebolt::rialto::common
+} // namespace rialto::servermanager::service

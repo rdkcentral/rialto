@@ -23,9 +23,10 @@
 namespace
 {
 const std::string APP_NAME{"YouTube"};
-const firebolt::rialto::common::SessionServerState APP_STATE{firebolt::rialto::common::SessionServerState::INACTIVE};
+const rialto::servermanager::service::SessionServerState APP_STATE{
+    rialto::servermanager::service::SessionServerState::INACTIVE};
 const std::string APP_SOCKET{getenv("RIALTO_SOCKET_PATH")};
-const firebolt::rialto::common::AppConfig APP_CONFIG{APP_SOCKET};
+const rialto::servermanager::service::AppConfig APP_CONFIG{APP_SOCKET};
 } // namespace
 
 TEST_F(ServerManagerServiceTests, initiateApplicationShouldReturnTrueIfOperationSucceeded)

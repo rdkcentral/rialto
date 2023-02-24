@@ -33,9 +33,8 @@ public:
     explicit SessionServerAppFactory(const std::list<std::string> &environmentVariables);
     ~SessionServerAppFactory() override = default;
 
-    std::unique_ptr<ISessionServerApp> create(const std::string &appId,
-                                              const firebolt::rialto::common::SessionServerState &initialState,
-                                              const firebolt::rialto::common::AppConfig &appConfig,
+    std::unique_ptr<ISessionServerApp> create(const std::string &appId, const service::SessionServerState &initialState,
+                                              const service::AppConfig &appConfig,
                                               SessionServerAppManager &sessionServerAppManager) const override;
 
 private:

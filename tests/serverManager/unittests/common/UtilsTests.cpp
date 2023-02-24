@@ -20,12 +20,12 @@
 #include "Utils.h"
 #include <gtest/gtest.h>
 
-using firebolt::rialto::common::SessionServerState;
 using rialto::servermanager::common::convert;
 using rialto::servermanager::common::setLocalLogLevels;
 using rialto::servermanager::common::toString;
 using rialto::servermanager::service::LoggingLevel;
 using rialto::servermanager::service::LoggingLevels;
+using rialto::servermanager::service::SessionServerState;
 
 TEST(UtilsTest, ShouldReturnProperString)
 {

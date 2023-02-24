@@ -24,21 +24,21 @@
 
 namespace
 {
-firebolt::rialto::common::SessionServerState convert(const std::string &state)
+SessionServerState convert(const std::string &state)
 {
     if ("Inactive" == state)
     {
-        return firebolt::rialto::common::SessionServerState::INACTIVE;
+        return SessionServerState::INACTIVE;
     }
     else if ("Active" == state)
     {
-        return firebolt::rialto::common::SessionServerState::ACTIVE;
+        return SessionServerState::ACTIVE;
     }
     else if ("NotRunning" == state)
     {
-        return firebolt::rialto::common::SessionServerState::NOT_RUNNING;
+        return SessionServerState::NOT_RUNNING;
     }
-    return firebolt::rialto::common::SessionServerState::ERROR;
+    return SessionServerState::ERROR;
 }
 } // namespace
 
@@ -59,8 +59,8 @@ void SetState::run() const
         return;
     }
     std::string appName{m_kRequest.getParams()[0]};
-    firebolt::rialto::common::SessionServerState state{convert(m_kRequest.getParams()[1])};
-    firebolt::rialto::common::AppConfig appConfig{m_kRequest.getPostData()};
+    SessionServerState state{convert(m_kRequest.getParams()[1])};
+    AppConfig appConfig{m_kRequest.getPostData()};
     std::string reply{"HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n"};
     if (m_service.setState(appName, state, appConfig))
     {

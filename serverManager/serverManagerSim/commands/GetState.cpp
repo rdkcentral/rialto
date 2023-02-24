@@ -24,27 +24,27 @@
 
 namespace
 {
-std::string toString(const firebolt::rialto::common::SessionServerState &state)
+std::string toString(const SessionServerState &state)
 {
     switch (state)
     {
-    case firebolt::rialto::common::SessionServerState::UNINITIALIZED:
+    case SessionServerState::UNINITIALIZED:
     {
         return "Uninitialized";
     }
-    case firebolt::rialto::common::SessionServerState::INACTIVE:
+    case SessionServerState::INACTIVE:
     {
         return "Inactive";
     }
-    case firebolt::rialto::common::SessionServerState::ACTIVE:
+    case SessionServerState::ACTIVE:
     {
         return "Active";
     }
-    case firebolt::rialto::common::SessionServerState::NOT_RUNNING:
+    case SessionServerState::NOT_RUNNING:
     {
         return "NotRunning";
     }
-    case firebolt::rialto::common::SessionServerState::ERROR:
+    case SessionServerState::ERROR:
     {
         return "Error";
     }
