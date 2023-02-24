@@ -50,10 +50,10 @@ public:
     void notifyWriteBuffer(WebAudioPlayerContext &context)
     {
         {
-            std::unique_lock<std::mutex> lock(context.m_writeBufferMutex);
-            context.m_lastBytesWritten = m_bytesWritten;
+            std::unique_lock<std::mutex> lock(context.writeBufferMutex);
+            context.lastBytesWritten = m_bytesWritten;
         }
-        context.m_writeBufferCond.notify_one();
+        context.writeBufferCond.notify_one();
     }
 };
 
