@@ -39,7 +39,7 @@ protected:
 TEST_F(RialtoServerMediaPipelineSourceTest, AttachSourceSuccess)
 {
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
-        std::make_unique<IMediaPipeline::MediaSourceAudio>(-1, m_kMimeType);
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType);
 
     loadGstPlayer();
     mainThreadWillEnqueueTaskAndWait();
@@ -47,7 +47,7 @@ TEST_F(RialtoServerMediaPipelineSourceTest, AttachSourceSuccess)
     EXPECT_CALL(*m_gstPlayerMock, attachSource(Ref(mediaSource)));
 
     EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), true);
-    EXPECT_EQ(mediaSource->getId(), static_cast<int32_t>(MediaSourceType::AUDIO));
+    EXPECT_NE(mediaSource->getId(), -1);
 }
 
 /**
@@ -57,7 +57,7 @@ TEST_F(RialtoServerMediaPipelineSourceTest, AttachAudioSourceWitSpecificConfigur
 {
     AudioConfig audioConfig{6, 48000, {1, 2, 3}};
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
-        std::make_unique<IMediaPipeline::MediaSourceAudio>(-1, m_kMimeType, audioConfig);
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType, audioConfig);
 
     loadGstPlayer();
     mainThreadWillEnqueueTaskAndWait();
@@ -65,7 +65,7 @@ TEST_F(RialtoServerMediaPipelineSourceTest, AttachAudioSourceWitSpecificConfigur
     EXPECT_CALL(*m_gstPlayerMock, attachSource(Ref(mediaSource)));
 
     EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), true);
-    EXPECT_EQ(mediaSource->getId(), static_cast<int32_t>(MediaSourceType::AUDIO));
+    EXPECT_NE(mediaSource->getId(), -1);
 }
 
 /**
@@ -74,9 +74,99 @@ TEST_F(RialtoServerMediaPipelineSourceTest, AttachAudioSourceWitSpecificConfigur
 TEST_F(RialtoServerMediaPipelineSourceTest, NoGstPlayerFailure)
 {
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
-        std::make_unique<IMediaPipeline::MediaSourceAudio>(-1, m_kMimeType);
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType);
 
     mainThreadWillEnqueueTaskAndWait();
     EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), false);
     EXPECT_EQ(mediaSource->getId(), -1);
+}
+
+/**
+ * Test that RemoveSource returns success if the gstreamer player API succeeds.
+ */
+TEST_F(RialtoServerMediaPipelineSourceTest, RemoveSourceSuccess)
+{
+    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType);
+
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+
+    EXPECT_CALL(*m_gstPlayerMock, attachSource(Ref(mediaSource)));
+    EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), true);
+    std::int32_t sourceId{mediaSource->getId()};
+
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, removeSource(MediaSourceType::AUDIO));
+    EXPECT_EQ(m_mediaPipeline->removeSource(sourceId), true);
+}
+
+/**
+ * Test that RemoveSource fails if load has not been called (no gstreamer player).
+ */
+TEST_F(RialtoServerMediaPipelineSourceTest, RemoveSourceNoGstPlayerFailure)
+{
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_EQ(m_mediaPipeline->removeSource(m_id), false);
+}
+
+/**
+ * Test that RemoveSource fails if source is not present.
+ */
+TEST_F(RialtoServerMediaPipelineSourceTest, RemoveSourceNoSourcePresent)
+{
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+
+    EXPECT_FALSE(m_mediaPipeline->removeSource(m_id));
+}
+
+/**
+ * Test that after attaching, removing and attaching the same MediaSourceType, new sourceId is generated
+ */
+TEST_F(RialtoServerMediaPipelineSourceTest, AttachRemoveAttachSourceDifferentId)
+{
+    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType);
+
+    loadGstPlayer();
+
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, attachSource(Ref(mediaSource)));
+    EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), true);
+    std::int32_t firstSourceId{mediaSource->getId()};
+
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, removeSource(MediaSourceType::AUDIO));
+    EXPECT_EQ(m_mediaPipeline->removeSource(firstSourceId), true);
+
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, attachSource(Ref(mediaSource)));
+    EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), true);
+
+    EXPECT_NE(mediaSource->getId(), firstSourceId);
+}
+
+/**
+ * Test that source id remains unchanged when source is updated only.
+ */
+TEST_F(RialtoServerMediaPipelineSourceTest, UpdateSourceIdNotChanged)
+{
+    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType);
+
+    loadGstPlayer();
+
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, attachSource(Ref(mediaSource)));
+    EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), true);
+    std::int32_t firstSourceId{mediaSource->getId()};
+
+    mediaSource->setId(-1);
+
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, attachSource(Ref(mediaSource)));
+    EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), true);
+
+    EXPECT_EQ(mediaSource->getId(), firstSourceId);
 }

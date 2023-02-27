@@ -136,7 +136,7 @@ public:
         /**
          * @brief Gets the codec data
          */
-        const std::vector<uint8_t> &getCodecData() const { return m_codecData; }
+        const std::shared_ptr<std::vector<std::uint8_t>> &getCodecData() const { return m_codecData; }
 
         /**
          * @brief Gets the stream format
@@ -147,24 +147,23 @@ public:
         /**
          * @brief Default constructor.
          *
-         * @param[in] id   : The source id.
-         * @param[in] configType : The source config type.
-         * @param[in] mimeType : The mime type string.
-         * @param[in] alignment : The alignment of media segment.
-         * @param[in] streamFormat : The stream format
-         * @param[in] codecData : The additional data for decoder
+         * @param[in]  configType   : The source config type.
+         * @param[in]  mimeType     : The mime type string.
+         * @param[in]  alignment    : The alignment of media segment.
+         * @param[in]  streamFormat : The stream format
+         * @param[in]  codecData    : The additional data for decoder
          */
-        explicit MediaSource(int32_t id = 0, SourceConfigType configType = SourceConfigType::UNKNOWN,
+        explicit MediaSource(SourceConfigType configType = SourceConfigType::UNKNOWN,
                              const std::string &mimeType = std::string(),
                              SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                              StreamFormat streamFormat = StreamFormat::UNDEFINED,
-                             const std::vector<uint8_t> &codecData = std::vector<uint8_t>())
-            : m_id(id), m_configType(configType), m_mimeType(mimeType), m_alignment(alignment),
+                             const std::shared_ptr<std::vector<std::uint8_t>> &codecData = nullptr)
+            : m_id(0), m_configType(configType), m_mimeType(mimeType), m_alignment(alignment),
               m_streamFormat(streamFormat), m_codecData(codecData)
         {
         }
         /**
-         * @brief The source id.
+         * @brief The source id. Parameter will be set by a successful call to attachSource()
          */
         int32_t m_id;
 
@@ -191,8 +190,13 @@ public:
         /**
          * @brief Additional data for decoder
          */
-        std::vector<uint8_t> m_codecData;
+        std::shared_ptr<std::vector<std::uint8_t>> m_codecData;
     };
+
+    /**
+     * @brief A class that represents media source audio derived from MediaSource class, which represents the source of
+     * media data
+     */
 
     class MediaSourceAudio : public MediaSource
     {
@@ -200,18 +204,17 @@ public:
         /**
          * @brief Constructor for audio specific configuration.
          *
-         * @param[in] id   : The source id.
-         * @param[in] mimeType : The mime type string.
-         * @param[in] audioConfig : The audio specific configuration.
-         * @param[in] alignment : The alignment of media segment.
-         * @param[in] streamFormat : The stream format
-         * @param[in] codecData : The additional data for decoder
+         * @param[in]  mimeType     : The mime type string.
+         * @param[in]  audioConfig  : The audio specific configuration.
+         * @param[in]  alignment    : The alignment of media segment.
+         * @param[in]  streamFormat : The stream format
+         * @param[in]  codecData    : The additional data for decoder
          */
-        MediaSourceAudio(int32_t id, const std::string &mimeType, const AudioConfig &audioConfig = AudioConfig(),
+        MediaSourceAudio(const std::string &mimeType, const AudioConfig &audioConfig = AudioConfig(),
                          SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                          StreamFormat streamFormat = StreamFormat::UNDEFINED,
-                         const std::vector<uint8_t> &codecData = std::vector<uint8_t>())
-            : MediaSource(id, SourceConfigType::AUDIO, mimeType, alignment, streamFormat, codecData),
+                         const std::shared_ptr<std::vector<std::uint8_t>> &codecData = nullptr)
+            : MediaSource(SourceConfigType::AUDIO, mimeType, alignment, streamFormat, codecData),
               m_audioConfig(audioConfig)
         {
         }
@@ -229,8 +232,16 @@ public:
         const AudioConfig &getAudioConfig() const { return m_audioConfig; }
 
     protected:
+        /**
+         * @brief Variable that stores the audio specific configuration
+         */
         AudioConfig m_audioConfig;
     };
+
+    /**
+     * @brief A class that represents media source video derived from MediaSource class, which represents the source of
+     * media data
+     */
 
     class MediaSourceVideo : public MediaSource
     {
@@ -238,17 +249,15 @@ public:
         /**
          * @brief Constructor for video specific configuration.
          *
-         * @param[in] id   : The source id.
-         * @param[in] mimeType : The mime type string.
-         * @param[in] alignment : The alignment of media segment.
-         * @param[in] streamFormat : The stream format
-         * @param[in] codecData : The additional data for decoder
+         * @param[in]  mimeType     : The mime type string.
+         * @param[in]  alignment    : The alignment of media segment.
+         * @param[in]  streamFormat : The stream format
+         * @param[in]  codecData    : The additional data for decoder
          */
-        MediaSourceVideo(int32_t id, const std::string &mimeType,
-                         SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
+        MediaSourceVideo(const std::string &mimeType, SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                          StreamFormat streamFormat = StreamFormat::UNDEFINED,
-                         const std::vector<uint8_t> &codecData = std::vector<uint8_t>())
-            : MediaSource(id, SourceConfigType::VIDEO, mimeType, alignment, streamFormat, codecData)
+                         const std::shared_ptr<std::vector<std::uint8_t>> &codecData = nullptr)
+            : MediaSource(SourceConfigType::VIDEO, mimeType, alignment, streamFormat, codecData)
         {
         }
         ~MediaSourceVideo() {}
@@ -260,21 +269,24 @@ public:
         /**
          * @brief Constructor for video specific configuration.
          *
-         * @param[in] id   : The source id.
-         * @param[in] mimeType : The mime type string.
-         * @param[in] sourceConfigType : The source config type
-         * @param[in] alignment : The alignment of media segment.
-         * @param[in] streamFormat : The stream format
-         * @param[in] codecData : The additional data for decoder
+         * @param[in]  mimeType         : The mime type string.
+         * @param[in]  sourceConfigType : The source config type
+         * @param[in]  alignment        : The alignment of media segment.
+         * @param[in]  streamFormat     : The stream format
+         * @param[in]  codecData        : The additional data for decoder
          */
-        MediaSourceVideo(int32_t id, SourceConfigType sourceConfigType, const std::string &mimeType,
+        MediaSourceVideo(SourceConfigType sourceConfigType, const std::string &mimeType,
                          SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                          StreamFormat streamFormat = StreamFormat::UNDEFINED,
-                         const std::vector<uint8_t> &codecData = std::vector<uint8_t>())
-            : MediaSource(id, sourceConfigType, mimeType, alignment, streamFormat, codecData)
+                         const std::shared_ptr<std::vector<std::uint8_t>> &codecData = nullptr)
+            : MediaSource(sourceConfigType, mimeType, alignment, streamFormat, codecData)
         {
         }
     };
+
+    /**
+     * @brief A class that represents media source video dolby vision derived from media source video data
+     */
 
     class MediaSourceVideoDolbyVision : public MediaSourceVideo
     {
@@ -282,18 +294,17 @@ public:
         /**
          * @brief Constructor for dolby vision specific configuration.
          *
-         * @param[in] id   : The source id.
-         * @param[in] mimeType : The mime type string.
+         * @param[in] mimeType           : The mime type string.
          * @param[in] dolbyVisionProfile : The dolby vision profile
-         * @param[in] alignment : The alignment of media segment.
-         * @param[in] streamFormat : The stream format
-         * @param[in] codecData : The additional data for decoder
+         * @param[in] alignment          : The alignment of media segment.
+         * @param[in] streamFormat       : The stream format
+         * @param[in] codecData          : The additional data for decoder
          */
-        MediaSourceVideoDolbyVision(int32_t id, const std::string &mimeType, int32_t dolbyVisionProfile,
+        MediaSourceVideoDolbyVision(const std::string &mimeType, int32_t dolbyVisionProfile,
                                     SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                                     StreamFormat streamFormat = StreamFormat::UNDEFINED,
-                                    const std::vector<uint8_t> &codecData = std::vector<uint8_t>())
-            : MediaSourceVideo(id, SourceConfigType::VIDEO_DOLBY_VISION, mimeType, alignment, streamFormat, codecData),
+                                    const std::shared_ptr<std::vector<std::uint8_t>> &codecData = nullptr)
+            : MediaSourceVideo(SourceConfigType::VIDEO_DOLBY_VISION, mimeType, alignment, streamFormat, codecData),
               m_dolbyVisionProfile(dolbyVisionProfile)
         {
         }
@@ -308,6 +319,9 @@ public:
         uint32_t getDolbyVisionProfile() const { return m_dolbyVisionProfile; }
 
     protected:
+        /**
+         * @brief Variable that stores the Dolby Vision Profile
+         */
         uint32_t m_dolbyVisionProfile;
     };
 
@@ -320,7 +334,7 @@ public:
         /**
          * @brief Default constructor.
          *
-         * @param[in] sourceId      : The source id.
+         * @param[in] sourceId      : The source id. Value should be set to the MediaSource.id returned after attachSource()
          * @param[in] type          : The source type.
          * @param[in] timeStamp     : The timestamp in nanoseconds.
          * @param[in] duration      : The duration in nanoseconds.
@@ -448,6 +462,13 @@ public:
          */
         const SegmentAlignment getSegmentAlignment() const { return m_alignment; }
 
+        /**
+         * @brief Gets the codec data
+         *
+         * @retval the codec data
+         */
+        const std::shared_ptr<std::vector<std::uint8_t>> &getCodecData() const { return m_codecData; }
+
     protected:
         /**
          * @brief The source id.
@@ -478,6 +499,11 @@ public:
          * @brief The duration.
          */
         int64_t m_duration;
+
+        /**
+         * @brief Additional data for decoder
+         */
+        std::shared_ptr<std::vector<std::uint8_t>> m_codecData;
 
         /**
          * @brief The data
@@ -559,6 +585,15 @@ public:
         void setSegmentAlignment(const SegmentAlignment &alignment) { m_alignment = alignment; }
 
         /**
+         * @brief Sets new codec_data for the segment.
+         *
+         * @note Should only be called if the codec data changes
+         *
+         * @param[in] codecData  The updated codec data for the source
+         */
+        void setCodecData(const std::shared_ptr<std::vector<std::uint8_t>> &codecData) { m_codecData = codecData; }
+
+        /**
          * @brief Sets the encrypted flag.
          *
          * @param[in] encrypted : Set true to indicated encrypted data.
@@ -619,7 +654,7 @@ public:
         /**
          * @brief Default constructor.
          *
-         * @param[in] sourceId         : The source id.
+         * @param[in] sourceId         : The source id. Value should be set to the MediaSource.id returned after attachSource()
          * @param[in] timeStamp        : The timestamp in nanoseconds.
          * @param[in] duration         : The duration in nanoseconds.
          * @param[in] sampleRate       : The sample rate in samples per second.
@@ -699,7 +734,7 @@ public:
         /**
          * @brief Default constructor.
          *
-         * @param[in] sourceId  : The source id.
+         * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
          * @param[in] timeStamp : The timestamp in nanoseconds.
          * @param[in] duration  : The duration in nanoseconds.
          * @param[in] width     : The video width in pixels.
@@ -819,7 +854,7 @@ public:
      * being used. I.e. if the MediaType value in load() is
      * MediaType::MSE.
      *
-     * @param[in] id : The source id.
+     * @param[in] id : The source id. Value should be set to the MediaSource.id returned after attachSource()
      *
      * @retval true on success.
      */

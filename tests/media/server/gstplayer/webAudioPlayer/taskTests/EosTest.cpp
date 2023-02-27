@@ -38,7 +38,7 @@ protected:
 TEST_F(WebAudioEosTest, shouldSetEos)
 {
     m_context.source = &m_src;
-    firebolt::rialto::server::webaudio::Eos task{m_context, m_gstWrapper};
+    firebolt::rialto::server::tasks::webaudio::Eos task{m_context, m_gstWrapper};
     EXPECT_CALL(*m_gstWrapper, gstAppSrcEndOfStream(GST_APP_SRC(m_context.source))).WillOnce(Return(GST_FLOW_OK));
     task.execute();
 }
@@ -46,7 +46,7 @@ TEST_F(WebAudioEosTest, shouldSetEos)
 TEST_F(WebAudioEosTest, shouldFailToSetEos)
 {
     m_context.source = &m_src;
-    firebolt::rialto::server::webaudio::Eos task{m_context, m_gstWrapper};
+    firebolt::rialto::server::tasks::webaudio::Eos task{m_context, m_gstWrapper};
     EXPECT_CALL(*m_gstWrapper, gstAppSrcEndOfStream(GST_APP_SRC(m_context.source))).WillOnce(Return(GST_FLOW_ERROR));
     task.execute();
 }

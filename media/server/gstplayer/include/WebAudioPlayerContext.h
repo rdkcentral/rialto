@@ -51,17 +51,22 @@ struct WebAudioPlayerContext
     /**
      * @brief Write buffer mutex.
      */
-    std::mutex m_writeBufferMutex;
+    std::mutex writeBufferMutex;
 
     /**
      * @brief Write buffer condition variable.
      */
-    std::condition_variable m_writeBufferCond;
+    std::condition_variable writeBufferCond;
 
     /**
-     * @brief Write buffer condition variable.
+     * @brief The previous number of bytes written to the gstreamer buffers.
      */
-    uint32_t m_lastBytesWritten{};
+    uint32_t lastBytesWritten{};
+
+    /**
+     * @brief The number of bytes per sample.
+     */
+    uint32_t bytesPerSample{};
 };
 } // namespace firebolt::rialto::server
 

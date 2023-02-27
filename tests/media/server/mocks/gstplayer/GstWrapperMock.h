@@ -51,6 +51,8 @@ public:
     MOCK_METHOD(GstStateChangeReturn, gstElementSetState, (GstElement * element, GstState state), (override));
     MOCK_METHOD(GstState, gstElementGetState, (GstElement * element), (override));
     MOCK_METHOD(GstState, gstElementGetPendingState, (GstElement * element), (override));
+    MOCK_METHOD(GstObject *, gstElementGetParent, (const GstElement *elem), (const, override));
+    MOCK_METHOD(gchar *, gstElementGetName, (GstElement * element), (const, override));
     MOCK_METHOD(gboolean, gstElementSendEvent, (GstElement * element, GstEvent *event), (const, override));
     MOCK_METHOD(void, gstAppSrcSetCallbacks,
                 (GstAppSrc * appsrc, GstAppSrcCallbacks *callbacks, gpointer userData, GDestroyNotify notify),
@@ -103,6 +105,8 @@ public:
                 (GstCaps * caps, const gchar *field, GType type, const gboolean value), (const));
     MOCK_METHOD(void, gstCapsSetSimpleUintStub, (GstCaps * caps, const gchar *field, GType type, const unsigned value),
                 (const));
+    MOCK_METHOD(void, gstCapsSetSimpleBitMaskStub,
+                (GstCaps * caps, const gchar *field, GType type, const uint64_t value), (const));
     MOCK_METHOD(GstCaps *, gstCapsNewSimpleIntStub,
                 (const char *media_type, const char *fieldname, GType type, int value), (const));
     MOCK_METHOD(void, gstMessageParseQos,
@@ -160,9 +164,12 @@ public:
     MOCK_METHOD(GstElement *, gstPipelineNew, (const gchar *name), (const, override));
     MOCK_METHOD(GstPluginFeature *, gstRegistryLookupFeature, (GstRegistry * registry, const char *name),
                 (const, override));
-    MOCK_METHOD(void, gstBinAddManyStub, (GstBin * bin, GstElement *element), (const));
-    MOCK_METHOD(gboolean, gstElementLinkManyStub, (GstElement * element_1, GstElement *element_2), (const));
     MOCK_METHOD(guint64, gstAppSrcGetCurrentLevelBytes, (GstAppSrc * appsrc), (const, override));
+    MOCK_METHOD(GstEvent *, gstEventNewFlushStart, (), (const, override));
+    MOCK_METHOD(GstEvent *, gstEventNewFlushStop, (gboolean reset_time), (const, override));
+    MOCK_METHOD(GstObject *, gstObjectParent, (gpointer object), (const, override));
+    MOCK_METHOD(GstObject *, gstObjectCast, (gpointer object), (const, override));
+    MOCK_METHOD(guint64, gstAudioChannelGetFallbackMask, (gint channels), (const, override));
 
     GstCaps *gstCapsNewSimple(const char *media_type, const char *fieldname, ...) const override
     {
@@ -215,6 +222,11 @@ public:
                 unsigned val = va_arg(args, unsigned);
                 gstCapsSetSimpleUintStub(caps, property, type, val);
             }
+            else if (g_type_is_a(type, GST_TYPE_BITMASK))
+            {
+                uint64_t val = va_arg(args, uint64_t);
+                gstCapsSetSimpleBitMaskStub(caps, property, type, val);
+            }
             property = va_arg(args, const gchar *);
         }
 
@@ -257,41 +269,6 @@ public:
 
         va_end(args);
         return structure;
-    }
-
-    void gstBinAddMany(GstBin *bin, GstElement *element_1, ...) const override
-    {
-        va_list args;
-        GstElement *element = element_1;
-
-        va_start(args, element_1);
-        while (NULL != element)
-        {
-            gstBinAddManyStub(bin, element);
-            element = va_arg(args, GstElement *);
-        }
-        va_end(args);
-    }
-
-    gboolean gstElementLinkMany(GstElement *element_1, GstElement *element_2, ...) const override
-    {
-        gboolean status{FALSE};
-        va_list args;
-        GstElement *lastElement = element_1;
-        GstElement *newElement = element_2;
-
-        va_start(args, element_2);
-        while (NULL != newElement)
-        {
-            status = gstElementLinkManyStub(lastElement, newElement);
-            if (TRUE != status)
-                break;
-            lastElement = newElement;
-            newElement = va_arg(args, GstElement *);
-        }
-        va_end(args);
-
-        return status;
     }
 };
 } // namespace firebolt::rialto::server

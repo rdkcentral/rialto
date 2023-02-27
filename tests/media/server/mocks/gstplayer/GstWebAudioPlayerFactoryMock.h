@@ -32,8 +32,8 @@ public:
     GstWebAudioPlayerFactoryMock() = default;
     virtual ~GstWebAudioPlayerFactoryMock() = default;
 
-    MOCK_METHOD(std::unique_ptr<IGstWebAudioPlayer>, createGstWebAudioPlayer, (IGstWebAudioPlayerClient * client),
-                (override));
+    MOCK_METHOD(std::unique_ptr<IGstWebAudioPlayer>, createGstWebAudioPlayer,
+                (IGstWebAudioPlayerClient * client, const uint32_t priority), (override));
 };
 } // namespace firebolt::rialto::server
 

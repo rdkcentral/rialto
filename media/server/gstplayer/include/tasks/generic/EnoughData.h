@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_ENOUGH_DATA_H_
-#define FIREBOLT_RIALTO_SERVER_ENOUGH_DATA_H_
+#ifndef FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_ENOUGH_DATA_H_
+#define FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_ENOUGH_DATA_H_
 
 #include "IPlayerTask.h"
 #include <gst/app/gstappsrc.h>
@@ -28,7 +28,7 @@ namespace firebolt::rialto::server
 struct GenericPlayerContext;
 } // namespace firebolt::rialto::server
 
-namespace firebolt::rialto::server
+namespace firebolt::rialto::server::tasks::generic
 {
 class EnoughData : public IPlayerTask
 {
@@ -41,6 +41,6 @@ private:
     GenericPlayerContext &m_context;
     GstAppSrc *m_src;
 };
-} // namespace firebolt::rialto::server
+} // namespace firebolt::rialto::server::tasks::generic
 
-#endif // FIREBOLT_RIALTO_SERVER_ENOUGH_DATA_H_
+#endif // FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_ENOUGH_DATA_H_

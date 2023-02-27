@@ -58,49 +58,49 @@ TEST_F(WebAudioPlayerTaskFactoryTest, ShouldCreateSetCaps)
     const firebolt::rialto::WebAudioConfig config{};
     auto task = m_sut.createSetCaps(m_context, audioMimeType, &config);
     EXPECT_NE(task, nullptr);
-    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::webaudio::SetCaps &>(*task));
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::webaudio::SetCaps &>(*task));
 }
 
 TEST_F(WebAudioPlayerTaskFactoryTest, ShouldCreatePlay)
 {
     auto task = m_sut.createPlay(m_gstPlayer);
     EXPECT_NE(task, nullptr);
-    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::webaudio::Play &>(*task));
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::webaudio::Play &>(*task));
 }
 
 TEST_F(WebAudioPlayerTaskFactoryTest, ShouldCreatePause)
 {
     auto task = m_sut.createPause(m_gstPlayer);
     EXPECT_NE(task, nullptr);
-    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::webaudio::Pause &>(*task));
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::webaudio::Pause &>(*task));
 }
 
 TEST_F(WebAudioPlayerTaskFactoryTest, ShouldCreateEos)
 {
     auto task = m_sut.createEos(m_context);
     EXPECT_NE(task, nullptr);
-    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::webaudio::Eos &>(*task));
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::webaudio::Eos &>(*task));
 }
 
 TEST_F(WebAudioPlayerTaskFactoryTest, ShouldStop)
 {
     auto task = m_sut.createStop(m_gstPlayer);
     EXPECT_NE(task, nullptr);
-    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::webaudio::Stop &>(*task));
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::webaudio::Stop &>(*task));
 }
 
 TEST_F(WebAudioPlayerTaskFactoryTest, ShouldShutdown)
 {
     auto task = m_sut.createShutdown(m_gstPlayer);
     EXPECT_NE(task, nullptr);
-    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::webaudio::Shutdown &>(*task));
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::webaudio::Shutdown &>(*task));
 }
 
 TEST_F(WebAudioPlayerTaskFactoryTest, ShouldSetVolume)
 {
     auto task = m_sut.createSetVolume(m_context, {});
     EXPECT_NE(task, nullptr);
-    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::webaudio::SetVolume &>(*task));
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::webaudio::SetVolume &>(*task));
 }
 
 TEST_F(WebAudioPlayerTaskFactoryTest, ShouldWriteBuffer)
@@ -109,7 +109,7 @@ TEST_F(WebAudioPlayerTaskFactoryTest, ShouldWriteBuffer)
     uint8_t wrapPtr{};
     auto task = m_sut.createWriteBuffer(m_context, &mainPtr, {}, &wrapPtr, {});
     EXPECT_NE(task, nullptr);
-    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::webaudio::WriteBuffer &>(*task));
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::webaudio::WriteBuffer &>(*task));
 }
 
 TEST_F(WebAudioPlayerTaskFactoryTest, ShouldHandleBusMessage)
@@ -117,5 +117,5 @@ TEST_F(WebAudioPlayerTaskFactoryTest, ShouldHandleBusMessage)
     GstMessage message{};
     auto task = m_sut.createHandleBusMessage(m_context, m_gstPlayer, &message);
     EXPECT_NE(task, nullptr);
-    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::webaudio::HandleBusMessage &>(*task));
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::webaudio::HandleBusMessage &>(*task));
 }

@@ -23,22 +23,22 @@
 
 namespace
 {
-firebolt::rialto::server::SessionServerState convertSessionServerState(const rialto::SessionServerState &state)
+firebolt::rialto::common::SessionServerState convertSessionServerState(const rialto::SessionServerState &state)
 {
     switch (state)
     {
     case rialto::SessionServerState::UNINITIALIZED:
-        return firebolt::rialto::server::SessionServerState::UNINITIALIZED;
+        return firebolt::rialto::common::SessionServerState::UNINITIALIZED;
     case rialto::SessionServerState::INACTIVE:
-        return firebolt::rialto::server::SessionServerState::INACTIVE;
+        return firebolt::rialto::common::SessionServerState::INACTIVE;
     case rialto::SessionServerState::ACTIVE:
-        return firebolt::rialto::server::SessionServerState::ACTIVE;
+        return firebolt::rialto::common::SessionServerState::ACTIVE;
     case rialto::SessionServerState::NOT_RUNNING:
-        return firebolt::rialto::server::SessionServerState::NOT_RUNNING;
+        return firebolt::rialto::common::SessionServerState::NOT_RUNNING;
     case rialto::SessionServerState::ERROR:
-        return firebolt::rialto::server::SessionServerState::ERROR;
+        return firebolt::rialto::common::SessionServerState::ERROR;
     }
-    return firebolt::rialto::server::SessionServerState::ERROR;
+    return firebolt::rialto::common::SessionServerState::ERROR;
 }
 } // namespace
 
@@ -89,10 +89,12 @@ void ServerManagerModuleService::setConfiguration(::google::protobuf::RpcControl
                                                   ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("SetConfiguration received from ServerManager");
+    common::MaxResourceCapabilitites maxResource{request->resources().maxplaybacks(),
+                                                 request->resources().maxwebaudioplayers()};
     bool success =
         m_sessionServerManager.setConfiguration(request->sessionmanagementsocketname(),
                                                 convertSessionServerState(request->initialsessionserverstate()),
-                                                request->resources().maxplaybacks());
+                                                maxResource);
     m_sessionServerManager.setLogLevels(static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().defaultloglevels()),
                                         static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().clientloglevels()),
                                         static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().sessionserverloglevels()),

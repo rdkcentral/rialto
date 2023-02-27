@@ -28,26 +28,32 @@ namespace
 {
 const std::string SOCKET_NAME{"/tmp/rialtotest-0"};
 constexpr int MAX_SESSIONS{5};
+constexpr int MAX_WEB_AUDIO_PLAYERS{3};
 constexpr int socket{2};
 
-rialto::SessionServerState convertSessionServerState(const firebolt::rialto::server::SessionServerState &state)
+rialto::SessionServerState convertSessionServerState(const firebolt::rialto::common::SessionServerState &state)
 {
     switch (state)
     {
-    case firebolt::rialto::server::SessionServerState::UNINITIALIZED:
+    case firebolt::rialto::common::SessionServerState::UNINITIALIZED:
         return rialto::SessionServerState::UNINITIALIZED;
-    case firebolt::rialto::server::SessionServerState::INACTIVE:
+    case firebolt::rialto::common::SessionServerState::INACTIVE:
         return rialto::SessionServerState::INACTIVE;
-    case firebolt::rialto::server::SessionServerState::ACTIVE:
+    case firebolt::rialto::common::SessionServerState::ACTIVE:
         return rialto::SessionServerState::ACTIVE;
-    case firebolt::rialto::server::SessionServerState::NOT_RUNNING:
+    case firebolt::rialto::common::SessionServerState::NOT_RUNNING:
         return rialto::SessionServerState::NOT_RUNNING;
-    case firebolt::rialto::server::SessionServerState::ERROR:
+    case firebolt::rialto::common::SessionServerState::ERROR:
         return rialto::SessionServerState::ERROR;
     }
     return rialto::SessionServerState::ERROR;
 }
 } // namespace
+
+MATCHER_P2(MaxResourceMatcher, maxPlaybacks, maxWebAudioPlayers, "")
+{
+    return ((maxPlaybacks == arg.maxPlaybacks) && (maxWebAudioPlayers == arg.maxWebAudioPlayers));
+}
 
 ServerManagerModuleServiceTests::ServerManagerModuleServiceTests()
     : m_clientMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ClientMock>>()},
@@ -62,13 +68,15 @@ ServerManagerModuleServiceTests::ServerManagerModuleServiceTests()
 ServerManagerModuleServiceTests::~ServerManagerModuleServiceTests() {}
 
 void ServerManagerModuleServiceTests::sessionServerManagerWillSetConfiguration(
-    const firebolt::rialto::server::SessionServerState &state)
+    const firebolt::rialto::common::SessionServerState &state)
 {
-    EXPECT_CALL(m_sessionServerManagerMock, setConfiguration(SOCKET_NAME, state, MAX_SESSIONS)).WillOnce(Return(true));
+    EXPECT_CALL(m_sessionServerManagerMock,
+                setConfiguration(SOCKET_NAME, state, MaxResourceMatcher(MAX_SESSIONS, MAX_WEB_AUDIO_PLAYERS)))
+        .WillOnce(Return(true));
 }
 
 void ServerManagerModuleServiceTests::sessionServerManagerWillSetState(
-    const firebolt::rialto::server::SessionServerState &state)
+    const firebolt::rialto::common::SessionServerState &state)
 {
     EXPECT_CALL(m_sessionServerManagerMock, setState(state)).WillOnce(Return(true));
 }
@@ -81,24 +89,27 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillSetLogLevels()
 }
 
 void ServerManagerModuleServiceTests::sessionServerManagerWillFailToSetConfiguration(
-    const firebolt::rialto::server::SessionServerState &state)
+    const firebolt::rialto::common::SessionServerState &state)
 {
-    EXPECT_CALL(m_sessionServerManagerMock, setConfiguration(SOCKET_NAME, state, MAX_SESSIONS)).WillOnce(Return(false));
+    EXPECT_CALL(m_sessionServerManagerMock,
+                setConfiguration(SOCKET_NAME, state, MaxResourceMatcher(MAX_SESSIONS, MAX_WEB_AUDIO_PLAYERS)))
+        .WillOnce(Return(false));
 }
 
 void ServerManagerModuleServiceTests::sessionServerManagerWillFailToSetState(
-    const firebolt::rialto::server::SessionServerState &state)
+    const firebolt::rialto::common::SessionServerState &state)
 {
     EXPECT_CALL(m_sessionServerManagerMock, setState(state)).WillOnce(Return(false));
 }
 
-void ServerManagerModuleServiceTests::sendSetConfiguration(const firebolt::rialto::server::SessionServerState &state)
+void ServerManagerModuleServiceTests::sendSetConfiguration(const firebolt::rialto::common::SessionServerState &state)
 {
     rialto::SetConfigurationRequest request;
     rialto::SetConfigurationResponse response;
 
     request.set_sessionmanagementsocketname(SOCKET_NAME);
     request.mutable_resources()->set_maxplaybacks(MAX_SESSIONS);
+    request.mutable_resources()->set_maxwebaudioplayers(MAX_WEB_AUDIO_PLAYERS);
     request.mutable_loglevels()->set_defaultloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
     request.mutable_loglevels()->set_clientloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
     request.mutable_loglevels()->set_sessionserverloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
@@ -110,7 +121,7 @@ void ServerManagerModuleServiceTests::sendSetConfiguration(const firebolt::rialt
     m_sut->setConfiguration(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
 
-void ServerManagerModuleServiceTests::sendSetState(const firebolt::rialto::server::SessionServerState &state)
+void ServerManagerModuleServiceTests::sendSetState(const firebolt::rialto::common::SessionServerState &state)
 {
     rialto::SetStateRequest request;
     rialto::SetStateResponse response;

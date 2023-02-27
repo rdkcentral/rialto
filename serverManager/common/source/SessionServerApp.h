@@ -23,7 +23,7 @@
 #include "ISessionServerApp.h"
 #include "ITimer.h"
 #include "SessionServerAppManager.h"
-#include "SessionServerState.h"
+#include "SessionServerCommon.h"
 #include <array>
 #include <list>
 #include <memory>
@@ -37,16 +37,18 @@ namespace rialto::servermanager::common
 class SessionServerApp : public ISessionServerApp
 {
 public:
-    SessionServerApp(const std::string &appId, const service::SessionServerState &initialState,
+    SessionServerApp(const std::string &appId, const firebolt::rialto::common::SessionServerState &initialState,
+                     const firebolt::rialto::common::AppConfig &appConfig,
                      SessionServerAppManager &sessionServerAppManager,
                      const std::list<std::string> &environmentVariables);
     virtual ~SessionServerApp();
 
     bool launch() override;
     std::string getSessionManagementSocketName() const override;
-    service::SessionServerState getInitialState() const override;
+    firebolt::rialto::common::SessionServerState getInitialState() const override;
     int getAppManagementSocketName() const override;
     int getMaxPlaybackSessions() const override;
+    int getMaxWebAudioPlayers() const override;
     void cancelStartupTimer() override;
     void kill() const override;
 
@@ -58,7 +60,7 @@ private:
 
 private:
     const std::string m_kAppId;
-    const service::SessionServerState m_kInitialState;
+    const firebolt::rialto::common::SessionServerState m_kInitialState;
     const std::string m_kSessionManagementSocketName;
     std::array<int, 2> m_socks;
     SessionServerAppManager &m_sessionServerAppManager;

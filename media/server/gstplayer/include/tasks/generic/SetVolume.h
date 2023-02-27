@@ -17,15 +17,15 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_SET_VOLUME_H_
-#define FIREBOLT_RIALTO_SERVER_SET_VOLUME_H_
+#ifndef FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SET_VOLUME_H_
+#define FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SET_VOLUME_H_
 
 #include "GenericPlayerContext.h"
 #include "IGstWrapper.h"
 #include "IPlayerTask.h"
 #include <memory>
 
-namespace firebolt::rialto::server
+namespace firebolt::rialto::server::tasks::generic
 {
 class SetVolume : public IPlayerTask
 {
@@ -39,6 +39,6 @@ private:
     std::shared_ptr<IGstWrapper> m_gstWrapper;
     double m_volume;
 };
-} // namespace firebolt::rialto::server
+} // namespace firebolt::rialto::server::tasks::generic
 
-#endif // FIREBOLT_RIALTO_SERVER_SET_VOLUME_H_
+#endif // FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SET_VOLUME_H_

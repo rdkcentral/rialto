@@ -41,7 +41,7 @@ SessionServerManager::SessionServerManager(const ipc::IIpcFactory &ipcFactory, I
     : m_playbackService{playbackService}, m_cdmService{cdmService},
       m_applicationManagementServer{ipcFactory.createApplicationManagementServer(*this)},
       m_sessionManagementServer{ipcFactory.createSessionManagementServer(playbackService, cdmService)},
-      m_isServiceRunning{true}, m_currentState{SessionServerState::UNINITIALIZED}
+      m_isServiceRunning{true}, m_currentState{common::SessionServerState::UNINITIALIZED}
 {
     RIALTO_SERVER_LOG_INFO("Starting Rialto Server Service");
 }
@@ -74,7 +74,7 @@ try
         return false;
     }
     m_applicationManagementServer->start();
-    return m_applicationManagementServer->sendStateChangedEvent(SessionServerState::UNINITIALIZED);
+    return m_applicationManagementServer->sendStateChangedEvent(common::SessionServerState::UNINITIALIZED);
 }
 catch (const std::exception &e)
 {
@@ -88,8 +88,8 @@ void SessionServerManager::startService()
     m_serviceCv.wait(lock, [this]() { return !m_isServiceRunning; });
 }
 
-bool SessionServerManager::setConfiguration(const std::string &socketName, const SessionServerState &state,
-                                            int maxPlaybacks)
+bool SessionServerManager::setConfiguration(const std::string &socketName, const common::SessionServerState &state,
+                                            const common::MaxResourceCapabilitites &maxResource)
 {
     if (!m_sessionManagementServer->initialize(socketName))
     {
@@ -97,30 +97,31 @@ bool SessionServerManager::setConfiguration(const std::string &socketName, const
         return false;
     }
     m_sessionManagementServer->start();
-    m_playbackService.setMaxPlaybacks(maxPlaybacks);
+    m_playbackService.setMaxPlaybacks(maxResource.maxPlaybacks);
+    m_playbackService.setMaxWebAudioPlayers(maxResource.maxWebAudioPlayers);
     return setState(state);
 }
 
-bool SessionServerManager::setState(const SessionServerState &state)
+bool SessionServerManager::setState(const common::SessionServerState &state)
 {
     switch (state)
     {
-    case SessionServerState::ACTIVE:
+    case common::SessionServerState::ACTIVE:
     {
         return switchToActive();
     }
-    case SessionServerState::INACTIVE:
+    case common::SessionServerState::INACTIVE:
     {
         return switchToInactive();
     }
-    case SessionServerState::NOT_RUNNING:
+    case common::SessionServerState::NOT_RUNNING:
     {
         return switchToNotRunning();
     }
     default:
     {
         RIALTO_SERVER_LOG_ERROR("SetState failed - unsupported state");
-        m_applicationManagementServer->sendStateChangedEvent(SessionServerState::ERROR);
+        m_applicationManagementServer->sendStateChangedEvent(common::SessionServerState::ERROR);
     }
     }
     return false;
@@ -141,7 +142,7 @@ void SessionServerManager::setLogLevels(RIALTO_DEBUG_LEVEL defaultLogLevels, RIA
 
 bool SessionServerManager::switchToActive()
 {
-    if (m_currentState.load() == SessionServerState::ACTIVE)
+    if (m_currentState.load() == common::SessionServerState::ACTIVE)
     {
         RIALTO_SERVER_LOG_DEBUG("Session server already in Active state.");
         return true;
@@ -157,9 +158,9 @@ bool SessionServerManager::switchToActive()
         m_playbackService.switchToInactive();
         return false;
     }
-    if (m_applicationManagementServer->sendStateChangedEvent(SessionServerState::ACTIVE))
+    if (m_applicationManagementServer->sendStateChangedEvent(common::SessionServerState::ACTIVE))
     {
-        m_currentState.store(SessionServerState::ACTIVE);
+        m_currentState.store(common::SessionServerState::ACTIVE);
         return true;
     }
     m_playbackService.switchToInactive();
@@ -169,16 +170,16 @@ bool SessionServerManager::switchToActive()
 
 bool SessionServerManager::switchToInactive()
 {
-    if (m_currentState.load() == SessionServerState::INACTIVE)
+    if (m_currentState.load() == common::SessionServerState::INACTIVE)
     {
         RIALTO_SERVER_LOG_DEBUG("Session server already in Inactive state.");
         return true;
     }
     m_playbackService.switchToInactive();
     m_cdmService.switchToInactive();
-    if (m_applicationManagementServer->sendStateChangedEvent(SessionServerState::INACTIVE))
+    if (m_applicationManagementServer->sendStateChangedEvent(common::SessionServerState::INACTIVE))
     {
-        m_currentState.store(SessionServerState::INACTIVE);
+        m_currentState.store(common::SessionServerState::INACTIVE);
         return true;
     }
     if (!m_playbackService.switchToActive())
@@ -194,7 +195,7 @@ bool SessionServerManager::switchToInactive()
 
 bool SessionServerManager::switchToNotRunning()
 {
-    if (m_currentState.load() == SessionServerState::NOT_RUNNING)
+    if (m_currentState.load() == common::SessionServerState::NOT_RUNNING)
     {
         RIALTO_SERVER_LOG_DEBUG("Session server already in NotRunning state.");
         return true;
@@ -202,9 +203,9 @@ bool SessionServerManager::switchToNotRunning()
     std::unique_lock<std::mutex> lock{m_serviceMutex};
     m_isServiceRunning = false;
     m_serviceCv.notify_one();
-    if (m_applicationManagementServer->sendStateChangedEvent(SessionServerState::NOT_RUNNING))
+    if (m_applicationManagementServer->sendStateChangedEvent(common::SessionServerState::NOT_RUNNING))
     {
-        m_currentState.store(SessionServerState::NOT_RUNNING);
+        m_currentState.store(common::SessionServerState::NOT_RUNNING);
         return true;
     }
     return false;

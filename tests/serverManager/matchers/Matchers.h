@@ -17,19 +17,14 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_SESSION_SERVER_STATE_H_
-#define FIREBOLT_RIALTO_SERVER_SESSION_SERVER_STATE_H_
+#ifndef FIREBOLT_RIALTO_COMMON_MATCHERS_H_
+#define FIREBOLT_RIALTO_COMMON_MATCHERS_H_
 
-namespace firebolt::rialto::server
-{
-enum class SessionServerState
-{
-    UNINITIALIZED,
-    INACTIVE,
-    ACTIVE,
-    NOT_RUNNING,
-    ERROR
-};
-} // namespace firebolt::rialto::server
+#include "SessionServerCommon.h"
 
-#endif // FIREBOLT_RIALTO_SERVER_SESSION_SERVER_STATE_H_
+namespace firebolt::rialto::common
+{
+bool operator==(const AppConfig &lhs, const AppConfig &rhs);
+} // namespace firebolt::rialto::common
+
+#endif // FIREBOLT_RIALTO_COMMON_MATCHERS_H_

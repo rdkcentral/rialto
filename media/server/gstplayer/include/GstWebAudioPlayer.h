@@ -47,7 +47,8 @@ public:
      */
     static std::weak_ptr<IGstWebAudioPlayerFactory> m_factory;
 
-    std::unique_ptr<IGstWebAudioPlayer> createGstWebAudioPlayer(IGstWebAudioPlayerClient *client) override;
+    std::unique_ptr<IGstWebAudioPlayer> createGstWebAudioPlayer(IGstWebAudioPlayerClient *client,
+                                                                const uint32_t priority) override;
 };
 
 /**
@@ -60,6 +61,7 @@ public:
      * @brief The constructor.
      *
      * @param[in] client                       : The gstreamer player client.
+     * @param[in] priority                     : Priority value for this pipeline.
      * @param[in] gstWrapper                   : The gstreamer wrapper.
      * @param[in] glibWrapper                  : The glib wrapper.
      * @param[in] gstSrcFactory                : The gstreamer rialto src factory.
@@ -67,8 +69,8 @@ public:
      * @param[in] workerThreadFactory          : The worker thread factory
      * @param[in] gstDispatcherThreadFactory   : The gst dispatcher thread factory
      */
-    GstWebAudioPlayer(IGstWebAudioPlayerClient *client, const std::shared_ptr<IGstWrapper> &gstWrapper,
-                      const std::shared_ptr<IGlibWrapper> &glibWrapper,
+    GstWebAudioPlayer(IGstWebAudioPlayerClient *client, const uint32_t priority,
+                      const std::shared_ptr<IGstWrapper> &gstWrapper, const std::shared_ptr<IGlibWrapper> &glibWrapper,
                       const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
                       std::unique_ptr<IWebAudioPlayerTaskFactory> taskFactory,
                       std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
@@ -86,6 +88,7 @@ public:
     bool getVolume(double &volume) override;
     uint32_t writeBuffer(uint8_t *mainPtr, uint32_t mainLength, uint8_t *wrapPtr, uint32_t wrapLength) override;
     void setEos() override;
+    uint64_t getQueuedBytes() override;
 
     bool changePipelineState(GstState newState) override;
     void stopWorkerThread() override;
@@ -95,9 +98,11 @@ private:
     /**
      * @brief Initialises the player pipeline for WebAudio playback.
      *
+     * @param[in] priority  : Priority value for this pipeline.
+     *
      * @retval true on success false otherwise.
      */
-    bool initWebAudioPipeline();
+    bool initWebAudioPipeline(const uint32_t priority);
 
     /**
      * @brief Creates a amlhalasink audio sink element and adds it to the pipeline.

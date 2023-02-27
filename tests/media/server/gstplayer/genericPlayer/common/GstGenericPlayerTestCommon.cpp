@@ -47,17 +47,27 @@ void GstGenericPlayerTestCommon::gstPlayerWillBeCreated()
 
 void GstGenericPlayerTestCommon::gstPlayerWillBeDestroyed()
 {
-    std::unique_ptr<IPlayerTask> stopTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
-    std::unique_ptr<IPlayerTask> shutdownTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*stopTask), execute());
-    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*shutdownTask), execute());
-    EXPECT_CALL(m_taskFactoryMock, createShutdown(_)).WillOnce(Return(ByMove(std::move(shutdownTask))));
-    EXPECT_CALL(m_workerThreadMock, join());
-    EXPECT_CALL(m_taskFactoryMock, createStop(_, _)).WillOnce(Return(ByMove(std::move(stopTask))));
+    expectShutdown();
+    expectStop();
     EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(&m_pipeline))).WillOnce(Return(&m_bus));
     EXPECT_CALL(*m_gstWrapperMock, gstBusSetSyncHandler(&m_bus, nullptr, nullptr, nullptr));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus));
     EXPECT_CALL(*m_glibWrapperMock, gObjectUnref(&m_pipeline));
+}
+
+void GstGenericPlayerTestCommon::expectShutdown()
+{
+    std::unique_ptr<IPlayerTask> shutdownTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*shutdownTask), execute());
+    EXPECT_CALL(m_taskFactoryMock, createShutdown(_)).WillOnce(Return(ByMove(std::move(shutdownTask))));
+    EXPECT_CALL(m_workerThreadMock, join());
+}
+
+void GstGenericPlayerTestCommon::expectStop()
+{
+    std::unique_ptr<IPlayerTask> stopTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*stopTask), execute());
+    EXPECT_CALL(m_taskFactoryMock, createStop(_, _)).WillOnce(Return(ByMove(std::move(stopTask))));
 }
 
 void GstGenericPlayerTestCommon::executeTaskWhenEnqueued()
@@ -83,6 +93,13 @@ void GstGenericPlayerTestCommon::triggerSetupElement(GstElement *element)
     ((void (*)(GstElement *, GstElement *, GstGenericPlayer *))m_setupElementFunc)(&m_pipeline, element,
                                                                                    reinterpret_cast<GstGenericPlayer *>(
                                                                                        m_setupElementUserData));
+}
+
+void GstGenericPlayerTestCommon::triggerDeepElementAdded(GstElement *element)
+{
+    ASSERT_TRUE(m_deepElementAddedFunc);
+    ((void (*)(GstBin * pipeline, GstBin * bin, GstElement * element, GstGenericPlayer * self))
+         m_deepElementAddedFunc)(&m_bin, &m_bin, element, reinterpret_cast<GstGenericPlayer *>(m_setupElementUserData));
 }
 
 void GstGenericPlayerTestCommon::setPipelineState(const GstState &state)
@@ -126,6 +143,7 @@ void GstGenericPlayerTestCommon::expectSetSignalCallbacks()
             {
                 m_setupSourceFunc = c_handler;
                 m_setupSourceUserData = data;
+                return m_setupSourceSignalId;
             }));
     EXPECT_CALL(*m_glibWrapperMock,
                 gSignalConnect(&m_pipeline, CharStrMatcher("element-setup"), NotNullMatcher(), NotNullMatcher()))
@@ -134,6 +152,16 @@ void GstGenericPlayerTestCommon::expectSetSignalCallbacks()
             {
                 m_setupElementFunc = c_handler;
                 m_setupElementUserData = data;
+                return m_setupElementSignalId;
+            }));
+    EXPECT_CALL(*m_glibWrapperMock,
+                gSignalConnect(&m_pipeline, CharStrMatcher("deep-element-added"), NotNullMatcher(), NotNullMatcher()))
+        .WillOnce(Invoke(
+            [this](gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data)
+            {
+                m_deepElementAddedFunc = c_handler;
+                m_deepElementAddedUserData = data;
+                return m_deepElementAddedSignalId;
             }));
 }
 

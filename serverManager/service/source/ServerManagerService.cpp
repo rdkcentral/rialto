@@ -33,7 +33,15 @@ ServerManagerService::~ServerManagerService()
     RIALTO_SERVER_MANAGER_LOG_INFO("RialtoServerManager is closing...");
 }
 
-bool ServerManagerService::changeSessionServerState(const std::string &appId, const SessionServerState &state)
+bool ServerManagerService::initiateApplication(const std::string &appId,
+                                               const firebolt::rialto::common::SessionServerState &state,
+                                               const firebolt::rialto::common::AppConfig &appConfig)
+{
+    return m_kContext->getSessionServerAppManager().initiateApplication(appId, state, appConfig);
+}
+
+bool ServerManagerService::changeSessionServerState(const std::string &appId,
+                                                    const firebolt::rialto::common::SessionServerState &state)
 {
     return m_kContext->getSessionServerAppManager().setSessionServerState(appId, state);
 }

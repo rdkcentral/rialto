@@ -126,6 +126,14 @@ public:
     virtual void clearActiveRequestsCache() = 0;
 
     /**
+     * @brief Clears all active NeedMediaDataRequests cache for given Media Source Type
+     *
+     * @param[in] type : Media source type.
+     *
+     */
+    virtual void invalidateActiveRequests(const MediaSourceType &type) = 0;
+
+    /**
      * @brief Notifies the client of a Quality Of Service update from the Player.
      *
      * @param[in] qosInfo       : The Qos infomation extracted from the message.

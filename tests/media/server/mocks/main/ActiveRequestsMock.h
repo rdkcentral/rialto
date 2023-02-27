@@ -32,6 +32,7 @@ public:
     MOCK_METHOD(std::uint32_t, insert, (const MediaSourceType &mediaSourceType, std::uint32_t maxMediaBytes), (override));
     MOCK_METHOD(MediaSourceType, getType, (std::uint32_t requestId), (const, override));
     MOCK_METHOD(void, erase, (std::uint32_t requestId), (override));
+    MOCK_METHOD(void, erase, (const MediaSourceType &mediaSourceType), (override));
     MOCK_METHOD(void, clear, (), (override));
     MOCK_METHOD(AddSegmentStatus, addSegment,
                 (std::uint32_t requestId, const std::unique_ptr<IMediaPipeline::MediaSegment> &segment), (override));

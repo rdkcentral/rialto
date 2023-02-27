@@ -27,7 +27,7 @@
 
 #include <cinttypes>
 
-namespace firebolt::rialto::server
+namespace firebolt::rialto::server::tasks::generic
 {
 CheckAudioUnderflow::CheckAudioUnderflow(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                          IGstGenericPlayerClient *client, std::shared_ptr<IGstWrapper> gstWrapper)
@@ -49,10 +49,10 @@ void CheckAudioUnderflow::execute() const
         {
             RIALTO_SERVER_LOG_INFO("Audio stream underflow! Position %" PRIu64 ", lastAudioSampleTimestamps: %" PRIu64,
                                    position, m_context.lastAudioSampleTimestamps);
-            Underflow task(m_player, m_gstPlayerClient, m_context.audioUnderflowOccured);
+            Underflow task(m_player, m_gstPlayerClient, m_context.audioUnderflowOccured, m_context.audioUnderflowEnabled);
             task.execute();
         }
     }
 }
 
-} // namespace firebolt::rialto::server
+} // namespace firebolt::rialto::server::tasks::generic

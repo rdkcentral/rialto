@@ -25,7 +25,8 @@
 
 namespace firebolt::rialto::server
 {
-constexpr std::uint32_t maxFrames{24};
+constexpr std::uint32_t kPrerollNumFrames{1};
+constexpr std::uint32_t kMaxFrames{24};
 constexpr std::uint32_t getMaxMetadataBytes()
 {
     // The Rialto Server must size the metadata regions to be at least the following size:
@@ -34,7 +35,7 @@ constexpr std::uint32_t getMaxMetadataBytes()
 
     // Metadata V2 contains version only, so maximum metadata size is size of MetadataV1
     std::uint32_t maxMetadataStructSize = common::METADATA_V1_SIZE_PER_FRAME_BYTES;
-    return common::VERSION_SIZE_BYTES + maxFrames * maxMetadataStructSize;
+    return common::VERSION_SIZE_BYTES + kMaxFrames * maxMetadataStructSize;
 }
 } // namespace firebolt::rialto::server
 

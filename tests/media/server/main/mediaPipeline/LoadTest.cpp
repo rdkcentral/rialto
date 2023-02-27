@@ -45,7 +45,7 @@ TEST_F(RialtoServerMediaPipelineLoadTest, Success)
 {
     mainThreadWillEnqueueTaskAndWait();
     mainThreadWillEnqueueTask();
-    EXPECT_CALL(*m_gstPlayerFactoryMock, createGstGenericPlayer(_, _, m_type, VideoRequirementsMatcher(m_videoReq)))
+    EXPECT_CALL(*m_gstPlayerFactoryMock, createGstGenericPlayer(_, _, m_type, VideoRequirementsMatcher(m_videoReq), _))
         .WillOnce(Return(ByMove(std::move(m_gstPlayer))));
     EXPECT_CALL(*m_mediaPipelineClientMock, notifyNetworkState(NetworkState::BUFFERING));
 
@@ -59,7 +59,7 @@ TEST_F(RialtoServerMediaPipelineLoadTest, Success)
 TEST_F(RialtoServerMediaPipelineLoadTest, CreateGstPlayerFailure)
 {
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_gstPlayerFactoryMock, createGstGenericPlayer(_, _, m_type, VideoRequirementsMatcher(m_videoReq)))
+    EXPECT_CALL(*m_gstPlayerFactoryMock, createGstGenericPlayer(_, _, m_type, VideoRequirementsMatcher(m_videoReq), _))
         .WillOnce(Return(ByMove(nullptr)));
     EXPECT_CALL(*m_mediaPipelineClientMock, notifyNetworkState(_)).Times(0);
 

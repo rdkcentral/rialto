@@ -37,13 +37,13 @@ public:
     StateObserver &operator=(const StateObserver &) = delete;
     StateObserver &operator=(StateObserver &&) = delete;
 
-    void stateChanged(const std::string &appId, const service::SessionServerState &state) override;
-    service::SessionServerState getCurrentState(const std::string &appId) const;
+    void stateChanged(const std::string &appId, const firebolt::rialto::common::SessionServerState &state) override;
+    firebolt::rialto::common::SessionServerState getCurrentState(const std::string &appId) const;
     std::string getActiveApp() const;
 
 private:
     mutable std::mutex m_sessionServerStateMutex;
-    std::map<std::string, service::SessionServerState> m_sessionServerStates;
+    std::map<std::string, firebolt::rialto::common::SessionServerState> m_sessionServerStates;
 };
 } // namespace rialto::servermanager
 

@@ -34,8 +34,8 @@ public:
     virtual ~SessionServerAppFactoryMock() = default;
 
     MOCK_METHOD(std::unique_ptr<ISessionServerApp>, create,
-                (const std::string &appId, const service::SessionServerState &initialState,
-                 SessionServerAppManager &sessionServerAppManager),
+                (const std::string &appId, const firebolt::rialto::common::SessionServerState &initialState,
+                 const firebolt::rialto::common::AppConfig &appConfig, SessionServerAppManager &sessionServerAppManager),
                 (const, override));
 };
 } // namespace rialto::servermanager::common

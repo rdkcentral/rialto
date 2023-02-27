@@ -41,6 +41,7 @@ public:
     MOCK_METHOD(uint32_t, writeBuffer, (uint8_t * mainPtr, uint32_t mainLength, uint8_t *wrapPtr, uint32_t wrapLength),
                 (override));
     MOCK_METHOD(void, setEos, (), (override));
+    MOCK_METHOD(uint64_t, getQueuedBytes, (), (override));
 };
 } // namespace firebolt::rialto::server
 

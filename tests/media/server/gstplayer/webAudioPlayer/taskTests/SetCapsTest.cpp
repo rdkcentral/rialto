@@ -47,12 +47,13 @@ protected:
     GstCaps m_capsAppSrc{};
     GstElement m_appSrc{};
     gchar m_capsStr{};
+    const uint64_t m_channelMask{5};
 
     WebAudioSetCapsTest()
     {
         m_config.pcm.rate = 1;
         m_config.pcm.channels = 2;
-        m_config.pcm.sampleSize = 3;
+        m_config.pcm.sampleSize = 32;
         m_config.pcm.isBigEndian = false;
         m_config.pcm.isSigned = false;
         m_config.pcm.isFloat = false;
@@ -95,15 +96,16 @@ protected:
     {
         EXPECT_CALL(*m_gstWrapper, gstCapsNewEmptySimple(StrEq("audio/x-raw"))).WillOnce(Return(&m_caps));
         EXPECT_CALL(*m_gstWrapper,
-                    gstCapsSetSimpleUintStub(&m_caps, StrEq("channels"), G_TYPE_UINT, m_config.pcm.channels));
+                    gstCapsSetSimpleIntStub(&m_caps, StrEq("channels"), G_TYPE_INT, m_config.pcm.channels));
         EXPECT_CALL(*m_gstWrapper,
                     gstCapsSetSimpleStringStub(&m_caps, StrEq("layout"), G_TYPE_STRING, StrEq("interleaved")));
-        EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleUintStub(&m_caps, StrEq("rate"), G_TYPE_UINT, m_config.pcm.rate));
+        EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleIntStub(&m_caps, StrEq("rate"), G_TYPE_INT, m_config.pcm.rate));
         EXPECT_CALL(*m_gstWrapper,
                     gstCapsSetSimpleStringStub(&m_caps, StrEq("format"), G_TYPE_STRING, StrEq(getPcmFormat().c_str())));
+        EXPECT_CALL(*m_gstWrapper, gstAudioChannelGetFallbackMask(m_config.pcm.channels)).WillOnce(Return(m_channelMask));
+        EXPECT_CALL(*m_gstWrapper,
+                    gstCapsSetSimpleBitMaskStub(&m_caps, StrEq("channel-mask"), GST_TYPE_BITMASK, m_channelMask));
     }
-    MOCK_METHOD(void, gstCapsSetSimpleStringStub, (GstCaps * caps, const gchar *field, GType type, const char *value),
-                (const));
 
     void expectGetCapsStr()
     {
@@ -123,11 +125,17 @@ protected:
         EXPECT_CALL(*m_gstWrapper, gstCapsUnref(&m_capsAppSrc));
         EXPECT_CALL(*m_gstWrapper, gstCapsUnref(&m_caps));
     }
+
+    void expectSetBytesPerSamplePcm()
+    {
+        uint32_t expectedBytesPerSample = m_config.pcm.channels * (m_config.pcm.sampleSize / CHAR_BIT);
+        EXPECT_EQ(expectedBytesPerSample, m_context.bytesPerSample);
+    }
 };
 
-TEST_F(WebAudioSetCapsTest, shouldSetCapsWithFormatF15LE)
+TEST_F(WebAudioSetCapsTest, shouldSetCapsWithFormatF64LE)
 {
-    m_config.pcm.sampleSize = 15;
+    m_config.pcm.sampleSize = 64;
     m_config.pcm.isFloat = true;
 
     expectBuildPcmCaps();
@@ -135,13 +143,15 @@ TEST_F(WebAudioSetCapsTest, shouldSetCapsWithFormatF15LE)
     expectSetCaps();
     expectUnref();
 
-    firebolt::rialto::server::webaudio::SetCaps task{m_context, m_gstWrapper, m_glibWrapper, m_kAudioMimeType, &m_config};
+    firebolt::rialto::server::tasks::webaudio::SetCaps task{m_context, m_gstWrapper, m_glibWrapper, m_kAudioMimeType,
+                                                            &m_config};
     task.execute();
+    expectSetBytesPerSamplePcm();
 }
 
-TEST_F(WebAudioSetCapsTest, shouldSetCapsWithWithFormatS14BE)
+TEST_F(WebAudioSetCapsTest, shouldSetCapsWithWithFormatS16BE)
 {
-    m_config.pcm.sampleSize = 14;
+    m_config.pcm.sampleSize = 16;
     m_config.pcm.isSigned = true;
     m_config.pcm.isBigEndian = true;
 
@@ -150,19 +160,23 @@ TEST_F(WebAudioSetCapsTest, shouldSetCapsWithWithFormatS14BE)
     expectSetCaps();
     expectUnref();
 
-    firebolt::rialto::server::webaudio::SetCaps task{m_context, m_gstWrapper, m_glibWrapper, m_kAudioMimeType, &m_config};
+    firebolt::rialto::server::tasks::webaudio::SetCaps task{m_context, m_gstWrapper, m_glibWrapper, m_kAudioMimeType,
+                                                            &m_config};
     task.execute();
+    expectSetBytesPerSamplePcm();
 }
 
-TEST_F(WebAudioSetCapsTest, shouldSetCapsWithFormatU3SLE)
+TEST_F(WebAudioSetCapsTest, shouldSetCapsWithFormatU32LE)
 {
     expectBuildPcmCaps();
     expectGetCapsStr();
     expectSetCaps();
     expectUnref();
 
-    firebolt::rialto::server::webaudio::SetCaps task{m_context, m_gstWrapper, m_glibWrapper, m_kAudioMimeType, &m_config};
+    firebolt::rialto::server::tasks::webaudio::SetCaps task{m_context, m_gstWrapper, m_glibWrapper, m_kAudioMimeType,
+                                                            &m_config};
     task.execute();
+    expectSetBytesPerSamplePcm();
 }
 
 TEST_F(WebAudioSetCapsTest, shouldSetCapsWhenAppSrcCapsNull)
@@ -173,7 +187,14 @@ TEST_F(WebAudioSetCapsTest, shouldSetCapsWhenAppSrcCapsNull)
     EXPECT_CALL(*m_gstWrapper, gstAppSrcSetCaps(GST_APP_SRC(&m_appSrc), &m_caps));
     EXPECT_CALL(*m_gstWrapper, gstCapsUnref(&m_caps));
 
-    firebolt::rialto::server::webaudio::SetCaps task{m_context, m_gstWrapper, m_glibWrapper, m_kAudioMimeType, &m_config};
+    firebolt::rialto::server::tasks::webaudio::SetCaps task{m_context, m_gstWrapper, m_glibWrapper, m_kAudioMimeType,
+                                                            &m_config};
+    task.execute();
+}
+
+TEST_F(WebAudioSetCapsTest, shouldNotSetCapsWhenInvalidMimeType)
+{
+    firebolt::rialto::server::tasks::webaudio::SetCaps task{m_context, m_gstWrapper, m_glibWrapper, "invalid", &m_config};
     task.execute();
 }
 
@@ -185,6 +206,7 @@ TEST_F(WebAudioSetCapsTest, shouldNotSetCapsWhenCapsEqual)
     EXPECT_CALL(*m_gstWrapper, gstAppSrcGetCaps(GST_APP_SRC(&m_appSrc))).WillOnce(Return(&m_capsAppSrc));
     EXPECT_CALL(*m_gstWrapper, gstCapsIsEqual(&m_capsAppSrc, &m_caps)).WillOnce(Return(TRUE));
 
-    firebolt::rialto::server::webaudio::SetCaps task{m_context, m_gstWrapper, m_glibWrapper, m_kAudioMimeType, &m_config};
+    firebolt::rialto::server::tasks::webaudio::SetCaps task{m_context, m_gstWrapper, m_glibWrapper, m_kAudioMimeType,
+                                                            &m_config};
     task.execute();
 }

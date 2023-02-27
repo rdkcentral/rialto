@@ -23,7 +23,7 @@
 #include "IGstWrapper.h"
 #include <gst/gst.h>
 
-namespace firebolt::rialto::server
+namespace firebolt::rialto::server::tasks::generic
 {
 ReportPosition::ReportPosition(GenericPlayerContext &context, IGstGenericPlayerClient *client,
                                std::shared_ptr<IGstWrapper> gstWrapper)
@@ -43,4 +43,4 @@ void ReportPosition::execute() const
         }
     }
 }
-} // namespace firebolt::rialto::server
+} // namespace firebolt::rialto::server::tasks::generic

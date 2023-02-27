@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-#
 # If not stated otherwise in this file or this component's LICENSE file the
 # following copyright and licenses apply:
 #

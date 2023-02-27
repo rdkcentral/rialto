@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_MEDIA_PIPELINE_H_
 #define FIREBOLT_RIALTO_MEDIA_PIPELINE_H_
 
+#include "AttachedSources.h"
 #include "IMediaFrameWriter.h"
 #include "IMediaPipeline.h"
 #include "IMediaPipelineIpc.h"
@@ -185,6 +186,11 @@ protected:
      * @brief The current state of the MediaPipeline.
      */
     std::atomic<State> m_currentState;
+
+    /**
+     * @brief The container with attached source id <-> MediaSourceType mapping
+     */
+    AttachedSources m_attachedSources;
 
     /**
      * @brief Sets the new internal MediaPipeline state based on the NetworkState.

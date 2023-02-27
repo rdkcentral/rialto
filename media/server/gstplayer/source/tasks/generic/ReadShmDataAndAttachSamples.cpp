@@ -24,7 +24,7 @@
 #include "IMediaPipeline.h"
 #include "RialtoServerLogging.h"
 
-namespace firebolt::rialto::server
+namespace firebolt::rialto::server::tasks::generic
 {
 ReadShmDataAndAttachSamples::ReadShmDataAndAttachSamples(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                                          const std::shared_ptr<IDataReader> &dataReader)
@@ -53,7 +53,7 @@ void ReadShmDataAndAttachSamples::execute() const
             {
                 IMediaPipeline::MediaSegmentVideo &videoSegment =
                     dynamic_cast<IMediaPipeline::MediaSegmentVideo &>(*mediaSegment);
-                m_player.updateVideoCaps(videoSegment.getWidth(), videoSegment.getHeight());
+                m_player.updateVideoCaps(videoSegment.getWidth(), videoSegment.getHeight(), videoSegment.getCodecData());
             }
             catch (const std::exception &e)
             {
@@ -69,7 +69,8 @@ void ReadShmDataAndAttachSamples::execute() const
             {
                 IMediaPipeline::MediaSegmentAudio &audioSegment =
                     dynamic_cast<IMediaPipeline::MediaSegmentAudio &>(*mediaSegment);
-                m_player.updateAudioCaps(audioSegment.getSampleRate(), audioSegment.getNumberOfChannels());
+                m_player.updateAudioCaps(audioSegment.getSampleRate(), audioSegment.getNumberOfChannels(),
+                                         audioSegment.getCodecData());
             }
             catch (const std::exception &e)
             {
@@ -86,4 +87,4 @@ void ReadShmDataAndAttachSamples::execute() const
                                  (!mediaSegments.empty() &&
                                   mediaSegments.front()->getType() == firebolt::rialto::MediaSourceType::VIDEO));
 }
-} // namespace firebolt::rialto::server
+} // namespace firebolt::rialto::server::tasks::generic

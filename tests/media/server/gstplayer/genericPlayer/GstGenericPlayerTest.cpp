@@ -34,7 +34,7 @@ class GstGenericPlayerTest : public GstGenericPlayerTestCommon
 {
 protected:
     std::unique_ptr<IGstGenericPlayer> m_sut;
-    VideoRequirements m_videoReq = {};
+    VideoRequirements m_videoReq = {kMinPrimaryVideoWidth, kMinPrimaryVideoHeight};
 
     GstGenericPlayerTest()
     {
@@ -56,13 +56,22 @@ protected:
 TEST_F(GstGenericPlayerTest, shouldAttachSource)
 {
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
-        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>(-1, "video/mpeg");
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>("video/mpeg");
 
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createAttachSource(_, Ref(source))).WillOnce(Return(ByMove(std::move(task))));
+    EXPECT_CALL(m_taskFactoryMock, createAttachSource(_, _, Ref(source))).WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->attachSource(source);
+}
+
+TEST_F(GstGenericPlayerTest, shouldRemoveSource)
+{
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(m_taskFactoryMock, createRemoveSource(_, MediaSourceType::AUDIO)).WillOnce(Return(ByMove(std::move(task))));
+
+    m_sut->removeSource(MediaSourceType::AUDIO);
 }
 
 TEST_F(GstGenericPlayerTest, shouldPlay)
@@ -175,7 +184,17 @@ TEST_F(GstGenericPlayerTest, shouldSetupElement)
     triggerSetupElement(&element);
 }
 
-TEST_F(GstGenericPlayerTest, shouldReturnInvalidPositionWhenPipelineIsBelowPlayingState)
+TEST_F(GstGenericPlayerTest, shouldAddDeepElement)
+{
+    GstElement element{};
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(m_taskFactoryMock, createDeepElementAdded(_, _, _, _, &element)).WillOnce(Return(ByMove(std::move(task))));
+
+    triggerDeepElementAdded(&element);
+}
+
+TEST_F(GstGenericPlayerTest, shouldReturnInvalidPositionWhenPipelineIsBelowPausedState)
 {
     int64_t targetPosition{};
     EXPECT_FALSE(m_sut->getPosition(targetPosition));
@@ -189,11 +208,27 @@ TEST_F(GstGenericPlayerTest, shouldReturnInvalidPositionWhenQueryFails)
     EXPECT_FALSE(m_sut->getPosition(targetPosition));
 }
 
-TEST_F(GstGenericPlayerTest, shouldReturnPosition)
+TEST_F(GstGenericPlayerTest, shouldReturnPositionInPlayingState)
 {
     constexpr gint64 expectedPosition{123};
     int64_t targetPosition{};
     setPipelineState(GST_STATE_PLAYING);
+    EXPECT_CALL(*m_gstWrapperMock, gstElementQueryPosition(_, GST_FORMAT_TIME, _))
+        .WillOnce(Invoke(
+            [&](GstElement *element, GstFormat format, gint64 *cur)
+            {
+                *cur = expectedPosition;
+                return TRUE;
+            }));
+    EXPECT_TRUE(m_sut->getPosition(targetPosition));
+    EXPECT_EQ(expectedPosition, targetPosition);
+}
+
+TEST_F(GstGenericPlayerTest, shouldReturnPositionInPausedState)
+{
+    constexpr gint64 expectedPosition{123};
+    int64_t targetPosition{};
+    setPipelineState(GST_STATE_PAUSED);
     EXPECT_CALL(*m_gstWrapperMock, gstElementQueryPosition(_, GST_FORMAT_TIME, _))
         .WillOnce(Invoke(
             [&](GstElement *element, GstFormat format, gint64 *cur)

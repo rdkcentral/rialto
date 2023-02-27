@@ -22,6 +22,7 @@
 
 #include "IGstWebAudioPlayer.h"
 #include "IMainThread.h"
+#include "ITimer.h"
 #include "IWebAudioPlayer.h"
 #include "IWebAudioPlayerServerInternalFactory.h"
 
@@ -67,12 +68,14 @@ public:
      * @param[in] handle            : The handle for this WebAudioPlayer.
      * @param[in] mainThreadFactory : The main thread factory.
      * @param[in] gstPlayerFactory  : The gstreamer player factory.
+     * @param[in] timerFactory      : The timer factory.
      */
     WebAudioPlayerServerInternal(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
                                  const uint32_t priority, const WebAudioConfig *config,
                                  const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle,
                                  const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
-                                 const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory);
+                                 const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory,
+                                 std::shared_ptr<common::ITimerFactory> timerFactory);
 
     /**
      * @brief Virtual destructor.
@@ -138,9 +141,14 @@ protected:
     const int m_shmId;
 
     /**
-     * @brief Pointer to the started of the shared buffer partition.
+     * @brief Pointer to the start of the shared buffer.
      */
-    uint8_t *m_dataPtr;
+    uint8_t *m_shmPtr;
+
+    /**
+     * @brief Offset of the web audio partition relative to the start of the shared memory.
+     */
+    uint32_t m_partitionOffset;
 
     /**
      * @brief Length of the shared buffer partition.
@@ -156,6 +164,26 @@ protected:
      * @brief True if a writeBuffer call is expected.
      */
     bool m_expectWriteBuffer;
+
+    /**
+     * @brief Factory for creating timers.
+     */
+    std::shared_ptr<common::ITimerFactory> m_timerFactory;
+
+    /**
+     * @brief Timer set to write data to gstreamer.
+     */
+    std::unique_ptr<firebolt::rialto::common::ITimer> m_writeDataTimer;
+
+    /**
+     * @brief The bytes per frame for this audio playback.
+     */
+    uint32_t m_bytesPerFrame;
+
+    /**
+     * @brief Whether EOS has been requested at the end of the buffer.
+     */
+    bool m_isEosRequested;
 
     /**
      * @brief Initalises the WebAudioPlayer.
@@ -189,6 +217,35 @@ protected:
      * @retval true on success.
      */
     bool writeBufferInternal(const uint32_t numberOfFrames);
+
+    /**
+     * @brief Write the data that has been stored in the shared memory to gstreamer.
+     *
+     * Uses the available buffer variable to calculate the data to pass to gstreamer for writting.
+     *
+     * @retval true if all stored data was written to gstreamer.
+     */
+    bool writeStoredBuffers();
+
+    /**
+     * @brief Update the available buffer variable with the new bytes written to the shared memory and gstreamer.
+     *
+     * @param[in]  bytesWrittenToShm : Number of bytes newly written to the shared memory.
+     * @param[in]  bytesWrittenToGst : Number of bytes newly written to gstreamer.
+     */
+    void updateAvailableBuffer(uint32_t bytesWrittenToShm, uint32_t bytesWrittenToGst);
+
+    /**
+     * @brief Handles the timeout of the write data timer.
+     */
+    void handleWriteDataTimer();
+
+    /**
+     * @brief Gets the number of queued frames in the shared memory.
+     *
+     * @retval The number of frames queued.
+     */
+    uint32_t getQueuedFramesInShm();
 };
 
 }; // namespace firebolt::rialto::server

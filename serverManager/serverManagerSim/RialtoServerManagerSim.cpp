@@ -34,6 +34,11 @@ int main(int argc, char *argv[])
     fprintf(stderr, "== For example:                                                          ==\n");
     fprintf(stderr, "== curl -X POST -d \"\" <BOX_IP>:9008/SetState/YouTube/NotRunning          ==\n");
     fprintf(stderr, "==                                                                       ==\n");
+    fprintf(stderr, "== Custom socket name can be set in POST data. Available values are:     ==\n");
+    fprintf(stderr, "==  - Empty string (socket name will be automatically generated)         ==\n");
+    fprintf(stderr, "==  - Full socket path, e.g. POST -d \"/var/customsocket\"                 ==\n");
+    fprintf(stderr, "==  - Socket name, e.g. POST -d \"sock\" will create /tmp/sock socket      ==\n");
+    fprintf(stderr, "==                                                                       ==\n");
     fprintf(stderr, "== To get current state, send GET HttpRequest: /GetState/AppName         ==\n");
     fprintf(stderr, "== For example:                                                          ==\n");
     fprintf(stderr, "== curl -X GET <BOX_IP>:9008/GetState/YouTube                            ==\n");

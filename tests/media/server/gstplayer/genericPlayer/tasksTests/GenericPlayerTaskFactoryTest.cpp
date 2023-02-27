@@ -23,10 +23,12 @@
 #include "GstGenericPlayerClientMock.h"
 #include "GstGenericPlayerPrivateMock.h"
 #include "GstWrapperMock.h"
+#include "RdkGstreamerUtilsWrapperMock.h"
 #include "tasks/IPlayerTask.h"
 #include "tasks/generic/AttachSamples.h"
 #include "tasks/generic/AttachSource.h"
 #include "tasks/generic/CheckAudioUnderflow.h"
+#include "tasks/generic/DeepElementAdded.h"
 #include "tasks/generic/EnoughData.h"
 #include "tasks/generic/Eos.h"
 #include "tasks/generic/FinishSetupSource.h"
@@ -35,6 +37,7 @@
 #include "tasks/generic/Pause.h"
 #include "tasks/generic/Play.h"
 #include "tasks/generic/ReadShmDataAndAttachSamples.h"
+#include "tasks/generic/RemoveSource.h"
 #include "tasks/generic/ReportPosition.h"
 #include "tasks/generic/SetPlaybackRate.h"
 #include "tasks/generic/SetPosition.h"
@@ -45,6 +48,7 @@
 #include "tasks/generic/Shutdown.h"
 #include "tasks/generic/Stop.h"
 #include "tasks/generic/Underflow.h"
+#include "tasks/generic/UpdatePlaybackGroup.h"
 #include <gtest/gtest.h>
 
 using testing::_;
@@ -61,121 +65,142 @@ protected:
         std::make_shared<StrictMock<firebolt::rialto::server::GlibWrapperMock>>()};
     std::shared_ptr<firebolt::rialto::server::GstWrapperMock> m_gstWrapper{
         std::make_shared<StrictMock<firebolt::rialto::server::GstWrapperMock>>()};
-    firebolt::rialto::server::GenericPlayerTaskFactory m_sut{&m_gstPlayerClient, m_gstWrapper, m_glibWrapper};
+    std::shared_ptr<firebolt::rialto::server::RdkGstreamerUtilsWrapperMock> m_rdkGstreamerUtilsWrapper{
+        std::make_shared<StrictMock<firebolt::rialto::server::RdkGstreamerUtilsWrapperMock>>()};
+    firebolt::rialto::server::GenericPlayerTaskFactory m_sut{&m_gstPlayerClient, m_gstWrapper, m_glibWrapper,
+                                                             m_rdkGstreamerUtilsWrapper};
 };
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateAttachSamples)
 {
     auto task = m_sut.createAttachSamples(m_context, m_gstPlayer, {});
     EXPECT_NE(task, nullptr);
-    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::AttachSamples &>(*task));
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::AttachSamples &>(*task));
 }
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateAttachSource)
 {
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
-        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>(-1, "video/mpeg");
-    auto task = m_sut.createAttachSource(m_context, source);
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>("video/mpeg");
+    auto task = m_sut.createAttachSource(m_context, m_gstPlayer, source);
     EXPECT_NE(task, nullptr);
-    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::AttachSource &>(*task));
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::AttachSource &>(*task));
+}
+
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateDeepElementAdded)
+{
+    EXPECT_CALL(*m_gstWrapper, gstObjectParent(_)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_gstWrapper, gstObjectCast(_)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_gstWrapper, gstElementGetName(_)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_glibWrapper, gFree(nullptr));
+    auto task = m_sut.createDeepElementAdded(m_context, m_gstPlayer, nullptr, nullptr, nullptr);
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::DeepElementAdded &>(*task));
 }
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateEnoughData)
 {
     auto task = m_sut.createEnoughData(m_context, nullptr);
     EXPECT_NE(task, nullptr);
-    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::EnoughData &>(*task));
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::EnoughData &>(*task));
 }
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateEos)
 {
     auto task = m_sut.createEos(m_context, m_gstPlayer, firebolt::rialto::MediaSourceType::AUDIO);
     EXPECT_NE(task, nullptr);
-    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::Eos &>(*task));
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::Eos &>(*task));
 }
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateFinishSetupSource)
 {
     auto task = m_sut.createFinishSetupSource(m_context, m_gstPlayer);
     EXPECT_NE(task, nullptr);
-    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::FinishSetupSource &>(*task));
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::FinishSetupSource &>(*task));
 }
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateHandleBusMessage)
 {
     auto task = m_sut.createHandleBusMessage(m_context, m_gstPlayer, nullptr);
     EXPECT_NE(task, nullptr);
-    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::HandleBusMessage &>(*task));
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::HandleBusMessage &>(*task));
 }
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateNeedData)
 {
     auto task = m_sut.createNeedData(m_context, nullptr);
     EXPECT_NE(task, nullptr);
-    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::NeedData &>(*task));
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::NeedData &>(*task));
 }
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreatePause)
 {
     auto task = m_sut.createPause(m_gstPlayer);
     EXPECT_NE(task, nullptr);
-    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::Pause &>(*task));
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::Pause &>(*task));
 }
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreatePlay)
 {
     auto task = m_sut.createPlay(m_gstPlayer);
     EXPECT_NE(task, nullptr);
-    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::Play &>(*task));
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::Play &>(*task));
 }
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateReadShmDataAndAttachSamples)
 {
     auto task = m_sut.createReadShmDataAndAttachSamples(m_context, m_gstPlayer, nullptr);
     EXPECT_NE(task, nullptr);
-    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::ReadShmDataAndAttachSamples &>(*task));
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::ReadShmDataAndAttachSamples &>(*task));
+}
+
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateRemoveSource)
+{
+    auto task = m_sut.createRemoveSource(m_context, firebolt::rialto::MediaSourceType::AUDIO);
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::RemoveSource &>(*task));
 }
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateReportPosition)
 {
     auto task = m_sut.createReportPosition(m_context);
     EXPECT_NE(task, nullptr);
-    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::ReportPosition &>(*task));
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::ReportPosition &>(*task));
 }
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateCheckAudioUnderflow)
 {
     auto task = m_sut.createCheckAudioUnderflow(m_context, m_gstPlayer);
     EXPECT_NE(task, nullptr);
-    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::CheckAudioUnderflow &>(*task));
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::CheckAudioUnderflow &>(*task));
 }
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetPosition)
 {
     auto task = m_sut.createSetPosition(m_context, m_gstPlayer, 0);
     EXPECT_NE(task, nullptr);
-    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::SetPosition &>(*task));
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetPosition &>(*task));
 }
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetupElement)
 {
     auto task = m_sut.createSetupElement(m_context, m_gstPlayer, nullptr);
     EXPECT_NE(task, nullptr);
-    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::SetupElement &>(*task));
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetupElement &>(*task));
 }
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetupSource)
 {
     auto task = m_sut.createSetupSource(m_context, m_gstPlayer, nullptr);
     EXPECT_NE(task, nullptr);
-    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::SetupSource &>(*task));
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetupSource &>(*task));
 }
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetVideoGeometry)
 {
     auto task = m_sut.createSetVideoGeometry(m_context, m_gstPlayer, firebolt::rialto::server::Rectangle{});
     EXPECT_NE(task, nullptr);
-    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::SetVideoGeometry &>(*task));
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetVideoGeometry &>(*task));
 }
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetVolume)
@@ -183,34 +208,42 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetVolume)
     constexpr double kVolume{0.7};
     auto task = m_sut.createSetVolume(m_context, kVolume);
     EXPECT_NE(task, nullptr);
-    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::SetVolume &>(*task));
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetVolume &>(*task));
 }
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateShutdown)
 {
     auto task = m_sut.createShutdown(m_gstPlayer);
     EXPECT_NE(task, nullptr);
-    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::Shutdown &>(*task));
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::Shutdown &>(*task));
 }
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateStop)
 {
     auto task = m_sut.createStop(m_context, m_gstPlayer);
     EXPECT_NE(task, nullptr);
-    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::Stop &>(*task));
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::Stop &>(*task));
 }
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateUnderflow)
 {
     bool flag{false};
-    auto task = m_sut.createUnderflow(m_gstPlayer, flag);
+    bool enabled{false};
+    auto task = m_sut.createUnderflow(m_gstPlayer, flag, enabled);
     EXPECT_NE(task, nullptr);
-    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::Underflow &>(*task));
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::Underflow &>(*task));
 }
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetPlaybackRate)
 {
     auto task = m_sut.createSetPlaybackRate(m_context, 1.25);
     EXPECT_NE(task, nullptr);
-    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::SetPlaybackRate &>(*task));
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetPlaybackRate &>(*task));
+}
+
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateUpdatePlaybackGroup)
+{
+    auto task = m_sut.createUpdatePlaybackGroup(m_context, nullptr, nullptr);
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::UpdatePlaybackGroup &>(*task));
 }

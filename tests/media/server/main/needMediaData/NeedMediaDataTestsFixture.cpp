@@ -24,14 +24,15 @@ using testing::Return;
 
 namespace
 {
-constexpr int sessionId{0};
-constexpr firebolt::rialto::MediaSourceType validMediaSourceType{firebolt::rialto::MediaSourceType::VIDEO};
-constexpr int sourceId = static_cast<int>(validMediaSourceType);
-constexpr std::uint32_t bufferLen{7 * 1024 * 1024};
-constexpr std::uint32_t metadataOffset{1024};
-constexpr int requestId{0};
-constexpr int maxFrames{24};
-constexpr int maxMetadataBytes{2500};
+constexpr int kSessionId{0};
+constexpr firebolt::rialto::MediaSourceType kValidMediaSourceType{firebolt::rialto::MediaSourceType::VIDEO};
+constexpr int kSourceId{1};
+constexpr std::uint32_t kBufferLen{7 * 1024 * 1024};
+constexpr std::uint32_t kMetadataOffset{1024};
+constexpr int kRequestId{0};
+constexpr int kPrerollingNumFrames{1};
+constexpr int kMaxFrames{24};
+constexpr int kMaxMetadataBytes{2500};
 } // namespace
 
 namespace firebolt::rialto
@@ -54,35 +55,50 @@ NeedMediaDataTests::NeedMediaDataTests()
 {
 }
 
-void NeedMediaDataTests::initialize()
+void NeedMediaDataTests::initialize(firebolt::rialto::PlaybackState playbackState)
 {
     EXPECT_CALL(shmBufferMock, getMaxDataLen(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC,
-                                             sessionId, validMediaSourceType))
-        .WillOnce(Return(bufferLen));
+                                             kSessionId, kValidMediaSourceType))
+        .WillOnce(Return(kBufferLen));
     EXPECT_CALL(shmBufferMock, getDataOffset(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC,
-                                             sessionId, validMediaSourceType))
-        .WillOnce(Return(metadataOffset));
+                                             kSessionId, kValidMediaSourceType))
+        .WillOnce(Return(kMetadataOffset));
     m_sut = std::make_unique<firebolt::rialto::server::NeedMediaData>(m_clientMock, activeRequestsMock, shmBufferMock,
-                                                                      sessionId, validMediaSourceType);
+                                                                      kSessionId, kValidMediaSourceType, kSourceId,
+                                                                      playbackState);
 }
 
 void NeedMediaDataTests::initializeWithWrongType()
 {
-    m_sut = std::make_unique<firebolt::rialto::server::NeedMediaData>(m_clientMock, activeRequestsMock, shmBufferMock,
-                                                                      sessionId,
-                                                                      firebolt::rialto::MediaSourceType::UNKNOWN);
+    m_sut =
+        std::make_unique<firebolt::rialto::server::NeedMediaData>(m_clientMock, activeRequestsMock, shmBufferMock,
+                                                                  kSessionId, firebolt::rialto::MediaSourceType::UNKNOWN,
+                                                                  kSourceId, firebolt::rialto::PlaybackState::PLAYING);
 }
 
-void NeedMediaDataTests::needMediaDataWillBeSent()
+void NeedMediaDataTests::needMediaDataWillBeSentInPlayingState()
 {
     std::shared_ptr<firebolt::rialto::MediaPlayerShmInfo> expectedShmInfo{
         std::make_shared<firebolt::rialto::MediaPlayerShmInfo>()};
-    expectedShmInfo->maxMetadataBytes = maxMetadataBytes;
-    expectedShmInfo->metadataOffset = metadataOffset;
-    expectedShmInfo->mediaDataOffset = metadataOffset + maxMetadataBytes;
+    expectedShmInfo->maxMetadataBytes = kMaxMetadataBytes;
+    expectedShmInfo->metadataOffset = kMetadataOffset;
+    expectedShmInfo->mediaDataOffset = kMetadataOffset + kMaxMetadataBytes;
     ASSERT_TRUE(m_sut);
-    EXPECT_CALL(activeRequestsMock, insert(validMediaSourceType, _)).WillOnce(Return(requestId));
-    EXPECT_CALL(*m_clientMock, notifyNeedMediaData(sourceId, maxFrames, requestId, expectedShmInfo));
+    EXPECT_CALL(activeRequestsMock, insert(kValidMediaSourceType, _)).WillOnce(Return(kRequestId));
+    EXPECT_CALL(*m_clientMock, notifyNeedMediaData(kSourceId, kMaxFrames, kRequestId, expectedShmInfo));
+    EXPECT_TRUE(m_sut->send());
+}
+
+void NeedMediaDataTests::needMediaDataWillBeSentBelowPlayingState()
+{
+    std::shared_ptr<firebolt::rialto::MediaPlayerShmInfo> expectedShmInfo{
+        std::make_shared<firebolt::rialto::MediaPlayerShmInfo>()};
+    expectedShmInfo->maxMetadataBytes = kMaxMetadataBytes;
+    expectedShmInfo->metadataOffset = kMetadataOffset;
+    expectedShmInfo->mediaDataOffset = kMetadataOffset + kMaxMetadataBytes;
+    ASSERT_TRUE(m_sut);
+    EXPECT_CALL(activeRequestsMock, insert(kValidMediaSourceType, _)).WillOnce(Return(kRequestId));
+    EXPECT_CALL(*m_clientMock, notifyNeedMediaData(kSourceId, kPrerollingNumFrames, kRequestId, expectedShmInfo));
     EXPECT_TRUE(m_sut->send());
 }
 

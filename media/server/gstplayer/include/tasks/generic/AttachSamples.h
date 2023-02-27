@@ -17,17 +17,18 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_ATTACH_SAMPLES_H_
-#define FIREBOLT_RIALTO_SERVER_ATTACH_SAMPLES_H_
+#ifndef FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_ATTACH_SAMPLES_H_
+#define FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_ATTACH_SAMPLES_H_
 
 #include "GenericPlayerContext.h"
 #include "IGstGenericPlayerPrivate.h"
 #include "IMediaPipeline.h"
 #include "IPlayerTask.h"
 #include <gst/gst.h>
+#include <memory>
 #include <vector>
 
-namespace firebolt::rialto::server
+namespace firebolt::rialto::server::tasks::generic
 {
 class AttachSamples : public IPlayerTask
 {
@@ -43,12 +44,14 @@ private:
         GstBuffer *buffer;
         int32_t rate;
         int32_t channels;
+        std::shared_ptr<std::vector<std::uint8_t>> codecData;
     };
     struct VideoData
     {
         GstBuffer *buffer;
         int32_t width;
         int32_t height;
+        std::shared_ptr<std::vector<std::uint8_t>> codecData;
     };
 
     GenericPlayerContext &m_context;
@@ -56,6 +59,6 @@ private:
     std::vector<AudioData> m_audioData;
     std::vector<VideoData> m_videoData;
 };
-} // namespace firebolt::rialto::server
+} // namespace firebolt::rialto::server::tasks::generic
 
-#endif // FIREBOLT_RIALTO_SERVER_ATTACH_SAMPLES_H_
+#endif // FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_ATTACH_SAMPLES_H_

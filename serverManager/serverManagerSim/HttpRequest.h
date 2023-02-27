@@ -34,6 +34,7 @@ public:
 
     std::string getMethod() const;
     std::string getCommand() const;
+    std::string getPostData() const;
     std::vector<std::string> getParams() const;
 
     void reply(const std::string &message) const;
@@ -42,6 +43,7 @@ private:
     mg_connection *m_connection;
     std::string m_method;
     std::string m_command;
+    std::string m_postData;
     std::vector<std::string> m_params;
 };
 } // namespace rialto::servermanager

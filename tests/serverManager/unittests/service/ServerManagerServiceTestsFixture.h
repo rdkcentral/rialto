@@ -34,14 +34,18 @@ public:
     ServerManagerServiceTests();
     virtual ~ServerManagerServiceTests() = default;
 
+    void initiateApplicationWillBeCalled(const std::string &appId,
+                                         const firebolt::rialto::common::SessionServerState &state,
+                                         const firebolt::rialto::common::AppConfig &appConfig, bool returnValue);
     void setSessionServerStateWillBeCalled(const std::string &appId,
-                                           const rialto::servermanager::service::SessionServerState &state,
-                                           bool returnValue);
+                                           const firebolt::rialto::common::SessionServerState &state, bool returnValue);
     void getAppConnectionInfoWillBeCalled(const std::string &appId, const std::string &returnValue);
     void setLogLevelsWillBeCalled(bool returnValue);
 
+    bool triggerInitiateApplication(const std::string &appId, const firebolt::rialto::common::SessionServerState &state,
+                                    const firebolt::rialto::common::AppConfig &appConfig);
     bool triggerChangeSessionServerState(const std::string &appId,
-                                         const rialto::servermanager::service::SessionServerState &state);
+                                         const firebolt::rialto::common::SessionServerState &state);
     std::string triggerGetAppConnectionInfo(const std::string &appId);
     bool triggerSetLogLevels();
 

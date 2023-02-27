@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_SHUTDOWN_H_
-#define FIREBOLT_RIALTO_SERVER_SHUTDOWN_H_
+#ifndef FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SHUTDOWN_H_
+#define FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SHUTDOWN_H_
 
 #include "IPlayerTask.h"
 #include <gst/gst.h>
@@ -28,7 +28,7 @@ namespace firebolt::rialto::server
 class IGstGenericPlayerPrivate;
 } // namespace firebolt::rialto::server
 
-namespace firebolt::rialto::server
+namespace firebolt::rialto::server::tasks::generic
 {
 class Shutdown : public IPlayerTask
 {
@@ -40,6 +40,6 @@ public:
 private:
     IGstGenericPlayerPrivate &m_player;
 };
-} // namespace firebolt::rialto::server
+} // namespace firebolt::rialto::server::tasks::generic
 
-#endif // FIREBOLT_RIALTO_SERVER_SHUTDOWN_H_
+#endif // FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SHUTDOWN_H_

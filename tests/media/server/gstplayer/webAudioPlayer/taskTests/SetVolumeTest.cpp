@@ -41,6 +41,6 @@ TEST_F(WebAudioSetVolumeTest, shouldSetVolume)
     constexpr double kVolume{0.7};
     m_context.pipeline = &m_pipeline;
     EXPECT_CALL(*m_gstWrapper, gstStreamVolumeSetVolume(_, GST_STREAM_VOLUME_FORMAT_LINEAR, kVolume));
-    firebolt::rialto::server::webaudio::SetVolume task{m_context, m_gstWrapper, kVolume};
+    firebolt::rialto::server::tasks::webaudio::SetVolume task{m_context, m_gstWrapper, kVolume};
     task.execute();
 }

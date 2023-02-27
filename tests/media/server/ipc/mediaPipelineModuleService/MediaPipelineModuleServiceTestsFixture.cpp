@@ -44,7 +44,8 @@ const std::string mimeType{"exampleMimeType"};
 constexpr uint32_t numberOfChannels{6};
 constexpr uint32_t sampleRate{48000};
 const std::string codecSpecificConfigStr("1243567");
-std::vector<uint8_t> codecData{'T', 'E', 'S', 'T'};
+const std::shared_ptr<std::vector<std::uint8_t>> codecData{
+    std::make_shared<std::vector<std::uint8_t>>(std::vector<std::uint8_t>{'T', 'E', 'S', 'T'})};
 const std::string url{"https://example.url.com"};
 constexpr int64_t position{2000000000};
 constexpr std::uint32_t requestId{2};
@@ -68,9 +69,18 @@ constexpr double volume{0.7};
 MATCHER_P(AttachedSourceMatcher, source, "")
 {
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> &src = source.get();
+    bool codecDataEqual = false;
+    if (arg->getCodecData() && src->getCodecData())
+    {
+        codecDataEqual = *(arg->getCodecData()) == *(src->getCodecData());
+    }
+    else
+    {
+        codecDataEqual = arg->getCodecData() == src->getCodecData();
+    }
     bool baseCompare = arg->getConfigType() == src->getConfigType() && arg->getMimeType() == src->getMimeType() &&
-                       arg->getSegmentAlignment() == src->getSegmentAlignment() &&
-                       arg->getCodecData() == src->getCodecData() && arg->getStreamFormat() == src->getStreamFormat();
+                       arg->getSegmentAlignment() == src->getSegmentAlignment() && codecDataEqual &&
+                       arg->getStreamFormat() == src->getStreamFormat();
 
     bool extraCompare = true;
 
@@ -372,7 +382,7 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToLoadSession(
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillAttachSource()
 {
-    m_source = std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(0, mimeType);
+    m_source = std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(mimeType);
     expectRequestSuccess();
     EXPECT_CALL(m_mediaPipelineServiceMock, attachSource(hardcodedSessionId, AttachedSourceMatcher(ByRef(m_source))))
         .WillOnce(Return(true));
@@ -384,7 +394,7 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillAttachAudioSourceW
     codecSpecificConfig.assign(codecSpecificConfigStr.begin(), codecSpecificConfigStr.end());
     firebolt::rialto::AudioConfig audioConfig{numberOfChannels, sampleRate, codecSpecificConfig};
     m_source =
-        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(0, mimeType, audioConfig,
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(mimeType, audioConfig,
                                                                              firebolt::rialto::SegmentAlignment::UNDEFINED,
                                                                              firebolt::rialto::StreamFormat::RAW,
                                                                              codecData);
@@ -395,7 +405,7 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillAttachAudioSourceW
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToAttachSource()
 {
-    m_source = std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(0, mimeType);
+    m_source = std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(mimeType);
     expectRequestFailure();
     EXPECT_CALL(m_mediaPipelineServiceMock, attachSource(hardcodedSessionId, AttachedSourceMatcher(ByRef(m_source))))
         .WillOnce(Return(false));
@@ -660,7 +670,7 @@ void MediaPipelineModuleServiceTests::sendAttachAudioSourceWithAdditionalDataReq
     request.mutable_audio_config()->set_number_of_channels(numberOfChannels);
     request.mutable_audio_config()->set_sample_rate(sampleRate);
     request.mutable_audio_config()->set_codec_specific_config(codecSpecificConfigStr);
-    request.set_codec_data(codecData.data(), codecData.size());
+    request.set_codec_data(codecData->data(), codecData->size());
     request.set_stream_format(convertStreamFormat(firebolt::rialto::StreamFormat::RAW));
 
     m_service->attachSource(m_controllerMock.get(), &request, &response, m_closureMock.get());

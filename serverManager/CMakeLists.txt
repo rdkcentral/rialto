@@ -50,6 +50,7 @@ target_include_directories (
         PUBLIC
         $<TARGET_PROPERTY:RialtoLogging,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoServerManagerPublic,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoCommon,INTERFACE_INCLUDE_DIRECTORIES>
         $ENV{RDK_PROJECT_ROOT_PATH}/opensource/include/mongoose
 )
 

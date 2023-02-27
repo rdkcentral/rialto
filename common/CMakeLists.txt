@@ -22,6 +22,8 @@ set( CMAKE_CXX_STANDARD 14 )
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
 include( CheckCXXCompilerFlag )
 
+add_subdirectory(public)
+
 add_library(
         RialtoCommon
         STATIC
@@ -40,7 +42,8 @@ target_include_directories(
         RialtoCommon
 
         PUBLIC
-        public
+        interface
+        $<TARGET_PROPERTY:RialtoCommonPublic,INTERFACE_INCLUDE_DIRECTORIES>
 
         PRIVATE
         include
@@ -53,12 +56,3 @@ target_link_libraries (
         RialtoLogging
     )
 
-set (
-        RIALTO_COMMON_PUBLIC_HEADERS
-        public/IEventThread.h
-)
-
-install (
-        FILES  ${RIALTO_COMMON_PUBLIC_HEADERS}
-        DESTINATION  ${CMAKE_INSTALL_INCLUDEDIR}/rialto
-)

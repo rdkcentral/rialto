@@ -19,16 +19,22 @@
 
 #include "GstWebAudioPlayerTestCommon.h"
 #include "PlayerTaskMock.h"
+#include <thread>
+
+using testing::DoAll;
+using testing::WithArgs;
 
 class GstWebAudioPlayerTest : public GstWebAudioPlayerTestCommon
 {
 protected:
     std::unique_ptr<IGstWebAudioPlayer> m_sut;
+    std::thread m_testThread;
+    const uint32_t m_bytesWritten{123};
 
     GstWebAudioPlayerTest()
     {
         gstPlayerWillBeCreatedForGenericPlatform();
-        m_sut = std::make_unique<GstWebAudioPlayer>(&m_gstPlayerClient, m_gstWrapperMock, m_glibWrapperMock,
+        m_sut = std::make_unique<GstWebAudioPlayer>(&m_gstPlayerClient, m_priority, m_gstWrapperMock, m_glibWrapperMock,
                                                     m_gstSrcFactoryMock, std::move(m_taskFactory),
                                                     std::move(workerThreadFactory),
                                                     std::move(gstDispatcherThreadFactory));
@@ -38,6 +44,16 @@ protected:
     {
         gstPlayerWillBeDestroyed();
         m_sut.reset();
+    }
+
+public:
+    void notifyWriteBuffer(WebAudioPlayerContext &context)
+    {
+        {
+            std::unique_lock<std::mutex> lock(context.writeBufferMutex);
+            context.lastBytesWritten = m_bytesWritten;
+        }
+        context.writeBufferCond.notify_one();
     }
 };
 
@@ -119,7 +135,6 @@ TEST_F(GstWebAudioPlayerTest, writeBufferShouldReturn0OnTimeout)
     EXPECT_EQ(returnBytes, 0);
 }
 
-#if 0 // TODO(RIALTO-2): Implement test thread to unblock writeBuffer
 TEST_F(GstWebAudioPlayerTest, shouldWriteBuffer)
 {
     uint8_t mainPtr{};
@@ -128,10 +143,24 @@ TEST_F(GstWebAudioPlayerTest, shouldWriteBuffer)
     uint32_t wrapLength = 2;
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createWriteBuffer(_, &mainPtr, mainLength, &wrapPtr, wrapLength)).WillOnce(Return(ByMove(std::move(task))));
+    EXPECT_CALL(m_taskFactoryMock, createWriteBuffer(_, &mainPtr, mainLength, &wrapPtr, wrapLength))
+        .WillOnce(DoAll(WithArgs<0>(Invoke(
+                            [this](WebAudioPlayerContext &context) {
+                                m_testThread =
+                                    std::thread(&GstWebAudioPlayerTest::notifyWriteBuffer, this, std::ref(context));
+                            })),
+                        Return(ByMove(std::move(task)))));
     executeTaskWhenEnqueued();
 
-    m_sut->writeBuffer(&mainPtr, mainLength, &wrapPtr, wrapLength);
-    m_context.m_writeBufferCond.notify_one();
+    uint32_t returnBytes = m_sut->writeBuffer(&mainPtr, mainLength, &wrapPtr, wrapLength);
+    EXPECT_EQ(returnBytes, m_bytesWritten);
+
+    m_testThread.join();
 }
-#endif
+
+TEST_F(GstWebAudioPlayerTest, shouldGetQueuedBytes)
+{
+    constexpr uint64_t kQueuedBytes{4567};
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCurrentLevelBytes(_)).WillOnce(Return(kQueuedBytes));
+    EXPECT_EQ(m_sut->getQueuedBytes(), kQueuedBytes);
+}

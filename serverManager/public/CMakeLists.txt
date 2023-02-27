@@ -41,10 +41,9 @@ if( NOT CMAKE_BUILD_TYPE STREQUAL "UnitTests" )
                 include/IStateObserver.h
                 include/LoggingLevels.h
                 include/ServerManagerServiceFactory.h
-                include/SessionServerState.h
         )
         install (
                 FILES ${LIB_RIALTO_SERVER_MANAGER_PUBLIC_HEADERS}
-                DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/rialto/servermanager
+                DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/rialto
         )
 endif()

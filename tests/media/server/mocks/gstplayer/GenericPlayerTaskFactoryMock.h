@@ -33,7 +33,12 @@ public:
                  const IMediaPipeline::MediaSegmentVector &mediaSegments),
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createAttachSource,
-                (GenericPlayerContext & context, const std::unique_ptr<IMediaPipeline::MediaSource> &source),
+                (GenericPlayerContext & context, IGstGenericPlayerPrivate &player,
+                 const std::unique_ptr<IMediaPipeline::MediaSource> &source),
+                (const, override));
+    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createDeepElementAdded,
+                (GenericPlayerContext & context, IGstGenericPlayerPrivate &player, GstBin *pipeline, GstBin *bin,
+                 GstElement *element),
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createEnoughData, (GenericPlayerContext & context, GstAppSrc *src),
                 (const, override));
@@ -54,6 +59,8 @@ public:
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player,
                  const std::shared_ptr<IDataReader> &dataReader),
                 (const, override));
+    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createRemoveSource,
+                (GenericPlayerContext & context, const firebolt::rialto::MediaSourceType &type), (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createReportPosition, (GenericPlayerContext & context), (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createCheckAudioUnderflow,
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player), (const, override));
@@ -76,8 +83,10 @@ public:
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createShutdown, (IGstGenericPlayerPrivate & player), (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createStop,
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player), (const, override));
-    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createUnderflow, (IGstGenericPlayerPrivate & player, bool &underflowFlag),
-                (const, override));
+    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createUnderflow,
+                (IGstGenericPlayerPrivate & player, bool &underflowFlag, bool underflowEnabled), (const, override));
+    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createUpdatePlaybackGroup,
+                (GenericPlayerContext & context, GstElement *typefind, const GstCaps *caps), (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createRenderFrame, (GenericPlayerContext & context), (const, override));
 };
 } // namespace firebolt::rialto::server

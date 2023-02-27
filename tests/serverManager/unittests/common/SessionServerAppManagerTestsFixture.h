@@ -41,11 +41,11 @@ public:
     SessionServerAppManagerTests();
     virtual ~SessionServerAppManagerTests() = default;
 
-    void sessionServerLaunchWillFail(const rialto::servermanager::service::SessionServerState &state);
-    void sessionServerConnectWillFail(const rialto::servermanager::service::SessionServerState &state);
-    void sessionServerChangeStateWillFail(const rialto::servermanager::service::SessionServerState &state);
-    void sessionServerWillLaunch(const rialto::servermanager::service::SessionServerState &state);
-    void sessionServerWillChangeState(const rialto::servermanager::service::SessionServerState &state);
+    void sessionServerLaunchWillFail(const firebolt::rialto::common::SessionServerState &state);
+    void sessionServerConnectWillFail(const firebolt::rialto::common::SessionServerState &state);
+    void sessionServerChangeStateWillFail(const firebolt::rialto::common::SessionServerState &state);
+    void sessionServerWillLaunch(const firebolt::rialto::common::SessionServerState &state);
+    void sessionServerWillChangeState(const firebolt::rialto::common::SessionServerState &state);
     void sessionServerWillReturnAppSocketName(const std::string &socketName);
     void sessionServerWillChangeStateToUninitialized();
     void sessionServerWillChangeStateToInactive();
@@ -53,10 +53,11 @@ public:
     void sessionServerWillSetLogLevels();
     void sessionServerWillFailToSetLogLevels();
     void sessionServerWillKillRunningApplicationAtTeardown();
-    void clientWillBeRemovedAfterStateChangedIndication(const rialto::servermanager::service::SessionServerState &state);
+    void clientWillBeRemovedAfterStateChangedIndication(const firebolt::rialto::common::SessionServerState &state);
 
-    bool triggerSetSessionServerState(const rialto::servermanager::service::SessionServerState &newState);
-    void triggerOnSessionServerStateChanged(const rialto::servermanager::service::SessionServerState &newState);
+    bool triggerInitiateApplication(const firebolt::rialto::common::SessionServerState &state);
+    bool triggerSetSessionServerState(const firebolt::rialto::common::SessionServerState &newState);
+    void triggerOnSessionServerStateChanged(const firebolt::rialto::common::SessionServerState &newState);
     std::string triggerGetAppConnectionInfo();
     bool triggerSetLogLevel();
 

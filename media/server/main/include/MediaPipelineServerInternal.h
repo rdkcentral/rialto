@@ -26,6 +26,7 @@
 #include "IMainThread.h"
 #include "IMediaPipelineServerInternal.h"
 #include "ITimer.h"
+#include <map>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -135,6 +136,8 @@ public:
 
     void clearActiveRequestsCache() override;
 
+    void invalidateActiveRequests(const MediaSourceType &type) override;
+
     void notifyQos(MediaSourceType mediaSourceType, const QosInfo &qosInfo) override;
 
 protected:
@@ -199,9 +202,19 @@ protected:
     IDecryptionService &m_decryptionService;
 
     /**
+     * @brief Current playback state
+     */
+    PlaybackState m_currentPlaybackState;
+
+    /**
      * @brief Map containing scheduled need media data requests.
      */
     std::unordered_map<MediaSourceType, std::unique_ptr<firebolt::rialto::common::ITimer>> m_needMediaDataTimers;
+
+    /**
+     * @brief Currently attached sources
+     */
+    std::map<MediaSourceType, std::int32_t> m_attachedSources;
 
     /**
      * @brief Load internally, only to be called on the main thread.
@@ -222,6 +235,15 @@ protected:
      * @retval true on success.
      */
     bool attachSourceInternal(const std::unique_ptr<MediaSource> &source);
+
+    /**
+     * @brief Remove source internally, only to be called on the main thread.
+     *
+     * @param[in] id : The source id.
+     *
+     * @retval true on success.
+     */
+    bool removeSourceInternal(int32_t id);
 
     /**
      * @brief Play internally, only to be called on the main thread.

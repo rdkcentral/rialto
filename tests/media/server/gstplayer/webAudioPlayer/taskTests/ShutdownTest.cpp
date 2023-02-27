@@ -31,7 +31,7 @@ protected:
 
 TEST_F(WebAudioShutdownTest, shouldShutdown)
 {
-    firebolt::rialto::server::webaudio::Shutdown task{m_gstPlayer};
+    firebolt::rialto::server::tasks::webaudio::Shutdown task{m_gstPlayer};
     EXPECT_CALL(m_gstPlayer, stopWorkerThread());
     task.execute();
 }

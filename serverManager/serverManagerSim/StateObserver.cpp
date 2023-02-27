@@ -22,13 +22,13 @@
 
 namespace rialto::servermanager
 {
-void StateObserver::stateChanged(const std::string &appId, const service::SessionServerState &state)
+void StateObserver::stateChanged(const std::string &appId, const firebolt::rialto::common::SessionServerState &state)
 {
     std::unique_lock<std::mutex> lock{m_sessionServerStateMutex};
     m_sessionServerStates[appId] = state;
 }
 
-service::SessionServerState StateObserver::getCurrentState(const std::string &appId) const
+firebolt::rialto::common::SessionServerState StateObserver::getCurrentState(const std::string &appId) const
 {
     std::unique_lock<std::mutex> lock{m_sessionServerStateMutex};
     auto state = m_sessionServerStates.find(appId);
@@ -36,14 +36,15 @@ service::SessionServerState StateObserver::getCurrentState(const std::string &ap
     {
         return state->second;
     }
-    return service::SessionServerState::NOT_RUNNING;
+    return firebolt::rialto::common::SessionServerState::NOT_RUNNING;
 }
 
 std::string StateObserver::getActiveApp() const
 {
     std::unique_lock<std::mutex> lock{m_sessionServerStateMutex};
     auto app = std::find_if(m_sessionServerStates.begin(), m_sessionServerStates.end(),
-                            [](const auto &app) { return app.second == service::SessionServerState::ACTIVE; });
+                            [](const auto &app)
+                            { return app.second == firebolt::rialto::common::SessionServerState::ACTIVE; });
     if (app != m_sessionServerStates.end())
     {
         return app->first;

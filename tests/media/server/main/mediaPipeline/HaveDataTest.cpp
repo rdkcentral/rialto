@@ -28,7 +28,7 @@ using ::testing::Throw;
 class RialtoServerMediaPipelineHaveDataTest : public MediaPipelineTestBase
 {
 protected:
-    const uint32_t m_kNumFrames{24};
+    const uint32_t m_kNumFrames{1};
     const uint32_t m_kNeedDataRequestId{0};
     const std::chrono::milliseconds m_kNeedMediaDataResendTimeout{100};
 
@@ -207,8 +207,17 @@ TEST_F(RialtoServerMediaPipelineHaveDataTest, ServerInternalHaveDataSuccessWithR
     auto status = firebolt::rialto::MediaSourceStatus::ERROR;
     auto mediaSourceType = firebolt::rialto::MediaSourceType::VIDEO;
     std::function<void()> resendCallback;
-    int sourceId{static_cast<int>(mediaSourceType)};
     loadGstPlayer();
+
+    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
+        std::make_unique<IMediaPipeline::MediaSourceVideo>("video/h264");
+    mainThreadWillEnqueueTaskAndWait();
+
+    EXPECT_CALL(*m_gstPlayerMock, attachSource(Ref(mediaSource)));
+
+    EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), true);
+    int sourceId{mediaSource->getId()};
+
     mainThreadWillEnqueueTaskAndWait();
     ASSERT_TRUE(m_activeRequestsMock);
     EXPECT_CALL(*m_activeRequestsMock, getType(m_kNeedDataRequestId)).WillOnce(Return(mediaSourceType));

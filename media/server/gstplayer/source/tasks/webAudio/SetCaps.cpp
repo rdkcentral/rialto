@@ -22,7 +22,10 @@
 #include "IGstWrapper.h"
 #include "RialtoServerLogging.h"
 
-namespace firebolt::rialto::server::webaudio
+#include <gst/audio/gstaudiobasesink.h>
+#include <limits.h>
+
+namespace firebolt::rialto::server::tasks::webaudio
 {
 namespace
 {
@@ -53,8 +56,10 @@ public:
     {
         GstCaps *caps = m_gstWrapper->gstCapsNewEmptySimple("audio/x-raw");
         addFormat(caps);
-        m_gstWrapper->gstCapsSetSimple(caps, "channels", G_TYPE_UINT, m_pcmConfig.channels, "layout", G_TYPE_STRING,
-                                       "interleaved", "rate", G_TYPE_UINT, m_pcmConfig.rate, nullptr);
+        m_gstWrapper->gstCapsSetSimple(caps, "channels", G_TYPE_INT, m_pcmConfig.channels, "layout", G_TYPE_STRING,
+                                       "interleaved", "rate", G_TYPE_INT, m_pcmConfig.rate, "channel-mask",
+                                       GST_TYPE_BITMASK,
+                                       m_gstWrapper->gstAudioChannelGetFallbackMask(m_pcmConfig.channels), nullptr);
 
         return caps;
     }
@@ -118,23 +123,28 @@ void SetCaps::execute() const
     RIALTO_SERVER_LOG_DEBUG("Executing SetCaps");
 
     GstCaps *caps = createCapsFromMimeType();
-    gchar *capsStr = m_gstWrapper->gstCapsToString(caps);
-    std::string strCaps = capsStr;
-    m_glibWrapper->gFree(capsStr);
-
-    RIALTO_SERVER_LOG_DEBUG("caps str: '%s'", strCaps.c_str());
-
-    GstCaps *appsrcCaps = m_gstWrapper->gstAppSrcGetCaps(GST_APP_SRC(m_context.source));
-    if ((!appsrcCaps) || (!m_gstWrapper->gstCapsIsEqual(appsrcCaps, caps)))
-    {
-        RIALTO_SERVER_LOG_MIL("Updating web audio appsrc caps to '%s'", strCaps.c_str());
-        m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(m_context.source), caps);
-    }
-
-    if (appsrcCaps)
-        m_gstWrapper->gstCapsUnref(appsrcCaps);
     if (caps)
-        m_gstWrapper->gstCapsUnref(caps);
+    {
+        gchar *capsStr = m_gstWrapper->gstCapsToString(caps);
+        std::string strCaps = capsStr;
+        m_glibWrapper->gFree(capsStr);
+
+        RIALTO_SERVER_LOG_DEBUG("caps str: '%s'", strCaps.c_str());
+
+        GstCaps *appsrcCaps = m_gstWrapper->gstAppSrcGetCaps(GST_APP_SRC(m_context.source));
+        if ((!appsrcCaps) || (!m_gstWrapper->gstCapsIsEqual(appsrcCaps, caps)))
+        {
+            RIALTO_SERVER_LOG_INFO("Updating web audio appsrc caps to '%s'", strCaps.c_str());
+            m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(m_context.source), caps);
+        }
+
+        if (appsrcCaps)
+            m_gstWrapper->gstCapsUnref(appsrcCaps);
+        if (caps)
+            m_gstWrapper->gstCapsUnref(caps);
+
+        setBytesPerSample();
+    }
 }
 
 GstCaps *SetCaps::createCapsFromMimeType() const
@@ -153,4 +163,17 @@ GstCaps *SetCaps::createCapsFromMimeType() const
 
     return capsBuilder->buildCaps();
 }
-} // namespace firebolt::rialto::server::webaudio
+
+void SetCaps::setBytesPerSample() const
+{
+    if (m_audioMimeType == "audio/x-raw")
+    {
+        m_context.bytesPerSample = m_config.pcm.channels * (m_config.pcm.sampleSize / CHAR_BIT);
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Cannot set bytes per sample, invalid audio mime type %s", m_audioMimeType.c_str());
+    }
+}
+
+} // namespace firebolt::rialto::server::tasks::webaudio

@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_SET_POSITION_H_
-#define FIREBOLT_RIALTO_SERVER_SET_POSITION_H_
+#ifndef FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SET_POSITION_H_
+#define FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SET_POSITION_H_
 
 #include "GenericPlayerContext.h"
 #include "IGstGenericPlayerClient.h"
@@ -28,7 +28,7 @@
 #include <cstdint>
 #include <memory>
 
-namespace firebolt::rialto::server
+namespace firebolt::rialto::server::tasks::generic
 {
 class SetPosition : public IPlayerTask
 {
@@ -44,6 +44,6 @@ private:
     std::shared_ptr<IGstWrapper> m_gstWrapper;
     std::int64_t m_position;
 };
-} // namespace firebolt::rialto::server
+} // namespace firebolt::rialto::server::tasks::generic
 
-#endif // FIREBOLT_RIALTO_SERVER_SET_POSITION_H_
+#endif // FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SET_POSITION_H_

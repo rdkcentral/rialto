@@ -15,17 +15,15 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * @file SessionServerState.h
- *
- * This file comprises the enum class definition of SessionServerState.
- * Enum represents all possible states of session server.
  */
 
-#ifndef RIALTO_SERVERMANAGER_SERVICE_SESSION_SERVER_STATE_H_
-#define RIALTO_SERVERMANAGER_SERVICE_SESSION_SERVER_STATE_H_
+#ifndef FIREBOLT_RIALTO_COMMON_SESSION_SERVER_COMMON_H_
+#define FIREBOLT_RIALTO_COMMON_SESSION_SERVER_COMMON_H_
 
-namespace rialto::servermanager::service
+#include <stdint.h>
+#include <string>
+
+namespace firebolt::rialto::common
 {
 /**
  * @brief Represents all possible states of session server.
@@ -44,5 +42,31 @@ enum class SessionServerState
     NOT_RUNNING,
     ERROR
 };
-} // namespace rialto::servermanager::service
-#endif // RIALTO_SERVERMANAGER_SERVICE_SESSION_SERVER_STATE_H_
+
+/**
+ * @brief The max resource capabilities of the platform.
+ */
+struct MaxResourceCapabilitites
+{
+    int maxPlaybacks;
+    int maxWebAudioPlayers;
+};
+
+/**
+ * @brief Configuration data for an application
+ */
+struct AppConfig
+{
+    std::string clientIpcSocketName; /**< Socket name that Rialto client should connect to */
+    /*
+     * @note Socket name can take the following forms:
+     *    - Empty string, in which case Rialto server will automatically allocate the socket name, e.g. "/tmp/rialto-12"
+     *    - Full path, such as "/foo/bar", in which case Rialto will use this name for the socket
+     *    - Socket name, such as "bar", in which case Rialto will create the named socket in the default dir, e.g.
+     * "/tmp/bar" In all cases the name can be retrieved with getAppConnectionInfo()
+     */
+};
+
+} // namespace firebolt::rialto::common
+
+#endif // FIREBOLT_RIALTO_COMMON_SESSION_SERVER_COMMON_H_

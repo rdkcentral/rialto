@@ -132,6 +132,10 @@ MediaSegmentMetadata MediaFrameWriterV2::buildMetadata(const std::unique_ptr<IMe
     {
         metadata.set_segment_alignment(convertSegmentAlignment(data->getSegmentAlignment()));
     }
+    if (data->getCodecData())
+    {
+        metadata.set_codec_data(std::string(data->getCodecData()->begin(), data->getCodecData()->end()));
+    }
     if (data->isEncrypted())
     {
         metadata.set_media_key_session_id(data->getMediaKeySessionId());

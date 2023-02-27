@@ -23,7 +23,7 @@
 #include "RialtoServerLogging.h"
 #include "WebAudioPlayerContext.h"
 
-namespace firebolt::rialto::server::webaudio
+namespace firebolt::rialto::server::tasks::webaudio
 {
 HandleBusMessage::HandleBusMessage(WebAudioPlayerContext &context, IGstWebAudioPlayerPrivate &player,
                                    IGstWebAudioPlayerClient *client, std::shared_ptr<IGstWrapper> gstWrapper,
@@ -103,6 +103,13 @@ void HandleBusMessage::execute() const
             {
                 m_gstPlayerClient->notifyState(WebAudioPlayerState::END_OF_STREAM);
             }
+
+            // Flush the pipeline so that it can be reused
+            if ((!m_gstWrapper->gstElementSendEvent(m_context.pipeline, m_gstWrapper->gstEventNewFlushStart())) ||
+                (!m_gstWrapper->gstElementSendEvent(m_context.pipeline, m_gstWrapper->gstEventNewFlushStop(TRUE))))
+            {
+                RIALTO_SERVER_LOG_ERROR("Failed to flush the pipeline");
+            }
         }
         break;
     }
@@ -112,4 +119,4 @@ void HandleBusMessage::execute() const
 
     m_gstWrapper->gstMessageUnref(m_message);
 }
-} // namespace firebolt::rialto::server::webaudio
+} // namespace firebolt::rialto::server::tasks::webaudio

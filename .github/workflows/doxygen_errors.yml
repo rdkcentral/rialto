@@ -1,0 +1,38 @@
+name: Doxygen Documentation Check
+
+on:
+  pull_request:
+    branches: [ "master", "rdkcentral:master" ]
+  workflow_dispatch:
+
+jobs:
+  build-doxygen:
+      runs-on: ubuntu-20.04 
+      
+      steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y doxygen
+          sudo apt install -y graphviz
+      
+      - name: Run through the Doxygen Documentation
+        id: doxygen
+        run: |
+          mkdir -p build/gh_pages
+          doxygen 
+      
+      - name: Check for errors in the Doxygen Documentation
+        run: |
+          if [ -s doxygen_errors.txt ]
+          then
+            echo "Errors found in the Doxygen Documentation:"
+            cat doxygen_errors.txt
+            exit 1
+          else
+            echo "No errors found in the Doxygen Documentation!"
+            exit 0
+          fi

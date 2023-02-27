@@ -30,6 +30,7 @@ add_library(
         source/tasks/generic/GenericPlayerTaskFactory.cpp
         source/tasks/generic/AttachSamples.cpp
         source/tasks/generic/AttachSource.cpp
+        source/tasks/generic/DeepElementAdded.cpp
         source/tasks/generic/EnoughData.cpp
         source/tasks/generic/Eos.cpp
         source/tasks/generic/FinishSetupSource.cpp
@@ -38,6 +39,7 @@ add_library(
         source/tasks/generic/Pause.cpp
         source/tasks/generic/Play.cpp
         source/tasks/generic/ReadShmDataAndAttachSamples.cpp
+        source/tasks/generic/RemoveSource.cpp
         source/tasks/generic/RenderFrame.cpp
         source/tasks/generic/ReportPosition.cpp
         source/tasks/generic/CheckAudioUnderflow.cpp
@@ -50,6 +52,7 @@ add_library(
         source/tasks/generic/Shutdown.cpp
         source/tasks/generic/Stop.cpp
         source/tasks/generic/Underflow.cpp
+        source/tasks/generic/UpdatePlaybackGroup.cpp
 
         source/tasks/webAudio/WebAudioPlayerTaskFactory.cpp
         source/tasks/webAudio/Shutdown.cpp
@@ -92,6 +95,7 @@ target_include_directories(
         $<TARGET_PROPERTY:RialtoPlayerPublic,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoServerCommon,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoServerMain,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoServerWrappers,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoCommon,INTERFACE_INCLUDE_DIRECTORIES>
         ${GStreamerApp_INCLUDE_DIRS}
 
@@ -110,6 +114,7 @@ target_link_libraries(
         PRIVATE
         RialtoLogging
         RialtoServerMain
+        RialtoServerWrappers
         RialtoCommon
         ${GStreamerApp_LIBRARIES}
 

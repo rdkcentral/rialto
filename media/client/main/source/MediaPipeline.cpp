@@ -194,6 +194,7 @@ bool MediaPipeline::attachSource(const std::unique_ptr<IMediaPipeline::MediaSour
     if (status)
     {
         source->setId(sourceId);
+        m_attachedSources.add(sourceId, source->getType());
     }
     return status;
 }
@@ -201,7 +202,7 @@ bool MediaPipeline::attachSource(const std::unique_ptr<IMediaPipeline::MediaSour
 bool MediaPipeline::removeSource(int32_t id)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
-
+    m_attachedSources.remove(id);
     return m_mediaPipelineIpc->removeSource(id);
 }
 
@@ -553,6 +554,13 @@ void MediaPipeline::notifyNeedMediaData(int32_t sourceId, size_t frameCount, uin
                                         const std::shared_ptr<MediaPlayerShmInfo> &shmInfo)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    if (MediaSourceType::UNKNOWN == m_attachedSources.get(sourceId))
+    {
+        RIALTO_CLIENT_LOG_WARN("NeedMediaData received for unknown source %d, ignoring request id %u", sourceId,
+                               requestId);
+        return;
+    }
 
     switch (m_currentState)
     {

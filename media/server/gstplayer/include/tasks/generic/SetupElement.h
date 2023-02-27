@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_SETUP_ELEMENT_H_
-#define FIREBOLT_RIALTO_SERVER_SETUP_ELEMENT_H_
+#ifndef FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SETUP_ELEMENT_H_
+#define FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SETUP_ELEMENT_H_
 
 #include "GenericPlayerContext.h"
 #include "IGlibWrapper.h"
@@ -28,7 +28,7 @@
 #include <gst/gst.h>
 #include <memory>
 
-namespace firebolt::rialto::server
+namespace firebolt::rialto::server::tasks::generic
 {
 class SetupElement : public IPlayerTask
 {
@@ -45,6 +45,6 @@ private:
     IGstGenericPlayerPrivate &m_player;
     GstElement *m_element;
 };
-} // namespace firebolt::rialto::server
+} // namespace firebolt::rialto::server::tasks::generic
 
-#endif // FIREBOLT_RIALTO_SERVER_SETUP_ELEMENT_H_
+#endif // FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SETUP_ELEMENT_H_

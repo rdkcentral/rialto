@@ -18,6 +18,7 @@
  */
 
 #include "ServerManagerServiceTestsFixture.h"
+#include "Matchers.h"
 #include "ServerManagerService.h"
 #include "ServiceContextMock.h"
 #include <string>
@@ -35,8 +36,16 @@ ServerManagerServiceTests::ServerManagerServiceTests()
     m_sut = std::make_unique<rialto::servermanager::service::ServerManagerService>(std::move(serviceContext));
 }
 
+void ServerManagerServiceTests::initiateApplicationWillBeCalled(const std::string &appId,
+                                                                const firebolt::rialto::common::SessionServerState &state,
+                                                                const firebolt::rialto::common::AppConfig &appConfig,
+                                                                bool returnValue)
+{
+    EXPECT_CALL(m_appManager, initiateApplication(appId, state, appConfig)).WillOnce(Return(returnValue));
+}
+
 void ServerManagerServiceTests::setSessionServerStateWillBeCalled(
-    const std::string &appId, const rialto::servermanager::service::SessionServerState &state, bool returnValue)
+    const std::string &appId, const firebolt::rialto::common::SessionServerState &state, bool returnValue)
 {
     EXPECT_CALL(m_appManager, setSessionServerState(appId, state)).WillOnce(Return(returnValue));
 }
@@ -51,8 +60,16 @@ void ServerManagerServiceTests::setLogLevelsWillBeCalled(bool returnValue)
     EXPECT_CALL(m_appManager, setLogLevels(_)).WillOnce(Return(returnValue));
 }
 
-bool ServerManagerServiceTests::triggerChangeSessionServerState(
-    const std::string &appId, const rialto::servermanager::service::SessionServerState &state)
+bool ServerManagerServiceTests::triggerInitiateApplication(const std::string &appId,
+                                                           const firebolt::rialto::common::SessionServerState &state,
+                                                           const firebolt::rialto::common::AppConfig &appConfig)
+{
+    EXPECT_TRUE(m_sut);
+    return m_sut->initiateApplication(appId, state, appConfig);
+}
+
+bool ServerManagerServiceTests::triggerChangeSessionServerState(const std::string &appId,
+                                                                const firebolt::rialto::common::SessionServerState &state)
 {
     EXPECT_TRUE(m_sut);
     return m_sut->changeSessionServerState(appId, state);

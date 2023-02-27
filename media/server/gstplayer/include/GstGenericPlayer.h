@@ -36,6 +36,7 @@
 #include <IMediaPipeline.h>
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace firebolt::rialto::server
 {
@@ -53,9 +54,10 @@ public:
      */
     static std::weak_ptr<IGstGenericPlayerFactory> m_factory;
 
-    std::unique_ptr<IGstGenericPlayer> createGstGenericPlayer(IGstGenericPlayerClient *client,
-                                                              IDecryptionService &decryptionService, MediaType type,
-                                                              const VideoRequirements &videoRequirements) override;
+    std::unique_ptr<IGstGenericPlayer> createGstGenericPlayer(
+        IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
+        const VideoRequirements &videoRequirements,
+        const std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactory) override;
 };
 
 /**
@@ -95,6 +97,7 @@ public:
     virtual ~GstGenericPlayer();
 
     void attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &mediaSource) override;
+    void removeSource(const MediaSourceType &mediaSourceType) override;
     void play() override;
     void pause() override;
     void stop() override;
@@ -115,13 +118,14 @@ private:
     void scheduleAudioUnderflow() override;
     void scheduleVideoUnderflow() override;
     bool setWesterossinkRectangle() override;
-    bool setWesterossinkSecondaryVideo() override;
     void notifyNeedMediaData(bool audioNotificationNeeded, bool videoNotificationNeeded) override;
     GstBuffer *createBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const override;
     void attachAudioData() override;
     void attachVideoData() override;
-    void updateAudioCaps(int32_t rate, int32_t channels) override;
-    void updateVideoCaps(int32_t width, int32_t height) override;
+    void updateAudioCaps(int32_t rate, int32_t channels,
+                         const std::shared_ptr<std::vector<std::uint8_t>> &codecData) override;
+    void updateVideoCaps(int32_t width, int32_t height,
+                         const std::shared_ptr<std::vector<std::uint8_t>> &codecData) override;
     bool changePipelineState(GstState newState) override;
     void startPositionReportingAndCheckAudioUnderflowTimer() override;
     void stopPositionReportingAndCheckAudioUnderflowTimer() override;
@@ -130,6 +134,7 @@ private:
     void setPendingPlaybackRate() override;
     void renderFrame() override;
     void handleBusMessage(GstMessage *message) override;
+    void updatePlaybackGroup(GstElement *typefind, const GstCaps *caps) override;
 
 private:
     /**
@@ -163,6 +168,33 @@ private:
      * @param[in] self      : Reference to the calling object.
      */
     static void setupElement(GstElement *pipeline, GstElement *element, GstGenericPlayer *self);
+
+    /**
+     * @brief Callback on element-setup. Called by the Gstreamer thread
+     *
+     * @param[in] pipeline  : The pipeline the signal was fired from.
+     * @param[in] bin       : the GstBin the element was added to
+     * @param[in] element   : an element that was added to the playbin hierarchy
+     * @param[in] self      : Reference to the calling object.
+     */
+    static void deepElementAdded(GstBin *pipeline, GstBin *bin, GstElement *element, GstGenericPlayer *self);
+
+    /**
+     * @brief Creates a Westeros sink and sets the res-usage flag for a secondary video.
+     *
+     * @retval true on success.
+     */
+    bool setWesterossinkSecondaryVideo();
+
+    /**
+     * @brief Terminates the player pipeline.
+     */
+    void termPipeline();
+
+    /**
+     * @brief Shutdown and destroys the worker thread.
+     */
+    void resetWorkerThread();
 
 private:
     /**

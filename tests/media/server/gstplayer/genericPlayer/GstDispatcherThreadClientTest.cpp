@@ -31,7 +31,7 @@ class GstDispatcherThreadClientTest : public GstGenericPlayerTestCommon
 {
 protected:
     std::unique_ptr<IGstDispatcherThreadClient> m_sut;
-    VideoRequirements m_videoReq = {};
+    VideoRequirements m_videoReq = {kMinPrimaryVideoWidth, kMinPrimaryVideoHeight};
 
     GstDispatcherThreadClientTest()
     {
