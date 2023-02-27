@@ -57,7 +57,7 @@ static void consoleLogHandler(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL lev
     timespec ts = {0, 0};
     clock_gettime(CLOCK_MONOTONIC, &ts);
     struct iovec iov[6];
-    char tbuf[32];
+    char tbuf[32]; 
 
     iov[0].iov_base = tbuf;
     iov[0].iov_len = snprintf(tbuf, sizeof(tbuf), "%.010lu.%.06lu ", ts.tv_sec, ts.tv_nsec / 1000);
@@ -96,37 +96,74 @@ static void consoleLogHandler(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL lev
         break;
     }
 
+switch (component)
+    {
+    case RIALTO_COMPONENT_DEFAULT:
+        iov[2].iov_base = const_cast<void *>(reinterpret_cast<const void *>("DEF: "));
+        iov[2].iov_len = 5;
+        break;
+    case RIALTO_COMPONENT_CLIENT:
+        iov[2].iov_base = const_cast<void *>(reinterpret_cast<const void *>("CLI: "));
+        iov[2].iov_len = 5;
+        break;
+    case RIALTO_COMPONENT_SERVER:
+        iov[2].iov_base = const_cast<void *>(reinterpret_cast<const void *>("SRV: "));
+        iov[2].iov_len = 5;
+        break;
+    case RIALTO_COMPONENT_IPC:
+        iov[2].iov_base = const_cast<void *>(reinterpret_cast<const void *>("IPC: "));
+        iov[2].iov_len = 5;
+        break;
+    case RIALTO_COMPONENT_SERVER_MANAGER:
+        iov[2].iov_base = const_cast<void *>(reinterpret_cast<const void *>("SMG: "));
+        iov[2].iov_len = 5;
+        break;
+    case RIALTO_COMPONENT_COMMON:
+        iov[2].iov_base = const_cast<void *>(reinterpret_cast<const void *>("COM: "));
+        iov[2].iov_len = 5; 
+        break;
+    case RIALTO_COMPONENT_LAST:
+        iov[2].iov_base = const_cast<void *>(reinterpret_cast<const void *>("LST: "));
+        iov[2].iov_len = 5; 
+        break;
+    case RIALTO_COMPONENT_EXTERNAL:
+    default:
+        iov[2].iov_base = const_cast<void *>(reinterpret_cast<const void *>("EXT: "));
+        iov[2].iov_len = 5; 
+        break;
+    }
+
     static thread_local pid_t threadId = 0;
     if (threadId <= 0)
         threadId = syscall(SYS_gettid);
     char fbuf[180];
-    iov[2].iov_base = reinterpret_cast<void *>(fbuf);
+    iov[3].iov_base = reinterpret_cast<void *>(fbuf);
+
     if (RIALTO_DEBUG_LEVEL_EXTERNAL == level)
     {
-        iov[2].iov_len = snprintf(fbuf, sizeof(fbuf), "< T:%d >", threadId);
+        iov[3].iov_len = snprintf(fbuf, sizeof(fbuf), "< T:%d >", threadId);
     }
     else if (!file || !function || (line <= 0))
     {
-        iov[2].iov_len = snprintf(fbuf, sizeof(fbuf), "< T:%d M:? F:? L:? > ", threadId);
+        iov[3].iov_len = snprintf(fbuf, sizeof(fbuf), "< T:%d M:? F:? L:? > ", threadId);
     }
     else
     {
-        iov[2].iov_len =
+        iov[3].iov_len =
             snprintf(fbuf, sizeof(fbuf), "< T:%d M:%.*s F:%.*s L:%d > ", threadId, 64, file, 64, function, line);
     }
-    iov[2].iov_len = std::min(iov[2].iov_len, sizeof(fbuf));
-    iov[3].iov_base = const_cast<void *>(reinterpret_cast<const void *>(message));
-    iov[3].iov_len = messageLen;
-    iov[4].iov_base = const_cast<void *>(reinterpret_cast<const void *>("\n"));
-    iov[4].iov_len = 1;
+    iov[3].iov_len = std::min(iov[3].iov_len, sizeof(fbuf));
+    iov[4].iov_base = const_cast<void *>(reinterpret_cast<const void *>(message));
+    iov[4].iov_len = messageLen;
+    iov[5].iov_base = const_cast<void *>(reinterpret_cast<const void *>("\n"));
+    iov[5].iov_len = 1;
     // TODO(RIALTO-38): consider using standard write(2) and handle EINTR properly.
-    std::ignore = writev(STDERR_FILENO, iov, 5);
+    std::ignore = writev(STDERR_FILENO, iov, 6);
 }
-
 /**
  * Journald logging function for the library.
  */
-static void journaldLogHandler(RIALTO_DEBUG_LEVEL level, const char *file, int line, const char *function,
+static void journaldLogHandler(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char *file, int line, const char *function,
                                const char *message, size_t messageLen)
 {
     static thread_local pid_t threadId = 0;
@@ -220,11 +257,11 @@ static void rialtoLog(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, cons
     }
     else if (g_envVariableParser.isConsoleLoggingEnabled())
     {
-        consoleLogHandler(level, fname, line, func, mbuf, len);
+        consoleLogHandler(component, level, fname, line, func, mbuf, len);
     }
     else
     {
-        journaldLogHandler(level, fname, line, func, mbuf, len);
+        journaldLogHandler(component, level, fname, line, func, mbuf, len);
     }
 }
 
