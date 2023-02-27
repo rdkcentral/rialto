@@ -22,6 +22,7 @@
 
 #include "IOcdm.h"
 #include <memory>
+#include <mutex>
 #include <string>
 
 namespace firebolt::rialto::server
@@ -36,6 +37,11 @@ public:
      * @brief Weak pointer to the singleton object.
      */
     static std::weak_ptr<IOcdm> m_ocdm;
+
+    /**
+     * @brief Mutex protection for creation of the Ocdm object.
+     */
+    static std::mutex m_creationMutex;
 
     std::shared_ptr<IOcdm> getOcdm() const override;
 };

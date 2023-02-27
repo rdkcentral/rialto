@@ -26,6 +26,7 @@
 namespace firebolt::rialto
 {
 std::weak_ptr<IMediaKeysCapabilities> MediaKeysCapabilitiesFactory::m_mediaKeysCapabilities;
+std::mutex MediaKeysCapabilitiesFactory::m_creationMutex;
 
 std::shared_ptr<IMediaKeysCapabilitiesFactory> IMediaKeysCapabilitiesFactory::createFactory()
 {
@@ -45,6 +46,8 @@ std::shared_ptr<IMediaKeysCapabilitiesFactory> IMediaKeysCapabilitiesFactory::cr
 
 std::shared_ptr<IMediaKeysCapabilities> MediaKeysCapabilitiesFactory::getMediaKeysCapabilities() const
 {
+    std::lock_guard<std::mutex> lock{m_creationMutex};
+
     std::shared_ptr<IMediaKeysCapabilities> mediaKeysCapabilities =
         MediaKeysCapabilitiesFactory::m_mediaKeysCapabilities.lock();
 

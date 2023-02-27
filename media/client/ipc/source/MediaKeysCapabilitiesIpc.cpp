@@ -23,6 +23,7 @@
 namespace firebolt::rialto::client
 {
 std::weak_ptr<IMediaKeysCapabilities> MediaKeysCapabilitiesIpcFactory::m_mediaKeysCapabilitiesIpc;
+std::mutex MediaKeysCapabilitiesIpcFactory::m_creationMutex;
 
 std::shared_ptr<IMediaKeysCapabilitiesIpcFactory> IMediaKeysCapabilitiesIpcFactory::createFactory()
 {
@@ -42,6 +43,8 @@ std::shared_ptr<IMediaKeysCapabilitiesIpcFactory> IMediaKeysCapabilitiesIpcFacto
 
 std::shared_ptr<IMediaKeysCapabilities> MediaKeysCapabilitiesIpcFactory::getMediaKeysCapabilitiesIpc() const
 {
+    std::lock_guard<std::mutex> lock{m_creationMutex};
+
     std::shared_ptr<IMediaKeysCapabilities> mediaKeysCapabilitiesIpc =
         MediaKeysCapabilitiesIpcFactory::m_mediaKeysCapabilitiesIpc.lock();
 

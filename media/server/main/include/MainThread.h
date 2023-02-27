@@ -49,6 +49,11 @@ protected:
      * @brief Weak pointer to the singleton main thread object.
      */
     static std::weak_ptr<IMainThread> m_mainThread;
+
+    /**
+     * @brief Mutex protection for creation of the MainThread object.
+     */
+    static std::mutex m_creationMutex;
 };
 
 /**

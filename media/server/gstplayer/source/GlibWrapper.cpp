@@ -24,6 +24,7 @@ namespace firebolt::rialto::server
 {
 std::weak_ptr<IGlibWrapperFactory> GlibWrapperFactory::m_factory;
 std::weak_ptr<IGlibWrapper> GlibWrapperFactory::m_gstWrapper;
+std::mutex GlibWrapperFactory::m_creationMutex;
 
 std::shared_ptr<IGlibWrapperFactory> IGlibWrapperFactory::getFactory()
 {
@@ -48,6 +49,8 @@ std::shared_ptr<IGlibWrapperFactory> IGlibWrapperFactory::getFactory()
 
 std::shared_ptr<IGlibWrapper> GlibWrapperFactory::getGlibWrapper()
 {
+    std::lock_guard<std::mutex> lock{m_creationMutex};
+
     std::shared_ptr<IGlibWrapper> gstWrapper = GlibWrapperFactory::m_gstWrapper.lock();
 
     if (!gstWrapper)

@@ -23,6 +23,7 @@
 #include "IIpcClient.h"
 #include "IRialtoControlIpc.h"
 #include <memory>
+#include <mutex>
 
 #include "rialtocontrolmodule.pb.h"
 
@@ -55,6 +56,11 @@ protected:
      * @brief Weak pointer to the singleton rialto control object.
      */
     static std::weak_ptr<RialtoControlIpc> m_rialtoControlIpc;
+
+    /**
+     * @brief Mutex protection for creation of the RialtoControlIpc object.
+     */
+    static std::mutex m_creationMutex;
 
     /**
      * @brief Create generic object.

@@ -59,6 +59,11 @@ protected:
     static std::weak_ptr<RialtoControl> m_rialtoControl;
 
     /**
+     * @brief Mutex protection for creation of the RialtoControl object.
+     */
+    static std::mutex m_creationMutex;
+
+    /**
      * @brief Get the generic rialto control singleton object.
      *
      * @retval the generic rialto control singleton or null on error.
@@ -136,6 +141,11 @@ protected:
      * @brief Mutex protection for the shared memory.
      */
     std::mutex m_shmMutex;
+
+    /**
+     * @brief Mutex protection for the states of RialtoControl.
+     */
+    std::mutex m_stateMutex;
 
     /**
      * @brief Vector of clients to notify.
