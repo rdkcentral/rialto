@@ -181,9 +181,9 @@ MediaKeyErrorStatus MediaKeySession::updateSession(const std::vector<uint8_t> &r
 }
 
 MediaKeyErrorStatus MediaKeySession::decrypt(GstBuffer *encrypted, GstBuffer *subSample, const uint32_t subSampleCount,
-                                             GstBuffer *IV, GstBuffer *keyId, uint32_t initWithLast15)
+                                             GstBuffer *IV, GstBuffer *keyId, uint32_t initWithLast15, GstCaps *caps)
 {
-    MediaKeyErrorStatus status = m_ocdmSession->decrypt(encrypted, subSample, subSampleCount, IV, keyId, initWithLast15);
+    MediaKeyErrorStatus status = m_ocdmSession->decrypt(encrypted, subSample, subSampleCount, IV, keyId, initWithLast15, caps);
     if (MediaKeyErrorStatus::OK != status)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to decrypt");

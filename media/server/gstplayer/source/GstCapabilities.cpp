@@ -242,7 +242,12 @@ std::unordered_set<std::string> GstCapabilities::convertFromCapsVectorToMimeSet(
          {m_gstWrapper->gstCapsFromString("video/x-av1"), {"video/x-av1"}},
          {m_gstWrapper->gstCapsFromString("video/x-h264"), {"video/h264"}},
          {m_gstWrapper->gstCapsFromString("video/x-h265"), {"video/h265"}},
-         {m_gstWrapper->gstCapsFromString("video/x-vp9"), {"video/x-vp9"}}};
+         {m_gstWrapper->gstCapsFromString("video/x-vp9"), {"video/x-vp9"}},
+         {m_gstWrapper->gstCapsFromString("video/x-h265"), {"video/h265"}},
+         {m_gstWrapper->gstCapsFromString("video/x-h264, memory=(string)DMABuf"), {"video/h264"}},
+         {m_gstWrapper->gstCapsFromString("video/x-h265, memory=(string)DMABuf"), {"video/h265"}},
+         {m_gstWrapper->gstCapsFromString("video/x-av1, memory=(string)DMABuf"), {"video/x-av1"}},
+         {m_gstWrapper->gstCapsFromString("video/x-vp9, memory=(string)DMABuf"), {"video/x-vp9"}}};
 
     std::unordered_set<std::string> supportedMimes;
 

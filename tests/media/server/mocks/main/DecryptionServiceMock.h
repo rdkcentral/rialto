@@ -31,7 +31,7 @@ class DecryptionServiceMock : public IDecryptionService
 public:
     MOCK_METHOD(MediaKeyErrorStatus, decrypt,
                 (int32_t keySessionId, GstBuffer *encrypted, GstBuffer *subSample, const uint32_t subSampleCount,
-                 GstBuffer *IV, GstBuffer *keyId, uint32_t initWithLast15),
+                 GstBuffer *IV, GstBuffer *keyId, uint32_t initWithLast15, GstCaps* caps),
                 (override));
     MOCK_METHOD(bool, isNetflixKeySystem, (int32_t keySessionId), (const, override));
     MOCK_METHOD(MediaKeyErrorStatus, selectKeyId, (int32_t keySessionId, const std::vector<uint8_t> &keyId), (override));

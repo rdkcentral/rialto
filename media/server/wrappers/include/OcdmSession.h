@@ -61,7 +61,7 @@ public:
     MediaKeyErrorStatus update(const uint8_t response[], uint32_t responseSize) override;
 
     MediaKeyErrorStatus decrypt(GstBuffer *encrypted, GstBuffer *subSample, const uint32_t subSampleCount,
-                                GstBuffer *IV, GstBuffer *keyId, uint32_t initWithLast15) override;
+                                GstBuffer *IV, GstBuffer *keyId, uint32_t initWithLast15, GstCaps* caps) override;
 
     MediaKeyErrorStatus remove();
 

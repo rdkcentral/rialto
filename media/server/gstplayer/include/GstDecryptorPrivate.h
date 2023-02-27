@@ -44,10 +44,11 @@ public:
      * @brief Decrypts the gst buffer.
      *
      * @param[in] buffer   : The gst buffer to decrypt.
+     * @param[in] caps     : The gst caps of buffer.
      *
      * @retval the gst flow return status.
      */
-    GstFlowReturn decrypt(GstBuffer *buffer);
+    GstFlowReturn decrypt(GstBuffer *buffer, GstCaps* caps);
 
     /**
      * @brief Set the decryption service object.
