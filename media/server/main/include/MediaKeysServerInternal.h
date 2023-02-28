@@ -115,8 +115,8 @@ public:
     MediaKeyErrorStatus getCdmKeySessionId(int32_t keySessionId, std::string &cdmKeySessionId) override;
 
     MediaKeyErrorStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstBuffer *subSample,
-                                const uint32_t subSampleCount, GstBuffer *IV, GstBuffer *keyId,
-                                uint32_t initWithLast15, GstCaps *caps) override;
+                                const uint32_t subSampleCount, GstBuffer *IV, GstBuffer *keyId, uint32_t initWithLast15,
+                                GstCaps *caps) override;
 
     bool hasSession(int32_t keySessionId) const override;
 

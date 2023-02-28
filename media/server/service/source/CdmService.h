@@ -71,8 +71,8 @@ public:
     bool supportsKeySystem(const std::string &keySystem) override;
     bool getSupportedKeySystemVersion(const std::string &keySystem, std::string &version) override;
     MediaKeyErrorStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstBuffer *subSample,
-                                const uint32_t subSampleCount, GstBuffer *IV, GstBuffer *keyId,
-                                uint32_t initWithLast15, GstCaps *caps) override;
+                                const uint32_t subSampleCount, GstBuffer *IV, GstBuffer *keyId, uint32_t initWithLast15,
+                                GstCaps *caps) override;
     bool isNetflixKeySystem(int32_t keySessionId) const override;
     MediaKeyErrorStatus selectKeyId(int32_t keySessionId, const std::vector<uint8_t> &keyId) override;
     void incrementSessionIdUsageCounter(int32_t keySessionId) override;

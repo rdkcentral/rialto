@@ -48,7 +48,7 @@ public:
      *
      * @retval the gst flow return status.
      */
-    GstFlowReturn decrypt(GstBuffer *buffer, GstCaps* caps);
+    GstFlowReturn decrypt(GstBuffer *buffer, GstCaps *caps);
 
     /**
      * @brief Set the decryption service object.

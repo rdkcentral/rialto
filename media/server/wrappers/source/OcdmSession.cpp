@@ -205,8 +205,8 @@ MediaKeyErrorStatus OcdmSession::decrypt(GstBuffer *encrypted, GstBuffer *subSam
         return MediaKeyErrorStatus::FAIL;
     }
 
-    OpenCDMError status =
-        opencdm_gstreamer_session_decrypt_ex(m_session, encrypted, subSample, subSampleCount, IV, keyId, initWithLast15, caps);
+    OpenCDMError status = opencdm_gstreamer_session_decrypt_ex(m_session, encrypted, subSample, subSampleCount, IV,
+                                                               keyId, initWithLast15, caps);
 
     RIALTO_SERVER_LOG_INFO("opencdm_session_decrypt returned with status %s", openCdmErrorToString(status).c_str());
 

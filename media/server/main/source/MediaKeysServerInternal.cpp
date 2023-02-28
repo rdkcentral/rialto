@@ -545,7 +545,8 @@ MediaKeyErrorStatus MediaKeysServerInternal::decrypt(int32_t keySessionId, GstBu
 
 MediaKeyErrorStatus MediaKeysServerInternal::decryptInternal(int32_t keySessionId, GstBuffer *encrypted,
                                                              GstBuffer *subSample, const uint32_t subSampleCount,
-                                                             GstBuffer *IV, GstBuffer *keyId, uint32_t initWithLast15, GstCaps *caps)
+                                                             GstBuffer *IV, GstBuffer *keyId, uint32_t initWithLast15,
+                                                             GstCaps *caps)
 {
     auto sessionIter = m_mediaKeySessions.find(keySessionId);
     if (sessionIter == m_mediaKeySessions.end())
@@ -554,8 +555,8 @@ MediaKeyErrorStatus MediaKeysServerInternal::decryptInternal(int32_t keySessionI
         return MediaKeyErrorStatus::BAD_SESSION_ID;
     }
 
-    MediaKeyErrorStatus status =
-        sessionIter->second.mediaKeySession->decrypt(encrypted, subSample, subSampleCount, IV, keyId, initWithLast15, caps);
+    MediaKeyErrorStatus status = sessionIter->second.mediaKeySession->decrypt(encrypted, subSample, subSampleCount, IV,
+                                                                              keyId, initWithLast15, caps);
     if (MediaKeyErrorStatus::OK != status)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to decrypt buffer.");

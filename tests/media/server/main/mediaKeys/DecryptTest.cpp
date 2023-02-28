@@ -48,8 +48,8 @@ TEST_F(RialtoServerMediaKeysDecryptTest, Success)
                 decrypt(&m_encrypted, &m_subSample, m_subSampleCount, &m_IV, &m_keyId, m_initWithLast15, &m_caps))
         .WillOnce(Return(MediaKeyErrorStatus::OK));
 
-    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeys->decrypt(m_kKeySessionId, &m_encrypted, &m_subSample,
-                                                            m_subSampleCount, &m_IV, &m_keyId, m_initWithLast15, &m_caps));
+    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeys->decrypt(m_kKeySessionId, &m_encrypted, &m_subSample, m_subSampleCount,
+                                                            &m_IV, &m_keyId, m_initWithLast15, &m_caps));
 }
 
 /**

@@ -59,7 +59,7 @@ public:
                 (override));
     MOCK_METHOD(MediaKeyErrorStatus, decrypt,
                 (int32_t keySessionId, GstBuffer *encrypted, GstBuffer *subSample, const uint32_t subSampleCount,
-                 GstBuffer *IV, GstBuffer *keyId, uint32_t initWithLast15, GstCaps* caps),
+                 GstBuffer *IV, GstBuffer *keyId, uint32_t initWithLast15, GstCaps *caps),
                 (override));
     MOCK_METHOD(bool, hasSession, (int32_t keySessionId), (const, override));
     MOCK_METHOD(bool, isNetflixKeySystem, (int32_t keySessionId), (const, override));

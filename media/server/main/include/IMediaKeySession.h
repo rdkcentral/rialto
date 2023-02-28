@@ -121,7 +121,7 @@ public:
      * @retval an error status.
      */
     virtual MediaKeyErrorStatus decrypt(GstBuffer *encrypted, GstBuffer *subSample, const uint32_t subSampleCount,
-                                        GstBuffer *IV, GstBuffer *keyId, uint32_t initWithLast15, GstCaps* caps) = 0;
+                                        GstBuffer *IV, GstBuffer *keyId, uint32_t initWithLast15, GstCaps *caps) = 0;
 
     /**
      * @brief Closes the key session.

@@ -88,7 +88,7 @@ public:
      * @param[in]  initWithLast15 : The value deciding whether decryption context needs to be initialized with
      *                              last 15 bytes. Currently this only applies to PlayReady DRM.
      * @param[in] caps            : The gst caps of buffer.
-     * 
+     *
      * @retval an error status.
      */
     virtual MediaKeyErrorStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstBuffer *subSample,

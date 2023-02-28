@@ -36,7 +36,7 @@ public:
     MOCK_METHOD(MediaKeyErrorStatus, updateSession, (const std::vector<uint8_t> &responseData), (override));
     MOCK_METHOD(MediaKeyErrorStatus, decrypt,
                 (GstBuffer * encrypted, GstBuffer *subSample, const uint32_t subSampleCount, GstBuffer *IV,
-                 GstBuffer *keyId, uint32_t initWithLast15, GstCaps* caps),
+                 GstBuffer *keyId, uint32_t initWithLast15, GstCaps *caps),
                 (override));
     MOCK_METHOD(MediaKeyErrorStatus, closeKeySession, (), (override));
     MOCK_METHOD(MediaKeyErrorStatus, removeKeySession, (), (override));
