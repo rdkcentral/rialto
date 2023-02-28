@@ -56,10 +56,15 @@ public:
         : m_capsMap{{"audio/mpeg, mpegversion=(int)4", {}},
                     {"audio/x-eac3", {}},
                     {"audio/x-opus", {}},
+                    {"audio/x-opus, channel-mapping-family=(int)0", {}},
                     {"video/x-av1", {}},
                     {"video/x-h264", {}},
                     {"video/x-h265", {}},
-                    {"video/x-vp9", {}}}
+                    {"video/x-vp9", {}},
+                    {"video/x-h264(memory:DMABuf)", {}},
+                    {"video/x-h265(memory:DMABuf)", {}},
+                    {"video/x-av1(memory:DMABuf)", {}},
+                    {"video/x-vp9(memory:DMABuf)", {}}}
     {
     }
     ~GstCapabilitiesTest() = default;
