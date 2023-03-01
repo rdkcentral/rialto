@@ -137,7 +137,14 @@ static GstFlowReturn gst_rialto_decryptor_transform_ip(GstBaseTransform *base, /
 
     GST_TRACE_OBJECT(self, "Transform in place buf=(%" GST_PTR_FORMAT ")", buffer);
 
-    return (priv->decrypt(buffer));
+    GstPad *sink_pad = gst_element_get_static_pad(GST_ELEMENT(self), "sink");
+    GstCaps *caps = gst_pad_get_current_caps(sink_pad);
+
+    GstFlowReturn result = priv->decrypt(buffer, caps);
+    gst_caps_unref(caps);
+    gst_object_unref(sink_pad);
+
+    return result;
 }
 
 namespace firebolt::rialto::server
@@ -191,7 +198,7 @@ GstRialtoDecryptorPrivate::GstRialtoDecryptorPrivate(GstBaseTransform *parentEle
     }
 }
 
-GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer)
+GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer, GstCaps *caps)
 {
     GstRialtoDecryptor *self = GST_RIALTO_DECRYPTOR(m_decryptorElement);
     GstRialtoProtectionData *protectionData = m_metadataWrapper->getProtectionMetadataData(buffer);
@@ -214,8 +221,9 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer)
             GstBuffer *iv = protectionData->iv;
             GstBuffer *subsamples = protectionData->subsamples;
 
-            firebolt::rialto::MediaKeyErrorStatus status =
-                m_decryptionService->decrypt(keySessionId, buffer, subsamples, subsampleCount, iv, key, initWithLast15);
+            firebolt::rialto::MediaKeyErrorStatus status = m_decryptionService->decrypt(keySessionId, buffer,
+                                                                                        subsamples, subsampleCount, iv,
+                                                                                        key, initWithLast15, caps);
             if (firebolt::rialto::MediaKeyErrorStatus::OK != status)
             {
                 GST_ERROR_OBJECT(self, "Failed decrypt the buffer");

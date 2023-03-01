@@ -411,7 +411,7 @@ bool CdmService::getSupportedKeySystemVersion(const std::string &keySystem, std:
 
 MediaKeyErrorStatus CdmService::decrypt(int32_t keySessionId, GstBuffer *encrypted, GstBuffer *subSample,
                                         const uint32_t subSampleCount, GstBuffer *IV, GstBuffer *keyId,
-                                        uint32_t initWithLast15)
+                                        uint32_t initWithLast15, GstCaps *caps)
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to decrypt, key session id: %d", keySessionId);
 
@@ -423,7 +423,8 @@ MediaKeyErrorStatus CdmService::decrypt(int32_t keySessionId, GstBuffer *encrypt
         RIALTO_SERVER_LOG_ERROR("Media keys handle for mksId: %d does not exists", keySessionId);
         return MediaKeyErrorStatus::FAIL;
     }
-    return mediaKeysIter->second->decrypt(keySessionId, encrypted, subSample, subSampleCount, IV, keyId, initWithLast15);
+    return mediaKeysIter->second->decrypt(keySessionId, encrypted, subSample, subSampleCount, IV, keyId, initWithLast15,
+                                          caps);
 }
 
 bool CdmService::isNetflixKeySystem(int32_t keySessionId) const
