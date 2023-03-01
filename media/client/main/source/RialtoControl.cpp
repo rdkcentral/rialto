@@ -38,6 +38,7 @@ std::shared_ptr<IRialtoControlFactory> IRialtoControlFactory::createFactory()
 namespace firebolt::rialto::client
 {
 std::weak_ptr<RialtoControl> RialtoControlFactory::m_rialtoControl;
+std::mutex RialtoControlFactory::m_creationMutex;
 
 std::shared_ptr<ISharedMemoryManagerFactory> ISharedMemoryManagerFactory::createFactory()
 {
@@ -71,6 +72,8 @@ std::shared_ptr<ISharedMemoryManager> RialtoControlFactory::getSharedMemoryManag
 
 std::shared_ptr<RialtoControl> RialtoControlFactory::getGeneric() const
 {
+    std::lock_guard<std::mutex> lock{m_creationMutex};
+
     std::shared_ptr<RialtoControl> rialtoControl = m_rialtoControl.lock();
     if (!rialtoControl)
     {
@@ -115,6 +118,8 @@ RialtoControl::~RialtoControl()
 
 bool RialtoControl::setApplicationState(ApplicationState state)
 {
+    std::lock_guard<std::mutex> lock{m_stateMutex};
+
     if (ApplicationState::UNKNOWN == m_currentState)
     {
         RIALTO_CLIENT_LOG_ERROR("Rialto control not initalised");
@@ -160,6 +165,8 @@ bool RialtoControl::setApplicationState(ApplicationState state)
 
 bool RialtoControl::init()
 {
+    std::lock_guard<std::mutex> lock{m_stateMutex};
+
     m_currentState = ApplicationState::INACTIVE;
 
     return true;
@@ -167,6 +174,8 @@ bool RialtoControl::init()
 
 void RialtoControl::term()
 {
+    std::lock_guard<std::mutex> lock{m_stateMutex};
+
     if (ApplicationState::RUNNING == m_currentState)
     {
         termSharedMemory();

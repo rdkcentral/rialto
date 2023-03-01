@@ -39,7 +39,7 @@ protected:
 TEST_F(RialtoServerMediaPipelineSourceTest, AttachSourceSuccess)
 {
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
-        std::make_unique<IMediaPipeline::MediaSourceAudio>(-1, m_kMimeType);
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType);
 
     loadGstPlayer();
     mainThreadWillEnqueueTaskAndWait();
@@ -57,7 +57,7 @@ TEST_F(RialtoServerMediaPipelineSourceTest, AttachAudioSourceWitSpecificConfigur
 {
     AudioConfig audioConfig{6, 48000, {1, 2, 3}};
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
-        std::make_unique<IMediaPipeline::MediaSourceAudio>(-1, m_kMimeType, audioConfig);
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType, audioConfig);
 
     loadGstPlayer();
     mainThreadWillEnqueueTaskAndWait();
@@ -74,7 +74,7 @@ TEST_F(RialtoServerMediaPipelineSourceTest, AttachAudioSourceWitSpecificConfigur
 TEST_F(RialtoServerMediaPipelineSourceTest, NoGstPlayerFailure)
 {
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
-        std::make_unique<IMediaPipeline::MediaSourceAudio>(-1, m_kMimeType);
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType);
 
     mainThreadWillEnqueueTaskAndWait();
     EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), false);
@@ -87,7 +87,7 @@ TEST_F(RialtoServerMediaPipelineSourceTest, NoGstPlayerFailure)
 TEST_F(RialtoServerMediaPipelineSourceTest, RemoveSourceSuccess)
 {
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
-        std::make_unique<IMediaPipeline::MediaSourceAudio>(-1, m_kMimeType);
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType);
 
     loadGstPlayer();
     mainThreadWillEnqueueTaskAndWait();
@@ -127,7 +127,7 @@ TEST_F(RialtoServerMediaPipelineSourceTest, RemoveSourceNoSourcePresent)
 TEST_F(RialtoServerMediaPipelineSourceTest, AttachRemoveAttachSourceDifferentId)
 {
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
-        std::make_unique<IMediaPipeline::MediaSourceAudio>(-1, m_kMimeType);
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType);
 
     loadGstPlayer();
 
@@ -153,7 +153,7 @@ TEST_F(RialtoServerMediaPipelineSourceTest, AttachRemoveAttachSourceDifferentId)
 TEST_F(RialtoServerMediaPipelineSourceTest, UpdateSourceIdNotChanged)
 {
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
-        std::make_unique<IMediaPipeline::MediaSourceAudio>(-1, m_kMimeType);
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType);
 
     loadGstPlayer();
 

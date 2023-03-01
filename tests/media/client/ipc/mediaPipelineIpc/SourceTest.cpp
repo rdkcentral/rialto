@@ -138,7 +138,7 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachSourceSuccess)
         .WillOnce(WithArgs<3>(Invoke(this, &RialtoClientMediaPipelineIpcSourceTest::setAttachSourceResponse)));
 
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
-        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_id, m_kMimeType);
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType);
 
     EXPECT_EQ(m_mediaPipelineIpc->attachSource(mediaSource, m_id), true);
 }
@@ -172,8 +172,7 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachAudioSourceWithAdditionalda
     AudioConfig audioConfig{6, 48000, codecSpecificConfig};
 
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
-        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_id, m_kMimeType, audioConfig, alignment, streamFormat,
-                                                           codecData);
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType, audioConfig, alignment, streamFormat, codecData);
 
     EXPECT_EQ(m_mediaPipelineIpc->attachSource(mediaSource, m_id), true);
 }
@@ -208,8 +207,7 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachAudioSourceWithEmptyCodecDa
     AudioConfig audioConfig{6, 48000, codecSpecificConfig};
 
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
-        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_id, m_kMimeType, audioConfig, alignment, streamFormat,
-                                                           codecData);
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType, audioConfig, alignment, streamFormat, codecData);
 
     EXPECT_EQ(m_mediaPipelineIpc->attachSource(mediaSource, m_id), true);
 }
@@ -233,7 +231,7 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachDolbyVisionSourceWithSucces
         .WillOnce(WithArgs<3>(Invoke(this, &RialtoClientMediaPipelineIpcSourceTest::setAttachSourceResponse)));
 
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
-        std::make_unique<IMediaPipeline::MediaSourceVideoDolbyVision>(m_id, m_kMimeType, dolbyVisionProfile, alignment,
+        std::make_unique<IMediaPipeline::MediaSourceVideoDolbyVision>(m_kMimeType, dolbyVisionProfile, alignment,
                                                                       streamFormat, codecData);
 
     EXPECT_EQ(m_mediaPipelineIpc->attachSource(mediaSource, m_id), true);
@@ -248,7 +246,7 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachSourceFailure)
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("attachSource"), _, _, _, _));
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
-        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_id, m_kMimeType);
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType);
 
     EXPECT_EQ(m_mediaPipelineIpc->attachSource(mediaSource, m_id), false);
 }
@@ -262,7 +260,7 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachSourceChannelDisconnected)
     expectUnsubscribeEvents();
 
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
-        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_id, m_kMimeType);
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType);
     EXPECT_EQ(m_mediaPipelineIpc->attachSource(mediaSource, m_id), false);
 
     // Reattach channel on destroySession
@@ -282,7 +280,7 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachSourceReconnectChannel)
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("attachSource"), _, _, _, _));
 
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
-        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_id, m_kMimeType);
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType);
     EXPECT_EQ(m_mediaPipelineIpc->attachSource(mediaSource, m_id), true);
 }
 

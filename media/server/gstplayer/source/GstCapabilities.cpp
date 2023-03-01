@@ -52,7 +52,6 @@ std::shared_ptr<IGstCapabilitiesFactory> IGstCapabilitiesFactory::getFactory()
 std::unique_ptr<IGstCapabilities> GstCapabilitiesFactory::createGstCapabilities()
 {
     std::unique_ptr<IGstCapabilities> gstCapabilities;
-
     try
     {
         std::shared_ptr<IGstWrapperFactory> gstWrapperFactory = IGstWrapperFactory::getFactory();
@@ -239,10 +238,15 @@ std::unordered_set<std::string> GstCapabilities::convertFromCapsVectorToMimeSet(
         {{m_gstWrapper->gstCapsFromString("audio/mpeg, mpegversion=(int)4"), {"audio/mp4", "audio/aac", "audio/x-eac3"}},
          {m_gstWrapper->gstCapsFromString("audio/x-eac3"), {"audio/x-eac3"}},
          {m_gstWrapper->gstCapsFromString("audio/x-opus"), {"audio/x-opus"}},
+         {m_gstWrapper->gstCapsFromString("audio/x-opus, channel-mapping-family=(int)0"), {"audio/x-opus"}},
          {m_gstWrapper->gstCapsFromString("video/x-av1"), {"video/x-av1"}},
          {m_gstWrapper->gstCapsFromString("video/x-h264"), {"video/h264"}},
          {m_gstWrapper->gstCapsFromString("video/x-h265"), {"video/h265"}},
-         {m_gstWrapper->gstCapsFromString("video/x-vp9"), {"video/x-vp9"}}};
+         {m_gstWrapper->gstCapsFromString("video/x-vp9"), {"video/x-vp9"}},
+         {m_gstWrapper->gstCapsFromString("video/x-h264(memory:DMABuf)"), {"video/h264"}},
+         {m_gstWrapper->gstCapsFromString("video/x-h265(memory:DMABuf)"), {"video/h265"}},
+         {m_gstWrapper->gstCapsFromString("video/x-av1(memory:DMABuf)"), {"video/x-av1"}},
+         {m_gstWrapper->gstCapsFromString("video/x-vp9(memory:DMABuf)"), {"video/x-vp9"}}};
 
     std::unordered_set<std::string> supportedMimes;
 

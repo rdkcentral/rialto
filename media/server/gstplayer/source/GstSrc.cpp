@@ -267,6 +267,7 @@ namespace firebolt::rialto::server
 {
 std::weak_ptr<IGstSrcFactory> GstSrcFactory::m_factory;
 std::weak_ptr<IGstSrc> GstSrcFactory::m_gstSrc;
+std::mutex GstSrcFactory::m_creationMutex;
 
 std::shared_ptr<IGstSrcFactory> IGstSrcFactory::getFactory()
 {
@@ -291,6 +292,8 @@ std::shared_ptr<IGstSrcFactory> IGstSrcFactory::getFactory()
 
 std::shared_ptr<IGstSrc> GstSrcFactory::getGstSrc()
 {
+    std::lock_guard<std::mutex> lock{m_creationMutex};
+
     std::shared_ptr<IGstSrc> gstSrc = GstSrcFactory::m_gstSrc.lock();
 
     if (!gstSrc)

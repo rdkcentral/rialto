@@ -37,11 +37,6 @@ public:
     MediaPipelineCapabilitiesFactory() = default;
     ~MediaPipelineCapabilitiesFactory() override = default;
 
-    /**
-     * @brief Weak pointer to the singleton object.
-     */
-    static std::weak_ptr<IMediaPipelineCapabilities> m_mediaPipelineCapabilities;
-
     std::unique_ptr<IMediaPipelineCapabilities> createMediaPipelineCapabilities() const override;
 };
 

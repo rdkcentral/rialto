@@ -58,7 +58,7 @@ protected:
 TEST_F(AttachSourceTest, shouldAttachAudioSource)
 {
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
-        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(-1, "audio/aac");
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>("audio/aac");
     firebolt::rialto::server::tasks::generic::AttachSource task{m_context,     m_gstWrapper,
                                                                 m_glibWrapper, m_rdkGstreamerUtilsWrapper,
                                                                 m_gstPlayer,   source};
@@ -79,7 +79,7 @@ TEST_F(AttachSourceTest, shouldAttachAudioSourceWithChannelsAndRate)
 {
     firebolt::rialto::AudioConfig audioConfig{6, 48000, {}};
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
-        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(-1, "audio/x-eac3", audioConfig);
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>("audio/x-eac3", audioConfig);
     firebolt::rialto::server::tasks::generic::AttachSource task{m_context,     m_gstWrapper,
                                                                 m_glibWrapper, m_rdkGstreamerUtilsWrapper,
                                                                 m_gstPlayer,   source};
@@ -101,7 +101,7 @@ TEST_F(AttachSourceTest, shouldAttachOpusWithAudioSpecificConf)
 {
     firebolt::rialto::AudioConfig audioConfig{0, 0, {'T', 'E', 'S', 'T'}};
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
-        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(-1, "audio/x-opus", audioConfig);
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>("audio/x-opus", audioConfig);
     firebolt::rialto::server::tasks::generic::AttachSource task{m_context,     m_gstWrapper,
                                                                 m_glibWrapper, m_rdkGstreamerUtilsWrapper,
                                                                 m_gstPlayer,   source};
@@ -125,7 +125,7 @@ TEST_F(AttachSourceTest, shouldAttachVideoSource)
     std::shared_ptr<std::vector<std::uint8_t>> codecData{
         std::make_shared<std::vector<std::uint8_t>>(std::vector<std::uint8_t>{'T', 'E', 'S', 'T'})};
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
-        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>(-1, "video/h264",
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>("video/h264",
                                                                              firebolt::rialto::SegmentAlignment::AU,
                                                                              firebolt::rialto::StreamFormat::AVC,
                                                                              codecData);
@@ -156,7 +156,7 @@ TEST_F(AttachSourceTest, shouldAttachVideoSourceEmptyCodecData)
     GstBuffer buf;
     std::shared_ptr<std::vector<std::uint8_t>> codecData{std::make_shared<std::vector<std::uint8_t>>()};
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
-        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>(-1, "video/h264",
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>("video/h264",
                                                                              firebolt::rialto::SegmentAlignment::AU,
                                                                              firebolt::rialto::StreamFormat::AVC,
                                                                              codecData);
@@ -185,7 +185,7 @@ TEST_F(AttachSourceTest, shouldUpdateEmptyCapsInAudioSource)
 {
     m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, &m_appSrc);
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
-        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(-1, "");
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>("");
     firebolt::rialto::server::tasks::generic::AttachSource task{m_context,     m_gstWrapper,
                                                                 m_glibWrapper, m_rdkGstreamerUtilsWrapper,
                                                                 m_gstPlayer,   source};
@@ -204,7 +204,7 @@ TEST_F(AttachSourceTest, shouldUpdateExistingCapsInAudioSource)
 {
     m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, &m_appSrc);
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
-        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(-1, "audio/aac");
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>("audio/aac");
     firebolt::rialto::server::tasks::generic::AttachSource task{m_context,     m_gstWrapper,
                                                                 m_glibWrapper, m_rdkGstreamerUtilsWrapper,
                                                                 m_gstPlayer,   source};
@@ -226,7 +226,7 @@ TEST_F(AttachSourceTest, shouldUpdateEmptyCapsInVideoSource)
 {
     m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::VIDEO, &m_appSrc);
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
-        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>(-1, "");
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>("");
     firebolt::rialto::server::tasks::generic::AttachSource task{m_context,     m_gstWrapper,
                                                                 m_glibWrapper, m_rdkGstreamerUtilsWrapper,
                                                                 m_gstPlayer,   source};
@@ -245,7 +245,7 @@ TEST_F(AttachSourceTest, shouldUpdateExistingCapsInVideoSource)
 {
     m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::VIDEO, &m_appSrc);
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
-        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>(-1, "video/h264");
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>("video/h264");
     firebolt::rialto::server::tasks::generic::AttachSource task{m_context,     m_gstWrapper,
                                                                 m_glibWrapper, m_rdkGstreamerUtilsWrapper,
                                                                 m_gstPlayer,   source};
@@ -266,7 +266,7 @@ TEST_F(AttachSourceTest, shouldNotUpdateAudioSource)
 {
     m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, &m_appSrc);
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
-        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(-1, "audio/aac");
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>("audio/aac");
     firebolt::rialto::server::tasks::generic::AttachSource task{m_context,     m_gstWrapper,
                                                                 m_glibWrapper, m_rdkGstreamerUtilsWrapper,
                                                                 m_gstPlayer,   source};
@@ -287,7 +287,7 @@ TEST_F(AttachSourceTest, shouldNotUpdateVideoSource)
 {
     m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::VIDEO, &m_appSrc);
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
-        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>(-1, "video/h264");
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>("video/h264");
     firebolt::rialto::server::tasks::generic::AttachSource task{m_context,     m_gstWrapper,
                                                                 m_glibWrapper, m_rdkGstreamerUtilsWrapper,
                                                                 m_gstPlayer,   source};
@@ -310,10 +310,11 @@ TEST_F(AttachSourceTest, shouldAttachVideoDolbyVisionSource)
     GstBuffer buf;
     std::shared_ptr<std::vector<std::uint8_t>> codecData{
         std::make_shared<std::vector<std::uint8_t>>(std::vector<std::uint8_t>{'T', 'E', 'S', 'T'})};
-    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source = std::make_unique<
-        firebolt::rialto::IMediaPipeline::MediaSourceVideoDolbyVision>(-1, "video/h265", dolbyVisionProfile,
-                                                                       firebolt::rialto::SegmentAlignment::AU,
-                                                                       firebolt::rialto::StreamFormat::AVC, codecData);
+    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideoDolbyVision>("video/h265", dolbyVisionProfile,
+                                                                                        firebolt::rialto::SegmentAlignment::AU,
+                                                                                        firebolt::rialto::StreamFormat::AVC,
+                                                                                        codecData);
     firebolt::rialto::server::tasks::generic::AttachSource task{m_context,     m_gstWrapper,
                                                                 m_glibWrapper, m_rdkGstreamerUtilsWrapper,
                                                                 m_gstPlayer,   source};
@@ -344,7 +345,7 @@ TEST_F(AttachSourceTest, shouldSwitchAudioSource)
     m_context.audioSourceRemoved = true;
     gchar oldCapsStr[]{"audio/x-eac3"};
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
-        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(-1, "audio/aac");
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>("audio/aac");
     firebolt::rialto::server::tasks::generic::AttachSource task{m_context,     m_gstWrapper,
                                                                 m_glibWrapper, m_rdkGstreamerUtilsWrapper,
                                                                 m_gstPlayer,   source};
@@ -380,7 +381,7 @@ TEST_F(AttachSourceTest, shouldNotSwitchAudioSourceWhenMimeTypeIsEmpty)
     m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, &m_appSrc);
     m_context.audioSourceRemoved = true;
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
-        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(-1, "");
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>("");
     firebolt::rialto::server::tasks::generic::AttachSource task{m_context,     m_gstWrapper,
                                                                 m_glibWrapper, m_rdkGstreamerUtilsWrapper,
                                                                 m_gstPlayer,   source};

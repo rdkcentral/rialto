@@ -22,6 +22,7 @@
 
 #include "IGlibWrapper.h"
 #include <memory>
+#include <mutex>
 
 namespace firebolt::rialto::server
 {
@@ -40,6 +41,11 @@ public:
      * @brief Weak pointer to the singleton object.
      */
     static std::weak_ptr<IGlibWrapper> m_gstWrapper;
+
+    /**
+     * @brief Mutex protection for creation of the GlibWrapper object.
+     */
+    static std::mutex m_creationMutex;
 
     std::shared_ptr<IGlibWrapper> getGlibWrapper() override;
 };

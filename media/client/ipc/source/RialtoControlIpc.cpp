@@ -23,6 +23,7 @@
 namespace firebolt::rialto::client
 {
 std::weak_ptr<RialtoControlIpc> RialtoControlIpcFactory::m_rialtoControlIpc;
+std::mutex RialtoControlIpcFactory::m_creationMutex;
 
 std::shared_ptr<IRialtoControlIpcFactory> IRialtoControlIpcFactory::createFactory()
 {
@@ -62,6 +63,8 @@ std::shared_ptr<IIpcClient> RialtoControlIpcFactory::getIpcClient()
 
 std::shared_ptr<RialtoControlIpc> RialtoControlIpcFactory::getGeneric()
 {
+    std::lock_guard<std::mutex> lock{m_creationMutex};
+
     std::shared_ptr<RialtoControlIpc> rialtoControlIpc = m_rialtoControlIpc.lock();
 
     if (!rialtoControlIpc)

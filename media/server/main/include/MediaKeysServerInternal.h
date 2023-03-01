@@ -115,8 +115,8 @@ public:
     MediaKeyErrorStatus getCdmKeySessionId(int32_t keySessionId, std::string &cdmKeySessionId) override;
 
     MediaKeyErrorStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstBuffer *subSample,
-                                const uint32_t subSampleCount, GstBuffer *IV, GstBuffer *keyId,
-                                uint32_t initWithLast15) override;
+                                const uint32_t subSampleCount, GstBuffer *IV, GstBuffer *keyId, uint32_t initWithLast15,
+                                GstCaps *caps) override;
 
     bool hasSession(int32_t keySessionId) const override;
 
@@ -246,7 +246,7 @@ private:
      */
     MediaKeyErrorStatus decryptInternal(int32_t keySessionId, GstBuffer *encrypted, GstBuffer *subSample,
                                         const uint32_t subSampleCount, GstBuffer *IV, GstBuffer *keyId,
-                                        uint32_t initWithLast15);
+                                        uint32_t initWithLast15, GstCaps *caps);
 
     /**
      * @brief Selects the specified keyId for the key session internally, only to be called on the main thread.

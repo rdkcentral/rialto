@@ -102,7 +102,7 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyNetworkState)
 TEST_F(RialtoServerMediaPipelineCallbackTest, notifyNeedMediaDataInPrerollingState)
 {
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
-        std::make_unique<IMediaPipeline::MediaSourceVideo>(-1, "video/h264");
+        std::make_unique<IMediaPipeline::MediaSourceVideo>("video/h264");
     mainThreadWillEnqueueTaskAndWait();
 
     EXPECT_CALL(*m_gstPlayerMock, attachSource(Ref(mediaSource)));
@@ -137,7 +137,7 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyNeedMediaDataInPrerollingSta
 TEST_F(RialtoServerMediaPipelineCallbackTest, notifyNeedMediaDataInPlayingState)
 {
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
-        std::make_unique<IMediaPipeline::MediaSourceVideo>(-1, "video/h264");
+        std::make_unique<IMediaPipeline::MediaSourceVideo>("video/h264");
     mainThreadWillEnqueueTaskAndWait();
 
     EXPECT_CALL(*m_gstPlayerMock, attachSource(Ref(mediaSource)));
@@ -192,7 +192,7 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyNeedMediaDataFailureDueToSou
 TEST_F(RialtoServerMediaPipelineCallbackTest, notifyQos)
 {
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
-        std::make_unique<IMediaPipeline::MediaSourceVideo>(-1, "video/h264");
+        std::make_unique<IMediaPipeline::MediaSourceVideo>("video/h264");
     mainThreadWillEnqueueTaskAndWait();
 
     EXPECT_CALL(*m_gstPlayerMock, attachSource(Ref(mediaSource)));
