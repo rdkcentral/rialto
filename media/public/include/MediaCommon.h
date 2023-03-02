@@ -337,7 +337,7 @@ enum class WebAudioPlayerState
  */
 enum class CipherMode
 {
-    UNKOWN,
+    UNKNOWN,
     CENC, /* AES-CTR scheme */
     CBC1, /* AES-CBC scheme */
     CENS, /* AES-CTR subsample pattern encryption scheme */
