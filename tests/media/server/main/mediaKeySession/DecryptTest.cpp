@@ -28,6 +28,7 @@ protected:
     GstBuffer m_IV{};
     GstBuffer m_keyId{};
     uint32_t m_initWithLast15{1};
+    GstCaps m_caps{};
 
     ~RialtoServerMediaKeySessionDecryptTest() { destroyKeySession(); }
 };
@@ -40,11 +41,11 @@ TEST_F(RialtoServerMediaKeySessionDecryptTest, Success)
     createKeySession(kWidevineKeySystem);
 
     EXPECT_CALL(*m_ocdmSessionMock,
-                decrypt(&m_encrypted, &m_subSample, m_kSubSampleCount, &m_IV, &m_keyId, m_initWithLast15))
+                decrypt(&m_encrypted, &m_subSample, m_kSubSampleCount, &m_IV, &m_keyId, m_initWithLast15, &m_caps))
         .WillOnce(Return(MediaKeyErrorStatus::OK));
 
     EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->decrypt(&m_encrypted, &m_subSample, m_kSubSampleCount, &m_IV,
-                                                                  &m_keyId, m_initWithLast15));
+                                                                  &m_keyId, m_initWithLast15, &m_caps));
 }
 
 /**
@@ -55,9 +56,9 @@ TEST_F(RialtoServerMediaKeySessionDecryptTest, Fail)
     createKeySession(kWidevineKeySystem);
 
     EXPECT_CALL(*m_ocdmSessionMock,
-                decrypt(&m_encrypted, &m_subSample, m_kSubSampleCount, &m_IV, &m_keyId, m_initWithLast15))
+                decrypt(&m_encrypted, &m_subSample, m_kSubSampleCount, &m_IV, &m_keyId, m_initWithLast15, &m_caps))
         .WillOnce(Return(MediaKeyErrorStatus::FAIL));
 
     EXPECT_EQ(MediaKeyErrorStatus::FAIL, m_mediaKeySession->decrypt(&m_encrypted, &m_subSample, m_kSubSampleCount,
-                                                                    &m_IV, &m_keyId, m_initWithLast15));
+                                                                    &m_IV, &m_keyId, m_initWithLast15, &m_caps));
 }

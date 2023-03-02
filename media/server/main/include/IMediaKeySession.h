@@ -116,11 +116,12 @@ public:
      * @param[in]  keyId            : Gstreamer buffer containing keyID to use for decryption
      * @param[in]  initWithLast15   : The value deciding whether decryption context needs to be initialized with
      *                                last 15 bytes. Currently this only applies to PlayReady DRM.
+     * @param[in] caps              : The gst caps of buffer.
      *
      * @retval an error status.
      */
     virtual MediaKeyErrorStatus decrypt(GstBuffer *encrypted, GstBuffer *subSample, const uint32_t subSampleCount,
-                                        GstBuffer *IV, GstBuffer *keyId, uint32_t initWithLast15) = 0;
+                                        GstBuffer *IV, GstBuffer *keyId, uint32_t initWithLast15, GstCaps *caps) = 0;
 
     /**
      * @brief Closes the key session.

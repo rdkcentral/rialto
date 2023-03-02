@@ -200,7 +200,8 @@ void CdmServiceTests::mediaKeysWillGetDrmTimeWithStatus(firebolt::rialto::MediaK
 void CdmServiceTests::mediaKeysWillDecryptWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
 {
     EXPECT_CALL(m_mediaKeysMock, hasSession(keySessionId)).WillOnce(Return(true));
-    EXPECT_CALL(m_mediaKeysMock, decrypt(keySessionId, _, _, subSampleCount, _, _, initWithLast15)).WillOnce(Return(status));
+    EXPECT_CALL(m_mediaKeysMock, decrypt(keySessionId, _, _, subSampleCount, _, _, initWithLast15, _))
+        .WillOnce(Return(status));
 }
 
 void CdmServiceTests::mediaKeysWillSelectKeyIdWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
@@ -292,8 +293,9 @@ void CdmServiceTests::decryptShouldReturnStatus(firebolt::rialto::MediaKeyErrorS
     GstBuffer subSample{};
     GstBuffer IV{};
     GstBuffer keyId{};
-    EXPECT_EQ(status,
-              m_sut.decrypt(keySessionId, &encryptedData, &subSample, subSampleCount, &IV, &keyId, initWithLast15));
+    GstCaps caps{};
+    EXPECT_EQ(status, m_sut.decrypt(keySessionId, &encryptedData, &subSample, subSampleCount, &IV, &keyId,
+                                    initWithLast15, &caps));
 }
 
 void CdmServiceTests::selectKeyIdShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status)

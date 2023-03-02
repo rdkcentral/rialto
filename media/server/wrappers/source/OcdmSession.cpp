@@ -197,7 +197,7 @@ MediaKeyErrorStatus OcdmSession::update(const uint8_t response[], uint32_t respo
 }
 
 MediaKeyErrorStatus OcdmSession::decrypt(GstBuffer *encrypted, GstBuffer *subSample, const uint32_t subSampleCount,
-                                         GstBuffer *IV, GstBuffer *keyId, uint32_t initWithLast15)
+                                         GstBuffer *IV, GstBuffer *keyId, uint32_t initWithLast15, GstCaps *caps)
 {
     if (!m_session)
     {
@@ -205,8 +205,8 @@ MediaKeyErrorStatus OcdmSession::decrypt(GstBuffer *encrypted, GstBuffer *subSam
         return MediaKeyErrorStatus::FAIL;
     }
 
-    OpenCDMError status =
-        opencdm_gstreamer_session_decrypt(m_session, encrypted, subSample, subSampleCount, IV, keyId, initWithLast15);
+    OpenCDMError status = opencdm_gstreamer_session_decrypt_ex(m_session, encrypted, subSample, subSampleCount, IV,
+                                                               keyId, initWithLast15, caps);
 
     RIALTO_SERVER_LOG_INFO("opencdm_session_decrypt returned with status %s", openCdmErrorToString(status).c_str());
 
