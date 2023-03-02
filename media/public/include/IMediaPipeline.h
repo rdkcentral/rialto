@@ -342,10 +342,8 @@ public:
         MediaSegment(int32_t sourceId = 0, MediaSourceType type = MediaSourceType::UNKNOWN, int64_t timeStamp = 0,
                      int64_t duration = 0)
             : m_sourceId(sourceId), m_type(type), m_data(nullptr), m_dataLength(0u), m_timeStamp(timeStamp),
-              m_duration(duration),
-              m_encrypted(false), m_mediaKeySessionId{0}, m_initWithLast15{0}, m_alignment{SegmentAlignment::UNDEFINED}
-        {
-        }
+              m_duration(duration), m_encrypted(false), m_mediaKeySessionId(0), m_initWithLast15(0), m_alignment(SegmentAlignment::UNDEFINED), m_cipherMode(CipherMode::UNKNOWN)
+              m_crypt(0), m_skip(0), m_encryptionPatternSet(false);
 
         /**
          * @brief Virtual destructor.
@@ -469,6 +467,28 @@ public:
          */
         const std::shared_ptr<std::vector<std::uint8_t>> &getCodecData() const { return m_codecData; }
 
+        /**
+         * @brief Gets the cipher mode for common encryption
+         *
+         * @retval cipher mode uses for this sample
+         */
+        const CipherMode &getCipherMode() const { return m_cipherMode; }
+
+        /**
+         * @brief Gets the crypt & skip byte block for pattern encryption
+         *
+         * @param[out] crypt : Crypt byte block value
+         * @param[out] skip  : Skip byte block value
+         *
+         * @retval if the encryption pattern has been set
+         */
+        const bool getEncryptionPattern(uint32_t &crypt, uint32_t &skip) const
+        {
+            crypt = m_crypt;
+            skip = m_skip;
+            return m_encryptionPatternSet;
+        }
+
     protected:
         /**
          * @brief The source id.
@@ -545,6 +565,26 @@ public:
          * @brief The alignment of media segment
          */
         SegmentAlignment m_alignment;
+
+        /**
+         * @brief Cipher mode of the sample.
+         */
+        CipherMode m_cipherMode;
+
+        /**
+         * @brief Crypt byte block value.
+         */
+        uint32_t m_crypt;
+
+        /**
+         * @brief Skip byte block value.
+         */
+        uint32_t m_skip;
+
+        /**
+         * @brief Whether the encryption pattern has been set.
+         */
+        bool m_encryptionPatternSet;
 
     public:
         /**
@@ -638,6 +678,26 @@ public:
          * @param[in] initWithLast15 : initWithLast15 value
          */
         void setInitWithLast15(uint32_t initWithLast15) { m_initWithLast15 = initWithLast15; }
+
+        /**
+         * @brief Sets the cipher mode for common encryption.
+         *
+         * @param[in] cipherMode : Specifies cipher mode uses for this sample.
+         */
+        void setCipherMode(CipherMode cipherMode) { m_cipherMode = cipherMode; }
+
+        /**
+        * @brief Sets the crypt & skip byte block for pattern encryption
+        *
+        * @param[in] crypt : Crypt byte block value
+        * @param[in] skip  : Skip byte block value
+        */
+        void setEncryptionPattern(uint32_t crypt, uint32_t skip)
+        {
+            m_crypt = crypt;
+            m_skip = skip;
+            m_encryptionPatternSet = true;
+        }
 
         /**
          * @brief Copies the data from other to this.

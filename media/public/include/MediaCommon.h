@@ -331,6 +331,19 @@ enum class WebAudioPlayerState
     END_OF_STREAM, /**< The player has got to the end of playback. */
     FAILURE        /**< The player failed to set playback state. */
 };
+
+/**
+ * @brief Cipher mode for common encryption, see https://www.iso.org/obp/ui/#iso:std:iso-iec:23001:-7:ed-3:v1:en
+ */
+enum class CipherMode
+{
+    UNKOWN,
+    CENC,     /* AES-CTR scheme */
+    CBC1,     /* AES-CBC scheme */
+    CENS,     /* AES-CTR subsample pattern encryption scheme */
+    CBCS      /* AES-CBC subsample pattern encryption scheme */
+};
+
 } // namespace firebolt::rialto
 
 #endif // FIREBOLT_RIALTO_MEDIA_COMMON_H_
