@@ -186,25 +186,25 @@ static void journaldLogHandler(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL le
     switch (level)
     {
     case RIALTO_DEBUG_LEVEL_FATAL:
-        syslog(LOG_CRIT, "%s %s", fbuf, message);
+        syslog(LOG_CRIT, "%s %s %d %d", fbuf, message, component, level);
         break;
     case RIALTO_DEBUG_LEVEL_ERROR:
-        syslog(LOG_ERR, "%s %s", fbuf, message);
+        syslog(LOG_ERR, "%s %s %d %d", fbuf, message, component, level);
         break;
     case RIALTO_DEBUG_LEVEL_WARNING:
-        syslog(LOG_WARNING, "%s %s", fbuf, message);
+        syslog(LOG_WARNING, "%s %s %d %d", fbuf, message, component, level);
         break;
     case RIALTO_DEBUG_LEVEL_MILESTONE:
-        syslog(LOG_NOTICE, "%s %s", fbuf, message);
+        syslog(LOG_NOTICE, "%s %s %d %d", fbuf, message, component, level);
         break;
     case RIALTO_DEBUG_LEVEL_INFO:
-        syslog(LOG_INFO, "%s %s", fbuf, message);
+        syslog(LOG_INFO, "%s %s %d %d", fbuf, message, component, level);
         break;
     case RIALTO_DEBUG_LEVEL_DEBUG:
-        syslog(LOG_DEBUG, "%s %s", fbuf, message);
+        syslog(LOG_DEBUG, "%s %s %d %d", fbuf, message, component, level);
         break;
     case RIALTO_DEBUG_LEVEL_EXTERNAL:
-        syslog(LOG_INFO, "%s %s", fbuf, message);
+        syslog(LOG_INFO, "%s %s %d %d", fbuf, message, component, level);
         break;
     default:
         break;
