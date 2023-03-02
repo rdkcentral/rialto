@@ -342,8 +342,9 @@ public:
         MediaSegment(int32_t sourceId = 0, MediaSourceType type = MediaSourceType::UNKNOWN, int64_t timeStamp = 0,
                      int64_t duration = 0)
             : m_sourceId(sourceId), m_type(type), m_data(nullptr), m_dataLength(0u), m_timeStamp(timeStamp),
-              m_duration(duration), m_encrypted(false), m_mediaKeySessionId(0), m_initWithLast15(0), m_alignment(SegmentAlignment::UNDEFINED), m_cipherMode(CipherMode::UNKNOWN)
-              m_crypt(0), m_skip(0), m_encryptionPatternSet(false);
+              m_duration(duration), m_encrypted(false), m_mediaKeySessionId(0), m_initWithLast15(0),
+              m_alignment(SegmentAlignment::UNDEFINED), m_cipherMode(CipherMode::UNKNOWN) m_crypt(0), m_skip(0),
+              m_encryptionPatternSet(false);
 
         /**
          * @brief Virtual destructor.
@@ -687,11 +688,11 @@ public:
         void setCipherMode(CipherMode cipherMode) { m_cipherMode = cipherMode; }
 
         /**
-        * @brief Sets the crypt & skip byte block for pattern encryption
-        *
-        * @param[in] crypt : Crypt byte block value
-        * @param[in] skip  : Skip byte block value
-        */
+         * @brief Sets the crypt & skip byte block for pattern encryption
+         *
+         * @param[in] crypt : Crypt byte block value
+         * @param[in] skip  : Skip byte block value
+         */
         void setEncryptionPattern(uint32_t crypt, uint32_t skip)
         {
             m_crypt = crypt;

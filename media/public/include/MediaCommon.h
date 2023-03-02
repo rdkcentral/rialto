@@ -338,10 +338,10 @@ enum class WebAudioPlayerState
 enum class CipherMode
 {
     UNKOWN,
-    CENC,     /* AES-CTR scheme */
-    CBC1,     /* AES-CBC scheme */
-    CENS,     /* AES-CTR subsample pattern encryption scheme */
-    CBCS      /* AES-CBC subsample pattern encryption scheme */
+    CENC, /* AES-CTR scheme */
+    CBC1, /* AES-CBC scheme */
+    CENS, /* AES-CTR subsample pattern encryption scheme */
+    CBCS  /* AES-CBC subsample pattern encryption scheme */
 };
 
 } // namespace firebolt::rialto
