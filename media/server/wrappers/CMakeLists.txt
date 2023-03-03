@@ -64,6 +64,7 @@ if( NOT CMAKE_BUILD_FLAG STREQUAL "UnitTests" )
         RialtoLogging
         ocdm::ocdm
         rdkgstreamerutils
+        ${CMAKE_DL_LIBS}
 
         )
 
