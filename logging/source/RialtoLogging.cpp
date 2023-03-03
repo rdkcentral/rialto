@@ -172,7 +172,7 @@ static void journaldLogHandler(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL le
     char fbuf[180];
     if (RIALTO_DEBUG_LEVEL_EXTERNAL == level)
     {
-        snprintf(fbuf, sizeof(fbuf), "< T:%d C:%d S:%d>", threadId, component, level);
+        snprintf(fbuf, sizeof(fbuf), "< T:%d C:%d S:%d >", threadId, component, level);
     }
     else if (!file || !function || (line <= 0))
     {
