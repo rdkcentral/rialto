@@ -48,6 +48,47 @@ static void journaldLogHandler(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL le
                                const char *message, size_t messageLen);
 static firebolt::rialto::logging::LogHandler g_logHandler[RIALTO_COMPONENT_LAST] = {};
 
+// static std::string componentToString(RIALTO_COMPONENT component);
+static std::string logLevelToString(RIALTO_DEBUG_LEVEL level);
+
+
+
+
+
+// static std::string componentToString(RIALTO_COMPONENT component)
+// {
+//     return "CLI";
+// }
+
+static std::string levelToString(RIALTO_DEBUG_LEVEL level)
+{
+    switch (level)
+    {
+    case RIALTO_DEBUG_LEVEL_FATAL:
+        return "FTL";
+        break;
+    case RIALTO_DEBUG_LEVEL_ERROR:
+        return "ERR: ";
+        break;
+    case RIALTO_DEBUG_LEVEL_WARNING:
+        return "WRN: ";
+        break;
+    case RIALTO_DEBUG_LEVEL_MILESTONE:
+        return "MIL: ";
+        break;
+    case RIALTO_DEBUG_LEVEL_INFO:
+        return "NFO: ";
+        break;
+    case RIALTO_DEBUG_LEVEL_DEBUG:
+        return "DBG: ";
+        break;
+    case RIALTO_DEBUG_LEVEL_EXTERNAL:
+    default:
+        return ": ";
+        break;
+    }
+}
+
 /**
  * Console logging function for the library.
  */
@@ -63,75 +104,47 @@ static void consoleLogHandler(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL lev
     iov[0].iov_len = snprintf(tbuf, sizeof(tbuf), "%.010lu.%.06lu ", ts.tv_sec, ts.tv_nsec / 1000);
     iov[0].iov_len = std::min(iov[0].iov_len, sizeof(tbuf));
 
-    switch (level)
-    {
-    case RIALTO_DEBUG_LEVEL_FATAL:
-        iov[1].iov_base = const_cast<void *>(reinterpret_cast<const void *>("FTL: "));
-        iov[1].iov_len = 5;
-        break;
-    case RIALTO_DEBUG_LEVEL_ERROR:
-        iov[1].iov_base = const_cast<void *>(reinterpret_cast<const void *>("ERR: "));
-        iov[1].iov_len = 5;
-        break;
-    case RIALTO_DEBUG_LEVEL_WARNING:
-        iov[1].iov_base = const_cast<void *>(reinterpret_cast<const void *>("WRN: "));
-        iov[1].iov_len = 5;
-        break;
-    case RIALTO_DEBUG_LEVEL_MILESTONE:
-        iov[1].iov_base = const_cast<void *>(reinterpret_cast<const void *>("MIL: "));
-        iov[1].iov_len = 5;
-        break;
-    case RIALTO_DEBUG_LEVEL_INFO:
-        iov[1].iov_base = const_cast<void *>(reinterpret_cast<const void *>("NFO: "));
-        iov[1].iov_len = 5;
-        break;
-    case RIALTO_DEBUG_LEVEL_DEBUG:
-        iov[1].iov_base = const_cast<void *>(reinterpret_cast<const void *>("DBG: "));
-        iov[1].iov_len = 5;
-        break;
-    case RIALTO_DEBUG_LEVEL_EXTERNAL:
-    default:
-        iov[1].iov_base = const_cast<void *>(reinterpret_cast<const void *>(": "));
-        iov[1].iov_len = 2;
-        break;
-    }
+    char lbuf[180];
+    iov[1].iov_base = reinterpret_cast<void *>(lbuf);
+    iov[1].iov_len = snprintf(lbuf, sizeof(lbuf), "%s: ", levelToString(level).c_str());
 
-switch (component)
-    {
-    case RIALTO_COMPONENT_DEFAULT:
-        iov[2].iov_base = const_cast<void *>(reinterpret_cast<const void *>("DEF: "));
-        iov[2].iov_len = 5;
-        break;
-    case RIALTO_COMPONENT_CLIENT:
-        iov[2].iov_base = const_cast<void *>(reinterpret_cast<const void *>("CLI: "));
-        iov[2].iov_len = 5;
-        break;
-    case RIALTO_COMPONENT_SERVER:
-        iov[2].iov_base = const_cast<void *>(reinterpret_cast<const void *>("SRV: "));
-        iov[2].iov_len = 5;
-        break;
-    case RIALTO_COMPONENT_IPC:
-        iov[2].iov_base = const_cast<void *>(reinterpret_cast<const void *>("IPC: "));
-        iov[2].iov_len = 5;
-        break;
-    case RIALTO_COMPONENT_SERVER_MANAGER:
-        iov[2].iov_base = const_cast<void *>(reinterpret_cast<const void *>("SMG: "));
-        iov[2].iov_len = 5;
-        break;
-    case RIALTO_COMPONENT_COMMON:
-        iov[2].iov_base = const_cast<void *>(reinterpret_cast<const void *>("COM: "));
-        iov[2].iov_len = 5; 
-        break;
-    case RIALTO_COMPONENT_LAST:
-        iov[2].iov_base = const_cast<void *>(reinterpret_cast<const void *>("LST: "));
-        iov[2].iov_len = 5; 
-        break;
-    case RIALTO_COMPONENT_EXTERNAL:
-    default:
-        iov[2].iov_base = const_cast<void *>(reinterpret_cast<const void *>("EXT: "));
-        iov[2].iov_len = 5; 
-        break;
-    }
+
+// switch (component)
+//     {
+//     case RIALTO_COMPONENT_DEFAULT:
+//         iov[2].iov_base = const_cast<void *>(reinterpret_cast<const void *>("DEF: "));
+//         iov[2].iov_len = 5;
+//         break;
+//     case RIALTO_COMPONENT_CLIENT:
+//         iov[2].iov_base = const_cast<void *>(reinterpret_cast<const void *>("CLI: "));
+//         iov[2].iov_len = 5;
+//         break;
+//     case RIALTO_COMPONENT_SERVER:
+//         iov[2].iov_base = const_cast<void *>(reinterpret_cast<const void *>("SRV: "));
+//         iov[2].iov_len = 5;
+//         break;
+//     case RIALTO_COMPONENT_IPC:
+//         iov[2].iov_base = const_cast<void *>(reinterpret_cast<const void *>("IPC: "));
+//         iov[2].iov_len = 5;
+//         break;
+//     case RIALTO_COMPONENT_SERVER_MANAGER:
+//         iov[2].iov_base = const_cast<void *>(reinterpret_cast<const void *>("SMG: "));
+//         iov[2].iov_len = 5;
+//         break;
+//     case RIALTO_COMPONENT_COMMON:
+//         iov[2].iov_base = const_cast<void *>(reinterpret_cast<const void *>("COM: "));
+//         iov[2].iov_len = 5; 
+//         break;
+//     case RIALTO_COMPONENT_LAST:
+//         iov[2].iov_base = const_cast<void *>(reinterpret_cast<const void *>("LST: "));
+//         iov[2].iov_len = 5; 
+//         break;
+//     case RIALTO_COMPONENT_EXTERNAL:
+//     default:
+//         iov[2].iov_base = const_cast<void *>(reinterpret_cast<const void *>(": "));
+//         iov[2].iov_len = 2; 
+//         break;
+//     }
 
     static thread_local pid_t threadId = 0;
     if (threadId <= 0)
@@ -166,45 +179,47 @@ switch (component)
 static void journaldLogHandler(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char *file, int line, const char *function,
                                const char *message, size_t messageLen)
 {
+
     static thread_local pid_t threadId = 0;
     if (threadId <= 0)
         threadId = syscall(SYS_gettid);
     char fbuf[180];
     if (RIALTO_DEBUG_LEVEL_EXTERNAL == level)
     {
-        snprintf(fbuf, sizeof(fbuf), "< T:%d C:%d S:%d >", threadId, component, level);
+        // |DEF| |ERR| < 
+        snprintf(fbuf, sizeof(fbuf), "%s < T:%d >",levelToString(level).c_str(), threadId);
     }
     else if (!file || !function || (line <= 0))
     {
-        snprintf(fbuf, sizeof(fbuf), "< T:%d C:%d S:%d M:? F:? L:? >", threadId, component, level);
+        snprintf(fbuf, sizeof(fbuf), "%s: < T:%d C:%d S:%d M:? F:? L:? >", levelToString(level).c_str(), threadId, component, level);
     }
     else
     {
-        snprintf(fbuf, sizeof(fbuf), "< T:%d C:%d S:%d M:%.*s F:%.*s L:%d >", threadId, component, level, 64, file, 64, function, line);
+        snprintf(fbuf, sizeof(fbuf), "%s: < T:%d C:%d S:%d M:%.*s F:%.*s L:%d >", levelToString(level).c_str(), threadId, component, level, 64, file, 64, function, line);
     }
 
     switch (level)
     {
     case RIALTO_DEBUG_LEVEL_FATAL:
-        syslog(LOG_CRIT, "%s %s %d %d", fbuf, message, component, level);
+        syslog(LOG_CRIT, "%s %s", fbuf, message);
         break;
     case RIALTO_DEBUG_LEVEL_ERROR:
-        syslog(LOG_ERR, "%s %s %d %d", fbuf, message, component, level);
+        syslog(LOG_ERR, "%s %s", fbuf, message);
         break;
     case RIALTO_DEBUG_LEVEL_WARNING:
-        syslog(LOG_WARNING, "%s %s %d %d", fbuf, message, component, level);
+        syslog(LOG_WARNING, "%s %s", fbuf, message);
         break;
     case RIALTO_DEBUG_LEVEL_MILESTONE:
-        syslog(LOG_NOTICE, "%s %s %d %d", fbuf, message, component, level);
+        syslog(LOG_NOTICE, "%s %s", fbuf, message);
         break;
     case RIALTO_DEBUG_LEVEL_INFO:
-        syslog(LOG_INFO, "%s %s %d %d", fbuf, message, component, level);
+        syslog(LOG_INFO, "%s %s", fbuf, message);
         break;
     case RIALTO_DEBUG_LEVEL_DEBUG:
-        syslog(LOG_DEBUG, "%s %s %d %d", fbuf, message, component, level);
+        syslog(LOG_DEBUG, "%s %s", fbuf, message);
         break;
     case RIALTO_DEBUG_LEVEL_EXTERNAL:
-        syslog(LOG_INFO, "%s %s %d %d", fbuf, message, component, level);
+        syslog(LOG_INFO, "%s %s", fbuf, message);
         break;
     default:
         break;
