@@ -49,7 +49,7 @@ static void journaldLogHandler(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL le
 static firebolt::rialto::logging::LogHandler g_logHandler[RIALTO_COMPONENT_LAST] = {};
 
 // static std::string componentToString(RIALTO_COMPONENT component);
-static std::string logLevelToString(RIALTO_DEBUG_LEVEL level);
+static std::string levelToString(RIALTO_DEBUG_LEVEL level);
 
 
 
@@ -183,7 +183,7 @@ static void journaldLogHandler(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL le
     static thread_local pid_t threadId = 0;
     if (threadId <= 0)
         threadId = syscall(SYS_gettid);
-    char fbuf[180];
+    char fbuf[380];
     if (RIALTO_DEBUG_LEVEL_EXTERNAL == level)
     {
         // |DEF| |ERR| < 
