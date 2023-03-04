@@ -187,15 +187,15 @@ static void journaldLogHandler(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL le
     if (RIALTO_DEBUG_LEVEL_EXTERNAL == level)
     {
         // |DEF| |ERR| < 
-        snprintf(fbuf, sizeof(fbuf), "%s < T:%d >",levelToString(level).c_str(), threadId);
+        snprintf(fbuf, sizeof(fbuf), "%s-------------------HELLO------------------------- < T:%d >",levelToString(level).c_str(), threadId);
     }
     else if (!file || !function || (line <= 0))
     {
-        snprintf(fbuf, sizeof(fbuf), "%s: < T:%d C:%d S:%d M:? F:? L:? >", levelToString(level).c_str(), threadId, component, level);
+        snprintf(fbuf, sizeof(fbuf), "%s-------------------HELLO------------------------- < T:%d M:? F:? L:? >", levelToString(level).c_str(), threadId);
     }
     else
     {
-        snprintf(fbuf, sizeof(fbuf), "%s: < T:%d C:%d S:%d M:%.*s F:%.*s L:%d >", levelToString(level).c_str(), threadId, component, level, 64, file, 64, function, line);
+        snprintf(fbuf, sizeof(fbuf), "%s-------------------HELLO------------------------- < T:%d M:%.*s F:%.*s L:%d >", levelToString(level).c_str(), threadId, 64, file, 64, function, line);
     }
 
     switch (level)
