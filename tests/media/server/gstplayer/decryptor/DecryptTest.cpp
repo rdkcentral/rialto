@@ -155,17 +155,15 @@ protected:
                                                              CharStrMatcher("init_with_last_15"), G_TYPE_UINT, m_initWithLast15))
             .WillOnce(Return(&m_structure));
         EXPECT_CALL(*m_gstWrapperMock, gstStructureNewStringStub(CharStrMatcher("application/x-cenc"),
-                                                             CharStrMatcher("cipher-mode"), G_TYPE_STRING, toString(m_cipherMode)))
+                                                                 CharStrMatcher("cipher-mode"), G_TYPE_STRING, CharStrMatcher(toString(m_cipherMode))))
             .WillOnce(Return(&m_structure));
 
         if (encryptionPatternSet)
         {
-            EXPECT_CALL(*m_gstWrapperMock, gstStructureNewUintStub(CharStrMatcher("application/x-cenc"),
-                                                                 CharStrMatcher("crypt_byte_block"), G_TYPE_UINT, m_crypt))
-                .WillOnce(Return(&m_structure));
-            EXPECT_CALL(*m_gstWrapperMock, gstStructureNewUintStub(CharStrMatcher("application/x-cenc"),
-                                                               CharStrMatcher("skip_byte_block"), G_TYPE_UINT, m_crypt))
-                .WillOnce(Return(&m_structure));
+            EXPECT_CALL(*m_gstWrapperMock, gstStructureSetUintStub(&m_structure,
+                                                                   CharStrMatcher("crypt_byte_block"), G_TYPE_UINT, m_crypt));
+            EXPECT_CALL(*m_gstWrapperMock, gstStructureSetUintStub(&m_structure,
+                                                                   CharStrMatcher("skip_byte_block"), G_TYPE_UINT, m_skip));
         }
 
         EXPECT_CALL(*m_gstWrapperMock, gstBufferAddProtectionMeta(&m_buffer, &m_structure))
