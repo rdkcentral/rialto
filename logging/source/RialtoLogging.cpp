@@ -47,7 +47,6 @@ static void consoleLogHandler(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL lev
 static void journaldLogHandler(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char *file, int line, const char *function,
                                const char *message, size_t messageLen);
 static firebolt::rialto::logging::LogHandler g_logHandler[RIALTO_COMPONENT_LAST] = {};
-
 static std::string componentToString(RIALTO_COMPONENT component);
 static std::string levelToString(RIALTO_DEBUG_LEVEL level);
 
