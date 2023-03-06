@@ -79,6 +79,10 @@ public:
 
     MediaKeyErrorStatus decrypt(GstBuffer *encrypted, GstCaps *caps) override;
 
+    //TODO(RIALTO-127): Remove
+    MediaKeyErrorStatus decrypt(GstBuffer *encrypted, GstBuffer *subSample, const uint32_t subSampleCount,
+                                GstBuffer *IV, GstBuffer *keyId, uint32_t initWithLast15, GstCaps *caps) override;
+
     MediaKeyErrorStatus closeKeySession() override;
 
     MediaKeyErrorStatus removeKeySession() override;
@@ -170,12 +174,6 @@ private:
      * The challenge data is retrieved from ocdm and notified on a onLicenseRequest.
      */
     void getChallenge();
-
-#ifndef RIALTO_ENABLE_DECRYPT_BUFFER
-    bool extractDecryptionData(GstStructure *protectionMetaInfo,
-                               uint32_t &subsampleCount, uint32_t &initWithLast15,
-                               GstBuffer **key, GstBuffer **iv, GstBuffer **subsamples);
-#endif
 };
 } // namespace firebolt::rialto::server
 

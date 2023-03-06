@@ -170,6 +170,8 @@ public:
     MOCK_METHOD(GstObject *, gstObjectParent, (gpointer object), (const, override));
     MOCK_METHOD(GstObject *, gstObjectCast, (gpointer object), (const, override));
     MOCK_METHOD(guint64, gstAudioChannelGetFallbackMask, (gint channels), (const, override));
+    MOCK_METHOD(void, gstStructureSetUintStub, (GstStructure * structure, const gchar *firstname, GType type, uint32_t value), (const));
+    MOCK_METHOD(void, gstStructureSetStringStub, (GstStructure * structure, const gchar *firstname, GType type, const char *value), (const));
 
     GstCaps *gstCapsNewSimple(const char *media_type, const char *fieldname, ...) const override
     {
@@ -269,6 +271,32 @@ public:
 
         va_end(args);
         return structure;
+    }
+
+    void gstStructureSet(GstStructure * structure, const gchar *firstname, ...) const override
+    {
+        va_list args;
+        const gchar *field = firstname;
+
+        va_start(args, firstname);
+
+        while (NULL != field)
+        {
+            GType type = va_arg(args, GType);
+            if (g_type_is_a(type, G_TYPE_STRING))
+            {
+                const char *val = va_arg(args, const char *);
+                gstStructureSetStringStub(structure, field, type, val);
+            }
+            else if (g_type_is_a(type, G_TYPE_UINT))
+            {
+                unsigned val = va_arg(args, unsigned);
+                gstStructureSetUintStub(structure, field, type, val);
+            }
+            field = va_arg(args, const gchar *);
+        }
+
+        va_end(args);
     }
 };
 } // namespace firebolt::rialto::server

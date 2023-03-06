@@ -182,91 +182,26 @@ MediaKeyErrorStatus MediaKeySession::updateSession(const std::vector<uint8_t> &r
 
 MediaKeyErrorStatus MediaKeySession::decrypt(GstBuffer *encrypted, GstCaps *caps)
 {
-    MediaKeyErrorStatus status = MediaKeyErrorStatus::FAIL;
-
-#ifdef RIALTO_ENABLE_DECRYPT_BUFFER
-    status = m_ocdmSession->decrypt_buffer(encrypted, caps);
-#else
-    GstProtectionMeta* protectionMeta = reinterpret_cast<GstProtectionMeta*>(gstBufferGetProtectionMeta(buffer));
-    if (protectionMeta)
+    MediaKeyErrorStatus status = m_ocdmSession->decryptBuffer(encrypted, caps);
+    if (MediaKeyErrorStatus::OK != status)
     {
-        uint32_t subsampleCount = 0;
-        uint32_t initWithLast15 = 0;
-        GstBuffer *key = nullptr;
-        GstBuffer *iv = nullptr;
-        GstBuffer *subsamples = nullptr;
-        GstStructure* info = protectionMeta->info;
-
-        if (extractDecryptionData(info, subSampleCount, initWithLast15, keyId, iv, subSample))
-        {
-            status = m_ocdmSession->decrypt(encrypted, subSample, subSampleCount, IV, keyId, initWithLast15, caps);
-        }
-        else
-        {
-            RIALTO_SERVER_LOG_ERROR("Failed to get the protection meta");
-        }
+        RIALTO_SERVER_LOG_ERROR("Failed to decrypt buffer");
     }
-#endif
+    return status;
+}
+
+//TODO(RIALTO-127): Remove
+MediaKeyErrorStatus MediaKeySession::decrypt(GstBuffer *encrypted, GstBuffer *subSample, const uint32_t subSampleCount,
+                                             GstBuffer *IV, GstBuffer *keyId, uint32_t initWithLast15, GstCaps *caps)
+{
+    MediaKeyErrorStatus status =
+        m_ocdmSession->decrypt(encrypted, subSample, subSampleCount, IV, keyId, initWithLast15, caps);
     if (MediaKeyErrorStatus::OK != status)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to decrypt");
     }
-
     return status;
 }
-
-#ifndef RIALTO_ENABLE_DECRYPT_BUFFER
-bool MediaKeySession::extractDecryptionData(GstStructure *protectionMetaInfo,
-                                            uint32_t &subsampleCount, uint32_t &initWithLast15,
-                                            GstBuffer **key, GstBuffer **iv, GstBuffer **subsamples)
-{
-    bool ret = false;
-    const GValue *keyValue = nullptr;
-    const GValue *ivValue = nullptr;
-    const GValue *subsamplesValue = nullptr;
-
-    if (!m_gstWrapper->gstStructureGetUint(protectionMetaInfo, "subsample_count", &subsampleCount))
-    {
-        GST_ERROR_OBJECT(self, "Failed to get subsamples_count");
-    }
-    else if (!m_gstWrapper->gstStructureGetUint(protectionMetaInfo, "init_with_last_15", &initWithLast15))
-    {
-        GST_ERROR_OBJECT(self, "Failed to get init_with_last_15");
-    }
-    else if (!(keyValue = m_gstWrapper->gstStructureGetValue(protectionMetaInfo, "kid")))
-    {
-        GST_ERROR_OBJECT(self, "Failed to get the key ID");
-    }
-    else if (!(ivValue = m_gstWrapper->gstStructureGetValue(protectionMetaInfo, "iv")))
-    {
-        GST_ERROR_OBJECT(self, "Failed to get IV buffer");
-    }
-    else if ((0u != subsampleCount) &&
-             !(subsamplesValue = m_gstWrapper->gstStructureGetValue(protectionMetaInfo, "subsamples")))
-    {
-        GST_ERROR_OBJECT(self, "Failed to get subsamples buffer");
-    }
-    else if (!(*key = m_gstWrapper->gstValueGetBuffer(keyValue)))
-    {
-        GST_ERROR_OBJECT(self, "Failed to extract key from GValue");
-    }
-    else if (!(*iv = m_gstWrapper->gstValueGetBuffer(ivValue)))
-    {
-        GST_ERROR_OBJECT(self, "Failed to extract iv from GValue");
-    }
-    else if ((subsamplesValue) && !(*subsamples = m_gstWrapper->gstValueGetBuffer(subsamplesValue)))
-    {
-        GST_ERROR_OBJECT(self, "Failed to extract subsamples from GValue");
-    }
-    else
-    {
-        GST_TRACE_OBJECT(self, "Successfully extracted the decryption info");
-        ret = GST_FLOW_OK;
-    }
-
-    return ret;
-}
-#endif
 
 MediaKeyErrorStatus MediaKeySession::closeKeySession()
 {

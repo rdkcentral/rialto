@@ -37,7 +37,7 @@ struct GstRialtoProtectionData
     GstBuffer *key = nullptr;
     GstBuffer *iv = nullptr;
     GstBuffer *subsamples = nullptr;
-    firebolt::rialto::CipherMode ciperMode = firebolt::rialto::CipherMode::UNKNOWN;
+    firebolt::rialto::CipherMode cipherMode = firebolt::rialto::CipherMode::UNKNOWN;
     uint32_t crypt = 0;
     uint32_t skip = 0;
     bool encryptionPatternSet = false;

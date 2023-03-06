@@ -53,6 +53,9 @@ protected:
     uint32_t m_keySessionId = 1u;
     uint32_t m_subsampleCount = 2u;
     uint32_t m_initWithLast15 = 3u;
+    uint32_t m_crypt = 4u;
+    uint32_t m_skip = 5u;
+    firebolt::rialto::CipherMode m_cipherMode = firebolt::rialto::CipherMode::CENC;
     const GValue m_keyValue = {};
     const GValue m_ivValue = {};
     const GValue m_subsamplesValue = {};
@@ -61,7 +64,7 @@ protected:
     GstBuffer m_subsamples = {};
     GstCaps m_caps{};
     GstRialtoProtectionData m_protectionData =
-        {static_cast<int32_t>(m_keySessionId), m_subsampleCount, m_initWithLast15, &m_key, &m_iv, &m_subsamples};
+        {static_cast<int32_t>(m_keySessionId), m_subsampleCount, m_initWithLast15, &m_key, &m_iv, &m_subsamples, m_cipherMode, m_crypt, m_skip, true};
 
     RialtoServerDecryptorPrivateDecryptTest()
         : m_gstWrapperFactoryMock(std::make_shared<StrictMock<GstWrapperFactoryMock>>()),

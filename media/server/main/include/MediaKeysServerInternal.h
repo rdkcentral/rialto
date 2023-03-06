@@ -116,6 +116,11 @@ public:
 
     MediaKeyErrorStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps) override;
 
+    //TODO(RIALTO-127): Remove
+    MediaKeyErrorStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstBuffer *subSample,
+                                const uint32_t subSampleCount, GstBuffer *IV, GstBuffer *keyId, uint32_t initWithLast15,
+                                GstCaps *caps) override;
+
     bool hasSession(int32_t keySessionId) const override;
 
     bool isNetflixKeySystem(int32_t keySessionId) const override;
@@ -237,6 +242,29 @@ private:
      * @retval an error status.
      */
     MediaKeyErrorStatus decryptInternal(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps);
+
+    /**
+     * @brief Decrypt internally, only to be called on the main thread, deprecated.
+     *
+     * TODO(RIALTO-127): Remove
+     *
+     * @param[in] keySessionId    : The session id for the session.
+     * @param[in] encrypted       : Gstreamer buffer containing encrypted data and related meta data. If applicable,
+     *                              decrypted data will be stored here after this call returns.
+     * @param[in] subSample       : Gstreamer buffer containing subsamples size which has been parsed from protection
+     *                              meta data.
+     * @param[in] subSampleCount  : count of subsamples
+     * @param[in] IV              : Gstreamer buffer containing initial vector (IV) used during decryption.
+     * @param[in] keyId           : Gstreamer buffer containing keyID to use for decryption
+     * @param[in] initWithLast15  : The value deciding whether decryption context needs to be initialized with
+     *                              last 15 bytes. Currently this only applies to PlayReady DRM.
+     * @param[in] caps            : The gst caps of buffer.
+     *
+     * @retval an error status.
+     */
+    MediaKeyErrorStatus decryptInternal(int32_t keySessionId, GstBuffer *encrypted, GstBuffer *subSample,
+                                        const uint32_t subSampleCount, GstBuffer *IV, GstBuffer *keyId,
+                                        uint32_t initWithLast15, GstCaps *caps);
 
     /**
      * @brief Selects the specified keyId for the key session internally, only to be called on the main thread.
