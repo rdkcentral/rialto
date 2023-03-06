@@ -29,9 +29,7 @@ namespace firebolt::rialto::server
 class DecryptionServiceMock : public IDecryptionService
 {
 public:
-    MOCK_METHOD(MediaKeyErrorStatus, decrypt,
-                (int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps),
-                (override));
+    MOCK_METHOD(MediaKeyErrorStatus, decrypt, (int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps), (override));
     // TODO(RIALTO-127): Remove
     MOCK_METHOD(MediaKeyErrorStatus, decrypt,
                 (int32_t keySessionId, GstBuffer *encrypted, GstBuffer *subSample, const uint32_t subSampleCount,

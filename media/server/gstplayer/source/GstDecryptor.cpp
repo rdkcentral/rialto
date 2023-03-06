@@ -268,7 +268,8 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer, GstCaps *cap
             }
             else
             {
-                firebolt::rialto::MediaKeyErrorStatus status = m_decryptionService->decrypt(protectionData->keySessionId, buffer, caps);
+                firebolt::rialto::MediaKeyErrorStatus status =
+                    m_decryptionService->decrypt(protectionData->keySessionId, buffer, caps);
                 if (firebolt::rialto::MediaKeyErrorStatus::OK != status)
                 {
                     GST_ERROR_OBJECT(self, "Failed decrypt the buffer");
@@ -315,7 +316,8 @@ GstStructure *GstRialtoDecryptorPrivate::createProtectionMetaInfo(GstRialtoProte
                                                        "subsample_count", G_TYPE_UINT, protectionData->subsampleCount,
                                                        "subsamples", GST_TYPE_BUFFER, protectionData->subsamples,
                                                        "encryption_scheme", G_TYPE_UINT, 0, "init_with_last_15",
-                                                       G_TYPE_UINT, protectionData->initWithLast15, "cipher-mode", G_TYPE_STRING, toString(protectionData->cipherMode), NULL);
+                                                       G_TYPE_UINT, protectionData->initWithLast15, "cipher-mode",
+                                                       G_TYPE_STRING, toString(protectionData->cipherMode), NULL);
 
     if (protectionData->encryptionPatternSet)
     {

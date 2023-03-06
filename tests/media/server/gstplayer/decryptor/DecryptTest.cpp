@@ -137,33 +137,37 @@ protected:
     void expectAddGstProtectionMeta(bool encryptionPatternSet)
     {
         EXPECT_CALL(*m_gstWrapperMock, gstStructureNewBufferStub(CharStrMatcher("application/x-cenc"),
-                                                             CharStrMatcher("kid"), GST_TYPE_BUFFER, &m_key))
+                                                                 CharStrMatcher("kid"), GST_TYPE_BUFFER, &m_key))
             .WillOnce(Return(&m_structure));
         EXPECT_CALL(*m_gstWrapperMock, gstStructureNewBufferStub(CharStrMatcher("application/x-cenc"),
-                                                             CharStrMatcher("iv"), GST_TYPE_BUFFER, &m_iv))
+                                                                 CharStrMatcher("iv"), GST_TYPE_BUFFER, &m_iv))
+            .WillOnce(Return(&m_structure));
+        EXPECT_CALL(*m_gstWrapperMock,
+                    gstStructureNewUintStub(CharStrMatcher("application/x-cenc"), CharStrMatcher("subsample_count"),
+                                            G_TYPE_UINT, m_subsampleCount))
+            .WillOnce(Return(&m_structure));
+        EXPECT_CALL(*m_gstWrapperMock,
+                    gstStructureNewBufferStub(CharStrMatcher("application/x-cenc"), CharStrMatcher("subsamples"),
+                                              GST_TYPE_BUFFER, &m_subsamples))
             .WillOnce(Return(&m_structure));
         EXPECT_CALL(*m_gstWrapperMock, gstStructureNewUintStub(CharStrMatcher("application/x-cenc"),
-                                                           CharStrMatcher("subsample_count"), G_TYPE_UINT, m_subsampleCount))
+                                                               CharStrMatcher("encryption_scheme"), G_TYPE_UINT, 0))
             .WillOnce(Return(&m_structure));
-        EXPECT_CALL(*m_gstWrapperMock, gstStructureNewBufferStub(CharStrMatcher("application/x-cenc"),
-                                                             CharStrMatcher("subsamples"), GST_TYPE_BUFFER, &m_subsamples))
+        EXPECT_CALL(*m_gstWrapperMock,
+                    gstStructureNewUintStub(CharStrMatcher("application/x-cenc"), CharStrMatcher("init_with_last_15"),
+                                            G_TYPE_UINT, m_initWithLast15))
             .WillOnce(Return(&m_structure));
-        EXPECT_CALL(*m_gstWrapperMock, gstStructureNewUintStub(CharStrMatcher("application/x-cenc"),
-                                                             CharStrMatcher("encryption_scheme"), G_TYPE_UINT, 0))
-            .WillOnce(Return(&m_structure));
-        EXPECT_CALL(*m_gstWrapperMock, gstStructureNewUintStub(CharStrMatcher("application/x-cenc"),
-                                                             CharStrMatcher("init_with_last_15"), G_TYPE_UINT, m_initWithLast15))
-            .WillOnce(Return(&m_structure));
-        EXPECT_CALL(*m_gstWrapperMock, gstStructureNewStringStub(CharStrMatcher("application/x-cenc"),
-                                                                 CharStrMatcher("cipher-mode"), G_TYPE_STRING, CharStrMatcher(toString(m_cipherMode))))
+        EXPECT_CALL(*m_gstWrapperMock,
+                    gstStructureNewStringStub(CharStrMatcher("application/x-cenc"), CharStrMatcher("cipher-mode"),
+                                              G_TYPE_STRING, CharStrMatcher(toString(m_cipherMode))))
             .WillOnce(Return(&m_structure));
 
         if (encryptionPatternSet)
         {
-            EXPECT_CALL(*m_gstWrapperMock, gstStructureSetUintStub(&m_structure,
-                                                                   CharStrMatcher("crypt_byte_block"), G_TYPE_UINT, m_crypt));
-            EXPECT_CALL(*m_gstWrapperMock, gstStructureSetUintStub(&m_structure,
-                                                                   CharStrMatcher("skip_byte_block"), G_TYPE_UINT, m_skip));
+            EXPECT_CALL(*m_gstWrapperMock,
+                        gstStructureSetUintStub(&m_structure, CharStrMatcher("crypt_byte_block"), G_TYPE_UINT, m_crypt));
+            EXPECT_CALL(*m_gstWrapperMock,
+                        gstStructureSetUintStub(&m_structure, CharStrMatcher("skip_byte_block"), G_TYPE_UINT, m_skip));
         }
 
         EXPECT_CALL(*m_gstWrapperMock, gstBufferAddProtectionMeta(&m_buffer, &m_structure))
