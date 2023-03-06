@@ -62,7 +62,7 @@ public:
 
     MediaKeyErrorStatus decryptBuffer(GstBuffer *encrypted, GstCaps *caps) override;
 
-    //TODO(RIALTO-127): Remove
+    // TODO(RIALTO-127): Remove
     MediaKeyErrorStatus decrypt(GstBuffer *encrypted, GstBuffer *subSample, const uint32_t subSampleCount,
                                 GstBuffer *IV, GstBuffer *keyId, uint32_t initWithLast15, GstCaps *caps) override;
 

@@ -1069,7 +1069,7 @@ public:
      * @param[in] ...        : variable arguments, should be in the form field name, field type (as a GType), value(s)
      * and be NULL terminated.
      */
-    virtual void gstStructureSet(GstStructure * structure, const gchar *firstname, ...) const = 0;
+    virtual void gstStructureSet(GstStructure *structure, const gchar *firstname, ...) const = 0;
 };
 
 }; // namespace firebolt::rialto::server

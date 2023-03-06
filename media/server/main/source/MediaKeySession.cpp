@@ -190,7 +190,7 @@ MediaKeyErrorStatus MediaKeySession::decrypt(GstBuffer *encrypted, GstCaps *caps
     return status;
 }
 
-//TODO(RIALTO-127): Remove
+// TODO(RIALTO-127): Remove
 MediaKeyErrorStatus MediaKeySession::decrypt(GstBuffer *encrypted, GstBuffer *subSample, const uint32_t subSampleCount,
                                              GstBuffer *IV, GstBuffer *keyId, uint32_t initWithLast15, GstCaps *caps)
 {

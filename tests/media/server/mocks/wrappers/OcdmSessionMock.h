@@ -39,10 +39,8 @@ public:
                 (override));
     MOCK_METHOD(MediaKeyErrorStatus, load, (), (override));
     MOCK_METHOD(MediaKeyErrorStatus, update, (const uint8_t response[], uint32_t responseSize), (override));
-    MOCK_METHOD(MediaKeyErrorStatus, decryptBuffer,
-                (GstBuffer * encrypted, GstCaps *caps),
-                (override));
-    //TODO(RIALTO-127): Remove
+    MOCK_METHOD(MediaKeyErrorStatus, decryptBuffer, (GstBuffer * encrypted, GstCaps *caps), (override));
+    // TODO(RIALTO-127): Remove
     MOCK_METHOD(MediaKeyErrorStatus, decrypt,
                 (GstBuffer * encrypted, GstBuffer *subSample, const uint32_t subSampleCount, GstBuffer *IV,
                  GstBuffer *keyId, uint32_t initWithLast15, GstCaps *caps),

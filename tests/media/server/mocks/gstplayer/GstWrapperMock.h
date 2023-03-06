@@ -170,8 +170,10 @@ public:
     MOCK_METHOD(GstObject *, gstObjectParent, (gpointer object), (const, override));
     MOCK_METHOD(GstObject *, gstObjectCast, (gpointer object), (const, override));
     MOCK_METHOD(guint64, gstAudioChannelGetFallbackMask, (gint channels), (const, override));
-    MOCK_METHOD(void, gstStructureSetUintStub, (GstStructure * structure, const gchar *firstname, GType type, uint32_t value), (const));
-    MOCK_METHOD(void, gstStructureSetStringStub, (GstStructure * structure, const gchar *firstname, GType type, const char *value), (const));
+    MOCK_METHOD(void, gstStructureSetUintStub,
+                (GstStructure * structure, const gchar *firstname, GType type, uint32_t value), (const));
+    MOCK_METHOD(void, gstStructureSetStringStub,
+                (GstStructure * structure, const gchar *firstname, GType type, const char *value), (const));
 
     GstCaps *gstCapsNewSimple(const char *media_type, const char *fieldname, ...) const override
     {
@@ -273,7 +275,7 @@ public:
         return structure;
     }
 
-    void gstStructureSet(GstStructure * structure, const gchar *firstname, ...) const override
+    void gstStructureSet(GstStructure *structure, const gchar *firstname, ...) const override
     {
         va_list args;
         const gchar *field = firstname;

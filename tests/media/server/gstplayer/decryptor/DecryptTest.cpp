@@ -63,8 +63,16 @@ protected:
     GstBuffer m_iv = {};
     GstBuffer m_subsamples = {};
     GstCaps m_caps{};
-    GstRialtoProtectionData m_protectionData =
-        {static_cast<int32_t>(m_keySessionId), m_subsampleCount, m_initWithLast15, &m_key, &m_iv, &m_subsamples, m_cipherMode, m_crypt, m_skip, true};
+    GstRialtoProtectionData m_protectionData = {static_cast<int32_t>(m_keySessionId),
+                                                m_subsampleCount,
+                                                m_initWithLast15,
+                                                &m_key,
+                                                &m_iv,
+                                                &m_subsamples,
+                                                m_cipherMode,
+                                                m_crypt,
+                                                m_skip,
+                                                true};
 
     RialtoServerDecryptorPrivateDecryptTest()
         : m_gstWrapperFactoryMock(std::make_shared<StrictMock<GstWrapperFactoryMock>>()),

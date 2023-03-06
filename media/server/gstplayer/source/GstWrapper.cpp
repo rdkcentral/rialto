@@ -88,7 +88,7 @@ GstStructure *GstWrapper::gstStructureNew(const gchar *name, const gchar *firstf
     return structure;
 }
 
-void GstWrapper::gstStructureSet(GstStructure * structure, const gchar *firstname, ...) const
+void GstWrapper::gstStructureSet(GstStructure *structure, const gchar *firstname, ...) const
 {
     va_list vl;
     va_start(vl, firstname);

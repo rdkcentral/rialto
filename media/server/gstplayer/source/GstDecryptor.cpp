@@ -252,9 +252,10 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer, GstCaps *cap
             if (protectionData->encryptionPatternSet)
             {
                 if (protectionData->cipherMode = firebolt::rialto::CipherMode::CENC ||
-                    protectionData->cipherMode = firebolt::rialto::CipherMode::CBC1)
+                                                 protectionData->cipherMode = firebolt::rialto::CipherMode::CBC1)
                 {
-                    GST_WARN_OBJECT(self, "Encryption pattern set for non-pattern cipherMode '%s'", toString(protectionData->cipherMode));
+                    GST_WARN_OBJECT(self, "Encryption pattern set for non-pattern cipherMode '%s'",
+                                    toString(protectionData->cipherMode));
                 }
             }
 
@@ -278,9 +279,9 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer, GstCaps *cap
                 }
             }
 
-            m_gstWrapper->gstBufferRemoveMeta(buffer, reinterpret_cast<GstMeta*>(meta));
+            m_gstWrapper->gstBufferRemoveMeta(buffer, reinterpret_cast<GstMeta *>(meta));
 #else
-            //TODO(RIALTO-127): Remove
+            // TODO(RIALTO-127): Remove
             int32_t keySessionId = protectionData->keySessionId;
             uint32_t subsampleCount = protectionData->subsampleCount;
             uint32_t initWithLast15 = protectionData->initWithLast15;
@@ -293,7 +294,8 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer, GstCaps *cap
                                                                                         key, initWithLast15, caps);
             if (firebolt::rialto::MediaKeyErrorStatus::OK != status)
             {
-                GST_ERROR_OBJECT(self, "Failed decrypt the buffer");            }
+                GST_ERROR_OBJECT(self, "Failed decrypt the buffer");
+            }
             else
             {
                 GST_TRACE_OBJECT(self, "Decryption successful");
@@ -310,10 +312,12 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer, GstCaps *cap
 
 GstStructure *GstRialtoDecryptorPrivate::createProtectionMetaInfo(GstRialtoProtectionData *protectionData)
 {
-    GstStructure *info = m_gstWrapper->gstStructureNew("application/x-cenc", "kid", GST_TYPE_BUFFER,  protectionData->key,  "iv", GST_TYPE_BUFFER, protectionData->iv, "subsample_count",
-                                           G_TYPE_UINT, protectionData->subsampleCount, "subsamples", GST_TYPE_BUFFER, protectionData->subsamples,
-                                           "encryption_scheme", G_TYPE_UINT, 0,
-                                           "init_with_last_15", G_TYPE_UINT, protectionData->initWithLast15, NULL);
+    GstStructure *info = m_gstWrapper->gstStructureNew("application/x-cenc", "kid", GST_TYPE_BUFFER,
+                                                       protectionData->key, "iv", GST_TYPE_BUFFER, protectionData->iv,
+                                                       "subsample_count", G_TYPE_UINT, protectionData->subsampleCount,
+                                                       "subsamples", GST_TYPE_BUFFER, protectionData->subsamples,
+                                                       "encryption_scheme", G_TYPE_UINT, 0, "init_with_last_15",
+                                                       G_TYPE_UINT, protectionData->initWithLast15, NULL);
 
     if (protectionData->cipherMode != firebolt::rialto::CipherMode::UNKNOWN)
     {
