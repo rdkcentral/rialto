@@ -130,6 +130,8 @@ public:
                 (const gchar *name, const gchar *firstfield, GType type, GstBuffer *value), (const));
     MOCK_METHOD(GstStructure *, gstStructureNewUintStub,
                 (const gchar *name, const gchar *firstfield, GType type, uint32_t value), (const));
+    MOCK_METHOD(GstStructure *, gstStructureNewStringStub,
+                (const gchar *name, const gchar *firstfield, GType type, const char *value), (const));
     MOCK_METHOD(void, gstByteWriterInitWithData,
                 (GstByteWriter * writer, guint8 *data, guint size, gboolean initialized), (const, override));
     MOCK_METHOD(gboolean, gstByteWriterPutUint16Be, (GstByteWriter * writer, guint16 val), (const, override));
@@ -267,6 +269,11 @@ public:
             {
                 uint32_t value = va_arg(args, guint32);
                 structure = gstStructureNewUintStub(name, property, valueType, value);
+            }
+            else if (g_type_is_a(valueType, G_TYPE_STRING))
+            {
+                const char *value = va_arg(args, const char *);
+                structure = gstStructureNewStringStub(name, property, valueType, value);
             }
             property = va_arg(args, const gchar *);
         }
