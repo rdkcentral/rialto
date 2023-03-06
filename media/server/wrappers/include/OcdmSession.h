@@ -95,6 +95,8 @@ public:
     void handleError(struct OpenCDMSession *session, const char message[]);
 
 private:
+    using OcdmGstSessionDecryptExFn = OpenCDMError (*)(struct OpenCDMSession *, GstBuffer *, GstBuffer *,
+                                                       const uint32_t, GstBuffer *, GstBuffer *, uint32_t, GstCaps *);
     /**
      * @brief The System handle.
      */
@@ -114,6 +116,8 @@ private:
      * @brief The session pointer.
      */
     struct OpenCDMSession *m_session;
+
+    static OcdmGstSessionDecryptExFn m_ocdmGstSessionDecryptEx;
 
     /**
      * @brief Requests the processing of the challenge data.
