@@ -306,7 +306,7 @@ void GstWebAudioPlayer::termWebAudioPipeline()
             m_gstWrapper->gstObjectUnref(m_context.source);
         }
 
-        m_glibWrapper->gObjectUnref(m_context.pipeline);
+        m_gstWrapper->gstObjectUnref(m_context.pipeline);
     }
 }
 

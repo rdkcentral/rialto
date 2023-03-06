@@ -52,7 +52,7 @@ void GstGenericPlayerTestCommon::gstPlayerWillBeDestroyed()
     EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(&m_pipeline))).WillOnce(Return(&m_bus));
     EXPECT_CALL(*m_gstWrapperMock, gstBusSetSyncHandler(&m_bus, nullptr, nullptr, nullptr));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus));
-    EXPECT_CALL(*m_glibWrapperMock, gObjectUnref(&m_pipeline));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_pipeline));
 }
 
 void GstGenericPlayerTestCommon::expectShutdown()
@@ -175,7 +175,7 @@ void GstGenericPlayerTestCommon::expectCheckPlaySink()
     EXPECT_CALL(*m_gstWrapperMock, gstBinGetByName(GST_BIN(&m_pipeline), CharStrMatcher("playsink")))
         .WillOnce(Return(&m_playsink));
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_playsink, CharStrMatcher("send-event-mode")));
-    EXPECT_CALL(*m_glibWrapperMock, gObjectUnref(&m_playsink));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_playsink));
 }
 
 void GstGenericPlayerTestCommon::expectSetMessageCallback()
