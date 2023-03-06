@@ -50,6 +50,38 @@ convertSegmentAlignment(const firebolt::rialto::SegmentAlignment &alignment)
     }
     return firebolt::rialto::MediaSegmentMetadata_SegmentAlignment_ALIGNMENT_UNDEFINED;
 }
+
+/**
+ * @brief Convert CipherMode to protobuf object
+ */
+firebolt::rialto::MediaSegmentMetadata_CipherMode convertCipherMode(const firebolt::rialto::CipherMode &cipherMode)
+{
+    switch (cipherMode)
+    {
+    case firebolt::rialto::CipherMode::UNKNOWN:
+    {
+        return firebolt::rialto::MediaSegmentMetadata_CipherMode_UNKNOWN;
+    }
+    case firebolt::rialto::CipherMode::CENC:
+    {
+        return firebolt::rialto::MediaSegmentMetadata_CipherMode_CENC;
+    }
+    case firebolt::rialto::CipherMode::CBC1:
+    {
+        return firebolt::rialto::MediaSegmentMetadata_CipherMode_CBC1;
+    }
+    case firebolt::rialto::CipherMode::CENS:
+    {
+        return firebolt::rialto::MediaSegmentMetadata_CipherMode_CENS;
+    }
+    case firebolt::rialto::CipherMode::CBCS:
+    {
+        return firebolt::rialto::MediaSegmentMetadata_CipherMode_CBCS;
+    }
+    }
+    return firebolt::rialto::MediaSegmentMetadata_CipherMode_UNKNOWN;
+}
+
 } // namespace
 
 namespace firebolt::rialto::common
@@ -142,6 +174,15 @@ MediaSegmentMetadata MediaFrameWriterV2::buildMetadata(const std::unique_ptr<IMe
         metadata.set_key_id(std::string(data->getKeyId().begin(), data->getKeyId().end()));
         metadata.set_init_vector(std::string(data->getInitVector().begin(), data->getInitVector().end()));
         metadata.set_init_with_last_15(data->getInitWithLast15());
+        metadata.set_cipher_mode(convertCipherMode(data->getCipherMode()));
+        uint32_t crypt{0};
+        uint32_t skip{0};
+        if (data->getEncryptionPattern(crypt, skip))
+        {
+            metadata.set_crypt(crypt);
+            metadata.set_skip(skip);
+        }
+
         for (const auto &subSample : data->getSubSamples())
         {
             auto subSamplePair = metadata.mutable_sub_sample_info()->Add();
