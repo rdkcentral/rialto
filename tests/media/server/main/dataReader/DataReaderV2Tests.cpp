@@ -22,6 +22,7 @@
 #include <gtest/gtest.h>
 
 using firebolt::rialto::AddSegmentStatus;
+using firebolt::rialto::CipherMode;
 using firebolt::rialto::IMediaPipeline;
 using firebolt::rialto::MediaPlayerShmInfo;
 using firebolt::rialto::SegmentAlignment;
@@ -55,6 +56,9 @@ constexpr size_t kNumClearBytes{2};
 constexpr size_t kNumEncryptedBytes{7};
 constexpr uint32_t kInitWithLast15{1};
 constexpr SegmentAlignment kSegmentAlignment{SegmentAlignment::AU};
+constexpr CipherMode kCipherMode{CipherMode::CBCS};
+constexpr uint32_t kCryptBlocks{131};
+constexpr uint32_t kSkipBlocks{242};
 
 class Check
 {
@@ -123,6 +127,12 @@ public:
         EXPECT_EQ(m_segment->getSubSamples().front().numClearBytes, kNumClearBytes);
         EXPECT_EQ(m_segment->getSubSamples().front().numEncryptedBytes, kNumEncryptedBytes);
         EXPECT_EQ(m_segment->getInitWithLast15(), kInitWithLast15);
+        EXPECT_EQ(m_segment->getCipherMode(), kCipherMode);
+        uint32_t crypt{0};
+        uint32_t skip{0};
+        EXPECT_TRUE(m_segment->getEncryptionPattern(crypt, skip));
+        EXPECT_EQ(crypt, kCryptBlocks);
+        EXPECT_EQ(skip, kSkipBlocks);
         return *this;
     }
 
@@ -134,6 +144,10 @@ public:
         EXPECT_TRUE(m_segment->getInitVector().empty());
         EXPECT_TRUE(m_segment->getSubSamples().empty());
         EXPECT_EQ(m_segment->getInitWithLast15(), 0);
+        EXPECT_EQ(m_segment->getCipherMode(), CipherMode::UNKNOWN);
+        uint32_t crypt{0};
+        uint32_t skip{0};
+        EXPECT_FALSE(m_segment->getEncryptionPattern(crypt, skip));
         return *this;
     }
 
@@ -176,6 +190,9 @@ public:
         m_segment->setInitVector(kInitVector);
         m_segment->addSubSample(kNumClearBytes, kNumEncryptedBytes);
         m_segment->setInitWithLast15(kInitWithLast15);
+        m_segment->setCipherMode(kCipherMode);
+        m_segment->setEncryptionPattern(kCryptBlocks, kSkipBlocks);
+
         return *this;
     }
     std::unique_ptr<IMediaPipeline::MediaSegment> operator()() { return std::move(m_segment); }

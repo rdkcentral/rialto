@@ -230,7 +230,7 @@ void GstGenericPlayer::initMsePipeline()
     if (playsink)
     {
         m_glibWrapper->gObjectSet(G_OBJECT(playsink), "send-event-mode", 0, nullptr);
-        m_glibWrapper->gObjectUnref(playsink);
+        m_gstWrapper->gstObjectUnref(playsink);
     }
     else
     {
@@ -283,7 +283,7 @@ void GstGenericPlayer::termPipeline()
     }
 
     // Delete the pipeline
-    m_glibWrapper->gObjectUnref(m_context.pipeline);
+    m_gstWrapper->gstObjectUnref(m_context.pipeline);
 }
 
 unsigned GstGenericPlayer::getGstPlayFlag(const char *nick)

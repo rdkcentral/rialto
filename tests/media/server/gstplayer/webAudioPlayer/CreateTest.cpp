@@ -148,7 +148,7 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, createAppSrcFailure)
 
     // Reset worker thread and pipeline on failure
     EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(&m_pipeline))).WillOnce(Return(nullptr));
-    EXPECT_CALL(*m_glibWrapperMock, gObjectUnref(&m_pipeline));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_pipeline));
     expectTaskStop();
     expectResetWorkerThread();
 
