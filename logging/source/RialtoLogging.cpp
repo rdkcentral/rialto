@@ -130,8 +130,7 @@ static void consoleLogHandler(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL lev
     char lbuf[8];
     iov[1].iov_base = reinterpret_cast<void *>(lbuf);
     iov[1].iov_len =
-        std::min(static_cast<size_t>(snprintf(lbuf, sizeof(lbuf), "%s: ", componentToString(component).c_str())),
-                 sizeof(lbuf));
+        std::min(static_cast<size_t>(snprintf(lbuf, sizeof(lbuf), "%s: ", levelToString(level).c_str())), sizeof(lbuf));
 
     char cbuf[8];
     iov[2].iov_base = reinterpret_cast<void *>(cbuf);
