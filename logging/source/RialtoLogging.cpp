@@ -73,8 +73,7 @@ static std::string componentToString(RIALTO_COMPONENT component)
         return "COM";
         break;
     case RIALTO_COMPONENT_EXTERNAL:
-        return "EXT:" 
-        break;
+        return "EXT:" break;
     default:
         return "UNK";
         break;
