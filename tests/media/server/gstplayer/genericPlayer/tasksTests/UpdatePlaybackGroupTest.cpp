@@ -101,6 +101,7 @@ TEST_F(UpdatePlaybackGroupTest, shouldDoNothingWhenElementOtherThanDecodebin)
     EXPECT_CALL(*m_glibWrapper, gStrrstr(elementName, CharStrMatcher("decodebin"))).WillOnce(Return(nullptr));
     EXPECT_CALL(*m_glibWrapper, gFree(elementName));
     EXPECT_CALL(*m_glibWrapper, gFree(capsStr));
+    EXPECT_CALL(*m_gstWrapper, gstObjectUnref(&typefindParent));
     task.execute();
     EXPECT_EQ(m_context.playbackGroup.m_curAudioDecodeBin, nullptr);
     EXPECT_EQ(m_context.playbackGroup.m_curAudioTypefind, nullptr);
@@ -121,7 +122,9 @@ TEST_F(UpdatePlaybackGroupTest, shouldSuccessfullyFindTypefindAndParent)
     EXPECT_CALL(*m_glibWrapper, gStrrstr(elementName, CharStrMatcher("decodebin"))).WillOnce(Return(elementName));
     EXPECT_CALL(*m_gstWrapper, gstElementGetName(&m_typefind)).WillOnce(Return(typefindName));
     EXPECT_CALL(*m_glibWrapper, gFree(elementName));
+    EXPECT_CALL(*m_glibWrapper, gFree(typefindName));
     EXPECT_CALL(*m_glibWrapper, gFree(capsStr));
+    EXPECT_CALL(*m_gstWrapper, gstObjectUnref(&typefindParent));
     task.execute();
     EXPECT_EQ(m_context.playbackGroup.m_curAudioDecodeBin, &typefindParent);
     EXPECT_EQ(m_context.playbackGroup.m_curAudioTypefind, &m_typefind);

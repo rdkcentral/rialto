@@ -25,8 +25,6 @@
 
 namespace firebolt::rialto
 {
-std::weak_ptr<IMediaPipelineCapabilities> MediaPipelineCapabilitiesFactory::m_mediaPipelineCapabilities;
-
 std::shared_ptr<IMediaPipelineCapabilitiesFactory> IMediaPipelineCapabilitiesFactory::createFactory()
 {
     std::shared_ptr<IMediaPipelineCapabilitiesFactory> factory;

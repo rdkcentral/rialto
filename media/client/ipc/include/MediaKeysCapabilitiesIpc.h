@@ -24,6 +24,7 @@
 #include "IMediaKeysCapabilitiesIpcFactory.h"
 #include "IpcModule.h"
 #include <memory>
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -44,6 +45,11 @@ public:
      * @brief Weak pointer to the singleton object.
      */
     static std::weak_ptr<IMediaKeysCapabilities> m_mediaKeysCapabilitiesIpc;
+
+    /**
+     * @brief Mutex protection for creation of the MediaKeysCapabilitiesIpc object.
+     */
+    static std::mutex m_creationMutex;
 
     std::shared_ptr<IMediaKeysCapabilities> getMediaKeysCapabilitiesIpc() const override;
 };

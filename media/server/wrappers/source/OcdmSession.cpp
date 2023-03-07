@@ -20,6 +20,8 @@
 #include "OcdmSession.h"
 #include "OcdmCommon.h"
 #include "RialtoServerLogging.h"
+#include <dlfcn.h>
+#include <mutex>
 
 namespace
 {
@@ -105,11 +107,24 @@ const firebolt::rialto::KeyStatus convertKeyStatus(const KeyStatus &ocdmKeyStatu
 
 namespace firebolt::rialto::server
 {
+OcdmSession::OcdmGstSessionDecryptExFn OcdmSession::m_ocdmGstSessionDecryptEx{nullptr};
+
 OcdmSession::OcdmSession(struct OpenCDMSystem *systemHandle, IOcdmSessionClient *client)
     : m_systemHandle(systemHandle), m_ocdmSessionClient(client), m_session(nullptr)
 {
     m_ocdmCallbacks = {&OcdmSession::onProcessChallenge, &OcdmSession::onKeyUpdated, &OcdmSession::onError,
                        &OcdmSession::onAllKeysUpdated};
+    static std::once_flag flag;
+    std::call_once(flag,
+                   []()
+                   {
+                       m_ocdmGstSessionDecryptEx =
+                           (OcdmGstSessionDecryptExFn)dlsym(RTLD_DEFAULT, "opencdm_gstreamer_session_decrypt_ex");
+                       if (m_ocdmGstSessionDecryptEx)
+                       {
+                           RIALTO_SERVER_LOG_INFO("Has opencdm_gstreamer_session_decrypt_ex function");
+                       }
+                   });
 }
 
 OcdmSession::~OcdmSession() {}
@@ -197,7 +212,7 @@ MediaKeyErrorStatus OcdmSession::update(const uint8_t response[], uint32_t respo
 }
 
 MediaKeyErrorStatus OcdmSession::decrypt(GstBuffer *encrypted, GstBuffer *subSample, const uint32_t subSampleCount,
-                                         GstBuffer *IV, GstBuffer *keyId, uint32_t initWithLast15)
+                                         GstBuffer *IV, GstBuffer *keyId, uint32_t initWithLast15, GstCaps *caps)
 {
     if (!m_session)
     {
@@ -205,8 +220,17 @@ MediaKeyErrorStatus OcdmSession::decrypt(GstBuffer *encrypted, GstBuffer *subSam
         return MediaKeyErrorStatus::FAIL;
     }
 
-    OpenCDMError status =
-        opencdm_gstreamer_session_decrypt(m_session, encrypted, subSample, subSampleCount, IV, keyId, initWithLast15);
+    OpenCDMError status = ERROR_NONE;
+    if (m_ocdmGstSessionDecryptEx)
+    {
+        status =
+            m_ocdmGstSessionDecryptEx(m_session, encrypted, subSample, subSampleCount, IV, keyId, initWithLast15, caps);
+    }
+    else
+    {
+        status = opencdm_gstreamer_session_decrypt(m_session, encrypted, subSample, subSampleCount, IV, keyId,
+                                                   initWithLast15);
+    }
 
     RIALTO_SERVER_LOG_INFO("opencdm_session_decrypt returned with status %s", openCdmErrorToString(status).c_str());
 
