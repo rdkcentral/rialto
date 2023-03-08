@@ -58,7 +58,7 @@ target_include_directories (
         RialtoServerIpc
 
         PUBLIC
-        interface
+        public
 
         PRIVATE
         include
