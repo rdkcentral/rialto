@@ -52,7 +52,7 @@ target_include_directories(
         RialtoPlayerCommon
 
         PUBLIC
-        public
+        interface
 
         PRIVATE
         include
