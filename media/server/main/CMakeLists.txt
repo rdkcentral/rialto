@@ -54,7 +54,7 @@ target_include_directories(
         RialtoServerMain
 
         PUBLIC
-        interface
+        public
         ${GStreamerApp_INCLUDE_DIRS}
 
         PRIVATE

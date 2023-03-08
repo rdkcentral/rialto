@@ -72,7 +72,7 @@ if( CMAKE_BUILD_FLAG STREQUAL "UnitTests" )
     add_subdirectory( tests/media/client EXCLUDE_FROM_ALL )
     add_subdirectory( tests/media/server EXCLUDE_FROM_ALL )
     add_subdirectory( tests/media/common EXCLUDE_FROM_ALL )
-    add_subdirectory( tests/media/interface EXCLUDE_FROM_ALL )
+    add_subdirectory( tests/media/public EXCLUDE_FROM_ALL )
     add_subdirectory( tests/ipc EXCLUDE_FROM_ALL )
 
 endif()
