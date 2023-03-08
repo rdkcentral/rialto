@@ -79,7 +79,7 @@ else()
         RialtoServerWrappers
 
         INTERFACE
-        public
+        interface
     )
 
 endif()

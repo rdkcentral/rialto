@@ -85,7 +85,7 @@ target_include_directories(
         RialtoServerGstPlayer
 
         PUBLIC
-        public
+        interface
 
         PRIVATE
         include
