@@ -59,7 +59,7 @@ public:
     void mediaKeysWillGetLastDrmErrorWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillGetDrmTimeWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillDecryptDeprecatedWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
-    void mediaKeysWillDecryptWithStatus(firebolt::rialto::MediaKeyErrorStatus status);    
+    void mediaKeysWillDecryptWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillSelectKeyIdWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillNotFindMediaKeySession();
     void mediaKeysWillCheckIfKeySystemIsNetflix(bool result);

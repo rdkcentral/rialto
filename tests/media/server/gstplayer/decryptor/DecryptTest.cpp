@@ -189,6 +189,21 @@ TEST_F(RialtoServerDecryptorPrivateDecryptTest, SuccessEncrypted)
 
     EXPECT_EQ(GST_FLOW_OK, m_gstRialtoDecryptorPrivate->decrypt(&m_buffer, &m_caps));
 }
+
+/**
+ * Test GstRialtoDecryptorPrivate decrypt returns OK if the decryption service decrypt fails.
+ */
+TEST_F(RialtoServerDecryptorPrivateDecryptTest, DecryptionServiceDecryptFailure)
+{
+    expectGetInfoFromProtectionMeta();
+    expectAddGstProtectionMeta(true);
+
+    EXPECT_CALL(*m_decryptionServiceMock, decrypt(m_keySessionId, &m_buffer, &m_caps))
+        .WillOnce(Return(firebolt::rialto::MediaKeyErrorStatus::FAIL));
+
+    EXPECT_EQ(GST_FLOW_OK, m_gstRialtoDecryptorPrivate->decrypt(&m_buffer, &m_caps));
+}
+
 #else
 // TODO(RIALTO-127): Remove
 /**
