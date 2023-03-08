@@ -52,7 +52,7 @@ target_include_directories (
         RialtoClientIpcImpl
 
         PUBLIC
-        public
+        interface
 
         PRIVATE
         include
