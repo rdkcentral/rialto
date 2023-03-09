@@ -44,6 +44,14 @@ protected:
 TEST_F(RialtoServerMediaKeysDecryptTest, Success)
 {
     mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_mediaKeySessionMock, decrypt(&m_encrypted, &m_caps)).WillOnce(Return(MediaKeyErrorStatus::OK));
+
+    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeys->decrypt(m_kKeySessionId, &m_encrypted, &m_caps));
+}
+
+TEST_F(RialtoServerMediaKeysDecryptTest, Success_DecryptDeprecated_API)
+{
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_mediaKeySessionMock,
                 decrypt(&m_encrypted, &m_subSample, m_subSampleCount, &m_IV, &m_keyId, m_initWithLast15, &m_caps))
         .WillOnce(Return(MediaKeyErrorStatus::OK));
@@ -58,6 +66,12 @@ TEST_F(RialtoServerMediaKeysDecryptTest, Success)
 TEST_F(RialtoServerMediaKeysDecryptTest, SessionDoesNotExistFailure)
 {
     mainThreadWillEnqueueTaskAndWait();
+    EXPECT_EQ(MediaKeyErrorStatus::BAD_SESSION_ID, m_mediaKeys->decrypt(m_kKeySessionId + 1, &m_encrypted, &m_caps));
+}
+
+TEST_F(RialtoServerMediaKeysDecryptTest, SessionDoesNotExistFailure_DecryptDeprecated_API)
+{
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_EQ(MediaKeyErrorStatus::BAD_SESSION_ID,
               m_mediaKeys->decrypt(m_kKeySessionId + 1, &m_encrypted, &m_subSample, m_subSampleCount, &m_IV, &m_keyId,
                                    m_initWithLast15, &m_caps));
@@ -67,6 +81,14 @@ TEST_F(RialtoServerMediaKeysDecryptTest, SessionDoesNotExistFailure)
  * Test that Decryp fails if the session api fails.
  */
 TEST_F(RialtoServerMediaKeysDecryptTest, DecryptFailure)
+{
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_mediaKeySessionMock, decrypt(&m_encrypted, &m_caps)).WillOnce(Return(MediaKeyErrorStatus::INVALID_STATE));
+
+    EXPECT_EQ(MediaKeyErrorStatus::INVALID_STATE, m_mediaKeys->decrypt(m_kKeySessionId, &m_encrypted, &m_caps));
+}
+
+TEST_F(RialtoServerMediaKeysDecryptTest, DecryptFailure_DecryptDeprecated_API)
 {
     mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_mediaKeySessionMock,

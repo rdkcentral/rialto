@@ -84,24 +84,15 @@ private:
      * @brief The protection metadata object
      */
     std::unique_ptr<IGstProtectionMetadataWrapper> m_metadataWrapper;
+
     /**
-     * @brief Extract decryption data from protection meta.
+     * @brief Creates the protection meta structure.
      *
-     * @param[in]  protectionMetaInfo   : The protection meta info to extract data from.
-     * @param[out] keySessionId         : The session id for the session.
-     * @param[out] subSampleCount       : count of subsamples
-     * @param[out] initWithLast15       : The value deciding whether decryption context needs to be initialized with
-     *                                  last 15 bytes. Currently this only applies to PlayReady DRM.
-     * @param[out] key                  : Gstreamer buffer containing keyID to use for decryption
-     * @param[out] iv                   : Gstreamer buffer containing initial vector (IV) used during decryption.
-     * @param[out] subSample            : Gstreamer buffer containing subsamples size which has been parsed from
-     * protection meta data.
+     * @param[in]  protectionData   : The rialto protection data.
      *
-     * @retval the gst flow return status.
+     * @retval the gst structure of the protection meta.
      */
-    GstFlowReturn extractDecryptionData(GstStructure *protectionMetaInfo, uint32_t &keySessionId,
-                                        uint32_t &subsampleCount, uint32_t &initWithLast15, GstBuffer **key,
-                                        GstBuffer **iv, GstBuffer **subsamples);
+    GstStructure *createProtectionMetaInfo(GstRialtoProtectionData *protectionData);
 };
 }; // namespace firebolt::rialto::server
 

@@ -197,11 +197,17 @@ void CdmServiceTests::mediaKeysWillGetDrmTimeWithStatus(firebolt::rialto::MediaK
     EXPECT_CALL(m_mediaKeysMock, getDrmTime(_)).WillOnce(Return(status));
 }
 
-void CdmServiceTests::mediaKeysWillDecryptWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
+void CdmServiceTests::mediaKeysWillDecryptDeprecatedWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
 {
     EXPECT_CALL(m_mediaKeysMock, hasSession(keySessionId)).WillOnce(Return(true));
     EXPECT_CALL(m_mediaKeysMock, decrypt(keySessionId, _, _, subSampleCount, _, _, initWithLast15, _))
         .WillOnce(Return(status));
+}
+
+void CdmServiceTests::mediaKeysWillDecryptWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
+{
+    EXPECT_CALL(m_mediaKeysMock, hasSession(keySessionId)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaKeysMock, decrypt(keySessionId, _, _)).WillOnce(Return(status));
 }
 
 void CdmServiceTests::mediaKeysWillSelectKeyIdWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
@@ -287,7 +293,7 @@ void CdmServiceTests::getCdmKeySessionIdShouldReturnStatus(firebolt::rialto::Med
     EXPECT_EQ(status, m_sut.getCdmKeySessionId(mediaKeysHandle, keySessionId, cdmKeySessionId));
 }
 
-void CdmServiceTests::decryptShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status)
+void CdmServiceTests::decryptDeprecatedShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status)
 {
     GstBuffer encryptedData{};
     GstBuffer subSample{};
@@ -296,6 +302,13 @@ void CdmServiceTests::decryptShouldReturnStatus(firebolt::rialto::MediaKeyErrorS
     GstCaps caps{};
     EXPECT_EQ(status, m_sut.decrypt(keySessionId, &encryptedData, &subSample, subSampleCount, &IV, &keyId,
                                     initWithLast15, &caps));
+}
+
+void CdmServiceTests::decryptShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status)
+{
+    GstBuffer encryptedData{};
+    GstCaps caps{};
+    EXPECT_EQ(status, m_sut.decrypt(keySessionId, &encryptedData, &caps));
 }
 
 void CdmServiceTests::selectKeyIdShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status)
