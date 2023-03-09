@@ -32,6 +32,34 @@ using ::testing::Return;
 using ::testing::SetArgPointee;
 using ::testing::StrictMock;
 
+static const char *toString(const firebolt::rialto::CipherMode &cipherMode)
+{
+    switch (cipherMode)
+    {
+    case firebolt::rialto::CipherMode::CBCS:
+    {
+        return "cbcs";
+    }
+    case firebolt::rialto::CipherMode::CENC:
+    {
+        return "cenc";
+    }
+    case firebolt::rialto::CipherMode::CBC1:
+    {
+        return "cbc1";
+    }
+    case firebolt::rialto::CipherMode::CENS:
+    {
+        return "cens";
+    }
+    case firebolt::rialto::CipherMode::UNKNOWN:
+    default:
+    {
+        return "unknown";
+    }
+    }
+}
+
 MATCHER_P(CharStrMatcher, expectedStr, "")
 {
     std::string actualStr = (const char *)arg;
@@ -53,6 +81,9 @@ protected:
     uint32_t m_keySessionId = 1u;
     uint32_t m_subsampleCount = 2u;
     uint32_t m_initWithLast15 = 3u;
+    uint32_t m_crypt = 4u;
+    uint32_t m_skip = 5u;
+    firebolt::rialto::CipherMode m_cipherMode = firebolt::rialto::CipherMode::CENC;
     const GValue m_keyValue = {};
     const GValue m_ivValue = {};
     const GValue m_subsamplesValue = {};
@@ -60,8 +91,17 @@ protected:
     GstBuffer m_iv = {};
     GstBuffer m_subsamples = {};
     GstCaps m_caps{};
-    GstRialtoProtectionData m_protectionData =
-        {static_cast<int32_t>(m_keySessionId), m_subsampleCount, m_initWithLast15, &m_key, &m_iv, &m_subsamples};
+    GstStructure m_structure{};
+    GstRialtoProtectionData m_protectionData = {static_cast<int32_t>(m_keySessionId),
+                                                m_subsampleCount,
+                                                m_initWithLast15,
+                                                &m_key,
+                                                &m_iv,
+                                                &m_subsamples,
+                                                m_cipherMode,
+                                                m_crypt,
+                                                m_skip,
+                                                true};
 
     RialtoServerDecryptorPrivateDecryptTest()
         : m_gstWrapperFactoryMock(std::make_shared<StrictMock<GstWrapperFactoryMock>>()),
@@ -93,8 +133,79 @@ protected:
             .WillOnce(Return(&m_protectionData));
         EXPECT_CALL(*m_protectionMetadataWrapperMock, removeProtectionMetadata(&m_buffer));
     }
+
+    void expectAddGstProtectionMeta(bool encryptionPatternSet)
+    {
+        EXPECT_CALL(*m_gstWrapperMock, gstStructureNewBufferStub(CharStrMatcher("application/x-cenc"),
+                                                                 CharStrMatcher("kid"), GST_TYPE_BUFFER, &m_key))
+            .WillOnce(Return(&m_structure));
+        EXPECT_CALL(*m_gstWrapperMock, gstStructureNewBufferStub(CharStrMatcher("application/x-cenc"),
+                                                                 CharStrMatcher("iv"), GST_TYPE_BUFFER, &m_iv))
+            .WillOnce(Return(&m_structure));
+        EXPECT_CALL(*m_gstWrapperMock,
+                    gstStructureNewUintStub(CharStrMatcher("application/x-cenc"), CharStrMatcher("subsample_count"),
+                                            G_TYPE_UINT, m_subsampleCount))
+            .WillOnce(Return(&m_structure));
+        EXPECT_CALL(*m_gstWrapperMock,
+                    gstStructureNewBufferStub(CharStrMatcher("application/x-cenc"), CharStrMatcher("subsamples"),
+                                              GST_TYPE_BUFFER, &m_subsamples))
+            .WillOnce(Return(&m_structure));
+        EXPECT_CALL(*m_gstWrapperMock, gstStructureNewUintStub(CharStrMatcher("application/x-cenc"),
+                                                               CharStrMatcher("encryption_scheme"), G_TYPE_UINT, 0))
+            .WillOnce(Return(&m_structure));
+        EXPECT_CALL(*m_gstWrapperMock,
+                    gstStructureNewUintStub(CharStrMatcher("application/x-cenc"), CharStrMatcher("init_with_last_15"),
+                                            G_TYPE_UINT, m_initWithLast15))
+            .WillOnce(Return(&m_structure));
+        EXPECT_CALL(*m_gstWrapperMock,
+                    gstStructureNewStringStub(CharStrMatcher("application/x-cenc"), CharStrMatcher("cipher-mode"),
+                                              G_TYPE_STRING, CharStrMatcher(toString(m_cipherMode))))
+            .WillOnce(Return(&m_structure));
+
+        if (encryptionPatternSet)
+        {
+            EXPECT_CALL(*m_gstWrapperMock,
+                        gstStructureSetUintStub(&m_structure, CharStrMatcher("crypt_byte_block"), G_TYPE_UINT, m_crypt));
+            EXPECT_CALL(*m_gstWrapperMock,
+                        gstStructureSetUintStub(&m_structure, CharStrMatcher("skip_byte_block"), G_TYPE_UINT, m_skip));
+        }
+
+        EXPECT_CALL(*m_gstWrapperMock, gstBufferAddProtectionMeta(&m_buffer, &m_structure))
+            .WillOnce(Return(&m_protectionMeta));
+    }
 };
 
+#ifdef RIALTO_ENABLE_DECRYPT_BUFFER
+/**
+ * Test GstRialtoDecryptorPrivate decrypt returns success for an encrypted sample.
+ */
+TEST_F(RialtoServerDecryptorPrivateDecryptTest, SuccessEncrypted)
+{
+    expectGetInfoFromProtectionMeta();
+    expectAddGstProtectionMeta(true);
+
+    EXPECT_CALL(*m_decryptionServiceMock, decrypt(m_keySessionId, &m_buffer, &m_caps))
+        .WillOnce(Return(firebolt::rialto::MediaKeyErrorStatus::OK));
+
+    EXPECT_EQ(GST_FLOW_OK, m_gstRialtoDecryptorPrivate->decrypt(&m_buffer, &m_caps));
+}
+
+/**
+ * Test GstRialtoDecryptorPrivate decrypt returns OK if the decryption service decrypt fails.
+ */
+TEST_F(RialtoServerDecryptorPrivateDecryptTest, DecryptionServiceDecryptFailure)
+{
+    expectGetInfoFromProtectionMeta();
+    expectAddGstProtectionMeta(true);
+
+    EXPECT_CALL(*m_decryptionServiceMock, decrypt(m_keySessionId, &m_buffer, &m_caps))
+        .WillOnce(Return(firebolt::rialto::MediaKeyErrorStatus::FAIL));
+
+    EXPECT_EQ(GST_FLOW_OK, m_gstRialtoDecryptorPrivate->decrypt(&m_buffer, &m_caps));
+}
+
+#else
+// TODO(RIALTO-127): Remove
 /**
  * Test GstRialtoDecryptorPrivate decrypt returns success for an encrypted sample.
  */
@@ -144,3 +255,4 @@ TEST_F(RialtoServerDecryptorPrivateDecryptTest, DecryptionServiceDecryptFailure)
 
     EXPECT_EQ(GST_FLOW_OK, m_gstRialtoDecryptorPrivate->decrypt(&m_buffer, &m_caps));
 }
+#endif

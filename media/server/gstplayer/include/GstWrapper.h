@@ -458,6 +458,8 @@ public:
     {
         return gst_audio_channel_get_fallback_mask(channels);
     }
+
+    void gstStructureSet(GstStructure *structure, const gchar *firstname, ...) const override;
 };
 
 }; // namespace firebolt::rialto::server

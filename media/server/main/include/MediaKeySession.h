@@ -77,6 +77,9 @@ public:
 
     MediaKeyErrorStatus updateSession(const std::vector<uint8_t> &responseData) override;
 
+    MediaKeyErrorStatus decrypt(GstBuffer *encrypted, GstCaps *caps) override;
+
+    // TODO(RIALTO-127): Remove
     MediaKeyErrorStatus decrypt(GstBuffer *encrypted, GstBuffer *subSample, const uint32_t subSampleCount,
                                 GstBuffer *IV, GstBuffer *keyId, uint32_t initWithLast15, GstCaps *caps) override;
 
