@@ -56,7 +56,7 @@ constexpr size_t kNumClearBytes{2};
 constexpr size_t kNumEncryptedBytes{7};
 constexpr uint32_t kInitWithLast15{1};
 constexpr SegmentAlignment kSegmentAlignment{SegmentAlignment::AU};
-constexpr CipherMode kCipherMode{CipherMode::CBCS};
+
 constexpr uint32_t kCryptBlocks{131};
 constexpr uint32_t kSkipBlocks{242};
 
@@ -127,12 +127,43 @@ public:
         EXPECT_EQ(m_segment->getSubSamples().front().numClearBytes, kNumClearBytes);
         EXPECT_EQ(m_segment->getSubSamples().front().numEncryptedBytes, kNumEncryptedBytes);
         EXPECT_EQ(m_segment->getInitWithLast15(), kInitWithLast15);
-        EXPECT_EQ(m_segment->getCipherMode(), kCipherMode);
+        return *this;
+    }
+
+    Check &cipherModeCBCSPresent()
+    {
+        EXPECT_EQ(m_segment->getCipherMode(), CipherMode::CBCS);
         uint32_t crypt{0};
         uint32_t skip{0};
         EXPECT_TRUE(m_segment->getEncryptionPattern(crypt, skip));
         EXPECT_EQ(crypt, kCryptBlocks);
         EXPECT_EQ(skip, kSkipBlocks);
+        return *this;
+    }
+
+    Check &cipherModeCENCPresent()
+    {
+        EXPECT_EQ(m_segment->getCipherMode(), CipherMode::CENC);
+        uint32_t crypt{0};
+        uint32_t skip{0};
+        EXPECT_FALSE(m_segment->getEncryptionPattern(crypt, skip));
+        return *this;
+    }
+    Check &cipherModeCENSPresent()
+    {
+        EXPECT_EQ(m_segment->getCipherMode(), CipherMode::CENS);
+        uint32_t crypt{0};
+        uint32_t skip{0};
+        EXPECT_FALSE(m_segment->getEncryptionPattern(crypt, skip));
+        return *this;
+    }
+
+    Check &cipherModeCBC1Present()
+    {
+        EXPECT_EQ(m_segment->getCipherMode(), CipherMode::CBC1);
+        uint32_t crypt{0};
+        uint32_t skip{0};
+        EXPECT_FALSE(m_segment->getEncryptionPattern(crypt, skip));
         return *this;
     }
 
@@ -190,11 +221,36 @@ public:
         m_segment->setInitVector(kInitVector);
         m_segment->addSubSample(kNumClearBytes, kNumEncryptedBytes);
         m_segment->setInitWithLast15(kInitWithLast15);
-        m_segment->setCipherMode(kCipherMode);
+
+        return *this;
+    }
+
+    Build &withCBCSCipherMode()
+    {
+        m_segment->setCipherMode(CipherMode::CBCS);
         m_segment->setEncryptionPattern(kCryptBlocks, kSkipBlocks);
 
         return *this;
     }
+
+    Build &withCENCCipherMode()
+    {
+        m_segment->setCipherMode(CipherMode::CENC);
+        return *this;
+    }
+
+    Build &withCENSCipherMode()
+    {
+        m_segment->setCipherMode(CipherMode::CENS);
+        return *this;
+    }
+
+    Build &withCBC1CipherMode()
+    {
+        m_segment->setCipherMode(CipherMode::CBC1);
+        return *this;
+    }
+
     std::unique_ptr<IMediaPipeline::MediaSegment> operator()() { return std::move(m_segment); }
 
 private:
@@ -273,20 +329,56 @@ TEST_F(DataReaderV2Tests, shouldReadAudioDataWithOptionalParams)
     Check(resultSegment).mandatoryDataPresent().audioDataPresent().optionalDataPresent().encryptionDataNotPresent();
 }
 
-TEST_F(DataReaderV2Tests, shouldReadEncryptedVideoData)
+TEST_F(DataReaderV2Tests, shouldReadCBCSEncryptedVideoData)
 {
-    auto inputSegment = Build().basicVideoSegment().withEncryptionData()();
+    auto inputSegment = Build().basicVideoSegment().withEncryptionData().withCBCSCipherMode()();
     writeBuffer(inputSegment);
     auto resultSegment = readData(kVideoMediaSourceType);
-    Check(resultSegment).mandatoryDataPresent().videoDataPresent().optionalDataNotPresent().encryptionDataPresent();
+    Check(resultSegment)
+        .mandatoryDataPresent()
+        .videoDataPresent()
+        .optionalDataNotPresent()
+        .encryptionDataPresent()
+        .cipherModeCBCSPresent();
 }
 
-TEST_F(DataReaderV2Tests, shouldReadEncryptedAudioData)
+TEST_F(DataReaderV2Tests, shouldReadCENCEncryptedAudioData)
 {
-    auto inputSegment = Build().basicAudioSegment().withEncryptionData()();
+    auto inputSegment = Build().basicAudioSegment().withEncryptionData().withCENCCipherMode()();
     writeBuffer(inputSegment);
     auto resultSegment = readData(kAudioMediaSourceType);
-    Check(resultSegment).mandatoryDataPresent().audioDataPresent().optionalDataNotPresent().encryptionDataPresent();
+    Check(resultSegment)
+        .mandatoryDataPresent()
+        .audioDataPresent()
+        .optionalDataNotPresent()
+        .encryptionDataPresent()
+        .cipherModeCENCPresent();
+}
+
+TEST_F(DataReaderV2Tests, shouldReadCENSEncryptedVideoData)
+{
+    auto inputSegment = Build().basicVideoSegment().withEncryptionData().withCENSCipherMode()();
+    writeBuffer(inputSegment);
+    auto resultSegment = readData(kVideoMediaSourceType);
+    Check(resultSegment)
+        .mandatoryDataPresent()
+        .videoDataPresent()
+        .optionalDataNotPresent()
+        .encryptionDataPresent()
+        .cipherModeCENSPresent();
+}
+
+TEST_F(DataReaderV2Tests, shouldReadCBC1EncryptedAudioData)
+{
+    auto inputSegment = Build().basicAudioSegment().withEncryptionData().withCBC1CipherMode()();
+    writeBuffer(inputSegment);
+    auto resultSegment = readData(kAudioMediaSourceType);
+    Check(resultSegment)
+        .mandatoryDataPresent()
+        .audioDataPresent()
+        .optionalDataNotPresent()
+        .encryptionDataPresent()
+        .cipherModeCBC1Present();
 }
 
 TEST_F(DataReaderV2Tests, shouldReturnEmptyVectorWhenVideoSourceTypeIsSelectedForAudioData)
