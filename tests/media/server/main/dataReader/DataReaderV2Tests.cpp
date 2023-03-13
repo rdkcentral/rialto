@@ -154,7 +154,9 @@ public:
         EXPECT_EQ(m_segment->getCipherMode(), CipherMode::CENS);
         uint32_t crypt{0};
         uint32_t skip{0};
-        EXPECT_FALSE(m_segment->getEncryptionPattern(crypt, skip));
+        EXPECT_TRUE(m_segment->getEncryptionPattern(crypt, skip));
+        EXPECT_EQ(crypt, kCryptBlocks);
+        EXPECT_EQ(skip, kSkipBlocks);
         return *this;
     }
 
@@ -242,6 +244,7 @@ public:
     Build &withCENSCipherMode()
     {
         m_segment->setCipherMode(CipherMode::CENS);
+        m_segment->setEncryptionPattern(kCryptBlocks, kSkipBlocks);
         return *this;
     }
 
