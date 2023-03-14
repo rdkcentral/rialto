@@ -45,6 +45,34 @@ convertSegmentAlignment(const firebolt::rialto::MediaSegmentMetadata_SegmentAlig
     return firebolt::rialto::SegmentAlignment::UNDEFINED;
 }
 
+firebolt::rialto::CipherMode convertCipherMode(const firebolt::rialto::MediaSegmentMetadata_CipherMode &cipherMode)
+{
+    switch (cipherMode)
+    {
+    case firebolt::rialto::MediaSegmentMetadata_CipherMode_UNKNOWN:
+    {
+        return firebolt::rialto::CipherMode::UNKNOWN;
+    }
+    case firebolt::rialto::MediaSegmentMetadata_CipherMode_CENC:
+    {
+        return firebolt::rialto::CipherMode::CBC1;
+    }
+    case firebolt::rialto::MediaSegmentMetadata_CipherMode_CBC1:
+    {
+        return firebolt::rialto::CipherMode::CBC1;
+    }
+    case firebolt::rialto::MediaSegmentMetadata_CipherMode_CENS:
+    {
+        return firebolt::rialto::CipherMode::CENS;
+    }
+    case firebolt::rialto::MediaSegmentMetadata_CipherMode_CBCS:
+    {
+        return firebolt::rialto::CipherMode::CBCS;
+    }
+    }
+    return firebolt::rialto::CipherMode::UNKNOWN;
+}
+
 std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSegment>
 createSegment(const firebolt::rialto::MediaSegmentMetadata &metadata, const firebolt::rialto::MediaSourceType &type)
 {
@@ -123,6 +151,15 @@ createSegment(const firebolt::rialto::MediaSegmentMetadata &metadata, const fire
     {
         segment->setInitWithLast15(metadata.init_with_last_15());
     }
+    if (metadata.has_cipher_mode())
+    {
+        segment->setCipherMode(convertCipherMode(metadata.cipher_mode()));
+    }
+    if (metadata.has_crypt() && metadata.has_skip())
+    {
+        segment->setEncryptionPattern(metadata.crypt(), metadata.skip());
+    }
+
     for (const auto &info : metadata.sub_sample_info())
     {
         segment->addSubSample(info.num_clear_bytes(), info.num_encrypted_bytes());

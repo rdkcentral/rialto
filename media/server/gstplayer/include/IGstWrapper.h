@@ -1060,6 +1060,16 @@ public:
      * @retval the channel mask or 0 if unknown.
      */
     virtual guint64 gstAudioChannelGetFallbackMask(gint channels) const = 0;
+
+    /**
+     * @brief Sets the fields of the gst structure.
+     *
+     * @param[in] structure  : the structure to add fields too.
+     * @param[in] fieldname  : the name of the first field to add.
+     * @param[in] ...        : variable arguments, should be in the form field name, field type (as a GType), value(s)
+     * and be NULL terminated.
+     */
+    virtual void gstStructureSet(GstStructure *structure, const gchar *firstname, ...) const = 0;
 };
 
 }; // namespace firebolt::rialto::server
