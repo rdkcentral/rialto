@@ -55,7 +55,7 @@ firebolt::rialto::CipherMode convertCipherMode(const firebolt::rialto::MediaSegm
     }
     case firebolt::rialto::MediaSegmentMetadata_CipherMode_CENC:
     {
-        return firebolt::rialto::CipherMode::CBC1;
+        return firebolt::rialto::CipherMode::CENC;
     }
     case firebolt::rialto::MediaSegmentMetadata_CipherMode_CBC1:
     {
