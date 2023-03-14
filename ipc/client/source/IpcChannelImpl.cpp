@@ -616,7 +616,8 @@ void ChannelImpl::updateTimeoutTimer()
 
         // set the timerfd to the next duration
         const std::chrono::microseconds duration =
-            std::chrono::duration_cast<std::chrono::microseconds>(nextTimeout - std::chrono::steady_clock::now());
+            std::chrono::duration_cast<std::chrono::microseconds>(nextTimeout - std::chrono::steady_clock::now()) +
+            std::chrono::microseconds(500); // add 500 microseconds, because timeout poll() is sometimes called too early
         if (duration <= std::chrono::microseconds::zero())
         {
             ts.it_value.tv_nsec = 1000;
