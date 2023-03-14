@@ -28,6 +28,14 @@ message MediaSegmentMetadata {
         ALIGNMENT_AU        = 2;
     }
 
+    enum CipherMode {
+        UNKNOWN = 0;
+        CENC    = 1;
+        CBC1    = 2;
+        CENS    = 3;
+        CBCS    = 4;
+    }
+
     message SubsamplePair {
         required uint32 num_clear_bytes      = 1;             /* How many of next bytes in sequence are clear */
         required uint32 num_encrypted_bytes  = 2;             /* How many of next bytes in sequence are encrypted */
@@ -50,4 +58,7 @@ message MediaSegmentMetadata {
     repeated SubsamplePair    sub_sample_info      = 15;      /* If present, use gather/scatter decryption based on this list of clear/encrypted byte lengths. */
                                                               /* If not present and content is encrypted then entire media segment needs decryption.           */
     optional bytes            codec_data           = 16;      /* Buffer containing updated codec data for video segments */
+    optional CipherMode       cipher_mode          = 17;      /* Specifies cipher mode uses for this sample */
+    optional uint32           crypt                = 18;      /* Crypt byte block value */
+    optional uint32           skip                 = 19;      /* Skip byte block value */
 }

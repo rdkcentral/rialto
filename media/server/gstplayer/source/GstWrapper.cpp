@@ -88,4 +88,11 @@ GstStructure *GstWrapper::gstStructureNew(const gchar *name, const gchar *firstf
     return structure;
 }
 
+void GstWrapper::gstStructureSet(GstStructure *structure, const gchar *firstname, ...) const
+{
+    va_list vl;
+    va_start(vl, firstname);
+    gst_structure_set_valist(structure, firstname, vl);
+    va_end(vl);
+}
 }; // namespace firebolt::rialto::server

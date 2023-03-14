@@ -26,6 +26,10 @@ endif()
 
 add_compile_options(-Wall -Werror)
 
+if ( RIALTO_ENABLE_DECRYPT_BUFFER )
+    add_compile_definitions( RIALTO_ENABLE_DECRYPT_BUFFER )
+endif()
+
 # Add our local cmake directory to search for components
 set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake )
 
