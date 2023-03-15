@@ -301,11 +301,6 @@ void GstWebAudioPlayer::termWebAudioPipeline()
             m_gstWrapper->gstObjectUnref(bus);
         }
 
-        if (m_context.source)
-        {
-            m_gstWrapper->gstObjectUnref(m_context.source);
-        }
-
         m_gstWrapper->gstObjectUnref(m_context.pipeline);
     }
 }
