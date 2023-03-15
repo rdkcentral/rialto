@@ -21,14 +21,13 @@
 #include "TestClientMock.h"
 #include <IIpcChannel.h>
 #include <IIpcControllerFactory.h>
-#include <atomic>
 #include <gtest/gtest.h>
 
 namespace
 {
-void onMessageReceived(std::atomic_bool *done)
+void onMessageReceived(bool *done)
 {
-    done->store(true);
+    *done = true;
 }
 }; // namespace
 
@@ -97,13 +96,13 @@ bool ClientStub::sendSingleVarRequest(int32_t var1)
     auto controllerFactory = firebolt::rialto::ipc::IControllerFactory::createFactory();
     auto controller = controllerFactory->create();
 
-    std::atomic_bool done{false};
+    bool done = false;
     m_testModuleStub->TestRequestSingleVar(controller.get(), &request, &response,
                                            google::protobuf::NewCallback(onMessageReceived, &done));
 
-    while (m_channel->process() && !done.load())
+    while (m_channel->process() && !done)
     {
-        m_channel->wait(1);
+        m_channel->wait(-1);
     }
 
     if (controller->Failed())
@@ -128,13 +127,13 @@ bool ClientStub::sendMultiVarRequest(int32_t var1, uint32_t var2, firebolt::rial
     auto controllerFactory = firebolt::rialto::ipc::IControllerFactory::createFactory();
     auto controller = controllerFactory->create();
 
-    std::atomic_bool done{false};
+    bool done = false;
     m_testModuleStub->TestRequestMultiVar(controller.get(), &request, &response,
                                           google::protobuf::NewCallback(onMessageReceived, &done));
 
-    while (m_channel->process() && !done.load())
+    while (m_channel->process() && !done)
     {
-        m_channel->wait(1);
+        m_channel->wait(-1);
     }
 
     if (controller->Failed())
@@ -153,13 +152,13 @@ bool ClientStub::sendRequestWithSingleVarResponse(int32_t &var1)
     auto controllerFactory = firebolt::rialto::ipc::IControllerFactory::createFactory();
     auto controller = controllerFactory->create();
 
-    std::atomic_bool done{false};
+    bool done = false;
     m_testModuleStub->TestResponseSingleVar(controller.get(), &request, &response,
                                             google::protobuf::NewCallback(onMessageReceived, &done));
 
-    while (m_channel->process() && !done.load())
+    while (m_channel->process() && !done)
     {
-        m_channel->wait(1);
+        m_channel->wait(-1);
     }
 
     if (controller->Failed())
@@ -181,13 +180,13 @@ bool ClientStub::sendRequestWithMultiVarResponse(int32_t &var1, uint32_t &var2,
     auto controllerFactory = firebolt::rialto::ipc::IControllerFactory::createFactory();
     auto controller = controllerFactory->create();
 
-    std::atomic_bool done{false};
+    bool done = false;
     m_testModuleStub->TestResponseMultiVar(controller.get(), &request, &response,
                                            google::protobuf::NewCallback(onMessageReceived, &done));
 
-    while (m_channel->process() && !done.load())
+    while (m_channel->process() && !done)
     {
-        m_channel->wait(1);
+        m_channel->wait(-1);
     }
 
     if (controller->Failed())
@@ -203,16 +202,16 @@ bool ClientStub::sendRequestWithMultiVarResponse(int32_t &var1, uint32_t &var2,
     return true;
 }
 
-void ClientStub::startMessageThread(bool expectMessage)
+void ClientStub::startMessageThread()
 {
-    m_eventThread = std::thread{[this, expectMessage]()
+    m_eventThread = std::thread{[this]()
                                 {
                                     while (m_channel->process() && !m_messageReceived.load())
                                     {
                                         m_startThreadCond.notify_one();
                                         m_channel->wait(10);
                                     }
-                                    EXPECT_EQ(m_messageReceived.load(), expectMessage);
+                                    EXPECT_TRUE(m_messageReceived.load());
                                     m_messageCond.notify_one();
                                 }};
 
