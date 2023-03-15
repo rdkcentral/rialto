@@ -39,7 +39,7 @@ if( NOT CMAKE_BUILD_FLAG STREQUAL "UnitTests" )
         RialtoServerWrappers
 
         PUBLIC
-        public
+        interface
 
         PRIVATE
         include
@@ -79,7 +79,7 @@ else()
         RialtoServerWrappers
 
         INTERFACE
-        public
+        interface
     )
 
 endif()
