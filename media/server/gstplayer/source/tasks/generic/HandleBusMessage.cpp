@@ -161,6 +161,34 @@ void HandleBusMessage::execute() const
         }
         break;
     }
+    case GST_MESSAGE_ERROR:
+    {
+        GError* err = nullptr;
+        gchar* debug = nullptr;
+        gst_message_parse_error(m_message, &err, &debug);
+
+#if 0
+        // TODO: Check for EOS here?
+        bool is_eos = (self->eos_data_ == (int)self->GetBothMediaTypeTakingCodecsIntoAccount());
+        if (err->domain == GST_STREAM_ERROR && is_eos)
+        {
+            RIALTO_SERVER_LOG_WARN("Got stream error. But all streams are ended, so reporting EOS. Error code %d: %s (%s).",
+            err->code, err->message, debug);
+            self->DispatchOnWorkerThread(new PlayerStatusTask(
+            self->player_status_func_, self->player_, self->ticket_,
+            self->context_, kSbPlayerStateEndOfStream));
+        }
+        else
+#endif
+        {
+            RIALTO_SERVER_LOG_ERROR("Error %d: %s (%s)", err->code, err->message, debug);
+            m_gstPlayerClient->notifyPlaybackState(PlaybackState::FAILURE);
+        }
+        g_free(debug);
+        g_error_free(err);
+
+        break;
+    }
     default:
         break;
     }
