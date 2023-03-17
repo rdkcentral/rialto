@@ -95,3 +95,23 @@ TEST_F(RialtoClientMediaPipelineSourceTest, RemoveSourceFailure)
 
     EXPECT_EQ(m_mediaPipeline->removeSource(m_id), false);
 }
+
+/**
+ * Test that allSourcesAttached returns success if the IPC API succeeds.
+ */
+TEST_F(RialtoClientMediaPipelineSourceTest, AllSourcesAttachedSuccess)
+{
+    EXPECT_CALL(*m_mediaPipelineIpcMock, allSourcesAttached()).WillOnce(Return(true));
+
+    EXPECT_EQ(m_mediaPipeline->allSourcesAttached(), true);
+}
+
+/**
+ * Test that allSourcesAttached returns failure if the IPC API fails.
+ */
+TEST_F(RialtoClientMediaPipelineSourceTest, AllSourcesAttachedFailure)
+{
+    EXPECT_CALL(*m_mediaPipelineIpcMock, allSourcesAttached()).WillOnce(Return(false));
+
+    EXPECT_EQ(m_mediaPipeline->allSourcesAttached(), false);
+}

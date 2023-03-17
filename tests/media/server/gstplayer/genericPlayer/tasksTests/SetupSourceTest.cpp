@@ -36,7 +36,6 @@ protected:
 TEST_F(SetupSourceTest, shouldSetupSource)
 {
     firebolt::rialto::server::tasks::generic::SetupSource task{m_context, m_gstPlayer, &m_element};
-    EXPECT_CALL(m_gstPlayer, scheduleSourceSetupFinish());
     task.execute();
     EXPECT_EQ(m_context.source, &m_element);
 }

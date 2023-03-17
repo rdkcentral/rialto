@@ -94,6 +94,10 @@ public:
      */
     virtual void removeSource(const MediaSourceType &mediaSourceType) = 0;
 
+    /**
+     * @brief Handles notification that all sources were attached
+     *
+     */
     virtual void allSourcesAttached() = 0;
 
     /**
