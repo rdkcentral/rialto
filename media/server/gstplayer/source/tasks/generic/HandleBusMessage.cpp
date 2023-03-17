@@ -198,7 +198,7 @@ bool HandleBusMessage::allSourcesEos() const
 {
     for (const auto streamInfo : m_context.streamInfo)
     {
-        if (!(m_context.endOfStreamInfo.find(streamInfo.first) == m_context.endOfStreamInfo.end()))
+        if (m_context.endOfStreamInfo.find(streamInfo.first) == m_context.endOfStreamInfo.end())
         {
             return false;
         }
