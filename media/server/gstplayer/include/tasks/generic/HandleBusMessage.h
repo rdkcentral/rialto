@@ -39,6 +39,8 @@ public:
     void execute() const override;
 
 private:
+    bool allSourcesEos() const;
+
     GenericPlayerContext &m_context;
     IGstGenericPlayerPrivate &m_player;
     IGstGenericPlayerClient *m_gstPlayerClient;
