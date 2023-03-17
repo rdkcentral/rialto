@@ -280,6 +280,13 @@ public:
      * @retval A pointer to the found occurrence, or NULL if not found.
      */
     virtual gchar *gStrrstr(const gchar *haystack, const gchar *needle) const = 0;
+
+    /**
+     * @brief Frees a GError and its resources.
+     *
+     * @param[in] error : GError to free.
+     */
+    virtual void gErrorFree(GError* error) const = 0;
 };
 
 }; // namespace firebolt::rialto::server

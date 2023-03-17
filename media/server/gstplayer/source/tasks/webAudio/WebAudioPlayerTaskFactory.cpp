@@ -85,6 +85,6 @@ std::unique_ptr<IPlayerTask> WebAudioPlayerTaskFactory::createHandleBusMessage(W
                                                                                IGstWebAudioPlayerPrivate &player,
                                                                                GstMessage *message) const
 {
-    return std::make_unique<tasks::webaudio::HandleBusMessage>(context, player, m_client, m_gstWrapper, message);
+    return std::make_unique<tasks::webaudio::HandleBusMessage>(context, player, m_client, m_gstWrapper, m_glibWrapper, message);
 }
 } // namespace firebolt::rialto::server

@@ -26,9 +26,9 @@
 namespace firebolt::rialto::server::tasks::generic
 {
 HandleBusMessage::HandleBusMessage(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                   IGstGenericPlayerClient *client, std::shared_ptr<IGstWrapper> gstWrapper,
+                                   IGstGenericPlayerClient *client, std::shared_ptr<IGstWrapper> gstWrapper, std::shared_ptr<IGlibWrapper> glibWrapper,
                                    GstMessage *message)
-    : m_context{context}, m_player{player}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}, m_message{message}
+    : m_context{context}, m_player{player}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_message{message}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing HandleBusMessage");
 }
@@ -165,7 +165,7 @@ void HandleBusMessage::execute() const
     {
         GError* err = nullptr;
         gchar* debug = nullptr;
-        gst_message_parse_error(m_message, &err, &debug);
+        m_gstWrapper->gstMessageParseError(m_message, &err, &debug);
 
         if ((err->domain == GST_STREAM_ERROR) &&
             (allSourcesEos()))
@@ -183,8 +183,8 @@ void HandleBusMessage::execute() const
             m_gstPlayerClient->notifyPlaybackState(PlaybackState::FAILURE);
         }
 
-        g_free(debug);
-        g_error_free(err);
+        m_glibWrapper->gFree(debug);
+        m_glibWrapper->gErrorFree(err);
         break;
     }
     default:

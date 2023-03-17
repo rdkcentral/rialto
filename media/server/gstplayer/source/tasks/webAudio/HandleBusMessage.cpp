@@ -26,9 +26,9 @@
 namespace firebolt::rialto::server::tasks::webaudio
 {
 HandleBusMessage::HandleBusMessage(WebAudioPlayerContext &context, IGstWebAudioPlayerPrivate &player,
-                                   IGstWebAudioPlayerClient *client, std::shared_ptr<IGstWrapper> gstWrapper,
+                                   IGstWebAudioPlayerClient *client, std::shared_ptr<IGstWrapper> gstWrapper, std::shared_ptr<IGlibWrapper> glibWrapper,
                                    GstMessage *message)
-    : m_context{context}, m_player{player}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}, m_message{message}
+    : m_context{context}, m_player{player}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_message{message}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing HandleBusMessage");
 }
@@ -111,6 +111,19 @@ void HandleBusMessage::execute() const
                 RIALTO_SERVER_LOG_ERROR("Failed to flush the pipeline");
             }
         }
+        break;
+    }
+    case GST_MESSAGE_ERROR:
+    {
+        GError* err = nullptr;
+        gchar* debug = nullptr;
+        m_gstWrapper->gstMessageParseError(m_message, &err, &debug);
+
+        RIALTO_SERVER_LOG_ERROR("Error %d: %s (%s)", err->code, err->message, debug);
+        m_gstPlayerClient->notifyState(WebAudioPlayerState::FAILURE);
+
+        m_glibWrapper->gFree(debug);
+        m_glibWrapper->gErrorFree(err);
         break;
     }
     default:

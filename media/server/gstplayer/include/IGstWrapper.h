@@ -1070,6 +1070,15 @@ public:
      * and be NULL terminated.
      */
     virtual void gstStructureSet(GstStructure *structure, const gchar *firstname, ...) const = 0;
+
+    /**
+     * @brief Gets the error and debug string from the message. Both gerror and debug must be freed by the caller once complete.
+     *
+     * @param[in]  message  : a gst error message.
+     * @param[out] gerror   : pointer to the error value.
+     * @param[out] debug    : pointer to the debug string.
+     */
+    virtual void gstMessageParseError(GstMessage * message, GError ** gerror, gchar ** debug) const = 0;
 };
 
 }; // namespace firebolt::rialto::server

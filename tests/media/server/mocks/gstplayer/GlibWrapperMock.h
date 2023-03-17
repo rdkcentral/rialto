@@ -94,6 +94,7 @@ public:
     MOCK_METHOD(gboolean, gOnceInitEnter, (gsize * location), (const, override));
     MOCK_METHOD(void, gOnceInitLeave, (gsize * location, gsize result), (const, override));
     MOCK_METHOD(gchar *, gStrrstr, (const gchar *haystack, const gchar *needle), (const, override));
+    MOCK_METHOD(void, gErrorFree, (GError* error), (const, override));
 };
 } // namespace firebolt::rialto::server
 
