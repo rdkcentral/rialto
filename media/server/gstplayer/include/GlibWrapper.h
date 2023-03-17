@@ -131,10 +131,7 @@ public:
 
     gchar *gStrrstr(const gchar *haystack, const gchar *needle) const override { return g_strrstr(haystack, needle); }
 
-    void gErrorFree(GError* error) const override
-    {
-        g_error_free(error);
-    }
+    void gErrorFree(GError *error) const override { g_error_free(error); }
 };
 
 }; // namespace firebolt::rialto::server

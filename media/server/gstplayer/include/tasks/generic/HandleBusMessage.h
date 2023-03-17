@@ -21,10 +21,10 @@
 #define FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_HANDLE_BUS_MESSAGE_H_
 
 #include "GenericPlayerContext.h"
+#include "IGlibWrapper.h"
 #include "IGstGenericPlayerClient.h"
 #include "IGstGenericPlayerPrivate.h"
 #include "IGstWrapper.h"
-#include "IGlibWrapper.h"
 #include "IPlayerTask.h"
 #include <gst/gst.h>
 #include <memory>
@@ -35,7 +35,8 @@ class HandleBusMessage : public IPlayerTask
 {
 public:
     HandleBusMessage(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client,
-                     std::shared_ptr<IGstWrapper> gstWrapper, std::shared_ptr<IGlibWrapper> glibWrapper, GstMessage *message);
+                     std::shared_ptr<IGstWrapper> gstWrapper, std::shared_ptr<IGlibWrapper> glibWrapper,
+                     GstMessage *message);
     ~HandleBusMessage() override;
     void execute() const override;
 

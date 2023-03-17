@@ -176,8 +176,7 @@ public:
                 (GstStructure * structure, const gchar *firstname, GType type, uint32_t value), (const));
     MOCK_METHOD(void, gstStructureSetStringStub,
                 (GstStructure * structure, const gchar *firstname, GType type, const char *value), (const));
-    MOCK_METHOD(void, gstMessageParseError,
-                (GstMessage * message, GError ** gerror, gchar ** debug), (const));
+    MOCK_METHOD(void, gstMessageParseError, (GstMessage * message, GError **gerror, gchar **debug), (const));
 
     GstCaps *gstCapsNewSimple(const char *media_type, const char *fieldname, ...) const override
     {

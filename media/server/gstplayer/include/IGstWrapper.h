@@ -1078,7 +1078,7 @@ public:
      * @param[out] gerror   : pointer to the error value.
      * @param[out] debug    : pointer to the debug string.
      */
-    virtual void gstMessageParseError(GstMessage * message, GError ** gerror, gchar ** debug) const = 0;
+    virtual void gstMessageParseError(GstMessage *message, GError **gerror, gchar **debug) const = 0;
 };
 
 }; // namespace firebolt::rialto::server

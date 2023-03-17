@@ -20,10 +20,10 @@
 #ifndef FIREBOLT_RIALTO_SERVER_TASKS_WEBAUDIO_HANDLE_BUS_MESSAGE_H_
 #define FIREBOLT_RIALTO_SERVER_TASKS_WEBAUDIO_HANDLE_BUS_MESSAGE_H_
 
+#include "IGlibWrapper.h"
 #include "IGstWebAudioPlayerClient.h"
 #include "IGstWebAudioPlayerPrivate.h"
 #include "IGstWrapper.h"
-#include "IGlibWrapper.h"
 #include "IPlayerTask.h"
 #include "WebAudioPlayerContext.h"
 #include <gst/gst.h>
@@ -35,7 +35,8 @@ class HandleBusMessage : public IPlayerTask
 {
 public:
     HandleBusMessage(WebAudioPlayerContext &context, IGstWebAudioPlayerPrivate &player,
-                     IGstWebAudioPlayerClient *client, std::shared_ptr<IGstWrapper> gstWrapper, std::shared_ptr<IGlibWrapper> glibWrapper, GstMessage *message);
+                     IGstWebAudioPlayerClient *client, std::shared_ptr<IGstWrapper> gstWrapper,
+                     std::shared_ptr<IGlibWrapper> glibWrapper, GstMessage *message);
     ~HandleBusMessage() override;
     void execute() const override;
 

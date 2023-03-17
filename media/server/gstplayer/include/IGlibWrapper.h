@@ -286,7 +286,7 @@ public:
      *
      * @param[in] error : GError to free.
      */
-    virtual void gErrorFree(GError* error) const = 0;
+    virtual void gErrorFree(GError *error) const = 0;
 };
 
 }; // namespace firebolt::rialto::server

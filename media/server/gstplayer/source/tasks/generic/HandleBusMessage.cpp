@@ -26,9 +26,10 @@
 namespace firebolt::rialto::server::tasks::generic
 {
 HandleBusMessage::HandleBusMessage(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                   IGstGenericPlayerClient *client, std::shared_ptr<IGstWrapper> gstWrapper, std::shared_ptr<IGlibWrapper> glibWrapper,
-                                   GstMessage *message)
-    : m_context{context}, m_player{player}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_message{message}
+                                   IGstGenericPlayerClient *client, std::shared_ptr<IGstWrapper> gstWrapper,
+                                   std::shared_ptr<IGlibWrapper> glibWrapper, GstMessage *message)
+    : m_context{context}, m_player{player}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper},
+      m_glibWrapper{glibWrapper}, m_message{message}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing HandleBusMessage");
 }
@@ -163,15 +164,15 @@ void HandleBusMessage::execute() const
     }
     case GST_MESSAGE_ERROR:
     {
-        GError* err = nullptr;
-        gchar* debug = nullptr;
+        GError *err = nullptr;
+        gchar *debug = nullptr;
         m_gstWrapper->gstMessageParseError(m_message, &err, &debug);
 
-        if ((err->domain == GST_STREAM_ERROR) &&
-            (allSourcesEos()))
+        if ((err->domain == GST_STREAM_ERROR) && (allSourcesEos()))
         {
-            RIALTO_SERVER_LOG_WARN("Got stream error. But all streams are ended, so reporting EOS. Error code %d: %s (%s).",
-            err->code, err->message, debug);
+            RIALTO_SERVER_LOG_WARN("Got stream error. But all streams are ended, so reporting EOS. Error code %d: %s "
+                                   "(%s).",
+                                   err->code, err->message, debug);
             if (m_gstPlayerClient)
             {
                 m_gstPlayerClient->notifyPlaybackState(PlaybackState::END_OF_STREAM);
