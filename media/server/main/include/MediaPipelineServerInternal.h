@@ -98,6 +98,8 @@ public:
 
     bool removeSource(int32_t id) override;
 
+    bool allSourcesAttached() override;
+
     bool play() override;
 
     bool pause() override;
@@ -244,6 +246,13 @@ protected:
      * @retval true on success.
      */
     bool removeSourceInternal(int32_t id);
+
+    /**
+     * @brief Notify all sources attached internally, only to be called on the main thread.
+     *
+     * @retval true on success.
+     */
+    bool allSourcesAttachedInternal();
 
     /**
      * @brief Play internally, only to be called on the main thread.

@@ -300,6 +300,29 @@ bool MediaPipelineServerInternal::removeSourceInternal(int32_t id)
     return true;
 }
 
+bool MediaPipelineServerInternal::allSourcesAttached()
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = allSourcesAttachedInternal(); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::allSourcesAttachedInternal()
+{
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to notify all sources attached - Gstreamer player has not been loaded");
+        return false;
+    }
+
+    m_gstPlayer->allSourcesAttached();
+    return true;
+}
+
 bool MediaPipelineServerInternal::play()
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");

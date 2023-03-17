@@ -94,6 +94,8 @@ public:
      */
     virtual void removeSource(const MediaSourceType &mediaSourceType) = 0;
 
+    virtual void allSourcesAttached() = 0;
+
     /**
      * @brief Starts playback of the media.
      *

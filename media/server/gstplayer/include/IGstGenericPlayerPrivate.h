@@ -40,11 +40,6 @@ public:
     IGstGenericPlayerPrivate &operator=(IGstGenericPlayerPrivate &&) = delete;
 
     /**
-     * @brief Schedules source setup finish task. Called by the worker thread.
-     */
-    virtual void scheduleSourceSetupFinish() = 0;
-
-    /**
      * @brief Schedules need media data task. Called by the worker thread.
      */
     virtual void scheduleNeedMediaData(GstAppSrc *src) = 0;

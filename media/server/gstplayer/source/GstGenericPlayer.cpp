@@ -303,20 +303,6 @@ void GstGenericPlayer::setupSource(GstElement *pipeline, GstElement *source, Gst
     }
 }
 
-void GstGenericPlayer::scheduleSourceSetupFinish()
-{
-    m_finishSourceSetupTimer =
-        m_timerFactory->createTimer(kSourceSetupFinishTimeoutMs,
-                                    [this]()
-                                    {
-                                        if (m_workerThread)
-                                        {
-                                            m_workerThread->enqueueTask(
-                                                m_taskFactory->createFinishSetupSource(m_context, *this));
-                                        }
-                                    });
-}
-
 void GstGenericPlayer::setupElement(GstElement *pipeline, GstElement *element, GstGenericPlayer *self)
 {
     RIALTO_SERVER_LOG_DEBUG("Element %s added to the pipeline", GST_ELEMENT_NAME(element));
@@ -350,6 +336,14 @@ void GstGenericPlayer::removeSource(const MediaSourceType &mediaSourceType)
     if (m_workerThread)
     {
         m_workerThread->enqueueTask(m_taskFactory->createRemoveSource(m_context, mediaSourceType));
+    }
+}
+
+void GstGenericPlayer::allSourcesAttached()
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(m_taskFactory->createFinishSetupSource(m_context, *this));
     }
 }
 

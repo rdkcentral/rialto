@@ -97,6 +97,8 @@ public:
      */
     virtual bool removeSource(int32_t sourceId) = 0;
 
+    virtual bool allSourcesAttached() = 0;
+
     /**
      * @brief Request to load the media pipeline.
      *
