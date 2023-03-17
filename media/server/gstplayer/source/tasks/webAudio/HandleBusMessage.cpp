@@ -120,7 +120,7 @@ void HandleBusMessage::execute() const
         gchar *debug = nullptr;
         m_gstWrapper->gstMessageParseError(m_message, &err, &debug);
 
-        RIALTO_SERVER_LOG_ERROR("Error %d: %s (%s)", err->code, err->message, debug);
+        RIALTO_SERVER_LOG_ERROR("Error from %s - %d: %s (%s)", GST_OBJECT_NAME (GST_MESSAGE_SRC(m_message)), err->code, err->message, debug);
         m_gstPlayerClient->notifyState(WebAudioPlayerState::FAILURE);
 
         m_glibWrapper->gFree(debug);
