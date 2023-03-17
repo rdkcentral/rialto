@@ -172,7 +172,7 @@ void HandleBusMessage::execute() const
         {
             RIALTO_SERVER_LOG_WARN("Got stream error from %s. But all streams are ended, so reporting EOS. Error code %d: %s "
                                    "(%s).",
-                                   GST_OBJECT_NAME (GST_MESSAGE_SRC(m_message)), err->code, err->message, debug);
+                                   GST_OBJECT_NAME(GST_MESSAGE_SRC(m_message)), err->code, err->message, debug);
             if (m_gstPlayerClient)
             {
                 m_gstPlayerClient->notifyPlaybackState(PlaybackState::END_OF_STREAM);
@@ -180,7 +180,7 @@ void HandleBusMessage::execute() const
         }
         else
         {
-            RIALTO_SERVER_LOG_ERROR("Error from %s - %d: %s (%s)", GST_OBJECT_NAME (GST_MESSAGE_SRC(m_message)), err->code, err->message, debug);
+            RIALTO_SERVER_LOG_ERROR("Error from %s - %d: %s (%s)", GST_OBJECT_NAME(GST_MESSAGE_SRC(m_message)), err->code, err->message, debug);
             m_gstPlayerClient->notifyPlaybackState(PlaybackState::FAILURE);
         }
 

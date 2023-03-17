@@ -363,6 +363,7 @@ TEST_F(HandleBusMessageTest, shouldHandleErrorMessageNoEos)
     GError err{};
     gchar *debug = "Error message";
     GST_MESSAGE_TYPE(&message) = GST_MESSAGE_ERROR;
+    GST_MESSAGE_SRC(&message) = GST_OBJECT_CAST(&m_videoSrc);
     err.domain = GST_CORE_ERROR;
 
     EXPECT_CALL(*m_gstWrapper, gstMessageParseError(&message, _, _))
@@ -385,6 +386,7 @@ TEST_F(HandleBusMessageTest, shouldHandleErrorMessageWhenEosAllSources)
     GError err{};
     gchar *debug = "Error message";
     GST_MESSAGE_TYPE(&message) = GST_MESSAGE_ERROR;
+    GST_MESSAGE_SRC(&message) = GST_OBJECT_CAST(&m_videoSrc);
     err.domain = GST_CORE_ERROR;
 
     m_context.endOfStreamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, GST_ELEMENT(&m_audioSrc));
@@ -410,6 +412,7 @@ TEST_F(HandleBusMessageTest, shouldHandleStreamErrorMessageNoEos)
     GError err{};
     gchar *debug = "Error message";
     GST_MESSAGE_TYPE(&message) = GST_MESSAGE_ERROR;
+    GST_MESSAGE_SRC(&message) = GST_OBJECT_CAST(&m_videoSrc);
     err.domain = GST_STREAM_ERROR;
 
     EXPECT_CALL(*m_gstWrapper, gstMessageParseError(&message, _, _))
@@ -432,6 +435,7 @@ TEST_F(HandleBusMessageTest, shouldHandleStreamErrorMessageWhenEosSingleSource)
     GError err{};
     gchar *debug = "Error message";
     GST_MESSAGE_TYPE(&message) = GST_MESSAGE_ERROR;
+    GST_MESSAGE_SRC(&message) = GST_OBJECT_CAST(&m_videoSrc);
     err.domain = GST_STREAM_ERROR;
 
     m_context.endOfStreamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, GST_ELEMENT(&m_audioSrc));
@@ -456,6 +460,7 @@ TEST_F(HandleBusMessageTest, shouldHandleStreamErrorMessageWhenEosAllSources)
     GError err{};
     gchar *debug = "Error message";
     GST_MESSAGE_TYPE(&message) = GST_MESSAGE_ERROR;
+    GST_MESSAGE_SRC(&message) = GST_OBJECT_CAST(&m_videoSrc);
     err.domain = GST_STREAM_ERROR;
 
     m_context.endOfStreamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, GST_ELEMENT(&m_audioSrc));

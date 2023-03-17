@@ -44,6 +44,7 @@ protected:
     std::shared_ptr<firebolt::rialto::server::GlibWrapperMock> m_glibWrapper{
         std::make_shared<StrictMock<firebolt::rialto::server::GlibWrapperMock>>()};
     GstElement m_pipeline{};
+    GstAppSrc m_audioSrc{};
 
     WebAudioHandleBusMessageTest() { m_context.pipeline = &m_pipeline; }
 };
@@ -225,6 +226,7 @@ TEST_F(WebAudioHandleBusMessageTest, shouldHandleErrorMessage)
     GError err{};
     gchar *debug = "Error message";
     GST_MESSAGE_TYPE(&message) = GST_MESSAGE_ERROR;
+    GST_MESSAGE_SRC(&message) = GST_OBJECT_CAST(&m_audioSrc);
 
     EXPECT_CALL(*m_gstWrapper, gstMessageParseError(&message, _, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(&err), SetArgPointee<2>(debug)));
