@@ -104,6 +104,16 @@ void MediaPipelineServiceTests::mediaPipelineWillFailToRemoveSource()
     EXPECT_CALL(m_mediaPipelineMock, removeSource(sourceId)).WillOnce(Return(false));
 }
 
+void MediaPipelineServiceTests::mediaPipelineWillAllSourcesAttached()
+{
+    EXPECT_CALL(m_mediaPipelineMock, allSourcesAttached()).WillOnce(Return(true));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillFailToAllSourcesAttached()
+{
+    EXPECT_CALL(m_mediaPipelineMock, allSourcesAttached()).WillOnce(Return(false));
+}
+
 void MediaPipelineServiceTests::mediaPipelineWillPlay()
 {
     EXPECT_CALL(m_mediaPipelineMock, play()).WillOnce(Return(true));
@@ -333,6 +343,16 @@ void MediaPipelineServiceTests::removeSourceShouldSucceed()
 void MediaPipelineServiceTests::removeSourceShouldFail()
 {
     EXPECT_FALSE(m_sut->removeSource(sessionId, sourceId));
+}
+
+void MediaPipelineServiceTests::allSourcesAttachedShouldSucceed() 
+{
+    EXPECT_TRUE(m_sut->allSourcesAttached(sessionId));
+}
+
+void MediaPipelineServiceTests::allSourcesAttachedShouldFail() 
+{
+    EXPECT_FALSE(m_sut->allSourcesAttached(sessionId));
 }
 
 void MediaPipelineServiceTests::playShouldSucceed()

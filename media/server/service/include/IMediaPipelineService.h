@@ -46,6 +46,7 @@ public:
     virtual bool load(int sessionId, MediaType type, const std::string &mimeType, const std::string &url) = 0;
     virtual bool attachSource(int sessionId, const std::unique_ptr<IMediaPipeline::MediaSource> &source) = 0;
     virtual bool removeSource(int sessionId, std::int32_t sourceId) = 0;
+    virtual bool allSourcesAttached(int sessionId) = 0;
     virtual bool play(int sessionId) = 0;
     virtual bool pause(int sessionId) = 0;
     virtual bool stop(int sessionId) = 0;

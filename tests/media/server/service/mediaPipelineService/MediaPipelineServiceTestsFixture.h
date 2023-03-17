@@ -45,6 +45,8 @@ public:
     void mediaPipelineWillFailToAttachSource();
     void mediaPipelineWillRemoveSource();
     void mediaPipelineWillFailToRemoveSource();
+    void mediaPipelineWillAllSourcesAttached();
+    void mediaPipelineWillFailToAllSourcesAttached();
     void mediaPipelineWillPlay();
     void mediaPipelineWillFailToPlay();
     void mediaPipelineWillPause();
@@ -89,6 +91,8 @@ public:
     void attachSourceShouldFail();
     void removeSourceShouldSucceed();
     void removeSourceShouldFail();
+    void allSourcesAttachedShouldSucceed();
+    void allSourcesAttachedShouldFail();
     void playShouldSucceed();
     void playShouldFail();
     void pauseShouldSucceed();
