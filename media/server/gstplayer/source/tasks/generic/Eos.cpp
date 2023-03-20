@@ -59,5 +59,9 @@ void Eos::execute() const
     {
         RIALTO_SERVER_LOG_WARN("Set eos failed - Gstreamer error");
     }
+    else
+    {
+        m_context.endOfStreamInfo.emplace(m_type, elem->second);
+    }
 }
 } // namespace firebolt::rialto::server::tasks::generic

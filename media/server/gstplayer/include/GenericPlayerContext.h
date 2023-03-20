@@ -82,6 +82,7 @@ struct GenericPlayerContext
      * @brief A map of streams attached to the source.
      */
     StreamInfoMap streamInfo{};
+
     /**
      * @brief Flag used to check, if we need to request for new audio data.
      *
@@ -212,6 +213,11 @@ struct GenericPlayerContext
      * Attribute can be used only in worker thread
      */
     std::map<GstElement *, gulong> connectedSignals;
+
+    /**
+     * @brief A map of streams that have ended.
+     */
+    StreamInfoMap endOfStreamInfo{};
 };
 } // namespace firebolt::rialto::server
 
