@@ -46,3 +46,19 @@ TEST_F(RialtoServerMediaKeySessionGetCdmKeySessionIdTest, OcdmSessionFailure)
     EXPECT_CALL(*m_ocdmSessionMock, getCdmKeySessionId(cdmKeySessionId)).WillOnce(Return(MediaKeyErrorStatus::FAIL));
     EXPECT_EQ(MediaKeyErrorStatus::FAIL, m_mediaKeySession->getCdmKeySessionId(cdmKeySessionId));
 }
+
+/**
+ * Test that GetCdmKeySessionId fails if ocdm onError is called during the operation.
+ */
+TEST_F(RialtoServerMediaKeySessionGetCdmKeySessionIdTest, OnErrorFailure)
+{
+    std::string cdmKeySessionId;
+    EXPECT_CALL(*m_ocdmSessionMock, getCdmKeySessionId(cdmKeySessionId))
+        .WillOnce(Invoke([this](std::string & cdmKeySessionId)
+            {
+                m_mediaKeySession->onError("Failure");
+                return MediaKeyErrorStatus::OK;
+            }));
+
+    EXPECT_EQ(MediaKeyErrorStatus::FAIL, m_mediaKeySession->getCdmKeySessionId(cdmKeySessionId));
+}

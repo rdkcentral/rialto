@@ -118,3 +118,23 @@ TEST_F(RialtoServerMediaKeySessionGenerateRequestTest, OcdmSessionFailure)
         .WillOnce(Return(MediaKeyErrorStatus::NOT_SUPPORTED));
     EXPECT_EQ(MediaKeyErrorStatus::NOT_SUPPORTED, m_mediaKeySession->generateRequest(m_kInitDataType, m_kInitData));
 }
+
+/**
+ * Test that GenerateRequest fails if ocdm onError is called during the operation.
+ */
+TEST_F(RialtoServerMediaKeySessionGenerateRequestTest, OnErrorFailure)
+{
+    createKeySession(kWidevineKeySystem);
+    EXPECT_CALL(*m_ocdmSessionMock,
+                constructSession(m_keySessionType, m_kInitDataType, &m_kInitData[0], m_kInitData.size()))
+        .WillOnce(Invoke([this](KeySessionType sessionType, InitDataType initDataType, const uint8_t initData[], uint32_t initDataSize)
+            {
+                m_mediaKeySession->onError("Failure");
+                return MediaKeyErrorStatus::OK;
+            }));
+
+    EXPECT_EQ(MediaKeyErrorStatus::FAIL, m_mediaKeySession->generateRequest(m_kInitDataType, m_kInitData));
+
+    // OcdmSession will be closed on destruction
+    expectCloseKeySession(kWidevineKeySystem);
+}

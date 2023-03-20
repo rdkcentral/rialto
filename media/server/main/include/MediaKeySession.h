@@ -25,6 +25,7 @@
 #include "IOcdmSessionClient.h"
 #include <atomic>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -169,11 +170,40 @@ private:
     std::vector<uint8_t> m_selectedKeyId;
 
     /**
+     * @brief Whether a Ocdm call is currently ongoing.
+     */
+    bool m_ongoingOcdmOperation;
+
+    /**
+     * @brief Whether Ocdm has returned an error via the onError callback.
+     */
+    bool m_ocdmError;
+
+    /**
+     * @brief Mutex protecting the ocdm error checking.
+     */
+    std::mutex m_ocdmErrorMutex;
+
+    /**
      * @brief Posts a getChallenge task onto the main thread.
      *
      * The challenge data is retrieved from ocdm and notified on a onLicenseRequest.
      */
     void getChallenge();
+
+    /**
+     * @brief Initalises the ocdm error data which checks for onError callbacks.
+     */
+    void initOcdmErrorChecking();
+
+    /**
+     * @brief Checks if onError has been received.
+     *
+     * @param[in] operationStr : Operation name for logging purposes.
+     *
+     * @retval True if an error was received.
+     */
+    bool checkForOcdmErrors(const char* operationStr);
 };
 } // namespace firebolt::rialto::server
 

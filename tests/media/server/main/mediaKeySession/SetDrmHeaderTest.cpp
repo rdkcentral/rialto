@@ -40,14 +40,31 @@ TEST_F(RialtoServerMediaKeySessionSetDrmHeaderTest, Success)
 }
 
 /**
- * Test that method returns failure when set drm header fails
+ * Test that setDrmHeader fails if the ocdm session api set drm header fails.
  */
-TEST_F(RialtoServerMediaKeySessionSetDrmHeaderTest, Fail)
+TEST_F(RialtoServerMediaKeySessionSetDrmHeaderTest, OcdmSessionFailure)
 {
     createKeySession(kNetflixKeySystem);
 
     EXPECT_CALL(*m_ocdmSessionMock, setDrmHeader(&m_kDrmHeader[0], m_kDrmHeader.size()))
         .WillOnce(Return(MediaKeyErrorStatus::FAIL));
+
+    EXPECT_EQ(MediaKeyErrorStatus::FAIL, m_mediaKeySession->setDrmHeader(m_kDrmHeader));
+}
+
+/**
+ * Test that setDrmHeader fails if the ocdm onError is called during the operation.
+ */
+TEST_F(RialtoServerMediaKeySessionSetDrmHeaderTest, OnErrorFailure)
+{
+    createKeySession(kWidevineKeySystem);
+
+    EXPECT_CALL(*m_ocdmSessionMock, setDrmHeader(&m_kDrmHeader[0], m_kDrmHeader.size()))
+        .WillOnce(Invoke([this](const uint8_t drmHeader[], uint32_t drmHeaderSize)
+            {
+                m_mediaKeySession->onError("Failure");
+                return MediaKeyErrorStatus::OK;
+            }));
 
     EXPECT_EQ(MediaKeyErrorStatus::FAIL, m_mediaKeySession->setDrmHeader(m_kDrmHeader));
 }

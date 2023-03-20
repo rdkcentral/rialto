@@ -51,13 +51,33 @@ TEST_F(RialtoServerMediaKeySessionDecryptTest, Success)
 /**
  * Test that method returns failure when decryption fails
  */
-TEST_F(RialtoServerMediaKeySessionDecryptTest, Fail)
+TEST_F(RialtoServerMediaKeySessionDecryptTest, OcdmSessionFailure)
 {
     createKeySession(kWidevineKeySystem);
 
     EXPECT_CALL(*m_ocdmSessionMock,
                 decrypt(&m_encrypted, &m_subSample, m_kSubSampleCount, &m_IV, &m_keyId, m_initWithLast15, &m_caps))
         .WillOnce(Return(MediaKeyErrorStatus::FAIL));
+
+    EXPECT_EQ(MediaKeyErrorStatus::FAIL, m_mediaKeySession->decrypt(&m_encrypted, &m_subSample, m_kSubSampleCount,
+                                                                    &m_IV, &m_keyId, m_initWithLast15, &m_caps));
+}
+
+/**
+ * Test that Decrypt fails if ocdm onError is called during the operation.
+ */
+TEST_F(RialtoServerMediaKeySessionDecryptTest, OnErrorFailure)
+{
+    createKeySession(kWidevineKeySystem);
+
+    EXPECT_CALL(*m_ocdmSessionMock,
+                    decrypt(&m_encrypted, &m_subSample, m_kSubSampleCount, &m_IV, &m_keyId, m_initWithLast15, &m_caps))
+        .WillOnce(Invoke([this](GstBuffer * encrypted, GstBuffer *subSample, const uint32_t subSampleCount, GstBuffer *IV,
+                 GstBuffer *keyId, uint32_t initWithLast15, GstCaps *caps)
+            {
+                m_mediaKeySession->onError("Failure");
+                return MediaKeyErrorStatus::OK;
+            }));
 
     EXPECT_EQ(MediaKeyErrorStatus::FAIL, m_mediaKeySession->decrypt(&m_encrypted, &m_subSample, m_kSubSampleCount,
                                                                     &m_IV, &m_keyId, m_initWithLast15, &m_caps));

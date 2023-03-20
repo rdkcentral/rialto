@@ -84,3 +84,20 @@ TEST_F(RialtoServerMediaKeySessionSelectKeyIdTest, SaveKeyAfterSuccessfulOperati
 
     EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->selectKeyId(m_kKeyId));
 }
+
+/**
+ * Test that selectKeyId fails if ocdm onError is called during the operation.
+ */
+TEST_F(RialtoServerMediaKeySessionSelectKeyIdTest, OnErrorFailure)
+{
+    createKeySession(kNetflixKeySystem);
+
+    EXPECT_CALL(*m_ocdmSessionMock, selectKeyId(m_kKeyId.size(), m_kKeyId.data()))
+        .WillOnce(Invoke([this](uint8_t keyLength, const uint8_t keyId[])
+            {
+                m_mediaKeySession->onError("Failure");
+                return MediaKeyErrorStatus::OK;
+            }));
+
+    EXPECT_EQ(MediaKeyErrorStatus::FAIL, m_mediaKeySession->selectKeyId(m_kKeyId));
+}
