@@ -58,7 +58,8 @@ TEST_F(RialtoServerMediaKeySessionGetLastDrmErrorTest, OnErrorFailure)
     createKeySession(kNetflixKeySystem);
 
     EXPECT_CALL(*m_ocdmSessionMock, getLastDrmError(m_lastDrmError))
-        .WillOnce(Invoke([this](uint32_t & errorCode)
+        .WillOnce(Invoke(
+            [this](uint32_t &errorCode)
             {
                 m_mediaKeySession->onError("Failure");
                 return MediaKeyErrorStatus::OK;

@@ -62,7 +62,8 @@ TEST_F(RialtoServerMediaKeySessionDecryptBufferTest, OnErrorFailure)
     createKeySession(kWidevineKeySystem);
 
     EXPECT_CALL(*m_ocdmSessionMock, decryptBuffer(&m_encrypted, &m_caps))
-        .WillOnce(Invoke([this](GstBuffer * encrypted, GstCaps *caps)
+        .WillOnce(Invoke(
+            [this](GstBuffer *encrypted, GstCaps *caps)
             {
                 m_mediaKeySession->onError("Failure");
                 return MediaKeyErrorStatus::OK;

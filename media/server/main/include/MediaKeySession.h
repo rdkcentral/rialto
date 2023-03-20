@@ -203,7 +203,7 @@ private:
      *
      * @retval True if an error was received.
      */
-    bool checkForOcdmErrors(const char* operationStr);
+    bool checkForOcdmErrors(const char *operationStr);
 };
 } // namespace firebolt::rialto::server
 

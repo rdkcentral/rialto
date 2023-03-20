@@ -123,8 +123,7 @@ MediaKeyErrorStatus MediaKeySession::generateRequest(InitDataType initDataType, 
             }
         }
 
-        if ((checkForOcdmErrors("generateRequest")) &&
-            (MediaKeyErrorStatus::OK == status))
+        if ((checkForOcdmErrors("generateRequest")) && (MediaKeyErrorStatus::OK == status))
         {
             status = MediaKeyErrorStatus::FAIL;
         }
@@ -166,8 +165,7 @@ MediaKeyErrorStatus MediaKeySession::loadSession()
         RIALTO_SERVER_LOG_ERROR("Failed to load the key session");
     }
 
-    if ((checkForOcdmErrors("loadSession")) &&
-        (MediaKeyErrorStatus::OK == status))
+    if ((checkForOcdmErrors("loadSession")) && (MediaKeyErrorStatus::OK == status))
     {
         status = MediaKeyErrorStatus::FAIL;
     }
@@ -197,8 +195,7 @@ MediaKeyErrorStatus MediaKeySession::updateSession(const std::vector<uint8_t> &r
         }
     }
 
-    if ((checkForOcdmErrors("updateSession")) &&
-        (MediaKeyErrorStatus::OK == status))
+    if ((checkForOcdmErrors("updateSession")) && (MediaKeyErrorStatus::OK == status))
     {
         status = MediaKeyErrorStatus::FAIL;
     }
@@ -216,8 +213,7 @@ MediaKeyErrorStatus MediaKeySession::decrypt(GstBuffer *encrypted, GstCaps *caps
         RIALTO_SERVER_LOG_ERROR("Failed to decrypt buffer");
     }
 
-    if ((checkForOcdmErrors("decrypt")) &&
-        (MediaKeyErrorStatus::OK == status))
+    if ((checkForOcdmErrors("decrypt")) && (MediaKeyErrorStatus::OK == status))
     {
         status = MediaKeyErrorStatus::FAIL;
     }
@@ -238,8 +234,7 @@ MediaKeyErrorStatus MediaKeySession::decrypt(GstBuffer *encrypted, GstBuffer *su
         RIALTO_SERVER_LOG_ERROR("Failed to decrypt");
     }
 
-    if ((checkForOcdmErrors("decrypt")) &&
-        (MediaKeyErrorStatus::OK == status))
+    if ((checkForOcdmErrors("decrypt")) && (MediaKeyErrorStatus::OK == status))
     {
         status = MediaKeyErrorStatus::FAIL;
     }
@@ -287,8 +282,7 @@ MediaKeyErrorStatus MediaKeySession::closeKeySession()
         }
     }
 
-    if ((checkForOcdmErrors("closeKeySession")) &&
-        (MediaKeyErrorStatus::OK == status))
+    if ((checkForOcdmErrors("closeKeySession")) && (MediaKeyErrorStatus::OK == status))
     {
         status = MediaKeyErrorStatus::FAIL;
     }
@@ -306,8 +300,7 @@ MediaKeyErrorStatus MediaKeySession::removeKeySession()
         RIALTO_SERVER_LOG_ERROR("Failed to remove the key session");
     }
 
-    if ((checkForOcdmErrors("removeKeySession")) &&
-        (MediaKeyErrorStatus::OK == status))
+    if ((checkForOcdmErrors("removeKeySession")) && (MediaKeyErrorStatus::OK == status))
     {
         status = MediaKeyErrorStatus::FAIL;
     }
@@ -325,8 +318,7 @@ MediaKeyErrorStatus MediaKeySession::getCdmKeySessionId(std::string &cdmKeySessi
         RIALTO_SERVER_LOG_ERROR("Failed to get cdm key session id");
     }
 
-    if ((checkForOcdmErrors("getCdmKeySessionId")) &&
-        (MediaKeyErrorStatus::OK == status))
+    if ((checkForOcdmErrors("getCdmKeySessionId")) && (MediaKeyErrorStatus::OK == status))
     {
         status = MediaKeyErrorStatus::FAIL;
     }
@@ -351,8 +343,7 @@ MediaKeyErrorStatus MediaKeySession::setDrmHeader(const std::vector<uint8_t> &re
         RIALTO_SERVER_LOG_ERROR("Failed to set drm header");
     }
 
-    if ((checkForOcdmErrors("setDrmHeader")) &&
-        (MediaKeyErrorStatus::OK == status))
+    if ((checkForOcdmErrors("setDrmHeader")) && (MediaKeyErrorStatus::OK == status))
     {
         status = MediaKeyErrorStatus::FAIL;
     }
@@ -370,8 +361,7 @@ MediaKeyErrorStatus MediaKeySession::getLastDrmError(uint32_t &errorCode)
         RIALTO_SERVER_LOG_ERROR("Failed to get last drm error");
     }
 
-    if ((checkForOcdmErrors("getLastDrmError")) &&
-        (MediaKeyErrorStatus::OK == status))
+    if ((checkForOcdmErrors("getLastDrmError")) && (MediaKeyErrorStatus::OK == status))
     {
         status = MediaKeyErrorStatus::FAIL;
     }
@@ -395,8 +385,7 @@ MediaKeyErrorStatus MediaKeySession::selectKeyId(const std::vector<uint8_t> &key
         m_selectedKeyId = keyId;
     }
 
-    if ((checkForOcdmErrors("selectKeyId")) &&
-        (MediaKeyErrorStatus::OK == status))
+    if ((checkForOcdmErrors("selectKeyId")) && (MediaKeyErrorStatus::OK == status))
     {
         status = MediaKeyErrorStatus::FAIL;
     }
@@ -483,7 +472,7 @@ void MediaKeySession::initOcdmErrorChecking()
     m_ocdmError = false;
 }
 
-bool MediaKeySession::checkForOcdmErrors(const char* operationStr)
+bool MediaKeySession::checkForOcdmErrors(const char *operationStr)
 {
     bool error = false;
 

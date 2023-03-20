@@ -60,7 +60,8 @@ TEST_F(RialtoServerMediaKeySessionSetDrmHeaderTest, OnErrorFailure)
     createKeySession(kWidevineKeySystem);
 
     EXPECT_CALL(*m_ocdmSessionMock, setDrmHeader(&m_kDrmHeader[0], m_kDrmHeader.size()))
-        .WillOnce(Invoke([this](const uint8_t drmHeader[], uint32_t drmHeaderSize)
+        .WillOnce(Invoke(
+            [this](const uint8_t drmHeader[], uint32_t drmHeaderSize)
             {
                 m_mediaKeySession->onError("Failure");
                 return MediaKeyErrorStatus::OK;

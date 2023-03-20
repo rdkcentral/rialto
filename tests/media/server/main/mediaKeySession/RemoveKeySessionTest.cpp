@@ -51,7 +51,8 @@ TEST_F(RialtoServerMediaKeySessionRemoveKeySessionTest, OcdmSessionFailure)
 TEST_F(RialtoServerMediaKeySessionRemoveKeySessionTest, OnErrorFailure)
 {
     EXPECT_CALL(*m_ocdmSessionMock, remove())
-        .WillOnce(Invoke([this]()
+        .WillOnce(Invoke(
+            [this]()
             {
                 m_mediaKeySession->onError("Failure");
                 return MediaKeyErrorStatus::OK;

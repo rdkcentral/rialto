@@ -113,7 +113,8 @@ TEST_F(RialtoServerMediaKeySessionCloseKeySessionTest, OnErrorFailure)
     createKeySession(kWidevineKeySystem);
 
     EXPECT_CALL(*m_ocdmSessionMock, close())
-        .WillOnce(Invoke([this]()
+        .WillOnce(Invoke(
+            [this]()
             {
                 m_mediaKeySession->onError("Failure");
                 return MediaKeyErrorStatus::OK;

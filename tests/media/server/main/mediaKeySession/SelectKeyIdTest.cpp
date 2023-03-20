@@ -93,7 +93,8 @@ TEST_F(RialtoServerMediaKeySessionSelectKeyIdTest, OnErrorFailure)
     createKeySession(kNetflixKeySystem);
 
     EXPECT_CALL(*m_ocdmSessionMock, selectKeyId(m_kKeyId.size(), m_kKeyId.data()))
-        .WillOnce(Invoke([this](uint8_t keyLength, const uint8_t keyId[])
+        .WillOnce(Invoke(
+            [this](uint8_t keyLength, const uint8_t keyId[])
             {
                 m_mediaKeySession->onError("Failure");
                 return MediaKeyErrorStatus::OK;

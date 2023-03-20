@@ -54,7 +54,8 @@ TEST_F(RialtoServerMediaKeySessionGetCdmKeySessionIdTest, OnErrorFailure)
 {
     std::string cdmKeySessionId;
     EXPECT_CALL(*m_ocdmSessionMock, getCdmKeySessionId(cdmKeySessionId))
-        .WillOnce(Invoke([this](std::string & cdmKeySessionId)
+        .WillOnce(Invoke(
+            [this](std::string &cdmKeySessionId)
             {
                 m_mediaKeySession->onError("Failure");
                 return MediaKeyErrorStatus::OK;
