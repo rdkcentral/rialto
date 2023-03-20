@@ -268,9 +268,8 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer, GstCaps *cap
             }
             else
             {
-                int32_t keySessionId = protectionData->keySessionId;
-
-                firebolt::rialto::MediaKeyErrorStatus status = m_decryptionService->decrypt(keySessionId, buffer, caps);
+                firebolt::rialto::MediaKeyErrorStatus status =
+                    m_decryptionService->decrypt(protectionData->keySessionId, buffer, caps);
                 if (firebolt::rialto::MediaKeyErrorStatus::OK != status)
                 {
                     GST_ERROR_OBJECT(self, "Failed decrypt the buffer");
