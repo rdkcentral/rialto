@@ -64,7 +64,8 @@ MediaKeySession::MediaKeySession(const std::string &keySystem, int32_t keySessio
                                  KeySessionType sessionType, std::weak_ptr<IMediaKeysClient> client, bool isLDL,
                                  const std::shared_ptr<IMainThreadFactory> &mainThreadFactory)
     : m_kKeySystem(keySystem), m_kKeySessionId(keySessionId), m_kSessionType(sessionType), m_mediaKeysClient(client),
-      m_kIsLDL(isLDL), m_isSessionConstructed(false), m_licenseRequested(false)
+      m_kIsLDL(isLDL), m_isSessionConstructed(false), m_licenseRequested(false), m_ongoingOcdmOperation(false),
+      m_ocdmError(false)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
