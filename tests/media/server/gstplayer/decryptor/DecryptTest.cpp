@@ -256,7 +256,8 @@ TEST_F(RialtoServerDecryptorPrivateDecryptTest, SuccessEncryptedCipherModeAndEnc
 }
 
 /**
- * Test GstRialtoDecryptorPrivate decrypt returns success for an encrypted sample when cipher mode and no encryption pattern is set.
+ * Test GstRialtoDecryptorPrivate decrypt returns success for an encrypted sample when cipher mode and no encryption
+ * pattern is set.
  */
 TEST_F(RialtoServerDecryptorPrivateDecryptTest, SuccessEncryptedCipherModeOnly)
 {
