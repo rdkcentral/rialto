@@ -136,6 +136,7 @@ protected:
 
     void expectAddGstProtectionMeta(bool encryptionPatternSet)
     {
+#ifdef RIALTO_ENABLE_DECRYPT_BUFFER
         EXPECT_CALL(*m_gstWrapperMock, gstStructureNewBufferStub(CharStrMatcher("application/x-cenc"),
                                                                  CharStrMatcher("kid"), GST_TYPE_BUFFER, &m_key))
             .WillOnce(Return(&m_structure));
@@ -157,6 +158,7 @@ protected:
                     gstStructureNewUintStub(CharStrMatcher("application/x-cenc"), CharStrMatcher("init_with_last_15"),
                                             G_TYPE_UINT, m_initWithLast15))
             .WillOnce(Return(&m_structure));
+#endif
         EXPECT_CALL(*m_gstWrapperMock,
                     gstStructureNewStringStub(CharStrMatcher("application/x-cenc"), CharStrMatcher("cipher-mode"),
                                               G_TYPE_STRING, CharStrMatcher(toString(m_cipherMode))))
@@ -191,6 +193,22 @@ TEST_F(RialtoServerDecryptorPrivateDecryptTest, SuccessEncrypted)
 }
 
 /**
+ * Test GstRialtoDecryptorPrivate decrypt returns success for an encrypted sample with no encryption pattern.
+ */
+TEST_F(RialtoServerDecryptorPrivateDecryptTest, SuccessEncryptedNoEncryptionPattern)
+{
+    m_protectionData.encryptionPatternSet = false;
+
+    expectGetInfoFromProtectionMeta();
+    expectAddGstProtectionMeta(false);
+
+    EXPECT_CALL(*m_decryptionServiceMock, decrypt(m_keySessionId, &m_buffer, &m_caps))
+        .WillOnce(Return(firebolt::rialto::MediaKeyErrorStatus::OK));
+
+    EXPECT_EQ(GST_FLOW_OK, m_gstRialtoDecryptorPrivate->decrypt(&m_buffer, &m_caps));
+}
+
+/**
  * Test GstRialtoDecryptorPrivate decrypt returns OK if the decryption service decrypt fails.
  */
 TEST_F(RialtoServerDecryptorPrivateDecryptTest, DecryptionServiceDecryptFailure)
@@ -207,10 +225,12 @@ TEST_F(RialtoServerDecryptorPrivateDecryptTest, DecryptionServiceDecryptFailure)
 #else
 // TODO(RIALTO-127): Remove
 /**
- * Test GstRialtoDecryptorPrivate decrypt returns success for an encrypted sample.
+ * Test GstRialtoDecryptorPrivate decrypt returns success for an encrypted sample when no cipher mode is set.
  */
-TEST_F(RialtoServerDecryptorPrivateDecryptTest, SuccessEncrypted)
+TEST_F(RialtoServerDecryptorPrivateDecryptTest, SuccessEncryptedNoCipherMode)
 {
+    m_protectionData.cipherMode = firebolt::rialto::CipherMode::UNKNOWN;
+
     expectGetInfoFromProtectionMeta();
 
     EXPECT_CALL(*m_decryptionServiceMock, decrypt(m_keySessionId, &m_buffer, &m_subsamples, m_subsampleCount, &m_iv,
@@ -219,6 +239,54 @@ TEST_F(RialtoServerDecryptorPrivateDecryptTest, SuccessEncrypted)
 
     EXPECT_EQ(GST_FLOW_OK, m_gstRialtoDecryptorPrivate->decrypt(&m_buffer, &m_caps));
 }
+
+/**
+ * Test GstRialtoDecryptorPrivate decrypt returns success for an encrypted sample when cipher mode & encryption pattern is set.
+ */
+TEST_F(RialtoServerDecryptorPrivateDecryptTest, SuccessEncryptedCipherModeAndEncryptionPattern)
+{
+    expectGetInfoFromProtectionMeta();
+    expectAddGstProtectionMeta(true);
+
+    EXPECT_CALL(*m_decryptionServiceMock, decrypt(m_keySessionId, &m_buffer, &m_subsamples, m_subsampleCount, &m_iv,
+                                                  &m_key, m_initWithLast15, &m_caps))
+        .WillOnce(Return(firebolt::rialto::MediaKeyErrorStatus::OK));
+
+    EXPECT_EQ(GST_FLOW_OK, m_gstRialtoDecryptorPrivate->decrypt(&m_buffer, &m_caps));
+}
+
+/**
+ * Test GstRialtoDecryptorPrivate decrypt returns success for an encrypted sample when cipher mode and no encryption pattern is set.
+ */
+TEST_F(RialtoServerDecryptorPrivateDecryptTest, SuccessEncryptedCipherModeOnly)
+{
+    m_protectionData.encryptionPatternSet = false;
+
+    expectGetInfoFromProtectionMeta();
+    expectAddGstProtectionMeta(false);
+
+    EXPECT_CALL(*m_decryptionServiceMock, decrypt(m_keySessionId, &m_buffer, &m_subsamples, m_subsampleCount, &m_iv,
+                                                  &m_key, m_initWithLast15, &m_caps))
+        .WillOnce(Return(firebolt::rialto::MediaKeyErrorStatus::OK));
+
+    EXPECT_EQ(GST_FLOW_OK, m_gstRialtoDecryptorPrivate->decrypt(&m_buffer, &m_caps));
+}
+
+/**
+ * Test GstRialtoDecryptorPrivate decrypt returns OK if the decryption service decrypt fails.
+ */
+TEST_F(RialtoServerDecryptorPrivateDecryptTest, DecryptionServiceDecryptFailure)
+{
+    expectGetInfoFromProtectionMeta();
+    expectAddGstProtectionMeta(true);
+
+    EXPECT_CALL(*m_decryptionServiceMock, decrypt(m_keySessionId, &m_buffer, &m_subsamples, m_subsampleCount, &m_iv,
+                                                  &m_key, m_initWithLast15, &m_caps))
+        .WillOnce(Return(firebolt::rialto::MediaKeyErrorStatus::FAIL));
+
+    EXPECT_EQ(GST_FLOW_OK, m_gstRialtoDecryptorPrivate->decrypt(&m_buffer, &m_caps));
+}
+#endif
 
 /**
  * Test GstRialtoDecryptorPrivate decrypt returns success for a clear sample.
@@ -241,18 +309,3 @@ TEST_F(RialtoServerDecryptorPrivateDecryptTest, NoDecryptionService)
 
     EXPECT_EQ(GST_FLOW_OK, m_gstRialtoDecryptorPrivate->decrypt(&m_buffer, &m_caps));
 }
-
-/**
- * Test GstRialtoDecryptorPrivate decrypt returns OK if the decryption service decrypt fails.
- */
-TEST_F(RialtoServerDecryptorPrivateDecryptTest, DecryptionServiceDecryptFailure)
-{
-    expectGetInfoFromProtectionMeta();
-
-    EXPECT_CALL(*m_decryptionServiceMock, decrypt(m_keySessionId, &m_buffer, &m_subsamples, m_subsampleCount, &m_iv,
-                                                  &m_key, m_initWithLast15, &m_caps))
-        .WillOnce(Return(firebolt::rialto::MediaKeyErrorStatus::FAIL));
-
-    EXPECT_EQ(GST_FLOW_OK, m_gstRialtoDecryptorPrivate->decrypt(&m_buffer, &m_caps));
-}
-#endif
