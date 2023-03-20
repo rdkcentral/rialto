@@ -391,8 +391,9 @@ void MediaPipelineModuleService::removeSource(::google::protobuf::RpcController 
 }
 
 void MediaPipelineModuleService::allSourcesAttached(::google::protobuf::RpcController *controller,
-                        const ::firebolt::rialto::AllSourcesAttachedRequest *request,
-                        ::firebolt::rialto::AllSourcesAttachedResponse *response, ::google::protobuf::Closure *done)
+                                                    const ::firebolt::rialto::AllSourcesAttachedRequest *request,
+                                                    ::firebolt::rialto::AllSourcesAttachedResponse *response,
+                                                    ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
     if (!m_mediaPipelineService.allSourcesAttached(request->session_id()))

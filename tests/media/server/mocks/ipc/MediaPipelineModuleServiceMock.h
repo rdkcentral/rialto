@@ -60,7 +60,8 @@ public:
                  ::firebolt::rialto::RemoveSourceResponse *response, ::google::protobuf::Closure *done),
                 (override));
     MOCK_METHOD(void, allSourcesAttached,
-                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::AllSourcesAttachedRequest *request,
+                (::google::protobuf::RpcController * controller,
+                 const ::firebolt::rialto::AllSourcesAttachedRequest *request,
                  ::firebolt::rialto::AllSourcesAttachedResponse *response, ::google::protobuf::Closure *done),
                 (override));
     MOCK_METHOD(void, play,

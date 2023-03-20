@@ -345,12 +345,12 @@ void MediaPipelineServiceTests::removeSourceShouldFail()
     EXPECT_FALSE(m_sut->removeSource(sessionId, sourceId));
 }
 
-void MediaPipelineServiceTests::allSourcesAttachedShouldSucceed() 
+void MediaPipelineServiceTests::allSourcesAttachedShouldSucceed()
 {
     EXPECT_TRUE(m_sut->allSourcesAttached(sessionId));
 }
 
-void MediaPipelineServiceTests::allSourcesAttachedShouldFail() 
+void MediaPipelineServiceTests::allSourcesAttachedShouldFail()
 {
     EXPECT_FALSE(m_sut->allSourcesAttached(sessionId));
 }
