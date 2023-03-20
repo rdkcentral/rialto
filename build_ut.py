@@ -155,7 +155,7 @@ def getSuitesToRun (suitesRequested):
         suitesToRun = suiteInfo
     return suitesToRun
 
-# Build the target executables
+# Build he target executables
 def buildTargets (suites, outputDir, resultsFile, debug, coverage):
     # Run cmake
     cmakeCmd = ["cmake", "-B", outputDir , "-DCMAKE_BUILD_FLAG=UnitTests", "-DRIALTO_ENABLE_DECRYPT_BUFFER=1"]
