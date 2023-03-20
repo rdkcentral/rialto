@@ -30,13 +30,6 @@
 namespace
 {
 /**
- * @brief The time to wait to finish the set up of sources.
- *        When the pipeline requests the set up of sources, GstGenericPlayer must wait for all
- *        sources to be attached first.
- */
-constexpr std::chrono::milliseconds kSourceSetupFinishTimeoutMs{200};
-
-/**
  * @brief Report position interval in ms.
  *        The position reporting timer should be started whenever the PLAYING state is entered and stopped
  *        whenever the session moves to another playback state.
