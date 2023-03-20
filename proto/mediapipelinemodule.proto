@@ -162,11 +162,10 @@ message RemoveSourceResponse {
 }
 
 /**
- * @fn void removeSource(int session_id, int source_id)
- * @brief Remove a media source for a session.
+ * @fn void allSourcesAttached(int session_id)
+ * @brief Notify server that all sources were attached
  *
  * @param[in]  session_id   The id of the A/V session.
- * @param[in]  source_id  The id of the media source to destroy.
  *
  */
 message AllSourcesAttachedRequest {
