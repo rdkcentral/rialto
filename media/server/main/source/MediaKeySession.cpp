@@ -64,7 +64,8 @@ MediaKeySession::MediaKeySession(const std::string &keySystem, int32_t keySessio
                                  KeySessionType sessionType, std::weak_ptr<IMediaKeysClient> client, bool isLDL,
                                  const std::shared_ptr<IMainThreadFactory> &mainThreadFactory)
     : m_kKeySystem(keySystem), m_kKeySessionId(keySessionId), m_kSessionType(sessionType), m_mediaKeysClient(client),
-      m_kIsLDL(isLDL), m_isSessionConstructed(false), m_licenseRequested(false)
+      m_kIsLDL(isLDL), m_isSessionConstructed(false), m_licenseRequested(false), m_ongoingOcdmOperation(false),
+      m_ocdmError(false)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
@@ -103,6 +104,8 @@ MediaKeyErrorStatus MediaKeySession::generateRequest(InitDataType initDataType, 
     // Only construct session if it hasnt previously been constructed
     if (!m_isSessionConstructed)
     {
+        initOcdmErrorChecking();
+
         MediaKeyErrorStatus status =
             m_ocdmSession->constructSession(m_kSessionType, initDataType, &initData[0], initData.size());
         if (MediaKeyErrorStatus::OK != status)
@@ -120,6 +123,12 @@ MediaKeyErrorStatus MediaKeySession::generateRequest(InitDataType initDataType, 
                 getChallenge();
             }
         }
+
+        if ((checkForOcdmErrors("generateRequest")) && (MediaKeyErrorStatus::OK == status))
+        {
+            status = MediaKeyErrorStatus::FAIL;
+        }
+
         return status;
     }
 
@@ -149,16 +158,26 @@ void MediaKeySession::getChallenge()
 
 MediaKeyErrorStatus MediaKeySession::loadSession()
 {
+    initOcdmErrorChecking();
+
     MediaKeyErrorStatus status = m_ocdmSession->load();
     if (MediaKeyErrorStatus::OK != status)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to load the key session");
     }
+
+    if ((checkForOcdmErrors("loadSession")) && (MediaKeyErrorStatus::OK == status))
+    {
+        status = MediaKeyErrorStatus::FAIL;
+    }
+
     return status;
 }
 
 MediaKeyErrorStatus MediaKeySession::updateSession(const std::vector<uint8_t> &responseData)
 {
+    initOcdmErrorChecking();
+
     MediaKeyErrorStatus status;
     if (kNetflixKeySystem == m_kKeySystem)
     {
@@ -167,7 +186,6 @@ MediaKeyErrorStatus MediaKeySession::updateSession(const std::vector<uint8_t> &r
         {
             RIALTO_SERVER_LOG_ERROR("Failed to store the license data for the key session");
         }
-        return status;
     }
     else
     {
@@ -176,17 +194,31 @@ MediaKeyErrorStatus MediaKeySession::updateSession(const std::vector<uint8_t> &r
         {
             RIALTO_SERVER_LOG_ERROR("Failed to update the key session");
         }
-        return status;
     }
+
+    if ((checkForOcdmErrors("updateSession")) && (MediaKeyErrorStatus::OK == status))
+    {
+        status = MediaKeyErrorStatus::FAIL;
+    }
+
+    return status;
 }
 
 MediaKeyErrorStatus MediaKeySession::decrypt(GstBuffer *encrypted, GstCaps *caps)
 {
+    initOcdmErrorChecking();
+
     MediaKeyErrorStatus status = m_ocdmSession->decryptBuffer(encrypted, caps);
     if (MediaKeyErrorStatus::OK != status)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to decrypt buffer");
     }
+
+    if ((checkForOcdmErrors("decrypt")) && (MediaKeyErrorStatus::OK == status))
+    {
+        status = MediaKeyErrorStatus::FAIL;
+    }
+
     return status;
 }
 
@@ -194,31 +226,40 @@ MediaKeyErrorStatus MediaKeySession::decrypt(GstBuffer *encrypted, GstCaps *caps
 MediaKeyErrorStatus MediaKeySession::decrypt(GstBuffer *encrypted, GstBuffer *subSample, const uint32_t subSampleCount,
                                              GstBuffer *IV, GstBuffer *keyId, uint32_t initWithLast15, GstCaps *caps)
 {
+    initOcdmErrorChecking();
+
     MediaKeyErrorStatus status =
         m_ocdmSession->decrypt(encrypted, subSample, subSampleCount, IV, keyId, initWithLast15, caps);
     if (MediaKeyErrorStatus::OK != status)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to decrypt");
     }
+
+    if ((checkForOcdmErrors("decrypt")) && (MediaKeyErrorStatus::OK == status))
+    {
+        status = MediaKeyErrorStatus::FAIL;
+    }
+
     return status;
 }
 
 MediaKeyErrorStatus MediaKeySession::closeKeySession()
 {
+    initOcdmErrorChecking();
+
     MediaKeyErrorStatus status;
     if (kNetflixKeySystem == m_kKeySystem)
     {
-        status = m_ocdmSession->cancelChallengeData();
-        if (MediaKeyErrorStatus::OK != status)
+        if (MediaKeyErrorStatus::OK != m_ocdmSession->cancelChallengeData())
         {
             RIALTO_SERVER_LOG_WARN("Failed to cancel the challenge data for the key session");
         }
 
-        status = m_ocdmSession->cleanDecryptContext();
-        if (MediaKeyErrorStatus::OK != status)
+        if (MediaKeyErrorStatus::OK != m_ocdmSession->cleanDecryptContext())
         {
             RIALTO_SERVER_LOG_WARN("Failed to clean the decrypt context for the key session");
         }
+        status = MediaKeyErrorStatus::OK;
     }
     else
     {
@@ -226,18 +267,25 @@ MediaKeyErrorStatus MediaKeySession::closeKeySession()
         if (MediaKeyErrorStatus::OK != status)
         {
             RIALTO_SERVER_LOG_ERROR("Failed to Close the key session");
-            return status;
         }
     }
 
-    status = m_ocdmSession->destructSession();
-    if (MediaKeyErrorStatus::OK != status)
+    if (MediaKeyErrorStatus::OK == status)
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to destruct the key session");
+        status = m_ocdmSession->destructSession();
+        if (MediaKeyErrorStatus::OK != status)
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to destruct the key session");
+        }
+        else
+        {
+            m_isSessionConstructed = false;
+        }
     }
-    else
+
+    if ((checkForOcdmErrors("closeKeySession")) && (MediaKeyErrorStatus::OK == status))
     {
-        m_isSessionConstructed = false;
+        status = MediaKeyErrorStatus::FAIL;
     }
 
     return status;
@@ -245,11 +293,17 @@ MediaKeyErrorStatus MediaKeySession::closeKeySession()
 
 MediaKeyErrorStatus MediaKeySession::removeKeySession()
 {
+    initOcdmErrorChecking();
+
     MediaKeyErrorStatus status = m_ocdmSession->remove();
     if (MediaKeyErrorStatus::OK != status)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to remove the key session");
-        return status;
+    }
+
+    if ((checkForOcdmErrors("removeKeySession")) && (MediaKeyErrorStatus::OK == status))
+    {
+        status = MediaKeyErrorStatus::FAIL;
     }
 
     return status;
@@ -257,11 +311,17 @@ MediaKeyErrorStatus MediaKeySession::removeKeySession()
 
 MediaKeyErrorStatus MediaKeySession::getCdmKeySessionId(std::string &cdmKeySessionId)
 {
+    initOcdmErrorChecking();
+
     MediaKeyErrorStatus status = m_ocdmSession->getCdmKeySessionId(cdmKeySessionId);
     if (MediaKeyErrorStatus::OK != status)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to get cdm key session id");
-        return status;
+    }
+
+    if ((checkForOcdmErrors("getCdmKeySessionId")) && (MediaKeyErrorStatus::OK == status))
+    {
+        status = MediaKeyErrorStatus::FAIL;
     }
 
     return status;
@@ -276,21 +336,37 @@ bool MediaKeySession::containsKey(const std::vector<uint8_t> &keyId)
 
 MediaKeyErrorStatus MediaKeySession::setDrmHeader(const std::vector<uint8_t> &requestData)
 {
+    initOcdmErrorChecking();
+
     MediaKeyErrorStatus status = m_ocdmSession->setDrmHeader(requestData.data(), requestData.size());
     if (MediaKeyErrorStatus::OK != status)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to set drm header");
     }
+
+    if ((checkForOcdmErrors("setDrmHeader")) && (MediaKeyErrorStatus::OK == status))
+    {
+        status = MediaKeyErrorStatus::FAIL;
+    }
+
     return status;
 }
 
 MediaKeyErrorStatus MediaKeySession::getLastDrmError(uint32_t &errorCode)
 {
+    initOcdmErrorChecking();
+
     MediaKeyErrorStatus status = m_ocdmSession->getLastDrmError(errorCode);
     if (MediaKeyErrorStatus::OK != status)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to get last drm error");
     }
+
+    if ((checkForOcdmErrors("getLastDrmError")) && (MediaKeyErrorStatus::OK == status))
+    {
+        status = MediaKeyErrorStatus::FAIL;
+    }
+
     return status;
 }
 
@@ -300,12 +376,21 @@ MediaKeyErrorStatus MediaKeySession::selectKeyId(const std::vector<uint8_t> &key
     {
         return MediaKeyErrorStatus::OK;
     }
+
+    initOcdmErrorChecking();
+
     MediaKeyErrorStatus status = m_ocdmSession->selectKeyId(keyId.size(), keyId.data());
     if (MediaKeyErrorStatus::OK == status)
     {
         RIALTO_SERVER_LOG_INFO("New keyId selected successfully");
         m_selectedKeyId = keyId;
     }
+
+    if ((checkForOcdmErrors("selectKeyId")) && (MediaKeyErrorStatus::OK == status))
+    {
+        status = MediaKeyErrorStatus::FAIL;
+    }
+
     return status;
 }
 
@@ -369,5 +454,38 @@ void MediaKeySession::onAllKeysUpdated()
 void MediaKeySession::onError(const char message[])
 {
     RIALTO_SERVER_LOG_ERROR("Ocdm returned error: %s", message);
+
+    std::lock_guard<std::mutex> lock(m_ocdmErrorMutex);
+    if (!m_ongoingOcdmOperation)
+    {
+        RIALTO_SERVER_LOG_WARN("Received an asycronous OCDM error, ignoring");
+    }
+    else
+    {
+        m_ocdmError = true;
+    }
 }
+
+void MediaKeySession::initOcdmErrorChecking()
+{
+    std::lock_guard<std::mutex> lock(m_ocdmErrorMutex);
+    m_ongoingOcdmOperation = true;
+    m_ocdmError = false;
+}
+
+bool MediaKeySession::checkForOcdmErrors(const char *operationStr)
+{
+    bool error = false;
+
+    std::lock_guard<std::mutex> lock(m_ocdmErrorMutex);
+    if (m_ocdmError)
+    {
+        RIALTO_SERVER_LOG_ERROR("MediaKeySession received an onError callback, operation '%s' failed", operationStr);
+        error = true;
+    }
+    m_ongoingOcdmOperation = false;
+
+    return error;
+}
+
 }; // namespace firebolt::rialto::server
