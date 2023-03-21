@@ -148,14 +148,14 @@ TEST_F(MediaPipelineServiceTests, shouldFailToAllSourcesAttachedForNotExistingSe
     allSourcesAttachedShouldFail();
 }
 
-TEST_F(MediaPipelineServiceTests, shouldFailTollSourcesAttached)
+TEST_F(MediaPipelineServiceTests, shouldFailToAllSourcesAttached)
 {
     initSession();
     mediaPipelineWillFailToAllSourcesAttached();
     allSourcesAttachedShouldFail();
 }
 
-TEST_F(MediaPipelineServiceTests, shouldllSourcesAttached)
+TEST_F(MediaPipelineServiceTests, shouldAllSourcesAttached)
 {
     initSession();
     mediaPipelineWillAllSourcesAttached();
