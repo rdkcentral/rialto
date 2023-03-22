@@ -78,3 +78,21 @@ TEST_F(RialtoServerMediaKeySessionUpdateSessionTest, OcdmSessionUpdateFailure)
 
     EXPECT_EQ(MediaKeyErrorStatus::INVALID_STATE, m_mediaKeySession->updateSession(m_kResponseData));
 }
+
+/**
+ * Test that UpdateSession fails if the ocdm onError is called during the operation.
+ */
+TEST_F(RialtoServerMediaKeySessionUpdateSessionTest, OcdmSessionUpdateOnErrorFailure)
+{
+    createKeySession(kWidevineKeySystem);
+
+    EXPECT_CALL(*m_ocdmSessionMock, update(&m_kResponseData[0], m_kResponseData.size()))
+        .WillOnce(Invoke(
+            [this](const uint8_t response[], uint32_t responseSize)
+            {
+                m_mediaKeySession->onError("Failure");
+                return MediaKeyErrorStatus::OK;
+            }));
+
+    EXPECT_EQ(MediaKeyErrorStatus::FAIL, m_mediaKeySession->updateSession(m_kResponseData));
+}

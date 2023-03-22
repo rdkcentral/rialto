@@ -550,9 +550,8 @@ void ChannelImpl::processTimeoutEvent()
         }
     }
 
-    // if any method calls have been removed, then re-calculate the timer
-    // for the next timeout
-    if (!timedOuts.empty())
+    // if we still have method calls available, then re-calculate the timer for the next timeout
+    if (!m_methodCalls.empty())
     {
         updateTimeoutTimer();
     }
@@ -624,7 +623,7 @@ void ChannelImpl::updateTimeoutTimer()
         else
         {
             ts.it_value.tv_sec = static_cast<time_t>(std::chrono::duration_cast<std::chrono::seconds>(duration).count());
-            ts.it_value.tv_nsec = static_cast<int32_t>((duration % 1000).count() * 1000);
+            ts.it_value.tv_nsec = static_cast<int32_t>((duration.count() % 1000000) * 1000);
         }
 
         RIALTO_IPC_LOG_INFO("next timeout in %" PRId64 "us - %ld.%09lds", duration.count(), ts.it_value.tv_sec,

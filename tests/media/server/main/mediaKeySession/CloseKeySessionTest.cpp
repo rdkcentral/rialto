@@ -104,3 +104,22 @@ TEST_F(RialtoServerMediaKeySessionCloseKeySessionTest, OcdmDestructSessionFailur
 
     EXPECT_EQ(MediaKeyErrorStatus::INVALID_STATE, m_mediaKeySession->closeKeySession());
 }
+
+/**
+ * Test that CloseKeySession fails if ocdm onError is called during the operation.
+ */
+TEST_F(RialtoServerMediaKeySessionCloseKeySessionTest, OnErrorFailure)
+{
+    createKeySession(kWidevineKeySystem);
+
+    EXPECT_CALL(*m_ocdmSessionMock, close())
+        .WillOnce(Invoke(
+            [this]()
+            {
+                m_mediaKeySession->onError("Failure");
+                return MediaKeyErrorStatus::OK;
+            }));
+    EXPECT_CALL(*m_ocdmSessionMock, destructSession()).WillOnce(Return(MediaKeyErrorStatus::OK));
+
+    EXPECT_EQ(MediaKeyErrorStatus::FAIL, m_mediaKeySession->closeKeySession());
+}

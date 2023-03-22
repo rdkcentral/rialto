@@ -44,3 +44,19 @@ TEST_F(RialtoServerMediaKeySessionLoadSessionTest, OcdmSessionFailure)
     EXPECT_CALL(*m_ocdmSessionMock, load()).WillOnce(Return(MediaKeyErrorStatus::NOT_SUPPORTED));
     EXPECT_EQ(MediaKeyErrorStatus::NOT_SUPPORTED, m_mediaKeySession->loadSession());
 }
+
+/**
+ * Test that loadSession fails if ocdm onError is called during the operation.
+ */
+TEST_F(RialtoServerMediaKeySessionLoadSessionTest, OnErrorFailure)
+{
+    EXPECT_CALL(*m_ocdmSessionMock, load())
+        .WillOnce(Invoke(
+            [this]()
+            {
+                m_mediaKeySession->onError("Failure");
+                return MediaKeyErrorStatus::OK;
+            }));
+
+    EXPECT_EQ(MediaKeyErrorStatus::FAIL, m_mediaKeySession->loadSession());
+}
