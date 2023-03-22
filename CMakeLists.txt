@@ -53,6 +53,11 @@ find_package( Protobuf REQUIRED )
 option(ENABLE_SERVER "Enable building RialtoServer" ON)
 option(ENABLE_SERVER_MANAGER "Enable building RialtoServerManagerSim" ON)
 
+if( NATIVE_BUILD )
+    add_subdirectory( stubs/rdk_gstreamer_utils )
+    add_subdirectory( stubs/opencdm )
+endif()
+
 # Include the new IPC library components
 add_subdirectory( ipc )
 
