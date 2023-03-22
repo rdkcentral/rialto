@@ -664,6 +664,11 @@ void GstGenericPlayer::scheduleVideoUnderflow()
     }
 }
 
+void GstGenericPlayer::scheduleAllSourcesAttached()
+{
+    allSourcesAttached();
+}
+
 void GstGenericPlayer::cancelUnderflow(bool &underflowFlag)
 {
     if (!underflowFlag)

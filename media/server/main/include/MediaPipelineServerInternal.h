@@ -219,6 +219,11 @@ protected:
     std::map<MediaSourceType, std::int32_t> m_attachedSources;
 
     /**
+     * @brief Flag used to check if allSourcesAttached was already called
+     */
+    bool m_wasAllSourcesAttachedCalled;
+
+    /**
      * @brief Load internally, only to be called on the main thread.
      *
      * @param[in] type     : The media type.

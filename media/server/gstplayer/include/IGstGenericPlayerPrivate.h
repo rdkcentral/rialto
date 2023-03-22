@@ -60,6 +60,11 @@ public:
     virtual void scheduleVideoUnderflow() = 0;
 
     /**
+     * @brief Schedules all sources attached task. Called by the worker thread.
+     */
+    virtual void scheduleAllSourcesAttached() = 0;
+
+    /**
      * @brief Sets Westeros sink rectangle. Called by the worker thread.
      *
      * @retval true on success.

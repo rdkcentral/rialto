@@ -39,3 +39,12 @@ TEST_F(SetupSourceTest, shouldSetupSource)
     task.execute();
     EXPECT_EQ(m_context.source, &m_element);
 }
+
+TEST_F(SetupSourceTest, shouldScheduleAllSourcesAttachedWhenItWasReceivedBefore)
+{
+    m_context.wereAllSourcesAttached = true;
+    firebolt::rialto::server::tasks::generic::SetupSource task{m_context, m_gstPlayer, &m_element};
+    EXPECT_CALL(m_gstPlayer, scheduleAllSourcesAttached());
+    task.execute();
+    EXPECT_EQ(m_context.source, &m_element);
+}

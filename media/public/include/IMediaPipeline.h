@@ -928,7 +928,9 @@ public:
      *
      * This method is called by Rialto Client to notify the RialtoServer
      * that all sources were attached.
+     *
      * Must be called, otherwise streaming cannot commence.
+     * Can be called only once.
      *
      * @retval true on success.
      */

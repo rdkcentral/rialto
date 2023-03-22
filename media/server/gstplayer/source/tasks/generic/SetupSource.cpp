@@ -39,5 +39,11 @@ void SetupSource::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing SetupSource");
     m_context.source = m_source;
+
+    if (m_context.wereAllSourcesAttached)
+    {
+        RIALTO_SERVER_LOG_DEBUG("Source ready. Schedulling allSourcesAttached");
+        m_player.scheduleAllSourcesAttached();
+    }
 }
 } // namespace firebolt::rialto::server::tasks::generic
