@@ -218,6 +218,13 @@ struct GenericPlayerContext
      * @brief A map of streams that have ended.
      */
     StreamInfoMap endOfStreamInfo{};
+
+    /**
+     * @brief Flag used to check if client already notified server that all sources were attached
+     *
+     * Attribute can be used only in worker thread
+     */
+    bool wereAllSourcesAttached{false};
 };
 } // namespace firebolt::rialto::server
 

@@ -170,3 +170,39 @@ TEST_F(RialtoServerMediaPipelineSourceTest, UpdateSourceIdNotChanged)
 
     EXPECT_EQ(mediaSource->getId(), firstSourceId);
 }
+
+/**
+ * Test that AllSourcesAttached returns success if the gstreamer player API succeeds.
+ */
+TEST_F(RialtoServerMediaPipelineSourceTest, AllSourcesAttachedSuccess)
+{
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+
+    EXPECT_CALL(*m_gstPlayerMock, allSourcesAttached());
+    EXPECT_EQ(m_mediaPipeline->allSourcesAttached(), true);
+}
+
+/**
+ * Test that AllSourcesAttached fails if there is no gstreamer player.
+ */
+TEST_F(RialtoServerMediaPipelineSourceTest, AllSourcesAttachedNoGstPlayerFailure)
+{
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_EQ(m_mediaPipeline->allSourcesAttached(), false);
+}
+
+/**
+ * Test that AllSourcesAttached fails if called for a second time
+ */
+TEST_F(RialtoServerMediaPipelineSourceTest, AllSourcesAttachedCalledTwiceFailure)
+{
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+
+    EXPECT_CALL(*m_gstPlayerMock, allSourcesAttached());
+    EXPECT_EQ(m_mediaPipeline->allSourcesAttached(), true);
+
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_EQ(m_mediaPipeline->allSourcesAttached(), false);
+}

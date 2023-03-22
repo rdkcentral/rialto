@@ -93,6 +93,13 @@ MATCHER_P2(removeSourceRequestMatcher, sessionId, sourceId, "")
     return ((request->session_id() == sessionId) && (request->source_id() == sourceId));
 }
 
+MATCHER_P(allSourcesAttachedRequestMatcher, sessionId, "")
+{
+    const ::firebolt::rialto::AllSourcesAttachedRequest *request =
+        dynamic_cast<const ::firebolt::rialto::AllSourcesAttachedRequest *>(arg);
+    return ((request->session_id() == sessionId));
+}
+
 class RialtoClientMediaPipelineIpcSourceTest : public MediaPipelineIpcTestBase
 {
 protected:
@@ -285,7 +292,7 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachSourceReconnectChannel)
 }
 
 /**
- * Test that Load can be called successfully.
+ * Test that RemoveSource can be called successfully.
  */
 TEST_F(RialtoClientMediaPipelineIpcSourceTest, RemoveSourceSuccess)
 {
@@ -299,7 +306,7 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, RemoveSourceSuccess)
 }
 
 /**
- * Test that Load fails when ipc fails.
+ * Test that RemoveSource fails when ipc fails.
  */
 TEST_F(RialtoClientMediaPipelineIpcSourceTest, RemoveSourceFailure)
 {
@@ -337,4 +344,59 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, RemoveSourceReconnectChannel)
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("removeSource"), _, _, _, _));
 
     EXPECT_EQ(m_mediaPipelineIpc->removeSource(m_id), true);
+}
+
+/**
+ * Test that AllSourcesAttached can be called successfully.
+ */
+TEST_F(RialtoClientMediaPipelineIpcSourceTest, AllSourcesAttachedSuccess)
+{
+    expectIpcApiCallSuccess();
+
+    EXPECT_CALL(*m_channelMock,
+                CallMethod(methodMatcher("allSourcesAttached"), m_controllerMock.get(),
+                           allSourcesAttachedRequestMatcher(m_sessionId), _, m_blockingClosureMock.get()));
+
+    EXPECT_EQ(m_mediaPipelineIpc->allSourcesAttached(), true);
+}
+
+/**
+ * Test that AllSourcesAttached fails when ipc fails.
+ */
+TEST_F(RialtoClientMediaPipelineIpcSourceTest, AllSourcesAttachedeFailure)
+{
+    expectIpcApiCallFailure();
+
+    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("allSourcesAttached"), _, _, _, _));
+
+    EXPECT_EQ(m_mediaPipelineIpc->allSourcesAttached(), false);
+}
+
+/**
+ * Test that AllSourcesAttached fails if the ipc channel disconnected.
+ */
+TEST_F(RialtoClientMediaPipelineIpcSourceTest, AllSourcesAttachedChannelDisconnected)
+{
+    expectIpcApiCallDisconnected();
+    expectUnsubscribeEvents();
+
+    EXPECT_EQ(m_mediaPipelineIpc->allSourcesAttached(), false);
+
+    // Reattach channel on destroySession
+    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
+    expectSubscribeEvents();
+}
+
+/**
+ * Test that AllSourcesAttached fails if the ipc channel disconnected and succeeds if the channel is reconnected.
+ */
+TEST_F(RialtoClientMediaPipelineIpcSourceTest, AllSourcesAttachedReconnectChannel)
+{
+    expectIpcApiCallReconnected();
+    expectUnsubscribeEvents();
+    expectSubscribeEvents();
+
+    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("allSourcesAttached"), _, _, _, _));
+
+    EXPECT_EQ(m_mediaPipelineIpc->allSourcesAttached(), true);
 }

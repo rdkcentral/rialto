@@ -96,6 +96,8 @@ public:
 
     bool removeSource(int32_t id) override;
 
+    bool allSourcesAttached() override;
+
     bool play() override;
 
     bool pause() override;

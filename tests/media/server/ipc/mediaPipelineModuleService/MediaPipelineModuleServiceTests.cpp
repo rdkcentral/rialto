@@ -93,6 +93,18 @@ TEST_F(MediaPipelineModuleServiceTests, shouldFailToAttachSource)
     sendAttachSourceRequestAndReceiveResponse();
 }
 
+TEST_F(MediaPipelineModuleServiceTests, shouldSucceedAllSourcesAttached)
+{
+    mediaPipelineServiceWillSucceedAllSourcesAttached();
+    sendAllSourcesAttachedRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailAllSourcesAttached)
+{
+    mediaPipelineServiceWillFailAllSourcesAttached();
+    sendAllSourcesAttachedRequestAndReceiveResponse();
+}
+
 TEST_F(MediaPipelineModuleServiceTests, shouldPlay)
 {
     mediaPipelineServiceWillPlay();

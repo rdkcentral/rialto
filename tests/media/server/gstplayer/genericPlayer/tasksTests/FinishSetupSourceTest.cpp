@@ -167,3 +167,11 @@ TEST_F(FinishSetupSourceTest, shouldScheduleVideoSeekData)
     EXPECT_TRUE(m_videoUserData);
     ((gboolean(*)(GstAppSrc *, guint64, gpointer))m_videoCallbacks.seek_data)(&m_videoAppSrc, m_kOffset, m_videoUserData);
 }
+
+TEST_F(FinishSetupSourceTest, shouldntFinishSetupSourceWhenSourceNotSet)
+{
+    m_context.source = nullptr;
+    firebolt::rialto::server::tasks::generic::FinishSetupSource task{m_context, m_gstPlayer, &m_gstPlayerClient};
+    task.execute();
+    EXPECT_TRUE(m_context.wereAllSourcesAttached);
+}

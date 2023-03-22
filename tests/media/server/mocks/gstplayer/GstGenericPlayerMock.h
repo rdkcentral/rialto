@@ -35,6 +35,7 @@ public:
 
     MOCK_METHOD(void, attachSource, (const std::unique_ptr<IMediaPipeline::MediaSource> &mediaSource), (override));
     MOCK_METHOD(void, removeSource, (const MediaSourceType &mediaSourceType), (override));
+    MOCK_METHOD(void, allSourcesAttached, (), (override));
     MOCK_METHOD(void, play, (), (override));
     MOCK_METHOD(void, pause, (), (override));
     MOCK_METHOD(void, stop, (), (override));
