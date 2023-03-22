@@ -17,42 +17,33 @@
 # limitations under the License.
 #
 
-
-##
-#
-#
-#
-# TODO: enable only when built for native
-#
-#
-#
-#
-#
-include(ExternalProject)
-set_property(DIRECTORY PROPERTY EP_BASE "${CMAKE_CURRENT_BINARY_DIR}/third-party")
-ExternalProject_Add(
-    mongoose
+if( NATIVE_BUILD )
+  include(ExternalProject)
+  set_property(DIRECTORY PROPERTY EP_BASE "${CMAKE_CURRENT_BINARY_DIR}/third-party")
+  ExternalProject_Add(
+    mongoose-source
     URL https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/mongoose/mongoose-2.6.tgz
     BUILD_IN_SOURCE 1
     CONFIGURE_COMMAND ""
     BUILD_COMMAND  COPT="-Wl,--no-as-needed" make linux
     INSTALL_COMMAND ""
-)
+  )
 
-ExternalProject_Get_Property( mongoose SOURCE_DIR )
+  ExternalProject_Get_Property( mongoose-source SOURCE_DIR )
 
-add_library(mongoose-third-party SHARED IMPORTED)
-set_target_properties(mongoose-third-party
-PROPERTIES
-  IMPORTED_LOCATION  "${SOURCE_DIR}/_mongoose.so" 
-  INTERFACE_INCLUDE_DIRECTORIES "${SOURCE_DIR}"
-)
+  add_library(mongoose SHARED IMPORTED)
+  set_target_properties(mongoose
+  PROPERTIES
+    IMPORTED_LOCATION  "${SOURCE_DIR}/_mongoose.so"
+    INTERFACE_INCLUDE_DIRECTORIES "${SOURCE_DIR}"
+  )
 
-add_dependencies( mongoose-third-party mongoose )
+  add_dependencies( mongoose mongoose-source )
 
-install (
+  install (
     FILES  ${SOURCE_DIR}/_mongoose.so
     TYPE LIB
-)
+  )
 
-unset( INSTALL_DIR )
+  unset( SOURCE_DIR )
+endif()

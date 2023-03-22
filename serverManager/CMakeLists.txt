@@ -21,7 +21,13 @@ set( CMAKE_CXX_STANDARD 14 )
 
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
 include( CheckCXXCompilerFlag )
-include( ../cmake/mongoose.cmake )
+
+if( NATIVE_BUILD )
+##todo:
+# let Findmongoose also search mongoose in not native projects
+        find_package( mongoose REQUIRED )
+endif()
+
 add_subdirectory(common)
 add_subdirectory(ipc)
 add_subdirectory(service)
@@ -44,8 +50,6 @@ add_executable (
         serverManagerSim/TestService.cpp
 )
 
-add_dependencies (RialtoServerManagerSim mongoose-third-party)
-
 target_include_directories (
         RialtoServerManagerSim
 
@@ -53,7 +57,7 @@ target_include_directories (
         $<TARGET_PROPERTY:RialtoLogging,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoServerManagerPublic,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoCommon,INTERFACE_INCLUDE_DIRECTORIES>
-        mongoose-third-party
+        mongoose
         #$ENV{RDK_PROJECT_ROOT_PATH}/opensource/include/mongoose
 )
 
@@ -63,7 +67,7 @@ target_link_libraries (
         RialtoServerManager
         RialtoLogging
         Threads::Threads
-        mongoose-third-party
+        mongoose
         dl
 )
 
