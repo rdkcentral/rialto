@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_GST_MIME_MAPPING_H_
 
 #include <IMediaPipeline.h>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>

@@ -31,7 +31,6 @@ namespace
 {
 class MediaSourceCapsBuilder
 {
-
 public:
     MediaSourceCapsBuilder(std::shared_ptr<IGstWrapper> gstWrapper, std::shared_ptr<IGlibWrapper> glibWrapper,
                            const firebolt::rialto::IMediaPipeline::MediaSource &source)
