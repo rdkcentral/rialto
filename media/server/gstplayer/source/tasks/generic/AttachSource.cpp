@@ -23,6 +23,7 @@
 #include "IMediaPipeline.h"
 #include "RialtoServerLogging.h"
 #include <unordered_map>
+#include <GstMimeMapping.h>
 
 namespace firebolt::rialto::server::tasks::generic
 {
@@ -30,40 +31,31 @@ namespace
 {
 class MediaSourceCapsBuilder
 {
+
 public:
+    
     MediaSourceCapsBuilder(std::shared_ptr<IGstWrapper> gstWrapper, std::shared_ptr<IGlibWrapper> glibWrapper,
-                           const IMediaPipeline::MediaSource &source)
+                           const firebolt::rialto::IMediaPipeline::MediaSource &source)
         : m_gstWrapper(gstWrapper), m_glibWrapper(glibWrapper), m_attachedSource(source)
     {
     }
     virtual GstCaps *buildCaps() { return buildCommonCaps(); }
 
 protected:
+
+    std::shared_ptr<IGstWrapper> m_gstWrapper;
+    std::shared_ptr<IGlibWrapper> m_glibWrapper;
+    const IMediaPipeline::MediaSource &m_attachedSource;
+
     GstCaps *buildCommonCaps()
     {
-        GstCaps *caps = createSimpleCapsFromMimeType();
-
+        GstCaps *caps = firebolt::rialto::server::createSimpleCapsFromMimeType(m_gstWrapper, m_attachedSource);
+        
         addAlignmentToCaps(caps);
         addCodecDataToCaps(caps);
         addStreamFormatToCaps(caps);
 
         return caps;
-    }
-
-    GstCaps *createSimpleCapsFromMimeType() const
-    {
-        static const std::unordered_map<std::string, std::string> mimeToMediaType =
-            {{"video/h264", "video/x-h264"},   {"video/h265", "video/x-h265"},  {"video/x-av1", "video/x-av1"},
-             {"video/x-vp9", "video/x-vp9"},   {"audio/mp4", "audio/mpeg"},     {"audio/aac", "audio/mpeg"},
-             {"audio/x-eac3", "audio/x-eac3"}, {"audio/x-opus", "audio/x-opus"}};
-
-        auto mimeToMediaTypeIt = mimeToMediaType.find(m_attachedSource.getMimeType());
-        if (mimeToMediaTypeIt != mimeToMediaType.end())
-        {
-            return m_gstWrapper->gstCapsNewEmptySimple(mimeToMediaTypeIt->second.c_str());
-        }
-
-        return m_gstWrapper->gstCapsNewEmpty();
     }
 
     void addAlignmentToCaps(GstCaps *caps) const
@@ -103,10 +95,7 @@ protected:
             m_gstWrapper->gstCapsSetSimple(caps, "stream-format", G_TYPE_STRING, formatMapIt->second.c_str(), nullptr);
         }
     }
-
-    std::shared_ptr<IGstWrapper> m_gstWrapper;
-    std::shared_ptr<IGlibWrapper> m_glibWrapper;
-    const IMediaPipeline::MediaSource &m_attachedSource;
+    
 };
 
 class MediaSourceAudioCapsBuilder : public MediaSourceCapsBuilder
