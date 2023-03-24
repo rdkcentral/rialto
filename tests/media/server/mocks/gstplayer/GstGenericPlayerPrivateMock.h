@@ -30,11 +30,11 @@ namespace firebolt::rialto::server
 class GstGenericPlayerPrivateMock : public IGstGenericPlayerPrivate
 {
 public:
-    MOCK_METHOD(void, scheduleSourceSetupFinish, (), (override));
     MOCK_METHOD(void, scheduleNeedMediaData, (GstAppSrc * src), (override));
     MOCK_METHOD(void, scheduleEnoughData, (GstAppSrc * src), (override));
     MOCK_METHOD(void, scheduleAudioUnderflow, (), (override));
     MOCK_METHOD(void, scheduleVideoUnderflow, (), (override));
+    MOCK_METHOD(void, scheduleAllSourcesAttached, (), (override));
     MOCK_METHOD(bool, setWesterossinkRectangle, (), (override));
     MOCK_METHOD(void, notifyNeedMediaData, (bool audioNotificationNeeded, bool videoNotificationNeeded), (override));
     MOCK_METHOD(GstBuffer *, createBuffer, (const IMediaPipeline::MediaSegment &mediaSegment), (const, override));

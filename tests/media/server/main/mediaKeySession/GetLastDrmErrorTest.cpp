@@ -39,13 +39,31 @@ TEST_F(RialtoServerMediaKeySessionGetLastDrmErrorTest, Success)
 }
 
 /**
- * Test that method returns failure when get last drm error fails
+ * Test that getLastDrmError fails if the ocdm session api fails.
  */
-TEST_F(RialtoServerMediaKeySessionGetLastDrmErrorTest, Fail)
+TEST_F(RialtoServerMediaKeySessionGetLastDrmErrorTest, OcdmSessionFail)
 {
     createKeySession(kNetflixKeySystem);
 
     EXPECT_CALL(*m_ocdmSessionMock, getLastDrmError(m_lastDrmError)).WillOnce(Return(MediaKeyErrorStatus::FAIL));
+
+    EXPECT_EQ(MediaKeyErrorStatus::FAIL, m_mediaKeySession->getLastDrmError(m_lastDrmError));
+}
+
+/**
+ * Test that getLastDrmError fails if ocdm onError is called during the operation.
+ */
+TEST_F(RialtoServerMediaKeySessionGetLastDrmErrorTest, OnErrorFailure)
+{
+    createKeySession(kNetflixKeySystem);
+
+    EXPECT_CALL(*m_ocdmSessionMock, getLastDrmError(m_lastDrmError))
+        .WillOnce(Invoke(
+            [this](uint32_t &errorCode)
+            {
+                m_mediaKeySession->onError("Failure");
+                return MediaKeyErrorStatus::OK;
+            }));
 
     EXPECT_EQ(MediaKeyErrorStatus::FAIL, m_mediaKeySession->getLastDrmError(m_lastDrmError));
 }

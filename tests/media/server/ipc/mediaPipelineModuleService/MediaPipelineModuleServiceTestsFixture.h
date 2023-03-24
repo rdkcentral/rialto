@@ -48,6 +48,8 @@ public:
     void mediaPipelineServiceWillAttachSource();
     void mediaPipelineServiceWillAttachAudioSourceWithAdditionaldata();
     void mediaPipelineServiceWillFailToAttachSource();
+    void mediaPipelineServiceWillSucceedAllSourcesAttached();
+    void mediaPipelineServiceWillFailAllSourcesAttached();
     void mediaPipelineServiceWillPlay();
     void mediaPipelineServiceWillFailToPlay();
     void mediaPipelineServiceWillPause();
@@ -84,6 +86,7 @@ public:
     void sendLoadRequestAndReceiveResponse();
     void sendAttachSourceRequestAndReceiveResponse();
     void sendAttachAudioSourceWithAdditionalDataRequestAndReceiveResponse();
+    void sendAllSourcesAttachedRequestAndReceiveResponse();
     void sendPlayRequestAndReceiveResponse();
     void sendPauseRequestAndReceiveResponse();
     void sendStopRequestAndReceiveResponse();

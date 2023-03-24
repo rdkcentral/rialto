@@ -64,6 +64,10 @@ public:
     void removeSource(::google::protobuf::RpcController *controller,
                       const ::firebolt::rialto::RemoveSourceRequest *request,
                       ::firebolt::rialto::RemoveSourceResponse *response, ::google::protobuf::Closure *done) override;
+    void allSourcesAttached(::google::protobuf::RpcController *controller,
+                            const ::firebolt::rialto::AllSourcesAttachedRequest *request,
+                            ::firebolt::rialto::AllSourcesAttachedResponse *response,
+                            ::google::protobuf::Closure *done) override;
     void play(::google::protobuf::RpcController *controller, const ::firebolt::rialto::PlayRequest *request,
               ::firebolt::rialto::PlayResponse *response, ::google::protobuf::Closure *done) override;
     void pause(::google::protobuf::RpcController *controller, const ::firebolt::rialto::PauseRequest *request,

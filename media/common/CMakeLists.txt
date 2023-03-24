@@ -64,8 +64,8 @@ target_include_directories(
 
 set (
         RIALTO_PLAYER_COMMON_PUBLIC_HEADERS
-        public/ShmCommon.h
-        public/IMediaFrameWriter.h
+        interface/ShmCommon.h
+        interface/IMediaFrameWriter.h
 )
 
 install (

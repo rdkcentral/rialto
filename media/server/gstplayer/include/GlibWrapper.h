@@ -130,6 +130,8 @@ public:
     void gOnceInitLeave(gsize *location, gsize result) const override { g_once_init_leave(location, result); }
 
     gchar *gStrrstr(const gchar *haystack, const gchar *needle) const override { return g_strrstr(haystack, needle); }
+
+    void gErrorFree(GError *error) const override { g_error_free(error); }
 };
 
 }; // namespace firebolt::rialto::server

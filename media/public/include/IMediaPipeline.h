@@ -924,6 +924,19 @@ public:
     virtual bool removeSource(int32_t id) = 0;
 
     /**
+     * @brief Notifies Rialto Server that all sources were attached
+     *
+     * This method is called by Rialto Client to notify the RialtoServer
+     * that all sources were attached.
+     *
+     * Must be called, otherwise streaming cannot commence.
+     * Can be called only once.
+     *
+     * @retval true on success.
+     */
+    virtual bool allSourcesAttached() = 0;
+
+    /**
      * @brief Starts playback of the media.
      *
      * This method is considered to be asychronous and MUST NOT block

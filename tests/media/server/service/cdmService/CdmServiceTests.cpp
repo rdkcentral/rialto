@@ -306,6 +306,16 @@ TEST_F(CdmServiceTests, shouldFailToGetCdmKeySessionIdWhenMediaKeysFails)
     destroyMediaKeysShouldSucceed();
 }
 
+TEST_F(CdmServiceTests, shouldDecryptDeprecated)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysFactoryWillCreateMediaKeys();
+    createMediaKeysShouldSucceed();
+    mediaKeysWillDecryptDeprecatedWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    decryptDeprecatedShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    destroyMediaKeysShouldSucceed();
+}
+
 TEST_F(CdmServiceTests, shouldDecrypt)
 {
     triggerSwitchToActiveSuccess();
@@ -316,10 +326,26 @@ TEST_F(CdmServiceTests, shouldDecrypt)
     destroyMediaKeysShouldSucceed();
 }
 
+TEST_F(CdmServiceTests, shouldFailToDecryptDeprecatedWhenNoMediaKeys)
+{
+    triggerSwitchToActiveSuccess();
+    decryptDeprecatedShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::FAIL);
+}
+
 TEST_F(CdmServiceTests, shouldFailToDecryptWhenNoMediaKeys)
 {
     triggerSwitchToActiveSuccess();
     decryptShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::FAIL);
+}
+
+TEST_F(CdmServiceTests, shouldFailToDecryptDeprecatedWhenMediaKeysFails)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysFactoryWillCreateMediaKeys();
+    createMediaKeysShouldSucceed();
+    mediaKeysWillDecryptDeprecatedWithStatus(firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE);
+    decryptDeprecatedShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE);
+    destroyMediaKeysShouldSucceed();
 }
 
 TEST_F(CdmServiceTests, shouldFailToDecryptWhenMediaKeysFails)
@@ -329,6 +355,16 @@ TEST_F(CdmServiceTests, shouldFailToDecryptWhenMediaKeysFails)
     createMediaKeysShouldSucceed();
     mediaKeysWillDecryptWithStatus(firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE);
     decryptShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE);
+    destroyMediaKeysShouldSucceed();
+}
+
+TEST_F(CdmServiceTests, shouldFailToDecryptDeprecatedWhenMediaKeysIsNotFoundForSession)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysFactoryWillCreateMediaKeys();
+    createMediaKeysShouldSucceed();
+    mediaKeysWillNotFindMediaKeySession();
+    decryptDeprecatedShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::FAIL);
     destroyMediaKeysShouldSucceed();
 }
 

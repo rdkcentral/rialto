@@ -142,6 +142,26 @@ TEST_F(MediaPipelineServiceTests, shouldRemoveSource)
     removeSourceShouldSucceed();
 }
 
+TEST_F(MediaPipelineServiceTests, shouldFailToAllSourcesAttachedForNotExistingSession)
+{
+    createMediaPipelineShouldSuccess();
+    allSourcesAttachedShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToAllSourcesAttached)
+{
+    initSession();
+    mediaPipelineWillFailToAllSourcesAttached();
+    allSourcesAttachedShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldAllSourcesAttached)
+{
+    initSession();
+    mediaPipelineWillAllSourcesAttached();
+    allSourcesAttachedShouldSucceed();
+}
+
 TEST_F(MediaPipelineServiceTests, shouldFailToPlayForNotExistingSession)
 {
     createMediaPipelineShouldSuccess();

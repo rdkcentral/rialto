@@ -162,6 +162,19 @@ message RemoveSourceResponse {
 }
 
 /**
+ * @fn void allSourcesAttached(int session_id)
+ * @brief Notify server that all sources were attached
+ *
+ * @param[in]  session_id   The id of the A/V session.
+ *
+ */
+message AllSourcesAttachedRequest {
+  required int32 session_id = 1;
+}
+message AllSourcesAttachedResponse {
+}
+
+/**
  * @fn void setVideoWindow(int session_id, uint x, uint y, uint width, uint height)
  * @brief Sets the on-screen dimensions of the video window associated with the session
  *
@@ -517,6 +530,13 @@ service MediaPipelineModule {
      * @see RemoveSourceRequest
      */
     rpc removeSource(RemoveSourceRequest) returns (RemoveSourceResponse) {
+    }
+
+    /**
+     * @brief Notify that all sources were attached
+     * @see AllSourcesAttachedRequest
+     */
+    rpc allSourcesAttached(AllSourcesAttachedRequest) returns (AllSourcesAttachedResponse) {
     }
 
     /**

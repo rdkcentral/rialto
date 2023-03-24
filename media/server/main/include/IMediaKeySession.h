@@ -109,6 +109,19 @@ public:
      *
      * @param[in]  encrypted        : Gstreamer buffer containing encrypted data and related meta data. If applicable,
      *                                decrypted data will be stored here after this call returns.
+     * @param[in] caps              : The gst caps of buffer.
+     *
+     * @retval an error status.
+     */
+    virtual MediaKeyErrorStatus decrypt(GstBuffer *encrypted, GstCaps *caps) = 0;
+
+    /**
+     * @brief Decrypts the buffer, deprecated.
+     *
+     * TODO(RIALTO-127): Remove
+     *
+     * @param[in]  encrypted        : Gstreamer buffer containing encrypted data and related meta data. If applicable,
+     *                                decrypted data will be stored here after this call returns.
      * @param[in]  subSample        : Gstreamer buffer containing subsamples size which has been parsed from protection
      *                                meta data.
      * @param[in]  subSampleCount   : count of subsamples

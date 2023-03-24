@@ -411,6 +411,18 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToAttachSource
         .WillOnce(Return(false));
 }
 
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSucceedAllSourcesAttached()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_mediaPipelineServiceMock, allSourcesAttached(hardcodedSessionId)).WillOnce(Return(true));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailAllSourcesAttached()
+{
+    expectRequestFailure();
+    EXPECT_CALL(m_mediaPipelineServiceMock, allSourcesAttached(hardcodedSessionId)).WillOnce(Return(false));
+}
+
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillPlay()
 {
     expectRequestSuccess();
@@ -674,6 +686,16 @@ void MediaPipelineModuleServiceTests::sendAttachAudioSourceWithAdditionalDataReq
     request.set_stream_format(convertStreamFormat(firebolt::rialto::StreamFormat::RAW));
 
     m_service->attachSource(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void MediaPipelineModuleServiceTests::sendAllSourcesAttachedRequestAndReceiveResponse()
+{
+    firebolt::rialto::AllSourcesAttachedRequest request;
+    firebolt::rialto::AllSourcesAttachedResponse response;
+
+    request.set_session_id(hardcodedSessionId);
+
+    m_service->allSourcesAttached(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
 
 void MediaPipelineModuleServiceTests::sendPlayRequestAndReceiveResponse()

@@ -40,11 +40,6 @@ public:
     IGstGenericPlayerPrivate &operator=(IGstGenericPlayerPrivate &&) = delete;
 
     /**
-     * @brief Schedules source setup finish task. Called by the worker thread.
-     */
-    virtual void scheduleSourceSetupFinish() = 0;
-
-    /**
      * @brief Schedules need media data task. Called by the worker thread.
      */
     virtual void scheduleNeedMediaData(GstAppSrc *src) = 0;
@@ -63,6 +58,11 @@ public:
      * @brief Schedules video underflow task. Called by the worker thread.
      */
     virtual void scheduleVideoUnderflow() = 0;
+
+    /**
+     * @brief Schedules all sources attached task. Called by the worker thread.
+     */
+    virtual void scheduleAllSourcesAttached() = 0;
 
     /**
      * @brief Sets Westeros sink rectangle. Called by the worker thread.

@@ -155,6 +155,20 @@ bool MediaPipelineService::removeSource(int sessionId, std::int32_t sourceId)
     return mediaPipelineIter->second->removeSource(sourceId);
 }
 
+bool MediaPipelineService::allSourcesAttached(int sessionId)
+{
+    RIALTO_SERVER_LOG_INFO("MediaPipelineService notified that all sources were attached, session id: %d", sessionId);
+
+    std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+    auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
+    if (mediaPipelineIter == m_mediaPipelines.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
+        return false;
+    }
+    return mediaPipelineIter->second->allSourcesAttached();
+}
+
 bool MediaPipelineService::play(int sessionId)
 {
     RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to play, session id: %d", sessionId);

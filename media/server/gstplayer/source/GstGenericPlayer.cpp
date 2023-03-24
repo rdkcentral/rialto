@@ -30,13 +30,6 @@
 namespace
 {
 /**
- * @brief The time to wait to finish the set up of sources.
- *        When the pipeline requests the set up of sources, GstGenericPlayer must wait for all
- *        sources to be attached first.
- */
-constexpr std::chrono::milliseconds kSourceSetupFinishTimeoutMs{200};
-
-/**
  * @brief Report position interval in ms.
  *        The position reporting timer should be started whenever the PLAYING state is entered and stopped
  *        whenever the session moves to another playback state.
@@ -303,20 +296,6 @@ void GstGenericPlayer::setupSource(GstElement *pipeline, GstElement *source, Gst
     }
 }
 
-void GstGenericPlayer::scheduleSourceSetupFinish()
-{
-    m_finishSourceSetupTimer =
-        m_timerFactory->createTimer(kSourceSetupFinishTimeoutMs,
-                                    [this]()
-                                    {
-                                        if (m_workerThread)
-                                        {
-                                            m_workerThread->enqueueTask(
-                                                m_taskFactory->createFinishSetupSource(m_context, *this));
-                                        }
-                                    });
-}
-
 void GstGenericPlayer::setupElement(GstElement *pipeline, GstElement *element, GstGenericPlayer *self)
 {
     RIALTO_SERVER_LOG_DEBUG("Element %s added to the pipeline", GST_ELEMENT_NAME(element));
@@ -350,6 +329,14 @@ void GstGenericPlayer::removeSource(const MediaSourceType &mediaSourceType)
     if (m_workerThread)
     {
         m_workerThread->enqueueTask(m_taskFactory->createRemoveSource(m_context, mediaSourceType));
+    }
+}
+
+void GstGenericPlayer::allSourcesAttached()
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(m_taskFactory->createFinishSetupSource(m_context, *this));
     }
 }
 
@@ -435,12 +422,20 @@ GstBuffer *GstGenericPlayer::createBuffer(const IMediaPipeline::MediaSegment &me
         }
         GstBuffer *subsamples = m_gstWrapper->gstBufferNewWrapped(subsamplesRaw, subsamplesRawSize);
 
+        uint32_t crypt = 0;
+        uint32_t skip = 0;
+        bool encryptionPatternSet = mediaSegment.getEncryptionPattern(crypt, skip);
+
         GstRialtoProtectionData data = {mediaSegment.getMediaKeySessionId(),
                                         static_cast<uint32_t>(mediaSegment.getSubSamples().size()),
                                         mediaSegment.getInitWithLast15(),
                                         keyId,
                                         initVector,
                                         subsamples,
+                                        mediaSegment.getCipherMode(),
+                                        crypt,
+                                        skip,
+                                        encryptionPatternSet,
                                         m_context.decryptionService};
 
         if (!m_protectionMetadataWrapper->addProtectionMetadata(gstBuffer, data))
@@ -667,6 +662,11 @@ void GstGenericPlayer::scheduleVideoUnderflow()
     {
         m_workerThread->enqueueTask(m_taskFactory->createUnderflow(*this, m_context.videoUnderflowOccured));
     }
+}
+
+void GstGenericPlayer::scheduleAllSourcesAttached()
+{
+    allSourcesAttached();
 }
 
 void GstGenericPlayer::cancelUnderflow(bool &underflowFlag)
