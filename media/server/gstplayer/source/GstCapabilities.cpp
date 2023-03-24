@@ -19,9 +19,9 @@
 
 #include <stdexcept>
 
+#include "GstMimeMapping.h"
 #include "RialtoServerLogging.h"
 #include <GstCapabilities.h>
-#include "GstMimeMapping.h"
 #include <algorithm>
 #include <unordered_set>
 

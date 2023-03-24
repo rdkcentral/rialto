@@ -18,11 +18,11 @@
  */
 
 #include "tasks/generic/AttachSource.h"
+#include "GstMimeMapping.h"
 #include "IGlibWrapper.h"
 #include "IGstWrapper.h"
 #include "IMediaPipeline.h"
 #include "RialtoServerLogging.h"
-#include "GstMimeMapping.h"
 #include <unordered_map>
 
 namespace firebolt::rialto::server::tasks::generic
