@@ -19,7 +19,7 @@
 
 #include <stdexcept>
 
-#include "GstMimeMapping.h"
+#include <GstMimeMapping.h>
 #include "RialtoServerLogging.h"
 #include <GstCapabilities.h>
 #include <algorithm>
