@@ -22,7 +22,7 @@
 #include "IGstWrapper.h"
 #include "IMediaPipeline.h"
 #include "RialtoServerLogging.h"
-#include <GstMimeMapping.h>
+#include "GstMimeMapping.h"
 #include <unordered_map>
 
 namespace firebolt::rialto::server::tasks::generic

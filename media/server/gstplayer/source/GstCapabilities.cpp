@@ -21,7 +21,7 @@
 
 #include "RialtoServerLogging.h"
 #include <GstCapabilities.h>
-#include <GstMimeMapping.h>
+#include "GstMimeMapping.h"
 #include <algorithm>
 #include <unordered_set>
 
