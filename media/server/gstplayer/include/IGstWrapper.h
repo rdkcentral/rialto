@@ -1060,6 +1060,25 @@ public:
      * @retval the channel mask or 0 if unknown.
      */
     virtual guint64 gstAudioChannelGetFallbackMask(gint channels) const = 0;
+
+    /**
+     * @brief Sets the fields of the gst structure.
+     *
+     * @param[in] structure  : the structure to add fields too.
+     * @param[in] fieldname  : the name of the first field to add.
+     * @param[in] ...        : variable arguments, should be in the form field name, field type (as a GType), value(s)
+     * and be NULL terminated.
+     */
+    virtual void gstStructureSet(GstStructure *structure, const gchar *firstname, ...) const = 0;
+
+    /**
+     * @brief Gets the error and debug string from the message. Both gerror and debug must be freed by the caller once complete.
+     *
+     * @param[in]  message  : a gst error message.
+     * @param[out] gerror   : pointer to the error value.
+     * @param[out] debug    : pointer to the debug string.
+     */
+    virtual void gstMessageParseError(GstMessage *message, GError **gerror, gchar **debug) const = 0;
 };
 
 }; // namespace firebolt::rialto::server

@@ -58,6 +58,7 @@ public:
     bool load(int sessionId, MediaType type, const std::string &mimeType, const std::string &url) override;
     bool attachSource(int sessionId, const std::unique_ptr<IMediaPipeline::MediaSource> &source) override;
     bool removeSource(int sessionId, std::int32_t sourceId) override;
+    bool allSourcesAttached(int sessionId) override;
     bool play(int sessionId) override;
     bool pause(int sessionId) override;
     bool stop(int sessionId) override;

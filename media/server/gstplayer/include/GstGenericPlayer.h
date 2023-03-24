@@ -98,6 +98,7 @@ public:
 
     void attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &mediaSource) override;
     void removeSource(const MediaSourceType &mediaSourceType) override;
+    void allSourcesAttached() override;
     void play() override;
     void pause() override;
     void stop() override;
@@ -112,11 +113,11 @@ public:
     bool getVolume(double &volume) override;
 
 private:
-    void scheduleSourceSetupFinish() override;
     void scheduleNeedMediaData(GstAppSrc *src) override;
     void scheduleEnoughData(GstAppSrc *src) override;
     void scheduleAudioUnderflow() override;
     void scheduleVideoUnderflow() override;
+    void scheduleAllSourcesAttached() override;
     bool setWesterossinkRectangle() override;
     void notifyNeedMediaData(bool audioNotificationNeeded, bool videoNotificationNeeded) override;
     GstBuffer *createBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const override;

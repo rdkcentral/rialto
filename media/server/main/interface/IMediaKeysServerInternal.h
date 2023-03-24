@@ -77,15 +77,33 @@ public:
     /**
      * @brief Decrypts the buffer.
      *
+     * Encryption metadata shall be attached to the encrypted buffer as protection meta prior to this call.
+     *
      * @param[in] keySessionId    : The session id for the session.
-     * @param[in]  encrypted      : Gstreamer buffer containing encrypted data and related meta data. If applicable,
+     * @param[in] encrypted       : Gstreamer buffer containing encrypted data and related meta data. If applicable,
      *                              decrypted data will be stored here after this call returns.
-     * @param[in]  subSample      : Gstreamer buffer containing subsamples size which has been parsed from protection
+     * @param[in] caps            : The gst caps of buffer.
+     *
+     * @retval an error status.
+     */
+    virtual MediaKeyErrorStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps) = 0;
+
+    /**
+     * @brief Decrypts the buffer, deprecated.
+     *
+     * TODO(RIALTO-127): Remove
+     *
+     * Encryption metadata shall be attached to the encrypted buffer as protection meta prior to this call.
+     *
+     * @param[in] keySessionId    : The session id for the session.
+     * @param[in] encrypted       : Gstreamer buffer containing encrypted data and related meta data. If applicable,
+     *                              decrypted data will be stored here after this call returns.
+     * @param[in] subSample       : Gstreamer buffer containing subsamples size which has been parsed from protection
      *                              meta data.
-     * @param[in]  subSampleCount : count of subsamples
-     * @param[in]  IV             : Gstreamer buffer containing initial vector (IV) used during decryption.
-     * @param[in]  keyId          : Gstreamer buffer containing keyID to use for decryption
-     * @param[in]  initWithLast15 : The value deciding whether decryption context needs to be initialized with
+     * @param[in] subSampleCount  : count of subsamples
+     * @param[in] IV              : Gstreamer buffer containing initial vector (IV) used during decryption.
+     * @param[in] keyId           : Gstreamer buffer containing keyID to use for decryption
+     * @param[in] initWithLast15  : The value deciding whether decryption context needs to be initialized with
      *                              last 15 bytes. Currently this only applies to PlayReady DRM.
      * @param[in] caps            : The gst caps of buffer.
      *

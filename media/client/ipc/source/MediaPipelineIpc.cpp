@@ -278,6 +278,36 @@ bool MediaPipelineIpc::removeSource(int32_t sourceId)
     return true;
 }
 
+bool MediaPipelineIpc::allSourcesAttached()
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::AllSourcesAttachedRequest request;
+    request.set_session_id(m_sessionId);
+
+    firebolt::rialto::AllSourcesAttachedResponse response;
+    auto ipcController = m_ipc->createRpcController();
+    auto blockingClosure = m_ipc->createBlockingClosure();
+    m_mediaPipelineStub->allSourcesAttached(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to notify about all sources attached due to '%s'",
+                                ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    return true;
+}
+
 bool MediaPipelineIpc::setVideoWindow(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
 {
     if (!reattachChannelIfRequired())

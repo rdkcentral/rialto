@@ -206,6 +206,13 @@ bool MediaPipeline::removeSource(int32_t id)
     return m_mediaPipelineIpc->removeSource(id);
 }
 
+bool MediaPipeline::allSourcesAttached()
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    return m_mediaPipelineIpc->allSourcesAttached();
+}
+
 bool MediaPipeline::play()
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");

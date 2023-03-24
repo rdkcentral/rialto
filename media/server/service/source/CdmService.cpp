@@ -409,6 +409,22 @@ bool CdmService::getSupportedKeySystemVersion(const std::string &keySystem, std:
     return mediaKeysCapabilities->getSupportedKeySystemVersion(keySystem, version);
 }
 
+MediaKeyErrorStatus CdmService::decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps)
+{
+    RIALTO_SERVER_LOG_DEBUG("CdmService requested to decrypt, key session id: %d", keySessionId);
+
+    std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
+    auto mediaKeysIter = std::find_if(m_mediaKeys.begin(), m_mediaKeys.end(),
+                                      [&](const auto &iter) { return iter.second->hasSession(keySessionId); });
+    if (mediaKeysIter == m_mediaKeys.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Media keys handle for mksId: %d does not exists", keySessionId);
+        return MediaKeyErrorStatus::FAIL;
+    }
+    return mediaKeysIter->second->decrypt(keySessionId, encrypted, caps);
+}
+
+// TODO(RIALTO-127): Remove
 MediaKeyErrorStatus CdmService::decrypt(int32_t keySessionId, GstBuffer *encrypted, GstBuffer *subSample,
                                         const uint32_t subSampleCount, GstBuffer *IV, GstBuffer *keyId,
                                         uint32_t initWithLast15, GstCaps *caps)

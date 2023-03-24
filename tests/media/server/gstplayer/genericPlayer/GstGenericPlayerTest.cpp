@@ -74,6 +74,15 @@ TEST_F(GstGenericPlayerTest, shouldRemoveSource)
     m_sut->removeSource(MediaSourceType::AUDIO);
 }
 
+TEST_F(GstGenericPlayerTest, shouldAllSourcesAttached)
+{
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(m_taskFactoryMock, createFinishSetupSource(_, _)).WillOnce(Return(ByMove(std::move(task))));
+
+    m_sut->allSourcesAttached();
+}
+
 TEST_F(GstGenericPlayerTest, shouldPlay)
 {
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};

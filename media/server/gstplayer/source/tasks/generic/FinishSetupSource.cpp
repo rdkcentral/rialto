@@ -89,6 +89,14 @@ FinishSetupSource::~FinishSetupSource()
 void FinishSetupSource::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing FinishSetupSource");
+    m_context.wereAllSourcesAttached = true;
+
+    if (!m_context.source)
+    {
+        RIALTO_SERVER_LOG_DEBUG("Source is not ready");
+        return;
+    }
+
     GstAppSrcCallbacks callbacks = {appSrcNeedData, appSrcEnoughData, appSrcSeekData, {nullptr}};
 
     auto elem = m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO);

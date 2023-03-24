@@ -132,11 +132,10 @@ MediaPipelineServerInternal::MediaPipelineServerInternal(
     const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
     std::shared_ptr<common::ITimerFactory> timerFactory, std::unique_ptr<IDataReaderFactory> &&dataReaderFactory,
     std::unique_ptr<IActiveRequests> &&activeRequests, IDecryptionService &decryptionService)
-    : m_mediaPipelineClient(client), m_kGstPlayerFactory(gstPlayerFactory),
-      m_kVideoRequirements(videoRequirements), m_sessionId{sessionId}, m_shmBuffer{shmBuffer},
-      m_dataReaderFactory{std::move(dataReaderFactory)}, m_timerFactory{timerFactory},
-      m_activeRequests{std::move(activeRequests)}, m_decryptionService{decryptionService}, m_currentPlaybackState{
-                                                                                               PlaybackState::UNKNOWN}
+    : m_mediaPipelineClient(client), m_kGstPlayerFactory(gstPlayerFactory), m_kVideoRequirements(videoRequirements),
+      m_sessionId{sessionId}, m_shmBuffer{shmBuffer}, m_dataReaderFactory{std::move(dataReaderFactory)},
+      m_timerFactory{timerFactory}, m_activeRequests{std::move(activeRequests)}, m_decryptionService{decryptionService},
+      m_currentPlaybackState{PlaybackState::UNKNOWN}, m_wasAllSourcesAttachedCalled{false}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
@@ -297,6 +296,36 @@ bool MediaPipelineServerInternal::removeSourceInternal(int32_t id)
 
     m_gstPlayer->removeSource(sourceIter->first);
     m_attachedSources.erase(sourceIter);
+    return true;
+}
+
+bool MediaPipelineServerInternal::allSourcesAttached()
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = allSourcesAttachedInternal(); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::allSourcesAttachedInternal()
+{
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to notify all sources attached - Gstreamer player has not been loaded");
+        return false;
+    }
+
+    if (m_wasAllSourcesAttachedCalled)
+    {
+        RIALTO_SERVER_LOG_WARN("Failed to notify all sources attached - It was already called");
+        return false;
+    }
+
+    m_gstPlayer->allSourcesAttached();
+    m_wasAllSourcesAttachedCalled = true;
     return true;
 }
 

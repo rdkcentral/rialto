@@ -458,6 +458,13 @@ public:
     {
         return gst_audio_channel_get_fallback_mask(channels);
     }
+
+    void gstStructureSet(GstStructure *structure, const gchar *firstname, ...) const override;
+
+    void gstMessageParseError(GstMessage *message, GError **gerror, gchar **debug) const override
+    {
+        return gst_message_parse_error(message, gerror, debug);
+    }
 };
 
 }; // namespace firebolt::rialto::server

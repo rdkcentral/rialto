@@ -211,6 +211,30 @@ MediaKeyErrorStatus OcdmSession::update(const uint8_t response[], uint32_t respo
     return convertOpenCdmError(status);
 }
 
+MediaKeyErrorStatus OcdmSession::decryptBuffer(GstBuffer *encrypted, GstCaps *caps)
+{
+    if (!m_session)
+    {
+        RIALTO_SERVER_LOG_ERROR("Session does not exist");
+        return MediaKeyErrorStatus::FAIL;
+    }
+
+#ifdef RIALTO_ENABLE_DECRYPT_BUFFER
+    OpenCDMError status = opencdm_gstreamer_session_decrypt_buffer(m_session, encrypted, caps);
+
+    RIALTO_SERVER_LOG_INFO("opencdm_gstreamer_session_decrypt_buffer returned with status %s",
+                           openCdmErrorToString(status).c_str());
+
+    return convertOpenCdmError(status);
+#else
+    // TODO(RIALTO-127): Remove
+    RIALTO_SERVER_LOG_ERROR("opencdm_gstreamer_session_decrypt_buffer not supported");
+
+    return MediaKeyErrorStatus::FAIL;
+#endif
+}
+
+// TODO(RIALTO-127): Remove
 MediaKeyErrorStatus OcdmSession::decrypt(GstBuffer *encrypted, GstBuffer *subSample, const uint32_t subSampleCount,
                                          GstBuffer *IV, GstBuffer *keyId, uint32_t initWithLast15, GstCaps *caps)
 {
@@ -232,7 +256,8 @@ MediaKeyErrorStatus OcdmSession::decrypt(GstBuffer *encrypted, GstBuffer *subSam
                                                    initWithLast15);
     }
 
-    RIALTO_SERVER_LOG_INFO("opencdm_session_decrypt returned with status %s", openCdmErrorToString(status).c_str());
+    RIALTO_SERVER_LOG_INFO("opencdm_gstreamer_session_decrypt returned with status %s",
+                           openCdmErrorToString(status).c_str());
 
     return convertOpenCdmError(status);
 }
