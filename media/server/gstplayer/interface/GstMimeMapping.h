@@ -20,56 +20,55 @@
 #ifndef FIREBOLT_RIALTO_SERVER_GST_MIME_MAPPING_H_
 #define FIREBOLT_RIALTO_SERVER_GST_MIME_MAPPING_H_
 
+#include <IMediaPipeline.h>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
-#include <string>
 #include <vector>
-#include <IMediaPipeline.h>
 
-namespace firebolt::rialto::server 
+namespace firebolt::rialto::server
 {
 
 /**
  * @brief Converts MIME types to simple caps.
- * 
+ *
  * @param[in] m_gstWrapper        : Member variable that is a shared pointer to an object of type IGstWrapper
  * @param[in] m_attachedSource    : A const reference to an object of type MediaSource
- * 
- * @retval the pointer to the GstCaps object, which represents the simple caps for the given MIME type. If MIME type is not found, an empty GstCaps object is returned
+ *
+ * @retval the pointer to the GstCaps object, which represents the simple caps for the given MIME type. If MIME type is
+ * not found, an empty GstCaps object is returned
  */
 
-inline GstCaps *createSimpleCapsFromMimeType(
-    std::shared_ptr<IGstWrapper> m_gstWrapper,
-    const IMediaPipeline::MediaSource &m_attachedSource)
+inline GstCaps *createSimpleCapsFromMimeType(std::shared_ptr<IGstWrapper> m_gstWrapper,
+                                             const IMediaPipeline::MediaSource &m_attachedSource)
+{
+    static const std::unordered_map<std::string, std::string> mimeToMediaType =
+        {{"video/h264", "video/x-h264"},   {"video/h265", "video/x-h265"},  {"video/x-av1", "video/x-av1"},
+         {"video/x-vp9", "video/x-vp9"},   {"audio/mp4", "audio/mpeg"},     {"audio/aac", "audio/mpeg"},
+         {"audio/x-eac3", "audio/x-eac3"}, {"audio/x-opus", "audio/x-opus"}};
+
+    auto mimeToMediaTypeIt = mimeToMediaType.find(m_attachedSource.getMimeType());
+    if (mimeToMediaTypeIt != mimeToMediaType.end())
     {
-        static const std::unordered_map<std::string, std::string> mimeToMediaType =
-            {{"video/h264", "video/x-h264"},   {"video/h265", "video/x-h265"},  {"video/x-av1", "video/x-av1"},
-             {"video/x-vp9", "video/x-vp9"},   {"audio/mp4", "audio/mpeg"},     {"audio/aac", "audio/mpeg"},
-             {"audio/x-eac3", "audio/x-eac3"}, {"audio/x-opus", "audio/x-opus"}};
-
-        auto mimeToMediaTypeIt = mimeToMediaType.find(m_attachedSource.getMimeType());
-        if (mimeToMediaTypeIt != mimeToMediaType.end())
-        {
-            return m_gstWrapper->gstCapsNewEmptySimple(mimeToMediaTypeIt->second.c_str());
-        }
-
-        return m_gstWrapper->gstCapsNewEmpty();
+        return m_gstWrapper->gstCapsNewEmptySimple(mimeToMediaTypeIt->second.c_str());
     }
+
+    return m_gstWrapper->gstCapsNewEmpty();
+}
 
 /**
  * @brief Converts simple caps to MIME types.
- * 
+ *
  * @param[in] supportedCaps    : A const reference to a vector of pointers to GstCaps objects representing the supported caps
  * @param[in] m_gstWrapper     : Member variable that is a shared pointer to an object of type IGstWrapper
- * 
+ *
  * @retval an unordered set of strings representing the supported MIME types
  */
 
-inline std::unordered_set<std::string> convertFromCapsVectorToMimeSet(
-    const std::vector<GstCaps *> &supportedCaps, 
-    std::shared_ptr<IGstWrapper> m_gstWrapper)
+inline std::unordered_set<std::string> convertFromCapsVectorToMimeSet(const std::vector<GstCaps *> &supportedCaps,
+                                                                      std::shared_ptr<IGstWrapper> m_gstWrapper)
 {
-std::vector<std::pair<GstCaps *, std::vector<std::string>>> capsToMimeVec =
+    std::vector<std::pair<GstCaps *, std::vector<std::string>>> capsToMimeVec =
         {{m_gstWrapper->gstCapsFromString("audio/mpeg, mpegversion=(int)4"), {"audio/mp4", "audio/aac", "audio/x-eac3"}},
          {m_gstWrapper->gstCapsFromString("audio/x-eac3"), {"audio/x-eac3"}},
          {m_gstWrapper->gstCapsFromString("audio/x-opus"), {"audio/x-opus"}},
@@ -107,5 +106,4 @@ std::vector<std::pair<GstCaps *, std::vector<std::string>>> capsToMimeVec =
 
 }; // namespace firebolt::rialto::server
 
-
-#endif //FIREBOLT_RIALTO_SERVER_GST_MIME_MAPPING_H_
+#endif // FIREBOLT_RIALTO_SERVER_GST_MIME_MAPPING_H_

@@ -22,8 +22,8 @@
 #include "IGstWrapper.h"
 #include "IMediaPipeline.h"
 #include "RialtoServerLogging.h"
-#include <unordered_map>
 #include <GstMimeMapping.h>
+#include <unordered_map>
 
 namespace firebolt::rialto::server::tasks::generic
 {
@@ -33,7 +33,6 @@ class MediaSourceCapsBuilder
 {
 
 public:
-    
     MediaSourceCapsBuilder(std::shared_ptr<IGstWrapper> gstWrapper, std::shared_ptr<IGlibWrapper> glibWrapper,
                            const firebolt::rialto::IMediaPipeline::MediaSource &source)
         : m_gstWrapper(gstWrapper), m_glibWrapper(glibWrapper), m_attachedSource(source)
@@ -42,7 +41,6 @@ public:
     virtual GstCaps *buildCaps() { return buildCommonCaps(); }
 
 protected:
-
     std::shared_ptr<IGstWrapper> m_gstWrapper;
     std::shared_ptr<IGlibWrapper> m_glibWrapper;
     const IMediaPipeline::MediaSource &m_attachedSource;
@@ -50,7 +48,7 @@ protected:
     GstCaps *buildCommonCaps()
     {
         GstCaps *caps = firebolt::rialto::server::createSimpleCapsFromMimeType(m_gstWrapper, m_attachedSource);
-        
+
         addAlignmentToCaps(caps);
         addCodecDataToCaps(caps);
         addStreamFormatToCaps(caps);
@@ -95,7 +93,6 @@ protected:
             m_gstWrapper->gstCapsSetSimple(caps, "stream-format", G_TYPE_STRING, formatMapIt->second.c_str(), nullptr);
         }
     }
-    
 };
 
 class MediaSourceAudioCapsBuilder : public MediaSourceCapsBuilder

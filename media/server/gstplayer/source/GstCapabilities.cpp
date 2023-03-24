@@ -21,9 +21,9 @@
 
 #include "RialtoServerLogging.h"
 #include <GstCapabilities.h>
+#include <GstMimeMapping.h>
 #include <algorithm>
 #include <unordered_set>
-#include <GstMimeMapping.h>
 
 namespace firebolt::rialto::server
 {
@@ -233,6 +233,6 @@ bool GstCapabilities::isCapsInVector(const std::vector<GstCaps *> &capsVector, G
                         { return m_gstWrapper->gstCapsIsStrictlyEqual(caps, comparedCaps); }) != capsVector.end();
 }
 
-}
+} // namespace firebolt::rialto::server
 
 // namespace firebolt::rialto::server
