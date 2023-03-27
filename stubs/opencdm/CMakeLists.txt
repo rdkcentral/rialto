@@ -49,6 +49,7 @@ add_library(
   open_cdm.cpp
   open_cdm_ext.cpp
   open_cdm_adapter.cpp
+  RialtoGStreamerEMEProtectionMetadata.cpp
 
         )
 add_dependencies( ocdm ThunderClientLibraries )
@@ -66,6 +67,13 @@ configure_package_config_file(ocdm-config.cmake.in
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/ocdm-config.cmake"
   DESTINATION ${CMAKE_MODULE_PATH}
   COMPONENT development
+)
+
+target_include_directories(
+      ocdm
+
+      PRIVATE
+      ${GStreamerApp_INCLUDE_DIRS}
 )
 
 install(

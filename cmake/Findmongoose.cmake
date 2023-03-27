@@ -17,7 +17,28 @@
 # limitations under the License.
 #
 
-if( NATIVE_BUILD )
+if( NOT NATIVE_BUILD )
+  find_path( MONGOOSE_INCLUDE_DIR NAMES mongoose.h )
+  find_library( MONGOOSE_LIBRARY NAMES libmongoose.so )
+
+  include( FindPackageHandleStandardArgs )
+
+  find_package_handle_standard_args( MONGOOSE DEFAULT_MSG MONGOOSE_LIBRARY MONGOOSE_INCLUDE_DIR )
+
+  mark_as_advanced( MONGOOSE_INCLUDE_DIR MONGOOSE_LIBRARY )
+
+  if( MONGOOSE_FOUND )
+       set( MONGOOSE_LIBRARY ${RIALTO_LIBRARY} )
+       set( MONGOOSE_INCLUDE_DIR ${RIALTO_INCLUDE_DIR} )
+   endif()
+
+  if( MONGOOSE_FOUND AND NOT TARGET mongoose )
+       add_library( mongoose SHARED IMPORTED )
+       set_target_properties( mongoose PROPERTIES
+               IMPORTED_LOCATION "${MONGOOSE_LIBRARY}"
+               INTERFACE_INCLUDE_DIRECTORIES "${MONGOOSE_INCLUDE_DIR}" )
+  endif()
+else()
   include(ExternalProject)
   set_property(DIRECTORY PROPERTY EP_BASE "${CMAKE_CURRENT_BINARY_DIR}/third-party")
   ExternalProject_Add(
@@ -26,7 +47,8 @@ if( NATIVE_BUILD )
     BUILD_IN_SOURCE 1
     CONFIGURE_COMMAND ""
     BUILD_COMMAND  COPT="-Wl,--no-as-needed" make linux
-    INSTALL_COMMAND ""
+    INSTALL_COMMAND ${CMAKE_COMMAND} -E rename ${CMAKE_CURRENT_SOURCE_DIR}/third-party/Source/mongoose-source/_mongoose.so
+    ${CMAKE_CURRENT_SOURCE_DIR}/third-party/Source/mongoose-source/libmongoose.so
   )
 
   ExternalProject_Get_Property( mongoose-source SOURCE_DIR )
@@ -34,16 +56,12 @@ if( NATIVE_BUILD )
   add_library(mongoose SHARED IMPORTED)
   set_target_properties(mongoose
   PROPERTIES
-    IMPORTED_LOCATION  "${SOURCE_DIR}/_mongoose.so"
+    IMPORTED_LOCATION  "${SOURCE_DIR}/libmongoose.so"
     INTERFACE_INCLUDE_DIRECTORIES "${SOURCE_DIR}"
+    IMPORTED_NO_SONAME TRUE
   )
 
   add_dependencies( mongoose mongoose-source )
-
-  install (
-    FILES  ${SOURCE_DIR}/_mongoose.so
-    TYPE LIB
-  )
 
   unset( SOURCE_DIR )
 endif()
