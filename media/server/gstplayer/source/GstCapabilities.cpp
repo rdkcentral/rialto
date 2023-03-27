@@ -19,8 +19,9 @@
 
 #include <stdexcept>
 
+#include "GstCapabilities.h"
+#include "GstMimeMapping.h"
 #include "RialtoServerLogging.h"
-#include <GstCapabilities.h>
 #include <algorithm>
 #include <unordered_set>
 
@@ -117,7 +118,7 @@ void GstCapabilities::fillSupportedMimeTypes()
         return;
     }
 
-    m_supportedMimeTypes = convertFromCapsVectorToMimeSet(supportedCaps);
+    m_supportedMimeTypes = firebolt::rialto::server::convertFromCapsVectorToMimeSet(supportedCaps, m_gstWrapper);
 
     for (GstCaps *caps : supportedCaps)
     {
@@ -232,42 +233,6 @@ bool GstCapabilities::isCapsInVector(const std::vector<GstCaps *> &capsVector, G
                         { return m_gstWrapper->gstCapsIsStrictlyEqual(caps, comparedCaps); }) != capsVector.end();
 }
 
-std::unordered_set<std::string> GstCapabilities::convertFromCapsVectorToMimeSet(std::vector<GstCaps *> &supportedCaps)
-{
-    std::vector<std::pair<GstCaps *, std::vector<std::string>>> capsToMimeVec =
-        {{m_gstWrapper->gstCapsFromString("audio/mpeg, mpegversion=(int)4"), {"audio/mp4", "audio/aac", "audio/x-eac3"}},
-         {m_gstWrapper->gstCapsFromString("audio/x-eac3"), {"audio/x-eac3"}},
-         {m_gstWrapper->gstCapsFromString("audio/x-opus"), {"audio/x-opus"}},
-         {m_gstWrapper->gstCapsFromString("audio/x-opus, channel-mapping-family=(int)0"), {"audio/x-opus"}},
-         {m_gstWrapper->gstCapsFromString("video/x-av1"), {"video/x-av1"}},
-         {m_gstWrapper->gstCapsFromString("video/x-h264"), {"video/h264"}},
-         {m_gstWrapper->gstCapsFromString("video/x-h265"), {"video/h265"}},
-         {m_gstWrapper->gstCapsFromString("video/x-vp9"), {"video/x-vp9"}},
-         {m_gstWrapper->gstCapsFromString("video/x-h264(memory:DMABuf)"), {"video/h264"}},
-         {m_gstWrapper->gstCapsFromString("video/x-h265(memory:DMABuf)"), {"video/h265"}},
-         {m_gstWrapper->gstCapsFromString("video/x-av1(memory:DMABuf)"), {"video/x-av1"}},
-         {m_gstWrapper->gstCapsFromString("video/x-vp9(memory:DMABuf)"), {"video/x-vp9"}}};
+} // namespace firebolt::rialto::server
 
-    std::unordered_set<std::string> supportedMimes;
-
-    for (GstCaps *caps : supportedCaps)
-    {
-        for (const auto &capsToMime : capsToMimeVec)
-        {
-            if (m_gstWrapper->gstCapsIsSubset(capsToMime.first, caps))
-            {
-                supportedMimes.insert(capsToMime.second.begin(), capsToMime.second.end());
-            }
-        }
-    }
-
-    for (auto &capsToMime : capsToMimeVec)
-    {
-        if (capsToMime.first)
-            m_gstWrapper->gstCapsUnref(capsToMime.first);
-    }
-
-    return supportedMimes;
-}
-
-}; // namespace firebolt::rialto::server
+// namespace firebolt::rialto::server
