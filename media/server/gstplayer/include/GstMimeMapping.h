@@ -20,8 +20,9 @@
 #ifndef FIREBOLT_RIALTO_SERVER_GST_MIME_MAPPING_H_
 #define FIREBOLT_RIALTO_SERVER_GST_MIME_MAPPING_H_
 
-#include <GstCapabilities.h>
-#include <IMediaPipeline.h>
+#include "GstCapabilities.h"
+#include "IGstWrapper.h"
+#include "IMediaPipeline.h"
 #include <memory>
 #include <string>
 #include <unordered_map>
