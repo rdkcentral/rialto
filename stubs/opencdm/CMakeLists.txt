@@ -32,14 +32,18 @@ ExternalProject_Add(
   ThunderClientLibraries
   GIT_REPOSITORY https://github.com/rdkcentral/ThunderClientLibraries.git
   GIT_TAG ${THUNDER_CLIENT_TAG}
+  PREFIX "git"
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
   INSTALL_COMMAND ${CMAKE_COMMAND} -E copy 
-  ${CMAKE_CURRENT_SOURCE_DIR}/ThunderClientLibraries-prefix/src/ThunderClientLibraries/Source/ocdm/open_cdm.h 
-  ${CMAKE_CURRENT_SOURCE_DIR}/ThunderClientLibraries-prefix/src/ThunderClientLibraries/Source/ocdm/open_cdm_ext.h 
-  ${CMAKE_CURRENT_SOURCE_DIR}/ThunderClientLibraries-prefix/src/ThunderClientLibraries/Source/ocdm/adapter/open_cdm_adapter.h 
+  ${CMAKE_CURRENT_SOURCE_DIR}/git/src/ThunderClientLibraries/Source/ocdm/open_cdm.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/git/src/ThunderClientLibraries/Source/ocdm/open_cdm_ext.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/git/src/ThunderClientLibraries/Source/ocdm/adapter/open_cdm_adapter.h
   ${CMAKE_CURRENT_SOURCE_DIR}/
 )
+
+find_package( PkgConfig REQUIRED )
+pkg_check_modules( GStreamerApp REQUIRED IMPORTED_TARGET gstreamer-1.0 )
 
 add_library(
   ocdm
@@ -57,14 +61,14 @@ add_library(ocdm::ocdm ALIAS ocdm)
 
 include(CMakePackageConfigHelpers)
 set(OCDM_INCLUDE_INSTALL_DIR "${PROJECT_BINARY_DIR}/stubs" )
-set(PROJECT_CONFIG_FILE         "${PROJECT_BINARY_DIR}/ocdm-config.cmake")
+set(PROJECT_CONFIG_FILE "${PROJECT_BINARY_DIR}/ocdm-config.cmake")
 
 configure_package_config_file(ocdm-config.cmake.in
   ${CMAKE_CURRENT_BINARY_DIR}/ocdm-config.cmake
   INSTALL_DESTINATION ${CMAKE_MODULE_PATH}
   PATH_VARS OCDM_INCLUDE_INSTALL_DIR)
 
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/ocdm-config.cmake"
+install(FILES "${PROJECT_CONFIG_FILE}"
   DESTINATION ${CMAKE_MODULE_PATH}
   COMPONENT development
 )
@@ -74,12 +78,4 @@ target_include_directories(
 
       PRIVATE
       ${GStreamerApp_INCLUDE_DIRS}
-)
-
-install(
-  TARGETS ocdm
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
-  RUNTIME DESTINATION bin
-  INCLUDES DESTINATION include
 )

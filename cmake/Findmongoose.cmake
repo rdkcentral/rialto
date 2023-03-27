@@ -21,6 +21,9 @@ if( NOT NATIVE_BUILD )
   find_path( MONGOOSE_INCLUDE_DIR NAMES mongoose.h )
   find_library( MONGOOSE_LIBRARY NAMES libmongoose.so )
 
+#  message( "MONGOOSE_INCLUDE_DIR include dir = ${MONGOOSE_INCLUDE_DIR}" )
+#  message( "MONGOOSE_LIBRARY lib = ${MONGOOSE_LIBRARY}" )
+
   include( FindPackageHandleStandardArgs )
 
   find_package_handle_standard_args( MONGOOSE DEFAULT_MSG MONGOOSE_LIBRARY MONGOOSE_INCLUDE_DIR )

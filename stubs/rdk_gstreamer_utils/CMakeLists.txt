@@ -40,6 +40,9 @@ ExternalProject_Add(
   ${CMAKE_CURRENT_SOURCE_DIR}/
 )
 
+find_package( PkgConfig REQUIRED )
+pkg_check_modules( GStreamerApp REQUIRED IMPORTED_TARGET gstreamer-1.0 )
+
 add_library(
     rdkgstreamerutils
 

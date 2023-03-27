@@ -22,11 +22,7 @@ set( CMAKE_CXX_STANDARD 14 )
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
 include( CheckCXXCompilerFlag )
 
-if( NATIVE_BUILD )
-##todo:
-# let Findmongoose also search mongoose in not native projects
-        find_package( mongoose REQUIRED )
-endif()
+find_package( mongoose REQUIRED )
 
 add_subdirectory(common)
 add_subdirectory(ipc)
@@ -58,7 +54,6 @@ target_include_directories (
         $<TARGET_PROPERTY:RialtoServerManagerPublic,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoCommon,INTERFACE_INCLUDE_DIRECTORIES>
         mongoose
-        #$ENV{RDK_PROJECT_ROOT_PATH}/opensource/include/mongoose
 )
 
 target_link_libraries (
