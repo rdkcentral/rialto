@@ -103,14 +103,25 @@ std::chrono::milliseconds getStartupTimeout()
 
 namespace rialto::servermanager::common
 {
+SessionServerApp::SessionServerApp(SessionServerAppManager &sessionServerAppManager,
+                                   const std::list<std::string> &environmentVariables)
+    : m_kAppId{generateAppId()}, m_socks{-1, -1}, m_sessionServerAppManager{sessionServerAppManager}, m_pid{-1},
+      m_isPreloaded{true}
+{
+    RIALTO_SERVER_MANAGER_LOG_INFO("Creating preloaded SessionServerApp with appId: %d", m_kAppId);
+    std::transform(environmentVariables.begin(), environmentVariables.end(), std::back_inserter(m_environmentVariables),
+                   [](const std::string &str) { return strdup(str.c_str()); });
+    m_environmentVariables.push_back(nullptr);
+}
+
 SessionServerApp::SessionServerApp(const std::string &appName,
                                    const firebolt::rialto::common::SessionServerState &initialState,
                                    const firebolt::rialto::common::AppConfig &appConfig,
                                    SessionServerAppManager &sessionServerAppManager,
                                    const std::list<std::string> &environmentVariables)
-    : m_kAppId{generateAppId()}, m_appName{appName}, m_kInitialState{initialState},
-      m_kSessionManagementSocketName{getSessionManagementSocketPath(appConfig)}, m_socks{-1, -1},
-      m_sessionServerAppManager{sessionServerAppManager}, m_pid{-1}
+    : m_kAppId{generateAppId()}, m_appName{appName}, m_initialState{initialState},
+      m_sessionManagementSocketName{getSessionManagementSocketPath(appConfig)}, m_socks{-1, -1},
+      m_sessionServerAppManager{sessionServerAppManager}, m_pid{-1}, m_isPreloaded{false}
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("Creating SessionServerApp for app: %s with appId: %d", appName.c_str(), m_kAppId);
     std::transform(environmentVariables.begin(), environmentVariables.end(), std::back_inserter(m_environmentVariables),
@@ -158,14 +169,29 @@ bool SessionServerApp::launch()
     return result;
 }
 
+bool SessionServerApp::isPreloaded() const
+{
+    return m_isPreloaded;
+}
+
+void SessionServerApp::configure(const std::string &appName,
+                                 const firebolt::rialto::common::SessionServerState &initialState,
+                                 const firebolt::rialto::common::AppConfig &appConfig)
+{
+    m_appName = appName;
+    m_initialState = initialState;
+    m_sessionManagementSocketName = getSessionManagementSocketPath(appConfig);
+    m_isPreloaded = false;
+}
+
 std::string SessionServerApp::getSessionManagementSocketName() const
 {
-    return m_kSessionManagementSocketName;
+    return m_sessionManagementSocketName;
 }
 
 firebolt::rialto::common::SessionServerState SessionServerApp::getInitialState() const
 {
-    return m_kInitialState;
+    return m_initialState;
 }
 
 int SessionServerApp::getAppId() const

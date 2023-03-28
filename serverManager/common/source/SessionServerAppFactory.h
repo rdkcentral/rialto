@@ -37,6 +37,7 @@ public:
                                               const firebolt::rialto::common::SessionServerState &initialState,
                                               const firebolt::rialto::common::AppConfig &appConfig,
                                               SessionServerAppManager &sessionServerAppManager) const override;
+    std::unique_ptr<ISessionServerApp> create(SessionServerAppManager &sessionServerAppManager) const override;
 
 private:
     const std::list<std::string> m_kEnvironmentVariables;

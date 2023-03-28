@@ -37,6 +37,9 @@ public:
     ISessionServerApp &operator=(ISessionServerApp &&) = delete;
 
     virtual bool launch() = 0;
+    virtual bool isPreloaded() const = 0;
+    virtual void configure(const std::string &appName, const firebolt::rialto::common::SessionServerState &initialState,
+                           const firebolt::rialto::common::AppConfig &appConfig) = 0;
     virtual std::string getSessionManagementSocketName() const = 0;
     virtual firebolt::rialto::common::SessionServerState getInitialState() const = 0;
     virtual int getAppId() const = 0;

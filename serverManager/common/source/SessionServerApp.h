@@ -37,6 +37,8 @@ namespace rialto::servermanager::common
 class SessionServerApp : public ISessionServerApp
 {
 public:
+    SessionServerApp(SessionServerAppManager &sessionServerAppManager,
+                     const std::list<std::string> &environmentVariables);
     SessionServerApp(const std::string &appName, const firebolt::rialto::common::SessionServerState &initialState,
                      const firebolt::rialto::common::AppConfig &appConfig,
                      SessionServerAppManager &sessionServerAppManager,
@@ -44,6 +46,9 @@ public:
     virtual ~SessionServerApp();
 
     bool launch() override;
+    bool isPreloaded() const override;
+    void configure(const std::string &appName, const firebolt::rialto::common::SessionServerState &initialState,
+                   const firebolt::rialto::common::AppConfig &appConfig) override;
     std::string getSessionManagementSocketName() const override;
     firebolt::rialto::common::SessionServerState getInitialState() const override;
     int getAppId() const override;
@@ -63,11 +68,12 @@ private:
 private:
     const int m_kAppId;
     std::string m_appName;
-    const firebolt::rialto::common::SessionServerState m_kInitialState;
-    const std::string m_kSessionManagementSocketName;
+    firebolt::rialto::common::SessionServerState m_initialState;
+    std::string m_sessionManagementSocketName;
     std::array<int, 2> m_socks;
     SessionServerAppManager &m_sessionServerAppManager;
     pid_t m_pid;
+    bool m_isPreloaded;
     std::vector<char *> m_environmentVariables;
     std::mutex m_timerMutex;
     std::unique_ptr<firebolt::rialto::common::ITimer> m_startupTimer;

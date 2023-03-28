@@ -36,4 +36,9 @@ std::unique_ptr<ISessionServerApp> SessionServerAppFactory::create(
     return std::make_unique<SessionServerApp>(appName, initialState, appConfig, sessionServerAppManager,
                                               m_kEnvironmentVariables);
 }
+
+std::unique_ptr<ISessionServerApp> SessionServerAppFactory::create(SessionServerAppManager &sessionServerAppManager) const
+{
+    return std::make_unique<SessionServerApp>(sessionServerAppManager, m_kEnvironmentVariables);
+}
 } // namespace rialto::servermanager::common
