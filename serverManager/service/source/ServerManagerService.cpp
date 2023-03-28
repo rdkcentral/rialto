@@ -26,6 +26,11 @@ namespace rialto::servermanager::service
 ServerManagerService::ServerManagerService(std::unique_ptr<IServiceContext> &&context) : m_kContext{std::move(context)}
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("RialtoServerManager is starting...");
+
+#ifdef RIALTO_SERVER_LOG_DEBUG_ENABLED
+    RIALTO_SERVER_MANAGER_LOG_DEBUG("TEST");
+#endif
+
 }
 
 ServerManagerService::~ServerManagerService()

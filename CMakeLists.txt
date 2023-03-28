@@ -26,6 +26,10 @@ endif()
 
 add_compile_options(-Wall -Werror)
 
+if ( RIALTO_SERVER_LOG_DEBUG_ENABLED )
+    add_compile_definitions( RIALTO_SERVER_LOG_DEBUG_ENABLED )
+endif()
+
 if ( RIALTO_ENABLE_DECRYPT_BUFFER )
     add_compile_definitions( RIALTO_ENABLE_DECRYPT_BUFFER )
 endif()
@@ -52,6 +56,7 @@ find_package( Protobuf REQUIRED )
 # Options to disable building some of the components
 option(ENABLE_SERVER "Enable building RialtoServer" ON)
 option(ENABLE_SERVER_MANAGER "Enable building RialtoServerManagerSim" ON)
+option(RIALTO_SERVER_LOG_DEBUG_ENABLED "Enable debug logging  for RialtoServer" ON)
 
 # Include the new IPC library components
 add_subdirectory( ipc )

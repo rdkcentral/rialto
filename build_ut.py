@@ -158,7 +158,7 @@ def getSuitesToRun (suitesRequested):
 # Build the target executables
 def buildTargets (suites, outputDir, resultsFile, debug, coverage):
     # Run cmake
-    cmakeCmd = ["cmake", "-B", outputDir , "-DCMAKE_BUILD_FLAG=UnitTests", "-DRIALTO_ENABLE_DECRYPT_BUFFER=1"]
+    cmakeCmd = ["cmake", "-B", outputDir , "-DCMAKE_BUILD_FLAG=UnitTests", "-DRIALTO_ENABLE_DECRYPT_BUFFER=1", "-DRIALTO_SERVER_LOG_DEBUG_ENABLED=1"]
     if debug:
         cmakeCmd.append("-DCMAKE_BUILD_TYPE=Debug")
     if coverage:
