@@ -37,7 +37,7 @@ namespace rialto::servermanager::common
 class SessionServerApp : public ISessionServerApp
 {
 public:
-    SessionServerApp(const std::string &appId, const firebolt::rialto::common::SessionServerState &initialState,
+    SessionServerApp(const std::string &appName, const firebolt::rialto::common::SessionServerState &initialState,
                      const firebolt::rialto::common::AppConfig &appConfig,
                      SessionServerAppManager &sessionServerAppManager,
                      const std::list<std::string> &environmentVariables);
@@ -46,6 +46,8 @@ public:
     bool launch() override;
     std::string getSessionManagementSocketName() const override;
     firebolt::rialto::common::SessionServerState getInitialState() const override;
+    int getAppId() const override;
+    const std::string &getAppName() const override;
     int getAppManagementSocketName() const override;
     int getMaxPlaybackSessions() const override;
     int getMaxWebAudioPlayers() const override;
@@ -59,7 +61,8 @@ private:
     void cancelStartupTimerInternal(); // to avoid calling virtual method in destructor
 
 private:
-    const std::string m_kAppId;
+    const int m_kAppId;
+    std::string m_appName;
     const firebolt::rialto::common::SessionServerState m_kInitialState;
     const std::string m_kSessionManagementSocketName;
     std::array<int, 2> m_socks;

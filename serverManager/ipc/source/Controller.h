@@ -48,19 +48,18 @@ public:
     Controller &operator=(const Controller &) = delete;
     Controller &operator=(Controller &&) = delete;
 
-    bool createClient(const std::string &appId, int appMgmtSocket) override;
-    void removeClient(const std::string &appId) override;
-    bool performSetConfiguration(const std::string &appId,
-                                 const firebolt::rialto::common::SessionServerState &initialState,
+    bool createClient(int appId, int appMgmtSocket) override;
+    void removeClient(int appId) override;
+    bool performSetConfiguration(int appId, const firebolt::rialto::common::SessionServerState &initialState,
                                  const std::string &socketName,
                                  const firebolt::rialto::common::MaxResourceCapabilitites &maxResource) override;
-    bool performSetState(const std::string &appId, const firebolt::rialto::common::SessionServerState &state) override;
+    bool performSetState(int appId, const firebolt::rialto::common::SessionServerState &state) override;
     bool setLogLevels(const service::LoggingLevels &logLevels) const override;
 
 private:
     mutable std::mutex m_clientMutex;
     std::unique_ptr<common::ISessionServerAppManager> &m_sessionServerAppManager;
-    std::map<std::string, std::unique_ptr<Client>> m_clients;
+    std::map<int, std::unique_ptr<Client>> m_clients;
 };
 } // namespace rialto::servermanager::ipc
 

@@ -35,6 +35,8 @@ public:
     MOCK_METHOD(bool, launch, (), (override));
     MOCK_METHOD(std::string, getSessionManagementSocketName, (), (const, override));
     MOCK_METHOD(firebolt::rialto::common::SessionServerState, getInitialState, (), (const, override));
+    MOCK_METHOD(int, getAppId, (), (const, override));
+    MOCK_METHOD(const std::string &, getAppName, (), (const, override));
     MOCK_METHOD(int, getAppManagementSocketName, (), (const, override));
     MOCK_METHOD(int, getMaxPlaybackSessions, (), (const, override));
     MOCK_METHOD(int, getMaxWebAudioPlayers, (), (const, override));

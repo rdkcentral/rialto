@@ -38,13 +38,12 @@ public:
     IController &operator=(const IController &) = delete;
     IController &operator=(IController &&) = delete;
 
-    virtual bool createClient(const std::string &appId, int appMgmtSocket) = 0;
-    virtual void removeClient(const std::string &appId) = 0;
-    virtual bool performSetConfiguration(const std::string &appId,
-                                         const firebolt::rialto::common::SessionServerState &initialState,
+    virtual bool createClient(int appId, int appMgmtSocket) = 0;
+    virtual void removeClient(int appId) = 0;
+    virtual bool performSetConfiguration(int appId, const firebolt::rialto::common::SessionServerState &initialState,
                                          const std::string &socketName,
                                          const firebolt::rialto::common::MaxResourceCapabilitites &maxResource) = 0;
-    virtual bool performSetState(const std::string &appId, const firebolt::rialto::common::SessionServerState &state) = 0;
+    virtual bool performSetState(int appId, const firebolt::rialto::common::SessionServerState &state) = 0;
     virtual bool setLogLevels(const service::LoggingLevels &logLevels) const = 0;
 };
 } // namespace rialto::servermanager::ipc

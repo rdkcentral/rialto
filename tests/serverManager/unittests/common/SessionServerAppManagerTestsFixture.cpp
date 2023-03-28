@@ -28,6 +28,7 @@ using testing::_;
 using testing::ByMove;
 using testing::Invoke;
 using testing::Return;
+using testing::ReturnRef;
 using testing::StrictMock;
 
 namespace rialto::servermanager::service
@@ -44,6 +45,7 @@ bool operator==(const LoggingLevels &lhs, const LoggingLevels &rhs)
 namespace
 {
 const std::string APP_NAME{"YouTube"};
+constexpr int kAppId{3};
 const int APP_MGMT_SOCKET{0};
 const std::string SESSION_SERVER_SOCKET_NAME{getenv("RIALTO_SOCKET_PATH")};
 constexpr int MAX_SESSIONS{2};
@@ -97,14 +99,17 @@ void SessionServerAppManagerTests::sessionServerConnectWillFail(const firebolt::
     EXPECT_CALL(*m_sessionServerAppFactoryMock, create(APP_NAME, state, APP_CONFIG, _))
         .WillOnce(Return(ByMove(std::move(m_sessionServerApp))));
     EXPECT_CALL(m_sessionServerAppMock, launch()).WillOnce(Return(true));
+    EXPECT_CALL(m_sessionServerAppMock, getAppName()).WillRepeatedly(ReturnRef(APP_NAME));
     EXPECT_CALL(m_sessionServerAppMock, getAppManagementSocketName()).WillOnce(Return(APP_MGMT_SOCKET));
-    EXPECT_CALL(m_controllerMock, createClient(APP_NAME, APP_MGMT_SOCKET)).WillOnce(Return(false));
+    EXPECT_CALL(m_sessionServerAppMock, getAppId()).WillRepeatedly(Return(kAppId));
+    EXPECT_CALL(m_controllerMock, createClient(kAppId, APP_MGMT_SOCKET)).WillOnce(Return(false));
     EXPECT_CALL(m_sessionServerAppMock, kill());
 }
 
 void SessionServerAppManagerTests::sessionServerChangeStateWillFail(const firebolt::rialto::common::SessionServerState &state)
 {
-    EXPECT_CALL(m_controllerMock, performSetState(APP_NAME, state)).WillOnce(Return(false));
+    EXPECT_CALL(m_sessionServerAppMock, getAppId()).WillRepeatedly(Return(kAppId));
+    EXPECT_CALL(m_controllerMock, performSetState(kAppId, state)).WillOnce(Return(false));
 }
 
 void SessionServerAppManagerTests::sessionServerWillLaunch(const firebolt::rialto::common::SessionServerState &state)
@@ -113,13 +118,15 @@ void SessionServerAppManagerTests::sessionServerWillLaunch(const firebolt::rialt
     EXPECT_CALL(*m_sessionServerAppFactoryMock, create(APP_NAME, state, APP_CONFIG, _))
         .WillOnce(Return(ByMove(std::move(m_sessionServerApp))));
     EXPECT_CALL(m_sessionServerAppMock, launch()).WillOnce(Return(true));
+    EXPECT_CALL(m_sessionServerAppMock, getAppName()).WillRepeatedly(ReturnRef(APP_NAME));
     EXPECT_CALL(m_sessionServerAppMock, getAppManagementSocketName()).WillOnce(Return(APP_MGMT_SOCKET));
-    EXPECT_CALL(m_controllerMock, createClient(APP_NAME, APP_MGMT_SOCKET)).WillOnce(Return(true));
+    EXPECT_CALL(m_sessionServerAppMock, getAppId()).WillRepeatedly(Return(kAppId));
+    EXPECT_CALL(m_controllerMock, createClient(kAppId, APP_MGMT_SOCKET)).WillOnce(Return(true));
 }
 
 void SessionServerAppManagerTests::sessionServerWillChangeState(const firebolt::rialto::common::SessionServerState &state)
 {
-    EXPECT_CALL(m_controllerMock, performSetState(APP_NAME, state)).WillOnce(Return(true));
+    EXPECT_CALL(m_controllerMock, performSetState(kAppId, state)).WillOnce(Return(true));
 }
 
 void SessionServerAppManagerTests::sessionServerWillChangeStateToUninitialized()
@@ -131,7 +138,7 @@ void SessionServerAppManagerTests::sessionServerWillChangeStateToUninitialized()
     EXPECT_CALL(m_sessionServerAppMock, getMaxPlaybackSessions()).WillOnce(Return(MAX_SESSIONS));
     EXPECT_CALL(m_sessionServerAppMock, getMaxWebAudioPlayers()).WillOnce(Return(MAX_WEB_AUDIO_PLAYERS));
     EXPECT_CALL(m_controllerMock,
-                performSetConfiguration(APP_NAME, firebolt::rialto::common::SessionServerState::UNINITIALIZED,
+                performSetConfiguration(kAppId, firebolt::rialto::common::SessionServerState::UNINITIALIZED,
                                         SESSION_SERVER_SOCKET_NAME,
                                         MaxResourceMatcher(MAX_SESSIONS, MAX_WEB_AUDIO_PLAYERS)))
         .WillOnce(Return(true));
@@ -154,7 +161,7 @@ void SessionServerAppManagerTests::sessionServerWillFailToSetConfiguration()
     EXPECT_CALL(m_sessionServerAppMock, getMaxPlaybackSessions()).WillOnce(Return(MAX_SESSIONS));
     EXPECT_CALL(m_sessionServerAppMock, getMaxWebAudioPlayers()).WillOnce(Return(MAX_WEB_AUDIO_PLAYERS));
     EXPECT_CALL(m_controllerMock,
-                performSetConfiguration(APP_NAME, firebolt::rialto::common::SessionServerState::UNINITIALIZED,
+                performSetConfiguration(kAppId, firebolt::rialto::common::SessionServerState::UNINITIALIZED,
                                         SESSION_SERVER_SOCKET_NAME,
                                         MaxResourceMatcher(MAX_SESSIONS, MAX_WEB_AUDIO_PLAYERS)))
         .WillOnce(Return(false));
@@ -173,7 +180,7 @@ void SessionServerAppManagerTests::sessionServerWillFailToSetLogLevels()
 void SessionServerAppManagerTests::clientWillBeRemovedAfterStateChangedIndication(
     const firebolt::rialto::common::SessionServerState &state)
 {
-    EXPECT_CALL(m_controllerMock, removeClient(APP_NAME));
+    EXPECT_CALL(m_controllerMock, removeClient(kAppId));
     EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
     EXPECT_CALL(*m_stateObserver, stateChanged(APP_NAME, state));
 }
@@ -204,7 +211,7 @@ void SessionServerAppManagerTests::triggerOnSessionServerStateChanged(
     const firebolt::rialto::common::SessionServerState &newState)
 {
     EXPECT_TRUE(m_sut);
-    return m_sut->onSessionServerStateChanged(APP_NAME, newState);
+    return m_sut->onSessionServerStateChanged(kAppId, newState);
 }
 
 std::string SessionServerAppManagerTests::triggerGetAppConnectionInfo()
