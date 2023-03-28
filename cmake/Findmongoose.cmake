@@ -31,9 +31,9 @@ if( NOT NATIVE_BUILD )
   mark_as_advanced( MONGOOSE_INCLUDE_DIR MONGOOSE_LIBRARY )
 
   if( MONGOOSE_FOUND )
-       set( MONGOOSE_LIBRARY ${RIALTO_LIBRARY} )
-       set( MONGOOSE_INCLUDE_DIR ${RIALTO_INCLUDE_DIR} )
-   endif()
+       set( MONGOOSE_LIBRARIES ${MONGOOSE_LIBRARY} )
+       set( MONGOOSE_INCLUDE_DIRS ${MONGOOSE_INCLUDE_DIR} )
+  endif()
 
   if( MONGOOSE_FOUND AND NOT TARGET mongoose )
        add_library( mongoose SHARED IMPORTED )
