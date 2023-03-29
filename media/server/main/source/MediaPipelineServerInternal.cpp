@@ -261,7 +261,7 @@ bool MediaPipelineServerInternal::attachSourceInternal(const std::unique_ptr<Med
     }
     else
     {
-        RIALTO_SERVER_LOG_WARN("SourceType %s already added",
+        RIALTO_SERVER_LOG_WARN("SourceType '%s' already attached",
                                (MediaSourceType::AUDIO == source->getType() ? "AUDIO" : "VIDEO"));
         return false;
     }
