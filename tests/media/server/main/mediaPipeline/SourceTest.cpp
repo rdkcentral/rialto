@@ -148,7 +148,7 @@ TEST_F(RialtoServerMediaPipelineSourceTest, AttachRemoveAttachSourceDifferentId)
 }
 
 /**
- * Test that source id remains unchanged when source is updated only.
+ * Test that attachSource fails when the same source type is attached for a second time
  */
 TEST_F(RialtoServerMediaPipelineSourceTest, UpdateSourceIdNotChanged)
 {
@@ -160,15 +160,12 @@ TEST_F(RialtoServerMediaPipelineSourceTest, UpdateSourceIdNotChanged)
     mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_gstPlayerMock, attachSource(Ref(mediaSource)));
     EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), true);
-    std::int32_t firstSourceId{mediaSource->getId()};
 
     mediaSource->setId(-1);
 
     mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_gstPlayerMock, attachSource(Ref(mediaSource)));
-    EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), true);
-
-    EXPECT_EQ(mediaSource->getId(), firstSourceId);
+    EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), false);
 }
 
 /**
