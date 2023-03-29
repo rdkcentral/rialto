@@ -38,6 +38,7 @@ public:
                 (const std::string &appName, const firebolt::rialto::common::SessionServerState &initialState,
                  const firebolt::rialto::common::AppConfig &appConfig),
                 (override));
+    MOCK_METHOD(bool, isConnected, (), (const, override));
     MOCK_METHOD(std::string, getSessionManagementSocketName, (), (const, override));
     MOCK_METHOD(firebolt::rialto::common::SessionServerState, getInitialState, (), (const, override));
     MOCK_METHOD(int, getAppId, (), (const, override));

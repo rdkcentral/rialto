@@ -49,6 +49,7 @@ public:
     bool isPreloaded() const override;
     void configure(const std::string &appName, const firebolt::rialto::common::SessionServerState &initialState,
                    const firebolt::rialto::common::AppConfig &appConfig) override;
+    bool isConnected() const override;
     std::string getSessionManagementSocketName() const override;
     firebolt::rialto::common::SessionServerState getInitialState() const override;
     int getAppId() const override;
@@ -75,7 +76,7 @@ private:
     pid_t m_pid;
     bool m_isPreloaded;
     std::vector<char *> m_environmentVariables;
-    std::mutex m_timerMutex;
+    mutable std::mutex m_timerMutex;
     std::unique_ptr<firebolt::rialto::common::ITimer> m_startupTimer;
 };
 } // namespace rialto::servermanager::common
