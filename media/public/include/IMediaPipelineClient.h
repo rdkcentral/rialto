@@ -187,6 +187,37 @@ public:
      * @param[in] qosInfo   : The information provided in the update.
      */
     virtual void notifyQos(int32_t sourceId, const QosInfo &qosInfo) = 0;
+
+    /**
+     * @brief Notifies the client when first frame rendered for the MediaSource
+     *
+     * @param[in] sourceId : ID of media source reporting first frame
+     */
+    virtual void IMediaPipelineClient::notifyFirstFrame(int32_t sourceId) = 0;
+
+    /**
+     * @brief Notifies the client when a MediaSource is starved of data
+     *
+     * @param[in] sourceId : ID of media source reporting the underflow
+     */
+    virtual void IMediaPipelineClient::notifyUnderflow(int32_t sourceId) = 0;
+
+    /**
+     * @brief Notifies the client when there has been a failure decoding a frame
+     *
+     * @param[in] sourceId  : ID of media source reporting the decode error
+     * @param[in] timeStamp : Nanoseconds timestamp of the media frame that triggered the error
+     */
+    virtual void IMediaPipelineClient::notifyDecodeError(int32_t sourceId, int64_t timeStamp) = 0;
+
+    /**
+     * @brief Notifies the client when a frame with an embedded timecode is rendered
+     *
+     * @param[in] hours   : Hours value in timecode
+     * @param[in] minutes : Minutes value in timecode
+     * @param[in] seconds : Seconds value in timecode
+     */
+    virtual void IMediaPipelineClient::notifyTimecode(uint32_t hours, uint32_t minutes, uint32_t seconds) = 0;
 };
 
 }; // namespace firebolt::rialto
