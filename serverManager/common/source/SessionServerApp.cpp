@@ -193,7 +193,7 @@ bool SessionServerApp::configure(const std::string &appName,
 bool SessionServerApp::isConnected() const
 {
     std::unique_lock<std::mutex> lock{m_timerMutex};
-    return m_startupTimer && !m_startupTimer->isActive();
+    return !m_startupTimer || !m_startupTimer->isActive();
 }
 
 std::string SessionServerApp::getSessionManagementSocketName() const
