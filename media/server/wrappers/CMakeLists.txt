@@ -20,6 +20,10 @@
 # Find includes in corresponding build directories
 set( CMAKE_INCLUDE_CURRENT_DIR ON )
 
+if( NATIVE_BUILD )
+    set(ocdm_DIR "${CMAKE_SOURCE_DIR}/stubs/opencdm/" )
+endif()
+
 if( NOT CMAKE_BUILD_FLAG STREQUAL "UnitTests" )
 
     find_package( ocdm REQUIRED )
