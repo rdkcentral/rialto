@@ -20,9 +20,11 @@
 #include "IGstGenericPlayerClient.h"
 #include "MediaPipelineTestBase.h"
 
+using ::testing::A;
 using ::testing::ByMove;
 using ::testing::DoAll;
 using ::testing::Ref;
+using ::testing::ReturnRef;
 using ::testing::SaveArg;
 
 MATCHER_P(QosInfoMatcher, expectedQosInfo, "")
@@ -57,6 +59,22 @@ protected:
         EXPECT_EQ(m_mediaPipeline->load(MediaType::MSE, "mime", "mse://1"), true);
 
         ASSERT_NE(m_gstPlayerCallback, nullptr);
+    }
+
+    void setEos()
+    {
+        const uint32_t kNeedDataRequestId{0};
+        auto status = firebolt::rialto::MediaSourceStatus::EOS;
+        IMediaPipeline::MediaSegmentVector dataVec;
+        mainThreadWillEnqueueTaskAndWait();
+        ASSERT_TRUE(m_activeRequestsMock);
+        EXPECT_CALL(*m_activeRequestsMock, getType(kNeedDataRequestId))
+            .WillOnce(Return(firebolt::rialto::MediaSourceType::VIDEO));
+        EXPECT_CALL(*m_activeRequestsMock, getSegments(kNeedDataRequestId)).WillOnce(ReturnRef(dataVec));
+        EXPECT_CALL(*m_activeRequestsMock, erase(kNeedDataRequestId));
+        EXPECT_CALL(*m_gstPlayerMock, attachSamples(A<const IMediaPipeline::MediaSegmentVector &>()));
+        EXPECT_CALL(*m_gstPlayerMock, setEos(firebolt::rialto::MediaSourceType::VIDEO));
+        EXPECT_TRUE(m_mediaPipeline->haveData(status, kNeedDataRequestId));
     }
 };
 
@@ -182,6 +200,36 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyNeedMediaDataFailureDueToSou
     EXPECT_CALL(*m_sharedMemoryBufferMock,
                 clearData(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId, mediaSourceType))
         .WillOnce(Return(true));
+
+    m_gstPlayerCallback->notifyNeedMediaData(mediaSourceType);
+}
+
+/**
+ * Test a notification of the need media data is ignored if EOS.
+ */
+TEST_F(RialtoServerMediaPipelineCallbackTest, notifyNeedMediaDataInEos)
+{
+    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
+        std::make_unique<IMediaPipeline::MediaSourceVideo>("video/h264");
+    mainThreadWillEnqueueTaskAndWait();
+
+    EXPECT_CALL(*m_gstPlayerMock, attachSource(Ref(mediaSource)));
+
+    EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), true);
+
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyPlaybackState(PlaybackState::PLAYING));
+    mainThreadWillEnqueueTask();
+    m_gstPlayerCallback->notifyPlaybackState(PlaybackState::PLAYING);
+
+    auto mediaSourceType = firebolt::rialto::MediaSourceType::VIDEO;
+    mainThreadWillEnqueueTaskAndWait();
+    ASSERT_TRUE(m_sharedMemoryBufferMock);
+    ASSERT_TRUE(m_activeRequestsMock);
+    EXPECT_CALL(*m_sharedMemoryBufferMock,
+                clearData(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId, mediaSourceType))
+        .WillOnce(Return(true));
+
+    setEos();
 
     m_gstPlayerCallback->notifyNeedMediaData(mediaSourceType);
 }
