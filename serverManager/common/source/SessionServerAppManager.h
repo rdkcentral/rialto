@@ -39,14 +39,14 @@ public:
     SessionServerAppManager(std::unique_ptr<ipc::IController> &ipcController,
                             const std::shared_ptr<service::IStateObserver> &stateObserver,
                             std::unique_ptr<ISessionServerAppFactory> &&sessionServerAppFactory,
-                            const std::shared_ptr<firebolt::rialto::common::IEventThreadFactory> &eventThreadFactory,
-                            int numberOfPreloadedServers);
+                            const std::shared_ptr<firebolt::rialto::common::IEventThreadFactory> &eventThreadFactory);
     virtual ~SessionServerAppManager();
     SessionServerAppManager(const SessionServerAppManager &) = delete;
     SessionServerAppManager(SessionServerAppManager &&) = delete;
     SessionServerAppManager &operator=(const SessionServerAppManager &) = delete;
     SessionServerAppManager &operator=(SessionServerAppManager &&) = delete;
 
+    void preloadSessionServers(int numOfPreloadedServers) override;
     bool initiateApplication(const std::string &appName, const firebolt::rialto::common::SessionServerState &state,
                              const firebolt::rialto::common::AppConfig &appConfig) override;
     bool setSessionServerState(const std::string &appName,

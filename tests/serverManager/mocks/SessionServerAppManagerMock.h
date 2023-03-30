@@ -32,6 +32,7 @@ public:
     SessionServerAppManagerMock() = default;
     virtual ~SessionServerAppManagerMock() = default;
 
+    MOCK_METHOD(void, preloadSessionServers, (int numOfPreloadedServers), (override));
     MOCK_METHOD(bool, initiateApplication,
                 (const std::string &appId, const firebolt::rialto::common::SessionServerState &state,
                  const firebolt::rialto::common::AppConfig &appConfig),

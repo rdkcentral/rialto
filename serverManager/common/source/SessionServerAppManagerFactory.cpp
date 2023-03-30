@@ -19,30 +19,9 @@
 
 #include "SessionServerAppManagerFactory.h"
 #include "IEventThread.h"
-#include "RialtoServerManagerLogging.h"
 #include "SessionServerAppFactory.h"
 #include "SessionServerAppManager.h"
 #include <memory>
-#include <string>
-
-namespace
-{
-int getNumberOfPreloadedServers()
-try
-{
-    const char *numOfPreloadedServersEnvVar = getenv("RIALTO_PRELOADED_SERVERS");
-    if (numOfPreloadedServersEnvVar)
-    {
-        RIALTO_SERVER_MANAGER_LOG_INFO("Number of preloaded servers: %s", numOfPreloadedServersEnvVar);
-        return std::stoi(std::string(numOfPreloadedServersEnvVar));
-    }
-    return 0;
-}
-catch (std::exception &e)
-{
-    return 0;
-}
-} // namespace
 
 namespace rialto::servermanager::common
 {
@@ -53,7 +32,6 @@ createSessionServerAppManager(std::unique_ptr<ipc::IController> &ipc,
 {
     return std::make_unique<SessionServerAppManager>(ipc, stateObserver,
                                                      std::make_unique<SessionServerAppFactory>(environmentVariables),
-                                                     firebolt::rialto::common::IEventThreadFactory::createFactory(),
-                                                     getNumberOfPreloadedServers());
+                                                     firebolt::rialto::common::IEventThreadFactory::createFactory());
 }
 } // namespace rialto::servermanager::common

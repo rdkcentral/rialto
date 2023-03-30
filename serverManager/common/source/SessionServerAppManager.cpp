@@ -38,22 +38,25 @@ namespace rialto::servermanager::common
 SessionServerAppManager::SessionServerAppManager(
     std::unique_ptr<ipc::IController> &ipcController, const std::shared_ptr<service::IStateObserver> &stateObserver,
     std::unique_ptr<ISessionServerAppFactory> &&sessionServerAppFactory,
-    const std::shared_ptr<firebolt::rialto::common::IEventThreadFactory> &eventThreadFactory,
-    int numberOfPreloadedServers)
+    const std::shared_ptr<firebolt::rialto::common::IEventThreadFactory> &eventThreadFactory)
     : m_ipcController{ipcController}, m_eventThread{eventThreadFactory->createEventThread(
                                           "rialtoservermanager-appmanager")},
       m_sessionServerAppFactory{std::move(sessionServerAppFactory)}, m_stateObserver{stateObserver}
 {
-    for (int i = 0; i < numberOfPreloadedServers; ++i)
-    {
-        addPreloadedSessionServer();
-    }
 }
 
 SessionServerAppManager::~SessionServerAppManager()
 {
     shutdownAllSessionServers();
     m_eventThread.reset();
+}
+
+void SessionServerAppManager::preloadSessionServers(int numOfPreloadedServers)
+{
+    for (int i = 0; i < numOfPreloadedServers; ++i)
+    {
+        addPreloadedSessionServer();
+    }
 }
 
 bool SessionServerAppManager::initiateApplication(const std::string &appName,

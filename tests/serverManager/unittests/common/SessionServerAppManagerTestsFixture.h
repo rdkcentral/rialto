@@ -41,8 +41,6 @@ public:
     SessionServerAppManagerTests();
     virtual ~SessionServerAppManagerTests() = default;
 
-    void initSut(int numOfPreloadedServers = 0);
-
     void sessionServerLaunchWillFail(const firebolt::rialto::common::SessionServerState &state);
     void preloadedSessionServerLaunchWillFail();
     void sessionServerConnectWillFail(const firebolt::rialto::common::SessionServerState &state);
@@ -66,6 +64,7 @@ public:
     void sessionServerWillKillRunningApplication();
     void clientWillBeRemovedAfterStateChangedIndication(const firebolt::rialto::common::SessionServerState &state);
 
+    void triggerPreloadSessionServers();
     bool triggerInitiateApplication(const firebolt::rialto::common::SessionServerState &state);
     bool triggerSetSessionServerState(const firebolt::rialto::common::SessionServerState &newState);
     void triggerOnSessionServerStateChanged(const firebolt::rialto::common::SessionServerState &newState);
