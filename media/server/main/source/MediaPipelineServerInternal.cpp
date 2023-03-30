@@ -135,7 +135,7 @@ MediaPipelineServerInternal::MediaPipelineServerInternal(
     : m_mediaPipelineClient(client), m_kGstPlayerFactory(gstPlayerFactory), m_kVideoRequirements(videoRequirements),
       m_sessionId{sessionId}, m_shmBuffer{shmBuffer}, m_dataReaderFactory{std::move(dataReaderFactory)},
       m_timerFactory{timerFactory}, m_activeRequests{std::move(activeRequests)}, m_decryptionService{decryptionService},
-      m_currentPlaybackState{PlaybackState::UNKNOWN}, m_wasAllSourcesAttachedCalled{false}
+      m_currentPlaybackState{PlaybackState::UNKNOWN}, m_wasAllSourcesAttachedCalled{false}, m_isEos{false}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
@@ -447,6 +447,7 @@ bool MediaPipelineServerInternal::setPositionInternal(int64_t position)
     }
 
     m_gstPlayer->setPosition(position);
+    m_isEos = false;
     return true;
 }
 
@@ -547,6 +548,7 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
     if (status == MediaSourceStatus::EOS)
     {
         m_gstPlayer->setEos(mediaSourceType);
+        m_isEos = true;
     }
 
     return true;
@@ -620,6 +622,7 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
     if (status == MediaSourceStatus::EOS)
     {
         m_gstPlayer->setEos(mediaSourceType);
+        m_isEos = true;
     }
 
     return true;
@@ -759,6 +762,11 @@ bool MediaPipelineServerInternal::notifyNeedMediaDataInternal(MediaSourceType me
     if (m_attachedSources.cend() == kSourceIter)
     {
         RIALTO_SERVER_LOG_WARN("NeedMediaData event sending failed - sourceId not found");
+        return false;
+    }
+    if (m_isEos)
+    {
+        RIALTO_SERVER_LOG_INFO("EOS, NeedMediaData not needed");
         return false;
     }
     NeedMediaData event{m_mediaPipelineClient, *m_activeRequests,   *m_shmBuffer,          m_sessionId,

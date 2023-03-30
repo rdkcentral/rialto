@@ -224,6 +224,11 @@ protected:
     bool m_wasAllSourcesAttachedCalled;
 
     /**
+     * @brief Flag used to check if Eos has been set on this playback
+     */
+    bool m_isEos;
+
+    /**
      * @brief Load internally, only to be called on the main thread.
      *
      * @param[in] type     : The media type.
