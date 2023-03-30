@@ -267,12 +267,17 @@ bool SessionServerAppManager::configurePreloadedSessionServer(int appId, const s
                                                               const firebolt::rialto::common::SessionServerState &state,
                                                               const firebolt::rialto::common::AppConfig &appConfig)
 {
+    RIALTO_SERVER_MANAGER_LOG_INFO("Configuration of preloaded app with id: %d for %s app", appId, appName.c_str());
     if (addSessionServerConfiguration(appId, appName, state, appConfig) && configureSessionServer(appId))
     {
         // Schedule adding new preloaded session server (as we've just used one) and return immediately
         m_eventThread->add(&SessionServerAppManager::addPreloadedSessionServer, this);
         return true;
     }
+    // Configuration failed, kill server and return error
+    handleSessionServerStateChange(appId, firebolt::rialto::common::SessionServerState::ERROR);
+    // Schedule adding new preloaded session server
+    m_eventThread->add(&SessionServerAppManager::addPreloadedSessionServer, this);
     return false;
 }
 
@@ -288,8 +293,7 @@ bool SessionServerAppManager::addSessionServerConfiguration(int appId, const std
         RIALTO_SERVER_MANAGER_LOG_ERROR("Configuration of app with id: %d failed - app not found", appId);
         return false;
     }
-    (*app)->configure(appName, state, appConfig);
-    return true;
+    return (*app)->configure(appName, state, appConfig);
 }
 
 bool SessionServerAppManager::changeSessionServerState(const std::string &appName,
@@ -357,9 +361,9 @@ void SessionServerAppManager::handleSessionServerStateChange(int appId,
              newState == firebolt::rialto::common::SessionServerState::NOT_RUNNING)
     {
         m_ipcController->removeClient(appId);
-        removeSessionServer(appId);
+        removeSessionServer(appId, newState == firebolt::rialto::common::SessionServerState::ERROR);
     }
-    if (m_stateObserver)
+    if (!appName.empty() && m_stateObserver) // empty app name is when SessionServer is preloaded
     {
         m_stateObserver->stateChanged(appName, newState);
     }

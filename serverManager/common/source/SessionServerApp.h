@@ -47,7 +47,7 @@ public:
 
     bool launch() override;
     bool isPreloaded() const override;
-    void configure(const std::string &appName, const firebolt::rialto::common::SessionServerState &initialState,
+    bool configure(const std::string &appName, const firebolt::rialto::common::SessionServerState &initialState,
                    const firebolt::rialto::common::AppConfig &appConfig) override;
     bool isConnected() const override;
     std::string getSessionManagementSocketName() const override;

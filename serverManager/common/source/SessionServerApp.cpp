@@ -174,14 +174,20 @@ bool SessionServerApp::isPreloaded() const
     return m_isPreloaded;
 }
 
-void SessionServerApp::configure(const std::string &appName,
+bool SessionServerApp::configure(const std::string &appName,
                                  const firebolt::rialto::common::SessionServerState &initialState,
                                  const firebolt::rialto::common::AppConfig &appConfig)
 {
+    if (!m_isPreloaded)
+    {
+        RIALTO_SERVER_MANAGER_LOG_ERROR("SessionServerApp is already configured!");
+        return false;
+    }
     m_appName = appName;
     m_initialState = initialState;
     m_sessionManagementSocketName = getSessionManagementSocketPath(appConfig);
     m_isPreloaded = false;
+    return true;
 }
 
 bool SessionServerApp::isConnected() const
