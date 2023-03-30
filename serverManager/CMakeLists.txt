@@ -22,6 +22,8 @@ set( CMAKE_CXX_STANDARD 14 )
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
 include( CheckCXXCompilerFlag )
 
+find_package( mongoose REQUIRED )
+
 add_subdirectory(common)
 add_subdirectory(ipc)
 add_subdirectory(service)
@@ -51,7 +53,7 @@ target_include_directories (
         $<TARGET_PROPERTY:RialtoLogging,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoServerManagerPublic,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoCommon,INTERFACE_INCLUDE_DIRECTORIES>
-        $ENV{RDK_PROJECT_ROOT_PATH}/opensource/include/mongoose
+        mongoose
 )
 
 target_link_libraries (
