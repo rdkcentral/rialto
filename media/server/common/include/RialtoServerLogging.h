@@ -27,15 +27,88 @@ extern "C"
 {
 #endif
 
-#define RIALTO_SERVER_LOG_FATAL(fmt, args...) RIALTO_LOG_FATAL(RIALTO_COMPONENT_SERVER, fmt, ##args)
-#define RIALTO_SERVER_LOG_SYS_FATAL(err, fmt, args...) RIALTO_LOG_SYS_FATAL(RIALTO_COMPONENT_SERVER, err, fmt, ##args)
-#define RIALTO_SERVER_LOG_ERROR(fmt, args...) RIALTO_LOG_ERROR(RIALTO_COMPONENT_SERVER, fmt, ##args)
-#define RIALTO_SERVER_LOG_SYS_ERROR(err, fmt, args...) RIALTO_LOG_SYS_ERROR(RIALTO_COMPONENT_SERVER, err, fmt, ##args)
-#define RIALTO_SERVER_LOG_WARN(fmt, args...) RIALTO_LOG_WARN(RIALTO_COMPONENT_SERVER, fmt, ##args)
-#define RIALTO_SERVER_LOG_SYS_WARN(err, fmt, args...) RIALTO_LOG_SYS_WARN(RIALTO_COMPONENT_SERVER, err, fmt, ##args)
-#define RIALTO_SERVER_LOG_MIL(fmt, args...) RIALTO_LOG_MIL(RIALTO_COMPONENT_SERVER, fmt, ##args)
-#define RIALTO_SERVER_LOG_INFO(fmt, args...) RIALTO_LOG_INFO(RIALTO_COMPONENT_SERVER, fmt, ##args)
-#define RIALTO_SERVER_LOG_DEBUG(fmt, args...) RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, fmt, ##args)
+//Enables all logs in debug mode:
+#if (RIALTO_DEBUG_TYPE == RIALTO_DEBUG)
+
+    #define RIALTO_SERVER_LOG_FATAL_ENABLED 1
+    #define RIALTO_SERVER_LOG_SYS_FATAL_ENABLED 1
+    #define RIALTO_SERVER_LOG_ERROR_ENABLED 1
+    #define RIALTO_SERVER_LOG_SYS_ERROR_ENABLED 1
+    #define RIALTO_SERVER_LOG_WARN_ENABLED 1
+    #define RIALTO_SERVER_LOG_SYS_WARN_ENABLED 1
+    #define RIALTO_SERVER_LOG_MIL_ENABLED 1
+    #define RIALTO_SERVER_LOG_INFO_ENABLED 1
+    #define RIALTO_SERVER_LOG_DEBUG_ENABLED 1
+
+//Disable debug logging in release mode:
+#elif (RIALTO_DEBUG_TYPE == RIALTO_RELEASE)
+
+    #define RIALTO_SERVER_LOG_FATAL_ENABLED 1
+    #define RIALTO_SERVER_LOG_SYS_FATAL_ENABLED 1
+    #define RIALTO_SERVER_LOG_ERROR_ENABLED 1
+    #define RIALTO_SERVER_LOG_SYS_ERROR_ENABLED 1
+    #define RIALTO_SERVER_LOG_WARN_ENABLED 1
+    #define RIALTO_SERVER_LOG_SYS_WARN_ENABLED 1
+    #define RIALTO_SERVER_LOG_MIL_ENABLED 1
+    #define RIALTO_SERVER_LOG_INFO_ENABLED 1
+    #define RIALTO_SERVER_LOG_DEBUG_ENABLED 1
+
+#endif
+
+#if RIALTO_SERVER_LOG_FATAL_ENABLED
+    #define RIALTO_SERVER_LOG_FATAL(fmt, args...) RIALTO_LOG_FATAL(RIALTO_COMPONENT_SERVER, fmt, ##args)
+#else 
+    #define RIALTO_SERVER_LOG_FATAL(fmt, args...)
+#endif
+
+#if RIALTO_SERVER_LOG_SYS_FATAL_ENABLED
+    #define RIALTO_SERVER_LOG_SYS_FATAL(err, fmt, args...) RIALTO_LOG_SYS_FATAL(RIALTO_COMPONENT_SERVER, err, fmt, ##args)
+#else
+    #define RIALTO_SERVER_LOG_SYS_FATAL(err, fmt, args...)
+#endif
+
+#if RIALTO_SERVER_LOG_ERROR_ENABLED
+    #define RIALTO_SERVER_LOG_ERROR(fmt, args...) RIALTO_LOG_ERROR(RIALTO_COMPONENT_SERVER, fmt, ##args)
+#else  
+    #define RIALTO_SERVER_LOG_ERROR(fmt, args...)
+#endif
+
+#if RIALTO_SERVER_LOG_SYS_ERROR_ENABLED
+    #define RIALTO_SERVER_LOG_SYS_ERROR(err, fmt, args...) RIALTO_LOG_SYS_ERROR(RIALTO_COMPONENT_SERVER, err, fmt, ##args)
+#else   
+    #define RIALTO_SERVER_LOG_SYS_ERROR(err, fmt, args...)
+#endif
+
+#if RIALTO_SERVER_LOG_WARN_ENABLED
+    #define RIALTO_SERVER_LOG_WARN(fmt, args...) RIALTO_LOG_WARN(RIALTO_COMPONENT_SERVER, fmt, ##args)
+#else
+    #define RIALTO_SERVER_LOG_WARN(fmt, args...)
+#endif
+
+#if RIALTO_SERVER_LOG_SYS_WARN_ENABLED
+    #define RIALTO_SERVER_LOG_SYS_WARN(err, fmt, args...) RIALTO_LOG_SYS_WARN(RIALTO_COMPONENT_SERVER, err, fmt, ##args)
+#else
+    #define RIALTO_SERVER_LOG_SYS_WARN(err, fmt, args...)
+#endif
+
+#if RIALTO_SERVER_LOG_MIL_ENABLED
+    #define RIALTO_SERVER_LOG_MIL(fmt, args...) RIALTO_LOG_MIL(RIALTO_COMPONENT_SERVER, fmt, ##args)
+#else
+    #define RIALTO_SERVER_LOG_MIL(fmt, args...)
+#endif
+
+#if RIALTO_SERVER_LOG_INFO_ENABLED
+    #define RIALTO_SERVER_LOG_INFO(fmt, args...) RIALTO_LOG_INFO(RIALTO_COMPONENT_SERVER, fmt, ##args)
+#else
+    #define RIALTO_SERVER_LOG_INFO(fmt, args...)
+#endif
+
+#if RIALTO_SERVER_LOG_DEBUG_ENABLED
+    #define RIALTO_SERVER_LOG_DEBUG(fmt, args...) RIALTO_LOG_DEBUG(RIALTO_COMPONENT_SERVER, fmt, ##args)
+#else   
+    #define RIALTO_SERVER_LOG_DEBUG(fmt, args...)  
+#endif
+
 
 #ifdef __cplusplus
 }
