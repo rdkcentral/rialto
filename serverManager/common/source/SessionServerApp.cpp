@@ -40,7 +40,7 @@ constexpr int maxWebAudioPlayers{1};
 const std::string sessionManagementSocketDefaultDir{"/tmp/"};
 const std::string sessionManagementSocketDefaultName{"rialto-"};
 
-int generateAppId()
+int generateServerId()
 {
     static int id{0};
     return id++;
@@ -105,10 +105,10 @@ namespace rialto::servermanager::common
 {
 SessionServerApp::SessionServerApp(SessionServerAppManager &sessionServerAppManager,
                                    const std::list<std::string> &environmentVariables)
-    : m_kAppId{generateAppId()}, m_socks{-1, -1}, m_sessionServerAppManager{sessionServerAppManager}, m_pid{-1},
+    : m_kServerId{generateServerId()}, m_socks{-1, -1}, m_sessionServerAppManager{sessionServerAppManager}, m_pid{-1},
       m_isPreloaded{true}
 {
-    RIALTO_SERVER_MANAGER_LOG_INFO("Creating preloaded SessionServerApp with appId: %d", m_kAppId);
+    RIALTO_SERVER_MANAGER_LOG_INFO("Creating preloaded SessionServerApp with appId: %d", m_kServerId);
     std::transform(environmentVariables.begin(), environmentVariables.end(), std::back_inserter(m_environmentVariables),
                    [](const std::string &str) { return strdup(str.c_str()); });
     m_environmentVariables.push_back(nullptr);
@@ -119,11 +119,11 @@ SessionServerApp::SessionServerApp(const std::string &appName,
                                    const firebolt::rialto::common::AppConfig &appConfig,
                                    SessionServerAppManager &sessionServerAppManager,
                                    const std::list<std::string> &environmentVariables)
-    : m_kAppId{generateAppId()}, m_appName{appName}, m_initialState{initialState},
+    : m_kServerId{generateServerId()}, m_appName{appName}, m_initialState{initialState},
       m_sessionManagementSocketName{getSessionManagementSocketPath(appConfig)}, m_socks{-1, -1},
       m_sessionServerAppManager{sessionServerAppManager}, m_pid{-1}, m_isPreloaded{false}
 {
-    RIALTO_SERVER_MANAGER_LOG_INFO("Creating SessionServerApp for app: %s with appId: %d", appName.c_str(), m_kAppId);
+    RIALTO_SERVER_MANAGER_LOG_INFO("Creating SessionServerApp for app: %s with appId: %d", appName.c_str(), m_kServerId);
     std::transform(environmentVariables.begin(), environmentVariables.end(), std::back_inserter(m_environmentVariables),
                    [](const std::string &str) { return strdup(str.c_str()); });
     m_environmentVariables.push_back(nullptr);
@@ -131,13 +131,13 @@ SessionServerApp::SessionServerApp(const std::string &appName,
 
 SessionServerApp::~SessionServerApp()
 {
-    RIALTO_SERVER_MANAGER_LOG_INFO("Application %d is destructed", m_kAppId);
+    RIALTO_SERVER_MANAGER_LOG_INFO("Application %d is destructed", m_kServerId);
     cancelStartupTimerInternal();
     if (m_pid != -1)
     {
         if (waitpid(m_pid, nullptr, 0) < 0)
         {
-            RIALTO_SERVER_MANAGER_LOG_SYS_WARN(errno, "waitpid failed for %d", m_kAppId);
+            RIALTO_SERVER_MANAGER_LOG_SYS_WARN(errno, "waitpid failed for %d", m_kServerId);
         }
     }
     if (m_socks[0] >= 0)
@@ -156,10 +156,10 @@ SessionServerApp::~SessionServerApp()
 
 bool SessionServerApp::launch()
 {
-    RIALTO_SERVER_MANAGER_LOG_INFO("Launching: %d", m_kAppId);
+    RIALTO_SERVER_MANAGER_LOG_INFO("Launching: %d", m_kServerId);
     if (!initializeSockets())
     {
-        RIALTO_SERVER_MANAGER_LOG_ERROR("Failed to launch: %d - unable to initialize sockets", m_kAppId);
+        RIALTO_SERVER_MANAGER_LOG_ERROR("Failed to launch: %d - unable to initialize sockets", m_kServerId);
         return false;
     }
     setupStartupTimer();
@@ -206,9 +206,9 @@ firebolt::rialto::common::SessionServerState SessionServerApp::getInitialState()
     return m_initialState;
 }
 
-int SessionServerApp::getAppId() const
+int SessionServerApp::getId() const
 {
-    return m_kAppId;
+    return m_kServerId;
 }
 
 const std::string &SessionServerApp::getAppName() const
@@ -241,7 +241,7 @@ void SessionServerApp::cancelStartupTimerInternal()
     std::unique_lock<std::mutex> lock{m_timerMutex};
     if (m_startupTimer && m_startupTimer->isActive())
     {
-        RIALTO_SERVER_MANAGER_LOG_INFO("Application: %d connected successfully", m_kAppId);
+        RIALTO_SERVER_MANAGER_LOG_INFO("Application: %d connected successfully", m_kServerId);
         m_startupTimer->cancel();
     }
 }
@@ -275,9 +275,9 @@ void SessionServerApp::setupStartupTimer()
             factory->createTimer(timeout,
                                  [this]()
                                  {
-                                     RIALTO_SERVER_MANAGER_LOG_WARN("Killing: %d", m_kAppId);
+                                     RIALTO_SERVER_MANAGER_LOG_WARN("Killing: %d", m_kServerId);
                                      m_sessionServerAppManager
-                                         .onSessionServerStateChanged(m_kAppId,
+                                         .onSessionServerStateChanged(m_kServerId,
                                                                       firebolt::rialto::common::SessionServerState::ERROR);
                                      kill();
                                  });
@@ -300,7 +300,7 @@ bool SessionServerApp::spawnSessionServer()
     }
     else if (childPid > 0)
     {
-        RIALTO_SERVER_MANAGER_LOG_DEBUG("%d launched. PID: %d", m_kAppId, childPid);
+        RIALTO_SERVER_MANAGER_LOG_DEBUG("%d launched. PID: %d", m_kServerId, childPid);
         m_pid = childPid;
         return true;
     }

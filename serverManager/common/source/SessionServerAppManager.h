@@ -51,7 +51,7 @@ public:
                              const firebolt::rialto::common::AppConfig &appConfig) override;
     bool setSessionServerState(const std::string &appName,
                                const firebolt::rialto::common::SessionServerState &newState) override;
-    void onSessionServerStateChanged(int appId, const firebolt::rialto::common::SessionServerState &newState) override;
+    void onSessionServerStateChanged(int serverId, const firebolt::rialto::common::SessionServerState &newState) override;
     std::string getAppConnectionInfo(const std::string &appName) const override;
     bool setLogLevels(const service::LoggingLevels &logLevels) const override;
 
@@ -62,23 +62,23 @@ private:
     int launchSessionServer(const std::string &appName, const firebolt::rialto::common::SessionServerState &initialState,
                             const firebolt::rialto::common::AppConfig &appConfig);
     int preloadSessionServer();
-    void removeSessionServer(int appId, bool killApp = false);
-    bool configureSessionServer(int appId);
-    bool configurePreloadedSessionServer(int appId, const std::string &appName,
+    void removeSessionServer(int serverId, bool killApp = false);
+    bool configureSessionServer(int serverId);
+    bool configurePreloadedSessionServer(int serverId, const std::string &appName,
                                          const firebolt::rialto::common::SessionServerState &state,
                                          const firebolt::rialto::common::AppConfig &appConfig);
-    bool addSessionServerConfiguration(int appId, const std::string &appName,
+    bool addSessionServerConfiguration(int serverId, const std::string &appName,
                                        const firebolt::rialto::common::SessionServerState &state,
                                        const firebolt::rialto::common::AppConfig &appConfig);
     bool changeSessionServerState(const std::string &appName,
                                   const firebolt::rialto::common::SessionServerState &newState);
     bool isSessionServerLaunched(const std::string &appName) const;
-    void cancelSessionServerStartupTimer(int appId) const;
-    bool isSessionServerPreloaded(int appId) const;
-    int getAppId(const std::string &appName) const;
-    std::string getAppName(int appId) const;
-    int getAppManagementSocketName(int appId) const;
-    void handleSessionServerStateChange(int appId, firebolt::rialto::common::SessionServerState newState);
+    void cancelSessionServerStartupTimer(int serverId) const;
+    bool isSessionServerPreloaded(int serverId) const;
+    int getserverId(const std::string &appName) const;
+    std::string getAppName(int serverId) const;
+    int getAppManagementSocketName(int serverId) const;
+    void handleSessionServerStateChange(int serverId, firebolt::rialto::common::SessionServerState newState);
     void shutdownAllSessionServers();
     int getPreloadedServerId() const;
 

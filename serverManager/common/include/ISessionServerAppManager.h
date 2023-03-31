@@ -44,7 +44,7 @@ public:
                                      const firebolt::rialto::common::AppConfig &appConfig) = 0;
     virtual bool setSessionServerState(const std::string &appName,
                                        const firebolt::rialto::common::SessionServerState &newState) = 0;
-    virtual void onSessionServerStateChanged(int appName,
+    virtual void onSessionServerStateChanged(int serverId,
                                              const firebolt::rialto::common::SessionServerState &newState) = 0;
     virtual std::string getAppConnectionInfo(const std::string &appName) const = 0;
     virtual bool setLogLevels(const service::LoggingLevels &logLevels) const = 0;

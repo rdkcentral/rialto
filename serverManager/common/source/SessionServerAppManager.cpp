@@ -99,12 +99,12 @@ bool SessionServerAppManager::setSessionServerState(const std::string &appName,
     return false;
 }
 
-void SessionServerAppManager::onSessionServerStateChanged(int appId,
+void SessionServerAppManager::onSessionServerStateChanged(int serverId,
                                                           const firebolt::rialto::common::SessionServerState &newState)
 {
-    RIALTO_SERVER_MANAGER_LOG_DEBUG("Queue state change of appId: %d to %s", appId, toString(newState));
+    RIALTO_SERVER_MANAGER_LOG_DEBUG("Queue state change of serverId: %d to %s", serverId, toString(newState));
     // Event loop needed here, as function caller may be deleted as a result of this call
-    m_eventThread->add(&SessionServerAppManager::handleSessionServerStateChange, this, appId, newState);
+    m_eventThread->add(&SessionServerAppManager::handleSessionServerStateChange, this, serverId, newState);
 }
 
 std::string SessionServerAppManager::getAppConnectionInfo(const std::string &appName) const
@@ -116,7 +116,7 @@ std::string SessionServerAppManager::getAppConnectionInfo(const std::string &app
     {
         return (*app)->getSessionManagementSocketName();
     }
-    RIALTO_SERVER_MANAGER_LOG_ERROR("%s: App: %s could not be found", __func__, appName.c_str());
+    RIALTO_SERVER_MANAGER_LOG_ERROR("App: %s could not be found", appName.c_str());
     return "";
 }
 
@@ -137,17 +137,17 @@ bool SessionServerAppManager::addSessionServer(const std::string &appName,
                                                const firebolt::rialto::common::AppConfig &appConfig)
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("RialtoServerManager tries to launch %s", appName.c_str());
-    int appId{launchSessionServer(appName, initialState, appConfig)};
-    if (kInvalidId == appId)
+    int serverId{launchSessionServer(appName, initialState, appConfig)};
+    if (kInvalidId == serverId)
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("RialtoServerManager unable to launch %s", appName.c_str());
         return false;
     }
-    if (!m_ipcController->createClient(appId, getAppManagementSocketName(appId)))
+    if (!m_ipcController->createClient(serverId, getAppManagementSocketName(serverId)))
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR(
             "Failed to establish RialtoServerManager - RialtoSessionServer connection for %s", appName.c_str());
-        removeSessionServer(appId, true);
+        removeSessionServer(serverId, true);
         return false;
     }
     RIALTO_SERVER_MANAGER_LOG_INFO("RialtoServerManager %s successfully launched", appName.c_str());
@@ -157,28 +157,28 @@ bool SessionServerAppManager::addSessionServer(const std::string &appName,
 void SessionServerAppManager::addPreloadedSessionServer()
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("RialtoServerManager tries to launch preloaded session server");
-    int appId{preloadSessionServer()};
-    if (kInvalidId == appId)
+    int serverId{preloadSessionServer()};
+    if (kInvalidId == serverId)
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("RialtoServerManager unable to launch preloaded session server");
         return;
     }
-    if (!m_ipcController->createClient(appId, getAppManagementSocketName(appId)))
+    if (!m_ipcController->createClient(serverId, getAppManagementSocketName(serverId)))
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("Failed to establish RialtoServerManager - RialtoSessionServer connection for "
                                         "session server with id: %d",
-                                        appId);
-        removeSessionServer(appId, true);
+                                        serverId);
+        removeSessionServer(serverId, true);
         return;
     }
-    RIALTO_SERVER_MANAGER_LOG_INFO("RialtoServerManager with id %d successfully launched", appId);
+    RIALTO_SERVER_MANAGER_LOG_INFO("RialtoServerManager with id %d successfully launched", serverId);
 }
 
-void SessionServerAppManager::removeSessionServer(int appId, bool killApp)
+void SessionServerAppManager::removeSessionServer(int serverId, bool killApp)
 {
     std::unique_lock<std::mutex> lock{m_sessionServerAppsMutex};
     auto app = std::find_if(m_sessionServerApps.begin(), m_sessionServerApps.end(),
-                            [&](const auto &app) { return app->getAppId() == appId; });
+                            [&](const auto &app) { return app->getId() == serverId; });
     if (app != m_sessionServerApps.end())
     {
         if (killApp)
@@ -196,22 +196,22 @@ bool SessionServerAppManager::isSessionServerLaunched(const std::string &appName
                         [&](const auto &app) { return app->getAppName() == appName; }) != m_sessionServerApps.end();
 }
 
-void SessionServerAppManager::cancelSessionServerStartupTimer(int appId) const
+void SessionServerAppManager::cancelSessionServerStartupTimer(int serverId) const
 {
     std::unique_lock<std::mutex> lock{m_sessionServerAppsMutex};
     auto app = std::find_if(m_sessionServerApps.begin(), m_sessionServerApps.end(),
-                            [&](const auto &app) { return app->getAppId() == appId; });
+                            [&](const auto &app) { return app->getId() == serverId; });
     if (app != m_sessionServerApps.end())
     {
         (*app)->cancelStartupTimer();
     }
 }
 
-bool SessionServerAppManager::isSessionServerPreloaded(int appId) const
+bool SessionServerAppManager::isSessionServerPreloaded(int serverId) const
 {
     std::unique_lock<std::mutex> lock{m_sessionServerAppsMutex};
     auto app = std::find_if(m_sessionServerApps.begin(), m_sessionServerApps.end(),
-                            [&](const auto &app) { return app->getAppId() == appId && app->isPreloaded(); });
+                            [&](const auto &app) { return app->getId() == serverId && app->isPreloaded(); });
     return app != m_sessionServerApps.end();
 }
 
@@ -223,9 +223,9 @@ int SessionServerAppManager::launchSessionServer(const std::string &appName,
     auto app = m_sessionServerAppFactory->create(appName, initialState, appConfig, *this);
     if (app->launch())
     {
-        int appId = app->getAppId();
+        int serverId = app->getId();
         m_sessionServerApps.emplace_back(std::move(app));
-        return appId;
+        return serverId;
     }
     return kInvalidId;
 }
@@ -236,64 +236,64 @@ int SessionServerAppManager::preloadSessionServer()
     auto app = m_sessionServerAppFactory->create(*this);
     if (app->launch())
     {
-        int appId = app->getAppId();
+        int serverId = app->getId();
         m_sessionServerApps.emplace_back(std::move(app));
-        return appId;
+        return serverId;
     }
     return kInvalidId;
 }
 
-bool SessionServerAppManager::configureSessionServer(int appId)
+bool SessionServerAppManager::configureSessionServer(int serverId)
 {
     std::unique_lock<std::mutex> lock{m_sessionServerAppsMutex};
     auto app = std::find_if(m_sessionServerApps.begin(), m_sessionServerApps.end(),
-                            [&](const auto &app) { return app->getAppId() == appId; });
+                            [&](const auto &app) { return app->getId() == serverId; });
     if (app == m_sessionServerApps.end())
     {
-        RIALTO_SERVER_MANAGER_LOG_ERROR("Configuration of app with id: %d failed - app not found", appId);
+        RIALTO_SERVER_MANAGER_LOG_ERROR("Configuration of app with id: %d failed - app not found", serverId);
         return false;
     }
     const auto initialState{(*app)->getInitialState()};
     const auto socketName{(*app)->getSessionManagementSocketName()};
     const firebolt::rialto::common::MaxResourceCapabilitites maxResource{(*app)->getMaxPlaybackSessions(),
                                                                          (*app)->getMaxWebAudioPlayers()};
-    if (!m_ipcController->performSetConfiguration((*app)->getAppId(), initialState, socketName, maxResource))
+    if (!m_ipcController->performSetConfiguration((*app)->getId(), initialState, socketName, maxResource))
     {
-        RIALTO_SERVER_MANAGER_LOG_ERROR("Configuration of app with id %d failed - ipc error.", appId);
+        RIALTO_SERVER_MANAGER_LOG_ERROR("Configuration of app with id %d failed - ipc error.", serverId);
         return false;
     }
-    RIALTO_SERVER_MANAGER_LOG_INFO("Configuration of app with id %d succeeded.", appId);
+    RIALTO_SERVER_MANAGER_LOG_INFO("Configuration of app with id %d succeeded.", serverId);
     return true;
 }
 
-bool SessionServerAppManager::configurePreloadedSessionServer(int appId, const std::string &appName,
+bool SessionServerAppManager::configurePreloadedSessionServer(int serverId, const std::string &appName,
                                                               const firebolt::rialto::common::SessionServerState &state,
                                                               const firebolt::rialto::common::AppConfig &appConfig)
 {
-    RIALTO_SERVER_MANAGER_LOG_INFO("Configuration of preloaded app with id: %d for %s app", appId, appName.c_str());
-    if (addSessionServerConfiguration(appId, appName, state, appConfig) && configureSessionServer(appId))
+    RIALTO_SERVER_MANAGER_LOG_INFO("Configuration of preloaded app with id: %d for %s app", serverId, appName.c_str());
+    if (addSessionServerConfiguration(serverId, appName, state, appConfig) && configureSessionServer(serverId))
     {
         // Schedule adding new preloaded session server (as we've just used one) and return immediately
         m_eventThread->add(&SessionServerAppManager::addPreloadedSessionServer, this);
         return true;
     }
     // Configuration failed, kill server and return error
-    handleSessionServerStateChange(appId, firebolt::rialto::common::SessionServerState::ERROR);
+    handleSessionServerStateChange(serverId, firebolt::rialto::common::SessionServerState::ERROR);
     // Schedule adding new preloaded session server
     m_eventThread->add(&SessionServerAppManager::addPreloadedSessionServer, this);
     return false;
 }
 
-bool SessionServerAppManager::addSessionServerConfiguration(int appId, const std::string &appName,
+bool SessionServerAppManager::addSessionServerConfiguration(int serverId, const std::string &appName,
                                                             const firebolt::rialto::common::SessionServerState &state,
                                                             const firebolt::rialto::common::AppConfig &appConfig)
 {
     std::unique_lock<std::mutex> lock{m_sessionServerAppsMutex};
     auto app = std::find_if(m_sessionServerApps.begin(), m_sessionServerApps.end(),
-                            [&](const auto &app) { return app->getAppId() == appId; });
+                            [&](const auto &app) { return app->getId() == serverId; });
     if (app == m_sessionServerApps.end())
     {
-        RIALTO_SERVER_MANAGER_LOG_ERROR("Configuration of app with id: %d failed - app not found", appId);
+        RIALTO_SERVER_MANAGER_LOG_ERROR("Configuration of app with id: %d failed - app not found", serverId);
         return false;
     }
     return (*app)->configure(appName, state, appConfig);
@@ -302,7 +302,7 @@ bool SessionServerAppManager::addSessionServerConfiguration(int appId, const std
 bool SessionServerAppManager::changeSessionServerState(const std::string &appName,
                                                        const firebolt::rialto::common::SessionServerState &newState)
 {
-    if (!m_ipcController->performSetState(getAppId(appName), newState))
+    if (!m_ipcController->performSetState(getserverId(appName), newState))
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("Change state of %s to %s failed.", appName.c_str(), toString(newState));
         return false;
@@ -311,23 +311,23 @@ bool SessionServerAppManager::changeSessionServerState(const std::string &appNam
     return true;
 }
 
-int SessionServerAppManager::getAppId(const std::string &appName) const
+int SessionServerAppManager::getserverId(const std::string &appName) const
 {
     std::unique_lock<std::mutex> lock{m_sessionServerAppsMutex};
     auto app = std::find_if(m_sessionServerApps.begin(), m_sessionServerApps.end(),
                             [&](const auto &app) { return app->getAppName() == appName; });
     if (app != m_sessionServerApps.end())
     {
-        return (*app)->getAppId();
+        return (*app)->getId();
     }
     return kInvalidId;
 }
 
-std::string SessionServerAppManager::getAppName(int appId) const
+std::string SessionServerAppManager::getAppName(int serverId) const
 {
     std::unique_lock<std::mutex> lock{m_sessionServerAppsMutex};
     auto app = std::find_if(m_sessionServerApps.begin(), m_sessionServerApps.end(),
-                            [&](const auto &app) { return app->getAppId() == appId; });
+                            [&](const auto &app) { return app->getId() == serverId; });
     if (app != m_sessionServerApps.end())
     {
         return (*app)->getAppName();
@@ -335,11 +335,11 @@ std::string SessionServerAppManager::getAppName(int appId) const
     return "";
 }
 
-int SessionServerAppManager::getAppManagementSocketName(int appId) const
+int SessionServerAppManager::getAppManagementSocketName(int serverId) const
 {
     std::unique_lock<std::mutex> lock{m_sessionServerAppsMutex};
     auto app = std::find_if(m_sessionServerApps.begin(), m_sessionServerApps.end(),
-                            [&](const auto &app) { return app->getAppId() == appId; });
+                            [&](const auto &app) { return app->getId() == serverId; });
     if (app != m_sessionServerApps.end())
     {
         return (*app)->getAppManagementSocketName();
@@ -347,24 +347,24 @@ int SessionServerAppManager::getAppManagementSocketName(int appId) const
     return -1;
 }
 
-void SessionServerAppManager::handleSessionServerStateChange(int appId,
+void SessionServerAppManager::handleSessionServerStateChange(int serverId,
                                                              firebolt::rialto::common::SessionServerState newState)
 {
-    RIALTO_SERVER_MANAGER_LOG_INFO("SessionServer with id: %d changed state to %s", appId, toString(newState));
-    std::string appName{getAppName(appId)};
+    RIALTO_SERVER_MANAGER_LOG_INFO("SessionServer with id: %d changed state to %s", serverId, toString(newState));
+    std::string appName{getAppName(serverId)};
     if (firebolt::rialto::common::SessionServerState::UNINITIALIZED == newState)
     {
-        cancelSessionServerStartupTimer(appId);
-        if (!isSessionServerPreloaded(appId) && !configureSessionServer(appId))
+        cancelSessionServerStartupTimer(serverId);
+        if (!isSessionServerPreloaded(serverId) && !configureSessionServer(serverId))
         {
-            return handleSessionServerStateChange(appId, firebolt::rialto::common::SessionServerState::ERROR);
+            return handleSessionServerStateChange(serverId, firebolt::rialto::common::SessionServerState::ERROR);
         }
     }
     else if (newState == firebolt::rialto::common::SessionServerState::ERROR ||
              newState == firebolt::rialto::common::SessionServerState::NOT_RUNNING)
     {
-        m_ipcController->removeClient(appId);
-        removeSessionServer(appId, newState == firebolt::rialto::common::SessionServerState::ERROR);
+        m_ipcController->removeClient(serverId);
+        removeSessionServer(serverId, newState == firebolt::rialto::common::SessionServerState::ERROR);
     }
     if (!appName.empty() && m_stateObserver) // empty app name is when SessionServer is preloaded
     {
@@ -389,7 +389,7 @@ int SessionServerAppManager::getPreloadedServerId() const
                             [](const auto &app) { return app->isPreloaded() && app->isConnected(); });
     if (app != m_sessionServerApps.end())
     {
-        return (*app)->getAppId();
+        return (*app)->getId();
     }
     return kInvalidId;
 }

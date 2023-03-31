@@ -34,7 +34,7 @@ public:
 
     MOCK_METHOD(void, preloadSessionServers, (int numOfPreloadedServers), (override));
     MOCK_METHOD(bool, initiateApplication,
-                (const std::string &appId, const firebolt::rialto::common::SessionServerState &state,
+                (const std::string &appName, const firebolt::rialto::common::SessionServerState &state,
                  const firebolt::rialto::common::AppConfig &appConfig),
                 (override));
     MOCK_METHOD(bool, setSessionServerState,

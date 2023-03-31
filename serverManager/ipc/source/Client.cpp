@@ -129,15 +129,15 @@ rialto::LogLevels getCurrentLogLevels()
 
 namespace rialto::servermanager::ipc
 {
-Client::Client(std::unique_ptr<common::ISessionServerAppManager> &sessionServerAppManager, int appId, int socket)
-    : m_appId{appId}, m_sessionServerAppManager{sessionServerAppManager}, m_socket{socket}
+Client::Client(std::unique_ptr<common::ISessionServerAppManager> &sessionServerAppManager, int serverId, int socket)
+    : m_serverId{serverId}, m_sessionServerAppManager{sessionServerAppManager}, m_socket{socket}
 {
-    RIALTO_SERVER_MANAGER_LOG_INFO("Constructing client for appId: %d", m_appId);
+    RIALTO_SERVER_MANAGER_LOG_INFO("Constructing client for serverId: %d", m_serverId);
 }
 
 Client::~Client()
 {
-    RIALTO_SERVER_MANAGER_LOG_INFO("Client for appId: %d is destructed", m_appId);
+    RIALTO_SERVER_MANAGER_LOG_INFO("Client for serverId: %d is destructed", m_serverId);
     m_serviceStub.reset();
     m_ipcLoop.reset();
 }
@@ -160,7 +160,7 @@ bool Client::performSetState(const firebolt::rialto::common::SessionServerState 
 {
     if (!m_ipcLoop || !m_serviceStub)
     {
-        RIALTO_SERVER_MANAGER_LOG_ERROR("failed to set status - client is not active for appId: %d", m_appId);
+        RIALTO_SERVER_MANAGER_LOG_ERROR("failed to set status - client is not active for serverId: %d", m_serverId);
         return false;
     }
     rialto::SetStateRequest request;
@@ -187,7 +187,8 @@ bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServ
 {
     if (!m_ipcLoop || !m_serviceStub)
     {
-        RIALTO_SERVER_MANAGER_LOG_ERROR("failed to set configuration - client is not active for appId: %d", m_appId);
+        RIALTO_SERVER_MANAGER_LOG_ERROR("failed to set configuration - client is not active for serverId: %d",
+                                        m_serverId);
         return false;
     }
     rialto::SetConfigurationRequest request;
@@ -216,7 +217,7 @@ bool Client::setLogLevels(const service::LoggingLevels &logLevels) const
 {
     if (!m_ipcLoop || !m_serviceStub)
     {
-        RIALTO_SERVER_MANAGER_LOG_WARN("failed to change log levels - client is not active for appId: %d", m_appId);
+        RIALTO_SERVER_MANAGER_LOG_WARN("failed to change log levels - client is not active for serverId: %d", m_serverId);
         return false;
     }
     rialto::SetLogLevelsRequest request;
@@ -239,19 +240,19 @@ bool Client::setLogLevels(const service::LoggingLevels &logLevels) const
 
 void Client::onDisconnected() const
 {
-    RIALTO_SERVER_MANAGER_LOG_WARN("Connection to appId: %d broken!", m_appId);
-    m_sessionServerAppManager->onSessionServerStateChanged(m_appId,
+    RIALTO_SERVER_MANAGER_LOG_WARN("Connection to serverId: %d broken!", m_serverId);
+    m_sessionServerAppManager->onSessionServerStateChanged(m_serverId,
                                                            firebolt::rialto::common::SessionServerState::NOT_RUNNING);
 }
 
 void Client::onStateChangedEvent(const std::shared_ptr<rialto::StateChangedEvent> &event) const
 {
-    RIALTO_SERVER_MANAGER_LOG_DEBUG("StateChangedEvent received for appId: %d", m_appId);
+    RIALTO_SERVER_MANAGER_LOG_DEBUG("StateChangedEvent received for serverId: %d", m_serverId);
     if (!m_sessionServerAppManager || !event)
     {
         RIALTO_SERVER_MANAGER_LOG_WARN("Problem during StateChangedEvent processing");
         return;
     }
-    m_sessionServerAppManager->onSessionServerStateChanged(m_appId, convert(event->sessionserverstate()));
+    m_sessionServerAppManager->onSessionServerStateChanged(m_serverId, convert(event->sessionserverstate()));
 }
 } // namespace rialto::servermanager::ipc

@@ -52,7 +52,7 @@ public:
     bool isConnected() const override;
     std::string getSessionManagementSocketName() const override;
     firebolt::rialto::common::SessionServerState getInitialState() const override;
-    int getAppId() const override;
+    int getId() const override;
     const std::string &getAppName() const override;
     int getAppManagementSocketName() const override;
     int getMaxPlaybackSessions() const override;
@@ -67,7 +67,7 @@ private:
     void cancelStartupTimerInternal(); // to avoid calling virtual method in destructor
 
 private:
-    const int m_kAppId;
+    const int m_kServerId;
     std::string m_appName;
     firebolt::rialto::common::SessionServerState m_initialState;
     std::string m_sessionManagementSocketName;

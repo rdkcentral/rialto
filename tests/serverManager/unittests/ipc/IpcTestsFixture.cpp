@@ -26,7 +26,7 @@ using testing::Invoke;
 
 namespace
 {
-constexpr int kAppId{3};
+constexpr int kServerId{3};
 } // namespace
 
 IpcTests::IpcTests()
@@ -62,7 +62,7 @@ void IpcTests::simulateClientDisconnection()
 void IpcTests::sessionServerAppManagerWillBeNotifiedAboutSessionServerStateChange(
     const firebolt::rialto::common::SessionServerState &newState)
 {
-    EXPECT_CALL(m_sessionServerAppManagerMock, onSessionServerStateChanged(kAppId, newState))
+    EXPECT_CALL(m_sessionServerAppManagerMock, onSessionServerStateChanged(kServerId, newState))
         .WillOnce(Invoke(
             [this](const auto &, const auto &)
             {
@@ -81,19 +81,19 @@ void IpcTests::waitForExpectationsMet()
 bool IpcTests::triggerCreateClientConnectToFakeSocket()
 {
     EXPECT_TRUE(m_sut);
-    return m_sut->createClient(kAppId, 12345);
+    return m_sut->createClient(kServerId, 12345);
 }
 
 bool IpcTests::triggerCreateClient()
 {
     EXPECT_TRUE(m_sut);
-    return m_sut->createClient(kAppId, m_appStub.getClientSocket());
+    return m_sut->createClient(kServerId, m_appStub.getClientSocket());
 }
 
 void IpcTests::triggerRemoveClient()
 {
     EXPECT_TRUE(m_sut);
-    return m_sut->removeClient(kAppId);
+    return m_sut->removeClient(kServerId);
 }
 
 bool IpcTests::triggerPerformSetConfiguration()
@@ -102,13 +102,13 @@ bool IpcTests::triggerPerformSetConfiguration()
     const auto initialState{firebolt::rialto::common::SessionServerState::INACTIVE};
     const std::string socketName{getenv("RIALTO_SOCKET_PATH")};
     constexpr firebolt::rialto::common::MaxResourceCapabilitites maxResource{2, 1};
-    return m_sut->performSetConfiguration(kAppId, initialState, socketName, maxResource);
+    return m_sut->performSetConfiguration(kServerId, initialState, socketName, maxResource);
 }
 
 bool IpcTests::triggerPerformSetState(const firebolt::rialto::common::SessionServerState &state)
 {
     EXPECT_TRUE(m_sut);
-    return m_sut->performSetState(kAppId, state);
+    return m_sut->performSetState(kServerId, state);
 }
 
 bool IpcTests::triggerSetLogLevels()

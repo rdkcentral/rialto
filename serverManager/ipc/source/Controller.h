@@ -48,12 +48,12 @@ public:
     Controller &operator=(const Controller &) = delete;
     Controller &operator=(Controller &&) = delete;
 
-    bool createClient(int appId, int appMgmtSocket) override;
-    void removeClient(int appId) override;
-    bool performSetConfiguration(int appId, const firebolt::rialto::common::SessionServerState &initialState,
+    bool createClient(int serverId, int appMgmtSocket) override;
+    void removeClient(int serverId) override;
+    bool performSetConfiguration(int serverId, const firebolt::rialto::common::SessionServerState &initialState,
                                  const std::string &socketName,
                                  const firebolt::rialto::common::MaxResourceCapabilitites &maxResource) override;
-    bool performSetState(int appId, const firebolt::rialto::common::SessionServerState &state) override;
+    bool performSetState(int serverId, const firebolt::rialto::common::SessionServerState &state) override;
     bool setLogLevels(const service::LoggingLevels &logLevels) const override;
 
 private:
