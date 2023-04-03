@@ -27,9 +27,8 @@
 #include "IStateObserver.h"
 #include "SessionServerAppFactory.h"
 #include <memory>
-#include <mutex>
+#include <set>
 #include <string>
-#include <vector>
 
 namespace rialto::servermanager::common
 {
@@ -56,37 +55,28 @@ public:
     bool setLogLevels(const service::LoggingLevels &logLevels) const override;
 
 private:
-    bool addSessionServer(const std::string &appName, const firebolt::rialto::common::SessionServerState &initialState,
-                          const firebolt::rialto::common::AppConfig &appConfig);
-    void addPreloadedSessionServer();
-    int launchSessionServer(const std::string &appName, const firebolt::rialto::common::SessionServerState &initialState,
-                            const firebolt::rialto::common::AppConfig &appConfig);
-    int preloadSessionServer();
-    void removeSessionServer(int serverId, bool killApp = false);
-    bool configureSessionServer(int serverId);
-    bool configurePreloadedSessionServer(int serverId, const std::string &appName,
+    bool connectSessionServer(const std::unique_ptr<ISessionServerApp> &sessionServer);
+    bool configureSessionServer(const std::unique_ptr<ISessionServerApp> &sessionServer);
+    bool configurePreloadedSessionServer(const std::unique_ptr<ISessionServerApp> &sessionServer,
+                                         const std::string &appName,
                                          const firebolt::rialto::common::SessionServerState &state,
                                          const firebolt::rialto::common::AppConfig &appConfig);
-    bool addSessionServerConfiguration(int serverId, const std::string &appName,
-                                       const firebolt::rialto::common::SessionServerState &state,
-                                       const firebolt::rialto::common::AppConfig &appConfig);
     bool changeSessionServerState(const std::string &appName,
                                   const firebolt::rialto::common::SessionServerState &newState);
-    bool isSessionServerLaunched(const std::string &appName) const;
-    void cancelSessionServerStartupTimer(int serverId) const;
-    bool isSessionServerPreloaded(int serverId) const;
-    int getserverId(const std::string &appName) const;
-    std::string getAppName(int serverId) const;
-    int getAppManagementSocketName(int serverId) const;
     void handleSessionServerStateChange(int serverId, firebolt::rialto::common::SessionServerState newState);
     void shutdownAllSessionServers();
-    int getPreloadedServerId() const;
+    const std::unique_ptr<ISessionServerApp> &
+    launchSessionServer(const std::string &appName, const firebolt::rialto::common::SessionServerState &initialState,
+                        const firebolt::rialto::common::AppConfig &appConfig);
+    const std::unique_ptr<ISessionServerApp> &preloadSessionServer();
+    const std::unique_ptr<ISessionServerApp> &getPreloadedServer() const;
+    const std::unique_ptr<ISessionServerApp> &getServerByAppName(const std::string &appName) const;
+    const std::unique_ptr<ISessionServerApp> &getServerById(int serverId) const;
 
 private:
-    mutable std::mutex m_sessionServerAppsMutex;
     std::unique_ptr<ipc::IController> &m_ipcController;
     std::unique_ptr<firebolt::rialto::common::IEventThread> m_eventThread;
-    std::vector<std::unique_ptr<ISessionServerApp>> m_sessionServerApps;
+    std::set<std::unique_ptr<ISessionServerApp>> m_sessionServerApps;
     std::unique_ptr<ISessionServerAppFactory> m_sessionServerAppFactory;
     std::shared_ptr<service::IStateObserver> m_stateObserver;
 };

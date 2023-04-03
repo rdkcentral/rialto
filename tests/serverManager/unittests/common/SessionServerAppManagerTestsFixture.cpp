@@ -80,7 +80,8 @@ SessionServerAppManagerTests::SessionServerAppManagerTests()
 {
     auto eventThreadFactoryMock = std::make_shared<StrictMock<firebolt::rialto::common::EventThreadFactoryMock>>();
     auto eventThreadMock = std::make_unique<StrictMock<firebolt::rialto::common::EventThreadMock>>();
-    m_eventThreadMock = eventThreadMock.get();
+    EXPECT_CALL(*eventThreadMock, addImpl(_)).WillRepeatedly(Invoke([](std::function<void()> &&func) { func(); }));
+    EXPECT_CALL(*eventThreadMock, flush());
     EXPECT_CALL(*eventThreadFactoryMock, createEventThread(_)).WillOnce(Return(ByMove(std::move(eventThreadMock))));
 
     m_sut = std::make_unique<rialto::servermanager::common::SessionServerAppManager>(m_controller, m_stateObserver,
@@ -108,7 +109,7 @@ void SessionServerAppManagerTests::sessionServerConnectWillFail(const firebolt::
     EXPECT_CALL(m_sessionServerAppMock, launch()).WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerAppMock, getAppName()).WillRepeatedly(ReturnRef(kAppName));
     EXPECT_CALL(m_sessionServerAppMock, getAppManagementSocketName()).WillOnce(Return(kAppMgmtSocket));
-    EXPECT_CALL(m_sessionServerAppMock, getId()).WillRepeatedly(Return(kServerId));
+    EXPECT_CALL(m_sessionServerAppMock, getServerId()).WillRepeatedly(Return(kServerId));
     EXPECT_CALL(m_controllerMock, createClient(kServerId, kAppMgmtSocket)).WillOnce(Return(false));
     EXPECT_CALL(m_sessionServerAppMock, kill());
 }
@@ -117,7 +118,7 @@ void SessionServerAppManagerTests::preloadedSessionServerConnectWillFail()
 {
     EXPECT_CALL(m_sessionServerAppFactoryMock, create(_)).WillOnce(Return(ByMove(std::move(m_sessionServerApp))));
     EXPECT_CALL(m_sessionServerAppMock, launch()).WillOnce(Return(true));
-    EXPECT_CALL(m_sessionServerAppMock, getId()).WillRepeatedly(Return(kServerId));
+    EXPECT_CALL(m_sessionServerAppMock, getServerId()).WillRepeatedly(Return(kServerId));
     EXPECT_CALL(m_sessionServerAppMock, getAppManagementSocketName()).WillOnce(Return(kAppMgmtSocket));
     EXPECT_CALL(m_controllerMock, createClient(kServerId, kAppMgmtSocket)).WillOnce(Return(false));
     EXPECT_CALL(m_sessionServerAppMock, kill());
@@ -125,7 +126,7 @@ void SessionServerAppManagerTests::preloadedSessionServerConnectWillFail()
 
 void SessionServerAppManagerTests::sessionServerChangeStateWillFail(const firebolt::rialto::common::SessionServerState &state)
 {
-    EXPECT_CALL(m_sessionServerAppMock, getId()).WillRepeatedly(Return(kServerId));
+    EXPECT_CALL(m_sessionServerAppMock, getServerId()).WillRepeatedly(Return(kServerId));
     EXPECT_CALL(m_controllerMock, performSetState(kServerId, state)).WillOnce(Return(false));
 }
 
@@ -136,7 +137,7 @@ void SessionServerAppManagerTests::sessionServerWillLaunch(const firebolt::rialt
     EXPECT_CALL(m_sessionServerAppMock, launch()).WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerAppMock, getAppName()).WillRepeatedly(ReturnRef(kAppName));
     EXPECT_CALL(m_sessionServerAppMock, getAppManagementSocketName()).WillOnce(Return(kAppMgmtSocket));
-    EXPECT_CALL(m_sessionServerAppMock, getId()).WillRepeatedly(Return(kServerId));
+    EXPECT_CALL(m_sessionServerAppMock, getServerId()).WillRepeatedly(Return(kServerId));
     EXPECT_CALL(m_controllerMock, createClient(kServerId, kAppMgmtSocket)).WillOnce(Return(true));
 }
 
@@ -144,7 +145,7 @@ void SessionServerAppManagerTests::preloadedSessionServerWillLaunch()
 {
     EXPECT_CALL(m_sessionServerAppFactoryMock, create(_)).WillOnce(Return(ByMove(std::move(m_sessionServerApp))));
     EXPECT_CALL(m_sessionServerAppMock, launch()).WillOnce(Return(true));
-    EXPECT_CALL(m_sessionServerAppMock, getId()).WillRepeatedly(Return(kServerId));
+    EXPECT_CALL(m_sessionServerAppMock, getServerId()).WillRepeatedly(Return(kServerId));
     EXPECT_CALL(m_sessionServerAppMock, getAppManagementSocketName()).WillOnce(Return(kAppMgmtSocket));
     EXPECT_CALL(m_controllerMock, createClient(kServerId, kAppMgmtSocket)).WillOnce(Return(true));
 }
@@ -166,7 +167,6 @@ void SessionServerAppManagerTests::preloadedSessionServerWillCloseWithError()
     m_secondSessionServerApp = std::make_unique<StrictMock<rialto::servermanager::common::SessionServerAppMock>>();
     auto &secondSessionServerAppMock{
         dynamic_cast<StrictMock<rialto::servermanager::common::SessionServerAppMock> &>(*m_secondSessionServerApp)};
-    EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillRepeatedly(Invoke([](std::function<void()> &&func) { func(); }));
     EXPECT_CALL(m_sessionServerAppMock, isPreloaded()).WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerAppMock, isConnected()).WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerAppMock, getAppName()).WillRepeatedly(ReturnRef(kEmptyAppName));
@@ -194,13 +194,11 @@ void SessionServerAppManagerTests::sessionServerWillChangeStateToUninitialized()
                 performSetConfiguration(kServerId, firebolt::rialto::common::SessionServerState::INACTIVE,
                                         kSessionServerSocketName, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers)))
         .WillOnce(Return(true));
-    EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
     EXPECT_CALL(*m_stateObserver, stateChanged(kAppName, firebolt::rialto::common::SessionServerState::UNINITIALIZED));
 }
 
 void SessionServerAppManagerTests::preloadedSessionServerWillChangeStateToUninitialized()
 {
-    EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
     EXPECT_CALL(m_sessionServerAppMock, getAppName()).WillOnce(ReturnRef(kEmptyAppName));
     EXPECT_CALL(m_sessionServerAppMock, cancelStartupTimer());
     EXPECT_CALL(m_sessionServerAppMock, isPreloaded()).WillOnce(Return(true));
@@ -208,7 +206,6 @@ void SessionServerAppManagerTests::preloadedSessionServerWillChangeStateToUninit
 
 void SessionServerAppManagerTests::sessionServerWillChangeStateToInactive()
 {
-    EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
     EXPECT_CALL(*m_stateObserver, stateChanged(kAppName, firebolt::rialto::common::SessionServerState::INACTIVE));
 }
 
@@ -217,7 +214,6 @@ void SessionServerAppManagerTests::preloadedSessionServerWillSetConfiguration()
     m_secondSessionServerApp = std::make_unique<StrictMock<rialto::servermanager::common::SessionServerAppMock>>();
     auto &secondSessionServerAppMock{
         dynamic_cast<StrictMock<rialto::servermanager::common::SessionServerAppMock> &>(*m_secondSessionServerApp)};
-    EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillRepeatedly(Invoke([](std::function<void()> &&func) { func(); }));
     EXPECT_CALL(m_sessionServerAppMock, isPreloaded()).WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerAppMock, isConnected()).WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerAppMock, getAppName()).WillRepeatedly(ReturnRef(kEmptyAppName));
@@ -276,7 +272,6 @@ void SessionServerAppManagerTests::clientWillBeRemovedAfterStateChangedIndicatio
     const firebolt::rialto::common::SessionServerState &state)
 {
     EXPECT_CALL(m_controllerMock, removeClient(kServerId));
-    EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
     EXPECT_CALL(*m_stateObserver, stateChanged(kAppName, state));
 }
 

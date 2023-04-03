@@ -80,7 +80,6 @@ private:
     StrictMock<rialto::servermanager::ipc::ControllerMock> &m_controllerMock;
     StrictMock<rialto::servermanager::common::SessionServerAppMock> &m_sessionServerAppMock;
     StrictMock<rialto::servermanager::common::SessionServerAppFactoryMock> &m_sessionServerAppFactoryMock;
-    StrictMock<firebolt::rialto::common::EventThreadMock> *m_eventThreadMock;
     std::unique_ptr<rialto::servermanager::common::ISessionServerAppManager> m_sut;
 };
 
