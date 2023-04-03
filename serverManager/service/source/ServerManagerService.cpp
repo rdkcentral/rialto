@@ -33,7 +33,7 @@ ServerManagerService::~ServerManagerService()
     RIALTO_SERVER_MANAGER_LOG_INFO("RialtoServerManager is closing...");
 
 #ifdef RIALTO_SERVER_LOG_FATAL_ENABLED
-    RIALTO_SERVER_MANAGER_LOG_DEBUG("TEST");
+    RIALTO_SERVER_MANAGER_LOG_FATAL("TEST_FATAL");
 #endif
 }
 
