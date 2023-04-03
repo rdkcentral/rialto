@@ -135,7 +135,7 @@ MediaPipelineServerInternal::MediaPipelineServerInternal(
     : m_mediaPipelineClient(client), m_kGstPlayerFactory(gstPlayerFactory), m_kVideoRequirements(videoRequirements),
       m_sessionId{sessionId}, m_shmBuffer{shmBuffer}, m_dataReaderFactory{std::move(dataReaderFactory)},
       m_timerFactory{timerFactory}, m_activeRequests{std::move(activeRequests)}, m_decryptionService{decryptionService},
-      m_currentPlaybackState{PlaybackState::UNKNOWN}, m_wasAllSourcesAttachedCalled{false}, m_isEos{false}
+      m_currentPlaybackState{PlaybackState::UNKNOWN}, m_wasAllSourcesAttachedCalled{false}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
@@ -447,7 +447,13 @@ bool MediaPipelineServerInternal::setPositionInternal(int64_t position)
     }
 
     m_gstPlayer->setPosition(position);
-    m_isEos = false;
+
+    // Reset Eos on seek
+    for (auto& isMediaTypeEos: m_isMediaTypeEosMap)
+    {
+        isMediaTypeEos.second = false;
+    }
+
     return true;
 }
 
@@ -548,7 +554,7 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
     if (status == MediaSourceStatus::EOS)
     {
         m_gstPlayer->setEos(mediaSourceType);
-        m_isEos = true;
+        m_isMediaTypeEosMap[mediaSourceType] = true;
     }
 
     return true;
@@ -622,7 +628,7 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
     if (status == MediaSourceStatus::EOS)
     {
         m_gstPlayer->setEos(mediaSourceType);
-        m_isEos = true;
+        m_isMediaTypeEosMap[mediaSourceType] = true;
     }
 
     return true;
@@ -764,7 +770,8 @@ bool MediaPipelineServerInternal::notifyNeedMediaDataInternal(MediaSourceType me
         RIALTO_SERVER_LOG_WARN("NeedMediaData event sending failed - sourceId not found");
         return false;
     }
-    if (m_isEos)
+    auto it = m_isMediaTypeEosMap.find(mediaSourceType);
+    if (it != m_isMediaTypeEosMap.end() && it->second)
     {
         RIALTO_SERVER_LOG_INFO("EOS, NeedMediaData not needed");
         return false;
