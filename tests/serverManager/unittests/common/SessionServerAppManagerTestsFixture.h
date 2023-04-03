@@ -42,19 +42,29 @@ public:
     virtual ~SessionServerAppManagerTests() = default;
 
     void sessionServerLaunchWillFail(const firebolt::rialto::common::SessionServerState &state);
+    void preloadedSessionServerLaunchWillFail();
     void sessionServerConnectWillFail(const firebolt::rialto::common::SessionServerState &state);
+    void preloadedSessionServerConnectWillFail();
     void sessionServerChangeStateWillFail(const firebolt::rialto::common::SessionServerState &state);
     void sessionServerWillLaunch(const firebolt::rialto::common::SessionServerState &state);
+    void preloadedSessionServerWillLaunch();
+    void preloadedSessionServerWillFailToConfigure(const firebolt::rialto::common::SessionServerState &state);
+    void preloadedSessionServerWillBeConfigured(const firebolt::rialto::common::SessionServerState &state);
+    void preloadedSessionServerWillCloseWithError();
     void sessionServerWillChangeState(const firebolt::rialto::common::SessionServerState &state);
     void sessionServerWillReturnAppSocketName(const std::string &socketName);
     void sessionServerWillChangeStateToUninitialized();
+    void preloadedSessionServerWillChangeStateToUninitialized();
     void sessionServerWillChangeStateToInactive();
+    void preloadedSessionServerWillSetConfiguration();
     void sessionServerWillFailToSetConfiguration();
+    void preloadedSessionServerWillFailToSetConfiguration();
     void sessionServerWillSetLogLevels();
     void sessionServerWillFailToSetLogLevels();
-    void sessionServerWillKillRunningApplicationAtTeardown();
+    void sessionServerWillKillRunningApplication();
     void clientWillBeRemovedAfterStateChangedIndication(const firebolt::rialto::common::SessionServerState &state);
 
+    void triggerPreloadSessionServers();
     bool triggerInitiateApplication(const firebolt::rialto::common::SessionServerState &state);
     bool triggerSetSessionServerState(const firebolt::rialto::common::SessionServerState &newState);
     void triggerOnSessionServerStateChanged(const firebolt::rialto::common::SessionServerState &newState);
@@ -65,9 +75,11 @@ private:
     std::unique_ptr<rialto::servermanager::ipc::IController> m_controller;
     std::shared_ptr<StrictMock<rialto::servermanager::service::StateObserverMock>> m_stateObserver;
     std::unique_ptr<rialto::servermanager::common::ISessionServerApp> m_sessionServerApp;
+    std::unique_ptr<rialto::servermanager::common::ISessionServerApp> m_secondSessionServerApp;
+    std::unique_ptr<rialto::servermanager::common::ISessionServerAppFactory> m_sessionServerAppFactory;
     StrictMock<rialto::servermanager::ipc::ControllerMock> &m_controllerMock;
     StrictMock<rialto::servermanager::common::SessionServerAppMock> &m_sessionServerAppMock;
-    StrictMock<rialto::servermanager::common::SessionServerAppFactoryMock> *m_sessionServerAppFactoryMock;
+    StrictMock<rialto::servermanager::common::SessionServerAppFactoryMock> &m_sessionServerAppFactoryMock;
     StrictMock<firebolt::rialto::common::EventThreadMock> *m_eventThreadMock;
     std::unique_ptr<rialto::servermanager::common::ISessionServerAppManager> m_sut;
 };

@@ -38,8 +38,7 @@ namespace rialto::servermanager::ipc
 class Client
 {
 public:
-    Client(std::unique_ptr<common::ISessionServerAppManager> &sessionServerAppManager, const std::string &appId,
-           int socket);
+    Client(std::unique_ptr<common::ISessionServerAppManager> &sessionServerAppManager, int serverId, int socket);
     ~Client();
     Client(const Client &) = delete;
     Client(Client &&) = delete;
@@ -58,7 +57,7 @@ private:
     void onStateChangedEvent(const std::shared_ptr<rialto::StateChangedEvent> &event) const;
 
 private:
-    std::string m_appId;
+    int m_serverId;
     std::unique_ptr<common::ISessionServerAppManager> &m_sessionServerAppManager;
     int m_socket;
     std::shared_ptr<::firebolt::rialto::ipc::IChannel> m_channel;
