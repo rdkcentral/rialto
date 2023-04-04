@@ -208,7 +208,7 @@ TEST_F(RialtoIpcTest, Timeout)
 }
 
 /**
- * Test that IPC client can process no reply request 
+ * Test that IPC client can process no reply request
  */
 TEST_F(RialtoIpcTest, NoReply)
 {
@@ -232,7 +232,7 @@ TEST_F(RialtoIpcTest, NoReply)
     EXPECT_TRUE(m_clientStub->sendSingleVarRequestWithNoReply(m_int));
     std::unique_lock<std::mutex> messageReceivedLock(messageReceivedMutex);
     bool status = messageReceivedCond.wait_for(messageReceivedLock, std::chrono::milliseconds(100),
-                                                         [&] { return messageReceived; });
+                                               [&] { return messageReceived; });
 
     ASSERT_TRUE(status);
 }

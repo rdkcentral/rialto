@@ -127,7 +127,7 @@ bool ClientStub::sendSingleVarRequestWithNoReply(int32_t var1)
 
     std::atomic_bool done{false};
     m_testModuleStub->TestRequestSingleVarNoReply(controller.get(), &request, &response,
-                                           google::protobuf::NewCallback(onMessageReceived, &done));
+                                                  google::protobuf::NewCallback(onMessageReceived, &done));
 
     while (!done.load())
     {
