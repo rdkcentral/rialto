@@ -34,8 +34,8 @@ MediaPipelineTestBase::MediaPipelineTestBase()
       m_activeRequestsMock{static_cast<StrictMock<ActiveRequestsMock> *>(m_activeRequests.get())},
       m_mainThreadFactoryMock{std::make_shared<StrictMock<MainThreadFactoryMock>>()},
       m_mainThreadMock{std::make_shared<StrictMock<MainThreadMock>>()},
-      m_timerFactoryMock{std::make_shared<StrictMock<TimerFactoryMock>>()}, m_timerMock{
-                                                                                std::make_unique<StrictMock<TimerMock>>()}
+      m_timerFactoryMock{std::make_shared<StrictMock<TimerFactoryMock>>()},
+      m_timerMock{std::make_unique<StrictMock<TimerMock>>()}, m_gstPlayerCallback{nullptr}
 {
 }
 
