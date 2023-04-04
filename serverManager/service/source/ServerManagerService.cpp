@@ -32,7 +32,7 @@ ServerManagerService::ServerManagerService(std::unique_ptr<IServiceContext> &&co
 #endif
 
 #ifdef RIALTO_SERVER_LOG_SYS_FATAL_ENABLED
-    RIALTO_SERVER_MANAGER_LOG_SYS_FATAL("TEST_SYS_FATAL");
+    RIALTO_SERVER_MANAGER_LOG_SYS_FATAL(1,"TEST_SYS_FATAL");
 #endif
 
 #ifdef RIALTO_SERVER_LOG_ERROR_ENABLED
@@ -40,7 +40,7 @@ ServerManagerService::ServerManagerService(std::unique_ptr<IServiceContext> &&co
 #endif
 
 #ifdef RIALTO_SERVER_LOG_SYS_ERROR_ENABLED
-    RIALTO_SERVER_MANAGER_LOG_SYS_ERROR("TEST_SYS_ERROR");
+    RIALTO_SERVER_MANAGER_LOG_SYS_ERROR(1,"TEST_SYS_ERROR");
 #endif
 
 #ifdef RIALTO_SERVER_LOG_WARN_ENABLED
@@ -48,7 +48,7 @@ ServerManagerService::ServerManagerService(std::unique_ptr<IServiceContext> &&co
 #endif
 
 #ifdef RIALTO_SERVER_LOG_SYS_WARN_ENABLED
-    RIALTO_SERVER_MANAGER_LOG_SYS_WARN("TEST_SYS_WARN");
+    RIALTO_SERVER_MANAGER_LOG_SYS_WARN(1,"TEST_SYS_WARN");
 #endif
 
 #ifdef RIALTO_SERVER_LOG_MIL_ENABLED
