@@ -171,8 +171,7 @@ bool SessionServerAppManager::configureSessionServer(const std::unique_ptr<ISess
 {
     if (!sessionServer)
     {
-        RIALTO_SERVER_MANAGER_LOG_ERROR("Configuration of app with id: %d failed - app not found",
-                                        sessionServer->getServerId());
+        RIALTO_SERVER_MANAGER_LOG_ERROR("Configuration of server failed - app not found");
         return false;
     }
     const auto initialState{sessionServer->getInitialState()};
@@ -181,11 +180,11 @@ bool SessionServerAppManager::configureSessionServer(const std::unique_ptr<ISess
                                                                          sessionServer->getMaxWebAudioPlayers()};
     if (!m_ipcController->performSetConfiguration(sessionServer->getServerId(), initialState, socketName, maxResource))
     {
-        RIALTO_SERVER_MANAGER_LOG_ERROR("Configuration of app with id %d failed - ipc error.",
+        RIALTO_SERVER_MANAGER_LOG_ERROR("Configuration of server with id %d failed - ipc error.",
                                         sessionServer->getServerId());
         return false;
     }
-    RIALTO_SERVER_MANAGER_LOG_INFO("Configuration of app with id %d succeeded.", sessionServer->getServerId());
+    RIALTO_SERVER_MANAGER_LOG_INFO("Configuration of server with id %d succeeded.", sessionServer->getServerId());
     return true;
 }
 
