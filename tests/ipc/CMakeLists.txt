@@ -19,7 +19,7 @@
 
 # Run the protoc tool to generate the code
 
-set( Protobuf_IMPORT_DIRS "${CMAKE_SYSROOT}/usr/include" "${CMAKE_CURRENT_LIST_DIR}/../common/proto/" )
+set( Protobuf_IMPORT_DIRS "${CMAKE_SYSROOT}/usr/include" "${CMAKE_CURRENT_LIST_DIR}/../../ipc/common/proto/" )
 protobuf_generate_cpp( PROTO_SRCS PROTO_HEADERS proto/testmodule.proto proto/testmodule.proto )
 
 list( GET PROTO_HEADERS 0 PROTO_HEADER )

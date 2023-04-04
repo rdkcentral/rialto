@@ -41,6 +41,9 @@ public:
     MOCK_METHOD(void, TestResponseMultiVar,
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::TestNoVar *request,
                  ::firebolt::rialto::TestMultiVar *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, TestRequestSingleVarNoReply,
+                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::TestSingleVarNoReply *request,
+                 ::firebolt::rialto::TestNoVar *response, ::google::protobuf::Closure *done));
 
     void defaultReturn(::google::protobuf::RpcController *controller, ::google::protobuf::Closure *done)
     {

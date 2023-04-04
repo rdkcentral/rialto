@@ -204,6 +204,35 @@ TEST_F(RialtoIpcTest, Timeout)
 
     EXPECT_FALSE(m_clientStub->sendSingleVarRequest(m_int));
 
-    // To prevent mock leak (can be removed when we remove TODOs from IPC code - RIALTO-20)
     m_testModuleMock->failureReturn(controller, done);
+}
+
+/**
+ * Test that IPC client can process no reply request 
+ */
+TEST_F(RialtoIpcTest, NoReply)
+{
+    constexpr bool expectMessage{false};
+    m_clientStub->startMessageThread(expectMessage);
+
+    std::mutex messageReceivedMutex;
+    std::condition_variable messageReceivedCond;
+    bool messageReceived = false;
+
+    EXPECT_CALL(*m_testModuleMock, TestRequestSingleVarNoReply(_, _, _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(
+            [&](auto *c, auto *d)
+            {
+                std::unique_lock<std::mutex> messageReceivedLock(messageReceivedMutex);
+                m_testModuleMock->defaultReturn(c, d);
+                messageReceived = true;
+                messageReceivedCond.notify_one();
+            })));
+
+    EXPECT_TRUE(m_clientStub->sendSingleVarRequestWithNoReply(m_int));
+    std::unique_lock<std::mutex> messageReceivedLock(messageReceivedMutex);
+    bool status = messageReceivedCond.wait_for(messageReceivedLock, std::chrono::milliseconds(100),
+                                                         [&] { return messageReceived; });
+
+    ASSERT_TRUE(status);
 }

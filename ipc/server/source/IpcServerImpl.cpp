@@ -945,6 +945,8 @@ void ServerImpl::processMethodCall(const std::shared_ptr<ClientImpl> &client, co
             // request, but no need to pass a controller, response or closure object
             static google::protobuf::internal::FunctionClosure0 nullClosure(&google::protobuf::DoNothing, false);
             service->CallMethod(method, controller, requestMessage, nullptr, &nullClosure);
+
+            delete controller;
         }
         else
         {

@@ -20,6 +20,7 @@
 syntax = "proto2";
 
 import "google/protobuf/descriptor.proto";
+import "rialtoipc.proto";
 
 package firebolt.rialto;
 
@@ -57,6 +58,11 @@ message TestMultiVar {
     required string     var4 = 4;
 }
 
+message TestSingleVarNoReply {
+    required int32 var1 = 1;
+    optional bool no_reply = 2;
+}
+
 service TestModule {
     rpc TestRequestSingleVar(TestSingleVar) returns (TestNoVar) {
     }
@@ -65,5 +71,8 @@ service TestModule {
     rpc TestResponseSingleVar(TestNoVar) returns (TestSingleVar) {
     }
     rpc TestResponseMultiVar(TestNoVar) returns (TestMultiVar) {
+    }
+    rpc TestRequestSingleVarNoReply(TestSingleVarNoReply) returns (TestNoVar) {
+        option (rialto.ipc.no_reply) = true;
     }
 }
