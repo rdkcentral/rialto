@@ -29,11 +29,18 @@ using testing::AtLeast;
 using testing::Return;
 using testing::ReturnRef;
 
+namespace
+{
+constexpr int kNumOfPreloadedServers{2};
+} // namespace
+
 ServerManagerServiceTests::ServerManagerServiceTests()
 {
     auto serviceContext{std::make_unique<StrictMock<rialto::servermanager::service::ServiceContextMock>>()};
     EXPECT_CALL(*serviceContext, getSessionServerAppManager).Times(AtLeast(0)).WillRepeatedly(ReturnRef(m_appManager));
-    m_sut = std::make_unique<rialto::servermanager::service::ServerManagerService>(std::move(serviceContext));
+    EXPECT_CALL(m_appManager, preloadSessionServers(kNumOfPreloadedServers));
+    m_sut = std::make_unique<rialto::servermanager::service::ServerManagerService>(std::move(serviceContext),
+                                                                                   kNumOfPreloadedServers);
 }
 
 void ServerManagerServiceTests::initiateApplicationWillBeCalled(const std::string &appId,

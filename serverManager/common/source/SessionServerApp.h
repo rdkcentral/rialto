@@ -37,15 +37,23 @@ namespace rialto::servermanager::common
 class SessionServerApp : public ISessionServerApp
 {
 public:
-    SessionServerApp(const std::string &appId, const firebolt::rialto::common::SessionServerState &initialState,
+    SessionServerApp(SessionServerAppManager &sessionServerAppManager,
+                     const std::list<std::string> &environmentVariables);
+    SessionServerApp(const std::string &appName, const firebolt::rialto::common::SessionServerState &initialState,
                      const firebolt::rialto::common::AppConfig &appConfig,
                      SessionServerAppManager &sessionServerAppManager,
                      const std::list<std::string> &environmentVariables);
     virtual ~SessionServerApp();
 
     bool launch() override;
+    bool isPreloaded() const override;
+    bool configure(const std::string &appName, const firebolt::rialto::common::SessionServerState &initialState,
+                   const firebolt::rialto::common::AppConfig &appConfig) override;
+    bool isConnected() const override;
     std::string getSessionManagementSocketName() const override;
     firebolt::rialto::common::SessionServerState getInitialState() const override;
+    int getId() const override;
+    const std::string &getAppName() const override;
     int getAppManagementSocketName() const override;
     int getMaxPlaybackSessions() const override;
     int getMaxWebAudioPlayers() const override;
@@ -59,14 +67,16 @@ private:
     void cancelStartupTimerInternal(); // to avoid calling virtual method in destructor
 
 private:
-    const std::string m_kAppId;
-    const firebolt::rialto::common::SessionServerState m_kInitialState;
-    const std::string m_kSessionManagementSocketName;
+    const int m_kServerId;
+    std::string m_appName;
+    firebolt::rialto::common::SessionServerState m_initialState;
+    std::string m_sessionManagementSocketName;
     std::array<int, 2> m_socks;
     SessionServerAppManager &m_sessionServerAppManager;
     pid_t m_pid;
+    bool m_isPreloaded;
     std::vector<char *> m_environmentVariables;
-    std::mutex m_timerMutex;
+    mutable std::mutex m_timerMutex;
     std::unique_ptr<firebolt::rialto::common::ITimer> m_startupTimer;
 };
 } // namespace rialto::servermanager::common
