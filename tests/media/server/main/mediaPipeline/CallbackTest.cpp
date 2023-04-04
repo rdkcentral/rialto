@@ -17,13 +17,7 @@
  * limitations under the License.
  */
 
-#include "IGstGenericPlayerClient.h"
 #include "MediaPipelineTestBase.h"
-
-using ::testing::ByMove;
-using ::testing::DoAll;
-using ::testing::Ref;
-using ::testing::SaveArg;
 
 MATCHER_P(QosInfoMatcher, expectedQosInfo, "")
 {
@@ -33,30 +27,21 @@ MATCHER_P(QosInfoMatcher, expectedQosInfo, "")
 class RialtoServerMediaPipelineCallbackTest : public MediaPipelineTestBase
 {
 protected:
-    IGstGenericPlayerClient *m_gstPlayerCallback;
-
     RialtoServerMediaPipelineCallbackTest()
     {
         createMediaPipeline();
 
-        GetGstPlayerClient();
+        loadGstPlayer();
     }
 
     ~RialtoServerMediaPipelineCallbackTest() { destroyMediaPipeline(); }
 
-    void GetGstPlayerClient()
+    void setPlaybackStatePlaying()
     {
-        mainThreadWillEnqueueTaskAndWait();
-        EXPECT_CALL(*m_gstPlayerFactoryMock, createGstGenericPlayer(_, _, _, _, _))
-            .WillOnce(DoAll(SaveArg<0>(&m_gstPlayerCallback), Return(ByMove(std::move(m_gstPlayer)))));
-
-        // notifyNetworkState posts a task onto the main thread but doesnt wait
         mainThreadWillEnqueueTask();
-        EXPECT_CALL(*m_mediaPipelineClientMock, notifyNetworkState(NetworkState::BUFFERING));
+        EXPECT_CALL(*m_mediaPipelineClientMock, notifyPlaybackState(PlaybackState::PLAYING));
 
-        EXPECT_EQ(m_mediaPipeline->load(MediaType::MSE, "mime", "mse://1"), true);
-
-        ASSERT_NE(m_gstPlayerCallback, nullptr);
+        m_gstPlayerCallback->notifyPlaybackState(PlaybackState::PLAYING);
     }
 };
 
@@ -101,32 +86,11 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyNetworkState)
  */
 TEST_F(RialtoServerMediaPipelineCallbackTest, notifyNeedMediaDataInPrerollingState)
 {
-    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
-        std::make_unique<IMediaPipeline::MediaSourceVideo>("video/h264");
-    mainThreadWillEnqueueTaskAndWait();
-
-    EXPECT_CALL(*m_gstPlayerMock, attachSource(Ref(mediaSource)));
-
-    EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), true);
-
     auto mediaSourceType = firebolt::rialto::MediaSourceType::VIDEO;
-    int sourceId{mediaSource->getId()};
+    int sourceId = attachSource(mediaSourceType, "video/h264");
     int numFrames{1};
-    mainThreadWillEnqueueTaskAndWait();
-    ASSERT_TRUE(m_sharedMemoryBufferMock);
-    ASSERT_TRUE(m_activeRequestsMock);
-    EXPECT_CALL(*m_sharedMemoryBufferMock,
-                clearData(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId, mediaSourceType))
-        .WillOnce(Return(true));
-    EXPECT_CALL(*m_sharedMemoryBufferMock,
-                getMaxDataLen(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId, mediaSourceType))
-        .WillOnce(Return(7 * 1024 * 1024));
-    EXPECT_CALL(*m_sharedMemoryBufferMock,
-                getDataOffset(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId, mediaSourceType))
-        .WillOnce(Return(0));
-    EXPECT_CALL(*m_activeRequestsMock, insert(mediaSourceType, _)).WillOnce(Return(0));
-    EXPECT_CALL(*m_mediaPipelineClientMock,
-                notifyNeedMediaData(sourceId, numFrames, 0, _)); // params tested in NeedMediaDataTests
+
+    expectNotifyNeedData(mediaSourceType, sourceId, numFrames);
 
     m_gstPlayerCallback->notifyNeedMediaData(mediaSourceType);
 }
@@ -136,36 +100,13 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyNeedMediaDataInPrerollingSta
  */
 TEST_F(RialtoServerMediaPipelineCallbackTest, notifyNeedMediaDataInPlayingState)
 {
-    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
-        std::make_unique<IMediaPipeline::MediaSourceVideo>("video/h264");
-    mainThreadWillEnqueueTaskAndWait();
-
-    EXPECT_CALL(*m_gstPlayerMock, attachSource(Ref(mediaSource)));
-
-    EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), true);
-
-    EXPECT_CALL(*m_mediaPipelineClientMock, notifyPlaybackState(PlaybackState::PLAYING));
-    mainThreadWillEnqueueTask();
-    m_gstPlayerCallback->notifyPlaybackState(PlaybackState::PLAYING);
-
     auto mediaSourceType = firebolt::rialto::MediaSourceType::VIDEO;
-    int sourceId{mediaSource->getId()};
+    int sourceId = attachSource(mediaSourceType, "video/h264");
     int numFrames{24};
-    mainThreadWillEnqueueTaskAndWait();
-    ASSERT_TRUE(m_sharedMemoryBufferMock);
-    ASSERT_TRUE(m_activeRequestsMock);
-    EXPECT_CALL(*m_sharedMemoryBufferMock,
-                clearData(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId, mediaSourceType))
-        .WillOnce(Return(true));
-    EXPECT_CALL(*m_sharedMemoryBufferMock,
-                getMaxDataLen(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId, mediaSourceType))
-        .WillOnce(Return(7 * 1024 * 1024));
-    EXPECT_CALL(*m_sharedMemoryBufferMock,
-                getDataOffset(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId, mediaSourceType))
-        .WillOnce(Return(0));
-    EXPECT_CALL(*m_activeRequestsMock, insert(mediaSourceType, _)).WillOnce(Return(0));
-    EXPECT_CALL(*m_mediaPipelineClientMock,
-                notifyNeedMediaData(sourceId, numFrames, 0, _)); // params tested in NeedMediaDataTests
+
+    setPlaybackStatePlaying();
+
+    expectNotifyNeedData(mediaSourceType, sourceId, numFrames);
 
     m_gstPlayerCallback->notifyNeedMediaData(mediaSourceType);
 }
@@ -187,20 +128,62 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyNeedMediaDataFailureDueToSou
 }
 
 /**
+ * Test a notification of the need media data for audio is ignored if EOS.
+ */
+TEST_F(RialtoServerMediaPipelineCallbackTest, notifyNeedMediaDataAudioInEos)
+{
+    auto mediaSourceType = firebolt::rialto::MediaSourceType::AUDIO;
+    attachSource(mediaSourceType, "audio/x-opus");
+
+    setPlaybackStatePlaying();
+    setEos(mediaSourceType);
+
+    expectNotifyNeedDataEos(mediaSourceType);
+
+    m_gstPlayerCallback->notifyNeedMediaData(mediaSourceType);
+}
+
+/**
+ * Test a notification of the need media data for video is ignored if EOS.
+ */
+TEST_F(RialtoServerMediaPipelineCallbackTest, notifyNeedMediaDataVideoInEos)
+{
+    auto mediaSourceType = firebolt::rialto::MediaSourceType::VIDEO;
+    attachSource(mediaSourceType, "video/h264");
+
+    setPlaybackStatePlaying();
+    setEos(mediaSourceType);
+
+    expectNotifyNeedDataEos(mediaSourceType);
+
+    m_gstPlayerCallback->notifyNeedMediaData(mediaSourceType);
+}
+
+/**
+ * Test a notification of the need media data is sent if another source is Eos.
+ */
+TEST_F(RialtoServerMediaPipelineCallbackTest, notifyNeedMediaDataOtherSourcesInEos)
+{
+    int videoSourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
+    attachSource(firebolt::rialto::MediaSourceType::AUDIO, "audio/x-opus");
+
+    int numFrames{24};
+
+    setPlaybackStatePlaying();
+    setEos(firebolt::rialto::MediaSourceType::AUDIO);
+
+    expectNotifyNeedData(firebolt::rialto::MediaSourceType::VIDEO, videoSourceId, numFrames);
+
+    m_gstPlayerCallback->notifyNeedMediaData(firebolt::rialto::MediaSourceType::VIDEO);
+}
+
+/**
  * Test a notification of qos is forwarded to the registered client.
  */
 TEST_F(RialtoServerMediaPipelineCallbackTest, notifyQos)
 {
-    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
-        std::make_unique<IMediaPipeline::MediaSourceVideo>("video/h264");
-    mainThreadWillEnqueueTaskAndWait();
-
-    EXPECT_CALL(*m_gstPlayerMock, attachSource(Ref(mediaSource)));
-
-    EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), true);
-
     auto mediaSourceType = firebolt::rialto::MediaSourceType::VIDEO;
-    int sourceId{mediaSource->getId()};
+    int sourceId = attachSource(mediaSourceType, "audio/x-opus");
     QosInfo qosInfo{5u, 2u};
 
     mainThreadWillEnqueueTask();

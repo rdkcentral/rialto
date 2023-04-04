@@ -77,6 +77,7 @@ WebAudioPlayerIpc::WebAudioPlayerIpc(IWebAudioPlayerIpcClient *client, const std
 
     if (!createWebAudioPlayer(audioMimeType, priority, config))
     {
+        detachChannel();
         throw std::runtime_error("Could not create the web audio player");
     }
 }
