@@ -108,7 +108,7 @@ SessionServerApp::SessionServerApp(SessionServerAppManager &sessionServerAppMana
     : m_kServerId{generateServerId()}, m_socks{-1, -1}, m_sessionServerAppManager{sessionServerAppManager}, m_pid{-1},
       m_isPreloaded{true}
 {
-    RIALTO_SERVER_MANAGER_LOG_INFO("Creating preloaded SessionServerApp with appId: %d", m_kServerId);
+    RIALTO_SERVER_MANAGER_LOG_INFO("Creating preloaded SessionServerApp with serverId: %d", m_kServerId);
     std::transform(environmentVariables.begin(), environmentVariables.end(), std::back_inserter(m_environmentVariables),
                    [](const std::string &str) { return strdup(str.c_str()); });
     m_environmentVariables.push_back(nullptr);
@@ -206,7 +206,7 @@ firebolt::rialto::common::SessionServerState SessionServerApp::getInitialState()
     return m_initialState;
 }
 
-int SessionServerApp::getId() const
+int SessionServerApp::getServerId() const
 {
     return m_kServerId;
 }
