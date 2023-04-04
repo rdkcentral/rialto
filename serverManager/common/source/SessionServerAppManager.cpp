@@ -171,7 +171,7 @@ bool SessionServerAppManager::configureSessionServer(const std::unique_ptr<ISess
 {
     if (!sessionServer)
     {
-        RIALTO_SERVER_MANAGER_LOG_ERROR("Configuration of server failed - app not found");
+        RIALTO_SERVER_MANAGER_LOG_ERROR("Unable to configure Session Server - pointer is null!");
         return false;
     }
     const auto initialState{sessionServer->getInitialState()};
