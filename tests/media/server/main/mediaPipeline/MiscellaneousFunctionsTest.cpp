@@ -146,7 +146,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetPositionSuccess)
 }
 
 /**
- * Test that SetPosition resets the Eos flag on
+ * Test that SetPosition resets the Eos flag on success
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetPositionResetEos)
 {

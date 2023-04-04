@@ -224,7 +224,7 @@ protected:
     bool m_wasAllSourcesAttachedCalled;
 
     /**
-     * @brief Map of flag used to check if Eos has been set on the media type for this playback
+     * @brief Map of flags used to check if Eos has been set on the media type for this playback
      */
     std::map<MediaSourceType, bool> m_isMediaTypeEosMap;
 
