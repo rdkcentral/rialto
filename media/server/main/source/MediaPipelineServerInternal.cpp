@@ -449,7 +449,7 @@ bool MediaPipelineServerInternal::setPositionInternal(int64_t position)
     m_gstPlayer->setPosition(position);
 
     // Reset Eos on seek
-    for (auto& isMediaTypeEos: m_isMediaTypeEosMap)
+    for (auto &isMediaTypeEos : m_isMediaTypeEosMap)
     {
         isMediaTypeEos.second = false;
     }

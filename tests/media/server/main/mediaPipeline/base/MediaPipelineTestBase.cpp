@@ -94,7 +94,6 @@ void MediaPipelineTestBase::loadGstPlayer()
     ASSERT_NE(m_gstPlayerCallback, nullptr);
 }
 
-
 int MediaPipelineTestBase::attachSource(MediaSourceType sourceType, const std::string &mimeType)
 {
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource;
@@ -122,8 +121,7 @@ void MediaPipelineTestBase::setEos(MediaSourceType sourceType)
     IMediaPipeline::MediaSegmentVector dataVec;
     mainThreadWillEnqueueTaskAndWait();
     ASSERT_TRUE(m_activeRequestsMock);
-    EXPECT_CALL(*m_activeRequestsMock, getType(kNeedDataRequestId))
-        .WillOnce(Return(sourceType));
+    EXPECT_CALL(*m_activeRequestsMock, getType(kNeedDataRequestId)).WillOnce(Return(sourceType));
     EXPECT_CALL(*m_activeRequestsMock, getSegments(kNeedDataRequestId)).WillOnce(ReturnRef(dataVec));
     EXPECT_CALL(*m_activeRequestsMock, erase(kNeedDataRequestId));
     EXPECT_CALL(*m_gstPlayerMock, attachSamples(A<const IMediaPipeline::MediaSegmentVector &>()));

@@ -37,21 +37,22 @@
 #include "TimerMock.h"
 #include <gtest/gtest.h>
 #include <memory>
+#include <string>
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::server;
 using namespace firebolt::rialto::server::mock;
 
 using ::testing::_;
-using ::testing::Invoke;
-using ::testing::Return;
-using ::testing::StrictMock;
-using ::testing::ReturnRef;
 using ::testing::A;
-using ::testing::Ref;
-using ::testing::DoAll;
 using ::testing::ByMove;
+using ::testing::DoAll;
+using ::testing::Invoke;
+using ::testing::Ref;
+using ::testing::Return;
+using ::testing::ReturnRef;
 using ::testing::SaveArg;
+using ::testing::StrictMock;
 
 namespace
 {
