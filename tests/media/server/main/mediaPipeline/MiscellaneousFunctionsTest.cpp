@@ -134,7 +134,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetPositionFailureDu
 }
 
 /**
- * Test that SetPosition succeeds
+ * Test that SetPosition succeeds.
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetPositionSuccess)
 {
