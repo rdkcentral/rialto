@@ -46,6 +46,12 @@ using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::StrictMock;
+using ::testing::ReturnRef;
+using ::testing::A;
+using ::testing::Ref;
+using ::testing::DoAll;
+using ::testing::ByMove;
+using ::testing::SaveArg;
 
 namespace
 {
@@ -77,6 +83,7 @@ protected:
     std::shared_ptr<StrictMock<TimerFactoryMock>> m_timerFactoryMock;
     std::unique_ptr<StrictMock<TimerMock>> m_timerMock;
     StrictMock<DecryptionServiceMock> m_decryptionServiceMock;
+    IGstGenericPlayerClient *m_gstPlayerCallback;
 
     // Common variables
     const int m_kSessionId{1};
@@ -88,6 +95,10 @@ protected:
     void mainThreadWillEnqueueTask();
     void mainThreadWillEnqueueTaskAndWait();
     void loadGstPlayer();
+    int attachSource(MediaSourceType sourceType, const std::string &mimeType);
+    void setEos(MediaSourceType sourceType);
+    void expectNotifyNeedData(MediaSourceType sourceType, int sourceId, int numFrames);
+    void expectNotifyNeedDataEos(MediaSourceType sourceType);
 };
 
 #endif // MEDIA_PIPELINE_TEST_BASE_H_

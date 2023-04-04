@@ -134,7 +134,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetPositionFailureDu
 }
 
 /**
- * Test that SetPosition returns failure if the gstreamer player is not initialized
+ * Test that SetPosition succeeds
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetPositionSuccess)
 {
@@ -143,6 +143,30 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetPositionSuccess)
 
     EXPECT_CALL(*m_gstPlayerMock, setPosition(m_kPosition));
     EXPECT_TRUE(m_mediaPipeline->setPosition(m_kPosition));
+}
+
+/**
+ * Test that SetPosition resets the Eos flag on
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetPositionResetEos)
+{
+    loadGstPlayer();
+    int videoSourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
+    int audioSourceId = attachSource(firebolt::rialto::MediaSourceType::AUDIO, "audio/x-opus");
+    setEos(firebolt::rialto::MediaSourceType::VIDEO);
+    setEos(firebolt::rialto::MediaSourceType::AUDIO);
+
+    mainThreadWillEnqueueTaskAndWait();
+
+    EXPECT_CALL(*m_gstPlayerMock, setPosition(m_kPosition));
+    EXPECT_TRUE(m_mediaPipeline->setPosition(m_kPosition));
+
+    // Expect need data notified to client
+    expectNotifyNeedData(firebolt::rialto::MediaSourceType::VIDEO, videoSourceId, 1);
+    m_gstPlayerCallback->notifyNeedMediaData(firebolt::rialto::MediaSourceType::VIDEO);
+
+    expectNotifyNeedData(firebolt::rialto::MediaSourceType::AUDIO, audioSourceId, 1);
+    m_gstPlayerCallback->notifyNeedMediaData(firebolt::rialto::MediaSourceType::AUDIO);
 }
 
 /**
