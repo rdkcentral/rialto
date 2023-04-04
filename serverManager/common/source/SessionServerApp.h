@@ -52,7 +52,7 @@ public:
     bool isConnected() const override;
     std::string getSessionManagementSocketName() const override;
     firebolt::rialto::common::SessionServerState getInitialState() const override;
-    int getId() const override;
+    int getServerId() const override;
     const std::string &getAppName() const override;
     int getAppManagementSocketName() const override;
     int getMaxPlaybackSessions() const override;
