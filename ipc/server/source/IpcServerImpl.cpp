@@ -936,7 +936,6 @@ void ServerImpl::processMethodCall(const std::shared_ptr<ClientImpl> &client, co
         RIALTO_IPC_LOG_DEBUG("call{ serial %" PRIu64 " } - %s.%s { %s }", call.serial_id(), serviceName.c_str(),
                              methodName.c_str(), requestMessage->ShortDebugString().c_str());
 
-        // create a controller (TODO: use a pool of these rather alloc new one each time)
         auto *controller = new ServerControllerImpl(client, call.serial_id());
 
         if (noReply)
