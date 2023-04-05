@@ -33,6 +33,7 @@ public:
     ~ControlClient() override = default;
 
     void notifyApplicationState(ApplicationState state) override;
+    void ping(uint32_t id) override;
 
 private:
     std::shared_ptr<::firebolt::rialto::ipc::IClient> m_ipcClient;

@@ -89,7 +89,9 @@ public:
      */
     virtual ~Control();
 
-    bool setApplicationState(ApplicationState state) override;
+    bool setControlClient(std::weak_ptr<IControlClient> client, ApplicationState &state) override;
+
+    void ack(uint32_t id) override;
 
     uint8_t *getSharedMemoryBuffer() override;
 

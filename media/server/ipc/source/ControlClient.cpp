@@ -56,4 +56,9 @@ void ControlClient::notifyApplicationState(ApplicationState state)
 
     m_ipcClient->sendEvent(event);
 }
+
+void ControlClient::ping(uint32_t id)
+{
+    RIALTO_SERVER_LOG_WARN("Not implemented");
+}
 } // namespace firebolt::rialto::server::ipc

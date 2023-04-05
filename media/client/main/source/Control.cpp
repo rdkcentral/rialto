@@ -116,7 +116,8 @@ Control::~Control()
     term();
 }
 
-bool Control::setApplicationState(ApplicationState state)
+// TODO(marcin.wojciechowski): To be rewritten
+bool Control::setControlClient(std::weak_ptr<IControlClient> client, ApplicationState &state)
 {
     std::lock_guard<std::mutex> lock{m_stateMutex};
 
@@ -161,6 +162,11 @@ bool Control::setApplicationState(ApplicationState state)
     m_currentState = state;
 
     return true;
+}
+
+void Control::ack(uint32_t id)
+{
+    RIALTO_CLIENT_LOG_WARN("Not implemented");
 }
 
 bool Control::init()

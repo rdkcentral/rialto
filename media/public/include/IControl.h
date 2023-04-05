@@ -30,6 +30,7 @@
  */
 
 #include "ControlCommon.h"
+#include "IControlClient.h"
 #include <memory>
 #include <stdint.h>
 
@@ -82,16 +83,21 @@ public:
     IControl &operator=(IControl &&) = delete;
 
     /**
-     * @brief Set the application state
-     * On a transtion from INACTIVE->RUNNING, map the shared memory region.
-     * On a transtion from RUNNING->INACTIVE, unmap the shared memory region.
-     * Initial state of IControl instance is INACTIVE.
+     * @brief Sets IControlClient, note that there can be only one as this is a singleton object
      *
-     * @param[in] state  : The application state.
+     * @param[in]  client  : Client object for callbacks
+     * @param[out] state   : Current application state
      *
      * @retval true on success, false otherwise.
      */
-    virtual bool setApplicationState(ApplicationState state) = 0;
+    virtual bool setControlClient(std::weak_ptr<IControlClient> client, ApplicationState &state) = 0;
+
+    /**
+     * @brief Acknowledgement of a received ping request
+     *
+     * @param[in] id  : id received in ping notification
+     */
+    virtual void ack(uint32_t id) = 0;
 };
 
 }; // namespace firebolt::rialto
