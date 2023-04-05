@@ -59,6 +59,17 @@
    fun:*DescriptorPool*TryFindFileInFallbackDatabase*
 }
 {
+   ignore_protobuf_descriptor_possible_leak
+   Memcheck:Leak
+   match-leak-kinds: possible
+   ...
+   fun:*DescriptorBuilder*BuildService*
+   fun:*DescriptorBuilder*BuildFileImpl*
+   fun:*DescriptorBuilder*BuildFile*
+   fun:*DescriptorPool*BuildFileFromDatabase*
+   fun:*DescriptorPool*TryFindFileInFallbackDatabase*
+}
+{
    ignore_glib_type_leaks
    Memcheck:Leak
    fun:*alloc
