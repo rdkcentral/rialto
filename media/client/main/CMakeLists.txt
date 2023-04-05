@@ -28,7 +28,7 @@ set(LIB_RIALTO_CLIENT_SOURCES
         source/AttachedSources.cpp
         source/MediaPipeline.cpp
         source/MediaPipelineCapabilities.cpp
-        source/RialtoControl.cpp
+        source/Control.cpp
         source/MediaKeys.cpp
         source/MediaKeysCapabilities.cpp
         source/KeyIdMap.cpp

@@ -39,10 +39,10 @@ add_gtests (
         # MediaPipelineCapabilities tests
         mediaPipelineCapabilities/MediaPipelineCapabilitiesTest.cpp
 
-        # RialtoControl tests
-        rialtoControl/CreateTest.cpp
-        rialtoControl/SetAppStateTest.cpp
-        rialtoControl/SharedMemoryClientTest.cpp
+        # Control tests
+        control/CreateTest.cpp
+        control/SetAppStateTest.cpp
+        control/SharedMemoryClientTest.cpp
 
         # MediaKeys tests
         mediaKeys/CreateTest.cpp

@@ -42,9 +42,9 @@ set (
         include/IMediaKeys.h
         include/IMediaKeysClient.h
         include/IMediaKeysCapabilities.h
-        include/IRialtoControl.h
+        include/IControl.h
         include/MediaCommon.h
-        include/RialtoControlCommon.h
+        include/ControlCommon.h
         include/IWebAudioPlayer.h
         include/IWebAudioPlayerClient.h
 )

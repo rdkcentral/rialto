@@ -20,7 +20,7 @@
 set( Protobuf_IMPORT_DIRS "${CMAKE_SYSROOT}/usr/include" "${CMAKE_CURRENT_LIST_DIR}/../../../../ipc/common/proto/" )
 protobuf_generate_cpp( PROTO_SRCS PROTO_HEADERS ../../../../proto/servermanagermodule.proto ../../../../proto/mediapipelinemodule.proto
         ../../../../proto/mediapipelinecapabilitiesmodule.proto ../../../../proto/mediakeysmodule.proto
-        ../../../../proto/mediakeyscapabilitiesmodule.proto ../../../../proto/rialtocontrolmodule.proto
+        ../../../../proto/mediakeyscapabilitiesmodule.proto ../../../../proto/controlmodule.proto
         ../../../../proto/rialtocommon.proto ../../../../proto/webaudioplayermodule.proto )
 
 set( CMAKE_INCLUDE_CURRENT_DIR ON )
@@ -47,9 +47,9 @@ add_gtests (
         mediaPipelineModuleService/MediaPipelineModuleServiceTestsFixture.cpp
         mediaPipelineModuleService/MediaPipelineModuleServiceTests.cpp
 
-        # RialtoControlModuleService unittests
-        rialtoControlModuleService/RialtoControlModuleServiceTestsFixture.cpp
-        rialtoControlModuleService/RialtoControlModuleServiceTests.cpp
+        # ControlModuleService unittests
+        controlModuleService/ControlModuleServiceTestsFixture.cpp
+        controlModuleService/ControlModuleServiceTests.cpp
 
         # MediaKeysModuleService unittests
         mediaKeysModuleService/MediaKeysModuleServiceTestsFixture.cpp

@@ -20,12 +20,12 @@
 #ifndef FIREBOLT_RIALTO_SERVER_IPC_SESSION_MANAGEMENT_SERVER_H_
 #define FIREBOLT_RIALTO_SERVER_IPC_SESSION_MANAGEMENT_SERVER_H_
 
+#include "IControlModuleService.h"
 #include "IMediaKeysCapabilitiesModuleService.h"
 #include "IMediaKeysModuleService.h"
 #include "IMediaPipelineCapabilitiesModuleService.h"
 #include "IMediaPipelineModuleService.h"
 #include "IPlaybackService.h"
-#include "IRialtoControlModuleService.h"
 #include "ISessionManagementServer.h"
 #include "IWebAudioPlayerModuleService.h"
 #include "SetLogLevelsService.h"
@@ -48,7 +48,7 @@ public:
         const std::shared_ptr<IMediaKeysModuleServiceFactory> &mediaKeysModuleFactory,
         const std::shared_ptr<IMediaKeysCapabilitiesModuleServiceFactory> &mediaKeysCapabilitiesModuleFactory,
         const std::shared_ptr<IWebAudioPlayerModuleServiceFactory> &webAudioPlayerModuleFactory,
-        const std::shared_ptr<IRialtoControlModuleServiceFactory> &rialtoControlModuleFactory,
+        const std::shared_ptr<IControlModuleServiceFactory> &controlModuleFactory,
         service::IPlaybackService &playbackService, service::ICdmService &cdmService);
     ~SessionManagementServer() override;
     SessionManagementServer(const SessionManagementServer &) = delete;
@@ -75,7 +75,7 @@ private:
     std::shared_ptr<IMediaKeysModuleService> m_mediaKeysModule;
     std::shared_ptr<IMediaKeysCapabilitiesModuleService> m_mediaKeysCapabilitiesModule;
     std::shared_ptr<IWebAudioPlayerModuleService> m_webAudioPlayerModule;
-    std::shared_ptr<IRialtoControlModuleService> m_rialtoControlModule;
+    std::shared_ptr<IControlModuleService> m_controlModule;
     SetLogLevelsService m_setLogLevelsService;
 };
 } // namespace firebolt::rialto::server::ipc

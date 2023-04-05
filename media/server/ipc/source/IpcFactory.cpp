@@ -19,12 +19,12 @@
 
 #include "IpcFactory.h"
 #include "ApplicationManagementServer.h"
+#include "IControlModuleService.h"
 #include "IIpcServer.h"
 #include "IMediaKeysCapabilitiesModuleService.h"
 #include "IMediaKeysModuleService.h"
 #include "IMediaPipelineCapabilitiesModuleService.h"
 #include "IMediaPipelineModuleService.h"
-#include "IRialtoControlModuleService.h"
 #include "IServerManagerModuleServiceFactory.h"
 #include "IWebAudioPlayerModuleService.h"
 #include "SessionManagementServer.h"
@@ -50,7 +50,7 @@ IpcFactory::createSessionManagementServer(service::IPlaybackService &playbackSer
                                  firebolt::rialto::server::ipc::IMediaKeysModuleServiceFactory::createFactory(),
                                  firebolt::rialto::server::ipc::IMediaKeysCapabilitiesModuleServiceFactory::createFactory(),
                                  firebolt::rialto::server::ipc::IWebAudioPlayerModuleServiceFactory::createFactory(),
-                                 firebolt::rialto::server::ipc::IRialtoControlModuleServiceFactory::createFactory(),
+                                 firebolt::rialto::server::ipc::IControlModuleServiceFactory::createFactory(),
                                  playbackService, cdmService);
 }
 } // namespace firebolt::rialto::server::ipc
