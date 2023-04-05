@@ -60,7 +60,6 @@ message TestMultiVar {
 
 message TestSingleVarNoReply {
     required int32 var1 = 1;
-    optional bool no_reply = 2;
 }
 
 service TestModule {

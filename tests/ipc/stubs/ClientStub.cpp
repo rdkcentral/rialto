@@ -120,7 +120,6 @@ bool ClientStub::sendSingleVarRequestWithNoReply(int32_t var1)
     firebolt::rialto::TestNoVar response;
 
     request.set_var1(var1);
-    request.set_no_reply(true);
 
     auto controllerFactory = firebolt::rialto::ipc::IControllerFactory::createFactory();
     auto controller = controllerFactory->create();
