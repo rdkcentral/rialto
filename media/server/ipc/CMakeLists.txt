@@ -40,6 +40,7 @@ add_library (
         source/MediaKeysClient.cpp
         source/MediaKeysModuleService.cpp
         source/MediaKeysCapabilitiesModuleService.cpp
+        source/RialtoControlClient.cpp
         source/RialtoControlModuleService.cpp
         source/ServerManagerModuleService.cpp
         source/SessionManagementServer.cpp

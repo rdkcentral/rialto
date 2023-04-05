@@ -44,6 +44,23 @@ message GetSharedMemoryResponse {
     required uint32 size = 2;
 }
 
+/**
+ * @brief Event sent by the server when it changes its state
+ *
+ * @param session_id        The id of the A/V session the request is for.
+ *
+ */
+message ApplicationStateChangeEvent {
+
+    enum ApplicationState {
+        UNKNOWN  = 0;        ///< State of RialtoServer is not known
+        RUNNING  = 1;        ///< State of RialtoServer is Active
+        INACTIVE = 2;        ///< State of RialtoServer is Inactive or NotRunning
+    }
+
+    required ApplicationState application_state = 1;
+}
+
 service RialtoControlModule {
 
     /**
