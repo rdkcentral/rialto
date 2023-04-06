@@ -60,7 +60,7 @@ std::shared_ptr<ControlFactory> ControlFactory::createFactory()
     return factory;
 }
 
-std::shared_ptr<IControl> ControlFactory::getControl() const
+std::shared_ptr<IControl> ControlFactory::createControl(std::weak_ptr<IControlClient> client) const
 {
     return getGeneric();
 }
@@ -117,52 +117,52 @@ Control::~Control()
 }
 
 // TODO(marcin.wojciechowski): To be rewritten
-bool Control::setControlClient(std::weak_ptr<IControlClient> client, ApplicationState &state)
-{
-    std::lock_guard<std::mutex> lock{m_stateMutex};
+// bool Control::setControlClient(std::weak_ptr<IControlClient> client, ApplicationState &state)
+// {
+//     std::lock_guard<std::mutex> lock{m_stateMutex};
 
-    if (ApplicationState::UNKNOWN == m_currentState)
-    {
-        RIALTO_CLIENT_LOG_ERROR("Rialto control not initalised");
-        return false;
-    }
+//     if (ApplicationState::UNKNOWN == m_currentState)
+//     {
+//         RIALTO_CLIENT_LOG_ERROR("Rialto control not initalised");
+//         return false;
+//     }
 
-    if (m_currentState == state)
-    {
-        RIALTO_CLIENT_LOG_WARN("Rialto application state already set, %s", stateToString(m_currentState).c_str());
-        return true;
-    }
+//     if (m_currentState == state)
+//     {
+//         RIALTO_CLIENT_LOG_WARN("Rialto application state already set, %s", stateToString(m_currentState).c_str());
+//         return true;
+//     }
 
-    switch (state)
-    {
-    case ApplicationState::RUNNING:
-    {
-        if (!initSharedMemory())
-        {
-            RIALTO_CLIENT_LOG_ERROR("Could not initalise the shared memory in the running state");
-            return false;
-        }
-        break;
-    }
-    case ApplicationState::INACTIVE:
-    {
-        termSharedMemory();
-        break;
-    }
-    default:
-    {
-        RIALTO_CLIENT_LOG_ERROR("Invalid application state, %s", stateToString(state).c_str());
-        return false;
-    }
-    }
+//     switch (state)
+//     {
+//     case ApplicationState::RUNNING:
+//     {
+//         if (!initSharedMemory())
+//         {
+//             RIALTO_CLIENT_LOG_ERROR("Could not initalise the shared memory in the running state");
+//             return false;
+//         }
+//         break;
+//     }
+//     case ApplicationState::INACTIVE:
+//     {
+//         termSharedMemory();
+//         break;
+//     }
+//     default:
+//     {
+//         RIALTO_CLIENT_LOG_ERROR("Invalid application state, %s", stateToString(state).c_str());
+//         return false;
+//     }
+//     }
 
-    RIALTO_CLIENT_LOG_INFO("Rialto application state changed from %s to %s", stateToString(m_currentState).c_str(),
-                           stateToString(state).c_str());
+//     RIALTO_CLIENT_LOG_INFO("Rialto application state changed from %s to %s", stateToString(m_currentState).c_str(),
+//                            stateToString(state).c_str());
 
-    m_currentState = state;
+//     m_currentState = state;
 
-    return true;
-}
+//     return true;
+// }
 
 void Control::ack(uint32_t id)
 {

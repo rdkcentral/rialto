@@ -41,7 +41,7 @@ public:
     ControlFactory() = default;
     ~ControlFactory() override = default;
 
-    std::shared_ptr<IControl> getControl() const override;
+    std::shared_ptr<IControl> createControl(std::weak_ptr<IControlClient> client) const override;
 
     std::shared_ptr<ISharedMemoryManager> getSharedMemoryManager() const override;
 
@@ -88,8 +88,6 @@ public:
      * @brief Virtual destructor.
      */
     virtual ~Control();
-
-    bool setControlClient(std::weak_ptr<IControlClient> client, ApplicationState &state) override;
 
     void ack(uint32_t id) override;
 

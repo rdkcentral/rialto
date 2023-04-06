@@ -55,20 +55,19 @@ public:
     static std::shared_ptr<IControlFactory> createFactory();
 
     /**
-     * @brief IControl factory method, returns a the singleton IControl object.
+     * @brief IControl factory method, returns a concrete implementation of IControl
      *
-     * @retval the rialto control instance or null on error.
+     * @param[in] client            : The Rialto control client.
+     *
+     * @retval the new IControl instance or null on error.
      */
-    virtual std::shared_ptr<IControl> getControl() const = 0;
+    virtual std::shared_ptr<IControl> createControl(std::weak_ptr<IControlClient> client) const = 0;
 };
 
 /**
  * @brief The definition of the IControl interface.
  *
- * This interface defines the public API for control of the ipc and shared memory,
- * should be implemented by Rialto Client only.
- * Initially, IControl instance is in INACTIVE state.
- * It can be changed using IControl::setApplicationState method.
+ * This interface defines the public API for control of the ipc and shared memory.
  *
  */
 class IControl
@@ -81,16 +80,6 @@ public:
     IControl &operator=(const IControl &) = delete;
     IControl(IControl &&) = delete;
     IControl &operator=(IControl &&) = delete;
-
-    /**
-     * @brief Sets IControlClient, note that there can be only one as this is a singleton object
-     *
-     * @param[in]  client  : Client object for callbacks
-     * @param[out] state   : Current application state
-     *
-     * @retval true on success, false otherwise.
-     */
-    virtual bool setControlClient(std::weak_ptr<IControlClient> client, ApplicationState &state) = 0;
 
     /**
      * @brief Acknowledgement of a received ping request
