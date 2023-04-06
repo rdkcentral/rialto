@@ -24,6 +24,7 @@ protobuf_generate_cpp( PROTO_SRCS PROTO_HEADERS proto/testmodule.proto proto/tes
 
 list( GET PROTO_HEADERS 0 PROTO_HEADER )
 get_filename_component( PROTO_DIR ${PROTO_HEADER} DIRECTORY )
+unset(GTEST_MAIN_LIBRARY) # do not link g_test_main
 
 add_gtests (
         RialtoIpcUnitTests
@@ -32,6 +33,7 @@ add_gtests (
         ${PROTO_SRCS}
         ${PROTO_HEADERS}
 
+        main.cpp
         IpcTest.cpp
         )
 
