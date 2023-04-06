@@ -41,6 +41,7 @@ public:
 
     bool sendSingleVarRequest(int32_t var1);
     bool sendMultiVarRequest(int32_t var1, uint32_t var2, firebolt::rialto::TestMultiVar_TestType var3, std::string var4);
+    bool sendSingleVarRequestWithNoReply(int32_t var1);
     bool sendRequestWithSingleVarResponse(int32_t &var1);
     bool sendRequestWithMultiVarResponse(int32_t &var1, uint32_t &var2, firebolt::rialto::TestMultiVar_TestType &var3,
                                          std::string &var4);

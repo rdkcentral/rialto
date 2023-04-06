@@ -118,8 +118,6 @@ std::shared_ptr<firebolt::rialto::ipc::IBlockingClosure> IpcLoop::createBlocking
         return nullptr;
     }
 
-    // TODO(LLDEV-27303): replace with a pool of closures rather than allocating new one each time
-
     // check which thread we're being called from, this determines if we pump
     // event loop from within the wait() method or not
     auto factory = firebolt::rialto::ipc::IBlockingClosureFactory::createFactory();
@@ -141,8 +139,6 @@ std::shared_ptr<firebolt::rialto::ipc::IBlockingClosure> IpcLoop::createBlocking
  */
 std::shared_ptr<google::protobuf::RpcController> IpcLoop::createRpcController()
 {
-    // TODO(LLDEV-27303): replace with a pool of controllers rather than allocating new one each time
-
     return m_ipcControllerFactory->create();
 }
 

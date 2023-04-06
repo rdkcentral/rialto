@@ -114,6 +114,28 @@ bool ClientStub::sendSingleVarRequest(int32_t var1)
     return true;
 }
 
+bool ClientStub::sendSingleVarRequestWithNoReply(int32_t var1)
+{
+    firebolt::rialto::TestSingleVarNoReply request;
+    firebolt::rialto::TestNoVar response;
+
+    request.set_var1(var1);
+
+    auto controllerFactory = firebolt::rialto::ipc::IControllerFactory::createFactory();
+    auto controller = controllerFactory->create();
+
+    std::atomic_bool done{false};
+    m_testModuleStub->TestRequestSingleVarNoReply(controller.get(), &request, &response,
+                                                  google::protobuf::NewCallback(onMessageReceived, &done));
+
+    while (!done.load())
+    {
+        m_channel->wait(1);
+    }
+
+    return true;
+}
+
 bool ClientStub::sendMultiVarRequest(int32_t var1, uint32_t var2, firebolt::rialto::TestMultiVar_TestType var3,
                                      std::string var4)
 {

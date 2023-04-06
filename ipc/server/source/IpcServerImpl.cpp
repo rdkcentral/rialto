@@ -936,7 +936,6 @@ void ServerImpl::processMethodCall(const std::shared_ptr<ClientImpl> &client, co
         RIALTO_IPC_LOG_DEBUG("call{ serial %" PRIu64 " } - %s.%s { %s }", call.serial_id(), serviceName.c_str(),
                              methodName.c_str(), requestMessage->ShortDebugString().c_str());
 
-        // create a controller (TODO: use a pool of these rather alloc new one each time)
         auto *controller = new ServerControllerImpl(client, call.serial_id());
 
         if (noReply)
@@ -945,6 +944,8 @@ void ServerImpl::processMethodCall(const std::shared_ptr<ClientImpl> &client, co
             // request, but no need to pass a controller, response or closure object
             static google::protobuf::internal::FunctionClosure0 nullClosure(&google::protobuf::DoNothing, false);
             service->CallMethod(method, controller, requestMessage, nullptr, &nullClosure);
+
+            delete controller;
         }
         else
         {
