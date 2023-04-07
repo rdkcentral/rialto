@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_IPC_CONTROL_MODULE_SERVICE_H_
 
 #include "IControlModuleService.h"
+#include "IControlService.h"
 #include "IPlaybackService.h"
 #include <IIpcServer.h>
 #include <memory>
@@ -33,13 +34,14 @@ public:
     ControlModuleServiceFactory() = default;
     virtual ~ControlModuleServiceFactory() = default;
 
-    std::shared_ptr<IControlModuleService> create(service::IPlaybackService &playbackService) const override;
+    std::shared_ptr<IControlModuleService> create(service::IPlaybackService &playbackService,
+                                                  service::IControlService &controlService) const override;
 };
 
 class ControlModuleService : public IControlModuleService
 {
 public:
-    explicit ControlModuleService(service::IPlaybackService &playbackService);
+    explicit ControlModuleService(service::IPlaybackService &playbackService, service::IControlService &controlService);
     ~ControlModuleService() override;
 
     void clientConnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient) override;
@@ -52,6 +54,7 @@ public:
 
 private:
     service::IPlaybackService &m_playbackService;
+    service::IControlService &m_controlService;
 };
 } // namespace firebolt::rialto::server::ipc
 

@@ -44,7 +44,8 @@ ControlModuleServiceTests::ControlModuleServiceTests()
       m_closureMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ClosureMock>>()},
       m_controllerMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ControllerMock>>()}
 {
-    m_service = std::make_shared<firebolt::rialto::server::ipc::ControlModuleService>(m_playbackServiceMock);
+    m_service = std::make_shared<firebolt::rialto::server::ipc::ControlModuleService>(m_playbackServiceMock,
+                                                                                      m_controlServiceMock);
 }
 
 ControlModuleServiceTests::~ControlModuleServiceTests() {}

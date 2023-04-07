@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_IPC_SESSION_MANAGEMENT_SERVER_H_
 
 #include "IControlModuleService.h"
+#include "IControlService.h"
 #include "IMediaKeysCapabilitiesModuleService.h"
 #include "IMediaKeysModuleService.h"
 #include "IMediaPipelineCapabilitiesModuleService.h"
@@ -49,7 +50,8 @@ public:
         const std::shared_ptr<IMediaKeysCapabilitiesModuleServiceFactory> &mediaKeysCapabilitiesModuleFactory,
         const std::shared_ptr<IWebAudioPlayerModuleServiceFactory> &webAudioPlayerModuleFactory,
         const std::shared_ptr<IControlModuleServiceFactory> &controlModuleFactory,
-        service::IPlaybackService &playbackService, service::ICdmService &cdmService);
+        service::IPlaybackService &playbackService, service::ICdmService &cdmService,
+        service::IControlService &controlService);
     ~SessionManagementServer() override;
     SessionManagementServer(const SessionManagementServer &) = delete;
     SessionManagementServer(SessionManagementServer &&) = delete;

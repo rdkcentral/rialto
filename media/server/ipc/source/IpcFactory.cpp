@@ -41,7 +41,8 @@ IpcFactory::createApplicationManagementServer(service::ISessionServerManager &se
 }
 
 std::unique_ptr<ISessionManagementServer>
-IpcFactory::createSessionManagementServer(service::IPlaybackService &playbackService, service::ICdmService &cdmService) const
+IpcFactory::createSessionManagementServer(service::IPlaybackService &playbackService, service::ICdmService &cdmService,
+                                          service::IControlService &controlService) const
 {
     return std::make_unique<
         SessionManagementServer>(firebolt::rialto::ipc::IServerFactory::createFactory(),
@@ -51,6 +52,6 @@ IpcFactory::createSessionManagementServer(service::IPlaybackService &playbackSer
                                  firebolt::rialto::server::ipc::IMediaKeysCapabilitiesModuleServiceFactory::createFactory(),
                                  firebolt::rialto::server::ipc::IWebAudioPlayerModuleServiceFactory::createFactory(),
                                  firebolt::rialto::server::ipc::IControlModuleServiceFactory::createFactory(),
-                                 playbackService, cdmService);
+                                 playbackService, cdmService, controlService);
 }
 } // namespace firebolt::rialto::server::ipc

@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_IPC_I_CONTROL_MODULE_SERVICE_H_
 #define FIREBOLT_RIALTO_SERVER_IPC_I_CONTROL_MODULE_SERVICE_H_
 
+#include "IControlService.h"
 #include "IPlaybackService.h"
 #include "controlmodule.pb.h"
 #include <IIpcServer.h>
@@ -50,7 +51,8 @@ public:
      *
      * @retval the rialto controller ipc instance or null on error.
      */
-    virtual std::shared_ptr<IControlModuleService> create(service::IPlaybackService &playbackService) const = 0;
+    virtual std::shared_ptr<IControlModuleService> create(service::IPlaybackService &playbackService,
+                                                          service::IControlService &controlService) const = 0;
 };
 
 /**

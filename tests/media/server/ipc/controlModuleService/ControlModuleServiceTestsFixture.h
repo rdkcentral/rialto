@@ -21,6 +21,7 @@
 #define CONTROL_MODULE_SERVICE_TESTS_FIXTURE_H_
 
 #include "ClosureMock.h"
+#include "ControlServiceMock.h"
 #include "IControlModuleService.h"
 #include "IpcClientMock.h"
 #include "IpcControllerMock.h"
@@ -51,6 +52,7 @@ private:
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ClosureMock>> m_closureMock;
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ControllerMock>> m_controllerMock;
     StrictMock<firebolt::rialto::server::service::PlaybackServiceMock> m_playbackServiceMock;
+    StrictMock<firebolt::rialto::server::service::ControlServiceMock> m_controlServiceMock;
     std::shared_ptr<firebolt::rialto::server::ipc::IControlModuleService> m_service;
 };
 

@@ -42,13 +42,14 @@ std::shared_ptr<IControlModuleServiceFactory> IControlModuleServiceFactory::crea
     return factory;
 }
 
-std::shared_ptr<IControlModuleService> ControlModuleServiceFactory::create(service::IPlaybackService &playbackService) const
+std::shared_ptr<IControlModuleService> ControlModuleServiceFactory::create(service::IPlaybackService &playbackService,
+                                                                           service::IControlService &controlService) const
 {
     std::shared_ptr<IControlModuleService> controlModule;
 
     try
     {
-        controlModule = std::make_shared<ControlModuleService>(playbackService);
+        controlModule = std::make_shared<ControlModuleService>(playbackService, controlService);
     }
     catch (const std::exception &e)
     {
@@ -58,8 +59,9 @@ std::shared_ptr<IControlModuleService> ControlModuleServiceFactory::create(servi
     return controlModule;
 }
 
-ControlModuleService::ControlModuleService(service::IPlaybackService &playbackService)
-    : m_playbackService{playbackService}
+ControlModuleService::ControlModuleService(service::IPlaybackService &playbackService,
+                                           service::IControlService &controlService)
+    : m_playbackService{playbackService}, m_controlService{controlService}
 {
 }
 

@@ -102,7 +102,7 @@ SessionManagementServerTests::SessionManagementServerTests()
     EXPECT_CALL(m_playbackServiceMock, getWebAudioPlayerService()).WillOnce(ReturnRef(m_webAudioPlayerServiceMock));
     std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::ControlModuleServiceFactoryMock>> controlModuleFactoryMock =
         std::make_shared<StrictMock<firebolt::rialto::server::ipc::ControlModuleServiceFactoryMock>>();
-    EXPECT_CALL(*controlModuleFactoryMock, create(_)).WillOnce(Return(m_controlModuleMock));
+    EXPECT_CALL(*controlModuleFactoryMock, create(_, _)).WillOnce(Return(m_controlModuleMock));
     m_sut =
         std::make_unique<firebolt::rialto::server::ipc::SessionManagementServer>(serverFactoryMock,
                                                                                  mediaPipelineModuleFactoryMock,
@@ -111,7 +111,8 @@ SessionManagementServerTests::SessionManagementServerTests()
                                                                                  mediaKeysCapabilitiesModuleFactoryMock,
                                                                                  webAudioPlayerModuleFactoryMock,
                                                                                  controlModuleFactoryMock,
-                                                                                 m_playbackServiceMock, m_cdmServiceMock);
+                                                                                 m_playbackServiceMock,
+                                                                                 m_cdmServiceMock, m_controlServiceMock);
 }
 
 SessionManagementServerTests::~SessionManagementServerTests() {}

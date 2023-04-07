@@ -32,7 +32,8 @@ public:
     ControlModuleServiceFactoryMock() = default;
     virtual ~ControlModuleServiceFactoryMock() = default;
 
-    MOCK_METHOD(std::shared_ptr<IControlModuleService>, create, (service::IPlaybackService & playbackService),
+    MOCK_METHOD(std::shared_ptr<IControlModuleService>, create,
+                (service::IPlaybackService & playbackService, service::IControlService &controlService),
                 (override, const));
 };
 } // namespace firebolt::rialto::server::ipc

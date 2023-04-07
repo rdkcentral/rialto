@@ -18,7 +18,9 @@
  */
 
 #include "CdmService.h"
+#include "ControlService.h"
 #include "GstInit.h"
+#include "IControlServerInternal.h"
 #include "IMediaKeysCapabilities.h"
 #include "IMediaKeysServerInternal.h"
 #include "IMediaPipelineCapabilities.h"
@@ -38,6 +40,8 @@ int main(int argc, char *argv[])
     firebolt::rialto::server::gstInitalise(argc, argv);
 
     firebolt::rialto::server::ipc::IpcFactory ipcFactory;
+    firebolt::rialto::server::service::ControlService controlService{
+        firebolt::rialto::server::IControlServerInternalFactory::createFactory()};
     firebolt::rialto::server::service::CdmService
         cdmService{firebolt::rialto::server::IMediaKeysServerInternalFactory::createFactory(),
                    firebolt::rialto::IMediaKeysCapabilitiesFactory::createFactory()};
@@ -46,7 +50,8 @@ int main(int argc, char *argv[])
                         firebolt::rialto::IMediaPipelineCapabilitiesFactory::createFactory(),
                         firebolt::rialto::server::IWebAudioPlayerServerInternalFactory::createFactory(),
                         firebolt::rialto::server::ISharedMemoryBufferFactory::createFactory(), cdmService};
-    firebolt::rialto::server::service::SessionServerManager serviceManager{ipcFactory, playbackService, cdmService};
+    firebolt::rialto::server::service::SessionServerManager serviceManager{ipcFactory, playbackService, cdmService,
+                                                                           controlService};
     if (!serviceManager.initialize(argc, argv))
     {
         return EXIT_FAILURE;

@@ -22,6 +22,7 @@
 
 #include "CdmServiceMock.h"
 #include "ControlModuleServiceMock.h"
+#include "ControlServiceMock.h"
 #include "ISessionManagementServer.h"
 #include "IpcClientMock.h"
 #include "IpcServerMock.h"
@@ -64,6 +65,7 @@ private:
     StrictMock<firebolt::rialto::server::service::MediaPipelineServiceMock> m_mediaPipelineServiceMock;
     StrictMock<firebolt::rialto::server::service::WebAudioPlayerServiceMock> m_webAudioPlayerServiceMock;
     StrictMock<firebolt::rialto::server::service::CdmServiceMock> m_cdmServiceMock;
+    StrictMock<firebolt::rialto::server::service::ControlServiceMock> m_controlServiceMock;
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ServerMock>> m_serverMock;
     std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::MediaPipelineModuleServiceMock>> m_mediaPipelineModuleMock;
     std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::MediaPipelineCapabilitiesModuleServiceMock>>
