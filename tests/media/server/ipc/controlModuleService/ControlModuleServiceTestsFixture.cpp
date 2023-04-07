@@ -32,6 +32,7 @@ namespace
 {
 constexpr int32_t fd{123};
 constexpr uint32_t size{456U};
+constexpr int kControlId{4};
 } // namespace
 
 namespace firebolt::rialto
@@ -52,7 +53,13 @@ ControlModuleServiceTests::~ControlModuleServiceTests() {}
 
 void ControlModuleServiceTests::clientWillConnect()
 {
+    EXPECT_CALL(m_controlServiceMock, addControl(_)).WillOnce(Return(kControlId));
     EXPECT_CALL(*m_clientMock, exportService(_));
+}
+
+void ControlModuleServiceTests::controlServiceWillRemoveControl()
+{
+    EXPECT_CALL(m_controlServiceMock, removeControl(kControlId));
 }
 
 void ControlModuleServiceTests::playbackServiceWillGetSharedMemory()
@@ -72,6 +79,11 @@ void ControlModuleServiceTests::playbackServiceWillFailToGetSharedMemory()
 void ControlModuleServiceTests::sendClientConnected()
 {
     m_service->clientConnected(m_clientMock);
+}
+
+void ControlModuleServiceTests::sendClientDisconnected()
+{
+    m_service->clientDisconnected(m_clientMock);
 }
 
 void ControlModuleServiceTests::sendGetSharedMemoryRequestAndReceiveResponse()

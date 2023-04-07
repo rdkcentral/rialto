@@ -39,10 +39,12 @@ public:
     ~ControlModuleServiceTests() override;
 
     void clientWillConnect();
+    void controlServiceWillRemoveControl();
     void playbackServiceWillGetSharedMemory();
     void playbackServiceWillFailToGetSharedMemory();
 
     void sendClientConnected();
+    void sendClientDisconnected();
     void sendGetSharedMemoryRequestAndReceiveResponse();
     void sendGetSharedMemoryRequestAndExpectFailure();
 

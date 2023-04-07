@@ -24,6 +24,7 @@
 #include "IControlService.h"
 #include "IPlaybackService.h"
 #include <IIpcServer.h>
+#include <map>
 #include <memory>
 
 namespace firebolt::rialto::server::ipc
@@ -55,6 +56,7 @@ public:
 private:
     service::IPlaybackService &m_playbackService;
     service::IControlService &m_controlService;
+    std::map<std::shared_ptr<::firebolt::rialto::ipc::IClient>, int> m_controlIds;
 };
 } // namespace firebolt::rialto::server::ipc
 

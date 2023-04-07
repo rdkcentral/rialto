@@ -24,6 +24,15 @@ TEST_F(ControlModuleServiceTests, shouldEstablishConnection)
 {
     clientWillConnect();
     sendClientConnected();
+    controlServiceWillRemoveControl(); // in destructor
+}
+
+TEST_F(ControlModuleServiceTests, shouldDisconnect)
+{
+    clientWillConnect();
+    sendClientConnected();
+    controlServiceWillRemoveControl();
+    sendClientDisconnected();
 }
 
 TEST_F(ControlModuleServiceTests, shouldGetSharedMemory)

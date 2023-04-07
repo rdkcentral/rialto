@@ -18,6 +18,7 @@
  */
 
 #include "ControlModuleService.h"
+#include "ControlClient.h"
 #include "IPlaybackService.h"
 #include "RialtoServerLogging.h"
 #include <IIpcController.h>
@@ -65,18 +66,31 @@ ControlModuleService::ControlModuleService(service::IPlaybackService &playbackSe
 {
 }
 
-ControlModuleService::~ControlModuleService() {}
+ControlModuleService::~ControlModuleService()
+{
+    for (const auto &controlId : m_controlIds)
+    {
+        m_controlService.removeControl(controlId.second);
+    }
+}
 
 void ControlModuleService::clientConnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient)
 {
     RIALTO_SERVER_LOG_INFO("Client Connected!");
-
+    auto controlClient{std::make_shared<ControlClient>(ipcClient)};
+    m_controlIds.emplace(ipcClient, m_controlService.addControl(controlClient));
     ipcClient->exportService(shared_from_this());
 }
 
 void ControlModuleService::clientDisconnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient)
 {
     RIALTO_SERVER_LOG_INFO("Client disconnected!");
+    auto controlIdIter = m_controlIds.find(ipcClient);
+    if (m_controlIds.end() != controlIdIter)
+    {
+        m_controlService.removeControl(controlIdIter->second);
+        m_controlIds.erase(controlIdIter);
+    }
 }
 
 void ControlModuleService::getSharedMemory(::google::protobuf::RpcController *controller,
