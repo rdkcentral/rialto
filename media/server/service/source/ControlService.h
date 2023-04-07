@@ -38,6 +38,7 @@ public:
     void setApplicationState(const ApplicationState &state) override;
 
 private:
+    ApplicationState m_currentState;
     std::shared_ptr<IControlServerInternalFactory> m_controlServerInternalFactory;
     std::map<int, std::shared_ptr<IControlServerInternal>> m_controls;
 };

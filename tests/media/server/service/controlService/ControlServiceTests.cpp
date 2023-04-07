@@ -68,3 +68,10 @@ TEST_F(ControlServiceTests, shouldSetApplicationState)
     triggerAddControl();
     triggerSetApplicationState();
 }
+
+TEST_F(ControlServiceTests, shouldSetApplicationStateForNewControl)
+{
+    triggerSetApplicationState();
+    controlServerInternalFactoryWillCreateControlServerInternalWithSetState();
+    triggerAddControl();
+}

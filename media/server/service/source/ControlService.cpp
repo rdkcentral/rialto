@@ -32,7 +32,7 @@ int generateControlId()
 namespace firebolt::rialto::server::service
 {
 ControlService::ControlService(const std::shared_ptr<IControlServerInternalFactory> &controlServerInternalFactory)
-    : m_controlServerInternalFactory{controlServerInternalFactory}
+    : m_currentState{ApplicationState::UNKNOWN}, m_controlServerInternalFactory{controlServerInternalFactory}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 }
@@ -41,7 +41,9 @@ int ControlService::addControl(const std::shared_ptr<IControlClient> &client)
 {
     int id{generateControlId()};
     RIALTO_SERVER_LOG_INFO("Creating new Control with id: %d", id);
-    m_controls.emplace(id, m_controlServerInternalFactory->createControlServerInternal(client));
+    auto controlServerInternal{m_controlServerInternalFactory->createControlServerInternal(client)};
+    controlServerInternal->setApplicationState(m_currentState);
+    m_controls.emplace(id, controlServerInternal);
     return id;
 }
 
@@ -65,6 +67,7 @@ bool ControlService::ack(int controlId, std::uint32_t id)
 
 void ControlService::setApplicationState(const ApplicationState &state)
 {
+    m_currentState = state;
     for (const auto &control : m_controls)
     {
         control.second->setApplicationState(state);

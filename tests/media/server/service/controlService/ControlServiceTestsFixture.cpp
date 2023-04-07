@@ -39,6 +39,14 @@ void ControlServiceTests::controlServerInternalFactoryWillCreateControlServerInt
 {
     EXPECT_CALL(*m_controlServerInternalFactoryMock, createControlServerInternal(_))
         .WillOnce(Return(m_controlServerInternalMock));
+    EXPECT_CALL(*m_controlServerInternalMock, setApplicationState(ApplicationState::UNKNOWN));
+}
+
+void ControlServiceTests::controlServerInternalFactoryWillCreateControlServerInternalWithSetState()
+{
+    EXPECT_CALL(*m_controlServerInternalFactoryMock, createControlServerInternal(_))
+        .WillOnce(Return(m_controlServerInternalMock));
+    EXPECT_CALL(*m_controlServerInternalMock, setApplicationState(kAppState));
 }
 
 void ControlServiceTests::controlServerInternalWillAck()

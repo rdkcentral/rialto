@@ -27,6 +27,7 @@
 #include <gtest/gtest.h>
 #include <memory>
 
+using firebolt::rialto::ApplicationState;
 using firebolt::rialto::ControlClientMock;
 using firebolt::rialto::server::ControlServerInternalFactoryMock;
 using firebolt::rialto::server::ControlServerInternalMock;
@@ -40,6 +41,7 @@ public:
     ~ControlServiceTests() override = default;
 
     void controlServerInternalFactoryWillCreateControlServerInternal();
+    void controlServerInternalFactoryWillCreateControlServerInternalWithSetState();
     void controlServerInternalWillAck();
     void controlServerInternalWillSetApplicationState();
 
