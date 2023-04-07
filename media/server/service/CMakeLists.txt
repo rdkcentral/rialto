@@ -24,6 +24,7 @@ add_library (
 
         source/PlaybackService.cpp
         source/CdmService.cpp
+        source/ControlService.cpp
         source/SessionServerManager.cpp
         source/MediaPipelineService.cpp
         source/WebAudioPlayerService.cpp

@@ -35,6 +35,9 @@ add_gtests (
 
         webAudioPlayerService/WebAudioPlayerServiceTestsFixture.cpp
         webAudioPlayerService/WebAudioPlayerServiceTests.cpp
+
+        controlService/ControlServiceTestsFixture.cpp
+        controlService/ControlServiceTests.cpp
         )
 
 target_include_directories(

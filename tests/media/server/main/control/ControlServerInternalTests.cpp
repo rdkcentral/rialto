@@ -21,6 +21,7 @@
 #include "ControlServerInternal.h"
 #include <gtest/gtest.h>
 
+using testing::StrictMock;
 using testing::Test;
 
 namespace
@@ -33,11 +34,11 @@ class ControlServerInternalTests : public Test
 {
 public:
     ControlServerInternalTests()
-        : m_controlClientMock{std::make_shared<firebolt::rialto::ControlClientMock>()}, m_sut{m_controlClientMock}
+        : m_controlClientMock{std::make_shared<StrictMock<firebolt::rialto::ControlClientMock>>()}, m_sut{m_controlClientMock}
     {
     }
 
-    std::shared_ptr<firebolt::rialto::ControlClientMock> m_controlClientMock;
+    std::shared_ptr<StrictMock<firebolt::rialto::ControlClientMock>> m_controlClientMock;
     firebolt::rialto::server::ControlServerInternal m_sut;
 };
 
