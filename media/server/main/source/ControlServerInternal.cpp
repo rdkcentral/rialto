@@ -74,7 +74,7 @@ try
         RIALTO_SERVER_LOG_ERROR("ControlServerInternal creation failed - can't lock client");
         return nullptr;
     }
-    return std::make_shared<ControlServerInternal>(controlClient);
+    return std::make_shared<ControlServerInternal>(controlClient, server::IMainThreadFactory::createFactory());
 }
 catch (const std::exception &e)
 {
@@ -82,14 +82,23 @@ catch (const std::exception &e)
     return nullptr;
 }
 
-ControlServerInternal::ControlServerInternal(const std::shared_ptr<IControlClient> &client) : m_client{client}
+ControlServerInternal::ControlServerInternal(const std::shared_ptr<IControlClient> &client,
+                                             const std::shared_ptr<IMainThreadFactory> &mainThreadFactory)
+    : m_client{client}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
+    m_mainThread = mainThreadFactory->getMainThread();
+    if (!m_mainThread)
+    {
+        throw std::runtime_error("Failed to get the main thread");
+    }
+    m_mainThreadClientId = m_mainThread->registerClient();
 }
 
 ControlServerInternal::~ControlServerInternal()
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
+    m_mainThread->unregisterClient(m_mainThreadClientId);
 }
 
 void ControlServerInternal::ack(uint32_t id)
@@ -100,6 +109,7 @@ void ControlServerInternal::ack(uint32_t id)
 void ControlServerInternal::setApplicationState(const ApplicationState &state)
 {
     RIALTO_SERVER_LOG_INFO("Notify rialto clients about state changed to: %s", convertApplicationState(state));
-    m_client->notifyApplicationState(state);
+    auto task = [&]() { m_client->notifyApplicationState(state); };
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
 }
 } // namespace firebolt::rialto::server

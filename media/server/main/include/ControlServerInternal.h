@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_CONTROL_SERVER_INTERNAL_H_
 
 #include "IControlServerInternal.h"
+#include "IMainThread.h"
 
 namespace firebolt::rialto::server
 {
@@ -37,7 +38,8 @@ public:
 class ControlServerInternal : public IControlServerInternal
 {
 public:
-    ControlServerInternal(const std::shared_ptr<IControlClient> &client);
+    ControlServerInternal(const std::shared_ptr<IControlClient> &client,
+                          const std::shared_ptr<IMainThreadFactory> &mainThreadFactory);
     ~ControlServerInternal() override;
 
     void ack(uint32_t id) override;
@@ -45,6 +47,8 @@ public:
 
 private:
     std::shared_ptr<IControlClient> m_client;
+    std::shared_ptr<IMainThread> m_mainThread;
+    uint32_t m_mainThreadClientId;
 };
 } // namespace firebolt::rialto::server
 
