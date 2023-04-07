@@ -29,12 +29,13 @@ convertApplicationState(const firebolt::rialto::ApplicationState &state)
 {
     switch (state)
     {
-    case firebolt::rialto::ApplicationState::UNKNOWN:
-        return firebolt::rialto::ApplicationStateChangeEvent_ApplicationState_UNKNOWN;
     case firebolt::rialto::ApplicationState::RUNNING:
         return firebolt::rialto::ApplicationStateChangeEvent_ApplicationState_RUNNING;
     case firebolt::rialto::ApplicationState::INACTIVE:
         return firebolt::rialto::ApplicationStateChangeEvent_ApplicationState_INACTIVE;
+    case firebolt::rialto::ApplicationState::UNKNOWN:
+        break;
+        // do nothing
     }
     return firebolt::rialto::ApplicationStateChangeEvent_ApplicationState_UNKNOWN;
 }
@@ -59,6 +60,11 @@ void ControlClient::notifyApplicationState(ApplicationState state)
 
 void ControlClient::ping(uint32_t id)
 {
-    RIALTO_SERVER_LOG_WARN("Not implemented");
+    RIALTO_SERVER_LOG_DEBUG("Sending PingEvent with id: %d", id);
+
+    auto event = std::make_shared<firebolt::rialto::PingEvent>();
+    event->set_id(id);
+
+    m_ipcClient->sendEvent(event);
 }
 } // namespace firebolt::rialto::server::ipc

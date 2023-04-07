@@ -30,9 +30,10 @@ using testing::SetArgReferee;
 
 namespace
 {
-constexpr int32_t fd{123};
-constexpr uint32_t size{456U};
+constexpr int32_t kFd{123};
+constexpr uint32_t kSize{456U};
 constexpr int kControlId{4};
+constexpr int kPingId{35};
 } // namespace
 
 namespace firebolt::rialto
@@ -66,7 +67,7 @@ void ControlModuleServiceTests::playbackServiceWillGetSharedMemory()
 {
     EXPECT_CALL(*m_closureMock, Run());
     EXPECT_CALL(m_playbackServiceMock, getSharedMemory(_, _))
-        .WillOnce(DoAll(SetArgReferee<0>(fd), SetArgReferee<1>(size), Return(true)));
+        .WillOnce(DoAll(SetArgReferee<0>(kFd), SetArgReferee<1>(kSize), Return(true)));
 }
 
 void ControlModuleServiceTests::playbackServiceWillFailToGetSharedMemory()
@@ -74,6 +75,16 @@ void ControlModuleServiceTests::playbackServiceWillFailToGetSharedMemory()
     EXPECT_CALL(*m_controllerMock, SetFailed(_));
     EXPECT_CALL(*m_closureMock, Run());
     EXPECT_CALL(m_playbackServiceMock, getSharedMemory(_, _)).WillOnce(Return(false));
+}
+
+void ControlModuleServiceTests::playbackServiceWillAck()
+{
+    EXPECT_CALL(m_controlServiceMock, ack(kControlId, kPingId)).WillOnce(Return(true));
+}
+
+void ControlModuleServiceTests::playbackServiceWillFailToAck()
+{
+    EXPECT_CALL(m_controlServiceMock, ack(kControlId, kPingId)).WillOnce(Return(false));
 }
 
 void ControlModuleServiceTests::sendClientConnected()
@@ -93,8 +104,8 @@ void ControlModuleServiceTests::sendGetSharedMemoryRequestAndReceiveResponse()
 
     m_service->getSharedMemory(m_controllerMock.get(), &request, &response, m_closureMock.get());
 
-    EXPECT_EQ(response.fd(), fd);
-    EXPECT_EQ(response.size(), size);
+    EXPECT_EQ(response.fd(), kFd);
+    EXPECT_EQ(response.size(), kSize);
 }
 
 void ControlModuleServiceTests::sendGetSharedMemoryRequestAndExpectFailure()
@@ -103,4 +114,29 @@ void ControlModuleServiceTests::sendGetSharedMemoryRequestAndExpectFailure()
     firebolt::rialto::GetSharedMemoryResponse response;
 
     m_service->getSharedMemory(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void ControlModuleServiceTests::sendAckRequestAndReceiveResponse()
+{
+    firebolt::rialto::AckRequest request;
+    firebolt::rialto::AckResponse response;
+    request.set_id(kPingId);
+
+    EXPECT_CALL(*m_controllerMock, getClient()).WillOnce(Return(m_clientMock));
+    EXPECT_CALL(*m_closureMock, Run());
+
+    m_service->ack(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void ControlModuleServiceTests::sendAckRequestAndExpectFailure()
+{
+    firebolt::rialto::AckRequest request;
+    firebolt::rialto::AckResponse response;
+    request.set_id(kPingId);
+
+    EXPECT_CALL(*m_controllerMock, getClient()).WillOnce(Return(m_clientMock));
+    EXPECT_CALL(*m_controllerMock, SetFailed(_));
+    EXPECT_CALL(*m_closureMock, Run());
+
+    m_service->ack(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }

@@ -45,6 +45,20 @@ message GetSharedMemoryResponse {
 }
 
 /**
+ * @fn void ack()
+ * 
+ * @brief Acknowledgement of a received ping request
+ *
+ * @param[in] id  : id received in ping notification
+ * 
+ */
+message AckRequest {
+    required int32 id = 1;
+}
+message AckResponse {
+}
+
+/**
  * @brief Event sent by the server when it changes its state
  *
  * @param session_id        The id of the A/V session the request is for.
@@ -61,6 +75,17 @@ message ApplicationStateChangeEvent {
     required ApplicationState application_state = 1;
 }
 
+/**
+ * @brief Ping notification for checking system health
+ * The client should perform any health checks then respond with
+ * a call to ack(id) if system healthy
+ *
+ * @param[in] id  : Unique id, should be passed to corresponding ack call
+ */
+message PingEvent {
+    required int32 id = 1;
+}
+
 service ControlModule {
 
     /**
@@ -68,6 +93,13 @@ service ControlModule {
      * @see GetSharedMemoryRequest
      */
     rpc getSharedMemory(GetSharedMemoryRequest) returns (GetSharedMemoryResponse) {
+    }
+
+    /**
+     * @brief Acknowledgement of a received ping request
+     * @see AckRequest
+     */
+    rpc ack(AckRequest) returns (AckResponse) {
     }
 
 }

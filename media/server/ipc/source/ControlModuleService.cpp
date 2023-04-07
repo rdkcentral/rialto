@@ -113,4 +113,35 @@ void ControlModuleService::getSharedMemory(::google::protobuf::RpcController *co
     response->set_size(size);
     done->Run();
 }
+
+void ControlModuleService::ack(::google::protobuf::RpcController *controller,
+                               const ::firebolt::rialto::AckRequest *request, ::firebolt::rialto::AckResponse *response,
+                               ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
+    if (!ipcController)
+    {
+        RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
+        controller->SetFailed("ipc library provided incompatible controller object");
+        done->Run();
+        return;
+    }
+    auto controlIdIter = m_controlIds.find(ipcController->getClient());
+    if (m_controlIds.end() == controlIdIter)
+    {
+        RIALTO_SERVER_LOG_ERROR("Ack received for unknown client");
+        controller->SetFailed("Ack received for unknown client");
+        done->Run();
+        return;
+    }
+    if (!m_controlService.ack(controlIdIter->second, request->id()))
+    {
+        RIALTO_SERVER_LOG_ERROR("ack failed");
+        controller->SetFailed("Operation failed");
+        done->Run();
+        return;
+    }
+    done->Run();
+}
 } // namespace firebolt::rialto::server::ipc

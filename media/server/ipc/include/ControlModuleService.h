@@ -52,6 +52,8 @@ public:
                          const ::firebolt::rialto::GetSharedMemoryRequest *request,
                          ::firebolt::rialto::GetSharedMemoryResponse *response,
                          ::google::protobuf::Closure *done) override;
+    void ack(::google::protobuf::RpcController *controller, const ::firebolt::rialto::AckRequest *request,
+             ::firebolt::rialto::AckResponse *response, ::google::protobuf::Closure *done) override;
 
 private:
     service::IPlaybackService &m_playbackService;

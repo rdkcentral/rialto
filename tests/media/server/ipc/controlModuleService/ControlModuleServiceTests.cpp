@@ -46,3 +46,26 @@ TEST_F(ControlModuleServiceTests, shouldFailToGetSharedMemory)
     playbackServiceWillFailToGetSharedMemory();
     sendGetSharedMemoryRequestAndExpectFailure();
 }
+
+TEST_F(ControlModuleServiceTests, shouldFailToAckWhenClientIsNotConnected)
+{
+    sendAckRequestAndExpectFailure();
+}
+
+TEST_F(ControlModuleServiceTests, shouldFailToAckWhenControlServiceReturnsFailure)
+{
+    clientWillConnect();
+    sendClientConnected();
+    playbackServiceWillFailToAck();
+    sendAckRequestAndExpectFailure();
+    controlServiceWillRemoveControl(); // in destructor
+}
+
+TEST_F(ControlModuleServiceTests, shouldAck)
+{
+    clientWillConnect();
+    sendClientConnected();
+    playbackServiceWillAck();
+    sendAckRequestAndReceiveResponse();
+    controlServiceWillRemoveControl(); // in destructor
+}

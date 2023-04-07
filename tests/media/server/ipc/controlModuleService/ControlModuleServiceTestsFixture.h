@@ -42,11 +42,15 @@ public:
     void controlServiceWillRemoveControl();
     void playbackServiceWillGetSharedMemory();
     void playbackServiceWillFailToGetSharedMemory();
+    void playbackServiceWillAck();
+    void playbackServiceWillFailToAck();
 
     void sendClientConnected();
     void sendClientDisconnected();
     void sendGetSharedMemoryRequestAndReceiveResponse();
     void sendGetSharedMemoryRequestAndExpectFailure();
+    void sendAckRequestAndReceiveResponse();
+    void sendAckRequestAndExpectFailure();
 
 private:
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ClientMock>> m_clientMock;

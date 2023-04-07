@@ -51,6 +51,10 @@ add_gtests (
         controlModuleService/ControlModuleServiceTestsFixture.cpp
         controlModuleService/ControlModuleServiceTests.cpp
 
+        # ControlClient unittests
+        controlClient/ControlClientTestsFixture.cpp
+        controlClient/ControlClientTests.cpp
+
         # MediaKeysModuleService unittests
         mediaKeysModuleService/MediaKeysModuleServiceTestsFixture.cpp
         mediaKeysModuleService/MediaKeysModuleServiceTests.cpp
