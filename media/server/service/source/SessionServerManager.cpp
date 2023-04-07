@@ -167,6 +167,7 @@ bool SessionServerManager::switchToActive()
     }
     if (m_applicationManagementServer->sendStateChangedEvent(common::SessionServerState::ACTIVE))
     {
+        m_controlService.setApplicationState(ApplicationState::RUNNING);
         m_currentState.store(common::SessionServerState::ACTIVE);
         return true;
     }
@@ -186,6 +187,7 @@ bool SessionServerManager::switchToInactive()
     m_cdmService.switchToInactive();
     if (m_applicationManagementServer->sendStateChangedEvent(common::SessionServerState::INACTIVE))
     {
+        m_controlService.setApplicationState(ApplicationState::INACTIVE);
         m_currentState.store(common::SessionServerState::INACTIVE);
         return true;
     }
