@@ -189,6 +189,9 @@ bool GstWebAudioPlayer::initWebAudioPipeline(const uint32_t priority)
         RIALTO_SERVER_LOG_INFO("Use autoaudiosink");
         result = createAutoSink();
     }
+
+    gst_element_set_state(m_context.pipeline, GST_STATE_READY);
+
     return result;
 }
 
