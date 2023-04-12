@@ -59,120 +59,36 @@ catch (const std::exception &e)
 }
 
 Control::Control(std::weak_ptr<IControlClient> client, ISharedMemoryManager &sharedMemoryManager)
-    : m_currentState(ApplicationState::UNKNOWN), m_client(client), m_sharedMemoryManager(sharedMemoryManager)
+    : m_client(client), m_sharedMemoryManager(sharedMemoryManager)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
-
-    if (!init())
+    std::shared_ptr<IControlClient> lockedClient = m_client.lock();
+    if (lockedClient)
     {
-        throw std::runtime_error("Cound not initalise rialto control");
+        m_sharedMemoryManager.registerClient(lockedClient.get());
+    }
+    else
+    {
+        RIALTO_CLIENT_LOG_WARN("Unable to register client");
     }
 }
 
 Control::~Control()
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
-
-    term();
+    std::shared_ptr<IControlClient> client = m_client.lock();
+    if (client)
+    {
+        m_sharedMemoryManager.unregisterClient(client.get());
+    }
+    else
+    {
+        RIALTO_CLIENT_LOG_WARN("Unable to unregister client");
+    }
 }
 
 void Control::ack(uint32_t id)
 {
     RIALTO_CLIENT_LOG_WARN("Not implemented");
 }
-
-void Control::notifyApplicationState(ApplicationState state)
-{
-    std::lock_guard<std::mutex> lock{m_stateMutex};
-
-    if (ApplicationState::UNKNOWN == m_currentState)
-    {
-        RIALTO_CLIENT_LOG_ERROR("Rialto control not initalised");
-        return;
-    }
-    if (m_currentState == state)
-    {
-        RIALTO_CLIENT_LOG_WARN("Rialto application state already set, %s", stateToString(m_currentState).c_str());
-        return;
-    }
-
-    switch (state)
-    {
-    case ApplicationState::RUNNING:
-    {
-        if (!m_sharedMemoryManager.initSharedMemory())
-        {
-            RIALTO_CLIENT_LOG_ERROR("Could not initalise the shared memory in the running state");
-            return;
-        }
-        break;
-    }
-    case ApplicationState::INACTIVE:
-    {
-        m_sharedMemoryManager.termSharedMemory();
-        break;
-    }
-    default:
-    {
-        RIALTO_CLIENT_LOG_ERROR("Invalid application state, %s", stateToString(state).c_str());
-        return;
-    }
-    }
-
-    RIALTO_CLIENT_LOG_INFO("Rialto application state changed from %s to %s", stateToString(m_currentState).c_str(),
-                           stateToString(state).c_str());
-
-    m_currentState = state;
-
-    std::shared_ptr<IControlClient> client = m_client.lock();
-    if (client)
-    {
-        client->notifyApplicationState(state);
-    }
-}
-
-void Control::ping(uint32_t id)
-{
-    RIALTO_CLIENT_LOG_WARN("Not implemented");
-}
-
-bool Control::init()
-{
-    std::lock_guard<std::mutex> lock{m_stateMutex};
-
-    m_currentState = ApplicationState::INACTIVE;
-
-    return true;
-}
-
-void Control::term()
-{
-    std::lock_guard<std::mutex> lock{m_stateMutex};
-
-    m_currentState = ApplicationState::UNKNOWN;
-}
-
-std::string Control::stateToString(ApplicationState state)
-{
-    switch (state)
-    {
-    case ApplicationState::RUNNING:
-    {
-        return "RUNNING";
-    }
-    case ApplicationState::INACTIVE:
-    {
-        return "INACTIVE";
-    }
-    case ApplicationState::UNKNOWN:
-    {
-        return "UNKNOWN";
-    }
-    default:
-    {
-        return "";
-    }
-    }
-}
-
 }; // namespace firebolt::rialto::client

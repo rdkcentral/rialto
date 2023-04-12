@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_MEDIA_PIPELINE_H_
 
 #include "AttachedSources.h"
+#include "IControlClient.h"
 #include "IMediaFrameWriter.h"
 #include "IMediaPipeline.h"
 #include "IMediaPipelineIpc.h"
@@ -54,7 +55,7 @@ namespace firebolt::rialto::client
 /**
  * @brief The definition of the MediaPipeline.
  */
-class MediaPipeline : public IMediaPipeline, public IMediaPipelineIpcClient, public ISharedMemoryManagerClient
+class MediaPipeline : public IMediaPipeline, public IMediaPipelineIpcClient, public IControlClient
 {
 public:
     /**
@@ -126,8 +127,6 @@ public:
     void notifyNeedMediaData(int32_t sourceId, size_t frameCount, uint32_t requestId,
                              const std::shared_ptr<MediaPlayerShmInfo> &shmInfo) override;
 
-    void notifyBufferTerm() override;
-
     void notifyQos(int32_t sourceId, const QosInfo &qosInfo) override;
 
     bool renderFrame() override;
@@ -135,6 +134,10 @@ public:
     bool setVolume(double volume) override;
 
     bool getVolume(double &volume) override;
+
+    void notifyApplicationState(ApplicationState state) override;
+
+    void ping(uint32_t id) override;
 
 protected:
     /**

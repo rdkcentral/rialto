@@ -605,13 +605,20 @@ void MediaPipeline::notifyNeedMediaData(int32_t sourceId, size_t frameCount, uin
     }
 }
 
-void MediaPipeline::notifyBufferTerm()
+void MediaPipeline::notifyApplicationState(ApplicationState state)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
+    if (ApplicationState::RUNNING != state)
+    {
+        // If shared memory in use, wait for it to finish before returning
+        std::lock_guard<std::mutex> lock{m_needDataRequestMapMutex};
+        m_needDataRequestMap.clear();
+    }
+}
 
-    // If shared memory in use, wait for it to finish before returning
-    std::lock_guard<std::mutex> lock{m_needDataRequestMapMutex};
-    m_needDataRequestMap.clear();
+void MediaPipeline::ping(uint32_t id)
+{
+    RIALTO_CLIENT_LOG_DEBUG("To be removed");
 }
 
 void MediaPipeline::notifyQos(int32_t sourceId, const QosInfo &qosInfo)

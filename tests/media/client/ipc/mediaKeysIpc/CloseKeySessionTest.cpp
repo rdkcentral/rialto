@@ -85,7 +85,7 @@ TEST_F(RialtoClientMediaKeysIpcCloseKeySessionTest, ChannelDisconnected)
     EXPECT_EQ(m_mediaKeysIpc->closeKeySession(m_kKeySessionId), MediaKeyErrorStatus::FAIL);
 
     // Reattach channel on destroySession
-    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
+    EXPECT_CALL(m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
     expectSubscribeEvents();
 }
 

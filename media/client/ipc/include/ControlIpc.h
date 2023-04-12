@@ -20,10 +20,11 @@
 #ifndef FIREBOLT_RIALTO_CLIENT_CONTROL_IPC_H_
 #define FIREBOLT_RIALTO_CLIENT_CONTROL_IPC_H_
 
+#include "IControlClient.h"
 #include "IControlIpc.h"
-#include "IIpcClient.h"
+#include "IEventThread.h"
+#include "IpcModule.h"
 #include <memory>
-#include <mutex>
 
 #include "controlmodule.pb.h"
 
@@ -34,15 +35,13 @@ class ControlIpc;
 /**
  * @brief IControlIpc factory class definition.
  */
-class ControlIpcFactory : public IControlIpcFactory, public IIpcClientFactory
+class ControlIpcFactory : public IControlIpcFactory
 {
 public:
     ControlIpcFactory() = default;
     ~ControlIpcFactory() override = default;
 
-    std::shared_ptr<IControlIpc> getControlIpc() override;
-
-    std::shared_ptr<IIpcClient> getIpcClient() override;
+    std::shared_ptr<IControlIpc> getControlIpc(IControlClient *controlClient) override;
 
     /**
      * @brief Create the generic rialto control factory object.
@@ -50,91 +49,60 @@ public:
      * @retval the generic rialto control factory instance or null on error.
      */
     static std::shared_ptr<ControlIpcFactory> createFactory();
-
-protected:
-    /**
-     * @brief Weak pointer to the singleton rialto control object.
-     */
-    static std::weak_ptr<ControlIpc> m_controlIpc;
-
-    /**
-     * @brief Mutex protection for creation of the ControlIpc object.
-     */
-    static std::mutex m_creationMutex;
-
-    /**
-     * @brief Create generic object.
-     *
-     * @retval the generic rialto control ipc instance or null on error.
-     */
-    std::shared_ptr<ControlIpc> getGeneric();
 };
 
 /**
  * @brief The definition of the ControlIpc.
  */
-class ControlIpc : public IControlIpc, public IIpcClient
+class ControlIpc : public IControlIpc, public IpcModule
 {
 public:
     /**
      * @brief The constructor.
      */
-    ControlIpc(const std::shared_ptr<ipc::IChannelFactory> &ipcChannelFactory,
-               const std::shared_ptr<ipc::IControllerFactory> &ipcControllerFactory,
-               const std::shared_ptr<ipc::IBlockingClosureFactory> &blockingClosureFactory);
+    ControlIpc(IControlClient *controlClient, IIpcClient &ipcClient,
+               const std::shared_ptr<common::IEventThreadFactory> &eventThreadFactory);
 
     /**
      * @brief Virtual destructor.
      */
     virtual ~ControlIpc();
 
-    bool connect() override;
-
-    bool disconnect() override;
-
     bool getSharedMemory(int32_t &fd, uint32_t &size) override;
 
-    std::shared_ptr<ipc::IChannel> getChannel() const override;
-
-    std::shared_ptr<ipc::IBlockingClosure> createBlockingClosure() override;
-
-    std::shared_ptr<google::protobuf::RpcController> createRpcController() override;
-
-protected:
-    /**
-     * @brief The ipc thread.
-     */
-    std::thread m_ipcThread;
+private:
+    bool createRpcStubs() override;
+    bool subscribeToEvents() override;
 
     /**
-     * @brief The connected ipc communication channel.
+     * @brief Handler for a application state update from the server.
+     *
+     * @param[in] event : The app state changed event structure.
      */
-    std::shared_ptr<ipc::IChannel> m_ipcChannel;
+    void onApplicationStateUpdated(const std::shared_ptr<firebolt::rialto::ApplicationStateChangeEvent> &event);
 
     /**
-     * @brief Factory for creating the ipc controllers.
+     * @brief Handler for a ping from the server.
+     *
+     * @param[in] event : The ping event structure.
      */
-    std::shared_ptr<ipc::IControllerFactory> m_ipcControllerFactory;
+    void onPing(const std::shared_ptr<firebolt::rialto::PingEvent> &event);
+
+private:
+    /**
+     * @brief Control client for handling messages from server
+     */
+    IControlClient *m_controlClient;
+
+    /**
+     * @brief Thread for handling media player events from the server.
+     */
+    std::unique_ptr<common::IEventThread> m_eventThread;
 
     /**
      * @brief RPC stubs for the Control APIs.
      */
     std::shared_ptr<::firebolt::rialto::ControlModule_Stub> m_controlStub;
-
-    /**
-     * @brief Factory for creating a connected ipc channel.
-     */
-    std::shared_ptr<ipc::IChannelFactory> m_ipcChannelFactory;
-
-    /**
-     * @brief Factory for creating a blocking closure.
-     */
-    std::shared_ptr<ipc::IBlockingClosureFactory> m_blockingClosureFactory;
-
-    /**
-     * @brief The processing loop for the ipc thread.
-     */
-    void ipcThread();
 };
 
 }; // namespace firebolt::rialto::client

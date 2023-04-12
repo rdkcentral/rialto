@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_CLIENT_SHARED_MEMORY_MANAGER_H_
 #define FIREBOLT_RIALTO_CLIENT_SHARED_MEMORY_MANAGER_H_
 
+#include "IControlClient.h"
 #include "IControlIpc.h"
 #include "ISharedMemoryManager.h"
 #include <mutex>
@@ -27,22 +28,48 @@
 
 namespace firebolt::rialto::client
 {
-class SharedMemoryManager : public ISharedMemoryManager
+class SharedMemoryManager : public ISharedMemoryManager, public IControlClient
 {
 public:
     static SharedMemoryManager &instance();
 
     uint8_t *getSharedMemoryBuffer() override;
-    bool registerClient(ISharedMemoryManagerClient *client) override;
-    bool unregisterClient(ISharedMemoryManagerClient *client) override;
-    bool initSharedMemory() override;
-    void termSharedMemory() override;
+    bool registerClient(IControlClient *client) override;
+    bool unregisterClient(IControlClient *client) override;
 
 private:
     SharedMemoryManager(const std::shared_ptr<IControlIpcFactory> &ControlIpcFactory);
     ~SharedMemoryManager() override;
+    void notifyApplicationState(ApplicationState state) override;
+    void ping(uint32_t id) override;
+
+    /**
+     * @brief Initalised the shared memory for media playback. Function not thread-safe
+     *
+     * @retval true on success, false otherwise.
+     */
+    bool initSharedMemory();
+
+    /**
+     * @brief Terminates the shared memory. Function not thread-safe
+     */
+    void termSharedMemory();
+
+    /**
+     * @brief Coverts a ApplicationState to string.
+     *
+     * @param[in] state     : The application state.
+     *
+     * @retval the application state string, or "" on error.
+     */
+    std::string stateToString(ApplicationState state);
 
 private:
+    /**
+     * @brief The current application state
+     */
+    ApplicationState m_currentState;
+
     /**
      * @brief Mutex protection for class attributes.
      */
@@ -71,7 +98,7 @@ private:
     /**
      * @brief Vector of clients to notify.
      */
-    std::set<ISharedMemoryManagerClient *> m_clientVec;
+    std::set<IControlClient *> m_clientVec;
 };
 } // namespace firebolt::rialto::client
 

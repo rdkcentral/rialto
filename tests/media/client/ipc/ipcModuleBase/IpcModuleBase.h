@@ -22,7 +22,6 @@
 
 #include "BlockingClosureMock.h"
 #include "IpcChannelMock.h"
-#include "IpcClientFactoryMock.h"
 #include "IpcClientMock.h"
 #include "MediaPipelineIpc.h"
 #include "MediaPipelineIpcClientMock.h"
@@ -51,8 +50,7 @@ public:
     virtual ~IpcModuleBase() = default;
 
 protected:
-    std::shared_ptr<StrictMock<IpcClientFactoryMock>> m_ipcClientFactoryMock;
-    std::shared_ptr<StrictMock<IpcClientMock>> m_ipcClientMock;
+    StrictMock<IpcClientMock> m_ipcClientMock;
     std::shared_ptr<StrictMock<ChannelMock>> m_channelMock;
     std::shared_ptr<StrictMock<BlockingClosureMock>> m_blockingClosureMock;
     std::shared_ptr<StrictMock<RpcControllerMock>> m_controllerMock;

@@ -20,7 +20,7 @@
 #ifndef FIREBOLT_RIALTO_CLIENT_I_SHARED_MEMORY_MANAGER_H_
 #define FIREBOLT_RIALTO_CLIENT_I_SHARED_MEMORY_MANAGER_H_
 
-#include "ISharedMemoryManagerClient.h"
+#include "IControlClient.h"
 #include <functional>
 #include <memory>
 #include <stdint.h>
@@ -82,7 +82,7 @@ public:
      *
      * @retval true on success, false otherwise.
      */
-    virtual bool registerClient(ISharedMemoryManagerClient *client) = 0;
+    virtual bool registerClient(IControlClient *client) = 0;
 
     /**
      * @brief Unregister a client.
@@ -91,19 +91,7 @@ public:
      *
      * @retval true on success, false otherwise.
      */
-    virtual bool unregisterClient(ISharedMemoryManagerClient *client) = 0;
-
-    /**
-     * @brief Initalised the shared memory for media playback.
-     *
-     * @retval true on success, false otherwise.
-     */
-    virtual bool initSharedMemory() = 0;
-
-    /**
-     * @brief Terminates the shared memory.
-     */
-    virtual void termSharedMemory() = 0;
+    virtual bool unregisterClient(IControlClient *client) = 0;
 };
 
 }; // namespace firebolt::rialto::client

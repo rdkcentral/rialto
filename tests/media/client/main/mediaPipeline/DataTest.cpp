@@ -686,7 +686,7 @@ TEST_F(RialtoClientMediaPipelineDataTest, TermSharedMemoryDuringWrite)
     m_haveDataCond.wait(haveDataLock);
 
     // When notifyBufferTerm called, it shall wait for haveData to finish before returning
-    m_mediaPipeline->notifyBufferTerm();
+    m_mediaPipeline->notifyApplicationState(ApplicationState::INACTIVE);
 
     m_haveDataThread.join();
 }

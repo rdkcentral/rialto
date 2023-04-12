@@ -52,7 +52,7 @@ namespace firebolt::rialto::client
 /**
  * @brief The definition of the WebAudioPlayer.
  */
-class WebAudioPlayer : public IWebAudioPlayer, public IWebAudioPlayerIpcClient, public ISharedMemoryManagerClient
+class WebAudioPlayer : public IWebAudioPlayer, public IWebAudioPlayerIpcClient
 {
 public:
     /**
@@ -94,8 +94,6 @@ public:
     std::weak_ptr<IWebAudioPlayerClient> getClient() override;
 
     void notifyState(WebAudioPlayerState state) override;
-
-    void notifyBufferTerm() override;
 
 protected:
     /**

@@ -50,10 +50,8 @@ TEST_F(RialtoClientCreateWebAudioPlayerTest, Create)
     // Object shall be freed by the holder of the unique ptr on destruction
     m_webAudioPlayerIpcMock = webAudioPlayerIpcMock.get();
 
-    EXPECT_CALL(m_sharedMemoryManagerMock, registerClient(_)).WillOnce(Return(true));
     EXPECT_CALL(*m_webAudioPlayerIpcFactoryMock, createWebAudioPlayerIpc(_, m_audioMimeType, m_priority, &m_config))
         .WillOnce(Return(ByMove(std::move(webAudioPlayerIpcMock))));
-    EXPECT_CALL(m_sharedMemoryManagerMock, unregisterClient(_)).WillOnce(Return(true));
 
     EXPECT_NO_THROW(m_webAudioPlayer = std::make_unique<WebAudioPlayer>(m_webAudioPlayerClientMock, m_audioMimeType,
                                                                         m_priority, &m_config,
@@ -65,33 +63,13 @@ TEST_F(RialtoClientCreateWebAudioPlayerTest, Create)
 
 /**
  * Test that a WebAudioPlayer object throws an exeption if failure occurs during construction.
- * In this case, WebAudioPlayer fails to register a client with the SharedMemoryManager.
- */
-TEST_F(RialtoClientCreateWebAudioPlayerTest, RegisterClientFailure)
-{
-    std::unique_ptr<IWebAudioPlayer> webAudioPlayer;
-
-    EXPECT_CALL(m_sharedMemoryManagerMock, registerClient(_)).WillOnce(Return(false));
-
-    EXPECT_THROW(webAudioPlayer = std::make_unique<WebAudioPlayer>(m_webAudioPlayerClientMock, m_audioMimeType,
-                                                                   m_priority, &m_config, m_webAudioPlayerIpcFactoryMock,
-                                                                   m_sharedMemoryManagerMock),
-                 std::runtime_error);
-}
-
-/**
- * Test that a WebAudioPlayer object throws an exeption if failure occurs during construction.
  * In this case, createWebAudioPlayerIpc fails, returning a nullptr.
  */
 TEST_F(RialtoClientCreateWebAudioPlayerTest, CreateWebAudioPlayerIpcFailure)
 {
     std::unique_ptr<IWebAudioPlayer> webAudioPlayer;
 
-    EXPECT_CALL(m_sharedMemoryManagerMock, registerClient(_)).WillOnce(Return(true));
     EXPECT_CALL(*m_webAudioPlayerIpcFactoryMock, createWebAudioPlayerIpc(_, _, _, _)).WillOnce(Return(nullptr));
-
-    // Unregister after mediaPipelineIpc error
-    EXPECT_CALL(m_sharedMemoryManagerMock, unregisterClient(_)).WillOnce(Return(true));
 
     EXPECT_THROW(webAudioPlayer = std::make_unique<WebAudioPlayer>(m_webAudioPlayerClientMock, m_audioMimeType,
                                                                    m_priority, &m_config, m_webAudioPlayerIpcFactoryMock,

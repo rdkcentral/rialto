@@ -89,11 +89,6 @@ WebAudioPlayer::WebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, cons
         }
     }
 
-    if (!m_sharedMemoryManager.registerClient(this))
-    {
-        throw std::runtime_error("Failed to register client with SharedMemoryManager");
-    }
-
     if (!webAudioPlayerIpcFactory)
     {
         throw std::runtime_error("Web audio player ipc factory could not be null");
@@ -102,7 +97,6 @@ WebAudioPlayer::WebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, cons
     m_webAudioPlayerIpc = webAudioPlayerIpcFactory->createWebAudioPlayerIpc(this, audioMimeType, priority, config);
     if (!m_webAudioPlayerIpc)
     {
-        (void)m_sharedMemoryManager.unregisterClient(this);
         throw std::runtime_error("Web audio player ipc could not be created");
     }
 }
@@ -112,10 +106,6 @@ WebAudioPlayer::~WebAudioPlayer()
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     m_webAudioPlayerIpc.reset();
-    if (!m_sharedMemoryManager.unregisterClient(this))
-    {
-        RIALTO_CLIENT_LOG_WARN("Failed to unregister client with SharedMemoryManager");
-    }
 }
 
 bool WebAudioPlayer::play()
@@ -231,7 +221,5 @@ void WebAudioPlayer::notifyState(WebAudioPlayerState state)
         client->notifyState(state);
     }
 }
-
-void WebAudioPlayer::notifyBufferTerm() {}
 
 }; // namespace firebolt::rialto::client

@@ -18,6 +18,7 @@
  */
 
 #include "MediaPipelineCapabilitiesIpc.h"
+#include "IpcClient.h"
 #include "RialtoClientLogging.h"
 #include "RialtoCommonIpc.h"
 
@@ -45,8 +46,7 @@ std::unique_ptr<IMediaPipelineCapabilities> MediaPipelineCapabilitiesIpcFactory:
 
     try
     {
-        mediaPipelineCapabilitiesIpc =
-            std::make_unique<client::MediaPipelineCapabilitiesIpc>(IIpcClientFactory::createFactory());
+        mediaPipelineCapabilitiesIpc = std::make_unique<client::MediaPipelineCapabilitiesIpc>(IpcClient::instance());
     }
     catch (const std::exception &e)
     {
@@ -56,8 +56,7 @@ std::unique_ptr<IMediaPipelineCapabilities> MediaPipelineCapabilitiesIpcFactory:
     return mediaPipelineCapabilitiesIpc;
 }
 
-MediaPipelineCapabilitiesIpc::MediaPipelineCapabilitiesIpc(const std::shared_ptr<IIpcClientFactory> &ipcClientFactory)
-    : IpcModule(ipcClientFactory)
+MediaPipelineCapabilitiesIpc::MediaPipelineCapabilitiesIpc(IIpcClient &ipcClient) : IpcModule(ipcClient)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
@@ -97,8 +96,8 @@ std::vector<std::string> MediaPipelineCapabilitiesIpc::getSupportedMimeTypes(Med
     request.set_media_type(convertProtoMediaSourceType(sourceType));
 
     firebolt::rialto::GetSupportedMimeTypesResponse response;
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_mediaPipelineCapabilitiesStub->getSupportedMimeTypes(ipcController.get(), &request, &response,
                                                            blockingClosure.get());
 
@@ -127,8 +126,8 @@ bool MediaPipelineCapabilitiesIpc::isMimeTypeSupported(const std::string &mimeTy
     request.set_mime_type(mimeType);
 
     firebolt::rialto::IsMimeTypeSupportedResponse response;
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_mediaPipelineCapabilitiesStub->isMimeTypeSupported(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete

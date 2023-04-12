@@ -22,11 +22,8 @@
 
 #include "IControl.h"
 #include "IControlClient.h"
-#include "IControlIpc.h"
 #include "ISharedMemoryManager.h"
 #include <memory>
-#include <mutex>
-#include <set>
 #include <string>
 
 namespace firebolt::rialto::client
@@ -53,7 +50,7 @@ public:
 /**
  * @brief The definition of the Control.
  */
-class Control : public IControl, public IControlClient
+class Control : public IControl
 {
 public:
     /**
@@ -68,34 +65,7 @@ public:
 
     void ack(uint32_t id) override;
 
-    void notifyApplicationState(ApplicationState state) override;
-    void ping(uint32_t id) override;
-
 private:
-    /**
-     * @brief Initialise the rialto client.
-     * If initialisation is successful, object will be in INACTIVE state.
-     *
-     * @retval true on success, false otherwise.
-     */
-    bool init();
-
-    /**
-     * @brief Terminate the rialto client.
-     */
-    void term();
-
-protected:
-    /**
-     * @brief The current application state
-     */
-    ApplicationState m_currentState;
-
-    /**
-     * @brief Mutex protection for the states of Control.
-     */
-    std::mutex m_stateMutex;
-
     /**
      * @brief The control client
      */
@@ -105,15 +75,6 @@ protected:
      * @brief The rialto shared memory manager object.
      */
     ISharedMemoryManager &m_sharedMemoryManager;
-
-    /**
-     * @brief Coverts a ApplicationState to string.
-     *
-     * @param[in] state     : The application state.
-     *
-     * @retval the application state string, or "" on error.
-     */
-    std::string stateToString(ApplicationState state);
 };
 
 }; // namespace firebolt::rialto::client

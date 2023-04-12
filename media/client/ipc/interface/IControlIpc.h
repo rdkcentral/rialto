@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_CLIENT_I_CONTROL_IPC_H_
 #define FIREBOLT_RIALTO_CLIENT_I_CONTROL_IPC_H_
 
+#include "IControlClient.h"
 #include <stdint.h>
 
 #include <memory>
@@ -50,7 +51,7 @@ public:
      *
      * @retval the rialto controller ipc instance or null on error.
      */
-    virtual std::shared_ptr<IControlIpc> getControlIpc() = 0;
+    virtual std::shared_ptr<IControlIpc> getControlIpc(IControlClient *controlClient) = 0;
 };
 
 /**
@@ -68,20 +69,6 @@ public:
     IControlIpc &operator=(const IControlIpc &) = delete;
     IControlIpc(IControlIpc &&) = delete;
     IControlIpc &operator=(IControlIpc &&) = delete;
-
-    /**
-     * @brief Connect the IPC client.
-     *
-     * @retval true on success, false otherwise.
-     */
-    virtual bool connect() = 0;
-
-    /**
-     * @brief Disconnect the IPC client.
-     *
-     * @retval true on success, false otherwise.
-     */
-    virtual bool disconnect() = 0;
 
     /**
      * @brief Gets shared memory information to map.

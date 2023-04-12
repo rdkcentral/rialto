@@ -31,32 +31,6 @@
 
 namespace firebolt::rialto::client
 {
-class IIpcClient;
-
-/**
- * @brief IIpcClient factory class, returns a singlton of IIpcClient
- */
-class IIpcClientFactory
-{
-public:
-    IIpcClientFactory() = default;
-    virtual ~IIpcClientFactory() = default;
-
-    /**
-     * @brief Create a IIpcClientFactory instance.
-     *
-     * @retval the factory instance or null on error.
-     */
-    static std::shared_ptr<IIpcClientFactory> createFactory();
-
-    /**
-     * @brief Creates a IIpcClient object.
-     *
-     * @retval the rialto controller ipc instance or null on error.
-     */
-    virtual std::shared_ptr<IIpcClient> getIpcClient() = 0;
-};
-
 /**
  * @brief The definition of the IIpcClient interface.
  *

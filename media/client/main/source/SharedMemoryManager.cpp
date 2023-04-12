@@ -30,7 +30,7 @@ SharedMemoryManager::SharedMemoryManager(const std::shared_ptr<IControlIpcFactor
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    m_controlIpc = ControlIpcFactory->getControlIpc();
+    m_controlIpc = ControlIpcFactory->getControlIpc(this);
     if (nullptr == m_controlIpc)
     {
         throw std::runtime_error("Failed to create the ControlIpc object");
@@ -56,7 +56,7 @@ uint8_t *SharedMemoryManager::getSharedMemoryBuffer()
     return m_shmBuffer;
 }
 
-bool SharedMemoryManager::registerClient(ISharedMemoryManagerClient *client)
+bool SharedMemoryManager::registerClient(IControlClient *client)
 {
     if (nullptr == client)
     {
@@ -70,10 +70,15 @@ bool SharedMemoryManager::registerClient(ISharedMemoryManagerClient *client)
         m_clientVec.insert(client);
     }
 
+    if (ApplicationState::RUNNING == m_currentState)
+    {
+        client->notifyApplicationState(m_currentState);
+    }
+
     return true;
 }
 
-bool SharedMemoryManager::unregisterClient(ISharedMemoryManagerClient *client)
+bool SharedMemoryManager::unregisterClient(IControlClient *client)
 {
     if (nullptr == client)
     {
@@ -98,8 +103,6 @@ bool SharedMemoryManager::unregisterClient(ISharedMemoryManagerClient *client)
 bool SharedMemoryManager::initSharedMemory()
 {
     {
-        std::lock_guard<std::mutex> lock{m_mutex};
-
         if (!m_controlIpc->getSharedMemory(m_shmFd, m_shmBufferLen))
         {
             RIALTO_CLIENT_LOG_ERROR("Failed to get the shared memory");
@@ -131,19 +134,10 @@ bool SharedMemoryManager::initSharedMemory()
 
 void SharedMemoryManager::termSharedMemory()
 {
-    std::lock_guard<std::mutex> lock{m_mutex};
-
     if (-1 == m_shmFd)
     {
         RIALTO_CLIENT_LOG_WARN("Shared memory not initalised");
         return;
-    }
-
-    // Notify clients that the shared memory is about to be terminated
-    // Client should finish any reading/writing from the shared buffer before returning
-    for (auto it = m_clientVec.begin(); it != m_clientVec.end(); it++)
-    {
-        (*it)->notifyBufferTerm();
     }
 
     int32_t ret = munmap(m_shmBuffer, m_shmBufferLen);
@@ -160,5 +154,86 @@ void SharedMemoryManager::termSharedMemory()
     m_shmBuffer = nullptr;
     m_shmFd = -1;
     m_shmBufferLen = 0U;
+}
+
+void SharedMemoryManager::notifyApplicationState(ApplicationState state)
+{
+    std::lock_guard<std::mutex> lock{m_mutex};
+    if (ApplicationState::UNKNOWN == m_currentState)
+    {
+        RIALTO_CLIENT_LOG_ERROR("Rialto control not initalised");
+        return;
+    }
+    if (m_currentState == state)
+    {
+        RIALTO_CLIENT_LOG_WARN("Rialto application state already set, %s", stateToString(m_currentState).c_str());
+        return;
+    }
+
+    switch (state)
+    {
+    case ApplicationState::RUNNING:
+    {
+        if (!initSharedMemory())
+        {
+            RIALTO_CLIENT_LOG_ERROR("Could not initalise the shared memory in the running state");
+            return;
+        }
+        // Inform clients after memory initialisation
+        for (auto *client : m_clientVec)
+        {
+            client->notifyApplicationState(state);
+        }
+        break;
+    }
+    case ApplicationState::INACTIVE:
+    {
+        // Inform clients before memory termination
+        for (auto *client : m_clientVec)
+        {
+            client->notifyApplicationState(state);
+        }
+        termSharedMemory();
+        break;
+    }
+    default:
+    {
+        RIALTO_CLIENT_LOG_ERROR("Invalid application state, %s", stateToString(state).c_str());
+        return;
+    }
+    }
+
+    RIALTO_CLIENT_LOG_INFO("Rialto application state changed from %s to %s", stateToString(m_currentState).c_str(),
+                           stateToString(state).c_str());
+
+    m_currentState = state;
+}
+
+void SharedMemoryManager::ping(uint32_t id)
+{
+    RIALTO_CLIENT_LOG_INFO("To be removed");
+}
+
+std::string SharedMemoryManager::stateToString(ApplicationState state)
+{
+    switch (state)
+    {
+    case ApplicationState::RUNNING:
+    {
+        return "RUNNING";
+    }
+    case ApplicationState::INACTIVE:
+    {
+        return "INACTIVE";
+    }
+    case ApplicationState::UNKNOWN:
+    {
+        return "UNKNOWN";
+    }
+    default:
+    {
+        return "";
+    }
+    }
 }
 } // namespace firebolt::rialto::client
