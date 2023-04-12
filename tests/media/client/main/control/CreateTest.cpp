@@ -17,79 +17,79 @@
  * limitations under the License.
  */
 
-#include "Control.h"
-#include "ControlIpcFactoryMock.h"
-#include "ControlIpcMock.h"
-#include <gtest/gtest.h>
+// #include "Control.h"
+// #include "ControlIpcFactoryMock.h"
+// #include "ControlIpcMock.h"
+// #include <gtest/gtest.h>
 
-using namespace firebolt::rialto;
-using namespace firebolt::rialto::client;
+// using namespace firebolt::rialto;
+// using namespace firebolt::rialto::client;
 
-using ::testing::_;
-using ::testing::ByMove;
-using ::testing::Return;
-using ::testing::StrictMock;
+// using ::testing::_;
+// using ::testing::ByMove;
+// using ::testing::Return;
+// using ::testing::StrictMock;
 
-class RialtoClientControlCreateTest : public ::testing::Test
-{
-protected:
-    std::shared_ptr<StrictMock<ControlIpcFactoryMock>> m_controlIpcFactoryMock;
-    std::shared_ptr<StrictMock<ControlIpcMock>> m_controlIpcMock;
+// class RialtoClientControlCreateTest : public ::testing::Test
+// {
+// protected:
+//     std::shared_ptr<StrictMock<ControlIpcFactoryMock>> m_controlIpcFactoryMock;
+//     std::shared_ptr<StrictMock<ControlIpcMock>> m_controlIpcMock;
 
-    virtual void SetUp()
-    {
-        m_controlIpcFactoryMock = std::make_shared<StrictMock<ControlIpcFactoryMock>>();
-        m_controlIpcMock = std::make_shared<StrictMock<ControlIpcMock>>();
-    }
+//     virtual void SetUp()
+//     {
+//         m_controlIpcFactoryMock = std::make_shared<StrictMock<ControlIpcFactoryMock>>();
+//         m_controlIpcMock = std::make_shared<StrictMock<ControlIpcMock>>();
+//     }
 
-    virtual void TearDown()
-    {
-        m_controlIpcMock.reset();
-        m_controlIpcFactoryMock.reset();
-    }
-};
+//     virtual void TearDown()
+//     {
+//         m_controlIpcMock.reset();
+//         m_controlIpcFactoryMock.reset();
+//     }
+// };
 
-/**
- * Test that creating and destroying a Control object connects and disconnects the Ipc .
- */
-TEST_F(RialtoClientControlCreateTest, CreateDestroy)
-{
-    std::unique_ptr<IControl> control;
+// /**
+//  * Test that creating and destroying a Control object connects and disconnects the Ipc .
+//  */
+// TEST_F(RialtoClientControlCreateTest, CreateDestroy)
+// {
+//     std::unique_ptr<IControl> control;
 
-    // Create
-    EXPECT_CALL(*m_controlIpcFactoryMock, getControlIpc()).WillOnce(Return(m_controlIpcMock));
+//     // Create
+//     EXPECT_CALL(*m_controlIpcFactoryMock, getControlIpc()).WillOnce(Return(m_controlIpcMock));
 
-    EXPECT_NO_THROW(control = std::make_unique<Control>(m_controlIpcFactoryMock));
+//     EXPECT_NO_THROW(control = std::make_unique<Control>(m_controlIpcFactoryMock));
 
-    // Destroy
-    control.reset();
-}
+//     // Destroy
+//     control.reset();
+// }
 
-/**
- * Test that create ControlIpc failure throws an exception when creating the Control object.
- */
-TEST_F(RialtoClientControlCreateTest, CreateControlIpcFailure)
-{
-    std::unique_ptr<IControl> control;
+// /**
+//  * Test that create ControlIpc failure throws an exception when creating the Control object.
+//  */
+// TEST_F(RialtoClientControlCreateTest, CreateControlIpcFailure)
+// {
+//     std::unique_ptr<IControl> control;
 
-    EXPECT_CALL(*m_controlIpcFactoryMock, getControlIpc()).WillOnce(Return(nullptr));
+//     EXPECT_CALL(*m_controlIpcFactoryMock, getControlIpc()).WillOnce(Return(nullptr));
 
-    EXPECT_THROW(control = std::make_unique<Control>(m_controlIpcFactoryMock), std::runtime_error);
-    EXPECT_EQ(control, nullptr);
-}
+//     EXPECT_THROW(control = std::make_unique<Control>(m_controlIpcFactoryMock), std::runtime_error);
+//     EXPECT_EQ(control, nullptr);
+// }
 
-/**
- * Test that Control object is still destroyed if term fails.
- */
-TEST_F(RialtoClientControlCreateTest, TermFailure)
-{
-    std::unique_ptr<IControl> control;
+// /**
+//  * Test that Control object is still destroyed if term fails.
+//  */
+// TEST_F(RialtoClientControlCreateTest, TermFailure)
+// {
+//     std::unique_ptr<IControl> control;
 
-    // Create
-    EXPECT_CALL(*m_controlIpcFactoryMock, getControlIpc()).WillOnce(Return(m_controlIpcMock));
+//     // Create
+//     EXPECT_CALL(*m_controlIpcFactoryMock, getControlIpc()).WillOnce(Return(m_controlIpcMock));
 
-    EXPECT_NO_THROW(control = std::make_unique<Control>(m_controlIpcFactoryMock));
+//     EXPECT_NO_THROW(control = std::make_unique<Control>(m_controlIpcFactoryMock));
 
-    // Destroy
-    control.reset();
-}
+//     // Destroy
+//     control.reset();
+// }

@@ -77,13 +77,12 @@ public:
      * @param[in] videoRequirements             : The video decoder requirements for the MediaPipeline session.
      * @param[in] mediaPipelineIpcFactory         : The media player ipc factory.
      * @param[in] mediaFrameWriterFactory       : The media frame writer factory.
-     * @param[in] sharedMemoryManagerFactory    : The shared memory manager factory.
-     * @param[in] sharedMemoryManagerFactory    : The event thread factory.
+     * @param[in] sharedMemoryManager           : The shared memory manager.
      */
     MediaPipeline(std::weak_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements,
                   const std::shared_ptr<IMediaPipelineIpcFactory> &mediaPipelineIpcFactory,
                   const std::shared_ptr<common::IMediaFrameWriterFactory> &mediaFrameWriterFactory,
-                  const std::shared_ptr<ISharedMemoryManagerFactory> &sharedMemoryManagerFactory);
+                  ISharedMemoryManager &sharedMemoryManager);
 
     /**
      * @brief Virtual destructor.
@@ -160,7 +159,7 @@ protected:
     /**
      * @brief The rialto shared memory manager object.
      */
-    std::shared_ptr<ISharedMemoryManager> m_sharedMemoryManager;
+    ISharedMemoryManager &m_sharedMemoryManager;
 
     /**
      * @brief The Need data request map.

@@ -78,7 +78,7 @@ TEST_F(RialtoClientWebAudioPlayerWriteBufferTest, sharedBufferNoLongerValidError
                 webAudioShmInfo->lengthMain = 4;
                 return true;
             }));
-    EXPECT_CALL(*m_sharedMemoryManagerMock, getSharedMemoryBuffer()).WillOnce(Invoke([this]() { return nullptr; }));
+    EXPECT_CALL(m_sharedMemoryManagerMock, getSharedMemoryBuffer()).WillOnce(Invoke([this]() { return nullptr; }));
     m_webAudioPlayer->getBufferAvailable(m_numberOfFrames, notUsedWebAudioShmInfo);
 
     EXPECT_FALSE(m_webAudioPlayer->writeBuffer(m_numberOfFrames, m_dataSrc.data()));
@@ -96,7 +96,7 @@ TEST_F(RialtoClientWebAudioPlayerWriteBufferTest, writeBufferIpcCallFailsError)
                 webAudioShmInfo->lengthMain = 4;
                 return true;
             }));
-    EXPECT_CALL(*m_sharedMemoryManagerMock, getSharedMemoryBuffer())
+    EXPECT_CALL(m_sharedMemoryManagerMock, getSharedMemoryBuffer())
         .WillOnce(Invoke([this]() { return m_dataDest.data(); }));
     m_webAudioPlayer->getBufferAvailable(m_numberOfFrames, notUsedWebAudioShmInfo);
 
@@ -118,7 +118,7 @@ TEST_F(RialtoClientWebAudioPlayerWriteBufferTest, writeToMainOffsetOnly)
                 webAudioShmInfo->lengthWrap = 1000;
                 return true;
             }));
-    EXPECT_CALL(*m_sharedMemoryManagerMock, getSharedMemoryBuffer())
+    EXPECT_CALL(m_sharedMemoryManagerMock, getSharedMemoryBuffer())
         .WillOnce(Invoke([this]() { return m_dataDest.data(); }));
     m_webAudioPlayer->getBufferAvailable(m_numberOfFrames, notUsedWebAudioShmInfo);
     EXPECT_EQ(1, m_numberOfFrames);
@@ -146,7 +146,7 @@ TEST_F(RialtoClientWebAudioPlayerWriteBufferTest, writeToMainAndWrapOffset)
                 webAudioShmInfo->lengthWrap = 4;
                 return true;
             }));
-    EXPECT_CALL(*m_sharedMemoryManagerMock, getSharedMemoryBuffer())
+    EXPECT_CALL(m_sharedMemoryManagerMock, getSharedMemoryBuffer())
         .WillOnce(Invoke([this]() { return m_dataDest.data(); }));
     m_webAudioPlayer->getBufferAvailable(m_numberOfFrames, notUsedWebAudioShmInfo);
     EXPECT_EQ(2, m_numberOfFrames);

@@ -92,6 +92,18 @@ public:
      * @retval true on success, false otherwise.
      */
     virtual bool unregisterClient(ISharedMemoryManagerClient *client) = 0;
+
+    /**
+     * @brief Initalised the shared memory for media playback.
+     *
+     * @retval true on success, false otherwise.
+     */
+    virtual bool initSharedMemory() = 0;
+
+    /**
+     * @brief Terminates the shared memory.
+     */
+    virtual void termSharedMemory() = 0;
 };
 
 }; // namespace firebolt::rialto::client

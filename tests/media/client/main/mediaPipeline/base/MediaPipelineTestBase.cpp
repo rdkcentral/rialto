@@ -27,15 +27,11 @@ void MediaPipelineTestBase::SetUp() // NOLINT(build/function_format)
     m_mediaPipelineClientMock = std::make_shared<StrictMock<MediaPipelineClientMock>>();
     m_mediaPipelineIpcFactoryMock = std::make_shared<StrictMock<MediaPipelineIpcFactoryMock>>();
     m_mediaFrameWriterFactoryMock = std::make_shared<StrictMock<MediaFrameWriterFactoryMock>>();
-    m_sharedMemoryManagerFactoryMock = std::make_shared<StrictMock<SharedMemoryManagerFactoryMock>>();
-    m_sharedMemoryManagerMock = std::make_shared<StrictMock<SharedMemoryManagerMock>>();
 }
 
 void MediaPipelineTestBase::TearDown() // NOLINT(build/function_format)
 {
     // Destroy StrictMocks
-    m_sharedMemoryManagerMock.reset();
-    m_sharedMemoryManagerFactoryMock.reset();
     m_mediaFrameWriterFactoryMock.reset();
     m_mediaPipelineIpcMock = nullptr;
     m_mediaPipelineIpcFactoryMock.reset();
@@ -52,21 +48,20 @@ void MediaPipelineTestBase::createMediaPipeline()
     // Object shall be freed by the holder of the unique ptr on destruction
     m_mediaPipelineIpcMock = mediaPipelineIpcMock.get();
 
-    EXPECT_CALL(*m_sharedMemoryManagerFactoryMock, getSharedMemoryManager()).WillOnce(Return(m_sharedMemoryManagerMock));
-    EXPECT_CALL(*m_sharedMemoryManagerMock, registerClient(_)).WillOnce(Return(true));
+    EXPECT_CALL(m_sharedMemoryManagerMock, registerClient(_)).WillOnce(Return(true));
     EXPECT_CALL(*m_mediaPipelineIpcFactoryMock, createMediaPipelineIpc(_, _))
         .WillOnce(DoAll(SaveArg<0>(&m_mediaPipelineCallback), Return(ByMove(std::move(mediaPipelineIpcMock)))));
 
     EXPECT_NO_THROW(m_mediaPipeline = std::make_unique<MediaPipeline>(m_mediaPipelineClientMock, videoReq,
                                                                       m_mediaPipelineIpcFactoryMock,
                                                                       m_mediaFrameWriterFactoryMock,
-                                                                      m_sharedMemoryManagerFactoryMock));
+                                                                      m_sharedMemoryManagerMock));
     EXPECT_NE(m_mediaPipeline, nullptr);
 }
 
 void MediaPipelineTestBase::destroyMediaPipeline()
 {
-    EXPECT_CALL(*m_sharedMemoryManagerMock, unregisterClient(_)).WillOnce(Return(true));
+    EXPECT_CALL(m_sharedMemoryManagerMock, unregisterClient(_)).WillOnce(Return(true));
 
     m_mediaPipeline.reset();
     m_mediaPipelineCallback = nullptr;

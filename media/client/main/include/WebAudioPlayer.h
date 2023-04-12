@@ -66,7 +66,7 @@ public:
     WebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
                    const uint32_t priority, const WebAudioConfig *config,
                    const std::shared_ptr<IWebAudioPlayerIpcFactory> &webAudioPlayerIpcFactory,
-                   const std::shared_ptr<ISharedMemoryManagerFactory> &sharedMemoryManagerFactory);
+                   ISharedMemoryManager &sharedMemoryManager);
 
     /**
      * @brief Virtual destructor.
@@ -111,7 +111,7 @@ protected:
     /**
      * @brief The rialto shared memory manager object.
      */
-    std::shared_ptr<ISharedMemoryManager> m_sharedMemoryManager;
+    ISharedMemoryManager &m_sharedMemoryManager;
 
     /**
      * @brief The shared memory region info.

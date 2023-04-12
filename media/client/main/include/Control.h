@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_CLIENT_CONTROL_H_
 
 #include "IControl.h"
+#include "IControlClient.h"
 #include "IControlIpc.h"
 #include "ISharedMemoryManager.h"
 #include <memory>
@@ -30,12 +31,10 @@
 
 namespace firebolt::rialto::client
 {
-class Control;
-
 /**
  * @brief IControl factory class definition.
  */
-class ControlFactory : public IControlFactory, public ISharedMemoryManagerFactory
+class ControlFactory : public IControlFactory
 {
 public:
     ControlFactory() = default;
@@ -43,59 +42,34 @@ public:
 
     std::shared_ptr<IControl> createControl(std::weak_ptr<IControlClient> client) const override;
 
-    std::shared_ptr<ISharedMemoryManager> getSharedMemoryManager() const override;
-
     /**
      * @brief Create the generic rialto control factory object.
      *
      * @retval the generic rialto control factory instance or null on error.
      */
     static std::shared_ptr<ControlFactory> createFactory();
-
-protected:
-    /**
-     * @brief Weak pointer to the singleton rialto control object.
-     */
-    static std::weak_ptr<Control> m_control;
-
-    /**
-     * @brief Mutex protection for creation of the Control object.
-     */
-    static std::mutex m_creationMutex;
-
-    /**
-     * @brief Get the generic rialto control singleton object.
-     *
-     * @retval the generic rialto control singleton or null on error.
-     */
-    std::shared_ptr<Control> getGeneric() const;
 };
 
 /**
  * @brief The definition of the Control.
  */
-class Control : public IControl, public ISharedMemoryManager
+class Control : public IControl, public IControlClient
 {
 public:
     /**
      * @brief The constructor.
-     *
-     * @param[in] ControlIpcFactory   : The factory for creating the rialto control ipc object.
      */
-    explicit Control(const std::shared_ptr<IControlIpcFactory> &ControlIpcFactory);
+    Control(std::weak_ptr<IControlClient> client, ISharedMemoryManager &sharedMemoryManager);
 
     /**
      * @brief Virtual destructor.
      */
-    virtual ~Control();
+    ~Control() override;
 
     void ack(uint32_t id) override;
 
-    uint8_t *getSharedMemoryBuffer() override;
-
-    bool registerClient(ISharedMemoryManagerClient *client) override;
-
-    bool unregisterClient(ISharedMemoryManagerClient *client) override;
+    void notifyApplicationState(ApplicationState state) override;
+    void ping(uint32_t id) override;
 
 private:
     /**
@@ -113,34 +87,9 @@ private:
 
 protected:
     /**
-     * @brief The rialto control ipc factory.
-     */
-    std::shared_ptr<IControlIpc> m_controlIpc;
-
-    /**
      * @brief The current application state
      */
     ApplicationState m_currentState;
-
-    /**
-     * @brief The shared memory file descriptor.
-     */
-    int32_t m_shmFd;
-
-    /**
-     * @brief The shared memory buffer pointer.
-     */
-    uint8_t *m_shmBuffer;
-
-    /**
-     * @brief The shared memory buffer length.
-     */
-    uint32_t m_shmBufferLen;
-
-    /**
-     * @brief Mutex protection for the shared memory.
-     */
-    std::mutex m_shmMutex;
 
     /**
      * @brief Mutex protection for the states of Control.
@@ -148,26 +97,14 @@ protected:
     std::mutex m_stateMutex;
 
     /**
-     * @brief Vector of clients to notify.
+     * @brief The control client
      */
-    std::set<ISharedMemoryManagerClient *> m_clientVec;
+    std::weak_ptr<IControlClient> m_client;
 
     /**
-     * @brief Mutex to protect read/write of the client vector.
+     * @brief The rialto shared memory manager object.
      */
-    std::mutex m_clientVecMutex;
-
-    /**
-     * @brief Initalised the shared memory for media playback.
-     *
-     * @retval true on success, false otherwise.
-     */
-    bool initSharedMemory();
-
-    /**
-     * @brief Terminates the shared memory.
-     */
-    void termSharedMemory();
+    ISharedMemoryManager &m_sharedMemoryManager;
 
     /**
      * @brief Coverts a ApplicationState to string.

@@ -48,35 +48,18 @@ TEST_F(RialtoClientCreateMediaPipelineTest, Create)
     std::unique_ptr<StrictMock<MediaPipelineIpcMock>> mediaPipelineIpcMock =
         std::make_unique<StrictMock<MediaPipelineIpcMock>>();
 
-    EXPECT_CALL(*m_sharedMemoryManagerFactoryMock, getSharedMemoryManager()).WillOnce(Return(m_sharedMemoryManagerMock));
-    EXPECT_CALL(*m_sharedMemoryManagerMock, registerClient(NotNull())).WillOnce(Return(true));
+    EXPECT_CALL(m_sharedMemoryManagerMock, registerClient(NotNull())).WillOnce(Return(true));
     EXPECT_CALL(*m_mediaPipelineIpcFactoryMock, createMediaPipelineIpc(_, VideoRequirementsMatcher(m_videoReq)))
         .WillOnce(Return(ByMove(std::move(mediaPipelineIpcMock))));
 
     EXPECT_NO_THROW(mediaPipeline = std::make_unique<MediaPipeline>(m_mediaPipelineClientMock, m_videoReq,
                                                                     m_mediaPipelineIpcFactoryMock,
                                                                     m_mediaFrameWriterFactoryMock,
-                                                                    m_sharedMemoryManagerFactoryMock));
+                                                                    m_sharedMemoryManagerMock));
     EXPECT_NE(mediaPipeline, nullptr);
 
     // Unregister client on destroy
-    EXPECT_CALL(*m_sharedMemoryManagerMock, unregisterClient(NotNull())).WillOnce(Return(true));
-}
-
-/**
- * Test that a MediaPipeline object throws an exeption if failure occurs during construction.
- * In this case, SharedMemoryManagerFactory returns an invalid object.
- */
-TEST_F(RialtoClientCreateMediaPipelineTest, GetSharedMemoryManagerFailure)
-{
-    std::unique_ptr<IMediaPipeline> mediaPipeline;
-
-    EXPECT_CALL(*m_sharedMemoryManagerFactoryMock, getSharedMemoryManager()).WillOnce(Return(nullptr));
-
-    EXPECT_THROW(mediaPipeline =
-                     std::make_unique<MediaPipeline>(m_mediaPipelineClientMock, m_videoReq, m_mediaPipelineIpcFactoryMock,
-                                                     m_mediaFrameWriterFactoryMock, m_sharedMemoryManagerFactoryMock),
-                 std::runtime_error);
+    EXPECT_CALL(m_sharedMemoryManagerMock, unregisterClient(NotNull())).WillOnce(Return(true));
 }
 
 /**
@@ -87,12 +70,11 @@ TEST_F(RialtoClientCreateMediaPipelineTest, RegisterClientFailure)
 {
     std::unique_ptr<IMediaPipeline> mediaPipeline;
 
-    EXPECT_CALL(*m_sharedMemoryManagerFactoryMock, getSharedMemoryManager()).WillOnce(Return(m_sharedMemoryManagerMock));
-    EXPECT_CALL(*m_sharedMemoryManagerMock, registerClient(NotNull())).WillOnce(Return(false));
+    EXPECT_CALL(m_sharedMemoryManagerMock, registerClient(NotNull())).WillOnce(Return(false));
 
     EXPECT_THROW(mediaPipeline =
                      std::make_unique<MediaPipeline>(m_mediaPipelineClientMock, m_videoReq, m_mediaPipelineIpcFactoryMock,
-                                                     m_mediaFrameWriterFactoryMock, m_sharedMemoryManagerFactoryMock),
+                                                     m_mediaFrameWriterFactoryMock, m_sharedMemoryManagerMock),
                  std::runtime_error);
 }
 
@@ -104,16 +86,15 @@ TEST_F(RialtoClientCreateMediaPipelineTest, CreateMediaPipelineIpcFailure)
 {
     std::unique_ptr<IMediaPipeline> mediaPipeline;
 
-    EXPECT_CALL(*m_sharedMemoryManagerFactoryMock, getSharedMemoryManager()).WillOnce(Return(m_sharedMemoryManagerMock));
-    EXPECT_CALL(*m_sharedMemoryManagerMock, registerClient(NotNull())).WillOnce(Return(true));
+    EXPECT_CALL(m_sharedMemoryManagerMock, registerClient(NotNull())).WillOnce(Return(true));
     EXPECT_CALL(*m_mediaPipelineIpcFactoryMock, createMediaPipelineIpc(_, VideoRequirementsMatcher(m_videoReq)))
         .WillOnce(Return(ByMove(nullptr)));
 
     // Unregister after mediaPipelineIpc error
-    EXPECT_CALL(*m_sharedMemoryManagerMock, unregisterClient(NotNull())).WillOnce(Return(true));
+    EXPECT_CALL(m_sharedMemoryManagerMock, unregisterClient(NotNull())).WillOnce(Return(true));
 
     EXPECT_THROW(mediaPipeline =
                      std::make_unique<MediaPipeline>(m_mediaPipelineClientMock, m_videoReq, m_mediaPipelineIpcFactoryMock,
-                                                     m_mediaFrameWriterFactoryMock, m_sharedMemoryManagerFactoryMock),
+                                                     m_mediaFrameWriterFactoryMock, m_sharedMemoryManagerMock),
                  std::runtime_error);
 }

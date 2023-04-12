@@ -34,6 +34,8 @@ public:
     MOCK_METHOD(uint8_t *, getSharedMemoryBuffer, (), (override));
     MOCK_METHOD(bool, registerClient, (ISharedMemoryManagerClient * client), (override));
     MOCK_METHOD(bool, unregisterClient, (ISharedMemoryManagerClient * client), (override));
+    MOCK_METHOD(bool, initSharedMemory, (), (override));
+    MOCK_METHOD(void, termSharedMemory, (), (override));
 };
 } // namespace firebolt::rialto::client
 
