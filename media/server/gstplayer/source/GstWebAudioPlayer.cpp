@@ -173,8 +173,9 @@ bool GstWebAudioPlayer::initWebAudioPipeline(const uint32_t priority)
     if (nullptr != (feature = m_gstWrapper->gstRegistryLookupFeature(reg, "amlhalasink")))
     {
         // LLama
-        RIALTO_SERVER_LOG_INFO("Use amlhalasink");
-        result = createAmlhalaSink();
+        RIALTO_SERVER_LOG_INFO("amlhalasink, use autoaudiosink");
+        //result = createAmlhalaSink();
+        result = createAutoSink();
         m_gstWrapper->gstObjectUnref(feature);
     }
     else if (nullptr != (feature = m_gstWrapper->gstRegistryLookupFeature(reg, "rtkaudiosink")))
@@ -273,16 +274,35 @@ bool GstWebAudioPlayer::createAutoSink()
         return false;
     }
 
+    GstElement *convert = NULL;
+    GstElement *resample = NULL;
+
+    convert = m_gstWrapper->gstElementFactoryMake("audioconvert", NULL);
+    if (!convert)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed create the audioconvert");
+        return false;
+    }
+    resample = m_gstWrapper->gstElementFactoryMake("audioresample", NULL);
+    if (!resample)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed create the audioresample");
+        return false;
+    }
+
     if ((!m_gstWrapper->gstBinAdd(GST_BIN(m_context.pipeline), m_context.source)) ||
+        (!m_gstWrapper->gstBinAdd(GST_BIN(m_context.pipeline), convert)) ||
+        (!m_gstWrapper->gstBinAdd(GST_BIN(m_context.pipeline), resample)) ||
         (!m_gstWrapper->gstBinAdd(GST_BIN(m_context.pipeline), sink)))
     {
         RIALTO_SERVER_LOG_ERROR("Failed to add elements to the bin");
         return false;
     }
 
-    if (!m_gstWrapper->gstElementLink(m_context.source, sink))
+    if ((!m_gstWrapper->gstElementLink(m_context.source, convert)) ||
+        (!m_gstWrapper->gstElementLink(convert, resample)) || (!m_gstWrapper->gstElementLink(resample, sink)))
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to link sink element");
+        RIALTO_SERVER_LOG_ERROR("Failed to link elements");
         return false;
     }
 
