@@ -40,7 +40,7 @@ add_library (
         source/MediaKeysClient.cpp
         source/MediaKeysModuleService.cpp
         source/MediaKeysCapabilitiesModuleService.cpp
-        source/ControlClient.cpp
+        source/ControlClientServerInternal.cpp
         source/ControlModuleService.cpp
         source/ServerManagerModuleService.cpp
         source/SessionManagementServer.cpp

@@ -20,7 +20,7 @@
 #ifndef CONTROL_CLIENT_TESTS_FIXTURE_H_
 #define CONTROL_CLIENT_TESTS_FIXTURE_H_
 
-#include "ControlClient.h"
+#include "ControlClientServerInternal.h"
 #include "IpcClientMock.h"
 #include "controlmodule.pb.h"
 #include <gtest/gtest.h>
@@ -42,7 +42,7 @@ public:
 
 private:
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ClientMock>> m_clientMock;
-    firebolt::rialto::server::ipc::ControlClient m_sut;
+    firebolt::rialto::server::ipc::ControlClientServerInternal m_sut;
 };
 
 #endif // CONTROL_CLIENT_TESTS_FIXTURE_H_

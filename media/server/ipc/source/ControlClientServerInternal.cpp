@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-#include "ControlClient.h"
+#include "ControlClientServerInternal.h"
 #include "RialtoServerLogging.h"
 #include "controlmodule.pb.h"
 #include <IIpcServer.h>
@@ -43,12 +43,12 @@ convertApplicationState(const firebolt::rialto::ApplicationState &state)
 
 namespace firebolt::rialto::server::ipc
 {
-ControlClient::ControlClient(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient)
+ControlClientServerInternal::ControlClientServerInternal(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient)
     : m_ipcClient{ipcClient}
 {
 }
 
-void ControlClient::notifyApplicationState(ApplicationState state)
+void ControlClientServerInternal::notifyApplicationState(ApplicationState state)
 {
     RIALTO_SERVER_LOG_DEBUG("Sending ApplicationStateChangeEvent");
 
@@ -58,7 +58,7 @@ void ControlClient::notifyApplicationState(ApplicationState state)
     m_ipcClient->sendEvent(event);
 }
 
-void ControlClient::ping(uint32_t id)
+void ControlClientServerInternal::ping(uint32_t id)
 {
     RIALTO_SERVER_LOG_DEBUG("Sending PingEvent with id: %d", id);
 

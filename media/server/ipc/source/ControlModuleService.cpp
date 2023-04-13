@@ -18,7 +18,7 @@
  */
 
 #include "ControlModuleService.h"
-#include "ControlClient.h"
+#include "ControlClientServerInternal.h"
 #include "IPlaybackService.h"
 #include "RialtoServerLogging.h"
 #include <IIpcController.h>
@@ -77,7 +77,7 @@ ControlModuleService::~ControlModuleService()
 void ControlModuleService::clientConnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient)
 {
     RIALTO_SERVER_LOG_INFO("Client Connected!");
-    auto controlClient{std::make_shared<ControlClient>(ipcClient)};
+    auto controlClient{std::make_shared<ControlClientServerInternal>(ipcClient)};
     m_controlIds.emplace(ipcClient, m_controlService.addControl(controlClient));
     ipcClient->exportService(shared_from_this());
 }
