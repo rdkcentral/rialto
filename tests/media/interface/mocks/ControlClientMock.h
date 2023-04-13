@@ -29,7 +29,6 @@ class ControlClientMock : public IControlClient
 {
 public:
     MOCK_METHOD(void, notifyApplicationState, (ApplicationState state), (override));
-    MOCK_METHOD(void, ping, (uint32_t id), (override));
 };
 } // namespace firebolt::rialto
 

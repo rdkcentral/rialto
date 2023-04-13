@@ -31,7 +31,8 @@ constexpr firebolt::rialto::ApplicationState kAppState{firebolt::rialto::Applica
 ControlServiceTests::ControlServiceTests()
     : m_controlServerInternalFactoryMock{std::make_shared<StrictMock<ControlServerInternalFactoryMock>>()},
       m_controlServerInternalMock{std::make_shared<StrictMock<ControlServerInternalMock>>()},
-      m_controlClientMock{std::make_shared<StrictMock<ControlClientMock>>()}, m_sut{m_controlServerInternalFactoryMock}
+      m_controlClientMock{std::make_shared<StrictMock<ControlClientServerInternalMock>>()},
+      m_sut{m_controlServerInternalFactoryMock}
 {
 }
 

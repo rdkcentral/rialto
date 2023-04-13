@@ -37,7 +37,7 @@ ControlService::ControlService(const std::shared_ptr<IControlServerInternalFacto
     RIALTO_SERVER_LOG_DEBUG("entry:");
 }
 
-int ControlService::addControl(const std::shared_ptr<IControlClient> &client)
+int ControlService::addControl(const std::shared_ptr<IControlClientServerInternal> &client)
 {
     int id{generateControlId()};
     RIALTO_SERVER_LOG_INFO("Creating new Control with id: %d", id);

@@ -86,9 +86,4 @@ Control::~Control()
         RIALTO_CLIENT_LOG_WARN("Unable to unregister client");
     }
 }
-
-void Control::ack(uint32_t id)
-{
-    RIALTO_CLIENT_LOG_WARN("Not implemented");
-}
 }; // namespace firebolt::rialto::client

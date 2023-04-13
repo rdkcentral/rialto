@@ -63,8 +63,6 @@ public:
      */
     ~Control() override;
 
-    void ack(uint32_t id) override;
-
 private:
     /**
      * @brief The control client

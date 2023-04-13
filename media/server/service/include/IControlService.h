@@ -21,7 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_SERVICE_I_CONTROL_SERVICE_H_
 
 #include "ControlCommon.h"
-#include "IControlClient.h"
+#include "IControlClientServerInternal.h"
 #include <cstdint>
 #include <memory>
 
@@ -38,7 +38,7 @@ public:
     IControlService &operator=(const IControlService &) = delete;
     IControlService &operator=(IControlService &&) = delete;
 
-    virtual int addControl(const std::shared_ptr<IControlClient> &client) = 0;
+    virtual int addControl(const std::shared_ptr<IControlClientServerInternal> &client) = 0;
     virtual void removeControl(int controlId) = 0;
     virtual bool ack(int controlId, std::uint32_t id) = 0;
     virtual void setApplicationState(const ApplicationState &state) = 0;

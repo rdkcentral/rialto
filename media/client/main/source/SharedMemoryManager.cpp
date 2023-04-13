@@ -209,11 +209,6 @@ void SharedMemoryManager::notifyApplicationState(ApplicationState state)
     m_currentState = state;
 }
 
-void SharedMemoryManager::ping(uint32_t id)
-{
-    RIALTO_CLIENT_LOG_INFO("To be removed");
-}
-
 std::string SharedMemoryManager::stateToString(ApplicationState state)
 {
     switch (state)

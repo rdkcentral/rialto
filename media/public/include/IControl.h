@@ -80,13 +80,6 @@ public:
     IControl &operator=(const IControl &) = delete;
     IControl(IControl &&) = delete;
     IControl &operator=(IControl &&) = delete;
-
-    /**
-     * @brief Acknowledgement of a received ping request
-     *
-     * @param[in] id  : id received in ping notification
-     */
-    virtual void ack(uint32_t id) = 0;
 };
 
 }; // namespace firebolt::rialto

@@ -41,7 +41,6 @@ private:
     SharedMemoryManager(const std::shared_ptr<IControlIpcFactory> &ControlIpcFactory);
     ~SharedMemoryManager() override;
     void notifyApplicationState(ApplicationState state) override;
-    void ping(uint32_t id) override;
 
     /**
      * @brief Initalised the shared memory for media playback. Function not thread-safe

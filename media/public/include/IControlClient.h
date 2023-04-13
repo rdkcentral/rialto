@@ -55,15 +55,6 @@ public:
      * @param[in] state: The new application state.
      */
     virtual void notifyApplicationState(ApplicationState state) = 0;
-
-    /**
-     * @brief Ping notification for checking system health
-     * The client should perform any health checks then respond with
-     * a call to ack(id) if system healthy
-     *
-     * @param[in] id  : Unique id, should be passed to corresponding ack call
-     */
-    virtual void ping(uint32_t id) = 0;
 };
 } // namespace firebolt::rialto
 

@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_I_CONTROL_SERVER_INTERNAL_H_
-#define FIREBOLT_RIALTO_I_CONTROL_SERVER_INTERNAL_H_
+#ifndef FIREBOLT_RIALTO_SERVER_I_CONTROL_SERVER_INTERNAL_H_
+#define FIREBOLT_RIALTO_SERVER_I_CONTROL_SERVER_INTERNAL_H_
 
 /**
  * @file IControlServerInternal.h
@@ -29,6 +29,7 @@
  */
 
 #include "IControl.h"
+#include "IControlClientServerInternal.h"
 
 namespace firebolt::rialto::server
 {
@@ -54,7 +55,7 @@ public:
      * @retval the new IControlServerInternal instance or null on error.
      */
     virtual std::shared_ptr<IControlServerInternal>
-    createControlServerInternal(std::weak_ptr<IControlClient> client) const = 0;
+    createControlServerInternal(std::weak_ptr<IControlClientServerInternal> client) const = 0;
 };
 
 class IControlServerInternal : public IControl
@@ -69,7 +70,14 @@ public:
      * @param[in] state: The new application state.
      */
     virtual void setApplicationState(const ApplicationState &state) = 0;
+
+    /**
+     * @brief Acknowledgement of a received ping request
+     *
+     * @param[in] id  : id received in ping notification
+     */
+    virtual void ack(uint32_t id) = 0;
 };
 } // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_I_CONTROL_SERVER_INTERNAL_H_
+#endif // FIREBOLT_RIALTO_SERVER_I_CONTROL_SERVER_INTERNAL_H_

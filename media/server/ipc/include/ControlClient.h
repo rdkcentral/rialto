@@ -20,13 +20,13 @@
 #ifndef FIREBOLT_RIALTO_SERVER_IPC_CONTROL_CLIENT_H_
 #define FIREBOLT_RIALTO_SERVER_IPC_CONTROL_CLIENT_H_
 
-#include "IControlClient.h"
+#include "IControlClientServerInternal.h"
 #include "IIpcServer.h"
 #include <memory>
 
 namespace firebolt::rialto::server::ipc
 {
-class ControlClient : public IControlClient
+class ControlClient : public IControlClientServerInternal
 {
 public:
     explicit ControlClient(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient);

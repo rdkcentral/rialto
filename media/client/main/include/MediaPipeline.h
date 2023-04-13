@@ -137,8 +137,6 @@ public:
 
     void notifyApplicationState(ApplicationState state) override;
 
-    void ping(uint32_t id) override;
-
 protected:
     /**
      * @brief The need data request data.

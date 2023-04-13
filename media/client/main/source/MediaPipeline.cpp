@@ -616,11 +616,6 @@ void MediaPipeline::notifyApplicationState(ApplicationState state)
     }
 }
 
-void MediaPipeline::ping(uint32_t id)
-{
-    RIALTO_CLIENT_LOG_DEBUG("To be removed");
-}
-
 void MediaPipeline::notifyQos(int32_t sourceId, const QosInfo &qosInfo)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");

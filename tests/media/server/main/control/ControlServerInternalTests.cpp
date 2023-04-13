@@ -17,14 +17,14 @@
  * limitations under the License.
  */
 
-#include "ControlClientMock.h"
+#include "ControlClientServerInternalMock.h"
 #include "ControlServerInternal.h"
 #include "MainThreadFactoryMock.h"
 #include "MainThreadMock.h"
 #include <gtest/gtest.h>
 
 using namespace firebolt::rialto::server::mock;
-using firebolt::rialto::ControlClientMock;
+using firebolt::rialto::server::ControlClientServerInternalMock;
 using testing::_;
 using testing::Invoke;
 using testing::Return;
@@ -42,7 +42,7 @@ class ControlServerInternalTests : public Test
 {
 public:
     ControlServerInternalTests()
-        : m_controlClientMock{std::make_shared<StrictMock<ControlClientMock>>()},
+        : m_controlClientMock{std::make_shared<StrictMock<ControlClientServerInternalMock>>()},
           m_mainThreadFactoryMock{std::make_shared<StrictMock<MainThreadFactoryMock>>()},
           m_mainThreadMock{std::make_shared<StrictMock<MainThreadMock>>()}
     {
@@ -65,7 +65,7 @@ public:
             .RetiresOnSaturation();
     }
 
-    std::shared_ptr<StrictMock<ControlClientMock>> m_controlClientMock;
+    std::shared_ptr<StrictMock<ControlClientServerInternalMock>> m_controlClientMock;
     std::shared_ptr<StrictMock<MainThreadFactoryMock>> m_mainThreadFactoryMock;
     std::shared_ptr<StrictMock<MainThreadMock>> m_mainThreadMock;
     std::unique_ptr<firebolt::rialto::server::ControlServerInternal> m_sut;

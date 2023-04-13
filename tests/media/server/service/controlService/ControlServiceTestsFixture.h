@@ -20,7 +20,7 @@
 #ifndef CONTROL_SERVICE_TESTS_FIXTURE_H_
 #define CONTROL_SERVICE_TESTS_FIXTURE_H_
 
-#include "ControlClientMock.h"
+#include "ControlClientServerInternalMock.h"
 #include "ControlServerInternalFactoryMock.h"
 #include "ControlServerInternalMock.h"
 #include "ControlService.h"
@@ -28,7 +28,7 @@
 #include <memory>
 
 using firebolt::rialto::ApplicationState;
-using firebolt::rialto::ControlClientMock;
+using firebolt::rialto::server::ControlClientServerInternalMock;
 using firebolt::rialto::server::ControlServerInternalFactoryMock;
 using firebolt::rialto::server::ControlServerInternalMock;
 using firebolt::rialto::server::service::ControlService;
@@ -53,7 +53,7 @@ public:
 private:
     std::shared_ptr<StrictMock<ControlServerInternalFactoryMock>> m_controlServerInternalFactoryMock;
     std::shared_ptr<StrictMock<ControlServerInternalMock>> m_controlServerInternalMock;
-    std::shared_ptr<StrictMock<ControlClientMock>> m_controlClientMock;
+    std::shared_ptr<StrictMock<ControlClientServerInternalMock>> m_controlClientMock;
     ControlService m_sut;
 };
 

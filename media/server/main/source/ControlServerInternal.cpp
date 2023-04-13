@@ -65,10 +65,10 @@ std::shared_ptr<IControl> ControlServerInternalFactory::createControl(std::weak_
 }
 
 std::shared_ptr<IControlServerInternal>
-ControlServerInternalFactory::createControlServerInternal(std::weak_ptr<IControlClient> client) const
+ControlServerInternalFactory::createControlServerInternal(std::weak_ptr<IControlClientServerInternal> client) const
 try
 {
-    std::shared_ptr<IControlClient> controlClient{client.lock()};
+    std::shared_ptr<IControlClientServerInternal> controlClient{client.lock()};
     if (!controlClient)
     {
         RIALTO_SERVER_LOG_ERROR("ControlServerInternal creation failed - can't lock client");
@@ -82,7 +82,7 @@ catch (const std::exception &e)
     return nullptr;
 }
 
-ControlServerInternal::ControlServerInternal(const std::shared_ptr<IControlClient> &client,
+ControlServerInternal::ControlServerInternal(const std::shared_ptr<IControlClientServerInternal> &client,
                                              const std::shared_ptr<IMainThreadFactory> &mainThreadFactory)
     : m_client{client}
 {

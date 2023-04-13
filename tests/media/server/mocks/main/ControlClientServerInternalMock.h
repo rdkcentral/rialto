@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2023 Sky UK
+ * Copyright 2022 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,21 +17,20 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_CONTROL_SERVER_INTERNAL_FACTORY_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_CONTROL_SERVER_INTERNAL_FACTORY_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_CONTROL_CLIENT_SERVER_INTERNAL_MOCK_H_
+#define FIREBOLT_RIALTO_SERVER_CONTROL_CLIENT_SERVER_INTERNAL_MOCK_H_
 
-#include "IControlServerInternal.h"
+#include "IControlClientServerInternal.h"
 #include <gmock/gmock.h>
 
 namespace firebolt::rialto::server
 {
-class ControlServerInternalFactoryMock : public IControlServerInternalFactory
+class ControlClientServerInternalMock : public IControlClientServerInternal
 {
 public:
-    MOCK_METHOD(std::shared_ptr<IControl>, createControl, (std::weak_ptr<IControlClient> client), (const, override));
-    MOCK_METHOD(std::shared_ptr<IControlServerInternal>, createControlServerInternal,
-                (std::weak_ptr<IControlClientServerInternal> client), (const, override));
+    MOCK_METHOD(void, notifyApplicationState, (ApplicationState state), (override));
+    MOCK_METHOD(void, ping, (uint32_t id), (override));
 };
 } // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_CONTROL_SERVER_INTERNAL_FACTORY_MOCK_H_
+#endif // FIREBOLT_RIALTO_SERVER_CONTROL_CLIENT_SERVER_INTERNAL_MOCK_H_
