@@ -30,6 +30,7 @@
 namespace
 {
 constexpr std::chrono::milliseconds kNeedMediaDataResendTimeMs{100};
+
 const char *toString(const firebolt::rialto::MediaSourceStatus &status)
 {
     switch (status)

@@ -59,14 +59,14 @@ void UpdatePlaybackGroup::execute() const
                     RIALTO_SERVER_LOG_DEBUG("m_context.playbackGroup.curAudioDecodeBin %s", elementName);
                     m_context.playbackGroup.m_curAudioDecodeBin = typeFindParent;
 
-#ifdef RIALTO_SERVER_LOG_DEBUG_ENABLED
+#ifdef RIALTO_LOG_DEBUG_ENABLED
 
                     gchar *typefindName = m_gstWrapper->gstElementGetName(m_typefind);
                     RIALTO_SERVER_LOG_DEBUG("onTypeFound(): m_context.playbackGroup.curAudioTypefind %s", typefindName);
                     m_glibWrapper->gFree(typefindName);
-                    m_context.playbackGroup.m_curAudioTypefind = m_typefind;
 
 #endif
+                    m_context.playbackGroup.m_curAudioTypefind = m_typefind;
                 }
                 m_glibWrapper->gFree(elementName);
                 m_gstWrapper->gstObjectUnref(typeFindParent);

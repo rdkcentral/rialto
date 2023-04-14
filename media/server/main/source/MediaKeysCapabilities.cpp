@@ -29,6 +29,8 @@ namespace
 /**
  * @brief Coverts MediaKeyErrorStatus to string.
  */
+
+#ifdef RIALTO_LOG_ERROR_ENABLED
 const char *toString(const firebolt::rialto::MediaKeyErrorStatus &status)
 {
     switch (status)
@@ -46,6 +48,8 @@ const char *toString(const firebolt::rialto::MediaKeyErrorStatus &status)
     }
     return "Unknown";
 }
+#endif
+
 } // namespace
 
 namespace firebolt::rialto
@@ -132,6 +136,7 @@ bool MediaKeysCapabilities::supportsKeySystem(const std::string &keySystem)
 
 bool MediaKeysCapabilities::getSupportedKeySystemVersion(const std::string &keySystem, std::string &version)
 {
+
     std::unique_ptr<IOcdmSystem> ocdmSystem = m_ocdmSystemFactory->createOcdmSystem(keySystem);
     if (!ocdmSystem)
     {
@@ -147,7 +152,6 @@ bool MediaKeysCapabilities::getSupportedKeySystemVersion(const std::string &keyS
         version = "";
         return false;
     }
-
     return true;
 }
 

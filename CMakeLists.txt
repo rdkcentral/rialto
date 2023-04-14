@@ -26,37 +26,81 @@ endif()
 
 add_compile_options(-Wall -Werror)
 
+if( CMAKE_BUILD_TYPE STREQUAL "Debug" )
 
-if ( RIALTO_SERVER_LOG_FATAL_ENABLED )
-    add_compile_definitions( RIALTO_SERVER_LOG_FATAL_ENABLED )
+    message("_______________DEBUG MODE_______________")
+    option(RIALTO_LOG_FATAL_ENABLED "Enable fatal logging for RialtoServer" ON)
+    option(RIALTO_LOG_SYS_FATAL_ENABLED "Enable fatal system logging for RialtoServer" ON)
+    option(RIALTO_LOG_ERROR_ENABLED "Enable error logging for RialtoServer" ON)
+    option(RIALTO_LOG_SYS_ERROR_ENABLED "Enable system error logging for RialtoServer" ON)
+    option(RIALTO_LOG_WARN_ENABLED "Enable warning logging for RialtoServer" ON)
+    option(RIALTO_LOG_SYS_WARN_ENABLED "Enable system warning logging for RialtoServer" ON)
+    option(RIALTO_LOG_MIL_ENABLED "Enable milestone logging for RialtoServer" ON)
+    option(RIALTO_LOG_INFO_ENABLED "Enable info logging for RialtoServer" ON)
+    option(RIALTO_LOG_DEBUG_ENABLED "Enable debug logging for RialtoServer" ON)
+
+elseif( CMAKE_BUILD_TYPE STREQUAL "Release" )
+
+    message("_______________RELEASE MODE_______________")
+    option(RIALTO_LOG_FATAL_ENABLED "Enable fatal logging for RialtoServer" OFF)
+    option(RIALTO_LOG_SYS_FATAL_ENABLED "Enable fatal system logging for RialtoServer" OFF)
+    option(RIALTO_LOG_ERROR_ENABLED "Enable error logging for RialtoServer" OFF)
+    option(RIALTO_LOG_SYS_ERROR_ENABLED "Enable system error logging for RialtoServer" OFF)
+    option(RIALTO_LOG_WARN_ENABLED "Enable warning logging for RialtoServer" OFF)
+    option(RIALTO_LOG_SYS_WARN_ENABLED "Enable system warning logging for RialtoServer" OFF)
+    option(RIALTO_LOG_MIL_ENABLED "Enable milestone logging for RialtoServer" OFF)
+    option(RIALTO_LOG_INFO_ENABLED "Enable info logging for RialtoServer" OFF)
+    option(RIALTO_LOG_DEBUG_ENABLED "Enable debug logging for RialtoServer" OFF)
+
+else()
+
+    message( FATAL_ERROR "The CMAKE_BUILD_TYPE '${CMAKE_BUILD_TYPE}' is NOT supported! Only 'Debug' & 'Release' are supported" )
+
 endif()
 
-if ( RIALTO_SERVER_LOG_SYS_FATAL_ENABLED )
-    add_compile_definitions( RIALTO_SERVER_LOG_SYS_FATAL_ENABLED )
+if ( RIALTO_LOG_FATAL_ENABLED )
+    message("RIALTO_LOG_FATAL IS ENABLED")
+    add_compile_definitions( RIALTO_LOG_FATAL_ENABLED )
 endif()
 
-if ( RIALTO_SERVER_LOG_SYS_ERROR_ENABLED )
-    add_compile_definitions( RIALTO_SERVER_LOG_SYS_ERROR_ENABLED )
+if ( RIALTO_LOG_SYS_FATAL_ENABLED )
+    message("RIALTO_LOG_SYS_FATAL IS ENABLED")
+    add_compile_definitions( RIALTO_LOG_SYS_FATAL_ENABLED )
 endif()
 
-if ( RIALTO_SERVER_LOG_WARN_ENABLED )
-    add_compile_definitions( RIALTO_SERVER_LOG_WARN_ENABLED )
+if ( RIALTO_LOG_ERROR_ENABLED )
+    message("RIALTO_LOG_ERROR IS ENABLED")
+    add_compile_definitions( RIALTO_LOG_ERROR_ENABLED )
 endif()
 
-if ( RIALTO_SERVER_LOG_SYS_WARN_ENABLED )
-    add_compile_definitions( RIALTO_SERVER_LOG_SYS_WARN_ENABLED )
+if ( RIALTO_LOG_SYS_ERROR_ENABLED )
+    message("RIALTO_LOG_SYS_ERROR IS ENABLED")
+    add_compile_definitions( RIALTO_LOG_SYS_ERROR_ENABLED )
 endif()
 
-if ( RIALTO_SERVER_LOG_MIL_ENABLED )
-    add_compile_definitions( RIALTO_SERVER_LOG_MIL_ENABLED )
+if ( RIALTO_LOG_WARN_ENABLED )
+    message("RIALTO_LOG_WARN IS ENABLED")
+    add_compile_definitions( RIALTO_LOG_WARN_ENABLED )
 endif()
 
-if ( RIALTO_SERVER_LOG_INFO_ENABLED )
-    add_compile_definitions( RIALTO_SERVER_LOG_INFO_ENABLED )
+if ( RIALTO_LOG_SYS_WARN_ENABLED )
+    message("RIALTO_LOG_SYS_WARN IS ENABLED")
+    add_compile_definitions( RIALTO_LOG_SYS_WARN_ENABLED )
 endif()
 
-if ( RIALTO_SERVER_LOG_DEBUG_ENABLED )
-    add_compile_definitions( RIALTO_SERVER_LOG_DEBUG_ENABLED )
+if ( RIALTO_LOG_MIL_ENABLED )
+    message("RIALTO_LOG_MIL IS ENABLED")
+    add_compile_definitions( RIALTO_LOG_MIL_ENABLED )
+endif()
+
+if ( RIALTO_LOG_INFO_ENABLED )
+    message("RIALTO_LOG_INFO IS ENABLED")
+    add_compile_definitions( RIALTO_LOG_INFO_ENABLED )
+endif()
+
+if ( RIALTO_LOG_DEBUG_ENABLED )
+    message("RIALTO_LOG_DEBUG IS ENABLED")
+    add_compile_definitions( RIALTO_LOG_DEBUG_ENABLED )
 endif()
 
 
@@ -87,16 +131,6 @@ find_package( Protobuf REQUIRED )
 option(ENABLE_SERVER "Enable building RialtoServer" ON)
 option(ENABLE_SERVER_MANAGER "Enable building RialtoServerManagerSim" ON)
 
-option(RIALTO_SERVER_LOG_FATAL_ENABLED "Enable fatal logging for RialtoServer" ON)
-option(RIALTO_SERVER_LOG_SYS_FATAL_ENABLED "Enable fatal system logging for RialtoServer" ON)
-option(RIALTO_SERVER_LOG_ERROR_ENABLED "Enable error logging for RialtoServer" ON)
-option(RIALTO_SERVER_LOG_SYS_ERROR_ENABLED "Enable system error logging for RialtoServer" ON)
-option(RIALTO_SERVER_LOG_WARN_ENABLED "Enable warning logging for RialtoServer" ON)
-option(RIALTO_SERVER_LOG_SYS_WARN_ENABLED "Enable system warning logging for RialtoServer" ON)
-option(RIALTO_SERVER_LOG_MIL_ENABLED "Enable milestone logging for RialtoServer" ON)
-option(RIALTO_SERVER_LOG_INFO_ENABLED "Enable info logging for RialtoServer" ON)
-option(RIALTO_SERVER_LOG_DEBUG_ENABLED "Enable debug logging for RialtoServer" ON)
-
 # Include the new IPC library components
 add_subdirectory( ipc )
 
@@ -124,3 +158,6 @@ if( CMAKE_BUILD_FLAG STREQUAL "UnitTests" )
     add_subdirectory( tests/ipc EXCLUDE_FROM_ALL )
 
 endif()
+
+
+

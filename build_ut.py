@@ -90,6 +90,8 @@ def main ():
                              + "Note: Valgrind can only write output to one source (log or xml). \n" \
                              + "Note: Requires version valgrind 3.17.0+ installed. \n")
     argParser.add_argument("-cov", "--coverage", action='store_true', help="Generates UT coverage report")
+    # argParser.add_argument("-d","--debug", action='store_true', help="Debug Mode")
+    # argParser.add_argument("-r","--release", action='store_true', help="Release Mode")    
     args = vars(argParser.parse_args())
 
     # Set env variable
@@ -158,11 +160,13 @@ def getSuitesToRun (suitesRequested):
 # Build the target executables
 def buildTargets (suites, outputDir, resultsFile, debug, coverage):
     # Run cmake
-    cmakeCmd = ["cmake", "-B", outputDir , "-DCMAKE_BUILD_FLAG=UnitTests", "-DRIALTO_ENABLE_DECRYPT_BUFFER=1", "-DRIALTO_SERVER_LOG_FATAL_ENABLED=1", "-DRIALTO_SERVER_LOG_SYS_FATAL_ENABLED=1", "-DRIALTO_SERVER_LOG_ERROR_ENABLED=1", "-DRIALTO_SERVER_LOG_SYS_ERROR_ENABLED=1", "-DRIALTO_SERVER_LOG_WARN_ENABLED=1", "-DRIALTO_SERVER_LOG_SYS_WARN_ENABLED=1", "-DRIALTO_SERVER_LOG_MIL_ENABLED=1", "-DRIALTO_SERVER_LOG_INFO_ENABLED=1", "-DRIALTO_SERVER_LOG_DEBUG_ENABLED=1"]
-    if debug:
-        cmakeCmd.append("-DCMAKE_BUILD_TYPE=Debug")
-    if coverage:
-        cmakeCmd.append("-DCOVERAGE_ENABLED=1")
+    cmakeCmd = ["cmake", "-B", outputDir,"-DCMAKE_BUILD_FLAG=UnitTests", "-DRIALTO_ENABLE_DECRYPT_BUFFER=1" ]
+    # if debug:
+    cmakeCmd.append("-DCMAKE_BUILD_TYPE=Debug")
+    # if coverage:
+    #     cmakeCmd.append("-DCOVERAGE_ENABLED=1")
+    # if release:
+    #     cmakeCmd.append("-DCMAKE_BUILD_TYPE=Release")
     runcmd(cmakeCmd, cwd=os.getcwd())
 
     # Make targets
