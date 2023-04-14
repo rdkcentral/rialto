@@ -136,7 +136,6 @@ bool MediaKeysCapabilities::supportsKeySystem(const std::string &keySystem)
 
 bool MediaKeysCapabilities::getSupportedKeySystemVersion(const std::string &keySystem, std::string &version)
 {
-
     std::unique_ptr<IOcdmSystem> ocdmSystem = m_ocdmSystemFactory->createOcdmSystem(keySystem);
     if (!ocdmSystem)
     {
