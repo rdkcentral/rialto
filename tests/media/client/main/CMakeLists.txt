@@ -53,6 +53,10 @@ add_gtests (
         mediaKeysCapabilities/CreateTest.cpp
         mediaKeysCapabilities/KeySystemsTest.cpp
 
+        # SharedMemoryManager tests
+        sharedMemoryManager/CreateTest.cpp
+        sharedMemoryManager/MemoryManagementTest.cpp
+
         # WebAudioPlayer tests
         webAudioPlayer/base/WebAudioPlayerTestBase.cpp
         webAudioPlayer/CreateTest.cpp
