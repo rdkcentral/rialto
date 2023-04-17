@@ -22,6 +22,19 @@
 
 namespace firebolt::rialto::client
 {
+IIpcClientAccessor &IIpcClientAccessor::instance()
+{
+    static IpcClientAccessor factory;
+    return factory;
+}
+
+IIpcClient &IpcClientAccessor::getIpcClient() const
+{
+    static IpcClient ipcClient{ipc::IChannelFactory::createFactory(), ipc::IControllerFactory::createFactory(),
+                               ipc::IBlockingClosureFactory::createFactory()};
+    return ipcClient;
+}
+
 IpcClient::IpcClient(const std::shared_ptr<ipc::IChannelFactory> &ipcChannelFactory,
                      const std::shared_ptr<ipc::IControllerFactory> &ipcControllerFactory,
                      const std::shared_ptr<ipc::IBlockingClosureFactory> &blockingClosureFactory)
@@ -41,13 +54,6 @@ IpcClient::~IpcClient()
     {
         RIALTO_CLIENT_LOG_WARN("Could not disconnect client");
     }
-}
-
-IpcClient &IpcClient::instance()
-{
-    static IpcClient ipcClient{ipc::IChannelFactory::createFactory(), ipc::IControllerFactory::createFactory(),
-                               ipc::IBlockingClosureFactory::createFactory()};
-    return ipcClient;
 }
 
 bool IpcClient::connect()

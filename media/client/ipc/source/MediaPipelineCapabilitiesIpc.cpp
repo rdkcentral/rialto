@@ -18,7 +18,6 @@
  */
 
 #include "MediaPipelineCapabilitiesIpc.h"
-#include "IpcClient.h"
 #include "RialtoClientLogging.h"
 #include "RialtoCommonIpc.h"
 
@@ -46,7 +45,8 @@ std::unique_ptr<IMediaPipelineCapabilities> MediaPipelineCapabilitiesIpcFactory:
 
     try
     {
-        mediaPipelineCapabilitiesIpc = std::make_unique<client::MediaPipelineCapabilitiesIpc>(IpcClient::instance());
+        mediaPipelineCapabilitiesIpc =
+            std::make_unique<client::MediaPipelineCapabilitiesIpc>(IIpcClientAccessor::instance().getIpcClient());
     }
     catch (const std::exception &e)
     {

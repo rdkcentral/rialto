@@ -18,7 +18,6 @@
  */
 
 #include "ControlIpc.h"
-#include "IpcClient.h"
 #include "RialtoClientLogging.h"
 
 namespace
@@ -64,7 +63,7 @@ std::shared_ptr<ControlIpcFactory> ControlIpcFactory::createFactory()
 
 std::shared_ptr<IControlIpc> ControlIpcFactory::getControlIpc(IControlClient *controlClient)
 {
-    return std::make_shared<ControlIpc>(controlClient, IpcClient::instance(),
+    return std::make_shared<ControlIpc>(controlClient, IIpcClientAccessor::instance().getIpcClient(),
                                         firebolt::rialto::common::IEventThreadFactory::createFactory());
 }
 
@@ -94,9 +93,9 @@ bool ControlIpc::getSharedMemory(int32_t &fd, uint32_t &size)
     std::shared_ptr<ipc::IChannel> ipcChannel = m_ipcChannel;
     std::shared_ptr<::firebolt::rialto::ControlModule_Stub> controlStub = m_controlStub;
 
-    if ((nullptr == ipcChannel) || (nullptr == controlStub))
+    if (!reattachChannelIfRequired())
     {
-        RIALTO_CLIENT_LOG_ERROR("Client disconnected");
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
         return false;
     }
 

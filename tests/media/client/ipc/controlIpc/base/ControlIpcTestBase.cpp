@@ -1,81 +1,89 @@
-// /*
-//  * If not stated otherwise in this file or this component's LICENSE file the
-//  * following copyright and licenses apply:
-//  *
-//  * Copyright 2022 Sky UK
-//  *
-//  * Licensed under the Apache License, Version 2.0 (the "License");
-//  * you may not use this file except in compliance with the License.
-//  * You may obtain a copy of the License at
-//  *
-//  * http://www.apache.org/licenses/LICENSE-2.0
-//  *
-//  * Unless required by applicable law or agreed to in writing, software
-//  * distributed under the License is distributed on an "AS IS" BASIS,
-//  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  * See the License for the specific language governing permissions and
-//  * limitations under the License.
-//  */
+/*
+ * If not stated otherwise in this file or this component's LICENSE file the
+ * following copyright and licenses apply:
+ *
+ * Copyright 2022 Sky UK
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-// #include "ControlIpcTestBase.h"
-// #include <memory>
+#include "ControlIpcTestBase.h"
+#include <memory>
 
-// void ControlIpcTestBase::SetUp() // NOLINT(build/function_format)
-// {
-//     // Create StrictMocks
-//     m_channelFactoryMock = std::make_shared<StrictMock<ChannelFactoryMock>>();
-//     m_channelMock = std::make_shared<StrictMock<ChannelMock>>();
-//     m_controllerFactoryMock = std::make_shared<StrictMock<ControllerFactoryMock>>();
-//     m_controllerMock = std::make_shared<StrictMock<RpcControllerMock>>();
-//     m_blockingClosureFactoryMock = std::make_shared<StrictMock<BlockingClosureFactoryMock>>();
-//     m_blockingClosureMock = std::make_shared<StrictMock<BlockingClosureMock>>();
-// }
+using ::testing::_;
+using ::testing::Invoke;
+using ::testing::Return;
 
-// void ControlIpcTestBase::TearDown() // NOLINT(build/function_format)
-// {
-//     // Destroy StrickMocks
-//     m_blockingClosureMock.reset();
-//     m_blockingClosureFactoryMock.reset();
-//     m_controllerMock.reset();
-//     m_controllerFactoryMock.reset();
-//     m_channelMock.reset();
-//     m_channelFactoryMock.reset();
-// }
+namespace
+{
+constexpr int kNotifyAppStateSubscriptionId{1};
+constexpr int kPingSubscriptionId{2};
+} // namespace
 
-// void ControlIpcTestBase::createControlIpc()
-// {
-//     EXPECT_CALL(*m_channelFactoryMock, createChannel(m_kRialtoPath)).WillOnce(Return(m_channelMock));
-//     EXPECT_CALL(*m_channelMock, process()).WillOnce(Return(false));
+ControlIpcTestBase::ControlIpcTestBase()
+{
+    m_eventThreadFactoryMock = std::make_shared<StrictMock<EventThreadFactoryMock>>();
+    m_eventThread = std::make_unique<StrictMock<EventThreadMock>>();
+    m_eventThreadMock = m_eventThread.get();
+}
 
-//     EXPECT_NO_THROW(m_controlIpc = std::make_shared<ControlIpc>(m_channelFactoryMock, m_controllerFactoryMock,
-//                                                                 m_blockingClosureFactoryMock));
-// }
+ControlIpcTestBase::~ControlIpcTestBase()
+{
+    m_eventThreadFactoryMock.reset();
+    m_eventThreadMock = nullptr;
+}
 
-// void ControlIpcTestBase::destroyControlIpc(bool alreadyDisconnected)
-// {
-//     if (!alreadyDisconnected)
-//     {
-//         EXPECT_CALL(*m_channelMock, disconnect());
-//     }
+void ControlIpcTestBase::createControlIpc()
+{
+    expectInitIpc();
+    expectSubscribeEvents();
+    EXPECT_CALL(*m_eventThreadFactoryMock, createEventThread(_)).WillOnce(Return(ByMove(std::move(m_eventThread))));
 
-//     m_controlIpc.reset();
-// }
+    EXPECT_NO_THROW(
+        m_controlIpc = std::make_shared<ControlIpc>(&m_controlClientMock, m_ipcClientMock, m_eventThreadFactoryMock));
+}
 
-// void ControlIpcTestBase::expectIpcApiCallSuccess()
-// {
-//     EXPECT_CALL(*m_controllerFactoryMock, create()).WillOnce(Return(m_controllerMock));
-//     EXPECT_CALL(*m_blockingClosureFactoryMock, createBlockingClosureSemaphore()).WillOnce(Return(m_blockingClosureMock));
+void ControlIpcTestBase::destroyControlIpc()
+{
+    expectUnsubscribeEvents();
 
-//     EXPECT_CALL(*m_blockingClosureMock, wait()).RetiresOnSaturation();
-//     EXPECT_CALL(*m_controllerMock, Failed()).WillOnce(Return(false)).RetiresOnSaturation();
-// }
+    m_controlIpc.reset();
+}
 
-// void ControlIpcTestBase::expectIpcApiCallFailure()
-// {
-//     EXPECT_CALL(*m_controllerFactoryMock, create()).WillOnce(Return(m_controllerMock));
-//     EXPECT_CALL(*m_blockingClosureFactoryMock, createBlockingClosureSemaphore()).WillOnce(Return(m_blockingClosureMock));
+void ControlIpcTestBase::expectSubscribeEvents()
+{
+    EXPECT_CALL(*m_channelMock, subscribeImpl("firebolt.rialto.ApplicationStateChangeEvent", _, _))
+        .WillOnce(Invoke(
+            [this](const std::string &eventName, const google::protobuf::Descriptor *descriptor,
+                   std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> &&handler)
+            {
+                m_notifyApplicationStateCb = std::move(handler);
+                return kNotifyAppStateSubscriptionId;
+            }))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*m_channelMock, subscribeImpl("firebolt.rialto.PingEvent", _, _))
+        .WillOnce(Invoke(
+            [this](const std::string &eventName, const google::protobuf::Descriptor *descriptor,
+                   std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> &&handler)
+            {
+                m_pingCb = std::move(handler);
+                return kPingSubscriptionId;
+            }))
+        .RetiresOnSaturation();
+}
 
-//     EXPECT_CALL(*m_blockingClosureMock, wait()).RetiresOnSaturation();
-//     EXPECT_CALL(*m_controllerMock, Failed()).WillOnce(Return(true)).RetiresOnSaturation();
-//     EXPECT_CALL(*m_controllerMock, ErrorText()).WillOnce(Return("Failed for some reason...")).RetiresOnSaturation();
-// }
+void ControlIpcTestBase::expectUnsubscribeEvents()
+{
+    EXPECT_CALL(*m_channelMock, unsubscribe(kNotifyAppStateSubscriptionId)).WillOnce(Return(true));
+    EXPECT_CALL(*m_channelMock, unsubscribe(kPingSubscriptionId)).WillOnce(Return(true));
+}

@@ -17,7 +17,6 @@
  * limitations under the License.
  */
 #include "WebAudioPlayerIpc.h"
-#include "IpcClient.h"
 #include "RialtoClientLogging.h"
 #include "RialtoCommonIpc.h"
 #include "webaudioplayermodule.pb.h"
@@ -51,7 +50,8 @@ std::unique_ptr<IWebAudioPlayerIpc> WebAudioPlayerIpcFactory::createWebAudioPlay
     try
     {
         webAudioPlayerIpc =
-            std::make_unique<WebAudioPlayerIpc>(client, audioMimeType, priority, config, IpcClient::instance(),
+            std::make_unique<WebAudioPlayerIpc>(client, audioMimeType, priority, config,
+                                                IIpcClientAccessor::instance().getIpcClient(),
                                                 firebolt::rialto::common::IEventThreadFactory::createFactory());
     }
     catch (const std::exception &e)

@@ -31,6 +31,38 @@
 
 namespace firebolt::rialto::client
 {
+class IIpcClient;
+
+/**
+ * @brief IIpcClient accessor class definition.
+ */
+class IIpcClientAccessor
+{
+public:
+    virtual ~IIpcClientAccessor() = default;
+    IIpcClientAccessor(const IIpcClientAccessor &) = delete;
+    IIpcClientAccessor &operator=(const IIpcClientAccessor &) = delete;
+    IIpcClientAccessor(IIpcClientAccessor &&) = delete;
+    IIpcClientAccessor &operator=(IIpcClientAccessor &&) = delete;
+
+    /**
+     * @brief Get a IControlIpcAccessor instance.
+     *
+     * @retval the accessor instance
+     */
+    static IIpcClientAccessor &instance();
+
+    /**
+     * @brief Get IpcClient object.
+     *
+     * @retval the reference to IpcClient singleton object
+     */
+    virtual IIpcClient &getIpcClient() const = 0;
+
+protected:
+    IIpcClientAccessor() = default;
+};
+
 /**
  * @brief The definition of the IIpcClient interface.
  *

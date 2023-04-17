@@ -18,7 +18,6 @@
  */
 
 #include "MediaKeysCapabilitiesIpc.h"
-#include "IpcClient.h"
 #include "RialtoClientLogging.h"
 
 namespace firebolt::rialto::client
@@ -53,7 +52,8 @@ std::shared_ptr<IMediaKeysCapabilities> MediaKeysCapabilitiesIpcFactory::getMedi
     {
         try
         {
-            mediaKeysCapabilitiesIpc = std::make_shared<client::MediaKeysCapabilitiesIpc>(IpcClient::instance());
+            mediaKeysCapabilitiesIpc =
+                std::make_shared<client::MediaKeysCapabilitiesIpc>(IIpcClientAccessor::instance().getIpcClient());
         }
         catch (const std::exception &e)
         {

@@ -1,71 +1,63 @@
-// /*
-//  * If not stated otherwise in this file or this component's LICENSE file the
-//  * following copyright and licenses apply:
-//  *
-//  * Copyright 2022 Sky UK
-//  *
-//  * Licensed under the Apache License, Version 2.0 (the "License");
-//  * you may not use this file except in compliance with the License.
-//  * You may obtain a copy of the License at
-//  *
-//  * http://www.apache.org/licenses/LICENSE-2.0
-//  *
-//  * Unless required by applicable law or agreed to in writing, software
-//  * distributed under the License is distributed on an "AS IS" BASIS,
-//  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  * See the License for the specific language governing permissions and
-//  * limitations under the License.
-//  */
+/*
+ * If not stated otherwise in this file or this component's LICENSE file the
+ * following copyright and licenses apply:
+ *
+ * Copyright 2022 Sky UK
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-// #ifndef CONTROL_IPC_TEST_BASE_H_
-// #define CONTROL_IPC_TEST_BASE_H_
+#ifndef CONTROL_IPC_TEST_BASE_H_
+#define CONTROL_IPC_TEST_BASE_H_
 
-// #include "BlockingClosureFactoryMock.h"
-// #include "BlockingClosureMock.h"
-// #include "ControlIpc.h"
-// #include "IpcChannelFactoryMock.h"
-// #include "IpcChannelMock.h"
-// #include "IpcControllerFactoryMock.h"
-// #include "RpcControllerMock.h"
-// #include <gtest/gtest.h>
-// #include <memory>
+#include "ControlClientMock.h"
+#include "ControlIpc.h"
+#include "EventThreadFactoryMock.h"
+#include "EventThreadMock.h"
+#include "IpcClientMock.h"
+#include "IpcModuleBase.h"
+#include <gtest/gtest.h>
+#include <memory>
 
-// using namespace firebolt::rialto;
-// using namespace firebolt::rialto::ipc;
-// using namespace firebolt::rialto::client;
+using namespace firebolt::rialto;
+using namespace firebolt::rialto::client;
+using namespace firebolt::rialto::common;
+using namespace firebolt::rialto::ipc;
 
-// using ::testing::_;
-// using ::testing::Return;
-// using ::testing::StrictMock;
+using ::testing::StrictMock;
 
-// MATCHER_P(methodMatcher, name, "")
-// {
-//     return (name == arg->name());
-// }
+class ControlIpcTestBase : public IpcModuleBase, public ::testing::Test
+{
+protected:
+    StrictMock<ControlClientMock> m_controlClientMock;
+    std::shared_ptr<StrictMock<EventThreadFactoryMock>> m_eventThreadFactoryMock;
+    std::unique_ptr<StrictMock<EventThreadMock>> m_eventThread;
+    StrictMock<EventThreadMock> *m_eventThreadMock;
 
-// class ControlIpcTestBase : public ::testing::Test
-// {
-// protected:
-//     // ControlIpc object
-//     std::shared_ptr<IControlIpc> m_controlIpc;
+    // ControlIpc object
+    std::shared_ptr<IControlIpc> m_controlIpc;
 
-//     // Strict Mocks
-//     std::shared_ptr<StrictMock<ChannelFactoryMock>> m_channelFactoryMock;
-//     std::shared_ptr<StrictMock<ChannelMock>> m_channelMock;
-//     std::shared_ptr<StrictMock<ControllerFactoryMock>> m_controllerFactoryMock;
-//     std::shared_ptr<StrictMock<RpcControllerMock>> m_controllerMock;
-//     std::shared_ptr<StrictMock<BlockingClosureFactoryMock>> m_blockingClosureFactoryMock;
-//     std::shared_ptr<StrictMock<BlockingClosureMock>> m_blockingClosureMock;
+    // Callbacks
+    std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> m_notifyApplicationStateCb;
+    std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> m_pingCb;
 
-//     // Common variables
-//     const char *m_kRialtoPath = getenv("RIALTO_SOCKET_PATH");
+    ControlIpcTestBase();
+    ~ControlIpcTestBase();
 
-//     void SetUp();
-//     void TearDown();
-//     void createControlIpc();
-//     void destroyControlIpc(bool alreadyDisconnected);
-//     void expectIpcApiCallSuccess();
-//     void expectIpcApiCallFailure();
-// };
+    void createControlIpc();
+    void destroyControlIpc();
+    void expectSubscribeEvents();
+    void expectUnsubscribeEvents();
+};
 
-// #endif // CONTROL_IPC_TEST_BASE_H_
+#endif // CONTROL_IPC_TEST_BASE_H_

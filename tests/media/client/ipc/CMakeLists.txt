@@ -62,8 +62,13 @@ add_gtests (
         # ControlIpc tests
         controlIpc/base/ControlIpcTestBase.cpp
         controlIpc/CreateTest.cpp
-        controlIpc/ConnectionTest.cpp
         controlIpc/GetSharedMemoryTest.cpp
+        controlIpc/NotifyApplicationStateTest.cpp
+        controlIpc/PingTest.cpp
+
+        # IpcClient tests
+        ipcClient/base/IpcClientTestBase.cpp
+        ipcClient/IpcClientTest.cpp
 
         # MediaKeysIpc tests
         mediaKeysIpc/base/MediaKeysIpcTestBase.cpp

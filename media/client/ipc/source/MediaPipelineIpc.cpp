@@ -17,7 +17,6 @@
  * limitations under the License.
  */
 #include "MediaPipelineIpc.h"
-#include "IpcClient.h"
 #include "RialtoClientLogging.h"
 #include "RialtoCommonIpc.h"
 #include "mediapipelinemodule.pb.h"
@@ -56,7 +55,7 @@ MediaPipelineIpcFactory::createMediaPipelineIpc(IMediaPipelineIpcClient *client,
     try
     {
         mediaPipelineIpc =
-            std::make_unique<MediaPipelineIpc>(client, videoRequirements, IpcClient::instance(),
+            std::make_unique<MediaPipelineIpc>(client, videoRequirements, IIpcClientAccessor::instance().getIpcClient(),
                                                firebolt::rialto::common::IEventThreadFactory::createFactory());
     }
     catch (const std::exception &e)

@@ -26,21 +26,19 @@
 
 namespace firebolt::rialto::client
 {
+class IpcClientAccessor : public IIpcClientAccessor
+{
+public:
+    ~IpcClientAccessor() override = default;
+    IIpcClient &getIpcClient() const override;
+};
+
 /**
  * @brief The definition of the IpcClient.
  */
 class IpcClient : public IIpcClient
 {
 public:
-    static IpcClient &instance();
-
-    std::shared_ptr<ipc::IChannel> getChannel() const override;
-
-    std::shared_ptr<ipc::IBlockingClosure> createBlockingClosure() override;
-
-    std::shared_ptr<google::protobuf::RpcController> createRpcController() override;
-
-protected:
     /**
      * @brief The constructor.
      */
@@ -51,8 +49,15 @@ protected:
     /**
      * @brief Virtual destructor.
      */
-    virtual ~IpcClient();
+    ~IpcClient() override;
 
+    std::shared_ptr<ipc::IChannel> getChannel() const override;
+
+    std::shared_ptr<ipc::IBlockingClosure> createBlockingClosure() override;
+
+    std::shared_ptr<google::protobuf::RpcController> createRpcController() override;
+
+protected:
     /**
      * @brief The ipc thread.
      */

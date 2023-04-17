@@ -18,7 +18,6 @@
  */
 
 #include "MediaKeysIpc.h"
-#include "IpcClient.h"
 #include "RialtoClientLogging.h"
 
 namespace
@@ -137,7 +136,7 @@ std::unique_ptr<IMediaKeys> MediaKeysIpcFactory::createMediaKeysIpc(const std::s
     try
     {
         mediaKeysIpc =
-            std::make_unique<client::MediaKeysIpc>(keySystem, IpcClient::instance(),
+            std::make_unique<client::MediaKeysIpc>(keySystem, IIpcClientAccessor::instance().getIpcClient(),
                                                    firebolt::rialto::common::IEventThreadFactory::createFactory());
     }
     catch (const std::exception &e)
