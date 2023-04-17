@@ -76,7 +76,6 @@ inline std::unordered_set<std::string> convertFromCapsVectorToMimeSet(const std:
         {{m_gstWrapper->gstCapsFromString("audio/mpeg, mpegversion=(int)4"), {"audio/mp4", "audio/aac", "audio/x-eac3"}},
          {m_gstWrapper->gstCapsFromString("audio/x-eac3"), {"audio/x-eac3"}},
          {m_gstWrapper->gstCapsFromString("audio/x-opus"), {"audio/x-opus"}},
-         {m_gstWrapper->gstCapsFromString("audio/x-opus, channel-mapping-family=(int)0"), {"audio/x-opus"}},
          {m_gstWrapper->gstCapsFromString("video/x-av1"), {"video/x-av1"}},
          {m_gstWrapper->gstCapsFromString("video/x-h264"), {"video/h264"}},
          {m_gstWrapper->gstCapsFromString("video/x-h265"), {"video/h265"}},
@@ -93,7 +92,7 @@ inline std::unordered_set<std::string> convertFromCapsVectorToMimeSet(const std:
     {
         for (const auto &capsToMime : capsToMimeVec)
         {
-            if (m_gstWrapper->gstCapsIsSubset(capsToMime.first, caps))
+            if (m_gstWrapper->gstCapsCanIntersect(capsToMime.first, caps))
             {
                 supportedMimes.insert(capsToMime.second.begin(), capsToMime.second.end());
             }

@@ -109,13 +109,6 @@ private:
     bool isCapsInVector(const std::vector<GstCaps *> &capsVector, GstCaps *caps) const;
 
     /**
-     * @brief Maps vector of supported caps to set of mime types
-     *
-     * @retval Mime types
-     */
-    std::unordered_set<std::string> convertFromCapsVectorToMimeSet(std::vector<GstCaps *> &supportedCaps);
-
-    /**
      * @brief Set of mime types which are supported by gstreamer
      */
     std::unordered_set<std::string> m_supportedMimeTypes;
