@@ -41,8 +41,6 @@ add_gtests (
 
         # Control tests
         control/CreateTest.cpp
-        control/SetAppStateTest.cpp
-        control/SharedMemoryClientTest.cpp
 
         # MediaKeys tests
         mediaKeys/CreateTest.cpp

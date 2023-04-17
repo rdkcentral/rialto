@@ -26,7 +26,6 @@ using namespace firebolt::rialto;
 using namespace firebolt::rialto::client;
 
 using ::testing::_;
-using ::testing::ByMove;
 using ::testing::Return;
 using ::testing::StrictMock;
 
