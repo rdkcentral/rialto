@@ -316,7 +316,8 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OneDecoderWithOneSinkPad_Parse
     EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(_, _)).WillRepeatedly(Return(false));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&decoderPadTemplateCapsSink, &parserPadTemplateCapsSrc))
         .WillOnce(Return(false));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["video/mpeg, mpegversion=(int)4"], &decoderPadTemplateCapsSink))
+    EXPECT_CALL(*m_gstWrapperMock,
+                gstCapsCanIntersect(&m_capsMap["video/mpeg, mpegversion=(int)4"], &decoderPadTemplateCapsSink))
         .WillOnce(Return(true));
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock);
