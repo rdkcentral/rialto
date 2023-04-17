@@ -21,7 +21,6 @@
 #include "IWebAudioPlayerIpc.h"
 #include "IWebAudioPlayerIpcClient.h"
 #include "RialtoClientLogging.h"
-#include "SharedMemoryManager.h"
 #include <cstring>
 #include <limits.h>
 #include <mutex>
@@ -54,7 +53,8 @@ std::unique_ptr<IWebAudioPlayer> WebAudioPlayerFactory::createWebAudioPlayer(std
     {
         webAudioPlayer = std::make_unique<client::WebAudioPlayer>(client, audioMimeType, priority, config,
                                                                   client::IWebAudioPlayerIpcFactory::getFactory(),
-                                                                  client::SharedMemoryManager::instance());
+                                                                  client::ISharedMemoryManagerAccessor::instance()
+                                                                      .getSharedMemoryManager());
     }
     catch (const std::exception &e)
     {

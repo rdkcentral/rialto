@@ -20,7 +20,6 @@
 #include "Control.h"
 #include "IControlIpc.h"
 #include "RialtoClientLogging.h"
-#include "SharedMemoryManager.h"
 
 namespace firebolt::rialto
 {
@@ -50,7 +49,7 @@ std::shared_ptr<ControlFactory> ControlFactory::createFactory()
 std::shared_ptr<IControl> ControlFactory::createControl(std::weak_ptr<IControlClient> client) const
 try
 {
-    return std::make_shared<Control>(client, SharedMemoryManager::instance());
+    return std::make_shared<Control>(client, ISharedMemoryManagerAccessor::instance().getSharedMemoryManager());
 }
 catch (const std::exception &e)
 {

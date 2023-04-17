@@ -25,6 +25,18 @@
 
 namespace firebolt::rialto::client
 {
+ISharedMemoryManagerAccessor &ISharedMemoryManagerAccessor::instance()
+{
+    static SharedMemoryManagerAccessor factory;
+    return factory;
+}
+
+ISharedMemoryManager &SharedMemoryManagerAccessor::getSharedMemoryManager() const
+{
+    static SharedMemoryManager sharedMemoryManager{IControlIpcFactory::createFactory()};
+    return sharedMemoryManager;
+}
+
 SharedMemoryManager::SharedMemoryManager(const std::shared_ptr<IControlIpcFactory> &ControlIpcFactory)
     : m_shmFd(-1), m_shmBuffer(nullptr), m_shmBufferLen(0U)
 {
@@ -42,12 +54,6 @@ SharedMemoryManager::~SharedMemoryManager()
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     termSharedMemory();
-}
-
-SharedMemoryManager &SharedMemoryManager::instance()
-{
-    static SharedMemoryManager sharedMemoryManager{IControlIpcFactory::createFactory()};
-    return sharedMemoryManager;
 }
 
 uint8_t *SharedMemoryManager::getSharedMemoryBuffer()

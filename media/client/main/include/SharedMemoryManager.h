@@ -28,18 +28,24 @@
 
 namespace firebolt::rialto::client
 {
+class SharedMemoryManagerAccessor : public ISharedMemoryManagerAccessor
+{
+public:
+    ~SharedMemoryManagerAccessor() override = default;
+    ISharedMemoryManager &getSharedMemoryManager() const override;
+};
+
 class SharedMemoryManager : public ISharedMemoryManager, public IControlClient
 {
 public:
-    static SharedMemoryManager &instance();
+    SharedMemoryManager(const std::shared_ptr<IControlIpcFactory> &ControlIpcFactory);
+    ~SharedMemoryManager() override;
 
     uint8_t *getSharedMemoryBuffer() override;
     bool registerClient(IControlClient *client) override;
     bool unregisterClient(IControlClient *client) override;
 
 private:
-    SharedMemoryManager(const std::shared_ptr<IControlIpcFactory> &ControlIpcFactory);
-    ~SharedMemoryManager() override;
     void notifyApplicationState(ApplicationState state) override;
 
     /**

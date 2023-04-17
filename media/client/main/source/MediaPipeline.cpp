@@ -20,7 +20,6 @@
 #include "MediaPipeline.h"
 #include "KeyIdMap.h"
 #include "RialtoClientLogging.h"
-#include "SharedMemoryManager.h"
 #include <inttypes.h>
 #include <stdint.h>
 
@@ -126,7 +125,8 @@ std::unique_ptr<IMediaPipeline> MediaPipelineFactory::createMediaPipeline(std::w
         mediaPipeline = std::make_unique<client::MediaPipeline>(client, videoRequirements,
                                                                 client::IMediaPipelineIpcFactory::getFactory(),
                                                                 common::IMediaFrameWriterFactory::getFactory(),
-                                                                client::SharedMemoryManager::instance());
+                                                                client::ISharedMemoryManagerAccessor::instance()
+                                                                    .getSharedMemoryManager());
     }
     catch (const std::exception &e)
     {

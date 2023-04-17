@@ -29,27 +29,33 @@ namespace firebolt::rialto::client
 class ISharedMemoryManager;
 
 /**
- * @brief ISharedMemoryManager factory class, returns a concrete implementation of ISharedMemoryManager.
+ * @brief ISharedMemoryManager accessor class definition.
  */
-class ISharedMemoryManagerFactory
+class ISharedMemoryManagerAccessor
 {
 public:
-    ISharedMemoryManagerFactory() = default;
-    virtual ~ISharedMemoryManagerFactory() = default;
+    virtual ~ISharedMemoryManagerAccessor() = default;
+    ISharedMemoryManagerAccessor(const ISharedMemoryManagerAccessor &) = delete;
+    ISharedMemoryManagerAccessor &operator=(const ISharedMemoryManagerAccessor &) = delete;
+    ISharedMemoryManagerAccessor(ISharedMemoryManagerAccessor &&) = delete;
+    ISharedMemoryManagerAccessor &operator=(ISharedMemoryManagerAccessor &&) = delete;
 
     /**
-     * @brief Creates a ISharedMemoryManagerFactory instance.
+     * @brief Get a ISharedMemoryManagerAccessor instance.
      *
-     * @retval the factory instance or null on error.
+     * @retval the accessor instance
      */
-    static std::shared_ptr<ISharedMemoryManagerFactory> createFactory();
+    static ISharedMemoryManagerAccessor &instance();
 
     /**
-     * @brief ISharedMemoryManager factory method, returns a the singleton ISharedMemoryManager object.
+     * @brief Get SharedMemoryManager object.
      *
-     * @retval the shared memory manager instance or null on error.
+     * @retval the reference to SharedMemoryManager singleton object
      */
-    virtual std::shared_ptr<ISharedMemoryManager> getSharedMemoryManager() const = 0;
+    virtual ISharedMemoryManager &getSharedMemoryManager() const = 0;
+
+protected:
+    ISharedMemoryManagerAccessor() = default;
 };
 
 /**
