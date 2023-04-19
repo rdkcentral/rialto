@@ -179,7 +179,8 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachAudioSourceWithAdditionalda
     AudioConfig audioConfig{6, 48000, codecSpecificConfig};
 
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
-        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType, true, audioConfig, alignment, streamFormat, codecData);
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType, true, audioConfig, alignment, streamFormat,
+                                                           codecData);
 
     EXPECT_EQ(m_mediaPipelineIpc->attachSource(mediaSource, m_id), true);
 }
@@ -214,7 +215,8 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachAudioSourceWithEmptyCodecDa
     AudioConfig audioConfig{6, 48000, codecSpecificConfig};
 
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
-        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType, true, audioConfig, alignment, streamFormat, codecData);
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType, true, audioConfig, alignment, streamFormat,
+                                                           codecData);
 
     EXPECT_EQ(m_mediaPipelineIpc->attachSource(mediaSource, m_id), true);
 }

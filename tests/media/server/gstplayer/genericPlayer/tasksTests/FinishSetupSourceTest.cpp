@@ -72,8 +72,8 @@ protected:
                                                  firebolt::rialto::MediaSourceType::AUDIO))
             .WillOnce(Invoke(
                 [this](firebolt::rialto::server::IDecryptionService *decryptionService, GstElement *element,
-                       firebolt::rialto::server::StreamInfo &streamInfo, GstAppSrcCallbacks *callbacks, gpointer userData,
-                       firebolt::rialto::MediaSourceType type)
+                       firebolt::rialto::server::StreamInfo &streamInfo, GstAppSrcCallbacks *callbacks,
+                       gpointer userData, firebolt::rialto::MediaSourceType type)
                 {
                     m_audioCallbacks = *callbacks;
                     m_audioUserData = userData;
@@ -86,8 +86,8 @@ protected:
                                                  firebolt::rialto::MediaSourceType::VIDEO))
             .WillOnce(Invoke(
                 [this](firebolt::rialto::server::IDecryptionService *decryptionService, GstElement *element,
-                       firebolt::rialto::server::StreamInfo &streamInfo, GstAppSrcCallbacks *callbacks, gpointer userData,
-                       firebolt::rialto::MediaSourceType type)
+                       firebolt::rialto::server::StreamInfo &streamInfo, GstAppSrcCallbacks *callbacks,
+                       gpointer userData, firebolt::rialto::MediaSourceType type)
                 {
                     m_videoCallbacks = *callbacks;
                     m_videoUserData = userData;

@@ -61,7 +61,7 @@ public:
  */
 struct StreamInfo
 {
-    StreamInfo(){}
+    StreamInfo() {}
     StreamInfo(GstElement *appSrc, bool hasDrm = true) : m_appSrc(appSrc), m_hasDrm(hasDrm) {}
     bool operator==(const StreamInfo &other) const { return m_appSrc == other.m_appSrc && m_hasDrm == other.m_hasDrm; }
     GstElement *m_appSrc = nullptr;

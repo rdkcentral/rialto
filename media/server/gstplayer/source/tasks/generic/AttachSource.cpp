@@ -312,14 +312,14 @@ void AttachSource::switchAudioSource(GstCaps *caps, const std::string &strCaps) 
     bool svpEnabled{true}; // assume always true
     bool retVal{false};    // Output param. Set to TRUE in rdk_gstreamer_utils function stub
 
-    bool result = m_rdkGstreamerUtilsWrapper
-                      ->performAudioTrackCodecChannelSwitch(&m_context.playbackGroup, &sampleAttributes,
-                                                            &audioAttributes, &status, &ui32Delay,
-                                                            &audioChangeTargetPts, &currentDispPts, &audioChangeStage,
-                                                            &caps, // may fail for amlogic - that implementation changes
-                                                                   // this parameter, it's probably used by Netflix later
-                                                            &audioAac, svpEnabled,
-                                                            m_context.streamInfo[m_attachedSource->getType()].m_appSrc, &retVal);
+    bool result =
+        m_rdkGstreamerUtilsWrapper
+            ->performAudioTrackCodecChannelSwitch(&m_context.playbackGroup, &sampleAttributes, &audioAttributes, &status,
+                                                  &ui32Delay, &audioChangeTargetPts, &currentDispPts, &audioChangeStage,
+                                                  &caps, // may fail for amlogic - that implementation changes
+                                                         // this parameter, it's probably used by Netflix later
+                                                  &audioAac, svpEnabled,
+                                                  m_context.streamInfo[m_attachedSource->getType()].m_appSrc, &retVal);
     if (!result || !retVal)
     {
         RIALTO_SERVER_LOG_WARN("performAudioTrackCodecChannelSwitch failed! Result: %d, retval %d", result, retVal);

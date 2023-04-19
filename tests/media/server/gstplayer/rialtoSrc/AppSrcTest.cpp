@@ -70,7 +70,7 @@ protected:
     gchar *m_name = "src_0";
     StreamInfo m_streamInfo = {};
 
-    RialtoServerAppSrcGstSrcTest() : m_streamInfo{&m_appsrc, true} { }
+    RialtoServerAppSrcGstSrcTest() : m_streamInfo{&m_appsrc, true} {}
 
     virtual void SetUp()
     {
@@ -105,9 +105,11 @@ protected:
         EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.m_appSrc, CharStrMatcher("stream-type")));
         EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.m_appSrc, CharStrMatcher("min-percent")));
 
-        EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCallbacks(GST_APP_SRC(m_streamInfo.m_appSrc), &m_callbacks, this, nullptr));
+        EXPECT_CALL(*m_gstWrapperMock,
+                    gstAppSrcSetCallbacks(GST_APP_SRC(m_streamInfo.m_appSrc), &m_callbacks, this, nullptr));
         EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetMaxBytes(GST_APP_SRC(m_streamInfo.m_appSrc), max));
-        EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetStreamType(GST_APP_SRC(m_streamInfo.m_appSrc), GST_APP_STREAM_TYPE_SEEKABLE));
+        EXPECT_CALL(*m_gstWrapperMock,
+                    gstAppSrcSetStreamType(GST_APP_SRC(m_streamInfo.m_appSrc), GST_APP_STREAM_TYPE_SEEKABLE));
     }
 
     void expectBin(GstElement *expectedElement)
@@ -189,8 +191,8 @@ TEST_F(RialtoServerAppSrcGstSrcTest, SetupVideo)
     expectLinkQueue(&m_payloader);
     expectSetupPad(&m_queue);
 
-    m_gstSrc->setupAndAddAppArc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), m_streamInfo, &m_callbacks, this,
-                                MediaSourceType::VIDEO);
+    m_gstSrc->setupAndAddAppArc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), m_streamInfo, &m_callbacks,
+                                this, MediaSourceType::VIDEO);
 }
 
 /**
@@ -207,8 +209,8 @@ TEST_F(RialtoServerAppSrcGstSrcTest, SetupAudio)
     expectLinkQueue(&m_decryptor);
     expectSetupPad(&m_queue);
 
-    m_gstSrc->setupAndAddAppArc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), m_streamInfo, &m_callbacks, this,
-                                MediaSourceType::AUDIO);
+    m_gstSrc->setupAndAddAppArc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), m_streamInfo, &m_callbacks,
+                                this, MediaSourceType::AUDIO);
 }
 
 /**
@@ -229,8 +231,8 @@ TEST_F(RialtoServerAppSrcGstSrcTest, DecryptorFailure)
     expectLinkQueue(&m_payloader);
     expectSetupPad(&m_queue);
 
-    m_gstSrc->setupAndAddAppArc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), m_streamInfo, &m_callbacks, this,
-                                MediaSourceType::VIDEO);
+    m_gstSrc->setupAndAddAppArc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), m_streamInfo, &m_callbacks,
+                                this, MediaSourceType::VIDEO);
 }
 
 /**
@@ -254,8 +256,8 @@ TEST_F(RialtoServerAppSrcGstSrcTest, PayloaderFailure)
     expectLinkQueue(&m_decryptor);
     expectSetupPad(&m_queue);
 
-    m_gstSrc->setupAndAddAppArc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), m_streamInfo, &m_callbacks, this,
-                                MediaSourceType::VIDEO);
+    m_gstSrc->setupAndAddAppArc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), m_streamInfo, &m_callbacks,
+                                this, MediaSourceType::VIDEO);
 }
 
 /**
@@ -274,8 +276,8 @@ TEST_F(RialtoServerAppSrcGstSrcTest, QueueFailure)
     expectLinkPayloader(&m_decryptor);
     expectSetupPad(&m_payloader);
 
-    m_gstSrc->setupAndAddAppArc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), m_streamInfo, &m_callbacks, this,
-                                MediaSourceType::VIDEO);
+    m_gstSrc->setupAndAddAppArc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), m_streamInfo, &m_callbacks,
+                                this, MediaSourceType::VIDEO);
 }
 
 /**
