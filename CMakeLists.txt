@@ -26,30 +26,29 @@ endif()
 
 add_compile_options(-Wall -Werror)
 
-if( CMAKE_BUILD_TYPE STREQUAL "Debug" )
+option(RIALTO_LOG_FATAL_ENABLED "Enable fatal logging for RialtoServer" ON)
+option(RIALTO_LOG_ERROR_ENABLED "Enable error logging for RialtoServer" ON)
+option(RIALTO_LOG_WARN_ENABLED "Enable warning logging for RialtoServer" ON)
+option(RIALTO_LOG_MIL_ENABLED "Enable milestone logging for RialtoServer" ON)
+option(RIALTO_LOG_INFO_ENABLED "Enable info logging for RialtoServer" ON)
+option(RIALTO_LOG_DEBUG_ENABLED "Enable debug logging for RialtoServer" ON)
+
+if( RIALTO_BUILD_TYPE STREQUAL "Debug" )
 
     message("_______________DEBUG MODE_______________")
-    option(RIALTO_LOG_FATAL_ENABLED "Enable fatal logging for RialtoServer" ON)
-    option(RIALTO_LOG_ERROR_ENABLED "Enable error logging for RialtoServer" ON)
-    option(RIALTO_LOG_WARN_ENABLED "Enable warning logging for RialtoServer" ON)
-    option(RIALTO_LOG_MIL_ENABLED "Enable milestone logging for RialtoServer" ON)
-    option(RIALTO_LOG_INFO_ENABLED "Enable info logging for RialtoServer" ON)
-    option(RIALTO_LOG_DEBUG_ENABLED "Enable debug logging for RialtoServer" ON)
 
-elseif( CMAKE_BUILD_TYPE STREQUAL "Release" )
+elseif( RIALTO_BUILD_TYPE STREQUAL "Release" )
 
     message("_______________RELEASE MODE_______________")
-    option(RIALTO_LOG_FATAL_ENABLED "Enable fatal logging for RialtoServer" ON)
-    option(RIALTO_LOG_ERROR_ENABLED "Enable error logging for RialtoServer" ON)
-    option(RIALTO_LOG_WARN_ENABLED "Enable warning logging for RialtoServer" ON)  
-    option(RIALTO_LOG_MIL_ENABLED "Enable milestone logging for RialtoServer" ON)
-    option(RIALTO_LOG_INFO_ENABLED "Enable info logging for RialtoServer" OFF)
-    option(RIALTO_LOG_DEBUG_ENABLED "Enable debug logging for RialtoServer" OFF)
+    set(RIALTO_LOG_INFO_ENABLED OFF)
+    set(RIALTO_LOG_DEBUG_ENABLED OFF)
 
 else()
 
-    message( FATAL_ERROR "The CMAKE_BUILD_TYPE '${CMAKE_BUILD_TYPE}' is NOT supported! Only 'Debug' & 'Release' are supported" )
-
+    message("_______________RELEASE MODE (DEFAULT)_______________")
+    set(RIALTO_LOG_INFO_ENABLED OFF)
+    set(RIALTO_LOG_DEBUG_ENABLED OFF)
+    
 endif()
 
 if ( RIALTO_LOG_FATAL_ENABLED )
