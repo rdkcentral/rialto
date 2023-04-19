@@ -161,8 +161,10 @@ def buildTargets (suites, outputDir, resultsFile, debug, coverage):
     cmakeCmd = ["cmake", "-B", outputDir , "-DCMAKE_BUILD_FLAG=UnitTests", "-DRIALTO_ENABLE_DECRYPT_BUFFER=1"]
     # Debug/Release Mode
     cmakeCmd.append("-DRIALTO_BUILD_TYPE=Debug")
+    # Coverge
+    cmakeCmd.append("-DCOVERAGE_ENABLED=1")
     runcmd(cmakeCmd, cwd=os.getcwd())
-
+    
     # Make targets
     jarg = "-j" + str(multiprocessing.cpu_count())
     makeCmd = ["make", jarg]
