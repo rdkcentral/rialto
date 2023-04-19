@@ -210,8 +210,9 @@ bool SessionServerManager::switchToNotRunning()
         RIALTO_SERVER_LOG_DEBUG("Session server already in NotRunning state.");
         return true;
     }
-    // m_playbackService.switchToInactive();
-    // m_cdmService.switchToInactive();
+    // Free resources before sending notification to ServerManager
+    m_playbackService.switchToInactive();
+    m_cdmService.switchToInactive();
     stopService();
     if (m_applicationManagementServer->sendStateChangedEvent(common::SessionServerState::NOT_RUNNING))
     {
