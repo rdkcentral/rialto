@@ -23,11 +23,13 @@
 #include "ISessionManagementServer.h"
 #include "RialtoServerLogging.h"
 #include <algorithm>
+#include <chrono>
 #include <stdexcept>
 #include <utility>
 
 namespace
 {
+constexpr std::chrono::milliseconds kShutdownDelay{200};
 inline bool isNumber(const std::string &text)
 {
     return std::find_if(text.begin(), text.end(), [](const auto &letter) { return !std::isdigit(letter); }) == text.end();
@@ -36,9 +38,10 @@ inline bool isNumber(const std::string &text)
 
 namespace firebolt::rialto::server::service
 {
-SessionServerManager::SessionServerManager(const ipc::IIpcFactory &ipcFactory, IPlaybackService &playbackService,
-                                           ICdmService &cdmService)
-    : m_playbackService{playbackService}, m_cdmService{cdmService},
+SessionServerManager::SessionServerManager(const ipc::IIpcFactory &ipcFactory,
+                                           const std::shared_ptr<common::ITimerFactory> &timerFactory,
+                                           IPlaybackService &playbackService, ICdmService &cdmService)
+    : m_timerFactory{timerFactory}, m_playbackService{playbackService}, m_cdmService{cdmService},
       m_applicationManagementServer{ipcFactory.createApplicationManagementServer(*this)},
       m_sessionManagementServer{ipcFactory.createSessionManagementServer(playbackService, cdmService)},
       m_isServiceRunning{true}, m_currentState{common::SessionServerState::UNINITIALIZED}
@@ -49,6 +52,7 @@ SessionServerManager::SessionServerManager(const ipc::IIpcFactory &ipcFactory, I
 SessionServerManager::~SessionServerManager()
 {
     RIALTO_SERVER_LOG_INFO("Stopping Rialto Server Service");
+    m_shutdownTimer.reset();
     std::unique_lock<std::mutex> lock{m_serviceMutex};
     m_isServiceRunning = false;
     m_serviceCv.notify_one();
@@ -91,6 +95,7 @@ void SessionServerManager::startService()
 void SessionServerManager::stopService()
 {
     std::unique_lock<std::mutex> lock{m_serviceMutex};
+    RIALTO_SERVER_LOG_MIL("SessionServerManager will shutdown now.");
     m_isServiceRunning = false;
     m_serviceCv.notify_one();
 }
@@ -210,9 +215,9 @@ bool SessionServerManager::switchToNotRunning()
         RIALTO_SERVER_LOG_DEBUG("Session server already in NotRunning state.");
         return true;
     }
-    // m_playbackService.switchToInactive();
-    // m_cdmService.switchToInactive();
-    stopService();
+    m_playbackService.switchToInactive();
+    m_cdmService.switchToInactive();
+    m_shutdownTimer = m_timerFactory->createTimer(kShutdownDelay, std::bind(&SessionServerManager::stopService, this));
     if (m_applicationManagementServer->sendStateChangedEvent(common::SessionServerState::NOT_RUNNING))
     {
         m_currentState.store(common::SessionServerState::NOT_RUNNING);

@@ -24,6 +24,7 @@
 #include "IMediaPipelineCapabilities.h"
 #include "IMediaPipelineServerInternal.h"
 #include "ISharedMemoryBuffer.h"
+#include "ITimer.h"
 #include "IWebAudioPlayerServerInternalFactory.h"
 #include "IpcFactory.h"
 #include "PlaybackService.h"
@@ -46,7 +47,9 @@ int main(int argc, char *argv[])
                         firebolt::rialto::IMediaPipelineCapabilitiesFactory::createFactory(),
                         firebolt::rialto::server::IWebAudioPlayerServerInternalFactory::createFactory(),
                         firebolt::rialto::server::ISharedMemoryBufferFactory::createFactory(), cdmService};
-    firebolt::rialto::server::service::SessionServerManager serviceManager{ipcFactory, playbackService, cdmService};
+    firebolt::rialto::server::service::SessionServerManager serviceManager{ipcFactory,
+                                                                           common::ITimerFactory::createFactory(),
+                                                                           playbackService, cdmService};
     if (!serviceManager.initialize(argc, argv))
     {
         return EXIT_FAILURE;

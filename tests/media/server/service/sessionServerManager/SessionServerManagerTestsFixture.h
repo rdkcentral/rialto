@@ -26,6 +26,8 @@
 #include "IpcFactoryMock.h"
 #include "PlaybackServiceMock.h"
 #include "SessionManagementServerMock.h"
+#include "TimerFactoryMock.h"
+#include "TimerMock.h"
 #include <gtest/gtest.h>
 #include <memory>
 #include <thread>
@@ -72,6 +74,8 @@ private:
     StrictMock<firebolt::rialto::server::service::CdmServiceMock> m_cdmServiceMock;
     std::unique_ptr<firebolt::rialto::server::ipc::ISessionManagementServer> m_sessionManagementServer;
     StrictMock<firebolt::rialto::server::ipc::SessionManagementServerMock> &m_sessionManagementServerMock;
+    std::shared_ptr<StrictMock<firebolt::rialto::server::TimerFactoryMock>> m_timerFactoryMock;
+    std::unique_ptr<StrictMock<firebolt::rialto::server::TimerMock>> m_timerMock;
     std::thread m_serviceThread;
     std::unique_ptr<firebolt::rialto::server::service::ISessionServerManager> m_sut;
 };
