@@ -200,6 +200,7 @@ bool MediaPipelineIpc::attachSource(const std::unique_ptr<IMediaPipeline::MediaS
     SourceConfigType configType = source->getConfigType();
     request.set_config_type(convertConfigType(configType));
     request.set_mime_type(source->getMimeType());
+    request.set_has_drm(source->getHasDrm());
     request.set_segment_alignment(convertSegmentAlignment(source->getSegmentAlignment()));
 
     if (source->getCodecData())

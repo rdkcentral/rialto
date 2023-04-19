@@ -34,11 +34,6 @@ namespace firebolt::rialto::server
 constexpr double kNoPendingPlaybackRate{0.0};
 
 /**
- * @brief Definition of a stream info map.
- */
-using StreamInfoMap = std::map<MediaSourceType, GstElement *>;
-
-/**
  * @brief Structure used for video geometry
  */
 struct Rectangle

@@ -114,6 +114,11 @@ public:
         std::string getMimeType() const { return m_mimeType; }
 
         /**
+         * @brief Return the if has drm
+         */
+        bool getHasDrm() const { return m_hasDrm; }
+
+        /**
          * @brief Return the source config type.
          */
         SourceConfigType getConfigType() const { return m_configType; }
@@ -154,11 +159,11 @@ public:
          * @param[in]  codecData    : The additional data for decoder
          */
         explicit MediaSource(SourceConfigType configType = SourceConfigType::UNKNOWN,
-                             const std::string &mimeType = std::string(),
+                             const std::string &mimeType = std::string(), bool hasDrm = true,
                              SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                              StreamFormat streamFormat = StreamFormat::UNDEFINED,
                              const std::shared_ptr<std::vector<std::uint8_t>> &codecData = nullptr)
-            : m_id(0), m_configType(configType), m_mimeType(mimeType), m_alignment(alignment),
+            : m_id(0), m_configType(configType), m_mimeType(mimeType), m_hasDrm(hasDrm), m_alignment(alignment),
               m_streamFormat(streamFormat), m_codecData(codecData)
         {
         }
@@ -176,6 +181,11 @@ public:
          * @brief The MIME type.
          */
         std::string m_mimeType;
+
+        /**
+         * @brief Parameter to check if encrypted frames will be used for this source.
+         */
+        bool m_hasDrm;
 
         /**
          * @brief The alignment of media segment
@@ -210,11 +220,11 @@ public:
          * @param[in]  streamFormat : The stream format
          * @param[in]  codecData    : The additional data for decoder
          */
-        MediaSourceAudio(const std::string &mimeType, const AudioConfig &audioConfig = AudioConfig(),
+        MediaSourceAudio(const std::string &mimeType, bool hasDrm = true, const AudioConfig &audioConfig = AudioConfig(),
                          SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                          StreamFormat streamFormat = StreamFormat::UNDEFINED,
                          const std::shared_ptr<std::vector<std::uint8_t>> &codecData = nullptr)
-            : MediaSource(SourceConfigType::AUDIO, mimeType, alignment, streamFormat, codecData),
+            : MediaSource(SourceConfigType::AUDIO, mimeType, hasDrm, alignment, streamFormat, codecData),
               m_audioConfig(audioConfig)
         {
         }
@@ -254,10 +264,11 @@ public:
          * @param[in]  streamFormat : The stream format
          * @param[in]  codecData    : The additional data for decoder
          */
-        MediaSourceVideo(const std::string &mimeType, SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
+        MediaSourceVideo(const std::string &mimeType, bool hasDrm = true,
+                         SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                          StreamFormat streamFormat = StreamFormat::UNDEFINED,
                          const std::shared_ptr<std::vector<std::uint8_t>> &codecData = nullptr)
-            : MediaSource(SourceConfigType::VIDEO, mimeType, alignment, streamFormat, codecData)
+            : MediaSource(SourceConfigType::VIDEO, mimeType, hasDrm, alignment, streamFormat, codecData)
         {
         }
         ~MediaSourceVideo() {}
@@ -275,11 +286,11 @@ public:
          * @param[in]  streamFormat     : The stream format
          * @param[in]  codecData        : The additional data for decoder
          */
-        MediaSourceVideo(SourceConfigType sourceConfigType, const std::string &mimeType,
+        MediaSourceVideo(SourceConfigType sourceConfigType, const std::string &mimeType, bool hasDrm = true,
                          SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                          StreamFormat streamFormat = StreamFormat::UNDEFINED,
                          const std::shared_ptr<std::vector<std::uint8_t>> &codecData = nullptr)
-            : MediaSource(sourceConfigType, mimeType, alignment, streamFormat, codecData)
+            : MediaSource(sourceConfigType, mimeType, hasDrm, alignment, streamFormat, codecData)
         {
         }
     };
@@ -300,11 +311,12 @@ public:
          * @param[in] streamFormat       : The stream format
          * @param[in] codecData          : The additional data for decoder
          */
-        MediaSourceVideoDolbyVision(const std::string &mimeType, int32_t dolbyVisionProfile,
+        MediaSourceVideoDolbyVision(const std::string &mimeType, int32_t dolbyVisionProfile, bool hasDrm = true,
                                     SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                                     StreamFormat streamFormat = StreamFormat::UNDEFINED,
                                     const std::shared_ptr<std::vector<std::uint8_t>> &codecData = nullptr)
-            : MediaSourceVideo(SourceConfigType::VIDEO_DOLBY_VISION, mimeType, alignment, streamFormat, codecData),
+            : MediaSourceVideo(SourceConfigType::VIDEO_DOLBY_VISION, mimeType, hasDrm, alignment, streamFormat,
+                               codecData),
               m_dolbyVisionProfile(dolbyVisionProfile)
         {
         }

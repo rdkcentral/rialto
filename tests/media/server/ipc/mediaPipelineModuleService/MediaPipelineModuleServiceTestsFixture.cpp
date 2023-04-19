@@ -394,7 +394,7 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillAttachAudioSourceW
     codecSpecificConfig.assign(codecSpecificConfigStr.begin(), codecSpecificConfigStr.end());
     firebolt::rialto::AudioConfig audioConfig{numberOfChannels, sampleRate, codecSpecificConfig};
     m_source =
-        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(mimeType, audioConfig,
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(mimeType, true, audioConfig,
                                                                              firebolt::rialto::SegmentAlignment::UNDEFINED,
                                                                              firebolt::rialto::StreamFormat::RAW,
                                                                              codecData);

@@ -136,11 +136,12 @@ message AttachSourceRequest {
     required int32 session_id = 1;
     required ConfigType config_type = 2;
     required string mime_type = 3;
-    required SegmentAlignment segment_alignment    = 4; /* Segment alignment can be specified for H264/H265, will use NAL if not set */
-    optional AudioConfig audio_config    = 5;
-    optional bytes codec_data = 6;
-    required StreamFormat stream_format = 7;
-    optional uint32 dolby_vision_profile = 8;
+    required bool has_drm = 4;
+    required SegmentAlignment segment_alignment    = 5; /* Segment alignment can be specified for H264/H265, will use NAL if not set */
+    optional AudioConfig audio_config    = 6;
+    optional bytes codec_data = 7;
+    required StreamFormat stream_format = 8;
+    optional uint32 dolby_vision_profile = 9;
 }
 message AttachSourceResponse {
     required int32 source_id = 1;

@@ -57,7 +57,7 @@ TEST_F(RialtoServerMediaPipelineSourceTest, AttachAudioSourceWitSpecificConfigur
 {
     AudioConfig audioConfig{6, 48000, {1, 2, 3}};
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
-        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType, audioConfig);
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType, true, audioConfig);
 
     loadGstPlayer();
     mainThreadWillEnqueueTaskAndWait();

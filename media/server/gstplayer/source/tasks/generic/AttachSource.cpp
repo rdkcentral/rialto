@@ -230,7 +230,7 @@ void AttachSource::execute() const
 
     if (m_context.streamInfo.find(m_attachedSource->getType()) == m_context.streamInfo.end())
     {
-        addSource(caps);
+        addSource(caps, m_attachedSource->getHasDrm());
     }
     else if (m_attachedSource->getType() == MediaSourceType::AUDIO && m_context.audioSourceRemoved)
     {
@@ -238,14 +238,14 @@ void AttachSource::execute() const
     }
     else
     {
-        updateSource(caps, strCaps);
+        RIALTO_SERVER_LOG_ERROR("cannot update caps");
     }
 
     if (caps)
         m_gstWrapper->gstCapsUnref(caps);
 }
 
-void AttachSource::addSource(GstCaps *caps) const
+void AttachSource::addSource(GstCaps *caps, bool hasDrm) const
 {
     GstElement *appSrc = nullptr;
     if (m_attachedSource->getType() == MediaSourceType::AUDIO)
@@ -260,12 +260,12 @@ void AttachSource::addSource(GstCaps *caps) const
     }
 
     m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(appSrc), caps);
-    m_context.streamInfo.emplace(m_attachedSource->getType(), appSrc);
+    m_context.streamInfo.emplace(m_attachedSource->getType(), StreamInfo{appSrc, hasDrm});
 }
 
 void AttachSource::updateSource(GstCaps *caps, const std::string &strCaps) const
 {
-    GstAppSrc *appSrc{GST_APP_SRC(m_context.streamInfo[m_attachedSource->getType()])};
+    GstAppSrc *appSrc{GST_APP_SRC(m_context.streamInfo[m_attachedSource->getType()].m_appSrc)};
     GstCaps *appsrcCaps = m_gstWrapper->gstAppSrcGetCaps(appSrc);
     if ((!appsrcCaps) || (!m_gstWrapper->gstCapsIsEqual(appsrcCaps, caps)))
     {
@@ -285,7 +285,7 @@ void AttachSource::switchAudioSource(GstCaps *caps, const std::string &strCaps) 
         RIALTO_SERVER_LOG_WARN("SKIP switching audio source. Unknown mime type");
         return;
     }
-    GstAppSrc *appSrc{GST_APP_SRC(m_context.streamInfo[m_attachedSource->getType()])};
+    GstAppSrc *appSrc{GST_APP_SRC(m_context.streamInfo[m_attachedSource->getType()].m_appSrc)};
     std::string oldCapsStr;
     GstCaps *oldCaps = m_gstWrapper->gstAppSrcGetCaps(appSrc);
     if (oldCaps)
@@ -319,7 +319,7 @@ void AttachSource::switchAudioSource(GstCaps *caps, const std::string &strCaps) 
                                                             &caps, // may fail for amlogic - that implementation changes
                                                                    // this parameter, it's probably used by Netflix later
                                                             &audioAac, svpEnabled,
-                                                            m_context.streamInfo[m_attachedSource->getType()], &retVal);
+                                                            m_context.streamInfo[m_attachedSource->getType()].m_appSrc, &retVal);
     if (!result || !retVal)
     {
         RIALTO_SERVER_LOG_WARN("performAudioTrackCodecChannelSwitch failed! Result: %d, retval %d", result, retVal);

@@ -329,6 +329,7 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
     }
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource;
     firebolt::rialto::SourceConfigType configType = convertConfigType(request->config_type());
+    bool hasDrm = request->has_drm();
 
     if (configType == firebolt::rialto::SourceConfigType::AUDIO)
     {
@@ -345,14 +346,14 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
         AudioConfig audioConfig{numberofchannels, sampleRate, codecSpecificConfig};
 
         mediaSource =
-            std::make_unique<IMediaPipeline::MediaSourceAudio>(request->mime_type(), audioConfig,
+            std::make_unique<IMediaPipeline::MediaSourceAudio>(request->mime_type(), hasDrm, audioConfig,
                                                                convertSegmentAlignment(request->segment_alignment()),
                                                                convertStreamFormat(request->stream_format()), codecData);
     }
     else if (configType == firebolt::rialto::SourceConfigType::VIDEO)
     {
         mediaSource =
-            std::make_unique<IMediaPipeline::MediaSourceVideo>(request->mime_type().c_str(),
+            std::make_unique<IMediaPipeline::MediaSourceVideo>(request->mime_type().c_str(), hasDrm,
                                                                convertSegmentAlignment(request->segment_alignment()),
                                                                convertStreamFormat(request->stream_format()), codecData);
     }
@@ -361,6 +362,7 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
         mediaSource =
             std::make_unique<IMediaPipeline::MediaSourceVideoDolbyVision>(request->mime_type().c_str(),
                                                                           request->dolby_vision_profile(),
+                                                                          hasDrm,
                                                                           convertSegmentAlignment(
                                                                               request->segment_alignment()),
                                                                           convertStreamFormat(request->stream_format()),

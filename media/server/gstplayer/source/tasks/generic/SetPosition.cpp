@@ -92,9 +92,9 @@ void SetPosition::execute() const
     // // Trigger NeedMediaData for all attached sources
     for (const auto streamInfo : m_context.streamInfo)
     {
-        if (streamInfo.second)
+        if (streamInfo.second.m_appSrc)
         {
-            NeedData task{m_context, m_gstPlayerClient, GST_APP_SRC(streamInfo.second)};
+            NeedData task{m_context, m_gstPlayerClient, GST_APP_SRC(streamInfo.second.m_appSrc)};
             task.execute();
         }
     }
