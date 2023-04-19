@@ -160,7 +160,7 @@ def buildTargets (suites, outputDir, resultsFile, debug, coverage):
     # Run cmake
     cmakeCmd = ["cmake", "-B", outputDir , "-DCMAKE_BUILD_FLAG=UnitTests", "-DRIALTO_ENABLE_DECRYPT_BUFFER=1"]
     # Debug/Release Mode
-    cmakeCmd.append("-DRAILTO_BUILD_TYPE=Debug")
+    cmakeCmd.append("-DRIALTO_BUILD_TYPE=Debug")
     runcmd(cmakeCmd, cwd=os.getcwd())
 
     # Make targets
