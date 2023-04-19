@@ -26,7 +26,6 @@
 #include "IPlaybackService.h"
 #include "ISessionManagementServer.h"
 #include "ISessionServerManager.h"
-#include "ITimer.h"
 #include <atomic>
 #include <condition_variable>
 #include <memory>
@@ -38,8 +37,7 @@ namespace firebolt::rialto::server::service
 class SessionServerManager : public ISessionServerManager
 {
 public:
-    SessionServerManager(const ipc::IIpcFactory &ipcFactory, const std::shared_ptr<common::ITimerFactory> &timerFactory,
-                         IPlaybackService &playbackService, ICdmService &cdmService);
+    SessionServerManager(const ipc::IIpcFactory &ipcFactory, IPlaybackService &playbackService, ICdmService &cdmService);
     ~SessionServerManager() override;
     SessionServerManager(const SessionServerManager &) = delete;
     SessionServerManager(SessionServerManager &&) = delete;
@@ -62,12 +60,10 @@ private:
     void stopService();
 
 private:
-    std::shared_ptr<common::ITimerFactory> m_timerFactory;
     IPlaybackService &m_playbackService;
     ICdmService &m_cdmService;
     std::unique_ptr<ipc::IApplicationManagementServer> m_applicationManagementServer;
     std::unique_ptr<ipc::ISessionManagementServer> m_sessionManagementServer;
-    std::unique_ptr<common::ITimer> m_shutdownTimer;
     std::mutex m_serviceMutex;
     std::condition_variable m_serviceCv;
     bool m_isServiceRunning;
