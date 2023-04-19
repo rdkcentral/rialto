@@ -150,6 +150,7 @@ TEST_F(RialtoClientCreateMediaPipelineIpcTest, CreateSessionFailure)
     expectInitIpc();
     expectSubscribeEvents();
     expectIpcApiCallFailure();
+    expectUnsubscribeEvents();
 
     EXPECT_CALL(*m_eventThreadFactoryMock, createEventThread(_)).WillOnce(Return(ByMove(std::move(m_eventThread))));
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("createSession"), _, _, _, _));

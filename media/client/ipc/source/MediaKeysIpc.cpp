@@ -160,6 +160,7 @@ MediaKeysIpc::MediaKeysIpc(const std::string &keySystem, const std::shared_ptr<I
 
     if (!createMediaKeys(keySystem))
     {
+        detachChannel();
         throw std::runtime_error("Could not create the media keys instance");
     }
 }

@@ -64,9 +64,6 @@ bool ServerMonitor::addMonitorSocket(const FileDescriptor &socket)
         return false;
     }
 
-    // TODO(LLDEV-27303): check someone hasn't supplied a socket back to us, such that we could get into an
-    // infinite loop of sending monitor messages back to ourselves
-
     // shutdown the read end of the received socket
     if (shutdown(socket.fd(), SHUT_RD) != 0)
     {

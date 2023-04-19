@@ -262,8 +262,9 @@ bool MediaPipelineServerInternal::attachSourceInternal(const std::unique_ptr<Med
     }
     else
     {
-        RIALTO_SERVER_LOG_DEBUG("SourceId: %d updated", kSourceIter->second);
-        source->setId(kSourceIter->second);
+        RIALTO_SERVER_LOG_WARN("SourceType '%s' already attached",
+                               (MediaSourceType::AUDIO == source->getType() ? "AUDIO" : "VIDEO"));
+        return false;
     }
 
     return true;
@@ -448,6 +449,13 @@ bool MediaPipelineServerInternal::setPositionInternal(int64_t position)
     }
 
     m_gstPlayer->setPosition(position);
+
+    // Reset Eos on seek
+    for (auto &isMediaTypeEos : m_isMediaTypeEosMap)
+    {
+        isMediaTypeEos.second = false;
+    }
+
     return true;
 }
 
@@ -548,6 +556,7 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
     if (status == MediaSourceStatus::EOS)
     {
         m_gstPlayer->setEos(mediaSourceType);
+        m_isMediaTypeEosMap[mediaSourceType] = true;
     }
 
     return true;
@@ -621,6 +630,7 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
     if (status == MediaSourceStatus::EOS)
     {
         m_gstPlayer->setEos(mediaSourceType);
+        m_isMediaTypeEosMap[mediaSourceType] = true;
     }
 
     return true;
@@ -760,6 +770,12 @@ bool MediaPipelineServerInternal::notifyNeedMediaDataInternal(MediaSourceType me
     if (m_attachedSources.cend() == kSourceIter)
     {
         RIALTO_SERVER_LOG_WARN("NeedMediaData event sending failed - sourceId not found");
+        return false;
+    }
+    auto it = m_isMediaTypeEosMap.find(mediaSourceType);
+    if (it != m_isMediaTypeEosMap.end() && it->second)
+    {
+        RIALTO_SERVER_LOG_INFO("EOS, NeedMediaData not needed");
         return false;
     }
     NeedMediaData event{m_mediaPipelineClient, *m_activeRequests,   *m_shmBuffer,          m_sessionId,

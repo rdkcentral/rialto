@@ -47,9 +47,9 @@ inline GstCaps *createSimpleCapsFromMimeType(std::shared_ptr<IGstWrapper> m_gstW
                                              const IMediaPipeline::MediaSource &m_attachedSource)
 {
     static const std::unordered_map<std::string, std::string> mimeToMediaType =
-        {{"video/h264", "video/x-h264"},   {"video/h265", "video/x-h265"},  {"video/x-av1", "video/x-av1"},
-         {"video/x-vp9", "video/x-vp9"},   {"audio/mp4", "audio/mpeg"},     {"audio/aac", "audio/mpeg"},
-         {"audio/x-eac3", "audio/x-eac3"}, {"audio/x-opus", "audio/x-opus"}};
+        {{"video/h264", "video/x-h264"}, {"video/h265", "video/x-h265"},   {"video/x-av1", "video/x-av1"},
+         {"video/x-vp9", "video/x-vp9"}, {"video/mp4", "video/mpeg"},      {"audio/mp4", "audio/mpeg"},
+         {"audio/aac", "audio/mpeg"},    {"audio/x-eac3", "audio/x-eac3"}, {"audio/x-opus", "audio/x-opus"}};
 
     auto mimeToMediaTypeIt = mimeToMediaType.find(m_attachedSource.getMimeType());
     if (mimeToMediaTypeIt != mimeToMediaType.end())
@@ -76,11 +76,11 @@ inline std::unordered_set<std::string> convertFromCapsVectorToMimeSet(const std:
         {{m_gstWrapper->gstCapsFromString("audio/mpeg, mpegversion=(int)4"), {"audio/mp4", "audio/aac", "audio/x-eac3"}},
          {m_gstWrapper->gstCapsFromString("audio/x-eac3"), {"audio/x-eac3"}},
          {m_gstWrapper->gstCapsFromString("audio/x-opus"), {"audio/x-opus"}},
-         {m_gstWrapper->gstCapsFromString("audio/x-opus, channel-mapping-family=(int)0"), {"audio/x-opus"}},
          {m_gstWrapper->gstCapsFromString("video/x-av1"), {"video/x-av1"}},
          {m_gstWrapper->gstCapsFromString("video/x-h264"), {"video/h264"}},
          {m_gstWrapper->gstCapsFromString("video/x-h265"), {"video/h265"}},
          {m_gstWrapper->gstCapsFromString("video/x-vp9"), {"video/x-vp9"}},
+         {m_gstWrapper->gstCapsFromString("video/mpeg, mpegversion=(int)4"), {"video/mp4"}},
          {m_gstWrapper->gstCapsFromString("video/x-h264(memory:DMABuf)"), {"video/h264"}},
          {m_gstWrapper->gstCapsFromString("video/x-h265(memory:DMABuf)"), {"video/h265"}},
          {m_gstWrapper->gstCapsFromString("video/x-av1(memory:DMABuf)"), {"video/x-av1"}},
@@ -92,7 +92,7 @@ inline std::unordered_set<std::string> convertFromCapsVectorToMimeSet(const std:
     {
         for (const auto &capsToMime : capsToMimeVec)
         {
-            if (m_gstWrapper->gstCapsIsSubset(capsToMime.first, caps))
+            if (m_gstWrapper->gstCapsCanIntersect(capsToMime.first, caps))
             {
                 supportedMimes.insert(capsToMime.second.begin(), capsToMime.second.end());
             }

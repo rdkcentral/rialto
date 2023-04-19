@@ -30,15 +30,15 @@ Controller::Controller(std::unique_ptr<common::ISessionServerAppManager> &sessio
 {
 }
 
-bool Controller::createClient(const std::string &appId, int appMgmtSocket)
+bool Controller::createClient(int serverId, int appMgmtSocket)
 {
     std::unique_lock<std::mutex> lock{m_clientMutex};
-    if (m_clients.find(appId) == m_clients.end())
+    if (m_clients.find(serverId) == m_clients.end())
     {
-        auto newClient = std::make_unique<Client>(m_sessionServerAppManager, appId, appMgmtSocket);
+        auto newClient = std::make_unique<Client>(m_sessionServerAppManager, serverId, appMgmtSocket);
         if (newClient->connect())
         {
-            m_clients.emplace(std::make_pair(appId, std::move(newClient)));
+            m_clients.emplace(std::make_pair(serverId, std::move(newClient)));
             return true;
         }
         return false;
@@ -46,16 +46,16 @@ bool Controller::createClient(const std::string &appId, int appMgmtSocket)
     return false;
 }
 
-void Controller::removeClient(const std::string &appId)
+void Controller::removeClient(int serverId)
 {
     std::unique_lock<std::mutex> lock{m_clientMutex};
-    m_clients.erase(appId);
+    m_clients.erase(serverId);
 }
 
-bool Controller::performSetState(const std::string &appId, const firebolt::rialto::common::SessionServerState &state)
+bool Controller::performSetState(int serverId, const firebolt::rialto::common::SessionServerState &state)
 {
     std::unique_lock<std::mutex> lock{m_clientMutex};
-    auto client = m_clients.find(appId);
+    auto client = m_clients.find(serverId);
     if (client != m_clients.end())
     {
         return client->second->performSetState(state);
@@ -63,13 +63,12 @@ bool Controller::performSetState(const std::string &appId, const firebolt::rialt
     return false;
 }
 
-bool Controller::performSetConfiguration(const std::string &appId,
-                                         const firebolt::rialto::common::SessionServerState &initialState,
+bool Controller::performSetConfiguration(int serverId, const firebolt::rialto::common::SessionServerState &initialState,
                                          const std::string &socketName,
                                          const firebolt::rialto::common::MaxResourceCapabilitites &maxResource)
 {
     std::unique_lock<std::mutex> lock{m_clientMutex};
-    auto client = m_clients.find(appId);
+    auto client = m_clients.find(serverId);
     if (client != m_clients.end())
     {
         return client->second->performSetConfiguration(initialState, socketName, maxResource);

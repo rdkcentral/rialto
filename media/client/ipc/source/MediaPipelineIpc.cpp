@@ -81,6 +81,7 @@ MediaPipelineIpc::MediaPipelineIpc(IMediaPipelineIpcClient *client, const VideoR
     // create media player session
     if (!createSession(videoRequirements))
     {
+        detachChannel();
         throw std::runtime_error("Could not create the media player session");
     }
 }
