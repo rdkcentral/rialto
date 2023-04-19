@@ -148,8 +148,6 @@ void SessionServerManagerTests::willFailToSetConfigurationWhenSessionManagementS
     EXPECT_CALL(m_cdmServiceMock, switchToInactive());
     EXPECT_CALL(m_applicationManagementServerMock, sendStateChangedEvent(SessionServerState::INACTIVE))
         .WillOnce(Return(false));
-    EXPECT_CALL(m_playbackServiceMock, switchToActive()).WillOnce(Return(false));
-    EXPECT_CALL(m_cdmServiceMock, switchToActive()).WillOnce(Return(false));
     EXPECT_TRUE(m_sut);
     EXPECT_FALSE(m_sut->setConfiguration(sessionManagementSocket, SessionServerState::INACTIVE, maxResource));
 }
@@ -207,8 +205,16 @@ void SessionServerManagerTests::willFailToSetStateInactive()
 {
     EXPECT_CALL(m_playbackServiceMock, switchToInactive());
     EXPECT_CALL(m_cdmServiceMock, switchToInactive());
-    EXPECT_CALL(m_playbackServiceMock, switchToActive()).WillOnce(Return(true));
-    EXPECT_CALL(m_cdmServiceMock, switchToActive()).WillOnce(Return(true));
+    EXPECT_CALL(m_applicationManagementServerMock, sendStateChangedEvent(SessionServerState::INACTIVE))
+        .WillOnce(Return(false));
+}
+
+void SessionServerManagerTests::willFailToSetStateInactiveAndGoBackToActive()
+{
+    EXPECT_CALL(m_playbackServiceMock, switchToInactive());
+    EXPECT_CALL(m_cdmServiceMock, switchToInactive());
+    EXPECT_CALL(m_playbackServiceMock, switchToActive()).WillOnce(Return(false));
+    EXPECT_CALL(m_cdmServiceMock, switchToActive()).WillOnce(Return(false));
     EXPECT_CALL(m_applicationManagementServerMock, sendStateChangedEvent(SessionServerState::INACTIVE))
         .WillOnce(Return(false));
 }

@@ -88,6 +88,13 @@ void SessionServerManager::startService()
     m_serviceCv.wait(lock, [this]() { return !m_isServiceRunning; });
 }
 
+void SessionServerManager::stopService()
+{
+    std::unique_lock<std::mutex> lock{m_serviceMutex};
+    m_isServiceRunning = false;
+    m_serviceCv.notify_one();
+}
+
 bool SessionServerManager::setConfiguration(const std::string &socketName, const common::SessionServerState &state,
                                             const common::MaxResourceCapabilitites &maxResource)
 {
@@ -182,13 +189,16 @@ bool SessionServerManager::switchToInactive()
         m_currentState.store(common::SessionServerState::INACTIVE);
         return true;
     }
-    if (!m_playbackService.switchToActive())
+    if (m_currentState.load() == common::SessionServerState::ACTIVE)
     {
-        RIALTO_SERVER_LOG_WARN("Player service failed to switch to active state");
-    }
-    if (!m_cdmService.switchToActive())
-    {
-        RIALTO_SERVER_LOG_WARN("Cdm service failed to switch to active state");
+        if (!m_playbackService.switchToActive())
+        {
+            RIALTO_SERVER_LOG_WARN("Player service failed to switch to active state");
+        }
+        if (!m_cdmService.switchToActive())
+        {
+            RIALTO_SERVER_LOG_WARN("Cdm service failed to switch to active state");
+        }
     }
     return false;
 }
@@ -200,9 +210,9 @@ bool SessionServerManager::switchToNotRunning()
         RIALTO_SERVER_LOG_DEBUG("Session server already in NotRunning state.");
         return true;
     }
-    std::unique_lock<std::mutex> lock{m_serviceMutex};
-    m_isServiceRunning = false;
-    m_serviceCv.notify_one();
+    // m_playbackService.switchToInactive();
+    // m_cdmService.switchToInactive();
+    stopService();
     if (m_applicationManagementServer->sendStateChangedEvent(common::SessionServerState::NOT_RUNNING))
     {
         m_currentState.store(common::SessionServerState::NOT_RUNNING);

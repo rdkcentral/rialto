@@ -53,6 +53,7 @@ public:
     void willFailToSetStateActiveDueToSessionServerError();
     void willSetStateActive();
     void willFailToSetStateInactive();
+    void willFailToSetStateInactiveAndGoBackToActive();
     void willSetStateInactive();
     void willFailToSetStateNotRunning();
     void willSetStateNotRunning();
