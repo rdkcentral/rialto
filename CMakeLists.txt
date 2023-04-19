@@ -34,21 +34,15 @@ option(RIALTO_LOG_INFO_ENABLED "Enable info logging for RialtoServer" ON)
 option(RIALTO_LOG_DEBUG_ENABLED "Enable debug logging for RialtoServer" ON)
 
 if( RIALTO_BUILD_TYPE STREQUAL "Debug" )
-
     message("_______________DEBUG MODE_______________")
-
 elseif( RIALTO_BUILD_TYPE STREQUAL "Release" )
-
     message("_______________RELEASE MODE_______________")
     set(RIALTO_LOG_INFO_ENABLED OFF)
     set(RIALTO_LOG_DEBUG_ENABLED OFF)
-
 else()
-
     message("_______________RELEASE MODE (DEFAULT)_______________")
     set(RIALTO_LOG_INFO_ENABLED OFF)
     set(RIALTO_LOG_DEBUG_ENABLED OFF)
-    
 endif()
 
 if ( RIALTO_LOG_FATAL_ENABLED )
@@ -81,7 +75,6 @@ if ( RIALTO_LOG_DEBUG_ENABLED )
     add_compile_definitions( RIALTO_LOG_DEBUG_ENABLED )
 endif()
 
-
 if ( RIALTO_ENABLE_DECRYPT_BUFFER )
     add_compile_definitions( RIALTO_ENABLE_DECRYPT_BUFFER )
 endif()
@@ -108,11 +101,6 @@ find_package( Protobuf REQUIRED )
 # Options to disable building some of the components
 option(ENABLE_SERVER "Enable building RialtoServer" ON)
 option(ENABLE_SERVER_MANAGER "Enable building RialtoServerManagerSim" ON)
-
-if( NATIVE_BUILD )
-    add_subdirectory( stubs/rdk_gstreamer_utils )
-    add_subdirectory( stubs/opencdm )
-endif()
 
 # Include the new IPC library components
 add_subdirectory( ipc )
