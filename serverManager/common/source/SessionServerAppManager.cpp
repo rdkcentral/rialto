@@ -235,6 +235,10 @@ void SessionServerAppManager::handleSessionServerStateChange(int serverId,
     RIALTO_SERVER_MANAGER_LOG_INFO("SessionServer with id: %d changed state to %s", serverId, toString(newState));
     const auto &sessionServer{getServerById(serverId)};
     std::string appName{sessionServer->getAppName()};
+    if (!appName.empty() && m_stateObserver) // empty app name is when SessionServer is preloaded
+    {
+        m_stateObserver->stateChanged(appName, newState);
+    }
     if (firebolt::rialto::common::SessionServerState::UNINITIALIZED == newState)
     {
         sessionServer->cancelStartupTimer();
@@ -252,10 +256,6 @@ void SessionServerAppManager::handleSessionServerStateChange(int serverId,
             sessionServer->kill();
         }
         m_sessionServerApps.erase(sessionServer);
-    }
-    if (!appName.empty() && m_stateObserver) // empty app name is when SessionServer is preloaded
-    {
-        m_stateObserver->stateChanged(appName, newState);
     }
 }
 

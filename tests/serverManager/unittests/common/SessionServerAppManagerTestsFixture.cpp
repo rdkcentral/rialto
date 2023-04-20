@@ -243,6 +243,7 @@ void SessionServerAppManagerTests::sessionServerWillFailToSetConfiguration()
                 performSetConfiguration(kServerId, firebolt::rialto::common::SessionServerState::INACTIVE,
                                         kSessionServerSocketName, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers)))
         .WillOnce(Return(false));
+    EXPECT_CALL(*m_stateObserver, stateChanged(kAppName, firebolt::rialto::common::SessionServerState::UNINITIALIZED));
 }
 
 void SessionServerAppManagerTests::preloadedSessionServerWillFailToSetConfiguration()
