@@ -43,6 +43,7 @@ set (
         include/IMediaKeysClient.h
         include/IMediaKeysCapabilities.h
         include/IControl.h
+        include/IControlClient.h
         include/MediaCommon.h
         include/ControlCommon.h
         include/IWebAudioPlayer.h
