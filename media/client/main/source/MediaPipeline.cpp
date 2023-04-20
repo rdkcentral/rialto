@@ -451,23 +451,24 @@ std::weak_ptr<IMediaPipelineClient> MediaPipeline::getClient()
 
 void MediaPipeline::updateState(NetworkState state)
 {
-#ifdef RIALTO_LOG_DEBUG_ENABLED
-    State oldState = m_currentState;
-#endif
+    // State oldState = m_currentState;
+
+    State newState;
+    
     switch (state)
     {
     case NetworkState::BUFFERING:
     case NetworkState::BUFFERING_PROGRESS:
     case NetworkState::STALLED:
     {
-        m_currentState = State::BUFFERING;
+        newState = State::BUFFERING;
         break;
     }
     case NetworkState::FORMAT_ERROR:
     case NetworkState::NETWORK_ERROR:
     case NetworkState::DECODE_ERROR:
     {
-        m_currentState = State::FAILURE;
+        newState = State::FAILURE;
         break;
     }
     default:
@@ -476,47 +477,48 @@ void MediaPipeline::updateState(NetworkState state)
     }
     }
 
+    m_currentState = newState;
     RIALTO_CLIENT_LOG_DEBUG("Received network state '%s', old state '%s', new state '%s'", toString(state),
-                            toString(oldState), toString(m_currentState));
+                            toString(newState), toString(m_currentState));
 }
 
 void MediaPipeline::updateState(PlaybackState state)
 {
-#ifdef RIALTO_LOG_DEBUG_ENABLED
-    State oldState = m_currentState;
-#endif
+    // State oldState = m_currentState;
+
+    State newState;
 
     switch (state)
     {
     case PlaybackState::PLAYING:
     case PlaybackState::PAUSED:
     {
-        m_currentState = State::PLAYING;
+        newState = State::PLAYING;
         break;
     }
     case PlaybackState::SEEKING:
     {
-        m_currentState = State::SEEKING;
+        newState = State::SEEKING;
         break;
     }
     case PlaybackState::STOPPED:
     {
-        m_currentState = State::IDLE;
+        newState = State::IDLE;
         break;
     }
     case PlaybackState::FLUSHED:
     {
-        m_currentState = State::BUFFERING;
+        newState = State::BUFFERING;
         break;
     }
     case PlaybackState::END_OF_STREAM:
     {
-        m_currentState = State::END_OF_STREAM;
+        newState = State::END_OF_STREAM;
         break;
     }
     case PlaybackState::FAILURE:
     {
-        m_currentState = State::FAILURE;
+        newState = State::FAILURE;
         break;
     }
     default:
@@ -525,8 +527,9 @@ void MediaPipeline::updateState(PlaybackState state)
     }
     }
 
+    m_currentState = newState;
     RIALTO_CLIENT_LOG_DEBUG("Received playback state '%s', old state '%s', new state '%s'", toString(state),
-                            toString(oldState), toString(m_currentState));
+                            toString(newState), toString(m_currentState));
 }
 
 void MediaPipeline::notifyPlaybackState(PlaybackState state)
