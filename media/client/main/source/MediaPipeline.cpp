@@ -454,7 +454,7 @@ void MediaPipeline::updateState(NetworkState state)
     // State oldState = m_currentState;
 
     State newState;
-    
+
     switch (state)
     {
     case NetworkState::BUFFERING:
