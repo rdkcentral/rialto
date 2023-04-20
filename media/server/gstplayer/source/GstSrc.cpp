@@ -350,28 +350,28 @@ void GstSrc::setupAndAddAppArc(IDecryptionService *decryptionService, GstElement
                                GstAppSrcCallbacks *callbacks, gpointer userData, firebolt::rialto::MediaSourceType type)
 {
     // Configure and add appsrc
-    m_glibWrapper->gObjectSet(streamInfo.m_appSrc, "block", FALSE, "format", GST_FORMAT_TIME, "stream-type",
+    m_glibWrapper->gObjectSet(streamInfo.appSrc, "block", FALSE, "format", GST_FORMAT_TIME, "stream-type",
                               GST_APP_STREAM_TYPE_STREAM, "min-percent", 20, nullptr);
-    m_gstWrapper->gstAppSrcSetCallbacks(GST_APP_SRC(streamInfo.m_appSrc), callbacks, userData, nullptr);
+    m_gstWrapper->gstAppSrcSetCallbacks(GST_APP_SRC(streamInfo.appSrc), callbacks, userData, nullptr);
     if (type == firebolt::rialto::MediaSourceType::VIDEO)
     {
-        m_gstWrapper->gstAppSrcSetMaxBytes(GST_APP_SRC(streamInfo.m_appSrc), 8 * 1024 * 1024);
+        m_gstWrapper->gstAppSrcSetMaxBytes(GST_APP_SRC(streamInfo.appSrc), 8 * 1024 * 1024);
     }
     else
     {
-        m_gstWrapper->gstAppSrcSetMaxBytes(GST_APP_SRC(streamInfo.m_appSrc), 512 * 1024);
+        m_gstWrapper->gstAppSrcSetMaxBytes(GST_APP_SRC(streamInfo.appSrc), 512 * 1024);
     }
-    m_gstWrapper->gstAppSrcSetStreamType(GST_APP_SRC(streamInfo.m_appSrc), GST_APP_STREAM_TYPE_SEEKABLE);
+    m_gstWrapper->gstAppSrcSetStreamType(GST_APP_SRC(streamInfo.appSrc), GST_APP_STREAM_TYPE_SEEKABLE);
 
     GstRialtoSrc *src = GST_RIALTO_SRC(source);
     gchar *name = m_glibWrapper->gStrdupPrintf("src_%u", src->priv->appsrc_count);
     src->priv->appsrc_count++;
-    m_gstWrapper->gstBinAdd(GST_BIN(source), streamInfo.m_appSrc);
+    m_gstWrapper->gstBinAdd(GST_BIN(source), streamInfo.appSrc);
 
-    GstElement *src_elem = streamInfo.m_appSrc;
+    GstElement *src_elem = streamInfo.appSrc;
 
     // Configure and add decryptor
-    if (streamInfo.m_hasDrm)
+    if (streamInfo.hasDrm)
     {
         GstElement *decryptor = m_decryptorFactory->createDecryptorElement(nullptr, decryptionService, m_gstWrapper);
         if (decryptor)
@@ -408,22 +408,22 @@ void GstSrc::setupAndAddAppArc(IDecryptionService *decryptionService, GstElement
                 GST_WARNING_OBJECT(src, "Could not create payloader element");
             }
         }
-    }
 
-    // Configure and add buffer queue
-    GstElement *queue = m_gstWrapper->gstElementFactoryMake("queue", nullptr);
-    if (queue)
-    {
-        m_glibWrapper->gObjectSet(G_OBJECT(queue), "max-size-buffers", 10, "max-size-bytes", 0, "max-size-time",
-                                  (gint64)0, "silent", TRUE, nullptr);
-        m_gstWrapper->gstBinAdd(GST_BIN(source), queue);
-        m_gstWrapper->gstElementSyncStateWithParent(queue);
-        m_gstWrapper->gstElementLink(src_elem, queue);
-        src_elem = queue;
-    }
-    else
-    {
-        GST_WARNING_OBJECT(src, "Could not create buffer queue element");
+        // Configure and add buffer queue
+        GstElement *queue = m_gstWrapper->gstElementFactoryMake("queue", nullptr);
+        if (queue)
+        {
+            m_glibWrapper->gObjectSet(G_OBJECT(queue), "max-size-buffers", 10, "max-size-bytes", 0, "max-size-time",
+                                      (gint64)0, "silent", TRUE, nullptr);
+            m_gstWrapper->gstBinAdd(GST_BIN(source), queue);
+            m_gstWrapper->gstElementSyncStateWithParent(queue);
+            m_gstWrapper->gstElementLink(src_elem, queue);
+            src_elem = queue;
+        }
+        else
+        {
+            GST_WARNING_OBJECT(src, "Could not create buffer queue element");
+        }
     }
 
     // Setup pad
@@ -435,7 +435,7 @@ void GstSrc::setupAndAddAppArc(IDecryptionService *decryptionService, GstElement
     m_gstWrapper->gstElementAddPad(source, pad);
     GST_OBJECT_FLAG_SET(pad, GST_PAD_FLAG_NEED_PARENT);
 
-    m_gstWrapper->gstElementSyncStateWithParent(streamInfo.m_appSrc);
+    m_gstWrapper->gstElementSyncStateWithParent(streamInfo.appSrc);
 
     m_glibWrapper->gFree(name);
     m_gstWrapper->gstObjectUnref(target);

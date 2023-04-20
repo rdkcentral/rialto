@@ -78,9 +78,10 @@ MATCHER_P(AttachedSourceMatcher, source, "")
     {
         codecDataEqual = arg->getCodecData() == src->getCodecData();
     }
+
     bool baseCompare = arg->getConfigType() == src->getConfigType() && arg->getMimeType() == src->getMimeType() &&
-                       arg->getSegmentAlignment() == src->getSegmentAlignment() && codecDataEqual &&
-                       arg->getStreamFormat() == src->getStreamFormat();
+                       arg->getHasDrm() == src->getHasDrm() && arg->getSegmentAlignment() == src->getSegmentAlignment() &&
+                       codecDataEqual && arg->getStreamFormat() == src->getStreamFormat();
 
     bool extraCompare = true;
 
@@ -667,6 +668,7 @@ void MediaPipelineModuleServiceTests::sendAttachSourceRequestAndReceiveResponse(
     request.set_session_id(hardcodedSessionId);
     request.set_config_type(firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_AUDIO);
     request.set_mime_type(mimeType);
+    request.set_has_drm(true);
 
     m_service->attachSource(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
@@ -679,6 +681,7 @@ void MediaPipelineModuleServiceTests::sendAttachAudioSourceWithAdditionalDataReq
     request.set_session_id(hardcodedSessionId);
     request.set_config_type(firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_AUDIO);
     request.set_mime_type(mimeType);
+    request.set_has_drm(true);
     request.mutable_audio_config()->set_number_of_channels(numberOfChannels);
     request.mutable_audio_config()->set_sample_rate(sampleRate);
     request.mutable_audio_config()->set_codec_specific_config(codecSpecificConfigStr);

@@ -77,13 +77,13 @@ MATCHER_P6(attachSourceRequestMatcherDolby, sessionId, mimeType, dolbyVisionProf
             (request->dolby_vision_profile() == dolbyVisionProfile) && codecDataEqual);
 }
 
-MATCHER_P3(attachSourceRequestMatcher, sessionId, configType, mimeType, "")
+MATCHER_P4(attachSourceRequestMatcher, sessionId, configType, mimeType, hasDrm, "")
 {
     const ::firebolt::rialto::AttachSourceRequest *request =
         dynamic_cast<const ::firebolt::rialto::AttachSourceRequest *>(arg);
     return ((request->session_id() == sessionId) &&
             (static_cast<const unsigned int>(request->config_type()) == configType) &&
-            (request->mime_type() == mimeType));
+            (request->mime_type() == mimeType) && (request->has_drm() == hasDrm));
 }
 
 MATCHER_P2(removeSourceRequestMatcher, sessionId, sourceId, "")
@@ -131,7 +131,7 @@ public:
 };
 
 /**
- * Test that Load can be called successfully.
+ * Test that attachSource can be called successfully.
  */
 TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachSourceSuccess)
 {
@@ -140,12 +140,33 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachSourceSuccess)
     EXPECT_CALL(*m_channelMock,
                 CallMethod(methodMatcher("attachSource"), m_controllerMock.get(),
                            attachSourceRequestMatcher(m_sessionId, static_cast<uint32_t>(SourceConfigType::AUDIO),
-                                                      m_kMimeType),
+                                                      m_kMimeType, true),
                            _, m_blockingClosureMock.get()))
         .WillOnce(WithArgs<3>(Invoke(this, &RialtoClientMediaPipelineIpcSourceTest::setAttachSourceResponse)));
 
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
         std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType);
+
+    EXPECT_EQ(m_mediaPipelineIpc->attachSource(mediaSource, m_id), true);
+}
+
+
+/**
+ * Test that attachSource can be called successfully with no drm.
+ */
+TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachSourceNoDrmSuccess)
+{
+    expectIpcApiCallSuccess();
+
+    EXPECT_CALL(*m_channelMock,
+                CallMethod(methodMatcher("attachSource"), m_controllerMock.get(),
+                           attachSourceRequestMatcher(m_sessionId, static_cast<uint32_t>(SourceConfigType::AUDIO),
+                                                      m_kMimeType, false),
+                           _, m_blockingClosureMock.get()))
+        .WillOnce(WithArgs<3>(Invoke(this, &RialtoClientMediaPipelineIpcSourceTest::setAttachSourceResponse)));
+
+    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType, false);
 
     EXPECT_EQ(m_mediaPipelineIpc->attachSource(mediaSource, m_id), true);
 }

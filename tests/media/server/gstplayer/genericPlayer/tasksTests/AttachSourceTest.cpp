@@ -58,7 +58,7 @@ protected:
 TEST_F(AttachSourceTest, shouldAttachAudioSource)
 {
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
-        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>("audio/aac");
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>("audio/aac", false);
     firebolt::rialto::server::tasks::generic::AttachSource task{m_context,     m_gstWrapper,
                                                                 m_glibWrapper, m_rdkGstreamerUtilsWrapper,
                                                                 m_gstPlayer,   source};
@@ -72,7 +72,8 @@ TEST_F(AttachSourceTest, shouldAttachAudioSource)
     task.execute();
     EXPECT_EQ(1, m_context.streamInfo.size());
     EXPECT_NE(m_context.streamInfo.end(), m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO));
-    EXPECT_EQ(&m_appSrc, m_context.streamInfo.at(firebolt::rialto::MediaSourceType::AUDIO).m_appSrc);
+    EXPECT_EQ(&m_appSrc, m_context.streamInfo.at(firebolt::rialto::MediaSourceType::AUDIO).appSrc);
+    EXPECT_FALSE(m_context.streamInfo.at(firebolt::rialto::MediaSourceType::AUDIO).hasDrm);
 }
 
 TEST_F(AttachSourceTest, shouldAttachAudioSourceWithChannelsAndRate)
@@ -94,7 +95,7 @@ TEST_F(AttachSourceTest, shouldAttachAudioSourceWithChannelsAndRate)
     task.execute();
     EXPECT_EQ(1, m_context.streamInfo.size());
     EXPECT_NE(m_context.streamInfo.end(), m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO));
-    EXPECT_EQ(&m_appSrc, m_context.streamInfo.at(firebolt::rialto::MediaSourceType::AUDIO).m_appSrc);
+    EXPECT_EQ(&m_appSrc, m_context.streamInfo.at(firebolt::rialto::MediaSourceType::AUDIO).appSrc);
 }
 
 TEST_F(AttachSourceTest, shouldAttachOpusWithAudioSpecificConf)
@@ -115,7 +116,7 @@ TEST_F(AttachSourceTest, shouldAttachOpusWithAudioSpecificConf)
     task.execute();
     EXPECT_EQ(1, m_context.streamInfo.size());
     EXPECT_NE(m_context.streamInfo.end(), m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO));
-    EXPECT_EQ(&m_appSrc, m_context.streamInfo.at(firebolt::rialto::MediaSourceType::AUDIO).m_appSrc);
+    EXPECT_EQ(&m_appSrc, m_context.streamInfo.at(firebolt::rialto::MediaSourceType::AUDIO).appSrc);
 }
 
 TEST_F(AttachSourceTest, shouldAttachVideoSource)
@@ -147,7 +148,8 @@ TEST_F(AttachSourceTest, shouldAttachVideoSource)
     task.execute();
     EXPECT_EQ(1, m_context.streamInfo.size());
     EXPECT_NE(m_context.streamInfo.end(), m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO));
-    EXPECT_EQ(&m_appSrc, m_context.streamInfo.at(firebolt::rialto::MediaSourceType::VIDEO).m_appSrc);
+    EXPECT_EQ(&m_appSrc, m_context.streamInfo.at(firebolt::rialto::MediaSourceType::VIDEO).appSrc);
+    EXPECT_TRUE(m_context.streamInfo.at(firebolt::rialto::MediaSourceType::VIDEO).hasDrm);
 }
 
 TEST_F(AttachSourceTest, shouldAttachVideoSourceEmptyCodecData)
@@ -178,7 +180,7 @@ TEST_F(AttachSourceTest, shouldAttachVideoSourceEmptyCodecData)
     task.execute();
     EXPECT_EQ(1, m_context.streamInfo.size());
     EXPECT_NE(m_context.streamInfo.end(), m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO));
-    EXPECT_EQ(&m_appSrc, m_context.streamInfo.at(firebolt::rialto::MediaSourceType::VIDEO).m_appSrc);
+    EXPECT_EQ(&m_appSrc, m_context.streamInfo.at(firebolt::rialto::MediaSourceType::VIDEO).appSrc);
 }
 
 TEST_F(AttachSourceTest, shouldAttachVideoDolbyVisionSource)
@@ -212,7 +214,7 @@ TEST_F(AttachSourceTest, shouldAttachVideoDolbyVisionSource)
     task.execute();
     EXPECT_EQ(1, m_context.streamInfo.size());
     EXPECT_NE(m_context.streamInfo.end(), m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO));
-    EXPECT_EQ(&m_appSrc, m_context.streamInfo.at(firebolt::rialto::MediaSourceType::VIDEO).m_appSrc);
+    EXPECT_EQ(&m_appSrc, m_context.streamInfo.at(firebolt::rialto::MediaSourceType::VIDEO).appSrc);
 }
 
 TEST_F(AttachSourceTest, shouldSwitchAudioSource)

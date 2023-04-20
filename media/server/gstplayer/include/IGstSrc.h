@@ -62,10 +62,10 @@ public:
 struct StreamInfo
 {
     StreamInfo() {}
-    StreamInfo(GstElement *appSrc, bool hasDrm = true) : m_appSrc(appSrc), m_hasDrm(hasDrm) {}
-    bool operator==(const StreamInfo &other) const { return m_appSrc == other.m_appSrc && m_hasDrm == other.m_hasDrm; }
-    GstElement *m_appSrc = nullptr;
-    bool m_hasDrm = true;
+    StreamInfo(GstElement *appSrc_, bool hasDrm_ = true) : appSrc(appSrc_), hasDrm(hasDrm_) {}
+    bool operator==(const StreamInfo &other) const { return appSrc == other.appSrc && hasDrm == other.hasDrm; }
+    GstElement *appSrc = nullptr;
+    bool hasDrm = true;
 };
 /**
  * @brief Definition of a stream info map.

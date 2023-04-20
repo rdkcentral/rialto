@@ -265,7 +265,7 @@ void AttachSource::addSource(GstCaps *caps, bool hasDrm) const
 
 void AttachSource::updateSource(GstCaps *caps, const std::string &strCaps) const
 {
-    GstAppSrc *appSrc{GST_APP_SRC(m_context.streamInfo[m_attachedSource->getType()].m_appSrc)};
+    GstAppSrc *appSrc{GST_APP_SRC(m_context.streamInfo[m_attachedSource->getType()].appSrc)};
     GstCaps *appsrcCaps = m_gstWrapper->gstAppSrcGetCaps(appSrc);
     if ((!appsrcCaps) || (!m_gstWrapper->gstCapsIsEqual(appsrcCaps, caps)))
     {
@@ -285,7 +285,7 @@ void AttachSource::switchAudioSource(GstCaps *caps, const std::string &strCaps) 
         RIALTO_SERVER_LOG_WARN("SKIP switching audio source. Unknown mime type");
         return;
     }
-    GstAppSrc *appSrc{GST_APP_SRC(m_context.streamInfo[m_attachedSource->getType()].m_appSrc)};
+    GstAppSrc *appSrc{GST_APP_SRC(m_context.streamInfo[m_attachedSource->getType()].appSrc)};
     std::string oldCapsStr;
     GstCaps *oldCaps = m_gstWrapper->gstAppSrcGetCaps(appSrc);
     if (oldCaps)
@@ -319,7 +319,7 @@ void AttachSource::switchAudioSource(GstCaps *caps, const std::string &strCaps) 
                                                   &caps, // may fail for amlogic - that implementation changes
                                                          // this parameter, it's probably used by Netflix later
                                                   &audioAac, svpEnabled,
-                                                  m_context.streamInfo[m_attachedSource->getType()].m_appSrc, &retVal);
+                                                  m_context.streamInfo[m_attachedSource->getType()].appSrc, &retVal);
     if (!result || !retVal)
     {
         RIALTO_SERVER_LOG_WARN("performAudioTrackCodecChannelSwitch failed! Result: %d, retval %d", result, retVal);

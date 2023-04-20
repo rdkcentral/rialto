@@ -39,7 +39,7 @@ void EnoughData::execute() const
     auto elem = m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO);
     if (elem != m_context.streamInfo.end())
     {
-        if (elem->second.m_appSrc == GST_ELEMENT(m_src))
+        if (elem->second.appSrc == GST_ELEMENT(m_src))
         {
             m_context.audioNeedData = false;
         }
@@ -47,7 +47,7 @@ void EnoughData::execute() const
     elem = m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO);
     if (elem != m_context.streamInfo.end())
     {
-        if (elem->second.m_appSrc == GST_ELEMENT(m_src))
+        if (elem->second.appSrc == GST_ELEMENT(m_src))
         {
             m_context.videoNeedData = false;
         }

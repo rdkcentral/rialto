@@ -100,16 +100,16 @@ protected:
 
     void expectSettings(guint64 max)
     {
-        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.m_appSrc, CharStrMatcher("block")));
-        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.m_appSrc, CharStrMatcher("format")));
-        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.m_appSrc, CharStrMatcher("stream-type")));
-        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.m_appSrc, CharStrMatcher("min-percent")));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, CharStrMatcher("block")));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, CharStrMatcher("format")));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, CharStrMatcher("stream-type")));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, CharStrMatcher("min-percent")));
 
         EXPECT_CALL(*m_gstWrapperMock,
-                    gstAppSrcSetCallbacks(GST_APP_SRC(m_streamInfo.m_appSrc), &m_callbacks, this, nullptr));
-        EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetMaxBytes(GST_APP_SRC(m_streamInfo.m_appSrc), max));
+                    gstAppSrcSetCallbacks(GST_APP_SRC(m_streamInfo.appSrc), &m_callbacks, this, nullptr));
+        EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetMaxBytes(GST_APP_SRC(m_streamInfo.appSrc), max));
         EXPECT_CALL(*m_gstWrapperMock,
-                    gstAppSrcSetStreamType(GST_APP_SRC(m_streamInfo.m_appSrc), GST_APP_STREAM_TYPE_SEEKABLE));
+                    gstAppSrcSetStreamType(GST_APP_SRC(m_streamInfo.appSrc), GST_APP_STREAM_TYPE_SEEKABLE));
     }
 
     void expectBin(GstElement *expectedElement)
@@ -184,9 +184,9 @@ TEST_F(RialtoServerAppSrcGstSrcTest, SetupVideo)
     guint64 videoMaxBytes = 8 * 1024 * 1024;
 
     expectSettings(videoMaxBytes);
-    expectBin(m_streamInfo.m_appSrc);
-    expectSyncElement(m_streamInfo.m_appSrc);
-    expectLinkDecryptor(m_streamInfo.m_appSrc);
+    expectBin(m_streamInfo.appSrc);
+    expectSyncElement(m_streamInfo.appSrc);
+    expectLinkDecryptor(m_streamInfo.appSrc);
     expectLinkPayloader(&m_decryptor);
     expectLinkQueue(&m_payloader);
     expectSetupPad(&m_queue);
@@ -203,9 +203,9 @@ TEST_F(RialtoServerAppSrcGstSrcTest, SetupAudio)
     guint64 audioMaxBytes = 512 * 1024;
 
     expectSettings(audioMaxBytes);
-    expectBin(m_streamInfo.m_appSrc);
-    expectSyncElement(m_streamInfo.m_appSrc);
-    expectLinkDecryptor(m_streamInfo.m_appSrc);
+    expectBin(m_streamInfo.appSrc);
+    expectSyncElement(m_streamInfo.appSrc);
+    expectLinkDecryptor(m_streamInfo.appSrc);
     expectLinkQueue(&m_decryptor);
     expectSetupPad(&m_queue);
 
@@ -225,9 +225,9 @@ TEST_F(RialtoServerAppSrcGstSrcTest, DecryptorFailure)
         .WillOnce(Return(nullptr));
 
     expectSettings(videoMaxBytes);
-    expectBin(m_streamInfo.m_appSrc);
-    expectSyncElement(m_streamInfo.m_appSrc);
-    expectLinkPayloader(m_streamInfo.m_appSrc);
+    expectBin(m_streamInfo.appSrc);
+    expectSyncElement(m_streamInfo.appSrc);
+    expectLinkPayloader(m_streamInfo.appSrc);
     expectLinkQueue(&m_payloader);
     expectSetupPad(&m_queue);
 
@@ -250,9 +250,9 @@ TEST_F(RialtoServerAppSrcGstSrcTest, PayloaderFailure)
         .WillOnce(Return(nullptr));
 
     expectSettings(videoMaxBytes);
-    expectBin(m_streamInfo.m_appSrc);
-    expectSyncElement(m_streamInfo.m_appSrc);
-    expectLinkDecryptor(m_streamInfo.m_appSrc);
+    expectBin(m_streamInfo.appSrc);
+    expectSyncElement(m_streamInfo.appSrc);
+    expectLinkDecryptor(m_streamInfo.appSrc);
     expectLinkQueue(&m_decryptor);
     expectSetupPad(&m_queue);
 
@@ -270,11 +270,28 @@ TEST_F(RialtoServerAppSrcGstSrcTest, QueueFailure)
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(CharStrMatcher("queue"), _)).WillOnce(Return(nullptr));
 
     expectSettings(videoMaxBytes);
-    expectBin(m_streamInfo.m_appSrc);
-    expectSyncElement(m_streamInfo.m_appSrc);
-    expectLinkDecryptor(m_streamInfo.m_appSrc);
+    expectBin(m_streamInfo.appSrc);
+    expectSyncElement(m_streamInfo.appSrc);
+    expectLinkDecryptor(m_streamInfo.appSrc);
     expectLinkPayloader(&m_decryptor);
     expectSetupPad(&m_payloader);
+
+    m_gstSrc->setupAndAddAppArc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), m_streamInfo, &m_callbacks,
+                                this, MediaSourceType::VIDEO);
+}
+
+/**
+ * Test that GstSrc can add and setup a video source.
+ */
+TEST_F(RialtoServerAppSrcGstSrcTest, NotDrm)
+{
+    guint64 videoMaxBytes = 8 * 1024 * 1024;
+    m_streamInfo.hasDrm = false;
+
+    expectSettings(videoMaxBytes);
+    expectBin(m_streamInfo.appSrc);
+    expectSyncElement(m_streamInfo.appSrc);
+    expectSetupPad(m_streamInfo.appSrc);
 
     m_gstSrc->setupAndAddAppArc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), m_streamInfo, &m_callbacks,
                                 this, MediaSourceType::VIDEO);
