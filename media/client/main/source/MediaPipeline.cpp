@@ -451,7 +451,6 @@ std::weak_ptr<IMediaPipelineClient> MediaPipeline::getClient()
 
 void MediaPipeline::updateState(NetworkState state)
 {
-
     State newState;
 
     switch (state)
