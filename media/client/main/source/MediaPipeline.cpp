@@ -451,7 +451,7 @@ std::weak_ptr<IMediaPipelineClient> MediaPipeline::getClient()
 
 void MediaPipeline::updateState(NetworkState state)
 {
-    State newState;
+    State newState = m_currentState;
 
     switch (state)
     {
@@ -475,14 +475,14 @@ void MediaPipeline::updateState(NetworkState state)
     }
     }
 
-    m_currentState = newState;
     RIALTO_CLIENT_LOG_DEBUG("Received network state '%s', old state '%s', new state '%s'", toString(state),
-                            toString(newState), toString(m_currentState));
+                            toString(m_currentState), toString(newState));
+    m_currentState = newState;
 }
 
 void MediaPipeline::updateState(PlaybackState state)
 {
-    State newState;
+    State newState = m_currentState;
 
     switch (state)
     {
@@ -523,9 +523,9 @@ void MediaPipeline::updateState(PlaybackState state)
     }
     }
 
-    m_currentState = newState;
     RIALTO_CLIENT_LOG_DEBUG("Received playback state '%s', old state '%s', new state '%s'", toString(state),
-                            toString(newState), toString(m_currentState));
+                            toString(m_currentState), toString(newState));
+    m_currentState = newState;
 }
 
 void MediaPipeline::notifyPlaybackState(PlaybackState state)
