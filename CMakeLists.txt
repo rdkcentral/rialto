@@ -26,6 +26,51 @@ endif()
 
 add_compile_options(-Wall -Werror)
 
+option(RIALTO_LOG_FATAL_ENABLED "Enable fatal logging for RialtoServer" ON)
+option(RIALTO_LOG_ERROR_ENABLED "Enable error logging for RialtoServer" ON)
+option(RIALTO_LOG_WARN_ENABLED "Enable warning logging for RialtoServer" ON)
+option(RIALTO_LOG_MIL_ENABLED "Enable milestone logging for RialtoServer" ON)
+
+if( RIALTO_BUILD_TYPE STREQUAL "Debug" )
+    message("_______________DEBUG MODE_______________")
+    option(RIALTO_LOG_INFO_ENABLED "Enable info logging for RialtoServer" ON)
+    option(RIALTO_LOG_DEBUG_ENABLED "Enable debug logging for RialtoServer" ON)
+else()
+    message("_______________RELEASE MODE (DEFAULT)_______________")
+    option(RIALTO_LOG_INFO_ENABLED "Enable info logging for RialtoServer" OFF)
+    option(RIALTO_LOG_DEBUG_ENABLED "Enable debug logging for RialtoServer" OFF)
+endif()
+
+if ( RIALTO_LOG_FATAL_ENABLED )
+    message("RIALTO_LOG_FATAL IS ENABLED")
+    add_compile_definitions( RIALTO_LOG_FATAL_ENABLED )
+endif()
+
+if ( RIALTO_LOG_ERROR_ENABLED )
+    message("RIALTO_LOG_ERROR IS ENABLED")
+    add_compile_definitions( RIALTO_LOG_ERROR_ENABLED )
+endif()
+
+if ( RIALTO_LOG_WARN_ENABLED )
+    message("RIALTO_LOG_WARN IS ENABLED")
+    add_compile_definitions( RIALTO_LOG_WARN_ENABLED )
+endif()
+
+if ( RIALTO_LOG_MIL_ENABLED )
+    message("RIALTO_LOG_MIL IS ENABLED")
+    add_compile_definitions( RIALTO_LOG_MIL_ENABLED )
+endif()
+
+if ( RIALTO_LOG_INFO_ENABLED )
+    message("RIALTO_LOG_INFO IS ENABLED")
+    add_compile_definitions( RIALTO_LOG_INFO_ENABLED )
+endif()
+
+if ( RIALTO_LOG_DEBUG_ENABLED )
+    message("RIALTO_LOG_DEBUG IS ENABLED")
+    add_compile_definitions( RIALTO_LOG_DEBUG_ENABLED )
+endif()
+
 if ( RIALTO_ENABLE_DECRYPT_BUFFER )
     add_compile_definitions( RIALTO_ENABLE_DECRYPT_BUFFER )
 endif()

@@ -147,7 +147,6 @@ bool MediaKeysCapabilities::getSupportedKeySystemVersion(const std::string &keyS
         version = "";
         return false;
     }
-
     return true;
 }
 
