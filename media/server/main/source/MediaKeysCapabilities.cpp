@@ -29,7 +29,6 @@ namespace
 /**
  * @brief Coverts MediaKeyErrorStatus to string.
  */
-
 const char *toString(const firebolt::rialto::MediaKeyErrorStatus &status)
 {
     switch (status)
@@ -47,7 +46,6 @@ const char *toString(const firebolt::rialto::MediaKeyErrorStatus &status)
     }
     return "Unknown";
 }
-
 } // namespace
 
 namespace firebolt::rialto
