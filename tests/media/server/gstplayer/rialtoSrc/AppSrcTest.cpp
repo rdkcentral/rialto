@@ -68,7 +68,7 @@ protected:
     GstPad m_target = {};
     GstPad m_pad = {};
     gchar *m_name = "src_0";
-    StreamInfo m_streamInfo = {};
+    StreamInfo m_streamInfo;
 
     RialtoServerAppSrcGstSrcTest() : m_streamInfo{&m_appsrc, true} {}
 

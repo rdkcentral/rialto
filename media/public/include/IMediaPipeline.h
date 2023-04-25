@@ -154,6 +154,7 @@ public:
          *
          * @param[in]  configType   : The source config type.
          * @param[in]  mimeType     : The mime type string.
+         * @param[in]  hasDrm       : Information if source will use drm
          * @param[in]  alignment    : The alignment of media segment.
          * @param[in]  streamFormat : The stream format
          * @param[in]  codecData    : The additional data for decoder
@@ -215,6 +216,7 @@ public:
          * @brief Constructor for audio specific configuration.
          *
          * @param[in]  mimeType     : The mime type string.
+         * @param[in]  hasDrm       : Information if source will use drm
          * @param[in]  audioConfig  : The audio specific configuration.
          * @param[in]  alignment    : The alignment of media segment.
          * @param[in]  streamFormat : The stream format
@@ -260,6 +262,9 @@ public:
          * @brief Constructor for video specific configuration.
          *
          * @param[in]  mimeType     : The mime type string.
+         * @param[in]  hasDrm       : Information if source will use drm
+         * @param[in]  width        : The width of the video
+         * @param[in]  height       : The height of the video
          * @param[in]  alignment    : The alignment of media segment.
          * @param[in]  streamFormat : The stream format
          * @param[in]  codecData    : The additional data for decoder
@@ -286,8 +291,11 @@ public:
         /**
          * @brief Constructor for video specific configuration.
          *
-         * @param[in]  mimeType         : The mime type string.
          * @param[in]  sourceConfigType : The source config type
+         * @param[in]  mimeType         : The mime type string.
+         * @param[in]  hasDrm           : Information if source will use drm
+         * @param[in]  width            : The width of the video
+         * @param[in]  height           : The height of the video
          * @param[in]  alignment        : The alignment of media segment.
          * @param[in]  streamFormat     : The stream format
          * @param[in]  codecData        : The additional data for decoder
@@ -325,6 +333,9 @@ public:
          *
          * @param[in] mimeType           : The mime type string.
          * @param[in] dolbyVisionProfile : The dolby vision profile
+         * @param[in] hasDrm             : Information if source will use drm
+         * @param[in] width              : The width of the video
+         * @param[in] height             : The height of the video
          * @param[in] alignment          : The alignment of media segment.
          * @param[in] streamFormat       : The stream format
          * @param[in] codecData          : The additional data for decoder
