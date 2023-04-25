@@ -284,7 +284,18 @@ public:
         MediaSourceType getType() const override { return MediaSourceType::VIDEO; }
         std::unique_ptr<MediaSource> copy() const { return std::make_unique<MediaSourceVideo>(*this); }
 
+        /**
+         * @brief Gets the width of the video
+         *
+         * @retval width of the video
+         */
         int32_t getWidth() const { return m_width; }
+
+        /**
+         * @brief Gets the height of the video
+         *
+         * @retval height of the video
+         */
         int32_t getHeight() const { return m_height; }
 
     protected:
