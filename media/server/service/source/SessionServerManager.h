@@ -57,6 +57,7 @@ private:
     bool switchToActive();
     bool switchToInactive();
     bool switchToNotRunning();
+    void stopService();
 
 private:
     IPlaybackService &m_playbackService;

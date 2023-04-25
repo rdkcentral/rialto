@@ -18,37 +18,17 @@
  */
 
 #include "ServerManagerServiceFactory.h"
-#include "RialtoServerManagerLogging.h"
 #include "ServerManagerService.h"
 #include "ServiceContext.h"
 #include <memory>
-#include <string>
-
-namespace
-{
-int getNumberOfPreloadedServers()
-try
-{
-    const char *numOfPreloadedServersEnvVar = getenv("RIALTO_PRELOADED_SERVERS");
-    if (numOfPreloadedServersEnvVar)
-    {
-        RIALTO_SERVER_MANAGER_LOG_INFO("Number of preloaded servers: %s", numOfPreloadedServersEnvVar);
-        return std::stoi(std::string(numOfPreloadedServersEnvVar));
-    }
-    return 0;
-}
-catch (std::exception &e)
-{
-    return 0;
-}
-} // namespace
 
 namespace rialto::servermanager::service
 {
 std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserver> &stateObserver,
-                                              const std::list<std::string> &sessionServerEnvVars)
+                                              const firebolt::rialto::common::ServerManagerConfig &config)
 {
-    return std::make_unique<ServerManagerService>(std::make_unique<ServiceContext>(stateObserver, sessionServerEnvVars),
-                                                  getNumberOfPreloadedServers());
+    return std::make_unique<ServerManagerService>(std::make_unique<ServiceContext>(stateObserver,
+                                                                                   config.sessionServerEnvVars),
+                                                  config.numOfPreloadedServers);
 }
 } // namespace rialto::servermanager::service

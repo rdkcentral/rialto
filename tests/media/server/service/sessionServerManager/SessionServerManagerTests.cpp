@@ -108,6 +108,14 @@ TEST_F(SessionServerManagerTests, shouldFailToSetInactiveState)
     setStateShouldFail(firebolt::rialto::common::SessionServerState::INACTIVE);
 }
 
+TEST_F(SessionServerManagerTests, shouldFailToSetInactiveStateAndGoBackToActive)
+{
+    willSetStateActive();
+    setStateShouldSucceed(firebolt::rialto::common::SessionServerState::ACTIVE);
+    willFailToSetStateInactiveAndGoBackToActive();
+    setStateShouldFail(firebolt::rialto::common::SessionServerState::INACTIVE);
+}
+
 TEST_F(SessionServerManagerTests, shouldSetInactiveState)
 {
     willSetStateInactive();

@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_COMMON_SESSION_SERVER_COMMON_H_
 #define FIREBOLT_RIALTO_COMMON_SESSION_SERVER_COMMON_H_
 
+#include <list>
 #include <stdint.h>
 #include <string>
 
@@ -65,6 +66,16 @@ struct AppConfig
      *    - Socket name, such as "bar", in which case Rialto will create the named socket in the default dir, e.g.
      * "/tmp/bar" In all cases the name can be retrieved with getAppConnectionInfo()
      */
+};
+
+/**
+ * @brief Configuration data for server manager
+ */
+struct ServerManagerConfig
+{
+    std::list<std::string> sessionServerEnvVars{}; /* List of environment variables, that need to be passed to
+                                                      RialtoSessionServer */
+    int numOfPreloadedServers{0};                  /* Number of preloaded servers */
 };
 
 } // namespace firebolt::rialto::common

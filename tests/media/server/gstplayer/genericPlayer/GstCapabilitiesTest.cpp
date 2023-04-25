@@ -56,11 +56,11 @@ public:
         : m_capsMap{{"audio/mpeg, mpegversion=(int)4", {}},
                     {"audio/x-eac3", {}},
                     {"audio/x-opus", {}},
-                    {"audio/x-opus, channel-mapping-family=(int)0", {}},
                     {"video/x-av1", {}},
                     {"video/x-h264", {}},
                     {"video/x-h265", {}},
                     {"video/x-vp9", {}},
+                    {"video/mpeg, mpegversion=(int)4", {}},
                     {"video/x-h264(memory:DMABuf)", {}},
                     {"video/x-h265(memory:DMABuf)", {}},
                     {"video/x-av1(memory:DMABuf)", {}},
@@ -176,10 +176,10 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OnlyOneDecoderWithTwoSinkPadsA
         .WillOnce(Return(nullptr));
 
     expectCapsToMimeMapping();
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsSubset(_, _)).WillRepeatedly(Return(false));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsSubset(&m_capsMap["audio/mpeg, mpegversion=(int)4"], &padTemplateCaps1))
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(_, _)).WillRepeatedly(Return(false));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["audio/mpeg, mpegversion=(int)4"], &padTemplateCaps1))
         .WillOnce(Return(true));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsSubset(&m_capsMap["audio/x-opus"], &padTemplateCaps2)).WillOnce(Return(true));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["audio/x-opus"], &padTemplateCaps2)).WillOnce(Return(true));
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock);
 
@@ -216,8 +216,8 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OnlyOneDecoderWithTwoPadsWithT
         .WillOnce(Return(nullptr));
 
     expectCapsToMimeMapping();
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsSubset(_, _)).WillRepeatedly(Return(false));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsSubset(&m_capsMap["audio/mpeg, mpegversion=(int)4"], &padTemplateCaps1))
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(_, _)).WillRepeatedly(Return(false));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["audio/mpeg, mpegversion=(int)4"], &padTemplateCaps1))
         .WillOnce(Return(true));
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock);
@@ -261,18 +261,17 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OneDecoderWithOneSinkPad_Parse
     expectGetStaticPadTemplates(parserFactory, parserPadTemplates.get());
     expectGetStaticCapsAndCapsUnref(parserPadTemplateSrc, &parserPadTemplateCapsSrc);
 
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&decoderPadTemplateCapsSink, &parserPadTemplateCapsSrc))
-        .WillOnce(Return(true));
-
     expectGetStaticCapsAndCapsUnref(parserPadTemplateSink, &parserPadTemplateCapsSink);
     EXPECT_CALL(*m_gstWrapperMock, gstCapsIsStrictlyEqual(&parserPadTemplateCapsSink, &decoderPadTemplateCapsSink))
         .WillOnce(Return(false));
 
     expectCapsToMimeMapping();
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsSubset(_, _)).WillRepeatedly(Return(false));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsSubset(&m_capsMap["video/x-h264"], &decoderPadTemplateCapsSink))
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(_, _)).WillRepeatedly(Return(false));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&decoderPadTemplateCapsSink, &parserPadTemplateCapsSrc))
         .WillOnce(Return(true));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsSubset(&m_capsMap["video/x-h265"], &parserPadTemplateCapsSink))
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["video/x-h264"], &decoderPadTemplateCapsSink))
+        .WillOnce(Return(true));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["video/x-h265"], &parserPadTemplateCapsSink))
         .WillOnce(Return(true));
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock);
@@ -313,19 +312,19 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OneDecoderWithOneSinkPad_Parse
     expectGetStaticPadTemplates(parserFactory, parserPadTemplates.get());
     expectGetStaticCapsAndCapsUnref(parserPadTemplateSrc, &parserPadTemplateCapsSrc);
 
+    expectCapsToMimeMapping();
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(_, _)).WillRepeatedly(Return(false));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&decoderPadTemplateCapsSink, &parserPadTemplateCapsSrc))
         .WillOnce(Return(false));
-
-    expectCapsToMimeMapping();
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsSubset(_, _)).WillRepeatedly(Return(false));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsSubset(&m_capsMap["video/x-h264"], &decoderPadTemplateCapsSink))
+    EXPECT_CALL(*m_gstWrapperMock,
+                gstCapsCanIntersect(&m_capsMap["video/mpeg, mpegversion=(int)4"], &decoderPadTemplateCapsSink))
         .WillOnce(Return(true));
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock);
 
-    EXPECT_THAT(m_sut->getSupportedMimeTypes(MediaSourceType::VIDEO), UnorderedElementsAre("video/h264"));
+    EXPECT_THAT(m_sut->getSupportedMimeTypes(MediaSourceType::VIDEO), UnorderedElementsAre("video/mp4"));
 
-    EXPECT_TRUE(m_sut->isMimeTypeSupported("video/h264"));
+    EXPECT_TRUE(m_sut->isMimeTypeSupported("video/mp4"));
     EXPECT_FALSE(m_sut->isMimeTypeSupported("video/h265"));
     EXPECT_FALSE(m_sut->isMimeTypeSupported("audio/x-opus"));
 }
@@ -362,18 +361,17 @@ TEST_F(GstCapabilitiesTest,
     expectGetStaticPadTemplates(parserFactory, parserPadTemplates.get());
     expectGetStaticCapsAndCapsUnref(parserPadTemplateSrc, &parserPadTemplateCapsSrc);
 
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&decoderPadTemplateCapsSink, &parserPadTemplateCapsSrc))
-        .WillOnce(Return(true));
-
     expectGetStaticCapsAndCapsUnref(parserPadTemplateSink, &parserPadTemplateCapsSink);
     EXPECT_CALL(*m_gstWrapperMock, gstCapsIsStrictlyEqual(&parserPadTemplateCapsSink, &decoderPadTemplateCapsSink))
         .WillOnce(Return(false));
 
     expectCapsToMimeMapping();
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsSubset(_, _)).WillRepeatedly(Return(false));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsSubset(&m_capsMap["video/x-h264"], &decoderPadTemplateCapsSink))
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(_, _)).WillRepeatedly(Return(false));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&decoderPadTemplateCapsSink, &parserPadTemplateCapsSrc))
+        .WillOnce(Return(true));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["video/x-h264"], &decoderPadTemplateCapsSink))
         .WillOnce(Return(false));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsSubset(&m_capsMap["video/x-h265"], &parserPadTemplateCapsSink))
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["video/x-h265"], &parserPadTemplateCapsSink))
         .WillOnce(Return(false));
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock);
@@ -426,11 +424,6 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_TwoDecodersWithOneSinkPad_Pars
     expectGetStaticPadTemplates(parserFactory, parserPadTemplates.get(), 2);
     expectGetStaticCapsAndCapsUnref(parserPadTemplateSrc, &parserPadTemplateCapsSrc, 2);
 
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&decoderPadTemplateCapsSink, &parserPadTemplateCapsSrc))
-        .WillOnce(Return(true));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&decoderPadTemplateCapsSink2, &parserPadTemplateCapsSrc))
-        .WillOnce(Return(false));
-
     expectGetStaticCapsAndCapsUnref(parserPadTemplateSink, &parserPadTemplateCapsSink);
     EXPECT_CALL(*m_gstWrapperMock, gstCapsIsStrictlyEqual(&parserPadTemplateCapsSink, &decoderPadTemplateCapsSink))
         .WillOnce(Return(false));
@@ -438,10 +431,14 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_TwoDecodersWithOneSinkPad_Pars
         .WillOnce(Return(true));
 
     expectCapsToMimeMapping();
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsSubset(_, _)).WillRepeatedly(Return(false));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsSubset(&m_capsMap["video/x-h264"], &decoderPadTemplateCapsSink))
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(_, _)).WillRepeatedly(Return(false));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&decoderPadTemplateCapsSink, &parserPadTemplateCapsSrc))
         .WillOnce(Return(true));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsSubset(&m_capsMap["video/x-h265"], &decoderPadTemplateCapsSink2))
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&decoderPadTemplateCapsSink2, &parserPadTemplateCapsSrc))
+        .WillOnce(Return(false));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["video/x-h264"], &decoderPadTemplateCapsSink))
+        .WillOnce(Return(true));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["video/x-h265"], &decoderPadTemplateCapsSink2))
         .WillOnce(Return(true));
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock);
@@ -490,20 +487,19 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OneDecodersWithOneSinkPad_Pars
     expectGetStaticCapsAndCapsUnref(parserPadTemplateSrc, &parserPadTemplateCapsSrc);
     expectGetStaticCapsAndCapsUnref(parserPadTemplateSrc2, &parserPadTemplateCapsSrc2);
 
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&decoderPadTemplateCapsSink, &parserPadTemplateCapsSrc))
-        .WillOnce(Return(false));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&decoderPadTemplateCapsSink, &parserPadTemplateCapsSrc2))
-        .WillOnce(Return(true));
-
     expectGetStaticCapsAndCapsUnref(parserPadTemplateSink, &parserPadTemplateCapsSink);
     EXPECT_CALL(*m_gstWrapperMock, gstCapsIsStrictlyEqual(&parserPadTemplateCapsSink, &decoderPadTemplateCapsSink))
         .WillOnce(Return(false));
 
     expectCapsToMimeMapping();
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsSubset(_, _)).WillRepeatedly(Return(false));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsSubset(&m_capsMap["video/x-h264"], &decoderPadTemplateCapsSink))
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(_, _)).WillRepeatedly(Return(false));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&decoderPadTemplateCapsSink, &parserPadTemplateCapsSrc))
+        .WillOnce(Return(false));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&decoderPadTemplateCapsSink, &parserPadTemplateCapsSrc2))
         .WillOnce(Return(true));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsSubset(&m_capsMap["video/x-h265"], &parserPadTemplateCapsSink))
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["video/x-h264"], &decoderPadTemplateCapsSink))
+        .WillOnce(Return(true));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["video/x-h265"], &parserPadTemplateCapsSink))
         .WillOnce(Return(true));
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock);
@@ -558,11 +554,6 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OneDecodersWithOneSinkPads_Two
     expectGetStaticCapsAndCapsUnref(parserPadTemplateSrc, &parserPadTemplateCapsSrc);
     expectGetStaticCapsAndCapsUnref(parserPadTemplateSrc2, &parserPadTemplateCapsSrc2);
 
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&decoderPadTemplateCapsSink, &parserPadTemplateCapsSrc))
-        .WillOnce(Return(true));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&decoderPadTemplateCapsSink, &parserPadTemplateCapsSrc2))
-        .WillOnce(Return(true));
-
     expectGetStaticCapsAndCapsUnref(parserPadTemplateSink, &parserPadTemplateCapsSink);
     expectGetStaticCapsAndCapsUnref(parserPadTemplateSink2, &parserPadTemplateCapsSink2);
 
@@ -574,12 +565,16 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OneDecodersWithOneSinkPads_Two
         .WillOnce(Return(false));
 
     expectCapsToMimeMapping();
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsSubset(_, _)).WillRepeatedly(Return(false));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsSubset(&m_capsMap["video/x-h264"], &decoderPadTemplateCapsSink))
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(_, _)).WillRepeatedly(Return(false));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&decoderPadTemplateCapsSink, &parserPadTemplateCapsSrc))
         .WillOnce(Return(true));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsSubset(&m_capsMap["video/x-h265"], &parserPadTemplateCapsSink))
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&decoderPadTemplateCapsSink, &parserPadTemplateCapsSrc2))
         .WillOnce(Return(true));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsSubset(&m_capsMap["video/x-av1"], &parserPadTemplateCapsSink2))
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["video/x-h264"], &decoderPadTemplateCapsSink))
+        .WillOnce(Return(true));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["video/x-h265"], &parserPadTemplateCapsSink))
+        .WillOnce(Return(true));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["video/x-av1"], &parserPadTemplateCapsSink2))
         .WillOnce(Return(true));
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock);
@@ -589,6 +584,7 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OneDecodersWithOneSinkPads_Two
 
     EXPECT_TRUE(m_sut->isMimeTypeSupported("video/h264"));
     EXPECT_TRUE(m_sut->isMimeTypeSupported("video/x-av1"));
+    EXPECT_FALSE(m_sut->isMimeTypeSupported("video/mp4"));
     EXPECT_FALSE(m_sut->isMimeTypeSupported("video/x-vp9"));
     EXPECT_FALSE(m_sut->isMimeTypeSupported("audio/x-opus"));
 }
