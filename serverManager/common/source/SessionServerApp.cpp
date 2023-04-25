@@ -69,44 +69,16 @@ std::string getSessionManagementSocketPath(const firebolt::rialto::common::AppCo
     // Socket name
     return sessionManagementSocketDefaultDir + appConfig.clientIpcSocketName;
 }
-
-std::string getSessionServerPath()
-{
-    const char *customPath = getenv("RIALTO_SESSION_SERVER_PATH");
-    if (customPath)
-    {
-        RIALTO_SERVER_MANAGER_LOG_INFO("Using custom SessionServer path: %s", customPath);
-        return std::string(customPath);
-    }
-    return "/usr/bin/RialtoServer";
-}
-
-std::chrono::milliseconds getStartupTimeout()
-{
-    const char *customTimeout = getenv("RIALTO_SESSION_SERVER_STARTUP_TIMEOUT_MS");
-    std::chrono::milliseconds timeout{0};
-    if (customTimeout)
-    {
-        try
-        {
-            timeout = std::chrono::milliseconds(std::stoull(customTimeout));
-            RIALTO_SERVER_MANAGER_LOG_INFO("Using custom SessionServer startup timeout: %sms", customTimeout);
-        }
-        catch (const std::exception &e)
-        {
-            RIALTO_SERVER_MANAGER_LOG_ERROR("Custom SessionServer startup timeout invalid, ignoring: %s", customTimeout);
-        }
-    }
-    return timeout;
-}
 } // namespace
 
 namespace rialto::servermanager::common
 {
 SessionServerApp::SessionServerApp(SessionServerAppManager &sessionServerAppManager,
-                                   const std::list<std::string> &environmentVariables)
+                                   const std::list<std::string> &environmentVariables,
+                                   const std::string &sessionServerPath, unsigned long long sessionServerStartupTimeoutMs)
     : m_kServerId{generateServerId()}, m_socks{-1, -1}, m_sessionServerAppManager{sessionServerAppManager}, m_pid{-1},
-      m_isPreloaded{true}
+      m_isPreloaded{true}, m_kSessionServerPath{sessionServerPath}, m_kSessionServerStartupTimeout{
+                                                                        sessionServerStartupTimeoutMs}
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("Creating preloaded SessionServerApp with serverId: %d", m_kServerId);
     std::transform(environmentVariables.begin(), environmentVariables.end(), std::back_inserter(m_environmentVariables),
@@ -118,10 +90,12 @@ SessionServerApp::SessionServerApp(const std::string &appName,
                                    const firebolt::rialto::common::SessionServerState &initialState,
                                    const firebolt::rialto::common::AppConfig &appConfig,
                                    SessionServerAppManager &sessionServerAppManager,
-                                   const std::list<std::string> &environmentVariables)
+                                   const std::list<std::string> &environmentVariables,
+                                   const std::string &sessionServerPath, unsigned long long sessionServerStartupTimeoutMs)
     : m_kServerId{generateServerId()}, m_appName{appName}, m_initialState{initialState},
       m_sessionManagementSocketName{getSessionManagementSocketPath(appConfig)}, m_socks{-1, -1},
-      m_sessionServerAppManager{sessionServerAppManager}, m_pid{-1}, m_isPreloaded{false}
+      m_sessionServerAppManager{sessionServerAppManager}, m_pid{-1}, m_isPreloaded{false},
+      m_kSessionServerPath{sessionServerPath}, m_kSessionServerStartupTimeout{sessionServerStartupTimeoutMs}
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("Creating SessionServerApp for app: %s with appId: %d", appName.c_str(), m_kServerId);
     std::transform(environmentVariables.begin(), environmentVariables.end(), std::back_inserter(m_environmentVariables),
@@ -266,13 +240,12 @@ bool SessionServerApp::initializeSockets()
 
 void SessionServerApp::setupStartupTimer()
 {
-    std::chrono::milliseconds timeout = getStartupTimeout();
-    if (std::chrono::milliseconds(0) < timeout)
+    if (std::chrono::milliseconds(0) < m_kSessionServerStartupTimeout)
     {
         std::unique_lock<std::mutex> lock{m_timerMutex};
         auto factory = firebolt::rialto::common::ITimerFactory::getFactory();
         m_startupTimer =
-            factory->createTimer(timeout,
+            factory->createTimer(m_kSessionServerStartupTimeout,
                                  [this]()
                                  {
                                      RIALTO_SERVER_MANAGER_LOG_WARN("Killing: %d", m_kServerId);
@@ -325,11 +298,10 @@ bool SessionServerApp::spawnSessionServer()
                 devNull = -1;
             }
         }
-        const std::string appName{getSessionServerPath()};
         const std::string appMgmtSocketStr{std::to_string(m_socks[0])};
-        char *const appArguments[] = {strdup(appName.c_str()), strdup(appMgmtSocketStr.c_str()), nullptr};
+        char *const appArguments[] = {strdup(m_kSessionServerPath.c_str()), strdup(appMgmtSocketStr.c_str()), nullptr};
         RIALTO_SERVER_MANAGER_LOG_DEBUG("PID: %d, executing: \"%s\" \"%s\"", getpid(), appArguments[0], appArguments[1]);
-        execve(appName.c_str(), appArguments, m_environmentVariables.data());
+        execve(m_kSessionServerPath.c_str(), appArguments, m_environmentVariables.data());
         RIALTO_SERVER_MANAGER_LOG_SYS_ERROR(errno, "Unable to spawn RialtoSessionServer - execve problem");
         for (char *arg : appArguments)
         {

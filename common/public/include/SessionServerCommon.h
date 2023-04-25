@@ -73,9 +73,12 @@ struct AppConfig
  */
 struct ServerManagerConfig
 {
-    std::list<std::string> sessionServerEnvVars{}; /* List of environment variables, that need to be passed to
-                                                      RialtoSessionServer */
-    int numOfPreloadedServers{0};                  /* Number of preloaded servers */
+    std::list<std::string> sessionServerEnvVars{};          /* List of environment variables, that need to be passed to
+                                                               RialtoSessionServer */
+    int numOfPreloadedServers{0};                           /* Number of preloaded servers */
+    std::string sessionServerPath{"/usr/bin/RialtoServer"}; /* Location of Rialto Session Server binary */
+    unsigned long long sessionServerStartupTimeoutMs{
+        0}; /* Custom session server startup timeout. If 0 - timeout disabled. */
 };
 
 } // namespace firebolt::rialto::common

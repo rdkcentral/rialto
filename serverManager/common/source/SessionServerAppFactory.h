@@ -30,7 +30,9 @@ namespace rialto::servermanager::common
 class SessionServerAppFactory : public ISessionServerAppFactory
 {
 public:
-    explicit SessionServerAppFactory(const std::list<std::string> &environmentVariables);
+    explicit SessionServerAppFactory(const std::list<std::string> &environmentVariables,
+                                     const std::string &sessionServerPath,
+                                     unsigned long long sessionServerStartupTimeoutMs);
     ~SessionServerAppFactory() override = default;
 
     std::unique_ptr<ISessionServerApp> create(const std::string &appName,
@@ -41,6 +43,8 @@ public:
 
 private:
     const std::list<std::string> m_kEnvironmentVariables;
+    const std::string m_kSessionServerPath;
+    const unsigned long long m_kSessionServerStartupTimeoutMs;
 };
 } // namespace rialto::servermanager::common
 

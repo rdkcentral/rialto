@@ -32,7 +32,8 @@ namespace rialto::servermanager::common
 std::unique_ptr<ISessionServerAppManager>
 createSessionServerAppManager(std::unique_ptr<ipc::IController> &ipc,
                               const std::shared_ptr<service::IStateObserver> &stateObserver,
-                              const std::list<std::string> &environmentVariables);
+                              const std::list<std::string> &environmentVariables, const std::string &sessionServerPath,
+                              unsigned long long sessionServerStartupTimeoutMs);
 } // namespace rialto::servermanager::common
 
 #endif // RIALTO_SERVERMANAGER_COMMON_SESSION_SERVER_APP_MANAGER_FACTORY_H_
