@@ -265,16 +265,22 @@ public:
          * @param[in]  codecData    : The additional data for decoder
          */
         MediaSourceVideo(const std::string &mimeType, bool hasDrm = true,
+                         int32_t width = firebolt::rialto::kUndefinedSize,
+                         int32_t height = firebolt::rialto::kUndefinedSize,
                          SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                          StreamFormat streamFormat = StreamFormat::UNDEFINED,
                          const std::shared_ptr<std::vector<std::uint8_t>> &codecData = nullptr)
-            : MediaSource(SourceConfigType::VIDEO, mimeType, hasDrm, alignment, streamFormat, codecData)
+            : MediaSource(SourceConfigType::VIDEO, mimeType, hasDrm, alignment, streamFormat, codecData),
+              m_width(width), m_height(height)
         {
         }
         ~MediaSourceVideo() {}
 
         MediaSourceType getType() const override { return MediaSourceType::VIDEO; }
         std::unique_ptr<MediaSource> copy() const { return std::make_unique<MediaSourceVideo>(*this); }
+
+        int32_t getWidth() const { return m_width; }
+        int32_t getHeight() const { return m_height; }
 
     protected:
         /**
@@ -287,12 +293,24 @@ public:
          * @param[in]  codecData        : The additional data for decoder
          */
         MediaSourceVideo(SourceConfigType sourceConfigType, const std::string &mimeType, bool hasDrm = true,
-                         SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
+                         int32_t width = 0, int32_t height = 0, SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                          StreamFormat streamFormat = StreamFormat::UNDEFINED,
                          const std::shared_ptr<std::vector<std::uint8_t>> &codecData = nullptr)
-            : MediaSource(sourceConfigType, mimeType, hasDrm, alignment, streamFormat, codecData)
+            : MediaSource(sourceConfigType, mimeType, hasDrm, alignment, streamFormat, codecData), m_width(width),
+              m_height(height)
         {
         }
+
+        private:
+        /**
+         * @brief The video width
+         */
+        int m_width;
+
+        /**
+         * @brief The video height
+         */
+        int m_height;
     };
 
     /**
@@ -312,11 +330,13 @@ public:
          * @param[in] codecData          : The additional data for decoder
          */
         MediaSourceVideoDolbyVision(const std::string &mimeType, int32_t dolbyVisionProfile, bool hasDrm = true,
+                                    int32_t width = firebolt::rialto::kUndefinedSize,
+                                    int32_t height = firebolt::rialto::kUndefinedSize,
                                     SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                                     StreamFormat streamFormat = StreamFormat::UNDEFINED,
                                     const std::shared_ptr<std::vector<std::uint8_t>> &codecData = nullptr)
-            : MediaSourceVideo(SourceConfigType::VIDEO_DOLBY_VISION, mimeType, hasDrm, alignment, streamFormat,
-                               codecData),
+            : MediaSourceVideo(SourceConfigType::VIDEO_DOLBY_VISION, mimeType, hasDrm, width, height, alignment,
+                               streamFormat, codecData),
               m_dolbyVisionProfile(dolbyVisionProfile)
         {
         }
@@ -815,8 +835,9 @@ public:
          * @param[in] width     : The video width in pixels.
          * @param[in] height    : The video height in pixels.
          */
-        MediaSegmentVideo(int32_t sourceId = 0, int64_t timeStamp = 0, int64_t duration = 0, int32_t width = 0,
-                          int32_t height = 0)
+        MediaSegmentVideo(int32_t sourceId = 0, int64_t timeStamp = 0, int64_t duration = 0,
+                          int32_t width = firebolt::rialto::kUndefinedSize,
+                          int32_t height = firebolt::rialto::kUndefinedSize)
             : MediaSegment(sourceId, MediaSourceType::VIDEO, timeStamp, duration), m_width(width), m_height(height)
         {
         }

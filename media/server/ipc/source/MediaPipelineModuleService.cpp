@@ -354,6 +354,7 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
     {
         mediaSource =
             std::make_unique<IMediaPipeline::MediaSourceVideo>(request->mime_type().c_str(), hasDrm,
+                                                               request->width(), request->height(), 
                                                                convertSegmentAlignment(request->segment_alignment()),
                                                                convertStreamFormat(request->stream_format()), codecData);
     }
@@ -362,6 +363,7 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
         mediaSource =
             std::make_unique<IMediaPipeline::MediaSourceVideoDolbyVision>(request->mime_type().c_str(),
                                                                           request->dolby_vision_profile(), hasDrm,
+                                                                          request->width(), request->height(),
                                                                           convertSegmentAlignment(
                                                                               request->segment_alignment()),
                                                                           convertStreamFormat(request->stream_format()),

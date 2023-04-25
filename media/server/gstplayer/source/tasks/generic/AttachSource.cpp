@@ -111,7 +111,7 @@ public:
             return createOpusCaps();
         }
 
-        GstCaps *caps = buildCommonCaps();
+        GstCaps *caps = MediaSourceCapsBuilder::buildCaps();
         if (mimeType == "audio/mp4" || mimeType == "audio/aac")
         {
             addMpegVersionToCaps(caps);
@@ -172,19 +172,43 @@ protected:
     const IMediaPipeline::MediaSourceAudio &m_attachedAudioSource;
 };
 
-class MediaSourceVideoDolbyVisionCapsBuilder : public MediaSourceCapsBuilder
+class MediaSourceVideoCapsBuilder : public MediaSourceCapsBuilder
 {
 public:
-    MediaSourceVideoDolbyVisionCapsBuilder(std::shared_ptr<IGstWrapper> gstWrapper,
-                                           std::shared_ptr<IGlibWrapper> glibWrapper,
-                                           const IMediaPipeline::MediaSourceVideoDolbyVision &source)
-        : MediaSourceCapsBuilder(gstWrapper, glibWrapper, source), m_attachedDolbySource(source)
+    MediaSourceVideoCapsBuilder(std::shared_ptr<IGstWrapper> gstWrapper, std::shared_ptr<IGlibWrapper> glibWrapper,
+                                const IMediaPipeline::MediaSourceVideo &source)
+        : MediaSourceCapsBuilder(gstWrapper, glibWrapper, source), m_attachedVideoSource(source)
     {
     }
 
     GstCaps *buildCaps() override
     {
-        GstCaps *caps = buildCommonCaps();
+        GstCaps *caps = MediaSourceCapsBuilder::buildCaps();
+        if (m_attachedVideoSource.getWidth() != firebolt::rialto::kUndefinedSize)
+            m_gstWrapper->gstCapsSetSimple(caps, "width", G_TYPE_INT, m_attachedVideoSource.getWidth(), nullptr);
+        if (m_attachedVideoSource.getHeight() != firebolt::rialto::kUndefinedSize)
+            m_gstWrapper->gstCapsSetSimple(caps, "height", G_TYPE_INT, m_attachedVideoSource.getHeight(), nullptr);
+
+        return caps;
+    }
+
+protected:
+    const IMediaPipeline::MediaSourceVideo &m_attachedVideoSource;
+};
+
+class MediaSourceVideoDolbyVisionCapsBuilder : public MediaSourceVideoCapsBuilder
+{
+public:
+    MediaSourceVideoDolbyVisionCapsBuilder(std::shared_ptr<IGstWrapper> gstWrapper,
+                                           std::shared_ptr<IGlibWrapper> glibWrapper,
+                                           const IMediaPipeline::MediaSourceVideoDolbyVision &source)
+        : MediaSourceVideoCapsBuilder(gstWrapper, glibWrapper, source), m_attachedDolbySource(source)
+    {
+    }
+
+    GstCaps *buildCaps() override
+    {
+        GstCaps *caps = MediaSourceVideoCapsBuilder::buildCaps();
         m_gstWrapper->gstCapsSetSimple(caps, "dovi-stream", G_TYPE_BOOLEAN, true, nullptr);
         m_gstWrapper->gstCapsSetSimple(caps, "dv_profile", G_TYPE_UINT, m_attachedDolbySource.getDolbyVisionProfile(),
                                        nullptr);
@@ -346,7 +370,10 @@ GstCaps *AttachSource::createCapsFromMediaSource() const
     }
     else if (configType == firebolt::rialto::SourceConfigType::VIDEO)
     {
-        capsBuilder = std::make_unique<MediaSourceCapsBuilder>(m_gstWrapper, m_glibWrapper, *m_attachedSource);
+        const IMediaPipeline::MediaSourceVideo &source =
+            dynamic_cast<IMediaPipeline::MediaSourceVideo &>(*m_attachedSource);
+
+        capsBuilder = std::make_unique<MediaSourceVideoCapsBuilder>(m_gstWrapper, m_glibWrapper, source);
     }
     else if (configType == firebolt::rialto::SourceConfigType::VIDEO_DOLBY_VISION)
     {

@@ -50,6 +50,11 @@ constexpr uint32_t kInvalidAudioChannels{0};
 constexpr uint32_t kInvalidAudioSampleRate{0};
 
 /**
+ * @brief The value of an undefined size
+ */
+constexpr int32_t kUndefinedSize{0};
+
+/**
  * @brief The supported types of media source.
  */
 enum class MediaSourceType
