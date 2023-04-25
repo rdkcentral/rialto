@@ -39,13 +39,13 @@ namespace rialto::servermanager::service
  * This function is used to create a new ServerManagerService instance.
  *
  * @param[in]    stateObserver        : A pointer to IStateObserver interface implementation
- * @param[in]    sessionServerEnvVars : List of environment variables, that need to be passed to RialtoSessionServer
+ * @param[in]    config               : Configuration data for server manager
  *
  * @retval a pointer to a new ServerManagerService instance.
  *
  */
 std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserver> &stateObserver,
-                                              const std::list<std::string> &sessionServerEnvVars);
+                                              const firebolt::rialto::common::ServerManagerConfig &config);
 } // namespace rialto::servermanager::service
 
 #endif // RIALTO_SERVERMANAGER_SERVICE_SERVER_MANAGER_SERVICE_FACTORY_H_
