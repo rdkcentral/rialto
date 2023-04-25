@@ -46,6 +46,8 @@ public:
     void mediaPipelineServiceWillLoadSession();
     void mediaPipelineServiceWillFailToLoadSession();
     void mediaPipelineServiceWillAttachSource();
+    void mediaPipelineServiceWillAttachVideoSource();
+    void mediaPipelineServiceWillAttachDolbySource();
     void mediaPipelineServiceWillAttachAudioSourceWithAdditionaldata();
     void mediaPipelineServiceWillFailToAttachSource();
     void mediaPipelineServiceWillSucceedAllSourcesAttached();
@@ -85,6 +87,8 @@ public:
     void sendDestroySessionRequestAndReceiveResponse();
     void sendLoadRequestAndReceiveResponse();
     void sendAttachSourceRequestAndReceiveResponse();
+    void sendAttachVideoSourceRequestAndReceiveResponse();
+    void sendAttachDolbySourceRequestAndReceiveResponse();
     void sendAttachAudioSourceWithAdditionalDataRequestAndReceiveResponse();
     void sendAllSourcesAttachedRequestAndReceiveResponse();
     void sendPlayRequestAndReceiveResponse();

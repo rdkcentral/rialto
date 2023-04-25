@@ -121,12 +121,14 @@ TEST_F(AttachSourceTest, shouldAttachOpusWithAudioSpecificConf)
 
 TEST_F(AttachSourceTest, shouldAttachVideoSource)
 {
+    int width = 1920;
+    int height = 1080;
     gpointer memory = nullptr;
     GstBuffer buf;
     std::shared_ptr<std::vector<std::uint8_t>> codecData{
         std::make_shared<std::vector<std::uint8_t>>(std::vector<std::uint8_t>{'T', 'E', 'S', 'T'})};
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
-        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>("video/h264", true,
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>("video/h264", true, width, height,
                                                                              firebolt::rialto::SegmentAlignment::AU,
                                                                              firebolt::rialto::StreamFormat::AVC,
                                                                              codecData);
@@ -134,6 +136,8 @@ TEST_F(AttachSourceTest, shouldAttachVideoSource)
                                                                 m_glibWrapper, m_rdkGstreamerUtilsWrapper,
                                                                 m_gstPlayer,   source};
     EXPECT_CALL(*m_gstWrapper, gstCapsNewEmptySimple(StrEq("video/x-h264"))).WillOnce(Return(&m_gstCaps1));
+    EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleIntStub(&m_gstCaps1, StrEq("width"), G_TYPE_INT, width));
+    EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleIntStub(&m_gstCaps1, StrEq("height"), G_TYPE_INT, height));
     EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleStringStub(&m_gstCaps1, StrEq("alignment"), _, StrEq("au")));
     EXPECT_CALL(*m_glibWrapper, gMemdup(arrayMatcher(*codecData), codecData->size())).WillOnce(Return(memory));
     EXPECT_CALL(*m_gstWrapper, gstBufferNewWrapped(memory, codecData->size())).WillOnce(Return(&buf));
@@ -154,11 +158,12 @@ TEST_F(AttachSourceTest, shouldAttachVideoSource)
 
 TEST_F(AttachSourceTest, shouldAttachVideoSourceEmptyCodecData)
 {
+    int size = 0;
     gpointer memory = nullptr;
     GstBuffer buf;
     std::shared_ptr<std::vector<std::uint8_t>> codecData{std::make_shared<std::vector<std::uint8_t>>()};
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
-        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>("video/h264", true,
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>("video/h264", true, size, size,
                                                                              firebolt::rialto::SegmentAlignment::AU,
                                                                              firebolt::rialto::StreamFormat::AVC,
                                                                              codecData);
@@ -187,17 +192,21 @@ TEST_F(AttachSourceTest, shouldAttachVideoDolbyVisionSource)
 {
     gpointer memory = nullptr;
     int32_t dolbyVisionProfile = 5;
+    int width = 1920;
+    int height = 1080;
     GstBuffer buf;
     std::shared_ptr<std::vector<std::uint8_t>> codecData{
         std::make_shared<std::vector<std::uint8_t>>(std::vector<std::uint8_t>{'T', 'E', 'S', 'T'})};
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source = std::make_unique<
-        firebolt::rialto::IMediaPipeline::MediaSourceVideoDolbyVision>("video/h265", dolbyVisionProfile, true,
-                                                                       firebolt::rialto::SegmentAlignment::AU,
+        firebolt::rialto::IMediaPipeline::MediaSourceVideoDolbyVision>("video/h265", dolbyVisionProfile, true, width,
+                                                                       height, firebolt::rialto::SegmentAlignment::AU,
                                                                        firebolt::rialto::StreamFormat::AVC, codecData);
     firebolt::rialto::server::tasks::generic::AttachSource task{m_context,     m_gstWrapper,
                                                                 m_glibWrapper, m_rdkGstreamerUtilsWrapper,
                                                                 m_gstPlayer,   source};
     EXPECT_CALL(*m_gstWrapper, gstCapsNewEmptySimple(StrEq("video/x-h265"))).WillOnce(Return(&m_gstCaps1));
+    EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleIntStub(&m_gstCaps1, StrEq("width"), G_TYPE_INT, width));
+    EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleIntStub(&m_gstCaps1, StrEq("height"), G_TYPE_INT, height));
     EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleStringStub(&m_gstCaps1, StrEq("alignment"), _, StrEq("au")));
     EXPECT_CALL(*m_glibWrapper, gMemdup(arrayMatcher(*codecData), codecData->size())).WillOnce(Return(memory));
     EXPECT_CALL(*m_gstWrapper, gstBufferNewWrapped(memory, codecData->size())).WillOnce(Return(&buf));
