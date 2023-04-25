@@ -25,26 +25,24 @@
 
 namespace firebolt::rialto::server
 {
-class ControlServerInternalFactory : public IControlServerInternalFactory
+class ControlServerInternalAccessor : public IControlServerInternalAccessor
 {
 public:
-    ControlServerInternalFactory() = default;
-    ~ControlServerInternalFactory() override = default;
+    ~ControlServerInternalAccessor() override = default;
 
-    std::shared_ptr<IControl> createControl(std::weak_ptr<IControlClient> client) const override;
-    std::shared_ptr<IControlServerInternal>
-    createControlServerInternal(std::weak_ptr<IControlClientServerInternal> client) const override;
+    IControl &getControl() const override;
+    IControlServerInternal &getControlServerInternal() const override;
 };
 
 class ControlServerInternal : public IControlServerInternal
 {
 public:
-    ControlServerInternal(const std::shared_ptr<IControlClientServerInternal> &client,
-                          const std::shared_ptr<IMainThreadFactory> &mainThreadFactory);
+    ControlServerInternal(const std::shared_ptr<IMainThreadFactory> &mainThreadFactory);
     ~ControlServerInternal() override;
 
     void ack(uint32_t id) override;
-    void setApplicationState(const ApplicationState &state) override;
+    bool registerClient(IControlClient *client, ApplicationState &appState) override;
+    bool unregisterClient(IControlClient *client) override;
 
 private:
     std::shared_ptr<IControlClientServerInternal> m_client;

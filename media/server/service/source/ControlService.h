@@ -29,18 +29,18 @@ namespace firebolt::rialto::server::service
 class ControlService : public IControlService
 {
 public:
-    ControlService(const std::shared_ptr<IControlServerInternalFactory> &controlServerInternalFactory);
+    ControlService(IControlServerInternal &controlServerInternal);
     ~ControlService() override = default;
 
-    int addControl(const std::shared_ptr<IControlClientServerInternal> &client) override;
-    void removeControl(int controlId) override;
-    bool ack(int controlId, std::uint32_t id) override;
+    int registerClient(const std::shared_ptr<IControlClientServerInternal> &client) override;
+    void unregisterClient(int controlId) override;
+    bool ack(std::uint32_t id) override;
     void setApplicationState(const ApplicationState &state) override;
 
 private:
     ApplicationState m_currentState;
-    std::shared_ptr<IControlServerInternalFactory> m_controlServerInternalFactory;
-    std::map<int, std::shared_ptr<IControlServerInternal>> m_controls;
+    IControlServerInternal &m_controlServerInternal;
+    std::map<int, std::shared_ptr<IControlClientServerInternal>> m_clients;
 };
 } // namespace firebolt::rialto::server::service
 

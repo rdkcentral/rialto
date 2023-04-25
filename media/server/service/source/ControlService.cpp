@@ -31,46 +31,39 @@ int generateControlId()
 
 namespace firebolt::rialto::server::service
 {
-ControlService::ControlService(const std::shared_ptr<IControlServerInternalFactory> &controlServerInternalFactory)
-    : m_currentState{ApplicationState::UNKNOWN}, m_controlServerInternalFactory{controlServerInternalFactory}
+ControlService::ControlService(IControlServerInternal &controlServerInternal)
+    : m_currentState{ApplicationState::UNKNOWN}, m_controlServerInternal{controlServerInternal}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 }
 
-int ControlService::addControl(const std::shared_ptr<IControlClientServerInternal> &client)
+int ControlService::registerClient(const std::shared_ptr<IControlClientServerInternal> &client)
 {
     int id{generateControlId()};
     RIALTO_SERVER_LOG_INFO("Creating new Control with id: %d", id);
-    auto controlServerInternal{m_controlServerInternalFactory->createControlServerInternal(client)};
-    controlServerInternal->setApplicationState(m_currentState);
-    m_controls.emplace(id, controlServerInternal);
+    m_controlServerInternal.registerClient(client.get(), m_currentState);
+    m_clients.emplace(id, client);
     return id;
 }
 
-void ControlService::removeControl(int controlId)
+void ControlService::unregisterClient(int controlId)
 {
     RIALTO_SERVER_LOG_INFO("Removing Control with id: %d", controlId);
-    m_controls.erase(controlId);
+    m_clients.erase(controlId);
 }
 
-bool ControlService::ack(int controlId, std::uint32_t id)
+bool ControlService::ack(std::uint32_t id)
 {
-    auto controlIter = m_controls.find(controlId);
-    if (m_controls.end() == controlIter)
-    {
-        RIALTO_SERVER_LOG_ERROR("Control with id: %d not found", controlId);
-        return false;
-    }
-    controlIter->second->ack(id);
+    m_controlServerInternal.ack(id);
     return true;
 }
 
 void ControlService::setApplicationState(const ApplicationState &state)
 {
     m_currentState = state;
-    for (const auto &control : m_controls)
+    for (const auto &controlClient : m_clients)
     {
-        control.second->setApplicationState(state);
+        controlClient.second->notifyApplicationState(state);
     }
 }
 } // namespace firebolt::rialto::server::service

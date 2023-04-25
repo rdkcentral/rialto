@@ -32,8 +32,6 @@ public:
     virtual ~SharedMemoryManagerMock() = default;
 
     MOCK_METHOD(uint8_t *, getSharedMemoryBuffer, (), (override));
-    MOCK_METHOD(bool, registerClient, (IControlClient * client), (override));
-    MOCK_METHOD(bool, unregisterClient, (IControlClient * client), (override));
 };
 } // namespace firebolt::rialto::client
 

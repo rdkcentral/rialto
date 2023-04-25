@@ -70,7 +70,7 @@ ControlModuleService::~ControlModuleService()
 {
     for (const auto &controlId : m_controlIds)
     {
-        m_controlService.removeControl(controlId.second);
+        m_controlService.unregisterClient(controlId.second);
     }
 }
 
@@ -78,7 +78,7 @@ void ControlModuleService::clientConnected(const std::shared_ptr<::firebolt::ria
 {
     RIALTO_SERVER_LOG_INFO("Client Connected!");
     auto controlClient{std::make_shared<ControlClientServerInternal>(ipcClient)};
-    m_controlIds.emplace(ipcClient, m_controlService.addControl(controlClient));
+    m_controlIds.emplace(ipcClient, m_controlService.registerClient(controlClient));
     ipcClient->exportService(shared_from_this());
 }
 
@@ -88,7 +88,7 @@ void ControlModuleService::clientDisconnected(const std::shared_ptr<::firebolt::
     auto controlIdIter = m_controlIds.find(ipcClient);
     if (m_controlIds.end() != controlIdIter)
     {
-        m_controlService.removeControl(controlIdIter->second);
+        m_controlService.unregisterClient(controlIdIter->second);
         m_controlIds.erase(controlIdIter);
     }
 }
@@ -127,15 +127,7 @@ void ControlModuleService::ack(::google::protobuf::RpcController *controller,
         done->Run();
         return;
     }
-    auto controlIdIter = m_controlIds.find(ipcController->getClient());
-    if (m_controlIds.end() == controlIdIter)
-    {
-        RIALTO_SERVER_LOG_ERROR("Ack received for unknown client");
-        controller->SetFailed("Ack received for unknown client");
-        done->Run();
-        return;
-    }
-    if (!m_controlService.ack(controlIdIter->second, request->id()))
+    if (!m_controlService.ack(request->id()))
     {
         RIALTO_SERVER_LOG_ERROR("ack failed");
         controller->SetFailed("Operation failed");

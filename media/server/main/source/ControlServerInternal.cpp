@@ -20,71 +20,34 @@
 #include "ControlServerInternal.h"
 #include "RialtoServerLogging.h"
 
-namespace
-{
-const char *convertApplicationState(const firebolt::rialto::ApplicationState &appState)
-{
-    switch (appState)
-    {
-    case firebolt::rialto::ApplicationState::UNKNOWN:
-        return "UNKNOWN";
-    case firebolt::rialto::ApplicationState::RUNNING:
-        return "RUNNING";
-    case firebolt::rialto::ApplicationState::INACTIVE:
-        return "INACTIVE";
-    }
-    return "UNKNOWN";
-}
-} // namespace
-
 namespace firebolt::rialto
 {
-std::shared_ptr<IControlFactory> IControlFactory::createFactory()
+IControlAccessor &IControlAccessor::instance()
 {
-    return server::IControlServerInternalFactory::createFactory();
+    return server::IControlServerInternalAccessor::instance();
 }
 } // namespace firebolt::rialto
 
 namespace firebolt::rialto::server
 {
-std::shared_ptr<IControlServerInternalFactory> IControlServerInternalFactory::createFactory()
-try
+IControlServerInternalAccessor &IControlServerInternalAccessor::instance()
 {
-    return std::make_shared<ControlServerInternalFactory>();
-}
-catch (std::exception &e)
-{
-    RIALTO_SERVER_LOG_ERROR("ControlServerInternalFactory creation failed");
-    return nullptr;
+    static ControlServerInternalAccessor accessor;
+    return accessor;
 }
 
-std::shared_ptr<IControl> ControlServerInternalFactory::createControl(std::weak_ptr<IControlClient> client) const
+IControlServerInternal &ControlServerInternalAccessor::getControlServerInternal() const
 {
-    RIALTO_SERVER_LOG_ERROR("This function can't be used by rialto server. Please use createControlServerInternal");
-    return nullptr;
+    static ControlServerInternal controlServerInternal{server::IMainThreadFactory::createFactory()};
+    return controlServerInternal;
 }
 
-std::shared_ptr<IControlServerInternal>
-ControlServerInternalFactory::createControlServerInternal(std::weak_ptr<IControlClientServerInternal> client) const
-try
+IControl &ControlServerInternalAccessor::getControl() const
 {
-    std::shared_ptr<IControlClientServerInternal> controlClient{client.lock()};
-    if (!controlClient)
-    {
-        RIALTO_SERVER_LOG_ERROR("ControlServerInternal creation failed - can't lock client");
-        return nullptr;
-    }
-    return std::make_shared<ControlServerInternal>(controlClient, server::IMainThreadFactory::createFactory());
-}
-catch (const std::exception &e)
-{
-    RIALTO_SERVER_LOG_ERROR("ControlServerInternal creation failed");
-    return nullptr;
+    return server::IControlServerInternalAccessor::instance().getControlServerInternal();
 }
 
-ControlServerInternal::ControlServerInternal(const std::shared_ptr<IControlClientServerInternal> &client,
-                                             const std::shared_ptr<IMainThreadFactory> &mainThreadFactory)
-    : m_client{client}
+ControlServerInternal::ControlServerInternal(const std::shared_ptr<IMainThreadFactory> &mainThreadFactory)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
     m_mainThread = mainThreadFactory->getMainThread();
@@ -106,10 +69,13 @@ void ControlServerInternal::ack(uint32_t id)
     RIALTO_SERVER_LOG_WARN("Heartbeat functionality not implemented yet.");
 }
 
-void ControlServerInternal::setApplicationState(const ApplicationState &state)
+bool ControlServerInternal::registerClient(IControlClient *client, ApplicationState &appState)
 {
-    RIALTO_SERVER_LOG_INFO("Notify rialto clients about state changed to: %s", convertApplicationState(state));
-    auto task = [&]() { m_client->notifyApplicationState(state); };
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return false;
+}
+
+bool ControlServerInternal::unregisterClient(IControlClient *client)
+{
+    return false;
 }
 } // namespace firebolt::rialto::server

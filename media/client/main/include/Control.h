@@ -22,57 +22,105 @@
 
 #include "IControl.h"
 #include "IControlClient.h"
+#include "IControlIpc.h"
 #include "ISharedMemoryManager.h"
 #include <memory>
+#include <mutex>
+#include <set>
 #include <string>
 
 namespace firebolt::rialto::client
 {
 /**
- * @brief IControl factory class definition.
+ * @brief The definition of the ControlAccessor.
  */
-class ControlFactory : public IControlFactory
+class ControlAccessor : public ISharedMemoryManagerAccessor
 {
 public:
-    ControlFactory() = default;
-    ~ControlFactory() override = default;
-
-    std::shared_ptr<IControl> createControl(std::weak_ptr<IControlClient> client) const override;
-
-    /**
-     * @brief Create the generic rialto control factory object.
-     *
-     * @retval the generic rialto control factory instance or null on error.
-     */
-    static std::shared_ptr<ControlFactory> createFactory();
+    ~ControlAccessor() override = default;
+    IControl &getControl() const override;
+    ISharedMemoryManager &getSharedMemoryManager() const override;
 };
 
 /**
  * @brief The definition of the Control.
  */
-class Control : public IControl
+class Control : public ISharedMemoryManager, public IControlClient
 {
 public:
     /**
      * @brief The constructor.
      */
-    Control(std::weak_ptr<IControlClient> client, ISharedMemoryManager &sharedMemoryManager);
+    Control(const std::shared_ptr<IControlIpcFactory> &controlIpcFactory);
 
     /**
      * @brief Virtual destructor.
      */
     ~Control() override;
 
+    uint8_t *getSharedMemoryBuffer() override;
+    bool registerClient(IControlClient *client, ApplicationState &appState) override;
+    bool unregisterClient(IControlClient *client) override;
+
 private:
-    /**
-     * @brief The control client
-     */
-    std::weak_ptr<IControlClient> m_client;
+    void notifyApplicationState(ApplicationState state) override;
 
     /**
-     * @brief The rialto shared memory manager object.
+     * @brief Initalised the shared memory for media playback. Function not thread-safe
+     *
+     * @retval true on success, false otherwise.
      */
-    ISharedMemoryManager &m_sharedMemoryManager;
+    bool initSharedMemory();
+
+    /**
+     * @brief Terminates the shared memory. Function not thread-safe
+     */
+    void termSharedMemory();
+
+    /**
+     * @brief Coverts a ApplicationState to string.
+     *
+     * @param[in] state     : The application state.
+     *
+     * @retval the application state string, or "" on error.
+     */
+    std::string stateToString(ApplicationState state);
+
+private:
+    /**
+     * @brief The current application state
+     */
+    ApplicationState m_currentState;
+
+    /**
+     * @brief Mutex protection for class attributes.
+     */
+    std::mutex m_mutex;
+
+    /**
+     * @brief The shared memory file descriptor.
+     */
+    int32_t m_shmFd;
+
+    /**
+     * @brief The shared memory buffer pointer.
+     */
+    uint8_t *m_shmBuffer;
+
+    /**
+     * @brief The shared memory buffer length.
+     */
+    uint32_t m_shmBufferLen;
+
+    /**
+     * @brief The rialto control ipc factory.
+     */
+    std::shared_ptr<IControlIpc> m_controlIpc;
+
+    /**
+     * @brief Vector of clients to notify.
+     */
+    std::set<IControlClient *> m_clientVec;
 };
 
 }; // namespace firebolt::rialto::client

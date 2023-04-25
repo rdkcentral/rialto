@@ -39,29 +39,33 @@ namespace firebolt::rialto
 class IControl;
 
 /**
- * @brief IControl factory class, returns a concrete implementation of IControl
+ * @brief IControl accessor class definition.
  */
-class IControlFactory
+class IControlAccessor
 {
 public:
-    IControlFactory() = default;
-    virtual ~IControlFactory() = default;
+    virtual ~IControlAccessor() = default;
+    IControlAccessor(const IControlAccessor &) = delete;
+    IControlAccessor &operator=(const IControlAccessor &) = delete;
+    IControlAccessor(IControlAccessor &&) = delete;
+    IControlAccessor &operator=(IControlAccessor &&) = delete;
 
     /**
-     * @brief Creates a IControlFactory instance.
+     * @brief Get a IControlAccessor instance.
      *
-     * @retval the factory instance or null on error.
+     * @retval the control instance
      */
-    static std::shared_ptr<IControlFactory> createFactory();
+    static IControlAccessor &instance();
 
     /**
-     * @brief IControl factory method, returns a concrete implementation of IControl
+     * @brief Get Control object.
      *
-     * @param[in] client            : The Rialto control client.
-     *
-     * @retval the new IControl instance or null on error.
+     * @retval the reference to Control singleton object
      */
-    virtual std::shared_ptr<IControl> createControl(std::weak_ptr<IControlClient> client) const = 0;
+    virtual IControl &getControl() const = 0;
+
+protected:
+    IControlAccessor() = default;
 };
 
 /**
@@ -80,6 +84,25 @@ public:
     IControl &operator=(const IControl &) = delete;
     IControl(IControl &&) = delete;
     IControl &operator=(IControl &&) = delete;
+
+    /**
+     * @brief Register new IControlClient
+     *
+     * @param[in]  state    : Client object for callbacks
+     * @param[out] appState : Current application state
+     *
+     * @retval true on success, false otherwise.
+     */
+    virtual bool registerClient(IControlClient *client, ApplicationState &appState) = 0;
+
+    /**
+     * @brief Unregister a client.
+     *
+     * @param[in] client    : Client to unregister.
+     *
+     * @retval true on success, false otherwise.
+     */
+    virtual bool unregisterClient(IControlClient *client) = 0;
 };
 
 }; // namespace firebolt::rialto
