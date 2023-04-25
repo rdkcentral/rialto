@@ -48,7 +48,7 @@ try
     const char *numOfPreloadedServersEnvVar = getenv("RIALTO_PRELOADED_SERVERS");
     if (numOfPreloadedServersEnvVar)
     {
-        RIALTO_SERVER_MANAGER_LOG_INFO("Number of preloaded servers: %s", numOfPreloadedServersEnvVar);
+        fprintf(stderr, "Number of preloaded servers: %s", numOfPreloadedServersEnvVar);
         return std::stoi(std::string(numOfPreloadedServersEnvVar));
     }
     return 0;
