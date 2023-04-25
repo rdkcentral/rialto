@@ -39,11 +39,11 @@ class SessionServerApp : public ISessionServerApp
 {
 public:
     SessionServerApp(SessionServerAppManager &sessionServerAppManager, const std::list<std::string> &environmentVariables,
-                     const std::string &sessionServerPath, unsigned long long sessionServerStartupTimeoutMs);
+                     const std::string &sessionServerPath, std::chrono::milliseconds sessionServerStartupTimeout);
     SessionServerApp(const std::string &appName, const firebolt::rialto::common::SessionServerState &initialState,
                      const firebolt::rialto::common::AppConfig &appConfig,
                      SessionServerAppManager &sessionServerAppManager, const std::list<std::string> &environmentVariables,
-                     const std::string &sessionServerPath, unsigned long long sessionServerStartupTimeoutMs);
+                     const std::string &sessionServerPath, std::chrono::milliseconds sessionServerStartupTimeout);
     virtual ~SessionServerApp();
 
     bool launch() override;

@@ -25,9 +25,9 @@ namespace rialto::servermanager::service
 {
 ServiceContext::ServiceContext(const std::shared_ptr<IStateObserver> &stateObserver,
                                const std::list<std::string> &environmentVariables, const std::string &sessionServerPath,
-                               unsigned long long sessionServerStartupTimeoutMs)
+                               std::chrono::milliseconds sessionServerStartupTimeout)
     : m_sessionServerAppManager{common::createSessionServerAppManager(m_ipcController, stateObserver, environmentVariables,
-                                                                      sessionServerPath, sessionServerStartupTimeoutMs)},
+                                                                      sessionServerPath, sessionServerStartupTimeout)},
       m_ipcController{ipc::create(m_sessionServerAppManager)}
 {
 }

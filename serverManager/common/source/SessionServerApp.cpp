@@ -75,10 +75,11 @@ namespace rialto::servermanager::common
 {
 SessionServerApp::SessionServerApp(SessionServerAppManager &sessionServerAppManager,
                                    const std::list<std::string> &environmentVariables,
-                                   const std::string &sessionServerPath, unsigned long long sessionServerStartupTimeoutMs)
+                                   const std::string &sessionServerPath,
+                                   std::chrono::milliseconds sessionServerStartupTimeout)
     : m_kServerId{generateServerId()}, m_socks{-1, -1}, m_sessionServerAppManager{sessionServerAppManager}, m_pid{-1},
       m_isPreloaded{true}, m_kSessionServerPath{sessionServerPath}, m_kSessionServerStartupTimeout{
-                                                                        sessionServerStartupTimeoutMs}
+                                                                        sessionServerStartupTimeout}
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("Creating preloaded SessionServerApp with serverId: %d", m_kServerId);
     std::transform(environmentVariables.begin(), environmentVariables.end(), std::back_inserter(m_environmentVariables),
@@ -91,11 +92,12 @@ SessionServerApp::SessionServerApp(const std::string &appName,
                                    const firebolt::rialto::common::AppConfig &appConfig,
                                    SessionServerAppManager &sessionServerAppManager,
                                    const std::list<std::string> &environmentVariables,
-                                   const std::string &sessionServerPath, unsigned long long sessionServerStartupTimeoutMs)
+                                   const std::string &sessionServerPath,
+                                   std::chrono::milliseconds sessionServerStartupTimeout)
     : m_kServerId{generateServerId()}, m_appName{appName}, m_initialState{initialState},
       m_sessionManagementSocketName{getSessionManagementSocketPath(appConfig)}, m_socks{-1, -1},
       m_sessionServerAppManager{sessionServerAppManager}, m_pid{-1}, m_isPreloaded{false},
-      m_kSessionServerPath{sessionServerPath}, m_kSessionServerStartupTimeout{sessionServerStartupTimeoutMs}
+      m_kSessionServerPath{sessionServerPath}, m_kSessionServerStartupTimeout{sessionServerStartupTimeout}
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("Creating SessionServerApp for app: %s with appId: %d", appName.c_str(), m_kServerId);
     std::transform(environmentVariables.begin(), environmentVariables.end(), std::back_inserter(m_environmentVariables),

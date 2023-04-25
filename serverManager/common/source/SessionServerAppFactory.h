@@ -21,6 +21,7 @@
 #define RIALTO_SERVERMANAGER_COMMON_SESSION_SERVER_APP_FACTORY_H_
 
 #include "ISessionServerAppFactory.h"
+#include <chrono>
 #include <list>
 #include <memory>
 #include <string>
@@ -32,7 +33,7 @@ class SessionServerAppFactory : public ISessionServerAppFactory
 public:
     explicit SessionServerAppFactory(const std::list<std::string> &environmentVariables,
                                      const std::string &sessionServerPath,
-                                     unsigned long long sessionServerStartupTimeoutMs);
+                                     std::chrono::milliseconds sessionServerStartupTimeout);
     ~SessionServerAppFactory() override = default;
 
     std::unique_ptr<ISessionServerApp> create(const std::string &appName,
@@ -44,7 +45,7 @@ public:
 private:
     const std::list<std::string> m_kEnvironmentVariables;
     const std::string m_kSessionServerPath;
-    const unsigned long long m_kSessionServerStartupTimeoutMs;
+    const std::chrono::milliseconds m_kSessionServerStartupTimeout;
 };
 } // namespace rialto::servermanager::common
 

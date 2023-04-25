@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_COMMON_SESSION_SERVER_COMMON_H_
 #define FIREBOLT_RIALTO_COMMON_SESSION_SERVER_COMMON_H_
 
+#include <chrono>
 #include <list>
 #include <stdint.h>
 #include <string>
@@ -77,7 +78,7 @@ struct ServerManagerConfig
                                                                RialtoSessionServer */
     int numOfPreloadedServers{0};                           /* Number of preloaded servers */
     std::string sessionServerPath{"/usr/bin/RialtoServer"}; /* Location of Rialto Session Server binary */
-    unsigned long long sessionServerStartupTimeoutMs{
+    std::chrono::milliseconds sessionServerStartupTimeout{
         0}; /* Custom session server startup timeout. If 0 - timeout disabled. */
 };
 

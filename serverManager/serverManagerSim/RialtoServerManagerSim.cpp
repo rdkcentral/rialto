@@ -35,15 +35,15 @@ std::string getSessionServerPath()
     return "/usr/bin/RialtoServer";
 }
 
-unsigned long long getStartupTimeout()
+std::chrono::milliseconds getStartupTimeout()
 {
     const char *customTimeout = getenv("RIALTO_SESSION_SERVER_STARTUP_TIMEOUT_MS");
-    unsigned long long timeout{0};
+    std::chrono::milliseconds timeout{0};
     if (customTimeout)
     {
         try
         {
-            timeout = std::stoull(customTimeout);
+            timeout = std::chrono::milliseconds{std::stoull(customTimeout)};
             fprintf(stderr, "Using custom SessionServer startup timeout: %sms", customTimeout);
         }
         catch (const std::exception &e)
