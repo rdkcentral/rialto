@@ -42,15 +42,15 @@ MATCHER_P8(attachSourceRequestMatcher2, sessionId, mimeType, numberOfChannels, s
     return ((request->session_id() == sessionId) &&
             (static_cast<const unsigned int>(request->config_type()) ==
              static_cast<const unsigned int>(SourceConfigType::AUDIO)) &&
-            (request->mime_type() == mimeType) &&
-            (request->has_audio_config()) && (request->audio_config().number_of_channels() == numberOfChannels) &&
+            (request->mime_type() == mimeType) && (request->has_audio_config()) &&
+            (request->audio_config().number_of_channels() == numberOfChannels) &&
             (request->audio_config().sample_rate() == sampleRate) &&
             (request->audio_config().codec_specific_config() == codecSpecificConfig) &&
             (request->segment_alignment() == alignment) && (request->stream_format() == streamFormat) && codecDataEqual);
 }
 
-MATCHER_P8(attachSourceRequestMatcherDolby, sessionId, mimeType, dolbyVisionProfile, width, height, alignment, streamFormat, codecData,
-           "")
+MATCHER_P8(attachSourceRequestMatcherDolby, sessionId, mimeType, dolbyVisionProfile, width, height, alignment,
+           streamFormat, codecData, "")
 {
     const ::firebolt::rialto::AttachSourceRequest *request =
         dynamic_cast<const ::firebolt::rialto::AttachSourceRequest *>(arg);
@@ -152,7 +152,6 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachSourceSuccess)
 
     EXPECT_EQ(m_mediaPipelineIpc->attachSource(mediaSource, m_id), true);
 }
-
 
 /**
  * Test that attachSource can be called successfully with no drm.
@@ -266,10 +265,8 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachDolbyVisionSourceWithSucces
         .WillOnce(WithArgs<3>(Invoke(this, &RialtoClientMediaPipelineIpcSourceTest::setAttachSourceResponse)));
 
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
-        std::make_unique<IMediaPipeline::MediaSourceVideoDolbyVision>(m_kMimeType, dolbyVisionProfile, true,
-                                                                      width,
-                                                                      height, alignment,
-                                                                      streamFormat, codecData);
+        std::make_unique<IMediaPipeline::MediaSourceVideoDolbyVision>(m_kMimeType, dolbyVisionProfile, true, width,
+                                                                      height, alignment, streamFormat, codecData);
 
     EXPECT_EQ(m_mediaPipelineIpc->attachSource(mediaSource, m_id), true);
 }

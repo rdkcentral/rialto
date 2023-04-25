@@ -353,8 +353,8 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
     else if (configType == firebolt::rialto::SourceConfigType::VIDEO)
     {
         mediaSource =
-            std::make_unique<IMediaPipeline::MediaSourceVideo>(request->mime_type().c_str(), hasDrm,
-                                                               request->width(), request->height(),
+            std::make_unique<IMediaPipeline::MediaSourceVideo>(request->mime_type().c_str(), hasDrm, request->width(),
+                                                               request->height(),
                                                                convertSegmentAlignment(request->segment_alignment()),
                                                                convertStreamFormat(request->stream_format()), codecData);
     }

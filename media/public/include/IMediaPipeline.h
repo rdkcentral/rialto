@@ -309,7 +309,7 @@ public:
         {
         }
 
-        private:
+    private:
         /**
          * @brief The video width
          */

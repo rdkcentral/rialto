@@ -466,7 +466,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldCancelAudioUnderflow)
         {
             context.audioBuffers.emplace_back(&buffer);
             context.audioNeedData = true;
-            context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].appSrc  = GST_ELEMENT(&audioSrc);
+            context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].appSrc = GST_ELEMENT(&audioSrc);
             context.audioUnderflowOccured = true;
         });
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(_, &buffer));
@@ -485,7 +485,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldNotCancelAudioUnderflowWhenVideoUnderf
         {
             context.audioBuffers.emplace_back(&buffer);
             context.audioNeedData = true;
-            context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].appSrc  = GST_ELEMENT(&audioSrc);
+            context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].appSrc = GST_ELEMENT(&audioSrc);
             context.audioUnderflowOccured = true;
             context.videoUnderflowOccured = true;
         });
@@ -528,7 +528,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldAttachVideoData)
         {
             context.videoBuffers.emplace_back(&buffer);
             context.videoNeedData = true;
-            context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].appSrc  = GST_ELEMENT(&videoSrc);
+            context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].appSrc = GST_ELEMENT(&videoSrc);
         });
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(_, &buffer));
     m_sut->attachVideoData();
@@ -544,7 +544,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldCancelVideoUnderflow)
         {
             context.videoBuffers.emplace_back(&buffer);
             context.videoNeedData = true;
-            context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].appSrc  = GST_ELEMENT(&videoSrc);
+            context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].appSrc = GST_ELEMENT(&videoSrc);
             context.videoUnderflowOccured = true;
         });
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(_, &buffer));
@@ -563,7 +563,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldNotCancelVideoUnderflowWhenAudioUnderf
         {
             context.videoBuffers.emplace_back(&buffer);
             context.videoNeedData = true;
-            context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].appSrc  = GST_ELEMENT(&videoSrc);
+            context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].appSrc = GST_ELEMENT(&videoSrc);
             context.audioUnderflowOccured = true;
             context.videoUnderflowOccured = true;
         });
@@ -584,8 +584,8 @@ TEST_F(GstGenericPlayerPrivateTest, shouldAttachAudioAndVideoData)
             context.videoBuffers.emplace_back(&videoBuffer);
             context.audioNeedData = true;
             context.videoNeedData = true;
-            context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].appSrc  = GST_ELEMENT(&audioSrc);
-            context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].appSrc  = GST_ELEMENT(&videoSrc);
+            context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].appSrc = GST_ELEMENT(&audioSrc);
+            context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].appSrc = GST_ELEMENT(&videoSrc);
         });
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(_, &audioBuffer));
     m_sut->attachAudioData();
@@ -609,8 +609,8 @@ TEST_F(GstGenericPlayerPrivateTest, shouldCancelAudioAndVideoUnderflow)
             context.videoBuffers.emplace_back(&videoBuffer);
             context.audioNeedData = true;
             context.videoNeedData = true;
-            context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].appSrc  = GST_ELEMENT(&audioSrc);
-            context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].appSrc  = GST_ELEMENT(&videoSrc);
+            context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].appSrc = GST_ELEMENT(&audioSrc);
+            context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].appSrc = GST_ELEMENT(&videoSrc);
             context.audioUnderflowOccured = true;
             context.videoUnderflowOccured = true;
         });
@@ -632,7 +632,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldUpdateAudioCaps)
     gpointer memory{nullptr};
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     modifyContext([&](GenericPlayerContext &context)
-                  { context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].appSrc  = GST_ELEMENT(&audioSrc); });
+                  { context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].appSrc = GST_ELEMENT(&audioSrc); });
 
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(GST_APP_SRC(&audioSrc))).WillOnce(Return(&dummyCaps1));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsCopy(&dummyCaps1)).WillOnce(Return(&dummyCaps2));
