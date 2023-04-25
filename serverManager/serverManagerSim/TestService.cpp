@@ -38,9 +38,9 @@ void handleRequest(mg_connection *conn, const mg_request_info *request_info, voi
 
 namespace rialto::servermanager
 {
-TestService::TestService(const std::list<std::string> &environmentVariables)
+TestService::TestService(const firebolt::rialto::common::ServerManagerConfig &config)
     : m_stateObserver{std::make_shared<StateObserver>()},
-      m_serverManagerService{rialto::servermanager::service::create(m_stateObserver, environmentVariables)},
+      m_serverManagerService{rialto::servermanager::service::create(m_stateObserver, config)},
       m_mgServerCtx{mg_start()}, m_isStopped{false}
 {
     mg_set_option(m_mgServerCtx, "ports", SERVER_URL);

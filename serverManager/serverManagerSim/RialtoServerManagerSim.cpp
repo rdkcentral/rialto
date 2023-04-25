@@ -22,6 +22,43 @@
 #include <stdio.h>
 #include <string>
 
+namespace
+{
+std::list<std::string> getEnvironmentVariables()
+{
+    std::list<std::string> environmentVariables;
+    const char *sessionServerEnvVars = getenv("SESSION_SERVER_ENV_VARS");
+    if (sessionServerEnvVars)
+    {
+        std::string envVarsStr{sessionServerEnvVars};
+        size_t pos = 0;
+        while ((pos = envVarsStr.find(";")) != std::string::npos)
+        {
+            environmentVariables.emplace_back(envVarsStr.substr(0, pos));
+            envVarsStr.erase(0, pos + 1);
+        }
+        environmentVariables.emplace_back(envVarsStr);
+    }
+    return environmentVariables;
+}
+
+int getNumberOfPreloadedServers()
+try
+{
+    const char *numOfPreloadedServersEnvVar = getenv("RIALTO_PRELOADED_SERVERS");
+    if (numOfPreloadedServersEnvVar)
+    {
+        RIALTO_SERVER_MANAGER_LOG_INFO("Number of preloaded servers: %s", numOfPreloadedServersEnvVar);
+        return std::stoi(std::string(numOfPreloadedServersEnvVar));
+    }
+    return 0;
+}
+catch (std::exception &e)
+{
+    return 0;
+}
+} // namespace
+
 int main(int argc, char *argv[])
 {
     fprintf(stderr, "===========================================================================\n");
@@ -57,21 +94,8 @@ int main(int argc, char *argv[])
     fprintf(stderr, "==                                                                       ==\n");
     fprintf(stderr, "===========================================================================\n");
 
-    std::list<std::string> environmentVariables;
-    const char *sessionServerEnvVars = getenv("SESSION_SERVER_ENV_VARS");
-    if (sessionServerEnvVars)
-    {
-        std::string envVarsStr{sessionServerEnvVars};
-        size_t pos = 0;
-        while ((pos = envVarsStr.find(";")) != std::string::npos)
-        {
-            environmentVariables.emplace_back(envVarsStr.substr(0, pos));
-            envVarsStr.erase(0, pos + 1);
-        }
-        environmentVariables.emplace_back(envVarsStr);
-    }
-
-    rialto::servermanager::TestService service{environmentVariables};
+    firebolt::rialto::common::ServerManagerConfig config{getEnvironmentVariables(), getNumberOfPreloadedServers()};
+    rialto::servermanager::TestService service{config};
     service.run();
 
     return 0;

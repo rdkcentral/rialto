@@ -35,7 +35,7 @@ namespace rialto::servermanager
 class TestService
 {
 public:
-    explicit TestService(const std::list<std::string> &environmentVariables);
+    explicit TestService(const firebolt::rialto::common::ServerManagerConfig &config);
     ~TestService();
 
     void run();
