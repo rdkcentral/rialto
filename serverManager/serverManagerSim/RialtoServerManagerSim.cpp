@@ -79,7 +79,7 @@ try
     if (numOfPreloadedServersEnvVar)
     {
         fprintf(stderr, "Number of preloaded servers: %s", numOfPreloadedServersEnvVar);
-        return std::stou(std::string(numOfPreloadedServersEnvVar));
+        return std::stoi(std::string(numOfPreloadedServersEnvVar));
     }
     return 0;
 }
