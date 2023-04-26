@@ -47,7 +47,7 @@ namespace
 const std::string kAppName{"YouTube"};
 const std::string kEmptyAppName{""};
 constexpr int kServerId{3};
-constexpr int kNumOfPreloadedServers{1};
+constexpr unsigned kNumOfPreloadedServers{1};
 const int kAppMgmtSocket{0};
 const std::string kSessionServerSocketName{getenv("RIALTO_SOCKET_PATH")};
 constexpr int kMaxSessions{2};

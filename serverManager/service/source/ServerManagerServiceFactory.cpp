@@ -28,7 +28,9 @@ std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserv
                                               const firebolt::rialto::common::ServerManagerConfig &config)
 {
     return std::make_unique<ServerManagerService>(std::make_unique<ServiceContext>(stateObserver,
-                                                                                   config.sessionServerEnvVars),
+                                                                                   config.sessionServerEnvVars,
+                                                                                   config.sessionServerPath,
+                                                                                   config.sessionServerStartupTimeout),
                                                   config.numOfPreloadedServers);
 }
 } // namespace rialto::servermanager::service

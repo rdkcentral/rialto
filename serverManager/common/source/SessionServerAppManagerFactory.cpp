@@ -28,10 +28,13 @@ namespace rialto::servermanager::common
 std::unique_ptr<ISessionServerAppManager>
 createSessionServerAppManager(std::unique_ptr<ipc::IController> &ipc,
                               const std::shared_ptr<service::IStateObserver> &stateObserver,
-                              const std::list<std::string> &environmentVariables)
+                              const std::list<std::string> &environmentVariables, const std::string &sessionServerPath,
+                              std::chrono::milliseconds sessionServerStartupTimeout)
 {
     return std::make_unique<SessionServerAppManager>(ipc, stateObserver,
-                                                     std::make_unique<SessionServerAppFactory>(environmentVariables),
+                                                     std::make_unique<SessionServerAppFactory>(environmentVariables,
+                                                                                               sessionServerPath,
+                                                                                               sessionServerStartupTimeout),
                                                      firebolt::rialto::common::IEventThreadFactory::createFactory());
 }
 } // namespace rialto::servermanager::common

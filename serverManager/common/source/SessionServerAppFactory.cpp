@@ -24,8 +24,11 @@
 
 namespace rialto::servermanager::common
 {
-SessionServerAppFactory::SessionServerAppFactory(const std::list<std::string> &environmentVariables)
-    : m_kEnvironmentVariables{environmentVariables}
+SessionServerAppFactory::SessionServerAppFactory(const std::list<std::string> &environmentVariables,
+                                                 const std::string &sessionServerPath,
+                                                 std::chrono::milliseconds sessionServerStartupTimeout)
+    : m_kEnvironmentVariables{environmentVariables}, m_kSessionServerPath{sessionServerPath},
+      m_kSessionServerStartupTimeout{sessionServerStartupTimeout}
 {
 }
 
@@ -34,11 +37,13 @@ std::unique_ptr<ISessionServerApp> SessionServerAppFactory::create(
     const firebolt::rialto::common::AppConfig &appConfig, SessionServerAppManager &sessionServerAppManager) const
 {
     return std::make_unique<SessionServerApp>(appName, initialState, appConfig, sessionServerAppManager,
-                                              m_kEnvironmentVariables);
+                                              m_kEnvironmentVariables, m_kSessionServerPath,
+                                              m_kSessionServerStartupTimeout);
 }
 
 std::unique_ptr<ISessionServerApp> SessionServerAppFactory::create(SessionServerAppManager &sessionServerAppManager) const
 {
-    return std::make_unique<SessionServerApp>(sessionServerAppManager, m_kEnvironmentVariables);
+    return std::make_unique<SessionServerApp>(sessionServerAppManager, m_kEnvironmentVariables, m_kSessionServerPath,
+                                              m_kSessionServerStartupTimeout);
 }
 } // namespace rialto::servermanager::common

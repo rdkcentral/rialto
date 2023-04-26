@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_COMMON_SESSION_SERVER_COMMON_H_
 #define FIREBOLT_RIALTO_COMMON_SESSION_SERVER_COMMON_H_
 
+#include <chrono>
 #include <list>
 #include <stdint.h>
 #include <string>
@@ -73,9 +74,12 @@ struct AppConfig
  */
 struct ServerManagerConfig
 {
-    std::list<std::string> sessionServerEnvVars{}; /* List of environment variables, that need to be passed to
-                                                      RialtoSessionServer */
-    int numOfPreloadedServers{0};                  /* Number of preloaded servers */
+    std::list<std::string> sessionServerEnvVars{};          /* List of environment variables, that need to be passed to
+                                                               RialtoSessionServer */
+    unsigned numOfPreloadedServers{0};                      /* Number of preloaded servers */
+    std::string sessionServerPath{"/usr/bin/RialtoServer"}; /* Location of Rialto Session Server binary */
+    std::chrono::milliseconds sessionServerStartupTimeout{
+        0}; /* Custom session server startup timeout. If 0 - timeout disabled. */
 };
 
 } // namespace firebolt::rialto::common
