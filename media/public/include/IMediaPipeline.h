@@ -114,7 +114,7 @@ public:
         std::string getMimeType() const { return m_mimeType; }
 
         /**
-         * @brief Return the if has drm
+         * @brief Return if source has drm
          */
         bool getHasDrm() const { return m_hasDrm; }
 
