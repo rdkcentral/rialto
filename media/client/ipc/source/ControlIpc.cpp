@@ -314,7 +314,14 @@ bool ControlIpc::subscribeToEvents()
 
 void ControlIpc::onApplicationStateUpdated(const std::shared_ptr<firebolt::rialto::ApplicationStateChangeEvent> &event)
 {
-    m_controlClient->notifyApplicationState(convertApplicationState(event->application_state()));
+    if (m_controlClient)
+    {
+        m_controlClient->notifyApplicationState(convertApplicationState(event->application_state()));
+    }
+    else
+    {
+        RIALTO_CLIENT_LOG_WARN("Control client is null!");
+    }
 }
 
 void ControlIpc::onPing(const std::shared_ptr<firebolt::rialto::PingEvent> &event)
