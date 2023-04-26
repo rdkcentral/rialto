@@ -32,7 +32,6 @@ add_library (
         ${PROTO_SRCS}
         ${PROTO_HEADERS}
 
-        source/IpcClient.cpp
         source/IpcModule.cpp
         source/MediaPipelineIpc.cpp
         source/MediaPipelineCapabilitiesIpc.cpp
