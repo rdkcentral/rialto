@@ -25,6 +25,7 @@
 #include "SessionServerAppManager.h"
 #include "SessionServerCommon.h"
 #include <array>
+#include <chrono>
 #include <list>
 #include <memory>
 #include <mutex>
@@ -37,12 +38,12 @@ namespace rialto::servermanager::common
 class SessionServerApp : public ISessionServerApp
 {
 public:
-    SessionServerApp(SessionServerAppManager &sessionServerAppManager,
-                     const std::list<std::string> &environmentVariables);
+    SessionServerApp(SessionServerAppManager &sessionServerAppManager, const std::list<std::string> &environmentVariables,
+                     const std::string &sessionServerPath, std::chrono::milliseconds sessionServerStartupTimeout);
     SessionServerApp(const std::string &appName, const firebolt::rialto::common::SessionServerState &initialState,
                      const firebolt::rialto::common::AppConfig &appConfig,
-                     SessionServerAppManager &sessionServerAppManager,
-                     const std::list<std::string> &environmentVariables);
+                     SessionServerAppManager &sessionServerAppManager, const std::list<std::string> &environmentVariables,
+                     const std::string &sessionServerPath, std::chrono::milliseconds sessionServerStartupTimeout);
     virtual ~SessionServerApp();
 
     bool launch() override;
@@ -75,6 +76,8 @@ private:
     SessionServerAppManager &m_sessionServerAppManager;
     pid_t m_pid;
     bool m_isPreloaded;
+    const std::string m_kSessionServerPath;
+    const std::chrono::milliseconds m_kSessionServerStartupTimeout;
     std::vector<char *> m_environmentVariables;
     mutable std::mutex m_timerMutex;
     std::unique_ptr<firebolt::rialto::common::ITimer> m_startupTimer;

@@ -30,7 +30,7 @@ namespace rialto::servermanager::service
 class ServerManagerService : public IServerManagerService
 {
 public:
-    explicit ServerManagerService(std::unique_ptr<IServiceContext> &&context, int numOfPreloadedServers);
+    explicit ServerManagerService(std::unique_ptr<IServiceContext> &&context, unsigned numOfPreloadedServers);
     virtual ~ServerManagerService();
     ServerManagerService(const ServerManagerService &) = delete;
     ServerManagerService(ServerManagerService &&) = delete;

@@ -45,7 +45,7 @@ public:
     SessionServerAppManager &operator=(const SessionServerAppManager &) = delete;
     SessionServerAppManager &operator=(SessionServerAppManager &&) = delete;
 
-    void preloadSessionServers(int numOfPreloadedServers) override;
+    void preloadSessionServers(unsigned numOfPreloadedServers) override;
     bool initiateApplication(const std::string &appName, const firebolt::rialto::common::SessionServerState &state,
                              const firebolt::rialto::common::AppConfig &appConfig) override;
     bool setSessionServerState(const std::string &appName,

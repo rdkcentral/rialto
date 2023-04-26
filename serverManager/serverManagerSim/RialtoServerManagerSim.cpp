@@ -24,6 +24,36 @@
 
 namespace
 {
+std::string getSessionServerPath()
+{
+    const char *customPath = getenv("RIALTO_SESSION_SERVER_PATH");
+    if (customPath)
+    {
+        fprintf(stderr, "Using custom SessionServer path: %s", customPath);
+        return std::string(customPath);
+    }
+    return "/usr/bin/RialtoServer";
+}
+
+std::chrono::milliseconds getStartupTimeout()
+{
+    const char *customTimeout = getenv("RIALTO_SESSION_SERVER_STARTUP_TIMEOUT_MS");
+    std::chrono::milliseconds timeout{0};
+    if (customTimeout)
+    {
+        try
+        {
+            timeout = std::chrono::milliseconds{std::stoull(customTimeout)};
+            fprintf(stderr, "Using custom SessionServer startup timeout: %sms", customTimeout);
+        }
+        catch (const std::exception &e)
+        {
+            fprintf(stderr, "Custom SessionServer startup timeout invalid, ignoring: %s", customTimeout);
+        }
+    }
+    return timeout;
+}
+
 std::list<std::string> getEnvironmentVariables()
 {
     std::list<std::string> environmentVariables;
@@ -42,7 +72,7 @@ std::list<std::string> getEnvironmentVariables()
     return environmentVariables;
 }
 
-int getNumberOfPreloadedServers()
+unsigned getNumberOfPreloadedServers()
 try
 {
     const char *numOfPreloadedServersEnvVar = getenv("RIALTO_PRELOADED_SERVERS");
@@ -94,7 +124,8 @@ int main(int argc, char *argv[])
     fprintf(stderr, "==                                                                       ==\n");
     fprintf(stderr, "===========================================================================\n");
 
-    firebolt::rialto::common::ServerManagerConfig config{getEnvironmentVariables(), getNumberOfPreloadedServers()};
+    firebolt::rialto::common::ServerManagerConfig config{getEnvironmentVariables(), getNumberOfPreloadedServers(),
+                                                         getSessionServerPath(), getStartupTimeout()};
     rialto::servermanager::TestService service{config};
     service.run();
 
