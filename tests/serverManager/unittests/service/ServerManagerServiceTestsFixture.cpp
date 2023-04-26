@@ -31,7 +31,7 @@ using testing::ReturnRef;
 
 namespace
 {
-constexpr int kNumOfPreloadedServers{2};
+constexpr unsigned kNumOfPreloadedServers{2};
 } // namespace
 
 ServerManagerServiceTests::ServerManagerServiceTests()

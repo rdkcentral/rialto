@@ -48,12 +48,12 @@ SessionServerAppManager::~SessionServerAppManager()
     m_eventThread.reset();
 }
 
-void SessionServerAppManager::preloadSessionServers(int numOfPreloadedServers)
+void SessionServerAppManager::preloadSessionServers(unsigned numOfPreloadedServers)
 {
     m_eventThread->add(
         [this, numOfPreloadedServers]()
         {
-            for (int i = 0; i < numOfPreloadedServers; ++i)
+            for (unsigned i = 0; i < numOfPreloadedServers; ++i)
             {
                 connectSessionServer(preloadSessionServer());
             }

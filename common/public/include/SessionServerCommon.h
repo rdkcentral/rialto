@@ -76,7 +76,7 @@ struct ServerManagerConfig
 {
     std::list<std::string> sessionServerEnvVars{};          /* List of environment variables, that need to be passed to
                                                                RialtoSessionServer */
-    int numOfPreloadedServers{0};                           /* Number of preloaded servers */
+    unsigned numOfPreloadedServers{0};                      /* Number of preloaded servers */
     std::string sessionServerPath{"/usr/bin/RialtoServer"}; /* Location of Rialto Session Server binary */
     std::chrono::milliseconds sessionServerStartupTimeout{
         0}; /* Custom session server startup timeout. If 0 - timeout disabled. */

@@ -72,14 +72,14 @@ std::list<std::string> getEnvironmentVariables()
     return environmentVariables;
 }
 
-int getNumberOfPreloadedServers()
+unsigned getNumberOfPreloadedServers()
 try
 {
     const char *numOfPreloadedServersEnvVar = getenv("RIALTO_PRELOADED_SERVERS");
     if (numOfPreloadedServersEnvVar)
     {
         fprintf(stderr, "Number of preloaded servers: %s", numOfPreloadedServersEnvVar);
-        return std::stoi(std::string(numOfPreloadedServersEnvVar));
+        return std::stou(std::string(numOfPreloadedServersEnvVar));
     }
     return 0;
 }
