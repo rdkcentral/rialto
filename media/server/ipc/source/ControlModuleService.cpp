@@ -68,33 +68,28 @@ ControlModuleService::ControlModuleService(service::IPlaybackService &playbackSe
 
 ControlModuleService::~ControlModuleService()
 {
-    for (const auto &controlIds : m_controlIds)
+    for (const auto &controlId : m_controlIds)
     {
-        for (int id : controlIds.second)
-        {
-            m_controlService.unregisterClient(id);
-        }
+        m_controlService.unregisterClient(controlId.second);
     }
 }
 
 void ControlModuleService::clientConnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient)
 {
     RIALTO_SERVER_LOG_INFO("Client Connected!");
-    m_controlIds.emplace(ipcClient, std::set<int>());
+    auto controlClient{std::make_shared<ControlClientServerInternal>(ipcClient)};
+    m_controlIds.emplace(ipcClient, m_controlService.registerClient(controlClient));
     ipcClient->exportService(shared_from_this());
 }
 
 void ControlModuleService::clientDisconnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient)
 {
     RIALTO_SERVER_LOG_INFO("Client disconnected!");
-    auto controlIdsIter = m_controlIds.find(ipcClient);
-    if (m_controlIds.end() != controlIdsIter)
+    auto controlIdIter = m_controlIds.find(ipcClient);
+    if (m_controlIds.end() != controlIdIter)
     {
-        for (int id : controlIdsIter->second)
-        {
-            m_controlService.unregisterClient(id);
-        }
-        m_controlIds.erase(controlIdsIter);
+        m_controlService.unregisterClient(controlIdIter->second);
+        m_controlIds.erase(controlIdIter);
     }
 }
 
@@ -116,26 +111,6 @@ void ControlModuleService::getSharedMemory(::google::protobuf::RpcController *co
     }
     response->set_fd(fd);
     response->set_size(size);
-    done->Run();
-}
-
-void ControlModuleService::registerClient(::google::protobuf::RpcController *controller,
-                                          const ::firebolt::rialto::RegisterClientRequest *request,
-                                          ::firebolt::rialto::RegisterClientResponse *response,
-                                          ::google::protobuf::Closure *done)
-{
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-    auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
-    if (!ipcController)
-    {
-        RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
-        controller->SetFailed("ipc library provided incompatible controller object");
-        done->Run();
-        return;
-    }
-    auto ipcClient = ipcController->getClient();
-    auto controlClient{std::make_shared<ControlClientServerInternal>(ipcClient)};
-    m_controlIds[ipcClient].insert(m_controlService.registerClient(controlClient));
     done->Run();
 }
 

@@ -71,14 +71,6 @@ void ControlServerInternal::ack(uint32_t id)
 
 bool ControlServerInternal::registerClient(IControlClient *client, ApplicationState &appState)
 {
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-    if (client)
-    {
-        RIALTO_SERVER_LOG_DEBUG("Sending notification, state: %s",
-                                appState == ApplicationState::RUNNING ? "Running" : "Not running");
-        client->notifyApplicationState(appState);
-        return true;
-    }
     return false;
 }
 

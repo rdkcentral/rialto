@@ -45,14 +45,6 @@ message GetSharedMemoryResponse {
 }
 
 /**
- * @brief Register new client
- */
-message RegisterClientRequest {
-}
-message RegisterClientResponse {
-}
-
-/**
  * @fn void ack()
  * 
  * @brief Acknowledgement of a received ping request
@@ -101,13 +93,6 @@ service ControlModule {
      * @see GetSharedMemoryRequest
      */
     rpc getSharedMemory(GetSharedMemoryRequest) returns (GetSharedMemoryResponse) {
-    }
-
-    /**
-     * @brief Registers new client
-     * @see RegisterClientRequest
-     */
-    rpc registerClient(RegisterClientRequest) returns (RegisterClientResponse) {
     }
 
     /**

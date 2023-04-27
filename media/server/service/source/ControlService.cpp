@@ -49,12 +49,7 @@ int ControlService::registerClient(const std::shared_ptr<IControlClientServerInt
 void ControlService::unregisterClient(int controlId)
 {
     RIALTO_SERVER_LOG_INFO("Removing Control with id: %d", controlId);
-    auto client = m_clients.find(controlId);
-    if (m_clients.end() != client)
-    {
-        m_controlServerInternal.unregisterClient(client->second.get());
-        m_clients.erase(client);
-    }
+    m_clients.erase(controlId);
 }
 
 bool ControlService::ack(std::uint32_t id)
