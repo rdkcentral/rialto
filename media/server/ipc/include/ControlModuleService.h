@@ -26,6 +26,7 @@
 #include <IIpcServer.h>
 #include <map>
 #include <memory>
+#include <set>
 
 namespace firebolt::rialto::server::ipc
 {
@@ -52,13 +53,16 @@ public:
                          const ::firebolt::rialto::GetSharedMemoryRequest *request,
                          ::firebolt::rialto::GetSharedMemoryResponse *response,
                          ::google::protobuf::Closure *done) override;
+    void registerClient(::google::protobuf::RpcController *controller,
+                        const ::firebolt::rialto::RegisterClientRequest *request,
+                        ::firebolt::rialto::RegisterClientResponse *response, ::google::protobuf::Closure *done) override;
     void ack(::google::protobuf::RpcController *controller, const ::firebolt::rialto::AckRequest *request,
              ::firebolt::rialto::AckResponse *response, ::google::protobuf::Closure *done) override;
 
 private:
     service::IPlaybackService &m_playbackService;
     service::IControlService &m_controlService;
-    std::map<std::shared_ptr<::firebolt::rialto::ipc::IClient>, int> m_controlIds;
+    std::map<std::shared_ptr<::firebolt::rialto::ipc::IClient>, std::set<int>> m_controlIds;
 };
 } // namespace firebolt::rialto::server::ipc
 
