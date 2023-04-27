@@ -42,7 +42,7 @@ ISharedMemoryManagerAccessor &ISharedMemoryManagerAccessor::instance()
 
 ISharedMemoryManager &ControlAccessor::getSharedMemoryManager() const
 {
-    static Control control{IControlIpcAccessor::instance().getControlIpc()};
+    static Control control{IControlIpcFactory::createFactory()};
     return control;
 }
 
@@ -51,13 +51,13 @@ IControl &ControlAccessor::getControl() const
     return ISharedMemoryManagerAccessor::instance().getSharedMemoryManager();
 }
 
-Control::Control(IControlIpc &controlIpc)
-    : m_currentState{ApplicationState::UNKNOWN}, m_shmFd(-1), m_shmBuffer(nullptr),
-      m_shmBufferLen(0U), m_controlIpc{controlIpc}
+Control::Control(const std::shared_ptr<IControlIpcFactory> &controlIpcFactory)
+    : m_currentState{ApplicationState::UNKNOWN}, m_shmFd(-1), m_shmBuffer(nullptr), m_shmBufferLen(0U)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    if (!m_controlIpc.registerClient(this))
+    m_controlIpc = controlIpcFactory->createControlIpc(this);
+    if (nullptr == m_controlIpc)
     {
         throw std::runtime_error("Failed to create the ControlIpc object");
     }
@@ -67,7 +67,6 @@ Control::~Control()
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
     termSharedMemory();
-    m_controlIpc.unregisterClient(this);
 }
 
 uint8_t *Control::getSharedMemoryBuffer()
@@ -113,7 +112,7 @@ bool Control::unregisterClient(IControlClient *client)
 bool Control::initSharedMemory()
 {
     std::lock_guard<std::mutex> lock{m_mutex};
-    if (!m_controlIpc.getSharedMemory(m_shmFd, m_shmBufferLen))
+    if (!m_controlIpc->getSharedMemory(m_shmFd, m_shmBufferLen))
     {
         RIALTO_CLIENT_LOG_ERROR("Failed to get the shared memory");
         return false;

@@ -51,7 +51,7 @@ public:
     /**
      * @brief The constructor.
      */
-    Control(IControlIpc &controlIpc);
+    Control(const std::shared_ptr<IControlIpcFactory> &controlIpcFactory);
 
     /**
      * @brief Virtual destructor.
@@ -113,9 +113,9 @@ private:
     uint32_t m_shmBufferLen;
 
     /**
-     * @brief The rialto control ipc.
+     * @brief The rialto control ipc factory.
      */
-    IControlIpc &m_controlIpc;
+    std::shared_ptr<IControlIpc> m_controlIpc;
 
     /**
      * @brief Vector of clients to notify.
