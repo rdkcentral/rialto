@@ -312,7 +312,9 @@ public:
          * @param[in]  codecData        : The additional data for decoder
          */
         MediaSourceVideo(SourceConfigType sourceConfigType, const std::string &mimeType, bool hasDrm = true,
-                         int32_t width = 0, int32_t height = 0, SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
+                         int32_t width = firebolt::rialto::kUndefinedSize,
+                         int32_t height = firebolt::rialto::kUndefinedSize,
+                         SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                          StreamFormat streamFormat = StreamFormat::UNDEFINED,
                          const std::shared_ptr<std::vector<std::uint8_t>> &codecData = nullptr)
             : MediaSource(sourceConfigType, mimeType, hasDrm, alignment, streamFormat, codecData), m_width(width),
