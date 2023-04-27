@@ -34,27 +34,28 @@
 namespace firebolt::rialto::server
 {
 class IControlServerInternal;
-class IControlServerInternalAccessor : public IControlAccessor
+class IControlServerInternalFactory : public IControlFactory
 {
 public:
-    ~IControlServerInternalAccessor() override = default;
+    IControlServerInternalFactory() = default;
+    ~IControlServerInternalFactory() override = default;
 
     /**
-     * @brief Get a IControlServerInternalAccessor instance.
+     * @brief Create a IControlServerInternalFactory instance.
      *
-     * @retval the control instance
+     * @retval the factory instance or null on error.
      */
-    static IControlServerInternalAccessor &instance();
+    static std::shared_ptr<IControlServerInternalFactory> createFactory();
 
     /**
-     * @brief Get ControlServerInternal object.
+     * @brief IControlServerInternal factory method, returns a concrete implementation of IControlServerInternal
      *
-     * @retval the reference to ControlServerInternal singleton object
+     * @param[in] client            : The Rialto control client.
+     *
+     * @retval the new IControlServerInternal instance or null on error.
      */
-    virtual IControlServerInternal &getControlServerInternal() const = 0;
-
-protected:
-    IControlServerInternalAccessor() = default;
+    virtual std::shared_ptr<IControlServerInternal>
+    createControlServerInternal(std::weak_ptr<IControlClientServerInternal> client) const = 0;
 };
 
 class IControlServerInternal : public IControl
@@ -62,6 +63,13 @@ class IControlServerInternal : public IControl
 public:
     IControlServerInternal() = default;
     ~IControlServerInternal() override = default;
+
+    /**
+     * @brief Informs connected rialto client about rialto server state change
+     *
+     * @param[in] state: The new application state.
+     */
+    virtual void setApplicationState(const ApplicationState &state) = 0;
 
     /**
      * @brief Acknowledgement of a received ping request

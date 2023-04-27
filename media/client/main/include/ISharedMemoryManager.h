@@ -20,7 +20,6 @@
 #ifndef FIREBOLT_RIALTO_CLIENT_I_SHARED_MEMORY_MANAGER_H_
 #define FIREBOLT_RIALTO_CLIENT_I_SHARED_MEMORY_MANAGER_H_
 
-#include "IControl.h"
 #include "IControlClient.h"
 #include <functional>
 #include <memory>
@@ -32,7 +31,7 @@ class ISharedMemoryManager;
 /**
  * @brief ISharedMemoryManager accessor class definition.
  */
-class ISharedMemoryManagerAccessor : public IControlAccessor
+class ISharedMemoryManagerAccessor
 {
 public:
     virtual ~ISharedMemoryManagerAccessor() = default;
@@ -64,7 +63,7 @@ protected:
  *
  * This interface defines the internal API querying shared memory.
  */
-class ISharedMemoryManager : public IControl
+class ISharedMemoryManager
 {
 public:
     ISharedMemoryManager() = default;
@@ -81,6 +80,24 @@ public:
      * @retval valid pointer on sucess, nullptr otherwise.
      */
     virtual uint8_t *getSharedMemoryBuffer() = 0;
+
+    /**
+     * @brief Register a client notify when the shared buffer changes.
+     *
+     * @param[in] client    : Client to register.
+     *
+     * @retval true on success, false otherwise.
+     */
+    virtual bool registerClient(IControlClient *client) = 0;
+
+    /**
+     * @brief Unregister a client.
+     *
+     * @param[in] client    : Client to unregister.
+     *
+     * @retval true on success, false otherwise.
+     */
+    virtual bool unregisterClient(IControlClient *client) = 0;
 };
 
 }; // namespace firebolt::rialto::client

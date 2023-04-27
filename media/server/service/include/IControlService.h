@@ -38,9 +38,9 @@ public:
     IControlService &operator=(const IControlService &) = delete;
     IControlService &operator=(IControlService &&) = delete;
 
-    virtual int registerClient(const std::shared_ptr<IControlClientServerInternal> &client) = 0;
-    virtual void unregisterClient(int controlId) = 0;
-    virtual bool ack(std::uint32_t id) = 0;
+    virtual int addControl(const std::shared_ptr<IControlClientServerInternal> &client) = 0;
+    virtual void removeControl(int controlId) = 0;
+    virtual bool ack(int controlId, std::uint32_t id) = 0;
     virtual void setApplicationState(const ApplicationState &state) = 0;
 };
 } // namespace firebolt::rialto::server::service

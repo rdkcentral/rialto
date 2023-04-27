@@ -61,7 +61,7 @@ std::shared_ptr<ControlIpcFactory> ControlIpcFactory::createFactory()
     return factory;
 }
 
-std::shared_ptr<IControlIpc> ControlIpcFactory::createControlIpc(IControlClient *controlClient)
+std::shared_ptr<IControlIpc> ControlIpcFactory::getControlIpc(IControlClient *controlClient)
 {
     return std::make_shared<ControlIpc>(controlClient, IIpcClientAccessor::instance().getIpcClient(),
                                         firebolt::rialto::common::IEventThreadFactory::createFactory());
