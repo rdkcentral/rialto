@@ -134,8 +134,9 @@ TEST_F(SharedMemoryManagerMemoryManagementTest, SwitchToInactiveWithMemoryTermin
 
 TEST_F(SharedMemoryManagerMemoryManagementTest, SwitchStatesWithClientNotification)
 {
-    EXPECT_CALL(m_controlClientMock, notifyApplicationState(ApplicationState::UNKNOWN));
-    m_sut->registerClient(&m_controlClientMock);
+    ApplicationState appState;
+    m_sut->registerClient(&m_controlClientMock, appState);
+    EXPECT_EQ(ApplicationState::UNKNOWN, appState);
     EXPECT_CALL(*m_controlIpcMock, getSharedMemory(_, _))
         .WillOnce(DoAll(SetArgReferee<0>(m_fd), SetArgReferee<1>(m_size), Return(true)));
     EXPECT_CALL(m_controlClientMock, notifyApplicationState(ApplicationState::RUNNING));
@@ -148,8 +149,8 @@ TEST_F(SharedMemoryManagerMemoryManagementTest, SwitchStatesWithClientNotificati
 
 TEST_F(SharedMemoryManagerMemoryManagementTest, SwitchStatesWithoutClientNotification)
 {
-    EXPECT_CALL(m_controlClientMock, notifyApplicationState(ApplicationState::UNKNOWN));
-    m_sut->registerClient(&m_controlClientMock);
+    ApplicationState appState;
+    m_sut->registerClient(&m_controlClientMock, appState);
     m_sut->unregisterClient(&m_controlClientMock);
     EXPECT_CALL(*m_controlIpcMock, getSharedMemory(_, _))
         .WillOnce(DoAll(SetArgReferee<0>(m_fd), SetArgReferee<1>(m_size), Return(true)));
@@ -157,6 +158,18 @@ TEST_F(SharedMemoryManagerMemoryManagementTest, SwitchStatesWithoutClientNotific
     EXPECT_NE(nullptr, m_sut->getSharedMemoryBuffer());
     changeAppState(ApplicationState::INACTIVE);
     EXPECT_EQ(nullptr, m_sut->getSharedMemoryBuffer());
+}
+
+TEST_F(SharedMemoryManagerMemoryManagementTest, RegisterClientInRunningState)
+{
+    constexpr ApplicationState kExpectedAppState{ApplicationState::RUNNING};
+    ApplicationState appState;
+    EXPECT_CALL(*m_controlIpcMock, getSharedMemory(_, _))
+        .WillOnce(DoAll(SetArgReferee<0>(m_fd), SetArgReferee<1>(m_size), Return(true)));
+    changeAppState(kExpectedAppState);
+    m_sut->registerClient(&m_controlClientMock, appState);
+    EXPECT_EQ(kExpectedAppState, appState);
+    EXPECT_NE(nullptr, m_sut->getSharedMemoryBuffer());
 }
 
 TEST_F(SharedMemoryManagerMemoryManagementTest, SwitchToInvalidStateShouldFail)

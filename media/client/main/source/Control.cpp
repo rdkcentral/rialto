@@ -74,7 +74,7 @@ Control::~Control()
 bool Control::registerClient(std::weak_ptr<IControlClient> client, ApplicationState &appState)
 {
     std::shared_ptr<IControlClient> lockedClient = client.lock();
-    if (lockedClient && m_sharedMemoryManager.registerClient(lockedClient.get()))
+    if (lockedClient && m_sharedMemoryManager.registerClient(lockedClient.get(), appState))
     {
         m_clients.push_back(lockedClient);
         return true;

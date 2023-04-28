@@ -42,7 +42,7 @@ public:
     ~SharedMemoryManager() override;
 
     uint8_t *getSharedMemoryBuffer() override;
-    bool registerClient(IControlClient *client) override;
+    bool registerClient(IControlClient *client, ApplicationState &appState) override;
     bool unregisterClient(IControlClient *client) override;
 
 private:
@@ -68,6 +68,14 @@ private:
      * @retval the application state string, or "" on error.
      */
     std::string stateToString(ApplicationState state);
+
+    /**
+     * @brief Forwards new ApplicationState to subscribed clients
+     *
+     * @param[in] state     : The new application state.
+     *
+     */
+    void changeStateAndNotifyClients(ApplicationState state);
 
 private:
     /**

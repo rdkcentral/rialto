@@ -148,9 +148,14 @@ MediaPipeline::MediaPipeline(std::weak_ptr<IMediaPipelineClient> client, const V
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    if (!m_sharedMemoryManager.registerClient(this))
+    ApplicationState currentAppState;
+    if (!m_sharedMemoryManager.registerClient(this, currentAppState))
     {
         throw std::runtime_error("Failed to register client with SharedMemoryManager");
+    }
+    if (ApplicationState::RUNNING != currentAppState)
+    {
+        RIALTO_CLIENT_LOG_WARN("MediaPipeline created in Inactive/Unknown state!");
     }
 
     m_mediaPipelineIpc = mediaPipelineIpcFactory->createMediaPipelineIpc(this, videoRequirements);

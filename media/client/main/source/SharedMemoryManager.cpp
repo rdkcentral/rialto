@@ -67,7 +67,7 @@ uint8_t *SharedMemoryManager::getSharedMemoryBuffer()
     return m_shmBuffer;
 }
 
-bool SharedMemoryManager::registerClient(IControlClient *client)
+bool SharedMemoryManager::registerClient(IControlClient *client, ApplicationState &appState)
 {
     if (nullptr == client)
     {
@@ -75,12 +75,9 @@ bool SharedMemoryManager::registerClient(IControlClient *client)
         return false;
     }
 
-    {
-        std::lock_guard<std::mutex> lock{m_mutex};
-        m_clientVec.insert(client);
-    }
-
-    client->notifyApplicationState(m_currentState);
+    std::lock_guard<std::mutex> lock{m_mutex};
+    m_clientVec.insert(client);
+    appState = m_currentState;
 
     return true;
 }
@@ -93,15 +90,13 @@ bool SharedMemoryManager::unregisterClient(IControlClient *client)
         return false;
     }
 
-    {
-        std::lock_guard<std::mutex> lock{m_mutex};
+    std::lock_guard<std::mutex> lock{m_mutex};
 
-        auto numDeleted = m_clientVec.erase(client);
-        if (0 == numDeleted)
-        {
-            RIALTO_CLIENT_LOG_ERROR("No client unregistered");
-            return false;
-        }
+    auto numDeleted = m_clientVec.erase(client);
+    if (0 == numDeleted)
+    {
+        RIALTO_CLIENT_LOG_ERROR("No client unregistered");
+        return false;
     }
 
     return true;
@@ -183,19 +178,13 @@ void SharedMemoryManager::notifyApplicationState(ApplicationState state)
             return;
         }
         // Inform clients after memory initialisation
-        for (auto *client : m_clientVec)
-        {
-            client->notifyApplicationState(state);
-        }
+        changeStateAndNotifyClients(state);
         break;
     }
     case ApplicationState::INACTIVE:
     {
         // Inform clients before memory termination
-        for (auto *client : m_clientVec)
-        {
-            client->notifyApplicationState(state);
-        }
+        changeStateAndNotifyClients(state);
         termSharedMemory();
         break;
     }
@@ -205,12 +194,6 @@ void SharedMemoryManager::notifyApplicationState(ApplicationState state)
         return;
     }
     }
-
-    RIALTO_CLIENT_LOG_INFO("Rialto application state changed from %s to %s", stateToString(m_currentState).c_str(),
-                           stateToString(state).c_str());
-
-    std::lock_guard<std::mutex> lock{m_mutex};
-    m_currentState = state;
 }
 
 std::string SharedMemoryManager::stateToString(ApplicationState state)
@@ -230,6 +213,22 @@ std::string SharedMemoryManager::stateToString(ApplicationState state)
     {
         return "UNKNOWN";
     }
+    }
+}
+
+void SharedMemoryManager::changeStateAndNotifyClients(ApplicationState state)
+{
+    std::set<IControlClient *> currentClients;
+    {
+        std::lock_guard<std::mutex> lock{m_mutex};
+        RIALTO_CLIENT_LOG_INFO("Rialto application state changed from %s to %s", stateToString(m_currentState).c_str(),
+                               stateToString(state).c_str());
+        m_currentState = state;
+        currentClients = m_clientVec;
+    }
+    for (const auto &client : currentClients)
+    {
+        client->notifyApplicationState(state);
     }
 }
 } // namespace firebolt::rialto::client

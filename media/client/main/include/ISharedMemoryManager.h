@@ -84,11 +84,12 @@ public:
     /**
      * @brief Register a client notify when the shared buffer changes.
      *
-     * @param[in] client    : Client to register.
+     * @param[in]  client   : Client to register.
+     * @param[out] appState : Current application state
      *
      * @retval true on success, false otherwise.
      */
-    virtual bool registerClient(IControlClient *client) = 0;
+    virtual bool registerClient(IControlClient *client, ApplicationState &appState) = 0;
 
     /**
      * @brief Unregister a client.
