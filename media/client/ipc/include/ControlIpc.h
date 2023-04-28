@@ -69,6 +69,7 @@ public:
     virtual ~ControlIpc();
 
     bool getSharedMemory(int32_t &fd, uint32_t &size) override;
+    bool registerClient() override;
 
 private:
     bool createRpcStubs() override;

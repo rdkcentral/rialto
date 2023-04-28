@@ -54,6 +54,7 @@ TEST_F(SharedMemoryManagerCreateTest, CreateDestroy)
 
     // Create
     EXPECT_CALL(*m_controlIpcFactoryMock, getControlIpc(_)).WillOnce(Return(m_controlIpcMock));
+    EXPECT_CALL(*m_controlIpcMock, registerClient()).WillOnce(Return(true));
 
     EXPECT_NO_THROW(shmManager = std::make_unique<SharedMemoryManager>(m_controlIpcFactoryMock));
 
@@ -66,6 +67,17 @@ TEST_F(SharedMemoryManagerCreateTest, CreateControlIpcFailure)
     std::unique_ptr<ISharedMemoryManager> shmManager;
 
     EXPECT_CALL(*m_controlIpcFactoryMock, getControlIpc(_)).WillOnce(Return(nullptr));
+
+    EXPECT_THROW(shmManager = std::make_unique<SharedMemoryManager>(m_controlIpcFactoryMock), std::runtime_error);
+    EXPECT_EQ(shmManager, nullptr);
+}
+
+TEST_F(SharedMemoryManagerCreateTest, CreateControlRegisterClientFailure)
+{
+    std::unique_ptr<ISharedMemoryManager> shmManager;
+
+    EXPECT_CALL(*m_controlIpcFactoryMock, getControlIpc(_)).WillOnce(Return(m_controlIpcMock));
+    EXPECT_CALL(*m_controlIpcMock, registerClient()).WillOnce(Return(false));
 
     EXPECT_THROW(shmManager = std::make_unique<SharedMemoryManager>(m_controlIpcFactoryMock), std::runtime_error);
     EXPECT_EQ(shmManager, nullptr);

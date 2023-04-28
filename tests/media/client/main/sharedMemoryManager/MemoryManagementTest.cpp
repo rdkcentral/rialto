@@ -55,6 +55,7 @@ protected:
         m_fd = memfd_create("memfdfile", 0);
 
         EXPECT_CALL(*m_controlIpcFactoryMock, getControlIpc(_)).WillOnce(Return(m_controlIpcMock));
+        EXPECT_CALL(*m_controlIpcMock, registerClient()).WillOnce(Return(true));
         EXPECT_NO_THROW(m_sut = std::make_unique<SharedMemoryManager>(m_controlIpcFactoryMock));
     }
 
@@ -133,6 +134,7 @@ TEST_F(SharedMemoryManagerMemoryManagementTest, SwitchToInactiveWithMemoryTermin
 
 TEST_F(SharedMemoryManagerMemoryManagementTest, SwitchStatesWithClientNotification)
 {
+    EXPECT_CALL(m_controlClientMock, notifyApplicationState(ApplicationState::UNKNOWN));
     m_sut->registerClient(&m_controlClientMock);
     EXPECT_CALL(*m_controlIpcMock, getSharedMemory(_, _))
         .WillOnce(DoAll(SetArgReferee<0>(m_fd), SetArgReferee<1>(m_size), Return(true)));
@@ -146,6 +148,7 @@ TEST_F(SharedMemoryManagerMemoryManagementTest, SwitchStatesWithClientNotificati
 
 TEST_F(SharedMemoryManagerMemoryManagementTest, SwitchStatesWithoutClientNotification)
 {
+    EXPECT_CALL(m_controlClientMock, notifyApplicationState(ApplicationState::UNKNOWN));
     m_sut->registerClient(&m_controlClientMock);
     m_sut->unregisterClient(&m_controlClientMock);
     EXPECT_CALL(*m_controlIpcMock, getSharedMemory(_, _))

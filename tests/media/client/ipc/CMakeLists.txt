@@ -65,6 +65,7 @@ add_gtests (
         controlIpc/GetSharedMemoryTest.cpp
         controlIpc/NotifyApplicationStateTest.cpp
         controlIpc/PingTest.cpp
+        controlIpc/RegisterClientTest.cpp
 
         # IpcClient tests
         ipcClient/base/IpcClientTestBase.cpp

@@ -44,7 +44,8 @@ ControlModuleServiceTests::ControlModuleServiceTests()
     : m_clientMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ClientMock>>()},
       m_serverMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ServerMock>>()},
       m_closureMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ClosureMock>>()},
-      m_controllerMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ControllerMock>>()}
+      m_controllerMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ControllerMock>>()},
+      m_invalidControllerMock{std::make_shared<StrictMock<firebolt::rialto::ipc::RpcControllerMock>>()}
 {
     m_service = std::make_shared<firebolt::rialto::server::ipc::ControlModuleService>(m_playbackServiceMock,
                                                                                       m_controlServiceMock);
@@ -54,13 +55,25 @@ ControlModuleServiceTests::~ControlModuleServiceTests() {}
 
 void ControlModuleServiceTests::clientWillConnect()
 {
-    EXPECT_CALL(m_controlServiceMock, addControl(_)).WillOnce(Return(kControlId));
     EXPECT_CALL(*m_clientMock, exportService(_));
 }
 
 void ControlModuleServiceTests::controlServiceWillRemoveControl()
 {
     EXPECT_CALL(m_controlServiceMock, removeControl(kControlId));
+}
+
+void ControlModuleServiceTests::controlServiceWillRegisterClient()
+{
+    EXPECT_CALL(*m_closureMock, Run());
+    EXPECT_CALL(*m_controllerMock, getClient()).WillOnce(Return(m_clientMock));
+    EXPECT_CALL(m_controlServiceMock, addControl(_)).WillOnce(Return(kControlId));
+}
+
+void ControlModuleServiceTests::willFailDueToInvalidController()
+{
+    EXPECT_CALL(*m_invalidControllerMock, SetFailed(_));
+    EXPECT_CALL(*m_closureMock, Run());
 }
 
 void ControlModuleServiceTests::playbackServiceWillGetSharedMemory()
@@ -95,6 +108,22 @@ void ControlModuleServiceTests::sendClientConnected()
 void ControlModuleServiceTests::sendClientDisconnected()
 {
     m_service->clientDisconnected(m_clientMock);
+}
+
+void ControlModuleServiceTests::sendRegisterClientRequestAndReceiveResponse()
+{
+    firebolt::rialto::RegisterClientRequest request;
+    firebolt::rialto::RegisterClientResponse response;
+
+    m_service->registerClient(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void ControlModuleServiceTests::sendRegisterClientRequestWithInvalidControllerAndReceiveFailure()
+{
+    firebolt::rialto::RegisterClientRequest request;
+    firebolt::rialto::RegisterClientResponse response;
+
+    m_service->registerClient(m_invalidControllerMock.get(), &request, &response, m_closureMock.get());
 }
 
 void ControlModuleServiceTests::sendGetSharedMemoryRequestAndReceiveResponse()
@@ -139,4 +168,13 @@ void ControlModuleServiceTests::sendAckRequestAndExpectFailure()
     EXPECT_CALL(*m_closureMock, Run());
 
     m_service->ack(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void ControlModuleServiceTests::sendAckRequestWithInvalidControllerAndExpectFailure()
+{
+    firebolt::rialto::AckRequest request;
+    firebolt::rialto::AckResponse response;
+    request.set_id(kPingId);
+
+    m_service->ack(m_invalidControllerMock.get(), &request, &response, m_closureMock.get());
 }

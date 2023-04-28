@@ -79,6 +79,13 @@ public:
      * @retval true success, false otherwise.
      */
     virtual bool getSharedMemory(int32_t &fd, uint32_t &size) = 0;
+
+    /**
+     * @brief Register new client
+     *
+     * @retval true success, false otherwise.
+     */
+    virtual bool registerClient() = 0;
 };
 
 }; // namespace firebolt::rialto::client

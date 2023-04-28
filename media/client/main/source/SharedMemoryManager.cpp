@@ -47,6 +47,11 @@ SharedMemoryManager::SharedMemoryManager(const std::shared_ptr<IControlIpcFactor
     {
         throw std::runtime_error("Failed to create the ControlIpc object");
     }
+
+    if (!m_controlIpc->registerClient())
+    {
+        throw std::runtime_error("Failed to register client");
+    }
 }
 
 SharedMemoryManager::~SharedMemoryManager()
@@ -76,10 +81,7 @@ bool SharedMemoryManager::registerClient(IControlClient *client)
         m_clientVec.insert(client);
     }
 
-    if (ApplicationState::RUNNING == m_currentState)
-    {
-        client->notifyApplicationState(m_currentState);
-    }
+    client->notifyApplicationState(m_currentState);
 
     return true;
 }

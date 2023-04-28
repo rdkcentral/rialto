@@ -27,6 +27,7 @@
 #include "IpcControllerMock.h"
 #include "IpcServerMock.h"
 #include "PlaybackServiceMock.h"
+#include "RpcControllerMock.h"
 #include <gtest/gtest.h>
 #include <memory>
 
@@ -40,6 +41,8 @@ public:
 
     void clientWillConnect();
     void controlServiceWillRemoveControl();
+    void controlServiceWillRegisterClient();
+    void willFailDueToInvalidController();
     void playbackServiceWillGetSharedMemory();
     void playbackServiceWillFailToGetSharedMemory();
     void playbackServiceWillAck();
@@ -47,16 +50,20 @@ public:
 
     void sendClientConnected();
     void sendClientDisconnected();
+    void sendRegisterClientRequestAndReceiveResponse();
+    void sendRegisterClientRequestWithInvalidControllerAndReceiveFailure();
     void sendGetSharedMemoryRequestAndReceiveResponse();
     void sendGetSharedMemoryRequestAndExpectFailure();
     void sendAckRequestAndReceiveResponse();
     void sendAckRequestAndExpectFailure();
+    void sendAckRequestWithInvalidControllerAndExpectFailure();
 
 private:
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ClientMock>> m_clientMock;
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ServerMock>> m_serverMock;
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ClosureMock>> m_closureMock;
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ControllerMock>> m_controllerMock;
+    std::shared_ptr<StrictMock<firebolt::rialto::ipc::RpcControllerMock>> m_invalidControllerMock;
     StrictMock<firebolt::rialto::server::service::PlaybackServiceMock> m_playbackServiceMock;
     StrictMock<firebolt::rialto::server::service::ControlServiceMock> m_controlServiceMock;
     std::shared_ptr<firebolt::rialto::server::ipc::IControlModuleService> m_service;

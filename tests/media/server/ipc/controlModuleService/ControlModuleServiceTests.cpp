@@ -24,15 +24,40 @@ TEST_F(ControlModuleServiceTests, shouldEstablishConnection)
 {
     clientWillConnect();
     sendClientConnected();
-    controlServiceWillRemoveControl(); // in destructor
 }
 
 TEST_F(ControlModuleServiceTests, shouldDisconnect)
 {
     clientWillConnect();
     sendClientConnected();
+    sendClientDisconnected();
+}
+
+TEST_F(ControlModuleServiceTests, shouldFailToRegisterClient)
+{
+    clientWillConnect();
+    sendClientConnected();
+    willFailDueToInvalidController();
+    sendRegisterClientRequestWithInvalidControllerAndReceiveFailure();
+}
+
+TEST_F(ControlModuleServiceTests, shouldRegisterClientAndUnregisterItWhenDisconnected)
+{
+    clientWillConnect();
+    sendClientConnected();
+    controlServiceWillRegisterClient();
+    sendRegisterClientRequestAndReceiveResponse();
     controlServiceWillRemoveControl();
     sendClientDisconnected();
+}
+
+TEST_F(ControlModuleServiceTests, shouldRegisterClientAndUnregisterItWhenDestructed)
+{
+    clientWillConnect();
+    sendClientConnected();
+    controlServiceWillRegisterClient();
+    sendRegisterClientRequestAndReceiveResponse();
+    controlServiceWillRemoveControl();
 }
 
 TEST_F(ControlModuleServiceTests, shouldGetSharedMemory)
@@ -52,20 +77,35 @@ TEST_F(ControlModuleServiceTests, shouldFailToAckWhenClientIsNotConnected)
     sendAckRequestAndExpectFailure();
 }
 
+TEST_F(ControlModuleServiceTests, shouldFailToAckWhenControllerIsInvalid)
+{
+    clientWillConnect();
+    sendClientConnected();
+    controlServiceWillRegisterClient();
+    sendRegisterClientRequestAndReceiveResponse();
+    willFailDueToInvalidController();
+    sendAckRequestWithInvalidControllerAndExpectFailure();
+    controlServiceWillRemoveControl();
+}
+
 TEST_F(ControlModuleServiceTests, shouldFailToAckWhenControlServiceReturnsFailure)
 {
     clientWillConnect();
     sendClientConnected();
+    controlServiceWillRegisterClient();
+    sendRegisterClientRequestAndReceiveResponse();
     playbackServiceWillFailToAck();
     sendAckRequestAndExpectFailure();
-    controlServiceWillRemoveControl(); // in destructor
+    controlServiceWillRemoveControl();
 }
 
 TEST_F(ControlModuleServiceTests, shouldAck)
 {
     clientWillConnect();
     sendClientConnected();
+    controlServiceWillRegisterClient();
+    sendRegisterClientRequestAndReceiveResponse();
     playbackServiceWillAck();
     sendAckRequestAndReceiveResponse();
-    controlServiceWillRemoveControl(); // in destructor
+    controlServiceWillRemoveControl();
 }
