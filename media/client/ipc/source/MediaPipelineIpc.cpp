@@ -200,6 +200,7 @@ bool MediaPipelineIpc::attachSource(const std::unique_ptr<IMediaPipeline::MediaS
     SourceConfigType configType = source->getConfigType();
     request.set_config_type(convertConfigType(configType));
     request.set_mime_type(source->getMimeType());
+    request.set_has_drm(source->getHasDrm());
     request.set_segment_alignment(convertSegmentAlignment(source->getSegmentAlignment()));
 
     if (source->getCodecData())
@@ -213,7 +214,16 @@ bool MediaPipelineIpc::attachSource(const std::unique_ptr<IMediaPipeline::MediaS
         IMediaPipeline::MediaSourceVideoDolbyVision &mediaSourceDolby =
             dynamic_cast<IMediaPipeline::MediaSourceVideoDolbyVision &>(*source);
 
+        request.set_width(mediaSourceDolby.getWidth());
+        request.set_height(mediaSourceDolby.getHeight());
         request.set_dolby_vision_profile(mediaSourceDolby.getDolbyVisionProfile());
+    }
+    else if (configType == SourceConfigType::VIDEO)
+    {
+        IMediaPipeline::MediaSourceVideo &mediaSourceVideo = dynamic_cast<IMediaPipeline::MediaSourceVideo &>(*source);
+
+        request.set_width(mediaSourceVideo.getWidth());
+        request.set_height(mediaSourceVideo.getHeight());
     }
     else if (configType == SourceConfigType::AUDIO)
     {

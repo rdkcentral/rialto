@@ -26,6 +26,7 @@
 #include <gst/gst.h>
 #include <memory>
 #include <stdint.h>
+#include <unordered_map>
 
 namespace firebolt::rialto::server
 {
@@ -55,6 +56,21 @@ public:
     virtual std::shared_ptr<IGstSrc> getGstSrc() = 0;
 };
 
+/**
+ * @brief Structure used for stream info
+ */
+struct StreamInfo
+{
+    explicit StreamInfo(GstElement *appSrc_ = nullptr, bool hasDrm_ = true) : appSrc(appSrc_), hasDrm(hasDrm_) {}
+    bool operator==(const StreamInfo &other) const { return appSrc == other.appSrc && hasDrm == other.hasDrm; }
+    GstElement *appSrc;
+    bool hasDrm;
+};
+/**
+ * @brief Definition of a stream info map.
+ */
+using StreamInfoMap = std::unordered_map<MediaSourceType, StreamInfo>;
+
 class IGstSrc
 {
 public:
@@ -74,13 +90,13 @@ public:
     /**
      * @brief Sets up the app source.
      *
-     * @param[in] element   : The source element.
+     * @param[in] source    : The source element.
      * @param[in] appsrc    : The app source to attach.
      * @param[in] callbacks : Callbacks to be set on the app source.
      * @param[in] userData  : Data to be passed to the callbacks.
      * @param[in] type      : The media type of the source.
      */
-    virtual void setupAndAddAppArc(IDecryptionService *decryptionService, GstElement *element, GstElement *appsrc,
+    virtual void setupAndAddAppArc(IDecryptionService *decryptionService, GstElement *source, StreamInfo &streamInfo,
                                    GstAppSrcCallbacks *callbacks, gpointer userData,
                                    firebolt::rialto::MediaSourceType type) = 0;
 

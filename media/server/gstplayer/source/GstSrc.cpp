@@ -346,81 +346,84 @@ void GstSrc::initSrc()
         src_factory = nullptr;
     }
 }
-void GstSrc::setupAndAddAppArc(IDecryptionService *decryptionService, GstElement *element, GstElement *appsrc,
+void GstSrc::setupAndAddAppArc(IDecryptionService *decryptionService, GstElement *source, StreamInfo &streamInfo,
                                GstAppSrcCallbacks *callbacks, gpointer userData, firebolt::rialto::MediaSourceType type)
 {
     // Configure and add appsrc
-    m_glibWrapper->gObjectSet(appsrc, "block", FALSE, "format", GST_FORMAT_TIME, "stream-type",
+    m_glibWrapper->gObjectSet(streamInfo.appSrc, "block", FALSE, "format", GST_FORMAT_TIME, "stream-type",
                               GST_APP_STREAM_TYPE_STREAM, "min-percent", 20, nullptr);
-    m_gstWrapper->gstAppSrcSetCallbacks(GST_APP_SRC(appsrc), callbacks, userData, nullptr);
+    m_gstWrapper->gstAppSrcSetCallbacks(GST_APP_SRC(streamInfo.appSrc), callbacks, userData, nullptr);
     if (type == firebolt::rialto::MediaSourceType::VIDEO)
     {
-        m_gstWrapper->gstAppSrcSetMaxBytes(GST_APP_SRC(appsrc), 8 * 1024 * 1024);
+        m_gstWrapper->gstAppSrcSetMaxBytes(GST_APP_SRC(streamInfo.appSrc), 8 * 1024 * 1024);
     }
     else
     {
-        m_gstWrapper->gstAppSrcSetMaxBytes(GST_APP_SRC(appsrc), 512 * 1024);
+        m_gstWrapper->gstAppSrcSetMaxBytes(GST_APP_SRC(streamInfo.appSrc), 512 * 1024);
     }
-    m_gstWrapper->gstAppSrcSetStreamType(GST_APP_SRC(appsrc), GST_APP_STREAM_TYPE_SEEKABLE);
+    m_gstWrapper->gstAppSrcSetStreamType(GST_APP_SRC(streamInfo.appSrc), GST_APP_STREAM_TYPE_SEEKABLE);
 
-    GstRialtoSrc *src = GST_RIALTO_SRC(element);
+    GstRialtoSrc *src = GST_RIALTO_SRC(source);
     gchar *name = m_glibWrapper->gStrdupPrintf("src_%u", src->priv->appsrc_count);
     src->priv->appsrc_count++;
-    m_gstWrapper->gstBinAdd(GST_BIN(element), appsrc);
+    m_gstWrapper->gstBinAdd(GST_BIN(source), streamInfo.appSrc);
 
-    GstElement *src_elem = appsrc;
+    GstElement *src_elem = streamInfo.appSrc;
 
     // Configure and add decryptor
-    GstElement *decryptor = m_decryptorFactory->createDecryptorElement(nullptr, decryptionService, m_gstWrapper);
-    if (decryptor)
+    if (streamInfo.hasDrm)
     {
-        GST_DEBUG_OBJECT(src, "Injecting decryptor element %" GST_PTR_FORMAT, decryptor);
-
-        m_gstWrapper->gstBinAdd(GST_BIN(element), decryptor);
-        m_gstWrapper->gstElementSyncStateWithParent(decryptor);
-        m_gstWrapper->gstElementLink(src_elem, decryptor);
-        src_elem = decryptor;
-    }
-    else
-    {
-        GST_WARNING_OBJECT(src, "Could not create decryptor element");
-    }
-
-    if (type == firebolt::rialto::MediaSourceType::VIDEO)
-    {
-        // Configure and add payloader
-        GstElement *payloader = createPayloader();
-        if (payloader)
+        GstElement *decryptor = m_decryptorFactory->createDecryptorElement(nullptr, decryptionService, m_gstWrapper);
+        if (decryptor)
         {
-            if (GST_IS_BASE_TRANSFORM(payloader))
-            {
-                m_gstWrapper->gstBaseTransformSetInPlace(GST_BASE_TRANSFORM(payloader), TRUE);
-            }
-            m_gstWrapper->gstBinAdd(GST_BIN(element), payloader);
-            m_gstWrapper->gstElementSyncStateWithParent(payloader);
-            m_gstWrapper->gstElementLink(src_elem, payloader);
-            src_elem = payloader;
+            GST_DEBUG_OBJECT(src, "Injecting decryptor element %" GST_PTR_FORMAT, decryptor);
+
+            m_gstWrapper->gstBinAdd(GST_BIN(source), decryptor);
+            m_gstWrapper->gstElementSyncStateWithParent(decryptor);
+            m_gstWrapper->gstElementLink(src_elem, decryptor);
+            src_elem = decryptor;
         }
         else
         {
-            GST_WARNING_OBJECT(src, "Could not create payloader element");
+            GST_WARNING_OBJECT(src, "Could not create decryptor element");
         }
-    }
 
-    // Configure and add buffer queue
-    GstElement *queue = m_gstWrapper->gstElementFactoryMake("queue", nullptr);
-    if (queue)
-    {
-        m_glibWrapper->gObjectSet(G_OBJECT(queue), "max-size-buffers", 10, "max-size-bytes", 0, "max-size-time",
-                                  (gint64)0, "silent", TRUE, nullptr);
-        m_gstWrapper->gstBinAdd(GST_BIN(element), queue);
-        m_gstWrapper->gstElementSyncStateWithParent(queue);
-        m_gstWrapper->gstElementLink(src_elem, queue);
-        src_elem = queue;
-    }
-    else
-    {
-        GST_WARNING_OBJECT(src, "Could not create buffer queue element");
+        if (type == firebolt::rialto::MediaSourceType::VIDEO)
+        {
+            // Configure and add payloader
+            GstElement *payloader = createPayloader();
+            if (payloader)
+            {
+                if (GST_IS_BASE_TRANSFORM(payloader))
+                {
+                    m_gstWrapper->gstBaseTransformSetInPlace(GST_BASE_TRANSFORM(payloader), TRUE);
+                }
+                m_gstWrapper->gstBinAdd(GST_BIN(source), payloader);
+                m_gstWrapper->gstElementSyncStateWithParent(payloader);
+                m_gstWrapper->gstElementLink(src_elem, payloader);
+                src_elem = payloader;
+            }
+            else
+            {
+                GST_WARNING_OBJECT(src, "Could not create payloader element");
+            }
+        }
+
+        // Configure and add buffer queue
+        GstElement *queue = m_gstWrapper->gstElementFactoryMake("queue", nullptr);
+        if (queue)
+        {
+            m_glibWrapper->gObjectSet(G_OBJECT(queue), "max-size-buffers", 10, "max-size-bytes", 0, "max-size-time",
+                                      (gint64)0, "silent", TRUE, nullptr);
+            m_gstWrapper->gstBinAdd(GST_BIN(source), queue);
+            m_gstWrapper->gstElementSyncStateWithParent(queue);
+            m_gstWrapper->gstElementLink(src_elem, queue);
+            src_elem = queue;
+        }
+        else
+        {
+            GST_WARNING_OBJECT(src, "Could not create buffer queue element");
+        }
     }
 
     // Setup pad
@@ -429,10 +432,10 @@ void GstSrc::setupAndAddAppArc(IDecryptionService *decryptionService, GstElement
     m_gstWrapper->gstPadSetQueryFunction(pad, gstRialtoSrcQueryWithParent);
     m_gstWrapper->gstPadSetActive(pad, TRUE);
 
-    m_gstWrapper->gstElementAddPad(element, pad);
+    m_gstWrapper->gstElementAddPad(source, pad);
     GST_OBJECT_FLAG_SET(pad, GST_PAD_FLAG_NEED_PARENT);
 
-    m_gstWrapper->gstElementSyncStateWithParent(appsrc);
+    m_gstWrapper->gstElementSyncStateWithParent(streamInfo.appSrc);
 
     m_glibWrapper->gFree(name);
     m_gstWrapper->gstObjectUnref(target);

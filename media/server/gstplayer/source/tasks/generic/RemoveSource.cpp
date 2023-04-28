@@ -52,7 +52,7 @@ void RemoveSource::execute() const
     auto sourceElem = m_context.streamInfo.find(m_type);
     if (sourceElem != m_context.streamInfo.end())
     {
-        source = sourceElem->second;
+        source = sourceElem->second.appSrc;
     }
     if (!source)
     {

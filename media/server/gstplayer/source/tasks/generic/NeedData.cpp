@@ -42,7 +42,7 @@ void NeedData::execute() const
     auto elem = m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO);
     if (elem != m_context.streamInfo.end())
     {
-        if (elem->second == GST_ELEMENT(m_src))
+        if (elem->second.appSrc == GST_ELEMENT(m_src))
         {
             m_context.audioNeedData = true;
             if (m_gstPlayerClient && !m_context.audioNeedDataPending && !m_context.audioSourceRemoved)
@@ -54,7 +54,7 @@ void NeedData::execute() const
     elem = m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO);
     if (elem != m_context.streamInfo.end())
     {
-        if (elem->second == GST_ELEMENT(m_src))
+        if (elem->second.appSrc == GST_ELEMENT(m_src))
         {
             m_context.videoNeedData = true;
             if (m_gstPlayerClient && !m_context.videoNeedDataPending)

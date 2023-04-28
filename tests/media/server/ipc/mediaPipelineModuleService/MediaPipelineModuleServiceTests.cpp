@@ -81,6 +81,18 @@ TEST_F(MediaPipelineModuleServiceTests, shouldAttachSource)
     sendAttachSourceRequestAndReceiveResponse();
 }
 
+TEST_F(MediaPipelineModuleServiceTests, shouldAttachVideoSource)
+{
+    mediaPipelineServiceWillAttachVideoSource();
+    sendAttachVideoSourceRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldAttachDolbySource)
+{
+    mediaPipelineServiceWillAttachDolbySource();
+    sendAttachDolbySourceRequestAndReceiveResponse();
+}
+
 TEST_F(MediaPipelineModuleServiceTests, shouldAttachAudioSourceWithAdditionalData)
 {
     mediaPipelineServiceWillAttachAudioSourceWithAdditionaldata();

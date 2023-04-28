@@ -55,7 +55,7 @@ void Eos::execute() const
         RIALTO_SERVER_LOG_WARN("Set eos failed - Stream not found");
         return;
     }
-    if (m_gstWrapper->gstAppSrcEndOfStream(GST_APP_SRC(elem->second)) != GST_FLOW_OK)
+    if (m_gstWrapper->gstAppSrcEndOfStream(GST_APP_SRC(elem->second.appSrc)) != GST_FLOW_OK)
     {
         RIALTO_SERVER_LOG_WARN("Set eos failed - Gstreamer error");
     }

@@ -496,7 +496,7 @@ void GstGenericPlayer::attachAudioData()
         auto elem = m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO);
         if (elem != m_context.streamInfo.end())
         {
-            m_context.audioAppSrc = elem->second;
+            m_context.audioAppSrc = elem->second.appSrc;
         }
     }
 
@@ -533,7 +533,7 @@ void GstGenericPlayer::attachVideoData()
         auto elem = m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO);
         if (elem != m_context.streamInfo.end())
         {
-            m_context.videoAppSrc = elem->second;
+            m_context.videoAppSrc = elem->second.appSrc;
         }
     }
     if (m_context.videoAppSrc)
@@ -561,7 +561,7 @@ void GstGenericPlayer::updateAudioCaps(int32_t rate, int32_t channels,
         auto elem = m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO);
         if (elem != m_context.streamInfo.end())
         {
-            m_context.audioAppSrc = elem->second;
+            m_context.audioAppSrc = elem->second.appSrc;
         }
     }
 
@@ -606,7 +606,7 @@ void GstGenericPlayer::updateVideoCaps(int32_t width, int32_t height,
         auto elem = m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO);
         if (elem != m_context.streamInfo.end())
         {
-            m_context.videoAppSrc = elem->second;
+            m_context.videoAppSrc = elem->second.appSrc;
         }
     }
 

@@ -41,6 +41,7 @@ constexpr std::uint32_t height{1080};
 constexpr int hardcodedSessionId{2};
 const firebolt::rialto::MediaType mediaType{firebolt::rialto::MediaType::MSE};
 const std::string mimeType{"exampleMimeType"};
+constexpr uint32_t dolbyProfile{5};
 constexpr uint32_t numberOfChannels{6};
 constexpr uint32_t sampleRate{48000};
 const std::string codecSpecificConfigStr("1243567");
@@ -78,9 +79,10 @@ MATCHER_P(AttachedSourceMatcher, source, "")
     {
         codecDataEqual = arg->getCodecData() == src->getCodecData();
     }
+
     bool baseCompare = arg->getConfigType() == src->getConfigType() && arg->getMimeType() == src->getMimeType() &&
-                       arg->getSegmentAlignment() == src->getSegmentAlignment() && codecDataEqual &&
-                       arg->getStreamFormat() == src->getStreamFormat();
+                       arg->getHasDrm() == src->getHasDrm() && arg->getSegmentAlignment() == src->getSegmentAlignment() &&
+                       codecDataEqual && arg->getStreamFormat() == src->getStreamFormat();
 
     bool extraCompare = true;
 
@@ -93,6 +95,15 @@ MATCHER_P(AttachedSourceMatcher, source, "")
 
         extraCompare = audioArg.getStreamFormat() == audioSrc.getStreamFormat();
     }
+    else if (arg->getConfigType() == firebolt::rialto::SourceConfigType::VIDEO)
+    {
+        firebolt::rialto::IMediaPipeline::MediaSourceVideo &videoArg =
+            dynamic_cast<firebolt::rialto::IMediaPipeline::MediaSourceVideo &>(*arg);
+        firebolt::rialto::IMediaPipeline::MediaSourceVideo &videoSrc =
+            dynamic_cast<firebolt::rialto::IMediaPipeline::MediaSourceVideo &>(*src);
+
+        extraCompare = videoArg.getWidth() == videoSrc.getWidth() && videoArg.getHeight() == videoSrc.getHeight();
+    }
     else if (arg->getConfigType() == firebolt::rialto::SourceConfigType::VIDEO_DOLBY_VISION)
     {
         firebolt::rialto::IMediaPipeline::MediaSourceVideoDolbyVision &dolbyArg =
@@ -100,7 +111,8 @@ MATCHER_P(AttachedSourceMatcher, source, "")
         firebolt::rialto::IMediaPipeline::MediaSourceVideoDolbyVision &dolbySrc =
             dynamic_cast<firebolt::rialto::IMediaPipeline::MediaSourceVideoDolbyVision &>(*src);
 
-        extraCompare = dolbyArg.getDolbyVisionProfile() == dolbySrc.getDolbyVisionProfile();
+        extraCompare = dolbyArg.getDolbyVisionProfile() == dolbySrc.getDolbyVisionProfile() &&
+                       dolbyArg.getWidth() == dolbySrc.getWidth() && dolbyArg.getHeight() == dolbySrc.getHeight();
     }
 
     return baseCompare && extraCompare;
@@ -388,13 +400,30 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillAttachSource()
         .WillOnce(Return(true));
 }
 
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillAttachVideoSource()
+{
+    m_source = std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>(mimeType, true, width, height);
+    expectRequestSuccess();
+    EXPECT_CALL(m_mediaPipelineServiceMock, attachSource(hardcodedSessionId, AttachedSourceMatcher(ByRef(m_source))))
+        .WillOnce(Return(true));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillAttachDolbySource()
+{
+    m_source = std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideoDolbyVision>(mimeType, dolbyProfile,
+                                                                                               true, width, height);
+    expectRequestSuccess();
+    EXPECT_CALL(m_mediaPipelineServiceMock, attachSource(hardcodedSessionId, AttachedSourceMatcher(ByRef(m_source))))
+        .WillOnce(Return(true));
+}
+
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillAttachAudioSourceWithAdditionaldata()
 {
     std::vector<uint8_t> codecSpecificConfig;
     codecSpecificConfig.assign(codecSpecificConfigStr.begin(), codecSpecificConfigStr.end());
     firebolt::rialto::AudioConfig audioConfig{numberOfChannels, sampleRate, codecSpecificConfig};
     m_source =
-        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(mimeType, audioConfig,
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(mimeType, true, audioConfig,
                                                                              firebolt::rialto::SegmentAlignment::UNDEFINED,
                                                                              firebolt::rialto::StreamFormat::RAW,
                                                                              codecData);
@@ -667,6 +696,38 @@ void MediaPipelineModuleServiceTests::sendAttachSourceRequestAndReceiveResponse(
     request.set_session_id(hardcodedSessionId);
     request.set_config_type(firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_AUDIO);
     request.set_mime_type(mimeType);
+    request.set_has_drm(true);
+
+    m_service->attachSource(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void MediaPipelineModuleServiceTests::sendAttachVideoSourceRequestAndReceiveResponse()
+{
+    firebolt::rialto::AttachSourceRequest request;
+    firebolt::rialto::AttachSourceResponse response;
+
+    request.set_session_id(hardcodedSessionId);
+    request.set_config_type(firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_VIDEO);
+    request.set_mime_type(mimeType);
+    request.set_has_drm(true);
+    request.set_width(width);
+    request.set_height(height);
+
+    m_service->attachSource(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void MediaPipelineModuleServiceTests::sendAttachDolbySourceRequestAndReceiveResponse()
+{
+    firebolt::rialto::AttachSourceRequest request;
+    firebolt::rialto::AttachSourceResponse response;
+
+    request.set_session_id(hardcodedSessionId);
+    request.set_config_type(firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_VIDEO_DOLBY_VISION);
+    request.set_mime_type(mimeType);
+    request.set_has_drm(true);
+    request.set_width(width);
+    request.set_height(height);
+    request.set_dolby_vision_profile(dolbyProfile);
 
     m_service->attachSource(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
@@ -679,6 +740,7 @@ void MediaPipelineModuleServiceTests::sendAttachAudioSourceWithAdditionalDataReq
     request.set_session_id(hardcodedSessionId);
     request.set_config_type(firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_AUDIO);
     request.set_mime_type(mimeType);
+    request.set_has_drm(true);
     request.mutable_audio_config()->set_number_of_channels(numberOfChannels);
     request.mutable_audio_config()->set_sample_rate(sampleRate);
     request.mutable_audio_config()->set_codec_specific_config(codecSpecificConfigStr);
