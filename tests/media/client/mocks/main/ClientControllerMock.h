@@ -17,22 +17,24 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_CLIENT_SHARED_MEMORY_MANAGER_CLIENT_MOCK_H_
-#define FIREBOLT_RIALTO_CLIENT_SHARED_MEMORY_MANAGER_CLIENT_MOCK_H_
+#ifndef FIREBOLT_RIALTO_CLIENT_CLIENT_CONTROLLER_MOCK_H_
+#define FIREBOLT_RIALTO_CLIENT_CLIENT_CONTROLLER_MOCK_H_
 
-#include "ISharedMemoryManagerClient.h"
+#include "IClientController.h"
 #include <gmock/gmock.h>
 
 namespace firebolt::rialto::client
 {
-class SharedMemoryManagerClientMock : public ISharedMemoryManagerClient
+class ClientControllerMock : public IClientController
 {
 public:
-    SharedMemoryManagerClientMock() = default;
-    virtual ~SharedMemoryManagerClientMock() = default;
+    ClientControllerMock() = default;
+    virtual ~ClientControllerMock() = default;
 
-    MOCK_METHOD(void, notifyBufferTerm, (), (override));
+    MOCK_METHOD(uint8_t *, getSharedMemoryBuffer, (), (override));
+    MOCK_METHOD(bool, registerClient, (IControlClient * client, ApplicationState &appState), (override));
+    MOCK_METHOD(bool, unregisterClient, (IControlClient * client), (override));
 };
 } // namespace firebolt::rialto::client
 
-#endif // FIREBOLT_RIALTO_CLIENT_SHARED_MEMORY_MANAGER_CLIENT_MOCK_H_
+#endif // FIREBOLT_RIALTO_CLIENT_CLIENT_CONTROLLER_MOCK_H_

@@ -48,20 +48,20 @@ void MediaPipelineTestBase::createMediaPipeline()
     // Object shall be freed by the holder of the unique ptr on destruction
     m_mediaPipelineIpcMock = mediaPipelineIpcMock.get();
 
-    EXPECT_CALL(m_sharedMemoryManagerMock, registerClient(_, _)).WillOnce(Return(true));
+    EXPECT_CALL(m_clientControllerMock, registerClient(_, _)).WillOnce(Return(true));
     EXPECT_CALL(*m_mediaPipelineIpcFactoryMock, createMediaPipelineIpc(_, _))
         .WillOnce(DoAll(SaveArg<0>(&m_mediaPipelineCallback), Return(ByMove(std::move(mediaPipelineIpcMock)))));
 
     EXPECT_NO_THROW(m_mediaPipeline = std::make_unique<MediaPipeline>(m_mediaPipelineClientMock, videoReq,
                                                                       m_mediaPipelineIpcFactoryMock,
                                                                       m_mediaFrameWriterFactoryMock,
-                                                                      m_sharedMemoryManagerMock));
+                                                                      m_clientControllerMock));
     EXPECT_NE(m_mediaPipeline, nullptr);
 }
 
 void MediaPipelineTestBase::destroyMediaPipeline()
 {
-    EXPECT_CALL(m_sharedMemoryManagerMock, unregisterClient(_)).WillOnce(Return(true));
+    EXPECT_CALL(m_clientControllerMock, unregisterClient(_)).WillOnce(Return(true));
 
     m_mediaPipeline.reset();
     m_mediaPipelineCallback = nullptr;

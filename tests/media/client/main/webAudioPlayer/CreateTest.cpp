@@ -17,9 +17,9 @@
  * limitations under the License.
  */
 
+#include "ClientControllerMock.h"
 #include "IWebAudioPlayerIpcClient.h"
 #include "MediaFrameWriterFactoryMock.h"
-#include "SharedMemoryManagerMock.h"
 #include "WebAudioPlayer.h"
 #include "WebAudioPlayerClientMock.h"
 #include "WebAudioPlayerIpcFactoryMock.h"
@@ -56,7 +56,7 @@ TEST_F(RialtoClientCreateWebAudioPlayerTest, Create)
     EXPECT_NO_THROW(m_webAudioPlayer = std::make_unique<WebAudioPlayer>(m_webAudioPlayerClientMock, m_audioMimeType,
                                                                         m_priority, &m_config,
                                                                         m_webAudioPlayerIpcFactoryMock,
-                                                                        m_sharedMemoryManagerMock));
+                                                                        m_clientControllerMock));
 
     EXPECT_NE(m_webAudioPlayer, nullptr);
 }
@@ -73,6 +73,6 @@ TEST_F(RialtoClientCreateWebAudioPlayerTest, CreateWebAudioPlayerIpcFailure)
 
     EXPECT_THROW(webAudioPlayer = std::make_unique<WebAudioPlayer>(m_webAudioPlayerClientMock, m_audioMimeType,
                                                                    m_priority, &m_config, m_webAudioPlayerIpcFactoryMock,
-                                                                   m_sharedMemoryManagerMock),
+                                                                   m_clientControllerMock),
                  std::runtime_error);
 }

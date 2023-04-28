@@ -20,9 +20,9 @@
 #ifndef FIREBOLT_RIALTO_CLIENT_CONTROL_H_
 #define FIREBOLT_RIALTO_CLIENT_CONTROL_H_
 
+#include "IClientController.h"
 #include "IControl.h"
 #include "IControlClient.h"
-#include "ISharedMemoryManager.h"
 #include <memory>
 #include <string>
 #include <vector>
@@ -57,7 +57,7 @@ public:
     /**
      * @brief The constructor.
      */
-    explicit Control(ISharedMemoryManager &sharedMemoryManager);
+    explicit Control(IClientController &clientController);
 
     /**
      * @brief Virtual destructor.
@@ -73,9 +73,9 @@ private:
     std::vector<std::shared_ptr<IControlClient>> m_clients;
 
     /**
-     * @brief The rialto shared memory manager object.
+     * @brief The rialto client controller object.
      */
-    ISharedMemoryManager &m_sharedMemoryManager;
+    IClientController &m_clientController;
 };
 
 }; // namespace firebolt::rialto::client

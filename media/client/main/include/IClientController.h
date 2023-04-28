@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_CLIENT_I_SHARED_MEMORY_MANAGER_H_
-#define FIREBOLT_RIALTO_CLIENT_I_SHARED_MEMORY_MANAGER_H_
+#ifndef FIREBOLT_RIALTO_CLIENT_I_CLIENT_CONTROLLER_H_
+#define FIREBOLT_RIALTO_CLIENT_I_CLIENT_CONTROLLER_H_
 
 #include "IControlClient.h"
 #include <functional>
@@ -26,53 +26,53 @@
 #include <stdint.h>
 namespace firebolt::rialto::client
 {
-class ISharedMemoryManager;
+class IClientController;
 
 /**
- * @brief ISharedMemoryManager accessor class definition.
+ * @brief IClientController accessor class definition.
  */
-class ISharedMemoryManagerAccessor
+class IClientControllerAccessor
 {
 public:
-    virtual ~ISharedMemoryManagerAccessor() = default;
-    ISharedMemoryManagerAccessor(const ISharedMemoryManagerAccessor &) = delete;
-    ISharedMemoryManagerAccessor &operator=(const ISharedMemoryManagerAccessor &) = delete;
-    ISharedMemoryManagerAccessor(ISharedMemoryManagerAccessor &&) = delete;
-    ISharedMemoryManagerAccessor &operator=(ISharedMemoryManagerAccessor &&) = delete;
+    virtual ~IClientControllerAccessor() = default;
+    IClientControllerAccessor(const IClientControllerAccessor &) = delete;
+    IClientControllerAccessor &operator=(const IClientControllerAccessor &) = delete;
+    IClientControllerAccessor(IClientControllerAccessor &&) = delete;
+    IClientControllerAccessor &operator=(IClientControllerAccessor &&) = delete;
 
     /**
-     * @brief Get a ISharedMemoryManagerAccessor instance.
+     * @brief Get a IClientControllerAccessor instance.
      *
      * @retval the accessor instance
      */
-    static ISharedMemoryManagerAccessor &instance();
+    static IClientControllerAccessor &instance();
 
     /**
-     * @brief Get SharedMemoryManager object.
+     * @brief Get ClientController object.
      *
-     * @retval the reference to SharedMemoryManager singleton object
+     * @retval the reference to ClientController singleton object
      */
-    virtual ISharedMemoryManager &getSharedMemoryManager() const = 0;
+    virtual IClientController &getClientController() const = 0;
 
 protected:
-    ISharedMemoryManagerAccessor() = default;
+    IClientControllerAccessor() = default;
 };
 
 /**
- * @brief The definition of the ISharedMemoryManager interface.
+ * @brief The definition of the IClientController interface.
  *
  * This interface defines the internal API querying shared memory.
  */
-class ISharedMemoryManager
+class IClientController
 {
 public:
-    ISharedMemoryManager() = default;
-    virtual ~ISharedMemoryManager() = default;
+    IClientController() = default;
+    virtual ~IClientController() = default;
 
-    ISharedMemoryManager(const ISharedMemoryManager &) = delete;
-    ISharedMemoryManager &operator=(const ISharedMemoryManager &) = delete;
-    ISharedMemoryManager(ISharedMemoryManager &&) = delete;
-    ISharedMemoryManager &operator=(ISharedMemoryManager &&) = delete;
+    IClientController(const IClientController &) = delete;
+    IClientController &operator=(const IClientController &) = delete;
+    IClientController(IClientController &&) = delete;
+    IClientController &operator=(IClientController &&) = delete;
 
     /**
      * @brief Gets the pointer to the mapped shared memory.
@@ -103,4 +103,4 @@ public:
 
 }; // namespace firebolt::rialto::client
 
-#endif // FIREBOLT_RIALTO_CLIENT_I_SHARED_MEMORY_MANAGER_H_
+#endif // FIREBOLT_RIALTO_CLIENT_I_CLIENT_CONTROLLER_H_

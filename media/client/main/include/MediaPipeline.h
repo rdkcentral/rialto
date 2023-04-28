@@ -21,11 +21,11 @@
 #define FIREBOLT_RIALTO_MEDIA_PIPELINE_H_
 
 #include "AttachedSources.h"
+#include "IClientController.h"
 #include "IControlClient.h"
 #include "IMediaFrameWriter.h"
 #include "IMediaPipeline.h"
 #include "IMediaPipelineIpc.h"
-#include "ISharedMemoryManager.h"
 #include <atomic>
 #include <map>
 #include <memory>
@@ -78,12 +78,12 @@ public:
      * @param[in] videoRequirements             : The video decoder requirements for the MediaPipeline session.
      * @param[in] mediaPipelineIpcFactory         : The media player ipc factory.
      * @param[in] mediaFrameWriterFactory       : The media frame writer factory.
-     * @param[in] sharedMemoryManager           : The shared memory manager.
+     * @param[in] clientController           : The shared memory manager.
      */
     MediaPipeline(std::weak_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements,
                   const std::shared_ptr<IMediaPipelineIpcFactory> &mediaPipelineIpcFactory,
                   const std::shared_ptr<common::IMediaFrameWriterFactory> &mediaFrameWriterFactory,
-                  ISharedMemoryManager &sharedMemoryManager);
+                  IClientController &clientController);
 
     /**
      * @brief Virtual destructor.
@@ -160,7 +160,7 @@ protected:
     /**
      * @brief The rialto shared memory manager object.
      */
-    ISharedMemoryManager &m_sharedMemoryManager;
+    IClientController &m_clientController;
 
     /**
      * @brief The Need data request map.

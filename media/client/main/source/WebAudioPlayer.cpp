@@ -51,10 +51,10 @@ std::unique_ptr<IWebAudioPlayer> WebAudioPlayerFactory::createWebAudioPlayer(std
     std::unique_ptr<IWebAudioPlayer> webAudioPlayer;
     try
     {
-        webAudioPlayer = std::make_unique<client::WebAudioPlayer>(client, audioMimeType, priority, config,
-                                                                  client::IWebAudioPlayerIpcFactory::getFactory(),
-                                                                  client::ISharedMemoryManagerAccessor::instance()
-                                                                      .getSharedMemoryManager());
+        webAudioPlayer =
+            std::make_unique<client::WebAudioPlayer>(client, audioMimeType, priority, config,
+                                                     client::IWebAudioPlayerIpcFactory::getFactory(),
+                                                     client::IClientControllerAccessor::instance().getClientController());
     }
     catch (const std::exception &e)
     {
@@ -70,8 +70,8 @@ namespace firebolt::rialto::client
 WebAudioPlayer::WebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
                                const uint32_t priority, const WebAudioConfig *config,
                                const std::shared_ptr<IWebAudioPlayerIpcFactory> &webAudioPlayerIpcFactory,
-                               ISharedMemoryManager &sharedMemoryManager)
-    : m_webAudioPlayerClient(client), m_sharedMemoryManager{sharedMemoryManager}, m_bytesPerFrame{0}
+                               IClientController &clientController)
+    : m_webAudioPlayerClient(client), m_clientController{clientController}, m_bytesPerFrame{0}
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
@@ -166,7 +166,7 @@ bool WebAudioPlayer::writeBuffer(const uint32_t numberOfFrames, void *data)
         return false;
     }
 
-    uint8_t *shmBuffer = m_sharedMemoryManager.getSharedMemoryBuffer();
+    uint8_t *shmBuffer = m_clientController.getSharedMemoryBuffer();
     if (nullptr == shmBuffer)
     {
         RIALTO_CLIENT_LOG_ERROR("Shared buffer no longer valid");

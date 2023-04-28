@@ -49,7 +49,7 @@ std::shared_ptr<ControlFactory> ControlFactory::createFactory()
 std::shared_ptr<IControl> ControlFactory::createControl() const
 try
 {
-    return std::make_shared<Control>(ISharedMemoryManagerAccessor::instance().getSharedMemoryManager());
+    return std::make_shared<Control>(IClientControllerAccessor::instance().getClientController());
 }
 catch (const std::exception &e)
 {
@@ -57,7 +57,7 @@ catch (const std::exception &e)
     return nullptr;
 }
 
-Control::Control(ISharedMemoryManager &sharedMemoryManager) : m_sharedMemoryManager(sharedMemoryManager)
+Control::Control(IClientController &clientController) : m_clientController(clientController)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 }
@@ -67,14 +67,14 @@ Control::~Control()
     RIALTO_CLIENT_LOG_DEBUG("entry:");
     for (const auto &client : m_clients)
     {
-        m_sharedMemoryManager.unregisterClient(client.get());
+        m_clientController.unregisterClient(client.get());
     }
 }
 
 bool Control::registerClient(std::weak_ptr<IControlClient> client, ApplicationState &appState)
 {
     std::shared_ptr<IControlClient> lockedClient = client.lock();
-    if (lockedClient && m_sharedMemoryManager.registerClient(lockedClient.get(), appState))
+    if (lockedClient && m_clientController.registerClient(lockedClient.get(), appState))
     {
         m_clients.push_back(lockedClient);
         return true;

@@ -59,7 +59,7 @@ void WebAudioPlayerTestBase::createWebAudioPlayer()
     EXPECT_NO_THROW(m_webAudioPlayer = std::make_unique<WebAudioPlayer>(m_webAudioPlayerClientMock, m_audioMimeType,
                                                                         m_priority, &m_config,
                                                                         m_webAudioPlayerIpcFactoryMock,
-                                                                        m_sharedMemoryManagerMock));
+                                                                        m_clientControllerMock));
 
     // Save a raw pointer here same as above
     m_webAudioPlayerCallback = m_webAudioPlayer.get();

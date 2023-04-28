@@ -17,9 +17,9 @@
  * limitations under the License.
  */
 
+#include "ClientController.h"
 #include "ControlIpcFactoryMock.h"
 #include "ControlIpcMock.h"
-#include "SharedMemoryManager.h"
 #include <gtest/gtest.h>
 
 using namespace firebolt::rialto;
@@ -29,56 +29,56 @@ using ::testing::_;
 using ::testing::Return;
 using ::testing::StrictMock;
 
-class SharedMemoryManagerCreateTest : public ::testing::Test
+class ClientControllerCreateTest : public ::testing::Test
 {
 protected:
     std::shared_ptr<StrictMock<ControlIpcFactoryMock>> m_controlIpcFactoryMock;
     std::shared_ptr<StrictMock<ControlIpcMock>> m_controlIpcMock;
 
-    SharedMemoryManagerCreateTest()
+    ClientControllerCreateTest()
     {
         m_controlIpcFactoryMock = std::make_shared<StrictMock<ControlIpcFactoryMock>>();
         m_controlIpcMock = std::make_shared<StrictMock<ControlIpcMock>>();
     }
 
-    ~SharedMemoryManagerCreateTest()
+    ~ClientControllerCreateTest()
     {
         m_controlIpcMock.reset();
         m_controlIpcFactoryMock.reset();
     }
 };
 
-TEST_F(SharedMemoryManagerCreateTest, CreateDestroy)
+TEST_F(ClientControllerCreateTest, CreateDestroy)
 {
-    std::unique_ptr<ISharedMemoryManager> shmManager;
+    std::unique_ptr<IClientController> controller;
 
     // Create
     EXPECT_CALL(*m_controlIpcFactoryMock, getControlIpc(_)).WillOnce(Return(m_controlIpcMock));
     EXPECT_CALL(*m_controlIpcMock, registerClient()).WillOnce(Return(true));
 
-    EXPECT_NO_THROW(shmManager = std::make_unique<SharedMemoryManager>(m_controlIpcFactoryMock));
+    EXPECT_NO_THROW(controller = std::make_unique<ClientController>(m_controlIpcFactoryMock));
 
     // Destroy
-    shmManager.reset();
+    controller.reset();
 }
 
-TEST_F(SharedMemoryManagerCreateTest, CreateControlIpcFailure)
+TEST_F(ClientControllerCreateTest, CreateControlIpcFailure)
 {
-    std::unique_ptr<ISharedMemoryManager> shmManager;
+    std::unique_ptr<IClientController> controller;
 
     EXPECT_CALL(*m_controlIpcFactoryMock, getControlIpc(_)).WillOnce(Return(nullptr));
 
-    EXPECT_THROW(shmManager = std::make_unique<SharedMemoryManager>(m_controlIpcFactoryMock), std::runtime_error);
-    EXPECT_EQ(shmManager, nullptr);
+    EXPECT_THROW(controller = std::make_unique<ClientController>(m_controlIpcFactoryMock), std::runtime_error);
+    EXPECT_EQ(controller, nullptr);
 }
 
-TEST_F(SharedMemoryManagerCreateTest, CreateControlRegisterClientFailure)
+TEST_F(ClientControllerCreateTest, CreateControlRegisterClientFailure)
 {
-    std::unique_ptr<ISharedMemoryManager> shmManager;
+    std::unique_ptr<IClientController> controller;
 
     EXPECT_CALL(*m_controlIpcFactoryMock, getControlIpc(_)).WillOnce(Return(m_controlIpcMock));
     EXPECT_CALL(*m_controlIpcMock, registerClient()).WillOnce(Return(false));
 
-    EXPECT_THROW(shmManager = std::make_unique<SharedMemoryManager>(m_controlIpcFactoryMock), std::runtime_error);
-    EXPECT_EQ(shmManager, nullptr);
+    EXPECT_THROW(controller = std::make_unique<ClientController>(m_controlIpcFactoryMock), std::runtime_error);
+    EXPECT_EQ(controller, nullptr);
 }

@@ -20,8 +20,8 @@
 #ifndef WEB_AUDIO_PLAYER_TEST_BASE_H_
 #define WEB_AUDIO_PLAYER_TEST_BASE_H_
 
+#include "ClientControllerMock.h"
 #include "IWebAudioPlayerIpcClient.h"
-#include "SharedMemoryManagerMock.h"
 #include "WebAudioPlayer.h"
 #include "WebAudioPlayerClientMock.h"
 #include "WebAudioPlayerIpcFactoryMock.h"
@@ -57,7 +57,7 @@ protected:
     std::shared_ptr<StrictMock<WebAudioPlayerClientMock>> m_webAudioPlayerClientMock;
     std::shared_ptr<StrictMock<WebAudioPlayerIpcFactoryMock>> m_webAudioPlayerIpcFactoryMock;
     StrictMock<WebAudioPlayerIpcMock> *m_webAudioPlayerIpcMock = nullptr;
-    StrictMock<SharedMemoryManagerMock> m_sharedMemoryManagerMock;
+    StrictMock<ClientControllerMock> m_clientControllerMock;
 
     std::unique_ptr<WebAudioPlayer> m_webAudioPlayer;
 

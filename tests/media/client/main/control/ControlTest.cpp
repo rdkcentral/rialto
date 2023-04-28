@@ -18,8 +18,8 @@
  */
 
 #include "Control.h"
+#include "ClientControllerMock.h"
 #include "ControlClientMock.h"
-#include "SharedMemoryManagerMock.h"
 #include <gtest/gtest.h>
 
 using namespace firebolt::rialto;
@@ -35,7 +35,7 @@ class RialtoClientControlTest : public ::testing::Test
 {
 protected:
     std::shared_ptr<StrictMock<ControlClientMock>> m_controlClientMock;
-    StrictMock<SharedMemoryManagerMock> m_sharedMemoryManagerMock;
+    StrictMock<ClientControllerMock> m_clientControllerMock;
 };
 
 TEST_F(RialtoClientControlTest, CreateDestroy)
@@ -43,7 +43,7 @@ TEST_F(RialtoClientControlTest, CreateDestroy)
     std::unique_ptr<IControl> control;
 
     // Create
-    EXPECT_NO_THROW(control = std::make_unique<Control>(m_sharedMemoryManagerMock));
+    EXPECT_NO_THROW(control = std::make_unique<Control>(m_clientControllerMock));
 
     // Destroy
     control.reset();
@@ -56,14 +56,14 @@ TEST_F(RialtoClientControlTest, RegisterAndUnregisterClient)
     constexpr ApplicationState kExpectedAppState{ApplicationState::RUNNING};
     std::unique_ptr<IControl> control;
 
-    EXPECT_NO_THROW(control = std::make_unique<Control>(m_sharedMemoryManagerMock));
+    EXPECT_NO_THROW(control = std::make_unique<Control>(m_clientControllerMock));
 
-    EXPECT_CALL(m_sharedMemoryManagerMock, registerClient(m_controlClientMock.get(), _))
+    EXPECT_CALL(m_clientControllerMock, registerClient(m_controlClientMock.get(), _))
         .WillOnce(DoAll(SetArgReferee<1>(kExpectedAppState), Return(true)));
     control->registerClient(m_controlClientMock, appState);
     EXPECT_EQ(appState, kExpectedAppState);
 
-    EXPECT_CALL(m_sharedMemoryManagerMock, unregisterClient(m_controlClientMock.get())).WillOnce(Return(true));
+    EXPECT_CALL(m_clientControllerMock, unregisterClient(m_controlClientMock.get())).WillOnce(Return(true));
 
     // Destroy
     control.reset();
@@ -74,7 +74,7 @@ TEST_F(RialtoClientControlTest, RegisterClientFailDueToNullControlClient)
     ApplicationState appState;
     std::unique_ptr<IControl> control;
 
-    EXPECT_NO_THROW(control = std::make_unique<Control>(m_sharedMemoryManagerMock));
+    EXPECT_NO_THROW(control = std::make_unique<Control>(m_clientControllerMock));
 
     control->registerClient(m_controlClientMock, appState);
 
@@ -88,9 +88,9 @@ TEST_F(RialtoClientControlTest, RegisterClientFailureDueToOperationFailure)
     ApplicationState appState;
     std::unique_ptr<IControl> control;
 
-    EXPECT_NO_THROW(control = std::make_unique<Control>(m_sharedMemoryManagerMock));
+    EXPECT_NO_THROW(control = std::make_unique<Control>(m_clientControllerMock));
 
-    EXPECT_CALL(m_sharedMemoryManagerMock, registerClient(m_controlClientMock.get(), _)).WillOnce(Return(false));
+    EXPECT_CALL(m_clientControllerMock, registerClient(m_controlClientMock.get(), _)).WillOnce(Return(false));
     control->registerClient(m_controlClientMock, appState);
 
     // Destroy

@@ -17,10 +17,10 @@
  * limitations under the License.
  */
 
+#include "ClientController.h"
 #include "ControlClientMock.h"
 #include "ControlIpcFactoryMock.h"
 #include "ControlIpcMock.h"
-#include "SharedMemoryManager.h"
 #include <gtest/gtest.h>
 #include <linux/memfd.h>
 #include <sys/mman.h>
@@ -36,7 +36,7 @@ using ::testing::Return;
 using ::testing::SetArgReferee;
 using ::testing::StrictMock;
 
-class SharedMemoryManagerMemoryManagementTest : public ::testing::Test
+class ClientControllerMemoryManagementTest : public ::testing::Test
 {
 protected:
     int32_t m_fd;
@@ -45,9 +45,9 @@ protected:
     std::shared_ptr<StrictMock<ControlIpcFactoryMock>> m_controlIpcFactoryMock;
     std::shared_ptr<StrictMock<ControlIpcMock>> m_controlIpcMock;
     StrictMock<ControlClientMock> m_controlClientMock;
-    std::unique_ptr<SharedMemoryManager> m_sut;
+    std::unique_ptr<ClientController> m_sut;
 
-    SharedMemoryManagerMemoryManagementTest()
+    ClientControllerMemoryManagementTest()
         : m_controlIpcFactoryMock{std::make_shared<StrictMock<ControlIpcFactoryMock>>()},
           m_controlIpcMock{std::make_shared<StrictMock<ControlIpcMock>>()}
     {
@@ -56,10 +56,10 @@ protected:
 
         EXPECT_CALL(*m_controlIpcFactoryMock, getControlIpc(_)).WillOnce(Return(m_controlIpcMock));
         EXPECT_CALL(*m_controlIpcMock, registerClient()).WillOnce(Return(true));
-        EXPECT_NO_THROW(m_sut = std::make_unique<SharedMemoryManager>(m_controlIpcFactoryMock));
+        EXPECT_NO_THROW(m_sut = std::make_unique<ClientController>(m_controlIpcFactoryMock));
     }
 
-    ~SharedMemoryManagerMemoryManagementTest()
+    ~ClientControllerMemoryManagementTest()
     {
         m_sut.reset();
 
@@ -77,13 +77,13 @@ protected:
     }
 };
 
-TEST_F(SharedMemoryManagerMemoryManagementTest, DoNothingWhenSwitchedToCurrentState)
+TEST_F(ClientControllerMemoryManagementTest, DoNothingWhenSwitchedToCurrentState)
 {
     changeAppState(ApplicationState::UNKNOWN);
     EXPECT_EQ(nullptr, m_sut->getSharedMemoryBuffer());
 }
 
-TEST_F(SharedMemoryManagerMemoryManagementTest, SwitchToRunningShouldFailWhenIpcReturnsError)
+TEST_F(ClientControllerMemoryManagementTest, SwitchToRunningShouldFailWhenIpcReturnsError)
 {
     EXPECT_CALL(*m_controlIpcMock, getSharedMemory(_, _))
         .WillOnce(DoAll(SetArgReferee<0>(m_fd), SetArgReferee<1>(m_size), Return(false)));
@@ -91,7 +91,7 @@ TEST_F(SharedMemoryManagerMemoryManagementTest, SwitchToRunningShouldFailWhenIpc
     EXPECT_EQ(nullptr, m_sut->getSharedMemoryBuffer());
 }
 
-TEST_F(SharedMemoryManagerMemoryManagementTest, SwitchToRunningShouldFailWhenIpcReturnsInvalidFdAndSize)
+TEST_F(ClientControllerMemoryManagementTest, SwitchToRunningShouldFailWhenIpcReturnsInvalidFdAndSize)
 {
     EXPECT_CALL(*m_controlIpcMock, getSharedMemory(_, _))
         .WillOnce(DoAll(SetArgReferee<0>(-1), SetArgReferee<1>(0), Return(true)));
@@ -99,7 +99,7 @@ TEST_F(SharedMemoryManagerMemoryManagementTest, SwitchToRunningShouldFailWhenIpc
     EXPECT_EQ(nullptr, m_sut->getSharedMemoryBuffer());
 }
 
-TEST_F(SharedMemoryManagerMemoryManagementTest, SwitchToRunningShouldFailWhenMemoryFailsToMap)
+TEST_F(ClientControllerMemoryManagementTest, SwitchToRunningShouldFailWhenMemoryFailsToMap)
 {
     // Send random numbers as a fd and size
     EXPECT_CALL(*m_controlIpcMock, getSharedMemory(_, _))
@@ -108,7 +108,7 @@ TEST_F(SharedMemoryManagerMemoryManagementTest, SwitchToRunningShouldFailWhenMem
     EXPECT_EQ(nullptr, m_sut->getSharedMemoryBuffer());
 }
 
-TEST_F(SharedMemoryManagerMemoryManagementTest, SwitchToRunningShouldSucceed)
+TEST_F(ClientControllerMemoryManagementTest, SwitchToRunningShouldSucceed)
 {
     EXPECT_CALL(*m_controlIpcMock, getSharedMemory(_, _))
         .WillOnce(DoAll(SetArgReferee<0>(m_fd), SetArgReferee<1>(m_size), Return(true)));
@@ -116,13 +116,13 @@ TEST_F(SharedMemoryManagerMemoryManagementTest, SwitchToRunningShouldSucceed)
     EXPECT_NE(nullptr, m_sut->getSharedMemoryBuffer());
 }
 
-TEST_F(SharedMemoryManagerMemoryManagementTest, SwitchToInactiveWithoutMemoryTerminationShouldSucceed)
+TEST_F(ClientControllerMemoryManagementTest, SwitchToInactiveWithoutMemoryTerminationShouldSucceed)
 {
     changeAppState(ApplicationState::INACTIVE);
     EXPECT_EQ(nullptr, m_sut->getSharedMemoryBuffer());
 }
 
-TEST_F(SharedMemoryManagerMemoryManagementTest, SwitchToInactiveWithMemoryTerminationShouldSucceed)
+TEST_F(ClientControllerMemoryManagementTest, SwitchToInactiveWithMemoryTerminationShouldSucceed)
 {
     EXPECT_CALL(*m_controlIpcMock, getSharedMemory(_, _))
         .WillOnce(DoAll(SetArgReferee<0>(m_fd), SetArgReferee<1>(m_size), Return(true)));
@@ -132,7 +132,7 @@ TEST_F(SharedMemoryManagerMemoryManagementTest, SwitchToInactiveWithMemoryTermin
     EXPECT_EQ(nullptr, m_sut->getSharedMemoryBuffer());
 }
 
-TEST_F(SharedMemoryManagerMemoryManagementTest, SwitchStatesWithClientNotification)
+TEST_F(ClientControllerMemoryManagementTest, SwitchStatesWithClientNotification)
 {
     ApplicationState appState;
     m_sut->registerClient(&m_controlClientMock, appState);
@@ -147,7 +147,7 @@ TEST_F(SharedMemoryManagerMemoryManagementTest, SwitchStatesWithClientNotificati
     EXPECT_EQ(nullptr, m_sut->getSharedMemoryBuffer());
 }
 
-TEST_F(SharedMemoryManagerMemoryManagementTest, SwitchStatesWithoutClientNotification)
+TEST_F(ClientControllerMemoryManagementTest, SwitchStatesWithoutClientNotification)
 {
     ApplicationState appState;
     m_sut->registerClient(&m_controlClientMock, appState);
@@ -160,7 +160,7 @@ TEST_F(SharedMemoryManagerMemoryManagementTest, SwitchStatesWithoutClientNotific
     EXPECT_EQ(nullptr, m_sut->getSharedMemoryBuffer());
 }
 
-TEST_F(SharedMemoryManagerMemoryManagementTest, RegisterClientInRunningState)
+TEST_F(ClientControllerMemoryManagementTest, RegisterClientInRunningState)
 {
     constexpr ApplicationState kExpectedAppState{ApplicationState::RUNNING};
     ApplicationState appState;
@@ -172,7 +172,7 @@ TEST_F(SharedMemoryManagerMemoryManagementTest, RegisterClientInRunningState)
     EXPECT_NE(nullptr, m_sut->getSharedMemoryBuffer());
 }
 
-TEST_F(SharedMemoryManagerMemoryManagementTest, SwitchToInvalidStateShouldFail)
+TEST_F(ClientControllerMemoryManagementTest, SwitchToInvalidStateShouldFail)
 {
     EXPECT_CALL(*m_controlIpcMock, getSharedMemory(_, _))
         .WillOnce(DoAll(SetArgReferee<0>(m_fd), SetArgReferee<1>(m_size), Return(true)));

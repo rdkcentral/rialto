@@ -17,29 +17,29 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_CLIENT_SHARED_MEMORY_MANAGER_H_
-#define FIREBOLT_RIALTO_CLIENT_SHARED_MEMORY_MANAGER_H_
+#ifndef FIREBOLT_RIALTO_CLIENT_CLIENT_CONTROLLER_H_
+#define FIREBOLT_RIALTO_CLIENT_CLIENT_CONTROLLER_H_
 
+#include "IClientController.h"
 #include "IControlClient.h"
 #include "IControlIpc.h"
-#include "ISharedMemoryManager.h"
 #include <mutex>
 #include <set>
 
 namespace firebolt::rialto::client
 {
-class SharedMemoryManagerAccessor : public ISharedMemoryManagerAccessor
+class ClientControllerAccessor : public IClientControllerAccessor
 {
 public:
-    ~SharedMemoryManagerAccessor() override = default;
-    ISharedMemoryManager &getSharedMemoryManager() const override;
+    ~ClientControllerAccessor() override = default;
+    IClientController &getClientController() const override;
 };
 
-class SharedMemoryManager : public ISharedMemoryManager, public IControlClient
+class ClientController : public IClientController, public IControlClient
 {
 public:
-    SharedMemoryManager(const std::shared_ptr<IControlIpcFactory> &ControlIpcFactory);
-    ~SharedMemoryManager() override;
+    ClientController(const std::shared_ptr<IControlIpcFactory> &ControlIpcFactory);
+    ~ClientController() override;
 
     uint8_t *getSharedMemoryBuffer() override;
     bool registerClient(IControlClient *client, ApplicationState &appState) override;
@@ -115,4 +115,4 @@ private:
 };
 } // namespace firebolt::rialto::client
 
-#endif // FIREBOLT_RIALTO_CLIENT_SHARED_MEMORY_MANAGER_H_
+#endif // FIREBOLT_RIALTO_CLIENT_CLIENT_CONTROLLER_H_

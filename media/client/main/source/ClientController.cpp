@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-#include "SharedMemoryManager.h"
+#include "ClientController.h"
 #include "RialtoClientLogging.h"
 #include <sys/mman.h>
 #include <sys/un.h>
@@ -25,19 +25,19 @@
 
 namespace firebolt::rialto::client
 {
-ISharedMemoryManagerAccessor &ISharedMemoryManagerAccessor::instance()
+IClientControllerAccessor &IClientControllerAccessor::instance()
 {
-    static SharedMemoryManagerAccessor factory;
+    static ClientControllerAccessor factory;
     return factory;
 }
 
-ISharedMemoryManager &SharedMemoryManagerAccessor::getSharedMemoryManager() const
+IClientController &ClientControllerAccessor::getClientController() const
 {
-    static SharedMemoryManager sharedMemoryManager{IControlIpcFactory::createFactory()};
-    return sharedMemoryManager;
+    static ClientController ClientController{IControlIpcFactory::createFactory()};
+    return ClientController;
 }
 
-SharedMemoryManager::SharedMemoryManager(const std::shared_ptr<IControlIpcFactory> &ControlIpcFactory)
+ClientController::ClientController(const std::shared_ptr<IControlIpcFactory> &ControlIpcFactory)
     : m_currentState{ApplicationState::UNKNOWN}, m_shmFd(-1), m_shmBuffer(nullptr), m_shmBufferLen(0U)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
@@ -54,20 +54,20 @@ SharedMemoryManager::SharedMemoryManager(const std::shared_ptr<IControlIpcFactor
     }
 }
 
-SharedMemoryManager::~SharedMemoryManager()
+ClientController::~ClientController()
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     termSharedMemory();
 }
 
-uint8_t *SharedMemoryManager::getSharedMemoryBuffer()
+uint8_t *ClientController::getSharedMemoryBuffer()
 {
     std::lock_guard<std::mutex> lock{m_mutex};
     return m_shmBuffer;
 }
 
-bool SharedMemoryManager::registerClient(IControlClient *client, ApplicationState &appState)
+bool ClientController::registerClient(IControlClient *client, ApplicationState &appState)
 {
     if (nullptr == client)
     {
@@ -82,7 +82,7 @@ bool SharedMemoryManager::registerClient(IControlClient *client, ApplicationStat
     return true;
 }
 
-bool SharedMemoryManager::unregisterClient(IControlClient *client)
+bool ClientController::unregisterClient(IControlClient *client)
 {
     if (nullptr == client)
     {
@@ -102,7 +102,7 @@ bool SharedMemoryManager::unregisterClient(IControlClient *client)
     return true;
 }
 
-bool SharedMemoryManager::initSharedMemory()
+bool ClientController::initSharedMemory()
 {
     std::lock_guard<std::mutex> lock{m_mutex};
     if (!m_controlIpc->getSharedMemory(m_shmFd, m_shmBufferLen))
@@ -132,7 +132,7 @@ bool SharedMemoryManager::initSharedMemory()
     return true;
 }
 
-void SharedMemoryManager::termSharedMemory()
+void ClientController::termSharedMemory()
 {
     std::lock_guard<std::mutex> lock{m_mutex};
     if (-1 == m_shmFd)
@@ -157,7 +157,7 @@ void SharedMemoryManager::termSharedMemory()
     m_shmBufferLen = 0U;
 }
 
-void SharedMemoryManager::notifyApplicationState(ApplicationState state)
+void ClientController::notifyApplicationState(ApplicationState state)
 {
     {
         std::lock_guard<std::mutex> lock{m_mutex};
@@ -196,7 +196,7 @@ void SharedMemoryManager::notifyApplicationState(ApplicationState state)
     }
 }
 
-std::string SharedMemoryManager::stateToString(ApplicationState state)
+std::string ClientController::stateToString(ApplicationState state)
 {
     switch (state)
     {
@@ -216,7 +216,7 @@ std::string SharedMemoryManager::stateToString(ApplicationState state)
     }
 }
 
-void SharedMemoryManager::changeStateAndNotifyClients(ApplicationState state)
+void ClientController::changeStateAndNotifyClients(ApplicationState state)
 {
     std::set<IControlClient *> currentClients;
     {
