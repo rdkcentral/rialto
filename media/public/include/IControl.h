@@ -57,11 +57,9 @@ public:
     /**
      * @brief IControl factory method, returns a concrete implementation of IControl
      *
-     * @param[in] client            : The Rialto control client.
-     *
      * @retval the new IControl instance or null on error.
      */
-    virtual std::shared_ptr<IControl> createControl(std::weak_ptr<IControlClient> client) const = 0;
+    virtual std::shared_ptr<IControl> createControl() const = 0;
 };
 
 /**
@@ -80,6 +78,16 @@ public:
     IControl &operator=(const IControl &) = delete;
     IControl(IControl &&) = delete;
     IControl &operator=(IControl &&) = delete;
+
+    /**
+     * @brief Register new IControlClient
+     *
+     * @param[in]  state    : Client object for callbacks
+     * @param[out] appState : Current application state
+     *
+     * @retval true on success, false otherwise.
+     */
+    virtual bool registerClient(std::weak_ptr<IControlClient> client, ApplicationState &appState) = 0;
 };
 
 }; // namespace firebolt::rialto

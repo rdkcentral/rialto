@@ -58,23 +58,16 @@ catch (std::exception &e)
     return nullptr;
 }
 
-std::shared_ptr<IControl> ControlServerInternalFactory::createControl(std::weak_ptr<IControlClient> client) const
+std::shared_ptr<IControl> ControlServerInternalFactory::createControl() const
 {
     RIALTO_SERVER_LOG_ERROR("This function can't be used by rialto server. Please use createControlServerInternal");
     return nullptr;
 }
 
-std::shared_ptr<IControlServerInternal>
-ControlServerInternalFactory::createControlServerInternal(std::weak_ptr<IControlClientServerInternal> client) const
+std::shared_ptr<IControlServerInternal> ControlServerInternalFactory::createControlServerInternal() const
 try
 {
-    std::shared_ptr<IControlClientServerInternal> controlClient{client.lock()};
-    if (!controlClient)
-    {
-        RIALTO_SERVER_LOG_ERROR("ControlServerInternal creation failed - can't lock client");
-        return nullptr;
-    }
-    return std::make_shared<ControlServerInternal>(controlClient, server::IMainThreadFactory::createFactory());
+    return std::make_shared<ControlServerInternal>(server::IMainThreadFactory::createFactory());
 }
 catch (const std::exception &e)
 {
@@ -82,9 +75,7 @@ catch (const std::exception &e)
     return nullptr;
 }
 
-ControlServerInternal::ControlServerInternal(const std::shared_ptr<IControlClientServerInternal> &client,
-                                             const std::shared_ptr<IMainThreadFactory> &mainThreadFactory)
-    : m_client{client}
+ControlServerInternal::ControlServerInternal(const std::shared_ptr<IMainThreadFactory> &mainThreadFactory)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
     m_mainThread = mainThreadFactory->getMainThread();
@@ -111,5 +102,16 @@ void ControlServerInternal::setApplicationState(const ApplicationState &state)
     RIALTO_SERVER_LOG_INFO("Notify rialto clients about state changed to: %s", convertApplicationState(state));
     auto task = [&]() { m_client->notifyApplicationState(state); };
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+}
+
+bool ControlServerInternal::registerClient(std::weak_ptr<IControlClient> client, ApplicationState &appState)
+{
+    std::shared_ptr<IControlClient> lockedClient = client.lock();
+    if (!lockedClient)
+    {
+        return false;
+    }
+    m_client = lockedClient;
+    return true;
 }
 } // namespace firebolt::rialto::server

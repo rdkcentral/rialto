@@ -77,7 +77,6 @@ bool SharedMemoryManager::registerClient(IControlClient *client)
 
     {
         std::lock_guard<std::mutex> lock{m_mutex};
-
         m_clientVec.insert(client);
     }
 
@@ -110,6 +109,7 @@ bool SharedMemoryManager::unregisterClient(IControlClient *client)
 
 bool SharedMemoryManager::initSharedMemory()
 {
+    std::lock_guard<std::mutex> lock{m_mutex};
     if (!m_controlIpc->getSharedMemory(m_shmFd, m_shmBufferLen))
     {
         RIALTO_CLIENT_LOG_ERROR("Failed to get the shared memory");
@@ -139,6 +139,7 @@ bool SharedMemoryManager::initSharedMemory()
 
 void SharedMemoryManager::termSharedMemory()
 {
+    std::lock_guard<std::mutex> lock{m_mutex};
     if (-1 == m_shmFd)
     {
         RIALTO_CLIENT_LOG_WARN("Shared memory not initalised");
@@ -163,11 +164,13 @@ void SharedMemoryManager::termSharedMemory()
 
 void SharedMemoryManager::notifyApplicationState(ApplicationState state)
 {
-    std::lock_guard<std::mutex> lock{m_mutex};
-    if (m_currentState == state)
     {
-        RIALTO_CLIENT_LOG_WARN("Rialto application state already set, %s", stateToString(m_currentState).c_str());
-        return;
+        std::lock_guard<std::mutex> lock{m_mutex};
+        if (m_currentState == state)
+        {
+            RIALTO_CLIENT_LOG_WARN("Rialto application state already set, %s", stateToString(m_currentState).c_str());
+            return;
+        }
     }
 
     switch (state)
@@ -206,6 +209,7 @@ void SharedMemoryManager::notifyApplicationState(ApplicationState state)
     RIALTO_CLIENT_LOG_INFO("Rialto application state changed from %s to %s", stateToString(m_currentState).c_str(),
                            stateToString(state).c_str());
 
+    std::lock_guard<std::mutex> lock{m_mutex};
     m_currentState = state;
 }
 

@@ -71,14 +71,14 @@ private:
 
 private:
     /**
-     * @brief The current application state
-     */
-    ApplicationState m_currentState;
-
-    /**
      * @brief Mutex protection for class attributes.
      */
     std::mutex m_mutex;
+
+    /**
+     * @brief The current application state
+     */
+    ApplicationState m_currentState;
 
     /**
      * @brief The shared memory file descriptor.

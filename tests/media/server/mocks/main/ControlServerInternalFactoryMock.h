@@ -28,9 +28,8 @@ namespace firebolt::rialto::server
 class ControlServerInternalFactoryMock : public IControlServerInternalFactory
 {
 public:
-    MOCK_METHOD(std::shared_ptr<IControl>, createControl, (std::weak_ptr<IControlClient> client), (const, override));
-    MOCK_METHOD(std::shared_ptr<IControlServerInternal>, createControlServerInternal,
-                (std::weak_ptr<IControlClientServerInternal> client), (const, override));
+    MOCK_METHOD(std::shared_ptr<IControl>, createControl, (), (const, override));
+    MOCK_METHOD(std::shared_ptr<IControlServerInternal>, createControlServerInternal, (), (const, override));
 };
 } // namespace firebolt::rialto::server
 

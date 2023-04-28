@@ -40,7 +40,7 @@ add_gtests (
         mediaPipelineCapabilities/MediaPipelineCapabilitiesTest.cpp
 
         # Control tests
-        control/CreateTest.cpp
+        control/ControlTest.cpp
 
         # MediaKeys tests
         mediaKeys/CreateTest.cpp

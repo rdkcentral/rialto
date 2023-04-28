@@ -46,10 +46,10 @@ std::shared_ptr<ControlFactory> ControlFactory::createFactory()
     return factory;
 }
 
-std::shared_ptr<IControl> ControlFactory::createControl(std::weak_ptr<IControlClient> client) const
+std::shared_ptr<IControl> ControlFactory::createControl() const
 try
 {
-    return std::make_shared<Control>(client, ISharedMemoryManagerAccessor::instance().getSharedMemoryManager());
+    return std::make_shared<Control>(ISharedMemoryManagerAccessor::instance().getSharedMemoryManager());
 }
 catch (const std::exception &e)
 {
@@ -57,32 +57,29 @@ catch (const std::exception &e)
     return nullptr;
 }
 
-Control::Control(std::weak_ptr<IControlClient> client, ISharedMemoryManager &sharedMemoryManager)
-    : m_client(client), m_sharedMemoryManager(sharedMemoryManager)
+Control::Control(ISharedMemoryManager &sharedMemoryManager) : m_sharedMemoryManager(sharedMemoryManager)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
-    std::shared_ptr<IControlClient> lockedClient = m_client.lock();
-    if (lockedClient)
-    {
-        m_sharedMemoryManager.registerClient(lockedClient.get());
-    }
-    else
-    {
-        RIALTO_CLIENT_LOG_WARN("Unable to register client");
-    }
 }
 
 Control::~Control()
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
-    std::shared_ptr<IControlClient> client = m_client.lock();
-    if (client)
+    for (const auto &client : m_clients)
     {
         m_sharedMemoryManager.unregisterClient(client.get());
     }
-    else
+}
+
+bool Control::registerClient(std::weak_ptr<IControlClient> client, ApplicationState &appState)
+{
+    std::shared_ptr<IControlClient> lockedClient = client.lock();
+    if (lockedClient && m_sharedMemoryManager.registerClient(lockedClient.get()))
     {
-        RIALTO_CLIENT_LOG_WARN("Unable to unregister client");
+        m_clients.push_back(lockedClient);
+        return true;
     }
+    RIALTO_CLIENT_LOG_WARN("Unable to register client");
+    return false;
 }
 }; // namespace firebolt::rialto::client

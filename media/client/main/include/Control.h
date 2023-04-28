@@ -25,6 +25,7 @@
 #include "ISharedMemoryManager.h"
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace firebolt::rialto::client
 {
@@ -37,7 +38,7 @@ public:
     ControlFactory() = default;
     ~ControlFactory() override = default;
 
-    std::shared_ptr<IControl> createControl(std::weak_ptr<IControlClient> client) const override;
+    std::shared_ptr<IControl> createControl() const override;
 
     /**
      * @brief Create the generic rialto control factory object.
@@ -56,18 +57,20 @@ public:
     /**
      * @brief The constructor.
      */
-    Control(std::weak_ptr<IControlClient> client, ISharedMemoryManager &sharedMemoryManager);
+    explicit Control(ISharedMemoryManager &sharedMemoryManager);
 
     /**
      * @brief Virtual destructor.
      */
     ~Control() override;
 
+    bool registerClient(std::weak_ptr<IControlClient> client, ApplicationState &appState) override;
+
 private:
     /**
-     * @brief The control client
+     * @brief The registered control clients
      */
-    std::weak_ptr<IControlClient> m_client;
+    std::vector<std::shared_ptr<IControlClient>> m_clients;
 
     /**
      * @brief The rialto shared memory manager object.

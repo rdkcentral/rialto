@@ -50,12 +50,9 @@ public:
     /**
      * @brief IControlServerInternal factory method, returns a concrete implementation of IControlServerInternal
      *
-     * @param[in] client            : The Rialto control client.
-     *
      * @retval the new IControlServerInternal instance or null on error.
      */
-    virtual std::shared_ptr<IControlServerInternal>
-    createControlServerInternal(std::weak_ptr<IControlClientServerInternal> client) const = 0;
+    virtual std::shared_ptr<IControlServerInternal> createControlServerInternal() const = 0;
 };
 
 class IControlServerInternal : public IControl

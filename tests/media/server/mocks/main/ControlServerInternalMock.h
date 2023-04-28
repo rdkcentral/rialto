@@ -30,6 +30,7 @@ class ControlServerInternalMock : public IControlServerInternal
 public:
     MOCK_METHOD(void, setApplicationState, (const ApplicationState &state), (override));
     MOCK_METHOD(void, ack, (uint32_t id), (override));
+    MOCK_METHOD(bool, registerClient, (std::weak_ptr<IControlClient> client, ApplicationState &appState), (override));
 };
 } // namespace firebolt::rialto::server
 

@@ -41,7 +41,8 @@ int ControlService::addControl(const std::shared_ptr<IControlClientServerInterna
 {
     int id{generateControlId()};
     RIALTO_SERVER_LOG_INFO("Creating new Control with id: %d", id);
-    auto controlServerInternal{m_controlServerInternalFactory->createControlServerInternal(client)};
+    auto controlServerInternal{m_controlServerInternalFactory->createControlServerInternal()};
+    controlServerInternal->registerClient(client, m_currentState);
     controlServerInternal->setApplicationState(m_currentState);
     m_controls.emplace(id, controlServerInternal);
     return id;
