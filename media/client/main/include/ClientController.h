@@ -23,8 +23,10 @@
 #include "IClientController.h"
 #include "IControlClient.h"
 #include "IControlIpc.h"
+#include <memory>
 #include <mutex>
 #include <set>
+#include <string>
 
 namespace firebolt::rialto::client
 {
@@ -38,7 +40,7 @@ public:
 class ClientController : public IClientController, public IControlClient
 {
 public:
-    ClientController(const std::shared_ptr<IControlIpcFactory> &ControlIpcFactory);
+    explicit ClientController(const std::shared_ptr<IControlIpcFactory> &ControlIpcFactory);
     ~ClientController() override;
 
     uint8_t *getSharedMemoryBuffer() override;

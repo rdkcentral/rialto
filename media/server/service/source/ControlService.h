@@ -23,6 +23,7 @@
 #include "IControlServerInternal.h"
 #include "IControlService.h"
 #include <map>
+#include <memory>
 #include <mutex>
 
 namespace firebolt::rialto::server::service
@@ -30,7 +31,7 @@ namespace firebolt::rialto::server::service
 class ControlService : public IControlService
 {
 public:
-    ControlService(const std::shared_ptr<IControlServerInternalFactory> &controlServerInternalFactory);
+    explicit ControlService(const std::shared_ptr<IControlServerInternalFactory> &controlServerInternalFactory);
     ~ControlService() override = default;
 
     void addControl(int controlId, const std::shared_ptr<IControlClientServerInternal> &client) override;

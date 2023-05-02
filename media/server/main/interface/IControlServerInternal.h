@@ -30,6 +30,7 @@
 
 #include "IControl.h"
 #include "IControlClientServerInternal.h"
+#include <memory>
 
 namespace firebolt::rialto::server
 {

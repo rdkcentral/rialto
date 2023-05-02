@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_IPC_CONTROL_CLIENT_H_
-#define FIREBOLT_RIALTO_SERVER_IPC_CONTROL_CLIENT_H_
+#ifndef FIREBOLT_RIALTO_SERVER_IPC_CONTROL_CLIENT_SERVER_INTERNAL_H_
+#define FIREBOLT_RIALTO_SERVER_IPC_CONTROL_CLIENT_SERVER_INTERNAL_H_
 
 #include "IControlClientServerInternal.h"
 #include "IIpcServer.h"
@@ -42,4 +42,4 @@ private:
 };
 } // namespace firebolt::rialto::server::ipc
 
-#endif // FIREBOLT_RIALTO_SERVER_IPC_CONTROL_CLIENT_H_
+#endif // FIREBOLT_RIALTO_SERVER_IPC_CONTROL_CLIENT_SERVER_INTERNAL_H_

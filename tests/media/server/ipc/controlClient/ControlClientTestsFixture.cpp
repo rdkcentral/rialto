@@ -18,6 +18,7 @@
  */
 
 #include "ControlClientTestsFixture.h"
+#include <memory>
 
 namespace
 {

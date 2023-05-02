@@ -22,6 +22,7 @@
 
 #include "IControlServerInternal.h"
 #include "IMainThread.h"
+#include <memory>
 
 namespace firebolt::rialto::server
 {

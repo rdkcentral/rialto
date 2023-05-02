@@ -19,6 +19,8 @@
 
 #include "ControlIpcTestBase.h"
 #include <memory>
+#include <string>
+#include <utility>
 
 using ::testing::_;
 using ::testing::Invoke;

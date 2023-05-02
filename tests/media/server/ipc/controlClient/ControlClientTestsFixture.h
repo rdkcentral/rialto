@@ -24,6 +24,7 @@
 #include "IpcClientMock.h"
 #include "controlmodule.pb.h"
 #include <gtest/gtest.h>
+#include <memory>
 
 using testing::StrictMock;
 using testing::Test;
