@@ -44,9 +44,9 @@ public:
     std::shared_ptr<IControlIpc> getControlIpc(IControlClient *controlClient) override;
 
     /**
-     * @brief Create the generic rialto control factory object.
+     * @brief Create the generic control factory object.
      *
-     * @retval the generic rialto control factory instance or null on error.
+     * @retval the generic control factory instance or null on error.
      */
     static std::shared_ptr<ControlIpcFactory> createFactory();
 };

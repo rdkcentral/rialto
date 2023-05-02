@@ -49,14 +49,14 @@ private:
     void notifyApplicationState(ApplicationState state) override;
 
     /**
-     * @brief Initalised the shared memory for media playback. Function not thread-safe
+     * @brief Initalised the shared memory for media playback.
      *
      * @retval true on success, false otherwise.
      */
     bool initSharedMemory();
 
     /**
-     * @brief Terminates the shared memory. Function not thread-safe
+     * @brief Terminates the shared memory.
      */
     void termSharedMemory();
 

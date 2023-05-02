@@ -66,7 +66,7 @@ protected:
 /**
  * @brief The definition of the IIpcClient interface.
  *
- * This interface defines the rialto control ipc APIs that are used to communicate with the Rialto server.
+ * This interface defines the control ipc APIs that are used to communicate with the Rialto server.
  */
 class IIpcClient
 {

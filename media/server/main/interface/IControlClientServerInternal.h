@@ -26,7 +26,7 @@
  * The definition of the IControlClientServerInternal interface.
  *
  * This file comprises the definition of the IControlClientServerInternal abstract
- * class. This is the API by which a IRialtoControl implementation will
+ * class. This is the API by which a IControl implementation will
  * pass notifications to its client.
  */
 

@@ -49,7 +49,7 @@ public:
     /**
      * @brief Creates a ControlModuleService object.
      *
-     * @retval the rialto controller ipc instance or null on error.
+     * @retval the control ipc instance or null on error.
      */
     virtual std::shared_ptr<IControlModuleService> create(service::IPlaybackService &playbackService,
                                                           service::IControlService &controlService) const = 0;

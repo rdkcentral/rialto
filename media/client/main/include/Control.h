@@ -41,9 +41,9 @@ public:
     std::shared_ptr<IControl> createControl() const override;
 
     /**
-     * @brief Create the generic rialto control factory object.
+     * @brief Create the control factory object.
      *
-     * @retval the generic rialto control factory instance or null on error.
+     * @retval the control factory instance or null on error.
      */
     static std::shared_ptr<ControlFactory> createFactory();
 };
