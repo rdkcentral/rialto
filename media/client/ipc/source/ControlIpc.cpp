@@ -194,7 +194,7 @@ void ControlIpc::onApplicationStateUpdated(const std::shared_ptr<firebolt::rialt
     if (m_controlHandle != event->control_handle())
     {
         RIALTO_CLIENT_LOG_WARN("ApplicationStateChangeEvent received with wrong handle");
-        return;
+        // It's possible, that ApplicationStateChangeEvent comes before RegisterClientResponse, so do not return here
     }
     m_controlClient->notifyApplicationState(convertApplicationState(event->application_state()));
 }

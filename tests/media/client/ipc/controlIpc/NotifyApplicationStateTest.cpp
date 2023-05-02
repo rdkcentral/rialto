@@ -69,6 +69,7 @@ TEST_F(ControlIpcNotifyApplicationStateTest, shouldNotifyAboutChangeToUnknown)
 
 TEST_F(ControlIpcNotifyApplicationStateTest, wrongHandleId)
 {
+    EXPECT_CALL(m_controlClientMock, notifyApplicationState(firebolt::rialto::ApplicationState::UNKNOWN));
     auto event = createEvent(firebolt::rialto::ApplicationStateChangeEvent_ApplicationState_UNKNOWN);
     event->set_control_handle(1234);
 
