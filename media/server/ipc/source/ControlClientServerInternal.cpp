@@ -43,8 +43,9 @@ convertApplicationState(const firebolt::rialto::ApplicationState &state)
 
 namespace firebolt::rialto::server::ipc
 {
-ControlClientServerInternal::ControlClientServerInternal(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient)
-    : m_ipcClient{ipcClient}
+ControlClientServerInternal::ControlClientServerInternal(int controlId,
+                                                         const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient)
+    : m_kControlId{controlId}, m_ipcClient{ipcClient}
 {
 }
 
@@ -53,6 +54,7 @@ void ControlClientServerInternal::notifyApplicationState(ApplicationState state)
     RIALTO_SERVER_LOG_DEBUG("Sending ApplicationStateChangeEvent");
 
     auto event = std::make_shared<firebolt::rialto::ApplicationStateChangeEvent>();
+    event->set_control_handle(m_kControlId);
     event->set_application_state(convertApplicationState(state));
 
     m_ipcClient->sendEvent(event);
@@ -63,6 +65,7 @@ void ControlClientServerInternal::ping(uint32_t id)
     RIALTO_SERVER_LOG_DEBUG("Sending PingEvent with id: %d", id);
 
     auto event = std::make_shared<firebolt::rialto::PingEvent>();
+    event->set_control_handle(m_kControlId);
     event->set_id(id);
 
     m_ipcClient->sendEvent(event);

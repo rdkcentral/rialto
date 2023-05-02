@@ -32,7 +32,7 @@ namespace
 {
 constexpr int32_t kFd{123};
 constexpr uint32_t kSize{456U};
-constexpr int kControlId{4};
+constexpr int kControlId{8};
 constexpr int kPingId{35};
 } // namespace
 
@@ -60,14 +60,14 @@ void ControlModuleServiceTests::clientWillConnect()
 
 void ControlModuleServiceTests::controlServiceWillRemoveControl()
 {
-    EXPECT_CALL(m_controlServiceMock, removeControl(kControlId));
+    EXPECT_CALL(m_controlServiceMock, removeControl(_));
 }
 
 void ControlModuleServiceTests::controlServiceWillRegisterClient()
 {
     EXPECT_CALL(*m_closureMock, Run());
     EXPECT_CALL(*m_controllerMock, getClient()).WillOnce(Return(m_clientMock));
-    EXPECT_CALL(m_controlServiceMock, addControl(_)).WillOnce(Return(kControlId));
+    EXPECT_CALL(m_controlServiceMock, addControl(_, _));
 }
 
 void ControlModuleServiceTests::willFailDueToInvalidController()
@@ -97,6 +97,7 @@ void ControlModuleServiceTests::playbackServiceWillAck()
 
 void ControlModuleServiceTests::playbackServiceWillFailToAck()
 {
+    EXPECT_CALL(*m_controllerMock, SetFailed(_));
     EXPECT_CALL(m_controlServiceMock, ack(kControlId, kPingId)).WillOnce(Return(false));
 }
 
@@ -149,9 +150,9 @@ void ControlModuleServiceTests::sendAckRequestAndReceiveResponse()
 {
     firebolt::rialto::AckRequest request;
     firebolt::rialto::AckResponse response;
+    request.set_control_handle(kControlId);
     request.set_id(kPingId);
 
-    EXPECT_CALL(*m_controllerMock, getClient()).WillOnce(Return(m_clientMock));
     EXPECT_CALL(*m_closureMock, Run());
 
     m_service->ack(m_controllerMock.get(), &request, &response, m_closureMock.get());
@@ -161,20 +162,10 @@ void ControlModuleServiceTests::sendAckRequestAndExpectFailure()
 {
     firebolt::rialto::AckRequest request;
     firebolt::rialto::AckResponse response;
+    request.set_control_handle(kControlId);
     request.set_id(kPingId);
 
-    EXPECT_CALL(*m_controllerMock, getClient()).WillOnce(Return(m_clientMock));
-    EXPECT_CALL(*m_controllerMock, SetFailed(_));
     EXPECT_CALL(*m_closureMock, Run());
 
     m_service->ack(m_controllerMock.get(), &request, &response, m_closureMock.get());
-}
-
-void ControlModuleServiceTests::sendAckRequestWithInvalidControllerAndExpectFailure()
-{
-    firebolt::rialto::AckRequest request;
-    firebolt::rialto::AckResponse response;
-    request.set_id(kPingId);
-
-    m_service->ack(m_invalidControllerMock.get(), &request, &response, m_closureMock.get());
 }

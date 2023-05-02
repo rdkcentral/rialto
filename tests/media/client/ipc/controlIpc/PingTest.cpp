@@ -34,6 +34,8 @@ protected:
     ControlIpcPingTest()
     {
         createControlIpc();
+        expectIpcApiCallSuccess();
+        registerClient();
         EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
     }
 
@@ -42,6 +44,7 @@ protected:
     std::shared_ptr<firebolt::rialto::PingEvent> createEvent()
     {
         auto appStateChangeEvent = std::make_shared<firebolt::rialto::PingEvent>();
+        appStateChangeEvent->set_control_handle(m_kHandleId);
         appStateChangeEvent->set_id(kPingId);
         return appStateChangeEvent;
     }
@@ -90,6 +93,16 @@ TEST_F(ControlIpcPingTest, ackFailure)
                 CallMethod(methodMatcher("ack"), m_controllerMock.get(), _, _, m_blockingClosureMock.get()));
 
     m_pingCb(createEvent());
+
+    destroyControlIpc();
+}
+
+TEST_F(ControlIpcPingTest, wrongHandleId)
+{
+    auto event = createEvent();
+    event->set_control_handle(1234);
+
+    m_pingCb(event);
 
     destroyControlIpc();
 }

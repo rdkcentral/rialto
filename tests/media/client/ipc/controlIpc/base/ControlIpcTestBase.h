@@ -51,11 +51,15 @@ protected:
     std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> m_notifyApplicationStateCb;
     std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> m_pingCb;
 
+    // Variables
+    const int m_kHandleId{0};
+
     ControlIpcTestBase();
     ~ControlIpcTestBase();
 
     void createControlIpc();
     void destroyControlIpc();
+    void registerClient();
     void expectSubscribeEvents();
     void expectUnsubscribeEvents();
 };

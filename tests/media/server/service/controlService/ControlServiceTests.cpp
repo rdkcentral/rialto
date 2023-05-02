@@ -19,9 +19,13 @@
 
 #include "ControlServiceTestsFixture.h"
 
+namespace
+{
+constexpr int kControlId{8};
+} // namespace
+
 TEST_F(ControlServiceTests, shouldNotAckWithoutAddedControl)
 {
-    constexpr int kControlId{8};
     EXPECT_FALSE(triggerAck(kControlId));
 }
 
@@ -33,39 +37,39 @@ TEST_F(ControlServiceTests, shouldNotSetApplicationStateWithoutAddedControl)
 TEST_F(ControlServiceTests, shouldNotAckWithUnknownControlId)
 {
     controlServerInternalFactoryWillCreateControlServerInternal();
-    int validControlId{triggerAddControl()};
-    EXPECT_FALSE(triggerAck(validControlId + 1));
+    triggerAddControl(kControlId);
+    EXPECT_FALSE(triggerAck(kControlId + 1));
 }
 
 TEST_F(ControlServiceTests, shouldNotAckWithRemovedControlId)
 {
     controlServerInternalFactoryWillCreateControlServerInternal();
-    int validControlId{triggerAddControl()};
-    triggerRemoveControl(validControlId);
+    triggerAddControl(kControlId);
+    triggerRemoveControl(kControlId);
     triggerSetApplicationState();
 }
 
 TEST_F(ControlServiceTests, shouldNotSetApplicationStateWithRemovedControlId)
 {
     controlServerInternalFactoryWillCreateControlServerInternal();
-    int validControlId{triggerAddControl()};
-    triggerRemoveControl(validControlId);
-    EXPECT_FALSE(triggerAck(validControlId));
+    triggerAddControl(kControlId);
+    triggerRemoveControl(kControlId);
+    EXPECT_FALSE(triggerAck(kControlId));
 }
 
 TEST_F(ControlServiceTests, shouldAck)
 {
     controlServerInternalFactoryWillCreateControlServerInternal();
     controlServerInternalWillAck();
-    int validControlId{triggerAddControl()};
-    EXPECT_TRUE(triggerAck(validControlId));
+    triggerAddControl(kControlId);
+    EXPECT_TRUE(triggerAck(kControlId));
 }
 
 TEST_F(ControlServiceTests, shouldSetApplicationState)
 {
     controlServerInternalFactoryWillCreateControlServerInternal();
     controlServerInternalWillSetApplicationState();
-    triggerAddControl();
+    triggerAddControl(kControlId);
     triggerSetApplicationState();
 }
 
@@ -73,5 +77,5 @@ TEST_F(ControlServiceTests, shouldSetApplicationStateForNewControl)
 {
     triggerSetApplicationState();
     controlServerInternalFactoryWillCreateControlServerInternalWithSetState();
-    triggerAddControl();
+    triggerAddControl(kControlId);
 }

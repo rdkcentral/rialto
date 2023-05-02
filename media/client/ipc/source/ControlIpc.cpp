@@ -150,6 +150,8 @@ bool ControlIpc::registerClient()
         return false;
     }
 
+    m_controlHandle = response.control_handle();
+
     return true;
 }
 
@@ -189,17 +191,29 @@ bool ControlIpc::subscribeToEvents()
 
 void ControlIpc::onApplicationStateUpdated(const std::shared_ptr<firebolt::rialto::ApplicationStateChangeEvent> &event)
 {
+    if (m_controlHandle != event->control_handle())
+    {
+        RIALTO_CLIENT_LOG_WARN("ApplicationStateChangeEvent received with wrong handle");
+        return;
+    }
     m_controlClient->notifyApplicationState(convertApplicationState(event->application_state()));
 }
 
 void ControlIpc::onPing(const std::shared_ptr<firebolt::rialto::PingEvent> &event)
 {
+    if (m_controlHandle != event->control_handle())
+    {
+        RIALTO_CLIENT_LOG_WARN("PingEvent received with wrong handle");
+        return;
+    }
+
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
         return;
     }
     firebolt::rialto::AckRequest request;
+    request.set_control_handle(m_controlHandle);
     request.set_id(event->id());
     firebolt::rialto::AckResponse response;
     auto ipcController = m_ipc.createRpcController();

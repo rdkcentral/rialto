@@ -32,13 +32,15 @@ public:
     ~ControlServerInternalFactory() override = default;
 
     std::shared_ptr<IControl> createControl() const override;
-    std::shared_ptr<IControlServerInternal> createControlServerInternal() const override;
+    std::shared_ptr<IControlServerInternal>
+    createControlServerInternal(const std::shared_ptr<IControlClientServerInternal> &client) const override;
 };
 
 class ControlServerInternal : public IControlServerInternal
 {
 public:
-    explicit ControlServerInternal(const std::shared_ptr<IMainThreadFactory> &mainThreadFactory);
+    explicit ControlServerInternal(const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
+                                   const std::shared_ptr<IControlClientServerInternal> &client);
     ~ControlServerInternal() override;
 
     void ack(uint32_t id) override;
@@ -46,7 +48,7 @@ public:
     bool registerClient(std::weak_ptr<IControlClient> client, ApplicationState &appState) override;
 
 private:
-    std::shared_ptr<IControlClient> m_client;
+    std::shared_ptr<IControlClientServerInternal> m_client;
     std::shared_ptr<IMainThread> m_mainThread;
     uint32_t m_mainThreadClientId;
 };

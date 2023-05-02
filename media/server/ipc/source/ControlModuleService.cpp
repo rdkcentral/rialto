@@ -25,6 +25,15 @@
 #include <algorithm>
 #include <cstdint>
 
+namespace
+{
+int generateControlId()
+{
+    static int id{0};
+    return id++;
+}
+} // namespace
+
 namespace firebolt::rialto::server::ipc
 {
 std::shared_ptr<IControlModuleServiceFactory> IControlModuleServiceFactory::createFactory()
@@ -133,9 +142,12 @@ void ControlModuleService::registerClient(::google::protobuf::RpcController *con
         done->Run();
         return;
     }
+    const int controlId{generateControlId()};
     auto ipcClient = ipcController->getClient();
-    auto controlClient{std::make_shared<ControlClientServerInternal>(ipcClient)};
-    m_controlIds[ipcClient].insert(m_controlService.addControl(controlClient));
+    auto controlClient{std::make_shared<ControlClientServerInternal>(controlId, ipcClient)};
+    m_controlService.addControl(controlId, controlClient);
+    m_controlIds[ipcClient].insert(controlId);
+    response->set_control_handle(controlId);
     done->Run();
 }
 
@@ -144,31 +156,12 @@ void ControlModuleService::ack(::google::protobuf::RpcController *controller,
                                ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
-    if (!ipcController)
+    if (!m_controlService.ack(request->control_handle(), request->id()))
     {
-        RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
-        controller->SetFailed("ipc library provided incompatible controller object");
+        RIALTO_SERVER_LOG_ERROR("ack failed");
+        controller->SetFailed("Operation failed");
         done->Run();
         return;
-    }
-    auto controlIdsIter = m_controlIds.find(ipcController->getClient());
-    if (m_controlIds.end() == controlIdsIter)
-    {
-        RIALTO_SERVER_LOG_ERROR("Ack received for unknown client");
-        controller->SetFailed("Ack received for unknown client");
-        done->Run();
-        return;
-    }
-    for (int controlId : controlIdsIter->second)
-    {
-        if (!m_controlService.ack(controlId, request->id()))
-        {
-            RIALTO_SERVER_LOG_ERROR("ack failed");
-            controller->SetFailed("Operation failed");
-            done->Run();
-            return;
-        }
     }
     done->Run();
 }

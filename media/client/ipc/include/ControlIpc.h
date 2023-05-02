@@ -96,6 +96,11 @@ private:
     IControlClient *m_controlClient;
 
     /**
+     * @brief The control handle for the current instance.
+     */
+    std::atomic<int> m_controlHandle;
+
+    /**
      * @brief Thread for handling media player events from the server.
      */
     std::unique_ptr<common::IEventThread> m_eventThread;

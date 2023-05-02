@@ -46,11 +46,10 @@ public:
           m_mainThreadFactoryMock{std::make_shared<StrictMock<MainThreadFactoryMock>>()},
           m_mainThreadMock{std::make_shared<StrictMock<MainThreadMock>>()}
     {
-        firebolt::rialto::ApplicationState appState;
         EXPECT_CALL(*m_mainThreadFactoryMock, getMainThread()).WillOnce(Return(m_mainThreadMock));
         EXPECT_CALL(*m_mainThreadMock, registerClient()).WillOnce(Return(kMainThreadClientId));
-        m_sut = std::make_unique<firebolt::rialto::server::ControlServerInternal>(m_mainThreadFactoryMock);
-        m_sut->registerClient(m_controlClientMock, appState);
+        m_sut = std::make_unique<firebolt::rialto::server::ControlServerInternal>(m_mainThreadFactoryMock,
+                                                                                  m_controlClientMock);
     }
 
     ~ControlServerInternalTests()
@@ -83,4 +82,12 @@ TEST_F(ControlServerInternalTests, shouldSetApplicationState)
     mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_controlClientMock, notifyApplicationState(kAppState));
     m_sut->setApplicationState(kAppState);
+}
+
+TEST_F(ControlServerInternalTests, shouldRegisterClient)
+{
+    firebolt::rialto::ApplicationState appState{firebolt::rialto::ApplicationState::INACTIVE};
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_controlClientMock, notifyApplicationState(kAppState));
+    m_sut->registerClient(m_controlClientMock, appState);
 }

@@ -29,6 +29,8 @@ protected:
     ControlIpcNotifyApplicationStateTest()
     {
         createControlIpc();
+        expectIpcApiCallSuccess();
+        registerClient();
         EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
     }
 
@@ -38,6 +40,7 @@ protected:
     createEvent(const firebolt::rialto::ApplicationStateChangeEvent_ApplicationState &state)
     {
         auto appStateChangeEvent = std::make_shared<firebolt::rialto::ApplicationStateChangeEvent>();
+        appStateChangeEvent->set_control_handle(m_kHandleId);
         appStateChangeEvent->set_application_state(state);
         return appStateChangeEvent;
     }
@@ -62,4 +65,12 @@ TEST_F(ControlIpcNotifyApplicationStateTest, shouldNotifyAboutChangeToUnknown)
     ASSERT_TRUE(m_notifyApplicationStateCb);
     EXPECT_CALL(m_controlClientMock, notifyApplicationState(firebolt::rialto::ApplicationState::UNKNOWN));
     m_notifyApplicationStateCb(createEvent(firebolt::rialto::ApplicationStateChangeEvent_ApplicationState_UNKNOWN));
+}
+
+TEST_F(ControlIpcNotifyApplicationStateTest, wrongHandleId)
+{
+    auto event = createEvent(firebolt::rialto::ApplicationStateChangeEvent_ApplicationState_UNKNOWN);
+    event->set_control_handle(1234);
+
+    m_notifyApplicationStateCb(event);
 }

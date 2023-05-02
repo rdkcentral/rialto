@@ -23,6 +23,7 @@
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Return;
+using ::testing::WithArgs;
 
 namespace
 {
@@ -58,6 +59,21 @@ void ControlIpcTestBase::destroyControlIpc()
     expectUnsubscribeEvents();
 
     m_controlIpc.reset();
+}
+
+void ControlIpcTestBase::registerClient()
+{
+    EXPECT_CALL(*m_channelMock,
+                CallMethod(methodMatcher("registerClient"), m_controllerMock.get(), _, _, m_blockingClosureMock.get()))
+        .WillOnce(WithArgs<3>(Invoke(
+            [&](google::protobuf::Message *response)
+            {
+                firebolt::rialto::RegisterClientResponse *registerClientResponse =
+                    dynamic_cast<firebolt::rialto::RegisterClientResponse *>(response);
+                registerClientResponse->set_control_handle(m_kHandleId);
+            })));
+
+    EXPECT_EQ(m_controlIpc->registerClient(), true);
 }
 
 void ControlIpcTestBase::expectSubscribeEvents()

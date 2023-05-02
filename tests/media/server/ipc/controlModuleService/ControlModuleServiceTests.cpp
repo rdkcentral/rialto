@@ -72,40 +72,14 @@ TEST_F(ControlModuleServiceTests, shouldFailToGetSharedMemory)
     sendGetSharedMemoryRequestAndExpectFailure();
 }
 
-TEST_F(ControlModuleServiceTests, shouldFailToAckWhenClientIsNotConnected)
-{
-    sendAckRequestAndExpectFailure();
-}
-
-TEST_F(ControlModuleServiceTests, shouldFailToAckWhenControllerIsInvalid)
-{
-    clientWillConnect();
-    sendClientConnected();
-    controlServiceWillRegisterClient();
-    sendRegisterClientRequestAndReceiveResponse();
-    willFailDueToInvalidController();
-    sendAckRequestWithInvalidControllerAndExpectFailure();
-    controlServiceWillRemoveControl();
-}
-
 TEST_F(ControlModuleServiceTests, shouldFailToAckWhenControlServiceReturnsFailure)
 {
-    clientWillConnect();
-    sendClientConnected();
-    controlServiceWillRegisterClient();
-    sendRegisterClientRequestAndReceiveResponse();
     playbackServiceWillFailToAck();
     sendAckRequestAndExpectFailure();
-    controlServiceWillRemoveControl();
 }
 
 TEST_F(ControlModuleServiceTests, shouldAck)
 {
-    clientWillConnect();
-    sendClientConnected();
-    controlServiceWillRegisterClient();
-    sendRegisterClientRequestAndReceiveResponse();
     playbackServiceWillAck();
     sendAckRequestAndReceiveResponse();
-    controlServiceWillRemoveControl();
 }

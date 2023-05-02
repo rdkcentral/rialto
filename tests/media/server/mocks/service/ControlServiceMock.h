@@ -28,7 +28,8 @@ namespace firebolt::rialto::server::service
 class ControlServiceMock : public IControlService
 {
 public:
-    MOCK_METHOD(int, addControl, (const std::shared_ptr<IControlClientServerInternal> &client), (override));
+    MOCK_METHOD(void, addControl, (int controlId, const std::shared_ptr<IControlClientServerInternal> &client),
+                (override));
     MOCK_METHOD(void, removeControl, (int controlId), (override));
     MOCK_METHOD(bool, ack, (int controlId, std::uint32_t id), (override));
     MOCK_METHOD(void, setApplicationState, (const ApplicationState &state), (override));

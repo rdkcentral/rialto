@@ -32,7 +32,7 @@ public:
     ControlService(const std::shared_ptr<IControlServerInternalFactory> &controlServerInternalFactory);
     ~ControlService() override = default;
 
-    int addControl(const std::shared_ptr<IControlClientServerInternal> &client) override;
+    void addControl(int controlId, const std::shared_ptr<IControlClientServerInternal> &client) override;
     void removeControl(int controlId) override;
     bool ack(int controlId, std::uint32_t id) override;
     void setApplicationState(const ApplicationState &state) override;

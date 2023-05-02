@@ -64,10 +64,11 @@ std::shared_ptr<IControl> ControlServerInternalFactory::createControl() const
     return nullptr;
 }
 
-std::shared_ptr<IControlServerInternal> ControlServerInternalFactory::createControlServerInternal() const
+std::shared_ptr<IControlServerInternal>
+ControlServerInternalFactory::createControlServerInternal(const std::shared_ptr<IControlClientServerInternal> &client) const
 try
 {
-    return std::make_shared<ControlServerInternal>(server::IMainThreadFactory::createFactory());
+    return std::make_shared<ControlServerInternal>(server::IMainThreadFactory::createFactory(), client);
 }
 catch (const std::exception &e)
 {
@@ -75,7 +76,9 @@ catch (const std::exception &e)
     return nullptr;
 }
 
-ControlServerInternal::ControlServerInternal(const std::shared_ptr<IMainThreadFactory> &mainThreadFactory)
+ControlServerInternal::ControlServerInternal(const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
+                                             const std::shared_ptr<IControlClientServerInternal> &client)
+    : m_client{client}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
     m_mainThread = mainThreadFactory->getMainThread();
@@ -99,19 +102,18 @@ void ControlServerInternal::ack(uint32_t id)
 
 void ControlServerInternal::setApplicationState(const ApplicationState &state)
 {
-    RIALTO_SERVER_LOG_INFO("Notify rialto clients about state changed to: %s", convertApplicationState(state));
-    auto task = [&]() { m_client->notifyApplicationState(state); };
+    RIALTO_SERVER_LOG_INFO("Notify rialto client about state changed to: %s", convertApplicationState(state));
+    auto task = [&]()
+    {
+        if (m_client)
+            m_client->notifyApplicationState(state);
+    };
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
 }
 
 bool ControlServerInternal::registerClient(std::weak_ptr<IControlClient> client, ApplicationState &appState)
 {
-    std::shared_ptr<IControlClient> lockedClient = client.lock();
-    if (!lockedClient)
-    {
-        return false;
-    }
-    m_client = lockedClient;
+    setApplicationState(appState);
     return true;
 }
 } // namespace firebolt::rialto::server

@@ -20,15 +20,6 @@
 #include "ControlService.h"
 #include "RialtoServerLogging.h"
 
-namespace
-{
-int generateControlId()
-{
-    static int id{0};
-    return id++;
-}
-} // namespace
-
 namespace firebolt::rialto::server::service
 {
 ControlService::ControlService(const std::shared_ptr<IControlServerInternalFactory> &controlServerInternalFactory)
@@ -37,15 +28,12 @@ ControlService::ControlService(const std::shared_ptr<IControlServerInternalFacto
     RIALTO_SERVER_LOG_DEBUG("entry:");
 }
 
-int ControlService::addControl(const std::shared_ptr<IControlClientServerInternal> &client)
+void ControlService::addControl(int controlId, const std::shared_ptr<IControlClientServerInternal> &client)
 {
-    int id{generateControlId()};
-    RIALTO_SERVER_LOG_INFO("Creating new Control with id: %d", id);
-    auto controlServerInternal{m_controlServerInternalFactory->createControlServerInternal()};
+    RIALTO_SERVER_LOG_INFO("Creating new Control with id: %d", controlId);
+    auto controlServerInternal{m_controlServerInternalFactory->createControlServerInternal(client)};
     controlServerInternal->registerClient(client, m_currentState);
-    controlServerInternal->setApplicationState(m_currentState);
-    m_controls.emplace(id, controlServerInternal);
-    return id;
+    m_controls.emplace(controlId, controlServerInternal);
 }
 
 void ControlService::removeControl(int controlId)

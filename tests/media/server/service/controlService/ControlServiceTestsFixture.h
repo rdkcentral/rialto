@@ -45,7 +45,7 @@ public:
     void controlServerInternalWillAck();
     void controlServerInternalWillSetApplicationState();
 
-    int triggerAddControl();
+    void triggerAddControl(int id);
     void triggerRemoveControl(int id);
     bool triggerAck(int id);
     void triggerSetApplicationState();

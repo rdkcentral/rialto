@@ -33,12 +33,7 @@ TEST_F(ControlIpcRegisterClientTest, Success)
 {
     createControlIpc();
     expectIpcApiCallSuccess();
-
-    EXPECT_CALL(*m_channelMock,
-                CallMethod(methodMatcher("registerClient"), m_controllerMock.get(), _, _, m_blockingClosureMock.get()));
-
-    EXPECT_EQ(m_controlIpc->registerClient(), true);
-
+    registerClient();
     destroyControlIpc();
 }
 

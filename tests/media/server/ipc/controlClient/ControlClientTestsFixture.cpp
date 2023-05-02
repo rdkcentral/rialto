@@ -21,6 +21,7 @@
 
 namespace
 {
+constexpr int kControlId{23};
 constexpr int kPingId{56};
 } // namespace
 
@@ -28,17 +29,17 @@ MATCHER_P(ApplicationStateChangeEventMatcher, state, "")
 {
     std::shared_ptr<firebolt::rialto::ApplicationStateChangeEvent> event =
         std::dynamic_pointer_cast<firebolt::rialto::ApplicationStateChangeEvent>(arg);
-    return (state == event->application_state());
+    return (kControlId == event->control_handle() && state == event->application_state());
 }
 
 MATCHER_P(PingEventMatcher, id, "")
 {
     std::shared_ptr<firebolt::rialto::PingEvent> event = std::dynamic_pointer_cast<firebolt::rialto::PingEvent>(arg);
-    return (id == event->id());
+    return (kControlId == event->control_handle() && id == event->id());
 }
 
 ControlClientTests::ControlClientTests()
-    : m_clientMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ClientMock>>()}, m_sut{m_clientMock}
+    : m_clientMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ClientMock>>()}, m_sut{kControlId, m_clientMock}
 {
 }
 

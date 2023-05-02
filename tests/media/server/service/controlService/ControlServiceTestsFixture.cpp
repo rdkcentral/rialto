@@ -38,18 +38,16 @@ ControlServiceTests::ControlServiceTests()
 
 void ControlServiceTests::controlServerInternalFactoryWillCreateControlServerInternal()
 {
-    EXPECT_CALL(*m_controlServerInternalFactoryMock, createControlServerInternal())
+    EXPECT_CALL(*m_controlServerInternalFactoryMock, createControlServerInternal(_))
         .WillOnce(Return(m_controlServerInternalMock));
     EXPECT_CALL(*m_controlServerInternalMock, registerClient(_, _));
-    EXPECT_CALL(*m_controlServerInternalMock, setApplicationState(ApplicationState::UNKNOWN));
 }
 
 void ControlServiceTests::controlServerInternalFactoryWillCreateControlServerInternalWithSetState()
 {
-    EXPECT_CALL(*m_controlServerInternalFactoryMock, createControlServerInternal())
+    EXPECT_CALL(*m_controlServerInternalFactoryMock, createControlServerInternal(_))
         .WillOnce(Return(m_controlServerInternalMock));
     EXPECT_CALL(*m_controlServerInternalMock, registerClient(_, _));
-    EXPECT_CALL(*m_controlServerInternalMock, setApplicationState(kAppState));
 }
 
 void ControlServiceTests::controlServerInternalWillAck()
@@ -62,9 +60,9 @@ void ControlServiceTests::controlServerInternalWillSetApplicationState()
     EXPECT_CALL(*m_controlServerInternalMock, setApplicationState(kAppState));
 }
 
-int ControlServiceTests::triggerAddControl()
+void ControlServiceTests::triggerAddControl(int id)
 {
-    return m_sut.addControl(m_controlClientMock);
+    m_sut.addControl(id, m_controlClientMock);
 }
 
 void ControlServiceTests::triggerRemoveControl(int id)

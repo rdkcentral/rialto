@@ -50,6 +50,7 @@ message GetSharedMemoryResponse {
 message RegisterClientRequest {
 }
 message RegisterClientResponse {
+    required int32 control_handle = 1;
 }
 
 /**
@@ -61,7 +62,8 @@ message RegisterClientResponse {
  * 
  */
 message AckRequest {
-    required int32 id = 1;
+    required int32 control_handle = 1;
+    required int32 id = 2;
 }
 message AckResponse {
 }
@@ -80,7 +82,8 @@ message ApplicationStateChangeEvent {
         INACTIVE = 2;        ///< State of RialtoServer is Inactive or NotRunning
     }
 
-    required ApplicationState application_state = 1;
+    required int32 control_handle = 1;
+    required ApplicationState application_state = 2;
 }
 
 /**
@@ -91,7 +94,8 @@ message ApplicationStateChangeEvent {
  * @param[in] id  : Unique id, should be passed to corresponding ack call
  */
 message PingEvent {
-    required int32 id = 1;
+    required int32 control_handle = 1;
+    required int32 id = 2;
 }
 
 service ControlModule {

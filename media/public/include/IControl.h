@@ -82,7 +82,7 @@ public:
     /**
      * @brief Register new IControlClient
      *
-     * @param[in]  state    : Client object for callbacks
+     * @param[in]  client   : Client object for callbacks
      * @param[out] appState : Current application state
      *
      * @retval true on success, false otherwise.

@@ -29,13 +29,15 @@ namespace firebolt::rialto::server::ipc
 class ControlClientServerInternal : public IControlClientServerInternal
 {
 public:
-    explicit ControlClientServerInternal(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient);
+    explicit ControlClientServerInternal(int controlId,
+                                         const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient);
     ~ControlClientServerInternal() override = default;
 
     void notifyApplicationState(ApplicationState state) override;
     void ping(uint32_t id) override;
 
 private:
+    const int m_kControlId;
     std::shared_ptr<::firebolt::rialto::ipc::IClient> m_ipcClient;
 };
 } // namespace firebolt::rialto::server::ipc
