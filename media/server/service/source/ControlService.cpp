@@ -32,6 +32,7 @@ void ControlService::addControl(int controlId, const std::shared_ptr<IControlCli
 {
     RIALTO_SERVER_LOG_INFO("Creating new Control with id: %d", controlId);
     auto controlServerInternal{m_controlServerInternalFactory->createControlServerInternal(client)};
+    std::unique_lock<std::mutex> lock{m_mutex};
     controlServerInternal->registerClient(client, m_currentState);
     m_controls.emplace(controlId, controlServerInternal);
 }
@@ -39,11 +40,13 @@ void ControlService::addControl(int controlId, const std::shared_ptr<IControlCli
 void ControlService::removeControl(int controlId)
 {
     RIALTO_SERVER_LOG_INFO("Removing Control with id: %d", controlId);
+    std::unique_lock<std::mutex> lock{m_mutex};
     m_controls.erase(controlId);
 }
 
 bool ControlService::ack(int controlId, std::uint32_t id)
 {
+    std::unique_lock<std::mutex> lock{m_mutex};
     auto controlIter = m_controls.find(controlId);
     if (m_controls.end() == controlIter)
     {
@@ -56,6 +59,7 @@ bool ControlService::ack(int controlId, std::uint32_t id)
 
 void ControlService::setApplicationState(const ApplicationState &state)
 {
+    std::unique_lock<std::mutex> lock{m_mutex};
     m_currentState = state;
     for (const auto &control : m_controls)
     {

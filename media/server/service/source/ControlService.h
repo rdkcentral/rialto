@@ -23,6 +23,7 @@
 #include "IControlServerInternal.h"
 #include "IControlService.h"
 #include <map>
+#include <mutex>
 
 namespace firebolt::rialto::server::service
 {
@@ -38,6 +39,7 @@ public:
     void setApplicationState(const ApplicationState &state) override;
 
 private:
+    std::mutex m_mutex;
     ApplicationState m_currentState;
     std::shared_ptr<IControlServerInternalFactory> m_controlServerInternalFactory;
     std::map<int, std::shared_ptr<IControlServerInternal>> m_controls;
