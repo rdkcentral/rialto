@@ -147,11 +147,26 @@ TEST_F(WebAudioHandleBusMessageTest, shouldNotHandleStateChangedMessageWhenGstPl
 
     EXPECT_CALL(*m_gstWrapper, gstMessageParseStateChanged(&message, _, _, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
+
+    #ifdef RIALTO_LOG_INFO_ENABLED
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(oldState)).Times(2).WillRepeatedly(Return("Ready"));
+    #else
+    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(oldState)).WillOnce(Return("Ready"));
+    #endif  
+
+    #ifdef RIALTO_LOG_INFO_ENABLED
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(newState)).Times(2).WillRepeatedly(Return("Null"));
+    #else
+    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(newState)).WillOnce(Return("Null"));
+    #endif
+
+    #ifdef RIALTO_LOG_INFO_ENABLED
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(pending)).WillOnce(Return("Void"));
+    #endif
+
     EXPECT_CALL(*m_gstWrapper, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&message));
+    // #endif
     firebolt::rialto::server::tasks::webaudio::HandleBusMessage task{m_context,    m_gstPlayer,   nullptr,
                                                                      m_gstWrapper, m_glibWrapper, &message};
     task.execute();
@@ -168,9 +183,23 @@ TEST_F(WebAudioHandleBusMessageTest, shouldHandleStateChangedToPausedMessage)
 
     EXPECT_CALL(*m_gstWrapper, gstMessageParseStateChanged(&message, _, _, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
+
+    #ifdef RIALTO_LOG_INFO_ENABLED
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(oldState)).Times(2).WillRepeatedly(Return("Ready"));
+    #else
+    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(oldState)).WillOnce(Return("Ready"));
+    #endif
+
+    #ifdef RIALTO_LOG_INFO_ENABLED
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(newState)).Times(2).WillRepeatedly(Return("Paused"));
+    #else
+    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(newState)).WillOnce(Return("Paused"));
+    #endif
+
+    #ifdef RIALTO_LOG_INFO_ENABLED
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(pending)).WillOnce(Return("Void"));
+    #endif
+
     EXPECT_CALL(*m_gstWrapper, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
     EXPECT_CALL(m_gstPlayerClient, notifyState(firebolt::rialto::WebAudioPlayerState::PAUSED));
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&message));
@@ -209,9 +238,23 @@ TEST_F(WebAudioHandleBusMessageTest, shouldHandleStateChangedToPlayingMessage)
 
     EXPECT_CALL(*m_gstWrapper, gstMessageParseStateChanged(&message, _, _, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
+
+    #ifdef RIALTO_LOG_INFO_ENABLED
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(oldState)).Times(2).WillRepeatedly(Return("Ready"));
+    #else
+    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(oldState)).WillOnce(Return("Ready"));
+    #endif
+
+    #ifdef RIALTO_LOG_INFO_ENABLED
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(newState)).Times(2).WillRepeatedly(Return("Playing"));
+    #else
+    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(newState)).WillOnce(Return("Playing"));
+    #endif
+
+    #ifdef RIALTO_LOG_INFO_ENABLED
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(pending)).WillOnce(Return("Void"));
+    #endif
+    
     EXPECT_CALL(*m_gstWrapper, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
     EXPECT_CALL(m_gstPlayerClient, notifyState(firebolt::rialto::WebAudioPlayerState::PLAYING));
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&message));

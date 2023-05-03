@@ -30,6 +30,7 @@
 namespace
 {
 constexpr std::chrono::milliseconds kNeedMediaDataResendTimeMs{100};
+#ifdef RIALTO_LOG_WARN_ENABLED
 const char *toString(const firebolt::rialto::MediaSourceStatus &status)
 {
     switch (status)
@@ -47,7 +48,7 @@ const char *toString(const firebolt::rialto::MediaSourceStatus &status)
     }
     return "Unknown";
 }
-
+#endif
 std::int32_t generateSourceId()
 {
     static std::int32_t sourceId{1};

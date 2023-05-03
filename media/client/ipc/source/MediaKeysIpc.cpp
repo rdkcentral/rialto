@@ -82,7 +82,7 @@ firebolt::rialto::KeyStatus convertKeyStatus(const firebolt::rialto::KeyStatuses
     }
     return firebolt::rialto::KeyStatus::INTERNAL_ERROR;
 }
-
+#ifdef RIALTO_LOG_ERROR_ENABLED
 const char *toString(const firebolt::rialto::MediaKeyErrorStatus &errorStatus)
 {
     switch (errorStatus)
@@ -110,6 +110,7 @@ const char *toString(const firebolt::rialto::MediaKeyErrorStatus &errorStatus)
     }
     return "UNKNOWN";
 }
+#endif
 } // namespace
 
 namespace firebolt::rialto::client

@@ -25,6 +25,7 @@
 
 namespace
 {
+#ifdef RIALTO_LOG_DEBUG_ENABLED
 const char *toString(const firebolt::rialto::client::MediaPipeline::State &state)
 {
     switch (state)
@@ -44,6 +45,7 @@ const char *toString(const firebolt::rialto::client::MediaPipeline::State &state
     }
     return "UNKNOWN";
 }
+#endif
 
 #ifdef RIALTO_LOG_DEBUG_ENABLED
 const char *toString(const firebolt::rialto::PlaybackState &state)

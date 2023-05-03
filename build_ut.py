@@ -89,8 +89,9 @@ def main ():
                              + "Output written to xml if -xml option specified '*suite_name*_" + valgrindOutput + ".xml' \n" \
                              + "Note: Valgrind can only write output to one source (log or xml). \n" \
                              + "Note: Requires version valgrind 3.17.0+ installed. \n")
-    argParser.add_argument("-cov", "--coverage", action='store_true', help="Generates UT coverage report")  
-    args = vars(argParser.parse_args())
+    argParser.add_argument("-cov", "--coverage", action='store_true', help="Generates UT coverage report") 
+    argParser.add_argument('-lvl',"-logLevel", type=int, default=0, choices=[0,1,2,3,4,5,6], help="" ) 
+    args = vars(argParser.parse_args()) 
 
     # Set env variable
     os.environ["RIALTO_SOCKET_PATH"] = "/tmp/rialto-0"
@@ -124,7 +125,7 @@ def main ():
 
     # Build the test executables
     if args['noBuild'] == False:
-        buildTargets(suitesToRun, args['output'], f, args['valgrind'], args['coverage'])
+        buildTargets(suitesToRun, args['output'], f, args['valgrind'], args['coverage'], args['lvl'])
 
     # Run the tests with the optional settings
     if args['noTest'] == False:
@@ -156,16 +157,88 @@ def getSuitesToRun (suitesRequested):
     return suitesToRun
 
 # Build the target executables
-def buildTargets (suites, outputDir, resultsFile, debug, coverage):
+def buildTargets (suites, outputDir, resultsFile, debug, coverage, lvl):
     # Run cmake
     cmakeCmd = ["cmake", "-B", outputDir , "-DCMAKE_BUILD_FLAG=UnitTests", "-DRIALTO_ENABLE_DECRYPT_BUFFER=1"]
-    # Debug Mode /Release Mode
+    # # Debug Mode /Release Mode
     cmakeCmd.append("-DRIALTO_BUILD_TYPE=Debug")
     # Coverage
     if coverage:
         cmakeCmd.append("-DCOVERAGE_ENABLED=1")
-    runcmd(cmakeCmd, cwd=os.getcwd())
+    # Log Level Options
+    # All Logs Enabled
+    if lvl == 0:
+        print('_______________All Logs Enabled_______________')
+        cmakeCmd.append("-DRIALTO_LOG_FATAL_ENABLED=1")
+        cmakeCmd.append("-DRIALTO_LOG_ERROR_ENABLED=1")
+        cmakeCmd.append("-DRIALTO_LOG_WARN_ENABLED=1")
+        cmakeCmd.append("-DRIALTO_LOG_MIL_ENABLED=1")
+        cmakeCmd.append("-DRIALTO_LOG_INFO_ENABLED=1")
+        cmakeCmd.append("-DRIALTO_LOG_DEBUG_ENABLED=1")
+        
+    # Only Debug Log Enabled
+    elif lvl == 1:
+        print('_______________Debug Log Enabled_______________')
+        cmakeCmd.append("-DRIALTO_LOG_FATAL_ENABLED=0")
+        cmakeCmd.append("-DRIALTO_LOG_ERROR_ENABLED=0")
+        cmakeCmd.append("-DRIALTO_LOG_WARN_ENABLED=0")
+        cmakeCmd.append("-DRIALTO_LOG_MIL_ENABLED=0")
+        cmakeCmd.append("-DRIALTO_LOG_INFO_ENABLED=0")
+        cmakeCmd.append("-DRIALTO_LOG_DEBUG_ENABLED=1")
+
+    # Info + Debug Logs Enabled
+    elif lvl == 2:
+        print('_______________Info + Debug Logs Enabled_______________')
+        cmakeCmd.append("-DRIALTO_LOG_FATAL_ENABLED=0")
+        cmakeCmd.append("-DRIALTO_LOG_ERROR_ENABLED=0")
+        cmakeCmd.append("-DRIALTO_LOG_WARN_ENABLED=0")
+        cmakeCmd.append("-DRIALTO_LOG_MIL_ENABLED=0")
+        cmakeCmd.append("-DRIALTO_LOG_INFO_ENABLED=1")
+        cmakeCmd.append("-DRIALTO_LOG_DEBUG_ENABLED=1")
+
+
+    # Milestone + Info + Debug Logs Enabled
+    elif lvl == 3:
+        print('_______________Milestone + Info + Debug Logs Enabled_______________')
+        cmakeCmd.append("-DRIALTO_LOG_FATAL_ENABLED=0")
+        cmakeCmd.append("-DRIALTO_LOG_ERROR_ENABLED=0")
+        cmakeCmd.append("-DRIALTO_LOG_WARN_ENABLED=0")
+        cmakeCmd.append("-DRIALTO_LOG_MIL_ENABLED=1")
+        cmakeCmd.append("-DRIALTO_LOG_INFO_ENABLED=1")
+        cmakeCmd.append("-DRIALTO_LOG_DEBUG_ENABLED=1")
+
+    # Warn + Milestone + Info + Debug Logs Enabled
+    elif lvl == 4:
+        print('_______________Warn + Milestone + Info + Debug Logs Enabled_______________')
+        cmakeCmd.append("-DRIALTO_LOG_FATAL_ENABLED=0")
+        cmakeCmd.append("-DRIALTO_LOG_ERROR_ENABLED=0")
+        cmakeCmd.append("-DRIALTO_LOG_WARN_ENABLED=1")
+        cmakeCmd.append("-DRIALTO_LOG_MIL_ENABLED=1")
+        cmakeCmd.append("-DRIALTO_LOG_INFO_ENABLED=1")
+        cmakeCmd.append("-DRIALTO_LOG_DEBUG_ENABLED=1")
     
+    # Error + Warn + Milestone + Info + Debug Logs Enabled
+    elif lvl == 5:
+        print('_______________Error + Warn + Milestone + Info + Debug Logs Enabled_______________')
+        cmakeCmd.append("-DRIALTO_LOG_FATAL_ENABLED=0")
+        cmakeCmd.append("-DRIALTO_LOG_ERROR_ENABLED=1")
+        cmakeCmd.append("-DRIALTO_LOG_WARN_ENABLED=1")
+        cmakeCmd.append("-DRIALTO_LOG_MIL_ENABLED=1")
+        cmakeCmd.append("-DRIALTO_LOG_INFO_ENABLED=1")
+        cmakeCmd.append("-DRIALTO_LOG_DEBUG_ENABLED=1")
+
+    # All Logs Disabled
+    elif lvl == 6:
+        print('_______________All Logs Disabled_______________')
+        cmakeCmd.append("-DRIALTO_LOG_FATAL_ENABLED=0")
+        cmakeCmd.append("-DRIALTO_LOG_ERROR_ENABLED=0")
+        cmakeCmd.append("-DRIALTO_LOG_WARN_ENABLED=0")
+        cmakeCmd.append("-DRIALTO_LOG_MIL_ENABLED=0")
+        cmakeCmd.append("-DRIALTO_LOG_INFO_ENABLED=0")
+        cmakeCmd.append("-DRIALTO_LOG_DEBUG_ENABLED=0")
+
+    runcmd(cmakeCmd, cwd=os.getcwd())   
+
     # Make targets
     jarg = "-j" + str(multiprocessing.cpu_count())
     makeCmd = ["make", jarg]

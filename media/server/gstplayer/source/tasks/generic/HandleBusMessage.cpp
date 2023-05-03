@@ -54,7 +54,6 @@ void HandleBusMessage::execute() const
                                    m_gstWrapper->gstElementStateGetName(oldState),
                                    m_gstWrapper->gstElementStateGetName(newState),
                                    m_gstWrapper->gstElementStateGetName(pending));
-
             std::string filename = std::string(m_gstWrapper->gstElementStateGetName(oldState)) + "-" +
                                    std::string(m_gstWrapper->gstElementStateGetName(newState));
             m_gstWrapper->gstDebugBinToDotFileWithTs(GST_BIN(m_context.pipeline), GST_DEBUG_GRAPH_SHOW_ALL,

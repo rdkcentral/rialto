@@ -45,42 +45,61 @@ protected:
     void TestExpectLogCalls(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL logLevels)
     {
         uint32_t expectedHandlerCalledCount = g_handlerCalledCount;
+        (void) expectedHandlerCalledCount;
 
         RIALTO_LOG_FATAL(component, "RIALTO_LOG_FATAL");
+        #ifdef RIALTO_LOG_FATAL_ENABLED
         EXPECT_EQ(g_handlerCalledCount,
                   (logLevels & RIALTO_DEBUG_LEVEL_FATAL) ? ++expectedHandlerCalledCount : expectedHandlerCalledCount);
+        #endif
 
         RIALTO_LOG_SYS_FATAL(component, 1, "RIALTO_LOG_SYS_FATAL");
+        #ifdef RIALTO_LOG_FATAL_ENABLED
         EXPECT_EQ(g_handlerCalledCount,
                   (logLevels & RIALTO_DEBUG_LEVEL_FATAL) ? ++expectedHandlerCalledCount : expectedHandlerCalledCount);
+        #endif
 
         RIALTO_LOG_ERROR(component, "RIALTO_LOG_ERROR");
+        #ifdef RIALTO_LOG_ERROR_ENABLED
         EXPECT_EQ(g_handlerCalledCount,
                   (logLevels & RIALTO_DEBUG_LEVEL_ERROR) ? ++expectedHandlerCalledCount : expectedHandlerCalledCount);
+        #endif
 
         RIALTO_LOG_SYS_ERROR(component, 1, "RIALTO_LOG_SYS_ERROR");
+        #ifdef RIALTO_LOG_ERROR_ENABLED
         EXPECT_EQ(g_handlerCalledCount,
                   (logLevels & RIALTO_DEBUG_LEVEL_ERROR) ? ++expectedHandlerCalledCount : expectedHandlerCalledCount);
+        #endif
 
         RIALTO_LOG_WARN(component, "RIALTO_LOG_WARN");
+        #ifdef RIALTO_LOG_WARN_ENABLED
         EXPECT_EQ(g_handlerCalledCount,
                   (logLevels & RIALTO_DEBUG_LEVEL_WARNING) ? ++expectedHandlerCalledCount : expectedHandlerCalledCount);
+        #endif
 
         RIALTO_LOG_SYS_WARN(component, 1, "RIALTO_LOG_SYS_WARN");
+        #ifdef RIALTO_LOG_WARN_ENABLED
         EXPECT_EQ(g_handlerCalledCount,
                   (logLevels & RIALTO_DEBUG_LEVEL_WARNING) ? ++expectedHandlerCalledCount : expectedHandlerCalledCount);
+        #endif
 
         RIALTO_LOG_MIL(component, "RIALTO_LOG_MIL");
+        #ifdef RIALTO_LOG_MIL_ENABLED
         EXPECT_EQ(g_handlerCalledCount, (logLevels & RIALTO_DEBUG_LEVEL_MILESTONE) ? ++expectedHandlerCalledCount
                                                                                    : expectedHandlerCalledCount);
+        #endif
 
         RIALTO_LOG_INFO(component, "RIALTO_LOG_INFO");
+        #ifdef RIALTO_LOG_INFO_ENABLED
         EXPECT_EQ(g_handlerCalledCount,
                   (logLevels & RIALTO_DEBUG_LEVEL_INFO) ? ++expectedHandlerCalledCount : expectedHandlerCalledCount);
+        #endif
 
         RIALTO_LOG_DEBUG(component, "RIALTO_LOG_DEBUG");
+        #ifdef RIALTO_LOG_DEBUG_ENABLED
         EXPECT_EQ(g_handlerCalledCount,
                   (logLevels & RIALTO_DEBUG_LEVEL_DEBUG) ? ++expectedHandlerCalledCount : expectedHandlerCalledCount);
+        #endif
     }
 };
 
