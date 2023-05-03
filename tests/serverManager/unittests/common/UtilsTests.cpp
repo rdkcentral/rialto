@@ -90,6 +90,7 @@ int printsToExpect(RIALTO_COMPONENT component, const rialto::servermanager::serv
     #endif
         std::cout << static_cast <int> (lvl) << std::endl;
         return expectedPrints;
+        
 }
 
 TEST(UtilsTest, ShouldReturnProperString)
@@ -130,10 +131,9 @@ TEST(UtilsTest, ShouldSetLocalLogLevels)
                       rialto::servermanager::service::LoggingLevel::DEBUG};
     setLocalLogLevels(loggingLevels);
 
-    // int expectedPrints{1};
     for (uint32_t i = RIALTO_COMPONENT_DEFAULT; i < RIALTO_COMPONENT_EXTERNAL; i++)
     {
-        // int counter{0};
+
         RIALTO_COMPONENT component = static_cast<RIALTO_COMPONENT>(i);
         int counter{0};
         int expectedPrints = printsToExpect(component, loggingLevels);
@@ -149,6 +149,6 @@ TEST(UtilsTest, ShouldSetLocalLogLevels)
         RIALTO_LOG_DEBUG(component, "RIALTO_LOG_DEBUG");
         EXPECT_EQ(counter, expectedPrints);
         firebolt::rialto::logging::setLogHandler(component, nullptr); // Reset to default
-        // ++expectedPrints;
+        
     }
 }
