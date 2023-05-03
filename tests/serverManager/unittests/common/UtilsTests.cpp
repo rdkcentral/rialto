@@ -28,69 +28,68 @@ using rialto::servermanager::common::toString;
 using rialto::servermanager::service::LoggingLevel;
 using rialto::servermanager::service::LoggingLevels;
 
-int printsToExpect(RIALTO_COMPONENT component, const rialto::servermanager::service::LoggingLevels& logLevels)
+int printsToExpect(RIALTO_COMPONENT component, const rialto::servermanager::service::LoggingLevels &logLevels)
 {
     rialto::servermanager::service::LoggingLevel lvl = rialto::servermanager::service::LoggingLevel::UNCHANGED;
     int expectedPrints = 0;
-    (void) lvl; // When all Log Levels are disabled, lvl throws an unused but set variable error
+    (void)lvl; // When all Log Levels are disabled, lvl throws an unused but set variable error
     switch (component)
     {
-        case RIALTO_COMPONENT_DEFAULT:
-            lvl = logLevels.defaultLoggingLevel;
-            break;
-        case RIALTO_COMPONENT_CLIENT:
-            lvl = logLevels.clientLoggingLevel;
-           break;
-        case RIALTO_COMPONENT_SERVER:
-            lvl = logLevels.sessionServerLoggingLevel;
-            break;
-        case RIALTO_COMPONENT_IPC:
-            lvl = logLevels.ipcLoggingLevel;
-           break;
-        case RIALTO_COMPONENT_SERVER_MANAGER:
-            lvl = logLevels.serverManagerLoggingLevel;
-            break;
-        case RIALTO_COMPONENT_COMMON:
-            lvl = logLevels.commonLoggingLevel;
-            break;
-        case RIALTO_COMPONENT_EXTERNAL:
-        case RIALTO_COMPONENT_LAST:
-        default:
-            lvl = rialto::servermanager::service::LoggingLevel::UNCHANGED;
-            break;
+    case RIALTO_COMPONENT_DEFAULT:
+        lvl = logLevels.defaultLoggingLevel;
+        break;
+    case RIALTO_COMPONENT_CLIENT:
+        lvl = logLevels.clientLoggingLevel;
+        break;
+    case RIALTO_COMPONENT_SERVER:
+        lvl = logLevels.sessionServerLoggingLevel;
+        break;
+    case RIALTO_COMPONENT_IPC:
+        lvl = logLevels.ipcLoggingLevel;
+        break;
+    case RIALTO_COMPONENT_SERVER_MANAGER:
+        lvl = logLevels.serverManagerLoggingLevel;
+        break;
+    case RIALTO_COMPONENT_COMMON:
+        lvl = logLevels.commonLoggingLevel;
+        break;
+    case RIALTO_COMPONENT_EXTERNAL:
+    case RIALTO_COMPONENT_LAST:
+    default:
+        lvl = rialto::servermanager::service::LoggingLevel::UNCHANGED;
+        break;
     }
 
-    #ifdef RIALTO_LOG_FATAL_ENABLED
-        if (lvl >= rialto::servermanager::service::LoggingLevel::FATAL)
-            expectedPrints++;
-    #endif
-    #ifdef RIALTO_LOG_ERROR_ENABLED
-        if (lvl >= rialto::servermanager::service::LoggingLevel::ERROR)
-            expectedPrints++;
-    #endif
-    #ifdef RIALTO_LOG_WARN_ENABLED
-        if (lvl >= rialto::servermanager::service::LoggingLevel::WARNING)
-            expectedPrints++;
-    #endif
-    #ifdef RIALTO_LOG_MIL_ENABLED
-        if (lvl >= rialto::servermanager::service::LoggingLevel::MILESTONE)
-            expectedPrints++;
-    #endif
-    #ifdef RIALTO_LOG_INFO_ENABLED
-        if (lvl >= rialto::servermanager::service::LoggingLevel::INFO &&
+#ifdef RIALTO_LOG_FATAL_ENABLED
+    if (lvl >= rialto::servermanager::service::LoggingLevel::FATAL)
+        expectedPrints++;
+#endif
+#ifdef RIALTO_LOG_ERROR_ENABLED
+    if (lvl >= rialto::servermanager::service::LoggingLevel::ERROR)
+        expectedPrints++;
+#endif
+#ifdef RIALTO_LOG_WARN_ENABLED
+    if (lvl >= rialto::servermanager::service::LoggingLevel::WARNING)
+        expectedPrints++;
+#endif
+#ifdef RIALTO_LOG_MIL_ENABLED
+    if (lvl >= rialto::servermanager::service::LoggingLevel::MILESTONE)
+        expectedPrints++;
+#endif
+#ifdef RIALTO_LOG_INFO_ENABLED
+    if (lvl >= rialto::servermanager::service::LoggingLevel::INFO &&
         !(lvl == rialto::servermanager::service::LoggingLevel::DEFAULT ||
           lvl == rialto::servermanager::service::LoggingLevel::UNCHANGED))
-            expectedPrints++;
-    #endif
-    #ifdef RIALTO_LOG_DEBUG_ENABLED
-        if (lvl >= rialto::servermanager::service::LoggingLevel::DEBUG &&
+        expectedPrints++;
+#endif
+#ifdef RIALTO_LOG_DEBUG_ENABLED
+    if (lvl >= rialto::servermanager::service::LoggingLevel::DEBUG &&
         !(lvl == rialto::servermanager::service::LoggingLevel::DEFAULT ||
           lvl == rialto::servermanager::service::LoggingLevel::UNCHANGED))
-            expectedPrints++;
-    #endif
-        std::cout << static_cast <int> (lvl) << std::endl;
-        return expectedPrints;
-        
+        expectedPrints++;
+#endif
+    std::cout << static_cast<int>(lvl) << std::endl;
+    return expectedPrints;
 }
 
 TEST(UtilsTest, ShouldReturnProperString)
@@ -149,6 +148,5 @@ TEST(UtilsTest, ShouldSetLocalLogLevels)
         RIALTO_LOG_DEBUG(component, "RIALTO_LOG_DEBUG");
         EXPECT_EQ(counter, expectedPrints);
         firebolt::rialto::logging::setLogHandler(component, nullptr); // Reset to default
-        
     }
 }
