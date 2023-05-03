@@ -90,7 +90,7 @@ def main ():
                              + "Note: Valgrind can only write output to one source (log or xml). \n" \
                              + "Note: Requires version valgrind 3.17.0+ installed. \n")
     argParser.add_argument("-cov", "--coverage", action='store_true', help="Generates UT coverage report. \n") 
-    argParser.add_argument('-lvl',"--logLevel", type=int, default=0, choices=[0,1,2,3,4,5,6], help="Runs unit test with specific log levels. \n" ) 
+    argParser.add_argument("-lvl", "-logLevel", type=int, default=0, choices=[0,1,2,3,4,5,6], help="Runs unit test with specific log levels. \n" ) 
     args = vars(argParser.parse_args()) 
 
     # Set env variable
