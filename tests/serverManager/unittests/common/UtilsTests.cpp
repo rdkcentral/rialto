@@ -132,7 +132,6 @@ TEST(UtilsTest, ShouldSetLocalLogLevels)
 
     for (uint32_t i = RIALTO_COMPONENT_DEFAULT; i < RIALTO_COMPONENT_EXTERNAL; i++)
     {
-
         RIALTO_COMPONENT component = static_cast<RIALTO_COMPONENT>(i);
         int counter{0};
         int expectedPrints = printsToExpect(component, loggingLevels);
