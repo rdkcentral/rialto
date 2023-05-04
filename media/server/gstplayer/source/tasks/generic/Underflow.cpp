@@ -25,9 +25,8 @@
 
 namespace firebolt::rialto::server::tasks::generic
 {
-Underflow::Underflow(IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client, bool &underflowFlag,
-                     bool underflowEnabled)
-    : m_player{player}, m_gstPlayerClient{client}, m_underflowFlag{underflowFlag}, m_underflowEnabled{underflowEnabled}
+Underflow::Underflow(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client, bool &underflowFlag)
+    : m_context{context}, m_player{player}, m_gstPlayerClient{client}, m_underflowFlag{underflowFlag}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing Underflow");
 }
@@ -40,7 +39,7 @@ Underflow::~Underflow()
 void Underflow::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing Underflow");
-    if (!m_underflowEnabled)
+    if (!m_context.isPlaying)
     {
         return;
     }
@@ -49,11 +48,37 @@ void Underflow::execute() const
         return;
     }
     m_underflowFlag = true;
-    Pause pauseTask{m_player};
-    pauseTask.execute();
-    if (m_gstPlayerClient)
+
+    // If the EOS has been raised, notify EndOfStream, not underflow.
+    if (!m_context.eosNotified && allSourcesEos())
     {
-        m_gstPlayerClient->notifyNetworkState(NetworkState::STALLED);
+        RIALTO_SERVER_LOG_WARN("Received underflow, but all streams are ended, so reporting EOS.");
+        if (m_gstPlayerClient)
+        {
+            m_gstPlayerClient->notifyPlaybackState(PlaybackState::END_OF_STREAM);
+            m_context.eosNotified = true;
+        }
     }
+    else
+    {
+        Pause pauseTask{m_context, m_player};
+        pauseTask.execute();
+        if (m_gstPlayerClient)
+        {
+            m_gstPlayerClient->notifyNetworkState(NetworkState::STALLED);
+        }
+    }
+}
+
+bool Underflow::allSourcesEos() const
+{
+    for (const auto &streamInfo : m_context.streamInfo)
+    {
+        if (m_context.endOfStreamInfo.find(streamInfo.first) == m_context.endOfStreamInfo.end())
+        {
+            return false;
+        }
+    }
+    return true;
 }
 } // namespace firebolt::rialto::server::tasks::generic

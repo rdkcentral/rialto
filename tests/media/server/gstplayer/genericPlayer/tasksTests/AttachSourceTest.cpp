@@ -259,7 +259,6 @@ TEST_F(AttachSourceTest, shouldSwitchAudioSource)
     EXPECT_CALL(*m_gstWrapper, gstCapsUnref(&m_gstCaps1));
     task.execute();
     EXPECT_TRUE(m_context.audioNeedData);
-    EXPECT_TRUE(m_context.audioUnderflowEnabled);
     EXPECT_FALSE(m_context.audioSourceRemoved);
     EXPECT_EQ(m_context.lastAudioSampleTimestamps, kPosition);
 }

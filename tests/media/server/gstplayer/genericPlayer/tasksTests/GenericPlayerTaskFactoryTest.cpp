@@ -135,7 +135,7 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateNeedData)
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreatePause)
 {
-    auto task = m_sut.createPause(m_gstPlayer);
+    auto task = m_sut.createPause(m_context, m_gstPlayer);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::Pause &>(*task));
 }
@@ -228,8 +228,7 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateStop)
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateUnderflow)
 {
     bool flag{false};
-    bool enabled{false};
-    auto task = m_sut.createUnderflow(m_gstPlayer, flag, enabled);
+    auto task = m_sut.createUnderflow(m_context, m_gstPlayer, flag);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::Underflow &>(*task));
 }

@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_UNDERFLOW_H_
 #define FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_UNDERFLOW_H_
 
+#include "GenericPlayerContext.h"
 #include "IGstGenericPlayerClient.h"
 #include "IGstGenericPlayerPrivate.h"
 #include "IPlayerTask.h"
@@ -30,16 +31,17 @@ namespace firebolt::rialto::server::tasks::generic
 class Underflow : public IPlayerTask
 {
 public:
-    Underflow(IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client, bool &underflowFlag,
-              bool underflowEnabled);
+    Underflow(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client, bool &underflowFlag);
     ~Underflow() override;
     void execute() const override;
 
 private:
+    bool allSourcesEos() const;
+
+    GenericPlayerContext &m_context;
     IGstGenericPlayerPrivate &m_player;
     IGstGenericPlayerClient *m_gstPlayerClient;
     bool &m_underflowFlag;
-    bool m_underflowEnabled;
 };
 } // namespace firebolt::rialto::server::tasks::generic
 

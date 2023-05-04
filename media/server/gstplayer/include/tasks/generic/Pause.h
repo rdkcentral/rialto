@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_PAUSE_H_
 #define FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_PAUSE_H_
 
+#include "GenericPlayerContext.h"
 #include "IGstGenericPlayerPrivate.h"
 #include "IPlayerTask.h"
 
@@ -28,11 +29,12 @@ namespace firebolt::rialto::server::tasks::generic
 class Pause : public IPlayerTask
 {
 public:
-    explicit Pause(IGstGenericPlayerPrivate &player);
+    explicit Pause(GenericPlayerContext &context, IGstGenericPlayerPrivate &player);
     ~Pause() override;
     void execute() const override;
 
 private:
+    GenericPlayerContext &m_context;
     IGstGenericPlayerPrivate &m_player;
 };
 } // namespace firebolt::rialto::server::tasks::generic

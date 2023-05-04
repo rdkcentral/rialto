@@ -136,7 +136,6 @@ private:
     void renderFrame() override;
     void handleBusMessage(GstMessage *message) override;
     void updatePlaybackGroup(GstElement *typefind, const GstCaps *caps) override;
-    void setUnderflowEnabled(bool isUnderflowEnabled) override;
 
 private:
     /**

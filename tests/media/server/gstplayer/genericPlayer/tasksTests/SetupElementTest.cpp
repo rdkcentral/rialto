@@ -124,7 +124,6 @@ TEST_F(SetupElementTest, shouldSetupVideoElement)
     EXPECT_CALL(*m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("westerossink"))).WillOnce(Return(false));
     expectSetupVideoElement();
     task.execute();
-    EXPECT_FALSE(m_context.audioUnderflowEnabled);
 }
 
 TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingGeometry)
@@ -136,7 +135,6 @@ TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingGeometry)
     EXPECT_CALL(m_gstPlayer, setWesterossinkRectangle());
     expectSetupVideoElement();
     task.execute();
-    EXPECT_FALSE(m_context.audioUnderflowEnabled);
 }
 
 TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingGeometryOtherThanWesterosSink)
@@ -147,7 +145,6 @@ TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingGeometryOtherThanWest
     EXPECT_CALL(*m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("westerossink"))).WillOnce(Return(false));
     expectSetupVideoElement();
     task.execute();
-    EXPECT_FALSE(m_context.audioUnderflowEnabled);
 }
 
 TEST_F(SetupElementTest, shouldSetupVideoElementForSecondaryVideoOtherThanWesterosSink)
@@ -157,7 +154,6 @@ TEST_F(SetupElementTest, shouldSetupVideoElementForSecondaryVideoOtherThanWester
     EXPECT_CALL(*m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("westerossink"))).WillOnce(Return(false));
     expectSetupVideoElement();
     task.execute();
-    EXPECT_FALSE(m_context.audioUnderflowEnabled);
 }
 
 TEST_F(SetupElementTest, shouldSetupAudioElement)
@@ -166,7 +162,6 @@ TEST_F(SetupElementTest, shouldSetupAudioElement)
                                                                 &m_element};
     expectSetupAudioElement();
     task.execute();
-    EXPECT_TRUE(m_context.audioUnderflowEnabled);
 }
 
 TEST_F(SetupElementTest, shouldReportVideoUnderflow)
@@ -176,7 +171,6 @@ TEST_F(SetupElementTest, shouldReportVideoUnderflow)
     EXPECT_CALL(*m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("westerossink"))).WillOnce(Return(false));
     expectSetupVideoElement();
     task.execute();
-    EXPECT_FALSE(m_context.audioUnderflowEnabled);
     EXPECT_TRUE(m_videoUnderflowCallback);
     EXPECT_CALL(m_gstPlayer, scheduleVideoUnderflow());
     ((void (*)(GstElement *, guint, gpointer, gpointer))m_videoUnderflowCallback)(&m_element, 0, nullptr, &m_gstPlayer);
@@ -188,7 +182,6 @@ TEST_F(SetupElementTest, shouldReportAudioUnderflow)
                                                                 &m_element};
     expectSetupAudioElement();
     task.execute();
-    EXPECT_TRUE(m_context.audioUnderflowEnabled);
     EXPECT_TRUE(m_audioUnderflowCallback);
     EXPECT_CALL(m_gstPlayer, scheduleAudioUnderflow());
     ((void (*)(GstElement *, guint, gpointer, gpointer))m_audioUnderflowCallback)(&m_element, 0, nullptr, &m_gstPlayer);

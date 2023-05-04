@@ -23,7 +23,7 @@
 
 namespace firebolt::rialto::server::tasks::generic
 {
-Pause::Pause(IGstGenericPlayerPrivate &player) : m_player{player}
+Pause::Pause(GenericPlayerContext &context, IGstGenericPlayerPrivate &player) : m_context{context}, m_player{player}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing Pause");
 }
@@ -38,7 +38,6 @@ void Pause::execute() const
     RIALTO_SERVER_LOG_DEBUG("Executing Pause");
     m_player.stopPositionReportingAndCheckAudioUnderflowTimer();
     m_player.changePipelineState(GST_STATE_PAUSED);
-    // Disable underflow notifications when paused
-    m_player.setUnderflowEnabled(false);
+    m_context.isPlaying = false;
 }
 } // namespace firebolt::rialto::server::tasks::generic

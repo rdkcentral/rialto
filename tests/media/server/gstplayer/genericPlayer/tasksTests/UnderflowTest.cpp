@@ -30,6 +30,7 @@ using testing::StrictMock;
 class UnderflowTest : public testing::Test
 {
 protected:
+    firebolt::rialto::server::GenericPlayerContext m_context{};
     StrictMock<firebolt::rialto::server::GstGenericPlayerPrivateMock> m_gstPlayer;
     StrictMock<firebolt::rialto::server::GstGenericPlayerClientMock> m_gstPlayerClient;
 };
@@ -37,18 +38,14 @@ protected:
 TEST_F(UnderflowTest, shouldNotReportUnderflowWhenItIsDisabled)
 {
     bool underflowFlag{false};
-    bool underflowEnabled{false};
-    firebolt::rialto::server::tasks::generic::Underflow task{m_gstPlayer, &m_gstPlayerClient, underflowFlag,
-                                                             underflowEnabled};
+    firebolt::rialto::server::tasks::generic::Underflow task{m_context, m_gstPlayer, &m_gstPlayerClient, underflowFlag};
     task.execute();
 }
 
 TEST_F(UnderflowTest, shouldNotReportUnderflowWhenItIsAlreadyActive)
 {
     bool underflowFlag{true};
-    bool underflowEnabled{true};
-    firebolt::rialto::server::tasks::generic::Underflow task{m_gstPlayer, &m_gstPlayerClient, underflowFlag,
-                                                             underflowEnabled};
+    firebolt::rialto::server::tasks::generic::Underflow task{m_context, m_gstPlayer, &m_gstPlayerClient, underflowFlag};
     task.execute();
     EXPECT_TRUE(underflowFlag);
 }
@@ -56,9 +53,7 @@ TEST_F(UnderflowTest, shouldNotReportUnderflowWhenItIsAlreadyActive)
 TEST_F(UnderflowTest, shouldReportUnderflow)
 {
     bool underflowFlag{false};
-    bool underflowEnabled{true};
-    firebolt::rialto::server::tasks::generic::Underflow task{m_gstPlayer, &m_gstPlayerClient, underflowFlag,
-                                                             underflowEnabled};
+    firebolt::rialto::server::tasks::generic::Underflow task{m_context, m_gstPlayer, &m_gstPlayerClient, underflowFlag};
     EXPECT_CALL(m_gstPlayer, stopPositionReportingAndCheckAudioUnderflowTimer());
     EXPECT_CALL(m_gstPlayer, changePipelineState(GST_STATE_PAUSED));
     EXPECT_CALL(m_gstPlayerClient, notifyNetworkState(firebolt::rialto::NetworkState::STALLED));

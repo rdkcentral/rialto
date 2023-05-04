@@ -58,7 +58,6 @@ TEST_F(CheckAudioUnderflowTest, shouldNotTriggerAudioUnderflow)
     m_context.audioAppSrc = &audioAppSrc;
     m_context.lastAudioSampleTimestamps = position;
     m_context.audioUnderflowOccured = false;
-    m_context.audioUnderflowEnabled = true;
     firebolt::rialto::server::tasks::generic::CheckAudioUnderflow task{m_context, m_gstPlayer, &m_gstPlayerClient,
                                                                        m_gstWrapper};
     task.execute();
@@ -86,7 +85,6 @@ TEST_F(CheckAudioUnderflowTest, shouldTriggerAudioUnderflow)
     m_context.audioAppSrc = &audioAppSrc;
     m_context.lastAudioSampleTimestamps = 0;
     m_context.audioUnderflowOccured = false;
-    m_context.audioUnderflowEnabled = true;
     firebolt::rialto::server::tasks::generic::CheckAudioUnderflow task{m_context, m_gstPlayer, &m_gstPlayerClient,
                                                                        m_gstWrapper};
     task.execute();

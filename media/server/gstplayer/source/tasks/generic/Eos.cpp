@@ -39,25 +39,15 @@ Eos::~Eos()
 void Eos::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing Eos");
-    if (m_type == firebolt::rialto::MediaSourceType::AUDIO)
+    if (m_type == firebolt::rialto::MediaSourceType::AUDIO && m_context.audioUnderflowOccured)
     {
-        if (m_context.audioUnderflowOccured)
-        {
-            RIALTO_SERVER_LOG_DEBUG("Cancelling audio underflow in EOS procedure");
-            m_player.cancelUnderflow(m_context.audioUnderflowOccured);
-        }
-        // Disable audio underflow notifications once EOS has been set on the source
-        m_context.audioUnderflowEnabled = false;
+        RIALTO_SERVER_LOG_DEBUG("Cancelling audio underflow in EOS procedure");
+        m_player.cancelUnderflow(m_context.audioUnderflowOccured);
     }
-    else if (m_type == firebolt::rialto::MediaSourceType::VIDEO)
+    else if (m_type == firebolt::rialto::MediaSourceType::VIDEO && m_context.videoUnderflowOccured)
     {
-        if (m_context.videoUnderflowOccured)
-        {
-            RIALTO_SERVER_LOG_DEBUG("Cancelling video underflow in EOS procedure");
-            m_player.cancelUnderflow(m_context.videoUnderflowOccured);
-        }
-        // Disable video underflow notifications once EOS has been set on the source
-        m_context.videoUnderflowEnabled = false;
+        RIALTO_SERVER_LOG_DEBUG("Cancelling video underflow in EOS procedure");
+        m_player.cancelUnderflow(m_context.videoUnderflowOccured);
     }
     auto elem = m_context.streamInfo.find(m_type);
     if (elem == m_context.streamInfo.end())

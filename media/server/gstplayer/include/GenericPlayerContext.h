@@ -156,18 +156,18 @@ struct GenericPlayerContext
     bool videoUnderflowOccured{false};
 
     /**
-     * @brief Flag used to check, if audio underflow reporting is enabled
+     * @brief Flag used to check, if the playback is in the playing state
      *
      * Flag can be used only in worker thread
      */
-    bool audioUnderflowEnabled{false};
+    bool isPlaying{false};
 
     /**
-     * @brief Flag used to check, if video underflow reporting is enabled
+     * @brief Flag used to check, if EOS has been notified to the client
      *
      * Flag can be used only in worker thread
      */
-    bool videoUnderflowEnabled{false};
+    bool eosNotified{false};
 
     /**
      * @brief Pending video geometry

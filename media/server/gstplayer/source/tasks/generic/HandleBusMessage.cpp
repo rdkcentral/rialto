@@ -91,8 +91,7 @@ void HandleBusMessage::execute() const
                 }
                 m_player.startPositionReportingAndCheckAudioUnderflowTimer();
 
-                // Enable underflow notifications while playing
-                m_player.setUnderflowEnabled(true);
+                m_context.isPlaying = true;
                 break;
             }
             case GST_STATE_VOID_PENDING:
@@ -106,12 +105,13 @@ void HandleBusMessage::execute() const
     }
     case GST_MESSAGE_EOS:
     {
-        if (m_context.pipeline && GST_MESSAGE_SRC(m_message) == GST_OBJECT(m_context.pipeline))
+        if (m_context.pipeline && GST_MESSAGE_SRC(m_message) == GST_OBJECT(m_context.pipeline) && !m_context.eosNotified)
         {
             RIALTO_SERVER_LOG_MIL("End of stream reached.");
             if (m_gstPlayerClient)
             {
                 m_gstPlayerClient->notifyPlaybackState(PlaybackState::END_OF_STREAM);
+                m_context.eosNotified = true;
             }
         }
         break;
@@ -171,7 +171,7 @@ void HandleBusMessage::execute() const
         gchar *debug = nullptr;
         m_gstWrapper->gstMessageParseError(m_message, &err, &debug);
 
-        if ((err->domain == GST_STREAM_ERROR) && (allSourcesEos()))
+        if ((err->domain == GST_STREAM_ERROR) && (allSourcesEos() && !m_context.eosNotified))
         {
             RIALTO_SERVER_LOG_WARN("Got stream error from %s. But all streams are ended, so reporting EOS. Error code "
                                    "%d: %s "
@@ -180,6 +180,7 @@ void HandleBusMessage::execute() const
             if (m_gstPlayerClient)
             {
                 m_gstPlayerClient->notifyPlaybackState(PlaybackState::END_OF_STREAM);
+                m_context.eosNotified = true;
             }
         }
         else
