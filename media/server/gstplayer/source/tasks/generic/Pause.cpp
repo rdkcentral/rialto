@@ -38,5 +38,7 @@ void Pause::execute() const
     RIALTO_SERVER_LOG_DEBUG("Executing Pause");
     m_player.stopPositionReportingAndCheckAudioUnderflowTimer();
     m_player.changePipelineState(GST_STATE_PAUSED);
+    // Disable underflow notifications when paused
+    m_player.setUnderflowEnabled(false);
 }
 } // namespace firebolt::rialto::server::tasks::generic

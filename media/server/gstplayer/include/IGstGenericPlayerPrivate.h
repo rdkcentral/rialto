@@ -145,6 +145,11 @@ public:
      * @brief Updates Playback Group in PlayerContext.
      */
     virtual void updatePlaybackGroup(GstElement *typefind, const GstCaps *caps) = 0;
+
+    /**
+     * @brief Set underflow enabled on attached sources.
+     */
+    virtual void setUnderflowEnabled(bool isUnderflowEnabled) = 0;
 };
 } // namespace firebolt::rialto::server
 

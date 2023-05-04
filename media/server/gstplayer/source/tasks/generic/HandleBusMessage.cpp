@@ -90,6 +90,9 @@ void HandleBusMessage::execute() const
                     m_player.setPendingPlaybackRate();
                 }
                 m_player.startPositionReportingAndCheckAudioUnderflowTimer();
+
+                // Enable underflow notifications while playing
+                m_player.setUnderflowEnabled(true);
                 break;
             }
             case GST_STATE_VOID_PENDING:

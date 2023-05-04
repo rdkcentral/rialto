@@ -163,6 +163,13 @@ struct GenericPlayerContext
     bool audioUnderflowEnabled{false};
 
     /**
+     * @brief Flag used to check, if video underflow reporting is enabled
+     *
+     * Flag can be used only in worker thread
+     */
+    bool videoUnderflowEnabled{false};
+
+    /**
      * @brief Pending video geometry
      */
     Rectangle pendingGeometry;

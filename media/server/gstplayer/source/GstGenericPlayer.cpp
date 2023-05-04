@@ -660,7 +660,7 @@ void GstGenericPlayer::scheduleVideoUnderflow()
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createUnderflow(*this, m_context.videoUnderflowOccured));
+        m_workerThread->enqueueTask(m_taskFactory->createUnderflow(*this, m_context.videoUnderflowOccured, m_context.videoUnderflowEnabled));
     }
 }
 
@@ -886,4 +886,19 @@ void GstGenericPlayer::updatePlaybackGroup(GstElement *typefind, const GstCaps *
 {
     m_workerThread->enqueueTask(m_taskFactory->createUpdatePlaybackGroup(m_context, typefind, caps));
 }
+
+void GstGenericPlayer::setUnderflowEnabled(bool isUnderflowEnabled)
+{
+    auto sourceElem = m_context.streamInfo.find(MediaSourceType::VIDEO);
+    if (sourceElem != m_context.streamInfo.end())
+    {
+        m_context.videoUnderflowEnabled = isUnderflowEnabled;
+    }
+    sourceElem = m_context.streamInfo.find(MediaSourceType::AUDIO);
+    if (sourceElem != m_context.streamInfo.end())
+    {
+        m_context.audioUnderflowEnabled = isUnderflowEnabled;
+    }
+}
+
 }; // namespace firebolt::rialto::server
