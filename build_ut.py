@@ -236,6 +236,7 @@ def buildTargets (suites, outputDir, resultsFile, debug, coverage, lvl):
         cmakeCmd.append("-DRIALTO_LOG_MIL_ENABLED=0")
         cmakeCmd.append("-DRIALTO_LOG_INFO_ENABLED=0")
         cmakeCmd.append("-DRIALTO_LOG_DEBUG_ENABLED=0")
+           
 
     runcmd(cmakeCmd, cwd=os.getcwd())   
 

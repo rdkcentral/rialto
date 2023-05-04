@@ -25,7 +25,7 @@
 
 namespace
 {
-#ifdef RIALTO_LOG_DEBUG_ENABLED
+#if defined(RIALTO_LOG_DEBUG_ENABLED) || defined(RIALTO_LOG_WARN_ENABLED)
 const char *toString(const firebolt::rialto::client::MediaPipeline::State &state)
 {
     switch (state)

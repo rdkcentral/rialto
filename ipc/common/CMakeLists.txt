@@ -67,5 +67,5 @@ target_link_libraries(
 
         PRIVATE
         protobuf::libprotobuf
-
+        RialtoLogging
         )
