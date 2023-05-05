@@ -39,7 +39,7 @@ public:
     ILogHandler(ILogHandler &&) = delete;
     ILogHandler &operator=(ILogHandler &&) = delete;
 
-    enum Level
+    enum class Level
     {
         Fatal,
         Error,
