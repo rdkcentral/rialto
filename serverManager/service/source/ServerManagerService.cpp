@@ -87,7 +87,12 @@ bool ServerManagerService::setLogLevels(const LoggingLevels &logLevels) const
 
 bool ServerManagerService::registerLogHandler(const std::shared_ptr<ILogHandler> &handler)
 {
-    using namespace std::placeholders;
+    using std::placeholders::_1;
+    using std::placeholders::_2;
+    using std::placeholders::_3;
+    using std::placeholders::_4;
+    using std::placeholders::_5;
+    using std::placeholders::_6;
     if (!handler)
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("Cannot set custom log handler - ptr is null!");
