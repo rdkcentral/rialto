@@ -241,12 +241,6 @@ void GstGenericPlayer::resetWorkerThread()
 
 void GstGenericPlayer::termPipeline()
 {
-    for (const auto &signal : m_context.connectedSignals)
-    {
-        m_glibWrapper->gSignalHandlerDisconnect(G_OBJECT(signal.first), signal.second);
-    }
-    m_context.connectedSignals.clear();
-
     if (m_finishSourceSetupTimer && m_finishSourceSetupTimer->isActive())
     {
         m_finishSourceSetupTimer->cancel();
