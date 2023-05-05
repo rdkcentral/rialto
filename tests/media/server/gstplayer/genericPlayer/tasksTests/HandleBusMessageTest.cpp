@@ -497,7 +497,8 @@ TEST_F(HandleBusMessageTest, shouldHandleStreamErrorMessageWhenEosAllSources)
 }
 
 /**
- * Test HandleBusMessage does not notifies END_OF_STREAM for a stream error when all sources are EOS but EOS has already been notified.
+ * Test HandleBusMessage does not notifies END_OF_STREAM for a stream error when all sources are EOS but EOS has already
+ * been notified.
  */
 TEST_F(HandleBusMessageTest, shouldHandleStreamErrorMessageWhenEosAllSourcesAndEosAlreadyNotfied)
 {

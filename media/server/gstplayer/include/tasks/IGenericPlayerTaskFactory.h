@@ -144,7 +144,8 @@ public:
      *
      * @retval the new Pause task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createPause(GenericPlayerContext &context, IGstGenericPlayerPrivate &player) const = 0;
+    virtual std::unique_ptr<IPlayerTask> createPause(GenericPlayerContext &context,
+                                                     IGstGenericPlayerPrivate &player) const = 0;
 
     /**
      * @brief Creates a Play task.
@@ -298,7 +299,8 @@ public:
      *
      * @retval the new Underflow task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createUnderflow(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, bool &underflowFlag, bool underflowEnabled) const = 0;
+    virtual std::unique_ptr<IPlayerTask> createUnderflow(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                                                         bool &underflowFlag, bool underflowEnabled) const = 0;
 
     /**
      * @brief Creates an UpdatePlaybackGroup task.

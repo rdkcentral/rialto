@@ -662,7 +662,8 @@ void GstGenericPlayer::scheduleVideoUnderflow()
     if (m_workerThread)
     {
         bool underflowEnabled = m_context.isPlaying;
-        m_workerThread->enqueueTask(m_taskFactory->createUnderflow(m_context, *this, m_context.videoUnderflowOccured, underflowEnabled));
+        m_workerThread->enqueueTask(
+            m_taskFactory->createUnderflow(m_context, *this, m_context.videoUnderflowOccured, underflowEnabled));
     }
 }
 

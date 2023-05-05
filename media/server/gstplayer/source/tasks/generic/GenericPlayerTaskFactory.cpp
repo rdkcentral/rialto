@@ -110,7 +110,8 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createNeedData(GenericPla
     return std::make_unique<tasks::generic::NeedData>(context, m_client, src);
 }
 
-std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createPause(GenericPlayerContext &context, IGstGenericPlayerPrivate &player) const
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createPause(GenericPlayerContext &context,
+                                                                   IGstGenericPlayerPrivate &player) const
 {
     return std::make_unique<tasks::generic::Pause>(context, player);
 }
@@ -193,7 +194,8 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createStop(GenericPlayerC
     return std::make_unique<tasks::generic::Stop>(context, player);
 }
 
-std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createUnderflow(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createUnderflow(GenericPlayerContext &context,
+                                                                       IGstGenericPlayerPrivate &player,
                                                                        bool &underflowFlag, bool underflowEnabled) const
 {
     return std::make_unique<tasks::generic::Underflow>(context, player, m_client, underflowFlag, underflowEnabled);

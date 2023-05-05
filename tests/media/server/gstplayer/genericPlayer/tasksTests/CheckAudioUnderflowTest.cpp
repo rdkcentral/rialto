@@ -47,7 +47,8 @@ protected:
     {
         m_context.pipeline = &m_pipeline;
         m_context.audioAppSrc = &m_audioAppSrc;
-        m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, firebolt::rialto::server::StreamInfo{&m_audioAppSrc, true});
+        m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO,
+                                     firebolt::rialto::server::StreamInfo{&m_audioAppSrc, true});
         m_context.audioUnderflowOccured = false;
         m_context.isPlaying = true;
     }
