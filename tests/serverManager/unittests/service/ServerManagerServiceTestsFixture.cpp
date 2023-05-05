@@ -18,6 +18,7 @@
  */
 
 #include "ServerManagerServiceTestsFixture.h"
+#include "LogHandlerMock.h"
 #include "Matchers.h"
 #include "ServerManagerService.h"
 #include "ServiceContextMock.h"
@@ -67,6 +68,15 @@ void ServerManagerServiceTests::setLogLevelsWillBeCalled(bool returnValue)
     EXPECT_CALL(m_appManager, setLogLevels(_)).WillOnce(Return(returnValue));
 }
 
+std::shared_ptr<rialto::servermanager::service::ILogHandler> ServerManagerServiceTests::configureLogHandler()
+{
+    auto logHandler = std::make_shared<StrictMock<rialto::servermanager::service::LogHandlerMock>>();
+    // Expect print in destructor:
+    EXPECT_CALL(*logHandler, log(rialto::servermanager::service::ILogHandler::Level::Info, "ServerManagerService.cpp",
+                                 62, "~ServerManagerService", "RialtoServerManager is closing..."));
+    return logHandler;
+}
+
 bool ServerManagerServiceTests::triggerInitiateApplication(const std::string &appId,
                                                            const firebolt::rialto::common::SessionServerState &state,
                                                            const firebolt::rialto::common::AppConfig &appConfig)
@@ -92,4 +102,11 @@ bool ServerManagerServiceTests::triggerSetLogLevels()
 {
     EXPECT_TRUE(m_sut);
     return m_sut->setLogLevels(rialto::servermanager::service::LoggingLevels());
+}
+
+bool ServerManagerServiceTests::triggerRegisterLogHandler(
+    const std::shared_ptr<rialto::servermanager::service::ILogHandler> &handler)
+{
+    EXPECT_TRUE(m_sut);
+    return m_sut->registerLogHandler(handler);
 }

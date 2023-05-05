@@ -21,6 +21,33 @@
 #include "ISessionServerAppManager.h"
 #include "RialtoServerManagerLogging.h"
 
+namespace
+{
+rialto::servermanager::service::ILogHandler::Level convertLevel(const RIALTO_DEBUG_LEVEL &level)
+{
+    switch (level)
+    {
+    case RIALTO_DEBUG_LEVEL_FATAL:
+        return rialto::servermanager::service::ILogHandler::Level::Fatal;
+    case RIALTO_DEBUG_LEVEL_ERROR:
+        return rialto::servermanager::service::ILogHandler::Level::Error;
+    case RIALTO_DEBUG_LEVEL_WARNING:
+        return rialto::servermanager::service::ILogHandler::Level::Warning;
+    case RIALTO_DEBUG_LEVEL_MILESTONE:
+        return rialto::servermanager::service::ILogHandler::Level::Milestone;
+    case RIALTO_DEBUG_LEVEL_INFO:
+        return rialto::servermanager::service::ILogHandler::Level::Info;
+    case RIALTO_DEBUG_LEVEL_DEBUG:
+        return rialto::servermanager::service::ILogHandler::Level::Debug;
+    case RIALTO_DEBUG_LEVEL_EXTERNAL:
+        return rialto::servermanager::service::ILogHandler::Level::External;
+    case RIALTO_DEBUG_LEVEL_DEFAULT:
+        return rialto::servermanager::service::ILogHandler::Level::Milestone;
+    }
+    return rialto::servermanager::service::ILogHandler::Level::Debug;
+}
+} // namespace
+
 namespace rialto::servermanager::service
 {
 ServerManagerService::ServerManagerService(std::unique_ptr<IServiceContext> &&context, unsigned numOfPreloadedServers)
@@ -56,5 +83,30 @@ std::string ServerManagerService::getAppConnectionInfo(const std::string &appId)
 bool ServerManagerService::setLogLevels(const LoggingLevels &logLevels) const
 {
     return m_kContext->getSessionServerAppManager().setLogLevels(logLevels);
+}
+
+bool ServerManagerService::registerLogHandler(const std::shared_ptr<ILogHandler> &handler)
+{
+    using namespace std::placeholders;
+    if (!handler)
+    {
+        RIALTO_SERVER_MANAGER_LOG_ERROR("Cannot set custom log handler - ptr is null!");
+        return false;
+    }
+    m_logHandler = handler;
+    return firebolt::rialto::logging::RIALTO_LOGGING_STATUS_OK ==
+           firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_SERVER_MANAGER,
+                                                    std::bind(&ServerManagerService::forwardLog, this, _1, _2, _3, _4,
+                                                              _5, _6));
+}
+
+void ServerManagerService::forwardLog(RIALTO_DEBUG_LEVEL level, const char *file, int line, const char *function,
+                                      const char *message, std::size_t messageLen) const
+{
+    if (!m_logHandler)
+    {
+        return;
+    }
+    m_logHandler->log(convertLevel(level), std::string(file), line, std::string(function), std::string(message));
 }
 } // namespace rialto::servermanager::service

@@ -22,6 +22,7 @@
 
 #include "IServerManagerService.h"
 #include "IServiceContext.h"
+#include "RialtoLogging.h"
 #include <memory>
 #include <string>
 
@@ -43,9 +44,15 @@ public:
                                   const firebolt::rialto::common::SessionServerState &state) override;
     std::string getAppConnectionInfo(const std::string &appId) const override;
     bool setLogLevels(const LoggingLevels &logLevels) const override;
+    bool registerLogHandler(const std::shared_ptr<ILogHandler> &handler) override;
+
+private:
+    void forwardLog(RIALTO_DEBUG_LEVEL level, const char *file, int line, const char *function, const char *message,
+                    std::size_t messageLen) const;
 
 private:
     const std::unique_ptr<IServiceContext> m_kContext;
+    std::shared_ptr<ILogHandler> m_logHandler;
 };
 } // namespace rialto::servermanager::service
 
