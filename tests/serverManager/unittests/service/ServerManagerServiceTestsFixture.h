@@ -41,6 +41,7 @@ public:
                                            const firebolt::rialto::common::SessionServerState &state, bool returnValue);
     void getAppConnectionInfoWillBeCalled(const std::string &appId, const std::string &returnValue);
     void setLogLevelsWillBeCalled(bool returnValue);
+    std::shared_ptr<rialto::servermanager::service::ILogHandler> configureLogHandler();
 
     bool triggerInitiateApplication(const std::string &appId, const firebolt::rialto::common::SessionServerState &state,
                                     const firebolt::rialto::common::AppConfig &appConfig);
@@ -48,6 +49,7 @@ public:
                                          const firebolt::rialto::common::SessionServerState &state);
     std::string triggerGetAppConnectionInfo(const std::string &appId);
     bool triggerSetLogLevels();
+    bool triggerRegisterLogHandler(const std::shared_ptr<rialto::servermanager::service::ILogHandler> &handler);
 
 private:
     StrictMock<rialto::servermanager::common::SessionServerAppManagerMock> m_appManager;

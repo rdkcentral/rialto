@@ -25,8 +25,10 @@
 #ifndef RIALTO_SERVERMANAGER_SERVICE_I_SERVER_MANAGER_SERVICE_H_
 #define RIALTO_SERVERMANAGER_SERVICE_I_SERVER_MANAGER_SERVICE_H_
 
+#include "ILogHandler.h"
 #include "LoggingLevels.h"
 #include "SessionServerCommon.h"
+#include <memory>
 #include <string>
 
 namespace rialto::servermanager::service
@@ -100,6 +102,18 @@ public:
      * @retval true on success.
      */
     virtual bool setLogLevels(const LoggingLevels &logLevels) const = 0;
+
+    /**
+     * @brief Registers new log handler for rialto server manager
+     *
+     * This method registers new log handler for rialto server manager. All server manager logs will be forwarded to
+     * ILogHandler::log function
+     *
+     * @param[in]     handler     : Custom log handler.
+     *
+     * @retval true on success.
+     */
+    virtual bool registerLogHandler(const std::shared_ptr<ILogHandler> &handler) = 0;
 };
 } // namespace rialto::servermanager::service
 
