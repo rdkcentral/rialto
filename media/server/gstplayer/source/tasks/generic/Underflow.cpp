@@ -50,10 +50,10 @@ void Underflow::execute() const
     m_underflowFlag = true;
 
     // If the EOS has been raised, notify EndOfStream, not underflow.
-    if (!m_context.eosNotified && allSourcesEos())
+    if (allSourcesEos())
     {
         RIALTO_SERVER_LOG_WARN("Received underflow, but all streams are ended, so reporting EOS.");
-        if (m_gstPlayerClient)
+        if (!m_context.eosNotified && m_gstPlayerClient)
         {
             m_gstPlayerClient->notifyPlaybackState(PlaybackState::END_OF_STREAM);
             m_context.eosNotified = true;

@@ -105,10 +105,10 @@ void HandleBusMessage::execute() const
     }
     case GST_MESSAGE_EOS:
     {
-        if (m_context.pipeline && GST_MESSAGE_SRC(m_message) == GST_OBJECT(m_context.pipeline) && !m_context.eosNotified)
+        if (m_context.pipeline && GST_MESSAGE_SRC(m_message) == GST_OBJECT(m_context.pipeline))
         {
             RIALTO_SERVER_LOG_MIL("End of stream reached.");
-            if (m_gstPlayerClient)
+            if (!m_context.eosNotified && m_gstPlayerClient)
             {
                 m_gstPlayerClient->notifyPlaybackState(PlaybackState::END_OF_STREAM);
                 m_context.eosNotified = true;
@@ -171,13 +171,13 @@ void HandleBusMessage::execute() const
         gchar *debug = nullptr;
         m_gstWrapper->gstMessageParseError(m_message, &err, &debug);
 
-        if ((err->domain == GST_STREAM_ERROR) && (allSourcesEos() && !m_context.eosNotified))
+        if ((err->domain == GST_STREAM_ERROR) && (allSourcesEos()))
         {
             RIALTO_SERVER_LOG_WARN("Got stream error from %s. But all streams are ended, so reporting EOS. Error code "
                                    "%d: %s "
                                    "(%s).",
                                    GST_OBJECT_NAME(GST_MESSAGE_SRC(m_message)), err->code, err->message, debug);
-            if (m_gstPlayerClient)
+            if (!m_context.eosNotified && m_gstPlayerClient)
             {
                 m_gstPlayerClient->notifyPlaybackState(PlaybackState::END_OF_STREAM);
                 m_context.eosNotified = true;
