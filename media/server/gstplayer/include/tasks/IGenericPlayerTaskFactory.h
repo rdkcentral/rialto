@@ -294,10 +294,11 @@ public:
      * @param[in] context          : The GstGenericPlayer context
      * @param[in] player           : The GstPlayer instance
      * @param[in] underflowFlag    : The underflow flag (audio or video).
+     * @param[in] underflowEnabled : The underflow enabled flag (audio or video).
      *
      * @retval the new Underflow task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createUnderflow(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, bool &underflowFlag) const = 0;
+    virtual std::unique_ptr<IPlayerTask> createUnderflow(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, bool &underflowFlag, bool underflowEnabled) const = 0;
 
     /**
      * @brief Creates an UpdatePlaybackGroup task.

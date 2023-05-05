@@ -194,9 +194,9 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createStop(GenericPlayerC
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createUnderflow(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                                                       bool &underflowFlag) const
+                                                                       bool &underflowFlag, bool underflowEnabled) const
 {
-    return std::make_unique<tasks::generic::Underflow>(context, player, m_client, underflowFlag);
+    return std::make_unique<tasks::generic::Underflow>(context, player, m_client, underflowFlag, underflowEnabled);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createUpdatePlaybackGroup(GenericPlayerContext &context,
