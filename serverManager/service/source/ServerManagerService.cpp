@@ -87,12 +87,6 @@ bool ServerManagerService::setLogLevels(const LoggingLevels &logLevels) const
 
 bool ServerManagerService::registerLogHandler(const std::shared_ptr<ILogHandler> &handler)
 {
-    using std::placeholders::_1;
-    using std::placeholders::_2;
-    using std::placeholders::_3;
-    using std::placeholders::_4;
-    using std::placeholders::_5;
-    using std::placeholders::_6;
     if (!handler)
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("Cannot set custom log handler - ptr is null!");
@@ -101,8 +95,10 @@ bool ServerManagerService::registerLogHandler(const std::shared_ptr<ILogHandler>
     m_logHandler = handler;
     return firebolt::rialto::logging::RIALTO_LOGGING_STATUS_OK ==
            firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_SERVER_MANAGER,
-                                                    std::bind(&ServerManagerService::forwardLog, this, _1, _2, _3, _4,
-                                                              _5, _6));
+                                                    std::bind(&ServerManagerService::forwardLog, this,
+                                                              std::placeholders::_1, std::placeholders::_2,
+                                                              std::placeholders::_3, std::placeholders::_4,
+                                                              std::placeholders::_5, std::placeholders::_6));
 }
 
 void ServerManagerService::forwardLog(RIALTO_DEBUG_LEVEL level, const char *file, int line, const char *function,
