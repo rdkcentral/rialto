@@ -26,13 +26,17 @@ using testing::StrictMock;
 class PauseTest : public testing::Test
 {
 protected:
+    firebolt::rialto::server::GenericPlayerContext m_context{};
     StrictMock<firebolt::rialto::server::GstGenericPlayerPrivateMock> m_gstPlayer;
 };
 
 TEST_F(PauseTest, shouldPause)
 {
+    m_context.isPlaying = true;
     EXPECT_CALL(m_gstPlayer, stopPositionReportingAndCheckAudioUnderflowTimer());
     EXPECT_CALL(m_gstPlayer, changePipelineState(GST_STATE_PAUSED));
-    firebolt::rialto::server::tasks::generic::Pause task{m_gstPlayer};
+    firebolt::rialto::server::tasks::generic::Pause task{m_context, m_gstPlayer};
     task.execute();
+
+    EXPECT_FALSE(m_context.isPlaying);
 }

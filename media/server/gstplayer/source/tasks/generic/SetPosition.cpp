@@ -87,6 +87,10 @@ void SetPosition::execute() const
         return;
     }
 
+    // Reset Eos info
+    m_context.endOfStreamInfo.clear();
+    m_context.eosNotified = false;
+
     m_gstPlayerClient->notifyPlaybackState(PlaybackState::FLUSHED);
 
     // // Trigger NeedMediaData for all attached sources
