@@ -26,10 +26,10 @@ endif()
 
 add_compile_options(-Wall -Werror)
 
-option(RIALTO_LOG_FATAL_ENABLED "Enable fatal logging for RialtoServer" OFF)
-option(RIALTO_LOG_ERROR_ENABLED "Enable error logging for RialtoServer" OFF)
-option(RIALTO_LOG_WARN_ENABLED "Enable warning logging for RialtoServer" OFF)
-option(RIALTO_LOG_MIL_ENABLED "Enable milestone logging for RialtoServer" OFF)
+option(RIALTO_LOG_FATAL_ENABLED "Enable fatal logging for RialtoServer" ON)
+option(RIALTO_LOG_ERROR_ENABLED "Enable error logging for RialtoServer" ON)
+option(RIALTO_LOG_WARN_ENABLED "Enable warning logging for RialtoServer" ON)
+option(RIALTO_LOG_MIL_ENABLED "Enable milestone logging for RialtoServer" ON)
 
 if( RIALTO_BUILD_TYPE STREQUAL "Debug" )
     message("_______________DEBUG MODE_______________")
