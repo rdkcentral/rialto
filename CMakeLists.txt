@@ -26,10 +26,10 @@ endif()
 
 add_compile_options(-Wall -Werror)
 
-option(RIALTO_LOG_FATAL_ENABLED "Enable fatal logging for RialtoServer" ON)
-option(RIALTO_LOG_ERROR_ENABLED "Enable error logging for RialtoServer" ON)
-option(RIALTO_LOG_WARN_ENABLED "Enable warning logging for RialtoServer" ON)
-option(RIALTO_LOG_MIL_ENABLED "Enable milestone logging for RialtoServer" ON)
+option(RIALTO_LOG_FATAL_ENABLED "Enable fatal logging for RialtoServer" OFF)
+option(RIALTO_LOG_ERROR_ENABLED "Enable error logging for RialtoServer" OFF)
+option(RIALTO_LOG_WARN_ENABLED "Enable warning logging for RialtoServer" OFF)
+option(RIALTO_LOG_MIL_ENABLED "Enable milestone logging for RialtoServer" OFF)
 
 if( RIALTO_BUILD_TYPE STREQUAL "Debug" )
     message("_______________DEBUG MODE_______________")
@@ -41,6 +41,18 @@ else()
     option(RIALTO_LOG_DEBUG_ENABLED "Enable debug logging for RialtoServer" OFF)
 endif()
 
+if (NOT RIALTO_LOG_FATAL_ENABLED OR 
+    NOT RIALTO_LOG_ERROR_ENABLED OR
+    NOT RIALTO_LOG_WARN_ENABLED OR
+    NOT RIALTO_LOG_MIL_ENABLED OR
+    NOT RIALTO_LOG_INFO_ENABLED OR
+    NOT RIALTO_LOG_DEBUG_ENABLED )
+
+    message("_______________COMPILATION ERRORS IGNORED_______________")
+    add_compile_options(-Wno-error)
+
+endif()
+   
 if ( RIALTO_LOG_FATAL_ENABLED )
     message("RIALTO_LOG_FATAL IS ENABLED")
     add_compile_definitions( RIALTO_LOG_FATAL_ENABLED )
