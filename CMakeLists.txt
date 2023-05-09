@@ -49,7 +49,7 @@ if (NOT RIALTO_LOG_FATAL_ENABLED OR
     NOT RIALTO_LOG_DEBUG_ENABLED )
 
     message("_______________COMPILATION ERRORS IGNORED_______________")
-    add_compile_options(-Wno-error)
+    add_compile_options(-Wno-error=unused-function -Wno-error=unused-variable)
 
 endif()
    
