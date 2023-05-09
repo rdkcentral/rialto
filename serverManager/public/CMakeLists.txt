@@ -37,6 +37,7 @@ target_include_directories(
 if( NOT CMAKE_BUILD_TYPE STREQUAL "UnitTests" )
         include( GNUInstallDirs )
         set (LIB_RIALTO_SERVER_MANAGER_PUBLIC_HEADERS
+                include/ILogHandler.h
                 include/IServerManagerService.h
                 include/IStateObserver.h
                 include/LoggingLevels.h
