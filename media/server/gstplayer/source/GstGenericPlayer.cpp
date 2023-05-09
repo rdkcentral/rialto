@@ -645,8 +645,9 @@ void GstGenericPlayer::scheduleAudioUnderflow()
 {
     if (m_workerThread)
     {
+        bool underflowEnabled = m_context.isPlaying && !m_context.audioSourceRemoved;
         m_workerThread->enqueueTask(
-            m_taskFactory->createUnderflow(*this, m_context.audioUnderflowOccured, m_context.audioUnderflowEnabled));
+            m_taskFactory->createUnderflow(m_context, *this, m_context.audioUnderflowOccured, underflowEnabled));
     }
 }
 
@@ -654,7 +655,9 @@ void GstGenericPlayer::scheduleVideoUnderflow()
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createUnderflow(*this, m_context.videoUnderflowOccured));
+        bool underflowEnabled = m_context.isPlaying;
+        m_workerThread->enqueueTask(
+            m_taskFactory->createUnderflow(m_context, *this, m_context.videoUnderflowOccured, underflowEnabled));
     }
 }
 
@@ -689,7 +692,7 @@ void GstGenericPlayer::pause()
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createPause(*this));
+        m_workerThread->enqueueTask(m_taskFactory->createPause(m_context, *this));
     }
 }
 
@@ -880,4 +883,5 @@ void GstGenericPlayer::updatePlaybackGroup(GstElement *typefind, const GstCaps *
 {
     m_workerThread->enqueueTask(m_taskFactory->createUpdatePlaybackGroup(m_context, typefind, caps));
 }
+
 }; // namespace firebolt::rialto::server

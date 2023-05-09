@@ -41,8 +41,17 @@ protected:
     std::shared_ptr<firebolt::rialto::server::GstWrapperMock> m_gstWrapper{
         std::make_shared<StrictMock<firebolt::rialto::server::GstWrapperMock>>()};
     GstElement m_pipeline{};
+    GstElement m_audioAppSrc{};
 
-    CheckAudioUnderflowTest() { m_context.pipeline = &m_pipeline; }
+    CheckAudioUnderflowTest()
+    {
+        m_context.pipeline = &m_pipeline;
+        m_context.audioAppSrc = &m_audioAppSrc;
+        m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO,
+                                     firebolt::rialto::server::StreamInfo{&m_audioAppSrc, true});
+        m_context.audioUnderflowOccured = false;
+        m_context.isPlaying = true;
+    }
 };
 
 TEST_F(CheckAudioUnderflowTest, shouldNotTriggerAudioUnderflow)
@@ -54,11 +63,7 @@ TEST_F(CheckAudioUnderflowTest, shouldNotTriggerAudioUnderflow)
                 *cur = 0;
                 return TRUE;
             }));
-    GstElement audioAppSrc;
-    m_context.audioAppSrc = &audioAppSrc;
     m_context.lastAudioSampleTimestamps = position;
-    m_context.audioUnderflowOccured = false;
-    m_context.audioUnderflowEnabled = true;
     firebolt::rialto::server::tasks::generic::CheckAudioUnderflow task{m_context, m_gstPlayer, &m_gstPlayerClient,
                                                                        m_gstWrapper};
     task.execute();
@@ -82,11 +87,7 @@ TEST_F(CheckAudioUnderflowTest, shouldTriggerAudioUnderflow)
     EXPECT_CALL(m_gstPlayer, stopPositionReportingAndCheckAudioUnderflowTimer());
     EXPECT_CALL(m_gstPlayer, changePipelineState(GST_STATE_PAUSED));
     EXPECT_CALL(m_gstPlayerClient, notifyNetworkState(firebolt::rialto::NetworkState::STALLED));
-    GstElement audioAppSrc;
-    m_context.audioAppSrc = &audioAppSrc;
     m_context.lastAudioSampleTimestamps = 0;
-    m_context.audioUnderflowOccured = false;
-    m_context.audioUnderflowEnabled = true;
     firebolt::rialto::server::tasks::generic::CheckAudioUnderflow task{m_context, m_gstPlayer, &m_gstPlayerClient,
                                                                        m_gstWrapper};
     task.execute();

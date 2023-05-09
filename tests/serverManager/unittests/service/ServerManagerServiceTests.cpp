@@ -69,3 +69,13 @@ TEST_F(ServerManagerServiceTests, setLogLevelsShouldReturnFalseIfOperationFailed
     setLogLevelsWillBeCalled(false);
     ASSERT_FALSE(triggerSetLogLevels());
 }
+
+TEST_F(ServerManagerServiceTests, registerLogHandlerShouldFailWhenPtrIsNull)
+{
+    EXPECT_FALSE(triggerRegisterLogHandler(nullptr));
+}
+
+TEST_F(ServerManagerServiceTests, registerLogHandlerShouldSucceed)
+{
+    EXPECT_TRUE(triggerRegisterLogHandler(configureLogHandler()));
+}

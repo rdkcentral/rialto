@@ -49,7 +49,8 @@ void CheckAudioUnderflow::execute() const
         {
             RIALTO_SERVER_LOG_INFO("Audio stream underflow! Position %" PRIu64 ", lastAudioSampleTimestamps: %" PRIu64,
                                    position, m_context.lastAudioSampleTimestamps);
-            Underflow task(m_player, m_gstPlayerClient, m_context.audioUnderflowOccured, m_context.audioUnderflowEnabled);
+            bool underflowEnabled = m_context.isPlaying && !m_context.audioSourceRemoved;
+            Underflow task(m_context, m_player, m_gstPlayerClient, m_context.audioUnderflowOccured, underflowEnabled);
             task.execute();
         }
     }

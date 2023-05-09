@@ -44,7 +44,6 @@ protected:
         m_context.audioBuffers.push_back(&m_gstBuffer);
         m_context.audioNeedData = true;
         m_context.audioNeedDataPending = true;
-        m_context.audioUnderflowEnabled = true;
         m_context.audioSourceRemoved = false;
         m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, &m_audioSrc);
     }
@@ -60,7 +59,6 @@ TEST_F(RemoveSourceTest, shouldRemoveAudioSourceWithoutFlushing)
     task.execute();
     EXPECT_FALSE(m_context.audioNeedData);
     EXPECT_FALSE(m_context.audioNeedDataPending);
-    EXPECT_FALSE(m_context.audioUnderflowEnabled);
     EXPECT_TRUE(m_context.audioSourceRemoved);
     EXPECT_TRUE(m_context.audioBuffers.empty());
 }
@@ -73,7 +71,6 @@ TEST_F(RemoveSourceTest, shouldNotRemoveVideoSource)
     task.execute();
     EXPECT_TRUE(m_context.audioNeedData);
     EXPECT_TRUE(m_context.audioNeedDataPending);
-    EXPECT_TRUE(m_context.audioUnderflowEnabled);
     EXPECT_FALSE(m_context.audioSourceRemoved);
 }
 
@@ -90,7 +87,6 @@ TEST_F(RemoveSourceTest, shouldRemoveAudioSource)
     task.execute();
     EXPECT_FALSE(m_context.audioNeedData);
     EXPECT_FALSE(m_context.audioNeedDataPending);
-    EXPECT_FALSE(m_context.audioUnderflowEnabled);
     EXPECT_TRUE(m_context.audioSourceRemoved);
     EXPECT_TRUE(m_context.audioBuffers.empty());
 }
@@ -108,6 +104,5 @@ TEST_F(RemoveSourceTest, shouldRemoveAudioSourceFlushEventError)
     task.execute();
     EXPECT_FALSE(m_context.audioNeedData);
     EXPECT_FALSE(m_context.audioNeedDataPending);
-    EXPECT_FALSE(m_context.audioUnderflowEnabled);
     EXPECT_TRUE(m_context.audioSourceRemoved);
 }

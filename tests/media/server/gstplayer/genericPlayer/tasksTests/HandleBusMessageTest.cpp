@@ -92,6 +92,18 @@ TEST_F(HandleBusMessageTest, shouldNotHandleMessageEosWhenPipelineIsNull)
     task.execute();
 }
 
+TEST_F(HandleBusMessageTest, shouldNotHandleMessageEosWhenEosAlreadyNotified)
+{
+    m_context.eosNotified = true;
+    GstMessage message{};
+    GST_MESSAGE_SRC(&message) = GST_OBJECT(&m_pipeline);
+    GST_MESSAGE_TYPE(&message) = GST_MESSAGE_EOS;
+    EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&message));
+    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,    m_gstPlayer,   &m_gstPlayerClient,
+                                                                    m_gstWrapper, m_glibWrapper, &message};
+    task.execute();
+}
+
 TEST_F(HandleBusMessageTest, shouldHandleEosMessage)
 {
     GstMessage message{};
@@ -102,6 +114,8 @@ TEST_F(HandleBusMessageTest, shouldHandleEosMessage)
     firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,    m_gstPlayer,   &m_gstPlayerClient,
                                                                     m_gstWrapper, m_glibWrapper, &message};
     task.execute();
+
+    EXPECT_TRUE(m_context.eosNotified);
 }
 
 TEST_F(HandleBusMessageTest, shouldNotHandleStateChangedMessageForAnotherPipeline)
@@ -212,6 +226,7 @@ TEST_F(HandleBusMessageTest, shouldHandleStateChangedToPausedAndPendingPausedMes
 
 TEST_F(HandleBusMessageTest, shouldHandleStateChangedToPlayingMessage)
 {
+    m_context.isPlaying = false;
     GstMessage message{};
     GST_MESSAGE_SRC(&message) = GST_OBJECT(&m_pipeline);
     GST_MESSAGE_TYPE(&message) = GST_MESSAGE_STATE_CHANGED;
@@ -231,6 +246,8 @@ TEST_F(HandleBusMessageTest, shouldHandleStateChangedToPlayingMessage)
     firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,    m_gstPlayer,   &m_gstPlayerClient,
                                                                     m_gstWrapper, m_glibWrapper, &message};
     task.execute();
+
+    EXPECT_TRUE(m_context.isPlaying);
 }
 
 TEST_F(HandleBusMessageTest, shouldHandleStateChangedToPlayingMessageAndSetPendingPlaybackRate)
@@ -469,6 +486,35 @@ TEST_F(HandleBusMessageTest, shouldHandleStreamErrorMessageWhenEosAllSources)
     EXPECT_CALL(*m_gstWrapper, gstMessageParseError(&message, _, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(&err), SetArgPointee<2>(debug)));
     EXPECT_CALL(m_gstPlayerClient, notifyPlaybackState(firebolt::rialto::PlaybackState::END_OF_STREAM));
+    EXPECT_CALL(*m_glibWrapper, gFree(debug));
+    EXPECT_CALL(*m_glibWrapper, gErrorFree(&err));
+    EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&message));
+    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,    m_gstPlayer,   &m_gstPlayerClient,
+                                                                    m_gstWrapper, m_glibWrapper, &message};
+    task.execute();
+
+    EXPECT_TRUE(m_context.eosNotified);
+}
+
+/**
+ * Test HandleBusMessage does not notifies END_OF_STREAM for a stream error when all sources are EOS but EOS has already
+ * been notified.
+ */
+TEST_F(HandleBusMessageTest, shouldHandleStreamErrorMessageWhenEosAllSourcesAndEosAlreadyNotfied)
+{
+    GstMessage message{};
+    GError err{};
+    gchar *debug = "Error message";
+    GST_MESSAGE_TYPE(&message) = GST_MESSAGE_ERROR;
+    GST_MESSAGE_SRC(&message) = GST_OBJECT_CAST(&m_videoSrc);
+    err.domain = GST_STREAM_ERROR;
+
+    m_context.endOfStreamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, GST_ELEMENT(&m_audioSrc));
+    m_context.endOfStreamInfo.emplace(firebolt::rialto::MediaSourceType::VIDEO, GST_ELEMENT(&m_videoSrc));
+    m_context.eosNotified = true;
+
+    EXPECT_CALL(*m_gstWrapper, gstMessageParseError(&message, _, _))
+        .WillRepeatedly(DoAll(SetArgPointee<1>(&err), SetArgPointee<2>(debug)));
     EXPECT_CALL(*m_glibWrapper, gFree(debug));
     EXPECT_CALL(*m_glibWrapper, gErrorFree(&err));
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&message));
