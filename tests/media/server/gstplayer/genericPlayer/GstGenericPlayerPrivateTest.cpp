@@ -123,20 +123,72 @@ TEST_F(GstGenericPlayerPrivateTest, shouldScheduleEnoughDataData)
     m_sut->scheduleEnoughData(&appSrc);
 }
 
-TEST_F(GstGenericPlayerPrivateTest, shouldScheduleAudioUnderflow)
+TEST_F(GstGenericPlayerPrivateTest, shouldScheduleAudioUnderflowWithUnderflowEnabled)
 {
+    modifyContext(
+        [&](GenericPlayerContext &context)
+        {
+            context.isPlaying = true;
+            context.audioSourceRemoved = false;
+        });
+
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createUnderflow(_, _, _)).WillOnce(Return(ByMove(std::move(task))));
+    EXPECT_CALL(m_taskFactoryMock, createUnderflow(_, _, _, true)).WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->scheduleAudioUnderflow();
 }
 
-TEST_F(GstGenericPlayerPrivateTest, shouldScheduleVideoUnderflow)
+TEST_F(GstGenericPlayerPrivateTest, shouldScheduleAudioUnderflowWithUnderflowDisabledNotPlaying)
 {
+    modifyContext(
+        [&](GenericPlayerContext &context)
+        {
+            context.isPlaying = false;
+            context.audioSourceRemoved = false;
+        });
+
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createUnderflow(_, _, _)).WillOnce(Return(ByMove(std::move(task))));
+    EXPECT_CALL(m_taskFactoryMock, createUnderflow(_, _, _, false)).WillOnce(Return(ByMove(std::move(task))));
+
+    m_sut->scheduleAudioUnderflow();
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldScheduleAudioUnderflowWithUnderflowDisabledRemoveSource)
+{
+    modifyContext(
+        [&](GenericPlayerContext &context)
+        {
+            context.isPlaying = true;
+            context.audioSourceRemoved = true;
+        });
+
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(m_taskFactoryMock, createUnderflow(_, _, _, false)).WillOnce(Return(ByMove(std::move(task))));
+
+    m_sut->scheduleAudioUnderflow();
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldScheduleVideoUnderflowWithUnderflowEnabled)
+{
+    modifyContext([&](GenericPlayerContext &context) { context.isPlaying = true; });
+
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(m_taskFactoryMock, createUnderflow(_, _, _, true)).WillOnce(Return(ByMove(std::move(task))));
+
+    m_sut->scheduleVideoUnderflow();
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldScheduleVideoUnderflowWithUnderflowDisabled)
+{
+    modifyContext([&](GenericPlayerContext &context) { context.isPlaying = false; });
+
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(m_taskFactoryMock, createUnderflow(_, _, _, false)).WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->scheduleVideoUnderflow();
 }

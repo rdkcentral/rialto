@@ -90,6 +90,8 @@ void HandleBusMessage::execute() const
                     m_player.setPendingPlaybackRate();
                 }
                 m_player.startPositionReportingAndCheckAudioUnderflowTimer();
+
+                m_context.isPlaying = true;
                 break;
             }
             case GST_STATE_VOID_PENDING:
@@ -106,9 +108,10 @@ void HandleBusMessage::execute() const
         if (m_context.pipeline && GST_MESSAGE_SRC(m_message) == GST_OBJECT(m_context.pipeline))
         {
             RIALTO_SERVER_LOG_MIL("End of stream reached.");
-            if (m_gstPlayerClient)
+            if (!m_context.eosNotified && m_gstPlayerClient)
             {
                 m_gstPlayerClient->notifyPlaybackState(PlaybackState::END_OF_STREAM);
+                m_context.eosNotified = true;
             }
         }
         break;
@@ -174,9 +177,10 @@ void HandleBusMessage::execute() const
                                    "%d: %s "
                                    "(%s).",
                                    GST_OBJECT_NAME(GST_MESSAGE_SRC(m_message)), err->code, err->message, debug);
-            if (m_gstPlayerClient)
+            if (!m_context.eosNotified && m_gstPlayerClient)
             {
                 m_gstPlayerClient->notifyPlaybackState(PlaybackState::END_OF_STREAM);
+                m_context.eosNotified = true;
             }
         }
         else

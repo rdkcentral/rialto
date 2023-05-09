@@ -45,7 +45,6 @@ void RemoveSource::execute() const
     m_context.audioBuffers.clear();
     m_context.audioNeedData = false;
     m_context.audioNeedDataPending = false;
-    m_context.audioUnderflowEnabled = false;
     m_context.audioSourceRemoved = true;
     m_gstPlayerClient->invalidateActiveRequests(m_type);
     GstElement *source{nullptr};

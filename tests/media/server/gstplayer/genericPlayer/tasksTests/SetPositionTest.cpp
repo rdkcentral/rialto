@@ -54,10 +54,13 @@ protected:
         m_context.videoNeedData = true;
         m_context.audioNeedDataPending = true;
         m_context.videoNeedDataPending = true;
+        m_context.eosNotified = true;
         m_context.audioBuffers.emplace_back(&m_audioBuffer);
         m_context.videoBuffers.emplace_back(&m_videoBuffer);
         m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, GST_ELEMENT(&m_audioSrc));
         m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::VIDEO, GST_ELEMENT(&m_videoSrc));
+        m_context.endOfStreamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, GST_ELEMENT(&m_audioSrc));
+        m_context.endOfStreamInfo.emplace(firebolt::rialto::MediaSourceType::VIDEO, GST_ELEMENT(&m_videoSrc));
     }
 };
 
@@ -162,4 +165,6 @@ TEST_F(SetPositionTest, shouldSetPositionWithChangedPlaybackRate)
     EXPECT_TRUE(m_context.videoNeedDataPending);
     EXPECT_TRUE(m_context.audioBuffers.empty());
     EXPECT_TRUE(m_context.videoBuffers.empty());
+    EXPECT_TRUE(m_context.endOfStreamInfo.empty());
+    EXPECT_FALSE(m_context.eosNotified);
 }
