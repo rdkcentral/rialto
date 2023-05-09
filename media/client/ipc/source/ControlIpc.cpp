@@ -89,8 +89,6 @@ ControlIpc::~ControlIpc()
 
 bool ControlIpc::getSharedMemory(int32_t &fd, uint32_t &size)
 {
-    // Increase reference incase client disconnects from another thread
-    std::shared_ptr<ipc::IChannel> ipcChannel = m_ipcChannel;
     std::shared_ptr<::firebolt::rialto::ControlModule_Stub> controlStub = m_controlStub;
 
     if (!reattachChannelIfRequired())
@@ -124,8 +122,6 @@ bool ControlIpc::getSharedMemory(int32_t &fd, uint32_t &size)
 
 bool ControlIpc::registerClient()
 {
-    // Increase reference incase client disconnects from another thread
-    std::shared_ptr<ipc::IChannel> ipcChannel = m_ipcChannel;
     std::shared_ptr<::firebolt::rialto::ControlModule_Stub> controlStub = m_controlStub;
 
     if (!reattachChannelIfRequired())

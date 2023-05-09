@@ -36,9 +36,9 @@ protected:
     std::shared_ptr<StrictMock<ControlIpcMock>> m_controlIpcMock;
 
     ClientControllerCreateTest()
+        : m_controlIpcFactoryMock{std::make_shared<StrictMock<ControlIpcFactoryMock>>()},
+          m_controlIpcMock{std::make_shared<StrictMock<ControlIpcMock>>()}
     {
-        m_controlIpcFactoryMock = std::make_shared<StrictMock<ControlIpcFactoryMock>>();
-        m_controlIpcMock = std::make_shared<StrictMock<ControlIpcMock>>();
     }
 
     ~ClientControllerCreateTest()

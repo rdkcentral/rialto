@@ -34,8 +34,6 @@ void IpcModuleBase::expectInitIpc()
     expectAttachChannel();
 }
 
-void IpcModuleBase::expectInitIpcFailure() {}
-
 void IpcModuleBase::expectInitIpcButAttachChannelFailure()
 {
     EXPECT_CALL(m_ipcClientMock, getChannel()).WillOnce(Return(nullptr)).RetiresOnSaturation();

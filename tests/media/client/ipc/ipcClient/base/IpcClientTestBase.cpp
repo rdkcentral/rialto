@@ -21,14 +21,13 @@
 #include "IpcClient.h"
 
 IpcClientTestBase::IpcClientTestBase()
+    : m_channelFactoryMock{std::make_shared<StrictMock<ChannelFactoryMock>>()},
+      m_channelMock{std::make_shared<StrictMock<ChannelMock>>()},
+      m_controllerFactoryMock{std::make_shared<StrictMock<ControllerFactoryMock>>()},
+      m_controllerMock{std::make_shared<StrictMock<RpcControllerMock>>()},
+      m_blockingClosureFactoryMock{std::make_shared<StrictMock<BlockingClosureFactoryMock>>()},
+      m_blockingClosureMock{std::make_shared<StrictMock<BlockingClosureMock>>()}
 {
-    // Create StrictMocks
-    m_channelFactoryMock = std::make_shared<StrictMock<ChannelFactoryMock>>();
-    m_channelMock = std::make_shared<StrictMock<ChannelMock>>();
-    m_controllerFactoryMock = std::make_shared<StrictMock<ControllerFactoryMock>>();
-    m_controllerMock = std::make_shared<StrictMock<RpcControllerMock>>();
-    m_blockingClosureFactoryMock = std::make_shared<StrictMock<BlockingClosureFactoryMock>>();
-    m_blockingClosureMock = std::make_shared<StrictMock<BlockingClosureMock>>();
 }
 
 IpcClientTestBase::~IpcClientTestBase()

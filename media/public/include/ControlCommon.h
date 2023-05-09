@@ -21,9 +21,9 @@
 #define FIREBOLT_RIALTO_CONTROL_COMMON_H_
 
 /**
- * @file RialtoControlCommon.h
+ * @file ControlCommon.h
  *
- * The definition of the Rialto Control Common types
+ * The definition of the Control Common types
  *
  */
 

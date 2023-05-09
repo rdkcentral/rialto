@@ -34,10 +34,9 @@ constexpr int kPingSubscriptionId{2};
 } // namespace
 
 ControlIpcTestBase::ControlIpcTestBase()
+    : m_eventThreadFactoryMock{std::make_shared<StrictMock<EventThreadFactoryMock>>()},
+      m_eventThread{std::make_unique<StrictMock<EventThreadMock>>()}, m_eventThreadMock{m_eventThread.get()}
 {
-    m_eventThreadFactoryMock = std::make_shared<StrictMock<EventThreadFactoryMock>>();
-    m_eventThread = std::make_unique<StrictMock<EventThreadMock>>();
-    m_eventThreadMock = m_eventThread.get();
 }
 
 ControlIpcTestBase::~ControlIpcTestBase()
