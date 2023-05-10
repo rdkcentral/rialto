@@ -58,7 +58,8 @@ message RegisterClientResponse {
  * 
  * @brief Acknowledgement of a received ping request
  *
- * @param[in] id  : id received in ping notification
+ * @param[in] control_handle  : The handle id.
+ * @param[in] id              : id received in ping notification
  * 
  */
 message AckRequest {
@@ -71,7 +72,8 @@ message AckResponse {
 /**
  * @brief Event sent by the server when it changes its state
  *
- * @param session_id        The id of the A/V session the request is for.
+ * @param control_handle        The handle id.
+ * @param application_state     The new state of application
  *
  */
 message ApplicationStateChangeEvent {

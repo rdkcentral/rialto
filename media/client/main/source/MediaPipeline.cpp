@@ -148,7 +148,7 @@ MediaPipeline::MediaPipeline(std::weak_ptr<IMediaPipelineClient> client, const V
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    ApplicationState currentAppState;
+    ApplicationState currentAppState{ApplicationState::UNKNOWN};
     if (!m_clientController.registerClient(this, currentAppState))
     {
         throw std::runtime_error("Failed to register client with clientController");
