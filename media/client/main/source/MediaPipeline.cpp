@@ -45,7 +45,6 @@ const char *toString(const firebolt::rialto::client::MediaPipeline::State &state
     return "UNKNOWN";
 }
 
-#ifdef RIALTO_LOG_DEBUG_ENABLED
 const char *toString(const firebolt::rialto::PlaybackState &state)
 {
     switch (state)
@@ -71,9 +70,7 @@ const char *toString(const firebolt::rialto::PlaybackState &state)
     }
     return "UNKNOWN";
 }
-#endif
 
-#ifdef RIALTO_LOG_DEBUG_ENABLED
 const char *toString(const firebolt::rialto::NetworkState &state)
 {
     switch (state)
@@ -99,7 +96,6 @@ const char *toString(const firebolt::rialto::NetworkState &state)
     }
     return "UNKNOWN";
 }
-#endif
 } // namespace
 
 namespace firebolt::rialto
