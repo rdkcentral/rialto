@@ -42,7 +42,7 @@ IpcModule::~IpcModule()
     m_ipc.reset();
 }
 
-bool IpcModule::unsubscribeFromAllEvents(const std::shared_ptr<ipc::IChannel>& ipcChannel)
+bool IpcModule::unsubscribeFromAllEvents(const std::shared_ptr<ipc::IChannel> &ipcChannel)
 {
     if (!ipcChannel)
     {

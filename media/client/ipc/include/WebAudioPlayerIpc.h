@@ -87,9 +87,9 @@ private:
 
     void destroyWebAudioPlayer();
 
-    bool createRpcStubs(const std::shared_ptr<ipc::IChannel>& ipcChannel) override;
+    bool createRpcStubs(const std::shared_ptr<ipc::IChannel> &ipcChannel) override;
 
-    bool subscribeToEvents(const std::shared_ptr<ipc::IChannel>& ipcChannel) override;
+    bool subscribeToEvents(const std::shared_ptr<ipc::IChannel> &ipcChannel) override;
 
     void onPlaybackStateUpdated(const std::shared_ptr<firebolt::rialto::WebAudioPlayerStateEvent> &event);
     /**

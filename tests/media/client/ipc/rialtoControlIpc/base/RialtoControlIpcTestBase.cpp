@@ -19,6 +19,7 @@
 
 #include "RialtoControlIpcTestBase.h"
 #include <memory>
+#include <string>
 
 void RialtoControlIpcTestBase::SetUp() // NOLINT(build/function_format)
 {
@@ -55,13 +56,14 @@ void RialtoControlIpcTestBase::expectIpcLoop()
 {
     EXPECT_CALL(*m_channelMock, process()).InSequence(m_processSeq).WillOnce(Return(true));
     EXPECT_CALL(*m_channelMock, wait(_))
-        .WillOnce(Invoke([this](int timeoutMSecs)
-        {
-            std::unique_lock<std::mutex> locker(m_eventsLock);
-            if (!m_disconnected)
-                m_eventsCond.wait(locker);
-            return true;
-        }));
+        .WillOnce(Invoke(
+            [this](int timeoutMSecs)
+            {
+                std::unique_lock<std::mutex> locker(m_eventsLock);
+                if (!m_disconnected)
+                    m_eventsCond.wait(locker);
+                return true;
+            }));
 }
 
 void RialtoControlIpcTestBase::destroyRialtoControlIpc(bool alreadyDisconnected)
@@ -97,22 +99,23 @@ void RialtoControlIpcTestBase::expectDisconnect()
 {
     EXPECT_CALL(*m_channelMock, process()).InSequence(m_processSeq).WillOnce(Return(false));
     EXPECT_CALL(*m_channelMock, disconnect())
-        .WillOnce(Invoke([this]()
-        {
-            std::lock_guard<std::mutex> locker(m_eventsLock);
-            m_disconnected = true;
-            m_eventsCond.notify_all();
-        }));
+        .WillOnce(Invoke(
+            [this]()
+            {
+                std::lock_guard<std::mutex> locker(m_eventsLock);
+                m_disconnected = true;
+                m_eventsCond.notify_all();
+            }));
 }
 
 void RialtoControlIpcTestBase::expectCreateChannel()
 {
     EXPECT_CALL(*m_channelFactoryMock, createChannel(m_kRialtoPath))
-        .WillOnce(Invoke([this](const std::string &socketPath)
-        {
-            std::lock_guard<std::mutex> locker(m_eventsLock);
-            m_disconnected = false;
-            return m_channelMock;
-        }));
-
+        .WillOnce(Invoke(
+            [this](const std::string &socketPath)
+            {
+                std::lock_guard<std::mutex> locker(m_eventsLock);
+                m_disconnected = false;
+                return m_channelMock;
+            }));
 }

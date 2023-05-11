@@ -94,7 +94,7 @@ WebAudioPlayerIpc::~WebAudioPlayerIpc()
     m_eventThread.reset();
 }
 
-bool WebAudioPlayerIpc::createRpcStubs(const std::shared_ptr<ipc::IChannel>& ipcChannel)
+bool WebAudioPlayerIpc::createRpcStubs(const std::shared_ptr<ipc::IChannel> &ipcChannel)
 {
     m_webAudioPlayerStub = std::make_unique<::firebolt::rialto::WebAudioPlayerModule_Stub>(ipcChannel.get());
     if (!m_webAudioPlayerStub)
@@ -104,7 +104,7 @@ bool WebAudioPlayerIpc::createRpcStubs(const std::shared_ptr<ipc::IChannel>& ipc
     return true;
 }
 
-bool WebAudioPlayerIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel>& ipcChannel)
+bool WebAudioPlayerIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &ipcChannel)
 {
     int eventTag = ipcChannel->subscribe<firebolt::rialto::WebAudioPlayerStateEvent>(
         [this](const std::shared_ptr<firebolt::rialto::WebAudioPlayerStateEvent> &event)

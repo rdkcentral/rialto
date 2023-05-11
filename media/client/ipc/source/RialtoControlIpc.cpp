@@ -193,7 +193,7 @@ bool RialtoControlIpc::disconnect()
     RIALTO_CLIENT_LOG_INFO("closing IPC channel");
     m_disconnecting = true;
 
-   // release the RPC stubs
+    // release the RPC stubs
     m_rialtoControlStub.reset();
 
     // disconnect from the server, this should terminate the thread so join that too

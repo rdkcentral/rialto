@@ -27,8 +27,8 @@
 #include "IpcControllerFactoryMock.h"
 #include "RialtoControlIpc.h"
 #include "RpcControllerMock.h"
-#include <gtest/gtest.h>
 #include <condition_variable>
+#include <gtest/gtest.h>
 #include <memory>
 #include <mutex>
 
@@ -37,10 +37,10 @@ using namespace firebolt::rialto::ipc;
 using namespace firebolt::rialto::client;
 
 using ::testing::_;
-using ::testing::Return;
-using ::testing::StrictMock;
 using ::testing::Invoke;
+using ::testing::Return;
 using ::testing::Sequence;
+using ::testing::StrictMock;
 
 MATCHER_P(methodMatcher, name, "")
 {

@@ -74,7 +74,7 @@ protected:
      *
      * @retval true if the rpc stubs are created successfully, false otherwise.
      */
-    virtual bool createRpcStubs(const std::shared_ptr<ipc::IChannel>& ipcChannel) = 0;
+    virtual bool createRpcStubs(const std::shared_ptr<ipc::IChannel> &ipcChannel) = 0;
 
     /**
      * @brief Subscribes to the Ipc events for the derived object.
@@ -83,7 +83,7 @@ protected:
      *
      * @retval true if the events are subscribed successfully, false otherwise.
      */
-    virtual bool subscribeToEvents(const std::shared_ptr<ipc::IChannel>& ipcChannel) = 0;
+    virtual bool subscribeToEvents(const std::shared_ptr<ipc::IChannel> &ipcChannel) = 0;
 
     /**
      * @brief Unsubscribes to all Ipc events.
@@ -92,7 +92,7 @@ protected:
      *
      * @retval true if the events are unsubscribed successfully, false otherwise.
      */
-    bool unsubscribeFromAllEvents(const std::shared_ptr<ipc::IChannel>& ipcChannel);
+    bool unsubscribeFromAllEvents(const std::shared_ptr<ipc::IChannel> &ipcChannel);
 
     /**
      * @brief Attach the connected ipc client channel to the MediaKeysIpc object.

@@ -176,7 +176,7 @@ MediaKeysIpc::~MediaKeysIpc()
     m_eventThread.reset();
 }
 
-bool MediaKeysIpc::createRpcStubs(const std::shared_ptr<ipc::IChannel>& ipcChannel)
+bool MediaKeysIpc::createRpcStubs(const std::shared_ptr<ipc::IChannel> &ipcChannel)
 {
     m_mediaKeysStub = std::make_unique<::firebolt::rialto::MediaKeysModule_Stub>(ipcChannel.get());
     if (!m_mediaKeysStub)
@@ -186,7 +186,7 @@ bool MediaKeysIpc::createRpcStubs(const std::shared_ptr<ipc::IChannel>& ipcChann
     return true;
 }
 
-bool MediaKeysIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel>& ipcChannel)
+bool MediaKeysIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &ipcChannel)
 {
     int eventTag = ipcChannel->subscribe<firebolt::rialto::LicenseRequestEvent>(
         [this](const std::shared_ptr<firebolt::rialto::LicenseRequestEvent> &event)
