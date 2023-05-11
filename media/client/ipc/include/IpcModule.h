@@ -70,7 +70,7 @@ protected:
     /**
      * @brief Create the Rpc stubs for the derived object.
      *
-     * @param[in] ipcChannel      : The connected ipc channel
+     * @param[in] ipcChannel      : The ipc channel
      *
      * @retval true if the rpc stubs are created successfully, false otherwise.
      */
@@ -79,7 +79,7 @@ protected:
     /**
      * @brief Subscribes to the Ipc events for the derived object.
      *
-     * @param[in] ipcChannel      : The connected ipc channel
+     * @param[in] ipcChannel      : The ipc channel
      *
      * @retval true if the events are subscribed successfully, false otherwise.
      */
@@ -88,7 +88,7 @@ protected:
     /**
      * @brief Unsubscribes to all Ipc events.
      *
-     * @param[in] ipcChannel      : The connected ipc channel
+     * @param[in] ipcChannel      : The ipc channel
      *
      * @retval true if the events are unsubscribed successfully, false otherwise.
      */

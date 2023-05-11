@@ -111,7 +111,7 @@ bool RialtoControlIpc::connect()
 {
     if (m_ipcChannel)
     {
-        RIALTO_CLIENT_LOG_WARN("Client already connected");
+        RIALTO_CLIENT_LOG_INFO("Client already connected");
         return true;
     }
 
@@ -182,7 +182,7 @@ bool RialtoControlIpc::disconnect()
     std::shared_ptr<ipc::IChannel> ipcChannel = m_ipcChannel;
     if (!ipcChannel)
     {
-        // The ipc channel may have disconnected unexpectadly, join the ipc thread if required
+        // The ipc channel may have disconnected unexpectedly, join the ipc thread if required
         if (m_ipcThread.joinable())
             m_ipcThread.join();
 
@@ -190,6 +190,7 @@ bool RialtoControlIpc::disconnect()
         return true;
     }
 
+    RIALTO_CLIENT_LOG_INFO("closing IPC channel");
     m_disconnecting = true;
 
    // release the RPC stubs
@@ -223,6 +224,7 @@ bool RialtoControlIpc::getSharedMemory(int32_t &fd, uint32_t &size)
     }
 
     firebolt::rialto::GetSharedMemoryRequest request;
+
     firebolt::rialto::GetSharedMemoryResponse response;
     auto ipcController = createRpcController();
     auto blockingClosure = createBlockingClosure();
@@ -248,11 +250,10 @@ void RialtoControlIpc::ipcThread()
 {
     pthread_setname_np(pthread_self(), "rialto-ipc");
 
-    RIALTO_CLIENT_LOG_ERROR("started ipc thread");
+    RIALTO_CLIENT_LOG_INFO("started ipc thread");
 
     while (m_ipcChannel->process())
     {
-        RIALTO_CLIENT_LOG_ERROR("Client disconnected");
         m_ipcChannel->wait(-1);
     }
 
@@ -266,12 +267,11 @@ void RialtoControlIpc::ipcThread()
         m_ipcChannel.reset();
     }
 
-    RIALTO_CLIENT_LOG_ERROR("exiting ipc thread");
+    RIALTO_CLIENT_LOG_INFO("exiting ipc thread");
 }
 
 std::weak_ptr<::firebolt::rialto::ipc::IChannel> RialtoControlIpc::getChannel() const
 {
-    RIALTO_CLIENT_LOG_ERROR("here1");
     return m_ipcChannel;
 }
 

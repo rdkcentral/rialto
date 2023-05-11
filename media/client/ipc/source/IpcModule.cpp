@@ -24,7 +24,7 @@ namespace firebolt::rialto::client
 {
 IpcModule::IpcModule(const std::shared_ptr<IIpcClientFactory> &ipcClientFactory)
 {
-    RIALTO_CLIENT_LOG_ERROR("entry:");
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     // get IPC
     m_ipc = ipcClientFactory->getIpcClient();
@@ -36,7 +36,7 @@ IpcModule::IpcModule(const std::shared_ptr<IIpcClientFactory> &ipcClientFactory)
 
 IpcModule::~IpcModule()
 {
-    RIALTO_CLIENT_LOG_ERROR("entry:");
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     // remove IPC
     m_ipc.reset();
@@ -107,6 +107,7 @@ void IpcModule::detachChannel()
         RIALTO_CLIENT_LOG_ERROR("Failed to unsubscribe to some ipc module events, this can lead to core dumps in IPC");
     }
 
+    // remove IPC
     m_ipcChannel.reset();
 }
 
