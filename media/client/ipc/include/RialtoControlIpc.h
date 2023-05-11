@@ -132,6 +132,11 @@ protected:
     std::shared_ptr<ipc::IBlockingClosureFactory> m_blockingClosureFactory;
 
     /**
+     * @brief Whether disconnection of ipc has been requested by the client and is ongoing.
+     */
+    std::atomic<bool> m_disconnecting;
+
+    /**
      * @brief The processing loop for the ipc thread.
      */
     void ipcThread();

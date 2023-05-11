@@ -44,18 +44,31 @@ void RialtoControlIpcTestBase::TearDown() // NOLINT(build/function_format)
 
 void RialtoControlIpcTestBase::createRialtoControlIpc()
 {
-    EXPECT_CALL(*m_channelFactoryMock, createChannel(m_kRialtoPath)).WillOnce(Return(m_channelMock));
-    EXPECT_CALL(*m_channelMock, process()).WillOnce(Return(false));
+    expectCreateChannel();
+    expectIpcLoop();
 
     EXPECT_NO_THROW(m_rialtoControlIpc = std::make_shared<RialtoControlIpc>(m_channelFactoryMock, m_controllerFactoryMock,
                                                                             m_blockingClosureFactoryMock));
+}
+
+void RialtoControlIpcTestBase::expectIpcLoop()
+{
+    EXPECT_CALL(*m_channelMock, process()).InSequence(m_processSeq).WillOnce(Return(true));
+    EXPECT_CALL(*m_channelMock, wait(_))
+        .WillOnce(Invoke([this](int timeoutMSecs)
+        {
+            std::unique_lock<std::mutex> locker(m_eventsLock);
+            if (!m_disconnected)
+                m_eventsCond.wait(locker);
+            return true;
+        }));
 }
 
 void RialtoControlIpcTestBase::destroyRialtoControlIpc(bool alreadyDisconnected)
 {
     if (!alreadyDisconnected)
     {
-        EXPECT_CALL(*m_channelMock, disconnect());
+        expectDisconnect();
     }
 
     m_rialtoControlIpc.reset();
@@ -78,4 +91,28 @@ void RialtoControlIpcTestBase::expectIpcApiCallFailure()
     EXPECT_CALL(*m_blockingClosureMock, wait()).RetiresOnSaturation();
     EXPECT_CALL(*m_controllerMock, Failed()).WillOnce(Return(true)).RetiresOnSaturation();
     EXPECT_CALL(*m_controllerMock, ErrorText()).WillOnce(Return("Failed for some reason...")).RetiresOnSaturation();
+}
+
+void RialtoControlIpcTestBase::expectDisconnect()
+{
+    EXPECT_CALL(*m_channelMock, process()).InSequence(m_processSeq).WillOnce(Return(false));
+    EXPECT_CALL(*m_channelMock, disconnect())
+        .WillOnce(Invoke([this]()
+        {
+            std::lock_guard<std::mutex> locker(m_eventsLock);
+            m_disconnected = true;
+            m_eventsCond.notify_all();
+        }));
+}
+
+void RialtoControlIpcTestBase::expectCreateChannel()
+{
+    EXPECT_CALL(*m_channelFactoryMock, createChannel(m_kRialtoPath))
+        .WillOnce(Invoke([this](const std::string &socketPath)
+        {
+            std::lock_guard<std::mutex> locker(m_eventsLock);
+            m_disconnected = false;
+            return m_channelMock;
+        }));
+
 }

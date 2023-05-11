@@ -24,7 +24,7 @@ namespace firebolt::rialto::client
 {
 IpcModule::IpcModule(const std::shared_ptr<IIpcClientFactory> &ipcClientFactory)
 {
-    RIALTO_CLIENT_LOG_DEBUG("entry:");
+    RIALTO_CLIENT_LOG_ERROR("entry:");
 
     // get IPC
     m_ipc = ipcClientFactory->getIpcClient();
@@ -36,15 +36,14 @@ IpcModule::IpcModule(const std::shared_ptr<IIpcClientFactory> &ipcClientFactory)
 
 IpcModule::~IpcModule()
 {
-    RIALTO_CLIENT_LOG_DEBUG("entry:");
+    RIALTO_CLIENT_LOG_ERROR("entry:");
 
     // remove IPC
     m_ipc.reset();
 }
 
-bool IpcModule::unsubscribeFromAllEvents()
+bool IpcModule::unsubscribeFromAllEvents(const std::shared_ptr<ipc::IChannel>& ipcChannel)
 {
-    std::shared_ptr<ipc::IChannel> ipcChannel = m_ipcChannel.lock();
     if (!ipcChannel)
     {
         return false;
@@ -66,8 +65,7 @@ bool IpcModule::unsubscribeFromAllEvents()
 bool IpcModule::attachChannel()
 {
     // get the channel
-    m_ipcChannel = m_ipc->getChannel();
-    std::shared_ptr<ipc::IChannel> ipcChannel = m_ipcChannel.lock();
+    std::shared_ptr<ipc::IChannel> ipcChannel = m_ipc->getChannel().lock();
     if (!ipcChannel)
     {
         RIALTO_CLIENT_LOG_ERROR("Failed to get the ipc channel");
@@ -92,9 +90,11 @@ bool IpcModule::attachChannel()
     if (!subscribeToEvents(ipcChannel))
     {
         RIALTO_CLIENT_LOG_ERROR("Could not subscribe to ipc module events");
-        unsubscribeFromAllEvents();
+        unsubscribeFromAllEvents(ipcChannel);
         return false;
     }
+
+    m_ipcChannel = ipcChannel;
 
     return true;
 }
@@ -102,10 +102,12 @@ bool IpcModule::attachChannel()
 void IpcModule::detachChannel()
 {
     // uninstalls listeners
-    if (!unsubscribeFromAllEvents())
+    if (!unsubscribeFromAllEvents(m_ipcChannel.lock()))
     {
         RIALTO_CLIENT_LOG_ERROR("Failed to unsubscribe to some ipc module events, this can lead to core dumps in IPC");
     }
+
+    m_ipcChannel.reset();
 }
 
 bool IpcModule::reattachChannelIfRequired()

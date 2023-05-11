@@ -88,9 +88,11 @@ protected:
     /**
      * @brief Unsubscribes to all Ipc events.
      *
+     * @param[in] ipcChannel      : The connected ipc channel
+     *
      * @retval true if the events are unsubscribed successfully, false otherwise.
      */
-    bool unsubscribeFromAllEvents();
+    bool unsubscribeFromAllEvents(const std::shared_ptr<ipc::IChannel>& ipcChannel);
 
     /**
      * @brief Attach the connected ipc client channel to the MediaKeysIpc object.

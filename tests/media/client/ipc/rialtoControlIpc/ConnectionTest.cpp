@@ -40,7 +40,7 @@ TEST_F(RialtoClientRialtoControlIpcConnectionTest, Disconnect)
 {
     createRialtoControlIpc();
 
-    EXPECT_CALL(*m_channelMock, disconnect());
+    expectDisconnect();
     EXPECT_EQ(m_rialtoControlIpc->disconnect(), true);
 }
 
@@ -52,15 +52,15 @@ TEST_F(RialtoClientRialtoControlIpcConnectionTest, Connect)
     createRialtoControlIpc();
 
     // Disconnect
-    EXPECT_CALL(*m_channelMock, disconnect());
+    expectDisconnect();
     EXPECT_EQ(m_rialtoControlIpc->disconnect(), true);
 
     // Connect
-    EXPECT_CALL(*m_channelFactoryMock, createChannel(m_kRialtoPath)).WillOnce(Return(m_channelMock));
-    EXPECT_CALL(*m_channelMock, process()).WillOnce(Return(false));
+    expectCreateChannel();
+    expectIpcLoop();
 
     EXPECT_EQ(m_rialtoControlIpc->connect(), true);
 
     // Expect disconnect on destruction
-    EXPECT_CALL(*m_channelMock, disconnect());
+    expectDisconnect();
 }

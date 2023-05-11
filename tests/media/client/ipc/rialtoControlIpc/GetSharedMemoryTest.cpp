@@ -73,7 +73,7 @@ TEST_F(RialtoClientRialtoControlIpcSharedMemoryTest, Success)
     EXPECT_EQ(fd, m_responseFd);
 
     // Expect disconnect on destruction
-    EXPECT_CALL(*m_channelMock, disconnect());
+    expectDisconnect();
 }
 
 /**
@@ -84,7 +84,7 @@ TEST_F(RialtoClientRialtoControlIpcSharedMemoryTest, ClientDisconnected)
     int32_t fd = -1;
     uint32_t size = 0U;
 
-    EXPECT_CALL(*m_channelMock, disconnect());
+    expectDisconnect();
     EXPECT_EQ(m_rialtoControlIpc->disconnect(), true);
 
     EXPECT_EQ(m_rialtoControlIpc->getSharedMemory(fd, size), false);
@@ -105,5 +105,5 @@ TEST_F(RialtoClientRialtoControlIpcSharedMemoryTest, GetSharedMemoryFailure)
     EXPECT_EQ(m_rialtoControlIpc->getSharedMemory(fd, size), false);
 
     // Expect disconnect on destruction
-    EXPECT_CALL(*m_channelMock, disconnect());
+    expectDisconnect();
 }

@@ -28,7 +28,9 @@
 #include "RialtoControlIpc.h"
 #include "RpcControllerMock.h"
 #include <gtest/gtest.h>
+#include <condition_variable>
 #include <memory>
+#include <mutex>
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::ipc;
@@ -37,6 +39,8 @@ using namespace firebolt::rialto::client;
 using ::testing::_;
 using ::testing::Return;
 using ::testing::StrictMock;
+using ::testing::Invoke;
+using ::testing::Sequence;
 
 MATCHER_P(methodMatcher, name, "")
 {
@@ -60,12 +64,22 @@ protected:
     // Common variables
     const char *m_kRialtoPath = getenv("RIALTO_SOCKET_PATH");
 
+    // Variables for the ipc event loop
+    std::mutex m_eventsLock;
+    std::condition_variable m_eventsCond;
+    bool m_disconnected = true;
+
+    Sequence m_processSeq;
+
     void SetUp();
     void TearDown();
     void createRialtoControlIpc();
     void destroyRialtoControlIpc(bool alreadyDisconnected);
     void expectIpcApiCallSuccess();
     void expectIpcApiCallFailure();
+    void expectDisconnect();
+    void expectCreateChannel();
+    void expectIpcLoop();
 };
 
 #endif // RIALTO_CONTROL_IPC_TEST_BASE_H_

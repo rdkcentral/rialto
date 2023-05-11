@@ -31,13 +31,6 @@ protected:
     virtual void SetUp() { RialtoControlIpcTestBase::SetUp(); }
 
     virtual void TearDown() { RialtoControlIpcTestBase::TearDown(); }
-
-    void expectIpcThreadProcess()
-    {
-        EXPECT_CALL(*m_channelMock, process()).InSequence(m_processSeq).WillOnce(Return(true)).RetiresOnSaturation();
-        EXPECT_CALL(*m_channelMock, wait(-1));
-        EXPECT_CALL(*m_channelMock, process()).InSequence(m_processSeq).WillOnce(Return(false)).RetiresOnSaturation();
-    }
 };
 
 /**
@@ -46,14 +39,14 @@ protected:
 TEST_F(RialtoClientRialtoControlIpcCreateTest, CreateDestroy)
 {
     // Create
-    EXPECT_CALL(*m_channelFactoryMock, createChannel(m_kRialtoPath)).WillOnce(Return(m_channelMock));
-    expectIpcThreadProcess();
+    expectCreateChannel();
+    expectIpcLoop();
 
     EXPECT_NO_THROW(m_rialtoControlIpc = std::make_shared<RialtoControlIpc>(m_channelFactoryMock, m_controllerFactoryMock,
                                                                             m_blockingClosureFactoryMock));
 
     // Destroy
-    EXPECT_CALL(*m_channelMock, disconnect());
+    expectDisconnect();
 
     m_rialtoControlIpc.reset();
 }
