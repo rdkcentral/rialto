@@ -122,9 +122,9 @@ private:
      */
     std::weak_ptr<IMediaKeysClient> m_mediaKeysIpcClient;
 
-    bool createRpcStubs() override;
+    bool createRpcStubs(const std::shared_ptr<ipc::IChannel>& ipcChannel) override;
 
-    bool subscribeToEvents() override;
+    bool subscribeToEvents(const std::shared_ptr<ipc::IChannel>& ipcChannel) override;
 
     /**
      * @brief Handler for a license request from the server.

@@ -94,7 +94,7 @@ public:
 
     bool getSharedMemory(int32_t &fd, uint32_t &size) override;
 
-    std::shared_ptr<ipc::IChannel> getChannel() const override;
+    std::weak_ptr<ipc::IChannel> getChannel() const override;
 
     std::shared_ptr<ipc::IBlockingClosure> createBlockingClosure() override;
 

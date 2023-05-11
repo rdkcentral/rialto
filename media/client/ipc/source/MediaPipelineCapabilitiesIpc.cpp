@@ -74,10 +74,10 @@ MediaPipelineCapabilitiesIpc::~MediaPipelineCapabilitiesIpc()
     detachChannel();
 }
 
-bool MediaPipelineCapabilitiesIpc::createRpcStubs()
+bool MediaPipelineCapabilitiesIpc::createRpcStubs(const std::shared_ptr<ipc::IChannel>& ipcChannel)
 {
     m_mediaPipelineCapabilitiesStub =
-        std::make_unique<::firebolt::rialto::MediaPipelineCapabilitiesModule_Stub>(m_ipcChannel.get());
+        std::make_unique<::firebolt::rialto::MediaPipelineCapabilitiesModule_Stub>(ipcChannel.get());
     if (!m_mediaPipelineCapabilitiesStub)
     {
         return false;

@@ -60,7 +60,7 @@ protected:
     /**
      * @brief The ipc communication channel.
      */
-    std::shared_ptr<ipc::IChannel> m_ipcChannel;
+    std::weak_ptr<ipc::IChannel> m_ipcChannel;
 
     /**
      * @brief Subscribed event tags.
@@ -70,16 +70,20 @@ protected:
     /**
      * @brief Create the Rpc stubs for the derived object.
      *
+     * @param[in] ipcChannel      : The connected ipc channel
+     *
      * @retval true if the rpc stubs are created successfully, false otherwise.
      */
-    virtual bool createRpcStubs() = 0;
+    virtual bool createRpcStubs(const std::shared_ptr<ipc::IChannel>& ipcChannel) = 0;
 
     /**
      * @brief Subscribes to the Ipc events for the derived object.
      *
+     * @param[in] ipcChannel      : The connected ipc channel
+     *
      * @retval true if the events are subscribed successfully, false otherwise.
      */
-    virtual bool subscribeToEvents() = 0;
+    virtual bool subscribeToEvents(const std::shared_ptr<ipc::IChannel>& ipcChannel) = 0;
 
     /**
      * @brief Unsubscribes to all Ipc events.

@@ -78,7 +78,7 @@ public:
      *
      * @retval the ipc channel or null if ipc not connected.
      */
-    virtual std::shared_ptr<ipc::IChannel> getChannel() const = 0;
+    virtual std::weak_ptr<ipc::IChannel> getChannel() const = 0;
 
     /**
      * @brief Create the blocking closure to be passed to the RPC stubs.

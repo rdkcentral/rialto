@@ -93,9 +93,8 @@ TEST_F(RialtoClientCreateMediaPipelineIpcTest, CreateNoIpcClient)
  */
 TEST_F(RialtoClientCreateMediaPipelineIpcTest, CreateNoIpcChannel)
 {
+    expectInitIpcButAttachChannelFailure();
     EXPECT_CALL(*m_eventThreadFactoryMock, createEventThread(_)).WillOnce(Return(ByMove(std::move(m_eventThread))));
-    EXPECT_CALL(*m_ipcClientFactoryMock, getIpcClient()).WillOnce(Return(m_ipcClientMock));
-    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(nullptr));
 
     EXPECT_THROW(m_mediaPipelineIpc = std::make_unique<MediaPipelineIpc>(m_clientMock, m_videoReq, m_ipcClientFactoryMock,
                                                                          m_eventThreadFactoryMock),

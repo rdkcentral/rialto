@@ -45,8 +45,9 @@ void IpcModuleBase::expectInitIpcFailure()
 
 void IpcModuleBase::expectInitIpcButAttachChannelFailure()
 {
+    std::shared_ptr<StrictMock<ChannelMock>> channelMock;
     EXPECT_CALL(*m_ipcClientFactoryMock, getIpcClient()).WillOnce(Return(m_ipcClientMock)).RetiresOnSaturation();
-    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(nullptr)).RetiresOnSaturation();
+    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(channelMock)).RetiresOnSaturation();
 }
 
 void IpcModuleBase::expectAttachChannel()

@@ -109,16 +109,19 @@ RialtoControlIpc::~RialtoControlIpc()
 
 bool RialtoControlIpc::connect()
 {
+        RIALTO_CLIENT_LOG_INFO("Client already connected");
     if (m_ipcChannel)
     {
         RIALTO_CLIENT_LOG_INFO("Client already connected");
         return true;
     }
 
+        RIALTO_CLIENT_LOG_INFO("Client already connected");
     // Verify that the version of the library that we linked against is
     // compatible with the version of the headers we compiled against.
     GOOGLE_PROTOBUF_VERIFY_VERSION;
 
+        RIALTO_CLIENT_LOG_INFO("Client already connected");
     // check if either of following env vars are set to determine the location of the rialto socket
     //  - RIALTO_SOCKET_PATH should specify the absolute path to the socket to connect to
     //  - RIALTO_SOCKET_FD should specify the number of a file descriptor of the socket to connect to
@@ -146,6 +149,7 @@ bool RialtoControlIpc::connect()
         return false;
     }
 
+        RIALTO_CLIENT_LOG_INFO("Client already connected");
     // check if the channel was opened
     if (!m_ipcChannel)
     {
@@ -153,6 +157,7 @@ bool RialtoControlIpc::connect()
         return false;
     }
 
+        RIALTO_CLIENT_LOG_INFO("Client already connected");
     // spin up the thread that runs the IPC event loop
     m_ipcThread = std::thread(&RialtoControlIpc::ipcThread, this);
     if (!m_ipcThread.joinable())
@@ -161,6 +166,7 @@ bool RialtoControlIpc::connect()
         return false;
     }
 
+        RIALTO_CLIENT_LOG_INFO("Client already connected");
     // create the RPC stubs
     m_rialtoControlStub = std::make_shared<::firebolt::rialto::RialtoControlModule_Stub>(m_ipcChannel.get());
     if (!m_rialtoControlStub)
@@ -169,6 +175,7 @@ bool RialtoControlIpc::connect()
         m_ipcChannel.reset();
         return false;
     }
+        RIALTO_CLIENT_LOG_INFO("Client already connected");
 
     return true;
 }
@@ -183,18 +190,12 @@ bool RialtoControlIpc::disconnect()
 
     RIALTO_CLIENT_LOG_INFO("closing IPC channel");
 
-    // release the RPC stubs
-    m_rialtoControlStub.reset();
-
     // disconnect from the server, this should terminate the thread so join that too
     if (m_ipcChannel)
         m_ipcChannel->disconnect();
 
     if (m_ipcThread.joinable())
         m_ipcThread.join();
-
-    // destroy the IPC channel
-    m_ipcChannel.reset();
 
     return true;
 }
@@ -245,10 +246,14 @@ void RialtoControlIpc::ipcThread()
         m_ipcChannel->wait(-1);
     }
 
+    // Ipc has disconnected, safe to reset objects in ipc thread
+    m_rialtoControlStub.reset();
+    m_ipcChannel.reset();
+
     RIALTO_CLIENT_LOG_INFO("exiting ipc thread");
 }
 
-std::shared_ptr<::firebolt::rialto::ipc::IChannel> RialtoControlIpc::getChannel() const
+std::weak_ptr<::firebolt::rialto::ipc::IChannel> RialtoControlIpc::getChannel() const
 {
     return m_ipcChannel;
 }
