@@ -68,7 +68,7 @@ protected:
     void AddVideoFrame(int64_t duration, int64_t timestamp, int32_t width, int32_t height, uint32_t dataSize)
     {
         m_dataVec.push_back(
-            std::make_unique<IMediaPipeline::MediaSegmentVideo>(m_sourceId, timestamp, duration, width, height));
+            std::make_unique<IMediaPipeline::MediaSegmentVideo>(m_sourceId, timestamp, duration, width, height, 0));
 
         m_dataVec.back()->setData(dataSize, new uint8_t[dataSize]());
 

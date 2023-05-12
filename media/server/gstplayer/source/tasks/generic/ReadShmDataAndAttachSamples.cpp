@@ -53,7 +53,7 @@ void ReadShmDataAndAttachSamples::execute() const
             {
                 IMediaPipeline::MediaSegmentVideo &videoSegment =
                     dynamic_cast<IMediaPipeline::MediaSegmentVideo &>(*mediaSegment);
-                m_player.updateVideoCaps(videoSegment.getWidth(), videoSegment.getHeight(), videoSegment.getCodecData());
+                m_player.updateVideoCaps(videoSegment.getWidth(), videoSegment.getHeight(), videoSegment.getFrameRate(), videoSegment.getCodecData());
             }
             catch (const std::exception &e)
             {

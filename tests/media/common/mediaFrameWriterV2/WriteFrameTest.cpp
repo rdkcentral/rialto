@@ -38,6 +38,7 @@ constexpr int32_t kSampleRate{3536};
 constexpr int32_t kNumberOfChannels{3};
 constexpr int32_t kWidth{1024};
 constexpr int32_t kHeight{768};
+constexpr int32_t kFrameRate{15};
 const std::vector<uint8_t> kExtraData{1, 2, 3, 4};
 const std::vector<uint8_t> kCodecData{4, 3, 2, 1};
 const int32_t kMksId{43};
@@ -63,7 +64,7 @@ std::unique_ptr<IMediaPipeline::MediaSegment> createAudioSegment()
 
 std::unique_ptr<IMediaPipeline::MediaSegment> createVideoSegment()
 {
-    auto segment{std::make_unique<IMediaPipeline::MediaSegmentVideo>(kSourceId, kTimeStamp, kDuration, kWidth, kHeight)};
+    auto segment{std::make_unique<IMediaPipeline::MediaSegmentVideo>(kSourceId, kTimeStamp, kDuration, kWidth, kHeight, kFrameRate)};
     segment->setData(kMediaDataLength, kMediaData);
     return segment;
 }
@@ -107,6 +108,7 @@ void checkVideoMetadata(const MediaSegmentMetadata &metadata)
     EXPECT_FALSE(metadata.has_channels_num());
     EXPECT_EQ(metadata.width(), kWidth);
     EXPECT_EQ(metadata.height(), kHeight);
+    EXPECT_EQ(metadata.frame_rate(), kFrameRate);
 }
 
 void checkOptionalMetadataNotPresent(const MediaSegmentMetadata &metadata)

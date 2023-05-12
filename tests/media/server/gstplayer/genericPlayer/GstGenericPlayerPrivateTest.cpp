@@ -38,6 +38,7 @@ constexpr int32_t kInvalidSampleRate{0};
 constexpr int32_t kInvalidNumberOfChannels{0};
 constexpr int32_t kWidth{1024};
 constexpr int32_t kHeight{768};
+constexpr int32_t kFrameRate{15};
 constexpr int32_t kSourceId{2};
 constexpr int64_t kTimeStamp{123};
 constexpr int64_t kDuration{432};
@@ -261,7 +262,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldNotNotifyNeedVideoDataWhenNotNeeded)
 TEST_F(GstGenericPlayerPrivateTest, shouldCreateClearGstBuffer)
 {
     GstBuffer buffer{};
-    IMediaPipeline::MediaSegmentVideo mediaSegment{kSourceId, kTimeStamp, kDuration, kWidth, kHeight};
+    IMediaPipeline::MediaSegmentVideo mediaSegment{kSourceId, kTimeStamp, kDuration, kWidth, kHeight, kFrameRate};
     EXPECT_CALL(*m_gstWrapperMock, gstBufferNewAllocate(nullptr, mediaSegment.getDataLength(), nullptr))
         .WillOnce(Return(&buffer));
     EXPECT_CALL(*m_gstWrapperMock, gstBufferFill(&buffer, 0, mediaSegment.getData(), mediaSegment.getDataLength()));
@@ -275,7 +276,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldCreateCENSEncryptedGstBuffer)
     GstBuffer buffer{}, initVectorBuffer{}, keyIdBuffer{}, subSamplesBuffer{};
     guint8 subSamplesData{0};
     auto subSamplesSize{sizeof(guint16) + sizeof(guint32)};
-    IMediaPipeline::MediaSegmentVideo mediaSegment{kSourceId, kTimeStamp, kDuration, kWidth, kHeight};
+    IMediaPipeline::MediaSegmentVideo mediaSegment{kSourceId, kTimeStamp, kDuration, kWidth, kHeight, kFrameRate};
     GstMeta meta;
     mediaSegment.setEncrypted(true);
     mediaSegment.setMediaKeySessionId(kMediaKeySessionId);
@@ -325,7 +326,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldCreateCENCEncryptedGstBuffer)
     guint8 subSamplesData{0};
     auto subSamplesSize{sizeof(guint16) + sizeof(guint32)};
     firebolt::rialto::CipherMode cipherMode{firebolt::rialto::CipherMode::CENC};
-    IMediaPipeline::MediaSegmentVideo mediaSegment{kSourceId, kTimeStamp, kDuration, kWidth, kHeight};
+    IMediaPipeline::MediaSegmentVideo mediaSegment{kSourceId, kTimeStamp, kDuration, kWidth, kHeight, kFrameRate};
     GstMeta meta;
     mediaSegment.setEncrypted(true);
     mediaSegment.setMediaKeySessionId(kMediaKeySessionId);
@@ -373,7 +374,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldFailToAddProtectionMetadata)
     GstBuffer buffer{}, initVectorBuffer{}, keyIdBuffer{}, subSamplesBuffer{};
     guint8 subSamplesData{0};
     auto subSamplesSize{sizeof(guint16) + sizeof(guint32)};
-    IMediaPipeline::MediaSegmentVideo mediaSegment{kSourceId, kTimeStamp, kDuration, kWidth, kHeight};
+    IMediaPipeline::MediaSegmentVideo mediaSegment{kSourceId, kTimeStamp, kDuration, kWidth, kHeight, kFrameRate};
     mediaSegment.setEncrypted(true);
     mediaSegment.setMediaKeySessionId(kMediaKeySessionId);
     mediaSegment.setKeyId(kKeyId);
@@ -424,7 +425,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldCreateAndDecryptGstBufferForNetflix)
     GstBuffer buffer{}, initVectorBuffer{}, keyIdBuffer{}, subSamplesBuffer{};
     guint8 subSamplesData{0};
     auto subSamplesSize{sizeof(guint16) + sizeof(guint32)};
-    IMediaPipeline::MediaSegmentVideo mediaSegment{kSourceId, kTimeStamp, kDuration, kWidth, kHeight};
+    IMediaPipeline::MediaSegmentVideo mediaSegment{kSourceId, kTimeStamp, kDuration, kWidth, kHeight, kFrameRate};
     GstMeta meta;
     mediaSegment.setEncrypted(true);
     mediaSegment.setMediaKeySessionId(kMediaKeySessionId);
@@ -802,6 +803,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldUpdateVideoCaps)
     EXPECT_CALL(*m_gstWrapperMock, gstCapsCopy(&dummyCaps1)).WillOnce(Return(&dummyCaps2));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&dummyCaps2, CharStrMatcher("width"), G_TYPE_INT, kWidth));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&dummyCaps2, CharStrMatcher("height"), G_TYPE_INT, kHeight));
+    //EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&dummyCaps2, CharStrMatcher("framerate"), GST_TYPE_FRACTION, kHeight));
     EXPECT_CALL(*m_glibWrapperMock, gMemdup(arrayMatcher(*kCodecData), kCodecData->size())).WillOnce(Return(memory));
     EXPECT_CALL(*m_gstWrapperMock, gstBufferNewWrapped(memory, kCodecData->size())).WillOnce(Return(&buf));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleBufferStub(&dummyCaps2, StrEq("codec_data"), _, &buf));
@@ -810,7 +812,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldUpdateVideoCaps)
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps1));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps2));
 
-    m_sut->updateVideoCaps(kWidth, kHeight, kCodecData);
+    m_sut->updateVideoCaps(kWidth, kHeight, kFrameRate, kCodecData);
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldUpdateVideoCapsWithoutCodecData)
@@ -826,16 +828,17 @@ TEST_F(GstGenericPlayerPrivateTest, shouldUpdateVideoCapsWithoutCodecData)
     EXPECT_CALL(*m_gstWrapperMock, gstCapsCopy(&dummyCaps1)).WillOnce(Return(&dummyCaps2));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&dummyCaps2, CharStrMatcher("width"), G_TYPE_INT, kWidth));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&dummyCaps2, CharStrMatcher("height"), G_TYPE_INT, kHeight));
+    //EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&dummyCaps2, CharStrMatcher("framerate"), GST_TYPE_FRACTION, kHeight));
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(GST_APP_SRC(&videoSrc), &dummyCaps2));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps1));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps2));
 
-    m_sut->updateVideoCaps(kWidth, kHeight, kEmptyCodecData);
+    m_sut->updateVideoCaps(kWidth, kHeight, kFrameRate, kEmptyCodecData);
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldNotUpdateAudioVideoCapsWhenNoSrc)
 {
-    m_sut->updateVideoCaps(kWidth, kHeight, kEmptyCodecData);
+    m_sut->updateVideoCaps(kWidth, kHeight, kFrameRate, kEmptyCodecData);
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldFailToChangePlaybackStateWhenPipelineIsNull)

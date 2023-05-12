@@ -858,11 +858,13 @@ public:
          * @param[in] duration  : The duration in nanoseconds.
          * @param[in] width     : The video width in pixels.
          * @param[in] height    : The video height in pixels.
+         * @param[in] frameRate : The video frame rate.
          */
         MediaSegmentVideo(int32_t sourceId = 0, int64_t timeStamp = 0, int64_t duration = 0,
                           int32_t width = firebolt::rialto::kUndefinedSize,
-                          int32_t height = firebolt::rialto::kUndefinedSize)
-            : MediaSegment(sourceId, MediaSourceType::VIDEO, timeStamp, duration), m_width(width), m_height(height)
+                          int32_t height = firebolt::rialto::kUndefinedSize,
+                          int32_t frameRate = firebolt::rialto::kUndefinedSize)
+            : MediaSegment(sourceId, MediaSourceType::VIDEO, timeStamp, duration), m_width(width), m_height(height), m_frameRate(frameRate)
         {
         }
 
@@ -873,6 +875,7 @@ public:
         {
             m_width = other.m_width;
             m_height = other.m_height;
+            m_frameRate = other.m_frameRate;
         }
 
         /**
@@ -895,6 +898,13 @@ public:
          * @retval the video height in pixels.
          */
         int32_t getHeight() const { return m_height; }
+
+        /**
+         * @brief Return the video frameRate.
+         *
+         * @retval the video frameRate.
+         */
+        int32_t getFrameRate() const { return m_frameRate; }
 
         /**
          * @brief Copy assignment operator.
@@ -922,6 +932,11 @@ public:
          * @brief The video height in pixels.
          */
         int32_t m_height;
+
+        /**
+         * @brief The video frameRate.
+         */
+        int32_t m_frameRate;
     };
 
     /**
