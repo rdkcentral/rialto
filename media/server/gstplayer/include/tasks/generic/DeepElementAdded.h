@@ -49,7 +49,6 @@ private:
     GstElement *m_element;
     gchar *m_elementName;
     bool m_callbackRegistered;
-    gulong m_signalId;
 };
 } // namespace firebolt::rialto::server::tasks::generic
 
