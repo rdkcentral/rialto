@@ -90,7 +90,7 @@ RialtoControlIpc::RialtoControlIpc(const std::shared_ptr<ipc::IChannelFactory> &
                                    const std::shared_ptr<ipc::IControllerFactory> &ipcControllerFactory,
                                    const std::shared_ptr<ipc::IBlockingClosureFactory> &blockingClosureFactory)
     : m_ipcControllerFactory(ipcControllerFactory), m_ipcChannelFactory(ipcChannelFactory),
-      m_blockingClosureFactory(blockingClosureFactory)
+      m_blockingClosureFactory(blockingClosureFactory), m_disconnecting(false)
 {
     // For now, always connect the client on construction
     if (!connect())
@@ -182,7 +182,7 @@ bool RialtoControlIpc::disconnect()
     std::shared_ptr<ipc::IChannel> ipcChannel = m_ipcChannel;
     if (!ipcChannel)
     {
-        // The ipc channel may have disconnected unexpectedly, join the ipc thread if required
+        // The ipc channel may have disconnected unexpectedly, join the ipc thread if possible
         if (m_ipcThread.joinable())
             m_ipcThread.join();
 
@@ -197,8 +197,7 @@ bool RialtoControlIpc::disconnect()
     m_rialtoControlStub.reset();
 
     // disconnect from the server, this should terminate the thread so join that too
-    if (ipcChannel)
-        ipcChannel->disconnect();
+    ipcChannel->disconnect();
 
     if (m_ipcThread.joinable())
         m_ipcThread.join();

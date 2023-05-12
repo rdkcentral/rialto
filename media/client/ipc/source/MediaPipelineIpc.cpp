@@ -110,14 +110,12 @@ bool MediaPipelineIpc::createRpcStubs(const std::shared_ptr<ipc::IChannel> &ipcC
 
 bool MediaPipelineIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &ipcChannel)
 {
-    RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
     int eventTag = ipcChannel->subscribe<firebolt::rialto::PlaybackStateChangeEvent>(
         [this](const std::shared_ptr<firebolt::rialto::PlaybackStateChangeEvent> &event)
         { m_eventThread->add(&MediaPipelineIpc::onPlaybackStateUpdated, this, event); });
     if (eventTag < 0)
         return false;
     m_eventTags.push_back(eventTag);
-    RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
 
     eventTag = ipcChannel->subscribe<firebolt::rialto::PositionChangeEvent>(
         [this](const std::shared_ptr<firebolt::rialto::PositionChangeEvent> &event)
@@ -125,7 +123,6 @@ bool MediaPipelineIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &i
     if (eventTag < 0)
         return false;
     m_eventTags.push_back(eventTag);
-    RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
 
     eventTag = ipcChannel->subscribe<firebolt::rialto::NetworkStateChangeEvent>(
         [this](const std::shared_ptr<firebolt::rialto::NetworkStateChangeEvent> &event)
