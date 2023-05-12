@@ -64,3 +64,38 @@ TEST_F(RialtoClientRialtoControlIpcConnectionTest, Connect)
     // Expect disconnect on destruction
     expectDisconnect();
 }
+
+/**
+ * Test that RialtoControlIpc handles a unexpected disconnect of the ipc channel.
+ */
+TEST_F(RialtoClientRialtoControlIpcConnectionTest, UnexpectedDisconnect)
+{
+    // Connect
+    expectCreateChannel();
+
+    // Exit the ipc loop, simulates an unexpected disconnect
+    long ipcChannelCount = 0;
+    EXPECT_CALL(*m_channelMock, process()).InSequence(m_processSeq)
+        .WillOnce(Invoke(
+            [this, &ipcChannelCount]()
+            {
+                std::unique_lock<std::mutex> locker(m_eventsLock);
+                ipcChannelCount = m_channelMock.use_count();
+                m_eventsCond.notify_all();
+                return false;
+            }));
+
+    EXPECT_NO_THROW(m_rialtoControlIpc = std::make_shared<RialtoControlIpc>(m_channelFactoryMock, m_controllerFactoryMock,
+                                                                            m_blockingClosureFactoryMock));
+
+    // Wait for process to set the ipcChannelCount
+    {
+        std::unique_lock<std::mutex> locker(m_eventsLock);
+        m_eventsCond.wait(locker);
+    }
+
+    // Wait for shared_ptr to be reset in ipc thread
+    while (m_channelMock.use_count() == ipcChannelCount){}
+
+    // On destruction RialtoControlIpc does not disconnect
+}
