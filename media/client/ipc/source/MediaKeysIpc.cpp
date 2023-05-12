@@ -188,6 +188,11 @@ bool MediaKeysIpc::createRpcStubs(const std::shared_ptr<ipc::IChannel> &ipcChann
 
 bool MediaKeysIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &ipcChannel)
 {
+    if (!ipcChannel)
+    {
+        return false;
+    }
+
     int eventTag = ipcChannel->subscribe<firebolt::rialto::LicenseRequestEvent>(
         [this](const std::shared_ptr<firebolt::rialto::LicenseRequestEvent> &event)
         { m_eventThread->add(&MediaKeysIpc::onLicenseRequest, this, event); });

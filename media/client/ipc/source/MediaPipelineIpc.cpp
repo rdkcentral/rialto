@@ -110,6 +110,11 @@ bool MediaPipelineIpc::createRpcStubs(const std::shared_ptr<ipc::IChannel> &ipcC
 
 bool MediaPipelineIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &ipcChannel)
 {
+    if (!ipcChannel)
+    {
+        return false;
+    }
+
     int eventTag = ipcChannel->subscribe<firebolt::rialto::PlaybackStateChangeEvent>(
         [this](const std::shared_ptr<firebolt::rialto::PlaybackStateChangeEvent> &event)
         { m_eventThread->add(&MediaPipelineIpc::onPlaybackStateUpdated, this, event); });

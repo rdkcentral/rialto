@@ -106,6 +106,11 @@ bool WebAudioPlayerIpc::createRpcStubs(const std::shared_ptr<ipc::IChannel> &ipc
 
 bool WebAudioPlayerIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &ipcChannel)
 {
+    if (!ipcChannel)
+    {
+        return false;
+    }
+
     int eventTag = ipcChannel->subscribe<firebolt::rialto::WebAudioPlayerStateEvent>(
         [this](const std::shared_ptr<firebolt::rialto::WebAudioPlayerStateEvent> &event)
         { m_eventThread->add(&WebAudioPlayerIpc::onPlaybackStateUpdated, this, event); });
