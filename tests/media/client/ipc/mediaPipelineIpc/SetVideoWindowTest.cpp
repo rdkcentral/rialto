@@ -75,7 +75,7 @@ TEST_F(RialtoClientMediaPipelineIpcSetVideoWindowTest, ChannelDisconnected)
     EXPECT_EQ(m_mediaPipelineIpc->setVideoWindow(m_x, m_y, m_width, m_height), false);
 
     // Reattach channel on destroySession
-    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
+    EXPECT_CALL(m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
     expectSubscribeEvents();
 }
 

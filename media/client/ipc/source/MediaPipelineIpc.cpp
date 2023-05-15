@@ -17,7 +17,6 @@
  * limitations under the License.
  */
 #include "MediaPipelineIpc.h"
-#include "IIpcClient.h"
 #include "RialtoClientLogging.h"
 #include "RialtoCommonIpc.h"
 #include "mediapipelinemodule.pb.h"
@@ -56,7 +55,7 @@ MediaPipelineIpcFactory::createMediaPipelineIpc(IMediaPipelineIpcClient *client,
     try
     {
         mediaPipelineIpc =
-            std::make_unique<MediaPipelineIpc>(client, videoRequirements, IIpcClientFactory::createFactory(),
+            std::make_unique<MediaPipelineIpc>(client, videoRequirements, IIpcClientAccessor::instance().getIpcClient(),
                                                firebolt::rialto::common::IEventThreadFactory::createFactory());
     }
     catch (const std::exception &e)
@@ -68,9 +67,9 @@ MediaPipelineIpcFactory::createMediaPipelineIpc(IMediaPipelineIpcClient *client,
 }
 
 MediaPipelineIpc::MediaPipelineIpc(IMediaPipelineIpcClient *client, const VideoRequirements &videoRequirements,
-                                   const std::shared_ptr<IIpcClientFactory> &ipcClientFactory,
+                                   IIpcClient &ipcClient,
                                    const std::shared_ptr<common::IEventThreadFactory> &eventThreadFactory)
-    : IpcModule(ipcClientFactory), m_mediaPipelineIpcClient(client),
+    : IpcModule(ipcClient), m_mediaPipelineIpcClient(client),
       m_eventThread(eventThreadFactory->createEventThread("rialto-media-player-events"))
 {
     if (!attachChannel())
@@ -169,8 +168,8 @@ bool MediaPipelineIpc::load(MediaType type, const std::string &mimeType, const s
     request.set_url(url);
 
     firebolt::rialto::LoadResponse response;
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_mediaPipelineStub->load(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -239,8 +238,8 @@ bool MediaPipelineIpc::attachSource(const std::unique_ptr<IMediaPipeline::MediaS
     }
 
     firebolt::rialto::AttachSourceResponse response;
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_mediaPipelineStub->attachSource(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -272,8 +271,8 @@ bool MediaPipelineIpc::removeSource(int32_t sourceId)
     request.set_source_id(sourceId);
 
     firebolt::rialto::RemoveSourceResponse response;
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_mediaPipelineStub->removeSource(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -301,8 +300,8 @@ bool MediaPipelineIpc::allSourcesAttached()
     request.set_session_id(m_sessionId);
 
     firebolt::rialto::AllSourcesAttachedResponse response;
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_mediaPipelineStub->allSourcesAttached(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -336,8 +335,8 @@ bool MediaPipelineIpc::setVideoWindow(uint32_t x, uint32_t y, uint32_t width, ui
     request.set_height(height);
 
     firebolt::rialto::SetVideoWindowResponse response;
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_mediaPipelineStub->setVideoWindow(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -366,8 +365,8 @@ bool MediaPipelineIpc::play()
     request.set_session_id(m_sessionId);
 
     firebolt::rialto::PlayResponse response;
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_mediaPipelineStub->play(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -396,8 +395,8 @@ bool MediaPipelineIpc::pause()
     request.set_session_id(m_sessionId);
 
     firebolt::rialto::PauseResponse response;
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_mediaPipelineStub->pause(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -426,8 +425,8 @@ bool MediaPipelineIpc::stop()
     request.set_session_id(m_sessionId);
 
     firebolt::rialto::StopResponse response;
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_mediaPipelineStub->stop(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -459,8 +458,8 @@ bool MediaPipelineIpc::haveData(MediaSourceStatus status, uint32_t numFrames, ui
     request.set_request_id(requestId);
 
     firebolt::rialto::HaveDataResponse response;
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_mediaPipelineStub->haveData(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -490,8 +489,8 @@ bool MediaPipelineIpc::setPosition(int64_t position)
     request.set_position(position);
 
     firebolt::rialto::SetPositionResponse response;
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_mediaPipelineStub->setPosition(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -520,8 +519,8 @@ bool MediaPipelineIpc::getPosition(int64_t &position)
     request.set_session_id(m_sessionId);
 
     firebolt::rialto::GetPositionResponse response;
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_mediaPipelineStub->getPosition(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -552,8 +551,8 @@ bool MediaPipelineIpc::setPlaybackRate(double rate)
     request.set_rate(rate);
 
     firebolt::rialto::SetPlaybackRateResponse response;
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_mediaPipelineStub->setPlaybackRate(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -581,8 +580,8 @@ bool MediaPipelineIpc::renderFrame()
     request.set_session_id(m_sessionId);
 
     firebolt::rialto::RenderFrameResponse response;
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_mediaPipelineStub->renderFrame(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -612,8 +611,8 @@ bool MediaPipelineIpc::setVolume(double volume)
     request.set_volume(volume);
 
     firebolt::rialto::SetVolumeResponse response;
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_mediaPipelineStub->setVolume(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -642,8 +641,8 @@ bool MediaPipelineIpc::getVolume(double &volume)
     request.set_session_id(m_sessionId);
 
     firebolt::rialto::GetVolumeResponse response;
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_mediaPipelineStub->getVolume(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -792,8 +791,8 @@ bool MediaPipelineIpc::createSession(const VideoRequirements &videoRequirements)
     request.set_max_height(videoRequirements.maxHeight);
 
     firebolt::rialto::CreateSessionResponse response;
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_mediaPipelineStub->createSession(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -823,8 +822,8 @@ void MediaPipelineIpc::destroySession()
     request.set_session_id(m_sessionId);
 
     firebolt::rialto::DestroySessionResponse response;
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_mediaPipelineStub->destroySession(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete

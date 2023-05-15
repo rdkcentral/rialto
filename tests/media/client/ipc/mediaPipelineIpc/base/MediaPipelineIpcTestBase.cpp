@@ -51,7 +51,7 @@ void MediaPipelineIpcTestBase::createMediaPipelineIpc()
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("createSession"), _, _, _, _))
         .WillOnce(WithArgs<3>(Invoke(this, &MediaPipelineIpcTestBase::setCreateSessionResponse)));
 
-    EXPECT_NO_THROW(m_mediaPipelineIpc = std::make_unique<MediaPipelineIpc>(m_clientMock, videoReq, m_ipcClientFactoryMock,
+    EXPECT_NO_THROW(m_mediaPipelineIpc = std::make_unique<MediaPipelineIpc>(m_clientMock, videoReq, m_ipcClientMock,
                                                                             m_eventThreadFactoryMock));
     EXPECT_NE(m_mediaPipelineIpc, nullptr);
 }

@@ -53,7 +53,7 @@ std::shared_ptr<IMediaKeysCapabilities> MediaKeysCapabilitiesIpcFactory::getMedi
         try
         {
             mediaKeysCapabilitiesIpc =
-                std::make_shared<client::MediaKeysCapabilitiesIpc>(IIpcClientFactory::createFactory());
+                std::make_shared<client::MediaKeysCapabilitiesIpc>(IIpcClientAccessor::instance().getIpcClient());
         }
         catch (const std::exception &e)
         {
@@ -66,8 +66,7 @@ std::shared_ptr<IMediaKeysCapabilities> MediaKeysCapabilitiesIpcFactory::getMedi
     return mediaKeysCapabilitiesIpc;
 }
 
-MediaKeysCapabilitiesIpc::MediaKeysCapabilitiesIpc(const std::shared_ptr<IIpcClientFactory> &ipcClientFactory)
-    : IpcModule(ipcClientFactory)
+MediaKeysCapabilitiesIpc::MediaKeysCapabilitiesIpc(IIpcClient &ipcClient) : IpcModule(ipcClient)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
@@ -105,8 +104,8 @@ std::vector<std::string> MediaKeysCapabilitiesIpc::getSupportedKeySystems()
 
     firebolt::rialto::GetSupportedKeySystemsRequest request;
     firebolt::rialto::GetSupportedKeySystemsResponse response;
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_mediaKeysCapabilitiesStub->getSupportedKeySystems(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -134,8 +133,8 @@ bool MediaKeysCapabilitiesIpc::supportsKeySystem(const std::string &keySystem)
     request.set_key_system(keySystem);
 
     firebolt::rialto::SupportsKeySystemResponse response;
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_mediaKeysCapabilitiesStub->supportsKeySystem(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -163,8 +162,8 @@ bool MediaKeysCapabilitiesIpc::getSupportedKeySystemVersion(const std::string &k
     request.set_key_system(keySystem);
 
     firebolt::rialto::GetSupportedKeySystemVersionResponse response;
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_mediaKeysCapabilitiesStub->getSupportedKeySystemVersion(ipcController.get(), &request, &response,
                                                               blockingClosure.get());
 

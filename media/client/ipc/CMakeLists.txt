@@ -20,7 +20,7 @@
 # Run the protoc tool to generate the code
 set( Protobuf_IMPORT_DIRS "${CMAKE_SYSROOT}/usr/include" "${CMAKE_CURRENT_LIST_DIR}/../../../ipc/common/proto" )
 protobuf_generate_cpp( PROTO_SRCS PROTO_HEADERS proto/rialtocommon.proto proto/mediapipelinemodule.proto  proto/mediapipelinecapabilitiesmodule.proto
-        proto/mediakeysmodule.proto proto/mediakeyscapabilitiesmodule.proto proto/rialtocontrolmodule.proto proto/webaudioplayermodule.proto )
+        proto/mediakeysmodule.proto proto/mediakeyscapabilitiesmodule.proto proto/controlmodule.proto proto/webaudioplayermodule.proto )
 
 # Find includes in corresponding build directories
 set( CMAKE_INCLUDE_CURRENT_DIR ON )
@@ -32,10 +32,11 @@ add_library (
         ${PROTO_SRCS}
         ${PROTO_HEADERS}
 
+        source/IpcClient.cpp
         source/IpcModule.cpp
         source/MediaPipelineIpc.cpp
         source/MediaPipelineCapabilitiesIpc.cpp
-        source/RialtoControlIpc.cpp
+        source/ControlIpc.cpp
         source/MediaKeysIpc.cpp
         source/MediaKeysCapabilitiesIpc.cpp
         source/RialtoCommonIpc.cpp

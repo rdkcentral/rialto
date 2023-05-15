@@ -21,7 +21,7 @@
 
 set( Protobuf_IMPORT_DIRS "${CMAKE_SYSROOT}/usr/include" "${CMAKE_CURRENT_LIST_DIR}/../../../../ipc/common/proto/" )
 protobuf_generate_cpp( PROTO_SRCS PROTO_HEADERS ../../../../media/client/ipc/proto/mediapipelinemodule.proto
-        ../../../../media/client/ipc/proto/mediapipelinecapabilitiesmodule.proto ../../../../media/client/ipc/proto/rialtocontrolmodule.proto
+        ../../../../media/client/ipc/proto/mediapipelinecapabilitiesmodule.proto ../../../../media/client/ipc/proto/controlmodule.proto
         ../../../../media/client/ipc/proto/mediakeysmodule.proto ../../../../media/client/ipc/proto/mediakeyscapabilitiesmodule.proto
         ../../../../media/client/ipc/proto/rialtocommon.proto ../../../../media/client/ipc/proto/webaudioplayermodule.proto )
 
@@ -59,11 +59,17 @@ add_gtests (
         # MediaPipelineCapabilitiesIpc tests
         mediaPipelineCapabilitiesIpc/MediaPipelineCapabilitiesIpcTest.cpp
 
-        # RialtoControlIpc tests
-        rialtoControlIpc/base/RialtoControlIpcTestBase.cpp
-        rialtoControlIpc/CreateTest.cpp
-        rialtoControlIpc/ConnectionTest.cpp
-        rialtoControlIpc/GetSharedMemoryTest.cpp
+        # ControlIpc tests
+        controlIpc/base/ControlIpcTestBase.cpp
+        controlIpc/CreateTest.cpp
+        controlIpc/GetSharedMemoryTest.cpp
+        controlIpc/NotifyApplicationStateTest.cpp
+        controlIpc/PingTest.cpp
+        controlIpc/RegisterClientTest.cpp
+
+        # IpcClient tests
+        ipcClient/base/IpcClientTestBase.cpp
+        ipcClient/IpcClientTest.cpp
 
         # MediaKeysIpc tests
         mediaKeysIpc/base/MediaKeysIpcTestBase.cpp
@@ -122,7 +128,7 @@ target_include_directories(
         # Test Bases
         ipcModuleBase
         mediaPipelineIpc/base
-        rialtoControlIpc/base
+        controlIpc/base
         mediaKeysIpc/base
         webAudioPlayerIpc/base
         )
