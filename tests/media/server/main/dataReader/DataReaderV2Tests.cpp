@@ -42,7 +42,7 @@ constexpr int64_t kTimeStamp{4135000000000};
 constexpr int64_t kDuration{90000000000};
 constexpr int32_t kWidth{1024};
 constexpr int32_t kHeight{768};
-constexpr int32_t kFrameRate{15};
+constexpr Fraction kFrameRate{15, 1};
 constexpr int32_t kSampleRate{13};
 constexpr int32_t kNumberOfChannels{4};
 std::vector<uint8_t> kMediaData{'T', 'E', 'S', 'T', '_', 'M', 'E', 'D', 'I', 'A'};

@@ -101,7 +101,7 @@ public:
     /**
      * @brief Checks the new video mediaSegment metadata and updates the caps accordingly.
      */
-    virtual void updateVideoCaps(int32_t width, int32_t height, int32_t frameRate,
+    virtual void updateVideoCaps(int32_t width, int32_t height, Fraction frameRate,
                                  const std::shared_ptr<std::vector<std::uint8_t>> &codecData) = 0;
 
     /**

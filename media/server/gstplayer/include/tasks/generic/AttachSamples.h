@@ -51,7 +51,7 @@ private:
         GstBuffer *buffer;
         int32_t width;
         int32_t height;
-        int32_t frameRate;
+        Fraction frameRate;
         std::shared_ptr<std::vector<std::uint8_t>> codecData;
     };
 

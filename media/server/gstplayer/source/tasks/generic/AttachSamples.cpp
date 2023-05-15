@@ -38,7 +38,7 @@ AttachSamples::AttachSamples(GenericPlayerContext &context, IGstGenericPlayerPri
             {
                 IMediaPipeline::MediaSegmentVideo &videoSegment =
                     dynamic_cast<IMediaPipeline::MediaSegmentVideo &>(*mediaSegment);
-                VideoData videoData = {gstBuffer, videoSegment.getWidth(), videoSegment.getHeight(), videoSegment.getFrameRate()
+                VideoData videoData = {gstBuffer, videoSegment.getWidth(), videoSegment.getHeight(), videoSegment.getFrameRate(),
                                        videoSegment.getCodecData()};
                 m_videoData.push_back(videoData);
             }
@@ -82,7 +82,7 @@ void AttachSamples::execute() const
     }
     for (VideoData videoData : m_videoData)
     {
-        m_player.updateVideoCaps(videoData.width, videoData.height, videoSegment.frameRate, videoData.codecData);
+        m_player.updateVideoCaps(videoData.width, videoData.height, videoData.frameRate, videoData.codecData);
 
         m_context.videoBuffers.push_back(videoData.buffer);
         m_player.attachVideoData();

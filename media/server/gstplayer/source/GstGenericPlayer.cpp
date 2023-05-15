@@ -598,7 +598,7 @@ void GstGenericPlayer::updateAudioCaps(int32_t rate, int32_t channels,
     }
 }
 
-void GstGenericPlayer::updateVideoCaps(int32_t width, int32_t height, int32_t frameRate,
+void GstGenericPlayer::updateVideoCaps(int32_t width, int32_t height, Fraction frameRate,
                                        const std::shared_ptr<std::vector<std::uint8_t>> &codecData)
 {
     if (!m_context.videoAppSrc)
@@ -616,9 +616,9 @@ void GstGenericPlayer::updateVideoCaps(int32_t width, int32_t height, int32_t fr
         GstCaps *newCaps = m_gstWrapper->gstCapsCopy(currentCaps);
 
         m_gstWrapper->gstCapsSetSimple(newCaps, "width", G_TYPE_INT, width, "height", G_TYPE_INT, height, NULL);
-        if (kUndefinedSize != frameRate)
+        if ((kUndefinedSize != frameRate.numerator) && (kUndefinedSize != frameRate.denominator))
         {
-            m_gstWrapper->gstCapsSetSimple(newCaps, "framerate", GST_TYPE_FRACTION, frameRate, 1, NULL);
+            m_gstWrapper->gstCapsSetSimple(newCaps, "framerate", GST_TYPE_FRACTION, frameRate.numerator, frameRate.denominator, NULL);
         }
         if (codecData)
         {

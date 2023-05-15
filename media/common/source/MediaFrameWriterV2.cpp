@@ -81,7 +81,6 @@ firebolt::rialto::MediaSegmentMetadata_CipherMode convertCipherMode(const firebo
     }
     return firebolt::rialto::MediaSegmentMetadata_CipherMode_UNKNOWN;
 }
-
 } // namespace
 
 namespace firebolt::rialto::common
@@ -150,7 +149,7 @@ MediaSegmentMetadata MediaFrameWriterV2::buildMetadata(const std::unique_ptr<IMe
         IMediaPipeline::MediaSegmentVideo &videoSegment = dynamic_cast<IMediaPipeline::MediaSegmentVideo &>(*data);
         metadata.set_width(videoSegment.getWidth());
         metadata.set_height(videoSegment.getHeight());
-        metadata.set_frame_rate(videoSegment.getFrameRate());
+        metadata.set_frame_rate({videoSegment.getFrameRate().numerator, videoSegment.getFrameRate().denominator});
     }
     else
     {

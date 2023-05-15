@@ -38,7 +38,7 @@ constexpr int32_t kInvalidSampleRate{0};
 constexpr int32_t kInvalidNumberOfChannels{0};
 constexpr int32_t kWidth{1024};
 constexpr int32_t kHeight{768};
-constexpr int32_t kFrameRate{15};
+constexpr Fraction kFrameRate{15, 1};
 constexpr int32_t kSourceId{2};
 constexpr int64_t kTimeStamp{123};
 constexpr int64_t kDuration{432};
