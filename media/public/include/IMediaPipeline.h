@@ -853,8 +853,7 @@ public:
         /**
          * @brief Default constructor.
          *
-         * @param[in] sourceId              : The source id. Value should be set to the MediaSource.id returned after
-         * attachSource()
+         * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
          * @param[in] timeStamp : The timestamp in nanoseconds.
          * @param[in] duration  : The duration in nanoseconds.
          * @param[in] width     : The video width in pixels.
