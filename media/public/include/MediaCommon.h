@@ -354,8 +354,8 @@ enum class CipherMode
  */
 struct Fraction
 {
-    int32_t numerator;      /**< The numerator */
-    int32_t denominator;    /**< The denominator */
+    int32_t numerator;   /**< The numerator */
+    int32_t denominator; /**< The denominator */
 };
 
 } // namespace firebolt::rialto

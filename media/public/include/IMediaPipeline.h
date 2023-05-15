@@ -864,7 +864,8 @@ public:
         MediaSegmentVideo(int32_t sourceId = 0, int64_t timeStamp = 0, int64_t duration = 0,
                           int32_t width = firebolt::rialto::kUndefinedSize,
                           int32_t height = firebolt::rialto::kUndefinedSize,
-                          firebolt::rialto::Fraction frameRate = {firebolt::rialto::kUndefinedSize, firebolt::rialto::kUndefinedSize})
+                          firebolt::rialto::Fraction frameRate = {firebolt::rialto::kUndefinedSize,
+                                                                  firebolt::rialto::kUndefinedSize})
             : MediaSegment(sourceId, MediaSourceType::VIDEO, timeStamp, duration), m_width(width), m_height(height),
               m_frameRate(frameRate)
         {
