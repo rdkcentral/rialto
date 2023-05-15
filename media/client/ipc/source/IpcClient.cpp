@@ -44,7 +44,7 @@ IpcClient::IpcClient(const std::shared_ptr<ipc::IChannelFactory> &ipcChannelFact
     // For now, always connect the client on construction
     if (!connect())
     {
-        throw std::runtime_error("Cound not connect client");
+        throw std::runtime_error("Could not connect client");
     }
 }
 
@@ -103,7 +103,7 @@ bool IpcClient::connect()
     }
 
     // spin up the thread that runs the IPC event loop
-    m_ipcThread = std::thread(&IpcClient::ipcThread, this);
+    m_ipcThread = std::thread(&IpcClient::processIpcThread, this);
     if (!m_ipcThread.joinable())
     {
         RIALTO_CLIENT_LOG_ERROR("Failed to create thread for IPC");
@@ -135,7 +135,7 @@ bool IpcClient::disconnect()
     return true;
 }
 
-void IpcClient::ipcThread()
+void IpcClient::processIpcThread()
 {
     pthread_setname_np(pthread_self(), "rialto-ipc");
 

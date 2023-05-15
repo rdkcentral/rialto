@@ -86,10 +86,16 @@ protected:
     /**
      * @brief The processing loop for the ipc thread.
      */
-    void ipcThread();
+    void processIpcThread();
 
+    /**
+     * @brief Establish connection between Rialto Server and Rialto Client
+     */
     bool connect();
 
+    /**
+     * @brief Close connection between Rialto Server and Rialto Client
+     */
     bool disconnect();
 };
 } // namespace firebolt::rialto::client
