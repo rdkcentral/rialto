@@ -100,7 +100,7 @@ protected:
             std::make_unique<StrictMock<MediaFrameWriterMock>>();
         m_mediaFrameWriterMock = mediaFrameWriterMock.get();
 
-        EXPECT_CALL(*m_sharedMemoryManagerMock, getSharedMemoryBuffer())
+        EXPECT_CALL(m_clientControllerMock, getSharedMemoryBuffer())
             .Times(numberOfFrames)
             .WillRepeatedly(Return(&m_shmBuffer))
             .RetiresOnSaturation();
@@ -194,7 +194,7 @@ protected:
                 // Object shall be freed by the holder of the unique ptr on destruction
                 m_mediaFrameWriterMock = mediaFrameWriterMock.get();
 
-                EXPECT_CALL(*m_sharedMemoryManagerMock, getSharedMemoryBuffer()).WillOnce(Return(&m_shmBuffer));
+                EXPECT_CALL(m_clientControllerMock, getSharedMemoryBuffer()).WillOnce(Return(&m_shmBuffer));
 
                 EXPECT_CALL(*m_mediaFrameWriterFactoryMock, createFrameWriter(&m_shmBuffer, ShmInfoMatcher(m_shmInfo)))
                     .WillOnce(DoAll(Invoke(
@@ -333,7 +333,7 @@ TEST_F(RialtoClientMediaPipelineDataTest, haveDataSuccess)
     // Object shall be freed by the holder of the unique ptr on destruction
     m_mediaFrameWriterMock = mediaFrameWriterMock.get();
 
-    EXPECT_CALL(*m_sharedMemoryManagerMock, getSharedMemoryBuffer()).WillOnce(Return(&m_shmBuffer));
+    EXPECT_CALL(m_clientControllerMock, getSharedMemoryBuffer()).WillOnce(Return(&m_shmBuffer));
 
     EXPECT_CALL(*m_mediaFrameWriterFactoryMock, createFrameWriter(&m_shmBuffer, ShmInfoMatcher(m_shmInfo)))
         .WillOnce(Return(ByMove(std::move(mediaFrameWriterMock))));
@@ -364,7 +364,7 @@ TEST_F(RialtoClientMediaPipelineDataTest, AddSegmentUnknownDataType)
     std::vector<uint8_t> data{'T', 'E', 'S', 'T'};
     std::unique_ptr<IMediaPipeline::MediaSegment> frame = createFrame(MediaSourceType::UNKNOWN, data.size(), data.data());
 
-    EXPECT_CALL(*m_sharedMemoryManagerMock, getSharedMemoryBuffer()).WillOnce(Return(&m_shmBuffer));
+    EXPECT_CALL(m_clientControllerMock, getSharedMemoryBuffer()).WillOnce(Return(&m_shmBuffer));
 
     EXPECT_EQ(m_mediaPipeline->addSegment(m_requestId, frame), AddSegmentStatus::ERROR);
 }
@@ -390,7 +390,7 @@ TEST_F(RialtoClientMediaPipelineDataTest, AddSegmentGetSharedMemoryFailure)
     std::vector<uint8_t> data{'T', 'E', 'S', 'T'};
     std::unique_ptr<IMediaPipeline::MediaSegment> frame = createFrame(MediaSourceType::UNKNOWN, data.size(), data.data());
 
-    EXPECT_CALL(*m_sharedMemoryManagerMock, getSharedMemoryBuffer()).WillOnce(Return(nullptr));
+    EXPECT_CALL(m_clientControllerMock, getSharedMemoryBuffer()).WillOnce(Return(nullptr));
 
     EXPECT_EQ(m_mediaPipeline->addSegment(m_requestId, frame), AddSegmentStatus::ERROR);
 }
@@ -407,7 +407,7 @@ TEST_F(RialtoClientMediaPipelineDataTest, AddSegmentcreateFrameWriterFailure)
 
     std::unique_ptr<StrictMock<MediaFrameWriterMock>> mediaFrameWriterMock;
 
-    EXPECT_CALL(*m_sharedMemoryManagerMock, getSharedMemoryBuffer()).WillOnce(Return(&m_shmBuffer));
+    EXPECT_CALL(m_clientControllerMock, getSharedMemoryBuffer()).WillOnce(Return(&m_shmBuffer));
 
     EXPECT_CALL(*m_mediaFrameWriterFactoryMock, createFrameWriter(&m_shmBuffer, ShmInfoMatcher(m_shmInfo)))
         .WillOnce(Return(ByMove(std::move(mediaFrameWriterMock))));
@@ -432,7 +432,7 @@ TEST_F(RialtoClientMediaPipelineDataTest, AddSegmentWriteFrameFailure)
     // Object shall be freed by the holder of the unique ptr on destruction
     m_mediaFrameWriterMock = mediaFrameWriterMock.get();
 
-    EXPECT_CALL(*m_sharedMemoryManagerMock, getSharedMemoryBuffer()).WillOnce(Return(&m_shmBuffer));
+    EXPECT_CALL(m_clientControllerMock, getSharedMemoryBuffer()).WillOnce(Return(&m_shmBuffer));
 
     EXPECT_CALL(*m_mediaFrameWriterFactoryMock, createFrameWriter(&m_shmBuffer, ShmInfoMatcher(m_shmInfo)))
         .WillOnce(Return(ByMove(std::move(mediaFrameWriterMock))));
@@ -459,7 +459,7 @@ TEST_F(RialtoClientMediaPipelineDataTest, AddSegmentVideoSuccess)
     // Object shall be freed by the holder of the unique ptr on destruction
     m_mediaFrameWriterMock = mediaFrameWriterMock.get();
 
-    EXPECT_CALL(*m_sharedMemoryManagerMock, getSharedMemoryBuffer()).WillOnce(Return(&m_shmBuffer));
+    EXPECT_CALL(m_clientControllerMock, getSharedMemoryBuffer()).WillOnce(Return(&m_shmBuffer));
 
     EXPECT_CALL(*m_mediaFrameWriterFactoryMock, createFrameWriter(&m_shmBuffer, ShmInfoMatcher(m_shmInfo)))
         .WillOnce(Return(ByMove(std::move(mediaFrameWriterMock))));
@@ -483,7 +483,7 @@ TEST_F(RialtoClientMediaPipelineDataTest, AddSegmentAudioSuccess)
     // Object shall be freed by the holder of the unique ptr on destruction
     m_mediaFrameWriterMock = mediaFrameWriterMock.get();
 
-    EXPECT_CALL(*m_sharedMemoryManagerMock, getSharedMemoryBuffer()).WillOnce(Return(&m_shmBuffer));
+    EXPECT_CALL(m_clientControllerMock, getSharedMemoryBuffer()).WillOnce(Return(&m_shmBuffer));
 
     EXPECT_CALL(*m_mediaFrameWriterFactoryMock, createFrameWriter(&m_shmBuffer, ShmInfoMatcher(m_shmInfo)))
         .WillOnce(Return(ByMove(std::move(mediaFrameWriterMock))));
@@ -512,7 +512,7 @@ TEST_F(RialtoClientMediaPipelineDataTest, AddEncryptedCobaltSegmentSuccess)
     // Object shall be freed by the holder of the unique ptr on destruction
     m_mediaFrameWriterMock = mediaFrameWriterMock.get();
 
-    EXPECT_CALL(*m_sharedMemoryManagerMock, getSharedMemoryBuffer()).WillOnce(Return(&m_shmBuffer));
+    EXPECT_CALL(m_clientControllerMock, getSharedMemoryBuffer()).WillOnce(Return(&m_shmBuffer));
 
     EXPECT_CALL(*m_mediaFrameWriterFactoryMock, createFrameWriter(&m_shmBuffer, ShmInfoMatcher(m_shmInfo)))
         .WillOnce(Return(ByMove(std::move(mediaFrameWriterMock))));
@@ -547,7 +547,7 @@ TEST_F(RialtoClientMediaPipelineDataTest, AddEncryptedNetflixSegmentSuccess)
     // Object shall be freed by the holder of the unique ptr on destruction
     m_mediaFrameWriterMock = mediaFrameWriterMock.get();
 
-    EXPECT_CALL(*m_sharedMemoryManagerMock, getSharedMemoryBuffer()).WillOnce(Return(&m_shmBuffer));
+    EXPECT_CALL(m_clientControllerMock, getSharedMemoryBuffer()).WillOnce(Return(&m_shmBuffer));
 
     EXPECT_CALL(*m_mediaFrameWriterFactoryMock, createFrameWriter(&m_shmBuffer, ShmInfoMatcher(m_shmInfo)))
         .WillOnce(Return(ByMove(std::move(mediaFrameWriterMock))));
@@ -688,7 +688,7 @@ TEST_F(RialtoClientMediaPipelineDataTest, TermSharedMemoryDuringWrite)
     m_haveDataCond.wait(haveDataLock);
 
     // When notifyBufferTerm called, it shall wait for haveData to finish before returning
-    m_mediaPipeline->notifyBufferTerm();
+    m_mediaPipeline->notifyApplicationState(ApplicationState::INACTIVE);
 
     m_haveDataThread.join();
 }

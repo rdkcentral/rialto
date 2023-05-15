@@ -19,12 +19,12 @@
 
 #include "IpcFactory.h"
 #include "ApplicationManagementServer.h"
+#include "IControlModuleService.h"
 #include "IIpcServer.h"
 #include "IMediaKeysCapabilitiesModuleService.h"
 #include "IMediaKeysModuleService.h"
 #include "IMediaPipelineCapabilitiesModuleService.h"
 #include "IMediaPipelineModuleService.h"
-#include "IRialtoControlModuleService.h"
 #include "IServerManagerModuleServiceFactory.h"
 #include "IWebAudioPlayerModuleService.h"
 #include "SessionManagementServer.h"
@@ -41,7 +41,8 @@ IpcFactory::createApplicationManagementServer(service::ISessionServerManager &se
 }
 
 std::unique_ptr<ISessionManagementServer>
-IpcFactory::createSessionManagementServer(service::IPlaybackService &playbackService, service::ICdmService &cdmService) const
+IpcFactory::createSessionManagementServer(service::IPlaybackService &playbackService, service::ICdmService &cdmService,
+                                          service::IControlService &controlService) const
 {
     return std::make_unique<
         SessionManagementServer>(firebolt::rialto::ipc::IServerFactory::createFactory(),
@@ -50,7 +51,7 @@ IpcFactory::createSessionManagementServer(service::IPlaybackService &playbackSer
                                  firebolt::rialto::server::ipc::IMediaKeysModuleServiceFactory::createFactory(),
                                  firebolt::rialto::server::ipc::IMediaKeysCapabilitiesModuleServiceFactory::createFactory(),
                                  firebolt::rialto::server::ipc::IWebAudioPlayerModuleServiceFactory::createFactory(),
-                                 firebolt::rialto::server::ipc::IRialtoControlModuleServiceFactory::createFactory(),
-                                 playbackService, cdmService);
+                                 firebolt::rialto::server::ipc::IControlModuleServiceFactory::createFactory(),
+                                 playbackService, cdmService, controlService);
 }
 } // namespace firebolt::rialto::server::ipc

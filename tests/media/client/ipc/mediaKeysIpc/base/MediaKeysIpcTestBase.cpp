@@ -42,7 +42,7 @@ void MediaKeysIpcTestBase::createMediaKeysIpc()
         .WillOnce(WithArgs<3>(Invoke(this, &MediaKeysIpcTestBase::setCreateMediaKeysResponse)));
 
     EXPECT_NO_THROW(
-        m_mediaKeysIpc = std::make_unique<MediaKeysIpc>(m_keySystem, m_ipcClientFactoryMock, m_eventThreadFactoryMock));
+        m_mediaKeysIpc = std::make_unique<MediaKeysIpc>(m_keySystem, m_ipcClientMock, m_eventThreadFactoryMock));
     EXPECT_NE(m_mediaKeysIpc, nullptr);
 }
 

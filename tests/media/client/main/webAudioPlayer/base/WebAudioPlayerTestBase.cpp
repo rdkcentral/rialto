@@ -26,8 +26,6 @@ void WebAudioPlayerTestBase::SetUp() // NOLINT(build/function_format)
     // Create StrictMocks
     m_webAudioPlayerClientMock = std::make_shared<StrictMock<WebAudioPlayerClientMock>>();
     m_webAudioPlayerIpcFactoryMock = std::make_shared<StrictMock<WebAudioPlayerIpcFactoryMock>>();
-    m_sharedMemoryManagerFactoryMock = std::make_shared<StrictMock<SharedMemoryManagerFactoryMock>>();
-    m_sharedMemoryManagerMock = std::make_shared<StrictMock<SharedMemoryManagerMock>>();
 
     // Init pcm config
     m_config.pcm.rate = 1;
@@ -41,8 +39,6 @@ void WebAudioPlayerTestBase::SetUp() // NOLINT(build/function_format)
 void WebAudioPlayerTestBase::TearDown() // NOLINT(build/function_format)
 {
     // Destroy StrictMocks
-    m_sharedMemoryManagerMock.reset();
-    m_sharedMemoryManagerFactoryMock.reset();
     m_webAudioPlayerIpcMock = nullptr;
     m_webAudioPlayerIpcFactoryMock.reset();
     m_webAudioPlayerClientMock.reset();
@@ -57,15 +53,13 @@ void WebAudioPlayerTestBase::createWebAudioPlayer()
     // Object shall be freed by the holder of the unique ptr on destruction
     m_webAudioPlayerIpcMock = webAudioPlayerIpcMock.get();
 
-    EXPECT_CALL(*m_sharedMemoryManagerFactoryMock, getSharedMemoryManager()).WillOnce(Return(m_sharedMemoryManagerMock));
-    EXPECT_CALL(*m_sharedMemoryManagerMock, registerClient(_)).WillOnce(Return(true));
     EXPECT_CALL(*m_webAudioPlayerIpcFactoryMock, createWebAudioPlayerIpc(_, _, _, _))
         .WillOnce(Return(ByMove(std::move(webAudioPlayerIpcMock))));
 
     EXPECT_NO_THROW(m_webAudioPlayer = std::make_unique<WebAudioPlayer>(m_webAudioPlayerClientMock, m_audioMimeType,
                                                                         m_priority, &m_config,
                                                                         m_webAudioPlayerIpcFactoryMock,
-                                                                        m_sharedMemoryManagerFactoryMock));
+                                                                        m_clientControllerMock));
 
     // Save a raw pointer here same as above
     m_webAudioPlayerCallback = m_webAudioPlayer.get();
@@ -74,8 +68,6 @@ void WebAudioPlayerTestBase::createWebAudioPlayer()
 
 void WebAudioPlayerTestBase::destroyWebAudioPlayer()
 {
-    EXPECT_CALL(*m_sharedMemoryManagerMock, unregisterClient(_)).WillOnce(Return(true));
-
     m_webAudioPlayer.reset();
     m_webAudioPlayerCallback = nullptr;
 }

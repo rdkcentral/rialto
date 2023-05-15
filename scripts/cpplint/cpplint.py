@@ -4254,7 +4254,7 @@ def CheckClassNameFormat(filename, clean_lines, classinfo, linenum, error):
   """Rialto: Checks that the class is correctly formatted.
 
   Filenames should capitalise all words with no underscores.
-  e.g. 'IRialtoControl'
+  e.g. 'IControl'
 
   Args:
     filename: The name of the current file.
