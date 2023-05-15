@@ -20,14 +20,13 @@
 #ifndef MEDIA_PIPELINE_TEST_BASE_H_
 #define MEDIA_PIPELINE_TEST_BASE_H_
 
+#include "ClientControllerMock.h"
 #include "IMediaPipelineIpcClient.h"
 #include "MediaFrameWriterFactoryMock.h"
 #include "MediaPipeline.h"
 #include "MediaPipelineClientMock.h"
 #include "MediaPipelineIpcFactoryMock.h"
 #include "MediaPipelineIpcMock.h"
-#include "SharedMemoryManagerFactoryMock.h"
-#include "SharedMemoryManagerMock.h"
 #include <gtest/gtest.h>
 #include <memory>
 
@@ -54,8 +53,6 @@ MATCHER(IsNull, "")
 class MediaPipelineTestBase : public ::testing::Test
 {
 protected:
-    // MediaPipeline object
-    std::unique_ptr<MediaPipeline> m_mediaPipeline;
     IMediaPipelineIpcClient *m_mediaPipelineCallback;
 
     // Strict Mocks
@@ -63,8 +60,10 @@ protected:
     std::shared_ptr<StrictMock<MediaPipelineIpcFactoryMock>> m_mediaPipelineIpcFactoryMock;
     StrictMock<MediaPipelineIpcMock> *m_mediaPipelineIpcMock = nullptr;
     std::shared_ptr<StrictMock<MediaFrameWriterFactoryMock>> m_mediaFrameWriterFactoryMock;
-    std::shared_ptr<StrictMock<SharedMemoryManagerMock>> m_sharedMemoryManagerMock;
-    std::shared_ptr<StrictMock<SharedMemoryManagerFactoryMock>> m_sharedMemoryManagerFactoryMock;
+    StrictMock<ClientControllerMock> m_clientControllerMock;
+
+    // MediaPipeline object
+    std::unique_ptr<MediaPipeline> m_mediaPipeline;
 
     void SetUp();
     void TearDown();

@@ -51,9 +51,9 @@ public:
     /**
      * @brief The constructor.
      *
-     * @param[in] ipcClientFactory      : The ipc client factory
+     * @param[in] ipcClient      : The ipc client
      */
-    explicit MediaPipelineCapabilitiesIpc(const std::shared_ptr<IIpcClientFactory> &ipcClientFactory);
+    explicit MediaPipelineCapabilitiesIpc(IIpcClient &ipcClient);
 
     /**
      * @brief Virtual destructor.

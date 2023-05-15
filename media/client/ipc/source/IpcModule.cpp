@@ -22,24 +22,14 @@
 
 namespace firebolt::rialto::client
 {
-IpcModule::IpcModule(const std::shared_ptr<IIpcClientFactory> &ipcClientFactory)
+IpcModule::IpcModule(IIpcClient &ipcClient) : m_ipc{ipcClient}
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
-
-    // get IPC
-    m_ipc = ipcClientFactory->getIpcClient();
-    if (!m_ipc)
-    {
-        throw std::runtime_error("Failed to get the ipc client");
-    }
 }
 
 IpcModule::~IpcModule()
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
-
-    // remove IPC
-    m_ipc.reset();
 }
 
 bool IpcModule::unsubscribeFromAllEvents()
@@ -65,7 +55,7 @@ bool IpcModule::unsubscribeFromAllEvents()
 bool IpcModule::attachChannel()
 {
     // get the channel
-    m_ipcChannel = m_ipc->getChannel();
+    m_ipcChannel = m_ipc.getChannel();
     if (!m_ipcChannel)
     {
         RIALTO_CLIENT_LOG_ERROR("Failed to get the ipc channel");

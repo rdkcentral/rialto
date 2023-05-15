@@ -23,6 +23,8 @@ add_gtests (
         # gtest code
         activeRequests/ActiveRequestsTests.cpp
 
+        control/ControlServerInternalTests.cpp
+
         dataReader/DataReaderFactoryTests.cpp
         dataReader/DataReaderV1Tests.cpp
         dataReader/DataReaderV2Tests.cpp
