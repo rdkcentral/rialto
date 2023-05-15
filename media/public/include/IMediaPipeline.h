@@ -858,13 +858,15 @@ public:
          * @param[in] duration  : The duration in nanoseconds.
          * @param[in] width     : The video width in pixels.
          * @param[in] height    : The video height in pixels.
-         * @param[in] frameRate : The video frame rate.
+         * @param[in] frameRate : The fractional framerate of the sample.
          */
         MediaSegmentVideo(int32_t sourceId = 0, int64_t timeStamp = 0, int64_t duration = 0,
                           int32_t width = firebolt::rialto::kUndefinedSize,
                           int32_t height = firebolt::rialto::kUndefinedSize,
-                          int32_t frameRate = firebolt::rialto::kUndefinedSize)
-            : MediaSegment(sourceId, MediaSourceType::VIDEO, timeStamp, duration), m_width(width), m_height(height), m_frameRate(frameRate)
+                          firebolt::rialto::Fraction frameRate = {firebolt::rialto::kUndefinedSize,
+                                                                  firebolt::rialto::kUndefinedSize})
+            : MediaSegment(sourceId, MediaSourceType::VIDEO, timeStamp, duration), m_width(width), m_height(height),
+              m_frameRate(frameRate)
         {
         }
 
@@ -902,9 +904,9 @@ public:
         /**
          * @brief Return the video frameRate.
          *
-         * @retval the video frameRate.
+         * @retval the fractional framerate of the sample.
          */
-        int32_t getFrameRate() const { return m_frameRate; }
+        firebolt::rialto::Fraction getFrameRate() const { return m_frameRate; }
 
         /**
          * @brief Copy assignment operator.
@@ -934,9 +936,9 @@ public:
         int32_t m_height;
 
         /**
-         * @brief The video frameRate.
+         * @brief The fractional framerate of the sample.
          */
-        int32_t m_frameRate;
+        firebolt::rialto::Fraction m_frameRate;
     };
 
     /**
