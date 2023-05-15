@@ -42,7 +42,7 @@ constexpr int64_t kTimeStamp{4135000000000};
 constexpr int64_t kDuration{90000000000};
 constexpr int32_t kWidth{1024};
 constexpr int32_t kHeight{768};
-constexpr Fraction kFrameRate{15, 1};
+constexpr firebolt::rialto::Fraction kFrameRate{15, 1};
 constexpr int32_t kSampleRate{13};
 constexpr int32_t kNumberOfChannels{4};
 std::vector<uint8_t> kMediaData{'T', 'E', 'S', 'T', '_', 'M', 'E', 'D', 'I', 'A'};
@@ -263,6 +263,13 @@ private:
 };
 } // namespace
 
+namespace firebolt::rialto
+{
+bool operator==(const Fraction &lhs, const Fraction &rhs)
+{
+    return lhs.numerator == rhs.numerator && lhs.denominator == rhs.denominator;
+}
+} // namespace firebolt::rialto
 class DataReaderV2Tests : public testing::Test
 {
 protected:

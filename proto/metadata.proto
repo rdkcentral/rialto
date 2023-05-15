@@ -54,17 +54,17 @@ message MediaSegmentMetadata {
     optional uint32           channels_num         = 6;       /* Number of channels for audio segments */
     optional uint32           width                = 7;       /* Frame width in pixels for video segments */
     optional uint32           height               = 8;       /* Frame height in pixels for video segments */
-    optional Fraction         frame_rate           = 9;       /* Fractional frame rate of the video segments */
-    optional SegmentAlignment segment_alignment    = 10;      /* Segment alignment can be specified for H264/H265, will use NAL if not set */
-    optional bytes            extra_data           = 11;      /* buffer containing extradata */
-    optional int32            media_key_session_id = 12;      /* Buffer containing key session ID to use for decryption */
-    optional bytes            key_id               = 13;      /* Buffer containing Key ID to use for decryption */
-    optional bytes            init_vector          = 14;      /* Buffer containing the initialization vector for decryption */
-    optional uint32           init_with_last_15    = 15;      /* initWithLast15 value for decryption */
-    repeated SubsamplePair    sub_sample_info      = 16;      /* If present, use gather/scatter decryption based on this list of clear/encrypted byte lengths. */
+    optional SegmentAlignment segment_alignment    = 9;      /* Segment alignment can be specified for H264/H265, will use NAL if not set */
+    optional bytes            extra_data           = 10;      /* buffer containing extradata */
+    optional int32            media_key_session_id = 11;      /* Buffer containing key session ID to use for decryption */
+    optional bytes            key_id               = 12;      /* Buffer containing Key ID to use for decryption */
+    optional bytes            init_vector          = 13;      /* Buffer containing the initialization vector for decryption */
+    optional uint32           init_with_last_15    = 14;      /* initWithLast15 value for decryption */
+    repeated SubsamplePair    sub_sample_info      = 15;      /* If present, use gather/scatter decryption based on this list of clear/encrypted byte lengths. */
                                                               /* If not present and content is encrypted then entire media segment needs decryption.           */
-    optional bytes            codec_data           = 17;      /* Buffer containing updated codec data for video segments */
-    optional CipherMode       cipher_mode          = 18;      /* Specifies cipher mode uses for this sample */
-    optional uint32           crypt                = 19;      /* Crypt byte block value */
-    optional uint32           skip                 = 20;      /* Skip byte block value */
+    optional bytes            codec_data           = 16;      /* Buffer containing updated codec data for video segments */
+    optional CipherMode       cipher_mode          = 17;      /* Specifies cipher mode uses for this sample */
+    optional uint32           crypt                = 18;      /* Crypt byte block value */
+    optional uint32           skip                 = 19;      /* Skip byte block value */
+    optional Fraction         frame_rate           = 20;       /* Fractional frame rate of the video segments */
 }

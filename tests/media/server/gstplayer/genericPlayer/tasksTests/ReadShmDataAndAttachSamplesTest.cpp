@@ -22,6 +22,7 @@
 #include "GenericPlayerContext.h"
 #include "GstGenericPlayerPrivateMock.h"
 #include "IMediaPipeline.h"
+#include "Matchers.h"
 #include <gst/gst.h>
 #include <gtest/gtest.h>
 
@@ -41,7 +42,7 @@ constexpr int32_t sampleRate{13};
 constexpr int32_t numberOfChannels{4};
 constexpr int32_t width{1024};
 constexpr int32_t height{768};
-constexpr Fraction frameRate{15, 1};
+constexpr firebolt::rialto::Fraction frameRate{15, 1};
 const std::shared_ptr<std::vector<std::uint8_t>> emptyCodecData{};
 const std::shared_ptr<std::vector<std::uint8_t>> codecData{
     std::make_shared<std::vector<std::uint8_t>>(std::vector<std::uint8_t>{1, 2, 3, 4})};
