@@ -195,8 +195,8 @@ class Build
 public:
     Build &basicVideoSegment()
     {
-        m_segment =
-            std::make_unique<IMediaPipeline::MediaSegmentVideo>(kVideoSourceId, kTimeStamp, kDuration, kWidth, kHeight, kFrameRate);
+        m_segment = std::make_unique<IMediaPipeline::MediaSegmentVideo>(kVideoSourceId, kTimeStamp, kDuration, kWidth,
+                                                                        kHeight, kFrameRate);
         m_segment->setData(kMediaData.size(), kMediaData.data());
         return *this;
     }

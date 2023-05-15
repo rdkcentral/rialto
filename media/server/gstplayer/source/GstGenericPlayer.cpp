@@ -618,7 +618,8 @@ void GstGenericPlayer::updateVideoCaps(int32_t width, int32_t height, Fraction f
         m_gstWrapper->gstCapsSetSimple(newCaps, "width", G_TYPE_INT, width, "height", G_TYPE_INT, height, NULL);
         if ((kUndefinedSize != frameRate.numerator) && (kUndefinedSize != frameRate.denominator))
         {
-            m_gstWrapper->gstCapsSetSimple(newCaps, "framerate", GST_TYPE_FRACTION, frameRate.numerator, frameRate.denominator, NULL);
+            m_gstWrapper->gstCapsSetSimple(newCaps, "framerate", GST_TYPE_FRACTION, frameRate.numerator,
+                                           frameRate.denominator, NULL);
         }
         if (codecData)
         {

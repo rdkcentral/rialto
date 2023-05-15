@@ -64,7 +64,8 @@ std::unique_ptr<IMediaPipeline::MediaSegment> createAudioSegment()
 
 std::unique_ptr<IMediaPipeline::MediaSegment> createVideoSegment()
 {
-    auto segment{std::make_unique<IMediaPipeline::MediaSegmentVideo>(kSourceId, kTimeStamp, kDuration, kWidth, kHeight, kFrameRate)};
+    auto segment{std::make_unique<IMediaPipeline::MediaSegmentVideo>(kSourceId, kTimeStamp, kDuration, kWidth, kHeight,
+                                                                     kFrameRate)};
     segment->setData(kMediaDataLength, kMediaData);
     return segment;
 }

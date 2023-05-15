@@ -108,8 +108,7 @@ createSegment(const firebolt::rialto::MediaSegmentMetadata &metadata, const fire
                                                                                         metadata.time_position(),
                                                                                         metadata.sample_duration(),
                                                                                         metadata.width(),
-                                                                                        metadata.height(),
-                                                                                        frameRate);
+                                                                                        metadata.height(), frameRate);
     }
     else
     {

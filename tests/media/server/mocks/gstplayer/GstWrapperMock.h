@@ -107,8 +107,8 @@ public:
                 (const));
     MOCK_METHOD(void, gstCapsSetSimpleBitMaskStub,
                 (GstCaps * caps, const gchar *field, GType type, const uint64_t value), (const));
-    MOCK_METHOD(void, gstCapsSetSimpleFractionStub, (GstCaps * caps, const gchar *field, GType type, int value1, int value2),
-                (const));
+    MOCK_METHOD(void, gstCapsSetSimpleFractionStub,
+                (GstCaps * caps, const gchar *field, GType type, int value1, int value2), (const));
     MOCK_METHOD(GstCaps *, gstCapsNewSimpleIntStub,
                 (const char *media_type, const char *fieldname, GType type, int value), (const));
     MOCK_METHOD(void, gstMessageParseQos,

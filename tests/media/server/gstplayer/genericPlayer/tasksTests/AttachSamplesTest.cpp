@@ -61,12 +61,12 @@ firebolt::rialto::IMediaPipeline::MediaSegmentVector buildAudioSamples()
 firebolt::rialto::IMediaPipeline::MediaSegmentVector buildVideoSamples()
 {
     firebolt::rialto::IMediaPipeline::MediaSegmentVector dataVec;
-    dataVec.emplace_back(std::make_unique<firebolt::rialto::IMediaPipeline::MediaSegmentVideo>(videoSourceId,
-                                                                                               itHappenedInThePast,
-                                                                                               duration, width, height, frameRate));
-    dataVec.emplace_back(std::make_unique<firebolt::rialto::IMediaPipeline::MediaSegmentVideo>(videoSourceId,
-                                                                                               itWillHappenInTheFuture,
-                                                                                               duration, width, height, frameRate));
+    dataVec.emplace_back(
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSegmentVideo>(videoSourceId, itHappenedInThePast,
+                                                                              duration, width, height, frameRate));
+    dataVec.emplace_back(
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSegmentVideo>(videoSourceId, itWillHappenInTheFuture,
+                                                                              duration, width, height, frameRate));
     dataVec.back()->setCodecData(codecData);
     return dataVec;
 }

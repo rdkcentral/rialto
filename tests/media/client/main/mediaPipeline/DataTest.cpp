@@ -166,7 +166,8 @@ protected:
             int32_t width = 8;
             int32_t height = 9;
             Fraction frameRate = {10, 1};
-            frame = std::make_unique<IMediaPipeline::MediaSegmentVideo>(m_sourceId, timestamp, duration, width, height, frameRate);
+            frame = std::make_unique<IMediaPipeline::MediaSegmentVideo>(m_sourceId, timestamp, duration, width, height,
+                                                                        frameRate);
         }
         else
         {

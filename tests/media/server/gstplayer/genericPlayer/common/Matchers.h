@@ -34,7 +34,7 @@ bool operator==(const Rectangle &lhs, const Rectangle &rhs);
 namespace firebolt::rialto
 {
 bool operator==(const Fraction &lhs, const Fraction &rhs);
-} // namespace firebolt::rialto::server
+} // namespace firebolt::rialto
 
 MATCHER_P(CharStrMatcher, expectedStr, "")
 {

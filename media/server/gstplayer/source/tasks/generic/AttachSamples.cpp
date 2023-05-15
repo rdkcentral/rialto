@@ -38,8 +38,8 @@ AttachSamples::AttachSamples(GenericPlayerContext &context, IGstGenericPlayerPri
             {
                 IMediaPipeline::MediaSegmentVideo &videoSegment =
                     dynamic_cast<IMediaPipeline::MediaSegmentVideo &>(*mediaSegment);
-                VideoData videoData = {gstBuffer, videoSegment.getWidth(), videoSegment.getHeight(), videoSegment.getFrameRate(),
-                                       videoSegment.getCodecData()};
+                VideoData videoData = {gstBuffer, videoSegment.getWidth(), videoSegment.getHeight(),
+                                       videoSegment.getFrameRate(), videoSegment.getCodecData()};
                 m_videoData.push_back(videoData);
             }
             catch (const std::exception &e)
