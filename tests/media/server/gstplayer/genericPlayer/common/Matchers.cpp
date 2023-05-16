@@ -26,3 +26,10 @@ bool operator==(const Rectangle &lhs, const Rectangle &rhs)
     return lhs.x == rhs.x && lhs.y == rhs.y && lhs.width == rhs.width && lhs.height == rhs.height;
 }
 } // namespace firebolt::rialto::server
+namespace firebolt::rialto
+{
+bool operator==(const Fraction &lhs, const Fraction &rhs)
+{
+    return lhs.numerator == rhs.numerator && lhs.denominator == rhs.denominator;
+}
+} // namespace firebolt::rialto
