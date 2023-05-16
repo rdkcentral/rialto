@@ -349,6 +349,15 @@ enum class CipherMode
     CBCS  /* AES-CBC subsample pattern encryption scheme */
 };
 
+/**
+ * @brief Fraction type.
+ */
+struct Fraction
+{
+    int32_t numerator;   /**< The numerator */
+    int32_t denominator; /**< The denominator */
+};
+
 } // namespace firebolt::rialto
 
 #endif // FIREBOLT_RIALTO_MEDIA_COMMON_H_
