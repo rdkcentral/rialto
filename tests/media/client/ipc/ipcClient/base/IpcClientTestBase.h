@@ -27,15 +27,19 @@
 #include "IpcChannelMock.h"
 #include "IpcControllerFactoryMock.h"
 #include "RpcControllerMock.h"
+#include <condition_variable>
 #include <gtest/gtest.h>
 #include <memory>
+#include <mutex>
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::ipc;
 using namespace firebolt::rialto::client;
 
 using ::testing::_;
+using ::testing::Invoke;
 using ::testing::Return;
+using ::testing::Sequence;
 using ::testing::StrictMock;
 
 class IpcClientTestBase : public ::testing::Test
@@ -54,6 +58,13 @@ protected:
     // Common variables
     const char *m_kRialtoPath = getenv("RIALTO_SOCKET_PATH");
 
+    // Variables for the ipc event loop
+    std::mutex m_eventsLock;
+    std::condition_variable m_eventsCond;
+    bool m_disconnected = true;
+
+    Sequence m_processSeq;
+
     IpcClientTestBase();
     virtual ~IpcClientTestBase();
     void createIpcClient();
@@ -61,6 +72,8 @@ protected:
     void createBlockingClosure();
     void createRpcController();
     void disconnectIpcClient();
+    void expectCreateChannel();
+    void expectIpcLoop();
 };
 
 #endif // IPC_CLIENT_TEST_BASE_H_
