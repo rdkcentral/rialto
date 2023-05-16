@@ -59,8 +59,9 @@ TEST_F(IpcClientTest, UnexpectedDisconnect)
     expectCreateChannel();
 
     // Exit the ipc loop, simulates an unexpected disconnect
-    long ipcChannelCount = 0;
-    EXPECT_CALL(*m_channelMock, process()).InSequence(m_processSeq)
+    int32_t ipcChannelCount = 0;
+    EXPECT_CALL(*m_channelMock, process())
+        .InSequence(m_processSeq)
         .WillOnce(Invoke(
             [this, &ipcChannelCount]()
             {
@@ -80,7 +81,9 @@ TEST_F(IpcClientTest, UnexpectedDisconnect)
     }
 
     // Wait for shared_ptr to be reset in ipc thread
-    while (m_channelMock.use_count() == ipcChannelCount){}
+    while (m_channelMock.use_count() == ipcChannelCount)
+    {
+    }
 
     // On destruction IpcClient does not disconnect
 }
