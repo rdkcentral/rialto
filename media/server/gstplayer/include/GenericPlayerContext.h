@@ -210,13 +210,6 @@ struct GenericPlayerContext
     PlaybackGroupPrivate playbackGroup;
 
     /**
-     * @brief Signals connected to pipeline elements
-     *
-     * Attribute can be used only in worker thread
-     */
-    std::map<GstElement *, gulong> connectedSignals;
-
-    /**
      * @brief A map of streams that have ended.
      */
     StreamInfoMap endOfStreamInfo{};

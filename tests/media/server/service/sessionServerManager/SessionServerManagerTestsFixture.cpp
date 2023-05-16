@@ -22,6 +22,7 @@
 #include <string>
 #include <utility>
 
+using firebolt::rialto::ApplicationState;
 using firebolt::rialto::common::SessionServerState;
 using firebolt::rialto::server::ipc::ApplicationManagementServerMock;
 using firebolt::rialto::server::ipc::SessionManagementServerMock;
@@ -50,9 +51,10 @@ SessionServerManagerTests::SessionServerManagerTests()
 {
     EXPECT_CALL(m_ipcFactoryMock, createApplicationManagementServer(_))
         .WillOnce(Return(ByMove(std::move(m_applicationManagementServer))));
-    EXPECT_CALL(m_ipcFactoryMock, createSessionManagementServer(_, _))
+    EXPECT_CALL(m_ipcFactoryMock, createSessionManagementServer(_, _, _))
         .WillOnce(Return(ByMove(std::move(m_sessionManagementServer))));
-    m_sut = std::make_unique<SessionServerManager>(m_ipcFactoryMock, m_playbackServiceMock, m_cdmServiceMock);
+    m_sut = std::make_unique<SessionServerManager>(m_ipcFactoryMock, m_playbackServiceMock, m_cdmServiceMock,
+                                                   m_controlServiceMock);
 }
 
 SessionServerManagerTests::~SessionServerManagerTests()
@@ -160,6 +162,7 @@ void SessionServerManagerTests::willSetConfiguration()
     EXPECT_CALL(m_playbackServiceMock, setMaxWebAudioPlayers(maxWebAudioPlayers));
     EXPECT_CALL(m_playbackServiceMock, switchToInactive());
     EXPECT_CALL(m_cdmServiceMock, switchToInactive());
+    EXPECT_CALL(m_controlServiceMock, setApplicationState(ApplicationState::INACTIVE));
     EXPECT_CALL(m_applicationManagementServerMock, sendStateChangedEvent(SessionServerState::INACTIVE))
         .WillOnce(Return(true));
     EXPECT_TRUE(m_sut);
@@ -198,6 +201,7 @@ void SessionServerManagerTests::willSetStateActive()
 {
     EXPECT_CALL(m_playbackServiceMock, switchToActive()).WillOnce(Return(true));
     EXPECT_CALL(m_cdmServiceMock, switchToActive()).WillOnce(Return(true));
+    EXPECT_CALL(m_controlServiceMock, setApplicationState(ApplicationState::RUNNING));
     EXPECT_CALL(m_applicationManagementServerMock, sendStateChangedEvent(SessionServerState::ACTIVE)).WillOnce(Return(true));
 }
 
@@ -223,6 +227,7 @@ void SessionServerManagerTests::willSetStateInactive()
 {
     EXPECT_CALL(m_playbackServiceMock, switchToInactive());
     EXPECT_CALL(m_cdmServiceMock, switchToInactive());
+    EXPECT_CALL(m_controlServiceMock, setApplicationState(ApplicationState::INACTIVE));
     EXPECT_CALL(m_applicationManagementServerMock, sendStateChangedEvent(SessionServerState::INACTIVE))
         .WillOnce(Return(true));
 }

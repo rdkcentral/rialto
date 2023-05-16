@@ -60,8 +60,7 @@ TEST_F(RialtoClientCreateMediaPipelineIpcTest, CreateDestroy)
                                            m_blockingClosureMock.get()))
         .WillOnce(WithArgs<3>(Invoke(this, &MediaPipelineIpcTestBase::setCreateSessionResponse)));
 
-    EXPECT_NO_THROW(m_mediaPipelineIpc = std::make_unique<MediaPipelineIpc>(m_clientMock, m_videoReq,
-                                                                            m_ipcClientFactoryMock,
+    EXPECT_NO_THROW(m_mediaPipelineIpc = std::make_unique<MediaPipelineIpc>(m_clientMock, m_videoReq, m_ipcClientMock,
                                                                             m_eventThreadFactoryMock));
     EXPECT_NE(m_mediaPipelineIpc, nullptr);
 
@@ -77,18 +76,6 @@ TEST_F(RialtoClientCreateMediaPipelineIpcTest, CreateDestroy)
 }
 
 /**
- * Test that a MediaPipelineIpc object not created when the client has not been created.
- */
-TEST_F(RialtoClientCreateMediaPipelineIpcTest, CreateNoIpcClient)
-{
-    EXPECT_CALL(*m_ipcClientFactoryMock, getIpcClient()).WillOnce(Return(nullptr));
-
-    EXPECT_THROW(m_mediaPipelineIpc = std::make_unique<MediaPipelineIpc>(m_clientMock, m_videoReq, m_ipcClientFactoryMock,
-                                                                         m_eventThreadFactoryMock),
-                 std::runtime_error);
-}
-
-/**
  * Test that a MediaPipelineIpc object not created when the ipc channel has not been created.
  */
 TEST_F(RialtoClientCreateMediaPipelineIpcTest, CreateNoIpcChannel)
@@ -96,7 +83,7 @@ TEST_F(RialtoClientCreateMediaPipelineIpcTest, CreateNoIpcChannel)
     expectInitIpcButAttachChannelFailure();
     EXPECT_CALL(*m_eventThreadFactoryMock, createEventThread(_)).WillOnce(Return(ByMove(std::move(m_eventThread))));
 
-    EXPECT_THROW(m_mediaPipelineIpc = std::make_unique<MediaPipelineIpc>(m_clientMock, m_videoReq, m_ipcClientFactoryMock,
+    EXPECT_THROW(m_mediaPipelineIpc = std::make_unique<MediaPipelineIpc>(m_clientMock, m_videoReq, m_ipcClientMock,
                                                                          m_eventThreadFactoryMock),
                  std::runtime_error);
 }
@@ -107,11 +94,10 @@ TEST_F(RialtoClientCreateMediaPipelineIpcTest, CreateNoIpcChannel)
 TEST_F(RialtoClientCreateMediaPipelineIpcTest, CreateIpcChannelDisconnected)
 {
     EXPECT_CALL(*m_eventThreadFactoryMock, createEventThread(_)).WillOnce(Return(ByMove(std::move(m_eventThread))));
-    EXPECT_CALL(*m_ipcClientFactoryMock, getIpcClient()).WillOnce(Return(m_ipcClientMock));
-    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock));
+    EXPECT_CALL(m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock));
     EXPECT_CALL(*m_channelMock, isConnected()).WillOnce(Return(false));
 
-    EXPECT_THROW(m_mediaPipelineIpc = std::make_unique<MediaPipelineIpc>(m_clientMock, m_videoReq, m_ipcClientFactoryMock,
+    EXPECT_THROW(m_mediaPipelineIpc = std::make_unique<MediaPipelineIpc>(m_clientMock, m_videoReq, m_ipcClientMock,
                                                                          m_eventThreadFactoryMock),
                  std::runtime_error);
 }
@@ -136,7 +122,7 @@ TEST_F(RialtoClientCreateMediaPipelineIpcTest, SubscribeEventFailure)
     EXPECT_CALL(*m_channelMock, subscribeImpl("firebolt.rialto.PositionChangeEvent", _, _)).WillOnce(Return(-1));
     EXPECT_CALL(*m_channelMock, unsubscribe(static_cast<int>(EventTags::PlaybackStateChangeEvent)));
 
-    EXPECT_THROW(m_mediaPipelineIpc = std::make_unique<MediaPipelineIpc>(m_clientMock, m_videoReq, m_ipcClientFactoryMock,
+    EXPECT_THROW(m_mediaPipelineIpc = std::make_unique<MediaPipelineIpc>(m_clientMock, m_videoReq, m_ipcClientMock,
                                                                          m_eventThreadFactoryMock),
                  std::runtime_error);
 }
@@ -154,7 +140,7 @@ TEST_F(RialtoClientCreateMediaPipelineIpcTest, CreateSessionFailure)
     EXPECT_CALL(*m_eventThreadFactoryMock, createEventThread(_)).WillOnce(Return(ByMove(std::move(m_eventThread))));
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("createSession"), _, _, _, _));
 
-    EXPECT_THROW(m_mediaPipelineIpc = std::make_unique<MediaPipelineIpc>(m_clientMock, m_videoReq, m_ipcClientFactoryMock,
+    EXPECT_THROW(m_mediaPipelineIpc = std::make_unique<MediaPipelineIpc>(m_clientMock, m_videoReq, m_ipcClientMock,
                                                                          m_eventThreadFactoryMock),
                  std::runtime_error);
 }

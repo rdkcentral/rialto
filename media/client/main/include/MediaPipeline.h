@@ -21,10 +21,11 @@
 #define FIREBOLT_RIALTO_MEDIA_PIPELINE_H_
 
 #include "AttachedSources.h"
+#include "IClientController.h"
+#include "IControlClient.h"
 #include "IMediaFrameWriter.h"
 #include "IMediaPipeline.h"
 #include "IMediaPipelineIpc.h"
-#include "ISharedMemoryManager.h"
 #include <atomic>
 #include <map>
 #include <memory>
@@ -54,7 +55,7 @@ namespace firebolt::rialto::client
 /**
  * @brief The definition of the MediaPipeline.
  */
-class MediaPipeline : public IMediaPipeline, public IMediaPipelineIpcClient, public ISharedMemoryManagerClient
+class MediaPipeline : public IMediaPipeline, public IMediaPipelineIpcClient, public IControlClient
 {
 public:
     /**
@@ -77,13 +78,12 @@ public:
      * @param[in] videoRequirements             : The video decoder requirements for the MediaPipeline session.
      * @param[in] mediaPipelineIpcFactory         : The media player ipc factory.
      * @param[in] mediaFrameWriterFactory       : The media frame writer factory.
-     * @param[in] sharedMemoryManagerFactory    : The shared memory manager factory.
-     * @param[in] sharedMemoryManagerFactory    : The event thread factory.
+     * @param[in] clientController           : The shared memory manager.
      */
     MediaPipeline(std::weak_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements,
                   const std::shared_ptr<IMediaPipelineIpcFactory> &mediaPipelineIpcFactory,
                   const std::shared_ptr<common::IMediaFrameWriterFactory> &mediaFrameWriterFactory,
-                  const std::shared_ptr<ISharedMemoryManagerFactory> &sharedMemoryManagerFactory);
+                  IClientController &clientController);
 
     /**
      * @brief Virtual destructor.
@@ -127,8 +127,6 @@ public:
     void notifyNeedMediaData(int32_t sourceId, size_t frameCount, uint32_t requestId,
                              const std::shared_ptr<MediaPlayerShmInfo> &shmInfo) override;
 
-    void notifyBufferTerm() override;
-
     void notifyQos(int32_t sourceId, const QosInfo &qosInfo) override;
 
     bool renderFrame() override;
@@ -136,6 +134,8 @@ public:
     bool setVolume(double volume) override;
 
     bool getVolume(double &volume) override;
+
+    void notifyApplicationState(ApplicationState state) override;
 
 protected:
     /**
@@ -160,7 +160,7 @@ protected:
     /**
      * @brief The rialto shared memory manager object.
      */
-    std::shared_ptr<ISharedMemoryManager> m_sharedMemoryManager;
+    IClientController &m_clientController;
 
     /**
      * @brief The Need data request map.

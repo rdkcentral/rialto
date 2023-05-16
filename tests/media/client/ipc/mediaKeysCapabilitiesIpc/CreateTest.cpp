@@ -40,19 +40,8 @@ TEST_F(RialtoClientCreateMediaKeysCapabilitiesIpcTest, Create)
 {
     expectInitIpc();
 
-    EXPECT_NO_THROW(m_mediaKeysCapabilitiesIpc = std::make_unique<MediaKeysCapabilitiesIpc>(m_ipcClientFactoryMock));
+    EXPECT_NO_THROW(m_mediaKeysCapabilitiesIpc = std::make_unique<MediaKeysCapabilitiesIpc>(m_ipcClientMock));
     EXPECT_NE(m_mediaKeysCapabilitiesIpc, nullptr);
-}
-
-/**
- * Test that a MediaKeysCapabilitiesIpc object not created when the client has not been created.
- */
-TEST_F(RialtoClientCreateMediaKeysCapabilitiesIpcTest, CreateNoIpcClient)
-{
-    EXPECT_CALL(*m_ipcClientFactoryMock, getIpcClient()).WillOnce(Return(nullptr));
-
-    EXPECT_THROW(m_mediaKeysCapabilitiesIpc = std::make_unique<MediaKeysCapabilitiesIpc>(m_ipcClientFactoryMock),
-                 std::runtime_error);
 }
 
 /**
@@ -62,7 +51,7 @@ TEST_F(RialtoClientCreateMediaKeysCapabilitiesIpcTest, CreateNoIpcChannel)
 {
     expectInitIpcButAttachChannelFailure();
 
-    EXPECT_THROW(m_mediaKeysCapabilitiesIpc = std::make_unique<MediaKeysCapabilitiesIpc>(m_ipcClientFactoryMock),
+    EXPECT_THROW(m_mediaKeysCapabilitiesIpc = std::make_unique<MediaKeysCapabilitiesIpc>(m_ipcClientMock),
                  std::runtime_error);
 }
 
@@ -71,10 +60,9 @@ TEST_F(RialtoClientCreateMediaKeysCapabilitiesIpcTest, CreateNoIpcChannel)
  */
 TEST_F(RialtoClientCreateMediaKeysCapabilitiesIpcTest, CreateIpcChannelDisconnected)
 {
-    EXPECT_CALL(*m_ipcClientFactoryMock, getIpcClient()).WillOnce(Return(m_ipcClientMock));
-    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock));
+    EXPECT_CALL(m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock));
     EXPECT_CALL(*m_channelMock, isConnected()).WillOnce(Return(false));
 
-    EXPECT_THROW(m_mediaKeysCapabilitiesIpc = std::make_unique<MediaKeysCapabilitiesIpc>(m_ipcClientFactoryMock),
+    EXPECT_THROW(m_mediaKeysCapabilitiesIpc = std::make_unique<MediaKeysCapabilitiesIpc>(m_ipcClientMock),
                  std::runtime_error);
 }

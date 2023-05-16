@@ -136,7 +136,7 @@ std::unique_ptr<IMediaKeys> MediaKeysIpcFactory::createMediaKeysIpc(const std::s
     try
     {
         mediaKeysIpc =
-            std::make_unique<client::MediaKeysIpc>(keySystem, IIpcClientFactory::createFactory(),
+            std::make_unique<client::MediaKeysIpc>(keySystem, IIpcClientAccessor::instance().getIpcClient(),
                                                    firebolt::rialto::common::IEventThreadFactory::createFactory());
     }
     catch (const std::exception &e)
@@ -147,9 +147,9 @@ std::unique_ptr<IMediaKeys> MediaKeysIpcFactory::createMediaKeysIpc(const std::s
     return mediaKeysIpc;
 }
 
-MediaKeysIpc::MediaKeysIpc(const std::string &keySystem, const std::shared_ptr<IIpcClientFactory> &ipcClientFactory,
+MediaKeysIpc::MediaKeysIpc(const std::string &keySystem, IIpcClient &ipcClient,
                            const std::shared_ptr<common::IEventThreadFactory> &eventThreadFactory)
-    : IpcModule(ipcClientFactory), m_eventThread(eventThreadFactory->createEventThread("rialto-media-keys-events"))
+    : IpcModule(ipcClient), m_eventThread(eventThreadFactory->createEventThread("rialto-media-keys-events"))
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
@@ -230,8 +230,8 @@ bool MediaKeysIpc::createMediaKeys(const std::string &keySystem)
     request.set_key_system(keySystem);
 
     firebolt::rialto::CreateMediaKeysResponse response;
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_mediaKeysStub->createMediaKeys(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -261,8 +261,8 @@ void MediaKeysIpc::destroyMediaKeys()
     request.set_media_keys_handle(m_mediaKeysHandle);
 
     firebolt::rialto::DestroyMediaKeysResponse response;
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_mediaKeysStub->destroyMediaKeys(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -301,8 +301,8 @@ bool MediaKeysIpc::containsKey(int32_t keySessionId, const std::vector<uint8_t> 
     // Default return value to false
     response.set_contains_key(false);
 
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_mediaKeysStub->containsKey(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -352,8 +352,8 @@ MediaKeyErrorStatus MediaKeysIpc::createKeySession(KeySessionType sessionType, s
     // Default error status to FAIL
     response.set_error_status(ProtoMediaKeyErrorStatus::FAIL);
 
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_mediaKeysStub->createKeySession(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -413,8 +413,8 @@ MediaKeyErrorStatus MediaKeysIpc::generateRequest(int32_t keySessionId, InitData
     // Default error status to FAIL
     response.set_error_status(ProtoMediaKeyErrorStatus::FAIL);
 
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_mediaKeysStub->generateRequest(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -439,8 +439,8 @@ MediaKeyErrorStatus MediaKeysIpc::loadSession(int32_t keySessionId)
     // Default error status to FAIL
     response.set_error_status(ProtoMediaKeyErrorStatus::FAIL);
 
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_mediaKeysStub->loadSession(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -470,8 +470,8 @@ MediaKeyErrorStatus MediaKeysIpc::updateSession(int32_t keySessionId, const std:
     // Default error status to FAIL
     response.set_error_status(ProtoMediaKeyErrorStatus::FAIL);
 
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_mediaKeysStub->updateSession(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -500,8 +500,8 @@ MediaKeyErrorStatus MediaKeysIpc::setDrmHeader(int32_t keySessionId, const std::
     // Default error status to FAIL
     response.set_error_status(ProtoMediaKeyErrorStatus::FAIL);
 
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_mediaKeysStub->setDrmHeader(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -529,8 +529,8 @@ MediaKeyErrorStatus MediaKeysIpc::closeKeySession(int32_t keySessionId)
     // Default error status to FAIL
     response.set_error_status(ProtoMediaKeyErrorStatus::FAIL);
 
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_mediaKeysStub->closeKeySession(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -555,8 +555,8 @@ MediaKeyErrorStatus MediaKeysIpc::removeKeySession(int32_t keySessionId)
     // Default error status to FAIL
     response.set_error_status(ProtoMediaKeyErrorStatus::FAIL);
 
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_mediaKeysStub->removeKeySession(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -580,8 +580,8 @@ MediaKeyErrorStatus MediaKeysIpc::deleteDrmStore()
     // Default error status to FAIL
     response.set_error_status(ProtoMediaKeyErrorStatus::FAIL);
 
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_mediaKeysStub->deleteDrmStore(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -605,8 +605,8 @@ MediaKeyErrorStatus MediaKeysIpc::deleteKeyStore()
     // Default error status to FAIL
     response.set_error_status(ProtoMediaKeyErrorStatus::FAIL);
 
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_mediaKeysStub->deleteKeyStore(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -630,8 +630,8 @@ MediaKeyErrorStatus MediaKeysIpc::getDrmStoreHash(std::vector<unsigned char> &dr
     // Default error status to FAIL
     response.set_error_status(ProtoMediaKeyErrorStatus::FAIL);
 
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_mediaKeysStub->getDrmStoreHash(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -660,8 +660,8 @@ MediaKeyErrorStatus MediaKeysIpc::getKeyStoreHash(std::vector<unsigned char> &ke
     // Default error status to FAIL
     response.set_error_status(ProtoMediaKeyErrorStatus::FAIL);
 
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_mediaKeysStub->getKeyStoreHash(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -690,8 +690,8 @@ MediaKeyErrorStatus MediaKeysIpc::getLdlSessionsLimit(uint32_t &ldlLimit)
     // Default error status to FAIL
     response.set_error_status(ProtoMediaKeyErrorStatus::FAIL);
 
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_mediaKeysStub->getLdlSessionsLimit(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -721,8 +721,8 @@ MediaKeyErrorStatus MediaKeysIpc::getLastDrmError(int32_t keySessionId, uint32_t
     // Default error status to FAIL
     response.set_error_status(ProtoMediaKeyErrorStatus::FAIL);
 
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_mediaKeysStub->getLastDrmError(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -751,8 +751,8 @@ MediaKeyErrorStatus MediaKeysIpc::getDrmTime(uint64_t &drmTime)
     // Default error status to FAIL
     response.set_error_status(ProtoMediaKeyErrorStatus::FAIL);
 
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_mediaKeysStub->getDrmTime(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -782,8 +782,8 @@ MediaKeyErrorStatus MediaKeysIpc::getCdmKeySessionId(int32_t keySessionId, std::
     // Default error status to FAIL
     response.set_error_status(ProtoMediaKeyErrorStatus::FAIL);
 
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_mediaKeysStub->getCdmKeySessionId(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete

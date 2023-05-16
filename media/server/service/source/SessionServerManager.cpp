@@ -37,10 +37,10 @@ inline bool isNumber(const std::string &text)
 namespace firebolt::rialto::server::service
 {
 SessionServerManager::SessionServerManager(const ipc::IIpcFactory &ipcFactory, IPlaybackService &playbackService,
-                                           ICdmService &cdmService)
-    : m_playbackService{playbackService}, m_cdmService{cdmService},
+                                           ICdmService &cdmService, IControlService &controlService)
+    : m_playbackService{playbackService}, m_cdmService{cdmService}, m_controlService{controlService},
       m_applicationManagementServer{ipcFactory.createApplicationManagementServer(*this)},
-      m_sessionManagementServer{ipcFactory.createSessionManagementServer(playbackService, cdmService)},
+      m_sessionManagementServer{ipcFactory.createSessionManagementServer(playbackService, cdmService, controlService)},
       m_isServiceRunning{true}, m_currentState{common::SessionServerState::UNINITIALIZED}
 {
     RIALTO_SERVER_LOG_INFO("Starting Rialto Server Service");
@@ -167,6 +167,7 @@ bool SessionServerManager::switchToActive()
     }
     if (m_applicationManagementServer->sendStateChangedEvent(common::SessionServerState::ACTIVE))
     {
+        m_controlService.setApplicationState(ApplicationState::RUNNING);
         m_currentState.store(common::SessionServerState::ACTIVE);
         return true;
     }
@@ -186,6 +187,7 @@ bool SessionServerManager::switchToInactive()
     m_cdmService.switchToInactive();
     if (m_applicationManagementServer->sendStateChangedEvent(common::SessionServerState::INACTIVE))
     {
+        m_controlService.setApplicationState(ApplicationState::INACTIVE);
         m_currentState.store(common::SessionServerState::INACTIVE);
         return true;
     }

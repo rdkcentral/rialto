@@ -54,10 +54,10 @@ public:
      * @brief The constructor.
      *
      * @param[in] keySystem             : The key system for which to create a Media Keys Ipc instance
-     * @param[in] ipcClientFactory      : The ipc client factory
+     * @param[in] ipcClient             : The ipc client
      * @param[in] eventThreadFactory    : The event thread factory
      */
-    MediaKeysIpc(const std::string &keySystem, const std::shared_ptr<IIpcClientFactory> &ipcClientFactory,
+    MediaKeysIpc(const std::string &keySystem, IIpcClient &ipcClient,
                  const std::shared_ptr<common::IEventThreadFactory> &eventThreadFactory);
 
     /**
