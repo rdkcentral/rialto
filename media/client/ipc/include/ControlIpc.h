@@ -72,8 +72,8 @@ public:
     bool registerClient() override;
 
 private:
-    bool createRpcStubs() override;
-    bool subscribeToEvents() override;
+    bool createRpcStubs(const std::shared_ptr<ipc::IChannel> &ipcChannel) override;
+    bool subscribeToEvents(const std::shared_ptr<ipc::IChannel> &ipcChannel) override;
 
     /**
      * @brief Handler for a application state update from the server.

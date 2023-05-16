@@ -50,10 +50,10 @@ void IpcClientTestBase::createIpcClient()
     EXPECT_NO_THROW(m_sut = std::make_unique<IpcClient>(m_channelFactoryMock, m_controllerFactoryMock,
                                                         m_blockingClosureFactoryMock));
 
-    EXPECT_EQ(m_sut->getChannel(), m_channelMock);
+    EXPECT_EQ(m_sut->getChannel().lock(), m_channelMock);
 }
 
-void RialtoControlIpcTestBase::expectIpcLoop()
+void IpcClientTestBase::expectIpcLoop()
 {
     EXPECT_CALL(*m_channelMock, process()).InSequence(m_processSeq).WillOnce(Return(true));
     EXPECT_CALL(*m_channelMock, wait(_))
@@ -86,7 +86,7 @@ void IpcClientTestBase::createRpcController()
     EXPECT_NE(m_sut->createRpcController(), nullptr);
 }
 
-void RialtoControlIpcTestBase::disconnectIpcClient()
+void IpcClientTestBase::disconnectIpcClient()
 {
     EXPECT_CALL(*m_channelMock, process()).InSequence(m_processSeq).WillOnce(Return(false));
     EXPECT_CALL(*m_channelMock, disconnect())
@@ -100,7 +100,7 @@ void RialtoControlIpcTestBase::disconnectIpcClient()
     m_sut.reset();
 }
 
-void RialtoControlIpcTestBase::expectCreateChannel()
+void IpcClientTestBase::expectCreateChannel()
 {
     EXPECT_CALL(*m_channelFactoryMock, createChannel(m_kRialtoPath))
         .WillOnce(Invoke(

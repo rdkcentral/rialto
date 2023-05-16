@@ -161,7 +161,6 @@ void IpcClient::processIpcThread()
 
         // Safe to destroy the ipc objects in the ipc thread as the client has already disconnected.
         // This ensures the channel is destructed and that all ongoing ipc calls are unblocked.
-        m_rialtoControlStub.reset();
         m_ipcChannel.reset();
     }
 

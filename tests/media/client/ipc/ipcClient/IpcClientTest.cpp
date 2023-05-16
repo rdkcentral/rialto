@@ -82,5 +82,5 @@ TEST_F(IpcClientTest, UnexpectedDisconnect)
     // Wait for shared_ptr to be reset in ipc thread
     while (m_channelMock.use_count() == ipcChannelCount){}
 
-    // On destruction RialtoControlIpc does not disconnect
+    // On destruction IpcClient does not disconnect
 }
