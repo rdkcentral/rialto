@@ -26,7 +26,7 @@
  * The definition of the IControlClient interface.
  *
  * This file comprises the definition of the IControlClient abstract
- * class. This is the API by which a IControl implementation will
+ * class. This is the API by which a IRialtoControl implementation will
  * pass notifications to its client.
  */
 

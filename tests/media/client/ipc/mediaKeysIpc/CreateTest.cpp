@@ -59,8 +59,8 @@ TEST_F(RialtoClientCreateMediaKeysIpcTest, Create)
  */
 TEST_F(RialtoClientCreateMediaKeysIpcTest, CreateNoIpcChannel)
 {
-    expectInitIpcButAttachChannelFailure();
     EXPECT_CALL(*m_eventThreadFactoryMock, createEventThread(_)).WillOnce(Return(ByMove(std::move(m_eventThread))));
+    EXPECT_CALL(m_ipcClientMock, getChannel()).WillOnce(Return(nullptr));
 
     EXPECT_THROW(m_mediaKeysIpc = std::make_unique<MediaKeysIpc>(m_keySystem, m_ipcClientMock, m_eventThreadFactoryMock),
                  std::runtime_error);

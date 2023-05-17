@@ -83,8 +83,8 @@ TEST_F(RialtoClientCreateWebAudioPlayerIpcTest, CreateDestroy)
  */
 TEST_F(RialtoClientCreateWebAudioPlayerIpcTest, CreateNoIpcChannel)
 {
-    expectInitIpcButAttachChannelFailure();
     EXPECT_CALL(*m_eventThreadFactoryMock, createEventThread(_)).WillOnce(Return(ByMove(std::move(m_eventThread))));
+    EXPECT_CALL(m_ipcClientMock, getChannel()).WillOnce(Return(nullptr));
 
     EXPECT_THROW(m_webAudioPlayerIpc = std::make_unique<WebAudioPlayerIpc>(m_clientMock, m_audioMimeType, m_priority,
                                                                            &m_config, m_ipcClientMock,

@@ -80,11 +80,11 @@ public:
     IIpcClient &operator=(IIpcClient &&) = delete;
 
     /**
-     * @brief Gets a weak ptr to the Ipc channel created by the IpcClient.
+     * @brief Gets the Ipc channel created by the IpcClient.
      *
-     * @retval the ipc channel weak ptr.
+     * @retval the ipc channel or null if ipc not connected.
      */
-    virtual std::weak_ptr<ipc::IChannel> getChannel() const = 0;
+    virtual std::shared_ptr<ipc::IChannel> getChannel() const = 0;
 
     /**
      * @brief Create the blocking closure to be passed to the RPC stubs.
