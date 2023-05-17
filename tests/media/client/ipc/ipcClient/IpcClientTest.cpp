@@ -60,13 +60,14 @@ TEST_F(IpcClientTest, UnexpectedDisconnect)
 
     // Exit the ipc loop, simulates an unexpected disconnect
     int32_t ipcChannelCount = 0;
+    bool isProcessed = false;
     EXPECT_CALL(*m_channelMock, process())
-        .InSequence(m_processSeq)
         .WillOnce(Invoke(
-            [this, &ipcChannelCount]()
+            [this, &ipcChannelCount, &isProcessed]()
             {
                 std::unique_lock<std::mutex> locker(m_eventsLock);
                 ipcChannelCount = m_channelMock.use_count();
+                isProcessed = true;
                 m_eventsCond.notify_all();
                 return false;
             }));
@@ -77,7 +78,10 @@ TEST_F(IpcClientTest, UnexpectedDisconnect)
     // Wait for process to set the ipcChannelCount
     {
         std::unique_lock<std::mutex> locker(m_eventsLock);
-        m_eventsCond.wait(locker);
+        if (!isProcessed)
+        {
+            m_eventsCond.wait(locker);
+        }
     }
 
     // Wait for shared_ptr to be reset in ipc thread

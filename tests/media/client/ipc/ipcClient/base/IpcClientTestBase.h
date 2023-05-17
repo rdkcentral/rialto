@@ -63,8 +63,6 @@ protected:
     std::condition_variable m_eventsCond;
     bool m_disconnected = true;
 
-    Sequence m_processSeq;
-
     IpcClientTestBase();
     virtual ~IpcClientTestBase();
     void createIpcClient();

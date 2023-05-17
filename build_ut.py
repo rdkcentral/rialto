@@ -89,7 +89,7 @@ def main ():
                              + "Output written to xml if -xml option specified '*suite_name*_" + valgrindOutput + ".xml' \n" \
                              + "Note: Valgrind can only write output to one source (log or xml). \n" \
                              + "Note: Requires version valgrind 3.17.0+ installed. \n")
-    argParser.add_argument("-cov", "--coverage", action='store_true', help="Generates UT coverage report")  
+    argParser.add_argument("-cov", "--coverage", action='store_true', help="Generates UT coverage report")
     args = vars(argParser.parse_args())
 
     # Set env variable
@@ -165,7 +165,7 @@ def buildTargets (suites, outputDir, resultsFile, debug, coverage):
     if coverage:
         cmakeCmd.append("-DCOVERAGE_ENABLED=1")
     runcmd(cmakeCmd, cwd=os.getcwd())
-    
+
     # Make targets
     jarg = "-j" + str(multiprocessing.cpu_count())
     makeCmd = ["make", jarg]

@@ -55,7 +55,7 @@ void IpcClientTestBase::createIpcClient()
 
 void IpcClientTestBase::expectIpcLoop()
 {
-    EXPECT_CALL(*m_channelMock, process()).InSequence(m_processSeq).WillOnce(Return(true));
+    EXPECT_CALL(*m_channelMock, process()).Times(2).WillOnce(Return(true)).WillOnce(Return(false));
     EXPECT_CALL(*m_channelMock, wait(_))
         .WillOnce(Invoke(
             [this](int timeoutMSecs)
@@ -88,7 +88,6 @@ void IpcClientTestBase::createRpcController()
 
 void IpcClientTestBase::disconnectIpcClient()
 {
-    EXPECT_CALL(*m_channelMock, process()).InSequence(m_processSeq).WillOnce(Return(false));
     EXPECT_CALL(*m_channelMock, disconnect())
         .WillOnce(Invoke(
             [this]()
