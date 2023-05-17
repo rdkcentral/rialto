@@ -150,8 +150,6 @@ MediaSegmentMetadata MediaFrameWriterV2::buildMetadata(const std::unique_ptr<IMe
         IMediaPipeline::MediaSegmentVideo &videoSegment = dynamic_cast<IMediaPipeline::MediaSegmentVideo &>(*data);
         metadata.set_width(videoSegment.getWidth());
         metadata.set_height(videoSegment.getHeight());
-        metadata.mutable_frame_rate()->set_numerator(videoSegment.getFrameRate().numerator);
-        metadata.mutable_frame_rate()->set_denominator(videoSegment.getFrameRate().denominator);
     }
     else
     {
