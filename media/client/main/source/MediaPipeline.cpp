@@ -143,19 +143,14 @@ MediaPipeline::MediaPipeline(std::weak_ptr<IMediaPipelineClient> client, const V
                              const std::shared_ptr<IMediaPipelineIpcFactory> &mediaPipelineIpcFactory,
                              const std::shared_ptr<common::IMediaFrameWriterFactory> &mediaFrameWriterFactory,
                              IClientController &clientController)
-    : m_mediaPipelineClient(client), m_clientController{clientController},
+    : m_mediaPipelineClient(client), m_clientController{clientController}, m_currentAppState{ApplicationState::UNKNOWN},
       m_mediaFrameWriterFactory(mediaFrameWriterFactory), m_currentState(State::IDLE)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    ApplicationState currentAppState{ApplicationState::UNKNOWN};
-    if (!m_clientController.registerClient(this, currentAppState))
+    if (!m_clientController.registerClient(this, m_currentAppState))
     {
         throw std::runtime_error("Failed to register client with clientController");
-    }
-    if (ApplicationState::RUNNING != currentAppState)
-    {
-        RIALTO_CLIENT_LOG_WARN("MediaPipeline created in Inactive/Unknown state!");
     }
 
     m_mediaPipelineIpc = mediaPipelineIpcFactory->createMediaPipelineIpc(this, videoRequirements);
@@ -582,6 +577,11 @@ void MediaPipeline::notifyNeedMediaData(int32_t sourceId, size_t frameCount, uin
 
         {
             std::lock_guard<std::mutex> lock{m_needDataRequestMapMutex};
+            if (ApplicationState::RUNNING != m_currentAppState)
+            {
+                RIALTO_CLIENT_LOG_INFO("NeedMediaData received in state != RUNNING, ignoring request id %u", requestId);
+                break;
+            }
             m_needDataRequestMap[requestId] = needDataRequest;
         }
 
@@ -613,10 +613,11 @@ void MediaPipeline::notifyNeedMediaData(int32_t sourceId, size_t frameCount, uin
 void MediaPipeline::notifyApplicationState(ApplicationState state)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
+    std::lock_guard<std::mutex> lock{m_needDataRequestMapMutex};
+    m_currentAppState = state;
     if (ApplicationState::RUNNING != state)
     {
         // If shared memory in use, wait for it to finish before returning
-        std::lock_guard<std::mutex> lock{m_needDataRequestMapMutex};
         m_needDataRequestMap.clear();
     }
 }

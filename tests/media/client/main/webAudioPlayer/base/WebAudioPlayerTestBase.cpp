@@ -53,6 +53,9 @@ void WebAudioPlayerTestBase::createWebAudioPlayer()
     // Object shall be freed by the holder of the unique ptr on destruction
     m_webAudioPlayerIpcMock = webAudioPlayerIpcMock.get();
 
+    EXPECT_CALL(m_clientControllerMock, registerClient(_, _))
+        .WillOnce(DoAll(SetArgReferee<1>(ApplicationState::RUNNING), Return(true)));
+
     EXPECT_CALL(*m_webAudioPlayerIpcFactoryMock, createWebAudioPlayerIpc(_, _, _, _))
         .WillOnce(Return(ByMove(std::move(webAudioPlayerIpcMock))));
 
@@ -68,6 +71,7 @@ void WebAudioPlayerTestBase::createWebAudioPlayer()
 
 void WebAudioPlayerTestBase::destroyWebAudioPlayer()
 {
+    EXPECT_CALL(m_clientControllerMock, unregisterClient(_)).WillOnce(Return(true));
     m_webAudioPlayer.reset();
     m_webAudioPlayerCallback = nullptr;
 }

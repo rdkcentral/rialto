@@ -71,6 +71,24 @@ TEST_F(RialtoClientWebAudioPlayerWriteBufferTest, numberOfFramesToWriteExceedsTh
     EXPECT_FALSE(m_webAudioPlayer->writeBuffer(m_numberOfFrames, m_dataSrc.data()));
 }
 
+TEST_F(RialtoClientWebAudioPlayerWriteBufferTest, clientInInactiveState)
+{
+    std::shared_ptr<WebAudioShmInfo> notUsedWebAudioShmInfo;
+    EXPECT_CALL(*m_webAudioPlayerIpcMock, getBufferAvailable(_, _))
+        .WillOnce(Invoke(
+            [this](uint32_t &availableFrames, const std::shared_ptr<WebAudioShmInfo> &webAudioShmInfo)
+            {
+                webAudioShmInfo->offsetMain = 0;
+                webAudioShmInfo->lengthMain = 4;
+                return true;
+            }));
+    m_webAudioPlayer->getBufferAvailable(m_numberOfFrames, notUsedWebAudioShmInfo);
+
+    m_webAudioPlayer->notifyApplicationState(ApplicationState::INACTIVE);
+
+    EXPECT_FALSE(m_webAudioPlayer->writeBuffer(m_numberOfFrames, m_dataSrc.data()));
+}
+
 TEST_F(RialtoClientWebAudioPlayerWriteBufferTest, sharedBufferNoLongerValidError)
 {
     std::shared_ptr<WebAudioShmInfo> notUsedWebAudioShmInfo;
@@ -83,6 +101,25 @@ TEST_F(RialtoClientWebAudioPlayerWriteBufferTest, sharedBufferNoLongerValidError
                 return true;
             }));
     EXPECT_CALL(m_clientControllerMock, getSharedMemoryHandle()).WillOnce(Invoke([this]() { return nullptr; }));
+    m_webAudioPlayer->getBufferAvailable(m_numberOfFrames, notUsedWebAudioShmInfo);
+
+    EXPECT_FALSE(m_webAudioPlayer->writeBuffer(m_numberOfFrames, m_dataSrc.data()));
+}
+
+TEST_F(RialtoClientWebAudioPlayerWriteBufferTest, sharedBufferShmNotValidError)
+{
+    std::shared_ptr<WebAudioShmInfo> notUsedWebAudioShmInfo;
+    EXPECT_CALL(*m_webAudioPlayerIpcMock, getBufferAvailable(_, _))
+        .WillOnce(Invoke(
+            [this](uint32_t &availableFrames, const std::shared_ptr<WebAudioShmInfo> &webAudioShmInfo)
+            {
+                webAudioShmInfo->offsetMain = 0;
+                webAudioShmInfo->lengthMain = 4;
+                return true;
+            }));
+    EXPECT_CALL(*m_sharedMemoryHandleMock, getShm()).WillRepeatedly(Return(nullptr));
+    EXPECT_CALL(m_clientControllerMock, getSharedMemoryHandle())
+        .WillOnce(Invoke([this]() { return m_sharedMemoryHandleMock; }));
     m_webAudioPlayer->getBufferAvailable(m_numberOfFrames, notUsedWebAudioShmInfo);
 
     EXPECT_FALSE(m_webAudioPlayer->writeBuffer(m_numberOfFrames, m_dataSrc.data()));

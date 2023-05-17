@@ -71,7 +71,8 @@ WebAudioPlayer::WebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, cons
                                const uint32_t priority, const WebAudioConfig *config,
                                const std::shared_ptr<IWebAudioPlayerIpcFactory> &webAudioPlayerIpcFactory,
                                IClientController &clientController)
-    : m_webAudioPlayerClient(client), m_clientController{clientController}, m_bytesPerFrame{0}
+    : m_webAudioPlayerClient(client), m_clientController{clientController}, m_bytesPerFrame{0},
+      m_currentAppState{ApplicationState::UNKNOWN}
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
@@ -99,11 +100,23 @@ WebAudioPlayer::WebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, cons
     {
         throw std::runtime_error("Web audio player ipc could not be created");
     }
+
+    ApplicationState currentState{ApplicationState::UNKNOWN};
+    if (!m_clientController.registerClient(this, currentState))
+    {
+        throw std::runtime_error("Failed to register client with clientController");
+    }
+    m_currentAppState = currentState;
 }
 
 WebAudioPlayer::~WebAudioPlayer()
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    if (!m_clientController.unregisterClient(this))
+    {
+        RIALTO_CLIENT_LOG_WARN("Failed to unregister client with clientController");
+    }
 
     m_webAudioPlayerIpc.reset();
 }
@@ -166,6 +179,12 @@ bool WebAudioPlayer::writeBuffer(const uint32_t numberOfFrames, void *data)
         return false;
     }
 
+    if (ApplicationState::RUNNING != m_currentAppState)
+    {
+        RIALTO_CLIENT_LOG_ERROR("Current ApplicationState is not RUNNING!");
+        return false;
+    }
+
     std::shared_ptr<ISharedMemoryHandle> shmHandle = m_clientController.getSharedMemoryHandle();
     if (nullptr == shmHandle || nullptr == shmHandle->getShm())
     {
@@ -220,6 +239,11 @@ void WebAudioPlayer::notifyState(WebAudioPlayerState state)
     {
         client->notifyState(state);
     }
+}
+
+void WebAudioPlayer::notifyApplicationState(ApplicationState state)
+{
+    m_currentAppState = state;
 }
 
 }; // namespace firebolt::rialto::client

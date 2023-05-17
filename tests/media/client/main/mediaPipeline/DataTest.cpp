@@ -724,6 +724,17 @@ TEST_F(RialtoClientMediaPipelineDataTest, TermSharedMemoryDuringWrite)
 }
 
 /**
+ * Test that a need data notification in app state != RUNNING is ignored.
+ */
+TEST_F(RialtoClientMediaPipelineDataTest, NeedDataEventInactiveState)
+{
+    m_mediaPipeline->notifyApplicationState(ApplicationState::INACTIVE);
+
+    // Should not trigger any expect calls in all invalid states
+    m_mediaPipelineCallback->notifyNeedMediaData(m_sourceId, m_frameCount, m_requestId, m_shmInfo);
+}
+
+/**
  * Test that a need data notification is skipped for uknown source
  */
 TEST_F(RialtoClientMediaPipelineDataTest, NeedDataEventSkipForUnknownSource)

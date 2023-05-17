@@ -21,9 +21,11 @@
 #define FIREBOLT_RIALTO_CLIENT_WEB_AUDIO_PLAYER_H_
 
 #include "IClientController.h"
+#include "IControlClient.h"
 #include "IWebAudioPlayer.h"
 #include "IWebAudioPlayerIpc.h"
 #include "IWebAudioPlayerIpcClient.h"
+#include <atomic>
 #include <memory>
 #include <mutex>
 #include <stdint.h>
@@ -52,7 +54,7 @@ namespace firebolt::rialto::client
 /**
  * @brief The definition of the WebAudioPlayer.
  */
-class WebAudioPlayer : public IWebAudioPlayer, public IWebAudioPlayerIpcClient
+class WebAudioPlayer : public IWebAudioPlayer, public IWebAudioPlayerIpcClient, public IControlClient
 {
 public:
     /**
@@ -95,6 +97,8 @@ public:
 
     void notifyState(WebAudioPlayerState state) override;
 
+    void notifyApplicationState(ApplicationState state) override;
+
 protected:
     /**
      * @brief The web audio player client.
@@ -125,6 +129,11 @@ protected:
      * @brief The bytes per frame for this audio playback.
      */
     uint32_t m_bytesPerFrame;
+
+    /**
+     * @brief The current application state.
+     */
+    std::atomic<ApplicationState> m_currentAppState;
 };
 
 }; // namespace firebolt::rialto::client
