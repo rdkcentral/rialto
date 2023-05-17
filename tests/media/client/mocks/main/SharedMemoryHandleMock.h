@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2022 Sky UK
+ * Copyright 2023 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,24 +17,22 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_CLIENT_CLIENT_CONTROLLER_MOCK_H_
-#define FIREBOLT_RIALTO_CLIENT_CLIENT_CONTROLLER_MOCK_H_
+#ifndef FIREBOLT_RIALTO_CLIENT_SHARED_MEMORY_HANDLE_MOCK_H_
+#define FIREBOLT_RIALTO_CLIENT_SHARED_MEMORY_HANDLE_MOCK_H_
 
-#include "IClientController.h"
+#include "ISharedMemoryHandle.h"
 #include <gmock/gmock.h>
 
 namespace firebolt::rialto::client
 {
-class ClientControllerMock : public IClientController
+class SharedMemoryHandleMock : public ISharedMemoryHandle
 {
 public:
-    ClientControllerMock() = default;
-    virtual ~ClientControllerMock() = default;
+    SharedMemoryHandleMock() = default;
+    ~SharedMemoryHandleMock() override = default;
 
-    MOCK_METHOD(std::shared_ptr<ISharedMemoryHandle>, getSharedMemoryHandle, (), (override));
-    MOCK_METHOD(bool, registerClient, (IControlClient * client, ApplicationState &appState), (override));
-    MOCK_METHOD(bool, unregisterClient, (IControlClient * client), (override));
+    MOCK_METHOD(std::uint8_t *, getShm, (), (const, override));
 };
 } // namespace firebolt::rialto::client
 
-#endif // FIREBOLT_RIALTO_CLIENT_CLIENT_CONTROLLER_MOCK_H_
+#endif // FIREBOLT_RIALTO_CLIENT_SHARED_MEMORY_HANDLE_MOCK_H_

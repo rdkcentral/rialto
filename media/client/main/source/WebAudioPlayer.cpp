@@ -166,8 +166,8 @@ bool WebAudioPlayer::writeBuffer(const uint32_t numberOfFrames, void *data)
         return false;
     }
 
-    uint8_t *shmBuffer = m_clientController.getSharedMemoryBuffer();
-    if (nullptr == shmBuffer)
+    std::shared_ptr<ISharedMemoryHandle> shmHandle = m_clientController.getSharedMemoryHandle();
+    if (nullptr == shmHandle || nullptr == shmHandle->getShm())
     {
         RIALTO_CLIENT_LOG_ERROR("Shared buffer no longer valid");
         return false;
@@ -175,14 +175,14 @@ bool WebAudioPlayer::writeBuffer(const uint32_t numberOfFrames, void *data)
 
     if (dataLength > m_webAudioShmInfo->lengthMain)
     {
-        std::memcpy(shmBuffer + m_webAudioShmInfo->offsetMain, data, m_webAudioShmInfo->lengthMain);
-        std::memcpy(shmBuffer + m_webAudioShmInfo->offsetWrap,
+        std::memcpy(shmHandle->getShm() + m_webAudioShmInfo->offsetMain, data, m_webAudioShmInfo->lengthMain);
+        std::memcpy(shmHandle->getShm() + m_webAudioShmInfo->offsetWrap,
                     reinterpret_cast<uint8_t *>(data) + m_webAudioShmInfo->lengthMain,
                     dataLength - m_webAudioShmInfo->lengthMain);
     }
     else
     {
-        std::memcpy(shmBuffer + m_webAudioShmInfo->offsetMain, data, m_webAudioShmInfo->lengthMain);
+        std::memcpy(shmHandle->getShm() + m_webAudioShmInfo->offsetMain, data, m_webAudioShmInfo->lengthMain);
     }
     return m_webAudioPlayerIpc->writeBuffer(numberOfFrames);
 }

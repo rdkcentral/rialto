@@ -361,8 +361,8 @@ AddSegmentStatus MediaPipeline::addSegment(uint32_t needDataRequestId, const std
     }
 
     std::shared_ptr<NeedDataRequest> needDataRequest = needDataRequestIt->second;
-    uint8_t *shmBuffer = m_clientController.getSharedMemoryBuffer();
-    if (nullptr == shmBuffer)
+    std::shared_ptr<ISharedMemoryHandle> shmHandle = m_clientController.getSharedMemoryHandle();
+    if (nullptr == shmHandle || nullptr == shmHandle->getShm())
     {
         RIALTO_CLIENT_LOG_ERROR("Shared buffer no longer valid");
         return AddSegmentStatus::ERROR;
@@ -383,7 +383,7 @@ AddSegmentStatus MediaPipeline::addSegment(uint32_t needDataRequestId, const std
         if (firebolt::rialto::MediaSourceType::UNKNOWN != mediaSegment->getType())
         {
             needDataRequest->frameWriter =
-                m_mediaFrameWriterFactory->createFrameWriter(shmBuffer, needDataRequest->shmInfo);
+                m_mediaFrameWriterFactory->createFrameWriter(shmHandle->getShm(), needDataRequest->shmInfo);
         }
         else
         {

@@ -17,6 +17,7 @@
  * limitations under the License.
  */
 
+#include "SharedMemoryHandleMock.h"
 #include "WebAudioPlayerTestBase.h"
 
 #include <vector>
@@ -28,11 +29,13 @@ protected:
     std::vector<uint8_t> m_dataSrc{1, 2, 3, 4, 55, 66, 77, 88};
     std::vector<uint8_t> m_dataDest{0, 0, 0, 0, 0, 0, 0, 0};
     std::shared_ptr<WebAudioShmInfo> m_webAudioShmInfo;
+    std::shared_ptr<SharedMemoryHandleMock> m_sharedMemoryHandleMock;
 
     virtual void SetUp()
     {
         WebAudioPlayerTestBase::SetUp();
         m_webAudioShmInfo = std::make_shared<WebAudioShmInfo>();
+        m_sharedMemoryHandleMock = std::make_shared<SharedMemoryHandleMock>();
 
         createWebAudioPlayer();
     }
@@ -41,6 +44,7 @@ protected:
     {
         destroyWebAudioPlayer();
         m_webAudioShmInfo.reset();
+        m_sharedMemoryHandleMock.reset();
         WebAudioPlayerTestBase::TearDown();
     }
 };
@@ -78,7 +82,7 @@ TEST_F(RialtoClientWebAudioPlayerWriteBufferTest, sharedBufferNoLongerValidError
                 webAudioShmInfo->lengthMain = 4;
                 return true;
             }));
-    EXPECT_CALL(m_clientControllerMock, getSharedMemoryBuffer()).WillOnce(Invoke([this]() { return nullptr; }));
+    EXPECT_CALL(m_clientControllerMock, getSharedMemoryHandle()).WillOnce(Invoke([this]() { return nullptr; }));
     m_webAudioPlayer->getBufferAvailable(m_numberOfFrames, notUsedWebAudioShmInfo);
 
     EXPECT_FALSE(m_webAudioPlayer->writeBuffer(m_numberOfFrames, m_dataSrc.data()));
@@ -96,7 +100,9 @@ TEST_F(RialtoClientWebAudioPlayerWriteBufferTest, writeBufferIpcCallFailsError)
                 webAudioShmInfo->lengthMain = 4;
                 return true;
             }));
-    EXPECT_CALL(m_clientControllerMock, getSharedMemoryBuffer()).WillOnce(Invoke([this]() { return m_dataDest.data(); }));
+    EXPECT_CALL(*m_sharedMemoryHandleMock, getShm()).WillRepeatedly(Return(m_dataDest.data()));
+    EXPECT_CALL(m_clientControllerMock, getSharedMemoryHandle())
+        .WillOnce(Invoke([this]() { return m_sharedMemoryHandleMock; }));
     m_webAudioPlayer->getBufferAvailable(m_numberOfFrames, notUsedWebAudioShmInfo);
 
     EXPECT_FALSE(m_webAudioPlayer->writeBuffer(m_numberOfFrames, m_dataSrc.data()));
@@ -117,7 +123,9 @@ TEST_F(RialtoClientWebAudioPlayerWriteBufferTest, writeToMainOffsetOnly)
                 webAudioShmInfo->lengthWrap = 1000;
                 return true;
             }));
-    EXPECT_CALL(m_clientControllerMock, getSharedMemoryBuffer()).WillOnce(Invoke([this]() { return m_dataDest.data(); }));
+    EXPECT_CALL(*m_sharedMemoryHandleMock, getShm()).WillRepeatedly(Return(m_dataDest.data()));
+    EXPECT_CALL(m_clientControllerMock, getSharedMemoryHandle())
+        .WillOnce(Invoke([this]() { return m_sharedMemoryHandleMock; }));
     m_webAudioPlayer->getBufferAvailable(m_numberOfFrames, notUsedWebAudioShmInfo);
     EXPECT_EQ(1, m_numberOfFrames);
 
@@ -144,7 +152,9 @@ TEST_F(RialtoClientWebAudioPlayerWriteBufferTest, writeToMainAndWrapOffset)
                 webAudioShmInfo->lengthWrap = 4;
                 return true;
             }));
-    EXPECT_CALL(m_clientControllerMock, getSharedMemoryBuffer()).WillOnce(Invoke([this]() { return m_dataDest.data(); }));
+    EXPECT_CALL(*m_sharedMemoryHandleMock, getShm()).WillRepeatedly(Return(m_dataDest.data()));
+    EXPECT_CALL(m_clientControllerMock, getSharedMemoryHandle())
+        .WillOnce(Invoke([this]() { return m_sharedMemoryHandleMock; }));
     m_webAudioPlayer->getBufferAvailable(m_numberOfFrames, notUsedWebAudioShmInfo);
     EXPECT_EQ(2, m_numberOfFrames);
 
