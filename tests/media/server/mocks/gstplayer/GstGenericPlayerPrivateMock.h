@@ -44,9 +44,7 @@ public:
                 (int32_t rate, int32_t channels, const std::shared_ptr<std::vector<std::uint8_t>> &codecData),
                 (override));
     MOCK_METHOD(void, updateVideoCaps,
-                (int32_t width, int32_t height, Fraction frameRate,
-                 const std::shared_ptr<std::vector<std::uint8_t>> &codecData),
-                (override));
+                (int32_t width, int32_t height, const std::shared_ptr<std::vector<std::uint8_t>> &codecData), (override));
     MOCK_METHOD(bool, changePipelineState, (GstState newState), (override));
     MOCK_METHOD(void, startPositionReportingAndCheckAudioUnderflowTimer, (), (override));
     MOCK_METHOD(void, stopPositionReportingAndCheckAudioUnderflowTimer, (), (override));
