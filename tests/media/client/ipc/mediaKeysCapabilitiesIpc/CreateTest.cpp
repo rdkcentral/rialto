@@ -49,7 +49,7 @@ TEST_F(RialtoClientCreateMediaKeysCapabilitiesIpcTest, Create)
  */
 TEST_F(RialtoClientCreateMediaKeysCapabilitiesIpcTest, CreateNoIpcChannel)
 {
-    expectInitIpcButAttachChannelFailure();
+    EXPECT_CALL(m_ipcClientMock, getChannel()).WillOnce(Return(nullptr));
 
     EXPECT_THROW(m_mediaKeysCapabilitiesIpc = std::make_unique<MediaKeysCapabilitiesIpc>(m_ipcClientMock),
                  std::runtime_error);

@@ -83,10 +83,10 @@ MediaKeysCapabilitiesIpc::~MediaKeysCapabilitiesIpc()
     detachChannel();
 }
 
-bool MediaKeysCapabilitiesIpc::createRpcStubs(const std::shared_ptr<ipc::IChannel> &ipcChannel)
+bool MediaKeysCapabilitiesIpc::createRpcStubs()
 {
     m_mediaKeysCapabilitiesStub =
-        std::make_unique<::firebolt::rialto::MediaKeysCapabilitiesModule_Stub>(ipcChannel.get());
+        std::make_unique<::firebolt::rialto::MediaKeysCapabilitiesModule_Stub>(m_ipcChannel.get());
     if (!m_mediaKeysCapabilitiesStub)
     {
         return false;
