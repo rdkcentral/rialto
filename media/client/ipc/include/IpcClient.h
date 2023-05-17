@@ -21,7 +21,6 @@
 #define FIREBOLT_RIALTO_CLIENT_IPC_CLIENT_H_
 
 #include "IIpcClient.h"
-#include <atomic>
 #include <memory>
 #include <mutex>
 
@@ -52,7 +51,7 @@ public:
      */
     ~IpcClient() override;
 
-    std::weak_ptr<ipc::IChannel> getChannel() const override;
+    std::shared_ptr<ipc::IChannel> getChannel() const override;
 
     std::shared_ptr<ipc::IBlockingClosure> createBlockingClosure() override;
 
@@ -83,11 +82,6 @@ protected:
      * @brief Factory for creating a blocking closure.
      */
     std::shared_ptr<ipc::IBlockingClosureFactory> m_blockingClosureFactory;
-
-    /**
-     * @brief Whether disconnection of ipc has been requested by the client and is ongoing.
-     */
-    std::atomic<bool> m_disconnecting;
 
     /**
      * @brief The processing loop for the ipc thread.

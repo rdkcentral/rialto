@@ -119,9 +119,9 @@ private:
      */
     std::unique_ptr<common::IEventThread> m_eventThread;
 
-    bool createRpcStubs(const std::shared_ptr<ipc::IChannel> &ipcChannel) override;
+    bool createRpcStubs() override;
 
-    bool subscribeToEvents(const std::shared_ptr<ipc::IChannel> &ipcChannel) override;
+    bool subscribeToEvents() override;
 
     /**
      * @brief Handler for a playback state update from the server.

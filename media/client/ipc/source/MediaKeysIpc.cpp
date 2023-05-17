@@ -176,9 +176,9 @@ MediaKeysIpc::~MediaKeysIpc()
     m_eventThread.reset();
 }
 
-bool MediaKeysIpc::createRpcStubs(const std::shared_ptr<ipc::IChannel> &ipcChannel)
+bool MediaKeysIpc::createRpcStubs()
 {
-    m_mediaKeysStub = std::make_unique<::firebolt::rialto::MediaKeysModule_Stub>(ipcChannel.get());
+    m_mediaKeysStub = std::make_unique<::firebolt::rialto::MediaKeysModule_Stub>(m_ipcChannel.get());
     if (!m_mediaKeysStub)
     {
         return false;
@@ -186,28 +186,28 @@ bool MediaKeysIpc::createRpcStubs(const std::shared_ptr<ipc::IChannel> &ipcChann
     return true;
 }
 
-bool MediaKeysIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &ipcChannel)
+bool MediaKeysIpc::subscribeToEvents()
 {
-    if (!ipcChannel)
+    if (!m_ipcChannel)
     {
         return false;
     }
 
-    int eventTag = ipcChannel->subscribe<firebolt::rialto::LicenseRequestEvent>(
+    int eventTag = m_ipcChannel->subscribe<firebolt::rialto::LicenseRequestEvent>(
         [this](const std::shared_ptr<firebolt::rialto::LicenseRequestEvent> &event)
         { m_eventThread->add(&MediaKeysIpc::onLicenseRequest, this, event); });
     if (eventTag < 0)
         return false;
     m_eventTags.push_back(eventTag);
 
-    eventTag = ipcChannel->subscribe<firebolt::rialto::LicenseRenewalEvent>(
+    eventTag = m_ipcChannel->subscribe<firebolt::rialto::LicenseRenewalEvent>(
         [this](const std::shared_ptr<firebolt::rialto::LicenseRenewalEvent> &event)
         { m_eventThread->add(&MediaKeysIpc::onLicenseRenewal, this, event); });
     if (eventTag < 0)
         return false;
     m_eventTags.push_back(eventTag);
 
-    eventTag = ipcChannel->subscribe<firebolt::rialto::KeyStatusesChangedEvent>(
+    eventTag = m_ipcChannel->subscribe<firebolt::rialto::KeyStatusesChangedEvent>(
         [this](const std::shared_ptr<firebolt::rialto::KeyStatusesChangedEvent> &event)
         { m_eventThread->add(&MediaKeysIpc::onKeyStatusesChanged, this, event); });
     if (eventTag < 0)
