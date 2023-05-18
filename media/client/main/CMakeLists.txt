@@ -34,6 +34,7 @@ set(LIB_RIALTO_CLIENT_SOURCES
         source/KeyIdMap.cpp
         source/WebAudioPlayer.cpp
         source/ClientController.cpp
+        source/SharedMemoryHandle.cpp
         )
 
 add_library( RialtoClient

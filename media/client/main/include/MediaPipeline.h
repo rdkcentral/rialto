@@ -170,6 +170,11 @@ protected:
     std::map<uint32_t, std::shared_ptr<NeedDataRequest>> m_needDataRequestMap;
 
     /**
+     * @brief The current application state. Protected by m_needDataRequestMapMutex
+     */
+    ApplicationState m_currentAppState;
+
+    /**
      * @brief The need data request map mutex.
      */
     std::mutex m_needDataRequestMapMutex;

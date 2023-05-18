@@ -53,12 +53,18 @@ TEST_F(RialtoClientCreateWebAudioPlayerTest, Create)
     EXPECT_CALL(*m_webAudioPlayerIpcFactoryMock, createWebAudioPlayerIpc(_, m_audioMimeType, m_priority, &m_config))
         .WillOnce(Return(ByMove(std::move(webAudioPlayerIpcMock))));
 
+    EXPECT_CALL(m_clientControllerMock, registerClient(_, _))
+        .WillOnce(DoAll(SetArgReferee<1>(ApplicationState::RUNNING), Return(true)));
+
     EXPECT_NO_THROW(m_webAudioPlayer = std::make_unique<WebAudioPlayer>(m_webAudioPlayerClientMock, m_audioMimeType,
                                                                         m_priority, &m_config,
                                                                         m_webAudioPlayerIpcFactoryMock,
                                                                         m_clientControllerMock));
 
     EXPECT_NE(m_webAudioPlayer, nullptr);
+
+    // Unregister client on destroy
+    EXPECT_CALL(m_clientControllerMock, unregisterClient(_)).WillOnce(Return(true));
 }
 
 /**
@@ -70,6 +76,32 @@ TEST_F(RialtoClientCreateWebAudioPlayerTest, CreateWebAudioPlayerIpcFailure)
     std::unique_ptr<IWebAudioPlayer> webAudioPlayer;
 
     EXPECT_CALL(*m_webAudioPlayerIpcFactoryMock, createWebAudioPlayerIpc(_, _, _, _)).WillOnce(Return(nullptr));
+
+    EXPECT_THROW(webAudioPlayer = std::make_unique<WebAudioPlayer>(m_webAudioPlayerClientMock, m_audioMimeType,
+                                                                   m_priority, &m_config, m_webAudioPlayerIpcFactoryMock,
+                                                                   m_clientControllerMock),
+                 std::runtime_error);
+}
+
+/**
+ * Test that a WebAudioPlayer object throws an exeption if failure occurs during construction.
+ * In this case, createWebAudioPlayerIpc fails, returning a nullptr.
+ */
+TEST_F(RialtoClientCreateWebAudioPlayerTest, CreateWebAudioPlayerRegisterFailure)
+{
+    std::unique_ptr<IWebAudioPlayer> webAudioPlayer;
+    std::unique_ptr<StrictMock<WebAudioPlayerIpcMock>> webAudioPlayerIpcMock =
+        std::make_unique<StrictMock<WebAudioPlayerIpcMock>>();
+
+    // Save a raw pointer to the unique object for use when testing mocks
+    // Object shall be freed by the holder of the unique ptr on destruction
+    m_webAudioPlayerIpcMock = webAudioPlayerIpcMock.get();
+
+    EXPECT_CALL(*m_webAudioPlayerIpcFactoryMock, createWebAudioPlayerIpc(_, m_audioMimeType, m_priority, &m_config))
+        .WillOnce(Return(ByMove(std::move(webAudioPlayerIpcMock))));
+
+    EXPECT_CALL(m_clientControllerMock, registerClient(_, _))
+        .WillOnce(DoAll(SetArgReferee<1>(ApplicationState::RUNNING), Return(false)));
 
     EXPECT_THROW(webAudioPlayer = std::make_unique<WebAudioPlayer>(m_webAudioPlayerClientMock, m_audioMimeType,
                                                                    m_priority, &m_config, m_webAudioPlayerIpcFactoryMock,

@@ -43,7 +43,7 @@ public:
     explicit ClientController(const std::shared_ptr<IControlIpcFactory> &ControlIpcFactory);
     ~ClientController() override;
 
-    uint8_t *getSharedMemoryBuffer() override;
+    std::shared_ptr<ISharedMemoryHandle> getSharedMemoryHandle() override;
     bool registerClient(IControlClient *client, ApplicationState &appState) override;
     bool unregisterClient(IControlClient *client) override;
 
@@ -91,19 +91,9 @@ private:
     ApplicationState m_currentState;
 
     /**
-     * @brief The shared memory file descriptor.
+     * @brief The shared memory buffer handle.
      */
-    int32_t m_shmFd;
-
-    /**
-     * @brief The shared memory buffer pointer.
-     */
-    uint8_t *m_shmBuffer;
-
-    /**
-     * @brief The shared memory buffer length.
-     */
-    uint32_t m_shmBufferLen;
+    std::shared_ptr<ISharedMemoryHandle> m_shmHandle;
 
     /**
      * @brief The rialto control ipc factory.
