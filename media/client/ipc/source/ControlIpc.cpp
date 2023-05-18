@@ -151,9 +151,9 @@ bool ControlIpc::registerClient()
     return true;
 }
 
-bool ControlIpc::createRpcStubs()
+bool ControlIpc::createRpcStubs(const std::shared_ptr<ipc::IChannel> &ipcChannel)
 {
-    m_controlStub = std::make_unique<::firebolt::rialto::ControlModule_Stub>(m_ipcChannel.get());
+    m_controlStub = std::make_unique<::firebolt::rialto::ControlModule_Stub>(ipcChannel.get());
     if (!m_controlStub)
     {
         return false;
@@ -161,21 +161,21 @@ bool ControlIpc::createRpcStubs()
     return true;
 }
 
-bool ControlIpc::subscribeToEvents()
+bool ControlIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &ipcChannel)
 {
-    if (!m_ipcChannel)
+    if (!ipcChannel)
     {
         return false;
     }
 
-    int eventTag = m_ipcChannel->subscribe<firebolt::rialto::ApplicationStateChangeEvent>(
+    int eventTag = ipcChannel->subscribe<firebolt::rialto::ApplicationStateChangeEvent>(
         [this](const std::shared_ptr<firebolt::rialto::ApplicationStateChangeEvent> &event)
         { m_eventThread->add(&ControlIpc::onApplicationStateUpdated, this, event); });
     if (eventTag < 0)
         return false;
     m_eventTags.push_back(eventTag);
 
-    eventTag = m_ipcChannel->subscribe<firebolt::rialto::PingEvent>(
+    eventTag = ipcChannel->subscribe<firebolt::rialto::PingEvent>(
         [this](const std::shared_ptr<firebolt::rialto::PingEvent> &event)
         { m_eventThread->add(&ControlIpc::onPing, this, event); });
     if (eventTag < 0)
