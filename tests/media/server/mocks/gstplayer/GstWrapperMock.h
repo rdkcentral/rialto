@@ -107,8 +107,6 @@ public:
                 (const));
     MOCK_METHOD(void, gstCapsSetSimpleBitMaskStub,
                 (GstCaps * caps, const gchar *field, GType type, const uint64_t value), (const));
-    MOCK_METHOD(void, gstCapsSetSimpleFractionStub,
-                (GstCaps * caps, const gchar *field, GType type, int value1, int value2), (const));
     MOCK_METHOD(GstCaps *, gstCapsNewSimpleIntStub,
                 (const char *media_type, const char *fieldname, GType type, int value), (const));
     MOCK_METHOD(void, gstMessageParseQos,
@@ -235,12 +233,6 @@ public:
             {
                 uint64_t val = va_arg(args, uint64_t);
                 gstCapsSetSimpleBitMaskStub(caps, property, type, val);
-            }
-            else if (g_type_is_a(type, GST_TYPE_FRACTION))
-            {
-                int val1 = va_arg(args, int);
-                int val2 = va_arg(args, int);
-                gstCapsSetSimpleFractionStub(caps, property, type, val1, val2);
             }
             property = va_arg(args, const gchar *);
         }
