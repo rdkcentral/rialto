@@ -41,11 +41,6 @@ message MediaSegmentMetadata {
         required uint32 num_encrypted_bytes  = 2;             /* How many of next bytes in sequence are encrypted */
     }
 
-    message Fraction {
-        required int32 numerator   = 1; /**< The numerator */
-        required int32 denominator = 2; /**< The denominator */
-    }
-
     required uint32           length               = 1;       /* Number of bytes in sample */
     required int64            time_position        = 2;       /* Position in stream in nanoseconds */
     required int64            sample_duration      = 3;       /* Frame/sample duration in nanoseconds */
@@ -54,7 +49,7 @@ message MediaSegmentMetadata {
     optional uint32           channels_num         = 6;       /* Number of channels for audio segments */
     optional uint32           width                = 7;       /* Frame width in pixels for video segments */
     optional uint32           height               = 8;       /* Frame height in pixels for video segments */
-    optional SegmentAlignment segment_alignment    = 9;      /* Segment alignment can be specified for H264/H265, will use NAL if not set */
+    optional SegmentAlignment segment_alignment    = 9;       /* Segment alignment can be specified for H264/H265, will use NAL if not set */
     optional bytes            extra_data           = 10;      /* buffer containing extradata */
     optional int32            media_key_session_id = 11;      /* Buffer containing key session ID to use for decryption */
     optional bytes            key_id               = 12;      /* Buffer containing Key ID to use for decryption */
@@ -66,5 +61,4 @@ message MediaSegmentMetadata {
     optional CipherMode       cipher_mode          = 17;      /* Specifies cipher mode uses for this sample */
     optional uint32           crypt                = 18;      /* Crypt byte block value */
     optional uint32           skip                 = 19;      /* Skip byte block value */
-    optional Fraction         frame_rate           = 20;       /* Fractional frame rate of the video segments */
 }

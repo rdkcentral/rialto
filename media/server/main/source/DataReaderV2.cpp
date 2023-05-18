@@ -98,17 +98,11 @@ createSegment(const firebolt::rialto::MediaSegmentMetadata &metadata, const fire
             RIALTO_SERVER_LOG_ERROR("Width/height not present in video metadata");
             return nullptr;
         }
-
-        firebolt::rialto::Fraction frameRate{firebolt::rialto::kUndefinedSize, firebolt::rialto::kUndefinedSize};
-        if (metadata.has_frame_rate())
-        {
-            frameRate = {metadata.frame_rate().numerator(), metadata.frame_rate().denominator()};
-        }
         segment = std::make_unique<firebolt::rialto::IMediaPipeline::MediaSegmentVideo>(metadata.stream_id(),
                                                                                         metadata.time_position(),
                                                                                         metadata.sample_duration(),
                                                                                         metadata.width(),
-                                                                                        metadata.height(), frameRate);
+                                                                                        metadata.height());
     }
     else
     {
