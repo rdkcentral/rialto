@@ -60,11 +60,10 @@ bool IpcClient::connect()
 {
     if (m_ipcChannel)
     {
-        RIALTO_CLIENT_LOG_ERROR("Client already connected");
+        RIALTO_CLIENT_LOG_INFO("Client already connected");
         return true;
     }
 
-    RIALTO_CLIENT_LOG_ERROR("Client connect");
     // Verify that the version of the library that we linked against is
     // compatible with the version of the headers we compiled against.
     GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -128,7 +127,7 @@ bool IpcClient::disconnect()
         return true;
     }
 
-    RIALTO_CLIENT_LOG_ERROR("closing IPC channel");
+    RIALTO_CLIENT_LOG_INFO("closing IPC channel");
     m_disconnecting = true;
 
     // disconnect from the server, this should terminate the thread so join that too
@@ -149,7 +148,7 @@ void IpcClient::processIpcThread()
 {
     pthread_setname_np(pthread_self(), "rialto-ipc");
 
-    RIALTO_CLIENT_LOG_ERROR("started ipc thread");
+    RIALTO_CLIENT_LOG_INFO("started ipc thread");
 
     while (m_ipcChannel->process())
     {
@@ -165,7 +164,7 @@ void IpcClient::processIpcThread()
         m_ipcChannel.reset();
     }
 
-    RIALTO_CLIENT_LOG_ERROR("exiting ipc thread");
+    RIALTO_CLIENT_LOG_INFO("exiting ipc thread");
 }
 
 std::weak_ptr<::firebolt::rialto::ipc::IChannel> IpcClient::getChannel() const
