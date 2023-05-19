@@ -19,6 +19,7 @@
 
 #include "ClientController.h"
 #include "RialtoClientLogging.h"
+#include "SharedMemoryHandle.h"
 #include <sys/mman.h>
 #include <sys/un.h>
 #include <unistd.h>
@@ -38,7 +39,7 @@ IClientController &ClientControllerAccessor::getClientController() const
 }
 
 ClientController::ClientController(const std::shared_ptr<IControlIpcFactory> &ControlIpcFactory)
-    : m_currentState{ApplicationState::UNKNOWN}, m_shmFd(-1), m_shmBuffer(nullptr), m_shmBufferLen(0U)
+    : m_currentState{ApplicationState::UNKNOWN}
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
@@ -61,10 +62,10 @@ ClientController::~ClientController()
     termSharedMemory();
 }
 
-uint8_t *ClientController::getSharedMemoryBuffer()
+std::shared_ptr<ISharedMemoryHandle> ClientController::getSharedMemoryHandle()
 {
     std::lock_guard<std::mutex> lock{m_mutex};
-    return m_shmBuffer;
+    return m_shmHandle;
 }
 
 bool ClientController::registerClient(IControlClient *client, ApplicationState &appState)
@@ -103,58 +104,31 @@ bool ClientController::unregisterClient(IControlClient *client)
 }
 
 bool ClientController::initSharedMemory()
+try
 {
     std::lock_guard<std::mutex> lock{m_mutex};
-    if (!m_controlIpc->getSharedMemory(m_shmFd, m_shmBufferLen))
+    int32_t shmFd{-1};
+    uint32_t shmBufferLen{0U};
+    if (!m_controlIpc->getSharedMemory(shmFd, shmBufferLen))
     {
         RIALTO_CLIENT_LOG_ERROR("Failed to get the shared memory");
         return false;
     }
-
-    if ((-1 == m_shmFd) || (0U == m_shmBufferLen))
-    {
-        RIALTO_CLIENT_LOG_ERROR("Shared buffer invalid");
-        return false;
-    }
-
-    m_shmBuffer = reinterpret_cast<uint8_t *>(mmap(NULL, m_shmBufferLen, PROT_READ | PROT_WRITE, MAP_SHARED, m_shmFd, 0));
-    if (MAP_FAILED == m_shmBuffer)
-    {
-        RIALTO_CLIENT_LOG_ERROR("Failed to map databuffer: %s", strerror(errno));
-        close(m_shmFd);
-        m_shmFd = -1;
-        m_shmBuffer = nullptr;
-        m_shmBufferLen = 0U;
-        return false;
-    }
+    m_shmHandle = std::make_shared<SharedMemoryHandle>(shmFd, shmBufferLen);
 
     RIALTO_CLIENT_LOG_INFO("Shared buffer was successfully initialised");
     return true;
+}
+catch (const std::exception &e)
+{
+    RIALTO_CLIENT_LOG_ERROR("Failed to initialise shared memory: %s", e.what());
+    return false;
 }
 
 void ClientController::termSharedMemory()
 {
     std::lock_guard<std::mutex> lock{m_mutex};
-    if (-1 == m_shmFd)
-    {
-        RIALTO_CLIENT_LOG_WARN("Shared memory not initalised");
-        return;
-    }
-
-    int32_t ret = munmap(m_shmBuffer, m_shmBufferLen);
-    if (-1 == ret)
-    {
-        RIALTO_CLIENT_LOG_ERROR("Failed to unmap databuffer: %s", strerror(errno));
-    }
-    else
-    {
-        RIALTO_CLIENT_LOG_INFO("Shared buffer was successfully terminated");
-    }
-
-    close(m_shmFd);
-    m_shmBuffer = nullptr;
-    m_shmFd = -1;
-    m_shmBufferLen = 0U;
+    m_shmHandle.reset();
 }
 
 void ClientController::notifyApplicationState(ApplicationState state)

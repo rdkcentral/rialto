@@ -84,9 +84,9 @@ private:
      */
     std::unique_ptr<::firebolt::rialto::MediaKeysCapabilitiesModule_Stub> m_mediaKeysCapabilitiesStub;
 
-    bool createRpcStubs() override;
+    bool createRpcStubs(const std::shared_ptr<ipc::IChannel> &ipcChannel) override;
 
-    bool subscribeToEvents() override { return true; }
+    bool subscribeToEvents(const std::shared_ptr<ipc::IChannel> &ipcChannel) override { return true; }
 };
 
 }; // namespace firebolt::rialto::client

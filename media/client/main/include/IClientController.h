@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_CLIENT_I_CLIENT_CONTROLLER_H_
 
 #include "IControlClient.h"
+#include "ISharedMemoryHandle.h"
 #include <functional>
 #include <memory>
 #include <stdint.h>
@@ -75,11 +76,11 @@ public:
     IClientController &operator=(IClientController &&) = delete;
 
     /**
-     * @brief Gets the pointer to the mapped shared memory.
+     * @brief Gets the handle to the mapped shared memory.
      *
-     * @retval valid pointer on sucess, nullptr otherwise.
+     * @retval shared pointer to shm handle.
      */
-    virtual uint8_t *getSharedMemoryBuffer() = 0;
+    virtual std::shared_ptr<ISharedMemoryHandle> getSharedMemoryHandle() = 0;
 
     /**
      * @brief Register a client notify when the shared buffer changes.

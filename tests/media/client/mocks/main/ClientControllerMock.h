@@ -22,6 +22,7 @@
 
 #include "IClientController.h"
 #include <gmock/gmock.h>
+#include <memory>
 
 namespace firebolt::rialto::client
 {
@@ -31,7 +32,7 @@ public:
     ClientControllerMock() = default;
     virtual ~ClientControllerMock() = default;
 
-    MOCK_METHOD(uint8_t *, getSharedMemoryBuffer, (), (override));
+    MOCK_METHOD(std::shared_ptr<ISharedMemoryHandle>, getSharedMemoryHandle, (), (override));
     MOCK_METHOD(bool, registerClient, (IControlClient * client, ApplicationState &appState), (override));
     MOCK_METHOD(bool, unregisterClient, (IControlClient * client), (override));
 };

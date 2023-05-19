@@ -43,8 +43,8 @@ TEST_F(RialtoClientControlIpcCreateTest, CreateDestroy)
  */
 TEST_F(RialtoClientControlIpcCreateTest, CreateNoIpcChannel)
 {
+    expectInitIpcButAttachChannelFailure();
     EXPECT_CALL(*m_eventThreadFactoryMock, createEventThread(_)).WillOnce(Return(ByMove(std::move(m_eventThread))));
-    EXPECT_CALL(m_ipcClientMock, getChannel()).WillOnce(Return(nullptr));
 
     EXPECT_THROW(m_controlIpc =
                      std::make_shared<ControlIpc>(&m_controlClientMock, m_ipcClientMock, m_eventThreadFactoryMock),

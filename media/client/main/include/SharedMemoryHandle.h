@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2022 Sky UK
+ * Copyright 2023 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,25 +17,37 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_CLIENT_IPC_CLIENT_MOCK_H_
-#define FIREBOLT_RIALTO_CLIENT_IPC_CLIENT_MOCK_H_
+#ifndef FIREBOLT_RIALTO_CLIENT_SHARED_MEMORY_HANDLE_H_
+#define FIREBOLT_RIALTO_CLIENT_SHARED_MEMORY_HANDLE_H_
 
-#include "IIpcClient.h"
-#include <gmock/gmock.h>
-#include <memory>
+#include "ISharedMemoryHandle.h"
 
 namespace firebolt::rialto::client
 {
-class IpcClientMock : public IIpcClient
+class SharedMemoryHandle : public ISharedMemoryHandle
 {
 public:
-    IpcClientMock() = default;
-    virtual ~IpcClientMock() = default;
+    SharedMemoryHandle(std::int32_t shmFd, std::uint32_t shmBufferLen);
+    ~SharedMemoryHandle() override;
 
-    MOCK_METHOD(std::weak_ptr<ipc::IChannel>, getChannel, (), (override, const));
-    MOCK_METHOD(std::shared_ptr<ipc::IBlockingClosure>, createBlockingClosure, (), (override));
-    MOCK_METHOD(std::shared_ptr<google::protobuf::RpcController>, createRpcController, (), (override));
+    std::uint8_t *getShm() const override;
+
+private:
+    /**
+     * @brief The shared memory file descriptor.
+     */
+    std::int32_t m_shmFd;
+
+    /**
+     * @brief The shared memory buffer length.
+     */
+    std::uint32_t m_shmBufferLen;
+
+    /**
+     * @brief The shared memory buffer pointer.
+     */
+    std::uint8_t *m_shmBuffer;
 };
 } // namespace firebolt::rialto::client
 
-#endif // FIREBOLT_RIALTO_CLIENT_IPC_CLIENT_MOCK_H_
+#endif // FIREBOLT_RIALTO_CLIENT_SHARED_MEMORY_HANDLE_H_

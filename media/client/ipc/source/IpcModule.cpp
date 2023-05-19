@@ -32,9 +32,9 @@ IpcModule::~IpcModule()
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 }
 
-bool IpcModule::unsubscribeFromAllEvents()
+bool IpcModule::unsubscribeFromAllEvents(const std::shared_ptr<ipc::IChannel> &ipcChannel)
 {
-    if (!m_ipcChannel)
+    if (!ipcChannel)
     {
         return false;
     }
@@ -42,7 +42,7 @@ bool IpcModule::unsubscribeFromAllEvents()
     bool result = true;
     for (auto it = m_eventTags.begin(); it != m_eventTags.end(); it++)
     {
-        if (!m_ipcChannel->unsubscribe(*it))
+        if (!ipcChannel->unsubscribe(*it))
         {
             result = false;
         }
@@ -55,37 +55,36 @@ bool IpcModule::unsubscribeFromAllEvents()
 bool IpcModule::attachChannel()
 {
     // get the channel
-    m_ipcChannel = m_ipc.getChannel();
-    if (!m_ipcChannel)
+    std::shared_ptr<ipc::IChannel> ipcChannel = m_ipc.getChannel().lock();
+    if (!ipcChannel)
     {
         RIALTO_CLIENT_LOG_ERROR("Failed to get the ipc channel");
         return false;
     }
 
     // check channel connected
-    if (!m_ipcChannel->isConnected())
+    if (!ipcChannel->isConnected())
     {
         RIALTO_CLIENT_LOG_ERROR("Ipc channel not connected");
-        m_ipcChannel.reset();
         return false;
     }
 
     // create the RPC stubs
-    if (!createRpcStubs())
+    if (!createRpcStubs(ipcChannel))
     {
         RIALTO_CLIENT_LOG_ERROR("Could not create the ipc module stubs");
-        m_ipcChannel.reset();
         return false;
     }
 
     // install listeners
-    if (!subscribeToEvents())
+    if (!subscribeToEvents(ipcChannel))
     {
         RIALTO_CLIENT_LOG_ERROR("Could not subscribe to ipc module events");
-        unsubscribeFromAllEvents();
-        m_ipcChannel.reset();
+        unsubscribeFromAllEvents(ipcChannel);
         return false;
     }
+
+    m_ipcChannel = ipcChannel;
 
     return true;
 }
@@ -93,7 +92,7 @@ bool IpcModule::attachChannel()
 void IpcModule::detachChannel()
 {
     // uninstalls listeners
-    if (!unsubscribeFromAllEvents())
+    if (!unsubscribeFromAllEvents(m_ipcChannel.lock()))
     {
         RIALTO_CLIENT_LOG_ERROR("Failed to unsubscribe to some ipc module events, this can lead to core dumps in IPC");
     }
@@ -104,7 +103,8 @@ void IpcModule::detachChannel()
 
 bool IpcModule::reattachChannelIfRequired()
 {
-    if ((nullptr == m_ipcChannel) || (!m_ipcChannel->isConnected()))
+    std::shared_ptr<ipc::IChannel> ipcChannel = m_ipcChannel.lock();
+    if ((nullptr == ipcChannel) || (!ipcChannel->isConnected()))
     {
         RIALTO_CLIENT_LOG_INFO("Ipc channel no longer connected, attach new channel");
         detachChannel();
