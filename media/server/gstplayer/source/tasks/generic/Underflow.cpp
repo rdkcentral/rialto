@@ -49,7 +49,6 @@ void Underflow::execute() const
     {
         return;
     }
-    m_underflowFlag = true;
 
     // If the EOS has been raised, notify EndOfStream, not underflow.
     if (allSourcesEos())
@@ -63,6 +62,8 @@ void Underflow::execute() const
     }
     else
     {
+        m_underflowFlag = true;
+
         Pause pauseTask{m_context, m_player};
         pauseTask.execute();
         if (m_gstPlayerClient)

@@ -465,7 +465,7 @@ void MediaPipeline::updateState(NetworkState state)
     }
     }
 
-    RIALTO_CLIENT_LOG_DEBUG("Received network state '%s', old state '%s', new state '%s'", toString(state),
+    RIALTO_CLIENT_LOG_ERROR("Received network state '%s', old state '%s', new state '%s'", toString(state),
                             toString(m_currentState), toString(newState));
     m_currentState = newState;
 }
@@ -513,7 +513,7 @@ void MediaPipeline::updateState(PlaybackState state)
     }
     }
 
-    RIALTO_CLIENT_LOG_DEBUG("Received playback state '%s', old state '%s', new state '%s'", toString(state),
+    RIALTO_CLIENT_LOG_ERROR("Received playback state '%s', old state '%s', new state '%s'", toString(state),
                             toString(m_currentState), toString(newState));
     m_currentState = newState;
 }
