@@ -532,7 +532,7 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
 
     if (status != MediaSourceStatus::OK && status != MediaSourceStatus::EOS)
     {
-        RIALTO_SERVER_LOG_INFO("Data request for needDataRequestId: %u received with wrong status: %s",
+        RIALTO_SERVER_LOG_WARN("Data request for needDataRequestId: %u received with wrong status: %s",
                                needDataRequestId, toString(status));
         m_activeRequests->erase(needDataRequestId);
         scheduleNotifyNeedMediaData(mediaSourceType);
@@ -589,7 +589,7 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
     m_activeRequests->erase(needDataRequestId);
     if (status != MediaSourceStatus::OK && status != MediaSourceStatus::EOS)
     {
-        RIALTO_SERVER_LOG_INFO("Data request for needDataRequestId: %u received with wrong status", needDataRequestId);
+        RIALTO_SERVER_LOG_WARN("Data request for needDataRequestId: %u received with wrong status", needDataRequestId);
         scheduleNotifyNeedMediaData(mediaSourceType);
         return true;
     }
