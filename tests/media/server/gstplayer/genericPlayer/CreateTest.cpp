@@ -317,7 +317,7 @@ TEST_F(RialtoServerCreateGstGenericPlayerTest, PlaysinkNotFound)
 /**
  * Test that a GstGenericPlayer sets native audio flag from brcmaudiosink.
  */
-TEST_F(RialtoServerCreateGstGenericPlayerTest, SetNativeAudioForBcmAudioSink)
+TEST_F(RialtoServerCreateGstGenericPlayerTest, SetNativeAudioForBrcmAudioSink)
 {
     initFactories();
 
