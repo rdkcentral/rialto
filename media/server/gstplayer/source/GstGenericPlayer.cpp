@@ -205,7 +205,7 @@ void GstGenericPlayer::initMsePipeline()
     unsigned flagAudio = getGstPlayFlag("audio");
     unsigned flagVideo = getGstPlayFlag("video");
     unsigned flagNativeVideo = getGstPlayFlag("native-video");
-    unsigned flagNativeAudio = 0;
+    unsigned flagNativeAudio = shouldEnableNativeAudio() ? getGstPlayFlag("native-audio") : 0;
     m_glibWrapper->gObjectSet(m_context.pipeline, "flags", flagAudio | flagVideo | flagNativeVideo | flagNativeAudio,
                               nullptr);
 
@@ -887,6 +887,27 @@ void GstGenericPlayer::handleBusMessage(GstMessage *message)
 void GstGenericPlayer::updatePlaybackGroup(GstElement *typefind, const GstCaps *caps)
 {
     m_workerThread->enqueueTask(m_taskFactory->createUpdatePlaybackGroup(m_context, typefind, caps));
+}
+
+bool GstGenericPlayer::shouldEnableNativeAudio()
+{
+    // Only needs to be checked once as its platform specific
+    static bool enableNativeAudio = false;
+    static gsize init = 0;
+
+    if (m_glibWrapper->gOnceInitEnter(&init))
+    {
+        GstElementFactory* factory = gst_element_factory_find("brcmaudiosink");
+        if (factory)
+        {
+            gst_object_unref(GST_OBJECT(factory));
+            enableNativeAudio = true;
+        }
+        m_glibWrapper->gOnceInitLeave(&init, 1);
+    }
+
+    return enableNativeAudio;
+
 }
 
 }; // namespace firebolt::rialto::server
