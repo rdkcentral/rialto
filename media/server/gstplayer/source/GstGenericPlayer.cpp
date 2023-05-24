@@ -897,7 +897,7 @@ bool GstGenericPlayer::shouldEnableNativeAudio()
 
     if (m_glibWrapper->gOnceInitEnter(&init))
     {
-        GstElementFactory* factory = m_gstWrapper->gstElementFactoryFind("brcmaudiosink");
+        GstElementFactory *factory = m_gstWrapper->gstElementFactoryFind("brcmaudiosink");
         if (factory)
         {
             m_gstWrapper->gstObjectUnref(GST_OBJECT(factory));
