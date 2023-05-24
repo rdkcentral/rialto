@@ -130,7 +130,7 @@ void GstGenericPlayerTestCommon::expectSetFlags()
         .WillOnce(Return(&m_videoFlag));
     EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, CharStrMatcher("native-video")))
         .WillOnce(Return(&m_nativeVideoFlag));
-    EXPECT_CALL(*m_glibWrapperMock, gOnceInitEnter(_)).WillOnce(Return(FALSE));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(CharStrMatcher("brcmaudiosink"))).WillOnce(Return(nullptr));
 
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_pipeline, CharStrMatcher("flags")));
 }
@@ -151,11 +151,9 @@ void GstGenericPlayerTestCommon::expectSetFlagsWithNativeAudio()
         .WillOnce(Return(&m_videoFlag));
     EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, CharStrMatcher("native-video")))
         .WillOnce(Return(&m_nativeVideoFlag));
-    EXPECT_CALL(*m_glibWrapperMock, gOnceInitEnter(_)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(CharStrMatcher("brcmaudiosink")))
         .WillOnce(Return(reinterpret_cast<GstElementFactory *>(&sinkFactory)));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(reinterpret_cast<GstElementFactory *>(&sinkFactory)));
-    EXPECT_CALL(*m_glibWrapperMock, gOnceInitLeave(_, 1));
     EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, CharStrMatcher("native-audio")))
         .WillOnce(Return(&nativeAudioFlag));
 

@@ -891,22 +891,13 @@ void GstGenericPlayer::updatePlaybackGroup(GstElement *typefind, const GstCaps *
 
 bool GstGenericPlayer::shouldEnableNativeAudio()
 {
-    // Only needs to be checked once as its platform specific
-    static bool enableNativeAudio = false;
-    static gsize init = 0;
-
-    if (m_glibWrapper->gOnceInitEnter(&init))
+    GstElementFactory *factory = m_gstWrapper->gstElementFactoryFind("brcmaudiosink");
+    if (factory)
     {
-        GstElementFactory *factory = m_gstWrapper->gstElementFactoryFind("brcmaudiosink");
-        if (factory)
-        {
-            m_gstWrapper->gstObjectUnref(GST_OBJECT(factory));
-            enableNativeAudio = true;
-        }
-        m_glibWrapper->gOnceInitLeave(&init, 1);
+        m_gstWrapper->gstObjectUnref(GST_OBJECT(factory));
+        return true;
     }
-
-    return enableNativeAudio;
+    return false;
 }
 
 }; // namespace firebolt::rialto::server
