@@ -897,17 +897,16 @@ bool GstGenericPlayer::shouldEnableNativeAudio()
 
     if (m_glibWrapper->gOnceInitEnter(&init))
     {
-        GstElementFactory* factory = gst_element_factory_find("brcmaudiosink");
+        GstElementFactory* factory = m_gstWrapper->gstElementFactoryFind("brcmaudiosink");
         if (factory)
         {
-            gst_object_unref(GST_OBJECT(factory));
+            m_gstWrapper->gstObjectUnref(GST_OBJECT(factory));
             enableNativeAudio = true;
         }
         m_glibWrapper->gOnceInitLeave(&init, 1);
     }
 
     return enableNativeAudio;
-
 }
 
 }; // namespace firebolt::rialto::server

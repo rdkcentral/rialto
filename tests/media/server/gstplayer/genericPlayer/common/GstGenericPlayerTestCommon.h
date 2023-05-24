@@ -94,6 +94,7 @@ protected:
     void initFactories();
     void expectMakePlaybin();
     void expectSetFlags();
+    void expectSetFlagsWithNativeAudio();
     void expectSetSignalCallbacks();
     void expectSetUri();
     void expectCheckPlaySink();
