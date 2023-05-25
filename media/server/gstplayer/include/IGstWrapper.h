@@ -1005,6 +1005,25 @@ public:
     virtual void gstStreamVolumeSetVolume(GstStreamVolume *volume, GstStreamVolumeFormat format, gdouble val) const = 0;
 
     /**
+     * @brief Get current mute status of the pipeline
+     *
+     * @param[in] volume : GstStreamVolume that should be used
+     *
+     * @retval Returns TRUE if the stream is muted
+     */
+    virtual gboolean gstStreamVolumeGetMute(GstStreamVolume *volume) const = 0;
+
+    /**
+     * @brief Sets mute status of pipeline
+     *
+     * @param[in] volume : GstStreamVolume that should be used
+     * @param[in] mute   : Mute state that should be set
+     *
+     * @retval Returns TRUE if the stream is muted
+     */
+    virtual void gstStreamVolumeSetMute(GstStreamVolume *volume, gboolean mute) const = 0;
+
+    /**
      * @brief Create a new pipeline with given name.
      *
      * @param[in] name  : Name of new pipeline.

@@ -296,3 +296,27 @@ TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetVolume)
     mediaPipelineServiceWillFailToGetVolume();
     sendGetVolumeRequestAndReceiveResponseWithoutVolumeMatch();
 }
+
+TEST_F(MediaPipelineModuleServiceTests, shouldSetMute)
+{
+    mediaPipelineServiceWillSetMute();
+    sendSetMuteRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToSetMute)
+{
+    mediaPipelineServiceWillFailToSetMute();
+    sendSetMuteRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldGetMute)
+{
+    mediaPipelineServiceWillGetMute();
+    sendGetMuteRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetMute)
+{
+    mediaPipelineServiceWillFailToGetMute();
+    sendGetMuteRequestAndReceiveResponseWithoutMuteMatch();
+}

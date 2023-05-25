@@ -72,6 +72,8 @@ public:
     bool renderFrame(int sessionId) override;
     bool setVolume(int sessionId, double volume) override;
     bool getVolume(int sessionId, double &volume) override;
+    bool setMute(int sessionId, bool mute) override;
+    bool getMute(int sessionId, bool &mute) override;
     std::vector<std::string> getSupportedMimeTypes(MediaSourceType type) override;
     bool isMimeTypeSupported(const std::string &mimeType) override;
 

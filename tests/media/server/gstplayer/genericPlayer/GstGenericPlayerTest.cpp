@@ -266,3 +266,12 @@ TEST_F(GstGenericPlayerTest, shouldReturnVolume)
     EXPECT_TRUE(m_sut->getVolume(resultVolume));
     EXPECT_EQ(resultVolume, kVolume);
 }
+
+TEST_F(GstGenericPlayerTest, shouldReturnMute)
+{
+    constexpr bool kMute{false};
+    bool resultMute{};
+    EXPECT_CALL(*m_gstWrapperMock, gstStreamVolumeGetMute(_)).WillOnce(Return(kMute));
+    EXPECT_TRUE(m_sut->getMute(resultMute));
+    EXPECT_EQ(resultMute, kMute);
+}

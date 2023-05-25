@@ -221,6 +221,26 @@ public:
      * @retval True on success
      */
     virtual bool getVolume(double &volume) = 0;
+
+    /**
+     * @brief Set mute status of pipeline
+     *
+     * Muting does not change the underlying volyme setting so when
+     * unmuted the user will hear audio at the same volume as previously
+     * set.
+     *
+     * @param[in] mute : Desired mute status, true=muted, false=not muted
+     */
+    virtual void setMute(bool mute) = 0;
+
+    /**
+     * @brief Get current mute status of the pipeline
+     *
+     * @param[out] mute : Current mute status
+     *
+     * @retval True in success, false otherwise
+     */
+    virtual bool getMute(bool &mute) = 0;
 };
 
 }; // namespace firebolt::rialto::server

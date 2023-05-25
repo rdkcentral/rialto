@@ -111,6 +111,8 @@ public:
     bool getPosition(std::int64_t &position) override;
     void setVolume(double volume) override;
     bool getVolume(double &volume) override;
+    void setMute(bool mute) override;
+    bool getMute(bool &mute) override;
 
 private:
     void scheduleNeedMediaData(GstAppSrc *src) override;

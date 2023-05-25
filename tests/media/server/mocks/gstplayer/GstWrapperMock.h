@@ -163,6 +163,8 @@ public:
                 (const, override));
     MOCK_METHOD(void, gstStreamVolumeSetVolume, (GstStreamVolume * volume, GstStreamVolumeFormat format, gdouble val),
                 (const, override));
+    MOCK_METHOD(gboolean, gstStreamVolumeGetMute, (GstStreamVolume * volume), (const, override));
+    MOCK_METHOD(void, gstStreamVolumeSetMute, (GstStreamVolume * volume, gboolean mute), (const, override));
     MOCK_METHOD(GstElement *, gstPipelineNew, (const gchar *name), (const, override));
     MOCK_METHOD(GstPluginFeature *, gstRegistryLookupFeature, (GstRegistry * registry, const char *name),
                 (const, override));

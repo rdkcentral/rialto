@@ -420,6 +420,18 @@ bool MediaPipeline::getVolume(double &volume)
     return m_mediaPipelineIpc->getVolume(volume);
 }
 
+bool MediaPipeline::setMute(bool mute)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+    return m_mediaPipelineIpc->setMute(mute);
+}
+
+bool MediaPipeline::getMute(bool &mute)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+    return m_mediaPipelineIpc->getMute(mute);
+}
+
 void MediaPipeline::discardNeedDataRequest(uint32_t needDataRequestId)
 {
     // Find the needDataRequest for this needDataRequestId

@@ -393,3 +393,43 @@ TEST_F(MediaPipelineServiceTests, shouldGetVolume)
     mediaPipelineWillGetVolume();
     getVolumeShouldSucceed();
 }
+
+TEST_F(MediaPipelineServiceTests, shouldFailToSetMuteForNotExistingSession)
+{
+    createMediaPipelineShouldSuccess();
+    setMuteShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToSetMute)
+{
+    initSession();
+    mediaPipelineWillFailToSetMute();
+    setMuteShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldSetMute)
+{
+    initSession();
+    mediaPipelineWillSetMute();
+    setMuteShouldSucceed();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToGetMuteForNotExistingSession)
+{
+    createMediaPipelineShouldSuccess();
+    getMuteShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToGetMute)
+{
+    initSession();
+    mediaPipelineWillFailToGetMute();
+    getMuteShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldGetMute)
+{
+    initSession();
+    mediaPipelineWillGetMute();
+    getMuteShouldSucceed();
+}

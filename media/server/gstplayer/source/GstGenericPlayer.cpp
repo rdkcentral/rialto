@@ -880,6 +880,24 @@ bool GstGenericPlayer::getVolume(double &volume)
     return true;
 }
 
+void GstGenericPlayer::setMute(bool mute)
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(m_taskFactory->createSetMute(m_context, mute));
+    }
+}
+
+bool GstGenericPlayer::getMute(bool &mute)
+{
+    if (!m_context.pipeline)
+    {
+        return false;
+    }
+    mute = m_gstWrapper->gstStreamVolumeGetMute(GST_STREAM_VOLUME(m_context.pipeline));
+    return true;
+}
+
 void GstGenericPlayer::handleBusMessage(GstMessage *message)
 {
     m_workerThread->enqueueTask(m_taskFactory->createHandleBusMessage(m_context, *this, message));

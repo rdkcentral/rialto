@@ -137,6 +137,10 @@ public:
 
     bool getVolume(double &volume) override;
 
+    bool setMute(bool mute) override;
+
+    bool getMute(bool &mute) override;
+
 protected:
     /**
      * @brief The need data request data.

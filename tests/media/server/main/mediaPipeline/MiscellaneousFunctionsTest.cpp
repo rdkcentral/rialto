@@ -321,6 +321,71 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetVolumeSuccess)
 }
 
 /**
+ * Test that SetMute returns failure if the gstreamer player is not initialized
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetMuteFailureDueToUninitializedPlayer)
+{
+    const bool kMute{false};
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_FALSE(m_mediaPipeline->setMute(kMute));
+}
+
+/**
+ * Test that SetMute returns failure if the gstreamer player is not initialized
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetMuteSuccess)
+{
+    const bool kMute{false};
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+
+    EXPECT_CALL(*m_gstPlayerMock, setMute(kMute));
+    EXPECT_TRUE(m_mediaPipeline->setMute(kMute));
+}
+
+/**
+ * Test that GetMute returns failure if the gstreamer player is not initialized
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetMuteFailureDueToUninitializedPlayer)
+{
+    mainThreadWillEnqueueTaskAndWait();
+    bool resultMute{};
+    EXPECT_FALSE(m_mediaPipeline->getMute(resultMute));
+}
+
+/**
+ * Test that GetMute returns failure if the gstreamer API fails
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetMuteFailure)
+{
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+    bool resultMute{};
+    EXPECT_CALL(*m_gstPlayerMock, getMute(_)).WillOnce(Return(false));
+    EXPECT_FALSE(m_mediaPipeline->getMute(resultMute));
+}
+
+/**
+ * Test that GetMute returns success if the gstreamer API succeeds and gets mute
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetMuteSuccess)
+{
+    constexpr bool kCurrentMute{false};
+    bool resultMute{};
+
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, getMute(_))
+        .WillOnce(Invoke(
+            [&](bool &mut)
+            {
+                mut = kCurrentMute;
+                return true;
+            }));
+    EXPECT_TRUE(m_mediaPipeline->getMute(resultMute));
+    EXPECT_EQ(resultMute, kCurrentMute);
+}
+/**
  * Test that active requests are invalidated successfully
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, InvalidateActiveRequestsSuccess)

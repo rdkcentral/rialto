@@ -124,6 +124,10 @@ public:
 
     bool getVolume(double &volume) override;
 
+    bool setMute(bool mute) override;
+
+    bool getMute(bool &mute) override;
+
     AddSegmentStatus addSegment(uint32_t needDataRequestId, const std::unique_ptr<MediaSegment> &mediaSegment) override;
 
     std::weak_ptr<IMediaPipelineClient> getClient() override;
@@ -394,6 +398,24 @@ protected:
      * @retval true on success false otherwise
      */
     bool getVolumeInternal(double &volume);
+
+    /**
+     * @brief Set mute internally, only to be called on the main thread.
+     *
+     * @param[in] mute Desired mute status, true=muted, false=not muted
+     *
+     * @retval true on success false otherwise
+     */
+    bool setMuteInternal(bool mute);
+
+    /**
+     * @brief Get mute internally, only to be called on the main thread.
+     *
+     * @param[out] mute Current mute status
+     *
+     * @retval true on success false otherwise
+     */
+    bool getMuteInternal(bool &mute);
 };
 
 }; // namespace firebolt::rialto::server

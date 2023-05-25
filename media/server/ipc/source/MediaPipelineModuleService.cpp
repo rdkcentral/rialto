@@ -560,4 +560,39 @@ void MediaPipelineModuleService::getVolume(::google::protobuf::RpcController *co
 
     done->Run();
 }
+
+void MediaPipelineModuleService::setMute(::google::protobuf::RpcController *controller,
+                                         const ::firebolt::rialto::SetMuteRequest *request,
+                                         ::firebolt::rialto::SetMuteResponse *response, ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    if (!m_mediaPipelineService.setMute(request->session_id(), request->mute()))
+    {
+        RIALTO_SERVER_LOG_ERROR("Set mute failed.");
+        controller->SetFailed("Operation failed");
+    }
+
+    done->Run();
+}
+
+void MediaPipelineModuleService::getMute(::google::protobuf::RpcController *controller,
+                                         const ::firebolt::rialto::GetMuteRequest *request,
+                                         ::firebolt::rialto::GetMuteResponse *response, ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    bool mute{};
+
+    if (!m_mediaPipelineService.getMute(request->session_id(), mute))
+    {
+        RIALTO_SERVER_LOG_ERROR("Get mute failed.");
+        controller->SetFailed("Operation failed");
+    }
+    else
+    {
+        response->set_mute(mute);
+    }
+
+    done->Run();
+}
 } // namespace firebolt::rialto::server::ipc
