@@ -34,33 +34,39 @@ namespace firebolt::rialto::client
 class IIpcClient;
 
 /**
- * @brief IIpcClient factory class, returns a singlton of IIpcClient
+ * @brief IIpcClient accessor class definition.
  */
-class IIpcClientFactory
+class IIpcClientAccessor
 {
 public:
-    IIpcClientFactory() = default;
-    virtual ~IIpcClientFactory() = default;
+    virtual ~IIpcClientAccessor() = default;
+    IIpcClientAccessor(const IIpcClientAccessor &) = delete;
+    IIpcClientAccessor &operator=(const IIpcClientAccessor &) = delete;
+    IIpcClientAccessor(IIpcClientAccessor &&) = delete;
+    IIpcClientAccessor &operator=(IIpcClientAccessor &&) = delete;
 
     /**
-     * @brief Create a IIpcClientFactory instance.
+     * @brief Get a IControlIpcAccessor instance.
      *
-     * @retval the factory instance or null on error.
+     * @retval the accessor instance
      */
-    static std::shared_ptr<IIpcClientFactory> createFactory();
+    static IIpcClientAccessor &instance();
 
     /**
-     * @brief Creates a IIpcClient object.
+     * @brief Get IpcClient object.
      *
-     * @retval the rialto controller ipc instance or null on error.
+     * @retval the reference to IpcClient singleton object
      */
-    virtual std::shared_ptr<IIpcClient> getIpcClient() = 0;
+    virtual IIpcClient &getIpcClient() const = 0;
+
+protected:
+    IIpcClientAccessor() = default;
 };
 
 /**
  * @brief The definition of the IIpcClient interface.
  *
- * This interface defines the rialto control ipc APIs that are used to communicate with the Rialto server.
+ * This interface defines the control ipc APIs that are used to communicate with the Rialto server.
  */
 class IIpcClient
 {
@@ -74,11 +80,11 @@ public:
     IIpcClient &operator=(IIpcClient &&) = delete;
 
     /**
-     * @brief Gets the Ipc channel created by the IpcClient.
+     * @brief Gets a weak ptr to the Ipc channel created by the IpcClient.
      *
-     * @retval the ipc channel or null if ipc not connected.
+     * @retval the ipc channel weak ptr.
      */
-    virtual std::shared_ptr<ipc::IChannel> getChannel() const = 0;
+    virtual std::weak_ptr<ipc::IChannel> getChannel() const = 0;
 
     /**
      * @brief Create the blocking closure to be passed to the RPC stubs.

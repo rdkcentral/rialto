@@ -40,11 +40,9 @@ public:
     /**
      * @brief The constructor.
      *
-     * @param[in] keySystem             : The key system for which to create a Media Keys Ipc instance
-     * @param[in] ipcClientFactory      : The ipc client factory
-     * @param[in] eventThreadFactory    : The event thread factory
+     * @param[in] ipcClient             : The ipc client
      */
-    explicit IpcModule(const std::shared_ptr<IIpcClientFactory> &ipcClientFactory);
+    explicit IpcModule(IIpcClient &ipcClient);
 
     /**
      * @brief Virtual destructor.
@@ -55,12 +53,12 @@ protected:
     /**
      * @brief The ipc client singleton object.
      */
-    std::shared_ptr<IIpcClient> m_ipc;
+    IIpcClient &m_ipc;
 
     /**
      * @brief The ipc communication channel.
      */
-    std::shared_ptr<ipc::IChannel> m_ipcChannel;
+    std::weak_ptr<ipc::IChannel> m_ipcChannel;
 
     /**
      * @brief Subscribed event tags.
@@ -70,23 +68,29 @@ protected:
     /**
      * @brief Create the Rpc stubs for the derived object.
      *
+     * @param[in] ipcChannel      : The ipc channel
+     *
      * @retval true if the rpc stubs are created successfully, false otherwise.
      */
-    virtual bool createRpcStubs() = 0;
+    virtual bool createRpcStubs(const std::shared_ptr<ipc::IChannel> &ipcChannel) = 0;
 
     /**
      * @brief Subscribes to the Ipc events for the derived object.
      *
+     * @param[in] ipcChannel      : The ipc channel
+     *
      * @retval true if the events are subscribed successfully, false otherwise.
      */
-    virtual bool subscribeToEvents() = 0;
+    virtual bool subscribeToEvents(const std::shared_ptr<ipc::IChannel> &ipcChannel) = 0;
 
     /**
      * @brief Unsubscribes to all Ipc events.
      *
+     * @param[in] ipcChannel      : The ipc channel
+     *
      * @retval true if the events are unsubscribed successfully, false otherwise.
      */
-    bool unsubscribeFromAllEvents();
+    bool unsubscribeFromAllEvents(const std::shared_ptr<ipc::IChannel> &ipcChannel);
 
     /**
      * @brief Attach the connected ipc client channel to the MediaKeysIpc object.

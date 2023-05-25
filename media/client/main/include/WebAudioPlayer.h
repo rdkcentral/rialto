@@ -20,10 +20,12 @@
 #ifndef FIREBOLT_RIALTO_CLIENT_WEB_AUDIO_PLAYER_H_
 #define FIREBOLT_RIALTO_CLIENT_WEB_AUDIO_PLAYER_H_
 
-#include "ISharedMemoryManager.h"
+#include "IClientController.h"
+#include "IControlClient.h"
 #include "IWebAudioPlayer.h"
 #include "IWebAudioPlayerIpc.h"
 #include "IWebAudioPlayerIpcClient.h"
+#include <atomic>
 #include <memory>
 #include <mutex>
 #include <stdint.h>
@@ -52,7 +54,7 @@ namespace firebolt::rialto::client
 /**
  * @brief The definition of the WebAudioPlayer.
  */
-class WebAudioPlayer : public IWebAudioPlayer, public IWebAudioPlayerIpcClient, public ISharedMemoryManagerClient
+class WebAudioPlayer : public IWebAudioPlayer, public IWebAudioPlayerIpcClient, public IControlClient
 {
 public:
     /**
@@ -66,7 +68,7 @@ public:
     WebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
                    const uint32_t priority, const WebAudioConfig *config,
                    const std::shared_ptr<IWebAudioPlayerIpcFactory> &webAudioPlayerIpcFactory,
-                   const std::shared_ptr<ISharedMemoryManagerFactory> &sharedMemoryManagerFactory);
+                   IClientController &clientController);
 
     /**
      * @brief Virtual destructor.
@@ -95,7 +97,7 @@ public:
 
     void notifyState(WebAudioPlayerState state) override;
 
-    void notifyBufferTerm() override;
+    void notifyApplicationState(ApplicationState state) override;
 
 protected:
     /**
@@ -109,9 +111,9 @@ protected:
     std::unique_ptr<IWebAudioPlayerIpc> m_webAudioPlayerIpc;
 
     /**
-     * @brief The rialto shared memory manager object.
+     * @brief The rialto client controller object.
      */
-    std::shared_ptr<ISharedMemoryManager> m_sharedMemoryManager;
+    IClientController &m_clientController;
 
     /**
      * @brief The shared memory region info.
@@ -127,6 +129,11 @@ protected:
      * @brief The bytes per frame for this audio playback.
      */
     uint32_t m_bytesPerFrame;
+
+    /**
+     * @brief The current application state.
+     */
+    std::atomic<ApplicationState> m_currentAppState;
 };
 
 }; // namespace firebolt::rialto::client

@@ -41,10 +41,8 @@ add_gtests (
         # MediaPipelineCapabilities tests
         mediaPipelineCapabilities/MediaPipelineCapabilitiesTest.cpp
 
-        # RialtoControl tests
-        rialtoControl/CreateTest.cpp
-        rialtoControl/SetAppStateTest.cpp
-        rialtoControl/SharedMemoryClientTest.cpp
+        # Control tests
+        control/ControlTest.cpp
 
         # MediaKeys tests
         mediaKeys/CreateTest.cpp
@@ -54,6 +52,10 @@ add_gtests (
         # MediaKeysCapabilities tests
         mediaKeysCapabilities/CreateTest.cpp
         mediaKeysCapabilities/KeySystemsTest.cpp
+
+        # ClientController tests
+        clientController/CreateTest.cpp
+        clientController/MemoryManagementTest.cpp
 
         # WebAudioPlayer tests
         webAudioPlayer/base/WebAudioPlayerTestBase.cpp

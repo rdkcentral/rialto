@@ -18,7 +18,6 @@
  */
 
 #include "WebAudioPlayer.h"
-#include "ISharedMemoryManager.h"
 #include "IWebAudioPlayerIpc.h"
 #include "IWebAudioPlayerIpcClient.h"
 #include "RialtoClientLogging.h"
@@ -52,9 +51,10 @@ std::unique_ptr<IWebAudioPlayer> WebAudioPlayerFactory::createWebAudioPlayer(std
     std::unique_ptr<IWebAudioPlayer> webAudioPlayer;
     try
     {
-        webAudioPlayer = std::make_unique<client::WebAudioPlayer>(client, audioMimeType, priority, config,
-                                                                  client::IWebAudioPlayerIpcFactory::getFactory(),
-                                                                  client::ISharedMemoryManagerFactory::createFactory());
+        webAudioPlayer =
+            std::make_unique<client::WebAudioPlayer>(client, audioMimeType, priority, config,
+                                                     client::IWebAudioPlayerIpcFactory::getFactory(),
+                                                     client::IClientControllerAccessor::instance().getClientController());
     }
     catch (const std::exception &e)
     {
@@ -70,8 +70,9 @@ namespace firebolt::rialto::client
 WebAudioPlayer::WebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
                                const uint32_t priority, const WebAudioConfig *config,
                                const std::shared_ptr<IWebAudioPlayerIpcFactory> &webAudioPlayerIpcFactory,
-                               const std::shared_ptr<ISharedMemoryManagerFactory> &sharedMemoryManagerFactory)
-    : m_webAudioPlayerClient(client), m_bytesPerFrame{0}
+                               IClientController &clientController)
+    : m_webAudioPlayerClient(client), m_clientController{clientController}, m_bytesPerFrame{0},
+      m_currentAppState{ApplicationState::UNKNOWN}
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
@@ -89,17 +90,6 @@ WebAudioPlayer::WebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, cons
         }
     }
 
-    m_sharedMemoryManager = sharedMemoryManagerFactory->getSharedMemoryManager();
-    if (!m_sharedMemoryManager)
-    {
-        throw std::runtime_error("Shared memory manager could not be created");
-    }
-
-    if (!m_sharedMemoryManager->registerClient(this))
-    {
-        throw std::runtime_error("Failed to register client with SharedMemoryManager");
-    }
-
     if (!webAudioPlayerIpcFactory)
     {
         throw std::runtime_error("Web audio player ipc factory could not be null");
@@ -108,22 +98,27 @@ WebAudioPlayer::WebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, cons
     m_webAudioPlayerIpc = webAudioPlayerIpcFactory->createWebAudioPlayerIpc(this, audioMimeType, priority, config);
     if (!m_webAudioPlayerIpc)
     {
-        (void)m_sharedMemoryManager->unregisterClient(this);
         throw std::runtime_error("Web audio player ipc could not be created");
     }
+
+    ApplicationState currentState{ApplicationState::UNKNOWN};
+    if (!m_clientController.registerClient(this, currentState))
+    {
+        throw std::runtime_error("Failed to register client with clientController");
+    }
+    m_currentAppState = currentState;
 }
 
 WebAudioPlayer::~WebAudioPlayer()
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    m_webAudioPlayerIpc.reset();
-    if (!m_sharedMemoryManager->unregisterClient(this))
+    if (!m_clientController.unregisterClient(this))
     {
-        RIALTO_CLIENT_LOG_WARN("Failed to unregister client with SharedMemoryManager");
+        RIALTO_CLIENT_LOG_WARN("Failed to unregister client with clientController");
     }
 
-    m_sharedMemoryManager.reset();
+    m_webAudioPlayerIpc.reset();
 }
 
 bool WebAudioPlayer::play()
@@ -184,8 +179,14 @@ bool WebAudioPlayer::writeBuffer(const uint32_t numberOfFrames, void *data)
         return false;
     }
 
-    uint8_t *shmBuffer = m_sharedMemoryManager->getSharedMemoryBuffer();
-    if (nullptr == shmBuffer)
+    if (ApplicationState::RUNNING != m_currentAppState)
+    {
+        RIALTO_CLIENT_LOG_ERROR("Current ApplicationState is not RUNNING!");
+        return false;
+    }
+
+    std::shared_ptr<ISharedMemoryHandle> shmHandle = m_clientController.getSharedMemoryHandle();
+    if (nullptr == shmHandle || nullptr == shmHandle->getShm())
     {
         RIALTO_CLIENT_LOG_ERROR("Shared buffer no longer valid");
         return false;
@@ -193,14 +194,14 @@ bool WebAudioPlayer::writeBuffer(const uint32_t numberOfFrames, void *data)
 
     if (dataLength > m_webAudioShmInfo->lengthMain)
     {
-        std::memcpy(shmBuffer + m_webAudioShmInfo->offsetMain, data, m_webAudioShmInfo->lengthMain);
-        std::memcpy(shmBuffer + m_webAudioShmInfo->offsetWrap,
+        std::memcpy(shmHandle->getShm() + m_webAudioShmInfo->offsetMain, data, m_webAudioShmInfo->lengthMain);
+        std::memcpy(shmHandle->getShm() + m_webAudioShmInfo->offsetWrap,
                     reinterpret_cast<uint8_t *>(data) + m_webAudioShmInfo->lengthMain,
                     dataLength - m_webAudioShmInfo->lengthMain);
     }
     else
     {
-        std::memcpy(shmBuffer + m_webAudioShmInfo->offsetMain, data, m_webAudioShmInfo->lengthMain);
+        std::memcpy(shmHandle->getShm() + m_webAudioShmInfo->offsetMain, data, m_webAudioShmInfo->lengthMain);
     }
     return m_webAudioPlayerIpc->writeBuffer(numberOfFrames);
 }
@@ -240,6 +241,9 @@ void WebAudioPlayer::notifyState(WebAudioPlayerState state)
     }
 }
 
-void WebAudioPlayer::notifyBufferTerm() {}
+void WebAudioPlayer::notifyApplicationState(ApplicationState state)
+{
+    m_currentAppState = state;
+}
 
 }; // namespace firebolt::rialto::client

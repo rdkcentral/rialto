@@ -55,11 +55,11 @@ public:
      * @param[in] audioMimeType         : The audio encoding format, currently only "audio/x-raw" (PCM)
      * @param[in] priority              : Priority value for this pipeline.
      * @param[in] config                : Additional type dependent configuration data or nullptr
-     * @param[in] ipcClientFactory      : The ipc factory for getting the singleton Ipc client object.
+     * @param[in] ipcClient             : The ipc client
      * @param[in] eventThreadFactory    : The event thread factory
      */
     WebAudioPlayerIpc(IWebAudioPlayerIpcClient *client, const std::string &audioMimeType, const uint32_t priority,
-                      const WebAudioConfig *config, const std::shared_ptr<IIpcClientFactory> &ipcClientFactory,
+                      const WebAudioConfig *config, IIpcClient &ipcClient,
                       const std::shared_ptr<common::IEventThreadFactory> &eventThreadFactory);
 
     virtual ~WebAudioPlayerIpc();
@@ -87,9 +87,9 @@ private:
 
     void destroyWebAudioPlayer();
 
-    bool createRpcStubs() override;
+    bool createRpcStubs(const std::shared_ptr<ipc::IChannel> &ipcChannel) override;
 
-    bool subscribeToEvents() override;
+    bool subscribeToEvents(const std::shared_ptr<ipc::IChannel> &ipcChannel) override;
 
     void onPlaybackStateUpdated(const std::shared_ptr<firebolt::rialto::WebAudioPlayerStateEvent> &event);
     /**

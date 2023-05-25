@@ -51,9 +51,9 @@ public:
     /**
      * @brief The constructor.
      *
-     * @param[in] ipcClientFactory      : The ipc client factory
+     * @param[in] ipcClient      : The ipc client
      */
-    explicit MediaPipelineCapabilitiesIpc(const std::shared_ptr<IIpcClientFactory> &ipcClientFactory);
+    explicit MediaPipelineCapabilitiesIpc(IIpcClient &ipcClient);
 
     /**
      * @brief Virtual destructor.
@@ -87,9 +87,9 @@ private:
      */
     std::unique_ptr<::firebolt::rialto::MediaPipelineCapabilitiesModule_Stub> m_mediaPipelineCapabilitiesStub;
 
-    bool createRpcStubs() override;
+    bool createRpcStubs(const std::shared_ptr<ipc::IChannel> &ipcChannel) override;
 
-    bool subscribeToEvents() override { return true; }
+    bool subscribeToEvents(const std::shared_ptr<ipc::IChannel> &ipcChannel) override { return true; }
 };
 
 }; // namespace firebolt::rialto::client

@@ -144,8 +144,6 @@ TEST_F(DeepElementAddedTest, shouldAddSignalIdOfRegisteredCallbackToPlayerContex
     task.execute();
     EXPECT_EQ(m_context.playbackGroup.m_gstPipeline, GST_ELEMENT(&m_pipeline));
     EXPECT_EQ(m_context.playbackGroup.m_curAudioTypefind, &m_element);
-    ASSERT_NE(m_context.connectedSignals.find(&m_element), m_context.connectedSignals.end());
-    EXPECT_EQ(m_context.connectedSignals[&m_element], signalId);
     EXPECT_EQ(m_context.playbackGroup.m_curAudioParse, nullptr);
     EXPECT_EQ(m_context.playbackGroup.m_curAudioDecoder, nullptr);
     EXPECT_EQ(m_context.playbackGroup.m_curAudioPlaysinkBin, nullptr);
@@ -162,7 +160,6 @@ TEST_F(DeepElementAddedTest, shouldAssignPipelineOnlyWhenElementNameIsNull)
                                                                     &m_element};
     task.execute();
     EXPECT_EQ(m_context.playbackGroup.m_curAudioTypefind, nullptr);
-    EXPECT_TRUE(m_context.connectedSignals.empty());
     EXPECT_EQ(m_context.playbackGroup.m_gstPipeline, GST_ELEMENT(&m_pipeline));
     EXPECT_EQ(m_context.playbackGroup.m_curAudioParse, nullptr);
     EXPECT_EQ(m_context.playbackGroup.m_curAudioDecoder, nullptr);
@@ -187,7 +184,6 @@ TEST_F(DeepElementAddedTest, shouldDetectParseElement)
                                                                     &m_element};
     task.execute();
     EXPECT_EQ(m_context.playbackGroup.m_curAudioTypefind, nullptr);
-    EXPECT_TRUE(m_context.connectedSignals.empty());
     EXPECT_EQ(m_context.playbackGroup.m_gstPipeline, GST_ELEMENT(&m_pipeline));
     EXPECT_EQ(m_context.playbackGroup.m_curAudioParse, &m_element);
     EXPECT_EQ(m_context.playbackGroup.m_curAudioDecoder, nullptr);
@@ -213,7 +209,6 @@ TEST_F(DeepElementAddedTest, shouldDetectDecElement)
                                                                     &m_element};
     task.execute();
     EXPECT_EQ(m_context.playbackGroup.m_curAudioTypefind, nullptr);
-    EXPECT_TRUE(m_context.connectedSignals.empty());
     EXPECT_EQ(m_context.playbackGroup.m_gstPipeline, GST_ELEMENT(&m_pipeline));
     EXPECT_EQ(m_context.playbackGroup.m_curAudioParse, nullptr);
     EXPECT_EQ(m_context.playbackGroup.m_curAudioDecoder, &m_element);
@@ -236,7 +231,6 @@ TEST_F(DeepElementAddedTest, shouldDoNothingForNotHandledElementName)
                                                                     &m_element};
     task.execute();
     EXPECT_EQ(m_context.playbackGroup.m_curAudioTypefind, nullptr);
-    EXPECT_TRUE(m_context.connectedSignals.empty());
     EXPECT_EQ(m_context.playbackGroup.m_gstPipeline, GST_ELEMENT(&m_pipeline));
     EXPECT_EQ(m_context.playbackGroup.m_curAudioParse, nullptr);
     EXPECT_EQ(m_context.playbackGroup.m_curAudioDecoder, nullptr);
@@ -263,7 +257,6 @@ TEST_F(DeepElementAddedTest, shouldDoNothingWhenAudiosinkParentNameIsNull)
                                                                     &m_element};
     task.execute();
     EXPECT_EQ(m_context.playbackGroup.m_curAudioTypefind, nullptr);
-    EXPECT_TRUE(m_context.connectedSignals.empty());
     EXPECT_EQ(m_context.playbackGroup.m_gstPipeline, GST_ELEMENT(&m_pipeline));
     EXPECT_EQ(m_context.playbackGroup.m_curAudioParse, nullptr);
     EXPECT_EQ(m_context.playbackGroup.m_curAudioDecoder, nullptr);
@@ -292,7 +285,6 @@ TEST_F(DeepElementAddedTest, shouldDoNothingWhenAudiosinkParentIsNotBin)
                                                                     &m_element};
     task.execute();
     EXPECT_EQ(m_context.playbackGroup.m_curAudioTypefind, nullptr);
-    EXPECT_TRUE(m_context.connectedSignals.empty());
     EXPECT_EQ(m_context.playbackGroup.m_gstPipeline, GST_ELEMENT(&m_pipeline));
     EXPECT_EQ(m_context.playbackGroup.m_curAudioParse, nullptr);
     EXPECT_EQ(m_context.playbackGroup.m_curAudioDecoder, nullptr);
@@ -321,7 +313,6 @@ TEST_F(DeepElementAddedTest, shouldFindAudioSinkBin)
                                                                     &m_element};
     task.execute();
     EXPECT_EQ(m_context.playbackGroup.m_curAudioTypefind, nullptr);
-    EXPECT_TRUE(m_context.connectedSignals.empty());
     EXPECT_EQ(m_context.playbackGroup.m_gstPipeline, GST_ELEMENT(&m_pipeline));
     EXPECT_EQ(m_context.playbackGroup.m_curAudioParse, nullptr);
     EXPECT_EQ(m_context.playbackGroup.m_curAudioDecoder, nullptr);

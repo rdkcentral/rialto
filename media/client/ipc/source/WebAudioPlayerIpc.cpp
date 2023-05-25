@@ -17,7 +17,6 @@
  * limitations under the License.
  */
 #include "WebAudioPlayerIpc.h"
-#include "IIpcClient.h"
 #include "RialtoClientLogging.h"
 #include "RialtoCommonIpc.h"
 #include "webaudioplayermodule.pb.h"
@@ -52,7 +51,7 @@ std::unique_ptr<IWebAudioPlayerIpc> WebAudioPlayerIpcFactory::createWebAudioPlay
     {
         webAudioPlayerIpc =
             std::make_unique<WebAudioPlayerIpc>(client, audioMimeType, priority, config,
-                                                IIpcClientFactory::createFactory(),
+                                                IIpcClientAccessor::instance().getIpcClient(),
                                                 firebolt::rialto::common::IEventThreadFactory::createFactory());
     }
     catch (const std::exception &e)
@@ -64,10 +63,9 @@ std::unique_ptr<IWebAudioPlayerIpc> WebAudioPlayerIpcFactory::createWebAudioPlay
 }
 
 WebAudioPlayerIpc::WebAudioPlayerIpc(IWebAudioPlayerIpcClient *client, const std::string &audioMimeType,
-                                     const uint32_t priority, const WebAudioConfig *config,
-                                     const std::shared_ptr<IIpcClientFactory> &ipcClientFactory,
+                                     const uint32_t priority, const WebAudioConfig *config, IIpcClient &ipcClient,
                                      const std::shared_ptr<common::IEventThreadFactory> &eventThreadFactory)
-    : IpcModule(ipcClientFactory), m_webAudioPlayerIpcClient(client),
+    : IpcModule(ipcClient), m_webAudioPlayerIpcClient(client),
       m_eventThread(eventThreadFactory->createEventThread("rialto-web-audio-player-events")), m_webAudioPlayerHandle(-1)
 {
     if (!attachChannel())
@@ -94,9 +92,9 @@ WebAudioPlayerIpc::~WebAudioPlayerIpc()
     m_eventThread.reset();
 }
 
-bool WebAudioPlayerIpc::createRpcStubs()
+bool WebAudioPlayerIpc::createRpcStubs(const std::shared_ptr<ipc::IChannel> &ipcChannel)
 {
-    m_webAudioPlayerStub = std::make_unique<::firebolt::rialto::WebAudioPlayerModule_Stub>(m_ipcChannel.get());
+    m_webAudioPlayerStub = std::make_unique<::firebolt::rialto::WebAudioPlayerModule_Stub>(ipcChannel.get());
     if (!m_webAudioPlayerStub)
     {
         return false;
@@ -104,14 +102,14 @@ bool WebAudioPlayerIpc::createRpcStubs()
     return true;
 }
 
-bool WebAudioPlayerIpc::subscribeToEvents()
+bool WebAudioPlayerIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &ipcChannel)
 {
-    if (!m_ipcChannel)
+    if (!ipcChannel)
     {
         return false;
     }
 
-    int eventTag = m_ipcChannel->subscribe<firebolt::rialto::WebAudioPlayerStateEvent>(
+    int eventTag = ipcChannel->subscribe<firebolt::rialto::WebAudioPlayerStateEvent>(
         [this](const std::shared_ptr<firebolt::rialto::WebAudioPlayerStateEvent> &event)
         { m_eventThread->add(&WebAudioPlayerIpc::onPlaybackStateUpdated, this, event); });
     if (eventTag < 0)
@@ -167,8 +165,8 @@ bool WebAudioPlayerIpc::play()
     request.set_web_audio_player_handle(m_webAudioPlayerHandle);
 
     firebolt::rialto::WebAudioPlayResponse response;
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_webAudioPlayerStub->play(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -196,8 +194,8 @@ bool WebAudioPlayerIpc::pause()
     request.set_web_audio_player_handle(m_webAudioPlayerHandle);
 
     firebolt::rialto::WebAudioPauseResponse response;
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_webAudioPlayerStub->pause(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -225,8 +223,8 @@ bool WebAudioPlayerIpc::setEos()
     request.set_web_audio_player_handle(m_webAudioPlayerHandle);
 
     firebolt::rialto::WebAudioSetEosResponse response;
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_webAudioPlayerStub->setEos(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -261,8 +259,8 @@ bool WebAudioPlayerIpc::getBufferAvailable(uint32_t &availableFrames,
     request.set_web_audio_player_handle(m_webAudioPlayerHandle);
 
     firebolt::rialto::WebAudioGetBufferAvailableResponse response;
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_webAudioPlayerStub->getBufferAvailable(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -296,8 +294,8 @@ bool WebAudioPlayerIpc::getBufferDelay(uint32_t &delayFrames)
     request.set_web_audio_player_handle(m_webAudioPlayerHandle);
 
     firebolt::rialto::WebAudioGetBufferDelayResponse response;
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_webAudioPlayerStub->getBufferDelay(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -329,8 +327,8 @@ bool WebAudioPlayerIpc::writeBuffer(const uint32_t numberOfFrames)
     request.set_web_audio_player_handle(m_webAudioPlayerHandle);
 
     firebolt::rialto::WebAudioWriteBufferResponse response;
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_webAudioPlayerStub->writeBuffer(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -358,8 +356,8 @@ bool WebAudioPlayerIpc::getDeviceInfo(uint32_t &preferredFrames, uint32_t &maxim
     request.set_web_audio_player_handle(m_webAudioPlayerHandle);
 
     firebolt::rialto::WebAudioGetDeviceInfoResponse response;
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_webAudioPlayerStub->getDeviceInfo(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -392,8 +390,8 @@ bool WebAudioPlayerIpc::setVolume(double volume)
     request.set_web_audio_player_handle(m_webAudioPlayerHandle);
 
     firebolt::rialto::WebAudioSetVolumeResponse response;
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_webAudioPlayerStub->setVolume(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -421,8 +419,8 @@ bool WebAudioPlayerIpc::getVolume(double &volume)
     request.set_web_audio_player_handle(m_webAudioPlayerHandle);
 
     firebolt::rialto::WebAudioGetVolumeResponse response;
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_webAudioPlayerStub->getVolume(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -464,8 +462,8 @@ bool WebAudioPlayerIpc::createWebAudioPlayer(const std::string &audioMimeType, c
     }
 
     firebolt::rialto::CreateWebAudioPlayerResponse response;
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_webAudioPlayerStub->createWebAudioPlayer(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete
@@ -495,8 +493,8 @@ void WebAudioPlayerIpc::destroyWebAudioPlayer()
     request.set_web_audio_player_handle(m_webAudioPlayerHandle);
 
     firebolt::rialto::DestroyWebAudioPlayerResponse response;
-    auto ipcController = m_ipc->createRpcController();
-    auto blockingClosure = m_ipc->createBlockingClosure();
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
     m_webAudioPlayerStub->destroyWebAudioPlayer(ipcController.get(), &request, &response, blockingClosure.get());
 
     // wait for the call to complete

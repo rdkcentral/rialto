@@ -21,6 +21,8 @@
 #define SESSION_MANAGEMENT_SERVER_TESTS_FIXTURE_H_
 
 #include "CdmServiceMock.h"
+#include "ControlModuleServiceMock.h"
+#include "ControlServiceMock.h"
 #include "ISessionManagementServer.h"
 #include "IpcClientMock.h"
 #include "IpcServerMock.h"
@@ -30,7 +32,6 @@
 #include "MediaPipelineModuleServiceMock.h"
 #include "MediaPipelineServiceMock.h"
 #include "PlaybackServiceMock.h"
-#include "RialtoControlModuleServiceMock.h"
 #include "WebAudioPlayerModuleServiceMock.h"
 #include "WebAudioPlayerServiceMock.h"
 #include <gtest/gtest.h>
@@ -64,6 +65,7 @@ private:
     StrictMock<firebolt::rialto::server::service::MediaPipelineServiceMock> m_mediaPipelineServiceMock;
     StrictMock<firebolt::rialto::server::service::WebAudioPlayerServiceMock> m_webAudioPlayerServiceMock;
     StrictMock<firebolt::rialto::server::service::CdmServiceMock> m_cdmServiceMock;
+    StrictMock<firebolt::rialto::server::service::ControlServiceMock> m_controlServiceMock;
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ServerMock>> m_serverMock;
     std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::MediaPipelineModuleServiceMock>> m_mediaPipelineModuleMock;
     std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::MediaPipelineCapabilitiesModuleServiceMock>>
@@ -72,7 +74,7 @@ private:
     std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::MediaKeysCapabilitiesModuleServiceMock>>
         m_mediaKeysCapabilitiesModuleMock;
     std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::WebAudioPlayerModuleServiceMock>> m_webAudioPlayerModuleMock;
-    std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::RialtoControlModuleServiceMock>> m_rialtoControlModuleMock;
+    std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::ControlModuleServiceMock>> m_controlModuleMock;
     std::unique_ptr<firebolt::rialto::server::ipc::ISessionManagementServer> m_sut;
 
     std::function<void(const std::shared_ptr<firebolt::rialto::ipc::IClient> &)> m_clientConnectedCb;

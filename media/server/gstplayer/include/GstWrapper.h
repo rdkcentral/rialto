@@ -46,7 +46,7 @@ public:
     static std::weak_ptr<IGstWrapper> m_gstWrapper;
 
     /**
-     * @brief Mutex protection for creation of the RialtoControl object.
+     * @brief Mutex protection for creation of the Control object.
      */
     static std::mutex m_creationMutex;
 

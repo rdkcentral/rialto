@@ -122,10 +122,11 @@ std::unique_ptr<IMediaPipeline> MediaPipelineFactory::createMediaPipeline(std::w
     std::unique_ptr<IMediaPipeline> mediaPipeline;
     try
     {
-        mediaPipeline = std::make_unique<client::MediaPipeline>(client, videoRequirements,
-                                                                client::IMediaPipelineIpcFactory::getFactory(),
-                                                                common::IMediaFrameWriterFactory::getFactory(),
-                                                                client::ISharedMemoryManagerFactory::createFactory());
+        mediaPipeline =
+            std::make_unique<client::MediaPipeline>(client, videoRequirements,
+                                                    client::IMediaPipelineIpcFactory::getFactory(),
+                                                    common::IMediaFrameWriterFactory::getFactory(),
+                                                    client::IClientControllerAccessor::instance().getClientController());
     }
     catch (const std::exception &e)
     {
@@ -141,26 +142,21 @@ namespace firebolt::rialto::client
 MediaPipeline::MediaPipeline(std::weak_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements,
                              const std::shared_ptr<IMediaPipelineIpcFactory> &mediaPipelineIpcFactory,
                              const std::shared_ptr<common::IMediaFrameWriterFactory> &mediaFrameWriterFactory,
-                             const std::shared_ptr<ISharedMemoryManagerFactory> &sharedMemoryManagerFactory)
-    : m_mediaPipelineClient(client), m_mediaFrameWriterFactory(mediaFrameWriterFactory), m_currentState(State::IDLE)
+                             IClientController &clientController)
+    : m_mediaPipelineClient(client), m_clientController{clientController}, m_currentAppState{ApplicationState::UNKNOWN},
+      m_mediaFrameWriterFactory(mediaFrameWriterFactory), m_currentState(State::IDLE)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    m_sharedMemoryManager = sharedMemoryManagerFactory->getSharedMemoryManager();
-    if (!m_sharedMemoryManager)
+    if (!m_clientController.registerClient(this, m_currentAppState))
     {
-        throw std::runtime_error("Shared memory manager could not be created");
-    }
-
-    if (!m_sharedMemoryManager->registerClient(this))
-    {
-        throw std::runtime_error("Failed to register client with SharedMemoryManager");
+        throw std::runtime_error("Failed to register client with clientController");
     }
 
     m_mediaPipelineIpc = mediaPipelineIpcFactory->createMediaPipelineIpc(this, videoRequirements);
     if (!m_mediaPipelineIpc)
     {
-        (void)m_sharedMemoryManager->unregisterClient(this);
+        (void)m_clientController.unregisterClient(this);
         throw std::runtime_error("Media player ipc could not be created");
     }
 }
@@ -171,12 +167,10 @@ MediaPipeline::~MediaPipeline()
 
     m_mediaPipelineIpc.reset();
 
-    if (!m_sharedMemoryManager->unregisterClient(this))
+    if (!m_clientController.unregisterClient(this))
     {
-        RIALTO_CLIENT_LOG_WARN("Failed to unregister client with SharedMemoryManager");
+        RIALTO_CLIENT_LOG_WARN("Failed to unregister client with clientController");
     }
-
-    m_sharedMemoryManager.reset();
 }
 
 bool MediaPipeline::load(MediaType type, const std::string &mimeType, const std::string &url)
@@ -362,8 +356,8 @@ AddSegmentStatus MediaPipeline::addSegment(uint32_t needDataRequestId, const std
     }
 
     std::shared_ptr<NeedDataRequest> needDataRequest = needDataRequestIt->second;
-    uint8_t *shmBuffer = m_sharedMemoryManager->getSharedMemoryBuffer();
-    if (nullptr == shmBuffer)
+    std::shared_ptr<ISharedMemoryHandle> shmHandle = m_clientController.getSharedMemoryHandle();
+    if (nullptr == shmHandle || nullptr == shmHandle->getShm())
     {
         RIALTO_CLIENT_LOG_ERROR("Shared buffer no longer valid");
         return AddSegmentStatus::ERROR;
@@ -384,7 +378,7 @@ AddSegmentStatus MediaPipeline::addSegment(uint32_t needDataRequestId, const std
         if (firebolt::rialto::MediaSourceType::UNKNOWN != mediaSegment->getType())
         {
             needDataRequest->frameWriter =
-                m_mediaFrameWriterFactory->createFrameWriter(shmBuffer, needDataRequest->shmInfo);
+                m_mediaFrameWriterFactory->createFrameWriter(shmHandle->getShm(), needDataRequest->shmInfo);
         }
         else
         {
@@ -595,6 +589,11 @@ void MediaPipeline::notifyNeedMediaData(int32_t sourceId, size_t frameCount, uin
 
         {
             std::lock_guard<std::mutex> lock{m_needDataRequestMapMutex};
+            if (ApplicationState::RUNNING != m_currentAppState)
+            {
+                RIALTO_CLIENT_LOG_INFO("NeedMediaData received in state != RUNNING, ignoring request id %u", requestId);
+                break;
+            }
             m_needDataRequestMap[requestId] = needDataRequest;
         }
 
@@ -623,13 +622,16 @@ void MediaPipeline::notifyNeedMediaData(int32_t sourceId, size_t frameCount, uin
     }
 }
 
-void MediaPipeline::notifyBufferTerm()
+void MediaPipeline::notifyApplicationState(ApplicationState state)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
-
-    // If shared memory in use, wait for it to finish before returning
     std::lock_guard<std::mutex> lock{m_needDataRequestMapMutex};
-    m_needDataRequestMap.clear();
+    m_currentAppState = state;
+    if (ApplicationState::RUNNING != state)
+    {
+        // If shared memory in use, wait for it to finish before returning
+        m_needDataRequestMap.clear();
+    }
 }
 
 void MediaPipeline::notifyQos(int32_t sourceId, const QosInfo &qosInfo)

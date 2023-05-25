@@ -57,11 +57,10 @@ public:
      *
      * @param[in] client                : The Rialto ipc media player client.
      * @param[in] videoRequirements     : The video decoder requirements for the MediaPipeline session.
-     * @param[in] ipcClientFactory      : The ipc factory for getting the singleton Ipc client object.
+     * @param[in] ipcClient             : The ipc client
      * @param[in] eventThreadFactory    : The event thread factory
      */
-    MediaPipelineIpc(IMediaPipelineIpcClient *client, const VideoRequirements &videoRequirements,
-                     const std::shared_ptr<IIpcClientFactory> &ipcClientFactory,
+    MediaPipelineIpc(IMediaPipelineIpcClient *client, const VideoRequirements &videoRequirements, IIpcClient &ipcClient,
                      const std::shared_ptr<common::IEventThreadFactory> &eventThreadFactory);
 
     /**
@@ -124,9 +123,9 @@ private:
      */
     std::unique_ptr<common::IEventThread> m_eventThread;
 
-    bool createRpcStubs() override;
+    bool createRpcStubs(const std::shared_ptr<ipc::IChannel> &ipcChannel) override;
 
-    bool subscribeToEvents() override;
+    bool subscribeToEvents(const std::shared_ptr<ipc::IChannel> &ipcChannel) override;
 
     /**
      * @brief Handler for a playback state update from the server.

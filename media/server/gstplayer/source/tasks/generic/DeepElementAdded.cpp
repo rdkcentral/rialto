@@ -36,8 +36,8 @@ DeepElementAdded::DeepElementAdded(GenericPlayerContext &context, IGstGenericPla
                                    const std::shared_ptr<IGstWrapper> &gstWrapper,
                                    const std::shared_ptr<IGlibWrapper> &glibWrapper, GstBin *pipeline, GstBin *bin,
                                    GstElement *element)
-    : m_context{context}, m_player{player}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_pipeline{pipeline},
-      m_bin{bin}, m_element{element}, m_elementName{nullptr}, m_callbackRegistered{false}, m_signalId{0}
+    : m_context{context}, m_player{player}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
+      m_pipeline{pipeline}, m_bin{bin}, m_element{element}, m_elementName{nullptr}, m_callbackRegistered{false}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing DeepElementAdded");
     // Signal connection has to happen immediately (we cannot wait for thread switch)
@@ -50,8 +50,7 @@ DeepElementAdded::DeepElementAdded(GenericPlayerContext &context, IGstGenericPla
             if (m_glibWrapper->gStrrstr(m_elementName, "typefind"))
             {
                 RIALTO_SERVER_LOG_DEBUG("Registering onHaveType callback");
-                m_signalId =
-                    m_glibWrapper->gSignalConnect(G_OBJECT(m_element), "have-type", G_CALLBACK(onHaveType), &m_player);
+                m_glibWrapper->gSignalConnect(G_OBJECT(m_element), "have-type", G_CALLBACK(onHaveType), &m_player);
                 m_callbackRegistered = true;
             }
         }
@@ -73,7 +72,6 @@ void DeepElementAdded::execute() const
     if (m_callbackRegistered)
     {
         m_context.playbackGroup.m_curAudioTypefind = m_element;
-        m_context.connectedSignals[m_element] = m_signalId;
     }
     if (m_elementName)
     {
