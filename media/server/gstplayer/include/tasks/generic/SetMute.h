@@ -41,4 +41,4 @@ private:
 };
 } // namespace firebolt::rialto::server::tasks::generic
 
-#endif // FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SET_MUTE_H
+#endif // FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SET_MUTE_H_
