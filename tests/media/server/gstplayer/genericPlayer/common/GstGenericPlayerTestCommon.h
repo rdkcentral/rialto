@@ -110,6 +110,7 @@ private:
     GFlagsValue m_audioFlag{1, "audio", "audio"};
     GFlagsValue m_videoFlag{2, "video", "video"};
     GFlagsValue m_nativeVideoFlag{3, "native-video", "native-video"};
+    GFlagsValue m_nativeAudioFlag{4, "native-audio", "native-audio"};
     gpointer m_setupSourceUserData;
     GCallback m_setupSourceFunc;
     gulong m_setupSourceSignalId{0};
@@ -119,6 +120,7 @@ private:
     gpointer m_deepElementAddedUserData;
     GCallback m_deepElementAddedFunc;
     gulong m_deepElementAddedSignalId{2};
+    GstObject m_sinkFactory{}; // GstElementFactory is an opaque data structure
 };
 
 #endif // GST_GENERIC_PLAYER_TEST_COMMON_H_
