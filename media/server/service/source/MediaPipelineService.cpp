@@ -346,7 +346,7 @@ bool MediaPipelineService::getMute(int sessionId, bool &mute)
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
-        RIALTO_SERVER_LOG_ERROR("SEssion with id: %d does not exist", sessionId);
+        RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
         return false;
     }
     return mediaPipelineIter->second->getMute(mute);
