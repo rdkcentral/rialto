@@ -62,8 +62,6 @@ void Underflow::execute() const
     }
     else
     {
-        m_underflowFlag = true;
-
         Pause pauseTask{m_context, m_player};
         pauseTask.execute();
 
