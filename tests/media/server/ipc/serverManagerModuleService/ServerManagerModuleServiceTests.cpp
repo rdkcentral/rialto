@@ -83,3 +83,17 @@ TEST_F(ServerManagerModuleServiceTests, shouldFailToSetState)
     sessionServerManagerWillFailToSetState(firebolt::rialto::common::SessionServerState::ACTIVE);
     sendSetState(firebolt::rialto::common::SessionServerState::ACTIVE);
 }
+
+TEST_F(ServerManagerModuleServiceTests, shouldPing)
+{
+    sessionServerManagerWillHandleRequestSuccess();
+    sessionServerManagerWillPing();
+    sendPing();
+}
+
+TEST_F(ServerManagerModuleServiceTests, shouldFailToPing)
+{
+    sessionServerManagerWillHandleRequestFailure();
+    sessionServerManagerWillFailToPing();
+    sendPing();
+}

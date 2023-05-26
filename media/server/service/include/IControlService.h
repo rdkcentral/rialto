@@ -42,6 +42,7 @@ public:
     virtual void removeControl(int controlId) = 0;
     virtual bool ack(int controlId, std::uint32_t id) = 0;
     virtual void setApplicationState(const ApplicationState &state) = 0;
+    virtual bool ping(std::int32_t id) = 0;
 };
 } // namespace firebolt::rialto::server::service
 

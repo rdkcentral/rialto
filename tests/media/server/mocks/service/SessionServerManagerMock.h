@@ -41,6 +41,7 @@ public:
                  RIALTO_DEBUG_LEVEL sessionServerLogLevels, RIALTO_DEBUG_LEVEL ipcLogLevels,
                  RIALTO_DEBUG_LEVEL serverManagerLogLevels, RIALTO_DEBUG_LEVEL commonLogLevels),
                 (override));
+    MOCK_METHOD(bool, ping, (std::int32_t id), (override));
 };
 } // namespace firebolt::rialto::server::service
 

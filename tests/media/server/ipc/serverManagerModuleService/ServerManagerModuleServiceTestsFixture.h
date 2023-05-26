@@ -49,10 +49,13 @@ public:
     void sessionServerManagerWillSetLogLevels();
     void sessionServerManagerWillFailToSetConfiguration(const firebolt::rialto::common::SessionServerState &state);
     void sessionServerManagerWillFailToSetState(const firebolt::rialto::common::SessionServerState &state);
+    void sessionServerManagerWillPing();
+    void sessionServerManagerWillFailToPing();
 
     void sendSetConfiguration(const firebolt::rialto::common::SessionServerState &state);
     void sendSetState(const firebolt::rialto::common::SessionServerState &state);
     void sendSetLogLevels();
+    void sendPing();
 
 private:
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ClientMock>> m_clientMock;

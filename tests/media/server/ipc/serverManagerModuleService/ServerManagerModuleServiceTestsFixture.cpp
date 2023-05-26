@@ -30,6 +30,7 @@ const std::string SOCKET_NAME{"/tmp/rialtotest-0"};
 constexpr int MAX_SESSIONS{5};
 constexpr int MAX_WEB_AUDIO_PLAYERS{3};
 constexpr int socket{2};
+constexpr int pingId{29};
 
 rialto::SessionServerState convertSessionServerState(const firebolt::rialto::common::SessionServerState &state)
 {
@@ -102,6 +103,16 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillFailToSetState(
     EXPECT_CALL(m_sessionServerManagerMock, setState(state)).WillOnce(Return(false));
 }
 
+void ServerManagerModuleServiceTests::sessionServerManagerWillPing()
+{
+    EXPECT_CALL(m_sessionServerManagerMock, ping(pingId)).WillOnce(Return(true));
+}
+
+void ServerManagerModuleServiceTests::sessionServerManagerWillFailToPing()
+{
+    EXPECT_CALL(m_sessionServerManagerMock, ping(pingId)).WillOnce(Return(false));
+}
+
 void ServerManagerModuleServiceTests::sendSetConfiguration(const firebolt::rialto::common::SessionServerState &state)
 {
     rialto::SetConfigurationRequest request;
@@ -144,6 +155,16 @@ void ServerManagerModuleServiceTests::sendSetLogLevels()
     request.mutable_loglevels()->set_commonloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
 
     m_sut->setLogLevels(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void ServerManagerModuleServiceTests::sendPing()
+{
+    rialto::PingRequest request;
+    rialto::PingResponse response;
+
+    request.set_id(pingId);
+
+    m_sut->ping(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
 
 void ServerManagerModuleServiceTests::sessionServerManagerWillHandleRequestSuccess()

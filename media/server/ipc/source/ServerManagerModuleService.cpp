@@ -136,4 +136,18 @@ void ServerManagerModuleService::setLogLevels(::google::protobuf::RpcController 
                                         static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().commonloglevels()));
     done->Run();
 }
+
+void ServerManagerModuleService::ping(::google::protobuf::RpcController *controller, const ::rialto::PingRequest *request,
+                                      ::rialto::PingResponse *response, ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("Ping received from ServerManager");
+    response->set_id(request->id());
+    bool success = m_sessionServerManager.ping(request->id());
+    if (!success)
+    {
+        RIALTO_SERVER_LOG_ERROR("Ping failed");
+        controller->SetFailed("Ping failed");
+    }
+    done->Run();
+}
 } // namespace firebolt::rialto::server::ipc

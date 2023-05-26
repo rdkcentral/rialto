@@ -34,6 +34,7 @@ public:
     MOCK_METHOD(void, removeControl, (int controlId), (override));
     MOCK_METHOD(bool, ack, (int controlId, std::uint32_t id), (override));
     MOCK_METHOD(void, setApplicationState, (const ApplicationState &state), (override));
+    MOCK_METHOD(bool, ping, (std::int32_t id), (override));
 };
 } // namespace firebolt::rialto::server::service
 

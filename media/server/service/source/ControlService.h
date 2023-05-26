@@ -38,6 +38,7 @@ public:
     void removeControl(int controlId) override;
     bool ack(int controlId, std::uint32_t id) override;
     void setApplicationState(const ApplicationState &state) override;
+    bool ping(std::int32_t id) override;
 
 private:
     std::mutex m_mutex;

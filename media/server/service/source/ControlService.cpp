@@ -66,4 +66,9 @@ void ControlService::setApplicationState(const ApplicationState &state)
         control.second->setApplicationState(state);
     }
 }
+
+bool ControlService::ping(std::int32_t id)
+{
+    return true;
+}
 } // namespace firebolt::rialto::server::service

@@ -37,6 +37,7 @@ namespace
 constexpr int appManagementSocket{3};
 constexpr int maxPlaybacks{2};
 constexpr int maxWebAudioPlayers{1};
+constexpr int pingId{12};
 constexpr firebolt::rialto::common::MaxResourceCapabilitites maxResource{maxPlaybacks, maxWebAudioPlayers};
 constexpr RIALTO_DEBUG_LEVEL logLvl{RIALTO_DEBUG_LEVEL_DEFAULT};
 const std::string sessionManagementSocket{"/tmp/rialtosessionservermanagertests-0"};
@@ -248,6 +249,16 @@ void SessionServerManagerTests::willSetStateNotRunning()
         .WillOnce(Return(true));
 }
 
+void SessionServerManagerTests::willPing()
+{
+    EXPECT_CALL(m_controlServiceMock, ping(pingId)).WillOnce(Return(true));
+}
+
+void SessionServerManagerTests::willFailToPing()
+{
+    EXPECT_CALL(m_controlServiceMock, ping(pingId)).WillOnce(Return(false));
+}
+
 void SessionServerManagerTests::willSetLogLevels()
 {
     EXPECT_CALL(m_sessionManagementServerMock, setLogLevels(logLvl, logLvl, logLvl, logLvl));
@@ -275,4 +286,16 @@ void SessionServerManagerTests::triggerSetLogLevels()
 {
     EXPECT_TRUE(m_sut);
     m_sut->setLogLevels(logLvl, logLvl, logLvl, logLvl, logLvl, logLvl);
+}
+
+void SessionServerManagerTests::pingShouldSucceed()
+{
+    EXPECT_TRUE(m_sut);
+    EXPECT_TRUE(m_sut->ping(pingId));
+}
+
+void SessionServerManagerTests::pingShouldFail()
+{
+    EXPECT_TRUE(m_sut);
+    EXPECT_FALSE(m_sut->ping(pingId));
 }

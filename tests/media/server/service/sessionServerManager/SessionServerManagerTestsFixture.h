@@ -59,11 +59,15 @@ public:
     void willFailToSetStateNotRunning();
     void willSetStateNotRunning();
     void willSetLogLevels();
+    void willPing();
+    void willFailToPing();
 
     void setStateShouldFail(const firebolt::rialto::common::SessionServerState &state);
     void setStateShouldSucceed(const firebolt::rialto::common::SessionServerState &state);
     void triggerStartService();
     void triggerSetLogLevels();
+    void pingShouldSucceed();
+    void pingShouldFail();
 
 private:
     std::unique_ptr<firebolt::rialto::server::ipc::IApplicationManagementServer> m_applicationManagementServer;

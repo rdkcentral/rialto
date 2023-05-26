@@ -147,6 +147,11 @@ void SessionServerManager::setLogLevels(RIALTO_DEBUG_LEVEL defaultLogLevels, RIA
     m_sessionManagementServer->setLogLevels(defaultLogLevels, clientLogLevels, ipcLogLevels, commonLogLevels);
 }
 
+bool SessionServerManager::ping(std::int32_t id)
+{
+    return m_controlService.ping(id);
+}
+
 bool SessionServerManager::switchToActive()
 {
     if (m_currentState.load() == common::SessionServerState::ACTIVE)

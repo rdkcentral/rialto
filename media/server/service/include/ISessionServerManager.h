@@ -46,6 +46,7 @@ public:
     virtual void setLogLevels(RIALTO_DEBUG_LEVEL defaultLogLevels, RIALTO_DEBUG_LEVEL clientLogLevels,
                               RIALTO_DEBUG_LEVEL sessionServerLogLevels, RIALTO_DEBUG_LEVEL ipcLogLevels,
                               RIALTO_DEBUG_LEVEL serverManagerLogLevels, RIALTO_DEBUG_LEVEL commonLogLevels) = 0;
+    virtual bool ping(std::int32_t id) = 0;
 };
 } // namespace firebolt::rialto::server::service
 
