@@ -197,6 +197,11 @@ private:
      */
     void resetWorkerThread();
 
+    /**
+     * @brief Whether native audio should be enabled on the current platform.
+     */
+    bool shouldEnableNativeAudio();
+
 private:
     /**
      * @brief The player context.
