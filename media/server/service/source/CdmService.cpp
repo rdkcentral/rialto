@@ -461,7 +461,7 @@ MediaKeyErrorStatus CdmService::decrypt(int32_t keySessionId, GstBuffer *encrypt
                                           caps);
 }
 
-bool CdmService::isNetflixKeySystem(int32_t keySessionId) const
+bool CdmService::isNetflixKeySystem(int32_t keySessionId)
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to check if key system is Netflix, key session id: %d", keySessionId);
 
