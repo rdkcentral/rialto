@@ -20,7 +20,6 @@
 #ifndef FIREBOLT_RIALTO_SERVER_SERVICE_CONTROL_SERVICE_H_
 #define FIREBOLT_RIALTO_SERVER_SERVICE_CONTROL_SERVICE_H_
 
-#include "IControlServerInternal.h"
 #include "IControlService.h"
 #include <map>
 #include <memory>
@@ -31,7 +30,7 @@ namespace firebolt::rialto::server::service
 class ControlService : public IControlService
 {
 public:
-    explicit ControlService(const std::shared_ptr<IControlServerInternalFactory> &controlServerInternalFactory);
+    ControlService();
     ~ControlService() override = default;
 
     void addControl(int controlId, const std::shared_ptr<IControlClientServerInternal> &client) override;
@@ -43,8 +42,7 @@ public:
 private:
     std::mutex m_mutex;
     ApplicationState m_currentState;
-    std::shared_ptr<IControlServerInternalFactory> m_controlServerInternalFactory;
-    std::map<int, std::shared_ptr<IControlServerInternal>> m_controls;
+    std::map<int, std::shared_ptr<IControlClientServerInternal>> m_clients;
 };
 } // namespace firebolt::rialto::server::service
 

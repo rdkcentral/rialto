@@ -20,10 +20,26 @@
 #include "ControlService.h"
 #include "RialtoServerLogging.h"
 
+namespace
+{
+const char *convertApplicationState(const firebolt::rialto::ApplicationState &appState)
+{
+    switch (appState)
+    {
+    case firebolt::rialto::ApplicationState::UNKNOWN:
+        return "UNKNOWN";
+    case firebolt::rialto::ApplicationState::RUNNING:
+        return "RUNNING";
+    case firebolt::rialto::ApplicationState::INACTIVE:
+        return "INACTIVE";
+    }
+    return "UNKNOWN";
+}
+} // namespace
+
 namespace firebolt::rialto::server::service
 {
-ControlService::ControlService(const std::shared_ptr<IControlServerInternalFactory> &controlServerInternalFactory)
-    : m_currentState{ApplicationState::UNKNOWN}, m_controlServerInternalFactory{controlServerInternalFactory}
+ControlService::ControlService() : m_currentState{ApplicationState::UNKNOWN}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 }
@@ -31,39 +47,39 @@ ControlService::ControlService(const std::shared_ptr<IControlServerInternalFacto
 void ControlService::addControl(int controlId, const std::shared_ptr<IControlClientServerInternal> &client)
 {
     RIALTO_SERVER_LOG_INFO("Creating new Control with id: %d", controlId);
-    auto controlServerInternal{m_controlServerInternalFactory->createControlServerInternal(client)};
     std::unique_lock<std::mutex> lock{m_mutex};
-    controlServerInternal->registerClient(client, m_currentState);
-    m_controls.emplace(controlId, controlServerInternal);
+    m_clients.emplace(controlId, client);
+    client->notifyApplicationState(m_currentState);
 }
 
 void ControlService::removeControl(int controlId)
 {
     RIALTO_SERVER_LOG_INFO("Removing Control with id: %d", controlId);
     std::unique_lock<std::mutex> lock{m_mutex};
-    m_controls.erase(controlId);
+    m_clients.erase(controlId);
 }
 
 bool ControlService::ack(int controlId, std::uint32_t id)
 {
     std::unique_lock<std::mutex> lock{m_mutex};
-    auto controlIter = m_controls.find(controlId);
-    if (m_controls.end() == controlIter)
+    auto controlClientIt = m_clients.find(controlId);
+    if (m_clients.end() == controlClientIt)
     {
         RIALTO_SERVER_LOG_ERROR("Control with id: %d not found", controlId);
         return false;
     }
-    controlIter->second->ack(id);
+    // Add implementation...
     return true;
 }
 
 void ControlService::setApplicationState(const ApplicationState &state)
 {
+    RIALTO_SERVER_LOG_INFO("Notify rialto client about state changed to: %s", convertApplicationState(state));
     std::unique_lock<std::mutex> lock{m_mutex};
     m_currentState = state;
-    for (const auto &control : m_controls)
+    for (const auto &client : m_clients)
     {
-        control.second->setApplicationState(state);
+        client.second->notifyApplicationState(state);
     }
 }
 

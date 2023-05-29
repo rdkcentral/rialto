@@ -21,16 +21,12 @@
 #define CONTROL_SERVICE_TESTS_FIXTURE_H_
 
 #include "ControlClientServerInternalMock.h"
-#include "ControlServerInternalFactoryMock.h"
-#include "ControlServerInternalMock.h"
 #include "ControlService.h"
 #include <gtest/gtest.h>
 #include <memory>
 
 using firebolt::rialto::ApplicationState;
 using firebolt::rialto::server::ControlClientServerInternalMock;
-using firebolt::rialto::server::ControlServerInternalFactoryMock;
-using firebolt::rialto::server::ControlServerInternalMock;
 using firebolt::rialto::server::service::ControlService;
 using testing::StrictMock;
 
@@ -40,19 +36,15 @@ public:
     ControlServiceTests();
     ~ControlServiceTests() override = default;
 
-    void controlServerInternalFactoryWillCreateControlServerInternal();
-    void controlServerInternalFactoryWillCreateControlServerInternalWithSetState();
-    void controlServerInternalWillAck();
-    void controlServerInternalWillSetApplicationState();
+    void controlClientServerInternalWillAck();
+    void controlClientServerInternalWillNotifyApplicationState(const firebolt::rialto::ApplicationState &appState);
 
     void triggerAddControl(int id);
     void triggerRemoveControl(int id);
     bool triggerAck(int id);
-    void triggerSetApplicationState();
+    void triggerSetApplicationState(const firebolt::rialto::ApplicationState &appState);
 
 private:
-    std::shared_ptr<StrictMock<ControlServerInternalFactoryMock>> m_controlServerInternalFactoryMock;
-    std::shared_ptr<StrictMock<ControlServerInternalMock>> m_controlServerInternalMock;
     std::shared_ptr<StrictMock<ControlClientServerInternalMock>> m_controlClientMock;
     ControlService m_sut;
 };
