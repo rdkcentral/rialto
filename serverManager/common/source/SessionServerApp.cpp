@@ -78,8 +78,8 @@ SessionServerApp::SessionServerApp(SessionServerAppManager &sessionServerAppMana
                                    const std::string &sessionServerPath,
                                    std::chrono::milliseconds sessionServerStartupTimeout)
     : m_kServerId{generateServerId()}, m_socks{-1, -1}, m_sessionServerAppManager{sessionServerAppManager}, m_pid{-1},
-      m_isPreloaded{true}, m_kSessionServerPath{sessionServerPath}, m_kSessionServerStartupTimeout{
-                                                                        sessionServerStartupTimeout}
+      m_isPreloaded{true}, m_kSessionServerPath{sessionServerPath},
+      m_kSessionServerStartupTimeout{sessionServerStartupTimeout}, m_childInitialized{false}
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("Creating preloaded SessionServerApp with serverId: %d", m_kServerId);
     std::transform(environmentVariables.begin(), environmentVariables.end(), std::back_inserter(m_environmentVariables),
