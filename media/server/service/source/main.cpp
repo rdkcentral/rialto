@@ -20,7 +20,6 @@
 #include "CdmService.h"
 #include "ControlService.h"
 #include "GstInit.h"
-#include "IControlServerInternal.h"
 #include "IMediaKeysCapabilities.h"
 #include "IMediaKeysServerInternal.h"
 #include "IMediaPipelineCapabilities.h"
