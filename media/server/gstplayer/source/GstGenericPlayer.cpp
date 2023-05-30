@@ -680,7 +680,12 @@ void GstGenericPlayer::cancelUnderflow(bool &underflowFlag)
     underflowFlag = false;
     if (!m_context.audioUnderflowOccured && !m_context.videoUnderflowOccured)
     {
-        m_taskFactory->createPlay(*this)->execute();
+        if (m_context.resumeOnUnderflowRecovery)
+        {
+            // Resume if the client hasnt requested pause during the underflow
+            m_taskFactory->createPlay(*this)->execute();
+            m_context.resumeOnUnderflowRecovery = false;
+        }
         m_gstPlayerClient->notifyNetworkState(NetworkState::BUFFERED);
     }
 }

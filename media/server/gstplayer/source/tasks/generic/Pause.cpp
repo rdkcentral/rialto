@@ -36,6 +36,13 @@ Pause::~Pause()
 void Pause::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing Pause");
+    if (m_context.videoUnderflowOccured || m_context.audioUnderflowOccured)
+    {
+        RIALTO_SERVER_LOG_INFO("Rialto is handling underflow, pipeline already paused");
+
+        // Playback should not resume when buffered
+        m_context.resumeOnUnderflowRecovery = false;
+    }
     m_player.stopPositionReportingAndCheckAudioUnderflowTimer();
     m_player.changePipelineState(GST_STATE_PAUSED);
     m_context.isPlaying = false;
