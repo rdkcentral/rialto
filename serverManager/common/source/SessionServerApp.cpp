@@ -338,7 +338,7 @@ void SessionServerApp::waitForChildProcess()
                          ->createTimer(std::chrono::milliseconds{1000},
                                        [this]()
                                        {
-                                           RIALTO_SERVER_MANAGER_LOG_WARN("Waitpid timeout. Killing: %d", m_kServerId);
+                                           RIALTO_SERVER_MANAGER_LOG_ERROR("Waitpid timeout. Killing: %d", m_kServerId);
                                            kill();
                                        });
     if (waitpid(m_pid, nullptr, 0) < 0)
