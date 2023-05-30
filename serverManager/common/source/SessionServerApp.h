@@ -65,6 +65,7 @@ private:
     bool initializeSockets();
     void setupStartupTimer();
     bool spawnSessionServer();
+    void waitForChildProcess();
     void cancelStartupTimerInternal(); // to avoid calling virtual method in destructor
 
 private:
@@ -81,6 +82,9 @@ private:
     std::vector<char *> m_environmentVariables;
     mutable std::mutex m_timerMutex;
     std::unique_ptr<firebolt::rialto::common::ITimer> m_startupTimer;
+    std::mutex m_processStartupMutex;
+    std::condition_variable m_processStartupCv;
+    bool m_childInitialized;
 };
 } // namespace rialto::servermanager::common
 
