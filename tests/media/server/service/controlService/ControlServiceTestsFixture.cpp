@@ -25,19 +25,39 @@ using testing::Return;
 namespace
 {
 constexpr int kPingId{7};
+constexpr firebolt::rialto::ApplicationState kAppState{firebolt::rialto::ApplicationState::INACTIVE};
 } // namespace
 
 ControlServiceTests::ControlServiceTests()
-    : m_controlClientMock{std::make_shared<StrictMock<ControlClientServerInternalMock>>()}, m_sut{}
+    : m_controlServerInternalFactoryMock{std::make_shared<StrictMock<ControlServerInternalFactoryMock>>()},
+      m_controlServerInternalMock{std::make_shared<StrictMock<ControlServerInternalMock>>()},
+      m_controlClientMock{std::make_shared<StrictMock<ControlClientServerInternalMock>>()},
+      m_sut{m_controlServerInternalFactoryMock}
 {
 }
 
-void ControlServiceTests::controlClientServerInternalWillAck() {}
-
-void ControlServiceTests::controlClientServerInternalWillNotifyApplicationState(
-    const firebolt::rialto::ApplicationState &appState)
+void ControlServiceTests::controlServerInternalFactoryWillCreateControlServerInternal()
 {
-    EXPECT_CALL(*m_controlClientMock, notifyApplicationState(appState));
+    EXPECT_CALL(*m_controlServerInternalFactoryMock, createControlServerInternal(_))
+        .WillOnce(Return(m_controlServerInternalMock));
+    EXPECT_CALL(*m_controlServerInternalMock, registerClient(_, _));
+}
+
+void ControlServiceTests::controlServerInternalFactoryWillCreateControlServerInternalWithSetState()
+{
+    EXPECT_CALL(*m_controlServerInternalFactoryMock, createControlServerInternal(_))
+        .WillOnce(Return(m_controlServerInternalMock));
+    EXPECT_CALL(*m_controlServerInternalMock, registerClient(_, _));
+}
+
+void ControlServiceTests::controlServerInternalWillAck()
+{
+    EXPECT_CALL(*m_controlServerInternalMock, ack(kPingId));
+}
+
+void ControlServiceTests::controlServerInternalWillSetApplicationState()
+{
+    EXPECT_CALL(*m_controlServerInternalMock, setApplicationState(kAppState));
 }
 
 void ControlServiceTests::triggerAddControl(int id)
@@ -55,7 +75,7 @@ bool ControlServiceTests::triggerAck(int id)
     return m_sut.ack(id, kPingId);
 }
 
-void ControlServiceTests::triggerSetApplicationState(const firebolt::rialto::ApplicationState &appState)
+void ControlServiceTests::triggerSetApplicationState()
 {
-    m_sut.setApplicationState(appState);
+    m_sut.setApplicationState(kAppState);
 }

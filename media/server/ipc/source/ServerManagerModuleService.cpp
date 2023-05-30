@@ -141,12 +141,13 @@ void ServerManagerModuleService::ping(::google::protobuf::RpcController *control
                                       ::rialto::PingResponse *response, ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("Ping received from ServerManager");
-    if (!m_sessionServerManager.ping(request->id()))
+    response->set_id(request->id());
+    bool success = m_sessionServerManager.ping(request->id());
+    if (!success)
     {
         RIALTO_SERVER_LOG_ERROR("Ping failed");
         controller->SetFailed("Ping failed");
     }
-    response->set_id(request->id());
     done->Run();
 }
 } // namespace firebolt::rialto::server::ipc

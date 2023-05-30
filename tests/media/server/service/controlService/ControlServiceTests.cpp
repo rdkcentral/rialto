@@ -22,7 +22,6 @@
 namespace
 {
 constexpr int kControlId{8};
-constexpr firebolt::rialto::ApplicationState kAppState{firebolt::rialto::ApplicationState::INACTIVE};
 } // namespace
 
 TEST_F(ControlServiceTests, shouldNotAckWithoutAddedControl)
@@ -32,27 +31,27 @@ TEST_F(ControlServiceTests, shouldNotAckWithoutAddedControl)
 
 TEST_F(ControlServiceTests, shouldNotSetApplicationStateWithoutAddedControl)
 {
-    triggerSetApplicationState(kAppState);
+    triggerSetApplicationState();
 }
 
 TEST_F(ControlServiceTests, shouldNotAckWithUnknownControlId)
 {
-    controlClientServerInternalWillNotifyApplicationState(firebolt::rialto::ApplicationState::UNKNOWN);
+    controlServerInternalFactoryWillCreateControlServerInternal();
     triggerAddControl(kControlId);
     EXPECT_FALSE(triggerAck(kControlId + 1));
 }
 
 TEST_F(ControlServiceTests, shouldNotAckWithRemovedControlId)
 {
-    controlClientServerInternalWillNotifyApplicationState(firebolt::rialto::ApplicationState::UNKNOWN);
+    controlServerInternalFactoryWillCreateControlServerInternal();
     triggerAddControl(kControlId);
     triggerRemoveControl(kControlId);
-    triggerSetApplicationState(kAppState);
+    triggerSetApplicationState();
 }
 
 TEST_F(ControlServiceTests, shouldNotSetApplicationStateWithRemovedControlId)
 {
-    controlClientServerInternalWillNotifyApplicationState(firebolt::rialto::ApplicationState::UNKNOWN);
+    controlServerInternalFactoryWillCreateControlServerInternal();
     triggerAddControl(kControlId);
     triggerRemoveControl(kControlId);
     EXPECT_FALSE(triggerAck(kControlId));
@@ -60,23 +59,23 @@ TEST_F(ControlServiceTests, shouldNotSetApplicationStateWithRemovedControlId)
 
 TEST_F(ControlServiceTests, shouldAck)
 {
-    controlClientServerInternalWillNotifyApplicationState(firebolt::rialto::ApplicationState::UNKNOWN);
-    controlClientServerInternalWillAck();
+    controlServerInternalFactoryWillCreateControlServerInternal();
+    controlServerInternalWillAck();
     triggerAddControl(kControlId);
     EXPECT_TRUE(triggerAck(kControlId));
 }
 
 TEST_F(ControlServiceTests, shouldSetApplicationState)
 {
-    controlClientServerInternalWillNotifyApplicationState(firebolt::rialto::ApplicationState::UNKNOWN);
+    controlServerInternalFactoryWillCreateControlServerInternal();
+    controlServerInternalWillSetApplicationState();
     triggerAddControl(kControlId);
-    controlClientServerInternalWillNotifyApplicationState(kAppState);
-    triggerSetApplicationState(kAppState);
+    triggerSetApplicationState();
 }
 
-TEST_F(ControlServiceTests, shouldAddControlWithCorrectApplicationState)
+TEST_F(ControlServiceTests, shouldSetApplicationStateForNewControl)
 {
-    triggerSetApplicationState(kAppState);
-    controlClientServerInternalWillNotifyApplicationState(kAppState);
+    triggerSetApplicationState();
+    controlServerInternalFactoryWillCreateControlServerInternalWithSetState();
     triggerAddControl(kControlId);
 }
