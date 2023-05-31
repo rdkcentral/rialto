@@ -97,3 +97,9 @@ TEST_F(ServerManagerModuleServiceTests, shouldFailToPing)
     sessionServerManagerWillFailToPing();
     sendPing();
 }
+
+TEST_F(ServerManagerModuleServiceTests, shouldFailToPingDueToInvalidController)
+{
+    sessionServerManagerWillHandleRequestFailureWithInvalidController();
+    sendPingWithInvalidController();
+}

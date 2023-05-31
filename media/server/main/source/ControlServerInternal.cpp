@@ -64,11 +64,11 @@ std::shared_ptr<IControl> ControlServerInternalFactory::createControl() const
     return nullptr;
 }
 
-std::shared_ptr<IControlServerInternal>
-ControlServerInternalFactory::createControlServerInternal(const std::shared_ptr<IControlClientServerInternal> &client) const
+std::shared_ptr<IControlServerInternal> ControlServerInternalFactory::createControlServerInternal(
+    int id, const std::shared_ptr<IControlClientServerInternal> &client) const
 try
 {
-    return std::make_shared<ControlServerInternal>(server::IMainThreadFactory::createFactory(), client);
+    return std::make_shared<ControlServerInternal>(server::IMainThreadFactory::createFactory(), id, client);
 }
 catch (const std::exception &e)
 {
@@ -76,9 +76,9 @@ catch (const std::exception &e)
     return nullptr;
 }
 
-ControlServerInternal::ControlServerInternal(const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
+ControlServerInternal::ControlServerInternal(const std::shared_ptr<IMainThreadFactory> &mainThreadFactory, int id,
                                              const std::shared_ptr<IControlClientServerInternal> &client)
-    : m_client{client}
+    : m_controlId{id}, m_client{client}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
     m_mainThread = mainThreadFactory->getMainThread();
@@ -95,9 +95,24 @@ ControlServerInternal::~ControlServerInternal()
     m_mainThread->unregisterClient(m_mainThreadClientId);
 }
 
-void ControlServerInternal::ack(uint32_t id)
+void ControlServerInternal::ack(uint32_t ackId)
 {
-    RIALTO_SERVER_LOG_WARN("Heartbeat functionality not implemented yet.");
+    RIALTO_SERVER_LOG_DEBUG("Control with id: %d received ack for ping: %d", m_controlId, ackId);
+    auto task = [&]()
+    {
+        if (!m_heartbeatHandler)
+        {
+            RIALTO_SERVER_LOG_WARN("No heartbeatHandler present for control with id: %d", m_controlId);
+            return;
+        }
+        if (m_heartbeatHandler->id() != ackId)
+        {
+            RIALTO_SERVER_LOG_WARN("Control with id: %d received ack with wrong id: %d", m_controlId, ackId);
+            return;
+        }
+        m_heartbeatHandler.reset();
+    };
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
 }
 
 void ControlServerInternal::setApplicationState(const ApplicationState &state)
@@ -107,6 +122,26 @@ void ControlServerInternal::setApplicationState(const ApplicationState &state)
     {
         if (m_client)
             m_client->notifyApplicationState(state);
+    };
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+}
+
+void ControlServerInternal::ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler)
+{
+    RIALTO_SERVER_LOG_DEBUG("Control with id: %d will send ping with id: %d", m_controlId, heartbeatHandler->id());
+    auto task = [&]()
+    {
+        if (m_heartbeatHandler)
+        {
+            m_heartbeatHandler->error();
+            m_heartbeatHandler.reset();
+        }
+        if (m_client)
+        {
+            m_client->ping(heartbeatHandler->id());
+            heartbeatHandler->pingSent();
+            m_heartbeatHandler = std::move(heartbeatHandler);
+        }
     };
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
 }

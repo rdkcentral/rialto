@@ -17,22 +17,25 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_CONTROL_SERVER_INTERNAL_FACTORY_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_CONTROL_SERVER_INTERNAL_FACTORY_MOCK_H_
-
-#include "IControlServerInternal.h"
-#include <gmock/gmock.h>
-#include <memory>
+#include "HeartbeatProcedure.h"
 
 namespace firebolt::rialto::server
 {
-class ControlServerInternalFactoryMock : public IControlServerInternalFactory
+std::unique_ptr<IHeartbeatProcedureFactory> IHeartbeatProcedureFactory::createFactory()
 {
-public:
-    MOCK_METHOD(std::shared_ptr<IControl>, createControl, (), (const, override));
-    MOCK_METHOD(std::shared_ptr<IControlServerInternal>, createControlServerInternal,
-                (int id, const std::shared_ptr<IControlClientServerInternal> &client), (const, override));
-};
-} // namespace firebolt::rialto::server
+    return std::make_unique<HeartbeatProcedureFactory>();
+}
 
-#endif // FIREBOLT_RIALTO_SERVER_CONTROL_SERVER_INTERNAL_FACTORY_MOCK_H_
+std::shared_ptr<IHeartbeatProcedure>
+HeartbeatProcedureFactory::createHeartbeatProcedure(const std::shared_ptr<IAckSender> &ackSender) const
+{
+    return std::make_shared<HeartbeatProcedure>(ackSender);
+}
+
+HeartbeatProcedure::HeartbeatProcedure(const std::shared_ptr<IAckSender> &ackSender) : m_ackSender{ackSender} {}
+
+std::unique_ptr<IHeartbeatHandler> HeartbeatProcedure::createHandler(int controlId, int pingId) const
+{
+    return nullptr;
+}
+} // namespace firebolt::rialto::server

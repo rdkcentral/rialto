@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_SERVICE_I_CONTROL_SERVICE_H_
 
 #include "ControlCommon.h"
+#include "IAckSender.h"
 #include "IControlClientServerInternal.h"
 #include <cstdint>
 #include <memory>
@@ -42,7 +43,7 @@ public:
     virtual void removeControl(int controlId) = 0;
     virtual bool ack(int controlId, std::uint32_t id) = 0;
     virtual void setApplicationState(const ApplicationState &state) = 0;
-    virtual bool ping(std::int32_t id) = 0;
+    virtual bool ping(std::int32_t id, const std::shared_ptr<IAckSender> &ackSender) = 0;
 };
 } // namespace firebolt::rialto::server::service
 

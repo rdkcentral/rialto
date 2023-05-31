@@ -17,22 +17,31 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_CONTROL_SERVER_INTERNAL_FACTORY_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_CONTROL_SERVER_INTERNAL_FACTORY_MOCK_H_
+#ifndef ACK_SENDER_TESTS_FIXTURE_H_
+#define ACK_SENDER_TESTS_FIXTURE_H_
 
-#include "IControlServerInternal.h"
-#include <gmock/gmock.h>
+#include "AckSender.h"
+#include "IpcClientMock.h"
+#include "servermanagermodule.pb.h"
+#include <gtest/gtest.h>
 #include <memory>
 
-namespace firebolt::rialto::server
-{
-class ControlServerInternalFactoryMock : public IControlServerInternalFactory
+using testing::StrictMock;
+using testing::Test;
+
+class AckSenderTests : public Test
 {
 public:
-    MOCK_METHOD(std::shared_ptr<IControl>, createControl, (), (const, override));
-    MOCK_METHOD(std::shared_ptr<IControlServerInternal>, createControlServerInternal,
-                (int id, const std::shared_ptr<IControlClientServerInternal> &client), (const, override));
-};
-} // namespace firebolt::rialto::server
+    AckSenderTests();
+    ~AckSenderTests() override = default;
 
-#endif // FIREBOLT_RIALTO_SERVER_CONTROL_SERVER_INTERNAL_FACTORY_MOCK_H_
+    void clientWillSendAckEvent();
+
+    void triggerSend();
+
+private:
+    std::shared_ptr<StrictMock<firebolt::rialto::ipc::ClientMock>> m_clientMock;
+    firebolt::rialto::server::ipc::AckSender m_sut;
+};
+
+#endif // ACK_SENDER_TESTS_FIXTURE_H_

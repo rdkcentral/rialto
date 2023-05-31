@@ -17,22 +17,26 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_CONTROL_SERVER_INTERNAL_FACTORY_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_CONTROL_SERVER_INTERNAL_FACTORY_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_IPC_ACK_SENDER_H_
+#define FIREBOLT_RIALTO_SERVER_IPC_ACK_SENDER_H_
 
-#include "IControlServerInternal.h"
-#include <gmock/gmock.h>
+#include "IAckSender.h"
+#include "IIpcServer.h"
 #include <memory>
 
-namespace firebolt::rialto::server
+namespace firebolt::rialto::server::ipc
 {
-class ControlServerInternalFactoryMock : public IControlServerInternalFactory
+class AckSender : public IAckSender
 {
 public:
-    MOCK_METHOD(std::shared_ptr<IControl>, createControl, (), (const, override));
-    MOCK_METHOD(std::shared_ptr<IControlServerInternal>, createControlServerInternal,
-                (int id, const std::shared_ptr<IControlClientServerInternal> &client), (const, override));
-};
-} // namespace firebolt::rialto::server
+    AckSender(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient);
+    ~AckSender() override = default;
 
-#endif // FIREBOLT_RIALTO_SERVER_CONTROL_SERVER_INTERNAL_FACTORY_MOCK_H_
+    void send(int id, bool success) const override;
+
+private:
+    std::shared_ptr<::firebolt::rialto::ipc::IClient> m_ipcClient;
+};
+} // namespace firebolt::rialto::server::ipc
+
+#endif // FIREBOLT_RIALTO_SERVER_IPC_ACK_SENDER_H_

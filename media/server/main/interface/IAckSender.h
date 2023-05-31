@@ -17,23 +17,17 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_CONTROL_SERVER_INTERNAL_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_CONTROL_SERVER_INTERNAL_MOCK_H_
-
-#include "IControlServerInternal.h"
-#include <gmock/gmock.h>
-#include <memory>
+#ifndef FIREBOLT_RIALTO_SERVER_I_ACK_SENDER_H_
+#define FIREBOLT_RIALTO_SERVER_I_ACK_SENDER_H_
 
 namespace firebolt::rialto::server
 {
-class ControlServerInternalMock : public IControlServerInternal
+class IAckSender
 {
 public:
-    MOCK_METHOD(void, setApplicationState, (const ApplicationState &state), (override));
-    MOCK_METHOD(void, ack, (uint32_t id), (override));
-    MOCK_METHOD(void, ping, (std::unique_ptr<IHeartbeatHandler> && heartbeatHandler), (override));
-    MOCK_METHOD(bool, registerClient, (std::weak_ptr<IControlClient> client, ApplicationState &appState), (override));
+    virtual ~IAckSender() = default;
+    virtual void send(int id, bool success) const = 0;
 };
 } // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_CONTROL_SERVER_INTERNAL_MOCK_H_
+#endif // FIREBOLT_RIALTO_SERVER_I_ACK_SENDER_H_

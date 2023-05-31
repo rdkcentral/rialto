@@ -18,8 +18,10 @@
  */
 
 #include "ServerManagerModuleService.h"
+#include "AckSender.h"
 #include "ISessionServerManager.h"
 #include "RialtoServerLogging.h"
+#include <IIpcController.h>
 
 namespace
 {
@@ -141,8 +143,15 @@ void ServerManagerModuleService::ping(::google::protobuf::RpcController *control
                                       ::rialto::PingResponse *response, ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("Ping received from ServerManager");
-    response->set_id(request->id());
-    bool success = m_sessionServerManager.ping(request->id());
+    auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
+    if (!ipcController)
+    {
+        RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
+        controller->SetFailed("ipc library provided incompatible controller object");
+        done->Run();
+        return;
+    }
+    bool success = m_sessionServerManager.ping(request->id(), std::make_shared<AckSender>(ipcController->getClient()));
     if (!success)
     {
         RIALTO_SERVER_LOG_ERROR("Ping failed");

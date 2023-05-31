@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_SERVICE_I_SESSION_SERVER_MANAGER_H_
 #define FIREBOLT_RIALTO_SERVER_SERVICE_I_SESSION_SERVER_MANAGER_H_
 
+#include "IAckSender.h"
 #include "RialtoLogging.h"
 #include "SessionServerCommon.h"
 #include <memory>
@@ -46,7 +47,7 @@ public:
     virtual void setLogLevels(RIALTO_DEBUG_LEVEL defaultLogLevels, RIALTO_DEBUG_LEVEL clientLogLevels,
                               RIALTO_DEBUG_LEVEL sessionServerLogLevels, RIALTO_DEBUG_LEVEL ipcLogLevels,
                               RIALTO_DEBUG_LEVEL serverManagerLogLevels, RIALTO_DEBUG_LEVEL commonLogLevels) = 0;
-    virtual bool ping(std::int32_t id) = 0;
+    virtual bool ping(std::int32_t id, const std::shared_ptr<IAckSender> &ackSender) = 0;
 };
 } // namespace firebolt::rialto::server::service
 

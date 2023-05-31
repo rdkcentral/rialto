@@ -60,7 +60,8 @@ ServerManagerModuleServiceTests::ServerManagerModuleServiceTests()
     : m_clientMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ClientMock>>()},
       m_serverMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ServerMock>>()},
       m_closureMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ClosureMock>>()},
-      m_controllerMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ControllerMock>>()}
+      m_controllerMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ControllerMock>>()},
+      m_invalidControllerMock{std::make_shared<StrictMock<firebolt::rialto::ipc::RpcControllerMock>>()}
 {
     auto sutFactory = firebolt::rialto::server::ipc::IServerManagerModuleServiceFactory::createFactory();
     m_sut = sutFactory->create(m_sessionServerManagerMock);
@@ -105,12 +106,14 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillFailToSetState(
 
 void ServerManagerModuleServiceTests::sessionServerManagerWillPing()
 {
-    EXPECT_CALL(m_sessionServerManagerMock, ping(pingId)).WillOnce(Return(true));
+    EXPECT_CALL(*m_controllerMock, getClient()).WillOnce(Return(m_clientMock));
+    EXPECT_CALL(m_sessionServerManagerMock, ping(pingId, _)).WillOnce(Return(true));
 }
 
 void ServerManagerModuleServiceTests::sessionServerManagerWillFailToPing()
 {
-    EXPECT_CALL(m_sessionServerManagerMock, ping(pingId)).WillOnce(Return(false));
+    EXPECT_CALL(*m_controllerMock, getClient()).WillOnce(Return(m_clientMock));
+    EXPECT_CALL(m_sessionServerManagerMock, ping(pingId, _)).WillOnce(Return(false));
 }
 
 void ServerManagerModuleServiceTests::sendSetConfiguration(const firebolt::rialto::common::SessionServerState &state)
@@ -167,6 +170,16 @@ void ServerManagerModuleServiceTests::sendPing()
     m_sut->ping(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
 
+void ServerManagerModuleServiceTests::sendPingWithInvalidController()
+{
+    rialto::PingRequest request;
+    rialto::PingResponse response;
+
+    request.set_id(pingId);
+
+    m_sut->ping(m_invalidControllerMock.get(), &request, &response, m_closureMock.get());
+}
+
 void ServerManagerModuleServiceTests::sessionServerManagerWillHandleRequestSuccess()
 {
     EXPECT_CALL(*m_closureMock, Run());
@@ -175,5 +188,11 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillHandleRequestSucce
 void ServerManagerModuleServiceTests::sessionServerManagerWillHandleRequestFailure()
 {
     EXPECT_CALL(*m_controllerMock, SetFailed(_));
+    EXPECT_CALL(*m_closureMock, Run());
+}
+
+void ServerManagerModuleServiceTests::sessionServerManagerWillHandleRequestFailureWithInvalidController()
+{
+    EXPECT_CALL(*m_invalidControllerMock, SetFailed(_));
     EXPECT_CALL(*m_closureMock, Run());
 }

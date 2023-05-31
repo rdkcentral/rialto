@@ -17,23 +17,19 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_CONTROL_SERVER_INTERNAL_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_CONTROL_SERVER_INTERNAL_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_HEARTBEAT_PROCEDURE_MOCK_H_
+#define FIREBOLT_RIALTO_SERVER_HEARTBEAT_PROCEDURE_MOCK_H_
 
-#include "IControlServerInternal.h"
+#include "IHeartbeatProcedure.h"
 #include <gmock/gmock.h>
-#include <memory>
 
 namespace firebolt::rialto::server
 {
-class ControlServerInternalMock : public IControlServerInternal
+class HeartbeatProcedureMock : public IHeartbeatProcedure
 {
 public:
-    MOCK_METHOD(void, setApplicationState, (const ApplicationState &state), (override));
-    MOCK_METHOD(void, ack, (uint32_t id), (override));
-    MOCK_METHOD(void, ping, (std::unique_ptr<IHeartbeatHandler> && heartbeatHandler), (override));
-    MOCK_METHOD(bool, registerClient, (std::weak_ptr<IControlClient> client, ApplicationState &appState), (override));
+    MOCK_METHOD(std::unique_ptr<IHeartbeatHandler>, createHandler, (int controlId, int pingId), (const, override));
 };
 } // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_CONTROL_SERVER_INTERNAL_MOCK_H_
+#endif // FIREBOLT_RIALTO_SERVER_HEARTBEAT_PROCEDURE_MOCK_H_

@@ -30,22 +30,26 @@ constexpr firebolt::rialto::ApplicationState kAppState{firebolt::rialto::Applica
 
 ControlServiceTests::ControlServiceTests()
     : m_controlServerInternalFactoryMock{std::make_shared<StrictMock<ControlServerInternalFactoryMock>>()},
+      m_heartbeatProcedureFactory{std::make_unique<StrictMock<HeartbeatProcedureFactoryMock>>()},
+      m_heartbeatProcedureFactoryMock{*m_heartbeatProcedureFactory},
+      m_heartbeatProcedureMock{std::make_shared<StrictMock<HeartbeatProcedureMock>>()},
       m_controlServerInternalMock{std::make_shared<StrictMock<ControlServerInternalMock>>()},
       m_controlClientMock{std::make_shared<StrictMock<ControlClientServerInternalMock>>()},
-      m_sut{m_controlServerInternalFactoryMock}
+      m_ackSenderMock{std::make_shared<StrictMock<AckSenderMock>>()}, m_sut{m_controlServerInternalFactoryMock,
+                                                                            std::move(m_heartbeatProcedureFactory)}
 {
 }
 
-void ControlServiceTests::controlServerInternalFactoryWillCreateControlServerInternal()
+void ControlServiceTests::controlServerInternalFactoryWillCreateControlServerInternal(int id)
 {
-    EXPECT_CALL(*m_controlServerInternalFactoryMock, createControlServerInternal(_))
+    EXPECT_CALL(*m_controlServerInternalFactoryMock, createControlServerInternal(id, _))
         .WillOnce(Return(m_controlServerInternalMock));
     EXPECT_CALL(*m_controlServerInternalMock, registerClient(_, _));
 }
 
-void ControlServiceTests::controlServerInternalFactoryWillCreateControlServerInternalWithSetState()
+void ControlServiceTests::controlServerInternalFactoryWillCreateControlServerInternalWithSetState(int id)
 {
-    EXPECT_CALL(*m_controlServerInternalFactoryMock, createControlServerInternal(_))
+    EXPECT_CALL(*m_controlServerInternalFactoryMock, createControlServerInternal(id, _))
         .WillOnce(Return(m_controlServerInternalMock));
     EXPECT_CALL(*m_controlServerInternalMock, registerClient(_, _));
 }
@@ -58,6 +62,17 @@ void ControlServiceTests::controlServerInternalWillAck()
 void ControlServiceTests::controlServerInternalWillSetApplicationState()
 {
     EXPECT_CALL(*m_controlServerInternalMock, setApplicationState(kAppState));
+}
+
+void ControlServiceTests::controlServerInternalWillPing()
+{
+    EXPECT_CALL(*m_heartbeatProcedureMock, createHandler(_, kPingId));
+    EXPECT_CALL(*m_controlServerInternalMock, ping(_));
+}
+
+void ControlServiceTests::heartbeatProcedureWillBeCreated()
+{
+    EXPECT_CALL(m_heartbeatProcedureFactoryMock, createHeartbeatProcedure(_)).WillOnce(Return(m_heartbeatProcedureMock));
 }
 
 void ControlServiceTests::triggerAddControl(int id)
@@ -78,4 +93,9 @@ bool ControlServiceTests::triggerAck(int id)
 void ControlServiceTests::triggerSetApplicationState()
 {
     m_sut.setApplicationState(kAppState);
+}
+
+bool ControlServiceTests::triggerPing()
+{
+    return m_sut.ping(kPingId, m_ackSenderMock);
 }

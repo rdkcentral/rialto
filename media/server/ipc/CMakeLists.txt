@@ -32,6 +32,7 @@ add_library (
         ${PROTO_SRCS}
         ${PROTO_HEADERS}
 
+        source/AckSender.cpp
         source/ApplicationManagementServer.cpp
         source/IpcFactory.cpp
         source/MediaPipelineClient.cpp

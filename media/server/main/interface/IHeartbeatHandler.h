@@ -17,23 +17,30 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_CONTROL_SERVER_INTERNAL_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_CONTROL_SERVER_INTERNAL_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_I_HEARTBEAT_HANDLER_H_
+#define FIREBOLT_RIALTO_SERVER_I_HEARTBEAT_HANDLER_H_
 
-#include "IControlServerInternal.h"
-#include <gmock/gmock.h>
-#include <memory>
+#include <cstdint>
+
+/**
+ * @file IHeartbeatHandler.h
+ *
+ * The definition of the IHeartbeatHandler interface.
+ *
+ * This interface defines the handler of single ping/ack action.
+ *
+ */
 
 namespace firebolt::rialto::server
 {
-class ControlServerInternalMock : public IControlServerInternal
+class IHeartbeatHandler
 {
 public:
-    MOCK_METHOD(void, setApplicationState, (const ApplicationState &state), (override));
-    MOCK_METHOD(void, ack, (uint32_t id), (override));
-    MOCK_METHOD(void, ping, (std::unique_ptr<IHeartbeatHandler> && heartbeatHandler), (override));
-    MOCK_METHOD(bool, registerClient, (std::weak_ptr<IControlClient> client, ApplicationState &appState), (override));
+    virtual ~IHeartbeatHandler() = default;
+    virtual void pingSent() = 0;
+    virtual void error() = 0;
+    virtual std::uint32_t id() const = 0;
 };
 } // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_CONTROL_SERVER_INTERNAL_MOCK_H_
+#endif // FIREBOLT_RIALTO_SERVER_I_HEARTBEAT_HANDLER_H_

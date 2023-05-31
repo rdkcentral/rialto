@@ -18,12 +18,15 @@
  */
 
 #include "ControlService.h"
+#include "IHeartbeatProcedure.h"
 #include "RialtoServerLogging.h"
 
 namespace firebolt::rialto::server::service
 {
-ControlService::ControlService(const std::shared_ptr<IControlServerInternalFactory> &controlServerInternalFactory)
-    : m_currentState{ApplicationState::UNKNOWN}, m_controlServerInternalFactory{controlServerInternalFactory}
+ControlService::ControlService(const std::shared_ptr<IControlServerInternalFactory> &controlServerInternalFactory,
+                               std::unique_ptr<IHeartbeatProcedureFactory> &&heartbeatProcedureFactory)
+    : m_currentState{ApplicationState::UNKNOWN}, m_controlServerInternalFactory{controlServerInternalFactory},
+      m_heartbeatProcedureFactory{std::move(heartbeatProcedureFactory)}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 }
@@ -31,7 +34,7 @@ ControlService::ControlService(const std::shared_ptr<IControlServerInternalFacto
 void ControlService::addControl(int controlId, const std::shared_ptr<IControlClientServerInternal> &client)
 {
     RIALTO_SERVER_LOG_INFO("Creating new Control with id: %d", controlId);
-    auto controlServerInternal{m_controlServerInternalFactory->createControlServerInternal(client)};
+    auto controlServerInternal{m_controlServerInternalFactory->createControlServerInternal(controlId, client)};
     std::unique_lock<std::mutex> lock{m_mutex};
     controlServerInternal->registerClient(client, m_currentState);
     m_controls.emplace(controlId, controlServerInternal);
@@ -67,8 +70,14 @@ void ControlService::setApplicationState(const ApplicationState &state)
     }
 }
 
-bool ControlService::ping(std::int32_t id)
+bool ControlService::ping(std::int32_t id, const std::shared_ptr<IAckSender> &ackSender)
 {
+    auto heartbeatProcedure{m_heartbeatProcedureFactory->createHeartbeatProcedure(ackSender)};
+    std::unique_lock<std::mutex> lock{m_mutex};
+    for (const auto &control : m_controls)
+    {
+        control.second->ping(heartbeatProcedure->createHandler(control.first, id));
+    }
     return true;
 }
 } // namespace firebolt::rialto::server::service
