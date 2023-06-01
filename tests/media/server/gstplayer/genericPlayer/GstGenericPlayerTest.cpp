@@ -289,11 +289,7 @@ TEST_F(GstGenericPlayerTest, shouldReturnMute)
     bool resultMute{};
     GstStreamVolume *volume = nullptr;
 
-    getContext(
-        [&](GenericPlayerContext &m_context)
-        {
-            volume = GST_STREAM_VOLUME(m_context.pipeline);
-        });
+    getContext([&](GenericPlayerContext &m_context) { volume = GST_STREAM_VOLUME(m_context.pipeline); });
     EXPECT_CALL(*m_gstWrapperMock, gstStreamVolumeGetMute(volume)).WillOnce(Return(kMute));
     EXPECT_TRUE(m_sut->getMute(resultMute));
     EXPECT_EQ(resultMute, kMute);
