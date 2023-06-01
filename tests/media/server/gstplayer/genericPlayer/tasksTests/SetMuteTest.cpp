@@ -52,7 +52,7 @@ TEST_F(SetMuteTest, shouldFailToSetMuteWhenPipelineIsNull)
 TEST_F(SetMuteTest, shouldSetMute)
 {
     m_context.pipeline = &m_pipeline;
-    EXPECT_CALL(*m_gstWrapper, gstStreamVolumeSetMute(_, kMute));
+    EXPECT_CALL(*m_gstWrapper, gstStreamVolumeSetMute(GST_STREAM_VOLUME(m_context.pipeline), kMute));
     firebolt::rialto::server::tasks::generic::SetMute task{m_context, m_gstWrapper, kMute};
     task.execute();
 }

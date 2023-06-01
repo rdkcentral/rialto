@@ -229,14 +229,14 @@ public:
      * unmuted the user will hear audio at the same volume as previously
      * set.
      *
-     * @param[in] mute : Desired mute status, true=muted, false=not muted
+     * @param[in] mute : Desired mute state, true=muted, false=not muted
      */
     virtual void setMute(bool mute) = 0;
 
     /**
      * @brief Get current mute status of the pipeline
      *
-     * @param[out] mute : Current mute status
+     * @param[out] mute : Current mute state
      *
      * @retval True in success, false otherwise
      */

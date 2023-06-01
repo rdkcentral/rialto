@@ -402,7 +402,7 @@ protected:
     /**
      * @brief Set mute internally, only to be called on the main thread.
      *
-     * @param[in] mute Desired mute status, true=muted, false=not muted
+     * @param[in] mute Desired mute state, true=muted, false=not muted
      *
      * @retval true on success false otherwise
      */
@@ -411,7 +411,7 @@ protected:
     /**
      * @brief Get mute internally, only to be called on the main thread.
      *
-     * @param[out] mute Current mute status
+     * @param[out] mute Current mute state
      *
      * @retval true on success false otherwise
      */

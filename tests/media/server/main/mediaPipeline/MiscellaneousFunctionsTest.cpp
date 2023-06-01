@@ -382,9 +382,11 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetMuteSuccess)
                 mut = kCurrentMute;
                 return true;
             }));
+
     EXPECT_TRUE(m_mediaPipeline->getMute(resultMute));
     EXPECT_EQ(resultMute, kCurrentMute);
 }
+
 /**
  * Test that active requests are invalidated successfully
  */

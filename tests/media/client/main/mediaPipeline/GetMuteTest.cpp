@@ -44,9 +44,12 @@ protected:
  */
 TEST_F(RialtoClientMediaPipelineGetMuteTest, getMuteSuccess)
 {
-    EXPECT_CALL(*m_mediaPipelineIpcMock, getMute(m_mute)).WillOnce(Return(true));
+    bool returnMute = !m_mute;
 
-    EXPECT_EQ(m_mediaPipeline->getMute(m_mute), true);
+    EXPECT_CALL(*m_mediaPipelineIpcMock, getMute(returnMute)).WillOnce(DoAll(SetArgReferee<0>(m_mute), Return(true)));
+
+    EXPECT_EQ(m_mediaPipeline->getMute(returnMute), true);
+    EXPECT_EQ(returnMute, m_mute);
 }
 
 /**

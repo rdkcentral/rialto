@@ -376,7 +376,7 @@ message GetVolumeResponse {
  * @brief Set mute status of pipeline.
  *
  * @param[in] session_id  The id of the A/V session the request is for.
- * @param[in] mute        Desired mute status, true=muted, false=not muted
+ * @param[in] mute        Desired mute state, true=muted, false=not muted
  *
  */
 message SetMuteRequest {
@@ -391,7 +391,7 @@ message SetMuteResponse {
  * @brief Get current mute status of the pipeline
  *
  * @param[in]  session_id  The id of the A/V session the request is for.
- * @param[out] mute      Current mute status
+ * @param[out] mute      Current mute state
  *
  * @retval true on success false otherwise
  */

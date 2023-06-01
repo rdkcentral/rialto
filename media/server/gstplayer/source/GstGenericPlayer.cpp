@@ -889,6 +889,8 @@ void GstGenericPlayer::setMute(bool mute)
 
 bool GstGenericPlayer::getMute(bool &mute)
 {
+    // We are on main thread here, but m_context.pipeline can be used, because it's modified only in GstGenericPlayer
+    // constructor and destructor. GstGenericPlayer is created/destructed on main thread, so we won't have a crash here.
     if (!m_context.pipeline)
     {
         return false;

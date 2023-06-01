@@ -213,7 +213,7 @@ public:
      * unmuted the user will hear audio at the same volume as previously
      * set.
      *
-     * @param[in] mute   Desired mute status, true=muted, false=not muted
+     * @param[in] mute   Desired mute state, true=muted, false=not muted
      *
      * @retval true on success false otherwise
      */
@@ -222,7 +222,7 @@ public:
     /**
      * @brief Get current mute status of the pipeline
      *
-     * @param[out] mute   Current mute status
+     * @param[out] mute   Current mute state
      *
      * @retval true on success false otherwise
      */

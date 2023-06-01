@@ -1019,7 +1019,6 @@ public:
      * @param[in] volume : GstStreamVolume that should be used
      * @param[in] mute   : Mute state that should be set
      *
-     * @retval Returns TRUE if the stream is muted
      */
     virtual void gstStreamVolumeSetMute(GstStreamVolume *volume, gboolean mute) const = 0;
 
