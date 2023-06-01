@@ -66,6 +66,8 @@ TEST_F(UnderflowTest, shouldReportUnderflow)
 {
     bool underflowFlag{false};
     bool underflowEnabled{true};
+    m_context.resumeOnUnderflowRecovery = false;
+
     firebolt::rialto::server::tasks::generic::Underflow task{m_context, m_gstPlayer, &m_gstPlayerClient, underflowFlag,
                                                              underflowEnabled};
     EXPECT_CALL(m_gstPlayer, stopPositionReportingAndCheckAudioUnderflowTimer());
@@ -73,6 +75,7 @@ TEST_F(UnderflowTest, shouldReportUnderflow)
     EXPECT_CALL(m_gstPlayerClient, notifyNetworkState(firebolt::rialto::NetworkState::STALLED));
     task.execute();
     EXPECT_TRUE(underflowFlag);
+    EXPECT_TRUE(m_context.resumeOnUnderflowRecovery);
 }
 
 TEST_F(UnderflowTest, shouldNotReportEosWhenEosAlreadyNotified)

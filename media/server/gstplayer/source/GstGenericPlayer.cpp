@@ -205,7 +205,7 @@ void GstGenericPlayer::initMsePipeline()
     unsigned flagAudio = getGstPlayFlag("audio");
     unsigned flagVideo = getGstPlayFlag("video");
     unsigned flagNativeVideo = getGstPlayFlag("native-video");
-    unsigned flagNativeAudio = 0;
+    unsigned flagNativeAudio = shouldEnableNativeAudio() ? getGstPlayFlag("native-audio") : 0;
     m_glibWrapper->gObjectSet(m_context.pipeline, "flags", flagAudio | flagVideo | flagNativeVideo | flagNativeAudio,
                               nullptr);
 
@@ -680,7 +680,12 @@ void GstGenericPlayer::cancelUnderflow(bool &underflowFlag)
     underflowFlag = false;
     if (!m_context.audioUnderflowOccured && !m_context.videoUnderflowOccured)
     {
-        m_taskFactory->createPlay(*this)->execute();
+        if (m_context.resumeOnUnderflowRecovery)
+        {
+            // Resume if the client hasnt requested pause during the underflow
+            m_taskFactory->createPlay(*this)->execute();
+            m_context.resumeOnUnderflowRecovery = false;
+        }
         m_gstPlayerClient->notifyNetworkState(NetworkState::BUFFERED);
     }
 }
@@ -907,6 +912,17 @@ void GstGenericPlayer::handleBusMessage(GstMessage *message)
 void GstGenericPlayer::updatePlaybackGroup(GstElement *typefind, const GstCaps *caps)
 {
     m_workerThread->enqueueTask(m_taskFactory->createUpdatePlaybackGroup(m_context, typefind, caps));
+}
+
+bool GstGenericPlayer::shouldEnableNativeAudio()
+{
+    GstElementFactory *factory = m_gstWrapper->gstElementFactoryFind("brcmaudiosink");
+    if (factory)
+    {
+        m_gstWrapper->gstObjectUnref(GST_OBJECT(factory));
+        return true;
+    }
+    return false;
 }
 
 }; // namespace firebolt::rialto::server
