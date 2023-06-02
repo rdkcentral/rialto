@@ -66,13 +66,14 @@ void ControlServiceTests::controlServerInternalWillSetApplicationState()
 
 void ControlServiceTests::controlServerInternalWillPing()
 {
-    EXPECT_CALL(*m_heartbeatProcedureMock, createHandler(_, kPingId));
+    EXPECT_CALL(*m_heartbeatProcedureMock, createHandler(_));
     EXPECT_CALL(*m_controlServerInternalMock, ping(_));
 }
 
 void ControlServiceTests::heartbeatProcedureWillBeCreated()
 {
-    EXPECT_CALL(m_heartbeatProcedureFactoryMock, createHeartbeatProcedure(_)).WillOnce(Return(m_heartbeatProcedureMock));
+    EXPECT_CALL(m_heartbeatProcedureFactoryMock, createHeartbeatProcedure(_, kPingId))
+        .WillOnce(Return(m_heartbeatProcedureMock));
 }
 
 void ControlServiceTests::triggerAddControl(int id)

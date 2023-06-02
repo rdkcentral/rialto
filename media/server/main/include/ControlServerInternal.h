@@ -44,7 +44,7 @@ public:
                                    const std::shared_ptr<IControlClientServerInternal> &client);
     ~ControlServerInternal() override;
 
-    void ack(uint32_t id) override;
+    void ack(int32_t id) override;
     void setApplicationState(const ApplicationState &state) override;
     bool registerClient(std::weak_ptr<IControlClient> client, ApplicationState &appState) override;
     void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) override;

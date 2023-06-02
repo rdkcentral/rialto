@@ -27,15 +27,63 @@ std::unique_ptr<IHeartbeatProcedureFactory> IHeartbeatProcedureFactory::createFa
 }
 
 std::shared_ptr<IHeartbeatProcedure>
-HeartbeatProcedureFactory::createHeartbeatProcedure(const std::shared_ptr<IAckSender> &ackSender) const
+HeartbeatProcedureFactory::createHeartbeatProcedure(const std::shared_ptr<IAckSender> &ackSender, std::int32_t pingId) const
 {
-    return std::make_shared<HeartbeatProcedure>(ackSender);
+    return std::make_shared<HeartbeatProcedure>(ackSender, pingId);
 }
 
-HeartbeatProcedure::HeartbeatProcedure(const std::shared_ptr<IAckSender> &ackSender) : m_ackSender{ackSender} {}
-
-std::unique_ptr<IHeartbeatHandler> HeartbeatProcedure::createHandler(int controlId, int pingId) const
+HeartbeatProcedure::HeartbeatHandler::HeartbeatHandler(const std::shared_ptr<HeartbeatProcedure> &procedure,
+                                                       int controlId, std::int32_t pingId)
+    : m_procedure{procedure}, m_kControlId{controlId}, m_kPingId{pingId}, m_success{true}
 {
-    return nullptr;
+}
+
+HeartbeatProcedure::HeartbeatHandler::~HeartbeatHandler()
+{
+    m_procedure->onFinish(m_kControlId, m_success);
+}
+
+void HeartbeatProcedure::HeartbeatHandler::pingSent()
+{
+    m_procedure->onStart(m_kControlId);
+}
+
+void HeartbeatProcedure::HeartbeatHandler::error()
+{
+    m_success = false;
+}
+
+std::int32_t HeartbeatProcedure::HeartbeatHandler::id() const
+{
+    return m_kPingId;
+}
+
+HeartbeatProcedure::HeartbeatProcedure(const std::shared_ptr<IAckSender> &ackSender, std::int32_t pingId)
+    : m_ackSender{ackSender}, m_kPingId{pingId}, m_success{true}
+{
+}
+
+HeartbeatProcedure::~HeartbeatProcedure()
+{
+    m_ackSender->send(m_kPingId, m_success);
+}
+
+std::unique_ptr<IHeartbeatHandler> HeartbeatProcedure::createHandler(int controlId)
+{
+    return std::make_unique<HeartbeatHandler>(shared_from_this(), controlId, m_kPingId);
+}
+
+void HeartbeatProcedure::onStart(int controlId)
+{
+    m_pingsSent.emplace(controlId);
+}
+
+void HeartbeatProcedure::onFinish(int controlId, bool success)
+{
+    m_pingsSent.erase(controlId);
+    if (!success)
+    {
+        m_success = false;
+    }
 }
 } // namespace firebolt::rialto::server

@@ -95,7 +95,7 @@ ControlServerInternal::~ControlServerInternal()
     m_mainThread->unregisterClient(m_mainThreadClientId);
 }
 
-void ControlServerInternal::ack(uint32_t ackId)
+void ControlServerInternal::ack(int32_t ackId)
 {
     RIALTO_SERVER_LOG_DEBUG("Control with id: %d received ack for ping: %d", m_controlId, ackId);
     auto task = [&]()

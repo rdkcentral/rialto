@@ -29,7 +29,7 @@ class HeartbeatProcedureFactoryMock : public IHeartbeatProcedureFactory
 {
 public:
     MOCK_METHOD(std::shared_ptr<IHeartbeatProcedure>, createHeartbeatProcedure,
-                (const std::shared_ptr<IAckSender> &ackSender), (const, override));
+                (const std::shared_ptr<IAckSender> &ackSender, std::int32_t pingId), (const, override));
 };
 } // namespace firebolt::rialto::server
 

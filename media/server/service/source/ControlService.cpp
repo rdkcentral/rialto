@@ -72,11 +72,11 @@ void ControlService::setApplicationState(const ApplicationState &state)
 
 bool ControlService::ping(std::int32_t id, const std::shared_ptr<IAckSender> &ackSender)
 {
-    auto heartbeatProcedure{m_heartbeatProcedureFactory->createHeartbeatProcedure(ackSender)};
+    auto heartbeatProcedure{m_heartbeatProcedureFactory->createHeartbeatProcedure(ackSender, id)};
     std::unique_lock<std::mutex> lock{m_mutex};
     for (const auto &control : m_controls)
     {
-        control.second->ping(heartbeatProcedure->createHandler(control.first, id));
+        control.second->ping(heartbeatProcedure->createHandler(control.first));
     }
     return true;
 }

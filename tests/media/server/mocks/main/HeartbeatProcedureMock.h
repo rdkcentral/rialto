@@ -28,7 +28,7 @@ namespace firebolt::rialto::server
 class HeartbeatProcedureMock : public IHeartbeatProcedure
 {
 public:
-    MOCK_METHOD(std::unique_ptr<IHeartbeatHandler>, createHandler, (int controlId, int pingId), (const, override));
+    MOCK_METHOD(std::unique_ptr<IHeartbeatHandler>, createHandler, (int controlId), (override));
 };
 } // namespace firebolt::rialto::server
 

@@ -79,7 +79,7 @@ public:
      *
      * @param[in] id  : id received in ping notification
      */
-    virtual void ack(uint32_t id) = 0;
+    virtual void ack(int32_t id) = 0;
 
     /**
      * @brief Ping notification for checking system health

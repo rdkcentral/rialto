@@ -36,10 +36,16 @@ namespace firebolt::rialto::server
 class IHeartbeatHandler
 {
 public:
+    IHeartbeatHandler() = default;
+    IHeartbeatHandler(const IHeartbeatHandler &) = delete;
+    IHeartbeatHandler(IHeartbeatHandler &&) = delete;
+    IHeartbeatHandler &operator=(const IHeartbeatHandler &) = delete;
+    IHeartbeatHandler &operator=(IHeartbeatHandler &&) = delete;
     virtual ~IHeartbeatHandler() = default;
+
     virtual void pingSent() = 0;
     virtual void error() = 0;
-    virtual std::uint32_t id() const = 0;
+    virtual std::int32_t id() const = 0;
 };
 } // namespace firebolt::rialto::server
 

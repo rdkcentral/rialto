@@ -42,15 +42,15 @@ public:
     virtual ~IHeartbeatProcedureFactory() = default;
 
     static std::unique_ptr<IHeartbeatProcedureFactory> createFactory();
-    virtual std::shared_ptr<IHeartbeatProcedure>
-    createHeartbeatProcedure(const std::shared_ptr<IAckSender> &ackSender) const = 0;
+    virtual std::shared_ptr<IHeartbeatProcedure> createHeartbeatProcedure(const std::shared_ptr<IAckSender> &ackSender,
+                                                                          std::int32_t pingId) const = 0;
 };
 
 class IHeartbeatProcedure
 {
 public:
     virtual ~IHeartbeatProcedure() = default;
-    virtual std::unique_ptr<IHeartbeatHandler> createHandler(int controlId, int pingId) const = 0;
+    virtual std::unique_ptr<IHeartbeatHandler> createHandler(int controlId) = 0;
 };
 } // namespace firebolt::rialto::server
 
