@@ -509,7 +509,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldAttachAudioData)
     m_sut->attachAudioData();
 }
 
-TEST_F(GstGenericPlayerPrivateTest, shouldCancelAudioUnderflow)
+TEST_F(GstGenericPlayerPrivateTest, shouldCancelAudioUnderflowAndResume)
 {
     GstBuffer buffer{};
     GstAppSrc audioSrc{};
@@ -521,6 +521,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldCancelAudioUnderflow)
             context.audioNeedData = true;
             context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].appSrc = GST_ELEMENT(&audioSrc);
             context.audioUnderflowOccured = true;
+            context.resumeOnUnderflowRecovery = true;
         });
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(_, &buffer));
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
@@ -587,7 +588,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldAttachVideoData)
     m_sut->attachVideoData();
 }
 
-TEST_F(GstGenericPlayerPrivateTest, shouldCancelVideoUnderflow)
+TEST_F(GstGenericPlayerPrivateTest, shouldCancelVideoUnderflowAndResume)
 {
     GstBuffer buffer{};
     GstAppSrc videoSrc{};
@@ -599,6 +600,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldCancelVideoUnderflow)
             context.videoNeedData = true;
             context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].appSrc = GST_ELEMENT(&videoSrc);
             context.videoUnderflowOccured = true;
+            context.resumeOnUnderflowRecovery = true;
         });
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(_, &buffer));
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
@@ -647,7 +649,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldAttachAudioAndVideoData)
     m_sut->attachVideoData();
 }
 
-TEST_F(GstGenericPlayerPrivateTest, shouldCancelAudioAndVideoUnderflow)
+TEST_F(GstGenericPlayerPrivateTest, shouldCancelAudioAndVideoUnderflowAndResume)
 {
     GstBuffer audioBuffer{};
     GstBuffer videoBuffer{};
@@ -666,12 +668,41 @@ TEST_F(GstGenericPlayerPrivateTest, shouldCancelAudioAndVideoUnderflow)
             context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].appSrc = GST_ELEMENT(&videoSrc);
             context.audioUnderflowOccured = true;
             context.videoUnderflowOccured = true;
+            context.resumeOnUnderflowRecovery = true;
         });
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(_, &audioBuffer));
     m_sut->attachAudioData();
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(_, &videoBuffer));
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
     EXPECT_CALL(m_taskFactoryMock, createPlay(_)).WillOnce(Return(ByMove(std::move(task))));
+    EXPECT_CALL(m_gstPlayerClient, notifyNetworkState(NetworkState::BUFFERED));
+    m_sut->attachVideoData();
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldCancelAudioAndVideoUnderflowAndNotResume)
+{
+    GstBuffer audioBuffer{};
+    GstBuffer videoBuffer{};
+    GstAppSrc audioSrc{};
+    GstAppSrc videoSrc{};
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    modifyContext(
+        [&](GenericPlayerContext &context)
+        {
+            context.bufferedNotificationSent = true;
+            context.audioBuffers.emplace_back(&audioBuffer);
+            context.videoBuffers.emplace_back(&videoBuffer);
+            context.audioNeedData = true;
+            context.videoNeedData = true;
+            context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].appSrc = GST_ELEMENT(&audioSrc);
+            context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].appSrc = GST_ELEMENT(&videoSrc);
+            context.audioUnderflowOccured = true;
+            context.videoUnderflowOccured = true;
+            context.resumeOnUnderflowRecovery = false;
+        });
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(_, &audioBuffer));
+    m_sut->attachAudioData();
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(_, &videoBuffer));
     EXPECT_CALL(m_gstPlayerClient, notifyNetworkState(NetworkState::BUFFERED));
     m_sut->attachVideoData();
 }
