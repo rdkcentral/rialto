@@ -110,6 +110,11 @@ void SessionServerAppManager::onSessionServerStateChanged(int serverId,
     m_eventThread->add(&SessionServerAppManager::handleSessionServerStateChange, this, serverId, newState);
 }
 
+void SessionServerAppManager::onAck(int serverId, int pingId, bool success)
+{
+    RIALTO_SERVER_MANAGER_LOG_DEBUG("Queue ack handling for serverId: %d ping id: %d", serverId, pingId);
+}
+
 std::string SessionServerAppManager::getAppConnectionInfo(const std::string &appName) const
 {
     std::promise<std::string> p;

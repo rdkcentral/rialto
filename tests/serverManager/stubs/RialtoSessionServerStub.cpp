@@ -126,6 +126,16 @@ void RialtoSessionServerStub::sendStateChangedEvent()
     m_client->sendEvent(stateChangedEvent);
 }
 
+void RialtoSessionServerStub::sendAckEvent(int pingId, bool success)
+{
+    EXPECT_TRUE(m_client);
+    EXPECT_TRUE(m_client->isConnected());
+    auto ackEvent = std::make_shared<rialto::AckEvent>();
+    ackEvent->set_id(pingId);
+    ackEvent->set_success(success);
+    m_client->sendEvent(ackEvent);
+}
+
 void RialtoSessionServerStub::disconnectClient()
 {
     EXPECT_TRUE(m_client);

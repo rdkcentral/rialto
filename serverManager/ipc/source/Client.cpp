@@ -153,6 +153,7 @@ bool Client::connect()
     m_serviceStub = std::make_unique<::rialto::ServerManagerModule_Stub>(m_ipcLoop->channel());
     m_ipcLoop->channel()->subscribe<rialto::StateChangedEvent>(
         std::bind(&Client::onStateChangedEvent, this, std::placeholders::_1));
+    m_ipcLoop->channel()->subscribe<rialto::AckEvent>(std::bind(&Client::onAckEvent, this, std::placeholders::_1));
     return true;
 }
 
@@ -254,5 +255,16 @@ void Client::onStateChangedEvent(const std::shared_ptr<rialto::StateChangedEvent
         return;
     }
     m_sessionServerAppManager->onSessionServerStateChanged(m_serverId, convert(event->sessionserverstate()));
+}
+
+void Client::onAckEvent(const std::shared_ptr<rialto::AckEvent> &event) const
+{
+    RIALTO_SERVER_MANAGER_LOG_DEBUG("AckEvent received for serverId: %d", m_serverId);
+    if (!m_sessionServerAppManager || !event)
+    {
+        RIALTO_SERVER_MANAGER_LOG_WARN("Problem during AckEvent processing");
+        return;
+    }
+    m_sessionServerAppManager->onAck(m_serverId, event->id(), event->success());
 }
 } // namespace rialto::servermanager::ipc

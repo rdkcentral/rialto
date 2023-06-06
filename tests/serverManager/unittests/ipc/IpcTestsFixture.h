@@ -40,10 +40,12 @@ public:
     void configureServerToSendFailResponses();
 
     void simulateStateChangedEventInactive();
+    void simulateAckEvent();
     void simulateClientDisconnection();
 
     void sessionServerAppManagerWillBeNotifiedAboutSessionServerStateChange(
         const firebolt::rialto::common::SessionServerState &newState);
+    void sessionServerAppManagerWillBeNotifiedAboutCompletedHealthcheck();
     void waitForExpectationsMet();
 
     bool triggerCreateClientConnectToFakeSocket();

@@ -31,6 +31,7 @@ namespace rialto
 {
 class ServerManagerModule_Stub;
 class StateChangedEvent;
+class AckEvent;
 } // namespace rialto
 
 namespace rialto::servermanager::ipc
@@ -55,6 +56,7 @@ public:
 
 private:
     void onStateChangedEvent(const std::shared_ptr<rialto::StateChangedEvent> &event) const;
+    void onAckEvent(const std::shared_ptr<rialto::AckEvent> &event) const;
 
 private:
     int m_serverId;

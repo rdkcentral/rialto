@@ -75,6 +75,15 @@ TEST_F(IpcTests, ShouldForwardStateChangedIndicationToSessionServerAppManager)
     waitForExpectationsMet();
 }
 
+TEST_F(IpcTests, ShouldForwardAckEventToSessionServerAppManager)
+{
+    configureServerToSendOkResponses();
+    ASSERT_TRUE(triggerCreateClient());
+    sessionServerAppManagerWillBeNotifiedAboutCompletedHealthcheck();
+    simulateAckEvent();
+    waitForExpectationsMet();
+}
+
 TEST_F(IpcTests, ShouldForwardNotRunningStateChangeToSessionServerAppManagerWhenUnexpectedlyDisconnected)
 {
     configureServerToSendOkResponses();
