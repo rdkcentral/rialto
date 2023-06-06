@@ -214,6 +214,31 @@ bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServ
     return true;
 }
 
+bool Client::performPing(int pingId) const
+{
+    if (!m_ipcLoop || !m_serviceStub)
+    {
+        RIALTO_SERVER_MANAGER_LOG_ERROR("failed to ping - client is not active for serverId: %d", m_serverId);
+        return false;
+    }
+    rialto::PingRequest request;
+    rialto::PingResponse response;
+    request.set_id(pingId);
+    auto ipcController = m_ipcLoop->createRpcController();
+    auto blockingClosure = m_ipcLoop->createBlockingClosure();
+    m_serviceStub->ping(ipcController.get(), &request, &response, blockingClosure.get());
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_SERVER_MANAGER_LOG_ERROR("failed to ping due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+    return true;
+}
+
 bool Client::setLogLevels(const service::LoggingLevels &logLevels) const
 {
     if (!m_ipcLoop || !m_serviceStub)

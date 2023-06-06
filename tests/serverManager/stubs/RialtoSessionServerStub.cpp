@@ -65,6 +65,16 @@ public:
         }
         done->Run();
     }
+
+    void ping(::google::protobuf::RpcController *controller, const ::rialto::PingRequest *request,
+              ::rialto::PingResponse *response, ::google::protobuf::Closure *done) override
+    {
+        if (m_programmedResponse != StubResponse::OK)
+        {
+            controller->SetFailed("Failed for some reason ...");
+        }
+        done->Run();
+    }
 };
 
 void clientDisconnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &client)

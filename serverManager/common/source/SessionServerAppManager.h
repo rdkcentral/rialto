@@ -65,6 +65,7 @@ private:
     bool changeSessionServerState(const std::string &appName,
                                   const firebolt::rialto::common::SessionServerState &newState);
     void handleSessionServerStateChange(int serverId, firebolt::rialto::common::SessionServerState newState);
+    void handleAck(int serverId, int pingId, bool success);
     void shutdownAllSessionServers();
     const std::unique_ptr<ISessionServerApp> &
     launchSessionServer(const std::string &appName, const firebolt::rialto::common::SessionServerState &initialState,

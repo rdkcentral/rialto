@@ -113,6 +113,7 @@ void SessionServerAppManager::onSessionServerStateChanged(int serverId,
 void SessionServerAppManager::onAck(int serverId, int pingId, bool success)
 {
     RIALTO_SERVER_MANAGER_LOG_DEBUG("Queue ack handling for serverId: %d ping id: %d", serverId, pingId);
+    m_eventThread->add(&SessionServerAppManager::handleAck, this, serverId, pingId, success);
 }
 
 std::string SessionServerAppManager::getAppConnectionInfo(const std::string &appName) const
@@ -262,6 +263,12 @@ void SessionServerAppManager::handleSessionServerStateChange(int serverId,
         }
         m_sessionServerApps.erase(sessionServer);
     }
+}
+
+void SessionServerAppManager::handleAck(int serverId, int pingId, bool success)
+{
+    RIALTO_SERVER_MANAGER_LOG_INFO("Ping with id: %d %s for server: %d", pingId, (success ? "succeeded" : "failed"),
+                                   serverId);
 }
 
 void SessionServerAppManager::shutdownAllSessionServers()

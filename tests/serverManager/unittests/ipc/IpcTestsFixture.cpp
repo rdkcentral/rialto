@@ -124,6 +124,12 @@ bool IpcTests::triggerPerformSetConfiguration()
     return m_sut->performSetConfiguration(kServerId, initialState, socketName, maxResource);
 }
 
+bool IpcTests::triggerPerformPing()
+{
+    EXPECT_TRUE(m_sut);
+    return m_sut->performPing(kServerId, kPingId);
+}
+
 bool IpcTests::triggerPerformSetState(const firebolt::rialto::common::SessionServerState &state)
 {
     EXPECT_TRUE(m_sut);

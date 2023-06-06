@@ -51,6 +51,7 @@ public:
     bool performSetConfiguration(const firebolt::rialto::common::SessionServerState &initialState,
                                  const std::string &socketName,
                                  const firebolt::rialto::common::MaxResourceCapabilitites &maxResource) const;
+    bool performPing(int pingId) const;
     bool setLogLevels(const service::LoggingLevels &logLevels) const;
     void onDisconnected() const;
 
