@@ -60,6 +60,8 @@ public:
     virtual bool renderFrame(int sessionId) = 0;
     virtual bool setVolume(int sessionId, double volume) = 0;
     virtual bool getVolume(int sessionId, double &volume) = 0;
+    virtual bool setMute(int sessionId, bool mute) = 0;
+    virtual bool getMute(int sessionId, bool &mute) = 0;
     virtual std::vector<std::string> getSupportedMimeTypes(MediaSourceType type) = 0;
     virtual bool isMimeTypeSupported(const std::string &mimeType) = 0;
 };

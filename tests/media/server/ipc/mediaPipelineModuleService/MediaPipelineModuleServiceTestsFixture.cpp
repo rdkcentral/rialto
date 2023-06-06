@@ -65,6 +65,7 @@ constexpr firebolt::rialto::NetworkState networkState{firebolt::rialto::NetworkS
 constexpr firebolt::rialto::QosInfo qosInfo{5u, 2u};
 constexpr double rate{1.5};
 constexpr double volume{0.7};
+constexpr bool mute{false};
 } // namespace
 
 MATCHER_P(AttachedSourceMatcher, source, "")
@@ -598,6 +599,36 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToGetVolume()
     EXPECT_CALL(m_mediaPipelineServiceMock, getVolume(hardcodedSessionId, _)).WillOnce(Return(false));
 }
 
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSetMute()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_mediaPipelineServiceMock, setMute(hardcodedSessionId, mute)).WillOnce(Return(true));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToSetMute()
+{
+    expectRequestFailure();
+    EXPECT_CALL(m_mediaPipelineServiceMock, setMute(hardcodedSessionId, mute)).WillOnce(Return(false));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillGetMute()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_mediaPipelineServiceMock, getMute(hardcodedSessionId, _))
+        .WillOnce(Invoke(
+            [&](int, bool &mut)
+            {
+                mut = mute;
+                return true;
+            }));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToGetMute()
+{
+    expectRequestFailure();
+    EXPECT_CALL(m_mediaPipelineServiceMock, getMute(hardcodedSessionId, _)).WillOnce(Return(false));
+}
+
 void MediaPipelineModuleServiceTests::mediaClientWillSendPlaybackStateChangedEvent()
 {
     EXPECT_CALL(*m_clientMock, sendEvent(PlaybackStateChangeEventMatcher(convertPlaybackState(playbackState))));
@@ -892,6 +923,39 @@ void MediaPipelineModuleServiceTests::sendGetVolumeRequestAndReceiveResponseWith
     request.set_session_id(hardcodedSessionId);
 
     m_service->getVolume(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void MediaPipelineModuleServiceTests::sendSetMuteRequestAndReceiveResponse()
+{
+    firebolt::rialto::SetMuteRequest request;
+    firebolt::rialto::SetMuteResponse response;
+
+    request.set_session_id(hardcodedSessionId);
+    request.set_mute(mute);
+
+    m_service->setMute(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void MediaPipelineModuleServiceTests::sendGetMuteRequestAndReceiveResponse()
+{
+    firebolt::rialto::GetMuteRequest request;
+    firebolt::rialto::GetMuteResponse response;
+
+    request.set_session_id(hardcodedSessionId);
+
+    m_service->getMute(m_controllerMock.get(), &request, &response, m_closureMock.get());
+
+    EXPECT_EQ(response.mute(), mute);
+}
+
+void MediaPipelineModuleServiceTests::sendGetMuteRequestAndReceiveResponseWithoutMuteMatch()
+{
+    firebolt::rialto::GetMuteRequest request;
+    firebolt::rialto::GetMuteResponse response;
+
+    request.set_session_id(hardcodedSessionId);
+
+    m_service->getMute(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
 
 void MediaPipelineModuleServiceTests::sendPlaybackStateChangedEvent()

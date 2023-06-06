@@ -884,6 +884,26 @@ bool GstGenericPlayer::getVolume(double &volume)
     return true;
 }
 
+void GstGenericPlayer::setMute(bool mute)
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(m_taskFactory->createSetMute(m_context, mute));
+    }
+}
+
+bool GstGenericPlayer::getMute(bool &mute)
+{
+    // We are on main thread here, but m_context.pipeline can be used, because it's modified only in GstGenericPlayer
+    // constructor and destructor. GstGenericPlayer is created/destructed on main thread, so we won't have a crash here.
+    if (!m_context.pipeline)
+    {
+        return false;
+    }
+    mute = m_gstWrapper->gstStreamVolumeGetMute(GST_STREAM_VOLUME(m_context.pipeline));
+    return true;
+}
+
 void GstGenericPlayer::handleBusMessage(GstMessage *message)
 {
     m_workerThread->enqueueTask(m_taskFactory->createHandleBusMessage(m_context, *this, message));

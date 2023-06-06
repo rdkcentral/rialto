@@ -372,6 +372,37 @@ message GetVolumeResponse {
 }
 
 /**
+ * @fn void setMute(bool mute)
+ * @brief Set mute status of pipeline.
+ *
+ * @param[in] session_id  The id of the A/V session the request is for.
+ * @param[in] mute        Desired mute state, true=muted, false=not muted
+ *
+ */
+message SetMuteRequest {
+    required int32 session_id = 1;
+    required bool mute = 2;
+}
+message SetMuteResponse {
+}
+
+/**
+ * @fn void getMute(bool &mute)
+ * @brief Get current mute status of the pipeline
+ *
+ * @param[in]  session_id  The id of the A/V session the request is for.
+ * @param[out] mute      Current mute state
+ *
+ * @retval true on success false otherwise
+ */
+message GetMuteRequest {
+    required int32 session_id = 1;
+}
+message GetMuteResponse {
+    required bool mute = 1;
+}
+
+/**
  * @brief Event sent the playback state has changed.
  *
  * @param session_id   The id of the A/V session the status is for.
@@ -617,5 +648,19 @@ service MediaPipelineModule {
      * @see GetVolumeRequest
      */
     rpc getVolume(GetVolumeRequest) returns (GetVolumeResponse) {
+    }
+
+        /**
+     * @brief Set mute status of pipeline.
+     * @see SetMuteRequest
+     */
+    rpc setMute(SetMuteRequest) returns (SetMuteResponse) {
+    } 
+
+    /**
+     * @brief Get current mute status of the pipeline
+     * @see GetMuteRequest
+     */
+    rpc getMute(GetMuteRequest) returns (GetMuteResponse) {
     }
 }

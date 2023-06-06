@@ -81,6 +81,8 @@ public:
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetVolume, (GenericPlayerContext & context, double volume),
                 (const, override));
+    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetMute, (GenericPlayerContext & context, bool mute),
+                (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createShutdown, (IGstGenericPlayerPrivate & player), (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createStop,
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player), (const, override));

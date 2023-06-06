@@ -69,6 +69,10 @@ public:
     void mediaPipelineWillFailToSetVolume();
     void mediaPipelineWillGetVolume();
     void mediaPipelineWillFailToGetVolume();
+    void mediaPipelineWillSetMute();
+    void mediaPipelineWillFailToSetMute();
+    void mediaPipelineWillGetMute();
+    void mediaPipelineWillFailToGetMute();
 
     void mediaPipelineFactoryWillCreateMediaPipeline();
     void mediaPipelineFactoryWillReturnNullptr();
@@ -117,6 +121,10 @@ public:
     void setVolumeShouldFail();
     void getVolumeShouldSucceed();
     void getVolumeShouldFail();
+    void setMuteShouldSucceed();
+    void setMuteShouldFail();
+    void getMuteShouldSucceed();
+    void getMuteShouldFail();
     void clearMediaPipelines();
     void initSession();
 

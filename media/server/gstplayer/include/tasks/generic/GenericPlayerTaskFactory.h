@@ -74,6 +74,7 @@ public:
     std::unique_ptr<IPlayerTask> createSetVideoGeometry(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                                         const Rectangle &rectangle) const override;
     std::unique_ptr<IPlayerTask> createSetVolume(GenericPlayerContext &context, double volume) const override;
+    std::unique_ptr<IPlayerTask> createSetMute(GenericPlayerContext &context, bool mute) const override;
     std::unique_ptr<IPlayerTask> createShutdown(IGstGenericPlayerPrivate &player) const override;
     std::unique_ptr<IPlayerTask> createStop(GenericPlayerContext &context,
                                             IGstGenericPlayerPrivate &player) const override;

@@ -98,6 +98,10 @@ public:
 
     bool getVolume(double &volume) override;
 
+    bool setMute(bool mute) override;
+
+    bool getMute(bool &mute) override;
+
 private:
     /**
      * @brief The media player client ipc.

@@ -74,6 +74,10 @@ public:
     void mediaPipelineServiceWillFailToSetVolume();
     void mediaPipelineServiceWillGetVolume();
     void mediaPipelineServiceWillFailToGetVolume();
+    void mediaPipelineServiceWillSetMute();
+    void mediaPipelineServiceWillFailToSetMute();
+    void mediaPipelineServiceWillGetMute();
+    void mediaPipelineServiceWillFailToGetMute();
     void mediaClientWillSendPlaybackStateChangedEvent();
     void mediaClientWillSendNetworkStateChangedEvent();
     void mediaClientWillSendNeedMediaDataEvent(int sessionId);
@@ -103,6 +107,9 @@ public:
     void sendSetVolumeRequestAndReceiveResponse();
     void sendGetVolumeRequestAndReceiveResponse();
     void sendGetVolumeRequestAndReceiveResponseWithoutVolumeMatch();
+    void sendSetMuteRequestAndReceiveResponse();
+    void sendGetMuteRequestAndReceiveResponse();
+    void sendGetMuteRequestAndReceiveResponseWithoutMuteMatch();
     void sendPlaybackStateChangedEvent();
     void sendNetworkStateChangedEvent();
     void sendNeedMediaDataEvent();

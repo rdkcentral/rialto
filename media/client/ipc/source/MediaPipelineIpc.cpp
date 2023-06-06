@@ -659,6 +659,69 @@ bool MediaPipelineIpc::getVolume(double &volume)
     return true;
 }
 
+bool MediaPipelineIpc::setMute(bool mute)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::SetMuteRequest request;
+
+    request.set_session_id(m_sessionId);
+    request.set_mute(mute);
+
+    firebolt::rialto::SetMuteResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->setMute(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // waiting for call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to set mute due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    return true;
+}
+
+bool MediaPipelineIpc::getMute(bool &mute)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::GetMuteRequest request;
+
+    request.set_session_id(m_sessionId);
+
+    firebolt::rialto::GetMuteResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->getMute(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to get mute due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    mute = response.mute();
+
+    return true;
+}
+
 void MediaPipelineIpc::onPlaybackStateUpdated(const std::shared_ptr<firebolt::rialto::PlaybackStateChangeEvent> &event)
 {
     /* Ignore event if not for this session */

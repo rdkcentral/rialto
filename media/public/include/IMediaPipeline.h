@@ -1158,7 +1158,7 @@ public:
      * @brief Set level and transition of audio attenuation.
      *        Sets the current volume for the pipeline (0.0 silent -> 1.0 full volume)
      *
-     * @param[in] volume Target volume level (0.0 - 1.0)
+     * @param[in] volume : Target volume level (0.0 - 1.0)
      *
      * @retval true on success false otherwise
      */
@@ -1167,11 +1167,33 @@ public:
     /**
      * @brief Get current audio level. Fetches the current volume level for the pipeline.
      *
-     * @param[out] volume Current volume level (range 0.0 - 1.0)
+     * @param[out] volume : Current volume level (range 0.0 - 1.0)
      *
      * @retval true on success false otherwise
      */
     virtual bool getVolume(double &volume) = 0;
+
+    /**
+     * @brief Set mute status of pipeline.
+     *
+     * Muting does not change the underlying volume setting so when
+     * unmuted the user will hear audio at the same volume as previously
+     * set.
+     *
+     * @param[in] mute : Desired mute state, true=muted, false=not muted
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool setMute(bool mute) = 0;
+
+    /**
+     * @brief Get current mute status of the pipeline
+     *
+     * @param[out] mute : Current mute state
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool getMute(bool &mute) = 0;
 };
 
 }; // namespace firebolt::rialto
