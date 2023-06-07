@@ -26,9 +26,9 @@
 namespace firebolt::rialto::server::tasks::generic
 {
 Underflow::Underflow(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client,
-                     bool &underflowFlag, bool underflowEnabled)
+                     bool &underflowFlag, bool underflowEnabled, MediaSourceType sourceType)
     : m_context{context}, m_player{player}, m_gstPlayerClient{client}, m_underflowFlag{underflowFlag},
-      m_underflowEnabled{underflowEnabled}
+      m_underflowEnabled{underflowEnabled}, m_sourceType{sourceType}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing Underflow");
 }
@@ -50,39 +50,7 @@ void Underflow::execute() const
         return;
     }
 
-    // If the EOS has been raised, notify EndOfStream, not underflow.
-    if (allSourcesEos())
-    {
-        RIALTO_SERVER_LOG_WARN("Received underflow, but all streams are ended, so reporting EOS.");
-        if (!m_context.eosNotified && m_gstPlayerClient)
-        {
-            m_gstPlayerClient->notifyPlaybackState(PlaybackState::END_OF_STREAM);
-            m_context.eosNotified = true;
-        }
-    }
-    else
-    {
-        Pause pauseTask{m_context, m_player};
-        pauseTask.execute();
-
-        m_underflowFlag = true;
-        m_context.resumeOnUnderflowRecovery = true;
-        if (m_gstPlayerClient)
-        {
-            m_gstPlayerClient->notifyNetworkState(NetworkState::STALLED);
-        }
-    }
+    m_gstPlayerClient->notifyBufferUnderflow(m_sourceType);
 }
 
-bool Underflow::allSourcesEos() const
-{
-    for (const auto &streamInfo : m_context.streamInfo)
-    {
-        if (m_context.endOfStreamInfo.find(streamInfo.first) == m_context.endOfStreamInfo.end())
-        {
-            return false;
-        }
-    }
-    return true;
-}
 } // namespace firebolt::rialto::server::tasks::generic

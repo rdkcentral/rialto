@@ -212,4 +212,15 @@ void MediaPipelineClient::notifyQos(int32_t sourceId, const QosInfo &qosInfo)
 
     m_ipcClient->sendEvent(event);
 }
+
+void MediaPipelineClient::notifyBufferUnderflow(int32_t sourceId)
+{
+    RIALTO_SERVER_LOG_DEBUG("Sending BufferUnderflowEvent...");
+
+    auto event = std::make_shared<firebolt::rialto::BufferUnderflowEvent>();
+    event->set_session_id(m_sessionId);
+    event->set_source_id(sourceId);
+
+    m_ipcClient->sendEvent(event);
+}
 } // namespace firebolt::rialto::server::ipc

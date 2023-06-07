@@ -652,7 +652,7 @@ void GstGenericPlayer::scheduleAudioUnderflow()
     {
         bool underflowEnabled = m_context.isPlaying && !m_context.audioSourceRemoved;
         m_workerThread->enqueueTask(
-            m_taskFactory->createUnderflow(m_context, *this, m_context.audioUnderflowOccured, underflowEnabled));
+            m_taskFactory->createUnderflow(m_context, *this, m_context.audioUnderflowOccured, underflowEnabled, MediaSourceType::AUDIO));
     }
 }
 
@@ -662,7 +662,7 @@ void GstGenericPlayer::scheduleVideoUnderflow()
     {
         bool underflowEnabled = m_context.isPlaying;
         m_workerThread->enqueueTask(
-            m_taskFactory->createUnderflow(m_context, *this, m_context.videoUnderflowOccured, underflowEnabled));
+            m_taskFactory->createUnderflow(m_context, *this, m_context.videoUnderflowOccured, underflowEnabled, MediaSourceType::VIDEO));
     }
 }
 

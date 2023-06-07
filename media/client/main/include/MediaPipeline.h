@@ -129,6 +129,8 @@ public:
 
     void notifyQos(int32_t sourceId, const QosInfo &qosInfo) override;
 
+    void notifyBufferUnderflow(int32_t sourceId) override;
+
     bool renderFrame() override;
 
     bool setVolume(double volume) override;

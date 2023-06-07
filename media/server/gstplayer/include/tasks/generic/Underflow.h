@@ -32,7 +32,7 @@ class Underflow : public IPlayerTask
 {
 public:
     Underflow(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client,
-              bool &underflowFlag, bool underflowEnabled);
+              bool &underflowFlag, bool underflowEnabled, MediaSourceType sourceType);
     ~Underflow() override;
     void execute() const override;
 
@@ -44,6 +44,7 @@ private:
     IGstGenericPlayerClient *m_gstPlayerClient;
     bool &m_underflowFlag;
     bool m_underflowEnabled;
+    MediaSourceType m_sourceType;
 };
 } // namespace firebolt::rialto::server::tasks::generic
 
