@@ -21,15 +21,19 @@
 #define RIALTO_SERVERMANAGER_COMMON_HEALTHCHECK_SERVICE_FACTORY_H_
 
 #include "IHealthcheckServiceFactory.h"
+#include <chrono>
 
 namespace rialto::servermanager::common
 {
 class HealthcheckServiceFactory : public IHealthcheckServiceFactory
 {
 public:
-    HealthcheckServiceFactory() = default;
+    HealthcheckServiceFactory(std::chrono::seconds healthcheckFrequency);
     ~HealthcheckServiceFactory() override = default;
     std::unique_ptr<IHealthcheckService> createHealthcheckService(ISessionServerAppManager &appManager) const override;
+
+private:
+    const std::chrono::seconds m_kHealthcheckFrequency;
 };
 } // namespace rialto::servermanager::common
 

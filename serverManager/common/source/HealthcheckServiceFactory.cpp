@@ -19,12 +19,19 @@
 
 #include "HealthcheckServiceFactory.h"
 #include "HealthcheckService.h"
+#include "ITimer.h"
 
 namespace rialto::servermanager::common
 {
+HealthcheckServiceFactory::HealthcheckServiceFactory(std::chrono::seconds healthcheckFrequency)
+    : m_kHealthcheckFrequency{healthcheckFrequency}
+{
+}
+
 std::unique_ptr<IHealthcheckService>
 HealthcheckServiceFactory::createHealthcheckService(ISessionServerAppManager &appManager) const
 {
-    return std::make_unique<HealthcheckService>(appManager);
+    return std::make_unique<HealthcheckService>(appManager, firebolt::rialto::common::ITimerFactory::getFactory(),
+                                                m_kHealthcheckFrequency);
 }
 } // namespace rialto::servermanager::common

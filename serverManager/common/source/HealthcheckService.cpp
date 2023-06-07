@@ -21,13 +21,33 @@
 
 namespace rialto::servermanager::common
 {
-HealthcheckService::HealthcheckService(ISessionServerAppManager &sessionServerAppManager) {}
+HealthcheckService::HealthcheckService(ISessionServerAppManager &sessionServerAppManager,
+                                       const std::shared_ptr<firebolt::rialto::common::ITimerFactory> &timerFactory,
+                                       std::chrono::seconds healthcheckFrequency)
+    : m_sessionServerAppManager{sessionServerAppManager}
+{
+    if (std::chrono::seconds{0} != healthcheckFrequency)
+    {
+        m_healthcheckTimer = timerFactory->createTimer(healthcheckFrequency,
+                                                       std::bind(&HealthcheckService::sendPing, this),
+                                                       firebolt::rialto::common::TimerType::PERIODIC);
+    }
+}
 
-HealthcheckService::~HealthcheckService() {}
+HealthcheckService::~HealthcheckService()
+{
+    if (m_healthcheckTimer && m_healthcheckTimer->isActive())
+    {
+        m_healthcheckTimer->cancel();
+        m_healthcheckTimer.reset();
+    }
+}
 
 void HealthcheckService::onPingSent(int serverId, int pingId) {}
 
 void HealthcheckService::onAckReceived(int serverId, int pingId, bool success) {}
 
 void HealthcheckService::onServerRemoved(int serverId) {}
+
+void HealthcheckService::sendPing() {}
 } // namespace rialto::servermanager::common

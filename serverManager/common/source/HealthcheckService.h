@@ -22,17 +22,27 @@
 
 #include "IHealthcheckService.h"
 #include "ISessionServerAppManager.h"
+#include "ITimer.h"
 
 namespace rialto::servermanager::common
 {
 class HealthcheckService : public IHealthcheckService
 {
 public:
-    HealthcheckService(ISessionServerAppManager &sessionServerAppManager);
+    HealthcheckService(ISessionServerAppManager &sessionServerAppManager,
+                       const std::shared_ptr<firebolt::rialto::common::ITimerFactory> &timerFactory,
+                       std::chrono::seconds healthcheckFrequency);
     ~HealthcheckService() override;
     void onPingSent(int serverId, int pingId) override;
     void onAckReceived(int serverId, int pingId, bool success) override;
     void onServerRemoved(int serverId) override;
+
+private:
+    void sendPing();
+
+private:
+    ISessionServerAppManager &m_sessionServerAppManager;
+    std::unique_ptr<firebolt::rialto::common::ITimer> m_healthcheckTimer;
 };
 } // namespace rialto::servermanager::common
 
