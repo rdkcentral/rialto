@@ -21,6 +21,8 @@
 set( CMAKE_INCLUDE_CURRENT_DIR ON )
 add_library (
         RialtoServerManagerCommon STATIC
+        source/HealthcheckService.cpp
+        source/HealthcheckServiceFactory.cpp
         source/SessionServerAppFactory.cpp
         source/SessionServerApp.cpp
         source/SessionServerAppManager.cpp

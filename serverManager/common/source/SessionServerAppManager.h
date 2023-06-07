@@ -22,6 +22,8 @@
 
 #include "IController.h"
 #include "IEventThread.h"
+#include "IHealthcheckService.h"
+#include "IHealthcheckServiceFactory.h"
 #include "ISessionServerApp.h"
 #include "ISessionServerAppManager.h"
 #include "IStateObserver.h"
@@ -38,6 +40,7 @@ public:
     SessionServerAppManager(std::unique_ptr<ipc::IController> &ipcController,
                             const std::shared_ptr<service::IStateObserver> &stateObserver,
                             std::unique_ptr<ISessionServerAppFactory> &&sessionServerAppFactory,
+                            std::unique_ptr<IHealthcheckServiceFactory> &&healthcheckServiceFactory,
                             const std::shared_ptr<firebolt::rialto::common::IEventThreadFactory> &eventThreadFactory);
     virtual ~SessionServerAppManager();
     SessionServerAppManager(const SessionServerAppManager &) = delete;
@@ -51,6 +54,7 @@ public:
     bool setSessionServerState(const std::string &appName,
                                const firebolt::rialto::common::SessionServerState &newState) override;
     void onSessionServerStateChanged(int serverId, const firebolt::rialto::common::SessionServerState &newState) override;
+    void sendPingEvents(int pingId) const override;
     void onAck(int serverId, int pingId, bool success) override;
     std::string getAppConnectionInfo(const std::string &appName) const override;
     bool setLogLevels(const service::LoggingLevels &logLevels) const override;
@@ -81,6 +85,7 @@ private:
     std::set<std::unique_ptr<ISessionServerApp>> m_sessionServerApps;
     std::unique_ptr<ISessionServerAppFactory> m_sessionServerAppFactory;
     std::shared_ptr<service::IStateObserver> m_stateObserver;
+    std::unique_ptr<IHealthcheckService> m_healthcheckService;
 };
 } // namespace rialto::servermanager::common
 
