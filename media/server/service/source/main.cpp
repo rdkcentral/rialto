@@ -29,6 +29,7 @@
 #include "IWebAudioPlayerServerInternalFactory.h"
 #include "IpcFactory.h"
 #include "PlaybackService.h"
+#include "RialtoServerLogging.h"
 #include "SessionServerManager.h"
 #include <cstdlib>
 #include <thread>
@@ -37,6 +38,9 @@
 
 int main(int argc, char *argv[])
 {
+    char commitID[] = COMMIT_ID;
+    RIALTO_SERVER_LOG_MIL("Commit ID: %s", commitID);
+
     firebolt::rialto::server::gstInitalise(argc, argv);
 
     firebolt::rialto::server::ipc::IpcFactory ipcFactory;
@@ -58,4 +62,6 @@ int main(int argc, char *argv[])
     }
     serviceManager.startService();
     return EXIT_SUCCESS;
+
+    // rialto logging
 }
