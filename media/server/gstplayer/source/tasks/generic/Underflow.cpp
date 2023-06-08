@@ -50,6 +50,7 @@ void Underflow::execute() const
         return;
     }
 
+    // If the EOS has been raised, notify EndOfStream, not underflow.
     if (allSourcesEos())
     {
         RIALTO_SERVER_LOG_WARN("Received underflow, but all streams are ended, so reporting EOS.");

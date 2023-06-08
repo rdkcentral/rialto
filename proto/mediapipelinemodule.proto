@@ -520,7 +520,7 @@ message QosEvent {
  * @param session_id        The id of the A/V session the request is for.
  * @param source_id         The id of the media source the request is for.
  *
- * This is sent by the server whenever frames are dropped from a buffer.
+ * This is sent by the server whenever buffer underflow occurs
  */
 message BufferUnderflowEvent {
     required int32 session_id = 1;
