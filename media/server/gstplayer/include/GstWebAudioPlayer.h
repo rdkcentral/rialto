@@ -107,21 +107,21 @@ private:
     /**
      * @brief Creates a amlhalasink audio sink element and adds it to the pipeline.
      *
-     * @retval constucted sink elemnt or nullptr on failure.
+     * @retval constructed sink element or nullptr on failure.
      */
     GstElement *createAmlhalaSink();
 
     /**
      * @brief Creates a rtkaudiosink audio sink element and adds it to the pipeline.
      *
-     * @retval constucted sink elemnt or nullptr on failure.
+     * @retval constructed sink element or nullptr on failure.
      */
     GstElement *createRtkAudioSink();
 
     /**
      * @brief Creates a autoaudiosink sink element and adds it to the pipeline.
      *
-     * @retval constucted sink elemnt or nullptr on failure.
+     * @retval constructed sink element or nullptr on failure.
      */
     GstElement *createAutoSink();
 

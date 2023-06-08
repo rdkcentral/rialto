@@ -49,7 +49,6 @@ void ReadShmDataAndAttachSamples::execute() const
         GstBuffer *gstBuffer = m_player.createBuffer(*mediaSegment);
         if (mediaSegment->getType() == firebolt::rialto::MediaSourceType::VIDEO)
         {
-            RIALTO_SERVER_LOG_DEBUG("lukewill: VIDEO");
             try
             {
                 IMediaPipeline::MediaSegmentVideo &videoSegment =
@@ -67,7 +66,6 @@ void ReadShmDataAndAttachSamples::execute() const
         }
         else if (mediaSegment->getType() == firebolt::rialto::MediaSourceType::AUDIO)
         {
-            RIALTO_SERVER_LOG_DEBUG("lukewill: AUDIO");
             try
             {
                 IMediaPipeline::MediaSegmentAudio &audioSegment =
