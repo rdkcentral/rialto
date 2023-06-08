@@ -62,6 +62,4 @@ int main(int argc, char *argv[])
     }
     serviceManager.startService();
     return EXIT_SUCCESS;
-
-    // rialto logging
 }
