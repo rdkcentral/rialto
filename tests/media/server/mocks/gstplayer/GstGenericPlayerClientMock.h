@@ -38,6 +38,7 @@ public:
     MOCK_METHOD(void, clearActiveRequestsCache, (), (override));
     MOCK_METHOD(void, invalidateActiveRequests, (const MediaSourceType &type), (override));
     MOCK_METHOD(void, notifyQos, (MediaSourceType mediaSourceType, const QosInfo &qosInfo), (override));
+    MOCK_METHOD(void, notifyBufferUnderflow, (MediaSourceType mediaSourceType), (override));
 };
 } // namespace firebolt::rialto::server
 

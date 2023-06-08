@@ -50,7 +50,35 @@ void Underflow::execute() const
         return;
     }
 
-    m_gstPlayerClient->notifyBufferUnderflow(m_sourceType);
+    if (allSourcesEos())
+    {
+        RIALTO_SERVER_LOG_WARN("Received underflow, but all streams are ended, so reporting EOS.");
+        if (!m_context.eosNotified && m_gstPlayerClient)
+        {
+            m_gstPlayerClient->notifyPlaybackState(PlaybackState::END_OF_STREAM);
+            m_context.eosNotified = true;
+        }
+    }
+    else
+    {
+        m_underflowFlag = true;
+        if (m_gstPlayerClient)
+        {
+            m_gstPlayerClient->notifyBufferUnderflow(m_sourceType);
+        }
+    }
+}
+
+bool Underflow::allSourcesEos() const
+{
+    for (const auto &streamInfo : m_context.streamInfo)
+    {
+        if (m_context.endOfStreamInfo.find(streamInfo.first) == m_context.endOfStreamInfo.end())
+        {
+            return false;
+        }
+    }
+    return true;
 }
 
 } // namespace firebolt::rialto::server::tasks::generic

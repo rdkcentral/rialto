@@ -84,9 +84,7 @@ TEST_F(CheckAudioUnderflowTest, shouldTriggerAudioUnderflow)
         .WillOnce(Invoke([this](GstElement *element) { return GST_STATE_PLAYING; }));
     EXPECT_CALL(*m_gstWrapper, gstElementGetPendingState(&m_pipeline))
         .WillOnce(Invoke([this](GstElement *element) { return GST_STATE_VOID_PENDING; }));
-    EXPECT_CALL(m_gstPlayer, stopPositionReportingAndCheckAudioUnderflowTimer());
-    EXPECT_CALL(m_gstPlayer, changePipelineState(GST_STATE_PAUSED));
-    EXPECT_CALL(m_gstPlayerClient, notifyNetworkState(firebolt::rialto::NetworkState::STALLED));
+    EXPECT_CALL(m_gstPlayerClient, notifyBufferUnderflow(firebolt::rialto::MediaSourceType::AUDIO));
     m_context.lastAudioSampleTimestamps = 0;
     firebolt::rialto::server::tasks::generic::CheckAudioUnderflow task{m_context, m_gstPlayer, &m_gstPlayerClient,
                                                                        m_gstWrapper};

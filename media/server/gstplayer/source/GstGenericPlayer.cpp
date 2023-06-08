@@ -651,8 +651,8 @@ void GstGenericPlayer::scheduleAudioUnderflow()
     if (m_workerThread)
     {
         bool underflowEnabled = m_context.isPlaying && !m_context.audioSourceRemoved;
-        m_workerThread->enqueueTask(
-            m_taskFactory->createUnderflow(m_context, *this, m_context.audioUnderflowOccured, underflowEnabled, MediaSourceType::AUDIO));
+        m_workerThread->enqueueTask(m_taskFactory->createUnderflow(m_context, *this, m_context.audioUnderflowOccured,
+                                                                   underflowEnabled, MediaSourceType::AUDIO));
     }
 }
 
@@ -661,8 +661,8 @@ void GstGenericPlayer::scheduleVideoUnderflow()
     if (m_workerThread)
     {
         bool underflowEnabled = m_context.isPlaying;
-        m_workerThread->enqueueTask(
-            m_taskFactory->createUnderflow(m_context, *this, m_context.videoUnderflowOccured, underflowEnabled, MediaSourceType::VIDEO));
+        m_workerThread->enqueueTask(m_taskFactory->createUnderflow(m_context, *this, m_context.videoUnderflowOccured,
+                                                                   underflowEnabled, MediaSourceType::VIDEO));
     }
 }
 
@@ -678,16 +678,6 @@ void GstGenericPlayer::cancelUnderflow(bool &underflowFlag)
         return;
     }
     underflowFlag = false;
-    if (!m_context.audioUnderflowOccured && !m_context.videoUnderflowOccured)
-    {
-        if (m_context.resumeOnUnderflowRecovery)
-        {
-            // Resume if the client hasnt requested pause during the underflow
-            m_taskFactory->createPlay(*this)->execute();
-            m_context.resumeOnUnderflowRecovery = false;
-        }
-        m_gstPlayerClient->notifyNetworkState(NetworkState::BUFFERED);
-    }
 }
 
 void GstGenericPlayer::play()

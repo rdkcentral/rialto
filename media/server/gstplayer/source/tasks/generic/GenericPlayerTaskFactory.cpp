@@ -199,7 +199,8 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createUnderflow(GenericPl
                                                                        bool &underflowFlag, bool underflowEnabled,
                                                                        MediaSourceType sourceType) const
 {
-    return std::make_unique<tasks::generic::Underflow>(context, player, m_client, underflowFlag, underflowEnabled, sourceType);
+    return std::make_unique<tasks::generic::Underflow>(context, player, m_client, underflowFlag, underflowEnabled,
+                                                       sourceType);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createUpdatePlaybackGroup(GenericPlayerContext &context,

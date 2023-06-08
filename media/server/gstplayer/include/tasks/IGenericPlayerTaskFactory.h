@@ -299,8 +299,9 @@ public:
      *
      * @retval the new Underflow task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createUnderflow(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                                         bool &underflowFlag, bool underflowEnabled, MediaSourceType sourceType) const = 0;
+    virtual std::unique_ptr<IPlayerTask> createUnderflow(GenericPlayerContext &context,
+                                                         IGstGenericPlayerPrivate &player, bool &underflowFlag,
+                                                         bool underflowEnabled, MediaSourceType sourceType) const = 0;
 
     /**
      * @brief Creates an UpdatePlaybackGroup task.
