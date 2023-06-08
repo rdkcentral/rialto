@@ -143,13 +143,6 @@ GstWebAudioPlayer::~GstWebAudioPlayer()
 
 bool GstWebAudioPlayer::initWebAudioPipeline(const uint32_t priority)
 {
-    m_context.pipeline = m_gstWrapper->gstPipelineNew(std::string("webaudiopipeline" + std::to_string(priority)).c_str());
-    if (!m_context.pipeline)
-    {
-        RIALTO_SERVER_LOG_ERROR("Failed to create the webaudiopipeline");
-        return false;
-    }
-
     // Create and initalise appsrc
     m_context.source = m_gstWrapper->gstElementFactoryMake("appsrc", "audsrc");
     if (!m_context.source)
@@ -159,6 +152,17 @@ bool GstWebAudioPlayer::initWebAudioPipeline(const uint32_t priority)
     }
     m_gstWrapper->gstAppSrcSetMaxBytes(GST_APP_SRC(m_context.source), kMaxWebAudioBytes);
     m_glibWrapper->gObjectSet(m_context.source, "format", GST_FORMAT_TIME, nullptr);
+
+    GstCaps *caps = gst_caps_from_string("audio/x-raw, format=(string)S16LE, channels=(int)6, layout=(string)interleaved, rate=(int)44100, channel-mask=(bitmask)0x000000000000003f");
+    RIALTO_SERVER_LOG_INFO("lukewill: Updating web audio appsrc caps to '%s'", strCaps.c_str());
+    m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(m_context.source), caps);
+
+    m_context.pipeline = m_gstWrapper->gstPipelineNew(std::string("webaudiopipeline" + std::to_string(priority)).c_str());
+    if (!m_context.pipeline)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to create the webaudiopipeline");
+        return false;
+    }
 
     // Perform sink specific initalisation
     GstPluginFeature *feature = nullptr;
