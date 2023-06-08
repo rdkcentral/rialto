@@ -137,6 +137,10 @@ public:
 
     bool getVolume(double &volume) override;
 
+    bool setMute(bool mute) override;
+
+    bool getMute(bool &mute) override;
+
     void notifyApplicationState(ApplicationState state) override;
 
 protected:

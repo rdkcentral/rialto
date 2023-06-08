@@ -49,6 +49,8 @@ public:
     MOCK_METHOD(bool, renderFrame, (int), (override));
     MOCK_METHOD(bool, setVolume, (int sessionId, double volume), (override));
     MOCK_METHOD(bool, getVolume, (int sessionId, double &volume), (override));
+    MOCK_METHOD(bool, setMute, (int sessionId, bool mute), (override));
+    MOCK_METHOD(bool, getMute, (int sessionId, bool &mute), (override));
     MOCK_METHOD(std::vector<std::string>, getSupportedMimeTypes, (MediaSourceType type), (override));
     MOCK_METHOD(bool, isMimeTypeSupported, (const std::string &mimeType), (override));
 };

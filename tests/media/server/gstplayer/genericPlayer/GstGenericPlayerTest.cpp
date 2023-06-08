@@ -51,6 +51,22 @@ protected:
         gstPlayerWillBeDestroyed();
         m_sut.reset();
     }
+
+    void getContext(const std::function<void(GenericPlayerContext &)> &fun)
+    {
+        // Call any method to modify GstGenericPlayer context
+        double volume{};
+        std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+        EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+        EXPECT_CALL(m_taskFactoryMock, createSetVolume(_, volume))
+            .WillOnce(Invoke(
+                [&](GenericPlayerContext &m_context, double volume)
+                {
+                    fun(m_context);
+                    return std::move(task);
+                }));
+        m_sut->setVolume(volume);
+    }
 };
 
 TEST_F(GstGenericPlayerTest, shouldAttachSource)
@@ -265,4 +281,25 @@ TEST_F(GstGenericPlayerTest, shouldReturnVolume)
     EXPECT_CALL(*m_gstWrapperMock, gstStreamVolumeGetVolume(_, GST_STREAM_VOLUME_FORMAT_LINEAR)).WillOnce(Return(kVolume));
     EXPECT_TRUE(m_sut->getVolume(resultVolume));
     EXPECT_EQ(resultVolume, kVolume);
+}
+
+TEST_F(GstGenericPlayerTest, shouldReturnMute)
+{
+    constexpr bool kMute{false};
+    bool resultMute{};
+    GstStreamVolume *volume = nullptr;
+
+    getContext([&](GenericPlayerContext &m_context) { volume = GST_STREAM_VOLUME(m_context.pipeline); });
+    EXPECT_CALL(*m_gstWrapperMock, gstStreamVolumeGetMute(volume)).WillOnce(Return(kMute));
+    EXPECT_TRUE(m_sut->getMute(resultMute));
+    EXPECT_EQ(resultMute, kMute);
+}
+
+TEST_F(GstGenericPlayerTest, shouldMute)
+{
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(m_taskFactoryMock, createSetMute(_, _)).WillOnce(Return(ByMove(std::move(task))));
+
+    m_sut->setMute(true);
 }

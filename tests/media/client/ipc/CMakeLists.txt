@@ -55,6 +55,8 @@ add_gtests (
         mediaPipelineIpc/RenderFrameTest.cpp
         mediaPipelineIpc/GetVolumeTest.cpp
         mediaPipelineIpc/SetVolumeTest.cpp
+        mediaPipelineIpc/GetMuteTest.cpp
+        mediaPipelineIpc/SetMuteTest.cpp
 
         # MediaPipelineCapabilitiesIpc tests
         mediaPipelineCapabilitiesIpc/MediaPipelineCapabilitiesIpcTest.cpp

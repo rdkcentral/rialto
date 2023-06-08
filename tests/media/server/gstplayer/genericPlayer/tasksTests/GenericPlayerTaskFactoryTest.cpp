@@ -39,6 +39,7 @@
 #include "tasks/generic/ReadShmDataAndAttachSamples.h"
 #include "tasks/generic/RemoveSource.h"
 #include "tasks/generic/ReportPosition.h"
+#include "tasks/generic/SetMute.h"
 #include "tasks/generic/SetPlaybackRate.h"
 #include "tasks/generic/SetPosition.h"
 #include "tasks/generic/SetVideoGeometry.h"
@@ -209,6 +210,14 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetVolume)
     auto task = m_sut.createSetVolume(m_context, kVolume);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetVolume &>(*task));
+}
+
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetMute)
+{
+    constexpr bool kMute{false};
+    auto task = m_sut.createSetMute(m_context, kMute);
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetMute &>(*task));
 }
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateShutdown)
