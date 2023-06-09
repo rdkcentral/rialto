@@ -95,9 +95,7 @@ find_package(Git QUIET REQUIRED)
 
 # Retrieve the commit ID
 execute_process(
-    # COMMAND "${GIT_EXECUTABLE}" rev-parse HEAD 
-    # COMMAND git log -1 --format=%h
-    COMMAND git rev-parse --short HEAD
+    COMMAND git rev-parse HEAD
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} 
     RESULT_VARIABLE RESULT 
     OUTPUT_VARIABLE COMMIT_ID 
