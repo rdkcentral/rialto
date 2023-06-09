@@ -87,11 +87,8 @@ if ( RIALTO_ENABLE_DECRYPT_BUFFER )
     add_compile_definitions( RIALTO_ENABLE_DECRYPT_BUFFER )
 endif()
 
-#Setting the executable
+# Setting the executable
 set(GIT_EXECUTABLE /usr/bin/git)
-
-#Find Git
-find_package(Git QUIET REQUIRED)
 
 # Retrieve the commit ID
 execute_process(
