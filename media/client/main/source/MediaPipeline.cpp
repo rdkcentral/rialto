@@ -645,4 +645,15 @@ void MediaPipeline::notifyQos(int32_t sourceId, const QosInfo &qosInfo)
     }
 }
 
+void MediaPipeline::notifyBufferUnderflow(int32_t sourceId)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    std::shared_ptr<IMediaPipelineClient> client = m_mediaPipelineClient.lock();
+    if (client)
+    {
+        client->notifyBufferUnderflow(sourceId);
+    }
+}
+
 }; // namespace firebolt::rialto::client

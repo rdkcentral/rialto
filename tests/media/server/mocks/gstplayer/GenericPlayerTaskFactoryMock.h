@@ -88,7 +88,7 @@ public:
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player), (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createUnderflow,
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player, bool &underflowFlag,
-                 bool underflowEnabled),
+                 bool underflowEnabled, MediaSourceType mediaSource),
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createUpdatePlaybackGroup,
                 (GenericPlayerContext & context, GstElement *typefind, const GstCaps *caps), (const, override));

@@ -220,11 +220,6 @@ struct GenericPlayerContext
      * Attribute can be used only in worker thread
      */
     bool wereAllSourcesAttached{false};
-
-    /**
-     * @brief Flag used to check if client is expecting playback to resume when recovering from an underflow.
-     */
-    bool resumeOnUnderflowRecovery{false};
 };
 } // namespace firebolt::rialto::server
 

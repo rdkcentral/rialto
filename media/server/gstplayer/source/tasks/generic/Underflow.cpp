@@ -26,9 +26,9 @@
 namespace firebolt::rialto::server::tasks::generic
 {
 Underflow::Underflow(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client,
-                     bool &underflowFlag, bool underflowEnabled)
+                     bool &underflowFlag, bool underflowEnabled, MediaSourceType sourceType)
     : m_context{context}, m_player{player}, m_gstPlayerClient{client}, m_underflowFlag{underflowFlag},
-      m_underflowEnabled{underflowEnabled}
+      m_underflowEnabled{underflowEnabled}, m_sourceType{sourceType}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing Underflow");
 }
@@ -62,14 +62,10 @@ void Underflow::execute() const
     }
     else
     {
-        Pause pauseTask{m_context, m_player};
-        pauseTask.execute();
-
         m_underflowFlag = true;
-        m_context.resumeOnUnderflowRecovery = true;
         if (m_gstPlayerClient)
         {
-            m_gstPlayerClient->notifyNetworkState(NetworkState::STALLED);
+            m_gstPlayerClient->notifyBufferUnderflow(m_sourceType);
         }
     }
 }
@@ -85,4 +81,5 @@ bool Underflow::allSourcesEos() const
     }
     return true;
 }
+
 } // namespace firebolt::rialto::server::tasks::generic

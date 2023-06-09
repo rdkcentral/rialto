@@ -135,7 +135,8 @@ TEST_F(GstGenericPlayerPrivateTest, shouldScheduleAudioUnderflowWithUnderflowEna
 
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createUnderflow(_, _, _, true)).WillOnce(Return(ByMove(std::move(task))));
+    EXPECT_CALL(m_taskFactoryMock, createUnderflow(_, _, _, true, MediaSourceType::AUDIO))
+        .WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->scheduleAudioUnderflow();
 }
@@ -151,7 +152,8 @@ TEST_F(GstGenericPlayerPrivateTest, shouldScheduleAudioUnderflowWithUnderflowDis
 
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createUnderflow(_, _, _, false)).WillOnce(Return(ByMove(std::move(task))));
+    EXPECT_CALL(m_taskFactoryMock, createUnderflow(_, _, _, false, MediaSourceType::AUDIO))
+        .WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->scheduleAudioUnderflow();
 }
@@ -167,7 +169,8 @@ TEST_F(GstGenericPlayerPrivateTest, shouldScheduleAudioUnderflowWithUnderflowDis
 
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createUnderflow(_, _, _, false)).WillOnce(Return(ByMove(std::move(task))));
+    EXPECT_CALL(m_taskFactoryMock, createUnderflow(_, _, _, false, MediaSourceType::AUDIO))
+        .WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->scheduleAudioUnderflow();
 }
@@ -178,7 +181,8 @@ TEST_F(GstGenericPlayerPrivateTest, shouldScheduleVideoUnderflowWithUnderflowEna
 
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createUnderflow(_, _, _, true)).WillOnce(Return(ByMove(std::move(task))));
+    EXPECT_CALL(m_taskFactoryMock, createUnderflow(_, _, _, true, MediaSourceType::VIDEO))
+        .WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->scheduleVideoUnderflow();
 }
@@ -189,7 +193,8 @@ TEST_F(GstGenericPlayerPrivateTest, shouldScheduleVideoUnderflowWithUnderflowDis
 
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createUnderflow(_, _, _, false)).WillOnce(Return(ByMove(std::move(task))));
+    EXPECT_CALL(m_taskFactoryMock, createUnderflow(_, _, _, false, MediaSourceType::VIDEO))
+        .WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->scheduleVideoUnderflow();
 }
@@ -514,37 +519,20 @@ TEST_F(GstGenericPlayerPrivateTest, shouldCancelAudioUnderflowAndResume)
     GstBuffer buffer{};
     GstAppSrc audioSrc{};
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    GenericPlayerContext *playerContext;
     modifyContext(
         [&](GenericPlayerContext &context)
         {
+            playerContext = &context;
             context.audioBuffers.emplace_back(&buffer);
             context.audioNeedData = true;
             context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].appSrc = GST_ELEMENT(&audioSrc);
             context.audioUnderflowOccured = true;
-            context.resumeOnUnderflowRecovery = true;
         });
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(_, &buffer));
-    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createPlay(_)).WillOnce(Return(ByMove(std::move(task))));
-    EXPECT_CALL(m_gstPlayerClient, notifyNetworkState(NetworkState::BUFFERED));
-    m_sut->attachAudioData();
-}
 
-TEST_F(GstGenericPlayerPrivateTest, shouldNotCancelAudioUnderflowWhenVideoUnderflowIsActive)
-{
-    GstBuffer buffer{};
-    GstAppSrc audioSrc{};
-    modifyContext(
-        [&](GenericPlayerContext &context)
-        {
-            context.audioBuffers.emplace_back(&buffer);
-            context.audioNeedData = true;
-            context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].appSrc = GST_ELEMENT(&audioSrc);
-            context.audioUnderflowOccured = true;
-            context.videoUnderflowOccured = true;
-        });
-    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(_, &buffer));
     m_sut->attachAudioData();
+    EXPECT_FALSE(playerContext->audioUnderflowOccured);
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldNotAttachVideoDataWhenBuffersAreEmpty)
@@ -593,20 +581,20 @@ TEST_F(GstGenericPlayerPrivateTest, shouldCancelVideoUnderflowAndResume)
     GstBuffer buffer{};
     GstAppSrc videoSrc{};
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    GenericPlayerContext *playerContext;
     modifyContext(
         [&](GenericPlayerContext &context)
         {
+            playerContext = &context;
             context.videoBuffers.emplace_back(&buffer);
             context.videoNeedData = true;
             context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].appSrc = GST_ELEMENT(&videoSrc);
             context.videoUnderflowOccured = true;
-            context.resumeOnUnderflowRecovery = true;
         });
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(_, &buffer));
-    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createPlay(_)).WillOnce(Return(ByMove(std::move(task))));
-    EXPECT_CALL(m_gstPlayerClient, notifyNetworkState(NetworkState::BUFFERED));
+
     m_sut->attachVideoData();
+    EXPECT_FALSE(playerContext->videoUnderflowOccured);
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldNotCancelVideoUnderflowWhenAudioUnderflowIsActive)
@@ -641,64 +629,6 @@ TEST_F(GstGenericPlayerPrivateTest, shouldAttachAudioAndVideoData)
             context.videoNeedData = true;
             context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].appSrc = GST_ELEMENT(&audioSrc);
             context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].appSrc = GST_ELEMENT(&videoSrc);
-        });
-    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(_, &audioBuffer));
-    m_sut->attachAudioData();
-    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(_, &videoBuffer));
-    EXPECT_CALL(m_gstPlayerClient, notifyNetworkState(NetworkState::BUFFERED));
-    m_sut->attachVideoData();
-}
-
-TEST_F(GstGenericPlayerPrivateTest, shouldCancelAudioAndVideoUnderflowAndResume)
-{
-    GstBuffer audioBuffer{};
-    GstBuffer videoBuffer{};
-    GstAppSrc audioSrc{};
-    GstAppSrc videoSrc{};
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
-    modifyContext(
-        [&](GenericPlayerContext &context)
-        {
-            context.bufferedNotificationSent = true;
-            context.audioBuffers.emplace_back(&audioBuffer);
-            context.videoBuffers.emplace_back(&videoBuffer);
-            context.audioNeedData = true;
-            context.videoNeedData = true;
-            context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].appSrc = GST_ELEMENT(&audioSrc);
-            context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].appSrc = GST_ELEMENT(&videoSrc);
-            context.audioUnderflowOccured = true;
-            context.videoUnderflowOccured = true;
-            context.resumeOnUnderflowRecovery = true;
-        });
-    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(_, &audioBuffer));
-    m_sut->attachAudioData();
-    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(_, &videoBuffer));
-    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createPlay(_)).WillOnce(Return(ByMove(std::move(task))));
-    EXPECT_CALL(m_gstPlayerClient, notifyNetworkState(NetworkState::BUFFERED));
-    m_sut->attachVideoData();
-}
-
-TEST_F(GstGenericPlayerPrivateTest, shouldCancelAudioAndVideoUnderflowAndNotResume)
-{
-    GstBuffer audioBuffer{};
-    GstBuffer videoBuffer{};
-    GstAppSrc audioSrc{};
-    GstAppSrc videoSrc{};
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
-    modifyContext(
-        [&](GenericPlayerContext &context)
-        {
-            context.bufferedNotificationSent = true;
-            context.audioBuffers.emplace_back(&audioBuffer);
-            context.videoBuffers.emplace_back(&videoBuffer);
-            context.audioNeedData = true;
-            context.videoNeedData = true;
-            context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].appSrc = GST_ELEMENT(&audioSrc);
-            context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].appSrc = GST_ELEMENT(&videoSrc);
-            context.audioUnderflowOccured = true;
-            context.videoUnderflowOccured = true;
-            context.resumeOnUnderflowRecovery = false;
         });
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(_, &audioBuffer));
     m_sut->attachAudioData();

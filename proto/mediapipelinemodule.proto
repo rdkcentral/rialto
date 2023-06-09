@@ -515,6 +515,19 @@ message QosEvent {
 }
 
 /**
+ * @brief Event sent by the server when a buffer underflow has been raised.
+ *
+ * @param session_id        The id of the A/V session the request is for.
+ * @param source_id         The id of the media source the request is for.
+ *
+ * This is sent by the server whenever buffer underflow occurs
+ */
+message BufferUnderflowEvent {
+    required int32 session_id = 1;
+    required uint64 source_id = 2;
+}
+
+/**
  * @brief Requests RialtoClient to change its log levels
  *
  * @param[in]  defaultLogLevels       Desired default log level

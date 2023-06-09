@@ -903,6 +903,27 @@ void MediaPipelineServerInternal::notifyQos(MediaSourceType mediaSourceType, con
     m_mainThread->enqueueTask(m_mainThreadClientId, task);
 }
 
+void MediaPipelineServerInternal::notifyBufferUnderflow(MediaSourceType mediaSourceType)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    auto task = [&, mediaSourceType]()
+    {
+        if (m_mediaPipelineClient)
+        {
+            const auto kSourceIter = m_attachedSources.find(mediaSourceType);
+            if (m_attachedSources.cend() == kSourceIter)
+            {
+                RIALTO_SERVER_LOG_WARN("Buffer underflow notification failed - sourceId not found");
+                return;
+            }
+            m_mediaPipelineClient->notifyBufferUnderflow(kSourceIter->second);
+        }
+    };
+
+    m_mainThread->enqueueTask(m_mainThreadClientId, task);
+}
+
 void MediaPipelineServerInternal::scheduleNotifyNeedMediaData(MediaSourceType mediaSourceType)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");

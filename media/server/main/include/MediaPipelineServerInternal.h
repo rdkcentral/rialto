@@ -146,6 +146,8 @@ public:
 
     void notifyQos(MediaSourceType mediaSourceType, const QosInfo &qosInfo) override;
 
+    void notifyBufferUnderflow(MediaSourceType mediaSourceType) override;
+
 protected:
     /**
      * @brief The media player client.
