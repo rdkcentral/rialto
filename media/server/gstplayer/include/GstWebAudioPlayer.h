@@ -107,23 +107,32 @@ private:
     /**
      * @brief Creates a amlhalasink audio sink element and adds it to the pipeline.
      *
-     * @retval true on success false otherwise.
+     * @retval constructed sink element or nullptr on failure.
      */
-    bool createAmlhalaSink();
+    GstElement *createAmlhalaSink();
 
     /**
      * @brief Creates a rtkaudiosink audio sink element and adds it to the pipeline.
      *
-     * @retval true on success false otherwise.
+     * @retval constructed sink element or nullptr on failure.
      */
-    bool createRtkAudioSink();
+    GstElement *createRtkAudioSink();
 
     /**
      * @brief Creates a autoaudiosink sink element and adds it to the pipeline.
      *
+     * @retval constructed sink element or nullptr on failure.
+     */
+    GstElement *createAutoSink();
+
+    /**
+     * @brief Links the sink, audio convert and audio resample to the src.
+     *
+     * @param[in] sink  : The constructed sink to link to the src.
+     *
      * @retval true on success false otherwise.
      */
-    bool createAutoSink();
+    bool linkElementsToSrc(GstElement *sink);
 
     /**
      * @brief Terminates the player pipeline for WebAudio playback.
