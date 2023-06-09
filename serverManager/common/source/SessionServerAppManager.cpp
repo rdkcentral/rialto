@@ -116,7 +116,7 @@ void SessionServerAppManager::sendPingEvents(int pingId) const
 {
     RIALTO_SERVER_MANAGER_LOG_DEBUG("Queue ping procedure with id: %d", pingId);
     m_eventThread->add(
-        [&]()
+        [this, pingId]()
         {
             for (const auto &sessionServer : m_sessionServerApps)
             {

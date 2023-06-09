@@ -23,6 +23,8 @@
 #include "IHealthcheckService.h"
 #include "ISessionServerAppManager.h"
 #include "ITimer.h"
+#include <mutex>
+#include <set>
 
 namespace rialto::servermanager::common
 {
@@ -43,6 +45,9 @@ private:
 private:
     ISessionServerAppManager &m_sessionServerAppManager;
     std::unique_ptr<firebolt::rialto::common::ITimer> m_healthcheckTimer;
+    std::mutex m_mutex;
+    int m_currentPingId;
+    std::set<int> m_remainingPings;
 };
 } // namespace rialto::servermanager::common
 
