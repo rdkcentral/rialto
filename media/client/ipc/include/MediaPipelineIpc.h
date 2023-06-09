@@ -163,6 +163,13 @@ private:
     void onQos(const std::shared_ptr<firebolt::rialto::QosEvent> &event);
 
     /**
+     * @brief Handler for a buffer underflow notification from the server.
+     *
+     * @param[in] event : The buffer underflow event structure.
+     */
+    void onBufferUnderflow(const std::shared_ptr<firebolt::rialto::BufferUnderflowEvent> &event);
+
+    /**
      * @brief Create a new player session.
      *
      * @param[in] videoRequirements : The video decoder requirements for the MediaPipeline session.

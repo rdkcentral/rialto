@@ -140,6 +140,15 @@ public:
      * @param[in] sourceType    : The type of source that sent the message.
      */
     virtual void notifyQos(MediaSourceType mediaSourceType, const QosInfo &qosInfo) = 0;
+
+    /**
+     * @brief Notifies the client that buffer underflow occurred.
+     *
+     * Notification shall be sent whenever a video/audio buffer underflow occurs
+     *
+     * @param[in] mediaSourceType  : The type of the source that produced the buffer underflow
+     */
+    virtual void notifyBufferUnderflow(MediaSourceType mediaSourceType) = 0;
 };
 
 }; // namespace firebolt::rialto::server

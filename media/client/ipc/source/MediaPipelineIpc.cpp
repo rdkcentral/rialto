@@ -149,6 +149,13 @@ bool MediaPipelineIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &i
         return false;
     m_eventTags.push_back(eventTag);
 
+    eventTag = ipcChannel->subscribe<firebolt::rialto::BufferUnderflowEvent>(
+        [this](const std::shared_ptr<firebolt::rialto::BufferUnderflowEvent> &event)
+        { m_eventThread->add(&MediaPipelineIpc::onBufferUnderflow, this, event); });
+    if (eventTag < 0)
+        return false;
+    m_eventTags.push_back(eventTag);
+
     return true;
 }
 
@@ -837,6 +844,15 @@ void MediaPipelineIpc::onQos(const std::shared_ptr<firebolt::rialto::QosEvent> &
     {
         QosInfo qosInfo = {event->qos_info().processed(), event->qos_info().dropped()};
         m_mediaPipelineIpcClient->notifyQos(event->source_id(), qosInfo);
+    }
+}
+
+void MediaPipelineIpc::onBufferUnderflow(const std::shared_ptr<firebolt::rialto::BufferUnderflowEvent> &event)
+{
+    // Ignore event if not for this session
+    if (event->session_id() == m_sessionId)
+    {
+        m_mediaPipelineIpcClient->notifyBufferUnderflow(event->source_id());
     }
 }
 
