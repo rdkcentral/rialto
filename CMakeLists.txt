@@ -87,9 +87,6 @@ if ( RIALTO_ENABLE_DECRYPT_BUFFER )
     add_compile_definitions( RIALTO_ENABLE_DECRYPT_BUFFER )
 endif()
 
-# Setting the executable
-set(GIT_EXECUTABLE /usr/bin/git)
-
 # Retrieve the commit ID
 execute_process(
     COMMAND git rev-parse HEAD
@@ -100,7 +97,7 @@ execute_process(
 )
 
 if(RESULT)
-    message("Failed to get git commit id: ${RESULT}")
+    message("Failed to get git commit ID: ${RESULT}")
 endif()
 
 # Preprocesser Variable
