@@ -69,7 +69,8 @@ public:
     void healthcheckServiceWillHandleAck();
     void pingWillBeSentToRunningApps();
     void pingSendToRunningAppsWillFail();
-    void clientWillBeRemovedAfterStateChangedIndication(const firebolt::rialto::common::SessionServerState &state);
+    void clientWillBeRemoved();
+    void sessionServerWillIndicateStateChange(const firebolt::rialto::common::SessionServerState &state);
 
     void triggerPreloadSessionServers();
     bool triggerInitiateApplication(const firebolt::rialto::common::SessionServerState &state);

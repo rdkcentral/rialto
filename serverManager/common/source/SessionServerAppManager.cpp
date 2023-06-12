@@ -232,6 +232,9 @@ bool SessionServerAppManager::configurePreloadedSessionServer(const std::unique_
     }
     // Configuration failed, kill server and return error
     handleSessionServerStateChange(sessionServer->getServerId(), firebolt::rialto::common::SessionServerState::ERROR);
+    sessionServer->kill();
+    handleSessionServerStateChange(sessionServer->getServerId(),
+                                   firebolt::rialto::common::SessionServerState::NOT_RUNNING);
     // Schedule adding new preloaded session server
     m_eventThread->add([this]() { connectSessionServer(preloadSessionServer()); });
     return false;
@@ -273,21 +276,22 @@ void SessionServerAppManager::handleSessionServerStateChange(int serverId,
         sessionServer->cancelStartupTimer();
         if (!sessionServer->isPreloaded() && !configureSessionServer(sessionServer))
         {
-            return handleSessionServerStateChange(serverId, firebolt::rialto::common::SessionServerState::ERROR);
+            handleSessionServerStateChange(serverId, firebolt::rialto::common::SessionServerState::ERROR);
+            sessionServer->kill();
+            handleSessionServerStateChange(serverId, firebolt::rialto::common::SessionServerState::NOT_RUNNING);
         }
     }
-    else if (newState == firebolt::rialto::common::SessionServerState::ERROR ||
-             newState == firebolt::rialto::common::SessionServerState::NOT_RUNNING)
+    else if (newState == firebolt::rialto::common::SessionServerState::ERROR && sessionServer->isPreloaded())
     {
         m_ipcController->removeClient(serverId);
-        if (newState == firebolt::rialto::common::SessionServerState::ERROR)
-        {
-            sessionServer->kill();
-            if (sessionServer->isPreloaded())
-            {
-                connectSessionServer(preloadSessionServer());
-            }
-        }
+        sessionServer->kill();
+        m_healthcheckService->onServerRemoved(sessionServer->getServerId());
+        m_sessionServerApps.erase(sessionServer);
+        connectSessionServer(preloadSessionServer());
+    }
+    else if (newState == firebolt::rialto::common::SessionServerState::NOT_RUNNING)
+    {
+        m_ipcController->removeClient(serverId);
         m_healthcheckService->onServerRemoved(sessionServer->getServerId());
         m_sessionServerApps.erase(sessionServer);
     }

@@ -261,6 +261,9 @@ void SessionServerApp::setupStartupTimer()
                                          .onSessionServerStateChanged(m_kServerId,
                                                                       firebolt::rialto::common::SessionServerState::ERROR);
                                      kill();
+                                     m_sessionServerAppManager
+                                         .onSessionServerStateChanged(m_kServerId,
+                                                                      firebolt::rialto::common::SessionServerState::NOT_RUNNING);
                                  });
     }
     else

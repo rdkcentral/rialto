@@ -286,11 +286,15 @@ void SessionServerAppManagerTests::sessionServerWillFailToSetLogLevels()
     EXPECT_CALL(m_controllerMock, setLogLevels(kExampleLoggingLevels)).WillOnce(Return(false));
 }
 
-void SessionServerAppManagerTests::clientWillBeRemovedAfterStateChangedIndication(
-    const firebolt::rialto::common::SessionServerState &state)
+void SessionServerAppManagerTests::clientWillBeRemoved()
 {
     EXPECT_CALL(m_healthcheckServiceMock, onServerRemoved(kServerId));
     EXPECT_CALL(m_controllerMock, removeClient(kServerId));
+}
+
+void SessionServerAppManagerTests::sessionServerWillIndicateStateChange(
+    const firebolt::rialto::common::SessionServerState &state)
+{
     EXPECT_CALL(*m_stateObserver, stateChanged(kAppName, state));
 }
 
