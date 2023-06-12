@@ -38,7 +38,7 @@ namespace
 constexpr int kControlId{8};
 constexpr int kPingId{3};
 constexpr int kNextPingId{4};
-constexpr firebolt::rialto::ApplicationState kAppState{firebolt::rialto::ApplicationState::INACTIVE};
+constexpr firebolt::rialto::ApplicationState kAppState{firebolt::rialto::ApplicationState::RUNNING};
 constexpr int kMainThreadClientId{123};
 } // namespace
 
@@ -69,14 +69,44 @@ public:
             .RetiresOnSaturation();
     }
 
+    void setRunningState()
+    {
+        mainThreadWillEnqueueTaskAndWait();
+        EXPECT_CALL(*m_controlClientMock, notifyApplicationState(kAppState));
+        m_sut->setApplicationState(kAppState);
+    }
+
     std::shared_ptr<StrictMock<ControlClientServerInternalMock>> m_controlClientMock;
     std::shared_ptr<StrictMock<MainThreadFactoryMock>> m_mainThreadFactoryMock;
     std::shared_ptr<StrictMock<MainThreadMock>> m_mainThreadMock;
     std::unique_ptr<firebolt::rialto::server::ControlServerInternal> m_sut;
 };
 
+TEST_F(ControlServerInternalTests, shouldNotSendPingEventInUnknownState)
+{
+    std::unique_ptr<StrictMock<HeartbeatHandlerMock>> heartbeatHandlerMock{
+        std::make_unique<StrictMock<HeartbeatHandlerMock>>()};
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*heartbeatHandlerMock, id()).WillRepeatedly(Return(kPingId));
+    m_sut->ping(std::move(heartbeatHandlerMock));
+}
+
+TEST_F(ControlServerInternalTests, shouldNotSendPingEventInInactiveState)
+{
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_controlClientMock, notifyApplicationState(firebolt::rialto::ApplicationState::INACTIVE));
+    m_sut->setApplicationState(firebolt::rialto::ApplicationState::INACTIVE);
+
+    std::unique_ptr<StrictMock<HeartbeatHandlerMock>> heartbeatHandlerMock{
+        std::make_unique<StrictMock<HeartbeatHandlerMock>>()};
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*heartbeatHandlerMock, id()).WillRepeatedly(Return(kPingId));
+    m_sut->ping(std::move(heartbeatHandlerMock));
+}
+
 TEST_F(ControlServerInternalTests, shouldSendPingEvent)
 {
+    setRunningState();
     std::unique_ptr<StrictMock<HeartbeatHandlerMock>> heartbeatHandlerMock{
         std::make_unique<StrictMock<HeartbeatHandlerMock>>()};
     mainThreadWillEnqueueTaskAndWait();
@@ -88,6 +118,7 @@ TEST_F(ControlServerInternalTests, shouldSendPingEvent)
 
 TEST_F(ControlServerInternalTests, shouldNotifyErrorWhenEarlierPingWasNotFinished)
 {
+    setRunningState();
     std::unique_ptr<StrictMock<HeartbeatHandlerMock>> heartbeatHandlerMock{
         std::make_unique<StrictMock<HeartbeatHandlerMock>>()};
     std::unique_ptr<StrictMock<HeartbeatHandlerMock>> heartbeatHandlerMock2{
@@ -105,6 +136,30 @@ TEST_F(ControlServerInternalTests, shouldNotifyErrorWhenEarlierPingWasNotFinishe
     m_sut->ping(std::move(heartbeatHandlerMock2));
 }
 
+TEST_F(ControlServerInternalTests, shouldNotNotifyErrorInInactiveState)
+{
+    setRunningState();
+    std::unique_ptr<StrictMock<HeartbeatHandlerMock>> heartbeatHandlerMock{
+        std::make_unique<StrictMock<HeartbeatHandlerMock>>()};
+    std::unique_ptr<StrictMock<HeartbeatHandlerMock>> heartbeatHandlerMock2{
+        std::make_unique<StrictMock<HeartbeatHandlerMock>>()};
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*heartbeatHandlerMock, id()).WillRepeatedly(Return(kPingId));
+    EXPECT_CALL(*heartbeatHandlerMock, pingSent());
+    EXPECT_CALL(*m_controlClientMock, ping(kPingId));
+
+    m_sut->ping(std::move(heartbeatHandlerMock));
+
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_controlClientMock, notifyApplicationState(firebolt::rialto::ApplicationState::INACTIVE));
+    m_sut->setApplicationState(firebolt::rialto::ApplicationState::INACTIVE);
+
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*heartbeatHandlerMock2, id()).WillRepeatedly(Return(kNextPingId));
+
+    m_sut->ping(std::move(heartbeatHandlerMock2));
+}
+
 TEST_F(ControlServerInternalTests, shouldNotAckWhenHeartbeatHandlerIsNotPresent)
 {
     mainThreadWillEnqueueTaskAndWait();
@@ -113,6 +168,7 @@ TEST_F(ControlServerInternalTests, shouldNotAckWhenHeartbeatHandlerIsNotPresent)
 
 TEST_F(ControlServerInternalTests, shouldNotAckWhenAckIdIsWrong)
 {
+    setRunningState();
     std::unique_ptr<StrictMock<HeartbeatHandlerMock>> heartbeatHandlerMock{
         std::make_unique<StrictMock<HeartbeatHandlerMock>>()};
     mainThreadWillEnqueueTaskAndWait();
@@ -127,6 +183,7 @@ TEST_F(ControlServerInternalTests, shouldNotAckWhenAckIdIsWrong)
 
 TEST_F(ControlServerInternalTests, shouldAck)
 {
+    setRunningState();
     std::unique_ptr<StrictMock<HeartbeatHandlerMock>> heartbeatHandlerMock{
         std::make_unique<StrictMock<HeartbeatHandlerMock>>()};
     mainThreadWillEnqueueTaskAndWait();
@@ -141,6 +198,7 @@ TEST_F(ControlServerInternalTests, shouldAck)
 
 TEST_F(ControlServerInternalTests, shouldAckAndSendNextPing)
 {
+    setRunningState();
     std::unique_ptr<StrictMock<HeartbeatHandlerMock>> heartbeatHandlerMock{
         std::make_unique<StrictMock<HeartbeatHandlerMock>>()};
     mainThreadWillEnqueueTaskAndWait();
@@ -166,14 +224,12 @@ TEST_F(ControlServerInternalTests, shouldAckAndSendNextPing)
 
 TEST_F(ControlServerInternalTests, shouldSetApplicationState)
 {
-    mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_controlClientMock, notifyApplicationState(kAppState));
-    m_sut->setApplicationState(kAppState);
+    setRunningState();
 }
 
 TEST_F(ControlServerInternalTests, shouldRegisterClient)
 {
-    firebolt::rialto::ApplicationState appState{firebolt::rialto::ApplicationState::INACTIVE};
+    firebolt::rialto::ApplicationState appState{firebolt::rialto::ApplicationState::RUNNING};
     mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_controlClientMock, notifyApplicationState(kAppState));
     m_sut->registerClient(m_controlClientMock, appState);

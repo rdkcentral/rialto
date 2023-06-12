@@ -52,6 +52,7 @@ public:
 private:
     const int m_controlId;
     std::shared_ptr<IControlClientServerInternal> m_client;
+    ApplicationState m_currentState;
     std::shared_ptr<IMainThread> m_mainThread;
     std::unique_ptr<IHeartbeatHandler> m_heartbeatHandler;
     uint32_t m_mainThreadClientId;

@@ -78,7 +78,7 @@ catch (const std::exception &e)
 
 ControlServerInternal::ControlServerInternal(const std::shared_ptr<IMainThreadFactory> &mainThreadFactory, int id,
                                              const std::shared_ptr<IControlClientServerInternal> &client)
-    : m_controlId{id}, m_client{client}
+    : m_controlId{id}, m_client{client}, m_currentState{ApplicationState::UNKNOWN}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
     m_mainThread = mainThreadFactory->getMainThread();
@@ -120,6 +120,7 @@ void ControlServerInternal::setApplicationState(const ApplicationState &state)
     RIALTO_SERVER_LOG_INFO("Notify rialto client about state changed to: %s", convertApplicationState(state));
     auto task = [&]()
     {
+        m_currentState = state;
         if (m_client)
             m_client->notifyApplicationState(state);
     };
@@ -131,6 +132,14 @@ void ControlServerInternal::ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatH
     RIALTO_SERVER_LOG_DEBUG("Control with id: %d will send ping with id: %d", m_controlId, heartbeatHandler->id());
     auto task = [&]()
     {
+        if (m_currentState != ApplicationState::RUNNING)
+        {
+            RIALTO_SERVER_LOG_DEBUG("Control with id: %d in INACTIVE state. Ack immediately for ping with id: %d",
+                                    m_controlId, heartbeatHandler->id());
+            m_heartbeatHandler.reset();
+            heartbeatHandler.reset();
+            return;
+        }
         if (m_heartbeatHandler)
         {
             m_heartbeatHandler->error();
