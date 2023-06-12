@@ -29,7 +29,7 @@ namespace firebolt::rialto::server::ipc
 class AckSender : public IAckSender
 {
 public:
-    AckSender(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient);
+    explicit AckSender(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient);
     ~AckSender() override = default;
 
     void send(int id, bool success) const override;

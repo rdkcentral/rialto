@@ -22,6 +22,7 @@
 
 #include "IHealthcheckServiceFactory.h"
 #include <gmock/gmock.h>
+#include <memory>
 
 namespace rialto::servermanager::common
 {

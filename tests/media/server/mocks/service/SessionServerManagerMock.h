@@ -22,6 +22,7 @@
 
 #include "ISessionServerManager.h"
 #include <gmock/gmock.h>
+#include <memory>
 #include <string>
 
 namespace firebolt::rialto::server::service

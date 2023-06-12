@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_HEARTBEAT_PROCEDURE_H_
 
 #include "IHeartbeatProcedure.h"
+#include <memory>
 #include <set>
 
 namespace firebolt::rialto::server

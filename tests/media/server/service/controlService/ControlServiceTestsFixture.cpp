@@ -18,6 +18,7 @@
  */
 
 #include "ControlServiceTestsFixture.h"
+#include <utility>
 
 using testing::_;
 using testing::Return;

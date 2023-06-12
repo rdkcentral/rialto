@@ -23,6 +23,7 @@
 #include "IHealthcheckService.h"
 #include "ISessionServerAppManager.h"
 #include "ITimer.h"
+#include <memory>
 #include <mutex>
 #include <set>
 

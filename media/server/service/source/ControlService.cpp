@@ -20,6 +20,7 @@
 #include "ControlService.h"
 #include "IHeartbeatProcedure.h"
 #include "RialtoServerLogging.h"
+#include <utility>
 
 namespace firebolt::rialto::server::service
 {
