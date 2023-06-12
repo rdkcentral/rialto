@@ -101,8 +101,8 @@ void HealthcheckService::sendPing()
                                                               firebolt::rialto::common::SessionServerState::ERROR);
     }
     m_remainingPings.clear();
-    RIALTO_SERVER_MANAGER_LOG_DEBUG("Start ping procedure with id: %d", m_currentPingId);
     m_currentPingId = generatePingId();
+    RIALTO_SERVER_MANAGER_LOG_DEBUG("Start ping procedure with id: %d", m_currentPingId);
     m_sessionServerAppManager.sendPingEvents(m_currentPingId);
 }
 } // namespace rialto::servermanager::common
