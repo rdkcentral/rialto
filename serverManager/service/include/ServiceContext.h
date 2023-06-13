@@ -35,7 +35,7 @@ class ServiceContext : public IServiceContext
 public:
     ServiceContext(const std::shared_ptr<IStateObserver> &stateObserver,
                    const std::list<std::string> &environmentVariables, const std::string &sessionServerPath,
-                   std::chrono::milliseconds sessionServerStartupTimeout, std::chrono::seconds healthcheckFrequency);
+                   std::chrono::milliseconds sessionServerStartupTimeout, std::chrono::seconds healthcheckInterval);
     virtual ~ServiceContext() = default;
 
     common::ISessionServerAppManager &getSessionServerAppManager() override;

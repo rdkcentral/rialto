@@ -79,8 +79,8 @@ struct ServerManagerConfig
     unsigned numOfPreloadedServers{0};                      /* Number of preloaded servers */
     std::string sessionServerPath{"/usr/bin/RialtoServer"}; /* Location of Rialto Session Server binary */
     std::chrono::milliseconds sessionServerStartupTimeout{
-        0};                                       /* Custom session server startup timeout. If 0 - timeout disabled. */
-    std::chrono::seconds healthcheckFrequency{5}; /* Defines how often healthcheck messages will be sent */
+        0};                                      /* Custom session server startup timeout. If 0 - timeout disabled. */
+    std::chrono::seconds healthcheckInterval{5}; /* Defines how often healthcheck messages will be sent */
 };
 
 } // namespace firebolt::rialto::common

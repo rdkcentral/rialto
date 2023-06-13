@@ -23,8 +23,8 @@
 
 namespace rialto::servermanager::common
 {
-HealthcheckServiceFactory::HealthcheckServiceFactory(std::chrono::seconds healthcheckFrequency)
-    : m_kHealthcheckFrequency{healthcheckFrequency}
+HealthcheckServiceFactory::HealthcheckServiceFactory(std::chrono::seconds healthcheckInterval)
+    : m_kHealthcheckFrequency{healthcheckInterval}
 {
 }
 

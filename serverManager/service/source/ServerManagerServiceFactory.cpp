@@ -31,7 +31,7 @@ std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserv
                                                                                    config.sessionServerEnvVars,
                                                                                    config.sessionServerPath,
                                                                                    config.sessionServerStartupTimeout,
-                                                                                   config.healthcheckFrequency),
+                                                                                   config.healthcheckInterval),
                                                   config.numOfPreloadedServers);
 }
 } // namespace rialto::servermanager::service
