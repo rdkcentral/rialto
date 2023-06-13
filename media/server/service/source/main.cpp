@@ -32,8 +32,8 @@
 #include "RialtoServerLogging.h"
 #include "SessionServerManager.h"
 #include <cstdlib>
-#include <thread>
 #include <cstring>
+#include <thread>
 
 // NOLINT(build/filename_format)
 
