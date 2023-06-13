@@ -33,13 +33,22 @@
 #include "SessionServerManager.h"
 #include <cstdlib>
 #include <thread>
+#include <cstring>
 
 // NOLINT(build/filename_format)
 
 int main(int argc, char *argv[])
 {
     char commitID[] = COMMIT_ID;
-    RIALTO_SERVER_LOG_MIL("Commit ID: %s", commitID);
+
+    if (std::strlen(commitID) > 0)
+    {
+        RIALTO_SERVER_LOG_MIL("Commit ID: %s", commitID);
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get git commit ID.");
+    }
 
     firebolt::rialto::server::gstInitalise(argc, argv);
 
