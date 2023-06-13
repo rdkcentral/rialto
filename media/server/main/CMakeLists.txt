@@ -49,6 +49,7 @@ add_library(
         source/MainThread.cpp
         source/WebAudioPlayerServerInternal.cpp
         source/ControlServerInternal.cpp
+        source/HeartbeatProcedure.cpp
         )
 
 target_include_directories(

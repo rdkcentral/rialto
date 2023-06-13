@@ -23,6 +23,8 @@
 #include "ControllerMock.h"
 #include "EventThreadFactoryMock.h"
 #include "EventThreadMock.h"
+#include "HealthcheckServiceFactoryMock.h"
+#include "HealthcheckServiceMock.h"
 #include "ISessionServerAppManager.h"
 #include "SessionServerAppFactoryMock.h"
 #include "SessionServerAppMock.h"
@@ -62,14 +64,22 @@ public:
     void sessionServerWillSetLogLevels();
     void sessionServerWillFailToSetLogLevels();
     void sessionServerWillKillRunningApplication();
-    void clientWillBeRemovedAfterStateChangedIndication(const firebolt::rialto::common::SessionServerState &state);
+    void sessionServerWontBePreloaded();
+    void newSessionServerWillBeLaunched();
+    void healthcheckServiceWillHandleAck();
+    void pingWillBeSentToRunningApps();
+    void pingSendToRunningAppsWillFail();
+    void clientWillBeRemoved();
+    void sessionServerWillIndicateStateChange(const firebolt::rialto::common::SessionServerState &state);
 
     void triggerPreloadSessionServers();
     bool triggerInitiateApplication(const firebolt::rialto::common::SessionServerState &state);
     bool triggerSetSessionServerState(const firebolt::rialto::common::SessionServerState &newState);
     void triggerOnSessionServerStateChanged(const firebolt::rialto::common::SessionServerState &newState);
+    void triggerOnAck();
     std::string triggerGetAppConnectionInfo();
     bool triggerSetLogLevel();
+    void triggerSendPingEvents();
 
 private:
     std::unique_ptr<rialto::servermanager::ipc::IController> m_controller;
@@ -77,9 +87,13 @@ private:
     std::unique_ptr<rialto::servermanager::common::ISessionServerApp> m_sessionServerApp;
     std::unique_ptr<rialto::servermanager::common::ISessionServerApp> m_secondSessionServerApp;
     std::unique_ptr<rialto::servermanager::common::ISessionServerAppFactory> m_sessionServerAppFactory;
+    std::unique_ptr<rialto::servermanager::common::IHealthcheckServiceFactory> m_healthcheckServiceFactory;
+    std::unique_ptr<rialto::servermanager::common::IHealthcheckService> m_healthcheckService;
     StrictMock<rialto::servermanager::ipc::ControllerMock> &m_controllerMock;
     StrictMock<rialto::servermanager::common::SessionServerAppMock> &m_sessionServerAppMock;
     StrictMock<rialto::servermanager::common::SessionServerAppFactoryMock> &m_sessionServerAppFactoryMock;
+    StrictMock<rialto::servermanager::common::HealthcheckServiceFactoryMock> &m_healthcheckServiceFactoryMock;
+    StrictMock<rialto::servermanager::common::HealthcheckServiceMock> &m_healthcheckServiceMock;
     std::unique_ptr<rialto::servermanager::common::ISessionServerAppManager> m_sut;
 };
 

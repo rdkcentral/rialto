@@ -53,6 +53,7 @@ public:
     bool performSetConfiguration(int serverId, const firebolt::rialto::common::SessionServerState &initialState,
                                  const std::string &socketName,
                                  const firebolt::rialto::common::MaxResourceCapabilitites &maxResource) override;
+    bool performPing(int serverId, int pingId) override;
     bool performSetState(int serverId, const firebolt::rialto::common::SessionServerState &state) override;
     bool setLogLevels(const service::LoggingLevels &logLevels) const override;
 

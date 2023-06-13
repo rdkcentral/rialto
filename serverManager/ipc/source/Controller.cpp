@@ -76,6 +76,17 @@ bool Controller::performSetConfiguration(int serverId, const firebolt::rialto::c
     return false;
 }
 
+bool Controller::performPing(int serverId, int pingId)
+{
+    std::unique_lock<std::mutex> lock{m_clientMutex};
+    auto client = m_clients.find(serverId);
+    if (client != m_clients.end())
+    {
+        return client->second->performPing(pingId);
+    }
+    return false;
+}
+
 bool Controller::setLogLevels(const service::LoggingLevels &logLevels) const
 {
     std::unique_lock<std::mutex> lock{m_clientMutex};

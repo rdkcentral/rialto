@@ -46,6 +46,8 @@ public:
                                        const firebolt::rialto::common::SessionServerState &newState) = 0;
     virtual void onSessionServerStateChanged(int serverId,
                                              const firebolt::rialto::common::SessionServerState &newState) = 0;
+    virtual void sendPingEvents(int pingId) const = 0;
+    virtual void onAck(int serverId, int pingId, bool success) = 0;
     virtual std::string getAppConnectionInfo(const std::string &appName) const = 0;
     virtual bool setLogLevels(const service::LoggingLevels &logLevels) const = 0;
 };

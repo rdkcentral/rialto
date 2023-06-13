@@ -27,6 +27,8 @@ using testing::Invoke;
 namespace
 {
 constexpr int kServerId{3};
+constexpr int kPingId{12};
+constexpr bool kPingSuccess{true};
 } // namespace
 
 IpcTests::IpcTests()
@@ -54,6 +56,11 @@ void IpcTests::simulateStateChangedEventInactive()
     m_appStub.sendStateChangedEvent();
 }
 
+void IpcTests::simulateAckEvent()
+{
+    m_appStub.sendAckEvent(kPingId, kPingSuccess);
+}
+
 void IpcTests::simulateClientDisconnection()
 {
     m_appStub.disconnectClient();
@@ -65,6 +72,18 @@ void IpcTests::sessionServerAppManagerWillBeNotifiedAboutSessionServerStateChang
     EXPECT_CALL(m_sessionServerAppManagerMock, onSessionServerStateChanged(kServerId, newState))
         .WillOnce(Invoke(
             [this](const auto &, const auto &)
+            {
+                std::unique_lock<std::mutex> lock{m_expectationsMetMutex};
+                m_expectationsFlag = true;
+                m_expectationsCv.notify_one();
+            }));
+}
+
+void IpcTests::sessionServerAppManagerWillBeNotifiedAboutCompletedHealthcheck()
+{
+    EXPECT_CALL(m_sessionServerAppManagerMock, onAck(kServerId, kPingId, kPingSuccess))
+        .WillOnce(Invoke(
+            [this](int, int, bool)
             {
                 std::unique_lock<std::mutex> lock{m_expectationsMetMutex};
                 m_expectationsFlag = true;
@@ -103,6 +122,12 @@ bool IpcTests::triggerPerformSetConfiguration()
     const std::string socketName{getenv("RIALTO_SOCKET_PATH")};
     constexpr firebolt::rialto::common::MaxResourceCapabilitites maxResource{2, 1};
     return m_sut->performSetConfiguration(kServerId, initialState, socketName, maxResource);
+}
+
+bool IpcTests::triggerPerformPing()
+{
+    EXPECT_TRUE(m_sut);
+    return m_sut->performPing(kServerId, kPingId);
 }
 
 bool IpcTests::triggerPerformSetState(const firebolt::rialto::common::SessionServerState &state)

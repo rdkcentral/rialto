@@ -153,6 +153,7 @@ bool Client::connect()
     m_serviceStub = std::make_unique<::rialto::ServerManagerModule_Stub>(m_ipcLoop->channel());
     m_ipcLoop->channel()->subscribe<rialto::StateChangedEvent>(
         std::bind(&Client::onStateChangedEvent, this, std::placeholders::_1));
+    m_ipcLoop->channel()->subscribe<rialto::AckEvent>(std::bind(&Client::onAckEvent, this, std::placeholders::_1));
     return true;
 }
 
@@ -213,6 +214,31 @@ bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServ
     return true;
 }
 
+bool Client::performPing(int pingId) const
+{
+    if (!m_ipcLoop || !m_serviceStub)
+    {
+        RIALTO_SERVER_MANAGER_LOG_ERROR("failed to ping - client is not active for serverId: %d", m_serverId);
+        return false;
+    }
+    rialto::PingRequest request;
+    rialto::PingResponse response;
+    request.set_id(pingId);
+    auto ipcController = m_ipcLoop->createRpcController();
+    auto blockingClosure = m_ipcLoop->createBlockingClosure();
+    m_serviceStub->ping(ipcController.get(), &request, &response, blockingClosure.get());
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_SERVER_MANAGER_LOG_ERROR("failed to ping due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+    return true;
+}
+
 bool Client::setLogLevels(const service::LoggingLevels &logLevels) const
 {
     if (!m_ipcLoop || !m_serviceStub)
@@ -254,5 +280,16 @@ void Client::onStateChangedEvent(const std::shared_ptr<rialto::StateChangedEvent
         return;
     }
     m_sessionServerAppManager->onSessionServerStateChanged(m_serverId, convert(event->sessionserverstate()));
+}
+
+void Client::onAckEvent(const std::shared_ptr<rialto::AckEvent> &event) const
+{
+    RIALTO_SERVER_MANAGER_LOG_DEBUG("AckEvent received for serverId: %d", m_serverId);
+    if (!m_sessionServerAppManager || !event)
+    {
+        RIALTO_SERVER_MANAGER_LOG_WARN("Problem during AckEvent processing");
+        return;
+    }
+    m_sessionServerAppManager->onAck(m_serverId, event->id(), event->success());
 }
 } // namespace rialto::servermanager::ipc

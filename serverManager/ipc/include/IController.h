@@ -43,6 +43,7 @@ public:
     virtual bool performSetConfiguration(int serverId, const firebolt::rialto::common::SessionServerState &initialState,
                                          const std::string &socketName,
                                          const firebolt::rialto::common::MaxResourceCapabilitites &maxResource) = 0;
+    virtual bool performPing(int serverId, int pingId) = 0;
     virtual bool performSetState(int serverId, const firebolt::rialto::common::SessionServerState &state) = 0;
     virtual bool setLogLevels(const service::LoggingLevels &logLevels) const = 0;
 };

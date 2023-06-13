@@ -24,6 +24,7 @@
 #include "IpcClientMock.h"
 #include "IpcControllerMock.h"
 #include "IpcServerMock.h"
+#include "RpcControllerMock.h"
 #include "SessionServerCommon.h"
 #include "SessionServerManagerMock.h"
 #include <gtest/gtest.h>
@@ -44,21 +45,27 @@ public:
 
     void sessionServerManagerWillHandleRequestSuccess();
     void sessionServerManagerWillHandleRequestFailure();
+    void sessionServerManagerWillHandleRequestFailureWithInvalidController();
     void sessionServerManagerWillSetConfiguration(const firebolt::rialto::common::SessionServerState &state);
     void sessionServerManagerWillSetState(const firebolt::rialto::common::SessionServerState &state);
     void sessionServerManagerWillSetLogLevels();
     void sessionServerManagerWillFailToSetConfiguration(const firebolt::rialto::common::SessionServerState &state);
     void sessionServerManagerWillFailToSetState(const firebolt::rialto::common::SessionServerState &state);
+    void sessionServerManagerWillPing();
+    void sessionServerManagerWillFailToPing();
 
     void sendSetConfiguration(const firebolt::rialto::common::SessionServerState &state);
     void sendSetState(const firebolt::rialto::common::SessionServerState &state);
     void sendSetLogLevels();
+    void sendPing();
+    void sendPingWithInvalidController();
 
 private:
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ClientMock>> m_clientMock;
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ServerMock>> m_serverMock;
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ClosureMock>> m_closureMock;
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ControllerMock>> m_controllerMock;
+    std::shared_ptr<StrictMock<firebolt::rialto::ipc::RpcControllerMock>> m_invalidControllerMock;
     StrictMock<firebolt::rialto::server::service::SessionServerManagerMock> m_sessionServerManagerMock;
     std::shared_ptr<::rialto::ServerManagerModule> m_sut;
 };

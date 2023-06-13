@@ -24,6 +24,11 @@ TEST_F(IpcTests, PerformSetStateShouldReturnFalseWhenNoAppIsConnected)
     ASSERT_FALSE(triggerPerformSetState(firebolt::rialto::common::SessionServerState::INACTIVE));
 }
 
+TEST_F(IpcTests, PerformPingShouldReturnFalseWhenNoAppIsConnected)
+{
+    ASSERT_FALSE(triggerPerformPing());
+}
+
 TEST_F(IpcTests, ShouldFailToCreateClientWhenServerIsNotRunning)
 {
     ASSERT_FALSE(triggerCreateClientConnectToFakeSocket());
@@ -65,6 +70,20 @@ TEST_F(IpcTests, ShouldFailToSetStateWhenFailResponseIsReceived)
     ASSERT_FALSE(triggerPerformSetState(firebolt::rialto::common::SessionServerState::INACTIVE));
 }
 
+TEST_F(IpcTests, ShouldSuccessfullyPing)
+{
+    configureServerToSendOkResponses();
+    ASSERT_TRUE(triggerCreateClient());
+    ASSERT_TRUE(triggerPerformPing());
+}
+
+TEST_F(IpcTests, ShouldFailToPingWhenFailResponseIsReceived)
+{
+    configureServerToSendFailResponses();
+    ASSERT_TRUE(triggerCreateClient());
+    ASSERT_FALSE(triggerPerformPing());
+}
+
 TEST_F(IpcTests, ShouldForwardStateChangedIndicationToSessionServerAppManager)
 {
     configureServerToSendOkResponses();
@@ -72,6 +91,15 @@ TEST_F(IpcTests, ShouldForwardStateChangedIndicationToSessionServerAppManager)
     sessionServerAppManagerWillBeNotifiedAboutSessionServerStateChange(
         firebolt::rialto::common::SessionServerState::INACTIVE);
     simulateStateChangedEventInactive();
+    waitForExpectationsMet();
+}
+
+TEST_F(IpcTests, ShouldForwardAckEventToSessionServerAppManager)
+{
+    configureServerToSendOkResponses();
+    ASSERT_TRUE(triggerCreateClient());
+    sessionServerAppManagerWillBeNotifiedAboutCompletedHealthcheck();
+    simulateAckEvent();
     waitForExpectationsMet();
 }
 

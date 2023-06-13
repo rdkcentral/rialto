@@ -20,6 +20,7 @@
 #ifndef SESSION_SERVER_MANAGER_TESTS_FIXTURE_H_
 #define SESSION_SERVER_MANAGER_TESTS_FIXTURE_H_
 
+#include "AckSenderMock.h"
 #include "ApplicationManagementServerMock.h"
 #include "CdmServiceMock.h"
 #include "ControlServiceMock.h"
@@ -59,11 +60,15 @@ public:
     void willFailToSetStateNotRunning();
     void willSetStateNotRunning();
     void willSetLogLevels();
+    void willPing();
+    void willFailToPing();
 
     void setStateShouldFail(const firebolt::rialto::common::SessionServerState &state);
     void setStateShouldSucceed(const firebolt::rialto::common::SessionServerState &state);
     void triggerStartService();
     void triggerSetLogLevels();
+    void pingShouldSucceed();
+    void pingShouldFail();
 
 private:
     std::unique_ptr<firebolt::rialto::server::ipc::IApplicationManagementServer> m_applicationManagementServer;
@@ -74,6 +79,7 @@ private:
     StrictMock<firebolt::rialto::server::service::ControlServiceMock> m_controlServiceMock;
     std::unique_ptr<firebolt::rialto::server::ipc::ISessionManagementServer> m_sessionManagementServer;
     StrictMock<firebolt::rialto::server::ipc::SessionManagementServerMock> &m_sessionManagementServerMock;
+    std::shared_ptr<StrictMock<firebolt::rialto::server::AckSenderMock>> m_ackSenderMock;
     std::thread m_serviceThread;
     std::unique_ptr<firebolt::rialto::server::service::ISessionServerManager> m_sut;
 };
