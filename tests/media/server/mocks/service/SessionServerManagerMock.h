@@ -22,6 +22,7 @@
 
 #include "ISessionServerManager.h"
 #include <gmock/gmock.h>
+#include <memory>
 #include <string>
 
 namespace firebolt::rialto::server::service
@@ -41,6 +42,7 @@ public:
                  RIALTO_DEBUG_LEVEL sessionServerLogLevels, RIALTO_DEBUG_LEVEL ipcLogLevels,
                  RIALTO_DEBUG_LEVEL serverManagerLogLevels, RIALTO_DEBUG_LEVEL commonLogLevels),
                 (override));
+    MOCK_METHOD(bool, ping, (std::int32_t id, const std::shared_ptr<IAckSender> &ackSender), (override));
 };
 } // namespace firebolt::rialto::server::service
 

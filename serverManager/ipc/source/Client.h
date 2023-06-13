@@ -31,6 +31,7 @@ namespace rialto
 {
 class ServerManagerModule_Stub;
 class StateChangedEvent;
+class AckEvent;
 } // namespace rialto
 
 namespace rialto::servermanager::ipc
@@ -50,11 +51,13 @@ public:
     bool performSetConfiguration(const firebolt::rialto::common::SessionServerState &initialState,
                                  const std::string &socketName,
                                  const firebolt::rialto::common::MaxResourceCapabilitites &maxResource) const;
+    bool performPing(int pingId) const;
     bool setLogLevels(const service::LoggingLevels &logLevels) const;
     void onDisconnected() const;
 
 private:
     void onStateChangedEvent(const std::shared_ptr<rialto::StateChangedEvent> &event) const;
+    void onAckEvent(const std::shared_ptr<rialto::AckEvent> &event) const;
 
 private:
     int m_serverId;

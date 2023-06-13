@@ -21,6 +21,7 @@ add_gtests (
         RialtoServerManagerUnitTests
 
         # gtest code
+        unittests/common/HealthcheckServiceTests.cpp
         unittests/common/SessionServerAppManagerTests.cpp
         unittests/common/SessionServerAppManagerTestsFixture.cpp
         unittests/common/UtilsTests.cpp
@@ -45,6 +46,7 @@ target_include_directories(
         $<TARGET_PROPERTY:RialtoServerManager,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoServerManagerMatchers,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoServerManagerStub,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoCommonMocks,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoLogging,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoCommon,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoIpcClient,INTERFACE_INCLUDE_DIRECTORIES>

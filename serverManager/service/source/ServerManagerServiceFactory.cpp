@@ -30,7 +30,8 @@ std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserv
     return std::make_unique<ServerManagerService>(std::make_unique<ServiceContext>(stateObserver,
                                                                                    config.sessionServerEnvVars,
                                                                                    config.sessionServerPath,
-                                                                                   config.sessionServerStartupTimeout),
+                                                                                   config.sessionServerStartupTimeout,
+                                                                                   config.healthcheckFrequency),
                                                   config.numOfPreloadedServers);
 }
 } // namespace rialto::servermanager::service

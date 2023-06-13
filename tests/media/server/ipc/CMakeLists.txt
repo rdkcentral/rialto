@@ -31,6 +31,10 @@ add_gtests (
         ${PROTO_SRCS}
         ${PROTO_HEADERS}
 
+        # AckSender unittests
+        ackSender/AckSenderTestsFixture.cpp
+        ackSender/AckSenderTests.cpp
+
         # ApplicationManagementServer unittests
         applicationManagementServer/ApplicationManagementServerTestsFixture.cpp
         applicationManagementServer/ApplicationManagementServerTests.cpp

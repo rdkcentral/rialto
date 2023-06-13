@@ -111,6 +111,31 @@ message SetStateResponse {
 }
 
 /**
+ * @brief Ping for checking system health
+ * The client should perform any health checks then respond with
+ * a call to Ack(id) if system healthy
+ *
+ * @param[in] id  : Unique id, should be passed to corresponding Ack call
+ */
+message PingRequest {
+    required int32 id = 1;
+}
+message PingResponse {
+}
+
+/**
+ * @brief Acknowledgement of a received ping request
+ *
+ * @param[in] id              : id received in ping notification
+ * @param[in] success         : true, if rialto server received response from all servers
+ * 
+ */
+ message AckEvent {
+    required int32 id = 1;
+    required bool success = 2;
+ }
+
+/**
  * @brief Requests RialtoSessionServer to change its log levels
  *
  * @param[in]  logLevels       Desired log levels
@@ -143,4 +168,11 @@ service ServerManagerModule {
      */
     rpc setLogLevels(SetLogLevelsRequest) returns (SetLogLevelsResponse) {
     }
+
+    /**
+     * @brief Requests RialtoSessionServer to check system health
+     *
+     */
+     rpc ping(PingRequest) returns (PingResponse) {
+     }
 }

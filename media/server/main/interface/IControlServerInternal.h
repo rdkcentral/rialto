@@ -30,6 +30,7 @@
 
 #include "IControl.h"
 #include "IControlClientServerInternal.h"
+#include "IHeartbeatHandler.h"
 #include <memory>
 
 namespace firebolt::rialto::server
@@ -51,12 +52,13 @@ public:
     /**
      * @brief IControlServerInternal factory method, returns a concrete implementation of IControlServerInternal
      *
+     * @param[in]  id       : Control id
      * @param[in]  client   : Client object for callbacks
      *
      * @retval the new IControlServerInternal instance or null on error.
      */
     virtual std::shared_ptr<IControlServerInternal>
-    createControlServerInternal(const std::shared_ptr<IControlClientServerInternal> &client) const = 0;
+    createControlServerInternal(int id, const std::shared_ptr<IControlClientServerInternal> &client) const = 0;
 };
 
 class IControlServerInternal : public IControl
@@ -77,7 +79,16 @@ public:
      *
      * @param[in] id  : id received in ping notification
      */
-    virtual void ack(uint32_t id) = 0;
+    virtual void ack(int32_t id) = 0;
+
+    /**
+     * @brief Ping notification for checking system health
+     * The client should perform any health checks then respond with
+     * a call to ack(id) if system healthy
+     *
+     * @param[in] heartbeatHandler  : Handler of current heartbeat request
+     */
+    virtual void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) = 0;
 };
 } // namespace firebolt::rialto::server
 
