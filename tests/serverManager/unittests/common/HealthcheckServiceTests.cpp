@@ -68,10 +68,10 @@ public:
         EXPECT_CALL(m_sessionServerAppManagerMock, onSessionServerStateChanged(kServerId, SessionServerState::ERROR));
     }
 
-    void createSut(std::chrono::seconds healthcheckFrequency = kHealthcheckFrequency)
+    void createSut(std::chrono::seconds healthcheckInterval = kHealthcheckFrequency)
     {
         m_sut = std::make_unique<HealthcheckService>(m_sessionServerAppManagerMock, m_timerFactoryMock,
-                                                     healthcheckFrequency);
+                                                     healthcheckInterval);
     }
 
     void triggerPingTimeout()
