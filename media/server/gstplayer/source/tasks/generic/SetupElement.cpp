@@ -88,6 +88,12 @@ void SetupElement::execute() const
         }
     }
 
+    if (m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "amlhalasink"))
+    {
+        // Wait for video so that the audio aligns at the starting point with timeout of 4000ms.
+        m_glibWrapper->gObjectSet(m_element, "wait-video", TRUE, "a-wait-timeout", 4000, nullptr);
+    }
+
     if (isVideoDecoder(*m_gstWrapper, m_element))
     {
         std::string underflowSignalName = getUnderflowSignalName(*m_glibWrapper, m_element);
