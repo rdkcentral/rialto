@@ -140,7 +140,7 @@ TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingGeometry)
     task.execute();
 }
 
-TEST_F(SetupElementTest, shouldSetupVideoElementWithWaitVideo)
+TEST_F(SetupElementTest, shouldSetupVideoElementForAmlhalasink)
 {
     firebolt::rialto::server::tasks::generic::SetupElement task{m_context, m_gstWrapper, m_glibWrapper, m_gstPlayer,
                                                                 &m_element};
@@ -148,6 +148,7 @@ TEST_F(SetupElementTest, shouldSetupVideoElementWithWaitVideo)
     EXPECT_CALL(*m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("amlhalasink"))).WillOnce(Return(true));
     EXPECT_CALL(*m_glibWrapper, gObjectSetStub(G_OBJECT(&m_element), CharStrMatcher("wait-video")));
     EXPECT_CALL(*m_glibWrapper, gObjectSetStub(G_OBJECT(&m_element), CharStrMatcher("a-wait-timeout")));
+    EXPECT_CALL(*m_glibWrapper, gObjectSetStub(G_OBJECT(&m_element), CharStrMatcher("disable-xrun")));
     expectSetupVideoElement();
     task.execute();
 }
