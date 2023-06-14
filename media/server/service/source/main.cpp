@@ -39,7 +39,6 @@
 
 int main(int argc, char *argv[])
 {
-
     char commitID[] = COMMIT_ID;
 
     if (std::strlen(commitID) > 0)
