@@ -39,6 +39,7 @@
 
 int main(int argc, char *argv[])
 {
+
     char commitID[] = COMMIT_ID;
 
     if (std::strlen(commitID) > 0)
@@ -47,7 +48,7 @@ int main(int argc, char *argv[])
     }
     else
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to get git commit ID.");
+        RIALTO_SERVER_LOG_WARN("Failed to get git commit ID.");
     }
 
     firebolt::rialto::server::gstInitalise(argc, argv);

@@ -20,6 +20,7 @@
 #include "ClientController.h"
 #include "RialtoClientLogging.h"
 #include "SharedMemoryHandle.h"
+#include <cstring>
 #include <sys/mman.h>
 #include <sys/un.h>
 #include <unistd.h>
@@ -42,6 +43,17 @@ ClientController::ClientController(const std::shared_ptr<IControlIpcFactory> &Co
     : m_currentState{ApplicationState::UNKNOWN}
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    char commitID[] = COMMIT_ID;
+
+    if (std::strlen(commitID) > 0)
+    {
+        RIALTO_CLIENT_LOG_MIL("Commit ID: %s", commitID);
+    }
+    else
+    {
+        RIALTO_CLIENT_LOG_WARN("Failed to get git commit ID.");
+    }
 
     m_controlIpc = ControlIpcFactory->getControlIpc(this);
     if (nullptr == m_controlIpc)
