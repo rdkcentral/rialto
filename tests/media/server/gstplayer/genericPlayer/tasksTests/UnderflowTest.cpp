@@ -47,8 +47,9 @@ TEST_F(UnderflowTest, shouldNotReportUnderflowWhenItIsDisabled)
 {
     bool underflowFlag{false};
     bool underflowEnabled{false};
-    firebolt::rialto::server::tasks::generic::Underflow task{m_context, m_gstPlayer, &m_gstPlayerClient, underflowFlag,
-                                                             underflowEnabled};
+    firebolt::rialto::MediaSourceType sourceType{firebolt::rialto::MediaSourceType::VIDEO};
+    firebolt::rialto::server::tasks::generic::Underflow task{m_context,     m_gstPlayer,      &m_gstPlayerClient,
+                                                             underflowFlag, underflowEnabled, sourceType};
     task.execute();
 }
 
@@ -56,8 +57,9 @@ TEST_F(UnderflowTest, shouldNotReportUnderflowWhenItIsAlreadyActive)
 {
     bool underflowFlag{true};
     bool underflowEnabled{true};
-    firebolt::rialto::server::tasks::generic::Underflow task{m_context, m_gstPlayer, &m_gstPlayerClient, underflowFlag,
-                                                             underflowEnabled};
+    firebolt::rialto::MediaSourceType sourceType{firebolt::rialto::MediaSourceType::VIDEO};
+    firebolt::rialto::server::tasks::generic::Underflow task{m_context,     m_gstPlayer,      &m_gstPlayerClient,
+                                                             underflowFlag, underflowEnabled, sourceType};
     task.execute();
     EXPECT_TRUE(underflowFlag);
 }
@@ -66,11 +68,12 @@ TEST_F(UnderflowTest, shouldReportUnderflow)
 {
     bool underflowFlag{false};
     bool underflowEnabled{true};
-    firebolt::rialto::server::tasks::generic::Underflow task{m_context, m_gstPlayer, &m_gstPlayerClient, underflowFlag,
-                                                             underflowEnabled};
-    EXPECT_CALL(m_gstPlayer, stopPositionReportingAndCheckAudioUnderflowTimer());
-    EXPECT_CALL(m_gstPlayer, changePipelineState(GST_STATE_PAUSED));
-    EXPECT_CALL(m_gstPlayerClient, notifyNetworkState(firebolt::rialto::NetworkState::STALLED));
+    firebolt::rialto::MediaSourceType sourceType{firebolt::rialto::MediaSourceType::VIDEO};
+
+    firebolt::rialto::server::tasks::generic::Underflow task{m_context,     m_gstPlayer,      &m_gstPlayerClient,
+                                                             underflowFlag, underflowEnabled, sourceType};
+
+    EXPECT_CALL(m_gstPlayerClient, notifyBufferUnderflow(firebolt::rialto::MediaSourceType::VIDEO));
     task.execute();
     EXPECT_TRUE(underflowFlag);
 }
@@ -82,8 +85,10 @@ TEST_F(UnderflowTest, shouldNotReportEosWhenEosAlreadyNotified)
 
     bool underflowFlag{false};
     bool underflowEnabled{true};
-    firebolt::rialto::server::tasks::generic::Underflow task{m_context, m_gstPlayer, &m_gstPlayerClient, underflowFlag,
-                                                             underflowEnabled};
+    firebolt::rialto::MediaSourceType sourceType{firebolt::rialto::MediaSourceType::AUDIO};
+
+    firebolt::rialto::server::tasks::generic::Underflow task{m_context,     m_gstPlayer,      &m_gstPlayerClient,
+                                                             underflowFlag, underflowEnabled, sourceType};
     task.execute();
     EXPECT_FALSE(underflowFlag);
 }
@@ -94,8 +99,10 @@ TEST_F(UnderflowTest, shouldReportEos)
 
     bool underflowFlag{false};
     bool underflowEnabled{true};
-    firebolt::rialto::server::tasks::generic::Underflow task{m_context, m_gstPlayer, &m_gstPlayerClient, underflowFlag,
-                                                             underflowEnabled};
+    firebolt::rialto::MediaSourceType sourceType{firebolt::rialto::MediaSourceType::AUDIO};
+
+    firebolt::rialto::server::tasks::generic::Underflow task{m_context,     m_gstPlayer,      &m_gstPlayerClient,
+                                                             underflowFlag, underflowEnabled, sourceType};
     EXPECT_CALL(m_gstPlayerClient, notifyPlaybackState(firebolt::rialto::PlaybackState::END_OF_STREAM));
     task.execute();
     EXPECT_FALSE(underflowFlag);

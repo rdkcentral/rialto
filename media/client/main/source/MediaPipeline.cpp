@@ -414,6 +414,18 @@ bool MediaPipeline::getVolume(double &volume)
     return m_mediaPipelineIpc->getVolume(volume);
 }
 
+bool MediaPipeline::setMute(bool mute)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+    return m_mediaPipelineIpc->setMute(mute);
+}
+
+bool MediaPipeline::getMute(bool &mute)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+    return m_mediaPipelineIpc->getMute(mute);
+}
+
 void MediaPipeline::discardNeedDataRequest(uint32_t needDataRequestId)
 {
     // Find the needDataRequest for this needDataRequestId
@@ -630,6 +642,17 @@ void MediaPipeline::notifyQos(int32_t sourceId, const QosInfo &qosInfo)
     if (client)
     {
         client->notifyQos(sourceId, qosInfo);
+    }
+}
+
+void MediaPipeline::notifyBufferUnderflow(int32_t sourceId)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    std::shared_ptr<IMediaPipelineClient> client = m_mediaPipelineClient.lock();
+    if (client)
+    {
+        client->notifyBufferUnderflow(sourceId);
     }
 }
 

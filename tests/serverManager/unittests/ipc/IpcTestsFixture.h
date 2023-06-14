@@ -40,16 +40,19 @@ public:
     void configureServerToSendFailResponses();
 
     void simulateStateChangedEventInactive();
+    void simulateAckEvent();
     void simulateClientDisconnection();
 
     void sessionServerAppManagerWillBeNotifiedAboutSessionServerStateChange(
         const firebolt::rialto::common::SessionServerState &newState);
+    void sessionServerAppManagerWillBeNotifiedAboutCompletedHealthcheck();
     void waitForExpectationsMet();
 
     bool triggerCreateClientConnectToFakeSocket();
     bool triggerCreateClient();
     void triggerRemoveClient();
     bool triggerPerformSetConfiguration();
+    bool triggerPerformPing();
     bool triggerPerformSetState(const firebolt::rialto::common::SessionServerState &state);
     bool triggerSetLogLevels();
 

@@ -29,6 +29,8 @@ add_gtests (
         dataReader/DataReaderV1Tests.cpp
         dataReader/DataReaderV2Tests.cpp
 
+        heartbeatProcedure/HeartbeatProcedureTests.cpp
+
         mediaPipeline/base/MediaPipelineTestBase.cpp
         mediaPipeline/CreateTest.cpp
         mediaPipeline/LoadTest.cpp

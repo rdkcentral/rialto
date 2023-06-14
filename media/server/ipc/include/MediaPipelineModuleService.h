@@ -90,6 +90,10 @@ public:
                    ::firebolt::rialto::SetVolumeResponse *response, ::google::protobuf::Closure *done) override;
     void getVolume(::google::protobuf::RpcController *controller, const ::firebolt::rialto::GetVolumeRequest *request,
                    ::firebolt::rialto::GetVolumeResponse *response, ::google::protobuf::Closure *done) override;
+    void setMute(::google::protobuf::RpcController *controller, const ::firebolt::rialto::SetMuteRequest *request,
+                 ::firebolt::rialto::SetMuteResponse *response, ::google::protobuf::Closure *done) override;
+    void getMute(::google::protobuf::RpcController *controller, const ::firebolt::rialto::GetMuteRequest *request,
+                 ::firebolt::rialto::GetMuteResponse *response, ::google::protobuf::Closure *done) override;
 
 private:
     service::IMediaPipelineService &m_mediaPipelineService;

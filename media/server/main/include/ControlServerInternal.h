@@ -34,23 +34,27 @@ public:
 
     std::shared_ptr<IControl> createControl() const override;
     std::shared_ptr<IControlServerInternal>
-    createControlServerInternal(const std::shared_ptr<IControlClientServerInternal> &client) const override;
+    createControlServerInternal(int id, const std::shared_ptr<IControlClientServerInternal> &client) const override;
 };
 
 class ControlServerInternal : public IControlServerInternal
 {
 public:
-    explicit ControlServerInternal(const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
+    explicit ControlServerInternal(const std::shared_ptr<IMainThreadFactory> &mainThreadFactory, int id,
                                    const std::shared_ptr<IControlClientServerInternal> &client);
     ~ControlServerInternal() override;
 
-    void ack(uint32_t id) override;
+    void ack(int32_t id) override;
     void setApplicationState(const ApplicationState &state) override;
     bool registerClient(std::weak_ptr<IControlClient> client, ApplicationState &appState) override;
+    void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) override;
 
 private:
+    const int m_controlId;
     std::shared_ptr<IControlClientServerInternal> m_client;
+    ApplicationState m_currentState;
     std::shared_ptr<IMainThread> m_mainThread;
+    std::unique_ptr<IHeartbeatHandler> m_heartbeatHandler;
     uint32_t m_mainThreadClientId;
 };
 } // namespace firebolt::rialto::server

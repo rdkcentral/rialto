@@ -39,6 +39,7 @@
 #include "tasks/generic/ReadShmDataAndAttachSamples.h"
 #include "tasks/generic/RemoveSource.h"
 #include "tasks/generic/ReportPosition.h"
+#include "tasks/generic/SetMute.h"
 #include "tasks/generic/SetPlaybackRate.h"
 #include "tasks/generic/SetPosition.h"
 #include "tasks/generic/SetVideoGeometry.h"
@@ -211,6 +212,14 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetVolume)
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetVolume &>(*task));
 }
 
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetMute)
+{
+    constexpr bool kMute{false};
+    auto task = m_sut.createSetMute(m_context, kMute);
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetMute &>(*task));
+}
+
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateShutdown)
 {
     auto task = m_sut.createShutdown(m_gstPlayer);
@@ -229,7 +238,7 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateUnderflow)
 {
     bool flag{false};
     bool enabled{false};
-    auto task = m_sut.createUnderflow(m_context, m_gstPlayer, flag, enabled);
+    auto task = m_sut.createUnderflow(m_context, m_gstPlayer, flag, enabled, firebolt::rialto::MediaSourceType::VIDEO);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::Underflow &>(*task));
 }

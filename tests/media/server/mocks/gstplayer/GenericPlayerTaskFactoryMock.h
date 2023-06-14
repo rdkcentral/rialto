@@ -81,12 +81,14 @@ public:
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetVolume, (GenericPlayerContext & context, double volume),
                 (const, override));
+    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetMute, (GenericPlayerContext & context, bool mute),
+                (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createShutdown, (IGstGenericPlayerPrivate & player), (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createStop,
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player), (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createUnderflow,
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player, bool &underflowFlag,
-                 bool underflowEnabled),
+                 bool underflowEnabled, MediaSourceType mediaSource),
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createUpdatePlaybackGroup,
                 (GenericPlayerContext & context, GstElement *typefind, const GstCaps *caps), (const, override));

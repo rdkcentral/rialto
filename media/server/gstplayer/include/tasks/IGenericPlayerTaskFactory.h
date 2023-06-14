@@ -270,6 +270,16 @@ public:
     virtual std::unique_ptr<IPlayerTask> createSetVolume(GenericPlayerContext &context, double volume) const = 0;
 
     /**
+     * @brief Creates a SetMute task.
+     *
+     * @param[in] context       : The GstGenericPlayer context
+     * @param[in] mute          : The mute state to be set
+     *
+     * @retval the new SetMute task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createSetMute(GenericPlayerContext &context, bool mute) const = 0;
+
+    /**
      * @brief Creates a Shutdown task.
      *
      * @param[in] context       : The GstGenericPlayer context
@@ -299,8 +309,9 @@ public:
      *
      * @retval the new Underflow task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createUnderflow(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                                         bool &underflowFlag, bool underflowEnabled) const = 0;
+    virtual std::unique_ptr<IPlayerTask> createUnderflow(GenericPlayerContext &context,
+                                                         IGstGenericPlayerPrivate &player, bool &underflowFlag,
+                                                         bool underflowEnabled, MediaSourceType sourceType) const = 0;
 
     /**
      * @brief Creates an UpdatePlaybackGroup task.

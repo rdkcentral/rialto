@@ -49,6 +49,8 @@ public:
                   ::rialto::SetStateResponse *response, ::google::protobuf::Closure *done) override;
     void setLogLevels(::google::protobuf::RpcController *controller, const ::rialto::SetLogLevelsRequest *request,
                       ::rialto::SetLogLevelsResponse *response, ::google::protobuf::Closure *done) override;
+    void ping(::google::protobuf::RpcController *controller, const ::rialto::PingRequest *request,
+              ::rialto::PingResponse *response, ::google::protobuf::Closure *done) override;
 
 private:
     service::ISessionServerManager &m_sessionServerManager;

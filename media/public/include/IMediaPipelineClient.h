@@ -187,6 +187,15 @@ public:
      * @param[in] qosInfo   : The information provided in the update.
      */
     virtual void notifyQos(int32_t sourceId, const QosInfo &qosInfo) = 0;
+
+    /**
+     * @brief Notifies the client that buffer underflow occurred.
+     *
+     * Notification shall be sent whenever a video/audio buffer underflow occurs
+     *
+     * @param[in] sourceId  : The id of the source that produced the buffer underflow
+     */
+    virtual void notifyBufferUnderflow(int32_t sourceId) = 0;
 };
 
 }; // namespace firebolt::rialto

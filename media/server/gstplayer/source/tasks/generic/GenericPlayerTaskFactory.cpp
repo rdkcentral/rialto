@@ -33,6 +33,7 @@
 #include "tasks/generic/RemoveSource.h"
 #include "tasks/generic/RenderFrame.h"
 #include "tasks/generic/ReportPosition.h"
+#include "tasks/generic/SetMute.h"
 #include "tasks/generic/SetPlaybackRate.h"
 #include "tasks/generic/SetPosition.h"
 #include "tasks/generic/SetVideoGeometry.h"
@@ -183,6 +184,11 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetVolume(GenericPl
     return std::make_unique<tasks::generic::SetVolume>(context, m_gstWrapper, volume);
 }
 
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetMute(GenericPlayerContext &context, bool mute) const
+{
+    return std::make_unique<tasks::generic::SetMute>(context, m_gstWrapper, mute);
+}
+
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createShutdown(IGstGenericPlayerPrivate &player) const
 {
     return std::make_unique<tasks::generic::Shutdown>(player);
@@ -196,9 +202,11 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createStop(GenericPlayerC
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createUnderflow(GenericPlayerContext &context,
                                                                        IGstGenericPlayerPrivate &player,
-                                                                       bool &underflowFlag, bool underflowEnabled) const
+                                                                       bool &underflowFlag, bool underflowEnabled,
+                                                                       MediaSourceType sourceType) const
 {
-    return std::make_unique<tasks::generic::Underflow>(context, player, m_client, underflowFlag, underflowEnabled);
+    return std::make_unique<tasks::generic::Underflow>(context, player, m_client, underflowFlag, underflowEnabled,
+                                                       sourceType);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createUpdatePlaybackGroup(GenericPlayerContext &context,

@@ -48,6 +48,7 @@ constexpr firebolt::rialto::MediaSourceStatus status{firebolt::rialto::MediaSour
 constexpr std::uint32_t needDataRequestId{17};
 constexpr std::uint32_t numFrames{1};
 constexpr double volume{0.7};
+constexpr bool mute{false};
 } // namespace
 
 namespace firebolt::rialto
@@ -234,6 +235,32 @@ void MediaPipelineServiceTests::mediaPipelineWillGetVolume()
 void MediaPipelineServiceTests::mediaPipelineWillFailToGetVolume()
 {
     EXPECT_CALL(m_mediaPipelineMock, getVolume(_)).WillOnce(Return(false));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillSetMute()
+{
+    EXPECT_CALL(m_mediaPipelineMock, setMute(_)).WillOnce(Return(true));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillFailToSetMute()
+{
+    EXPECT_CALL(m_mediaPipelineMock, setMute(_)).WillOnce(Return(false));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillGetMute()
+{
+    EXPECT_CALL(m_mediaPipelineMock, getMute(_))
+        .WillOnce(Invoke(
+            [&](bool &mut)
+            {
+                mut = mute;
+                return true;
+            }));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillFailToGetMute()
+{
+    EXPECT_CALL(m_mediaPipelineMock, getMute(_)).WillOnce(Return(false));
 }
 
 void MediaPipelineServiceTests::mediaPipelineFactoryWillCreateMediaPipeline()
@@ -486,6 +513,28 @@ void MediaPipelineServiceTests::getVolumeShouldFail()
     EXPECT_FALSE(m_sut->getVolume(sessionId, targetVolume));
 }
 
+void MediaPipelineServiceTests::setMuteShouldSucceed()
+{
+    EXPECT_TRUE(m_sut->setMute(sessionId, mute));
+}
+
+void MediaPipelineServiceTests::setMuteShouldFail()
+{
+    EXPECT_FALSE(m_sut->setMute(sessionId, mute));
+}
+
+void MediaPipelineServiceTests::getMuteShouldSucceed()
+{
+    bool targetMute{};
+    EXPECT_TRUE(m_sut->getMute(sessionId, targetMute));
+    EXPECT_EQ(targetMute, mute);
+}
+
+void MediaPipelineServiceTests::getMuteShouldFail()
+{
+    bool targetMute{};
+    EXPECT_FALSE(m_sut->getMute(sessionId, targetMute));
+}
 void MediaPipelineServiceTests::clearMediaPipelines()
 {
     m_sut->clearMediaPipelines();

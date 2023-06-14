@@ -324,6 +324,34 @@ bool MediaPipelineService::getVolume(int sessionId, double &volume)
     return mediaPipelineIter->second->getVolume(volume);
 }
 
+bool MediaPipelineService::setMute(int sessionId, bool mute)
+{
+    RIALTO_SERVER_LOG_DEBUG("Set mute requested, session id: %d", sessionId);
+
+    std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+    auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
+    if (mediaPipelineIter == m_mediaPipelines.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
+        return false;
+    }
+    return mediaPipelineIter->second->setMute(mute);
+}
+
+bool MediaPipelineService::getMute(int sessionId, bool &mute)
+{
+    RIALTO_SERVER_LOG_DEBUG("Get mute requested, session id: %d", sessionId);
+
+    std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+    auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
+    if (mediaPipelineIter == m_mediaPipelines.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
+        return false;
+    }
+    return mediaPipelineIter->second->getMute(mute);
+}
+
 std::vector<std::string> MediaPipelineService::getSupportedMimeTypes(MediaSourceType type)
 {
     return m_mediaPipelineCapabilities->getSupportedMimeTypes(type);

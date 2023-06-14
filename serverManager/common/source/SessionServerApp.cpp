@@ -78,8 +78,8 @@ SessionServerApp::SessionServerApp(SessionServerAppManager &sessionServerAppMana
                                    const std::string &sessionServerPath,
                                    std::chrono::milliseconds sessionServerStartupTimeout)
     : m_kServerId{generateServerId()}, m_socks{-1, -1}, m_sessionServerAppManager{sessionServerAppManager}, m_pid{-1},
-      m_isPreloaded{true}, m_kSessionServerPath{sessionServerPath}, m_kSessionServerStartupTimeout{
-                                                                        sessionServerStartupTimeout}
+      m_isPreloaded{true}, m_kSessionServerPath{sessionServerPath},
+      m_kSessionServerStartupTimeout{sessionServerStartupTimeout}, m_childInitialized{false}
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("Creating preloaded SessionServerApp with serverId: %d", m_kServerId);
     std::transform(environmentVariables.begin(), environmentVariables.end(), std::back_inserter(m_environmentVariables),
@@ -97,7 +97,8 @@ SessionServerApp::SessionServerApp(const std::string &appName,
     : m_kServerId{generateServerId()}, m_appName{appName}, m_initialState{initialState},
       m_sessionManagementSocketName{getSessionManagementSocketPath(appConfig)}, m_socks{-1, -1},
       m_sessionServerAppManager{sessionServerAppManager}, m_pid{-1}, m_isPreloaded{false},
-      m_kSessionServerPath{sessionServerPath}, m_kSessionServerStartupTimeout{sessionServerStartupTimeout}
+      m_kSessionServerPath{sessionServerPath}, m_kSessionServerStartupTimeout{sessionServerStartupTimeout},
+      m_childInitialized{false}
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("Creating SessionServerApp for app: %s with appId: %d", appName.c_str(), m_kServerId);
     std::transform(environmentVariables.begin(), environmentVariables.end(), std::back_inserter(m_environmentVariables),
@@ -109,13 +110,7 @@ SessionServerApp::~SessionServerApp()
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("Application %d is destructed", m_kServerId);
     cancelStartupTimerInternal();
-    if (m_pid != -1)
-    {
-        if (waitpid(m_pid, nullptr, 0) < 0)
-        {
-            RIALTO_SERVER_MANAGER_LOG_SYS_WARN(errno, "waitpid failed for %d", m_kServerId);
-        }
-    }
+    waitForChildProcess();
     if (m_socks[0] >= 0)
     {
         close(m_socks[0]);
@@ -139,8 +134,19 @@ bool SessionServerApp::launch()
         return false;
     }
     setupStartupTimer();
-    bool result = spawnSessionServer();
-    close(m_socks[0]);
+    const int childSocket{m_socks[0]};
+    const bool result = spawnSessionServer();
+    std::unique_lock<std::mutex> lock{m_processStartupMutex};
+    if (!m_processStartupCv.wait_for(lock, std::chrono::seconds{1}, [this]() { return m_childInitialized; }))
+    {
+        RIALTO_SERVER_MANAGER_LOG_ERROR("Child initialization failed. Timeout on waiting for process startup");
+        return false;
+    }
+    RIALTO_SERVER_MANAGER_LOG_DEBUG("Child initialized. Parent process will close the socket: %d now.", childSocket);
+    if (0 != close(childSocket))
+    {
+        RIALTO_SERVER_MANAGER_LOG_SYS_ERROR(errno, "Close of socket %d failed in parent process", childSocket);
+    }
     m_socks[0] = -1;
     return result;
 }
@@ -255,6 +261,9 @@ void SessionServerApp::setupStartupTimer()
                                          .onSessionServerStateChanged(m_kServerId,
                                                                       firebolt::rialto::common::SessionServerState::ERROR);
                                      kill();
+                                     m_sessionServerAppManager
+                                         .onSessionServerStateChanged(m_kServerId,
+                                                                      firebolt::rialto::common::SessionServerState::NOT_RUNNING);
                                  });
     }
     else
@@ -281,9 +290,18 @@ bool SessionServerApp::spawnSessionServer()
     }
     else
     {
-        int newSocket = dup(m_socks[0]);
-        close(m_socks[0]);
-        m_socks[0] = newSocket;
+        int newSocket{-1};
+        {
+            std::unique_lock<std::mutex> lock{m_processStartupMutex};
+            newSocket = dup(m_socks[0]);
+            if (0 != close(m_socks[0]))
+            {
+                RIALTO_SERVER_MANAGER_LOG_SYS_WARN(errno, "Socket %d could not be closed in child process.", m_socks[0]);
+            }
+            RIALTO_SERVER_MANAGER_LOG_DEBUG("Child socket initialized: %d", newSocket);
+            m_childInitialized = true;
+            m_processStartupCv.notify_one();
+        }
         if (!firebolt::rialto::logging::isConsoleLoggingEnabled())
         {
             int devNull = open("/dev/null", O_RDWR, 0);
@@ -300,7 +318,7 @@ bool SessionServerApp::spawnSessionServer()
                 devNull = -1;
             }
         }
-        const std::string appMgmtSocketStr{std::to_string(m_socks[0])};
+        const std::string appMgmtSocketStr{std::to_string(newSocket)};
         char *const appArguments[] = {strdup(m_kSessionServerPath.c_str()), strdup(appMgmtSocketStr.c_str()), nullptr};
         RIALTO_SERVER_MANAGER_LOG_DEBUG("PID: %d, executing: \"%s\" \"%s\"", getpid(), appArguments[0], appArguments[1]);
         execve(m_kSessionServerPath.c_str(), appArguments, m_environmentVariables.data());
@@ -311,5 +329,26 @@ bool SessionServerApp::spawnSessionServer()
         }
         _exit(EXIT_FAILURE);
     }
+}
+
+void SessionServerApp::waitForChildProcess()
+{
+    if (m_pid == -1)
+    {
+        return;
+    }
+    auto killTimer = firebolt::rialto::common::ITimerFactory::getFactory()
+                         ->createTimer(std::chrono::milliseconds{1000},
+                                       [this]()
+                                       {
+                                           RIALTO_SERVER_MANAGER_LOG_ERROR("Waitpid timeout. Killing: %d", m_kServerId);
+                                           kill();
+                                       });
+    if (waitpid(m_pid, nullptr, 0) < 0)
+    {
+        RIALTO_SERVER_MANAGER_LOG_SYS_WARN(errno, "waitpid failed for %d", m_kServerId);
+    }
+    killTimer->cancel();
+    RIALTO_SERVER_MANAGER_LOG_DEBUG("Server with id: %d exited.", m_kServerId);
 }
 } // namespace rialto::servermanager::common

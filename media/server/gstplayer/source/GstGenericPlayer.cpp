@@ -205,7 +205,7 @@ void GstGenericPlayer::initMsePipeline()
     unsigned flagAudio = getGstPlayFlag("audio");
     unsigned flagVideo = getGstPlayFlag("video");
     unsigned flagNativeVideo = getGstPlayFlag("native-video");
-    unsigned flagNativeAudio = 0;
+    unsigned flagNativeAudio = shouldEnableNativeAudio() ? getGstPlayFlag("native-audio") : 0;
     m_glibWrapper->gObjectSet(m_context.pipeline, "flags", flagAudio | flagVideo | flagNativeVideo | flagNativeAudio,
                               nullptr);
 
@@ -651,8 +651,8 @@ void GstGenericPlayer::scheduleAudioUnderflow()
     if (m_workerThread)
     {
         bool underflowEnabled = m_context.isPlaying && !m_context.audioSourceRemoved;
-        m_workerThread->enqueueTask(
-            m_taskFactory->createUnderflow(m_context, *this, m_context.audioUnderflowOccured, underflowEnabled));
+        m_workerThread->enqueueTask(m_taskFactory->createUnderflow(m_context, *this, m_context.audioUnderflowOccured,
+                                                                   underflowEnabled, MediaSourceType::AUDIO));
     }
 }
 
@@ -661,8 +661,8 @@ void GstGenericPlayer::scheduleVideoUnderflow()
     if (m_workerThread)
     {
         bool underflowEnabled = m_context.isPlaying;
-        m_workerThread->enqueueTask(
-            m_taskFactory->createUnderflow(m_context, *this, m_context.videoUnderflowOccured, underflowEnabled));
+        m_workerThread->enqueueTask(m_taskFactory->createUnderflow(m_context, *this, m_context.videoUnderflowOccured,
+                                                                   underflowEnabled, MediaSourceType::VIDEO));
     }
 }
 
@@ -678,11 +678,6 @@ void GstGenericPlayer::cancelUnderflow(bool &underflowFlag)
         return;
     }
     underflowFlag = false;
-    if (!m_context.audioUnderflowOccured && !m_context.videoUnderflowOccured)
-    {
-        m_taskFactory->createPlay(*this)->execute();
-        m_gstPlayerClient->notifyNetworkState(NetworkState::BUFFERED);
-    }
 }
 
 void GstGenericPlayer::play()
@@ -879,6 +874,26 @@ bool GstGenericPlayer::getVolume(double &volume)
     return true;
 }
 
+void GstGenericPlayer::setMute(bool mute)
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(m_taskFactory->createSetMute(m_context, mute));
+    }
+}
+
+bool GstGenericPlayer::getMute(bool &mute)
+{
+    // We are on main thread here, but m_context.pipeline can be used, because it's modified only in GstGenericPlayer
+    // constructor and destructor. GstGenericPlayer is created/destructed on main thread, so we won't have a crash here.
+    if (!m_context.pipeline)
+    {
+        return false;
+    }
+    mute = m_gstWrapper->gstStreamVolumeGetMute(GST_STREAM_VOLUME(m_context.pipeline));
+    return true;
+}
+
 void GstGenericPlayer::handleBusMessage(GstMessage *message)
 {
     m_workerThread->enqueueTask(m_taskFactory->createHandleBusMessage(m_context, *this, message));
@@ -887,6 +902,17 @@ void GstGenericPlayer::handleBusMessage(GstMessage *message)
 void GstGenericPlayer::updatePlaybackGroup(GstElement *typefind, const GstCaps *caps)
 {
     m_workerThread->enqueueTask(m_taskFactory->createUpdatePlaybackGroup(m_context, typefind, caps));
+}
+
+bool GstGenericPlayer::shouldEnableNativeAudio()
+{
+    GstElementFactory *factory = m_gstWrapper->gstElementFactoryFind("brcmaudiosink");
+    if (factory)
+    {
+        m_gstWrapper->gstObjectUnref(GST_OBJECT(factory));
+        return true;
+    }
+    return false;
 }
 
 }; // namespace firebolt::rialto::server

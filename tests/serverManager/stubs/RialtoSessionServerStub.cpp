@@ -65,6 +65,16 @@ public:
         }
         done->Run();
     }
+
+    void ping(::google::protobuf::RpcController *controller, const ::rialto::PingRequest *request,
+              ::rialto::PingResponse *response, ::google::protobuf::Closure *done) override
+    {
+        if (m_programmedResponse != StubResponse::OK)
+        {
+            controller->SetFailed("Failed for some reason ...");
+        }
+        done->Run();
+    }
 };
 
 void clientDisconnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &client)
@@ -124,6 +134,16 @@ void RialtoSessionServerStub::sendStateChangedEvent()
     auto stateChangedEvent = std::make_shared<rialto::StateChangedEvent>();
     stateChangedEvent->set_sessionserverstate(::rialto::SessionServerState::INACTIVE);
     m_client->sendEvent(stateChangedEvent);
+}
+
+void RialtoSessionServerStub::sendAckEvent(int pingId, bool success)
+{
+    EXPECT_TRUE(m_client);
+    EXPECT_TRUE(m_client->isConnected());
+    auto ackEvent = std::make_shared<rialto::AckEvent>();
+    ackEvent->set_id(pingId);
+    ackEvent->set_success(success);
+    m_client->sendEvent(ackEvent);
 }
 
 void RialtoSessionServerStub::disconnectClient()

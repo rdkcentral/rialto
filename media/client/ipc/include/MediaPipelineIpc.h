@@ -98,6 +98,10 @@ public:
 
     bool getVolume(double &volume) override;
 
+    bool setMute(bool mute) override;
+
+    bool getMute(bool &mute) override;
+
 private:
     /**
      * @brief The media player client ipc.
@@ -157,6 +161,13 @@ private:
      * @param[in] event : The qos event structure.
      */
     void onQos(const std::shared_ptr<firebolt::rialto::QosEvent> &event);
+
+    /**
+     * @brief Handler for a buffer underflow notification from the server.
+     *
+     * @param[in] event : The buffer underflow event structure.
+     */
+    void onBufferUnderflow(const std::shared_ptr<firebolt::rialto::BufferUnderflowEvent> &event);
 
     /**
      * @brief Create a new player session.

@@ -18,6 +18,7 @@
  */
 
 #include "SessionServerAppManagerFactory.h"
+#include "HealthcheckServiceFactory.h"
 #include "IEventThread.h"
 #include "SessionServerAppFactory.h"
 #include "SessionServerAppManager.h"
@@ -25,16 +26,16 @@
 
 namespace rialto::servermanager::common
 {
-std::unique_ptr<ISessionServerAppManager>
-createSessionServerAppManager(std::unique_ptr<ipc::IController> &ipc,
-                              const std::shared_ptr<service::IStateObserver> &stateObserver,
-                              const std::list<std::string> &environmentVariables, const std::string &sessionServerPath,
-                              std::chrono::milliseconds sessionServerStartupTimeout)
+std::unique_ptr<ISessionServerAppManager> createSessionServerAppManager(
+    std::unique_ptr<ipc::IController> &ipc, const std::shared_ptr<service::IStateObserver> &stateObserver,
+    const std::list<std::string> &environmentVariables, const std::string &sessionServerPath,
+    std::chrono::milliseconds sessionServerStartupTimeout, std::chrono::seconds healthcheckInterval)
 {
     return std::make_unique<SessionServerAppManager>(ipc, stateObserver,
                                                      std::make_unique<SessionServerAppFactory>(environmentVariables,
                                                                                                sessionServerPath,
                                                                                                sessionServerStartupTimeout),
+                                                     std::make_unique<HealthcheckServiceFactory>(healthcheckInterval),
                                                      firebolt::rialto::common::IEventThreadFactory::createFactory());
 }
 } // namespace rialto::servermanager::common

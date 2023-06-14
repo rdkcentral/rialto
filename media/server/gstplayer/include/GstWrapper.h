@@ -438,6 +438,16 @@ public:
         gst_stream_volume_set_volume(volume, format, val);
     }
 
+    gboolean gstStreamVolumeGetMute(GstStreamVolume *volume) const override
+    {
+        return gst_stream_volume_get_mute(volume);
+    }
+
+    void gstStreamVolumeSetMute(GstStreamVolume *volume, gboolean mute) const
+    {
+        return gst_stream_volume_set_mute(volume, mute);
+    }
+
     GstElement *gstPipelineNew(const gchar *name) const override { return gst_pipeline_new(name); }
 
     GstPluginFeature *gstRegistryLookupFeature(GstRegistry *registry, const char *name) const override

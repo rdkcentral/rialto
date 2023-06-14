@@ -43,6 +43,7 @@ public:
                              const std::shared_ptr<MediaPlayerShmInfo> &shmInfo) override;
     void notifyCancelNeedMediaData(int32_t sourceId) override;
     void notifyQos(int32_t sourceId, const QosInfo &qosInfo) override;
+    void notifyBufferUnderflow(int32_t sourceId) override;
 
 private:
     int m_sessionId;

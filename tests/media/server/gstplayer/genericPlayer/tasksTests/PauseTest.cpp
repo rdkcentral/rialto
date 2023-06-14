@@ -40,3 +40,15 @@ TEST_F(PauseTest, shouldPause)
 
     EXPECT_FALSE(m_context.isPlaying);
 }
+
+TEST_F(PauseTest, shouldPauseDuringUnderflow)
+{
+    m_context.isPlaying = true;
+    m_context.videoUnderflowOccured = true;
+    EXPECT_CALL(m_gstPlayer, stopPositionReportingAndCheckAudioUnderflowTimer());
+    EXPECT_CALL(m_gstPlayer, changePipelineState(GST_STATE_PAUSED));
+    firebolt::rialto::server::tasks::generic::Pause task{m_context, m_gstPlayer};
+    task.execute();
+
+    EXPECT_FALSE(m_context.isPlaying);
+}

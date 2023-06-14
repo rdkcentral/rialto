@@ -705,6 +705,53 @@ bool MediaPipelineServerInternal::getVolumeInternal(double &volume)
     return m_gstPlayer->getVolume(volume);
 }
 
+bool MediaPipelineServerInternal::setMute(bool mute)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = setMuteInternal(mute); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::setMuteInternal(bool mute)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to set mute - Gstreamer player has not been loaded");
+        return false;
+    }
+    m_gstPlayer->setMute(mute);
+    return true;
+}
+
+bool MediaPipelineServerInternal::getMute(bool &mute)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = getMuteInternal(mute); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::getMuteInternal(bool &mute)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get mute - Gstreamer player has not been loaded");
+        return false;
+    }
+    return m_gstPlayer->getMute(mute);
+}
+
 AddSegmentStatus MediaPipelineServerInternal::addSegment(uint32_t needDataRequestId,
                                                          const std::unique_ptr<MediaSegment> &mediaSegment)
 {
@@ -850,6 +897,27 @@ void MediaPipelineServerInternal::notifyQos(MediaSourceType mediaSourceType, con
                 return;
             }
             m_mediaPipelineClient->notifyQos(kSourceIter->second, qosInfo);
+        }
+    };
+
+    m_mainThread->enqueueTask(m_mainThreadClientId, task);
+}
+
+void MediaPipelineServerInternal::notifyBufferUnderflow(MediaSourceType mediaSourceType)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    auto task = [&, mediaSourceType]()
+    {
+        if (m_mediaPipelineClient)
+        {
+            const auto kSourceIter = m_attachedSources.find(mediaSourceType);
+            if (m_attachedSources.cend() == kSourceIter)
+            {
+                RIALTO_SERVER_LOG_WARN("Buffer underflow notification failed - sourceId not found");
+                return;
+            }
+            m_mediaPipelineClient->notifyBufferUnderflow(kSourceIter->second);
         }
     };
 

@@ -160,3 +160,15 @@ TEST_F(SessionServerManagerTests, shouldSetLogLevels)
     willSetLogLevels();
     triggerSetLogLevels();
 }
+
+TEST_F(SessionServerManagerTests, shouldPing)
+{
+    willPing();
+    pingShouldSucceed();
+}
+
+TEST_F(SessionServerManagerTests, shouldFailToPing)
+{
+    willFailToPing();
+    pingShouldFail();
+}

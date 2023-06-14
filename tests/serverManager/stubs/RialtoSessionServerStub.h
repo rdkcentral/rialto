@@ -40,6 +40,7 @@ public:
     void start(StubResponse stubResponse);
     int getClientSocket() const;
     void sendStateChangedEvent();
+    void sendAckEvent(int pingId, bool success);
     void disconnectClient();
 
 private:

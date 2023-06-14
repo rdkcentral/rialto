@@ -24,6 +24,7 @@
 
 using firebolt::rialto::ApplicationState;
 using firebolt::rialto::common::SessionServerState;
+using firebolt::rialto::server::AckSenderMock;
 using firebolt::rialto::server::ipc::ApplicationManagementServerMock;
 using firebolt::rialto::server::ipc::SessionManagementServerMock;
 using firebolt::rialto::server::service::SessionServerManager;
@@ -37,6 +38,7 @@ namespace
 constexpr int appManagementSocket{3};
 constexpr int maxPlaybacks{2};
 constexpr int maxWebAudioPlayers{1};
+constexpr int pingId{12};
 constexpr firebolt::rialto::common::MaxResourceCapabilitites maxResource{maxPlaybacks, maxWebAudioPlayers};
 constexpr RIALTO_DEBUG_LEVEL logLvl{RIALTO_DEBUG_LEVEL_DEFAULT};
 const std::string sessionManagementSocket{"/tmp/rialtosessionservermanagertests-0"};
@@ -47,7 +49,8 @@ SessionServerManagerTests::SessionServerManagerTests()
       m_applicationManagementServerMock{
           dynamic_cast<StrictMock<ApplicationManagementServerMock> &>(*m_applicationManagementServer)},
       m_sessionManagementServer{std::make_unique<StrictMock<SessionManagementServerMock>>()},
-      m_sessionManagementServerMock{dynamic_cast<StrictMock<SessionManagementServerMock> &>(*m_sessionManagementServer)}
+      m_sessionManagementServerMock{dynamic_cast<StrictMock<SessionManagementServerMock> &>(*m_sessionManagementServer)},
+      m_ackSenderMock{std::make_shared<StrictMock<AckSenderMock>>()}
 {
     EXPECT_CALL(m_ipcFactoryMock, createApplicationManagementServer(_))
         .WillOnce(Return(ByMove(std::move(m_applicationManagementServer))));
@@ -248,6 +251,16 @@ void SessionServerManagerTests::willSetStateNotRunning()
         .WillOnce(Return(true));
 }
 
+void SessionServerManagerTests::willPing()
+{
+    EXPECT_CALL(m_controlServiceMock, ping(pingId, _)).WillOnce(Return(true));
+}
+
+void SessionServerManagerTests::willFailToPing()
+{
+    EXPECT_CALL(m_controlServiceMock, ping(pingId, _)).WillOnce(Return(false));
+}
+
 void SessionServerManagerTests::willSetLogLevels()
 {
     EXPECT_CALL(m_sessionManagementServerMock, setLogLevels(logLvl, logLvl, logLvl, logLvl));
@@ -275,4 +288,16 @@ void SessionServerManagerTests::triggerSetLogLevels()
 {
     EXPECT_TRUE(m_sut);
     m_sut->setLogLevels(logLvl, logLvl, logLvl, logLvl, logLvl, logLvl);
+}
+
+void SessionServerManagerTests::pingShouldSucceed()
+{
+    EXPECT_TRUE(m_sut);
+    EXPECT_TRUE(m_sut->ping(pingId, m_ackSenderMock));
+}
+
+void SessionServerManagerTests::pingShouldFail()
+{
+    EXPECT_TRUE(m_sut);
+    EXPECT_FALSE(m_sut->ping(pingId, m_ackSenderMock));
 }
