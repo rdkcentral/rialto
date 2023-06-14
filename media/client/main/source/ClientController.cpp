@@ -44,7 +44,7 @@ ClientController::ClientController(const std::shared_ptr<IControlIpcFactory> &Co
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    char commitID[] = COMMIT_ID;
+    const char commitID[] = COMMIT_ID;
 
     if (std::strlen(commitID) > 0)
     {
