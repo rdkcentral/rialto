@@ -30,14 +30,27 @@
 #include "IWebAudioPlayerServerInternalFactory.h"
 #include "IpcFactory.h"
 #include "PlaybackService.h"
+#include "RialtoServerLogging.h"
 #include "SessionServerManager.h"
 #include <cstdlib>
+#include <cstring>
 #include <thread>
 
 // NOLINT(build/filename_format)
 
 int main(int argc, char *argv[])
 {
+    const char commitID[] = COMMIT_ID;
+
+    if (std::strlen(commitID) > 0)
+    {
+        RIALTO_SERVER_LOG_MIL("Commit ID: %s", commitID);
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_WARN("Failed to get git commit ID.");
+    }
+
     firebolt::rialto::server::gstInitalise(argc, argv);
 
     firebolt::rialto::server::ipc::IpcFactory ipcFactory;

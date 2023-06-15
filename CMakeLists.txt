@@ -87,6 +87,22 @@ if ( RIALTO_ENABLE_DECRYPT_BUFFER )
     add_compile_definitions( RIALTO_ENABLE_DECRYPT_BUFFER )
 endif()
 
+# Retrieve the commit ID
+execute_process(
+    COMMAND git rev-parse HEAD
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} 
+    RESULT_VARIABLE RESULT 
+    OUTPUT_VARIABLE COMMIT_ID 
+    OUTPUT_STRIP_TRAILING_WHITESPACE 
+)
+
+if(RESULT)
+    message("Failed to get git commit ID: ${RESULT}")
+endif()
+
+# Preprocesser Variable
+add_compile_definitions(COMMIT_ID="${COMMIT_ID}")
+
 # Add our local cmake directory to search for components
 set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake )
 
