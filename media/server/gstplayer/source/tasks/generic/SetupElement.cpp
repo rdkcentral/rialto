@@ -92,6 +92,11 @@ void SetupElement::execute() const
     {
         // Wait for video so that the audio aligns at the starting point with timeout of 4000ms.
         m_glibWrapper->gObjectSet(m_element, "wait-video", TRUE, "a-wait-timeout", 4000, nullptr);
+
+        // Xrun occasionally pauses the underlying sink due to unstable playback, but the rest of the pipeline
+        // remains in the playing state. This causes problems with the synchronization of gst element and rialto
+        // ultimately hangs waiting for pipeline termination.
+        m_glibWrapper->gObjectSet(m_element, "disable-xrun", TRUE, nullptr);
     }
 
     if (isVideoDecoder(*m_gstWrapper, m_element))
