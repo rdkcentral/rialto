@@ -587,12 +587,18 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
         return true;
     }
     m_activeRequests->erase(needDataRequestId);
-    if (status != MediaSourceStatus::OK && status != MediaSourceStatus::EOS)
+
+    static int counter = 0;
+    counter++;
+
+    if (status != MediaSourceStatus::OK && status != MediaSourceStatus::EOS && counter >= 10)
     {
         RIALTO_SERVER_LOG_WARN("Data request for needDataRequestId: %u received with wrong status", needDataRequestId);
         scheduleNotifyNeedMediaData(mediaSourceType);
+        counter = 0;
         return true;
     }
+
     uint8_t *buffer = m_shmBuffer->getBuffer();
     if (!buffer)
     {
