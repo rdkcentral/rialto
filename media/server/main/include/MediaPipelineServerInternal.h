@@ -34,8 +34,6 @@
 
 namespace firebolt::rialto::server
 {
-class MediaPipelineServerInternal;
-
 /**
  * @brief IMediaPipelineServerInternal factory class definition.
  */
@@ -178,6 +176,11 @@ protected:
      * @brief ID of a session represented by this MediaPipeline
      */
     int m_sessionId;
+
+    /**
+     * @brief Counter reperesenting the frequency performed 
+     */
+    int m_counter{0};
 
     /**
      * @brief Shared memory buffer
