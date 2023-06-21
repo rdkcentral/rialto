@@ -87,7 +87,7 @@ void clientDisconnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> 
 RialtoSessionServerStub::RialtoSessionServerStub() : m_socks{-1, -1}
 {
     auto factory = ::firebolt::rialto::ipc::IServerFactory::createFactory();
-    m_server = factory->create(::firebolt::rialto::ipc::IServerFactory::ALLOW_MONITORING);
+    m_server = factory->create();
 
     EXPECT_EQ(socketpair(AF_UNIX, SOCK_SEQPACKET | SOCK_CLOEXEC | SOCK_NONBLOCK, 0, m_socks.data()), 0);
 }

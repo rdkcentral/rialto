@@ -24,7 +24,6 @@ import "rialtoipc.proto";
 
 package firebolt.rialto.ipc.transport;
 
-
 message MethodCall {
   required uint64 serial_id = 1;
   required string service_name = 2;
@@ -33,18 +32,9 @@ message MethodCall {
   optional bytes request_message = 4;
 }
 
-message RegisterMonitor {
-  required int32 socket = 1 [(rialto.ipc.field_is_fd) = true];
-}
-
 message MessageToServer {
-  oneof type {
-    MethodCall call = 1;
-    RegisterMonitor monitor = 2;
-  }
+  required MethodCall call = 1;
 }
-
-
 
 message MethodCallReply {
   required uint64 reply_id = 1;
@@ -66,59 +56,5 @@ message MessageFromServer {
     MethodCallReply reply = 1;
     MethodCallError error = 2;
     EventFromServer event = 3;
-  }
-}
-
-
-
-
-message ClientDetails {
-  required string socket_path = 1;
-  required int32 pid = 2;
-  required uint32 uid = 3;
-  required uint32 gid = 4;
-}
-
-message CurrentClients {
-  map<uint64, ClientDetails> clients = 1;
-}
-
-message NewClientDetails {
-  required uint64 client_id = 1;
-  required ClientDetails details = 2;
-}
-
-message MonitoredMethodCall {
-  required uint64 client_id = 1;
-  optional bool no_reply = 2;
-  required MethodCall call = 3;
-}
-
-message MonitoredMethodCallReply {
-  required uint64 target_client_id = 1;
-  required MethodCallReply reply = 2;
-}
-
-message MonitoredMethodCallError {
-  required uint64 target_client_id = 1;
-  required MethodCallError error = 2;
-}
-
-message MonitoredEventFromServer {
-  required uint64 target_client_id = 1;
-  required EventFromServer event = 2;
-}
-
-message MonitorMessage {
-  optional fixed64 timestamp_mono = 1;
-  optional fixed64 timestamp_real = 2;
-  oneof type {
-    CurrentClients current_clients = 100;
-    NewClientDetails client_connected = 101;
-    uint64 client_disconnected = 102;
-    MonitoredMethodCall call = 103;
-    MonitoredMethodCallReply reply = 104;
-    MonitoredMethodCallError error = 105;
-    MonitoredEventFromServer event = 106;
   }
 }

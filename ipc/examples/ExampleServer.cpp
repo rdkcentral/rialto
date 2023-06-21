@@ -108,7 +108,7 @@ int main(int argc, char *argv[])
                                             RIALTO_DEBUG_LEVEL(RIALTO_DEBUG_LEVEL_DEFAULT | RIALTO_DEBUG_LEVEL_INFO));
 
     auto factory = ::firebolt::rialto::ipc::IServerFactory::createFactory();
-    auto server = factory->create(::firebolt::rialto::ipc::IServerFactory::ALLOW_MONITORING);
+    auto server = factory->create();
 
     // add a listening socket for clients to connect to
     server->addSocket("/tmp/rialto.example.socket", &clientConnected, &clientDisconnected);

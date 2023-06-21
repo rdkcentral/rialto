@@ -32,7 +32,7 @@ public:
     ServerFactoryMock() = default;
     virtual ~ServerFactoryMock() = default;
 
-    MOCK_METHOD(std::shared_ptr<IServer>, create, (unsigned flags), (override));
+    MOCK_METHOD(std::shared_ptr<IServer>, create, (), (override));
 };
 } // namespace firebolt::rialto::ipc
 
