@@ -44,7 +44,7 @@ private:
         GstBuffer *buffer;
         int32_t rate;
         int32_t channels;
-        std::shared_ptr<std::vector<std::uint8_t>> codecData;
+        std::shared_ptr<CodecData> codecData;
     };
     struct VideoData
     {
@@ -52,7 +52,7 @@ private:
         int32_t width;
         int32_t height;
         Fraction frameRate;
-        std::shared_ptr<std::vector<std::uint8_t>> codecData;
+        std::shared_ptr<CodecData> codecData;
     };
 
     GenericPlayerContext &m_context;
