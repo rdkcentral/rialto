@@ -50,6 +50,5 @@ set( CMAKE_POSITION_INDEPENDENT_CODE ON )
 add_subdirectory( common )
 add_subdirectory( client )
 add_subdirectory( server )
-#add_subdirectory( monitor )
 add_subdirectory( examples EXCLUDE_FROM_ALL )
 

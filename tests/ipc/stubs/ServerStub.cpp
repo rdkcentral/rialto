@@ -70,7 +70,7 @@ void ServerStub::init()
     m_clientConnected = false;
     m_running = true;
     auto factory = ::firebolt::rialto::ipc::IServerFactory::createFactory();
-    m_server = factory->create(::firebolt::rialto::ipc::IServerFactory::ALLOW_MONITORING);
+    m_server = factory->create();
 
     const char *rialtoPath = getenv("RIALTO_SOCKET_PATH");
     m_server->addSocket(rialtoPath, std::bind(&ServerStub::clientConnected, this, std::placeholders::_1),

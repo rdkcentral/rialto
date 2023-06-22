@@ -63,7 +63,7 @@ ApplicationManagementServerTests::ApplicationManagementServerTests()
 {
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ServerFactoryMock>> serverFactoryMock =
         std::make_shared<StrictMock<firebolt::rialto::ipc::ServerFactoryMock>>();
-    EXPECT_CALL(*serverFactoryMock, create(_)).WillOnce(Return(m_serverMock));
+    EXPECT_CALL(*serverFactoryMock, create()).WillOnce(Return(m_serverMock));
     std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::ServerManagerModuleServiceFactoryMock>>
         serverManagerModuleFactoryMock =
             std::make_shared<StrictMock<firebolt::rialto::server::ipc::ServerManagerModuleServiceFactoryMock>>();
