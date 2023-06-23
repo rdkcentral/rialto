@@ -367,6 +367,9 @@ enum class CodecDataType
     STRING
 };
 
+/**
+ * @brief Codec data with type.
+ */
 struct CodecData
 {
     std::vector<uint8_t> data{};
