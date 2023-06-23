@@ -157,6 +157,41 @@ TEST_F(AttachSourceTest, shouldAttachVideoSource)
     EXPECT_TRUE(m_context.streamInfo.at(firebolt::rialto::MediaSourceType::VIDEO).hasDrm);
 }
 
+TEST_F(AttachSourceTest, shouldAttachVideoSourceWithStringCodecData)
+{
+    int width = 1920;
+    int height = 1080;
+    std::string codecDataStr{"TEST"};
+    std::shared_ptr<firebolt::rialto::CodecData> codecData{std::make_shared<firebolt::rialto::CodecData>()};
+    codecData->data = std::vector<std::uint8_t>{codecDataStr.begin(), codecDataStr.end()};
+    codecData->type = firebolt::rialto::CodecDataType::STRING;
+    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>("video/h264", true, width, height,
+                                                                             firebolt::rialto::SegmentAlignment::AU,
+                                                                             firebolt::rialto::StreamFormat::AVC,
+                                                                             codecData);
+    firebolt::rialto::server::tasks::generic::AttachSource task{m_context,     m_gstWrapper,
+                                                                m_glibWrapper, m_rdkGstreamerUtilsWrapper,
+                                                                m_gstPlayer,   source};
+    EXPECT_CALL(*m_gstWrapper, gstCapsNewEmptySimple(StrEq("video/x-h264"))).WillOnce(Return(&m_gstCaps1));
+    EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleIntStub(&m_gstCaps1, StrEq("width"), G_TYPE_INT, width));
+    EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleIntStub(&m_gstCaps1, StrEq("height"), G_TYPE_INT, height));
+    EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleStringStub(&m_gstCaps1, StrEq("alignment"), _, StrEq("au")));
+    EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleStringStub(&m_gstCaps1, StrEq("codec_data"), G_TYPE_STRING,
+                                                          StrEq(codecDataStr.c_str())));
+    EXPECT_CALL(*m_gstWrapper, gstCapsSetSimpleStringStub(&m_gstCaps1, StrEq("stream-format"), _, StrEq("avc")));
+    EXPECT_CALL(*m_gstWrapper, gstCapsToString(&m_gstCaps1)).WillOnce(Return(&m_capsStr));
+    EXPECT_CALL(*m_glibWrapper, gFree(&m_capsStr));
+    EXPECT_CALL(*m_gstWrapper, gstElementFactoryMake(_, CharStrMatcher(m_vidName.c_str()))).WillOnce(Return(&m_appSrc));
+    EXPECT_CALL(*m_gstWrapper, gstAppSrcSetCaps(GST_APP_SRC(&m_appSrc), &m_gstCaps1));
+    EXPECT_CALL(*m_gstWrapper, gstCapsUnref(&m_gstCaps1));
+    task.execute();
+    EXPECT_EQ(1, m_context.streamInfo.size());
+    EXPECT_NE(m_context.streamInfo.end(), m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO));
+    EXPECT_EQ(&m_appSrc, m_context.streamInfo.at(firebolt::rialto::MediaSourceType::VIDEO).appSrc);
+    EXPECT_TRUE(m_context.streamInfo.at(firebolt::rialto::MediaSourceType::VIDEO).hasDrm);
+}
+
 TEST_F(AttachSourceTest, shouldAttachVideoSourceEmptyCodecData)
 {
     int size = 0;
