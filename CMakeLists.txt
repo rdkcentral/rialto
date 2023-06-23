@@ -35,13 +35,14 @@ if( RIALTO_BUILD_TYPE STREQUAL "Debug" )
     message("_______________DEBUG MODE_______________")
     option(RIALTO_LOG_INFO_ENABLED "Enable info logging for RialtoServer" ON)
     option(RIALTO_LOG_DEBUG_ENABLED "Enable debug logging for RialtoServer" ON)
+    add_compile_definitions( RIALTO_DEBUG_MODE )
 else()
     message("_______________RELEASE MODE (DEFAULT)_______________")
     option(RIALTO_LOG_INFO_ENABLED "Enable info logging for RialtoServer" OFF)
     option(RIALTO_LOG_DEBUG_ENABLED "Enable debug logging for RialtoServer" OFF)
 endif()
 
-if (NOT RIALTO_LOG_FATAL_ENABLED OR 
+if (NOT RIALTO_LOG_FATAL_ENABLED OR
     NOT RIALTO_LOG_ERROR_ENABLED OR
     NOT RIALTO_LOG_WARN_ENABLED OR
     NOT RIALTO_LOG_MIL_ENABLED OR
@@ -52,7 +53,7 @@ if (NOT RIALTO_LOG_FATAL_ENABLED OR
     add_compile_options(-Wno-error=unused-function -Wno-error=unused-variable)
 
 endif()
-   
+
 if ( RIALTO_LOG_FATAL_ENABLED )
     message("RIALTO_LOG_FATAL IS ENABLED")
     add_compile_definitions( RIALTO_LOG_FATAL_ENABLED )
@@ -90,10 +91,10 @@ endif()
 # Retrieve the commit ID
 execute_process(
     COMMAND git rev-parse HEAD
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} 
-    RESULT_VARIABLE RESULT 
-    OUTPUT_VARIABLE COMMIT_ID 
-    OUTPUT_STRIP_TRAILING_WHITESPACE 
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    RESULT_VARIABLE RESULT
+    OUTPUT_VARIABLE COMMIT_ID
+    OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
 if(RESULT)

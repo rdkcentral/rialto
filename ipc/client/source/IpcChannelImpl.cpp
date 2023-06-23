@@ -41,9 +41,18 @@
 #define SCM_MAX_FD 255
 #endif
 
+namespace
+{
+constexpr size_t kMaxMessageSize = 128 * 1024;
+#ifdef RIALTO_DEBUG_MODE
+const std::chrono::milliseconds kDefaultIpcTimeout = 10000;
+#else
+const std::chrono::milliseconds kDefaultIpcTimeout = 3000;
+#endif
+}
+
 namespace firebolt::rialto::ipc
 {
-const size_t ChannelImpl::m_kMaxMessageSize = 128 * 1024;
 
 std::shared_ptr<IChannelFactory> IChannelFactory::createFactory()
 {
@@ -92,7 +101,7 @@ std::shared_ptr<IChannel> ChannelFactory::createChannel(const std::string &socke
 }
 
 ChannelImpl::ChannelImpl(int sock)
-    : m_sock(-1), m_epollFd(-1), m_timerFd(-1), m_eventFd(-1), m_serialCounter(1), m_defaultTimeout(3000),
+    : m_sock(-1), m_epollFd(-1), m_timerFd(-1), m_eventFd(-1), m_serialCounter(1)
       m_eventTagCounter(1)
 {
     if (!attachSocket(sock))
@@ -112,7 +121,7 @@ ChannelImpl::ChannelImpl(int sock)
 }
 
 ChannelImpl::ChannelImpl(const std::string &socketPath)
-    : m_sock(-1), m_epollFd(-1), m_timerFd(-1), m_eventFd(-1), m_serialCounter(1), m_defaultTimeout(3000),
+    : m_sock(-1), m_epollFd(-1), m_timerFd(-1), m_eventFd(-1), m_serialCounter(1)
       m_eventTagCounter(1)
 {
     if (!createConnectedSocket(socketPath))
@@ -442,7 +451,7 @@ bool ChannelImpl::processSocketEvent()
     static std::mutex bufLock;
     std::lock_guard<std::mutex> bufLocker(bufLock);
 
-    static std::vector<uint8_t> dataBuf(m_kMaxMessageSize);
+    static std::vector<uint8_t> dataBuf(kMaxMessageSize);
     static std::vector<uint8_t> ctrlBuf(CMSG_SPACE(SCM_MAX_FD * sizeof(int)));
 
     // read all messages from the client socket, we break out if the socket is closed
@@ -1050,7 +1059,7 @@ void ChannelImpl::CallMethod(const google::protobuf::MethodDescriptor *method, /
                              google::protobuf::RpcController *controller, const google::protobuf::Message *request,
                              google::protobuf::Message *response, google::protobuf::Closure *done)
 {
-    MethodCall methodCall{std::chrono::steady_clock::now() + m_defaultTimeout,
+    MethodCall methodCall{std::chrono::steady_clock::now() + kDefaultIpcTimeout,
                           dynamic_cast<ClientControllerImpl *>(controller), response, done};
 
     //
@@ -1068,9 +1077,9 @@ void ChannelImpl::CallMethod(const google::protobuf::MethodDescriptor *method, /
     call->set_request_message(std::move(reqString));
 
     const size_t requiredDataLen = message.ByteSizeLong();
-    if (requiredDataLen > m_kMaxMessageSize)
+    if (requiredDataLen > kMaxMessageSize)
     {
-        RIALTO_IPC_LOG_ERROR("method call to big to send (%zu, max %zu", requiredDataLen, m_kMaxMessageSize);
+        RIALTO_IPC_LOG_ERROR("method call to big to send (%zu, max %zu", requiredDataLen, kMaxMessageSize);
         completeWithError(&methodCall, "Method call to big");
         return;
     }
