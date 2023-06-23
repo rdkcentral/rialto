@@ -588,28 +588,23 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
     }
     m_activeRequests->erase(needDataRequestId);
 
-    // int m_counter{0};
-    
+    int &counter = m_attachedSourcesForCounter[mediaSourceType];
+
     if (status != MediaSourceStatus::OK && status != MediaSourceStatus::EOS)
     {
-        m_counter++;
-        if(m_counter == 2)
+        counter++;
+        if (counter == 10)
         {
-            RIALTO_SERVER_LOG_INFO("First Counter should be 2: %d", m_counter);
-            RIALTO_SERVER_LOG_WARN("Data request for needDataRequestId: %u received with wrong status", needDataRequestId);
-            scheduleNotifyNeedMediaData(mediaSourceType);
-            m_counter = 0;
-            RIALTO_SERVER_LOG_INFO("Second counter after reset in if, should be zero: %d", m_counter);
-            return true;
-        }   
-        RIALTO_SERVER_LOG_INFO("Counter not in if, so should give a number: %d", m_counter);
+            RIALTO_SERVER_LOG_WARN("Data request for needDataRequestId: %u received with wrong status",
+                                   needDataRequestId);
+            counter = 0;
+        }
+        scheduleNotifyNeedMediaData(mediaSourceType);
         return true;
     }
     else
     {
-        RIALTO_SERVER_LOG_INFO("Counter counting in else before reset: %d", m_counter);
-        m_counter = 0;
-        RIALTO_SERVER_LOG_INFO("Counter should be reset in else, so zero: %d", m_counter);
+        counter = 0;
     }
 
     uint8_t *buffer = m_shmBuffer->getBuffer();

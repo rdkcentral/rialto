@@ -178,11 +178,6 @@ protected:
     int m_sessionId;
 
     /**
-     * @brief Counter reperesenting the frequency performed 
-     */
-    int m_counter{0};
-
-    /**
      * @brief Shared memory buffer
      */
     std::shared_ptr<ISharedMemoryBuffer> m_shmBuffer;
@@ -226,6 +221,11 @@ protected:
      * @brief Currently attached sources
      */
     std::map<MediaSourceType, std::int32_t> m_attachedSources;
+
+    /**
+     * @brief Map of flags for counter w mediasource
+     */
+    std::map<MediaSourceType, int> m_attachedSourcesForCounter;
 
     /**
      * @brief Flag used to check if allSourcesAttached was already called
