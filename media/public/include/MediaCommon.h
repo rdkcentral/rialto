@@ -372,8 +372,8 @@ enum class CodecDataType
  */
 struct CodecData
 {
-    std::vector<uint8_t> data{};
-    CodecDataType type{CodecDataType::BUFFER};
+    std::vector<uint8_t> data{};               /**< The codec data */
+    CodecDataType type{CodecDataType::BUFFER}; /**< The codec data type */
 };
 
 } // namespace firebolt::rialto
