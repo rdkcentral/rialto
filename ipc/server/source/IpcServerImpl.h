@@ -24,7 +24,6 @@
 #include "IIpcServer.h"
 #include "IIpcServerFactory.h"
 #include "IpcServerControllerImpl.h"
-#include "IpcServerMonitor.h"
 #include "SimpleBufferPool.h"
 
 #include "rialtoipc-transport.pb.h"
@@ -55,13 +54,13 @@ public:
     ServerFactory() = default;
     ~ServerFactory() override = default;
 
-    std::shared_ptr<IServer> create(unsigned flags) override;
+    std::shared_ptr<IServer> create() override;
 };
 
 class ServerImpl final : public ::firebolt::rialto::ipc::IServer, public std::enable_shared_from_this<ServerImpl>
 {
 public:
-    explicit ServerImpl(unsigned flags);
+    explicit ServerImpl();
     ~ServerImpl() final;
 
 public:
@@ -97,9 +96,6 @@ private:
     void processMethodCall(const std::shared_ptr<ClientImpl> &client, const transport::MethodCall &call,
                            const std::vector<FileDescriptor> &fds);
 
-    void processMonitorRequest(const std::shared_ptr<ClientImpl> &client,
-                               const transport::RegisterMonitor &registerMonitor, const std::vector<FileDescriptor> &fds);
-
     std::shared_ptr<ClientImpl> addClientSocket(int socketFd, const std::string &listeningSocketPath,
                                                 std::function<void(const std::shared_ptr<IClient> &)> disconnectedCb);
 
@@ -120,8 +116,6 @@ private:
 
     int m_pollFd;
     int m_wakeEventFd;
-
-    const std::unique_ptr<ServerMonitor> m_kMonitor;
 
     std::atomic<uint64_t> m_socketIdCounter;
     std::atomic<uint64_t> m_clientIdCounter;

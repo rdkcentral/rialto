@@ -25,7 +25,6 @@ add_library(
         source/IpcClientImpl.cpp
         source/IpcServerImpl.cpp
         source/IpcServerControllerImpl.cpp
-        source/IpcServerMonitor.cpp
 
         # $<TARGET_OBJECTS:RialtoIpcProto>
 
