@@ -49,7 +49,7 @@ const std::chrono::milliseconds kDefaultIpcTimeout = 10000;
 #else
 const std::chrono::milliseconds kDefaultIpcTimeout = 3000;
 #endif
-}
+} // namespace
 
 namespace firebolt::rialto::ipc
 {
@@ -101,8 +101,7 @@ std::shared_ptr<IChannel> ChannelFactory::createChannel(const std::string &socke
 }
 
 ChannelImpl::ChannelImpl(int sock)
-    : m_sock(-1), m_epollFd(-1), m_timerFd(-1), m_eventFd(-1), m_serialCounter(1)
-      m_eventTagCounter(1)
+    : m_sock(-1), m_epollFd(-1), m_timerFd(-1), m_eventFd(-1), m_serialCounter(1) m_eventTagCounter(1)
 {
     if (!attachSocket(sock))
     {
@@ -121,8 +120,7 @@ ChannelImpl::ChannelImpl(int sock)
 }
 
 ChannelImpl::ChannelImpl(const std::string &socketPath)
-    : m_sock(-1), m_epollFd(-1), m_timerFd(-1), m_eventFd(-1), m_serialCounter(1)
-      m_eventTagCounter(1)
+    : m_sock(-1), m_epollFd(-1), m_timerFd(-1), m_eventFd(-1), m_serialCounter(1) m_eventTagCounter(1)
 {
     if (!createConnectedSocket(socketPath))
     {
