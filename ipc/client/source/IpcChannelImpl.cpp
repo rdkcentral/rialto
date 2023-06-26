@@ -55,11 +55,11 @@ std::chrono::milliseconds getIpcTimeout()
         try
         {
             timeout = std::chrono::milliseconds{std::stoull(customTimeout)};
-            fprintf(stderr, "Using custom Ipc timeout: %sms", customTimeout);
+            RIALTO_IPC_LOG_INFO("Using custom Ipc timeout: %sms", customTimeout);
         }
         catch (const std::exception &e)
         {
-            fprintf(stderr, "Custom Ipc timeout invalid, ignoring: %s", customTimeout);
+            RIALTO_IPC_LOG_ERROR("Custom Ipc timeout invalid, ignoring: %s", customTimeout);
         }
     }
     return timeout;
