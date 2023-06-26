@@ -203,6 +203,13 @@ private:
      */
     bool shouldEnableNativeAudio();
 
+    /**
+     * @brief Sets codec_data in GstCaps if available
+     *
+     * @retval True if caps were changed
+     */
+    bool setCodecData(GstCaps *caps, const std::shared_ptr<CodecData> &codecData) const;
+
 private:
     /**
      * @brief The player context.
