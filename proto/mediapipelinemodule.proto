@@ -133,6 +133,15 @@ message AttachSourceRequest {
         optional bytes codec_specific_config = 3; ///The audio specific config. Zero length if no specific config
     }
 
+    message CodecData {
+        enum Type {
+            BUFFER = 1;
+            STRING = 2;
+        }
+        required bytes data = 1; /* Buffer containing updated codec data for video segments */
+        required Type type = 2;  /* Type of data */
+    }
+
     required int32 session_id = 1;
     required ConfigType config_type = 2;
     required string mime_type = 3;
@@ -141,7 +150,7 @@ message AttachSourceRequest {
     optional int32 height = 6;
     required SegmentAlignment segment_alignment = 7; /* Segment alignment can be specified for H264/H265, will use NAL if not set */
     optional AudioConfig audio_config = 8;
-    optional bytes codec_data = 9;
+    optional CodecData codec_data = 9;
     required StreamFormat stream_format = 10;
     optional uint32 dolby_vision_profile = 11;
 }

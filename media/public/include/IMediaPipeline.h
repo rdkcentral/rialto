@@ -141,7 +141,7 @@ public:
         /**
          * @brief Gets the codec data
          */
-        const std::shared_ptr<std::vector<std::uint8_t>> &getCodecData() const { return m_codecData; }
+        const std::shared_ptr<CodecData> &getCodecData() const { return m_codecData; }
 
         /**
          * @brief Gets the stream format
@@ -163,7 +163,7 @@ public:
                              const std::string &mimeType = std::string(), bool hasDrm = true,
                              SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                              StreamFormat streamFormat = StreamFormat::UNDEFINED,
-                             const std::shared_ptr<std::vector<std::uint8_t>> &codecData = nullptr)
+                             const std::shared_ptr<CodecData> &codecData = nullptr)
             : m_id(0), m_configType(configType), m_mimeType(mimeType), m_hasDrm(hasDrm), m_alignment(alignment),
               m_streamFormat(streamFormat), m_codecData(codecData)
         {
@@ -201,7 +201,7 @@ public:
         /**
          * @brief Additional data for decoder
          */
-        std::shared_ptr<std::vector<std::uint8_t>> m_codecData;
+        std::shared_ptr<CodecData> m_codecData;
     };
 
     /**
@@ -225,7 +225,7 @@ public:
         MediaSourceAudio(const std::string &mimeType, bool hasDrm = true, const AudioConfig &audioConfig = AudioConfig(),
                          SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                          StreamFormat streamFormat = StreamFormat::UNDEFINED,
-                         const std::shared_ptr<std::vector<std::uint8_t>> &codecData = nullptr)
+                         const std::shared_ptr<CodecData> &codecData = nullptr)
             : MediaSource(SourceConfigType::AUDIO, mimeType, hasDrm, alignment, streamFormat, codecData),
               m_audioConfig(audioConfig)
         {
@@ -274,7 +274,7 @@ public:
                          int32_t height = firebolt::rialto::kUndefinedSize,
                          SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                          StreamFormat streamFormat = StreamFormat::UNDEFINED,
-                         const std::shared_ptr<std::vector<std::uint8_t>> &codecData = nullptr)
+                         const std::shared_ptr<CodecData> &codecData = nullptr)
             : MediaSource(SourceConfigType::VIDEO, mimeType, hasDrm, alignment, streamFormat, codecData),
               m_width(width), m_height(height)
         {
@@ -316,7 +316,7 @@ public:
                          int32_t height = firebolt::rialto::kUndefinedSize,
                          SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                          StreamFormat streamFormat = StreamFormat::UNDEFINED,
-                         const std::shared_ptr<std::vector<std::uint8_t>> &codecData = nullptr)
+                         const std::shared_ptr<CodecData> &codecData = nullptr)
             : MediaSource(sourceConfigType, mimeType, hasDrm, alignment, streamFormat, codecData), m_width(width),
               m_height(height)
         {
@@ -358,7 +358,7 @@ public:
                                     int32_t height = firebolt::rialto::kUndefinedSize,
                                     SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                                     StreamFormat streamFormat = StreamFormat::UNDEFINED,
-                                    const std::shared_ptr<std::vector<std::uint8_t>> &codecData = nullptr)
+                                    const std::shared_ptr<CodecData> &codecData = nullptr)
             : MediaSourceVideo(SourceConfigType::VIDEO_DOLBY_VISION, mimeType, hasDrm, width, height, alignment,
                                streamFormat, codecData),
               m_dolbyVisionProfile(dolbyVisionProfile)
@@ -524,7 +524,7 @@ public:
          *
          * @retval the codec data
          */
-        const std::shared_ptr<std::vector<std::uint8_t>> &getCodecData() const { return m_codecData; }
+        const std::shared_ptr<CodecData> &getCodecData() const { return m_codecData; }
 
         /**
          * @brief Gets the cipher mode for common encryption
@@ -582,7 +582,7 @@ public:
         /**
          * @brief Additional data for decoder
          */
-        std::shared_ptr<std::vector<std::uint8_t>> m_codecData;
+        std::shared_ptr<CodecData> m_codecData;
 
         /**
          * @brief The data
@@ -690,7 +690,7 @@ public:
          *
          * @param[in] codecData  The updated codec data for the source
          */
-        void setCodecData(const std::shared_ptr<std::vector<std::uint8_t>> &codecData) { m_codecData = codecData; }
+        void setCodecData(const std::shared_ptr<CodecData> &codecData) { m_codecData = codecData; }
 
         /**
          * @brief Sets the encrypted flag.

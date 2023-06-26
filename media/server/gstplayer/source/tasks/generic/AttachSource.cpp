@@ -69,13 +69,18 @@ protected:
 
     void addCodecDataToCaps(GstCaps *caps) const
     {
-        const std::shared_ptr<std::vector<std::uint8_t>> &codecData = m_attachedSource.getCodecData();
-        if (codecData)
+        const std::shared_ptr<CodecData> &codecData = m_attachedSource.getCodecData();
+        if (codecData && CodecDataType::BUFFER == codecData->type)
         {
-            gpointer memory = m_glibWrapper->gMemdup(codecData->data(), codecData->size());
-            GstBuffer *buf = m_gstWrapper->gstBufferNewWrapped(memory, codecData->size());
+            gpointer memory = m_glibWrapper->gMemdup(codecData->data.data(), codecData->data.size());
+            GstBuffer *buf = m_gstWrapper->gstBufferNewWrapped(memory, codecData->data.size());
             m_gstWrapper->gstCapsSetSimple(caps, "codec_data", GST_TYPE_BUFFER, buf, nullptr);
             m_gstWrapper->gstBufferUnref(buf);
+        }
+        else if (codecData && CodecDataType::STRING == codecData->type)
+        {
+            std::string codecDataStr{codecData->data.begin(), codecData->data.end()};
+            m_gstWrapper->gstCapsSetSimple(caps, "codec_data", G_TYPE_STRING, codecDataStr.c_str(), nullptr);
         }
     }
 

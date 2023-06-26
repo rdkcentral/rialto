@@ -358,6 +358,24 @@ struct Fraction
     int32_t denominator; /**< The denominator */
 };
 
+/**
+ * @brief Codec data type.
+ */
+enum class CodecDataType
+{
+    BUFFER,
+    STRING
+};
+
+/**
+ * @brief Codec data with type.
+ */
+struct CodecData
+{
+    std::vector<uint8_t> data{};               /**< The codec data */
+    CodecDataType type{CodecDataType::BUFFER}; /**< The codec data type */
+};
+
 } // namespace firebolt::rialto
 
 #endif // FIREBOLT_RIALTO_MEDIA_COMMON_H_
