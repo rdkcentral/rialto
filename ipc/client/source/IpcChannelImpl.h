@@ -124,6 +124,8 @@ private:
     mutable std::mutex m_lock;
     std::atomic<uint64_t> m_serialCounter;
 
+    const std::chrono::milliseconds m_timeout;
+
     std::map<uint64_t, MethodCall> m_methodCalls;
 
     std::mutex m_eventsLock;

@@ -44,11 +44,26 @@
 namespace
 {
 constexpr size_t kMaxMessageSize{128 * 1024};
-#ifdef RIALTO_DEBUG_MODE
-const std::chrono::milliseconds kDefaultIpcTimeout{10000};
-#else
 const std::chrono::milliseconds kDefaultIpcTimeout{3000};
-#endif
+
+std::chrono::milliseconds getIpcTimeout()
+{
+    const char *customTimeout = getenv("RIALTO_CLIENT_IPC_TIMEOUT");
+    std::chrono::milliseconds timeout{kDefaultIpcTimeout};
+    if (customTimeout)
+    {
+        try
+        {
+            timeout = std::chrono::milliseconds{std::stoull(customTimeout)};
+            fprintf(stderr, "Using custom Ipc timeout: %sms", customTimeout);
+        }
+        catch (const std::exception &e)
+        {
+            fprintf(stderr, "Custom Ipc timeout invalid, ignoring: %s", customTimeout);
+        }
+    }
+    return timeout;
+}
 } // namespace
 
 namespace firebolt::rialto::ipc
@@ -101,7 +116,8 @@ std::shared_ptr<IChannel> ChannelFactory::createChannel(const std::string &socke
 }
 
 ChannelImpl::ChannelImpl(int sock)
-    : m_sock(-1), m_epollFd(-1), m_timerFd(-1), m_eventFd(-1), m_serialCounter(1), m_eventTagCounter(1)
+    : m_sock(-1), m_epollFd(-1), m_timerFd(-1), m_eventFd(-1), m_serialCounter(1), m_timeout(getIpcTimeout()),
+      m_eventTagCounter(1)
 {
     if (!attachSocket(sock))
     {
@@ -120,7 +136,8 @@ ChannelImpl::ChannelImpl(int sock)
 }
 
 ChannelImpl::ChannelImpl(const std::string &socketPath)
-    : m_sock(-1), m_epollFd(-1), m_timerFd(-1), m_eventFd(-1), m_serialCounter(1), m_eventTagCounter(1)
+    : m_sock(-1), m_epollFd(-1), m_timerFd(-1), m_eventFd(-1), m_serialCounter(1), m_timeout(getIpcTimeout()),
+      m_eventTagCounter(1)
 {
     if (!createConnectedSocket(socketPath))
     {
@@ -1057,7 +1074,7 @@ void ChannelImpl::CallMethod(const google::protobuf::MethodDescriptor *method, /
                              google::protobuf::RpcController *controller, const google::protobuf::Message *request,
                              google::protobuf::Message *response, google::protobuf::Closure *done)
 {
-    MethodCall methodCall{std::chrono::steady_clock::now() + kDefaultIpcTimeout,
+    MethodCall methodCall{std::chrono::steady_clock::now() + m_timeout,
                           dynamic_cast<ClientControllerImpl *>(controller), response, done};
 
     //
