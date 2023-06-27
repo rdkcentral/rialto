@@ -82,6 +82,15 @@ firebolt::rialto::MediaSegmentMetadata_CipherMode convertCipherMode(const firebo
     return firebolt::rialto::MediaSegmentMetadata_CipherMode_UNKNOWN;
 }
 
+firebolt::rialto::MediaSegmentMetadata_CodecData_Type convertCodecDataType(const firebolt::rialto::CodecDataType &type)
+{
+    if (firebolt::rialto::CodecDataType::STRING == type)
+    {
+        return firebolt::rialto::MediaSegmentMetadata_CodecData_Type_STRING;
+    }
+    return firebolt::rialto::MediaSegmentMetadata_CodecData_Type_BUFFER;
+}
+
 } // namespace
 
 namespace firebolt::rialto::common
@@ -168,7 +177,9 @@ MediaSegmentMetadata MediaFrameWriterV2::buildMetadata(const std::unique_ptr<IMe
     }
     if (data->getCodecData())
     {
-        metadata.set_codec_data(std::string(data->getCodecData()->begin(), data->getCodecData()->end()));
+        metadata.mutable_codec_data()->set_data(
+            std::string(data->getCodecData()->data.begin(), data->getCodecData()->data.end()));
+        metadata.mutable_codec_data()->set_type(convertCodecDataType(data->getCodecData()->type));
     }
     if (data->isEncrypted())
     {

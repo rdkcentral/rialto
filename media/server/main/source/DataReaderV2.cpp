@@ -73,6 +73,15 @@ firebolt::rialto::CipherMode convertCipherMode(const firebolt::rialto::MediaSegm
     return firebolt::rialto::CipherMode::UNKNOWN;
 }
 
+firebolt::rialto::CodecDataType convertCodecDataType(const firebolt::rialto::MediaSegmentMetadata_CodecData_Type &type)
+{
+    if (firebolt::rialto::MediaSegmentMetadata_CodecData_Type_STRING == type)
+    {
+        return firebolt::rialto::CodecDataType::STRING;
+    }
+    return firebolt::rialto::CodecDataType::BUFFER;
+}
+
 std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSegment>
 createSegment(const firebolt::rialto::MediaSegmentMetadata &metadata, const firebolt::rialto::MediaSourceType &type)
 {
@@ -127,8 +136,10 @@ createSegment(const firebolt::rialto::MediaSegmentMetadata &metadata, const fire
     }
     if (metadata.has_codec_data())
     {
-        segment->setCodecData(
-            std::make_shared<std::vector<uint8_t>>(metadata.codec_data().begin(), metadata.codec_data().end()));
+        auto codecData = std::make_shared<firebolt::rialto::CodecData>();
+        codecData->type = convertCodecDataType(metadata.codec_data().type());
+        codecData->data = std::vector<uint8_t>(metadata.codec_data().data().begin(), metadata.codec_data().data().end());
+        segment->setCodecData(codecData);
     }
 
     // Read encryption data

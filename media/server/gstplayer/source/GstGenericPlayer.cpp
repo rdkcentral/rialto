@@ -547,8 +547,7 @@ void GstGenericPlayer::attachVideoData()
     }
 }
 
-void GstGenericPlayer::updateAudioCaps(int32_t rate, int32_t channels,
-                                       const std::shared_ptr<std::vector<std::uint8_t>> &codecData)
+void GstGenericPlayer::updateAudioCaps(int32_t rate, int32_t channels, const std::shared_ptr<CodecData> &codecData)
 {
     if (!m_context.audioAppSrc)
     {
@@ -575,14 +574,7 @@ void GstGenericPlayer::updateAudioCaps(int32_t rate, int32_t channels,
             m_gstWrapper->gstCapsSetSimple(newCaps, "channels", G_TYPE_INT, channels, NULL);
             capsChanged = true;
         }
-        if (codecData)
-        {
-            gpointer memory = m_glibWrapper->gMemdup(codecData->data(), codecData->size());
-            GstBuffer *buf = m_gstWrapper->gstBufferNewWrapped(memory, codecData->size());
-            m_gstWrapper->gstCapsSetSimple(newCaps, "codec_data", GST_TYPE_BUFFER, buf, nullptr);
-            m_gstWrapper->gstBufferUnref(buf);
-            capsChanged = true;
-        }
+        capsChanged = setCodecData(newCaps, codecData) || capsChanged;
         if (capsChanged)
         {
             m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(m_context.audioAppSrc), newCaps);
@@ -593,7 +585,7 @@ void GstGenericPlayer::updateAudioCaps(int32_t rate, int32_t channels,
 }
 
 void GstGenericPlayer::updateVideoCaps(int32_t width, int32_t height, Fraction frameRate,
-                                       const std::shared_ptr<std::vector<std::uint8_t>> &codecData)
+                                       const std::shared_ptr<CodecData> &codecData)
 {
     if (!m_context.videoAppSrc)
     {
@@ -615,19 +607,32 @@ void GstGenericPlayer::updateVideoCaps(int32_t width, int32_t height, Fraction f
             m_gstWrapper->gstCapsSetSimple(newCaps, "framerate", GST_TYPE_FRACTION, frameRate.numerator,
                                            frameRate.denominator, NULL);
         }
-        if (codecData)
-        {
-            gpointer memory = m_glibWrapper->gMemdup(codecData->data(), codecData->size());
-            GstBuffer *buf = m_gstWrapper->gstBufferNewWrapped(memory, codecData->size());
-            m_gstWrapper->gstCapsSetSimple(newCaps, "codec_data", GST_TYPE_BUFFER, buf, nullptr);
-            m_gstWrapper->gstBufferUnref(buf);
-        }
+        setCodecData(newCaps, codecData);
 
         m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(m_context.videoAppSrc), newCaps);
 
         m_gstWrapper->gstCapsUnref(currentCaps);
         m_gstWrapper->gstCapsUnref(newCaps);
     }
+}
+
+bool GstGenericPlayer::setCodecData(GstCaps *caps, const std::shared_ptr<CodecData> &codecData) const
+{
+    if (codecData && CodecDataType::BUFFER == codecData->type)
+    {
+        gpointer memory = m_glibWrapper->gMemdup(codecData->data.data(), codecData->data.size());
+        GstBuffer *buf = m_gstWrapper->gstBufferNewWrapped(memory, codecData->data.size());
+        m_gstWrapper->gstCapsSetSimple(caps, "codec_data", GST_TYPE_BUFFER, buf, nullptr);
+        m_gstWrapper->gstBufferUnref(buf);
+        return true;
+    }
+    if (codecData && CodecDataType::STRING == codecData->type)
+    {
+        std::string codecDataStr(codecData->data.begin(), codecData->data.end());
+        m_gstWrapper->gstCapsSetSimple(caps, "codec_data", G_TYPE_STRING, codecDataStr.c_str(), nullptr);
+        return true;
+    }
+    return false;
 }
 
 void GstGenericPlayer::scheduleNeedMediaData(GstAppSrc *src)

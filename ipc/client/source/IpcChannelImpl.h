@@ -114,8 +114,6 @@ private:
     static void completeWithError(MethodCall *call, std::string reason);
 
 private:
-    static const size_t m_kMaxMessageSize;
-
     int m_sock;
     int m_epollFd;
     int m_timerFd;
@@ -126,7 +124,7 @@ private:
     mutable std::mutex m_lock;
     std::atomic<uint64_t> m_serialCounter;
 
-    std::chrono::milliseconds m_defaultTimeout;
+    const std::chrono::milliseconds m_timeout;
 
     std::map<uint64_t, MethodCall> m_methodCalls;
 

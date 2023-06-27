@@ -207,6 +207,12 @@ private:
 
     firebolt::rialto::AttachSourceRequest_ConfigType
     convertConfigType(const firebolt::rialto::SourceConfigType &configType);
+
+    /**
+     * @brief Converts the CodecDataType enum to protobuf AttachSourceRequest CodecDataType.
+     */
+    firebolt::rialto::AttachSourceRequest_CodecData_Type
+    convertCodecDataType(const firebolt::rialto::CodecDataType &codecDataType);
 };
 
 }; // namespace firebolt::rialto::client
