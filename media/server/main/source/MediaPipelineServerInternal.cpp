@@ -601,9 +601,9 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
             counter++;
             if (counter == kMaxSkippedNoAvailableSamples)
             {
-                RIALTO_SERVER_LOG_INFO("NO_AVAILABLE_SAMPLES received in: %d consecutive responses", counter);
-                RIALTO_SERVER_LOG_WARN("Data request for needDataRequestId: %u received with wrong status",
-                                       needDataRequestId);
+                RIALTO_SERVER_LOG_WARN("Data request for needDataRequestId: %u received NO_AVAILABLE_SAMPLES status "
+                                       "consecutively %d times",
+                                       needDataRequestId, counter);
                 counter = 0;
             }
             else
@@ -613,6 +613,8 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
         }
         else
         {
+            RIALTO_SERVER_LOG_WARN("Data request for needDataRequestId: %u received with wrong status",
+                                   needDataRequestId);
             counter = 0;
         }
         scheduleNotifyNeedMediaData(mediaSourceType);
