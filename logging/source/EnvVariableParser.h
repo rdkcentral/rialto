@@ -23,6 +23,7 @@
 
 #include "RialtoLogging.h"
 #include <map>
+#include <string>
 
 namespace firebolt::rialto::logging
 {
