@@ -161,3 +161,17 @@ TEST_F(EnvVariableParserTest, LogToConsoleDisabled)
     EnvVariableParser parser;
     EXPECT_FALSE(parser.isConsoleLoggingEnabled());
 }
+
+TEST_F(EnvVariableParserTest, SetLogToFile)
+{
+    setenv("RIALTO_LOG_PATH", "./rialto.log", 1);
+    EnvVariableParser parser;
+    EXPECT_TRUE(parser.isFileLoggingEnabled());
+}
+
+TEST_F(EnvVariableParserTest, LogToFileDisabled)
+{
+    unsetenv("RIALTO_LOG_PATH");
+    EnvVariableParser parser;
+    EXPECT_FALSE(parser.isFileLoggingEnabled());
+}

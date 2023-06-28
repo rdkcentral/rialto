@@ -19,6 +19,7 @@
 
 #include "RialtoLogging.h"
 #include "EnvVariableParser.h"
+#include "LogFileHandle.h"
 #include <atomic>
 #include <cstdarg>
 #include <cstdio>
@@ -42,8 +43,8 @@ static const firebolt::rialto::logging::EnvVariableParser g_envVariableParser;
 /**
  * Log handler for each component. By default will use journaldLogHandler.
  */
-static void consoleLogHandler(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char *file, int line,
-                              const char *function, const char *message, size_t messageLen);
+static void fdLogHandler(int fd, RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char *file, int line,
+                         const char *function, const char *message, size_t messageLen);
 static void journaldLogHandler(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char *file, int line,
                                const char *function, const char *message, size_t messageLen);
 static firebolt::rialto::logging::LogHandler g_logHandler[RIALTO_COMPONENT_LAST] = {};
@@ -113,10 +114,10 @@ static std::string levelToString(RIALTO_DEBUG_LEVEL level)
 }
 
 /**
- * Console logging function for the library.
+ * File descriptor logging function for the library.
  */
-static void consoleLogHandler(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char *file, int line,
-                              const char *function, const char *message, size_t messageLen)
+static void fdLogHandler(int fd, RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char *file, int line,
+                         const char *function, const char *message, size_t messageLen)
 {
     timespec ts = {0, 0};
     clock_gettime(CLOCK_MONOTONIC, &ts);
@@ -163,7 +164,7 @@ static void consoleLogHandler(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL lev
     iov[5].iov_base = const_cast<void *>(reinterpret_cast<const void *>("\n"));
     iov[5].iov_len = 1;
     // TODO(RIALTO-38): consider using standard write(2) and handle EINTR properly.
-    std::ignore = writev(STDERR_FILENO, iov, 6);
+    std::ignore = writev(fd, iov, 6);
 }
 /**
  * Journald logging function for the library.
@@ -263,9 +264,14 @@ static void rialtoLog(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, cons
     {
         g_logHandler[component](level, fname, line, func, mbuf, len);
     }
+    else if (g_envVariableParser.isFileLoggingEnabled())
+    {
+        fdLogHandler(firebolt::rialto::logging::LogFileHandle::instance().fd(), component, level, fname, line, func,
+                     mbuf, len);
+    }
     else if (g_envVariableParser.isConsoleLoggingEnabled())
     {
-        consoleLogHandler(component, level, fname, line, func, mbuf, len);
+        fdLogHandler(STDERR_FILENO, component, level, fname, line, func, mbuf, len);
     }
     else
     {

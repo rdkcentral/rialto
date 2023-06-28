@@ -18,6 +18,7 @@
  */
 
 #include "EnvVariableParser.h"
+#include "LogFileHandle.h"
 #include <algorithm>
 #include <string>
 #include <unistd.h>
@@ -38,6 +39,16 @@ std::string getRialtoDebug()
 std::string getRialtoConsoleLog()
 {
     const char *debugVar = getenv("RIALTO_CONSOLE_LOG");
+    if (debugVar)
+    {
+        return std::string(debugVar);
+    }
+    return "";
+}
+
+std::string getRialtoLogPath()
+{
+    const char *debugVar = getenv("RIALTO_LOG_PATH");
     if (debugVar)
     {
         return std::string(debugVar);
@@ -134,10 +145,11 @@ EnvVariableParser::EnvVariableParser()
                     {RIALTO_COMPONENT_IPC, RIALTO_DEBUG_LEVEL_DEFAULT},
                     {RIALTO_COMPONENT_SERVER_MANAGER, RIALTO_DEBUG_LEVEL_DEFAULT},
                     {RIALTO_COMPONENT_COMMON, RIALTO_DEBUG_LEVEL_DEFAULT}},
-      m_logToConsole{false}
+      m_logToConsole{false}, m_logFilePath{getRialtoLogPath()}
 {
     configureRialtoDebug();
     configureRialtoConsoleLog();
+    configureFileLogging();
 }
 
 void EnvVariableParser::configureRialtoDebug()
@@ -179,6 +191,14 @@ void EnvVariableParser::configureRialtoConsoleLog()
     }
 }
 
+void EnvVariableParser::configureFileLogging()
+{
+    if (isFileLoggingEnabled())
+    {
+        LogFileHandle::instance().init(m_logFilePath);
+    }
+}
+
 RIALTO_DEBUG_LEVEL EnvVariableParser::getLevel(const RIALTO_COMPONENT &component) const
 {
     if (RIALTO_COMPONENT_EXTERNAL == component)
@@ -194,5 +214,10 @@ RIALTO_DEBUG_LEVEL EnvVariableParser::getLevel(const RIALTO_COMPONENT &component
 bool EnvVariableParser::isConsoleLoggingEnabled() const
 {
     return m_logToConsole;
+}
+
+bool EnvVariableParser::isFileLoggingEnabled() const
+{
+    return !m_logFilePath.empty();
 }
 } // namespace firebolt::rialto::logging
