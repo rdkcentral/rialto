@@ -43,6 +43,11 @@ int LogFileHandle::fd() const
     return m_fd;
 }
 
+bool LogFileHandle::isOpen() const
+{
+    return m_fd != -1;
+}
+
 LogFileHandle::LogFileHandle() : m_fd{-1} {}
 
 LogFileHandle::~LogFileHandle()

@@ -31,6 +31,7 @@ public:
     static LogFileHandle &instance();
     void init(const std::string &path);
     int fd() const;
+    bool isOpen() const;
 
 private:
     LogFileHandle();

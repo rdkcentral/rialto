@@ -259,15 +259,15 @@ static void rialtoLog(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, cons
             fname++;
     }
 
+    const auto &logFileHandle = firebolt::rialto::logging::LogFileHandle::instance();
     /* If log handler had not been set, use default */
     if (g_logHandler[component])
     {
         g_logHandler[component](level, fname, line, func, mbuf, len);
     }
-    else if (g_envVariableParser.isFileLoggingEnabled())
+    else if (g_envVariableParser.isFileLoggingEnabled() && logFileHandle.isOpen())
     {
-        fdLogHandler(firebolt::rialto::logging::LogFileHandle::instance().fd(), component, level, fname, line, func,
-                     mbuf, len);
+        fdLogHandler(logFileHandle.fd(), component, level, fname, line, func, mbuf, len);
     }
     else if (g_envVariableParser.isConsoleLoggingEnabled())
     {

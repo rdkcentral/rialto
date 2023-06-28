@@ -48,10 +48,10 @@ std::string getRialtoConsoleLog()
 
 std::string getRialtoLogPath()
 {
-    const char *debugVar = getenv("RIALTO_LOG_PATH");
-    if (debugVar)
+    const char *logPathEnvVar = getenv("RIALTO_LOG_PATH");
+    if (logPathEnvVar)
     {
-        return std::string(debugVar);
+        return std::string(logPathEnvVar);
     }
     return "";
 }
