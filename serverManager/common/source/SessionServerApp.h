@@ -67,6 +67,7 @@ private:
     bool spawnSessionServer();
     void waitForChildProcess();
     void cancelStartupTimerInternal(); // to avoid calling virtual method in destructor
+    std::string addAppSuffixToLogFile(const std::string &envVar) const;
 
 private:
     const int m_kServerId;
