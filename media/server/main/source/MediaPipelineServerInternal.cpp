@@ -597,7 +597,6 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
         // warning from being repeatedly logged.
         if (status == MediaSourceStatus::NO_AVAILABLE_SAMPLES)
         {
-
             counter++;
             if (counter == kMaxSkippedNoAvailableSamples)
             {
