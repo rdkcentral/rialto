@@ -39,7 +39,7 @@ void RemoveSource::execute() const
     RIALTO_SERVER_LOG_DEBUG("Executing RemoveSource");
     if (MediaSourceType::AUDIO != m_type)
     {
-        RIALTO_SERVER_LOG_ERROR("RemoveSource not supported for type != AUDIO");
+        RIALTO_SERVER_LOG_DEBUG("RemoveSource not supported for type != AUDIO");
         return;
     }
     m_context.audioBuffers.clear();

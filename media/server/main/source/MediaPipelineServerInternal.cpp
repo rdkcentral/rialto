@@ -589,8 +589,7 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
     }
     m_activeRequests->erase(needDataRequestId);
 
-    int &counter = m_noAvailableSamplesCounter[mediaSourceType];
-
+    unsigned int &counter = m_noAvailableSamplesCounter[mediaSourceType];
     if (status != MediaSourceStatus::OK && status != MediaSourceStatus::EOS)
     {
         // Incrementing the counter allows us to track the occurrences where the status is other than OK or EOS. By
@@ -598,17 +597,20 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
         // warning from being repeatedly logged.
         if (status == MediaSourceStatus::NO_AVAILABLE_SAMPLES)
         {
+
             counter++;
             if (counter == kMaxSkippedNoAvailableSamples)
             {
-                RIALTO_SERVER_LOG_WARN("Data request for needDataRequestId: %u received NO_AVAILABLE_SAMPLES status "
-                                       "consecutively %d times",
-                                       needDataRequestId, counter);
+                RIALTO_SERVER_LOG_WARN("Received NO_AVAILABLE_SAMPLES status consecutively %d times for "
+                                       "mediaSourceType: %s",
+                                       counter, (static_cast<int>(mediaSourceType) == 1) ? "AUDIO" : "VIDEO");
                 counter = 0;
             }
             else
             {
-                RIALTO_SERVER_LOG_DEBUG("NO_AVAILABLE_SAMPLES received: %d consecutively", counter);
+                RIALTO_SERVER_LOG_DEBUG("Data request for needDataRequestId: %u. NO_AVAILABLE_SAMPLES received: %d "
+                                        "consecutively",
+                                        needDataRequestId, counter);
             }
         }
         else
@@ -622,6 +624,7 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
     }
     else
     {
+        RIALTO_SERVER_LOG_DEBUG("Data request for needDataRequestId: %u received with correct status", needDataRequestId);
         counter = 0;
     }
 

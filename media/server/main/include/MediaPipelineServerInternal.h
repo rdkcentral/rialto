@@ -225,7 +225,7 @@ protected:
     /**
      * @brief Map to keep track of the count of MediaSourceStatus with the value NO_AVAILABLE_SAMPLES for each MediaSource
      */
-    std::map<MediaSourceType, int> m_noAvailableSamplesCounter;
+    std::map<MediaSourceType, unsigned int> m_noAvailableSamplesCounter;
 
     /**
      * @brief Flag used to check if allSourcesAttached was already called
