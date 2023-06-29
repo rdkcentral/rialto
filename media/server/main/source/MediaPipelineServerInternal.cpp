@@ -600,14 +600,14 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
             counter++;
             if (counter == kMaxSkippedNoAvailableSamples)
             {
-                RIALTO_SERVER_LOG_WARN("Received NO_AVAILABLE_SAMPLES status consecutively %d times for "
+                RIALTO_SERVER_LOG_WARN("Received NO_AVAILABLE_SAMPLES status consecutively %u times for "
                                        "mediaSourceType: %s",
                                        counter, (mediaSourceType == MediaSourceType::AUDIO) ? "AUDIO" : "VIDEO");
                 counter = 0;
             }
             else
             {
-                RIALTO_SERVER_LOG_DEBUG("Data request for needDataRequestId: %u. NO_AVAILABLE_SAMPLES received: %d "
+                RIALTO_SERVER_LOG_DEBUG("Data request for needDataRequestId: %u. NO_AVAILABLE_SAMPLES received: %u "
                                         "consecutively",
                                         needDataRequestId, counter);
             }
