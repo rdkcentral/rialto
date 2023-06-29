@@ -84,7 +84,7 @@ SessionServerApp::SessionServerApp(SessionServerAppManager &sessionServerAppMana
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("Creating preloaded SessionServerApp with serverId: %d", m_kServerId);
     std::transform(environmentVariables.begin(), environmentVariables.end(), std::back_inserter(m_environmentVariables),
-                   [](const std::string &str) { return strdup(str.c_str()); });
+                   [this](const std::string &str) { return strdup(addAppSuffixToLogFile(str).c_str()); });
     m_environmentVariables.push_back(nullptr);
 }
 
