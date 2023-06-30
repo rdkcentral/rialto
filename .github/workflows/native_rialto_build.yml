@@ -3,6 +3,8 @@ name: Native Rialto Build
 on:
   pull_request:
     branches: [ "Aadit_NativeRialtoBuild" ]
+  push:
+    branches: [ "master" ]
   workflow_dispatch:
 
 jobs:
@@ -23,4 +25,17 @@ jobs:
           cmake -S . -B build -DRIALTO_LOG_FATAL_ENABLED=OFF -DRIALTO_LOG_ERROR_ENABLED=OFF -DRIALTO_LOG_WARN_ENABLED=OFF -DRIALTO_LOG_MIL_ENABLED=OFF -DRIALTO_LOG_INFO_ENABLED=OFF -DRIALTO_LOG_DEBUG_ENABLED=OFF
           cmake --build build
 
+      - name: Report Build Status
+        if: ${{ always() }}
+        run: |
+          if [[ ${{ success() }} == 'true' ]];
+          then
+            echo "Build Suceeded!"
+            exit 1
+          else
+            echo "Build Failed!"
+            exit 0
+          fi
+
+ 
         
