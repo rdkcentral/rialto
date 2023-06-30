@@ -95,7 +95,8 @@ SessionServerApp::SessionServerApp(const std::string &appName,
                                    const std::string &sessionServerPath,
                                    std::chrono::milliseconds sessionServerStartupTimeout)
     : m_kServerId{generateServerId()}, m_appName{appName}, m_initialState{initialState},
-      m_sessionManagementSocketName{getSessionManagementSocketPath(appConfig)}, m_socks{-1, -1},
+      m_sessionManagementSocketName{getSessionManagementSocketPath(appConfig)},
+      m_clientDisplayName{appConfig.clientDisplayName}, m_socks{-1, -1},
       m_sessionServerAppManager{sessionServerAppManager}, m_pid{-1}, m_isPreloaded{false},
       m_kSessionServerPath{sessionServerPath}, m_kSessionServerStartupTimeout{sessionServerStartupTimeout},
       m_childInitialized{false}
@@ -168,6 +169,7 @@ bool SessionServerApp::configure(const std::string &appName,
     m_appName = appName;
     m_initialState = initialState;
     m_sessionManagementSocketName = getSessionManagementSocketPath(appConfig);
+    m_clientDisplayName = appConfig.clientDisplayName;
     m_isPreloaded = false;
     return true;
 }
@@ -181,6 +183,11 @@ bool SessionServerApp::isConnected() const
 std::string SessionServerApp::getSessionManagementSocketName() const
 {
     return m_sessionManagementSocketName;
+}
+
+std::string SessionServerApp::getClientDisplayName() const
+{
+    return m_clientDisplayName;
 }
 
 firebolt::rialto::common::SessionServerState SessionServerApp::getInitialState() const

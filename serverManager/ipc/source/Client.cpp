@@ -183,7 +183,7 @@ bool Client::performSetState(const firebolt::rialto::common::SessionServerState 
 }
 
 bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServerState &initialState,
-                                     const std::string &socketName,
+                                     const std::string &socketName, const std::string &clientDisplayName,
                                      const firebolt::rialto::common::MaxResourceCapabilitites &maxResource) const
 {
     if (!m_ipcLoop || !m_serviceStub)
@@ -195,6 +195,7 @@ bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServ
     rialto::SetConfigurationRequest request;
     rialto::SetConfigurationResponse response;
     request.set_sessionmanagementsocketname(socketName);
+    request.set_clientdisplayname(clientDisplayName);
     request.mutable_resources()->set_maxplaybacks(maxResource.maxPlaybacks);
     request.mutable_resources()->set_maxwebaudioplayers(maxResource.maxWebAudioPlayers);
     *(request.mutable_loglevels()) = getCurrentLogLevels();
