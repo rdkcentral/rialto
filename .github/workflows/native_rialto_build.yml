@@ -23,20 +23,17 @@ jobs:
 
       - name: Build Rialto
         run:
-          cmake build -DRIALTO_LOG_FATAL_ENABLED=OFF -DRIALTO_LOG_ERROR_ENABLED=OFF -DRIALTO_LOG_WARN_ENABLED=OFF -DRIALTO_LOG_MIL_ENABLED=OFF -DRIALTO_LOG_INFO_ENABLED=OFF -DRIALTO_LOG_DEBUG_ENABLED=OFF
-          cmake --build build
+          cmake . -B -DNATIVE_BUILD=ON -DRIALTO_LOG_FATAL_ENABLED=OFF -DRIALTO_LOG_ERROR_ENABLED=OFF -DRIALTO_LOG_WARN_ENABLED=OFF -DRIALTO_LOG_MIL_ENABLED=OFF -DRIALTO_LOG_INFO_ENABLED=OFF -DRIALTO_LOG_DEBUG_ENABLED=OFF
+          make
 
       - name: Report Build Status
-        if: ${{ always() }}
+        if: success()
         run: |
-          if [[ ${{ job.status }} == 'true' ]];
-          then
-            echo "Build Succeeded!"
-            exit 0
-          else
-            echo "Build Failed!"
-            exit 1
-          fi
+          echo "Build Succeeded!"
+          exit 0;
+        if: failure()
+        run: |
+          echo "Build Failed!"
+          exit 1;
 
- 
-        
+            
