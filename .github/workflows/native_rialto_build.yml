@@ -2,9 +2,9 @@ name: Native Rialto Build
 
 on:
   pull_request:
-    branches: [ "Aadit_NativeRialtoBuild" ]
-  push:
     branches: [ "master" ]
+  push:
+    branches: [ "Aadit_NativeRialtoBuild" ]
   workflow_dispatch:
 
 jobs:
