@@ -28,7 +28,7 @@ jobs:
       - name: Report Build Status
         if: ${{ always() }}
         run: |
-          if [[ ${{ job.status() }} == 'true' ]];
+          if [[ ${{ job.status }} == 'true' ]];
           then
             echo "Build Succeeded!"
             exit 0
