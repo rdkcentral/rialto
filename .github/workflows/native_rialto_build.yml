@@ -21,25 +21,25 @@ jobs:
           sudo apt-get install build-essential
           sudo apt-get install cmake
 
-      # # Protobuf should always be cached here
-      # - name: Cache protobuf library
-      #   id: cache-protobuf-2
-      #   uses: actions/cache@v3
-      #   with:
-      #     path: protobuf
-      #     key: ${{ runner.os }}-protobuf-2
+      # Protobuf should always be cached here
+      - name: Cache protobuf library
+        id: cache-protobuf-2
+        uses: actions/cache@v3
+        with:
+          path: protobuf
+          key: ${{ runner.os }}-protobuf-2
 
-      # - name: Check cache
-      #   if: steps.cache-protobuf-2.outputs.cache-hit != 'true'
-      #   run: |
-      #     exit 1
+      - name: Check cache
+        if: steps.cache-protobuf-2.outputs.cache-hit != 'true'
+        run: |
+          exit 1
 
-      # - name: Install protobuf library
-      #   timeout-minutes: 2
-      #   run: |
-      #     cd protobuf
-      #     sudo make install
-      #     sudo ldconfig
+      - name: Install protobuf library
+        timeout-minutes: 2
+        run: |
+          cd protobuf
+          sudo make install
+          sudo ldconfig
 
       - name: Build Rialto
         run:
