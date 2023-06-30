@@ -30,15 +30,13 @@ jobs:
         if: success()
         run: |
           echo "Build Succeeded!"
-          exit 0;
+          exit 0
 
-      -name: Report Build Status Failure
+      - name: Report Build Status Failure
         if: failure()
-        run: |           
-          echo "Build Failed!"
-        with: 
-          name: logs
         run: |
+          echo "Build Failed!"
           echo "logs"
           exit 1
+
     
