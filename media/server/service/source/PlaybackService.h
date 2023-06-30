@@ -59,6 +59,7 @@ public:
     void switchToInactive() override;
     void setMaxPlaybacks(int maxPlaybacks) override;
     void setMaxWebAudioPlayers(int maxWebAudio) override;
+    void setClientDisplayName(const std::string &clientDisplayName) const override;
 
     bool isActive() const override;
     bool getSharedMemory(int32_t &fd, uint32_t &size) const override;

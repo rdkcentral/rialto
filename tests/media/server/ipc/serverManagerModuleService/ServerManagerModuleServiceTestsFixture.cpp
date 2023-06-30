@@ -27,6 +27,7 @@ using testing::Return;
 namespace
 {
 const std::string SOCKET_NAME{"/tmp/rialtotest-0"};
+const std::string CLIENT_DISPLAY_NAME{"westeros-rialto"};
 constexpr int MAX_SESSIONS{5};
 constexpr int MAX_WEB_AUDIO_PLAYERS{3};
 constexpr int socket{2};
@@ -73,7 +74,8 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillSetConfiguration(
     const firebolt::rialto::common::SessionServerState &state)
 {
     EXPECT_CALL(m_sessionServerManagerMock,
-                setConfiguration(SOCKET_NAME, state, MaxResourceMatcher(MAX_SESSIONS, MAX_WEB_AUDIO_PLAYERS)))
+                setConfiguration(SOCKET_NAME, state, MaxResourceMatcher(MAX_SESSIONS, MAX_WEB_AUDIO_PLAYERS),
+                                 CLIENT_DISPLAY_NAME))
         .WillOnce(Return(true));
 }
 
@@ -94,7 +96,8 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillFailToSetConfigura
     const firebolt::rialto::common::SessionServerState &state)
 {
     EXPECT_CALL(m_sessionServerManagerMock,
-                setConfiguration(SOCKET_NAME, state, MaxResourceMatcher(MAX_SESSIONS, MAX_WEB_AUDIO_PLAYERS)))
+                setConfiguration(SOCKET_NAME, state, MaxResourceMatcher(MAX_SESSIONS, MAX_WEB_AUDIO_PLAYERS),
+                                 CLIENT_DISPLAY_NAME))
         .WillOnce(Return(false));
 }
 
@@ -131,6 +134,7 @@ void ServerManagerModuleServiceTests::sendSetConfiguration(const firebolt::rialt
     request.mutable_loglevels()->set_servermanagerloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
     request.mutable_loglevels()->set_commonloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
     request.set_initialsessionserverstate(convertSessionServerState(state));
+    request.set_clientdisplayname(CLIENT_DISPLAY_NAME);
 
     m_sut->setConfiguration(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }

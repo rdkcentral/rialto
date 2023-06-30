@@ -35,6 +35,7 @@ constexpr std::int32_t shmFd{234};
 constexpr std::uint32_t shmSize{2048};
 constexpr std::int32_t maxPlaybacks{2};
 constexpr std::int32_t maxWebAudioPlayers{2};
+const std::string clientDisplayName{"westeros-rialto"};
 } // namespace
 
 PlaybackServiceTests::PlaybackServiceTests()
@@ -98,6 +99,11 @@ void PlaybackServiceTests::triggerSetMaxWebAudioPlayers()
     m_sut->setMaxWebAudioPlayers(maxWebAudioPlayers);
 }
 
+void PlaybackServiceTests::triggerSetClientDisplayName()
+{
+    m_sut->setClientDisplayName(clientDisplayName);
+}
+
 void PlaybackServiceTests::getSharedMemoryShouldSucceed()
 {
     int32_t returnedFd = 0;
@@ -134,4 +140,10 @@ void PlaybackServiceTests::getMaxPlaybacksShouldSucceed()
 void PlaybackServiceTests::getMaxWebAudioPlayersShouldSucceed()
 {
     EXPECT_EQ(m_sut->getMaxWebAudioPlayers(), maxWebAudioPlayers);
+}
+
+void PlaybackServiceTests::clientDisplayNameShouldBeSet()
+{
+    EXPECT_EQ(std::string(getenv("WAYLAND_DISPLAY")), clientDisplayName);
+    unsetenv("WAYLAND_DISPLAY");
 }
