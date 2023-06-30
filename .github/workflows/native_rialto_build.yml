@@ -1,0 +1,25 @@
+name: Native Rialto Build
+
+on:
+  pull_request:
+    branches: [ "Aadit_NativeRialtoBuild" ]
+  workflow_dispatch:
+
+jobs:
+  build: 
+      runs-on: ubuntu-20.04 
+
+      steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Dependencies
+        run: |
+          sudo 
+
+      - name: Build Rialto
+        run:
+          
+
+      - name: Report Build Status
+        
