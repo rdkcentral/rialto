@@ -15,11 +15,13 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          sudo 
+          sudo apt-get update
+          sudo apt-get install cmake
 
       - name: Build Rialto
         run:
-          
+          cmake -S . -B build -DRIALTO_LOG_FATAL_ENABLED=OFF -DRIALTO_LOG_ERROR_ENABLED=OFF -DRIALTO_LOG_WARN_ENABLED=OFF -DRIALTO_LOG_MIL_ENABLED=OFF -DRIALTO_LOG_INFO_ENABLED=OFF -DRIALTO_LOG_DEBUG_ENABLED=OFF
+          cmake --build build
 
       - name: Report Build Status
         
