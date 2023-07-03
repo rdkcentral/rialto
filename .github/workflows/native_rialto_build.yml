@@ -50,13 +50,14 @@ jobs:
         if: success()
         run: |
           echo "Build Succeeded!"
+          ls /home/runner/work/rialto/rialto/logging
           exit 0
 
       - name: Report Build Status Failure
         if: failure()
         run: |
           echo "Build Failed!"
-          echo "logs"
+          ls /home/runner/work/rialto/rialto/logging
           exit 1
 
     
