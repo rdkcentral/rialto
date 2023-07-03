@@ -51,6 +51,7 @@ jobs:
         if: success()
         run: |
           echo "Build Succeeded!"
+          cat /home/runner/work/rialto/rialto
           exit 0
 
       - name: Report Build Status Failure
