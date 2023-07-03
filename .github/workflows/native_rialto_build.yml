@@ -44,20 +44,20 @@ jobs:
 
       - name: Build Rialto
         run:
-          cmake . -B . -DNATIVE_BUILD=ON -DRIALTO_LOG_FATAL_ENABLED=OFF -DRIALTO_LOG_ERROR_ENABLED=OFF -DRIALTO_LOG_WARN_ENABLED=OFF -DRIALTO_LOG_MIL_ENABLED=OFF -DRIALTO_LOG_INFO_ENABLED=OFF -DRIALTO_LOG_DEBUG_ENABLED=OFF
+          cmake . -B . -DNATIVE_BUILD=ON -DRIALTO_LOG_FATAL_ENABLED=OFF -DRIALTO_LOG_ERROR_ENABLED=OFF -DRIALTO_LOG_WARN_ENABLED=OFF -DRIALTO_LOG_MIL_ENABLED=OFF -DRIALTO_LOG_INFO_ENABLED=OFF -DRIALTO_LOG_DEBUG_ENABLED=OFF >> output_file.txt 2>&1
 
       - name: Report Build Status Success
         if: success()
         run: |
           echo "Build Succeeded!"
-          ls /home/runner/work/rialto/rialto/logging
+          cat output_file.txt
           exit 0
 
       - name: Report Build Status Failure
         if: failure()
         run: |
           echo "Build Failed!"
-          ls /home/runner/work/rialto/rialto/logging
+          cat output_file.txt
           exit 1
 
     
