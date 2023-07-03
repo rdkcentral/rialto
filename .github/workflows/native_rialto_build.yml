@@ -50,13 +50,13 @@ jobs:
         if: success()
         run: |
           echo "Build Succeeded!"
-          cat output_file.txt
           exit 0
 
       - name: Report Build Status Failure
         if: failure()
         run: |
           echo "Build Failed!"
+          echo "_____Output File_____"
           cat output_file.txt
           exit 1
 
