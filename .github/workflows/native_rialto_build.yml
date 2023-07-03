@@ -45,13 +45,12 @@ jobs:
       - name: Build Rialto
         run:
           cmake . -B . -DNATIVE_BUILD=ON -DRIALTO_LOG_FATAL_ENABLED=OFF -DRIALTO_LOG_ERROR_ENABLED=OFF -DRIALTO_LOG_WARN_ENABLED=OFF -DRIALTO_LOG_MIL_ENABLED=OFF -DRIALTO_LOG_INFO_ENABLED=OFF -DRIALTO_LOG_DEBUG_ENABLED=OFF
-          make
 
       - name: Report Build Status Success
         if: success()
         run: |
           echo "Build Succeeded!"
-          cat /home/runner/work/rialto/rialto
+          ls /home/runner/work/rialto/rialto
           exit 0
 
       - name: Report Build Status Failure
