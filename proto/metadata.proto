@@ -46,6 +46,15 @@ message MediaSegmentMetadata {
         required int32 denominator = 2; /**< The denominator */
     }
 
+    message CodecData {
+        enum Type {
+            BUFFER = 1;
+            STRING = 2;
+        }
+        required bytes data = 1; /* Buffer containing updated codec data for video segments */
+        required Type type = 2;  /* Type of data */
+    }
+
     required uint32           length               = 1;       /* Number of bytes in sample */
     required int64            time_position        = 2;       /* Position in stream in nanoseconds */
     required int64            sample_duration      = 3;       /* Frame/sample duration in nanoseconds */
@@ -62,7 +71,7 @@ message MediaSegmentMetadata {
     optional uint32           init_with_last_15    = 14;      /* initWithLast15 value for decryption */
     repeated SubsamplePair    sub_sample_info      = 15;      /* If present, use gather/scatter decryption based on this list of clear/encrypted byte lengths. */
                                                               /* If not present and content is encrypted then entire media segment needs decryption.           */
-    optional bytes            codec_data           = 16;      /* Buffer containing updated codec data for video segments */
+    optional CodecData        codec_data           = 16;      /* Buffer/String containing updated codec data for video segments */
     optional CipherMode       cipher_mode          = 17;      /* Specifies cipher mode uses for this sample */
     optional uint32           crypt                = 18;      /* Crypt byte block value */
     optional uint32           skip                 = 19;      /* Skip byte block value */

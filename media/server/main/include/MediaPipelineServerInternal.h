@@ -34,8 +34,6 @@
 
 namespace firebolt::rialto::server
 {
-class MediaPipelineServerInternal;
-
 /**
  * @brief IMediaPipelineServerInternal factory class definition.
  */
@@ -223,6 +221,11 @@ protected:
      * @brief Currently attached sources
      */
     std::map<MediaSourceType, std::int32_t> m_attachedSources;
+
+    /**
+     * @brief Map to keep track of the count of MediaSourceStatus with the value NO_AVAILABLE_SAMPLES for each MediaSource
+     */
+    std::map<MediaSourceType, unsigned int> m_noAvailableSamplesCounter;
 
     /**
      * @brief Flag used to check if allSourcesAttached was already called

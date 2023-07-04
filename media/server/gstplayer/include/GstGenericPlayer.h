@@ -125,10 +125,9 @@ private:
     GstBuffer *createBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const override;
     void attachAudioData() override;
     void attachVideoData() override;
-    void updateAudioCaps(int32_t rate, int32_t channels,
-                         const std::shared_ptr<std::vector<std::uint8_t>> &codecData) override;
+    void updateAudioCaps(int32_t rate, int32_t channels, const std::shared_ptr<CodecData> &codecData) override;
     void updateVideoCaps(int32_t width, int32_t height, Fraction frameRate,
-                         const std::shared_ptr<std::vector<std::uint8_t>> &codecData) override;
+                         const std::shared_ptr<CodecData> &codecData) override;
     bool changePipelineState(GstState newState) override;
     void startPositionReportingAndCheckAudioUnderflowTimer() override;
     void stopPositionReportingAndCheckAudioUnderflowTimer() override;
@@ -203,6 +202,13 @@ private:
      * @brief Whether native audio should be enabled on the current platform.
      */
     bool shouldEnableNativeAudio();
+
+    /**
+     * @brief Sets codec_data in GstCaps if available
+     *
+     * @retval True if caps were changed
+     */
+    bool setCodecData(GstCaps *caps, const std::shared_ptr<CodecData> &codecData) const;
 
 private:
     /**

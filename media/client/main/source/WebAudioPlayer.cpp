@@ -201,7 +201,7 @@ bool WebAudioPlayer::writeBuffer(const uint32_t numberOfFrames, void *data)
     }
     else
     {
-        std::memcpy(shmHandle->getShm() + m_webAudioShmInfo->offsetMain, data, m_webAudioShmInfo->lengthMain);
+        std::memcpy(shmHandle->getShm() + m_webAudioShmInfo->offsetMain, data, dataLength);
     }
     return m_webAudioPlayerIpc->writeBuffer(numberOfFrames);
 }

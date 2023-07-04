@@ -45,8 +45,8 @@ constexpr uint32_t dolbyProfile{5};
 constexpr uint32_t numberOfChannels{6};
 constexpr uint32_t sampleRate{48000};
 const std::string codecSpecificConfigStr("1243567");
-const std::shared_ptr<std::vector<std::uint8_t>> codecData{
-    std::make_shared<std::vector<std::uint8_t>>(std::vector<std::uint8_t>{'T', 'E', 'S', 'T'})};
+const std::shared_ptr<firebolt::rialto::CodecData> codecData{std::make_shared<firebolt::rialto::CodecData>(
+    firebolt::rialto::CodecData{std::vector<std::uint8_t>{'T', 'E', 'S', 'T'}, firebolt::rialto::CodecDataType::BUFFER})};
 const std::string url{"https://example.url.com"};
 constexpr int64_t position{2000000000};
 constexpr std::uint32_t requestId{2};
@@ -74,7 +74,8 @@ MATCHER_P(AttachedSourceMatcher, source, "")
     bool codecDataEqual = false;
     if (arg->getCodecData() && src->getCodecData())
     {
-        codecDataEqual = *(arg->getCodecData()) == *(src->getCodecData());
+        codecDataEqual = arg->getCodecData()->data == src->getCodecData()->data &&
+                         arg->getCodecData()->type == src->getCodecData()->type;
     }
     else
     {
@@ -775,7 +776,8 @@ void MediaPipelineModuleServiceTests::sendAttachAudioSourceWithAdditionalDataReq
     request.mutable_audio_config()->set_number_of_channels(numberOfChannels);
     request.mutable_audio_config()->set_sample_rate(sampleRate);
     request.mutable_audio_config()->set_codec_specific_config(codecSpecificConfigStr);
-    request.set_codec_data(codecData->data(), codecData->size());
+    request.mutable_codec_data()->set_data(codecData->data.data(), codecData->data.size());
+    request.mutable_codec_data()->set_type(firebolt::rialto::AttachSourceRequest_CodecData_Type_BUFFER);
     request.set_stream_format(convertStreamFormat(firebolt::rialto::StreamFormat::RAW));
 
     m_service->attachSource(m_controllerMock.get(), &request, &response, m_closureMock.get());

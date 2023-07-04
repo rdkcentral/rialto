@@ -211,7 +211,8 @@ bool MediaPipelineIpc::attachSource(const std::unique_ptr<IMediaPipeline::MediaS
 
     if (source->getCodecData())
     {
-        request.set_codec_data(source->getCodecData()->data(), source->getCodecData()->size());
+        request.mutable_codec_data()->set_data(source->getCodecData()->data.data(), source->getCodecData()->data.size());
+        request.mutable_codec_data()->set_type(convertCodecDataType(source->getCodecData()->type));
     }
     request.set_stream_format(convertStreamFormat(source->getStreamFormat()));
 
@@ -1028,6 +1029,16 @@ MediaPipelineIpc::convertStreamFormat(const firebolt::rialto::StreamFormat &stre
     }
     }
     return firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_UNDEFINED;
+}
+
+firebolt::rialto::AttachSourceRequest_CodecData_Type
+MediaPipelineIpc::convertCodecDataType(const firebolt::rialto::CodecDataType &codecDataType)
+{
+    if (firebolt::rialto::CodecDataType::STRING == codecDataType)
+    {
+        return firebolt::rialto::AttachSourceRequest_CodecData_Type_STRING;
+    }
+    return firebolt::rialto::AttachSourceRequest_CodecData_Type_BUFFER;
 }
 
 }; // namespace firebolt::rialto::client

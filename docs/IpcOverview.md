@@ -24,9 +24,5 @@ The IPC library depends on protobuf library and compiler, minimum version is 3.6
 Server manager assignes a single named socket per client so thath each client / app has a socket with which to
 communicate with the server.
 
-
-### Debugging
-Ipc monitor not implemented in the rialto repository.
-
 [1]: https://developers.google.com/protocol-buffers
 [2]: https://developers.google.com/protocol-buffers/docs/proto#services

@@ -41,9 +41,9 @@ constexpr int32_t numberOfChannels{4};
 constexpr int32_t width{1024};
 constexpr int32_t height{768};
 constexpr firebolt::rialto::Fraction frameRate{15, 1};
-const std::shared_ptr<std::vector<std::uint8_t>> emptyCodecData{};
-const std::shared_ptr<std::vector<std::uint8_t>> codecData{
-    std::make_shared<std::vector<std::uint8_t>>(std::vector<std::uint8_t>{1, 2, 3, 4})};
+const std::shared_ptr<firebolt::rialto::CodecData> emptyCodecData{};
+const std::shared_ptr<firebolt::rialto::CodecData> codecData{std::make_shared<firebolt::rialto::CodecData>(
+    firebolt::rialto::CodecData{std::vector<std::uint8_t>{1, 2, 3, 4}, firebolt::rialto::CodecDataType::BUFFER})};
 
 firebolt::rialto::IMediaPipeline::MediaSegmentVector buildAudioSamples()
 {

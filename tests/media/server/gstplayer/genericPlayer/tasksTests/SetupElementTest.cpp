@@ -87,6 +87,7 @@ protected:
     void expectSetupAudioElement()
     {
         EXPECT_CALL(*m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("westerossink"))).WillOnce(Return(false));
+        EXPECT_CALL(*m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("amlhalasink"))).WillOnce(Return(false));
         EXPECT_CALL(*m_gstWrapper, gstElementGetFactory(_)).WillRepeatedly(Return(m_elementFactory));
         EXPECT_CALL(*m_gstWrapper, gstElementFactoryListIsType(m_elementFactory, GST_ELEMENT_FACTORY_TYPE_DECODER))
             .WillRepeatedly(Return(TRUE));
@@ -122,6 +123,7 @@ TEST_F(SetupElementTest, shouldSetupVideoElement)
     firebolt::rialto::server::tasks::generic::SetupElement task{m_context, m_gstWrapper, m_glibWrapper, m_gstPlayer,
                                                                 &m_element};
     EXPECT_CALL(*m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("westerossink"))).WillOnce(Return(false));
+    EXPECT_CALL(*m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("amlhalasink"))).WillOnce(Return(false));
     expectSetupVideoElement();
     task.execute();
 }
@@ -132,7 +134,21 @@ TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingGeometry)
     firebolt::rialto::server::tasks::generic::SetupElement task{m_context, m_gstWrapper, m_glibWrapper, m_gstPlayer,
                                                                 &m_element};
     EXPECT_CALL(*m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("westerossink"))).WillOnce(Return(true));
+    EXPECT_CALL(*m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("amlhalasink"))).WillOnce(Return(false));
     EXPECT_CALL(m_gstPlayer, setWesterossinkRectangle());
+    expectSetupVideoElement();
+    task.execute();
+}
+
+TEST_F(SetupElementTest, shouldSetupVideoElementForAmlhalasink)
+{
+    firebolt::rialto::server::tasks::generic::SetupElement task{m_context, m_gstWrapper, m_glibWrapper, m_gstPlayer,
+                                                                &m_element};
+    EXPECT_CALL(*m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("westerossink"))).WillOnce(Return(false));
+    EXPECT_CALL(*m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("amlhalasink"))).WillOnce(Return(true));
+    EXPECT_CALL(*m_glibWrapper, gObjectSetStub(G_OBJECT(&m_element), CharStrMatcher("wait-video")));
+    EXPECT_CALL(*m_glibWrapper, gObjectSetStub(G_OBJECT(&m_element), CharStrMatcher("a-wait-timeout")));
+    EXPECT_CALL(*m_glibWrapper, gObjectSetStub(G_OBJECT(&m_element), CharStrMatcher("disable-xrun")));
     expectSetupVideoElement();
     task.execute();
 }
@@ -143,6 +159,7 @@ TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingGeometryOtherThanWest
     firebolt::rialto::server::tasks::generic::SetupElement task{m_context, m_gstWrapper, m_glibWrapper, m_gstPlayer,
                                                                 &m_element};
     EXPECT_CALL(*m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("westerossink"))).WillOnce(Return(false));
+    EXPECT_CALL(*m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("amlhalasink"))).WillOnce(Return(false));
     expectSetupVideoElement();
     task.execute();
 }
@@ -152,6 +169,7 @@ TEST_F(SetupElementTest, shouldSetupVideoElementForSecondaryVideoOtherThanWester
     firebolt::rialto::server::tasks::generic::SetupElement task{m_context, m_gstWrapper, m_glibWrapper, m_gstPlayer,
                                                                 &m_element};
     EXPECT_CALL(*m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("westerossink"))).WillOnce(Return(false));
+    EXPECT_CALL(*m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("amlhalasink"))).WillOnce(Return(false));
     expectSetupVideoElement();
     task.execute();
 }
@@ -169,6 +187,7 @@ TEST_F(SetupElementTest, shouldReportVideoUnderflow)
     firebolt::rialto::server::tasks::generic::SetupElement task{m_context, m_gstWrapper, m_glibWrapper, m_gstPlayer,
                                                                 &m_element};
     EXPECT_CALL(*m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("westerossink"))).WillOnce(Return(false));
+    EXPECT_CALL(*m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("amlhalasink"))).WillOnce(Return(false));
     expectSetupVideoElement();
     task.execute();
     EXPECT_TRUE(m_videoUnderflowCallback);

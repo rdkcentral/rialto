@@ -52,6 +52,16 @@ static void gstRialtoSrcFinalize(GObject *object)
     GST_CALL_PARENT(G_OBJECT_CLASS, finalize, (object));
 }
 
+static void gstRialtoSrcSetProperty(GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
+{
+    GST_CALL_PARENT(G_OBJECT_CLASS, set_property, (object, prop_id, value, pspec));
+}
+
+static void gstRialtoSrcGetProperty(GObject *object, guint prop_id, GValue *value, GParamSpec *pspec)
+{
+    GST_CALL_PARENT(G_OBJECT_CLASS, get_property, (object, prop_id, value, pspec));
+}
+
 static GstURIType gstRialtoSrcUriGetType(GType)
 {
     return GST_URI_SRC;
@@ -252,6 +262,8 @@ static void gst_rialto_src_class_init(GstRialtoSrcClass *klass) // NOLINT(build/
     GstBinClass *bklass = GST_BIN_CLASS(klass);
     oklass->dispose = gstRialtoSrcDispose;
     oklass->finalize = gstRialtoSrcFinalize;
+    oklass->set_property = gstRialtoSrcSetProperty;
+    oklass->get_property = gstRialtoSrcGetProperty;
     GstPadTemplate *templ = gst_static_pad_template_get(&rialto_src_template);
     gst_element_class_add_pad_template(eklass, templ);
     gst_element_class_set_metadata(eklass, "Rialto source element", "Source",

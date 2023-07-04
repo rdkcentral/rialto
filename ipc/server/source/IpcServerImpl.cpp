@@ -67,19 +67,13 @@ std::shared_ptr<IServerFactory> IServerFactory::createFactory()
     return factory;
 }
 
-std::shared_ptr<IServer> ServerFactory::create(unsigned flags)
+std::shared_ptr<IServer> ServerFactory::create()
 {
-    const char *monitor = getenv("RIALTO_IPC_MONITOR");
-    if (monitor && (strstr(monitor, "ON") || strstr(monitor, "1")))
-        flags |= ServerFactory::ALLOW_MONITORING;
-
-    return std::make_shared<ServerImpl>(flags);
+    return std::make_shared<ServerImpl>();
 }
 
-ServerImpl::ServerImpl(unsigned flags)
-    : m_pollFd(-1), m_wakeEventFd(-1),
-      m_kMonitor(flags & ServerFactory::ALLOW_MONITORING ? std::make_unique<ServerMonitor>() : nullptr),
-      m_socketIdCounter(FIRST_LISTENING_SOCKET_ID),
+ServerImpl::ServerImpl()
+    : m_pollFd(-1), m_wakeEventFd(-1), m_socketIdCounter(FIRST_LISTENING_SOCKET_ID),
       m_clientIdCounter(FIRST_CLIENT_ID), m_recvDataBuf{0}, m_recvCtrlBuf{0}
 {
     // create the eventfd use to wake the poll loop
@@ -487,10 +481,6 @@ bool ServerImpl::process()
             if (details.disconnectedCb)
                 details.disconnectedCb(details.client);
 
-            // tell any monitors that the client has disconnected
-            if (m_kMonitor)
-                m_kMonitor->clientDisconnected(clientId);
-
             // ensure client object is destructed without the client lock held
             details.client.reset();
 
@@ -551,11 +541,6 @@ std::shared_ptr<ClientImpl> ServerImpl::addClientSocket(int socketFd, const std:
     {
         std::lock_guard<std::mutex> locker(m_clientsLock);
         m_clients.emplace(clientId, clientDetails);
-    }
-
-    if (m_kMonitor)
-    {
-        m_kMonitor->clientConnected(listeningSocketPath, clientId, clientDetails.client);
     }
 
     RIALTO_IPC_LOG_INFO("new client connected - giving id %" PRIu64, clientId);
@@ -871,10 +856,6 @@ void ServerImpl::processClientMessage(const std::shared_ptr<ClientImpl> &client,
     {
         processMethodCall(client, message.call(), fds);
     }
-    else if (message.has_monitor())
-    {
-        processMonitorRequest(client, message.monitor(), fds);
-    }
     else
     {
         RIALTO_IPC_LOG_WARN("received unknown message type from client");
@@ -930,9 +911,6 @@ void ServerImpl::processMethodCall(const std::shared_ptr<ClientImpl> &client, co
     }
     else
     {
-        if (m_kMonitor)
-            m_kMonitor->monitorCall(client->id(), call, noReply);
-
         RIALTO_IPC_LOG_DEBUG("call{ serial %" PRIu64 " } - %s.%s { %s }", call.serial_id(), serviceName.c_str(),
                              methodName.c_str(), requestMessage->ShortDebugString().c_str());
 
@@ -1148,10 +1126,6 @@ std::shared_ptr<msghdr> ServerImpl::populateReply(const std::shared_ptr<const Cl
         return populateErrorReply(client, serialId, "Internal error - reply message to large");
     }
 
-    // send to any monitors
-    if (m_kMonitor)
-        m_kMonitor->monitorReply(client->id(), *reply);
-
     // build the socket message to send
     auto msgBuf =
         m_sendBufPool.allocateShared<uint8_t>(sizeof(msghdr) + sizeof(iovec) + requiredCtrlLen + requiredDataLen);
@@ -1224,9 +1198,6 @@ std::shared_ptr<msghdr> ServerImpl::populateErrorReply(const std::shared_ptr<con
         error->set_error_reason("Error message truncated");
         replySize = message.ByteSizeLong();
     }
-
-    if (m_kMonitor)
-        m_kMonitor->monitorError(client->id(), *error);
 
     RIALTO_IPC_LOG_DEBUG("error{ serial %" PRIu64 " } - \"%s\"", serialId, reason.c_str());
 
@@ -1383,49 +1354,9 @@ bool ServerImpl::sendEvent(uint64_t clientId, const std::shared_ptr<google::prot
 
     locker.unlock();
 
-    if (m_kMonitor)
-        m_kMonitor->monitorEvent(clientId, *event);
-
     RIALTO_IPC_LOG_DEBUG("event{ %s } - { %s }", eventMessage->GetTypeName().c_str(),
                          eventMessage->ShortDebugString().c_str());
 
     return true;
 }
-
-// -----------------------------------------------------------------------------
-/*!
-    \internal
-
-    Processes a request to install a monitor socket for all sent / received
-    messages to from / to the server.
-
- */
-void ServerImpl::processMonitorRequest(const std::shared_ptr<ClientImpl> &client,
-                                       const transport::RegisterMonitor &registerMonitor,
-                                       const std::vector<FileDescriptor> &fds)
-{
-    if (!m_kMonitor)
-    {
-        RIALTO_IPC_LOG_WARN("received request to enable monitoring but it is disabled");
-        return;
-    }
-
-    // only allow monitor socket for root users
-    if (client->getClientUserId() != 0)
-    {
-        RIALTO_IPC_LOG_WARN("request to install monitor received from non-root user, ignoring");
-        return;
-    }
-
-    // sanity check a single fd (socket) was supplied
-    if (fds.size() != 1)
-    {
-        RIALTO_IPC_LOG_WARN("invalid number of fds passed in request monitor call");
-        return;
-    }
-
-    // try to add the socket to the monitor loop
-    m_kMonitor->addMonitorSocket(fds[0]);
-}
-
 } // namespace firebolt::rialto::ipc

@@ -32,13 +32,6 @@ public:
     IServerFactory() = default;
     virtual ~IServerFactory() = default;
 
-    enum CreateFlag : unsigned
-    {
-        ALLOW_MONITORING = (1u << 0), ///< If set then a root user can install a
-                                      ///  monitor socket to view all sent / recveived
-                                      ///  message from / to the server
-    };
-
     /**
      * @brief Create a IServerFactory instance.
      *
@@ -49,11 +42,9 @@ public:
     /**
      * @brief Create a IServer object.
      *
-     * @param[in] flags : Server flags to set.
-     *
      * @retval the server instance or null on error.
      */
-    virtual std::shared_ptr<IServer> create(unsigned flags = 0) = 0;
+    virtual std::shared_ptr<IServer> create() = 0;
 };
 
 } // namespace firebolt::rialto::ipc

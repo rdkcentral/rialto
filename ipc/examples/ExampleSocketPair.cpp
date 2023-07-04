@@ -153,7 +153,7 @@ int main(int argc, char *argv[])
                                             RIALTO_DEBUG_LEVEL(RIALTO_DEBUG_LEVEL_DEFAULT | RIALTO_DEBUG_LEVEL_INFO));
 
     auto factory = ::firebolt::rialto::ipc::IServerFactory::createFactory();
-    auto server = factory->create(::firebolt::rialto::ipc::IServerFactory::ALLOW_MONITORING);
+    auto server = factory->create();
 
     // create a socket pair, one for the server and one for the spawned client
     int socks[2] = {-1, -1};
