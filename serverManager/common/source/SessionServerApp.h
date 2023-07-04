@@ -56,6 +56,7 @@ public:
     int getServerId() const override;
     const std::string &getAppName() const override;
     int getAppManagementSocketName() const override;
+    std::string getClientDisplayName() const override;
     int getMaxPlaybackSessions() const override;
     int getMaxWebAudioPlayers() const override;
     void cancelStartupTimer() override;
@@ -73,6 +74,7 @@ private:
     std::string m_appName;
     firebolt::rialto::common::SessionServerState m_initialState;
     std::string m_sessionManagementSocketName;
+    std::string m_clientDisplayName;
     std::array<int, 2> m_socks;
     SessionServerAppManager &m_sessionServerAppManager;
     pid_t m_pid;

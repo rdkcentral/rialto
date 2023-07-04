@@ -120,8 +120,9 @@ bool IpcTests::triggerPerformSetConfiguration()
     EXPECT_TRUE(m_sut);
     const auto initialState{firebolt::rialto::common::SessionServerState::INACTIVE};
     const std::string socketName{getenv("RIALTO_SOCKET_PATH")};
+    const std::string clientSocketName{"westeros-rialto"};
     constexpr firebolt::rialto::common::MaxResourceCapabilitites maxResource{2, 1};
-    return m_sut->performSetConfiguration(kServerId, initialState, socketName, maxResource);
+    return m_sut->performSetConfiguration(kServerId, initialState, socketName, clientSocketName, maxResource);
 }
 
 bool IpcTests::triggerPerformPing()
