@@ -52,12 +52,13 @@ jobs:
           echo "Build Succeeded!"
           exit 0
 
-      - name: Report Build Status Failure
+      - name: Upload Logs on Failure
+        uses: actions/upload-artifact@v3
         if: failure()
-        run: |
-          echo "Build Failed!"
-          echo "_____Output File_____"
-          cat output_file.txt
-          exit 1
+        with: 
+          name: logs
+          path: |
+            output_file.txt
+
 
     
