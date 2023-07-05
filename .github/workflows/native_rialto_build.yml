@@ -59,6 +59,3 @@ jobs:
           name: Output Logs
           path: |
             output_file.txt
-
-
-    
