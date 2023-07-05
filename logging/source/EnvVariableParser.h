@@ -23,6 +23,7 @@
 
 #include "RialtoLogging.h"
 #include <map>
+#include <string>
 
 namespace firebolt::rialto::logging
 {
@@ -38,14 +39,17 @@ public:
 
     RIALTO_DEBUG_LEVEL getLevel(const RIALTO_COMPONENT &component) const;
     bool isConsoleLoggingEnabled() const;
+    bool isFileLoggingEnabled() const;
 
 private:
     void configureRialtoDebug();
     void configureRialtoConsoleLog();
+    void configureFileLogging();
 
 private:
     std::map<RIALTO_COMPONENT, RIALTO_DEBUG_LEVEL> m_debugLevels;
     bool m_logToConsole;
+    std::string m_logFilePath;
 };
 } // namespace firebolt::rialto::logging
 

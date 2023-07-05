@@ -27,6 +27,7 @@ include( CheckCXXCompilerFlag )
 
 set(LIB_RIALTO_LOGGING_SOURCES
         source/EnvVariableParser.cpp
+        source/LogFileHandle.cpp
         source/RialtoLogging.cpp
         )
 
