@@ -51,3 +51,10 @@ TEST_F(PlaybackServiceTests, shouldSetMaxWebAudioPlayers)
     triggerSetMaxWebAudioPlayers();
     getMaxWebAudioPlayersShouldSucceed();
 }
+
+TEST_F(PlaybackServiceTests, shouldSetClientDisplayName)
+{
+    createPlaybackServiceShouldSuccess();
+    triggerSetClientDisplayName();
+    clientDisplayNameShouldBeSet();
+}

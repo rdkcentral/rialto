@@ -86,6 +86,15 @@ void PlaybackService::setMaxWebAudioPlayers(int maxWebAudio)
     m_maxWebAudioPlayers = maxWebAudio;
 }
 
+void PlaybackService::setClientDisplayName(const std::string &clientDisplayName) const
+{
+    // Method called during initialization only (before setting any state), no need to execute it on a task thread.
+    if (!clientDisplayName.empty())
+    {
+        setenv("WAYLAND_DISPLAY", clientDisplayName.c_str(), 1);
+    }
+}
+
 bool PlaybackService::getSharedMemory(int32_t &fd, uint32_t &size) const
 {
     auto shmBuffer = m_shmBuffer;

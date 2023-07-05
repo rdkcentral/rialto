@@ -67,6 +67,7 @@ struct AppConfig
      *    - Socket name, such as "bar", in which case Rialto will create the named socket in the default dir, e.g.
      * "/tmp/bar" In all cases the name can be retrieved with getAppConnectionInfo()
      */
+    std::string clientDisplayName; /**< Socket name that Rialto client should connect to */
 };
 
 /**

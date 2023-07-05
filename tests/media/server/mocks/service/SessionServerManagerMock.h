@@ -34,7 +34,7 @@ public:
     MOCK_METHOD(void, startService, (), (override));
     MOCK_METHOD(bool, setConfiguration,
                 (const std::string &socketName, const common::SessionServerState &state,
-                 const common::MaxResourceCapabilitites &maxResource),
+                 const common::MaxResourceCapabilitites &maxResource, const std::string &clientDisplayName),
                 (override));
     MOCK_METHOD(bool, setState, (const common::SessionServerState &state), (override));
     MOCK_METHOD(void, setLogLevels,

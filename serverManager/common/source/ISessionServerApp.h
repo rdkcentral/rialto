@@ -42,6 +42,7 @@ public:
                            const firebolt::rialto::common::AppConfig &appConfig) = 0;
     virtual bool isConnected() const = 0;
     virtual std::string getSessionManagementSocketName() const = 0;
+    virtual std::string getClientDisplayName() const = 0;
     virtual firebolt::rialto::common::SessionServerState getInitialState() const = 0;
     virtual int getServerId() const = 0;
     virtual const std::string &getAppName() const = 0;
