@@ -20,6 +20,7 @@
 #include "WebAudioPlayerServerInternal.h"
 #include "RialtoServerLogging.h"
 #include <limits.h>
+#include <stdexcept>
 
 namespace
 {
