@@ -3,9 +3,13 @@ name: Doxygen Documentation Check
 on:
   # pull_request:
   #   branches: [ "master", "rdkcentral:master" ]
-  pull_request:
+  # pull_request:
+  #   branches: [ "Aadit_Ubuntu22.04" ]
+  # workflow_dispatch:
+  push:
     branches: [ "Aadit_Ubuntu22.04" ]
-  workflow_dispatch:
+  pull_request:
+    branches: [ "master" ]  
 
 jobs:
   build-doxygen:

@@ -22,12 +22,15 @@ name: cppcheck
 # Controls when the workflow will run
 on:
   # Triggers the workflow on push or pull request events but only for the "master" branch
-  push:
-    branches: [ "master", "rdkcentral:master" ]
+  # push:
+  #   branches: [ "master", "rdkcentral:master" ]
   # pull_request:
   #   branches: [ "master", "rdkcentral:master" ]
-  pull_request:
+  push:
     branches: [ "Aadit_Ubuntu22.04" ]
+  pull_request:
+    branches: [ "master" ]
+
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:

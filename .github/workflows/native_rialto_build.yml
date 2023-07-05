@@ -3,10 +3,13 @@ name: Native Rialto Build
 on:
   # pull_request:
   #   branches: [ "master", "rdkcentral:master" ]
-  pull_request:
-    branches: [ "Aadit_Ubuntu22.04" ]
+  # push:
+  #   branches: [ "master", "rdkcentral:master" ]
+
   push:
-    branches: [ "master", "rdkcentral:master" ]
+    branches: [ "Aadit_Ubuntu22.04" ]
+  pull_request:
+    branches: [ "master" ]
   workflow_dispatch:
 
 jobs:
