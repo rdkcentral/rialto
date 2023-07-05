@@ -42,7 +42,7 @@ jobs:
           exit 1
 
       - name: Install protobuf library
-        timeout-minutes: 2
+        timeout-minutes: 3
         run: |
           cd protobuf
           sudo make install
