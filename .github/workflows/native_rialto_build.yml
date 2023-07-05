@@ -1,0 +1,61 @@
+name: Native Rialto Build
+
+on:
+  pull_request:
+    branches: [ "master", "rdkcentral:master" ]
+  push:
+    branches: [ "master", "rdkcentral:master" ]
+  workflow_dispatch:
+
+jobs:
+  build: 
+      runs-on: ubuntu-20.04 
+
+      steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install build-essential
+          sudo apt-get install cmake
+          sudo apt-get install libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev libgstreamer1.0-dev
+
+      # Protobuf should always be cached here. Cached from the build_ut and valgrind_ut workflows
+      - name: Cache protobuf library
+        id: cache-protobuf-2
+        uses: actions/cache@v3
+        with:
+          path: protobuf
+          key: ${{ runner.os }}-protobuf-2
+
+      - name: Check cache
+        if: steps.cache-protobuf-2.outputs.cache-hit != 'true'
+        run: |
+          exit 1
+
+      - name: Install protobuf library
+        timeout-minutes: 2
+        run: |
+          cd protobuf
+          sudo make install
+          sudo ldconfig
+
+      - name: Build Rialto
+        run:
+          cmake . -B . -DNATIVE_BUILD=ON -DRIALTO_LOG_FATAL_ENABLED=OFF -DRIALTO_LOG_ERROR_ENABLED=OFF -DRIALTO_LOG_WARN_ENABLED=OFF -DRIALTO_LOG_MIL_ENABLED=OFF -DRIALTO_LOG_INFO_ENABLED=OFF -DRIALTO_LOG_DEBUG_ENABLED=OFF >> output_file.txt 2>&1
+
+      - name: Report Build Status Success
+        if: success()
+        run: |
+          echo "Build Succeeded!"
+          exit 0
+
+      - name: Upload Logs on Failure
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with: 
+          name: Output Logs
+          path: |
+            output_file.txt
