@@ -49,7 +49,8 @@ public:
     bool initialize(int argc, char *argv[]) override;
     void startService() override;
     bool setConfiguration(const std::string &socketName, const common::SessionServerState &state,
-                          const common::MaxResourceCapabilitites &maxResource) override;
+                          const common::MaxResourceCapabilitites &maxResource,
+                          const std::string &clientDisplayName) override;
     bool setState(const common::SessionServerState &state) override;
     void setLogLevels(RIALTO_DEBUG_LEVEL defaultLogLevels, RIALTO_DEBUG_LEVEL clientLogLevels,
                       RIALTO_DEBUG_LEVEL sessionServerLogLevels, RIALTO_DEBUG_LEVEL ipcLogLevels,

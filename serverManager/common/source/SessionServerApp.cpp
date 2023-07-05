@@ -39,6 +39,7 @@ constexpr int maxPlaybackSessions{2};
 constexpr int maxWebAudioPlayers{1};
 const std::string sessionManagementSocketDefaultDir{"/tmp/"};
 const std::string sessionManagementSocketDefaultName{"rialto-"};
+const std::string logPathEnvVariable{"RIALTO_LOG_PATH"};
 
 int generateServerId()
 {
@@ -83,7 +84,7 @@ SessionServerApp::SessionServerApp(SessionServerAppManager &sessionServerAppMana
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("Creating preloaded SessionServerApp with serverId: %d", m_kServerId);
     std::transform(environmentVariables.begin(), environmentVariables.end(), std::back_inserter(m_environmentVariables),
-                   [](const std::string &str) { return strdup(str.c_str()); });
+                   [this](const std::string &str) { return strdup(addAppSuffixToLogFile(str).c_str()); });
     m_environmentVariables.push_back(nullptr);
 }
 
@@ -95,14 +96,15 @@ SessionServerApp::SessionServerApp(const std::string &appName,
                                    const std::string &sessionServerPath,
                                    std::chrono::milliseconds sessionServerStartupTimeout)
     : m_kServerId{generateServerId()}, m_appName{appName}, m_initialState{initialState},
-      m_sessionManagementSocketName{getSessionManagementSocketPath(appConfig)}, m_socks{-1, -1},
+      m_sessionManagementSocketName{getSessionManagementSocketPath(appConfig)},
+      m_clientDisplayName{appConfig.clientDisplayName}, m_socks{-1, -1},
       m_sessionServerAppManager{sessionServerAppManager}, m_pid{-1}, m_isPreloaded{false},
       m_kSessionServerPath{sessionServerPath}, m_kSessionServerStartupTimeout{sessionServerStartupTimeout},
       m_childInitialized{false}
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("Creating SessionServerApp for app: %s with appId: %d", appName.c_str(), m_kServerId);
     std::transform(environmentVariables.begin(), environmentVariables.end(), std::back_inserter(m_environmentVariables),
-                   [](const std::string &str) { return strdup(str.c_str()); });
+                   [this](const std::string &str) { return strdup(addAppSuffixToLogFile(str).c_str()); });
     m_environmentVariables.push_back(nullptr);
 }
 
@@ -168,6 +170,7 @@ bool SessionServerApp::configure(const std::string &appName,
     m_appName = appName;
     m_initialState = initialState;
     m_sessionManagementSocketName = getSessionManagementSocketPath(appConfig);
+    m_clientDisplayName = appConfig.clientDisplayName;
     m_isPreloaded = false;
     return true;
 }
@@ -181,6 +184,11 @@ bool SessionServerApp::isConnected() const
 std::string SessionServerApp::getSessionManagementSocketName() const
 {
     return m_sessionManagementSocketName;
+}
+
+std::string SessionServerApp::getClientDisplayName() const
+{
+    return m_clientDisplayName;
 }
 
 firebolt::rialto::common::SessionServerState SessionServerApp::getInitialState() const
@@ -226,6 +234,15 @@ void SessionServerApp::cancelStartupTimerInternal()
         RIALTO_SERVER_MANAGER_LOG_INFO("Application: %d connected successfully", m_kServerId);
         m_startupTimer->cancel();
     }
+}
+
+std::string SessionServerApp::addAppSuffixToLogFile(const std::string &envVar) const
+{
+    if (envVar.find(logPathEnvVariable) != std::string::npos)
+    {
+        return envVar + "." + std::to_string(m_kServerId);
+    }
+    return envVar;
 }
 
 void SessionServerApp::kill() const

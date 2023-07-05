@@ -51,7 +51,7 @@ public:
     bool createClient(int serverId, int appMgmtSocket) override;
     void removeClient(int serverId) override;
     bool performSetConfiguration(int serverId, const firebolt::rialto::common::SessionServerState &initialState,
-                                 const std::string &socketName,
+                                 const std::string &socketName, const std::string &clientDisplayName,
                                  const firebolt::rialto::common::MaxResourceCapabilitites &maxResource) override;
     bool performPing(int serverId, int pingId) override;
     bool performSetState(int serverId, const firebolt::rialto::common::SessionServerState &state) override;

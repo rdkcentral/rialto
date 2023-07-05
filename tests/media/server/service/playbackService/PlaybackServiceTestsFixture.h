@@ -46,6 +46,7 @@ public:
     void triggerSwitchToInactive();
     void triggerSetMaxPlaybacks();
     void triggerSetMaxWebAudioPlayers();
+    void triggerSetClientDisplayName();
 
     void createPlaybackServiceShouldSuccess();
     void getSharedMemoryShouldSucceed();
@@ -54,6 +55,7 @@ public:
     void getShmBufferShouldFail();
     void getMaxPlaybacksShouldSucceed();
     void getMaxWebAudioPlayersShouldSucceed();
+    void clientDisplayNameShouldBeSet();
 
 private:
     std::shared_ptr<StrictMock<firebolt::rialto::server::MediaPipelineServerInternalFactoryMock>> m_mediaPipelineFactoryMock;
