@@ -2,9 +2,9 @@ name: Native Rialto Build
 
 on:
   pull_request:
-    branches: [ "master" ]
+    branches: [ "master", "rdkcentral:master" ]
   push:
-    branches: [ "Aadit_NativeRialtoBuild" ]
+    branches: [ "master", "rdkcentral:master" ]
   workflow_dispatch:
 
 jobs:
