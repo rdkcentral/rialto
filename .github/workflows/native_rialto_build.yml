@@ -24,20 +24,19 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install build-essential
-          sudo apt-get install cmake
-          sudo apt-get install libunwind-dev
-          sudo apt-get install libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev libgstreamer1.0-dev 
+          sudo apt-get install cmake 
+          sudo apt-get install libunwind-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev libgstreamer1.0-dev 
 
       # Protobuf should always be cached here. Cached from the build_ut and valgrind_ut workflows
       - name: Cache protobuf library
-        id: cache-protobuf-2
+        id: cache-protobuf-22-04
         uses: actions/cache@v3
         with:
           path: protobuf
-          key: ${{ runner.os }}-protobuf-2
+          key: ${{ runner.os }}-protobuf-22-04
 
       - name: Check cache
-        if: steps.cache-protobuf-2.outputs.cache-hit != 'true'
+        if: steps.cache-protobuf-22-04.outputs.cache-hit != 'true'
         run: |
           exit 1
 
