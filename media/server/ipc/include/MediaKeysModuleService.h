@@ -54,8 +54,6 @@ public:
                           const ::firebolt::rialto::DestroyMediaKeysRequest *request,
                           ::firebolt::rialto::DestroyMediaKeysResponse *response,
                           ::google::protobuf::Closure *done) override;
-    void selectKeyId(::google::protobuf::RpcController *controller, const ::firebolt::rialto::SelectKeyIdRequest *request,
-                     ::firebolt::rialto::SelectKeyIdResponse *response, ::google::protobuf::Closure *done) override;
     void containsKey(::google::protobuf::RpcController *controller, const ::firebolt::rialto::ContainsKeyRequest *request,
                      ::firebolt::rialto::ContainsKeyResponse *response, ::google::protobuf::Closure *done) override;
     void createKeySession(::google::protobuf::RpcController *controller,
