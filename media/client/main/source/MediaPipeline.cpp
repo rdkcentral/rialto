@@ -363,12 +363,14 @@ AddSegmentStatus MediaPipeline::addSegment(uint32_t needDataRequestId, const std
         return AddSegmentStatus::ERROR;
     }
 
+    // This block of code is only for playready apps using rialto c++ interface
+    // Widevine apps and playready apps using rialto-ocdm set MediaSegment::keyId earlier
     if (mediaSegment->isEncrypted())
     {
         auto keyId = KeyIdMap::instance().get(mediaSegment->getMediaKeySessionId());
-        if (!keyId.empty())
+        if (!keyId.empty() && mediaSegment->getKeyId().empty())
         {
-            RIALTO_CLIENT_LOG_DEBUG("Adding Netflix keyID to media segment");
+            RIALTO_CLIENT_LOG_DEBUG("Adding Playready keyID to media segment");
             mediaSegment->setKeyId(keyId);
         }
     }
