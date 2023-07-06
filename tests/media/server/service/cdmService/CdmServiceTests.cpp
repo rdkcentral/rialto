@@ -716,38 +716,38 @@ TEST_F(CdmServiceTests, shouldGetSupportedKeySystemVersionInActiveState)
     getSupportedKeySystemVersionShouldSucceed();
 }
 
-TEST_F(CdmServiceTests, shouldCheckThatKeySystemIsNetflix)
+TEST_F(CdmServiceTests, shouldCheckThatKeySystemIsPlayready)
 {
     triggerSwitchToActiveSuccess();
     mediaKeysFactoryWillCreateMediaKeys();
     createMediaKeysShouldSucceed();
-    mediaKeysWillCheckIfKeySystemIsNetflix(true);
-    isNetflixKeySystemShouldReturn(true);
+    mediaKeysWillCheckIfKeySystemIsPlayready(true);
+    isPlayreadyKeySystemShouldReturn(true);
     destroyMediaKeysShouldSucceed();
 }
 
-TEST_F(CdmServiceTests, shouldReturnFalseWhenCheckingNetflixKeySystemWhenNoMediaKeys)
+TEST_F(CdmServiceTests, shouldReturnFalseWhenCheckingPlayreadyKeySystemWhenNoMediaKeys)
 {
     triggerSwitchToActiveSuccess();
-    isNetflixKeySystemShouldReturn(false);
+    isPlayreadyKeySystemShouldReturn(false);
 }
 
-TEST_F(CdmServiceTests, shouldReturnFalseWhenCheckingNetflixKeySystemWhenMediaKeysFails)
+TEST_F(CdmServiceTests, shouldReturnFalseWhenCheckingPlayreadyKeySystemWhenMediaKeysFails)
 {
     triggerSwitchToActiveSuccess();
     mediaKeysFactoryWillCreateMediaKeys();
     createMediaKeysShouldSucceed();
-    mediaKeysWillCheckIfKeySystemIsNetflix(false);
-    isNetflixKeySystemShouldReturn(false);
+    mediaKeysWillCheckIfKeySystemIsPlayready(false);
+    isPlayreadyKeySystemShouldReturn(false);
     destroyMediaKeysShouldSucceed();
 }
 
-TEST_F(CdmServiceTests, shouldReturnFalseWhenCheckingNetflixKeySystemWhenMediaKeysIsNotFoundForSession)
+TEST_F(CdmServiceTests, shouldReturnFalseWhenCheckingPlayreadyKeySystemWhenMediaKeysIsNotFoundForSession)
 {
     triggerSwitchToActiveSuccess();
     mediaKeysFactoryWillCreateMediaKeys();
     createMediaKeysShouldSucceed();
     mediaKeysWillNotFindMediaKeySession();
-    isNetflixKeySystemShouldReturn(false);
+    isPlayreadyKeySystemShouldReturn(false);
     destroyMediaKeysShouldSucceed();
 }

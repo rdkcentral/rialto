@@ -390,7 +390,7 @@ GstBuffer *GstGenericPlayer::createBuffer(const IMediaPipeline::MediaSegment &me
     if (mediaSegment.isEncrypted())
     {
         GstBuffer *keyId = nullptr;
-        if (m_context.decryptionService->isNetflixKeySystem(mediaSegment.getMediaKeySessionId()))
+        if (m_context.decryptionService->isPlayreadyKeySystem(mediaSegment.getMediaKeySessionId()))
         {
             keyId = m_gstWrapper->gstBufferNew();
             m_context.decryptionService->selectKeyId(mediaSegment.getMediaKeySessionId(), mediaSegment.getKeyId());

@@ -116,9 +116,9 @@ MediaKeyErrorStatus MediaKeySession::generateRequest(InitDataType initDataType, 
         else
         {
             m_isSessionConstructed = true;
-            if (kNetflixKeySystem == m_kKeySystem)
+            if (isPlayreadyKeySystem())
             {
-                // Ocdm-playready netflix does not notify onProcessChallenge when complete.
+                // Ocdm-playready does not notify onProcessChallenge when complete.
                 // Fetch the challenge manually.
                 getChallenge();
             }
@@ -179,7 +179,7 @@ MediaKeyErrorStatus MediaKeySession::updateSession(const std::vector<uint8_t> &r
     initOcdmErrorChecking();
 
     MediaKeyErrorStatus status;
-    if (kNetflixKeySystem == m_kKeySystem)
+    if (isPlayreadyKeySystem())
     {
         status = m_ocdmSession->storeLicenseData(&responseData[0], responseData.size());
         if (MediaKeyErrorStatus::OK != status)
@@ -248,7 +248,7 @@ MediaKeyErrorStatus MediaKeySession::closeKeySession()
     initOcdmErrorChecking();
 
     MediaKeyErrorStatus status;
-    if (kNetflixKeySystem == m_kKeySystem)
+    if (isPlayreadyKeySystem())
     {
         if (MediaKeyErrorStatus::OK != m_ocdmSession->cancelChallengeData())
         {
@@ -394,9 +394,9 @@ MediaKeyErrorStatus MediaKeySession::selectKeyId(const std::vector<uint8_t> &key
     return status;
 }
 
-bool MediaKeySession::isNetflixKeySystem() const
+bool MediaKeySession::isPlayreadyKeySystem() const
 {
-    return (kNetflixKeySystem == m_kKeySystem);
+    return m_kKeySystem.find("playready") != std::string::npos;
 }
 
 void MediaKeySession::onProcessChallenge(const char url[], const uint8_t challenge[], const uint16_t challengeLength)

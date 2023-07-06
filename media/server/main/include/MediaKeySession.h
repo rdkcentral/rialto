@@ -98,7 +98,7 @@ public:
 
     MediaKeyErrorStatus selectKeyId(const std::vector<uint8_t> &keyId) override;
 
-    bool isNetflixKeySystem() const override;
+    bool isPlayreadyKeySystem() const override;
 
     void onProcessChallenge(const char url[], const uint8_t challenge[], const uint16_t challengeLength) override;
 
