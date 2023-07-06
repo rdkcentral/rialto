@@ -53,13 +53,13 @@ jobs:
     steps:
       # Setup github for protobuf 3.7.0
       - name: Cache protobuf library
-        id: cache-protobuf-2
+        id: cache-protobuf-22-04
         uses: actions/cache@v3
         with:
           path: protobuf
-          key: ${{ runner.os }}-protobuf-2
+          key: ${{ runner.os }}-protobuf-22-04
       - name: Build protobuf library
-        if: steps.cache-protobuf-2.outputs.cache-hit != 'true'
+        if: steps.cache-protobuf-22-04.outputs.cache-hit != 'true'
         run: |
           git clone https://github.com/protocolbuffers/protobuf.git protobuf
           cd protobuf
@@ -110,18 +110,18 @@ jobs:
       - name: Build gstreamer library
         run: |
           sudo apt-get update
-          sudo apt-get install libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-doc gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio lcov
+          sudo apt-get install libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio lcov
 
       # Setup github for protobuf 3.7.0
       # Protobuf should always be cached here
       - name: Cache protobuf library
-        id: cache-protobuf-2
+        id: cache-protobuf-22-04
         uses: actions/cache@v3
         with:
           path: protobuf
-          key: ${{ runner.os }}-protobuf-2
+          key: ${{ runner.os }}-protobuf-22-04
       - name: Check cache
-        if: steps.cache-protobuf-2.outputs.cache-hit != 'true'
+        if: steps.cache-protobuf-22-04.outputs.cache-hit != 'true'
         run: |
           exit 1
       - name: Install protobuf library
