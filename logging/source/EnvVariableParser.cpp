@@ -61,7 +61,7 @@ inline bool isNumber(const std::string &str)
     return std::find_if(str.begin(), str.end(), [](unsigned char c) { return !std::isdigit(c); }) == str.end();
 }
 
-std::vector<std::string> split(std::string s, const std::string& delimiter)
+std::vector<std::string> split(std::string s, std::string delimiter)
 {
     std::vector<std::string> result;
     size_t pos = 0;
