@@ -43,7 +43,7 @@ static gboolean rialto_eme_protection_metadata_free(GstMeta *meta, GstBuffer *bu
 
 GST_EXPORT GType rialto_eme_protection_metadata_get_type()
 {
-    static volatile GType g_type;
+    static GType g_type;
     static const gchar *api_tags[] = {"rialto", "protection", NULL};
 
     if (g_once_init_enter(&g_type))

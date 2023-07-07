@@ -21,6 +21,7 @@
 #include "GstDecryptorPrivate.h"
 #include "GstProtectionMetadataWrapperFactory.h"
 #include "RialtoServerLogging.h"
+#include <stdexcept>
 
 #include <gst/base/gstbasetransform.h>
 #include <gst/gst.h>

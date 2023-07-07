@@ -21,6 +21,7 @@
 #include "OcdmCommon.h"
 #include "OcdmSession.h"
 #include "RialtoServerLogging.h"
+#include <stdexcept>
 
 namespace firebolt::rialto::server
 {
