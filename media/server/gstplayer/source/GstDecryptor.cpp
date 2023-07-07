@@ -24,6 +24,7 @@
 
 #include <gst/base/gstbasetransform.h>
 #include <gst/gst.h>
+#include <stdexcept>
 
 G_BEGIN_DECLS
 
