@@ -231,6 +231,13 @@ public:
 
     void gstBufferUnref(GstBuffer *buf) override { gst_buffer_unref(buf); }
 
+    gboolean gstBufferMap(GstBuffer *buffer, GstMapInfo *info, GstMapFlags flags) override
+    {
+        return gst_buffer_map(buffer, info, flags);
+    }
+
+    void gstBufferUnmap(GstBuffer *buffer, GstMapInfo *info) override { gst_buffer_unmap(buffer, info); }
+
     void gstBusSetSyncHandler(GstBus *bus, GstBusSyncHandler func, gpointer user_data, GDestroyNotify notify) override
     {
         gst_bus_set_sync_handler(bus, func, user_data, notify);

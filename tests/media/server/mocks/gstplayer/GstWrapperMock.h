@@ -87,6 +87,8 @@ public:
     MOCK_METHOD(GstBuffer *, gstBufferNewAllocate, (GstAllocator *, gsize, GstAllocationParams *), (override));
     MOCK_METHOD(gsize, gstBufferFill, (GstBuffer *, gsize, gconstpointer, gsize), (override));
     MOCK_METHOD(void, gstBufferUnref, (GstBuffer *), (override));
+    MOCK_METHOD(gboolean, gstBufferMap, (GstBuffer * buffer, GstMapInfo *info, GstMapFlags flags), (override));
+    MOCK_METHOD(void, gstBufferUnmap, (GstBuffer * buffer, GstMapInfo *info), (override));
     MOCK_METHOD(void, gstMessageUnref, (GstMessage *), (override));
     MOCK_METHOD(GstMessage *, gstBusTimedPopFiltered, (GstBus * bus, GstClockTime timeout, GstMessageType types),
                 (override));

@@ -92,6 +92,8 @@ protected:
     GstBuffer m_subsamples = {};
     GstCaps m_caps{};
     GstStructure m_structure{};
+    std::vector<uint8_t> m_keyVector{1, 2, 3, 4};
+    GstMapInfo m_keyMap{nullptr, GST_MAP_READ, m_keyVector.data(), m_keyVector.size(), m_keyVector.size(), nullptr};
     GstRialtoProtectionData m_protectionData = {static_cast<int32_t>(m_keySessionId),
                                                 m_subsampleCount,
                                                 m_initWithLast15,
@@ -132,6 +134,31 @@ protected:
         EXPECT_CALL(*m_protectionMetadataWrapperMock, getProtectionMetadataData(&m_buffer))
             .WillOnce(Return(&m_protectionData));
         EXPECT_CALL(*m_protectionMetadataWrapperMock, removeProtectionMetadata(&m_buffer));
+    }
+
+    void expectWidevineKeySystem()
+    {
+        EXPECT_CALL(*m_decryptionServiceMock, isPlayreadyKeySystem(m_keySessionId)).WillOnce(Return(false));
+    }
+
+    void expectPlayreadyKeySystem()
+    {
+        EXPECT_CALL(*m_decryptionServiceMock, isPlayreadyKeySystem(m_keySessionId)).WillOnce(Return(true));
+    }
+
+    void expectKeyMappingFailure()
+    {
+        EXPECT_CALL(*m_gstWrapperMock, gstBufferMap(&m_key, _, GST_MAP_READ)).WillOnce(Return(FALSE));
+    }
+
+    void expectSuccessfulKeyIdSelection()
+    {
+        EXPECT_CALL(*m_gstWrapperMock, gstBufferMap(&m_key, _, GST_MAP_READ))
+            .WillOnce(DoAll(SetArgPointee<1>(m_keyMap), Return(TRUE)));
+        EXPECT_CALL(*m_gstWrapperMock, gstBufferUnmap(&m_key, _));
+        EXPECT_CALL(*m_decryptionServiceMock, selectKeyId(m_keySessionId, m_keyVector));
+        EXPECT_CALL(*m_gstWrapperMock, gstBufferUnref(&m_key));
+        EXPECT_CALL(*m_gstWrapperMock, gstBufferNew()).WillOnce(Return(&m_key));
     }
 
     void expectAddGstProtectionMeta(bool encryptionPatternSet)
@@ -184,6 +211,7 @@ protected:
 TEST_F(RialtoServerDecryptorPrivateDecryptTest, SuccessEncrypted)
 {
     expectGetInfoFromProtectionMeta();
+    expectWidevineKeySystem();
     expectAddGstProtectionMeta(true);
 
     EXPECT_CALL(*m_decryptionServiceMock, decrypt(m_keySessionId, &m_buffer, &m_caps))
@@ -200,6 +228,7 @@ TEST_F(RialtoServerDecryptorPrivateDecryptTest, SuccessEncryptedNoEncryptionPatt
     m_protectionData.encryptionPatternSet = false;
 
     expectGetInfoFromProtectionMeta();
+    expectWidevineKeySystem();
     expectAddGstProtectionMeta(false);
 
     EXPECT_CALL(*m_decryptionServiceMock, decrypt(m_keySessionId, &m_buffer, &m_caps))
@@ -214,10 +243,43 @@ TEST_F(RialtoServerDecryptorPrivateDecryptTest, SuccessEncryptedNoEncryptionPatt
 TEST_F(RialtoServerDecryptorPrivateDecryptTest, DecryptionServiceDecryptFailure)
 {
     expectGetInfoFromProtectionMeta();
+    expectWidevineKeySystem();
     expectAddGstProtectionMeta(true);
 
     EXPECT_CALL(*m_decryptionServiceMock, decrypt(m_keySessionId, &m_buffer, &m_caps))
         .WillOnce(Return(firebolt::rialto::MediaKeyErrorStatus::FAIL));
+
+    EXPECT_EQ(GST_FLOW_OK, m_gstRialtoDecryptorPrivate->decrypt(&m_buffer, &m_caps));
+}
+
+/**
+ * Test GstRialtoDecryptorPrivate decrypt returns success for a playready encrypted sample with mapping problem.
+ */
+TEST_F(RialtoServerDecryptorPrivateDecryptTest, PlayreadySuccessEncrypted)
+{
+    expectGetInfoFromProtectionMeta();
+    expectPlayreadyKeySystem();
+    expectKeyMappingFailure();
+    expectAddGstProtectionMeta(true);
+
+    EXPECT_CALL(*m_decryptionServiceMock, decrypt(m_keySessionId, &m_buffer, &m_caps))
+        .WillOnce(Return(firebolt::rialto::MediaKeyErrorStatus::OK));
+
+    EXPECT_EQ(GST_FLOW_OK, m_gstRialtoDecryptorPrivate->decrypt(&m_buffer, &m_caps));
+}
+
+/**
+ * Test GstRialtoDecryptorPrivate decrypt returns success for a playready encrypted sample
+ */
+TEST_F(RialtoServerDecryptorPrivateDecryptTest, PlayreadySuccessEncryptedMappingFail)
+{
+    expectGetInfoFromProtectionMeta();
+    expectPlayreadyKeySystem();
+    expectSuccessfulKeyIdSelection();
+    expectAddGstProtectionMeta(true);
+
+    EXPECT_CALL(*m_decryptionServiceMock, decrypt(m_keySessionId, &m_buffer, &m_caps))
+        .WillOnce(Return(firebolt::rialto::MediaKeyErrorStatus::OK));
 
     EXPECT_EQ(GST_FLOW_OK, m_gstRialtoDecryptorPrivate->decrypt(&m_buffer, &m_caps));
 }
