@@ -19,6 +19,7 @@
 
 #include "ControlServerInternal.h"
 #include "RialtoServerLogging.h"
+#include <stdexcept>
 
 namespace
 {
