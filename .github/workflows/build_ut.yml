@@ -121,13 +121,13 @@ jobs:
         uses: actions/cache@v3
         with:
           path: protobuf
-          key: ${{ matrix.os }}-protobuf
-
+          key: ${{ runner.os }}-protobuf-22-04
+          
       - name: Check cache
-        if: steps.cache-protobuf.outputs.cache-hit != 'true'
+        if: steps.cache-protobuf-22-04.outputs.cache-hit != 'true'
         run: |
           exit 1
-
+          
       - name: Install protobuf library
         timeout-minutes: 2
         run: |
