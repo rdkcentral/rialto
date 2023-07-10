@@ -28,7 +28,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: protobuf
-          key: ${{ runner.os }}-protobuf-2
+          key: ${{ runner.os }}-protobuf-2*
 
       - name: Check cache
         if: steps.cache-protobuf-2.outputs.cache-hit != 'true'
