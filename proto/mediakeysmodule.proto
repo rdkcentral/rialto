@@ -133,25 +133,6 @@ message DestroyMediaKeysResponse {
 }
 
 /**
- * @fn MediaKeyErrorStatus selectKeyId(int32 media_keys_handle, string keySessionId, vector<uint8_t> keyId)
- * @brief Selects the specified keyId for the key session. Netflix specific API.
- *
- * @param[in] media_keys_handle The handle of the media keys.
- * @param[in] key_session_id    The key session id for the session.
- * @param[in] key_id            The key id.
- *
- * @retval an error status.
- */
-message SelectKeyIdRequest {
-  required int32 media_keys_handle = 1;
-  required int32 key_session_id = 2;
-  repeated uint32 key_id = 3;
-}
-message SelectKeyIdResponse {
-  required ProtoMediaKeyErrorStatus error_status = 1;
-}
-
-/**
  * @fn bool containsKey(int32 media_keys_handle, string keySessionId, vector<uint8_t> keyId)
  * @brief Returns true if the Key Session object contains the specified key.
  *
@@ -513,13 +494,6 @@ service MediaKeysModule {
      * @see DestroyMediaKeysRequest
      */
     rpc destroyMediaKeys(DestroyMediaKeysRequest) returns (DestroyMediaKeysResponse) {
-    }
-
-    /**
-     * @brief Sets the specified key id.
-     * @see SelectKeyIdRequest
-     */
-    rpc selectKeyId(SelectKeyIdRequest) returns (SelectKeyIdResponse) {
     }
 
     /**

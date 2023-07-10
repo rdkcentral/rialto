@@ -461,9 +461,9 @@ MediaKeyErrorStatus CdmService::decrypt(int32_t keySessionId, GstBuffer *encrypt
                                           caps);
 }
 
-bool CdmService::isNetflixKeySystem(int32_t keySessionId)
+bool CdmService::isPlayreadyKeySystem(int32_t keySessionId)
 {
-    RIALTO_SERVER_LOG_DEBUG("CdmService requested to check if key system is Netflix, key session id: %d", keySessionId);
+    RIALTO_SERVER_LOG_DEBUG("CdmService requested to check if key system is Playready, key session id: %d", keySessionId);
 
     std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
     auto mediaKeysIter = std::find_if(m_mediaKeys.begin(), m_mediaKeys.end(),
@@ -473,7 +473,7 @@ bool CdmService::isNetflixKeySystem(int32_t keySessionId)
         RIALTO_SERVER_LOG_ERROR("Media keys handle for mksId: %d does not exists", keySessionId);
         return false;
     }
-    return mediaKeysIter->second->isNetflixKeySystem(keySessionId);
+    return mediaKeysIter->second->isPlayreadyKeySystem(keySessionId);
 }
 
 MediaKeyErrorStatus CdmService::selectKeyId(int32_t keySessionId, const std::vector<uint8_t> &keyId)

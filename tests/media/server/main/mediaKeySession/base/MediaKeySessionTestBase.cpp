@@ -53,7 +53,7 @@ void MediaKeySessionTestBase::destroyKeySession()
 
 void MediaKeySessionTestBase::expectCloseKeySession(const std::string &keySystem)
 {
-    if (kNetflixKeySystem == keySystem)
+    if (keySystem.find("playready") != std::string::npos)
     {
         EXPECT_CALL(*m_ocdmSessionMock, cancelChallengeData()).WillOnce(Return(MediaKeyErrorStatus::OK));
         EXPECT_CALL(*m_ocdmSessionMock, cleanDecryptContext()).WillOnce(Return(MediaKeyErrorStatus::OK));

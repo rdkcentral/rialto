@@ -220,17 +220,6 @@ void MediaKeysModuleService::destroyMediaKeys(::google::protobuf::RpcController 
     done->Run();
 }
 
-void MediaKeysModuleService::selectKeyId(::google::protobuf::RpcController *controller,
-                                         const ::firebolt::rialto::SelectKeyIdRequest *request,
-                                         ::firebolt::rialto::SelectKeyIdResponse *response,
-                                         ::google::protobuf::Closure *done)
-{
-    RIALTO_SERVER_LOG_ERROR("Not implemented");
-    controller->SetFailed("Not implemented");
-    done->Run();
-    return;
-}
-
 void MediaKeysModuleService::containsKey(::google::protobuf::RpcController *controller,
                                          const ::firebolt::rialto::ContainsKeyRequest *request,
                                          ::firebolt::rialto::ContainsKeyResponse *response,

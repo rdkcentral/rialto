@@ -201,11 +201,11 @@ public:
     virtual MediaKeyErrorStatus selectKeyId(const std::vector<uint8_t> &keyId) = 0;
 
     /**
-     * @brief Checks, if key system of media key session is Netflix.
+     * @brief Checks, if key system of media key session is playready.
      *
-     * @retval true if key system is Netflix
+     * @retval true if key system is playready
      */
-    virtual bool isNetflixKeySystem() const = 0;
+    virtual bool isPlayreadyKeySystem() const = 0;
 };
 } // namespace firebolt::rialto::server
 

@@ -62,7 +62,7 @@ public:
     void mediaKeysWillDecryptWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillSelectKeyIdWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillNotFindMediaKeySession();
-    void mediaKeysWillCheckIfKeySystemIsNetflix(bool result);
+    void mediaKeysWillCheckIfKeySystemIsPlayready(bool result);
 
     void mediaKeysCapabilitiesFactoryWillCreateMediaKeysCapabilities();
     void mediaKeysCapabilitiesFactoryWillReturnNullptr();
@@ -98,7 +98,7 @@ public:
     void getLdlSessionsLimitShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void getLastDrmErrorShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void getDrmTimeShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
-    void isNetflixKeySystemShouldReturn(bool result);
+    void isPlayreadyKeySystemShouldReturn(bool result);
     void incrementSessionIdUsageCounter();
     void decrementSessionIdUsageCounter();
     void incrementSessionIdUsageCounterFails();

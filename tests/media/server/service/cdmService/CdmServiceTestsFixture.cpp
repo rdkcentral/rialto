@@ -221,10 +221,10 @@ void CdmServiceTests::mediaKeysWillNotFindMediaKeySession()
     EXPECT_CALL(m_mediaKeysMock, hasSession(keySessionId)).WillOnce(Return(false));
 }
 
-void CdmServiceTests::mediaKeysWillCheckIfKeySystemIsNetflix(bool result)
+void CdmServiceTests::mediaKeysWillCheckIfKeySystemIsPlayready(bool result)
 {
     EXPECT_CALL(m_mediaKeysMock, hasSession(keySessionId)).WillOnce(Return(true));
-    EXPECT_CALL(m_mediaKeysMock, isNetflixKeySystem(keySessionId)).WillOnce(Return(result));
+    EXPECT_CALL(m_mediaKeysMock, isPlayreadyKeySystem(keySessionId)).WillOnce(Return(result));
 }
 
 void CdmServiceTests::createMediaKeysShouldSucceed()
@@ -366,9 +366,9 @@ void CdmServiceTests::getDrmTimeShouldReturnStatus(firebolt::rialto::MediaKeyErr
     EXPECT_EQ(status, m_sut.getDrmTime(mediaKeysHandle, drmTime));
 }
 
-void CdmServiceTests::isNetflixKeySystemShouldReturn(bool result)
+void CdmServiceTests::isPlayreadyKeySystemShouldReturn(bool result)
 {
-    EXPECT_EQ(result, m_sut.isNetflixKeySystem(keySessionId));
+    EXPECT_EQ(result, m_sut.isPlayreadyKeySystem(keySessionId));
 }
 
 void CdmServiceTests::getSupportedKeySystemsShouldSucceed()

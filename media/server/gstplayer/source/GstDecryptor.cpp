@@ -259,6 +259,23 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer, GstCaps *cap
                 }
             }
 
+            if (protectionData->key && m_decryptionService->isPlayreadyKeySystem(protectionData->keySessionId))
+            {
+                GstMapInfo keyMap;
+                if (m_gstWrapper->gstBufferMap(protectionData->key, &keyMap, GST_MAP_READ))
+                {
+                    std::vector<uint8_t> playreadyKey(keyMap.data, keyMap.data + keyMap.size);
+                    m_gstWrapper->gstBufferUnmap(protectionData->key, &keyMap);
+                    m_decryptionService->selectKeyId(protectionData->keySessionId, playreadyKey);
+                    m_gstWrapper->gstBufferUnref(protectionData->key);
+                    protectionData->key = m_gstWrapper->gstBufferNew();
+                }
+                else
+                {
+                    GST_ERROR_OBJECT(self, "Failed to map playready key id");
+                }
+            }
+
             // Create new GstProtectionMeta decrypt
             GstStructure *info = createProtectionMetaInfo(protectionData);
 #ifdef RIALTO_ENABLE_DECRYPT_BUFFER
