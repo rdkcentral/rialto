@@ -41,6 +41,11 @@ jobs:
     name: Download and Cache Protobuf
     # Runs on ubuntu
     runs-on: ubuntu-22.04
+
+    strategy:
+      matrix:
+        os: [ ubuntu-22.04 ]
+        
     # Timeout after
     timeout-minutes: 90
 
@@ -53,7 +58,8 @@ jobs:
         uses: actions/cache@v3
         with:
           path: protobuf
-          key: ${{ runner.os }}-protobuf-22-04
+          key: ${{ matrix.os }}-protobuf
+          
       - name: Build protobuf library
         if: steps.cache-protobuf-22-04.outputs.cache-hit != 'true'
         run: |
