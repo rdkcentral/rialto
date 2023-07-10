@@ -567,6 +567,23 @@ public:
     virtual void gstBufferUnref(GstBuffer *buf) = 0;
 
     /**
+     * @brief Fills info with the GstMapInfo of all merged memory blocks in buffer.
+     *
+     * @param[in] buffer : a GstBuffer.
+     * @param[out] info  : info about the mapping
+     * @param[in] flags  : flags for the mapping
+     */
+    virtual gboolean gstBufferMap(GstBuffer *buffer, GstMapInfo *info, GstMapFlags flags) = 0;
+
+    /**
+     * @brief Releases the memory previously mapped with gst_buffer_map.
+     *
+     * @param[in] buffer : a GstBuffer.
+     * @param[in] info   : a GstMapInfo
+     */
+    virtual void gstBufferUnmap(GstBuffer *buffer, GstMapInfo *info) = 0;
+
+    /**
      * @brief Decreases the refcount of the message. If the refcount reaches 0, the message with the associated
      *        metadata and memory will be freed.
      *

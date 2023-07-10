@@ -23,6 +23,14 @@
 #include "MediaKeys.h"
 #include "RialtoClientLogging.h"
 
+namespace
+{
+bool isPlayready(const std::string &keySystem)
+{
+    return keySystem.find("playready") != std::string::npos;
+}
+} // namespace
+
 namespace firebolt::rialto
 {
 std::shared_ptr<IMediaKeysFactory> IMediaKeysFactory::createFactory()
@@ -55,7 +63,6 @@ std::unique_ptr<IMediaKeys> MediaKeysFactory::createMediaKeys(const std::string 
 
     return mediaKeys;
 }
-const std::string kNetflixKeySystem{"com.netflix.playready"};
 }; // namespace firebolt::rialto
 
 namespace firebolt::rialto::client
@@ -103,7 +110,7 @@ MediaKeyErrorStatus MediaKeys::createKeySession(KeySessionType sessionType, std:
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     auto result{m_mediaKeysIpc->createKeySession(sessionType, client, isLDL, keySessionId)};
-    if (kNetflixKeySystem == m_keySystem && MediaKeyErrorStatus::OK == result)
+    if (isPlayready(m_keySystem) && MediaKeyErrorStatus::OK == result)
     {
         KeyIdMap::instance().addSession(keySessionId);
     }
@@ -142,7 +149,7 @@ MediaKeyErrorStatus MediaKeys::setDrmHeader(int32_t keySessionId, const std::vec
 MediaKeyErrorStatus MediaKeys::closeKeySession(int32_t keySessionId)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
-    if (kNetflixKeySystem == m_keySystem)
+    if (isPlayready(m_keySystem))
     {
         KeyIdMap::instance().erase(keySessionId);
     }
