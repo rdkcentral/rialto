@@ -47,7 +47,7 @@ jobs:
           cmake . -B build -DNATIVE_BUILD=ON -DRIALTO_BUILD_TYPE="Debug" &> output_file.txt
           if [ $? -eq 0 ]
           then
-            make &>> output_file.txt
+            make -C build &>> output_file.txt
           else
             exit 1
           fi
