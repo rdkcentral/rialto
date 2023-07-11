@@ -33,7 +33,7 @@ jobs:
 
       # Steps represent a sequence of tasks that will be executed as part of the job
       # Protobuf isnt cached if any steps fail, hence it is isolated in its own job
-      steps:
+      
       # Setup github for protobuf 3.7.0
       - name: Cache protobuf library
         id: cache-protobuf-2
