@@ -27,6 +27,7 @@ jobs:
         uses: lewagon/wait-on-check-action@v1.2.0
         with:
           ref: ${{ github.ref }}
+            echo '${{ github.ref }}'
           check-name: 'Download and Cache Protobuf'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           wait-interval: 90
