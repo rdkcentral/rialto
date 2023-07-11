@@ -48,7 +48,10 @@ jobs:
           if [ $? -eq 0 ]
           then
             make &>> output_file.txt
+          else
+            exit 1
           fi
+
 
       - name: Report Build Status Success
         if: success()
