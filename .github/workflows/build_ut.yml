@@ -40,11 +40,11 @@ jobs:
   download-protobuf:
     name: Download and Cache Protobuf
     # Runs on ubuntu
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-22.04
 
     strategy:
       matrix:
-        os: [ ubuntu-20.04, ubuntu-22.04 ]
+        os: [ ubuntu-22.04 ]
         
     # Timeout after
     timeout-minutes: 90
@@ -92,11 +92,11 @@ jobs:
     # Wait for protobuf to be cached first
     needs: download-protobuf
     # Runs on ubuntu
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-22.04
 
     strategy:
       matrix:
-        os: [ ubuntu-20.04, ubuntu-22.04 ]
+        os: [ ubuntu-22.04 ]
 
     # Timeout after
     timeout-minutes: 60

@@ -55,6 +55,7 @@ jobs:
         with:
           path: protobuf
           key: ${{ runner.os }}-protobuf-2
+
       - name: Build protobuf library
         if: steps.cache-protobuf-2.outputs.cache-hit != 'true'
         run: |
@@ -67,6 +68,7 @@ jobs:
           ./configure
           make
           make check
+          
       - name: Install protobuf library
         timeout-minutes: 2
         run: |
