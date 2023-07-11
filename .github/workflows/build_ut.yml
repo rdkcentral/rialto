@@ -124,8 +124,8 @@ jobs:
           key: ${{ runner.os }}-protobuf-22-04
           
       - name: Check cache
-        uses: actions/upload-artifact@v3
         if: steps.cache-protobuf-22-04.outputs.cache-hit != 'true'
+        uses: actions/upload-artifact@v3
         with:
           name: checklog
           path: |
