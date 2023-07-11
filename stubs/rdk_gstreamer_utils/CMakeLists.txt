@@ -36,7 +36,7 @@ ExternalProject_Add(
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
   INSTALL_COMMAND ${CMAKE_COMMAND} -E copy 
-  ${CMAKE_CURRENT_SOURCE_DIR}/git/src/rdk-gstreamer-utils-repo/rdk_gstreamer_utils.h
+  ${CMAKE_CURRENT_BINARY_DIR}/git/src/rdk-gstreamer-utils-repo/rdk_gstreamer_utils.h
   ${CMAKE_CURRENT_SOURCE_DIR}/
 )
 

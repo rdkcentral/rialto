@@ -36,9 +36,9 @@ ExternalProject_Add(
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
   INSTALL_COMMAND ${CMAKE_COMMAND} -E copy 
-  ${CMAKE_CURRENT_SOURCE_DIR}/git/src/ThunderClientLibraries/Source/ocdm/open_cdm.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/git/src/ThunderClientLibraries/Source/ocdm/open_cdm_ext.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/git/src/ThunderClientLibraries/Source/ocdm/adapter/open_cdm_adapter.h
+  ${CMAKE_CURRENT_BINARY_DIR}/git/src/ThunderClientLibraries/Source/ocdm/open_cdm.h
+  ${CMAKE_CURRENT_BINARY_DIR}/git/src/ThunderClientLibraries/Source/ocdm/open_cdm_ext.h
+  ${CMAKE_CURRENT_BINARY_DIR}/git/src/ThunderClientLibraries/Source/ocdm/adapter/open_cdm_adapter.h
   ${CMAKE_CURRENT_SOURCE_DIR}/
 )
 
@@ -60,7 +60,7 @@ add_dependencies( ocdm ThunderClientLibraries )
 add_library(ocdm::ocdm ALIAS ocdm)
 
 include(CMakePackageConfigHelpers)
-set(OCDM_INCLUDE_INSTALL_DIR "${PROJECT_BINARY_DIR}/stubs" )
+set(OCDM_INCLUDE_INSTALL_DIR "${PROJECT_SOURCE_DIR}/stubs" )
 set(PROJECT_CONFIG_FILE "${PROJECT_BINARY_DIR}/ocdm-config.cmake")
 
 configure_package_config_file(ocdm-config.cmake.in
