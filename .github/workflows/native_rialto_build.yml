@@ -23,13 +23,49 @@ jobs:
           sudo apt-get install cmake
           sudo apt-get install libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev libgstreamer1.0-dev
 
-      - name: Wait for protobuf installation to prevent race in next step
-        uses: lewagon/wait-on-check-action@v1.2.0
+      # - name: Wait for protobuf installation to prevent race in next step
+      #   uses: lewagon/wait-on-check-action@v1.2.0
+      #   with:
+      #     ref: ${{ github.ref }}
+      #     check-name: 'Download and Cache Protobuf'
+      #     repo-token: ${{ secrets.GITHUB_TOKEN }}
+      #     wait-interval: 90
+
+      # Steps represent a sequence of tasks that will be executed as part of the job
+      # Protobuf isnt cached if any steps fail, hence it is isolated in its own job
+      steps:
+      # Setup github for protobuf 3.7.0
+      - name: Cache protobuf library
+        id: cache-protobuf-2
+        uses: actions/cache@v3
         with:
-          ref: ${{ github.ref }}
-          check-name: 'Download and Cache Protobuf'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          wait-interval: 90
+          path: protobuf
+          key: ${{ runner.os }}-protobuf-2
+      - name: Build protobuf library
+        if: steps.cache-protobuf-2.outputs.cache-hit != 'true'
+        run: |
+          git clone https://github.com/protocolbuffers/protobuf.git protobuf
+          cd protobuf
+          git checkout v3.7.0
+          git submodule update --init --recursive
+          ./autogen.sh
+          ./autogen.sh
+          ./configure
+          make
+          make check
+      - name: Install protobuf library
+        timeout-minutes: 2
+        run: |
+          cd protobuf
+          sudo make install
+          sudo ldconfig
+
+      # If this job was cancelled by protobuf install, the cache is likely corrupt
+      # See instructions on how to reset the cache - https://wiki.rdkcentral.com/display/ASP/Github+workflow+Failures
+      - name: Is Cancelled
+        if: cancelled()
+        run: |
+          echo "If this job was cancelled due to 'Install protobuf library' timeout, the cache is likely corrupt and needs deleting! (see https://wiki.rdkcentral.com/display/ASP/Github+workflow+Failures)" >> $GITHUB_STEP_SUMMARY
 
       # Protobuf should always be cached here. Cached from the build_ut and valgrind_ut workflows
       - name: Cache protobuf library

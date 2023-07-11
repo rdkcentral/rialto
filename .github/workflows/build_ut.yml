@@ -117,14 +117,14 @@ jobs:
       # Setup github for protobuf 3.7.0
       # Protobuf should always be cached here
       - name: Cache protobuf library
-        id: cache-protobuf-22-04
+        id: ubuntu-22.04-protobuf
         uses: actions/cache@v3
         with:
           path: protobuf
           key: ${{ matrix.os }}-protobuf-22-04
           
       - name: Check cache
-        if: steps.cache-protobuf-22-04.outputs.cache-hit != 'true'
+        if: steps.ubuntu-22.04-protobuf.outputs.cache-hit != 'true'
         run: |
           exit 1
 
