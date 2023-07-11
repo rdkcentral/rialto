@@ -26,7 +26,7 @@ jobs:
       - name: Wait for protobuf installation to prevent race in next step
         uses: lewagon/wait-on-check-action@v1.2.0
         with:
-          ref: ${{ github.ref }}
+          ref: ${{ github.ref == 'master' }}
             echo '${{ github.ref }}'
           check-name: 'Download and Cache Protobuf'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
