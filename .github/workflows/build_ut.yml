@@ -121,7 +121,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: protobuf
-          key: ${{ runner.os }}-protobuf-22-04
+          key: ${{ matrix.os }}-protobuf-22-04
           
       - name: Check cache
         if: steps.cache-protobuf-22-04.outputs.cache-hit != 'true'
