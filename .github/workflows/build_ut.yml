@@ -125,13 +125,8 @@ jobs:
           
       - name: Check cache
         if: steps.cache-protobuf-22-04.outputs.cache-hit != 'true'
-        uses: actions/upload-artifact@v3
-        with:
-          name: checklog
-          path: |
-            checklog.txt
-        # run: |
-        #   exit 1
+        run: |
+          exit 1
 
       - name: Install protobuf library
         timeout-minutes: 2
