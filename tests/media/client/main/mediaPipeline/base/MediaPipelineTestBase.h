@@ -63,7 +63,6 @@ protected:
     StrictMock<ClientControllerMock> m_clientControllerMock;
     std::unique_ptr<StrictMock<MediaPipelineIpcMock>> mediaPipelineIpcMock;
 
-
     // MediaPipeline object
     std::unique_ptr<MediaPipeline> m_mediaPipeline;
 

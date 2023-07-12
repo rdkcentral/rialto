@@ -41,8 +41,7 @@ void MediaPipelineTestBase::TearDown() // NOLINT(build/function_format)
 void MediaPipelineTestBase::createMediaPipeline()
 {
     VideoRequirements videoReq = {};
-    mediaPipelineIpcMock =
-        std::make_unique<StrictMock<MediaPipelineIpcMock>>();
+    mediaPipelineIpcMock = std::make_unique<StrictMock<MediaPipelineIpcMock>>();
 
     // Save a raw pointer to the unique object for use when testing mocks
     // Object shall be freed by the holder of the unique ptr on destruction

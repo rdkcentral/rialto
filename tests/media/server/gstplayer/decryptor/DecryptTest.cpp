@@ -115,8 +115,7 @@ protected:
 
         m_gstRialtoDecryptorPrivate->setDecryptionService(m_decryptionServiceMock.get());
 
-        protectionMetadataWrapperMock =
-            std::make_unique<StrictMock<GstProtectionMetadataWrapperMock>>();
+        protectionMetadataWrapperMock = std::make_unique<StrictMock<GstProtectionMetadataWrapperMock>>();
         m_protectionMetadataWrapperMock = protectionMetadataWrapperMock.get();
         m_gstRialtoDecryptorPrivate->setProtectionMetadataWrapper(std::move(protectionMetadataWrapperMock));
     }

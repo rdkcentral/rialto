@@ -101,8 +101,7 @@ protected:
     {
         int64_t timestamp = 0;
 
-        mediaFrameWriterMock =
-            std::make_unique<StrictMock<MediaFrameWriterMock>>();
+        mediaFrameWriterMock = std::make_unique<StrictMock<MediaFrameWriterMock>>();
         m_mediaFrameWriterMock = mediaFrameWriterMock.get();
 
         EXPECT_CALL(*m_sharedMemoryHandleMock, getShm()).WillRepeatedly(Return(&m_shmBuffer));
@@ -190,8 +189,7 @@ protected:
         m_haveDataThread = std::thread(
             [this]()
             {
-                mediaFrameWriterMock =
-                    std::make_unique<StrictMock<MediaFrameWriterMock>>();
+                mediaFrameWriterMock = std::make_unique<StrictMock<MediaFrameWriterMock>>();
 
                 std::vector<uint8_t> data{'T', 'E', 'S', 'T'};
                 std::unique_ptr<IMediaPipeline::MediaSegment> frame =
