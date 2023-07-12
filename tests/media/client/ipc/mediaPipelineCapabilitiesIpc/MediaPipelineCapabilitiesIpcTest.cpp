@@ -24,7 +24,7 @@
 using ::testing::Return;
 using ::testing::WithArgs;
 
-class MediaPipelineCapabilitiesTest : public IpcModuleBase, public ::testing::Test
+class MediaPipelineCapabilitiesIpcTest : public IpcModuleBase, public ::testing::Test
 {
 protected:
     std::unique_ptr<IMediaPipelineCapabilities> m_sut;
@@ -57,30 +57,30 @@ public:
     }
 };
 
-TEST_F(MediaPipelineCapabilitiesTest, createMediaPipelineCapabilitiesIpc)
+TEST_F(MediaPipelineCapabilitiesIpcTest, createMediaPipelineCapabilitiesIpc)
 {
     createMediaPipelineCapabilitiesIpc();
 }
 
-TEST_F(MediaPipelineCapabilitiesTest, createMediaPipelineCapabilitiesTestAttachChannelFailure)
+TEST_F(MediaPipelineCapabilitiesIpcTest, createMediaPipelineCapabilitiesTestAttachChannelFailure)
 {
     expectInitIpcButAttachChannelFailure();
     EXPECT_THROW(m_sut = std::make_unique<MediaPipelineCapabilitiesIpc>(m_ipcClientMock), std::runtime_error);
 }
 
-TEST_F(MediaPipelineCapabilitiesTest, GetSupportedMimeTypesSuccess)
+TEST_F(MediaPipelineCapabilitiesIpcTest, GetSupportedMimeTypesSuccess)
 {
     createMediaPipelineCapabilitiesIpc();
     expectIpcApiCallSuccess();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getSupportedMimeTypes"), m_controllerMock.get(), _, _,
                                            m_blockingClosureMock.get()))
-        .WillOnce(WithArgs<3>(Invoke(this, &MediaPipelineCapabilitiesTest::setGetSupportedMimeTypesResponse)));
+        .WillOnce(WithArgs<3>(Invoke(this, &MediaPipelineCapabilitiesIpcTest::setGetSupportedMimeTypesResponse)));
 
     EXPECT_EQ(m_sut->getSupportedMimeTypes(MediaSourceType::VIDEO), m_mimeTypes);
 }
 
-TEST_F(MediaPipelineCapabilitiesTest, GetSupportedMimeTypesDisconnected)
+TEST_F(MediaPipelineCapabilitiesIpcTest, GetSupportedMimeTypesDisconnected)
 {
     createMediaPipelineCapabilitiesIpc();
     expectIpcApiCallDisconnected();
@@ -88,19 +88,19 @@ TEST_F(MediaPipelineCapabilitiesTest, GetSupportedMimeTypesDisconnected)
     EXPECT_EQ(m_sut->getSupportedMimeTypes(MediaSourceType::VIDEO), std::vector<std::string>{});
 }
 
-TEST_F(MediaPipelineCapabilitiesTest, GetSupportedMimeTypesDisconnectedReconnectChannel)
+TEST_F(MediaPipelineCapabilitiesIpcTest, GetSupportedMimeTypesDisconnectedReconnectChannel)
 {
     createMediaPipelineCapabilitiesIpc();
     expectIpcApiCallReconnected();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getSupportedMimeTypes"), m_controllerMock.get(), _, _,
                                            m_blockingClosureMock.get()))
-        .WillOnce(WithArgs<3>(Invoke(this, &MediaPipelineCapabilitiesTest::setGetSupportedMimeTypesResponse)));
+        .WillOnce(WithArgs<3>(Invoke(this, &MediaPipelineCapabilitiesIpcTest::setGetSupportedMimeTypesResponse)));
 
     EXPECT_EQ(m_sut->getSupportedMimeTypes(MediaSourceType::VIDEO), m_mimeTypes);
 }
 
-TEST_F(MediaPipelineCapabilitiesTest, GetSupportedMimeTypesFailure)
+TEST_F(MediaPipelineCapabilitiesIpcTest, GetSupportedMimeTypesFailure)
 {
     createMediaPipelineCapabilitiesIpc();
     expectIpcApiCallFailure();
@@ -110,19 +110,19 @@ TEST_F(MediaPipelineCapabilitiesTest, GetSupportedMimeTypesFailure)
     EXPECT_EQ(m_sut->getSupportedMimeTypes(MediaSourceType::VIDEO), std::vector<std::string>{});
 }
 
-TEST_F(MediaPipelineCapabilitiesTest, IsMimeTypeSupportedSuccess)
+TEST_F(MediaPipelineCapabilitiesIpcTest, IsMimeTypeSupportedSuccess)
 {
     createMediaPipelineCapabilitiesIpc();
     expectIpcApiCallSuccess();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("isMimeTypeSupported"), m_controllerMock.get(), _, _,
                                            m_blockingClosureMock.get()))
-        .WillOnce(WithArgs<3>(Invoke(this, &MediaPipelineCapabilitiesTest::setIsMimeTypeSupportedResponse)));
+        .WillOnce(WithArgs<3>(Invoke(this, &MediaPipelineCapabilitiesIpcTest::setIsMimeTypeSupportedResponse)));
 
     EXPECT_TRUE(m_sut->isMimeTypeSupported("video/h264"));
 }
 
-TEST_F(MediaPipelineCapabilitiesTest, IsMimeTypeSupportedsDisconnected)
+TEST_F(MediaPipelineCapabilitiesIpcTest, IsMimeTypeSupportedsDisconnected)
 {
     createMediaPipelineCapabilitiesIpc();
     expectIpcApiCallDisconnected();
@@ -130,19 +130,19 @@ TEST_F(MediaPipelineCapabilitiesTest, IsMimeTypeSupportedsDisconnected)
     EXPECT_FALSE(m_sut->isMimeTypeSupported("video/h264"));
 }
 
-TEST_F(MediaPipelineCapabilitiesTest, IsMimeTypeSupportedDisconnectedReconnectChannel)
+TEST_F(MediaPipelineCapabilitiesIpcTest, IsMimeTypeSupportedDisconnectedReconnectChannel)
 {
     createMediaPipelineCapabilitiesIpc();
     expectIpcApiCallReconnected();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("isMimeTypeSupported"), m_controllerMock.get(), _, _,
                                            m_blockingClosureMock.get()))
-        .WillOnce(WithArgs<3>(Invoke(this, &MediaPipelineCapabilitiesTest::setIsMimeTypeSupportedResponse)));
+        .WillOnce(WithArgs<3>(Invoke(this, &MediaPipelineCapabilitiesIpcTest::setIsMimeTypeSupportedResponse)));
 
     EXPECT_TRUE(m_sut->isMimeTypeSupported("video/h264"));
 }
 
-TEST_F(MediaPipelineCapabilitiesTest, IsMimeTypeSupportedFailure)
+TEST_F(MediaPipelineCapabilitiesIpcTest, IsMimeTypeSupportedFailure)
 {
     createMediaPipelineCapabilitiesIpc();
     expectIpcApiCallFailure();

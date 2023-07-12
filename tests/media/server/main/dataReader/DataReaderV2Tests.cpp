@@ -282,7 +282,7 @@ protected:
         auto result = m_sut->readData();
         if (result.size() != 1)
             return nullptr;
-        return std::move(result.front());
+        return result.front();
     }
 
     void writeBuffer(const std::unique_ptr<IMediaPipeline::MediaSegment> &segment)

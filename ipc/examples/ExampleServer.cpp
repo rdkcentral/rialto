@@ -26,7 +26,7 @@
 
 #include <unistd.h>
 
-class MyExampleService : public ::example::ExampleService
+class MyExampleServiceServer : public ::example::ExampleService
 {
 public:
     void exampleEcho(google::protobuf::RpcController *controller, const ::example::RequestEcho *request,

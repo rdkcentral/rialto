@@ -39,7 +39,7 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, CreateDestroyLlamaSuccess)
                                                                       m_glibWrapperMock, m_gstSrcFactoryMock,
                                                                       std::move(m_taskFactory),
                                                                       std::move(workerThreadFactory),
-                                                                      std::move(gstDispatcherThreadFactory)););
+                                                                      std::move(gstDispatcherThreadFactory)));
     EXPECT_NE(m_gstPlayer, nullptr);
 
     gstPlayerWillBeDestroyed();
@@ -57,7 +57,7 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, CreateDestroyXiOneSuccess)
                                                                       m_glibWrapperMock, m_gstSrcFactoryMock,
                                                                       std::move(m_taskFactory),
                                                                       std::move(workerThreadFactory),
-                                                                      std::move(gstDispatcherThreadFactory)););
+                                                                      std::move(gstDispatcherThreadFactory)));
     EXPECT_NE(m_gstPlayer, nullptr);
 
     gstPlayerWillBeDestroyed();
@@ -75,7 +75,7 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, CreateDestroyGenericPlatformsSuc
                                                                       m_glibWrapperMock, m_gstSrcFactoryMock,
                                                                       std::move(m_taskFactory),
                                                                       std::move(workerThreadFactory),
-                                                                      std::move(gstDispatcherThreadFactory)););
+                                                                      std::move(gstDispatcherThreadFactory)));
     EXPECT_NE(m_gstPlayer, nullptr);
 
     gstPlayerWillBeDestroyed();

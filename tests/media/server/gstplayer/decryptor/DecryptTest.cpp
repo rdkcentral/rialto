@@ -74,6 +74,7 @@ protected:
     std::unique_ptr<GstRialtoDecryptorPrivate> m_gstRialtoDecryptorPrivate;
     std::shared_ptr<StrictMock<DecryptionServiceMock>> m_decryptionServiceMock;
     StrictMock<GstProtectionMetadataWrapperMock> *m_protectionMetadataWrapperMock;
+    std::unique_ptr<StrictMock<GstProtectionMetadataWrapperMock>> protectionMetadataWrapperMock;
 
     GstBaseTransform m_decryptorBase = {};
     GstBuffer m_buffer = {};
@@ -114,7 +115,7 @@ protected:
 
         m_gstRialtoDecryptorPrivate->setDecryptionService(m_decryptionServiceMock.get());
 
-        std::unique_ptr<StrictMock<GstProtectionMetadataWrapperMock>> protectionMetadataWrapperMock =
+        protectionMetadataWrapperMock =
             std::make_unique<StrictMock<GstProtectionMetadataWrapperMock>>();
         m_protectionMetadataWrapperMock = protectionMetadataWrapperMock.get();
         m_gstRialtoDecryptorPrivate->setProtectionMetadataWrapper(std::move(protectionMetadataWrapperMock));
@@ -125,7 +126,7 @@ protected:
         EXPECT_CALL(*m_gstWrapperFactoryMock, getGstWrapper()).WillOnce(Return(m_gstWrapperMock));
 
         EXPECT_NO_THROW(m_gstRialtoDecryptorPrivate =
-                            std::make_unique<GstRialtoDecryptorPrivate>(&m_decryptorBase, m_gstWrapperFactoryMock););
+                            std::make_unique<GstRialtoDecryptorPrivate>(&m_decryptorBase, m_gstWrapperFactoryMock));
         EXPECT_NE(m_gstRialtoDecryptorPrivate, nullptr);
     }
 

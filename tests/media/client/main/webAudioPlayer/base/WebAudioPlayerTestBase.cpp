@@ -46,7 +46,7 @@ void WebAudioPlayerTestBase::TearDown() // NOLINT(build/function_format)
 
 void WebAudioPlayerTestBase::createWebAudioPlayer()
 {
-    std::unique_ptr<StrictMock<WebAudioPlayerIpcMock>> webAudioPlayerIpcMock =
+    webAudioPlayerIpcMock =
         std::make_unique<StrictMock<WebAudioPlayerIpcMock>>();
 
     // Save a raw pointer to the unique object for use when testing mocks

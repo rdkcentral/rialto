@@ -28,14 +28,18 @@
     </suppress>
     <suppress>
         <id>unusedFunction</id>
-        <fileName>media/server/gstplayer/source/GstProtectionMetadata.cpp</fileName>
-    </suppress>
-    <suppress>
-        <id>unusedFunction</id>
         <symbolName>MATCHER_P5</symbolName>
     </suppress>
     <suppress>
         <id>unusedFunction</id>
         <symbolName>rialto_mse_add_protection_metadata</symbolName>
+    </suppress>
+    <suppress>
+        <id>ctuOneDefinitionRuleViolation</id>
+        <fileName>tests/media/client/main/mediaPipeline/base/MediaPipelineTestBase.h</fileName>
+    </suppress>
+    <suppress>
+        <id>ctuOneDefinitionRuleViolation</id>
+        <fileName>tests/media/client/main/webAudioPlayer/base/WebAudioPlayerTestBase.h</fileName>
     </suppress>
 </suppressions>

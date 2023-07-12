@@ -61,6 +61,8 @@ protected:
     StrictMock<MediaPipelineIpcMock> *m_mediaPipelineIpcMock = nullptr;
     std::shared_ptr<StrictMock<MediaFrameWriterFactoryMock>> m_mediaFrameWriterFactoryMock;
     StrictMock<ClientControllerMock> m_clientControllerMock;
+    std::unique_ptr<StrictMock<MediaPipelineIpcMock>> mediaPipelineIpcMock;
+
 
     // MediaPipeline object
     std::unique_ptr<MediaPipeline> m_mediaPipeline;

@@ -35,8 +35,8 @@ GST_DEBUG_CATEGORY(rialto_gst_player_debug);
     GST_DEBUG_CATEGORY_INIT(rialto_gst_player_debug, "rialtosrc", 0, "Rialto source element");
 G_DEFINE_TYPE_WITH_CODE(GstRialtoSrc, gst_rialto_src, GST_TYPE_BIN,
                         G_ADD_PRIVATE(GstRialtoSrc)
-                            G_IMPLEMENT_INTERFACE(GST_TYPE_URI_HANDLER, gstRialtoSrcUriHandlerInit);
-                        RIALTO_SRC_CATEGORY_INIT);
+                            G_IMPLEMENT_INTERFACE(GST_TYPE_URI_HANDLER, gstRialtoSrcUriHandlerInit)
+                        RIALTO_SRC_CATEGORY_INIT)
 
 static void gstRialtoSrcDispose(GObject *object)
 {

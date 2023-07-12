@@ -383,7 +383,6 @@ TEST_F(RialtoServerMediaPipelineHaveDataTest, ServerInternalHaveDataSuccessEosWi
     auto status = firebolt::rialto::MediaSourceStatus::EOS;
     std::uint8_t data{123};
     int offset = 0;
-    std::shared_ptr<IDataReader> dataReader{std::make_shared<DataReaderMock>()};
     loadGstPlayer();
     mainThreadWillEnqueueTaskAndWait();
     ASSERT_TRUE(m_activeRequestsMock);

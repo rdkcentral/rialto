@@ -48,6 +48,7 @@ protected:
     std::shared_ptr<SharedMemoryHandleMock> m_sharedMemoryHandleMock;
     MediaSourceStatus m_status = MediaSourceStatus::NO_AVAILABLE_SAMPLES;
     IMediaPipeline::MediaSegmentVector m_dataVec;
+    std::unique_ptr<StrictMock<MediaFrameWriterMock>> mediaFrameWriterMock;
 
     std::thread m_haveDataThread;
     std::mutex m_haveDataMutex;
@@ -100,7 +101,7 @@ protected:
     {
         int64_t timestamp = 0;
 
-        std::unique_ptr<StrictMock<MediaFrameWriterMock>> mediaFrameWriterMock =
+        mediaFrameWriterMock =
             std::make_unique<StrictMock<MediaFrameWriterMock>>();
         m_mediaFrameWriterMock = mediaFrameWriterMock.get();
 
@@ -189,7 +190,7 @@ protected:
         m_haveDataThread = std::thread(
             [this]()
             {
-                std::unique_ptr<StrictMock<MediaFrameWriterMock>> mediaFrameWriterMock =
+                mediaFrameWriterMock =
                     std::make_unique<StrictMock<MediaFrameWriterMock>>();
 
                 std::vector<uint8_t> data{'T', 'E', 'S', 'T'};

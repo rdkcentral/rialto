@@ -60,6 +60,7 @@ protected:
     StrictMock<ClientControllerMock> m_clientControllerMock;
 
     std::unique_ptr<WebAudioPlayer> m_webAudioPlayer;
+    std::unique_ptr<StrictMock<WebAudioPlayerIpcMock>> webAudioPlayerIpcMock;
 
     void SetUp();
     void TearDown();
