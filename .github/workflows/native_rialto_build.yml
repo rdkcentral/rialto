@@ -22,14 +22,6 @@ jobs:
           sudo apt-get install cmake
           sudo apt-get install libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev libgstreamer1.0-dev
 
-      - name: Wait for protobuf installation to prevent race in next step
-        uses: lewagon/wait-on-check-action@v1.2.0
-        with:
-          ref: ${{ github.ref }}
-          check-name: 'Download and Cache Protobuf'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          wait-interval: 90
-
       # Protobuf should always be cached here. Cached from the build_ut and valgrind_ut workflows
       - name: Cache protobuf library
         id: cache-protobuf-2
