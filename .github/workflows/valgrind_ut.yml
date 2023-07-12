@@ -73,7 +73,7 @@ jobs:
           make
           make check
       - name: Install protobuf library
-        timeout-minutes: 2
+        timeout-minutes: 4
         run: |
           cd protobuf
           sudo make install
