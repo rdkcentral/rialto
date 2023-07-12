@@ -9,7 +9,11 @@ on:
 
 jobs:
   build: 
-      runs-on: ubuntu-20.04
+      runs-on: ubuntu-22.04
+
+    strategy:
+      matrix:
+        os: [ ubuntu-22.04 ]
 
       steps:
       - name: Checkout code
@@ -24,14 +28,14 @@ jobs:
 
       # Protobuf should always be cached here. Cached from the build_ut and valgrind_ut workflows
       - name: Cache protobuf library
-        id: cache-protobuf-2
+        id: cache-protobuf
         uses: actions/cache@v3
         with:
           path: protobuf
-          key: ${{ runner.os }}-protobuf-2
+          key: ${{ runner.os }}-protobuf-${{ matrix.os }}
 
       - name: Check cache
-        if: steps.cache-protobuf-2.outputs.cache-hit != 'true'
+        if: steps.cache-protobuf.outputs.cache-hit != 'true'
         run: |
           exit 1
 
