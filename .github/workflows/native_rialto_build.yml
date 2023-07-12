@@ -8,14 +8,14 @@ on:
   workflow_dispatch:
 
 jobs:
-  build: 
+  build:
     runs-on: ubuntu-22.04
 
     strategy:
-        matrix:
-          os: [ ubuntu-22.04 ]
+      matrix:
+        os: [ ubuntu-22.04 ]
 
-      steps:
+    steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
