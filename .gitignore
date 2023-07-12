@@ -9,7 +9,5 @@
 /cppcheck_report.txt
 
 # These files are fetched by cmake during building rialto for the native platform
-/stubs/opencdm/open_cdm.h
-/stubs/opencdm/open_cdm_adapter.h
-/stubs/opencdm/open_cdm_ext.h
-/stubs/rdk_gstreamer_utils/rdk_gstreamer_utils.h
+/stubs/opencdm/third-party/*
+/stubs/rdk_gstreamer_utils/third-party/*

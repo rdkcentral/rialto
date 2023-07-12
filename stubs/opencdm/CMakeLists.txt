@@ -28,6 +28,8 @@ if (NOT THUNDER_CLIENT_TAG)
   set(THUNDER_CLIENT_TAG "d3e3d6c2be6516dd6b4ccfc04b129f8725b59baa")
 endif()
 
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/third-party/opencdm)
+
 ExternalProject_Add(
   ThunderClientLibraries
   GIT_REPOSITORY https://github.com/rdkcentral/ThunderClientLibraries.git
@@ -39,7 +41,7 @@ ExternalProject_Add(
   ${CMAKE_CURRENT_BINARY_DIR}/git/src/ThunderClientLibraries/Source/ocdm/open_cdm.h
   ${CMAKE_CURRENT_BINARY_DIR}/git/src/ThunderClientLibraries/Source/ocdm/open_cdm_ext.h
   ${CMAKE_CURRENT_BINARY_DIR}/git/src/ThunderClientLibraries/Source/ocdm/adapter/open_cdm_adapter.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/
+  ${CMAKE_CURRENT_SOURCE_DIR}/third-party/opencdm
 )
 
 find_package( PkgConfig REQUIRED )
@@ -60,7 +62,7 @@ add_dependencies( ocdm ThunderClientLibraries )
 add_library(ocdm::ocdm ALIAS ocdm)
 
 include(CMakePackageConfigHelpers)
-set(OCDM_INCLUDE_INSTALL_DIR "${PROJECT_SOURCE_DIR}/stubs" )
+set(OCDM_INCLUDE_INSTALL_DIR "${PROJECT_SOURCE_DIR}/stubs/opencdm/third-party" )
 set(PROJECT_CONFIG_FILE "${PROJECT_BINARY_DIR}/ocdm-config.cmake")
 
 configure_package_config_file(ocdm-config.cmake.in
@@ -77,5 +79,6 @@ target_include_directories(
       ocdm
 
       PRIVATE
+      third-party
       ${GStreamerApp_INCLUDE_DIRS}
 )
