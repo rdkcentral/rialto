@@ -11,10 +11,6 @@ jobs:
   build:
     runs-on: ubuntu-22.04
 
-    strategy:
-      matrix:
-        os: [ ubuntu-22.04 ]
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -26,25 +22,10 @@ jobs:
           sudo apt-get install cmake
           sudo apt-get install libunwind-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev libgstreamer1.0-dev
 
-      # Protobuf should always be cached here. Cached from the build_ut and valgrind_ut workflows
-      - name: Cache protobuf library
-        id: cache-protobuf
-        uses: actions/cache@v3
-        with:
-          path: protobuf
-          key: ${{ runner.os }}-protobuf-${{ matrix.os }}
-
-      - name: Check cache
-        if: steps.cache-protobuf.outputs.cache-hit != 'true'
-        run: |
-          exit 1
-
-      - name: Install protobuf library
+      - name: Install protobuf
         timeout-minutes: 2
         run: |
-          cd protobuf
-          sudo make install
-          sudo ldconfig
+          sudo apt-get install protobuf-compiler
 
       - name: Build Rialto
         run: |
