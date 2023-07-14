@@ -69,7 +69,7 @@ protected:
         EXPECT_CALL(*m_glibWrapperFactoryMock, getGlibWrapper()).WillOnce(Return(m_glibWrapperMock));
 
         EXPECT_NO_THROW(m_gstSrc = std::make_unique<GstSrc>(m_gstWrapperFactoryMock, m_glibWrapperFactoryMock,
-                                                            m_decryptorFactoryMock););
+                                                            m_decryptorFactoryMock));
         EXPECT_NE(m_gstSrc, nullptr);
     }
 };

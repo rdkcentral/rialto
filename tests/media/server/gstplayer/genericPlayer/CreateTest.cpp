@@ -68,7 +68,7 @@ protected:
                                                                          m_timerFactoryMock, std::move(m_taskFactory),
                                                                          std::move(workerThreadFactory),
                                                                          std::move(gstDispatcherThreadFactory),
-                                                                         m_gstProtectionMetadataFactoryMock););
+                                                                         m_gstProtectionMetadataFactoryMock));
         EXPECT_NE(m_gstPlayer, nullptr);
     }
 
@@ -307,7 +307,7 @@ TEST_F(RialtoServerCreateGstGenericPlayerTest, PlaysinkNotFound)
                                                                      m_timerFactoryMock, std::move(m_taskFactory),
                                                                      std::move(workerThreadFactory),
                                                                      std::move(gstDispatcherThreadFactory),
-                                                                     m_gstProtectionMetadataFactoryMock););
+                                                                     m_gstProtectionMetadataFactoryMock));
     EXPECT_NE(m_gstPlayer, nullptr);
 
     executeTaskWhenEnqueued();
@@ -339,7 +339,7 @@ TEST_F(RialtoServerCreateGstGenericPlayerTest, SetNativeAudioForBrcmAudioSink)
                                                                      m_timerFactoryMock, std::move(m_taskFactory),
                                                                      std::move(workerThreadFactory),
                                                                      std::move(gstDispatcherThreadFactory),
-                                                                     m_gstProtectionMetadataFactoryMock););
+                                                                     m_gstProtectionMetadataFactoryMock));
     EXPECT_NE(m_gstPlayer, nullptr);
 
     executeTaskWhenEnqueued();

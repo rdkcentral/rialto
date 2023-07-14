@@ -43,6 +43,6 @@ protected:
 TEST_F(RialtoServerInitGstPlayerTest, Init)
 {
     bool status = false;
-    EXPECT_NO_THROW(status = gstInitalise(argc, static_cast<char **>(argv)););
+    EXPECT_NO_THROW(status = gstInitalise(argc, static_cast<char **>(argv)));
     EXPECT_EQ(status, true);
 }

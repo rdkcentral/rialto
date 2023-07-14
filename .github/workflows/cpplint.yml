@@ -41,7 +41,7 @@ jobs:
   run-cpplint:
     name: Run cpplint.py
     # Runs on ubuntu
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     # Timeout after
     timeout-minutes: 2
 
@@ -66,7 +66,7 @@ jobs:
       # Proccess returns error if failure detected
       - name: cpplint.py script
         run: |
-              python scripts/cpplint/cpplint.py --recursive --output=junit . 2> cpplint_errors.xml
+              python3 scripts/cpplint/cpplint.py --recursive --output=junit . 2> cpplint_errors.xml
 
       # Process the errors on failure
       - name: Check results
