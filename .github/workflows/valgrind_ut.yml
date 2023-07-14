@@ -74,7 +74,8 @@ jobs:
   # This job sets up the repo with the dependancies then runs the tests with valgrind
   valgrind-test:
     name: Build and test build_ut with valgrind
-    
+    # Wait for protobuf and valgrind to be cached first
+    needs: [download-valgrind]
     # Runs on ubuntu
     runs-on: ubuntu-22.04
 
