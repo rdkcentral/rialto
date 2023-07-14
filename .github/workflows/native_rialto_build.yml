@@ -47,8 +47,15 @@ jobs:
           sudo ldconfig
 
       - name: Build Rialto
-        run:
-          cmake . -B . -DNATIVE_BUILD=ON -DRIALTO_LOG_FATAL_ENABLED=OFF -DRIALTO_LOG_ERROR_ENABLED=OFF -DRIALTO_LOG_WARN_ENABLED=OFF -DRIALTO_LOG_MIL_ENABLED=OFF -DRIALTO_LOG_INFO_ENABLED=OFF -DRIALTO_LOG_DEBUG_ENABLED=OFF >> output_file.txt 2>&1
+        run: |
+          cmake . -B build -DNATIVE_BUILD=ON -DRIALTO_BUILD_TYPE="Debug" &> output_file.txt
+          if [ $? -eq 0 ]
+          then
+            make -C build &>> output_file.txt
+          else
+            exit 1
+          fi
+
 
       - name: Report Build Status Success
         if: success()
