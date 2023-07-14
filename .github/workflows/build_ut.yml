@@ -26,9 +26,9 @@ name: build_ut
 on:
   # Triggers the workflow on push or pull request events but only for the "master" branch
   push:
-    branches: [ "master", "rdkcentral:master" ]
+    branches: [ "Test_protobuf" ]
   pull_request:
-    branches: [ "master", "rdkcentral:master" ]
+    branches: [ "Test_protobuf" ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -36,67 +36,11 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
 
-  # This job downloads and caches the protobuf library to speed up execution
-  download-protobuf:
-    name: Download and Cache Protobuf
-    # Runs on ubuntu
-    runs-on: ubuntu-22.04
-
-    strategy:
-      matrix:
-        os: [ ubuntu-22.04 ]
-        
-    # Timeout after
-    timeout-minutes: 90
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    # Protobuf isnt cached if any steps fail, hence it is isolated in its own job
-    steps:
-      # Setup github for protobuf 3.7.0
-      - name: Cache protobuf library
-        id: cache-protobuf
-        uses: actions/cache@v3
-        with:
-          path: protobuf
-          key: ${{ runner.os }}-protobuf-${{ matrix.os }}
-
-      - name: Build protobuf library
-        if: steps.cache-protobuf.outputs.cache-hit != 'true'
-        run: |
-          git clone https://github.com/protocolbuffers/protobuf.git protobuf
-          cd protobuf
-          git checkout v3.7.0
-          git submodule update --init --recursive
-          ./autogen.sh
-          ./autogen.sh
-          ./configure
-          make
-          make check
-      - name: Install protobuf library
-        timeout-minutes: 2
-        run: |
-          cd protobuf
-          sudo make install
-          sudo ldconfig
-
-      # If this job was cancelled by protobuf install, the cache is likely corrupt
-      # See instructions on how to reset the cache - https://wiki.rdkcentral.com/display/ASP/Github+workflow+Failures
-      - name: Is Cancelled
-        if: cancelled()
-        run: |
-          echo "If this job was cancelled due to 'Install protobuf library' timeout, the cache is likely corrupt and needs deleting! (see https://wiki.rdkcentral.com/display/ASP/Github+workflow+Failures)" >> $GITHUB_STEP_SUMMARY
-
   # This job sets up the repo with the dependancies then runs the tests
   build-test:
     name: Build and test build_ut
-    # Wait for protobuf to be cached first
-    needs: download-protobuf
     # Runs on ubuntu
     runs-on: ubuntu-22.04
-
-    strategy:
-      matrix:
-        os: [ ubuntu-22.04 ]
 
     # Timeout after
     timeout-minutes: 60
@@ -121,24 +65,9 @@ jobs:
 
       # Setup github for protobuf 3.7.0
       # Protobuf should always be cached here
-      - name: Cache protobuf library
-        id: cache-protobuf
-        uses: actions/cache@v3
-        with:
-          path: protobuf
-          key: ${{ runner.os }}-protobuf-${{ matrix.os }}
-          
-      - name: Check cache
-        if: steps.cache-protobuf.outputs.cache-hit != 'true'
+      - name: Install protobuf
         run: |
-          exit 1
-
-      - name: Install protobuf library
-        timeout-minutes: 2
-        run: |
-          cd protobuf
-          sudo make install
-          sudo ldconfig
+          sudo apt-get install protobuf-compiler
 
       # If this job was cancelled by protobuf install, the cache is likely corrupt
       # See instructions on how to reset the cache - https://wiki.rdkcentral.com/display/ASP/Github+workflow+Failures
