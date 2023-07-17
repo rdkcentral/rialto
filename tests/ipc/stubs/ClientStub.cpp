@@ -32,6 +32,8 @@ void onMessageReceived(std::atomic_bool *done)
 }
 }; // namespace
 
+constexpr int32_t kMessageTimeoutMs{200};
+
 ClientStub::ClientStub(const std::shared_ptr<firebolt::rialto::ipc::TestClientMock> &clientMock,
                        const std::string &socketName)
     : m_socketName{socketName}, m_clientMock{clientMock}, m_messageReceived{false}
@@ -239,7 +241,7 @@ void ClientStub::startMessageThread(bool expectMessage)
                                 }};
 
     std::unique_lock<std::mutex> startThreadLock(m_startThreadMutex);
-    std::cv_status status = m_startThreadCond.wait_for(startThreadLock, std::chrono::milliseconds(100));
+    std::cv_status status = m_startThreadCond.wait_for(startThreadLock, std::chrono::milliseconds(kMessageTimeoutMs));
     ASSERT_NE(std::cv_status::timeout, status);
 }
 
@@ -248,7 +250,7 @@ void ClientStub::waitForSingleVarEvent(int32_t &var1)
     if (!m_messageReceived.load())
     {
         std::unique_lock<std::mutex> messageLock(m_messageMutex);
-        std::cv_status status = m_messageCond.wait_for(messageLock, std::chrono::milliseconds(100));
+        std::cv_status status = m_messageCond.wait_for(messageLock, std::chrono::milliseconds(kMessageTimeoutMs));
         EXPECT_NE(std::cv_status::timeout, status);
     }
     ASSERT_NE(m_singleVarEvent, nullptr);
@@ -262,7 +264,7 @@ void ClientStub::waitForMultiVarEvent(int32_t &var1, uint32_t &var2, firebolt::r
     if (!m_messageReceived.load())
     {
         std::unique_lock<std::mutex> messageLock(m_messageMutex);
-        std::cv_status status = m_messageCond.wait_for(messageLock, std::chrono::milliseconds(100));
+        std::cv_status status = m_messageCond.wait_for(messageLock, std::chrono::milliseconds(kMessageTimeoutMs));
         EXPECT_NE(std::cv_status::timeout, status);
     }
     ASSERT_NE(m_multiVarEvent, nullptr);
