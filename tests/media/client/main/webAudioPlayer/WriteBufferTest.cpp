@@ -51,7 +51,6 @@ protected:
 
 TEST_F(RialtoClientWebAudioPlayerWriteBufferTest, webAudoSharedInfoIsNullError)
 {
-    std::shared_ptr<WebAudioShmInfo> notUsedWebAudioShmInfo;
     EXPECT_FALSE(m_webAudioPlayer->writeBuffer(m_numberOfFrames, m_dataSrc.data()));
 }
 

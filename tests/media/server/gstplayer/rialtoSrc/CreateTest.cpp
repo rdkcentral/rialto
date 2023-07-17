@@ -65,6 +65,6 @@ TEST_F(RialtoServerCreateGstSrcTest, Create)
     EXPECT_CALL(*m_glibWrapperFactoryMock, getGlibWrapper()).WillOnce(Return(m_glibWrapperMock));
 
     EXPECT_NO_THROW(
-        gstSrc = std::make_unique<GstSrc>(m_gstWrapperFactoryMock, m_glibWrapperFactoryMock, m_decryptorFactoryMock););
+        gstSrc = std::make_unique<GstSrc>(m_gstWrapperFactoryMock, m_glibWrapperFactoryMock, m_decryptorFactoryMock));
     EXPECT_NE(gstSrc, nullptr);
 }

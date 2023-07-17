@@ -8,10 +8,10 @@ on:
   workflow_dispatch:
 
 jobs:
-  build: 
-      runs-on: ubuntu-20.04 
+  build:
+    runs-on: ubuntu-22.04
 
-      steps:
+    steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
@@ -20,31 +20,23 @@ jobs:
           sudo apt-get update
           sudo apt-get install build-essential
           sudo apt-get install cmake
-          sudo apt-get install libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev libgstreamer1.0-dev
+          sudo apt-get install libunwind-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev libgstreamer1.0-dev
 
-      # Protobuf should always be cached here. Cached from the build_ut and valgrind_ut workflows
-      - name: Cache protobuf library
-        id: cache-protobuf-2
-        uses: actions/cache@v3
-        with:
-          path: protobuf
-          key: ${{ runner.os }}-protobuf-2
-
-      - name: Check cache
-        if: steps.cache-protobuf-2.outputs.cache-hit != 'true'
-        run: |
-          exit 1
-
-      - name: Install protobuf library
+      - name: Install protobuf
         timeout-minutes: 2
         run: |
-          cd protobuf
-          sudo make install
-          sudo ldconfig
+          sudo apt-get install protobuf-compiler
 
       - name: Build Rialto
-        run:
-          cmake . -B . -DNATIVE_BUILD=ON -DRIALTO_LOG_FATAL_ENABLED=OFF -DRIALTO_LOG_ERROR_ENABLED=OFF -DRIALTO_LOG_WARN_ENABLED=OFF -DRIALTO_LOG_MIL_ENABLED=OFF -DRIALTO_LOG_INFO_ENABLED=OFF -DRIALTO_LOG_DEBUG_ENABLED=OFF >> output_file.txt 2>&1
+        run: |
+          cmake . -B build -DNATIVE_BUILD=ON -DRIALTO_BUILD_TYPE="Debug" &> output_file.txt
+          if [ $? -eq 0 ]
+          then
+            make -C build &>> output_file.txt
+          else
+            exit 1
+          fi
+
 
       - name: Report Build Status Success
         if: success()

@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-#include "open_cdm.h"
+#include "opencdm/open_cdm.h"
 
 extern "C"
 {
