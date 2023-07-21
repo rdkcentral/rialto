@@ -242,19 +242,19 @@ def AddValgrind(suite, outputToFile, outputToXml):
 def generateCoverageReport(outputDir, resultsFile):
     lcovCmd = ["lcov", "--capture", "--directory", ".", "--output-file", "coverage.info", "--exclude", "/usr/*",
                "--exclude", "*build/*", "--exclude", "*tests/*", "--exclude", "*GstWrapper*", "--exclude",
-               "*GlibWrapper*"]
+               "*GlibWrapper*", "--filter", "brace,function,trivial"]
     if resultsFile:
         lcovStatus = runcmd(lcovCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
     else:
         lcovStatus = runcmd(lcovCmd, cwd=os.getcwd() + '/' + outputDir, stderr=subprocess.STDOUT)
     if not lcovStatus:
         return False
-    genHtmlCmd = ["genhtml", "coverage.info", "--output-directory", "gh_pages/coverage_report"]
+    genHtmlCmd = ["genhtml", "coverage.info", "--output-directory", "gh_pages/coverage_report", "--filter", "brace,function,trivial"]
     if resultsFile:
         genHtmlStatus = runcmd(genHtmlCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
     else:
         genHtmlStatus = runcmd(genHtmlCmd, cwd=os.getcwd() + '/' + outputDir, stderr=subprocess.STDOUT)
-    genStatsCmd = ["lcov", "--summary", "coverage.info"]
+    genStatsCmd = ["lcov", "--summary", "coverage.info", "--filter", "brace,function,trivial"]
     statsFile = open(os.getcwd() + '/' + outputDir + '/' + "coverage_statistics.txt", "w")
     if statsFile:
         genStatsStatus = runcmd(genStatsCmd, cwd=os.getcwd() + '/' + outputDir, stdout=statsFile, stderr=subprocess.STDOUT)

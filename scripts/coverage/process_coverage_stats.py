@@ -34,13 +34,15 @@ def parse_statistics(file_path):
     try:
         file = open(file_path, "r")
         lines = file.readlines()
-        covered_lines_str = lines[2][15:lines[2].find('%')]
-        covered_functions_str = lines[3][15:lines[3].find('%')]
+        covered_lines_line = [i for i in lines if "lines......" in i][0]
+        covered_functions_line = [i for i in lines if "functions.." in i][0]
+        covered_lines_str = covered_lines_line[15:covered_lines_line.find('%')]
+        covered_functions_str = covered_functions_line[15:covered_functions_line.find('%')]
         file.close()
         return (float(covered_lines_str), float(covered_functions_str))
     except:
         write_output("Can't compare coverage stats - Could not open statistics file")
-        sys.exit("Could not open statistics file...")
+        return (0.0, 0.0)
 
 def compare_coverage(master_stats, current_stats):
     output_text = "Coverage statistics of your commit:\n"
