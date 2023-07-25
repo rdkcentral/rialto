@@ -32,6 +32,7 @@ target_include_directories(
 
         INTERFACE
         ipc
+        gstplayerinterface
         main
         service
         wrappers
