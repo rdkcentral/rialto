@@ -23,7 +23,6 @@ jobs:
           sudo apt-get install libunwind-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev libgstreamer1.0-dev
 
       - name: Install protobuf
-        timeout-minutes: 2
         run: |
           sudo apt-get install protobuf-compiler
 
@@ -47,7 +46,7 @@ jobs:
       - name: Upload Logs on Failure
         uses: actions/upload-artifact@v3
         if: failure()
-        with: 
+        with:
           name: Output Logs
           path: |
             output_file.txt
