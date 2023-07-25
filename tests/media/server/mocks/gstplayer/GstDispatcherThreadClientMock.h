@@ -28,8 +28,8 @@ namespace firebolt::rialto::server
 class GstDispatcherThreadClientMock : public IGstDispatcherThreadClient
 {
 public:
-    GstDispatcherThreadClientMock() = default;
-    virtual ~GstDispatcherThreadClientMock() = default;
+    GstDispatcherThreadClientMock();
+    virtual ~GstDispatcherThreadClientMock();
 
     MOCK_METHOD(void, handleBusMessage, (GstMessage * message), (override));
 };

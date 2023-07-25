@@ -28,8 +28,25 @@ set( CMAKE_INCLUDE_CURRENT_DIR ON )
 add_library(
         RialtoServerGstPlayerMocks STATIC
 
-        GstWrapperMock.cpp
+        GenericPlayerTaskFactoryMock.cpp
+        GlibWrapperFactoryMock.cpp
         GlibWrapperMock.cpp
+        GstDecryptorElementFactoryMock.cpp
+        GstDispatcherThreadClientMock.cpp
+        GstDispatcherThreadFactoryMock.cpp
+        GstDispatcherThreadMock.cpp
+        GstGenericPlayerPrivateMock.cpp
+        GstProtectionMetadataWrapperFactoryMock.cpp
+        GstProtectionMetadataWrapperMock.cpp
+        GstSrcFactoryMock.cpp
+        GstSrcMock.cpp
+        GstWebAudioPlayerPrivateMock.cpp
+        GstWrapperFactoryMock.cpp
+        GstWrapperMock.cpp
+        PlayerTaskMock.cpp
+        WebAudioPlayerTaskFactoryMock.cpp
+        WorkerThreadFactoryMock.cpp
+        WorkerThreadMock.cpp
         )
 
 target_include_directories(

@@ -28,6 +28,9 @@ namespace firebolt::rialto::server
 class GstProtectionMetadataWrapperMock : public IGstProtectionMetadataWrapper
 {
 public:
+    GstProtectionMetadataWrapperMock();
+    virtual ~GstProtectionMetadataWrapperMock();
+
     MOCK_METHOD(GstMeta *, addProtectionMetadata, (GstBuffer * gstBuffer, GstRialtoProtectionData &data), (override));
     MOCK_METHOD(GstRialtoProtectionData *, getProtectionMetadataData, (GstBuffer * gstBuffer), (override));
     MOCK_METHOD(void, removeProtectionMetadata, (GstBuffer * gstBuffer), (override));

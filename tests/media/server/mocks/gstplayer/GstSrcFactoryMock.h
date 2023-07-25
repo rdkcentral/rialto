@@ -29,8 +29,8 @@ namespace firebolt::rialto::server
 class GstSrcFactoryMock : public IGstSrcFactory
 {
 public:
-    GstSrcFactoryMock() = default;
-    virtual ~GstSrcFactoryMock() = default;
+    GstSrcFactoryMock();
+    virtual ~GstSrcFactoryMock();
 
     MOCK_METHOD(std::shared_ptr<IGstSrc>, getGstSrc, (), (override));
 };

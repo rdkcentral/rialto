@@ -28,6 +28,9 @@ namespace firebolt::rialto::server
 class GenericPlayerTaskFactoryMock : public IGenericPlayerTaskFactory
 {
 public:
+    GenericPlayerTaskFactoryMock();
+    virtual ~GenericPlayerTaskFactoryMock();
+
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createAttachSamples,
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player,
                  const IMediaPipeline::MediaSegmentVector &mediaSegments),

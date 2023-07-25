@@ -17,23 +17,10 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_GLIB_WRAPPER_FACTORY_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_GLIB_WRAPPER_FACTORY_MOCK_H_
-
-#include "IGlibWrapper.h"
-#include <gmock/gmock.h>
-#include <memory>
+#include "GstDispatcherThreadClientMock.h"
 
 namespace firebolt::rialto::server
 {
-class GlibWrapperFactoryMock : public IGlibWrapperFactory
-{
-public:
-    GlibWrapperFactoryMock();
-    virtual ~GlibWrapperFactoryMock();
-
-    MOCK_METHOD(std::shared_ptr<IGlibWrapper>, getGlibWrapper, (), (override));
-};
+GstDispatcherThreadClientMock::GstDispatcherThreadClientMock(){};
+GstDispatcherThreadClientMock::~GstDispatcherThreadClientMock(){};
 } // namespace firebolt::rialto::server
-
-#endif // FIREBOLT_RIALTO_SERVER_GLIB_WRAPPER_FACTORY_MOCK_H_

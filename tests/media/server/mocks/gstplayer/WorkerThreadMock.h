@@ -29,6 +29,9 @@ namespace firebolt::rialto::server
 class WorkerThreadMock : public IWorkerThread
 {
 public:
+    WorkerThreadMock();
+    virtual ~WorkerThreadMock();
+
     MOCK_METHOD(void, stop, (), (override));
     MOCK_METHOD(void, join, (), (override));
     MOCK_METHOD(void, enqueueTask, (std::unique_ptr<IPlayerTask> && task), (override));

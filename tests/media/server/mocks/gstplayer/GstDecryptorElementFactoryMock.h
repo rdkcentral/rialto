@@ -29,8 +29,8 @@ namespace firebolt::rialto::server
 class GstDecryptorElementFactoryMock : public IGstDecryptorElementFactory
 {
 public:
-    GstDecryptorElementFactoryMock() = default;
-    virtual ~GstDecryptorElementFactoryMock() = default;
+    GstDecryptorElementFactoryMock();
+    virtual ~GstDecryptorElementFactoryMock();
 
     MOCK_METHOD(GstElement *, createDecryptorElement,
                 (const gchar *name, firebolt::rialto::server::IDecryptionService *decryptionService,
