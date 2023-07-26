@@ -71,6 +71,8 @@ public:
 
     void gstInit(int *argc, char ***argv) override { gst_init(argc, argv); }
 
+    void gstDeinit() override { gst_deinit(); }
+
     GstPlugin *gstRegistryFindPlugin(GstRegistry *registry, const gchar *name) override
     {
         return gst_registry_find_plugin(registry, name);

@@ -32,7 +32,7 @@ public:
     virtual ~GstSrcMock() = default;
 
     MOCK_METHOD(void, initSrc, (), (override));
-    MOCK_METHOD(void, setupAndAddAppArc,
+    MOCK_METHOD(void, setupAndAddAppSrc,
                 (IDecryptionService * decryptionService, GstElement *element, StreamInfo &streamInfo,
                  GstAppSrcCallbacks *callbacks, gpointer userData, firebolt::rialto::MediaSourceType type),
                 (override));

@@ -62,6 +62,7 @@ target_link_libraries(
         RialtoServerIpc
         RialtoServerMain
         RialtoServerService
+        protobuf::libprotobuf
 )
 
 install(

@@ -35,6 +35,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <thread>
+#include <google/protobuf/service.h>
 
 // NOLINT(build/filename_format)
 
@@ -69,8 +70,13 @@ int main(int argc, char *argv[])
                                                                            controlService};
     if (!serviceManager.initialize(argc, argv))
     {
+        firebolt::rialto::server::gstDeinitalise();
         return EXIT_FAILURE;
     }
     serviceManager.startService();
+
+    firebolt::rialto::server::gstDeinitalise();
+    google::protobuf::ShutdownProtobufLibrary();
+
     return EXIT_SUCCESS;
 }
