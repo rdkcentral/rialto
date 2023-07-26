@@ -17,6 +17,8 @@
 #limitations under the License.
 #
 
+set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CMAKE_COMMAND} -E time")
+
 add_gtests(RialtoServerGstPlayerUnitTests
 
     #GstGenericPlayer unittests
