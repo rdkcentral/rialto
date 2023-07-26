@@ -29,7 +29,7 @@ namespace firebolt::rialto::server::ipc
 class SessionManagementServerMock : public ISessionManagementServer
 {
 public:
-    MOCK_METHOD(bool, initialize, (const std::string &socketName), (override));
+    MOCK_METHOD(bool, initialize, (const std::string &socketName, unsigned int socketPermissions), (override));
     MOCK_METHOD(void, start, (), (override));
     MOCK_METHOD(void, stop, (), (override));
     MOCK_METHOD(void, setLogLevels,

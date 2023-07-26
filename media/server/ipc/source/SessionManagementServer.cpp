@@ -59,7 +59,7 @@ SessionManagementServer::~SessionManagementServer()
     }
 }
 
-bool SessionManagementServer::initialize(const std::string &socketName)
+bool SessionManagementServer::initialize(const std::string &socketName, unsigned int socketPermissions)
 {
     RIALTO_SERVER_LOG_INFO("Initializing Session Management Server. Socket name: %s", socketName.c_str());
     if (!m_ipcServer)
