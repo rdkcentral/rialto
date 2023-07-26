@@ -33,6 +33,13 @@ namespace firebolt::rialto::server
  * @param[in] argv    : Vector of C strings each containing a command line argument.
  */
 bool gstInitalise(int argc, char **argv);
+
+/**
+ * @brief Deinitalise gstreamer.
+ *
+ */
+bool gstDeinitalise();
+
 }; // namespace firebolt::rialto::server
 
 #endif // FIREBOLT_RIALTO_SERVER_GST_INIT_H_

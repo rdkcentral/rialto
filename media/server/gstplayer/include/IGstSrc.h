@@ -96,7 +96,7 @@ public:
      * @param[in] userData  : Data to be passed to the callbacks.
      * @param[in] type      : The media type of the source.
      */
-    virtual void setupAndAddAppArc(IDecryptionService *decryptionService, GstElement *source, StreamInfo &streamInfo,
+    virtual void setupAndAddAppSrc(IDecryptionService *decryptionService, GstElement *source, StreamInfo &streamInfo,
                                    GstAppSrcCallbacks *callbacks, gpointer userData,
                                    firebolt::rialto::MediaSourceType type) = 0;
 

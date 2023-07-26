@@ -77,6 +77,12 @@ public:
     virtual void gstInit(int *argc, char ***argv) = 0;
 
     /**
+     * @brief Deinitalise gstreamer.
+     *
+     */
+    virtual void gstDeinit() = 0;
+
+    /**
      * @brief Finds the plugin with the given name.
      *
      * @param[in] registry  : The registry to search.

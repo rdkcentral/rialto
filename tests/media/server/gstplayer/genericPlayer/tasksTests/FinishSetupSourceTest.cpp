@@ -65,7 +65,7 @@ protected:
 
     void expectFinishSetupSource()
     {
-        EXPECT_CALL(*m_gstSrc, setupAndAddAppArc(std::dynamic_pointer_cast<firebolt::rialto::server::IDecryptionService>(
+        EXPECT_CALL(*m_gstSrc, setupAndAddAppSrc(std::dynamic_pointer_cast<firebolt::rialto::server::IDecryptionService>(
                                                      m_decryptionServiceMock)
                                                      .get(),
                                                  &m_source, m_streamInfoAudio, _, &m_gstPlayer,
@@ -79,7 +79,7 @@ protected:
                     m_audioUserData = userData;
                 }));
         EXPECT_CALL(m_gstPlayer, notifyNeedMediaData(true, false));
-        EXPECT_CALL(*m_gstSrc, setupAndAddAppArc(std::dynamic_pointer_cast<firebolt::rialto::server::IDecryptionService>(
+        EXPECT_CALL(*m_gstSrc, setupAndAddAppSrc(std::dynamic_pointer_cast<firebolt::rialto::server::IDecryptionService>(
                                                      m_decryptionServiceMock)
                                                      .get(),
                                                  &m_source, m_streamInfoVideo, _, &m_gstPlayer,
