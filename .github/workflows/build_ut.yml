@@ -54,7 +54,7 @@ jobs:
 
       # Setup github for python 3.8
       - name: setup python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: 3.8
 
@@ -77,13 +77,6 @@ jobs:
       - name: Install protobuf
         run: |
           sudo apt-get install protobuf-compiler
-
-      # If this job was cancelled by protobuf install, the cache is likely corrupt
-      # See instructions on how to reset the cache - https://wiki.rdkcentral.com/display/ASP/Github+workflow+Failures
-      - name: Is Cancelled
-        if: cancelled()
-        run: |
-          echo "If this job was cancelled due to 'Install protobuf library' timeout, the cache is likely corrupt and needs deleting! (see https://wiki.rdkcentral.com/display/ASP/Github+workflow+Failures)" >> $GITHUB_STEP_SUMMARY
 
       # Run the build script
       - name: build_ut.py script
