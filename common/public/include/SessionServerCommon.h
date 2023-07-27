@@ -71,6 +71,23 @@ struct AppConfig
 };
 
 /**
+ * @brief Available permissions
+ */
+constexpr unsigned int kRead{4};
+constexpr unsigned int kWrite{2};
+constexpr unsigned int kExecute{1};
+
+/**
+ * @brief Socket permissions
+ */
+struct SocketPermissions
+{
+    unsigned int userPermissions{kRead | kWrite};
+    unsigned int groupPermissions{kRead | kWrite};
+    unsigned int otherPermissions{kRead | kWrite};
+};
+
+/**
  * @brief Configuration data for server manager
  */
 struct ServerManagerConfig
@@ -82,6 +99,7 @@ struct ServerManagerConfig
     std::chrono::milliseconds sessionServerStartupTimeout{
         0};                                      /* Custom session server startup timeout. If 0 - timeout disabled. */
     std::chrono::seconds healthcheckInterval{5}; /* Defines how often healthcheck messages will be sent */
+    SocketPermissions sessionManagementSocketPermissions{}; /* Defines permissions of session management socket */
 };
 
 } // namespace firebolt::rialto::common
