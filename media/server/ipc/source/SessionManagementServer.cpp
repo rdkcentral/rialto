@@ -78,8 +78,7 @@ bool SessionManagementServer::initialize(const std::string &socketName, unsigned
         return false;
     }
 
-    // set full read / write access for everyone on the socket for now
-    if (chmod(socketName.c_str(), 0777) != 0)
+    if (chmod(socketName.c_str(), socketPermissions) != 0)
     {
         RIALTO_SERVER_LOG_SYS_WARN(errno, "Failed to change the permissions on the IPC socket");
     }
