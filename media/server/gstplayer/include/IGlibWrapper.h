@@ -20,7 +20,8 @@
 #ifndef FIREBOLT_RIALTO_SERVER_I_GLIB_WRAPPER_H_
 #define FIREBOLT_RIALTO_SERVER_I_GLIB_WRAPPER_H_
 
-#include <gst/gst.h>
+#include <glib.h>
+#include <glib-object.h>
 #include <memory>
 #include <stdint.h>
 #include <string>

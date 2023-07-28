@@ -22,8 +22,16 @@
 
 #include "MediaCommon.h"
 #include <cstdint>
-#include <gst/gst.h>
 #include <vector>
+
+#ifndef RIALTO_UNITTEST_MOCKS
+#include <gst/gst.h>
+#else
+struct _GstBuffer;
+typedef struct _GstBuffer GstBuffer;
+struct _GstCaps;
+typedef struct _GstCaps GstCaps;
+#endif
 
 namespace firebolt::rialto::server
 {

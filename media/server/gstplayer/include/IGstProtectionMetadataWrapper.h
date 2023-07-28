@@ -20,7 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_I_GST_PROTECTION_METADATA_WRAPPER_H_
 #define FIREBOLT_RIALTO_SERVER_I_GST_PROTECTION_METADATA_WRAPPER_H_
 
-#include "GstProtectionMetadata.h"
+#include "GstRialtoProtectionData.h"
 
 namespace firebolt::rialto::server
 {

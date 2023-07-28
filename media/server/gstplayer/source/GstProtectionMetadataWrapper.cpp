@@ -19,6 +19,7 @@
 
 #include "GstProtectionMetadataWrapper.h"
 #include "GstProtectionMetadataWrapperFactory.h"
+#include "GstProtectionMetadata.h"
 #include "RialtoServerLogging.h"
 
 namespace firebolt::rialto::server

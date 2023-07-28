@@ -20,10 +20,8 @@
 #ifndef FIREBOLT_RIALTO_SERVER_I_GST_PROTECTION_METADATA_WRAPPER_FACTORY_H_
 #define FIREBOLT_RIALTO_SERVER_I_GST_PROTECTION_METADATA_WRAPPER_FACTORY_H_
 
-#include "IDecryptionService.h"
 #include "IGstProtectionMetadataWrapper.h"
 #include "IGstWrapper.h"
-#include <gst/gst.h>
 #include <memory>
 
 namespace firebolt::rialto::server

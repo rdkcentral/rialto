@@ -25,7 +25,6 @@
 #include "IGstGenericPlayerPrivate.h"
 #include "IGstWrapper.h"
 #include "IPlayerTask.h"
-#include <gst/gst.h>
 #include <memory>
 
 namespace firebolt::rialto::server::tasks::generic

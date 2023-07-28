@@ -20,29 +20,13 @@
 #ifndef FIREBOLT_RIALTO_SERVER_GST_PROTECTION_METADATA_H_ // NOLINT(build/header_guard)
 #define FIREBOLT_RIALTO_SERVER_GST_PROTECTION_METADATA_H_
 
-#include "IDecryptionService.h"
-#include "IGstWrapper.h"
+#include "GstRialtoProtectionData.h"
 #include <gst/gst.h>
 
 G_BEGIN_DECLS
 
 #define GST_RIALTO_PROTECTION_METADATA_GET_TYPE (rialto_eme_protection_metadata_get_type())
 #define GST_RIALTO_PROTECTION_METADATA_INFO (rialto_mse_protection_metadata_get_info())
-
-struct GstRialtoProtectionData
-{
-    int32_t keySessionId = 0;
-    uint32_t subsampleCount = 0;
-    uint32_t initWithLast15 = 0;
-    GstBuffer *key = nullptr;
-    GstBuffer *iv = nullptr;
-    GstBuffer *subsamples = nullptr;
-    firebolt::rialto::CipherMode cipherMode = firebolt::rialto::CipherMode::UNKNOWN;
-    uint32_t crypt = 0;
-    uint32_t skip = 0;
-    bool encryptionPatternSet = false;
-    firebolt::rialto::server::IDecryptionService *decryptionService = nullptr;
-};
 
 struct _GstRialtoProtectionMetadata
 {

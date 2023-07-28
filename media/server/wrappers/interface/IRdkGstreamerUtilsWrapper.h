@@ -21,9 +21,17 @@
 #define FIREBOLT_RIALTO_SERVER_I_RDK_GSTREAMER_UTILS_WRAPPER_H_
 
 #include <cstdint>
-#include <gst/gst.h>
 #include <memory>
 #include <string>
+
+#ifndef RIALTO_UNITTEST_MOCKS
+#include <gst/gst.h>
+#else
+struct _GstElement;
+typedef struct _GstElement GstElement;
+struct _GstCaps;
+typedef struct _GstCaps GstCaps;
+#endif
 
 namespace firebolt::rialto::server
 {

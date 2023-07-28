@@ -20,7 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_I_GST_WEB_AUDIO_PLAYER_PRIVATE_H_
 #define FIREBOLT_RIALTO_SERVER_I_GST_WEB_AUDIO_PLAYER_PRIVATE_H_
 
-#include <gst/gst.h>
+#include "IGstWrapper.h"
 
 namespace firebolt::rialto::server
 {

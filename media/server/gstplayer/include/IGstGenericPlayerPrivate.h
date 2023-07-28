@@ -21,8 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_I_GST_GENERIC_PLAYER_PRIVATE_H_
 
 #include "IMediaPipeline.h"
-#include <gst/app/gstappsrc.h>
-#include <gst/gst.h>
+#include "IGstWrapper.h"
 #include <memory>
 #include <vector>
 

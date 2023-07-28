@@ -21,9 +21,8 @@
 #define FIREBOLT_RIALTO_SERVER_I_GST_SRC_H_
 
 #include "IDecryptionService.h"
+#include "IGstWrapper.h"
 #include <MediaCommon.h>
-#include <gst/app/gstappsrc.h>
-#include <gst/gst.h>
 #include <memory>
 #include <stdint.h>
 #include <unordered_map>

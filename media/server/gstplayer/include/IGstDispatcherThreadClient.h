@@ -20,7 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_I_GST_DISPATCHER_THREAD_CLIENT_H_
 #define FIREBOLT_RIALTO_SERVER_I_GST_DISPATCHER_THREAD_CLIENT_H_
 
-#include <gst/gst.h>
+#include "IGstWrapper.h"
 
 namespace firebolt::rialto::server
 {

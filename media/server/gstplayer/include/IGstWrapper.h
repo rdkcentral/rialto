@@ -57,6 +57,8 @@ struct _GstEvent;
 typedef struct _GstEvent GstEvent;
 struct _GstAppSrc;
 typedef struct _GstAppSrc GstAppSrc;
+struct _GstMemory;
+typedef struct _GstMemory GstMemory;
 typedef struct {
   void      (*need_data)    (GstAppSrc *src, guint length, gpointer user_data);
   void      (*enough_data)  (GstAppSrc *src, gpointer user_data);
@@ -73,7 +75,7 @@ struct _GstPad;
 typedef struct _GstPad GstPad;
 typedef int GstFormat;
 typedef int GstSeekFlags;
-typedef intGstSeekType;
+typedef int GstSeekType;
 struct _GstCaps;
 typedef struct _GstCaps GstCaps;
 struct _GstBuffer;
@@ -82,18 +84,6 @@ struct _GstAllocator;
 typedef struct _GstAllocator GstAllocator;
 struct _GstAllocationParams;
 typedef struct _GstAllocationParams GstAllocationParams;
-typedef struct {
-  GstMemory *memory;
-  GstMapFlags flags;
-  guint8 *data;
-  gsize size;
-  gsize maxsize;
-  /*< protected >*/
-  gpointer user_data[4];
-
-  /*< private >*/
-  gpointer _gst_reserved[256];
-} GstMapInfo;
 typedef int GstMapFlags;
 typedef guint64 GstClockTime;
 typedef int GstMessageType;
@@ -121,10 +111,30 @@ typedef struct _GstStreamVolume GstStreamVolume;
 typedef int GstStreamVolumeFormat;
 struct _GstPluginFeature;
 typedef struct _GstPluginFeature GstPluginFeature;
+typedef int GstBusSyncReply;
+struct _GstQuery;
+typedef struct _GstQuery GstQuery;
+struct _GstStaticCaps;
+typedef struct _GstStaticCaps GstStaticCaps;
 typedef gboolean        (*GstBusFunc)           (GstBus * bus, GstMessage * message, gpointer user_data);
 typedef GstBusSyncReply (*GstBusSyncHandler)    (GstBus * bus, GstMessage * message, gpointer user_data);
 typedef gboolean		(*GstPadQueryFunction)		(GstPad *pad, GstObject *parent,
                                                                  GstQuery *query);
+typedef struct {
+  GstMemory *memory;
+  GstMapFlags flags;
+  guint8 *data;
+  gsize size;
+  gsize maxsize;
+  /*< protected >*/
+  gpointer user_data[4];
+
+  /*< private >*/
+  gpointer _gst_reserved[256];
+} GstMapInfo;
+#define GST_TYPE_BUFFER 1
+#define GST_TYPE_BITMASK 2
+#define GST_TYPE_FRACTION 3
 #endif
 
 #if 0

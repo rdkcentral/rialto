@@ -22,7 +22,6 @@
 
 #include "IDecryptionService.h"
 #include "IGstWrapper.h"
-#include <gst/gst.h>
 #include <memory>
 
 namespace firebolt::rialto::server

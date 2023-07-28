@@ -21,10 +21,10 @@
 #define FIREBOLT_RIALTO_SERVER_GENERIC_PLAYER_CONTEXT_H_
 
 #include "IGstSrc.h"
+#include "IGstWrapper.h"
 #include "IRdkGstreamerUtilsWrapper.h"
 #include "ITimer.h"
 #include "MediaCommon.h"
-#include <gst/gst.h>
 #include <list>
 #include <map>
 #include <memory>

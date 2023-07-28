@@ -23,11 +23,11 @@
 #include "GenericPlayerContext.h"
 #include "IDataReader.h"
 #include "IGstGenericPlayerPrivate.h"
+#include "IGstWrapper.h"
 #include "IMediaPipeline.h"
 #include "IPlayerTask.h"
 #include "MediaCommon.h"
 #include <cstdint>
-#include <gst/app/gstappsrc.h>
 #include <memory>
 
 namespace firebolt::rialto::server
