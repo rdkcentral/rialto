@@ -21,6 +21,7 @@
 #include "IGlibWrapper.h"
 #include "IGstWrapper.h"
 #include <string.h>
+#include <vector>
 
 namespace
 {
@@ -29,34 +30,47 @@ const char *underflowSignals[]{"buffer-underflow-callback", "vidsink-underflow-c
 
 namespace firebolt::rialto::server
 {
-bool isVideoDecoder(const IGstWrapper &gstWrapper, GstElement *element)
+
+static bool isElementType(const IGstWrapper &gstWrapper, GstElement *element, const std::vector<GstElementFactoryListType> &types)
 {
     if (!element)
     {
         return false;
     }
+
     GstElementFactory *factory{gstWrapper.gstElementGetFactory(element)};
     if (!factory)
     {
         return false;
     }
-    return gstWrapper.gstElementFactoryListIsType(factory, GST_ELEMENT_FACTORY_TYPE_DECODER) &&
-           gstWrapper.gstElementFactoryListIsType(factory, GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO);
+
+    bool result = true;
+    for (GstElementFactoryListType type : types)
+    {
+        result = result && gstWrapper.gstElementFactoryListIsType(factory, type);
+        if (!result)
+            break;
+    }
+
+    return result;
+}
+
+bool isVideoDecoder(const IGstWrapper &gstWrapper, GstElement *element)
+{
+    std::vector<GstElementFactoryListType> types{GST_ELEMENT_FACTORY_TYPE_DECODER, GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO};
+    return isElementType(gstWrapper, element, types);
 }
 
 bool isAudioDecoder(const IGstWrapper &gstWrapper, GstElement *element)
 {
-    if (!element)
-    {
-        return false;
-    }
-    GstElementFactory *factory{gstWrapper.gstElementGetFactory(element)};
-    if (!factory)
-    {
-        return false;
-    }
-    return gstWrapper.gstElementFactoryListIsType(factory, GST_ELEMENT_FACTORY_TYPE_DECODER) &&
-           gstWrapper.gstElementFactoryListIsType(factory, GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO);
+    std::vector<GstElementFactoryListType> types{GST_ELEMENT_FACTORY_TYPE_DECODER, GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO};
+    return isElementType(gstWrapper, element, types);
+}
+
+bool isVideoSink(const IGstWrapper &gstWrapper, GstElement *element)
+{
+    std::vector<GstElementFactoryListType> types{GST_ELEMENT_FACTORY_TYPE_SINK, GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO};
+    return isElementType(gstWrapper, element, types);
 }
 
 std::string getUnderflowSignalName(const IGlibWrapper &glibWrapper, GstElement *element)

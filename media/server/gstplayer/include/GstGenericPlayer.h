@@ -120,7 +120,8 @@ private:
     void scheduleAudioUnderflow() override;
     void scheduleVideoUnderflow() override;
     void scheduleAllSourcesAttached() override;
-    bool setWesterossinkRectangle() override;
+    bool setVideoSinkRectangle() override;
+    void setRectangleProperty(GstElement *sink) override;
     void notifyNeedMediaData(bool audioNotificationNeeded, bool videoNotificationNeeded) override;
     GstBuffer *createBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const override;
     void attachAudioData() override;

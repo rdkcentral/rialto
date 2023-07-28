@@ -80,11 +80,13 @@ SetupElement::~SetupElement()
 void SetupElement::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing SetupElement");
-    if (m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "westerossink"))
+
+    if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(m_element), "rectangle") &&
+        isVideoSink(*m_gstWrapper, m_element))
     {
         if (!m_context.pendingGeometry.empty())
         {
-            m_player.setWesterossinkRectangle();
+            m_player.setRectangleProperty(m_element);
         }
     }
 
@@ -120,4 +122,5 @@ void SetupElement::execute() const
 
     m_gstWrapper->gstObjectUnref(m_element);
 }
+
 } // namespace firebolt::rialto::server::tasks::generic

@@ -135,7 +135,7 @@ TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingGeometry)
                                                                 &m_element};
     EXPECT_CALL(*m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("westerossink"))).WillOnce(Return(true));
     EXPECT_CALL(*m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("amlhalasink"))).WillOnce(Return(false));
-    EXPECT_CALL(m_gstPlayer, setWesterossinkRectangle());
+    EXPECT_CALL(m_gstPlayer, setVideoSinkRectangle());
     expectSetupVideoElement();
     task.execute();
 }

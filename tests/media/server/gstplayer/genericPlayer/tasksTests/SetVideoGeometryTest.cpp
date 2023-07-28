@@ -47,7 +47,7 @@ TEST_F(SetVideoGeometryTest, shouldNotSetVideoGeometryWhenPipelineIsNull)
 TEST_F(SetVideoGeometryTest, shouldSetVideoGeometry)
 {
     firebolt::rialto::server::tasks::generic::SetVideoGeometry task{m_context, m_gstPlayer, m_rectangle};
-    EXPECT_CALL(m_gstPlayer, setWesterossinkRectangle());
+    EXPECT_CALL(m_gstPlayer, setVideoSinkRectangle());
     task.execute();
     EXPECT_EQ(m_context.pendingGeometry, m_rectangle);
 }

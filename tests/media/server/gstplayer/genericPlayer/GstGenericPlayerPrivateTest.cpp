@@ -206,7 +206,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldScheduleVideoUnderflowWithUnderflowDis
 TEST_F(GstGenericPlayerPrivateTest, shouldNotSetVideoRectangleWhenVideoSinkIsNull)
 {
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, CharStrMatcher("video-sink"), _));
-    EXPECT_FALSE(m_sut->setWesterossinkRectangle());
+    EXPECT_FALSE(m_sut->setVideoSinkRectangle());
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldNotSetVideoRectangleWhenVideoSinkDoesNotHaveRectangleProperty)
@@ -221,7 +221,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldNotSetVideoRectangleWhenVideoSinkDoesN
             }));
     EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, CharStrMatcher("rectangle"))).WillOnce(Return(nullptr));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&videoSink));
-    EXPECT_FALSE(m_sut->setWesterossinkRectangle());
+    EXPECT_FALSE(m_sut->setVideoSinkRectangle());
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldSetVideoRectangle)
@@ -239,7 +239,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldSetVideoRectangle)
         .WillOnce(Return(&rectangleSpec));
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(_, CharStrMatcher("rectangle")));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&videoSink));
-    EXPECT_TRUE(m_sut->setWesterossinkRectangle());
+    EXPECT_TRUE(m_sut->setVideoSinkRectangle());
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldNotifyNeedAudioData)

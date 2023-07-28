@@ -736,18 +736,14 @@ void GstGenericPlayer::setEos(const firebolt::rialto::MediaSourceType &type)
     }
 }
 
-bool GstGenericPlayer::setWesterossinkRectangle()
+bool GstGenericPlayer::setVideoSinkRectangle()
 {
     bool result = false;
     GstElement *videoSink = nullptr;
     m_glibWrapper->gObjectGet(m_context.pipeline, "video-sink", &videoSink, nullptr);
     if (videoSink && m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink), "rectangle"))
     {
-        char rect[64];
-        snprintf(rect, sizeof(rect), "%d,%d,%d,%d", m_context.pendingGeometry.x, m_context.pendingGeometry.y,
-                 m_context.pendingGeometry.width, m_context.pendingGeometry.height);
-        m_glibWrapper->gObjectSet(videoSink, "rectangle", rect, nullptr);
-        m_context.pendingGeometry.clear();
+        setRectangleProperty(videoSink);
         result = true;
     }
     else
@@ -759,6 +755,15 @@ bool GstGenericPlayer::setWesterossinkRectangle()
         m_gstWrapper->gstObjectUnref(GST_OBJECT(videoSink));
 
     return result;
+}
+
+void GstGenericPlayer::setRectangleProperty(GstElement *sink)
+{
+    char rect[64];
+    snprintf(rect, sizeof(rect), "%d,%d,%d,%d", m_context.pendingGeometry.x, m_context.pendingGeometry.y,
+             m_context.pendingGeometry.width, m_context.pendingGeometry.height);
+    m_glibWrapper->gObjectSet(sink, "rectangle", rect, nullptr);
+    m_context.pendingGeometry.clear();
 }
 
 bool GstGenericPlayer::setWesterossinkSecondaryVideo()

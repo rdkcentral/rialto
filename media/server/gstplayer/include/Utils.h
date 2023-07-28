@@ -29,6 +29,7 @@ namespace firebolt::rialto::server
 {
 bool isVideoDecoder(const IGstWrapper &gstWrapper, GstElement *element);
 bool isAudioDecoder(const IGstWrapper &gstWrapper, GstElement *element);
+bool isVideoSink(const IGstWrapper &gstWrapper, GstElement *element);
 std::string getUnderflowSignalName(const IGlibWrapper &glibWrapper, GstElement *element);
 } // namespace firebolt::rialto::server
 

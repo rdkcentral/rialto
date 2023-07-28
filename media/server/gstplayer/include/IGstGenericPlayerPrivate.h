@@ -69,7 +69,13 @@ public:
      *
      * @retval true on success.
      */
-    virtual bool setWesterossinkRectangle() = 0;
+    virtual bool setVideoSinkRectangle() = 0;
+
+    /**
+     * @brief Sets rectangle property. Called by the worker thread.
+     *
+     */
+    virtual void setRectangleProperty(GstElement *sink) = 0;
 
     /**
      * @brief Sends NeedMediaData notification. Called by the worker thread.
