@@ -42,7 +42,6 @@ firebolt::rialto::common::SessionServerState convertSessionServerState(const ria
     }
     return firebolt::rialto::common::SessionServerState::ERROR;
 }
-constexpr unsigned int kDefaultSocketPermissions{0666};
 } // namespace
 
 namespace firebolt::rialto::server::ipc
@@ -95,12 +94,10 @@ void ServerManagerModuleService::setConfiguration(::google::protobuf::RpcControl
     common::MaxResourceCapabilitites maxResource{request->resources().maxplaybacks(),
                                                  request->resources().maxwebaudioplayers()};
     const auto clientDisplayName = request->has_clientdisplayname() ? request->clientdisplayname() : "";
-    const unsigned int socketPermissions = request->has_socketpermissions() ? request->socketpermissions()
-                                                                            : kDefaultSocketPermissions;
     bool success =
         m_sessionServerManager.setConfiguration(request->sessionmanagementsocketname(),
                                                 convertSessionServerState(request->initialsessionserverstate()),
-                                                maxResource, clientDisplayName, socketPermissions);
+                                                maxResource, clientDisplayName, request->socketpermissions());
     m_sessionServerManager.setLogLevels(static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().defaultloglevels()),
                                         static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().clientloglevels()),
                                         static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().sessionserverloglevels()),

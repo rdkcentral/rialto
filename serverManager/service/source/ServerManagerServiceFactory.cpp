@@ -18,6 +18,7 @@
  */
 
 #include "ServerManagerServiceFactory.h"
+#include "RialtoServerManagerLogging.h"
 #include "ServerManagerService.h"
 #include "ServiceContext.h"
 #include <memory>
@@ -26,9 +27,15 @@ namespace
 {
 unsigned int convertSocketPermissions(firebolt::rialto::common::SocketPermissions permissions) // copy param intentionally
 {
-    permissions.userPermissions <<= 6;
+    constexpr unsigned int kDefaultPermissions{0666};
+    if (permissions.ownerPermissions > 7 || permissions.groupPermissions > 7 || permissions.otherPermissions > 7)
+    {
+        RIALTO_SERVER_MANAGER_LOG_WARN("One of permissions values is out of bounds. Default permissions will be used");
+        return kDefaultPermissions;
+    }
+    permissions.ownerPermissions <<= 6;
     permissions.groupPermissions <<= 3;
-    return (permissions.userPermissions | permissions.groupPermissions | permissions.otherPermissions);
+    return (permissions.ownerPermissions | permissions.groupPermissions | permissions.otherPermissions);
 }
 } // namespace
 

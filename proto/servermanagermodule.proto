@@ -86,8 +86,8 @@ message SetConfigurationRequest {
     required SessionServerState initialSessionServerState = 2;
     required Resources resources = 3;
     required LogLevels logLevels = 4;
-    optional string clientDisplayName = 5;
-    optional uint32 socketPermissions = 6;
+    required uint32 socketPermissions = 5;
+    optional string clientDisplayName = 6;
 }
 message SetConfigurationResponse {
 }

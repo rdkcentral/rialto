@@ -82,7 +82,7 @@ constexpr unsigned int kExecute{1};
  */
 struct SocketPermissions
 {
-    unsigned int userPermissions{kRead | kWrite};
+    unsigned int ownerPermissions{kRead | kWrite};
     unsigned int groupPermissions{kRead | kWrite};
     unsigned int otherPermissions{kRead | kWrite};
 };
