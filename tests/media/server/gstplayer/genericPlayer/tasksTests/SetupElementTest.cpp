@@ -21,9 +21,7 @@
 #include "GenericPlayerContext.h"
 #include "GlibWrapperMock.h"
 #include "GstGenericPlayerPrivateMock.h"
-#include "GstWrapperMock.h"
 #include "Matchers.h"
-#include <gst/gst.h>
 #include <gtest/gtest.h>
 
 using testing::_;

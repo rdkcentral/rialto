@@ -17,8 +17,6 @@
 # limitations under the License.
 #
 
-add_compile_definitions( RIALTO_UNITTEST_MOCKS )
-
 add_subdirectory(gstplayer)
 add_subdirectory(ipc)
 add_subdirectory(main)

@@ -74,6 +74,14 @@ firebolt::rialto::IMediaPipeline::MediaSegmentVector buildVideoSamples()
 }
 } // namespace
 
+namespace firebolt::rialto
+{
+bool operator==(const Fraction &lhs, const Fraction &rhs)
+{
+    return lhs.numerator == rhs.numerator && lhs.denominator == rhs.denominator;
+}
+} // namespace firebolt::rialto
+
 class ReadShmDataAndAttachSamplesTest : public testing::Test
 {
 protected:
