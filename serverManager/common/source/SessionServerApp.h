@@ -66,6 +66,7 @@ private:
     bool initializeSockets();
     void setupStartupTimer();
     bool spawnSessionServer();
+    std::vector<char*> createArguments(int newSocket);
     void waitForChildProcess();
     void cancelStartupTimerInternal(); // to avoid calling virtual method in destructor
     std::string addAppSuffixToLogFile(const std::string &envVar) const;

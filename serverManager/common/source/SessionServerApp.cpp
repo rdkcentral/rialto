@@ -289,6 +289,33 @@ void SessionServerApp::setupStartupTimer()
     }
 }
 
+std::vector<char *> SessionServerApp::createArguments(int newSocket)
+{
+    const std::string appMgmtSocketStr{std::to_string(newSocket)};
+
+    std::vector<char *> appArguments;
+
+    const char *valgrindParams = getenv("VALGRIND_PARAMS");
+    if (valgrindParams)
+    {
+        std::string envVarsStr{valgrindParams};
+        size_t pos = 0;
+        while ((pos = envVarsStr.find(";")) != std::string::npos)
+        {
+            appArguments.push_back(strdup(envVarsStr.substr(0, pos).c_str()));
+            envVarsStr.erase(0, pos + 1);
+        }
+        appArguments.push_back(strdup(envVarsStr.c_str()));
+    }
+
+    appArguments.insert(appArguments.end(),
+                        {strdup(m_kSessionServerPath.c_str()), strdup(appMgmtSocketStr.c_str()), nullptr});
+
+
+
+    return appArguments;
+}
+
 bool SessionServerApp::spawnSessionServer()
 {
     pid_t childPid = vfork();
@@ -335,10 +362,20 @@ bool SessionServerApp::spawnSessionServer()
                 devNull = -1;
             }
         }
-        const std::string appMgmtSocketStr{std::to_string(newSocket)};
-        char *const appArguments[] = {strdup("/usr/bin/valgrind"), strdup("--num-callers=100"), strdup("--suppressions=rialto-native.supp"), strdup("--leak-check=full"), strdup(m_kSessionServerPath.c_str()), strdup(appMgmtSocketStr.c_str()), nullptr};
-        RIALTO_SERVER_MANAGER_LOG_ERROR("PID: %d, executing: \"%s\" \"%s\"", getpid(), appArguments[0], appArguments[1]);
-        execve(strdup("/usr/bin/valgrind"), appArguments, m_environmentVariables.data());
+
+        std::vector<char *> appArguments = createArguments(newSocket);
+
+        std::string launchParameters;
+        for (char *param : appArguments)
+        {
+            if (param)
+                launchParameters += std::string(param) + " ";
+        }
+        launchParameters.pop_back();
+
+        RIALTO_SERVER_MANAGER_LOG_MIL("PID: %d, executing: '%s'", getpid(), launchParameters.c_str());
+
+        execve(appArguments[0], appArguments.data(), m_environmentVariables.data());
         RIALTO_SERVER_MANAGER_LOG_SYS_ERROR(errno, "Unable to spawn RialtoSessionServer - execve problem");
         for (char *arg : appArguments)
         {
