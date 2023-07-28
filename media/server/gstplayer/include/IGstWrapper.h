@@ -20,14 +20,134 @@
 #ifndef FIREBOLT_RIALTO_SERVER_I_GST_WRAPPER_H_
 #define FIREBOLT_RIALTO_SERVER_I_GST_WRAPPER_H_
 
+#include <memory>
+#include <stdint.h>
+#include <string>
+#include <glib.h>
+#include <glib-object.h>
+
+#ifndef RIALTO_UNITTEST_MOCKS
 #include <gst/app/gstappsrc.h>
 #include <gst/audio/streamvolume.h>
 #include <gst/base/gstbasetransform.h>
 #include <gst/base/gstbytewriter.h>
 #include <gst/gst.h>
-#include <memory>
-#include <stdint.h>
-#include <string>
+#else
+struct _GstPlugin;
+typedef struct _GstPlugin GstPlugin;
+struct _GstRegistry;
+typedef struct _GstRegistry GstRegistry;
+struct _GstElementFactory;
+typedef struct _GstElementFactory GstElementFactory;
+struct _GstElement;
+typedef struct _GstElement GstElement;
+struct _GstObject;
+typedef struct _GstObject GstObject;
+struct _GstBin;
+typedef struct _GstBin GstBin;
+struct _GstBus;
+typedef struct _GstBus GstBus;
+struct _GstPipeline;
+typedef struct _GstPipeline GstPipeline;
+struct _GstMessage;
+typedef struct _GstMessage GstMessage;
+typedef int GstState;
+typedef int GstStateChangeReturn;
+struct _GstEvent;
+typedef struct _GstEvent GstEvent;
+struct _GstAppSrc;
+typedef struct _GstAppSrc GstAppSrc;
+typedef struct {
+  void      (*need_data)    (GstAppSrc *src, guint length, gpointer user_data);
+  void      (*enough_data)  (GstAppSrc *src, gpointer user_data);
+  gboolean  (*seek_data)    (GstAppSrc *src, guint64 offset, gpointer user_data);
+
+  /*< private >*/
+  gpointer     _gst_reserved[256];
+} GstAppSrcCallbacks;
+typedef int GstAppStreamType ;
+typedef int GstFlowReturn;
+struct _GstBaseTransform;
+typedef struct _GstBaseTransform GstBaseTransform;
+struct _GstPad;
+typedef struct _GstPad GstPad;
+typedef int GstFormat;
+typedef int GstSeekFlags;
+typedef intGstSeekType;
+struct _GstCaps;
+typedef struct _GstCaps GstCaps;
+struct _GstBuffer;
+typedef struct _GstBuffer GstBuffer;
+struct _GstAllocator;
+typedef struct _GstAllocator GstAllocator;
+struct _GstAllocationParams;
+typedef struct _GstAllocationParams GstAllocationParams;
+typedef struct {
+  GstMemory *memory;
+  GstMapFlags flags;
+  guint8 *data;
+  gsize size;
+  gsize maxsize;
+  /*< protected >*/
+  gpointer user_data[4];
+
+  /*< private >*/
+  gpointer _gst_reserved[256];
+} GstMapInfo;
+typedef int GstMapFlags;
+typedef guint64 GstClockTime;
+typedef int GstMessageType;
+typedef int GstDebugGraphDetails;
+typedef int GstElementFactoryListType;
+struct _GstElementClass;
+typedef struct _GstElementClass GstElementClass;
+struct _GstSegment;
+typedef struct _GstSegment GstSegment;
+struct _GstEvent;
+typedef struct _GstEvent GstEvent;
+typedef int GstEventType;
+struct _GstStructure;
+typedef struct _GstStructure GstStructure;
+struct GstByteWriter;
+typedef int GstRank;
+struct _GstProtectionMeta;
+typedef struct _GstProtectionMeta GstProtectionMeta;
+struct _GstMeta;
+typedef struct _GstMeta GstMeta;
+struct _GstMetaInfo;
+typedef struct _GstMetaInfo GstMetaInfo;
+struct _GstStreamVolume;
+typedef struct _GstStreamVolume GstStreamVolume;
+typedef int GstStreamVolumeFormat;
+struct _GstPluginFeature;
+typedef struct _GstPluginFeature GstPluginFeature;
+typedef gboolean        (*GstBusFunc)           (GstBus * bus, GstMessage * message, gpointer user_data);
+typedef GstBusSyncReply (*GstBusSyncHandler)    (GstBus * bus, GstMessage * message, gpointer user_data);
+typedef gboolean		(*GstPadQueryFunction)		(GstPad *pad, GstObject *parent,
+                                                                 GstQuery *query);
+#endif
+
+#if 0
+gchar
+gpointer
+gboolean
+guint
+guint64
+gint64
+gdouble
+gsize
+gconstpointer
+guint8
+guint16
+guint32
+gint
+
+GType
+GDestroyNotify
+GList
+GValue
+GError
+#endif
 
 namespace firebolt::rialto::server
 {

@@ -19,6 +19,7 @@
 
 #include "tasks/generic/DeepElementAdded.h"
 #include "RialtoServerLogging.h"
+#include <gst/audio/streamvolume.h>
 
 namespace
 {

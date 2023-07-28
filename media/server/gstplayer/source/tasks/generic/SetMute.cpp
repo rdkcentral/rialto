@@ -20,6 +20,7 @@
 #include "tasks/generic/SetMute.h"
 #include "RialtoServerLogging.h"
 #include <gst/gst.h>
+#include <gst/audio/streamvolume.h>
 
 namespace firebolt::rialto::server::tasks::generic
 {

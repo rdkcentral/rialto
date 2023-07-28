@@ -1,0 +1,1523 @@
+-- The C compiler identification is GNU 11.3.0
+-- The CXX compiler identification is GNU 11.3.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Looking for pthread.h
+-- Looking for pthread.h - found
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE  
+-- Found Protobuf: /usr/lib/x86_64-linux-gnu/libprotobuf.so (found version "3.12.4") 
+-- Found PkgConfig: /usr/bin/pkg-config (found version "0.29.2") 
+-- Checking for modules 'gstreamer-app-1.0;gstreamer-pbutils-1.0;gstreamer-audio-1.0'
+--   Found gstreamer-app-1.0, version 1.20.1
+--   Found gstreamer-pbutils-1.0, version 1.20.1
+--   Found gstreamer-audio-1.0, version 1.20.1
+-- Could NOT find MONGOOSE (missing: MONGOOSE_LIBRARY MONGOOSE_INCLUDE_DIR) 
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/lukewill95/rialto/build
+[  0%] Building CXX object logging/CMakeFiles/RialtoLogging.dir/source/EnvVariableParser.cpp.o
+[  0%] Creating directories for 'googletest-project'
+[  0%] Building CXX object logging/CMakeFiles/RialtoLogging.dir/source/LogFileHandle.cpp.o
+[  5%] Building CXX object logging/CMakeFiles/RialtoLogging.dir/source/RialtoLogging.cpp.o
+[  5%] Building CXX object tests/common/misc/CMakeFiles/RialtoCommonMisc.dir/MediaSourceUtil.cpp.o
+[  5%] Performing download step (download, verify and extract) for 'googletest-project'
+-- Downloading...
+   dst='/home/lukewill95/rialto/build/deps/googletest-1.12.1/src/release-1.12.1.tar.gz'
+   timeout='none'
+   inactivity timeout='none'
+-- Using src='https://github.com/google/googletest/archive/release-1.12.1.tar.gz'
+Elapsed time: 0 s. (time), 0.000281 s. (clock)
+Elapsed time: 0 s. (time), 0.00035 s. (clock)
+Elapsed time: 0 s. (time), 0.000345 s. (clock)
+[  5%] Linking CXX static library libRialtoCommonMisc.a
+[  5%] Built target RialtoCommonMisc
+Elapsed time: 0 s. (time), 0.000415 s. (clock)
+[  5%] Linking CXX static library libRialtoLogging.a
+-- [download 1% complete]
+[  5%] Built target RialtoLogging
+[  5%] Building CXX object common/CMakeFiles/RialtoCommon.dir/source/Timer.cpp.o
+[  5%] Building CXX object common/CMakeFiles/RialtoCommon.dir/source/EventThread.cpp.o
+-- [download 2% complete]
+-- [download 3% complete]
+-- [download 4% complete]
+-- [download 5% complete]
+-- [download 6% complete]
+-- [download 8% complete]
+-- [download 9% complete]
+-- [download 10% complete]
+-- [download 11% complete]
+-- [download 12% complete]
+-- [download 13% complete]
+-- [download 14% complete]
+-- [download 15% complete]
+-- [download 16% complete]
+-- [download 17% complete]
+-- [download 18% complete]
+-- [download 19% complete]
+-- [download 20% complete]
+-- [download 21% complete]
+-- [download 22% complete]
+-- [download 23% complete]
+-- [download 24% complete]
+-- [download 25% complete]
+-- [download 26% complete]
+-- [download 28% complete]
+-- [download 29% complete]
+-- [download 30% complete]
+-- [download 31% complete]
+-- [download 32% complete]
+-- [download 34% complete]
+-- [download 35% complete]
+-- [download 36% complete]
+-- [download 37% complete]
+-- [download 38% complete]
+-- [download 39% complete]
+-- [download 40% complete]
+-- [download 41% complete]
+-- [download 42% complete]
+-- [download 43% complete]
+-- [download 44% complete]
+-- [download 45% complete]
+-- [download 46% complete]
+-- [download 47% complete]
+-- [download 48% complete]
+-- [download 49% complete]
+-- [download 50% complete]
+-- [download 52% complete]
+-- [download 53% complete]
+-- [download 55% complete]
+-- [download 56% complete]
+-- [download 57% complete]
+-- [download 58% complete]
+-- [download 59% complete]
+-- [download 60% complete]
+-- [download 61% complete]
+-- [download 62% complete]
+-- [download 63% complete]
+-- [download 64% complete]
+-- [download 65% complete]
+-- [download 66% complete]
+-- [download 67% complete]
+-- [download 68% complete]
+-- [download 69% complete]
+-- [download 70% complete]
+-- [download 71% complete]
+-- [download 72% complete]
+-- [download 73% complete]
+-- [download 74% complete]
+-- [download 76% complete]
+-- [download 77% complete]
+-- [download 78% complete]
+-- [download 79% complete]
+-- [download 80% complete]
+-- [download 81% complete]
+-- [download 82% complete]
+-- [download 84% complete]
+-- [download 85% complete]
+-- [download 86% complete]
+-- [download 87% complete]
+-- [download 88% complete]
+-- [download 89% complete]
+-- [download 90% complete]
+-- [download 91% complete]
+-- [download 92% complete]
+-- [download 93% complete]
+-- [download 94% complete]
+-- [download 95% complete]
+-- [download 96% complete]
+-- [download 97% complete]
+-- [download 98% complete]
+-- [download 99% complete]
+-- [download 100% complete]
+-- Downloading... done
+-- extracting...
+     src='/home/lukewill95/rialto/build/deps/googletest-1.12.1/src/release-1.12.1.tar.gz'
+     dst='/home/lukewill95/rialto/build/deps/googletest-1.12.1/src/googletest-project'
+-- extracting... [tar xfz]
+-- extracting... [analysis]
+-- extracting... [rename]
+-- extracting... [clean up]
+-- extracting... done
+[ 10%] No update step for 'googletest-project'
+[ 10%] No patch step for 'googletest-project'
+[ 15%] Performing configure step for 'googletest-project'
+-- The C compiler identification is GNU 11.3.0
+-- The CXX compiler identification is GNU 11.3.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+Elapsed time: 1 s. (time), 0.000236 s. (clock)
+-- Detecting CXX compiler ABI info
+Elapsed time: 1 s. (time), 0.000315 s. (clock)
+[ 15%] Linking CXX static library libRialtoCommon.a
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+[ 15%] Built target RialtoCommon
+[ 15%] Running cpp protocol buffer compiler on proto/metadata.proto
+[ 15%] Building CXX object media/server/main/CMakeFiles/RialtoServerMain.dir/source/MediaPipelineCapabilities.cpp.o
+[ 15%] Building CXX object media/server/main/CMakeFiles/RialtoServerMain.dir/source/MediaPipelineServerInternal.cpp.o
+[ 20%] Building CXX object media/server/main/CMakeFiles/RialtoServerMain.dir/source/ActiveRequests.cpp.o
+[ 20%] Building CXX object media/server/main/CMakeFiles/RialtoServerMain.dir/source/DataReaderV1.cpp.o
+[ 20%] Building CXX object media/server/main/CMakeFiles/RialtoServerMain.dir/source/DataReaderV2.cpp.o
+[ 20%] Building CXX object media/server/main/CMakeFiles/RialtoServerMain.dir/metadata.pb.cc.o
+[ 20%] Building CXX object media/server/main/CMakeFiles/RialtoServerMain.dir/source/NeedMediaData.cpp.o
+[ 20%] Building CXX object media/server/main/CMakeFiles/RialtoServerMain.dir/source/SharedMemoryBuffer.cpp.o
+[ 20%] Building CXX object media/server/main/CMakeFiles/RialtoServerMain.dir/source/MediaKeysCapabilities.cpp.o
+[ 20%] Building CXX object media/server/main/CMakeFiles/RialtoServerMain.dir/source/DataReaderFactory.cpp.o
+[ 25%] Building CXX object media/server/main/CMakeFiles/RialtoServerMain.dir/source/MediaKeysServerInternal.cpp.o
+-- Found Python: /usr/bin/python3.10 (found version "3.10.6") found components: Interpreter 
+-- Looking for pthread.h
+-- Looking for pthread.h - found
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE  
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/lukewill95/rialto/build/deps/googletest-1.12.1/src/googletest-project-build
+[ 25%] Performing build step for 'googletest-project'
+[ 12%] Building CXX object googletest/CMakeFiles/gtest.dir/src/gtest-all.cc.o
+Elapsed time: 0 s. (time), 0.000299 s. (clock)
+[ 25%] Building CXX object media/server/main/CMakeFiles/RialtoServerMain.dir/source/MediaKeySession.cpp.o
+Elapsed time: 1 s. (time), 0.000233 s. (clock)
+[ 25%] Building CXX object media/server/main/CMakeFiles/RialtoServerMain.dir/source/MainThread.cpp.o
+Elapsed time: 1 s. (time), 0.000312 s. (clock)
+[ 25%] Building CXX object media/server/main/CMakeFiles/RialtoServerMain.dir/source/WebAudioPlayerServerInternal.cpp.o
+Elapsed time: 1 s. (time), 0.0003 s. (clock)
+[ 30%] Building CXX object media/server/main/CMakeFiles/RialtoServerMain.dir/source/ControlServerInternal.cpp.o
+Elapsed time: 1 s. (time), 0.000296 s. (clock)
+[ 30%] Building CXX object media/server/main/CMakeFiles/RialtoServerMain.dir/source/HeartbeatProcedure.cpp.o
+Elapsed time: 1 s. (time), 0.000331 s. (clock)
+Elapsed time: 1 s. (time), 0.000283 s. (clock)
+Elapsed time: 0 s. (time), 0.000497 s. (clock)
+Elapsed time: 0 s. (time), 0.000389 s. (clock)
+Elapsed time: 1 s. (time), 0.00102 s. (clock)
+Elapsed time: 1 s. (time), 0.000291 s. (clock)
+Elapsed time: 2 s. (time), 0.000409 s. (clock)
+Elapsed time: 2 s. (time), 0.000281 s. (clock)
+Elapsed time: 1 s. (time), 0.00041 s. (clock)
+Elapsed time: 1 s. (time), 0.000346 s. (clock)
+Elapsed time: 2 s. (time), 0.000292 s. (clock)
+[ 30%] Linking CXX static library libRialtoServerMain.a
+[ 30%] Built target RialtoServerMain
+[ 35%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/tasks/generic/Eos.cpp.o
+[ 35%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/tasks/generic/DeepElementAdded.cpp.o
+[ 35%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/tasks/generic/AttachSource.cpp.o
+[ 35%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/tasks/generic/AttachSamples.cpp.o
+[ 35%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/tasks/generic/FinishSetupSource.cpp.o
+[ 40%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/tasks/generic/HandleBusMessage.cpp.o
+[ 40%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/tasks/generic/NeedData.cpp.o
+[ 40%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/tasks/generic/Pause.cpp.o
+[ 40%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/tasks/generic/Play.cpp.o
+[ 40%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/tasks/generic/EnoughData.cpp.o
+[ 40%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/tasks/generic/GenericPlayerTaskFactory.cpp.o
+Elapsed time: 1 s. (time), 0.000687 s. (clock)
+[ 40%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/tasks/generic/ReadShmDataAndAttachSamples.cpp.o
+Elapsed time: 6 s. (time), 0.00044 s. (clock)
+[ 45%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/tasks/generic/RemoveSource.cpp.o
+Elapsed time: 23 s. (time), 0.000376 s. (clock)
+Elapsed time: 23 s. (time), 0.000276 s. (clock)
+Elapsed time: 23 s. (time), 0.000293 s. (clock)
+[ 45%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/tasks/generic/RenderFrame.cpp.o
+[ 45%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/tasks/generic/ReportPosition.cpp.o
+[ 45%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/tasks/generic/CheckAudioUnderflow.cpp.o
+Elapsed time: 22 s. (time), 0.00037 s. (clock)
+[ 45%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/tasks/generic/SetPlaybackRate.cpp.o
+Elapsed time: 23 s. (time), 0.000364 s. (clock)
+[ 50%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/tasks/generic/SetPosition.cpp.o
+Elapsed time: 23 s. (time), 0.000456 s. (clock)
+[ 50%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/tasks/generic/SetupElement.cpp.o
+Elapsed time: 23 s. (time), 0.000331 s. (clock)
+[ 50%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/tasks/generic/SetupSource.cpp.o
+Elapsed time: 23 s. (time), 0.0003 s. (clock)
+[ 50%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/tasks/generic/SetVideoGeometry.cpp.o
+Elapsed time: 0 s. (time), 0.000345 s. (clock)
+[ 50%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/tasks/generic/SetVolume.cpp.o
+Elapsed time: 0 s. (time), 0.000395 s. (clock)
+[ 55%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/tasks/generic/SetMute.cpp.o
+Elapsed time: 0 s. (time), 0.000345 s. (clock)
+[ 55%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/tasks/generic/Shutdown.cpp.o
+Elapsed time: 23 s. (time), 0.000267 s. (clock)
+[ 55%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/tasks/generic/Stop.cpp.o
+Elapsed time: 0 s. (time), 0.000405 s. (clock)
+[ 55%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/tasks/generic/Underflow.cpp.o
+Elapsed time: 0 s. (time), 0.000644 s. (clock)
+[ 55%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/tasks/generic/UpdatePlaybackGroup.cpp.o
+Elapsed time: 23 s. (time), 0.001339 s. (clock)
+[ 60%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/tasks/webAudio/WebAudioPlayerTaskFactory.cpp.o
+Elapsed time: 0 s. (time), 0.0004 s. (clock)
+[ 60%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/tasks/webAudio/Shutdown.cpp.o
+Elapsed time: 0 s. (time), 0.002505 s. (clock)
+[ 60%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/tasks/webAudio/Stop.cpp.o
+Elapsed time: 0 s. (time), 0.000319 s. (clock)
+[ 60%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/tasks/webAudio/Pause.cpp.o
+Elapsed time: 0 s. (time), 0.000356 s. (clock)
+[ 60%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/tasks/webAudio/Play.cpp.o
+Elapsed time: 0 s. (time), 0.000369 s. (clock)
+[ 65%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/tasks/webAudio/Eos.cpp.o
+Elapsed time: 0 s. (time), 0.000347 s. (clock)
+[ 65%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/tasks/webAudio/SetCaps.cpp.o
+Elapsed time: 0 s. (time), 0.000343 s. (clock)
+[ 65%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/tasks/webAudio/SetVolume.cpp.o
+Elapsed time: 2 s. (time), 0.000351 s. (clock)
+[ 65%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/tasks/webAudio/WriteBuffer.cpp.o
+Elapsed time: 2 s. (time), 0.000369 s. (clock)
+[ 65%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/tasks/webAudio/HandleBusMessage.cpp.o
+Elapsed time: 4 s. (time), 0.000327 s. (clock)
+Elapsed time: 4 s. (time), 0.002683 s. (clock)
+Elapsed time: 4 s. (time), 0.000495 s. (clock)
+[ 25%] Linking CXX static library ../lib/libgtest.a
+[ 65%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/GstInit.cpp.o
+[ 70%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/GstDispatcherThread.cpp.o
+[ 70%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/GstGenericPlayer.cpp.o
+Elapsed time: 4 s. (time), 0.000349 s. (clock)
+[ 70%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/GstWebAudioPlayer.cpp.o
+Elapsed time: 4 s. (time), 0.000387 s. (clock)
+[ 70%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/GstProtectionMetadata.cpp.o
+[ 25%] Built target gtest
+[ 37%] Building CXX object googlemock/CMakeFiles/gmock.dir/src/gmock-all.cc.o
+Elapsed time: 5 s. (time), 0.000327 s. (clock)
+Elapsed time: 1 s. (time), 0.000287 s. (clock)
+[ 75%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/GstProtectionMetadataWrapper.cpp.o
+[ 75%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/GstWrapper.cpp.o
+Elapsed time: 1 s. (time), 0.000281 s. (clock)
+Elapsed time: 5 s. (time), 0.001059 s. (clock)
+[ 75%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/GlibWrapper.cpp.o
+[ 75%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/GstSrc.cpp.o
+Elapsed time: 3 s. (time), 0.00032 s. (clock)
+[ 75%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/Utils.cpp.o
+Elapsed time: 2 s. (time), 0.00031 s. (clock)
+[ 75%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/WorkerThread.cpp.o
+Elapsed time: 5 s. (time), 0.004234 s. (clock)
+[ 80%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/GstCapabilities.cpp.o
+Elapsed time: 1 s. (time), 0.000356 s. (clock)
+[ 80%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/GstDecryptor.cpp.o
+Elapsed time: 1 s. (time), 0.002899 s. (clock)
+[ 80%] Building CXX object media/server/gstplayer/CMakeFiles/RialtoServerGstPlayer.dir/source/GstLogForwarding.cpp.o
+Elapsed time: 1 s. (time), 0.000348 s. (clock)
+Elapsed time: 1 s. (time), 0.000398 s. (clock)
+[ 50%] Building CXX object googletest/CMakeFiles/gtest_main.dir/src/gtest_main.cc.o
+Elapsed time: 1 s. (time), 0.000448 s. (clock)
+Elapsed time: 2 s. (time), 0.000387 s. (clock)
+Elapsed time: 1 s. (time), 0.000406 s. (clock)
+Elapsed time: 0 s. (time), 0.000343 s. (clock)
+Elapsed time: 0 s. (time), 0.000414 s. (clock)
+Elapsed time: 3 s. (time), 0.000342 s. (clock)
+Elapsed time: 2 s. (time), 0.00032 s. (clock)
+Elapsed time: 3 s. (time), 0.000387 s. (clock)
+[ 62%] Linking CXX static library ../lib/libgtest_main.a
+[ 62%] Built target gtest_main
+Elapsed time: 8 s. (time), 0.000373 s. (clock)
+[ 80%] Linking CXX static library libRialtoServerGstPlayer.a
+[ 80%] Built target RialtoServerGstPlayer
+[ 75%] Linking CXX static library ../lib/libgmock.a
+[ 75%] Built target gmock
+[ 87%] Building CXX object googlemock/CMakeFiles/gmock_main.dir/src/gmock_main.cc.o
+[100%] Linking CXX static library ../lib/libgmock_main.a
+[100%] Built target gmock_main
+[ 80%] Performing install step for 'googletest-project'
+Consolidate compiler generated dependencies of target gtest
+[ 25%] Built target gtest
+Consolidate compiler generated dependencies of target gtest_main
+Consolidate compiler generated dependencies of target gmock
+[ 62%] Built target gtest_main
+[ 75%] Built target gmock
+Consolidate compiler generated dependencies of target gmock_main
+[100%] Built target gmock_main
+Install the project...
+-- Install configuration: ""
+-- Up-to-date: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gmock
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gmock/gmock-matchers.h
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gmock/gmock-function-mocker.h
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gmock/internal
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gmock/internal/gmock-pp.h
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gmock/internal/gmock-internal-utils.h
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gmock/internal/gmock-port.h
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gmock/internal/custom
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gmock/internal/custom/gmock-port.h
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gmock/internal/custom/gmock-matchers.h
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gmock/internal/custom/gmock-generated-actions.h
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gmock/internal/custom/README.md
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gmock/gmock-more-actions.h
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gmock/gmock-more-matchers.h
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gmock/gmock-nice-strict.h
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gmock/gmock.h
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gmock/gmock-cardinalities.h
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gmock/gmock-spec-builders.h
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gmock/gmock-actions.h
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/lib/libgmock.a
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/lib/libgmock_main.a
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/lib/pkgconfig/gmock.pc
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/lib/pkgconfig/gmock_main.pc
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/lib/cmake/GTest/GTestTargets.cmake
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/lib/cmake/GTest/GTestTargets-noconfig.cmake
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/lib/cmake/GTest/GTestConfigVersion.cmake
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/lib/cmake/GTest/GTestConfig.cmake
+-- Up-to-date: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gtest
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gtest/gtest-param-test.h
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gtest/internal
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gtest/internal/gtest-port-arch.h
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gtest/internal/gtest-string.h
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gtest/internal/gtest-death-test-internal.h
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gtest/internal/gtest-type-util.h
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gtest/internal/gtest-port.h
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gtest/internal/gtest-internal.h
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gtest/internal/gtest-param-util.h
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gtest/internal/gtest-filepath.h
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gtest/internal/custom
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gtest/internal/custom/README.md
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gtest/internal/custom/gtest.h
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gtest/internal/custom/gtest-port.h
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gtest/internal/custom/gtest-printers.h
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gtest/gtest-matchers.h
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gtest/gtest-death-test.h
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gtest/gtest-spi.h
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gtest/gtest.h
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gtest/gtest-test-part.h
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gtest/gtest-typed-test.h
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gtest/gtest_prod.h
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gtest/gtest-assertion-result.h
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gtest/gtest_pred_impl.h
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gtest/gtest-message.h
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/include/gtest/gtest-printers.h
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/lib/libgtest.a
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/lib/libgtest_main.a
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/lib/pkgconfig/gtest.pc
+-- Installing: /home/lukewill95/rialto/build/deps/googletest-1.12.1/lib/pkgconfig/gtest_main.pc
+[ 80%] Completed 'googletest-project'
+[ 80%] Built target googletest-project
+[ 80%] Building CXX object tests/media/server/mocks/gstplayer/CMakeFiles/RialtoServerGstPlayerMocks.dir/GenericPlayerTaskFactoryMock.cpp.o
+[ 85%] Building CXX object tests/media/server/mocks/gstplayer/CMakeFiles/RialtoServerGstPlayerMocks.dir/GlibWrapperFactoryMock.cpp.o
+[ 85%] Building CXX object tests/media/server/mocks/gstplayer/CMakeFiles/RialtoServerGstPlayerMocks.dir/GlibWrapperMock.cpp.o
+[ 85%] Building CXX object tests/media/server/mocks/gstplayer/CMakeFiles/RialtoServerGstPlayerMocks.dir/GstDecryptorElementFactoryMock.cpp.o
+[ 85%] Building CXX object tests/media/server/mocks/gstplayer/CMakeFiles/RialtoServerGstPlayerMocks.dir/GstDispatcherThreadFactoryMock.cpp.o
+[ 85%] Building CXX object tests/media/server/mocks/gstplayer/CMakeFiles/RialtoServerGstPlayerMocks.dir/GstDispatcherThreadClientMock.cpp.o
+[ 90%] Building CXX object tests/media/server/mocks/gstplayer/CMakeFiles/RialtoServerGstPlayerMocks.dir/GstDispatcherThreadMock.cpp.o
+[ 90%] Building CXX object tests/media/server/mocks/gstplayer/CMakeFiles/RialtoServerGstPlayerMocks.dir/GstGenericPlayerPrivateMock.cpp.o
+[ 90%] Building CXX object tests/media/server/mocks/gstplayer/CMakeFiles/RialtoServerGstPlayerMocks.dir/GstProtectionMetadataWrapperMock.cpp.o
+[ 90%] Building CXX object tests/media/server/mocks/gstplayer/CMakeFiles/RialtoServerGstPlayerMocks.dir/GstProtectionMetadataWrapperFactoryMock.cpp.o
+[ 90%] Building CXX object tests/media/server/mocks/gstplayer/CMakeFiles/RialtoServerGstPlayerMocks.dir/GstSrcFactoryMock.cpp.o
+[ 90%] Building CXX object tests/media/server/mocks/gstplayer/CMakeFiles/RialtoServerGstPlayerMocks.dir/GstSrcMock.cpp.o
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:54:13: error: conflicting declaration ‘typedef int GstState’
+   54 | typedef int GstState;
+      |             ^~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThreadClient.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstelement.h:192:3: note: previous declaration as ‘typedef enum GstState GstState’
+  192 | } GstState;
+      |   ^~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:55:13: error: conflicting declaration ‘typedef int GstStateChangeReturn’
+   55 | typedef int GstStateChangeReturn;
+      |             ^~~~~~~~~~~~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThreadClient.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstelement.h:219:3: note: previous declaration as ‘typedef enum GstStateChangeReturn GstStateChangeReturn’
+  219 | } GstStateChangeReturn;
+      |   ^~~~~~~~~~~~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:69:13: error: conflicting declaration ‘typedef int GstFlowReturn’
+   69 | typedef int GstFlowReturn;
+      |             ^~~~~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstelement.h:223,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThreadClient.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstpad.h:183:3: note: previous declaration as ‘typedef enum GstFlowReturn GstFlowReturn’
+  183 | } GstFlowReturn;
+      |   ^~~~~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:74:13: error: conflicting declaration ‘typedef int GstFormat’
+   74 | typedef int GstFormat;
+      |             ^~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstevent.h:220,
+                 from /usr/include/gstreamer-1.0/gst/gstpadtemplate.h:36,
+                 from /usr/include/gstreamer-1.0/gst/gstpad.h:73,
+                 from /usr/include/gstreamer-1.0/gst/gstelement.h:223,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThreadClient.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstformat.h:59:3: note: previous declaration as ‘typedef enum GstFormat GstFormat’
+   59 | } GstFormat;
+      |   ^~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:75:13: error: conflicting declaration ‘typedef int GstSeekFlags’
+   75 | typedef int GstSeekFlags;
+      |             ^~~~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstsample.h:30,
+                 from /usr/include/gstreamer-1.0/gst/gsttaglist.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gstevent.h:224,
+                 from /usr/include/gstreamer-1.0/gst/gstpadtemplate.h:36,
+                 from /usr/include/gstreamer-1.0/gst/gstpad.h:73,
+                 from /usr/include/gstreamer-1.0/gst/gstelement.h:223,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThreadClient.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstsegment.h:161:3: note: previous declaration as ‘typedef enum GstSeekFlags GstSeekFlags’
+  161 | } GstSeekFlags;
+      |   ^~~~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:76:9: error: ‘intGstSeekType’ does not name a type; did you mean ‘GstSeekType’?
+   76 | typedef intGstSeekType;
+      |         ^~~~~~~~~~~~~~
+      |         GstSeekType
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:96:3: error: conflicting declaration ‘typedef struct GstMapInfo GstMapInfo’
+   96 | } GstMapInfo;
+      |   ^~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstallocator.h:26,
+                 from /usr/include/gstreamer-1.0/gst/gstbuffer.h:29,
+                 from /usr/include/gstreamer-1.0/gst/gstpad.h:70,
+                 from /usr/include/gstreamer-1.0/gst/gstelement.h:223,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThreadClient.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstmemory.h:220:3: note: previous declaration as ‘typedef struct GstMapInfo GstMapInfo’
+  220 | } GstMapInfo;
+      |   ^~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:97:13: error: conflicting declaration ‘typedef int GstMapFlags’
+   97 | typedef int GstMapFlags;
+      |             ^~~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstallocator.h:26,
+                 from /usr/include/gstreamer-1.0/gst/gstbuffer.h:29,
+                 from /usr/include/gstreamer-1.0/gst/gstpad.h:70,
+                 from /usr/include/gstreamer-1.0/gst/gstelement.h:223,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThreadClient.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstmemory.h:186:3: note: previous declaration as ‘typedef enum GstMapFlags GstMapFlags’
+  186 | } GstMapFlags;
+      |   ^~~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:99:13: error: conflicting declaration ‘typedef int GstMessageType’
+   99 | typedef int GstMessageType;
+      |             ^~~~~~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstevent.h:226,
+                 from /usr/include/gstreamer-1.0/gst/gstpadtemplate.h:36,
+                 from /usr/include/gstreamer-1.0/gst/gstpad.h:73,
+                 from /usr/include/gstreamer-1.0/gst/gstelement.h:223,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThreadClient.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstmessage.h:184:3: note: previous declaration as ‘typedef enum GstMessageType GstMessageType’
+  184 | } GstMessageType;
+      |   ^~~~~~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:100:13: error: conflicting declaration ‘typedef int GstDebugGraphDetails’
+  100 | typedef int GstDebugGraphDetails;
+      |             ^~~~~~~~~~~~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gst.h:45,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThreadClient.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstdebugutils.h:59:3: note: previous declaration as ‘typedef enum GstDebugGraphDetails GstDebugGraphDetails’
+   59 | } GstDebugGraphDetails;
+      |   ^~~~~~~~~~~~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:101:13: error: conflicting declaration ‘typedef int GstElementFactoryListType’
+  101 | typedef int GstElementFactoryListType;
+      |             ^~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstelement.h:226,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThreadClient.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstelementfactory.h:153:17: note: previous declaration as ‘typedef guint64 GstElementFactoryListType’
+  153 | typedef guint64 GstElementFactoryListType;
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:108:13: error: conflicting declaration ‘typedef int GstEventType’
+  108 | typedef int GstEventType;
+      |             ^~~~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstpadtemplate.h:36,
+                 from /usr/include/gstreamer-1.0/gst/gstpad.h:73,
+                 from /usr/include/gstreamer-1.0/gst/gstelement.h:223,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThreadClient.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstevent.h:192:3: note: previous declaration as ‘typedef enum GstEventType GstEventType’
+  192 | } GstEventType;
+      |   ^~~~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:112:13: error: conflicting declaration ‘typedef int GstRank’
+  112 | typedef int GstRank;
+      |             ^~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstelementfactory.h:39,
+                 from /usr/include/gstreamer-1.0/gst/gstelement.h:226,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThreadClient.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstpluginfeature.h:69:3: note: previous declaration as ‘typedef enum GstRank GstRank’
+   69 | } GstRank;
+      |   ^~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:54:13: error: conflicting declaration ‘typedef int GstState’
+   54 | typedef int GstState;
+      |             ^~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThreadClient.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstelement.h:192:3: note: previous declaration as ‘typedef enum GstState GstState’
+  192 | } GstState;
+      |   ^~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:55:13: error: conflicting declaration ‘typedef int GstStateChangeReturn’
+   55 | typedef int GstStateChangeReturn;
+      |             ^~~~~~~~~~~~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThreadClient.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstelement.h:219:3: note: previous declaration as ‘typedef enum GstStateChangeReturn GstStateChangeReturn’
+  219 | } GstStateChangeReturn;
+      |   ^~~~~~~~~~~~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:69:13: error: conflicting declaration ‘typedef int GstFlowReturn’
+   69 | typedef int GstFlowReturn;
+      |             ^~~~~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstelement.h:223,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThreadClient.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstpad.h:183:3: note: previous declaration as ‘typedef enum GstFlowReturn GstFlowReturn’
+  183 | } GstFlowReturn;
+      |   ^~~~~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:74:13: error: conflicting declaration ‘typedef int GstFormat’
+   74 | typedef int GstFormat;
+      |             ^~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstevent.h:220,
+                 from /usr/include/gstreamer-1.0/gst/gstpadtemplate.h:36,
+                 from /usr/include/gstreamer-1.0/gst/gstpad.h:73,
+                 from /usr/include/gstreamer-1.0/gst/gstelement.h:223,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThreadClient.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstformat.h:59:3: note: previous declaration as ‘typedef enum GstFormat GstFormat’
+   59 | } GstFormat;
+      |   ^~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:75:13: error: conflicting declaration ‘typedef int GstSeekFlags’
+   75 | typedef int GstSeekFlags;
+      |             ^~~~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstsample.h:30,
+                 from /usr/include/gstreamer-1.0/gst/gsttaglist.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gstevent.h:224,
+                 from /usr/include/gstreamer-1.0/gst/gstpadtemplate.h:36,
+                 from /usr/include/gstreamer-1.0/gst/gstpad.h:73,
+                 from /usr/include/gstreamer-1.0/gst/gstelement.h:223,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThreadClient.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstsegment.h:161:3: note: previous declaration as ‘typedef enum GstSeekFlags GstSeekFlags’
+  161 | } GstSeekFlags;
+      |   ^~~~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:76:9: error: ‘intGstSeekType’ does not name a type; did you mean ‘GstSeekType’?
+   76 | typedef intGstSeekType;
+      |         ^~~~~~~~~~~~~~
+      |         GstSeekType
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:96:3: error: conflicting declaration ‘typedef struct GstMapInfo GstMapInfo’
+   96 | } GstMapInfo;
+      |   ^~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstallocator.h:26,
+                 from /usr/include/gstreamer-1.0/gst/gstbuffer.h:29,
+                 from /usr/include/gstreamer-1.0/gst/gstpad.h:70,
+                 from /usr/include/gstreamer-1.0/gst/gstelement.h:223,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThreadClient.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstmemory.h:220:3: note: previous declaration as ‘typedef struct GstMapInfo GstMapInfo’
+  220 | } GstMapInfo;
+      |   ^~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:97:13: error: conflicting declaration ‘typedef int GstMapFlags’
+   97 | typedef int GstMapFlags;
+      |             ^~~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstallocator.h:26,
+                 from /usr/include/gstreamer-1.0/gst/gstbuffer.h:29,
+                 from /usr/include/gstreamer-1.0/gst/gstpad.h:70,
+                 from /usr/include/gstreamer-1.0/gst/gstelement.h:223,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThreadClient.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstmemory.h:186:3: note: previous declaration as ‘typedef enum GstMapFlags GstMapFlags’
+  186 | } GstMapFlags;
+      |   ^~~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:99:13: error: conflicting declaration ‘typedef int GstMessageType’
+   99 | typedef int GstMessageType;
+      |             ^~~~~~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstevent.h:226,
+                 from /usr/include/gstreamer-1.0/gst/gstpadtemplate.h:36,
+                 from /usr/include/gstreamer-1.0/gst/gstpad.h:73,
+                 from /usr/include/gstreamer-1.0/gst/gstelement.h:223,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThreadClient.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstmessage.h:184:3: note: previous declaration as ‘typedef enum GstMessageType GstMessageType’
+  184 | } GstMessageType;
+      |   ^~~~~~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:100:13: error: conflicting declaration ‘typedef int GstDebugGraphDetails’
+  100 | typedef int GstDebugGraphDetails;
+      |             ^~~~~~~~~~~~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gst.h:45,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThreadClient.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstdebugutils.h:59:3: note: previous declaration as ‘typedef enum GstDebugGraphDetails GstDebugGraphDetails’
+   59 | } GstDebugGraphDetails;
+      |   ^~~~~~~~~~~~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:101:13: error: conflicting declaration ‘typedef int GstElementFactoryListType’
+  101 | typedef int GstElementFactoryListType;
+      |             ^~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstelement.h:226,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThreadClient.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstelementfactory.h:153:17: note: previous declaration as ‘typedef guint64 GstElementFactoryListType’
+  153 | typedef guint64 GstElementFactoryListType;
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:108:13: error: conflicting declaration ‘typedef int GstEventType’
+  108 | typedef int GstEventType;
+      |             ^~~~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstpadtemplate.h:36,
+                 from /usr/include/gstreamer-1.0/gst/gstpad.h:73,
+                 from /usr/include/gstreamer-1.0/gst/gstelement.h:223,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThreadClient.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstevent.h:192:3: note: previous declaration as ‘typedef enum GstEventType GstEventType’
+  192 | } GstEventType;
+      |   ^~~~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:112:13: error: conflicting declaration ‘typedef int GstRank’
+  112 | typedef int GstRank;
+      |             ^~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstelementfactory.h:39,
+                 from /usr/include/gstreamer-1.0/gst/gstelement.h:226,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThreadClient.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDispatcherThread.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDispatcherThreadFactoryMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstpluginfeature.h:69:3: note: previous declaration as ‘typedef enum GstRank GstRank’
+   69 | } GstRank;
+      |   ^~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDecryptorElementFactory.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:54:13: error: conflicting declaration ‘typedef int GstState’
+   54 | typedef int GstState;
+      |             ^~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/main/interface/IDecryptionService.h:25,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDecryptorElementFactory.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstelement.h:192:3: note: previous declaration as ‘typedef enum GstState GstState’
+  192 | } GstState;
+      |   ^~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDecryptorElementFactory.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:55:13: error: conflicting declaration ‘typedef int GstStateChangeReturn’
+   55 | typedef int GstStateChangeReturn;
+      |             ^~~~~~~~~~~~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/main/interface/IDecryptionService.h:25,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDecryptorElementFactory.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstelement.h:219:3: note: previous declaration as ‘typedef enum GstStateChangeReturn GstStateChangeReturn’
+  219 | } GstStateChangeReturn;
+      |   ^~~~~~~~~~~~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDecryptorElementFactory.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:69:13: error: conflicting declaration ‘typedef int GstFlowReturn’
+   69 | typedef int GstFlowReturn;
+      |             ^~~~~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstelement.h:223,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/main/interface/IDecryptionService.h:25,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDecryptorElementFactory.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstpad.h:183:3: note: previous declaration as ‘typedef enum GstFlowReturn GstFlowReturn’
+  183 | } GstFlowReturn;
+      |   ^~~~~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDecryptorElementFactory.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:74:13: error: conflicting declaration ‘typedef int GstFormat’
+   74 | typedef int GstFormat;
+      |             ^~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstevent.h:220,
+                 from /usr/include/gstreamer-1.0/gst/gstpadtemplate.h:36,
+                 from /usr/include/gstreamer-1.0/gst/gstpad.h:73,
+                 from /usr/include/gstreamer-1.0/gst/gstelement.h:223,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/main/interface/IDecryptionService.h:25,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDecryptorElementFactory.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstformat.h:59:3: note: previous declaration as ‘typedef enum GstFormat GstFormat’
+   59 | } GstFormat;
+      |   ^~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDecryptorElementFactory.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:75:13: error: conflicting declaration ‘typedef int GstSeekFlags’
+   75 | typedef int GstSeekFlags;
+      |             ^~~~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstsample.h:30,
+                 from /usr/include/gstreamer-1.0/gst/gsttaglist.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gstevent.h:224,
+                 from /usr/include/gstreamer-1.0/gst/gstpadtemplate.h:36,
+                 from /usr/include/gstreamer-1.0/gst/gstpad.h:73,
+                 from /usr/include/gstreamer-1.0/gst/gstelement.h:223,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/main/interface/IDecryptionService.h:25,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDecryptorElementFactory.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstsegment.h:161:3: note: previous declaration as ‘typedef enum GstSeekFlags GstSeekFlags’
+  161 | } GstSeekFlags;
+      |   ^~~~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDecryptorElementFactory.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:76:9: error: ‘intGstSeekType’ does not name a type; did you mean ‘GstSeekType’?
+   76 | typedef intGstSeekType;
+      |         ^~~~~~~~~~~~~~
+      |         GstSeekType
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:96:3: error: conflicting declaration ‘typedef struct GstMapInfo GstMapInfo’
+   96 | } GstMapInfo;
+      |   ^~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstallocator.h:26,
+                 from /usr/include/gstreamer-1.0/gst/gstbuffer.h:29,
+                 from /usr/include/gstreamer-1.0/gst/gstpad.h:70,
+                 from /usr/include/gstreamer-1.0/gst/gstelement.h:223,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/main/interface/IDecryptionService.h:25,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDecryptorElementFactory.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstmemory.h:220:3: note: previous declaration as ‘typedef struct GstMapInfo GstMapInfo’
+  220 | } GstMapInfo;
+      |   ^~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDecryptorElementFactory.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:97:13: error: conflicting declaration ‘typedef int GstMapFlags’
+   97 | typedef int GstMapFlags;
+      |             ^~~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstallocator.h:26,
+                 from /usr/include/gstreamer-1.0/gst/gstbuffer.h:29,
+                 from /usr/include/gstreamer-1.0/gst/gstpad.h:70,
+                 from /usr/include/gstreamer-1.0/gst/gstelement.h:223,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/main/interface/IDecryptionService.h:25,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDecryptorElementFactory.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstmemory.h:186:3: note: previous declaration as ‘typedef enum GstMapFlags GstMapFlags’
+  186 | } GstMapFlags;
+      |   ^~~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDecryptorElementFactory.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:99:13: error: conflicting declaration ‘typedef int GstMessageType’
+   99 | typedef int GstMessageType;
+      |             ^~~~~~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstevent.h:226,
+                 from /usr/include/gstreamer-1.0/gst/gstpadtemplate.h:36,
+                 from /usr/include/gstreamer-1.0/gst/gstpad.h:73,
+                 from /usr/include/gstreamer-1.0/gst/gstelement.h:223,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/main/interface/IDecryptionService.h:25,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDecryptorElementFactory.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstmessage.h:184:3: note: previous declaration as ‘typedef enum GstMessageType GstMessageType’
+  184 | } GstMessageType;
+      |   ^~~~~~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDecryptorElementFactory.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:100:13: error: conflicting declaration ‘typedef int GstDebugGraphDetails’
+  100 | typedef int GstDebugGraphDetails;
+      |             ^~~~~~~~~~~~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gst.h:45,
+                 from /home/lukewill95/rialto/media/server/main/interface/IDecryptionService.h:25,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDecryptorElementFactory.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstdebugutils.h:59:3: note: previous declaration as ‘typedef enum GstDebugGraphDetails GstDebugGraphDetails’
+   59 | } GstDebugGraphDetails;
+      |   ^~~~~~~~~~~~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDecryptorElementFactory.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:101:13: error: conflicting declaration ‘typedef int GstElementFactoryListType’
+  101 | typedef int GstElementFactoryListType;
+      |             ^~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstelement.h:226,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/main/interface/IDecryptionService.h:25,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDecryptorElementFactory.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstelementfactory.h:153:17: note: previous declaration as ‘typedef guint64 GstElementFactoryListType’
+  153 | typedef guint64 GstElementFactoryListType;
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDecryptorElementFactory.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:108:13: error: conflicting declaration ‘typedef int GstEventType’
+  108 | typedef int GstEventType;
+      |             ^~~~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstpadtemplate.h:36,
+                 from /usr/include/gstreamer-1.0/gst/gstpad.h:73,
+                 from /usr/include/gstreamer-1.0/gst/gstelement.h:223,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/main/interface/IDecryptionService.h:25,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDecryptorElementFactory.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstevent.h:192:3: note: previous declaration as ‘typedef enum GstEventType GstEventType’
+  192 | } GstEventType;
+      |   ^~~~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDecryptorElementFactory.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:112:13: error: conflicting declaration ‘typedef int GstRank’
+  112 | typedef int GstRank;
+      |             ^~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstelementfactory.h:39,
+                 from /usr/include/gstreamer-1.0/gst/gstelement.h:226,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/main/interface/IDecryptionService.h:25,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstDecryptorElementFactory.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstDecryptorElementFactoryMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstpluginfeature.h:69:3: note: previous declaration as ‘typedef enum GstRank GstRank’
+   69 | } GstRank;
+      |   ^~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/GstProtectionMetadata.h:24,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapper.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:54:13: error: conflicting declaration ‘typedef int GstState’
+   54 | typedef int GstState;
+      |             ^~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/main/interface/IDecryptionService.h:25,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/GstProtectionMetadata.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapper.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstelement.h:192:3: note: previous declaration as ‘typedef enum GstState GstState’
+  192 | } GstState;
+      |   ^~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/GstProtectionMetadata.h:24,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapper.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:55:13: error: conflicting declaration ‘typedef int GstStateChangeReturn’
+   55 | typedef int GstStateChangeReturn;
+      |             ^~~~~~~~~~~~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/main/interface/IDecryptionService.h:25,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/GstProtectionMetadata.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapper.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstelement.h:219:3: note: previous declaration as ‘typedef enum GstStateChangeReturn GstStateChangeReturn’
+  219 | } GstStateChangeReturn;
+      |   ^~~~~~~~~~~~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/GstProtectionMetadata.h:24,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapper.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:69:13: error: conflicting declaration ‘typedef int GstFlowReturn’
+   69 | typedef int GstFlowReturn;
+      |             ^~~~~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstelement.h:223,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/main/interface/IDecryptionService.h:25,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/GstProtectionMetadata.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapper.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstpad.h:183:3: note: previous declaration as ‘typedef enum GstFlowReturn GstFlowReturn’
+  183 | } GstFlowReturn;
+      |   ^~~~~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/GstProtectionMetadata.h:24,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapper.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:74:13: error: conflicting declaration ‘typedef int GstFormat’
+   74 | typedef int GstFormat;
+      |             ^~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstevent.h:220,
+                 from /usr/include/gstreamer-1.0/gst/gstpadtemplate.h:36,
+                 from /usr/include/gstreamer-1.0/gst/gstpad.h:73,
+                 from /usr/include/gstreamer-1.0/gst/gstelement.h:223,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/main/interface/IDecryptionService.h:25,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/GstProtectionMetadata.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapper.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstformat.h:59:3: note: previous declaration as ‘typedef enum GstFormat GstFormat’
+   59 | } GstFormat;
+      |   ^~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/GstProtectionMetadata.h:24,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapper.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:75:13: error: conflicting declaration ‘typedef int GstSeekFlags’
+   75 | typedef int GstSeekFlags;
+      |             ^~~~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstsample.h:30,
+                 from /usr/include/gstreamer-1.0/gst/gsttaglist.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gstevent.h:224,
+                 from /usr/include/gstreamer-1.0/gst/gstpadtemplate.h:36,
+                 from /usr/include/gstreamer-1.0/gst/gstpad.h:73,
+                 from /usr/include/gstreamer-1.0/gst/gstelement.h:223,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/main/interface/IDecryptionService.h:25,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/GstProtectionMetadata.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapper.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstsegment.h:161:3: note: previous declaration as ‘typedef enum GstSeekFlags GstSeekFlags’
+  161 | } GstSeekFlags;
+      |   ^~~~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/GstProtectionMetadata.h:24,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapper.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapperFactory.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:54:13: error: conflicting declaration ‘typedef int GstState’
+   54 | typedef int GstState;
+      |             ^~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/main/interface/IDecryptionService.h:25,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapperFactory.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstelement.h:192:3: note: previous declaration as ‘typedef enum GstState GstState’
+  192 | } GstState;
+      |   ^~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/GstProtectionMetadata.h:24,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapper.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapperFactory.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:55:13: error: conflicting declaration ‘typedef int GstStateChangeReturn’
+   55 | typedef int GstStateChangeReturn;
+      |             ^~~~~~~~~~~~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/main/interface/IDecryptionService.h:25,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapperFactory.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstelement.h:219:3: note: previous declaration as ‘typedef enum GstStateChangeReturn GstStateChangeReturn’
+  219 | } GstStateChangeReturn;
+      |   ^~~~~~~~~~~~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/GstProtectionMetadata.h:24,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapper.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapperFactory.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:69:13: error: conflicting declaration ‘typedef int GstFlowReturn’
+   69 | typedef int GstFlowReturn;
+      |             ^~~~~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstelement.h:223,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/main/interface/IDecryptionService.h:25,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapperFactory.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstpad.h:183:3: note: previous declaration as ‘typedef enum GstFlowReturn GstFlowReturn’
+  183 | } GstFlowReturn;
+      |   ^~~~~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/GstProtectionMetadata.h:24,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapper.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapperFactory.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:74:13: error: conflicting declaration ‘typedef int GstFormat’
+   74 | typedef int GstFormat;
+      |             ^~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstevent.h:220,
+                 from /usr/include/gstreamer-1.0/gst/gstpadtemplate.h:36,
+                 from /usr/include/gstreamer-1.0/gst/gstpad.h:73,
+                 from /usr/include/gstreamer-1.0/gst/gstelement.h:223,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/main/interface/IDecryptionService.h:25,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapperFactory.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstformat.h:59:3: note: previous declaration as ‘typedef enum GstFormat GstFormat’
+   59 | } GstFormat;
+      |   ^~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/GstProtectionMetadata.h:24,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapper.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapperFactory.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:75:13: error: conflicting declaration ‘typedef int GstSeekFlags’
+   75 | typedef int GstSeekFlags;
+      |             ^~~~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstsample.h:30,
+                 from /usr/include/gstreamer-1.0/gst/gsttaglist.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gstevent.h:224,
+                 from /usr/include/gstreamer-1.0/gst/gstpadtemplate.h:36,
+                 from /usr/include/gstreamer-1.0/gst/gstpad.h:73,
+                 from /usr/include/gstreamer-1.0/gst/gstelement.h:223,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/main/interface/IDecryptionService.h:25,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapperFactory.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstsegment.h:161:3: note: previous declaration as ‘typedef enum GstSeekFlags GstSeekFlags’
+  161 | } GstSeekFlags;
+      |   ^~~~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/GstProtectionMetadata.h:24,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapper.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:76:9: error: ‘intGstSeekType’ does not name a type; did you mean ‘GstSeekType’?
+   76 | typedef intGstSeekType;
+      |         ^~~~~~~~~~~~~~
+      |         GstSeekType
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:96:3: error: conflicting declaration ‘typedef struct GstMapInfo GstMapInfo’
+   96 | } GstMapInfo;
+      |   ^~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstallocator.h:26,
+                 from /usr/include/gstreamer-1.0/gst/gstbuffer.h:29,
+                 from /usr/include/gstreamer-1.0/gst/gstpad.h:70,
+                 from /usr/include/gstreamer-1.0/gst/gstelement.h:223,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/main/interface/IDecryptionService.h:25,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/GstProtectionMetadata.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapper.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstmemory.h:220:3: note: previous declaration as ‘typedef struct GstMapInfo GstMapInfo’
+  220 | } GstMapInfo;
+      |   ^~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/GstProtectionMetadata.h:24,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapper.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:97:13: error: conflicting declaration ‘typedef int GstMapFlags’
+   97 | typedef int GstMapFlags;
+      |             ^~~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstallocator.h:26,
+                 from /usr/include/gstreamer-1.0/gst/gstbuffer.h:29,
+                 from /usr/include/gstreamer-1.0/gst/gstpad.h:70,
+                 from /usr/include/gstreamer-1.0/gst/gstelement.h:223,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/main/interface/IDecryptionService.h:25,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/GstProtectionMetadata.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapper.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstmemory.h:186:3: note: previous declaration as ‘typedef enum GstMapFlags GstMapFlags’
+  186 | } GstMapFlags;
+      |   ^~~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/GstProtectionMetadata.h:24,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapper.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:99:13: error: conflicting declaration ‘typedef int GstMessageType’
+   99 | typedef int GstMessageType;
+      |             ^~~~~~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstevent.h:226,
+                 from /usr/include/gstreamer-1.0/gst/gstpadtemplate.h:36,
+                 from /usr/include/gstreamer-1.0/gst/gstpad.h:73,
+                 from /usr/include/gstreamer-1.0/gst/gstelement.h:223,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/main/interface/IDecryptionService.h:25,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/GstProtectionMetadata.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapper.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstmessage.h:184:3: note: previous declaration as ‘typedef enum GstMessageType GstMessageType’
+  184 | } GstMessageType;
+      |   ^~~~~~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/GstProtectionMetadata.h:24,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapper.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:100:13: error: conflicting declaration ‘typedef int GstDebugGraphDetails’
+  100 | typedef int GstDebugGraphDetails;
+      |             ^~~~~~~~~~~~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gst.h:45,
+                 from /home/lukewill95/rialto/media/server/main/interface/IDecryptionService.h:25,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/GstProtectionMetadata.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapper.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstdebugutils.h:59:3: note: previous declaration as ‘typedef enum GstDebugGraphDetails GstDebugGraphDetails’
+   59 | } GstDebugGraphDetails;
+      |   ^~~~~~~~~~~~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/GstProtectionMetadata.h:24,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapper.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:101:13: error: conflicting declaration ‘typedef int GstElementFactoryListType’
+  101 | typedef int GstElementFactoryListType;
+      |             ^~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstelement.h:226,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/main/interface/IDecryptionService.h:25,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/GstProtectionMetadata.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapper.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstelementfactory.h:153:17: note: previous declaration as ‘typedef guint64 GstElementFactoryListType’
+  153 | typedef guint64 GstElementFactoryListType;
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/GstProtectionMetadata.h:24,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapper.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:108:13: error: conflicting declaration ‘typedef int GstEventType’
+  108 | typedef int GstEventType;
+      |             ^~~~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstpadtemplate.h:36,
+                 from /usr/include/gstreamer-1.0/gst/gstpad.h:73,
+                 from /usr/include/gstreamer-1.0/gst/gstelement.h:223,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/main/interface/IDecryptionService.h:25,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/GstProtectionMetadata.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapper.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstevent.h:192:3: note: previous declaration as ‘typedef enum GstEventType GstEventType’
+  192 | } GstEventType;
+      |   ^~~~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/GstProtectionMetadata.h:24,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapper.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:112:13: error: conflicting declaration ‘typedef int GstRank’
+  112 | typedef int GstRank;
+      |             ^~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstelementfactory.h:39,
+                 from /usr/include/gstreamer-1.0/gst/gstelement.h:226,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/main/interface/IDecryptionService.h:25,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/GstProtectionMetadata.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapper.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstpluginfeature.h:69:3: note: previous declaration as ‘typedef enum GstRank GstRank’
+   69 | } GstRank;
+      |   ^~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/GstProtectionMetadata.h:24,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapper.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapperFactory.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:76:9: error: ‘intGstSeekType’ does not name a type; did you mean ‘GstSeekType’?
+   76 | typedef intGstSeekType;
+      |         ^~~~~~~~~~~~~~
+      |         GstSeekType
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:96:3: error: conflicting declaration ‘typedef struct GstMapInfo GstMapInfo’
+   96 | } GstMapInfo;
+      |   ^~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstallocator.h:26,
+                 from /usr/include/gstreamer-1.0/gst/gstbuffer.h:29,
+                 from /usr/include/gstreamer-1.0/gst/gstpad.h:70,
+                 from /usr/include/gstreamer-1.0/gst/gstelement.h:223,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/main/interface/IDecryptionService.h:25,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapperFactory.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstmemory.h:220:3: note: previous declaration as ‘typedef struct GstMapInfo GstMapInfo’
+  220 | } GstMapInfo;
+      |   ^~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/GstProtectionMetadata.h:24,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapper.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapperFactory.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:97:13: error: conflicting declaration ‘typedef int GstMapFlags’
+   97 | typedef int GstMapFlags;
+      |             ^~~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstallocator.h:26,
+                 from /usr/include/gstreamer-1.0/gst/gstbuffer.h:29,
+                 from /usr/include/gstreamer-1.0/gst/gstpad.h:70,
+                 from /usr/include/gstreamer-1.0/gst/gstelement.h:223,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/main/interface/IDecryptionService.h:25,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapperFactory.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstmemory.h:186:3: note: previous declaration as ‘typedef enum GstMapFlags GstMapFlags’
+  186 | } GstMapFlags;
+      |   ^~~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/GstProtectionMetadata.h:24,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapper.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapperFactory.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:99:13: error: conflicting declaration ‘typedef int GstMessageType’
+   99 | typedef int GstMessageType;
+      |             ^~~~~~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstevent.h:226,
+                 from /usr/include/gstreamer-1.0/gst/gstpadtemplate.h:36,
+                 from /usr/include/gstreamer-1.0/gst/gstpad.h:73,
+                 from /usr/include/gstreamer-1.0/gst/gstelement.h:223,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/main/interface/IDecryptionService.h:25,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapperFactory.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstmessage.h:184:3: note: previous declaration as ‘typedef enum GstMessageType GstMessageType’
+  184 | } GstMessageType;
+      |   ^~~~~~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/GstProtectionMetadata.h:24,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapper.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapperFactory.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:100:13: error: conflicting declaration ‘typedef int GstDebugGraphDetails’
+  100 | typedef int GstDebugGraphDetails;
+      |             ^~~~~~~~~~~~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gst.h:45,
+                 from /home/lukewill95/rialto/media/server/main/interface/IDecryptionService.h:25,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapperFactory.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstdebugutils.h:59:3: note: previous declaration as ‘typedef enum GstDebugGraphDetails GstDebugGraphDetails’
+   59 | } GstDebugGraphDetails;
+      |   ^~~~~~~~~~~~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/GstProtectionMetadata.h:24,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapper.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapperFactory.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:101:13: error: conflicting declaration ‘typedef int GstElementFactoryListType’
+  101 | typedef int GstElementFactoryListType;
+      |             ^~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstelement.h:226,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/main/interface/IDecryptionService.h:25,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapperFactory.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstelementfactory.h:153:17: note: previous declaration as ‘typedef guint64 GstElementFactoryListType’
+  153 | typedef guint64 GstElementFactoryListType;
+      |                 ^~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/GstProtectionMetadata.h:24,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapper.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapperFactory.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:108:13: error: conflicting declaration ‘typedef int GstEventType’
+  108 | typedef int GstEventType;
+      |             ^~~~~~~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstpadtemplate.h:36,
+                 from /usr/include/gstreamer-1.0/gst/gstpad.h:73,
+                 from /usr/include/gstreamer-1.0/gst/gstelement.h:223,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/main/interface/IDecryptionService.h:25,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapperFactory.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstevent.h:192:3: note: previous declaration as ‘typedef enum GstEventType GstEventType’
+  192 | } GstEventType;
+      |   ^~~~~~~~~~~~
+In file included from /home/lukewill95/rialto/media/server/gstplayer/include/GstProtectionMetadata.h:24,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapper.h:23,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapperFactory.h:24,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.cpp:20:
+/home/lukewill95/rialto/media/server/gstplayer/include/IGstWrapper.h:112:13: error: conflicting declaration ‘typedef int GstRank’
+  112 | typedef int GstRank;
+      |             ^~~~~~~
+In file included from /usr/include/gstreamer-1.0/gst/gstelementfactory.h:39,
+                 from /usr/include/gstreamer-1.0/gst/gstelement.h:226,
+                 from /usr/include/gstreamer-1.0/gst/gstbin.h:27,
+                 from /usr/include/gstreamer-1.0/gst/gst.h:35,
+                 from /home/lukewill95/rialto/media/server/main/interface/IDecryptionService.h:25,
+                 from /home/lukewill95/rialto/media/server/gstplayer/include/IGstProtectionMetadataWrapperFactory.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.h:23,
+                 from /home/lukewill95/rialto/tests/media/server/mocks/gstplayer/GstProtectionMetadataWrapperFactoryMock.cpp:20:
+/usr/include/gstreamer-1.0/gst/gstpluginfeature.h:69:3: note: previous declaration as ‘typedef enum GstRank GstRank’
+   69 | } GstRank;
+      |   ^~~~~~~
