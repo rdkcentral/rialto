@@ -27,7 +27,6 @@ add_compile_options(
 )
 
 find_package( PkgConfig REQUIRED )
-
 pkg_check_modules( GStreamerApp REQUIRED IMPORTED_TARGET gstreamer-app-1.0 gstreamer-pbutils-1.0 gstreamer-audio-1.0)
 
 add_library(

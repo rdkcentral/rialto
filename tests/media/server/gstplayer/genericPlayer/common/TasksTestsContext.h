@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2022 Sky UK
+ * Copyright 2023 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,11 @@
 #include "GstGenericPlayerPrivateMock.h"
 #include "GstWrapperMock.h"
 
+/**
+ * @brief TasksTests context
+ *
+ * Stores all objects and non-const variables so that constuction and destruction can be managed.
+ */
 class TasksTestsContext
 {
 public:
@@ -42,13 +47,15 @@ public:
     std::shared_ptr<firebolt::rialto::server::GlibWrapperMock> m_glibWrapper;
     std::shared_ptr<firebolt::rialto::server::GstWrapperMock> m_gstWrapper;
 
-    // Gstreamer Objects
+    // Gstreamer members
     GstElement m_element{};
     GstElementFactory *m_elementFactory{};
+    GstElement m_pipeline{};
+
+    // Glib members
+    guint m_signals[1]{123};
     GCallback m_audioUnderflowCallback;
     GCallback m_videoUnderflowCallback;
-    GstElement m_pipeline{};
-    guint m_signals[1]{123};
 };
 
 #endif // TASKS_TESTS_CONTEXT_H_

@@ -34,6 +34,12 @@ using ::testing::ReturnRef;
 using ::testing::SaveArg;
 using ::testing::StrictMock;
 
+/**
+ * @brief TasksTest Base class
+ *
+ * This class exists to create a common place for all gstreamer objects and mocks to coexist.
+ * Moving all gstreamer dependancies into one file reduces the compile time dramatically.
+ */
 class TasksTestsBase : public ::testing::Test
 {
 public:
@@ -41,6 +47,7 @@ public:
     virtual ~TasksTestsBase();
 
 protected:
+    // SetupElement test methods
     void shouldSetupVideoElementOnly();
     void shouldSetupVideoElementWesterossink();
     void shouldSetupVideoElementAmlhalasink();
@@ -52,20 +59,23 @@ protected:
     void shouldSetAudioUnderflowCallback();
     void triggerAudioUnderflowCallback();
 
-    void initSetVideoGeometryTest();
-    void termSetVideoGeometryTest();
+    // SetVideoGeometry test methods
     void setPipelineToNull();
     void triggerSetVideoGeometryFailure();
     void shouldSetVideoGeometry();
     void triggerSetVideoGeometrySuccess();
 
+    // SetupSource test methods
     void setAllSourcesAttached();
     void shouldScheduleAllSourcesAttached();
     void triggerSetupSource();
 
+    // SetVolume test methods
     void shouldSetGstVolume();
     void triggerSetVolume();
+
 private:
+    // SetupElement helper methods
     void expectSetupVideoElement();
     void expectSetupAudioElement();
 };
