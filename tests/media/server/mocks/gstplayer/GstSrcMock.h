@@ -28,8 +28,8 @@ namespace firebolt::rialto::server
 class GstSrcMock : public IGstSrc
 {
 public:
-    GstSrcMock();
-    virtual ~GstSrcMock();
+    GstSrcMock() = default;
+    virtual ~GstSrcMock() = default;
 
     MOCK_METHOD(void, initSrc, (), (override));
     MOCK_METHOD(void, setupAndAddAppArc,

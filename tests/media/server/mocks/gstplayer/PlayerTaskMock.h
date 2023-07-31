@@ -28,9 +28,6 @@ namespace firebolt::rialto::server
 class PlayerTaskMock : public IPlayerTask
 {
 public:
-    PlayerTaskMock();
-    virtual ~PlayerTaskMock();
-
     MOCK_METHOD(void, execute, (), (const, override));
 };
 } // namespace firebolt::rialto::server

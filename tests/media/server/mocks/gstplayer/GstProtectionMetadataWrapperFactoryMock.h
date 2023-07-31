@@ -29,9 +29,6 @@ namespace firebolt::rialto::server
 class GstProtectionMetadataWrapperFactoryMock : public IGstProtectionMetadataWrapperFactory
 {
 public:
-    GstProtectionMetadataWrapperFactoryMock();
-    virtual ~GstProtectionMetadataWrapperFactoryMock();
-
     MOCK_METHOD(std::unique_ptr<IGstProtectionMetadataWrapper>, createProtectionMetadataWrapper,
                 (const std::shared_ptr<IGstWrapper> &gstWrapper), (const, override));
 };

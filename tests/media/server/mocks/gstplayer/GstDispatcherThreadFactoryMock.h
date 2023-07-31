@@ -29,9 +29,6 @@ namespace firebolt::rialto::server
 class GstDispatcherThreadFactoryMock : public IGstDispatcherThreadFactory
 {
 public:
-    GstDispatcherThreadFactoryMock();
-    virtual ~GstDispatcherThreadFactoryMock();
-
     MOCK_METHOD(std::unique_ptr<IGstDispatcherThread>, createGstDispatcherThread,
                 (IGstDispatcherThreadClient & client, GstElement *pipeline,
                  const std::shared_ptr<IGstWrapper> &gstWrapper),

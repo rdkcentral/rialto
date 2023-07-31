@@ -109,7 +109,6 @@ target_include_directories(RialtoServerGstPlayerUnitTests
         $<TARGET_PROPERTY:RialtoServerMocks,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoCommonMocks,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoCommonMisc,INTERFACE_INCLUDE_DIRECTORIES>
-        $<TARGET_PROPERTY:RialtoServerGstPlayerMocks,INTERFACE_INCLUDE_DIRECTORIES>
 
         genericPlayer/tasksTests/
         genericPlayer/common/
@@ -122,7 +121,6 @@ target_link_libraries(RialtoServerGstPlayerUnitTests
     RialtoServerGstPlayer
     RialtoLogging
     RialtoCommonMisc
-    RialtoServerGstPlayerMocks
 )
 
 if ( COVERAGE_ENABLED )

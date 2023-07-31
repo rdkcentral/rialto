@@ -28,8 +28,6 @@ namespace firebolt::rialto::server
 class GstDispatcherThreadMock : public IGstDispatcherThread
 {
 public:
-    GstDispatcherThreadMock();
-    virtual ~GstDispatcherThreadMock();
 };
 } // namespace firebolt::rialto::server
 

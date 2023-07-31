@@ -29,9 +29,6 @@ namespace firebolt::rialto::server
 class WorkerThreadFactoryMock : public IWorkerThreadFactory
 {
 public:
-    WorkerThreadFactoryMock();
-    virtual ~WorkerThreadFactoryMock();
-
     MOCK_METHOD(std::unique_ptr<IWorkerThread>, createWorkerThread, (), (const, override));
 };
 } // namespace firebolt::rialto::server

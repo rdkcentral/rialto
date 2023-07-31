@@ -31,11 +31,9 @@ target_include_directories(
         RialtoServerMocks
 
         INTERFACE
+        gstplayer
         ipc
-        gstplayerinterface
         main
         service
         wrappers
     )
-
-add_subdirectory( gstplayer )

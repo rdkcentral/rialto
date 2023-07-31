@@ -29,8 +29,8 @@ namespace firebolt::rialto::server
 class GstWrapperFactoryMock : public IGstWrapperFactory
 {
 public:
-    GstWrapperFactoryMock();
-    virtual ~GstWrapperFactoryMock();
+    GstWrapperFactoryMock() = default;
+    virtual ~GstWrapperFactoryMock() = default;
 
     MOCK_METHOD(std::shared_ptr<IGstWrapper>, getGstWrapper, (), (override));
 };
