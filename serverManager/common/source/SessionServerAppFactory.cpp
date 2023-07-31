@@ -26,9 +26,10 @@ namespace rialto::servermanager::common
 {
 SessionServerAppFactory::SessionServerAppFactory(const std::list<std::string> &environmentVariables,
                                                  const std::string &sessionServerPath,
-                                                 std::chrono::milliseconds sessionServerStartupTimeout)
+                                                 std::chrono::milliseconds sessionServerStartupTimeout,
+                                                 unsigned int socketPermissions)
     : m_kEnvironmentVariables{environmentVariables}, m_kSessionServerPath{sessionServerPath},
-      m_kSessionServerStartupTimeout{sessionServerStartupTimeout}
+      m_kSessionServerStartupTimeout{sessionServerStartupTimeout}, m_kSocketPermissions{socketPermissions}
 {
 }
 
@@ -38,12 +39,12 @@ std::unique_ptr<ISessionServerApp> SessionServerAppFactory::create(
 {
     return std::make_unique<SessionServerApp>(appName, initialState, appConfig, sessionServerAppManager,
                                               m_kEnvironmentVariables, m_kSessionServerPath,
-                                              m_kSessionServerStartupTimeout);
+                                              m_kSessionServerStartupTimeout, m_kSocketPermissions);
 }
 
 std::unique_ptr<ISessionServerApp> SessionServerAppFactory::create(SessionServerAppManager &sessionServerAppManager) const
 {
     return std::make_unique<SessionServerApp>(sessionServerAppManager, m_kEnvironmentVariables, m_kSessionServerPath,
-                                              m_kSessionServerStartupTimeout);
+                                              m_kSessionServerStartupTimeout, m_kSocketPermissions);
 }
 } // namespace rialto::servermanager::common

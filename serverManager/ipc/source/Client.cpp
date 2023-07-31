@@ -184,7 +184,8 @@ bool Client::performSetState(const firebolt::rialto::common::SessionServerState 
 
 bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServerState &initialState,
                                      const std::string &socketName, const std::string &clientDisplayName,
-                                     const firebolt::rialto::common::MaxResourceCapabilitites &maxResource) const
+                                     const firebolt::rialto::common::MaxResourceCapabilitites &maxResource,
+                                     const unsigned int socketPermissions) const
 {
     if (!m_ipcLoop || !m_serviceStub)
     {
@@ -198,6 +199,7 @@ bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServ
     request.set_clientdisplayname(clientDisplayName);
     request.mutable_resources()->set_maxplaybacks(maxResource.maxPlaybacks);
     request.mutable_resources()->set_maxwebaudioplayers(maxResource.maxWebAudioPlayers);
+    request.set_socketpermissions(socketPermissions);
     *(request.mutable_loglevels()) = getCurrentLogLevels();
     request.set_initialsessionserverstate(convert(initialState));
     auto ipcController = m_ipcLoop->createRpcController();

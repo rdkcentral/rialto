@@ -58,7 +58,7 @@ public:
     SessionManagementServer &operator=(const SessionManagementServer &) = delete;
     SessionManagementServer &operator=(SessionManagementServer &&) = delete;
 
-    bool initialize(const std::string &socketName) override;
+    bool initialize(const std::string &socketName, unsigned int socketPermissions) override;
     void start() override;
     void stop() override;
     void setLogLevels(RIALTO_DEBUG_LEVEL defaultLogLevels, RIALTO_DEBUG_LEVEL clientLogLevels,
