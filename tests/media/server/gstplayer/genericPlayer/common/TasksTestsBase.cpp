@@ -24,8 +24,8 @@
 #include "tasks/generic/SetVolume.h"
 #include "tasks/generic/SetupElement.h"
 #include "tasks/generic/SetupSource.h"
-#include <memory>
 #include <gst/gst.h>
+#include <memory>
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::server;

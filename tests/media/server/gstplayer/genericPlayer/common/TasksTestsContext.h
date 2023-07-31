@@ -34,19 +34,14 @@
 class TasksTestsContext
 {
 public:
-    TasksTestsContext()
-    {
-        m_glibWrapper = std::make_shared<StrictMock<firebolt::rialto::server::GlibWrapperMock>>();
-        m_gstWrapper = std::make_shared<StrictMock<firebolt::rialto::server::GstWrapperMock>>();
-    }
-    virtual ~TasksTestsContext(){}
-
     firebolt::rialto::server::GenericPlayerContext m_context;
 
     // Mocks
     StrictMock<firebolt::rialto::server::GstGenericPlayerPrivateMock> m_gstPlayer;
-    std::shared_ptr<firebolt::rialto::server::GlibWrapperMock> m_glibWrapper;
-    std::shared_ptr<firebolt::rialto::server::GstWrapperMock> m_gstWrapper;
+    std::shared_ptr<firebolt::rialto::server::GlibWrapperMock> m_glibWrapper{
+        std::make_shared<StrictMock<firebolt::rialto::server::GlibWrapperMock>>()};
+    std::shared_ptr<firebolt::rialto::server::GstWrapperMock> m_gstWrapper{
+        std::make_shared<StrictMock<firebolt::rialto::server::GstWrapperMock>>()};
 
     // Gstreamer members
     GstElement m_element{};
