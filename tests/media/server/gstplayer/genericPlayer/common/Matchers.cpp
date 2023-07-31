@@ -25,6 +25,10 @@ bool operator==(const Rectangle &lhs, const Rectangle &rhs)
 {
     return lhs.x == rhs.x && lhs.y == rhs.y && lhs.width == rhs.width && lhs.height == rhs.height;
 }
+bool operator!=(const Rectangle &lhs, const Rectangle &rhs)
+{
+    return lhs.x != rhs.x && lhs.y != rhs.y && lhs.width != rhs.width && lhs.height != rhs.height;
+}
 } // namespace firebolt::rialto::server
 namespace firebolt::rialto
 {

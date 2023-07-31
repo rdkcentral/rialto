@@ -22,6 +22,7 @@ set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CMAKE_COMMAND} -E time")
 add_gtests(RialtoServerGstPlayerUnitTests
 
     #GstGenericPlayer unittests
+    genericPlayer/tasksTests/TasksTestsBase.cpp
     #genericPlayer/tasksTests/AttachSamplesTest.cpp
     #genericPlayer/tasksTests/AttachSourceTest.cpp
     #genericPlayer/tasksTests/DeepElementAddedTest.cpp
@@ -41,15 +42,15 @@ add_gtests(RialtoServerGstPlayerUnitTests
     #genericPlayer/tasksTests/SetPlaybackRateTest.cpp
     #genericPlayer/tasksTests/SetPositionTest.cpp
     genericPlayer/tasksTests/SetupElementTest.cpp
-    #genericPlayer/tasksTests/SetupSourceTest.cpp
-    #genericPlayer/tasksTests/SetVideoGeometryTest.cpp
-    #genericPlayer/tasksTests/SetVolumeTest.cpp
+    genericPlayer/tasksTests/SetupSourceTest.cpp
+    genericPlayer/tasksTests/SetVideoGeometryTest.cpp
+    genericPlayer/tasksTests/SetVolumeTest.cpp
     #genericPlayer/tasksTests/SetMuteTest.cpp
     #genericPlayer/tasksTests/ShutdownTest.cpp
     #genericPlayer/tasksTests/StopTest.cpp
     #genericPlayer/tasksTests/UnderflowTest.cpp
     #genericPlayer/tasksTests/UpdatePlaybackGroupTest.cpp
-    #genericPlayer/common/Matchers.cpp
+    genericPlayer/common/Matchers.cpp
     #genericPlayer/common/GstGenericPlayerTestCommon.cpp
 
     #genericPlayer/CreateTest.cpp
@@ -110,6 +111,7 @@ target_include_directories(RialtoServerGstPlayerUnitTests
         $<TARGET_PROPERTY:RialtoCommonMisc,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoServerGstPlayerMocks,INTERFACE_INCLUDE_DIRECTORIES>
 
+        genericPlayer/tasksTests/
         genericPlayer/common/
         webAudioPlayer/common/
 

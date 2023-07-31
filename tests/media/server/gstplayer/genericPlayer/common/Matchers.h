@@ -29,6 +29,7 @@
 namespace firebolt::rialto::server
 {
 bool operator==(const Rectangle &lhs, const Rectangle &rhs);
+bool operator!=(const Rectangle &lhs, const Rectangle &rhs);
 } // namespace firebolt::rialto::server
 
 namespace firebolt::rialto

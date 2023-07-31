@@ -17,42 +17,20 @@
  * limitations under the License.
  */
 
-#include "tasks/generic/SetVolume.h"
-#include "GenericPlayerContext.h"
-#include "GstWrapperMock.h"
-#include <gst/gst.h>
-#include <gtest/gtest.h>
+#include "TasksTestsBase.h"
 
-using testing::_;
-using testing::Return;
-using testing::StrictMock;
-
-namespace
+class SetVolumeTest : public TasksTestsBase
 {
-constexpr double kVolume{0.7};
-} // namespace
-
-class SetVolumeTest : public testing::Test
-{
-public:
-    SetVolumeTest() = default;
-
-    firebolt::rialto::server::GenericPlayerContext m_context;
-    std::shared_ptr<firebolt::rialto::server::GstWrapperMock> m_gstWrapper{
-        std::make_shared<StrictMock<firebolt::rialto::server::GstWrapperMock>>()};
-    GstElement m_pipeline{};
 };
 
 TEST_F(SetVolumeTest, shouldFailToSetVolumeWhenPipelineIsNull)
 {
-    firebolt::rialto::server::tasks::generic::SetVolume task{m_context, m_gstWrapper, kVolume};
-    task.execute();
+    setPipelineToNull();
+    triggerSetVolume();
 }
 
 TEST_F(SetVolumeTest, shouldSetVolume)
 {
-    m_context.pipeline = &m_pipeline;
-    EXPECT_CALL(*m_gstWrapper, gstStreamVolumeSetVolume(_, GST_STREAM_VOLUME_FORMAT_LINEAR, kVolume));
-    firebolt::rialto::server::tasks::generic::SetVolume task{m_context, m_gstWrapper, kVolume};
-    task.execute();
+    shouldSetGstVolume();
+    triggerSetVolume();
 }
