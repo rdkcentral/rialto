@@ -38,12 +38,14 @@ namespace rialto::servermanager::common
 class SessionServerApp : public ISessionServerApp
 {
 public:
-    SessionServerApp(SessionServerAppManager &sessionServerAppManager, const std::list<std::string> &environmentVariables,
-                     const std::string &sessionServerPath, std::chrono::milliseconds sessionServerStartupTimeout);
+    SessionServerApp(SessionServerAppManager &sessionServerAppManager,
+                     const std::list<std::string> &environmentVariables, const std::string &sessionServerPath,
+                     std::chrono::milliseconds sessionServerStartupTimeout, unsigned int socketPermissions);
     SessionServerApp(const std::string &appName, const firebolt::rialto::common::SessionServerState &initialState,
                      const firebolt::rialto::common::AppConfig &appConfig,
-                     SessionServerAppManager &sessionServerAppManager, const std::list<std::string> &environmentVariables,
-                     const std::string &sessionServerPath, std::chrono::milliseconds sessionServerStartupTimeout);
+                     SessionServerAppManager &sessionServerAppManager,
+                     const std::list<std::string> &environmentVariables, const std::string &sessionServerPath,
+                     std::chrono::milliseconds sessionServerStartupTimeout, unsigned int socketPermissions);
     virtual ~SessionServerApp();
 
     bool launch() override;
@@ -52,6 +54,7 @@ public:
                    const firebolt::rialto::common::AppConfig &appConfig) override;
     bool isConnected() const override;
     std::string getSessionManagementSocketName() const override;
+    unsigned int getSessionManagementSocketPermissions() const override;
     firebolt::rialto::common::SessionServerState getInitialState() const override;
     int getServerId() const override;
     const std::string &getAppName() const override;
@@ -82,6 +85,7 @@ private:
     bool m_isPreloaded;
     const std::string m_kSessionServerPath;
     const std::chrono::milliseconds m_kSessionServerStartupTimeout;
+    const unsigned int m_kSessionManagementSocketPermissions;
     std::vector<char *> m_environmentVariables;
     mutable std::mutex m_timerMutex;
     std::unique_ptr<firebolt::rialto::common::ITimer> m_startupTimer;

@@ -18,20 +18,39 @@
  */
 
 #include "ServerManagerServiceFactory.h"
+#include "RialtoServerManagerLogging.h"
 #include "ServerManagerService.h"
 #include "ServiceContext.h"
 #include <memory>
+
+namespace
+{
+unsigned int convertSocketPermissions(firebolt::rialto::common::SocketPermissions permissions) // copy param intentionally
+{
+    constexpr unsigned int kDefaultPermissions{0666};
+    if (permissions.ownerPermissions > 7 || permissions.groupPermissions > 7 || permissions.otherPermissions > 7)
+    {
+        RIALTO_SERVER_MANAGER_LOG_WARN("One of permissions values is out of bounds. Default permissions will be used");
+        return kDefaultPermissions;
+    }
+    permissions.ownerPermissions <<= 6;
+    permissions.groupPermissions <<= 3;
+    return (permissions.ownerPermissions | permissions.groupPermissions | permissions.otherPermissions);
+}
+} // namespace
 
 namespace rialto::servermanager::service
 {
 std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserver> &stateObserver,
                                               const firebolt::rialto::common::ServerManagerConfig &config)
 {
-    return std::make_unique<ServerManagerService>(std::make_unique<ServiceContext>(stateObserver,
-                                                                                   config.sessionServerEnvVars,
-                                                                                   config.sessionServerPath,
-                                                                                   config.sessionServerStartupTimeout,
-                                                                                   config.healthcheckInterval),
-                                                  config.numOfPreloadedServers);
+    return std::make_unique<
+        ServerManagerService>(std::make_unique<ServiceContext>(stateObserver, config.sessionServerEnvVars,
+                                                               config.sessionServerPath,
+                                                               config.sessionServerStartupTimeout,
+                                                               config.healthcheckInterval,
+                                                               convertSocketPermissions(
+                                                                   config.sessionManagementSocketPermissions)),
+                              config.numOfPreloadedServers);
 }
 } // namespace rialto::servermanager::service

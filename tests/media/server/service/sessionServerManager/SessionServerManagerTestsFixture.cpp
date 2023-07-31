@@ -42,6 +42,7 @@ constexpr int pingId{12};
 constexpr firebolt::rialto::common::MaxResourceCapabilitites maxResource{maxPlaybacks, maxWebAudioPlayers};
 constexpr RIALTO_DEBUG_LEVEL logLvl{RIALTO_DEBUG_LEVEL_DEFAULT};
 const std::string sessionManagementSocket{"/tmp/rialtosessionservermanagertests-0"};
+constexpr unsigned int sessionManagementSocketPermissions{0777};
 const std::string clientDisplayName{"westeros-rialto"};
 } // namespace
 
@@ -139,15 +140,17 @@ void SessionServerManagerTests::willInitialize()
 
 void SessionServerManagerTests::willFailToSetConfigurationWhenSessionManagementServerFailsToInit()
 {
-    EXPECT_CALL(m_sessionManagementServerMock, initialize(sessionManagementSocket)).WillOnce(Return(false));
+    EXPECT_CALL(m_sessionManagementServerMock, initialize(sessionManagementSocket, sessionManagementSocketPermissions))
+        .WillOnce(Return(false));
     EXPECT_TRUE(m_sut);
-    EXPECT_FALSE(
-        m_sut->setConfiguration(sessionManagementSocket, SessionServerState::INACTIVE, maxResource, clientDisplayName));
+    EXPECT_FALSE(m_sut->setConfiguration(sessionManagementSocket, SessionServerState::INACTIVE, maxResource,
+                                         clientDisplayName, sessionManagementSocketPermissions));
 }
 
 void SessionServerManagerTests::willFailToSetConfigurationWhenSessionManagementServerFailsToSetInitialState()
 {
-    EXPECT_CALL(m_sessionManagementServerMock, initialize(sessionManagementSocket)).WillOnce(Return(true));
+    EXPECT_CALL(m_sessionManagementServerMock, initialize(sessionManagementSocket, sessionManagementSocketPermissions))
+        .WillOnce(Return(true));
     EXPECT_CALL(m_sessionManagementServerMock, start());
     EXPECT_CALL(m_playbackServiceMock, setMaxPlaybacks(maxPlaybacks));
     EXPECT_CALL(m_playbackServiceMock, setMaxWebAudioPlayers(maxWebAudioPlayers));
@@ -157,13 +160,14 @@ void SessionServerManagerTests::willFailToSetConfigurationWhenSessionManagementS
     EXPECT_CALL(m_applicationManagementServerMock, sendStateChangedEvent(SessionServerState::INACTIVE))
         .WillOnce(Return(false));
     EXPECT_TRUE(m_sut);
-    EXPECT_FALSE(
-        m_sut->setConfiguration(sessionManagementSocket, SessionServerState::INACTIVE, maxResource, clientDisplayName));
+    EXPECT_FALSE(m_sut->setConfiguration(sessionManagementSocket, SessionServerState::INACTIVE, maxResource,
+                                         clientDisplayName, sessionManagementSocketPermissions));
 }
 
 void SessionServerManagerTests::willSetConfiguration()
 {
-    EXPECT_CALL(m_sessionManagementServerMock, initialize(sessionManagementSocket)).WillOnce(Return(true));
+    EXPECT_CALL(m_sessionManagementServerMock, initialize(sessionManagementSocket, sessionManagementSocketPermissions))
+        .WillOnce(Return(true));
     EXPECT_CALL(m_sessionManagementServerMock, start());
     EXPECT_CALL(m_playbackServiceMock, setMaxPlaybacks(maxPlaybacks));
     EXPECT_CALL(m_playbackServiceMock, setMaxWebAudioPlayers(maxWebAudioPlayers));
@@ -174,8 +178,8 @@ void SessionServerManagerTests::willSetConfiguration()
     EXPECT_CALL(m_applicationManagementServerMock, sendStateChangedEvent(SessionServerState::INACTIVE))
         .WillOnce(Return(true));
     EXPECT_TRUE(m_sut);
-    EXPECT_TRUE(
-        m_sut->setConfiguration(sessionManagementSocket, SessionServerState::INACTIVE, maxResource, clientDisplayName));
+    EXPECT_TRUE(m_sut->setConfiguration(sessionManagementSocket, SessionServerState::INACTIVE, maxResource,
+                                        clientDisplayName, sessionManagementSocketPermissions));
 }
 
 void SessionServerManagerTests::willFailToSetUnsupportedState()

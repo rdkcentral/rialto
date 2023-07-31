@@ -41,6 +41,7 @@ using testing::SetArgReferee;
 namespace
 {
 const std::string socketName{"/tmp/sessionmanagementservertest-0"};
+constexpr unsigned int socketPermissions{0777};
 const RIALTO_DEBUG_LEVEL defaultLogLevels{RIALTO_DEBUG_LEVEL_FATAL};
 const RIALTO_DEBUG_LEVEL clientLogLevels{RIALTO_DEBUG_LEVEL_ERROR};
 const RIALTO_DEBUG_LEVEL ipcLogLevels{RIALTO_DEBUG_LEVEL_DEBUG};
@@ -181,12 +182,12 @@ void SessionManagementServerTests::serverWillSetLogLevels()
 
 void SessionManagementServerTests::sendServerInitialize()
 {
-    EXPECT_TRUE(m_sut->initialize(socketName));
+    EXPECT_TRUE(m_sut->initialize(socketName, socketPermissions));
 }
 
 void SessionManagementServerTests::sendServerInitializeAndExpectFailure()
 {
-    EXPECT_FALSE(m_sut->initialize(socketName));
+    EXPECT_FALSE(m_sut->initialize(socketName, socketPermissions));
 }
 
 void SessionManagementServerTests::sendServerStart()

@@ -28,6 +28,7 @@ namespace
 {
 const std::string SOCKET_NAME{"/tmp/rialtotest-0"};
 const std::string CLIENT_DISPLAY_NAME{"westeros-rialto"};
+constexpr unsigned int SOCKET_PERMISSIONS{0777};
 constexpr int MAX_SESSIONS{5};
 constexpr int MAX_WEB_AUDIO_PLAYERS{3};
 constexpr int socket{2};
@@ -75,7 +76,7 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillSetConfiguration(
 {
     EXPECT_CALL(m_sessionServerManagerMock,
                 setConfiguration(SOCKET_NAME, state, MaxResourceMatcher(MAX_SESSIONS, MAX_WEB_AUDIO_PLAYERS),
-                                 CLIENT_DISPLAY_NAME))
+                                 CLIENT_DISPLAY_NAME, SOCKET_PERMISSIONS))
         .WillOnce(Return(true));
 }
 
@@ -97,7 +98,7 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillFailToSetConfigura
 {
     EXPECT_CALL(m_sessionServerManagerMock,
                 setConfiguration(SOCKET_NAME, state, MaxResourceMatcher(MAX_SESSIONS, MAX_WEB_AUDIO_PLAYERS),
-                                 CLIENT_DISPLAY_NAME))
+                                 CLIENT_DISPLAY_NAME, SOCKET_PERMISSIONS))
         .WillOnce(Return(false));
 }
 
@@ -135,6 +136,7 @@ void ServerManagerModuleServiceTests::sendSetConfiguration(const firebolt::rialt
     request.mutable_loglevels()->set_commonloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
     request.set_initialsessionserverstate(convertSessionServerState(state));
     request.set_clientdisplayname(CLIENT_DISPLAY_NAME);
+    request.set_socketpermissions(SOCKET_PERMISSIONS);
 
     m_sut->setConfiguration(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }

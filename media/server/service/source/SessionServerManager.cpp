@@ -97,9 +97,9 @@ void SessionServerManager::stopService()
 
 bool SessionServerManager::setConfiguration(const std::string &socketName, const common::SessionServerState &state,
                                             const common::MaxResourceCapabilitites &maxResource,
-                                            const std::string &clientDisplayName)
+                                            const std::string &clientDisplayName, unsigned int socketPermissions)
 {
-    if (!m_sessionManagementServer->initialize(socketName))
+    if (!m_sessionManagementServer->initialize(socketName, socketPermissions))
     {
         RIALTO_SERVER_LOG_ERROR("SetConfiguration failed - SessionManagementServer failed to initialize");
         return false;
