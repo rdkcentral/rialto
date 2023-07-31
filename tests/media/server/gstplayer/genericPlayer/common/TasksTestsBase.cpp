@@ -53,8 +53,6 @@ TasksTestsBase::~TasksTestsBase()
 {
     gst_object_unref(testContext->m_elementFactory);
 
-    gst_deinit();
-
     testContext.reset();
 }
 
