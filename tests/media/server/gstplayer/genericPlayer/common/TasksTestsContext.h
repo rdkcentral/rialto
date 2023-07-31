@@ -24,6 +24,7 @@
 #include "GlibWrapperMock.h"
 #include "GstGenericPlayerPrivateMock.h"
 #include "GstWrapperMock.h"
+#include <memory>
 
 /**
  * @brief TasksTests context
@@ -37,8 +38,8 @@ public:
     {
         m_glibWrapper = std::make_shared<StrictMock<firebolt::rialto::server::GlibWrapperMock>>();
         m_gstWrapper = std::make_shared<StrictMock<firebolt::rialto::server::GstWrapperMock>>();
-    };
-    virtual ~TasksTestsContext(){};
+    }
+    virtual ~TasksTestsContext(){}
 
     firebolt::rialto::server::GenericPlayerContext m_context;
 

@@ -20,8 +20,8 @@
 #ifndef TASKS_TESTS_BASE_H_
 #define TASKS_TESTS_BASE_H_
 
-#include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
 using ::testing::_;
 using ::testing::A;
