@@ -21,16 +21,6 @@
 
 class SetupElementTest : public TasksTestsBase
 {
-protected:
-    SetupElementTest()
-    {
-        TasksTestsBase::initSetupElementTest();
-    }
-
-    ~SetupElementTest()
-    {
-        TasksTestsBase::termSetupElementTest();
-    }
 };
 
 TEST_F(SetupElementTest, shouldSetupVideoElement)

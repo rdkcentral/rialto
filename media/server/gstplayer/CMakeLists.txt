@@ -28,10 +28,7 @@ add_compile_options(
 
 find_package( PkgConfig REQUIRED )
 
-if( CMAKE_BUILD_FLAG STREQUAL "UnitTests" )
-        message("****************************************************************************************")
-        pkg_check_modules( GStreamerApp REQUIRED IMPORTED_TARGET gstreamer-app-1.0 gstreamer-pbutils-1.0 gstreamer-audio-1.0)
-endif()
+pkg_check_modules( GStreamerApp REQUIRED IMPORTED_TARGET gstreamer-app-1.0 gstreamer-pbutils-1.0 gstreamer-audio-1.0)
 
 add_library(
         RialtoServerGstPlayer
@@ -108,6 +105,7 @@ target_include_directories(
         $<TARGET_PROPERTY:RialtoServerMain,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoServerWrappers,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoCommon,INTERFACE_INCLUDE_DIRECTORIES>
+        ${GStreamerApp_INCLUDE_DIRS}
 
         )
 
@@ -126,22 +124,6 @@ target_link_libraries(
         RialtoServerMain
         RialtoServerWrappers
         RialtoCommon
+        ${GStreamerApp_LIBRARIES}
 
         )
-
-if( CMAKE_BUILD_FLAG STREQUAL "UnitTests" )
-        target_include_directories(
-                RialtoServerGstPlayer
-
-                PRIVATE
-
-                )
-
-        target_link_libraries(
-                RialtoServerGstPlayer
-
-                PRIVATE
-                ${GStreamerApp_LIBRARIES}
-
-                )
-endif()

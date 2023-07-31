@@ -41,8 +41,6 @@ public:
     virtual ~TasksTestsBase();
 
 protected:
-    void initSetupElementTest();
-    void termSetupElementTest();
     void shouldSetupVideoElementOnly();
     void shouldSetupVideoElementWesterossink();
     void shouldSetupVideoElementAmlhalasink();
