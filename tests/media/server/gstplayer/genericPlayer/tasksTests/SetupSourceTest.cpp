@@ -17,34 +17,20 @@
  * limitations under the License.
  */
 
-#include "tasks/generic/SetupSource.h"
-#include "GenericPlayerContext.h"
-#include "GstGenericPlayerPrivateMock.h"
-#include <gst/gst.h>
-#include <gtest/gtest.h>
+#include "TasksTestsBase.h"
 
-using testing::StrictMock;
-
-class SetupSourceTest : public testing::Test
+class SetupSourceTest : public TasksTestsBase
 {
-protected:
-    firebolt::rialto::server::GenericPlayerContext m_context{};
-    StrictMock<firebolt::rialto::server::GstGenericPlayerPrivateMock> m_gstPlayer;
-    GstElement m_element{};
 };
 
 TEST_F(SetupSourceTest, shouldSetupSource)
 {
-    firebolt::rialto::server::tasks::generic::SetupSource task{m_context, m_gstPlayer, &m_element};
-    task.execute();
-    EXPECT_EQ(m_context.source, &m_element);
+    triggerSetupSource();
 }
 
 TEST_F(SetupSourceTest, shouldScheduleAllSourcesAttachedWhenItWasReceivedBefore)
 {
-    m_context.wereAllSourcesAttached = true;
-    firebolt::rialto::server::tasks::generic::SetupSource task{m_context, m_gstPlayer, &m_element};
-    EXPECT_CALL(m_gstPlayer, scheduleAllSourcesAttached());
-    task.execute();
-    EXPECT_EQ(m_context.source, &m_element);
+    setAllSourcesAttached();
+    shouldScheduleAllSourcesAttached();
+    triggerSetupSource();
 }

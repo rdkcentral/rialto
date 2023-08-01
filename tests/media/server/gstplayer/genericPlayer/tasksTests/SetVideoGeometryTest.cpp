@@ -17,37 +17,20 @@
  * limitations under the License.
  */
 
-#include "tasks/generic/SetVideoGeometry.h"
-#include "GenericPlayerContext.h"
-#include "GstGenericPlayerPrivateMock.h"
-#include "Matchers.h"
-#include <gst/gst.h>
-#include <gtest/gtest.h>
+#include "TasksTestsBase.h"
 
-using testing::StrictMock;
-
-class SetVideoGeometryTest : public testing::Test
+class SetVideoGeometryTest : public TasksTestsBase
 {
-protected:
-    firebolt::rialto::server::GenericPlayerContext m_context{};
-    StrictMock<firebolt::rialto::server::GstGenericPlayerPrivateMock> m_gstPlayer;
-    firebolt::rialto::server::Rectangle m_rectangle{1, 2, 3, 4};
-    GstElement m_pipeline{};
-
-    SetVideoGeometryTest() { m_context.pipeline = &m_pipeline; }
 };
 
 TEST_F(SetVideoGeometryTest, shouldNotSetVideoGeometryWhenPipelineIsNull)
 {
-    m_context.pipeline = nullptr;
-    firebolt::rialto::server::tasks::generic::SetVideoGeometry task{m_context, m_gstPlayer, m_rectangle};
-    task.execute();
+    setPipelineToNull();
+    triggerSetVideoGeometryFailure();
 }
 
 TEST_F(SetVideoGeometryTest, shouldSetVideoGeometry)
 {
-    firebolt::rialto::server::tasks::generic::SetVideoGeometry task{m_context, m_gstPlayer, m_rectangle};
-    EXPECT_CALL(m_gstPlayer, setWesterossinkRectangle());
-    task.execute();
-    EXPECT_EQ(m_context.pendingGeometry, m_rectangle);
+    shouldSetVideoGeometry();
+    triggerSetVideoGeometrySuccess();
 }
