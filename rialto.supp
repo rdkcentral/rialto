@@ -90,3 +90,13 @@
    fun:_dl_init
    obj:*/ld-*
 }
+{
+   ignore_dl_open_possibly_lost
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   ...
+   fun:_dl_open
+   fun:dlopen_implementation
+   obj:*/ld-*
+}
