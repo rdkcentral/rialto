@@ -222,7 +222,7 @@ def runTests (suites, doListTests, gtestFilter, outputDir, resultsFile, xmlFile,
 
 # Returns the valgrind command arguments
 def AddValgrind(suite, outputToFile, outputToXml):
-    executeCmd = ["valgrind", "--leak-check=full", "--show-leak-kinds=all", "--track-origins=yes", "--verbose", "--error-exitcode=" + str(valgrindErrorCode)]
+    executeCmd = ["valgrind", "--leak-check=full", "--show-leak-kinds=all", "--gen-suppressions=all", "--track-origins=yes", "--verbose", "--error-exitcode=" + str(valgrindErrorCode)]
 
     # Xml redirects the output to xml, cannot output to logfile at the same time
     if outputToXml:
