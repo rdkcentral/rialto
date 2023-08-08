@@ -432,20 +432,11 @@ void TasksTestsBase::triggerAttachOpusAudioSourceWithAudioSpecificConf()
 void TasksTestsBase::shouldAttachVideoSource()
 {
     gpointer memory = nullptr;
-    EXPECT_CALL(*(testContext->m_gstWrapper), gstCapsNewEmptySimple(StrEq("video/x-h264"))).WillOnce(Return(&(testContext->m_gstCaps1)));
-    EXPECT_CALL(*(testContext->m_gstWrapper), gstCapsSetSimpleIntStub(&(testContext->m_gstCaps1), StrEq("width"), G_TYPE_INT, kWidth));
-    EXPECT_CALL(*(testContext->m_gstWrapper), gstCapsSetSimpleIntStub(&(testContext->m_gstCaps1), StrEq("height"), G_TYPE_INT, kHeight));
-    EXPECT_CALL(*(testContext->m_gstWrapper), gstCapsSetSimpleStringStub(&(testContext->m_gstCaps1), StrEq("alignment"), _, StrEq("au")));
+    expectSetGenericVideoCaps();
     EXPECT_CALL(*(testContext->m_glibWrapper), gMemdup(arrayMatcher(kCodecDataBuffer->data), kCodecDataBuffer->data.size())).WillOnce(Return(memory));
     EXPECT_CALL(*(testContext->m_gstWrapper), gstBufferNewWrapped(memory, kCodecDataBuffer->data.size())).WillOnce(Return(&(testContext->m_gstBuffer)));
     EXPECT_CALL(*(testContext->m_gstWrapper), gstCapsSetSimpleBufferStub(&(testContext->m_gstCaps1), StrEq("codec_data"), _, &(testContext->m_gstBuffer)));
     EXPECT_CALL(*(testContext->m_gstWrapper), gstBufferUnref(&(testContext->m_gstBuffer)));
-    EXPECT_CALL(*(testContext->m_gstWrapper), gstCapsSetSimpleStringStub(&(testContext->m_gstCaps1), StrEq("stream-format"), _, StrEq("avc")));
-    EXPECT_CALL(*(testContext->m_gstWrapper), gstCapsToString(&(testContext->m_gstCaps1))).WillOnce(Return(&(testContext->m_capsStr)));
-    EXPECT_CALL(*(testContext->m_glibWrapper), gFree(&(testContext->m_capsStr)));
-    EXPECT_CALL(*(testContext->m_gstWrapper), gstElementFactoryMake(_, CharStrMatcher(kVidName.c_str()))).WillOnce(Return(&(testContext->m_appSrc)));
-    EXPECT_CALL(*(testContext->m_gstWrapper), gstAppSrcSetCaps(GST_APP_SRC(&(testContext->m_appSrc)), &(testContext->m_gstCaps1)));
-    EXPECT_CALL(*(testContext->m_gstWrapper), gstCapsUnref(&(testContext->m_gstCaps1)));
 }
 
 void TasksTestsBase::triggerAttachVideoSource()
@@ -471,18 +462,9 @@ void TasksTestsBase::checkVideoSourceAttached()
 
 void TasksTestsBase::shouldAttachVideoSourceWithStringCodecData()
 {
-    EXPECT_CALL(*(testContext->m_gstWrapper), gstCapsNewEmptySimple(StrEq("video/x-h264"))).WillOnce(Return(&(testContext->m_gstCaps1)));
-    EXPECT_CALL(*(testContext->m_gstWrapper), gstCapsSetSimpleIntStub(&(testContext->m_gstCaps1), StrEq("width"), G_TYPE_INT, kWidth));
-    EXPECT_CALL(*(testContext->m_gstWrapper), gstCapsSetSimpleIntStub(&(testContext->m_gstCaps1), StrEq("height"), G_TYPE_INT, kHeight));
-    EXPECT_CALL(*(testContext->m_gstWrapper), gstCapsSetSimpleStringStub(&(testContext->m_gstCaps1), StrEq("alignment"), _, StrEq("au")));
+    expectSetGenericVideoCaps();
     EXPECT_CALL(*(testContext->m_gstWrapper), gstCapsSetSimpleStringStub(&(testContext->m_gstCaps1), StrEq("codec_data"), G_TYPE_STRING,
                                                           StrEq(kCodecStr.c_str())));
-    EXPECT_CALL(*(testContext->m_gstWrapper), gstCapsSetSimpleStringStub(&(testContext->m_gstCaps1), StrEq("stream-format"), _, StrEq("avc")));
-    EXPECT_CALL(*(testContext->m_gstWrapper), gstCapsToString(&(testContext->m_gstCaps1))).WillOnce(Return(&(testContext->m_capsStr)));
-    EXPECT_CALL(*(testContext->m_glibWrapper), gFree(&(testContext->m_capsStr)));
-    EXPECT_CALL(*(testContext->m_gstWrapper), gstElementFactoryMake(_, CharStrMatcher(kVidName.c_str()))).WillOnce(Return(&(testContext->m_appSrc)));
-    EXPECT_CALL(*(testContext->m_gstWrapper), gstAppSrcSetCaps(GST_APP_SRC(&(testContext->m_appSrc)), &(testContext->m_gstCaps1)));
-    EXPECT_CALL(*(testContext->m_gstWrapper), gstCapsUnref(&(testContext->m_gstCaps1)));
 }
 
 void TasksTestsBase::triggerAttachVideoSourceWithStringCodecData()
@@ -540,22 +522,13 @@ void TasksTestsBase::triggerAttachVideoSourceWithEmptyCodecData()
 void TasksTestsBase::shouldAttachVideoSourceWithDolbyVisionSource()
 {
     gpointer memory = nullptr;
-    EXPECT_CALL(*(testContext->m_gstWrapper), gstCapsNewEmptySimple(StrEq("video/x-h265"))).WillOnce(Return(&(testContext->m_gstCaps1)));
-    EXPECT_CALL(*(testContext->m_gstWrapper), gstCapsSetSimpleIntStub(&(testContext->m_gstCaps1), StrEq("width"), G_TYPE_INT, kWidth));
-    EXPECT_CALL(*(testContext->m_gstWrapper), gstCapsSetSimpleIntStub(&(testContext->m_gstCaps1), StrEq("height"), G_TYPE_INT, kHeight));
-    EXPECT_CALL(*(testContext->m_gstWrapper), gstCapsSetSimpleStringStub(&(testContext->m_gstCaps1), StrEq("alignment"), _, StrEq("au")));
+    expectSetGenericVideoCaps();
     EXPECT_CALL(*(testContext->m_glibWrapper), gMemdup(arrayMatcher(kCodecDataBuffer->data), kCodecDataBuffer->data.size())).WillOnce(Return(memory));
     EXPECT_CALL(*(testContext->m_gstWrapper), gstBufferNewWrapped(memory, kCodecDataBuffer->data.size())).WillOnce(Return(&(testContext->m_gstBuffer)));
     EXPECT_CALL(*(testContext->m_gstWrapper), gstCapsSetSimpleBufferStub(&(testContext->m_gstCaps1), StrEq("codec_data"), _, &(testContext->m_gstBuffer)));
     EXPECT_CALL(*(testContext->m_gstWrapper), gstBufferUnref(&(testContext->m_gstBuffer)));
-    EXPECT_CALL(*(testContext->m_gstWrapper), gstCapsSetSimpleStringStub(&(testContext->m_gstCaps1), StrEq("stream-format"), _, StrEq("avc")));
     EXPECT_CALL(*(testContext->m_gstWrapper), gstCapsSetSimpleBooleanStub(&(testContext->m_gstCaps1), StrEq("dovi-stream"), _, true));
     EXPECT_CALL(*(testContext->m_gstWrapper), gstCapsSetSimpleUintStub(&(testContext->m_gstCaps1), StrEq("dv_profile"), _, kDolbyVisionProfile));
-    EXPECT_CALL(*(testContext->m_gstWrapper), gstCapsToString(&(testContext->m_gstCaps1))).WillOnce(Return(&(testContext->m_capsStr)));
-    EXPECT_CALL(*(testContext->m_glibWrapper), gFree(&(testContext->m_capsStr)));
-    EXPECT_CALL(*(testContext->m_gstWrapper), gstElementFactoryMake(_, CharStrMatcher(kVidName.c_str()))).WillOnce(Return(&(testContext->m_appSrc)));
-    EXPECT_CALL(*(testContext->m_gstWrapper), gstAppSrcSetCaps(GST_APP_SRC(&(testContext->m_appSrc)), &(testContext->m_gstCaps1)));
-    EXPECT_CALL(*(testContext->m_gstWrapper), gstCapsUnref(&(testContext->m_gstCaps1)));
 }
 
 void TasksTestsBase::triggerAttachVideoSourceWithDolbyVisionSource()
@@ -627,4 +600,18 @@ void TasksTestsBase::triggerSwitchAudioSourceWithEmptyMimeType()
                                                                 testContext->m_glibWrapper, testContext->m_rdkGstreamerUtilsWrapper,
                                                                 testContext->m_gstPlayer,   source};
     task.execute();
+}
+
+void TasksTestsBase::expectSetGenericVideoCaps()
+{
+    EXPECT_CALL(*(testContext->m_gstWrapper), gstCapsNewEmptySimple(StrEq("video/x-h265"))).WillOnce(Return(&(testContext->m_gstCaps1)));
+    EXPECT_CALL(*(testContext->m_gstWrapper), gstCapsSetSimpleIntStub(&(testContext->m_gstCaps1), StrEq("width"), G_TYPE_INT, kWidth));
+    EXPECT_CALL(*(testContext->m_gstWrapper), gstCapsSetSimpleIntStub(&(testContext->m_gstCaps1), StrEq("height"), G_TYPE_INT, kHeight));
+    EXPECT_CALL(*(testContext->m_gstWrapper), gstCapsSetSimpleStringStub(&(testContext->m_gstCaps1), StrEq("alignment"), _, StrEq("au")));
+    EXPECT_CALL(*(testContext->m_gstWrapper), gstCapsSetSimpleStringStub(&(testContext->m_gstCaps1), StrEq("stream-format"), _, StrEq("avc")));
+    EXPECT_CALL(*(testContext->m_gstWrapper), gstCapsToString(&(testContext->m_gstCaps1))).WillOnce(Return(&(testContext->m_capsStr)));
+    EXPECT_CALL(*(testContext->m_glibWrapper), gFree(&(testContext->m_capsStr)));
+    EXPECT_CALL(*(testContext->m_gstWrapper), gstElementFactoryMake(_, CharStrMatcher(kVidName.c_str()))).WillOnce(Return(&(testContext->m_appSrc)));
+    EXPECT_CALL(*(testContext->m_gstWrapper), gstAppSrcSetCaps(GST_APP_SRC(&(testContext->m_appSrc)), &(testContext->m_gstCaps1)));
+    EXPECT_CALL(*(testContext->m_gstWrapper), gstCapsUnref(&(testContext->m_gstCaps1)));
 }

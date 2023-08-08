@@ -113,7 +113,7 @@ private:
     void expectSetupAudioElement();
 
     // AttachSource helper methods
-    //void expectSetGenericVideoCaps();
+    void expectSetGenericVideoCaps();
 };
 
 #endif // TASKS_TESTS_BASE_H_
