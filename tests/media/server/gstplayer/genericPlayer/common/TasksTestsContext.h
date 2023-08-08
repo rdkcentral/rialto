@@ -67,9 +67,11 @@ public:
     GCallback m_audioUnderflowCallback;
     GCallback m_videoUnderflowCallback;
     gchar m_capsStr{};
+    gchar m_videoStr[7]{"video/"};
+    gchar m_audioStr[7]{"audio/"};
     gchar m_typefindElementName[9]{"typefind"};
     gchar m_parseElementName[6]{"parse"};
-    gchar m_decoderElementName[4]{"dec"};
+    gchar m_decoderElementName[10]{"decodebin"};
     gchar m_audioSinkElementName[10]{"audiosink"};
     gchar m_elementName[5]{"sink"};
     gchar m_binElementName[5]{"bin"};

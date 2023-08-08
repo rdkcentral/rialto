@@ -47,7 +47,7 @@ add_gtests(RialtoServerGstPlayerUnitTests
     #genericPlayer/tasksTests/ShutdownTest.cpp
     #genericPlayer/tasksTests/StopTest.cpp
     #genericPlayer/tasksTests/UnderflowTest.cpp
-    #genericPlayer/tasksTests/UpdatePlaybackGroupTest.cpp
+    genericPlayer/tasksTests/UpdatePlaybackGroupTest.cpp
     genericPlayer/common/Matchers.cpp
     genericPlayer/common/GstGenericPlayerTestCommon.cpp
 

@@ -141,6 +141,17 @@ protected:
     void shouldHaveBinParentSink();
     void checkAudioSinkPlaybackGroupAdded();
 
+    // UpdatePlaybackGroup test methods
+    void triggerUpdatePlaybackGroupNoCaps();
+    void checkNoPlaybackGroupAdded();
+    void shouldReturnNullCaps();
+    void triggerUpdatePlaybackGroup();
+    void shouldDoNothingForVideoCaps();
+    void shouldDoNothingWhenTypefindParentIsNull();
+    void shouldDoNothingWhenElementOtherThanDecodebin();
+    void shouldSuccessfullyFindTypefindAndParent();
+    void checkPlaybackGroupAdded();
+
 private:
     // SetupElement helper methods
     void expectSetupVideoElement();
