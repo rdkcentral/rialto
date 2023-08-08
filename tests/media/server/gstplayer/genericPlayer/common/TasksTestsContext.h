@@ -24,6 +24,7 @@
 #include "GlibWrapperMock.h"
 #include "GstGenericPlayerPrivateMock.h"
 #include "GstWrapperMock.h"
+#include "RdkGstreamerUtilsWrapperMock.h"
 #include <memory>
 
 /**
@@ -42,16 +43,23 @@ public:
         std::make_shared<StrictMock<firebolt::rialto::server::GlibWrapperMock>>()};
     std::shared_ptr<firebolt::rialto::server::GstWrapperMock> m_gstWrapper{
         std::make_shared<StrictMock<firebolt::rialto::server::GstWrapperMock>>()};
+    std::shared_ptr<firebolt::rialto::server::RdkGstreamerUtilsWrapperMock> m_rdkGstreamerUtilsWrapper{
+        std::make_shared<StrictMock<firebolt::rialto::server::RdkGstreamerUtilsWrapperMock>>()};
 
     // Gstreamer members
     GstElement m_element{};
     GstElementFactory *m_elementFactory{};
     GstElement m_pipeline{};
+    GstBuffer m_gstBuffer{};
+    GstCaps m_gstCaps1{};
+    GstCaps m_gstCaps2{};
+    GstElement m_appSrc{};
 
     // Glib members
     guint m_signals[1]{123};
     GCallback m_audioUnderflowCallback;
     GCallback m_videoUnderflowCallback;
+    gchar m_capsStr{};
 };
 
 #endif // TASKS_TESTS_CONTEXT_H_

@@ -1,0 +1,2033 @@
+[33mcommit caff617454da87a5cc29dc7a56ca3712a4166b68[m[33m ([m[1;36mHEAD -> [m[1;32mSpeed_up_unittest_all_in_one_file[m[33m)[m
+Merge: 07327c0 006dca6
+Author: luke <luke.williamson@sky.uk>
+Date:   Mon Jul 31 15:48:05 2023 +0100
+
+    Merge branch 'master' into Speed_up_unittest_all_in_one_file
+
+[33mcommit 07327c000c3c60b9463f07abfdcfbc36b5c81162[m
+Author: luke <luke.williamson@sky.uk>
+Date:   Mon Jul 31 12:14:56 2023 +0100
+
+    Do not deinit gst mid unittest
+
+[33mcommit 006dca61a7b14c8905c0d880cc7599957382d197[m[33m ([m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmaster[m[33m)[m
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Mon Jul 31 12:27:25 2023 +0200
+
+    Customizable socket permissions (#164)
+    
+    Summary: Customizable socket permissions
+    Type: Feature
+    Test Plan: UT
+    Jira: None
+
+[33mcommit 728550f23c681c0db07eb4a449e47fb48d5d07c0[m
+Author: luke <luke.williamson@sky.uk>
+Date:   Mon Jul 31 11:19:17 2023 +0100
+
+    Format fixes
+
+[33mcommit c72179c580c45c92007265733029da4e1e1ea8ed[m
+Author: luke <luke.williamson@sky.uk>
+Date:   Mon Jul 31 11:11:29 2023 +0100
+
+    Update year
+
+[33mcommit 4f7066da9f26456807ed938adb57b0053876463a[m
+Author: luke <luke.williamson@sky.uk>
+Date:   Mon Jul 31 10:59:27 2023 +0100
+
+    Format fixes
+
+[33mcommit 76b95ba97786203009c45019f250be246d9ee1f4[m
+Author: luke <luke.williamson@sky.uk>
+Date:   Mon Jul 31 10:50:11 2023 +0100
+
+    Tidy up and add comments
+
+[33mcommit e0cc38d58406cca91b52104f01e6edab030ca16b[m
+Author: luke <luke.williamson@sky.uk>
+Date:   Mon Jul 31 10:38:14 2023 +0100
+
+    Create a test context for maangeing objects
+
+[33mcommit e4379be604de689ef32b6a808e880205cc0c3650[m
+Author: luke <luke.williamson@sky.uk>
+Date:   Mon Jul 31 08:38:55 2023 +0100
+
+    Revert moving mock files
+
+[33mcommit 684be78676cb7be764f171ed8750299ba0c57a57[m
+Author: luke <luke.williamson@sky.uk>
+Date:   Mon Jul 31 08:35:44 2023 +0100
+
+    Create common base test file
+
+[33mcommit 5ad972ca8678374ccbea740d55116b53f03dc464[m
+Merge: 6afedca bf4a901
+Author: luke <luke.williamson@sky.uk>
+Date:   Thu Jul 27 09:19:46 2023 +0100
+
+    Merge branch 'master' into Speed_up_unittests
+
+[33mcommit 6afedca53c54dc1b464afc73deec56402398aa22[m
+Author: luke <luke.williamson@sky.uk>
+Date:   Thu Jul 27 09:12:28 2023 +0100
+
+    Stick to 1 unittest
+
+[33mcommit bf4a90174200460a89a4a51f60e07a6663e1eaf6[m[33m ([m[1;31morigin/nightly/20230731-dunfell[m[33m, [m[1;31morigin/nightly/20230729-dunfell[m[33m, [m[1;31morigin/nightly/20230728-dunfell[m[33m, [m[1;31morigin/nightly/20230727-dunfell[m[33m)[m
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Wed Jul 26 11:40:55 2023 +0200
+
+    lcov command fix (#163)
+    
+    Summary: Lcov command changed to improve coverage calculation
+    Type: Fix
+    Test Plan: UT
+    Jira: None
+
+[33mcommit 2b85eb55f97ff485c0a7855490ea16d0a79ee523[m
+Author: Luke Williamson <luke.williamson@sky.uk>
+Date:   Wed Jul 26 07:49:43 2023 +0100
+
+    Time compilation
+
+[33mcommit 932d1dca42a08229d5bd3dc759d19787b252a06e[m[33m ([m[1;31morigin/nightly/20230726-dunfell[m[33m)[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Tue Jul 25 15:11:11 2023 +0100
+
+    Remove valgrind caching (#162)
+    
+    Summary: Removes the caching of specific version of valgrind. Now that we have updated to Ubuntu 22 we can just install the recommended version.
+    Type: Feature
+    Test Plan: Valgrind UTs
+    Jira: RIALTO-263
+
+[33mcommit da9356cbd58dbc554ad4271c7da6f911778deb2a[m
+Author: Luke Williamson <luke.williamson@sky.uk>
+Date:   Tue Jul 25 09:43:21 2023 +0100
+
+    Move all constructors and destructors to cpp file
+
+[33mcommit f918432aea8236fe293cdfb6ed32b7abd14d2352[m
+Author: Luke Williamson <luke.williamson@sky.uk>
+Date:   Tue Jul 25 07:58:26 2023 +0100
+
+    Move server main gst dependancies to separate folder
+
+[33mcommit 63db5346bb5eea8aa7fae88802871242bbd1a51e[m
+Author: Luke Williamson <luke.williamson@sky.uk>
+Date:   Mon Jul 24 13:59:01 2023 +0100
+
+    Move gst and glib mocks
+
+[33mcommit 0d14bc9caf7aa8df9c7f80826a1c17d87596c20d[m[33m ([m[1;31morigin/nightly/20230724-dunfell[m[33m, [m[1;31morigin/nightly/20230722-dunfell[m[33m, [m[1;31morigin/nightly/20230721-dunfell[m[33m, [m[1;31morigin/LcovCommandFix[m[33m)[m
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Fri Jul 21 11:41:37 2023 +0200
+
+    lcov 2.0 introduced (#161)
+    
+    Summary: Version of LCOV changed from 1.14 to 2.0 to fix problem with function coverage
+    Type: Fix
+    Test Plan: UT
+    Jira: RIALTO-32
+
+[33mcommit 7bdfb410a87ebdc7fdaed3a8d9ee8e90f4afedcf[m[33m ([m[1;31morigin/nightly/20230720-dunfell[m[33m, [m[1;31morigin/nightly/20230719-dunfell[m[33m, [m[1;31morigin/nightly/20230718-dunfell[m[33m)[m
+Author: skyshaha1 <123478835+skyshaha1@users.noreply.github.com>
+Date:   Mon Jul 17 11:07:38 2023 +0100
+
+    Fixing tests valgrind +build pages yaml script (#160)
+
+[33mcommit 68b6ac583d04392b8b4f5c01cb5613a7e5c5e591[m[33m ([m[1;31morigin/nightly/20230717-dunfell[m[33m, [m[1;31morigin/nightly/20230715-dunfell[m[33m)[m
+Author: skyshaha1 <123478835+skyshaha1@users.noreply.github.com>
+Date:   Fri Jul 14 16:43:10 2023 +0100
+
+    Ubuntu 22.04 in CI (#158)
+    
+    Summary: As a developer, I want to run Ubuntu 22 in CI
+    Type: Fix
+    Test Plan: Unit Tests
+    Jira: RIALTO-37
+
+[33mcommit 11ada9f92e341dd134045151aa5a86c99777c181[m
+Author: aczs <92790185+aczs@users.noreply.github.com>
+Date:   Fri Jul 14 09:03:24 2023 +0100
+
+    Cleaned output of native build (#156)
+    
+    Summary: Cleaned up output of the native build
+    Type: Cleanup
+    Test Plan: Build for native
+
+[33mcommit c9f530c088004b6d671b4d3f24c5e8ad1bd058c7[m[33m ([m[1;31morigin/nightly/20230713-dunfell[m[33m, [m[1;32mRemove_gst_from_unittests[m[33m)[m
+Author: skyshaha1 <123478835+skyshaha1@users.noreply.github.com>
+Date:   Wed Jul 12 10:55:08 2023 +0100
+
+    Revert "build_ut.py fix and build_ut.yml fix for ubuntu 22.04 (#155)" (#157)
+    
+    This reverts commit 910377b193cd028adb579f1efa20d1209dd7463e.
+
+[33mcommit 910377b193cd028adb579f1efa20d1209dd7463e[m
+Author: skyshaha1 <123478835+skyshaha1@users.noreply.github.com>
+Date:   Wed Jul 12 09:29:01 2023 +0100
+
+    build_ut.py fix and build_ut.yml fix for ubuntu 22.04 (#155)
+    
+    Summary: As a developer, I want to run Ubuntu 22 in CI
+    Type: Fix
+    Test Plan: Unit Tests
+    Jira: RIALTO-37
+
+[33mcommit 8a448704f86bba4b1c6678a3a45df759c3cb72ff[m[33m ([m[1;31morigin/nightly/20230712-dunfell[m[33m, [m[1;31morigin/nightly/20230711-dunfell[m[33m)[m
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Mon Jul 10 11:51:43 2023 +0200
+
+    Synchronized select key (#153)
+    
+    Summary: Added com.microsoft.playready support.
+    Playready key taken from metadata and selected just before decrypt
+    Type: Fix
+    Test Plan: UT
+    Jira: RIALTO-228
+
+[33mcommit 9d270b7a45e062f2c7036d7ebf78f0c91e0a425f[m[33m ([m[1;31morigin/nightly/20230710-dunfell[m[33m, [m[1;31morigin/nightly/20230708-dunfell[m[33m)[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Fri Jul 7 15:38:34 2023 +0100
+
+    Native build compilation (#154)
+    
+    Summary: Fix compilation issues for native build on Ubuntu 22
+    Type: Bufix
+    Test Plan: Native build
+    Jira: RIALTO-72
+
+[33mcommit 155ac69107b8d2fbc6d9b91792e2ba19c9ad291d[m[33m ([m[1;31morigin/nightly/20230707-dunfell[m[33m, [m[1;31morigin/nightly/20230706-dunfell[m[33m, [m[1;31morigin/feature-cbcs-thunder42-generic-adapter-07072023[m[33m, [m[1;31morigin/feature-cbcs-thunder42-07072023[m[33m, [m[1;31morigin/feature-cbcs-07072023[m[33m)[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Thu Jul 6 11:15:11 2023 +0100
+
+    Add catagory name to gst logs (#152)
+    
+    Summary: Print the category name of the logging component.
+    Type: Feature
+    Test Plan: Youtube Cert Tests
+    Jira: N/A
+
+[33mcommit ddc2c4144de126440702ba425d95b2ae03fa731b[m
+Author: skyshaha1 <123478835+skyshaha1@users.noreply.github.com>
+Date:   Wed Jul 5 13:59:33 2023 +0100
+
+    As a developer, I want to know if my changes have broken the native Rialto build
+    
+    Summary: As a developer, I want to know if my changes have broken the native Rialto build
+    Type: Feature
+    Test Plan: Unit Tests
+    Jira: RIALTO-160
+
+[33mcommit 2377fcdb60dc22b475d16a6a4fb1a7f66eeddf80[m
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Wed Jul 5 10:14:35 2023 +0200
+
+    Log to file (#147)
+    
+    Summary: Add possibility to forward rialto logs to file
+    Type: Feature
+    Test Plan: UT
+    Jira: RIALTO-203
+
+[33mcommit 242a46cc9ad182be4a2a8af699d2f0888fffbac8[m[33m ([m[1;31morigin/nightly/20230705-dunfell[m[33m)[m
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Tue Jul 4 16:26:50 2023 +0200
+
+    Wayland display setting (#150)
+    
+    * servermanager implementation
+    
+    * rialto server implementation
+
+[33mcommit d3f65d6e505941b915f20ad8817dbdecc7f95584[m[33m ([m[1;31morigin/nightly/20230704-dunfell[m[33m, [m[1;31morigin/nightly/20230703-dunfell[m[33m, [m[1;31morigin/nightly/20230701-dunfell[m[33m, [m[1;31morigin/nightly/20230630-dunfell[m[33m, [m[1;31morigin/NGDEV-196478_RialtoInstallation_dunfell[m[33m)[m
+Author: skyshaha1 <123478835+skyshaha1@users.noreply.github.com>
+Date:   Thu Jun 29 14:31:48 2023 +0100
+
+    Review current rialto logs and find logs which have too high level (#142)
+    
+    Summary: Review current rialto logs and find logs which have too high level
+    Type: Error Fix
+    Test Plan: Unit Tests & Full Stack
+    Jira: RIALTO-193
+
+[33mcommit 4869486c1fa6a344b43a3203cfa97aba461e1000[m[33m ([m[1;31morigin/nightly/20230629-dunfell[m[33m)[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Wed Jun 28 16:02:17 2023 +0100
+
+    Fix memcpy to shared memory (#148)
+    
+    Summary: Coredump found when copying the buffers to the shared memory due to copying invalid data size.
+    Type: Bugfix
+    Test Plan: NPLB Tests
+    Jira: RIALTO-68
+
+[33mcommit 81603a2bfab10a690f4794b9a006793cb71733f2[m[33m ([m[1;31morigin/nightly/20230628-dunfell[m[33m, [m[1;31morigin/nightly/20230627-dunfell[m[33m)[m
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Mon Jun 26 15:52:29 2023 +0200
+
+    copy paste replaced with a function (#146)
+    
+    Summary: Copy paste replaced with a function
+    Type: Feature
+    Test Plan: UT
+    Jira: RIALTO-222
+
+[33mcommit 4bac3d6ea8d20a1425f74ad70d58424b48524883[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Mon Jun 26 13:06:36 2023 +0100
+
+    Ipc custom timeout (#145)
+    
+    Summary: When turning on debug logging in RialtoSever, API calls can take longer than the default set in the Ipc client. This change enables the user to increase this timeout at runtime.
+    Type: Feature
+    Test Plan: Unittests
+    Jira: N/A
+
+[33mcommit ae97322b19b7a53799f9d6fefb1116baaa09a132[m
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Mon Jun 26 11:19:57 2023 +0200
+
+    added support for customizable codec data type (#144)
+    
+    Summary: Added support for string codec_data
+    Type: Feature
+    Test Plan: UT, YT Conformance tests, YT Manual tests
+    Jira: RIALTO-222
+
+[33mcommit a2f2f49f6d4dbfa21309c989d14b4aad53c32deb[m[33m ([m[1;31morigin/rdkv-test-release-dunfell[m[33m, [m[1;31morigin/nightly/20230626-dunfell[m[33m, [m[1;31morigin/nightly/20230624-dunfell[m[33m, [m[1;31morigin/nightly/20230623-dunfell[m[33m, [m[1;31morigin/feature-yt23-realtek-sercom-23062023[m[33m)[m
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Thu Jun 22 13:59:34 2023 +0200
+
+    ipc monitor removed (#143)
+    
+    Summary: Ipc monitor removed
+    Type: Feature
+    Test Plan: UT
+    Jira: RIALTO-164
+
+[33mcommit ac83ca6cda0f8697622498ff5196185845336781[m[33m ([m[1;31morigin/nightly/20230622-dunfell[m[33m, [m[1;31morigin/nightly/20230621-dunfell[m[33m, [m[1;31morigin/nightly/20230620-dunfell[m[33m, [m[1;31morigin/nightly/20230619-dunfell[m[33m, [m[1;31morigin/nightly/20230617-dunfell[m[33m)[m
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Fri Jun 16 11:41:28 2023 +0200
+
+    Glib/GObject critical error fixed (#141)
+    
+    Summary: Glib/GObject critical error fixed
+    Type: Fix
+    Test Plan: UT; YT Conformance Tests
+    Jira: RIALTO-171
+
+[33mcommit 7a26be9a34b2a11c1c44995f378d2c2dec2a9198[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Fri Jun 16 06:41:15 2023 +0100
+
+    Disable xrun for amlhalasink (#140)
+    
+    Summary: Rialto was hanging because the amlhalasink sink in the server pipeline was been paused by xrun, while the rest of the pipeline remained playing. This causes issues with the termination of the pipeline as the elements states are not synchronised. The approach of disabling xrun is the same as that in wpe webkit RDKTV-16244.
+    Type: BugFix
+    Test Plan: YouTube Cert Tests
+    Jira: RIALTO-231
+
+[33mcommit ae193925f94bd8bb6816d721633d8d0ecc11b33f[m[33m ([m[1;31morigin/nightly/20230616-dunfell[m[33m)[m
+Author: skyshaha1 <123478835+skyshaha1@users.noreply.github.com>
+Date:   Thu Jun 15 09:44:37 2023 +0100
+
+    Print commitId when rialto components start (#134)
+    
+    Summary: Print commitId when rialto components start - Rialto
+    Type: Feature
+    Test Plan: Unit Tests & FullStack
+    Jira: RIALTO-221
+
+[33mcommit 2eae06d4e88a75e781e7ef0e43822f4c5b1401ed[m[33m ([m[1;31morigin/nightly/20230615-dunfell[m[33m)[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Wed Jun 14 13:21:35 2023 +0100
+
+    Add video-wait for amlhalasink (#138)
+    
+    Summary: Improves the stability of playback on Llama.
+    Type: BugFix
+    Test Plan: YouTube Cert Tests
+    Jira: N/A
+
+[33mcommit b539aa8253e84261f8ebb66c5b89135e2c703df7[m[33m ([m[1;33mtag: RDKV_2023Q2_DUNFELL[m[33m, [m[1;31morigin/rdkv-2023q2-dunfell[m[33m, [m[1;31morigin/nightly/20230614-dunfell[m[33m, [m[1;31morigin/nightly/20230613-dunfell[m[33m, [m[1;31morigin/feature-cbcs-thunder42-integration-13062023[m[33m)[m
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Tue Jun 13 10:00:25 2023 +0200
+
+    name changed (#139)
+    
+    Summary: healthcheckFrequency renamed to healthcheckInterval
+    Type: Feature
+    Test Plan: UT
+    Jira: RIALTO-163
+
+[33mcommit 577642d850c1ace79c63109fe6cae0422248c172[m
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Tue Jun 13 07:30:17 2023 +0200
+
+    Healthcheck (#137)
+    
+    Summary: Healthcheck introduced in rialto
+    Type: Feature
+    Test Plan: UT
+    Jira: RIALTO-163
+
+[33mcommit 9e185596cb7d06af58d9c531046ca544bce5ef73[m[33m ([m[1;31morigin/nightly/20230612-dunfell[m[33m, [m[1;31morigin/nightly/20230610-dunfell[m[33m)[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Fri Jun 9 14:40:28 2023 +0100
+
+    Fix webaudio pipeline (#136)
+    
+    Summary: Link audioconvert and audioresample elements for all sinks.
+    Type: BugFix
+    Test Plan: YouTube Cert Tests, NPLB Tests
+    Jira: RIALTO-166
+
+[33mcommit a6739e0f247ee1c72bb387de3164e77c627fd9fe[m[33m ([m[1;31morigin/nightly/20230609-dunfell[m[33m)[m
+Author: aczs <92790185+aczs@users.noreply.github.com>
+Date:   Fri Jun 9 09:45:14 2023 +0100
+
+    Underflow remake (#135)
+    
+    Summary: YTLR: VP9/H264 WV SFR/HFR tests fail randomly due to frame drops
+    Type: Fix
+    Test Plan: Unit Tests & Fullstack
+    Jira: RIALTO-172
+
+[33mcommit 116aeca3019a1b0c49b521b2565199f2e8226af9[m[33m ([m[1;31morigin/nightly/20230608-dunfell[m[33m, [m[1;31morigin/nightly/20230607-dunfell[m[33m)[m
+Author: skyshaha1 <123478835+skyshaha1@users.noreply.github.com>
+Date:   Tue Jun 6 15:29:59 2023 +0100
+
+    RialtoMSEAudioSink should implement 'mute' from interface 'GstStreamVolume' (#131)
+    
+    Summary: RialtoMSEAudioSink should implement 'mute' from interface 'GstStreamVolume'
+    Type: Error Fix
+    Test Plan: Unit Tests & Fullstack
+    Jira: RIALTO-167
+
+[33mcommit 2396a57f68fdf2ed64a6907748ead95f7ded7e64[m[33m ([m[1;31morigin/nightly/20230606-dunfell[m[33m, [m[1;31morigin/nightly/20230605-dunfell[m[33m, [m[1;31morigin/nightly/20230603-dunfell[m[33m, [m[1;31morigin/nightly/20230602-dunfell[m[33m, [m[1;31morigin/nightly/20230601-dunfell[m[33m, [m[1;31morigin/nightly/20230531-dunfell[m[33m)[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Tue May 30 12:27:12 2023 +0100
+
+    Handle pause during underflow and fix mediaKeys coredump (#132)
+    
+    Summary: Couple of fixes for issues seen on broadcom. Fixes the edge case where application is pausing playback during an underflow, playback should not resume on buffered. Fixes coredump seen during decryption, where some APIs were accessing m_mediaKeys while one is been deleted.
+    Type: BugFix
+    Test Plan: YouTube Cert Tests, Unittests
+    Jira: N/A
+
+[33mcommit c389cc8695eec509422b21912b6e670fc9ddd70a[m
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Tue May 30 11:33:57 2023 +0200
+
+    fix for fd bug + fox for infinite waitpid (#133)
+    
+    Summary: Bugfixes:
+    1. Fix for fd close bug - Due to parent/child process race, sometimes wrong FDs were closed by
+    parent, which caused problems with rialto ipc
+    2. When rialto server is stuck, ServerManager will kill it to avoid infinite waitpid.
+    Type: Fix
+    Test Plan: App launch/kill tests with AI
+    Jira: RIALTO-4
+
+[33mcommit cd5134fce9972125740e73918e0c4a07157b0cba[m[33m ([m[1;31morigin/nightly/20230530-dunfell[m[33m, [m[1;31morigin/nightly/20230529-dunfell[m[33m)[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Fri May 26 07:19:18 2023 +0100
+
+    Enable native audio for brcm (#130)
+    
+    Summary: Enable native-audio for the broadcom platform, this fixes audio only playback.
+    Type: BugFix
+    Test Plan: YouTube Cert Tests, Unittests
+    Jira: RIALTO-179
+
+[33mcommit 948972f5798bd85482b56287b5262cf8ff90fe0c[m[33m ([m[1;31morigin/nightly/20230526-dunfell[m[33m, [m[1;31morigin/nightly/20230525-dunfell[m[33m, [m[1;31morigin/nightly/20230524-dunfell[m[33m)[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Tue May 23 14:27:12 2023 +0100
+
+    Do not set underflow flag on eos (#129)
+    
+    Summary: Underflow flag should not be set if Eos, this avoids rialto cancelling an underflow on recovery from a seek.
+    Type: BugFix
+    Test Plan: YouTube Cert Tests, Unittests
+    Jira: RIALTO-180
+
+[33mcommit 545aaaa551a9aa4b975651d1a563cbe17439072e[m[33m ([m[1;31morigin/nightly/20230523-dunfell[m[33m, [m[1;31morigin/nightly/20230522-dunfell[m[33m, [m[1;31morigin/nightly/20230520-dunfell[m[33m, [m[1;31morigin/feature-securestorage-rpi4-22May2023[m[33m)[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Fri May 19 15:37:31 2023 +0100
+
+    Implement framerate (#122) (#128)
+    
+    Summary: Redelivers ad643cd.
+    Type: BugFix
+    Test Plan: Unittests, YtCert Dual Video
+    Jira: RIALTO-192
+
+[33mcommit 5e51675a48dc1ab8e86fde9f7b1d914bbf906832[m[33m ([m[1;31morigin/nightly/20230519-dunfell[m[33m)[m
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Thu May 18 12:32:11 2023 +0200
+
+    Shm write thread safe (#125)
+    
+    Summary: Thread safety of shm in Rialto Client improved
+    Type: Feature
+    Test Plan: UT, YT Manual tests, NF Manual tests
+    Jira: RIALTO-121
+
+[33mcommit 9326d99a9721b5cbb42f53db97478d5398abce55[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Thu May 18 10:22:50 2023 +0100
+
+    Reapply reset ipc channel on disconnect (#127)
+    
+    Summary: Redeliver aa75cfd and fix intermittent coredump in unittest.
+    Type: BugFix
+    Test Plan: YouTube Cert Tests, Unittests
+    Jira: RIALTO-174
+
+[33mcommit 9fe5da8c61c934115b3ba13a892cb16fb7f3a852[m[33m ([m[1;31morigin/nightly/20230518-dunfell[m[33m)[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Wed May 17 15:48:59 2023 +0100
+
+    Revert "Implement framerate (#122)" (#126)
+    
+    Summery: This reverts commit ad643cd.
+    Type: BugFix
+    Test Plan: Unittests, YtCert Dual Video
+    Jira: RIALTO-192
+
+[33mcommit eb05c0cf8823295dfa19b679e288e1d6d238bfe6[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Wed May 17 12:49:36 2023 +0100
+
+    Revert "Reset ipc channel on disconnect (#120)" (#124)
+    
+    Summery: This reverts commit aa75cfd.
+    Type: BugFix
+    Test Plan: YouTube Cert Tests, Unittests
+    Jira: RIALTO-174
+
+[33mcommit aa75cfd3634e3390ed4ad94104cd1e4924272ea1[m[33m ([m[1;31morigin/nightly/20230517-dunfell[m[33m)[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Tue May 16 15:59:15 2023 +0100
+
+    Reset ipc channel on disconnect (#120)
+    
+    Summary: Reset the ipc channel and only return weak_ptrs of the channel to the ipc client modules. This ensures that the ipc channel is successfully destroyed on an unexpected disconnect and all blocking ipc calls are completed.
+    Type: BugFix
+    Test Plan: YouTube Cert Tests, Unittests
+    Jira: RIALTO-174
+
+[33mcommit ad643cd36455dd54953f34669ed89f0eed5c7cd3[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Tue May 16 15:39:42 2023 +0100
+
+    Implement framerate (#122)
+    
+    Summary: Updates the caps when framerate is set on the video segments.
+    Type: BugFix
+    Test Plan: Unittests, YtCert Dual Video
+    Jira: RIALTO-192
+
+[33mcommit a0332c17cac109ef5e374631d9faee34dd180e62[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Tue May 16 07:31:29 2023 +0100
+
+    Add framerate to video segment info (#121)
+    
+    Summary: Adds the framerate parameter to the media video segment class in IMediaPipeline interface.
+    Type: BugFix
+    Test Plan: Unittests
+    Jira: RIALTO-192
+
+[33mcommit 6992f3821dd9815d7750ef1d1dc3b1e5670d8f82[m[33m ([m[1;31morigin/nightly/20230516-dunfell[m[33m)[m
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Mon May 15 12:13:59 2023 +0200
+
+    New Control interface (#118)
+    
+    Summary: New Control interface - Rialto Server State forwarding to clients
+    Type: Feature
+    Test Plan: UT, YT Conformance tests, YT Manual tests, NF Manual tests
+    Jira: RIALTO-121
+
+[33mcommit 2e4264f01663d2c90b9a0bff7a578d5b7d5d368e[m[33m ([m[1;31morigin/nightly/20230515-dunfell[m[33m, [m[1;31morigin/nightly/20230513-dunfell[m[33m)[m
+Author: aczs <92790185+aczs@users.noreply.github.com>
+Date:   Fri May 12 09:34:30 2023 +0100
+
+    Fixed signal disconnect crash (#119)
+    
+    Summary: RialtoServer crash in firebolt::rialto::server::GstGenericPlayer::termPipeline
+    Type: Fix
+    Test Plan: Unit Tests
+    Jira: RIALTO-175
+
+[33mcommit 093555b9a0748df3586e5b3e1b31e99c0abb340d[m[33m ([m[1;31morigin/nightly/20230512-dunfell[m[33m, [m[1;31morigin/nightly/20230511-dunfell[m[33m, [m[1;31morigin/nightly/20230510-dunfell[m[33m)[m
+Author: skyshaha1 <123478835+skyshaha1@users.noreply.github.com>
+Date:   Wed May 10 09:11:59 2023 +0100
+
+    Updated Profiling of Logs (#117)
+    
+    Summary: Corrected CmakeLists.txt file to ignore compilation errors
+    Type: Fix
+    Test Plan: Unit Tests
+    Jira: RIALTO-113
+
+[33mcommit 835e5f50bde16f7e4bb165a8e23cc44f3dfc0a9a[m[33m ([m[1;31morigin/nightly/20230509-dunfell[m[33m)[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Tue May 9 09:17:24 2023 +0100
+
+    Ignore underflows when not playing & send EOS if set (#116)
+    
+    Summary: Underflows should not be reported when not playing. Also, if an underflow is reported during EOS, EOS should be notified.
+    Type: BugFix
+    Test Plan: YouTube Cert Tests, Unittests
+    Jira: RIALTO-180, RIALTO-179,RIALTO-178, RIALTO-176, RIALTO-170
+
+[33mcommit 023fe1df9242a154ce09f92cacc7a62c691550a8[m[33m ([m[1;31morigin/nightly/20230508-dunfell[m[33m, [m[1;31morigin/nightly/20230506-dunfell[m[33m, [m[1;31morigin/feature-rdkvm[m[33m)[m
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Fri May 5 12:04:20 2023 +0200
+
+    Server manager custom logger (#115)
+    
+    Summary: Custom logger support added for server manager
+    Type: Feature
+    Test Plan: UT
+    Jira: RIALTO-4
+
+[33mcommit 906348712ada3da4f4fce81d10058439549cdfa7[m[33m ([m[1;31morigin/nightly/20230505-dunfell[m[33m, [m[1;31morigin/nightly/20230504-dunfell[m[33m, [m[1;31morigin/nightly/20230503-dunfell[m[33m, [m[1;31morigin/nightly/20230502-dunfell[m[33m, [m[1;31morigin/nightly/20230501-dunfell[m[33m, [m[1;31morigin/nightly/20230429-dunfell[m[33m, [m[1;31morigin/dunfell-M3-20230503ng[m[33m)[m
+Author: aczs <92790185+aczs@users.noreply.github.com>
+Date:   Fri Apr 28 15:52:34 2023 +0100
+
+    Drm pipeline (#111)
+    
+    Summary: Fix for creating svppay in not-drm pipelines
+    Type: Fix
+    Test Plan: UT and manual tests
+    Jira: RIALTO-169
+
+[33mcommit 84813fd64e825a633ac16d98dbf7b43c1c811672[m[33m ([m[1;31morigin/nightly/20230428-dunfell[m[33m, [m[1;31morigin/nightly/20230427-dunfell[m[33m)[m
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Wed Apr 26 12:31:22 2023 +0200
+
+    Env variables substituted with params in Rialto Server Manager so (#113)
+    
+    Summary: Env variables substituted with params in Rialto Server Manager so
+    Type: Feature
+    Test Plan: UT
+    Jira: RIALTO-4
+
+[33mcommit 37e1e117ca463d06809a013192a72a247248b3d8[m[33m ([m[1;31morigin/nightly/20230426-dunfell[m[33m)[m
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Tue Apr 25 13:55:33 2023 +0200
+
+    Server manager create change (#112)
+    
+    Summary: RialtoServerManagerConfig passed in create method instead of many params
+    Type: Feature
+    Test Plan: UT
+    Jira: RIALTO-4
+
+[33mcommit c2ec666f9da0430f1c7dd1a8873f4442c1449977[m[33m ([m[1;31morigin/nightly/20230425-dunfell[m[33m)[m
+Author: skyshaha1 <123478835+skyshaha1@users.noreply.github.com>
+Date:   Mon Apr 24 13:52:37 2023 +0100
+
+    Profiling out Logs (#102)
+    
+    Summary: Profiling out logs
+    Type: New macros introduced to Rialto, debug mode and release mode added
+    Test Plan: Tested via build_ut.py
+    Jira: RIALTO-113
+
+[33mcommit fa40d8dc64e2071be42b3b4211f543165aaf2978[m[33m ([m[1;31morigin/nightly/20230424-dunfell[m[33m, [m[1;31morigin/nightly/20230422-dunfell[m[33m)[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Fri Apr 21 11:05:38 2023 +0100
+
+    Disable deprecated-declarations for gstreamer (#110)
+    
+    Summary: Disable deprecated-declarations when compiling rialto-gstreamer to avoid compilation errors.
+    Type: BugFix
+    Test Plan: rialto-gstreamer build
+    Jira: RIALTO-197
+
+[33mcommit 04499c806ecacdc7d129d0cb2e4eda138656449d[m[33m ([m[1;31morigin/nightly/20230421-dunfell[m[33m)[m
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Thu Apr 20 10:41:50 2023 +0200
+
+    Fast State Changed notifications (#109)
+    
+    Summary: Forwarding State Change notification immediately in rialto server manager
+    MSE/EME cleanup before sending notification in Rialto Server
+    Type: Feature
+    Test Plan: UT
+    Jira: RIALTO-4
+
+[33mcommit dcd6a71a963f2bc31562e6e0366a22702cc4376a[m[33m ([m[1;31morigin/nightly/20230420-dunfell[m[33m, [m[1;31morigin/nightly/20230419-dunfell[m[33m, [m[1;31morigin/feature-mediarite[m[33m, [m[1;31morigin/feature-kirkstone-next[m[33m, [m[1;31morigin/feature-apparmor-rpi-17Apr[m[33m)[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Tue Apr 18 11:01:31 2023 +0100
+
+    Add video mp4 mimetype to rialto (#108)
+    
+    Summary: Add support for mp4 codec in Rialto.
+    Type: Feature
+    Test Plan: Unittests
+    Jira: RIALTO-181
+
+[33mcommit 7539538351f415af4364295c4f2c37443175dcf8[m[33m ([m[1;31morigin/nightly/20230418-dunfell[m[33m, [m[1;31morigin/nightly/20230417-dunfell[m[33m, [m[1;31morigin/nightly/20230415-dunfell[m[33m, [m[1;31morigin/nightly/20230414-dunfell[m[33m, [m[1;31morigin/nightly/20230413-dunfell[m[33m, [m[1;31morigin/nightly/20230412-dunfell[m[33m, [m[1;31morigin/nightly/20230411-dunfell[m[33m, [m[1;31morigin/nightly/20230410-dunfell[m[33m, [m[1;31morigin/nightly/20230408-dunfell[m[33m, [m[1;31morigin/nightly/20230407-dunfell[m[33m, [m[1;31morigin/nightly/20230406-dunfell[m[33m)[m
+Author: aczs <92790185+aczs@users.noreply.github.com>
+Date:   Thu Apr 6 15:03:58 2023 +0100
+
+    No reply fix (#107)
+    
+    Summary: Fix potential leak with no_reply messages
+    Type: Bugfix
+    Test Plan: Unittests
+    Jira: RIALTO-20
+
+[33mcommit 6a0e9c2416461f9b42a190fa1de0cedbd25d2974[m[33m ([m[1;31morigin/nightly/20230405-dunfell[m[33m, [m[1;31morigin/nightly/20230404-dunfell[m[33m)[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Tue Apr 4 12:51:03 2023 +0100
+
+    Fix NPLB tests (#105)
+    
+    Summary: Avoid sending unneeded need datas when an EOS has been received & detatch IPC when there is a failure to create objects over IPC.
+    Type: Bugfix
+    Test Plan: Unittests, NPLB, Youtube Cert Tests
+    Jira: RIALTO-118 & RIALTO-123
+
+[33mcommit 6945e68ad07225adeecd9d4aa7ec2a5d28cb7416[m
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Tue Apr 4 12:27:25 2023 +0200
+
+    SessionServerAppManager refactoring (#106)
+    
+    Summary: SessionServerAppManager refactoring
+    Type: Feature
+    Test Plan: UT
+    Jira: RIALTO-4
+
+[33mcommit ab5a072a4dd5b1e5a5ec1c3b1d033a8db2d05332[m
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Mon Apr 3 14:04:17 2023 +0200
+
+    Preloaded servers (#104)
+    
+    Summary: Preloading rialto server to fasten launch time
+    Type: Feature
+    Test Plan: UT
+    Jira: RIALTO-4
+
+[33mcommit 8aa0130aecf08c4e278faade1403d379f0ed8093[m[33m ([m[1;31morigin/nightly/20230403-dunfell[m[33m, [m[1;31morigin/nightly/20230402-dunfell[m[33m, [m[1;31morigin/nightly/20230401-dunfell[m[33m)[m
+Author: aczs <92790185+aczs@users.noreply.github.com>
+Date:   Thu Mar 30 13:01:05 2023 +0100
+
+    Allow attachSource to be called only once (#103)
+    
+    Summary: Allow attachSource with the same source type to be called only once
+    Type: Feature
+    Test Plan: UTs
+    Jira: RIALTO-64
+
+[33mcommit d70706b151de7beb2a984907eca7c278f896d36f[m
+Author: aczs <92790185+aczs@users.noreply.github.com>
+Date:   Thu Mar 30 10:22:39 2023 +0100
+
+    Native build (#101)
+    
+    Summary: Make it possible to build Rialto on native platform
+    Type: Feature
+
+[33mcommit 92fdfa1440265f995f29e8d907163b1fcf9d9a0e[m
+Author: skyshaha1 <123478835+skyshaha1@users.noreply.github.com>
+Date:   Mon Mar 27 12:11:06 2023 +0100
+
+    Moved MIME type/gstreamer caps mappings to a common location (#100)
+    
+    Summary: Move MIME type/gstreamer caps mappings to a common location
+    Type: Header file created
+    Test Plan: Tested via build_ut.py
+    Jira: RIALTO-13
+
+[33mcommit e365e5c30973e09b7070ba65595e1b6011a4438c[m[33m ([m[1;31morigin/amlrdknext-alexa-early-access-20230327ng-bsp1019[m[33m)[m
+Author: aczs <92790185+aczs@users.noreply.github.com>
+Date:   Wed Mar 22 14:42:59 2023 +0000
+
+    All sources attached (#97)
+    
+    Summary: Added allSourcesAttached API
+    Type: Feature
+    Test Plan: UT and manual tests with YT and NF
+    Jira: RIALTO-23
+
+[33mcommit 4ed0471806ea601050044599d76440b0407d56c2[m[33m ([m[1;33mtag: RDKV_2023Q1_DUNFELL[m[33m, [m[1;31morigin/rdkv-2023q1-dunfell[m[33m)[m
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Tue Mar 21 14:26:38 2023 +0100
+
+    deadlock fix (#99)
+    
+    Summary: Fixed deadlock in rialto ipc
+    Type: Fix
+    Test Plan: UT
+    Jira: RIALTO-125
+
+[33mcommit bf754236aee4ddee4fa7fbe91df79fd87d90743d[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Tue Mar 21 10:59:22 2023 +0000
+
+    Handle ocdm errors (#98)
+    
+    Summary: MediaKeySession now stores ocdm errors received via onError and returns the relevant status from Apis.
+    Type: Feature
+    Test Plan: Unittests, NPLB
+    Jira: RIALTO-154
+
+[33mcommit c5ae81616159c8b20ec0bba3b4ab890e1f727563[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Mon Mar 20 14:05:30 2023 +0000
+
+    Add cipher mode to old decrypt (#95)
+    
+    Summary: Add the option of cipher mode and encryption pattern to the old decrypt method.
+    Type: Feature
+    Test Plan: Unittests
+    Jira: RIALTO-104
+
+[33mcommit 81933d665e46dde3b1cd9ec17ef0d78df6afd1be[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Mon Mar 20 10:54:45 2023 +0000
+
+    Notify gst errors (#94)
+    
+    Summary: Propagate errors raised in the server gstreamer pipleines to the client.
+    Type: Feature
+    Test Plan: Unittests, Youtube Certification Tests, NPLB
+    Jira: RIALTO-110
+
+[33mcommit 0908d37ba86188ec39e2fa22a955101a89306ac0[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Wed Mar 15 14:38:33 2023 +0000
+
+    Remove destruction of source from GstWebAudioPlayer (#81)
+    
+    Summary: Appsrc should not be unref from the GstWebAudioPlayer as it is owned by the pipeline. Fixes critical gstreamer error message.
+    Type: Cleanup
+    Test Plan: Unittests
+    Jira: N/A
+
+[33mcommit 2423b0920067a3b956ffb70f0ec9bf8246ae3a8d[m
+Author: skyshaha1 <123478835+skyshaha1@users.noreply.github.com>
+Date:   Wed Mar 15 12:08:27 2023 +0000
+
+    Changing the 'public' directories that contain non-public files to 'interface' (#91)
+    
+    Summary: Changing the 'public' directories that contain non-public files to 'interfaces'
+    Type: Directory Change
+    Test Plan: Tested via build_ut.py and bitbake rialto
+    Jira: RIALTO-114
+
+[33mcommit c606d880a65c7044631e052b5b7dc88eb924f3e7[m
+Author: aczs <92790185+aczs@users.noreply.github.com>
+Date:   Wed Mar 15 09:58:58 2023 +0000
+
+    Revert "Ipc timeout deadlock fix (#85)" (#93)
+    
+    Summary: Reverted fix for deadlock in rialto ipc
+    Type: Revert
+    Test Plan: UT
+    Jira: RIALTO-125
+
+[33mcommit f95c2fab33104738463477cd0dd51eeed924037b[m
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Tue Mar 14 12:00:46 2023 +0100
+
+    Ipc timeout deadlock fix (#85)
+    
+    Summary: Fixed deadlock in rialto ipc
+    Type: Fix
+    Test Plan: UT
+    Jira: RIALTO-125
+
+[33mcommit efee1388bad27ed01d2e61a7be2632b55607b427[m
+Author: Vladimir Rangelov <106084004+skyrangelovv@users.noreply.github.com>
+Date:   Tue Mar 14 09:15:31 2023 +0000
+
+    fix CENC/CBC1 typo mistake (#92)
+    
+    Summary: Fix CENC/CBC1 typo mistake
+    Type: Bugfix
+    Test Plan: UT
+
+[33mcommit 8ec1dbf2c1ec1a1bca970ab334b0121425473365[m
+Author: Vladimir Rangelov <106084004+skyrangelovv@users.noreply.github.com>
+Date:   Thu Mar 9 09:46:30 2023 +0000
+
+    Add decrypt buffer usage (#88)
+    
+    Summary: Add decrypt buffer usage
+    Type: Feature
+    Test Plan: UT, run yt tests manually
+    Jira: RIALTO-104
+
+[33mcommit c78328dceb5cac9c443ee338312798756a390505[m
+Author: aczs <92790185+aczs@users.noreply.github.com>
+Date:   Wed Mar 8 15:21:27 2023 +0000
+
+    Revert "Pub changed names and completed unit test (#89)" (#90)
+    
+    Summary: Reverted `Changing the 'public' directories that contain non-public files to 'interfaces'`
+    Type: Directory Change
+    Jira: RIALTO-114
+
+[33mcommit 1b389623d6c5e6402cecc49b19c3fe0d785f4c3d[m
+Author: skyshaha1 <123478835+skyshaha1@users.noreply.github.com>
+Date:   Wed Mar 8 14:10:01 2023 +0000
+
+    Pub changed names and completed unit test (#89)
+    
+    Summary: Changing the 'public' directories that contain non-public files to 'interfaces'
+    Type: Directory Change
+    Test Plan: Tested via build_ut.py
+    Jira: RIALTO-114
+
+[33mcommit 4e345f6b87608867c845d119ceaf6387e59aebab[m
+Author: skyshaha1 <123478835+skyshaha1@users.noreply.github.com>
+Date:   Tue Mar 7 18:46:55 2023 +0000
+
+    Rialto Logger (#87)
+    
+    Summary: RialtoLogger Improvement
+    Type: Fix
+    Test Plan: Tested via build_ut and check compilation via bitbake
+
+[33mcommit 031b4ffd8586a8f1cbf4c5116cba845740d1345c[m
+Author: aczs <92790185+aczs@users.noreply.github.com>
+Date:   Mon Mar 6 10:08:00 2023 +0000
+
+    Changed gstelements unref to gstreamer's one (#80)
+    
+    Summary: Change free function to gst's one
+    Type: Fix
+    Test Plan: Unit tests
+
+[33mcommit 5709103fbf7f9162f9a2073410057f593beab4ff[m
+Author: Vladimir Rangelov <106084004+skyrangelovv@users.noreply.github.com>
+Date:   Mon Mar 6 09:17:08 2023 +0000
+
+    Add encryption scheme and pattern to metadata (#86)
+    
+    Summary: Add encryption scheme and pattern to metadata
+    Type: Feature
+    Test Plan: Manual Tests
+    Dependencies and Impacts: Small
+
+[33mcommit 03488997e5c968bb1116d8e9934cc53d5e44bcb5[m
+Author: aczs <92790185+aczs@users.noreply.github.com>
+Date:   Fri Mar 3 13:48:50 2023 +0000
+
+    Use opencdm_gstreamer_session_decrypt when opencdm_gstreamer_session_decrypt_ex is not available (#84)
+    
+    Summary: Use opencdm_gstreamer_session_decrypt  when opencdm_gstreamer_session_decrypt_ex doesn't exist
+    Type: Fix
+
+[33mcommit 73ec3ffe653f15c53f8d414d85cada76693e070d[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Fri Mar 3 10:59:53 2023 +0000
+
+    Add params to ipc metadata (#83)
+    
+    Summary: Add the new parameters to the metadata.proto structure.
+    Type: Feature
+    Test Plan: Unittests
+    Jira: RIALTO-104
+
+[33mcommit 608a441777c9c12537fd65bc03c0c1fa6089403d[m[33m ([m[1;31morigin/feature-securestorage-rpi-2Mar[m[33m)[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Thu Mar 2 10:58:50 2023 +0000
+
+    New decrypt interface support (#82)
+    
+    * Add to interface
+    
+    * Format fixes
+    
+    * Unittest compialtion fixes
+
+[33mcommit 9eec710fee7c4ece42a734e8211603c9d135e942[m
+Author: aczs <92790185+aczs@users.noreply.github.com>
+Date:   Wed Mar 1 12:04:05 2023 +0000
+
+    Typefind leak fix (#76)
+    
+    Summary: Fix memory leaks
+    Type: Fix
+    Test Plan: Unittests
+
+[33mcommit a994ee546ead3ec2bc6b536cdee9aa8b96ff4b69[m
+Author: aczs <92790185+aczs@users.noreply.github.com>
+Date:   Wed Mar 1 10:31:21 2023 +0000
+
+    Glass support (#79)
+    
+    Summary: Add Rialto support on SkyGlass
+    Type: Feature
+    Test Plan: Unittests, Youtube Cert Tests, Manual tests
+    Jira: RIALTO-71
+
+[33mcommit 2e4fc808546dd854a37c0e8e8c4b9e0219cd3b15[m[33m ([m[1;31morigin/feature-securestorage-rpi-28Feb[m[33m)[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Mon Feb 27 14:19:30 2023 +0000
+
+    Improve rialto for multithreading (#78)
+    
+    Summary: Add a new mutex in RialtoControl to protect from multiple threads changing state at the same time and add a mutex to singleton objects to protect from two threads creating the first object at the same time.
+    Type: Cleanup
+    Test Plan: Unittests, Youtube Cert Tests
+    Jira: RIALTO-15
+
+[33mcommit fd80bb336996e83584516e8544aca5d00b4b7ea9[m
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Mon Feb 27 07:40:49 2023 +0100
+
+    Ai integration (#77)
+    
+    Summary: Remove private headers includes from public headers
+    Type: Feature
+    Owner: Marcin Wojciechowski
+    Reviewers: Adam Czynszak, Stuart Pett
+    Coding Standard Applied: Y
+    Test Plan: None
+    Dependencies and Impacts: None
+    Jira: RIALTO-4
+
+[33mcommit cad2f6083764b3970af4129f129230dcc5139e77[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Fri Feb 24 10:18:12 2023 +0000
+
+    Remove id from media source constructor (#75)
+    
+    Summary: Remove id from the MediaSource constructors, this can be set with the setId API.
+    Type: Cleanup
+    Test Plan: Unittests, rialto build
+    Jira: RIALTO-76
+
+[33mcommit ddc20ae86cc01bd30fa146b407c2ff5a721a3aea[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Thu Feb 23 11:46:53 2023 +0000
+
+    Move res usage (#74)
+    
+    Summary: Set res-usage before the video sink is added to the pipeline, setting after is undefined behaviour for Westerossink.
+    Type: Fix
+    Test Plan: Unittests, Youtube Dual Video Test
+    Jira: RIALTO-69
+
+[33mcommit ffbae913ac9389a025eb00cef61a0faa201d7217[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Thu Feb 23 09:21:00 2023 +0000
+
+    Web audio intergration fixes for nplb (#73)
+    
+    Summary: Set the channel mask and write the gst buffers in alignment with the bytes per sample.
+    Type: Fix
+    Test Plan: Unittests, NPLB Tests
+    Jira: RIALTO-2
+
+[33mcommit 8db73a7e9a1bb5433051020be529720842ce10d1[m
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Tue Feb 21 11:06:21 2023 +0100
+
+    Custom socket names support (#72)
+    
+    Summary: Custom socket name support in servermanager
+    Type: Feature
+    Owner: Marcin Wojciechowski
+    Reviewers: Adam Czynszak, Stuart Pett
+    Coding Standard Applied: Y
+    Test Plan: None
+    Dependencies and Impacts: None
+    Jira: RIALTO-101
+
+[33mcommit d6fe86e8ab004b0ab54175a1bfbadc27630619b4[m
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Fri Feb 17 12:38:47 2023 +0100
+
+    Set codec data (#69)
+    
+    Summary: SetCodecData API added
+    Type: Fix
+    Owner: Marcin Wojciechowski
+    Reviewers: Adam Czynszak, Stuart Pett
+    Coding Standard Applied: Y
+    Test Plan: None
+    Dependencies and Impacts: None
+    Jira: RIALTO-66
+
+[33mcommit 270723b588d3e93061d3673c7dd54b1b023c7c49[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Fri Feb 17 11:09:32 2023 +0000
+
+    Web audio intergration fixes for netflix (#71)
+    
+    Summary: Flush the pipeline of Eos so that the pipeline can be reused.
+    Type: Fix
+    Test Plan: Unittests, Netflix UiAudio Test
+    Jira: RIALTO-2
+
+[33mcommit 9ec7d46a32c47622954ab30d890dbda9a61b1617[m[33m ([m[1;31morigin/amlrdknext-20230217ng-bsp1019[m[33m)[m
+Author: aczs <92790185+aczs@users.noreply.github.com>
+Date:   Thu Feb 16 10:18:27 2023 +0000
+
+    Fixed compilation issue on x86-64 platform (#70)
+    
+    Summary: Fix pointer casting on 64b platforms
+    Type: Fix
+    Test Plan: UTs
+
+[33mcommit 3924d19ceba9c02d62ec67ac804fbb1fb10fb2ec[m
+Author: skyshaha1 <123478835+skyshaha1@users.noreply.github.com>
+Date:   Wed Feb 15 09:17:45 2023 +0000
+
+    Doxygen Error (#67)
+    
+    Summary: Run through doxygen warnings raised in github and fix any warning found in current codebase
+    Type: Feature
+    Test Plan: Tested via the doxygen-build github action in the doxygen_errors.yml file
+    Jira: RIALTO-62
+
+[33mcommit 6a068337e1910e141095928af6ae2ea3396e0f67[m
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Mon Feb 13 10:47:14 2023 +0100
+
+    NeedMediaData with smaller numFrames in prerolling state (#66)
+    
+    Summary: NeedMediaData with smaller numFrames in prerolling state
+    Type: Fix
+    Owner: Marcin Wojciechowski
+    Reviewers: Adam Czynszak, Stuart Pett
+    Coding Standard Applied: Y
+    Test Plan: None
+    Dependencies and Impacts: None
+    Jira: RIALTO-5, RIALTO-25
+
+[33mcommit af271b566e264c76c2c00ce35f0f4f7fd052d891[m[33m ([m[1;31morigin/feature-wanmanager-phase4[m[33m)[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Fri Feb 3 11:47:49 2023 +0000
+
+    Web audio integration (#65)
+    
+    Summary: Intergration fixes for web audio.
+    Type: Feature
+    Test Plan: Unittests, fullstack
+    Jira: RIALTO-2
+
+[33mcommit 5fcfb00c2127ee5c6bcfb2c33cc8784426a7ab8d[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Thu Feb 2 14:02:29 2023 +0000
+
+    Add setMaxWebAudioPlayers and introduce generic namespace for tasks (#62)
+    
+    Summary: Implement the setting of the max web audio players in server manager. Add new namespace in gstplayer/tasks/generic like we do for webaudio.
+    Type: Feature
+    Test Plan: Unittests
+    Jira: RIALTO-2
+
+[33mcommit b60940516eb9eda7ddd46060bd300c4fb5386b2b[m
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Tue Jan 31 09:00:17 2023 +0100
+
+    SourceId dynamic assignment (#63)
+    
+    Summary: SourceId dynamic assignment
+    Type: Feature
+    Owner: Marcin Wojciechowski
+    Reviewers: Adam Czynszak, Stuart Pett
+    Coding Standard Applied: Y
+    Test Plan: None
+    Dependencies and Impacts: None
+    Jira: RIALTO-28
+
+[33mcommit e8f9b4089dae27f65590f39815e6161004658a65[m
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Fri Jan 27 12:23:01 2023 +0100
+
+    codec change support added (#61)
+    
+    Summary: Audio codec change support added
+    Type: Feature
+    Owner: Marcin Wojciechowski
+    Reviewers: Adam Czynszak, Stuart Pett
+    Coding Standard Applied: Y
+    Test Plan: None
+    Dependencies and Impacts: None
+    Jira: RIALTO-28
+
+[33mcommit 7065b85403949a756e8be41ce0b60ea3cfd9dc39[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Fri Jan 27 10:25:05 2023 +0000
+
+    Web audio server improvements (#60)
+    
+    Summary: Improve the web audio implementation in rialto server. Adds a circular buffer, implements bufferDelay, setEos now waits for all date to be passed to gstreamer and we calculate the bytesPerFrame.
+    Type: Feature
+    Test Plan: Unittests
+    Jira: RIALTO-2
+
+[33mcommit 364ae82021982ef684aedf2b9537b691e6635fa1[m
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Fri Jan 27 08:28:10 2023 +0100
+
+    Switch audio source (#59)
+    
+    Summary: Switch Audio source implementation
+    Type: Feature
+    Owner: Marcin Wojciechowski
+    Reviewers: Adam Czynszak, Stuart Pett
+    Coding Standard Applied: Y
+    Test Plan: None
+    Dependencies and Impacts: None
+    Jira: RIALTO-28
+
+[33mcommit 6d1dbaa6bdd676984992e74ae45a1c25c566965f[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Fri Jan 20 11:44:55 2023 +0000
+
+    Web audio server main and gst player (#58)
+    
+    Summary: Implement rialto server and gst web audio player functionality.
+    Type: Feature
+    Test Plan: Unittests
+    Jira: RIALTO-2
+
+[33mcommit d3ca58d7f28a4ee7b33c28a06bd7ee607d57a108[m
+Author: Vladimir Rangelov <106084004+skyrangelovv@users.noreply.github.com>
+Date:   Wed Jan 18 09:04:54 2023 +0000
+
+    Add web audio player public header files to cmake public header files list (#57)
+    
+    Summary: Add web audio player public header files to cmake public files list.
+    Type: Fix
+    Test Plan: Manual tests
+
+[33mcommit c4bdf05ca0ed7c036afc3dc588334e3b274cfdc8[m
+Author: aczs <92790185+aczs@users.noreply.github.com>
+Date:   Fri Jan 13 09:43:20 2023 +0000
+
+    Print pad owner (#56)
+    
+    Summary: Print name of the pad's parent in forwarded gst logs
+    Type: Feature
+    Test Plan: Manual tests
+
+[33mcommit 7dd42e8392a68a5772ff451b9b99738799b9fc10[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Thu Jan 12 13:23:14 2023 +0000
+
+    Web audio refactor gst player (#55)
+    
+    Summary: Refactor SharedMemoryBuffer class for additional allocation of WebAudioPlayer buffers, rename GstPlayer and add a new framework for a new webaudio gst player.
+    Type: Feature
+    Test Plan: Unittests
+    Jira: RIALTO-2
+
+[33mcommit 65921de1055170c168aa22a7edf76d29ef1af81b[m
+Author: Vladimir Rangelov <106084004+skyrangelovv@users.noreply.github.com>
+Date:   Wed Jan 11 13:59:30 2023 +0000
+
+    Implements web audio client, web audio Ipc client and adds unit tests.  (#54)
+    
+    Summary: Implements web audio client, web audio ipc client and adds unit tests.
+    Type: Feature
+    Test Plan: Unittests
+    Jira: RIALTO-51
+
+[33mcommit 88e139184d4e8ae8a52a98141e687eb7e2f0434b[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Thu Jan 5 13:06:27 2023 +0000
+
+    Web audio server ipc and service implementation (#53)
+    
+    Summary: Implements a new WebAudioPlayer module in ipc and service with Unittests. Also includes refactoring of PlaybackService so that the sharedMemory can be shared between MediaPipelines and WebAudioPlayers.
+    Type: Feature
+    Test Plan: Unittests
+    Jira: RIALTO-2
+
+[33mcommit 237363f7b1f32744ec95e1736966b5a2197f3270[m
+Author: aczs <92790185+aczs@users.noreply.github.com>
+Date:   Thu Jan 5 10:51:17 2023 +0000
+
+    Eme deferred session closing (#51)
+    
+    Summary: Delay closing media key session when mks is still in use
+    Type: Fix
+    Test Plan: Unit tests and manual tests
+    Jira: RIALTO-8
+
+[33mcommit 3678fd120b6673769098c400adac3873ace92298[m
+Author: aczs <92790185+aczs@users.noreply.github.com>
+Date:   Wed Jan 4 16:03:30 2023 +0000
+
+    Set valid buffer size (#52)
+    
+    Summary: Set valid buffer size in case when external logs are printed to console
+    Type: Fix
+    Test Plan: Manual tests
+
+[33mcommit f0ad5482c14a9fc5d1d3bbea4ac7f2a23dbede5f[m
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Tue Jan 3 09:52:21 2023 +0100
+
+    GstWrapper/GlibWrapper excluded from coverage report (#50)
+    
+    Summary: Gst/Glib Wrappers excluded from coverage report generation
+    Type: Feature
+    Owner: Marcin Wojciechowski
+    Reviewers: Adam Czynszak, Luke Williamson
+    Coding Standard Applied: Y
+    Test Plan: None
+    Dependencies and Impacts: None
+    Jira: RIALTO-33
+
+[33mcommit 4ad7961c942452cf2b44737c99b979ed4e167944[m
+Author: aczs <92790185+aczs@users.noreply.github.com>
+Date:   Thu Dec 29 14:23:02 2022 +0000
+
+    Video peek fix (#47)
+    
+    Summary: Moved render frame to the main thread
+    Type: Fix
+    Test Plan: Unit Tests
+
+[33mcommit 20565a3e0d736680482cba6dc5f468ac9b8da85d[m
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Thu Dec 29 11:46:13 2022 +0100
+
+    link fix (#49)
+    
+    Summary: Missing dependency added in CMakeLists.txt
+    Type: Fix
+    Owner: Marcin Wojciechowski
+    Reviewers: Adam Czynszak, Luke Williamson
+    Coding Standard Applied: Y
+    Test Plan: None
+    Dependencies and Impacts: None
+    Jira: RIALTO-6
+
+[33mcommit 48c1034d9d2d70157e78ece7c9e6318a4de6317e[m
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Thu Dec 29 10:39:24 2022 +0100
+
+    set position fix (#48)
+    
+    Summary: Cancel NeedMediaData timer when new event is sent
+    Type: Fix
+    Owner: Marcin Wojciechowski
+    Reviewers: Adam Czynszak, Luke Williamson
+    Coding Standard Applied: Y
+    Test Plan: None
+    Dependencies and Impacts: None
+    Jira: RIALTO-9
+
+[33mcommit 017f5addadbcedc9f7d211125368a7bb18b832f8[m
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Thu Dec 29 09:48:29 2022 +0100
+
+    Set volume api (#45)
+    
+    Summary: Implementation of get/setVolume in IMediaPipeline.
+    Type: Feature
+    Owner: Marcin Wojciechowski
+    Reviewers: Adam Czynszak, Luke Williamson
+    Coding Standard Applied: Y
+    Test Plan: None
+    Dependencies and Impacts: None
+    Jira: RIALTO-6
+
+[33mcommit 1498ed20431a8fe2312065f192b61f48a0c1cfee[m
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Thu Dec 29 09:17:33 2022 +0100
+
+    GStreamer Logs forwarding (#43)
+    
+    Summary: GStreamer logs forwarded to rialto server logger.
+    Type: Feature
+    Owner: Marcin Wojciechowski
+    Reviewers: Adam Czynszak, Stuart Pett
+    Coding Standard Applied: Y
+    Test Plan: None
+    Dependencies and Impacts: None
+    Jira: RIALTO-47
+
+[33mcommit 3beeeb669acc92da2c796b9b1756c5850c8c6158[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Thu Dec 29 06:50:17 2022 +0000
+
+    Add web audio proto (#46)
+    
+    Summary: Adds the web audio player proto file for ipc.
+    Type: Feature
+    Test Plan: Unittests
+    Jira: RIALTO-2
+
+[33mcommit ddfba7d40f45863e56e57e2d6469f471e16491c8[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Wed Dec 28 14:41:20 2022 +0000
+
+    Add web audio player interface (#44)
+    
+    Summary: Adds the web audio player interface to rialto along with API stubs and unittests.
+    Type: Feature
+    Test Plan: Unittests
+    Jira: RIALTO-2
+
+[33mcommit 2e82bd3e90d11cdc978990d6b46d2dba32c92e70[m
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Fri Dec 23 12:47:05 2022 +0100
+
+    line endings unified (#42)
+    
+    Summary: Line endings unified to LF
+    Type: Feature
+    Owner: Marcin Wojciechowski
+    Reviewers: Adam Czynszak, Stuart Pett
+    Coding Standard Applied: Y
+    Test Plan: None
+    Dependencies and Impacts: None
+    Jira: RIALTO-21
+
+[33mcommit efffef08858a916785c703e07178cf261d77bcdc[m
+Author: aczs <92790185+aczs@users.noreply.github.com>
+Date:   Thu Dec 22 16:21:14 2022 +0000
+
+    Add dolby vision profile (#41)
+    
+    Summary: Added support for dolby vision profile
+    Type: Feature
+    Test Plan: Unit tests, manual NF tests, YT conformance tests
+
+[33mcommit 9a92fdf30c82cd3666d96c8c495f0f2799f43ac7[m
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Thu Dec 22 13:39:20 2022 +0100
+
+    No available samples timer (#40)
+    
+    Summary: Added NeedMediaData timer to prevent HaveData with NO_AVAILABLE_SAMPLES flood
+    Type: Feature
+    Owner: Marcin Wojciechowski
+    Reviewers: Adam Czynszak, Stuart Pett
+    Coding Standard Applied: Y
+    Test Plan: None
+    Dependencies and Impacts: None
+    Jira: RIALTO-9
+
+[33mcommit 29ece3555a7be3e1ecddfb2126d4f19d1038d960[m
+Author: Damian Wrobel <dwrobel@ertelnet.rybnik.pl>
+Date:   Wed Dec 21 13:13:26 2022 +0100
+
+    Explicitly Ignore return value in consoleLogHandler() from writev() (#24)
+    
+    Summary: Explicitly ignore return value in consoleLogHandler() from writev()
+    Type: fix
+    Owner: Damian Wrobel
+    Test Plan: None
+    Dependencies and Impacts: None
+
+[33mcommit 464a53c113dba1b8dde19b0b11bcc51ec33ca232[m
+Author: Damian Wrobel <dwrobel@ertelnet.rybnik.pl>
+Date:   Wed Dec 21 08:33:16 2022 +0100
+
+    Add options to disable compiling some components (#39)
+    
+    Summary: Add options to disable compiling some components
+    Type: feature
+    Owner: Damian Wrobel
+    Test Plan: None
+    Dependencies and Impacts: None
+
+[33mcommit 6672f8f067487a865d35ca854f44777b7b3a8452[m
+Author: Damian Wrobel <dwrobel@ertelnet.rybnik.pl>
+Date:   Thu Dec 15 12:40:41 2022 +0100
+
+    Add checking return code in build_ut.py (#31)
+    
+    Adds checking a return code from subprocess.run to avoid
+    running unit test before it compiles successfully.
+    
+    In addition, it allows to detect errors from sanitizers
+    despite unit test itself passes e.g.:
+    
+     $ ./build_ut.py
+     [==========] 35 tests from 4 test suites ran. (1060 ms total)
+     [  PASSED  ] 35 tests.
+     ThreadSanitizer: reported 62 warnings
+     Command: "./tests/serverManager/RialtoServerManagerUnitTests" returned with 66 error code!
+     $ echo $?
+     1
+    
+    Signed-off-by: Damian Wrobel <dwrobel@ertelnet.rybnik.pl>
+    --
+    Summary: add checking return code in build_ut.py
+    Type: Fix
+    Owner: Damian Wrobel
+    Test Plan: Unit Tests
+
+[33mcommit 870b67352d3f6bf1a9ba78a05ecca209e81d95bc[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Wed Dec 14 10:09:21 2022 +0000
+
+    Add confluence link (#38)
+    
+    Summary: Add information on how to reset the cache on workflow failure.
+    Type: Bug
+    Test Plan: N/A
+    Jira: N/A
+
+[33mcommit b9d8e52b13a2404e4f23958fc81ce94c49c7cc07[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Wed Dec 14 10:04:58 2022 +0000
+
+    Do not stop the dispatcher thread on EOS (#37)
+    
+    Summary: Do not stop the dispatcher thread after handling an EOS. This fixes the issue of when an EOS is reached, the pipeline could no longer be used.
+    Type: Feature
+    Test Plan: Unittests, Youtube Certification Tests
+    Jira: RIALTO-10
+
+[33mcommit ae1152e3408527f78a07b71e5af6cb63deca4df2[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Wed Dec 14 09:44:27 2022 +0000
+
+    Move decrypt after appsrc (#36)
+    
+    Summary: Move decryption of samples after appsrc, to avoid allocating too many resources while storing decrypted buffers.
+    Type: Feature
+    Test Plan: Unittests, Youtube Certification Tests, Netflix Full Stack
+    Jira: RIALTO-10
+
+[33mcommit 1de0fb499fdb80831b4defd58b8517b3480d6a52[m
+Author: Damian Wrobel <dwrobel@ertelnet.rybnik.pl>
+Date:   Tue Dec 13 16:13:22 2022 +0100
+
+    Fix some compilation errors (#30)
+    
+    Fixes the following compilation errors:
+    
+     rialto/ipc/client/source/IpcChannelImpl.cpp:601:29:
+     error: suggest braces around initialization of subobject
+      [-Werror,-Wmissing-braces]
+        struct itimerspec ts = {0};
+                                ^
+                                {}
+    
+     rialto/media/server/main/source/SharedMemoryBuffer.cpp:159:40:
+     error: lambda capture 'sessionId' is not used
+      [-Werror,-Wunused-lambda-capture]
+       [sessionId](const auto &p) { return p.sessionId == NO_SESSION_ASSIGNED; });
+        ^~~~~~~~~
+    
+     rialto/media/common/include/MediaFrameWriterV2.h:64:14:
+      error: 'getNumFrames' overrides a member function but is not marked 'override'
+       [-Werror,-Winconsistent-missing-override]
+        uint32_t getNumFrames() { return m_numFrames; }
+                 ^
+    
+     rialto/media/server/gstplayer/source/tasks/FinishSetupSource.cpp:91:87:
+      error: suggest braces around initialization of subobject [-Werror,-Wmissing-braces]
+       GstAppSrcCallbacks callbacks = {appSrcNeedData, appSrcEnoughData, appSrcSeekData,
+        nullptr};
+        ^~~~~~~
+        {      }
+    
+     rialto/media/server/gstplayer/include/tasks/Shutdown.h:28:1:
+      error: struct 'IGstPlayerPrivate' was previously declared as a class;
+       this is valid, but may result in linker errors under the Microsoft C++ ABI
+       [-Werror,-Wmismatched-tags]
+       struct IGstPlayerPrivate;
+       ^
+      media/server/gstplayer/include/IGstPlayerPrivate.h:29:7: note: previous use is here
+      class IGstPlayerPrivate
+      ^
+    
+      media/server/gstplayer/include/tasks/SetPosition.h:43:24:
+       error: private field 'm_player' is not used [-Werror,-Wunused-private-field]
+        IGstPlayerPrivate &m_player;
+                           ^
+    
+     media/server/gstplayer/include/GstWrapper.h:289:10:
+      error: 'gstByteWriterInitWithData' overrides a member function but is not marked
+      'override' [-Werror,-Winconsistent-missing-override]
+      void gstByteWriterInitWithData(GstByteWriter *writer, guint8 *data, ...
+           ^
+    
+     media/server/gstplayer/include/IGstWrapper.h:716:18: note: overridden virtual function
+        virtual void gstByteWriterInitWithData(GstByteWriter *writer, guint8 *data, ...
+                     ^
+    
+     tests/media/server/main/dataReader/DataReaderV2Tests.cpp:49:20:
+      error: unused variable 'kMediaKeysId' [-Werror,-Wunused-const-variable]
+       constexpr uint32_t kMediaKeysId{54354};
+                          ^
+     tests/media/server/main/mediaPipelineCapabilities/MediaPipelineCapabilitiesTest.cpp:53:37:
+      error: moving a temporary object prevents copy elision [-Werror,-Wpessimizing-move]
+       .WillOnce(Return(ByMove(std::move(std::unique_ptr<firebolt::rialto::server::IGstCapabilities>()))));
+                               ^
+    
+     rialto/rialto/tests/media/server/main/mediaPipelineCapabilities/MediaPipelineCapabilitiesTest.cpp:53:37:
+      note: remove std::move call here
+       .WillOnce(Return(ByMove(std::move(std::unique_ptr<firebolt::rialto::server::IGstCapabilities>()))));
+                               ^~~~~~~~~~                                                             ~
+    
+      tests/media/server/main/mediaKeysCapabilities/KeySystemsTest.cpp:47:38: error:
+       implicit instantiation of undefined template 'std::array<std::basic_string<char>, 3>'
+        const std::array<std::string, 3> m_supportedKeySystems{"com.widevine.alpha", "com.microsoft.playready",
+                                         ^
+    
+      tests/media/server/main/sharedMemoryBuffer/SharedMemoryBufferTestsFixture.cpp:24:15:
+       error: unused variable 'maxPlaybacks' [-Werror,-Wunused-const-variable]
+       constexpr int maxPlaybacks{1};
+                     ^
+      tests/media/server/main/needMediaData/NeedMediaDataTestsFixture.cpp:35:15:
+       error: unused variable 'maxMediaBytes' [-Werror,-Wunused-const-variable]
+       constexpr int maxMediaBytes{7337532};
+                     ^
+    
+      rialto/tests/media/server/gstplayer/player/tasksTests/AttachSamplesTest.cpp:36:18:
+       error: unused variable 'currentTimestamp' [-Werror,-Wunused-const-variable]
+        constexpr gint64 currentTimestamp = 2340538204;
+                         ^
+    
+      tests/media/server/gstplayer/player/tasksTests/ReadShmDataAndAttachSamplesTest.cpp:38:18:
+       error: unused variable 'currentTimestamp' [-Werror,-Wunused-const-variable]
+        constexpr gint64 currentTimestamp = 2340538204;
+                         ^
+    
+      tests/media/server/mocks/gstplayer/GstWrapperMock.h:181:19:
+       error: 'gstStructureNew' overrides a member function but is not marked 'override'
+        [-Werror,-Winconsistent-missing-override]
+         GstStructure *gstStructureNew(const gchar *name, const gchar *firstfield, ...) const
+                       ^
+    
+      media/server/ipc/source/MediaPipelineModuleService.cpp:112:10: error:
+       comparison of different enumeration types in switch statement
+       ('firebolt::rialto::AttachSourceRequest_StreamFormat' and
+        'firebolt::rialto::AttachSourceRequest_SegmentAlignment') [-Werror, -Wenum-compare-switch]
+        case firebolt::rialto::AttachSourceRequest_SegmentAlignment_ALIGNMENT_UNDEFINED:
+             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+    --
+    Summary: Fix some compilation errors
+    Type: fix
+    Owner: Damian Wrobel
+    Test Plan: Unit Tests
+
+[33mcommit f990f141bc0be501269fb2de937a9a84a06507dd[m
+Author: Damian Wrobel <dwrobel@ertelnet.rybnik.pl>
+Date:   Tue Dec 13 15:02:32 2022 +0100
+
+    Add versioning for shared libraries (#32)
+    
+    Adds versioning for shared libraries to avoid linking
+    with development version of shared library (.so).
+    
+    Additionaly, it would let us introduce incompatible changes
+    to the API in a controlled way.
+    
+    Signed-off-by: Damian Wrobel <dwrobel@ertelnet.rybnik.pl>
+    --
+    Summary: Add versioning for shared libraries
+    Type: Fix
+    Owner: Damian Wrobel
+    Test Plan: Unit Tests
+    
+    Co-authored-by: Vladimir Rangelov <106084004+skyrangelovv@users.noreply.github.com>
+    Co-authored-by: Simon Chung <simon.thunderbolt@gmail.com>
+
+[33mcommit bd998f4ec58045cd25b253968f056819448e0a61[m
+Author: aczs <92790185+aczs@users.noreply.github.com>
+Date:   Tue Dec 13 10:32:15 2022 +0000
+
+    Video peek (#33)
+    
+    Summary: Implemented video peek
+    Type: Feature
+    Test Plan: NTS tests
+    Jira: RIALTO-3
+
+[33mcommit e9af7fa08038c4ac375b0bd3b82646ff28d1dd79[m[33m ([m[1;33mtag: RDKV_2022Q4_DUNFELL[m[33m, [m[1;31morigin/rdkv-2022q4-dunfell[m[33m)[m
+Author: aczs <92790185+aczs@users.noreply.github.com>
+Date:   Fri Dec 9 12:07:51 2022 +0000
+
+    Fixed the issue in which ipcChannel could use eventThread's callbacks… (#35)
+    
+    Summary: Fixed race condition during stopping one of sessions during dual decoding
+    Type: Fix
+    Test Plan: Manual tests with dual decoding
+
+[33mcommit d26bb605ab94f0bfbee3594cb0dff03cf57fe734[m
+Author: Damian Wrobel <dwrobel@ertelnet.rybnik.pl>
+Date:   Fri Dec 9 11:14:44 2022 +0100
+
+    Add debug message for executing RialtoServer (#14)
+    
+    Makes easier to trace invocation of RialtoServer and its
+    arguments. Log excerpt:
+     T:15463 M:SessionServerApp.cpp F:launch L:100 > Launching: YouTube
+     T:15463 M:SessionServerApp.cpp F:spawnSessionServer L:214 > PID: 15464, executing: "/usr/bin/RialtoServer" "8"
+     T:15463 M:SessionServerApp.cpp F:spawnSessionServer L:189 > YouTube launched. PID: 15464
+    
+    Signed-off-by: Damian Wrobel <dwrobel@ertelnet.rybnik.pl>
+    --
+    Summary: Add debug message for executing Rialto Server
+    Type: Feature
+    Owner: Damian Wrobel
+    Test Plan: None
+    Dependencies and Impacts: None
+    
+    Co-authored-by: aczs <92790185+aczs@users.noreply.github.com>
+    Co-authored-by: Vladimir Rangelov <106084004+skyrangelovv@users.noreply.github.com>
+
+[33mcommit 65a86b074eaa869a3e8a816ef58be8a34723c8d7[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Wed Dec 7 07:51:04 2022 +0000
+
+    Dual video (#29)
+    
+    Summary: Set the res-usage flag on westerossink based on the max video capabilities.
+    Type: Feature
+    Test Plan: Unittests, Youtube Certification Tests
+    Jira: RIALTO-10
+
+[33mcommit 1776eed428392b12bd5aa41a58bf3d20c4b9f00e[m
+Author: aczs <92790185+aczs@users.noreply.github.com>
+Date:   Fri Dec 2 10:16:28 2022 +0000
+
+    Removed paths-ignore from gh actions (#34)
+    
+    Summary: Removed paths-ignore from gh actions
+    Type: Feature
+    Test Plan: GH actions
+    Jira: RIALTO-34
+
+[33mcommit 850379b431cab30a75b5fc1b6771fd75bf8eb7f2[m
+Author: Damian Wrobel <dwrobel@ertelnet.rybnik.pl>
+Date:   Mon Nov 28 12:58:43 2022 +0100
+
+    Stop using deprecated g_memdup() (#23)
+    
+    Summary: Stop using deprecated g_memdup()
+    Type: fix
+    Owner: Damian Wrobel
+    Test Plan: Unit Tests
+
+[33mcommit b4df2d8070c112fcc495e9fe05a3c388e9b6d868[m
+Author: aczs <92790185+aczs@users.noreply.github.com>
+Date:   Fri Nov 25 10:54:31 2022 +0000
+
+    Missing caps fix (#21)
+    
+    Summary: Added support for stream format and codec_data in caps
+    Type: Feature
+    Test Plan: Play h264/aac content
+    Dependencies and Impacts: MediaSource constructor parameters changed
+
+[33mcommit 758a4256317fa3497933c19b199ebc71c32e867b[m
+Author: aczs <92790185+aczs@users.noreply.github.com>
+Date:   Thu Nov 24 14:38:11 2022 +0000
+
+    Increase UT jobs timeout (#28)
+    
+    Summary: Increased timeouts for UT jobs
+    Type: Fix
+    Test Plan: None
+
+[33mcommit c85543e3bda2804d50e04bfc5f9be4c8cc0e2c02[m
+Author: aczs <92790185+aczs@users.noreply.github.com>
+Date:   Thu Nov 24 11:16:33 2022 +0000
+
+    added commit message template to README.md (#27)
+    
+    Summary: Added a link to commit message template description
+    Type: Feature
+    Test Plan: None
+
+[33mcommit aca605b85932e51e6b90c6e18e59057abab67791[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Thu Nov 24 10:13:04 2022 +0000
+
+    Read shared buffer in rialto client fix (#25)
+    
+    Summary: Use the start of the shared buffer when reading data from the buffer as the offsets are measured from the start.
+    Type: Feature
+    Test Plan: Unittests, Youtube Certification Tests (Dual Video)
+    Dependencies and Impacts: None
+    Jira: RIALTO-10
+
+[33mcommit b7d757468872a358d2e176a67c1246faee764b40[m
+Author: aczs <92790185+aczs@users.noreply.github.com>
+Date:   Wed Nov 23 11:11:09 2022 +0000
+
+    Hardcode GH action environment to Ubuntu 20.04 (#26)
+    
+    Summary: Changed system used in GH actions environment from Ubuntu latest to 20.04
+    Type: Feature
+    Test Plan: None
+    Dependencies and Impacts: None
+
+[33mcommit 5ea813a0953f1de8f6cbb42f3a2ccb60857064b4[m
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Tue Nov 22 13:11:30 2022 +0100
+
+    memory leak fix (#22)
+    
+    Summary: Fixed memory leak in rialto server
+    Type: Feature
+    Owner: Marcin Wojciechowski
+    Reviewers: Adam Czynszak, Stuart Pett
+    Coding Standard Applied: Y
+    Test Plan: None
+    Dependencies and Impacts: None
+    Jira: None
+
+[33mcommit dc2e2a41c76b18bf744e86c3814c286da35da456[m
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Mon Nov 21 11:13:17 2022 +0100
+
+    Netflix integration (#20)
+    
+    Summary: Fixed errors in Netflix EME functions. Fixed logging in rialto server.
+    Type: Feature
+    Owner: Marcin Wojciechowski
+    Reviewers: Adam Czynszak, Stuart Pett
+    Coding Standard Applied: Y
+    Test Plan: None
+    Dependencies and Impacts: None
+    Jira: RIALTO-8
+
+[33mcommit 27f7c6f793e85bceb961ed06157a3f88f67a4d0f[m
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Thu Nov 17 13:53:20 2022 +0100
+
+    Netflix eme (#19)
+    
+    Summary: Netflix EME specific functions implementation
+    Type: Feature
+    Owner: Marcin Wojciechowski
+    Reviewers: Adam Czynszak, Stuart Pett
+    Coding Standard Applied: Y
+    Test Plan: None
+    Dependencies and Impacts: None
+    Jira: RIALTO-8
+
+[33mcommit a5be54321a62c2ae6ec27c6435f4b54f28a52db4[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Thu Nov 17 11:47:08 2022 +0000
+
+    App launch timeout config (#18)
+    
+    Summary: Make session server app timeout configurable, where default is no timeout.
+    Type: Feature
+    Test Plan: Fullstack application manual testing
+    Dependencies and Impacts: None
+    Jira: RIALTO-35
+
+[33mcommit 781f3fe8b20e5f9ccccb39d1af5f138e4d29fcb7[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Thu Nov 17 07:40:41 2022 +0000
+
+    Reapply main thread to rialto server (#17)
+    
+    Summary: Rebase main thread move to server and fix the bug. Issue was that notification of the cond variable in the main thread class was not protected by the mutex, so on occasion the notification would occur before the other thread is waiting for it.
+    Type: Feature
+    Test Plan: Unittests, Youtube EME and MSE conformance tests
+    Dependencies and Impacts: None
+    Jira: RIALTO-30
+
+[33mcommit c5cca325204d00b770d4d1884961bff160e54b50[m
+Author: Damian Wrobel <dwrobel@ertelnet.rybnik.pl>
+Date:   Tue Nov 15 11:40:59 2022 +0100
+
+    Update googletest to fix build errors (#7)
+    
+    Summary: Update googletest to fix build errors
+    Type: Fix
+    Owner: Damian Wrobel
+    Reviewers: Adam Czynszak, Marcin Wojciechowski
+    Coding Standard Applied: Y
+    Test Plan: None
+    Dependencies and Impacts: None
+    Jira: None
+
+[33mcommit 96e45be1293536beed6561a68dac595c372ff891[m
+Author: Damian Wrobel <dwrobel@ertelnet.rybnik.pl>
+Date:   Tue Nov 15 11:21:46 2022 +0100
+
+    Add missing stdxcept header (#8)
+    
+    Summary: Add missing stdxcept header
+    Type: Fix
+    Owner: Damian Wrobel
+    Reviewers: Adam Czynszak, Marcin Wojciechowski
+    Coding Standard Applied: Y
+    Test Plan: None
+    Dependencies and Impacts: None
+    Jira: None
+
+[33mcommit 9402b57f3493b1e2865290da0021216dbaecc3c2[m
+Author: aczs <92790185+aczs@users.noreply.github.com>
+Date:   Mon Nov 14 11:19:06 2022 +0000
+
+    Clang format upgrade (#15)
+    
+    Summary: Upgraded clang-format version from v10 to v12
+    Type: Feature
+    Test Plan: Unit Tests
+    Dependencies and Impacts: None
+
+[33mcommit d24e5c893fc27ae26c15280bdfb7c67c12fa1300[m
+Author: aczs <92790185+aczs@users.noreply.github.com>
+Date:   Mon Nov 14 10:11:06 2022 +0000
+
+    Unit Test cleanup (#16)
+    
+    Summary: Changed fixtures from structs to classes and removed 'using namespace' duplicates
+    Type: Cleanup
+    Test Plan: Unit Tests
+    Dependencies and Impacts: Small
+
+[33mcommit 6dd99c2d820922fd52803f607044eced1981a1e1[m
+Author: Vladimir Rangelov <106084004+skyrangelovv@users.noreply.github.com>
+Date:   Thu Nov 10 12:41:38 2022 +0000
+
+    Replace gst caps with mime type. Add new create media source API (#5)
+    
+    * Replace gst caps with mime type
+    
+    * fix compilation errors after a merarch with master branch
+    
+    * fix clang-format errors
+    
+    * unit tests refactoring
+    
+    * fix valgrind errors
+    
+    * Fix pull request comments
+    
+    * Sync mime types with what is on pipeline capabilities confluence page
+
+[33mcommit a79f739f4c64d977154da760cf81e2d50984e43b[m
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Wed Nov 9 12:23:13 2022 +0100
+
+    coverage report in github pages (#13)
+    
+    Summary: Coverage report deployed to github pages
+    Type: Feature
+    Owner: Marcin Wojciechowski
+    Reviewers: Adam Czynszak, Stuart Pett
+    Coding Standard Applied: Y
+    Test Plan: None
+    Dependencies and Impacts: None
+    Jira: LLDEV-28919
+
+[33mcommit fdda313b0e84ca42dec3e9d34db4e69882bdc8b9[m
+Author: aczs <92790185+aczs@users.noreply.github.com>
+Date:   Wed Nov 9 09:16:05 2022 +0000
+
+    Doxygen doc generation (#12)
+    
+    Summary: Added doxygen documentation generation and an action which uploads it to the gh pages
+    Type: Feature
+    Coding Standard Applied: Y
+    Test Plan: None
+    Dependencies and Impacts: None
+
+[33mcommit 5aeb59bfc61b1689367b2b4ab95925a7bc9cf1b9[m
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Tue Nov 8 15:05:19 2022 +0100
+
+    Cobalt eme 34 35 fix (#10)
+    
+    Summary: Cobalt EME Tests 34, 35 fix
+    Type: Fix
+    Owner: Marcin Wojciechowski
+    Reviewers: Adam Czynszak, Stuart Pett
+    Coding Standard Applied: Y
+    Test Plan: None
+    Dependencies and Impacts: None
+    Jira: LLDEV-23469
+
+[33mcommit d3a8205a208ea4fbca912e131266d3f7f29ad981[m
+Author: aczs <92790185+aczs@users.noreply.github.com>
+Date:   Fri Nov 4 13:53:41 2022 +0000
+
+    Removed 'mock' namespaces (#4)
+    
+    Summary: Removed mock/mocks namespaces
+    Type: Cleanup
+    Test Plan: Unit Tests
+    Dependencies and Impacts: Small
+
+[33mcommit d6f46335721b01c0ad8dd9c3a214429df83cc810[m
+Author: aczs <92790185+aczs@users.noreply.github.com>
+Date:   Fri Nov 4 12:16:45 2022 +0000
+
+    MediaPipelineCapabilities implementation (#1)
+    
+    Summary: Implemented MediaPipelineCapabilities API
+    Type: Feature
+    Test Plan: Unit Tests, Manual Tests
+    Dependencies and Impacts: Small
+
+[33mcommit fc2bee706d5716a824130b7141d45c81f62d0288[m
+Merge: c2d8706 791ad17
+Author: Marcin Wojciechowski <105790697+skywojciechowskim@users.noreply.github.com>
+Date:   Fri Nov 4 11:19:56 2022 +0100
+
+    Merge pull request #3 from rdkcentral/EnableCoverageReportAgain
+    
+    Summary: Coverage report enabled again
+    Type: Fix
+    Owner: Marcin Wojciechowski
+    Reviewers: Adam Czynszak, Stuart Pett
+    Coding Standard Applied: Y
+    Test Plan: None
+    Dependencies and Impacts: None
+    Jira:
+
+[33mcommit 791ad17f80e6a5c66001d10c69abfb342beb539b[m
+Author: Marcin Wojciechowski <marcin.wojciechowski@sky.uk>
+Date:   Fri Nov 4 10:19:08 2022 +0100
+
+    coverage report enabled agai
+
+[33mcommit c2d87063cc63e53f9f38cdf7f44214b83c82d6fd[m
+Merge: 51f6764 3c5fb9b
+Author: aczs <92790185+aczs@users.noreply.github.com>
+Date:   Fri Nov 4 09:09:27 2022 +0000
+
+    Merge pull request #2 from rdkcentral/CoverageDisabledTemporarily
+    
+    Summary: Coverage report disabled temporarily
+    Type: Fix
+    Owner: Marcin Wojciechowski
+    Reviewers: Adam Czynszak, Stuart Pett
+    Coding Standard Applied: Y
+    Test Plan: None
+    Dependencies and Impacts: None
+
+[33mcommit 3c5fb9bd6b756407aa5a2c4e390b0d62a9418e80[m
+Author: Marcin Wojciechowski <marcin.wojciechowski@sky.uk>
+Date:   Fri Nov 4 08:47:19 2022 +0100
+
+    coverage report disabled temporarily
+
+[33mcommit 51f67643bf6749f45ba17951bc123246d759e9f0[m[33m ([m[1;33mtag: v0.1.0[m[33m)[m
+Author: skywilliamsonl <105777240+skywilliamsonl@users.noreply.github.com>
+Date:   Wed Nov 2 17:56:18 2022 +0000
+
+    Initial commit

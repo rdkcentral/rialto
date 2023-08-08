@@ -33,6 +33,8 @@ using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::SaveArg;
 using ::testing::StrictMock;
+using ::testing::ElementsAreArray;
+using ::testing::StrEq;
 
 /**
  * @brief TasksTest Base class
@@ -74,10 +76,44 @@ protected:
     void shouldSetGstVolume();
     void triggerSetVolume();
 
+    // AttachSamples test methods
+    void shouldAttachAllAudioSamples();
+    void triggerAttachSamplesAudio();
+    void shouldAttachAllVideoSamples();
+    void triggerAttachSamplesVideo();
+
+    // AttachSource test methods
+    void shouldAttachAudioSource();
+    void triggerAttachAudioSource();
+    void checkAudioSourceAttached();
+    void shouldAttachAudioSourceWithChannelsAndRate();
+    void triggerAttachAudioSourceWithChannelsAndRateAndDrm();
+    void checkAudioSourceAttachedWithDrm();
+    void shouldAttachAudioSourceWithAudioSpecificConf();
+    void triggerAttachOpusAudioSourceWithAudioSpecificConf();
+    void shouldAttachVideoSource();
+    void triggerAttachVideoSource();
+    void checkVideoSourceAttached();
+    void shouldAttachVideoSourceWithStringCodecData();
+    void triggerAttachVideoSourceWithStringCodecData();
+    void checkVideoSourceAttachedWithDrm();
+    void shouldAttachVideoSourceWithEmptyCodecData();
+    void triggerAttachVideoSourceWithEmptyCodecData();
+    void shouldAttachVideoSourceWithDolbyVisionSource();
+    void triggerAttachVideoSourceWithDolbyVisionSource();
+    void shouldSwitchAudioSource();
+    void triggerSwitchAudioSource();
+    void checkNewAudioSourceAttached();
+    void shouldNotSwitchAudioSourceWhenMimeTypeIsEmpty();
+    void triggerSwitchAudioSourceWithEmptyMimeType();
+
 private:
     // SetupElement helper methods
     void expectSetupVideoElement();
     void expectSetupAudioElement();
+
+    // AttachSource helper methods
+    //void expectSetGenericVideoCaps();
 };
 
 #endif // TASKS_TESTS_BASE_H_
