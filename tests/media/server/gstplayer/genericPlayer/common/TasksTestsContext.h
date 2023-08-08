@@ -23,6 +23,7 @@
 #include "GenericPlayerContext.h"
 #include "GlibWrapperMock.h"
 #include "GstGenericPlayerPrivateMock.h"
+#include "GstGenericPlayerClientMock.h"
 #include "GstWrapperMock.h"
 #include "RdkGstreamerUtilsWrapperMock.h"
 #include <memory>
@@ -39,6 +40,7 @@ public:
 
     // Mocks
     StrictMock<firebolt::rialto::server::GstGenericPlayerPrivateMock> m_gstPlayer;
+    StrictMock<firebolt::rialto::server::GstGenericPlayerClientMock> m_gstPlayerClient;
     std::shared_ptr<firebolt::rialto::server::GlibWrapperMock> m_glibWrapper{
         std::make_shared<StrictMock<firebolt::rialto::server::GlibWrapperMock>>()};
     std::shared_ptr<firebolt::rialto::server::GstWrapperMock> m_gstWrapper{
@@ -54,12 +56,23 @@ public:
     GstCaps m_gstCaps1{};
     GstCaps m_gstCaps2{};
     GstElement m_appSrc{};
+    GstBin m_bin{};
+    GstObject m_obj1{};
+    GstObject m_obj2{};
+    GstElement m_audioDecodeBin{};
+    GstElement m_audioParentSink{};
 
     // Glib members
     guint m_signals[1]{123};
     GCallback m_audioUnderflowCallback;
     GCallback m_videoUnderflowCallback;
     gchar m_capsStr{};
+    gchar m_typefindElementName[9]{"typefind"};
+    gchar m_parseElementName[6]{"parse"};
+    gchar m_decoderElementName[4]{"dec"};
+    gchar m_audioSinkElementName[10]{"audiosink"};
+    gchar m_elementName[5]{"sink"};
+    gchar m_binElementName[5]{"bin"};
 };
 
 #endif // TASKS_TESTS_CONTEXT_H_

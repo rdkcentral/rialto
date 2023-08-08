@@ -20,6 +20,8 @@
 #ifndef TASKS_TESTS_BASE_H_
 #define TASKS_TESTS_BASE_H_
 
+#include "MediaCommon.h"
+
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
@@ -49,6 +51,10 @@ public:
     virtual ~TasksTestsBase();
 
 protected:
+    // Set context methods
+    void setContextStreamInfo(firebolt::rialto::MediaSourceType sourceType);
+    void setContextPlaying();
+
     // SetupElement test methods
     void shouldSetupVideoElementOnly();
     void shouldSetupVideoElementWesterossink();
@@ -106,6 +112,34 @@ protected:
     void checkNewAudioSourceAttached();
     void shouldNotSwitchAudioSourceWhenMimeTypeIsEmpty();
     void triggerSwitchAudioSourceWithEmptyMimeType();
+
+    // CheckAudioUnderflow test methods
+    void shouldQueryPositionAndSetToZero();
+    void triggerCheckAudioUnderflowNoNotification();
+    void shouldNotifyAudioUnderflow();
+    void triggerCheckAudioUnderflow();
+
+    // DeepElementAdded test methods
+    void shouldNotRegisterCallbackWhenPtrsAreNotEqual();
+    void constructDeepElementAdded();
+    void shouldNotRegisterCallbackWhenElementIsNull();
+    void shouldNotRegisterCallbackWhenElementNameIsNotTypefind();
+    void shouldRegisterCallbackForTypefindElement();
+    void shouldUpdatePlaybackGroupWhenCallbackIsCalled();
+    void shouldSetTypefindElement();
+    void triggerDeepElementAdded();
+    void checkTypefindPlaybackGroupAdded();
+    void checkPipelinePlaybackGroupAdded();
+    void shouldSetParseElement();
+    void checkParsePlaybackGroupAdded();
+    void shouldSetDecoderElement();
+    void checkDecoderPlaybackGroupAdded();
+    void shouldSetGenericElement();
+    void shouldSetAudioSinkElement();
+    void shouldHaveNullParentSink();
+    void shouldHaveNonBinParentSink();
+    void shouldHaveBinParentSink();
+    void checkAudioSinkPlaybackGroupAdded();
 
 private:
     // SetupElement helper methods
