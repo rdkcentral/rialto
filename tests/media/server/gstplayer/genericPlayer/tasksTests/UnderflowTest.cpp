@@ -17,94 +17,59 @@
  * limitations under the License.
  */
 
-#include "tasks/generic/Underflow.h"
-#include "GstGenericPlayerClientMock.h"
-#include "GstGenericPlayerPrivateMock.h"
-#include <gtest/gtest.h>
+#include "TasksTestsBase.h"
 
-using testing::_;
-using testing::Invoke;
-using testing::Return;
-using testing::StrictMock;
-
-class UnderflowTest : public testing::Test
+class UnderflowTest : public TasksTestsBase
 {
 protected:
-    firebolt::rialto::server::GenericPlayerContext m_context{};
-    StrictMock<firebolt::rialto::server::GstGenericPlayerPrivateMock> m_gstPlayer;
-    StrictMock<firebolt::rialto::server::GstGenericPlayerClientMock> m_gstPlayerClient;
-    GstElement m_audioAppSrc{};
-
     UnderflowTest()
     {
-        m_context.audioAppSrc = &m_audioAppSrc;
-        m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO,
-                                     firebolt::rialto::server::StreamInfo{&m_audioAppSrc, true});
+        setContextAudioAppSrc();
+        setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
     }
 };
 
 TEST_F(UnderflowTest, shouldNotReportUnderflowWhenItIsDisabled)
 {
-    bool underflowFlag{false};
-    bool underflowEnabled{false};
-    firebolt::rialto::MediaSourceType sourceType{firebolt::rialto::MediaSourceType::VIDEO};
-    firebolt::rialto::server::tasks::generic::Underflow task{m_context,     m_gstPlayer,      &m_gstPlayerClient,
-                                                             underflowFlag, underflowEnabled, sourceType};
-    task.execute();
+    setUnderflowFlag(false);
+    setUnderflowEnabled(false);
+    triggerVideoUnderflow();
 }
 
 TEST_F(UnderflowTest, shouldNotReportUnderflowWhenItIsAlreadyActive)
 {
-    bool underflowFlag{true};
-    bool underflowEnabled{true};
-    firebolt::rialto::MediaSourceType sourceType{firebolt::rialto::MediaSourceType::VIDEO};
-    firebolt::rialto::server::tasks::generic::Underflow task{m_context,     m_gstPlayer,      &m_gstPlayerClient,
-                                                             underflowFlag, underflowEnabled, sourceType};
-    task.execute();
-    EXPECT_TRUE(underflowFlag);
+    setUnderflowFlag(true);
+    setUnderflowEnabled(true);
+    triggerVideoUnderflow();
+    checkUnderflowFlag(true);
 }
 
 TEST_F(UnderflowTest, shouldReportUnderflow)
 {
-    bool underflowFlag{false};
-    bool underflowEnabled{true};
-    firebolt::rialto::MediaSourceType sourceType{firebolt::rialto::MediaSourceType::VIDEO};
-
-    firebolt::rialto::server::tasks::generic::Underflow task{m_context,     m_gstPlayer,      &m_gstPlayerClient,
-                                                             underflowFlag, underflowEnabled, sourceType};
-
-    EXPECT_CALL(m_gstPlayerClient, notifyBufferUnderflow(firebolt::rialto::MediaSourceType::VIDEO));
-    task.execute();
-    EXPECT_TRUE(underflowFlag);
+    setUnderflowFlag(false);
+    setUnderflowEnabled(true);
+    shouldNotifyVideoUnderflow();
+    triggerVideoUnderflow();
+    checkUnderflowFlag(true);
 }
 
 TEST_F(UnderflowTest, shouldNotReportEosWhenEosAlreadyNotified)
 {
-    m_context.endOfStreamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, GST_ELEMENT(&m_audioAppSrc));
-    m_context.eosNotified = true;
-
-    bool underflowFlag{false};
-    bool underflowEnabled{true};
-    firebolt::rialto::MediaSourceType sourceType{firebolt::rialto::MediaSourceType::AUDIO};
-
-    firebolt::rialto::server::tasks::generic::Underflow task{m_context,     m_gstPlayer,      &m_gstPlayerClient,
-                                                             underflowFlag, underflowEnabled, sourceType};
-    task.execute();
-    EXPECT_FALSE(underflowFlag);
+    setContextEndOfStream(firebolt::rialto::MediaSourceType::AUDIO);
+    setContextEndOfStreamNotified();
+    setUnderflowFlag(false);
+    setUnderflowEnabled(true);
+    triggerVideoUnderflow();
+    checkUnderflowFlag(false);
 }
 
 TEST_F(UnderflowTest, shouldReportEos)
 {
-    m_context.endOfStreamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, GST_ELEMENT(&m_audioAppSrc));
-
-    bool underflowFlag{false};
-    bool underflowEnabled{true};
-    firebolt::rialto::MediaSourceType sourceType{firebolt::rialto::MediaSourceType::AUDIO};
-
-    firebolt::rialto::server::tasks::generic::Underflow task{m_context,     m_gstPlayer,      &m_gstPlayerClient,
-                                                             underflowFlag, underflowEnabled, sourceType};
-    EXPECT_CALL(m_gstPlayerClient, notifyPlaybackState(firebolt::rialto::PlaybackState::END_OF_STREAM));
-    task.execute();
-    EXPECT_FALSE(underflowFlag);
-    EXPECT_TRUE(m_context.eosNotified);
+    setContextEndOfStream(firebolt::rialto::MediaSourceType::AUDIO);
+    setUnderflowFlag(false);
+    setUnderflowEnabled(true);
+    shouldNotifyEndOfStream();
+    triggerVideoUnderflow();
+    checkUnderflowFlag(false);
+    checkEndOfStreamNotified();
 }

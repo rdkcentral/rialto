@@ -54,6 +54,17 @@ protected:
     // Set context methods
     void setContextStreamInfo(firebolt::rialto::MediaSourceType sourceType);
     void setContextPlaying();
+    void setContextNeedData(bool doNeedData);
+    void setContextAudioUnderflowOccured(bool isUnderflow);
+    void setContextVideoUnderflowOccured(bool isUnderflow);
+    void setContextAudioAppSrc();
+    void setContextEndOfStream(firebolt::rialto::MediaSourceType sourceType);
+    void setContextEndOfStreamNotified();
+    void setContextPipelineNull();
+    void setContextNeedDataPending(bool isNeedDataPending);
+    void setContextAudioBuffer();
+    void setContextVideoBuffer();
+    void setContextPlaybackRate();
 
     // SetupElement test methods
     void shouldSetupVideoElementOnly();
@@ -152,6 +163,55 @@ protected:
     void shouldSuccessfullyFindTypefindAndParent();
     void checkPlaybackGroupAdded();
 
+    // Stop test methods
+    void shouldStopGstPlayer();
+    void triggerStop();
+    void checkNoMoreNeedData();
+
+    // EnoughData test methods
+    void triggerEnoughDataAudio();
+    void triggerEnoughDataVideo();
+    void checkNeedDataForBothSources();
+    void checkNeedDataForAudioOnly();
+    void checkNeedDataForVideoOnly();
+
+    // Eos test methods
+    void triggerEosAudio();
+    void triggerEosVideo();
+    void shouldGstAppSrcEndOfStreamSuccess();
+    void shouldGstAppSrcEndOfStreamFailure();
+    void shouldCancelUnderflow();
+
+    // Underflow test methods
+    void setUnderflowFlag(bool isUnderflowFlag);
+    void setUnderflowEnabled(bool isUnderflowEnabled);
+    void triggerVideoUnderflow();
+    void checkUnderflowFlag(bool expected);
+    void shouldNotifyVideoUnderflow();
+    void shouldNotifyEndOfStream();
+    void checkEndOfStreamNotified();
+
+    // Shutdown test methods
+    void shouldStopWorkerThread();
+    void triggerShutdown();
+
+    // SetMute test methods
+    void triggerSetMute();
+    void shouldGstSetMute();
+
+    // SetPosition test methods
+    void triggerSetPositionNullClient();
+    void triggerSetPosition();
+    void checkNeedDataPendingForBothSources();
+    void checkBuffersDoExist();
+    void checkDoNotNeedDataForBothSources();
+    void checkNoNeedDataPendingForBothSources();
+    void checkBuffersEmpty();
+    void shouldExtractBuffers();
+    void shouldNotifyFailure();
+    void shouldSeekFailure();
+    void shouldSeekSuccess();
+    void checkNoEos();
 private:
     // SetupElement helper methods
     void expectSetupVideoElement();

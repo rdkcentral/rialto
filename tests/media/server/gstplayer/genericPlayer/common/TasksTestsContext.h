@@ -52,10 +52,12 @@ public:
     GstElement m_element{};
     GstElementFactory *m_elementFactory{};
     GstElement m_pipeline{};
-    GstBuffer m_gstBuffer{};
+    GstBuffer m_audioBuffer{};
+    GstBuffer m_videoBuffer{};
     GstCaps m_gstCaps1{};
     GstCaps m_gstCaps2{};
-    GstElement m_appSrc{};
+    GstElement m_appSrcAudio{};
+    GstElement m_appSrcVideo{};
     GstBin m_bin{};
     GstObject m_obj1{};
     GstObject m_obj2{};
@@ -75,6 +77,10 @@ public:
     gchar m_audioSinkElementName[10]{"audiosink"};
     gchar m_elementName[5]{"sink"};
     gchar m_binElementName[5]{"bin"};
+
+    // Standard members
+    bool m_underflowFlag{false};
+    bool m_underflowEnabled{false};
 };
 
 #endif // TASKS_TESTS_CONTEXT_H_

@@ -17,42 +17,20 @@
  * limitations under the License.
  */
 
-#include "tasks/generic/SetMute.h"
-#include "GenericPlayerContext.h"
-#include "GstWrapperMock.h"
-#include <gst/gst.h>
-#include <gtest/gtest.h>
+#include "TasksTestsBase.h"
 
-using testing::_;
-using testing::Return;
-using testing::StrictMock;
-
-namespace
+class SetMuteTest : public TasksTestsBase
 {
-constexpr bool kMute{false};
-} // namespace
-
-class SetMuteTest : public testing::Test
-{
-public:
-    SetMuteTest() = default;
-
-    firebolt::rialto::server::GenericPlayerContext m_context;
-    std::shared_ptr<firebolt::rialto::server::GstWrapperMock> m_gstWrapper{
-        std::make_shared<StrictMock<firebolt::rialto::server::GstWrapperMock>>()};
-    GstElement m_pipeline{};
 };
 
 TEST_F(SetMuteTest, shouldFailToSetMuteWhenPipelineIsNull)
 {
-    firebolt::rialto::server::tasks::generic::SetMute task{m_context, m_gstWrapper, kMute};
-    task.execute();
+    setContextPipelineNull();
+    triggerSetMute();
 }
 
 TEST_F(SetMuteTest, shouldSetMute)
 {
-    m_context.pipeline = &m_pipeline;
-    EXPECT_CALL(*m_gstWrapper, gstStreamVolumeSetMute(GST_STREAM_VOLUME(m_context.pipeline), kMute));
-    firebolt::rialto::server::tasks::generic::SetMute task{m_context, m_gstWrapper, kMute};
-    task.execute();
+    shouldGstSetMute();
+    triggerSetMute();
 }
