@@ -20,11 +20,13 @@
 #ifndef TASKS_TESTS_CONTEXT_H_
 #define TASKS_TESTS_CONTEXT_H_
 
+#include "DecryptionServiceMock.h"
 #include "GenericPlayerContext.h"
 #include "GlibWrapperMock.h"
 #include "GstGenericPlayerPrivateMock.h"
 #include "GstGenericPlayerClientMock.h"
 #include "GstWrapperMock.h"
+#include "GstSrcMock.h"
 #include "RdkGstreamerUtilsWrapperMock.h"
 #include <memory>
 
@@ -47,6 +49,10 @@ public:
         std::make_shared<StrictMock<firebolt::rialto::server::GstWrapperMock>>()};
     std::shared_ptr<firebolt::rialto::server::RdkGstreamerUtilsWrapperMock> m_rdkGstreamerUtilsWrapper{
         std::make_shared<StrictMock<firebolt::rialto::server::RdkGstreamerUtilsWrapperMock>>()};
+    std::shared_ptr<StrictMock<firebolt::rialto::server::DecryptionServiceMock>> m_decryptionServiceMock{
+        std::make_shared<StrictMock<firebolt::rialto::server::DecryptionServiceMock>>()};
+    std::shared_ptr<StrictMock<firebolt::rialto::server::GstSrcMock>> m_gstSrc{
+        std::make_shared<StrictMock<firebolt::rialto::server::GstSrcMock>>()};
 
     // Gstreamer members
     GstElement m_element{};
@@ -63,6 +69,8 @@ public:
     GstObject m_obj2{};
     GstElement m_audioDecodeBin{};
     GstElement m_audioParentSink{};
+    GstAppSrcCallbacks m_audioCallbacks{};
+    GstAppSrcCallbacks m_videoCallbacks{};
 
     // Glib members
     guint m_signals[1]{123};
@@ -77,10 +85,14 @@ public:
     gchar m_audioSinkElementName[10]{"audiosink"};
     gchar m_elementName[5]{"sink"};
     gchar m_binElementName[5]{"bin"};
+    gpointer m_videoUserData{};
+    gpointer m_audioUserData{};
 
     // Standard members
     bool m_underflowFlag{false};
     bool m_underflowEnabled{false};
+    firebolt::rialto::server::StreamInfo m_streamInfoAudio{&m_appSrcAudio, true};
+    firebolt::rialto::server::StreamInfo m_streamInfoVideo{&m_appSrcVideo, true};
 };
 
 #endif // TASKS_TESTS_CONTEXT_H_

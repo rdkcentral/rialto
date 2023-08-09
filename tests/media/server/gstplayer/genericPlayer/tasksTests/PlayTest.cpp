@@ -17,29 +17,20 @@
  * limitations under the License.
  */
 
-#include "tasks/generic/Play.h"
-#include "GstGenericPlayerPrivateMock.h"
-#include <gtest/gtest.h>
+#include "TasksTestsBase.h"
 
-using testing::Return;
-using testing::StrictMock;
-
-class PlayTest : public testing::Test
+class PlayTest  : public TasksTestsBase
 {
-protected:
-    StrictMock<firebolt::rialto::server::GstGenericPlayerPrivateMock> m_gstPlayer;
 };
 
 TEST_F(PlayTest, shouldPlay)
 {
-    EXPECT_CALL(m_gstPlayer, changePipelineState(GST_STATE_PLAYING)).WillOnce(Return(true));
-    firebolt::rialto::server::tasks::generic::Play task{m_gstPlayer};
-    task.execute();
+    shouldChangeStatePlayingSuccess();
+    triggerPlay();
 }
 
 TEST_F(PlayTest, shouldFailToPlay)
 {
-    EXPECT_CALL(m_gstPlayer, changePipelineState(GST_STATE_PLAYING)).WillOnce(Return(false));
-    firebolt::rialto::server::tasks::generic::Play task{m_gstPlayer};
-    task.execute();
+    shouldChangeStatePlayingFailure();
+    triggerPlay();
 }

@@ -62,9 +62,13 @@ protected:
     void setContextEndOfStreamNotified();
     void setContextPipelineNull();
     void setContextNeedDataPending(bool isNeedDataPending);
+    void setContextNeedDataPendingAudioOnly(bool isNeedDataPending);
+    void setContextNeedDataPendingVideoOnly(bool isNeedDataPending);
     void setContextAudioBuffer();
     void setContextVideoBuffer();
     void setContextPlaybackRate();
+    void setContextSourceNull();
+    void setContextAudioSourceRemoved();
 
     // SetupElement test methods
     void shouldSetupVideoElementOnly();
@@ -212,6 +216,48 @@ protected:
     void shouldSeekFailure();
     void shouldSeekSuccess();
     void checkNoEos();
+
+    // Play test methods
+    void shouldChangeStatePlayingSuccess();
+    void shouldChangeStatePlayingFailure();
+    void triggerPlay();
+
+    // Pause test methods
+    void shouldPause();
+    void triggerPause();
+    void checkContextPaused();
+
+    // ReportPosition test methods
+    void shouldReportPosition();
+    void triggerReportPosition();
+    void shouldFailToReportPosition();
+
+    // FinishSetupSource test methods
+    void shouldFinishSetupSource();
+    void triggerFinishSetupSource();
+    void shouldScheduleNeedMediaDataAudio();
+    void triggerAudioCallbackNeedData();
+    void shouldScheduleNeedMediaDataVideo();
+    void triggerVideoCallbackNeedData();
+    void shouldScheduleEnoughDataAudio();
+    void triggerAudioCallbackEnoughData();
+    void shouldScheduleEnoughDataVideo();
+    void triggerVideoCallbackEnoughData();
+    void triggerAudioCallbackSeekData();
+    void triggerVideoCallbackSeekData();
+    void checkSourcesAttached();
+
+    // NeedData test methods
+    void triggerNeedDataAudio();
+    void triggerNeedDataVideo();
+    void triggerNeedDataUnknownSrc();
+    void shouldNotifyNeedAudioDataSuccess();
+    void shouldNotifyNeedVideoDataSuccess();
+    void checkNeedDataPendingForAudioOnly();
+    void checkNeedDataPendingForVideoOnly();
+    void shouldNotifyNeedAudioDataFailure();
+    void shouldNotifyNeedVideoDataFailure();
+
 private:
     // SetupElement helper methods
     void expectSetupVideoElement();
