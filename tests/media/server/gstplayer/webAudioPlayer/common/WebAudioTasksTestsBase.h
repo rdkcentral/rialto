@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef GENERIC_TASKS_TESTS_BASE_H_
-#define GENERIC_TASKS_TESTS_BASE_H_
+#ifndef WEB_AUDIO_TASKS_TESTS_BASE_H_
+#define WEB_AUDIO_TASKS_TESTS_BASE_H_
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -35,49 +35,22 @@ using ::testing::SaveArg;
 using ::testing::StrictMock;
 
 /**
- * @brief TasksTest Base class
+ * @brief WebAudioTasksTest Base class
  *
  * This class exists to create a common place for all gstreamer objects and mocks to coexist.
  * Moving all gstreamer dependancies into one file reduces the compile time dramatically.
  */
-class GenericTasksTestsBase : public ::testing::Test
+class WebAudioTasksTestsBase : public ::testing::Test
 {
 public:
-    GenericTasksTestsBase();
-    virtual ~GenericTasksTestsBase();
+    WebAudioTasksTestsBase();
+    virtual ~WebAudioTasksTestsBase();
 
 protected:
     // SetupElement test methods
-    void shouldSetupVideoElementOnly();
-    void shouldSetupVideoElementWesterossink();
-    void shouldSetupVideoElementAmlhalasink();
-    void shouldSetupVideoElementPendingGeometryNonWesterissink();
-    void shouldSetupAudioElementOnly();
-    void shouldSetVideoUnderflowCallback();
-    void triggerSetupElement();
-    void triggerVideoUnderflowCallback();
-    void shouldSetAudioUnderflowCallback();
-    void triggerAudioUnderflowCallback();
-
-    // SetVideoGeometry test methods
-    void setPipelineToNull();
-    void triggerSetVideoGeometryFailure();
-    void shouldSetVideoGeometry();
-    void triggerSetVideoGeometrySuccess();
-
-    // SetupSource test methods
-    void setAllSourcesAttached();
-    void shouldScheduleAllSourcesAttached();
-    void triggerSetupSource();
-
-    // SetVolume test methods
-    void shouldSetGstVolume();
-    void triggerSetVolume();
+    void shouldEndOfStreamSuccess();
 
 private:
-    // SetupElement helper methods
-    void expectSetupVideoElement();
-    void expectSetupAudioElement();
 };
 
-#endif // GENERIC_TASKS_TESTS_BASE_H_
+#endif // WEB_AUDIO_TASKS_TESTS_BASE_H_

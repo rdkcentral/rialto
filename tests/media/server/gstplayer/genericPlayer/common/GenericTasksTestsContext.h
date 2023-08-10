@@ -27,7 +27,7 @@
 #include <memory>
 
 /**
- * @brief TasksTests context
+ * @brief GenericTasksTests context
  *
  * Stores all objects and non-const variables so that constuction and destruction can be managed.
  */

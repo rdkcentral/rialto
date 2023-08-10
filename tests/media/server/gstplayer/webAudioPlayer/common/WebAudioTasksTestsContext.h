@@ -20,25 +20,28 @@
 #ifndef WEB_AUDIO_TASKS_TESTS_CONTEXT_H_
 #define WEB_AUDIO_TASKS_TESTS_CONTEXT_H_
 
-#include "GenericPlayerContext.h"
+#include "WebAudioPlayerContext.h"
 #include "GlibWrapperMock.h"
-#include "GstGenericPlayerPrivateMock.h"
+#include "GstWebAudioPlayerPrivateMock.h"
 #include "GstWrapperMock.h"
 #include <memory>
 
 /**
- * @brief TasksTests context
+ * @brief WebAudioTasksTests context
  *
  * Stores all objects and non-const variables so that constuction and destruction can be managed.
  */
 class WebAudioTasksTestsContext
 {
 public:
-    #firebolt::rialto::server::GenericPlayerContext m_context;
+    firebolt::rialto::server::WebAudioPlayerContext m_context;
 
     // Mocks
+    std::shared_ptr<firebolt::rialto::server::GstWrapperMock> m_gstWrapper{
+        std::make_shared<StrictMock<firebolt::rialto::server::GstWrapperMock>>()};
 
     // Gstreamer members
+    GstElement m_src{};
 
     // Glib members
 };

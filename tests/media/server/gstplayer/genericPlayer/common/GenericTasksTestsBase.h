@@ -35,7 +35,7 @@ using ::testing::SaveArg;
 using ::testing::StrictMock;
 
 /**
- * @brief TasksTest Base class
+ * @brief GenericTasksTest Base class
  *
  * This class exists to create a common place for all gstreamer objects and mocks to coexist.
  * Moving all gstreamer dependancies into one file reduces the compile time dramatically.
