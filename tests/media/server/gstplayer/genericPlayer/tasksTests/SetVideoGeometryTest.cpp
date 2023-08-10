@@ -17,9 +17,9 @@
  * limitations under the License.
  */
 
-#include "TasksTestsBase.h"
+#include "GenericTasksTestsBase.h"
 
-class SetVideoGeometryTest : public TasksTestsBase
+class SetVideoGeometryTest : public GenericTasksTestsBase
 {
 };
 

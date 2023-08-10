@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef TASKS_TESTS_CONTEXT_H_
-#define TASKS_TESTS_CONTEXT_H_
+#ifndef WEB_AUDIO_TASKS_TESTS_CONTEXT_H_
+#define WEB_AUDIO_TASKS_TESTS_CONTEXT_H_
 
 #include "GenericPlayerContext.h"
 #include "GlibWrapperMock.h"
@@ -31,27 +31,16 @@
  *
  * Stores all objects and non-const variables so that constuction and destruction can be managed.
  */
-class TasksTestsContext
+class WebAudioTasksTestsContext
 {
 public:
-    firebolt::rialto::server::GenericPlayerContext m_context;
+    #firebolt::rialto::server::GenericPlayerContext m_context;
 
     // Mocks
-    StrictMock<firebolt::rialto::server::GstGenericPlayerPrivateMock> m_gstPlayer;
-    std::shared_ptr<firebolt::rialto::server::GlibWrapperMock> m_glibWrapper{
-        std::make_shared<StrictMock<firebolt::rialto::server::GlibWrapperMock>>()};
-    std::shared_ptr<firebolt::rialto::server::GstWrapperMock> m_gstWrapper{
-        std::make_shared<StrictMock<firebolt::rialto::server::GstWrapperMock>>()};
 
     // Gstreamer members
-    GstElement m_element{};
-    GstElementFactory *m_elementFactory{};
-    GstElement m_pipeline{};
 
     // Glib members
-    guint m_signals[1]{123};
-    GCallback m_audioUnderflowCallback;
-    GCallback m_videoUnderflowCallback;
 };
 
-#endif // TASKS_TESTS_CONTEXT_H_
+#endif // WEB_AUDIO_TASKS_TESTS_CONTEXT_H_

@@ -17,9 +17,9 @@
  * limitations under the License.
  */
 
-#include "TasksTestsBase.h"
+#include "GenericTasksTestsBase.h"
 #include "Matchers.h"
-#include "TasksTestsContext.h"
+#include "GenericTasksTestsContext.h"
 #include "tasks/generic/SetVideoGeometry.h"
 #include "tasks/generic/SetVolume.h"
 #include "tasks/generic/SetupElement.h"
@@ -32,16 +32,16 @@ using namespace firebolt::rialto::server;
 
 namespace
 {
-std::shared_ptr<TasksTestsContext> testContext;
+std::shared_ptr<GenericTasksTestsContext> testContext;
 
 constexpr firebolt::rialto::server::Rectangle kRectangle{1, 2, 3, 4};
 constexpr double kVolume{0.7};
 constexpr gulong kSignalId{123};
 } // namespace
 
-TasksTestsBase::TasksTestsBase()
+GenericTasksTestsBase::GenericTasksTestsBase()
 {
-    testContext = std::make_shared<TasksTestsContext>();
+    testContext = std::make_shared<GenericTasksTestsContext>();
 
     gst_init(nullptr, nullptr);
 
@@ -49,14 +49,14 @@ TasksTestsBase::TasksTestsBase()
     testContext->m_context.pipeline = &testContext->m_pipeline;
 }
 
-TasksTestsBase::~TasksTestsBase()
+GenericTasksTestsBase::~GenericTasksTestsBase()
 {
     gst_object_unref(testContext->m_elementFactory);
 
     testContext.reset();
 }
 
-void TasksTestsBase::expectSetupVideoElement()
+void GenericTasksTestsBase::expectSetupVideoElement()
 {
     EXPECT_CALL(*(testContext->m_gstWrapper), gstElementGetFactory(_)).WillOnce(Return(testContext->m_elementFactory));
     EXPECT_CALL(*(testContext->m_gstWrapper),
@@ -86,7 +86,7 @@ void TasksTestsBase::expectSetupVideoElement()
     EXPECT_CALL(*(testContext->m_gstWrapper), gstObjectUnref(_));
 }
 
-void TasksTestsBase::expectSetupAudioElement()
+void GenericTasksTestsBase::expectSetupAudioElement()
 {
     EXPECT_CALL(*(testContext->m_glibWrapper), gStrHasPrefix(_, CharStrMatcher("westerossink"))).WillOnce(Return(false));
     EXPECT_CALL(*(testContext->m_glibWrapper), gStrHasPrefix(_, CharStrMatcher("amlhalasink"))).WillOnce(Return(false));
@@ -121,14 +121,14 @@ void TasksTestsBase::expectSetupAudioElement()
     EXPECT_CALL(*(testContext->m_gstWrapper), gstObjectUnref(_));
 }
 
-void TasksTestsBase::shouldSetupVideoElementOnly()
+void GenericTasksTestsBase::shouldSetupVideoElementOnly()
 {
     EXPECT_CALL(*(testContext->m_glibWrapper), gStrHasPrefix(_, CharStrMatcher("westerossink"))).WillOnce(Return(false));
     EXPECT_CALL(*(testContext->m_glibWrapper), gStrHasPrefix(_, CharStrMatcher("amlhalasink"))).WillOnce(Return(false));
     expectSetupVideoElement();
 }
 
-void TasksTestsBase::shouldSetupVideoElementWesterossink()
+void GenericTasksTestsBase::shouldSetupVideoElementWesterossink()
 {
     testContext->m_context.pendingGeometry = kRectangle;
     EXPECT_CALL(*(testContext->m_glibWrapper), gStrHasPrefix(_, CharStrMatcher("westerossink"))).WillOnce(Return(true));
@@ -137,7 +137,7 @@ void TasksTestsBase::shouldSetupVideoElementWesterossink()
     expectSetupVideoElement();
 }
 
-void TasksTestsBase::shouldSetupVideoElementAmlhalasink()
+void GenericTasksTestsBase::shouldSetupVideoElementAmlhalasink()
 {
     EXPECT_CALL(*(testContext->m_glibWrapper), gStrHasPrefix(_, CharStrMatcher("westerossink"))).WillOnce(Return(false));
     EXPECT_CALL(*(testContext->m_glibWrapper), gStrHasPrefix(_, CharStrMatcher("amlhalasink"))).WillOnce(Return(true));
@@ -150,7 +150,7 @@ void TasksTestsBase::shouldSetupVideoElementAmlhalasink()
     expectSetupVideoElement();
 }
 
-void TasksTestsBase::shouldSetupVideoElementPendingGeometryNonWesterissink()
+void GenericTasksTestsBase::shouldSetupVideoElementPendingGeometryNonWesterissink()
 {
     testContext->m_context.pendingGeometry = kRectangle;
     EXPECT_CALL(*(testContext->m_glibWrapper), gStrHasPrefix(_, CharStrMatcher("westerossink"))).WillOnce(Return(false));
@@ -158,38 +158,38 @@ void TasksTestsBase::shouldSetupVideoElementPendingGeometryNonWesterissink()
     expectSetupVideoElement();
 }
 
-void TasksTestsBase::shouldSetupAudioElementOnly()
+void GenericTasksTestsBase::shouldSetupAudioElementOnly()
 {
     expectSetupAudioElement();
 }
 
-void TasksTestsBase::shouldSetVideoUnderflowCallback()
+void GenericTasksTestsBase::shouldSetVideoUnderflowCallback()
 {
     ASSERT_TRUE(testContext->m_videoUnderflowCallback);
     EXPECT_CALL(testContext->m_gstPlayer, scheduleVideoUnderflow());
 }
 
-void TasksTestsBase::triggerVideoUnderflowCallback()
+void GenericTasksTestsBase::triggerVideoUnderflowCallback()
 {
     ((void (*)(GstElement *, guint, gpointer,
                gpointer))testContext->m_videoUnderflowCallback)(&(testContext->m_element), 0, nullptr,
                                                                 &(testContext->m_gstPlayer));
 }
 
-void TasksTestsBase::shouldSetAudioUnderflowCallback()
+void GenericTasksTestsBase::shouldSetAudioUnderflowCallback()
 {
     ASSERT_TRUE(testContext->m_audioUnderflowCallback);
     EXPECT_CALL(testContext->m_gstPlayer, scheduleAudioUnderflow());
 }
 
-void TasksTestsBase::triggerAudioUnderflowCallback()
+void GenericTasksTestsBase::triggerAudioUnderflowCallback()
 {
     ((void (*)(GstElement *, guint, gpointer,
                gpointer))testContext->m_audioUnderflowCallback)(&(testContext->m_element), 0, nullptr,
                                                                 &(testContext->m_gstPlayer));
 }
 
-void TasksTestsBase::triggerSetupElement()
+void GenericTasksTestsBase::triggerSetupElement()
 {
     firebolt::rialto::server::tasks::generic::SetupElement task{testContext->m_context, testContext->m_gstWrapper,
                                                                 testContext->m_glibWrapper, testContext->m_gstPlayer,
@@ -197,12 +197,12 @@ void TasksTestsBase::triggerSetupElement()
     task.execute();
 }
 
-void TasksTestsBase::setPipelineToNull()
+void GenericTasksTestsBase::setPipelineToNull()
 {
     testContext->m_context.pipeline = nullptr;
 }
 
-void TasksTestsBase::triggerSetVideoGeometryFailure()
+void GenericTasksTestsBase::triggerSetVideoGeometryFailure()
 {
     firebolt::rialto::server::tasks::generic::SetVideoGeometry task{testContext->m_context, testContext->m_gstPlayer,
                                                                     kRectangle};
@@ -210,12 +210,12 @@ void TasksTestsBase::triggerSetVideoGeometryFailure()
     EXPECT_EQ(testContext->m_context.pendingGeometry, kRectangle);
 }
 
-void TasksTestsBase::shouldSetVideoGeometry()
+void GenericTasksTestsBase::shouldSetVideoGeometry()
 {
     EXPECT_CALL(testContext->m_gstPlayer, setWesterossinkRectangle());
 }
 
-void TasksTestsBase::triggerSetVideoGeometrySuccess()
+void GenericTasksTestsBase::triggerSetVideoGeometrySuccess()
 {
     firebolt::rialto::server::tasks::generic::SetVideoGeometry task{testContext->m_context, testContext->m_gstPlayer,
                                                                     kRectangle};
@@ -223,17 +223,17 @@ void TasksTestsBase::triggerSetVideoGeometrySuccess()
     EXPECT_EQ(testContext->m_context.pendingGeometry, kRectangle);
 }
 
-void TasksTestsBase::setAllSourcesAttached()
+void GenericTasksTestsBase::setAllSourcesAttached()
 {
     testContext->m_context.wereAllSourcesAttached = true;
 }
 
-void TasksTestsBase::shouldScheduleAllSourcesAttached()
+void GenericTasksTestsBase::shouldScheduleAllSourcesAttached()
 {
     EXPECT_CALL(testContext->m_gstPlayer, scheduleAllSourcesAttached());
 }
 
-void TasksTestsBase::triggerSetupSource()
+void GenericTasksTestsBase::triggerSetupSource()
 {
     firebolt::rialto::server::tasks::generic::SetupSource task{testContext->m_context, testContext->m_gstPlayer,
                                                                &(testContext->m_element)};
@@ -241,12 +241,12 @@ void TasksTestsBase::triggerSetupSource()
     EXPECT_EQ(testContext->m_context.source, &(testContext->m_element));
 }
 
-void TasksTestsBase::shouldSetGstVolume()
+void GenericTasksTestsBase::shouldSetGstVolume()
 {
     EXPECT_CALL(*(testContext->m_gstWrapper), gstStreamVolumeSetVolume(_, GST_STREAM_VOLUME_FORMAT_LINEAR, kVolume));
 }
 
-void TasksTestsBase::triggerSetVolume()
+void GenericTasksTestsBase::triggerSetVolume()
 {
     firebolt::rialto::server::tasks::generic::SetVolume task{testContext->m_context, testContext->m_gstWrapper, kVolume};
     task.execute();
