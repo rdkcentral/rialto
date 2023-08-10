@@ -95,7 +95,7 @@ jobs:
       # Upload logs on failure
       - name: Upload logs
         uses: actions/upload-artifact@v3
-        if: success() || failure()
+        if: failure()
         with:
           name: logs
           path: |
