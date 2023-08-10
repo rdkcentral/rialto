@@ -93,7 +93,7 @@
 {
    ignore_dl_init_possibly_lost
    Memcheck:Leak
-   match-leak-kinds: possibly
+   match-leak-kinds: possible
    fun:malloc
    fun:g_malloc
    obj:*/libglib-2.0*
