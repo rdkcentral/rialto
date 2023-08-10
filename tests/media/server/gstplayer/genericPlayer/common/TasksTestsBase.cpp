@@ -91,10 +91,6 @@ const std::string kAudName{"audsrc"};
 
 firebolt::rialto::IMediaPipeline::MediaSegmentVector buildAudioSamples()
 {
-    const gint64 kItHappenedInThePast = 1238450934;
-    const gint64 kItWillHappenInTheFuture = 3823530248;
-    const int64_t kDuration{9000000000};
-
     firebolt::rialto::IMediaPipeline::MediaSegmentVector dataVec;
     dataVec.emplace_back(
         std::make_unique<firebolt::rialto::IMediaPipeline::MediaSegmentAudio>(kAudioSourceId, kItHappenedInThePast,
@@ -108,10 +104,6 @@ firebolt::rialto::IMediaPipeline::MediaSegmentVector buildAudioSamples()
 
 firebolt::rialto::IMediaPipeline::MediaSegmentVector buildVideoSamples()
 {
-    const gint64 kItHappenedInThePast = 1238450934;
-    const gint64 kItWillHappenInTheFuture = 3823530248;
-    const int64_t kDuration{9000000000};
-
     firebolt::rialto::IMediaPipeline::MediaSegmentVector dataVec;
     dataVec.emplace_back(
         std::make_unique<firebolt::rialto::IMediaPipeline::MediaSegmentVideo>(kVideoSourceId, kItHappenedInThePast,
