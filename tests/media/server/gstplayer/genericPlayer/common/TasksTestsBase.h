@@ -69,6 +69,8 @@ protected:
     void setContextPlaybackRate();
     void setContextSourceNull();
     void setContextAudioSourceRemoved();
+    void setContextStreamInfoEmpty();
+    void setContextNeedDataAudioOnly();
 
     // SetupElement test methods
     void shouldSetupVideoElementOnly();
@@ -278,6 +280,10 @@ protected:
     void triggerRenderFrame();
     void shouldGetVideoSinkFailure();
     void shouldFindPropertyFailure();
+    void shouldInvalidateActiveAudioRequests();
+    void triggerRemoveSourceAudio();
+    void triggerRemoveSourceVideo();
+    void checkAudioSourceRemoved();
 private:
     // SetupElement helper methods
     void expectSetupVideoElement();

@@ -75,6 +75,7 @@ public:
     GstEvent m_event{};
     GstSegment m_segment{};
     GParamSpec m_paramSpec{};
+    GstEvent m_event2{};
 
     // Glib members
     guint m_signals[1]{123};

@@ -17,6 +17,8 @@
 #limitations under the License.
 #
 
+set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CMAKE_COMMAND} -E time")
+
 add_gtests(RialtoServerGstPlayerUnitTests
 
     #GstGenericPlayer unittests
@@ -27,12 +29,12 @@ add_gtests(RialtoServerGstPlayerUnitTests
     genericPlayer/tasksTests/EnoughDataTest.cpp
     genericPlayer/tasksTests/EosTest.cpp
     genericPlayer/tasksTests/FinishSetupSourceTest.cpp
-    genericPlayer/tasksTests/HandleBusMessageTest.cpp
+    genericPlayer/tasksTests/HandleBusMessageTest.cpp #this
     genericPlayer/tasksTests/NeedDataTest.cpp
     genericPlayer/tasksTests/PauseTest.cpp
     genericPlayer/tasksTests/GenericPlayerTaskFactoryTest.cpp
     genericPlayer/tasksTests/PlayTest.cpp
-    genericPlayer/tasksTests/ReadShmDataAndAttachSamplesTest.cpp
+    genericPlayer/tasksTests/ReadShmDataAndAttachSamplesTest.cpp #this
     genericPlayer/tasksTests/RemoveSourceTest.cpp
     genericPlayer/tasksTests/RenderFrameTest.cpp
     genericPlayer/tasksTests/ReportPositionTest.cpp

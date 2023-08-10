@@ -44,6 +44,7 @@
 #include "tasks/generic/NeedData.h"
 #include "tasks/generic/SetPlaybackRate.h"
 #include "tasks/generic/RenderFrame.h"
+#include "tasks/generic/RemoveSource.h"
 #include <gst/gst.h>
 #include <memory>
 #include <string>
@@ -228,6 +229,16 @@ void TasksTestsBase::setContextSourceNull()
 void TasksTestsBase::setContextAudioSourceRemoved()
 {
     testContext->m_context.audioSourceRemoved = true;
+}
+
+void TasksTestsBase::setContextStreamInfoEmpty()
+{
+    testContext->m_context.streamInfo.clear();
+}
+
+void TasksTestsBase::setContextNeedDataAudioOnly()
+{
+    testContext->m_context.audioNeedData = true;
 }
 
 void TasksTestsBase::expectSetupVideoElement()
@@ -1663,4 +1674,28 @@ void TasksTestsBase::shouldFindPropertyFailure()
                 gObjectClassFindProperty(G_OBJECT_GET_CLASS(&testContext->m_element), StrEq("frame-step-on-preroll")))
         .WillOnce(Return(nullptr));
     EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(GST_OBJECT(&testContext->m_element)));
+}
+
+void TasksTestsBase::shouldInvalidateActiveAudioRequests()
+{
+    EXPECT_CALL(testContext->m_gstPlayerClient, invalidateActiveRequests(firebolt::rialto::MediaSourceType::AUDIO));
+}
+
+void TasksTestsBase::triggerRemoveSourceAudio()
+{
+    firebolt::rialto::server::tasks::generic::RemoveSource task{testContext->m_context, &testContext->m_gstPlayerClient, testContext->m_gstWrapper,
+                                                                firebolt::rialto::MediaSourceType::AUDIO};
+    task.execute();
+}
+
+void TasksTestsBase::triggerRemoveSourceVideo()
+{
+    firebolt::rialto::server::tasks::generic::RemoveSource task{testContext->m_context, &testContext->m_gstPlayerClient, testContext->m_gstWrapper,
+                                                                firebolt::rialto::MediaSourceType::VIDEO};
+    task.execute();
+}
+
+void TasksTestsBase::checkAudioSourceRemoved()
+{
+    EXPECT_TRUE(testContext->m_context.audioSourceRemoved);
 }
