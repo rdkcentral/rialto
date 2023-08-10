@@ -24,10 +24,10 @@
 #include "DecryptionServiceMock.h"
 #include "GenericPlayerContext.h"
 #include "GlibWrapperMock.h"
-#include "GstGenericPlayerPrivateMock.h"
 #include "GstGenericPlayerClientMock.h"
-#include "GstWrapperMock.h"
+#include "GstGenericPlayerPrivateMock.h"
 #include "GstSrcMock.h"
+#include "GstWrapperMock.h"
 #include "RdkGstreamerUtilsWrapperMock.h"
 #include <memory>
 

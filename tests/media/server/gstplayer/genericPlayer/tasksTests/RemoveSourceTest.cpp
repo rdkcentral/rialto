@@ -22,7 +22,6 @@
 class RemoveSourceTest : public TasksTestsBase
 {
 protected:
-
     RemoveSourceTest()
     {
         setContextNeedDataAudioOnly();

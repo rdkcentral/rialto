@@ -22,10 +22,7 @@
 class EnoughDataTest : public TasksTestsBase
 {
 protected:
-    EnoughDataTest()
-    {
-        setContextNeedData(true);
-    }
+    EnoughDataTest() { setContextNeedData(true); }
 };
 
 TEST_F(EnoughDataTest, shouldDoNothingWhenAppSourcesAreNotPresent)

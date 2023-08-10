@@ -19,7 +19,7 @@
 
 #include "TasksTestsBase.h"
 
-class PlayTest  : public TasksTestsBase
+class PlayTest : public TasksTestsBase
 {
 };
 

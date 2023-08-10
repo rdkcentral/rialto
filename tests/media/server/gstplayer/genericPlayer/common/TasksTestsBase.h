@@ -29,14 +29,14 @@ using ::testing::_;
 using ::testing::A;
 using ::testing::ByMove;
 using ::testing::DoAll;
+using ::testing::ElementsAreArray;
 using ::testing::Invoke;
 using ::testing::Ref;
 using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::SaveArg;
-using ::testing::StrictMock;
-using ::testing::ElementsAreArray;
 using ::testing::StrEq;
+using ::testing::StrictMock;
 
 /**
  * @brief TasksTest Base class

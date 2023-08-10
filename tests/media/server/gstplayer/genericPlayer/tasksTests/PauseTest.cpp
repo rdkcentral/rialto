@@ -22,10 +22,7 @@
 class PauseTest : public TasksTestsBase
 {
 protected:
-    PauseTest()
-    {
-        setContextPlaying();
-    }
+    PauseTest() { setContextPlaying(); }
 };
 
 TEST_F(PauseTest, shouldPause)
