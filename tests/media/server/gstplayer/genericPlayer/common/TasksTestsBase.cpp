@@ -759,7 +759,6 @@ void TasksTestsBase::expectSetGenericVideoCaps()
 
 void TasksTestsBase::shouldSwitchAudioSource()
 {
-    gchar oldCapsStr[]{"audio/x-eac3"};
     EXPECT_CALL(*testContext->m_gstWrapper, gstCapsNewEmptySimple(StrEq("audio/mpeg")))
         .WillOnce(Return(&testContext->m_gstCaps1));
     EXPECT_CALL(*testContext->m_gstWrapper,
@@ -769,8 +768,8 @@ void TasksTestsBase::shouldSwitchAudioSource()
     EXPECT_CALL(*testContext->m_glibWrapper, gFree(&testContext->m_capsStr));
     EXPECT_CALL(*testContext->m_gstWrapper, gstAppSrcGetCaps(GST_APP_SRC(&testContext->m_appSrcAudio)))
         .WillOnce(Return(&testContext->m_gstCaps2));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsToString(&testContext->m_gstCaps2)).WillOnce(Return(oldCapsStr));
-    EXPECT_CALL(*testContext->m_glibWrapper, gFree(oldCapsStr));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsToString(&testContext->m_gstCaps2)).WillOnce(Return(testContext->m_xEac3Str));
+    EXPECT_CALL(*testContext->m_glibWrapper, gFree(testContext->m_xEac3Str));
     EXPECT_CALL(*testContext->m_gstWrapper, gstCapsUnref(&testContext->m_gstCaps2));
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementQueryPosition(_, GST_FORMAT_TIME, _))
         .WillOnce(Invoke(

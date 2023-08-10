@@ -93,6 +93,7 @@ public:
     gchar m_audioSinkElementName[10]{"audiosink"};
     gchar m_elementName[5]{"sink"};
     gchar m_binElementName[5]{"bin"};
+    gchar m_xEac3Str[13]{"audio/x-eac3"};
     gpointer m_videoUserData{};
     gpointer m_audioUserData{};
 
