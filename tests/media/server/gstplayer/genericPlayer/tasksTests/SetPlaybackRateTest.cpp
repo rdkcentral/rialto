@@ -17,195 +17,87 @@
  * limitations under the License.
  */
 
-#include "tasks/generic/SetPlaybackRate.h"
-#include "GenericPlayerContext.h"
-#include "GlibWrapperMock.h"
-#include "GstWrapperMock.h"
-#include "Matchers.h"
-#include <gst/gst.h>
-#include <gtest/gtest.h>
+#include "TasksTestsBase.h"
 
-namespace
+class SetPlaybackRateTest : public TasksTestsBase
 {
-constexpr double kRate{1.5};
-} // namespace
-
-using testing::_;
-using testing::Invoke;
-using testing::Return;
-using testing::StrictMock;
-
-class SetPlaybackRateTest : public testing::Test
-{
-protected:
-    firebolt::rialto::server::GenericPlayerContext m_context{};
-    std::shared_ptr<firebolt::rialto::server::GlibWrapperMock> m_glibWrapper{
-        std::make_shared<StrictMock<firebolt::rialto::server::GlibWrapperMock>>()};
-    std::shared_ptr<firebolt::rialto::server::GstWrapperMock> m_gstWrapper{
-        std::make_shared<StrictMock<firebolt::rialto::server::GstWrapperMock>>()};
-    GstElement m_pipeline{};
-    GstElement m_audioSink{};
-    GstStructure m_structure{};
-    GstEvent m_event{};
-    GstSegment m_segment{};
 };
 
 TEST_F(SetPlaybackRateTest, shouldNotChangePlaybackRateIfItsAlreadySet)
 {
-    m_context.playbackRate = kRate;
-    firebolt::rialto::server::tasks::generic::SetPlaybackRate task{m_context, m_gstWrapper, m_glibWrapper, kRate};
-    task.execute();
-    EXPECT_EQ(m_context.pendingPlaybackRate, firebolt::rialto::server::kNoPendingPlaybackRate);
-    EXPECT_EQ(m_context.playbackRate, kRate);
+    setContextPlaybackRate();
+    triggerSetPlaybackRate();
+    checkNoPendingPlaybackRate();
+    checkPlaybackRateSet();
 }
 
 TEST_F(SetPlaybackRateTest, shouldNotChangePlaybackRateIfPipelineIsNull)
 {
-    firebolt::rialto::server::tasks::generic::SetPlaybackRate task{m_context, m_gstWrapper, m_glibWrapper, kRate};
-    task.execute();
-    EXPECT_EQ(m_context.pendingPlaybackRate, kRate);
-    EXPECT_EQ(m_context.playbackRate, 1.0);
+    setContextPipelineNull();
+    triggerSetPlaybackRate();
+    checkPendingPlaybackRate();
+    checkPlaybackRateDefault();
 }
 
 TEST_F(SetPlaybackRateTest, shouldNotChangePlaybackRateIfPipelineStateIsBelowPlaying)
 {
-    m_context.pipeline = &m_pipeline;
-    firebolt::rialto::server::tasks::generic::SetPlaybackRate task{m_context, m_gstWrapper, m_glibWrapper, kRate};
-    task.execute();
-    EXPECT_EQ(m_context.pendingPlaybackRate, kRate);
-    EXPECT_EQ(m_context.playbackRate, 1.0);
+    triggerSetPlaybackRate();
+    checkPendingPlaybackRate();
+    checkPlaybackRateDefault();
 }
 
 TEST_F(SetPlaybackRateTest, shouldSetPlaybackRateAudioSinkNull)
 {
-    GST_STATE(&m_pipeline) = GST_STATE_PLAYING;
-    m_context.pipeline = &m_pipeline;
-    firebolt::rialto::server::tasks::generic::SetPlaybackRate task{m_context, m_gstWrapper, m_glibWrapper, kRate};
-    EXPECT_CALL(*m_glibWrapper, gObjectGetStub(_, CharStrMatcher("audio-sink"), _));
-    EXPECT_CALL(*m_gstWrapper, gstStructureNewDoubleStub(CharStrMatcher("custom-instant-rate-change"),
-                                                         CharStrMatcher("rate"), G_TYPE_DOUBLE, kRate))
-        .WillOnce(Return(&m_structure));
-    EXPECT_CALL(*m_gstWrapper, gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB, &m_structure)).WillOnce(Return(&m_event));
-    EXPECT_CALL(*m_gstWrapper, gstElementSendEvent(_, &m_event)).WillOnce(Return(TRUE));
-    task.execute();
-    EXPECT_EQ(m_context.playbackRate, kRate);
-    EXPECT_EQ(m_context.pendingPlaybackRate, firebolt::rialto::server::kNoPendingPlaybackRate);
+    setPipelinePlaying();
+    shouldSetPlaybackRateAudioSinkNullSuccess();
+    triggerSetPlaybackRate();
+    checkNoPendingPlaybackRate();
+    checkPlaybackRateSet();
 }
 
 TEST_F(SetPlaybackRateTest, shouldFailToSetPlaybackRateAudioSinkNull)
 {
-    GST_STATE(&m_pipeline) = GST_STATE_PLAYING;
-    m_context.pipeline = &m_pipeline;
-    firebolt::rialto::server::tasks::generic::SetPlaybackRate task{m_context, m_gstWrapper, m_glibWrapper, kRate};
-    EXPECT_CALL(*m_glibWrapper, gObjectGetStub(_, CharStrMatcher("audio-sink"), _));
-    EXPECT_CALL(*m_gstWrapper, gstStructureNewDoubleStub(CharStrMatcher("custom-instant-rate-change"),
-                                                         CharStrMatcher("rate"), G_TYPE_DOUBLE, kRate))
-        .WillOnce(Return(&m_structure));
-    EXPECT_CALL(*m_gstWrapper, gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB, &m_structure)).WillOnce(Return(&m_event));
-    EXPECT_CALL(*m_gstWrapper, gstElementSendEvent(_, &m_event)).WillOnce(Return(FALSE));
-    task.execute();
-    EXPECT_EQ(m_context.playbackRate, 1.0);
-    EXPECT_EQ(m_context.pendingPlaybackRate, firebolt::rialto::server::kNoPendingPlaybackRate);
+    setPipelinePlaying();
+    shouldSetPlaybackRateAudioSinkNullFailure();
+    triggerSetPlaybackRate();
+    checkNoPendingPlaybackRate();
+    checkPlaybackRateDefault();
 }
 
 TEST_F(SetPlaybackRateTest, shouldSetPlaybackRateAudioSinkOtherThanAmlhala)
 {
-    GST_STATE(&m_pipeline) = GST_STATE_PLAYING;
-    m_context.pipeline = &m_pipeline;
-    firebolt::rialto::server::tasks::generic::SetPlaybackRate task{m_context, m_gstWrapper, m_glibWrapper, kRate};
-    EXPECT_CALL(*m_glibWrapper, gObjectGetStub(_, CharStrMatcher("audio-sink"), _))
-        .WillOnce(Invoke(
-            [&](gpointer object, const gchar *first_property_name, void *element)
-            {
-                GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
-                *elementPtr = &m_audioSink;
-            }));
-    EXPECT_CALL(*m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("amlhalasink"))).WillOnce(Return(FALSE));
-    EXPECT_CALL(*m_gstWrapper, gstStructureNewDoubleStub(CharStrMatcher("custom-instant-rate-change"),
-                                                         CharStrMatcher("rate"), G_TYPE_DOUBLE, kRate))
-        .WillOnce(Return(&m_structure));
-    EXPECT_CALL(*m_gstWrapper, gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB, &m_structure)).WillOnce(Return(&m_event));
-    EXPECT_CALL(*m_gstWrapper, gstElementSendEvent(_, &m_event)).WillOnce(Return(TRUE));
-    EXPECT_CALL(*m_glibWrapper, gObjectUnref(&m_audioSink));
-    task.execute();
-    EXPECT_EQ(m_context.playbackRate, kRate);
-    EXPECT_EQ(m_context.pendingPlaybackRate, firebolt::rialto::server::kNoPendingPlaybackRate);
+    setPipelinePlaying();
+    shouldSetPlaybackRateAudioSinkOtherThanAmlhala();
+    triggerSetPlaybackRate();
+    checkNoPendingPlaybackRate();
+    checkPlaybackRateSet();
 }
 
 TEST_F(SetPlaybackRateTest, shouldFailToSetPlaybackRateAudioSinkOtherThanAmlhala)
 {
-    GST_STATE(&m_pipeline) = GST_STATE_PLAYING;
-    m_context.pipeline = &m_pipeline;
-    firebolt::rialto::server::tasks::generic::SetPlaybackRate task{m_context, m_gstWrapper, m_glibWrapper, kRate};
-    EXPECT_CALL(*m_glibWrapper, gObjectGetStub(_, CharStrMatcher("audio-sink"), _))
-        .WillOnce(Invoke(
-            [&](gpointer object, const gchar *first_property_name, void *element)
-            {
-                GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
-                *elementPtr = &m_audioSink;
-            }));
-    EXPECT_CALL(*m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("amlhalasink"))).WillOnce(Return(FALSE));
-    EXPECT_CALL(*m_gstWrapper, gstStructureNewDoubleStub(CharStrMatcher("custom-instant-rate-change"),
-                                                         CharStrMatcher("rate"), G_TYPE_DOUBLE, kRate))
-        .WillOnce(Return(&m_structure));
-    EXPECT_CALL(*m_gstWrapper, gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB, &m_structure)).WillOnce(Return(&m_event));
-    EXPECT_CALL(*m_gstWrapper, gstElementSendEvent(_, &m_event)).WillOnce(Return(FALSE));
-    EXPECT_CALL(*m_glibWrapper, gObjectUnref(&m_audioSink));
-    task.execute();
-    EXPECT_EQ(m_context.playbackRate, 1.0);
-    EXPECT_EQ(m_context.pendingPlaybackRate, firebolt::rialto::server::kNoPendingPlaybackRate);
+    setPipelinePlaying();
+    shouldFailToSetPlaybackRateAudioSinkOtherThanAmlhala();
+    triggerSetPlaybackRate();
+    checkNoPendingPlaybackRate();
+    checkPlaybackRateDefault();
 }
 
 TEST_F(SetPlaybackRateTest, shouldSetPlaybackRateAmlhalaAudioSink)
 {
-    GST_STATE(&m_pipeline) = GST_STATE_PLAYING;
-    m_context.pipeline = &m_pipeline;
-    firebolt::rialto::server::tasks::generic::SetPlaybackRate task{m_context, m_gstWrapper, m_glibWrapper, kRate};
-    EXPECT_CALL(*m_glibWrapper, gObjectGetStub(_, CharStrMatcher("audio-sink"), _))
-        .WillOnce(Invoke(
-            [&](gpointer object, const gchar *first_property_name, void *element)
-            {
-                GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
-                *elementPtr = &m_audioSink;
-            }));
-    EXPECT_CALL(*m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("amlhalasink"))).WillOnce(Return(TRUE));
-    EXPECT_CALL(*m_gstWrapper, gstSegmentNew()).WillOnce(Return(&m_segment));
-    EXPECT_CALL(*m_gstWrapper, gstSegmentInit(&m_segment, GST_FORMAT_TIME));
-    EXPECT_CALL(*m_gstWrapper, gstEventNewSegment(&m_segment)).WillOnce(Return(&m_event));
-    EXPECT_CALL(*m_gstWrapper, gstPadSendEvent(_, &m_event)).WillOnce(Return(TRUE));
-    EXPECT_CALL(*m_gstWrapper, gstSegmentFree(&m_segment));
-    EXPECT_CALL(*m_glibWrapper, gObjectUnref(&m_audioSink));
-    task.execute();
-    EXPECT_EQ(m_segment.rate, kRate);
-    EXPECT_EQ(m_segment.start, GST_CLOCK_TIME_NONE);
-    EXPECT_EQ(m_segment.position, GST_CLOCK_TIME_NONE);
-    EXPECT_EQ(m_context.playbackRate, kRate);
-    EXPECT_EQ(m_context.pendingPlaybackRate, firebolt::rialto::server::kNoPendingPlaybackRate);
+    setPipelinePlaying();
+    shouldSetPlaybackRateAmlhalaAudioSink();
+    triggerSetPlaybackRate();
+    checkNoPendingPlaybackRate();
+    checkPlaybackRateSet();
+    checkSegmentInfo();
 }
 
 TEST_F(SetPlaybackRateTest, shouldFailToSetPlaybackRateAmlhalaAudioSink)
 {
-    GST_STATE(&m_pipeline) = GST_STATE_PLAYING;
-    m_context.pipeline = &m_pipeline;
-    firebolt::rialto::server::tasks::generic::SetPlaybackRate task{m_context, m_gstWrapper, m_glibWrapper, kRate};
-    EXPECT_CALL(*m_glibWrapper, gObjectGetStub(_, CharStrMatcher("audio-sink"), _))
-        .WillOnce(Invoke(
-            [&](gpointer object, const gchar *first_property_name, void *element)
-            {
-                GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
-                *elementPtr = &m_audioSink;
-            }));
-    EXPECT_CALL(*m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("amlhalasink"))).WillOnce(Return(TRUE));
-    EXPECT_CALL(*m_gstWrapper, gstSegmentNew()).WillOnce(Return(&m_segment));
-    EXPECT_CALL(*m_gstWrapper, gstSegmentInit(&m_segment, GST_FORMAT_TIME));
-    EXPECT_CALL(*m_gstWrapper, gstEventNewSegment(&m_segment)).WillOnce(Return(&m_event));
-    EXPECT_CALL(*m_gstWrapper, gstPadSendEvent(_, &m_event)).WillOnce(Return(FALSE));
-    EXPECT_CALL(*m_gstWrapper, gstSegmentFree(&m_segment));
-    EXPECT_CALL(*m_glibWrapper, gObjectUnref(&m_audioSink));
-    task.execute();
-    EXPECT_EQ(m_segment.rate, kRate);
-    EXPECT_EQ(m_segment.start, GST_CLOCK_TIME_NONE);
-    EXPECT_EQ(m_segment.position, GST_CLOCK_TIME_NONE);
-    EXPECT_EQ(m_context.playbackRate, 1.0);
-    EXPECT_EQ(m_context.pendingPlaybackRate, firebolt::rialto::server::kNoPendingPlaybackRate);
+    setPipelinePlaying();
+    shouldFailToSetPlaybackRateAmlhalaAudioSink();
+    triggerSetPlaybackRate();
+    checkNoPendingPlaybackRate();
+    checkPlaybackRateDefault();
+    checkSegmentInfo();
 }

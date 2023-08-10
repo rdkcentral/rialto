@@ -71,6 +71,10 @@ public:
     GstElement m_audioParentSink{};
     GstAppSrcCallbacks m_audioCallbacks{};
     GstAppSrcCallbacks m_videoCallbacks{};
+    GstStructure m_structure{};
+    GstEvent m_event{};
+    GstSegment m_segment{};
+    GParamSpec m_paramSpec{};
 
     // Glib members
     guint m_signals[1]{123};

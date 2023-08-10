@@ -42,6 +42,8 @@
 #include "tasks/generic/ReportPosition.h"
 #include "tasks/generic/FinishSetupSource.h"
 #include "tasks/generic/NeedData.h"
+#include "tasks/generic/SetPlaybackRate.h"
+#include "tasks/generic/RenderFrame.h"
 #include <gst/gst.h>
 #include <memory>
 #include <string>
@@ -1476,4 +1478,189 @@ void TasksTestsBase::shouldNotifyNeedAudioDataFailure()
 void TasksTestsBase::shouldNotifyNeedVideoDataFailure()
 {
     EXPECT_CALL(testContext->m_gstPlayerClient, notifyNeedMediaData(firebolt::rialto::MediaSourceType::VIDEO)).WillOnce(Return(false));
+}
+
+void TasksTestsBase::triggerSetPlaybackRate()
+{
+    firebolt::rialto::server::tasks::generic::SetPlaybackRate task{testContext->m_context, testContext->m_gstWrapper, testContext->m_glibWrapper, kRate};
+    task.execute();
+}
+
+void TasksTestsBase::checkNoPendingPlaybackRate()
+{
+    EXPECT_EQ(testContext->m_context.pendingPlaybackRate, firebolt::rialto::server::kNoPendingPlaybackRate);
+}
+
+void TasksTestsBase::checkPendingPlaybackRate()
+{
+    EXPECT_EQ(testContext->m_context.pendingPlaybackRate, kRate);
+}
+
+void TasksTestsBase::checkPlaybackRateSet()
+{
+    EXPECT_EQ(testContext->m_context.playbackRate, kRate);
+}
+
+void TasksTestsBase::checkPlaybackRateDefault()
+{
+    EXPECT_EQ(testContext->m_context.playbackRate, 1.0);
+}
+
+void TasksTestsBase::setPipelinePlaying()
+{
+    GST_STATE(&testContext->m_pipeline) = GST_STATE_PLAYING;
+}
+
+void TasksTestsBase::shouldSetPlaybackRateAudioSinkNullSuccess()
+{
+    EXPECT_CALL(*testContext->m_glibWrapper, gObjectGetStub(_, CharStrMatcher("audio-sink"), _));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstStructureNewDoubleStub(CharStrMatcher("custom-instant-rate-change"),
+                                                         CharStrMatcher("rate"), G_TYPE_DOUBLE, kRate))
+        .WillOnce(Return(&testContext->m_structure));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB, &testContext->m_structure)).WillOnce(Return(&testContext->m_event));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstElementSendEvent(_, &testContext->m_event)).WillOnce(Return(TRUE));
+}
+
+void TasksTestsBase::shouldSetPlaybackRateAudioSinkNullFailure()
+{
+    EXPECT_CALL(*testContext->m_glibWrapper, gObjectGetStub(_, CharStrMatcher("audio-sink"), _));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstStructureNewDoubleStub(CharStrMatcher("custom-instant-rate-change"),
+                                                         CharStrMatcher("rate"), G_TYPE_DOUBLE, kRate))
+        .WillOnce(Return(&testContext->m_structure));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB, &testContext->m_structure)).WillOnce(Return(&testContext->m_event));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstElementSendEvent(_, &testContext->m_event)).WillOnce(Return(FALSE));
+}
+
+void TasksTestsBase::shouldSetPlaybackRateAudioSinkOtherThanAmlhala()
+{
+    EXPECT_CALL(*testContext->m_glibWrapper, gObjectGetStub(_, CharStrMatcher("audio-sink"), _))
+        .WillOnce(Invoke(
+            [&](gpointer object, const gchar *first_property_name, void *element)
+            {
+                GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
+                *elementPtr = &testContext->m_element;
+            }));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("amlhalasink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstStructureNewDoubleStub(CharStrMatcher("custom-instant-rate-change"),
+                                                         CharStrMatcher("rate"), G_TYPE_DOUBLE, kRate))
+        .WillOnce(Return(&testContext->m_structure));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB, &testContext->m_structure)).WillOnce(Return(&testContext->m_event));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstElementSendEvent(_, &testContext->m_event)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*testContext->m_glibWrapper, gObjectUnref(&testContext->m_element));
+}
+
+void TasksTestsBase::shouldFailToSetPlaybackRateAudioSinkOtherThanAmlhala()
+{
+
+    EXPECT_CALL(*testContext->m_glibWrapper, gObjectGetStub(_, CharStrMatcher("audio-sink"), _))
+        .WillOnce(Invoke(
+            [&](gpointer object, const gchar *first_property_name, void *element)
+            {
+                GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
+                *elementPtr = &testContext->m_element;
+            }));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("amlhalasink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstStructureNewDoubleStub(CharStrMatcher("custom-instant-rate-change"),
+                                                         CharStrMatcher("rate"), G_TYPE_DOUBLE, kRate))
+        .WillOnce(Return(&testContext->m_structure));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB, &testContext->m_structure)).WillOnce(Return(&testContext->m_event));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstElementSendEvent(_, &testContext->m_event)).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_glibWrapper, gObjectUnref(&testContext->m_element));
+}
+
+void TasksTestsBase::shouldSetPlaybackRateAmlhalaAudioSink()
+{
+
+    EXPECT_CALL(*testContext->m_glibWrapper, gObjectGetStub(_, CharStrMatcher("audio-sink"), _))
+        .WillOnce(Invoke(
+            [&](gpointer object, const gchar *first_property_name, void *element)
+            {
+                GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
+                *elementPtr = &testContext->m_element;
+            }));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("amlhalasink"))).WillOnce(Return(TRUE));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstSegmentNew()).WillOnce(Return(&testContext->m_segment));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstSegmentInit(&testContext->m_segment, GST_FORMAT_TIME));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewSegment(&testContext->m_segment)).WillOnce(Return(&testContext->m_event));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstPadSendEvent(_, &testContext->m_event)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstSegmentFree(&testContext->m_segment));
+    EXPECT_CALL(*testContext->m_glibWrapper, gObjectUnref(&testContext->m_element));
+}
+
+void TasksTestsBase::shouldFailToSetPlaybackRateAmlhalaAudioSink()
+{
+
+    EXPECT_CALL(*testContext->m_glibWrapper, gObjectGetStub(_, CharStrMatcher("audio-sink"), _))
+        .WillOnce(Invoke(
+            [&](gpointer object, const gchar *first_property_name, void *element)
+            {
+                GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
+                *elementPtr = &testContext->m_element;
+            }));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("amlhalasink"))).WillOnce(Return(TRUE));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstSegmentNew()).WillOnce(Return(&testContext->m_segment));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstSegmentInit(&testContext->m_segment, GST_FORMAT_TIME));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewSegment(&testContext->m_segment)).WillOnce(Return(&testContext->m_event));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstPadSendEvent(_, &testContext->m_event)).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstSegmentFree(&testContext->m_segment));
+    EXPECT_CALL(*testContext->m_glibWrapper, gObjectUnref(&testContext->m_element));
+}
+
+void TasksTestsBase::checkSegmentInfo()
+{
+    EXPECT_EQ(testContext->m_segment.rate, kRate);
+    EXPECT_EQ(testContext->m_segment.start, GST_CLOCK_TIME_NONE);
+    EXPECT_EQ(testContext->m_segment.position, GST_CLOCK_TIME_NONE);
+}
+
+void TasksTestsBase::shouldRenderFrame()
+{
+    EXPECT_CALL(*testContext->m_glibWrapper, gObjectGetStub(&testContext->m_pipeline, StrEq("video-sink"), _))
+        .WillOnce(Invoke(
+            [&](gpointer object, const gchar *first_property_name, void *element)
+            {
+                GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
+                *elementPtr = &testContext->m_element;
+            }));
+
+    EXPECT_CALL(*testContext->m_glibWrapper,
+                gObjectClassFindProperty(G_OBJECT_GET_CLASS(&testContext->m_element), StrEq("frame-step-on-preroll")))
+        .WillOnce(Return(&testContext->m_paramSpec));
+    EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(&testContext->m_element, StrEq("frame-step-on-preroll"))).Times(2);
+    EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewStep(GST_FORMAT_BUFFERS, 1, 1.0, true, false)).WillOnce(Return(&testContext->m_event));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstElementSendEvent(&testContext->m_element, &testContext->m_event));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(GST_OBJECT(&testContext->m_element)));
+}
+
+void TasksTestsBase::triggerRenderFrame()
+{
+    firebolt::rialto::server::tasks::generic::RenderFrame task{testContext->m_context, testContext->m_gstWrapper, testContext->m_glibWrapper};
+    task.execute();
+}
+
+void TasksTestsBase::shouldGetVideoSinkFailure()
+{
+    EXPECT_CALL(*testContext->m_glibWrapper, gObjectGetStub(&testContext->m_pipeline, StrEq("video-sink"), _))
+        .WillOnce(Invoke(
+            [&](gpointer object, const gchar *first_property_name, void *element)
+            {
+                GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
+                *elementPtr = nullptr;
+            }));
+}
+
+void TasksTestsBase::shouldFindPropertyFailure()
+{
+    EXPECT_CALL(*testContext->m_glibWrapper, gObjectGetStub(&testContext->m_pipeline, StrEq("video-sink"), _))
+        .WillOnce(Invoke(
+            [&](gpointer object, const gchar *first_property_name, void *element)
+            {
+                GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
+                *elementPtr = &testContext->m_element;
+            }));
+
+    EXPECT_CALL(*testContext->m_glibWrapper,
+                gObjectClassFindProperty(G_OBJECT_GET_CLASS(&testContext->m_element), StrEq("frame-step-on-preroll")))
+        .WillOnce(Return(nullptr));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(GST_OBJECT(&testContext->m_element)));
 }

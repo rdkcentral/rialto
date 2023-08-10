@@ -27,17 +27,17 @@ add_gtests(RialtoServerGstPlayerUnitTests
     genericPlayer/tasksTests/EnoughDataTest.cpp
     genericPlayer/tasksTests/EosTest.cpp
     genericPlayer/tasksTests/FinishSetupSourceTest.cpp
-    #genericPlayer/tasksTests/HandleBusMessageTest.cpp
+    genericPlayer/tasksTests/HandleBusMessageTest.cpp
     genericPlayer/tasksTests/NeedDataTest.cpp
     genericPlayer/tasksTests/PauseTest.cpp
     genericPlayer/tasksTests/GenericPlayerTaskFactoryTest.cpp
     genericPlayer/tasksTests/PlayTest.cpp
-    #genericPlayer/tasksTests/ReadShmDataAndAttachSamplesTest.cpp
-    #genericPlayer/tasksTests/RemoveSourceTest.cpp
-    #genericPlayer/tasksTests/RenderFrameTest.cpp
+    genericPlayer/tasksTests/ReadShmDataAndAttachSamplesTest.cpp
+    genericPlayer/tasksTests/RemoveSourceTest.cpp
+    genericPlayer/tasksTests/RenderFrameTest.cpp
     genericPlayer/tasksTests/ReportPositionTest.cpp
     genericPlayer/tasksTests/CheckAudioUnderflowTest.cpp
-    #genericPlayer/tasksTests/SetPlaybackRateTest.cpp
+    genericPlayer/tasksTests/SetPlaybackRateTest.cpp
     genericPlayer/tasksTests/SetPositionTest.cpp
     genericPlayer/tasksTests/SetupElementTest.cpp
     genericPlayer/tasksTests/SetupSourceTest.cpp
@@ -52,50 +52,50 @@ add_gtests(RialtoServerGstPlayerUnitTests
     genericPlayer/common/GstGenericPlayerTestCommon.cpp
 
     #genericPlayer/CreateTest.cpp
-    #genericPlayer/GstGenericPlayerPrivateTest.cpp
-    #genericPlayer/GstGenericPlayerTest.cpp
-    #genericPlayer/GstDispatcherThreadClientTest.cpp
-    #genericPlayer/GstCapabilitiesTest.cpp
+    genericPlayer/GstGenericPlayerPrivateTest.cpp
+    genericPlayer/GstGenericPlayerTest.cpp
+    genericPlayer/GstDispatcherThreadClientTest.cpp
+    genericPlayer/GstCapabilitiesTest.cpp
 
     #GstWebAudioPlayer unittests
-    #webAudioPlayer/taskTests/WebAudioPlayerTaskFactoryTest.cpp
-    #webAudioPlayer/taskTests/PlayTest.cpp
-    #webAudioPlayer/taskTests/PauseTest.cpp
-    #webAudioPlayer/taskTests/EosTest.cpp
-    #webAudioPlayer/taskTests/HandleBusMessageTest.cpp
-    #webAudioPlayer/taskTests/SetVolumeTest.cpp
-    #webAudioPlayer/taskTests/ShutdownTest.cpp
-    #webAudioPlayer/taskTests/StopTest.cpp
-    #webAudioPlayer/taskTests/SetCapsTest.cpp
-    #webAudioPlayer/taskTests/WriteBufferTest.cpp
+    webAudioPlayer/taskTests/WebAudioPlayerTaskFactoryTest.cpp
+    webAudioPlayer/taskTests/PlayTest.cpp
+    webAudioPlayer/taskTests/PauseTest.cpp
+    webAudioPlayer/taskTests/EosTest.cpp
+    webAudioPlayer/taskTests/HandleBusMessageTest.cpp
+    webAudioPlayer/taskTests/SetVolumeTest.cpp
+    webAudioPlayer/taskTests/ShutdownTest.cpp
+    webAudioPlayer/taskTests/StopTest.cpp
+    webAudioPlayer/taskTests/SetCapsTest.cpp
+    webAudioPlayer/taskTests/WriteBufferTest.cpp
 
-    #webAudioPlayer/CreateTest.cpp
-    #webAudioPlayer/GstWebAudioPlayerPrivateTest.cpp
-    #webAudioPlayer/GstDispatcherThreadClientTest.cpp
-    #webAudioPlayer/GstWebAudioPlayerTest.cpp
+    webAudioPlayer/CreateTest.cpp
+    webAudioPlayer/GstWebAudioPlayerPrivateTest.cpp
+    webAudioPlayer/GstDispatcherThreadClientTest.cpp
+    webAudioPlayer/GstWebAudioPlayerTest.cpp
 
-    #webAudioPlayer/common/GstWebAudioPlayerTestCommon.cpp
+    webAudioPlayer/common/GstWebAudioPlayerTestCommon.cpp
 
     #GstSrc unittests
-    #rialtoSrc/CreateTest.cpp
-    #rialtoSrc/InitTest.cpp
-    #rialtoSrc/AppSrcTest.cpp
+    rialtoSrc/CreateTest.cpp
+    rialtoSrc/InitTest.cpp
+    rialtoSrc/AppSrcTest.cpp
 
     #Decyptor unittests
-    #decryptor/CreateTest.cpp
-    #decryptor/DecryptTest.cpp
+    decryptor/CreateTest.cpp
+    decryptor/DecryptTest.cpp
 
     #ProtectionMetadata unittests
-    #protectionMetadata/ProtectionMetadataTest.cpp
+    protectionMetadata/ProtectionMetadataTest.cpp
 
     #ProtectionMetadata unittests
-    #dispatcherThread/GstDispatcherThreadTest.cpp
+    dispatcherThread/GstDispatcherThreadTest.cpp
 
     #GstInit unittests
-    #gstInit/InitTest.cpp
+    gstInit/InitTest.cpp
 
     #WorkerThread unittests
-    #workerThread/WorkerThreadTest.cpp
+    workerThread/WorkerThreadTest.cpp
 
 )
 
