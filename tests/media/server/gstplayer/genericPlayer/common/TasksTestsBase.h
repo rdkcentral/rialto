@@ -284,6 +284,16 @@ protected:
     void triggerRemoveSourceAudio();
     void triggerRemoveSourceVideo();
     void checkAudioSourceRemoved();
+    void checkAudioSourceNotRemoved();
+    void shouldFlushAudioSrcSuccess();
+    void shouldFlushAudioSrcFailure();
+
+    // ReadShmDataAndAttachSamples test methods
+    void shouldReadAudioData();
+    void shouldReadVideoData();
+    void triggerReadShmDataAndAttachSamplesAudio();
+    void triggerReadShmDataAndAttachSamplesVideo();
+
 private:
     // SetupElement helper methods
     void expectSetupVideoElement();

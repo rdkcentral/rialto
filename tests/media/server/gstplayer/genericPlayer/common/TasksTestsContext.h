@@ -20,6 +20,7 @@
 #ifndef TASKS_TESTS_CONTEXT_H_
 #define TASKS_TESTS_CONTEXT_H_
 
+#include "DataReaderMock.h"
 #include "DecryptionServiceMock.h"
 #include "GenericPlayerContext.h"
 #include "GlibWrapperMock.h"
@@ -53,6 +54,8 @@ public:
         std::make_shared<StrictMock<firebolt::rialto::server::DecryptionServiceMock>>()};
     std::shared_ptr<StrictMock<firebolt::rialto::server::GstSrcMock>> m_gstSrc{
         std::make_shared<StrictMock<firebolt::rialto::server::GstSrcMock>>()};
+    std::shared_ptr<StrictMock<firebolt::rialto::server::DataReaderMock>> m_dataReader{
+        std::make_shared<StrictMock<firebolt::rialto::server::DataReaderMock>>()};
 
     // Gstreamer members
     GstElement m_element{};

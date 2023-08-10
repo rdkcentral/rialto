@@ -45,6 +45,7 @@
 #include "tasks/generic/SetPlaybackRate.h"
 #include "tasks/generic/RenderFrame.h"
 #include "tasks/generic/RemoveSource.h"
+#include "tasks/generic/ReadShmDataAndAttachSamples.h"
 #include <gst/gst.h>
 #include <memory>
 #include <string>
@@ -1698,4 +1699,59 @@ void TasksTestsBase::triggerRemoveSourceVideo()
 void TasksTestsBase::checkAudioSourceRemoved()
 {
     EXPECT_TRUE(testContext->m_context.audioSourceRemoved);
+}
+
+void TasksTestsBase::checkAudioSourceNotRemoved()
+{
+    EXPECT_FALSE(testContext->m_context.audioSourceRemoved);
+}
+
+void TasksTestsBase::shouldFlushAudioSrcSuccess()
+{
+    EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewFlushStart()).WillOnce(Return(&testContext->m_event));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstElementSendEvent(&testContext->m_appSrcAudio, &testContext->m_event)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewFlushStop(FALSE)).WillOnce(Return(&testContext->m_event2));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstElementSendEvent(&testContext->m_appSrcAudio, &testContext->m_event2)).WillOnce(Return(TRUE));
+}
+
+void TasksTestsBase::shouldFlushAudioSrcFailure()
+{
+    EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewFlushStart()).WillOnce(Return(&testContext->m_event));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstElementSendEvent(&testContext->m_appSrcAudio, &testContext->m_event)).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewFlushStop(FALSE)).WillOnce(Return(&testContext->m_event2));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstElementSendEvent(&testContext->m_appSrcAudio, &testContext->m_event2)).WillOnce(Return(FALSE));
+}
+
+void TasksTestsBase::shouldReadAudioData()
+{
+    EXPECT_CALL(*testContext->m_dataReader, readData())
+        .WillOnce(Invoke(
+            [&]()
+            {
+                return std::move(buildAudioSamples());
+            }));
+}
+
+void TasksTestsBase::shouldReadVideoData()
+{
+    EXPECT_CALL(*testContext->m_dataReader, readData())
+        .WillOnce(Invoke(
+            [&]()
+            {
+                return std::move(buildVideoSamples());
+            }));
+}
+
+void TasksTestsBase::triggerReadShmDataAndAttachSamplesAudio()
+{
+    firebolt::rialto::server::tasks::generic::ReadShmDataAndAttachSamples task{testContext->m_context, testContext->m_gstPlayer, testContext->m_dataReader};
+    task.execute();
+    EXPECT_EQ(testContext->m_context.audioBuffers.size(), 2);
+}
+
+void TasksTestsBase::triggerReadShmDataAndAttachSamplesVideo()
+{
+    firebolt::rialto::server::tasks::generic::ReadShmDataAndAttachSamples task{testContext->m_context, testContext->m_gstPlayer, testContext->m_dataReader};
+    task.execute();
+    EXPECT_EQ(testContext->m_context.videoBuffers.size(), 2);
 }
