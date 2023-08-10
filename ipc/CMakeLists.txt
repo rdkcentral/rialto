@@ -40,7 +40,7 @@ if( NOT HAS_PARENT )
 endif()
 
 # We require C++14
-set( CMAKE_CXX_STANDARD 14 )
+set( CMAKE_CXX_STANDARD 17 )
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
 
 # Build all components with -fPIC as ultimates
