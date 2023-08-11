@@ -22,11 +22,7 @@
 class WebAudioSetCapsTest : public WebAudioTasksTestsBase
 {
 protected:
-
-    WebAudioSetCapsTest()
-    {
-        setU32LEConfig();
-    }
+    WebAudioSetCapsTest() { setU32LEConfig(); }
 };
 
 TEST_F(WebAudioSetCapsTest, shouldSetCapsWithFormatF64LE)

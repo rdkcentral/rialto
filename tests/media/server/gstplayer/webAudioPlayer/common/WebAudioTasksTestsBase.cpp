@@ -23,13 +23,14 @@
 #include "tasks/webAudio/Eos.h"
 #include "tasks/webAudio/Pause.h"
 #include "tasks/webAudio/Play.h"
+#include "tasks/webAudio/SetCaps.h"
 #include "tasks/webAudio/SetVolume.h"
 #include "tasks/webAudio/Shutdown.h"
 #include "tasks/webAudio/Stop.h"
-#include "tasks/webAudio/SetCaps.h"
 #include "tasks/webAudio/WriteBuffer.h"
 #include <gst/gst.h>
 #include <memory>
+#include <string>
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::server;
@@ -64,12 +65,14 @@ WebAudioTasksTestsBase::~WebAudioTasksTestsBase()
 
 void WebAudioTasksTestsBase::shouldEndOfStreamSuccess()
 {
-    EXPECT_CALL(*testContext->m_gstWrapper, gstAppSrcEndOfStream(GST_APP_SRC(&testContext->m_src))).WillOnce(Return(GST_FLOW_OK));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstAppSrcEndOfStream(GST_APP_SRC(&testContext->m_src)))
+        .WillOnce(Return(GST_FLOW_OK));
 }
 
 void WebAudioTasksTestsBase::shouldEndOfStreamFailure()
 {
-    EXPECT_CALL(*testContext->m_gstWrapper, gstAppSrcEndOfStream(GST_APP_SRC(&testContext->m_src))).WillOnce(Return(GST_FLOW_ERROR));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstAppSrcEndOfStream(GST_APP_SRC(&testContext->m_src)))
+        .WillOnce(Return(GST_FLOW_ERROR));
 }
 
 void WebAudioTasksTestsBase::triggerEos()
@@ -208,17 +211,20 @@ std::string WebAudioTasksTestsBase::getPcmFormat()
 
 void WebAudioTasksTestsBase::shouldBuildPcmCaps()
 {
-    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsNewEmptySimple(StrEq("audio/x-raw"))).WillOnce(Return(&testContext->m_caps));
-    EXPECT_CALL(*testContext->m_gstWrapper,
-                gstCapsSetSimpleIntStub(&testContext->m_caps, StrEq("channels"), G_TYPE_INT, testContext->m_config.pcm.channels));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsNewEmptySimple(StrEq("audio/x-raw")))
+        .WillOnce(Return(&testContext->m_caps));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsSetSimpleIntStub(&testContext->m_caps, StrEq("channels"), G_TYPE_INT,
+                                                                    testContext->m_config.pcm.channels));
     EXPECT_CALL(*testContext->m_gstWrapper,
                 gstCapsSetSimpleStringStub(&testContext->m_caps, StrEq("layout"), G_TYPE_STRING, StrEq("interleaved")));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsSetSimpleIntStub(&testContext->m_caps, StrEq("rate"), G_TYPE_INT, testContext->m_config.pcm.rate));
-    EXPECT_CALL(*testContext->m_gstWrapper,
-                gstCapsSetSimpleStringStub(&testContext->m_caps, StrEq("format"), G_TYPE_STRING, StrEq(getPcmFormat().c_str())));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstAudioChannelGetFallbackMask(testContext->m_config.pcm.channels)).WillOnce(Return(kChannelMask));
-    EXPECT_CALL(*testContext->m_gstWrapper,
-                gstCapsSetSimpleBitMaskStub(&testContext->m_caps, StrEq("channel-mask"), GST_TYPE_BITMASK, kChannelMask));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsSetSimpleIntStub(&testContext->m_caps, StrEq("rate"), G_TYPE_INT,
+                                                                    testContext->m_config.pcm.rate));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsSetSimpleStringStub(&testContext->m_caps, StrEq("format"),
+                                                                       G_TYPE_STRING, StrEq(getPcmFormat().c_str())));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstAudioChannelGetFallbackMask(testContext->m_config.pcm.channels))
+        .WillOnce(Return(kChannelMask));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsSetSimpleBitMaskStub(&testContext->m_caps, StrEq("channel-mask"),
+                                                                        GST_TYPE_BITMASK, kChannelMask));
 }
 
 void WebAudioTasksTestsBase::shouldGetCapsStr()
@@ -229,8 +235,10 @@ void WebAudioTasksTestsBase::shouldGetCapsStr()
 
 void WebAudioTasksTestsBase::shouldSetCaps()
 {
-    EXPECT_CALL(*testContext->m_gstWrapper, gstAppSrcGetCaps(GST_APP_SRC(&testContext->m_src))).WillOnce(Return(&testContext->m_capsAppSrc));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsIsEqual(&testContext->m_capsAppSrc, &testContext->m_caps)).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstAppSrcGetCaps(GST_APP_SRC(&testContext->m_src)))
+        .WillOnce(Return(&testContext->m_capsAppSrc));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsIsEqual(&testContext->m_capsAppSrc, &testContext->m_caps))
+        .WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_gstWrapper, gstAppSrcSetCaps(GST_APP_SRC(&testContext->m_src), &testContext->m_caps));
 }
 
@@ -242,7 +250,8 @@ void WebAudioTasksTestsBase::shouldUnref()
 
 void WebAudioTasksTestsBase::checkBytesPerSamplePcmSet()
 {
-    uint32_t expectedBytesPerSample = testContext->m_config.pcm.channels * (testContext->m_config.pcm.sampleSize / CHAR_BIT);
+    uint32_t expectedBytesPerSample = testContext->m_config.pcm.channels *
+                                      (testContext->m_config.pcm.sampleSize / CHAR_BIT);
     EXPECT_EQ(expectedBytesPerSample, testContext->m_context.bytesPerSample);
 }
 
@@ -255,20 +264,25 @@ void WebAudioTasksTestsBase::shouldSetCapsWhenAppSrcCapsNull()
 
 void WebAudioTasksTestsBase::shouldNotSetCapsWhenCapsEqual()
 {
-    EXPECT_CALL(*testContext->m_gstWrapper, gstAppSrcGetCaps(GST_APP_SRC(&testContext->m_src))).WillOnce(Return(&testContext->m_capsAppSrc));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsIsEqual(&testContext->m_capsAppSrc, &testContext->m_caps)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstAppSrcGetCaps(GST_APP_SRC(&testContext->m_src)))
+        .WillOnce(Return(&testContext->m_capsAppSrc));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsIsEqual(&testContext->m_capsAppSrc, &testContext->m_caps))
+        .WillOnce(Return(TRUE));
 }
 
 void WebAudioTasksTestsBase::triggerSetCaps()
 {
-    firebolt::rialto::server::tasks::webaudio::SetCaps task{testContext->m_context, testContext->m_gstWrapper, testContext->m_glibWrapper, kAudioMimeType,
+    firebolt::rialto::server::tasks::webaudio::SetCaps task{testContext->m_context, testContext->m_gstWrapper,
+                                                            testContext->m_glibWrapper, kAudioMimeType,
                                                             &testContext->m_config};
     task.execute();
 }
 
 void WebAudioTasksTestsBase::triggerSetCapsInvalidMimeType()
 {
-    firebolt::rialto::server::tasks::webaudio::SetCaps task{testContext->m_context, testContext->m_gstWrapper, testContext->m_glibWrapper, "invalid", &testContext->m_config};
+    firebolt::rialto::server::tasks::webaudio::SetCaps task{testContext->m_context, testContext->m_gstWrapper,
+                                                            testContext->m_glibWrapper, "invalid",
+                                                            &testContext->m_config};
     task.execute();
 }
 
@@ -279,18 +293,25 @@ void WebAudioTasksTestsBase::setContextBytesPerSample()
 
 void WebAudioTasksTestsBase::shouldWriteBufferForAllData()
 {
-    EXPECT_CALL(*testContext->m_gstWrapper, gstAppSrcGetCurrentLevelBytes(GST_APP_SRC(&testContext->m_src))).WillOnce(Return(0));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstBufferNewAllocate(_, kMainLength + kWrapLength, _)).WillOnce(Return(&testContext->m_buffer));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstBufferFill(&testContext->m_buffer, 0, &testContext->m_mainPtr, kMainLength)).WillOnce(Return(kMainLength));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstBufferFill(&testContext->m_buffer, kMainLength, &testContext->m_wrapPtr, kWrapLength))
+    EXPECT_CALL(*testContext->m_gstWrapper, gstAppSrcGetCurrentLevelBytes(GST_APP_SRC(&testContext->m_src)))
+        .WillOnce(Return(0));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstBufferNewAllocate(_, kMainLength + kWrapLength, _))
+        .WillOnce(Return(&testContext->m_buffer));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstBufferFill(&testContext->m_buffer, 0, &testContext->m_mainPtr, kMainLength))
+        .WillOnce(Return(kMainLength));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstBufferFill(&testContext->m_buffer, kMainLength, &testContext->m_wrapPtr, kWrapLength))
         .WillOnce(Return(kWrapLength));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstAppSrcPushBuffer(GST_APP_SRC(&testContext->m_src), &testContext->m_buffer)).WillOnce(Return(GST_FLOW_OK));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstAppSrcPushBuffer(GST_APP_SRC(&testContext->m_src), &testContext->m_buffer))
+        .WillOnce(Return(GST_FLOW_OK));
 }
 
 void WebAudioTasksTestsBase::triggerWriteBuffer()
 {
-    firebolt::rialto::server::tasks::webaudio::WriteBuffer task{testContext->m_context,    testContext->m_gstWrapper, &testContext->m_mainPtr,
-                                                                kMainLength, &testContext->m_wrapPtr,   kWrapLength};
+    firebolt::rialto::server::tasks::webaudio::WriteBuffer task{testContext->m_context,  testContext->m_gstWrapper,
+                                                                &testContext->m_mainPtr, kMainLength,
+                                                                &testContext->m_wrapPtr, kWrapLength};
     task.execute();
 }
 
@@ -301,12 +322,18 @@ void WebAudioTasksTestsBase::checkWriteAllData()
 
 void WebAudioTasksTestsBase::shouldWriteBufferForAllMainDataAndPartialWrapData()
 {
-    EXPECT_CALL(*testContext->m_gstWrapper, gstAppSrcGetCurrentLevelBytes(GST_APP_SRC(&testContext->m_src))).WillOnce(Return(kWrapLength / 2));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstBufferNewAllocate(_, kMainLength + kWrapLength / 2, _)).WillOnce(Return(&testContext->m_buffer));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstBufferFill(&testContext->m_buffer, 0, &testContext->m_mainPtr, kMainLength)).WillOnce(Return(kMainLength));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstBufferFill(&testContext->m_buffer, kMainLength, &testContext->m_wrapPtr, kWrapLength / 2))
+    EXPECT_CALL(*testContext->m_gstWrapper, gstAppSrcGetCurrentLevelBytes(GST_APP_SRC(&testContext->m_src)))
         .WillOnce(Return(kWrapLength / 2));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstAppSrcPushBuffer(GST_APP_SRC(&testContext->m_src), &testContext->m_buffer)).WillOnce(Return(GST_FLOW_OK));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstBufferNewAllocate(_, kMainLength + kWrapLength / 2, _))
+        .WillOnce(Return(&testContext->m_buffer));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstBufferFill(&testContext->m_buffer, 0, &testContext->m_mainPtr, kMainLength))
+        .WillOnce(Return(kMainLength));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstBufferFill(&testContext->m_buffer, kMainLength, &testContext->m_wrapPtr, kWrapLength / 2))
+        .WillOnce(Return(kWrapLength / 2));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstAppSrcPushBuffer(GST_APP_SRC(&testContext->m_src), &testContext->m_buffer))
+        .WillOnce(Return(GST_FLOW_OK));
 }
 
 void WebAudioTasksTestsBase::checkWriteAllMainDataAndPartialWrapData()
@@ -318,9 +345,13 @@ void WebAudioTasksTestsBase::shouldWriteBufferForPartialMainDataAndNoWrapData()
 {
     EXPECT_CALL(*testContext->m_gstWrapper, gstAppSrcGetCurrentLevelBytes(GST_APP_SRC(&testContext->m_src)))
         .WillOnce(Return(kMainLength / 2 + kWrapLength));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstBufferNewAllocate(_, kMainLength / 2, _)).WillOnce(Return(&testContext->m_buffer));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstBufferFill(&testContext->m_buffer, 0, &testContext->m_mainPtr, kMainLength / 2)).WillOnce(Return(kMainLength / 2));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstAppSrcPushBuffer(GST_APP_SRC(&testContext->m_src), &testContext->m_buffer)).WillOnce(Return(GST_FLOW_OK));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstBufferNewAllocate(_, kMainLength / 2, _))
+        .WillOnce(Return(&testContext->m_buffer));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstBufferFill(&testContext->m_buffer, 0, &testContext->m_mainPtr, kMainLength / 2))
+        .WillOnce(Return(kMainLength / 2));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstAppSrcPushBuffer(GST_APP_SRC(&testContext->m_src), &testContext->m_buffer))
+        .WillOnce(Return(GST_FLOW_OK));
 }
 
 void WebAudioTasksTestsBase::checkWritePartialMainDataAndNoWrapData()
@@ -330,7 +361,8 @@ void WebAudioTasksTestsBase::checkWritePartialMainDataAndNoWrapData()
 
 void WebAudioTasksTestsBase::shouldNotWriteBufferIfNewAllocateFails()
 {
-    EXPECT_CALL(*testContext->m_gstWrapper, gstAppSrcGetCurrentLevelBytes(GST_APP_SRC(&testContext->m_src))).WillOnce(Return(0));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstAppSrcGetCurrentLevelBytes(GST_APP_SRC(&testContext->m_src)))
+        .WillOnce(Return(0));
     EXPECT_CALL(*testContext->m_gstWrapper, gstBufferNewAllocate(_, kMainLength + kWrapLength, _)).WillOnce(Return(nullptr));
 }
 
@@ -341,12 +373,18 @@ void WebAudioTasksTestsBase::checkWriteNoData()
 
 void WebAudioTasksTestsBase::shouldWriteBufferIfBytesWrittenLessThanExpected()
 {
-    EXPECT_CALL(*testContext->m_gstWrapper, gstAppSrcGetCurrentLevelBytes(GST_APP_SRC(&testContext->m_src))).WillOnce(Return(0));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstBufferNewAllocate(_, kMainLength + kWrapLength, _)).WillOnce(Return(&testContext->m_buffer));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstBufferFill(&testContext->m_buffer, 0, &testContext->m_mainPtr, kMainLength)).WillOnce(Return(kMainLength - 1));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstBufferFill(&testContext->m_buffer, kMainLength - 1, &testContext->m_wrapPtr, kWrapLength))
+    EXPECT_CALL(*testContext->m_gstWrapper, gstAppSrcGetCurrentLevelBytes(GST_APP_SRC(&testContext->m_src)))
+        .WillOnce(Return(0));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstBufferNewAllocate(_, kMainLength + kWrapLength, _))
+        .WillOnce(Return(&testContext->m_buffer));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstBufferFill(&testContext->m_buffer, 0, &testContext->m_mainPtr, kMainLength))
+        .WillOnce(Return(kMainLength - 1));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstBufferFill(&testContext->m_buffer, kMainLength - 1, &testContext->m_wrapPtr, kWrapLength))
         .WillOnce(Return(kWrapLength));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstAppSrcPushBuffer(GST_APP_SRC(&testContext->m_src), &testContext->m_buffer)).WillOnce(Return(GST_FLOW_OK));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstAppSrcPushBuffer(GST_APP_SRC(&testContext->m_src), &testContext->m_buffer))
+        .WillOnce(Return(GST_FLOW_OK));
 }
 
 void WebAudioTasksTestsBase::checkWriteLessThanExpected()
@@ -356,12 +394,18 @@ void WebAudioTasksTestsBase::checkWriteLessThanExpected()
 
 void WebAudioTasksTestsBase::shouldNotWriteBufferIfPushBufferFails()
 {
-    EXPECT_CALL(*testContext->m_gstWrapper, gstAppSrcGetCurrentLevelBytes(GST_APP_SRC(&testContext->m_src))).WillOnce(Return(0));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstBufferNewAllocate(_, kMainLength + kWrapLength, _)).WillOnce(Return(&testContext->m_buffer));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstBufferFill(&testContext->m_buffer, 0, &testContext->m_mainPtr, kMainLength)).WillOnce(Return(kMainLength));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstBufferFill(&testContext->m_buffer, kMainLength, &testContext->m_wrapPtr, kWrapLength))
+    EXPECT_CALL(*testContext->m_gstWrapper, gstAppSrcGetCurrentLevelBytes(GST_APP_SRC(&testContext->m_src)))
+        .WillOnce(Return(0));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstBufferNewAllocate(_, kMainLength + kWrapLength, _))
+        .WillOnce(Return(&testContext->m_buffer));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstBufferFill(&testContext->m_buffer, 0, &testContext->m_mainPtr, kMainLength))
+        .WillOnce(Return(kMainLength));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstBufferFill(&testContext->m_buffer, kMainLength, &testContext->m_wrapPtr, kWrapLength))
         .WillOnce(Return(kWrapLength));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstAppSrcPushBuffer(GST_APP_SRC(&testContext->m_src), &testContext->m_buffer)).WillOnce(Return(GST_FLOW_ERROR));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstAppSrcPushBuffer(GST_APP_SRC(&testContext->m_src), &testContext->m_buffer))
+        .WillOnce(Return(GST_FLOW_ERROR));
     EXPECT_CALL(*testContext->m_gstWrapper, gstBufferUnref(&testContext->m_buffer));
 }
 
@@ -375,11 +419,16 @@ void WebAudioTasksTestsBase::shouldWriteBufferThatNotAlignedWithBytesPerSample()
 {
     EXPECT_CALL(*testContext->m_gstWrapper, gstAppSrcGetCurrentLevelBytes(GST_APP_SRC(&testContext->m_src)))
         .WillOnce(Return(testContext->m_context.bytesPerSample - 1));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstBufferNewAllocate(_, kUnalignedWriteSize, _)).WillOnce(Return(&testContext->m_buffer));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstBufferFill(&testContext->m_buffer, 0, &testContext->m_mainPtr, kMainLength)).WillOnce(Return(kMainLength));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstBufferFill(&testContext->m_buffer, kMainLength, &testContext->m_wrapPtr, kUnalignedWriteSize - kMainLength))
+    EXPECT_CALL(*testContext->m_gstWrapper, gstBufferNewAllocate(_, kUnalignedWriteSize, _))
+        .WillOnce(Return(&testContext->m_buffer));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstBufferFill(&testContext->m_buffer, 0, &testContext->m_mainPtr, kMainLength))
+        .WillOnce(Return(kMainLength));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstBufferFill(&testContext->m_buffer, kMainLength, &testContext->m_wrapPtr,
+                                                          kUnalignedWriteSize - kMainLength))
         .WillOnce(Return(kUnalignedWriteSize - kMainLength));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstAppSrcPushBuffer(GST_APP_SRC(&testContext->m_src), &testContext->m_buffer)).WillOnce(Return(GST_FLOW_OK));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstAppSrcPushBuffer(GST_APP_SRC(&testContext->m_src), &testContext->m_buffer))
+        .WillOnce(Return(GST_FLOW_OK));
 }
 
 void WebAudioTasksTestsBase::checkWriteUnaligned()

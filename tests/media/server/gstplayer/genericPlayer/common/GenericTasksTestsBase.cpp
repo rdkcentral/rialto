@@ -18,8 +18,8 @@
  */
 
 #include "GenericTasksTestsBase.h"
-#include "Matchers.h"
 #include "GenericTasksTestsContext.h"
+#include "Matchers.h"
 #include "tasks/generic/SetVideoGeometry.h"
 #include "tasks/generic/SetVolume.h"
 #include "tasks/generic/SetupElement.h"

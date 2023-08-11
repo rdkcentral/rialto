@@ -20,11 +20,11 @@
 #ifndef WEB_AUDIO_TASKS_TESTS_CONTEXT_H_
 #define WEB_AUDIO_TASKS_TESTS_CONTEXT_H_
 
-#include "WebAudioPlayerContext.h"
 #include "GlibWrapperMock.h"
 #include "GstWebAudioPlayerClientMock.h"
 #include "GstWebAudioPlayerPrivateMock.h"
 #include "GstWrapperMock.h"
+#include "WebAudioPlayerContext.h"
 #include <memory>
 
 /**

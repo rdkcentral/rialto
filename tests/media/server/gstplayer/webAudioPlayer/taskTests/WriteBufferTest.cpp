@@ -22,11 +22,7 @@
 class WebAudioWriteBufferTest : public WebAudioTasksTestsBase
 {
 protected:
-
-    WebAudioWriteBufferTest()
-    {
-        setContextBytesPerSample();
-    }
+    WebAudioWriteBufferTest() { setContextBytesPerSample(); }
 };
 
 TEST_F(WebAudioWriteBufferTest, shouldWriteBufferForAllData)

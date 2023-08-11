@@ -20,8 +20,6 @@
 cmake_minimum_required( VERSION 3.10 )
 project( Rialto LANGUAGES C CXX VERSION 1.0.0 )
 
-set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CMAKE_COMMAND} -E time")
-
 set(CMAKE_CXX_STANDARD 17)
 
 if ( COVERAGE_ENABLED )

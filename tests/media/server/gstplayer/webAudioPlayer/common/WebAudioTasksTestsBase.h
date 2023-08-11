@@ -22,6 +22,7 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <string>
 
 using ::testing::_;
 using ::testing::A;
@@ -32,8 +33,8 @@ using ::testing::Ref;
 using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::SaveArg;
-using ::testing::StrictMock;
 using ::testing::StrEq;
+using ::testing::StrictMock;
 
 /**
  * @brief WebAudioTasksTest Base class
@@ -108,7 +109,6 @@ protected:
     void checkWriteUnaligned();
 
 private:
-
     // SetCaps helper methods
     std::string getPcmFormat();
 };
