@@ -47,9 +47,32 @@ public:
     virtual ~WebAudioTasksTestsBase();
 
 protected:
-    // SetupElement test methods
+    // Eos test methods
     void shouldEndOfStreamSuccess();
+    void shouldEndOfStreamFailure();
+    void triggerEos();
 
+    // Pause test methods
+    void shouldPauseSuccess();
+    void shouldPauseFailure();
+    void triggerPause();
+
+    // Play test methods
+    void shouldPlaySuccess();
+    void shouldPlayFailure();
+    void triggerPlay();
+
+    // SetVolume test methods
+    void shouldGstSetVolume();
+    void triggerSetVolume();
+
+    // Shutdown test methods
+    void shouldStopWorkerThread();
+    void triggerShutdown();
+
+    // Stop test methods
+    void shouldChangePlayerStateNull();
+    void triggerStop();
 private:
 };
 

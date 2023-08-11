@@ -20,6 +20,8 @@
 cmake_minimum_required( VERSION 3.10 )
 project( Rialto LANGUAGES C CXX VERSION 1.0.0 )
 
+set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CMAKE_COMMAND} -E time")
+
 set(CMAKE_CXX_STANDARD 17)
 
 if ( COVERAGE_ENABLED )
@@ -43,7 +45,7 @@ else()
     option(RIALTO_LOG_DEBUG_ENABLED "Enable debug logging for RialtoServer" OFF)
 endif()
 
-if (NOT RIALTO_LOG_FATAL_ENABLED OR 
+if (NOT RIALTO_LOG_FATAL_ENABLED OR
     NOT RIALTO_LOG_ERROR_ENABLED OR
     NOT RIALTO_LOG_WARN_ENABLED OR
     NOT RIALTO_LOG_MIL_ENABLED OR
@@ -54,7 +56,7 @@ if (NOT RIALTO_LOG_FATAL_ENABLED OR
     add_compile_options(-Wno-error=unused-function -Wno-error=unused-variable)
 
 endif()
-   
+
 if ( RIALTO_LOG_FATAL_ENABLED )
     message("RIALTO_LOG_FATAL IS ENABLED")
     add_compile_definitions( RIALTO_LOG_FATAL_ENABLED )
@@ -92,10 +94,10 @@ endif()
 # Retrieve the commit ID
 execute_process(
     COMMAND git rev-parse HEAD
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} 
-    RESULT_VARIABLE RESULT 
-    OUTPUT_VARIABLE COMMIT_ID 
-    OUTPUT_STRIP_TRAILING_WHITESPACE 
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    RESULT_VARIABLE RESULT
+    OUTPUT_VARIABLE COMMIT_ID
+    OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
 if(RESULT)

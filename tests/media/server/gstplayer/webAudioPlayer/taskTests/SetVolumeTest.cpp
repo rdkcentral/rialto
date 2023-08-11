@@ -17,30 +17,14 @@
  * limitations under the License.
  */
 
-#include "tasks/webAudio/SetVolume.h"
-#include "GstWrapperMock.h"
-#include "WebAudioPlayerContext.h"
-#include <gst/gst.h>
-#include <gtest/gtest.h>
+#include "WebAudioTasksTestsBase.h"
 
-using testing::_;
-using testing::Return;
-using testing::StrictMock;
-
-class WebAudioSetVolumeTest : public testing::Test
+class WebAudioSetVolumeTest : public WebAudioTasksTestsBase
 {
-public:
-    firebolt::rialto::server::WebAudioPlayerContext m_context;
-    std::shared_ptr<firebolt::rialto::server::GstWrapperMock> m_gstWrapper{
-        std::make_shared<StrictMock<firebolt::rialto::server::GstWrapperMock>>()};
-    GstElement m_pipeline{};
 };
 
 TEST_F(WebAudioSetVolumeTest, shouldSetVolume)
 {
-    constexpr double kVolume{0.7};
-    m_context.pipeline = &m_pipeline;
-    EXPECT_CALL(*m_gstWrapper, gstStreamVolumeSetVolume(_, GST_STREAM_VOLUME_FORMAT_LINEAR, kVolume));
-    firebolt::rialto::server::tasks::webaudio::SetVolume task{m_context, m_gstWrapper, kVolume};
-    task.execute();
+    shouldGstSetVolume();
+    triggerSetVolume();
 }

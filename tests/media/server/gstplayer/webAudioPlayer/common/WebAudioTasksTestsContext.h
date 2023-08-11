@@ -22,6 +22,7 @@
 
 #include "WebAudioPlayerContext.h"
 #include "GlibWrapperMock.h"
+#include "GstWebAudioPlayerClientMock.h"
 #include "GstWebAudioPlayerPrivateMock.h"
 #include "GstWrapperMock.h"
 #include <memory>
@@ -39,8 +40,13 @@ public:
     // Mocks
     std::shared_ptr<firebolt::rialto::server::GstWrapperMock> m_gstWrapper{
         std::make_shared<StrictMock<firebolt::rialto::server::GstWrapperMock>>()};
+    std::shared_ptr<firebolt::rialto::server::GlibWrapperMock> m_glibWrapper{
+        std::make_shared<StrictMock<firebolt::rialto::server::GlibWrapperMock>>()};
+    StrictMock<firebolt::rialto::server::GstWebAudioPlayerPrivateMock> m_gstPlayer;
+    StrictMock<firebolt::rialto::server::GstWebAudioPlayerClientMock> m_gstPlayerClient;
 
     // Gstreamer members
+    GstElement m_pipeline{};
     GstElement m_src{};
 
     // Glib members

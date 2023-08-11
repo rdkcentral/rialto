@@ -17,30 +17,11 @@
  * limitations under the License.
  */
 
-#include "tasks/webAudio/SetCaps.h"
-#include "GlibWrapperMock.h"
-#include "GstWebAudioPlayerPrivateMock.h"
-#include "GstWrapperMock.h"
-#include "Matchers.h"
-#include "WebAudioPlayerContext.h"
-#include <gst/gst.h>
-#include <gtest/gtest.h>
+#include "WebAudioTasksTestsBase.h"
 
-using testing::_;
-using testing::Return;
-using testing::StrEq;
-using testing::StrictMock;
-
-class WebAudioSetCapsTest : public testing::Test
+class WebAudioSetCapsTest : public WebAudioTasksTestsBase
 {
 protected:
-    firebolt::rialto::server::WebAudioPlayerContext m_context;
-    StrictMock<firebolt::rialto::server::GstWebAudioPlayerPrivateMock> m_gstPlayer;
-    std::shared_ptr<firebolt::rialto::server::GstWrapperMock> m_gstWrapper{
-        std::make_shared<StrictMock<firebolt::rialto::server::GstWrapperMock>>()};
-    std::shared_ptr<firebolt::rialto::server::GlibWrapperMock> m_glibWrapper{
-        std::make_shared<StrictMock<firebolt::rialto::server::GlibWrapperMock>>()};
-
     const std::string m_kAudioMimeType{"audio/x-raw"};
     firebolt::rialto::WebAudioConfig m_config;
     GstCaps m_caps{};
