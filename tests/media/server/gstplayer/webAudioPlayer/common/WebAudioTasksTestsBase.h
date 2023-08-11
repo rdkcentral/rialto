@@ -89,6 +89,24 @@ protected:
     void triggerSetCaps();
     void triggerSetCapsInvalidMimeType();
 
+    // WriteBuffer test methods
+    void setContextBytesPerSample();
+    void shouldWriteBufferForAllData();
+    void triggerWriteBuffer();
+    void checkWriteAllData();
+    void shouldWriteBufferForAllMainDataAndPartialWrapData();
+    void checkWriteAllMainDataAndPartialWrapData();
+    void shouldWriteBufferForPartialMainDataAndNoWrapData();
+    void checkWritePartialMainDataAndNoWrapData();
+    void shouldNotWriteBufferIfNewAllocateFails();
+    void checkWriteNoData();
+    void shouldWriteBufferIfBytesWrittenLessThanExpected();
+    void checkWriteLessThanExpected();
+    void shouldNotWriteBufferIfPushBufferFails();
+    void shouldNotWriteBufferIfBytesToWriteLessThanBytesPerSample();
+    void shouldWriteBufferThatNotAlignedWithBytesPerSample();
+    void checkWriteUnaligned();
+
 private:
 
     // SetCaps helper methods

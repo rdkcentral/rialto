@@ -50,12 +50,15 @@ public:
     GstElement m_src{};
     GstCaps m_caps{};
     GstCaps m_capsAppSrc{};
+    GstBuffer m_buffer{};
 
     // Glib members
     gchar m_capsStr{};
 
     // Standard members
     firebolt::rialto::WebAudioConfig m_config;
+    uint8_t m_mainPtr{};
+    uint8_t m_wrapPtr{};
 };
 
 #endif // WEB_AUDIO_TASKS_TESTS_CONTEXT_H_
