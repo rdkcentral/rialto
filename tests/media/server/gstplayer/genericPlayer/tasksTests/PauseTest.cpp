@@ -17,38 +17,25 @@
  * limitations under the License.
  */
 
-#include "tasks/generic/Pause.h"
-#include "GstGenericPlayerPrivateMock.h"
-#include <gtest/gtest.h>
+#include "TasksTestsBase.h"
 
-using testing::StrictMock;
-
-class PauseTest : public testing::Test
+class PauseTest : public TasksTestsBase
 {
 protected:
-    firebolt::rialto::server::GenericPlayerContext m_context{};
-    StrictMock<firebolt::rialto::server::GstGenericPlayerPrivateMock> m_gstPlayer;
+    PauseTest() { setContextPlaying(); }
 };
 
 TEST_F(PauseTest, shouldPause)
 {
-    m_context.isPlaying = true;
-    EXPECT_CALL(m_gstPlayer, stopPositionReportingAndCheckAudioUnderflowTimer());
-    EXPECT_CALL(m_gstPlayer, changePipelineState(GST_STATE_PAUSED));
-    firebolt::rialto::server::tasks::generic::Pause task{m_context, m_gstPlayer};
-    task.execute();
-
-    EXPECT_FALSE(m_context.isPlaying);
+    shouldPause();
+    triggerPause();
+    checkContextPaused();
 }
 
 TEST_F(PauseTest, shouldPauseDuringUnderflow)
 {
-    m_context.isPlaying = true;
-    m_context.videoUnderflowOccured = true;
-    EXPECT_CALL(m_gstPlayer, stopPositionReportingAndCheckAudioUnderflowTimer());
-    EXPECT_CALL(m_gstPlayer, changePipelineState(GST_STATE_PAUSED));
-    firebolt::rialto::server::tasks::generic::Pause task{m_context, m_gstPlayer};
-    task.execute();
-
-    EXPECT_FALSE(m_context.isPlaying);
+    setContextVideoUnderflowOccured(true);
+    shouldPause();
+    triggerPause();
+    checkContextPaused();
 }

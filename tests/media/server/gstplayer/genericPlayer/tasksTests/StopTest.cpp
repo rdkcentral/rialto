@@ -17,33 +17,15 @@
  * limitations under the License.
  */
 
-#include "tasks/generic/Stop.h"
-#include "GenericPlayerContext.h"
-#include "GstGenericPlayerPrivateMock.h"
-#include <gst/gst.h>
-#include <gtest/gtest.h>
+#include "TasksTestsBase.h"
 
-using testing::StrictMock;
-
-class StopTest : public testing::Test
+class StopTest : public TasksTestsBase
 {
-protected:
-    firebolt::rialto::server::GenericPlayerContext m_context{};
-    StrictMock<firebolt::rialto::server::GstGenericPlayerPrivateMock> m_gstPlayer;
-
-    StopTest()
-    {
-        m_context.videoNeedData = true;
-        m_context.audioNeedData = true;
-    }
 };
 
 TEST_F(StopTest, shouldStop)
 {
-    firebolt::rialto::server::tasks::generic::Stop task{m_context, m_gstPlayer};
-    EXPECT_CALL(m_gstPlayer, stopPositionReportingAndCheckAudioUnderflowTimer());
-    EXPECT_CALL(m_gstPlayer, changePipelineState(GST_STATE_NULL));
-    task.execute();
-    EXPECT_FALSE(m_context.videoNeedData);
-    EXPECT_FALSE(m_context.audioNeedData);
+    shouldStopGstPlayer();
+    triggerStop();
+    checkNoMoreNeedData();
 }

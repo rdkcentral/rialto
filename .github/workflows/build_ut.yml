@@ -74,7 +74,7 @@ jobs:
           sudo make install
 
       # Installation of protobuf
-      - name: Install protobuf 
+      - name: Install protobuf
         run: |
           sudo apt-get install protobuf-compiler
 
