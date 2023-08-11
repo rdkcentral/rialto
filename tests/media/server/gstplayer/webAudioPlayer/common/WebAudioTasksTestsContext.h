@@ -48,8 +48,14 @@ public:
     // Gstreamer members
     GstElement m_pipeline{};
     GstElement m_src{};
+    GstCaps m_caps{};
+    GstCaps m_capsAppSrc{};
 
     // Glib members
+    gchar m_capsStr{};
+
+    // Standard members
+    firebolt::rialto::WebAudioConfig m_config;
 };
 
 #endif // WEB_AUDIO_TASKS_TESTS_CONTEXT_H_

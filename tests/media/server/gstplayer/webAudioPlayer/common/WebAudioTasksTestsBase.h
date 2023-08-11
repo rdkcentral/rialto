@@ -33,6 +33,7 @@ using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::SaveArg;
 using ::testing::StrictMock;
+using ::testing::StrEq;
 
 /**
  * @brief WebAudioTasksTest Base class
@@ -73,7 +74,25 @@ protected:
     // Stop test methods
     void shouldChangePlayerStateNull();
     void triggerStop();
+
+    // SetCaps test methods
+    void setU32LEConfig();
+    void setF64LEConfig();
+    void setS16BEConfig();
+    void shouldBuildPcmCaps();
+    void shouldGetCapsStr();
+    void shouldSetCaps();
+    void shouldUnref();
+    void checkBytesPerSamplePcmSet();
+    void shouldSetCapsWhenAppSrcCapsNull();
+    void shouldNotSetCapsWhenCapsEqual();
+    void triggerSetCaps();
+    void triggerSetCapsInvalidMimeType();
+
 private:
+
+    // SetCaps helper methods
+    std::string getPcmFormat();
 };
 
 #endif // WEB_AUDIO_TASKS_TESTS_BASE_H_
