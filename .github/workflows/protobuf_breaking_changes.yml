@@ -21,4 +21,5 @@ jobs:
       - name: Breaking change detection against `master`
         uses: bufbuild/buf-breaking-action@v1
         with:
-          against: https://github.com/rdkcentral/rialto.git#branch=master,ref=HEAD~1
+          input: proto
+          against: https://github.com/rdkcentral/rialto.git#branch=master,ref=HEAD~1,subdir=proto
