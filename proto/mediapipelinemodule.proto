@@ -52,6 +52,32 @@ message CreateSessionResponse {
 }
 
 /**
+ * @fn int createSession(uint32 max_width, uint32 max_height)
+ * @brief Creates a new A/V playback session.
+ *
+ * @param[in]  max_width    The maximum width of the video.
+ * @param[in]  max_height   The maximum height of the video.
+ *
+ * A client can have multiple A/V sessions, although typically only one will be streaming at a time.  A session is used
+ * to group a one or more video and audio media sources together into a single playback session.
+ *
+ * Sessions are unique to a single IPC connection to the server, it is not possible to use a session id created on
+ * one IPC connection with another IPC connection.  When an IPC connection is closed the session ids are invalidated
+ * and the resource allocated to the session on the server are freed.
+ *
+ * @returns a unique numeric session id value that should be used for all subsequent operations on the session.
+ */
+message NewRequest {
+    required uint32 param1 = 1;
+    required uint32 param2 = 2;
+    optional string param3 = 3;
+}
+message NewResponse {
+    required string param1 = 1;
+    optional int32 param2 = 2;
+}
+
+/**
  * @fn void destroySession(int session_id)
  * @brief Destroys an A/V playback session.
  *
@@ -663,7 +689,7 @@ service MediaPipelineModule {
      * @see SetVolumeRequest
      */
     rpc setVolume(SetVolumeRequest) returns (SetVolumeResponse) {
-    } 
+    }
 
     /**
      * @brief Get current audio level. Fetches the current volume level for the pipeline.
@@ -677,12 +703,19 @@ service MediaPipelineModule {
      * @see SetMuteRequest
      */
     rpc setMute(SetMuteRequest) returns (SetMuteResponse) {
-    } 
+    }
 
     /**
      * @brief Get current mute status of the pipeline
      * @see GetMuteRequest
      */
     rpc getMute(GetMuteRequest) returns (GetMuteResponse) {
+    }
+
+    /**
+     * @brief NewTestMethod
+     * @see newMethod
+     */
+    rpc newMethod(NewRequest) returns (NewResponse) {
     }
 }

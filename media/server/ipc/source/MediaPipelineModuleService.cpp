@@ -605,4 +605,25 @@ void MediaPipelineModuleService::getMute(::google::protobuf::RpcController *cont
 
     done->Run();
 }
+
+void MediaPipelineModuleService::newMethod(::google::protobuf::RpcController *controller,
+                                         const ::firebolt::rialto::NewRequest *request,
+                                         ::firebolt::rialto::NewResponse *response, ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    request.set_param1(1);
+    request.set_param2(2);
+    std::string str = "";
+    if (request.has_param3())
+    {
+        str = request.param3();
+    }
+
+    RIALTO_SERVER_LOG_ERROR("%u, %u, %s", request.param1(),  request.param2(), str);
+    response->set_param1("test2");
+    response->set_param2(4);
+
+    done->Run();
+}
 } // namespace firebolt::rialto::server::ipc

@@ -94,6 +94,8 @@ public:
                  ::firebolt::rialto::SetMuteResponse *response, ::google::protobuf::Closure *done) override;
     void getMute(::google::protobuf::RpcController *controller, const ::firebolt::rialto::GetMuteRequest *request,
                  ::firebolt::rialto::GetMuteResponse *response, ::google::protobuf::Closure *done) override;
+    void newMethod(::google::protobuf::RpcController *controller, const ::firebolt::rialto::NewRequest *request,
+                 ::firebolt::rialto::NewResponse *response, ::google::protobuf::Closure *done) override;
 
 private:
     service::IMediaPipelineService &m_mediaPipelineService;
