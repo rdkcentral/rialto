@@ -1,0 +1,25 @@
+name: Protobuf breaking change detection
+
+on:
+  pull_request:
+    branches: [ "master", "rdkcentral:master" ]
+  push:
+    branches: [ "master", "rdkcentral:master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup
+        uses: bufbuild/buf-setup-action@v1.25.0
+
+      - name: Breaking change detection against `master`
+        uses: bufbuild/buf-breaking-action@v1
+        with:
+          input: proto
+          against: https://github.com/rdkcentral/rialto.git#branch=master,ref=HEAD~1,subdir=proto
