@@ -17,9 +17,9 @@
  * limitations under the License.
  */
 
-#include "TasksTestsBase.h"
+#include "GenericTasksTestsBase.h"
 
-class ReadShmDataAndAttachSamplesTest : public TasksTestsBase
+class ReadShmDataAndAttachSamplesTest : public GenericTasksTestsBase
 {
 };
 

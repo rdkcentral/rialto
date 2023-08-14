@@ -17,9 +17,9 @@
  * limitations under the License.
  */
 
-#include "TasksTestsBase.h"
+#include "GenericTasksTestsBase.h"
 
-class FinishSetupSourceTest : public TasksTestsBase
+class FinishSetupSourceTest : public GenericTasksTestsBase
 {
 protected:
     FinishSetupSourceTest()

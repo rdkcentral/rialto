@@ -17,9 +17,9 @@
  * limitations under the License.
  */
 
-#include "TasksTestsBase.h"
+#include "GenericTasksTestsBase.h"
 
-class NeedDataTest : public TasksTestsBase
+class NeedDataTest : public GenericTasksTestsBase
 {
 };
 
