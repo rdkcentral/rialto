@@ -37,7 +37,7 @@ on:
 jobs:
 
   # This job sets up the repo with the dependancies then runs the servermain tests
-  build-servermain:
+  run-servermain:
     name: Build and test servermain unittests
 
     # Runs on ubuntu
@@ -65,13 +65,13 @@ jobs:
           sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
 
       # Setup lcov 2.0
-      #- name: Install lcov library
-      #  run: |
-      #    sudo apt-get install libjson-perl libperlio-gzip-perl perl libgd-gd2-perl libcapture-tiny-perl libdatetime-perl
-      #    wget https://github.com/linux-test-project/lcov/releases/download/v2.0/lcov-2.0.tar.gz
-      #    tar -xf lcov-2.0.tar.gz
-      #    cd lcov-2.0
-      #    sudo make install
+      - name: Install lcov library
+        run: |
+          sudo apt-get install libjson-perl libperlio-gzip-perl perl libgd-gd2-perl libcapture-tiny-perl libdatetime-perl
+          wget https://github.com/linux-test-project/lcov/releases/download/v2.0/lcov-2.0.tar.gz
+          tar -xf lcov-2.0.tar.gz
+          cd lcov-2.0
+          sudo make install
 
       # Installation of protobuf
       - name: Install protobuf
@@ -81,14 +81,14 @@ jobs:
       # Run the build script for servermain
       - name: build_ut.py script servermain
         run: |
-              python build_ut.py -c -xml -f -s servermain
+              python build_ut.py -c -xml -f -cov -s servermain
 
       # Process the test results
-      - name: Check results
+      - name: Check servermain results
         uses: dorny/test-reporter@v1
         if: success() || failure()
         with:
-          name: GTests
+          name: Results servermain
           path: build/*gtest_result.xml
           reporter: java-junit
 
@@ -152,7 +152,7 @@ jobs:
       #    body: ${{ steps.get-comment-body.outputs.body }}
 
   # This job sets up the repo with the dependancies then runs the servergstplayer tests
-  build-servergstplayer:
+  run-servergstplayer:
     name: Build and test servergstplayer unittests
 
     # Runs on ubuntu
@@ -179,6 +179,15 @@ jobs:
           sudo apt-get update
           sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
 
+      # Setup lcov 2.0
+      - name: Install lcov library
+        run: |
+          sudo apt-get install libjson-perl libperlio-gzip-perl perl libgd-gd2-perl libcapture-tiny-perl libdatetime-perl
+          wget https://github.com/linux-test-project/lcov/releases/download/v2.0/lcov-2.0.tar.gz
+          tar -xf lcov-2.0.tar.gz
+          cd lcov-2.0
+          sudo make install
+
       # Installation of protobuf
       - name: Install protobuf
         run: |
@@ -187,14 +196,14 @@ jobs:
       # Run the build script for servergstplayer
       - name: build_ut.py script servergstplayer
         run: |
-              python build_ut.py -c -xml -f -s servergstplayer
+              python build_ut.py -c -xml -f -cov -s servergstplayer
 
       # Process the test results
-      - name: Check results
+      - name: Check servergstplayer results
         uses: dorny/test-reporter@v1
         if: success() || failure()
         with:
-          name: GTests
+          name: Results servergstplayer
           path: build/*gtest_result.xml
           reporter: java-junit
 
@@ -209,7 +218,7 @@ jobs:
             build/*gtest_result.xml
 
   # This job sets up the repo with the dependancies then runs the serveripc tests
-  build-serveripc:
+  run-serveripc:
     name: Build and test serveripc unittests
 
     # Runs on ubuntu
@@ -236,6 +245,15 @@ jobs:
           sudo apt-get update
           sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
 
+      # Setup lcov 2.0
+      - name: Install lcov library
+        run: |
+          sudo apt-get install libjson-perl libperlio-gzip-perl perl libgd-gd2-perl libcapture-tiny-perl libdatetime-perl
+          wget https://github.com/linux-test-project/lcov/releases/download/v2.0/lcov-2.0.tar.gz
+          tar -xf lcov-2.0.tar.gz
+          cd lcov-2.0
+          sudo make install
+
       # Installation of protobuf
       - name: Install protobuf
         run: |
@@ -244,14 +262,14 @@ jobs:
       # Run the build script for serveripc
       - name: build_ut.py script serveripc
         run: |
-              python build_ut.py -c -xml -f -s serveripc
+              python build_ut.py -c -xml -f -cov -s serveripc
 
       # Process the test results
-      - name: Check results
+      - name: Check serveripc results
         uses: dorny/test-reporter@v1
         if: success() || failure()
         with:
-          name: GTests
+          name: Results serveripc
           path: build/*gtest_result.xml
           reporter: java-junit
 
@@ -266,7 +284,7 @@ jobs:
             build/*gtest_result.xml
 
   # This job sets up the repo with the dependancies then runs the serverservice tests
-  build-serverservice:
+  run-serverservice:
     name: Build and test serverservice unittests
 
     # Runs on ubuntu
@@ -293,6 +311,15 @@ jobs:
           sudo apt-get update
           sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
 
+      # Setup lcov 2.0
+      - name: Install lcov library
+        run: |
+          sudo apt-get install libjson-perl libperlio-gzip-perl perl libgd-gd2-perl libcapture-tiny-perl libdatetime-perl
+          wget https://github.com/linux-test-project/lcov/releases/download/v2.0/lcov-2.0.tar.gz
+          tar -xf lcov-2.0.tar.gz
+          cd lcov-2.0
+          sudo make install
+
       # Installation of protobuf
       - name: Install protobuf
         run: |
@@ -301,14 +328,14 @@ jobs:
       # Run the build script for serverservice
       - name: build_ut.py script serverservice
         run: |
-              python build_ut.py -c -xml -f -s serverservice
+              python build_ut.py -c -xml -f -cov -s serverservice
 
       # Process the test results
-      - name: Check results
+      - name: Check serverservice results
         uses: dorny/test-reporter@v1
         if: success() || failure()
         with:
-          name: GTests
+          name: Results serverservice
           path: build/*gtest_result.xml
           reporter: java-junit
 
@@ -323,7 +350,7 @@ jobs:
             build/*gtest_result.xml
 
   # This job sets up the repo with the dependancies then runs the client tests
-  build-client:
+  run-client:
     name: Build and test client unittests
 
     # Runs on ubuntu
@@ -350,6 +377,15 @@ jobs:
           sudo apt-get update
           sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
 
+      # Setup lcov 2.0
+      - name: Install lcov library
+        run: |
+          sudo apt-get install libjson-perl libperlio-gzip-perl perl libgd-gd2-perl libcapture-tiny-perl libdatetime-perl
+          wget https://github.com/linux-test-project/lcov/releases/download/v2.0/lcov-2.0.tar.gz
+          tar -xf lcov-2.0.tar.gz
+          cd lcov-2.0
+          sudo make install
+
       # Installation of protobuf
       - name: Install protobuf
         run: |
@@ -358,14 +394,14 @@ jobs:
       # Run the build script for client
       - name: build_ut.py script client
         run: |
-              python build_ut.py -c -xml -f -s client
+              python build_ut.py -c -xml -f -cov -s client
 
       # Process the test results
-      - name: Check results
+      - name: Check client results
         uses: dorny/test-reporter@v1
         if: success() || failure()
         with:
-          name: GTests
+          name: Results client
           path: build/*gtest_result.xml
           reporter: java-junit
 
@@ -380,7 +416,7 @@ jobs:
             build/*gtest_result.xml
 
   # This job sets up the repo with the dependancies then runs the clientipc tests
-  build-clientipc:
+  run-clientipc:
     name: Build and test clientipc unittests
 
     # Runs on ubuntu
@@ -407,6 +443,15 @@ jobs:
           sudo apt-get update
           sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
 
+      # Setup lcov 2.0
+      - name: Install lcov library
+        run: |
+          sudo apt-get install libjson-perl libperlio-gzip-perl perl libgd-gd2-perl libcapture-tiny-perl libdatetime-perl
+          wget https://github.com/linux-test-project/lcov/releases/download/v2.0/lcov-2.0.tar.gz
+          tar -xf lcov-2.0.tar.gz
+          cd lcov-2.0
+          sudo make install
+
       # Installation of protobuf
       - name: Install protobuf
         run: |
@@ -415,14 +460,14 @@ jobs:
       # Run the build script for clientipc
       - name: build_ut.py script clientipc
         run: |
-              python build_ut.py -c -xml -f -s clientipc
+              python build_ut.py -c -xml -f -cov -s clientipc
 
       # Process the test results
-      - name: Check results
+      - name: Check clientipc results
         uses: dorny/test-reporter@v1
         if: success() || failure()
         with:
-          name: GTests
+          name: Results clientipc
           path: build/*gtest_result.xml
           reporter: java-junit
 
@@ -437,7 +482,7 @@ jobs:
             build/*gtest_result.xml
 
   # This job sets up the repo with the dependancies then runs the common tests
-  build-common:
+  run-common:
     name: Build and test common unittests
 
     # Runs on ubuntu
@@ -464,6 +509,15 @@ jobs:
           sudo apt-get update
           sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
 
+      # Setup lcov 2.0
+      - name: Install lcov library
+        run: |
+          sudo apt-get install libjson-perl libperlio-gzip-perl perl libgd-gd2-perl libcapture-tiny-perl libdatetime-perl
+          wget https://github.com/linux-test-project/lcov/releases/download/v2.0/lcov-2.0.tar.gz
+          tar -xf lcov-2.0.tar.gz
+          cd lcov-2.0
+          sudo make install
+
       # Installation of protobuf
       - name: Install protobuf
         run: |
@@ -472,14 +526,14 @@ jobs:
       # Run the build script for common
       - name: build_ut.py script common
         run: |
-              python build_ut.py -c -xml -f -s common
+              python build_ut.py -c -xml -f -cov -s common
 
       # Process the test results
-      - name: Check results
+      - name: Check common results
         uses: dorny/test-reporter@v1
         if: success() || failure()
         with:
-          name: GTests
+          name: Results common
           path: build/*gtest_result.xml
           reporter: java-junit
 
@@ -494,7 +548,7 @@ jobs:
             build/*gtest_result.xml
 
   # This job sets up the repo with the dependancies then runs the logging tests
-  build-logging:
+  run-logging:
     name: Build and test logging unittests
 
     # Runs on ubuntu
@@ -521,6 +575,15 @@ jobs:
           sudo apt-get update
           sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
 
+      # Setup lcov 2.0
+      - name: Install lcov library
+        run: |
+          sudo apt-get install libjson-perl libperlio-gzip-perl perl libgd-gd2-perl libcapture-tiny-perl libdatetime-perl
+          wget https://github.com/linux-test-project/lcov/releases/download/v2.0/lcov-2.0.tar.gz
+          tar -xf lcov-2.0.tar.gz
+          cd lcov-2.0
+          sudo make install
+
       # Installation of protobuf
       - name: Install protobuf
         run: |
@@ -529,14 +592,14 @@ jobs:
       # Run the build script for logging
       - name: build_ut.py script logging
         run: |
-              python build_ut.py -c -xml -f -s logging
+              python build_ut.py -c -xml -f -cov -s logging
 
       # Process the test results
-      - name: Check results
+      - name: Check logging results
         uses: dorny/test-reporter@v1
         if: success() || failure()
         with:
-          name: GTests
+          name: Results logging
           path: build/*gtest_result.xml
           reporter: java-junit
 
@@ -551,7 +614,7 @@ jobs:
             build/*gtest_result.xml
 
   # This job sets up the repo with the dependancies then runs the manager tests
-  build-manager:
+  run-manager:
     name: Build and test manager unittests
 
     # Runs on ubuntu
@@ -578,6 +641,15 @@ jobs:
           sudo apt-get update
           sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
 
+      # Setup lcov 2.0
+      - name: Install lcov library
+        run: |
+          sudo apt-get install libjson-perl libperlio-gzip-perl perl libgd-gd2-perl libcapture-tiny-perl libdatetime-perl
+          wget https://github.com/linux-test-project/lcov/releases/download/v2.0/lcov-2.0.tar.gz
+          tar -xf lcov-2.0.tar.gz
+          cd lcov-2.0
+          sudo make install
+
       # Installation of protobuf
       - name: Install protobuf
         run: |
@@ -586,14 +658,14 @@ jobs:
       # Run the build script for manager
       - name: build_ut.py script manager
         run: |
-              python build_ut.py -c -xml -f -s manager
+              python build_ut.py -c -xml -f -cov -s manager
 
       # Process the test results
-      - name: Check results
+      - name: Check manager results
         uses: dorny/test-reporter@v1
         if: success() || failure()
         with:
-          name: GTests
+          name: Results manager
           path: build/*gtest_result.xml
           reporter: java-junit
 
@@ -608,7 +680,7 @@ jobs:
             build/*gtest_result.xml
 
   # This job sets up the repo with the dependancies then runs the ipc tests
-  build-ipc:
+  run-ipc:
     name: Build and test ipc unittests
 
     # Runs on ubuntu
@@ -635,6 +707,15 @@ jobs:
           sudo apt-get update
           sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
 
+      # Setup lcov 2.0
+      - name: Install lcov library
+        run: |
+          sudo apt-get install libjson-perl libperlio-gzip-perl perl libgd-gd2-perl libcapture-tiny-perl libdatetime-perl
+          wget https://github.com/linux-test-project/lcov/releases/download/v2.0/lcov-2.0.tar.gz
+          tar -xf lcov-2.0.tar.gz
+          cd lcov-2.0
+          sudo make install
+
       # Installation of protobuf
       - name: Install protobuf
         run: |
@@ -643,14 +724,14 @@ jobs:
       # Run the build script for ipc
       - name: build_ut.py script ipc
         run: |
-              python build_ut.py -c -xml -f -s ipc
+              python build_ut.py -c -xml -f -cov -s ipc
 
       # Process the test results
-      - name: Check results
+      - name: Check ipc results
         uses: dorny/test-reporter@v1
         if: success() || failure()
         with:
-          name: GTests
+          name: Results ipc
           path: build/*gtest_result.xml
           reporter: java-junit
 
@@ -663,3 +744,18 @@ jobs:
           path: |
             gtest_result.log
             build/*gtest_result.xml
+
+  # This job runs the coverage report
+  generate-coverage-report:
+    name: Runs the coverage report
+
+    # Runs on ubuntu
+    runs-on: ubuntu-22.04
+
+    # Timeout after
+    timeout-minutes: 10
+
+    needs: [run-servermain, run-servergstplayer, run-serveripc, run-serverservice, run-client, run-clientipc, run-common, run-logging, run-manager, run-ipc]
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
