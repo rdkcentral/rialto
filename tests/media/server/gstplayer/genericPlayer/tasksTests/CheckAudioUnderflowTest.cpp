@@ -17,76 +17,26 @@
  * limitations under the License.
  */
 
-#include "tasks/generic/CheckAudioUnderflow.h"
-#include "GenericPlayerContext.h"
-#include "GstGenericPlayerClientMock.h"
-#include "GstGenericPlayerPrivateMock.h"
-#include "GstWrapperMock.h"
-#include "Matchers.h"
-#include <gst/gst.h>
-#include <gtest/gtest.h>
+#include "TasksTestsBase.h"
 
-using testing::Invoke;
-using testing::StrictMock;
-namespace
-{
-constexpr gint64 position = 350 * 1000000 + 1;
-} // namespace
-class CheckAudioUnderflowTest : public testing::Test
+class CheckAudioUnderflowTest : public TasksTestsBase
 {
 protected:
-    firebolt::rialto::server::GenericPlayerContext m_context{};
-    StrictMock<firebolt::rialto::server::GstGenericPlayerClientMock> m_gstPlayerClient;
-    StrictMock<firebolt::rialto::server::GstGenericPlayerPrivateMock> m_gstPlayer;
-    std::shared_ptr<firebolt::rialto::server::GstWrapperMock> m_gstWrapper{
-        std::make_shared<StrictMock<firebolt::rialto::server::GstWrapperMock>>()};
-    GstElement m_pipeline{};
-    GstElement m_audioAppSrc{};
-
     CheckAudioUnderflowTest()
     {
-        m_context.pipeline = &m_pipeline;
-        m_context.audioAppSrc = &m_audioAppSrc;
-        m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO,
-                                     firebolt::rialto::server::StreamInfo{&m_audioAppSrc, true});
-        m_context.audioUnderflowOccured = false;
-        m_context.isPlaying = true;
+        setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
+        setContextPlaying();
     }
 };
 
 TEST_F(CheckAudioUnderflowTest, shouldNotTriggerAudioUnderflow)
 {
-    EXPECT_CALL(*m_gstWrapper, gstElementQueryPosition(&m_pipeline, GST_FORMAT_TIME, NotNullMatcher()))
-        .WillOnce(Invoke(
-            [this](GstElement *element, GstFormat format, gint64 *cur)
-            {
-                *cur = 0;
-                return TRUE;
-            }));
-    m_context.lastAudioSampleTimestamps = position;
-    firebolt::rialto::server::tasks::generic::CheckAudioUnderflow task{m_context, m_gstPlayer, &m_gstPlayerClient,
-                                                                       m_gstWrapper};
-    task.execute();
-
-    EXPECT_FALSE(m_context.audioUnderflowOccured);
+    shouldQueryPositionAndSetToZero();
+    triggerCheckAudioUnderflowNoNotification();
 }
 
 TEST_F(CheckAudioUnderflowTest, shouldTriggerAudioUnderflow)
 {
-    EXPECT_CALL(*m_gstWrapper, gstElementQueryPosition(&m_pipeline, GST_FORMAT_TIME, NotNullMatcher()))
-        .WillOnce(Invoke(
-            [this](GstElement *element, GstFormat format, gint64 *cur)
-            {
-                *cur = position;
-                return TRUE;
-            }));
-    EXPECT_CALL(*m_gstWrapper, gstElementGetState(&m_pipeline))
-        .WillOnce(Invoke([this](GstElement *element) { return GST_STATE_PLAYING; }));
-    EXPECT_CALL(*m_gstWrapper, gstElementGetPendingState(&m_pipeline))
-        .WillOnce(Invoke([this](GstElement *element) { return GST_STATE_VOID_PENDING; }));
-    EXPECT_CALL(m_gstPlayerClient, notifyBufferUnderflow(firebolt::rialto::MediaSourceType::AUDIO));
-    m_context.lastAudioSampleTimestamps = 0;
-    firebolt::rialto::server::tasks::generic::CheckAudioUnderflow task{m_context, m_gstPlayer, &m_gstPlayerClient,
-                                                                       m_gstWrapper};
-    task.execute();
+    shouldNotifyAudioUnderflow();
+    triggerCheckAudioUnderflow();
 }

@@ -17,21 +17,14 @@
  * limitations under the License.
  */
 
-#include "tasks/generic/Shutdown.h"
-#include "GstGenericPlayerPrivateMock.h"
-#include <gtest/gtest.h>
+#include "TasksTestsBase.h"
 
-using testing::StrictMock;
-
-class ShutdownTest : public testing::Test
+class ShutdownTest : public TasksTestsBase
 {
-protected:
-    StrictMock<firebolt::rialto::server::GstGenericPlayerPrivateMock> m_gstPlayer;
 };
 
 TEST_F(ShutdownTest, shouldShutdown)
 {
-    firebolt::rialto::server::tasks::generic::Shutdown task{m_gstPlayer};
-    EXPECT_CALL(m_gstPlayer, stopWorkerThread());
-    task.execute();
+    shouldStopWorkerThread();
+    triggerShutdown();
 }

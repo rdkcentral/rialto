@@ -17,130 +17,95 @@
  * limitations under the License.
  */
 
-#include "tasks/generic/NeedData.h"
-#include "GenericPlayerContext.h"
-#include "GstGenericPlayerClientMock.h"
-#include <gst/gst.h>
-#include <gtest/gtest.h>
+#include "TasksTestsBase.h"
 
-using testing::Return;
-using testing::StrictMock;
-
-class NeedDataTest : public testing::Test
+class NeedDataTest : public TasksTestsBase
 {
-protected:
-    firebolt::rialto::server::GenericPlayerContext m_context{};
-    StrictMock<firebolt::rialto::server::GstGenericPlayerClientMock> m_gstPlayerClient;
-    GstAppSrc m_audioSrc{};
-    GstAppSrc m_videoSrc{};
-
-    void setupAppSource()
-    {
-        m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, GST_ELEMENT(&m_audioSrc));
-        m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::VIDEO, GST_ELEMENT(&m_videoSrc));
-    }
 };
 
 TEST_F(NeedDataTest, shouldDoNothingWhenAudioAppSourceIsNotPresent)
 {
-    firebolt::rialto::server::tasks::generic::NeedData task{m_context, &m_gstPlayerClient, &m_audioSrc};
-    task.execute();
+    triggerNeedDataAudio();
 }
 
 TEST_F(NeedDataTest, shouldDoNothingWhenVideoAppSourceIsNotPresent)
 {
-    firebolt::rialto::server::tasks::generic::NeedData task{m_context, &m_gstPlayerClient, &m_videoSrc};
-    task.execute();
+    triggerNeedDataVideo();
 }
 
 TEST_F(NeedDataTest, shouldDoNothingForUnknownAppSource)
 {
-    GstAppSrc unknownSrc{};
-    setupAppSource();
-    firebolt::rialto::server::tasks::generic::NeedData task{m_context, &m_gstPlayerClient, &unknownSrc};
-    task.execute();
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::VIDEO);
+    triggerNeedDataUnknownSrc();
 }
 
 TEST_F(NeedDataTest, shouldNotifyNeedAudioData)
 {
-    setupAppSource();
-    EXPECT_CALL(m_gstPlayerClient, notifyNeedMediaData(firebolt::rialto::MediaSourceType::AUDIO)).WillOnce(Return(true));
-    firebolt::rialto::server::tasks::generic::NeedData task{m_context, &m_gstPlayerClient, &m_audioSrc};
-    task.execute();
-    EXPECT_TRUE(m_context.audioNeedData);
-    EXPECT_TRUE(m_context.audioNeedDataPending);
-    EXPECT_FALSE(m_context.videoNeedData);
-    EXPECT_FALSE(m_context.videoNeedDataPending);
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::VIDEO);
+    shouldNotifyNeedAudioDataSuccess();
+    triggerNeedDataAudio();
+    checkNeedDataForAudioOnly();
+    checkNeedDataPendingForAudioOnly();
 }
 
 TEST_F(NeedDataTest, shouldFailToNotifyNeedAudioData)
 {
-    setupAppSource();
-    EXPECT_CALL(m_gstPlayerClient, notifyNeedMediaData(firebolt::rialto::MediaSourceType::AUDIO)).WillOnce(Return(false));
-    firebolt::rialto::server::tasks::generic::NeedData task{m_context, &m_gstPlayerClient, &m_audioSrc};
-    task.execute();
-    EXPECT_TRUE(m_context.audioNeedData);
-    EXPECT_FALSE(m_context.audioNeedDataPending);
-    EXPECT_FALSE(m_context.videoNeedData);
-    EXPECT_FALSE(m_context.videoNeedDataPending);
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::VIDEO);
+    shouldNotifyNeedAudioDataFailure();
+    triggerNeedDataAudio();
+    checkNeedDataForAudioOnly();
+    checkNoNeedDataPendingForBothSources();
 }
 
 TEST_F(NeedDataTest, shouldSkipToNotifyNeedAudioDataWhenAnotherOneIsPending)
 {
-    setupAppSource();
-    m_context.audioNeedDataPending = true;
-    firebolt::rialto::server::tasks::generic::NeedData task{m_context, &m_gstPlayerClient, &m_audioSrc};
-    task.execute();
-    EXPECT_TRUE(m_context.audioNeedData);
-    EXPECT_TRUE(m_context.audioNeedDataPending);
-    EXPECT_FALSE(m_context.videoNeedData);
-    EXPECT_FALSE(m_context.videoNeedDataPending);
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::VIDEO);
+    setContextNeedDataPendingAudioOnly(true);
+    triggerNeedDataAudio();
+    checkNeedDataForAudioOnly();
+    checkNeedDataPendingForAudioOnly();
 }
 
 TEST_F(NeedDataTest, shouldSkipToNotifyNeedAudioDataWhenAudioSourceIsRemoved)
 {
-    setupAppSource();
-    m_context.audioSourceRemoved = true;
-    firebolt::rialto::server::tasks::generic::NeedData task{m_context, &m_gstPlayerClient, &m_audioSrc};
-    task.execute();
-    EXPECT_TRUE(m_context.audioNeedData);
-    EXPECT_FALSE(m_context.audioNeedDataPending);
-    EXPECT_FALSE(m_context.videoNeedData);
-    EXPECT_FALSE(m_context.videoNeedDataPending);
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::VIDEO);
+    setContextAudioSourceRemoved();
+    triggerNeedDataAudio();
+    checkNeedDataForAudioOnly();
+    checkNoNeedDataPendingForBothSources();
 }
 
 TEST_F(NeedDataTest, shouldNotifyNeedVideoData)
 {
-    setupAppSource();
-    EXPECT_CALL(m_gstPlayerClient, notifyNeedMediaData(firebolt::rialto::MediaSourceType::VIDEO)).WillOnce(Return(true));
-    firebolt::rialto::server::tasks::generic::NeedData task{m_context, &m_gstPlayerClient, &m_videoSrc};
-    task.execute();
-    EXPECT_FALSE(m_context.audioNeedData);
-    EXPECT_FALSE(m_context.audioNeedDataPending);
-    EXPECT_TRUE(m_context.videoNeedData);
-    EXPECT_TRUE(m_context.videoNeedDataPending);
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::VIDEO);
+    shouldNotifyNeedVideoDataSuccess();
+    triggerNeedDataVideo();
+    checkNeedDataPendingForVideoOnly();
+    checkNeedDataForVideoOnly();
 }
 
 TEST_F(NeedDataTest, shouldFailToNotifyNeedVideoData)
 {
-    setupAppSource();
-    EXPECT_CALL(m_gstPlayerClient, notifyNeedMediaData(firebolt::rialto::MediaSourceType::VIDEO)).WillOnce(Return(false));
-    firebolt::rialto::server::tasks::generic::NeedData task{m_context, &m_gstPlayerClient, &m_videoSrc};
-    task.execute();
-    EXPECT_FALSE(m_context.audioNeedData);
-    EXPECT_FALSE(m_context.audioNeedDataPending);
-    EXPECT_TRUE(m_context.videoNeedData);
-    EXPECT_FALSE(m_context.videoNeedDataPending);
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::VIDEO);
+    shouldNotifyNeedVideoDataFailure();
+    triggerNeedDataVideo();
+    checkNeedDataForVideoOnly();
+    checkNoNeedDataPendingForBothSources();
 }
 
 TEST_F(NeedDataTest, shouldSkipToNotifyNeedVideoData)
 {
-    setupAppSource();
-    m_context.videoNeedDataPending = true;
-    firebolt::rialto::server::tasks::generic::NeedData task{m_context, &m_gstPlayerClient, &m_videoSrc};
-    task.execute();
-    EXPECT_FALSE(m_context.audioNeedData);
-    EXPECT_FALSE(m_context.audioNeedDataPending);
-    EXPECT_TRUE(m_context.videoNeedData);
-    EXPECT_TRUE(m_context.videoNeedDataPending);
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::VIDEO);
+    setContextNeedDataPendingVideoOnly(true);
+    triggerNeedDataVideo();
+    checkNeedDataPendingForVideoOnly();
+    checkNeedDataForVideoOnly();
 }

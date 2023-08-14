@@ -17,57 +17,20 @@
  * limitations under the License.
  */
 
-#include "tasks/generic/ReportPosition.h"
-#include "GenericPlayerContext.h"
-#include "GstGenericPlayerClientMock.h"
-#include "GstWrapperMock.h"
-#include "Matchers.h"
-#include <gst/gst.h>
-#include <gtest/gtest.h>
+#include "TasksTestsBase.h"
 
-using testing::Invoke;
-using testing::StrictMock;
-
-namespace
+class ReportPositionTest : public TasksTestsBase
 {
-gint64 position{1234};
-} // namespace
-
-class ReportPositionTest : public testing::Test
-{
-protected:
-    firebolt::rialto::server::GenericPlayerContext m_context{};
-    StrictMock<firebolt::rialto::server::GstGenericPlayerClientMock> m_gstPlayerClient;
-    std::shared_ptr<firebolt::rialto::server::GstWrapperMock> m_gstWrapper{
-        std::make_shared<StrictMock<firebolt::rialto::server::GstWrapperMock>>()};
-    GstElement m_pipeline{};
-
-    ReportPositionTest() { m_context.pipeline = &m_pipeline; }
 };
 
 TEST_F(ReportPositionTest, shouldReportPosition)
 {
-    EXPECT_CALL(*m_gstWrapper, gstElementQueryPosition(&m_pipeline, GST_FORMAT_TIME, NotNullMatcher()))
-        .WillOnce(Invoke(
-            [this](GstElement *element, GstFormat format, gint64 *cur)
-            {
-                *cur = position;
-                return TRUE;
-            }));
-    EXPECT_CALL(m_gstPlayerClient, notifyPosition(position));
-    firebolt::rialto::server::tasks::generic::ReportPosition task{m_context, &m_gstPlayerClient, m_gstWrapper};
-    task.execute();
+    shouldReportPosition();
+    triggerReportPosition();
 }
 
 TEST_F(ReportPositionTest, shouldFailToReportPosition)
 {
-    EXPECT_CALL(*m_gstWrapper, gstElementQueryPosition(&m_pipeline, GST_FORMAT_TIME, NotNullMatcher()))
-        .WillOnce(Invoke(
-            [this](GstElement *element, GstFormat format, gint64 *cur)
-            {
-                *cur = -1;
-                return TRUE;
-            }));
-    firebolt::rialto::server::tasks::generic::ReportPosition task{m_context, &m_gstPlayerClient, m_gstWrapper};
-    task.execute();
+    shouldFailToReportPosition();
+    triggerReportPosition();
 }
