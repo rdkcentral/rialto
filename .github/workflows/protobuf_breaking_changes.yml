@@ -28,3 +28,8 @@ jobs:
         with:
           input: proto
           against: https://github.com/rdkcentral/rialto.git#branch=master,ref=HEAD~1,subdir=proto
+
+      - name: Push breaking change comments
+       - uses: bufbuild/buf-push-action@v1
+        with:
+          buf_token: ${{ secrets.BUF_TOKEN }}
