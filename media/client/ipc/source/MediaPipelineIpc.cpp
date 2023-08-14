@@ -296,9 +296,9 @@ bool MediaPipelineIpc::removeSource(int32_t sourceId)
     // Try new test method
     firebolt::rialto::NewRequest request1;
 
-    request.set_param1(1);
-    request.set_param2(2);
-    request.set_param3("test");
+    request1.set_param1(1);
+    request1.set_param2(2);
+    request1.set_param3("test");
 
     firebolt::rialto::NewResponse response1;
     auto ipcController = m_ipc.createRpcController();
@@ -316,11 +316,11 @@ bool MediaPipelineIpc::removeSource(int32_t sourceId)
     }
     else
     {
-        std::string str = response.param1();
+        std::string str = response1.param1();
         int32 var = -1;
-        if (response.has_param1())
+        if (response1.has_param1())
         {
-            var = response.set_param2()
+            var = response1.set_param2()
         }
         RIALTO_CLIENT_LOG_ERROR("'%s', %d", str, var);
     }
