@@ -1,0 +1,32 @@
+name: Protobuf breaking change detection
+
+on:
+  pull_request:
+    branches: [ "Protobuf_experiments", "rdkcentral:Protobuf_experiments" ]
+  push:
+    branches: [ "Protobuf_experiments", "rdkcentral:Protobuf_experiments" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup
+        uses: bufbuild/buf-setup-action@v1.25.0
+        with:
+          github_token: ${{ github.token }}
+
+      - name: Lint
+        uses: bufbuild/buf-lint-action@v1
+        with:
+          input: proto
+
+      - name: Breaking change detection against `main`
+        uses: bufbuild/buf-breaking-action@v1
+        with:
+          input: github-actions
+          against: https://github.com/rialto/rialto.git#branch=main,ref=HEAD~1,subdir=proto
