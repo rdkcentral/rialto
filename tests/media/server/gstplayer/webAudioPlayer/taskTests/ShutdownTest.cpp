@@ -17,21 +17,14 @@
  * limitations under the License.
  */
 
-#include "tasks/webAudio/Shutdown.h"
-#include "GstWebAudioPlayerPrivateMock.h"
-#include <gtest/gtest.h>
+#include "WebAudioTasksTestsBase.h"
 
-using testing::StrictMock;
-
-class WebAudioShutdownTest : public testing::Test
+class WebAudioShutdownTest : public WebAudioTasksTestsBase
 {
-protected:
-    StrictMock<firebolt::rialto::server::GstWebAudioPlayerPrivateMock> m_gstPlayer;
 };
 
 TEST_F(WebAudioShutdownTest, shouldShutdown)
 {
-    firebolt::rialto::server::tasks::webaudio::Shutdown task{m_gstPlayer};
-    EXPECT_CALL(m_gstPlayer, stopWorkerThread());
-    task.execute();
+    shouldStopWorkerThread();
+    triggerShutdown();
 }

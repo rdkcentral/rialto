@@ -17,9 +17,9 @@
  * limitations under the License.
  */
 
-#include "TasksTestsBase.h"
+#include "GenericTasksTestsBase.h"
 
-class EosTest : public TasksTestsBase
+class EosTest : public GenericTasksTestsBase
 {
 };
 

@@ -17,9 +17,9 @@
  * limitations under the License.
  */
 
-#include "TasksTestsBase.h"
+#include "GenericTasksTestsBase.h"
 
-class EnoughDataTest : public TasksTestsBase
+class EnoughDataTest : public GenericTasksTestsBase
 {
 protected:
     EnoughDataTest() { setContextNeedData(true); }

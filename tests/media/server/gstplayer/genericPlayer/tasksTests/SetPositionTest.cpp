@@ -17,9 +17,9 @@
  * limitations under the License.
  */
 
-#include "TasksTestsBase.h"
+#include "GenericTasksTestsBase.h"
 
-class SetPositionTest : public TasksTestsBase
+class SetPositionTest : public GenericTasksTestsBase
 {
 protected:
     SetPositionTest()

@@ -17,9 +17,9 @@
  * limitations under the License.
  */
 
-#include "TasksTestsBase.h"
+#include "GenericTasksTestsBase.h"
 
-class SetMuteTest : public TasksTestsBase
+class SetMuteTest : public GenericTasksTestsBase
 {
 };
 

@@ -17,9 +17,9 @@
  * limitations under the License.
  */
 
-#include "TasksTestsBase.h"
+#include "GenericTasksTestsBase.h"
 
-class UnderflowTest : public TasksTestsBase
+class UnderflowTest : public GenericTasksTestsBase
 {
 protected:
     UnderflowTest()

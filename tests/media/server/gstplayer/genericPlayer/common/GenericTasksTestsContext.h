@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef TASKS_TESTS_CONTEXT_H_
-#define TASKS_TESTS_CONTEXT_H_
+#ifndef GENERIC_TASKS_TESTS_CONTEXT_H_
+#define GENERIC_TASKS_TESTS_CONTEXT_H_
 
 #include "DataReaderMock.h"
 #include "DecryptionServiceMock.h"
@@ -32,11 +32,11 @@
 #include <memory>
 
 /**
- * @brief TasksTests context
+ * @brief GenericTasksTests context
  *
  * Stores all objects and non-const variables so that constuction and destruction can be managed.
  */
-class TasksTestsContext
+class GenericTasksTestsContext
 {
 public:
     firebolt::rialto::server::GenericPlayerContext m_context;
@@ -104,4 +104,4 @@ public:
     firebolt::rialto::server::StreamInfo m_streamInfoVideo{&m_appSrcVideo, true};
 };
 
-#endif // TASKS_TESTS_CONTEXT_H_
+#endif // GENERIC_TASKS_TESTS_CONTEXT_H_

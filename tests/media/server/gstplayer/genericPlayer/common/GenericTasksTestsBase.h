@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef TASKS_TESTS_BASE_H_
-#define TASKS_TESTS_BASE_H_
+#ifndef GENERIC_TASKS_TESTS_BASE_H_
+#define GENERIC_TASKS_TESTS_BASE_H_
 
 #include "MediaCommon.h"
 
@@ -39,16 +39,16 @@ using ::testing::StrEq;
 using ::testing::StrictMock;
 
 /**
- * @brief TasksTest Base class
+ * @brief GenericTasksTest Base class
  *
  * This class exists to create a common place for all gstreamer objects and mocks to coexist.
  * Moving all gstreamer dependancies into one file reduces the compile time dramatically.
  */
-class TasksTestsBase : public ::testing::Test
+class GenericTasksTestsBase : public ::testing::Test
 {
 public:
-    TasksTestsBase();
-    virtual ~TasksTestsBase();
+    GenericTasksTestsBase();
+    virtual ~GenericTasksTestsBase();
 
 protected:
     // Set context methods
@@ -303,4 +303,4 @@ private:
     void expectSetGenericVideoCaps();
 };
 
-#endif // TASKS_TESTS_BASE_H_
+#endif // GENERIC_TASKS_TESTS_BASE_H_

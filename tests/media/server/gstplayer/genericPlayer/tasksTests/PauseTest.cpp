@@ -17,9 +17,9 @@
  * limitations under the License.
  */
 
-#include "TasksTestsBase.h"
+#include "GenericTasksTestsBase.h"
 
-class PauseTest : public TasksTestsBase
+class PauseTest : public GenericTasksTestsBase
 {
 protected:
     PauseTest() { setContextPlaying(); }
