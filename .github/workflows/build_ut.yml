@@ -26,9 +26,9 @@ name: build_ut
 on:
   # Triggers the workflow on push or pull request events but only for the "master" branch
   push:
-    branches: [ "master", "rdkcentral:master" ]
+    branches: [ "Split_unittests_prototype", "rdkcentral:Split_unittests_prototype" ]
   pull_request:
-    branches: [ "master", "rdkcentral:master" ]
+    branches: [ "Split_unittests_prototype", "rdkcentral:Split_unittests_prototype" ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -36,15 +36,15 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
 
-  # This job sets up the repo with the dependancies then runs the tests
-  build-test:
-    name: Build and test build_ut
+  # This job sets up the repo with the dependancies then runs the servermain tests
+  build-servermain:
+    name: Build and test servermain unittests
 
     # Runs on ubuntu
     runs-on: ubuntu-22.04
 
     # Timeout after
-    timeout-minutes: 60
+    timeout-minutes: 10
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -65,23 +65,23 @@ jobs:
           sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
 
       # Setup lcov 2.0
-      - name: Install lcov library
-        run: |
-          sudo apt-get install libjson-perl libperlio-gzip-perl perl libgd-gd2-perl libcapture-tiny-perl libdatetime-perl
-          wget https://github.com/linux-test-project/lcov/releases/download/v2.0/lcov-2.0.tar.gz
-          tar -xf lcov-2.0.tar.gz
-          cd lcov-2.0
-          sudo make install
+      #- name: Install lcov library
+      #  run: |
+      #    sudo apt-get install libjson-perl libperlio-gzip-perl perl libgd-gd2-perl libcapture-tiny-perl libdatetime-perl
+      #    wget https://github.com/linux-test-project/lcov/releases/download/v2.0/lcov-2.0.tar.gz
+      #    tar -xf lcov-2.0.tar.gz
+      #    cd lcov-2.0
+      #    sudo make install
 
       # Installation of protobuf
       - name: Install protobuf
         run: |
           sudo apt-get install protobuf-compiler
 
-      # Run the build script
-      - name: build_ut.py script
+      # Run the build script for servermain
+      - name: build_ut.py script servermain
         run: |
-              python build_ut.py -c -xml -f -cov
+              python build_ut.py -c -xml -f -s servermain
 
       # Process the test results
       - name: Check results
@@ -103,50 +103,563 @@ jobs:
             build/*gtest_result.xml
 
       # Upload coverage report on success
-      - name: Upload Coverage Report
-        uses: actions/upload-artifact@v3
-        if: success()
-        with:
-          name: coverage_report
-          path: build/gh_pages/coverage_report
+      #- name: Upload Coverage Report
+      #  uses: actions/upload-artifact@v3
+      #  if: success()
+      #  with:
+      #    name: coverage_report
+      #    path: build/gh_pages/coverage_report
 
       # Upload coverage statistics on success
-      - name: Upload Coverage Statistics
-        uses: actions/upload-artifact@v3
-        if: success()
-        with:
-          name: coverage_report_stats
-          path: build/coverage_statistics.txt
+      #- name: Upload Coverage Statistics
+      #  uses: actions/upload-artifact@v3
+      #  if: success()
+      #  with:
+      #    name: coverage_report_stats
+      #    path: build/coverage_statistics.txt
 
       # Download current master coverage statistics
-      - name: Download Master Coverage Statistics
-        uses: dawidd6/action-download-artifact@v2
-        if: ${{ success() && github.ref != 'refs/heads/master' }}
-        with:
-          workflow_conclusion: success
-          branch: master
-          name: coverage_report_stats
-          path: master_artifacts
+      #- name: Download Master Coverage Statistics
+      #  uses: dawidd6/action-download-artifact@v2
+      #  if: ${{ success() && github.ref != 'refs/heads/master' }}
+      #  with:
+      #    workflow_conclusion: success
+      #    branch: master
+      #    name: coverage_report_stats
+      #    path: master_artifacts
 
       # Run the process_coverage_stats script
-      - name: Process Coverage Statistics
-        if: ${{ success() && github.ref != 'refs/heads/master' }}
-        run: python scripts/coverage/process_coverage_stats.py ./master_artifacts/coverage_statistics.txt build/coverage_statistics.txt
+      #- name: Process Coverage Statistics
+      #  if: ${{ success() && github.ref != 'refs/heads/master' }}
+      #  run: python scripts/coverage/process_coverage_stats.py ./master_artifacts/coverage_statistics.txt build/coverage_statistics.txt
 
       # Get process_coverage_stats script output
-      - id: get-comment-body
-        if: ${{ success() && github.ref != 'refs/heads/master' }}
-        run: |
-          body="$(cat comparison_output.txt)"
-          body="${body//'%'/'%25'}"
-          body="${body//$'\n'/'%0A'}"
-          body="${body//$'\r'/'%0D'}"
-          echo "::set-output name=body::$body"
+      #- id: get-comment-body
+      #  if: ${{ success() && github.ref != 'refs/heads/master' }}
+      #  run: |
+      #    body="$(cat comparison_output.txt)"
+      #    body="${body//'%'/'%25'}"
+      #    body="${body//$'\n'/'%0A'}"
+      #    body="${body//$'\r'/'%0D'}"
+      #    echo "::set-output name=body::$body"
 
       # Create comment with coverage info
-      - name: Create Coverage Comment
-        if: ${{ success() && github.ref != 'refs/heads/master' }}
-        uses: peter-evans/create-or-update-comment@v2
+      #- name: Create Coverage Comment
+      #  if: ${{ success() && github.ref != 'refs/heads/master' }}
+      #  uses: peter-evans/create-or-update-comment@v2
+      #  with:
+      #    issue-number: ${{ github.event.pull_request.number }}
+      #    body: ${{ steps.get-comment-body.outputs.body }}
+
+  # This job sets up the repo with the dependancies then runs the servergstplayer tests
+  build-servergstplayer:
+    name: Build and test servergstplayer unittests
+
+    # Runs on ubuntu
+    runs-on: ubuntu-22.04
+
+    # Timeout after
+    timeout-minutes: 10
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: checkout repo
+        uses: actions/checkout@v3
+
+      # Setup github for python 3.8
+      - name: setup python
+        uses: actions/setup-python@v4
         with:
-          issue-number: ${{ github.event.pull_request.number }}
-          body: ${{ steps.get-comment-body.outputs.body }}
+          python-version: 3.8
+
+      # Setup gstreamer 1.0
+      - name: Build gstreamer library
+        run: |
+          sudo apt-get update
+          sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
+
+      # Installation of protobuf
+      - name: Install protobuf
+        run: |
+          sudo apt-get install protobuf-compiler
+
+      # Run the build script for servergstplayer
+      - name: build_ut.py script servergstplayer
+        run: |
+              python build_ut.py -c -xml -f -s servergstplayer
+
+      # Process the test results
+      - name: Check results
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: GTests
+          path: build/*gtest_result.xml
+          reporter: java-junit
+
+      # Upload logs on failure
+      - name: Upload logs
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: logs
+          path: |
+            gtest_result.log
+            build/*gtest_result.xml
+
+  # This job sets up the repo with the dependancies then runs the serveripc tests
+  build-serveripc:
+    name: Build and test serveripc unittests
+
+    # Runs on ubuntu
+    runs-on: ubuntu-22.04
+
+    # Timeout after
+    timeout-minutes: 10
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: checkout repo
+        uses: actions/checkout@v3
+
+      # Setup github for python 3.8
+      - name: setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+
+      # Setup gstreamer 1.0
+      - name: Build gstreamer library
+        run: |
+          sudo apt-get update
+          sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
+
+      # Installation of protobuf
+      - name: Install protobuf
+        run: |
+          sudo apt-get install protobuf-compiler
+
+      # Run the build script for serveripc
+      - name: build_ut.py script serveripc
+        run: |
+              python build_ut.py -c -xml -f -s serveripc
+
+      # Process the test results
+      - name: Check results
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: GTests
+          path: build/*gtest_result.xml
+          reporter: java-junit
+
+      # Upload logs on failure
+      - name: Upload logs
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: logs
+          path: |
+            gtest_result.log
+            build/*gtest_result.xml
+
+  # This job sets up the repo with the dependancies then runs the serverservice tests
+  build-serverservice:
+    name: Build and test serverservice unittests
+
+    # Runs on ubuntu
+    runs-on: ubuntu-22.04
+
+    # Timeout after
+    timeout-minutes: 10
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: checkout repo
+        uses: actions/checkout@v3
+
+      # Setup github for python 3.8
+      - name: setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+
+      # Setup gstreamer 1.0
+      - name: Build gstreamer library
+        run: |
+          sudo apt-get update
+          sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
+
+      # Installation of protobuf
+      - name: Install protobuf
+        run: |
+          sudo apt-get install protobuf-compiler
+
+      # Run the build script for serverservice
+      - name: build_ut.py script serverservice
+        run: |
+              python build_ut.py -c -xml -f -s serverservice
+
+      # Process the test results
+      - name: Check results
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: GTests
+          path: build/*gtest_result.xml
+          reporter: java-junit
+
+      # Upload logs on failure
+      - name: Upload logs
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: logs
+          path: |
+            gtest_result.log
+            build/*gtest_result.xml
+
+  # This job sets up the repo with the dependancies then runs the client tests
+  build-client:
+    name: Build and test client unittests
+
+    # Runs on ubuntu
+    runs-on: ubuntu-22.04
+
+    # Timeout after
+    timeout-minutes: 10
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: checkout repo
+        uses: actions/checkout@v3
+
+      # Setup github for python 3.8
+      - name: setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+
+      # Setup gstreamer 1.0
+      - name: Build gstreamer library
+        run: |
+          sudo apt-get update
+          sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
+
+      # Installation of protobuf
+      - name: Install protobuf
+        run: |
+          sudo apt-get install protobuf-compiler
+
+      # Run the build script for client
+      - name: build_ut.py script client
+        run: |
+              python build_ut.py -c -xml -f -s client
+
+      # Process the test results
+      - name: Check results
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: GTests
+          path: build/*gtest_result.xml
+          reporter: java-junit
+
+      # Upload logs on failure
+      - name: Upload logs
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: logs
+          path: |
+            gtest_result.log
+            build/*gtest_result.xml
+
+  # This job sets up the repo with the dependancies then runs the clientipc tests
+  build-clientipc:
+    name: Build and test clientipc unittests
+
+    # Runs on ubuntu
+    runs-on: ubuntu-22.04
+
+    # Timeout after
+    timeout-minutes: 10
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: checkout repo
+        uses: actions/checkout@v3
+
+      # Setup github for python 3.8
+      - name: setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+
+      # Setup gstreamer 1.0
+      - name: Build gstreamer library
+        run: |
+          sudo apt-get update
+          sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
+
+      # Installation of protobuf
+      - name: Install protobuf
+        run: |
+          sudo apt-get install protobuf-compiler
+
+      # Run the build script for clientipc
+      - name: build_ut.py script clientipc
+        run: |
+              python build_ut.py -c -xml -f -s clientipc
+
+      # Process the test results
+      - name: Check results
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: GTests
+          path: build/*gtest_result.xml
+          reporter: java-junit
+
+      # Upload logs on failure
+      - name: Upload logs
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: logs
+          path: |
+            gtest_result.log
+            build/*gtest_result.xml
+
+  # This job sets up the repo with the dependancies then runs the common tests
+  build-common:
+    name: Build and test common unittests
+
+    # Runs on ubuntu
+    runs-on: ubuntu-22.04
+
+    # Timeout after
+    timeout-minutes: 10
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: checkout repo
+        uses: actions/checkout@v3
+
+      # Setup github for python 3.8
+      - name: setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+
+      # Setup gstreamer 1.0
+      - name: Build gstreamer library
+        run: |
+          sudo apt-get update
+          sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
+
+      # Installation of protobuf
+      - name: Install protobuf
+        run: |
+          sudo apt-get install protobuf-compiler
+
+      # Run the build script for common
+      - name: build_ut.py script common
+        run: |
+              python build_ut.py -c -xml -f -s common
+
+      # Process the test results
+      - name: Check results
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: GTests
+          path: build/*gtest_result.xml
+          reporter: java-junit
+
+      # Upload logs on failure
+      - name: Upload logs
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: logs
+          path: |
+            gtest_result.log
+            build/*gtest_result.xml
+
+  # This job sets up the repo with the dependancies then runs the logging tests
+  build-logging:
+    name: Build and test logging unittests
+
+    # Runs on ubuntu
+    runs-on: ubuntu-22.04
+
+    # Timeout after
+    timeout-minutes: 10
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: checkout repo
+        uses: actions/checkout@v3
+
+      # Setup github for python 3.8
+      - name: setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+
+      # Setup gstreamer 1.0
+      - name: Build gstreamer library
+        run: |
+          sudo apt-get update
+          sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
+
+      # Installation of protobuf
+      - name: Install protobuf
+        run: |
+          sudo apt-get install protobuf-compiler
+
+      # Run the build script for logging
+      - name: build_ut.py script logging
+        run: |
+              python build_ut.py -c -xml -f -s logging
+
+      # Process the test results
+      - name: Check results
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: GTests
+          path: build/*gtest_result.xml
+          reporter: java-junit
+
+      # Upload logs on failure
+      - name: Upload logs
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: logs
+          path: |
+            gtest_result.log
+            build/*gtest_result.xml
+
+  # This job sets up the repo with the dependancies then runs the manager tests
+  build-manager:
+    name: Build and test manager unittests
+
+    # Runs on ubuntu
+    runs-on: ubuntu-22.04
+
+    # Timeout after
+    timeout-minutes: 10
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: checkout repo
+        uses: actions/checkout@v3
+
+      # Setup github for python 3.8
+      - name: setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+
+      # Setup gstreamer 1.0
+      - name: Build gstreamer library
+        run: |
+          sudo apt-get update
+          sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
+
+      # Installation of protobuf
+      - name: Install protobuf
+        run: |
+          sudo apt-get install protobuf-compiler
+
+      # Run the build script for manager
+      - name: build_ut.py script manager
+        run: |
+              python build_ut.py -c -xml -f -s manager
+
+      # Process the test results
+      - name: Check results
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: GTests
+          path: build/*gtest_result.xml
+          reporter: java-junit
+
+      # Upload logs on failure
+      - name: Upload logs
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: logs
+          path: |
+            gtest_result.log
+            build/*gtest_result.xml
+
+  # This job sets up the repo with the dependancies then runs the ipc tests
+  build-ipc:
+    name: Build and test ipc unittests
+
+    # Runs on ubuntu
+    runs-on: ubuntu-22.04
+
+    # Timeout after
+    timeout-minutes: 10
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: checkout repo
+        uses: actions/checkout@v3
+
+      # Setup github for python 3.8
+      - name: setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+
+      # Setup gstreamer 1.0
+      - name: Build gstreamer library
+        run: |
+          sudo apt-get update
+          sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
+
+      # Installation of protobuf
+      - name: Install protobuf
+        run: |
+          sudo apt-get install protobuf-compiler
+
+      # Run the build script for ipc
+      - name: build_ut.py script ipc
+        run: |
+              python build_ut.py -c -xml -f -s ipc
+
+      # Process the test results
+      - name: Check results
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: GTests
+          path: build/*gtest_result.xml
+          reporter: java-junit
+
+      # Upload logs on failure
+      - name: Upload logs
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: logs
+          path: |
+            gtest_result.log
+            build/*gtest_result.xml
