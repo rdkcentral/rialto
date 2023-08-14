@@ -102,54 +102,19 @@ jobs:
             gtest_result.log
             build/*gtest_result.xml
 
-      # Upload coverage report on success
-      #- name: Upload Coverage Report
-      #  uses: actions/upload-artifact@v3
-      #  if: success()
-      #  with:
-      #    name: coverage_report
-      #    path: build/gh_pages/coverage_report
+      # Rename coverage report
+      - name: Rename coverage report
+        run: |
+          mv build/coverage.info build/coverage-servermain.info
 
-      # Upload coverage statistics on success
-      #- name: Upload Coverage Statistics
-      #  uses: actions/upload-artifact@v3
-      #  if: success()
-      #  with:
-      #    name: coverage_report_stats
-      #    path: build/coverage_statistics.txt
-
-      # Download current master coverage statistics
-      #- name: Download Master Coverage Statistics
-      #  uses: dawidd6/action-download-artifact@v2
-      #  if: ${{ success() && github.ref != 'refs/heads/master' }}
-      #  with:
-      #    workflow_conclusion: success
-      #    branch: master
-      #    name: coverage_report_stats
-      #    path: master_artifacts
-
-      # Run the process_coverage_stats script
-      #- name: Process Coverage Statistics
-      #  if: ${{ success() && github.ref != 'refs/heads/master' }}
-      #  run: python scripts/coverage/process_coverage_stats.py ./master_artifacts/coverage_statistics.txt build/coverage_statistics.txt
-
-      # Get process_coverage_stats script output
-      #- id: get-comment-body
-      #  if: ${{ success() && github.ref != 'refs/heads/master' }}
-      #  run: |
-      #    body="$(cat comparison_output.txt)"
-      #    body="${body//'%'/'%25'}"
-      #    body="${body//$'\n'/'%0A'}"
-      #    body="${body//$'\r'/'%0D'}"
-      #    echo "::set-output name=body::$body"
-
-      # Create comment with coverage info
-      #- name: Create Coverage Comment
-      #  if: ${{ success() && github.ref != 'refs/heads/master' }}
-      #  uses: peter-evans/create-or-update-comment@v2
-      #  with:
-      #    issue-number: ${{ github.event.pull_request.number }}
-      #    body: ${{ steps.get-comment-body.outputs.body }}
+      # Cache lcov servermain output
+      - name: Cache servermain coverage
+        id: cache-servermain-coverage
+        uses: actions/cache@v3
+        if: success()
+        with:
+          path: build/coverage-servermain.info
+          key: ${{ runner.os }}-servermain-coverage-${{ github.run_id }}-${{ github.run_number }}
 
   # This job sets up the repo with the dependancies then runs the servergstplayer tests
   run-servergstplayer:
@@ -759,6 +724,64 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - name: checkout repo
-        uses: actions/checkout@v3
+
+      # Get cached lcov servermain output
+      - name: Get servermain coverage
+        id: get-servermain-coverage
+        uses: actions/cache@v3
+        if: success()
+        with:
+          path: build/coverage-servermain.info
+          key: ${{ runner.os }}-servermain-coverage-${{ github.run_id }}-${{ github.run_number }}
+
+      - name: something
+        run: |
+          ls build/
+      # Upload coverage report on success
+      #- name: Upload Coverage Report
+      #  uses: actions/upload-artifact@v3
+      #  if: success()
+      #  with:
+      #    name: coverage_report
+      #    path: build/gh_pages/coverage_report
+
+      # Upload coverage statistics on success
+      #- name: Upload Coverage Statistics
+      #  uses: actions/upload-artifact@v3
+      #  if: success()
+      #  with:
+      #    name: coverage_report_stats
+      #    path: build/coverage_statistics.txt
+
+      # Download current master coverage statistics
+      #- name: Download Master Coverage Statistics
+      #  uses: dawidd6/action-download-artifact@v2
+      #  if: ${{ success() && github.ref != 'refs/heads/master' }}
+      #  with:
+      #    workflow_conclusion: success
+      #    branch: master
+      #    name: coverage_report_stats
+      #    path: master_artifacts
+
+      # Run the process_coverage_stats script
+      #- name: Process Coverage Statistics
+      #  if: ${{ success() && github.ref != 'refs/heads/master' }}
+      #  run: python scripts/coverage/process_coverage_stats.py ./master_artifacts/coverage_statistics.txt build/coverage_statistics.txt
+
+      # Get process_coverage_stats script output
+      #- id: get-comment-body
+      #  if: ${{ success() && github.ref != 'refs/heads/master' }}
+      #  run: |
+      #    body="$(cat comparison_output.txt)"
+      #    body="${body//'%'/'%25'}"
+      #    body="${body//$'\n'/'%0A'}"
+      #    body="${body//$'\r'/'%0D'}"
+      #    echo "::set-output name=body::$body"
+
+      # Create comment with coverage info
+      #- name: Create Coverage Comment
+      #  if: ${{ success() && github.ref != 'refs/heads/master' }}
+      #  uses: peter-evans/create-or-update-comment@v2
+      #  with:
+      #    issue-number: ${{ github.event.pull_request.number }}
+      #    body: ${{ steps.get-comment-body.outputs.body }}

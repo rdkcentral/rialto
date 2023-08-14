@@ -218,7 +218,7 @@ def runTests (suites, doListTests, gtestFilter, outputDir, resultsFile, xmlFile,
     if hasFailed:
         raise Exception( f"runTests has failed, exiting" )
     elif coverage:
-        generateCoverageReport(outputDir, resultsFile)
+        generateCoverageReport(outputDir, resultsFile, suites)
 
 # Returns the valgrind command arguments
 def AddValgrind(suite, outputToFile, outputToXml):
@@ -239,25 +239,30 @@ def AddValgrind(suite, outputToFile, outputToXml):
 
     return executeCmd
 
-def generateCoverageReport(outputDir, resultsFile):
+def generateCoverageReport(outputDir, resultsFile, suites):
+    print (suites)
     lcovBaseCmd = ["lcov", "-c", "-i", "-d", ".", "--output-file", "coverage_base.info", "--exclude", "/usr/*",
-                   "--exclude", "*build/*", "--exclude", "*tests/*", "--exclude", "*GstWrapper*", "--exclude",
-                   "*GlibWrapper*", "--filter", "brace,function,trivial"]
+                   "--exclude", "*build/*", "--exclude", "*tests/*", "--filter", "brace,function,trivial"]
+    if 'servergstplayer' in suites:
+        lcovBaseCmd.extend(["--exclude", "*GstWrapper*", "--exclude","*GlibWrapper*"])
     if resultsFile:
         lcovBaseStatus = runcmd(lcovBaseCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
     else:
         lcovBaseStatus = runcmd(lcovBaseCmd, cwd=os.getcwd() + '/' + outputDir, stderr=subprocess.STDOUT)
     if not lcovBaseStatus:
         return False
+
     lcovTestCmd = ["lcov", "-c", "-d", ".", "--output-file", "coverage_test.info", "--exclude", "/usr/*",
-                   "--exclude", "*build/*", "--exclude", "*tests/*", "--exclude", "*GstWrapper*", "--exclude",
-                   "*GlibWrapper*", "--filter", "brace,function,trivial"]
+                   "--exclude", "*build/*", "--exclude", "*tests/*", "--filter", "brace,function,trivial"]
+    if 'servergstplayer' in suites:
+        lcovTestCmd.extend(["--exclude", "*GstWrapper*", "--exclude","*GlibWrapper*"])
     if resultsFile:
         lcovTestStatus = runcmd(lcovTestCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
     else:
         lcovTestStatus = runcmd(lcovTestCmd, cwd=os.getcwd() + '/' + outputDir, stderr=subprocess.STDOUT)
     if not lcovTestStatus:
         return False
+
     lcovCombineCmd = ["lcov", "-a", "coverage_base.info", "-a", "coverage_test.info", "-o", "coverage.info", "--filter",
                       "brace,function,trivial"]
     if resultsFile:
