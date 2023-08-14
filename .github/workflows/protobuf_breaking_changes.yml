@@ -20,9 +20,11 @@ jobs:
 
       - name: Lint
         uses: bufbuild/buf-lint-action@v1
+        with:
+          input: proto
 
       - name: Breaking change detection against `main`
         uses: bufbuild/buf-breaking-action@v1
         with:
           input: github-actions
-          against: https://github.com/rdkcentral/rialto.git#branch=main,ref=HEAD~1
+          against: https://github.com/rdkcentral/rialto.git#branch=main,ref=HEAD~1,subdir=proto
