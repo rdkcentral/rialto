@@ -1,5 +1,4 @@
 version: v1
-name: "Rialto protobuf"
 deps: []
 build:
   excludes: []
