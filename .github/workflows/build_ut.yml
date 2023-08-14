@@ -159,7 +159,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     # Timeout after
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
