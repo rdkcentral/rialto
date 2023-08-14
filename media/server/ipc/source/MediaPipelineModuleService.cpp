@@ -612,15 +612,13 @@ void MediaPipelineModuleService::newMethod(::google::protobuf::RpcController *co
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    request.set_param1(1);
-    request.set_param2(2);
     std::string str = "";
-    if (request.has_param3())
+    if (request->has_param3())
     {
-        str = request.param3();
+        str = request->param3();
     }
 
-    RIALTO_SERVER_LOG_ERROR("%u, %u, %s", request.param1(),  request.param2(), str);
+    RIALTO_SERVER_LOG_ERROR("%u, %u, %s", request->param1(),  request->param2(), str.c_str());
     response->set_param1("test2");
     response->set_param2(4);
 

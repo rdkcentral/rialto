@@ -301,8 +301,8 @@ bool MediaPipelineIpc::removeSource(int32_t sourceId)
     request1.set_param3("test");
 
     firebolt::rialto::NewResponse response1;
-    auto ipcController = m_ipc.createRpcController();
-    auto blockingClosure = m_ipc.createBlockingClosure();
+    ipcController = m_ipc.createRpcController();
+    blockingClosure = m_ipc.createBlockingClosure();
     m_mediaPipelineStub->newMethod(ipcController.get(), &request1, &response1, blockingClosure.get());
 
     // wait for the call to complete
@@ -317,12 +317,12 @@ bool MediaPipelineIpc::removeSource(int32_t sourceId)
     else
     {
         std::string str = response1.param1();
-        int32 var = -1;
+        int32_t var = -1;
         if (response1.has_param1())
         {
-            var = response1.set_param2()
+            var = response1.param2();
         }
-        RIALTO_CLIENT_LOG_ERROR("'%s', %d", str, var);
+        RIALTO_CLIENT_LOG_ERROR("'%s', %d", str.c_str(), var);
     }
 
     return true;
