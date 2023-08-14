@@ -18,9 +18,9 @@
  */
 
 #include "GenericTasksTestsBase.h"
+#include "GenericTasksTestsContext.h"
 #include "IMediaPipeline.h"
 #include "Matchers.h"
-#include "GenericTasksTestsContext.h"
 #include "tasks/generic/AttachSamples.h"
 #include "tasks/generic/AttachSource.h"
 #include "tasks/generic/CheckAudioUnderflow.h"
