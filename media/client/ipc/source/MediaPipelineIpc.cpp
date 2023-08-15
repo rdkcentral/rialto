@@ -189,6 +189,38 @@ bool MediaPipelineIpc::load(MediaType type, const std::string &mimeType, const s
         return false;
     }
 
+    // Try new test method
+    firebolt::rialto::NewRequest request1;
+
+    request1.set_param1(1);
+    request1.set_param2(2);
+    request1.set_param3("test");
+
+    firebolt::rialto::NewResponse response1;
+    ipcController = m_ipc.createRpcController();
+    blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->newMethod(ipcController.get(), &request1, &response1, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to remove source due to '%s'", ipcController->ErrorText().c_str());
+        //return false;
+    }
+    else
+    {
+        std::string str = response1.param1();
+        int32_t var = -1;
+        if (response1.has_param1())
+        {
+            var = response1.param2();
+        }
+        RIALTO_CLIENT_LOG_ERROR("'%s', %d", str.c_str(), var);
+    }
+
     return true;
 }
 
@@ -291,38 +323,6 @@ bool MediaPipelineIpc::removeSource(int32_t sourceId)
     {
         RIALTO_CLIENT_LOG_ERROR("failed to remove source due to '%s'", ipcController->ErrorText().c_str());
         return false;
-    }
-
-    // Try new test method
-    firebolt::rialto::NewRequest request1;
-
-    request1.set_param1(1);
-    request1.set_param2(2);
-    request1.set_param3("test");
-
-    firebolt::rialto::NewResponse response1;
-    ipcController = m_ipc.createRpcController();
-    blockingClosure = m_ipc.createBlockingClosure();
-    m_mediaPipelineStub->newMethod(ipcController.get(), &request1, &response1, blockingClosure.get());
-
-    // wait for the call to complete
-    blockingClosure->wait();
-
-    // check the result
-    if (ipcController->Failed())
-    {
-        RIALTO_CLIENT_LOG_ERROR("failed to remove source due to '%s'", ipcController->ErrorText().c_str());
-        //return false;
-    }
-    else
-    {
-        std::string str = response1.param1();
-        int32_t var = -1;
-        if (response1.has_param1())
-        {
-            var = response1.param2();
-        }
-        RIALTO_CLIENT_LOG_ERROR("'%s', %d", str.c_str(), var);
     }
 
     return true;
