@@ -112,8 +112,10 @@ message LoadRequest {
     required MediaType  type = 2;
     required string     mime_type = 3;
     required string     url = 4;
+    optional string     url2 = 5;
 }
 message LoadResponse {
+    optional int32     url2 = 1;
 }
 
 /**

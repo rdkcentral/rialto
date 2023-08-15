@@ -173,6 +173,7 @@ bool MediaPipelineIpc::load(MediaType type, const std::string &mimeType, const s
     request.set_type(convertLoadRequestMediaType(type));
     request.set_mime_type(mimeType);
     request.set_url(url);
+    request.set_url2(url);
 
     firebolt::rialto::LoadResponse response;
     auto ipcController = m_ipc.createRpcController();
@@ -188,6 +189,13 @@ bool MediaPipelineIpc::load(MediaType type, const std::string &mimeType, const s
         RIALTO_CLIENT_LOG_ERROR("failed to load media due to '%s'", ipcController->ErrorText().c_str());
         return false;
     }
+
+    int32_t var = -1;
+    if (response.has_url2())
+    {
+        var = response.url2();
+    }
+    RIALTO_CLIENT_LOG_ERROR("%d", var);
 
     // Try new test method
     firebolt::rialto::NewRequest request1;

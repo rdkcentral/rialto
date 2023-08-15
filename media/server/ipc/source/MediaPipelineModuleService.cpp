@@ -298,12 +298,19 @@ void MediaPipelineModuleService::load(::google::protobuf::RpcController *control
                                       ::firebolt::rialto::LoadResponse *response, ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
+    std::string str = "";
+    if (request->has_url2())
+    {
+        str = request->url2();
+    }
+    RIALTO_SERVER_LOG_DEBUG("%s", str.c_str());
     if (!m_mediaPipelineService.load(request->session_id(), convertMediaType(request->type()), request->mime_type(),
                                      request->url()))
     {
         RIALTO_SERVER_LOG_ERROR("Load failed");
         controller->SetFailed("Operation failed");
     }
+    response->set_url2(4);
     done->Run();
 }
 
