@@ -20,6 +20,7 @@
 syntax = "proto2";
 
 import "google/protobuf/descriptor.proto";
+import "proto/rialtoipc.proto";
 
 package firebolt.rialto;
 
