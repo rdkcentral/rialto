@@ -149,6 +149,13 @@ private:
     void onNetworkStateUpdated(const std::shared_ptr<firebolt::rialto::NetworkStateChangeEvent> &event);
 
     /**
+     * @brief Handler for a network state update from the server.
+     *
+     * @param[in] event : The player state changed event structure.
+     */
+    void onNewEvent(const std::shared_ptr<firebolt::rialto::NewEvent> &event);
+
+    /**
      * @brief Handler for a need data request from the server.
      *
      * @param[in] event : The need data event structure.

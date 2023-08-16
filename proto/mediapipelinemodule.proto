@@ -464,6 +464,11 @@ message PlaybackStateChangeEvent {
     optional PlaybackState state = 2;
 }
 
+message NewEvent {
+    required int32 var1 = 1;
+    optional string var2 = 2;
+}
+
 /**
  * @brief Event sent the network state has changed.
  *

@@ -165,6 +165,14 @@ void MediaPipelineClient::notifyPlaybackState(PlaybackState state)
     event->set_state(convertPlaybackState(state));
 
     m_ipcClient->sendEvent(event);
+
+    RIALTO_SERVER_LOG_ERROR("Sending NewEvent");
+
+    auto event2 = std::make_shared<firebolt::rialto::NewEvent>();
+    event2->set_var1(5);
+    event2->set_var2("test");
+
+    m_ipcClient->sendEvent(event2);
 }
 
 void MediaPipelineClient::notifyVideoData(bool hasData)

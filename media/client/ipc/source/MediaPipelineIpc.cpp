@@ -135,6 +135,13 @@ bool MediaPipelineIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &i
         return false;
     m_eventTags.push_back(eventTag);
 
+    eventTag = ipcChannel->subscribe<firebolt::rialto::NewEvent>(
+        [this](const std::shared_ptr<firebolt::rialto::NewEvent> &event)
+        { m_eventThread->add(&MediaPipelineIpc::onNewEvent, this, event); });
+    if (eventTag < 0)
+        return false;
+    m_eventTags.push_back(eventTag);
+
     eventTag = ipcChannel->subscribe<firebolt::rialto::NeedMediaDataEvent>(
         [this](const std::shared_ptr<firebolt::rialto::NeedMediaDataEvent> &event)
         { m_eventThread->add(&MediaPipelineIpc::onNeedMediaData, this, event); });
@@ -819,6 +826,16 @@ void MediaPipelineIpc::onPositionUpdated(const std::shared_ptr<firebolt::rialto:
         int64_t position = event->position();
         m_mediaPipelineIpcClient->notifyPosition(position);
     }
+}
+
+void MediaPipelineIpc::onNewEvent(const std::shared_ptr<firebolt::rialto::NewEvent> &event)
+{
+    std::string str;
+    if (event->has_var2())
+    {
+        str = event->var2();
+    }
+    RIALTO_CLIENT_LOG_ERROR("'%s', %d", str.c_str(), event->var1());
 }
 
 void MediaPipelineIpc::onNetworkStateUpdated(const std::shared_ptr<firebolt::rialto::NetworkStateChangeEvent> &event)
