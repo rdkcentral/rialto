@@ -181,6 +181,7 @@ bool MediaPipelineIpc::load(MediaType type, const std::string &mimeType, const s
     request.set_mime_type(mimeType);
     request.set_url(url);
     request.set_url2(url);
+    request.set_var1(76);
 
     firebolt::rialto::LoadResponse response;
     auto ipcController = m_ipc.createRpcController();
@@ -202,7 +203,8 @@ bool MediaPipelineIpc::load(MediaType type, const std::string &mimeType, const s
     {
         var = response.url2();
     }
-    RIALTO_CLIENT_LOG_ERROR("%d", var);
+    uint32_t var1 = response.var1();
+    RIALTO_CLIENT_LOG_ERROR("%d, %u", var, var1);
 
     // Try new test method
     firebolt::rialto::NewRequest request1;

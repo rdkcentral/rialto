@@ -113,9 +113,12 @@ message LoadRequest {
     optional string     mime_type = 3;
     optional string     url = 4;
     optional string     url2 = 5;
+    required uint32     var1 = 6;
+
 }
 message LoadResponse {
     optional int32     url2 = 1;
+    required uint32    var1 = 2;
 }
 
 /**

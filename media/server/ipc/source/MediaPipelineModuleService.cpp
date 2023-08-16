@@ -303,7 +303,7 @@ void MediaPipelineModuleService::load(::google::protobuf::RpcController *control
     {
         str = request->url2();
     }
-    RIALTO_SERVER_LOG_DEBUG("%s", str.c_str());
+    RIALTO_SERVER_LOG_DEBUG("%s, %u", str.c_str(), request->var1());
     if (!m_mediaPipelineService.load(request->session_id(), convertMediaType(request->type()), request->mime_type(),
                                      request->url()))
     {
@@ -311,6 +311,7 @@ void MediaPipelineModuleService::load(::google::protobuf::RpcController *control
         controller->SetFailed("Operation failed");
     }
     response->set_url2(4);
+    response->set_var1(76);
     done->Run();
 }
 
