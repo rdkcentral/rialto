@@ -20,7 +20,7 @@
 syntax = "proto2";
 
 import "google/protobuf/descriptor.proto";
-import "proto/rialtoipc.proto";
+import "rialtoipc.proto";
 
 package firebolt.rialto;
 
@@ -55,12 +55,12 @@ message RegisterClientResponse {
 
 /**
  * @fn void ack()
- *
+ * 
  * @brief Acknowledgement of a received ping request
  *
  * @param[in] control_handle  : The handle id.
  * @param[in] id              : id received in ping notification
- *
+ * 
  */
 message AckRequest {
     required int32 control_handle = 1;
