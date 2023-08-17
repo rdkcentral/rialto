@@ -29,7 +29,7 @@
 
 namespace
 {
-constexpr unsigned int kMaxSkippedNoAvailableSamples = 40;
+constexpr unsigned int kMaxSkippedNoAvailableSamples = 50;
 constexpr std::chrono::milliseconds kNeedMediaDataResendTimeMs{100};
 const char *toString(const firebolt::rialto::MediaSourceStatus &status)
 {
