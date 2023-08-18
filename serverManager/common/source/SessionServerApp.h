@@ -40,13 +40,15 @@ class SessionServerApp : public ISessionServerApp
 {
 public:
     SessionServerApp(std::unique_ptr<firebolt::rialto::common::ILinuxWrapper> &&linuxWrapper,
-                     SessionServerAppManager &sessionServerAppManager,
+                     const std::shared_ptr<firebolt::rialto::common::ITimerFactory> &timerFactory,
+                     ISessionServerAppManager &sessionServerAppManager,
                      const std::list<std::string> &environmentVariables, const std::string &sessionServerPath,
                      std::chrono::milliseconds sessionServerStartupTimeout, unsigned int socketPermissions);
     SessionServerApp(const std::string &appName, const firebolt::rialto::common::SessionServerState &initialState,
                      const firebolt::rialto::common::AppConfig &appConfig,
                      std::unique_ptr<firebolt::rialto::common::ILinuxWrapper> &&linuxWrapper,
-                     SessionServerAppManager &sessionServerAppManager,
+                     const std::shared_ptr<firebolt::rialto::common::ITimerFactory> &timerFactory,
+                     ISessionServerAppManager &sessionServerAppManager,
                      const std::list<std::string> &environmentVariables, const std::string &sessionServerPath,
                      std::chrono::milliseconds sessionServerStartupTimeout, unsigned int socketPermissions);
     virtual ~SessionServerApp();
@@ -84,7 +86,8 @@ private:
     std::string m_clientDisplayName;
     std::array<int, 2> m_socks;
     std::unique_ptr<firebolt::rialto::common::ILinuxWrapper> m_linuxWrapper;
-    SessionServerAppManager &m_sessionServerAppManager;
+    std::shared_ptr<firebolt::rialto::common::ITimerFactory> m_timerFactory;
+    ISessionServerAppManager &m_sessionServerAppManager;
     pid_t m_pid;
     bool m_isPreloaded;
     const std::string m_kSessionServerPath;

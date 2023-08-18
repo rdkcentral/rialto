@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_COMMON_I_LINUX_WRAPPER_H_
 #define FIREBOLT_RIALTO_COMMON_I_LINUX_WRAPPER_H_
 
+#include <fcntl.h>
 #include <memory>
 #include <signal.h>
 #include <sys/socket.h>

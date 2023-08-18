@@ -18,6 +18,7 @@
  */
 
 #include "SessionServerAppFactory.h"
+#include "ITimer.h"
 #include "SessionServerApp.h"
 #include <memory>
 #include <string>
@@ -39,15 +40,17 @@ std::unique_ptr<ISessionServerApp> SessionServerAppFactory::create(
     const firebolt::rialto::common::AppConfig &appConfig, SessionServerAppManager &sessionServerAppManager) const
 {
     return std::make_unique<SessionServerApp>(appName, initialState, appConfig,
-                                              m_linuxWrapperFactory->createLinuxWrapper(), sessionServerAppManager,
-                                              m_kEnvironmentVariables, m_kSessionServerPath,
+                                              m_linuxWrapperFactory->createLinuxWrapper(),
+                                              firebolt::rialto::common::ITimerFactory::getFactory(),
+                                              sessionServerAppManager, m_kEnvironmentVariables, m_kSessionServerPath,
                                               m_kSessionServerStartupTimeout, m_kSocketPermissions);
 }
 
 std::unique_ptr<ISessionServerApp> SessionServerAppFactory::create(SessionServerAppManager &sessionServerAppManager) const
 {
-    return std::make_unique<SessionServerApp>(m_linuxWrapperFactory->createLinuxWrapper(), sessionServerAppManager,
-                                              m_kEnvironmentVariables, m_kSessionServerPath,
+    return std::make_unique<SessionServerApp>(m_linuxWrapperFactory->createLinuxWrapper(),
+                                              firebolt::rialto::common::ITimerFactory::getFactory(),
+                                              sessionServerAppManager, m_kEnvironmentVariables, m_kSessionServerPath,
                                               m_kSessionServerStartupTimeout, m_kSocketPermissions);
 }
 } // namespace rialto::servermanager::common

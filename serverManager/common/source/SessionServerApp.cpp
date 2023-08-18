@@ -75,11 +75,13 @@ std::string getSessionManagementSocketPath(const firebolt::rialto::common::AppCo
 namespace rialto::servermanager::common
 {
 SessionServerApp::SessionServerApp(std::unique_ptr<firebolt::rialto::common::ILinuxWrapper> &&linuxWrapper,
-                                   SessionServerAppManager &sessionServerAppManager,
+                                   const std::shared_ptr<firebolt::rialto::common::ITimerFactory> &timerFactory,
+                                   ISessionServerAppManager &sessionServerAppManager,
                                    const std::list<std::string> &environmentVariables,
                                    const std::string &sessionServerPath,
                                    std::chrono::milliseconds sessionServerStartupTimeout, unsigned int socketPermissions)
-    : m_kServerId{generateServerId()}, m_socks{-1, -1}, m_linuxWrapper{std::move(linuxWrapper)},
+    : m_kServerId{generateServerId()}, m_initialState{firebolt::rialto::common::SessionServerState::UNINITIALIZED},
+      m_socks{-1, -1}, m_linuxWrapper{std::move(linuxWrapper)}, m_timerFactory{timerFactory},
       m_sessionServerAppManager{sessionServerAppManager}, m_pid{-1}, m_isPreloaded{true},
       m_kSessionServerPath{sessionServerPath}, m_kSessionServerStartupTimeout{sessionServerStartupTimeout},
       m_kSessionManagementSocketPermissions{socketPermissions}, m_childInitialized{false}
@@ -94,14 +96,15 @@ SessionServerApp::SessionServerApp(const std::string &appName,
                                    const firebolt::rialto::common::SessionServerState &initialState,
                                    const firebolt::rialto::common::AppConfig &appConfig,
                                    std::unique_ptr<firebolt::rialto::common::ILinuxWrapper> &&linuxWrapper,
-                                   SessionServerAppManager &sessionServerAppManager,
+                                   const std::shared_ptr<firebolt::rialto::common::ITimerFactory> &timerFactory,
+                                   ISessionServerAppManager &sessionServerAppManager,
                                    const std::list<std::string> &environmentVariables,
                                    const std::string &sessionServerPath,
                                    std::chrono::milliseconds sessionServerStartupTimeout, unsigned int socketPermissions)
     : m_kServerId{generateServerId()}, m_appName{appName}, m_initialState{initialState},
       m_sessionManagementSocketName{getSessionManagementSocketPath(appConfig)},
       m_clientDisplayName{appConfig.clientDisplayName}, m_socks{-1, -1}, m_linuxWrapper{std::move(linuxWrapper)},
-      m_sessionServerAppManager{sessionServerAppManager}, m_pid{-1}, m_isPreloaded{false},
+      m_timerFactory{timerFactory}, m_sessionServerAppManager{sessionServerAppManager}, m_pid{-1}, m_isPreloaded{false},
       m_kSessionServerPath{sessionServerPath}, m_kSessionServerStartupTimeout{sessionServerStartupTimeout},
       m_kSessionManagementSocketPermissions{socketPermissions}, m_childInitialized{false}
 {
@@ -276,20 +279,20 @@ void SessionServerApp::setupStartupTimer()
     if (std::chrono::milliseconds(0) < m_kSessionServerStartupTimeout)
     {
         std::unique_lock<std::mutex> lock{m_timerMutex};
-        auto factory = firebolt::rialto::common::ITimerFactory::getFactory();
         m_startupTimer =
-            factory->createTimer(m_kSessionServerStartupTimeout,
-                                 [this]()
-                                 {
-                                     RIALTO_SERVER_MANAGER_LOG_WARN("Killing: %d", m_kServerId);
-                                     m_sessionServerAppManager
-                                         .onSessionServerStateChanged(m_kServerId,
-                                                                      firebolt::rialto::common::SessionServerState::ERROR);
-                                     kill();
-                                     m_sessionServerAppManager
-                                         .onSessionServerStateChanged(m_kServerId,
-                                                                      firebolt::rialto::common::SessionServerState::NOT_RUNNING);
-                                 });
+            m_timerFactory
+                ->createTimer(m_kSessionServerStartupTimeout,
+                              [this]()
+                              {
+                                  RIALTO_SERVER_MANAGER_LOG_WARN("Killing: %d", m_kServerId);
+                                  m_sessionServerAppManager
+                                      .onSessionServerStateChanged(m_kServerId,
+                                                                   firebolt::rialto::common::SessionServerState::ERROR);
+                                  kill();
+                                  m_sessionServerAppManager
+                                      .onSessionServerStateChanged(m_kServerId,
+                                                                   firebolt::rialto::common::SessionServerState::NOT_RUNNING);
+                              });
     }
     else
     {
@@ -355,7 +358,7 @@ bool SessionServerApp::spawnSessionServer()
             free(arg);
         }
         m_linuxWrapper->exit(EXIT_FAILURE);
-        return false; // wrapper function is not [[noreturn]]
+        return true; // wrapper function is not [[noreturn]]
     }
 }
 
@@ -365,13 +368,13 @@ void SessionServerApp::waitForChildProcess()
     {
         return;
     }
-    auto killTimer = firebolt::rialto::common::ITimerFactory::getFactory()
-                         ->createTimer(std::chrono::milliseconds{1000},
-                                       [this]()
-                                       {
-                                           RIALTO_SERVER_MANAGER_LOG_ERROR("Waitpid timeout. Killing: %d", m_kServerId);
-                                           kill();
-                                       });
+    auto killTimer =
+        m_timerFactory->createTimer(std::chrono::milliseconds{1000},
+                                    [this]()
+                                    {
+                                        RIALTO_SERVER_MANAGER_LOG_ERROR("Waitpid timeout. Killing: %d", m_kServerId);
+                                        kill();
+                                    });
     if (m_linuxWrapper->waitpid(m_pid, nullptr, 0) < 0)
     {
         RIALTO_SERVER_MANAGER_LOG_SYS_WARN(errno, "waitpid failed for %d", m_kServerId);
