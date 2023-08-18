@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_COMMON_LINUX_WRAPPER_H_
 
 #include "ILinuxWrapper.h"
+#include <memory>
 
 namespace firebolt::rialto::common
 {

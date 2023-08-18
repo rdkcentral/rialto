@@ -17,6 +17,9 @@
  * limitations under the License.
  */
 
+#ifndef FIREBOLT_RIALTO_COMMON_LINUX_WRAPPER_MOCK_H_
+#define FIREBOLT_RIALTO_COMMON_LINUX_WRAPPER_MOCK_H_
+
 #include "ILinuxWrapper.h"
 #include <gmock/gmock.h>
 
@@ -38,3 +41,5 @@ public:
     MOCK_METHOD(pid_t, getpid, (), (const, override));
 };
 } // namespace firebolt::rialto::common
+
+#endif // FIREBOLT_RIALTO_COMMON_LINUX_WRAPPER_MOCK_H_

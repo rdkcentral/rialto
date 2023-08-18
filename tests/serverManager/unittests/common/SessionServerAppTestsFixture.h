@@ -1,4 +1,4 @@
-/*rialto::servermanager::common
+/*
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
@@ -16,6 +16,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+#ifndef SESSION_SERVER_APP_TESTS_H_
+#define SESSION_SERVER_APP_TESTS_H_
 
 #include "LinuxWrapperMock.h"
 #include "SessionServerApp.h"
@@ -60,3 +63,5 @@ private:
 protected:
     std::unique_ptr<rialto::servermanager::common::SessionServerApp> m_sut;
 };
+
+#endif // SESSION_SERVER_APP_TESTS_H_
