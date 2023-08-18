@@ -31,6 +31,10 @@
         <symbolName>MATCHER_P5</symbolName>
     </suppress>
     <suppress>
+        <id>syntaxError</id>
+        <fileName>tests/serverManager/unittests/common/SessionServerAppTestsFixture.cpp</fileName>
+    </suppress>
+    <suppress>
         <id>unusedFunction</id>
         <symbolName>rialto_mse_add_protection_metadata</symbolName>
     </suppress>
