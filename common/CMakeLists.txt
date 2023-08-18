@@ -29,6 +29,7 @@ add_library(
         STATIC
 
         source/EventThread.cpp
+        source/LinuxWrapper.cpp
         source/Timer.cpp
     )
 

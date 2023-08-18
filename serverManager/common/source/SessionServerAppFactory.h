@@ -20,6 +20,7 @@
 #ifndef RIALTO_SERVERMANAGER_COMMON_SESSION_SERVER_APP_FACTORY_H_
 #define RIALTO_SERVERMANAGER_COMMON_SESSION_SERVER_APP_FACTORY_H_
 
+#include "ILinuxWrapper.h"
 #include "ISessionServerAppFactory.h"
 #include <chrono>
 #include <list>
@@ -48,6 +49,7 @@ private:
     const std::string m_kSessionServerPath;
     const std::chrono::milliseconds m_kSessionServerStartupTimeout;
     const unsigned int m_kSocketPermissions;
+    std::shared_ptr<firebolt::rialto::common::ILinuxWrapperFactory> m_linuxWrapperFactory;
 };
 } // namespace rialto::servermanager::common
 
