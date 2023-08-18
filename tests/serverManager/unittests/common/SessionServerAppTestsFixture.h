@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef SESSION_SERVER_APP_TESTS_H_
-#define SESSION_SERVER_APP_TESTS_H_
+#ifndef SESSION_SERVER_APP_TESTS_FIXTURE_H_
+#define SESSION_SERVER_APP_TESTS_FIXTURE_H_
 
 #include "LinuxWrapperMock.h"
 #include "SessionServerApp.h"
@@ -64,4 +64,4 @@ protected:
     std::unique_ptr<rialto::servermanager::common::SessionServerApp> m_sut;
 };
 
-#endif // SESSION_SERVER_APP_TESTS_H_
+#endif // SESSION_SERVER_APP_TESTS_FIXTURE_H_
