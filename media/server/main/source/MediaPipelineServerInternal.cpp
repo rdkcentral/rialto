@@ -551,6 +551,7 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
                                    needDataRequestId, toString(status));
             counter = 0;
         }
+
         m_activeRequests->erase(needDataRequestId);
         scheduleNotifyNeedMediaData(mediaSourceType);
         return true;
