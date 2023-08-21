@@ -62,7 +62,7 @@ jobs:
               python build_ut.py -c -xml -f -cov -s servermain
 
       # Processes the results of the unittests and the lcov output
-      - name: Process the output from test run
+      - name: Process output
         uses: ./.github/workflows/actions/process_results_ut
         with:
           suite: 'servermain'
@@ -83,69 +83,20 @@ jobs:
       - name: checkout repo
         uses: actions/checkout@v3
 
-      # Setup github for python 3.8
-      - name: setup python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.8
-
-      # Setup gstreamer 1.0
-      - name: Build gstreamer library
-        run: |
-          sudo apt-get update
-          sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
-
-      # Setup lcov 2.0
-      - name: Install lcov library
-        run: |
-          sudo apt-get install libjson-perl libperlio-gzip-perl perl libgd-gd2-perl libcapture-tiny-perl libdatetime-perl
-          wget https://github.com/linux-test-project/lcov/releases/download/v2.0/lcov-2.0.tar.gz
-          tar -xf lcov-2.0.tar.gz
-          cd lcov-2.0
-          sudo make install
-
-      # Installation of protobuf
-      - name: Install protobuf
-        run: |
-          sudo apt-get install protobuf-compiler
+      # Initialises the host ready to run unittests
+      - name: Initialise host
+        uses: ./.github/workflows/actions/init_ut
 
       # Run the build script for servergstplayer
       - name: build_ut.py script servergstplayer
         run: |
               python build_ut.py -c -xml -f -cov -s servergstplayer
 
-      # Process the test results
-      - name: Check servergstplayer results
-        uses: dorny/test-reporter@v1
-        if: success() || failure()
+      # Processes the results of the unittests and the lcov output
+      - name: Process output
+        uses: ./.github/workflows/actions/process_results_ut
         with:
-          name: Results servergstplayer
-          path: build/*gtest_result.xml
-          reporter: java-junit
-
-      # Upload logs on failure
-      - name: Upload logs
-        uses: actions/upload-artifact@v3
-        if: failure()
-        with:
-          name: logs
-          path: |
-            gtest_result.log
-            build/*gtest_result.xml
-
-      # Rename coverage report
-      - name: Rename coverage report
-        run: |
-          mv build/coverage.info build/coverage-servergstplayer.info
-
-      # Cache lcov servergstplayer output
-      - name: Cache servergstplayer coverage
-        id: cache-servergstplayer-coverage
-        uses: actions/cache@v3
-        if: success()
-        with:
-          path: build/coverage-servergstplayer.info
-          key: ${{ runner.os }}-servergstplayer-coverage-${{ github.run_id }}-${{ github.run_number }}
+          suite: 'servergstplayer'
 
   # This job sets up the repo with the dependancies then runs the serveripc tests
   run-serveripc:
@@ -163,69 +114,20 @@ jobs:
       - name: checkout repo
         uses: actions/checkout@v3
 
-      # Setup github for python 3.8
-      - name: setup python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.8
-
-      # Setup gstreamer 1.0
-      - name: Build gstreamer library
-        run: |
-          sudo apt-get update
-          sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
-
-      # Setup lcov 2.0
-      - name: Install lcov library
-        run: |
-          sudo apt-get install libjson-perl libperlio-gzip-perl perl libgd-gd2-perl libcapture-tiny-perl libdatetime-perl
-          wget https://github.com/linux-test-project/lcov/releases/download/v2.0/lcov-2.0.tar.gz
-          tar -xf lcov-2.0.tar.gz
-          cd lcov-2.0
-          sudo make install
-
-      # Installation of protobuf
-      - name: Install protobuf
-        run: |
-          sudo apt-get install protobuf-compiler
+      # Initialises the host ready to run unittests
+      - name: Initialise host
+        uses: ./.github/workflows/actions/init_ut
 
       # Run the build script for serveripc
       - name: build_ut.py script serveripc
         run: |
               python build_ut.py -c -xml -f -cov -s serveripc
 
-      # Process the test results
-      - name: Check serveripc results
-        uses: dorny/test-reporter@v1
-        if: success() || failure()
+      # Processes the results of the unittests and the lcov output
+      - name: Process output
+        uses: ./.github/workflows/actions/process_results_ut
         with:
-          name: Results serveripc
-          path: build/*gtest_result.xml
-          reporter: java-junit
-
-      # Upload logs on failure
-      - name: Upload logs
-        uses: actions/upload-artifact@v3
-        if: failure()
-        with:
-          name: logs
-          path: |
-            gtest_result.log
-            build/*gtest_result.xml
-
-      # Rename coverage report
-      - name: Rename coverage report
-        run: |
-          mv build/coverage.info build/coverage-serveripc.info
-
-      # Cache lcov serveripc output
-      - name: Cache serveripc coverage
-        id: cache-serveripc-coverage
-        uses: actions/cache@v3
-        if: success()
-        with:
-          path: build/coverage-serveripc.info
-          key: ${{ runner.os }}-serveripc-coverage-${{ github.run_id }}-${{ github.run_number }}
+          suite: 'serveripc'
 
   # This job sets up the repo with the dependancies then runs the serverservice tests
   run-serverservice:
@@ -243,69 +145,20 @@ jobs:
       - name: checkout repo
         uses: actions/checkout@v3
 
-      # Setup github for python 3.8
-      - name: setup python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.8
-
-      # Setup gstreamer 1.0
-      - name: Build gstreamer library
-        run: |
-          sudo apt-get update
-          sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
-
-      # Setup lcov 2.0
-      - name: Install lcov library
-        run: |
-          sudo apt-get install libjson-perl libperlio-gzip-perl perl libgd-gd2-perl libcapture-tiny-perl libdatetime-perl
-          wget https://github.com/linux-test-project/lcov/releases/download/v2.0/lcov-2.0.tar.gz
-          tar -xf lcov-2.0.tar.gz
-          cd lcov-2.0
-          sudo make install
-
-      # Installation of protobuf
-      - name: Install protobuf
-        run: |
-          sudo apt-get install protobuf-compiler
+      # Initialises the host ready to run unittests
+      - name: Initialise host
+        uses: ./.github/workflows/actions/init_ut
 
       # Run the build script for serverservice
       - name: build_ut.py script serverservice
         run: |
               python build_ut.py -c -xml -f -cov -s serverservice
 
-      # Process the test results
-      - name: Check serverservice results
-        uses: dorny/test-reporter@v1
-        if: success() || failure()
+      # Processes the results of the unittests and the lcov output
+      - name: Process output
+        uses: ./.github/workflows/actions/process_results_ut
         with:
-          name: Results serverservice
-          path: build/*gtest_result.xml
-          reporter: java-junit
-
-      # Upload logs on failure
-      - name: Upload logs
-        uses: actions/upload-artifact@v3
-        if: failure()
-        with:
-          name: logs
-          path: |
-            gtest_result.log
-            build/*gtest_result.xml
-
-      # Rename coverage report
-      - name: Rename coverage report
-        run: |
-          mv build/coverage.info build/coverage-serverservice.info
-
-      # Cache lcov serverservice output
-      - name: Cache serverservice coverage
-        id: cache-serverservice-coverage
-        uses: actions/cache@v3
-        if: success()
-        with:
-          path: build/coverage-serverservice.info
-          key: ${{ runner.os }}-serverservice-coverage-${{ github.run_id }}-${{ github.run_number }}
+          suite: 'serverservice'
 
   # This job sets up the repo with the dependancies then runs the client tests
   run-client:
@@ -323,69 +176,20 @@ jobs:
       - name: checkout repo
         uses: actions/checkout@v3
 
-      # Setup github for python 3.8
-      - name: setup python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.8
-
-      # Setup gstreamer 1.0
-      - name: Build gstreamer library
-        run: |
-          sudo apt-get update
-          sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
-
-      # Setup lcov 2.0
-      - name: Install lcov library
-        run: |
-          sudo apt-get install libjson-perl libperlio-gzip-perl perl libgd-gd2-perl libcapture-tiny-perl libdatetime-perl
-          wget https://github.com/linux-test-project/lcov/releases/download/v2.0/lcov-2.0.tar.gz
-          tar -xf lcov-2.0.tar.gz
-          cd lcov-2.0
-          sudo make install
-
-      # Installation of protobuf
-      - name: Install protobuf
-        run: |
-          sudo apt-get install protobuf-compiler
+      # Initialises the host ready to run unittests
+      - name: Initialise host
+        uses: ./.github/workflows/actions/init_ut
 
       # Run the build script for client
       - name: build_ut.py script client
         run: |
               python build_ut.py -c -xml -f -cov -s client
 
-      # Process the test results
-      - name: Check client results
-        uses: dorny/test-reporter@v1
-        if: success() || failure()
+      # Processes the results of the unittests and the lcov output
+      - name: Process output
+        uses: ./.github/workflows/actions/process_results_ut
         with:
-          name: Results client
-          path: build/*gtest_result.xml
-          reporter: java-junit
-
-      # Upload logs on failure
-      - name: Upload logs
-        uses: actions/upload-artifact@v3
-        if: failure()
-        with:
-          name: logs
-          path: |
-            gtest_result.log
-            build/*gtest_result.xml
-
-      # Rename coverage report
-      - name: Rename coverage report
-        run: |
-          mv build/coverage.info build/coverage-client.info
-
-      # Cache lcov client output
-      - name: Cache client coverage
-        id: cache-client-coverage
-        uses: actions/cache@v3
-        if: success()
-        with:
-          path: build/coverage-client.info
-          key: ${{ runner.os }}-client-coverage-${{ github.run_id }}-${{ github.run_number }}
+          suite: 'client'
 
   # This job sets up the repo with the dependancies then runs the clientipc tests
   run-clientipc:
@@ -403,69 +207,20 @@ jobs:
       - name: checkout repo
         uses: actions/checkout@v3
 
-      # Setup github for python 3.8
-      - name: setup python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.8
-
-      # Setup gstreamer 1.0
-      - name: Build gstreamer library
-        run: |
-          sudo apt-get update
-          sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
-
-      # Setup lcov 2.0
-      - name: Install lcov library
-        run: |
-          sudo apt-get install libjson-perl libperlio-gzip-perl perl libgd-gd2-perl libcapture-tiny-perl libdatetime-perl
-          wget https://github.com/linux-test-project/lcov/releases/download/v2.0/lcov-2.0.tar.gz
-          tar -xf lcov-2.0.tar.gz
-          cd lcov-2.0
-          sudo make install
-
-      # Installation of protobuf
-      - name: Install protobuf
-        run: |
-          sudo apt-get install protobuf-compiler
+      # Initialises the host ready to run unittests
+      - name: Initialise host
+        uses: ./.github/workflows/actions/init_ut
 
       # Run the build script for clientipc
       - name: build_ut.py script clientipc
         run: |
               python build_ut.py -c -xml -f -cov -s clientipc
 
-      # Process the test results
-      - name: Check clientipc results
-        uses: dorny/test-reporter@v1
-        if: success() || failure()
+      # Processes the results of the unittests and the lcov output
+      - name: Process output
+        uses: ./.github/workflows/actions/process_results_ut
         with:
-          name: Results clientipc
-          path: build/*gtest_result.xml
-          reporter: java-junit
-
-      # Upload logs on failure
-      - name: Upload logs
-        uses: actions/upload-artifact@v3
-        if: failure()
-        with:
-          name: logs
-          path: |
-            gtest_result.log
-            build/*gtest_result.xml
-
-      # Rename coverage report
-      - name: Rename coverage report
-        run: |
-          mv build/coverage.info build/coverage-clientipc.info
-
-      # Cache lcov clientipc output
-      - name: Cache clientipc coverage
-        id: cache-clientipc-coverage
-        uses: actions/cache@v3
-        if: success()
-        with:
-          path: build/coverage-clientipc.info
-          key: ${{ runner.os }}-clientipc-coverage-${{ github.run_id }}-${{ github.run_number }}
+          suite: 'clientipc'
 
   # This job sets up the repo with the dependancies then runs the common tests
   run-common:
@@ -483,69 +238,20 @@ jobs:
       - name: checkout repo
         uses: actions/checkout@v3
 
-      # Setup github for python 3.8
-      - name: setup python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.8
-
-      # Setup gstreamer 1.0
-      - name: Build gstreamer library
-        run: |
-          sudo apt-get update
-          sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
-
-      # Setup lcov 2.0
-      - name: Install lcov library
-        run: |
-          sudo apt-get install libjson-perl libperlio-gzip-perl perl libgd-gd2-perl libcapture-tiny-perl libdatetime-perl
-          wget https://github.com/linux-test-project/lcov/releases/download/v2.0/lcov-2.0.tar.gz
-          tar -xf lcov-2.0.tar.gz
-          cd lcov-2.0
-          sudo make install
-
-      # Installation of protobuf
-      - name: Install protobuf
-        run: |
-          sudo apt-get install protobuf-compiler
+      # Initialises the host ready to run unittests
+      - name: Initialise host
+        uses: ./.github/workflows/actions/init_ut
 
       # Run the build script for common
       - name: build_ut.py script common
         run: |
               python build_ut.py -c -xml -f -cov -s common
 
-      # Process the test results
-      - name: Check common results
-        uses: dorny/test-reporter@v1
-        if: success() || failure()
+      # Processes the results of the unittests and the lcov output
+      - name: Process output
+        uses: ./.github/workflows/actions/process_results_ut
         with:
-          name: Results common
-          path: build/*gtest_result.xml
-          reporter: java-junit
-
-      # Upload logs on failure
-      - name: Upload logs
-        uses: actions/upload-artifact@v3
-        if: failure()
-        with:
-          name: logs
-          path: |
-            gtest_result.log
-            build/*gtest_result.xml
-
-      # Rename coverage report
-      - name: Rename coverage report
-        run: |
-          mv build/coverage.info build/coverage-common.info
-
-      # Cache lcov common output
-      - name: Cache common coverage
-        id: cache-common-coverage
-        uses: actions/cache@v3
-        if: success()
-        with:
-          path: build/coverage-common.info
-          key: ${{ runner.os }}-common-coverage-${{ github.run_id }}-${{ github.run_number }}
+          suite: 'common'
 
   # This job sets up the repo with the dependancies then runs the logging tests
   run-logging:
@@ -563,69 +269,20 @@ jobs:
       - name: checkout repo
         uses: actions/checkout@v3
 
-      # Setup github for python 3.8
-      - name: setup python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.8
-
-      # Setup gstreamer 1.0
-      - name: Build gstreamer library
-        run: |
-          sudo apt-get update
-          sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
-
-      # Setup lcov 2.0
-      - name: Install lcov library
-        run: |
-          sudo apt-get install libjson-perl libperlio-gzip-perl perl libgd-gd2-perl libcapture-tiny-perl libdatetime-perl
-          wget https://github.com/linux-test-project/lcov/releases/download/v2.0/lcov-2.0.tar.gz
-          tar -xf lcov-2.0.tar.gz
-          cd lcov-2.0
-          sudo make install
-
-      # Installation of protobuf
-      - name: Install protobuf
-        run: |
-          sudo apt-get install protobuf-compiler
+      # Initialises the host ready to run unittests
+      - name: Initialise host
+        uses: ./.github/workflows/actions/init_ut
 
       # Run the build script for logging
       - name: build_ut.py script logging
         run: |
               python build_ut.py -c -xml -f -cov -s logging
 
-      # Process the test results
-      - name: Check logging results
-        uses: dorny/test-reporter@v1
-        if: success() || failure()
+      # Processes the results of the unittests and the lcov output
+      - name: Process output
+        uses: ./.github/workflows/actions/process_results_ut
         with:
-          name: Results logging
-          path: build/*gtest_result.xml
-          reporter: java-junit
-
-      # Upload logs on failure
-      - name: Upload logs
-        uses: actions/upload-artifact@v3
-        if: failure()
-        with:
-          name: logs
-          path: |
-            gtest_result.log
-            build/*gtest_result.xml
-
-      # Rename coverage report
-      - name: Rename coverage report
-        run: |
-          mv build/coverage.info build/coverage-logging.info
-
-      # Cache lcov logging output
-      - name: Cache logging coverage
-        id: cache-logging-coverage
-        uses: actions/cache@v3
-        if: success()
-        with:
-          path: build/coverage-logging.info
-          key: ${{ runner.os }}-logging-coverage-${{ github.run_id }}-${{ github.run_number }}
+          suite: 'logging'
 
   # This job sets up the repo with the dependancies then runs the manager tests
   run-manager:
@@ -643,69 +300,20 @@ jobs:
       - name: checkout repo
         uses: actions/checkout@v3
 
-      # Setup github for python 3.8
-      - name: setup python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.8
-
-      # Setup gstreamer 1.0
-      - name: Build gstreamer library
-        run: |
-          sudo apt-get update
-          sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
-
-      # Setup lcov 2.0
-      - name: Install lcov library
-        run: |
-          sudo apt-get install libjson-perl libperlio-gzip-perl perl libgd-gd2-perl libcapture-tiny-perl libdatetime-perl
-          wget https://github.com/linux-test-project/lcov/releases/download/v2.0/lcov-2.0.tar.gz
-          tar -xf lcov-2.0.tar.gz
-          cd lcov-2.0
-          sudo make install
-
-      # Installation of protobuf
-      - name: Install protobuf
-        run: |
-          sudo apt-get install protobuf-compiler
+      # Initialises the host ready to run unittests
+      - name: Initialise host
+        uses: ./.github/workflows/actions/init_ut
 
       # Run the build script for manager
       - name: build_ut.py script manager
         run: |
               python build_ut.py -c -xml -f -cov -s manager
 
-      # Process the test results
-      - name: Check manager results
-        uses: dorny/test-reporter@v1
-        if: success() || failure()
+      # Processes the results of the unittests and the lcov output
+      - name: Process output
+        uses: ./.github/workflows/actions/process_results_ut
         with:
-          name: Results manager
-          path: build/*gtest_result.xml
-          reporter: java-junit
-
-      # Upload logs on failure
-      - name: Upload logs
-        uses: actions/upload-artifact@v3
-        if: failure()
-        with:
-          name: logs
-          path: |
-            gtest_result.log
-            build/*gtest_result.xml
-
-      # Rename coverage report
-      - name: Rename coverage report
-        run: |
-          mv build/coverage.info build/coverage-manager.info
-
-      # Cache lcov manager output
-      - name: Cache manager coverage
-        id: cache-manager-coverage
-        uses: actions/cache@v3
-        if: success()
-        with:
-          path: build/coverage-manager.info
-          key: ${{ runner.os }}-manager-coverage-${{ github.run_id }}-${{ github.run_number }}
+          suite: 'manager'
 
   # This job sets up the repo with the dependancies then runs the ipc tests
   run-ipc:
@@ -723,69 +331,20 @@ jobs:
       - name: checkout repo
         uses: actions/checkout@v3
 
-      # Setup github for python 3.8
-      - name: setup python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.8
-
-      # Setup gstreamer 1.0
-      - name: Build gstreamer library
-        run: |
-          sudo apt-get update
-          sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
-
-      # Setup lcov 2.0
-      - name: Install lcov library
-        run: |
-          sudo apt-get install libjson-perl libperlio-gzip-perl perl libgd-gd2-perl libcapture-tiny-perl libdatetime-perl
-          wget https://github.com/linux-test-project/lcov/releases/download/v2.0/lcov-2.0.tar.gz
-          tar -xf lcov-2.0.tar.gz
-          cd lcov-2.0
-          sudo make install
-
-      # Installation of protobuf
-      - name: Install protobuf
-        run: |
-          sudo apt-get install protobuf-compiler
+      # Initialises the host ready to run unittests
+      - name: Initialise host
+        uses: ./.github/workflows/actions/init_ut
 
       # Run the build script for ipc
       - name: build_ut.py script ipc
         run: |
               python build_ut.py -c -xml -f -cov -s ipc
 
-      # Process the test results
-      - name: Check ipc results
-        uses: dorny/test-reporter@v1
-        if: success() || failure()
+      # Processes the results of the unittests and the lcov output
+      - name: Process output
+        uses: ./.github/workflows/actions/process_results_ut
         with:
-          name: Results ipc
-          path: build/*gtest_result.xml
-          reporter: java-junit
-
-      # Upload logs on failure
-      - name: Upload logs
-        uses: actions/upload-artifact@v3
-        if: failure()
-        with:
-          name: logs
-          path: |
-            gtest_result.log
-            build/*gtest_result.xml
-
-      # Rename coverage report
-      - name: Rename coverage report
-        run: |
-          mv build/coverage.info build/coverage-ipc.info
-
-      # Cache lcov ipc output
-      - name: Cache ipc coverage
-        id: cache-ipc-coverage
-        uses: actions/cache@v3
-        if: success()
-        with:
-          path: build/coverage-ipc.info
-          key: ${{ runner.os }}-ipc-coverage-${{ github.run_id }}-${{ github.run_number }}
+          suite: 'ipc'
 
   # This job runs the coverage report
   generate-coverage-report:
