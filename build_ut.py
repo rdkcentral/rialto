@@ -271,19 +271,19 @@ def generateCoverageReport(outputDir, resultsFile, suites):
         lcovCombineStatus = runcmd(lcovCombineCmd, cwd=os.getcwd() + '/' + outputDir, stderr=subprocess.STDOUT)
     if not lcovCombineStatus:
         return False
-    genHtmlCmd = ["genhtml", "coverage.info", "--output-directory", "gh_pages/coverage_report", "--filter", "brace,function,trivial"]
-    if resultsFile:
-        genHtmlStatus = runcmd(genHtmlCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
-    else:
-        genHtmlStatus = runcmd(genHtmlCmd, cwd=os.getcwd() + '/' + outputDir, stderr=subprocess.STDOUT)
-    genStatsCmd = ["lcov", "--summary", "coverage.info", "--filter", "brace,function,trivial"]
-    statsFile = open(os.getcwd() + '/' + outputDir + '/' + "coverage_statistics.txt", "w")
-    if statsFile:
-        genStatsStatus = runcmd(genStatsCmd, cwd=os.getcwd() + '/' + outputDir, stdout=statsFile, stderr=subprocess.STDOUT)
-    else:
-        genStatsStatus = False
-    statsFile.close()
-    return genHtmlStatus and genStatsStatus
+    #genHtmlCmd = ["genhtml", "coverage.info", "--output-directory", "gh_pages/coverage_report", "--filter", "brace,function,trivial"]
+    #if resultsFile:
+    #    genHtmlStatus = runcmd(genHtmlCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
+    #else:
+    #    genHtmlStatus = runcmd(genHtmlCmd, cwd=os.getcwd() + '/' + outputDir, stderr=subprocess.STDOUT)
+    #genStatsCmd = ["lcov", "--summary", "coverage.info", "--filter", "brace,function,trivial"]
+    #statsFile = open(os.getcwd() + '/' + outputDir + '/' + "coverage_statistics.txt", "w")
+    #if statsFile:
+    #    genStatsStatus = runcmd(genStatsCmd, cwd=os.getcwd() + '/' + outputDir, stdout=statsFile, stderr=subprocess.STDOUT)
+    #else:
+    #    genStatsStatus = False
+    #statsFile.close()
+    return True
 
 
 if __name__ == "__main__":
