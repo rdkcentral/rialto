@@ -61,38 +61,11 @@ jobs:
         run: |
               python build_ut.py -c -xml -f -cov -s servermain
 
-      # Process the test results
-      - name: Check servermain results
-        uses: dorny/test-reporter@v1
-        if: success() || failure()
+      # Processes the results of the unittests and the lcov output
+      - name: Process the output from test run
+        uses: ./.github/workflows/actions/process_results_ut
         with:
-          name: Results servermain
-          path: build/*gtest_result.xml
-          reporter: java-junit
-
-      # Upload logs on failure
-      - name: Upload logs
-        uses: actions/upload-artifact@v3
-        if: failure()
-        with:
-          name: logs
-          path: |
-            gtest_result.log
-            build/*gtest_result.xml
-
-      # Rename coverage report
-      - name: Rename coverage report
-        run: |
-          mv build/coverage.info build/coverage-servermain.info
-
-      # Cache lcov servermain output
-      - name: Cache servermain coverage
-        id: cache-servermain-coverage
-        uses: actions/cache@v3
-        if: success()
-        with:
-          path: build/coverage-servermain.info
-          key: ${{ runner.os }}-servermain-coverage-${{ github.run_id }}-${{ github.run_number }}
+          suite: 'servermain'
 
   # This job sets up the repo with the dependancies then runs the servergstplayer tests
   run-servergstplayer:
