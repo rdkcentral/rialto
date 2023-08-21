@@ -56,12 +56,12 @@ jobs:
       - name: Install lcov library
         run: |
           pwd
-          apt install tree
+          sudo apt install tree
           tree -f -L 2
 
       # Initialises the host ready to run unittests
       - name: Initialise host
-        uses: ./github/rialto/rialto/actions/init_ut
+        uses: ./.github/workflows/actions/init_ut
 
       # Run the build script for servermain
       - name: build_ut.py script servermain
