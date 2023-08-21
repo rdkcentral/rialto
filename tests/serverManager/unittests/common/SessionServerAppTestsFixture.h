@@ -26,6 +26,7 @@
 #include "TimerFactoryMock.h"
 #include "TimerMock.h"
 #include <gtest/gtest.h>
+#include <memory>
 
 class SessionServerAppTests : public testing::Test
 {

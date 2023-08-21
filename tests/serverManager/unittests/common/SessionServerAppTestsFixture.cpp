@@ -20,6 +20,7 @@
 #include "SessionServerAppTestsFixture.h"
 #include <list>
 #include <string>
+#include <utility>
 
 namespace
 {
