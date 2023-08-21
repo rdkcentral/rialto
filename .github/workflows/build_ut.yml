@@ -81,7 +81,7 @@ jobs:
       # Run the build script for servermain
       - name: build_ut.py script servermain
         run: |
-              python build_ut.py -c -xml -f -s servermain
+              python build_ut.py -c -xml -f -cov -s servermain
 
       # Process the test results
       - name: Check servermain results
@@ -161,7 +161,7 @@ jobs:
       # Run the build script for servergstplayer
       - name: build_ut.py script servergstplayer
         run: |
-              python build_ut.py -c -xml -f -s servergstplayer
+              python build_ut.py -c -xml -f -cov -s servergstplayer
 
       # Process the test results
       - name: Check servergstplayer results
@@ -241,7 +241,7 @@ jobs:
       # Run the build script for serveripc
       - name: build_ut.py script serveripc
         run: |
-              python build_ut.py -c -xml -f -s serveripc
+              python build_ut.py -c -xml -f -cov -s serveripc
 
       # Process the test results
       - name: Check serveripc results
@@ -321,7 +321,7 @@ jobs:
       # Run the build script for serverservice
       - name: build_ut.py script serverservice
         run: |
-              python build_ut.py -c -xml -f -s serverservice
+              python build_ut.py -c -xml -f -cov -s serverservice
 
       # Process the test results
       - name: Check serverservice results
@@ -401,7 +401,7 @@ jobs:
       # Run the build script for client
       - name: build_ut.py script client
         run: |
-              python build_ut.py -c -xml -f -s client
+              python build_ut.py -c -xml -f -cov -s client
 
       # Process the test results
       - name: Check client results
@@ -481,7 +481,7 @@ jobs:
       # Run the build script for clientipc
       - name: build_ut.py script clientipc
         run: |
-              python build_ut.py -c -xml -f -s clientipc
+              python build_ut.py -c -xml -f -cov -s clientipc
 
       # Process the test results
       - name: Check clientipc results
@@ -561,7 +561,7 @@ jobs:
       # Run the build script for common
       - name: build_ut.py script common
         run: |
-              python build_ut.py -c -xml -f -s common
+              python build_ut.py -c -xml -f -cov -s common
 
       # Process the test results
       - name: Check common results
@@ -641,7 +641,7 @@ jobs:
       # Run the build script for logging
       - name: build_ut.py script logging
         run: |
-              python build_ut.py -c -xml -f -s logging
+              python build_ut.py -c -xml -f -cov -s logging
 
       # Process the test results
       - name: Check logging results
@@ -721,7 +721,7 @@ jobs:
       # Run the build script for manager
       - name: build_ut.py script manager
         run: |
-              python build_ut.py -c -xml -f -s manager
+              python build_ut.py -c -xml -f -cov -s manager
 
       # Process the test results
       - name: Check manager results
@@ -801,7 +801,7 @@ jobs:
       # Run the build script for ipc
       - name: build_ut.py script ipc
         run: |
-              python build_ut.py -c -xml -f -s ipc
+              python build_ut.py -c -xml -f -cov -s ipc
 
       # Process the test results
       - name: Check ipc results
