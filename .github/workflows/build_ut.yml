@@ -48,35 +48,9 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - name: checkout repo
-        uses: actions/checkout@v3
-
-      # Setup github for python 3.8
-      - name: setup python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.8
-
-      # Setup gstreamer 1.0
-      - name: Build gstreamer library
-        run: |
-          sudo apt-get update
-          sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
-
-      # Setup lcov 2.0
-      - name: Install lcov library
-        run: |
-          sudo apt-get install libjson-perl libperlio-gzip-perl perl libgd-gd2-perl libcapture-tiny-perl libdatetime-perl
-          wget https://github.com/linux-test-project/lcov/releases/download/v2.0/lcov-2.0.tar.gz
-          tar -xf lcov-2.0.tar.gz
-          cd lcov-2.0
-          sudo make install
-
-      # Installation of protobuf
-      - name: Install protobuf
-        run: |
-          sudo apt-get install protobuf-compiler
+      # Initialises the repo ready to run unittests
+      - name: Initialise repo
+        uses: actions/init_ut@v1
 
       # Run the build script for servermain
       - name: build_ut.py script servermain
