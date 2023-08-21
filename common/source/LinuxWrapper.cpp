@@ -33,37 +33,42 @@ std::unique_ptr<ILinuxWrapper> LinuxWrapperFactory::createLinuxWrapper() const
 
 int LinuxWrapper::close(int fd) const
 {
-    return close(fd);
+    return ::close(fd);
 }
 
 int LinuxWrapper::kill(int pid, int sig) const
 {
-    return kill(pid, sig);
+    return ::kill(pid, sig);
 }
 
 int LinuxWrapper::socketpair(int domain, int type, int protocol, int sv[2]) const
 {
-    return socketpair(domain, type, protocol, sv);
+    return ::socketpair(domain, type, protocol, sv);
 }
 
-pid_t LinuxWrapper::vfork() const
+bool LinuxWrapper::vfork(const std::function<bool(pid_t)> &function) const
 {
-    return vfork();
+    if (!function)
+    {
+        return false;
+    }
+    pid_t childPid{::vfork()};
+    return function(childPid);
 }
 
 int LinuxWrapper::dup(int oldfd) const
 {
-    return dup(oldfd);
+    return ::dup(oldfd);
 }
 
 int LinuxWrapper::dup2(int oldfd, int newfd) const
 {
-    return dup2(oldfd, newfd);
+    return ::dup2(oldfd, newfd);
 }
 
 int LinuxWrapper::open(const char *pathname, int flags, mode_t mode) const
 {
-    return open(pathname, flags, mode);
+    return ::open(pathname, flags, mode);
 }
 
 void LinuxWrapper::exit(int status) const
@@ -73,16 +78,16 @@ void LinuxWrapper::exit(int status) const
 
 int LinuxWrapper::execve(const char *pathname, char *const argv[], char *const envp[]) const
 {
-    return execve(pathname, argv, envp);
+    return ::execve(pathname, argv, envp);
 }
 
 pid_t LinuxWrapper::waitpid(pid_t pid, int *wstatus, int options) const
 {
-    return waitpid(pid, wstatus, options);
+    return ::waitpid(pid, wstatus, options);
 }
 
 pid_t LinuxWrapper::getpid() const
 {
-    return getpid();
+    return ::getpid();
 }
 } // namespace firebolt::rialto::common

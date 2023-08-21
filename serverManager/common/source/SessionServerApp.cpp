@@ -303,64 +303,69 @@ void SessionServerApp::setupStartupTimer()
 
 bool SessionServerApp::spawnSessionServer()
 {
-    pid_t childPid = m_linuxWrapper->vfork();
-    if (childPid == -1)
-    {
-        RIALTO_SERVER_MANAGER_LOG_SYS_ERROR(errno, "Unable to spawn RialtoSessionServer - fork problem");
-        m_linuxWrapper->close(m_socks[1]);
-        m_socks[1] = -1;
-        return false;
-    }
-    else if (childPid > 0)
-    {
-        RIALTO_SERVER_MANAGER_LOG_DEBUG("%d launched. PID: %d", m_kServerId, childPid);
-        m_pid = childPid;
-        return true;
-    }
-    else
-    {
-        int newSocket{-1};
+    return m_linuxWrapper->vfork(
+        [this](pid_t childPid)
         {
-            std::unique_lock<std::mutex> lock{m_processStartupMutex};
-            newSocket = m_linuxWrapper->dup(m_socks[0]);
-            if (0 != m_linuxWrapper->close(m_socks[0]))
+            if (childPid == -1)
             {
-                RIALTO_SERVER_MANAGER_LOG_SYS_WARN(errno, "Socket %d could not be closed in child process.", m_socks[0]);
+                RIALTO_SERVER_MANAGER_LOG_SYS_ERROR(errno, "Unable to spawn RialtoSessionServer - fork problem");
+                m_linuxWrapper->close(m_socks[1]);
+                m_socks[1] = -1;
+                return false;
             }
-            RIALTO_SERVER_MANAGER_LOG_DEBUG("Child socket initialized: %d", newSocket);
-            m_childInitialized = true;
-            m_processStartupCv.notify_one();
-        }
-        if (!firebolt::rialto::logging::isConsoleLoggingEnabled())
-        {
-            int devNull = m_linuxWrapper->open("/dev/null", O_RDWR, 0);
-            if (devNull < 0)
+            else if (childPid > 0)
             {
+                RIALTO_SERVER_MANAGER_LOG_DEBUG("%d launched. PID: %d", m_kServerId, childPid);
+                m_pid = childPid;
+                return true;
+            }
+            else
+            {
+                int newSocket{-1};
+                {
+                    std::unique_lock<std::mutex> lock{m_processStartupMutex};
+                    newSocket = m_linuxWrapper->dup(m_socks[0]);
+                    if (0 != m_linuxWrapper->close(m_socks[0]))
+                    {
+                        RIALTO_SERVER_MANAGER_LOG_SYS_WARN(errno, "Socket %d could not be closed in child process.",
+                                                           m_socks[0]);
+                    }
+                    RIALTO_SERVER_MANAGER_LOG_DEBUG("Child socket initialized: %d", newSocket);
+                    m_childInitialized = true;
+                    m_processStartupCv.notify_one();
+                }
+                if (!firebolt::rialto::logging::isConsoleLoggingEnabled())
+                {
+                    int devNull = m_linuxWrapper->open("/dev/null", O_RDWR, 0);
+                    if (devNull < 0)
+                    {
+                        m_linuxWrapper->exit(EXIT_FAILURE);
+                        return false; // wrapper function is not [[noreturn]]
+                    }
+                    m_linuxWrapper->dup2(devNull, STDIN_FILENO);
+                    m_linuxWrapper->dup2(devNull, STDOUT_FILENO);
+                    m_linuxWrapper->dup2(devNull, STDERR_FILENO);
+                    if (devNull > STDERR_FILENO)
+                    {
+                        m_linuxWrapper->close(devNull);
+                        devNull = -1;
+                    }
+                }
+                const std::string appMgmtSocketStr{std::to_string(newSocket)};
+                char *const appArguments[] = {strdup(m_kSessionServerPath.c_str()), strdup(appMgmtSocketStr.c_str()),
+                                              nullptr};
+                RIALTO_SERVER_MANAGER_LOG_DEBUG("PID: %d, executing: \"%s\" \"%s\"", m_linuxWrapper->getpid(),
+                                                appArguments[0], appArguments[1]);
+                m_linuxWrapper->execve(m_kSessionServerPath.c_str(), appArguments, m_environmentVariables.data());
+                RIALTO_SERVER_MANAGER_LOG_SYS_ERROR(errno, "Unable to spawn RialtoSessionServer - execve problem");
+                for (char *arg : appArguments)
+                {
+                    free(arg);
+                }
                 m_linuxWrapper->exit(EXIT_FAILURE);
-                return false; // wrapper function is not [[noreturn]]
+                return true; // wrapper function is not [[noreturn]]
             }
-            m_linuxWrapper->dup2(devNull, STDIN_FILENO);
-            m_linuxWrapper->dup2(devNull, STDOUT_FILENO);
-            m_linuxWrapper->dup2(devNull, STDERR_FILENO);
-            if (devNull > STDERR_FILENO)
-            {
-                m_linuxWrapper->close(devNull);
-                devNull = -1;
-            }
-        }
-        const std::string appMgmtSocketStr{std::to_string(newSocket)};
-        char *const appArguments[] = {strdup(m_kSessionServerPath.c_str()), strdup(appMgmtSocketStr.c_str()), nullptr};
-        RIALTO_SERVER_MANAGER_LOG_DEBUG("PID: %d, executing: \"%s\" \"%s\"", m_linuxWrapper->getpid(), appArguments[0],
-                                        appArguments[1]);
-        m_linuxWrapper->execve(m_kSessionServerPath.c_str(), appArguments, m_environmentVariables.data());
-        RIALTO_SERVER_MANAGER_LOG_SYS_ERROR(errno, "Unable to spawn RialtoSessionServer - execve problem");
-        for (char *arg : appArguments)
-        {
-            free(arg);
-        }
-        m_linuxWrapper->exit(EXIT_FAILURE);
-        return true; // wrapper function is not [[noreturn]]
-    }
+        });
 }
 
 void SessionServerApp::waitForChildProcess()

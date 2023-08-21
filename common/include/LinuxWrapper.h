@@ -43,7 +43,7 @@ public:
     int close(int fd) const override;
     int kill(int pid, int sig) const override;
     int socketpair(int domain, int type, int protocol, int sv[2]) const override;
-    pid_t vfork() const override;
+    bool vfork(const std::function<bool(pid_t)> &function) const override;
     int dup(int oldfd) const override;
     int dup2(int oldfd, int newfd) const override;
     int open(const char *pathname, int flags, mode_t mode) const override;

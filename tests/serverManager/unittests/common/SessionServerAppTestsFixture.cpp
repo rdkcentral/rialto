@@ -128,7 +128,7 @@ void SessionServerAppTests::launchingAppWillTimeout()
                 onSessionServerStateChanged(kAppId, firebolt::rialto::common::SessionServerState::ERROR));
     EXPECT_CALL(m_sessionServerAppManagerMock,
                 onSessionServerStateChanged(kAppId, firebolt::rialto::common::SessionServerState::NOT_RUNNING));
-    EXPECT_CALL(m_linuxWrapperMock, vfork()).WillOnce(Return(kPid));
+    EXPECT_CALL(m_linuxWrapperMock, vfork(_)).WillOnce(DoAll(InvokeArgument<0>(kPid), Return(true)));
     EXPECT_CALL(*m_timerFactoryMock,
                 createTimer(kSessionServerStartupTimeout, _, firebolt::rialto::common::TimerType::ONE_SHOT))
         .WillOnce(DoAll(InvokeArgument<1>(), Return(ByMove(std::move(m_timer)))));
@@ -138,7 +138,7 @@ void SessionServerAppTests::willFailToLaunchApp() const
 {
     EXPECT_CALL(m_linuxWrapperMock, socketpair(AF_UNIX, SOCK_SEQPACKET | SOCK_CLOEXEC | SOCK_NONBLOCK, 0, _))
         .WillOnce(DoAll(SetArrayArgument<3>(kSocketPair.begin(), kSocketPair.end()), Return(0)));
-    EXPECT_CALL(m_linuxWrapperMock, vfork()).WillOnce(Return(-1));
+    EXPECT_CALL(m_linuxWrapperMock, vfork(_)).WillOnce(DoAll(InvokeArgument<0>(-1), Return(false)));
     EXPECT_CALL(m_linuxWrapperMock, close(kSocketPair[0]));
     EXPECT_CALL(m_linuxWrapperMock, close(kSocketPair[1]));
 }
@@ -147,7 +147,7 @@ void SessionServerAppTests::willLaunchApp() const
 {
     EXPECT_CALL(m_linuxWrapperMock, socketpair(AF_UNIX, SOCK_SEQPACKET | SOCK_CLOEXEC | SOCK_NONBLOCK, 0, _))
         .WillOnce(DoAll(SetArrayArgument<3>(kSocketPair.begin(), kSocketPair.end()), Return(0)));
-    EXPECT_CALL(m_linuxWrapperMock, vfork()).WillOnce(Return(0));
+    EXPECT_CALL(m_linuxWrapperMock, vfork(_)).WillOnce(DoAll(InvokeArgument<0>(0), Return(true)));
     EXPECT_CALL(m_linuxWrapperMock, close(kSocketPair[0])).Times(2).WillRepeatedly(Return(-1));
     EXPECT_CALL(m_linuxWrapperMock, getpid()).WillOnce(Return(kPid));
     EXPECT_CALL(m_linuxWrapperMock, dup(kSocketPair[0])).WillOnce(Return(kDuplicatedSocket));

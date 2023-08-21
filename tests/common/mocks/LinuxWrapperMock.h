@@ -31,7 +31,7 @@ public:
     MOCK_METHOD(int, close, (int fd), (const, override));
     MOCK_METHOD(int, kill, (int pid, int sig), (const, override));
     MOCK_METHOD(int, socketpair, (int domain, int type, int protocol, int sv[2]), (const, override));
-    MOCK_METHOD(pid_t, vfork, (), (const, override));
+    MOCK_METHOD(bool, vfork, (const std::function<bool(pid_t)> &function), (const, override));
     MOCK_METHOD(int, dup, (int oldfd), (const, override));
     MOCK_METHOD(int, dup2, (int oldfd, int newfd), (const, override));
     MOCK_METHOD(int, open, (const char *pathname, int flags, mode_t mode), (const, override));

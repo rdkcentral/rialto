@@ -21,9 +21,11 @@
 #define FIREBOLT_RIALTO_COMMON_I_LINUX_WRAPPER_H_
 
 #include <fcntl.h>
+#include <functional>
 #include <memory>
 #include <signal.h>
 #include <sys/socket.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 namespace firebolt::rialto::common
@@ -99,10 +101,12 @@ public:
     /**
      * @brief Create a child process and block parent
      *
-     * @retval pid of child process on success in parent, 0 in child, on error, -1 is returned and errno is set to
-     *         indicate the error on parent.
+     * @param[in] function   : The function called after fork (the child must not return from wrapper function after
+     *                         calling fork)
+     *
+     * @retval value returned by function given as a parameter
      */
-    virtual pid_t vfork() const = 0;
+    virtual bool vfork(const std::function<bool(pid_t)> &function) const = 0;
 
     /**
      * @brief Duplicate a file descriptor
