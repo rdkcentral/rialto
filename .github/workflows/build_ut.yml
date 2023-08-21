@@ -48,8 +48,12 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Initialises the repo ready to run unittests
-      - name: Initialise repo
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: checkout repo
+        uses: actions/checkout@v3
+
+      # Initialises the host ready to run unittests
+      - name: Initialise host
         uses: actions/init_ut@v1
 
       # Run the build script for servermain

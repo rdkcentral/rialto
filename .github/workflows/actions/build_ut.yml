@@ -17,7 +17,7 @@
 # limitations under the License.
 #
 
-# This action initalises the runner ready for rialto unittests.
+# This action initalises the host ready for rialto unittests.
 name: init_ut
 
 runs:
@@ -25,10 +25,6 @@ runs:
 
   # Steps represent a sequence of tasks that will be executed as part of the job
   steps:
-    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - name: checkout repo
-      uses: actions/checkout@v3
-
     # Setup github for python 3.8
     - name: setup python
       uses: actions/setup-python@v4
