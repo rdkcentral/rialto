@@ -54,7 +54,7 @@ jobs:
 
       # Initialises the host ready to run unittests
       - name: Initialise host
-        uses: actions/init_ut@v1
+        uses: $GITHUB_WORKSPACE/rialto/actions/init_ut@v1
 
       # Run the build script for servermain
       - name: build_ut.py script servermain
