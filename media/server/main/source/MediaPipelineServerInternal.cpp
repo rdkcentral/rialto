@@ -29,7 +29,6 @@
 
 namespace
 {
-constexpr unsigned int kMaxSkippedNoAvailableSamples = 200;
 constexpr std::chrono::milliseconds kNeedMediaDataResendTimeMs{100};
 const char *toString(const firebolt::rialto::MediaSourceStatus &status)
 {
@@ -595,22 +594,13 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
         // Incrementing the counter allows us to track the occurrences where the status is other than OK or EOS. By
         // limiting the logging of the warning message to the number of NO_AVAILABLE_SAMPLES in a row, we prevent the
         // warning from being repeatedly logged.
+
+        counter++;
         if (status == MediaSourceStatus::NO_AVAILABLE_SAMPLES)
-        {
-            counter++;
-            if (counter == kMaxSkippedNoAvailableSamples)
-            {
-                RIALTO_SERVER_LOG_WARN("Received NO_AVAILABLE_SAMPLES status consecutively %u times for "
-                                       "mediaSourceType: %s",
-                                       counter, (mediaSourceType == MediaSourceType::AUDIO) ? "AUDIO" : "VIDEO");
-                counter = 0;
-            }
-            else
-            {
-                RIALTO_SERVER_LOG_DEBUG("Data request for needDataRequestId: %u. NO_AVAILABLE_SAMPLES received: %u "
-                                        "consecutively",
-                                        needDataRequestId, counter);
-            }
+        {            
+            RIALTO_SERVER_LOG_DEBUG("Data request for needDataRequestId: %u. NO_AVAILABLE_SAMPLES received: %u "
+                                    "consecutively for mediaSourceType: %s",
+                                    needDataRequestId, counter, (mediaSourceType == MediaSourceType::AUDIO) ? "AUDIO" : "VIDEO");
         }
         else
         {
