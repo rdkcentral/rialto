@@ -529,14 +529,35 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
         RIALTO_SERVER_LOG_WARN("NeedData RequestID is not valid: %u", needDataRequestId);
         return true;
     }
-
+    m_activeRequests->erase(needDataRequestId);
+    
+    unsigned int &counter = m_noAvailableSamplesCounter[mediaSourceType];
     if (status != MediaSourceStatus::OK && status != MediaSourceStatus::EOS)
     {
-        RIALTO_SERVER_LOG_WARN("Data request for needDataRequestId: %u received with wrong status: %s",
+        // Incrementing the counter allows us to track the occurrences where the status is other than OK or EOS. By
+        // limiting the logging of the warning message to the number of NO_AVAILABLE_SAMPLES in a row, we prevent the
+        // warning from being repeatedly logged.
+
+        counter++;    
+        if(status == MediaSourceStatus::NO_AVAILABLE_SAMPLES)
+        {
+            RIALTO_SERVER_LOG_DEBUG("Data request for needDataRequestId: %u. NO_AVAILABLE_SAMPLES received: %u "
+                                    "consecutively for mediaSourceType: %s",
+                                    needDataRequestId, counter, (mediaSourceType == MediaSourceType::AUDIO) ? "AUDIO" : "VIDEO");            
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_WARN("Data request for needDataRequestId: %u received with wrong status: %s",
                                needDataRequestId, toString(status));
-        m_activeRequests->erase(needDataRequestId);
+            counter = 0;
+        }
         scheduleNotifyNeedMediaData(mediaSourceType);
         return true;
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_DEBUG("Data request for needDataRequestId: %u received with correct status", needDataRequestId);
+        counter = 0;        
     }
 
     try
