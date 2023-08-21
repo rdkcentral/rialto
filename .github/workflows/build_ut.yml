@@ -52,13 +52,6 @@ jobs:
       - name: checkout repo
         uses: actions/checkout@v3
 
-      # Setup lcov 2.0
-      - name: Install lcov library
-        run: |
-          pwd
-          sudo apt install tree
-          tree -f -L 2
-
       # Initialises the host ready to run unittests
       - name: Initialise host
         uses: ./.github/workflows/actions/init_ut
