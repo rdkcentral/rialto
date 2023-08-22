@@ -29,6 +29,7 @@ add_library(
         STATIC
 
         source/EventThread.cpp
+        source/LinuxWrapper.cpp
         source/Timer.cpp
     )
 
@@ -56,3 +57,10 @@ target_link_libraries (
         RialtoLogging
     )
 
+if ( COVERAGE_ENABLED )
+    target_link_libraries(
+        RialtoCommon
+        PRIVATE
+        gcov
+        )
+endif()
