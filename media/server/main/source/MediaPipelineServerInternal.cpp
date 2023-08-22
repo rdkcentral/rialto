@@ -533,11 +533,10 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
     unsigned int &counter = m_noAvailableSamplesCounter[mediaSourceType];
     if (status != MediaSourceStatus::OK && status != MediaSourceStatus::EOS)
     {
-        // Incrementing the counter allows us to track the occurrences where the status is other than OK or EOS. By
-        // limiting the logging of the warning message to the number of NO_AVAILABLE_SAMPLES in a row, we prevent the
-        // warning from being repeatedly logged.
+        // Incrementing the counter allows us to track the occurrences where the status is other than OK or EOS.
+        // This helps prevent unnecessary repetitive logging of the same message.
 
-        counter++;
+        ++counter;
         if (status == MediaSourceStatus::NO_AVAILABLE_SAMPLES)
         {
             RIALTO_SERVER_LOG_DEBUG("Data request for needDataRequestId: %u. NO_AVAILABLE_SAMPLES received: %u "
@@ -614,11 +613,10 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
     unsigned int &counter = m_noAvailableSamplesCounter[mediaSourceType];
     if (status != MediaSourceStatus::OK && status != MediaSourceStatus::EOS)
     {
-        // Incrementing the counter allows us to track the occurrences where the status is other than OK or EOS. By
-        // limiting the logging of the warning message to the number of NO_AVAILABLE_SAMPLES in a row, we prevent the
-        // warning from being repeatedly logged.
+        // Incrementing the counter allows us to track the occurrences where the status is other than OK or EOS.
+        // This helps prevent unnecessary repetitive logging of the same message.
 
-        counter++;
+        ++counter;
         if (status == MediaSourceStatus::NO_AVAILABLE_SAMPLES)
         {
             RIALTO_SERVER_LOG_DEBUG("Data request for needDataRequestId: %u. NO_AVAILABLE_SAMPLES received: %u "
