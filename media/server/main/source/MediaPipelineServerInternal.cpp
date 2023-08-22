@@ -534,7 +534,6 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
     if (status != MediaSourceStatus::OK && status != MediaSourceStatus::EOS)
     {
         // Incrementing the counter allows us to track the occurrences where the status is other than OK or EOS.
-        // This helps prevent unnecessary repetitive logging of the same message.
 
         ++counter;
         if (status == MediaSourceStatus::NO_AVAILABLE_SAMPLES)
@@ -614,7 +613,6 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
     if (status != MediaSourceStatus::OK && status != MediaSourceStatus::EOS)
     {
         // Incrementing the counter allows us to track the occurrences where the status is other than OK or EOS.
-        // This helps prevent unnecessary repetitive logging of the same message.
 
         ++counter;
         if (status == MediaSourceStatus::NO_AVAILABLE_SAMPLES)
