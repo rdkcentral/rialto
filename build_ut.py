@@ -241,8 +241,8 @@ def AddValgrind(suite, outputToFile, outputToXml):
 
 def generateCoverageReport(outputDir, resultsFile):
     lcovBaseCmd = ["lcov", "-c", "-i", "-d", ".", "--output-file", "coverage_base.info", "--exclude", "/usr/*",
-                   "--exclude", "*build/*", "--exclude", "*tests/*", "--exclude", "*GstWrapper*", "--exclude",
-                   "*GlibWrapper*", "--filter", "brace,function,trivial"]
+                   "--exclude", "*build/*", "--exclude", "*tests/*", "--exclude", "*Wrapper*",
+                   "--filter", "brace,function,trivial"]
     if resultsFile:
         lcovBaseStatus = runcmd(lcovBaseCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
     else:
@@ -250,8 +250,8 @@ def generateCoverageReport(outputDir, resultsFile):
     if not lcovBaseStatus:
         return False
     lcovTestCmd = ["lcov", "-c", "-d", ".", "--output-file", "coverage_test.info", "--exclude", "/usr/*",
-                   "--exclude", "*build/*", "--exclude", "*tests/*", "--exclude", "*GstWrapper*", "--exclude",
-                   "*GlibWrapper*", "--filter", "brace,function,trivial"]
+                   "--exclude", "*build/*", "--exclude", "*tests/*", "--exclude", "*Wrapper*","--filter",
+                   "brace,function,trivial"]
     if resultsFile:
         lcovTestStatus = runcmd(lcovTestCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
     else:
