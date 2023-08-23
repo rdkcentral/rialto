@@ -56,6 +56,7 @@ public:
         : m_capsMap{{"audio/mpeg, mpegversion=(int)4", {}},
                     {"audio/x-eac3", {}},
                     {"audio/x-opus", {}},
+                    {"audio/x-opus, channel-mapping-family=(int)0", {}},
                     {"video/x-av1", {}},
                     {"video/x-h264", {}},
                     {"video/x-h265", {}},
