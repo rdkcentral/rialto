@@ -68,10 +68,10 @@ void TestService::shutdown()
 bool TestService::setState(const std::string &appName, const firebolt::rialto::common::SessionServerState &state,
                            const firebolt::rialto::common::AppConfig &appConfig)
 {
-    fprintf(stderr, "______LOGCHECK1");
+    RIALTO_SERVER_MANAGER_LOG_ERROR("LOGCHECK1");
     if (state == firebolt::rialto::common::SessionServerState::ACTIVE)
     {
-        fprintf(stderr, "______LOGCHECK2");
+        RIALTO_SERVER_MANAGER_LOG_ERROR("LOGCHECK2");
         std::string activeApp = m_stateObserver->getActiveApp();
         if (!activeApp.empty() && activeApp != appName &&
             !m_serverManagerService->changeSessionServerState(activeApp,
@@ -83,10 +83,10 @@ bool TestService::setState(const std::string &appName, const firebolt::rialto::c
     }
     if (getState(appName) == firebolt::rialto::common::SessionServerState::NOT_RUNNING)
     {
-        fprintf(stderr, "______LOGCHECK3");
+        RIALTO_SERVER_MANAGER_LOG_ERROR("LOGCHECK3");
         return m_serverManagerService->initiateApplication(appName, state, appConfig);
     }
-    fprintf(stderr, "______LOGCHECK4");
+    RIALTO_SERVER_MANAGER_LOG_ERROR("LOGCHECK4");
     return m_serverManagerService->changeSessionServerState(appName, state);
 }
 
