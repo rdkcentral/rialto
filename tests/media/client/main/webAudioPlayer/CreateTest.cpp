@@ -68,6 +68,20 @@ TEST_F(RialtoClientCreateWebAudioPlayerTest, Create)
 }
 
 /**
+ * Test the factory
+ */
+TEST_F(RialtoClientCreateWebAudioPlayerTest, Factory)
+{
+    std::shared_ptr<firebolt::rialto::IWebAudioPlayerFactory> factory =
+      firebolt::rialto::IWebAudioPlayerFactory::createFactory();
+    EXPECT_NE(factory, nullptr);
+    EXPECT_EQ(factory->createWebAudioPlayer(m_webAudioPlayerClientMock,
+					    m_audioMimeType,
+					    m_priority,
+					    &m_config), nullptr);
+}
+
+/**
  * Test that a WebAudioPlayer object throws an exeption if failure occurs during construction.
  * In this case, createWebAudioPlayerIpc fails, returning a nullptr.
  */
@@ -107,4 +121,5 @@ TEST_F(RialtoClientCreateWebAudioPlayerTest, CreateWebAudioPlayerRegisterFailure
                                                                    m_priority, &m_config, m_webAudioPlayerIpcFactoryMock,
                                                                    m_clientControllerMock),
                  std::runtime_error);
+
 }

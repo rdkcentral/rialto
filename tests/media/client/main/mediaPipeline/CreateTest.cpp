@@ -18,6 +18,7 @@
  */
 
 #include "MediaPipelineTestBase.h"
+#include "MediaPipelineCapabilities.h"
 
 MATCHER(NotNull, "")
 {
@@ -60,6 +61,30 @@ TEST_F(RialtoClientCreateMediaPipelineTest, Create)
 
     // Unregister client on destroy
     EXPECT_CALL(m_clientControllerMock, unregisterClient(NotNull())).WillOnce(Return(true));
+}
+
+/**
+ * Test the factory
+ */
+TEST_F(RialtoClientCreateMediaPipelineTest, Factory1)
+{
+    std::shared_ptr<firebolt::rialto::IMediaPipelineFactory> factory =
+      firebolt::rialto::IMediaPipelineFactory::createFactory();
+    EXPECT_NE(factory, nullptr);
+    EXPECT_EQ(factory->createMediaPipeline(m_mediaPipelineClientMock, m_videoReq), nullptr);
+}
+
+
+/**
+ * Test the factory
+ */
+TEST_F(RialtoClientCreateMediaPipelineTest, Factory2)
+{
+    std::shared_ptr<firebolt::rialto::IMediaPipelineCapabilitiesFactory> factory =
+      firebolt::rialto::IMediaPipelineCapabilitiesFactory::createFactory();
+    EXPECT_NE(factory, nullptr);
+
+    EXPECT_EQ(factory->createMediaPipelineCapabilities(), nullptr);
 }
 
 /**

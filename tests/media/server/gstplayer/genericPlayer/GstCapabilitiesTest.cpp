@@ -129,6 +129,17 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_NoDecoders)
     EXPECT_FALSE(m_sut->isMimeTypeSupported("video/h264"));
 }
 
+/**
+ * Test the factory
+ */
+TEST_F(GstCapabilitiesTest, Factory)
+{
+    std::shared_ptr<firebolt::rialto::server::IGstCapabilitiesFactory> factory =
+      firebolt::rialto::server::IGstCapabilitiesFactory::getFactory();
+    EXPECT_NE(factory, nullptr);
+    EXPECT_NE(factory->createGstCapabilities(), nullptr);
+}
+
 TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OnlyOneDecoderWithNoPads)
 {
     char dummy = 0;

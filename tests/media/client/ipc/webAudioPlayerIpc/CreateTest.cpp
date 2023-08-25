@@ -79,6 +79,17 @@ TEST_F(RialtoClientCreateWebAudioPlayerIpcTest, CreateDestroy)
 }
 
 /**
+ * Test the factory
+ */
+TEST_F(RialtoClientCreateWebAudioPlayerIpcTest, Factory)
+{
+    std::shared_ptr<firebolt::rialto::client::IWebAudioPlayerIpcFactory> factory =
+      firebolt::rialto::client::IWebAudioPlayerIpcFactory::getFactory();
+    EXPECT_NE(factory, nullptr);
+    EXPECT_EQ(factory->createWebAudioPlayerIpc(m_clientMock, m_audioMimeType, m_priority, &m_config), nullptr);
+}
+
+/**
  * Test that a WebAudioPlayerIpc object not created when the ipc channel has not been created.
  */
 TEST_F(RialtoClientCreateWebAudioPlayerIpcTest, CreateNoIpcChannel)

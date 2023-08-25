@@ -38,6 +38,17 @@ protected:
     StrictMock<ClientControllerMock> m_clientControllerMock;
 };
 
+/**
+ * Test the factory
+ */
+TEST_F(RialtoClientControlTest, Factory)
+{
+    std::shared_ptr<firebolt::rialto::IControlFactory> factory =
+      firebolt::rialto::IControlFactory::createFactory();
+    EXPECT_NE(factory, nullptr);
+    EXPECT_EQ(factory->createControl(), nullptr);
+}
+
 TEST_F(RialtoClientControlTest, CreateDestroy)
 {
     std::unique_ptr<IControl> control;

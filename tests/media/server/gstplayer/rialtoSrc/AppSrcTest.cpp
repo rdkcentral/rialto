@@ -196,6 +196,17 @@ TEST_F(RialtoServerAppSrcGstSrcTest, SetupVideo)
 }
 
 /**
+ * Test the factory
+ */
+TEST_F(RialtoServerAppSrcGstSrcTest, Factory)
+{
+    std::shared_ptr<firebolt::rialto::server::IGstSrcFactory> factory =
+      firebolt::rialto::server::IGstSrcFactory::getFactory();
+    EXPECT_NE(factory, nullptr);
+    EXPECT_NE(factory->getGstSrc(), nullptr);
+}
+
+/**
  * Test that GstSrc can add and setup a audio source.
  */
 TEST_F(RialtoServerAppSrcGstSrcTest, SetupAudio)

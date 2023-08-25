@@ -47,3 +47,23 @@ TEST_F(RialtoServerCreateMediaPipelineTest, Create)
     // Objects are destroyed on the main thread
     mainThreadWillEnqueueTaskAndWait();
 }
+
+/**
+ * Test the factory
+ */
+TEST_F(RialtoServerCreateMediaPipelineTest, Factory)
+{
+    std::shared_ptr<firebolt::rialto::IMediaPipelineFactory> factory =
+      firebolt::rialto::IMediaPipelineFactory::createFactory();
+    EXPECT_NE(factory, nullptr);
+    EXPECT_EQ(factory->createMediaPipeline(m_mediaPipelineClientMock, m_videoReq), nullptr);
+
+#if 0
+    // TODO - look at this
+    std::shared_ptr<firebolt::rialto::server::MediaPipelineServerInternalFactory> factoryInternal =
+      firebolt::rialto::server::MediaPipelineServerInternalFactory::createFactory();
+    EXPECT_NE(factoryInternal->createMediaPipelineServerInternal(m_mediaPipelineClientMock, m_videoReq,
+								 m_kSessionId, m_sharedMemoryBufferMock,
+								 m_decryptionServiceMock), nullptr);
+#endif
+}

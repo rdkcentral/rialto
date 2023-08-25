@@ -45,6 +45,17 @@ TEST_F(RialtoServerCreateMediaKeysTest, Create)
 }
 
 /**
+ * Test the factory
+ */
+TEST_F(RialtoServerCreateMediaKeysTest, Factory)
+{
+    std::shared_ptr<firebolt::rialto::IMediaKeysFactory> factory =
+      firebolt::rialto::IMediaKeysFactory::createFactory();
+    EXPECT_NE(factory, nullptr);
+    EXPECT_EQ(factory->createMediaKeys(kWidevineKeySystem), nullptr);
+}
+
+/**
  * Test that a MediaKeys object throws an exeption if failure occurs during construction.
  * In this case, getMainThread fails, returning a nullptr.
  */

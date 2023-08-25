@@ -76,6 +76,18 @@ TEST_F(RialtoClientCreateMediaPipelineIpcTest, CreateDestroy)
 }
 
 /**
+ * Test the factory
+ */
+TEST_F(RialtoClientCreateMediaPipelineIpcTest, Factory)
+{
+    std::shared_ptr<firebolt::rialto::client::IMediaPipelineIpcFactory> factory =
+      firebolt::rialto::client::IMediaPipelineIpcFactory::getFactory();
+    EXPECT_NE(factory, nullptr);
+    EXPECT_EQ(factory->createMediaPipelineIpc(m_clientMock, m_videoReq), nullptr);
+}
+
+
+/**
  * Test that a MediaPipelineIpc object not created when the ipc channel has not been created.
  */
 TEST_F(RialtoClientCreateMediaPipelineIpcTest, CreateNoIpcChannel)

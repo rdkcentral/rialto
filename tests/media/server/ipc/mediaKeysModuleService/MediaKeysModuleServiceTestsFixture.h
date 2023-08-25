@@ -129,6 +129,8 @@ public:
 
     void expectInvalidControllerRequestFailure();
 
+    void testFactory();
+
 private:
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ClientMock>> m_clientMock;
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ServerMock>> m_serverMock;

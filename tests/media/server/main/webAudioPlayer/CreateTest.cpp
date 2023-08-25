@@ -59,6 +59,19 @@ TEST_F(RialtoServerCreateWebAudioPlayerTest, Create)
 }
 
 /**
+ * Test the factory
+ */
+TEST_F(RialtoServerCreateWebAudioPlayerTest, Factory)
+{
+    std::shared_ptr<firebolt::rialto::IWebAudioPlayerFactory> factory =
+      firebolt::rialto::IWebAudioPlayerFactory::createFactory();
+    EXPECT_NE(factory, nullptr);
+    EXPECT_EQ(factory->createWebAudioPlayer(m_webAudioPlayerClientMock, m_audioMimeType,
+					    m_priority, &m_config), nullptr);
+}
+
+
+/**
  * Test that a WebAudioPlayer object throws an exeception if the pcm config is null.
  */
 TEST_F(RialtoServerCreateWebAudioPlayerTest, InvalidPcmConfig)

@@ -169,3 +169,11 @@ void ControlModuleServiceTests::sendAckRequestAndExpectFailure()
 
     m_service->ack(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
+
+void ControlModuleServiceTests::testFactory()
+{
+    std::shared_ptr<firebolt::rialto::server::ipc::IControlModuleServiceFactory> factory =
+      firebolt::rialto::server::ipc::IControlModuleServiceFactory::createFactory();
+    EXPECT_NE(factory, nullptr);
+    EXPECT_NE(factory->create(m_playbackServiceMock, m_controlServiceMock), nullptr);
+}

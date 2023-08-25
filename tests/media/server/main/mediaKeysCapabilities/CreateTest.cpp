@@ -60,6 +60,23 @@ TEST_F(RialtoServerCreateMediaKeysCapabilitiesTest, Create)
 }
 
 /**
+ * Test the factory
+ */
+TEST_F(RialtoServerCreateMediaKeysCapabilitiesTest, Factory)
+{
+    std::shared_ptr<firebolt::rialto::IMediaKeysCapabilitiesFactory> factory =
+      firebolt::rialto::IMediaKeysCapabilitiesFactory::createFactory();
+    EXPECT_NE(factory, nullptr);
+#if 0
+    // TODO
+    // Call to factory->getMediaKeysCapabilities(); fails, perhaps pass in the other factories and then
+    // they can be mocked
+    EXPECT_NE(factory->getMediaKeysCapabilities(), nullptr);
+#endif
+}
+
+
+/**
  * Test that a MediaKeysCapabilities object throws an exeption if failure occurs during construction.
  * In this case, getOcdm fails, returning a nullptr.
  */
