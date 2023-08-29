@@ -71,6 +71,7 @@ target_include_directories (
         $<TARGET_PROPERTY:RialtoIpcCommon,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoPlayerPublic,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoCommon,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoPlayerCommon,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
 target_link_libraries (
@@ -79,6 +80,7 @@ target_link_libraries (
         PRIVATE
         RialtoIpcServer
         RialtoIpcCommon
+        RialtoPlayerCommon
         RialtoServerMain
         RialtoServerService
         protobuf::libprotobuf

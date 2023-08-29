@@ -70,6 +70,12 @@ void ControlModuleServiceTests::controlServiceWillRegisterClient()
     EXPECT_CALL(m_controlServiceMock, addControl(_, _));
 }
 
+void ControlModuleServiceTests::controlServiceWillFailToRegisterClient()
+{
+    EXPECT_CALL(*m_controllerMock, SetFailed(_));
+    EXPECT_CALL(*m_closureMock, Run());
+}
+
 void ControlModuleServiceTests::willFailDueToInvalidController()
 {
     EXPECT_CALL(*m_invalidControllerMock, SetFailed(_));
@@ -111,10 +117,17 @@ void ControlModuleServiceTests::sendClientDisconnected()
     m_service->clientDisconnected(m_clientMock);
 }
 
-void ControlModuleServiceTests::sendRegisterClientRequestAndReceiveResponse()
+void ControlModuleServiceTests::sendRegisterClientRequestAndReceiveResponse(
+    const std::optional<firebolt::rialto::common::SchemaVersion> &schemaVersion)
 {
     firebolt::rialto::RegisterClientRequest request;
     firebolt::rialto::RegisterClientResponse response;
+    if (schemaVersion)
+    {
+        request.mutable_client_schema_version()->set_major(schemaVersion->major());
+        request.mutable_client_schema_version()->set_minor(schemaVersion->minor());
+        request.mutable_client_schema_version()->set_patch(schemaVersion->patch());
+    }
 
     m_service->registerClient(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }

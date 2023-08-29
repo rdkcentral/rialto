@@ -21,6 +21,7 @@
 #include "ControlClientServerInternal.h"
 #include "IPlaybackService.h"
 #include "RialtoServerLogging.h"
+#include "SchemaVersion.h"
 #include <IIpcController.h>
 #include <algorithm>
 #include <cstdint>
@@ -32,6 +33,7 @@ int generateControlId()
     static int id{0};
     return id++;
 }
+const firebolt::rialto::common::SchemaVersion kSchemaVersion{1, 0, 0};
 } // namespace
 
 namespace firebolt::rialto::server::ipc
@@ -141,6 +143,25 @@ void ControlModuleService::registerClient(::google::protobuf::RpcController *con
         controller->SetFailed("ipc library provided incompatible controller object");
         done->Run();
         return;
+    }
+    if (request->has_client_schema_version())
+    {
+        const firebolt::rialto::common::SchemaVersion kClientSchemaVersion{request->client_schema_version().major(),
+                                                                           request->client_schema_version().minor(),
+                                                                           request->client_schema_version().patch()};
+        RIALTO_SERVER_LOG_DEBUG("Server schema version: %s, client schema version: %s", kSchemaVersion.str().c_str(),
+                                kClientSchemaVersion.str().c_str());
+        if (!kSchemaVersion.isCompatible(kClientSchemaVersion))
+        {
+            RIALTO_SERVER_LOG_ERROR("Server and client schema versions not compatible");
+            controller->SetFailed("Server and client schema versions not compatible");
+            done->Run();
+            return;
+        }
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_WARN("Client schema version not present in RegisterClientRequest message");
     }
     const int controlId{generateControlId()};
     auto ipcClient = ipcController->getClient();

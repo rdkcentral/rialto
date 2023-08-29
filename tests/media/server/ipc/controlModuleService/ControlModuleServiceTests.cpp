@@ -60,6 +60,23 @@ TEST_F(ControlModuleServiceTests, shouldRegisterClientAndUnregisterItWhenDestruc
     controlServiceWillRemoveControl();
 }
 
+TEST_F(ControlModuleServiceTests, shouldRegisterClientWithCompatibleSchemaVersion)
+{
+    clientWillConnect();
+    sendClientConnected();
+    controlServiceWillRegisterClient();
+    sendRegisterClientRequestAndReceiveResponse(firebolt::rialto::common::SchemaVersion{1, 1, 0});
+    controlServiceWillRemoveControl();
+}
+
+TEST_F(ControlModuleServiceTests, shouldFailToRegisterClientWithNotCompatibleSchemaVersion)
+{
+    clientWillConnect();
+    sendClientConnected();
+    controlServiceWillFailToRegisterClient();
+    sendRegisterClientRequestAndReceiveResponse(firebolt::rialto::common::SchemaVersion{2, 0, 0});
+}
+
 TEST_F(ControlModuleServiceTests, shouldGetSharedMemory)
 {
     playbackServiceWillGetSharedMemory();
