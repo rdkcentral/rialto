@@ -60,8 +60,8 @@ SchemaVersion getCurrentSchemaVersion()
 try
 {
     return SchemaVersion{static_cast<std::uint32_t>(std::stoul(PROJECT_VER_MAJOR)),
-                         static_cast<std::uint32_t>(std::stoi(PROJECT_VER_MINOR)),
-                         static_cast<std::uint32_t>(std::stoi(PROJECT_VER_PATCH))};
+                         static_cast<std::uint32_t>(std::stoul(PROJECT_VER_MINOR)),
+                         static_cast<std::uint32_t>(std::stoul(PROJECT_VER_PATCH))};
 }
 catch (const std::exception &e)
 {
