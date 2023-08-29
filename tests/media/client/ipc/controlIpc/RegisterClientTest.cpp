@@ -27,13 +27,46 @@ protected:
 };
 
 /**
- * Test that registerClient can be called successfully.
+ * Test that registerClient can be called successfully without schema version.
  */
-TEST_F(ControlIpcRegisterClientTest, Success)
+TEST_F(ControlIpcRegisterClientTest, SuccessWithoutSchemaVersion)
 {
     createControlIpc();
     expectIpcApiCallSuccess();
-    registerClient();
+    EXPECT_TRUE(registerClient());
+    destroyControlIpc();
+}
+
+/**
+ * Test that registerClient can be called successfully with the same schema version.
+ */
+TEST_F(ControlIpcRegisterClientTest, SuccessWithTheSameSchemaVersion)
+{
+    createControlIpc();
+    expectIpcApiCallSuccess();
+    EXPECT_TRUE(registerClient(firebolt::rialto::common::SchemaVersion{1, 0, 0}));
+    destroyControlIpc();
+}
+
+/**
+ * Test that registerClient can be called successfully with compatible schema version.
+ */
+TEST_F(ControlIpcRegisterClientTest, SuccessWithCompatibleSchemaVersion)
+{
+    createControlIpc();
+    expectIpcApiCallSuccess();
+    EXPECT_TRUE(registerClient(firebolt::rialto::common::SchemaVersion{1, 2, 3}));
+    destroyControlIpc();
+}
+
+/**
+ * Test that registerClient fails with not compatible schema version.
+ */
+TEST_F(ControlIpcRegisterClientTest, FailureWithNotCompatibleSchemaVersion)
+{
+    createControlIpc();
+    expectIpcApiCallSuccess();
+    EXPECT_FALSE(registerClient(firebolt::rialto::common::SchemaVersion{2, 0, 0}));
     destroyControlIpc();
 }
 
