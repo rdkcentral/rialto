@@ -48,4 +48,4 @@ private:
 const firebolt::rialto::common::SchemaVersion kCurrentSchemaVersion{1, 0, 0};
 } // namespace firebolt::rialto::common
 
-#endif // FIREBOLT_RIALTO_COMMON_I_SCHEMA_VERSION_H_
+#endif // FIREBOLT_RIALTO_COMMON_SCHEMA_VERSION_H_
