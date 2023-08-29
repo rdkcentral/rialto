@@ -33,7 +33,6 @@ int generateControlId()
     static int id{0};
     return id++;
 }
-const firebolt::rialto::common::SchemaVersion kSchemaVersion{1, 0, 0};
 } // namespace
 
 namespace firebolt::rialto::server::ipc
@@ -149,9 +148,9 @@ void ControlModuleService::registerClient(::google::protobuf::RpcController *con
         const firebolt::rialto::common::SchemaVersion kClientSchemaVersion{request->client_schema_version().major(),
                                                                            request->client_schema_version().minor(),
                                                                            request->client_schema_version().patch()};
-        RIALTO_SERVER_LOG_DEBUG("Server schema version: %s, client schema version: %s", kSchemaVersion.str().c_str(),
-                                kClientSchemaVersion.str().c_str());
-        if (!kSchemaVersion.isCompatible(kClientSchemaVersion))
+        RIALTO_SERVER_LOG_DEBUG("Server schema version: %s, client schema version: %s",
+                                common::kCurrentSchemaVersion.str().c_str(), kClientSchemaVersion.str().c_str());
+        if (!common::kCurrentSchemaVersion.isCompatible(kClientSchemaVersion))
         {
             RIALTO_SERVER_LOG_ERROR("Server and client schema versions not compatible");
             controller->SetFailed("Server and client schema versions not compatible");
