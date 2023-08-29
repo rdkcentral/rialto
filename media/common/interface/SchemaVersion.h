@@ -44,8 +44,8 @@ private:
     std::uint32_t m_patch;
 };
 
-// Current schema version, common for server and client. Change it when proto is updated
-const firebolt::rialto::common::SchemaVersion kCurrentSchemaVersion{1, 0, 0};
+// Current schema version, common for server and client. Taken from main CMakeLists.txt file
+SchemaVersion getCurrentSchemaVersion();
 } // namespace firebolt::rialto::common
 
 #endif // FIREBOLT_RIALTO_COMMON_SCHEMA_VERSION_H_

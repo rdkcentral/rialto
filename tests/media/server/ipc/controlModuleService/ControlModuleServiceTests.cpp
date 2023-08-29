@@ -65,16 +65,17 @@ TEST_F(ControlModuleServiceTests, shouldRegisterClientWithCompatibleSchemaVersio
     clientWillConnect();
     sendClientConnected();
     controlServiceWillRegisterClient();
-    sendRegisterClientRequestAndReceiveResponse(firebolt::rialto::common::SchemaVersion{1, 1, 0});
+    sendRegisterClientRequestAndReceiveResponse(firebolt::rialto::common::getCurrentSchemaVersion());
     controlServiceWillRemoveControl();
 }
 
 TEST_F(ControlModuleServiceTests, shouldFailToRegisterClientWithNotCompatibleSchemaVersion)
 {
+    firebolt::rialto::common::SchemaVersion schema{firebolt::rialto::common::getCurrentSchemaVersion().major() + 1, 0, 0};
     clientWillConnect();
     sendClientConnected();
     controlServiceWillFailToRegisterClient();
-    sendRegisterClientRequestAndReceiveResponse(firebolt::rialto::common::SchemaVersion{2, 0, 0});
+    sendRegisterClientRequestAndReceiveResponse(schema);
 }
 
 TEST_F(ControlModuleServiceTests, shouldGetSharedMemory)

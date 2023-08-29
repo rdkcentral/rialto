@@ -30,6 +30,14 @@ TEST(SchemaVersionTests, shouldInitialize)
     EXPECT_EQ(schema.patch(), 3);
 }
 
+TEST(SchemaVersionTests, shouldReturnCurrentSchemaVersion)
+{
+    const auto currentSchemaVersion{firebolt::rialto::common::getCurrentSchemaVersion()};
+    const std::string expectedSchemaVersion{std::string(PROJECT_VER_MAJOR) + "." + std::string(PROJECT_VER_MINOR) +
+                                            "." + std::string(PROJECT_VER_PATCH)};
+    EXPECT_EQ(currentSchemaVersion.str(), expectedSchemaVersion);
+}
+
 TEST(SchemaVersionTests, shouldEqual)
 {
     SchemaVersion schema1{1, 2, 3};

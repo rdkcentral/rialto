@@ -19,6 +19,11 @@
 
 #include "ControlIpcTestBase.h"
 
+namespace
+{
+const auto kCurrentSchemaVersion{firebolt::rialto::common::getCurrentSchemaVersion()};
+} // namespace
+
 class ControlIpcRegisterClientTest : public ControlIpcTestBase
 {
 protected:
@@ -44,7 +49,7 @@ TEST_F(ControlIpcRegisterClientTest, SuccessWithTheSameSchemaVersion)
 {
     createControlIpc();
     expectIpcApiCallSuccess();
-    EXPECT_TRUE(registerClient(firebolt::rialto::common::SchemaVersion{1, 0, 0}));
+    EXPECT_TRUE(registerClient(kCurrentSchemaVersion));
     destroyControlIpc();
 }
 
@@ -53,9 +58,12 @@ TEST_F(ControlIpcRegisterClientTest, SuccessWithTheSameSchemaVersion)
  */
 TEST_F(ControlIpcRegisterClientTest, SuccessWithCompatibleSchemaVersion)
 {
+    const firebolt::rialto::common::SchemaVersion schemaVersion{kCurrentSchemaVersion.major(),
+                                                                kCurrentSchemaVersion.minor() + 1,
+                                                                kCurrentSchemaVersion.patch() + 1};
     createControlIpc();
     expectIpcApiCallSuccess();
-    EXPECT_TRUE(registerClient(firebolt::rialto::common::SchemaVersion{1, 2, 3}));
+    EXPECT_TRUE(registerClient(schemaVersion));
     destroyControlIpc();
 }
 
@@ -64,9 +72,12 @@ TEST_F(ControlIpcRegisterClientTest, SuccessWithCompatibleSchemaVersion)
  */
 TEST_F(ControlIpcRegisterClientTest, FailureWithNotCompatibleSchemaVersion)
 {
+    const firebolt::rialto::common::SchemaVersion schemaVersion{kCurrentSchemaVersion.major() + 1,
+                                                                kCurrentSchemaVersion.minor(),
+                                                                kCurrentSchemaVersion.patch()};
     createControlIpc();
     expectIpcApiCallSuccess();
-    EXPECT_FALSE(registerClient(firebolt::rialto::common::SchemaVersion{2, 0, 0}));
+    EXPECT_FALSE(registerClient(schemaVersion));
     destroyControlIpc();
 }
 

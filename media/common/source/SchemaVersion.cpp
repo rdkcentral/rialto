@@ -55,4 +55,17 @@ std::uint32_t SchemaVersion::patch() const
 {
     return m_patch;
 }
+
+SchemaVersion getCurrentSchemaVersion()
+try
+{
+    return SchemaVersion{static_cast<std::uint32_t>(std::stoul(PROJECT_VER_MAJOR)),
+                         static_cast<std::uint32_t>(std::stoi(PROJECT_VER_MINOR)),
+                         static_cast<std::uint32_t>(std::stoi(PROJECT_VER_PATCH))};
+}
+catch (const std::exception &e)
+{
+    // If conversion can't be performed, return default version
+    return SchemaVersion{1, 0, 0};
+}
 } // namespace firebolt::rialto::common
