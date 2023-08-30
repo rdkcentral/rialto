@@ -32,21 +32,8 @@ protected:
 TEST_F(RialtoServerCreateWebAudioPlayerTest, Create)
 {
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_mainThreadFactoryMock, getMainThread()).WillOnce(Return(m_mainThreadMock));
-    EXPECT_CALL(*m_mainThreadMock, registerClient()).WillOnce(Return(m_kMainThreadClientId));
-    EXPECT_CALL(*m_sharedMemoryBufferMock,
-                mapPartition(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, m_webAudioPlayerHandle))
-        .WillOnce(Return(true));
-    EXPECT_CALL(*m_sharedMemoryBufferMock, getBuffer()).WillOnce(Return(&m_dataPtr));
-    EXPECT_CALL(*m_sharedMemoryBufferMock, getDataOffset(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO,
-                                                         m_webAudioPlayerHandle, MediaSourceType::AUDIO))
-        .WillOnce(Return(m_dataOffset));
-    EXPECT_CALL(*m_sharedMemoryBufferMock, getMaxDataLen(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO,
-                                                         m_webAudioPlayerHandle, MediaSourceType::AUDIO))
-        .WillOnce(Return(m_dataLen));
-    EXPECT_CALL(*m_gstPlayerFactoryMock, createGstWebAudioPlayer(_, m_priority))
-        .WillOnce(Return(ByMove(std::move(m_gstPlayer))));
-    EXPECT_CALL(*m_gstPlayerMock, setCaps(m_audioMimeType, &m_config));
+    expectConstructionOfWebAudioPlayerServerInternal();
+
 
     EXPECT_NO_THROW(m_webAudioPlayer =
                         std::make_unique<WebAudioPlayerServerInternal>(m_webAudioPlayerClientMock, m_audioMimeType,
@@ -59,15 +46,43 @@ TEST_F(RialtoServerCreateWebAudioPlayerTest, Create)
 }
 
 /**
- * Test the factory
+ * Test the external factory (this code is designed to fail)
  */
-TEST_F(RialtoServerCreateWebAudioPlayerTest, Factory)
+TEST_F(RialtoServerCreateWebAudioPlayerTest, ExternalFactoryFailure)
 {
     std::shared_ptr<firebolt::rialto::IWebAudioPlayerFactory> factory =
       firebolt::rialto::IWebAudioPlayerFactory::createFactory();
     EXPECT_NE(factory, nullptr);
+    // The following call is expected to fail
     EXPECT_EQ(factory->createWebAudioPlayer(m_webAudioPlayerClientMock, m_audioMimeType,
-					    m_priority, &m_config), nullptr);
+                                            m_priority, &m_config), nullptr);
+}
+
+/**
+ * Test the internal factory
+ */
+TEST_F(RialtoServerCreateWebAudioPlayerTest, InternalFactoryCreatesObject)
+{
+
+    std::shared_ptr<IWebAudioPlayerServerInternalFactory> factory =
+      firebolt::rialto::server::IWebAudioPlayerServerInternalFactory::createFactory();
+    EXPECT_NE(factory, nullptr);
+
+    mainThreadWillEnqueueTaskAndWait();
+    expectConstructionOfWebAudioPlayerServerInternal();
+
+    std::unique_ptr<IWebAudioPlayer> webAudioPlayerServer;
+    EXPECT_NO_THROW(webAudioPlayerServer =
+                    factory->createWebAudioPlayerServerInternal(m_webAudioPlayerClientMock, m_audioMimeType,
+                                                                m_priority, &m_config, m_sharedMemoryBufferMock,
+                                                                m_webAudioPlayerHandle, m_mainThreadFactoryMock,
+                                                                m_gstPlayerFactoryMock, m_timerFactoryMock));
+    EXPECT_NE(webAudioPlayerServer, nullptr);
+
+    // The returned object (IWebAudioPlayer) is expected to be a WebAudioPlayerServerInternal
+    m_webAudioPlayer.reset(dynamic_cast<WebAudioPlayerServerInternal*>( webAudioPlayerServer.release() ));
+    EXPECT_NE(m_webAudioPlayer, nullptr);
+    destroyWebAudioPlayer();
 }
 
 

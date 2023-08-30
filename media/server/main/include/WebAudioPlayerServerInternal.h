@@ -48,7 +48,10 @@ public:
     std::unique_ptr<IWebAudioPlayer>
     createWebAudioPlayerServerInternal(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
                                        const uint32_t priority, const WebAudioConfig *config,
-                                       const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle) const override;
+                                       const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle,
+                                       const std::shared_ptr<firebolt::rialto::server::IMainThreadFactory> &mainThreadFactory,
+                                       const std::shared_ptr<firebolt::rialto::server::IGstWebAudioPlayerFactory> &gstPlayerFactory,
+                                       std::shared_ptr<firebolt::rialto::common::ITimerFactory> timerFactory) const override;
 };
 
 /**

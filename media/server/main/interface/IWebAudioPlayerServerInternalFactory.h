@@ -38,6 +38,13 @@
 #include "ISharedMemoryBuffer.h"
 #include "IWebAudioPlayer.h"
 #include <MediaCommon.h>
+namespace firebolt::rialto::server {
+  class IMainThreadFactory;
+  class IGstWebAudioPlayerFactory;
+};
+namespace firebolt::rialto::common {
+  class ITimerFactory;
+};
 
 namespace firebolt::rialto::server
 {
@@ -72,7 +79,10 @@ public:
     virtual std::unique_ptr<IWebAudioPlayer>
     createWebAudioPlayerServerInternal(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
                                        const uint32_t priority, const WebAudioConfig *config,
-                                       const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle) const = 0;
+                                       const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle,
+                                       const std::shared_ptr<firebolt::rialto::server::IMainThreadFactory> &mainThreadFactory,
+                                       const std::shared_ptr<firebolt::rialto::server::IGstWebAudioPlayerFactory> &gstPlayerFactory,
+                                       std::shared_ptr<common::ITimerFactory> timerFactory) const = 0;
 };
 }; // namespace firebolt::rialto::server
 

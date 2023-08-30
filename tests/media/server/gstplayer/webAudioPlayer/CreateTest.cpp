@@ -54,10 +54,7 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, Factory)
     std::shared_ptr<firebolt::rialto::server::IGstWebAudioPlayerFactory> factory =
       firebolt::rialto::server::IGstWebAudioPlayerFactory::getFactory();
     EXPECT_NE(factory, nullptr);
-#if 0
-    // TODO - research why this fails
-    EXPECT_EQ(factory->createGstWebAudioPlayer(&m_gstPlayerClient, m_priority), nullptr);
-#endif
+    EXPECT_NE(factory->createGstWebAudioPlayer(&m_gstPlayerClient, m_priority), nullptr);
 }
 
 

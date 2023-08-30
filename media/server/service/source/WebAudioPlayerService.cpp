@@ -20,6 +20,9 @@
 #include "WebAudioPlayerService.h"
 #include "IWebAudioPlayer.h"
 #include "IWebAudioPlayerServerInternalFactory.h"
+#include "IMainThread.h"
+#include "IGstWebAudioPlayer.h"
+#include "ITimer.h"
 #include "RialtoServerLogging.h"
 #include <exception>
 #include <future>
@@ -72,11 +75,15 @@ bool WebAudioPlayerService::createWebAudioPlayer(int handle,
             return false;
         }
         auto shmBuffer = m_playbackService.getShmBuffer();
+
         m_webAudioPlayers.emplace(
             std::make_pair(handle,
                            m_webAudioPlayerFactory->createWebAudioPlayerServerInternal(webAudioPlayerClient,
                                                                                        audioMimeType, priority, config,
-                                                                                       shmBuffer, handle)));
+                                                                                       shmBuffer, handle,
+                                                                                       IMainThreadFactory::createFactory(),
+                                                                                       IGstWebAudioPlayerFactory::getFactory(),
+                                                                                       common::ITimerFactory::getFactory())));
         if (!m_webAudioPlayers.at(handle))
         {
             RIALTO_SERVER_LOG_ERROR("Could not create WebAudioPlayer for handle: %d", handle);

@@ -195,3 +195,22 @@ void WebAudioPlayerTestBase::expectCancelTimer()
     EXPECT_CALL(*m_timerMock, isActive()).WillOnce(Return(true)).RetiresOnSaturation();
     EXPECT_CALL(*m_timerMock, cancel()).RetiresOnSaturation();
 }
+
+void WebAudioPlayerTestBase::expectConstructionOfWebAudioPlayerServerInternal() {
+    EXPECT_CALL(*m_mainThreadFactoryMock, getMainThread()).WillOnce(Return(m_mainThreadMock));
+    EXPECT_CALL(*m_mainThreadMock, registerClient()).WillOnce(Return(m_kMainThreadClientId));
+    EXPECT_CALL(*m_sharedMemoryBufferMock,
+                mapPartition(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, m_webAudioPlayerHandle))
+        .WillOnce(Return(true));
+    EXPECT_CALL(*m_sharedMemoryBufferMock, getBuffer()).WillOnce(Return(&m_dataPtr));
+    EXPECT_CALL(*m_sharedMemoryBufferMock, getDataOffset(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO,
+                                                         m_webAudioPlayerHandle, MediaSourceType::AUDIO))
+        .WillOnce(Return(m_dataOffset));
+    EXPECT_CALL(*m_sharedMemoryBufferMock, getMaxDataLen(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO,
+                                                         m_webAudioPlayerHandle, MediaSourceType::AUDIO))
+        .WillOnce(Return(m_dataLen));
+    EXPECT_CALL(*m_gstPlayerFactoryMock, createGstWebAudioPlayer(_, m_priority))
+        .WillOnce(Return(ByMove(std::move(m_gstPlayer))));
+    EXPECT_CALL(*m_gstPlayerMock, setCaps(m_audioMimeType, &m_config));
+}
+

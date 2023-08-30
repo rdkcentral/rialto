@@ -66,16 +66,19 @@ WebAudioPlayerServerInternalFactory::createWebAudioPlayer(std::weak_ptr<IWebAudi
 
 std::unique_ptr<IWebAudioPlayer> WebAudioPlayerServerInternalFactory::createWebAudioPlayerServerInternal(
     std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType, const uint32_t priority,
-    const WebAudioConfig *config, const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle) const
+    const WebAudioConfig *config, const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle,
+    const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
+    const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory,
+    std::shared_ptr<common::ITimerFactory> timerFactory) const
 {
     std::unique_ptr<IWebAudioPlayer> webAudioPlayer;
     try
     {
         webAudioPlayer = std::make_unique<server::WebAudioPlayerServerInternal>(client, audioMimeType, priority, config,
                                                                                 shmBuffer, handle,
-                                                                                IMainThreadFactory::createFactory(),
-                                                                                IGstWebAudioPlayerFactory::getFactory(),
-                                                                                common::ITimerFactory::getFactory());
+                                                                                mainThreadFactory,
+                                                                                gstPlayerFactory,
+                                                                                timerFactory);
     }
     catch (const std::exception &e)
     {
