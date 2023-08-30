@@ -26,8 +26,10 @@
 #include "EventThreadMock.h"
 #include "IpcClientMock.h"
 #include "IpcModuleBase.h"
+#include "SchemaVersion.h"
 #include <gtest/gtest.h>
 #include <memory>
+#include <optional>
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::client;
@@ -59,7 +61,7 @@ protected:
 
     void createControlIpc();
     void destroyControlIpc();
-    void registerClient();
+    bool registerClient(const std::optional<firebolt::rialto::common::SchemaVersion> &schemaVersion = std::nullopt);
     void expectSubscribeEvents();
     void expectUnsubscribeEvents();
 };

@@ -19,6 +19,7 @@
 
 #include "ControlIpc.h"
 #include "RialtoClientLogging.h"
+#include "SchemaVersion.h"
 
 namespace
 {
@@ -122,6 +123,7 @@ bool ControlIpc::getSharedMemory(int32_t &fd, uint32_t &size)
 
 bool ControlIpc::registerClient()
 {
+    const auto kCurrentSchemaVersion{common::getCurrentSchemaVersion()};
     std::shared_ptr<::firebolt::rialto::ControlModule_Stub> controlStub = m_controlStub;
 
     if (!reattachChannelIfRequired())
@@ -132,6 +134,10 @@ bool ControlIpc::registerClient()
 
     firebolt::rialto::RegisterClientRequest request;
     firebolt::rialto::RegisterClientResponse response;
+    firebolt::rialto::SchemaVersion clientSchemaVersion;
+    request.mutable_client_schema_version()->set_major(kCurrentSchemaVersion.major());
+    request.mutable_client_schema_version()->set_minor(kCurrentSchemaVersion.minor());
+    request.mutable_client_schema_version()->set_patch(kCurrentSchemaVersion.patch());
     auto ipcController = m_ipc.createRpcController();
     auto blockingClosure = m_ipc.createBlockingClosure();
     controlStub->registerClient(ipcController.get(), &request, &response, blockingClosure.get());
@@ -147,6 +153,33 @@ bool ControlIpc::registerClient()
     }
 
     m_controlHandle = response.control_handle();
+
+    if (!response.has_server_schema_version())
+    {
+        RIALTO_CLIENT_LOG_WARN("Server proto schema version not known");
+        return true;
+    }
+
+    const common::SchemaVersion serverSchemaVersion{response.server_schema_version().major(),
+                                                    response.server_schema_version().minor(),
+                                                    response.server_schema_version().patch()};
+    if (kCurrentSchemaVersion == serverSchemaVersion)
+    {
+        RIALTO_CLIENT_LOG_DEBUG("Server and Client proto schema versions are equal");
+    }
+    else if (kCurrentSchemaVersion.isCompatible(serverSchemaVersion))
+    {
+        RIALTO_CLIENT_LOG_INFO("Server and Client proto schema versions are compatible. Server schema version: %s, "
+                               "Client schema version: %s",
+                               serverSchemaVersion.str().c_str(), kCurrentSchemaVersion.str().c_str());
+    }
+    else
+    {
+        RIALTO_CLIENT_LOG_ERROR("Server and Client proto schema versions are not compatible. Server schema version: "
+                                "%s, Client schema version: %s",
+                                serverSchemaVersion.str().c_str(), kCurrentSchemaVersion.str().c_str());
+        return false;
+    }
 
     return true;
 }

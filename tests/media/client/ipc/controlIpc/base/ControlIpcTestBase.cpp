@@ -62,7 +62,7 @@ void ControlIpcTestBase::destroyControlIpc()
     m_controlIpc.reset();
 }
 
-void ControlIpcTestBase::registerClient()
+bool ControlIpcTestBase::registerClient(const std::optional<firebolt::rialto::common::SchemaVersion> &schemaVersion)
 {
     EXPECT_CALL(*m_channelMock,
                 CallMethod(methodMatcher("registerClient"), m_controllerMock.get(), _, _, m_blockingClosureMock.get()))
@@ -72,9 +72,15 @@ void ControlIpcTestBase::registerClient()
                 firebolt::rialto::RegisterClientResponse *registerClientResponse =
                     dynamic_cast<firebolt::rialto::RegisterClientResponse *>(response);
                 registerClientResponse->set_control_handle(m_kHandleId);
+                if (schemaVersion)
+                {
+                    registerClientResponse->mutable_server_schema_version()->set_major(schemaVersion->major());
+                    registerClientResponse->mutable_server_schema_version()->set_minor(schemaVersion->minor());
+                    registerClientResponse->mutable_server_schema_version()->set_patch(schemaVersion->patch());
+                }
             })));
 
-    EXPECT_EQ(m_controlIpc->registerClient(), true);
+    return m_controlIpc->registerClient();
 }
 
 void ControlIpcTestBase::expectSubscribeEvents()
