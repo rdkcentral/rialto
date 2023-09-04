@@ -1306,16 +1306,6 @@ void GenericTasksTestsBase::shouldNotifyVideoUnderflow()
     EXPECT_CALL(testContext->m_gstPlayerClient, notifyBufferUnderflow(firebolt::rialto::MediaSourceType::VIDEO));
 }
 
-void GenericTasksTestsBase::shouldNotifyEndOfStream()
-{
-    EXPECT_CALL(testContext->m_gstPlayerClient, notifyPlaybackState(firebolt::rialto::PlaybackState::END_OF_STREAM));
-}
-
-void GenericTasksTestsBase::checkEndOfStreamNotified()
-{
-    EXPECT_TRUE(testContext->m_context.eosNotified);
-}
-
 void GenericTasksTestsBase::shouldStopWorkerThread()
 {
     EXPECT_CALL(testContext->m_gstPlayer, stopWorkerThread());

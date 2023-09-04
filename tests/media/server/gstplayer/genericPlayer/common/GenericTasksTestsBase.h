@@ -194,8 +194,6 @@ protected:
     void triggerVideoUnderflow();
     void checkUnderflowFlag(bool expected);
     void shouldNotifyVideoUnderflow();
-    void shouldNotifyEndOfStream();
-    void checkEndOfStreamNotified();
 
     // Shutdown test methods
     void shouldStopWorkerThread();
