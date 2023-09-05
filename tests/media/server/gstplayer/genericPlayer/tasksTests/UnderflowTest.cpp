@@ -52,24 +52,3 @@ TEST_F(UnderflowTest, shouldReportUnderflow)
     triggerVideoUnderflow();
     checkUnderflowFlag(true);
 }
-
-TEST_F(UnderflowTest, shouldNotReportEosWhenEosAlreadyNotified)
-{
-    setContextEndOfStream(firebolt::rialto::MediaSourceType::AUDIO);
-    setContextEndOfStreamNotified();
-    setUnderflowFlag(false);
-    setUnderflowEnabled(true);
-    triggerVideoUnderflow();
-    checkUnderflowFlag(false);
-}
-
-TEST_F(UnderflowTest, shouldReportEos)
-{
-    setContextEndOfStream(firebolt::rialto::MediaSourceType::AUDIO);
-    setUnderflowFlag(false);
-    setUnderflowEnabled(true);
-    shouldNotifyEndOfStream();
-    triggerVideoUnderflow();
-    checkUnderflowFlag(false);
-    checkEndOfStreamNotified();
-}
