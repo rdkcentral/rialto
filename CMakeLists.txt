@@ -20,6 +20,11 @@
 cmake_minimum_required( VERSION 3.10 )
 project( Rialto LANGUAGES C CXX VERSION 1.0.0 )
 
+# Preprocesser Variable
+add_compile_definitions(PROJECT_VER_MAJOR="${PROJECT_VERSION_MAJOR}")
+add_compile_definitions(PROJECT_VER_MINOR="${PROJECT_VERSION_MINOR}")
+add_compile_definitions(PROJECT_VER_PATCH="${PROJECT_VERSION_PATCH}")
+
 set(CMAKE_CXX_STANDARD 17)
 
 if ( COVERAGE_ENABLED )

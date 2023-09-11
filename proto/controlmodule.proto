@@ -45,12 +45,32 @@ message GetSharedMemoryResponse {
 }
 
 /**
+ * @brief Schema version
+ *
+ * @param[in] major  : The number determines, if schemas are compatibile.
+ * @param[in] minor  : The number determines, if public API or proto schema is the same.
+ * @param[in] patch  : The number determines, if implementation has the same version.
+ *
+ */
+ message SchemaVersion {
+    optional uint32 major = 1;
+    optional uint32 minor = 2;
+    optional uint32 patch = 3;
+ }
+
+/**
  * @brief Register new client
+ *
+ * @param[in] client_schema_version  : The version of protobuf interface used by client.
+ *
+ * @returns The control handle and version of protobuf interface used by server.
  */
 message RegisterClientRequest {
+    optional SchemaVersion client_schema_version = 1;
 }
 message RegisterClientResponse {
     required int32 control_handle = 1;
+    optional SchemaVersion server_schema_version = 2;
 }
 
 /**

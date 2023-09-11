@@ -24,6 +24,8 @@ add_gtests (
         unittests/common/HealthcheckServiceTests.cpp
         unittests/common/SessionServerAppManagerTests.cpp
         unittests/common/SessionServerAppManagerTestsFixture.cpp
+        unittests/common/SessionServerAppTests.cpp
+        unittests/common/SessionServerAppTestsFixture.cpp
         unittests/common/UtilsTests.cpp
 
         unittests/ipc/IpcTests.cpp

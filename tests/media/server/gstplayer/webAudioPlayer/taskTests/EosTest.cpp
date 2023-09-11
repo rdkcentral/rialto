@@ -17,36 +17,20 @@
  * limitations under the License.
  */
 
-#include "tasks/webAudio/Eos.h"
-#include "GstWebAudioPlayerPrivateMock.h"
-#include "GstWrapperMock.h"
-#include <gst/gst.h>
-#include <gtest/gtest.h>
+#include "WebAudioTasksTestsBase.h"
 
-using testing::Return;
-using testing::StrictMock;
-
-class WebAudioEosTest : public testing::Test
+class WebAudioEosTest : public WebAudioTasksTestsBase
 {
-protected:
-    firebolt::rialto::server::WebAudioPlayerContext m_context{};
-    std::shared_ptr<firebolt::rialto::server::GstWrapperMock> m_gstWrapper{
-        std::make_shared<StrictMock<firebolt::rialto::server::GstWrapperMock>>()};
-    GstElement m_src{};
 };
 
 TEST_F(WebAudioEosTest, shouldSetEos)
 {
-    m_context.source = &m_src;
-    firebolt::rialto::server::tasks::webaudio::Eos task{m_context, m_gstWrapper};
-    EXPECT_CALL(*m_gstWrapper, gstAppSrcEndOfStream(GST_APP_SRC(m_context.source))).WillOnce(Return(GST_FLOW_OK));
-    task.execute();
+    shouldEndOfStreamSuccess();
+    triggerEos();
 }
 
 TEST_F(WebAudioEosTest, shouldFailToSetEos)
 {
-    m_context.source = &m_src;
-    firebolt::rialto::server::tasks::webaudio::Eos task{m_context, m_gstWrapper};
-    EXPECT_CALL(*m_gstWrapper, gstAppSrcEndOfStream(GST_APP_SRC(m_context.source))).WillOnce(Return(GST_FLOW_ERROR));
-    task.execute();
+    shouldEndOfStreamFailure();
+    triggerEos();
 }

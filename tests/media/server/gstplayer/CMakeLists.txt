@@ -20,7 +20,7 @@
 add_gtests(RialtoServerGstPlayerUnitTests
 
     #GstGenericPlayer unittests
-    genericPlayer/common/TasksTestsBase.cpp
+    genericPlayer/common/GenericTasksTestsBase.cpp
     genericPlayer/tasksTests/AttachSamplesTest.cpp
     genericPlayer/tasksTests/AttachSourceTest.cpp
     genericPlayer/tasksTests/DeepElementAddedTest.cpp
@@ -58,6 +58,7 @@ add_gtests(RialtoServerGstPlayerUnitTests
     genericPlayer/GstCapabilitiesTest.cpp
 
     #GstWebAudioPlayer unittests
+    webAudioPlayer/common/WebAudioTasksTestsBase.cpp
     webAudioPlayer/taskTests/WebAudioPlayerTaskFactoryTest.cpp
     webAudioPlayer/taskTests/PlayTest.cpp
     webAudioPlayer/taskTests/PauseTest.cpp

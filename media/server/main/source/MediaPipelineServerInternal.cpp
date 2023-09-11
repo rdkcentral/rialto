@@ -29,7 +29,6 @@
 
 namespace
 {
-constexpr unsigned int kMaxSkippedNoAvailableSamples = 10;
 constexpr std::chrono::milliseconds kNeedMediaDataResendTimeMs{100};
 const char *toString(const firebolt::rialto::MediaSourceStatus &status)
 {
@@ -531,13 +530,34 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
         return true;
     }
 
+    unsigned int &counter = m_noAvailableSamplesCounter[mediaSourceType];
     if (status != MediaSourceStatus::OK && status != MediaSourceStatus::EOS)
     {
-        RIALTO_SERVER_LOG_WARN("Data request for needDataRequestId: %u received with wrong status: %s",
-                               needDataRequestId, toString(status));
+        // Incrementing the counter allows us to track the occurrences where the status is other than OK or EOS.
+
+        ++counter;
+        if (status == MediaSourceStatus::NO_AVAILABLE_SAMPLES)
+        {
+            RIALTO_SERVER_LOG_DEBUG("Data request for needDataRequestId: %u. NO_AVAILABLE_SAMPLES received: %u "
+                                    "consecutively for mediaSourceType: %s",
+                                    needDataRequestId, counter,
+                                    (mediaSourceType == MediaSourceType::AUDIO) ? "AUDIO" : "VIDEO");
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_WARN("Data request for needDataRequestId: %u received with wrong status: %s",
+                                   needDataRequestId, toString(status));
+            counter = 0;
+        }
+
         m_activeRequests->erase(needDataRequestId);
         scheduleNotifyNeedMediaData(mediaSourceType);
         return true;
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_DEBUG("Data request for needDataRequestId: %u received with correct status", needDataRequestId);
+        counter = 0;
     }
 
     try
@@ -592,25 +612,15 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
     unsigned int &counter = m_noAvailableSamplesCounter[mediaSourceType];
     if (status != MediaSourceStatus::OK && status != MediaSourceStatus::EOS)
     {
-        // Incrementing the counter allows us to track the occurrences where the status is other than OK or EOS. By
-        // limiting the logging of the warning message to the number of NO_AVAILABLE_SAMPLES in a row, we prevent the
-        // warning from being repeatedly logged.
+        // Incrementing the counter allows us to track the occurrences where the status is other than OK or EOS.
+
+        ++counter;
         if (status == MediaSourceStatus::NO_AVAILABLE_SAMPLES)
         {
-            counter++;
-            if (counter == kMaxSkippedNoAvailableSamples)
-            {
-                RIALTO_SERVER_LOG_WARN("Received NO_AVAILABLE_SAMPLES status consecutively %u times for "
-                                       "mediaSourceType: %s",
-                                       counter, (mediaSourceType == MediaSourceType::AUDIO) ? "AUDIO" : "VIDEO");
-                counter = 0;
-            }
-            else
-            {
-                RIALTO_SERVER_LOG_DEBUG("Data request for needDataRequestId: %u. NO_AVAILABLE_SAMPLES received: %u "
-                                        "consecutively",
-                                        needDataRequestId, counter);
-            }
+            RIALTO_SERVER_LOG_DEBUG("Data request for needDataRequestId: %u. NO_AVAILABLE_SAMPLES received: %u "
+                                    "consecutively for mediaSourceType: %s",
+                                    needDataRequestId, counter,
+                                    (mediaSourceType == MediaSourceType::AUDIO) ? "AUDIO" : "VIDEO");
         }
         else
         {

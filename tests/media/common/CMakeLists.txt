@@ -35,6 +35,8 @@ add_gtests (
 
         mediaFrameWriterV2/CreateTest.cpp
         mediaFrameWriterV2/WriteFrameTest.cpp
+
+        schemaVersion/SchemaVersionTest.cpp
         )
 
 add_subdirectory(mocks)

@@ -17,9 +17,9 @@
  * limitations under the License.
  */
 
-#include "TasksTestsBase.h"
+#include "GenericTasksTestsBase.h"
 
-class UnderflowTest : public TasksTestsBase
+class UnderflowTest : public GenericTasksTestsBase
 {
 protected:
     UnderflowTest()
@@ -51,25 +51,4 @@ TEST_F(UnderflowTest, shouldReportUnderflow)
     shouldNotifyVideoUnderflow();
     triggerVideoUnderflow();
     checkUnderflowFlag(true);
-}
-
-TEST_F(UnderflowTest, shouldNotReportEosWhenEosAlreadyNotified)
-{
-    setContextEndOfStream(firebolt::rialto::MediaSourceType::AUDIO);
-    setContextEndOfStreamNotified();
-    setUnderflowFlag(false);
-    setUnderflowEnabled(true);
-    triggerVideoUnderflow();
-    checkUnderflowFlag(false);
-}
-
-TEST_F(UnderflowTest, shouldReportEos)
-{
-    setContextEndOfStream(firebolt::rialto::MediaSourceType::AUDIO);
-    setUnderflowFlag(false);
-    setUnderflowEnabled(true);
-    shouldNotifyEndOfStream();
-    triggerVideoUnderflow();
-    checkUnderflowFlag(false);
-    checkEndOfStreamNotified();
 }
