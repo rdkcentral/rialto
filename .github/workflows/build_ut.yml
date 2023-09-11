@@ -26,9 +26,9 @@ name: build_ut
 on:
   # Triggers the workflow on push or pull request events but only for the "master" branch
   push:
-    branches: [ "Split_unittests_prototype", "rdkcentral:Split_unittests_prototype" ]
+    branches: [ "master", "rdkcentral:master" ]
   pull_request:
-    branches: [ "Split_unittests_prototype", "rdkcentral:Split_unittests_prototype" ]
+    branches: [ "master", "rdkcentral:master" ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -64,6 +64,7 @@ jobs:
       # Processes the results of the unittests and the lcov output
       - name: Process output
         uses: ./.github/workflows/actions/process_results_ut
+        if: success() || failure()
         with:
           suite: 'servermain'
 
@@ -104,6 +105,7 @@ jobs:
       # Processes the results of the unittests and the lcov output
       - name: Process output
         uses: ./.github/workflows/actions/process_results_ut
+        if: success() || failure()
         with:
           suite: 'servergstplayer'
 
@@ -144,6 +146,7 @@ jobs:
       # Processes the results of the unittests and the lcov output
       - name: Process output
         uses: ./.github/workflows/actions/process_results_ut
+        if: success() || failure()
         with:
           suite: 'serveripc'
 
@@ -184,6 +187,7 @@ jobs:
       # Processes the results of the unittests and the lcov output
       - name: Process output
         uses: ./.github/workflows/actions/process_results_ut
+        if: success() || failure()
         with:
           suite: 'serverservice'
 
@@ -224,6 +228,7 @@ jobs:
       # Processes the results of the unittests and the lcov output
       - name: Process output
         uses: ./.github/workflows/actions/process_results_ut
+        if: success() || failure()
         with:
           suite: 'client'
 
@@ -264,6 +269,7 @@ jobs:
       # Processes the results of the unittests and the lcov output
       - name: Process output
         uses: ./.github/workflows/actions/process_results_ut
+        if: success() || failure()
         with:
           suite: 'clientipc'
 
@@ -304,6 +310,7 @@ jobs:
       # Processes the results of the unittests and the lcov output
       - name: Process output
         uses: ./.github/workflows/actions/process_results_ut
+        if: success() || failure()
         with:
           suite: 'common'
 
@@ -344,6 +351,7 @@ jobs:
       # Processes the results of the unittests and the lcov output
       - name: Process output
         uses: ./.github/workflows/actions/process_results_ut
+        if: success() || failure()
         with:
           suite: 'logging'
 
@@ -385,6 +393,7 @@ jobs:
       # Processes the results of the unittests and the lcov output
       - name: Process output
         uses: ./.github/workflows/actions/process_results_ut
+        if: success() || failure()
         with:
           suite: 'manager'
 
@@ -425,6 +434,7 @@ jobs:
       # Processes the results of the unittests and the lcov output
       - name: Process output
         uses: ./.github/workflows/actions/process_results_ut
+        if: success() || failure()
         with:
           suite: 'ipc'
 

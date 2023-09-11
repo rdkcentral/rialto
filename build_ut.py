@@ -280,7 +280,7 @@ def generateCoverageReport(outputDir, resultsFile, suites):
     else:
         genStatsStatus = False
     statsFile.close()
-    return True
+    return genHtmlStatus and genStatsStatus
 
 
 if __name__ == "__main__":

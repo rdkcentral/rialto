@@ -17,8 +17,8 @@
 # limitations under the License.
 #
 
-# This action initalises the host ready for rialto unittests.
-name: init_ut
+# This action process the results for the given suite after a successufl unittest run.
+name: process_results_ut
 
 inputs:
   suite:
