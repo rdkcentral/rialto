@@ -253,14 +253,8 @@ def generateCoverageReport(outputDir, resultsFile, suites):
         return False
 
     lcovTestCmd = ["lcov", "-c", "-d", ".", "--output-file", "coverage_test.info", "--exclude", "/usr/*",
-<<<<<<< HEAD
-                   "--exclude", "*build/*", "--exclude", "*tests/*", "--filter", "brace,function,trivial"]
-    if 'servergstplayer' in suites:
-        lcovTestCmd.extend(["--exclude", "*GstWrapper*", "--exclude","*GlibWrapper*"])
-=======
                    "--exclude", "*build/*", "--exclude", "*tests/*", "--exclude", "*Wrapper*","--filter",
                    "brace,function,trivial"]
->>>>>>> master
     if resultsFile:
         lcovTestStatus = runcmd(lcovTestCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
     else:
