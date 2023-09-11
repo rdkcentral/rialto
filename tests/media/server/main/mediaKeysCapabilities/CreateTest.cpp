@@ -62,17 +62,16 @@ TEST_F(RialtoServerCreateMediaKeysCapabilitiesTest, Create)
 /**
  * Test the factory
  */
-TEST_F(RialtoServerCreateMediaKeysCapabilitiesTest, Factory)
+TEST_F(RialtoServerCreateMediaKeysCapabilitiesTest, FactoryStubReturnsNull)
 {
     std::shared_ptr<firebolt::rialto::IMediaKeysCapabilitiesFactory> factory =
       firebolt::rialto::IMediaKeysCapabilitiesFactory::createFactory();
     EXPECT_NE(factory, nullptr);
-#if 0
-    // TODO
-    // Call to factory->getMediaKeysCapabilities(); fails, perhaps pass in the other factories and then
-    // they can be mocked
-    EXPECT_NE(factory->getMediaKeysCapabilities(), nullptr);
-#endif
+
+    // We expect the following to fail
+    // The test harness uses a stub for  IOcdmFactory::createFactory()  which is defined in
+    //    "./tests/media/server/stubs/wrappers/OcdmFactory.cpp" and returns null
+    EXPECT_EQ(factory->getMediaKeysCapabilities(), nullptr);
 }
 
 

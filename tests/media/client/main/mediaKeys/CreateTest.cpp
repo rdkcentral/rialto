@@ -28,6 +28,7 @@ using namespace firebolt::rialto::client;
 using ::testing::ByMove;
 using ::testing::Return;
 using ::testing::StrictMock;
+using ::testing::_;
 
 class RialtoClientCreateMediaKeysTest : public ::testing::Test
 {
@@ -59,12 +60,20 @@ TEST_F(RialtoClientCreateMediaKeysTest, Create)
 /**
  * Test the factory
  */
-TEST_F(RialtoClientCreateMediaKeysTest, Factory)
+TEST_F(RialtoClientCreateMediaKeysTest, FactoryCreatesObject)
 {
     std::shared_ptr<firebolt::rialto::IMediaKeysFactory> factory =
       firebolt::rialto::IMediaKeysFactory::createFactory();
     EXPECT_NE(factory, nullptr);
-    EXPECT_EQ(factory->createMediaKeys(m_keySystem), nullptr);
+
+    std::unique_ptr<IMediaKeys> mediaKeys;
+    std::unique_ptr<StrictMock<MediaKeysMock>> mediaKeysIpcMock = std::make_unique<StrictMock<MediaKeysMock>>();
+
+    EXPECT_CALL(*m_mediaKeysIpcFactoryMock, createMediaKeysIpc(m_keySystem))
+        .WillOnce(Return(ByMove(std::move(mediaKeysIpcMock))));
+
+    EXPECT_NO_THROW(mediaKeys = factory->createMediaKeys(m_keySystem, m_mediaKeysIpcFactoryMock));
+    EXPECT_NE(mediaKeys, nullptr);
 }
 
 /**

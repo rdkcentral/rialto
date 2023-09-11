@@ -55,9 +55,12 @@ std::shared_ptr<IWebAudioPlayerServerInternalFactory> IWebAudioPlayerServerInter
 }
 
 std::unique_ptr<IWebAudioPlayer>
-WebAudioPlayerServerInternalFactory::createWebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client,
-                                                          const std::string &audioMimeType, const uint32_t priority,
-                                                          const WebAudioConfig *config) const
+WebAudioPlayerServerInternalFactory::createWebAudioPlayer(
+    std::weak_ptr<IWebAudioPlayerClient> client,
+    const std::string &audioMimeType, const uint32_t priority,
+    const WebAudioConfig *config,
+    std::shared_ptr<client::IWebAudioPlayerIpcFactory> webAudioPlayerIpcFactory,
+    client::IClientController *clientController) const
 {
     RIALTO_SERVER_LOG_ERROR(
         "This function can't be used by rialto server. Please use createWebAudioPlayerServerInternal");

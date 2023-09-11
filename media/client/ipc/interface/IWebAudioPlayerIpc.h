@@ -33,6 +33,7 @@
 namespace firebolt::rialto::client
 {
 class IWebAudioPlayerIpc;
+class IIpcClient;
 
 /**
  * @brief IWebAudioPlayerIpc factory class, returns a concrete implementation of IWebAudioPlayerIpc
@@ -60,7 +61,8 @@ public:
     virtual std::unique_ptr<IWebAudioPlayerIpc> createWebAudioPlayerIpc(IWebAudioPlayerIpcClient *client,
                                                                         const std::string &audioMimeType,
                                                                         const uint32_t priority,
-                                                                        const WebAudioConfig *config) = 0;
+                                                                        const WebAudioConfig *config,
+                                                                        IIpcClient *ipcClient = 0) = 0;
 };
 
 /**

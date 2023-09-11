@@ -39,6 +39,8 @@ public:
     ControlModuleServiceTests();
     ~ControlModuleServiceTests() override;
 
+    void testFactoryCreatesObject();
+
     void clientWillConnect();
     void controlServiceWillRemoveControl();
     void controlServiceWillRegisterClient();
@@ -56,8 +58,6 @@ public:
     void sendGetSharedMemoryRequestAndExpectFailure();
     void sendAckRequestAndReceiveResponse();
     void sendAckRequestAndExpectFailure();
-
-    void testFactory();
 
 private:
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ClientMock>> m_clientMock;

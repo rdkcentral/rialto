@@ -37,6 +37,8 @@ public:
     MediaPipelineModuleServiceTests();
     ~MediaPipelineModuleServiceTests() override;
 
+    void testFactoryCreatesObject();
+
     void clientWillConnect();
     void clientWillDisconnect();
     void mediaPipelineServiceWillCreateSession();
@@ -116,8 +118,6 @@ public:
     void sendPostionChangeEvent();
     void sendQosEvent();
     void sendRenderFrameRequestAndReceiveResponse();
-
-    void testFactory();
 
 private:
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ClientMock>> m_clientMock;

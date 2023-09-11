@@ -117,7 +117,7 @@ TEST_F(RialtoServerCreateGstGenericPlayerTest, Factory)
 #if 0
     // TODO - the 4th parameter of the following method requires a IRdkGstreamerUtilsWrapperFactory
     EXPECT_NE(factory->createGstGenericPlayer(&m_gstPlayerClient, m_decryptionServiceMock, m_type,
-					      m_videoReq, nullptr), nullptr);
+                                              m_videoReq, nullptr), nullptr);
 #endif
 }
 

@@ -53,7 +53,7 @@ TEST_F(RialtoServerCreateWebAudioPlayerTest, ExternalFactoryFailure)
     std::shared_ptr<firebolt::rialto::IWebAudioPlayerFactory> factory =
       firebolt::rialto::IWebAudioPlayerFactory::createFactory();
     EXPECT_NE(factory, nullptr);
-    // The following call is expected to fail
+    // The following is expected to return null, and show an error log
     EXPECT_EQ(factory->createWebAudioPlayer(m_webAudioPlayerClientMock, m_audioMimeType,
                                             m_priority, &m_config), nullptr);
 }

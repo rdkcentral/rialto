@@ -33,6 +33,7 @@
 namespace firebolt::rialto::client
 {
 class IMediaPipelineIpc;
+class IIpcClient;
 
 /**
  * @brief IMediaPipelineIpc factory class, returns a concrete implementation of IMediaPipelineIpc
@@ -59,7 +60,8 @@ public:
      * @retval the new media player ipc instance or null on error.
      */
     virtual std::unique_ptr<IMediaPipelineIpc> createMediaPipelineIpc(IMediaPipelineIpcClient *client,
-                                                                      const VideoRequirements &videoRequirements) = 0;
+                                                                      const VideoRequirements &videoRequirements,
+                                                                      IIpcClient *ipcClient = 0) = 0;
 };
 
 /**

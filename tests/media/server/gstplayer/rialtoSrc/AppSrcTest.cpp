@@ -198,7 +198,7 @@ TEST_F(RialtoServerAppSrcGstSrcTest, SetupVideo)
 /**
  * Test the factory
  */
-TEST_F(RialtoServerAppSrcGstSrcTest, Factory)
+TEST_F(RialtoServerAppSrcGstSrcTest, FactoryCreatesObject)
 {
     std::shared_ptr<firebolt::rialto::server::IGstSrcFactory> factory =
       firebolt::rialto::server::IGstSrcFactory::getFactory();

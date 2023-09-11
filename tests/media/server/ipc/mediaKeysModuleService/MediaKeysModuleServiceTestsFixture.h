@@ -39,6 +39,8 @@ public:
     MediaKeysModuleServiceTests();
     ~MediaKeysModuleServiceTests() override;
 
+    void testFactoryCreatesObject();
+
     void clientWillConnect();
     void clientWillDisconnect();
     void cdmServiceWillCreateMediaKeys();
@@ -128,8 +130,6 @@ public:
     void sendKeyStatusesChangedEvent();
 
     void expectInvalidControllerRequestFailure();
-
-    void testFactory();
 
 private:
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ClientMock>> m_clientMock;

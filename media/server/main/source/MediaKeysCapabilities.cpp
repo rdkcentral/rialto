@@ -72,8 +72,8 @@ std::shared_ptr<IMediaKeysCapabilities> MediaKeysCapabilitiesFactory::getMediaKe
     try
     {
         mediaKeysCapabilities =
-            std::make_shared<server::MediaKeysCapabilities>(server::IOcdmFactory::createFactory(),
-                                                            server::IOcdmSystemFactory::createFactory());
+          std::make_shared<server::MediaKeysCapabilities>(server::IOcdmFactory::createFactory(),
+                                                          server::IOcdmSystemFactory::createFactory());
     }
     catch (const std::exception &e)
     {
@@ -92,6 +92,11 @@ MediaKeysCapabilities::MediaKeysCapabilities(std::shared_ptr<IOcdmFactory> ocdmF
     : m_ocdmSystemFactory{ocdmSystemFactory}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    if (!ocdmFactory)
+    {
+        throw std::runtime_error("ocdmFactory invalid");
+    }
 
     m_ocdm = ocdmFactory->getOcdm();
     if (!m_ocdm)

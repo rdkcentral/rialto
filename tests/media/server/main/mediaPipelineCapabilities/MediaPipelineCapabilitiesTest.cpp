@@ -71,7 +71,7 @@ TEST_F(MediaPipelineCapabilitiesTest, failToCreateMediaPipelineCapabilities)
 /**
  * Test the factory
  */
-TEST_F(MediaPipelineCapabilitiesTest, Factory)
+TEST_F(MediaPipelineCapabilitiesTest, FactoryCreatesObject)
 {
     std::shared_ptr<firebolt::rialto::IMediaPipelineCapabilitiesFactory> factory =
       firebolt::rialto::IMediaPipelineCapabilitiesFactory::createFactory();

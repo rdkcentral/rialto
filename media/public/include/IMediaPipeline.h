@@ -38,6 +38,10 @@
 #include "IMediaPipelineClient.h"
 #include <MediaCommon.h>
 
+namespace firebolt::rialto::client {
+class IMediaPipelineIpcFactory;
+class IClientController;
+};
 namespace firebolt::rialto
 {
 class IMediaPipeline;
@@ -67,7 +71,9 @@ public:
      * @retval the new backend instance or null on error.
      */
     virtual std::unique_ptr<IMediaPipeline> createMediaPipeline(std::weak_ptr<IMediaPipelineClient> client,
-                                                                const VideoRequirements &videoRequirements) const = 0;
+                                   const VideoRequirements &videoRequirements,
+                                   std::shared_ptr<client::IMediaPipelineIpcFactory> mediaPipelineIpcFactory = {},
+                                   client::IClientController *clientController = 0) const = 0;
 };
 
 /**

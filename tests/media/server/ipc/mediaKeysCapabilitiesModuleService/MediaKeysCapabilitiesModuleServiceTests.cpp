@@ -49,7 +49,7 @@ TEST_F(MediaKeysCapabilitiesModuleServiceTests, shouldFailToGetSupportedKeySyste
     sendGetSupportedKeySystemVersionRequestAndExpectFailure();
 }
 
-TEST_F(MediaKeysCapabilitiesModuleServiceTests, Factory)
+TEST_F(MediaKeysCapabilitiesModuleServiceTests, FactoryCreatesObject)
 {
-    testFactory();
+    testFactoryCreatesObject();
 }

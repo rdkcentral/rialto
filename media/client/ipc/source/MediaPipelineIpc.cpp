@@ -49,14 +49,22 @@ std::shared_ptr<IMediaPipelineIpcFactory> IMediaPipelineIpcFactory::getFactory()
 
 std::unique_ptr<IMediaPipelineIpc>
 MediaPipelineIpcFactory::createMediaPipelineIpc(IMediaPipelineIpcClient *client,
-                                                const VideoRequirements &videoRequirements)
+                                                const VideoRequirements &videoRequirements,
+                                                IIpcClient *ipcClient)
 {
     std::unique_ptr<IMediaPipelineIpc> mediaPipelineIpc;
     try
     {
+        if (!ipcClient)
+        {
+            ipcClient = &IIpcClientAccessor::instance().getIpcClient();
+        }
+
         mediaPipelineIpc =
-            std::make_unique<MediaPipelineIpc>(client, videoRequirements, IIpcClientAccessor::instance().getIpcClient(),
-                                               firebolt::rialto::common::IEventThreadFactory::createFactory());
+            std::make_unique<MediaPipelineIpc>(client, videoRequirements,
+                                               *ipcClient,
+                                               firebolt::rialto::common::IEventThreadFactory::createFactory()
+                                               );
     }
     catch (const std::exception &e)
     {

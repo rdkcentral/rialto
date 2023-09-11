@@ -997,7 +997,7 @@ void MediaKeysModuleServiceTests::expectInvalidControllerRequestFailure()
     EXPECT_CALL(*m_closureMock, Run());
 }
 
-void MediaKeysModuleServiceTests::testFactory()
+void MediaKeysModuleServiceTests::testFactoryCreatesObject()
 {
     std::shared_ptr<firebolt::rialto::server::ipc::IMediaKeysModuleServiceFactory> factory =
       firebolt::rialto::server::ipc::IMediaKeysModuleServiceFactory::createFactory();

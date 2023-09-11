@@ -49,7 +49,7 @@ void MediaPipelineTestBase::createMediaPipeline()
 
     EXPECT_CALL(m_clientControllerMock, registerClient(_, _))
         .WillOnce(DoAll(SetArgReferee<1>(ApplicationState::RUNNING), Return(true)));
-    EXPECT_CALL(*m_mediaPipelineIpcFactoryMock, createMediaPipelineIpc(_, _))
+    EXPECT_CALL(*m_mediaPipelineIpcFactoryMock, createMediaPipelineIpc(_, _, _))
         .WillOnce(DoAll(SaveArg<0>(&m_mediaPipelineCallback), Return(ByMove(std::move(mediaPipelineIpcMock)))));
 
     EXPECT_NO_THROW(m_mediaPipeline = std::make_unique<MediaPipeline>(m_mediaPipelineClientMock, videoReq,

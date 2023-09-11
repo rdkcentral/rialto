@@ -32,9 +32,9 @@ TEST_F(MediaPipelineModuleServiceTests, shouldConnectClient)
 /**
  * Test the factory
  */
-TEST_F(MediaPipelineModuleServiceTests, Factory)
+TEST_F(MediaPipelineModuleServiceTests, FactoryCreatesObject)
 {
-    testFactory();
+    testFactoryCreatesObject();
 }
 
 

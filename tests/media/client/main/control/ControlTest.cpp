@@ -41,7 +41,7 @@ protected:
 /**
  * Test the factory
  */
-TEST_F(RialtoClientControlTest, Factory)
+TEST_F(RialtoClientControlTest, FactoryFails)
 {
     std::shared_ptr<firebolt::rialto::IControlFactory> factory =
       firebolt::rialto::IControlFactory::createFactory();

@@ -49,7 +49,7 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, CreateDestroyLlamaSuccess)
 /**
  * Test the factory
  */
-TEST_F(RialtoServerCreateGstWebAudioPlayerTest, Factory)
+TEST_F(RialtoServerCreateGstWebAudioPlayerTest, FactoryCreatesObject)
 {
     std::shared_ptr<firebolt::rialto::server::IGstWebAudioPlayerFactory> factory =
       firebolt::rialto::server::IGstWebAudioPlayerFactory::getFactory();

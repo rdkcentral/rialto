@@ -37,6 +37,8 @@ public:
     MediaKeysCapabilitiesModuleServiceTests();
     ~MediaKeysCapabilitiesModuleServiceTests() override;
 
+    void testFactoryCreatesObject();
+
     void clientWillConnect();
     void cdmServiceWillGetSupportedKeySystems();
     void cdmServiceWillSupportsKeySystem();
@@ -48,8 +50,6 @@ public:
     void sendSupportsKeySystemRequestAndReceiveResponse();
     void sendGetSupportedKeySystemVersionRequestAndReceiveResponse();
     void sendGetSupportedKeySystemVersionRequestAndExpectFailure();
-
-    void testFactory();
 
 private:
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ClientMock>> m_clientMock;

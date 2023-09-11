@@ -84,7 +84,7 @@ TEST_F(ControlModuleServiceTests, shouldAck)
     sendAckRequestAndReceiveResponse();
 }
 
-TEST_F(ControlModuleServiceTests, Factory)
+TEST_F(ControlModuleServiceTests, FactoryCreatesObject)
 {
-    testFactory();
+    testFactoryCreatesObject();
 }

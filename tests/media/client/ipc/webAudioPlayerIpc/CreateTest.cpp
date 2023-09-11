@@ -81,12 +81,35 @@ TEST_F(RialtoClientCreateWebAudioPlayerIpcTest, CreateDestroy)
 /**
  * Test the factory
  */
-TEST_F(RialtoClientCreateWebAudioPlayerIpcTest, Factory)
+TEST_F(RialtoClientCreateWebAudioPlayerIpcTest, FactoryCreatesObject)
 {
     std::shared_ptr<firebolt::rialto::client::IWebAudioPlayerIpcFactory> factory =
       firebolt::rialto::client::IWebAudioPlayerIpcFactory::getFactory();
     EXPECT_NE(factory, nullptr);
-    EXPECT_EQ(factory->createWebAudioPlayerIpc(m_clientMock, m_audioMimeType, m_priority, &m_config), nullptr);
+
+    /* create media player */
+    expectInitIpc();
+    expectSubscribeEvents();
+    expectIpcApiCallSuccess();
+
+    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("createWebAudioPlayer"), m_controllerMock.get(),
+                                           createWebAudioPlayerRequestMatcher(m_audioMimeType, m_priority, &m_config),
+                                           _, m_blockingClosureMock.get()))
+        .WillOnce(WithArgs<3>(Invoke(this, &WebAudioPlayerIpcTestBase::setCreateWebAudioPlayerResponse)));
+
+    EXPECT_NO_THROW(m_webAudioPlayerIpc = factory->createWebAudioPlayerIpc(m_clientMock, m_audioMimeType, m_priority, &m_config, &m_ipcClientMock));
+    EXPECT_NE(m_webAudioPlayerIpc, nullptr);
+
+    /* destroy media player */
+    expectIpcApiCallSuccess();
+    expectUnsubscribeEvents();
+
+    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("destroyWebAudioPlayer"), m_controllerMock.get(),
+                                           destroyWebAudioPlayerRequestMatcher(m_webAaudioPlayerHandle), _,
+                                           m_blockingClosureMock.get()));
+
+    m_webAudioPlayerIpc.reset();
+    EXPECT_EQ(m_webAudioPlayerIpc, nullptr);
 }
 
 /**

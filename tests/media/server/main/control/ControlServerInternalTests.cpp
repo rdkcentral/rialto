@@ -97,7 +97,7 @@ TEST_F(ControlServerInternalTests, shouldNotSendPingEventInUnknownState)
 TEST_F(ControlServerInternalTests, Factory)
 {
     std::shared_ptr<firebolt::rialto::IControlFactory> factory =
-      firebolt::rialto::IControlFactory::createFactory();
+        firebolt::rialto::IControlFactory::createFactory();
     EXPECT_NE(factory, nullptr);
     EXPECT_EQ(factory->createControl(), nullptr);
 }

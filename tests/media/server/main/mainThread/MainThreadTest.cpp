@@ -70,7 +70,7 @@ TEST_F(MainThreadTests, CreateDestroy)
 /**
  * Test the factory
  */
-TEST_F(MainThreadTests, Factory)
+TEST_F(MainThreadTests, FactoryCreatesObject)
 {
     std::shared_ptr<firebolt::rialto::server::IMainThreadFactory> factory =
       firebolt::rialto::server::IMainThreadFactory::createFactory();

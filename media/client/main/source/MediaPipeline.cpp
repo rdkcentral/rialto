@@ -117,16 +117,26 @@ std::shared_ptr<IMediaPipelineFactory> IMediaPipelineFactory::createFactory()
 }
 
 std::unique_ptr<IMediaPipeline> MediaPipelineFactory::createMediaPipeline(std::weak_ptr<IMediaPipelineClient> client,
-                                                                          const VideoRequirements &videoRequirements) const
+                                                                          const VideoRequirements &videoRequirements,
+                                                                          std::shared_ptr<client::IMediaPipelineIpcFactory> mediaPipelineIpcFactory,
+                                                                          client::IClientController *clientController) const
 {
     std::unique_ptr<IMediaPipeline> mediaPipeline;
     try
     {
+        if (!mediaPipelineIpcFactory)
+        {
+            mediaPipelineIpcFactory = client::IMediaPipelineIpcFactory::getFactory();
+        }
+        if (!clientController)
+        {
+            clientController = &client::IClientControllerAccessor::instance().getClientController();
+        }
+
         mediaPipeline =
-            std::make_unique<client::MediaPipeline>(client, videoRequirements,
-                                                    client::IMediaPipelineIpcFactory::getFactory(),
+            std::make_unique<client::MediaPipeline>(client, videoRequirements, mediaPipelineIpcFactory,
                                                     common::IMediaFrameWriterFactory::getFactory(),
-                                                    client::IClientControllerAccessor::instance().getClientController());
+                                                    *clientController);
     }
     catch (const std::exception &e)
     {
@@ -154,6 +164,8 @@ MediaPipeline::MediaPipeline(std::weak_ptr<IMediaPipelineClient> client, const V
     }
 
     m_mediaPipelineIpc = mediaPipelineIpcFactory->createMediaPipelineIpc(this, videoRequirements);
+
+
     if (!m_mediaPipelineIpc)
     {
         (void)m_clientController.unregisterClient(this);

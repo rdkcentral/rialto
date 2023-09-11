@@ -35,6 +35,11 @@
 #include <stdint.h>
 #include <string>
 
+namespace firebolt::rialto::client
+{
+class IWebAudioPlayerIpcFactory;
+class IClientController;
+};
 namespace firebolt::rialto
 {
 class IWebAudioPlayer;
@@ -63,6 +68,8 @@ public:
      * @param[in] audioMimeType: The audio encoding format, currently only "audio/x-raw" (PCM)
      * @param[in] priority:      Priority value for this pipeline.
      * @param[in] config:        Additional type dependent configuration data or nullptr
+     * @param[in] webAudioPlayerIpcFactory: Leave as the default argument unless testing
+     * @param[in] clientController: Leave as the default argument unless testing
      *
      * Some platforms have limited numbers of audio playbacks that can be mixed. The client application
      * should therefore assign a priority to each audio player it creates, starting with priority 1 for
@@ -72,10 +79,13 @@ public:
      *
      * @retval the new Web Audio Player instance or null on error.
      */
-    virtual std::unique_ptr<IWebAudioPlayer> createWebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client,
-                                                                  const std::string &audioMimeType,
-                                                                  const uint32_t priority,
-                                                                  const WebAudioConfig *config) const = 0;
+    virtual std::unique_ptr<IWebAudioPlayer> createWebAudioPlayer(
+        std::weak_ptr<IWebAudioPlayerClient> client,
+        const std::string &audioMimeType,
+        const uint32_t priority,
+        const WebAudioConfig *config,
+        std::shared_ptr<client::IWebAudioPlayerIpcFactory> webAudioPlayerIpcFactory = {},
+        client::IClientController *clientController = 0) const = 0;
 };
 
 /**

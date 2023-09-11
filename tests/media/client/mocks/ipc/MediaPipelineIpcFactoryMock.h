@@ -33,7 +33,9 @@ public:
     virtual ~MediaPipelineIpcFactoryMock() = default;
 
     MOCK_METHOD(std::unique_ptr<IMediaPipelineIpc>, createMediaPipelineIpc,
-                (IMediaPipelineIpcClient * client, const VideoRequirements &videoRequirements), (override));
+                (IMediaPipelineIpcClient * client,
+                 const VideoRequirements &videoRequirements,
+                 IIpcClient *ipcClient), (override));
 };
 } // namespace firebolt::rialto::client
 

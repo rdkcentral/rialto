@@ -39,7 +39,8 @@ class WebAudioPlayerIpcFactory : public IWebAudioPlayerIpcFactory
 public:
     std::unique_ptr<IWebAudioPlayerIpc> createWebAudioPlayerIpc(IWebAudioPlayerIpcClient *client,
                                                                 const std::string &audioMimeType, const uint32_t priority,
-                                                                const WebAudioConfig *config) override;
+                                                                const WebAudioConfig *config,
+                                                                IIpcClient *ipcClient) override;
 };
 
 /**

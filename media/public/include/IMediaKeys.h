@@ -35,6 +35,10 @@
 #include "IMediaKeysClient.h"
 #include "MediaCommon.h"
 
+namespace firebolt::rialto::client
+{
+class IMediaKeysIpcFactory;
+};
 namespace firebolt::rialto
 {
 class IMediaKeys;
@@ -62,7 +66,8 @@ public:
      *
      * @retval the new media keys instance or null on error.
      */
-    virtual std::unique_ptr<IMediaKeys> createMediaKeys(const std::string &keySystem) const = 0;
+    virtual std::unique_ptr<IMediaKeys> createMediaKeys(const std::string &keySystem,
+                   std::shared_ptr<firebolt::rialto::client::IMediaKeysIpcFactory> mediaKeysIpcFactory = {}) const = 0;
 };
 
 /**

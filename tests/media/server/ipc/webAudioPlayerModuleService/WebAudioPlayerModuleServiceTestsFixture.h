@@ -37,6 +37,8 @@ public:
     WebAudioPlayerModuleServiceTests();
     ~WebAudioPlayerModuleServiceTests() override;
 
+    void testFactoryCreatesObject();
+
     void clientWillConnect();
     void clientWillDisconnect(int handle);
     void webAudioPlayerServiceWillCreateWebAudioPlayer();
@@ -85,8 +87,6 @@ public:
     void sendGetVolumeRequestAndReceiveResponse();
     void sendGetVolumeRequestAndExpectFailure();
     void sendPlayerStateEvent();
-
-    void testFactory();
 
 private:
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ClientMock>> m_clientMock;
