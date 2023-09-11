@@ -67,6 +67,15 @@ jobs:
         with:
           suite: 'servermain'
 
+      # Cache lcov output
+      - name: Cache servermain coverage
+        id: cache-servermain-coverage
+        uses: actions/cache@v3
+        if: success()
+        with:
+          path: build/coverage-servermain.info
+          key: ${{ runner.os }}-servermain-coverage-${{ github.run_id }}-${{ github.run_number }}
+
   # This job sets up the repo with the dependancies then runs the servergstplayer tests
   run-servergstplayer:
     name: Build and test servergstplayer unittests
@@ -97,6 +106,15 @@ jobs:
         uses: ./.github/workflows/actions/process_results_ut
         with:
           suite: 'servergstplayer'
+
+      # Cache lcov output
+      - name: Cache servergstplayer coverage
+        id: cache-servergstplayer-coverage
+        uses: actions/cache@v3
+        if: success()
+        with:
+          path: build/coverage-servergstplayer.info
+          key: ${{ runner.os }}-servergstplayer-coverage-${{ github.run_id }}-${{ github.run_number }}
 
   # This job sets up the repo with the dependancies then runs the serveripc tests
   run-serveripc:
@@ -129,6 +147,15 @@ jobs:
         with:
           suite: 'serveripc'
 
+      # Cache lcov output
+      - name: Cache serveripc coverage
+        id: cache-serveripc-coverage
+        uses: actions/cache@v3
+        if: success()
+        with:
+          path: build/coverage-serveripc.info
+          key: ${{ runner.os }}-serveripc-coverage-${{ github.run_id }}-${{ github.run_number }}
+
   # This job sets up the repo with the dependancies then runs the serverservice tests
   run-serverservice:
     name: Build and test serverservice unittests
@@ -159,6 +186,15 @@ jobs:
         uses: ./.github/workflows/actions/process_results_ut
         with:
           suite: 'serverservice'
+
+      # Cache lcov output
+      - name: Cache serverservice coverage
+        id: cache-serverservice-coverage
+        uses: actions/cache@v3
+        if: success()
+        with:
+          path: build/coverage-serverservice.info
+          key: ${{ runner.os }}-serverservice-coverage-${{ github.run_id }}-${{ github.run_number }}
 
   # This job sets up the repo with the dependancies then runs the client tests
   run-client:
@@ -191,6 +227,15 @@ jobs:
         with:
           suite: 'client'
 
+      # Cache lcov output
+      - name: Cache client coverage
+        id: cache-client-coverage
+        uses: actions/cache@v3
+        if: success()
+        with:
+          path: build/coverage-client.info
+          key: ${{ runner.os }}-client-coverage-${{ github.run_id }}-${{ github.run_number }}
+
   # This job sets up the repo with the dependancies then runs the clientipc tests
   run-clientipc:
     name: Build and test clientipc unittests
@@ -221,6 +266,15 @@ jobs:
         uses: ./.github/workflows/actions/process_results_ut
         with:
           suite: 'clientipc'
+
+      # Cache lcov output
+      - name: Cache clientipc coverage
+        id: cache-clientipc-coverage
+        uses: actions/cache@v3
+        if: success()
+        with:
+          path: build/coverage-clientipc.info
+          key: ${{ runner.os }}-clientipc-coverage-${{ github.run_id }}-${{ github.run_number }}
 
   # This job sets up the repo with the dependancies then runs the common tests
   run-common:
@@ -253,6 +307,15 @@ jobs:
         with:
           suite: 'common'
 
+      # Cache lcov output
+      - name: Cache common coverage
+        id: cache-common-coverage
+        uses: actions/cache@v3
+        if: success()
+        with:
+          path: build/coverage-common.info
+          key: ${{ runner.os }}-common-coverage-${{ github.run_id }}-${{ github.run_number }}
+
   # This job sets up the repo with the dependancies then runs the logging tests
   run-logging:
     name: Build and test logging unittests
@@ -283,6 +346,16 @@ jobs:
         uses: ./.github/workflows/actions/process_results_ut
         with:
           suite: 'logging'
+
+      # Cache lcov output
+      - name: Cache logging coverage
+        id: cache-logging-coverage
+        uses: actions/cache@v3
+        if: success()
+        with:
+          path: build/coverage-logging.info
+          key: ${{ runner.os }}-logging-coverage-${{ github.run_id }}-${{ github.run_number }}
+
 
   # This job sets up the repo with the dependancies then runs the manager tests
   run-manager:
@@ -315,6 +388,15 @@ jobs:
         with:
           suite: 'manager'
 
+      # Cache lcov output
+      - name: Cache manager coverage
+        id: cache-manager-coverage
+        uses: actions/cache@v3
+        if: success()
+        with:
+          path: build/coverage-manager.info
+          key: ${{ runner.os }}-manager-coverage-${{ github.run_id }}-${{ github.run_number }}
+
   # This job sets up the repo with the dependancies then runs the ipc tests
   run-ipc:
     name: Build and test ipc unittests
@@ -346,6 +428,15 @@ jobs:
         with:
           suite: 'ipc'
 
+      # Cache lcov output
+      - name: Cache ipc coverage
+        id: cache-ipc-coverage
+        uses: actions/cache@v3
+        if: success()
+        with:
+          path: build/coverage-ipc.info
+          key: ${{ runner.os }}-ipc-coverage-${{ github.run_id }}-${{ github.run_number }}
+
   # This job runs the coverage report
   generate-coverage-report:
     name: Runs the coverage report
@@ -376,7 +467,7 @@ jobs:
 
       # Get cached lcov servermain output
       - name: Get servermain coverage
-        id: get-servermain-coverage
+        id: cache-servermain-coverage
         uses: actions/cache@v3
         if: success()
         with:
@@ -385,7 +476,7 @@ jobs:
 
       # Get cached lcov servergstplayer output
       - name: Get servergstplayer coverage
-        id: get-servergstplayer-coverage
+        id: cache-servergstplayer-coverage
         uses: actions/cache@v3
         if: success()
         with:
@@ -394,7 +485,7 @@ jobs:
 
       # Get cached lcov serveripc output
       - name: Get serveripc coverage
-        id: get-serveripc-coverage
+        id: cache-serveripc-coverage
         uses: actions/cache@v3
         if: success()
         with:
@@ -403,7 +494,7 @@ jobs:
 
       # Get cached lcov serverservice output
       - name: Get serverservice coverage
-        id: get-serverservice-coverage
+        id: cache-serverservice-coverage
         uses: actions/cache@v3
         if: success()
         with:
@@ -412,7 +503,7 @@ jobs:
 
       # Get cached lcov client output
       - name: Get client coverage
-        id: get-client-coverage
+        id: cache-client-coverage
         uses: actions/cache@v3
         if: success()
         with:
@@ -421,7 +512,7 @@ jobs:
 
       # Get cached lcov clientipc output
       - name: Get clientipc coverage
-        id: get-clientipc-coverage
+        id: cache-clientipc-coverage
         uses: actions/cache@v3
         if: success()
         with:
@@ -430,7 +521,7 @@ jobs:
 
       # Get cached lcov common output
       - name: Get common coverage
-        id: get-common-coverage
+        id: cache-common-coverage
         uses: actions/cache@v3
         if: success()
         with:
@@ -439,7 +530,7 @@ jobs:
 
       # Get cached lcov logging output
       - name: Get logging coverage
-        id: get-logging-coverage
+        id: cache-logging-coverage
         uses: actions/cache@v3
         if: success()
         with:
@@ -448,7 +539,7 @@ jobs:
 
       # Get cached lcov manager output
       - name: Get manager coverage
-        id: get-manager-coverage
+        id: cache-manager-coverage
         uses: actions/cache@v3
         if: success()
         with:
@@ -457,7 +548,7 @@ jobs:
 
       # Get cached lcov ipc output
       - name: Get ipc coverage
-        id: get-ipc-coverage
+        id: cache-ipc-coverage
         uses: actions/cache@v3
         if: success()
         with:
