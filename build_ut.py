@@ -243,8 +243,8 @@ def generateCoverageReport(outputDir, resultsFile, suites):
     print (suites)
     lcovBaseCmd = ["lcov", "-c", "-i", "-d", ".", "--output-file", "coverage_base.info", "--exclude", "/usr/*",
                    "--exclude", "*build/*", "--exclude", "*tests/*", "--filter", "brace,function,trivial"]
-    if 'servergstplayer' in suites:
-        lcovTestCmd.extend(["--exclude", "*Wrapper*"])
+    if 'servergstplayer' in suites or 'servermain' in suites or 'manager' in suites :
+        lcovBaseCmd.extend(["--exclude", "*Wrapper*"])
     if resultsFile:
         lcovBaseStatus = runcmd(lcovBaseCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
     else:
@@ -254,7 +254,7 @@ def generateCoverageReport(outputDir, resultsFile, suites):
 
     lcovTestCmd = ["lcov", "-c", "-d", ".", "--output-file", "coverage_test.info", "--exclude", "/usr/*",
                    "--exclude", "*build/*", "--exclude", "*tests/*","--filter", "brace,function,trivial"]
-    if 'servergstplayer' in suites:
+    if 'servergstplayer' in suites or 'servermain' in suites or 'manager' in suites :
         lcovTestCmd.extend(["--exclude", "*Wrapper*"])
     if resultsFile:
         lcovTestStatus = runcmd(lcovTestCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
