@@ -54,4 +54,4 @@ runs:
     - name: Rename coverage report
       shell: bash
       run: |
-        mv build/coverage.info build/coverage-${{ github.event.inputs.suite }}.info
+        mv build/coverage.info build/coverage-${{ inputs.suite }}.info
