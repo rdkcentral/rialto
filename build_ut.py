@@ -240,12 +240,16 @@ def AddValgrind(suite, outputToFile, outputToXml):
     return executeCmd
 
 def generateCoverageReport(outputDir, resultsFile, suites):
-    print (suites)
+    # The lcov command will fail if the --exclude file does not exist, only run '--exclude *Wrapper*' for the relevent suites
+    ExcludeWrapperSuitesBase = ['serveripc', 'serverservice', 'servergstplayer', 'servermain', 'manager', 'common']
+    ExcludeWrapperSuitesTest = ['servergstplayer', 'servermain', 'manager', 'common']
+
     lcovBaseCmd = ["lcov", "-c", "-i", "-d", ".", "--output-file", "coverage_base.info", "--exclude", "/usr/*",
                    "--exclude", "*build/*", "--exclude", "*tests/*", "--filter", "brace,function,trivial"]
-    if 'serveripc' in suites or 'serverservice' in suites or 'servergstplayer' in suites or 'servermain' in suites or 'manager' in suites or 'common' in suites:
-        print ('here1')
-        lcovBaseCmd.extend(["--exclude", "*Wrapper*"])
+    for suite in ExcludeWrapperSuitesBase:
+        if suite in suites:
+            lcovBaseCmd.extend(["--exclude", "*Wrapper*"])
+            break
     if resultsFile:
         lcovBaseStatus = runcmd(lcovBaseCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
     else:
@@ -254,9 +258,10 @@ def generateCoverageReport(outputDir, resultsFile, suites):
         return False
     lcovTestCmd = ["lcov", "-c", "-d", ".", "--output-file", "coverage_test.info", "--exclude", "/usr/*",
                    "--exclude", "*build/*", "--exclude", "*tests/*","--filter", "brace,function,trivial"]
-    if 'serveripc' in suites or 'serverservice' in suites or 'servergstplayer' in suites or 'servermain' in suites or 'manager' in suites or 'common' in suites:
-        print ('here2')
-        lcovTestCmd.extend(["--exclude", "*Wrapper*"])
+    for suite in ExcludeWrapperSuitesTest:
+        if suite in suites:
+            lcovTestCmd.extend(["--exclude", "*Wrapper*"])
+            break
     if resultsFile:
         lcovTestStatus = runcmd(lcovTestCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
     else:
