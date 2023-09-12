@@ -241,8 +241,8 @@ def AddValgrind(suite, outputToFile, outputToXml):
 
 def generateCoverageReport(outputDir, resultsFile, suites):
     # The lcov command will fail if the --exclude file does not exist, only run '--exclude *Wrapper*' for the relevent suites
-    ExcludeWrapperSuitesBase = ['serveripc', 'serverservice', 'servergstplayer', 'servermain', 'manager', 'common']
-    ExcludeWrapperSuitesTest = ['servergstplayer', 'servermain', 'manager', 'common']
+    ExcludeWrapperSuitesBase = ['serveripc', 'serverservice', 'servergstplayer', 'servermain', 'manager']
+    ExcludeWrapperSuitesTest = ['servergstplayer', 'servermain', 'manager']
 
     lcovBaseCmd = ["lcov", "-c", "-i", "-d", ".", "--output-file", "coverage_base.info", "--exclude", "/usr/*",
                    "--exclude", "*build/*", "--exclude", "*tests/*", "--filter", "brace,function,trivial"]
