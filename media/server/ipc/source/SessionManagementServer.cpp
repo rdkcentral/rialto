@@ -26,6 +26,8 @@
 #include "RialtoServerLogging.h"
 #include <IIpcServerFactory.h>
 #include <sys/stat.h>
+#include <pwd.h>
+#include <grp.h>
 
 namespace firebolt::rialto::server::ipc
 {
@@ -59,7 +61,8 @@ SessionManagementServer::~SessionManagementServer()
     }
 }
 
-bool SessionManagementServer::initialize(const std::string &socketName, unsigned int socketPermissions)
+bool SessionManagementServer::initialize(const std::string &socketName, unsigned int socketPermissions,
+                                         const std::string &socketOwner, const std::string &socketGroup)
 {
     RIALTO_SERVER_LOG_INFO("Initializing Session Management Server. Socket name: %s", socketName.c_str());
     if (!m_ipcServer)
@@ -78,10 +81,62 @@ bool SessionManagementServer::initialize(const std::string &socketName, unsigned
         return false;
     }
 
-    if (chmod(socketName.c_str(), socketPermissions) != 0)
+    const char* sn = socketName.c_str();
+    if (chmod(sn, socketPermissions) != 0)
     {
         RIALTO_SERVER_LOG_SYS_WARN(errno, "Failed to change the permissions on the IPC socket");
     }
+
+    const uid_t noOwnerChange = -1; // -1 means chown() won't change the owner
+    uid_t ownerId = noOwnerChange;
+    if (!socketOwner.empty())
+    {
+        errno = 0;
+        struct passwd *pwd = getpwnam(socketOwner.c_str());
+        if (pwd == NULL)
+        {
+            RIALTO_SERVER_LOG_SYS_WARN(errno, "Failed to determine ownerId for the IPC socket");
+        }
+        else
+        {
+            ownerId = pwd->pw_uid;
+        }
+    }
+
+    const gid_t noGroupChange = -1; // -1 means chown() won't change the group
+    gid_t groupId = noGroupChange;
+    if (!socketGroup.empty())
+    {
+        errno = 0;
+        struct group * grp = getgrnam(socketGroup.c_str());
+        if (grp == NULL)
+        {
+            RIALTO_SERVER_LOG_SYS_WARN(errno, "Failed to determine groupId for the IPC socket");
+        }
+        else
+        {
+            groupId = grp->gr_gid;
+        }
+    }
+
+    if (ownerId != noOwnerChange || groupId != noGroupChange)
+    {
+        errno = 0;
+        if (chown(sn, ownerId, groupId) != 0)
+        {
+            RIALTO_SERVER_LOG_SYS_WARN(errno, "Failed to change the owner/group for the IPC socket");
+            // Try to change the group alone
+            if (ownerId != noOwnerChange && groupId != noGroupChange)
+            {
+                errno = 0;
+                if (chown(sn, noOwnerChange, groupId) != 0)
+                {
+                    RIALTO_SERVER_LOG_SYS_WARN(errno, "Failed to change the group for the IPC socket");
+                }
+            }
+        }
+    }
+
     return true;
 }
 

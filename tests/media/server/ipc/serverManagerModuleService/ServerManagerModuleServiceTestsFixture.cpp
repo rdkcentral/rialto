@@ -33,6 +33,8 @@ constexpr int MAX_SESSIONS{5};
 constexpr int MAX_WEB_AUDIO_PLAYERS{3};
 constexpr int socket{2};
 constexpr int pingId{29};
+const std::string SOCKET_OWNER{"nobody"};
+const std::string SOCKET_GROUP{"nogroup"};
 
 rialto::SessionServerState convertSessionServerState(const firebolt::rialto::common::SessionServerState &state)
 {
@@ -76,7 +78,7 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillSetConfiguration(
 {
     EXPECT_CALL(m_sessionServerManagerMock,
                 setConfiguration(SOCKET_NAME, state, MaxResourceMatcher(MAX_SESSIONS, MAX_WEB_AUDIO_PLAYERS),
-                                 CLIENT_DISPLAY_NAME, SOCKET_PERMISSIONS))
+                                 CLIENT_DISPLAY_NAME, SOCKET_PERMISSIONS, SOCKET_OWNER, SOCKET_GROUP))
         .WillOnce(Return(true));
 }
 
@@ -98,7 +100,7 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillFailToSetConfigura
 {
     EXPECT_CALL(m_sessionServerManagerMock,
                 setConfiguration(SOCKET_NAME, state, MaxResourceMatcher(MAX_SESSIONS, MAX_WEB_AUDIO_PLAYERS),
-                                 CLIENT_DISPLAY_NAME, SOCKET_PERMISSIONS))
+                                 CLIENT_DISPLAY_NAME, SOCKET_PERMISSIONS, SOCKET_OWNER, SOCKET_GROUP))
         .WillOnce(Return(false));
 }
 
@@ -137,6 +139,8 @@ void ServerManagerModuleServiceTests::sendSetConfiguration(const firebolt::rialt
     request.set_initialsessionserverstate(convertSessionServerState(state));
     request.set_clientdisplayname(CLIENT_DISPLAY_NAME);
     request.set_socketpermissions(SOCKET_PERMISSIONS);
+    request.set_socketowner(SOCKET_OWNER);
+    request.set_socketgroup(SOCKET_GROUP);
 
     m_sut->setConfiguration(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }

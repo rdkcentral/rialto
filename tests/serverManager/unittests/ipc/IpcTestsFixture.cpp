@@ -123,8 +123,10 @@ bool IpcTests::triggerPerformSetConfiguration()
     const std::string clientSocketName{"westeros-rialto"};
     constexpr firebolt::rialto::common::MaxResourceCapabilitites maxResource{2, 1};
     constexpr unsigned int kSocketPermissions{0777};
+    const std::string kSocketOwner{"nobody"};
+    const std::string kSocketGroup{"nogroup"};
     return m_sut->performSetConfiguration(kServerId, initialState, socketName, clientSocketName, maxResource,
-                                          kSocketPermissions);
+                                          kSocketPermissions, kSocketOwner, kSocketGroup);
 }
 
 bool IpcTests::triggerPerformPing()

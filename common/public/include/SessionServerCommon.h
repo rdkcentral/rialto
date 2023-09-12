@@ -85,6 +85,8 @@ struct SocketPermissions
     unsigned int ownerPermissions{kRead | kWrite};
     unsigned int groupPermissions{kRead | kWrite};
     unsigned int otherPermissions{kRead | kWrite};
+    std::string owner;
+    std::string group;
 };
 
 /**

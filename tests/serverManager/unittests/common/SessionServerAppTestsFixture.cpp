@@ -30,6 +30,8 @@ const std::string kSessionServerPath{"/usr/bin/RialtoServer"};
 constexpr std::chrono::milliseconds kSessionServerStartupTimeout{100};
 constexpr std::chrono::milliseconds kKillTimeout{1000};
 constexpr unsigned int kSocketPermissions{0777};
+const std::string kSocketOwner{"nobody"};
+const std::string kSocketGroup{"nogroup"};
 const std::string kAppName{"YouTube"};
 constexpr auto kInitialState{firebolt::rialto::common::SessionServerState::ACTIVE};
 constexpr int kMaxPlaybackSessions{2};
@@ -61,7 +63,8 @@ void SessionServerAppTests::createPreloadedAppSut()
                                                                               m_sessionServerAppManagerMock,
                                                                               kEnvironmentVariables, kSessionServerPath,
                                                                               kSessionServerStartupTimeout,
-                                                                              kSocketPermissions);
+                                                                              kSocketPermissions,
+                                                                              kSocketOwner, kSocketGroup);
     ASSERT_TRUE(m_sut);
     EXPECT_TRUE(m_sut->isPreloaded());
     EXPECT_EQ(kSocketPermissions, m_sut->getSessionManagementSocketPermissions());
@@ -82,7 +85,8 @@ void SessionServerAppTests::createAppSut(const firebolt::rialto::common::AppConf
                                                                               kEnvironmentVariablesWithLogPath,
                                                                               kSessionServerPath,
                                                                               kSessionServerStartupTimeout,
-                                                                              kSocketPermissions);
+                                                                              kSocketPermissions,
+                                                                              kSocketOwner, kSocketGroup);
     ASSERT_TRUE(m_sut);
     EXPECT_FALSE(m_sut->isPreloaded());
     EXPECT_EQ(kSocketPermissions, m_sut->getSessionManagementSocketPermissions());
@@ -102,7 +106,8 @@ void SessionServerAppTests::createAppSutWithDisabledTimer(const firebolt::rialto
                                                                               kEnvironmentVariablesWithLogPath,
                                                                               kSessionServerPath,
                                                                               std::chrono::milliseconds{0},
-                                                                              kSocketPermissions);
+                                                                              kSocketPermissions,
+                                                                              kSocketOwner, kSocketGroup);
     ASSERT_TRUE(m_sut);
     EXPECT_FALSE(m_sut->isPreloaded());
     EXPECT_EQ(kSocketPermissions, m_sut->getSessionManagementSocketPermissions());

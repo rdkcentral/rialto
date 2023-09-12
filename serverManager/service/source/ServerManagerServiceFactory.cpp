@@ -50,7 +50,9 @@ std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserv
                                                                config.sessionServerStartupTimeout,
                                                                config.healthcheckInterval,
                                                                convertSocketPermissions(
-                                                                   config.sessionManagementSocketPermissions)),
+                                                                   config.sessionManagementSocketPermissions),
+                                                               config.sessionManagementSocketPermissions.owner,
+                                                               config.sessionManagementSocketPermissions.group),
                               config.numOfPreloadedServers);
 }
 } // namespace rialto::servermanager::service

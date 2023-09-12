@@ -207,10 +207,13 @@ bool SessionServerAppManager::configureSessionServer(const std::unique_ptr<ISess
     const auto socketName{sessionServer->getSessionManagementSocketName()};
     const auto clientDisplayName{sessionServer->getClientDisplayName()};
     const auto socketPermissions{sessionServer->getSessionManagementSocketPermissions()};
+    const auto socketOwner{sessionServer->getSessionManagementSocketOwner()};
+    const auto socketGroup{sessionServer->getSessionManagementSocketGroup()};
     const firebolt::rialto::common::MaxResourceCapabilitites maxResource{sessionServer->getMaxPlaybackSessions(),
                                                                          sessionServer->getMaxWebAudioPlayers()};
     if (!m_ipcController->performSetConfiguration(sessionServer->getServerId(), initialState, socketName,
-                                                  clientDisplayName, maxResource, socketPermissions))
+                                                  clientDisplayName, maxResource, socketPermissions,
+                                                  socketOwner, socketGroup))
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("Configuration of server with id %d failed - ipc error.",
                                         sessionServer->getServerId());

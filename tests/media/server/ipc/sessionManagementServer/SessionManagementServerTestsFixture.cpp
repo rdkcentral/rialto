@@ -42,6 +42,8 @@ namespace
 {
 const std::string socketName{"/tmp/sessionmanagementservertest-0"};
 constexpr unsigned int socketPermissions{0777};
+const std::string socketOwner{"nobody"};
+const std::string socketGroup{"nogroup"};
 const RIALTO_DEBUG_LEVEL defaultLogLevels{RIALTO_DEBUG_LEVEL_FATAL};
 const RIALTO_DEBUG_LEVEL clientLogLevels{RIALTO_DEBUG_LEVEL_ERROR};
 const RIALTO_DEBUG_LEVEL ipcLogLevels{RIALTO_DEBUG_LEVEL_DEBUG};
@@ -182,12 +184,12 @@ void SessionManagementServerTests::serverWillSetLogLevels()
 
 void SessionManagementServerTests::sendServerInitialize()
 {
-    EXPECT_TRUE(m_sut->initialize(socketName, socketPermissions));
+    EXPECT_TRUE(m_sut->initialize(socketName, socketPermissions, socketOwner, socketGroup));
 }
 
 void SessionManagementServerTests::sendServerInitializeAndExpectFailure()
 {
-    EXPECT_FALSE(m_sut->initialize(socketName, socketPermissions));
+    EXPECT_FALSE(m_sut->initialize(socketName, socketPermissions, socketOwner, socketGroup));
 }
 
 void SessionManagementServerTests::sendServerStart()
