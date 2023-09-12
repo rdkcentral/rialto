@@ -83,7 +83,6 @@ TEST_F(ControlServiceTests, shouldSetApplicationStateForNewControl)
 TEST_F(ControlServiceTests, shouldPing)
 {
     controlServerInternalFactoryWillCreateControlServerInternal(kControlId);
-    heartbeatProcedureWillBeCreated();
     controlServerInternalWillPing();
     triggerAddControl(kControlId);
     EXPECT_TRUE(triggerPing());
