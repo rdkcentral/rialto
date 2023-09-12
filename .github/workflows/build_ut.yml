@@ -26,9 +26,9 @@ name: build_ut
 on:
   # Triggers the workflow on push or pull request events but only for the "master" branch
   push:
-    branches: [ "master", "rdkcentral:master" ]
+    branches: [ "Split_unittests_prototype", "rdkcentral:Split_unittests_prototype" ]
   pull_request:
-    branches: [ "master", "rdkcentral:master" ]
+    branches: [ "Split_unittests_prototype", "rdkcentral:Split_unittests_prototype" ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -581,7 +581,7 @@ jobs:
       - name: Generate coverage stats
         run: |
           cd build
-          lcov --summary coverage.info --filter brace,function,trivial
+          lcov --summary coverage.info --filter brace,function,trivial > coverage_statistics.txt
 
       # Upload coverage report on success
       - name: Upload Coverage Report
