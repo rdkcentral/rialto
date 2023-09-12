@@ -240,9 +240,11 @@ def AddValgrind(suite, outputToFile, outputToXml):
     return executeCmd
 
 def generateCoverageReport(outputDir, resultsFile, suites):
+    print (suites)
     lcovBaseCmd = ["lcov", "-c", "-i", "-d", ".", "--output-file", "coverage_base.info", "--exclude", "/usr/*",
                    "--exclude", "*build/*", "--exclude", "*tests/*", "--filter", "brace,function,trivial"]
-    if 'servergstplayer' in suites or 'servermain' in suites or 'manager' in suites :
+    if 'serveripc' in suites or 'serverservice' in suites or 'servergstplayer' in suites or 'servermain' in suites or 'manager' in suites or 'common' in suites:
+        print ('here1')
         lcovBaseCmd.extend(["--exclude", "*Wrapper*"])
     if resultsFile:
         lcovBaseStatus = runcmd(lcovBaseCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
@@ -252,7 +254,8 @@ def generateCoverageReport(outputDir, resultsFile, suites):
         return False
     lcovTestCmd = ["lcov", "-c", "-d", ".", "--output-file", "coverage_test.info", "--exclude", "/usr/*",
                    "--exclude", "*build/*", "--exclude", "*tests/*","--filter", "brace,function,trivial"]
-    if 'servergstplayer' in suites or 'servermain' in suites or 'manager' in suites :
+    if 'serveripc' in suites or 'serverservice' in suites or 'servergstplayer' in suites or 'servermain' in suites or 'manager' in suites or 'common' in suites:
+        print ('here2')
         lcovTestCmd.extend(["--exclude", "*Wrapper*"])
     if resultsFile:
         lcovTestStatus = runcmd(lcovTestCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
