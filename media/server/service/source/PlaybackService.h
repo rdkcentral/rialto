@@ -25,7 +25,7 @@
 #include "IMediaPipelineServerInternal.h"
 #include "IPlaybackService.h"
 #include "ISharedMemoryBuffer.h"
-#include "IWebAudioPlayerServerInternalFactory.h"
+#include "IWebAudioPlayerServerInternal.h"
 #include "MediaPipelineService.h"
 #include "WebAudioPlayerService.h"
 #include <atomic>

@@ -35,12 +35,14 @@
 #include <vector>
 
 #include "IDecryptionService.h"
+#include "IHeartbeatHandler.h"
 #include "ISharedMemoryBuffer.h"
 #include "IWebAudioPlayer.h"
 #include <MediaCommon.h>
 
 namespace firebolt::rialto::server
 {
+class IWebAudioPlayerServerInternal;
 /**
  * @brief IWebAudioPlayer factory class, returns a concrete implementation of IWebAudioPlayer for internal server use
  */
@@ -69,10 +71,28 @@ public:
      *
      * @retval the new backend instance or null on error.
      */
-    virtual std::unique_ptr<IWebAudioPlayer>
+    virtual std::unique_ptr<IWebAudioPlayerServerInternal>
     createWebAudioPlayerServerInternal(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
                                        const uint32_t priority, const WebAudioConfig *config,
                                        const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle) const = 0;
+};
+
+/**
+ * @brief The definition of the IWebAudioPlayerServerInternal interface.
+ *
+ * This interface defines the public API of Rialto for mixing PCM audio with
+ * current audio output. It should be implemented by both Rialto Client &
+ * Rialto Server.
+ */
+class IWebAudioPlayerServerInternal : public IWebAudioPlayer
+{
+public:
+    /**
+     * @brief Checks if WebAudioPlayer threads are not deadlocked
+     *
+     * @param[out] heartbeatHandler : The heartbeat handler instance
+     */
+    virtual void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) = 0;
 };
 }; // namespace firebolt::rialto::server
 

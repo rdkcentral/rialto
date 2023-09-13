@@ -94,7 +94,7 @@ private:
     std::shared_ptr<StrictMock<firebolt::rialto::server::WebAudioPlayerServerInternalFactoryMock>> m_webAudioPlayerFactoryMock;
     std::shared_ptr<firebolt::rialto::server::ISharedMemoryBuffer> m_shmBuffer;
     StrictMock<firebolt::rialto::server::SharedMemoryBufferMock> &m_shmBufferMock;
-    std::unique_ptr<firebolt::rialto::IWebAudioPlayer> m_webAudioPlayer;
+    std::unique_ptr<firebolt::rialto::server::IWebAudioPlayerServerInternal> m_webAudioPlayer;
     StrictMock<firebolt::rialto::server::WebAudioPlayerServerInternalMock> &m_webAudioPlayerMock;
     StrictMock<firebolt::rialto::server::service::PlaybackServiceMock> m_playbackServiceMock;
     std::unique_ptr<firebolt::rialto::server::service::WebAudioPlayerService> m_sut;

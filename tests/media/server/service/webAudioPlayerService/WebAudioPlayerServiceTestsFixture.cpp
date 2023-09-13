@@ -165,7 +165,7 @@ void WebAudioPlayerServiceTests::webAudioPlayerFactoryWillReturnNullptr()
 {
     EXPECT_CALL(*m_webAudioPlayerFactoryMock,
                 createWebAudioPlayerServerInternal(_, audioMimeType, priority, _, _, webAudioPlayerHandle))
-        .WillOnce(Return(ByMove(std::unique_ptr<firebolt::rialto::IWebAudioPlayer>())));
+        .WillOnce(Return(ByMove(std::unique_ptr<firebolt::rialto::server::IWebAudioPlayerServerInternal>())));
 }
 
 void WebAudioPlayerServiceTests::playbackServiceWillReturnActive()

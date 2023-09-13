@@ -22,7 +22,7 @@
 
 #include "IPlaybackService.h"
 #include "IWebAudioPlayer.h"
-#include "IWebAudioPlayerServerInternalFactory.h"
+#include "IWebAudioPlayerServerInternal.h"
 #include "IWebAudioPlayerService.h"
 #include <atomic>
 #include <condition_variable>

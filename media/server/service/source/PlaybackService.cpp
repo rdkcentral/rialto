@@ -19,7 +19,7 @@
 
 #include "PlaybackService.h"
 #include "IMediaPipelineServerInternal.h"
-#include "IWebAudioPlayerServerInternalFactory.h"
+#include "IWebAudioPlayerServerInternal.h"
 #include "RialtoServerLogging.h"
 #include <exception>
 #include <future>
