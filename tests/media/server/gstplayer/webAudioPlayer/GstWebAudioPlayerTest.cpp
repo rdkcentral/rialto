@@ -18,6 +18,7 @@
  */
 
 #include "GstWebAudioPlayerTestCommon.h"
+#include "HeartbeatHandlerMock.h"
 #include "PlayerTaskMock.h"
 #include <thread>
 
@@ -163,4 +164,14 @@ TEST_F(GstWebAudioPlayerTest, shouldGetQueuedBytes)
     constexpr uint64_t kQueuedBytes{4567};
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCurrentLevelBytes(_)).WillOnce(Return(kQueuedBytes));
     EXPECT_EQ(m_sut->getQueuedBytes(), kQueuedBytes);
+}
+
+TEST_F(GstWebAudioPlayerTest, shouldPing)
+{
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(m_taskFactoryMock, createPing(_)).WillOnce(Return(ByMove(std::move(task))));
+    executeTaskWhenEnqueued();
+
+    m_sut->ping(std::make_unique<StrictMock<firebolt::rialto::server::HeartbeatHandlerMock>>());
 }

@@ -19,6 +19,7 @@
 
 #include "DataReaderMock.h"
 #include "GstGenericPlayerTestCommon.h"
+#include "HeartbeatHandlerMock.h"
 #include "IMediaPipeline.h"
 #include "Matchers.h"
 #include "MediaSourceUtil.h"
@@ -302,4 +303,13 @@ TEST_F(GstGenericPlayerTest, shouldMute)
     EXPECT_CALL(m_taskFactoryMock, createSetMute(_, _)).WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->setMute(true);
+}
+
+TEST_F(GstGenericPlayerTest, shouldPing)
+{
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(m_taskFactoryMock, createPing(_)).WillOnce(Return(ByMove(std::move(task))));
+
+    m_sut->ping(std::make_unique<StrictMock<firebolt::rialto::server::HeartbeatHandlerMock>>());
 }

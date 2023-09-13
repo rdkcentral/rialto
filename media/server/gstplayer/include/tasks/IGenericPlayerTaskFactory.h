@@ -23,6 +23,7 @@
 #include "GenericPlayerContext.h"
 #include "IDataReader.h"
 #include "IGstGenericPlayerPrivate.h"
+#include "IHeartbeatHandler.h"
 #include "IMediaPipeline.h"
 #include "IPlayerTask.h"
 #include "MediaCommon.h"
@@ -326,6 +327,15 @@ public:
                                                                    const GstCaps *caps) const = 0;
 
     virtual std::unique_ptr<IPlayerTask> createRenderFrame(GenericPlayerContext &context) const = 0;
+
+    /**
+     * @brief Creates a Ping task.
+     *
+     * @param[in] heartbeatHandler       : The HeartbeatHandler instance
+     *
+     * @retval the new Ping task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createPing(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) const = 0;
 };
 
 } // namespace firebolt::rialto::server

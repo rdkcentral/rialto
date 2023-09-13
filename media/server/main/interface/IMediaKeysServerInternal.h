@@ -151,7 +151,7 @@ public:
     /**
      * @brief Checks, if MediaKeys main thread is not deadlocked
      *
-     * @param[in] heartbeatHandler    : The session id for the session.
+     * @param[in] heartbeatHandler    : The heartbeat handler instance.
      *
      */
     virtual void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) = 0;
