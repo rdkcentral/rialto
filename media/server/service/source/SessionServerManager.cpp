@@ -154,6 +154,11 @@ void SessionServerManager::setLogLevels(RIALTO_DEBUG_LEVEL defaultLogLevels, RIA
 bool SessionServerManager::ping(std::int32_t id, const std::shared_ptr<IAckSender> &ackSender)
 {
     auto heartbeatProcedure{m_heartbeatProcedureFactory->createHeartbeatProcedure(ackSender, id)};
+
+    // Check all rialto server internal threads
+    m_cdmService.ping(heartbeatProcedure);
+
+    // Check all Rialto Clients
     return m_controlService.ping(heartbeatProcedure);
 }
 

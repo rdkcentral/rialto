@@ -270,6 +270,7 @@ void SessionServerManagerTests::willPing()
 {
     EXPECT_CALL(m_heartbeatProcedureFactoryMock, createHeartbeatProcedure(_, pingId))
         .WillOnce(Return(m_heartbeatProcedureMock));
+    EXPECT_CALL(m_cdmServiceMock, ping(_));
     EXPECT_CALL(m_controlServiceMock, ping(_)).WillOnce(Return(true));
 }
 
@@ -277,6 +278,7 @@ void SessionServerManagerTests::willFailToPing()
 {
     EXPECT_CALL(m_heartbeatProcedureFactoryMock, createHeartbeatProcedure(_, pingId))
         .WillOnce(Return(m_heartbeatProcedureMock));
+    EXPECT_CALL(m_cdmServiceMock, ping(_));
     EXPECT_CALL(m_controlServiceMock, ping(_)).WillOnce(Return(false));
 }
 

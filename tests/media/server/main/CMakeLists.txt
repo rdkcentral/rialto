@@ -62,6 +62,7 @@ add_gtests (
         mediaKeys/GetLastDrmErrorTest.cpp
         mediaKeys/SelectKeyIdTest.cpp
         mediaKeys/IsPlayreadyKeySystemTest.cpp
+        mediaKeys/PingTest.cpp
 
         mediaKeysCapabilities/CreateTest.cpp
         mediaKeysCapabilities/KeySystemsTest.cpp
