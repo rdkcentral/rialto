@@ -218,7 +218,7 @@ def runTests (suites, doListTests, gtestFilter, outputDir, resultsFile, xmlFile,
     if hasFailed:
         raise Exception( f"runTests has failed, exiting" )
     elif coverage:
-        generateCoverageReport(outputDir, resultsFile)
+        generateCoverageReport(outputDir, resultsFile, suites)
 
 # Returns the valgrind command arguments
 def AddValgrind(suite, outputToFile, outputToXml):
@@ -239,10 +239,17 @@ def AddValgrind(suite, outputToFile, outputToXml):
 
     return executeCmd
 
-def generateCoverageReport(outputDir, resultsFile):
+def generateCoverageReport(outputDir, resultsFile, suites):
+    # The lcov command will fail if the --exclude file does not exist, only run '--exclude *Wrapper*' for the relevent suites
+    ExcludeWrapperSuitesBase = ['serveripc', 'serverservice', 'servergstplayer', 'servermain', 'manager', 'clientipc', 'client']
+    ExcludeWrapperSuitesTest = ['servergstplayer', 'servermain', 'manager']
+
     lcovBaseCmd = ["lcov", "-c", "-i", "-d", ".", "--output-file", "coverage_base.info", "--exclude", "/usr/*",
-                   "--exclude", "*build/*", "--exclude", "*tests/*", "--exclude", "*Wrapper*",
-                   "--filter", "brace,function,trivial"]
+                   "--exclude", "*build/*", "--exclude", "*tests/*", "--filter", "brace,function,trivial"]
+    for suite in ExcludeWrapperSuitesBase:
+        if suite in suites:
+            lcovBaseCmd.extend(["--exclude", "*Wrapper*"])
+            break
     if resultsFile:
         lcovBaseStatus = runcmd(lcovBaseCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
     else:
@@ -250,8 +257,11 @@ def generateCoverageReport(outputDir, resultsFile):
     if not lcovBaseStatus:
         return False
     lcovTestCmd = ["lcov", "-c", "-d", ".", "--output-file", "coverage_test.info", "--exclude", "/usr/*",
-                   "--exclude", "*build/*", "--exclude", "*tests/*", "--exclude", "*Wrapper*","--filter",
-                   "brace,function,trivial"]
+                   "--exclude", "*build/*", "--exclude", "*tests/*","--filter", "brace,function,trivial"]
+    for suite in ExcludeWrapperSuitesTest:
+        if suite in suites:
+            lcovTestCmd.extend(["--exclude", "*Wrapper*"])
+            break
     if resultsFile:
         lcovTestStatus = runcmd(lcovTestCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
     else:
