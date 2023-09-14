@@ -157,6 +157,7 @@ bool SessionServerManager::ping(std::int32_t id, const std::shared_ptr<IAckSende
 
     // Check all rialto server internal threads
     m_cdmService.ping(heartbeatProcedure);
+    m_playbackService.ping(heartbeatProcedure);
 
     // Check all Rialto Clients
     return m_controlService.ping(heartbeatProcedure);

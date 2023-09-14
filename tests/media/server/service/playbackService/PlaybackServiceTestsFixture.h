@@ -21,6 +21,7 @@
 #define PLAYBACK_SERVICE_TESTS_FIXTURE_H_
 
 #include "DecryptionServiceMock.h"
+#include "HeartbeatProcedureMock.h"
 #include "MediaPipelineCapabilitiesFactoryMock.h"
 #include "MediaPipelineCapabilitiesMock.h"
 #include "MediaPipelineServerInternalFactoryMock.h"
@@ -47,6 +48,7 @@ public:
     void triggerSetMaxPlaybacks();
     void triggerSetMaxWebAudioPlayers();
     void triggerSetClientDisplayName();
+    void triggerPing();
 
     void createPlaybackServiceShouldSuccess();
     void getSharedMemoryShouldSucceed();
@@ -69,6 +71,7 @@ private:
     std::shared_ptr<firebolt::rialto::server::ISharedMemoryBuffer> m_shmBuffer;
     StrictMock<firebolt::rialto::server::SharedMemoryBufferMock> &m_shmBufferMock;
     StrictMock<firebolt::rialto::server::DecryptionServiceMock> m_decryptionServiceMock;
+    std::shared_ptr<StrictMock<firebolt::rialto::server::HeartbeatProcedureMock>> m_heartbeatProcedureMock;
     std::unique_ptr<firebolt::rialto::server::service::PlaybackService> m_sut;
 };
 

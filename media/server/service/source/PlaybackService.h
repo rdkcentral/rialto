@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_SERVICE_PLAYBACK_SERVICE_H_
 
 #include "IDecryptionService.h"
+#include "IHeartbeatProcedure.h"
 #include "IMediaPipelineCapabilities.h"
 #include "IMediaPipelineServerInternal.h"
 #include "IPlaybackService.h"
@@ -68,6 +69,7 @@ public:
     std::shared_ptr<ISharedMemoryBuffer> getShmBuffer() const override;
     IMediaPipelineService &getMediaPipelineService() const override;
     IWebAudioPlayerService &getWebAudioPlayerService() const override;
+    void ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure) const override;
 
 private:
     std::unique_ptr<ISharedMemoryBufferFactory> m_shmBufferFactory;

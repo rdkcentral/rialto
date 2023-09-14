@@ -138,4 +138,9 @@ IWebAudioPlayerService &PlaybackService::getWebAudioPlayerService() const
     return *m_webAudioPlayerService;
 }
 
+void PlaybackService::ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure) const
+{
+    m_mediaPipelineService->ping(heartbeatProcedure);
+    m_webAudioPlayerService->ping(heartbeatProcedure);
+}
 } // namespace firebolt::rialto::server::service
