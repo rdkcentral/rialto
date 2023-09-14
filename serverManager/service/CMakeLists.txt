@@ -17,9 +17,15 @@
 # limitations under the License.
 #
 
+find_package( jsoncpp REQUIRED )
 find_package( PkgConfig REQUIRED )
+
+add_compile_definitions(RIALTO_CONFIG_PATH="${RIALTO_CONFIG_PATH}")
+
 add_library (
         RialtoServerManager SHARED
+        source/ConfigReader.cpp
+        source/JsonCppWrapper.cpp
         source/ServerManagerServiceFactory.cpp
         source/ServerManagerService.cpp
         source/ServiceContext.cpp
@@ -48,6 +54,7 @@ target_link_libraries (
         RialtoServerManagerCommon
         RialtoServerManagerIpc
         Threads::Threads
+        JsonCpp::JsonCpp
 )
 
 if ( COVERAGE_ENABLED )

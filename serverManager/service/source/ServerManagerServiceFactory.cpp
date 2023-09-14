@@ -23,6 +23,9 @@
 #include "ServiceContext.h"
 #include <memory>
 
+#include "ConfigReader.h"
+
+
 namespace
 {
 unsigned int convertSocketPermissions(firebolt::rialto::common::SocketPermissions permissions) // copy param intentionally
@@ -44,13 +47,32 @@ namespace rialto::servermanager::service
 std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserver> &stateObserver,
                                               const firebolt::rialto::common::ServerManagerConfig &config)
 {
-    return std::make_unique<
-        ServerManagerService>(std::make_unique<ServiceContext>(stateObserver, config.sessionServerEnvVars,
-                                                               config.sessionServerPath,
-                                                               config.sessionServerStartupTimeout,
-                                                               config.healthcheckInterval,
-                                                               convertSocketPermissions(
-                                                                   config.sessionManagementSocketPermissions)),
-                              config.numOfPreloadedServers);
+    std::unique_ptr<IJsonCppWrapper> jsonwrapper;
+    std::unique_ptr<IFileReader> fileReader;
+    ConfigReader configReader(std::string(RIALTO_CONFIG_PATH), std::move(jsonwrapper), std::move(fileReader));
+    configReader.read();
+
+    std::list<std::string> sessionServerEnvVars = configReader.getEnvironmentVariables().size() > 0
+                                                      ? configReader.getEnvironmentVariables()
+                                                      : config.sessionServerEnvVars;
+
+    std::string sessionServerPath = configReader.getSessionServerPath().value_or(config.sessionServerPath);
+
+    std::chrono::milliseconds sessionServerStartupTimeout =
+        configReader.getSessionServerStartupTimeout().value_or(config.sessionServerStartupTimeout);
+
+    std::chrono::seconds healthcheckInterval = configReader.getHealthcheckInterval().value_or(config.healthcheckInterval);
+
+    unsigned int sessionManagementSocketPermissions = configReader.getSocketPermissions().value_or(
+        convertSocketPermissions(config.sessionManagementSocketPermissions));
+
+    unsigned int numOfPreloadedServers = configReader.getNumOfPreloadedServers().value_or(config.numOfPreloadedServers);
+
+    return std::make_unique<ServerManagerService>(std::make_unique<ServiceContext>(stateObserver, sessionServerEnvVars,
+                                                                                   sessionServerPath,
+                                                                                   sessionServerStartupTimeout,
+                                                                                   healthcheckInterval,
+                                                                                   sessionManagementSocketPermissions),
+                                                  numOfPreloadedServers);
 }
 } // namespace rialto::servermanager::service

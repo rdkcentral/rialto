@@ -109,7 +109,7 @@ endif()
 
 # Preprocesser Variable
 add_compile_definitions(COMMIT_ID="${COMMIT_ID}")
-
+add_compile_definitions(RIALTO_CONFIG_PATH="${RIALTO_CONFIG_PATH}")
 # Add our local cmake directory to search for components
 set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake )
 
