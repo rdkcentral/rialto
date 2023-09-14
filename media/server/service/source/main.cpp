@@ -27,7 +27,7 @@
 #include "IMediaPipelineCapabilities.h"
 #include "IMediaPipelineServerInternal.h"
 #include "ISharedMemoryBuffer.h"
-#include "IWebAudioPlayerServerInternalFactory.h"
+#include "IWebAudioPlayerServerInternal.h"
 #include "IpcFactory.h"
 #include "PlaybackService.h"
 #include "RialtoServerLogging.h"
