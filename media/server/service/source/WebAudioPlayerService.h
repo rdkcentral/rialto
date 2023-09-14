@@ -21,7 +21,6 @@
 #define FIREBOLT_RIALTO_SERVER_SERVICE_WEB_AUDIO_PLAYER_SERVICE_H_
 
 #include "IPlaybackService.h"
-#include "IWebAudioPlayer.h"
 #include "IWebAudioPlayerServerInternal.h"
 #include "IWebAudioPlayerService.h"
 #include <atomic>
@@ -62,13 +61,14 @@ public:
     bool getDeviceInfo(int handle, uint32_t &preferredFrames, uint32_t &maximumFrames, bool &supportDeferredPlay) override;
     bool setVolume(int handle, double volume) override;
     bool getVolume(int handle, double &volume) override;
+    void ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure) override;
 
     void clearWebAudioPlayers();
 
 private:
     IPlaybackService &m_playbackService;
     std::shared_ptr<IWebAudioPlayerServerInternalFactory> m_webAudioPlayerFactory;
-    std::map<int, std::unique_ptr<IWebAudioPlayer>> m_webAudioPlayers;
+    std::map<int, std::unique_ptr<IWebAudioPlayerServerInternal>> m_webAudioPlayers;
     std::mutex m_webAudioPlayerMutex;
 };
 } // namespace firebolt::rialto::server::service

@@ -18,6 +18,7 @@
  */
 
 #include "WebAudioPlayerServiceTestsFixture.h"
+#include "HeartbeatHandlerMock.h"
 #include "MediaCommon.h"
 #include <string>
 #include <utility>
@@ -57,6 +58,7 @@ WebAudioPlayerServiceTests::WebAudioPlayerServiceTests()
       m_webAudioPlayer{std::make_unique<StrictMock<firebolt::rialto::server::WebAudioPlayerServerInternalMock>>()},
       m_webAudioPlayerMock{
           dynamic_cast<StrictMock<firebolt::rialto::server::WebAudioPlayerServerInternalMock> &>(*m_webAudioPlayer)},
+      m_heartbeatProcedureMock{std::make_shared<StrictMock<firebolt::rialto::server::HeartbeatProcedureMock>>()},
       m_shmInfo{std::make_shared<firebolt::rialto::WebAudioShmInfo>(shmInfo)}
 {
 }
@@ -152,6 +154,13 @@ void WebAudioPlayerServiceTests::webAudioPlayerWillGetVolume()
 void WebAudioPlayerServiceTests::webAudioPlayerWillFailToGetVolume()
 {
     EXPECT_CALL(m_webAudioPlayerMock, getVolume(_)).WillOnce(Return(false));
+}
+
+void WebAudioPlayerServiceTests::webAudioPlayerWillPing()
+{
+    EXPECT_CALL(*m_heartbeatProcedureMock, createHandler())
+        .WillOnce(Return(ByMove(std::make_unique<StrictMock<firebolt::rialto::server::HeartbeatHandlerMock>>())));
+    EXPECT_CALL(m_webAudioPlayerMock, ping(_));
 }
 
 void WebAudioPlayerServiceTests::webAudioPlayerFactoryWillCreateWebAudioPlayer()
@@ -341,4 +350,9 @@ void WebAudioPlayerServiceTests::initWebAudioPlayer()
     playbackServiceWillReturnSharedMemoryBuffer();
     webAudioPlayerFactoryWillCreateWebAudioPlayer();
     createWebAudioPlayerShouldSucceed();
+}
+
+void WebAudioPlayerServiceTests::triggerPing()
+{
+    m_sut->ping(m_heartbeatProcedureMock);
 }

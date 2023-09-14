@@ -18,6 +18,7 @@
  */
 
 #include "MediaPipelineServiceTestsFixture.h"
+#include "HeartbeatHandlerMock.h"
 #include "MediaCommon.h"
 #include <string>
 #include <utility>

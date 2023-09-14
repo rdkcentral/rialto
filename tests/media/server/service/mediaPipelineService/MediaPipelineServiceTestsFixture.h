@@ -21,7 +21,6 @@
 #define MEDIA_PIPELINE_SERVICE_TESTS_FIXTURE_H_
 
 #include "DecryptionServiceMock.h"
-#include "HeartbeatHandlerMock.h"
 #include "HeartbeatProcedureMock.h"
 #include "MediaPipelineCapabilitiesFactoryMock.h"
 #include "MediaPipelineCapabilitiesMock.h"
