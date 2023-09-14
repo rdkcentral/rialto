@@ -522,9 +522,9 @@ void CdmService::decrementSessionIdUsageCounter(int32_t keySessionId)
 void CdmService::ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure)
 {
     std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
-    for (const auto &mediaKeys : m_mediaKeys)
+    for (const auto &[_, mediaKeys] : m_mediaKeys)
     {
-        mediaKeys.second->ping(heartbeatProcedure->createHandler());
+        mediaKeys->ping(heartbeatProcedure->createHandler());
     }
 }
 } // namespace firebolt::rialto::server::service

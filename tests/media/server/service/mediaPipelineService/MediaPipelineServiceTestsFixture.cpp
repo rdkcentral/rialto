@@ -71,7 +71,8 @@ MediaPipelineServiceTests::MediaPipelineServiceTests()
       m_shmBufferMock{dynamic_cast<StrictMock<firebolt::rialto::server::SharedMemoryBufferMock> &>(*m_shmBuffer)},
       m_mediaPipeline{std::make_unique<StrictMock<firebolt::rialto::server::MediaPipelineServerInternalMock>>()},
       m_mediaPipelineMock{
-          dynamic_cast<StrictMock<firebolt::rialto::server::MediaPipelineServerInternalMock> &>(*m_mediaPipeline)}
+          dynamic_cast<StrictMock<firebolt::rialto::server::MediaPipelineServerInternalMock> &>(*m_mediaPipeline)},
+      m_heartbeatProcedureMock{std::make_shared<StrictMock<firebolt::rialto::server::HeartbeatProcedureMock>>()}
 {
 }
 
@@ -261,6 +262,13 @@ void MediaPipelineServiceTests::mediaPipelineWillGetMute()
 void MediaPipelineServiceTests::mediaPipelineWillFailToGetMute()
 {
     EXPECT_CALL(m_mediaPipelineMock, getMute(_)).WillOnce(Return(false));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillPing()
+{
+    EXPECT_CALL(*m_heartbeatProcedureMock, createHandler())
+        .WillOnce(Return(ByMove(std::make_unique<StrictMock<firebolt::rialto::server::HeartbeatHandlerMock>>())));
+    EXPECT_CALL(m_mediaPipelineMock, ping(_));
 }
 
 void MediaPipelineServiceTests::mediaPipelineFactoryWillCreateMediaPipeline()
@@ -548,4 +556,9 @@ void MediaPipelineServiceTests::initSession()
     playbackServiceWillReturnSharedMemoryBuffer();
     mediaPipelineFactoryWillCreateMediaPipeline();
     createSessionShouldSucceed();
+}
+
+void MediaPipelineServiceTests::triggerPing()
+{
+    m_sut->ping(m_heartbeatProcedureMock);
 }

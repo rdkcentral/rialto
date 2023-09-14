@@ -21,6 +21,8 @@
 #define MEDIA_PIPELINE_SERVICE_TESTS_FIXTURE_H_
 
 #include "DecryptionServiceMock.h"
+#include "HeartbeatHandlerMock.h"
+#include "HeartbeatProcedureMock.h"
 #include "MediaPipelineCapabilitiesFactoryMock.h"
 #include "MediaPipelineCapabilitiesMock.h"
 #include "MediaPipelineServerInternalFactoryMock.h"
@@ -73,6 +75,7 @@ public:
     void mediaPipelineWillFailToSetMute();
     void mediaPipelineWillGetMute();
     void mediaPipelineWillFailToGetMute();
+    void mediaPipelineWillPing();
 
     void mediaPipelineFactoryWillCreateMediaPipeline();
     void mediaPipelineFactoryWillReturnNullptr();
@@ -127,6 +130,7 @@ public:
     void getMuteShouldFail();
     void clearMediaPipelines();
     void initSession();
+    void triggerPing();
 
 private:
     std::shared_ptr<StrictMock<firebolt::rialto::server::MediaPipelineServerInternalFactoryMock>> m_mediaPipelineFactoryMock;
@@ -140,6 +144,7 @@ private:
     StrictMock<firebolt::rialto::server::MediaPipelineServerInternalMock> &m_mediaPipelineMock;
     StrictMock<firebolt::rialto::server::DecryptionServiceMock> m_decryptionServiceMock;
     StrictMock<firebolt::rialto::server::service::PlaybackServiceMock> m_playbackServiceMock;
+    std::shared_ptr<StrictMock<firebolt::rialto::server::HeartbeatProcedureMock>> m_heartbeatProcedureMock;
     std::unique_ptr<firebolt::rialto::server::service::MediaPipelineService> m_sut;
 };
 
