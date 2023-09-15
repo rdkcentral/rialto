@@ -42,6 +42,7 @@ public:
                 (override));
     MOCK_METHOD(void, setEos, (), (override));
     MOCK_METHOD(uint64_t, getQueuedBytes, (), (override));
+    MOCK_METHOD(void, ping, (std::unique_ptr<IHeartbeatHandler> && heartbeatHandler), (override));
 };
 } // namespace firebolt::rialto::server
 

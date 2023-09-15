@@ -380,4 +380,12 @@ void GstWebAudioPlayer::handleBusMessage(GstMessage *message)
     }
 }
 
+void GstWebAudioPlayer::ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler)
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(m_taskFactory->createPing(std::move(heartbeatHandler)));
+    }
+}
+
 }; // namespace firebolt::rialto::server

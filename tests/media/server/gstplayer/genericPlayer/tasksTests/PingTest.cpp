@@ -17,20 +17,13 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_HEARTBEAT_PROCEDURE_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_HEARTBEAT_PROCEDURE_MOCK_H_
+#include "GenericTasksTestsBase.h"
 
-#include "IHeartbeatProcedure.h"
-#include <gmock/gmock.h>
-#include <memory>
-
-namespace firebolt::rialto::server
+class PingTest : public GenericTasksTestsBase
 {
-class HeartbeatProcedureMock : public IHeartbeatProcedure
-{
-public:
-    MOCK_METHOD(std::unique_ptr<IHeartbeatHandler>, createHandler, (), (override));
 };
-} // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_HEARTBEAT_PROCEDURE_MOCK_H_
+TEST_F(PingTest, shouldPing)
+{
+    triggerPing();
+}

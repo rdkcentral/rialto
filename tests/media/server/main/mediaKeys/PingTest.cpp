@@ -17,20 +17,25 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_HEARTBEAT_PROCEDURE_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_HEARTBEAT_PROCEDURE_MOCK_H_
+#include "HeartbeatHandlerMock.h"
+#include "MediaKeysTestBase.h"
 
-#include "IHeartbeatProcedure.h"
-#include <gmock/gmock.h>
-#include <memory>
+class RialtoServerMediaKeysPingTest : public MediaKeysTestBase
+{
+protected:
+    RialtoServerMediaKeysPingTest() { createMediaKeys(kNetflixKeySystem); }
+    ~RialtoServerMediaKeysPingTest() { destroyMediaKeys(); }
 
-namespace firebolt::rialto::server
-{
-class HeartbeatProcedureMock : public IHeartbeatProcedure
-{
-public:
-    MOCK_METHOD(std::unique_ptr<IHeartbeatHandler>, createHandler, (), (override));
+    std::unique_ptr<firebolt::rialto::server::IHeartbeatHandler> m_heartbeatHandlerMock{
+        std::make_unique<StrictMock<firebolt::rialto::server::HeartbeatHandlerMock>>()};
 };
-} // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_HEARTBEAT_PROCEDURE_MOCK_H_
+/**
+ * Test that Ping succeeds.
+ */
+TEST_F(RialtoServerMediaKeysPingTest, Success)
+{
+    mainThreadWillEnqueueTaskAndWait();
+
+    m_mediaKeys->ping(std::move(m_heartbeatHandlerMock));
+}

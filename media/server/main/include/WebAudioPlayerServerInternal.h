@@ -24,7 +24,7 @@
 #include "IMainThread.h"
 #include "ITimer.h"
 #include "IWebAudioPlayer.h"
-#include "IWebAudioPlayerServerInternalFactory.h"
+#include "IWebAudioPlayerServerInternal.h"
 
 #include <memory>
 #include <stdint.h>
@@ -45,7 +45,7 @@ public:
                                                           const std::string &audioMimeType, const uint32_t priority,
                                                           const WebAudioConfig *config) const override;
 
-    std::unique_ptr<IWebAudioPlayer>
+    std::unique_ptr<IWebAudioPlayerServerInternal>
     createWebAudioPlayerServerInternal(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
                                        const uint32_t priority, const WebAudioConfig *config,
                                        const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle) const override;
@@ -54,7 +54,7 @@ public:
 /**
  * @brief The definition of the WebAudioPlayerServerInternal.
  */
-class WebAudioPlayerServerInternal : public IWebAudioPlayer, public IGstWebAudioPlayerClient
+class WebAudioPlayerServerInternal : public IWebAudioPlayerServerInternal, public IGstWebAudioPlayerClient
 {
 public:
     /**
@@ -103,6 +103,8 @@ public:
     std::weak_ptr<IWebAudioPlayerClient> getClient() override;
 
     void notifyState(WebAudioPlayerState state) override;
+
+    void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) override;
 
 protected:
     /**

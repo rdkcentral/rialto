@@ -93,6 +93,8 @@ public:
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createUpdatePlaybackGroup,
                 (GenericPlayerContext & context, GstElement *typefind, const GstCaps *caps), (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createRenderFrame, (GenericPlayerContext & context), (const, override));
+    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createPing, (std::unique_ptr<IHeartbeatHandler> && heartbeatHandler),
+                (const, override));
 };
 } // namespace firebolt::rialto::server
 

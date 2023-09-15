@@ -24,6 +24,8 @@
 #include "ApplicationManagementServerMock.h"
 #include "CdmServiceMock.h"
 #include "ControlServiceMock.h"
+#include "HeartbeatProcedureFactoryMock.h"
+#include "HeartbeatProcedureMock.h"
 #include "ISessionServerManager.h"
 #include "IpcFactoryMock.h"
 #include "PlaybackServiceMock.h"
@@ -80,6 +82,9 @@ private:
     std::unique_ptr<firebolt::rialto::server::ipc::ISessionManagementServer> m_sessionManagementServer;
     StrictMock<firebolt::rialto::server::ipc::SessionManagementServerMock> &m_sessionManagementServerMock;
     std::shared_ptr<StrictMock<firebolt::rialto::server::AckSenderMock>> m_ackSenderMock;
+    std::unique_ptr<StrictMock<firebolt::rialto::server::HeartbeatProcedureFactoryMock>> m_heartbeatProcedureFactory;
+    StrictMock<firebolt::rialto::server::HeartbeatProcedureFactoryMock> &m_heartbeatProcedureFactoryMock;
+    std::shared_ptr<StrictMock<firebolt::rialto::server::HeartbeatProcedureMock>> m_heartbeatProcedureMock;
     std::thread m_serviceThread;
     std::unique_ptr<firebolt::rialto::server::service::ISessionServerManager> m_sut;
 };

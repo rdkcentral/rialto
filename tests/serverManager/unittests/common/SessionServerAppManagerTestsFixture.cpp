@@ -59,7 +59,6 @@ constexpr rialto::servermanager::service::LoggingLevels
                           rialto::servermanager::service::LoggingLevel::MILESTONE,
                           rialto::servermanager::service::LoggingLevel::INFO};
 const firebolt::rialto::common::AppConfig kAppConfig{kSessionServerSocketName};
-constexpr bool kPingSuccess{true};
 constexpr int kPingId{125};
 const std::string kClientDisplayName{"westeros-rialto"};
 constexpr unsigned int kSocketPermissions{0777};
@@ -322,9 +321,9 @@ void SessionServerAppManagerTests::sessionServerWontBePreloaded()
     EXPECT_CALL(m_sessionServerAppMock, isPreloaded()).WillOnce(Return(false));
 }
 
-void SessionServerAppManagerTests::healthcheckServiceWillHandleAck()
+void SessionServerAppManagerTests::healthcheckServiceWillHandleAck(bool success)
 {
-    EXPECT_CALL(m_healthcheckServiceMock, onAckReceived(kServerId, kPingId, kPingSuccess));
+    EXPECT_CALL(m_healthcheckServiceMock, onAckReceived(kServerId, kPingId, success));
 }
 
 void SessionServerAppManagerTests::pingWillBeSentToRunningApps()
@@ -335,6 +334,8 @@ void SessionServerAppManagerTests::pingWillBeSentToRunningApps()
 
 void SessionServerAppManagerTests::pingSendToRunningAppsWillFail()
 {
+    EXPECT_CALL(*m_stateObserver, stateChanged(kAppName, firebolt::rialto::common::SessionServerState::ERROR));
+    EXPECT_CALL(m_sessionServerAppMock, isPreloaded()).WillOnce(Return(false));
     EXPECT_CALL(m_controllerMock, performPing(kServerId, kPingId)).WillOnce(Return(false));
 }
 
@@ -378,10 +379,10 @@ void SessionServerAppManagerTests::triggerOnSessionServerStateChanged(
     return m_sut->onSessionServerStateChanged(kServerId, newState);
 }
 
-void SessionServerAppManagerTests::triggerOnAck()
+void SessionServerAppManagerTests::triggerOnAck(bool success)
 {
     EXPECT_TRUE(m_sut);
-    return m_sut->onAck(kServerId, kPingId, kPingSuccess);
+    return m_sut->onAck(kServerId, kPingId, success);
 }
 
 std::string SessionServerAppManagerTests::triggerGetAppConnectionInfo()

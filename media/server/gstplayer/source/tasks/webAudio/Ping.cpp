@@ -17,20 +17,24 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_HEARTBEAT_PROCEDURE_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_HEARTBEAT_PROCEDURE_MOCK_H_
+#include "tasks/webAudio/Ping.h"
+#include "RialtoServerLogging.h"
 
-#include "IHeartbeatProcedure.h"
-#include <gmock/gmock.h>
-#include <memory>
-
-namespace firebolt::rialto::server
+namespace firebolt::rialto::server::tasks::webaudio
 {
-class HeartbeatProcedureMock : public IHeartbeatProcedure
+Ping::Ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) : m_heartbeatHandler{std::move(heartbeatHandler)}
 {
-public:
-    MOCK_METHOD(std::unique_ptr<IHeartbeatHandler>, createHandler, (), (override));
-};
-} // namespace firebolt::rialto::server
+    RIALTO_SERVER_LOG_DEBUG("Constructing Ping");
+}
 
-#endif // FIREBOLT_RIALTO_SERVER_HEARTBEAT_PROCEDURE_MOCK_H_
+Ping::~Ping()
+{
+    RIALTO_SERVER_LOG_DEBUG("Ping finished");
+    m_heartbeatHandler.reset();
+}
+
+void Ping::execute() const
+{
+    RIALTO_SERVER_LOG_DEBUG("Executing Ping");
+}
+} // namespace firebolt::rialto::server::tasks::webaudio

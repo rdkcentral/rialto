@@ -35,6 +35,7 @@
 #include <vector>
 
 #include "IDecryptionService.h"
+#include "IHeartbeatHandler.h"
 #include "IMediaPipeline.h"
 #include "ISharedMemoryBuffer.h"
 #include <MediaCommon.h>
@@ -97,6 +98,13 @@ public:
      * @param[in] needDataRequestId : Need data request id
      */
     virtual bool haveData(MediaSourceStatus status, uint32_t numFrames, uint32_t needDataRequestId) = 0;
+
+    /**
+     * @brief Checks if MediaPipeline threads are not deadlocked
+     *
+     * @param[out] heartbeatHandler : The heartbeat handler instance
+     */
+    virtual void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) = 0;
 };
 
 }; // namespace firebolt::rialto::server

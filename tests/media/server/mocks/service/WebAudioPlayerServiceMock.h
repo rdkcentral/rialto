@@ -47,6 +47,7 @@ public:
                 (int handle, uint32_t &preferredFrames, uint32_t &maximumFrames, bool &supportDeferredPlay), (override));
     MOCK_METHOD(bool, setVolume, (int handle, double volume), (override));
     MOCK_METHOD(bool, getVolume, (int handle, double &volume), (override));
+    MOCK_METHOD(void, ping, (const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure), (override));
 };
 } // namespace firebolt::rialto::server::service
 

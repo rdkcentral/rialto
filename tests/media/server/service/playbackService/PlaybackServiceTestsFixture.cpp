@@ -52,7 +52,8 @@ PlaybackServiceTests::PlaybackServiceTests()
       m_shmBufferFactoryMock{
           dynamic_cast<StrictMock<firebolt::rialto::server::SharedMemoryBufferFactoryMock> &>(*m_shmBufferFactory)},
       m_shmBuffer{std::make_shared<StrictMock<firebolt::rialto::server::SharedMemoryBufferMock>>()},
-      m_shmBufferMock{dynamic_cast<StrictMock<firebolt::rialto::server::SharedMemoryBufferMock> &>(*m_shmBuffer)}
+      m_shmBufferMock{dynamic_cast<StrictMock<firebolt::rialto::server::SharedMemoryBufferMock> &>(*m_shmBuffer)},
+      m_heartbeatProcedureMock{std::make_shared<StrictMock<firebolt::rialto::server::HeartbeatProcedureMock>>()}
 {
 }
 
@@ -102,6 +103,11 @@ void PlaybackServiceTests::triggerSetMaxWebAudioPlayers()
 void PlaybackServiceTests::triggerSetClientDisplayName()
 {
     m_sut->setClientDisplayName(clientDisplayName);
+}
+
+void PlaybackServiceTests::triggerPing()
+{
+    m_sut->ping(m_heartbeatProcedureMock);
 }
 
 void PlaybackServiceTests::getSharedMemoryShouldSucceed()

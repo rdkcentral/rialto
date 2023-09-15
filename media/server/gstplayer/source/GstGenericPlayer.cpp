@@ -890,6 +890,14 @@ bool GstGenericPlayer::getMute(bool &mute)
     return true;
 }
 
+void GstGenericPlayer::ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler)
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(m_taskFactory->createPing(std::move(heartbeatHandler)));
+    }
+}
+
 void GstGenericPlayer::handleBusMessage(GstMessage *message)
 {
     m_workerThread->enqueueTask(m_taskFactory->createHandleBusMessage(m_context, *this, message));

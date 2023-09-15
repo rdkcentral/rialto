@@ -23,6 +23,7 @@
 #include "GstGenericPlayerClientMock.h"
 #include "GstGenericPlayerPrivateMock.h"
 #include "GstWrapperMock.h"
+#include "HeartbeatHandlerMock.h"
 #include "RdkGstreamerUtilsWrapperMock.h"
 #include "tasks/IPlayerTask.h"
 #include "tasks/generic/AttachSamples.h"
@@ -35,6 +36,7 @@
 #include "tasks/generic/HandleBusMessage.h"
 #include "tasks/generic/NeedData.h"
 #include "tasks/generic/Pause.h"
+#include "tasks/generic/Ping.h"
 #include "tasks/generic/Play.h"
 #include "tasks/generic/ReadShmDataAndAttachSamples.h"
 #include "tasks/generic/RemoveSource.h"
@@ -255,4 +257,11 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateUpdatePlaybackGroup)
     auto task = m_sut.createUpdatePlaybackGroup(m_context, nullptr, nullptr);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::UpdatePlaybackGroup &>(*task));
+}
+
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreatePing)
+{
+    auto task = m_sut.createPing(std::make_unique<StrictMock<firebolt::rialto::server::HeartbeatHandlerMock>>());
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::Ping &>(*task));
 }

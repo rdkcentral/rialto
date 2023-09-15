@@ -50,7 +50,7 @@ class IHeartbeatProcedure
 {
 public:
     virtual ~IHeartbeatProcedure() = default;
-    virtual std::unique_ptr<IHeartbeatHandler> createHandler(int controlId) = 0;
+    virtual std::unique_ptr<IHeartbeatHandler> createHandler() = 0;
 };
 } // namespace firebolt::rialto::server
 
