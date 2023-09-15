@@ -24,21 +24,21 @@
 
 namespace rialto::servermanager::service
 {
-    ConfigReader::ConfigReader(const std::string &filePath, std::unique_ptr<IJsonCppWrapper> &&jsonWrapper, std::unique_ptr<IFileReader> &&fileReader)
-    : m_jsonWrapper(std::move(jsonWrapper)), m_fileReader(std::move(fileReader)), m_filePath(filePath)
+    ConfigReader::ConfigReader(const std::string &filePath, std::shared_ptr<IJsonCppWrapper> jsonWrapper, std::shared_ptr<IFileReader> fileReader)
+    : m_jsonWrapper(jsonWrapper), m_fileReader(fileReader), m_filePath(filePath)
     {
 
     }
 
     bool ConfigReader::read()
     {
-        std::ifstream jsonFile(m_filePath.c_str());
+        std::ifstream jsonFile(m_filePath.c_str()); //todo remove
         if (!m_fileReader->isOpen())
         {
             RIALTO_SERVER_MANAGER_LOG_WARN("Could not open '%s' config file", m_filePath.c_str());
             return false;
         }
-        std::unique_ptr<IJsonValueWrapper> root;
+        std::shared_ptr<IJsonValueWrapper> root;
         Json::CharReaderBuilder builder;
         if (!m_jsonWrapper->parseFromStream(builder, jsonFile, root, nullptr))
         {
@@ -46,42 +46,42 @@ namespace rialto::servermanager::service
             return false;
         }
 
-        if (root->isMember("ENVIRONMENT_VARIABLES") && (*root)["ENVIRONMENT_VARIABLES"]->isArray())
+        if (root->isMember("ENVIRONMENT_VARIABLES") && root->at("ENVIRONMENT_VARIABLES")->isArray())
         {
-            std::unique_ptr<IJsonValueWrapper> envVarsJson = (*root)["ENVIRONMENT_VARIABLES"];
+            std::shared_ptr<IJsonValueWrapper> envVarsJson = root->at("ENVIRONMENT_VARIABLES");
             Json::ArrayIndex size = envVarsJson->size();
             for (Json::ArrayIndex index = 0; index < size; ++index)
             {
-                if((*envVarsJson)[index]->isString())
+                if(envVarsJson->at(index)->isString())
                 {
-                    m_envVars.emplace_back((*envVarsJson)[index]->asString());
+                    m_envVars.emplace_back(envVarsJson->at(index)->asString());
                 }
             }
         }
 
-        if (root->isMember("SESSION_SERVER_PATH") && (*root)["SESSION_SERVER_PATH"]->isString())
+        if (root->isMember("SESSION_SERVER_PATH") && root->at("SESSION_SERVER_PATH")->isString())
         {
-            m_sessionServerPath = (*root)["SESSION_SERVER_PATH"]->asString();
+            m_sessionServerPath = root->at("SESSION_SERVER_PATH")->asString();
         }
 
-        if (root->isMember("STARTUP_TIMEOUT_MS") && (*root)["STARTUP_TIMEOUT_MS"]->isUInt())
+        if (root->isMember("STARTUP_TIMEOUT_MS") && root->at("STARTUP_TIMEOUT_MS")->isUInt())
         {
-            m_sessionServerStartupTimeout = std::optional<std::chrono::milliseconds>((*root)["STARTUP_TIMEOUT_MS"]->asUInt());
+            m_sessionServerStartupTimeout = std::optional<std::chrono::milliseconds>(root->at("STARTUP_TIMEOUT_MS")->asUInt());
         }
 
-        if (root->isMember("HEALTHCHECK_INTERVAL") && (*root)["HEALTHCHECK_INTERVAL"]->isUInt())
+        if (root->isMember("HEALTHCHECK_INTERVAL") && root->at("HEALTHCHECK_INTERVAL")->isUInt())
         {
-            m_healthcheckInterval = std::optional<std::chrono::seconds>((*root)["HEALTHCHECK_INTERVAL"]->asUInt());
+            m_healthcheckInterval = std::optional<std::chrono::seconds>(root->at("HEALTHCHECK_INTERVAL")->asUInt());
         }
 
-        if (root->isMember("SOCKET_PERMISSIONS") && (*root)["SOCKET_PERMISSIONS"]->isUInt())
+        if (root->isMember("SOCKET_PERMISSIONS") && root->at("SOCKET_PERMISSIONS")->isUInt())
         {
-            m_socketPermissions = (*root)["SOCKET_PERMISSIONS"]->asUInt();
+            m_socketPermissions = root->at("SOCKET_PERMISSIONS")->asUInt();
         }
 
-        if (root->isMember("NUM_OF_PRELOADED_SERVERS") && (*root)["NUM_OF_PRELOADED_SERVERS"]->isUInt())
+        if (root->isMember("NUM_OF_PRELOADED_SERVERS") && root->at("NUM_OF_PRELOADED_SERVERS")->isUInt())
         {
-            m_numOfPreloadedServers = (*root)["NUM_OF_PRELOADED_SERVERS"]->asUInt();
+            m_numOfPreloadedServers = root->at("NUM_OF_PRELOADED_SERVERS")->asUInt();
         }
 
         return true;

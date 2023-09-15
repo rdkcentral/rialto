@@ -17,21 +17,21 @@
  * limitations under the License.
  */
 
-#ifndef RIALTO_SERVERMANAGER_SERVICE_IFILE_READER_H_
-#define RIALTO_SERVERMANAGER_SERVICE_IFILE_READER_H_
+#ifndef RIALTO_SERVERMANAGER_SERVICE_FILE_READER_MOCK_H_
+#define RIALTO_SERVERMANAGER_SERVICE_FILE_READER_MOCK_H_
 
-#include <fstream>
+#include "IFileReader.h"
+#include <gmock/gmock.h>
 
 namespace rialto::servermanager::service
 {
-class IFileReader
-{
-public:
-    virtual bool isOpen() = 0;
-    virtual std::ifstream& get() = 0;
-};
+    class FileReaderMock : public IFileReader
+    {
+        public:
+        MOCK_METHOD(bool, isOpen, (), (override));
+        MOCK_METHOD(std::ifstream&, get, (), (override));
+    };
 
 } // namespace rialto::servermanager::service
 
-#endif // RIALTO_SERVERMANAGER_SERVICE_IFILE_READER_H_
-
+#endif // RIALTO_SERVERMANAGER_SERVICE_FILE_READER_MOCK_H_

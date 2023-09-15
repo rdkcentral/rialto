@@ -49,12 +49,13 @@ target_include_directories (
 )
 target_link_libraries (
         RialtoServerManager
+        PUBLIC # pomyslec o tym
+        JsonCpp::JsonCpp
         PRIVATE
         RialtoLogging
         RialtoServerManagerCommon
         RialtoServerManagerIpc
         Threads::Threads
-        JsonCpp::JsonCpp
 )
 
 if ( COVERAGE_ENABLED )

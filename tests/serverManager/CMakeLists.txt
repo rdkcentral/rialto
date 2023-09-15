@@ -33,6 +33,7 @@ add_gtests (
 
         unittests/service/ServerManagerServiceTests.cpp
         unittests/service/ServerManagerServiceTestsFixture.cpp
+        unittests/service/ConfigReaderTests.cpp
         )
 
 add_subdirectory(matchers)

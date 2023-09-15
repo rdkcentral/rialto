@@ -31,12 +31,12 @@ class JsonValueWrapper : public IJsonValueWrapper
     public:
         JsonValueWrapper(const Json::Value &value) : m_value(value) {}
         bool isMember(const JSONCPP_STRING &key) const override { return m_value.isMember(key); }
-        std::unique_ptr<IJsonValueWrapper> operator[](const JSONCPP_STRING &key) const override
+        std::shared_ptr<IJsonValueWrapper> at(const JSONCPP_STRING &key) const override
         {
             return std::make_unique<JsonValueWrapper<const Json::Value&>>(m_value[key]);
         }
 
-        std::unique_ptr<IJsonValueWrapper> operator[](Json::ArrayIndex index) const override
+        std::shared_ptr<IJsonValueWrapper> at(Json::ArrayIndex index) const override
         {
             return std::make_unique<JsonValueWrapper<const Json::Value &>>(m_value[index]);
         }
@@ -55,7 +55,7 @@ class JsonValueWrapper : public IJsonValueWrapper
 class JsonCppWrapper : public IJsonCppWrapper
 {
     public:
-        bool parseFromStream(Json::CharReader::Factory const &, std::istream &, std::unique_ptr<IJsonValueWrapper> &root, JSONCPP_STRING *errs);
+        bool parseFromStream(Json::CharReader::Factory const &, std::istream &, std::shared_ptr<IJsonValueWrapper> &root, JSONCPP_STRING *errs);
 };
 
 } // namespace rialto::servermanager::service
