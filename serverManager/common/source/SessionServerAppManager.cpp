@@ -258,6 +258,7 @@ bool SessionServerAppManager::changeSessionServerState(const std::string &appNam
     if (!m_ipcController->performSetState(sessionServer->getServerId(), newState))
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("Change state of %s to %s failed.", appName.c_str(), toString(newState));
+        handleStateChangeFailure(sessionServer, newState);
         return false;
     }
     RIALTO_SERVER_MANAGER_LOG_INFO("Change state of %s to %s succeeded.", appName.c_str(), toString(newState));
@@ -386,5 +387,20 @@ const std::unique_ptr<ISessionServerApp> &SessionServerAppManager::getServerById
         return *iter;
     }
     return kInvalidSessionServer;
+}
+
+void SessionServerAppManager::handleStateChangeFailure(const std::unique_ptr<ISessionServerApp> &sessionServer,
+                                                       const firebolt::rialto::common::SessionServerState &state)
+{
+    if (state == firebolt::rialto::common::SessionServerState::NOT_RUNNING)
+    {
+        RIALTO_SERVER_MANAGER_LOG_WARN("Force change of %s to NotRunning.", sessionServer->getAppName().c_str());
+        sessionServer->kill();
+        handleSessionServerStateChange(sessionServer->getServerId(), state);
+    }
+    else
+    {
+        handleSessionServerStateChange(sessionServer->getServerId(), firebolt::rialto::common::SessionServerState::ERROR);
+    }
 }
 } // namespace rialto::servermanager::common
