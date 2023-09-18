@@ -79,8 +79,21 @@ TEST_F(SessionServerAppManagerTests, SetSessionServerStateShouldReturnFalseWhenU
     sessionServerWillLaunch(firebolt::rialto::common::SessionServerState::INACTIVE);
     ASSERT_TRUE(triggerInitiateApplication(firebolt::rialto::common::SessionServerState::INACTIVE));
     sessionServerChangeStateWillFail(firebolt::rialto::common::SessionServerState::ACTIVE);
+    sessionServerWontBePreloaded();
+    sessionServerWillIndicateStateChange(firebolt::rialto::common::SessionServerState::ERROR);
     ASSERT_FALSE(triggerSetSessionServerState(firebolt::rialto::common::SessionServerState::ACTIVE));
     sessionServerWillKillRunningApplication();
+}
+
+TEST_F(SessionServerAppManagerTests, SetSessionServerStateToNotRunningShouldReturnFalseAndKillAppWhenUnableToSendMessage)
+{
+    sessionServerWillLaunch(firebolt::rialto::common::SessionServerState::INACTIVE);
+    ASSERT_TRUE(triggerInitiateApplication(firebolt::rialto::common::SessionServerState::INACTIVE));
+    sessionServerChangeStateWillFail(firebolt::rialto::common::SessionServerState::NOT_RUNNING);
+    sessionServerWillKillRunningApplication();
+    sessionServerWillIndicateStateChange(firebolt::rialto::common::SessionServerState::NOT_RUNNING);
+    clientWillBeRemoved();
+    ASSERT_FALSE(triggerSetSessionServerState(firebolt::rialto::common::SessionServerState::NOT_RUNNING));
 }
 
 TEST_F(SessionServerAppManagerTests, SetSessionServerStateShouldReturnTrueWhenStateIsChanged)
