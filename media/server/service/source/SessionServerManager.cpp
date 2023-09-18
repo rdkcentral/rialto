@@ -231,6 +231,7 @@ bool SessionServerManager::switchToNotRunning()
     // Free resources before sending notification to ServerManager
     m_playbackService.switchToInactive();
     m_cdmService.switchToInactive();
+    m_controlService.setApplicationState(ApplicationState::UNKNOWN);
     stopService();
     if (m_applicationManagementServer->sendStateChangedEvent(common::SessionServerState::NOT_RUNNING))
     {
