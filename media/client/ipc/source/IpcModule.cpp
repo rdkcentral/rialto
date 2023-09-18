@@ -55,18 +55,24 @@ bool IpcModule::unsubscribeFromAllEvents(const std::shared_ptr<ipc::IChannel> &i
 bool IpcModule::attachChannel()
 {
     // get the channel
-    std::shared_ptr<ipc::IChannel> ipcChannel = m_ipc.getChannel().lock();
+    std::shared_ptr<ipc::IChannel> ipcChannel{getConnectedChannel()};
+
+    // If not connected, try to recover and reconnect first
     if (!ipcChannel)
     {
-        RIALTO_CLIENT_LOG_ERROR("Failed to get the ipc channel");
-        return false;
-    }
+        RIALTO_CLIENT_LOG_WARN("Channel not connected. Trying to recover...");
+        if (!m_ipc.reconnect())
+        {
+            RIALTO_CLIENT_LOG_ERROR("Reconnection failed.");
+            return false;
+        }
 
-    // check channel connected
-    if (!ipcChannel->isConnected())
-    {
-        RIALTO_CLIENT_LOG_ERROR("Ipc channel not connected");
-        return false;
+        std::shared_ptr<ipc::IChannel> ipcChannel{getConnectedChannel()};
+        if (!ipcChannel)
+        {
+            RIALTO_CLIENT_LOG_ERROR("Failed to get the ipc channel");
+            return false;
+        }
     }
 
     // create the RPC stubs
@@ -118,4 +124,13 @@ bool IpcModule::reattachChannelIfRequired()
     return true;
 }
 
+std::shared_ptr<ipc::IChannel> IpcModule::getConnectedChannel()
+{
+    std::shared_ptr<ipc::IChannel> ipcChannel = m_ipc.getChannel().lock();
+    if (ipcChannel && ipcChannel->isConnected())
+    {
+        return ipcChannel;
+    }
+    return nullptr;
+}
 }; // namespace firebolt::rialto::client

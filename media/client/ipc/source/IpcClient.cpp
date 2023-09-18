@@ -195,4 +195,14 @@ std::shared_ptr<google::protobuf::RpcController> IpcClient::createRpcController(
     return m_ipcControllerFactory->create();
 }
 
+bool IpcClient::reconnect()
+{
+    RIALTO_CLIENT_LOG_INFO("Trying to reconnect channel");
+    if (disconnect())
+    {
+        return connect();
+    }
+    return false;
+}
+
 }; // namespace firebolt::rialto::client
