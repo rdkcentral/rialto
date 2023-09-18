@@ -55,7 +55,6 @@ protected:
         m_fd = memfd_create("memfdfile", 0);
 
         EXPECT_CALL(*m_controlIpcFactoryMock, getControlIpc(_)).WillOnce(Return(m_controlIpcMock));
-        EXPECT_CALL(*m_controlIpcMock, registerClient()).WillOnce(Return(true));
         EXPECT_NO_THROW(m_sut = std::make_unique<ClientController>(m_controlIpcFactoryMock));
     }
 
@@ -137,6 +136,7 @@ TEST_F(ClientControllerMemoryManagementTest, SwitchToInactiveWithMemoryTerminati
 TEST_F(ClientControllerMemoryManagementTest, SwitchStatesWithClientNotification)
 {
     ApplicationState appState;
+    EXPECT_CALL(*m_controlIpcMock, registerClient()).WillOnce(Return(true));
     m_sut->registerClient(&m_controlClientMock, appState);
     EXPECT_EQ(ApplicationState::UNKNOWN, appState);
     EXPECT_CALL(*m_controlIpcMock, getSharedMemory(_, _))
@@ -153,6 +153,7 @@ TEST_F(ClientControllerMemoryManagementTest, SwitchStatesWithClientNotification)
 TEST_F(ClientControllerMemoryManagementTest, SwitchStatesWithoutClientNotification)
 {
     ApplicationState appState;
+    EXPECT_CALL(*m_controlIpcMock, registerClient()).WillOnce(Return(true));
     m_sut->registerClient(&m_controlClientMock, appState);
     m_sut->unregisterClient(&m_controlClientMock);
     EXPECT_CALL(*m_controlIpcMock, getSharedMemory(_, _))
@@ -177,7 +178,7 @@ TEST_F(ClientControllerMemoryManagementTest, RegisterClientInRunningState)
     EXPECT_NE(nullptr, m_sut->getSharedMemoryHandle()->getShm());
 }
 
-TEST_F(ClientControllerMemoryManagementTest, SwitchToInvalidStateShouldFail)
+TEST_F(ClientControllerMemoryManagementTest, SwitchToUnknown)
 {
     EXPECT_CALL(*m_controlIpcMock, getSharedMemory(_, _))
         .WillOnce(DoAll(SetArgReferee<0>(m_fd), SetArgReferee<1>(m_size), Return(true)));
@@ -185,6 +186,5 @@ TEST_F(ClientControllerMemoryManagementTest, SwitchToInvalidStateShouldFail)
     EXPECT_NE(nullptr, m_sut->getSharedMemoryHandle());
     EXPECT_NE(nullptr, m_sut->getSharedMemoryHandle()->getShm());
     changeAppState(ApplicationState::UNKNOWN);
-    EXPECT_NE(nullptr, m_sut->getSharedMemoryHandle());
-    EXPECT_NE(nullptr, m_sut->getSharedMemoryHandle()->getShm());
+    EXPECT_EQ(nullptr, m_sut->getSharedMemoryHandle());
 }
