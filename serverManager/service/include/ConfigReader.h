@@ -33,7 +33,7 @@ namespace rialto::servermanager::service
 class ConfigReader : public IConfigReader
 {
 public:
-    ConfigReader(const std::string &filePath, std::shared_ptr<IJsonCppWrapper> jsonWrapper, std::shared_ptr<IFileReader> fileReader);
+    ConfigReader(std::shared_ptr<IJsonCppWrapper> jsonWrapper, std::shared_ptr<IFileReader> fileReader);
     bool read() override;
 
     std::list<std::string> getEnvironmentVariables() override;
@@ -46,7 +46,7 @@ public:
 private:
     std::shared_ptr<IJsonCppWrapper> m_jsonWrapper;
     std::shared_ptr<IFileReader> m_fileReader;
-    std::string m_filePath;
+
     std::list<std::string> m_envVars;
     std::optional<std::string> m_sessionServerPath;
     std::optional<std::chrono::milliseconds> m_sessionServerStartupTimeout;

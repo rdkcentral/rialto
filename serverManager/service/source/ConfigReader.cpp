@@ -24,31 +24,31 @@
 
 namespace rialto::servermanager::service
 {
-    ConfigReader::ConfigReader(const std::string &filePath, std::shared_ptr<IJsonCppWrapper> jsonWrapper, std::shared_ptr<IFileReader> fileReader)
-    : m_jsonWrapper(jsonWrapper), m_fileReader(fileReader), m_filePath(filePath)
+    ConfigReader::ConfigReader(std::shared_ptr<IJsonCppWrapper> jsonWrapper, std::shared_ptr<IFileReader> fileReader)
+    : m_jsonWrapper(jsonWrapper), m_fileReader(fileReader)
     {
 
     }
 
     bool ConfigReader::read()
     {
-        std::ifstream jsonFile(m_filePath.c_str()); //todo remove
         if (!m_fileReader->isOpen())
         {
-            RIALTO_SERVER_MANAGER_LOG_WARN("Could not open '%s' config file", m_filePath.c_str());
-            return false;
-        }
-        std::shared_ptr<IJsonValueWrapper> root;
-        Json::CharReaderBuilder builder;
-        if (!m_jsonWrapper->parseFromStream(builder, jsonFile, root, nullptr))
-        {
-            RIALTO_SERVER_MANAGER_LOG_ERROR("Failed to parse '%s' config file", m_filePath.c_str());
+            RIALTO_SERVER_MANAGER_LOG_WARN("Could not open config file");
             return false;
         }
 
-        if (root->isMember("ENVIRONMENT_VARIABLES") && root->at("ENVIRONMENT_VARIABLES")->isArray())
+        std::shared_ptr<IJsonValueWrapper> root;
+        Json::CharReaderBuilder builder;
+        if (!m_jsonWrapper->parseFromStream(builder, m_fileReader->get(), root, nullptr))
         {
-            std::shared_ptr<IJsonValueWrapper> envVarsJson = root->at("ENVIRONMENT_VARIABLES");
+            RIALTO_SERVER_MANAGER_LOG_ERROR("Failed to parse config file");
+            return false;
+        }
+
+        if (root->isMember("environment_variables") && root->at("environment_variables")->isArray())
+        {
+            std::shared_ptr<IJsonValueWrapper> envVarsJson = root->at("environment_variables");
             Json::ArrayIndex size = envVarsJson->size();
             for (Json::ArrayIndex index = 0; index < size; ++index)
             {
@@ -59,29 +59,29 @@ namespace rialto::servermanager::service
             }
         }
 
-        if (root->isMember("SESSION_SERVER_PATH") && root->at("SESSION_SERVER_PATH")->isString())
+        if (root->isMember("session_server_path") && root->at("session_server_path")->isString())
         {
-            m_sessionServerPath = root->at("SESSION_SERVER_PATH")->asString();
+            m_sessionServerPath = root->at("session_server_path")->asString();
         }
 
-        if (root->isMember("STARTUP_TIMEOUT_MS") && root->at("STARTUP_TIMEOUT_MS")->isUInt())
+        if (root->isMember("startup_timeout_ms") && root->at("startup_timeout_ms")->isUInt())
         {
-            m_sessionServerStartupTimeout = std::optional<std::chrono::milliseconds>(root->at("STARTUP_TIMEOUT_MS")->asUInt());
+            m_sessionServerStartupTimeout = std::optional<std::chrono::milliseconds>(root->at("startup_timeout_ms")->asUInt());
         }
 
-        if (root->isMember("HEALTHCHECK_INTERVAL") && root->at("HEALTHCHECK_INTERVAL")->isUInt())
+        if (root->isMember("healthcheck_interval") && root->at("healthcheck_interval")->isUInt())
         {
-            m_healthcheckInterval = std::optional<std::chrono::seconds>(root->at("HEALTHCHECK_INTERVAL")->asUInt());
+            m_healthcheckInterval = std::optional<std::chrono::seconds>(root->at("healthcheck_interval")->asUInt());
         }
 
-        if (root->isMember("SOCKET_PERMISSIONS") && root->at("SOCKET_PERMISSIONS")->isUInt())
+        if (root->isMember("socket_permissions") && root->at("socket_permissions")->isUInt())
         {
-            m_socketPermissions = root->at("SOCKET_PERMISSIONS")->asUInt();
+            m_socketPermissions = root->at("socket_permissions")->asUInt();
         }
 
-        if (root->isMember("NUM_OF_PRELOADED_SERVERS") && root->at("NUM_OF_PRELOADED_SERVERS")->isUInt())
+        if (root->isMember("num_of_preloaded_servers") && root->at("num_of_preloaded_servers")->isUInt())
         {
-            m_numOfPreloadedServers = root->at("NUM_OF_PRELOADED_SERVERS")->asUInt();
+            m_numOfPreloadedServers = root->at("num_of_preloaded_servers")->asUInt();
         }
 
         return true;
@@ -116,4 +116,5 @@ namespace rialto::servermanager::service
     {
         return m_numOfPreloadedServers;
     }
+
 } // namespace rialto::servermanager::service

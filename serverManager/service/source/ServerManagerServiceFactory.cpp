@@ -22,7 +22,8 @@
 #include "ServerManagerService.h"
 #include "ServiceContext.h"
 #include <memory>
-
+#include "JsonCppWrapper.h"
+#include "FileReader.h"
 #include "ConfigReader.h"
 
 
@@ -47,9 +48,9 @@ namespace rialto::servermanager::service
 std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserver> &stateObserver,
                                               const firebolt::rialto::common::ServerManagerConfig &config)
 {
-    std::unique_ptr<IJsonCppWrapper> jsonwrapper;
-    std::unique_ptr<IFileReader> fileReader;
-    ConfigReader configReader(std::string(RIALTO_CONFIG_PATH), std::move(jsonwrapper), std::move(fileReader));
+    std::shared_ptr<IJsonCppWrapper> jsonwrapper = std::make_shared<JsonCppWrapper>();
+    std::shared_ptr<IFileReader> fileReader = std::make_shared<FileReader>(RIALTO_CONFIG_PATH);
+    ConfigReader configReader(jsonwrapper, fileReader);
     configReader.read();
 
     std::list<std::string> sessionServerEnvVars = configReader.getEnvironmentVariables().size() > 0
@@ -67,6 +68,8 @@ std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserv
         convertSocketPermissions(config.sessionManagementSocketPermissions));
 
     unsigned int numOfPreloadedServers = configReader.getNumOfPreloadedServers().value_or(config.numOfPreloadedServers);
+
+
 
     return std::make_unique<ServerManagerService>(std::make_unique<ServiceContext>(stateObserver, sessionServerEnvVars,
                                                                                    sessionServerPath,
