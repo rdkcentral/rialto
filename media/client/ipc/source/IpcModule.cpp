@@ -67,7 +67,7 @@ bool IpcModule::attachChannel()
             return false;
         }
 
-        std::shared_ptr<ipc::IChannel> ipcChannel{getConnectedChannel()};
+        ipcChannel = getConnectedChannel();
         if (!ipcChannel)
         {
             RIALTO_CLIENT_LOG_ERROR("Failed to get the ipc channel");
