@@ -26,4 +26,4 @@ std::shared_ptr<IJsonCppWrapper> JsonCppWrapperFactory::createJsonCppWrapper() c
 {
     return std::make_shared<JsonCppWrapper>();
 }
-}
+} // namespace rialto::servermanager::service

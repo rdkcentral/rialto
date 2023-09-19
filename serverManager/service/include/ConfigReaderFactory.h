@@ -21,13 +21,14 @@
 #define RIALTO_SERVERMANAGER_SERVICE_CONFIG_READER_FACTORY_H_
 
 #include "IConfigReaderFactory.h"
+#include <memory>
 
 namespace rialto::servermanager::service
 {
 class ConfigReaderFactory : public IConfigReaderFactory
 {
 public:
-    explicit ConfigReaderFactory() = default;
+    ConfigReaderFactory() = default;
     ~ConfigReaderFactory() override = default;
     std::shared_ptr<IConfigReader> createConfigReader() const override;
 };

@@ -34,4 +34,4 @@ std::shared_ptr<IConfigReader> ConfigReaderFactory::createConfigReader() const
 
     return std::make_shared<ConfigReader>(jsonWrapper, fileReader);
 }
-}
+} // namespace rialto::servermanager::service

@@ -21,13 +21,15 @@
 #define RIALTO_SERVERMANAGER_SERVICE_FILE_READER_FACTORY_H_
 
 #include "IFileReaderFactory.h"
+#include <memory>
+#include <string>
 
 namespace rialto::servermanager::service
 {
 class FileReaderFactory : public IFileReaderFactory
 {
 public:
-    explicit FileReaderFactory() = default;
+    FileReaderFactory() = default;
     ~FileReaderFactory() override = default;
     std::shared_ptr<IFileReader> createFileReader(const std::string &path) const override;
 };

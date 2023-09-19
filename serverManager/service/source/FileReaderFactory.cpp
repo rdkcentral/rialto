@@ -26,4 +26,4 @@ std::shared_ptr<IFileReader> FileReaderFactory::createFileReader(const std::stri
 {
     return std::make_shared<FileReader>(path);
 }
-}
+} // namespace rialto::servermanager::service

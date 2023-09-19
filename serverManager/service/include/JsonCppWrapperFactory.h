@@ -17,21 +17,22 @@
  * limitations under the License.
  */
 
-#ifndef RIALTO_SERVERMANAGER_SERVICE_JSON_WRAPPER_FACTORY_H_
-#define RIALTO_SERVERMANAGER_SERVICE_JSON_WRAPPER_FACTORY_H_
+#ifndef RIALTO_SERVERMANAGER_SERVICE_JSON_CPP_WRAPPER_FACTORY_H_
+#define RIALTO_SERVERMANAGER_SERVICE_JSON_CPP_WRAPPER_FACTORY_H_
 
 #include "IJsonCppWrapperFactory.h"
+#include <memory>
 
 namespace rialto::servermanager::service
 {
 class JsonCppWrapperFactory : public IJsonCppWrapperFactory
 {
 public:
-    explicit JsonCppWrapperFactory() = default;
+    JsonCppWrapperFactory() = default;
     ~JsonCppWrapperFactory() override = default;
     std::shared_ptr<IJsonCppWrapper> createJsonCppWrapper() const override;
 };
 
 } // namespace rialto::servermanager::service
 
-#endif // RIALTO_SERVERMANAGER_SERVICE_JSON_WRAPPER_FACTORY_H_
+#endif // RIALTO_SERVERMANAGER_SERVICE_JSON_CPP_WRAPPER_FACTORY_H_
