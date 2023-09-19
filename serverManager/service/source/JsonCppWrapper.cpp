@@ -21,21 +21,6 @@
 
 namespace rialto::servermanager::service
 {
-// bool JsonValueWrapper::isMember(const JSONCPP_STRING &key) const
-// {
-//     return m_value.isMember(key);
-// }
-
-// std::unique_ptr<IJsonValueWrapper> JsonValueWrapper::operator[](const JSONCPP_STRING &key) const
-// {
-//     return std::make_unique<JsonValueWrapper>(m_value[key]);
-// }
-
-// Json::ArrayIndex JsonValueWrapper::size() const
-// {
-//     return m_value.size();
-// }
-
 
 bool JsonCppWrapper::parseFromStream(Json::CharReader::Factory const &factory, std::istream &file, std::shared_ptr<IJsonValueWrapper> &root, JSONCPP_STRING *errs)
 {
@@ -46,7 +31,7 @@ bool JsonCppWrapper::parseFromStream(Json::CharReader::Factory const &factory, s
         return false;
     }
 
-    root = std::make_unique<JsonValueWrapper<Json::Value>>(value);
+    root = std::make_shared<JsonValueWrapper<Json::Value>>(value);
 
     return true;
 }

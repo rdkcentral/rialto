@@ -22,9 +22,12 @@
 #include "ServerManagerService.h"
 #include "ServiceContext.h"
 #include <memory>
-#include "JsonCppWrapper.h"
-#include "FileReader.h"
+
+#ifdef RIALTO_ENABLE_CONFIG_FILE
 #include "ConfigReader.h"
+#include "FileReader.h"
+#include "JsonCppWrapper.h"
+#endif
 
 
 namespace
@@ -48,29 +51,36 @@ namespace rialto::servermanager::service
 std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserver> &stateObserver,
                                               const firebolt::rialto::common::ServerManagerConfig &config)
 {
+    std::list<std::string> sessionServerEnvVars = config.sessionServerEnvVars;
+    std::string sessionServerPath = config.sessionServerPath;
+    std::chrono::milliseconds sessionServerStartupTimeout = config.sessionServerStartupTimeout;
+    std::chrono::seconds healthcheckInterval = config.healthcheckInterval;
+    unsigned int sessionManagementSocketPermissions = convertSocketPermissions(config.sessionManagementSocketPermissions);
+    unsigned int numOfPreloadedServers = config.numOfPreloadedServers;
+#ifdef RIALTO_ENABLE_CONFIG_FILE
     std::shared_ptr<IJsonCppWrapper> jsonwrapper = std::make_shared<JsonCppWrapper>();
     std::shared_ptr<IFileReader> fileReader = std::make_shared<FileReader>(RIALTO_CONFIG_PATH);
     ConfigReader configReader(jsonwrapper, fileReader);
     configReader.read();
 
-    std::list<std::string> sessionServerEnvVars = configReader.getEnvironmentVariables().size() > 0
-                                                      ? configReader.getEnvironmentVariables()
-                                                      : config.sessionServerEnvVars;
+    if (!configReader.getEnvironmentVariables().empty())
+        sessionServerEnvVars = configReader.getEnvironmentVariables();
 
-    std::string sessionServerPath = configReader.getSessionServerPath().value_or(config.sessionServerPath);
+    if (configReader.getSessionServerPath())
+        sessionServerPath = configReader.getSessionServerPath();
 
-    std::chrono::milliseconds sessionServerStartupTimeout =
-        configReader.getSessionServerStartupTimeout().value_or(config.sessionServerStartupTimeout);
+    if (configReader.getSessionServerStartupTimeout())
+        std::chrono::milliseconds sessionServerStartupTimeout = configReader.getSessionServerStartupTimeout();
 
-    std::chrono::seconds healthcheckInterval = configReader.getHealthcheckInterval().value_or(config.healthcheckInterval);
+    if (configReader.getHealthcheckInterval())
+        healthcheckInterval = configReader.getHealthcheckInterval();
 
-    unsigned int sessionManagementSocketPermissions = configReader.getSocketPermissions().value_or(
-        convertSocketPermissions(config.sessionManagementSocketPermissions));
+    if (configReader.getSocketPermissions())
+        sessionManagementSocketPermissions = configReader.getSocketPermissions();
 
-    unsigned int numOfPreloadedServers = configReader.getNumOfPreloadedServers().value_or(config.numOfPreloadedServers);
-
-
-
+    if(configReader.getNumOfPreloadedServers())
+        numOfPreloadedServers = configReader.getNumOfPreloadedServers();
+#endif
     return std::make_unique<ServerManagerService>(std::make_unique<ServiceContext>(stateObserver, sessionServerEnvVars,
                                                                                    sessionServerPath,
                                                                                    sessionServerStartupTimeout,
