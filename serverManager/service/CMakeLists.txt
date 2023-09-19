@@ -21,7 +21,10 @@ if( RIALTO_ENABLE_CONFIG_FILE )
     find_package( jsoncpp REQUIRED )
     set(RIALTO_CONFIG_SOURCE_FILES
         source/ConfigReader.cpp
-        source/JsonCppWrapper.cpp)
+        source/JsonCppWrapper.cpp
+        source/FileReaderFactory.cpp
+        source/JsonCppWrapperFactory.cpp
+        source/ConfigReaderFactory.cpp)
 endif()
 
 find_package( PkgConfig REQUIRED )

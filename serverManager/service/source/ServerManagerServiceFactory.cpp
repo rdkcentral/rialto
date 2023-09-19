@@ -24,9 +24,7 @@
 #include <memory>
 
 #ifdef RIALTO_ENABLE_CONFIG_FILE
-#include "ConfigReader.h"
-#include "FileReader.h"
-#include "JsonCppWrapper.h"
+#include "ConfigReaderFactory.h"
 #endif
 
 namespace
@@ -57,28 +55,27 @@ std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserv
     unsigned int sessionManagementSocketPermissions = convertSocketPermissions(config.sessionManagementSocketPermissions);
     unsigned int numOfPreloadedServers = config.numOfPreloadedServers;
 #ifdef RIALTO_ENABLE_CONFIG_FILE
-    std::shared_ptr<IJsonCppWrapper> jsonwrapper = std::make_shared<JsonCppWrapper>();
-    std::shared_ptr<IFileReader> fileReader = std::make_shared<FileReader>(RIALTO_CONFIG_PATH);
-    ConfigReader configReader(jsonwrapper, fileReader);
-    configReader.read();
+    std::unique_ptr<IConfigReaderFactory> configReaderFactory = std::make_unique<ConfigReaderFactory>();
+    std::shared_ptr<IConfigReader> configReader = configReaderFactory->createConfigReader(jsonWrapper, fileReader);
+    configReader->read();
 
-    if (!configReader.getEnvironmentVariables().empty())
-        sessionServerEnvVars = configReader.getEnvironmentVariables();
+    if (!configReader->getEnvironmentVariables().empty())
+        sessionServerEnvVars = configReader->getEnvironmentVariables();
 
-    if (configReader.getSessionServerPath())
-        sessionServerPath = configReader.getSessionServerPath();
+    if (configReader->getSessionServerPath())
+        sessionServerPath = configReader->getSessionServerPath();
 
-    if (configReader.getSessionServerStartupTimeout())
-        sessionServerStartupTimeout = configReader.getSessionServerStartupTimeout();
+    if (configReader->getSessionServerStartupTimeout())
+        sessionServerStartupTimeout = configReader->getSessionServerStartupTimeout();
 
-    if (configReader.getHealthcheckInterval())
-        healthcheckInterval = configReader.getHealthcheckInterval();
+    if (configReader->getHealthcheckInterval())
+        healthcheckInterval = configReader->getHealthcheckInterval();
 
-    if (configReader.getSocketPermissions())
-        sessionManagementSocketPermissions = configReader.getSocketPermissions();
+    if (configReader->getSocketPermissions())
+        sessionManagementSocketPermissions = configReader->getSocketPermissions();
 
-    if (configReader.getNumOfPreloadedServers())
-        numOfPreloadedServers = configReader.getNumOfPreloadedServers();
+    if (configReader->getNumOfPreloadedServers())
+        numOfPreloadedServers = configReader->getNumOfPreloadedServers();
 #endif
     return std::make_unique<ServerManagerService>(std::make_unique<ServiceContext>(stateObserver, sessionServerEnvVars,
                                                                                    sessionServerPath,
