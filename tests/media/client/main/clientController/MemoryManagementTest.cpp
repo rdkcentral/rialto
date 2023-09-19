@@ -133,11 +133,24 @@ TEST_F(ClientControllerMemoryManagementTest, SwitchToInactiveWithMemoryTerminati
     EXPECT_EQ(nullptr, m_sut->getSharedMemoryHandle());
 }
 
+TEST_F(ClientControllerMemoryManagementTest, RegisterClientFailureWhenClientIsNull)
+{
+    ApplicationState appState;
+    EXPECT_FALSE(m_sut->registerClient(nullptr, appState));
+}
+
+TEST_F(ClientControllerMemoryManagementTest, RegisterClientFailureWhenIpcFails)
+{
+    ApplicationState appState;
+    EXPECT_CALL(*m_controlIpcMock, registerClient()).WillOnce(Return(false));
+    EXPECT_FALSE(m_sut->registerClient(&m_controlClientMock, appState));
+}
+
 TEST_F(ClientControllerMemoryManagementTest, SwitchStatesWithClientNotification)
 {
     ApplicationState appState;
     EXPECT_CALL(*m_controlIpcMock, registerClient()).WillOnce(Return(true));
-    m_sut->registerClient(&m_controlClientMock, appState);
+    EXPECT_TRUE(m_sut->registerClient(&m_controlClientMock, appState));
     EXPECT_EQ(ApplicationState::UNKNOWN, appState);
     EXPECT_CALL(*m_controlIpcMock, getSharedMemory(_, _))
         .WillOnce(DoAll(SetArgReferee<0>(m_fd), SetArgReferee<1>(m_size), Return(true)));
@@ -154,7 +167,7 @@ TEST_F(ClientControllerMemoryManagementTest, SwitchStatesWithoutClientNotificati
 {
     ApplicationState appState;
     EXPECT_CALL(*m_controlIpcMock, registerClient()).WillOnce(Return(true));
-    m_sut->registerClient(&m_controlClientMock, appState);
+    EXPECT_TRUE(m_sut->registerClient(&m_controlClientMock, appState));
     m_sut->unregisterClient(&m_controlClientMock);
     EXPECT_CALL(*m_controlIpcMock, getSharedMemory(_, _))
         .WillOnce(DoAll(SetArgReferee<0>(m_fd), SetArgReferee<1>(m_size), Return(true)));
@@ -172,7 +185,7 @@ TEST_F(ClientControllerMemoryManagementTest, RegisterClientInRunningState)
     EXPECT_CALL(*m_controlIpcMock, getSharedMemory(_, _))
         .WillOnce(DoAll(SetArgReferee<0>(m_fd), SetArgReferee<1>(m_size), Return(true)));
     changeAppState(kExpectedAppState);
-    m_sut->registerClient(&m_controlClientMock, appState);
+    EXPECT_TRUE(m_sut->registerClient(&m_controlClientMock, appState));
     EXPECT_EQ(kExpectedAppState, appState);
     EXPECT_NE(nullptr, m_sut->getSharedMemoryHandle());
     EXPECT_NE(nullptr, m_sut->getSharedMemoryHandle()->getShm());
