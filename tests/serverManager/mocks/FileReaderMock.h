@@ -25,12 +25,12 @@
 
 namespace rialto::servermanager::service
 {
-    class FileReaderMock : public IFileReader
-    {
-        public:
-        MOCK_METHOD(bool, isOpen, (), (override));
-        MOCK_METHOD(std::ifstream&, get, (), (override));
-    };
+class FileReaderMock : public IFileReader
+{
+public:
+    MOCK_METHOD(bool, isOpen, (), (override));
+    MOCK_METHOD(std::ifstream &, get, (), (override));
+};
 
 } // namespace rialto::servermanager::service
 

@@ -17,20 +17,20 @@
  * limitations under the License.
  */
 
-#include "gtest/gtest.h"
-#include "JsonCppWrapperMock.h"
-#include "FileReaderMock.h"
 #include "ConfigReader.h"
+#include "FileReaderMock.h"
+#include "JsonCppWrapperMock.h"
+#include "gtest/gtest.h"
 
 using testing::_;
 using testing::ByMove;
 using testing::DoAll;
+using testing::Matcher;
 using testing::Return;
 using testing::ReturnRef;
 using testing::SetArgReferee;
 using testing::StrictMock;
 using testing::StrNe;
-using testing::Matcher;
 using testing::UnorderedElementsAre;
 using namespace rialto::servermanager::service;
 
@@ -72,10 +72,11 @@ TEST_F(ConfigReaderTests, fileParsingFailed)
 }
 
 TEST_F(ConfigReaderTests, thereWillBeNothing)
-{ 
+{
     EXPECT_CALL(*m_fileReaderMock, isOpen()).WillOnce(Return(true));
     EXPECT_CALL(*m_fileReaderMock, get()).WillOnce(ReturnRef(m_jsonFile));
-    EXPECT_CALL(*m_jsonCppWrapperMock, parseFromStream(_, _, _, _)).WillOnce(DoAll(SetArgReferee<2>(m_rootJsonValueMock), Return(true)));
+    EXPECT_CALL(*m_jsonCppWrapperMock, parseFromStream(_, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<2>(m_rootJsonValueMock), Return(true)));
 
     EXPECT_CALL(*m_rootJsonValueMock, isMember(_)).WillRepeatedly(Return(false));
 
@@ -90,11 +91,13 @@ TEST_F(ConfigReaderTests, thereWillBeNothing)
 
 TEST_F(ConfigReaderTests, envVariablesNotArray)
 {
-    std::shared_ptr<StrictMock<JsonValueWrapperMock>> m_objectJsonValueMock = std::make_shared<StrictMock<JsonValueWrapperMock>>();
+    std::shared_ptr<StrictMock<JsonValueWrapperMock>> m_objectJsonValueMock =
+        std::make_shared<StrictMock<JsonValueWrapperMock>>();
 
     EXPECT_CALL(*m_fileReaderMock, isOpen()).WillOnce(Return(true));
     EXPECT_CALL(*m_fileReaderMock, get()).WillOnce(ReturnRef(m_jsonFile));
-    EXPECT_CALL(*m_jsonCppWrapperMock, parseFromStream(_, _, _, _)).WillOnce(DoAll(SetArgReferee<2>(m_rootJsonValueMock), Return(true)));
+    EXPECT_CALL(*m_jsonCppWrapperMock, parseFromStream(_, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<2>(m_rootJsonValueMock), Return(true)));
 
     EXPECT_CALL(*m_rootJsonValueMock, isMember("environment_variables")).WillOnce(Return(true));
     EXPECT_CALL(*m_rootJsonValueMock, at("environment_variables")).WillOnce(Return(m_objectJsonValueMock));
@@ -108,11 +111,13 @@ TEST_F(ConfigReaderTests, envVariablesNotArray)
 
 TEST_F(ConfigReaderTests, envVariablesEmptyArray)
 {
-    std::shared_ptr<StrictMock<JsonValueWrapperMock>> m_objectJsonValueMock = std::make_shared<StrictMock<JsonValueWrapperMock>>();
+    std::shared_ptr<StrictMock<JsonValueWrapperMock>> m_objectJsonValueMock =
+        std::make_shared<StrictMock<JsonValueWrapperMock>>();
 
     EXPECT_CALL(*m_fileReaderMock, isOpen()).WillOnce(Return(true));
     EXPECT_CALL(*m_fileReaderMock, get()).WillOnce(ReturnRef(m_jsonFile));
-    EXPECT_CALL(*m_jsonCppWrapperMock, parseFromStream(_, _, _, _)).WillOnce(DoAll(SetArgReferee<2>(m_rootJsonValueMock), Return(true)));
+    EXPECT_CALL(*m_jsonCppWrapperMock, parseFromStream(_, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<2>(m_rootJsonValueMock), Return(true)));
 
     EXPECT_CALL(*m_rootJsonValueMock, isMember("environment_variables")).WillOnce(Return(true));
     EXPECT_CALL(*m_rootJsonValueMock, at("environment_variables")).WillRepeatedly(Return(m_objectJsonValueMock));
@@ -127,12 +132,15 @@ TEST_F(ConfigReaderTests, envVariablesEmptyArray)
 
 TEST_F(ConfigReaderTests, envVariablesOneElementArrayNotString)
 {
-    std::shared_ptr<StrictMock<JsonValueWrapperMock>> m_objectJsonValueMock = std::make_shared<StrictMock<JsonValueWrapperMock>>();
-    std::shared_ptr<StrictMock<JsonValueWrapperMock>> m_object1JsonValueMock = std::make_shared<StrictMock<JsonValueWrapperMock>>();
+    std::shared_ptr<StrictMock<JsonValueWrapperMock>> m_objectJsonValueMock =
+        std::make_shared<StrictMock<JsonValueWrapperMock>>();
+    std::shared_ptr<StrictMock<JsonValueWrapperMock>> m_object1JsonValueMock =
+        std::make_shared<StrictMock<JsonValueWrapperMock>>();
 
     EXPECT_CALL(*m_fileReaderMock, isOpen()).WillOnce(Return(true));
     EXPECT_CALL(*m_fileReaderMock, get()).WillOnce(ReturnRef(m_jsonFile));
-    EXPECT_CALL(*m_jsonCppWrapperMock, parseFromStream(_, _, _, _)).WillOnce(DoAll(SetArgReferee<2>(m_rootJsonValueMock), Return(true)));
+    EXPECT_CALL(*m_jsonCppWrapperMock, parseFromStream(_, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<2>(m_rootJsonValueMock), Return(true)));
 
     EXPECT_CALL(*m_rootJsonValueMock, isMember("environment_variables")).WillOnce(Return(true));
     EXPECT_CALL(*m_rootJsonValueMock, at("environment_variables")).WillRepeatedly(Return(m_objectJsonValueMock));
@@ -140,7 +148,6 @@ TEST_F(ConfigReaderTests, envVariablesOneElementArrayNotString)
     EXPECT_CALL(*m_objectJsonValueMock, size()).WillOnce(Return(1));
     EXPECT_CALL(*m_objectJsonValueMock, at(Matcher<Json::ArrayIndex>(0u))).WillOnce(Return(m_object1JsonValueMock));
     EXPECT_CALL(*m_object1JsonValueMock, isString()).WillOnce(Return(false));
-
 
     EXPECT_CALL(*m_rootJsonValueMock, isMember(StrNe("environment_variables"))).WillRepeatedly(Return(false));
 
@@ -150,13 +157,17 @@ TEST_F(ConfigReaderTests, envVariablesOneElementArrayNotString)
 
 TEST_F(ConfigReaderTests, envVariablesMultipleElementArray)
 {
-    std::shared_ptr<StrictMock<JsonValueWrapperMock>> m_objectJsonValueMock = std::make_shared<StrictMock<JsonValueWrapperMock>>();
-    std::shared_ptr<StrictMock<JsonValueWrapperMock>> m_object1JsonValueMock = std::make_shared<StrictMock<JsonValueWrapperMock>>();
-    std::shared_ptr<StrictMock<JsonValueWrapperMock>> m_object2JsonValueMock = std::make_shared<StrictMock<JsonValueWrapperMock>>();
+    std::shared_ptr<StrictMock<JsonValueWrapperMock>> m_objectJsonValueMock =
+        std::make_shared<StrictMock<JsonValueWrapperMock>>();
+    std::shared_ptr<StrictMock<JsonValueWrapperMock>> m_object1JsonValueMock =
+        std::make_shared<StrictMock<JsonValueWrapperMock>>();
+    std::shared_ptr<StrictMock<JsonValueWrapperMock>> m_object2JsonValueMock =
+        std::make_shared<StrictMock<JsonValueWrapperMock>>();
 
     EXPECT_CALL(*m_fileReaderMock, isOpen()).WillOnce(Return(true));
     EXPECT_CALL(*m_fileReaderMock, get()).WillOnce(ReturnRef(m_jsonFile));
-    EXPECT_CALL(*m_jsonCppWrapperMock, parseFromStream(_, _, _, _)).WillOnce(DoAll(SetArgReferee<2>(m_rootJsonValueMock), Return(true)));
+    EXPECT_CALL(*m_jsonCppWrapperMock, parseFromStream(_, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<2>(m_rootJsonValueMock), Return(true)));
 
     EXPECT_CALL(*m_rootJsonValueMock, isMember("environment_variables")).WillOnce(Return(true));
     EXPECT_CALL(*m_rootJsonValueMock, at("environment_variables")).WillRepeatedly(Return(m_objectJsonValueMock));
@@ -177,11 +188,13 @@ TEST_F(ConfigReaderTests, envVariablesMultipleElementArray)
 
 TEST_F(ConfigReaderTests, sessionServerPathNotString)
 {
-    std::shared_ptr<StrictMock<JsonValueWrapperMock>> m_objectJsonValueMock = std::make_shared<StrictMock<JsonValueWrapperMock>>();
+    std::shared_ptr<StrictMock<JsonValueWrapperMock>> m_objectJsonValueMock =
+        std::make_shared<StrictMock<JsonValueWrapperMock>>();
 
     EXPECT_CALL(*m_fileReaderMock, isOpen()).WillOnce(Return(true));
     EXPECT_CALL(*m_fileReaderMock, get()).WillOnce(ReturnRef(m_jsonFile));
-    EXPECT_CALL(*m_jsonCppWrapperMock, parseFromStream(_, _, _, _)).WillOnce(DoAll(SetArgReferee<2>(m_rootJsonValueMock), Return(true)));
+    EXPECT_CALL(*m_jsonCppWrapperMock, parseFromStream(_, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<2>(m_rootJsonValueMock), Return(true)));
 
     EXPECT_CALL(*m_rootJsonValueMock, isMember("session_server_path")).WillOnce(Return(true));
     EXPECT_CALL(*m_rootJsonValueMock, isMember(StrNe("session_server_path"))).WillRepeatedly(Return(false));
@@ -195,11 +208,13 @@ TEST_F(ConfigReaderTests, sessionServerPathNotString)
 
 TEST_F(ConfigReaderTests, sessionServerPathExists)
 {
-    std::shared_ptr<StrictMock<JsonValueWrapperMock>> m_objectJsonValueMock = std::make_shared<StrictMock<JsonValueWrapperMock>>();
+    std::shared_ptr<StrictMock<JsonValueWrapperMock>> m_objectJsonValueMock =
+        std::make_shared<StrictMock<JsonValueWrapperMock>>();
 
     EXPECT_CALL(*m_fileReaderMock, isOpen()).WillOnce(Return(true));
     EXPECT_CALL(*m_fileReaderMock, get()).WillOnce(ReturnRef(m_jsonFile));
-    EXPECT_CALL(*m_jsonCppWrapperMock, parseFromStream(_, _, _, _)).WillOnce(DoAll(SetArgReferee<2>(m_rootJsonValueMock), Return(true)));
+    EXPECT_CALL(*m_jsonCppWrapperMock, parseFromStream(_, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<2>(m_rootJsonValueMock), Return(true)));
 
     EXPECT_CALL(*m_rootJsonValueMock, isMember("session_server_path")).WillOnce(Return(true));
     EXPECT_CALL(*m_rootJsonValueMock, isMember(StrNe("session_server_path"))).WillRepeatedly(Return(false));
@@ -214,11 +229,13 @@ TEST_F(ConfigReaderTests, sessionServerPathExists)
 
 TEST_F(ConfigReaderTests, startupTimerNotUint)
 {
-    std::shared_ptr<StrictMock<JsonValueWrapperMock>> m_objectJsonValueMock = std::make_shared<StrictMock<JsonValueWrapperMock>>();
+    std::shared_ptr<StrictMock<JsonValueWrapperMock>> m_objectJsonValueMock =
+        std::make_shared<StrictMock<JsonValueWrapperMock>>();
 
     EXPECT_CALL(*m_fileReaderMock, isOpen()).WillOnce(Return(true));
     EXPECT_CALL(*m_fileReaderMock, get()).WillOnce(ReturnRef(m_jsonFile));
-    EXPECT_CALL(*m_jsonCppWrapperMock, parseFromStream(_, _, _, _)).WillOnce(DoAll(SetArgReferee<2>(m_rootJsonValueMock), Return(true)));
+    EXPECT_CALL(*m_jsonCppWrapperMock, parseFromStream(_, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<2>(m_rootJsonValueMock), Return(true)));
 
     EXPECT_CALL(*m_rootJsonValueMock, isMember("startup_timeout_ms")).WillOnce(Return(true));
     EXPECT_CALL(*m_rootJsonValueMock, isMember(StrNe("startup_timeout_ms"))).WillRepeatedly(Return(false));
@@ -232,11 +249,13 @@ TEST_F(ConfigReaderTests, startupTimerNotUint)
 
 TEST_F(ConfigReaderTests, startupTimerExists)
 {
-    std::shared_ptr<StrictMock<JsonValueWrapperMock>> m_objectJsonValueMock = std::make_shared<StrictMock<JsonValueWrapperMock>>();
+    std::shared_ptr<StrictMock<JsonValueWrapperMock>> m_objectJsonValueMock =
+        std::make_shared<StrictMock<JsonValueWrapperMock>>();
 
     EXPECT_CALL(*m_fileReaderMock, isOpen()).WillOnce(Return(true));
     EXPECT_CALL(*m_fileReaderMock, get()).WillOnce(ReturnRef(m_jsonFile));
-    EXPECT_CALL(*m_jsonCppWrapperMock, parseFromStream(_, _, _, _)).WillOnce(DoAll(SetArgReferee<2>(m_rootJsonValueMock), Return(true)));
+    EXPECT_CALL(*m_jsonCppWrapperMock, parseFromStream(_, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<2>(m_rootJsonValueMock), Return(true)));
 
     EXPECT_CALL(*m_rootJsonValueMock, isMember("startup_timeout_ms")).WillOnce(Return(true));
     EXPECT_CALL(*m_rootJsonValueMock, isMember(StrNe("startup_timeout_ms"))).WillRepeatedly(Return(false));
@@ -251,11 +270,13 @@ TEST_F(ConfigReaderTests, startupTimerExists)
 
 TEST_F(ConfigReaderTests, healthCheckIntervalNotUint)
 {
-    std::shared_ptr<StrictMock<JsonValueWrapperMock>> m_objectJsonValueMock = std::make_shared<StrictMock<JsonValueWrapperMock>>();
+    std::shared_ptr<StrictMock<JsonValueWrapperMock>> m_objectJsonValueMock =
+        std::make_shared<StrictMock<JsonValueWrapperMock>>();
 
     EXPECT_CALL(*m_fileReaderMock, isOpen()).WillOnce(Return(true));
     EXPECT_CALL(*m_fileReaderMock, get()).WillOnce(ReturnRef(m_jsonFile));
-    EXPECT_CALL(*m_jsonCppWrapperMock, parseFromStream(_, _, _, _)).WillOnce(DoAll(SetArgReferee<2>(m_rootJsonValueMock), Return(true)));
+    EXPECT_CALL(*m_jsonCppWrapperMock, parseFromStream(_, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<2>(m_rootJsonValueMock), Return(true)));
 
     EXPECT_CALL(*m_rootJsonValueMock, isMember("healthcheck_interval")).WillOnce(Return(true));
     EXPECT_CALL(*m_rootJsonValueMock, isMember(StrNe("healthcheck_interval"))).WillRepeatedly(Return(false));
@@ -269,11 +290,13 @@ TEST_F(ConfigReaderTests, healthCheckIntervalNotUint)
 
 TEST_F(ConfigReaderTests, healthCheckIntervalExists)
 {
-    std::shared_ptr<StrictMock<JsonValueWrapperMock>> m_objectJsonValueMock = std::make_shared<StrictMock<JsonValueWrapperMock>>();
+    std::shared_ptr<StrictMock<JsonValueWrapperMock>> m_objectJsonValueMock =
+        std::make_shared<StrictMock<JsonValueWrapperMock>>();
 
     EXPECT_CALL(*m_fileReaderMock, isOpen()).WillOnce(Return(true));
     EXPECT_CALL(*m_fileReaderMock, get()).WillOnce(ReturnRef(m_jsonFile));
-    EXPECT_CALL(*m_jsonCppWrapperMock, parseFromStream(_, _, _, _)).WillOnce(DoAll(SetArgReferee<2>(m_rootJsonValueMock), Return(true)));
+    EXPECT_CALL(*m_jsonCppWrapperMock, parseFromStream(_, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<2>(m_rootJsonValueMock), Return(true)));
 
     EXPECT_CALL(*m_rootJsonValueMock, isMember("healthcheck_interval")).WillOnce(Return(true));
     EXPECT_CALL(*m_rootJsonValueMock, isMember(StrNe("healthcheck_interval"))).WillRepeatedly(Return(false));
@@ -288,11 +311,13 @@ TEST_F(ConfigReaderTests, healthCheckIntervalExists)
 
 TEST_F(ConfigReaderTests, socketPermissionsNotUint)
 {
-    std::shared_ptr<StrictMock<JsonValueWrapperMock>> m_objectJsonValueMock = std::make_shared<StrictMock<JsonValueWrapperMock>>();
+    std::shared_ptr<StrictMock<JsonValueWrapperMock>> m_objectJsonValueMock =
+        std::make_shared<StrictMock<JsonValueWrapperMock>>();
 
     EXPECT_CALL(*m_fileReaderMock, isOpen()).WillOnce(Return(true));
     EXPECT_CALL(*m_fileReaderMock, get()).WillOnce(ReturnRef(m_jsonFile));
-    EXPECT_CALL(*m_jsonCppWrapperMock, parseFromStream(_, _, _, _)).WillOnce(DoAll(SetArgReferee<2>(m_rootJsonValueMock), Return(true)));
+    EXPECT_CALL(*m_jsonCppWrapperMock, parseFromStream(_, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<2>(m_rootJsonValueMock), Return(true)));
 
     EXPECT_CALL(*m_rootJsonValueMock, isMember("socket_permissions")).WillOnce(Return(true));
     EXPECT_CALL(*m_rootJsonValueMock, isMember(StrNe("socket_permissions"))).WillRepeatedly(Return(false));
@@ -306,11 +331,13 @@ TEST_F(ConfigReaderTests, socketPermissionsNotUint)
 
 TEST_F(ConfigReaderTests, socketPermissionsExists)
 {
-    std::shared_ptr<StrictMock<JsonValueWrapperMock>> m_objectJsonValueMock = std::make_shared<StrictMock<JsonValueWrapperMock>>();
+    std::shared_ptr<StrictMock<JsonValueWrapperMock>> m_objectJsonValueMock =
+        std::make_shared<StrictMock<JsonValueWrapperMock>>();
 
     EXPECT_CALL(*m_fileReaderMock, isOpen()).WillOnce(Return(true));
     EXPECT_CALL(*m_fileReaderMock, get()).WillOnce(ReturnRef(m_jsonFile));
-    EXPECT_CALL(*m_jsonCppWrapperMock, parseFromStream(_, _, _, _)).WillOnce(DoAll(SetArgReferee<2>(m_rootJsonValueMock), Return(true)));
+    EXPECT_CALL(*m_jsonCppWrapperMock, parseFromStream(_, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<2>(m_rootJsonValueMock), Return(true)));
 
     EXPECT_CALL(*m_rootJsonValueMock, isMember("socket_permissions")).WillOnce(Return(true));
     EXPECT_CALL(*m_rootJsonValueMock, isMember(StrNe("socket_permissions"))).WillRepeatedly(Return(false));
@@ -325,11 +352,13 @@ TEST_F(ConfigReaderTests, socketPermissionsExists)
 
 TEST_F(ConfigReaderTests, numOfPreloadedServersNotUint)
 {
-    std::shared_ptr<StrictMock<JsonValueWrapperMock>> m_objectJsonValueMock = std::make_shared<StrictMock<JsonValueWrapperMock>>();
+    std::shared_ptr<StrictMock<JsonValueWrapperMock>> m_objectJsonValueMock =
+        std::make_shared<StrictMock<JsonValueWrapperMock>>();
 
     EXPECT_CALL(*m_fileReaderMock, isOpen()).WillOnce(Return(true));
     EXPECT_CALL(*m_fileReaderMock, get()).WillOnce(ReturnRef(m_jsonFile));
-    EXPECT_CALL(*m_jsonCppWrapperMock, parseFromStream(_, _, _, _)).WillOnce(DoAll(SetArgReferee<2>(m_rootJsonValueMock), Return(true)));
+    EXPECT_CALL(*m_jsonCppWrapperMock, parseFromStream(_, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<2>(m_rootJsonValueMock), Return(true)));
 
     EXPECT_CALL(*m_rootJsonValueMock, isMember("num_of_preloaded_servers")).WillOnce(Return(true));
     EXPECT_CALL(*m_rootJsonValueMock, isMember(StrNe("num_of_preloaded_servers"))).WillRepeatedly(Return(false));
@@ -343,11 +372,13 @@ TEST_F(ConfigReaderTests, numOfPreloadedServersNotUint)
 
 TEST_F(ConfigReaderTests, numOfPreloadedServersExists)
 {
-    std::shared_ptr<StrictMock<JsonValueWrapperMock>> m_objectJsonValueMock = std::make_shared<StrictMock<JsonValueWrapperMock>>();
+    std::shared_ptr<StrictMock<JsonValueWrapperMock>> m_objectJsonValueMock =
+        std::make_shared<StrictMock<JsonValueWrapperMock>>();
 
     EXPECT_CALL(*m_fileReaderMock, isOpen()).WillOnce(Return(true));
     EXPECT_CALL(*m_fileReaderMock, get()).WillOnce(ReturnRef(m_jsonFile));
-    EXPECT_CALL(*m_jsonCppWrapperMock, parseFromStream(_, _, _, _)).WillOnce(DoAll(SetArgReferee<2>(m_rootJsonValueMock), Return(true)));
+    EXPECT_CALL(*m_jsonCppWrapperMock, parseFromStream(_, _, _, _))
+        .WillOnce(DoAll(SetArgReferee<2>(m_rootJsonValueMock), Return(true)));
 
     EXPECT_CALL(*m_rootJsonValueMock, isMember("num_of_preloaded_servers")).WillOnce(Return(true));
     EXPECT_CALL(*m_rootJsonValueMock, isMember(StrNe("num_of_preloaded_servers"))).WillRepeatedly(Return(false));

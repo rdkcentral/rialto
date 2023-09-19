@@ -17,12 +17,11 @@
  * limitations under the License.
  */
 
-#ifndef RIALTO_SERVERMANAGER_SERVICE_ICONFIG_READER_H_
-#define RIALTO_SERVERMANAGER_SERVICE_ICONFIG_READER_H_
+#ifndef RIALTO_SERVERMANAGER_SERVICE_I_CONFIG_READER_H_
+#define RIALTO_SERVERMANAGER_SERVICE_I_CONFIG_READER_H_
 #include <chrono>
-#include <string>
-#include <optional>
 #include <list>
+#include <optional>
 #include <string>
 
 namespace rialto::servermanager::service
@@ -43,4 +42,4 @@ public:
 
 } // namespace rialto::servermanager::service
 
-#endif // RIALTO_SERVERMANAGER_SERVICE_ICONFIG_READER_H_
+#endif // RIALTO_SERVERMANAGER_SERVICE_I_CONFIG_READER_H_

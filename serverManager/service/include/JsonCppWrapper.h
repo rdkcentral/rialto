@@ -21,41 +21,42 @@
 #define RIALTO_SERVERMANAGER_SERVICE_JSON_CPP_WRAPPER_H_
 
 #include "IJsonCppWrapper.h"
+#include <memory>
 
 namespace rialto::servermanager::service
 {
 
-template <typename T>
-class JsonValueWrapper : public IJsonValueWrapper
+template <typename T> class JsonValueWrapper : public IJsonValueWrapper
 {
-    public:
-        JsonValueWrapper(const Json::Value &value) : m_value(value) {}
-        bool isMember(const JSONCPP_STRING &key) const override { return m_value.isMember(key); }
-        std::shared_ptr<IJsonValueWrapper> at(const JSONCPP_STRING &key) const override
-        {
-            return std::make_unique<JsonValueWrapper<const Json::Value&>>(m_value[key]);
-        }
+public:
+    explicit JsonValueWrapper(const Json::Value &value) : m_value(value) {}
+    bool isMember(const JSONCPP_STRING &key) const override { return m_value.isMember(key); }
+    std::shared_ptr<IJsonValueWrapper> at(const JSONCPP_STRING &key) const override
+    {
+        return std::make_unique<JsonValueWrapper<const Json::Value &>>(m_value[key]);
+    }
 
-        std::shared_ptr<IJsonValueWrapper> at(Json::ArrayIndex index) const override
-        {
-            return std::make_unique<JsonValueWrapper<const Json::Value &>>(m_value[index]);
-        }
+    std::shared_ptr<IJsonValueWrapper> at(Json::ArrayIndex index) const override
+    {
+        return std::make_unique<JsonValueWrapper<const Json::Value &>>(m_value[index]);
+    }
 
-        Json::ArrayIndex size() const override { return m_value.size(); }
-        bool isArray() const override { return m_value.isArray(); }
-        bool isString() const override { return m_value.isString(); }
-        bool isUInt() const override { return m_value.isUInt(); }
-        JSONCPP_STRING asString() const override { return m_value.asString(); }
-        unsigned int asUInt() const override { return m_value.asUInt(); }
+    Json::ArrayIndex size() const override { return m_value.size(); }
+    bool isArray() const override { return m_value.isArray(); }
+    bool isString() const override { return m_value.isString(); }
+    bool isUInt() const override { return m_value.isUInt(); }
+    JSONCPP_STRING asString() const override { return m_value.asString(); }
+    unsigned int asUInt() const override { return m_value.asUInt(); }
 
-    private:
-        /*const*/ T m_value;
+private:
+    /*const*/ T m_value;
 };
 
 class JsonCppWrapper : public IJsonCppWrapper
 {
-    public:
-        bool parseFromStream(Json::CharReader::Factory const &, std::istream &, std::shared_ptr<IJsonValueWrapper> &root, JSONCPP_STRING *errs);
+public:
+    bool parseFromStream(Json::CharReader::Factory const &, std::istream &, std::shared_ptr<IJsonValueWrapper> &root,
+                         JSONCPP_STRING *errs);
 };
 
 } // namespace rialto::servermanager::service

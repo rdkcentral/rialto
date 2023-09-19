@@ -17,14 +17,18 @@
  * limitations under the License.
  */
 
+#ifndef RIALTO_SERVERMANAGER_SERVICE_FILE_READER_H_
+#define RIALTO_SERVERMANAGER_SERVICE_FILE_READER_H_
+
 #include "IFileReader.h"
+#include <string>
 
 namespace rialto::servermanager::service
 {
 class FileReader : public IFileReader
 {
 public:
-    FileReader(const std::string &filePath) : m_jsonFile(filePath.c_str()) {}
+    explicit FileReader(const std::string &filePath) : m_jsonFile(filePath.c_str()) {}
     bool isOpen() override { return m_jsonFile.is_open(); }
     std::ifstream &get() override { return m_jsonFile; }
 
@@ -33,3 +37,5 @@ private:
 };
 
 } // namespace rialto::servermanager::service
+
+#endif // RIALTO_SERVERMANAGER_SERVICE_FILE_READER_H_

@@ -17,12 +17,11 @@
  * limitations under the License.
  */
 
-#ifndef RIALTO_SERVERMANAGER_SERVICE_IJSON_CPP_WRAPPER_H_
-#define RIALTO_SERVERMANAGER_SERVICE_IJSON_CPP_WRAPPER_H_
+#ifndef RIALTO_SERVERMANAGER_SERVICE_I_JSON_CPP_WRAPPER_H_
+#define RIALTO_SERVERMANAGER_SERVICE_I_JSON_CPP_WRAPPER_H_
 
 #include <json/json.h>
 #include <memory>
-
 
 namespace rialto::servermanager::service
 {
@@ -30,8 +29,8 @@ class IJsonValueWrapper
 {
 public:
     virtual ~IJsonValueWrapper() = default;
-    virtual bool isMember(const JSONCPP_STRING& key) const = 0;
-    virtual std::shared_ptr<IJsonValueWrapper> at(const JSONCPP_STRING& key) const = 0;
+    virtual bool isMember(const JSONCPP_STRING &key) const = 0;
+    virtual std::shared_ptr<IJsonValueWrapper> at(const JSONCPP_STRING &key) const = 0;
     virtual std::shared_ptr<IJsonValueWrapper> at(Json::ArrayIndex index) const = 0;
     virtual Json::ArrayIndex size() const = 0;
     virtual bool isArray() const = 0;
@@ -45,9 +44,10 @@ class IJsonCppWrapper
 {
 public:
     virtual ~IJsonCppWrapper() = default;
-    virtual bool parseFromStream(Json::CharReader::Factory const &, std::istream &, std::shared_ptr<IJsonValueWrapper> &root, JSONCPP_STRING *errs) = 0;
+    virtual bool parseFromStream(Json::CharReader::Factory const &, std::istream &,
+                                 std::shared_ptr<IJsonValueWrapper> &root, JSONCPP_STRING *errs) = 0;
 };
 
 } // namespace rialto::servermanager::service
 
-#endif // RIALTO_SERVERMANAGER_SERVICE_IJSON_CPP_WRAPPER_H_
+#endif // RIALTO_SERVERMANAGER_SERVICE_I_JSON_CPP_WRAPPER_H_

@@ -22,55 +22,32 @@
 
 #include "IJsonCppWrapper.h"
 #include <gmock/gmock.h>
+#include <memory>
 
-
-/*
-class IJsonValueWrapper
-{
-public:
-    virtual ~IJsonValueWrapper() = default;
-    virtual bool isMember(const JSONCPP_STRING& key) const = 0;
-    virtual std::unique_ptr<IJsonValueWrapper> operator[](const JSONCPP_STRING& key) const = 0;
-    virtual std::unique_ptr<IJsonValueWrapper> operator[](Json::ArrayIndex index) const = 0;
-    virtual Json::ArrayIndex size() const = 0;
-    virtual bool isArray() const = 0;
-    virtual bool isString() const = 0;
-    virtual bool isUInt() const = 0;
-    virtual JSONCPP_STRING asString() const = 0;
-    virtual unsigned int asUInt() const = 0;
-};
-
-class IJsonCppWrapper
-{
-public:
-    virtual ~IJsonCppWrapper() = default;
-    virtual bool parseFromStream(Json::CharReader::Factory const &, std::istream &, std::unique_ptr<IJsonValueWrapper> &root, JSONCPP_STRING *errs) = 0;
-};
-*/
 namespace rialto::servermanager::service
 {
-    class JsonValueWrapperMock : public IJsonValueWrapper
-    {
-        public:
-        MOCK_METHOD(bool, isMember, (const JSONCPP_STRING& key), (const, override));
-        MOCK_METHOD(std::shared_ptr<IJsonValueWrapper>, at, (const JSONCPP_STRING& key), (const, override));
-        MOCK_METHOD(std::shared_ptr<IJsonValueWrapper>, at, (Json::ArrayIndex index), (const, override));
-        MOCK_METHOD(Json::ArrayIndex, size, (), (const, override));
-        MOCK_METHOD(bool, isArray, (), (const, override));
-        MOCK_METHOD(bool, isString, (), (const, override));
-        MOCK_METHOD(bool, isUInt, (), (const, override));
-        MOCK_METHOD(JSONCPP_STRING, asString, (), (const, override));
-        MOCK_METHOD(unsigned int, asUInt, (), (const, override));
-    };
+class JsonValueWrapperMock : public IJsonValueWrapper
+{
+public:
+    MOCK_METHOD(bool, isMember, (const JSONCPP_STRING &key), (const, override));
+    MOCK_METHOD(std::shared_ptr<IJsonValueWrapper>, at, (const JSONCPP_STRING &key), (const, override));
+    MOCK_METHOD(std::shared_ptr<IJsonValueWrapper>, at, (Json::ArrayIndex index), (const, override));
+    MOCK_METHOD(Json::ArrayIndex, size, (), (const, override));
+    MOCK_METHOD(bool, isArray, (), (const, override));
+    MOCK_METHOD(bool, isString, (), (const, override));
+    MOCK_METHOD(bool, isUInt, (), (const, override));
+    MOCK_METHOD(JSONCPP_STRING, asString, (), (const, override));
+    MOCK_METHOD(unsigned int, asUInt, (), (const, override));
+};
 
-    class JsonCppWrapperMock : public IJsonCppWrapper
-    {
-        public:
-        MOCK_METHOD(bool, parseFromStream,
-                    (Json::CharReader::Factory const &, std::istream &, std::shared_ptr<IJsonValueWrapper> &root,
-                     JSONCPP_STRING *errs),
-                    (override));
-    };
+class JsonCppWrapperMock : public IJsonCppWrapper
+{
+public:
+    MOCK_METHOD(bool, parseFromStream,
+                (Json::CharReader::Factory const &, std::istream &, std::shared_ptr<IJsonValueWrapper> &root,
+                 JSONCPP_STRING *errs),
+                (override));
+};
 
 } // namespace rialto::servermanager::service
 

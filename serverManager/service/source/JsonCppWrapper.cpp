@@ -22,7 +22,8 @@
 namespace rialto::servermanager::service
 {
 
-bool JsonCppWrapper::parseFromStream(Json::CharReader::Factory const &factory, std::istream &file, std::shared_ptr<IJsonValueWrapper> &root, JSONCPP_STRING *errs)
+bool JsonCppWrapper::parseFromStream(Json::CharReader::Factory const &factory, std::istream &file,
+                                     std::shared_ptr<IJsonValueWrapper> &root, JSONCPP_STRING *errs)
 {
     Json::Value value;
 

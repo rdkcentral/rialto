@@ -29,7 +29,6 @@
 #include "JsonCppWrapper.h"
 #endif
 
-
 namespace
 {
 unsigned int convertSocketPermissions(firebolt::rialto::common::SocketPermissions permissions) // copy param intentionally
@@ -70,7 +69,7 @@ std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserv
         sessionServerPath = configReader.getSessionServerPath();
 
     if (configReader.getSessionServerStartupTimeout())
-        std::chrono::milliseconds sessionServerStartupTimeout = configReader.getSessionServerStartupTimeout();
+        sessionServerStartupTimeout = configReader.getSessionServerStartupTimeout();
 
     if (configReader.getHealthcheckInterval())
         healthcheckInterval = configReader.getHealthcheckInterval();
@@ -78,7 +77,7 @@ std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserv
     if (configReader.getSocketPermissions())
         sessionManagementSocketPermissions = configReader.getSocketPermissions();
 
-    if(configReader.getNumOfPreloadedServers())
+    if (configReader.getNumOfPreloadedServers())
         numOfPreloadedServers = configReader.getNumOfPreloadedServers();
 #endif
     return std::make_unique<ServerManagerService>(std::make_unique<ServiceContext>(stateObserver, sessionServerEnvVars,

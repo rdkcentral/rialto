@@ -78,6 +78,11 @@ jobs:
         run: |
           sudo apt-get install protobuf-compiler
 
+      # Installation of jsoncpp
+      - name: Install jsoncpp
+        run: |
+          sudo apt-get install libjsoncpp-dev
+
       # Run the build script
       - name: build_ut.py script
         run: |

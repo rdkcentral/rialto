@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef RIALTO_SERVERMANAGER_SERVICE_IFILE_READER_H_
-#define RIALTO_SERVERMANAGER_SERVICE_IFILE_READER_H_
+#ifndef RIALTO_SERVERMANAGER_SERVICE_I_FILE_READER_H_
+#define RIALTO_SERVERMANAGER_SERVICE_I_FILE_READER_H_
 
 #include <fstream>
 
@@ -28,10 +28,9 @@ class IFileReader
 {
 public:
     virtual bool isOpen() = 0;
-    virtual std::ifstream& get() = 0;
+    virtual std::ifstream &get() = 0;
 };
 
 } // namespace rialto::servermanager::service
 
-#endif // RIALTO_SERVERMANAGER_SERVICE_IFILE_READER_H_
-
+#endif // RIALTO_SERVERMANAGER_SERVICE_I_FILE_READER_H_

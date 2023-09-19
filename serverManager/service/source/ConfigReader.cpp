@@ -19,102 +19,102 @@
 
 #include "ConfigReader.h"
 #include "RialtoServerManagerLogging.h"
-#include <json/json.h>
 #include <fstream>
+#include <json/json.h>
 
 namespace rialto::servermanager::service
 {
-    ConfigReader::ConfigReader(std::shared_ptr<IJsonCppWrapper> jsonWrapper, std::shared_ptr<IFileReader> fileReader)
+ConfigReader::ConfigReader(std::shared_ptr<IJsonCppWrapper> jsonWrapper, std::shared_ptr<IFileReader> fileReader)
     : m_jsonWrapper(jsonWrapper), m_fileReader(fileReader)
-    {
+{
+}
 
+bool ConfigReader::read()
+{
+    if (!m_fileReader->isOpen())
+    {
+        RIALTO_SERVER_MANAGER_LOG_WARN("Could not open config file");
+        return false;
     }
 
-    bool ConfigReader::read()
+    std::shared_ptr<IJsonValueWrapper> root;
+    Json::CharReaderBuilder builder;
+    if (!m_jsonWrapper->parseFromStream(builder, m_fileReader->get(), root, nullptr))
     {
-        if (!m_fileReader->isOpen())
-        {
-            RIALTO_SERVER_MANAGER_LOG_WARN("Could not open config file");
-            return false;
-        }
+        RIALTO_SERVER_MANAGER_LOG_ERROR("Failed to parse config file");
+        return false;
+    }
 
-        std::shared_ptr<IJsonValueWrapper> root;
-        Json::CharReaderBuilder builder;
-        if (!m_jsonWrapper->parseFromStream(builder, m_fileReader->get(), root, nullptr))
+    if (root->isMember("environment_variables") && root->at("environment_variables")->isArray())
+    {
+        std::shared_ptr<IJsonValueWrapper> envVarsJson = root->at("environment_variables");
+        Json::ArrayIndex size = envVarsJson->size();
+        for (Json::ArrayIndex index = 0; index < size; ++index)
         {
-            RIALTO_SERVER_MANAGER_LOG_ERROR("Failed to parse config file");
-            return false;
-        }
-
-        if (root->isMember("environment_variables") && root->at("environment_variables")->isArray())
-        {
-            std::shared_ptr<IJsonValueWrapper> envVarsJson = root->at("environment_variables");
-            Json::ArrayIndex size = envVarsJson->size();
-            for (Json::ArrayIndex index = 0; index < size; ++index)
+            if (envVarsJson->at(index)->isString())
             {
-                if(envVarsJson->at(index)->isString())
-                {
-                    m_envVars.emplace_back(envVarsJson->at(index)->asString());
-                }
+                m_envVars.emplace_back(envVarsJson->at(index)->asString());
             }
         }
-
-        if (root->isMember("session_server_path") && root->at("session_server_path")->isString())
-        {
-            m_sessionServerPath = root->at("session_server_path")->asString();
-        }
-
-        if (root->isMember("startup_timeout_ms") && root->at("startup_timeout_ms")->isUInt())
-        {
-            m_sessionServerStartupTimeout = std::optional<std::chrono::milliseconds>(root->at("startup_timeout_ms")->asUInt());
-        }
-
-        if (root->isMember("healthcheck_interval") && root->at("healthcheck_interval")->isUInt())
-        {
-            m_healthcheckInterval = std::optional<std::chrono::seconds>(root->at("healthcheck_interval")->asUInt());
-        }
-
-        if (root->isMember("socket_permissions") && root->at("socket_permissions")->isUInt())
-        {
-            m_socketPermissions = root->at("socket_permissions")->asUInt();
-        }
-
-        if (root->isMember("num_of_preloaded_servers") && root->at("num_of_preloaded_servers")->isUInt())
-        {
-            m_numOfPreloadedServers = root->at("num_of_preloaded_servers")->asUInt();
-        }
-
-        return true;
     }
 
-    std::list<std::string> ConfigReader::getEnvironmentVariables()
+    if (root->isMember("session_server_path") && root->at("session_server_path")->isString())
     {
-        return m_envVars;
+        m_sessionServerPath = root->at("session_server_path")->asString();
     }
 
-    std::optional<std::string> ConfigReader::getSessionServerPath()
+    if (root->isMember("startup_timeout_ms") && root->at("startup_timeout_ms")->isUInt())
     {
-        return m_sessionServerPath;
+        m_sessionServerStartupTimeout =
+            std::optional<std::chrono::milliseconds>(root->at("startup_timeout_ms")->asUInt());
     }
 
-    std::optional<std::chrono::milliseconds> ConfigReader::getSessionServerStartupTimeout()
+    if (root->isMember("healthcheck_interval") && root->at("healthcheck_interval")->isUInt())
     {
-        return m_sessionServerStartupTimeout;
+        m_healthcheckInterval = std::optional<std::chrono::seconds>(root->at("healthcheck_interval")->asUInt());
     }
 
-    std::optional<std::chrono::seconds> ConfigReader::getHealthcheckInterval()
+    if (root->isMember("socket_permissions") && root->at("socket_permissions")->isUInt())
     {
-        return m_healthcheckInterval;
+        m_socketPermissions = root->at("socket_permissions")->asUInt();
     }
 
-    std::optional<unsigned int> ConfigReader::getSocketPermissions()
+    if (root->isMember("num_of_preloaded_servers") && root->at("num_of_preloaded_servers")->isUInt())
     {
-        return m_socketPermissions;
+        m_numOfPreloadedServers = root->at("num_of_preloaded_servers")->asUInt();
     }
 
-    std::optional<unsigned int> ConfigReader::getNumOfPreloadedServers()
-    {
-        return m_numOfPreloadedServers;
-    }
+    return true;
+}
+
+std::list<std::string> ConfigReader::getEnvironmentVariables()
+{
+    return m_envVars;
+}
+
+std::optional<std::string> ConfigReader::getSessionServerPath()
+{
+    return m_sessionServerPath;
+}
+
+std::optional<std::chrono::milliseconds> ConfigReader::getSessionServerStartupTimeout()
+{
+    return m_sessionServerStartupTimeout;
+}
+
+std::optional<std::chrono::seconds> ConfigReader::getHealthcheckInterval()
+{
+    return m_healthcheckInterval;
+}
+
+std::optional<unsigned int> ConfigReader::getSocketPermissions()
+{
+    return m_socketPermissions;
+}
+
+std::optional<unsigned int> ConfigReader::getNumOfPreloadedServers()
+{
+    return m_numOfPreloadedServers;
+}
 
 } // namespace rialto::servermanager::service

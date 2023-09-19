@@ -19,14 +19,14 @@
 
 #ifndef RIALTO_SERVERMANAGER_SERVICE_CONFIG_READER_H_
 #define RIALTO_SERVERMANAGER_SERVICE_CONFIG_READER_H_
-#include <chrono>
-#include <string>
-#include <optional>
-#include <list>
-#include <string>
 #include "IConfigReader.h"
 #include "IJsonCppWrapper.h"
 #include <IFileReader.h>
+#include <chrono>
+#include <list>
+#include <memory>
+#include <optional>
+#include <string>
 
 namespace rialto::servermanager::service
 {
