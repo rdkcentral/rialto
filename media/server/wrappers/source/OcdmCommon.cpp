@@ -34,9 +34,17 @@ std::string openCdmErrorToString(const OpenCDMError &status)
     {
         return "ERROR_UNKNOWN";
     }
-    case OpenCDMError::ERROR_MORE_DATA_AVAILBALE:
+    case OpenCDMError::ERROR_MORE_DATA_AVAILABLE:
     {
-        return "ERROR_MORE_DATA_AVAILBALE";
+        return "ERROR_MORE_DATA_AVAILABLE";
+    }
+    case OpenCDMError::ERROR_INTERFACE_NOT_IMPLEMENTED:
+    {
+        return "ERROR_INTERFACE_NOT_IMPLEMENTED";
+    }
+    case OpenCDMError::ERROR_BUFFER_TOO_SMALL:
+    {
+        return "ERROR_BUFFER_TOO_SMALL";
     }
     case OpenCDMError::ERROR_INVALID_ACCESSOR:
     {
@@ -58,6 +66,10 @@ std::string openCdmErrorToString(const OpenCDMError &status)
     {
         return "ERROR_OUT_OF_MEMORY";
     }
+    case OpenCDMError::ERROR_METHOD_NOT_IMPLEMENTED:
+    {
+        return "ERROR_METHOD_NOT_IMPLEMENTED";
+    }
     case OpenCDMError::ERROR_FAIL:
     {
         return "ERROR_FAIL";
@@ -77,6 +89,10 @@ std::string openCdmErrorToString(const OpenCDMError &status)
     case OpenCDMError::ERROR_SERVER_SERVICE_SPECIFIC:
     {
         return "ERROR_SERVER_SERVICE_SPECIFIC";
+    }
+    case OpenCDMError::ERROR_BUSY_CANNOT_INITIALIZE:
+    {
+        return "ERROR_BUSY_CANNOT_INITIALIZE";
     }
     }
     return "UNKNOWN";
@@ -99,7 +115,7 @@ firebolt::rialto::MediaKeyErrorStatus convertOpenCdmError(const OpenCDMError &st
         return firebolt::rialto::MediaKeyErrorStatus::NOT_SUPPORTED;
     }
     case OpenCDMError::ERROR_UNKNOWN:
-    case OpenCDMError::ERROR_MORE_DATA_AVAILBALE:
+    case OpenCDMError::ERROR_MORE_DATA_AVAILABLE:
     case OpenCDMError::ERROR_INVALID_ACCESSOR:
     case OpenCDMError::ERROR_INVALID_DECRYPT_BUFFER:
     case OpenCDMError::ERROR_OUT_OF_MEMORY:
