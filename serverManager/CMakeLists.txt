@@ -73,8 +73,8 @@ if( RIALTO_ENABLE_CONFIG_FILE )
         set( STARTUP_TIMEOUT_MS 0 )
     endif()
 
-    if (NOT HEALTHCHECK_INTERVAL)
-        set( HEALTHCHECK_INTERVAL 5 )
+    if (NOT HEALTHCHECK_INTERVAL_S)
+        set( HEALTHCHECK_INTERVAL_S 5 )
     endif()
 
     if (NOT SOCKET_PERMISSIONS)

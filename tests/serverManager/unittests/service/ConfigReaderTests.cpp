@@ -278,10 +278,10 @@ TEST_F(ConfigReaderTests, healthCheckIntervalNotUint)
     EXPECT_CALL(*m_jsonCppWrapperMock, parseFromStream(_, _, _, _))
         .WillOnce(DoAll(SetArgReferee<2>(m_rootJsonValueMock), Return(true)));
 
-    EXPECT_CALL(*m_rootJsonValueMock, isMember("healthcheck_interval")).WillOnce(Return(true));
-    EXPECT_CALL(*m_rootJsonValueMock, isMember(StrNe("healthcheck_interval"))).WillRepeatedly(Return(false));
+    EXPECT_CALL(*m_rootJsonValueMock, isMember("healthcheck_interval_s")).WillOnce(Return(true));
+    EXPECT_CALL(*m_rootJsonValueMock, isMember(StrNe("healthcheck_interval_s"))).WillRepeatedly(Return(false));
 
-    EXPECT_CALL(*m_rootJsonValueMock, at("healthcheck_interval")).WillRepeatedly(Return(m_objectJsonValueMock));
+    EXPECT_CALL(*m_rootJsonValueMock, at("healthcheck_interval_s")).WillRepeatedly(Return(m_objectJsonValueMock));
     EXPECT_CALL(*m_objectJsonValueMock, isUInt()).WillOnce(Return(false));
 
     EXPECT_TRUE(m_sut->read());
@@ -298,10 +298,10 @@ TEST_F(ConfigReaderTests, healthCheckIntervalExists)
     EXPECT_CALL(*m_jsonCppWrapperMock, parseFromStream(_, _, _, _))
         .WillOnce(DoAll(SetArgReferee<2>(m_rootJsonValueMock), Return(true)));
 
-    EXPECT_CALL(*m_rootJsonValueMock, isMember("healthcheck_interval")).WillOnce(Return(true));
-    EXPECT_CALL(*m_rootJsonValueMock, isMember(StrNe("healthcheck_interval"))).WillRepeatedly(Return(false));
+    EXPECT_CALL(*m_rootJsonValueMock, isMember("healthcheck_interval_s")).WillOnce(Return(true));
+    EXPECT_CALL(*m_rootJsonValueMock, isMember(StrNe("healthcheck_interval_s"))).WillRepeatedly(Return(false));
 
-    EXPECT_CALL(*m_rootJsonValueMock, at("healthcheck_interval")).WillRepeatedly(Return(m_objectJsonValueMock));
+    EXPECT_CALL(*m_rootJsonValueMock, at("healthcheck_interval_s")).WillRepeatedly(Return(m_objectJsonValueMock));
     EXPECT_CALL(*m_objectJsonValueMock, isUInt()).WillOnce(Return(true));
     EXPECT_CALL(*m_objectJsonValueMock, asUInt()).WillOnce(Return(1));
 

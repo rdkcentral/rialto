@@ -65,13 +65,12 @@ bool ConfigReader::read()
 
     if (root->isMember("startup_timeout_ms") && root->at("startup_timeout_ms")->isUInt())
     {
-        m_sessionServerStartupTimeout =
-            std::optional<std::chrono::milliseconds>(root->at("startup_timeout_ms")->asUInt());
+        m_sessionServerStartupTimeout = std::chrono::milliseconds(root->at("startup_timeout_ms")->asUInt());
     }
 
-    if (root->isMember("healthcheck_interval") && root->at("healthcheck_interval")->isUInt())
+    if (root->isMember("healthcheck_interval_s") && root->at("healthcheck_interval_s")->isUInt())
     {
-        m_healthcheckInterval = std::optional<std::chrono::seconds>(root->at("healthcheck_interval")->asUInt());
+        m_healthcheckInterval = std::chrono::seconds(root->at("healthcheck_interval_s")->asUInt());
     }
 
     if (root->isMember("socket_permissions") && root->at("socket_permissions")->isUInt())

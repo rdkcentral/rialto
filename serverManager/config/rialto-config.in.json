@@ -19,7 +19,7 @@
     "environment_variables" : [@ENVIRONMENT_VARIABLES@],
     "session_server_path" : @SESSION_SERVER_PATH@,
     "startup_timeout_ms" : @STARTUP_TIMEOUT_MS@,
-    "healthcheck_interval" : @HEALTHCHECK_INTERVAL@,
+    "healthcheck_interval_s" : @HEALTHCHECK_INTERVAL_S@,
     "socket_permissions" : @SOCKET_PERMISSIONS@,
     "num_of_preloaded_servers" : @NUM_OF_PRELOADED_SERVERS@
 }
