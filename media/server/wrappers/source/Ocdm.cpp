@@ -70,7 +70,7 @@ MediaKeyErrorStatus Ocdm::isTypeSupported(std::string keySystem)
     // mimeType is currently ignored by ocdm
     OpenCDMError status = opencdm_is_type_supported(keySystem.c_str(), "");
 
-    RIALTO_SERVER_LOG_INFO("opencdm_is_type_supported returned with status %s", openCdmErrorToString(status).c_str());
+    RIALTO_SERVER_LOG_INFO("opencdm_is_type_supported returned with status %u", status);
 
     return convertOpenCdmError(status);
 }

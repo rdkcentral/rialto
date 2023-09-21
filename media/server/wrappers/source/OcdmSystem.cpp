@@ -72,7 +72,7 @@ OcdmSystem::~OcdmSystem()
     OpenCDMError status = opencdm_destruct_system(m_systemHandle);
     if (ERROR_NONE != status)
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to destroy the system, reason %s", openCdmErrorToString(status).c_str());
+        RIALTO_SERVER_LOG_ERROR("Failed to destroy the system, reason %u", status);
     }
 }
 
@@ -82,7 +82,7 @@ MediaKeyErrorStatus OcdmSystem::getVersion(std::string &version)
     OpenCDMError status = opencdm_system_get_version(m_systemHandle, versionBuffer);
     version = versionBuffer;
 
-    RIALTO_SERVER_LOG_INFO("opencdm_system_get_version returned with status %s", openCdmErrorToString(status).c_str());
+    RIALTO_SERVER_LOG_INFO("opencdm_system_get_version returned with status %u", status);
 
     return convertOpenCdmError(status);
 }
@@ -91,8 +91,7 @@ MediaKeyErrorStatus OcdmSystem::getLdlSessionsLimit(uint32_t *ldlLimit)
 {
     OpenCDMError status = opencdm_system_ext_get_ldl_session_limit(m_systemHandle, ldlLimit);
 
-    RIALTO_SERVER_LOG_INFO("opencdm_system_ext_get_ldl_session_limit returned with status %s",
-                           openCdmErrorToString(status).c_str());
+    RIALTO_SERVER_LOG_INFO("opencdm_system_ext_get_ldl_session_limit returned with status %u", status);;
 
     return convertOpenCdmError(status);
 }
@@ -101,7 +100,7 @@ MediaKeyErrorStatus OcdmSystem::deleteKeyStore()
 {
     OpenCDMError status = opencdm_delete_key_store(m_systemHandle);
 
-    RIALTO_SERVER_LOG_INFO("opencdm_delete_key_store returned with status %s", openCdmErrorToString(status).c_str());
+    RIALTO_SERVER_LOG_INFO("opencdm_delete_key_store returned with status %u", status);
 
     return convertOpenCdmError(status);
 }
@@ -110,7 +109,7 @@ MediaKeyErrorStatus OcdmSystem::deleteSecureStore()
 {
     OpenCDMError status = opencdm_delete_secure_store(m_systemHandle);
 
-    RIALTO_SERVER_LOG_INFO("opencdm_delete_secure_store returned with status %s", openCdmErrorToString(status).c_str());
+    RIALTO_SERVER_LOG_INFO("opencdm_delete_secure_store returned with status %u", status);
 
     return convertOpenCdmError(status);
 }
@@ -119,8 +118,7 @@ MediaKeyErrorStatus OcdmSystem::getKeyStoreHash(uint8_t keyStoreHash[], uint32_t
 {
     OpenCDMError status = opencdm_get_key_store_hash_ext(m_systemHandle, keyStoreHash, keyStoreHashLength);
 
-    RIALTO_SERVER_LOG_INFO("opencdm_get_key_store_hash_ext returned with status %s",
-                           openCdmErrorToString(status).c_str());
+    RIALTO_SERVER_LOG_INFO("opencdm_get_key_store_hash_ext returned with status %u", status);
 
     return convertOpenCdmError(status);
 }
@@ -129,8 +127,7 @@ MediaKeyErrorStatus OcdmSystem::getSecureStoreHash(uint8_t secureStoreHash[], ui
 {
     OpenCDMError status = opencdm_get_secure_store_hash_ext(m_systemHandle, secureStoreHash, secureStoreHashLength);
 
-    RIALTO_SERVER_LOG_INFO("opencdm_get_secure_store_hash_ext returned with status %s",
-                           openCdmErrorToString(status).c_str());
+    RIALTO_SERVER_LOG_INFO("opencdm_get_secure_store_hash_ext returned with status %u", status);
 
     return convertOpenCdmError(status);
 }
@@ -139,7 +136,7 @@ MediaKeyErrorStatus OcdmSystem::getDrmTime(uint64_t *time)
 {
     OpenCDMError status = opencdm_system_get_drm_time(m_systemHandle, time);
 
-    RIALTO_SERVER_LOG_INFO("opencdm_system_get_drm_time returned with status %s", openCdmErrorToString(status).c_str());
+    RIALTO_SERVER_LOG_INFO("opencdm_system_get_drm_time returned with status %u", status);
 
     return convertOpenCdmError(status);
 }

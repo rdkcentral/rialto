@@ -22,82 +22,6 @@
 
 namespace firebolt::rialto::server
 {
-std::string openCdmErrorToString(const OpenCDMError &status)
-{
-    switch (status)
-    {
-    case OpenCDMError::ERROR_NONE:
-    {
-        return "ERROR_NONE";
-    }
-    case OpenCDMError::ERROR_UNKNOWN:
-    {
-        return "ERROR_UNKNOWN";
-    }
-    case OpenCDMError::ERROR_MORE_DATA_AVAILABLE:
-    {
-        return "ERROR_MORE_DATA_AVAILABLE";
-    }
-    case OpenCDMError::ERROR_INTERFACE_NOT_IMPLEMENTED:
-    {
-        return "ERROR_INTERFACE_NOT_IMPLEMENTED";
-    }
-    case OpenCDMError::ERROR_BUFFER_TOO_SMALL:
-    {
-        return "ERROR_BUFFER_TOO_SMALL";
-    }
-    case OpenCDMError::ERROR_INVALID_ACCESSOR:
-    {
-        return "ERROR_INVALID_ACCESSOR";
-    }
-    case OpenCDMError::ERROR_KEYSYSTEM_NOT_SUPPORTED:
-    {
-        return "ERROR_KEYSYSTEM_NOT_SUPPORTED";
-    }
-    case OpenCDMError::ERROR_INVALID_SESSION:
-    {
-        return "ERROR_INVALID_SESSION";
-    }
-    case OpenCDMError::ERROR_INVALID_DECRYPT_BUFFER:
-    {
-        return "ERROR_INVALID_DECRYPT_BUFFER";
-    }
-    case OpenCDMError::ERROR_OUT_OF_MEMORY:
-    {
-        return "ERROR_OUT_OF_MEMORY";
-    }
-    case OpenCDMError::ERROR_METHOD_NOT_IMPLEMENTED:
-    {
-        return "ERROR_METHOD_NOT_IMPLEMENTED";
-    }
-    case OpenCDMError::ERROR_FAIL:
-    {
-        return "ERROR_FAIL";
-    }
-    case OpenCDMError::ERROR_INVALID_ARG:
-    {
-        return "ERROR_INVALID_ARG";
-    }
-    case OpenCDMError::ERROR_SERVER_INTERNAL_ERROR:
-    {
-        return "ERROR_SERVER_INTERNAL_ERROR";
-    }
-    case OpenCDMError::ERROR_SERVER_INVALID_MESSAGE:
-    {
-        return "ERROR_SERVER_INVALID_MESSAGE";
-    }
-    case OpenCDMError::ERROR_SERVER_SERVICE_SPECIFIC:
-    {
-        return "ERROR_SERVER_SERVICE_SPECIFIC";
-    }
-    case OpenCDMError::ERROR_BUSY_CANNOT_INITIALIZE:
-    {
-        return "ERROR_BUSY_CANNOT_INITIALIZE";
-    }
-    }
-    return "UNKNOWN";
-}
-
 firebolt::rialto::MediaKeyErrorStatus convertOpenCdmError(const OpenCDMError &status)
 {
     switch (status)
@@ -114,16 +38,6 @@ firebolt::rialto::MediaKeyErrorStatus convertOpenCdmError(const OpenCDMError &st
     {
         return firebolt::rialto::MediaKeyErrorStatus::NOT_SUPPORTED;
     }
-    case OpenCDMError::ERROR_UNKNOWN:
-    case OpenCDMError::ERROR_MORE_DATA_AVAILABLE:
-    case OpenCDMError::ERROR_INVALID_ACCESSOR:
-    case OpenCDMError::ERROR_INVALID_DECRYPT_BUFFER:
-    case OpenCDMError::ERROR_OUT_OF_MEMORY:
-    case OpenCDMError::ERROR_FAIL:
-    case OpenCDMError::ERROR_INVALID_ARG:
-    case OpenCDMError::ERROR_SERVER_INTERNAL_ERROR:
-    case OpenCDMError::ERROR_SERVER_INVALID_MESSAGE:
-    case OpenCDMError::ERROR_SERVER_SERVICE_SPECIFIC:
     default:
     {
         return firebolt::rialto::MediaKeyErrorStatus::FAIL;

@@ -142,7 +142,7 @@ MediaKeyErrorStatus OcdmSession::constructSession(KeySessionType sessionType, In
                                                     convertInitDataType(initDataType), initData, initDataSize, nullptr,
                                                     0, &m_ocdmCallbacks, this, &m_session);
 
-    RIALTO_SERVER_LOG_INFO("opencdm_construct_session returned with status %s", openCdmErrorToString(status).c_str());
+    RIALTO_SERVER_LOG_INFO("opencdm_construct_session returned with status %u", status);
 
     return convertOpenCdmError(status);
 }
@@ -158,8 +158,7 @@ MediaKeyErrorStatus OcdmSession::getChallengeData(bool isLDL, uint8_t *challenge
     OpenCDMError status =
         opencdm_session_get_challenge_data(m_session, challenge, challengeSize, static_cast<uint32_t>(isLDL));
 
-    RIALTO_SERVER_LOG_INFO("opencdm_session_get_challenge_data returned with status %s",
-                           openCdmErrorToString(status).c_str());
+    RIALTO_SERVER_LOG_INFO("opencdm_session_get_challenge_data returned with status %u", status);
 
     return convertOpenCdmError(status);
 }
@@ -175,8 +174,7 @@ MediaKeyErrorStatus OcdmSession::storeLicenseData(const uint8_t challenge[], uin
     // Rialto does not support secureStop
     OpenCDMError status = opencdm_session_store_license_data(m_session, challenge, challengeSize, nullptr);
 
-    RIALTO_SERVER_LOG_INFO("opencdm_session_store_license_data returned with status %s",
-                           openCdmErrorToString(status).c_str());
+    RIALTO_SERVER_LOG_INFO("opencdm_session_store_license_data returned with status %u", status);
 
     return convertOpenCdmError(status);
 }
@@ -191,7 +189,7 @@ MediaKeyErrorStatus OcdmSession::load()
 
     OpenCDMError status = opencdm_session_load(m_session);
 
-    RIALTO_SERVER_LOG_INFO("opencdm_session_load returned with status %s", openCdmErrorToString(status).c_str());
+    RIALTO_SERVER_LOG_INFO("opencdm_session_load returned with status %u", status);
 
     return convertOpenCdmError(status);
 }
@@ -206,7 +204,7 @@ MediaKeyErrorStatus OcdmSession::update(const uint8_t response[], uint32_t respo
 
     OpenCDMError status = opencdm_session_update(m_session, response, responseSize);
 
-    RIALTO_SERVER_LOG_INFO("opencdm_session_update returned with status %s", openCdmErrorToString(status).c_str());
+    RIALTO_SERVER_LOG_INFO("opencdm_session_update returned with status %u", status);
 
     return convertOpenCdmError(status);
 }
@@ -222,8 +220,7 @@ MediaKeyErrorStatus OcdmSession::decryptBuffer(GstBuffer *encrypted, GstCaps *ca
 #ifdef RIALTO_ENABLE_DECRYPT_BUFFER
     OpenCDMError status = opencdm_gstreamer_session_decrypt_buffer(m_session, encrypted, caps);
 
-    RIALTO_SERVER_LOG_INFO("opencdm_gstreamer_session_decrypt_buffer returned with status %s",
-                           openCdmErrorToString(status).c_str());
+    RIALTO_SERVER_LOG_INFO("opencdm_gstreamer_session_decrypt_buffer returned with status %u", status);
 
     return convertOpenCdmError(status);
 #else
@@ -256,8 +253,7 @@ MediaKeyErrorStatus OcdmSession::decrypt(GstBuffer *encrypted, GstBuffer *subSam
                                                    initWithLast15);
     }
 
-    RIALTO_SERVER_LOG_INFO("opencdm_gstreamer_session_decrypt returned with status %s",
-                           openCdmErrorToString(status).c_str());
+    RIALTO_SERVER_LOG_INFO("opencdm_gstreamer_session_decrypt returned with status %u", status);
 
     return convertOpenCdmError(status);
 }
@@ -272,7 +268,7 @@ MediaKeyErrorStatus OcdmSession::remove()
 
     OpenCDMError status = opencdm_session_remove(m_session);
 
-    RIALTO_SERVER_LOG_INFO("opencdm_session_remove returned with status %s", openCdmErrorToString(status).c_str());
+    RIALTO_SERVER_LOG_INFO("opencdm_session_remove returned with status %u", status);
 
     return convertOpenCdmError(status);
 }
@@ -287,7 +283,7 @@ MediaKeyErrorStatus OcdmSession::close()
 
     OpenCDMError status = opencdm_session_close(m_session);
 
-    RIALTO_SERVER_LOG_INFO("opencdm_session_close returned with status %s", openCdmErrorToString(status).c_str());
+    RIALTO_SERVER_LOG_INFO("opencdm_session_close returned with status %u", status);
 
     return convertOpenCdmError(status);
 }
@@ -302,8 +298,7 @@ MediaKeyErrorStatus OcdmSession::cancelChallengeData()
 
     OpenCDMError status = opencdm_session_cancel_challenge_data(m_session);
 
-    RIALTO_SERVER_LOG_INFO("opencdm_session_cancel_challenge_data returned with status %s",
-                           openCdmErrorToString(status).c_str());
+    RIALTO_SERVER_LOG_INFO("opencdm_session_cancel_challenge_data returned with status %u", status);
 
     return convertOpenCdmError(status);
 }
@@ -318,8 +313,7 @@ MediaKeyErrorStatus OcdmSession::cleanDecryptContext()
 
     OpenCDMError status = opencdm_session_clean_decrypt_context(m_session);
 
-    RIALTO_SERVER_LOG_INFO("opencdm_session_clean_decrypt_context returned with status %s",
-                           openCdmErrorToString(status).c_str());
+    RIALTO_SERVER_LOG_INFO("opencdm_session_clean_decrypt_context returned with status %u", status);
 
     return convertOpenCdmError(status);
 }
@@ -334,7 +328,7 @@ MediaKeyErrorStatus OcdmSession::destructSession()
 
     OpenCDMError status = opencdm_destruct_session(m_session);
 
-    RIALTO_SERVER_LOG_INFO("opencdm_destruct_session returned with status %s", openCdmErrorToString(status).c_str());
+    RIALTO_SERVER_LOG_INFO("opencdm_destruct_session returned with status %u", status);
 
     return convertOpenCdmError(status);
 }
