@@ -239,8 +239,9 @@ void WebAudioPlayerService::ping(const std::shared_ptr<IHeartbeatProcedure> &hea
 {
     RIALTO_SERVER_LOG_DEBUG("Ping requested");
     std::lock_guard<std::mutex> lock{m_webAudioPlayerMutex};
-    for (const auto &[_, webAudioPlayer] : m_webAudioPlayers)
+    for (const auto &webAudioPlayersPair : m_webAudioPlayers)
     {
+        auto &webAudioPlayer = webAudioPlayersPair.second;
         webAudioPlayer->ping(heartbeatProcedure->createHandler());
     }
 }
