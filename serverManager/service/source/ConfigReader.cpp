@@ -75,7 +75,13 @@ bool ConfigReader::read()
 
     if (root->isMember("socket_permissions") && root->at("socket_permissions")->isUInt())
     {
-        m_socketPermissions = root->at("socket_permissions")->asUInt();
+        unsigned permissions = root->at("socket_permissions")->asUInt();
+
+        firebolt::rialto::common::SocketPermissions socketPermissions;
+        socketPermissions.ownerPermissions = (permissions/100)%10;
+        socketPermissions.groupPermissions = (permissions/10)%10;
+        socketPermissions.otherPermissions = (permissions)%10;
+        m_socketPermissions = socketPermissions;
     }
 
     if (root->isMember("num_of_preloaded_servers") && root->at("num_of_preloaded_servers")->isUInt())
@@ -106,7 +112,7 @@ std::optional<std::chrono::seconds> ConfigReader::getHealthcheckInterval()
     return m_healthcheckInterval;
 }
 
-std::optional<unsigned int> ConfigReader::getSocketPermissions()
+std::optional<firebolt::rialto::common::SocketPermissions> ConfigReader::getSocketPermissions()
 {
     return m_socketPermissions;
 }

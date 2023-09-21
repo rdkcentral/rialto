@@ -27,6 +27,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include "SessionServerCommon.h"
 
 namespace rialto::servermanager::service
 {
@@ -40,7 +41,7 @@ public:
     std::optional<std::string> getSessionServerPath() override;
     std::optional<std::chrono::milliseconds> getSessionServerStartupTimeout() override;
     std::optional<std::chrono::seconds> getHealthcheckInterval() override;
-    std::optional<unsigned int> getSocketPermissions() override;
+    std::optional<firebolt::rialto::common::SocketPermissions> getSocketPermissions() override;
     std::optional<unsigned int> getNumOfPreloadedServers() override;
 
 private:
@@ -51,7 +52,7 @@ private:
     std::optional<std::string> m_sessionServerPath;
     std::optional<std::chrono::milliseconds> m_sessionServerStartupTimeout;
     std::optional<std::chrono::seconds> m_healthcheckInterval;
-    std::optional<unsigned int> m_socketPermissions;
+    std::optional<firebolt::rialto::common::SocketPermissions> m_socketPermissions;
     std::optional<unsigned int> m_numOfPreloadedServers;
 };
 

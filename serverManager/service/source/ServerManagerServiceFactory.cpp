@@ -52,36 +52,37 @@ std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserv
     std::string sessionServerPath = config.sessionServerPath;
     std::chrono::milliseconds sessionServerStartupTimeout = config.sessionServerStartupTimeout;
     std::chrono::seconds healthcheckInterval = config.healthcheckInterval;
-    unsigned int sessionManagementSocketPermissions = convertSocketPermissions(config.sessionManagementSocketPermissions);
+    firebolt::rialto::common::SocketPermissions sessionManagementSocketPermissions = config.sessionManagementSocketPermissions;
     unsigned int numOfPreloadedServers = config.numOfPreloadedServers;
 #ifdef RIALTO_ENABLE_CONFIG_FILE
     std::unique_ptr<IConfigReaderFactory> configReaderFactory = std::make_unique<ConfigReaderFactory>();
-    std::shared_ptr<IConfigReader> configReader = configReaderFactory->createConfigReader(jsonWrapper, fileReader);
+    std::shared_ptr<IConfigReader> configReader = configReaderFactory->createConfigReader();
     configReader->read();
 
     if (!configReader->getEnvironmentVariables().empty())
         sessionServerEnvVars = configReader->getEnvironmentVariables();
 
     if (configReader->getSessionServerPath())
-        sessionServerPath = configReader->getSessionServerPath();
+        sessionServerPath = configReader->getSessionServerPath().value();
 
     if (configReader->getSessionServerStartupTimeout())
-        sessionServerStartupTimeout = configReader->getSessionServerStartupTimeout();
+        sessionServerStartupTimeout = configReader->getSessionServerStartupTimeout().value();
 
     if (configReader->getHealthcheckInterval())
-        healthcheckInterval = configReader->getHealthcheckInterval();
+        healthcheckInterval = configReader->getHealthcheckInterval().value();
 
     if (configReader->getSocketPermissions())
-        sessionManagementSocketPermissions = configReader->getSocketPermissions();
+        sessionManagementSocketPermissions = configReader->getSocketPermissions().value();
 
     if (configReader->getNumOfPreloadedServers())
-        numOfPreloadedServers = configReader->getNumOfPreloadedServers();
+        numOfPreloadedServers = configReader->getNumOfPreloadedServers().value();
 #endif
+
     return std::make_unique<ServerManagerService>(std::make_unique<ServiceContext>(stateObserver, sessionServerEnvVars,
                                                                                    sessionServerPath,
                                                                                    sessionServerStartupTimeout,
                                                                                    healthcheckInterval,
-                                                                                   sessionManagementSocketPermissions),
+                                                                                   convertSocketPermissions(sessionManagementSocketPermissions)),
                                                   numOfPreloadedServers);
 }
 } // namespace rialto::servermanager::service

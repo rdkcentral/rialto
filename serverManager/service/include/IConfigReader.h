@@ -23,6 +23,7 @@
 #include <list>
 #include <optional>
 #include <string>
+#include "SessionServerCommon.h"
 
 namespace rialto::servermanager::service
 {
@@ -36,7 +37,7 @@ public:
     virtual std::optional<std::string> getSessionServerPath() = 0;
     virtual std::optional<std::chrono::milliseconds> getSessionServerStartupTimeout() = 0;
     virtual std::optional<std::chrono::seconds> getHealthcheckInterval() = 0;
-    virtual std::optional<unsigned int> getSocketPermissions() = 0;
+    virtual std::optional<firebolt::rialto::common::SocketPermissions> getSocketPermissions() = 0;
     virtual std::optional<unsigned int> getNumOfPreloadedServers() = 0;
 };
 

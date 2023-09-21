@@ -64,6 +64,7 @@ target_link_libraries (
 )
 
 if( RIALTO_ENABLE_CONFIG_FILE )
+    add_compile_definitions(RIALTO_ENABLE_CONFIG_FILE)
     add_compile_definitions(RIALTO_CONFIG_PATH="${RIALTO_CONFIG_FILE_DIR}/rialto-config.json")
 
     target_link_libraries(
