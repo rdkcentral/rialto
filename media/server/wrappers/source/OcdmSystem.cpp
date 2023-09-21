@@ -92,7 +92,6 @@ MediaKeyErrorStatus OcdmSystem::getLdlSessionsLimit(uint32_t *ldlLimit)
     OpenCDMError status = opencdm_system_ext_get_ldl_session_limit(m_systemHandle, ldlLimit);
 
     RIALTO_SERVER_LOG_INFO("opencdm_system_ext_get_ldl_session_limit returned with status %u", status);
-    ;
 
     return convertOpenCdmError(status);
 }
