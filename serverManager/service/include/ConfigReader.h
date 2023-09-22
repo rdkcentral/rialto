@@ -21,13 +21,13 @@
 #define RIALTO_SERVERMANAGER_SERVICE_CONFIG_READER_H_
 #include "IConfigReader.h"
 #include "IJsonCppWrapper.h"
+#include "SessionServerCommon.h"
 #include <IFileReader.h>
 #include <chrono>
 #include <list>
 #include <memory>
 #include <optional>
 #include <string>
-#include "SessionServerCommon.h"
 
 namespace rialto::servermanager::service
 {

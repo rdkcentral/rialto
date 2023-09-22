@@ -19,11 +19,11 @@
 
 #ifndef RIALTO_SERVERMANAGER_SERVICE_I_CONFIG_READER_H_
 #define RIALTO_SERVERMANAGER_SERVICE_I_CONFIG_READER_H_
+#include "SessionServerCommon.h"
 #include <chrono>
 #include <list>
 #include <optional>
 #include <string>
-#include "SessionServerCommon.h"
 
 namespace rialto::servermanager::service
 {

@@ -78,9 +78,9 @@ bool ConfigReader::read()
         unsigned permissions = root->at("socket_permissions")->asUInt();
 
         firebolt::rialto::common::SocketPermissions socketPermissions;
-        socketPermissions.ownerPermissions = (permissions/100)%10;
-        socketPermissions.groupPermissions = (permissions/10)%10;
-        socketPermissions.otherPermissions = (permissions)%10;
+        socketPermissions.ownerPermissions = (permissions / 100) % 10;
+        socketPermissions.groupPermissions = (permissions / 10) % 10;
+        socketPermissions.otherPermissions = (permissions) % 10;
         m_socketPermissions = socketPermissions;
     }
 
