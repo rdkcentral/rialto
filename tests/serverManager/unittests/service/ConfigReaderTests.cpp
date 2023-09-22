@@ -347,7 +347,7 @@ TEST_F(ConfigReaderTests, socketPermissionsExists)
     EXPECT_CALL(*m_objectJsonValueMock, asUInt()).WillOnce(Return(666));
 
     EXPECT_TRUE(m_sut->read());
-    firebolt::rialto::common::SocketPermissions expectedPermissions{6,6,6};
+    firebolt::rialto::common::SocketPermissions expectedPermissions{6, 6, 6};
     EXPECT_EQ(m_sut->getSocketPermissions().value().ownerPermissions, expectedPermissions.ownerPermissions);
     EXPECT_EQ(m_sut->getSocketPermissions().value().groupPermissions, expectedPermissions.groupPermissions);
     EXPECT_EQ(m_sut->getSocketPermissions().value().otherPermissions, expectedPermissions.otherPermissions);
