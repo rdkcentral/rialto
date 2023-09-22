@@ -149,7 +149,6 @@ void ControlServerInternal::ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatH
         if (m_client)
         {
             m_client->ping(heartbeatHandler->id());
-            heartbeatHandler->pingSent();
             m_heartbeatHandler = std::move(heartbeatHandler);
         }
     };

@@ -28,6 +28,7 @@
  * This interface defines the server internal API of Rialto for EME decryption of AV content.
  */
 
+#include "IHeartbeatHandler.h"
 #include "IMediaKeys.h"
 #include "MediaCommon.h"
 #include <cstdint>
@@ -146,6 +147,14 @@ public:
      *
      */
     virtual void decrementSessionIdUsageCounter(int32_t keySessionId) = 0;
+
+    /**
+     * @brief Checks, if MediaKeys main thread is not deadlocked
+     *
+     * @param[in] heartbeatHandler    : The heartbeat handler instance.
+     *
+     */
+    virtual void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) = 0;
 };
 } // namespace firebolt::rialto::server
 

@@ -20,7 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_WEB_AUDIO_PLAYER_SERVER_INTERNAL_MOCK_H_
 #define FIREBOLT_RIALTO_SERVER_WEB_AUDIO_PLAYER_SERVER_INTERNAL_MOCK_H_
 
-#include "IWebAudioPlayer.h"
+#include "IWebAudioPlayerServerInternal.h"
 #include <gmock/gmock.h>
 #include <memory>
 #include <string>
@@ -28,7 +28,7 @@
 
 namespace firebolt::rialto::server
 {
-class WebAudioPlayerServerInternalMock : public IWebAudioPlayer
+class WebAudioPlayerServerInternalMock : public IWebAudioPlayerServerInternal
 {
 public:
     MOCK_METHOD(bool, play, (), (override));
@@ -42,6 +42,7 @@ public:
                 (override));
     MOCK_METHOD(bool, setVolume, (double volume), (override));
     MOCK_METHOD(bool, getVolume, (double &volume), (override));
+    MOCK_METHOD(void, ping, (std::unique_ptr<IHeartbeatHandler> && heartbeatHandler), (override));
     MOCK_METHOD(std::weak_ptr<IWebAudioPlayerClient>, getClient, (), (override));
 };
 } // namespace firebolt::rialto::server

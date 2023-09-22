@@ -28,6 +28,7 @@
 #include "IDataReader.h"
 #include "IDecryptionService.h"
 #include "IGstGenericPlayerClient.h"
+#include "IHeartbeatHandler.h"
 #include "IMediaPipeline.h"
 #include "IRdkGstreamerUtilsWrapper.h"
 
@@ -241,6 +242,14 @@ public:
      * @retval True in success, false otherwise
      */
     virtual bool getMute(bool &mute) = 0;
+
+    /**
+     * @brief Checks if worker thread is not deadlocked
+     *
+     * @param[out] heartbeatHandler : The heartbeat handler instance
+     *
+     */
+    virtual void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) = 0;
 };
 
 }; // namespace firebolt::rialto::server

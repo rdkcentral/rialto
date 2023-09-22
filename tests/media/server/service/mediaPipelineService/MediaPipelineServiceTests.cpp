@@ -433,3 +433,10 @@ TEST_F(MediaPipelineServiceTests, shouldGetMute)
     mediaPipelineWillGetMute();
     getMuteShouldSucceed();
 }
+
+TEST_F(MediaPipelineServiceTests, shouldPing)
+{
+    initSession();
+    mediaPipelineWillPing();
+    triggerPing();
+}

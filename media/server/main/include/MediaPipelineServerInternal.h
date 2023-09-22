@@ -116,6 +116,8 @@ public:
 
     bool haveData(MediaSourceStatus status, uint32_t numFrames, uint32_t needDataRequestId) override;
 
+    void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) override;
+
     bool renderFrame() override;
 
     bool setVolume(double volume) override;
@@ -421,6 +423,13 @@ protected:
      * @retval true on success false otherwise
      */
     bool getMuteInternal(bool &mute);
+
+    /**
+     * @brief Checks if MediaPipeline threads are not deadlocked internally
+     *
+     * @param[out] heartbeatHandler : The heartbeat handler instance
+     */
+    void pingInternal(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler);
 };
 
 }; // namespace firebolt::rialto::server

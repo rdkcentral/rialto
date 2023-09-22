@@ -43,7 +43,6 @@ public:
     IHeartbeatHandler &operator=(IHeartbeatHandler &&) = delete;
     virtual ~IHeartbeatHandler() = default;
 
-    virtual void pingSent() = 0;
     virtual void error() = 0;
     virtual std::int32_t id() const = 0;
 };

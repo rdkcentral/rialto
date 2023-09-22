@@ -361,4 +361,14 @@ bool MediaPipelineService::isMimeTypeSupported(const std::string &mimeType)
 {
     return m_mediaPipelineCapabilities->isMimeTypeSupported(mimeType);
 }
+
+void MediaPipelineService::ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure)
+{
+    RIALTO_SERVER_LOG_DEBUG("Ping requested");
+    std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+    for (const auto &[_, mediaPipeline] : m_mediaPipelines)
+    {
+        mediaPipeline->ping(heartbeatProcedure->createHandler());
+    }
+}
 } // namespace firebolt::rialto::server::service

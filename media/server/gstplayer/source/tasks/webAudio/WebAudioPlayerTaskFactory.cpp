@@ -20,6 +20,7 @@
 #include "tasks/webAudio/Eos.h"
 #include "tasks/webAudio/HandleBusMessage.h"
 #include "tasks/webAudio/Pause.h"
+#include "tasks/webAudio/Ping.h"
 #include "tasks/webAudio/Play.h"
 #include "tasks/webAudio/SetCaps.h"
 #include "tasks/webAudio/SetVolume.h"
@@ -87,5 +88,10 @@ std::unique_ptr<IPlayerTask> WebAudioPlayerTaskFactory::createHandleBusMessage(W
 {
     return std::make_unique<tasks::webaudio::HandleBusMessage>(context, player, m_client, m_gstWrapper, m_glibWrapper,
                                                                message);
+}
+
+std::unique_ptr<IPlayerTask> WebAudioPlayerTaskFactory::createPing(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) const
+{
+    return std::make_unique<tasks::webaudio::Ping>(std::move(heartbeatHandler));
 }
 } // namespace firebolt::rialto::server

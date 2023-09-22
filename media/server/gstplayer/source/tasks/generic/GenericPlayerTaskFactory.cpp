@@ -28,6 +28,7 @@
 #include "tasks/generic/HandleBusMessage.h"
 #include "tasks/generic/NeedData.h"
 #include "tasks/generic/Pause.h"
+#include "tasks/generic/Ping.h"
 #include "tasks/generic/Play.h"
 #include "tasks/generic/ReadShmDataAndAttachSamples.h"
 #include "tasks/generic/RemoveSource.h"
@@ -221,4 +222,8 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createRenderFrame(Generic
     return std::make_unique<tasks::generic::RenderFrame>(context, m_gstWrapper, m_glibWrapper);
 }
 
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createPing(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) const
+{
+    return std::make_unique<tasks::generic::Ping>(std::move(heartbeatHandler));
+}
 } // namespace firebolt::rialto::server

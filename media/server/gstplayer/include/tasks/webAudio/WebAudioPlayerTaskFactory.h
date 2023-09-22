@@ -48,6 +48,7 @@ public:
                                                    uint8_t *wrapPtr, uint32_t wrapLength) const override;
     std::unique_ptr<IPlayerTask> createHandleBusMessage(WebAudioPlayerContext &context, IGstWebAudioPlayerPrivate &player,
                                                         GstMessage *message) const override;
+    std::unique_ptr<IPlayerTask> createPing(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) const override;
 
 private:
     IGstWebAudioPlayerClient *m_client;

@@ -79,8 +79,21 @@ TEST_F(SessionServerAppManagerTests, SetSessionServerStateShouldReturnFalseWhenU
     sessionServerWillLaunch(firebolt::rialto::common::SessionServerState::INACTIVE);
     ASSERT_TRUE(triggerInitiateApplication(firebolt::rialto::common::SessionServerState::INACTIVE));
     sessionServerChangeStateWillFail(firebolt::rialto::common::SessionServerState::ACTIVE);
+    sessionServerWontBePreloaded();
+    sessionServerWillIndicateStateChange(firebolt::rialto::common::SessionServerState::ERROR);
     ASSERT_FALSE(triggerSetSessionServerState(firebolt::rialto::common::SessionServerState::ACTIVE));
     sessionServerWillKillRunningApplication();
+}
+
+TEST_F(SessionServerAppManagerTests, SetSessionServerStateToNotRunningShouldReturnFalseAndKillAppWhenUnableToSendMessage)
+{
+    sessionServerWillLaunch(firebolt::rialto::common::SessionServerState::INACTIVE);
+    ASSERT_TRUE(triggerInitiateApplication(firebolt::rialto::common::SessionServerState::INACTIVE));
+    sessionServerChangeStateWillFail(firebolt::rialto::common::SessionServerState::NOT_RUNNING);
+    sessionServerWillKillRunningApplication();
+    sessionServerWillIndicateStateChange(firebolt::rialto::common::SessionServerState::NOT_RUNNING);
+    clientWillBeRemoved();
+    ASSERT_FALSE(triggerSetSessionServerState(firebolt::rialto::common::SessionServerState::NOT_RUNNING));
 }
 
 TEST_F(SessionServerAppManagerTests, SetSessionServerStateShouldReturnTrueWhenStateIsChanged)
@@ -223,10 +236,21 @@ TEST_F(SessionServerAppManagerTests, SessionServerAppManagerShouldConfigure)
 
 TEST_F(SessionServerAppManagerTests, SessionServerAppManagerShouldHandleAck)
 {
+    constexpr bool kSuccess{true};
     sessionServerWillLaunch(firebolt::rialto::common::SessionServerState::INACTIVE);
     ASSERT_TRUE(triggerInitiateApplication(firebolt::rialto::common::SessionServerState::INACTIVE));
-    healthcheckServiceWillHandleAck();
-    triggerOnAck();
+    healthcheckServiceWillHandleAck(kSuccess);
+    triggerOnAck(kSuccess);
+    sessionServerWillKillRunningApplication();
+}
+
+TEST_F(SessionServerAppManagerTests, SessionServerAppManagerShouldHandleFailedAck)
+{
+    constexpr bool kSuccess{false};
+    sessionServerWillLaunch(firebolt::rialto::common::SessionServerState::INACTIVE);
+    ASSERT_TRUE(triggerInitiateApplication(firebolt::rialto::common::SessionServerState::INACTIVE));
+    healthcheckServiceWillHandleAck(kSuccess);
+    triggerOnAck(kSuccess);
     sessionServerWillKillRunningApplication();
 }
 

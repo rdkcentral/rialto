@@ -21,7 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_WEB_AUDIO_PLAYER_SERVER_INTERNAL_FACTORY_MOCK_H_
 
 #include "IWebAudioPlayer.h"
-#include "IWebAudioPlayerServerInternalFactory.h"
+#include "IWebAudioPlayerServerInternal.h"
 #include <gmock/gmock.h>
 #include <memory>
 #include <string>
@@ -35,7 +35,7 @@ public:
                 (std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType, const uint32_t priority,
                  const WebAudioConfig *config),
                 (const, override));
-    MOCK_METHOD(std::unique_ptr<IWebAudioPlayer>, createWebAudioPlayerServerInternal,
+    MOCK_METHOD(std::unique_ptr<IWebAudioPlayerServerInternal>, createWebAudioPlayerServerInternal,
                 (std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType, const uint32_t priority,
                  const WebAudioConfig *config, const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle),
                 (const, override));

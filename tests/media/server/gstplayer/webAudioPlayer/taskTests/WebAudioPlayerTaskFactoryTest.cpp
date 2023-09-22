@@ -22,11 +22,13 @@
 #include "GstWebAudioPlayerClientMock.h"
 #include "GstWebAudioPlayerPrivateMock.h"
 #include "GstWrapperMock.h"
+#include "HeartbeatHandlerMock.h"
 #include "WebAudioPlayerContext.h"
 #include "tasks/IPlayerTask.h"
 #include "tasks/webAudio/Eos.h"
 #include "tasks/webAudio/HandleBusMessage.h"
 #include "tasks/webAudio/Pause.h"
+#include "tasks/webAudio/Ping.h"
 #include "tasks/webAudio/Play.h"
 #include "tasks/webAudio/SetCaps.h"
 #include "tasks/webAudio/SetVolume.h"
@@ -118,4 +120,11 @@ TEST_F(WebAudioPlayerTaskFactoryTest, ShouldHandleBusMessage)
     auto task = m_sut.createHandleBusMessage(m_context, m_gstPlayer, &message);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::webaudio::HandleBusMessage &>(*task));
+}
+
+TEST_F(WebAudioPlayerTaskFactoryTest, ShouldCreatePing)
+{
+    auto task = m_sut.createPing(std::make_unique<StrictMock<firebolt::rialto::server::HeartbeatHandlerMock>>());
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::webaudio::Ping &>(*task));
 }

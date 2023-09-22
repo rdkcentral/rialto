@@ -51,6 +51,7 @@ public:
     MOCK_METHOD(bool, getVolume, (double &volume), (override));
     MOCK_METHOD(void, setMute, (bool mute), (override));
     MOCK_METHOD(bool, getMute, (bool &mute), (override));
+    MOCK_METHOD(void, ping, (std::unique_ptr<IHeartbeatHandler> && heartbeatHandler), (override));
 };
 } // namespace firebolt::rialto::server
 

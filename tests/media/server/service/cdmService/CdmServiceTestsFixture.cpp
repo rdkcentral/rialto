@@ -59,6 +59,7 @@ CdmServiceTests::CdmServiceTests()
       m_mediaKeysCapabilitiesMock{
           dynamic_cast<StrictMock<firebolt::rialto::MediaKeysCapabilitiesMock> &>(*m_mediaKeysCapabilities)},
       m_mediaKeysClientMock{std::make_shared<StrictMock<firebolt::rialto::MediaKeysClientMock>>()},
+      m_heartbeatProcedureMock{std::make_shared<StrictMock<firebolt::rialto::server::HeartbeatProcedureMock>>()},
       m_sut{m_mediaKeysFactoryMock, m_mediaKeysCapabilitiesFactoryMock}
 {
 }
@@ -103,6 +104,11 @@ void CdmServiceTests::triggerSwitchToActiveSuccess()
 void CdmServiceTests::triggerSwitchToInactive()
 {
     m_sut.switchToInactive();
+}
+
+void CdmServiceTests::triggerPing()
+{
+    m_sut.ping(m_heartbeatProcedureMock);
 }
 
 void CdmServiceTests::mediaKeysFactoryWillCreateMediaKeys()
@@ -225,6 +231,12 @@ void CdmServiceTests::mediaKeysWillCheckIfKeySystemIsPlayready(bool result)
 {
     EXPECT_CALL(m_mediaKeysMock, hasSession(keySessionId)).WillOnce(Return(true));
     EXPECT_CALL(m_mediaKeysMock, isPlayreadyKeySystem(keySessionId)).WillOnce(Return(result));
+}
+
+void CdmServiceTests::mediaKeysWillPing()
+{
+    EXPECT_CALL(*m_heartbeatProcedureMock, createHandler());
+    EXPECT_CALL(m_mediaKeysMock, ping(_));
 }
 
 void CdmServiceTests::createMediaKeysShouldSucceed()

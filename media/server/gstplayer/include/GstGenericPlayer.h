@@ -113,6 +113,7 @@ public:
     bool getVolume(double &volume) override;
     void setMute(bool mute) override;
     bool getMute(bool &mute) override;
+    void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) override;
 
 private:
     void scheduleNeedMediaData(GstAppSrc *src) override;

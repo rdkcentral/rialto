@@ -67,6 +67,7 @@ public:
     MOCK_METHOD(bool, isPlayreadyKeySystem, (int32_t keySessionId), (const, override));
     MOCK_METHOD(void, incrementSessionIdUsageCounter, (int32_t keySessionId), (override));
     MOCK_METHOD(void, decrementSessionIdUsageCounter, (int32_t keySessionId), (override));
+    MOCK_METHOD(void, ping, (std::unique_ptr<IHeartbeatHandler> && heartbeatHandler), (override));
 };
 } // namespace firebolt::rialto::server
 

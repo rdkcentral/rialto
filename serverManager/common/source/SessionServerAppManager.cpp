@@ -112,7 +112,7 @@ void SessionServerAppManager::onSessionServerStateChanged(int serverId,
     m_eventThread->add(&SessionServerAppManager::handleSessionServerStateChange, this, serverId, newState);
 }
 
-void SessionServerAppManager::sendPingEvents(int pingId) const
+void SessionServerAppManager::sendPingEvents(int pingId)
 {
     RIALTO_SERVER_MANAGER_LOG_DEBUG("Queue ping procedure with id: %d", pingId);
     m_eventThread->add(
@@ -123,8 +123,8 @@ void SessionServerAppManager::sendPingEvents(int pingId) const
                 auto serverId{sessionServer->getServerId()};
                 if (!m_ipcController->performPing(serverId, pingId))
                 {
-                    RIALTO_SERVER_MANAGER_LOG_WARN("Ping event (id: %d) sending failed for serverId: %d", pingId,
-                                                   serverId);
+                    RIALTO_SERVER_MANAGER_LOG_ERROR("Ping with id: %d failed for server: %d", pingId, serverId);
+                    handleSessionServerStateChange(serverId, firebolt::rialto::common::SessionServerState::ERROR);
                     continue;
                 }
                 m_healthcheckService->onPingSent(serverId, pingId);
@@ -258,6 +258,7 @@ bool SessionServerAppManager::changeSessionServerState(const std::string &appNam
     if (!m_ipcController->performSetState(sessionServer->getServerId(), newState))
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("Change state of %s to %s failed.", appName.c_str(), toString(newState));
+        handleStateChangeFailure(sessionServer, newState);
         return false;
     }
     RIALTO_SERVER_MANAGER_LOG_INFO("Change state of %s to %s succeeded.", appName.c_str(), toString(newState));
@@ -302,8 +303,14 @@ void SessionServerAppManager::handleSessionServerStateChange(int serverId,
 
 void SessionServerAppManager::handleAck(int serverId, int pingId, bool success)
 {
-    RIALTO_SERVER_MANAGER_LOG_INFO("Ping with id: %d %s for server: %d", pingId, (success ? "succeeded" : "failed"),
-                                   serverId);
+    if (success)
+    {
+        RIALTO_SERVER_MANAGER_LOG_DEBUG("Ping with id: %d succeeded for server: %d", pingId, serverId);
+    }
+    else
+    {
+        RIALTO_SERVER_MANAGER_LOG_ERROR("Ping with id: %d failed for server: %d", pingId, serverId);
+    }
     m_healthcheckService->onAckReceived(serverId, pingId, success);
 }
 
@@ -380,5 +387,20 @@ const std::unique_ptr<ISessionServerApp> &SessionServerAppManager::getServerById
         return *iter;
     }
     return kInvalidSessionServer;
+}
+
+void SessionServerAppManager::handleStateChangeFailure(const std::unique_ptr<ISessionServerApp> &sessionServer,
+                                                       const firebolt::rialto::common::SessionServerState &state)
+{
+    if (state == firebolt::rialto::common::SessionServerState::NOT_RUNNING)
+    {
+        RIALTO_SERVER_MANAGER_LOG_WARN("Force change of %s to NotRunning.", sessionServer->getAppName().c_str());
+        sessionServer->kill();
+        handleSessionServerStateChange(sessionServer->getServerId(), state);
+    }
+    else
+    {
+        handleSessionServerStateChange(sessionServer->getServerId(), firebolt::rialto::common::SessionServerState::ERROR);
+    }
 }
 } // namespace rialto::servermanager::common

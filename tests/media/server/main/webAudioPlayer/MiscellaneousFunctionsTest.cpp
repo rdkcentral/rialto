@@ -17,6 +17,7 @@
  * limitations under the License.
  */
 
+#include "HeartbeatHandlerMock.h"
 #include "WebAudioPlayerTestBase.h"
 
 class RialtoServerWebAudioPlayerMiscellaneousFunctionsTest : public WebAudioPlayerTestBase
@@ -156,4 +157,14 @@ TEST_F(RialtoServerWebAudioPlayerMiscellaneousFunctionsTest, getVolumeFailure)
 
     bool status = m_webAudioPlayer->getVolume(returnVolume);
     EXPECT_EQ(status, false);
+}
+
+/**
+ * Test that ping is forwarded to WebAudioGstPlayer
+ */
+TEST_F(RialtoServerWebAudioPlayerMiscellaneousFunctionsTest, ping)
+{
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, ping(_));
+    m_webAudioPlayer->ping(std::make_unique<StrictMock<firebolt::rialto::server::HeartbeatHandlerMock>>());
 }

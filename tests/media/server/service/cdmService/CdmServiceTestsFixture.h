@@ -21,6 +21,7 @@
 #define CDM_SERVICE_TESTS_FIXTURE_H_
 
 #include "CdmService.h"
+#include "HeartbeatProcedureMock.h"
 #include "MediaKeysCapabilitiesFactoryMock.h"
 #include "MediaKeysCapabilitiesMock.h"
 #include "MediaKeysClientMock.h"
@@ -63,6 +64,7 @@ public:
     void mediaKeysWillSelectKeyIdWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillNotFindMediaKeySession();
     void mediaKeysWillCheckIfKeySystemIsPlayready(bool result);
+    void mediaKeysWillPing();
 
     void mediaKeysCapabilitiesFactoryWillCreateMediaKeysCapabilities();
     void mediaKeysCapabilitiesFactoryWillReturnNullptr();
@@ -73,6 +75,7 @@ public:
 
     void triggerSwitchToActiveSuccess();
     void triggerSwitchToInactive();
+    void triggerPing();
 
     void createMediaKeysShouldSucceed();
     void createMediaKeysShouldFail();
@@ -119,6 +122,7 @@ private:
     std::shared_ptr<firebolt::rialto::IMediaKeysCapabilities> m_mediaKeysCapabilities;
     StrictMock<firebolt::rialto::MediaKeysCapabilitiesMock> &m_mediaKeysCapabilitiesMock;
     std::shared_ptr<StrictMock<firebolt::rialto::MediaKeysClientMock>> m_mediaKeysClientMock;
+    std::shared_ptr<StrictMock<firebolt::rialto::server::HeartbeatProcedureMock>> m_heartbeatProcedureMock;
     firebolt::rialto::server::service::CdmService m_sut;
 };
 
