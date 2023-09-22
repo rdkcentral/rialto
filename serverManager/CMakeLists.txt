@@ -61,7 +61,11 @@ if( RIALTO_ENABLE_CONFIG_FILE )
         set(RIALTO_CONFIG_FILE_DIR /etc/)
     endif()
 
-    if (NOT ENVIRONMENT_VARIABLES)
+    if ( ENVIRONMENT_VARIABLES)
+        # remove leading and trailing double quotes
+        string(REGEX MATCH "^\"(.*)\"$" _ ${ENVIRONMENT_VARIABLES})
+        set(ENVIRONMENT_VARIABLES "${CMAKE_MATCH_1}")
+    else()
         set( ENVIRONMENT_VARIABLES "\"WESTEROS_SINK_USE_ESSRMGR=1\"" )
     endif()
 
