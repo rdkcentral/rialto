@@ -465,12 +465,7 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: checkout repo
         uses: actions/checkout@v3
-        
-      # Installation of jsoncpp
-      - name: Install jsoncpp
-        run: |
-          sudo apt-get install libjsoncpp-dev
-          
+
       # Setup lcov 2.0
       - name: Install lcov library
         run: |
