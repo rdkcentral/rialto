@@ -333,11 +333,11 @@ TEST_F(ConfigReaderTests, logLevelSuccessfulParsing)
 
     EXPECT_TRUE(m_sut->read());
     rialto::servermanager::service::LoggingLevels loggingLevel{rialto::servermanager::service::LoggingLevel::MILESTONE,
-                                                              rialto::servermanager::service::LoggingLevel::MILESTONE,
-                                                              rialto::servermanager::service::LoggingLevel::MILESTONE,
-                                                              rialto::servermanager::service::LoggingLevel::MILESTONE,
-                                                              rialto::servermanager::service::LoggingLevel::MILESTONE,
-                                                              rialto::servermanager::service::LoggingLevel::MILESTONE};
+                                                               rialto::servermanager::service::LoggingLevel::MILESTONE,
+                                                               rialto::servermanager::service::LoggingLevel::MILESTONE,
+                                                               rialto::servermanager::service::LoggingLevel::MILESTONE,
+                                                               rialto::servermanager::service::LoggingLevel::MILESTONE,
+                                                               rialto::servermanager::service::LoggingLevel::MILESTONE};
 
     EXPECT_EQ(m_sut->getLoggingLevels().value().defaultLoggingLevel, loggingLevel.defaultLoggingLevel);
     EXPECT_EQ(m_sut->getLoggingLevels().value().clientLoggingLevel, loggingLevel.clientLoggingLevel);

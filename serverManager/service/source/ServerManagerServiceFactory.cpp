@@ -88,10 +88,10 @@ std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserv
                                                                                     sessionManagementSocketPermissions)),
                                                numOfPreloadedServers);
 
-    #ifdef RIALTO_ENABLE_CONFIG_FILE
+#ifdef RIALTO_ENABLE_CONFIG_FILE
     if (configReader->getLoggingLevels())
         service->setLogLevels(configReader->getLoggingLevels().value());
-    #endif
+#endif
     return service;
 }
 } // namespace rialto::servermanager::service
