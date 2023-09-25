@@ -27,8 +27,8 @@ name: cpplint
 on:
   # Wait for specified workflow to complete before running
   workflow_run:
-    workflows: [build_ut]
-    branches: ["master", "rdkcentral:master"]
+    workflows: [clang-format]
+    branches: ["Fix_gh_pages_generation", "rdkcentral:Fix_gh_pages_generation"]
     types: [completed]
 
   # Allows you to run this workflow manually from the Actions tab
