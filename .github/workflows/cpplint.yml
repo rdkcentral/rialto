@@ -28,7 +28,7 @@ on:
   # Wait for specified workflow to complete before running
   workflow_run:
     workflows: [clang-format]
-    branches: ["Fix_gh_pages_generation", "rdkcentral:Fix_gh_pages_generation"]
+    branches: [Fix_gh_pages_generation, rdkcentral:Fix_gh_pages_generation]
     types: [completed]
 
   # Allows you to run this workflow manually from the Actions tab
