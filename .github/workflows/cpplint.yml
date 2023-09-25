@@ -25,11 +25,11 @@ name: cpplint
 
 # Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "master" branch
-  push:
-    branches: [ "master", "rdkcentral:master" ]
-  pull_request:
-    branches: [ "master", "rdkcentral:master" ]
+  # Wait for specified workflow to complete before running
+  workflow_run:
+    workflows: [clang-format]
+    branches: ["Fix_gh_pages_generation", "rdkcentral:Fix_gh_pages_generation"]
+    types: [completed]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
