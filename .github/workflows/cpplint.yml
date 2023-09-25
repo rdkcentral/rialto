@@ -27,7 +27,7 @@ name: cpplint
 on:
   # Wait for specified workflow to complete before running
   workflow_run:
-    workflows: [clang-format]
+    workflows: [build_ut]
     types: [completed]
   
   # Triggers the workflow on push or pull request events but only for the "master" branch
