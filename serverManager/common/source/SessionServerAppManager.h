@@ -74,6 +74,8 @@ private:
     const std::unique_ptr<ISessionServerApp> &
     launchSessionServer(const std::string &appName, const firebolt::rialto::common::SessionServerState &initialState,
                         const firebolt::rialto::common::AppConfig &appConfig);
+    void handleStateChangeFailure(const std::unique_ptr<ISessionServerApp> &sessionServer,
+                                  const firebolt::rialto::common::SessionServerState &state);
     const std::unique_ptr<ISessionServerApp> &preloadSessionServer();
     const std::unique_ptr<ISessionServerApp> &getPreloadedServer() const;
     const std::unique_ptr<ISessionServerApp> &getServerByAppName(const std::string &appName) const;
