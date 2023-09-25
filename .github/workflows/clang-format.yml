@@ -27,9 +27,9 @@ name: clang-format
 on:
   # Triggers the workflow on push or pull request events but only for the "master" branch
   push:
-    branches: [ "Fix_gh_pages_generation", "rdkcentral:Fix_gh_pages_generation" ]
+    branches: [ "master", "rdkcentral:master" ]
   pull_request:
-    branches: [ "Fix_gh_pages_generation", "rdkcentral:Fix_gh_pages_generation" ]
+    branches: [ "master", "rdkcentral:master" ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
