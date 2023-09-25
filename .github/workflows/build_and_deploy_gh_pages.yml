@@ -24,7 +24,7 @@ on:
   # Wait for specified workflow to complete before running
   workflow_run:
     workflows: ["build_ut"]
-    branches: [master, rdkcentral:master]
+    branches: ["master", "rdkcentral:master"]
     types: [completed]
 
   # Allows you to run this workflow manually from the Actions tab
