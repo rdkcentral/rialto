@@ -85,6 +85,10 @@ if( RIALTO_ENABLE_CONFIG_FILE )
         set( NUM_OF_PRELOADED_SERVERS 0 )
     endif()
 
+    if (NOT LOG_LEVEL)
+        set( LOG_LEVEL 3 )
+    endif()
+
     configure_file(
         config/rialto-config.in.json
         rialto-config.json

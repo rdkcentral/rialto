@@ -24,6 +24,7 @@
 #include <list>
 #include <optional>
 #include <string>
+#include "LoggingLevels.h"
 
 namespace rialto::servermanager::service
 {
@@ -39,6 +40,7 @@ public:
     virtual std::optional<std::chrono::seconds> getHealthcheckInterval() = 0;
     virtual std::optional<firebolt::rialto::common::SocketPermissions> getSocketPermissions() = 0;
     virtual std::optional<unsigned int> getNumOfPreloadedServers() = 0;
+    virtual std::optional<rialto::servermanager::service::LoggingLevels> getLoggingLevels() = 0;
 };
 
 } // namespace rialto::servermanager::service

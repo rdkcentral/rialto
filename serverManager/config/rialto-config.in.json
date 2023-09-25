@@ -21,5 +21,6 @@
     "startup_timeout_ms" : @STARTUP_TIMEOUT_MS@,
     "healthcheck_interval_s" : @HEALTHCHECK_INTERVAL_S@,
     "socket_permissions" : @SOCKET_PERMISSIONS@,
-    "num_of_preloaded_servers" : @NUM_OF_PRELOADED_SERVERS@
+    "num_of_preloaded_servers" : @NUM_OF_PRELOADED_SERVERS@,
+    "log_level" : @LOG_LEVEL@
 }

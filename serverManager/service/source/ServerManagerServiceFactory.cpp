@@ -79,12 +79,19 @@ std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserv
         numOfPreloadedServers = configReader->getNumOfPreloadedServers().value();
 #endif
 
-    return std::make_unique<ServerManagerService>(std::make_unique<ServiceContext>(stateObserver, sessionServerEnvVars,
-                                                                                   sessionServerPath,
-                                                                                   sessionServerStartupTimeout,
-                                                                                   healthcheckInterval,
-                                                                                   convertSocketPermissions(
-                                                                                       sessionManagementSocketPermissions)),
-                                                  numOfPreloadedServers);
+    std::unique_ptr<IServerManagerService> service =
+        std::make_unique<ServerManagerService>(std::make_unique<ServiceContext>(stateObserver, sessionServerEnvVars,
+                                                                                sessionServerPath,
+                                                                                sessionServerStartupTimeout,
+                                                                                healthcheckInterval,
+                                                                                convertSocketPermissions(
+                                                                                    sessionManagementSocketPermissions)),
+                                               numOfPreloadedServers);
+
+    #ifdef RIALTO_ENABLE_CONFIG_FILE
+    if (configReader->getLoggingLevels())
+        service->setLogLevels(configReader->getLoggingLevels().value());
+    #endif
+    return service;
 }
 } // namespace rialto::servermanager::service

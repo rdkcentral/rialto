@@ -43,6 +43,7 @@ public:
     std::optional<std::chrono::seconds> getHealthcheckInterval() override;
     std::optional<firebolt::rialto::common::SocketPermissions> getSocketPermissions() override;
     std::optional<unsigned int> getNumOfPreloadedServers() override;
+    std::optional<rialto::servermanager::service::LoggingLevels> getLoggingLevels() override;
 
 private:
     std::shared_ptr<IJsonCppWrapper> m_jsonWrapper;
@@ -54,6 +55,7 @@ private:
     std::optional<std::chrono::seconds> m_healthcheckInterval;
     std::optional<firebolt::rialto::common::SocketPermissions> m_socketPermissions;
     std::optional<unsigned int> m_numOfPreloadedServers;
+    std::optional<rialto::servermanager::service::LoggingLevels> m_loggingLevels;
 };
 
 } // namespace rialto::servermanager::service

@@ -89,6 +89,38 @@ bool ConfigReader::read()
         m_numOfPreloadedServers = root->at("num_of_preloaded_servers")->asUInt();
     }
 
+    if (root->isMember("log_level") && root->at("log_level")->isUInt())
+    {
+        unsigned loggingLevel = root->at("log_level")->asUInt();
+        rialto::servermanager::service::LoggingLevel newLevel{rialto::servermanager::service::LoggingLevel::UNCHANGED};
+
+        switch (loggingLevel)
+        {
+        case 0:
+            newLevel = rialto::servermanager::service::LoggingLevel::FATAL;
+            break;
+        case 1:
+            newLevel = rialto::servermanager::service::LoggingLevel::ERROR;
+            break;
+        case 2:
+            newLevel = rialto::servermanager::service::LoggingLevel::WARNING;
+            break;
+        case 3:
+            newLevel = rialto::servermanager::service::LoggingLevel::MILESTONE;
+            break;
+        case 4:
+            newLevel = rialto::servermanager::service::LoggingLevel::INFO;
+            break;
+        case 5:
+            newLevel = rialto::servermanager::service::LoggingLevel::DEBUG;
+            break;
+        default:
+            newLevel = rialto::servermanager::service::LoggingLevel::UNCHANGED;
+            break;
+        }
+        m_loggingLevels = {newLevel, newLevel, newLevel, newLevel, newLevel, newLevel};
+    }
+
     return true;
 }
 
@@ -120,6 +152,11 @@ std::optional<firebolt::rialto::common::SocketPermissions> ConfigReader::getSock
 std::optional<unsigned int> ConfigReader::getNumOfPreloadedServers()
 {
     return m_numOfPreloadedServers;
+}
+
+std::optional<rialto::servermanager::service::LoggingLevels> ConfigReader::getLoggingLevels()
+{
+    return m_loggingLevels;
 }
 
 } // namespace rialto::servermanager::service
