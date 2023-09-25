@@ -61,12 +61,8 @@ if( RIALTO_ENABLE_CONFIG_FILE )
         set(RIALTO_CONFIG_FILE_DIR /etc/)
     endif()
 
-    if ( ENVIRONMENT_VARIABLES)
-        # remove leading and trailing double quotes
-        string(REGEX MATCH "^\"(.*)\"$" _ ${ENVIRONMENT_VARIABLES})
-        set(ENVIRONMENT_VARIABLES "${CMAKE_MATCH_1}")
-    else()
-        set( ENVIRONMENT_VARIABLES "\"WESTEROS_SINK_USE_ESSRMGR=1\"" )
+    if ( NOT ENVIRONMENT_VARIABLES)
+        set( ENVIRONMENT_VARIABLES "\"XDG_RUNTIME_DIR=/tmp\",\"WAYLAND_DISPLAY=westeros-rialto\",\"RIALTO_SINKS_RANK=0\",\"GST_REGISTRY=/tmp/rialto-server-gstreamer-cache.bin\",\"WESTEROS_SINK_USE_ESSRMGR=1\"" )
     endif()
 
     if (NOT SESSION_SERVER_PATH)
