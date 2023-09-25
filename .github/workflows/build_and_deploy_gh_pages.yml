@@ -21,6 +21,11 @@ name: build_and_deploy_gh_pages
 
 # Controls when the workflow will run
 on:
+  # Wait for specified workflow to complete before running
+  workflow_run:
+    workflows: [build_ut]
+    types: [completed]
+
   # Triggers the workflow on push to the "master" branch
   push:
     branches: [ "master", "rdkcentral:master" ]
@@ -58,14 +63,6 @@ jobs:
         run: |
           mkdir -p build/gh_pages
           doxygen
-
-      - name: Wait for coverage report generation
-        uses: lewagon/wait-on-check-action@v1.2.0
-        with:
-          ref: ${{ github.ref }}
-          check-name: 'Runs the coverage report'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          wait-interval: 20
 
       - name: Download Coverage Report
         uses: dawidd6/action-download-artifact@v2
