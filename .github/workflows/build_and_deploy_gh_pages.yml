@@ -23,7 +23,7 @@ name: build_and_deploy_gh_pages
 on:
   # Wait for specified workflow to complete before running
   workflow_run:
-    workflows: [build_ut]
+    workflows: ["build_ut"]
     branches: [master, rdkcentral:master]
     types: [completed]
 
