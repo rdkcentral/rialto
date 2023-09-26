@@ -34,7 +34,7 @@ class HealthcheckService : public IHealthcheckService
 public:
     HealthcheckService(ISessionServerAppManager &sessionServerAppManager,
                        const std::shared_ptr<firebolt::rialto::common::ITimerFactory> &timerFactory,
-                       std::chrono::seconds healthcheckInterval);
+                       std::chrono::seconds healthcheckInterval, unsigned numOfFailedPingsBeforeRecovery);
     ~HealthcheckService() override;
     void onPingSent(int serverId, int pingId) override;
     void onAckReceived(int serverId, int pingId, bool success) override;
@@ -45,6 +45,7 @@ private:
 
 private:
     ISessionServerAppManager &m_sessionServerAppManager;
+    const unsigned m_kNumOfFailedPingsBeforeRecovery;
     std::unique_ptr<firebolt::rialto::common::ITimer> m_healthcheckTimer;
     std::mutex m_mutex;
     int m_currentPingId;

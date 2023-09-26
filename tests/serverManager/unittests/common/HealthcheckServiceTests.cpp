@@ -41,6 +41,7 @@ constexpr std::chrono::seconds kHealthcheckFrequency{1};
 constexpr int kServerId{12};
 constexpr bool kSuccess{true};
 constexpr bool kFailure{false};
+constexpr unsigned kNumoFFailedPingsBeforeRecovery{2};
 } // namespace
 
 class HealthcheckServiceTests : public testing::Test
@@ -71,7 +72,7 @@ public:
     void createSut(std::chrono::seconds healthcheckInterval = kHealthcheckFrequency)
     {
         m_sut = std::make_unique<HealthcheckService>(m_sessionServerAppManagerMock, m_timerFactoryMock,
-                                                     healthcheckInterval);
+                                                     healthcheckInterval, kNumoFFailedPingsBeforeRecovery);
     }
 
     void triggerPingTimeout()
