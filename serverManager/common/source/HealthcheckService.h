@@ -23,6 +23,7 @@
 #include "IHealthcheckService.h"
 #include "ISessionServerAppManager.h"
 #include "ITimer.h"
+#include <map>
 #include <memory>
 #include <mutex>
 #include <set>
@@ -42,6 +43,7 @@ public:
 
 private:
     void sendPing();
+    void handleError(int serverId);
 
 private:
     ISessionServerAppManager &m_sessionServerAppManager;
@@ -50,6 +52,7 @@ private:
     std::mutex m_mutex;
     int m_currentPingId;
     std::set<int> m_remainingPings;
+    std::map<int, unsigned> m_failedPings;
 };
 } // namespace rialto::servermanager::common
 

@@ -65,6 +65,7 @@ void HealthcheckService::onPingSent(int serverId, int pingId)
         return;
     }
     m_remainingPings.insert(serverId);
+    m_failedPings.try_emplace(serverId, 0);
 }
 
 void HealthcheckService::onAckReceived(int serverId, int pingId, bool success)
@@ -78,11 +79,14 @@ void HealthcheckService::onAckReceived(int serverId, int pingId, bool success)
         return;
     }
     m_remainingPings.erase(serverId);
-    if (!success)
+    if (success)
+    {
+        m_failedPings[serverId] = 0;
+    }
+    else
     {
         RIALTO_SERVER_MANAGER_LOG_WARN("Ack with error received from server id: %d, ping id: %d", serverId, pingId);
-        m_sessionServerAppManager.onSessionServerStateChanged(serverId,
-                                                              firebolt::rialto::common::SessionServerState::ERROR);
+        handleError(serverId);
     }
 }
 
@@ -90,6 +94,7 @@ void HealthcheckService::onServerRemoved(int serverId)
 {
     std::unique_lock<std::mutex> lock{m_mutex};
     m_remainingPings.erase(serverId);
+    m_failedPings.erase(serverId);
 }
 
 void HealthcheckService::sendPing()
@@ -98,12 +103,26 @@ void HealthcheckService::sendPing()
     for (int serverId : m_remainingPings)
     {
         RIALTO_SERVER_MANAGER_LOG_WARN("Ping (id: %d) timeout for server id: %d", m_currentPingId, serverId);
-        m_sessionServerAppManager.onSessionServerStateChanged(serverId,
-                                                              firebolt::rialto::common::SessionServerState::ERROR);
+        handleError(serverId);
+                                                              
     }
     m_remainingPings.clear();
     m_currentPingId = generatePingId();
     RIALTO_SERVER_MANAGER_LOG_DEBUG("Start ping procedure with id: %d", m_currentPingId);
     m_sessionServerAppManager.sendPingEvents(m_currentPingId);
+}
+
+void HealthcheckService::handleError(int serverId)
+{
+    m_sessionServerAppManager.onSessionServerStateChanged(serverId,
+                                                          firebolt::rialto::common::SessionServerState::ERROR);
+    unsigned &failedPingsNum{m_failedPings[serverId]};
+    if (++failedPingsNum >= m_kNumOfFailedPingsBeforeRecovery)
+    {
+        RIALTO_SERVER_MANAGER_LOG_WARN("Max num of failed pings reached for server with id: %d. Starting recovery action",
+                                       serverId);
+        failedPingsNum = 0;
+        m_sessionServerAppManager.restartServer(serverId);
+    }
 }
 } // namespace rialto::servermanager::common

@@ -50,6 +50,7 @@ public:
     virtual void onAck(int serverId, int pingId, bool success) = 0;
     virtual std::string getAppConnectionInfo(const std::string &appName) const = 0;
     virtual bool setLogLevels(const service::LoggingLevels &logLevels) const = 0;
+    virtual bool restartServer(int serverId) = 0;
 };
 } // namespace rialto::servermanager::common
 

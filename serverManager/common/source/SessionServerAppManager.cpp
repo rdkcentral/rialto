@@ -175,6 +175,11 @@ bool SessionServerAppManager::setLogLevels(const service::LoggingLevels &logLeve
     return f.get();
 }
 
+bool SessionServerAppManager::restartServer(int serverId)
+{
+    return true;
+}
+
 bool SessionServerAppManager::connectSessionServer(const std::unique_ptr<ISessionServerApp> &sessionServer)
 {
     if (!sessionServer)

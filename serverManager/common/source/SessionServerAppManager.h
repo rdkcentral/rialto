@@ -58,6 +58,7 @@ public:
     void onAck(int serverId, int pingId, bool success) override;
     std::string getAppConnectionInfo(const std::string &appName) const override;
     bool setLogLevels(const service::LoggingLevels &logLevels) const override;
+    bool restartServer(int serverId) override;
 
 private:
     bool connectSessionServer(const std::unique_ptr<ISessionServerApp> &sessionServer);
