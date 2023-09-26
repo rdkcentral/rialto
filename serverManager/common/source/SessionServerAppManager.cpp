@@ -275,7 +275,13 @@ void SessionServerAppManager::handleSessionServerStateChange(int serverId,
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("SessionServer with id: %d changed state to %s", serverId, toString(newState));
     const auto &sessionServer{getServerById(serverId)};
+    if (!sessionServer)
+    {
+        RIALTO_SERVER_MANAGER_LOG_WARN("SessionServer with id: %d not found", serverId);
+        return;
+    }
     std::string appName{sessionServer->getAppName()};
+    sessionServer->setCurrentState(newState);
     if (!appName.empty() && m_stateObserver) // empty app name is when SessionServer is preloaded
     {
         m_stateObserver->stateChanged(appName, newState);

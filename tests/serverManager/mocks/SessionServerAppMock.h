@@ -50,6 +50,8 @@ public:
     MOCK_METHOD(int, getMaxWebAudioPlayers, (), (const, override));
     MOCK_METHOD(void, cancelStartupTimer, (), (override));
     MOCK_METHOD(void, kill, (), (const, override));
+    MOCK_METHOD(void, setCurrentState, (const firebolt::rialto::common::SessionServerState &state), (override));
+    MOCK_METHOD(firebolt::rialto::common::SessionServerState, getCurrentState, (), (const, override));
 };
 } // namespace rialto::servermanager::common
 

@@ -127,3 +127,11 @@ TEST_F(SessionServerAppTests, ShouldLaunchAppWithoutStartupTimer)
     EXPECT_TRUE(m_sut->launch());
     m_sut.reset();
 }
+
+TEST_F(SessionServerAppTests, ShouldStoreCurrentSessionServerState)
+{
+    createAppSutWithDisabledTimer(firebolt::rialto::common::AppConfig{kEmptyClientIpcSocketName, kClientDisplayName});
+    m_sut->setCurrentState(firebolt::rialto::common::SessionServerState::ACTIVE);
+    EXPECT_EQ(firebolt::rialto::common::SessionServerState::ACTIVE, m_sut->getCurrentState());
+    m_sut.reset();
+}
