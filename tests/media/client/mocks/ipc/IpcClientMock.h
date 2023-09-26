@@ -35,6 +35,7 @@ public:
     MOCK_METHOD(std::weak_ptr<ipc::IChannel>, getChannel, (), (override, const));
     MOCK_METHOD(std::shared_ptr<ipc::IBlockingClosure>, createBlockingClosure, (), (override));
     MOCK_METHOD(std::shared_ptr<google::protobuf::RpcController>, createRpcController, (), (override));
+    MOCK_METHOD(bool, reconnect, (), (override));
 };
 } // namespace firebolt::rialto::client
 

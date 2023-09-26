@@ -254,6 +254,7 @@ void SessionServerManagerTests::willFailToSetStateNotRunning()
 {
     EXPECT_CALL(m_playbackServiceMock, switchToInactive());
     EXPECT_CALL(m_cdmServiceMock, switchToInactive());
+    EXPECT_CALL(m_controlServiceMock, setApplicationState(ApplicationState::UNKNOWN));
     EXPECT_CALL(m_applicationManagementServerMock, sendStateChangedEvent(SessionServerState::NOT_RUNNING))
         .WillOnce(Return(false));
 }
@@ -262,6 +263,7 @@ void SessionServerManagerTests::willSetStateNotRunning()
 {
     EXPECT_CALL(m_playbackServiceMock, switchToInactive());
     EXPECT_CALL(m_cdmServiceMock, switchToInactive());
+    EXPECT_CALL(m_controlServiceMock, setApplicationState(ApplicationState::UNKNOWN));
     EXPECT_CALL(m_applicationManagementServerMock, sendStateChangedEvent(SessionServerState::NOT_RUNNING))
         .WillOnce(Return(true));
 }

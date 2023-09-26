@@ -58,6 +58,8 @@ public:
 
     std::shared_ptr<google::protobuf::RpcController> createRpcController() override;
 
+    bool reconnect() override;
+
 protected:
     /**
      * @brief The ipc thread.

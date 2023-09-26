@@ -143,9 +143,9 @@ void ControlModuleService::registerClient(::google::protobuf::RpcController *con
         done->Run();
         return;
     }
+    const auto kCurrentSchemaVersion{common::getCurrentSchemaVersion()};
     if (request->has_client_schema_version())
     {
-        const auto kCurrentSchemaVersion{common::getCurrentSchemaVersion()};
         const firebolt::rialto::common::SchemaVersion kClientSchemaVersion{request->client_schema_version().major(),
                                                                            request->client_schema_version().minor(),
                                                                            request->client_schema_version().patch()};
@@ -169,6 +169,9 @@ void ControlModuleService::registerClient(::google::protobuf::RpcController *con
     m_controlService.addControl(controlId, controlClient);
     m_controlIds[ipcClient].insert(controlId);
     response->set_control_handle(controlId);
+    response->mutable_server_schema_version()->set_major(kCurrentSchemaVersion.major());
+    response->mutable_server_schema_version()->set_minor(kCurrentSchemaVersion.minor());
+    response->mutable_server_schema_version()->set_patch(kCurrentSchemaVersion.patch());
     done->Run();
 }
 

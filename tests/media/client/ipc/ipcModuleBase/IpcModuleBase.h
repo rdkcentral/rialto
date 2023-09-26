@@ -58,8 +58,10 @@ protected:
     Sequence m_isConnectedSeq;
 
     void expectInitIpc();
+    void expectInitIpcWithReconnection();
     void expectInitIpcFailure();
     void expectInitIpcButAttachChannelFailure();
+    void expectInitIpcButNotConnectedChannelAfterReconnect();
     void expectAttachChannel();
     void expectIpcApiCallDisconnected();
     void expectIpcApiCallReconnected();

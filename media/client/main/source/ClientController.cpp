@@ -60,11 +60,6 @@ ClientController::ClientController(const std::shared_ptr<IControlIpcFactory> &Co
     {
         throw std::runtime_error("Failed to create the ControlIpc object");
     }
-
-    if (!m_controlIpc->registerClient())
-    {
-        throw std::runtime_error("Failed to register client");
-    }
 }
 
 ClientController::~ClientController()
@@ -89,6 +84,14 @@ bool ClientController::registerClient(IControlClient *client, ApplicationState &
     }
 
     std::lock_guard<std::mutex> lock{m_mutex};
+    if (ApplicationState::UNKNOWN == m_currentState)
+    {
+        if (!m_controlIpc->registerClient())
+        {
+            RIALTO_CLIENT_LOG_ERROR("Failed to register client");
+            return false;
+        }
+    }
     m_clientVec.insert(client);
     appState = m_currentState;
 
@@ -168,16 +171,12 @@ void ClientController::notifyApplicationState(ApplicationState state)
         break;
     }
     case ApplicationState::INACTIVE:
+    case ApplicationState::UNKNOWN:
     {
         // Inform clients before memory termination
         changeStateAndNotifyClients(state);
         termSharedMemory();
         break;
-    }
-    default:
-    {
-        RIALTO_CLIENT_LOG_ERROR("Invalid application state, %s", stateToString(state).c_str());
-        return;
     }
     }
 }
