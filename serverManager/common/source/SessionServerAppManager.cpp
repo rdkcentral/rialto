@@ -68,31 +68,34 @@ bool SessionServerAppManager::initiateApplication(const std::string &appName,
 {
     std::promise<bool> p;
     std::future<bool> f{p.get_future()};
-    m_eventThread->add(
-        [&]()
-        {
-            RIALTO_SERVER_MANAGER_LOG_INFO("RialtoServerManager requests to launch %s with initial state: %s",
-                                           appName.c_str(), toString(state));
-            if (state != firebolt::rialto::common::SessionServerState::NOT_RUNNING && !getServerByAppName(appName))
-            {
-                auto &preloadedServer{getPreloadedServer()};
-                if (preloadedServer)
-                {
-                    return p.set_value(configurePreloadedSessionServer(preloadedServer, appName, state, appConfig));
-                }
-                return p.set_value(connectSessionServer(launchSessionServer(appName, state, appConfig)));
-            }
-            else if (state == firebolt::rialto::common::SessionServerState::NOT_RUNNING)
-            {
-                RIALTO_SERVER_MANAGER_LOG_ERROR("Initialization of %s failed - wrong state", appName.c_str());
-            }
-            else
-            {
-                RIALTO_SERVER_MANAGER_LOG_ERROR("Initialization of %s failed. App is already launched", appName.c_str());
-            }
-            return p.set_value(false);
-        });
+    m_eventThread->add([&]() { return p.set_value(handleInitiateApplication(appName, state, appConfig)); });
     return f.get();
+}
+
+bool SessionServerAppManager::handleInitiateApplication(const std::string &appName,
+                                                        const firebolt::rialto::common::SessionServerState &state,
+                                                        const firebolt::rialto::common::AppConfig &appConfig)
+{
+    RIALTO_SERVER_MANAGER_LOG_INFO("RialtoServerManager requests to launch %s with initial state: %s", appName.c_str(),
+                                   toString(state));
+    if (state != firebolt::rialto::common::SessionServerState::NOT_RUNNING && !getServerByAppName(appName))
+    {
+        auto &preloadedServer{getPreloadedServer()};
+        if (preloadedServer)
+        {
+            return configurePreloadedSessionServer(preloadedServer, appName, state, appConfig);
+        }
+        return connectSessionServer(launchSessionServer(appName, state, appConfig));
+    }
+    else if (state == firebolt::rialto::common::SessionServerState::NOT_RUNNING)
+    {
+        RIALTO_SERVER_MANAGER_LOG_ERROR("Initialization of %s failed - wrong state", appName.c_str());
+    }
+    else
+    {
+        RIALTO_SERVER_MANAGER_LOG_ERROR("Initialization of %s failed. App is already launched", appName.c_str());
+    }
+    return false;
 }
 
 bool SessionServerAppManager::setSessionServerState(const std::string &appName,
@@ -183,6 +186,7 @@ void SessionServerAppManager::restartServer(int serverId)
 
 void SessionServerAppManager::handleRestartServer(int serverId)
 {
+    RIALTO_SERVER_MANAGER_LOG_DEBUG("Restarting server with id: %d", serverId);
     const auto &sessionServer{getServerById(serverId)};
     if (!sessionServer)
     {
@@ -199,7 +203,7 @@ void SessionServerAppManager::handleRestartServer(int serverId)
     handleSessionServerStateChange(serverId, firebolt::rialto::common::SessionServerState::NOT_RUNNING);
 
     // Finally, spawn the new app with old settings
-    initiateApplication(kAppName, kState, kAppConfig);
+    handleInitiateApplication(kAppName, kState, kAppConfig);
 }
 
 bool SessionServerAppManager::connectSessionServer(const std::unique_ptr<ISessionServerApp> &sessionServer)
