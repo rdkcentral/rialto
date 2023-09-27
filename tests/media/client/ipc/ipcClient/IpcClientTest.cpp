@@ -18,6 +18,7 @@
  */
 
 #include "IpcClient.h"
+#include "ConnectionObserverMock.h"
 #include "base/IpcClientTestBase.h"
 #include <memory>
 
@@ -89,5 +90,48 @@ TEST_F(IpcClientTest, UnexpectedDisconnect)
     {
     }
 
+    // On destruction IpcClient does not disconnect
+}
+
+TEST_F(IpcClientTest, UnexpectedDisconnectWithNotification)
+{
+    // Connect
+    expectCreateChannel();
+
+    // Exit the ipc loop, simulates an unexpected disconnect
+    int32_t ipcChannelCount = 0;
+    bool isProcessed = false;
+    StrictMock<firebolt::rialto::client::ConnectionObserverMock> connectionObserverMock;
+    EXPECT_CALL(*m_channelMock, process())
+        .WillOnce(Invoke(
+            [this, &ipcChannelCount, &isProcessed, &connectionObserverMock]()
+            {
+                m_sut->registerConnectionObserver(&connectionObserverMock);
+                std::unique_lock<std::mutex> locker(m_eventsLock);
+                ipcChannelCount = m_channelMock.use_count();
+                isProcessed = true;
+                m_eventsCond.notify_all();
+                return false;
+            }));
+
+    EXPECT_CALL(connectionObserverMock, onConnectionBroken());
+    EXPECT_NO_THROW(m_sut = std::make_unique<IpcClient>(m_channelFactoryMock, m_controllerFactoryMock,
+                                                        m_blockingClosureFactoryMock));
+
+    // Wait for process to set the ipcChannelCount
+    {
+        std::unique_lock<std::mutex> locker(m_eventsLock);
+        if (!isProcessed)
+        {
+            m_eventsCond.wait(locker);
+        }
+    }
+
+    // Wait for shared_ptr to be reset in ipc thread
+    while (m_channelMock.use_count() == ipcChannelCount)
+    {
+    }
+
+    m_sut->unregisterConnectionObserver();
     // On destruction IpcClient does not disconnect
 }

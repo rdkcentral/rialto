@@ -77,6 +77,7 @@ ControlIpc::ControlIpc(IControlClient *controlClient, IIpcClient &ipcClient,
     {
         throw std::runtime_error("Failed attach to the ipc channel");
     }
+    m_ipc.registerConnectionObserver(this);
 }
 
 ControlIpc::~ControlIpc()
@@ -86,6 +87,9 @@ ControlIpc::~ControlIpc()
 
     // destroy the thread processing async notifications
     m_eventThread.reset();
+
+    // unregister connection notifications to avoid crash
+    m_ipc.unregisterConnectionObserver();
 }
 
 bool ControlIpc::getSharedMemory(int32_t &fd, uint32_t &size)
@@ -216,6 +220,11 @@ bool ControlIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &ipcChan
     m_eventTags.push_back(eventTag);
 
     return true;
+}
+
+void ControlIpc::onConnectionBroken()
+{
+    m_controlClient->notifyApplicationState(ApplicationState::UNKNOWN);
 }
 
 void ControlIpc::onApplicationStateUpdated(const std::shared_ptr<firebolt::rialto::ApplicationStateChangeEvent> &event)

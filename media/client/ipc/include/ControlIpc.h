@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_CLIENT_CONTROL_IPC_H_
 #define FIREBOLT_RIALTO_CLIENT_CONTROL_IPC_H_
 
+#include "IConnectionObserver.h"
 #include "IControlClient.h"
 #include "IControlIpc.h"
 #include "IEventThread.h"
@@ -54,7 +55,7 @@ public:
 /**
  * @brief The definition of the ControlIpc.
  */
-class ControlIpc : public IControlIpc, public IpcModule
+class ControlIpc : public IControlIpc, public IpcModule, public IConnectionObserver
 {
 public:
     /**
@@ -74,6 +75,7 @@ public:
 private:
     bool createRpcStubs(const std::shared_ptr<ipc::IChannel> &ipcChannel) override;
     bool subscribeToEvents(const std::shared_ptr<ipc::IChannel> &ipcChannel) override;
+    void onConnectionBroken() override;
 
     /**
      * @brief Handler for a application state update from the server.

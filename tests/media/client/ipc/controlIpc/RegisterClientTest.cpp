@@ -89,6 +89,7 @@ TEST_F(ControlIpcRegisterClientTest, ChannelDisconnected)
     createControlIpc();
     expectIpcApiCallDisconnected();
     expectUnsubscribeEvents();
+    EXPECT_CALL(m_ipcClientMock, unregisterConnectionObserver());
 
     EXPECT_EQ(m_controlIpc->registerClient(), false);
 }

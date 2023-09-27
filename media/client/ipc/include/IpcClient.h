@@ -60,6 +60,10 @@ public:
 
     bool reconnect() override;
 
+    void registerConnectionObserver(IConnectionObserver *observer) override;
+
+    void unregisterConnectionObserver() override;
+
 protected:
     /**
      * @brief The ipc thread.
@@ -90,6 +94,16 @@ protected:
      * @brief Whether disconnection of ipc has been requested by the client and is ongoing.
      */
     std::atomic<bool> m_disconnecting;
+
+    /**
+     * @brief Connection observer mutex to avoid ptr modification during method call
+     */
+    std::mutex m_connectionObserverMutex;
+
+    /**
+     * @brief Current connection status observer
+     */
+    IConnectionObserver *m_connectionObserver;
 
     /**
      * @brief The processing loop for the ipc thread.

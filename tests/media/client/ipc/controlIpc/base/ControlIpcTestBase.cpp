@@ -50,6 +50,7 @@ void ControlIpcTestBase::createControlIpc()
     expectInitIpc();
     expectSubscribeEvents();
     EXPECT_CALL(*m_eventThreadFactoryMock, createEventThread(_)).WillOnce(Return(ByMove(std::move(m_eventThread))));
+    EXPECT_CALL(m_ipcClientMock, registerConnectionObserver(_));
 
     EXPECT_NO_THROW(
         m_controlIpc = std::make_shared<ControlIpc>(&m_controlClientMock, m_ipcClientMock, m_eventThreadFactoryMock));
@@ -58,6 +59,7 @@ void ControlIpcTestBase::createControlIpc()
 void ControlIpcTestBase::destroyControlIpc()
 {
     expectUnsubscribeEvents();
+    EXPECT_CALL(m_ipcClientMock, unregisterConnectionObserver());
 
     m_controlIpc.reset();
 }
