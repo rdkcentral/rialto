@@ -27,6 +27,7 @@ class IHealthcheckService
 public:
     virtual ~IHealthcheckService() = default;
     virtual void onPingSent(int serverId, int pingId) = 0;
+    virtual void onPingFailed(int serverId, int pingId) = 0;
     virtual void onAckReceived(int serverId, int pingId, bool success) = 0;
     virtual void onServerRemoved(int serverId) = 0;
 };

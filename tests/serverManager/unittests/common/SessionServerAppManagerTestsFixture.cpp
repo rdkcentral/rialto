@@ -341,10 +341,8 @@ void SessionServerAppManagerTests::pingWillBeSentToRunningApps()
 
 void SessionServerAppManagerTests::pingSendToRunningAppsWillFail()
 {
-    EXPECT_CALL(*m_stateObserver, stateChanged(kAppName, firebolt::rialto::common::SessionServerState::ERROR));
-    EXPECT_CALL(m_sessionServerAppMock, setCurrentState(firebolt::rialto::common::SessionServerState::ERROR));
-    EXPECT_CALL(m_sessionServerAppMock, isPreloaded()).WillOnce(Return(false));
     EXPECT_CALL(m_controllerMock, performPing(kServerId, kPingId)).WillOnce(Return(false));
+    EXPECT_CALL(m_healthcheckServiceMock, onPingFailed(kServerId, kPingId));
 }
 
 void SessionServerAppManagerTests::newSessionServerWillBeLaunched()

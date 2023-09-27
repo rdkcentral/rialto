@@ -124,7 +124,7 @@ void SessionServerAppManager::sendPingEvents(int pingId)
                 if (!m_ipcController->performPing(serverId, pingId))
                 {
                     RIALTO_SERVER_MANAGER_LOG_ERROR("Ping with id: %d failed for server: %d", pingId, serverId);
-                    handleSessionServerStateChange(serverId, firebolt::rialto::common::SessionServerState::ERROR);
+                    m_healthcheckService->onPingFailed(serverId, pingId);
                     continue;
                 }
                 m_healthcheckService->onPingSent(serverId, pingId);

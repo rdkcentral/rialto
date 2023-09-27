@@ -38,6 +38,7 @@ public:
                        std::chrono::seconds healthcheckInterval, unsigned numOfFailedPingsBeforeRecovery);
     ~HealthcheckService() override;
     void onPingSent(int serverId, int pingId) override;
+    void onPingFailed(int serverId, int pingId) override;
     void onAckReceived(int serverId, int pingId, bool success) override;
     void onServerRemoved(int serverId) override;
 

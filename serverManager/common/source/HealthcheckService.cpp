@@ -68,6 +68,28 @@ void HealthcheckService::onPingSent(int serverId, int pingId)
     m_failedPings.try_emplace(serverId, 0);
 }
 
+void HealthcheckService::onPingFailed(int serverId, int pingId)
+{
+    std::unique_lock<std::mutex> lock{m_mutex};
+    if (pingId != m_currentPingId)
+    {
+        RIALTO_SERVER_MANAGER_LOG_ERROR("Something went seriously wrong. Ping sent with wrong id to server: %d, valid "
+                                        "ping id: %d, sent pingId: %d",
+                                        serverId, m_currentPingId, pingId);
+        return;
+    }
+    if (m_failedPings.end() != m_failedPings.find(serverId))
+    {
+        handleError(serverId);
+    }
+    else
+    {
+        m_sessionServerAppManager.onSessionServerStateChanged(serverId,
+                                                              firebolt::rialto::common::SessionServerState::ERROR);
+        m_failedPings.emplace(serverId, 1);
+    }
+}
+
 void HealthcheckService::onAckReceived(int serverId, int pingId, bool success)
 {
     std::unique_lock<std::mutex> lock{m_mutex};
@@ -104,7 +126,6 @@ void HealthcheckService::sendPing()
     {
         RIALTO_SERVER_MANAGER_LOG_WARN("Ping (id: %d) timeout for server id: %d", m_currentPingId, serverId);
         handleError(serverId);
-                                                              
     }
     m_remainingPings.clear();
     m_currentPingId = generatePingId();
@@ -114,13 +135,12 @@ void HealthcheckService::sendPing()
 
 void HealthcheckService::handleError(int serverId)
 {
-    m_sessionServerAppManager.onSessionServerStateChanged(serverId,
-                                                          firebolt::rialto::common::SessionServerState::ERROR);
+    m_sessionServerAppManager.onSessionServerStateChanged(serverId, firebolt::rialto::common::SessionServerState::ERROR);
     unsigned &failedPingsNum{m_failedPings[serverId]};
     if (++failedPingsNum >= m_kNumOfFailedPingsBeforeRecovery)
     {
-        RIALTO_SERVER_MANAGER_LOG_WARN("Max num of failed pings reached for server with id: %d. Starting recovery action",
-                                       serverId);
+        RIALTO_SERVER_MANAGER_LOG_WARN(
+            "Max num of failed pings reached for server with id: %d. Starting recovery action", serverId);
         failedPingsNum = 0;
         m_sessionServerAppManager.restartServer(serverId);
     }

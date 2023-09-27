@@ -69,10 +69,7 @@ public:
         EXPECT_CALL(m_sessionServerAppManagerMock, onSessionServerStateChanged(kServerId, SessionServerState::ERROR));
     }
 
-    void serverRestartWillBeRequested()
-    {
-        EXPECT_CALL(m_sessionServerAppManagerMock, restartServer(kServerId));
-    }
+    void serverRestartWillBeRequested() { EXPECT_CALL(m_sessionServerAppManagerMock, restartServer(kServerId)); }
 
     void createSut(std::chrono::seconds healthcheckInterval = kHealthcheckFrequency)
     {
@@ -87,6 +84,8 @@ public:
     }
 
     void triggerOnPingSent(int pingId) { m_sut->onPingSent(kServerId, pingId); }
+
+    void triggerOnPingFailed(int pingId) { m_sut->onPingFailed(kServerId, pingId); }
 
     void triggerOnServerRemoved() { m_sut->onServerRemoved(kServerId); }
 
@@ -238,6 +237,22 @@ TEST_F(HealthcheckServiceTests, WillStartRecoveryActionWhenFailAckIsReceivedTooM
     triggerPingTimeout();
 }
 
+TEST_F(HealthcheckServiceTests, WillStartRecoveryActionWhenPingFailsToBeSentTooManyTimes)
+{
+    int pingId{-1};
+    timerWillBeCreated();
+    createSut();
+    pingWillBeSent(pingId);
+    triggerPingTimeout();
+    errorIndicationWillBeSent();
+    triggerOnPingFailed(pingId);
+    pingWillBeSent(pingId);
+    triggerPingTimeout();
+    errorIndicationWillBeSent();
+    serverRestartWillBeRequested();
+    triggerOnPingFailed(pingId);
+}
+
 TEST_F(HealthcheckServiceTests, WillRecoveryActionCounterShouldBeResetWhenSuccessAckIsReceived)
 {
     int pingId{-1};
@@ -258,4 +273,15 @@ TEST_F(HealthcheckServiceTests, WillRecoveryActionCounterShouldBeResetWhenSucces
     pingWillBeSent(pingId);
     triggerPingTimeout();
     // There should be only error indication, without recovery action here.
+}
+
+TEST_F(HealthcheckServiceTests, WillFailToFailPingWithWrongId)
+{
+    int pingId{-1};
+    timerWillBeCreated();
+    createSut();
+    pingWillBeSent(pingId);
+    triggerPingTimeout();
+    // There should be no error indication here.
+    triggerOnPingFailed(pingId + 1);
 }
