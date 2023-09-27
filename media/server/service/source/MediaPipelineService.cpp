@@ -366,8 +366,9 @@ void MediaPipelineService::ping(const std::shared_ptr<IHeartbeatProcedure> &hear
 {
     RIALTO_SERVER_LOG_DEBUG("Ping requested");
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
-    for (const auto &[_, mediaPipeline] : m_mediaPipelines)
+    for (const auto &mediaPipelinePair : m_mediaPipelines)
     {
+        auto &mediaPipeline = mediaPipelinePair.second;
         mediaPipeline->ping(heartbeatProcedure->createHandler());
     }
 }

@@ -90,13 +90,13 @@ ControlIpc::~ControlIpc()
 
 bool ControlIpc::getSharedMemory(int32_t &fd, uint32_t &size)
 {
-    std::shared_ptr<::firebolt::rialto::ControlModule_Stub> controlStub = m_controlStub;
-
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
         return false;
     }
+
+    std::shared_ptr<::firebolt::rialto::ControlModule_Stub> controlStub = m_controlStub;
 
     firebolt::rialto::GetSharedMemoryRequest request;
 
@@ -124,13 +124,13 @@ bool ControlIpc::getSharedMemory(int32_t &fd, uint32_t &size)
 bool ControlIpc::registerClient()
 {
     const auto kCurrentSchemaVersion{common::getCurrentSchemaVersion()};
-    std::shared_ptr<::firebolt::rialto::ControlModule_Stub> controlStub = m_controlStub;
 
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
         return false;
     }
+    std::shared_ptr<::firebolt::rialto::ControlModule_Stub> controlStub = m_controlStub;
 
     firebolt::rialto::RegisterClientRequest request;
     firebolt::rialto::RegisterClientResponse response;

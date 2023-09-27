@@ -62,6 +62,7 @@ TEST_F(RialtoClientCreateMediaKeysCapabilitiesIpcTest, CreateIpcChannelDisconnec
 {
     EXPECT_CALL(m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock));
     EXPECT_CALL(*m_channelMock, isConnected()).WillOnce(Return(false));
+    EXPECT_CALL(m_ipcClientMock, reconnect()).WillOnce(Return(false));
 
     EXPECT_THROW(m_mediaKeysCapabilitiesIpc = std::make_unique<MediaKeysCapabilitiesIpc>(m_ipcClientMock),
                  std::runtime_error);

@@ -99,6 +99,13 @@ public:
      * @retval the rpc controller or null on error.
      */
     virtual std::shared_ptr<google::protobuf::RpcController> createRpcController() = 0;
+
+    /**
+     * @brief Reconnect channel.
+     *
+     * @retval true on success.
+     */
+    virtual bool reconnect() = 0;
 };
 
 }; // namespace firebolt::rialto::client
