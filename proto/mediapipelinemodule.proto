@@ -44,8 +44,8 @@ option cc_generic_services = true;
  * @returns a unique numeric session id value that should be used for all subsequent operations on the session.
  */
 message CreateSessionRequest {
-    optional uint32 max_width = 1 [default = 0];
-    optional uint32 max_height = 2 [default = 0];
+    optional uint32 max_width = 1;
+    optional uint32 max_height = 2;
 }
 message CreateSessionResponse {
     optional int32 session_id = 1 [default = -1];
@@ -83,9 +83,9 @@ message LoadRequest {
     }
 
     optional int32      session_id = 1 [default = -1];
-    optional MediaType  type = 2 [default = UNKNOWN];
-    optional string     mime_type = 3 [default = " "];
-    optional string     url = 4 [default = " "];
+    optional MediaType  type = 2;
+    optional string     mime_type = 3;
+    optional string     url = 4;
 }
 message LoadResponse {
 }
@@ -130,7 +130,7 @@ message AttachSourceRequest {
     message AudioConfig {
         optional uint32 number_of_channels = 1;   ///< The number of channels.
         optional uint32 sample_rate = 2;         ///< The sampling rate.
-        optional bytes codec_specific_config = 3 [default = ""]; ///The audio specific config. Zero length if no specific config
+        optional bytes codec_specific_config = 3; ///The audio specific config. Zero length if no specific config
     }
 
     message CodecData {
@@ -138,21 +138,21 @@ message AttachSourceRequest {
             BUFFER = 1;
             STRING = 2;
         }
-        optional bytes data = 1 [default = ""]; /* Buffer containing updated codec data for video segments */
+        optional bytes data = 1; /* Buffer containing updated codec data for video segments */
         optional Type type = 2;  /* Type of data */
     }
 
     optional int32 session_id = 1 [default = -1];
-    optional ConfigType config_type = 2 [default = CONFIG_TYPE_UNKNOWN];
-    optional string mime_type = 3 [default = ""];
-    optional bool has_drm = 4 [default = false];
-    optional int32 width = 5 [default = 0];
-    optional int32 height = 6 [default = 0];
-    optional SegmentAlignment segment_alignment = 7 [default = ALIGNMENT_UNDEFINED]; /* Segment alignment can be specified for H264/H265, will use NAL if not set */
+    optional ConfigType config_type = 2;
+    optional string mime_type = 3;
+    optional bool has_drm = 4;
+    optional int32 width = 5;
+    optional int32 height = 6;
+    optional SegmentAlignment segment_alignment = 7; /* Segment alignment can be specified for H264/H265, will use NAL if not set */
     optional AudioConfig audio_config = 8;
     optional CodecData codec_data = 9;
-    optional StreamFormat stream_format = 10  [default = STREAM_FORMAT_UNDEFINED];
-    optional uint32 dolby_vision_profile = 11 [default = 0]; /* Server side data type is an int32_t and client side data type is a uint32_t, not sure which one to change (client side or server side) */
+    optional StreamFormat stream_format = 10;
+    optional uint32 dolby_vision_profile = 11; 
 
 }
 message AttachSourceResponse {
@@ -200,10 +200,10 @@ message AllSourcesAttachedResponse {
  */
 message SetVideoWindowRequest {
     optional int32 session_id = 1 [default = -1];
-    optional uint32 x = 2 [default = 0];
-    optional uint32 y = 3 [default = 0];
-    optional uint32 width = 4 [default = 0];
-    optional uint32 height = 5 [default = 0];
+    optional uint32 x = 2;
+    optional uint32 y = 3;
+    optional uint32 width = 4;
+    optional uint32 height = 5;
 }
 message SetVideoWindowResponse {
 }
@@ -306,7 +306,7 @@ message GetPositionResponse {
  */
 message SetPlaybackRateRequest {
     optional int32 session_id = 1 [default = -1];
-    optional double rate = 2 [default = 0];
+    optional double rate = 2;
 }
 message SetPlaybackRateResponse {
 }
@@ -331,9 +331,9 @@ message HaveDataRequest {
     };
 
     optional int32 session_id = 1 [default = -1];
-    optional MediaSourceStatus status = 2 [default = UNKNOWN];
-    optional uint32 num_frames = 3 [default = 0];
-    optional uint32 request_id = 4 [default = 0];
+    optional MediaSourceStatus status = 2;
+    optional uint32 num_frames = 3;
+    optional uint32 request_id = 4;
 }
 message HaveDataResponse {
 }
@@ -360,7 +360,7 @@ message RenderFrameResponse {
  */
 message SetVolumeRequest {
     optional int32 session_id = 1 [default = -1];
-    optional double volume = 2 [default = 0];
+    optional double volume = 2 [default = -1];
 }
 message SetVolumeResponse {
 }
@@ -378,7 +378,7 @@ message GetVolumeRequest {
     optional int32 session_id = 1 [default = -1];
 }
 message GetVolumeResponse {
-    optional double volume = 1 [default = 0];
+    optional double volume = 1 [default = -1];
 }
 
 /**
@@ -391,7 +391,7 @@ message GetVolumeResponse {
  */
 message SetMuteRequest {
     optional int32 session_id = 1 [default = -1];
-    optional bool mute = 2 [default = false];
+    optional bool mute = 2;
 }
 message SetMuteResponse {
 }
@@ -409,7 +409,7 @@ message GetMuteRequest {
     optional int32 session_id = 1 [default = -1];
 }
 message GetMuteResponse {
-    optional bool mute = 1 [default = false];
+    optional bool mute = 1;
 }
 
 /**
@@ -434,7 +434,7 @@ message PlaybackStateChangeEvent {
     }
 
     optional int32 session_id = 1 [default = -1];
-    optional PlaybackState state = 2 [default = UNKNOWN];
+    optional PlaybackState state = 2;
 }
 
 /**
@@ -459,7 +459,7 @@ message NetworkStateChangeEvent {
     }
 
     optional int32 session_id = 1 [default = -1];
-    optional NetworkState state = 2 [default = UNKNOWN];
+    optional NetworkState state = 2;
 }
 
 /**
@@ -489,17 +489,17 @@ message PositionChangeEvent {
 message NeedMediaDataEvent {
 
     message MediaPlayerShmInfo {
-        optional uint32 max_metadata_bytes = 1 [default = 0];
-        optional uint32 metadata_offset = 2 [default = 0];
-        optional uint32 media_data_offset = 3 [default = 0];
-        optional uint32 max_media_bytes = 4 [default = 0];
+        optional uint32 max_metadata_bytes = 1;
+        optional uint32 metadata_offset = 2;
+        optional uint32 media_data_offset = 3;
+        optional uint32 max_media_bytes = 4;
     }
 
     optional int32 session_id = 1 [default = -1];
     optional int32 source_id = 2 [default = -1];
-    optional uint32 request_id = 3 [default = 0];
+    optional uint32 request_id = 3;
 
-    optional uint32 frame_count = 4 [default = 0];
+    optional uint32 frame_count = 4;
     optional MediaPlayerShmInfo shm_info = 5;
 }
 
@@ -515,8 +515,8 @@ message NeedMediaDataEvent {
 message QosEvent {
 
     message QosInfo {
-        optional uint64 processed = 1 [default = 0];
-        optional uint64 dropped = 2 [default = 0];
+        optional uint64 processed = 1;
+        optional uint64 dropped = 2;
     }
 
     optional int32 session_id = 1 [default = -1];
@@ -547,10 +547,10 @@ message BufferUnderflowEvent {
  *
  */
 message SetLogLevelsEvent {
-    optional uint32 defaultLogLevels = 1 [default = 0];
-    optional uint32 clientLogLevels = 2 [default = 0];
-    optional uint32 ipcLogLevels = 3 [default = 0];
-    optional uint32 commonLogLevels = 4 [default = 0];
+    optional uint32 defaultLogLevels = 1;
+    optional uint32 clientLogLevels = 2;
+    optional uint32 ipcLogLevels = 3;
+    optional uint32 commonLogLevels = 4;
 }
 
 service MediaPipelineModule {
