@@ -175,9 +175,31 @@ bool SessionServerAppManager::setLogLevels(const service::LoggingLevels &logLeve
     return f.get();
 }
 
-bool SessionServerAppManager::restartServer(int serverId)
+void SessionServerAppManager::restartServer(int serverId)
 {
-    return true;
+    RIALTO_SERVER_MANAGER_LOG_DEBUG("Queue restart server handling for serverId: %d", serverId);
+    m_eventThread->add(&SessionServerAppManager::handleRestartServer, this, serverId);
+}
+
+void SessionServerAppManager::handleRestartServer(int serverId)
+{
+    const auto &sessionServer{getServerById(serverId)};
+    if (!sessionServer)
+    {
+        RIALTO_SERVER_MANAGER_LOG_WARN("Unable to restart server, serverId: %d", serverId);
+        return;
+    }
+    // First, get all needed information from current app
+    const std::string kAppName{sessionServer->getAppName()};
+    const firebolt::rialto::common::SessionServerState kState{sessionServer->getCurrentState()};
+    const firebolt::rialto::common::AppConfig kAppConfig{sessionServer->getSessionManagementSocketName(),
+                                                         sessionServer->getClientDisplayName()};
+    // Then kill the app
+    sessionServer->kill();
+    handleSessionServerStateChange(serverId, firebolt::rialto::common::SessionServerState::NOT_RUNNING);
+
+    // Finally, spawn the new app with old settings
+    initiateApplication(kAppName, kState, kAppConfig);
 }
 
 bool SessionServerAppManager::connectSessionServer(const std::unique_ptr<ISessionServerApp> &sessionServer)

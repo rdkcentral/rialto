@@ -58,7 +58,7 @@ public:
     void onAck(int serverId, int pingId, bool success) override;
     std::string getAppConnectionInfo(const std::string &appName) const override;
     bool setLogLevels(const service::LoggingLevels &logLevels) const override;
-    bool restartServer(int serverId) override;
+    void restartServer(int serverId) override;
 
 private:
     bool connectSessionServer(const std::unique_ptr<ISessionServerApp> &sessionServer);
@@ -81,6 +81,7 @@ private:
     const std::unique_ptr<ISessionServerApp> &getPreloadedServer() const;
     const std::unique_ptr<ISessionServerApp> &getServerByAppName(const std::string &appName) const;
     const std::unique_ptr<ISessionServerApp> &getServerById(int serverId) const;
+    void handleRestartServer(int serverId);
 
 private:
     std::unique_ptr<ipc::IController> &m_ipcController;

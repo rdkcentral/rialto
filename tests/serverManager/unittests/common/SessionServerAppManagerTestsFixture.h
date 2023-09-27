@@ -71,6 +71,7 @@ public:
     void pingSendToRunningAppsWillFail();
     void clientWillBeRemoved();
     void sessionServerWillIndicateStateChange(const firebolt::rialto::common::SessionServerState &state);
+    void sessionServerWillBeRestarted(const firebolt::rialto::common::SessionServerState &state);
 
     void triggerPreloadSessionServers();
     bool triggerInitiateApplication(const firebolt::rialto::common::SessionServerState &state);
@@ -80,6 +81,7 @@ public:
     std::string triggerGetAppConnectionInfo();
     bool triggerSetLogLevel();
     void triggerSendPingEvents();
+    void triggerRestartServer();
 
 private:
     std::unique_ptr<rialto::servermanager::ipc::IController> m_controller;
