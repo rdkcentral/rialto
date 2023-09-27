@@ -72,6 +72,7 @@ public:
     void clientWillBeRemoved();
     void sessionServerWillIndicateStateChange(const firebolt::rialto::common::SessionServerState &state);
     void sessionServerWillBeRestarted(const firebolt::rialto::common::SessionServerState &state);
+    void sessionServerWillRestartWillBeSkipped();
 
     void triggerPreloadSessionServers();
     bool triggerInitiateApplication(const firebolt::rialto::common::SessionServerState &state);

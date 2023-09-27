@@ -283,3 +283,14 @@ TEST_F(SessionServerAppManagerTests, SessionServerShouldRestart)
     sessionServerWillBeRestarted(firebolt::rialto::common::SessionServerState::INACTIVE);
     triggerRestartServer();
 }
+
+TEST_F(SessionServerAppManagerTests, SessionServerShouldSkipRestart)
+{
+    sessionServerWillLaunch(firebolt::rialto::common::SessionServerState::INACTIVE);
+    ASSERT_TRUE(triggerInitiateApplication(firebolt::rialto::common::SessionServerState::INACTIVE));
+    sessionServerWillChangeStateToUninitialized();
+    triggerOnSessionServerStateChanged(firebolt::rialto::common::SessionServerState::UNINITIALIZED);
+    sessionServerWillRestartWillBeSkipped();
+    triggerRestartServer();
+    sessionServerWillKillRunningApplication();
+}

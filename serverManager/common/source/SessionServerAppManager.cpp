@@ -186,7 +186,6 @@ void SessionServerAppManager::restartServer(int serverId)
 
 void SessionServerAppManager::handleRestartServer(int serverId)
 {
-    RIALTO_SERVER_MANAGER_LOG_DEBUG("Restarting server with id: %d", serverId);
     const auto &sessionServer{getServerById(serverId)};
     if (!sessionServer)
     {
@@ -195,9 +194,16 @@ void SessionServerAppManager::handleRestartServer(int serverId)
     }
     // First, get all needed information from current app
     const std::string kAppName{sessionServer->getAppName()};
-    const firebolt::rialto::common::SessionServerState kState{sessionServer->getCurrentState()};
+    const firebolt::rialto::common::SessionServerState kState{sessionServer->getExpectedState()};
     const firebolt::rialto::common::AppConfig kAppConfig{sessionServer->getSessionManagementSocketName(),
                                                          sessionServer->getClientDisplayName()};
+    if (firebolt::rialto::common::SessionServerState::INACTIVE != kState &&
+        firebolt::rialto::common::SessionServerState::ACTIVE != kState)
+    {
+        RIALTO_SERVER_MANAGER_LOG_DEBUG("Restart server to %s not needed for serverId: %d", toString(kState), serverId);
+        return;
+    }
+    RIALTO_SERVER_MANAGER_LOG_DEBUG("Restarting server with id: %d", serverId);
     // Then kill the app
     sessionServer->kill();
     handleSessionServerStateChange(serverId, firebolt::rialto::common::SessionServerState::NOT_RUNNING);
@@ -286,6 +292,7 @@ bool SessionServerAppManager::changeSessionServerState(const std::string &appNam
                                         toString(newState));
         return false;
     }
+    sessionServer->setExpectedState(newState);
     if (!m_ipcController->performSetState(sessionServer->getServerId(), newState))
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("Change state of %s to %s failed.", appName.c_str(), toString(newState));
@@ -307,7 +314,6 @@ void SessionServerAppManager::handleSessionServerStateChange(int serverId,
         return;
     }
     std::string appName{sessionServer->getAppName()};
-    sessionServer->setCurrentState(newState);
     if (!appName.empty() && m_stateObserver) // empty app name is when SessionServer is preloaded
     {
         m_stateObserver->stateChanged(appName, newState);
