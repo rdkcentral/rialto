@@ -52,9 +52,9 @@ std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserv
     std::string sessionServerPath = config.sessionServerPath;
     std::chrono::milliseconds sessionServerStartupTimeout = config.sessionServerStartupTimeout;
     std::chrono::seconds healthcheckInterval = config.healthcheckInterval;
-    firebolt::rialto::common::SocketPermissions sessionManagementSocketPermissions =
-        config.sessionManagementSocketPermissions;
+    firebolt::rialto::common::SocketPermissions socketPermissions = config.sessionManagementSocketPermissions;
     unsigned int numOfPreloadedServers = config.numOfPreloadedServers;
+
 #ifdef RIALTO_ENABLE_CONFIG_FILE
     std::unique_ptr<IConfigReaderFactory> configReaderFactory = std::make_unique<ConfigReaderFactory>();
     std::shared_ptr<IConfigReader> configReader = configReaderFactory->createConfigReader();
@@ -73,7 +73,7 @@ std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserv
         healthcheckInterval = configReader->getHealthcheckInterval().value();
 
     if (configReader->getSocketPermissions())
-        sessionManagementSocketPermissions = configReader->getSocketPermissions().value();
+        socketPermissions = configReader->getSocketPermissions().value();
 
     if (configReader->getNumOfPreloadedServers())
         numOfPreloadedServers = configReader->getNumOfPreloadedServers().value();
@@ -85,7 +85,7 @@ std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserv
                                                                                 sessionServerStartupTimeout,
                                                                                 healthcheckInterval,
                                                                                 convertSocketPermissions(
-                                                                                    sessionManagementSocketPermissions)),
+                                                                                    socketPermissions)),
                                                numOfPreloadedServers);
 
 #ifdef RIALTO_ENABLE_CONFIG_FILE

@@ -45,6 +45,19 @@ bool ConfigReader::read()
         return false;
     }
 
+    parseEnvironmentVariables(root);
+    parseSessionServerPath(root);
+    parseSessionServerStartupTimeout(root);
+    parseHealthcheckInterval(root);
+    parseSocketPermissions(root);
+    parseNumOfPreloadedServers(root);
+    parseLogLevel(root);
+
+    return true;
+}
+
+void ConfigReader::parseEnvironmentVariables(std::shared_ptr<IJsonValueWrapper> root)
+{
     if (root->isMember("environment_variables") && root->at("environment_variables")->isArray())
     {
         std::shared_ptr<IJsonValueWrapper> envVarsJson = root->at("environment_variables");
@@ -57,22 +70,34 @@ bool ConfigReader::read()
             }
         }
     }
+}
 
+void ConfigReader::parseSessionServerPath(std::shared_ptr<IJsonValueWrapper> root)
+{
     if (root->isMember("session_server_path") && root->at("session_server_path")->isString())
     {
         m_sessionServerPath = root->at("session_server_path")->asString();
     }
+}
 
+void ConfigReader::parseSessionServerStartupTimeout(std::shared_ptr<IJsonValueWrapper> root)
+{
     if (root->isMember("startup_timeout_ms") && root->at("startup_timeout_ms")->isUInt())
     {
         m_sessionServerStartupTimeout = std::chrono::milliseconds(root->at("startup_timeout_ms")->asUInt());
     }
+}
 
+void ConfigReader::parseHealthcheckInterval(std::shared_ptr<IJsonValueWrapper> root)
+{
     if (root->isMember("healthcheck_interval_s") && root->at("healthcheck_interval_s")->isUInt())
     {
         m_healthcheckInterval = std::chrono::seconds(root->at("healthcheck_interval_s")->asUInt());
     }
+}
 
+void ConfigReader::parseSocketPermissions(std::shared_ptr<IJsonValueWrapper> root)
+{
     if (root->isMember("socket_permissions") && root->at("socket_permissions")->isUInt())
     {
         unsigned permissions = root->at("socket_permissions")->asUInt();
@@ -83,12 +108,18 @@ bool ConfigReader::read()
         socketPermissions.otherPermissions = (permissions) % 10;
         m_socketPermissions = socketPermissions;
     }
+}
 
+void ConfigReader::parseNumOfPreloadedServers(std::shared_ptr<IJsonValueWrapper> root)
+{
     if (root->isMember("num_of_preloaded_servers") && root->at("num_of_preloaded_servers")->isUInt())
     {
         m_numOfPreloadedServers = root->at("num_of_preloaded_servers")->asUInt();
     }
+}
 
+void ConfigReader::parseLogLevel(std::shared_ptr<IJsonValueWrapper> root)
+{
     if (root->isMember("log_level") && root->at("log_level")->isUInt())
     {
         unsigned loggingLevel = root->at("log_level")->asUInt();
@@ -120,8 +151,6 @@ bool ConfigReader::read()
         }
         m_loggingLevels = {newLevel, newLevel, newLevel, newLevel, newLevel, newLevel};
     }
-
-    return true;
 }
 
 std::list<std::string> ConfigReader::getEnvironmentVariables()

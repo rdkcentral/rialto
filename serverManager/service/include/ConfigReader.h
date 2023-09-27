@@ -46,6 +46,14 @@ public:
     std::optional<rialto::servermanager::service::LoggingLevels> getLoggingLevels() override;
 
 private:
+    void parseEnvironmentVariables(std::shared_ptr<IJsonValueWrapper> root);
+    void parseSessionServerPath(std::shared_ptr<IJsonValueWrapper> root);
+    void parseSessionServerStartupTimeout(std::shared_ptr<IJsonValueWrapper> root);
+    void parseHealthcheckInterval(std::shared_ptr<IJsonValueWrapper> root);
+    void parseSocketPermissions(std::shared_ptr<IJsonValueWrapper> root);
+    void parseNumOfPreloadedServers(std::shared_ptr<IJsonValueWrapper> root);
+    void parseLogLevel(std::shared_ptr<IJsonValueWrapper> root);
+
     std::shared_ptr<IJsonCppWrapper> m_jsonWrapper;
     std::shared_ptr<IFileReader> m_fileReader;
 
