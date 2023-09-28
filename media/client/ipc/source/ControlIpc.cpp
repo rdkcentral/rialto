@@ -223,7 +223,7 @@ bool ControlIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &ipcChan
 
 void ControlIpc::onConnectionBroken()
 {
-    m_controlClient->notifyApplicationState(ApplicationState::UNKNOWN);
+    m_eventThread->add([this]() { m_controlClient->notifyApplicationState(ApplicationState::UNKNOWN); });
 }
 
 void ControlIpc::onApplicationStateUpdated(const std::shared_ptr<firebolt::rialto::ApplicationStateChangeEvent> &event)

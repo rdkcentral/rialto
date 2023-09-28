@@ -82,6 +82,7 @@ TEST_F(ControlIpcNotifyApplicationStateTest, wrongHandleId)
 
 TEST_F(ControlIpcNotifyApplicationStateTest, shouldNotifyAboutChangeToUnknownWhenConnectionIsBroken)
 {
+    EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
     EXPECT_CALL(m_controlClientMock, notifyApplicationState(firebolt::rialto::ApplicationState::UNKNOWN));
     IConnectionObserver *connectionObserver = m_controlIpc.get();
     connectionObserver->onConnectionBroken();
