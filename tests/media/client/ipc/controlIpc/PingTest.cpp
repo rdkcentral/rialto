@@ -68,7 +68,6 @@ TEST_F(ControlIpcPingTest, ChannelDisconnected)
 {
     expectIpcApiCallDisconnected();
     expectUnsubscribeEvents();
-    EXPECT_CALL(m_ipcClientMock, unregisterConnectionObserver());
 
     m_pingCb(createEvent());
 }

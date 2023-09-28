@@ -39,7 +39,7 @@ IpcClient::IpcClient(const std::shared_ptr<ipc::IChannelFactory> &ipcChannelFact
                      const std::shared_ptr<ipc::IControllerFactory> &ipcControllerFactory,
                      const std::shared_ptr<ipc::IBlockingClosureFactory> &blockingClosureFactory)
     : m_ipcControllerFactory(ipcControllerFactory), m_ipcChannelFactory(ipcChannelFactory),
-      m_blockingClosureFactory(blockingClosureFactory), m_disconnecting(false), m_connectionObserver{nullptr}
+      m_blockingClosureFactory(blockingClosureFactory), m_disconnecting(false)
 {
     // For now, always connect the client on construction
     if (!connect())
@@ -163,10 +163,10 @@ void IpcClient::processIpcThread()
         // This ensures the channel is destructed and that all ongoing ipc calls are unblocked.
         m_ipcChannel.reset();
 
-        std::unique_lock lock{m_connectionObserverMutex};
-        if (m_connectionObserver)
+        auto connectionObserver{m_connectionObserver.lock()};
+        if (connectionObserver)
         {
-            m_connectionObserver->onConnectionBroken();
+            connectionObserver->onConnectionBroken();
         }
     }
 
@@ -211,16 +211,9 @@ bool IpcClient::reconnect()
     return false;
 }
 
-void IpcClient::registerConnectionObserver(IConnectionObserver *observer)
+void IpcClient::registerConnectionObserver(const std::weak_ptr<IConnectionObserver> &observer)
 {
-    std::unique_lock lock{m_connectionObserverMutex};
     m_connectionObserver = observer;
-}
-
-void IpcClient::unregisterConnectionObserver()
-{
-    std::unique_lock lock{m_connectionObserverMutex};
-    m_connectionObserver = nullptr;
 }
 
 }; // namespace firebolt::rialto::client

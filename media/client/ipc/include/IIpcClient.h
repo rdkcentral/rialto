@@ -112,12 +112,7 @@ public:
     /**
      * @brief Registers new connection observer.
      */
-    virtual void registerConnectionObserver(IConnectionObserver *observer) = 0;
-
-    /**
-     * @brief Unregisters current connection observer.
-     */
-    virtual void unregisterConnectionObserver() = 0;
+    virtual void registerConnectionObserver(const std::weak_ptr<IConnectionObserver> &observer) = 0;
 };
 
 }; // namespace firebolt::rialto::client

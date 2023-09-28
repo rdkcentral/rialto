@@ -42,7 +42,7 @@ public:
     ControlIpcFactory() = default;
     ~ControlIpcFactory() override = default;
 
-    std::shared_ptr<IControlIpc> getControlIpc(IControlClient *controlClient) override;
+    std::shared_ptr<IControlIpc> createControlIpc(IControlClient *controlClient) override;
 
     /**
      * @brief Create the generic control factory object.

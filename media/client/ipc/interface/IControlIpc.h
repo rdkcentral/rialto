@@ -51,7 +51,7 @@ public:
      *
      * @retval the rialto controller ipc instance or null on error.
      */
-    virtual std::shared_ptr<IControlIpc> getControlIpc(IControlClient *controlClient) = 0;
+    virtual std::shared_ptr<IControlIpc> createControlIpc(IControlClient *controlClient) = 0;
 };
 
 /**

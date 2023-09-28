@@ -62,10 +62,13 @@ std::shared_ptr<ControlIpcFactory> ControlIpcFactory::createFactory()
     return factory;
 }
 
-std::shared_ptr<IControlIpc> ControlIpcFactory::getControlIpc(IControlClient *controlClient)
+std::shared_ptr<IControlIpc> ControlIpcFactory::createControlIpc(IControlClient *controlClient)
 {
-    return std::make_shared<ControlIpc>(controlClient, IIpcClientAccessor::instance().getIpcClient(),
-                                        firebolt::rialto::common::IEventThreadFactory::createFactory());
+    auto &ipcClient{IIpcClientAccessor::instance().getIpcClient()};
+    auto controlIpc{std::make_shared<ControlIpc>(controlClient, ipcClient,
+                                                 firebolt::rialto::common::IEventThreadFactory::createFactory())};
+    ipcClient.registerConnectionObserver(controlIpc);
+    return controlIpc;
 }
 
 ControlIpc::ControlIpc(IControlClient *controlClient, IIpcClient &ipcClient,
@@ -77,7 +80,6 @@ ControlIpc::ControlIpc(IControlClient *controlClient, IIpcClient &ipcClient,
     {
         throw std::runtime_error("Failed attach to the ipc channel");
     }
-    m_ipc.registerConnectionObserver(this);
 }
 
 ControlIpc::~ControlIpc()
@@ -87,9 +89,6 @@ ControlIpc::~ControlIpc()
 
     // destroy the thread processing async notifications
     m_eventThread.reset();
-
-    // unregister connection notifications to avoid crash
-    m_ipc.unregisterConnectionObserver();
 }
 
 bool ControlIpc::getSharedMemory(int32_t &fd, uint32_t &size)

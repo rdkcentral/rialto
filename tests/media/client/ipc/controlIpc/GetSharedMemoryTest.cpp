@@ -72,7 +72,6 @@ TEST_F(ControlIpcGetSharedMemoryTest, ChannelDisconnected)
     createControlIpc();
     expectIpcApiCallDisconnected();
     expectUnsubscribeEvents();
-    EXPECT_CALL(m_ipcClientMock, unregisterConnectionObserver());
 
     EXPECT_EQ(m_controlIpc->getSharedMemory(m_fd, m_size), false);
 }

@@ -101,20 +101,20 @@ TEST_F(IpcClientTest, UnexpectedDisconnectWithNotification)
     // Exit the ipc loop, simulates an unexpected disconnect
     int32_t ipcChannelCount = 0;
     bool isProcessed = false;
-    StrictMock<firebolt::rialto::client::ConnectionObserverMock> connectionObserverMock;
+    auto connectionObserverMock{std::make_shared<StrictMock<firebolt::rialto::client::ConnectionObserverMock>>()};
     EXPECT_CALL(*m_channelMock, process())
         .WillOnce(Invoke(
             [this, &ipcChannelCount, &isProcessed, &connectionObserverMock]()
             {
-                m_sut->registerConnectionObserver(&connectionObserverMock);
                 std::unique_lock<std::mutex> locker(m_eventsLock);
+                m_sut->registerConnectionObserver(connectionObserverMock);
                 ipcChannelCount = m_channelMock.use_count();
                 isProcessed = true;
                 m_eventsCond.notify_all();
                 return false;
             }));
 
-    EXPECT_CALL(connectionObserverMock, onConnectionBroken());
+    EXPECT_CALL(*connectionObserverMock, onConnectionBroken());
     EXPECT_NO_THROW(m_sut = std::make_unique<IpcClient>(m_channelFactoryMock, m_controllerFactoryMock,
                                                         m_blockingClosureFactoryMock));
 
@@ -132,6 +132,5 @@ TEST_F(IpcClientTest, UnexpectedDisconnectWithNotification)
     {
     }
 
-    m_sut->unregisterConnectionObserver();
     // On destruction IpcClient does not disconnect
 }
