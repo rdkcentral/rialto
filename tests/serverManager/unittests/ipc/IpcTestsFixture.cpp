@@ -95,7 +95,7 @@ void IpcTests::sessionServerAppManagerWillBeRequestedToRestartServer()
 {
     EXPECT_CALL(m_sessionServerAppManagerMock, restartServer(kServerId))
         .WillOnce(Invoke(
-            [this](int)
+            [this](int) // NOLINT(readability/casting)
             {
                 std::unique_lock<std::mutex> lock{m_expectationsMetMutex};
                 m_expectationsFlag = true;
