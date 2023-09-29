@@ -91,6 +91,18 @@ void IpcTests::sessionServerAppManagerWillBeNotifiedAboutCompletedHealthcheck()
             }));
 }
 
+void IpcTests::sessionServerAppManagerWillBeRequestedToRestartServer()
+{
+    EXPECT_CALL(m_sessionServerAppManagerMock, restartServer(kServerId))
+        .WillOnce(Invoke(
+            [this](int)
+            {
+                std::unique_lock<std::mutex> lock{m_expectationsMetMutex};
+                m_expectationsFlag = true;
+                m_expectationsCv.notify_one();
+            }));
+}
+
 void IpcTests::waitForExpectationsMet()
 {
     std::unique_lock<std::mutex> lock{m_expectationsMetMutex};
