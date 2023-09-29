@@ -17,22 +17,19 @@
  * limitations under the License.
  */
 
-#ifndef RIALTO_SERVERMANAGER_COMMON_HEALTHCHECK_SERVICE_MOCK_H_
-#define RIALTO_SERVERMANAGER_COMMON_HEALTHCHECK_SERVICE_MOCK_H_
+#ifndef FIREBOLT_RIALTO_CLIENT_I_CONNECTION_OBSERVER_H_
+#define FIREBOLT_RIALTO_CLIENT_I_CONNECTION_OBSERVER_H_
 
-#include "IHealthcheckService.h"
-#include <gmock/gmock.h>
+#include "ControlCommon.h"
 
-namespace rialto::servermanager::common
+namespace firebolt::rialto::client
 {
-class HealthcheckServiceMock : public IHealthcheckService
+class IConnectionObserver
 {
 public:
-    MOCK_METHOD(void, onPingSent, (int serverId, int pingId), (override));
-    MOCK_METHOD(void, onPingFailed, (int serverId, int pingId), (override));
-    MOCK_METHOD(void, onAckReceived, (int serverId, int pingId, bool success), (override));
-    MOCK_METHOD(void, onServerRemoved, (int serverId), (override));
+    virtual ~IConnectionObserver() = default;
+    virtual void onConnectionBroken() = 0;
 };
-} // namespace rialto::servermanager::common
+} // namespace firebolt::rialto::client
 
-#endif // RIALTO_SERVERMANAGER_COMMON_HEALTHCHECK_SERVICE_MOCK_H_
+#endif // FIREBOLT_RIALTO_CLIENT_I_CONNECTION_OBSERVER_H_

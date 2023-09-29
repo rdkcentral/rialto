@@ -41,6 +41,7 @@ constexpr std::chrono::seconds kHealthcheckFrequency{1};
 constexpr int kServerId{12};
 constexpr bool kSuccess{true};
 constexpr bool kFailure{false};
+constexpr unsigned kNumoFFailedPingsBeforeRecovery{2};
 } // namespace
 
 class HealthcheckServiceTests : public testing::Test
@@ -68,10 +69,12 @@ public:
         EXPECT_CALL(m_sessionServerAppManagerMock, onSessionServerStateChanged(kServerId, SessionServerState::ERROR));
     }
 
+    void serverRestartWillBeRequested() { EXPECT_CALL(m_sessionServerAppManagerMock, restartServer(kServerId)); }
+
     void createSut(std::chrono::seconds healthcheckInterval = kHealthcheckFrequency)
     {
         m_sut = std::make_unique<HealthcheckService>(m_sessionServerAppManagerMock, m_timerFactoryMock,
-                                                     healthcheckInterval);
+                                                     healthcheckInterval, kNumoFFailedPingsBeforeRecovery);
     }
 
     void triggerPingTimeout()
@@ -81,6 +84,8 @@ public:
     }
 
     void triggerOnPingSent(int pingId) { m_sut->onPingSent(kServerId, pingId); }
+
+    void triggerOnPingFailed(int pingId) { m_sut->onPingFailed(kServerId, pingId); }
 
     void triggerOnServerRemoved() { m_sut->onServerRemoved(kServerId); }
 
@@ -212,4 +217,71 @@ TEST_F(HealthcheckServiceTests, WillPingAndAckSuccessfully)
     // There should be no error indication here.
     pingWillBeSent(pingId);
     triggerPingTimeout();
+}
+
+TEST_F(HealthcheckServiceTests, WillStartRecoveryActionWhenFailAckIsReceivedTooManyTimes)
+{
+    int pingId{-1};
+    timerWillBeCreated();
+    createSut();
+    pingWillBeSent(pingId);
+    triggerPingTimeout();
+    triggerOnPingSent(pingId);
+    errorIndicationWillBeSent();
+    pingWillBeSent(pingId);
+    triggerPingTimeout();
+    triggerOnPingSent(pingId);
+    errorIndicationWillBeSent();
+    serverRestartWillBeRequested();
+    pingWillBeSent(pingId);
+    triggerPingTimeout();
+}
+
+TEST_F(HealthcheckServiceTests, WillStartRecoveryActionWhenPingFailsToBeSentTooManyTimes)
+{
+    int pingId{-1};
+    timerWillBeCreated();
+    createSut();
+    pingWillBeSent(pingId);
+    triggerPingTimeout();
+    errorIndicationWillBeSent();
+    triggerOnPingFailed(pingId);
+    pingWillBeSent(pingId);
+    triggerPingTimeout();
+    errorIndicationWillBeSent();
+    serverRestartWillBeRequested();
+    triggerOnPingFailed(pingId);
+}
+
+TEST_F(HealthcheckServiceTests, WillRecoveryActionCounterShouldBeResetWhenSuccessAckIsReceived)
+{
+    int pingId{-1};
+    timerWillBeCreated();
+    createSut();
+    pingWillBeSent(pingId);
+    triggerPingTimeout();
+    triggerOnPingSent(pingId);
+    errorIndicationWillBeSent();
+    pingWillBeSent(pingId);
+    triggerPingTimeout();
+    triggerOnPingSent(pingId);
+    triggerOnAckReceived(kServerId, pingId, kSuccess);
+    pingWillBeSent(pingId);
+    triggerPingTimeout();
+    triggerOnPingSent(pingId);
+    errorIndicationWillBeSent();
+    pingWillBeSent(pingId);
+    triggerPingTimeout();
+    // There should be only error indication, without recovery action here.
+}
+
+TEST_F(HealthcheckServiceTests, WillFailToFailPingWithWrongId)
+{
+    int pingId{-1};
+    timerWillBeCreated();
+    createSut();
+    pingWillBeSent(pingId);
+    triggerPingTimeout();
+    // There should be no error indication here.
+    triggerOnPingFailed(pingId + 1);
 }

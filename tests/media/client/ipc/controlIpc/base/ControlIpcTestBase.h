@@ -47,7 +47,7 @@ protected:
     StrictMock<EventThreadMock> *m_eventThreadMock;
 
     // ControlIpc object
-    std::shared_ptr<IControlIpc> m_controlIpc;
+    std::shared_ptr<ControlIpc> m_controlIpc;
 
     // Callbacks
     std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> m_notifyApplicationStateCb;

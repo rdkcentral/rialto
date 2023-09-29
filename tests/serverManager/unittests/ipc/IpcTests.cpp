@@ -107,8 +107,7 @@ TEST_F(IpcTests, ShouldForwardNotRunningStateChangeToSessionServerAppManagerWhen
 {
     configureServerToSendOkResponses();
     ASSERT_TRUE(triggerCreateClient());
-    sessionServerAppManagerWillBeNotifiedAboutSessionServerStateChange(
-        firebolt::rialto::common::SessionServerState::NOT_RUNNING);
+    sessionServerAppManagerWillBeRequestedToRestartServer();
     simulateClientDisconnection();
     waitForExpectationsMet();
 }

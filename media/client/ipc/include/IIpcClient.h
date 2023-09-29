@@ -29,6 +29,8 @@
 #include <IIpcChannel.h>
 #include <IIpcControllerFactory.h>
 
+#include "IConnectionObserver.h"
+
 namespace firebolt::rialto::client
 {
 class IIpcClient;
@@ -106,6 +108,11 @@ public:
      * @retval true on success.
      */
     virtual bool reconnect() = 0;
+
+    /**
+     * @brief Registers new connection observer.
+     */
+    virtual void registerConnectionObserver(const std::weak_ptr<IConnectionObserver> &observer) = 0;
 };
 
 }; // namespace firebolt::rialto::client
