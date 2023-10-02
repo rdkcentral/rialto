@@ -29,12 +29,13 @@ namespace rialto::servermanager::common
 class HealthcheckServiceFactory : public IHealthcheckServiceFactory
 {
 public:
-    explicit HealthcheckServiceFactory(std::chrono::seconds healthcheckInterval);
+    explicit HealthcheckServiceFactory(std::chrono::seconds healthcheckInterval, unsigned numOfFailedPingsBeforeRecovery);
     ~HealthcheckServiceFactory() override = default;
     std::unique_ptr<IHealthcheckService> createHealthcheckService(ISessionServerAppManager &appManager) const override;
 
 private:
     const std::chrono::seconds m_kHealthcheckFrequency;
+    const unsigned m_kNumOfFailedPingsBeforeRecovery;
 };
 } // namespace rialto::servermanager::common
 

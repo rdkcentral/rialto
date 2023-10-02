@@ -45,6 +45,7 @@ public:
     MOCK_METHOD(void, onAck, (int serverId, int pingId, bool success), (override));
     MOCK_METHOD(std::string, getAppConnectionInfo, (const std::string &), (const, override));
     MOCK_METHOD(bool, setLogLevels, (const service::LoggingLevels &), (const, override));
+    MOCK_METHOD(void, restartServer, (int serverId), (override));
 };
 } // namespace rialto::servermanager::common
 

@@ -23,6 +23,7 @@
 #include "IHealthcheckService.h"
 #include "ISessionServerAppManager.h"
 #include "ITimer.h"
+#include <map>
 #include <memory>
 #include <mutex>
 #include <set>
@@ -34,21 +35,25 @@ class HealthcheckService : public IHealthcheckService
 public:
     HealthcheckService(ISessionServerAppManager &sessionServerAppManager,
                        const std::shared_ptr<firebolt::rialto::common::ITimerFactory> &timerFactory,
-                       std::chrono::seconds healthcheckInterval);
+                       std::chrono::seconds healthcheckInterval, unsigned numOfFailedPingsBeforeRecovery);
     ~HealthcheckService() override;
     void onPingSent(int serverId, int pingId) override;
+    void onPingFailed(int serverId, int pingId) override;
     void onAckReceived(int serverId, int pingId, bool success) override;
     void onServerRemoved(int serverId) override;
 
 private:
     void sendPing();
+    void handleError(int serverId);
 
 private:
     ISessionServerAppManager &m_sessionServerAppManager;
+    const unsigned m_kNumOfFailedPingsBeforeRecovery;
     std::unique_ptr<firebolt::rialto::common::ITimer> m_healthcheckTimer;
     std::mutex m_mutex;
     int m_currentPingId;
     std::set<int> m_remainingPings;
+    std::map<int, unsigned> m_failedPings;
 };
 } // namespace rialto::servermanager::common
 

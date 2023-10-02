@@ -23,7 +23,6 @@
 #include "IIpcClient.h"
 #include <atomic>
 #include <memory>
-#include <mutex>
 
 namespace firebolt::rialto::client
 {
@@ -60,6 +59,8 @@ public:
 
     bool reconnect() override;
 
+    void registerConnectionObserver(const std::weak_ptr<IConnectionObserver> &observer) override;
+
 protected:
     /**
      * @brief The ipc thread.
@@ -90,6 +91,11 @@ protected:
      * @brief Whether disconnection of ipc has been requested by the client and is ongoing.
      */
     std::atomic<bool> m_disconnecting;
+
+    /**
+     * @brief Current connection status observer
+     */
+    std::weak_ptr<IConnectionObserver> m_connectionObserver;
 
     /**
      * @brief The processing loop for the ipc thread.
