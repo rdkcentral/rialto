@@ -62,10 +62,13 @@ std::shared_ptr<ControlIpcFactory> ControlIpcFactory::createFactory()
     return factory;
 }
 
-std::shared_ptr<IControlIpc> ControlIpcFactory::getControlIpc(IControlClient *controlClient)
+std::shared_ptr<IControlIpc> ControlIpcFactory::createControlIpc(IControlClient *controlClient)
 {
-    return std::make_shared<ControlIpc>(controlClient, IIpcClientAccessor::instance().getIpcClient(),
-                                        firebolt::rialto::common::IEventThreadFactory::createFactory());
+    auto &ipcClient{IIpcClientAccessor::instance().getIpcClient()};
+    auto controlIpc{std::make_shared<ControlIpc>(controlClient, ipcClient,
+                                                 firebolt::rialto::common::IEventThreadFactory::createFactory())};
+    ipcClient.registerConnectionObserver(controlIpc);
+    return controlIpc;
 }
 
 ControlIpc::ControlIpc(IControlClient *controlClient, IIpcClient &ipcClient,
@@ -216,6 +219,11 @@ bool ControlIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &ipcChan
     m_eventTags.push_back(eventTag);
 
     return true;
+}
+
+void ControlIpc::onConnectionBroken()
+{
+    m_eventThread->add([this]() { m_controlClient->notifyApplicationState(ApplicationState::UNKNOWN); });
 }
 
 void ControlIpc::onApplicationStateUpdated(const std::shared_ptr<firebolt::rialto::ApplicationStateChangeEvent> &event)

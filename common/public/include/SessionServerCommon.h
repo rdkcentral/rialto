@@ -100,6 +100,8 @@ struct ServerManagerConfig
         0};                                      /* Custom session server startup timeout. If 0 - timeout disabled. */
     std::chrono::seconds healthcheckInterval{5}; /* Defines how often healthcheck messages will be sent */
     SocketPermissions sessionManagementSocketPermissions{}; /* Defines permissions of session management socket */
+    unsigned numOfFailedPingsBeforeRecovery{
+        3}; /* Defines how many pings have to fail before recovery action will be taken */
 };
 
 } // namespace firebolt::rialto::common

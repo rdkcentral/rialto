@@ -49,6 +49,7 @@ std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserv
                                                                config.sessionServerPath,
                                                                config.sessionServerStartupTimeout,
                                                                config.healthcheckInterval,
+                                                               config.numOfFailedPingsBeforeRecovery,
                                                                convertSocketPermissions(
                                                                    config.sessionManagementSocketPermissions)),
                               config.numOfPreloadedServers);

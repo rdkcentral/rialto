@@ -162,6 +162,12 @@ void IpcClient::processIpcThread()
         // Safe to destroy the ipc objects in the ipc thread as the client has already disconnected.
         // This ensures the channel is destructed and that all ongoing ipc calls are unblocked.
         m_ipcChannel.reset();
+
+        auto connectionObserver{m_connectionObserver.lock()};
+        if (connectionObserver)
+        {
+            connectionObserver->onConnectionBroken();
+        }
     }
 
     RIALTO_CLIENT_LOG_INFO("exiting ipc thread");
@@ -203,6 +209,11 @@ bool IpcClient::reconnect()
         return connect();
     }
     return false;
+}
+
+void IpcClient::registerConnectionObserver(const std::weak_ptr<IConnectionObserver> &observer)
+{
+    m_connectionObserver = observer;
 }
 
 }; // namespace firebolt::rialto::client

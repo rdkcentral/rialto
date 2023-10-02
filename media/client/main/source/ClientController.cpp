@@ -55,7 +55,7 @@ ClientController::ClientController(const std::shared_ptr<IControlIpcFactory> &Co
         RIALTO_CLIENT_LOG_WARN("Failed to get git commit ID.");
     }
 
-    m_controlIpc = ControlIpcFactory->getControlIpc(this);
+    m_controlIpc = ControlIpcFactory->createControlIpc(this);
     if (nullptr == m_controlIpc)
     {
         throw std::runtime_error("Failed to create the ControlIpc object");
