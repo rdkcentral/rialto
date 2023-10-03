@@ -34,7 +34,7 @@ option cc_generic_services = true;
  * @returns The supported mime types.
  */
 message GetSupportedMimeTypesRequest {
-  required ProtoMediaSourceType media_type = 1;
+  optional ProtoMediaSourceType media_type = 1;
 }
 message GetSupportedMimeTypesResponse {
   repeated string mime_types = 1;
@@ -49,10 +49,10 @@ message GetSupportedMimeTypesResponse {
  * @returns true if supported.
  */
 message IsMimeTypeSupportedRequest {
-  required string mime_type = 1;
+  optional string mime_type = 1;
 }
 message IsMimeTypeSupportedResponse {
-  required bool is_supported = 1;
+  optional bool is_supported = 1;
 }
 
 
