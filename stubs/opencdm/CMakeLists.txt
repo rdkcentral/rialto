@@ -21,7 +21,7 @@ set( CMAKE_CXX_STANDARD 17 )
 
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
 include( CheckCXXCompilerFlag )
-
+include( GNUInstallDirs )
 include(ExternalProject)
 
 if (NOT THUNDER_CLIENT_TAG)
