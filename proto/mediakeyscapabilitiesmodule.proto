@@ -47,10 +47,10 @@ message GetSupportedKeySystemsResponse {
  * @returns true if supported.
  */
 message SupportsKeySystemRequest {
-  required string key_system = 1;
+  optional string key_system = 1;
 }
 message SupportsKeySystemResponse {
-  required bool is_supported = 1;
+  optional bool is_supported = 1;
 }
 
 /**
@@ -62,10 +62,10 @@ message SupportsKeySystemResponse {
  * @returns the version supported.
  */
 message GetSupportedKeySystemVersionRequest {
-  required string key_system = 1;
+  optional string key_system = 1;
 }
 message GetSupportedKeySystemVersionResponse {
-  required string version = 1;
+  optional string version = 1;
 }
 
 service MediaKeysCapabilitiesModule {
