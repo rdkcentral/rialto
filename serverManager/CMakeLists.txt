@@ -89,6 +89,10 @@ if( RIALTO_ENABLE_CONFIG_FILE )
         set( LOG_LEVEL 3 )
     endif()
 
+    if (NOT NUM_OF_PINGS_BEFORE_RECOVERY)
+        set( NUM_OF_PINGS_BEFORE_RECOVERY 3 )
+    endif()
+
     configure_file(
         config/rialto-config.in.json
         rialto-config.json

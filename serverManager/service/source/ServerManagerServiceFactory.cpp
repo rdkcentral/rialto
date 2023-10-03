@@ -54,6 +54,7 @@ std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserv
     std::chrono::seconds healthcheckInterval = config.healthcheckInterval;
     firebolt::rialto::common::SocketPermissions socketPermissions = config.sessionManagementSocketPermissions;
     unsigned int numOfPreloadedServers = config.numOfPreloadedServers;
+    unsigned int numOfFailedPingsBeforeRecovery = config.numOfFailedPingsBeforeRecovery;
 
 #ifdef RIALTO_ENABLE_CONFIG_FILE
     std::unique_ptr<IConfigReaderFactory> configReaderFactory = std::make_unique<ConfigReaderFactory>();
@@ -77,6 +78,9 @@ std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserv
 
     if (configReader->getNumOfPreloadedServers())
         numOfPreloadedServers = configReader->getNumOfPreloadedServers().value();
+
+    if (configReader->getNumOfPingsBeforeRecovery())
+        numOfFailedPingsBeforeRecovery = configReader->getNumOfPingsBeforeRecovery().value();
 #endif
 
     std::unique_ptr<IServerManagerService> service =
@@ -84,7 +88,7 @@ std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserv
                                                                                 sessionServerPath,
                                                                                 sessionServerStartupTimeout,
                                                                                 healthcheckInterval,
-                                                                                config.numOfFailedPingsBeforeRecovery,
+                                                                                numOfFailedPingsBeforeRecovery,
                                                                                 convertSocketPermissions(
                                                                                     socketPermissions)),
                                                numOfPreloadedServers);

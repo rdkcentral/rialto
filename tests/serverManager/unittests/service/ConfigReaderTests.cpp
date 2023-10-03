@@ -346,3 +346,21 @@ TEST_F(ConfigReaderTests, logLevelSuccessfulParsing)
     EXPECT_EQ(m_sut->getLoggingLevels().value().serverManagerLoggingLevel, loggingLevel.serverManagerLoggingLevel);
     EXPECT_EQ(m_sut->getLoggingLevels().value().commonLoggingLevel, loggingLevel.commonLoggingLevel);
 }
+
+TEST_F(ConfigReaderTests, numOfPingsBeforeRecoveryNotUint)
+{
+    expectSuccessfulParsing();
+    expectNotUint("num_of_pings_before_recovery");
+
+    EXPECT_TRUE(m_sut->read());
+    EXPECT_EQ(m_sut->getNumOfPreloadedServers().has_value(), false);
+}
+
+TEST_F(ConfigReaderTests, numOfPingsBeforeRecoveryExists)
+{
+    expectSuccessfulParsing();
+    expectReturnUint("num_of_pings_before_recovery", 3);
+
+    EXPECT_TRUE(m_sut->read());
+    EXPECT_EQ(m_sut->getNumOfPingsBeforeRecovery(), 3);
+}

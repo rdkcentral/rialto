@@ -44,6 +44,7 @@ public:
     std::optional<firebolt::rialto::common::SocketPermissions> getSocketPermissions() override;
     std::optional<unsigned int> getNumOfPreloadedServers() override;
     std::optional<rialto::servermanager::service::LoggingLevels> getLoggingLevels() override;
+    std::optional<unsigned int> getNumOfPingsBeforeRecovery() override;
 
 private:
     void parseEnvironmentVariables(std::shared_ptr<IJsonValueWrapper> root);
@@ -53,6 +54,7 @@ private:
     void parseSocketPermissions(std::shared_ptr<IJsonValueWrapper> root);
     void parseNumOfPreloadedServers(std::shared_ptr<IJsonValueWrapper> root);
     void parseLogLevel(std::shared_ptr<IJsonValueWrapper> root);
+    void parseNumOfPingsBeforeRecovery(std::shared_ptr<IJsonValueWrapper> root);
 
     std::shared_ptr<IJsonCppWrapper> m_jsonWrapper;
     std::shared_ptr<IFileReader> m_fileReader;
@@ -64,6 +66,7 @@ private:
     std::optional<firebolt::rialto::common::SocketPermissions> m_socketPermissions;
     std::optional<unsigned int> m_numOfPreloadedServers;
     std::optional<rialto::servermanager::service::LoggingLevels> m_loggingLevels;
+    std::optional<unsigned int> m_numOfPingsBeforeRecovery;
 };
 
 } // namespace rialto::servermanager::service

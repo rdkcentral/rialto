@@ -52,6 +52,7 @@ bool ConfigReader::read()
     parseSocketPermissions(root);
     parseNumOfPreloadedServers(root);
     parseLogLevel(root);
+    parseNumOfPingsBeforeRecovery(root);
 
     return true;
 }
@@ -153,6 +154,14 @@ void ConfigReader::parseLogLevel(std::shared_ptr<IJsonValueWrapper> root)
     }
 }
 
+void ConfigReader::parseNumOfPingsBeforeRecovery(std::shared_ptr<IJsonValueWrapper> root)
+{
+    if (root->isMember("num_of_pings_before_recovery") && root->at("num_of_pings_before_recovery")->isUInt())
+    {
+        m_numOfPingsBeforeRecovery = root->at("num_of_pings_before_recovery")->asUInt();
+    }
+}
+
 std::list<std::string> ConfigReader::getEnvironmentVariables()
 {
     return m_envVars;
@@ -186,6 +195,11 @@ std::optional<unsigned int> ConfigReader::getNumOfPreloadedServers()
 std::optional<rialto::servermanager::service::LoggingLevels> ConfigReader::getLoggingLevels()
 {
     return m_loggingLevels;
+}
+
+std::optional<unsigned int> ConfigReader::getNumOfPingsBeforeRecovery()
+{
+    return m_numOfPingsBeforeRecovery;
 }
 
 } // namespace rialto::servermanager::service

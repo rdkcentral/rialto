@@ -41,6 +41,7 @@ public:
     virtual std::optional<firebolt::rialto::common::SocketPermissions> getSocketPermissions() = 0;
     virtual std::optional<unsigned int> getNumOfPreloadedServers() = 0;
     virtual std::optional<rialto::servermanager::service::LoggingLevels> getLoggingLevels() = 0;
+    virtual std::optional<unsigned int> getNumOfPingsBeforeRecovery() = 0;
 };
 
 } // namespace rialto::servermanager::service
