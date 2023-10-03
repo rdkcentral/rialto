@@ -66,8 +66,14 @@ target_link_libraries (
         dl
 )
 
+if( NATIVE_BUILD )
+        set_target_properties(
+        RialtoServer
+        PROPERTIES INSTALL_RPATH "${MONGOOSE_LIBRARIES}:${CMAKE_INSTALL_PREFIX}/lib"
+)
+endif()
+
 install (
         TARGETS RialtoServerManagerSim
         DESTINATION bin
 )
-

@@ -136,6 +136,12 @@ option(ENABLE_SERVER_MANAGER "Enable building RialtoServerManagerSim" ON)
 if( NATIVE_BUILD )
     add_subdirectory( stubs/rdk_gstreamer_utils )
     add_subdirectory( stubs/opencdm )
+
+    configure_file(pkg-config/RialtoClient.in.pc ${CMAKE_BINARY_DIR}/RialtoClient.pc @ONLY)
+    install (
+          FILES ${CMAKE_BINARY_DIR}/RialtoClient.pc
+          DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
+    )
 endif()
 
 # Include the new IPC library components

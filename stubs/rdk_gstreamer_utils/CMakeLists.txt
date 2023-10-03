@@ -63,3 +63,8 @@ target_include_directories(
     )
 
 add_dependencies( rdkgstreamerutils rdk-gstreamer-utils-repo )
+
+install (
+        TARGETS rdkgstreamerutils LIBRARY
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)

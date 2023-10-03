@@ -63,17 +63,12 @@ add_library(ocdm::ocdm ALIAS ocdm)
 
 include(CMakePackageConfigHelpers)
 set(OCDM_INCLUDE_INSTALL_DIR "${PROJECT_SOURCE_DIR}/stubs/opencdm/third-party" )
-set(PROJECT_CONFIG_FILE "${PROJECT_BINARY_DIR}/ocdm-config.cmake")
+set(PROJECT_CONFIG_FILE "${PROJECT_BINARY_DIR}/stubs/opencdm/ocdm-config.cmake")
 
 configure_package_config_file(ocdm-config.cmake.in
   ${CMAKE_CURRENT_BINARY_DIR}/ocdm-config.cmake
   INSTALL_DESTINATION ${CMAKE_MODULE_PATH}
   PATH_VARS OCDM_INCLUDE_INSTALL_DIR)
-
-install(FILES "${PROJECT_CONFIG_FILE}"
-  DESTINATION ${CMAKE_MODULE_PATH}
-  COMPONENT development
-)
 
 target_include_directories(
       ocdm
@@ -81,4 +76,36 @@ target_include_directories(
       PRIVATE
       third-party
       ${GStreamerApp_INCLUDE_DIRS}
+)
+
+set_target_properties(
+        ocdm
+        PROPERTIES SOVERSION  ${PROJECT_VERSION_MAJOR}
+                   VERSION    ${CMAKE_PROJECT_VERSION}
+        )
+
+install(FILES "${PROJECT_CONFIG_FILE}"
+  DESTINATION ${CMAKE_MODULE_PATH}
+  COMPONENT development
+)
+
+set (OCDM_PUBLIC_HEADER
+      third-party/opencdm/open_cdm_adapter.h
+      third-party/opencdm/open_cdm_ext.h
+      third-party/opencdm/open_cdm.h
+)
+
+install (
+          FILES ${OCDM_PUBLIC_HEADER}
+          DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/opencdm
+)
+
+install (
+          FILES RialtoGStreamerEMEProtectionMetadata.h
+          DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/rialto
+)
+
+install (
+        TARGETS ocdm LIBRARY
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
