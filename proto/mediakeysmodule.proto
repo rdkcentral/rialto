@@ -88,7 +88,7 @@ message KeyStatusesChangedEvent {
 
   message KeyStatusPair {
     repeated uint32 key_id = 1;
-    optional KeyStatus key_status = 2;
+    optional KeyStatus key_status = 2 [default = INTERNAL_ERROR];
   }
 
   optional int32 media_keys_handle = 1 [default = -1];
@@ -179,7 +179,7 @@ message CreateKeySessionRequest {
   optional bool is_ldl = 3;
 }
 message CreateKeySessionResponse {
-  optional ProtoMediaKeyErrorStatus error_status = 1;
+  optional ProtoMediaKeyErrorStatus error_status = 1 [default = FAIL];
   optional int32 key_session_id = 2 [default = -1];
 }
 
@@ -220,7 +220,7 @@ message GenerateRequestRequest {
 
 }
 message GenerateRequestResponse {
-  optional ProtoMediaKeyErrorStatus error_status = 1;
+  optional ProtoMediaKeyErrorStatus error_status = 1 [default = FAIL];
 }
 
 /**
@@ -244,7 +244,7 @@ message LoadSessionRequest {
   optional int32 key_session_id = 2 [default = -1];
 }
 message LoadSessionResponse {
-  optional ProtoMediaKeyErrorStatus error_status = 1;
+  optional ProtoMediaKeyErrorStatus error_status = 1 [default = FAIL];
 }
 
 /**
@@ -271,7 +271,7 @@ message UpdateSessionRequest {
   repeated uint32 response_data = 3;
 }
 message UpdateSessionResponse {
-  optional ProtoMediaKeyErrorStatus error_status = 1;
+  optional ProtoMediaKeyErrorStatus error_status = 1 [default = FAIL];
 }
 
 /**
@@ -298,7 +298,7 @@ message SetDrmHeaderRequest {
   repeated uint32 request_data = 3;
 }
 message SetDrmHeaderResponse {
-  optional ProtoMediaKeyErrorStatus error_status = 1;
+  optional ProtoMediaKeyErrorStatus error_status = 1 [default = FAIL];
 }
 
 /**
@@ -319,7 +319,7 @@ message CloseKeySessionRequest {
   optional int32 key_session_id = 2 [default = -1];
 }
 message CloseKeySessionResponse {
-  optional ProtoMediaKeyErrorStatus error_status = 1;
+  optional ProtoMediaKeyErrorStatus error_status = 1 [default = FAIL];
 }
 
 /**
@@ -340,7 +340,7 @@ message RemoveKeySessionRequest {
   optional int32 key_session_id = 2 [default = -1];
 }
 message RemoveKeySessionResponse {
-  optional ProtoMediaKeyErrorStatus error_status = 1;
+  optional ProtoMediaKeyErrorStatus error_status = 1 [default = FAIL];
 }
 
 /**
@@ -355,7 +355,7 @@ message DeleteDrmStoreRequest {
   optional int32 media_keys_handle = 1 [default = -1];
 }
 message DeleteDrmStoreResponse {
-  optional ProtoMediaKeyErrorStatus error_status = 1;
+  optional ProtoMediaKeyErrorStatus error_status = 1 [default = FAIL];
 }
 
 /**
@@ -370,7 +370,7 @@ message DeleteKeyStoreRequest {
   optional int32 media_keys_handle = 1 [default = -1];
 }
 message DeleteKeyStoreResponse {
-  optional ProtoMediaKeyErrorStatus error_status = 1;
+  optional ProtoMediaKeyErrorStatus error_status = 1 [default = FAIL];
 }
 
 /**
@@ -388,7 +388,7 @@ message GetDrmStoreHashRequest {
   optional int32 media_keys_handle = 1 [default = -1];
 }
 message GetDrmStoreHashResponse {
-  optional ProtoMediaKeyErrorStatus error_status = 1;
+  optional ProtoMediaKeyErrorStatus error_status = 1 [default = FAIL];
   repeated uint32 drm_store_hash = 2;
 }
 
@@ -407,7 +407,7 @@ message GetKeyStoreHashRequest {
   optional int32 media_keys_handle = 1 [default = -1];
 }
 message GetKeyStoreHashResponse {
-  optional ProtoMediaKeyErrorStatus error_status = 1;
+  optional ProtoMediaKeyErrorStatus error_status = 1 [default = FAIL];
   repeated uint32 key_store_hash = 2;
 }
 
@@ -423,7 +423,7 @@ message GetLdlSessionsLimitRequest {
   optional int32 media_keys_handle = 1 [default = -1];
 }
 message GetLdlSessionsLimitResponse {
-  optional ProtoMediaKeyErrorStatus error_status = 1;
+  optional ProtoMediaKeyErrorStatus error_status = 1 [default = FAIL];
   optional uint32 ldl_limit = 2;
 }
 
@@ -441,7 +441,7 @@ message GetLastDrmErrorRequest {
   optional int32 key_session_id = 2 [default = -1];
 }
 message GetLastDrmErrorResponse {
-  optional ProtoMediaKeyErrorStatus error_status = 1;
+  optional ProtoMediaKeyErrorStatus error_status = 1 [default = FAIL];
   optional uint32 error_code = 2;
 }
 
@@ -457,7 +457,7 @@ message GetDrmTimeRequest {
   optional int32 media_keys_handle = 1 [default = -1];
 }
 message GetDrmTimeResponse {
-  optional ProtoMediaKeyErrorStatus error_status = 1;
+  optional ProtoMediaKeyErrorStatus error_status = 1 [default = FAIL];
   optional uint64 drm_time = 2;
 }
 
@@ -477,7 +477,7 @@ message GetCdmKeySessionIdRequest {
   optional int32 key_session_id = 2 [default = -1];
 }
 message GetCdmKeySessionIdResponse {
-  optional ProtoMediaKeyErrorStatus error_status = 1;
+  optional ProtoMediaKeyErrorStatus error_status = 1 [default = FAIL];
   optional string cdm_key_session_id = 2;
 }
 
