@@ -62,7 +62,7 @@ public:
                                                                         const std::string &audioMimeType,
                                                                         const uint32_t priority,
                                                                         const WebAudioConfig *config,
-                                                                        IIpcClient *ipcClient = 0) = 0;
+                                                                        std::weak_ptr<IIpcClient> ipcClient = {}) = 0;
 };
 
 /**

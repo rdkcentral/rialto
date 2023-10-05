@@ -71,7 +71,7 @@ TEST_F(RialtoClientWebAudioPlayerIpcSetVolumeTest, ChannelDisconnected)
     EXPECT_EQ(m_webAudioPlayerIpc->setVolume(m_volume), false);
 
     // Reattach channel on destroySession
-    EXPECT_CALL(m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
+    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
     expectSubscribeEvents();
 }
 

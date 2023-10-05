@@ -35,7 +35,7 @@ public:
     MOCK_METHOD(std::unique_ptr<IMediaPipelineIpc>, createMediaPipelineIpc,
                 (IMediaPipelineIpcClient * client,
                  const VideoRequirements &videoRequirements,
-                 IIpcClient *ipcClient), (override));
+                 std::weak_ptr<IIpcClient> ipcClient), (override));
 };
 } // namespace firebolt::rialto::client
 

@@ -50,7 +50,7 @@ public:
     virtual ~IpcModuleBase() = default;
 
 protected:
-    StrictMock<IpcClientMock> m_ipcClientMock;
+    std::shared_ptr<StrictMock<IpcClientMock>> m_ipcClientMock;
     std::shared_ptr<StrictMock<ChannelMock>> m_channelMock;
     std::shared_ptr<StrictMock<BlockingClosureMock>> m_blockingClosureMock;
     std::shared_ptr<StrictMock<RpcControllerMock>> m_controllerMock;

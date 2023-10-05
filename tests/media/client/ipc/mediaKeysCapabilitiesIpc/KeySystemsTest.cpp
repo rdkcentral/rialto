@@ -42,7 +42,7 @@ protected:
     {
         expectInitIpc();
 
-        EXPECT_NO_THROW(m_mediaKeysCapabilitiesIpc = std::make_unique<MediaKeysCapabilitiesIpc>(m_ipcClientMock));
+        EXPECT_NO_THROW(m_mediaKeysCapabilitiesIpc = std::make_unique<MediaKeysCapabilitiesIpc>(*m_ipcClientMock));
         EXPECT_NE(m_mediaKeysCapabilitiesIpc, nullptr);
     }
 

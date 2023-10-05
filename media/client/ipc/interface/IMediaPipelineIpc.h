@@ -61,7 +61,7 @@ public:
      */
     virtual std::unique_ptr<IMediaPipelineIpc> createMediaPipelineIpc(IMediaPipelineIpcClient *client,
                                                                       const VideoRequirements &videoRequirements,
-                                                                      IIpcClient *ipcClient = 0) = 0;
+                                                                      std::weak_ptr<IIpcClient> ipcClient = {}) = 0;
 };
 
 /**

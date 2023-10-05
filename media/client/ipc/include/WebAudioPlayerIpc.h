@@ -40,7 +40,7 @@ public:
     std::unique_ptr<IWebAudioPlayerIpc> createWebAudioPlayerIpc(IWebAudioPlayerIpcClient *client,
                                                                 const std::string &audioMimeType, const uint32_t priority,
                                                                 const WebAudioConfig *config,
-                                                                IIpcClient *ipcClient) override;
+                                                                std::weak_ptr<IIpcClient> ipcClient) override;
 };
 
 /**
