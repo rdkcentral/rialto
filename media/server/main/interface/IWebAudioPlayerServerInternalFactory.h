@@ -82,7 +82,7 @@ public:
                                        const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle,
                                        const std::shared_ptr<firebolt::rialto::server::IMainThreadFactory> &mainThreadFactory,
                                        const std::shared_ptr<firebolt::rialto::server::IGstWebAudioPlayerFactory> &gstPlayerFactory,
-                                       std::shared_ptr<common::ITimerFactory> timerFactory) const = 0;
+                                       std::weak_ptr<common::ITimerFactory> timerFactory) const = 0;
 };
 }; // namespace firebolt::rialto::server
 

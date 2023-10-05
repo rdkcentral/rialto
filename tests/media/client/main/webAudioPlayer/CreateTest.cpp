@@ -47,7 +47,7 @@ public:
         EXPECT_CALL(*m_webAudioPlayerIpcFactoryMock, createWebAudioPlayerIpc(_, m_audioMimeType, m_priority, &m_config, _))
             .WillOnce(Return(ByMove(std::move(webAudioPlayerIpcMock))));
 
-        EXPECT_CALL(m_clientControllerMock, registerClient(_, _))
+        EXPECT_CALL(*m_clientControllerMock, registerClient(_, _))
             .WillOnce(DoAll(SetArgReferee<1>(ApplicationState::RUNNING), Return(true)));
     }
 };
@@ -65,12 +65,12 @@ TEST_F(RialtoClientCreateWebAudioPlayerTest, Create)
     EXPECT_NO_THROW(m_webAudioPlayer = std::make_unique<WebAudioPlayer>(m_webAudioPlayerClientMock, m_audioMimeType,
                                                                         m_priority, &m_config,
                                                                         m_webAudioPlayerIpcFactoryMock,
-                                                                        m_clientControllerMock));
+                                                                        *m_clientControllerMock));
 
     EXPECT_NE(m_webAudioPlayer, nullptr);
 
     // Unregister client on destroy
-    EXPECT_CALL(m_clientControllerMock, unregisterClient(_)).WillOnce(Return(true));
+    EXPECT_CALL(*m_clientControllerMock, unregisterClient(_)).WillOnce(Return(true));
 }
 
 /**
@@ -93,12 +93,12 @@ TEST_F(RialtoClientCreateWebAudioPlayerTest, FactoryCreatesObject)
                                                       m_priority,
                                                       &m_config,
                                                       m_webAudioPlayerIpcFactoryMock,
-                                                      &m_clientControllerMock
+                                                      m_clientControllerMock
                                                       ));
     EXPECT_NE(webAudioPlayer, nullptr);
 
     // Unregister client on destroy
-    EXPECT_CALL(m_clientControllerMock, unregisterClient(_)).WillOnce(Return(true));
+    EXPECT_CALL(*m_clientControllerMock, unregisterClient(_)).WillOnce(Return(true));
 }
 
 /**
@@ -113,7 +113,7 @@ TEST_F(RialtoClientCreateWebAudioPlayerTest, CreateWebAudioPlayerIpcFailure)
 
     EXPECT_THROW(webAudioPlayer = std::make_unique<WebAudioPlayer>(m_webAudioPlayerClientMock, m_audioMimeType,
                                                                    m_priority, &m_config, m_webAudioPlayerIpcFactoryMock,
-                                                                   m_clientControllerMock),
+                                                                   *m_clientControllerMock),
                  std::runtime_error);
 }
 
@@ -134,12 +134,12 @@ TEST_F(RialtoClientCreateWebAudioPlayerTest, CreateWebAudioPlayerRegisterFailure
     EXPECT_CALL(*m_webAudioPlayerIpcFactoryMock, createWebAudioPlayerIpc(_, m_audioMimeType, m_priority, &m_config, _))
         .WillOnce(Return(ByMove(std::move(webAudioPlayerIpcMock))));
 
-    EXPECT_CALL(m_clientControllerMock, registerClient(_, _))
+    EXPECT_CALL(*m_clientControllerMock, registerClient(_, _))
         .WillOnce(DoAll(SetArgReferee<1>(ApplicationState::RUNNING), Return(false)));
 
     EXPECT_THROW(webAudioPlayer = std::make_unique<WebAudioPlayer>(m_webAudioPlayerClientMock, m_audioMimeType,
                                                                    m_priority, &m_config, m_webAudioPlayerIpcFactoryMock,
-                                                                   m_clientControllerMock),
+                                                                   *m_clientControllerMock),
                  std::runtime_error);
 
 }

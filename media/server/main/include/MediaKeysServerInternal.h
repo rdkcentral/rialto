@@ -41,7 +41,7 @@ public:
     ~MediaKeysServerInternalFactory() override = default;
 
     std::unique_ptr<IMediaKeys> createMediaKeys(const std::string &keySystem,
-                std::shared_ptr<firebolt::rialto::client::IMediaKeysIpcFactory> mediaKeysIpcFactory) const override;
+                std::weak_ptr<firebolt::rialto::client::IMediaKeysIpcFactory> mediaKeysIpcFactory) const override;
     std::unique_ptr<IMediaKeysServerInternal> createMediaKeysServerInternal(const std::string &keySystem) const override;
 };
 

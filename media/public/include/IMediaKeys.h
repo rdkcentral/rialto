@@ -67,7 +67,7 @@ public:
      * @retval the new media keys instance or null on error.
      */
     virtual std::unique_ptr<IMediaKeys> createMediaKeys(const std::string &keySystem,
-                   std::shared_ptr<firebolt::rialto::client::IMediaKeysIpcFactory> mediaKeysIpcFactory = {}) const = 0;
+                   std::weak_ptr<firebolt::rialto::client::IMediaKeysIpcFactory> mediaKeysIpcFactory = {}) const = 0;
 };
 
 /**

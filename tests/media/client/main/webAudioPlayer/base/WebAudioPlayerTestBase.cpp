@@ -26,6 +26,7 @@ void WebAudioPlayerTestBase::SetUp() // NOLINT(build/function_format)
     // Create StrictMocks
     m_webAudioPlayerClientMock = std::make_shared<StrictMock<WebAudioPlayerClientMock>>();
     m_webAudioPlayerIpcFactoryMock = std::make_shared<StrictMock<WebAudioPlayerIpcFactoryMock>>();
+    m_clientControllerMock = std::make_shared<StrictMock<ClientControllerMock>>();
 
     // Init pcm config
     m_config.pcm.rate = 1;
@@ -52,7 +53,7 @@ void WebAudioPlayerTestBase::createWebAudioPlayer()
     // Object shall be freed by the holder of the unique ptr on destruction
     m_webAudioPlayerIpcMock = webAudioPlayerIpcMock.get();
 
-    EXPECT_CALL(m_clientControllerMock, registerClient(_, _))
+    EXPECT_CALL(*m_clientControllerMock, registerClient(_, _))
         .WillOnce(DoAll(SetArgReferee<1>(ApplicationState::RUNNING), Return(true)));
 
     EXPECT_CALL(*m_webAudioPlayerIpcFactoryMock, createWebAudioPlayerIpc(_, _, _, _,_))
@@ -61,7 +62,7 @@ void WebAudioPlayerTestBase::createWebAudioPlayer()
     EXPECT_NO_THROW(m_webAudioPlayer = std::make_unique<WebAudioPlayer>(m_webAudioPlayerClientMock, m_audioMimeType,
                                                                         m_priority, &m_config,
                                                                         m_webAudioPlayerIpcFactoryMock,
-                                                                        m_clientControllerMock));
+                                                                        *m_clientControllerMock));
 
     // Save a raw pointer here same as above
     m_webAudioPlayerCallback = m_webAudioPlayer.get();
@@ -70,7 +71,7 @@ void WebAudioPlayerTestBase::createWebAudioPlayer()
 
 void WebAudioPlayerTestBase::destroyWebAudioPlayer()
 {
-    EXPECT_CALL(m_clientControllerMock, unregisterClient(_)).WillOnce(Return(true));
+    EXPECT_CALL(*m_clientControllerMock, unregisterClient(_)).WillOnce(Return(true));
     m_webAudioPlayer.reset();
     m_webAudioPlayerCallback = nullptr;
 }

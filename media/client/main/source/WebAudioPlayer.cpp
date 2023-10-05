@@ -49,23 +49,18 @@ std::unique_ptr<IWebAudioPlayer> WebAudioPlayerFactory::createWebAudioPlayer(
                const std::string &audioMimeType,
                const uint32_t priority,
                const WebAudioConfig *config,
-               std::shared_ptr<client::IWebAudioPlayerIpcFactory> webAudioPlayerIpcFactory,
-               client::IClientController *clientController) const
+               std::weak_ptr<client::IWebAudioPlayerIpcFactory> webAudioPlayerIpcFactory,
+               std::weak_ptr<client::IClientController> clientController) const
 {
     std::unique_ptr<IWebAudioPlayer> webAudioPlayer;
     try
     {
-        if (!webAudioPlayerIpcFactory)
-        {
-            webAudioPlayerIpcFactory = client::IWebAudioPlayerIpcFactory::getFactory();
-        }
-        if (!clientController) {
-            clientController = &client::IClientControllerAccessor::instance().getClientController();
-        }
+        std::shared_ptr<client::IWebAudioPlayerIpcFactory> wapif = webAudioPlayerIpcFactory.lock();
+        std::shared_ptr<client::IClientController> cc = clientController.lock();
         webAudioPlayer =
             std::make_unique<client::WebAudioPlayer>(client, audioMimeType, priority, config,
-                                                     webAudioPlayerIpcFactory,
-                                                     *clientController);
+                                                     wapif ? wapif : client::IWebAudioPlayerIpcFactory::getFactory(),
+                                                     cc ? *cc : client::IClientControllerAccessor::instance().getClientController());
     }
     catch (const std::exception &e)
     {

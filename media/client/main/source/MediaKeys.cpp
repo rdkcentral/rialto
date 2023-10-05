@@ -50,16 +50,13 @@ std::shared_ptr<IMediaKeysFactory> IMediaKeysFactory::createFactory()
 }
 
 std::unique_ptr<IMediaKeys> MediaKeysFactory::createMediaKeys(const std::string &keySystem,
-                          std::shared_ptr<firebolt::rialto::client::IMediaKeysIpcFactory> mediaKeysIpcFactory) const
+                          std::weak_ptr<firebolt::rialto::client::IMediaKeysIpcFactory> mediaKeysIpcFactory) const
 {
     std::unique_ptr<IMediaKeys> mediaKeys;
     try
     {
-        if (!mediaKeysIpcFactory)
-        {
-            mediaKeysIpcFactory = client::IMediaKeysIpcFactory::createFactory();
-        }
-        mediaKeys = std::make_unique<client::MediaKeys>(keySystem, mediaKeysIpcFactory);
+        std::shared_ptr<firebolt::rialto::client::IMediaKeysIpcFactory> mkif = mediaKeysIpcFactory.lock();
+        mediaKeys = std::make_unique<client::MediaKeys>(keySystem, mkif ? mkif : client::IMediaKeysIpcFactory::createFactory());
     }
     catch (const std::exception &e)
     {

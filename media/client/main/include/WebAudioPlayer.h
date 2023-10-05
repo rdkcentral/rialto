@@ -46,8 +46,8 @@ public:
         std::weak_ptr<IWebAudioPlayerClient> client,
         const std::string &audioMimeType, const uint32_t priority,
         const WebAudioConfig *config,
-        std::shared_ptr<client::IWebAudioPlayerIpcFactory> webAudioPlayerIpcFactory,
-        client::IClientController *clientController) const override;
+        std::weak_ptr<client::IWebAudioPlayerIpcFactory> webAudioPlayerIpcFactory,
+        std::weak_ptr<client::IClientController> clientController) const override;
 };
 
 }; // namespace firebolt::rialto

@@ -118,25 +118,19 @@ std::shared_ptr<IMediaPipelineFactory> IMediaPipelineFactory::createFactory()
 
 std::unique_ptr<IMediaPipeline> MediaPipelineFactory::createMediaPipeline(std::weak_ptr<IMediaPipelineClient> client,
                                                                           const VideoRequirements &videoRequirements,
-                                                                          std::shared_ptr<client::IMediaPipelineIpcFactory> mediaPipelineIpcFactory,
-                                                                          client::IClientController *clientController) const
+                                                                          std::weak_ptr<client::IMediaPipelineIpcFactory> mediaPipelineIpcFactory,
+                                                                          std::weak_ptr<client::IClientController> clientController) const
 {
     std::unique_ptr<IMediaPipeline> mediaPipeline;
     try
     {
-        if (!mediaPipelineIpcFactory)
-        {
-            mediaPipelineIpcFactory = client::IMediaPipelineIpcFactory::getFactory();
-        }
-        if (!clientController)
-        {
-            clientController = &client::IClientControllerAccessor::instance().getClientController();
-        }
-
+        std::shared_ptr<client::IMediaPipelineIpcFactory> mp = mediaPipelineIpcFactory.lock();
+        std::shared_ptr<client::IClientController> cc = clientController.lock();
         mediaPipeline =
-            std::make_unique<client::MediaPipeline>(client, videoRequirements, mediaPipelineIpcFactory,
+            std::make_unique<client::MediaPipeline>(client, videoRequirements,
+                                                    mp ? mp : client::IMediaPipelineIpcFactory::getFactory(),
                                                     common::IMediaFrameWriterFactory::getFactory(),
-                                                    *clientController);
+                                                    cc ? *cc : client::IClientControllerAccessor::instance().getClientController());
     }
     catch (const std::exception &e)
     {

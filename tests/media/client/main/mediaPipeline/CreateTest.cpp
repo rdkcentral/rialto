@@ -49,18 +49,18 @@ TEST_F(RialtoClientCreateMediaPipelineTest, Create)
     std::unique_ptr<StrictMock<MediaPipelineIpcMock>> mediaPipelineIpcMock =
         std::make_unique<StrictMock<MediaPipelineIpcMock>>();
 
-    EXPECT_CALL(m_clientControllerMock, registerClient(NotNull(), _)).WillOnce(Return(true));
+    EXPECT_CALL(*m_clientControllerMock, registerClient(NotNull(), _)).WillOnce(Return(true));
     EXPECT_CALL(*m_mediaPipelineIpcFactoryMock, createMediaPipelineIpc(_, VideoRequirementsMatcher(m_videoReq), _))
         .WillOnce(Return(ByMove(std::move(mediaPipelineIpcMock))));
 
     EXPECT_NO_THROW(mediaPipeline = std::make_unique<MediaPipeline>(m_mediaPipelineClientMock, m_videoReq,
                                                                     m_mediaPipelineIpcFactoryMock,
                                                                     m_mediaFrameWriterFactoryMock,
-                                                                    m_clientControllerMock));
+                                                                    *m_clientControllerMock));
     EXPECT_NE(mediaPipeline, nullptr);
 
     // Unregister client on destroy
-    EXPECT_CALL(m_clientControllerMock, unregisterClient(NotNull())).WillOnce(Return(true));
+    EXPECT_CALL(*m_clientControllerMock, unregisterClient(NotNull())).WillOnce(Return(true));
 }
 
 /**
@@ -74,17 +74,17 @@ TEST_F(RialtoClientCreateMediaPipelineTest, FactoryCreatesObject)
 
     std::unique_ptr<StrictMock<MediaPipelineIpcMock>> mediaPipelineIpcMock =
         std::make_unique<StrictMock<MediaPipelineIpcMock>>();
-    EXPECT_CALL(m_clientControllerMock, registerClient(NotNull(), _)).WillOnce(Return(true));
+    EXPECT_CALL(*m_clientControllerMock, registerClient(NotNull(), _)).WillOnce(Return(true));
     EXPECT_CALL(*m_mediaPipelineIpcFactoryMock, createMediaPipelineIpc(_, VideoRequirementsMatcher(m_videoReq), _))
         .WillOnce(Return(ByMove(std::move(mediaPipelineIpcMock))));
 
     std::unique_ptr<IMediaPipeline> mediaPipeline;
     EXPECT_NO_THROW(mediaPipeline = factory->createMediaPipeline(m_mediaPipelineClientMock, m_videoReq,
-                                                                 m_mediaPipelineIpcFactoryMock, &m_clientControllerMock));
+                                                                 m_mediaPipelineIpcFactoryMock, m_clientControllerMock));
     EXPECT_NE(mediaPipeline, nullptr);
 
     // Unregister client on destroy
-    EXPECT_CALL(m_clientControllerMock, unregisterClient(NotNull())).WillOnce(Return(true));
+    EXPECT_CALL(*m_clientControllerMock, unregisterClient(NotNull())).WillOnce(Return(true));
 }
 
 
@@ -111,11 +111,11 @@ TEST_F(RialtoClientCreateMediaPipelineTest, RegisterClientFailure)
 {
     std::unique_ptr<IMediaPipeline> mediaPipeline;
 
-    EXPECT_CALL(m_clientControllerMock, registerClient(NotNull(), _)).WillOnce(Return(false));
+    EXPECT_CALL(*m_clientControllerMock, registerClient(NotNull(), _)).WillOnce(Return(false));
 
     EXPECT_THROW(mediaPipeline = std::make_unique<MediaPipeline>(m_mediaPipelineClientMock, m_videoReq,
                                                                  m_mediaPipelineIpcFactoryMock,
-                                                                 m_mediaFrameWriterFactoryMock, m_clientControllerMock),
+                                                                 m_mediaFrameWriterFactoryMock, *m_clientControllerMock),
                  std::runtime_error);
 }
 
@@ -127,15 +127,15 @@ TEST_F(RialtoClientCreateMediaPipelineTest, CreateMediaPipelineIpcFailure)
 {
     std::unique_ptr<IMediaPipeline> mediaPipeline;
 
-    EXPECT_CALL(m_clientControllerMock, registerClient(NotNull(), _)).WillOnce(Return(true));
+    EXPECT_CALL(*m_clientControllerMock, registerClient(NotNull(), _)).WillOnce(Return(true));
     EXPECT_CALL(*m_mediaPipelineIpcFactoryMock, createMediaPipelineIpc(_, VideoRequirementsMatcher(m_videoReq), _))
         .WillOnce(Return(ByMove(nullptr)));
 
     // Unregister after mediaPipelineIpc error
-    EXPECT_CALL(m_clientControllerMock, unregisterClient(NotNull())).WillOnce(Return(true));
+    EXPECT_CALL(*m_clientControllerMock, unregisterClient(NotNull())).WillOnce(Return(true));
 
     EXPECT_THROW(mediaPipeline = std::make_unique<MediaPipeline>(m_mediaPipelineClientMock, m_videoReq,
                                                                  m_mediaPipelineIpcFactoryMock,
-                                                                 m_mediaFrameWriterFactoryMock, m_clientControllerMock),
+                                                                 m_mediaFrameWriterFactoryMock, *m_clientControllerMock),
                  std::runtime_error);
 }

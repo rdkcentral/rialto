@@ -84,8 +84,8 @@ public:
         const std::string &audioMimeType,
         const uint32_t priority,
         const WebAudioConfig *config,
-        std::shared_ptr<client::IWebAudioPlayerIpcFactory> webAudioPlayerIpcFactory = {},
-        client::IClientController *clientController = 0) const = 0;
+        std::weak_ptr<client::IWebAudioPlayerIpcFactory> webAudioPlayerIpcFactory = {},
+        std::weak_ptr<client::IClientController> clientController = {}) const = 0;
 };
 
 /**

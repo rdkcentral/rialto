@@ -46,8 +46,8 @@ public:
 
     std::unique_ptr<IMediaPipeline> createMediaPipeline(std::weak_ptr<IMediaPipelineClient> client,
                                                         const VideoRequirements &videoRequirements,
-                                                        std::shared_ptr<client::IMediaPipelineIpcFactory> mediaPipelineIpcFactory,
-                                                        client::IClientController *clientController) const override;
+                                                        std::weak_ptr<client::IMediaPipelineIpcFactory> mediaPipelineIpcFactory,
+                                                        std::weak_ptr<client::IClientController> clientController) const override;
 };
 
 }; // namespace firebolt::rialto

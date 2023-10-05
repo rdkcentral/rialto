@@ -34,7 +34,7 @@ public:
     virtual ~MediaKeysServerInternalFactoryMock() = default;
 
     MOCK_METHOD(std::unique_ptr<IMediaKeys>, createMediaKeys, (const std::string &keySystem,
-                    std::shared_ptr<firebolt::rialto::client::IMediaKeysIpcFactory> mediaKeysIpcFactory), (override, const));
+                    std::weak_ptr<firebolt::rialto::client::IMediaKeysIpcFactory> mediaKeysIpcFactory), (override, const));
     MOCK_METHOD(std::unique_ptr<IMediaKeysServerInternal>, createMediaKeysServerInternal,
                 (const std::string &keySystem), (override, const));
 };

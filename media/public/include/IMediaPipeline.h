@@ -72,8 +72,8 @@ public:
      */
     virtual std::unique_ptr<IMediaPipeline> createMediaPipeline(std::weak_ptr<IMediaPipelineClient> client,
                                    const VideoRequirements &videoRequirements,
-                                   std::shared_ptr<client::IMediaPipelineIpcFactory> mediaPipelineIpcFactory = {},
-                                   client::IClientController *clientController = 0) const = 0;
+                                   std::weak_ptr<client::IMediaPipelineIpcFactory> mediaPipelineIpcFactory = {},
+                                   std::weak_ptr<client::IClientController> clientController = {}) const = 0;
 };
 
 /**
