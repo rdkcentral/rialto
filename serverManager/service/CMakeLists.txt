@@ -17,13 +17,26 @@
 # limitations under the License.
 #
 
+if( RIALTO_ENABLE_CONFIG_FILE )
+    find_package( jsoncpp REQUIRED )
+    set(RIALTO_CONFIG_SOURCE_FILES
+        source/ConfigReader.cpp
+        source/JsonCppWrapper.cpp
+        source/FileReaderFactory.cpp
+        source/JsonCppWrapperFactory.cpp
+        source/ConfigReaderFactory.cpp)
+endif()
+
 find_package( PkgConfig REQUIRED )
+
 add_library (
         RialtoServerManager SHARED
         source/ServerManagerServiceFactory.cpp
         source/ServerManagerService.cpp
         source/ServiceContext.cpp
+        ${RIALTO_CONFIG_SOURCE_FILES}
 )
+
 set_target_properties (
         RialtoServerManager
         PROPERTIES LINK_FLAGS "-Wl,--unresolved-symbols=report-all"
@@ -49,6 +62,17 @@ target_link_libraries (
         RialtoServerManagerIpc
         Threads::Threads
 )
+
+if( RIALTO_ENABLE_CONFIG_FILE )
+    add_compile_definitions(RIALTO_ENABLE_CONFIG_FILE)
+    add_compile_definitions(RIALTO_CONFIG_PATH="${RIALTO_CONFIG_FILE_DIR}/rialto-config.json")
+
+    target_link_libraries(
+        RialtoServerManager
+        PRIVATE
+        JsonCpp::JsonCpp
+        )
+endif()
 
 if ( COVERAGE_ENABLED )
     target_link_libraries(
