@@ -23,6 +23,10 @@
 #include "ServiceContext.h"
 #include <memory>
 
+#ifdef RIALTO_ENABLE_CONFIG_FILE
+#include "ConfigReaderFactory.h"
+#endif
+
 namespace
 {
 unsigned int convertSocketPermissions(firebolt::rialto::common::SocketPermissions permissions) // copy param intentionally
@@ -44,14 +48,55 @@ namespace rialto::servermanager::service
 std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserver> &stateObserver,
                                               const firebolt::rialto::common::ServerManagerConfig &config)
 {
-    return std::make_unique<
-        ServerManagerService>(std::make_unique<ServiceContext>(stateObserver, config.sessionServerEnvVars,
-                                                               config.sessionServerPath,
-                                                               config.sessionServerStartupTimeout,
-                                                               config.healthcheckInterval,
-                                                               config.numOfFailedPingsBeforeRecovery,
-                                                               convertSocketPermissions(
-                                                                   config.sessionManagementSocketPermissions)),
-                              config.numOfPreloadedServers);
+    std::list<std::string> sessionServerEnvVars = config.sessionServerEnvVars;
+    std::string sessionServerPath = config.sessionServerPath;
+    std::chrono::milliseconds sessionServerStartupTimeout = config.sessionServerStartupTimeout;
+    std::chrono::seconds healthcheckInterval = config.healthcheckInterval;
+    firebolt::rialto::common::SocketPermissions socketPermissions = config.sessionManagementSocketPermissions;
+    unsigned int numOfPreloadedServers = config.numOfPreloadedServers;
+    unsigned int numOfFailedPingsBeforeRecovery = config.numOfFailedPingsBeforeRecovery;
+
+#ifdef RIALTO_ENABLE_CONFIG_FILE
+    std::unique_ptr<IConfigReaderFactory> configReaderFactory = std::make_unique<ConfigReaderFactory>();
+    std::shared_ptr<IConfigReader> configReader = configReaderFactory->createConfigReader();
+    configReader->read();
+
+    if (!configReader->getEnvironmentVariables().empty())
+        sessionServerEnvVars = configReader->getEnvironmentVariables();
+
+    if (configReader->getSessionServerPath())
+        sessionServerPath = configReader->getSessionServerPath().value();
+
+    if (configReader->getSessionServerStartupTimeout())
+        sessionServerStartupTimeout = configReader->getSessionServerStartupTimeout().value();
+
+    if (configReader->getHealthcheckInterval())
+        healthcheckInterval = configReader->getHealthcheckInterval().value();
+
+    if (configReader->getSocketPermissions())
+        socketPermissions = configReader->getSocketPermissions().value();
+
+    if (configReader->getNumOfPreloadedServers())
+        numOfPreloadedServers = configReader->getNumOfPreloadedServers().value();
+
+    if (configReader->getNumOfPingsBeforeRecovery())
+        numOfFailedPingsBeforeRecovery = configReader->getNumOfPingsBeforeRecovery().value();
+#endif
+
+    std::unique_ptr<IServerManagerService> service =
+        std::make_unique<ServerManagerService>(std::make_unique<ServiceContext>(stateObserver, sessionServerEnvVars,
+                                                                                sessionServerPath,
+                                                                                sessionServerStartupTimeout,
+                                                                                healthcheckInterval,
+                                                                                numOfFailedPingsBeforeRecovery,
+                                                                                convertSocketPermissions(
+                                                                                    socketPermissions)),
+                                               numOfPreloadedServers);
+
+#ifdef RIALTO_ENABLE_CONFIG_FILE
+    if (configReader->getLoggingLevels())
+        service->setLogLevels(configReader->getLoggingLevels().value());
+#endif
+    return service;
 }
 } // namespace rialto::servermanager::service
