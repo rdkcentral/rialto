@@ -55,7 +55,7 @@ else()
   )
 
   ExternalProject_Get_Property( mongoose-source SOURCE_DIR )
-
+  set( MONGOOSE_LIBRARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/third-party/Source/mongoose-source/ )
   add_library(mongoose SHARED IMPORTED)
   set_target_properties(mongoose
   PROPERTIES
