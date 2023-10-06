@@ -29,15 +29,6 @@
 namespace firebolt::rialto::server
 {
 /**
- * @brief Convers the OpenCdmError status to a string.
- *
- * @param[in] status    : The open cdm error status.
- *
- * @retval the string of the status.
- */
-std::string openCdmErrorToString(const OpenCDMError &status);
-
-/**
  * @brief Convers the OpenCdmError status to a MediaKeyErrorStatus.
  *
  * @param[in] status    : The open cdm error status.

@@ -28,8 +28,10 @@
 #include "IpcServerMock.h"
 #include "PlaybackServiceMock.h"
 #include "RpcControllerMock.h"
+#include "SchemaVersion.h"
 #include <gtest/gtest.h>
 #include <memory>
+#include <optional>
 
 using testing::StrictMock;
 
@@ -44,6 +46,7 @@ public:
     void clientWillConnect();
     void controlServiceWillRemoveControl();
     void controlServiceWillRegisterClient();
+    void controlServiceWillFailToRegisterClient();
     void willFailDueToInvalidController();
     void playbackServiceWillGetSharedMemory();
     void playbackServiceWillFailToGetSharedMemory();
@@ -52,7 +55,8 @@ public:
 
     void sendClientConnected();
     void sendClientDisconnected();
-    void sendRegisterClientRequestAndReceiveResponse();
+    void sendRegisterClientRequestAndReceiveResponse(
+        const std::optional<firebolt::rialto::common::SchemaVersion> &schemaVersion = std::nullopt);
     void sendRegisterClientRequestWithInvalidControllerAndReceiveFailure();
     void sendGetSharedMemoryRequestAndReceiveResponse();
     void sendGetSharedMemoryRequestAndExpectFailure();

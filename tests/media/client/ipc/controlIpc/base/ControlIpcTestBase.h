@@ -26,8 +26,10 @@
 #include "EventThreadMock.h"
 #include "IpcClientMock.h"
 #include "IpcModuleBase.h"
+#include "SchemaVersion.h"
 #include <gtest/gtest.h>
 #include <memory>
+#include <optional>
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::client;
@@ -45,7 +47,7 @@ protected:
     StrictMock<EventThreadMock> *m_eventThreadMock;
 
     // ControlIpc object
-    std::shared_ptr<IControlIpc> m_controlIpc;
+    std::shared_ptr<ControlIpc> m_controlIpc;
 
     // Callbacks
     std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> m_notifyApplicationStateCb;
@@ -59,7 +61,7 @@ protected:
 
     void createControlIpc();
     void destroyControlIpc();
-    void registerClient();
+    bool registerClient(const std::optional<firebolt::rialto::common::SchemaVersion> &schemaVersion = std::nullopt);
     void expectSubscribeEvents();
     void expectUnsubscribeEvents();
 };

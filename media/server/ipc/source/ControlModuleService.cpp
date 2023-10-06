@@ -21,6 +21,7 @@
 #include "ControlClientServerInternal.h"
 #include "IPlaybackService.h"
 #include "RialtoServerLogging.h"
+#include "SchemaVersion.h"
 #include <IIpcController.h>
 #include <algorithm>
 #include <cstdint>
@@ -142,12 +143,35 @@ void ControlModuleService::registerClient(::google::protobuf::RpcController *con
         done->Run();
         return;
     }
+    const auto kCurrentSchemaVersion{common::getCurrentSchemaVersion()};
+    if (request->has_client_schema_version())
+    {
+        const firebolt::rialto::common::SchemaVersion kClientSchemaVersion{request->client_schema_version().major(),
+                                                                           request->client_schema_version().minor(),
+                                                                           request->client_schema_version().patch()};
+        RIALTO_SERVER_LOG_DEBUG("Server schema version: %s, client schema version: %s",
+                                kCurrentSchemaVersion.str().c_str(), kClientSchemaVersion.str().c_str());
+        if (!kCurrentSchemaVersion.isCompatible(kClientSchemaVersion))
+        {
+            RIALTO_SERVER_LOG_ERROR("Server and client schema versions not compatible");
+            controller->SetFailed("Server and client schema versions not compatible");
+            done->Run();
+            return;
+        }
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_WARN("Client schema version not present in RegisterClientRequest message");
+    }
     const int controlId{generateControlId()};
     auto ipcClient = ipcController->getClient();
     auto controlClient{std::make_shared<ControlClientServerInternal>(controlId, ipcClient)};
     m_controlService.addControl(controlId, controlClient);
     m_controlIds[ipcClient].insert(controlId);
     response->set_control_handle(controlId);
+    response->mutable_server_schema_version()->set_major(kCurrentSchemaVersion.major());
+    response->mutable_server_schema_version()->set_minor(kCurrentSchemaVersion.minor());
+    response->mutable_server_schema_version()->set_patch(kCurrentSchemaVersion.patch());
     done->Run();
 }
 

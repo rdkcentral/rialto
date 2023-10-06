@@ -76,6 +76,37 @@ TEST_F(RialtoClientCreateMediaPipelineIpcTest, CreateDestroy)
 }
 
 /**
+ * Test that a MediaPipelineIpc object can be created successfully with channel reconnection.
+ */
+TEST_F(RialtoClientCreateMediaPipelineIpcTest, CreateDestroyWithReconnection)
+{
+    /* create media player */
+    expectInitIpcWithReconnection();
+    expectSubscribeEvents();
+    expectIpcApiCallSuccess();
+
+    EXPECT_CALL(*m_eventThreadFactoryMock, createEventThread(_)).WillOnce(Return(ByMove(std::move(m_eventThread))));
+    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("createSession"), m_controllerMock.get(),
+                                           createSessionRequestMatcher(m_videoReq.maxWidth, m_videoReq.maxHeight), _,
+                                           m_blockingClosureMock.get()))
+        .WillOnce(WithArgs<3>(Invoke(this, &MediaPipelineIpcTestBase::setCreateSessionResponse)));
+
+    EXPECT_NO_THROW(m_mediaPipelineIpc = std::make_unique<MediaPipelineIpc>(m_clientMock, m_videoReq, *m_ipcClientMock,
+                                                                            m_eventThreadFactoryMock));
+    EXPECT_NE(m_mediaPipelineIpc, nullptr);
+
+    /* destroy media player */
+    expectIpcApiCallSuccess();
+    expectUnsubscribeEvents();
+
+    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("destroySession"), m_controllerMock.get(),
+                                           destroySessionRequestMatcher(m_sessionId), _, m_blockingClosureMock.get()));
+
+    m_mediaPipelineIpc.reset();
+    EXPECT_EQ(m_mediaPipelineIpc, nullptr);
+}
+
+/**
  * Test the factory
  */
 TEST_F(RialtoClientCreateMediaPipelineIpcTest, FactoryCreatesObject)
@@ -128,6 +159,19 @@ TEST_F(RialtoClientCreateMediaPipelineIpcTest, CreateNoIpcChannel)
 }
 
 /**
+ * Test that a MediaPipelineIpc object not created when the ipc channel has not been created after reconnection.
+ */
+TEST_F(RialtoClientCreateMediaPipelineIpcTest, CreateNoIpcChannelAfterReconnect)
+{
+    expectInitIpcButNotConnectedChannelAfterReconnect();
+    EXPECT_CALL(*m_eventThreadFactoryMock, createEventThread(_)).WillOnce(Return(ByMove(std::move(m_eventThread))));
+
+    EXPECT_THROW(m_mediaPipelineIpc = std::make_unique<MediaPipelineIpc>(m_clientMock, m_videoReq, *m_ipcClientMock,
+                                                                         m_eventThreadFactoryMock),
+                 std::runtime_error);
+}
+
+/**
  * Test that a MediaPipelineIpc object not created when the ipc channel is not connected.
  */
 TEST_F(RialtoClientCreateMediaPipelineIpcTest, CreateIpcChannelDisconnected)
@@ -135,6 +179,7 @@ TEST_F(RialtoClientCreateMediaPipelineIpcTest, CreateIpcChannelDisconnected)
     EXPECT_CALL(*m_eventThreadFactoryMock, createEventThread(_)).WillOnce(Return(ByMove(std::move(m_eventThread))));
     EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock));
     EXPECT_CALL(*m_channelMock, isConnected()).WillOnce(Return(false));
+    EXPECT_CALL(*m_ipcClientMock, reconnect()).WillOnce(Return(false));
 
     EXPECT_THROW(m_mediaPipelineIpc = std::make_unique<MediaPipelineIpc>(m_clientMock, m_videoReq, *m_ipcClientMock,
                                                                          m_eventThreadFactoryMock),

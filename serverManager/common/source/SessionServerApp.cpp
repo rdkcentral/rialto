@@ -85,7 +85,8 @@ SessionServerApp::SessionServerApp(std::unique_ptr<firebolt::rialto::common::ILi
       m_socks{-1, -1}, m_linuxWrapper{std::move(linuxWrapper)}, m_timerFactory{timerFactory},
       m_sessionServerAppManager{sessionServerAppManager}, m_pid{-1}, m_isPreloaded{true},
       m_kSessionServerPath{sessionServerPath}, m_kSessionServerStartupTimeout{sessionServerStartupTimeout},
-      m_kSessionManagementSocketPermissions{socketPermissions}, m_childInitialized{false}
+      m_kSessionManagementSocketPermissions{socketPermissions}, m_childInitialized{false},
+      m_expectedState{firebolt::rialto::common::SessionServerState::UNINITIALIZED}
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("Creating preloaded SessionServerApp with serverId: %d", m_kServerId);
     std::transform(environmentVariables.begin(), environmentVariables.end(), std::back_inserter(m_environmentVariables),
@@ -107,7 +108,7 @@ SessionServerApp::SessionServerApp(const std::string &appName,
       m_clientDisplayName{appConfig.clientDisplayName}, m_socks{-1, -1}, m_linuxWrapper{std::move(linuxWrapper)},
       m_timerFactory{timerFactory}, m_sessionServerAppManager{sessionServerAppManager}, m_pid{-1}, m_isPreloaded{false},
       m_kSessionServerPath{sessionServerPath}, m_kSessionServerStartupTimeout{sessionServerStartupTimeout},
-      m_kSessionManagementSocketPermissions{socketPermissions}, m_childInitialized{false}
+      m_kSessionManagementSocketPermissions{socketPermissions}, m_childInitialized{false}, m_expectedState{initialState}
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("Creating SessionServerApp for app: %s with appId: %d", appName.c_str(), m_kServerId);
     std::transform(environmentVariables.begin(), environmentVariables.end(), std::back_inserter(m_environmentVariables),
@@ -261,8 +262,18 @@ void SessionServerApp::kill() const
 {
     if (m_pid > 0)
     {
-        m_linuxWrapper->kill(m_pid, SIGKILL);
+        m_linuxWrapper->kill(m_pid, SIGTERM);
     }
+}
+
+void SessionServerApp::setExpectedState(const firebolt::rialto::common::SessionServerState &state)
+{
+    m_expectedState = state;
+}
+
+firebolt::rialto::common::SessionServerState SessionServerApp::getExpectedState() const
+{
+    return m_expectedState;
 }
 
 bool SessionServerApp::initializeSockets()

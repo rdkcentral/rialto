@@ -19,10 +19,11 @@
 
 #include "WebAudioPlayerService.h"
 #include "IWebAudioPlayer.h"
-#include "IWebAudioPlayerServerInternalFactory.h"
+//#include "IWebAudioPlayerServerInternalFactory.h"
 #include "IMainThread.h"
 #include "IGstWebAudioPlayer.h"
 #include "ITimer.h"
+#include "IWebAudioPlayerServerInternal.h"
 #include "RialtoServerLogging.h"
 #include <exception>
 #include <future>
@@ -242,4 +243,14 @@ bool WebAudioPlayerService::getVolume(int handle, double &volume)
     return webAudioPlayerIter->second->getVolume(volume);
 }
 
+void WebAudioPlayerService::ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure)
+{
+    RIALTO_SERVER_LOG_DEBUG("Ping requested");
+    std::lock_guard<std::mutex> lock{m_webAudioPlayerMutex};
+    for (const auto &webAudioPlayersPair : m_webAudioPlayers)
+    {
+        auto &webAudioPlayer = webAudioPlayersPair.second;
+        webAudioPlayer->ping(heartbeatProcedure->createHandler());
+    }
+}
 } // namespace firebolt::rialto::server::service

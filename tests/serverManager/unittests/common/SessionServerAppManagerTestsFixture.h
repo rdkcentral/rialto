@@ -66,20 +66,23 @@ public:
     void sessionServerWillKillRunningApplication();
     void sessionServerWontBePreloaded();
     void newSessionServerWillBeLaunched();
-    void healthcheckServiceWillHandleAck();
+    void healthcheckServiceWillHandleAck(bool success);
     void pingWillBeSentToRunningApps();
     void pingSendToRunningAppsWillFail();
     void clientWillBeRemoved();
     void sessionServerWillIndicateStateChange(const firebolt::rialto::common::SessionServerState &state);
+    void sessionServerWillBeRestarted(const firebolt::rialto::common::SessionServerState &state);
+    void sessionServerWillRestartWillBeSkipped();
 
     void triggerPreloadSessionServers();
     bool triggerInitiateApplication(const firebolt::rialto::common::SessionServerState &state);
     bool triggerSetSessionServerState(const firebolt::rialto::common::SessionServerState &newState);
     void triggerOnSessionServerStateChanged(const firebolt::rialto::common::SessionServerState &newState);
-    void triggerOnAck();
+    void triggerOnAck(bool success);
     std::string triggerGetAppConnectionInfo();
     bool triggerSetLogLevel();
     void triggerSendPingEvents();
+    void triggerRestartServer();
 
 private:
     std::unique_ptr<rialto::servermanager::ipc::IController> m_controller;

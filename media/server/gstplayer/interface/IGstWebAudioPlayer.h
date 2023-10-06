@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_I_GST_WEB_AUDIO_PLAYER_H_
 
 #include "IGstWebAudioPlayerClient.h"
+#include "IHeartbeatHandler.h"
 #include <memory>
 #include <stdint.h>
 #include <string>
@@ -138,6 +139,14 @@ public:
      * @retval The number of bytes queued.
      */
     virtual uint64_t getQueuedBytes() = 0;
+
+    /**
+     * @brief Checks if worker thread is not deadlocked
+     *
+     * @param[out] heartbeatHandler : The heartbeat handler instance
+     *
+     */
+    virtual void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) = 0;
 };
 
 }; // namespace firebolt::rialto::server

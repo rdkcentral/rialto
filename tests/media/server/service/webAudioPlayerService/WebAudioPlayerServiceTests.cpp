@@ -256,3 +256,10 @@ TEST_F(WebAudioPlayerServiceTests, shouldGetVolume)
     webAudioPlayerWillGetVolume();
     getVolumeShouldSucceed();
 }
+
+TEST_F(WebAudioPlayerServiceTests, shouldPing)
+{
+    initWebAudioPlayer();
+    webAudioPlayerWillPing();
+    triggerPing();
+}

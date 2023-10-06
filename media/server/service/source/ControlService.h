@@ -22,7 +22,6 @@
 
 #include "IControlServerInternal.h"
 #include "IControlService.h"
-#include "IHeartbeatProcedure.h"
 #include <map>
 #include <memory>
 #include <mutex>
@@ -32,21 +31,19 @@ namespace firebolt::rialto::server::service
 class ControlService : public IControlService
 {
 public:
-    explicit ControlService(const std::shared_ptr<IControlServerInternalFactory> &controlServerInternalFactory,
-                            std::unique_ptr<IHeartbeatProcedureFactory> &&heartbeatProcedureFactory);
+    explicit ControlService(const std::shared_ptr<IControlServerInternalFactory> &controlServerInternalFactory);
     ~ControlService() override = default;
 
     void addControl(int controlId, const std::shared_ptr<IControlClientServerInternal> &client) override;
     void removeControl(int controlId) override;
     bool ack(int controlId, std::uint32_t id) override;
     void setApplicationState(const ApplicationState &state) override;
-    bool ping(std::int32_t id, const std::shared_ptr<IAckSender> &ackSender) override;
+    bool ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure) override;
 
 private:
     std::mutex m_mutex;
     ApplicationState m_currentState;
     std::shared_ptr<IControlServerInternalFactory> m_controlServerInternalFactory;
-    std::unique_ptr<IHeartbeatProcedureFactory> m_heartbeatProcedureFactory;
     std::map<int, std::shared_ptr<IControlServerInternal>> m_controls;
 };
 } // namespace firebolt::rialto::server::service

@@ -29,8 +29,6 @@ using testing::Test;
 namespace
 {
 constexpr std::int32_t kPingId{13};
-constexpr int kFirstControlId{0};
-constexpr int kSecondControlId{1};
 } // namespace
 
 class HeartbeatProcedureTests : public Test
@@ -52,7 +50,7 @@ TEST_F(HeartbeatProcedureTests, shouldSendSuccessResponseWhenNoHandlerIsCreated)
 TEST_F(HeartbeatProcedureTests, shouldSendSuccessResponseWhenSingleHandlerSucceeds)
 {
     auto sut{IHeartbeatProcedureFactory::createFactory()->createHeartbeatProcedure(m_ackSenderMock, kPingId)};
-    auto handler = sut->createHandler(kFirstControlId);
+    auto handler = sut->createHandler();
     handler.reset();
     EXPECT_CALL(*m_ackSenderMock, send(kPingId, true));
     sut.reset();
@@ -61,7 +59,7 @@ TEST_F(HeartbeatProcedureTests, shouldSendSuccessResponseWhenSingleHandlerSuccee
 TEST_F(HeartbeatProcedureTests, shouldSendFailResponseWhenSingleHandlerFails)
 {
     auto sut{IHeartbeatProcedureFactory::createFactory()->createHeartbeatProcedure(m_ackSenderMock, kPingId)};
-    auto handler = sut->createHandler(kFirstControlId);
+    auto handler = sut->createHandler();
     handler->error();
     handler.reset();
     EXPECT_CALL(*m_ackSenderMock, send(kPingId, false));
@@ -71,7 +69,7 @@ TEST_F(HeartbeatProcedureTests, shouldSendFailResponseWhenSingleHandlerFails)
 TEST_F(HeartbeatProcedureTests, handlerShouldReturnCorrectPingId)
 {
     auto sut{IHeartbeatProcedureFactory::createFactory()->createHeartbeatProcedure(m_ackSenderMock, kPingId)};
-    auto handler = sut->createHandler(kFirstControlId);
+    auto handler = sut->createHandler();
     EXPECT_EQ(handler->id(), kPingId);
     handler.reset();
     EXPECT_CALL(*m_ackSenderMock, send(kPingId, true));
@@ -81,8 +79,8 @@ TEST_F(HeartbeatProcedureTests, handlerShouldReturnCorrectPingId)
 TEST_F(HeartbeatProcedureTests, shouldSendSuccessResponseWhenTwoHandlersSucceed)
 {
     auto sut{IHeartbeatProcedureFactory::createFactory()->createHeartbeatProcedure(m_ackSenderMock, kPingId)};
-    auto handler1 = sut->createHandler(kFirstControlId);
-    auto handler2 = sut->createHandler(kSecondControlId);
+    auto handler1 = sut->createHandler();
+    auto handler2 = sut->createHandler();
     handler1.reset();
     handler2.reset();
     EXPECT_CALL(*m_ackSenderMock, send(kPingId, true));
@@ -92,8 +90,8 @@ TEST_F(HeartbeatProcedureTests, shouldSendSuccessResponseWhenTwoHandlersSucceed)
 TEST_F(HeartbeatProcedureTests, shouldSendSuccessResponseWhenOneOfHandlersFail)
 {
     auto sut{IHeartbeatProcedureFactory::createFactory()->createHeartbeatProcedure(m_ackSenderMock, kPingId)};
-    auto handler1 = sut->createHandler(kFirstControlId);
-    auto handler2 = sut->createHandler(kSecondControlId);
+    auto handler1 = sut->createHandler();
+    auto handler2 = sut->createHandler();
     handler1->error();
     handler1.reset();
     handler2.reset();

@@ -67,14 +67,14 @@ WebAudioPlayerServerInternalFactory::createWebAudioPlayer(
     return nullptr;
 }
 
-std::unique_ptr<IWebAudioPlayer> WebAudioPlayerServerInternalFactory::createWebAudioPlayerServerInternal(
+std::unique_ptr<IWebAudioPlayerServerInternal> WebAudioPlayerServerInternalFactory::createWebAudioPlayerServerInternal(
     std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType, const uint32_t priority,
     const WebAudioConfig *config, const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle,
     const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
     const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory,
     std::weak_ptr<common::ITimerFactory> timerFactory) const
 {
-    std::unique_ptr<IWebAudioPlayer> webAudioPlayer;
+    std::unique_ptr<IWebAudioPlayerServerInternal> webAudioPlayer;
     try
     {
         webAudioPlayer = std::make_unique<server::WebAudioPlayerServerInternal>(client, audioMimeType, priority, config,
@@ -568,5 +568,13 @@ void WebAudioPlayerServerInternal::handleWriteDataTimer()
 uint32_t WebAudioPlayerServerInternal::getQueuedFramesInShm()
 {
     return (m_maxDataLength - (m_availableBuffer.lengthMain + m_availableBuffer.lengthWrap)) / m_bytesPerFrame;
+}
+
+void WebAudioPlayerServerInternal::ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    auto task = [&]() { m_gstPlayer->ping(std::move(heartbeatHandler)); };
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
 }
 }; // namespace firebolt::rialto::server

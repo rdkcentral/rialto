@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_I_WEB_AUDIO_PLAYER_SERVER_INTERNAL_FACTORY_H_
-#define FIREBOLT_RIALTO_SERVER_I_WEB_AUDIO_PLAYER_SERVER_INTERNAL_FACTORY_H_
+#ifndef FIREBOLT_RIALTO_SERVER_I_WEB_AUDIO_PLAYER_SERVER_INTERNAL_H_
+#define FIREBOLT_RIALTO_SERVER_I_WEB_AUDIO_PLAYER_SERVER_INTERNAL_H_
 
 /**
  * @file IWebAudioPlayerServerInternal.h
@@ -35,6 +35,7 @@
 #include <vector>
 
 #include "IDecryptionService.h"
+#include "IHeartbeatHandler.h"
 #include "ISharedMemoryBuffer.h"
 #include "IWebAudioPlayer.h"
 #include <MediaCommon.h>
@@ -48,6 +49,7 @@ namespace firebolt::rialto::common {
 
 namespace firebolt::rialto::server
 {
+class IWebAudioPlayerServerInternal;
 /**
  * @brief IWebAudioPlayer factory class, returns a concrete implementation of IWebAudioPlayer for internal server use
  */
@@ -76,7 +78,7 @@ public:
      *
      * @retval the new backend instance or null on error.
      */
-    virtual std::unique_ptr<IWebAudioPlayer>
+    virtual std::unique_ptr<IWebAudioPlayerServerInternal>
     createWebAudioPlayerServerInternal(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
                                        const uint32_t priority, const WebAudioConfig *config,
                                        const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle,
@@ -84,6 +86,24 @@ public:
                                        const std::shared_ptr<firebolt::rialto::server::IGstWebAudioPlayerFactory> &gstPlayerFactory,
                                        std::weak_ptr<common::ITimerFactory> timerFactory) const = 0;
 };
+
+/**
+ * @brief The definition of the IWebAudioPlayerServerInternal interface.
+ *
+ * This interface defines the public API of Rialto for mixing PCM audio with
+ * current audio output. It should be implemented by both Rialto Client &
+ * Rialto Server.
+ */
+class IWebAudioPlayerServerInternal : public IWebAudioPlayer
+{
+public:
+    /**
+     * @brief Checks if WebAudioPlayer threads are not deadlocked
+     *
+     * @param[out] heartbeatHandler : The heartbeat handler instance
+     */
+    virtual void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) = 0;
+};
 }; // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_I_WEB_AUDIO_PLAYER_SERVER_INTERNAL_FACTORY_H_
+#endif // FIREBOLT_RIALTO_SERVER_I_WEB_AUDIO_PLAYER_SERVER_INTERNAL_H_

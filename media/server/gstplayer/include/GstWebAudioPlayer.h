@@ -93,6 +93,7 @@ public:
     bool changePipelineState(GstState newState) override;
     void stopWorkerThread() override;
     void handleBusMessage(GstMessage *message) override;
+    void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) override;
 
 private:
     /**

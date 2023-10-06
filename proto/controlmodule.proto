@@ -40,17 +40,37 @@ option cc_generic_services = true;
 message GetSharedMemoryRequest {
 }
 message GetSharedMemoryResponse {
-    required int32 fd = 1 [(rialto.ipc.field_is_fd) = true];
-    required uint32 size = 2;
+    optional int32 fd = 1 [(rialto.ipc.field_is_fd) = true, default = -1];
+    optional  uint32 size = 2;
 }
 
 /**
+ * @brief Schema version
+ *
+ * @param[in] major  : The number determines, if schemas are compatibile.
+ * @param[in] minor  : The number determines, if public API or proto schema is the same.
+ * @param[in] patch  : The number determines, if implementation has the same version.
+ *
+ */
+ message SchemaVersion {
+    optional uint32 major = 1;
+    optional uint32 minor = 2;
+    optional uint32 patch = 3;
+ }
+
+/**
  * @brief Register new client
+ *
+ * @param[in] client_schema_version  : The version of protobuf interface used by client.
+ *
+ * @returns The control handle and version of protobuf interface used by server.
  */
 message RegisterClientRequest {
+    optional SchemaVersion client_schema_version = 1;
 }
 message RegisterClientResponse {
-    required int32 control_handle = 1;
+    optional  int32 control_handle = 1 [default = -1];
+    optional SchemaVersion server_schema_version = 2;
 }
 
 /**
@@ -63,8 +83,8 @@ message RegisterClientResponse {
  * 
  */
 message AckRequest {
-    required int32 control_handle = 1;
-    required int32 id = 2;
+    optional  int32 control_handle = 1 [default = -1];
+    optional  int32 id = 2 [default = -1];
 }
 message AckResponse {
 }
@@ -84,8 +104,8 @@ message ApplicationStateChangeEvent {
         INACTIVE = 2;        ///< State of RialtoServer is Inactive or NotRunning
     }
 
-    required int32 control_handle = 1;
-    required ApplicationState application_state = 2;
+    optional  int32 control_handle = 1 [default = -1];
+    optional  ApplicationState application_state = 2;
 }
 
 /**
@@ -96,8 +116,8 @@ message ApplicationStateChangeEvent {
  * @param[in] id  : Unique id, should be passed to corresponding ack call
  */
 message PingEvent {
-    required int32 control_handle = 1;
-    required int32 id = 2;
+    optional  int32 control_handle = 1 [default = -1];
+    optional  int32 id = 2 [default = -1];
 }
 
 service ControlModule {

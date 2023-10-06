@@ -76,6 +76,7 @@ public:
     bool getMute(int sessionId, bool &mute) override;
     std::vector<std::string> getSupportedMimeTypes(MediaSourceType type) override;
     bool isMimeTypeSupported(const std::string &mimeType) override;
+    void ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure) override;
 
     void clearMediaPipelines();
 

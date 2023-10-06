@@ -56,6 +56,53 @@ target_include_directories (
         mongoose
 )
 
+if( RIALTO_ENABLE_CONFIG_FILE )
+    if (NOT RIALTO_CONFIG_FILE_DIR)
+        set(RIALTO_CONFIG_FILE_DIR /etc/)
+    endif()
+
+    if ( NOT ENVIRONMENT_VARIABLES)
+        set( ENVIRONMENT_VARIABLES "\"XDG_RUNTIME_DIR=/tmp\",\"WAYLAND_DISPLAY=westeros-rialto\",\"RIALTO_SINKS_RANK=0\",\"GST_REGISTRY=/tmp/rialto-server-gstreamer-cache.bin\",\"WESTEROS_SINK_USE_ESSRMGR=1\"" )
+    endif()
+
+    if (NOT SESSION_SERVER_PATH)
+        set( SESSION_SERVER_PATH "\"/usr/bin/RialtoServer\"" )
+    endif()
+
+    if (NOT STARTUP_TIMEOUT_MS)
+        set( STARTUP_TIMEOUT_MS 0 )
+    endif()
+
+    if (NOT HEALTHCHECK_INTERVAL_S)
+        set( HEALTHCHECK_INTERVAL_S 5 )
+    endif()
+
+    if (NOT SOCKET_PERMISSIONS)
+        set( SOCKET_PERMISSIONS 666 )
+    endif()
+
+    if (NOT NUM_OF_PRELOADED_SERVERS)
+        set( NUM_OF_PRELOADED_SERVERS 0 )
+    endif()
+
+    if (NOT LOG_LEVEL)
+        set( LOG_LEVEL 3 )
+    endif()
+
+    if (NOT NUM_OF_PINGS_BEFORE_RECOVERY)
+        set( NUM_OF_PINGS_BEFORE_RECOVERY 3 )
+    endif()
+
+    configure_file(
+        config/rialto-config.in.json
+        rialto-config.json
+        @ONLY )
+
+    install(
+        FILES       ${CMAKE_CURRENT_BINARY_DIR}/rialto-config.json
+        DESTINATION ${RIALTO_CONFIG_FILE_DIR} )
+endif()
+
 target_link_libraries (
         RialtoServerManagerSim
 

@@ -751,3 +751,13 @@ TEST_F(CdmServiceTests, shouldReturnFalseWhenCheckingPlayreadyKeySystemWhenMedia
     isPlayreadyKeySystemShouldReturn(false);
     destroyMediaKeysShouldSucceed();
 }
+
+TEST_F(CdmServiceTests, shouldPing)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysFactoryWillCreateMediaKeys();
+    createMediaKeysShouldSucceed();
+    mediaKeysWillPing();
+    triggerPing();
+    destroyMediaKeysShouldSucceed();
+}

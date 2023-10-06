@@ -35,10 +35,29 @@ void IpcModuleBase::expectInitIpc()
     expectAttachChannel();
 }
 
+void IpcModuleBase::expectInitIpcWithReconnection()
+{
+    std::shared_ptr<StrictMock<ChannelMock>> channelMock;
+    EXPECT_CALL(*m_ipcClientMock, getChannel())
+        .WillOnce(Return(channelMock))
+        .WillOnce(Return(m_channelMock))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*m_ipcClientMock, reconnect()).WillOnce(Return(true)).RetiresOnSaturation();
+    EXPECT_CALL(*m_channelMock, isConnected()).InSequence(m_isConnectedSeq).WillOnce(Return(true)).RetiresOnSaturation();
+}
+
 void IpcModuleBase::expectInitIpcButAttachChannelFailure()
 {
     std::shared_ptr<StrictMock<ChannelMock>> channelMock;
     EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(channelMock)).RetiresOnSaturation();
+    EXPECT_CALL(*m_ipcClientMock, reconnect()).WillOnce(Return(false)).RetiresOnSaturation();
+}
+
+void IpcModuleBase::expectInitIpcButNotConnectedChannelAfterReconnect()
+{
+    std::shared_ptr<StrictMock<ChannelMock>> channelMock;
+    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillRepeatedly(Return(channelMock)).RetiresOnSaturation();
+    EXPECT_CALL(*m_ipcClientMock, reconnect()).WillOnce(Return(true)).RetiresOnSaturation();
 }
 
 void IpcModuleBase::expectAttachChannel()
@@ -76,6 +95,7 @@ void IpcModuleBase::expectIpcApiCallDisconnected()
 
     EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
     EXPECT_CALL(*m_channelMock, isConnected()).InSequence(m_isConnectedSeq).WillOnce(Return(false)).RetiresOnSaturation();
+    EXPECT_CALL(*m_ipcClientMock, reconnect()).WillOnce(Return(false)).RetiresOnSaturation();
 }
 
 void IpcModuleBase::expectIpcApiCallReconnected()

@@ -43,8 +43,8 @@ message WebAudioPlayerStateEvent {
         FAILURE = 5;
     };
 
-    required int32 web_audio_player_handle = 1;
-    required WebAudioPlayerState state = 2;
+    optional int32 web_audio_player_handle = 1 [default = -1];
+    optional WebAudioPlayerState state = 2;
 }
 
 /**
@@ -66,12 +66,12 @@ message WebAudioPlayerStateEvent {
 message CreateWebAudioPlayerRequest {
     message WebAudioPcmConfig
     {
-        required uint32 rate = 1;
-        required uint32 channels = 2;
-        required uint32 sample_size = 3;
-        required bool is_big_endian = 4;
-        required bool is_signed = 5;
-        required bool is_float = 6;
+        optional uint32 rate = 1;
+        optional uint32 channels = 2;
+        optional uint32 sample_size = 3;
+        optional bool is_big_endian = 4;
+        optional bool is_signed = 5;
+        optional bool is_float = 6;
     };
     message WebAudioConfig {
         oneof config {
@@ -79,12 +79,12 @@ message CreateWebAudioPlayerRequest {
         }
     }
 
-    required string audio_mime_type = 1;
-    required uint32 priority = 2;
+    optional string audio_mime_type = 1;
+    optional uint32 priority = 2;
     optional WebAudioConfig config = 3;
 }
 message CreateWebAudioPlayerResponse {
-    required int32 web_audio_player_handle = 1;
+    optional int32 web_audio_player_handle = 1 [default = -1];
 }
 
 /**
@@ -97,7 +97,7 @@ message CreateWebAudioPlayerResponse {
  *
  */
 message DestroyWebAudioPlayerRequest {
-    required int32 web_audio_player_handle = 1;
+    optional int32 web_audio_player_handle = 1 [default = -1];
 }
 message DestroyWebAudioPlayerResponse {
 }
@@ -108,7 +108,7 @@ message DestroyWebAudioPlayerResponse {
  *
  */
 message WebAudioPlayRequest {
-    required int32 web_audio_player_handle = 1;
+    optional int32 web_audio_player_handle = 1 [default = -1];
 }
 message WebAudioPlayResponse {
 }
@@ -119,7 +119,7 @@ message WebAudioPlayResponse {
  *
  */
 message WebAudioPauseRequest {
-    required int32 web_audio_player_handle = 1;
+    optional int32 web_audio_player_handle = 1 [default = -1];
 }
 message WebAudioPauseResponse {
 }
@@ -130,7 +130,7 @@ message WebAudioPauseResponse {
  *
  */
 message WebAudioSetEosRequest {
-    required int32 web_audio_player_handle = 1;
+    optional int32 web_audio_player_handle = 1 [default = -1];
 }
 message WebAudioSetEosResponse {
 }
@@ -145,18 +145,18 @@ message WebAudioSetEosResponse {
  * @retval Number of available frames and shm info.
  */
 message WebAudioGetBufferAvailableRequest {
-    required int32 web_audio_player_handle = 1;
+    optional int32 web_audio_player_handle = 1 [default = -1];
 }
 message WebAudioGetBufferAvailableResponse {
     message WebAudioShmInfo {
-        required uint32 offset_main = 1;
-        required uint32 length_main = 2;
-        required uint32 offset_wrap = 3;
-        required uint32 length_wrap = 4;
+        optional uint32 offset_main = 1;
+        optional uint32 length_main = 2;
+        optional uint32 offset_wrap = 3;
+        optional uint32 length_wrap = 4;
     }
 
-    required uint32 available_frames = 1;
-    required WebAudioShmInfo shm_info = 2;
+    optional uint32 available_frames = 1;
+    optional WebAudioShmInfo shm_info = 2;
 }
 
 /**
@@ -169,10 +169,10 @@ message WebAudioGetBufferAvailableResponse {
  * @retval Number of delayed frames.
  */
 message WebAudioGetBufferDelayRequest {
-    required int32 web_audio_player_handle = 1;
+    optional int32 web_audio_player_handle = 1 [default = -1];
 }
 message WebAudioGetBufferDelayResponse {
-    required uint32 delay_frames = 1;
+    optional uint32 delay_frames = 1;
 }
 
 /**
@@ -185,8 +185,8 @@ message WebAudioGetBufferDelayResponse {
  *
  */
 message WebAudioWriteBufferRequest {
-    required int32 web_audio_player_handle = 1;
-    required uint32 number_of_frames = 2;
+    optional int32 web_audio_player_handle = 1 [default = -1];
+    optional uint32 number_of_frames = 2;
 }
 message WebAudioWriteBufferResponse {
 }
@@ -203,12 +203,12 @@ message WebAudioWriteBufferResponse {
  * @retval the number of preferred frames, maximum frames and whether defered play is supported.
  */
 message WebAudioGetDeviceInfoRequest {
-    required int32 web_audio_player_handle = 1;
+    optional int32 web_audio_player_handle = 1 [default = -1];
 }
 message WebAudioGetDeviceInfoResponse {
-    required uint32 preferred_frames = 1;
-    required uint32 maximum_frames = 2;
-    required uint32 support_deferred_play = 3;
+    optional uint32 preferred_frames = 1;
+    optional uint32 maximum_frames = 2;
+    optional uint32 support_deferred_play = 3;
 }
 
 /**
@@ -221,8 +221,8 @@ message WebAudioGetDeviceInfoResponse {
  *
  */
 message WebAudioSetVolumeRequest {
-    required int32 web_audio_player_handle = 1;
-    required double volume = 2;
+    optional int32 web_audio_player_handle = 1 [default = -1];
+    optional double volume = 2 [default = -1];
 }
 message WebAudioSetVolumeResponse {
 }
@@ -236,10 +236,10 @@ message WebAudioSetVolumeResponse {
  * @retval The current volume.
  */
 message WebAudioGetVolumeRequest {
-    required int32 web_audio_player_handle = 1;
+    optional int32 web_audio_player_handle = 1 [default = -1];
 }
 message WebAudioGetVolumeResponse {
-    required double volume = 1;
+    optional double volume = 1 [default = -1];
 }
 
 service WebAudioPlayerModule {

@@ -123,7 +123,6 @@ TEST_F(ControlServerInternalTests, shouldSendPingEvent)
         std::make_unique<StrictMock<HeartbeatHandlerMock>>()};
     mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*heartbeatHandlerMock, id()).WillRepeatedly(Return(kPingId));
-    EXPECT_CALL(*heartbeatHandlerMock, pingSent());
     EXPECT_CALL(*m_controlClientMock, ping(kPingId));
     m_sut->ping(std::move(heartbeatHandlerMock));
 }
@@ -137,12 +136,10 @@ TEST_F(ControlServerInternalTests, shouldNotifyErrorWhenEarlierPingWasNotFinishe
         std::make_unique<StrictMock<HeartbeatHandlerMock>>()};
     mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*heartbeatHandlerMock, id()).WillRepeatedly(Return(kPingId));
-    EXPECT_CALL(*heartbeatHandlerMock, pingSent());
     EXPECT_CALL(*m_controlClientMock, ping(kPingId));
     mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*heartbeatHandlerMock, error());
     EXPECT_CALL(*heartbeatHandlerMock2, id()).WillRepeatedly(Return(kNextPingId));
-    EXPECT_CALL(*heartbeatHandlerMock2, pingSent());
     EXPECT_CALL(*m_controlClientMock, ping(kNextPingId));
     m_sut->ping(std::move(heartbeatHandlerMock));
     m_sut->ping(std::move(heartbeatHandlerMock2));
@@ -157,7 +154,6 @@ TEST_F(ControlServerInternalTests, shouldNotNotifyErrorInInactiveState)
         std::make_unique<StrictMock<HeartbeatHandlerMock>>()};
     mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*heartbeatHandlerMock, id()).WillRepeatedly(Return(kPingId));
-    EXPECT_CALL(*heartbeatHandlerMock, pingSent());
     EXPECT_CALL(*m_controlClientMock, ping(kPingId));
 
     m_sut->ping(std::move(heartbeatHandlerMock));
@@ -185,7 +181,6 @@ TEST_F(ControlServerInternalTests, shouldNotAckWhenAckIdIsWrong)
         std::make_unique<StrictMock<HeartbeatHandlerMock>>()};
     mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*heartbeatHandlerMock, id()).WillRepeatedly(Return(kNextPingId));
-    EXPECT_CALL(*heartbeatHandlerMock, pingSent());
     EXPECT_CALL(*m_controlClientMock, ping(kNextPingId));
     m_sut->ping(std::move(heartbeatHandlerMock));
 
@@ -200,7 +195,6 @@ TEST_F(ControlServerInternalTests, shouldAck)
         std::make_unique<StrictMock<HeartbeatHandlerMock>>()};
     mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*heartbeatHandlerMock, id()).WillRepeatedly(Return(kPingId));
-    EXPECT_CALL(*heartbeatHandlerMock, pingSent());
     EXPECT_CALL(*m_controlClientMock, ping(kPingId));
     m_sut->ping(std::move(heartbeatHandlerMock));
 
@@ -215,7 +209,6 @@ TEST_F(ControlServerInternalTests, shouldAckAndSendNextPing)
         std::make_unique<StrictMock<HeartbeatHandlerMock>>()};
     mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*heartbeatHandlerMock, id()).WillRepeatedly(Return(kPingId));
-    EXPECT_CALL(*heartbeatHandlerMock, pingSent());
     EXPECT_CALL(*m_controlClientMock, ping(kPingId));
     m_sut->ping(std::move(heartbeatHandlerMock));
 
@@ -226,7 +219,6 @@ TEST_F(ControlServerInternalTests, shouldAckAndSendNextPing)
         std::make_unique<StrictMock<HeartbeatHandlerMock>>()};
     mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*heartbeatHandlerMock2, id()).WillRepeatedly(Return(kNextPingId));
-    EXPECT_CALL(*heartbeatHandlerMock2, pingSent());
     EXPECT_CALL(*m_controlClientMock, ping(kNextPingId));
     m_sut->ping(std::move(heartbeatHandlerMock2));
 

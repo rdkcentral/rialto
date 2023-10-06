@@ -40,6 +40,7 @@ add_library(
         source/MediaFrameWriterFactory.cpp
         source/MediaFrameWriterV1.cpp
         source/MediaFrameWriterV2.cpp
+        source/SchemaVersion.cpp
     )
 
 set_property (

@@ -194,8 +194,6 @@ protected:
     void triggerVideoUnderflow();
     void checkUnderflowFlag(bool expected);
     void shouldNotifyVideoUnderflow();
-    void shouldNotifyEndOfStream();
-    void checkEndOfStreamNotified();
 
     // Shutdown test methods
     void shouldStopWorkerThread();
@@ -223,6 +221,9 @@ protected:
     void shouldChangeStatePlayingSuccess();
     void shouldChangeStatePlayingFailure();
     void triggerPlay();
+
+    // Ping test methods
+    void triggerPing();
 
     // Pause test methods
     void shouldPause();

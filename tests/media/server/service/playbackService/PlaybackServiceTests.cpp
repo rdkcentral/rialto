@@ -58,3 +58,9 @@ TEST_F(PlaybackServiceTests, shouldSetClientDisplayName)
     triggerSetClientDisplayName();
     clientDisplayNameShouldBeSet();
 }
+
+TEST_F(PlaybackServiceTests, shouldPing)
+{
+    createPlaybackServiceShouldSuccess();
+    triggerPing();
+}
