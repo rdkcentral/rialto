@@ -40,7 +40,7 @@ IClientController &ClientControllerAccessor::getClientController() const
 }
 
 ClientController::ClientController(const std::shared_ptr<IControlIpcFactory> &ControlIpcFactory)
-    : m_currentState{ApplicationState::UNKNOWN}
+    : m_currentState{ApplicationState::UNKNOWN}, m_registrationRequired{true}
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
@@ -84,7 +84,7 @@ bool ClientController::registerClient(IControlClient *client, ApplicationState &
     }
 
     std::lock_guard<std::mutex> lock{m_mutex};
-    if (ApplicationState::UNKNOWN == m_currentState)
+    if (m_registrationRequired)
     {
         if (!m_controlIpc->registerClient())
         {
@@ -92,6 +92,7 @@ bool ClientController::registerClient(IControlClient *client, ApplicationState &
             return false;
         }
     }
+    m_registrationRequired = false;
     m_clientVec.insert(client);
     appState = m_currentState;
 
@@ -150,6 +151,11 @@ void ClientController::notifyApplicationState(ApplicationState state)
 {
     {
         std::lock_guard<std::mutex> lock{m_mutex};
+        if (ApplicationState::UNKNOWN == state)
+        {
+            RIALTO_CLIENT_LOG_DEBUG("Application state changed to unknown. Client will have to register next time");
+            m_registrationRequired = true;
+        }
         if (m_currentState == state)
         {
             RIALTO_CLIENT_LOG_WARN("Rialto application state already set, %s", stateToString(m_currentState).c_str());
