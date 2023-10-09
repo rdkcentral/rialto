@@ -63,7 +63,7 @@ TEST_F(RialtoClientCreateMediaKeysCapabilitiesTest, Create)
 TEST_F(RialtoClientCreateMediaKeysCapabilitiesTest, FactoryExpectFailure)
 {
     std::shared_ptr<firebolt::rialto::IMediaKeysCapabilitiesFactory> factory =
-      firebolt::rialto::IMediaKeysCapabilitiesFactory::createFactory();
+        firebolt::rialto::IMediaKeysCapabilitiesFactory::createFactory();
     EXPECT_NE(factory, nullptr);
 
     // We expect this to fail because we can't easily pass in a mock object for IMediaKeysCapabilitiesIpcFactory

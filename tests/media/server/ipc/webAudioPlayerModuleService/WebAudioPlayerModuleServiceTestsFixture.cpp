@@ -516,7 +516,7 @@ void WebAudioPlayerModuleServiceTests::expectRequestFailure()
 void WebAudioPlayerModuleServiceTests::testFactoryCreatesObject()
 {
     std::shared_ptr<firebolt::rialto::server::ipc::IWebAudioPlayerModuleServiceFactory> factory =
-      firebolt::rialto::server::ipc::IWebAudioPlayerModuleServiceFactory::createFactory();
+        firebolt::rialto::server::ipc::IWebAudioPlayerModuleServiceFactory::createFactory();
     EXPECT_NE(factory, nullptr);
     EXPECT_NE(factory->create(m_webAudioPlayerServiceMock), nullptr);
 }

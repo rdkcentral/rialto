@@ -72,8 +72,8 @@ std::shared_ptr<IMediaKeysCapabilities> MediaKeysCapabilitiesFactory::getMediaKe
     try
     {
         mediaKeysCapabilities =
-          std::make_shared<server::MediaKeysCapabilities>(server::IOcdmFactory::createFactory(),
-                                                          server::IOcdmSystemFactory::createFactory());
+            std::make_shared<server::MediaKeysCapabilities>(server::IOcdmFactory::createFactory(),
+                                                            server::IOcdmSystemFactory::createFactory());
     }
     catch (const std::exception &e)
     {

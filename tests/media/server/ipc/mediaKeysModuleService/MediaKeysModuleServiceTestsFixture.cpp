@@ -1000,7 +1000,7 @@ void MediaKeysModuleServiceTests::expectInvalidControllerRequestFailure()
 void MediaKeysModuleServiceTests::testFactoryCreatesObject()
 {
     std::shared_ptr<firebolt::rialto::server::ipc::IMediaKeysModuleServiceFactory> factory =
-      firebolt::rialto::server::ipc::IMediaKeysModuleServiceFactory::createFactory();
+        firebolt::rialto::server::ipc::IMediaKeysModuleServiceFactory::createFactory();
     EXPECT_NE(factory, nullptr);
     EXPECT_NE(factory->create(m_cdmServiceMock), nullptr);
 }

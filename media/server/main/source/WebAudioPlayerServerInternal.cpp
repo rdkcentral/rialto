@@ -54,12 +54,9 @@ std::shared_ptr<IWebAudioPlayerServerInternalFactory> IWebAudioPlayerServerInter
     return factory;
 }
 
-std::unique_ptr<IWebAudioPlayer>
-WebAudioPlayerServerInternalFactory::createWebAudioPlayer(
-    std::weak_ptr<IWebAudioPlayerClient> client,
-    const std::string &audioMimeType, const uint32_t priority,
-    const WebAudioConfig *config,
-    std::weak_ptr<client::IWebAudioPlayerIpcFactory> webAudioPlayerIpcFactory,
+std::unique_ptr<IWebAudioPlayer> WebAudioPlayerServerInternalFactory::createWebAudioPlayer(
+    std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType, const uint32_t priority,
+    const WebAudioConfig *config, std::weak_ptr<client::IWebAudioPlayerIpcFactory> webAudioPlayerIpcFactory,
     std::weak_ptr<client::IClientController> clientController) const
 {
     RIALTO_SERVER_LOG_ERROR(
@@ -78,10 +75,8 @@ std::unique_ptr<IWebAudioPlayerServerInternal> WebAudioPlayerServerInternalFacto
     try
     {
         webAudioPlayer = std::make_unique<server::WebAudioPlayerServerInternal>(client, audioMimeType, priority, config,
-                                                                                shmBuffer, handle,
-                                                                                mainThreadFactory,
-                                                                                gstPlayerFactory,
-                                                                                timerFactory);
+                                                                                shmBuffer, handle, mainThreadFactory,
+                                                                                gstPlayerFactory, timerFactory);
     }
     catch (const std::exception &e)
     {
@@ -95,8 +90,7 @@ WebAudioPlayerServerInternal::WebAudioPlayerServerInternal(
     std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType, const uint32_t priority,
     const WebAudioConfig *config, const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle,
     const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
-    const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory,
-    std::weak_ptr<common::ITimerFactory> timerFactory)
+    const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory, std::weak_ptr<common::ITimerFactory> timerFactory)
     : m_webAudioPlayerClient(client), m_shmBuffer{shmBuffer}, m_priority{priority}, m_shmId{handle}, m_shmPtr{nullptr},
       m_partitionOffset{0}, m_maxDataLength{0}, m_availableBuffer{}, m_expectWriteBuffer{false},
       m_timerFactory{timerFactory}, m_bytesPerFrame{0}, m_isEosRequested{false}

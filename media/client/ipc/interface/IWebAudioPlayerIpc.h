@@ -58,11 +58,9 @@ public:
      *
      * @retval the new web audio player ipc instance or null on error.
      */
-    virtual std::unique_ptr<IWebAudioPlayerIpc> createWebAudioPlayerIpc(IWebAudioPlayerIpcClient *client,
-                                                                        const std::string &audioMimeType,
-                                                                        const uint32_t priority,
-                                                                        const WebAudioConfig *config,
-                                                                        std::weak_ptr<IIpcClient> ipcClient = {}) = 0;
+    virtual std::unique_ptr<IWebAudioPlayerIpc>
+    createWebAudioPlayerIpc(IWebAudioPlayerIpcClient *client, const std::string &audioMimeType, const uint32_t priority,
+                            const WebAudioConfig *config, std::weak_ptr<IIpcClient> ipcClient = {}) = 0;
 };
 
 /**

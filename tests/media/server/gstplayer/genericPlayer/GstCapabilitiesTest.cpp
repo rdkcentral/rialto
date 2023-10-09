@@ -136,7 +136,7 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_NoDecoders)
 TEST_F(GstCapabilitiesTest, FactoryCreatesObject)
 {
     std::shared_ptr<firebolt::rialto::server::IGstCapabilitiesFactory> factory =
-      firebolt::rialto::server::IGstCapabilitiesFactory::getFactory();
+        firebolt::rialto::server::IGstCapabilitiesFactory::getFactory();
     EXPECT_NE(factory, nullptr);
     EXPECT_NE(factory->createGstCapabilities(), nullptr);
 }

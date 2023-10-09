@@ -37,14 +37,14 @@ using ::testing::StrictMock;
 class RialtoClientCreateWebAudioPlayerTest : public WebAudioPlayerTestBase
 {
 public:
-    void prepareForWebAudioPlayerConstructor(
-             std::unique_ptr<StrictMock<WebAudioPlayerIpcMock>> &webAudioPlayerIpcMock)
+    void prepareForWebAudioPlayerConstructor(std::unique_ptr<StrictMock<WebAudioPlayerIpcMock>> &webAudioPlayerIpcMock)
     {
         // Save a raw pointer to the unique object for use when testing mocks
         // Object shall be freed by the holder of the unique ptr on destruction
         m_webAudioPlayerIpcMock = webAudioPlayerIpcMock.get();
 
-        EXPECT_CALL(*m_webAudioPlayerIpcFactoryMock, createWebAudioPlayerIpc(_, m_audioMimeType, m_priority, &m_config, _))
+        EXPECT_CALL(*m_webAudioPlayerIpcFactoryMock,
+                    createWebAudioPlayerIpc(_, m_audioMimeType, m_priority, &m_config, _))
             .WillOnce(Return(ByMove(std::move(webAudioPlayerIpcMock))));
 
         EXPECT_CALL(*m_clientControllerMock, registerClient(_, _))
@@ -79,7 +79,7 @@ TEST_F(RialtoClientCreateWebAudioPlayerTest, Create)
 TEST_F(RialtoClientCreateWebAudioPlayerTest, FactoryCreatesObject)
 {
     std::shared_ptr<firebolt::rialto::IWebAudioPlayerFactory> factory =
-      firebolt::rialto::IWebAudioPlayerFactory::createFactory();
+        firebolt::rialto::IWebAudioPlayerFactory::createFactory();
     EXPECT_NE(factory, nullptr);
 
     std::unique_ptr<StrictMock<WebAudioPlayerIpcMock>> webAudioPlayerIpcMock =
@@ -88,13 +88,9 @@ TEST_F(RialtoClientCreateWebAudioPlayerTest, FactoryCreatesObject)
     prepareForWebAudioPlayerConstructor(webAudioPlayerIpcMock);
 
     std::unique_ptr<IWebAudioPlayer> webAudioPlayer;
-    EXPECT_NO_THROW(webAudioPlayer = factory->createWebAudioPlayer(m_webAudioPlayerClientMock,
-                                                      m_audioMimeType,
-                                                      m_priority,
-                                                      &m_config,
-                                                      m_webAudioPlayerIpcFactoryMock,
-                                                      m_clientControllerMock
-                                                      ));
+    EXPECT_NO_THROW(webAudioPlayer = factory->createWebAudioPlayer(m_webAudioPlayerClientMock, m_audioMimeType,
+                                                                   m_priority, &m_config, m_webAudioPlayerIpcFactoryMock,
+                                                                   m_clientControllerMock));
     EXPECT_NE(webAudioPlayer, nullptr);
 
     // Unregister client on destroy
@@ -141,5 +137,4 @@ TEST_F(RialtoClientCreateWebAudioPlayerTest, CreateWebAudioPlayerRegisterFailure
                                                                    m_priority, &m_config, m_webAudioPlayerIpcFactoryMock,
                                                                    *m_clientControllerMock),
                  std::runtime_error);
-
 }

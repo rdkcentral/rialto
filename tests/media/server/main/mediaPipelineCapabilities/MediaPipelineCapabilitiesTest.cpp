@@ -74,11 +74,10 @@ TEST_F(MediaPipelineCapabilitiesTest, failToCreateMediaPipelineCapabilities)
 TEST_F(MediaPipelineCapabilitiesTest, FactoryCreatesObject)
 {
     std::shared_ptr<firebolt::rialto::IMediaPipelineCapabilitiesFactory> factory =
-      firebolt::rialto::IMediaPipelineCapabilitiesFactory::createFactory();
+        firebolt::rialto::IMediaPipelineCapabilitiesFactory::createFactory();
     EXPECT_NE(factory, nullptr);
     EXPECT_NE(factory->createMediaPipelineCapabilities(), nullptr);
 }
-
 
 TEST_F(MediaPipelineCapabilitiesTest, getSupportedMimeTypesIsSuccessful)
 {

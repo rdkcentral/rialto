@@ -108,19 +108,12 @@ TEST_F(RialtoServerCreateGstGenericPlayerTest, CreateDestroyPrimaryVideoSuccess)
 /**
  * Test the factory
  */
-TEST_F(RialtoServerCreateGstGenericPlayerTest, Factory)
+TEST_F(RialtoServerCreateGstGenericPlayerTest, GetFactorySucceeds)
 {
     std::shared_ptr<firebolt::rialto::server::IGstGenericPlayerFactory> factory =
-      firebolt::rialto::server::IGstGenericPlayerFactory::getFactory();
+        firebolt::rialto::server::IGstGenericPlayerFactory::getFactory();
     EXPECT_NE(factory, nullptr);
-
-#if 0
-    // TODO - the 4th parameter of the following method requires a IRdkGstreamerUtilsWrapperFactory
-    EXPECT_NE(factory->createGstGenericPlayer(&m_gstPlayerClient, m_decryptionServiceMock, m_type,
-                                              m_videoReq, nullptr), nullptr);
-#endif
 }
-
 
 /**
  * Test that a GstGenericPlayer object can be created successfully for a secondary video if width is less than the minimum.

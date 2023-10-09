@@ -43,8 +43,7 @@ protected:
  */
 TEST_F(RialtoClientControlTest, FactoryFails)
 {
-    std::shared_ptr<firebolt::rialto::IControlFactory> factory =
-      firebolt::rialto::IControlFactory::createFactory();
+    std::shared_ptr<firebolt::rialto::IControlFactory> factory = firebolt::rialto::IControlFactory::createFactory();
     EXPECT_NE(factory, nullptr);
     EXPECT_EQ(factory->createControl(), nullptr);
 }

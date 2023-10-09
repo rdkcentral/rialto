@@ -22,9 +22,9 @@
 #include "IWebAudioPlayerIpcClient.h"
 #include "RialtoClientLogging.h"
 #include <cstring>
+#include <iostream>
 #include <limits.h>
 #include <mutex>
-#include <iostream>
 
 namespace firebolt::rialto
 {
@@ -45,12 +45,9 @@ std::shared_ptr<IWebAudioPlayerFactory> IWebAudioPlayerFactory::createFactory()
 }
 
 std::unique_ptr<IWebAudioPlayer> WebAudioPlayerFactory::createWebAudioPlayer(
-               std::weak_ptr<IWebAudioPlayerClient> client,
-               const std::string &audioMimeType,
-               const uint32_t priority,
-               const WebAudioConfig *config,
-               std::weak_ptr<client::IWebAudioPlayerIpcFactory> webAudioPlayerIpcFactory,
-               std::weak_ptr<client::IClientController> clientController) const
+    std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType, const uint32_t priority,
+    const WebAudioConfig *config, std::weak_ptr<client::IWebAudioPlayerIpcFactory> webAudioPlayerIpcFactory,
+    std::weak_ptr<client::IClientController> clientController) const
 {
     std::unique_ptr<IWebAudioPlayer> webAudioPlayer;
     try
@@ -60,7 +57,9 @@ std::unique_ptr<IWebAudioPlayer> WebAudioPlayerFactory::createWebAudioPlayer(
         webAudioPlayer =
             std::make_unique<client::WebAudioPlayer>(client, audioMimeType, priority, config,
                                                      wapif ? wapif : client::IWebAudioPlayerIpcFactory::getFactory(),
-                                                     cc ? *cc : client::IClientControllerAccessor::instance().getClientController());
+                                                     cc ? *cc
+                                                        : client::IClientControllerAccessor::instance()
+                                                              .getClientController());
     }
     catch (const std::exception &e)
     {

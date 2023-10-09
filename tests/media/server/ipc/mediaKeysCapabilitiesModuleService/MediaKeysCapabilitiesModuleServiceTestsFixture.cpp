@@ -140,7 +140,7 @@ void MediaKeysCapabilitiesModuleServiceTests::expectRequestFailure()
 void MediaKeysCapabilitiesModuleServiceTests::testFactoryCreatesObject()
 {
     std::shared_ptr<firebolt::rialto::server::ipc::IMediaKeysCapabilitiesModuleServiceFactory> factory =
-      firebolt::rialto::server::ipc::IMediaKeysCapabilitiesModuleServiceFactory::createFactory();
+        firebolt::rialto::server::ipc::IMediaKeysCapabilitiesModuleServiceFactory::createFactory();
     EXPECT_NE(factory, nullptr);
     EXPECT_NE(factory->create(m_cdmServiceMock), nullptr);
 }

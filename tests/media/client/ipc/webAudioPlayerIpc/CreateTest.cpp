@@ -84,7 +84,7 @@ TEST_F(RialtoClientCreateWebAudioPlayerIpcTest, CreateDestroy)
 TEST_F(RialtoClientCreateWebAudioPlayerIpcTest, FactoryCreatesObject)
 {
     std::shared_ptr<firebolt::rialto::client::IWebAudioPlayerIpcFactory> factory =
-      firebolt::rialto::client::IWebAudioPlayerIpcFactory::getFactory();
+        firebolt::rialto::client::IWebAudioPlayerIpcFactory::getFactory();
     EXPECT_NE(factory, nullptr);
 
     /* create media player */
@@ -97,8 +97,8 @@ TEST_F(RialtoClientCreateWebAudioPlayerIpcTest, FactoryCreatesObject)
                                            _, m_blockingClosureMock.get()))
         .WillOnce(WithArgs<3>(Invoke(this, &WebAudioPlayerIpcTestBase::setCreateWebAudioPlayerResponse)));
 
-
-    EXPECT_NO_THROW(m_webAudioPlayerIpc = factory->createWebAudioPlayerIpc(m_clientMock, m_audioMimeType, m_priority, &m_config,  m_ipcClientMock));
+    EXPECT_NO_THROW(m_webAudioPlayerIpc = factory->createWebAudioPlayerIpc(m_clientMock, m_audioMimeType, m_priority,
+                                                                           &m_config, m_ipcClientMock));
     EXPECT_NE(m_webAudioPlayerIpc, nullptr);
 
     /* destroy media player */

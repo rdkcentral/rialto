@@ -41,11 +41,10 @@ std::shared_ptr<IWebAudioPlayerIpcFactory> IWebAudioPlayerIpcFactory::getFactory
     return factory;
 }
 
-std::unique_ptr<IWebAudioPlayerIpc> WebAudioPlayerIpcFactory::createWebAudioPlayerIpc(IWebAudioPlayerIpcClient *client,
-                                                                                      const std::string &audioMimeType,
-                                                                                      const uint32_t priority,
-                                                                                      const WebAudioConfig *config,
-                                                                                      std::weak_ptr<IIpcClient> ipcClient)
+std::unique_ptr<IWebAudioPlayerIpc>
+WebAudioPlayerIpcFactory::createWebAudioPlayerIpc(IWebAudioPlayerIpcClient *client, const std::string &audioMimeType,
+                                                  const uint32_t priority, const WebAudioConfig *config,
+                                                  std::weak_ptr<IIpcClient> ipcClient)
 {
     std::unique_ptr<IWebAudioPlayerIpc> webAudioPlayerIpc;
     try

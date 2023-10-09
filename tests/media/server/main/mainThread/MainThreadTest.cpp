@@ -73,11 +73,10 @@ TEST_F(MainThreadTests, CreateDestroy)
 TEST_F(MainThreadTests, FactoryCreatesObject)
 {
     std::shared_ptr<firebolt::rialto::server::IMainThreadFactory> factory =
-      firebolt::rialto::server::IMainThreadFactory::createFactory();
+        firebolt::rialto::server::IMainThreadFactory::createFactory();
     EXPECT_NE(factory, nullptr);
     EXPECT_NE(factory->getMainThread(), nullptr);
 }
-
 
 /**
  * Test that a MainThread registeres itself on creation, and can enqueue tasks.

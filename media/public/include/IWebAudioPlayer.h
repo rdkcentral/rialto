@@ -39,7 +39,7 @@ namespace firebolt::rialto::client
 {
 class IWebAudioPlayerIpcFactory;
 class IClientController;
-};
+}; // namespace firebolt::rialto::client
 namespace firebolt::rialto
 {
 class IWebAudioPlayer;
@@ -79,13 +79,11 @@ public:
      *
      * @retval the new Web Audio Player instance or null on error.
      */
-    virtual std::unique_ptr<IWebAudioPlayer> createWebAudioPlayer(
-        std::weak_ptr<IWebAudioPlayerClient> client,
-        const std::string &audioMimeType,
-        const uint32_t priority,
-        const WebAudioConfig *config,
-        std::weak_ptr<client::IWebAudioPlayerIpcFactory> webAudioPlayerIpcFactory = {},
-        std::weak_ptr<client::IClientController> clientController = {}) const = 0;
+    virtual std::unique_ptr<IWebAudioPlayer>
+    createWebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
+                         const uint32_t priority, const WebAudioConfig *config,
+                         std::weak_ptr<client::IWebAudioPlayerIpcFactory> webAudioPlayerIpcFactory = {},
+                         std::weak_ptr<client::IClientController> clientController = {}) const = 0;
 };
 
 /**

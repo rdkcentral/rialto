@@ -201,7 +201,7 @@ TEST_F(RialtoServerAppSrcGstSrcTest, SetupVideo)
 TEST_F(RialtoServerAppSrcGstSrcTest, FactoryCreatesObject)
 {
     std::shared_ptr<firebolt::rialto::server::IGstSrcFactory> factory =
-      firebolt::rialto::server::IGstSrcFactory::getFactory();
+        firebolt::rialto::server::IGstSrcFactory::getFactory();
     EXPECT_NE(factory, nullptr);
     EXPECT_NE(factory->getGstSrc(), nullptr);
 }

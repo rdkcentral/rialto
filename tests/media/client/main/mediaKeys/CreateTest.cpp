@@ -25,10 +25,10 @@
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::client;
 
+using ::testing::_;
 using ::testing::ByMove;
 using ::testing::Return;
 using ::testing::StrictMock;
-using ::testing::_;
 
 class RialtoClientCreateMediaKeysTest : public ::testing::Test
 {
@@ -62,8 +62,7 @@ TEST_F(RialtoClientCreateMediaKeysTest, Create)
  */
 TEST_F(RialtoClientCreateMediaKeysTest, FactoryCreatesObject)
 {
-    std::shared_ptr<firebolt::rialto::IMediaKeysFactory> factory =
-      firebolt::rialto::IMediaKeysFactory::createFactory();
+    std::shared_ptr<firebolt::rialto::IMediaKeysFactory> factory = firebolt::rialto::IMediaKeysFactory::createFactory();
     EXPECT_NE(factory, nullptr);
 
     std::unique_ptr<IMediaKeys> mediaKeys;

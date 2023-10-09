@@ -112,7 +112,7 @@ TEST_F(RialtoClientCreateMediaPipelineIpcTest, CreateDestroyWithReconnection)
 TEST_F(RialtoClientCreateMediaPipelineIpcTest, FactoryCreatesObject)
 {
     std::shared_ptr<firebolt::rialto::client::IMediaPipelineIpcFactory> factory =
-      firebolt::rialto::client::IMediaPipelineIpcFactory::getFactory();
+        firebolt::rialto::client::IMediaPipelineIpcFactory::getFactory();
     EXPECT_NE(factory, nullptr);
 
     /* create media player */
@@ -126,12 +126,8 @@ TEST_F(RialtoClientCreateMediaPipelineIpcTest, FactoryCreatesObject)
         .WillOnce(WithArgs<3>(Invoke(this, &MediaPipelineIpcTestBase::setCreateSessionResponse)));
 
     // Call the factory
-    EXPECT_NO_THROW(m_mediaPipelineIpc = factory->createMediaPipelineIpc(m_clientMock,
-                                                                         m_videoReq,
-                                                                         m_ipcClientMock
-                                                                         ));
+    EXPECT_NO_THROW(m_mediaPipelineIpc = factory->createMediaPipelineIpc(m_clientMock, m_videoReq, m_ipcClientMock));
     EXPECT_NE(m_mediaPipelineIpc, nullptr);
-
 
     /* destroy media player */
     expectIpcApiCallSuccess();
@@ -143,7 +139,6 @@ TEST_F(RialtoClientCreateMediaPipelineIpcTest, FactoryCreatesObject)
     m_mediaPipelineIpc.reset();
     EXPECT_EQ(m_mediaPipelineIpc, nullptr);
 }
-
 
 /**
  * Test that a MediaPipelineIpc object not created when the ipc channel has not been created.

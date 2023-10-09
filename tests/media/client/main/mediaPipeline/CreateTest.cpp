@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#include "MediaPipelineTestBase.h"
 #include "MediaPipelineCapabilities.h"
+#include "MediaPipelineTestBase.h"
 
 MATCHER(NotNull, "")
 {
@@ -69,7 +69,7 @@ TEST_F(RialtoClientCreateMediaPipelineTest, Create)
 TEST_F(RialtoClientCreateMediaPipelineTest, FactoryCreatesObject)
 {
     std::shared_ptr<firebolt::rialto::IMediaPipelineFactory> factory =
-      firebolt::rialto::IMediaPipelineFactory::createFactory();
+        firebolt::rialto::IMediaPipelineFactory::createFactory();
     EXPECT_NE(factory, nullptr);
 
     std::unique_ptr<StrictMock<MediaPipelineIpcMock>> mediaPipelineIpcMock =
@@ -87,14 +87,13 @@ TEST_F(RialtoClientCreateMediaPipelineTest, FactoryCreatesObject)
     EXPECT_CALL(*m_clientControllerMock, unregisterClient(NotNull())).WillOnce(Return(true));
 }
 
-
 /**
  * Test the factory
  */
 TEST_F(RialtoClientCreateMediaPipelineTest, CapabilitiesFactoryFails)
 {
     std::shared_ptr<firebolt::rialto::IMediaPipelineCapabilitiesFactory> factory =
-      firebolt::rialto::IMediaPipelineCapabilitiesFactory::createFactory();
+        firebolt::rialto::IMediaPipelineCapabilitiesFactory::createFactory();
     EXPECT_NE(factory, nullptr);
 
     // The following call is expected to fail because it's difficult to inject a mock

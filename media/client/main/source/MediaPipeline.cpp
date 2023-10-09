@@ -116,21 +116,23 @@ std::shared_ptr<IMediaPipelineFactory> IMediaPipelineFactory::createFactory()
     return factory;
 }
 
-std::unique_ptr<IMediaPipeline> MediaPipelineFactory::createMediaPipeline(std::weak_ptr<IMediaPipelineClient> client,
-                                                                          const VideoRequirements &videoRequirements,
-                                                                          std::weak_ptr<client::IMediaPipelineIpcFactory> mediaPipelineIpcFactory,
-                                                                          std::weak_ptr<client::IClientController> clientController) const
+std::unique_ptr<IMediaPipeline>
+MediaPipelineFactory::createMediaPipeline(std::weak_ptr<IMediaPipelineClient> client,
+                                          const VideoRequirements &videoRequirements,
+                                          std::weak_ptr<client::IMediaPipelineIpcFactory> mediaPipelineIpcFactory,
+                                          std::weak_ptr<client::IClientController> clientController) const
 {
     std::unique_ptr<IMediaPipeline> mediaPipeline;
     try
     {
         std::shared_ptr<client::IMediaPipelineIpcFactory> mp = mediaPipelineIpcFactory.lock();
         std::shared_ptr<client::IClientController> cc = clientController.lock();
-        mediaPipeline =
-            std::make_unique<client::MediaPipeline>(client, videoRequirements,
-                                                    mp ? mp : client::IMediaPipelineIpcFactory::getFactory(),
-                                                    common::IMediaFrameWriterFactory::getFactory(),
-                                                    cc ? *cc : client::IClientControllerAccessor::instance().getClientController());
+        mediaPipeline = std::make_unique<client::MediaPipeline>(client, videoRequirements,
+                                                                mp ? mp : client::IMediaPipelineIpcFactory::getFactory(),
+                                                                common::IMediaFrameWriterFactory::getFactory(),
+                                                                cc ? *cc
+                                                                   : client::IClientControllerAccessor::instance()
+                                                                         .getClientController());
     }
     catch (const std::exception &e)
     {
@@ -158,7 +160,6 @@ MediaPipeline::MediaPipeline(std::weak_ptr<IMediaPipelineClient> client, const V
     }
 
     m_mediaPipelineIpc = mediaPipelineIpcFactory->createMediaPipelineIpc(this, videoRequirements);
-
 
     if (!m_mediaPipelineIpc)
     {

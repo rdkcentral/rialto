@@ -37,8 +37,9 @@ public:
     MediaKeysFactory() = default;
     ~MediaKeysFactory() override = default;
 
-    std::unique_ptr<IMediaKeys> createMediaKeys(const std::string &keySystem,
-                      std::weak_ptr<firebolt::rialto::client::IMediaKeysIpcFactory> mediaKeysIpcFactory) const override;
+    std::unique_ptr<IMediaKeys>
+    createMediaKeys(const std::string &keySystem,
+                    std::weak_ptr<firebolt::rialto::client::IMediaKeysIpcFactory> mediaKeysIpcFactory) const override;
 };
 
 }; // namespace firebolt::rialto

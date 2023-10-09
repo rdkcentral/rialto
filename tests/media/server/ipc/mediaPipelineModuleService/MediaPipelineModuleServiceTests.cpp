@@ -37,7 +37,6 @@ TEST_F(MediaPipelineModuleServiceTests, FactoryCreatesObject)
     testFactoryCreatesObject();
 }
 
-
 TEST_F(MediaPipelineModuleServiceTests, shouldCreateSession)
 {
     mediaPipelineServiceWillCreateSession();
