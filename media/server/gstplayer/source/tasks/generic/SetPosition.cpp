@@ -24,7 +24,11 @@
 #include "IGstWrapper.h"
 #include "RialtoServerLogging.h"
 #include "tasks/generic/NeedData.h"
+#include <chrono>
+#include <sys/time.h>
+#include <ctime>
 
+// auto millisec_since_epoch = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 namespace firebolt::rialto::server::tasks::generic
 {
 SetPosition::SetPosition(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
@@ -41,6 +45,7 @@ SetPosition::~SetPosition()
 
 void SetPosition::execute() const
 {
+    auto startTime = std::chrono::system_clock::now();
     RIALTO_SERVER_LOG_DEBUG("Executing SetPosition");
     if (!m_gstPlayerClient)
     {
@@ -102,5 +107,8 @@ void SetPosition::execute() const
             task.execute();
         }
     }
+    auto endTime = std::chrono::system_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime-startTime).count();
+    RIALTO_SERVER_LOG_ERROR("Time it took: %s milliseconds", duration);
 }
 } // namespace firebolt::rialto::server::tasks::generic
