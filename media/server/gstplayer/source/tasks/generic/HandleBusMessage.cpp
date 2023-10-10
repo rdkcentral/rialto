@@ -81,10 +81,14 @@ void HandleBusMessage::execute() const
                     // indicate that the pipeline is prerolled and it reached GST_STATE_PAUSED state after seek.
                     m_gstPlayerClient->notifyPlaybackState(PlaybackState::PAUSED);
                 }
-                break;
                 auto endTime = std::chrono::system_clock::now();
                 auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime-startTime).count();
-                RIALTO_SERVER_LOG_INFO("Time it took in GST_STATE_PAUSED in HandleBusMessage: %ld milliseconds", duration);
+                auto startTimeMs = std::chrono::time_point_cast<std::chrono::milliseconds>(startTime);
+                auto endTimeMs = std::chrono::time_point_cast<std::chrono::milliseconds>(endTime);
+                RIALTO_SERVER_LOG_ERROR("StartTime in GST_STATE_PAUSED in HandleBusMessage: %lld milliseconds", static_cast<long long>(startTimeMs.time_since_epoch().count()));
+                RIALTO_SERVER_LOG_ERROR("EndTime in GST_STATE_PAUSED in HandleBusMessage: %lld milliseconds", static_cast<long long>(endTimeMs.time_since_epoch().count()));;
+                RIALTO_SERVER_LOG_ERROR("Time it took in GST_STATE_PAUSED in HandleBusMessage: %lld milliseconds", static_cast<long long>(duration));
+                break;
             }
             case GST_STATE_PLAYING:
             {
@@ -99,7 +103,11 @@ void HandleBusMessage::execute() const
                 m_context.isPlaying = true;
                 auto endTime = std::chrono::system_clock::now();
                 auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime-startTime).count();
-                RIALTO_SERVER_LOG_INFO("Time it took in GST_STATE_PLAYED in HandleBusMessage: %ld milliseconds", duration);
+                auto startTimeMs = std::chrono::time_point_cast<std::chrono::milliseconds>(startTime);
+                auto endTimeMs = std::chrono::time_point_cast<std::chrono::milliseconds>(endTime);
+                RIALTO_SERVER_LOG_ERROR("StartTime in GST_STATE_PLAYING in HandleBusMessage: %lld milliseconds", static_cast<long long>(startTimeMs.time_since_epoch().count()));
+                RIALTO_SERVER_LOG_ERROR("EndTime in GST_STATE_PLAYING in HandleBusMessage: %lld milliseconds", static_cast<long long>(endTimeMs.time_since_epoch().count()));
+                RIALTO_SERVER_LOG_ERROR("Time it took in GST_STATE_PLAYING in HandleBusMessage: %lld milliseconds", static_cast<long long>(duration));
                 break;
             }
             case GST_STATE_VOID_PENDING:

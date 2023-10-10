@@ -28,7 +28,6 @@
 #include <sys/time.h>
 #include <ctime>
 
-// auto millisec_since_epoch = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 namespace firebolt::rialto::server::tasks::generic
 {
 SetPosition::SetPosition(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
@@ -109,6 +108,10 @@ void SetPosition::execute() const
     }
     auto endTime = std::chrono::system_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime-startTime).count();
-    RIALTO_SERVER_LOG_INFO("Time it took in SetPosition: %ld milliseconds", duration);
+    auto startTimeMs = std::chrono::time_point_cast<std::chrono::milliseconds>(startTime);
+    auto endTimeMs = std::chrono::time_point_cast<std::chrono::milliseconds>(endTime);
+    RIALTO_SERVER_LOG_ERROR("StartTime in SetPosition: %lld milliseconds", static_cast<long long>(startTimeMs.time_since_epoch().count()));
+    RIALTO_SERVER_LOG_ERROR("EndTime in SetPosition: %lld milliseconds", static_cast<long long>(endTimeMs.time_since_epoch().count()));
+    RIALTO_SERVER_LOG_ERROR("Time it took in SetPosition: %lld milliseconds", static_cast<long long>(duration));
 }
 } // namespace firebolt::rialto::server::tasks::generic
