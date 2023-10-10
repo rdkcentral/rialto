@@ -109,6 +109,6 @@ void SetPosition::execute() const
     }
     auto endTime = std::chrono::system_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime-startTime).count();
-    RIALTO_SERVER_LOG_INFO("Time it took: %ld milliseconds", duration);
+    RIALTO_SERVER_LOG_INFO("Time it took in SetPosition: %ld milliseconds", duration);
 }
 } // namespace firebolt::rialto::server::tasks::generic

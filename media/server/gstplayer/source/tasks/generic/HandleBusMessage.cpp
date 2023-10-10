@@ -72,6 +72,7 @@ void HandleBusMessage::execute() const
             }
             case GST_STATE_PAUSED:
             {
+                auto startTime = std::chrono::system_clock::now();
                 if (pending != GST_STATE_PAUSED)
                 {
                     // newState==GST_STATE_PAUSED, pending==GST_STATE_PAUSED state transition is received as a result of
@@ -81,9 +82,13 @@ void HandleBusMessage::execute() const
                     m_gstPlayerClient->notifyPlaybackState(PlaybackState::PAUSED);
                 }
                 break;
+                auto endTime = std::chrono::system_clock::now();
+                auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime-startTime).count();
+                RIALTO_SERVER_LOG_INFO("Time it took in GST_STATE_PAUSED in HandleBusMessage: %ld milliseconds", duration);
             }
             case GST_STATE_PLAYING:
             {
+                auto startTime = std::chrono::system_clock::now();
                 m_gstPlayerClient->notifyPlaybackState(PlaybackState::PLAYING);
                 if (m_context.pendingPlaybackRate != kNoPendingPlaybackRate)
                 {
@@ -92,6 +97,9 @@ void HandleBusMessage::execute() const
                 m_player.startPositionReportingAndCheckAudioUnderflowTimer();
 
                 m_context.isPlaying = true;
+                auto endTime = std::chrono::system_clock::now();
+                auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime-startTime).count();
+                RIALTO_SERVER_LOG_INFO("Time it took in GST_STATE_PLAYED in HandleBusMessage: %ld milliseconds", duration);
                 break;
             }
             case GST_STATE_VOID_PENDING:
