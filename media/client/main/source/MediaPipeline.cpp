@@ -119,20 +119,23 @@ std::shared_ptr<IMediaPipelineFactory> IMediaPipelineFactory::createFactory()
 std::unique_ptr<IMediaPipeline>
 MediaPipelineFactory::createMediaPipeline(std::weak_ptr<IMediaPipelineClient> client,
                                           const VideoRequirements &videoRequirements,
-                                          std::weak_ptr<client::IMediaPipelineIpcFactory> mediaPipelineIpcFactory,
-                                          std::weak_ptr<client::IClientController> clientController) const
+                                          std::weak_ptr<client::IMediaPipelineIpcFactory> mediaPipelineIpcFactoryParam,
+                                          std::weak_ptr<client::IClientController> clientControllerParam) const
 {
     std::unique_ptr<IMediaPipeline> mediaPipeline;
     try
     {
-        std::shared_ptr<client::IMediaPipelineIpcFactory> mp = mediaPipelineIpcFactory.lock();
-        std::shared_ptr<client::IClientController> cc = clientController.lock();
+        std::shared_ptr<client::IMediaPipelineIpcFactory> mediaPipelineIpcFactory = mediaPipelineIpcFactoryParam.lock();
+        std::shared_ptr<client::IClientController> clientController = clientControllerParam.lock();
         mediaPipeline = std::make_unique<client::MediaPipeline>(client, videoRequirements,
-                                                                mp ? mp : client::IMediaPipelineIpcFactory::getFactory(),
+                                                                mediaPipelineIpcFactory
+                                                                    ? mediaPipelineIpcFactory
+                                                                    : client::IMediaPipelineIpcFactory::getFactory(),
                                                                 common::IMediaFrameWriterFactory::getFactory(),
-                                                                cc ? *cc
-                                                                   : client::IClientControllerAccessor::instance()
-                                                                         .getClientController());
+                                                                clientController
+                                                                    ? *clientController
+                                                                    : client::IClientControllerAccessor::instance()
+                                                                          .getClientController());
     }
     catch (const std::exception &e)
     {

@@ -46,20 +46,23 @@ std::shared_ptr<IWebAudioPlayerFactory> IWebAudioPlayerFactory::createFactory()
 
 std::unique_ptr<IWebAudioPlayer> WebAudioPlayerFactory::createWebAudioPlayer(
     std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType, const uint32_t priority,
-    const WebAudioConfig *config, std::weak_ptr<client::IWebAudioPlayerIpcFactory> webAudioPlayerIpcFactory,
-    std::weak_ptr<client::IClientController> clientController) const
+    const WebAudioConfig *config, std::weak_ptr<client::IWebAudioPlayerIpcFactory> webAudioPlayerIpcFactoryParam,
+    std::weak_ptr<client::IClientController> clientControllerParam) const
 {
     std::unique_ptr<IWebAudioPlayer> webAudioPlayer;
     try
     {
-        std::shared_ptr<client::IWebAudioPlayerIpcFactory> wapif = webAudioPlayerIpcFactory.lock();
-        std::shared_ptr<client::IClientController> cc = clientController.lock();
-        webAudioPlayer =
-            std::make_unique<client::WebAudioPlayer>(client, audioMimeType, priority, config,
-                                                     wapif ? wapif : client::IWebAudioPlayerIpcFactory::getFactory(),
-                                                     cc ? *cc
-                                                        : client::IClientControllerAccessor::instance()
-                                                              .getClientController());
+        std::shared_ptr<client::IWebAudioPlayerIpcFactory> webAudioPlayerIpcFactory =
+            webAudioPlayerIpcFactoryParam.lock();
+        std::shared_ptr<client::IClientController> clientController = clientControllerParam.lock();
+        webAudioPlayer = std::make_unique<client::WebAudioPlayer>(client, audioMimeType, priority, config,
+                                                                  webAudioPlayerIpcFactory
+                                                                      ? webAudioPlayerIpcFactory
+                                                                      : client::IWebAudioPlayerIpcFactory::getFactory(),
+                                                                  clientController
+                                                                      ? *clientController
+                                                                      : client::IClientControllerAccessor::instance()
+                                                                            .getClientController());
     }
     catch (const std::exception &e)
     {
