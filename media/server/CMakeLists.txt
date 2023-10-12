@@ -64,6 +64,13 @@ target_link_libraries(
         RialtoServerService
 )
 
+if( NATIVE_BUILD )
+        set_target_properties(
+        RialtoServer
+        PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib"
+)
+endif()
+
 install(
         TARGETS RialtoServer
         DESTINATION bin

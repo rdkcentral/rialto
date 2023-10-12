@@ -91,6 +91,11 @@ private:
     ApplicationState m_currentState;
 
     /**
+     * @brief Flag indicating if registerRequest has to be sent to Rialto Server
+     */
+    bool m_registrationRequired;
+
+    /**
      * @brief The shared memory buffer handle.
      */
     std::shared_ptr<ISharedMemoryHandle> m_shmHandle;
