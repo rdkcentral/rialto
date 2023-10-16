@@ -36,11 +36,16 @@
 #include <vector>
 
 #include "IMediaPipelineClient.h"
-#include <MediaCommon.h>
+#include "MediaCommon.h"
 
 namespace firebolt::rialto::client
 {
+// The following forward declaration is necessary to avoid a circular depandancy...
+//   "IMediaPipelineIpc.h" includes this file
+//   therefore this file can't include "IMediaPipelineIpc.h"
 class IMediaPipelineIpcFactory;
+// The following forward declaration can't be replaced with an include
+// because "IClientController.h" is a private include on the client side...
 class IClientController;
 }; // namespace firebolt::rialto::client
 namespace firebolt::rialto

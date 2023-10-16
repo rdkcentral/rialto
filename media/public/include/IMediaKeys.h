@@ -37,8 +37,10 @@
 
 namespace firebolt::rialto::client
 {
+// This forward declaration is necessary because the include file
+// IMediaKeysIpcFactory.h isn't public (and shouldn't be)
 class IMediaKeysIpcFactory;
-};
+}; // namespace firebolt::rialto::client
 namespace firebolt::rialto
 {
 class IMediaKeys;

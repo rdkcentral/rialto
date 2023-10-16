@@ -19,7 +19,6 @@
 
 #include "MediaFrameWriterV1.h"
 #include "RialtoCommonLogging.h"
-#include <iostream>
 
 namespace firebolt::rialto::common
 {

@@ -29,8 +29,8 @@ add_library(
 
 target_include_directories(
         RialtoPlayerPublic
-
         INTERFACE
+        $<TARGET_PROPERTY:RialtoClientIpcImpl,INTERFACE_INCLUDE_DIRECTORIES>
         include
     )
 

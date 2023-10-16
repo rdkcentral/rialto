@@ -30,14 +30,16 @@
  */
 
 #include "IWebAudioPlayerClient.h"
-#include <MediaCommon.h>
+#include "IWebAudioPlayerIpc.h"
+#include "MediaCommon.h"
 #include <memory>
 #include <stdint.h>
 #include <string>
 
 namespace firebolt::rialto::client
 {
-class IWebAudioPlayerIpcFactory;
+// The following forward declaration can't be replaced with an include
+// because "IClientController.h" is a private include on the client side...
 class IClientController;
 }; // namespace firebolt::rialto::client
 namespace firebolt::rialto

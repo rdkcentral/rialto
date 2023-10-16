@@ -35,19 +35,13 @@
 #include <vector>
 
 #include "IDecryptionService.h"
+#include "IGstWebAudioPlayer.h"
 #include "IHeartbeatHandler.h"
+#include "IMainThread.h"
 #include "ISharedMemoryBuffer.h"
+#include "ITimer.h"
 #include "IWebAudioPlayer.h"
-#include <MediaCommon.h>
-namespace firebolt::rialto::server
-{
-class IMainThreadFactory;
-class IGstWebAudioPlayerFactory;
-}; // namespace firebolt::rialto::server
-namespace firebolt::rialto::common
-{
-class ITimerFactory;
-};
+#include "MediaCommon.h"
 
 namespace firebolt::rialto::server
 {
