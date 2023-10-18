@@ -44,6 +44,9 @@ namespace rialto::servermanager::service
 std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserver> &stateObserver,
                                               const firebolt::rialto::common::ServerManagerConfig &config)
 {
+    RIALTO_SERVER_MANAGER_LOG_ERROR("proudman '%s' '%s'",
+                                    config.sessionManagementSocketPermissions.owner.c_str(),
+                                    config.sessionManagementSocketPermissions.group.c_str()); // TODO
     return std::make_unique<
         ServerManagerService>(std::make_unique<ServiceContext>(stateObserver, config.sessionServerEnvVars,
                                                                config.sessionServerPath,

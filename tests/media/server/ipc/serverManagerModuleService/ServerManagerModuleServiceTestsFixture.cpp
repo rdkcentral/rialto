@@ -33,8 +33,8 @@ constexpr int MAX_SESSIONS{5};
 constexpr int MAX_WEB_AUDIO_PLAYERS{3};
 constexpr int socket{2};
 constexpr int pingId{29};
-const std::string SOCKET_OWNER{"nobody"};
-const std::string SOCKET_GROUP{"nogroup"};
+const std::string SOCKET_OWNER;
+const std::string SOCKET_GROUP;
 
 rialto::SessionServerState convertSessionServerState(const firebolt::rialto::common::SessionServerState &state)
 {

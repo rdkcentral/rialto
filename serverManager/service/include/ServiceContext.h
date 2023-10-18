@@ -36,8 +36,7 @@ public:
     ServiceContext(const std::shared_ptr<IStateObserver> &stateObserver,
                    const std::list<std::string> &environmentVariables, const std::string &sessionServerPath,
                    std::chrono::milliseconds sessionServerStartupTimeout, std::chrono::seconds healthcheckInterval,
-                   unsigned int socketPermissions,
-                   const std::string &socketOwner, const std::string &socketGroup);
+                   unsigned int socketPermissions, const std::string &socketOwner, const std::string &socketGroup);
     virtual ~ServiceContext() = default;
 
     common::ISessionServerAppManager &getSessionServerAppManager() override;

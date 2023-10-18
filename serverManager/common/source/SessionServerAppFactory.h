@@ -35,8 +35,8 @@ public:
     explicit SessionServerAppFactory(const std::list<std::string> &environmentVariables,
                                      const std::string &sessionServerPath,
                                      std::chrono::milliseconds sessionServerStartupTimeout,
-                                     unsigned int socketPermissions,
-                                     const std::string &socketOwner, const std::string &socketGroup);
+                                     unsigned int socketPermissions, const std::string &socketOwner,
+                                     const std::string &socketGroup);
     ~SessionServerAppFactory() override = default;
 
     std::unique_ptr<ISessionServerApp> create(const std::string &appName,

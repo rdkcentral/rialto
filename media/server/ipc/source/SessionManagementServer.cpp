@@ -25,9 +25,11 @@
 #include "IWebAudioPlayerModuleService.h"
 #include "RialtoServerLogging.h"
 #include <IIpcServerFactory.h>
-#include <sys/stat.h>
-#include <pwd.h>
 #include <grp.h>
+#include <pwd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 namespace firebolt::rialto::server::ipc
 {
@@ -81,25 +83,33 @@ bool SessionManagementServer::initialize(const std::string &socketName, unsigned
         return false;
     }
 
-    const char* sn = socketName.c_str();
+    const char *sn = socketName.c_str();
     if (chmod(sn, socketPermissions) != 0)
     {
         RIALTO_SERVER_LOG_SYS_WARN(errno, "Failed to change the permissions on the IPC socket");
     }
+
+    RIALTO_SERVER_LOG_ERROR("Change owner and group proudman: owner '%s' group '%s'", socketOwner.c_str(),
+                            socketGroup.c_str());
 
     const uid_t noOwnerChange = -1; // -1 means chown() won't change the owner
     uid_t ownerId = noOwnerChange;
     if (!socketOwner.empty())
     {
         errno = 0;
-        struct passwd *pwd = getpwnam(socketOwner.c_str());
-        if (pwd == NULL)
+        struct passwd passwordStruct;
+        struct passwd* passwordResult;
+        char stringBuffer[256];
+        getpwnam_r(socketOwner.c_str(), &passwordStruct,
+                   stringBuffer, sizeof(stringBuffer)/sizeof(char),
+                   &passwordResult);
+        if  (passwordResult == NULL)
         {
             RIALTO_SERVER_LOG_SYS_WARN(errno, "Failed to determine ownerId for the IPC socket");
         }
         else
         {
-            ownerId = pwd->pw_uid;
+            ownerId = passwordResult->pw_uid;
         }
     }
 
@@ -108,14 +118,19 @@ bool SessionManagementServer::initialize(const std::string &socketName, unsigned
     if (!socketGroup.empty())
     {
         errno = 0;
-        struct group * grp = getgrnam(socketGroup.c_str());
-        if (grp == NULL)
+        struct group groupStruct;
+        struct group* groupResult;
+        char stringBuffer[256];
+        getgrnam_r(socketGroup.c_str(), &groupStruct,
+                   stringBuffer, sizeof(stringBuffer)/sizeof(char),
+                   &groupResult);
+        if (groupResult == NULL)
         {
             RIALTO_SERVER_LOG_SYS_WARN(errno, "Failed to determine groupId for the IPC socket");
         }
         else
         {
-            groupId = grp->gr_gid;
+            groupId = groupResult->gr_gid;
         }
     }
 

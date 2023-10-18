@@ -63,8 +63,8 @@ constexpr bool kPingSuccess{true};
 constexpr int kPingId{125};
 const std::string kClientDisplayName{"westeros-rialto"};
 constexpr unsigned int kSocketPermissions{0777};
-const std::string kSocketOwner{"nobody"};
-const std::string kSocketGroup{"nogroup"};
+const std::string kSocketOwner;
+const std::string kSocketGroup;
 } // namespace
 
 MATCHER_P2(MaxResourceMatcher, maxPlaybacks, maxWebAudioPlayers, "")

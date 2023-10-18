@@ -78,7 +78,7 @@ constexpr unsigned int kWrite{2};
 constexpr unsigned int kExecute{1};
 
 /**
- * @brief Socket permissions
+ * @brief Socket permissions and ownership
  */
 struct SocketPermissions
 {

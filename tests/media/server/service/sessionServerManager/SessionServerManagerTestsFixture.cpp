@@ -43,8 +43,8 @@ constexpr firebolt::rialto::common::MaxResourceCapabilitites maxResource{maxPlay
 constexpr RIALTO_DEBUG_LEVEL logLvl{RIALTO_DEBUG_LEVEL_DEFAULT};
 const std::string sessionManagementSocket{"/tmp/rialtosessionservermanagertests-0"};
 constexpr unsigned int sessionManagementSocketPermissions{0777};
-const std::string sessionManagementSocketOwner{"nobody"};
-const std::string sessionManagementSocketGroup{"nogroup"};
+const std::string sessionManagementSocketOwner;
+const std::string sessionManagementSocketGroup;
 const std::string clientDisplayName{"westeros-rialto"};
 } // namespace
 

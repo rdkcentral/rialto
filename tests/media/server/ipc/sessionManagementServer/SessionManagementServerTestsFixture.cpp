@@ -42,8 +42,8 @@ namespace
 {
 const std::string socketName{"/tmp/sessionmanagementservertest-0"};
 constexpr unsigned int socketPermissions{0777};
-const std::string socketOwner{"nobody"};
-const std::string socketGroup{"nogroup"};
+const std::string socketOwner;
+const std::string socketGroup;
 const RIALTO_DEBUG_LEVEL defaultLogLevels{RIALTO_DEBUG_LEVEL_FATAL};
 const RIALTO_DEBUG_LEVEL clientLogLevels{RIALTO_DEBUG_LEVEL_ERROR};
 const RIALTO_DEBUG_LEVEL ipcLogLevels{RIALTO_DEBUG_LEVEL_DEBUG};

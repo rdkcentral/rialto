@@ -28,8 +28,8 @@ namespace rialto::servermanager::common
 SessionServerAppFactory::SessionServerAppFactory(const std::list<std::string> &environmentVariables,
                                                  const std::string &sessionServerPath,
                                                  std::chrono::milliseconds sessionServerStartupTimeout,
-                                                 unsigned int socketPermissions,
-                                                 const std::string &socketOwner, const std::string &socketGroup)
+                                                 unsigned int socketPermissions, const std::string &socketOwner,
+                                                 const std::string &socketGroup)
     : m_kEnvironmentVariables{environmentVariables}, m_kSessionServerPath{sessionServerPath},
       m_kSessionServerStartupTimeout{sessionServerStartupTimeout}, m_kSocketPermissions{socketPermissions},
       m_kSocketOwner{socketOwner}, m_kSocketGroup{socketGroup},
@@ -45,8 +45,8 @@ std::unique_ptr<ISessionServerApp> SessionServerAppFactory::create(
                                               m_linuxWrapperFactory->createLinuxWrapper(),
                                               firebolt::rialto::common::ITimerFactory::getFactory(),
                                               sessionServerAppManager, m_kEnvironmentVariables, m_kSessionServerPath,
-                                              m_kSessionServerStartupTimeout, m_kSocketPermissions,
-                                              m_kSocketOwner, m_kSocketGroup);
+                                              m_kSessionServerStartupTimeout, m_kSocketPermissions, m_kSocketOwner,
+                                              m_kSocketGroup);
 }
 
 std::unique_ptr<ISessionServerApp> SessionServerAppFactory::create(SessionServerAppManager &sessionServerAppManager) const
@@ -54,7 +54,7 @@ std::unique_ptr<ISessionServerApp> SessionServerAppFactory::create(SessionServer
     return std::make_unique<SessionServerApp>(m_linuxWrapperFactory->createLinuxWrapper(),
                                               firebolt::rialto::common::ITimerFactory::getFactory(),
                                               sessionServerAppManager, m_kEnvironmentVariables, m_kSessionServerPath,
-                                              m_kSessionServerStartupTimeout, m_kSocketPermissions,
-                                              m_kSocketOwner, m_kSocketGroup);
+                                              m_kSessionServerStartupTimeout, m_kSocketPermissions, m_kSocketOwner,
+                                              m_kSocketGroup);
 }
 } // namespace rialto::servermanager::common
