@@ -25,7 +25,7 @@
 
 namespace firebolt::rialto::server
 {
-constexpr std::uint32_t kPrerollNumFrames{1};
+constexpr std::uint32_t kPrerollNumFrames{3};
 constexpr std::uint32_t kMaxFrames{24};
 constexpr std::uint32_t getMaxMetadataBytes()
 {
