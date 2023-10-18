@@ -30,7 +30,7 @@ constexpr int kSourceId{1};
 constexpr std::uint32_t kBufferLen{7 * 1024 * 1024};
 constexpr std::uint32_t kMetadataOffset{1024};
 constexpr int kRequestId{0};
-constexpr int kPrerollingNumFrames{1};
+constexpr int kPrerollingNumFrames{3};
 constexpr int kMaxFrames{24};
 constexpr int kMaxMetadataBytes{2500};
 } // namespace
