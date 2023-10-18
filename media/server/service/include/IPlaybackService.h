@@ -55,6 +55,7 @@ public:
     virtual std::shared_ptr<ISharedMemoryBuffer> getShmBuffer() const = 0;
     virtual IMediaPipelineService &getMediaPipelineService() const = 0;
     virtual IWebAudioPlayerService &getWebAudioPlayerService() const = 0;
+    virtual void ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure) const = 0;
 };
 } // namespace firebolt::rialto::server::service
 

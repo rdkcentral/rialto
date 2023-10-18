@@ -19,6 +19,7 @@
 
 #include "GenericTasksTestsBase.h"
 #include "GenericTasksTestsContext.h"
+#include "HeartbeatHandlerMock.h"
 #include "IMediaPipeline.h"
 #include "Matchers.h"
 #include "tasks/generic/AttachSamples.h"
@@ -30,6 +31,7 @@
 #include "tasks/generic/FinishSetupSource.h"
 #include "tasks/generic/NeedData.h"
 #include "tasks/generic/Pause.h"
+#include "tasks/generic/Ping.h"
 #include "tasks/generic/Play.h"
 #include "tasks/generic/ReadShmDataAndAttachSamples.h"
 #include "tasks/generic/RemoveSource.h"
@@ -1430,6 +1432,12 @@ void GenericTasksTestsBase::shouldChangeStatePlayingFailure()
 void GenericTasksTestsBase::triggerPlay()
 {
     firebolt::rialto::server::tasks::generic::Play task{testContext->m_gstPlayer};
+    task.execute();
+}
+
+void GenericTasksTestsBase::triggerPing()
+{
+    firebolt::rialto::server::tasks::generic::Ping task{std::make_unique<StrictMock<HeartbeatHandlerMock>>()};
     task.execute();
 }
 

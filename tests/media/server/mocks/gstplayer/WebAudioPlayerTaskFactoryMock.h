@@ -46,6 +46,8 @@ public:
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createHandleBusMessage,
                 (WebAudioPlayerContext & context, IGstWebAudioPlayerPrivate &player, GstMessage *message),
                 (const, override));
+    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createPing, (std::unique_ptr<IHeartbeatHandler> && heartbeatHandler),
+                (const, override));
 };
 } // namespace firebolt::rialto::server
 

@@ -37,8 +37,10 @@ inline bool isNumber(const std::string &text)
 namespace firebolt::rialto::server::service
 {
 SessionServerManager::SessionServerManager(const ipc::IIpcFactory &ipcFactory, IPlaybackService &playbackService,
-                                           ICdmService &cdmService, IControlService &controlService)
+                                           ICdmService &cdmService, IControlService &controlService,
+                                           std::unique_ptr<IHeartbeatProcedureFactory> &&heartbeatProcedureFactory)
     : m_playbackService{playbackService}, m_cdmService{cdmService}, m_controlService{controlService},
+      m_heartbeatProcedureFactory{std::move(heartbeatProcedureFactory)},
       m_applicationManagementServer{ipcFactory.createApplicationManagementServer(*this)},
       m_sessionManagementServer{ipcFactory.createSessionManagementServer(playbackService, cdmService, controlService)},
       m_isServiceRunning{true}, m_currentState{common::SessionServerState::UNINITIALIZED}
@@ -152,7 +154,14 @@ void SessionServerManager::setLogLevels(RIALTO_DEBUG_LEVEL defaultLogLevels, RIA
 
 bool SessionServerManager::ping(std::int32_t id, const std::shared_ptr<IAckSender> &ackSender)
 {
-    return m_controlService.ping(id, ackSender);
+    auto heartbeatProcedure{m_heartbeatProcedureFactory->createHeartbeatProcedure(ackSender, id)};
+
+    // Check all rialto server internal threads
+    m_cdmService.ping(heartbeatProcedure);
+    m_playbackService.ping(heartbeatProcedure);
+
+    // Check all Rialto Clients
+    return m_controlService.ping(heartbeatProcedure);
 }
 
 bool SessionServerManager::switchToActive()
@@ -223,6 +232,7 @@ bool SessionServerManager::switchToNotRunning()
     // Free resources before sending notification to ServerManager
     m_playbackService.switchToInactive();
     m_cdmService.switchToInactive();
+    m_controlService.setApplicationState(ApplicationState::UNKNOWN);
     stopService();
     if (m_applicationManagementServer->sendStateChangedEvent(common::SessionServerState::NOT_RUNNING))
     {

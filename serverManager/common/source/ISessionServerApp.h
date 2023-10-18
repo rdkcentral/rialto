@@ -54,6 +54,8 @@ public:
     virtual int getMaxWebAudioPlayers() const = 0;
     virtual void cancelStartupTimer() = 0;
     virtual void kill() const = 0;
+    virtual void setExpectedState(const firebolt::rialto::common::SessionServerState &state) = 0;
+    virtual firebolt::rialto::common::SessionServerState getExpectedState() const = 0;
 };
 } // namespace rialto::servermanager::common
 

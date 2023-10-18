@@ -32,7 +32,7 @@ public:
     ControlIpcFactoryMock() = default;
     virtual ~ControlIpcFactoryMock() = default;
 
-    MOCK_METHOD(std::shared_ptr<IControlIpc>, getControlIpc, (IControlClient * controlClient), (override));
+    MOCK_METHOD(std::shared_ptr<IControlIpc>, createControlIpc, (IControlClient * controlClient), (override));
 };
 } // namespace firebolt::rialto::client
 

@@ -684,4 +684,12 @@ void MediaKeysServerInternal::decrementSessionIdUsageCounterInternal(int32_t key
         m_mediaKeySessions.erase(sessionIter);
     }
 }
+
+void MediaKeysServerInternal::ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    auto task = [&]() { heartbeatHandler.reset(); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+}
 }; // namespace firebolt::rialto::server

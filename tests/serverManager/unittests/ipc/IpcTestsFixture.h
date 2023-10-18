@@ -46,6 +46,7 @@ public:
     void sessionServerAppManagerWillBeNotifiedAboutSessionServerStateChange(
         const firebolt::rialto::common::SessionServerState &newState);
     void sessionServerAppManagerWillBeNotifiedAboutCompletedHealthcheck();
+    void sessionServerAppManagerWillBeRequestedToRestartServer();
     void waitForExpectationsMet();
 
     bool triggerCreateClientConnectToFakeSocket();

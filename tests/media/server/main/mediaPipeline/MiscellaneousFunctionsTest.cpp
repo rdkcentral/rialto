@@ -17,6 +17,7 @@
  * limitations under the License.
  */
 
+#include "HeartbeatHandlerMock.h"
 #include "MediaPipelineTestBase.h"
 
 using ::testing::ByMove;
@@ -398,4 +399,26 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, InvalidateActiveRequ
 
     EXPECT_CALL(*m_activeRequestsMock, erase(kMediaSourceType));
     m_mediaPipeline->invalidateActiveRequests(kMediaSourceType);
+}
+
+/**
+ * Test that Ping checks GstPlayer worker thread
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, PingWithGstPlayerWorkerThreadCheck)
+{
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+
+    EXPECT_CALL(*m_gstPlayerMock, ping(_));
+    m_mediaPipeline->ping(std::make_unique<StrictMock<firebolt::rialto::server::HeartbeatHandlerMock>>());
+}
+
+/**
+ * Test that Ping checks main thread only
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SimplePing)
+{
+    mainThreadWillEnqueueTaskAndWait();
+
+    m_mediaPipeline->ping(std::make_unique<StrictMock<firebolt::rialto::server::HeartbeatHandlerMock>>());
 }

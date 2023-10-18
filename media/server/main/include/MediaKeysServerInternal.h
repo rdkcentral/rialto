@@ -127,6 +127,7 @@ public:
 
     void incrementSessionIdUsageCounter(int32_t keySessionId) override;
     void decrementSessionIdUsageCounter(int32_t keySessionId) override;
+    void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) override;
 
 private:
     /**

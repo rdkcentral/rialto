@@ -222,6 +222,9 @@ protected:
     void shouldChangeStatePlayingFailure();
     void triggerPlay();
 
+    // Ping test methods
+    void triggerPing();
+
     // Pause test methods
     void shouldPause();
     void triggerPause();

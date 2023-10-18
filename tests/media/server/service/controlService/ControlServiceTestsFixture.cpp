@@ -31,13 +31,10 @@ constexpr firebolt::rialto::ApplicationState kAppState{firebolt::rialto::Applica
 
 ControlServiceTests::ControlServiceTests()
     : m_controlServerInternalFactoryMock{std::make_shared<StrictMock<ControlServerInternalFactoryMock>>()},
-      m_heartbeatProcedureFactory{std::make_unique<StrictMock<HeartbeatProcedureFactoryMock>>()},
-      m_heartbeatProcedureFactoryMock{*m_heartbeatProcedureFactory},
       m_heartbeatProcedureMock{std::make_shared<StrictMock<HeartbeatProcedureMock>>()},
       m_controlServerInternalMock{std::make_shared<StrictMock<ControlServerInternalMock>>()},
       m_controlClientMock{std::make_shared<StrictMock<ControlClientServerInternalMock>>()},
-      m_ackSenderMock{std::make_shared<StrictMock<AckSenderMock>>()}, m_sut{m_controlServerInternalFactoryMock,
-                                                                            std::move(m_heartbeatProcedureFactory)}
+      m_ackSenderMock{std::make_shared<StrictMock<AckSenderMock>>()}, m_sut{m_controlServerInternalFactoryMock}
 {
 }
 
@@ -67,14 +64,8 @@ void ControlServiceTests::controlServerInternalWillSetApplicationState()
 
 void ControlServiceTests::controlServerInternalWillPing()
 {
-    EXPECT_CALL(*m_heartbeatProcedureMock, createHandler(_));
+    EXPECT_CALL(*m_heartbeatProcedureMock, createHandler());
     EXPECT_CALL(*m_controlServerInternalMock, ping(_));
-}
-
-void ControlServiceTests::heartbeatProcedureWillBeCreated()
-{
-    EXPECT_CALL(m_heartbeatProcedureFactoryMock, createHeartbeatProcedure(_, kPingId))
-        .WillOnce(Return(m_heartbeatProcedureMock));
 }
 
 void ControlServiceTests::triggerAddControl(int id)
@@ -99,5 +90,5 @@ void ControlServiceTests::triggerSetApplicationState()
 
 bool ControlServiceTests::triggerPing()
 {
-    return m_sut.ping(kPingId, m_ackSenderMock);
+    return m_sut.ping(m_heartbeatProcedureMock);
 }

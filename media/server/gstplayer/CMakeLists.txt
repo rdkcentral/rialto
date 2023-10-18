@@ -43,6 +43,7 @@ add_library(
         source/tasks/generic/HandleBusMessage.cpp
         source/tasks/generic/NeedData.cpp
         source/tasks/generic/Pause.cpp
+        source/tasks/generic/Ping.cpp
         source/tasks/generic/Play.cpp
         source/tasks/generic/ReadShmDataAndAttachSamples.cpp
         source/tasks/generic/RemoveSource.cpp
@@ -65,6 +66,7 @@ add_library(
         source/tasks/webAudio/Shutdown.cpp
         source/tasks/webAudio/Stop.cpp
         source/tasks/webAudio/Pause.cpp
+        source/tasks/webAudio/Ping.cpp
         source/tasks/webAudio/Play.cpp
         source/tasks/webAudio/Eos.cpp
         source/tasks/webAudio/SetCaps.cpp

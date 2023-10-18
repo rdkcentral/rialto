@@ -40,7 +40,7 @@ IClientController &ClientControllerAccessor::getClientController() const
 }
 
 ClientController::ClientController(const std::shared_ptr<IControlIpcFactory> &ControlIpcFactory)
-    : m_currentState{ApplicationState::UNKNOWN}
+    : m_currentState{ApplicationState::UNKNOWN}, m_registrationRequired{true}
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
@@ -55,15 +55,10 @@ ClientController::ClientController(const std::shared_ptr<IControlIpcFactory> &Co
         RIALTO_CLIENT_LOG_WARN("Failed to get git commit ID.");
     }
 
-    m_controlIpc = ControlIpcFactory->getControlIpc(this);
+    m_controlIpc = ControlIpcFactory->createControlIpc(this);
     if (nullptr == m_controlIpc)
     {
         throw std::runtime_error("Failed to create the ControlIpc object");
-    }
-
-    if (!m_controlIpc->registerClient())
-    {
-        throw std::runtime_error("Failed to register client");
     }
 }
 
@@ -89,6 +84,15 @@ bool ClientController::registerClient(IControlClient *client, ApplicationState &
     }
 
     std::lock_guard<std::mutex> lock{m_mutex};
+    if (m_registrationRequired)
+    {
+        if (!m_controlIpc->registerClient())
+        {
+            RIALTO_CLIENT_LOG_ERROR("Failed to register client");
+            return false;
+        }
+    }
+    m_registrationRequired = false;
     m_clientVec.insert(client);
     appState = m_currentState;
 
@@ -147,6 +151,11 @@ void ClientController::notifyApplicationState(ApplicationState state)
 {
     {
         std::lock_guard<std::mutex> lock{m_mutex};
+        if (ApplicationState::UNKNOWN == state)
+        {
+            RIALTO_CLIENT_LOG_DEBUG("Application state changed to unknown. Client will have to register next time");
+            m_registrationRequired = true;
+        }
         if (m_currentState == state)
         {
             RIALTO_CLIENT_LOG_WARN("Rialto application state already set, %s", stateToString(m_currentState).c_str());
@@ -168,16 +177,12 @@ void ClientController::notifyApplicationState(ApplicationState state)
         break;
     }
     case ApplicationState::INACTIVE:
+    case ApplicationState::UNKNOWN:
     {
         // Inform clients before memory termination
         changeStateAndNotifyClients(state);
         termSharedMemory();
         break;
-    }
-    default:
-    {
-        RIALTO_CLIENT_LOG_ERROR("Invalid application state, %s", stateToString(state).c_str());
-        return;
     }
     }
 }

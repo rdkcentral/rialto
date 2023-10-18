@@ -21,7 +21,7 @@ set( CMAKE_CXX_STANDARD 17 )
 
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
 include( CheckCXXCompilerFlag )
-
+include( GNUInstallDirs )
 include(ExternalProject)
 
 if (NOT RDK_GSTREAMER_UTILS_TAG)
@@ -63,3 +63,8 @@ target_include_directories(
     )
 
 add_dependencies( rdkgstreamerutils rdk-gstreamer-utils-repo )
+
+install (
+        TARGETS rdkgstreamerutils LIBRARY
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)

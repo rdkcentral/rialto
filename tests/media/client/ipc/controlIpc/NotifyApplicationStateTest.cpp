@@ -18,6 +18,7 @@
  */
 
 #include "ControlIpcTestBase.h"
+#include "IConnectionObserver.h"
 #include "controlmodule.pb.h"
 
 using testing::_;
@@ -31,7 +32,6 @@ protected:
         createControlIpc();
         expectIpcApiCallSuccess();
         registerClient();
-        EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
     }
 
     ~ControlIpcNotifyApplicationStateTest() override { destroyControlIpc(); }
@@ -49,6 +49,7 @@ protected:
 TEST_F(ControlIpcNotifyApplicationStateTest, shouldNotifyAboutChangeToRunning)
 {
     ASSERT_TRUE(m_notifyApplicationStateCb);
+    EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
     EXPECT_CALL(m_controlClientMock, notifyApplicationState(firebolt::rialto::ApplicationState::RUNNING));
     m_notifyApplicationStateCb(createEvent(firebolt::rialto::ApplicationStateChangeEvent_ApplicationState_RUNNING));
 }
@@ -56,6 +57,7 @@ TEST_F(ControlIpcNotifyApplicationStateTest, shouldNotifyAboutChangeToRunning)
 TEST_F(ControlIpcNotifyApplicationStateTest, shouldNotifyAboutChangeToInactive)
 {
     ASSERT_TRUE(m_notifyApplicationStateCb);
+    EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
     EXPECT_CALL(m_controlClientMock, notifyApplicationState(firebolt::rialto::ApplicationState::INACTIVE));
     m_notifyApplicationStateCb(createEvent(firebolt::rialto::ApplicationStateChangeEvent_ApplicationState_INACTIVE));
 }
@@ -63,15 +65,25 @@ TEST_F(ControlIpcNotifyApplicationStateTest, shouldNotifyAboutChangeToInactive)
 TEST_F(ControlIpcNotifyApplicationStateTest, shouldNotifyAboutChangeToUnknown)
 {
     ASSERT_TRUE(m_notifyApplicationStateCb);
+    EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
     EXPECT_CALL(m_controlClientMock, notifyApplicationState(firebolt::rialto::ApplicationState::UNKNOWN));
     m_notifyApplicationStateCb(createEvent(firebolt::rialto::ApplicationStateChangeEvent_ApplicationState_UNKNOWN));
 }
 
 TEST_F(ControlIpcNotifyApplicationStateTest, wrongHandleId)
 {
+    EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
     EXPECT_CALL(m_controlClientMock, notifyApplicationState(firebolt::rialto::ApplicationState::UNKNOWN));
     auto event = createEvent(firebolt::rialto::ApplicationStateChangeEvent_ApplicationState_UNKNOWN);
     event->set_control_handle(1234);
 
     m_notifyApplicationStateCb(event);
+}
+
+TEST_F(ControlIpcNotifyApplicationStateTest, shouldNotifyAboutChangeToUnknownWhenConnectionIsBroken)
+{
+    EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
+    EXPECT_CALL(m_controlClientMock, notifyApplicationState(firebolt::rialto::ApplicationState::UNKNOWN));
+    IConnectionObserver *connectionObserver = m_controlIpc.get();
+    connectionObserver->onConnectionBroken();
 }

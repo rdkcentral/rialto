@@ -272,9 +272,9 @@ bool Client::setLogLevels(const service::LoggingLevels &logLevels) const
 
 void Client::onDisconnected() const
 {
-    RIALTO_SERVER_MANAGER_LOG_WARN("Connection to serverId: %d broken!", m_serverId);
-    m_sessionServerAppManager->onSessionServerStateChanged(m_serverId,
-                                                           firebolt::rialto::common::SessionServerState::NOT_RUNNING);
+    RIALTO_SERVER_MANAGER_LOG_WARN("Connection to serverId: %d broken, server probably crashed. Starting recovery",
+                                   m_serverId);
+    m_sessionServerAppManager->restartServer(m_serverId);
 }
 
 void Client::onStateChangedEvent(const std::shared_ptr<rialto::StateChangedEvent> &event) const

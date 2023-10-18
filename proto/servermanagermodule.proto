@@ -66,8 +66,8 @@ message LogLevels {
  *
  */
 message Resources {
-    required int32 maxPlaybacks = 1;
-    required int32 maxWebAudioPlayers = 2;
+    optional int32 maxPlaybacks = 1 [default = -1];
+    optional int32 maxWebAudioPlayers = 2 [default = -1];
 }
 
 /**
@@ -84,11 +84,11 @@ message Resources {
  *
  */
 message SetConfigurationRequest {
-    required string sessionManagementSocketName = 1;
-    required SessionServerState initialSessionServerState = 2;
-    required Resources resources = 3;
-    required LogLevels logLevels = 4;
-    required uint32 socketPermissions = 5;
+    optional string sessionManagementSocketName = 1;
+    optional SessionServerState initialSessionServerState = 2;
+    optional Resources resources = 3;
+    optional LogLevels logLevels = 4;
+    optional uint32 socketPermissions = 5;
     optional string clientDisplayName = 6;
     required string socketOwner = 7;
     required string socketGroup = 8;
@@ -103,7 +103,7 @@ message SetConfigurationResponse {
  *
  */
 message StateChangedEvent {
-    required SessionServerState sessionServerState = 1;
+    optional SessionServerState sessionServerState = 1;
 }
 
 /**
@@ -113,7 +113,7 @@ message StateChangedEvent {
  *
  */
 message SetStateRequest {
-    required SessionServerState sessionServerState = 1;
+    optional SessionServerState sessionServerState = 1;
 }
 message SetStateResponse {
 }
@@ -126,7 +126,7 @@ message SetStateResponse {
  * @param[in] id  : Unique id, should be passed to corresponding Ack call
  */
 message PingRequest {
-    required int32 id = 1;
+    optional int32 id = 1 [default = -1];
 }
 message PingResponse {
 }
@@ -139,8 +139,8 @@ message PingResponse {
  * 
  */
  message AckEvent {
-    required int32 id = 1;
-    required bool success = 2;
+    optional int32 id = 1 [default = -1];
+    optional bool success = 2;
  }
 
 /**
@@ -150,7 +150,7 @@ message PingResponse {
  *
  */
 message SetLogLevelsRequest {
-    required LogLevels logLevels = 1;
+    optional LogLevels logLevels = 1;
 }
 message SetLogLevelsResponse {
 }

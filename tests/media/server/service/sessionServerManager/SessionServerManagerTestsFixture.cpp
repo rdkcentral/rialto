@@ -25,6 +25,8 @@
 using firebolt::rialto::ApplicationState;
 using firebolt::rialto::common::SessionServerState;
 using firebolt::rialto::server::AckSenderMock;
+using firebolt::rialto::server::HeartbeatProcedureFactoryMock;
+using firebolt::rialto::server::HeartbeatProcedureMock;
 using firebolt::rialto::server::ipc::ApplicationManagementServerMock;
 using firebolt::rialto::server::ipc::SessionManagementServerMock;
 using firebolt::rialto::server::service::SessionServerManager;
@@ -54,14 +56,17 @@ SessionServerManagerTests::SessionServerManagerTests()
           dynamic_cast<StrictMock<ApplicationManagementServerMock> &>(*m_applicationManagementServer)},
       m_sessionManagementServer{std::make_unique<StrictMock<SessionManagementServerMock>>()},
       m_sessionManagementServerMock{dynamic_cast<StrictMock<SessionManagementServerMock> &>(*m_sessionManagementServer)},
-      m_ackSenderMock{std::make_shared<StrictMock<AckSenderMock>>()}
+      m_ackSenderMock{std::make_shared<StrictMock<AckSenderMock>>()},
+      m_heartbeatProcedureFactory{std::make_unique<StrictMock<HeartbeatProcedureFactoryMock>>()},
+      m_heartbeatProcedureFactoryMock{*m_heartbeatProcedureFactory},
+      m_heartbeatProcedureMock{std::make_shared<StrictMock<HeartbeatProcedureMock>>()}
 {
     EXPECT_CALL(m_ipcFactoryMock, createApplicationManagementServer(_))
         .WillOnce(Return(ByMove(std::move(m_applicationManagementServer))));
     EXPECT_CALL(m_ipcFactoryMock, createSessionManagementServer(_, _, _))
         .WillOnce(Return(ByMove(std::move(m_sessionManagementServer))));
     m_sut = std::make_unique<SessionServerManager>(m_ipcFactoryMock, m_playbackServiceMock, m_cdmServiceMock,
-                                                   m_controlServiceMock);
+                                                   m_controlServiceMock, std::move(m_heartbeatProcedureFactory));
 }
 
 SessionServerManagerTests::~SessionServerManagerTests()
@@ -257,6 +262,7 @@ void SessionServerManagerTests::willFailToSetStateNotRunning()
 {
     EXPECT_CALL(m_playbackServiceMock, switchToInactive());
     EXPECT_CALL(m_cdmServiceMock, switchToInactive());
+    EXPECT_CALL(m_controlServiceMock, setApplicationState(ApplicationState::UNKNOWN));
     EXPECT_CALL(m_applicationManagementServerMock, sendStateChangedEvent(SessionServerState::NOT_RUNNING))
         .WillOnce(Return(false));
 }
@@ -265,18 +271,27 @@ void SessionServerManagerTests::willSetStateNotRunning()
 {
     EXPECT_CALL(m_playbackServiceMock, switchToInactive());
     EXPECT_CALL(m_cdmServiceMock, switchToInactive());
+    EXPECT_CALL(m_controlServiceMock, setApplicationState(ApplicationState::UNKNOWN));
     EXPECT_CALL(m_applicationManagementServerMock, sendStateChangedEvent(SessionServerState::NOT_RUNNING))
         .WillOnce(Return(true));
 }
 
 void SessionServerManagerTests::willPing()
 {
-    EXPECT_CALL(m_controlServiceMock, ping(pingId, _)).WillOnce(Return(true));
+    EXPECT_CALL(m_heartbeatProcedureFactoryMock, createHeartbeatProcedure(_, pingId))
+        .WillOnce(Return(m_heartbeatProcedureMock));
+    EXPECT_CALL(m_cdmServiceMock, ping(_));
+    EXPECT_CALL(m_playbackServiceMock, ping(_));
+    EXPECT_CALL(m_controlServiceMock, ping(_)).WillOnce(Return(true));
 }
 
 void SessionServerManagerTests::willFailToPing()
 {
-    EXPECT_CALL(m_controlServiceMock, ping(pingId, _)).WillOnce(Return(false));
+    EXPECT_CALL(m_heartbeatProcedureFactoryMock, createHeartbeatProcedure(_, pingId))
+        .WillOnce(Return(m_heartbeatProcedureMock));
+    EXPECT_CALL(m_cdmServiceMock, ping(_));
+    EXPECT_CALL(m_playbackServiceMock, ping(_));
+    EXPECT_CALL(m_controlServiceMock, ping(_)).WillOnce(Return(false));
 }
 
 void SessionServerManagerTests::willSetLogLevels()

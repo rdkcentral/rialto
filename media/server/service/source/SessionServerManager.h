@@ -23,6 +23,7 @@
 #include "IApplicationManagementServer.h"
 #include "ICdmService.h"
 #include "IControlService.h"
+#include "IHeartbeatProcedure.h"
 #include "IIpcFactory.h"
 #include "IPlaybackService.h"
 #include "ISessionManagementServer.h"
@@ -39,7 +40,8 @@ class SessionServerManager : public ISessionServerManager
 {
 public:
     SessionServerManager(const ipc::IIpcFactory &ipcFactory, IPlaybackService &playbackService, ICdmService &cdmService,
-                         IControlService &controlService);
+                         IControlService &controlService,
+                         std::unique_ptr<IHeartbeatProcedureFactory> &&heartbeatProcedureFactory);
     ~SessionServerManager() override;
     SessionServerManager(const SessionServerManager &) = delete;
     SessionServerManager(SessionServerManager &&) = delete;
@@ -68,6 +70,7 @@ private:
     IPlaybackService &m_playbackService;
     ICdmService &m_cdmService;
     IControlService &m_controlService;
+    std::unique_ptr<IHeartbeatProcedureFactory> m_heartbeatProcedureFactory;
     std::unique_ptr<ipc::IApplicationManagementServer> m_applicationManagementServer;
     std::unique_ptr<ipc::ISessionManagementServer> m_sessionManagementServer;
     std::mutex m_serviceMutex;

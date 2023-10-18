@@ -54,10 +54,11 @@ public:
     bool setSessionServerState(const std::string &appName,
                                const firebolt::rialto::common::SessionServerState &newState) override;
     void onSessionServerStateChanged(int serverId, const firebolt::rialto::common::SessionServerState &newState) override;
-    void sendPingEvents(int pingId) const override;
+    void sendPingEvents(int pingId) override;
     void onAck(int serverId, int pingId, bool success) override;
     std::string getAppConnectionInfo(const std::string &appName) const override;
     bool setLogLevels(const service::LoggingLevels &logLevels) const override;
+    void restartServer(int serverId) override;
 
 private:
     bool connectSessionServer(const std::unique_ptr<ISessionServerApp> &sessionServer);
@@ -74,10 +75,15 @@ private:
     const std::unique_ptr<ISessionServerApp> &
     launchSessionServer(const std::string &appName, const firebolt::rialto::common::SessionServerState &initialState,
                         const firebolt::rialto::common::AppConfig &appConfig);
+    void handleStateChangeFailure(const std::unique_ptr<ISessionServerApp> &sessionServer,
+                                  const firebolt::rialto::common::SessionServerState &state);
     const std::unique_ptr<ISessionServerApp> &preloadSessionServer();
     const std::unique_ptr<ISessionServerApp> &getPreloadedServer() const;
     const std::unique_ptr<ISessionServerApp> &getServerByAppName(const std::string &appName) const;
     const std::unique_ptr<ISessionServerApp> &getServerById(int serverId) const;
+    bool handleInitiateApplication(const std::string &appName, const firebolt::rialto::common::SessionServerState &state,
+                                   const firebolt::rialto::common::AppConfig &appConfig);
+    void handleRestartServer(int serverId);
 
 private:
     std::unique_ptr<ipc::IController> &m_ipcController;

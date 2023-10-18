@@ -679,6 +679,26 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
     return true;
 }
 
+void MediaPipelineServerInternal::ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    auto task = [&]() { pingInternal(std::move(heartbeatHandler)); };
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+}
+
+void MediaPipelineServerInternal::pingInternal(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler)
+{
+    if (!m_gstPlayer)
+    {
+        // No need to check GstPlayer worker thread, we reached this function, so main thread is working fine.
+        heartbeatHandler.reset();
+        return;
+    }
+    // Check GstPlayer worker thread
+    m_gstPlayer->ping(std::move(heartbeatHandler));
+}
+
 bool MediaPipelineServerInternal::renderFrame()
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");

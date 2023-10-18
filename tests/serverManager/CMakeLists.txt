@@ -17,6 +17,8 @@
 # limitations under the License.
 #
 
+find_package( jsoncpp REQUIRED )
+
 add_gtests (
         RialtoServerManagerUnitTests
 
@@ -31,6 +33,7 @@ add_gtests (
         unittests/ipc/IpcTests.cpp
         unittests/ipc/IpcTestsFixture.cpp
 
+        unittests/service/ConfigReaderTests.cpp
         unittests/service/ServerManagerServiceTests.cpp
         unittests/service/ServerManagerServiceTestsFixture.cpp
         )
@@ -59,6 +62,8 @@ target_include_directories(
         ../../serverManager/common/source
         ../../serverManager/ipc/source
         ../../serverManager/service/source
+
+        ${JSONCPP_INCLUDE_DIRS}
 )
 
 target_link_libraries(

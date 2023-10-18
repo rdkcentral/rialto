@@ -73,6 +73,8 @@ public:
     int getMaxWebAudioPlayers() const override;
     void cancelStartupTimer() override;
     void kill() const override;
+    void setExpectedState(const firebolt::rialto::common::SessionServerState &state) override;
+    firebolt::rialto::common::SessionServerState getExpectedState() const override;
 
 private:
     bool initializeSockets();
@@ -105,6 +107,7 @@ private:
     std::mutex m_processStartupMutex;
     std::condition_variable m_processStartupCv;
     bool m_childInitialized;
+    firebolt::rialto::common::SessionServerState m_expectedState;
 };
 } // namespace rialto::servermanager::common
 
