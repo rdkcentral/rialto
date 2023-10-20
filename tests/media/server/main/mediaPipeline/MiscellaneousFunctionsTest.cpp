@@ -163,10 +163,10 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetPositionResetEos)
     EXPECT_TRUE(m_mediaPipeline->setPosition(m_kPosition));
 
     // Expect need data notified to client
-    expectNotifyNeedData(firebolt::rialto::MediaSourceType::VIDEO, videoSourceId, 1);
+    expectNotifyNeedData(firebolt::rialto::MediaSourceType::VIDEO, videoSourceId, 3);
     m_gstPlayerCallback->notifyNeedMediaData(firebolt::rialto::MediaSourceType::VIDEO);
 
-    expectNotifyNeedData(firebolt::rialto::MediaSourceType::AUDIO, audioSourceId, 1);
+    expectNotifyNeedData(firebolt::rialto::MediaSourceType::AUDIO, audioSourceId, 3);
     m_gstPlayerCallback->notifyNeedMediaData(firebolt::rialto::MediaSourceType::AUDIO);
 }
 
