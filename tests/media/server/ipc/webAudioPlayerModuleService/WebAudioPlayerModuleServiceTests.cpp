@@ -184,3 +184,8 @@ TEST_F(WebAudioPlayerModuleServiceTests, shouldSendPlayerStateEvent)
     webAudioPlayerClientWillSendPlayerStateEvent();
     sendPlayerStateEvent();
 }
+
+TEST_F(WebAudioPlayerModuleServiceTests, FactoryCreatesObject)
+{
+    testFactoryCreatesObject();
+}

@@ -79,7 +79,7 @@ TEST_F(RialtoClientMediaPipelineIpcGetVolumeTest, ChannelDisconnected)
     EXPECT_FALSE(m_mediaPipelineIpc->getVolume(volume));
 
     // Reattach channel on destroySession
-    EXPECT_CALL(m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
+    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
     expectSubscribeEvents();
 }
 

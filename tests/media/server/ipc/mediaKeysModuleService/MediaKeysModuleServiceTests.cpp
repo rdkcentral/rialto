@@ -290,3 +290,8 @@ TEST_F(MediaKeysModuleServiceTests, shouldSendKeyStatusChanged)
     mediaClientWillSendKeyStatusesChangedEvent();
     sendKeyStatusesChangedEvent();
 }
+
+TEST_F(MediaKeysModuleServiceTests, FactoryCreatesObject)
+{
+    testFactoryCreatesObject();
+}

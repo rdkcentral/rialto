@@ -25,14 +25,14 @@
 #include <memory>
 #include <string>
 
-#include <IMediaPipeline.h>
-#include <MediaCommon.h>
-
+#include "IMediaPipeline.h"
 #include "IMediaPipelineIpcClient.h"
+#include "MediaCommon.h"
 
 namespace firebolt::rialto::client
 {
 class IMediaPipelineIpc;
+class IIpcClient;
 
 /**
  * @brief IMediaPipelineIpc factory class, returns a concrete implementation of IMediaPipelineIpc
@@ -59,7 +59,8 @@ public:
      * @retval the new media player ipc instance or null on error.
      */
     virtual std::unique_ptr<IMediaPipelineIpc> createMediaPipelineIpc(IMediaPipelineIpcClient *client,
-                                                                      const VideoRequirements &videoRequirements) = 0;
+                                                                      const VideoRequirements &videoRequirements,
+                                                                      std::weak_ptr<IIpcClient> ipcClient = {}) = 0;
 };
 
 /**

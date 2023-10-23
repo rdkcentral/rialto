@@ -99,7 +99,7 @@ TEST_F(RialtoClientWebAudioPlayerWriteBufferTest, sharedBufferNoLongerValidError
                 webAudioShmInfo->lengthMain = 4;
                 return true;
             }));
-    EXPECT_CALL(m_clientControllerMock, getSharedMemoryHandle()).WillOnce(Invoke([this]() { return nullptr; }));
+    EXPECT_CALL(*m_clientControllerMock, getSharedMemoryHandle()).WillOnce(Invoke([this]() { return nullptr; }));
     m_webAudioPlayer->getBufferAvailable(m_numberOfFrames, notUsedWebAudioShmInfo);
 
     EXPECT_FALSE(m_webAudioPlayer->writeBuffer(m_numberOfFrames, m_dataSrc.data()));
@@ -117,7 +117,7 @@ TEST_F(RialtoClientWebAudioPlayerWriteBufferTest, sharedBufferShmNotValidError)
                 return true;
             }));
     EXPECT_CALL(*m_sharedMemoryHandleMock, getShm()).WillRepeatedly(Return(nullptr));
-    EXPECT_CALL(m_clientControllerMock, getSharedMemoryHandle())
+    EXPECT_CALL(*m_clientControllerMock, getSharedMemoryHandle())
         .WillOnce(Invoke([this]() { return m_sharedMemoryHandleMock; }));
     m_webAudioPlayer->getBufferAvailable(m_numberOfFrames, notUsedWebAudioShmInfo);
 
@@ -137,7 +137,7 @@ TEST_F(RialtoClientWebAudioPlayerWriteBufferTest, writeBufferIpcCallFailsError)
                 return true;
             }));
     EXPECT_CALL(*m_sharedMemoryHandleMock, getShm()).WillRepeatedly(Return(m_dataDest.data()));
-    EXPECT_CALL(m_clientControllerMock, getSharedMemoryHandle())
+    EXPECT_CALL(*m_clientControllerMock, getSharedMemoryHandle())
         .WillOnce(Invoke([this]() { return m_sharedMemoryHandleMock; }));
     m_webAudioPlayer->getBufferAvailable(m_numberOfFrames, notUsedWebAudioShmInfo);
 
@@ -160,7 +160,7 @@ TEST_F(RialtoClientWebAudioPlayerWriteBufferTest, writeToMainOffsetOnly)
                 return true;
             }));
     EXPECT_CALL(*m_sharedMemoryHandleMock, getShm()).WillRepeatedly(Return(m_dataDest.data()));
-    EXPECT_CALL(m_clientControllerMock, getSharedMemoryHandle())
+    EXPECT_CALL(*m_clientControllerMock, getSharedMemoryHandle())
         .WillOnce(Invoke([this]() { return m_sharedMemoryHandleMock; }));
     m_webAudioPlayer->getBufferAvailable(m_numberOfFrames, notUsedWebAudioShmInfo);
     EXPECT_EQ(1, m_numberOfFrames);
@@ -189,7 +189,7 @@ TEST_F(RialtoClientWebAudioPlayerWriteBufferTest, writeToMainAndWrapOffset)
                 return true;
             }));
     EXPECT_CALL(*m_sharedMemoryHandleMock, getShm()).WillRepeatedly(Return(m_dataDest.data()));
-    EXPECT_CALL(m_clientControllerMock, getSharedMemoryHandle())
+    EXPECT_CALL(*m_clientControllerMock, getSharedMemoryHandle())
         .WillOnce(Invoke([this]() { return m_sharedMemoryHandleMock; }));
     m_webAudioPlayer->getBufferAvailable(m_numberOfFrames, notUsedWebAudioShmInfo);
     EXPECT_EQ(2, m_numberOfFrames);

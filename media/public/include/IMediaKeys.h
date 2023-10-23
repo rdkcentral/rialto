@@ -35,6 +35,12 @@
 #include "IMediaKeysClient.h"
 #include "MediaCommon.h"
 
+namespace firebolt::rialto::client
+{
+// This forward declaration is necessary because the include file
+// IMediaKeysIpcFactory.h isn't public (and shouldn't be)
+class IMediaKeysIpcFactory;
+}; // namespace firebolt::rialto::client
 namespace firebolt::rialto
 {
 class IMediaKeys;
@@ -58,11 +64,15 @@ public:
     /**
      * @brief IMediaKeys factory method, returns a concrete implementation of IMediaKeys
      *
-     * @param[in] keySystem : The key system for which to create a Media Keys instance
+     * @param[in] keySystem           : The key system for which to create a Media Keys instance
+     * @param[in] mediaKeysIpcFactory : It is safe to use the default value for this parameter. This was added for the
+     * test environment where a mock object needs to be passed in.
      *
      * @retval the new media keys instance or null on error.
      */
-    virtual std::unique_ptr<IMediaKeys> createMediaKeys(const std::string &keySystem) const = 0;
+    virtual std::unique_ptr<IMediaKeys>
+    createMediaKeys(const std::string &keySystem,
+                    std::weak_ptr<firebolt::rialto::client::IMediaKeysIpcFactory> mediaKeysIpcFactory = {}) const = 0;
 };
 
 /**

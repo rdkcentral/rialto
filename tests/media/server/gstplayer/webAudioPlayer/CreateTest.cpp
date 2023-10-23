@@ -47,6 +47,17 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, CreateDestroyLlamaSuccess)
 }
 
 /**
+ * Test the factory
+ */
+TEST_F(RialtoServerCreateGstWebAudioPlayerTest, FactoryCreatesObject)
+{
+    std::shared_ptr<firebolt::rialto::server::IGstWebAudioPlayerFactory> factory =
+        firebolt::rialto::server::IGstWebAudioPlayerFactory::getFactory();
+    EXPECT_NE(factory, nullptr);
+    EXPECT_NE(factory->createGstWebAudioPlayer(&m_gstPlayerClient, m_priority), nullptr);
+}
+
+/**
  * Test that a GstWebAudioPlayer object can be created successfully for the xione platform.
  */
 TEST_F(RialtoServerCreateGstWebAudioPlayerTest, CreateDestroyXiOneSuccess)

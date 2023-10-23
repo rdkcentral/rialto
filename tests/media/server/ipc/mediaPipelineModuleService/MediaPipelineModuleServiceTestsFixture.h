@@ -37,6 +37,8 @@ public:
     MediaPipelineModuleServiceTests();
     ~MediaPipelineModuleServiceTests() override;
 
+    void testFactoryCreatesObject();
+
     void clientWillConnect();
     void clientWillDisconnect();
     void mediaPipelineServiceWillCreateSession();

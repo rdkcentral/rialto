@@ -27,6 +27,7 @@ void MediaPipelineTestBase::SetUp() // NOLINT(build/function_format)
     m_mediaPipelineClientMock = std::make_shared<StrictMock<MediaPipelineClientMock>>();
     m_mediaPipelineIpcFactoryMock = std::make_shared<StrictMock<MediaPipelineIpcFactoryMock>>();
     m_mediaFrameWriterFactoryMock = std::make_shared<StrictMock<MediaFrameWriterFactoryMock>>();
+    m_clientControllerMock = std::make_shared<StrictMock<ClientControllerMock>>();
 }
 
 void MediaPipelineTestBase::TearDown() // NOLINT(build/function_format)
@@ -47,21 +48,21 @@ void MediaPipelineTestBase::createMediaPipeline()
     // Object shall be freed by the holder of the unique ptr on destruction
     m_mediaPipelineIpcMock = mediaPipelineIpcMock.get();
 
-    EXPECT_CALL(m_clientControllerMock, registerClient(_, _))
+    EXPECT_CALL(*m_clientControllerMock, registerClient(_, _))
         .WillOnce(DoAll(SetArgReferee<1>(ApplicationState::RUNNING), Return(true)));
-    EXPECT_CALL(*m_mediaPipelineIpcFactoryMock, createMediaPipelineIpc(_, _))
+    EXPECT_CALL(*m_mediaPipelineIpcFactoryMock, createMediaPipelineIpc(_, _, _))
         .WillOnce(DoAll(SaveArg<0>(&m_mediaPipelineCallback), Return(ByMove(std::move(mediaPipelineIpcMock)))));
 
     EXPECT_NO_THROW(m_mediaPipeline = std::make_unique<MediaPipeline>(m_mediaPipelineClientMock, videoReq,
                                                                       m_mediaPipelineIpcFactoryMock,
                                                                       m_mediaFrameWriterFactoryMock,
-                                                                      m_clientControllerMock));
+                                                                      *m_clientControllerMock));
     EXPECT_NE(m_mediaPipeline, nullptr);
 }
 
 void MediaPipelineTestBase::destroyMediaPipeline()
 {
-    EXPECT_CALL(m_clientControllerMock, unregisterClient(_)).WillOnce(Return(true));
+    EXPECT_CALL(*m_clientControllerMock, unregisterClient(_)).WillOnce(Return(true));
 
     m_mediaPipeline.reset();
     m_mediaPipelineCallback = nullptr;
