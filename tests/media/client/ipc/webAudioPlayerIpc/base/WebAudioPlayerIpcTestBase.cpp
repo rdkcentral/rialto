@@ -50,7 +50,7 @@ void WebAudioPlayerIpcTestBase::createWebAudioPlayerIpc()
         .WillOnce(WithArgs<3>(Invoke(this, &WebAudioPlayerIpcTestBase::setCreateWebAudioPlayerResponse)));
 
     EXPECT_NO_THROW(m_webAudioPlayerIpc = std::make_unique<WebAudioPlayerIpc>(m_clientMock, m_audioMimeType, m_priority,
-                                                                              &m_config, m_ipcClientMock,
+                                                                              &m_config, *m_ipcClientMock,
                                                                               m_eventThreadFactoryMock));
     EXPECT_NE(m_webAudioPlayerIpc, nullptr);
 }

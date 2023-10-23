@@ -35,7 +35,7 @@ public:
 
     MOCK_METHOD(std::unique_ptr<IWebAudioPlayerIpc>, createWebAudioPlayerIpc,
                 (IWebAudioPlayerIpcClient * client, const std::string &audioMimeType, const uint32_t priority,
-                 const WebAudioConfig *config),
+                 const WebAudioConfig *config, std::weak_ptr<IIpcClient> ipcClient),
                 (override));
 };
 } // namespace firebolt::rialto::client

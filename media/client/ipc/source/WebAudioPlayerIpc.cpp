@@ -41,17 +41,18 @@ std::shared_ptr<IWebAudioPlayerIpcFactory> IWebAudioPlayerIpcFactory::getFactory
     return factory;
 }
 
-std::unique_ptr<IWebAudioPlayerIpc> WebAudioPlayerIpcFactory::createWebAudioPlayerIpc(IWebAudioPlayerIpcClient *client,
-                                                                                      const std::string &audioMimeType,
-                                                                                      const uint32_t priority,
-                                                                                      const WebAudioConfig *config)
+std::unique_ptr<IWebAudioPlayerIpc>
+WebAudioPlayerIpcFactory::createWebAudioPlayerIpc(IWebAudioPlayerIpcClient *client, const std::string &audioMimeType,
+                                                  const uint32_t priority, const WebAudioConfig *config,
+                                                  std::weak_ptr<IIpcClient> ipcClientParam)
 {
     std::unique_ptr<IWebAudioPlayerIpc> webAudioPlayerIpc;
     try
     {
+        std::shared_ptr<IIpcClient> ipcClient = ipcClientParam.lock();
         webAudioPlayerIpc =
             std::make_unique<WebAudioPlayerIpc>(client, audioMimeType, priority, config,
-                                                IIpcClientAccessor::instance().getIpcClient(),
+                                                ipcClient ? *ipcClient : IIpcClientAccessor::instance().getIpcClient(),
                                                 firebolt::rialto::common::IEventThreadFactory::createFactory());
     }
     catch (const std::exception &e)

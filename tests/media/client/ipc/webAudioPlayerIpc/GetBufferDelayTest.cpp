@@ -81,7 +81,7 @@ TEST_F(RialtoClientWebAudioPlayerIpcGetBufferDelayTest, ChannelDisconnected)
     EXPECT_FALSE(m_webAudioPlayerIpc->getBufferDelay(delayFrames));
 
     // Reattach channel on destroySession
-    EXPECT_CALL(m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
+    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
     expectSubscribeEvents();
 }
 

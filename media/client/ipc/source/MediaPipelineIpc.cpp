@@ -47,15 +47,16 @@ std::shared_ptr<IMediaPipelineIpcFactory> IMediaPipelineIpcFactory::getFactory()
     return factory;
 }
 
-std::unique_ptr<IMediaPipelineIpc>
-MediaPipelineIpcFactory::createMediaPipelineIpc(IMediaPipelineIpcClient *client,
-                                                const VideoRequirements &videoRequirements)
+std::unique_ptr<IMediaPipelineIpc> MediaPipelineIpcFactory::createMediaPipelineIpc(
+    IMediaPipelineIpcClient *client, const VideoRequirements &videoRequirements, std::weak_ptr<IIpcClient> ipcClientParam)
 {
     std::unique_ptr<IMediaPipelineIpc> mediaPipelineIpc;
     try
     {
+        std::shared_ptr<IIpcClient> ipcClient = ipcClientParam.lock();
         mediaPipelineIpc =
-            std::make_unique<MediaPipelineIpc>(client, videoRequirements, IIpcClientAccessor::instance().getIpcClient(),
+            std::make_unique<MediaPipelineIpc>(client, videoRequirements,
+                                               ipcClient ? *ipcClient : IIpcClientAccessor::instance().getIpcClient(),
                                                firebolt::rialto::common::IEventThreadFactory::createFactory());
     }
     catch (const std::exception &e)

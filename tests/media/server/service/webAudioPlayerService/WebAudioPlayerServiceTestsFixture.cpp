@@ -166,14 +166,14 @@ void WebAudioPlayerServiceTests::webAudioPlayerWillPing()
 void WebAudioPlayerServiceTests::webAudioPlayerFactoryWillCreateWebAudioPlayer()
 {
     EXPECT_CALL(*m_webAudioPlayerFactoryMock,
-                createWebAudioPlayerServerInternal(_, audioMimeType, priority, _, _, webAudioPlayerHandle))
+                createWebAudioPlayerServerInternal(_, audioMimeType, priority, _, _, webAudioPlayerHandle, _, _, _))
         .WillOnce(Return(ByMove(std::move(m_webAudioPlayer))));
 }
 
 void WebAudioPlayerServiceTests::webAudioPlayerFactoryWillReturnNullptr()
 {
     EXPECT_CALL(*m_webAudioPlayerFactoryMock,
-                createWebAudioPlayerServerInternal(_, audioMimeType, priority, _, _, webAudioPlayerHandle))
+                createWebAudioPlayerServerInternal(_, audioMimeType, priority, _, _, webAudioPlayerHandle, _, _, _))
         .WillOnce(Return(ByMove(std::unique_ptr<firebolt::rialto::server::IWebAudioPlayerServerInternal>())));
 }
 
