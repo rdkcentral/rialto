@@ -79,7 +79,7 @@ message Resources {
  * @param[in]  logLevels                    Initial log levels
  * @param[in]  clientDisplayName            Socket name that Rialto client should connect to
  * @param[in]  socketPermissions            Socket permissions that Rialto client should connect to
- * @param[in]  socketUser                   Socket file created with this owner
+ * @param[in]  socketOwner                  Socket file created with this owner
  * @param[in]  socketGroup                  Socket file created with this group
  *
  */

@@ -48,9 +48,6 @@ namespace rialto::servermanager::service
 std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserver> &stateObserver,
                                               const firebolt::rialto::common::ServerManagerConfig &config)
 {
-    RIALTO_SERVER_MANAGER_LOG_ERROR("proudman '%s' '%s'",
-                                    config.sessionManagementSocketPermissions.owner.c_str(),
-                                    config.sessionManagementSocketPermissions.group.c_str()); // TODO
     std::list<std::string> sessionServerEnvVars = config.sessionServerEnvVars;
     std::string sessionServerPath = config.sessionServerPath;
     std::chrono::milliseconds sessionServerStartupTimeout = config.sessionServerStartupTimeout;
@@ -86,17 +83,14 @@ std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserv
         numOfFailedPingsBeforeRecovery = configReader->getNumOfPingsBeforeRecovery().value();
 #endif
 
-    std::unique_ptr<IServerManagerService> service =
-        std::make_unique<ServerManagerService>(std::make_unique<ServiceContext>(stateObserver, sessionServerEnvVars,
-                                                                                sessionServerPath,
-                                                                                sessionServerStartupTimeout,
-                                                                                healthcheckInterval,
-                                                                                numOfFailedPingsBeforeRecovery,
-                                                                                convertSocketPermissions(
-                                                                                    socketPermissions),
-                                                                                config.sessionManagementSocketPermissions.owner,
-                                                                                config.sessionManagementSocketPermissions.group),
-                                               numOfPreloadedServers);
+    std::unique_ptr<IServerManagerService> service = std::make_unique<
+        ServerManagerService>(std::make_unique<ServiceContext>(stateObserver, sessionServerEnvVars, sessionServerPath,
+                                                               sessionServerStartupTimeout, healthcheckInterval,
+                                                               numOfFailedPingsBeforeRecovery,
+                                                               convertSocketPermissions(socketPermissions),
+                                                               config.sessionManagementSocketPermissions.owner,
+                                                               config.sessionManagementSocketPermissions.group),
+                              numOfPreloadedServers);
 
 #ifdef RIALTO_ENABLE_CONFIG_FILE
     if (configReader->getLoggingLevels())

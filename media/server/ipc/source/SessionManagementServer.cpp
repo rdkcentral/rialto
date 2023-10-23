@@ -27,8 +27,8 @@
 #include <IIpcServerFactory.h>
 #include <grp.h>
 #include <pwd.h>
-#include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 namespace firebolt::rialto::server::ipc
@@ -98,12 +98,11 @@ bool SessionManagementServer::initialize(const std::string &socketName, unsigned
     {
         errno = 0;
         struct passwd passwordStruct;
-        struct passwd* passwordResult;
+        struct passwd *passwordResult;
         char stringBuffer[256];
-        getpwnam_r(socketOwner.c_str(), &passwordStruct,
-                   stringBuffer, sizeof(stringBuffer)/sizeof(char),
+        getpwnam_r(socketOwner.c_str(), &passwordStruct, stringBuffer, sizeof(stringBuffer) / sizeof(char),
                    &passwordResult);
-        if  (passwordResult == NULL)
+        if (passwordResult == NULL)
         {
             RIALTO_SERVER_LOG_SYS_WARN(errno, "Failed to determine ownerId for the IPC socket");
         }
@@ -119,11 +118,9 @@ bool SessionManagementServer::initialize(const std::string &socketName, unsigned
     {
         errno = 0;
         struct group groupStruct;
-        struct group* groupResult;
+        struct group *groupResult;
         char stringBuffer[256];
-        getgrnam_r(socketGroup.c_str(), &groupStruct,
-                   stringBuffer, sizeof(stringBuffer)/sizeof(char),
-                   &groupResult);
+        getgrnam_r(socketGroup.c_str(), &groupStruct, stringBuffer, sizeof(stringBuffer) / sizeof(char), &groupResult);
         if (groupResult == NULL)
         {
             RIALTO_SERVER_LOG_SYS_WARN(errno, "Failed to determine groupId for the IPC socket");
