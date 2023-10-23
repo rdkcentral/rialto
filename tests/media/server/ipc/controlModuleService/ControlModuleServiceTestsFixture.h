@@ -41,6 +41,8 @@ public:
     ControlModuleServiceTests();
     ~ControlModuleServiceTests() override;
 
+    void testFactoryCreatesObject();
+
     void clientWillConnect();
     void controlServiceWillRemoveControl();
     void controlServiceWillRegisterClient();

@@ -42,6 +42,21 @@ TEST_F(RialtoServerCreateMediaKeySessionTest, Create)
 }
 
 /**
+ * Test the factory
+ */
+TEST_F(RialtoServerCreateMediaKeySessionTest, FactoryCreatesObject)
+{
+    std::shared_ptr<firebolt::rialto::server::IMediaKeySessionFactory> factory =
+        firebolt::rialto::server::IMediaKeySessionFactory::createFactory();
+    EXPECT_NE(factory, nullptr);
+
+    EXPECT_CALL(*m_ocdmSystemMock, createSession(_)).WillOnce(Return(ByMove(std::move(m_ocdmSession))));
+    EXPECT_NE(factory->createMediaKeySession(kNetflixKeySystem, m_kKeySessionId, *m_ocdmSystemMock, m_keySessionType,
+                                             m_mediaKeysClientMock, m_isLDL),
+              nullptr);
+}
+
+/**
  * Test that a MediaKeySession object throws an exeption if failure occurs during construction.
  * In this case, createMainThread fails, returning a nullptr.
  */

@@ -17,10 +17,9 @@
  * limitations under the License.
  */
 
-#include <stdexcept>
-
 #include "MediaKeysServerInternal.h"
 #include "RialtoServerLogging.h"
+#include <stdexcept>
 
 namespace firebolt::rialto
 {
@@ -54,7 +53,8 @@ std::shared_ptr<IMediaKeysServerInternalFactory> IMediaKeysServerInternalFactory
     return factory;
 }
 
-std::unique_ptr<IMediaKeys> MediaKeysServerInternalFactory::createMediaKeys(const std::string &keySystem) const
+std::unique_ptr<IMediaKeys> MediaKeysServerInternalFactory::createMediaKeys(
+    const std::string &keySystem, std::weak_ptr<firebolt::rialto::client::IMediaKeysIpcFactory> mediaKeysIpcFactory) const
 {
     RIALTO_SERVER_LOG_ERROR("This function can't be used by rialto server. Please use createMediaKeysServerInternal");
     return nullptr;
@@ -96,6 +96,11 @@ MediaKeysServerInternal::MediaKeysServerInternal(const std::string &keySystem,
         throw std::runtime_error("Failed to get the main thread");
     }
     m_mainThreadClientId = m_mainThread->registerClient();
+
+    if (!ocdmSystemFactory)
+    {
+        throw std::runtime_error("No ocdmSystemFactory");
+    }
 
     bool result = false;
     auto task = [&]()

@@ -23,7 +23,8 @@
 #include <utility>
 
 IpcModuleBase::IpcModuleBase()
-    : m_channelMock{std::make_shared<StrictMock<ChannelMock>>()},
+    : m_ipcClientMock{std::make_unique<StrictMock<IpcClientMock>>()},
+      m_channelMock{std::make_shared<StrictMock<ChannelMock>>()},
       m_blockingClosureMock{std::make_shared<StrictMock<BlockingClosureMock>>()},
       m_controllerMock{std::make_shared<StrictMock<RpcControllerMock>>()}
 {
@@ -37,31 +38,31 @@ void IpcModuleBase::expectInitIpc()
 void IpcModuleBase::expectInitIpcWithReconnection()
 {
     std::shared_ptr<StrictMock<ChannelMock>> channelMock;
-    EXPECT_CALL(m_ipcClientMock, getChannel())
+    EXPECT_CALL(*m_ipcClientMock, getChannel())
         .WillOnce(Return(channelMock))
         .WillOnce(Return(m_channelMock))
         .RetiresOnSaturation();
-    EXPECT_CALL(m_ipcClientMock, reconnect()).WillOnce(Return(true)).RetiresOnSaturation();
+    EXPECT_CALL(*m_ipcClientMock, reconnect()).WillOnce(Return(true)).RetiresOnSaturation();
     EXPECT_CALL(*m_channelMock, isConnected()).InSequence(m_isConnectedSeq).WillOnce(Return(true)).RetiresOnSaturation();
 }
 
 void IpcModuleBase::expectInitIpcButAttachChannelFailure()
 {
     std::shared_ptr<StrictMock<ChannelMock>> channelMock;
-    EXPECT_CALL(m_ipcClientMock, getChannel()).WillOnce(Return(channelMock)).RetiresOnSaturation();
-    EXPECT_CALL(m_ipcClientMock, reconnect()).WillOnce(Return(false)).RetiresOnSaturation();
+    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(channelMock)).RetiresOnSaturation();
+    EXPECT_CALL(*m_ipcClientMock, reconnect()).WillOnce(Return(false)).RetiresOnSaturation();
 }
 
 void IpcModuleBase::expectInitIpcButNotConnectedChannelAfterReconnect()
 {
     std::shared_ptr<StrictMock<ChannelMock>> channelMock;
-    EXPECT_CALL(m_ipcClientMock, getChannel()).WillRepeatedly(Return(channelMock)).RetiresOnSaturation();
-    EXPECT_CALL(m_ipcClientMock, reconnect()).WillOnce(Return(true)).RetiresOnSaturation();
+    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillRepeatedly(Return(channelMock)).RetiresOnSaturation();
+    EXPECT_CALL(*m_ipcClientMock, reconnect()).WillOnce(Return(true)).RetiresOnSaturation();
 }
 
 void IpcModuleBase::expectAttachChannel()
 {
-    EXPECT_CALL(m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
+    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
     EXPECT_CALL(*m_channelMock, isConnected()).InSequence(m_isConnectedSeq).WillOnce(Return(true)).RetiresOnSaturation();
 }
 
@@ -69,8 +70,8 @@ void IpcModuleBase::expectIpcApiCallSuccess()
 {
     EXPECT_CALL(*m_channelMock, isConnected()).InSequence(m_isConnectedSeq).WillOnce(Return(true)).RetiresOnSaturation();
 
-    EXPECT_CALL(m_ipcClientMock, createRpcController()).WillOnce(Return(m_controllerMock)).RetiresOnSaturation();
-    EXPECT_CALL(m_ipcClientMock, createBlockingClosure()).WillOnce(Return(m_blockingClosureMock)).RetiresOnSaturation();
+    EXPECT_CALL(*m_ipcClientMock, createRpcController()).WillOnce(Return(m_controllerMock)).RetiresOnSaturation();
+    EXPECT_CALL(*m_ipcClientMock, createBlockingClosure()).WillOnce(Return(m_blockingClosureMock)).RetiresOnSaturation();
 
     EXPECT_CALL(*m_blockingClosureMock, wait()).RetiresOnSaturation();
     EXPECT_CALL(*m_controllerMock, Failed()).WillOnce(Return(false)).RetiresOnSaturation();
@@ -80,8 +81,8 @@ void IpcModuleBase::expectIpcApiCallFailure()
 {
     EXPECT_CALL(*m_channelMock, isConnected()).InSequence(m_isConnectedSeq).WillOnce(Return(true)).RetiresOnSaturation();
 
-    EXPECT_CALL(m_ipcClientMock, createRpcController()).WillOnce(Return(m_controllerMock)).RetiresOnSaturation();
-    EXPECT_CALL(m_ipcClientMock, createBlockingClosure()).WillOnce(Return(m_blockingClosureMock)).RetiresOnSaturation();
+    EXPECT_CALL(*m_ipcClientMock, createRpcController()).WillOnce(Return(m_controllerMock)).RetiresOnSaturation();
+    EXPECT_CALL(*m_ipcClientMock, createBlockingClosure()).WillOnce(Return(m_blockingClosureMock)).RetiresOnSaturation();
 
     EXPECT_CALL(*m_blockingClosureMock, wait()).RetiresOnSaturation();
     EXPECT_CALL(*m_controllerMock, Failed()).WillOnce(Return(true)).RetiresOnSaturation();
@@ -92,9 +93,9 @@ void IpcModuleBase::expectIpcApiCallDisconnected()
 {
     EXPECT_CALL(*m_channelMock, isConnected()).InSequence(m_isConnectedSeq).WillOnce(Return(false)).RetiresOnSaturation();
 
-    EXPECT_CALL(m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
+    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
     EXPECT_CALL(*m_channelMock, isConnected()).InSequence(m_isConnectedSeq).WillOnce(Return(false)).RetiresOnSaturation();
-    EXPECT_CALL(m_ipcClientMock, reconnect()).WillOnce(Return(false)).RetiresOnSaturation();
+    EXPECT_CALL(*m_ipcClientMock, reconnect()).WillOnce(Return(false)).RetiresOnSaturation();
 }
 
 void IpcModuleBase::expectIpcApiCallReconnected()
@@ -103,8 +104,8 @@ void IpcModuleBase::expectIpcApiCallReconnected()
 
     expectAttachChannel();
 
-    EXPECT_CALL(m_ipcClientMock, createRpcController()).WillOnce(Return(m_controllerMock)).RetiresOnSaturation();
-    EXPECT_CALL(m_ipcClientMock, createBlockingClosure()).WillOnce(Return(m_blockingClosureMock)).RetiresOnSaturation();
+    EXPECT_CALL(*m_ipcClientMock, createRpcController()).WillOnce(Return(m_controllerMock)).RetiresOnSaturation();
+    EXPECT_CALL(*m_ipcClientMock, createBlockingClosure()).WillOnce(Return(m_blockingClosureMock)).RetiresOnSaturation();
 
     EXPECT_CALL(*m_blockingClosureMock, wait()).RetiresOnSaturation();
     EXPECT_CALL(*m_controllerMock, Failed()).WillOnce(Return(false)).RetiresOnSaturation();

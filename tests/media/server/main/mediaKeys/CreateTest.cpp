@@ -45,6 +45,31 @@ TEST_F(RialtoServerCreateMediaKeysTest, Create)
 }
 
 /**
+ * Test the external factory (this code is designed to fail)
+ */
+TEST_F(RialtoServerCreateMediaKeysTest, ExternalFactoryFail)
+{
+    std::shared_ptr<firebolt::rialto::IMediaKeysFactory> factory = firebolt::rialto::IMediaKeysFactory::createFactory();
+    EXPECT_NE(factory, nullptr);
+    // The following is expected to return null, and show an error log
+    EXPECT_EQ(factory->createMediaKeys(kWidevineKeySystem), nullptr);
+}
+
+/**
+ * Test the internal factory
+ */
+TEST_F(RialtoServerCreateMediaKeysTest, InternalFactoryFails)
+{
+    std::shared_ptr<IMediaKeysServerInternalFactory> factory =
+        firebolt::rialto::server::IMediaKeysServerInternalFactory::createFactory();
+    EXPECT_NE(factory, nullptr);
+    // We expect the following to fail
+    // The test harness uses a stub for  IOcdmSystemFactory::createFactory()  which is defined in
+    //    "./tests/media/server/stubs/wrappers/OcdmSystemFactory.cpp" and returns null
+    EXPECT_EQ(factory->createMediaKeysServerInternal(kWidevineKeySystem), nullptr);
+}
+
+/**
  * Test that a MediaKeys object throws an exeption if failure occurs during construction.
  * In this case, getMainThread fails, returning a nullptr.
  */

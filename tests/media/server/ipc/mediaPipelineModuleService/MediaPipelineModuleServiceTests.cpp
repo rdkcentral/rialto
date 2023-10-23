@@ -29,6 +29,14 @@ TEST_F(MediaPipelineModuleServiceTests, shouldConnectClient)
     sendClientConnected();
 }
 
+/**
+ * Test the factory
+ */
+TEST_F(MediaPipelineModuleServiceTests, FactoryCreatesObject)
+{
+    testFactoryCreatesObject();
+}
+
 TEST_F(MediaPipelineModuleServiceTests, shouldCreateSession)
 {
     mediaPipelineServiceWillCreateSession();

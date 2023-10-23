@@ -42,9 +42,11 @@ public:
     WebAudioPlayerFactory() = default;
     ~WebAudioPlayerFactory() override = default;
 
-    std::unique_ptr<IWebAudioPlayer> createWebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client,
-                                                          const std::string &audioMimeType, const uint32_t priority,
-                                                          const WebAudioConfig *config) const override;
+    std::unique_ptr<IWebAudioPlayer>
+    createWebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
+                         const uint32_t priority, const WebAudioConfig *config,
+                         std::weak_ptr<client::IWebAudioPlayerIpcFactory> webAudioPlayerIpcFactory,
+                         std::weak_ptr<client::IClientController> clientController) const override;
 };
 
 }; // namespace firebolt::rialto

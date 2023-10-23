@@ -1012,3 +1012,11 @@ void MediaPipelineModuleServiceTests::sendRenderFrameRequestAndReceiveResponse()
 
     m_service->renderFrame(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
+
+void MediaPipelineModuleServiceTests::testFactoryCreatesObject()
+{
+    std::shared_ptr<firebolt::rialto::server::ipc::IMediaPipelineModuleServiceFactory> factory =
+        firebolt::rialto::server::ipc::IMediaPipelineModuleServiceFactory::createFactory();
+    EXPECT_NE(factory, nullptr);
+    EXPECT_NE(factory->create(m_mediaPipelineServiceMock), nullptr);
+}

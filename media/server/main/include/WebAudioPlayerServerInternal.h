@@ -41,14 +41,18 @@ public:
     WebAudioPlayerServerInternalFactory() = default;
     ~WebAudioPlayerServerInternalFactory() override = default;
 
-    std::unique_ptr<IWebAudioPlayer> createWebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client,
-                                                          const std::string &audioMimeType, const uint32_t priority,
-                                                          const WebAudioConfig *config) const override;
+    std::unique_ptr<IWebAudioPlayer>
+    createWebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
+                         const uint32_t priority, const WebAudioConfig *config,
+                         std::weak_ptr<client::IWebAudioPlayerIpcFactory> webAudioPlayerIpcFactory,
+                         std::weak_ptr<client::IClientController> clientController) const override;
 
-    std::unique_ptr<IWebAudioPlayerServerInternal>
-    createWebAudioPlayerServerInternal(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
-                                       const uint32_t priority, const WebAudioConfig *config,
-                                       const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle) const override;
+    std::unique_ptr<IWebAudioPlayerServerInternal> createWebAudioPlayerServerInternal(
+        std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType, const uint32_t priority,
+        const WebAudioConfig *config, const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle,
+        const std::shared_ptr<firebolt::rialto::server::IMainThreadFactory> &mainThreadFactory,
+        const std::shared_ptr<firebolt::rialto::server::IGstWebAudioPlayerFactory> &gstPlayerFactory,
+        std::weak_ptr<firebolt::rialto::common::ITimerFactory> timerFactory) const override;
 };
 
 /**
@@ -75,7 +79,7 @@ public:
                                  const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle,
                                  const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
                                  const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory,
-                                 std::shared_ptr<common::ITimerFactory> timerFactory);
+                                 std::weak_ptr<common::ITimerFactory> timerFactory);
 
     /**
      * @brief Virtual destructor.

@@ -77,7 +77,7 @@ TEST_F(RialtoClientMediaKeysIpcDeleteDrmStoreTest, ChannelDisconnected)
     EXPECT_EQ(m_mediaKeysIpc->deleteDrmStore(), MediaKeyErrorStatus::FAIL);
 
     // Reattach channel on destroySession
-    EXPECT_CALL(m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
+    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
     expectSubscribeEvents();
 }
 
