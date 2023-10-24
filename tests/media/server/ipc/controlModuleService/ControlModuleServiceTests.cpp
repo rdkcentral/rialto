@@ -101,8 +101,3 @@ TEST_F(ControlModuleServiceTests, shouldAck)
     playbackServiceWillAck();
     sendAckRequestAndReceiveResponse();
 }
-
-TEST_F(ControlModuleServiceTests, FactoryCreatesObject)
-{
-    testFactoryCreatesObject();
-}

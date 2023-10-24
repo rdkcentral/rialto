@@ -47,36 +47,3 @@ TEST_F(RialtoServerCreateMediaPipelineTest, Create)
     // Objects are destroyed on the main thread
     mainThreadWillEnqueueTaskAndWait();
 }
-
-/**
- * Test the external factory (this code is designed to fail)
- */
-TEST_F(RialtoServerCreateMediaPipelineTest, ExternalFactoryFailure)
-{
-    std::shared_ptr<firebolt::rialto::IMediaPipelineFactory> factory =
-        firebolt::rialto::IMediaPipelineFactory::createFactory();
-    EXPECT_NE(factory, nullptr);
-    // The following call is expected to fail
-    EXPECT_EQ(factory->createMediaPipeline(m_mediaPipelineClientMock, m_videoReq), nullptr);
-}
-
-/**
- * Test the internal factory
- */
-TEST_F(RialtoServerCreateMediaPipelineTest, InternalFactoryCreatesObject)
-{
-    EXPECT_CALL(*m_sharedMemoryBufferMock, mapPartition(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId))
-        .WillOnce(Return(true));
-
-    std::shared_ptr<firebolt::rialto::server::MediaPipelineServerInternalFactory> factory =
-        firebolt::rialto::server::MediaPipelineServerInternalFactory::createFactory();
-
-    std::unique_ptr<server::IMediaPipelineServerInternal> mediaPipelineServer;
-    EXPECT_NO_THROW(mediaPipelineServer =
-                        factory->createMediaPipelineServerInternal(m_mediaPipelineClientMock, m_videoReq, m_kSessionId,
-                                                                   m_sharedMemoryBufferMock, m_decryptionServiceMock));
-
-    EXPECT_CALL(*m_sharedMemoryBufferMock, unmapPartition(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId))
-        .WillOnce(Return(true));
-    EXPECT_NE(mediaPipelineServer, nullptr);
-}

@@ -96,7 +96,6 @@ protected:
     void expectWriteNewFrames(uint32_t newFramesToWrite, uint32_t newFramesWritten);
     void expectStartTimer();
     void expectCancelTimer();
-    void expectConstructionOfWebAudioPlayerServerInternal();
 };
 
 #endif // WEB_AUDIO_PLAYER_TEST_BASE_H_

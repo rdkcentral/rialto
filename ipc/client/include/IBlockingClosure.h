@@ -20,7 +20,7 @@
 #ifndef FIREBOLT_RIALTO_IPC_I_BLOCKING_CLOSURE_H_
 #define FIREBOLT_RIALTO_IPC_I_BLOCKING_CLOSURE_H_
 
-#include "IIpcChannel.h"
+#include <IIpcChannel.h>
 #include <memory>
 
 namespace firebolt::rialto::ipc

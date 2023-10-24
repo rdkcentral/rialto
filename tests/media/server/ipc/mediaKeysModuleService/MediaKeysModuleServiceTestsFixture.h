@@ -39,8 +39,6 @@ public:
     MediaKeysModuleServiceTests();
     ~MediaKeysModuleServiceTests() override;
 
-    void testFactoryCreatesObject();
-
     void clientWillConnect();
     void clientWillDisconnect();
     void cdmServiceWillCreateMediaKeys();

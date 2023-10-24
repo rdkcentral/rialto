@@ -36,18 +36,8 @@
 #include <vector>
 
 #include "IMediaPipelineClient.h"
-#include "MediaCommon.h"
+#include <MediaCommon.h>
 
-namespace firebolt::rialto::client
-{
-// The following forward declaration is necessary to avoid a circular depandancy...
-//   "IMediaPipelineIpc.h" includes this file
-//   therefore this file can't include "IMediaPipelineIpc.h"
-class IMediaPipelineIpcFactory;
-// The following forward declaration can't be replaced with an include
-// because "IClientController.h" is a private include on the client side...
-class IClientController;
-}; // namespace firebolt::rialto::client
 namespace firebolt::rialto
 {
 class IMediaPipeline;
@@ -71,19 +61,13 @@ public:
     /**
      * @brief IMediaPipeline factory method, returns a concrete implementation of IMediaPipeline
      *
-     * @param[in] client                  : The Rialto media player client.
-     * @param[in] videoRequirements       : The video decoder requirements for the MediaPipeline session
-     * @param[in] mediaPipelineIpcFactory : It is safe to use the default value for this parameter. This was added for
-     * the test environment where a mock object needs to be passed in.
-     * @param[in] clientController        : It is safe to use the default value for this parameter. This was added for
-     * the test environment where a mock object needs to be passed in.
+     * @param[in] client            : The Rialto media player client.
+     * @param[in] videoRequirements : The video decoder requirements for the MediaPipeline session
      *
      * @retval the new backend instance or null on error.
      */
-    virtual std::unique_ptr<IMediaPipeline>
-    createMediaPipeline(std::weak_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements,
-                        std::weak_ptr<client::IMediaPipelineIpcFactory> mediaPipelineIpcFactory = {},
-                        std::weak_ptr<client::IClientController> clientController = {}) const = 0;
+    virtual std::unique_ptr<IMediaPipeline> createMediaPipeline(std::weak_ptr<IMediaPipelineClient> client,
+                                                                const VideoRequirements &videoRequirements) const = 0;
 };
 
 /**

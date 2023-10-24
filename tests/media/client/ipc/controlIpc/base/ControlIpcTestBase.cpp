@@ -52,7 +52,7 @@ void ControlIpcTestBase::createControlIpc()
     EXPECT_CALL(*m_eventThreadFactoryMock, createEventThread(_)).WillOnce(Return(ByMove(std::move(m_eventThread))));
 
     EXPECT_NO_THROW(
-        m_controlIpc = std::make_shared<ControlIpc>(&m_controlClientMock, *m_ipcClientMock, m_eventThreadFactoryMock));
+        m_controlIpc = std::make_shared<ControlIpc>(&m_controlClientMock, m_ipcClientMock, m_eventThreadFactoryMock));
 }
 
 void ControlIpcTestBase::destroyControlIpc()

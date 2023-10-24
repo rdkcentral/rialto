@@ -33,7 +33,7 @@ protected:
     {
         expectInitIpc();
 
-        EXPECT_NO_THROW(m_sut = std::make_unique<MediaPipelineCapabilitiesIpc>(*m_ipcClientMock));
+        EXPECT_NO_THROW(m_sut = std::make_unique<MediaPipelineCapabilitiesIpc>(m_ipcClientMock));
     }
 
     std::vector<std::string> m_mimeTypes = {"video/h264", "video/h265"};
@@ -65,7 +65,7 @@ TEST_F(MediaPipelineCapabilitiesIpcTest, createMediaPipelineCapabilitiesIpc)
 TEST_F(MediaPipelineCapabilitiesIpcTest, createMediaPipelineCapabilitiesTestAttachChannelFailure)
 {
     expectInitIpcButAttachChannelFailure();
-    EXPECT_THROW(m_sut = std::make_unique<MediaPipelineCapabilitiesIpc>(*m_ipcClientMock), std::runtime_error);
+    EXPECT_THROW(m_sut = std::make_unique<MediaPipelineCapabilitiesIpc>(m_ipcClientMock), std::runtime_error);
 }
 
 TEST_F(MediaPipelineCapabilitiesIpcTest, GetSupportedMimeTypesSuccess)

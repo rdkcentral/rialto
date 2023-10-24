@@ -43,8 +43,7 @@ public:
     static std::weak_ptr<IMediaPipelineIpcFactory> m_factory;
 
     std::unique_ptr<IMediaPipelineIpc> createMediaPipelineIpc(IMediaPipelineIpcClient *client,
-                                                              const VideoRequirements &videoRequirements,
-                                                              std::weak_ptr<IIpcClient> ipcClient) override;
+                                                              const VideoRequirements &videoRequirements) override;
 };
 
 /**

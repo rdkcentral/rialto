@@ -47,7 +47,7 @@ TEST_F(RialtoClientControlIpcCreateTest, CreateNoIpcChannel)
     EXPECT_CALL(*m_eventThreadFactoryMock, createEventThread(_)).WillOnce(Return(ByMove(std::move(m_eventThread))));
 
     EXPECT_THROW(m_controlIpc =
-                     std::make_shared<ControlIpc>(&m_controlClientMock, *m_ipcClientMock, m_eventThreadFactoryMock),
+                     std::make_shared<ControlIpc>(&m_controlClientMock, m_ipcClientMock, m_eventThreadFactoryMock),
                  std::runtime_error);
 }
 
@@ -57,12 +57,12 @@ TEST_F(RialtoClientControlIpcCreateTest, CreateNoIpcChannel)
 TEST_F(RialtoClientControlIpcCreateTest, CreateIpcChannelDisconnected)
 {
     EXPECT_CALL(*m_eventThreadFactoryMock, createEventThread(_)).WillOnce(Return(ByMove(std::move(m_eventThread))));
-    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock));
+    EXPECT_CALL(m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock));
     EXPECT_CALL(*m_channelMock, isConnected()).WillOnce(Return(false));
-    EXPECT_CALL(*m_ipcClientMock, reconnect()).WillOnce(Return(false));
+    EXPECT_CALL(m_ipcClientMock, reconnect()).WillOnce(Return(false));
 
     EXPECT_THROW(m_controlIpc =
-                     std::make_shared<ControlIpc>(&m_controlClientMock, *m_ipcClientMock, m_eventThreadFactoryMock),
+                     std::make_shared<ControlIpc>(&m_controlClientMock, m_ipcClientMock, m_eventThreadFactoryMock),
                  std::runtime_error);
 }
 
@@ -88,6 +88,6 @@ TEST_F(RialtoClientControlIpcCreateTest, SubscribeEventFailure)
     EXPECT_CALL(*m_channelMock, unsubscribe(kEventId));
 
     EXPECT_THROW(m_controlIpc =
-                     std::make_shared<ControlIpc>(&m_controlClientMock, *m_ipcClientMock, m_eventThreadFactoryMock),
+                     std::make_shared<ControlIpc>(&m_controlClientMock, m_ipcClientMock, m_eventThreadFactoryMock),
                  std::runtime_error);
 }

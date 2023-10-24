@@ -43,25 +43,18 @@ std::shared_ptr<IWebAudioPlayerFactory> IWebAudioPlayerFactory::createFactory()
     return factory;
 }
 
-std::unique_ptr<IWebAudioPlayer> WebAudioPlayerFactory::createWebAudioPlayer(
-    std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType, const uint32_t priority,
-    const WebAudioConfig *config, std::weak_ptr<client::IWebAudioPlayerIpcFactory> webAudioPlayerIpcFactoryParam,
-    std::weak_ptr<client::IClientController> clientControllerParam) const
+std::unique_ptr<IWebAudioPlayer> WebAudioPlayerFactory::createWebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client,
+                                                                             const std::string &audioMimeType,
+                                                                             const uint32_t priority,
+                                                                             const WebAudioConfig *config) const
 {
     std::unique_ptr<IWebAudioPlayer> webAudioPlayer;
     try
     {
-        std::shared_ptr<client::IWebAudioPlayerIpcFactory> webAudioPlayerIpcFactory =
-            webAudioPlayerIpcFactoryParam.lock();
-        std::shared_ptr<client::IClientController> clientController = clientControllerParam.lock();
-        webAudioPlayer = std::make_unique<client::WebAudioPlayer>(client, audioMimeType, priority, config,
-                                                                  webAudioPlayerIpcFactory
-                                                                      ? webAudioPlayerIpcFactory
-                                                                      : client::IWebAudioPlayerIpcFactory::getFactory(),
-                                                                  clientController
-                                                                      ? *clientController
-                                                                      : client::IClientControllerAccessor::instance()
-                                                                            .getClientController());
+        webAudioPlayer =
+            std::make_unique<client::WebAudioPlayer>(client, audioMimeType, priority, config,
+                                                     client::IWebAudioPlayerIpcFactory::getFactory(),
+                                                     client::IClientControllerAccessor::instance().getClientController());
     }
     catch (const std::exception &e)
     {

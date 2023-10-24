@@ -20,6 +20,8 @@
 #include "HttpRequest.h"
 #include <cstring>
 
+#include <iostream>
+
 namespace
 {
 std::vector<std::string> splitUri(std::string uri)

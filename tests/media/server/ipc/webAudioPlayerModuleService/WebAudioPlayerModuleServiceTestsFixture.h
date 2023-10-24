@@ -37,8 +37,6 @@ public:
     WebAudioPlayerModuleServiceTests();
     ~WebAudioPlayerModuleServiceTests() override;
 
-    void testFactoryCreatesObject();
-
     void clientWillConnect();
     void clientWillDisconnect(int handle);
     void webAudioPlayerServiceWillCreateWebAudioPlayer();

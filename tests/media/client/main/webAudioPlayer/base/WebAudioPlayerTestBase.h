@@ -57,7 +57,7 @@ protected:
     std::shared_ptr<StrictMock<WebAudioPlayerClientMock>> m_webAudioPlayerClientMock;
     std::shared_ptr<StrictMock<WebAudioPlayerIpcFactoryMock>> m_webAudioPlayerIpcFactoryMock;
     StrictMock<WebAudioPlayerIpcMock> *m_webAudioPlayerIpcMock = nullptr;
-    std::shared_ptr<StrictMock<ClientControllerMock>> m_clientControllerMock;
+    StrictMock<ClientControllerMock> m_clientControllerMock;
 
     std::unique_ptr<WebAudioPlayer> m_webAudioPlayer;
     std::unique_ptr<StrictMock<WebAudioPlayerIpcMock>> webAudioPlayerIpcMock;

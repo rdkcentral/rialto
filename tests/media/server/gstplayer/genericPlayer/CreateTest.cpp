@@ -106,16 +106,6 @@ TEST_F(RialtoServerCreateGstGenericPlayerTest, CreateDestroyPrimaryVideoSuccess)
 }
 
 /**
- * Test the factory
- */
-TEST_F(RialtoServerCreateGstGenericPlayerTest, GetFactorySucceeds)
-{
-    std::shared_ptr<firebolt::rialto::server::IGstGenericPlayerFactory> factory =
-        firebolt::rialto::server::IGstGenericPlayerFactory::getFactory();
-    EXPECT_NE(factory, nullptr);
-}
-
-/**
  * Test that a GstGenericPlayer object can be created successfully for a secondary video if width is less than the minimum.
  */
 TEST_F(RialtoServerCreateGstGenericPlayerTest, CreateDestroySecondaryVideoMinWidthSuccess)

@@ -60,7 +60,7 @@ protected:
     std::shared_ptr<StrictMock<MediaPipelineIpcFactoryMock>> m_mediaPipelineIpcFactoryMock;
     StrictMock<MediaPipelineIpcMock> *m_mediaPipelineIpcMock = nullptr;
     std::shared_ptr<StrictMock<MediaFrameWriterFactoryMock>> m_mediaFrameWriterFactoryMock;
-    std::shared_ptr<StrictMock<ClientControllerMock>> m_clientControllerMock;
+    StrictMock<ClientControllerMock> m_clientControllerMock;
     std::unique_ptr<StrictMock<MediaPipelineIpcMock>> mediaPipelineIpcMock;
 
     // MediaPipeline object

@@ -35,13 +35,10 @@
 #include <vector>
 
 #include "IDecryptionService.h"
-#include "IGstWebAudioPlayer.h"
 #include "IHeartbeatHandler.h"
-#include "IMainThread.h"
 #include "ISharedMemoryBuffer.h"
-#include "ITimer.h"
 #include "IWebAudioPlayer.h"
-#include "MediaCommon.h"
+#include <MediaCommon.h>
 
 namespace firebolt::rialto::server
 {
@@ -74,12 +71,10 @@ public:
      *
      * @retval the new backend instance or null on error.
      */
-    virtual std::unique_ptr<IWebAudioPlayerServerInternal> createWebAudioPlayerServerInternal(
-        std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType, const uint32_t priority,
-        const WebAudioConfig *config, const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle,
-        const std::shared_ptr<firebolt::rialto::server::IMainThreadFactory> &mainThreadFactory,
-        const std::shared_ptr<firebolt::rialto::server::IGstWebAudioPlayerFactory> &gstPlayerFactory,
-        std::weak_ptr<common::ITimerFactory> timerFactory) const = 0;
+    virtual std::unique_ptr<IWebAudioPlayerServerInternal>
+    createWebAudioPlayerServerInternal(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
+                                       const uint32_t priority, const WebAudioConfig *config,
+                                       const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle) const = 0;
 };
 
 /**

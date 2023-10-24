@@ -22,6 +22,7 @@
 #include "ISharedMemoryBuffer.h"
 #include <cstdlib>
 #include <gtest/gtest.h>
+#include <iostream>
 
 using firebolt::rialto::AddSegmentStatus;
 using firebolt::rialto::IMediaPipeline;

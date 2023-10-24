@@ -93,11 +93,6 @@ MediaKeysCapabilities::MediaKeysCapabilities(std::shared_ptr<IOcdmFactory> ocdmF
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    if (!ocdmFactory)
-    {
-        throw std::runtime_error("ocdmFactory invalid");
-    }
-
     m_ocdm = ocdmFactory->getOcdm();
     if (!m_ocdm)
     {
