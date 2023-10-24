@@ -19,6 +19,8 @@
 
 #include "ServerManagerServiceTestsFixture.h"
 #include "gtest/gtest.h"
+#include "RialtoLogging.h"
+#include "ServerManagerService.h"
 
 namespace
 {
@@ -70,12 +72,13 @@ TEST_F(ServerManagerServiceTests, setLogLevelsShouldReturnFalseIfOperationFailed
     ASSERT_FALSE(triggerSetLogLevels());
 }
 
+TEST_F(ServerManagerServiceTests, registerLogHandlerShouldSucceed)
+{
+    firebolt::rialto::logging::setLogLevels(RIALTO_COMPONENT_SERVER_MANAGER, static_cast<RIALTO_DEBUG_LEVEL>(RIALTO_DEBUG_LEVEL_DEFAULT | RIALTO_DEBUG_LEVEL_DEBUG | RIALTO_DEBUG_LEVEL_INFO));
+    EXPECT_TRUE(triggerRegisterLogHandler(configureLogHandler()));
+}
+
 TEST_F(ServerManagerServiceTests, registerLogHandlerShouldFailWhenPtrIsNull)
 {
     EXPECT_FALSE(triggerRegisterLogHandler(nullptr));
-}
-
-TEST_F(ServerManagerServiceTests, registerLogHandlerShouldSucceed)
-{
-    EXPECT_TRUE(triggerRegisterLogHandler(configureLogHandler()));
 }

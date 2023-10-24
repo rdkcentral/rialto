@@ -32,7 +32,7 @@ class ServerManagerServiceTests : public testing::Test
 {
 public:
     ServerManagerServiceTests();
-    virtual ~ServerManagerServiceTests() = default;
+    virtual ~ServerManagerServiceTests();
 
     void initiateApplicationWillBeCalled(const std::string &appId,
                                          const firebolt::rialto::common::SessionServerState &state,

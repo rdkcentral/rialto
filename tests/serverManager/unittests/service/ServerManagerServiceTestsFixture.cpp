@@ -22,6 +22,8 @@
 #include "Matchers.h"
 #include "ServerManagerService.h"
 #include "ServiceContextMock.h"
+#include "gtest/gtest.h"
+#include "RialtoLogging.h"
 #include <string>
 #include <utility>
 
@@ -42,6 +44,12 @@ ServerManagerServiceTests::ServerManagerServiceTests()
     EXPECT_CALL(m_appManager, preloadSessionServers(kNumOfPreloadedServers));
     m_sut = std::make_unique<rialto::servermanager::service::ServerManagerService>(std::move(serviceContext),
                                                                                    kNumOfPreloadedServers);
+}
+
+ServerManagerServiceTests::~ServerManagerServiceTests()
+{
+    m_sut=nullptr;
+    firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_SERVER_MANAGER, nullptr);
 }
 
 void ServerManagerServiceTests::initiateApplicationWillBeCalled(const std::string &appId,
@@ -72,7 +80,7 @@ std::shared_ptr<rialto::servermanager::service::ILogHandler> ServerManagerServic
 {
     auto logHandler = std::make_shared<StrictMock<rialto::servermanager::service::LogHandlerMock>>();
     // Expect print in destructor:
-    EXPECT_CALL(*logHandler, log(rialto::servermanager::service::ILogHandler::Level::Info, "ServerManagerService.cpp",
+    EXPECT_CALL(*logHandler, log(rialto::servermanager::service::ILogHandler::Level::Debug, "ServerManagerService.cpp",
                                  62, "~ServerManagerService", "RialtoServerManager is closing..."));
     return logHandler;
 }
