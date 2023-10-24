@@ -35,6 +35,21 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+      - name: Post commit message comment on PR
+        uses: mshick/add-pr-comment@v2
+        with:
+          message: |
+            Pull request must be merged with a description containing the required fields,
+
+            Summery:
+            Type: Feature/Fix/Cleanup
+            Test Plan:
+            Jira:
+
+            If there is no jira releated to this change, please put 'Jira: NO-JIRA'.
+
+            Description can be changed by editing the top comment on your pull request and making a new commit.
+
       # Check PR description for 'Summery:' field.
       - name: Match 'Summery:' 
         uses: actions-ecosystem/action-regex-match@v2
