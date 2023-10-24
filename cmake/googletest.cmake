@@ -27,11 +27,6 @@ if( CMAKE_CROSSCOMPILING )
     set( GOOGLETEST_EXTRA_CMAKE_ARGS "-DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}" )
 endif()
 
-# Fix DOWNLOAD_EXTRACT_TIMESTAMP error in CMake 3.24:
-if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.24.0")
-    cmake_policy(SET CMP0135 NEW)
-endif()
-
 ExternalProject_Add(
         googletest-project
 
