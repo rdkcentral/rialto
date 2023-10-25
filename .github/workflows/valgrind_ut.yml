@@ -116,11 +116,11 @@ jobs:
         with:
           csvinput: ${{ steps.csv-memory.outputs.content }}
 
-      # Add table to the summery
+      # Add table to the summary
       - name: Create results table
         if: failure()
         run: |
-          echo "Summery of the valgrind failures" >> $GITHUB_STEP_SUMMARY
+          echo "Summary of the valgrind failures" >> $GITHUB_STEP_SUMMARY
           echo "${{steps.results-table-output.outputs.markdown-table}}" >> $GITHUB_STEP_SUMMARY
 
       # Upload logs on failure
