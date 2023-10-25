@@ -99,8 +99,8 @@ bool SessionManagementServer::initialize(const std::string &socketName, unsigned
         errno = 0;
         struct passwd passwordStruct;
         struct passwd *passwordResult;
-        char stringBuffer[256];
-        getpwnam_r(socketOwner.c_str(), &passwordStruct, stringBuffer, sizeof(stringBuffer) / sizeof(char),
+        char stringBuffer[1024];
+        getpwnam_r(socketOwner.c_str(), &passwordStruct, stringBuffer, sizeof(stringBuffer) / sizeof(*stringBuffer),
                    &passwordResult);
         if (passwordResult == NULL)
         {
@@ -119,8 +119,9 @@ bool SessionManagementServer::initialize(const std::string &socketName, unsigned
         errno = 0;
         struct group groupStruct;
         struct group *groupResult;
-        char stringBuffer[256];
-        getgrnam_r(socketGroup.c_str(), &groupStruct, stringBuffer, sizeof(stringBuffer) / sizeof(char), &groupResult);
+        char stringBuffer[1024];
+        getgrnam_r(socketGroup.c_str(), &groupStruct, stringBuffer, sizeof(stringBuffer) / sizeof(*stringBuffer),
+                   &groupResult);
         if (groupResult == NULL)
         {
             RIALTO_SERVER_LOG_SYS_WARN(errno, "Failed to determine groupId for the IPC socket");
