@@ -20,10 +20,9 @@
 #include "ServerManagerServiceTestsFixture.h"
 #include "LogHandlerMock.h"
 #include "Matchers.h"
+#include "RialtoServerManagerLogging.h"
 #include "ServerManagerService.h"
 #include "ServiceContextMock.h"
-#include "gtest/gtest.h"
-#include "RialtoLogging.h"
 #include <string>
 #include <utility>
 
@@ -35,6 +34,7 @@ using testing::ReturnRef;
 namespace
 {
 constexpr unsigned kNumOfPreloadedServers{2};
+const std::string kLogText{"RialtoServerManager Test Log"};
 } // namespace
 
 ServerManagerServiceTests::ServerManagerServiceTests()
@@ -44,12 +44,6 @@ ServerManagerServiceTests::ServerManagerServiceTests()
     EXPECT_CALL(m_appManager, preloadSessionServers(kNumOfPreloadedServers));
     m_sut = std::make_unique<rialto::servermanager::service::ServerManagerService>(std::move(serviceContext),
                                                                                    kNumOfPreloadedServers);
-}
-
-ServerManagerServiceTests::~ServerManagerServiceTests()
-{
-    m_sut=nullptr;
-    firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_SERVER_MANAGER, nullptr);
 }
 
 void ServerManagerServiceTests::initiateApplicationWillBeCalled(const std::string &appId,
@@ -80,8 +74,10 @@ std::shared_ptr<rialto::servermanager::service::ILogHandler> ServerManagerServic
 {
     auto logHandler = std::make_shared<StrictMock<rialto::servermanager::service::LogHandlerMock>>();
     // Expect print in destructor:
-    EXPECT_CALL(*logHandler, log(rialto::servermanager::service::ILogHandler::Level::Debug, "ServerManagerService.cpp",
+    EXPECT_CALL(*logHandler, log(rialto::servermanager::service::ILogHandler::Level::Info, "ServerManagerService.cpp",
                                  62, "~ServerManagerService", "RialtoServerManager is closing..."));
+    EXPECT_CALL(*logHandler, log(rialto::servermanager::service::ILogHandler::Level::Info,
+                                 "ServerManagerServiceTestsFixture.cpp", 117, "triggerServerManagerLog", kLogText));
     return logHandler;
 }
 
@@ -117,4 +113,9 @@ bool ServerManagerServiceTests::triggerRegisterLogHandler(
 {
     EXPECT_TRUE(m_sut);
     return m_sut->registerLogHandler(handler);
+}
+
+void ServerManagerServiceTests::triggerServerManagerLog()
+{
+    RIALTO_SERVER_MANAGER_LOG_INFO("%s", kLogText.c_str());
 }

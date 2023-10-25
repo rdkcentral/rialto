@@ -17,10 +17,9 @@
  * limitations under the License.
  */
 
+#include "RialtoLogging.h"
 #include "ServerManagerServiceTestsFixture.h"
 #include "gtest/gtest.h"
-#include "RialtoLogging.h"
-#include "ServerManagerService.h"
 
 namespace
 {
@@ -74,8 +73,9 @@ TEST_F(ServerManagerServiceTests, setLogLevelsShouldReturnFalseIfOperationFailed
 
 TEST_F(ServerManagerServiceTests, registerLogHandlerShouldSucceed)
 {
-    firebolt::rialto::logging::setLogLevels(RIALTO_COMPONENT_SERVER_MANAGER, static_cast<RIALTO_DEBUG_LEVEL>(RIALTO_DEBUG_LEVEL_DEFAULT | RIALTO_DEBUG_LEVEL_DEBUG | RIALTO_DEBUG_LEVEL_INFO));
     EXPECT_TRUE(triggerRegisterLogHandler(configureLogHandler()));
+    triggerServerManagerLog();
+    firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_SERVER_MANAGER, nullptr);
 }
 
 TEST_F(ServerManagerServiceTests, registerLogHandlerShouldFailWhenPtrIsNull)

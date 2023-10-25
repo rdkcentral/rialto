@@ -59,7 +59,7 @@ ServerManagerService::ServerManagerService(std::unique_ptr<IServiceContext> &&co
 
 ServerManagerService::~ServerManagerService()
 {
-    RIALTO_SERVER_MANAGER_LOG_DEBUG("RialtoServerManager is closing...");
+    RIALTO_SERVER_MANAGER_LOG_INFO("RialtoServerManager is closing...");
 }
 
 bool ServerManagerService::initiateApplication(const std::string &appId,

@@ -32,7 +32,7 @@ class ServerManagerServiceTests : public testing::Test
 {
 public:
     ServerManagerServiceTests();
-    virtual ~ServerManagerServiceTests();
+    virtual ~ServerManagerServiceTests() = default;
 
     void initiateApplicationWillBeCalled(const std::string &appId,
                                          const firebolt::rialto::common::SessionServerState &state,
@@ -50,6 +50,7 @@ public:
     std::string triggerGetAppConnectionInfo(const std::string &appId);
     bool triggerSetLogLevels();
     bool triggerRegisterLogHandler(const std::shared_ptr<rialto::servermanager::service::ILogHandler> &handler);
+    void triggerServerManagerLog();
 
 private:
     StrictMock<rialto::servermanager::common::SessionServerAppManagerMock> m_appManager;
