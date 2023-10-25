@@ -20,7 +20,9 @@
 #include "ConfigReader.h"
 #include "FileReaderMock.h"
 #include "JsonCppWrapperMock.h"
+#include "SessionServerCommon.h"
 #include "gtest/gtest.h"
+#include <iostream>
 
 using testing::_;
 using testing::ByMove;
@@ -363,4 +365,40 @@ TEST_F(ConfigReaderTests, numOfPingsBeforeRecoveryExists)
 
     EXPECT_TRUE(m_sut->read());
     EXPECT_EQ(m_sut->getNumOfPingsBeforeRecovery(), 3);
+}
+
+TEST_F(ConfigReaderTests, defaultConfigValuesAreSet)
+{
+    // "Real world" constants defined in rialto/CMakeLists.txt
+    constexpr std::size_t kSessionServerEnvVarsSize{5};
+    constexpr unsigned kNumOfPreloadedServers{0};
+    const std::string kSessionServerPath{"/usr/bin/RialtoServer"};
+    constexpr unsigned kSessionServerStartupTimeout{0};
+    constexpr unsigned kHealthcheckInterval{5};
+    constexpr unsigned kDefaultPermissions{6};
+    constexpr unsigned kNumoFFailedPingsBeforeRecovery{3};
+
+    firebolt::rialto::common::ServerManagerConfig config;
+    EXPECT_EQ(config.sessionServerEnvVars.size(), kSessionServerEnvVarsSize);
+    EXPECT_NE(config.sessionServerEnvVars.end(),
+              std::find(config.sessionServerEnvVars.begin(), config.sessionServerEnvVars.end(), "XDG_RUNTIME_DIR=/tmp"));
+    EXPECT_NE(config.sessionServerEnvVars.end(),
+              std::find(config.sessionServerEnvVars.begin(), config.sessionServerEnvVars.end(),
+                        "WAYLAND_DISPLAY=westeros-rialto"));
+    EXPECT_NE(config.sessionServerEnvVars.end(),
+              std::find(config.sessionServerEnvVars.begin(), config.sessionServerEnvVars.end(), "RIALTO_SINKS_RANK=0"));
+    EXPECT_NE(config.sessionServerEnvVars.end(),
+              std::find(config.sessionServerEnvVars.begin(), config.sessionServerEnvVars.end(),
+                        "GST_REGISTRY=/tmp/rialto-server-gstreamer-cache.bin"));
+    EXPECT_NE(config.sessionServerEnvVars.end(),
+              std::find(config.sessionServerEnvVars.begin(), config.sessionServerEnvVars.end(),
+                        "WESTEROS_SINK_USE_ESSRMGR=1"));
+    EXPECT_EQ(config.numOfPreloadedServers, kNumOfPreloadedServers);
+    EXPECT_EQ(config.sessionServerPath, kSessionServerPath);
+    EXPECT_EQ(config.sessionServerStartupTimeout.count(), kSessionServerStartupTimeout);
+    EXPECT_EQ(config.healthcheckInterval.count(), kHealthcheckInterval);
+    EXPECT_EQ(config.sessionManagementSocketPermissions.ownerPermissions, kDefaultPermissions);
+    EXPECT_EQ(config.sessionManagementSocketPermissions.groupPermissions, kDefaultPermissions);
+    EXPECT_EQ(config.sessionManagementSocketPermissions.otherPermissions, kDefaultPermissions);
+    EXPECT_EQ(config.numOfFailedPingsBeforeRecovery, kNumoFFailedPingsBeforeRecovery);
 }
