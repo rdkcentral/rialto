@@ -89,9 +89,6 @@ bool SessionManagementServer::initialize(const std::string &socketName, unsigned
         RIALTO_SERVER_LOG_SYS_WARN(errno, "Failed to change the permissions on the IPC socket");
     }
 
-    RIALTO_SERVER_LOG_ERROR("Change owner and group proudman: owner '%s' group '%s'", socketOwner.c_str(),
-                            socketGroup.c_str());
-
     const uid_t noOwnerChange = -1; // -1 means chown() won't change the owner
     uid_t ownerId = noOwnerChange;
     if (!socketOwner.empty())
