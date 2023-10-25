@@ -17,6 +17,7 @@
  * limitations under the License.
  */
 
+#include "RialtoLogging.h"
 #include "ServerManagerServiceTestsFixture.h"
 #include "gtest/gtest.h"
 
@@ -70,12 +71,14 @@ TEST_F(ServerManagerServiceTests, setLogLevelsShouldReturnFalseIfOperationFailed
     ASSERT_FALSE(triggerSetLogLevels());
 }
 
-TEST_F(ServerManagerServiceTests, registerLogHandlerShouldFailWhenPtrIsNull)
-{
-    EXPECT_FALSE(triggerRegisterLogHandler(nullptr));
-}
-
 TEST_F(ServerManagerServiceTests, registerLogHandlerShouldSucceed)
 {
     EXPECT_TRUE(triggerRegisterLogHandler(configureLogHandler()));
+    triggerServerManagerLog();
+    firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_SERVER_MANAGER, nullptr);
+}
+
+TEST_F(ServerManagerServiceTests, registerLogHandlerShouldFailWhenPtrIsNull)
+{
+    EXPECT_FALSE(triggerRegisterLogHandler(nullptr));
 }
