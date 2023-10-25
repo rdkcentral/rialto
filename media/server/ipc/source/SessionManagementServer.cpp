@@ -101,7 +101,7 @@ bool SessionManagementServer::initialize(const std::string &socketName, unsigned
                    &passwordResult);
         if (passwordResult == NULL)
         {
-            RIALTO_SERVER_LOG_SYS_WARN(errno, "Failed to determine ownerId for the IPC socket");
+            RIALTO_SERVER_LOG_SYS_WARN(errno, "Failed to determine ownerId for '%s'", socketOwner.c_str());
         }
         else
         {
@@ -121,7 +121,7 @@ bool SessionManagementServer::initialize(const std::string &socketName, unsigned
                    &groupResult);
         if (groupResult == NULL)
         {
-            RIALTO_SERVER_LOG_SYS_WARN(errno, "Failed to determine groupId for the IPC socket");
+            RIALTO_SERVER_LOG_SYS_WARN(errno, "Failed to determine groupId for '%s'", socketGroup.c_str());
         }
         else
         {
@@ -135,15 +135,6 @@ bool SessionManagementServer::initialize(const std::string &socketName, unsigned
         if (chown(socketName.c_str(), ownerId, groupId) != 0)
         {
             RIALTO_SERVER_LOG_SYS_WARN(errno, "Failed to change the owner/group for the IPC socket");
-            // Try to change the group alone
-            if (ownerId != noOwnerChange && groupId != noGroupChange)
-            {
-                errno = 0;
-                if (chown(socketName.c_str(), noOwnerChange, groupId) != 0)
-                {
-                    RIALTO_SERVER_LOG_SYS_WARN(errno, "Failed to change the group for the IPC socket");
-                }
-            }
         }
     }
 
