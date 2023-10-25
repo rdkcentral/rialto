@@ -75,7 +75,7 @@ std::shared_ptr<rialto::servermanager::service::ILogHandler> ServerManagerServic
     auto logHandler = std::make_shared<StrictMock<rialto::servermanager::service::LogHandlerMock>>();
 
     EXPECT_CALL(*logHandler, log(rialto::servermanager::service::ILogHandler::Level::Info,
-                                 "ServerManagerServiceTestsFixture.cpp", 117, "triggerServerManagerLog", kLogText));
+                                 "ServerManagerServiceTestsFixture.cpp", 118, "triggerServerManagerLog", kLogText));
     return logHandler;
 }
 
