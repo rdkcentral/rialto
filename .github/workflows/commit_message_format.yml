@@ -41,7 +41,7 @@ jobs:
           message: |
             Pull request must be merged with a description containing the required fields,
 
-            Summery:
+            Summary:
             Type: Feature/Fix/Cleanup
             Test Plan:
             Jira:
@@ -50,18 +50,18 @@ jobs:
 
             Description can be changed by editing the top comment on your pull request and making a new commit.
 
-      # Check PR description for 'Summery:' field.
-      - name: Match 'Summery:' 
+      # Check PR description for 'Summary:' field.
+      - name: Match 'Summary:' 
         uses: actions-ecosystem/action-regex-match@v2
-        id: summery-match
+        id: summary-match
         if: failure() || success()
         with:
           text: ${{ github.event.pull_request.body }}
-          regex: 'Summery:\s*[\s\S]*?'
+          regex: 'Summary:\s*[\s\S]*?'
           flags: gm
 
-      - name: Check 'Summery:' 
-        if: (failure() || success()) && (steps.summery-match.outputs.match == '')
+      - name: Check 'Summary:' 
+        if: (failure() || success()) && (steps.summary-match.outputs.match == '')
         run: exit 1
   
       # Check PR description for 'Type: Feature|Fix|Cleanup' field.
