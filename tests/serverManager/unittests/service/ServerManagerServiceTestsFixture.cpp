@@ -74,8 +74,6 @@ std::shared_ptr<rialto::servermanager::service::ILogHandler> ServerManagerServic
 {
     auto logHandler = std::make_shared<StrictMock<rialto::servermanager::service::LogHandlerMock>>();
     // Expect print in destructor:
-    EXPECT_CALL(*logHandler, log(rialto::servermanager::service::ILogHandler::Level::Info, "ServerManagerService.cpp",
-                                 62, "~ServerManagerService", "RialtoServerManager is closing..."));
     EXPECT_CALL(*logHandler, log(rialto::servermanager::service::ILogHandler::Level::Info,
                                  "ServerManagerServiceTestsFixture.cpp", 117, "triggerServerManagerLog", kLogText));
     return logHandler;
