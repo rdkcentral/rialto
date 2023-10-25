@@ -92,18 +92,18 @@ struct SocketPermissions
  */
 struct ServerManagerConfig
 {
-    std::list<std::string> sessionServerEnvVars{ENVIRONMENT_VARIABLES}; /* List of environment variables, that need to
-                                                      be passed to RialtoSessionServer */
-    unsigned numOfPreloadedServers{NUM_OF_PRELOADED_SERVERS};           /* Number of preloaded servers */
-    std::string sessionServerPath{SESSION_SERVER_PATH};                 /* Location of Rialto Session Server binary */
-    std::chrono::milliseconds sessionServerStartupTimeout{
-        STARTUP_TIMEOUT_MS}; /* Custom session server startup timeout. If 0 - timeout disabled. */
-    std::chrono::seconds healthcheckInterval{
-        HEALTHCHECK_INTERVAL_S}; /* Defines how often healthcheck messages will be sent */
-    SocketPermissions sessionManagementSocketPermissions{SOCKET_PERMISSIONS_OWNER, SOCKET_PERMISSIONS_GROUP,
-                                                         SOCKET_PERMISSIONS_OTHER}; /* Defines permissions of session management socket */
-    unsigned numOfFailedPingsBeforeRecovery{
-        NUM_OF_PINGS_BEFORE_RECOVERY}; /* Defines how many pings have to fail before recovery action will be taken */
+    std::list<std::string> sessionServerEnvVars{@ENVIRONMENT_VARIABLES@};
+        /* List of environment variables, that need to be passed to RialtoSessionServer */
+    unsigned numOfPreloadedServers{@NUM_OF_PRELOADED_SERVERS@}; /* Number of preloaded servers */
+    std::string sessionServerPath{@SESSION_SERVER_PATH@}; /* Location of Rialto Session Server binary */
+    std::chrono::milliseconds sessionServerStartupTimeout{@STARTUP_TIMEOUT_MS@};
+        /* Custom session server startup timeout. If 0 - timeout disabled. */
+    std::chrono::seconds healthcheckInterval{@HEALTHCHECK_INTERVAL_S@};
+        /* Defines how often healthcheck messages will be sent */
+    SocketPermissions sessionManagementSocketPermissions{@SOCKET_PERMISSIONS_OWNER@, @SOCKET_PERMISSIONS_GROUP@, @SOCKET_PERMISSIONS_OTHER@};
+        /* Defines permissions of session management socket */
+    unsigned numOfFailedPingsBeforeRecovery{@NUM_OF_PINGS_BEFORE_RECOVERY@};
+        /* Defines how many pings have to fail before recovery action will be taken */
 };
 
 } // namespace firebolt::rialto::common

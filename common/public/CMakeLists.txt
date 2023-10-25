@@ -22,6 +22,13 @@ set( CMAKE_CXX_STANDARD 17 )
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
 include( CheckCXXCompilerFlag )
 
+if( RIALTO_ENABLE_CONFIG_FILE )
+    configure_file(
+        include/SessionServerCommon.in.h
+        include/SessionServerCommon.h
+        @ONLY )
+endif()
+
 add_library(
         RialtoCommonPublic
         INTERFACE
@@ -31,7 +38,7 @@ target_include_directories(
         RialtoCommonPublic
 
         INTERFACE
-        include
+        ${CMAKE_BINARY_DIR}/common/public/include
     )
 
 if( NOT CMAKE_BUILD_TYPE STREQUAL "UnitTests" )
