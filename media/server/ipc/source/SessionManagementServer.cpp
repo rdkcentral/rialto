@@ -66,7 +66,7 @@ SessionManagementServer::~SessionManagementServer()
 bool SessionManagementServer::initialize(const std::string &socketName, unsigned int socketPermissions,
                                          const std::string &socketOwner, const std::string &socketGroup)
 {
-    RIALTO_SERVER_LOG_INFO("Initializing Session Management Server. Socket name: %s", socketName.c_str());
+    RIALTO_SERVER_LOG_INFO("Initializing Session Management Server. Socket name: '%s'", socketName.c_str());
     if (!m_ipcServer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to initialize SessionManagementServer - Ipc server instance is NULL");
@@ -78,13 +78,13 @@ bool SessionManagementServer::initialize(const std::string &socketName, unsigned
                                 std::bind(&SessionManagementServer::onClientConnected, this, std::placeholders::_1),
                                 std::bind(&SessionManagementServer::onClientDisconnected, this, std::placeholders::_1)))
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to initialize SessionManagementServer - can't add socket %s to the ipc server",
+        RIALTO_SERVER_LOG_ERROR("Failed to initialize SessionManagementServer - can't add socket '%s' to the ipc "
+                                "server",
                                 socketName.c_str());
         return false;
     }
 
-    const char *sn = socketName.c_str();
-    if (chmod(sn, socketPermissions) != 0)
+    if (chmod(socketName.c_str(), socketPermissions) != 0)
     {
         RIALTO_SERVER_LOG_SYS_WARN(errno, "Failed to change the permissions on the IPC socket");
     }
@@ -135,14 +135,14 @@ bool SessionManagementServer::initialize(const std::string &socketName, unsigned
     if (ownerId != noOwnerChange || groupId != noGroupChange)
     {
         errno = 0;
-        if (chown(sn, ownerId, groupId) != 0)
+        if (chown(socketName.c_str(), ownerId, groupId) != 0)
         {
             RIALTO_SERVER_LOG_SYS_WARN(errno, "Failed to change the owner/group for the IPC socket");
             // Try to change the group alone
             if (ownerId != noOwnerChange && groupId != noGroupChange)
             {
                 errno = 0;
-                if (chown(sn, noOwnerChange, groupId) != 0)
+                if (chown(socketName.c_str(), noOwnerChange, groupId) != 0)
                 {
                     RIALTO_SERVER_LOG_SYS_WARN(errno, "Failed to change the group for the IPC socket");
                 }
