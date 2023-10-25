@@ -73,7 +73,7 @@ void ServerManagerServiceTests::setLogLevelsWillBeCalled(bool returnValue)
 std::shared_ptr<rialto::servermanager::service::ILogHandler> ServerManagerServiceTests::configureLogHandler()
 {
     auto logHandler = std::make_shared<StrictMock<rialto::servermanager::service::LogHandlerMock>>();
-    // Expect print in destructor:
+
     EXPECT_CALL(*logHandler, log(rialto::servermanager::service::ILogHandler::Level::Info,
                                  "ServerManagerServiceTestsFixture.cpp", 117, "triggerServerManagerLog", kLogText));
     return logHandler;
