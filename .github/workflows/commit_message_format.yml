@@ -1,0 +1,109 @@
+ #
+ # Copyright (C) 2023 Sky UK
+ #
+ # This library is free software; you can redistribute it and/or
+ # modify it under the terms of the GNU Lesser General Public
+ # License as published by the Free Software Foundation;
+ # version 2.1 of the License.
+ #
+ # This library is distributed in the hope that it will be useful,
+ # but WITHOUT ANY WARRANTY; without even the implied warranty of
+ # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ # Lesser General Public License for more details.
+ #
+ # You should have received a copy of the GNU Lesser General Public
+ # License along with this library; if not, write to the Free Software
+ # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ #
+
+name: commit-message-format
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on pull request to master branch
+  pull_request:
+    branches: [ "master", "rdkcentral:master" ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This job checks the commit message of the merge
+  check-commit-message:
+    name: Check Commit Message
+
+    # Runs on ubuntu
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - name: Post commit message comment on PR
+        uses: mshick/add-pr-comment@v2
+        with:
+          message: |
+            Pull request must be merged with a description containing the required fields,
+
+            Summery:
+            Type: Feature/Fix/Cleanup
+            Test Plan:
+            Jira:
+
+            If there is no jira releated to this change, please put 'Jira: NO-JIRA'.
+
+            Description can be changed by editing the top comment on your pull request and making a new commit.
+
+      # Check PR description for 'Summery:' field.
+      - name: Match 'Summery:' 
+        uses: actions-ecosystem/action-regex-match@v2
+        id: summery-match
+        if: failure() || success()
+        with:
+          text: ${{ github.event.pull_request.body }}
+          regex: 'Summery:\s*[\s\S]*?'
+          flags: gm
+
+      - name: Check 'Summery:' 
+        if: (failure() || success()) && (steps.summery-match.outputs.match == '')
+        run: exit 1
+  
+      # Check PR description for 'Type: Feature|Fix|Cleanup' field.
+      - name: Match 'Type:' 
+        uses: actions-ecosystem/action-regex-match@v2
+        id: type-match
+        if: failure() || success()
+        with:
+          text: ${{ github.event.pull_request.body }}
+          regex: 'Type:\s*Feature|Fix|Cleanup'
+
+      - name: Check 'Type:' 
+        if: (failure() || success()) && (steps.type-match.outputs.match == '')
+        run: exit 1
+        
+      # Check PR description for 'Test Plan:' field.
+      - name: Match 'Test Plan:' 
+        uses: actions-ecosystem/action-regex-match@v2
+        id: test-plan-match
+        if: failure() || success()
+        with:
+          text: ${{ github.event.pull_request.body }}
+          regex: 'Test Plan:\s*[\s\S]*?'
+
+      - name: Check 'Test Plan:' 
+        if: (failure() || success()) && (steps.test-plan-match.outputs.match == '')
+        run: exit 1
+
+      # Check PR description for 'Jira:' field.
+      - name: Match 'Jira:' 
+        uses: actions-ecosystem/action-regex-match@v2
+        id: jira-match
+        if: failure() || success()
+        with:
+          text: ${{ github.event.pull_request.body }}
+          regex: 'Jira:\s*[\s\S]*?'
+
+      - name: Check 'Jira:' 
+        if: (failure() || success()) && (steps.jira-match.outputs.match == '')
+        run: exit 1
+      
+      # Print description.
+      - name: Log string on failure
+        if: failure()
+        run: echo ${{ github.event.pull_request.body }}
