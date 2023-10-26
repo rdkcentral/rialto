@@ -82,9 +82,9 @@ constexpr unsigned int kExecute{1};
  */
 struct SocketPermissions
 {
-    unsigned int ownerPermissions{kRead | kWrite};
-    unsigned int groupPermissions{kRead | kWrite};
-    unsigned int otherPermissions{kRead | kWrite};
+    unsigned int ownerPermissions{@SOCKET_PERMISSIONS_OWNER@};
+    unsigned int groupPermissions{@SOCKET_PERMISSIONS_GROUP@};
+    unsigned int otherPermissions{@SOCKET_PERMISSIONS_OTHER@};
 };
 
 /**
@@ -100,8 +100,7 @@ struct ServerManagerConfig
         /* Custom session server startup timeout. If 0 - timeout disabled. */
     std::chrono::seconds healthcheckInterval{@HEALTHCHECK_INTERVAL_S@};
         /* Defines how often healthcheck messages will be sent */
-    SocketPermissions sessionManagementSocketPermissions{@SOCKET_PERMISSIONS_OWNER@, @SOCKET_PERMISSIONS_GROUP@, @SOCKET_PERMISSIONS_OTHER@};
-        /* Defines permissions of session management socket */
+    SocketPermissions sessionManagementSocketPermissions{}; /* Defines permissions of session management socket */
     unsigned numOfFailedPingsBeforeRecovery{@NUM_OF_PINGS_BEFORE_RECOVERY@};
         /* Defines how many pings have to fail before recovery action will be taken */
 };
