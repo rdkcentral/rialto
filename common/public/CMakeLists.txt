@@ -22,12 +22,10 @@ set( CMAKE_CXX_STANDARD 17 )
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
 include( CheckCXXCompilerFlag )
 
-if( RIALTO_ENABLE_CONFIG_FILE )
-    configure_file(
+configure_file(
         include/SessionServerCommon.in
         include/SessionServerCommon.h
         @ONLY )
-endif()
 
 add_library(
         RialtoCommonPublic

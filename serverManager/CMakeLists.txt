@@ -57,6 +57,10 @@ target_include_directories (
 )
 
 if( RIALTO_ENABLE_CONFIG_FILE )
+    if (NOT RIALTO_CONFIG_FILE_DIR)
+        set(RIALTO_CONFIG_FILE_DIR /etc/)
+    endif()
+
     configure_file(
         config/rialto-config.in.json
         rialto-config.json
