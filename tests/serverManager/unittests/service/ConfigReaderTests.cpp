@@ -375,7 +375,7 @@ TEST_F(ConfigReaderTests, defaultConfigValuesAreSet)
     constexpr unsigned kSessionServerStartupTimeout{0};
     constexpr unsigned kHealthcheckInterval{5};
     constexpr unsigned kDefaultPermissions{6};
-    constexpr unsigned kNumoFFailedPingsBeforeRecovery{3};
+    constexpr unsigned kNumOfFailedPingsBeforeRecovery{3};
 
     firebolt::rialto::common::ServerManagerConfig config;
     EXPECT_EQ(config.sessionServerEnvVars.size(), kSessionServerEnvVarsSize);
@@ -399,5 +399,5 @@ TEST_F(ConfigReaderTests, defaultConfigValuesAreSet)
     EXPECT_EQ(config.sessionManagementSocketPermissions.ownerPermissions, kDefaultPermissions);
     EXPECT_EQ(config.sessionManagementSocketPermissions.groupPermissions, kDefaultPermissions);
     EXPECT_EQ(config.sessionManagementSocketPermissions.otherPermissions, kDefaultPermissions);
-    EXPECT_EQ(config.numOfFailedPingsBeforeRecovery, kNumoFFailedPingsBeforeRecovery);
+    EXPECT_EQ(config.numOfFailedPingsBeforeRecovery, kNumOfFailedPingsBeforeRecovery);
 }
