@@ -44,7 +44,7 @@ target_include_directories(
 if( NOT CMAKE_BUILD_TYPE STREQUAL "UnitTests" )
         include( GNUInstallDirs )
         set (LIB_RIALTO_COMMON_PUBLIC_HEADERS
-                include/SessionServerCommon.h
+                ${CMAKE_BINARY_DIR}/common/public/include/SessionServerCommon.h
         )
         install (
                 FILES ${LIB_RIALTO_COMMON_PUBLIC_HEADERS}
