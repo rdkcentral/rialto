@@ -24,7 +24,7 @@ include( CheckCXXCompilerFlag )
 
 if( RIALTO_ENABLE_CONFIG_FILE )
     configure_file(
-        include/SessionServerCommon.in.h
+        include/SessionServerCommon.in
         include/SessionServerCommon.h
         @ONLY )
 endif()
