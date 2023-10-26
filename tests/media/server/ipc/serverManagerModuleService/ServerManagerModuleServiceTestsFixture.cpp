@@ -28,7 +28,7 @@ namespace
 {
 const std::string kSocketName{"/tmp/rialtotest-0"};
 const std::string kClientDisplayName{"westeros-rialto"};
-constexpr unsigned int kSocketPermissions{0777};
+constexpr unsigned int kSocketPermissions{0666};
 constexpr int kMaxSessions{5};
 constexpr int kMaxWebAudioPlayers{3};
 constexpr int kPingId{29};

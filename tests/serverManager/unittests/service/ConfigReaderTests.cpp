@@ -22,7 +22,6 @@
 #include "JsonCppWrapperMock.h"
 #include "SessionServerCommon.h"
 #include "gtest/gtest.h"
-#include <iostream>
 
 using testing::_;
 using testing::ByMove;
