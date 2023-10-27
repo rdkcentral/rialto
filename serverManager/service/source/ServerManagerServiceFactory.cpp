@@ -45,6 +45,12 @@ unsigned int convertSocketPermissions(firebolt::rialto::common::SocketPermission
 
 namespace rialto::servermanager::service
 {
+std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserver> &stateObserver)
+{
+    firebolt::rialto::common::ServerManagerConfig config;
+    return create(stateObserver, config);
+}
+
 std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserver> &stateObserver,
                                               const firebolt::rialto::common::ServerManagerConfig &config)
 {
