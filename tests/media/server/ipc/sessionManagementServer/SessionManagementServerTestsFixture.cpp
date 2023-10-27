@@ -203,10 +203,10 @@ void SessionManagementServerTests::testSocketOwnership(bool testOwnerIsValid, bo
     std::unique_ptr<testing::StrictMock<firebolt::rialto::common::LinuxWrapperMock>> linuxWrapperMock{
         std::make_unique<testing::StrictMock<firebolt::rialto::common::LinuxWrapperMock>>()};
 
-    const std::string kTestOwner{"own1"};
-    const std::string kTestGroup{"grp1"};
-    const uid_t kTestOwnerId = 12;
-    const gid_t kTestGroupId = 14;
+    const std::string kTestOwner{"own1"}; // any test string is ok
+    const std::string kTestGroup{"grp1"}; // any test string is ok
+    const uid_t kTestOwnerId = 12;        // any +ve test number is ok
+    const gid_t kTestGroupId = 14;        // any +ve test number is ok
     const uid_t kDontChangeOwner = -1;
     const gid_t kDontChangeGroup = -1;
 
