@@ -55,6 +55,7 @@ public:
     void sendServerInitialize();
     void sendServerInitializeAndExpectFailure();
     void sendServerStart();
+    void testSocketOwnership(bool testOwnerIsValid, bool testGroupIsValid);
     void sendConnectClient();
     void sendDisconnectClient();
     void sendSetLogLevels();

@@ -85,8 +85,10 @@ struct SocketPermissions
     unsigned int ownerPermissions{kRead | kWrite};
     unsigned int groupPermissions{kRead | kWrite};
     unsigned int otherPermissions{kRead | kWrite};
-    std::string owner;
-    std::string group;
+    // Empty strings for "owner" and "group" means that chown() won't be called. This will leave the created
+    // socket being owned by the user executing the code (and the group would be their primary group)
+    std::string owner{};
+    std::string group{};
 };
 
 /**

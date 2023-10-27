@@ -90,8 +90,8 @@ message SetConfigurationRequest {
     optional LogLevels logLevels = 4;
     optional uint32 socketPermissions = 5;
     optional string clientDisplayName = 6;
-    required string socketOwner = 7;
-    required string socketGroup = 8;
+    optional string socketOwner = 7;
+    optional string socketGroup = 8;
 }
 message SetConfigurationResponse {
 }

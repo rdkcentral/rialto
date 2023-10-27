@@ -81,6 +81,14 @@ if( RIALTO_ENABLE_CONFIG_FILE )
         set( SOCKET_PERMISSIONS 666 )
     endif()
 
+    if (NOT SOCKET_OWNER)
+        set( SOCKET_OWNER "" )
+    endif()
+
+    if (NOT SOCKET_GROUP)
+        set( SOCKET_GROUP "" )
+    endif()
+
     if (NOT NUM_OF_PRELOADED_SERVERS)
         set( NUM_OF_PRELOADED_SERVERS 0 )
     endif()

@@ -30,8 +30,10 @@ const std::string kSessionServerPath{"/usr/bin/RialtoServer"};
 constexpr std::chrono::milliseconds kSessionServerStartupTimeout{100};
 constexpr std::chrono::milliseconds kKillTimeout{1000};
 constexpr unsigned int kSocketPermissions{0777};
-const std::string kSocketOwner;
-const std::string kSocketGroup;
+// Empty strings for kSocketOwner and kSocketGroup means that chown() won't be called. This will leave the created
+// socket being owned by the user executing the code (and the group would be their primary group)
+const std::string kSocketOwner{};
+const std::string kSocketGroup{};
 const std::string kAppName{"YouTube"};
 constexpr auto kInitialState{firebolt::rialto::common::SessionServerState::ACTIVE};
 constexpr int kMaxPlaybackSessions{2};

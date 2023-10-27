@@ -49,6 +49,26 @@ TEST_F(SessionManagementServerTests, shouldEstablishConnection)
     sendConnectClient();
 }
 
+TEST_F(SessionManagementServerTests, testSocketOwnershipValidOwnerAndGroup)
+{
+    testSocketOwnership(true, true);
+}
+
+TEST_F(SessionManagementServerTests, testSocketOwnershipValidOwnerInvalidGroup)
+{
+    testSocketOwnership(true, false);
+}
+
+TEST_F(SessionManagementServerTests, testSocketOwnershipInvalidOwnerValidGroup)
+{
+    testSocketOwnership(false, true);
+}
+
+TEST_F(SessionManagementServerTests, testSocketOwnershipInvalidOwnerAndGroup)
+{
+    testSocketOwnership(false, false);
+}
+
 TEST_F(SessionManagementServerTests, shouldDisconnectFromClient)
 {
     serverWillInitialize();

@@ -21,6 +21,7 @@
 #include "ControlModuleServiceFactoryMock.h"
 #include "IpcClientMock.h"
 #include "IpcServerFactoryMock.h"
+#include "LinuxWrapperMock.h"
 #include "MediaKeysCapabilitiesModuleServiceFactoryMock.h"
 #include "MediaKeysModuleServiceFactoryMock.h"
 #include "MediaPipelineCapabilitiesModuleServiceFactoryMock.h"
@@ -30,6 +31,7 @@
 #include <fcntl.h>
 #include <string>
 #include <sys/stat.h>
+#include <utility>
 #include <vector>
 
 using testing::_;
@@ -41,9 +43,9 @@ using testing::SetArgReferee;
 namespace
 {
 const std::string socketName{"/tmp/sessionmanagementservertest-0"};
-constexpr unsigned int socketPermissions{0777};
-const std::string socketOwner;
-const std::string socketGroup;
+constexpr unsigned int socketPermissions{0666};
+const std::string socketOwner{};
+const std::string socketGroup{};
 const RIALTO_DEBUG_LEVEL defaultLogLevels{RIALTO_DEBUG_LEVEL_FATAL};
 const RIALTO_DEBUG_LEVEL clientLogLevels{RIALTO_DEBUG_LEVEL_ERROR};
 const RIALTO_DEBUG_LEVEL ipcLogLevels{RIALTO_DEBUG_LEVEL_DEBUG};
@@ -184,12 +186,57 @@ void SessionManagementServerTests::serverWillSetLogLevels()
 
 void SessionManagementServerTests::sendServerInitialize()
 {
-    EXPECT_TRUE(m_sut->initialize(socketName, socketPermissions, socketOwner, socketGroup));
+    std::unique_ptr<firebolt::rialto::common::ILinuxWrapper> linuxWrapper =
+        firebolt::rialto::common::ILinuxWrapperFactory::createFactory()->createLinuxWrapper();
+    EXPECT_TRUE(m_sut->initialize(linuxWrapper, socketName, socketPermissions, socketOwner, socketGroup));
 }
 
 void SessionManagementServerTests::sendServerInitializeAndExpectFailure()
 {
-    EXPECT_FALSE(m_sut->initialize(socketName, socketPermissions, socketOwner, socketGroup));
+    std::unique_ptr<firebolt::rialto::common::ILinuxWrapper> linuxWrapper =
+        firebolt::rialto::common::ILinuxWrapperFactory::createFactory()->createLinuxWrapper();
+    EXPECT_FALSE(m_sut->initialize(linuxWrapper, socketName, socketPermissions, socketOwner, socketGroup));
+}
+
+void SessionManagementServerTests::testSocketOwnership(bool testOwnerIsValid, bool testGroupIsValid)
+{
+    std::unique_ptr<testing::StrictMock<firebolt::rialto::common::LinuxWrapperMock>> linuxWrapperMock{
+        std::make_unique<testing::StrictMock<firebolt::rialto::common::LinuxWrapperMock>>()};
+
+    const std::string kTestOwner{"own1"};
+    const std::string kTestGroup{"grp1"};
+    const uid_t kTestOwnerId = 12;
+    const gid_t kTestGroupId = 14;
+    const uid_t kDontChangeOwner = -1;
+    const gid_t kDontChangeGroup = -1;
+
+    serverWillInitialize();
+    EXPECT_CALL(*linuxWrapperMock, chmod(testing::StrEq(socketName), socketPermissions)).WillOnce(Return(0));
+
+    struct passwd passwordStruct
+    {
+    };
+    passwordStruct.pw_uid = kTestOwnerId;
+    EXPECT_CALL(*linuxWrapperMock, getpwnam_r(testing::StrEq(kTestOwner), _, _, _, _))
+        .WillOnce(testing::DoAll(testing::SetArgPointee<4>(&passwordStruct), Return(testOwnerIsValid ? 0 : 1)));
+
+    struct group groupStruct
+    {
+    };
+    groupStruct.gr_gid = kTestGroupId;
+    EXPECT_CALL(*linuxWrapperMock, getgrnam_r(testing::StrEq(kTestGroup), _, _, _, _))
+        .WillOnce(testing::DoAll(testing::SetArgPointee<4>(&groupStruct), Return(testGroupIsValid ? 0 : 1)));
+
+    if (testOwnerIsValid || testGroupIsValid)
+    {
+        EXPECT_CALL(*linuxWrapperMock,
+                    chown(testing::StrEq(socketName), testOwnerIsValid ? kTestOwnerId : kDontChangeOwner,
+                          testGroupIsValid ? kTestGroupId : kDontChangeGroup))
+            .WillOnce(Return(0));
+    }
+
+    std::unique_ptr<firebolt::rialto::common::ILinuxWrapper> linuxWrapper = std::move(linuxWrapperMock);
+    EXPECT_TRUE(m_sut->initialize(linuxWrapper, socketName, socketPermissions, kTestOwner, kTestGroup));
 }
 
 void SessionManagementServerTests::sendServerStart()

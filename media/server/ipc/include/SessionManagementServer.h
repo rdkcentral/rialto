@@ -58,7 +58,8 @@ public:
     SessionManagementServer &operator=(const SessionManagementServer &) = delete;
     SessionManagementServer &operator=(SessionManagementServer &&) = delete;
 
-    bool initialize(const std::string &socketName, unsigned int socketPermissions, const std::string &socketOwner,
+    bool initialize(std::unique_ptr<firebolt::rialto::common::ILinuxWrapper> &linuxWrapper,
+                    const std::string &socketName, unsigned int socketPermissions, const std::string &socketOwner,
                     const std::string &socketGroup) override;
     void start() override;
     void stop() override;

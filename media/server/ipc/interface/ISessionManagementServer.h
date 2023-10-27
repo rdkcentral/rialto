@@ -20,7 +20,9 @@
 #ifndef FIREBOLT_RIALTO_SERVER_IPC_I_SESSION_MANAGEMENT_SERVER_H_
 #define FIREBOLT_RIALTO_SERVER_IPC_I_SESSION_MANAGEMENT_SERVER_H_
 
+#include "ILinuxWrapper.h"
 #include "RialtoServerLogging.h"
+#include <memory>
 #include <string>
 
 namespace firebolt::rialto::server::ipc
@@ -36,7 +38,8 @@ public:
     ISessionManagementServer &operator=(const ISessionManagementServer &) = delete;
     ISessionManagementServer &operator=(ISessionManagementServer &&) = delete;
 
-    virtual bool initialize(const std::string &socketName, unsigned int socketPermissions,
+    virtual bool initialize(std::unique_ptr<firebolt::rialto::common::ILinuxWrapper> &linuxWrapper,
+                            const std::string &socketName, unsigned int socketPermissions,
                             const std::string &socketOwner, const std::string &socketGroup) = 0;
     virtual void start() = 0;
     virtual void stop() = 0;
