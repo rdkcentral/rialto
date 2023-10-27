@@ -26,13 +26,12 @@ using testing::Return;
 
 namespace
 {
-const std::string SOCKET_NAME{"/tmp/rialtotest-0"};
-const std::string CLIENT_DISPLAY_NAME{"westeros-rialto"};
-constexpr unsigned int SOCKET_PERMISSIONS{0777};
-constexpr int MAX_SESSIONS{5};
-constexpr int MAX_WEB_AUDIO_PLAYERS{3};
-constexpr int socket{2};
-constexpr int pingId{29};
+const std::string kSocketName{"/tmp/rialtotest-0"};
+const std::string kClientDisplayName{"westeros-rialto"};
+constexpr unsigned int kSocketPermissions{0666};
+constexpr int kMaxSessions{5};
+constexpr int kMaxWebAudioPlayers{3};
+constexpr int kPingId{29};
 
 rialto::SessionServerState convertSessionServerState(const firebolt::rialto::common::SessionServerState &state)
 {
@@ -75,8 +74,8 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillSetConfiguration(
     const firebolt::rialto::common::SessionServerState &state)
 {
     EXPECT_CALL(m_sessionServerManagerMock,
-                setConfiguration(SOCKET_NAME, state, MaxResourceMatcher(MAX_SESSIONS, MAX_WEB_AUDIO_PLAYERS),
-                                 CLIENT_DISPLAY_NAME, SOCKET_PERMISSIONS))
+                setConfiguration(kSocketName, state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers),
+                                 kClientDisplayName, kSocketPermissions))
         .WillOnce(Return(true));
 }
 
@@ -97,8 +96,8 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillFailToSetConfigura
     const firebolt::rialto::common::SessionServerState &state)
 {
     EXPECT_CALL(m_sessionServerManagerMock,
-                setConfiguration(SOCKET_NAME, state, MaxResourceMatcher(MAX_SESSIONS, MAX_WEB_AUDIO_PLAYERS),
-                                 CLIENT_DISPLAY_NAME, SOCKET_PERMISSIONS))
+                setConfiguration(kSocketName, state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers),
+                                 kClientDisplayName, kSocketPermissions))
         .WillOnce(Return(false));
 }
 
@@ -111,13 +110,13 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillFailToSetState(
 void ServerManagerModuleServiceTests::sessionServerManagerWillPing()
 {
     EXPECT_CALL(*m_controllerMock, getClient()).WillOnce(Return(m_clientMock));
-    EXPECT_CALL(m_sessionServerManagerMock, ping(pingId, _)).WillOnce(Return(true));
+    EXPECT_CALL(m_sessionServerManagerMock, ping(kPingId, _)).WillOnce(Return(true));
 }
 
 void ServerManagerModuleServiceTests::sessionServerManagerWillFailToPing()
 {
     EXPECT_CALL(*m_controllerMock, getClient()).WillOnce(Return(m_clientMock));
-    EXPECT_CALL(m_sessionServerManagerMock, ping(pingId, _)).WillOnce(Return(false));
+    EXPECT_CALL(m_sessionServerManagerMock, ping(kPingId, _)).WillOnce(Return(false));
 }
 
 void ServerManagerModuleServiceTests::sendSetConfiguration(const firebolt::rialto::common::SessionServerState &state)
@@ -125,9 +124,9 @@ void ServerManagerModuleServiceTests::sendSetConfiguration(const firebolt::rialt
     rialto::SetConfigurationRequest request;
     rialto::SetConfigurationResponse response;
 
-    request.set_sessionmanagementsocketname(SOCKET_NAME);
-    request.mutable_resources()->set_maxplaybacks(MAX_SESSIONS);
-    request.mutable_resources()->set_maxwebaudioplayers(MAX_WEB_AUDIO_PLAYERS);
+    request.set_sessionmanagementsocketname(kSocketName);
+    request.mutable_resources()->set_maxplaybacks(kMaxSessions);
+    request.mutable_resources()->set_maxwebaudioplayers(kMaxWebAudioPlayers);
     request.mutable_loglevels()->set_defaultloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
     request.mutable_loglevels()->set_clientloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
     request.mutable_loglevels()->set_sessionserverloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
@@ -135,8 +134,8 @@ void ServerManagerModuleServiceTests::sendSetConfiguration(const firebolt::rialt
     request.mutable_loglevels()->set_servermanagerloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
     request.mutable_loglevels()->set_commonloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
     request.set_initialsessionserverstate(convertSessionServerState(state));
-    request.set_clientdisplayname(CLIENT_DISPLAY_NAME);
-    request.set_socketpermissions(SOCKET_PERMISSIONS);
+    request.set_clientdisplayname(kClientDisplayName);
+    request.set_socketpermissions(kSocketPermissions);
 
     m_sut->setConfiguration(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
@@ -171,7 +170,7 @@ void ServerManagerModuleServiceTests::sendPing()
     rialto::PingRequest request;
     rialto::PingResponse response;
 
-    request.set_id(pingId);
+    request.set_id(kPingId);
 
     m_sut->ping(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
@@ -181,7 +180,7 @@ void ServerManagerModuleServiceTests::sendPingWithInvalidController()
     rialto::PingRequest request;
     rialto::PingResponse response;
 
-    request.set_id(pingId);
+    request.set_id(kPingId);
 
     m_sut->ping(m_invalidControllerMock.get(), &request, &response, m_closureMock.get());
 }
