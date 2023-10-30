@@ -69,8 +69,14 @@ std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserv
     std::shared_ptr<IConfigReader> configReader = configReaderFactory->createConfigReader();
     configReader->read();
 
-    if (!configReader->getEnvironmentVariables().empty())
-        sessionServerEnvVars = configReader->getEnvironmentVariables();
+    for (const auto &envVar : configReader->getEnvironmentVariables())
+    {
+        // If environment variable exists in ServerManagerConfig, do not overwrite it
+        if (sessionServerEnvVars.end() == std::find(sessionServerEnvVars.begin(), sessionServerEnvVars.end(), envVar))
+        {
+            sessionServerEnvVars.push_back(envVar);
+        }
+    }
 
     if (configReader->getSessionServerPath())
         sessionServerPath = configReader->getSessionServerPath().value();
