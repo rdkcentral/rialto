@@ -51,22 +51,22 @@ TEST_F(SessionManagementServerTests, shouldEstablishConnection)
 
 TEST_F(SessionManagementServerTests, testSocketOwnershipValidOwnerAndGroup)
 {
-    testSocketOwnership(true, true);
+    testSocketOwnershipValidOwnerAndGroup();
 }
 
 TEST_F(SessionManagementServerTests, testSocketOwnershipValidOwnerInvalidGroup)
 {
-    testSocketOwnership(true, false);
+    testSocketOwnershipValidOwnerInvalidGroup();
 }
 
 TEST_F(SessionManagementServerTests, testSocketOwnershipInvalidOwnerValidGroup)
 {
-    testSocketOwnership(false, true);
+    testSocketOwnershipInvalidOwnerValidGroup();
 }
 
 TEST_F(SessionManagementServerTests, testSocketOwnershipInvalidOwnerAndGroup)
 {
-    testSocketOwnership(false, false);
+    testSocketOwnershipInvalidOwnerAndGroup();
 }
 
 TEST_F(SessionManagementServerTests, shouldDisconnectFromClient)

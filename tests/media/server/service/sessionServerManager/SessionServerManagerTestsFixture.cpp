@@ -150,7 +150,7 @@ void SessionServerManagerTests::willInitialize()
 void SessionServerManagerTests::willFailToSetConfigurationWhenSessionManagementServerFailsToInit()
 {
     EXPECT_CALL(m_sessionManagementServerMock,
-                initialize(_, sessionManagementSocket, sessionManagementSocketPermissions, kSocketOwner, kSocketGroup))
+                initialize(sessionManagementSocket, sessionManagementSocketPermissions, kSocketOwner, kSocketGroup))
         .WillOnce(Return(false));
     EXPECT_TRUE(m_sut);
     EXPECT_FALSE(m_sut->setConfiguration(sessionManagementSocket, SessionServerState::INACTIVE, maxResource,
@@ -161,7 +161,7 @@ void SessionServerManagerTests::willFailToSetConfigurationWhenSessionManagementS
 void SessionServerManagerTests::willFailToSetConfigurationWhenSessionManagementServerFailsToSetInitialState()
 {
     EXPECT_CALL(m_sessionManagementServerMock,
-                initialize(_, sessionManagementSocket, sessionManagementSocketPermissions, kSocketOwner, kSocketGroup))
+                initialize(sessionManagementSocket, sessionManagementSocketPermissions, kSocketOwner, kSocketGroup))
         .WillOnce(Return(true));
     EXPECT_CALL(m_sessionManagementServerMock, start());
     EXPECT_CALL(m_playbackServiceMock, setMaxPlaybacks(maxPlaybacks));
@@ -180,7 +180,7 @@ void SessionServerManagerTests::willFailToSetConfigurationWhenSessionManagementS
 void SessionServerManagerTests::willSetConfiguration()
 {
     EXPECT_CALL(m_sessionManagementServerMock,
-                initialize(_, sessionManagementSocket, sessionManagementSocketPermissions, kSocketOwner, kSocketGroup))
+                initialize(sessionManagementSocket, sessionManagementSocketPermissions, kSocketOwner, kSocketGroup))
         .WillOnce(Return(true));
     EXPECT_CALL(m_sessionManagementServerMock, start());
     EXPECT_CALL(m_playbackServiceMock, setMaxPlaybacks(maxPlaybacks));

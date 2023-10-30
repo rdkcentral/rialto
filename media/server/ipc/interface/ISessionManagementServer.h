@@ -38,8 +38,7 @@ public:
     ISessionManagementServer &operator=(const ISessionManagementServer &) = delete;
     ISessionManagementServer &operator=(ISessionManagementServer &&) = delete;
 
-    virtual bool initialize(std::unique_ptr<firebolt::rialto::common::ILinuxWrapper> &linuxWrapper,
-                            const std::string &socketName, unsigned int socketPermissions,
+    virtual bool initialize(const std::string &socketName, unsigned int socketPermissions,
                             const std::string &socketOwner, const std::string &socketGroup) = 0;
     virtual void start() = 0;
     virtual void stop() = 0;

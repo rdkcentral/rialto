@@ -33,71 +33,13 @@
 
 namespace
 {
-const uid_t kNoOwnerChange = -1; // -1 means chown() won't change the owner
-const gid_t kNoGroupChange = -1; // -1 means chown() won't change the group
+constexpr uid_t kNoOwnerChange = -1; // -1 means chown() won't change the owner
+constexpr gid_t kNoGroupChange = -1; // -1 means chown() won't change the group
 } // namespace
 namespace firebolt::rialto::server::ipc
 {
-static size_t getBufferSizeForPasswordStructureCalls()
-{
-    // Can return -1 on error
-    return sysconf(_SC_GETPW_R_SIZE_MAX);
-}
-
-static uid_t getSocketOwnerId(std::unique_ptr<firebolt::rialto::common::ILinuxWrapper> &linuxWrapper,
-                              const std::string &kSocketOwner)
-{
-    uid_t ownerId = kNoOwnerChange;
-    const size_t kBufferSize = getBufferSizeForPasswordStructureCalls();
-    if (!kSocketOwner.empty() && kBufferSize > 0)
-    {
-        errno = 0;
-        struct passwd passwordStruct
-        {
-        };
-        struct passwd *passwordResult = nullptr;
-        char buffer[kBufferSize];
-        int result =
-            linuxWrapper->getpwnam_r(kSocketOwner.c_str(), &passwordStruct, buffer, kBufferSize, &passwordResult);
-        if (result == 0 && passwordResult)
-        {
-            ownerId = passwordResult->pw_uid;
-        }
-        else
-        {
-            RIALTO_SERVER_LOG_SYS_WARN(errno, "Failed to determine ownerId for '%s'", kSocketOwner.c_str());
-        }
-    }
-    return ownerId;
-}
-
-static gid_t getSocketGroupId(std::unique_ptr<firebolt::rialto::common::ILinuxWrapper> &linuxWrapper,
-                              const std::string &kSocketGroup)
-{
-    gid_t groupId = kNoGroupChange;
-    const size_t kBufferSize = getBufferSizeForPasswordStructureCalls();
-    if (!kSocketGroup.empty() && kBufferSize > 0)
-    {
-        errno = 0;
-        struct group groupStruct
-        {
-        };
-        struct group *groupResult = nullptr;
-        char buffer[kBufferSize];
-        int result = linuxWrapper->getgrnam_r(kSocketGroup.c_str(), &groupStruct, buffer, kBufferSize, &groupResult);
-        if (result == 0 && groupResult)
-        {
-            groupId = groupResult->gr_gid;
-        }
-        else
-        {
-            RIALTO_SERVER_LOG_SYS_WARN(errno, "Failed to determine groupId for '%s'", kSocketGroup.c_str());
-        }
-    }
-    return groupId;
-}
-
 SessionManagementServer::SessionManagementServer(
+    std::weak_ptr<firebolt::rialto::common::ILinuxWrapper> linuxWrapper,
     const std::shared_ptr<firebolt::rialto::ipc::IServerFactory> &ipcFactory,
     const std::shared_ptr<IMediaPipelineModuleServiceFactory> &mediaPipelineModuleFactory,
     const std::shared_ptr<IMediaPipelineCapabilitiesModuleServiceFactory> &mediaPipelineCapabilitiesModuleFactory,
@@ -113,7 +55,7 @@ SessionManagementServer::SessionManagementServer(
       m_mediaKeysModule{mediaKeysModuleFactory->create(cdmService)},
       m_mediaKeysCapabilitiesModule{mediaKeysCapabilitiesModuleFactory->create(cdmService)},
       m_webAudioPlayerModule{webAudioPlayerModuleFactory->create(playbackService.getWebAudioPlayerService())},
-      m_controlModule{controlModuleFactory->create(playbackService, controlService)}
+      m_controlModule{controlModuleFactory->create(playbackService, controlService)}, m_linuxWrapper{linuxWrapper.lock()}
 {
     m_ipcServer = ipcFactory->create();
 }
@@ -127,8 +69,64 @@ SessionManagementServer::~SessionManagementServer()
     }
 }
 
-bool SessionManagementServer::initialize(std::unique_ptr<firebolt::rialto::common::ILinuxWrapper> &linuxWrapper,
-                                         const std::string &socketName, unsigned int socketPermissions,
+size_t SessionManagementServer::getBufferSizeForPasswordStructureCalls() const
+{
+    // Can return -1 on error
+    return sysconf(_SC_GETPW_R_SIZE_MAX);
+}
+
+uid_t SessionManagementServer::getSocketOwnerId(const std::string &kSocketOwner) const
+{
+    uid_t ownerId = kNoOwnerChange;
+    const size_t kBufferSize = getBufferSizeForPasswordStructureCalls();
+    if (!kSocketOwner.empty() && kBufferSize > 0)
+    {
+        errno = 0;
+        struct passwd passwordStruct
+        {
+        };
+        struct passwd *passwordResult = nullptr;
+        char buffer[kBufferSize];
+        int result =
+            m_linuxWrapper->getpwnam_r(kSocketOwner.c_str(), &passwordStruct, buffer, kBufferSize, &passwordResult);
+        if (result == 0 && passwordResult)
+        {
+            ownerId = passwordResult->pw_uid;
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_SYS_WARN(errno, "Failed to determine ownerId for '%s'", kSocketOwner.c_str());
+        }
+    }
+    return ownerId;
+}
+
+gid_t SessionManagementServer::getSocketGroupId(const std::string &kSocketGroup) const
+{
+    gid_t groupId = kNoGroupChange;
+    const size_t kBufferSize = getBufferSizeForPasswordStructureCalls();
+    if (!kSocketGroup.empty() && kBufferSize > 0)
+    {
+        errno = 0;
+        struct group groupStruct
+        {
+        };
+        struct group *groupResult = nullptr;
+        char buffer[kBufferSize];
+        int result = m_linuxWrapper->getgrnam_r(kSocketGroup.c_str(), &groupStruct, buffer, kBufferSize, &groupResult);
+        if (result == 0 && groupResult)
+        {
+            groupId = groupResult->gr_gid;
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_SYS_WARN(errno, "Failed to determine groupId for '%s'", kSocketGroup.c_str());
+        }
+    }
+    return groupId;
+}
+
+bool SessionManagementServer::initialize(const std::string &socketName, unsigned int socketPermissions,
                                          const std::string &socketOwner, const std::string &socketGroup)
 {
     RIALTO_SERVER_LOG_INFO("Initializing Session Management Server. Socket name: '%s'", socketName.c_str());
@@ -150,18 +148,18 @@ bool SessionManagementServer::initialize(std::unique_ptr<firebolt::rialto::commo
     }
 
     errno = 0;
-    if (linuxWrapper->chmod(socketName.c_str(), socketPermissions) != 0)
+    if (m_linuxWrapper->chmod(socketName.c_str(), socketPermissions) != 0)
     {
         RIALTO_SERVER_LOG_SYS_WARN(errno, "Failed to change the permissions on the IPC socket");
     }
 
-    uid_t ownerId = getSocketOwnerId(linuxWrapper, socketOwner);
-    gid_t groupId = getSocketGroupId(linuxWrapper, socketGroup);
+    uid_t ownerId = getSocketOwnerId(socketOwner);
+    gid_t groupId = getSocketGroupId(socketGroup);
 
     if (ownerId != kNoOwnerChange || groupId != kNoGroupChange)
     {
         errno = 0;
-        if (linuxWrapper->chown(socketName.c_str(), ownerId, groupId) != 0)
+        if (m_linuxWrapper->chown(socketName.c_str(), ownerId, groupId) != 0)
         {
             RIALTO_SERVER_LOG_SYS_WARN(errno, "Failed to change the owner/group for the IPC socket");
         }

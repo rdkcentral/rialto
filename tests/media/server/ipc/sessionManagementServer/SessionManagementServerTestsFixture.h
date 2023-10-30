@@ -26,6 +26,7 @@
 #include "ISessionManagementServer.h"
 #include "IpcClientMock.h"
 #include "IpcServerMock.h"
+#include "LinuxWrapperMock.h"
 #include "MediaKeysCapabilitiesModuleServiceMock.h"
 #include "MediaKeysModuleServiceMock.h"
 #include "MediaPipelineCapabilitiesModuleServiceMock.h"
@@ -55,12 +56,16 @@ public:
     void sendServerInitialize();
     void sendServerInitializeAndExpectFailure();
     void sendServerStart();
-    void testSocketOwnership(bool testOwnerIsValid, bool testGroupIsValid);
+    void testSocketOwnershipValidOwnerAndGroup();
+    void testSocketOwnershipValidOwnerInvalidGroup();
+    void testSocketOwnershipInvalidOwnerValidGroup();
+    void testSocketOwnershipInvalidOwnerAndGroup();
     void sendConnectClient();
     void sendDisconnectClient();
     void sendSetLogLevels();
 
 private:
+    std::shared_ptr<firebolt::rialto::common::LinuxWrapperMock> m_linuxWrapperMock;
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ClientMock>> m_clientMock;
     StrictMock<firebolt::rialto::server::service::PlaybackServiceMock> m_playbackServiceMock;
     StrictMock<firebolt::rialto::server::service::MediaPipelineServiceMock> m_mediaPipelineServiceMock;

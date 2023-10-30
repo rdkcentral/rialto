@@ -102,9 +102,7 @@ bool SessionServerManager::setConfiguration(const std::string &socketName, const
                                             const std::string &clientDisplayName, unsigned int socketPermissions,
                                             const std::string &socketOwner, const std::string &socketGroup)
 {
-    std::unique_ptr<common::ILinuxWrapper> linuxWrapper =
-        common::ILinuxWrapperFactory::createFactory()->createLinuxWrapper();
-    if (!m_sessionManagementServer->initialize(linuxWrapper, socketName, socketPermissions, socketOwner, socketGroup))
+    if (!m_sessionManagementServer->initialize(socketName, socketPermissions, socketOwner, socketGroup))
     {
         RIALTO_SERVER_LOG_ERROR("SetConfiguration failed - SessionManagementServer failed to initialize");
         return false;
