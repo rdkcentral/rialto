@@ -187,8 +187,7 @@ public:
      *
      * @retval on success returns 0
      */
-    virtual int getpwnam_r(const char *name, struct passwd *pwd, char *buf, size_t buflen,
-                           struct passwd **result) const = 0;
+    virtual int getpwnam_r(const char *name, passwd *pwd, char *buf, size_t buflen, passwd **result) const = 0;
 
     /**
      * @brief Get group file entry
@@ -201,7 +200,7 @@ public:
      *
      * @retval on success returns 0
      */
-    virtual int getgrnam_r(const char *name, struct group *grp, char *buf, size_t buflen, struct group **result) const = 0;
+    virtual int getgrnam_r(const char *name, group *grp, char *buf, size_t buflen, group **result) const = 0;
 
     /**
      * @brief Change permissions of a file

@@ -54,12 +54,13 @@ public:
     void serverWillSetLogLevels();
 
     void sendServerInitialize();
+    void sendServerInitializeWithTestSocketOwnerAndGroup();
     void sendServerInitializeAndExpectFailure();
     void sendServerStart();
-    void testSocketOwnershipValidOwnerAndGroup();
-    void testSocketOwnershipValidOwnerInvalidGroup();
-    void testSocketOwnershipInvalidOwnerValidGroup();
-    void testSocketOwnershipInvalidOwnerAndGroup();
+    void serverWillInitializeWithValidSocketOwnerAndGroup();
+    void serverWillInitializeWithValidSocketOwnerAndInvalidGroup();
+    void serverWillInitializeWithInvalidSocketOwnerAndValidGroup();
+    void serverWillInitializeWithInvalidSocketOwnerAndGroup();
     void sendConnectClient();
     void sendDisconnectClient();
     void sendSetLogLevels();
@@ -82,6 +83,8 @@ private:
     std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::WebAudioPlayerModuleServiceMock>> m_webAudioPlayerModuleMock;
     std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::ControlModuleServiceMock>> m_controlModuleMock;
     std::unique_ptr<firebolt::rialto::server::ipc::ISessionManagementServer> m_sut;
+    passwd m_passwordStruct{};
+    group m_groupStruct{};
 
     std::function<void(const std::shared_ptr<firebolt::rialto::ipc::IClient> &)> m_clientConnectedCb;
     std::function<void(const std::shared_ptr<firebolt::rialto::ipc::IClient> &)> m_clientDisconnectedCb;

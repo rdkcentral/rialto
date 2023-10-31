@@ -49,24 +49,32 @@ TEST_F(SessionManagementServerTests, shouldEstablishConnection)
     sendConnectClient();
 }
 
-TEST_F(SessionManagementServerTests, testSocketOwnershipValidOwnerAndGroup)
+TEST_F(SessionManagementServerTests, serverWillInitializeWithValidSocketOwnerAndGroup)
 {
-    testSocketOwnershipValidOwnerAndGroup();
+    serverWillInitialize();
+    serverWillInitializeWithValidSocketOwnerAndGroup();
+    sendServerInitializeWithTestSocketOwnerAndGroup();
 }
 
-TEST_F(SessionManagementServerTests, testSocketOwnershipValidOwnerInvalidGroup)
+TEST_F(SessionManagementServerTests, serverWillInitializeWithValidSocketOwnerAndInvalidGroup)
 {
-    testSocketOwnershipValidOwnerInvalidGroup();
+    serverWillInitialize();
+    serverWillInitializeWithValidSocketOwnerAndInvalidGroup();
+    sendServerInitializeWithTestSocketOwnerAndGroup();
 }
 
-TEST_F(SessionManagementServerTests, testSocketOwnershipInvalidOwnerValidGroup)
+TEST_F(SessionManagementServerTests, serverWillInitializeWithInvalidSocketOwnerAndValidGroup)
 {
-    testSocketOwnershipInvalidOwnerValidGroup();
+    serverWillInitialize();
+    serverWillInitializeWithInvalidSocketOwnerAndValidGroup();
+    sendServerInitializeWithTestSocketOwnerAndGroup();
 }
 
-TEST_F(SessionManagementServerTests, testSocketOwnershipInvalidOwnerAndGroup)
+TEST_F(SessionManagementServerTests, serverWillInitializeWithInvalidSocketOwnerAndGroup)
 {
-    testSocketOwnershipInvalidOwnerAndGroup();
+    serverWillInitialize();
+    serverWillInitializeWithInvalidSocketOwnerAndGroup();
+    sendServerInitializeWithTestSocketOwnerAndGroup();
 }
 
 TEST_F(SessionManagementServerTests, shouldDisconnectFromClient)

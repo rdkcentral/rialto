@@ -82,10 +82,8 @@ uid_t SessionManagementServer::getSocketOwnerId(const std::string &kSocketOwner)
     if (!kSocketOwner.empty() && kBufferSize > 0)
     {
         errno = 0;
-        struct passwd passwordStruct
-        {
-        };
-        struct passwd *passwordResult = nullptr;
+        passwd passwordStruct{};
+        passwd *passwordResult = nullptr;
         char buffer[kBufferSize];
         int result =
             m_linuxWrapper->getpwnam_r(kSocketOwner.c_str(), &passwordStruct, buffer, kBufferSize, &passwordResult);
@@ -108,10 +106,8 @@ gid_t SessionManagementServer::getSocketGroupId(const std::string &kSocketGroup)
     if (!kSocketGroup.empty() && kBufferSize > 0)
     {
         errno = 0;
-        struct group groupStruct
-        {
-        };
-        struct group *groupResult = nullptr;
+        group groupStruct{};
+        group *groupResult = nullptr;
         char buffer[kBufferSize];
         int result = m_linuxWrapper->getgrnam_r(kSocketGroup.c_str(), &groupStruct, buffer, kBufferSize, &groupResult);
         if (result == 0 && groupResult)

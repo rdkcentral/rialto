@@ -42,14 +42,16 @@ using testing::SetArgReferee;
 
 namespace
 {
-const std::string socketName{"/tmp/sessionmanagementservertest-0"};
-constexpr unsigned int socketPermissions{0666};
-const std::string socketOwner{};
-const std::string socketGroup{};
-const RIALTO_DEBUG_LEVEL defaultLogLevels{RIALTO_DEBUG_LEVEL_FATAL};
-const RIALTO_DEBUG_LEVEL clientLogLevels{RIALTO_DEBUG_LEVEL_ERROR};
-const RIALTO_DEBUG_LEVEL ipcLogLevels{RIALTO_DEBUG_LEVEL_DEBUG};
-const RIALTO_DEBUG_LEVEL commonLogLevels{RIALTO_DEBUG_LEVEL_DEFAULT};
+const std::string kSocketName{"/tmp/sessionmanagementservertest-0"};
+constexpr unsigned int kSocketPermissions{0666};
+// Empty strings for socket owner and group means that chown() won't be called. This will leave the created
+// socket being owned by the user executing the code (and the group would be their primary group)
+const std::string kSocketOwnerEmpty{};
+const std::string kSocketGroupEmpty{};
+const RIALTO_DEBUG_LEVEL kDdefaultLogLevels{RIALTO_DEBUG_LEVEL_FATAL};
+const RIALTO_DEBUG_LEVEL kClientLogLevels{RIALTO_DEBUG_LEVEL_ERROR};
+const RIALTO_DEBUG_LEVEL kIpcLogLevels{RIALTO_DEBUG_LEVEL_DEBUG};
+const RIALTO_DEBUG_LEVEL kCommonLogLevels{RIALTO_DEBUG_LEVEL_DEFAULT};
 const std::string kTestOwner{"own1"}; // any test string is ok
 const std::string kTestGroup{"grp1"}; // any test string is ok
 constexpr uid_t kTestOwnerId = 12;    // any +ve test number is ok
@@ -132,7 +134,7 @@ SessionManagementServerTests::~SessionManagementServerTests() {}
 
 void SessionManagementServerTests::serverWillInitialize()
 {
-    EXPECT_CALL(*m_serverMock, addSocket(socketName, _, _))
+    EXPECT_CALL(*m_serverMock, addSocket(kSocketName, _, _))
         .WillOnce(Invoke(
             [this](const std::string &socketPath,
                    std::function<void(const std::shared_ptr<firebolt::rialto::ipc::IClient> &)> clientConnectedCb,
@@ -142,11 +144,12 @@ void SessionManagementServerTests::serverWillInitialize()
                 m_clientDisconnectedCb = clientDisconnectedCb;
                 return true;
             }));
+    EXPECT_CALL(*m_linuxWrapperMock, chmod(testing::StrEq(kSocketName), kSocketPermissions)).WillOnce(Return(0));
 }
 
 void SessionManagementServerTests::serverWillFailToInitialize()
 {
-    EXPECT_CALL(*m_serverMock, addSocket(socketName, _, _)).WillOnce(Return(false));
+    EXPECT_CALL(*m_serverMock, addSocket(kSocketName, _, _)).WillOnce(Return(false));
 }
 
 void SessionManagementServerTests::serverWillStart()
@@ -188,113 +191,73 @@ void SessionManagementServerTests::clientWillDisconnect()
 
 void SessionManagementServerTests::serverWillSetLogLevels()
 {
-    EXPECT_CALL(*m_clientMock,
-                sendEvent(SetLogLevelsEventMatcher(defaultLogLevels, clientLogLevels, ipcLogLevels, commonLogLevels)));
+    EXPECT_CALL(*m_clientMock, sendEvent(SetLogLevelsEventMatcher(kDdefaultLogLevels, kClientLogLevels, kIpcLogLevels,
+                                                                  kCommonLogLevels)));
+}
+
+void SessionManagementServerTests::serverWillInitializeWithValidSocketOwnerAndGroup()
+{
+    m_passwordStruct.pw_uid = kTestOwnerId;
+    EXPECT_CALL(*m_linuxWrapperMock, getpwnam_r(testing::StrEq(kTestOwner), _, _, _, _))
+        .WillOnce(testing::DoAll(testing::SetArgPointee<4>(&m_passwordStruct), Return(0)));
+
+    m_groupStruct.gr_gid = kTestGroupId;
+    EXPECT_CALL(*m_linuxWrapperMock, getgrnam_r(testing::StrEq(kTestGroup), _, _, _, _))
+        .WillOnce(testing::DoAll(testing::SetArgPointee<4>(&m_groupStruct), Return(0)));
+
+    EXPECT_CALL(*m_linuxWrapperMock, chown(testing::StrEq(kSocketName), kTestOwnerId, kTestGroupId)).WillOnce(Return(0));
+}
+
+void SessionManagementServerTests::serverWillInitializeWithInvalidSocketOwnerAndValidGroup()
+{
+    m_passwordStruct.pw_uid = kTestOwnerId;
+    EXPECT_CALL(*m_linuxWrapperMock, getpwnam_r(testing::StrEq(kTestOwner), _, _, _, _))
+        .WillOnce(testing::DoAll(testing::SetArgPointee<4>(&m_passwordStruct), Return(1)));
+
+    m_groupStruct.gr_gid = kTestGroupId;
+    EXPECT_CALL(*m_linuxWrapperMock, getgrnam_r(testing::StrEq(kTestGroup), _, _, _, _))
+        .WillOnce(testing::DoAll(testing::SetArgPointee<4>(&m_groupStruct), Return(0)));
+
+    EXPECT_CALL(*m_linuxWrapperMock, chown(testing::StrEq(kSocketName), kDontChangeOwner, kTestGroupId)).WillOnce(Return(0));
+}
+
+void SessionManagementServerTests::serverWillInitializeWithValidSocketOwnerAndInvalidGroup()
+{
+    m_passwordStruct.pw_uid = kTestOwnerId;
+    EXPECT_CALL(*m_linuxWrapperMock, getpwnam_r(testing::StrEq(kTestOwner), _, _, _, _))
+        .WillOnce(testing::DoAll(testing::SetArgPointee<4>(&m_passwordStruct), Return(0)));
+
+    m_groupStruct.gr_gid = kTestGroupId;
+    EXPECT_CALL(*m_linuxWrapperMock, getgrnam_r(testing::StrEq(kTestGroup), _, _, _, _))
+        .WillOnce(testing::DoAll(testing::SetArgPointee<4>(&m_groupStruct), Return(1)));
+
+    EXPECT_CALL(*m_linuxWrapperMock, chown(testing::StrEq(kSocketName), kTestOwnerId, kDontChangeGroup)).WillOnce(Return(0));
+}
+
+void SessionManagementServerTests::serverWillInitializeWithInvalidSocketOwnerAndGroup()
+{
+    m_passwordStruct.pw_uid = kTestOwnerId;
+    EXPECT_CALL(*m_linuxWrapperMock, getpwnam_r(testing::StrEq(kTestOwner), _, _, _, _))
+        .WillOnce(testing::DoAll(testing::SetArgPointee<4>(&m_passwordStruct), Return(1)));
+
+    m_groupStruct.gr_gid = kTestGroupId;
+    EXPECT_CALL(*m_linuxWrapperMock, getgrnam_r(testing::StrEq(kTestGroup), _, _, _, _))
+        .WillOnce(testing::DoAll(testing::SetArgPointee<4>(&m_groupStruct), Return(1)));
 }
 
 void SessionManagementServerTests::sendServerInitialize()
 {
-    EXPECT_CALL(*m_linuxWrapperMock, chmod(testing::StrEq(socketName), socketPermissions)).WillOnce(Return(0));
-    EXPECT_TRUE(m_sut->initialize(socketName, socketPermissions, socketOwner, socketGroup));
+    EXPECT_TRUE(m_sut->initialize(kSocketName, kSocketPermissions, kSocketOwnerEmpty, kSocketGroupEmpty));
+}
+
+void SessionManagementServerTests::sendServerInitializeWithTestSocketOwnerAndGroup()
+{
+    EXPECT_TRUE(m_sut->initialize(kSocketName, kSocketPermissions, kTestOwner, kTestGroup));
 }
 
 void SessionManagementServerTests::sendServerInitializeAndExpectFailure()
 {
-    EXPECT_FALSE(m_sut->initialize(socketName, socketPermissions, socketOwner, socketGroup));
-}
-
-void SessionManagementServerTests::testSocketOwnershipValidOwnerAndGroup()
-{
-    serverWillInitialize();
-    EXPECT_CALL(*m_linuxWrapperMock, chmod(testing::StrEq(socketName), socketPermissions)).WillOnce(Return(0));
-
-    struct passwd passwordStruct
-    {
-    };
-    passwordStruct.pw_uid = kTestOwnerId;
-    EXPECT_CALL(*m_linuxWrapperMock, getpwnam_r(testing::StrEq(kTestOwner), _, _, _, _))
-        .WillOnce(testing::DoAll(testing::SetArgPointee<4>(&passwordStruct), Return(0)));
-
-    struct group groupStruct
-    {
-    };
-    groupStruct.gr_gid = kTestGroupId;
-    EXPECT_CALL(*m_linuxWrapperMock, getgrnam_r(testing::StrEq(kTestGroup), _, _, _, _))
-        .WillOnce(testing::DoAll(testing::SetArgPointee<4>(&groupStruct), Return(0)));
-
-    EXPECT_CALL(*m_linuxWrapperMock, chown(testing::StrEq(socketName), kTestOwnerId, kTestGroupId)).WillOnce(Return(0));
-
-    EXPECT_TRUE(m_sut->initialize(socketName, socketPermissions, kTestOwner, kTestGroup));
-}
-
-void SessionManagementServerTests::testSocketOwnershipInvalidOwnerValidGroup()
-{
-    serverWillInitialize();
-    EXPECT_CALL(*m_linuxWrapperMock, chmod(testing::StrEq(socketName), socketPermissions)).WillOnce(Return(0));
-
-    struct passwd passwordStruct
-    {
-    };
-    passwordStruct.pw_uid = kTestOwnerId;
-    EXPECT_CALL(*m_linuxWrapperMock, getpwnam_r(testing::StrEq(kTestOwner), _, _, _, _))
-        .WillOnce(testing::DoAll(testing::SetArgPointee<4>(&passwordStruct), Return(1)));
-
-    struct group groupStruct
-    {
-    };
-    groupStruct.gr_gid = kTestGroupId;
-    EXPECT_CALL(*m_linuxWrapperMock, getgrnam_r(testing::StrEq(kTestGroup), _, _, _, _))
-        .WillOnce(testing::DoAll(testing::SetArgPointee<4>(&groupStruct), Return(0)));
-
-    EXPECT_CALL(*m_linuxWrapperMock, chown(testing::StrEq(socketName), kDontChangeOwner, kTestGroupId)).WillOnce(Return(0));
-
-    EXPECT_TRUE(m_sut->initialize(socketName, socketPermissions, kTestOwner, kTestGroup));
-}
-
-void SessionManagementServerTests::testSocketOwnershipValidOwnerInvalidGroup()
-{
-    serverWillInitialize();
-    EXPECT_CALL(*m_linuxWrapperMock, chmod(testing::StrEq(socketName), socketPermissions)).WillOnce(Return(0));
-
-    struct passwd passwordStruct
-    {
-    };
-    passwordStruct.pw_uid = kTestOwnerId;
-    EXPECT_CALL(*m_linuxWrapperMock, getpwnam_r(testing::StrEq(kTestOwner), _, _, _, _))
-        .WillOnce(testing::DoAll(testing::SetArgPointee<4>(&passwordStruct), Return(0)));
-
-    struct group groupStruct
-    {
-    };
-    groupStruct.gr_gid = kTestGroupId;
-    EXPECT_CALL(*m_linuxWrapperMock, getgrnam_r(testing::StrEq(kTestGroup), _, _, _, _))
-        .WillOnce(testing::DoAll(testing::SetArgPointee<4>(&groupStruct), Return(1)));
-
-    EXPECT_CALL(*m_linuxWrapperMock, chown(testing::StrEq(socketName), kTestOwnerId, kDontChangeGroup)).WillOnce(Return(0));
-
-    EXPECT_TRUE(m_sut->initialize(socketName, socketPermissions, kTestOwner, kTestGroup));
-}
-
-void SessionManagementServerTests::testSocketOwnershipInvalidOwnerAndGroup()
-{
-    serverWillInitialize();
-    EXPECT_CALL(*m_linuxWrapperMock, chmod(testing::StrEq(socketName), socketPermissions)).WillOnce(Return(0));
-
-    struct passwd passwordStruct
-    {
-    };
-    passwordStruct.pw_uid = kTestOwnerId;
-    EXPECT_CALL(*m_linuxWrapperMock, getpwnam_r(testing::StrEq(kTestOwner), _, _, _, _))
-        .WillOnce(testing::DoAll(testing::SetArgPointee<4>(&passwordStruct), Return(1)));
-
-    struct group groupStruct
-    {
-    };
-    groupStruct.gr_gid = kTestGroupId;
-    EXPECT_CALL(*m_linuxWrapperMock, getgrnam_r(testing::StrEq(kTestGroup), _, _, _, _))
-        .WillOnce(testing::DoAll(testing::SetArgPointee<4>(&groupStruct), Return(1)));
-
-    EXPECT_TRUE(m_sut->initialize(socketName, socketPermissions, kTestOwner, kTestGroup));
+    EXPECT_FALSE(m_sut->initialize(kSocketName, kSocketPermissions, kSocketOwnerEmpty, kSocketGroupEmpty));
 }
 
 void SessionManagementServerTests::sendServerStart()
@@ -314,5 +277,5 @@ void SessionManagementServerTests::sendDisconnectClient()
 
 void SessionManagementServerTests::sendSetLogLevels()
 {
-    m_sut->setLogLevels(defaultLogLevels, clientLogLevels, ipcLogLevels, commonLogLevels);
+    m_sut->setLogLevels(kDdefaultLogLevels, kClientLogLevels, kIpcLogLevels, kCommonLogLevels);
 }

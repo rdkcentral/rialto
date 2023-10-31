@@ -39,9 +39,9 @@ public:
     MOCK_METHOD(int, execve, (const char *pathname, char *const argv[], char *const envp[]), (const, override));
     MOCK_METHOD(pid_t, waitpid, (pid_t pid, int *wstatus, int options), (const, override));
     MOCK_METHOD(pid_t, getpid, (), (const, override));
-    MOCK_METHOD(int, getpwnam_r, (const char *name, struct passwd *pwd, char *buf, size_t buflen, struct passwd **result),
+    MOCK_METHOD(int, getpwnam_r, (const char *name, passwd *pwd, char *buf, size_t buflen, passwd **result),
                 (const, override));
-    MOCK_METHOD(int, getgrnam_r, (const char *name, struct group *grp, char *buf, size_t buflen, struct group **result),
+    MOCK_METHOD(int, getgrnam_r, (const char *name, group *grp, char *buf, size_t buflen, group **result),
                 (const, override));
     MOCK_METHOD(int, chmod, (const char *pathname, mode_t mode), (const, override));
     MOCK_METHOD(int, chown, (const char *pathname, uid_t owner, gid_t group), (const, override));
