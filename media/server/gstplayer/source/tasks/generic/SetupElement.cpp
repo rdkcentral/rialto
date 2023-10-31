@@ -99,6 +99,24 @@ void SetupElement::execute() const
         m_glibWrapper->gObjectSet(m_element, "disable-xrun", TRUE, nullptr);
     }
 
+    // auto vsink_factory = m_gstWrapper->gstElementFactoryFind("brcmvideosink");
+    // if (vsink_factory)
+    // {
+    //     RIALTO_SERVER_LOG_DEBUG("Inside vsink_factory if");
+    //     auto video_sink = m_gstWrapper->gstElementFactoryCreate(vsink_factory, nullptr);
+    //     if (video_sink)
+    //     {
+    //         RIALTO_SERVER_LOG_DEBUG("Inside video_sink if");
+    //         m_glibWrapper->gObjectSet(m_context.pipeline, "video-sink", video_sink, nullptr);
+    //     }
+    //     RIALTO_SERVER_LOG_DEBUG("Outside video_sink if");
+    // }
+    
+    // if (m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "brcmvideosink"))
+    // {
+    //     m_glibWrapper->gObjectSet(m_context.pipeline, "video-sink", m_element, nullptr);
+    // }
+    
     if (isVideoDecoder(*m_gstWrapper, m_element))
     {
         std::string underflowSignalName = getUnderflowSignalName(*m_glibWrapper, m_element);
@@ -117,7 +135,8 @@ void SetupElement::execute() const
                                           &m_player);
         }
     }
-
+    
+    // m_gstWrapper->gstObjectUnref(vsink_factory);
     m_gstWrapper->gstObjectUnref(m_element);
 }
 } // namespace firebolt::rialto::server::tasks::generic

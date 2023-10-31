@@ -215,6 +215,21 @@ void GstGenericPlayer::initMsePipeline()
     m_glibWrapper->gSignalConnect(m_context.pipeline, "deep-element-added",
                                   G_CALLBACK(&GstGenericPlayer::deepElementAdded), this);
 
+    RIALTO_SERVER_LOG_DEBUG("____________!!!!11 dafd");
+    auto vsink_factory = m_gstWrapper->gstElementFactoryFind("brcmvideosink");
+    if (vsink_factory) 
+    {
+        RIALTO_SERVER_LOG_DEBUG("Inside vsink_factory if");
+        auto video_sink = m_gstWrapper->gstElementFactoryCreate(vsink_factory, nullptr);
+        if (video_sink) 
+        {
+            RIALTO_SERVER_LOG_DEBUG("Inside video_sink if");
+            m_glibWrapper->gObjectSet(m_context.pipeline, "video-sink", video_sink, nullptr);
+        }
+        RIALTO_SERVER_LOG_DEBUG("Outside video_sink if");
+        m_gstWrapper->gstObjectUnref(vsink_factory);
+    } 
+
     // Set uri
     m_glibWrapper->gObjectSet(m_context.pipeline, "uri", "rialto://", nullptr);
 

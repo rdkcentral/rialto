@@ -310,6 +310,7 @@ void GenericTasksTestsBase::shouldSetupVideoElementOnly()
 {
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("westerossink"))).WillOnce(Return(false));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("amlhalasink"))).WillOnce(Return(false));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstElementFactoryFind("brcmvideosink")).WillOnce(Return(nullptr)); 
     expectSetupVideoElement();
 }
 
@@ -318,6 +319,7 @@ void GenericTasksTestsBase::shouldSetupVideoElementWesterossink()
     testContext->m_context.pendingGeometry = kRectangle;
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("westerossink"))).WillOnce(Return(true));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("amlhalasink"))).WillOnce(Return(false));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstElementFactoryFind("brcmvideosink")).WillOnce(Return(nullptr)); 
     EXPECT_CALL(testContext->m_gstPlayer, setWesterossinkRectangle());
     expectSetupVideoElement();
 }
@@ -326,6 +328,7 @@ void GenericTasksTestsBase::shouldSetupVideoElementAmlhalasink()
 {
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("westerossink"))).WillOnce(Return(false));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("amlhalasink"))).WillOnce(Return(true));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstElementFactoryFind("brcmvideosink")).WillOnce(Return(nullptr)); 
     EXPECT_CALL(*testContext->m_glibWrapper,
                 gObjectSetStub(G_OBJECT(&(testContext->m_element)), CharStrMatcher("wait-video")));
     EXPECT_CALL(*testContext->m_glibWrapper,
@@ -340,6 +343,7 @@ void GenericTasksTestsBase::shouldSetupVideoElementPendingGeometryNonWesterissin
     testContext->m_context.pendingGeometry = kRectangle;
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("westerossink"))).WillOnce(Return(false));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("amlhalasink"))).WillOnce(Return(false));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstElementFactoryFind("brcmvideosink")).WillOnce(Return(true));
     expectSetupVideoElement();
 }
 
