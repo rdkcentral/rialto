@@ -79,6 +79,11 @@ const rialto::servermanager::service::LoggingLevels &ConfigHelper::getLoggingLev
 void ConfigHelper::readConfigFile()
 {
 #ifdef RIALTO_ENABLE_CONFIG_FILE
+    if (!m_configReaderFactory)
+    {
+        RIALTO_SERVER_MANAGER_LOG_DEBUG("Config reader factory not present");
+        return;
+    }
     std::shared_ptr<IConfigReader> configReader = m_configReaderFactory->createConfigReader();
     if (!configReader || !configReader->read())
     {
