@@ -49,6 +49,34 @@ TEST_F(SessionManagementServerTests, shouldEstablishConnection)
     sendConnectClient();
 }
 
+TEST_F(SessionManagementServerTests, serverWillInitializeWithValidSocketOwnerAndGroup)
+{
+    serverWillInitialize();
+    serverWillInitializeWithValidSocketOwnerAndGroup();
+    sendServerInitializeWithTestSocketOwnerAndGroup();
+}
+
+TEST_F(SessionManagementServerTests, serverWillInitializeWithValidSocketOwnerAndInvalidGroup)
+{
+    serverWillInitialize();
+    serverWillInitializeWithValidSocketOwnerAndInvalidGroup();
+    sendServerInitializeWithTestSocketOwnerAndGroup();
+}
+
+TEST_F(SessionManagementServerTests, serverWillInitializeWithInvalidSocketOwnerAndValidGroup)
+{
+    serverWillInitialize();
+    serverWillInitializeWithInvalidSocketOwnerAndValidGroup();
+    sendServerInitializeWithTestSocketOwnerAndGroup();
+}
+
+TEST_F(SessionManagementServerTests, serverWillInitializeWithInvalidSocketOwnerAndGroup)
+{
+    serverWillInitialize();
+    serverWillInitializeWithInvalidSocketOwnerAndGroup();
+    sendServerInitializeWithTestSocketOwnerAndGroup();
+}
+
 TEST_F(SessionManagementServerTests, shouldDisconnectFromClient)
 {
     serverWillInitialize();

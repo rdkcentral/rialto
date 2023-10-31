@@ -157,6 +157,15 @@ set(SOCKET_PERMISSIONS_OWNER ${CMAKE_MATCH_1})
 set(SOCKET_PERMISSIONS_GROUP ${CMAKE_MATCH_2})
 set(SOCKET_PERMISSIONS_OTHER ${CMAKE_MATCH_3})
 
+# Empty strings for "owner" and "group" means that chown() won't be called. This will leave the created
+# socket being owned by the user executing the code (and the group would be their primary group)
+if (NOT SOCKET_OWNER)
+    set(SOCKET_OWNER "\"\"" )
+endif()
+if (NOT SOCKET_GROUP)
+    set(SOCKET_GROUP "\"\"" )
+endif()
+
 if (NOT NUM_OF_PRELOADED_SERVERS)
     set( NUM_OF_PRELOADED_SERVERS 0 )
 endif()

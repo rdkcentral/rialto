@@ -42,6 +42,8 @@ public:
     std::optional<std::chrono::milliseconds> getSessionServerStartupTimeout() override;
     std::optional<std::chrono::seconds> getHealthcheckInterval() override;
     std::optional<firebolt::rialto::common::SocketPermissions> getSocketPermissions() override;
+    std::optional<std::string> getSocketOwner() override;
+    std::optional<std::string> getSocketGroup() override;
     std::optional<unsigned int> getNumOfPreloadedServers() override;
     std::optional<rialto::servermanager::service::LoggingLevels> getLoggingLevels() override;
     std::optional<unsigned int> getNumOfPingsBeforeRecovery() override;
@@ -52,6 +54,8 @@ private:
     void parseSessionServerStartupTimeout(std::shared_ptr<IJsonValueWrapper> root);
     void parseHealthcheckInterval(std::shared_ptr<IJsonValueWrapper> root);
     void parseSocketPermissions(std::shared_ptr<IJsonValueWrapper> root);
+    void parseSocketOwner(std::shared_ptr<IJsonValueWrapper> root);
+    void parseSocketGroup(std::shared_ptr<IJsonValueWrapper> root);
     void parseNumOfPreloadedServers(std::shared_ptr<IJsonValueWrapper> root);
     void parseLogLevel(std::shared_ptr<IJsonValueWrapper> root);
     void parseNumOfPingsBeforeRecovery(std::shared_ptr<IJsonValueWrapper> root);
@@ -64,6 +68,8 @@ private:
     std::optional<std::chrono::milliseconds> m_sessionServerStartupTimeout;
     std::optional<std::chrono::seconds> m_healthcheckInterval;
     std::optional<firebolt::rialto::common::SocketPermissions> m_socketPermissions;
+    std::optional<std::string> m_socketOwner;
+    std::optional<std::string> m_socketGroup;
     std::optional<unsigned int> m_numOfPreloadedServers;
     std::optional<rialto::servermanager::service::LoggingLevels> m_loggingLevels;
     std::optional<unsigned int> m_numOfPingsBeforeRecovery;

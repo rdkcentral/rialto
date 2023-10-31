@@ -45,6 +45,10 @@ constexpr firebolt::rialto::common::MaxResourceCapabilitites maxResource{maxPlay
 constexpr RIALTO_DEBUG_LEVEL logLvl{RIALTO_DEBUG_LEVEL_DEFAULT};
 const std::string sessionManagementSocket{"/tmp/rialtosessionservermanagertests-0"};
 constexpr unsigned int sessionManagementSocketPermissions{0777};
+// Empty strings for kSocketOwner and kSocketGroup means that chown() won't be called. This will leave the created
+// socket being owned by the user executing the code (and the group would be their primary group)
+const std::string kSocketOwner{};
+const std::string kSocketGroup{};
 const std::string clientDisplayName{"westeros-rialto"};
 } // namespace
 
@@ -145,16 +149,19 @@ void SessionServerManagerTests::willInitialize()
 
 void SessionServerManagerTests::willFailToSetConfigurationWhenSessionManagementServerFailsToInit()
 {
-    EXPECT_CALL(m_sessionManagementServerMock, initialize(sessionManagementSocket, sessionManagementSocketPermissions))
+    EXPECT_CALL(m_sessionManagementServerMock,
+                initialize(sessionManagementSocket, sessionManagementSocketPermissions, kSocketOwner, kSocketGroup))
         .WillOnce(Return(false));
     EXPECT_TRUE(m_sut);
     EXPECT_FALSE(m_sut->setConfiguration(sessionManagementSocket, SessionServerState::INACTIVE, maxResource,
-                                         clientDisplayName, sessionManagementSocketPermissions));
+                                         clientDisplayName, sessionManagementSocketPermissions, kSocketOwner,
+                                         kSocketGroup));
 }
 
 void SessionServerManagerTests::willFailToSetConfigurationWhenSessionManagementServerFailsToSetInitialState()
 {
-    EXPECT_CALL(m_sessionManagementServerMock, initialize(sessionManagementSocket, sessionManagementSocketPermissions))
+    EXPECT_CALL(m_sessionManagementServerMock,
+                initialize(sessionManagementSocket, sessionManagementSocketPermissions, kSocketOwner, kSocketGroup))
         .WillOnce(Return(true));
     EXPECT_CALL(m_sessionManagementServerMock, start());
     EXPECT_CALL(m_playbackServiceMock, setMaxPlaybacks(maxPlaybacks));
@@ -166,12 +173,14 @@ void SessionServerManagerTests::willFailToSetConfigurationWhenSessionManagementS
         .WillOnce(Return(false));
     EXPECT_TRUE(m_sut);
     EXPECT_FALSE(m_sut->setConfiguration(sessionManagementSocket, SessionServerState::INACTIVE, maxResource,
-                                         clientDisplayName, sessionManagementSocketPermissions));
+                                         clientDisplayName, sessionManagementSocketPermissions, kSocketOwner,
+                                         kSocketGroup));
 }
 
 void SessionServerManagerTests::willSetConfiguration()
 {
-    EXPECT_CALL(m_sessionManagementServerMock, initialize(sessionManagementSocket, sessionManagementSocketPermissions))
+    EXPECT_CALL(m_sessionManagementServerMock,
+                initialize(sessionManagementSocket, sessionManagementSocketPermissions, kSocketOwner, kSocketGroup))
         .WillOnce(Return(true));
     EXPECT_CALL(m_sessionManagementServerMock, start());
     EXPECT_CALL(m_playbackServiceMock, setMaxPlaybacks(maxPlaybacks));
@@ -184,7 +193,8 @@ void SessionServerManagerTests::willSetConfiguration()
         .WillOnce(Return(true));
     EXPECT_TRUE(m_sut);
     EXPECT_TRUE(m_sut->setConfiguration(sessionManagementSocket, SessionServerState::INACTIVE, maxResource,
-                                        clientDisplayName, sessionManagementSocketPermissions));
+                                        clientDisplayName, sessionManagementSocketPermissions, kSocketOwner,
+                                        kSocketGroup));
 }
 
 void SessionServerManagerTests::willFailToSetUnsupportedState()

@@ -79,6 +79,8 @@ message Resources {
  * @param[in]  logLevels                    Initial log levels
  * @param[in]  clientDisplayName            Socket name that Rialto client should connect to
  * @param[in]  socketPermissions            Socket permissions that Rialto client should connect to
+ * @param[in]  socketOwner                  Socket file created with this owner
+ * @param[in]  socketGroup                  Socket file created with this group
  *
  */
 message SetConfigurationRequest {
@@ -88,6 +90,8 @@ message SetConfigurationRequest {
     optional LogLevels logLevels = 4;
     optional uint32 socketPermissions = 5;
     optional string clientDisplayName = 6;
+    optional string socketOwner = 7;
+    optional string socketGroup = 8;
 }
 message SetConfigurationResponse {
 }

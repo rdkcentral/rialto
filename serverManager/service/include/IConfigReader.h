@@ -39,6 +39,8 @@ public:
     virtual std::optional<std::chrono::milliseconds> getSessionServerStartupTimeout() = 0;
     virtual std::optional<std::chrono::seconds> getHealthcheckInterval() = 0;
     virtual std::optional<firebolt::rialto::common::SocketPermissions> getSocketPermissions() = 0;
+    virtual std::optional<std::string> getSocketOwner() = 0;
+    virtual std::optional<std::string> getSocketGroup() = 0;
     virtual std::optional<unsigned int> getNumOfPreloadedServers() = 0;
     virtual std::optional<rialto::servermanager::service::LoggingLevels> getLoggingLevels() = 0;
     virtual std::optional<unsigned int> getNumOfPingsBeforeRecovery() = 0;
