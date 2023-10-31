@@ -166,7 +166,7 @@ void SessionServerAppTests::willKillAppOnDestruction() const
 {
     auto killTimer{std::make_unique<StrictMock<firebolt::rialto::server::TimerMock>>()};
     EXPECT_CALL(m_timerMock, isActive()).WillOnce(Return(false));
-    EXPECT_CALL(m_linuxWrapperMock, kill(kPid, SIGTERM)).WillOnce(Return(0));
+    EXPECT_CALL(m_linuxWrapperMock, kill(kPid, SIGKILL)).WillOnce(Return(0));
     EXPECT_CALL(*killTimer, cancel());
     EXPECT_CALL(*m_timerFactoryMock, createTimer(kKillTimeout, _, firebolt::rialto::common::TimerType::ONE_SHOT))
         .WillOnce(DoAll(InvokeArgument<1>(), Return(ByMove(std::move(killTimer)))));

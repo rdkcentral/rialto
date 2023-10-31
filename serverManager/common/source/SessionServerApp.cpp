@@ -262,7 +262,7 @@ void SessionServerApp::kill() const
 {
     if (m_pid > 0)
     {
-        m_linuxWrapper->kill(m_pid, SIGTERM);
+        m_linuxWrapper->kill(m_pid, SIGKILL);
     }
 }
 
