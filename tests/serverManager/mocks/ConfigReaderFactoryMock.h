@@ -22,6 +22,7 @@
 
 #include "IConfigReaderFactory.h"
 #include <gmock/gmock.h>
+#include <memory>
 
 namespace rialto::servermanager::service
 {

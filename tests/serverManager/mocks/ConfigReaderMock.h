@@ -21,6 +21,8 @@
 #define RIALTO_SERVERMANAGER_SERVICE_CONFIG_READER_MOCK_H_
 
 #include "IConfigReader.h"
+#include <list>
+#include <string>
 
 namespace rialto::servermanager::service
 {
