@@ -25,6 +25,7 @@
 #include "SessionServerCommon.h"
 #include <chrono>
 #include <list>
+#include <memory>
 #include <string>
 
 namespace rialto::servermanager::service
