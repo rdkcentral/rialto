@@ -1,0 +1,98 @@
+# If not stated otherwise in this file or this component's LICENSE file the
+# following copyright and licenses apply:
+#
+# Copyright 2023 Sky UK
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Define the name of the workflow
+name: Rialto GStreamer and OCDM Tests
+
+# Define the events that trigger the workflow
+on:
+  # pull_request:
+  #   branches: [ "master", "rdkcentral:master" ]
+
+  push:
+    branches: [ "A_Rialto_390" ]
+
+  workflow_dispatch:
+
+# Define the jobs to be executed in the workflow
+jobs:
+  # Main job for building and testing
+  build-test:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Set up Python environment
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      # Install dependencies and build GStreamer library
+      - name: Build gstreamer library
+        run: |
+          sudo apt-get update
+          sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
+
+      # Install dependencies and build lcov library
+      - name: Build lcov library
+        run: |
+          sudo apt-get install libjson-perl libperlio-gzip-perl perl libgd-gd2-perl libcapture-tiny-perl libdatetime-perl
+          wget https://github.com/linux-test-project/lcov/releases/download/v2.0/lcov-2.0.tar.gz
+          tar -xf lcov-2.0.tar.gz
+          cd lcov-2.0
+          sudo make install
+
+      # Trigger and run tests for rialto-gstreamer
+      - name: Trigger and run rialto-gstreamer tests
+        run: |
+          python build_ut.py -c -xml -f -cov
+
+  # Job to trigger and run tests for rialto-gstreamer separately
+  trigger-gstreamer-tests:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout rialto-gstreamer repository
+      - name: Trigger rialto-gstreamer tests
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ github.repository }}
+          ref: ${{ github.event.before }}
+      # Run tests for rialto-gstreamer
+      - name: Run rialto-gstreamer tests
+        run: |
+          python build_ut.py -c -xml -f -cov
+
+  # Job to trigger and run tests for rialto-ocdm separately
+  trigger-ocdm-tests:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout rialto-ocdm repository
+      - name: Trigger rialto-ocdm tests
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ github.repository }}
+          ref: ${{ github.event.before }}
+      # Run tests for rialto-ocdm
+      - name: Run rialto-ocdm tests
+        run: |
+          python build_ut.py -c -xml -f -cov
