@@ -35,7 +35,8 @@ public:
     explicit SessionServerAppFactory(const std::list<std::string> &environmentVariables,
                                      const std::string &sessionServerPath,
                                      std::chrono::milliseconds sessionServerStartupTimeout,
-                                     unsigned int socketPermissions);
+                                     unsigned int socketPermissions, const std::string &socketOwner,
+                                     const std::string &socketGroup);
     ~SessionServerAppFactory() override = default;
 
     std::unique_ptr<ISessionServerApp> create(const std::string &appName,
@@ -49,6 +50,8 @@ private:
     const std::string m_kSessionServerPath;
     const std::chrono::milliseconds m_kSessionServerStartupTimeout;
     const unsigned int m_kSocketPermissions;
+    const std::string m_kSocketOwner;
+    const std::string m_kSocketGroup;
     std::shared_ptr<firebolt::rialto::common::ILinuxWrapperFactory> m_linuxWrapperFactory;
 };
 } // namespace rialto::servermanager::common

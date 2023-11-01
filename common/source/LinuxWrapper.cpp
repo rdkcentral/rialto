@@ -18,6 +18,7 @@
  */
 
 #include "LinuxWrapper.h"
+#include <sys/stat.h>
 
 namespace firebolt::rialto::common
 {
@@ -89,5 +90,27 @@ pid_t LinuxWrapper::waitpid(pid_t pid, int *wstatus, int options) const
 pid_t LinuxWrapper::getpid() const
 {
     return ::getpid();
+}
+
+int LinuxWrapper::getpwnam_r( // NOLINT(build/function_format)
+    const char *name, passwd *pwd, char *buf, size_t buflen, passwd **result) const
+{
+    return ::getpwnam_r(name, pwd, buf, buflen, result);
+}
+
+int LinuxWrapper::getgrnam_r( // NOLINT(build/function_format)
+    const char *name, group *grp, char *buf, size_t buflen, group **result) const
+{
+    return ::getgrnam_r(name, grp, buf, buflen, result);
+}
+
+int LinuxWrapper::chmod(const char *pathname, mode_t mode) const
+{
+    return ::chmod(pathname, mode);
+}
+
+int LinuxWrapper::chown(const char *pathname, uid_t owner, gid_t group) const
+{
+    return ::chown(pathname, owner, group);
 }
 } // namespace firebolt::rialto::common

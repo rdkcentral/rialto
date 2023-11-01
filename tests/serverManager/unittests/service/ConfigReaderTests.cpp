@@ -74,6 +74,25 @@ public:
         EXPECT_CALL(*m_objectJsonValueMock, asUInt()).WillOnce(Return(expectedValue));
     }
 
+    void expectNotString(const std::string &key)
+    {
+        EXPECT_CALL(*m_rootJsonValueMock, isMember(key)).WillOnce(Return(true));
+        EXPECT_CALL(*m_rootJsonValueMock, isMember(StrNe(key))).WillRepeatedly(Return(false));
+
+        EXPECT_CALL(*m_rootJsonValueMock, at(key)).WillRepeatedly(Return(m_objectJsonValueMock));
+        EXPECT_CALL(*m_objectJsonValueMock, isString()).WillOnce(Return(false));
+    }
+
+    void expectReturnString(const std::string &key, const std::string &expectedValue)
+    {
+        EXPECT_CALL(*m_rootJsonValueMock, isMember(key)).WillOnce(Return(true));
+        EXPECT_CALL(*m_rootJsonValueMock, isMember(StrNe(key))).WillRepeatedly(Return(false));
+
+        EXPECT_CALL(*m_rootJsonValueMock, at(key)).WillRepeatedly(Return(m_objectJsonValueMock));
+        EXPECT_CALL(*m_objectJsonValueMock, isString()).WillOnce(Return(true));
+        EXPECT_CALL(*m_objectJsonValueMock, asString()).WillOnce(Return(expectedValue));
+    }
+
     ~ConfigReaderTests() override = default;
 
 protected:
@@ -105,10 +124,7 @@ TEST_F(ConfigReaderTests, fileParsingFailed)
 
 TEST_F(ConfigReaderTests, thereWillBeNothing)
 {
-    EXPECT_CALL(*m_fileReaderMock, isOpen()).WillOnce(Return(true));
-    EXPECT_CALL(*m_fileReaderMock, get()).WillOnce(ReturnRef(m_jsonFile));
-    EXPECT_CALL(*m_jsonCppWrapperMock, parseFromStream(_, _, _, _))
-        .WillOnce(DoAll(SetArgReferee<2>(m_rootJsonValueMock), Return(true)));
+    expectSuccessfulParsing();
 
     EXPECT_CALL(*m_rootJsonValueMock, isMember(_)).WillRepeatedly(Return(false));
 
@@ -118,15 +134,14 @@ TEST_F(ConfigReaderTests, thereWillBeNothing)
     EXPECT_EQ(m_sut->getSessionServerStartupTimeout().has_value(), false);
     EXPECT_EQ(m_sut->getHealthcheckInterval().has_value(), false);
     EXPECT_EQ(m_sut->getSocketPermissions().has_value(), false);
+    EXPECT_EQ(m_sut->getSocketOwner().has_value(), false);
+    EXPECT_EQ(m_sut->getSocketGroup().has_value(), false);
     EXPECT_EQ(m_sut->getNumOfPreloadedServers().has_value(), false);
 }
 
 TEST_F(ConfigReaderTests, envVariablesNotArray)
 {
-    EXPECT_CALL(*m_fileReaderMock, isOpen()).WillOnce(Return(true));
-    EXPECT_CALL(*m_fileReaderMock, get()).WillOnce(ReturnRef(m_jsonFile));
-    EXPECT_CALL(*m_jsonCppWrapperMock, parseFromStream(_, _, _, _))
-        .WillOnce(DoAll(SetArgReferee<2>(m_rootJsonValueMock), Return(true)));
+    expectSuccessfulParsing();
 
     EXPECT_CALL(*m_rootJsonValueMock, isMember("environment_variables")).WillOnce(Return(true));
     EXPECT_CALL(*m_rootJsonValueMock, at("environment_variables")).WillOnce(Return(m_objectJsonValueMock));
@@ -140,10 +155,7 @@ TEST_F(ConfigReaderTests, envVariablesNotArray)
 
 TEST_F(ConfigReaderTests, envVariablesEmptyArray)
 {
-    EXPECT_CALL(*m_fileReaderMock, isOpen()).WillOnce(Return(true));
-    EXPECT_CALL(*m_fileReaderMock, get()).WillOnce(ReturnRef(m_jsonFile));
-    EXPECT_CALL(*m_jsonCppWrapperMock, parseFromStream(_, _, _, _))
-        .WillOnce(DoAll(SetArgReferee<2>(m_rootJsonValueMock), Return(true)));
+    expectSuccessfulParsing();
 
     EXPECT_CALL(*m_rootJsonValueMock, isMember("environment_variables")).WillOnce(Return(true));
     EXPECT_CALL(*m_rootJsonValueMock, at("environment_variables")).WillRepeatedly(Return(m_objectJsonValueMock));
@@ -161,10 +173,7 @@ TEST_F(ConfigReaderTests, envVariablesOneElementArrayNotString)
     std::shared_ptr<StrictMock<JsonValueWrapperMock>> object1JsonValueMock =
         std::make_shared<StrictMock<JsonValueWrapperMock>>();
 
-    EXPECT_CALL(*m_fileReaderMock, isOpen()).WillOnce(Return(true));
-    EXPECT_CALL(*m_fileReaderMock, get()).WillOnce(ReturnRef(m_jsonFile));
-    EXPECT_CALL(*m_jsonCppWrapperMock, parseFromStream(_, _, _, _))
-        .WillOnce(DoAll(SetArgReferee<2>(m_rootJsonValueMock), Return(true)));
+    expectSuccessfulParsing();
 
     EXPECT_CALL(*m_rootJsonValueMock, isMember("environment_variables")).WillOnce(Return(true));
     EXPECT_CALL(*m_rootJsonValueMock, at("environment_variables")).WillRepeatedly(Return(m_objectJsonValueMock));
@@ -186,10 +195,7 @@ TEST_F(ConfigReaderTests, envVariablesMultipleElementArray)
     std::shared_ptr<StrictMock<JsonValueWrapperMock>> object2JsonValueMock =
         std::make_shared<StrictMock<JsonValueWrapperMock>>();
 
-    EXPECT_CALL(*m_fileReaderMock, isOpen()).WillOnce(Return(true));
-    EXPECT_CALL(*m_fileReaderMock, get()).WillOnce(ReturnRef(m_jsonFile));
-    EXPECT_CALL(*m_jsonCppWrapperMock, parseFromStream(_, _, _, _))
-        .WillOnce(DoAll(SetArgReferee<2>(m_rootJsonValueMock), Return(true)));
+    expectSuccessfulParsing();
 
     EXPECT_CALL(*m_rootJsonValueMock, isMember("environment_variables")).WillOnce(Return(true));
     EXPECT_CALL(*m_rootJsonValueMock, at("environment_variables")).WillRepeatedly(Return(m_objectJsonValueMock));
@@ -210,16 +216,8 @@ TEST_F(ConfigReaderTests, envVariablesMultipleElementArray)
 
 TEST_F(ConfigReaderTests, sessionServerPathNotString)
 {
-    EXPECT_CALL(*m_fileReaderMock, isOpen()).WillOnce(Return(true));
-    EXPECT_CALL(*m_fileReaderMock, get()).WillOnce(ReturnRef(m_jsonFile));
-    EXPECT_CALL(*m_jsonCppWrapperMock, parseFromStream(_, _, _, _))
-        .WillOnce(DoAll(SetArgReferee<2>(m_rootJsonValueMock), Return(true)));
-
-    EXPECT_CALL(*m_rootJsonValueMock, isMember("session_server_path")).WillOnce(Return(true));
-    EXPECT_CALL(*m_rootJsonValueMock, isMember(StrNe("session_server_path"))).WillRepeatedly(Return(false));
-
-    EXPECT_CALL(*m_rootJsonValueMock, at("session_server_path")).WillRepeatedly(Return(m_objectJsonValueMock));
-    EXPECT_CALL(*m_objectJsonValueMock, isString()).WillOnce(Return(false));
+    expectSuccessfulParsing();
+    expectNotString("session_server_path");
 
     EXPECT_TRUE(m_sut->read());
     EXPECT_EQ(m_sut->getSessionServerPath().has_value(), false);
@@ -227,17 +225,8 @@ TEST_F(ConfigReaderTests, sessionServerPathNotString)
 
 TEST_F(ConfigReaderTests, sessionServerPathExists)
 {
-    EXPECT_CALL(*m_fileReaderMock, isOpen()).WillOnce(Return(true));
-    EXPECT_CALL(*m_fileReaderMock, get()).WillOnce(ReturnRef(m_jsonFile));
-    EXPECT_CALL(*m_jsonCppWrapperMock, parseFromStream(_, _, _, _))
-        .WillOnce(DoAll(SetArgReferee<2>(m_rootJsonValueMock), Return(true)));
-
-    EXPECT_CALL(*m_rootJsonValueMock, isMember("session_server_path")).WillOnce(Return(true));
-    EXPECT_CALL(*m_rootJsonValueMock, isMember(StrNe("session_server_path"))).WillRepeatedly(Return(false));
-
-    EXPECT_CALL(*m_rootJsonValueMock, at("session_server_path")).WillRepeatedly(Return(m_objectJsonValueMock));
-    EXPECT_CALL(*m_objectJsonValueMock, isString()).WillOnce(Return(true));
-    EXPECT_CALL(*m_objectJsonValueMock, asString()).WillOnce(Return("/usr/bin/RialtoServer"));
+    expectSuccessfulParsing();
+    expectReturnString("session_server_path", "/usr/bin/RialtoServer");
 
     EXPECT_TRUE(m_sut->read());
     EXPECT_EQ(m_sut->getSessionServerPath(), "/usr/bin/RialtoServer");
@@ -298,6 +287,40 @@ TEST_F(ConfigReaderTests, socketPermissionsExists)
     EXPECT_EQ(m_sut->getSocketPermissions().value().ownerPermissions, expectedPermissions.ownerPermissions);
     EXPECT_EQ(m_sut->getSocketPermissions().value().groupPermissions, expectedPermissions.groupPermissions);
     EXPECT_EQ(m_sut->getSocketPermissions().value().otherPermissions, expectedPermissions.otherPermissions);
+}
+
+TEST_F(ConfigReaderTests, socketOwnerNotString)
+{
+    expectSuccessfulParsing();
+    expectNotString("socket_owner");
+    EXPECT_TRUE(m_sut->read());
+    EXPECT_EQ(m_sut->getSocketOwner().has_value(), false);
+}
+
+TEST_F(ConfigReaderTests, socketOwnerExists)
+{
+    const char *kTestValue = "root";
+    expectSuccessfulParsing();
+    expectReturnString("socket_owner", kTestValue);
+    EXPECT_TRUE(m_sut->read());
+    EXPECT_EQ(m_sut->getSocketOwner().value(), kTestValue);
+}
+
+TEST_F(ConfigReaderTests, socketGroupNotString)
+{
+    expectSuccessfulParsing();
+    expectNotString("socket_group");
+    EXPECT_TRUE(m_sut->read());
+    EXPECT_EQ(m_sut->getSocketGroup().has_value(), false);
+}
+
+TEST_F(ConfigReaderTests, socketGroupExists)
+{
+    const char *kTestValue = "root";
+    expectSuccessfulParsing();
+    expectReturnString("socket_group", kTestValue);
+    EXPECT_TRUE(m_sut->read());
+    EXPECT_EQ(m_sut->getSocketGroup().value(), kTestValue);
 }
 
 TEST_F(ConfigReaderTests, numOfPreloadedServersNotUint)
