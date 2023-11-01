@@ -53,25 +53,11 @@ jobs:
           tar -xf lcov-2.0.tar.gz
           cd lcov-2.0
           sudo make install
-
-  # Job to trigger and run tests for rialto-gstreamer separately
-  trigger-gstreamer-tests:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Use install-dependencies job
-        uses: ./.github/actions/install-dependencies.yml
-
+          
       # Add other steps specific to the trigger-gstreamer-tests job here
       - name: Run rialto-gstreamer tests
         run: |
           python rialto-gstreamer/build_ut.py -c -xml -f -cov
-
-  # Job to trigger and run tests for rialto-ocdm separately
-  trigger-ocdm-tests:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Use install-dependencies job
-        uses: ./.github/actions/install-dependencies.yml
 
       # Add other steps specific to the trigger-ocdm-tests job here
       - name: Run rialto-ocdm tests
