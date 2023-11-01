@@ -200,7 +200,7 @@ GstGenericPlayer::~GstGenericPlayer()
 void GstGenericPlayer::initMsePipeline()
 {
     // Make playbin
-    m_context.pipeline = m_gstWrapper->gstElementFactoryMake("playbin", "media_pipeline");
+    m_context.pipeline = m_gstWrapper->gstElementFactoryMake("playbin3", "media_pipeline");
     // Set pipeline flags
     unsigned flagAudio = getGstPlayFlag("audio");
     unsigned flagVideo = getGstPlayFlag("video");
