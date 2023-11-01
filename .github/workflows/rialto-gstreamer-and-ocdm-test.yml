@@ -20,9 +20,8 @@ name: Rialto GStreamer and OCDM Tests
 
 # Define the events that trigger the workflow
 on:
-  # pull_request:
-  #   branches: [ "master", "rdkcentral:master" ]
-
+  pull_request:
+    branches: [ "master", "rdkcentral:master" ]
   push:
     branches: [ "A_Rialto_390" ]
 
