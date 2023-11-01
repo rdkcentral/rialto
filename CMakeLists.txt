@@ -133,6 +133,51 @@ find_package( Protobuf REQUIRED )
 option(ENABLE_SERVER "Enable building RialtoServer" ON)
 option(ENABLE_SERVER_MANAGER "Enable building RialtoServerManagerSim" ON)
 
+if ( NOT ENVIRONMENT_VARIABLES)
+    set( ENVIRONMENT_VARIABLES "\"XDG_RUNTIME_DIR=/tmp\",\"WAYLAND_DISPLAY=westeros-rialto\",\"RIALTO_SINKS_RANK=0\",\"GST_REGISTRY=/tmp/rialto-server-gstreamer-cache.bin\",\"WESTEROS_SINK_USE_ESSRMGR=1\"" )
+endif()
+
+if (NOT SESSION_SERVER_PATH)
+    set( SESSION_SERVER_PATH "\"/usr/bin/RialtoServer\"" )
+endif()
+
+if (NOT STARTUP_TIMEOUT_MS)
+    set( STARTUP_TIMEOUT_MS 0 )
+endif()
+
+if (NOT HEALTHCHECK_INTERVAL_S)
+    set( HEALTHCHECK_INTERVAL_S 5 )
+endif()
+
+if (NOT SOCKET_PERMISSIONS)
+    set( SOCKET_PERMISSIONS 666 )
+endif()
+string(REGEX MATCH "^([0-9]+)([0-9]+)([0-9]+)" PERMISSIONS_MATCH ${SOCKET_PERMISSIONS})
+set(SOCKET_PERMISSIONS_OWNER ${CMAKE_MATCH_1})
+set(SOCKET_PERMISSIONS_GROUP ${CMAKE_MATCH_2})
+set(SOCKET_PERMISSIONS_OTHER ${CMAKE_MATCH_3})
+
+# Empty strings for "owner" and "group" means that chown() won't be called. This will leave the created
+# socket being owned by the user executing the code (and the group would be their primary group)
+if (NOT SOCKET_OWNER)
+    set(SOCKET_OWNER "\"\"" )
+endif()
+if (NOT SOCKET_GROUP)
+    set(SOCKET_GROUP "\"\"" )
+endif()
+
+if (NOT NUM_OF_PRELOADED_SERVERS)
+    set( NUM_OF_PRELOADED_SERVERS 0 )
+endif()
+
+if (NOT LOG_LEVEL)
+    set( LOG_LEVEL 3 )
+endif()
+
+if (NOT NUM_OF_PINGS_BEFORE_RECOVERY)
+    set( NUM_OF_PINGS_BEFORE_RECOVERY 3 )
+endif()
+
 if( NATIVE_BUILD )
     add_subdirectory( stubs/rdk_gstreamer_utils )
     add_subdirectory( stubs/opencdm )

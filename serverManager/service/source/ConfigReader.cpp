@@ -50,6 +50,8 @@ bool ConfigReader::read()
     parseSessionServerStartupTimeout(root);
     parseHealthcheckInterval(root);
     parseSocketPermissions(root);
+    parseSocketOwner(root);
+    parseSocketGroup(root);
     parseNumOfPreloadedServers(root);
     parseLogLevel(root);
     parseNumOfPingsBeforeRecovery(root);
@@ -108,6 +110,24 @@ void ConfigReader::parseSocketPermissions(std::shared_ptr<IJsonValueWrapper> roo
         socketPermissions.groupPermissions = (permissions / 10) % 10;
         socketPermissions.otherPermissions = (permissions) % 10;
         m_socketPermissions = socketPermissions;
+    }
+}
+
+void ConfigReader::parseSocketOwner(std::shared_ptr<IJsonValueWrapper> root)
+{
+    const char *kFieldString = "socket_owner";
+    if (root->isMember(kFieldString) && root->at(kFieldString)->isString())
+    {
+        m_socketOwner = root->at(kFieldString)->asString();
+    }
+}
+
+void ConfigReader::parseSocketGroup(std::shared_ptr<IJsonValueWrapper> root)
+{
+    const char *kFieldString = "socket_group";
+    if (root->isMember(kFieldString) && root->at(kFieldString)->isString())
+    {
+        m_socketGroup = root->at(kFieldString)->asString();
     }
 }
 
@@ -185,6 +205,16 @@ std::optional<std::chrono::seconds> ConfigReader::getHealthcheckInterval()
 std::optional<firebolt::rialto::common::SocketPermissions> ConfigReader::getSocketPermissions()
 {
     return m_socketPermissions;
+}
+
+std::optional<std::string> ConfigReader::getSocketOwner()
+{
+    return m_socketOwner;
+}
+
+std::optional<std::string> ConfigReader::getSocketGroup()
+{
+    return m_socketGroup;
 }
 
 std::optional<unsigned int> ConfigReader::getNumOfPreloadedServers()

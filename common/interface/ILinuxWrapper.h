@@ -22,7 +22,9 @@
 
 #include <fcntl.h>
 #include <functional>
+#include <grp.h>
 #include <memory>
+#include <pwd.h>
 #include <signal.h>
 #include <sys/socket.h>
 #include <sys/wait.h>
@@ -173,6 +175,53 @@ public:
      * @retval on success, returns the process ID of the child whose state has changed. On error, -1 is returned.
      */
     virtual pid_t getpid() const = 0;
+
+    /**
+     * @brief Get password file entry
+     *
+     * @param[in]  name    : The username
+     * @param[in] pwd      : The function uses this memory as workspace
+     * @param[in] buf      : The function uses this memory as workspace
+     * @param[in] buflen   : The size of buf
+     * @param[out] result  : Returns a pointer on success
+     *
+     * @retval on success returns 0
+     */
+    virtual int getpwnam_r(const char *name, passwd *pwd, char *buf, size_t buflen, passwd **result) const = 0;
+
+    /**
+     * @brief Get group file entry
+     *
+     * @param[in]  name    : The group name
+     * @param[in] grp      : The function uses this memory as workspace
+     * @param[in] buf      : The function uses this memory as workspace
+     * @param[in] buflen   : The size of buf
+     * @param[out] result  : Returns a pointer on success
+     *
+     * @retval on success returns 0
+     */
+    virtual int getgrnam_r(const char *name, group *grp, char *buf, size_t buflen, group **result) const = 0;
+
+    /**
+     * @brief Change permissions of a file
+     *
+     * @param[in]  pathname     : The pathname of the file
+     * @param[in] mode : The desired permissions for the file
+     *
+     * @retval on success returns 0
+     */
+    virtual int chmod(const char *pathname, mode_t mode) const = 0;
+
+    /**
+     * @brief Change ownership of a file
+     *
+     * @param[in]  pathname     : The pathname of the file
+     * @param[in] owner : The desired owner
+     * @param[in] group : The desired group
+     *
+     * @retval on success returns 0
+     */
+    virtual int chown(const char *pathname, uid_t owner, gid_t group) const = 0;
 };
 } // namespace firebolt::rialto::common
 

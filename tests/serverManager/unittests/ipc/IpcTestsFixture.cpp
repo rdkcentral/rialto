@@ -135,8 +135,12 @@ bool IpcTests::triggerPerformSetConfiguration()
     const std::string clientSocketName{"westeros-rialto"};
     constexpr firebolt::rialto::common::MaxResourceCapabilitites maxResource{2, 1};
     constexpr unsigned int kSocketPermissions{0777};
+    // Empty strings for kSocketOwner and kSocketGroup means that chown() won't be called. This will leave the created
+    // socket being owned by the user executing the code (and the group would be their primary group)
+    const std::string kSocketOwner{};
+    const std::string kSocketGroup{};
     return m_sut->performSetConfiguration(kServerId, initialState, socketName, clientSocketName, maxResource,
-                                          kSocketPermissions);
+                                          kSocketPermissions, kSocketOwner, kSocketGroup);
 }
 
 bool IpcTests::triggerPerformPing()

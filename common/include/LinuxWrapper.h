@@ -51,6 +51,10 @@ public:
     int execve(const char *pathname, char *const argv[], char *const envp[]) const override;
     pid_t waitpid(pid_t pid, int *wstatus, int options) const override;
     pid_t getpid() const override;
+    int getpwnam_r(const char *name, passwd *pwd, char *buf, size_t buflen, passwd **result) const override;
+    int getgrnam_r(const char *name, group *grp, char *buf, size_t buflen, group **result) const override;
+    int chmod(const char *pathname, mode_t mode) const override;
+    int chown(const char *pathname, uid_t owner, gid_t group) const override;
 };
 } // namespace firebolt::rialto::common
 

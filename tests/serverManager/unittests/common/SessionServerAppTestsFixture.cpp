@@ -30,6 +30,10 @@ const std::string kSessionServerPath{"/usr/bin/RialtoServer"};
 constexpr std::chrono::milliseconds kSessionServerStartupTimeout{100};
 constexpr std::chrono::milliseconds kKillTimeout{1000};
 constexpr unsigned int kSocketPermissions{0777};
+// Empty strings for kSocketOwner and kSocketGroup means that chown() won't be called. This will leave the created
+// socket being owned by the user executing the code (and the group would be their primary group)
+const std::string kSocketOwner{};
+const std::string kSocketGroup{};
 const std::string kAppName{"YouTube"};
 constexpr auto kInitialState{firebolt::rialto::common::SessionServerState::ACTIVE};
 constexpr int kMaxPlaybackSessions{2};
@@ -61,7 +65,8 @@ void SessionServerAppTests::createPreloadedAppSut()
                                                                               m_sessionServerAppManagerMock,
                                                                               kEnvironmentVariables, kSessionServerPath,
                                                                               kSessionServerStartupTimeout,
-                                                                              kSocketPermissions);
+                                                                              kSocketPermissions, kSocketOwner,
+                                                                              kSocketGroup);
     ASSERT_TRUE(m_sut);
     EXPECT_TRUE(m_sut->isPreloaded());
     EXPECT_EQ(kSocketPermissions, m_sut->getSessionManagementSocketPermissions());
@@ -82,7 +87,8 @@ void SessionServerAppTests::createAppSut(const firebolt::rialto::common::AppConf
                                                                               kEnvironmentVariablesWithLogPath,
                                                                               kSessionServerPath,
                                                                               kSessionServerStartupTimeout,
-                                                                              kSocketPermissions);
+                                                                              kSocketPermissions, kSocketOwner,
+                                                                              kSocketGroup);
     ASSERT_TRUE(m_sut);
     EXPECT_FALSE(m_sut->isPreloaded());
     EXPECT_EQ(kSocketPermissions, m_sut->getSessionManagementSocketPermissions());
@@ -102,7 +108,8 @@ void SessionServerAppTests::createAppSutWithDisabledTimer(const firebolt::rialto
                                                                               kEnvironmentVariablesWithLogPath,
                                                                               kSessionServerPath,
                                                                               std::chrono::milliseconds{0},
-                                                                              kSocketPermissions);
+                                                                              kSocketPermissions, kSocketOwner,
+                                                                              kSocketGroup);
     ASSERT_TRUE(m_sut);
     EXPECT_FALSE(m_sut->isPreloaded());
     EXPECT_EQ(kSocketPermissions, m_sut->getSessionManagementSocketPermissions());
@@ -166,7 +173,7 @@ void SessionServerAppTests::willKillAppOnDestruction() const
 {
     auto killTimer{std::make_unique<StrictMock<firebolt::rialto::server::TimerMock>>()};
     EXPECT_CALL(m_timerMock, isActive()).WillOnce(Return(false));
-    EXPECT_CALL(m_linuxWrapperMock, kill(kPid, SIGTERM)).WillOnce(Return(0));
+    EXPECT_CALL(m_linuxWrapperMock, kill(kPid, SIGKILL)).WillOnce(Return(0));
     EXPECT_CALL(*killTimer, cancel());
     EXPECT_CALL(*m_timerFactoryMock, createTimer(kKillTimeout, _, firebolt::rialto::common::TimerType::ONE_SHOT))
         .WillOnce(DoAll(InvokeArgument<1>(), Return(ByMove(std::move(killTimer)))));

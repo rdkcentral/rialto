@@ -45,6 +45,12 @@ unsigned int convertSocketPermissions(firebolt::rialto::common::SocketPermission
 
 namespace rialto::servermanager::service
 {
+std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserver> &stateObserver)
+{
+    firebolt::rialto::common::ServerManagerConfig config;
+    return create(stateObserver, config);
+}
+
 std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserver> &stateObserver,
                                               const firebolt::rialto::common::ServerManagerConfig &config)
 {
@@ -53,6 +59,8 @@ std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserv
     std::chrono::milliseconds sessionServerStartupTimeout = config.sessionServerStartupTimeout;
     std::chrono::seconds healthcheckInterval = config.healthcheckInterval;
     firebolt::rialto::common::SocketPermissions socketPermissions = config.sessionManagementSocketPermissions;
+    std::string socketOwner = config.sessionManagementSocketPermissions.owner;
+    std::string socketGroup = config.sessionManagementSocketPermissions.group;
     unsigned int numOfPreloadedServers = config.numOfPreloadedServers;
     unsigned int numOfFailedPingsBeforeRecovery = config.numOfFailedPingsBeforeRecovery;
 
@@ -76,6 +84,12 @@ std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserv
     if (configReader->getSocketPermissions())
         socketPermissions = configReader->getSocketPermissions().value();
 
+    if (configReader->getSocketOwner())
+        socketOwner = configReader->getSocketOwner().value();
+
+    if (configReader->getSocketGroup())
+        socketGroup = configReader->getSocketGroup().value();
+
     if (configReader->getNumOfPreloadedServers())
         numOfPreloadedServers = configReader->getNumOfPreloadedServers().value();
 
@@ -89,8 +103,8 @@ std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserv
                                                                                 sessionServerStartupTimeout,
                                                                                 healthcheckInterval,
                                                                                 numOfFailedPingsBeforeRecovery,
-                                                                                convertSocketPermissions(
-                                                                                    socketPermissions)),
+                                                                                convertSocketPermissions(socketPermissions),
+                                                                                socketOwner, socketGroup),
                                                numOfPreloadedServers);
 
 #ifdef RIALTO_ENABLE_CONFIG_FILE
