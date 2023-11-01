@@ -27,26 +27,14 @@ on:
 
   workflow_dispatch:
 
-# Define reusable jobs
+# Define the jobs to be executed in the workflow
 jobs:
   # Job for installing dependencies and building libraries
   install-dependencies:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout main repository
-        uses: actions/checkout@v4
-
-      - name: Checkout rialto-gstreamer repository
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ github.repository }}
-          path: rialto-gstreamer
-
-      - name: Checkout rialto-ocdm repository
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ github.repository }}
-          path: rialto-ocdm
+        uses: actions/checkout@v2
 
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -55,37 +43,42 @@ jobs:
 
       - name: Install dependencies and build GStreamer library
         run: |
-         sudo apt-get update
-         sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
-      
+          sudo apt-get update
+          sudo apt-get update
+          sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
+
       - name: Install dependencies and build lcov library
         run: |
-         sudo apt-get install libjson-perl libperlio-gzip-perl perl libgd-gd2-perl libcapture-tiny-perl libdatetime-perl
-         wget https://github.com/linux-test-project/lcov/releases/download/v2.0/lcov-2.0.tar.gz
-         tar -xf lcov-2.0.tar.gz
-         cd lcov-2.0
-         sudo make install
+          sudo apt-get install libjson-perl libperlio-gzip-perl perl libgd-gd2-perl libcapture-tiny-perl libdatetime-perl
+          wget https://github.com/linux-test-project/lcov/releases/download/v2.0/lcov-2.0.tar.gz
+          tar -xf lcov-2.0.tar.gz
+          cd lcov-2.0
+          sudo make install
 
   # Job to trigger and run tests for rialto-gstreamer separately
   trigger-gstreamer-tests:
     runs-on: ubuntu-latest
+    needs: install-dependencies
     steps:
-      - name: Use install-dependencies action
-        uses: ./.github/actions/install-dependencies
+      - name: Checkout main repository
+        uses: actions/checkout@v2
+        with:
+          repository: rdkcentral/rialto-gstreamer
 
-      # Add other steps specific to the trigger-gstreamer-tests job here
       - name: Run rialto-gstreamer tests
         run: |
-          python rialto-gstreamer/build_ut.py -c -xml -f -cov
+          python build_ut.py -c -xml -f -cov
 
   # Job to trigger and run tests for rialto-ocdm separately
   trigger-ocdm-tests:
     runs-on: ubuntu-latest
+    needs: install-dependencies
     steps:
-      - name: Use install-dependencies action
-        uses: ./.github/actions/install-dependencies
-
-      # Add other steps specific to the trigger-ocdm-tests job here
+      - name: Checkout main repository
+        uses: actions/checkout@v2
+        with:
+          repository: rdkcentral/rialto-ocdm
       - name: Run rialto-ocdm tests
         run: |
-          python rialto-ocdm/build_ut.py -c -xml -f -cov
+          python build_ut.py -c -xml -f -cov
+
