@@ -33,7 +33,8 @@ public:
     GstWebAudioPlayerMock() = default;
     virtual ~GstWebAudioPlayerMock() = default;
 
-    MOCK_METHOD(void, setCaps, (const std::string &audioMimeType, const WebAudioConfig *config), (override));
+    MOCK_METHOD(void, setCaps, (const std::string &audioMimeType, std::weak_ptr<const WebAudioConfig> config),
+                (override));
     MOCK_METHOD(void, play, (), (override));
     MOCK_METHOD(void, pause, (), (override));
     MOCK_METHOD(void, setVolume, (double volume), (override));

@@ -34,7 +34,8 @@ public:
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createPlay, (IGstWebAudioPlayerPrivate & player), (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createPause, (IGstWebAudioPlayerPrivate & player), (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetCaps,
-                (WebAudioPlayerContext & context, const std::string &audioMimeType, const WebAudioConfig *config),
+                (WebAudioPlayerContext & context, const std::string &audioMimeType,
+                 std::weak_ptr<const WebAudioConfig> config),
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createEos, (WebAudioPlayerContext & context), (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetVolume, (WebAudioPlayerContext & context, double volume),

@@ -45,7 +45,8 @@ std::shared_ptr<IWebAudioPlayerFactory> IWebAudioPlayerFactory::createFactory()
 
 std::unique_ptr<IWebAudioPlayer> WebAudioPlayerFactory::createWebAudioPlayer(
     std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType, const uint32_t priority,
-    const WebAudioConfig *config, std::weak_ptr<client::IWebAudioPlayerIpcFactory> webAudioPlayerIpcFactoryParam,
+    std::weak_ptr<const WebAudioConfig> config,
+    std::weak_ptr<client::IWebAudioPlayerIpcFactory> webAudioPlayerIpcFactoryParam,
     std::weak_ptr<client::IClientController> clientControllerParam) const
 {
     std::unique_ptr<IWebAudioPlayer> webAudioPlayer;
@@ -75,7 +76,7 @@ std::unique_ptr<IWebAudioPlayer> WebAudioPlayerFactory::createWebAudioPlayer(
 namespace firebolt::rialto::client
 {
 WebAudioPlayer::WebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
-                               const uint32_t priority, const WebAudioConfig *config,
+                               const uint32_t priority, std::weak_ptr<const WebAudioConfig> webAudioConfig,
                                const std::shared_ptr<IWebAudioPlayerIpcFactory> &webAudioPlayerIpcFactory,
                                IClientController &clientController)
     : m_webAudioPlayerClient(client), m_clientController{clientController}, m_bytesPerFrame{0},
@@ -85,7 +86,8 @@ WebAudioPlayer::WebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, cons
 
     if (audioMimeType == "audio/x-raw")
     {
-        if (config == nullptr)
+        std::shared_ptr<const WebAudioConfig> config = webAudioConfig.lock();
+        if (!config)
         {
             throw std::runtime_error("Config is null for 'audio/x-raw'");
         }
@@ -102,7 +104,8 @@ WebAudioPlayer::WebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, cons
         throw std::runtime_error("Web audio player ipc factory could not be null");
     }
 
-    m_webAudioPlayerIpc = webAudioPlayerIpcFactory->createWebAudioPlayerIpc(this, audioMimeType, priority, config);
+    m_webAudioPlayerIpc =
+        webAudioPlayerIpcFactory->createWebAudioPlayerIpc(this, audioMimeType, priority, webAudioConfig);
     if (!m_webAudioPlayerIpc)
     {
         throw std::runtime_error("Web audio player ipc could not be created");

@@ -41,7 +41,7 @@ public:
     std::unique_ptr<IPlayerTask> createPlay(IGstWebAudioPlayerPrivate &player) const override;
     std::unique_ptr<IPlayerTask> createPause(IGstWebAudioPlayerPrivate &player) const override;
     std::unique_ptr<IPlayerTask> createSetCaps(WebAudioPlayerContext &context, const std::string &audioMimeType,
-                                               const WebAudioConfig *config) const override;
+                                               std::weak_ptr<const WebAudioConfig> config) const override;
     std::unique_ptr<IPlayerTask> createEos(WebAudioPlayerContext &context) const override;
     std::unique_ptr<IPlayerTask> createSetVolume(WebAudioPlayerContext &context, double volume) const override;
     std::unique_ptr<IPlayerTask> createWriteBuffer(WebAudioPlayerContext &context, uint8_t *mainPtr, uint32_t mainLength,

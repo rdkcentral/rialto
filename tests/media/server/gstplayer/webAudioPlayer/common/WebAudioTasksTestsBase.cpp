@@ -150,43 +150,43 @@ void WebAudioTasksTestsBase::triggerStop()
 
 void WebAudioTasksTestsBase::setU32LEConfig()
 {
-    testContext->m_config.pcm.rate = 1;
-    testContext->m_config.pcm.channels = 2;
-    testContext->m_config.pcm.sampleSize = 32;
-    testContext->m_config.pcm.isBigEndian = false;
-    testContext->m_config.pcm.isSigned = false;
-    testContext->m_config.pcm.isFloat = false;
+    testContext->m_config->pcm.rate = 1;
+    testContext->m_config->pcm.channels = 2;
+    testContext->m_config->pcm.sampleSize = 32;
+    testContext->m_config->pcm.isBigEndian = false;
+    testContext->m_config->pcm.isSigned = false;
+    testContext->m_config->pcm.isFloat = false;
 }
 
 void WebAudioTasksTestsBase::setF64LEConfig()
 {
-    testContext->m_config.pcm.rate = 1;
-    testContext->m_config.pcm.channels = 2;
-    testContext->m_config.pcm.sampleSize = 64;
-    testContext->m_config.pcm.isBigEndian = false;
-    testContext->m_config.pcm.isSigned = false;
-    testContext->m_config.pcm.isFloat = true;
+    testContext->m_config->pcm.rate = 1;
+    testContext->m_config->pcm.channels = 2;
+    testContext->m_config->pcm.sampleSize = 64;
+    testContext->m_config->pcm.isBigEndian = false;
+    testContext->m_config->pcm.isSigned = false;
+    testContext->m_config->pcm.isFloat = true;
 }
 
 void WebAudioTasksTestsBase::setS16BEConfig()
 {
-    testContext->m_config.pcm.rate = 1;
-    testContext->m_config.pcm.channels = 2;
-    testContext->m_config.pcm.sampleSize = 16;
-    testContext->m_config.pcm.isSigned = true;
-    testContext->m_config.pcm.isBigEndian = true;
-    testContext->m_config.pcm.isFloat = false;
+    testContext->m_config->pcm.rate = 1;
+    testContext->m_config->pcm.channels = 2;
+    testContext->m_config->pcm.sampleSize = 16;
+    testContext->m_config->pcm.isSigned = true;
+    testContext->m_config->pcm.isBigEndian = true;
+    testContext->m_config->pcm.isFloat = false;
 }
 
 std::string WebAudioTasksTestsBase::getPcmFormat()
 {
     std::string format;
 
-    if (testContext->m_config.pcm.isFloat)
+    if (testContext->m_config->pcm.isFloat)
     {
         format += "F";
     }
-    else if (testContext->m_config.pcm.isSigned)
+    else if (testContext->m_config->pcm.isSigned)
     {
         format += "S";
     }
@@ -195,9 +195,9 @@ std::string WebAudioTasksTestsBase::getPcmFormat()
         format += "U";
     }
 
-    format += std::to_string(testContext->m_config.pcm.sampleSize);
+    format += std::to_string(testContext->m_config->pcm.sampleSize);
 
-    if (testContext->m_config.pcm.isBigEndian)
+    if (testContext->m_config->pcm.isBigEndian)
     {
         format += "BE";
     }
@@ -214,14 +214,14 @@ void WebAudioTasksTestsBase::shouldBuildPcmCaps()
     EXPECT_CALL(*testContext->m_gstWrapper, gstCapsNewEmptySimple(StrEq("audio/x-raw")))
         .WillOnce(Return(&testContext->m_caps));
     EXPECT_CALL(*testContext->m_gstWrapper, gstCapsSetSimpleIntStub(&testContext->m_caps, StrEq("channels"), G_TYPE_INT,
-                                                                    testContext->m_config.pcm.channels));
+                                                                    testContext->m_config->pcm.channels));
     EXPECT_CALL(*testContext->m_gstWrapper,
                 gstCapsSetSimpleStringStub(&testContext->m_caps, StrEq("layout"), G_TYPE_STRING, StrEq("interleaved")));
     EXPECT_CALL(*testContext->m_gstWrapper, gstCapsSetSimpleIntStub(&testContext->m_caps, StrEq("rate"), G_TYPE_INT,
-                                                                    testContext->m_config.pcm.rate));
+                                                                    testContext->m_config->pcm.rate));
     EXPECT_CALL(*testContext->m_gstWrapper, gstCapsSetSimpleStringStub(&testContext->m_caps, StrEq("format"),
                                                                        G_TYPE_STRING, StrEq(getPcmFormat().c_str())));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstAudioChannelGetFallbackMask(testContext->m_config.pcm.channels))
+    EXPECT_CALL(*testContext->m_gstWrapper, gstAudioChannelGetFallbackMask(testContext->m_config->pcm.channels))
         .WillOnce(Return(kChannelMask));
     EXPECT_CALL(*testContext->m_gstWrapper, gstCapsSetSimpleBitMaskStub(&testContext->m_caps, StrEq("channel-mask"),
                                                                         GST_TYPE_BITMASK, kChannelMask));
@@ -250,8 +250,8 @@ void WebAudioTasksTestsBase::shouldUnref()
 
 void WebAudioTasksTestsBase::checkBytesPerSamplePcmSet()
 {
-    uint32_t expectedBytesPerSample = testContext->m_config.pcm.channels *
-                                      (testContext->m_config.pcm.sampleSize / CHAR_BIT);
+    uint32_t expectedBytesPerSample = testContext->m_config->pcm.channels *
+                                      (testContext->m_config->pcm.sampleSize / CHAR_BIT);
     EXPECT_EQ(expectedBytesPerSample, testContext->m_context.bytesPerSample);
 }
 
@@ -274,15 +274,14 @@ void WebAudioTasksTestsBase::triggerSetCaps()
 {
     firebolt::rialto::server::tasks::webaudio::SetCaps task{testContext->m_context, testContext->m_gstWrapper,
                                                             testContext->m_glibWrapper, kAudioMimeType,
-                                                            &testContext->m_config};
+                                                            testContext->m_config};
     task.execute();
 }
 
 void WebAudioTasksTestsBase::triggerSetCapsInvalidMimeType()
 {
     firebolt::rialto::server::tasks::webaudio::SetCaps task{testContext->m_context, testContext->m_gstWrapper,
-                                                            testContext->m_glibWrapper, "invalid",
-                                                            &testContext->m_config};
+                                                            testContext->m_glibWrapper, "invalid", testContext->m_config};
     task.execute();
 }
 

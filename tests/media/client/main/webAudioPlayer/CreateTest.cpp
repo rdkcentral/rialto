@@ -34,6 +34,15 @@ using namespace firebolt::rialto::client;
 using ::testing::Return;
 using ::testing::StrictMock;
 
+namespace
+{
+MATCHER_P(webAudioConfigMatcher, config, "")
+{
+    std::shared_ptr<const firebolt::rialto::WebAudioConfig> argConfig = arg.lock();
+    return argConfig && argConfig->pcm == config->pcm;
+}
+} // namespace
+
 class RialtoClientCreateWebAudioPlayerTest : public WebAudioPlayerTestBase
 {
 public:
@@ -44,7 +53,7 @@ public:
         m_webAudioPlayerIpcMock = webAudioPlayerIpcMock.get();
 
         EXPECT_CALL(*m_webAudioPlayerIpcFactoryMock,
-                    createWebAudioPlayerIpc(_, m_audioMimeType, m_priority, &m_config, _))
+                    createWebAudioPlayerIpc(_, m_audioMimeType, m_priority, webAudioConfigMatcher(m_config), _))
             .WillOnce(Return(ByMove(std::move(webAudioPlayerIpcMock))));
 
         EXPECT_CALL(*m_clientControllerMock, registerClient(_, _))
@@ -63,7 +72,7 @@ TEST_F(RialtoClientCreateWebAudioPlayerTest, Create)
     prepareForWebAudioPlayerConstructor(webAudioPlayerIpcMock);
 
     EXPECT_NO_THROW(m_webAudioPlayer = std::make_unique<WebAudioPlayer>(m_webAudioPlayerClientMock, m_audioMimeType,
-                                                                        m_priority, &m_config,
+                                                                        m_priority, m_config,
                                                                         m_webAudioPlayerIpcFactoryMock,
                                                                         *m_clientControllerMock));
 
@@ -89,7 +98,7 @@ TEST_F(RialtoClientCreateWebAudioPlayerTest, FactoryCreatesObject)
 
     std::unique_ptr<IWebAudioPlayer> webAudioPlayer;
     EXPECT_NO_THROW(webAudioPlayer = factory->createWebAudioPlayer(m_webAudioPlayerClientMock, m_audioMimeType,
-                                                                   m_priority, &m_config, m_webAudioPlayerIpcFactoryMock,
+                                                                   m_priority, m_config, m_webAudioPlayerIpcFactoryMock,
                                                                    m_clientControllerMock));
     EXPECT_NE(webAudioPlayer, nullptr);
 
@@ -108,7 +117,7 @@ TEST_F(RialtoClientCreateWebAudioPlayerTest, CreateWebAudioPlayerIpcFailure)
     EXPECT_CALL(*m_webAudioPlayerIpcFactoryMock, createWebAudioPlayerIpc(_, _, _, _, _)).WillOnce(Return(nullptr));
 
     EXPECT_THROW(webAudioPlayer = std::make_unique<WebAudioPlayer>(m_webAudioPlayerClientMock, m_audioMimeType,
-                                                                   m_priority, &m_config, m_webAudioPlayerIpcFactoryMock,
+                                                                   m_priority, m_config, m_webAudioPlayerIpcFactoryMock,
                                                                    *m_clientControllerMock),
                  std::runtime_error);
 }
@@ -127,14 +136,15 @@ TEST_F(RialtoClientCreateWebAudioPlayerTest, CreateWebAudioPlayerRegisterFailure
     // Object shall be freed by the holder of the unique ptr on destruction
     m_webAudioPlayerIpcMock = webAudioPlayerIpcMock.get();
 
-    EXPECT_CALL(*m_webAudioPlayerIpcFactoryMock, createWebAudioPlayerIpc(_, m_audioMimeType, m_priority, &m_config, _))
+    EXPECT_CALL(*m_webAudioPlayerIpcFactoryMock,
+                createWebAudioPlayerIpc(_, m_audioMimeType, m_priority, webAudioConfigMatcher(m_config), _))
         .WillOnce(Return(ByMove(std::move(webAudioPlayerIpcMock))));
 
     EXPECT_CALL(*m_clientControllerMock, registerClient(_, _))
         .WillOnce(DoAll(SetArgReferee<1>(ApplicationState::RUNNING), Return(false)));
 
     EXPECT_THROW(webAudioPlayer = std::make_unique<WebAudioPlayer>(m_webAudioPlayerClientMock, m_audioMimeType,
-                                                                   m_priority, &m_config, m_webAudioPlayerIpcFactoryMock,
+                                                                   m_priority, m_config, m_webAudioPlayerIpcFactoryMock,
                                                                    *m_clientControllerMock),
                  std::runtime_error);
 }

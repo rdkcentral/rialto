@@ -33,7 +33,8 @@ class SetCaps : public IPlayerTask
 {
 public:
     SetCaps(WebAudioPlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper,
-            std::shared_ptr<IGlibWrapper> glibWrapper, const std::string &audioMimeType, const WebAudioConfig *config);
+            std::shared_ptr<IGlibWrapper> glibWrapper, const std::string &audioMimeType,
+            std::weak_ptr<const WebAudioConfig> config);
     ~SetCaps() override;
     void execute() const override;
 

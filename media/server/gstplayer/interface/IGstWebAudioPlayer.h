@@ -75,7 +75,7 @@ public:
      * @param[in] audioMimeType: The audio encoding format, currently only "audio/x-raw" (PCM).
      * @param[in] config:        Additional type dependent configuration data or nullptr,
      */
-    virtual void setCaps(const std::string &audioMimeType, const WebAudioConfig *config) = 0;
+    virtual void setCaps(const std::string &audioMimeType, std::weak_ptr<const WebAudioConfig> config) = 0;
 
     /**
      * @brief Starts playback of the web audio.

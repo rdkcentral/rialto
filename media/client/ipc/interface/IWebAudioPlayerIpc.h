@@ -60,7 +60,7 @@ public:
      */
     virtual std::unique_ptr<IWebAudioPlayerIpc>
     createWebAudioPlayerIpc(IWebAudioPlayerIpcClient *client, const std::string &audioMimeType, const uint32_t priority,
-                            const WebAudioConfig *config, std::weak_ptr<IIpcClient> ipcClient = {}) = 0;
+                            std::weak_ptr<const WebAudioConfig> config, std::weak_ptr<IIpcClient> ipcClient = {}) = 0;
 };
 
 /**
