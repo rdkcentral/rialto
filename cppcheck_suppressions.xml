@@ -46,4 +46,8 @@
         <id>ctuOneDefinitionRuleViolation</id>
         <fileName>tests/media/client/main/webAudioPlayer/base/WebAudioPlayerTestBase.h</fileName>
     </suppress>
+    <suppress>
+        <id>unassignedValue</id>
+        <fileName>serverManager/service/source/ConfigHelper.cpp</fileName>
+    </suppress>
 </suppressions>
