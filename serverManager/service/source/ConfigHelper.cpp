@@ -20,14 +20,46 @@
 #include "ConfigHelper.h"
 #include "IConfigReader.h"
 #include "RialtoServerManagerLogging.h"
-#include <algorithm>
+#include <list>
+#include <map>
 #include <memory>
+
+namespace
+{
+std::map<std::string, std::string> convertToMap(const std::list<std::string> &envVariablesList)
+{
+    std::map<std::string, std::string> result{};
+    for (const auto &var : envVariablesList)
+    {
+        const auto kSplitPos{var.find("=")};
+        if (std::string::npos == kSplitPos || kSplitPos + 1 >= var.size())
+        {
+            continue;
+        }
+        std::string name = var.substr(0, kSplitPos);
+        std::string value = var.substr(kSplitPos + 1);
+        result.emplace(name, value);
+    }
+    return result;
+}
+
+std::list<std::string> convertToList(const std::map<std::string, std::string> &envVariablesMap)
+{
+    std::list<std::string> result{};
+    for (const auto &[name, value] : envVariablesMap)
+    {
+        result.emplace_back(name + "=" + value);
+    }
+    return result;
+}
+} // namespace
 
 namespace rialto::servermanager::service
 {
 ConfigHelper::ConfigHelper(std::unique_ptr<IConfigReaderFactory> &&configReaderFactory,
                            const firebolt::rialto::common::ServerManagerConfig &config)
-    : m_configReaderFactory{std::move(configReaderFactory)}, m_sessionServerEnvVars{config.sessionServerEnvVars},
+    : m_configReaderFactory{std::move(configReaderFactory)}, m_sessionServerEnvVars{convertToMap(
+                                                                 config.sessionServerEnvVars)},
       m_sessionServerPath{config.sessionServerPath}, m_sessionServerStartupTimeout{config.sessionServerStartupTimeout},
       m_healthcheckInterval{config.healthcheckInterval}, m_socketPermissions{config.sessionManagementSocketPermissions},
       m_numOfPreloadedServers{config.numOfPreloadedServers},
@@ -36,9 +68,9 @@ ConfigHelper::ConfigHelper(std::unique_ptr<IConfigReaderFactory> &&configReaderF
     readConfigFile();
 }
 
-const std::list<std::string> &ConfigHelper::getSessionServerEnvVars() const
+std::list<std::string> ConfigHelper::getSessionServerEnvVars() const
 {
-    return m_sessionServerEnvVars;
+    return convertToList(m_sessionServerEnvVars);
 }
 
 const std::string &ConfigHelper::getSessionServerPath() const
@@ -91,13 +123,13 @@ void ConfigHelper::readConfigFile()
         return;
     }
 
-    for (const auto &envVar : configReader->getEnvironmentVariables())
+    std::map<std::string, std::string> envVariables{convertToMap(configReader->getEnvironmentVariables())};
+    for (const auto &[name, value] : envVariables)
     {
         // If environment variable exists in ServerManagerConfig, do not overwrite it
-        if (m_sessionServerEnvVars.end() ==
-            std::find(m_sessionServerEnvVars.begin(), m_sessionServerEnvVars.end(), envVar))
+        if (m_sessionServerEnvVars.end() == m_sessionServerEnvVars.find(name))
         {
-            m_sessionServerEnvVars.push_back(envVar);
+            m_sessionServerEnvVars.emplace(name, value);
         }
     }
 

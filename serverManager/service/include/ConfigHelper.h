@@ -24,7 +24,7 @@
 #include "LoggingLevels.h"
 #include "SessionServerCommon.h"
 #include <chrono>
-#include <list>
+#include <map>
 #include <memory>
 #include <string>
 
@@ -37,7 +37,7 @@ public:
                  const firebolt::rialto::common::ServerManagerConfig &config);
     ~ConfigHelper() = default;
 
-    const std::list<std::string> &getSessionServerEnvVars() const;
+    std::list<std::string> getSessionServerEnvVars() const;
     const std::string &getSessionServerPath() const;
     std::chrono::milliseconds getSessionServerStartupTimeout() const;
     std::chrono::seconds getHealthcheckInterval() const;
@@ -51,7 +51,7 @@ private:
 
 private:
     std::unique_ptr<IConfigReaderFactory> m_configReaderFactory;
-    std::list<std::string> m_sessionServerEnvVars;
+    std::map<std::string, std::string> m_sessionServerEnvVars;
     std::string m_sessionServerPath;
     std::chrono::milliseconds m_sessionServerStartupTimeout;
     std::chrono::seconds m_healthcheckInterval;
