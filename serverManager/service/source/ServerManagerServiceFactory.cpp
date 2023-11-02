@@ -68,7 +68,9 @@ std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserv
                                                                configHelper.getHealthcheckInterval(),
                                                                configHelper.getNumOfFailedPingsBeforeRecovery(),
                                                                convertSocketPermissions(
-                                                                   configHelper.getSocketPermissions())),
+                                                                   configHelper.getSocketPermissions()),
+                                                               configHelper.getSocketPermissions().owner,
+                                                               configHelper.getSocketPermissions().group),
                               configHelper.getNumOfPreloadedServers());
 #ifdef RIALTO_ENABLE_CONFIG_FILE
     service->setLogLevels(configHelper.getLoggingLevels());

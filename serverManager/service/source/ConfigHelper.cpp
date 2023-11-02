@@ -113,6 +113,12 @@ void ConfigHelper::readConfigFile()
     if (configReader->getSocketPermissions())
         m_socketPermissions = configReader->getSocketPermissions().value();
 
+    if (configReader->getSocketOwner())
+        m_socketPermissions.owner = configReader->getSocketOwner().value();
+
+    if (configReader->getSocketGroup())
+        m_socketPermissions.group = configReader->getSocketGroup().value();
+
     if (configReader->getNumOfPreloadedServers())
         m_numOfPreloadedServers = configReader->getNumOfPreloadedServers().value();
 

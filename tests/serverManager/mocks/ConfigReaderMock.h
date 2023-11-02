@@ -35,6 +35,8 @@ public:
     MOCK_METHOD(std::optional<std::chrono::milliseconds>, getSessionServerStartupTimeout, (), (override));
     MOCK_METHOD(std::optional<std::chrono::seconds>, getHealthcheckInterval, (), (override));
     MOCK_METHOD(std::optional<firebolt::rialto::common::SocketPermissions>, getSocketPermissions, (), (override));
+    MOCK_METHOD(std::optional<std::string>, getSocketOwner, (), (override));
+    MOCK_METHOD(std::optional<std::string>, getSocketGroup, (), (override));
     MOCK_METHOD(std::optional<unsigned int>, getNumOfPreloadedServers, (), (override));
     MOCK_METHOD(std::optional<rialto::servermanager::service::LoggingLevels>, getLoggingLevels, (), (override));
     MOCK_METHOD(std::optional<unsigned int>, getNumOfPingsBeforeRecovery, (), (override));
