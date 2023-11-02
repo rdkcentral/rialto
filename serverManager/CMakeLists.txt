@@ -61,6 +61,10 @@ if( RIALTO_ENABLE_CONFIG_FILE )
         set(RIALTO_CONFIG_FILE_DIR /etc/)
     endif()
 
+    if (NOT RIALTO_CONFIG_OVERRIDES_FILE_DIR)
+        set(RIALTO_CONFIG_OVERRIDES_FILE_DIR /opt/persistent/sky/)
+    endif()
+
     configure_file(
         config/rialto-config.in.json
         rialto-config.json

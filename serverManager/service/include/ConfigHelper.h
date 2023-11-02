@@ -47,8 +47,10 @@ public:
     unsigned int getNumOfFailedPingsBeforeRecovery() const;
     const rialto::servermanager::service::LoggingLevels &getLoggingLevels() const;
 
+#ifdef RIALTO_ENABLE_CONFIG_FILE
 private:
-    void readConfigFile();
+    void readConfigFile(const std::string &filePath);
+#endif // RIALTO_ENABLE_CONFIG_FILE
 
 private:
     std::unique_ptr<IConfigReaderFactory> m_configReaderFactory;

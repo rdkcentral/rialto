@@ -35,6 +35,7 @@ using testing::StrictMock;
 namespace
 {
 const std::string kRialtoConfigPath{"/rialto-config.json"};
+const std::string kRialtoConfigOverridesPath{"/rialto-config-overrides.json"};
 const ServerManagerConfig kServerManagerConfig{{"env1=var1"},
                                                2,
                                                "sessionServerPath",
@@ -83,8 +84,13 @@ TEST(ConfigHelperTests, ShouldNotOverrideDefaultValuesWhenConfigReaderIsNull)
     std::unique_ptr<StrictMock<ConfigReaderFactoryMock>> configReaderFactoryMock{
         std::make_unique<StrictMock<ConfigReaderFactoryMock>>()};
     std::shared_ptr<StrictMock<ConfigReaderMock>> configReaderMock{std::make_shared<StrictMock<ConfigReaderMock>>()};
+    std::shared_ptr<StrictMock<ConfigReaderMock>> configOverridesReaderMock{
+        std::make_shared<StrictMock<ConfigReaderMock>>()};
     EXPECT_CALL(*configReaderFactoryMock, createConfigReader(kRialtoConfigPath)).WillOnce(Return(configReaderMock));
+    EXPECT_CALL(*configReaderFactoryMock, createConfigReader(kRialtoConfigOverridesPath))
+        .WillOnce(Return(configOverridesReaderMock));
     EXPECT_CALL(*configReaderMock, read()).WillOnce(Return(false));
+    EXPECT_CALL(*configOverridesReaderMock, read()).WillOnce(Return(false));
     ConfigHelper sut{std::move(configReaderFactoryMock), kServerManagerConfig};
     EXPECT_EQ(sut.getSessionServerEnvVars(), kServerManagerConfig.sessionServerEnvVars);
     EXPECT_EQ(sut.getSessionServerPath(), kServerManagerConfig.sessionServerPath);
@@ -113,8 +119,13 @@ TEST(ConfigHelperTests, ShouldNotOverrideDefaultValuesWhenConfigReaderReturnsNul
     std::unique_ptr<StrictMock<ConfigReaderFactoryMock>> configReaderFactoryMock{
         std::make_unique<StrictMock<ConfigReaderFactoryMock>>()};
     std::shared_ptr<StrictMock<ConfigReaderMock>> configReaderMock{std::make_shared<StrictMock<ConfigReaderMock>>()};
+    std::shared_ptr<StrictMock<ConfigReaderMock>> configOverridesReaderMock{
+        std::make_shared<StrictMock<ConfigReaderMock>>()};
     EXPECT_CALL(*configReaderFactoryMock, createConfigReader(kRialtoConfigPath)).WillOnce(Return(configReaderMock));
+    EXPECT_CALL(*configReaderFactoryMock, createConfigReader(kRialtoConfigOverridesPath))
+        .WillOnce(Return(configOverridesReaderMock));
     EXPECT_CALL(*configReaderMock, read()).WillOnce(Return(true));
+    EXPECT_CALL(*configOverridesReaderMock, read()).WillOnce(Return(false));
     EXPECT_CALL(*configReaderMock, getEnvironmentVariables()).WillOnce(Return(std::list<std::string>{}));
     EXPECT_CALL(*configReaderMock, getSessionServerPath()).WillOnce(Return(std::nullopt));
     EXPECT_CALL(*configReaderMock, getSessionServerStartupTimeout()).WillOnce(Return(std::nullopt));
@@ -155,8 +166,13 @@ TEST(ConfigHelperTests, ShouldOverrideDefaultValues)
     std::unique_ptr<StrictMock<ConfigReaderFactoryMock>> configReaderFactoryMock{
         std::make_unique<StrictMock<ConfigReaderFactoryMock>>()};
     std::shared_ptr<StrictMock<ConfigReaderMock>> configReaderMock{std::make_shared<StrictMock<ConfigReaderMock>>()};
+    std::shared_ptr<StrictMock<ConfigReaderMock>> configOverridesReaderMock{
+        std::make_shared<StrictMock<ConfigReaderMock>>()};
     EXPECT_CALL(*configReaderFactoryMock, createConfigReader(kRialtoConfigPath)).WillOnce(Return(configReaderMock));
+    EXPECT_CALL(*configReaderFactoryMock, createConfigReader(kRialtoConfigOverridesPath))
+        .WillOnce(Return(configOverridesReaderMock));
     EXPECT_CALL(*configReaderMock, read()).WillOnce(Return(true));
+    EXPECT_CALL(*configOverridesReaderMock, read()).WillOnce(Return(false));
     EXPECT_CALL(*configReaderMock, getEnvironmentVariables()).WillRepeatedly(Return(kAdditionalSessionServerEnvVars));
     EXPECT_CALL(*configReaderMock, getSessionServerPath()).WillRepeatedly(Return(kOverridenSessionServerPath));
     EXPECT_CALL(*configReaderMock, getSessionServerStartupTimeout()).WillRepeatedly(Return(kOverridenStartupTimeout));
@@ -197,8 +213,13 @@ TEST(ConfigHelperTests, ShouldNotOverrideEnvVariable)
     std::unique_ptr<StrictMock<ConfigReaderFactoryMock>> configReaderFactoryMock{
         std::make_unique<StrictMock<ConfigReaderFactoryMock>>()};
     std::shared_ptr<StrictMock<ConfigReaderMock>> configReaderMock{std::make_shared<StrictMock<ConfigReaderMock>>()};
+    std::shared_ptr<StrictMock<ConfigReaderMock>> configOverridesReaderMock{
+        std::make_shared<StrictMock<ConfigReaderMock>>()};
     EXPECT_CALL(*configReaderFactoryMock, createConfigReader(kRialtoConfigPath)).WillOnce(Return(configReaderMock));
+    EXPECT_CALL(*configReaderFactoryMock, createConfigReader(kRialtoConfigOverridesPath))
+        .WillOnce(Return(configOverridesReaderMock));
     EXPECT_CALL(*configReaderMock, read()).WillOnce(Return(true));
+    EXPECT_CALL(*configOverridesReaderMock, read()).WillOnce(Return(false));
     EXPECT_CALL(*configReaderMock, getEnvironmentVariables()).WillOnce(Return(std::list<std::string>{"env1=var2"}));
     EXPECT_CALL(*configReaderMock, getSessionServerPath()).WillOnce(Return(std::nullopt));
     EXPECT_CALL(*configReaderMock, getSessionServerStartupTimeout()).WillOnce(Return(std::nullopt));

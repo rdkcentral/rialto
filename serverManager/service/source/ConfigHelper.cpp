@@ -65,7 +65,10 @@ ConfigHelper::ConfigHelper(std::unique_ptr<IConfigReaderFactory> &&configReaderF
       m_numOfPreloadedServers{config.numOfPreloadedServers},
       m_numOfFailedPingsBeforeRecovery{config.numOfFailedPingsBeforeRecovery}, m_loggingLevels{}
 {
-    readConfigFile();
+#ifdef RIALTO_ENABLE_CONFIG_FILE
+    readConfigFile(RIALTO_CONFIG_PATH);
+    readConfigFile(RIALTO_CONFIG_OVERRIDES_PATH);
+#endif // RIALTO_ENABLE_CONFIG_FILE
 }
 
 std::list<std::string> ConfigHelper::getSessionServerEnvVars() const
@@ -108,15 +111,15 @@ const rialto::servermanager::service::LoggingLevels &ConfigHelper::getLoggingLev
     return m_loggingLevels;
 }
 
-void ConfigHelper::readConfigFile()
-{
 #ifdef RIALTO_ENABLE_CONFIG_FILE
+void ConfigHelper::readConfigFile(const std::string &filePath)
+{
     if (!m_configReaderFactory)
     {
         RIALTO_SERVER_MANAGER_LOG_DEBUG("Config reader factory not present");
         return;
     }
-    std::shared_ptr<IConfigReader> configReader = m_configReaderFactory->createConfigReader(RIALTO_CONFIG_PATH);
+    std::shared_ptr<IConfigReader> configReader = m_configReaderFactory->createConfigReader(filePath);
     if (!configReader || !configReader->read())
     {
         RIALTO_SERVER_MANAGER_LOG_DEBUG("Config file not present");
@@ -159,6 +162,6 @@ void ConfigHelper::readConfigFile()
 
     if (configReader->getLoggingLevels())
         m_loggingLevels = configReader->getLoggingLevels().value();
-#endif
 }
+#endif // RIALTO_ENABLE_CONFIG_FILE
 } // namespace rialto::servermanager::service
