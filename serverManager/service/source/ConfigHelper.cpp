@@ -116,7 +116,7 @@ void ConfigHelper::readConfigFile()
         RIALTO_SERVER_MANAGER_LOG_DEBUG("Config reader factory not present");
         return;
     }
-    std::shared_ptr<IConfigReader> configReader = m_configReaderFactory->createConfigReader();
+    std::shared_ptr<IConfigReader> configReader = m_configReaderFactory->createConfigReader(RIALTO_CONFIG_PATH);
     if (!configReader || !configReader->read())
     {
         RIALTO_SERVER_MANAGER_LOG_DEBUG("Config file not present");
