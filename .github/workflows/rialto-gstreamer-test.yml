@@ -15,21 +15,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Define the name of the workflow
-name: Rialto GStreamer and OCDM Tests
+name: Rialto GStreamer Test
 
-# Define the events that trigger the workflow
 on:
   pull_request:
-    branches: [ "master", "rdkcentral:master" ]
+    branches:
+      - "master"
+      - "rdkcentral:master"
   push:
-    branches: [ "A_Rialto_390" ]
-
+    branches:
+      - "A_Rialto_390"
   workflow_dispatch:
 
-# Define the jobs to be executed in the workflow
 jobs:
-  # Job for installing dependencies and building libraries
   install-dependencies:
     runs-on: ubuntu-22.04
     steps:
@@ -55,30 +53,6 @@ jobs:
           cd lcov-2.0
           sudo make install
 
-  # Job to trigger and run tests for rialto-gstreamer separately
-  trigger-gstreamer-tests:
-    runs-on: ubuntu-latest
-    needs: install-dependencies
-    steps:
-      - name: Checkout main repository
-        uses: actions/checkout@v2
-        with:
-          repository: rdkcentral/rialto-gstreamer
-
-      - name: Run rialto-gstreamer tests
+      - name: Run tests
         run: |
-          python build_ut.py -c -xml -f -cov
-
-  # Job to trigger and run tests for rialto-ocdm separately
-  trigger-ocdm-tests:
-    runs-on: ubuntu-latest
-    needs: install-dependencies
-    steps:
-      - name: Checkout main repository
-        uses: actions/checkout@v2
-        with:
-          repository: rdkcentral/rialto-ocdm
-      - name: Run rialto-ocdm tests
-        run: |
-          python build_ut.py -c -xml -f -cov
-
+          python rialto-gstreamer/build_ut.py -c -xml -f -cov -b ${{ github.event.before }}

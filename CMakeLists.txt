@@ -110,6 +110,22 @@ endif()
 # Preprocesser Variable
 add_compile_definitions(COMMIT_ID="${COMMIT_ID}")
 
+# Retrieve the branch 
+execute_process(
+    COMMAND git rev-parse --abbrev-ref HEAD
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    RESULT_VARIABLE RESULT_BRANCH
+    OUTPUT_VARIABLE BUILD_BRANCH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+if(RESULT_BRANCH)
+    message("Failed to get git branch: ${RESULT_BRANCH}")
+endif()
+
+# Preprocessor Variable
+add_compile_definitions(BUILD_BRANCH="${BUILD_BRANCH}")
+
 # Add our local cmake directory to search for components
 set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake )
 
