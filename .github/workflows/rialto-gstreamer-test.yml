@@ -56,5 +56,5 @@ jobs:
       - name: Run tests
         run: |
           git clone https://github.com/rdkcentral/rialto-gstreamer.git
-          python rialto-gstreamer/build_ut.py -c -xml -f -cov -b ${{ github.event.before }}
+          python rialto-gstreamer/build_ut.py -c -xml -f -cov -b
           
