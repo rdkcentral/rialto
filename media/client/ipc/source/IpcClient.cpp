@@ -160,11 +160,11 @@ void IpcClient::processIpcThread()
         RIALTO_CLIENT_LOG_ERROR("The ipc channel unexpectedly disconnected, destroying the channel");
 
         // The test case IpcClientTest.UnexpectedDisconnectWithNotification
-        // will start to destroy the shared_link<> to m_connectionObserver as
-        // soon as the ipcChannel is reset, therefore it's necessary
-        // to create another shared_link<> BEFORE calling m_ipcChannel.reset()
-        // in order to avoid a race since m_connectionObserver is a weak_link...
-        auto connectionObserver{m_connectionObserver.lock()};
+        // will start to destroy the connection observer object
+        // after m_ipcChannel.reset(), therefore it's necessary
+        // to create a shared_ptr<> BEFORE calling m_ipcChannel.reset()
+        // in order to avoid a race (since m_connectionObserver is a weak_ptr)
+        std::shared_ptr<IConnectionObserver> connectionObserver{m_connectionObserver.lock()};
 
         // Safe to destroy the ipc objects in the ipc thread as the client has already disconnected.
         // This ensures the channel is destructed and that all ongoing ipc calls are unblocked.
