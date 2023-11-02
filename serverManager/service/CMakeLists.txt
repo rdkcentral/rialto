@@ -31,6 +31,7 @@ find_package( PkgConfig REQUIRED )
 
 add_library (
         RialtoServerManager SHARED
+        source/ConfigHelper.cpp
         source/ServerManagerServiceFactory.cpp
         source/ServerManagerService.cpp
         source/ServiceContext.cpp

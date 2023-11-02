@@ -18,6 +18,7 @@
  */
 
 #include "ServerManagerServiceFactory.h"
+#include "ConfigHelper.h"
 #include "RialtoServerManagerLogging.h"
 #include "ServerManagerService.h"
 #include "ServiceContext.h"
@@ -54,62 +55,25 @@ std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserv
 std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserver> &stateObserver,
                                               const firebolt::rialto::common::ServerManagerConfig &config)
 {
-    std::list<std::string> sessionServerEnvVars = config.sessionServerEnvVars;
-    std::string sessionServerPath = config.sessionServerPath;
-    std::chrono::milliseconds sessionServerStartupTimeout = config.sessionServerStartupTimeout;
-    std::chrono::seconds healthcheckInterval = config.healthcheckInterval;
-    firebolt::rialto::common::SocketPermissions socketPermissions = config.sessionManagementSocketPermissions;
-    std::string socketOwner = config.sessionManagementSocketPermissions.owner;
-    std::string socketGroup = config.sessionManagementSocketPermissions.group;
-    unsigned int numOfPreloadedServers = config.numOfPreloadedServers;
-    unsigned int numOfFailedPingsBeforeRecovery = config.numOfFailedPingsBeforeRecovery;
-
+    std::unique_ptr<IConfigReaderFactory> configReaderFactory{};
 #ifdef RIALTO_ENABLE_CONFIG_FILE
-    std::unique_ptr<IConfigReaderFactory> configReaderFactory = std::make_unique<ConfigReaderFactory>();
-    std::shared_ptr<IConfigReader> configReader = configReaderFactory->createConfigReader();
-    configReader->read();
-
-    if (!configReader->getEnvironmentVariables().empty())
-        sessionServerEnvVars = configReader->getEnvironmentVariables();
-
-    if (configReader->getSessionServerPath())
-        sessionServerPath = configReader->getSessionServerPath().value();
-
-    if (configReader->getSessionServerStartupTimeout())
-        sessionServerStartupTimeout = configReader->getSessionServerStartupTimeout().value();
-
-    if (configReader->getHealthcheckInterval())
-        healthcheckInterval = configReader->getHealthcheckInterval().value();
-
-    if (configReader->getSocketPermissions())
-        socketPermissions = configReader->getSocketPermissions().value();
-
-    if (configReader->getSocketOwner())
-        socketOwner = configReader->getSocketOwner().value();
-
-    if (configReader->getSocketGroup())
-        socketGroup = configReader->getSocketGroup().value();
-
-    if (configReader->getNumOfPreloadedServers())
-        numOfPreloadedServers = configReader->getNumOfPreloadedServers().value();
-
-    if (configReader->getNumOfPingsBeforeRecovery())
-        numOfFailedPingsBeforeRecovery = configReader->getNumOfPingsBeforeRecovery().value();
+    configReaderFactory = std::make_unique<ConfigReaderFactory>();
 #endif
+    ConfigHelper configHelper{std::move(configReaderFactory), config};
 
-    std::unique_ptr<IServerManagerService> service =
-        std::make_unique<ServerManagerService>(std::make_unique<ServiceContext>(stateObserver, sessionServerEnvVars,
-                                                                                sessionServerPath,
-                                                                                sessionServerStartupTimeout,
-                                                                                healthcheckInterval,
-                                                                                numOfFailedPingsBeforeRecovery,
-                                                                                convertSocketPermissions(socketPermissions),
-                                                                                socketOwner, socketGroup),
-                                               numOfPreloadedServers);
-
+    std::unique_ptr<IServerManagerService> service = std::make_unique<
+        ServerManagerService>(std::make_unique<ServiceContext>(stateObserver, configHelper.getSessionServerEnvVars(),
+                                                               configHelper.getSessionServerPath(),
+                                                               configHelper.getSessionServerStartupTimeout(),
+                                                               configHelper.getHealthcheckInterval(),
+                                                               configHelper.getNumOfFailedPingsBeforeRecovery(),
+                                                               convertSocketPermissions(
+                                                                   configHelper.getSocketPermissions()),
+                                                               configHelper.getSocketPermissions().owner,
+                                                               configHelper.getSocketPermissions().group),
+                              configHelper.getNumOfPreloadedServers());
 #ifdef RIALTO_ENABLE_CONFIG_FILE
-    if (configReader->getLoggingLevels())
-        service->setLogLevels(configReader->getLoggingLevels().value());
+    service->setLogLevels(configHelper.getLoggingLevels());
 #endif
     return service;
 }
