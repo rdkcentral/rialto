@@ -24,6 +24,7 @@
 #include "LoggingLevels.h"
 #include "SessionServerCommon.h"
 #include <chrono>
+#include <list>
 #include <map>
 #include <memory>
 #include <string>
