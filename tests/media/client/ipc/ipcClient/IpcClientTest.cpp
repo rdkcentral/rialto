@@ -135,7 +135,7 @@ TEST_F(IpcClientTest, UnexpectedDisconnectWithNotification)
     }
 
     // Wait for the callback
-    unsigned int kWaitTimeMilliseconds = 5000;
+    constexpr unsigned int kWaitTimeMilliseconds = 5000;
     for (unsigned int i = 0; !connectionBrokenCallbackCalled && i < kWaitTimeMilliseconds; ++i)
     {
         usleep(1000); // Sleep for one millisecond
