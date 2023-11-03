@@ -44,7 +44,7 @@ const ServerManagerConfig kServerManagerConfig{{"env1=var1"},
                                                {7, 7, 7, "user1", "group1"},
                                                5};
 const std::list<std::string> kEmptyEnvVars{};
-const std::list<std::string> kOvwerwrittenEnvVar{"env1=var2"};
+const std::list<std::string> kOverwrittenEnvVar{"env1=var2"};
 const std::list<std::string> kJsonSessionServerEnvVars{"env2=var2"};
 constexpr unsigned kJsonNumOfPreloadedServers{10};
 const std::string kJsonSessionServerPath{"/usr/bin/RialtoServer"};
@@ -54,56 +54,91 @@ const SocketPermissions kJsonSocketPermissions{5, 5, 5, "user2", "group2"};
 constexpr unsigned kJsonNumOfFailedPingsBeforeRecovery{3};
 const LoggingLevels kJsonLoggingLevels{LoggingLevel::DEBUG, LoggingLevel::DEBUG, LoggingLevel::DEBUG,
                                        LoggingLevel::DEBUG, LoggingLevel::DEBUG, LoggingLevel::DEBUG};
+const std::list<std::string> kJsonOverrideSessionServerEnvVars{"env3=var3"};
+constexpr unsigned kJsonOverrideNumOfPreloadedServers{13};
+const std::string kJsonOverrideSessionServerPath{"/tmp/RialtoServer"};
+constexpr std::chrono::milliseconds kJsonOverrideStartupTimeout{12};
+constexpr std::chrono::seconds kJsonOverrideHealthcheckInterval{4};
+const SocketPermissions kJsonOverrideSocketPermissions{7, 3, 4, "user3", "group3"};
+constexpr unsigned kJsonOverrideNumOfFailedPingsBeforeRecovery{7};
+const LoggingLevels kJsonOverrideLoggingLevels{LoggingLevel::INFO, LoggingLevel::INFO, LoggingLevel::INFO,
+                                               LoggingLevel::INFO, LoggingLevel::INFO, LoggingLevel::INFO};
 } // namespace
 
 class ConfigHelperTests : public testing::Test
 {
 public:
-    void shouldReturnStructValues(ConfigHelper &sut)
+    void shouldReturnStructValues()
     {
-        EXPECT_EQ(sut.getSessionServerEnvVars(), kServerManagerConfig.sessionServerEnvVars);
-        EXPECT_EQ(sut.getSessionServerPath(), kServerManagerConfig.sessionServerPath);
-        EXPECT_EQ(sut.getSessionServerStartupTimeout(), kServerManagerConfig.sessionServerStartupTimeout);
-        EXPECT_EQ(sut.getHealthcheckInterval(), kServerManagerConfig.healthcheckInterval);
-        EXPECT_EQ(sut.getSocketPermissions().ownerPermissions,
+        EXPECT_EQ(m_sut->getSessionServerEnvVars(), kServerManagerConfig.sessionServerEnvVars);
+        EXPECT_EQ(m_sut->getSessionServerPath(), kServerManagerConfig.sessionServerPath);
+        EXPECT_EQ(m_sut->getSessionServerStartupTimeout(), kServerManagerConfig.sessionServerStartupTimeout);
+        EXPECT_EQ(m_sut->getHealthcheckInterval(), kServerManagerConfig.healthcheckInterval);
+        EXPECT_EQ(m_sut->getSocketPermissions().ownerPermissions,
                   kServerManagerConfig.sessionManagementSocketPermissions.ownerPermissions);
-        EXPECT_EQ(sut.getSocketPermissions().groupPermissions,
+        EXPECT_EQ(m_sut->getSocketPermissions().groupPermissions,
                   kServerManagerConfig.sessionManagementSocketPermissions.groupPermissions);
-        EXPECT_EQ(sut.getSocketPermissions().otherPermissions,
+        EXPECT_EQ(m_sut->getSocketPermissions().otherPermissions,
                   kServerManagerConfig.sessionManagementSocketPermissions.otherPermissions);
-        EXPECT_EQ(sut.getSocketPermissions().owner, kServerManagerConfig.sessionManagementSocketPermissions.owner);
-        EXPECT_EQ(sut.getSocketPermissions().group, kServerManagerConfig.sessionManagementSocketPermissions.group);
-        EXPECT_EQ(sut.getNumOfPreloadedServers(), kServerManagerConfig.numOfPreloadedServers);
-        EXPECT_EQ(sut.getNumOfFailedPingsBeforeRecovery(), kServerManagerConfig.numOfFailedPingsBeforeRecovery);
-        EXPECT_EQ(sut.getLoggingLevels().defaultLoggingLevel, LoggingLevel::UNCHANGED);
-        EXPECT_EQ(sut.getLoggingLevels().clientLoggingLevel, LoggingLevel::UNCHANGED);
-        EXPECT_EQ(sut.getLoggingLevels().sessionServerLoggingLevel, LoggingLevel::UNCHANGED);
-        EXPECT_EQ(sut.getLoggingLevels().ipcLoggingLevel, LoggingLevel::UNCHANGED);
-        EXPECT_EQ(sut.getLoggingLevels().serverManagerLoggingLevel, LoggingLevel::UNCHANGED);
-        EXPECT_EQ(sut.getLoggingLevels().commonLoggingLevel, LoggingLevel::UNCHANGED);
+        EXPECT_EQ(m_sut->getSocketPermissions().owner, kServerManagerConfig.sessionManagementSocketPermissions.owner);
+        EXPECT_EQ(m_sut->getSocketPermissions().group, kServerManagerConfig.sessionManagementSocketPermissions.group);
+        EXPECT_EQ(m_sut->getNumOfPreloadedServers(), kServerManagerConfig.numOfPreloadedServers);
+        EXPECT_EQ(m_sut->getNumOfFailedPingsBeforeRecovery(), kServerManagerConfig.numOfFailedPingsBeforeRecovery);
+        EXPECT_EQ(m_sut->getLoggingLevels().defaultLoggingLevel, LoggingLevel::UNCHANGED);
+        EXPECT_EQ(m_sut->getLoggingLevels().clientLoggingLevel, LoggingLevel::UNCHANGED);
+        EXPECT_EQ(m_sut->getLoggingLevels().sessionServerLoggingLevel, LoggingLevel::UNCHANGED);
+        EXPECT_EQ(m_sut->getLoggingLevels().ipcLoggingLevel, LoggingLevel::UNCHANGED);
+        EXPECT_EQ(m_sut->getLoggingLevels().serverManagerLoggingLevel, LoggingLevel::UNCHANGED);
+        EXPECT_EQ(m_sut->getLoggingLevels().commonLoggingLevel, LoggingLevel::UNCHANGED);
     }
 
-    void shouldReturnJsonValues(ConfigHelper &sut)
+    void shouldReturnJsonValues()
     {
         const std::list<std::string> kExpectedEnvVars{kServerManagerConfig.sessionServerEnvVars.front(),
                                                       kJsonSessionServerEnvVars.front()};
-        EXPECT_EQ(sut.getSessionServerEnvVars(), kExpectedEnvVars);
-        EXPECT_EQ(sut.getSessionServerPath(), kJsonSessionServerPath);
-        EXPECT_EQ(sut.getSessionServerStartupTimeout(), kJsonStartupTimeout);
-        EXPECT_EQ(sut.getHealthcheckInterval(), kJsonHealthcheckInterval);
-        EXPECT_EQ(sut.getSocketPermissions().ownerPermissions, kJsonSocketPermissions.ownerPermissions);
-        EXPECT_EQ(sut.getSocketPermissions().groupPermissions, kJsonSocketPermissions.groupPermissions);
-        EXPECT_EQ(sut.getSocketPermissions().otherPermissions, kJsonSocketPermissions.otherPermissions);
-        EXPECT_EQ(sut.getSocketPermissions().owner, kJsonSocketPermissions.owner);
-        EXPECT_EQ(sut.getSocketPermissions().group, kJsonSocketPermissions.group);
-        EXPECT_EQ(sut.getNumOfPreloadedServers(), kJsonNumOfPreloadedServers);
-        EXPECT_EQ(sut.getNumOfFailedPingsBeforeRecovery(), kJsonNumOfFailedPingsBeforeRecovery);
-        EXPECT_EQ(sut.getLoggingLevels().defaultLoggingLevel, kJsonLoggingLevels.defaultLoggingLevel);
-        EXPECT_EQ(sut.getLoggingLevels().clientLoggingLevel, kJsonLoggingLevels.clientLoggingLevel);
-        EXPECT_EQ(sut.getLoggingLevels().sessionServerLoggingLevel, kJsonLoggingLevels.sessionServerLoggingLevel);
-        EXPECT_EQ(sut.getLoggingLevels().ipcLoggingLevel, kJsonLoggingLevels.ipcLoggingLevel);
-        EXPECT_EQ(sut.getLoggingLevels().serverManagerLoggingLevel, kJsonLoggingLevels.serverManagerLoggingLevel);
-        EXPECT_EQ(sut.getLoggingLevels().commonLoggingLevel, kJsonLoggingLevels.commonLoggingLevel);
+        EXPECT_EQ(m_sut->getSessionServerEnvVars(), kExpectedEnvVars);
+        EXPECT_EQ(m_sut->getSessionServerPath(), kJsonSessionServerPath);
+        EXPECT_EQ(m_sut->getSessionServerStartupTimeout(), kJsonStartupTimeout);
+        EXPECT_EQ(m_sut->getHealthcheckInterval(), kJsonHealthcheckInterval);
+        EXPECT_EQ(m_sut->getSocketPermissions().ownerPermissions, kJsonSocketPermissions.ownerPermissions);
+        EXPECT_EQ(m_sut->getSocketPermissions().groupPermissions, kJsonSocketPermissions.groupPermissions);
+        EXPECT_EQ(m_sut->getSocketPermissions().otherPermissions, kJsonSocketPermissions.otherPermissions);
+        EXPECT_EQ(m_sut->getSocketPermissions().owner, kJsonSocketPermissions.owner);
+        EXPECT_EQ(m_sut->getSocketPermissions().group, kJsonSocketPermissions.group);
+        EXPECT_EQ(m_sut->getNumOfPreloadedServers(), kJsonNumOfPreloadedServers);
+        EXPECT_EQ(m_sut->getNumOfFailedPingsBeforeRecovery(), kJsonNumOfFailedPingsBeforeRecovery);
+        EXPECT_EQ(m_sut->getLoggingLevels().defaultLoggingLevel, kJsonLoggingLevels.defaultLoggingLevel);
+        EXPECT_EQ(m_sut->getLoggingLevels().clientLoggingLevel, kJsonLoggingLevels.clientLoggingLevel);
+        EXPECT_EQ(m_sut->getLoggingLevels().sessionServerLoggingLevel, kJsonLoggingLevels.sessionServerLoggingLevel);
+        EXPECT_EQ(m_sut->getLoggingLevels().ipcLoggingLevel, kJsonLoggingLevels.ipcLoggingLevel);
+        EXPECT_EQ(m_sut->getLoggingLevels().serverManagerLoggingLevel, kJsonLoggingLevels.serverManagerLoggingLevel);
+        EXPECT_EQ(m_sut->getLoggingLevels().commonLoggingLevel, kJsonLoggingLevels.commonLoggingLevel);
+    }
+
+    void shouldReturnJsonOverrideValues()
+    {
+        const std::list<std::string> kExpectedEnvVars{kServerManagerConfig.sessionServerEnvVars.front(),
+                                                      kJsonSessionServerEnvVars.front(),
+                                                      kJsonOverrideSessionServerEnvVars.front()};
+        EXPECT_EQ(m_sut->getSessionServerEnvVars(), kExpectedEnvVars);
+        EXPECT_EQ(m_sut->getSessionServerPath(), kJsonOverrideSessionServerPath);
+        EXPECT_EQ(m_sut->getSessionServerStartupTimeout(), kJsonOverrideStartupTimeout);
+        EXPECT_EQ(m_sut->getHealthcheckInterval(), kJsonOverrideHealthcheckInterval);
+        EXPECT_EQ(m_sut->getSocketPermissions().ownerPermissions, kJsonOverrideSocketPermissions.ownerPermissions);
+        EXPECT_EQ(m_sut->getSocketPermissions().groupPermissions, kJsonOverrideSocketPermissions.groupPermissions);
+        EXPECT_EQ(m_sut->getSocketPermissions().otherPermissions, kJsonOverrideSocketPermissions.otherPermissions);
+        EXPECT_EQ(m_sut->getSocketPermissions().owner, kJsonOverrideSocketPermissions.owner);
+        EXPECT_EQ(m_sut->getSocketPermissions().group, kJsonOverrideSocketPermissions.group);
+        EXPECT_EQ(m_sut->getNumOfPreloadedServers(), kJsonOverrideNumOfPreloadedServers);
+        EXPECT_EQ(m_sut->getNumOfFailedPingsBeforeRecovery(), kJsonOverrideNumOfFailedPingsBeforeRecovery);
+        EXPECT_EQ(m_sut->getLoggingLevels().defaultLoggingLevel, kJsonOverrideLoggingLevels.defaultLoggingLevel);
+        EXPECT_EQ(m_sut->getLoggingLevels().clientLoggingLevel, kJsonOverrideLoggingLevels.clientLoggingLevel);
+        EXPECT_EQ(m_sut->getLoggingLevels().sessionServerLoggingLevel,
+                  kJsonOverrideLoggingLevels.sessionServerLoggingLevel);
+        EXPECT_EQ(m_sut->getLoggingLevels().ipcLoggingLevel, kJsonOverrideLoggingLevels.ipcLoggingLevel);
+        EXPECT_EQ(m_sut->getLoggingLevels().serverManagerLoggingLevel,
+                  kJsonOverrideLoggingLevels.serverManagerLoggingLevel);
+        EXPECT_EQ(m_sut->getLoggingLevels().commonLoggingLevel, kJsonOverrideLoggingLevels.commonLoggingLevel);
     }
 
     void jsonConfigReaderWillFailToReadFile()
@@ -152,6 +187,56 @@ public:
         EXPECT_CALL(*m_configOverridesReaderMock, read()).WillOnce(Return(false));
     }
 
+    void jsonConfigOverridesReaderWillReturnNulloptsWithEnvVars(const std::list<std::string> &envVars)
+    {
+        EXPECT_CALL(*m_configReaderFactoryMock, createConfigReader(kRialtoConfigOverridesPath))
+            .WillOnce(Return(m_configOverridesReaderMock));
+        EXPECT_CALL(*m_configOverridesReaderMock, read()).WillOnce(Return(true));
+        EXPECT_CALL(*m_configOverridesReaderMock, getEnvironmentVariables()).WillOnce(Return(envVars));
+        EXPECT_CALL(*m_configOverridesReaderMock, getSessionServerPath()).WillOnce(Return(std::nullopt));
+        EXPECT_CALL(*m_configOverridesReaderMock, getSessionServerStartupTimeout()).WillOnce(Return(std::nullopt));
+        EXPECT_CALL(*m_configOverridesReaderMock, getHealthcheckInterval()).WillOnce(Return(std::nullopt));
+        EXPECT_CALL(*m_configOverridesReaderMock, getSocketPermissions()).WillOnce(Return(std::nullopt));
+        EXPECT_CALL(*m_configOverridesReaderMock, getSocketOwner()).WillOnce(Return(std::nullopt));
+        EXPECT_CALL(*m_configOverridesReaderMock, getSocketGroup()).WillOnce(Return(std::nullopt));
+        EXPECT_CALL(*m_configOverridesReaderMock, getNumOfPreloadedServers()).WillOnce(Return(std::nullopt));
+        EXPECT_CALL(*m_configOverridesReaderMock, getLoggingLevels()).WillOnce(Return(std::nullopt));
+        EXPECT_CALL(*m_configOverridesReaderMock, getNumOfPingsBeforeRecovery()).WillOnce(Return(std::nullopt));
+    }
+
+    void jsonConfigOverridesReaderWillReturnNewValues()
+    {
+        EXPECT_CALL(*m_configReaderFactoryMock, createConfigReader(kRialtoConfigOverridesPath))
+            .WillOnce(Return(m_configOverridesReaderMock));
+        EXPECT_CALL(*m_configOverridesReaderMock, read()).WillOnce(Return(true));
+        EXPECT_CALL(*m_configOverridesReaderMock, getEnvironmentVariables())
+            .WillRepeatedly(Return(kJsonOverrideSessionServerEnvVars));
+        EXPECT_CALL(*m_configOverridesReaderMock, getSessionServerPath())
+            .WillRepeatedly(Return(kJsonOverrideSessionServerPath));
+        EXPECT_CALL(*m_configOverridesReaderMock, getSessionServerStartupTimeout())
+            .WillRepeatedly(Return(kJsonOverrideStartupTimeout));
+        EXPECT_CALL(*m_configOverridesReaderMock, getHealthcheckInterval())
+            .WillRepeatedly(Return(kJsonOverrideHealthcheckInterval));
+        EXPECT_CALL(*m_configOverridesReaderMock, getSocketPermissions())
+            .WillRepeatedly(Return(kJsonOverrideSocketPermissions));
+        EXPECT_CALL(*m_configOverridesReaderMock, getSocketOwner())
+            .WillRepeatedly(Return(kJsonOverrideSocketPermissions.owner));
+        EXPECT_CALL(*m_configOverridesReaderMock, getSocketGroup())
+            .WillRepeatedly(Return(kJsonOverrideSocketPermissions.group));
+        EXPECT_CALL(*m_configOverridesReaderMock, getNumOfPreloadedServers())
+            .WillRepeatedly(Return(kJsonOverrideNumOfPreloadedServers));
+        EXPECT_CALL(*m_configOverridesReaderMock, getLoggingLevels()).WillRepeatedly(Return(kJsonOverrideLoggingLevels));
+        EXPECT_CALL(*m_configOverridesReaderMock, getNumOfPingsBeforeRecovery())
+            .WillRepeatedly(Return(kJsonOverrideNumOfFailedPingsBeforeRecovery));
+    }
+
+    void initSut(std::unique_ptr<StrictMock<ConfigReaderFactoryMock>> &&configReaderFactory)
+    {
+        m_sut = std::make_unique<ConfigHelper>(std::move(configReaderFactory), kServerManagerConfig);
+    }
+
+protected:
+    std::unique_ptr<ConfigHelper> m_sut;
     std::unique_ptr<StrictMock<ConfigReaderFactoryMock>> m_configReaderFactoryMock{
         std::make_unique<StrictMock<ConfigReaderFactoryMock>>()};
     std::shared_ptr<StrictMock<ConfigReaderMock>> m_configReaderMock{std::make_shared<StrictMock<ConfigReaderMock>>()};
@@ -161,38 +246,62 @@ public:
 
 TEST_F(ConfigHelperTests, ShouldNotUseMainJsonValuesWhenFactoryIsNull)
 {
-    ConfigHelper sut{nullptr, kServerManagerConfig};
-    shouldReturnStructValues(sut);
+    initSut(nullptr);
+    shouldReturnStructValues();
 }
 
 TEST_F(ConfigHelperTests, ShouldNotUseMainJsonValuesWhenConfigReaderIsNull)
 {
     jsonConfigReaderWillFailToReadFile();
     jsonConfigOverridesReaderWillFailToReadFile();
-    ConfigHelper sut{std::move(m_configReaderFactoryMock), kServerManagerConfig};
-    shouldReturnStructValues(sut);
+    initSut(std::move(m_configReaderFactoryMock));
+    shouldReturnStructValues();
 }
 
 TEST_F(ConfigHelperTests, ShouldNotUseMainJsonValuesWhenConfigReaderReturnsNullopts)
 {
     jsonConfigReaderWillReturnNulloptsWithEnvVars(kEmptyEnvVars);
     jsonConfigOverridesReaderWillFailToReadFile();
-    ConfigHelper sut{std::move(m_configReaderFactoryMock), kServerManagerConfig};
-    shouldReturnStructValues(sut);
+    initSut(std::move(m_configReaderFactoryMock));
+    shouldReturnStructValues();
 }
 
 TEST_F(ConfigHelperTests, ShouldUseMainJsonValues)
 {
     jsonConfigReaderWillReturnNewValues();
     jsonConfigOverridesReaderWillFailToReadFile();
-    ConfigHelper sut{std::move(m_configReaderFactoryMock), kServerManagerConfig};
-    shouldReturnJsonValues(sut);
+    initSut(std::move(m_configReaderFactoryMock));
+    shouldReturnJsonValues();
 }
 
 TEST_F(ConfigHelperTests, ShouldNotOverrideEnvVariable)
 {
-    jsonConfigReaderWillReturnNulloptsWithEnvVars(kOvwerwrittenEnvVar);
+    jsonConfigReaderWillReturnNulloptsWithEnvVars(kOverwrittenEnvVar);
     jsonConfigOverridesReaderWillFailToReadFile();
-    ConfigHelper sut{std::move(m_configReaderFactoryMock), kServerManagerConfig};
-    shouldReturnStructValues(sut);
+    initSut(std::move(m_configReaderFactoryMock));
+    shouldReturnStructValues();
+}
+
+TEST_F(ConfigHelperTests, ShouldNotUseMainJsonValuesWhenConfigReadersReturnNullopts)
+{
+    jsonConfigReaderWillReturnNulloptsWithEnvVars(kEmptyEnvVars);
+    jsonConfigOverridesReaderWillReturnNulloptsWithEnvVars(kEmptyEnvVars);
+    initSut(std::move(m_configReaderFactoryMock));
+    shouldReturnStructValues();
+}
+
+TEST_F(ConfigHelperTests, ShouldNotOverrideEnvVariableByOverridesFile)
+{
+    jsonConfigReaderWillReturnNulloptsWithEnvVars(kOverwrittenEnvVar);
+    jsonConfigOverridesReaderWillReturnNulloptsWithEnvVars(kOverwrittenEnvVar);
+    initSut(std::move(m_configReaderFactoryMock));
+    shouldReturnStructValues();
+}
+
+TEST_F(ConfigHelperTests, ShouldUseJsonOverrideValues)
+{
+    jsonConfigReaderWillReturnNewValues();
+    jsonConfigOverridesReaderWillReturnNewValues();
+    initSut(std::move(m_configReaderFactoryMock));
+    shouldReturnJsonOverrideValues();
 }
