@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2023 Sky UK
+ * Copyright 2022 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,22 +17,21 @@
  * limitations under the License.
  */
 
-#ifndef RIALTO_SERVERMANAGER_SERVICE_I_CONFIG_READER_FACTORY_H_
-#define RIALTO_SERVERMANAGER_SERVICE_I_CONFIG_READER_FACTORY_H_
+#ifndef RIALTO_SERVERMANAGER_SERVICE_CONFIG_READER_FACTORY_MOCK_H_
+#define RIALTO_SERVERMANAGER_SERVICE_CONFIG_READER_FACTORY_MOCK_H_
 
-#include "IConfigReader.h"
+#include "IConfigReaderFactory.h"
+#include <gmock/gmock.h>
 #include <memory>
 #include <string>
 
 namespace rialto::servermanager::service
 {
-class IConfigReaderFactory
+class ConfigReaderFactoryMock : public IConfigReaderFactory
 {
 public:
-    virtual ~IConfigReaderFactory() = default;
-    virtual std::shared_ptr<IConfigReader> createConfigReader(const std::string &filePath) const = 0;
+    MOCK_METHOD(std::shared_ptr<IConfigReader>, createConfigReader, (const std::string &), (const, override));
 };
-
 } // namespace rialto::servermanager::service
 
-#endif // RIALTO_SERVERMANAGER_SERVICE_I_CONFIG_READER_FACTORY_H_
+#endif // RIALTO_SERVERMANAGER_SERVICE_CONFIG_READER_FACTORY_MOCK_H_
