@@ -24,6 +24,6 @@ namespace firebolt::rialto
 bool operator==(const WebAudioPcmConfig &lhs, const WebAudioPcmConfig &rhs)
 {
     return lhs.rate == rhs.rate && lhs.channels == rhs.channels && lhs.sampleSize == rhs.sampleSize &&
-        lhs.isBigEndian == rhs.isBigEndian && lhs.isSigned == rhs.isSigned && lhs.isFloat == rhs.isFloat;
+           lhs.isBigEndian == rhs.isBigEndian && lhs.isSigned == rhs.isSigned && lhs.isFloat == rhs.isFloat;
 }
 } // namespace firebolt::rialto
