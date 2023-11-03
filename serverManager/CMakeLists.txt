@@ -24,6 +24,16 @@ include( CheckCXXCompilerFlag )
 
 find_package( mongoose REQUIRED )
 
+if( RIALTO_ENABLE_CONFIG_FILE )
+    if (NOT RIALTO_CONFIG_FILE_DIR)
+        set(RIALTO_CONFIG_FILE_DIR /etc)
+    endif()
+
+    if (NOT RIALTO_CONFIG_OVERRIDES_FILE_DIR)
+        set(RIALTO_CONFIG_OVERRIDES_FILE_DIR /opt/persistent/sky)
+    endif()
+endif()
+
 add_subdirectory(common)
 add_subdirectory(ipc)
 add_subdirectory(service)
@@ -57,10 +67,6 @@ target_include_directories (
 )
 
 if( RIALTO_ENABLE_CONFIG_FILE )
-    if (NOT RIALTO_CONFIG_FILE_DIR)
-        set(RIALTO_CONFIG_FILE_DIR /etc/)
-    endif()
-
     configure_file(
         config/rialto-config.in.json
         rialto-config.json

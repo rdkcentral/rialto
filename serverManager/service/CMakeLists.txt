@@ -31,6 +31,7 @@ find_package( PkgConfig REQUIRED )
 
 add_library (
         RialtoServerManager SHARED
+        source/ConfigHelper.cpp
         source/ServerManagerServiceFactory.cpp
         source/ServerManagerService.cpp
         source/ServiceContext.cpp
@@ -66,6 +67,7 @@ target_link_libraries (
 if( RIALTO_ENABLE_CONFIG_FILE )
     add_compile_definitions(RIALTO_ENABLE_CONFIG_FILE)
     add_compile_definitions(RIALTO_CONFIG_PATH="${RIALTO_CONFIG_FILE_DIR}/rialto-config.json")
+    add_compile_definitions(RIALTO_CONFIG_OVERRIDES_PATH="${RIALTO_CONFIG_OVERRIDES_FILE_DIR}/rialto-config-overrides.json")
 
     target_link_libraries(
         RialtoServerManager
