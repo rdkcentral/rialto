@@ -101,6 +101,7 @@ TEST_F(IpcClientTest, UnexpectedDisconnectWithNotification)
     // Exit the ipc loop, simulates an unexpected disconnect
     int32_t ipcChannelCount = 0;
     bool isProcessed = false;
+    bool connectionBrokenCallbackCalled = false;
     auto connectionObserverMock{std::make_shared<StrictMock<firebolt::rialto::client::ConnectionObserverMock>>()};
     EXPECT_CALL(*m_channelMock, process())
         .WillOnce(Invoke(
@@ -114,7 +115,11 @@ TEST_F(IpcClientTest, UnexpectedDisconnectWithNotification)
                 return false;
             }));
 
-    EXPECT_CALL(*connectionObserverMock, onConnectionBroken());
+    EXPECT_CALL(*connectionObserverMock, onConnectionBroken()).WillOnce(Invoke(
+                                                                            [this, &connectionBrokenCallbackCalled]()
+            {
+                connectionBrokenCallbackCalled = true;
+            }));
     EXPECT_NO_THROW(m_sut = std::make_unique<IpcClient>(m_channelFactoryMock, m_controllerFactoryMock,
                                                         m_blockingClosureFactoryMock));
 
@@ -130,6 +135,12 @@ TEST_F(IpcClientTest, UnexpectedDisconnectWithNotification)
     // Wait for shared_ptr to be reset in ipc thread
     while (m_channelMock.use_count() == ipcChannelCount)
     {
+    }
+
+    // Wait for the callback
+    unsigned int kWaitTimeMilliseconds = 5000;
+    for (unsigned int i=0; !connectionBrokenCallbackCalled && i<kWaitTimeMilliseconds; ++i) {
+        usleep(1000); // Sleep for one millisecond
     }
 
     // On destruction IpcClient does not disconnect
