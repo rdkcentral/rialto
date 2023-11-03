@@ -33,7 +33,6 @@ bool ConfigReader::read()
 {
     if (!m_fileReader->isOpen())
     {
-        RIALTO_SERVER_MANAGER_LOG_WARN("Could not open config file");
         return false;
     }
 

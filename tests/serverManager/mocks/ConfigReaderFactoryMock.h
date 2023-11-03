@@ -23,13 +23,14 @@
 #include "IConfigReaderFactory.h"
 #include <gmock/gmock.h>
 #include <memory>
+#include <string>
 
 namespace rialto::servermanager::service
 {
 class ConfigReaderFactoryMock : public IConfigReaderFactory
 {
 public:
-    MOCK_METHOD(std::shared_ptr<IConfigReader>, createConfigReader, (), (const, override));
+    MOCK_METHOD(std::shared_ptr<IConfigReader>, createConfigReader, (const std::string &), (const, override));
 };
 } // namespace rialto::servermanager::service
 

@@ -22,6 +22,7 @@
 
 #include "IConfigReader.h"
 #include <memory>
+#include <string>
 
 namespace rialto::servermanager::service
 {
@@ -29,7 +30,7 @@ class IConfigReaderFactory
 {
 public:
     virtual ~IConfigReaderFactory() = default;
-    virtual std::shared_ptr<IConfigReader> createConfigReader() const = 0;
+    virtual std::shared_ptr<IConfigReader> createConfigReader(const std::string &filePath) const = 0;
 };
 
 } // namespace rialto::servermanager::service

@@ -24,13 +24,13 @@
 
 namespace rialto::servermanager::service
 {
-std::shared_ptr<IConfigReader> ConfigReaderFactory::createConfigReader() const
+std::shared_ptr<IConfigReader> ConfigReaderFactory::createConfigReader(const std::string &filePath) const
 {
     std::unique_ptr<IJsonCppWrapperFactory> jsonCppWrapperFactory = std::make_unique<JsonCppWrapperFactory>();
     std::shared_ptr<IJsonCppWrapper> jsonWrapper = jsonCppWrapperFactory->createJsonCppWrapper();
 
     std::unique_ptr<IFileReaderFactory> fileReaderFactory = std::make_unique<FileReaderFactory>();
-    std::shared_ptr<IFileReader> fileReader = fileReaderFactory->createFileReader(RIALTO_CONFIG_PATH);
+    std::shared_ptr<IFileReader> fileReader = fileReaderFactory->createFileReader(filePath);
 
     return std::make_shared<ConfigReader>(jsonWrapper, fileReader);
 }
