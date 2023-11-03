@@ -22,6 +22,7 @@
 
 #include "IConfigReaderFactory.h"
 #include <memory>
+#include <string>
 
 namespace rialto::servermanager::service
 {
