@@ -115,11 +115,8 @@ TEST_F(IpcClientTest, UnexpectedDisconnectWithNotification)
                 return false;
             }));
 
-    EXPECT_CALL(*connectionObserverMock, onConnectionBroken()).WillOnce(Invoke(
-                                                                            [this, &connectionBrokenCallbackCalled]()
-            {
-                connectionBrokenCallbackCalled = true;
-            }));
+    EXPECT_CALL(*connectionObserverMock, onConnectionBroken())
+        .WillOnce(Invoke([this, &connectionBrokenCallbackCalled]() { connectionBrokenCallbackCalled = true; }));
     EXPECT_NO_THROW(m_sut = std::make_unique<IpcClient>(m_channelFactoryMock, m_controllerFactoryMock,
                                                         m_blockingClosureFactoryMock));
 
@@ -139,7 +136,8 @@ TEST_F(IpcClientTest, UnexpectedDisconnectWithNotification)
 
     // Wait for the callback
     unsigned int kWaitTimeMilliseconds = 5000;
-    for (unsigned int i=0; !connectionBrokenCallbackCalled && i<kWaitTimeMilliseconds; ++i) {
+    for (unsigned int i = 0; !connectionBrokenCallbackCalled && i < kWaitTimeMilliseconds; ++i)
+    {
         usleep(1000); // Sleep for one millisecond
     }
 
