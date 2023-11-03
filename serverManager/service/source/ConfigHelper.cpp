@@ -122,7 +122,7 @@ void ConfigHelper::readConfigFile(const std::string &filePath)
     std::shared_ptr<IConfigReader> configReader = m_configReaderFactory->createConfigReader(filePath);
     if (!configReader || !configReader->read())
     {
-        RIALTO_SERVER_MANAGER_LOG_DEBUG("Config file not present");
+        RIALTO_SERVER_MANAGER_LOG_DEBUG("Config file not present: %s", filePath.c_str());
         return;
     }
 

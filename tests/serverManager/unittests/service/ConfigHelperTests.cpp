@@ -34,8 +34,8 @@ using testing::StrictMock;
 
 namespace
 {
-const std::string kRialtoConfigPath{"/rialto-config.json"};
-const std::string kRialtoConfigOverridesPath{"/rialto-config-overrides.json"};
+const std::string kRialtoConfigPath{"/etc/rialto-config.json"};
+const std::string kRialtoConfigOverridesPath{"/opt/persistent/sky/rialto-config-overrides.json"};
 const ServerManagerConfig kServerManagerConfig{{"env1=var1"},
                                                2,
                                                "sessionServerPath",
