@@ -71,7 +71,6 @@ void WebAudioPlayerTestBase::createWebAudioPlayer()
         .WillOnce(Return(m_dataLen));
     EXPECT_CALL(*m_gstPlayerFactoryMock, createGstWebAudioPlayer(_, m_priority))
         .WillOnce(Return(ByMove(std::move(m_gstPlayer))));
-    std::weak_ptr<const WebAudioConfig> config = m_config;
     EXPECT_CALL(*m_gstPlayerMock, setCaps(m_audioMimeType, _));
     EXPECT_NO_THROW(m_webAudioPlayer =
                         std::make_unique<WebAudioPlayerServerInternal>(m_webAudioPlayerClientMock, m_audioMimeType,
