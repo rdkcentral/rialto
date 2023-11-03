@@ -18,6 +18,7 @@
  */
 
 #include "WebAudioPlayerTestBase.h"
+#include "WebAudioUtil.h"
 #include <memory>
 #include <string>
 #include <utility>

@@ -20,6 +20,7 @@
 #include "GstWebAudioPlayerTestCommon.h"
 #include "HeartbeatHandlerMock.h"
 #include "PlayerTaskMock.h"
+#include "WebAudioUtil.h"
 #include <thread>
 
 using testing::DoAll;

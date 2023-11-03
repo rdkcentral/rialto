@@ -25,6 +25,7 @@
 #include "WebAudioPlayerIpcFactoryMock.h"
 #include "WebAudioPlayerIpcMock.h"
 #include "WebAudioPlayerTestBase.h"
+#include "WebAudioUtil.h"
 
 #include <gtest/gtest.h>
 

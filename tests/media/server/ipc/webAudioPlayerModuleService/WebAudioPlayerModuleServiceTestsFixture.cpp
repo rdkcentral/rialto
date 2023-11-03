@@ -19,6 +19,7 @@
 
 #include "WebAudioPlayerModuleServiceTestsFixture.h"
 #include "WebAudioPlayerModuleService.h"
+#include "WebAudioUtil.h"
 #include <fcntl.h>
 #include <string>
 #include <sys/stat.h>

@@ -311,15 +311,6 @@ struct WebAudioPcmConfig
     bool isBigEndian;    /**< Specifies if sample is stored as big-endian or little-endian format */
     bool isSigned;       /**< Specifies if samples are signed or unsigned */
     bool isFloat;        /**< Specifies if samples are float values or interger values*/
-
-    /**
-     * @brief equality operator (could be replaced with "= default" in c++20)
-     */
-    bool operator==(const WebAudioPcmConfig &rhs) const
-    {
-        return rate == rhs.rate && channels == rhs.channels && sampleSize == rhs.sampleSize &&
-               isBigEndian == rhs.isBigEndian && isSigned == rhs.isSigned && isFloat == rhs.isFloat;
-    }
 };
 
 /**

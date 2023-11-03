@@ -26,6 +26,7 @@ add_library(
         RialtoCommonMisc
         STATIC
         MediaSourceUtil.cpp
+        WebAudioUtil.cpp
     )
 
 target_include_directories(
