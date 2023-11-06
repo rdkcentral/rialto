@@ -18,10 +18,10 @@
 name: Rialto GStreamer Test
 
 on:
-  pull_request:
-    branches:
-      - "master"
-      - "rdkcentral:master"
+  # pull_request:
+  #   branches:
+  #     - "master"
+  #     - "rdkcentral:master"
   push:
     branches:
       - "A_Rialto_390"
