@@ -16,6 +16,11 @@
  // limitations under the License.
 
 {
+    // To override any settings in this file (on debug builds only) you can
+    // create a JSON file at:   @RIALTO_CONFIG_OVERRIDES_FILE_DIR@/rialto-config-overrides.json
+    // with fields that mimic the structure of this file, but with
+    // alternative values
+
     "environment_variables" : [@ENVIRONMENT_VARIABLES@],
     "session_server_path" : @SESSION_SERVER_PATH@,
     "startup_timeout_ms" : @STARTUP_TIMEOUT_MS@,
