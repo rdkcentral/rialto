@@ -99,46 +99,35 @@ TEST_F(IpcClientTest, UnexpectedDisconnectWithNotification)
     expectCreateChannel();
 
     // Exit the ipc loop, simulates an unexpected disconnect
-    int32_t ipcChannelCount = 0;
-    bool isProcessed = false;
     bool connectionBrokenCallbackCalled = false;
     auto connectionObserverMock{std::make_shared<StrictMock<firebolt::rialto::client::ConnectionObserverMock>>()};
     EXPECT_CALL(*m_channelMock, process())
         .WillOnce(Invoke(
-            [this, &ipcChannelCount, &isProcessed, &connectionObserverMock]()
+            [this, &connectionObserverMock]()
             {
-                std::unique_lock<std::mutex> locker(m_eventsLock);
                 m_sut->registerConnectionObserver(connectionObserverMock);
-                ipcChannelCount = m_channelMock.use_count();
-                isProcessed = true;
-                m_eventsCond.notify_all();
                 return false;
             }));
 
     EXPECT_CALL(*connectionObserverMock, onConnectionBroken())
-        .WillOnce(Invoke([this, &connectionBrokenCallbackCalled]() { connectionBrokenCallbackCalled = true; }));
+        .WillOnce(Invoke(
+            [this, &connectionBrokenCallbackCalled]()
+            {
+                std::unique_lock<std::mutex> locker(m_eventsLock);
+                connectionBrokenCallbackCalled = true;
+                m_eventsCond.notify_all();
+            }));
     EXPECT_NO_THROW(m_sut = std::make_unique<IpcClient>(m_channelFactoryMock, m_controllerFactoryMock,
                                                         m_blockingClosureFactoryMock));
 
-    // Wait for process to set the ipcChannelCount
+    // Wait for the callback
     {
         std::unique_lock<std::mutex> locker(m_eventsLock);
-        if (!isProcessed)
+        std::chrono::duration kMaximumWaitTime{std::chrono::seconds(5)};
+        if (!connectionBrokenCallbackCalled)
         {
-            m_eventsCond.wait(locker);
+            m_eventsCond.wait_for(locker, kMaximumWaitTime);
         }
-    }
-
-    // Wait for shared_ptr to be reset in ipc thread
-    while (m_channelMock.use_count() == ipcChannelCount)
-    {
-    }
-
-    // Wait for the callback
-    constexpr unsigned int kWaitTimeMilliseconds = 5000;
-    for (unsigned int i = 0; !connectionBrokenCallbackCalled && i < kWaitTimeMilliseconds; ++i)
-    {
-        usleep(1000); // Sleep for one millisecond
     }
 
     // On destruction IpcClient does not disconnect
