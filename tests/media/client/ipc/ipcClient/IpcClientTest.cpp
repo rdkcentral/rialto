@@ -123,9 +123,10 @@ TEST_F(IpcClientTest, UnexpectedDisconnectWithNotification)
     // Wait for the callback
     {
         std::unique_lock<std::mutex> locker(m_eventsLock);
-        std::chrono::duration kMaximumWaitTime{std::chrono::seconds(5)};
+        constexpr std::chrono::duration kMaximumWaitTime{std::chrono::seconds(5)};
         if (!connectionBrokenCallbackCalled)
         {
+            // The EXPECT_CALL() above will catch a timeout if one occurs
             m_eventsCond.wait_for(locker, kMaximumWaitTime);
         }
     }
