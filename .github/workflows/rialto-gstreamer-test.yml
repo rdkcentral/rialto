@@ -18,10 +18,10 @@
 name: Rialto GStreamer Test
 
 on:
-  # pull_request:
-  #   branches:
-  #     - "master"
-  #     - "rdkcentral:master"
+  pull_request:
+    branches:
+      - "master"
+      - "rdkcentral:master"
   push:
     branches:
       - "A_Rialto_390"
@@ -58,5 +58,6 @@ jobs:
       - name: Run tests
         run: |
           git clone https://github.com/rdkcentral/rialto-gstreamer.git
+          checkout A_Rialto-390
           python rialto-gstreamer/build_ut.py -c -xml -f -cov -b ${{ github.event.before }}
           
