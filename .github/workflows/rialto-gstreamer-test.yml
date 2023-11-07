@@ -36,7 +36,7 @@ jobs:
         uses: actions/checkout@v2
       
       - name: Checkout rialto-gstreamer repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           repository: rdkcentral/rialto-gstreamer
           path: rialto-gstreamer
