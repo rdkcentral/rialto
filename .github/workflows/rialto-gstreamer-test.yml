@@ -34,8 +34,6 @@ jobs:
     steps:
       - name: Checkout PR branch
         uses: actions/checkout@v2
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
           
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -59,6 +57,6 @@ jobs:
         run: |
           git clone https://github.com/rdkcentral/rialto-gstreamer.git
           checkout A_Rialto-390
-          python rialto-gstreamer/build_ut.py -c -xml -f -cov -b ${{ github.event.pull_request.head.ref }}
+          python rialto-gstreamer/build_ut.py -c -xml -f -cov -b ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.event_name == 'push' && github.event.ref }}
 
           
