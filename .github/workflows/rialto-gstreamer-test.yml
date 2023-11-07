@@ -34,12 +34,6 @@ jobs:
     steps:
       - name: Checkout PR branch
         uses: actions/checkout@v2
-      
-      - name: Checkout rialto-gstreamer repo
-        uses: actions/checkout@v4
-        with:
-          repository: rdkcentral/rialto-gstreamer
-          path: rialto-gstreamer
           
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -59,11 +53,15 @@ jobs:
           cd lcov-2.0
           sudo make install
 
-      - name: Run tests
-        run: |
-          git clone https://github.com/rdkcentral/rialto-gstreamer.git  
-          cd rialto-gstreamer    
-          python build_ut.py -c -xml -f -cov -b ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.event_name == 'push' && github.event.ref }}
-        working-directory: rialto-gstreamer
+      - name: Checkout rialto-gstreamer repo
+        uses: actions/checkout@v4
+        with:
+          repository: rdkcentral/rialto-gstreamer
+          path: rialto-gstreamer
+          run: |
+            git clone https://github.com/rdkcentral/rialto-gstreamer.git  
+            cd rialto-gstreamer    
+            python build_ut.py -c -xml -f -cov -b ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.event_name == 'push' && github.event.ref }}
+          working-directory: rialto-gstreamer
 
           
