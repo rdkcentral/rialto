@@ -38,7 +38,7 @@ jobs:
       - name: Checkout rialto-gstreamer repo
         uses: actions/checkout@v4
         with:
-          ref: A_Rialto-390-Gstreamer
+          ref: origin/A_Rialto-390-Gstreamer
           repository: rdkcentral/rialto-gstreamer
           path: rialto-gstreamer
           
