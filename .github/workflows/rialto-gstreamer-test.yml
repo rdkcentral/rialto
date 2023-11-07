@@ -38,7 +38,7 @@ jobs:
       - name: Checkout rialto-gstreamer repo
         uses: actions/checkout@v2
         with:
-          repository: https://github.com/rdkcentral/rialto-gstreamer.git
+          repository: rdkcentral/rialto-gstreamer
           path: rialto-gstreamer
           
       - name: Set up Python
