@@ -57,6 +57,7 @@ jobs:
         run: |
           git clone https://github.com/rdkcentral/rialto-gstreamer.git  
           cd rialto-gstreamer    
-          python build_ut.py -c -xml -f -cov -b ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.event_name == 'push' && github.event.ref }}
+          git checkout A_Rialto-390
+          python rialto-gstreamer/build_ut.py -c -xml -f -cov -b ${{ github.event_name == 'pull_request' && github.event.pull_request.head.ref || github.event_name == 'push' && github.event.ref }}
 
           
