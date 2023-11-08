@@ -62,7 +62,6 @@ jobs:
 
       - name: Run tests
         run: |
-          git clone https://github.com/rdkcentral/rialto-gstreamer.git  
           cd rialto-gstreamer    
           python build_ut.py -c -xml -f -cov -b ${{ github.event_name == 'push' && github.event.ref }}
 
