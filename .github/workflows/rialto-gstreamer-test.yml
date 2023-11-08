@@ -61,9 +61,8 @@ jobs:
           sudo make install
 
       - name: Run tests
-        run: |
-          cd rialto-gstreamer    
-          python build_ut.py -c -xml -f -cov 
+        run: |   
+          python rialto-gstreamer/build_ut.py -c -xml -f -cov -b ${{ github.event_name == 'push' && github.event.ref }}
 
 
           
