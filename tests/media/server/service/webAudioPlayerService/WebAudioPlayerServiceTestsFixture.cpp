@@ -205,13 +205,14 @@ void WebAudioPlayerServiceTests::createWebAudioPlayerService()
 
 void WebAudioPlayerServiceTests::createWebAudioPlayerShouldSucceed()
 {
-    EXPECT_TRUE(m_sut->createWebAudioPlayer(webAudioPlayerHandle, webAudioPlayerClient, audioMimeType, priority, nullptr));
+    EXPECT_TRUE(m_sut->createWebAudioPlayer(webAudioPlayerHandle, webAudioPlayerClient, audioMimeType, priority,
+                                            std::shared_ptr<const firebolt::rialto::WebAudioConfig>{}));
 }
 
 void WebAudioPlayerServiceTests::createWebAudioPlayerShouldFail()
 {
-    EXPECT_FALSE(
-        m_sut->createWebAudioPlayer(webAudioPlayerHandle, webAudioPlayerClient, audioMimeType, priority, nullptr));
+    EXPECT_FALSE(m_sut->createWebAudioPlayer(webAudioPlayerHandle, webAudioPlayerClient, audioMimeType, priority,
+                                             std::shared_ptr<const firebolt::rialto::WebAudioConfig>{}));
 }
 
 void WebAudioPlayerServiceTests::destroyWebAudioPlayerShouldSucceed()

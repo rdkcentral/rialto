@@ -43,7 +43,7 @@ std::shared_ptr<IWebAudioPlayerIpcFactory> IWebAudioPlayerIpcFactory::getFactory
 
 std::unique_ptr<IWebAudioPlayerIpc>
 WebAudioPlayerIpcFactory::createWebAudioPlayerIpc(IWebAudioPlayerIpcClient *client, const std::string &audioMimeType,
-                                                  const uint32_t priority, const WebAudioConfig *config,
+                                                  const uint32_t priority, std::weak_ptr<const WebAudioConfig> config,
                                                   std::weak_ptr<IIpcClient> ipcClientParam)
 {
     std::unique_ptr<IWebAudioPlayerIpc> webAudioPlayerIpc;
@@ -64,7 +64,8 @@ WebAudioPlayerIpcFactory::createWebAudioPlayerIpc(IWebAudioPlayerIpcClient *clie
 }
 
 WebAudioPlayerIpc::WebAudioPlayerIpc(IWebAudioPlayerIpcClient *client, const std::string &audioMimeType,
-                                     const uint32_t priority, const WebAudioConfig *config, IIpcClient &ipcClient,
+                                     const uint32_t priority, std::weak_ptr<const WebAudioConfig> config,
+                                     IIpcClient &ipcClient,
                                      const std::shared_ptr<common::IEventThreadFactory> &eventThreadFactory)
     : IpcModule(ipcClient), m_webAudioPlayerIpcClient(client),
       m_eventThread(eventThreadFactory->createEventThread("rialto-web-audio-player-events")), m_webAudioPlayerHandle(-1)
@@ -439,7 +440,7 @@ bool WebAudioPlayerIpc::getVolume(double &volume)
 }
 
 bool WebAudioPlayerIpc::createWebAudioPlayer(const std::string &audioMimeType, const uint32_t priority,
-                                             const WebAudioConfig *config)
+                                             std::weak_ptr<const WebAudioConfig> webAudioConfig)
 {
     if (!reattachChannelIfRequired())
     {
@@ -450,6 +451,7 @@ bool WebAudioPlayerIpc::createWebAudioPlayer(const std::string &audioMimeType, c
     firebolt::rialto::CreateWebAudioPlayerRequest request;
     request.set_audio_mime_type(audioMimeType);
     request.set_priority(priority);
+    std::shared_ptr<const WebAudioConfig> config = webAudioConfig.lock();
     if (config)
     {
         ::firebolt::rialto::CreateWebAudioPlayerRequest_WebAudioPcmConfig pcm_config;

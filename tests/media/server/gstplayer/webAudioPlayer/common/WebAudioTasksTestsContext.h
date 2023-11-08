@@ -56,7 +56,7 @@ public:
     gchar m_capsStr{};
 
     // Standard members
-    firebolt::rialto::WebAudioConfig m_config;
+    std::shared_ptr<firebolt::rialto::WebAudioConfig> m_config = std::make_shared<firebolt::rialto::WebAudioConfig>();
     uint8_t m_mainPtr{};
     uint8_t m_wrapPtr{};
 };

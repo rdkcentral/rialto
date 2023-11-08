@@ -53,7 +53,7 @@ void WebAudioPlayerService::clearWebAudioPlayers()
 bool WebAudioPlayerService::createWebAudioPlayer(int handle,
                                                  const std::shared_ptr<IWebAudioPlayerClient> &webAudioPlayerClient,
                                                  const std::string &audioMimeType, const uint32_t priority,
-                                                 const WebAudioConfig *config)
+                                                 std::weak_ptr<const WebAudioConfig> config)
 {
     RIALTO_SERVER_LOG_DEBUG("WebAudioPlayerService requested to create new WebAudioPlayer with id: %d", handle);
     if (!m_playbackService.isActive())

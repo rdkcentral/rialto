@@ -84,7 +84,7 @@ public:
      * @retval the new SetCaps task instance.
      */
     virtual std::unique_ptr<IPlayerTask> createSetCaps(WebAudioPlayerContext &context, const std::string &audioMimeType,
-                                                       const WebAudioConfig *config) const = 0;
+                                                       std::weak_ptr<const WebAudioConfig> config) const = 0;
 
     /**
      * @brief Creates a Eos task.

@@ -49,7 +49,7 @@ class WebAudioPlayerTestBase : public ::testing::Test
 protected:
     const std::string m_audioMimeType{"audio/x-raw"};
     const uint32_t m_priority{5};
-    WebAudioConfig m_config{};
+    std::shared_ptr<WebAudioConfig> m_config = std::make_shared<WebAudioConfig>();
 
     IWebAudioPlayerIpcClient *m_webAudioPlayerCallback;
 

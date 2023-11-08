@@ -120,17 +120,17 @@ void WebAudioPlayerModuleService::createWebAudioPlayer(::google::protobuf::RpcCo
         return;
     }
 
-    WebAudioConfig config;
+    std::shared_ptr<WebAudioConfig> config = std::make_shared<WebAudioConfig>();
     if (request->has_config())
     {
         if (request->config().has_pcm())
         {
-            config.pcm.rate = request->config().pcm().rate();
-            config.pcm.channels = request->config().pcm().channels();
-            config.pcm.sampleSize = request->config().pcm().sample_size();
-            config.pcm.isBigEndian = request->config().pcm().is_big_endian();
-            config.pcm.isSigned = request->config().pcm().is_signed();
-            config.pcm.isFloat = request->config().pcm().is_float();
+            config->pcm.rate = request->config().pcm().rate();
+            config->pcm.channels = request->config().pcm().channels();
+            config->pcm.sampleSize = request->config().pcm().sample_size();
+            config->pcm.isBigEndian = request->config().pcm().is_big_endian();
+            config->pcm.isSigned = request->config().pcm().is_signed();
+            config->pcm.isFloat = request->config().pcm().is_float();
         }
     }
     int handle = generateHandle();
@@ -138,7 +138,7 @@ void WebAudioPlayerModuleService::createWebAudioPlayer(::google::protobuf::RpcCo
         m_webAudioPlayerService.createWebAudioPlayer(handle,
                                                      std::make_shared<WebAudioPlayerClient>(handle,
                                                                                             ipcController->getClient()),
-                                                     request->audio_mime_type(), request->priority(), &config);
+                                                     request->audio_mime_type(), request->priority(), config);
     if (webAudioPlayerCreated)
     {
         // Assume that IPC library works well and client is present

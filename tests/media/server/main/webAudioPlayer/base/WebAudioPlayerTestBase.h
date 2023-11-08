@@ -72,7 +72,7 @@ protected:
     const int m_webAudioPlayerHandle{1};
     const std::string m_audioMimeType{"audio/x-raw"};
     const uint32_t m_priority{5};
-    WebAudioConfig m_config{};
+    std::shared_ptr<WebAudioConfig> m_config = std::make_shared<WebAudioConfig>();
     const int32_t m_kMainThreadClientId{65};
     uint8_t m_dataPtr{4};
     uint32_t m_dataOffset{2000};

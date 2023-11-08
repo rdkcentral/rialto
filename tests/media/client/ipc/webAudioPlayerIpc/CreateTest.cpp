@@ -62,7 +62,7 @@ TEST_F(RialtoClientCreateWebAudioPlayerIpcTest, CreateDestroy)
         .WillOnce(WithArgs<3>(Invoke(this, &WebAudioPlayerIpcTestBase::setCreateWebAudioPlayerResponse)));
 
     EXPECT_NO_THROW(m_webAudioPlayerIpc = std::make_unique<WebAudioPlayerIpc>(m_clientMock, m_audioMimeType, m_priority,
-                                                                              &m_config, *m_ipcClientMock,
+                                                                              m_config, *m_ipcClientMock,
                                                                               m_eventThreadFactoryMock));
     EXPECT_NE(m_webAudioPlayerIpc, nullptr);
 
@@ -98,7 +98,7 @@ TEST_F(RialtoClientCreateWebAudioPlayerIpcTest, FactoryCreatesObject)
         .WillOnce(WithArgs<3>(Invoke(this, &WebAudioPlayerIpcTestBase::setCreateWebAudioPlayerResponse)));
 
     EXPECT_NO_THROW(m_webAudioPlayerIpc = factory->createWebAudioPlayerIpc(m_clientMock, m_audioMimeType, m_priority,
-                                                                           &m_config, m_ipcClientMock));
+                                                                           m_config, m_ipcClientMock));
     EXPECT_NE(m_webAudioPlayerIpc, nullptr);
 
     /* destroy media player */
@@ -122,7 +122,7 @@ TEST_F(RialtoClientCreateWebAudioPlayerIpcTest, CreateNoIpcChannel)
     EXPECT_CALL(*m_eventThreadFactoryMock, createEventThread(_)).WillOnce(Return(ByMove(std::move(m_eventThread))));
 
     EXPECT_THROW(m_webAudioPlayerIpc = std::make_unique<WebAudioPlayerIpc>(m_clientMock, m_audioMimeType, m_priority,
-                                                                           &m_config, *m_ipcClientMock,
+                                                                           m_config, *m_ipcClientMock,
                                                                            m_eventThreadFactoryMock),
                  std::runtime_error);
 }
@@ -138,7 +138,7 @@ TEST_F(RialtoClientCreateWebAudioPlayerIpcTest, CreateIpcChannelDisconnected)
     EXPECT_CALL(*m_ipcClientMock, reconnect()).WillOnce(Return(false));
 
     EXPECT_THROW(m_webAudioPlayerIpc = std::make_unique<WebAudioPlayerIpc>(m_clientMock, m_audioMimeType, m_priority,
-                                                                           &m_config, *m_ipcClientMock,
+                                                                           m_config, *m_ipcClientMock,
                                                                            m_eventThreadFactoryMock),
                  std::runtime_error);
 }
@@ -154,7 +154,7 @@ TEST_F(RialtoClientCreateWebAudioPlayerIpcTest, SubscribeEventFailure)
     EXPECT_CALL(*m_channelMock, subscribeImpl("firebolt.rialto.WebAudioPlayerStateEvent", _, _)).WillOnce(Return(-1));
 
     EXPECT_THROW(m_webAudioPlayerIpc = std::make_unique<WebAudioPlayerIpc>(m_clientMock, m_audioMimeType, m_priority,
-                                                                           &m_config, *m_ipcClientMock,
+                                                                           m_config, *m_ipcClientMock,
                                                                            m_eventThreadFactoryMock),
                  std::runtime_error);
 }
@@ -173,7 +173,7 @@ TEST_F(RialtoClientCreateWebAudioPlayerIpcTest, CreateSessionFailure)
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("createWebAudioPlayer"), _, _, _, _));
 
     EXPECT_THROW(m_webAudioPlayerIpc = std::make_unique<WebAudioPlayerIpc>(m_clientMock, m_audioMimeType, m_priority,
-                                                                           &m_config, *m_ipcClientMock,
+                                                                           m_config, *m_ipcClientMock,
                                                                            m_eventThreadFactoryMock),
                  std::runtime_error);
 }
