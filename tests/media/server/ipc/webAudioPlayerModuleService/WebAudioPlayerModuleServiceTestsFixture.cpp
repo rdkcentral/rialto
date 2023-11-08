@@ -19,6 +19,7 @@
 
 #include "WebAudioPlayerModuleServiceTestsFixture.h"
 #include "WebAudioPlayerModuleService.h"
+#include "WebAudioUtil.h"
 #include <fcntl.h>
 #include <string>
 #include <sys/stat.h>
@@ -58,12 +59,8 @@ MATCHER_P(WebAudioPlayerStateEventMatcher, playerState, "")
 
 MATCHER_P(PcmConfigMatcher, expectedPcmConfig, "")
 {
-    firebolt::rialto::WebAudioPcmConfig actualPcmConfig = arg->pcm;
-    return ((actualPcmConfig.rate == expectedPcmConfig.rate) && (actualPcmConfig.channels == expectedPcmConfig.channels) &&
-            (actualPcmConfig.sampleSize == expectedPcmConfig.sampleSize) &&
-            (actualPcmConfig.isBigEndian == expectedPcmConfig.isBigEndian) &&
-            (actualPcmConfig.isSigned == expectedPcmConfig.isSigned) &&
-            (actualPcmConfig.isFloat == expectedPcmConfig.isFloat));
+    std::shared_ptr<const firebolt::rialto::WebAudioConfig> argConfig = arg.lock();
+    return argConfig && argConfig->pcm == expectedPcmConfig;
 }
 
 namespace firebolt::rialto

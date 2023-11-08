@@ -85,7 +85,7 @@ public:
      */
     virtual std::unique_ptr<IWebAudioPlayer>
     createWebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
-                         const uint32_t priority, const WebAudioConfig *config,
+                         const uint32_t priority, std::weak_ptr<const WebAudioConfig> config,
                          std::weak_ptr<client::IWebAudioPlayerIpcFactory> webAudioPlayerIpcFactory = {},
                          std::weak_ptr<client::IClientController> clientController = {}) const = 0;
 };

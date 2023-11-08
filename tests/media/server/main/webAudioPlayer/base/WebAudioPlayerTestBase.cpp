@@ -18,9 +18,19 @@
  */
 
 #include "WebAudioPlayerTestBase.h"
+#include "WebAudioUtil.h"
 #include <memory>
 #include <string>
 #include <utility>
+
+namespace
+{
+MATCHER_P(webAudioConfigMatcher, config, "")
+{
+    std::shared_ptr<const firebolt::rialto::WebAudioConfig> argConfig = arg.lock();
+    return argConfig && argConfig->pcm == config->pcm;
+}
+} // namespace
 
 WebAudioPlayerTestBase::WebAudioPlayerTestBase()
     : m_webAudioPlayerClientMock{std::make_shared<StrictMock<WebAudioPlayerClientMock>>()},
@@ -32,13 +42,13 @@ WebAudioPlayerTestBase::WebAudioPlayerTestBase()
       m_gstPlayerMock{static_cast<StrictMock<GstWebAudioPlayerMock> *>(m_gstPlayer.get())},
       m_timerFactoryMock{std::make_shared<StrictMock<TimerFactoryMock>>()}, m_timerMock{nullptr}
 {
-    m_config.pcm.rate = 1;
-    m_config.pcm.channels = 2;
-    m_config.pcm.sampleSize = 16;
-    m_config.pcm.isBigEndian = false;
-    m_config.pcm.isSigned = false;
-    m_config.pcm.isFloat = false;
-    m_bytesPerFrame = m_config.pcm.channels * (m_config.pcm.sampleSize / 8);
+    m_config->pcm.rate = 1;
+    m_config->pcm.channels = 2;
+    m_config->pcm.sampleSize = 16;
+    m_config->pcm.isBigEndian = false;
+    m_config->pcm.isSigned = false;
+    m_config->pcm.isFloat = false;
+    m_bytesPerFrame = m_config->pcm.channels * (m_config->pcm.sampleSize / 8);
     m_maxFrame = m_dataLen / m_bytesPerFrame;
 }
 
@@ -61,11 +71,10 @@ void WebAudioPlayerTestBase::createWebAudioPlayer()
         .WillOnce(Return(m_dataLen));
     EXPECT_CALL(*m_gstPlayerFactoryMock, createGstWebAudioPlayer(_, m_priority))
         .WillOnce(Return(ByMove(std::move(m_gstPlayer))));
-    EXPECT_CALL(*m_gstPlayerMock, setCaps(m_audioMimeType, &m_config));
-
+    EXPECT_CALL(*m_gstPlayerMock, setCaps(m_audioMimeType, _));
     EXPECT_NO_THROW(m_webAudioPlayer =
                         std::make_unique<WebAudioPlayerServerInternal>(m_webAudioPlayerClientMock, m_audioMimeType,
-                                                                       m_priority, &m_config, m_sharedMemoryBufferMock,
+                                                                       m_priority, m_config, m_sharedMemoryBufferMock,
                                                                        m_webAudioPlayerHandle, m_mainThreadFactoryMock,
                                                                        m_gstPlayerFactoryMock, m_timerFactoryMock));
     EXPECT_NE(m_webAudioPlayer, nullptr);
@@ -212,5 +221,5 @@ void WebAudioPlayerTestBase::expectConstructionOfWebAudioPlayerServerInternal()
         .WillOnce(Return(m_dataLen));
     EXPECT_CALL(*m_gstPlayerFactoryMock, createGstWebAudioPlayer(_, m_priority))
         .WillOnce(Return(ByMove(std::move(m_gstPlayer))));
-    EXPECT_CALL(*m_gstPlayerMock, setCaps(m_audioMimeType, &m_config));
+    EXPECT_CALL(*m_gstPlayerMock, setCaps(m_audioMimeType, webAudioConfigMatcher(m_config)));
 }

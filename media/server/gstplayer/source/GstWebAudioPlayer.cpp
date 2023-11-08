@@ -296,7 +296,7 @@ void GstWebAudioPlayer::resetWorkerThread()
     m_workerThread.reset();
 }
 
-void GstWebAudioPlayer::setCaps(const std::string &audioMimeType, const WebAudioConfig *config)
+void GstWebAudioPlayer::setCaps(const std::string &audioMimeType, std::weak_ptr<const WebAudioConfig> config)
 {
     m_workerThread->enqueueTask(m_taskFactory->createSetCaps(m_context, audioMimeType, config));
 }

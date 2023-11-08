@@ -56,7 +56,7 @@ std::shared_ptr<IWebAudioPlayerServerInternalFactory> IWebAudioPlayerServerInter
 
 std::unique_ptr<IWebAudioPlayer> WebAudioPlayerServerInternalFactory::createWebAudioPlayer(
     std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType, const uint32_t priority,
-    const WebAudioConfig *config, std::weak_ptr<client::IWebAudioPlayerIpcFactory> webAudioPlayerIpcFactory,
+    std::weak_ptr<const WebAudioConfig> config, std::weak_ptr<client::IWebAudioPlayerIpcFactory> webAudioPlayerIpcFactory,
     std::weak_ptr<client::IClientController> clientController) const
 {
     RIALTO_SERVER_LOG_ERROR(
@@ -66,7 +66,7 @@ std::unique_ptr<IWebAudioPlayer> WebAudioPlayerServerInternalFactory::createWebA
 
 std::unique_ptr<IWebAudioPlayerServerInternal> WebAudioPlayerServerInternalFactory::createWebAudioPlayerServerInternal(
     std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType, const uint32_t priority,
-    const WebAudioConfig *config, const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle,
+    std::weak_ptr<const WebAudioConfig> config, const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle,
     const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
     const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory,
     std::weak_ptr<common::ITimerFactory> timerFactory) const
@@ -88,8 +88,8 @@ std::unique_ptr<IWebAudioPlayerServerInternal> WebAudioPlayerServerInternalFacto
 
 WebAudioPlayerServerInternal::WebAudioPlayerServerInternal(
     std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType, const uint32_t priority,
-    const WebAudioConfig *config, const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle,
-    const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
+    std::weak_ptr<const WebAudioConfig> webAudioConfig, const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer,
+    int handle, const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
     const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory, std::weak_ptr<common::ITimerFactory> timerFactory)
     : m_webAudioPlayerClient(client), m_shmBuffer{shmBuffer}, m_priority{priority}, m_shmId{handle}, m_shmPtr{nullptr},
       m_partitionOffset{0}, m_maxDataLength{0}, m_availableBuffer{}, m_expectWriteBuffer{false},
@@ -99,6 +99,7 @@ WebAudioPlayerServerInternal::WebAudioPlayerServerInternal(
 
     if (audioMimeType == "audio/x-raw")
     {
+        std::shared_ptr<const WebAudioConfig> config = webAudioConfig.lock();
         if (config == nullptr)
         {
             throw std::runtime_error("Config is null for 'audio/x-raw'");
@@ -123,7 +124,7 @@ WebAudioPlayerServerInternal::WebAudioPlayerServerInternal(
     m_mainThreadClientId = m_mainThread->registerClient();
 
     bool result = false;
-    auto task = [&]() { result = initWebAudioPlayerInternal(audioMimeType, config, gstPlayerFactory); };
+    auto task = [&]() { result = initWebAudioPlayerInternal(audioMimeType, webAudioConfig, gstPlayerFactory); };
 
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     if (!result)
@@ -133,7 +134,7 @@ WebAudioPlayerServerInternal::WebAudioPlayerServerInternal(
 }
 
 bool WebAudioPlayerServerInternal::initWebAudioPlayerInternal(
-    const std::string &audioMimeType, const WebAudioConfig *config,
+    const std::string &audioMimeType, std::weak_ptr<const WebAudioConfig> config,
     const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory)
 {
     if (!m_shmBuffer->mapPartition(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, m_shmId))
@@ -522,7 +523,8 @@ void WebAudioPlayerServerInternal::notifyState(WebAudioPlayerState state)
     m_mainThread->enqueueTask(m_mainThreadClientId, task);
 }
 
-bool WebAudioPlayerServerInternal::initGstWebAudioPlayer(const std::string &audioMimeType, const WebAudioConfig *config,
+bool WebAudioPlayerServerInternal::initGstWebAudioPlayer(const std::string &audioMimeType,
+                                                         std::weak_ptr<const WebAudioConfig> config,
                                                          const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory)
 {
     m_gstPlayer = gstPlayerFactory->createGstWebAudioPlayer(this, m_priority);

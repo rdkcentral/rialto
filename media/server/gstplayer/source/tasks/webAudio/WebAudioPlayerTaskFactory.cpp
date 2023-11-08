@@ -64,7 +64,7 @@ std::unique_ptr<IPlayerTask> WebAudioPlayerTaskFactory::createEos(WebAudioPlayer
 
 std::unique_ptr<IPlayerTask> WebAudioPlayerTaskFactory::createSetCaps(WebAudioPlayerContext &context,
                                                                       const std::string &audioMimeType,
-                                                                      const WebAudioConfig *config) const
+                                                                      std::weak_ptr<const WebAudioConfig> config) const
 {
     return std::make_unique<tasks::webaudio::SetCaps>(context, m_gstWrapper, m_glibWrapper, audioMimeType, config);
 }

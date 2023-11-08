@@ -29,12 +29,12 @@ void WebAudioPlayerTestBase::SetUp() // NOLINT(build/function_format)
     m_clientControllerMock = std::make_shared<StrictMock<ClientControllerMock>>();
 
     // Init pcm config
-    m_config.pcm.rate = 1;
-    m_config.pcm.channels = 2;
-    m_config.pcm.sampleSize = 16;
-    m_config.pcm.isBigEndian = false;
-    m_config.pcm.isSigned = false;
-    m_config.pcm.isFloat = false;
+    m_config->pcm.rate = 1;
+    m_config->pcm.channels = 2;
+    m_config->pcm.sampleSize = 16;
+    m_config->pcm.isBigEndian = false;
+    m_config->pcm.isSigned = false;
+    m_config->pcm.isFloat = false;
 }
 
 void WebAudioPlayerTestBase::TearDown() // NOLINT(build/function_format)
@@ -60,7 +60,7 @@ void WebAudioPlayerTestBase::createWebAudioPlayer()
         .WillOnce(Return(ByMove(std::move(webAudioPlayerIpcMock))));
 
     EXPECT_NO_THROW(m_webAudioPlayer = std::make_unique<WebAudioPlayer>(m_webAudioPlayerClientMock, m_audioMimeType,
-                                                                        m_priority, &m_config,
+                                                                        m_priority, m_config,
                                                                         m_webAudioPlayerIpcFactoryMock,
                                                                         *m_clientControllerMock));
 

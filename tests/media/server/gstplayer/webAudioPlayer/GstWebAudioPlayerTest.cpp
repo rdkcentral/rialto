@@ -20,10 +20,20 @@
 #include "GstWebAudioPlayerTestCommon.h"
 #include "HeartbeatHandlerMock.h"
 #include "PlayerTaskMock.h"
+#include "WebAudioUtil.h"
 #include <thread>
 
 using testing::DoAll;
 using testing::WithArgs;
+
+namespace
+{
+MATCHER_P(webAudioConfigMatcher, config, "")
+{
+    std::shared_ptr<const firebolt::rialto::WebAudioConfig> argConfig = arg.lock();
+    return argConfig && argConfig->pcm == config->pcm;
+}
+} // namespace
 
 class GstWebAudioPlayerTest : public GstWebAudioPlayerTestCommon
 {
@@ -61,13 +71,14 @@ public:
 TEST_F(GstWebAudioPlayerTest, shouldSetCaps)
 {
     const std::string audioMimeType{"audio/x-raw"};
-    const WebAudioConfig config{};
+    std::shared_ptr<const WebAudioConfig> config = std::make_shared<const WebAudioConfig>();
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createSetCaps(_, audioMimeType, &config)).WillOnce(Return(ByMove(std::move(task))));
+    EXPECT_CALL(m_taskFactoryMock, createSetCaps(_, audioMimeType, webAudioConfigMatcher(config)))
+        .WillOnce(Return(ByMove(std::move(task))));
     executeTaskWhenEnqueued();
 
-    m_sut->setCaps(audioMimeType, &config);
+    m_sut->setCaps(audioMimeType, config);
 }
 
 TEST_F(GstWebAudioPlayerTest, shouldPlay)

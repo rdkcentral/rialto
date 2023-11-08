@@ -49,7 +49,7 @@ public:
 
     bool createWebAudioPlayer(int handle, const std::shared_ptr<IWebAudioPlayerClient> &webAudioPlayerClient,
                               const std::string &audioMimeType, const uint32_t priority,
-                              const WebAudioConfig *config) override;
+                              std::weak_ptr<const WebAudioConfig> config) override;
     bool destroyWebAudioPlayer(int handle) override;
     bool play(int handle) override;
     bool pause(int handle) override;

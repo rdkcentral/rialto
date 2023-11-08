@@ -43,7 +43,7 @@ public:
 
     virtual bool createWebAudioPlayer(int handle, const std::shared_ptr<IWebAudioPlayerClient> &webAudioPlayerClient,
                                       const std::string &audioMimeType, const uint32_t priority,
-                                      const WebAudioConfig *config) = 0;
+                                      std::weak_ptr<const WebAudioConfig> config) = 0;
     virtual bool destroyWebAudioPlayer(int handle) = 0;
     virtual bool play(int handle) = 0;
     virtual bool pause(int handle) = 0;

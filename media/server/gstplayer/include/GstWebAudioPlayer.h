@@ -81,7 +81,7 @@ public:
      */
     virtual ~GstWebAudioPlayer();
 
-    void setCaps(const std::string &audioMimeType, const WebAudioConfig *config) override;
+    void setCaps(const std::string &audioMimeType, std::weak_ptr<const WebAudioConfig> config) override;
     void play() override;
     void pause() override;
     void setVolume(double volume) override;

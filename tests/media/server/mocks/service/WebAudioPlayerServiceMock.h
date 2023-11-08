@@ -33,7 +33,7 @@ class WebAudioPlayerServiceMock : public IWebAudioPlayerService
 public:
     MOCK_METHOD(bool, createWebAudioPlayer,
                 (int handle, const std::shared_ptr<IWebAudioPlayerClient> &webAudioPlayerClient,
-                 const std::string &audioMimeType, const uint32_t priority, const WebAudioConfig *config),
+                 const std::string &audioMimeType, const uint32_t priority, std::weak_ptr<const WebAudioConfig> config),
                 (override));
     MOCK_METHOD(bool, destroyWebAudioPlayer, (int handle), (override));
     MOCK_METHOD(bool, play, (int handle), (override));

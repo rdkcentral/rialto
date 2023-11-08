@@ -102,13 +102,18 @@ protected:
 
 SetCaps::SetCaps(WebAudioPlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper,
                  std::shared_ptr<IGlibWrapper> glibWrapper, const std::string &audioMimeType,
-                 const WebAudioConfig *config)
+                 std::weak_ptr<const WebAudioConfig> webAudioConfig)
     : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_audioMimeType{audioMimeType}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetCaps");
 
     if (m_audioMimeType == "audio/x-raw")
     {
+        std::shared_ptr<const WebAudioConfig> config = webAudioConfig.lock();
+        if (config == nullptr)
+        {
+            throw std::runtime_error("Config is null for 'audio/x-raw'");
+        }
         m_config.pcm = config->pcm;
     }
 }
