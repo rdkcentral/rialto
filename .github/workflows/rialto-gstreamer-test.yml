@@ -38,8 +38,8 @@ jobs:
       - name: Checkout rialto-gstreamer repo
         uses: actions/checkout@v4
         with:
-          ref: origin/A_Rialto-390-Gstreamer
           repository: rdkcentral/rialto-gstreamer
+          ref: origin/A_Rialto-390-Gstreamer
           path: rialto-gstreamer
           
       - name: Set up Python
