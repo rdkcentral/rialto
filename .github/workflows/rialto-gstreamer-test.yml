@@ -65,23 +65,9 @@ jobs:
           cd rialto-gstreamer    
           python build_ut.py -c -xml -f -cov -b ${{ github.event.pull_request.head.ref }}
 
-      # Process the test results
-      - name: Check results
-        uses: dorny/test-reporter@v1
+        # Processes the results of the unittests and the lcov output
+      - name: Process output
+        uses: ./.github/workflows/actions/process_results_ut
         if: success() || failure()
         with:
-          name: GTests
-          path: build/*gtest_result.xml
-          reporter: java-junit    
-          
-      # Upload logs on failure
-      - name: Upload logs
-        uses: actions/upload-artifact@v3
-        if: failure()
-        with:
-          name: logs
-          path: |
-            gtest_result.log
-            build/*gtest_result.xml
-
-          
+          suite: 'GstRialtoUnitTests'
