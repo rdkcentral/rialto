@@ -63,7 +63,7 @@ jobs:
       - name: Run tests
         run: |
           cd rialto-gstreamer    
-          python build_ut.py -c -xml -f -cov -b
+          python build_ut.py -c -xml -f -cov
 
 
           
