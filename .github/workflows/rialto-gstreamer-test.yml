@@ -63,7 +63,16 @@ jobs:
       - name: Run tests
         run: |
           cd rialto-gstreamer    
-          python build_ut.py -c -xml -f -cov
-
+          python build_ut.py -c -xml -f -cov -b ${{ github.event.pull_request.head.ref }}
+          
+      # Upload logs on failure
+      - name: Upload logs
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: logs
+          path: |
+            gtest_result.log
+            build/*gtest_result.xml
 
           
