@@ -64,6 +64,15 @@ jobs:
         run: |
           cd rialto-gstreamer    
           python build_ut.py -c -xml -f -cov -b ${{ github.event.pull_request.head.ref }}
+
+      # Process the test results
+      - name: Check results
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: GTests
+          path: build/*gtest_result.xml
+          reporter: java-junit    
           
       # Upload logs on failure
       - name: Upload logs
