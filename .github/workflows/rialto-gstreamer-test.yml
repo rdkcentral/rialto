@@ -40,7 +40,7 @@ jobs:
         with:
           repository: rdkcentral/rialto-gstreamer
           path: rialto-gstreamer
-          ref: origin/A_Rialto-390-Gstreamer
+          ref: A_Rialto-390-Gstreamer
           
       - name: Set up Python
         uses: actions/setup-python@v2
