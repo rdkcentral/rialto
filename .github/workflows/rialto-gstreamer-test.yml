@@ -33,12 +33,10 @@ jobs:
 
     steps:
       - name: Checkout PR branch
-        uses: actions/checkout@v4
-        with:
-          path: master
+        uses: actions/checkout@v2
       
       - name: Checkout rialto-gstreamer repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v2
         with:
           repository: rdkcentral/rialto-gstreamer
           path: rialto-gstreamer
