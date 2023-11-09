@@ -29,19 +29,21 @@ using firebolt::rialto::common::TimerType;
 TEST(TimerTests, ShouldTimeoutOneShotTimer)
 {
     std::mutex mtx;
-    std::condition_variable cv;
-    std::unique_lock<std::mutex> lock{mtx};
-    bool callFlag{false};
-    std::unique_ptr<ITimer> timer{ITimerFactory::getFactory()->createTimer(std::chrono::milliseconds{100},
-                                                                           [&]()
-                                                                           {
-                                                                               std::unique_lock<std::mutex> lock{mtx};
-                                                                               callFlag = true;
-                                                                               cv.notify_one();
-                                                                           })};
-    EXPECT_TRUE(timer->isActive());
-    cv.wait_for(lock, std::chrono::milliseconds{110}, [&]() { return callFlag; });
-    EXPECT_TRUE(callFlag);
+    { // This scope is required to suppress a false warning from cppcheck (about the mutex above)
+        std::condition_variable cv;
+        std::unique_lock<std::mutex> lock{mtx};
+        bool callFlag{false};
+        std::unique_ptr<ITimer> timer{ITimerFactory::getFactory()->createTimer(std::chrono::milliseconds{100},
+                                                                               [&]()
+                                                                               {
+                                                                                   std::unique_lock<std::mutex> lock{mtx};
+                                                                                   callFlag = true;
+                                                                                   cv.notify_one();
+                                                                               })};
+        EXPECT_TRUE(timer->isActive());
+        cv.wait_for(lock, std::chrono::milliseconds{110}, [&]() { return callFlag; });
+        EXPECT_TRUE(callFlag);
+    }
 }
 
 TEST(TimerTests, ShouldCancelTimer)
@@ -58,19 +60,21 @@ TEST(TimerTests, ShouldCancelTimer)
 TEST(TimerTests, ShouldTimeoutPeriodicTimer)
 {
     std::mutex mtx;
-    std::condition_variable cv;
-    std::unique_lock<std::mutex> lock{mtx};
-    unsigned callCounter{0};
-    std::unique_ptr<ITimer> timer{ITimerFactory::getFactory()->createTimer(
-        std::chrono::milliseconds{30},
-        [&]()
-        {
-            std::unique_lock<std::mutex> lock{mtx};
-            ++callCounter;
-            cv.notify_one();
-        },
-        TimerType::PERIODIC)};
-    EXPECT_TRUE(timer->isActive());
-    cv.wait_for(lock, std::chrono::milliseconds{110}, [&]() { return callCounter >= 3; });
-    EXPECT_TRUE(callCounter >= 3);
+    { // This scope is required to suppress a false warning from cppcheck (about the mutex above)
+        std::condition_variable cv;
+        std::unique_lock<std::mutex> lock{mtx};
+        unsigned callCounter{0};
+        std::unique_ptr<ITimer> timer{ITimerFactory::getFactory()->createTimer(
+            std::chrono::milliseconds{30},
+            [&]()
+            {
+                std::unique_lock<std::mutex> lock{mtx};
+                ++callCounter;
+                cv.notify_one();
+            },
+            TimerType::PERIODIC)};
+        EXPECT_TRUE(timer->isActive());
+        cv.wait_for(lock, std::chrono::milliseconds{110}, [&]() { return callCounter >= 3; });
+        EXPECT_GE(callCounter, 3);
+    }
 }

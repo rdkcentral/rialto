@@ -17,7 +17,6 @@
  * limitations under the License.
  */
 
-#include <google/protobuf/stubs/common.h>
 #include <gtest/gtest.h>
 
 int main(int argc, char **argv) // NOLINT(build/filename_format)
