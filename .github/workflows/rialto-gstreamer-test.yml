@@ -64,7 +64,7 @@ jobs:
         run: |
           cd rialto-gstreamer    
           python build_ut.py -c -xml -f -cov -b ${{ github.event.pull_request.head.ref }}
-          
+        
       - name: Upload logs
         uses: actions/upload-artifact@v3
         if: failure()
@@ -73,3 +73,17 @@ jobs:
           path: |
             rialto-gstreamer/gtest_result.log
             rialto-gstreamer/build/*gtest_result.xml
+           
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v3
+        if: success()
+        with:
+          name: coverage_report
+          path: rialto-gstreamer/build/gh_pages/coverage_report
+
+      - name: Upload Coverage Statistics
+        uses: actions/upload-artifact@v3
+        if: success()
+        with:
+          name: coverage_report_stats
+          path: rialto-gstreamer/build/coverage_statistics.txt
