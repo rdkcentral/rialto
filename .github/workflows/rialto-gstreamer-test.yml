@@ -22,9 +22,7 @@ on:
     branches:
       - "master"
       - "rdkcentral:master"
-  push:
-    branches:
-      - "A_Rialto_390"
+      
   workflow_dispatch:
 
 jobs:
@@ -40,7 +38,6 @@ jobs:
         with:
           repository: rdkcentral/rialto-gstreamer
           path: rialto-gstreamer
-          ref: A_Rialto-390-Gstreamer
           
       - name: Set up Python
         uses: actions/setup-python@v2
