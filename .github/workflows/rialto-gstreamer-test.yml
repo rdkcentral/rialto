@@ -65,9 +65,30 @@ jobs:
           cd rialto-gstreamer    
           python build_ut.py -c -xml -f -cov -b ${{ github.event.pull_request.head.ref }}
 
-        # Processes the results of the unittests and the lcov output
+      - name: List files in build directory
+        run: |
+          ls -R rialto-gstreamer/build/
+
+      - name: Print contents of test report files
+        run: |
+          cat rialto-gstreamer/build/gtest_result.log
+          cat rialto-gstreamer/build/*gtest_result.xml
+
       - name: Process output
         uses: ./.github/workflows/actions/process_results_ut
         if: success() || failure()
         with:
           suite: 'GstRialtoUnitTests'
+
+      - name: Debug - Print contents of the directories
+        run: |
+          ls -R
+          
+      - name: Upload logs
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: logs
+          path: |
+            rialto-gstreamer/gtest_result.log
+            rialto-gstreamer/build/*gtest_result.xml
