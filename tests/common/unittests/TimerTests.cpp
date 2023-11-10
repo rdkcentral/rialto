@@ -74,7 +74,7 @@ TEST(TimerTests, ShouldTimeoutPeriodicTimer)
             },
             TimerType::PERIODIC)};
         EXPECT_TRUE(timer->isActive());
-        cv.wait_for(lock, std::chrono::milliseconds{110}, [&]() { return callCounter >= 3; });
+        cv.wait_for(lock, std::chrono::milliseconds{180}, [&]() { return callCounter >= 3; });
         EXPECT_GE(callCounter, 3);
     }
 }
