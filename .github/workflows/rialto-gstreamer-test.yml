@@ -22,7 +22,10 @@ on:
     branches:
       - "master"
       - "rdkcentral:master"
-      
+  push:
+      branches:
+      - "A_Rialto_390"
+
   workflow_dispatch:
 
 jobs:
@@ -30,14 +33,12 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      - name: Checkout PR branch
-        uses: actions/checkout@v3
-      
       - name: Checkout rialto-gstreamer repo
         uses: actions/checkout@v4
         with:
           repository: rdkcentral/rialto-gstreamer
           path: rialto-gstreamer
+          ref: A_Rialto-390-Gstreamer
           
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -49,18 +50,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
 
-      - name: Install dependencies and build lcov library
-        run: |
-          sudo apt-get install libjson-perl libperlio-gzip-perl perl libgd-gd2-perl libcapture-tiny-perl libdatetime-perl
-          wget https://github.com/linux-test-project/lcov/releases/download/v2.0/lcov-2.0.tar.gz
-          tar -xf lcov-2.0.tar.gz
-          cd lcov-2.0
-          sudo make install
-
       - name: Run tests
         run: |
           cd rialto-gstreamer    
-          python build_ut.py -c -xml -f -cov -b ${{ github.event.pull_request.head.ref }}
+          python build_ut.py -c -xml -f -b ${{ github.event.pull_request.head.ref }}
         
       - name: Upload logs
         uses: actions/upload-artifact@v3
@@ -71,16 +64,3 @@ jobs:
             rialto-gstreamer/gtest_result.log
             rialto-gstreamer/build/*gtest_result.xml
            
-      - name: Upload Coverage Report
-        uses: actions/upload-artifact@v3
-        if: success()
-        with:
-          name: coverage_report
-          path: rialto-gstreamer/build/gh_pages/coverage_report
-
-      - name: Upload Coverage Statistics
-        uses: actions/upload-artifact@v3
-        if: success()
-        with:
-          name: coverage_report_stats
-          path: rialto-gstreamer/build/coverage_statistics.txt
