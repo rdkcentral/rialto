@@ -26,8 +26,9 @@ using firebolt::rialto::common::ITimer;
 using firebolt::rialto::common::ITimerFactory;
 using firebolt::rialto::common::TimerType;
 
-namespace {
-// The following must allow the test to complete under valgrind which runs slower
+namespace
+{
+// kEnoughTimeForTestToComplete must allow the test to complete under valgrind which runs slower
 constexpr std::chrono::milliseconds kEnoughTimeForTestToComplete{200};
 } // namespace
 
@@ -38,14 +39,13 @@ TEST(TimerTests, ShouldTimeoutOneShotTimer)
         std::condition_variable cv;
         std::unique_lock<std::mutex> lock{mtx};
         bool callFlag{false};
-        std::unique_ptr<ITimer> timer{ITimerFactory::getFactory()->createTimer(
-                std::chrono::milliseconds{100},
-                [&]()
-                    {
-                        std::unique_lock<std::mutex> lock{mtx};
-                        callFlag = true;
-                        cv.notify_one();
-                    })};
+        std::unique_ptr<ITimer> timer{ITimerFactory::getFactory()->createTimer(std::chrono::milliseconds{100},
+                                                                               [&]()
+                                                                               {
+                                                                                   std::unique_lock<std::mutex> lock{mtx};
+                                                                                   callFlag = true;
+                                                                                   cv.notify_one();
+                                                                               })};
         EXPECT_TRUE(timer->isActive());
         cv.wait_for(lock, kEnoughTimeForTestToComplete);
         EXPECT_TRUE(callFlag);
