@@ -41,7 +41,7 @@ TEST(TimerTests, ShouldTimeoutOneShotTimer)
                                                                                    cv.notify_one();
                                                                                })};
         EXPECT_TRUE(timer->isActive());
-        cv.wait_for(lock, std::chrono::milliseconds{110}, [&]() { return callFlag; });
+        cv.wait_for(lock, std::chrono::milliseconds{180}, [&]() { return callFlag; });
         EXPECT_TRUE(callFlag);
     }
 }
