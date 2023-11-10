@@ -16,15 +16,20 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include "ITimer.h"
-
 #include <condition_variable>
 #include <gtest/gtest.h>
 #include <mutex>
 
+#include "ITimer.h"
+
 using firebolt::rialto::common::ITimer;
 using firebolt::rialto::common::ITimerFactory;
 using firebolt::rialto::common::TimerType;
+
+namespace {
+// The following must allow the test to complete under valgrind which runs slower
+constexpr std::chrono::milliseconds kEnoughTimeForTestToComplete{200};
+} // namespace
 
 TEST(TimerTests, ShouldTimeoutOneShotTimer)
 {
@@ -33,15 +38,16 @@ TEST(TimerTests, ShouldTimeoutOneShotTimer)
         std::condition_variable cv;
         std::unique_lock<std::mutex> lock{mtx};
         bool callFlag{false};
-        std::unique_ptr<ITimer> timer{ITimerFactory::getFactory()->createTimer(std::chrono::milliseconds{100},
-                                                                               [&]()
-                                                                               {
-                                                                                   std::unique_lock<std::mutex> lock{mtx};
-                                                                                   callFlag = true;
-                                                                                   cv.notify_one();
-                                                                               })};
+        std::unique_ptr<ITimer> timer{ITimerFactory::getFactory()->createTimer(
+                std::chrono::milliseconds{100},
+                [&]()
+                    {
+                        std::unique_lock<std::mutex> lock{mtx};
+                        callFlag = true;
+                        cv.notify_one();
+                    })};
         EXPECT_TRUE(timer->isActive());
-        cv.wait_for(lock, std::chrono::milliseconds{180}, [&]() { return callFlag; });
+        cv.wait_for(lock, kEnoughTimeForTestToComplete);
         EXPECT_TRUE(callFlag);
     }
 }
@@ -70,11 +76,14 @@ TEST(TimerTests, ShouldTimeoutPeriodicTimer)
             {
                 std::unique_lock<std::mutex> lock{mtx};
                 ++callCounter;
-                cv.notify_one();
+                if (callCounter >= 3)
+                {
+                    cv.notify_one();
+                }
             },
             TimerType::PERIODIC)};
         EXPECT_TRUE(timer->isActive());
-        cv.wait_for(lock, std::chrono::milliseconds{180}, [&]() { return callCounter >= 3; });
+        cv.wait_for(lock, kEnoughTimeForTestToComplete);
         EXPECT_GE(callCounter, 3);
     }
 }
