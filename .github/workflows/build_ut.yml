@@ -498,7 +498,7 @@ jobs:
     # Timeout after
     timeout-minutes: 10
 
-    needs: [run-servermain, run-servergstplayer, run-serveripc, run-serverservice, run-client, run-clientipc, run-common, run-logging, run-manager, run-ipc]
+    needs: [run-servermain, run-servergstplayer, run-serveripc, run-serverservice, run-client, run-clientipc, run-common, run-playercommon, run-logging, run-manager, run-ipc]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
