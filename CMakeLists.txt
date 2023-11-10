@@ -107,6 +107,9 @@ if(RESULT)
     message("Failed to get git commit ID: ${RESULT}")
 endif()
 
+# Preprocesser Variable
+add_compile_definitions(COMMIT_ID="${COMMIT_ID}")
+
 # Add our local cmake directory to search for components
 set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake )
 
