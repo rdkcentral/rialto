@@ -53,7 +53,7 @@ jobs:
       - name: Run tests
         run: |
           cd rialto-ocdm    
-          python build_ut.py -c -xml -f -b ${{ github.event.pull_request.head.ref }}
+          python build_ut.py -c -xml -f -b ${{ github.ref_name }}
         
       - name: Upload logs
         uses: actions/upload-artifact@v3
