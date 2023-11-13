@@ -149,6 +149,7 @@ void ClientController::termSharedMemory()
 
 void ClientController::notifyApplicationState(ApplicationState state)
 {
+    RIALTO_CLIENT_LOG_ERROR("notifyApplicationState");
     {
         std::lock_guard<std::mutex> lock{m_mutex};
         if (ApplicationState::UNKNOWN == state)
@@ -167,6 +168,7 @@ void ClientController::notifyApplicationState(ApplicationState state)
     {
     case ApplicationState::RUNNING:
     {
+        RIALTO_CLIENT_LOG_ERROR("ApplicationState::RUNNING");
         if (!initSharedMemory())
         {
             RIALTO_CLIENT_LOG_ERROR("Could not initalise the shared memory");
@@ -179,6 +181,7 @@ void ClientController::notifyApplicationState(ApplicationState state)
     case ApplicationState::INACTIVE:
     case ApplicationState::UNKNOWN:
     {
+        RIALTO_CLIENT_LOG_ERROR("ApplicationState::INACTIVE or ApplicationState::UNKNOWN");
         // Inform clients before memory termination
         changeStateAndNotifyClients(state);
         termSharedMemory();

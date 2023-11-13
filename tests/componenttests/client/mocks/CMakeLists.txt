@@ -17,35 +17,19 @@
 # limitations under the License.
 #
 
-add_gtests (
-        RialtoLoggingUnitTests
+set( CMAKE_CXX_STANDARD 17 )
 
-        # gtest code
-        unittests/RialtoLoggingTest.cpp
-        unittests/EnvVariableParserTest.cpp
-        )
+set( CMAKE_CXX_STANDARD_REQUIRED ON )
+include( CheckCXXCompilerFlag )
 
+add_library(
+        RialtoIpcMocks
+        INTERFACE
+    )
 
 target_include_directories(
-        RialtoLoggingUnitTests
+        RialtoIpcMocks
 
-        PRIVATE
-        ../../../logging/source
-        )
-
-
-target_link_libraries(
-        RialtoLoggingUnitTests
-
-        # # Link application source
-        RialtoLogging
-        )
-
-if ( COVERAGE_ENABLED )
-    target_link_libraries(
-        RialtoLoggingUnitTests
-
-        gcov
-        )
-endif()
-
+        INTERFACE
+        .
+    )

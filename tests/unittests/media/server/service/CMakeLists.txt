@@ -54,7 +54,7 @@ target_include_directories(
         $<TARGET_PROPERTY:RialtoServerMocks,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoPlayerPublicMocks,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoServerGstPlayer,INTERFACE_INCLUDE_DIRECTORIES>
-        ../../../../media/server/service/source/
+        ../../../../../media/server/service/source/
         )
 
 target_link_libraries(

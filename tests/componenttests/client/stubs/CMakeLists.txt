@@ -18,31 +18,30 @@
 #
 
 # Run the protoc tool to generate the code
-set( Protobuf_IMPORT_DIRS "${CMAKE_SYSROOT}/usr/include" "${CMAKE_CURRENT_LIST_DIR}/../../../ipc/common/proto/" )
-protobuf_generate_cpp( PROTO_SRCS PROTO_HEADERS ../proto/testmodule.proto )
+set( Protobuf_IMPORT_DIRS "${CMAKE_SYSROOT}/usr/include" "${CMAKE_CURRENT_LIST_DIR}/../../../../ipc/common/proto/" )
+protobuf_generate_cpp( PROTO_SRCS PROTO_HEADERS ../../../../proto/controlmodule.proto)
 
 # Find includes in corresponding build directories
 set( CMAKE_INCLUDE_CURRENT_DIR ON )
 
 add_library (
-        RialtoIpcStub
+        RialtoIpcServerStub
         STATIC
 
         ${PROTO_SRCS}
         ${PROTO_HEADERS}
 
         ServerStub.cpp
-        ClientStub.cpp
 )
 
 set_property (
         TARGET
-        RialtoIpcStub
+        RialtoIpcServerStub
         PROPERTY POSITION_INDEPENDENT_CODE ON
 )
 
 target_include_directories (
-        RialtoIpcStub
+        RialtoIpcServerStub
 
         PUBLIC
         ${CMAKE_CURRENT_LIST_DIR}
@@ -51,16 +50,14 @@ target_include_directories (
         ../mocks
         $<TARGET_PROPERTY:RialtoPlayerPublic,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoIpcServer,INTERFACE_INCLUDE_DIRECTORIES>
-        $<TARGET_PROPERTY:RialtoIpcClient,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoIpcCommon,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
 target_link_libraries (
-        RialtoIpcStub
+        RialtoIpcServerStub
 
         PRIVATE
         RialtoIpcServer
-        RialtoIpcClient
         RialtoIpcCommon
         protobuf::libprotobuf
         GoogleTest::gtest

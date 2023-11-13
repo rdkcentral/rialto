@@ -24,7 +24,7 @@ if( NATIVE_BUILD )
     set(ocdm_DIR "${CMAKE_BINARY_DIR}/stubs/opencdm/" )
 endif()
 
-if( NOT CMAKE_BUILD_FLAG STREQUAL "UnitTests" )
+if( NOT CMAKE_BUILD_FLAG STREQUAL "UnitTests" AND NOT CMAKE_BUILD_FLAG STREQUAL "ComponentTests" )
 
     find_package( ocdm REQUIRED )
 

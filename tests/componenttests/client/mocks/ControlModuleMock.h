@@ -17,33 +17,28 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_IPC_TEST_MODULE_MOCK_H_
-#define FIREBOLT_RIALTO_IPC_TEST_MODULE_MOCK_H_
+#ifndef FIREBOLT_RIALTO_IPC_CONTROL_MODULE_MOCK_H_
+#define FIREBOLT_RIALTO_IPC_CONTROL_MODULE_MOCK_H_
 
-#include "testmodule.pb.h"
+#include "controlmodule.pb.h"
+#include "SchemaVersion.h"
 #include <gmock/gmock.h>
 #include <string>
 
 namespace firebolt::rialto::ipc
 {
-class TestModuleMock : public ::firebolt::rialto::TestModule
+class ControlModuleMock : public ::firebolt::rialto::ControlModule
 {
 public:
-    MOCK_METHOD(void, TestRequestSingleVar,
-                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::TestSingleVar *request,
-                 ::firebolt::rialto::TestNoVar *response, ::google::protobuf::Closure *done));
-    MOCK_METHOD(void, TestRequestMultiVar,
-                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::TestMultiVar *request,
-                 ::firebolt::rialto::TestNoVar *response, ::google::protobuf::Closure *done));
-    MOCK_METHOD(void, TestResponseSingleVar,
-                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::TestNoVar *request,
-                 ::firebolt::rialto::TestSingleVar *response, ::google::protobuf::Closure *done));
-    MOCK_METHOD(void, TestResponseMultiVar,
-                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::TestNoVar *request,
-                 ::firebolt::rialto::TestMultiVar *response, ::google::protobuf::Closure *done));
-    MOCK_METHOD(void, TestRequestSingleVarNoReply,
-                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::TestSingleVarNoReply *request,
-                 ::firebolt::rialto::TestNoVar *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, getSharedMemory,
+                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::GetSharedMemoryRequest *request,
+                 ::firebolt::rialto::GetSharedMemoryResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, registerClient,
+                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::RegisterClientRequest *request,
+                 ::firebolt::rialto::RegisterClientResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, ack,
+                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::AckRequest *request,
+                 ::firebolt::rialto::AckResponse *response, ::google::protobuf::Closure *done));
 
     void defaultReturn(::google::protobuf::RpcController *controller, ::google::protobuf::Closure *done)
     {
@@ -56,27 +51,19 @@ public:
         done->Run();
     }
 
-    ::firebolt::rialto::TestSingleVar getSingleVarResponse(int32_t var1)
+    ::firebolt::rialto::RegisterClientResponse getRegisterClientResponse(const int32_t controlId, const firebolt::rialto::common::SchemaVersion& schemaVersion)
     {
-        firebolt::rialto::TestSingleVar response;
-        response.set_var1(var1);
+        firebolt::rialto::RegisterClientResponse response;
+        response.set_control_handle(controlId);
+        response.mutable_server_schema_version()->set_major(schemaVersion.major());
+        response.mutable_server_schema_version()->set_minor(schemaVersion.minor());
+        response.mutable_server_schema_version()->set_patch(schemaVersion.patch());
         return response;
     }
 
-    ::firebolt::rialto::TestMultiVar getMultiVarResponse(int32_t var1, uint32_t var2,
-                                                         firebolt::rialto::TestMultiVar_TestType var3, std::string var4)
-    {
-        firebolt::rialto::TestMultiVar response;
-        response.set_var1(var1);
-        response.set_var2(var2);
-        response.set_var3(var3);
-        response.set_var4(var4);
-        return response;
-    }
-
-    TestModuleMock() {}
-    virtual ~TestModuleMock() = default;
+    ControlModuleMock() {}
+    virtual ~ControlModuleMock() = default;
 };
 } // namespace firebolt::rialto::ipc
 
-#endif // FIREBOLT_RIALTO_IPC_TEST_MODULE_MOCK_H_
+#endif // FIREBOLT_RIALTO_IPC_CONTROL_MODULE_MOCK_H_

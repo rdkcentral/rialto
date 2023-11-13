@@ -217,3 +217,12 @@ if( CMAKE_BUILD_FLAG STREQUAL "UnitTests" )
     add_subdirectory( tests/unittests/ipc EXCLUDE_FROM_ALL )
 
 endif()
+
+# Config and target for building the unit tests
+if( CMAKE_BUILD_FLAG STREQUAL "ComponentTests" )
+
+    include( cmake/googletest.cmake )
+
+    add_subdirectory( tests/componenttests/client EXCLUDE_FROM_ALL )
+
+endif()

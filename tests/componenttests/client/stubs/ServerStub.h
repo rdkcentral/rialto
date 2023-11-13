@@ -28,28 +28,27 @@
 #include <thread>
 
 #include "IIpcServer.h"
-#include "testmodule.pb.h"
+#include "ControlCommon.h"
+#include "controlmodule.pb.h"
 
 class ServerStub
 {
 public:
     ServerStub();
-    explicit ServerStub(std::shared_ptr<::firebolt::rialto::TestModule> moduleMock);
+    explicit ServerStub(std::shared_ptr<::firebolt::rialto::ControlModule> controlModuleMock);
     ~ServerStub();
 
     void clientDisconnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &client);
     void clientConnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &client);
 
-    void sendSingleVarEvent(int32_t var1);
-    void sendMultiVarEvent(int32_t var1, uint32_t var2, firebolt::rialto::TestEventMultiVar_TestType var3,
-                           std::string var4);
+    void notifyApplicationStateEvent(const int32_t controlId, const firebolt::rialto::ApplicationState &state);
 
 private:
     std::shared_ptr<::firebolt::rialto::ipc::IServer> m_server;
     std::shared_ptr<::firebolt::rialto::ipc::IClient> m_client;
     std::thread m_serverThread;
     std::atomic<bool> m_running;
-    std::shared_ptr<::firebolt::rialto::TestModule> m_testMock;
+    std::shared_ptr<::firebolt::rialto::ControlModule> m_controlModuleMock;
     std::atomic<bool> m_clientConnected;
     std::mutex m_clientConnectMutex;
     std::condition_variable m_clientConnectCond;
