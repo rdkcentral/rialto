@@ -579,6 +579,15 @@ jobs:
           path: build/coverage-common.info
           key: ${{ runner.os }}-common-coverage-${{ github.run_id }}-${{ github.run_number }}
 
+      # Get cached lcov playercommon output
+      - name: Get playercommon coverage
+        id: cache-playercommon-coverage
+        uses: actions/cache@v3
+        if: success()
+        with:
+          path: build/coverage-playercommon.info
+          key: ${{ runner.os }}-playercommon-coverage-${{ github.run_id }}-${{ github.run_number }}
+
       # Get cached lcov logging output
       - name: Get logging coverage
         id: cache-logging-coverage
@@ -611,7 +620,7 @@ jobs:
         run: |
           cd build
           lcov -a coverage-servermain.info -a coverage-servergstplayer.info -a coverage-serveripc.info -a coverage-serverservice.info \
-          -a coverage-client.info -a coverage-clientipc.info -a coverage-common.info -a coverage-logging.info -a coverage-manager.info \
+          -a coverage-client.info -a coverage-clientipc.info -a coverage-common.info -a coverage-playercommon.info -a coverage-logging.info -a coverage-manager.info \
           -a coverage-ipc.info -o coverage.info --filter brace,function,trivial
 
       - name: Generate html
