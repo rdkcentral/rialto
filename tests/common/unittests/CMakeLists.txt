@@ -24,7 +24,6 @@ add_gtests (
         # gtest code
         TimerTests.cpp
         EventThreadTests.cpp
-        main.cpp
         )
 
 target_include_directories(
