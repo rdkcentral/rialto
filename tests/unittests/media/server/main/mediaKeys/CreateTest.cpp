@@ -65,7 +65,7 @@ TEST_F(RialtoServerCreateMediaKeysTest, InternalFactoryFails)
     EXPECT_NE(factory, nullptr);
     // We expect the following to fail
     // The test harness uses a stub for  IOcdmSystemFactory::createFactory()  which is defined in
-    //    "./tests/media/server/stubs/wrappers/OcdmSystemFactory.cpp" and returns null
+    //    "./tests/unittests/media/server/stubs/wrappers/OcdmSystemFactory.cpp" and returns null
     EXPECT_EQ(factory->createMediaKeysServerInternal(kWidevineKeySystem), nullptr);
 }
 

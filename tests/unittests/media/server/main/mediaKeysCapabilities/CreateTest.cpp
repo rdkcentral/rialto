@@ -70,7 +70,7 @@ TEST_F(RialtoServerCreateMediaKeysCapabilitiesTest, FactoryStubReturnsNull)
 
     // We expect the following to fail
     // The test harness uses a stub for  IOcdmFactory::createFactory()  which is defined in
-    //    "./tests/media/server/stubs/wrappers/OcdmFactory.cpp" and returns null
+    //    "./tests/unittests/media/server/stubs/wrappers/OcdmFactory.cpp" and returns null
     EXPECT_EQ(factory->getMediaKeysCapabilities(), nullptr);
 }
 

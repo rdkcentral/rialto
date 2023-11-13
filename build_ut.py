@@ -29,16 +29,16 @@ import sys
 # Rialto Component Tests & Paths
 # {Component Name : {Test Suite, Test Path}}
 suiteInfo = {
-    "servermain" : {"suite" : "RialtoServerMainUnitTests", "path" : "/tests/media/server/main/"},
-    "servergstplayer" : {"suite" : "RialtoServerGstPlayerUnitTests", "path" : "/tests/media/server/gstplayer/"},
-    "serveripc" : {"suite" : "RialtoServerIpcUnitTests", "path" : "/tests/media/server/ipc/"},
-    "serverservice" : {"suite" : "RialtoServerServiceUnitTests", "path" : "/tests/media/server/service/"},
-    "client" : {"suite" : "RialtoClientUnitTests", "path" : "/tests/media/client/main/"},
-    "clientipc" : {"suite" : "RialtoClientIpcUnitTests", "path" : "/tests/media/client/ipc/"},
-    "common" : {"suite" : "RialtoPlayerCommonUnitTests", "path" : "/tests/media/common/"},
-    "logging" : {"suite" : "RialtoLoggingUnitTests", "path" : "/tests/logging/"},
-    "manager" : {"suite" : "RialtoServerManagerUnitTests", "path" : "/tests/serverManager/"},
-    "ipc" : {"suite" : "RialtoIpcUnitTests", "path" : "/tests/ipc/"},
+    "servermain" : {"suite" : "RialtoServerMainUnitTests", "path" : "/tests/unittests/media/server/main/"},
+    "servergstplayer" : {"suite" : "RialtoServerGstPlayerUnitTests", "path" : "/tests/unittests/media/server/gstplayer/"},
+    "serveripc" : {"suite" : "RialtoServerIpcUnitTests", "path" : "/tests/unittests/media/server/ipc/"},
+    "serverservice" : {"suite" : "RialtoServerServiceUnitTests", "path" : "/tests/unittests/media/server/service/"},
+    "client" : {"suite" : "RialtoClientUnitTests", "path" : "/tests/unittests/media/client/main/"},
+    "clientipc" : {"suite" : "RialtoClientIpcUnitTests", "path" : "/tests/unittests/media/client/ipc/"},
+    "common" : {"suite" : "RialtoPlayerCommonUnitTests", "path" : "/tests/unittests/media/common/"},
+    "logging" : {"suite" : "RialtoLoggingUnitTests", "path" : "/tests/unittests/logging/"},
+    "manager" : {"suite" : "RialtoServerManagerUnitTests", "path" : "/tests/unittests/serverManager/"},
+    "ipc" : {"suite" : "RialtoIpcUnitTests", "path" : "/tests/unittests/ipc/"},
 }
 
 # Default variables
@@ -202,6 +202,7 @@ def runTests (suites, doListTests, gtestFilter, outputDir, resultsFile, xmlFile,
         if xmlFile != None and valgrind == False:
             executeCmd.append('--gtest_output=xml:' + key + "_" + xmlFile)
 
+        executeCmd.append('--gtest_repeat=100')
         # Run the command
         if resultsFile != None:
             status = runcmd(executeCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
