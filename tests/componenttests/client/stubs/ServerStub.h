@@ -20,13 +20,13 @@
 #ifndef SERVER_STUB_H_
 #define SERVER_STUB_H_
 
+#include "ControlCommon.h"
+#include "IIpcServer.h"
+#include "controlmodule.pb.h"
 #include <atomic>
 #include <condition_variable>
 #include <memory>
 #include <thread>
-#include "IIpcServer.h"
-#include "ControlCommon.h"
-#include "controlmodule.pb.h"
 
 class ServerStub
 {

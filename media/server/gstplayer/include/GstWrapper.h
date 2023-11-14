@@ -356,7 +356,10 @@ public:
         return gst_caps_can_intersect(caps1, caps2);
     }
 
-    GstCaps *gstStaticCapsGet(GstStaticCaps *staticCaps) const override { return gst_static_caps_get(staticCaps); }
+    GstCaps *gstStaticCapsGet(GstStaticCaps *staticCaps) const override
+    {
+        return gst_static_caps_get(staticCaps);
+    }
 
     GList *gstElementFactoryListGetElements(GstElementFactoryListType type, GstRank minrank) const override
     {
@@ -368,7 +371,10 @@ public:
         return gst_element_factory_get_static_pad_templates(factory);
     }
 
-    void gstPluginFeatureListFree(GList *list) const override { gst_plugin_feature_list_free(list); }
+    void gstPluginFeatureListFree(GList *list) const override
+    {
+        gst_plugin_feature_list_free(list);
+    }
 
     GstCaps *gstCapsNewSimple(const char *media_type, const char *fieldname, ...) const override
     {
@@ -393,7 +399,10 @@ public:
         return gst_caps_new_empty_simple(media_type);
     }
 
-    GstCaps *gstCapsNewEmpty() const override { return gst_caps_new_empty(); }
+    GstCaps *gstCapsNewEmpty() const override
+    {
+        return gst_caps_new_empty();
+    }
 
     GstProtectionMeta *gstBufferAddProtectionMeta(GstBuffer *buffer, GstStructure *info) const override
     {
@@ -410,7 +419,10 @@ public:
         return gst_buffer_add_meta(buffer, info, params);
     }
 
-    GstMeta *gstBufferGetMeta(GstBuffer *buffer, GType api) const override { return gst_buffer_get_meta(buffer, api); }
+    GstMeta *gstBufferGetMeta(GstBuffer *buffer, GType api) const override
+    {
+        return gst_buffer_get_meta(buffer, api);
+    }
 
     gboolean gstBufferRemoveMeta(GstBuffer *buffer, GstMeta *meta) const override
     {
@@ -427,7 +439,10 @@ public:
         return gst_structure_get_value(structure, fieldname);
     }
 
-    GstBuffer *gstValueGetBuffer(const GValue *value) const override { return gst_value_get_buffer(value); }
+    GstBuffer *gstValueGetBuffer(const GValue *value) const override
+    {
+        return gst_value_get_buffer(value);
+    }
 
     GstEvent *gstEventNewStep(GstFormat format, guint64 amount, gdouble rate, gboolean flush,
                               gboolean intermediate) const override
@@ -455,7 +470,10 @@ public:
         return gst_stream_volume_set_mute(volume, mute);
     }
 
-    GstElement *gstPipelineNew(const gchar *name) const override { return gst_pipeline_new(name); }
+    GstElement *gstPipelineNew(const gchar *name) const override
+    {
+        return gst_pipeline_new(name);
+    }
 
     GstPluginFeature *gstRegistryLookupFeature(GstRegistry *registry, const char *name) const override
     {
@@ -467,9 +485,15 @@ public:
         return gst_app_src_get_current_level_bytes(appsrc);
     }
 
-    GstEvent *gstEventNewFlushStart() const override { return gst_event_new_flush_start(); }
+    GstEvent *gstEventNewFlushStart() const override
+    {
+        return gst_event_new_flush_start();
+    }
 
-    GstEvent *gstEventNewFlushStop(gboolean reset_time) const override { return gst_event_new_flush_stop(reset_time); }
+    GstEvent *gstEventNewFlushStop(gboolean reset_time) const override
+    {
+        return gst_event_new_flush_stop(reset_time);
+    }
 
     guint64 gstAudioChannelGetFallbackMask(gint channels) const override
     {

@@ -125,13 +125,25 @@ public:
 #endif
     }
 
-    gboolean gOnceInitEnter(gsize *location) const override { return g_once_init_enter(location); }
+    gboolean gOnceInitEnter(gsize *location) const override
+    {
+        return g_once_init_enter(location);
+    }
 
-    void gOnceInitLeave(gsize *location, gsize result) const override { g_once_init_leave(location, result); }
+    void gOnceInitLeave(gsize *location, gsize result) const override
+    {
+        g_once_init_leave(location, result);
+    }
 
-    gchar *gStrrstr(const gchar *haystack, const gchar *needle) const override { return g_strrstr(haystack, needle); }
+    gchar *gStrrstr(const gchar *haystack, const gchar *needle) const override
+    {
+        return g_strrstr(haystack, needle);
+    }
 
-    void gErrorFree(GError *error) const override { g_error_free(error); }
+    void gErrorFree(GError *error) const override
+    {
+        g_error_free(error);
+    }
 };
 
 }; // namespace firebolt::rialto::server

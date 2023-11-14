@@ -78,7 +78,8 @@ ServerStub::ServerStub()
     init();
 }
 
-ServerStub::ServerStub(std::shared_ptr<::firebolt::rialto::ControlModule> controlModuleMock) : m_controlModuleMock{controlModuleMock}
+ServerStub::ServerStub(std::shared_ptr<::firebolt::rialto::ControlModule> controlModuleMock)
+    : m_controlModuleMock{controlModuleMock}
 {
     init();
 }

@@ -20,8 +20,8 @@
 #ifndef FIREBOLT_RIALTO_IPC_CONTROL_MODULE_MOCK_H_
 #define FIREBOLT_RIALTO_IPC_CONTROL_MODULE_MOCK_H_
 
-#include "controlmodule.pb.h"
 #include "SchemaVersion.h"
+#include "controlmodule.pb.h"
 #include <gmock/gmock.h>
 
 namespace firebolt::rialto::ipc
@@ -50,7 +50,8 @@ public:
         done->Run();
     }
 
-    ::firebolt::rialto::RegisterClientResponse getRegisterClientResponse(const int32_t controlId, const firebolt::rialto::common::SchemaVersion& schemaVersion)
+    ::firebolt::rialto::RegisterClientResponse
+    getRegisterClientResponse(const int32_t controlId, const firebolt::rialto::common::SchemaVersion &schemaVersion)
     {
         firebolt::rialto::RegisterClientResponse response;
         response.set_control_handle(controlId);
