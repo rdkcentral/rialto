@@ -43,7 +43,9 @@ convertApplicationState(const firebolt::rialto::ApplicationState &state)
 }
 } // namespace
 
-void ServerStubComponentTest::clientDisconnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &client)
+namespace firebolt::rialto::componenttests
+{
+void ServerStub::clientDisconnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &client)
 {
     printf("Client disconnected, pid:%d, uid:%d gid:%d\n", client->getClientPid(), client->getClientUserId(),
            client->getClientGroupId());
@@ -56,7 +58,7 @@ void ServerStubComponentTest::clientDisconnected(const std::shared_ptr<::firebol
     m_clientConnectCond.notify_one();
 }
 
-void ServerStubComponentTest::clientConnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &client)
+void ServerStub::clientConnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &client)
 {
     printf("Client connected, pid:%d, uid:%d gid:%d\n", client->getClientPid(), client->getClientUserId(),
            client->getClientGroupId());
@@ -73,18 +75,18 @@ void ServerStubComponentTest::clientConnected(const std::shared_ptr<::firebolt::
     m_clientConnectCond.notify_one();
 }
 
-ServerStubComponentTest::ServerStubComponentTest()
+ServerStub::ServerStub()
 {
     init();
 }
 
-ServerStubComponentTest::ServerStubComponentTest(std::shared_ptr<::firebolt::rialto::ControlModule> controlModuleMock)
+ServerStub::ServerStub(std::shared_ptr<::firebolt::rialto::ControlModule> controlModuleMock)
     : m_controlModuleMock{controlModuleMock}
 {
     init();
 }
 
-void ServerStubComponentTest::init()
+void ServerStub::init()
 {
     m_clientConnected = false;
     m_running = true;
@@ -96,8 +98,8 @@ void ServerStubComponentTest::init()
     {
         printf("RIALTO_SOCKET_PATH not defined\n");
     }
-    m_server->addSocket(rialtoPath, std::bind(&ServerStubComponentTest::clientConnected, this, std::placeholders::_1),
-                        std::bind(&ServerStubComponentTest::clientDisconnected, this, std::placeholders::_1));
+    m_server->addSocket(rialtoPath, std::bind(&ServerStub::clientConnected, this, std::placeholders::_1),
+                        std::bind(&ServerStub::clientDisconnected, this, std::placeholders::_1));
 
     m_serverThread = std::thread(
         [this]()
@@ -109,7 +111,7 @@ void ServerStubComponentTest::init()
         });
 }
 
-ServerStubComponentTest::~ServerStubComponentTest()
+ServerStub::~ServerStub()
 {
     if (m_serverThread.joinable())
     {
@@ -118,7 +120,7 @@ ServerStubComponentTest::~ServerStubComponentTest()
     }
 }
 
-void ServerStubComponentTest::notifyApplicationStateEvent(const int32_t controlId, const firebolt::rialto::ApplicationState &state)
+void ServerStub::notifyApplicationStateEvent(const int32_t controlId, const firebolt::rialto::ApplicationState &state)
 {
     auto event = std::make_shared<firebolt::rialto::ApplicationStateChangeEvent>();
     event->set_control_handle(controlId);
@@ -133,3 +135,5 @@ void ServerStubComponentTest::notifyApplicationStateEvent(const int32_t controlI
 
     m_client->sendEvent(event);
 }
+
+} // namespace firebolt::rialto::componenttests

@@ -30,6 +30,7 @@
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::ipc;
+using namespace firebolt::rialto::componenttests;
 
 using ::testing::_;
 using ::testing::DoAll;
@@ -50,7 +51,7 @@ class ApplicationStateChangeTest : public ::testing::Test
 protected:
     std::shared_ptr<StrictMock<ControlClientMock>> m_controlClientMock;
     std::shared_ptr<StrictMock<ControlModuleMock>> m_controlModuleMock;
-    std::shared_ptr<ServerStubComponentTest> m_serverStub;
+    std::shared_ptr<ServerStub> m_serverStub;
 
     std::mutex m_eventsLock;
     std::condition_variable m_eventsCond;
@@ -67,7 +68,7 @@ protected:
         m_controlClientMock = std::make_shared<StrictMock<ControlClientMock>>();
         m_controlModuleMock = std::make_shared<StrictMock<ControlModuleMock>>();
 
-        m_serverStub = std::make_shared<ServerStubComponentTest>(m_controlModuleMock);
+        m_serverStub = std::make_shared<ServerStub>(m_controlModuleMock);
     }
 
     ~ApplicationStateChangeTest() { close(m_fd); }
