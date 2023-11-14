@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef SERVER_STUB_H_
-#define SERVER_STUB_H_
+#ifndef SERVER_STUB_COMPONENT_TEST_H_
+#define SERVER_STUB_COMPONENT_TEST_H_
 
 #include "ControlCommon.h"
 #include "IIpcServer.h"
@@ -28,14 +28,12 @@
 #include <memory>
 #include <thread>
 
-namespace firebolt::rialto::componenttests
-{
-class ServerStub
+class ServerStubComponentTest
 {
 public:
-    ServerStub();
-    explicit ServerStub(std::shared_ptr<::firebolt::rialto::ControlModule> controlModuleMock);
-    ~ServerStub();
+    ServerStubComponentTest();
+    explicit ServerStubComponentTest(std::shared_ptr<::firebolt::rialto::ControlModule> controlModuleMock);
+    ~ServerStubComponentTest();
 
     void clientDisconnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &client);
     void clientConnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &client);
@@ -54,6 +52,5 @@ private:
 
     void init();
 };
-} // namespace firebolt::rialto::componenttests
 
-#endif // SERVER_STUB_H_
+#endif // SERVER_STUB_COMPONENT_TEST_H_
