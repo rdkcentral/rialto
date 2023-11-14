@@ -60,9 +60,9 @@ target_include_directories(
 
         mocks
 
-        ../../serverManager/common/source
-        ../../serverManager/ipc/source
-        ../../serverManager/service/source
+        ../../../serverManager/common/source
+        ../../../serverManager/ipc/source
+        ../../../serverManager/service/source
 
         ${JSONCPP_INCLUDE_DIRS}
 )

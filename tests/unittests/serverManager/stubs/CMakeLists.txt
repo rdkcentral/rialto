@@ -18,8 +18,8 @@
 #
 
 # Run the protoc tool to generate the code
-set( Protobuf_IMPORT_DIRS "${CMAKE_SYSROOT}/usr/include" "${CMAKE_CURRENT_LIST_DIR}/../../../ipc/common/proto/" )
-protobuf_generate_cpp( PROTO_SRCS PROTO_HEADERS ../../../serverManager/ipc/proto/servermanagermodule.proto )
+set( Protobuf_IMPORT_DIRS "${CMAKE_SYSROOT}/usr/include" "${CMAKE_CURRENT_LIST_DIR}/../../../../ipc/common/proto/" )
+protobuf_generate_cpp( PROTO_SRCS PROTO_HEADERS ../../../../serverManager/ipc/proto/servermanagermodule.proto )
 
 # Find includes in corresponding build directories
 set( CMAKE_INCLUDE_CURRENT_DIR ON )
