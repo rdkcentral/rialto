@@ -22,9 +22,6 @@ on:
     branches:
       - "master"
       - "rdkcentral:master"
-  push:
-    branches:
-    - "A_RIALTO-390-2"
 
   workflow_dispatch:
 
@@ -38,7 +35,6 @@ jobs:
         with:
           repository: rdkcentral/rialto-ocdm
           path: rialto-ocdm
-          ref: A_RIALTO-390-OCDM
           
       - name: Set up Python
         uses: actions/setup-python@v2
