@@ -24,12 +24,14 @@
 #include <gtest/gtest.h>
 #include <condition_variable>
 #include <mutex>
+#include <linux/memfd.h>
+#include <sys/mman.h>
+#include <sys/syscall.h>
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::ipc;
 
 using ::testing::_;
-using ::testing::ByMove;
 using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::SetArgPointee;
@@ -40,6 +42,7 @@ using ::testing::DoAll;
 namespace
 {
 constexpr std::chrono::milliseconds kEventTimeout{200};
+constexpr int32_t kControlId = 1;
 }
 
 class ApplicationStateChangeTest : public ::testing::Test
@@ -52,29 +55,101 @@ protected:
     std::mutex m_eventsLock;
     std::condition_variable m_eventsCond;
     bool m_eventReceived {false};
+    int32_t m_fd;
+    uint32_t m_size = 456;
 
     ApplicationStateChangeTest()
     {
+        // Create a valid file descriptor
+        // TODO: Create a proper shared memory region
+        m_fd = memfd_create("memfdfile", 0);
+
         m_controlClientMock = std::make_shared<StrictMock<ControlClientMock>>();
         m_controlModuleMock = std::make_shared<StrictMock<ControlModuleMock>>();
 
         m_serverStub = std::make_shared<ServerStub>(m_controlModuleMock);
     }
 
-    ~ApplicationStateChangeTest(){}
+    ~ApplicationStateChangeTest()
+    {
+        close(m_fd);
+    }
+
+public:
+    void notifyEvent()
+    {
+        std::unique_lock<std::mutex> locker(m_eventsLock);
+        m_eventReceived = true;
+        m_eventsCond.notify_all();
+    }
+
+    void waitEvent()
+    {
+        std::unique_lock<std::mutex> locker(m_eventsLock);
+        if (!m_eventReceived)
+        {
+            bool status = m_eventsCond.wait_for(locker, kEventTimeout,
+                                                [this]() { return m_eventReceived; });
+            ASSERT_TRUE(status);
+        }
+    }
 };
 
-/**
- * Test that IPC can send a request with a single variable.
+/*
+ * Component Test: Application state change from INACTIVE->RUNNING->INACTIVE
+ * Test Objective:
+ *  Test the full lifecycle of an application and verify that the client is always notified,
+ *  and the shared memory initalised correctly.
+ * 
+ * Test Setup:
+ *  Language: C++
+ *  Testing Framework: Google Test
+ *  Components: Control
+ * 
+ * Test Initialize:
+ *  Create memory region for the shared buffer.
+ *  Create a server that handles Control IPC requests.
+ *
+ * Test Steps:
+ *  Step 1: Initialize control
+ *   Create an instance of Control.
+ *   Check that the object returned is valid.
+ * 
+ *  Step 2: Register client
+ *   Register a client listener.
+ *   Check that the initial state is UNKNOWN.
+ * 
+ *  Step 3: Change state to INACTIVE
+ *   Server notifys the client that the state has changed to INACTIVE.
+ *   Expect that the state change notification is propagated to the client.
+ * 
+ *  Step 4: Change state to RUNNING
+ *   Server notifys the client that the state has changed to RUNNING.
+ *   Expect that the state change notification is propagated to the client.
+ *   Expect that the shared memory region is fetched from the server.
+ * 
+ *  Step 5: Change state to INACTIVE
+ *   Server notifys the client that the state has changed to INACTIVE.
+ *   Expect that the state change notification is propagated to the client.
+ * 
+ * Test Teardown:
+ *  Memory region created for the shared buffer is closed.
+ *  Server is terminated.
+ * 
+ * Expected Results:
+ *  The lifecycle of an application is successfully negotiated and notfied to
+ *  listening clients.
+ * 
+ * Code:
  */
-TEST_F(ApplicationStateChangeTest, test)
+TEST_F(ApplicationStateChangeTest, lifecycle)
 {
-    // Init control
+    // Step 1: Initialize control
     std::shared_ptr<firebolt::rialto::IControlFactory> factory = firebolt::rialto::IControlFactory::createFactory();
     std::shared_ptr<IControl> control = factory->createControl();
     EXPECT_NE(control, nullptr);
 
-    constexpr int32_t kControlId = 1;
+    // Step 2: Register client
     const firebolt::rialto::common::SchemaVersion kSchemaVersion = firebolt::rialto::common::getCurrentSchemaVersion();
     EXPECT_CALL(*m_controlModuleMock, registerClient(_, _, _, _))
         .WillOnce(DoAll(SetArgPointee<2>(m_controlModuleMock->getRegisterClientResponse(kControlId, kSchemaVersion)),
@@ -84,27 +159,27 @@ TEST_F(ApplicationStateChangeTest, test)
     EXPECT_TRUE(control->registerClient(m_controlClientMock, appState));
     EXPECT_EQ(ApplicationState::UNKNOWN, appState);
 
-    // State changed to INACTIVE
+    // Step 3: Change state to INACTIVE
+    m_eventReceived = false;
     EXPECT_CALL(*m_controlClientMock, notifyApplicationState(ApplicationState::INACTIVE))
-        .WillOnce(Invoke([this](ApplicationState state)
-            {
-                std::unique_lock<std::mutex> locker(m_eventsLock);
-                m_eventReceived = true;
-                m_eventsCond.notify_all();
-            }));
+        .WillOnce(Invoke(this, &ApplicationStateChangeTest::notifyEvent));
     m_serverStub->notifyApplicationStateEvent(kControlId, ApplicationState::INACTIVE);
+    waitEvent();
 
-    {
-        std::unique_lock<std::mutex> locker(m_eventsLock);
-        if (!m_eventReceived)
-        {
-            m_eventsCond.wait_for(locker, kEventTimeout);
-        }
-    }
+    // Step 4: Change state to RUNNING
+    m_eventReceived = false;
+    EXPECT_CALL(*m_controlClientMock, notifyApplicationState(ApplicationState::RUNNING))
+        .WillOnce(Invoke(this, &ApplicationStateChangeTest::notifyEvent));
+    EXPECT_CALL(*m_controlModuleMock, getSharedMemory(_, _, _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_controlModuleMock->getSharedMemoryResponse(m_fd, m_size)),
+                        WithArgs<0, 3>(Invoke(&(*m_controlModuleMock), &ControlModuleMock::defaultReturn))));
+    m_serverStub->notifyApplicationStateEvent(kControlId, ApplicationState::RUNNING);
+    waitEvent();
 
-    // State changed to RUNNING
-    //m_serverStub->notifyApplicationStateEvent(kControlId, ApplicationState::RUNNING);
-
-    // State changed to INACTIVE
-    //m_serverStub->notifyApplicationStateEvent(kControlId, ApplicationState::INACTIVE);
+    // Step 5: Change state to INACTIVE
+    m_eventReceived = false;
+    EXPECT_CALL(*m_controlClientMock, notifyApplicationState(ApplicationState::INACTIVE))
+        .WillOnce(Invoke(this, &ApplicationStateChangeTest::notifyEvent));
+    m_serverStub->notifyApplicationStateEvent(kControlId, ApplicationState::INACTIVE);
+    waitEvent();
 }

@@ -61,6 +61,14 @@ public:
         return response;
     }
 
+    ::firebolt::rialto::GetSharedMemoryResponse getSharedMemoryResponse(const int32_t fd, const uint32_t size)
+    {
+        firebolt::rialto::GetSharedMemoryResponse response;
+        response.set_fd(fd);
+        response.set_size(size);
+        return response;
+    }
+
     ControlModuleMock() {}
     virtual ~ControlModuleMock() = default;
 };
