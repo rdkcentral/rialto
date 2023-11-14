@@ -20,11 +20,9 @@ name: Rialto OCDM Test
 on:
   pull_request:
     branches:
-      - "master"
-      - "rdkcentral:master"
-  push:
-    branches:
-    - "A_RIALTO-390-2"
+      # - "master"
+      # - "rdkcentral:master"
+      - "A_RIALTO-390-2"
 
   workflow_dispatch:
 
