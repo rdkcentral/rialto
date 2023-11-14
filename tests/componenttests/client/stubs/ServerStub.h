@@ -28,6 +28,8 @@
 #include <memory>
 #include <thread>
 
+namespace firebolt::rialto::componenttests
+{
 class ServerStub
 {
 public:
@@ -52,5 +54,6 @@ private:
 
     void init();
 };
+} // namespace firebolt::rialto::componenttests
 
 #endif // SERVER_STUB_H_

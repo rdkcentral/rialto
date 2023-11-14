@@ -43,6 +43,8 @@ convertApplicationState(const firebolt::rialto::ApplicationState &state)
 }
 } // namespace
 
+namespace firebolt::rialto::componenttests
+{
 void ServerStub::clientDisconnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &client)
 {
     printf("Client disconnected, pid:%d, uid:%d gid:%d\n", client->getClientPid(), client->getClientUserId(),
@@ -133,3 +135,4 @@ void ServerStub::notifyApplicationStateEvent(const int32_t controlId, const fire
 
     m_client->sendEvent(event);
 }
+} // namespace firebolt::rialto::componenttests

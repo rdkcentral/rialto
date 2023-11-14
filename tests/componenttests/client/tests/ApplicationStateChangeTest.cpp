@@ -30,6 +30,7 @@
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::ipc;
+using namespace firebolt::rialto::componenttests;
 
 using ::testing::_;
 using ::testing::DoAll;
