@@ -202,7 +202,6 @@ def runTests (suites, doListTests, gtestFilter, outputDir, resultsFile, xmlFile,
         if xmlFile != None and valgrind == False:
             executeCmd.append('--gtest_output=xml:' + key + "_" + xmlFile)
 
-        executeCmd.append('--gtest_repeat=100')
         # Run the command
         if resultsFile != None:
             status = runcmd(executeCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)

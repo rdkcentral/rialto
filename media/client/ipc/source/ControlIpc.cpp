@@ -76,13 +76,10 @@ ControlIpc::ControlIpc(IControlClient *controlClient, IIpcClient &ipcClient,
     : IpcModule(ipcClient), m_controlClient(controlClient),
       m_eventThread(eventThreadFactory->createEventThread("rialto-control-events"))
 {
-    RIALTO_CLIENT_LOG_ERROR("here");
     if (!attachChannel())
     {
-        RIALTO_CLIENT_LOG_ERROR("here");
         throw std::runtime_error("Failed attach to the ipc channel");
     }
-    RIALTO_CLIENT_LOG_ERROR("here");
 }
 
 ControlIpc::~ControlIpc()

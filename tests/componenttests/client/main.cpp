@@ -19,6 +19,7 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <gtest/gtest.h>
+#include "RialtoLogging.h"
 
 class ProtobufCleaner : public testing::Environment
 {
@@ -31,6 +32,14 @@ int main(int argc, char **argv) // NOLINT(build/filename_format)
 {
     ::testing::InitGoogleTest(&argc, argv);
     ::testing::AddGlobalTestEnvironment(new ProtobufCleaner);
+
+    RIALTO_DEBUG_LEVEL allLogs = RIALTO_DEBUG_LEVEL(RIALTO_DEBUG_LEVEL_FATAL | RIALTO_DEBUG_LEVEL_ERROR | RIALTO_DEBUG_LEVEL_WARNING |
+                                  RIALTO_DEBUG_LEVEL_MILESTONE | RIALTO_DEBUG_LEVEL_INFO | RIALTO_DEBUG_LEVEL_DEBUG);
+    firebolt::rialto::logging::setLogLevels(RIALTO_COMPONENT_DEFAULT, allLogs);
+    firebolt::rialto::logging::setLogLevels(RIALTO_COMPONENT_CLIENT, allLogs);
+    firebolt::rialto::logging::setLogLevels(RIALTO_COMPONENT_SERVER, allLogs);
+    firebolt::rialto::logging::setLogLevels(RIALTO_COMPONENT_IPC, allLogs);
+    firebolt::rialto::logging::setLogLevels(RIALTO_COMPONENT_COMMON, allLogs);
 
     return RUN_ALL_TESTS();
 }
