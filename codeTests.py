@@ -70,7 +70,7 @@ def doCheckExtra():
 
         if file.endswith("ShmCommon.h") or ("/I" in file and file.endswith(".h")):
             continue
-        
+
         #  variable name constant must begin with a k
         executeCmd = [ "egrep", "-n", "^[^\(<]*(const|constexpr) ([a-zA-Z0-9:<>_]+ )+[\*&]*[^km\*&][a-zA-Z0-9_]+[ ]*[=\{]", file, "/dev/null"]
         if not runcmd(1, executeCmd, cwd=baseDir):
@@ -158,13 +158,12 @@ def main():
     runAll = len(sys.argv) == 1 or args['all'] == True
 
 
-    
     if runAll or args['extra'] == True:
         doCheckExtra()
-        
+
     if runAll or args['doxygen'] == True:
         doCheckDoxygen()
-        
+
     if runAll or args['cppcheck'] == True:
         doCheckCppcheck()
 
@@ -177,6 +176,6 @@ def main():
     if runAll or args['valgrind'] == True:
         doCheckValgrind()
 
-        
+
 if __name__ == "__main__":
     main()
