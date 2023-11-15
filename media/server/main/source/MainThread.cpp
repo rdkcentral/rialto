@@ -86,20 +86,20 @@ void MainThread::mainThreadLoop()
 {
     while (m_isMainThreadRunning)
     {
-        const std::shared_ptr<TaskInfo> taskInfo = waitForTask();
-        if (m_registeredClients.find(taskInfo->clientId) != m_registeredClients.end())
+        const std::shared_ptr<TaskInfo> kTaskInfo = waitForTask();
+        if (m_registeredClients.find(kTaskInfo->clientId) != m_registeredClients.end())
         {
-            taskInfo->task();
+            kTaskInfo->task();
         }
         else
         {
-            RIALTO_SERVER_LOG_WARN("Task ignored, client '%d' not registered", taskInfo->clientId);
+            RIALTO_SERVER_LOG_WARN("Task ignored, client '%d' not registered", kTaskInfo->clientId);
         }
 
-        if (nullptr != taskInfo->cv)
+        if (nullptr != kTaskInfo->cv)
         {
-            std::unique_lock<std::mutex> lockTask(*(taskInfo->mutex));
-            taskInfo->cv->notify_one();
+            std::unique_lock<std::mutex> lockTask(*(kTaskInfo->mutex));
+            kTaskInfo->cv->notify_one();
         }
     }
 }
@@ -111,9 +111,9 @@ const std::shared_ptr<MainThread::TaskInfo> MainThread::waitForTask()
     {
         m_taskQueueCv.wait(lock, [this] { return !m_taskQueue.empty(); });
     }
-    const std::shared_ptr<TaskInfo> taskInfo = m_taskQueue.front();
+    const std::shared_ptr<TaskInfo> kTaskInfo = m_taskQueue.front();
     m_taskQueue.pop();
-    return taskInfo;
+    return kTaskInfo;
 }
 
 int32_t MainThread::registerClient()

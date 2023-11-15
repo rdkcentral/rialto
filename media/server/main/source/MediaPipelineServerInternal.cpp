@@ -563,8 +563,8 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
 
     try
     {
-        const IMediaPipeline::MediaSegmentVector &segments = m_activeRequests->getSegments(needDataRequestId);
-        m_gstPlayer->attachSamples(segments);
+        const IMediaPipeline::MediaSegmentVector &kSegments = m_activeRequests->getSegments(needDataRequestId);
+        m_gstPlayer->attachSamples(kSegments);
     }
     catch (const std::runtime_error &e)
     {

@@ -42,17 +42,17 @@ protected:
  */
 TEST_F(RialtoClientMediaPipelineGetPositionTest, GetPositionSuccess)
 {
-    constexpr int64_t expectedPosition{123};
+    constexpr int64_t kExpectedPosition{123};
     int64_t resultPosition{};
     EXPECT_CALL(*m_mediaPipelineIpcMock, getPosition(resultPosition))
         .WillOnce(Invoke(
             [&](int64_t &position)
             {
-                position = expectedPosition;
+                position = kExpectedPosition;
                 return true;
             }));
     EXPECT_TRUE(m_mediaPipeline->getPosition(resultPosition));
-    EXPECT_EQ(resultPosition, expectedPosition);
+    EXPECT_EQ(resultPosition, kExpectedPosition);
 }
 
 /**

@@ -46,17 +46,17 @@ public:
     void gObjectSet(gpointer object, const gchar *first_property_name, ...) override
     {
         va_list args;
-        const gchar *property = first_property_name;
+        const gchar *kProperty = first_property_name;
 
         va_start(args, first_property_name);
 
-        while (NULL != property)
+        while (NULL != kProperty)
         {
-            gObjectSetStub(object, property);
+            gObjectSetStub(object, kProperty);
 
             // Get the next propery, ignore the values
             va_arg(args, void *);
-            property = va_arg(args, const gchar *);
+            kProperty = va_arg(args, const gchar *);
         }
 
         va_end(args);
@@ -65,15 +65,15 @@ public:
     void gObjectGet(gpointer object, const gchar *first_property_name, ...) override
     {
         va_list args;
-        const gchar *property = first_property_name;
+        const gchar *kProperty = first_property_name;
 
         va_start(args, first_property_name);
 
-        while (NULL != property)
+        while (NULL != kProperty)
         {
             void *element = va_arg(args, void *);
-            gObjectGetStub(object, property, element);
-            property = va_arg(args, const gchar *);
+            gObjectGetStub(object, kProperty, element);
+            kProperty = va_arg(args, const gchar *);
         }
 
         va_end(args);

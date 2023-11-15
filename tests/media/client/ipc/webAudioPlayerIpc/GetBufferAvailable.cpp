@@ -21,9 +21,9 @@
 
 MATCHER_P(WebAudioGetBufferAvailableRequestMatcher, webAaudioPlayerHandle, "")
 {
-    const ::firebolt::rialto::WebAudioGetBufferAvailableRequest *request =
+    const ::firebolt::rialto::WebAudioGetBufferAvailableRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::WebAudioGetBufferAvailableRequest *>(arg);
-    return ((request->web_audio_player_handle() == webAaudioPlayerHandle));
+    return ((kRequest->web_audio_player_handle() == webAaudioPlayerHandle));
 }
 
 class RialtoClientWebAudioPlayerIpcGetBufferAvailableTest : public WebAudioPlayerIpcTestBase

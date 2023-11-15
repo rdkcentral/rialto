@@ -36,10 +36,10 @@ KeySessionType covertKeySessionType(CreateKeySessionRequest_KeySessionType proto
 
 MATCHER_P3(createKeySessionRequestMatcher, mediaKeysHandle, sessionType, isLdl, "")
 {
-    const ::firebolt::rialto::CreateKeySessionRequest *request =
+    const ::firebolt::rialto::CreateKeySessionRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::CreateKeySessionRequest *>(arg);
-    return ((request->media_keys_handle() == mediaKeysHandle) &&
-            (covertKeySessionType(request->session_type()) == sessionType) && (request->is_ldl() == isLdl));
+    return ((kRequest->media_keys_handle() == mediaKeysHandle) &&
+            (covertKeySessionType(kRequest->session_type()) == sessionType) && (kRequest->is_ldl() == isLdl));
 }
 
 class RialtoClientMediaKeysIpcCreateKeySessionTest : public MediaKeysIpcTestBase

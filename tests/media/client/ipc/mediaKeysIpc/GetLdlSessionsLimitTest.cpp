@@ -21,9 +21,9 @@
 
 MATCHER_P(getLdlSessionsLimitRequestMatcher, mediaKeysHandle, "")
 {
-    const ::firebolt::rialto::GetLdlSessionsLimitRequest *request =
+    const ::firebolt::rialto::GetLdlSessionsLimitRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::GetLdlSessionsLimitRequest *>(arg);
-    return (request->media_keys_handle() == mediaKeysHandle);
+    return (kRequest->media_keys_handle() == mediaKeysHandle);
 }
 
 class RialtoClientMediaKeysIpcGetLdlSessionsLimitTest : public MediaKeysIpcTestBase

@@ -34,8 +34,8 @@ using testing::SetArgReferee;
 
 namespace
 {
-const std::vector<std::string> mimeTypes{"video/h264", "video/h265"};
-const firebolt::rialto::MediaSourceType sourceType{firebolt::rialto::MediaSourceType::VIDEO};
+const std::vector<std::string> kMimeTypes{"video/h264", "video/h265"};
+const firebolt::rialto::MediaSourceType kSourceType{firebolt::rialto::MediaSourceType::VIDEO};
 } // namespace
 
 MediaPipelineCapabilitiesModuleServiceTests::MediaPipelineCapabilitiesModuleServiceTests()
@@ -58,13 +58,13 @@ void MediaPipelineCapabilitiesModuleServiceTests::clientWillConnect()
 void MediaPipelineCapabilitiesModuleServiceTests::mediaPipelineServiceWillGetSupportedMimeTypes()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_mediaPipelineServiceMock, getSupportedMimeTypes(sourceType)).WillOnce(Return(mimeTypes));
+    EXPECT_CALL(m_mediaPipelineServiceMock, getSupportedMimeTypes(kSourceType)).WillOnce(Return(kMimeTypes));
 }
 
 void MediaPipelineCapabilitiesModuleServiceTests::mediaPipelineWillCheckIfMimeTypeIsSupported()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_mediaPipelineServiceMock, isMimeTypeSupported(mimeTypes[0])).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineServiceMock, isMimeTypeSupported(kMimeTypes[0])).WillOnce(Return(true));
 }
 
 void MediaPipelineCapabilitiesModuleServiceTests::expectRequestSuccess()
@@ -92,7 +92,7 @@ void MediaPipelineCapabilitiesModuleServiceTests::sendGetSupportedMimeTypesReque
 
     m_service->getSupportedMimeTypes(m_controllerMock.get(), &request, &response, m_closureMock.get());
 
-    EXPECT_EQ((std::vector<std::string>{response.mime_types().begin(), response.mime_types().end()}), mimeTypes);
+    EXPECT_EQ((std::vector<std::string>{response.mime_types().begin(), response.mime_types().end()}), kMimeTypes);
 }
 
 void MediaPipelineCapabilitiesModuleServiceTests::sendGetSupportedMimeTypesRequestAndExpectFailure()
@@ -110,7 +110,7 @@ void MediaPipelineCapabilitiesModuleServiceTests::sendIsMimeTypeSupportedRequest
     firebolt::rialto::IsMimeTypeSupportedRequest request;
     firebolt::rialto::IsMimeTypeSupportedResponse response;
 
-    request.set_mime_type(mimeTypes[0]);
+    request.set_mime_type(kMimeTypes[0]);
 
     m_service->isMimeTypeSupported(m_controllerMock.get(), &request, &response, m_closureMock.get());
     EXPECT_EQ(response.is_supported(), true);

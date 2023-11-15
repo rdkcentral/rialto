@@ -56,18 +56,18 @@ GST_EXPORT GType rialto_eme_protection_metadata_get_type()
 
 const GstMetaInfo *rialto_mse_protection_metadata_get_info()
 {
-    static const GstMetaInfo *metainfo = NULL;
-    if (g_once_init_enter(&metainfo))
+    static const GstMetaInfo *kMetainfo = NULL;
+    if (g_once_init_enter(&kMetainfo))
     {
-        const GstMetaInfo *gstMeta =
+        const GstMetaInfo *kGstMeta =
             gst_meta_register(GST_RIALTO_PROTECTION_METADATA_GET_TYPE, "GstRialtoProtectionMetadata",
                               sizeof(GstRialtoProtectionMetadata),
                               (GstMetaInitFunction)rialto_eme_protection_metadata_init,
                               (GstMetaFreeFunction)rialto_eme_protection_metadata_free, (GstMetaTransformFunction)NULL);
 
-        g_once_init_leave(&metainfo, gstMeta);
+        g_once_init_leave(&kMetainfo, kGstMeta);
     }
-    return metainfo;
+    return kMetainfo;
 }
 
 GstRialtoProtectionMetadata *rialto_mse_add_protection_metadata(GstBuffer *gstBuffer, GstStructure *info)

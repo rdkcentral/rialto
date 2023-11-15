@@ -21,9 +21,9 @@
 
 MATCHER_P2(getLastDrmErrorRequestMatcher, mediaKeysHandle, keySessionId, "")
 {
-    const ::firebolt::rialto::GetLastDrmErrorRequest *request =
+    const ::firebolt::rialto::GetLastDrmErrorRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::GetLastDrmErrorRequest *>(arg);
-    return ((request->media_keys_handle() == mediaKeysHandle) && (request->key_session_id() == keySessionId));
+    return ((kRequest->media_keys_handle() == mediaKeysHandle) && (kRequest->key_session_id() == keySessionId));
 }
 
 class RialtoClientMediaKeysIpcGetLastDrmErrorTest : public MediaKeysIpcTestBase

@@ -90,7 +90,7 @@ protected:
     void mainThreadWillEnqueueTask();
     void mainThreadWillEnqueueTaskAndWait();
     void getBufferAvailableSuccess(uint32_t expectedAvailableFrames,
-                                   const std::shared_ptr<WebAudioShmInfo> &expectedShmInfo = nullptr);
+                                   const std::shared_ptr<WebAudioShmInfo> &kExpectedShmInfo = nullptr);
     void writeBufferSuccess(uint32_t newFramesToWrite);
     void expectWriteStoredFrames(uint32_t storedFramesToWrite, uint32_t storedFramesWritten);
     void expectWriteNewFrames(uint32_t newFramesToWrite, uint32_t newFramesWritten);

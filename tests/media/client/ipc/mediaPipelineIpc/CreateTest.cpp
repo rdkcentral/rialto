@@ -21,16 +21,16 @@
 
 MATCHER_P2(createSessionRequestMatcher, maxWidth, maxHeight, "")
 {
-    const ::firebolt::rialto::CreateSessionRequest *request =
+    const ::firebolt::rialto::CreateSessionRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::CreateSessionRequest *>(arg);
-    return ((request->max_width() == maxWidth) && (request->max_height() == maxHeight));
+    return ((kRequest->max_width() == maxWidth) && (kRequest->max_height() == maxHeight));
 }
 
 MATCHER_P(destroySessionRequestMatcher, sessionId, "")
 {
-    const ::firebolt::rialto::DestroySessionRequest *request =
+    const ::firebolt::rialto::DestroySessionRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::DestroySessionRequest *>(arg);
-    return (request->session_id() == sessionId);
+    return (kRequest->session_id() == sessionId);
 }
 
 class RialtoClientCreateMediaPipelineIpcTest : public MediaPipelineIpcTestBase

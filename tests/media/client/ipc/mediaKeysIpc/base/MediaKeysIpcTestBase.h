@@ -44,16 +44,16 @@ using ::testing::WithArgs;
 
 MATCHER_P(createMediaKeysRequestMatcher, keySystem, "")
 {
-    const ::firebolt::rialto::CreateMediaKeysRequest *request =
+    const ::firebolt::rialto::CreateMediaKeysRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::CreateMediaKeysRequest *>(arg);
-    return (request->key_system() == keySystem);
+    return (kRequest->key_system() == keySystem);
 }
 
 MATCHER_P(destroyMediaKeysRequestMatcher, mediaKeysHandle, "")
 {
-    const ::firebolt::rialto::DestroyMediaKeysRequest *request =
+    const ::firebolt::rialto::DestroyMediaKeysRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::DestroyMediaKeysRequest *>(arg);
-    return (request->media_keys_handle() == mediaKeysHandle);
+    return (kRequest->media_keys_handle() == mediaKeysHandle);
 }
 
 class MediaKeysIpcTestBase : public IpcModuleBase, public ::testing::Test

@@ -21,9 +21,9 @@
 
 MATCHER_P(getDrmTimeRequestMatcher, mediaKeysHandle, "")
 {
-    const ::firebolt::rialto::GetDrmTimeRequest *request =
+    const ::firebolt::rialto::GetDrmTimeRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::GetDrmTimeRequest *>(arg);
-    return (request->media_keys_handle() == mediaKeysHandle);
+    return (kRequest->media_keys_handle() == mediaKeysHandle);
 }
 
 class RialtoClientMediaKeysIpcGetDrmTimeTest : public MediaKeysIpcTestBase

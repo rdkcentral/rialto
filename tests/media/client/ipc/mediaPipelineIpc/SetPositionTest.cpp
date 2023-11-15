@@ -21,9 +21,9 @@
 
 MATCHER_P2(SetPositionRequestMatcher, sessionId, position, "")
 {
-    const ::firebolt::rialto::SetPositionRequest *request =
+    const ::firebolt::rialto::SetPositionRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::SetPositionRequest *>(arg);
-    return ((request->session_id() == sessionId) && (request->position() == position));
+    return ((kRequest->session_id() == sessionId) && (kRequest->position() == position));
 }
 
 class RialtoClientMediaPipelineIpcSetPositionTest : public MediaPipelineIpcTestBase
