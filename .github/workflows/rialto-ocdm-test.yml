@@ -41,6 +41,11 @@ jobs:
         with:
           python-version: 3.8
 
+      - name: Build gstreamer library
+        run: |
+          sudo apt-get update
+          sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-plugins-base 
+
       - name: Run tests
         run: |
           cd rialto-ocdm    
