@@ -248,7 +248,6 @@ def generateCoverageReport(outputDir, resultsFile, suites):
     lcovBaseCmd.extend(["--parallel",  str(multiprocessing.cpu_count())]);
     lcovBaseCmd.extend(["--ignore-errors", "unused"]);
     lcovBaseCmd.extend(["--exclude", "*Wrapper.cpp", "--exclude", "LinuxWrapper.h",  "--exclude", "JsonCppWrapperFactory.cpp", "--exclude", "JsonCppWrapperFactory.h", "--exclude", "JsonCppWrapper.h"])
-    # Should be added?...
     lcovBaseCmd.extend(["--exclude", "GstProtectionMetadataWrapper.h", "--exclude", "GstProtectionMetadataWrapperFactory.h", "--exclude", "GstWrapper.h", "--exclude", "GlibWrapper.h"])
     
     if resultsFile:
@@ -262,7 +261,6 @@ def generateCoverageReport(outputDir, resultsFile, suites):
     lcovTestCmd.extend(["--parallel", str(multiprocessing.cpu_count())]);
     lcovTestCmd.extend(["--ignore-errors", "unused"]);
     lcovTestCmd.extend(["--exclude", "*Wrapper.cpp", "--exclude", "LinuxWrapper.h",  "--exclude", "JsonCppWrapperFactory.cpp", "--exclude", "JsonCppWrapperFactory.h", "--exclude", "JsonCppWrapper.h"])
-    # Should be added?...
     lcovBaseCmd.extend(["--exclude", "GstProtectionMetadataWrapper.h", "--exclude", "GstProtectionMetadataWrapperFactory.h", "--exclude", "GstWrapper.h", "--exclude", "GlibWrapper.h"])
 
     if resultsFile:
