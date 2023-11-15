@@ -27,6 +27,7 @@ import multiprocessing
 import sys
 
 valgrindErrorCode = 101
+baseDir = os.getcwd()
 
 def runcmd(okErrorCode, *args, **kwargs):
     status = subprocess.run(*args, **kwargs)
@@ -39,13 +40,22 @@ def runcmd(okErrorCode, *args, **kwargs):
 
 def getSourceFiles():
     rv = []
-    for root, dirs, files in os.walk(os.getcwd()):
+    for root, dirs, files in os.walk(baseDir):
         for file in files:
             if file.endswith(".cpp") or file.endswith(".h"):
                 f = os.path.join(root, file)
                 if "/build/" not in f:
                     rv.append(f)
     return rv
+
+def printOk(str):
+    if str == "":
+        print("    ok")
+    else:
+        print("    "+str)
+    print()
+    print("###############################################")
+    print()
 
 ######################
 
@@ -55,7 +65,7 @@ def doCheckExtra():
     # The code shouldn't include iostream
     for file in files:
         executeCmd = ["grep", "-n", "iostream", file, "/dev/null"]
-        if not runcmd(1, executeCmd, cwd=os.getcwd()):
+        if not runcmd(1, executeCmd, cwd=baseDir):
             exit(1)
 
         if file.endswith("ShmCommon.h") or ("/I" in file and file.endswith(".h")):
@@ -63,12 +73,12 @@ def doCheckExtra():
         
         #  variable name constant must begin with a k
         executeCmd = [ "egrep", "-n", "^[^\(<]*(const|constexpr) ([a-zA-Z0-9:<>_]+ )+[\*&]*[^km\*&][a-zA-Z0-9_]+[ ]*[=\{]", file, "/dev/null"]
-        if not runcmd(1, executeCmd, cwd=os.getcwd()):
+        if not runcmd(1, executeCmd, cwd=baseDir):
             exit(1)
         executeCmd = [ "egrep", "-n", "^[^\(<]*(const|constexpr) ([a-zA-Z0-9:<>_]+ )+[\*&]*m[a-zA-Z0-9][a-zA-Z0-9_]+[ ]*[=\{]", file, "/dev/null"]
-        if not runcmd(1, executeCmd, cwd=os.getcwd()):
+        if not runcmd(1, executeCmd, cwd=baseDir):
             exit(1)
-    print("  ok")
+    printOk("")
 
 def doCheckDoxygen():
     print("Running doxygen...")
@@ -76,7 +86,7 @@ def doCheckDoxygen():
     if not os.path.exists(opdir):
         os.mkdir(opdir)
     executeCmd = ["doxygen"]
-    if not runcmd(0, executeCmd, cwd=os.getcwd()):
+    if not runcmd(0, executeCmd, cwd=baseDir):
         exit(1)
     errFile = "./doxygen_errors.txt"
     if os.path.isfile(errFile):
@@ -84,54 +94,46 @@ def doCheckDoxygen():
             print()
             print(errFile)
             executeCmd = ["cat", errFile]
-            runcmd(0, executeCmd, cwd=os.getcwd())
+            runcmd(0, executeCmd, cwd=baseDir)
             exit(1)
         os.remove(errFile)
-    print()
-    print("  doxygen test ok")
-    print()
+    printOk("doxygen test ok")
 
 def doCheckCppcheck():
     print("Running cppcheck...")
     executeCmd = ["cppcheck", "-q", "-ibuild", "--enable=all", "--std=c++17", "--error-exitcode=1",
                   "--suppress-xml=cppcheck_suppressions.xml", "--template='{file}:{line},{severity},{id},{message}'", "."]
-    if not runcmd(0, executeCmd, cwd=os.getcwd()):
+    if not runcmd(0, executeCmd, cwd=baseDir):
             exit(1)
-    print("  ok")
-    print()
+    printOk("")
 
 def doCheckCpplint():
     print("Running cpplint...")
     executeCmd = ["python", "scripts/cpplint/cpplint.py", "--recursive", "--output=junit", "."]
-    if not runcmd(0, executeCmd, cwd=os.getcwd()):
-            exit(1)
+    if not runcmd(0, executeCmd, cwd=baseDir):
+        exit(1)
     print()
-    print()
-    print("  cpplint test ok")
-    print()
+    printOk("cpplint test ok")
 
 def doCheckClang():
     print("Running clang-format-12...")
     files = getSourceFiles()
     for file in files:
         executeCmd = ["clang-format-12", "-style=file", "--dry-run", "--Werror", file]
-        if not runcmd(0, executeCmd, cwd=os.getcwd()):
+        if not runcmd(0, executeCmd, cwd=baseDir):
             print()
             print("consider running the following command...");
             print()
             print("  clang-format-12 -i " + file)
             exit(1)
-    print("  ok")
-    print()
+    printOk("")
 
 def doCheckValgrind():
     print("Running valgrind...")
     executeCmd = ["./build_ut.py", "-c", "-xml", "-f", "-val"]
-    if not runcmd(0, executeCmd, cwd=os.getcwd()):
+    if not runcmd(0, executeCmd, cwd=baseDir):
         exit(1)
-    print()
-    print("  valgrind test ok")
-    print()
+    printOk("valgrind test ok")
 
 ######################
 
