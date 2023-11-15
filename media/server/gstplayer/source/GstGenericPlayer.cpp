@@ -201,6 +201,7 @@ void GstGenericPlayer::initMsePipeline()
 {
     // Make playbin
     m_context.pipeline = m_gstWrapper->gstElementFactoryMake("playbin", "media_pipeline");
+
     // Set pipeline flags
     unsigned flagAudio = getGstPlayFlag("audio");
     unsigned flagVideo = getGstPlayFlag("video");
@@ -214,6 +215,8 @@ void GstGenericPlayer::initMsePipeline()
     m_glibWrapper->gSignalConnect(m_context.pipeline, "element-setup", G_CALLBACK(&GstGenericPlayer::setupElement), this);
     m_glibWrapper->gSignalConnect(m_context.pipeline, "deep-element-added",
                                   G_CALLBACK(&GstGenericPlayer::deepElementAdded), this);
+    m_glibWrapper->gSignalConnect(m_context.pipeline, "child-added",
+                                  G_CALLBACK(&GStreamerAudioSink::PlaybinChildAddedCallback), this);
 
     // Set uri
     m_glibWrapper->gObjectSet(m_context.pipeline, "uri", "rialto://", nullptr);
@@ -307,6 +310,16 @@ void GstGenericPlayer::deepElementAdded(GstBin *pipeline, GstBin *bin, GstElemen
     {
         self->m_workerThread->enqueueTask(
             self->m_taskFactory->createDeepElementAdded(self->m_context, *self, pipeline, bin, element));
+    }
+}
+
+void GstGenericPlayer::PlaybinChildAddedCallback(GstChildProxy * self, GObject * object, gchar * name, gpointer user_data)
+{
+    RIALTO_SERVER_LOG_ERROR("Child %s added to the pipeline", name);
+    if (self->m_workerThread)
+    {
+        //self->m_workerThread->enqueueTask(
+        //    self->m_taskFactory->createPlaybinChildAddedCallback(self->m_context, *self, pipeline, bin, element));
     }
 }
 
