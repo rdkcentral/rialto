@@ -242,13 +242,20 @@ def AddValgrind(suite, outputToFile, outputToXml):
     return executeCmd
 
 def generateCoverageReport(outputDir, resultsFile, suites):
+    lcovCommon = [];
+    lcovCommon.extend(["--exclude", "/usr/*"]);
+    lcovCommon.extend(["--exclude", "*build/*", "--exclude", "*tests/*", "--filter", "brace,function,trivial"])
+    lcovCommon.extend(["--parallel",  str(multiprocessing.cpu_count())])
+    
+    # the following line tells lcov to ignore any errors caused by include/exclude/erase/omit/substitute pattern which did not match any file pathnames
+    lcovCommon.extend(["--ignore-errors", "unused"]);
+    
+    lcovCommon.extend(["--exclude", "*Wrapper.cpp", "--exclude", "LinuxWrapper.h",  "--exclude", "JsonCppWrapperFactory.cpp", "--exclude", "JsonCppWrapperFactory.h", "--exclude", "JsonCppWrapper.h"])
+    lcovCommon.extend(["--exclude", "GstProtectionMetadataWrapper.h", "--exclude", "GstProtectionMetadataWrapperFactory.h", "--exclude", "GstWrapper.h", "--exclude", "GlibWrapper.h"])
+    
     # The lcov command will fail if the --exclude file does not exist, only run '--exclude *Wrapper*' for the relevent suites
-    lcovBaseCmd = ["lcov", "-c", "-i", "-d", ".", "--output-file", "coverage_base.info", "--exclude", "/usr/*",
-                   "--exclude", "*build/*", "--exclude", "*tests/*", "--filter", "brace,function,trivial"]
-    lcovBaseCmd.extend(["--parallel",  str(multiprocessing.cpu_count())]);
-    lcovBaseCmd.extend(["--ignore-errors", "unused"]);
-    lcovBaseCmd.extend(["--exclude", "*Wrapper.cpp", "--exclude", "LinuxWrapper.h",  "--exclude", "JsonCppWrapperFactory.cpp", "--exclude", "JsonCppWrapperFactory.h", "--exclude", "JsonCppWrapper.h"])
-    lcovBaseCmd.extend(["--exclude", "GstProtectionMetadataWrapper.h", "--exclude", "GstProtectionMetadataWrapperFactory.h", "--exclude", "GstWrapper.h", "--exclude", "GlibWrapper.h"])
+    lcovBaseCmd = ["lcov", "-c", "-i", "-d", ".", "--output-file", "coverage_base.info"]
+    lcovBaseCmd.extend(lcovCommon);
     
     if resultsFile:
         lcovBaseStatus = runcmd(lcovBaseCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
@@ -256,12 +263,8 @@ def generateCoverageReport(outputDir, resultsFile, suites):
         lcovBaseStatus = runcmd(lcovBaseCmd, cwd=os.getcwd() + '/' + outputDir, stderr=subprocess.STDOUT)
     if not lcovBaseStatus:
         return False
-    lcovTestCmd = ["lcov", "-c", "-d", ".", "--output-file", "coverage_test.info", "--exclude", "/usr/*",
-                   "--exclude", "*build/*", "--exclude", "*tests/*","--filter", "brace,function,trivial"] 
-    lcovTestCmd.extend(["--parallel", str(multiprocessing.cpu_count())]);
-    lcovTestCmd.extend(["--ignore-errors", "unused"]);
-    lcovTestCmd.extend(["--exclude", "*Wrapper.cpp", "--exclude", "LinuxWrapper.h",  "--exclude", "JsonCppWrapperFactory.cpp", "--exclude", "JsonCppWrapperFactory.h", "--exclude", "JsonCppWrapper.h"])
-    lcovBaseCmd.extend(["--exclude", "GstProtectionMetadataWrapper.h", "--exclude", "GstProtectionMetadataWrapperFactory.h", "--exclude", "GstWrapper.h", "--exclude", "GlibWrapper.h"])
+    lcovTestCmd = ["lcov", "-c", "-d", ".", "--output-file", "coverage_test.info"] 
+    lcovTestCmd.extend(lcovCommon);
 
     if resultsFile:
         lcovTestStatus = runcmd(lcovTestCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
