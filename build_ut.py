@@ -245,7 +245,7 @@ def generateCoverageReport(outputDir, resultsFile, suites):
     # The lcov command will fail if the --exclude file does not exist, only run '--exclude *Wrapper*' for the relevent suites
     lcovBaseCmd = ["lcov", "-c", "-i", "-d", ".", "--output-file", "coverage_base.info", "--exclude", "/usr/*",
                    "--exclude", "*build/*", "--exclude", "*tests/*", "--filter", "brace,function,trivial"]
-    lcovBaseCmd.extend(["--parallel", "10"]);
+    lcovBaseCmd.extend(["--parallel",  str(multiprocessing.cpu_count())]);
     lcovBaseCmd.extend(["--ignore-errors", "unused"]);
     lcovBaseCmd.extend(["--exclude", "*Wrapper.cpp", "--exclude", "LinuxWrapper.h",  "--exclude", "JsonCppWrapperFactory.cpp", "--exclude", "JsonCppWrapperFactory.h", "--exclude", "JsonCppWrapper.h"])
     # Should be added?...
@@ -259,7 +259,7 @@ def generateCoverageReport(outputDir, resultsFile, suites):
         return False
     lcovTestCmd = ["lcov", "-c", "-d", ".", "--output-file", "coverage_test.info", "--exclude", "/usr/*",
                    "--exclude", "*build/*", "--exclude", "*tests/*","--filter", "brace,function,trivial"] 
-    lcovTestCmd.extend(["--parallel", "10"]);
+    lcovTestCmd.extend(["--parallel", str(multiprocessing.cpu_count())]);
     lcovTestCmd.extend(["--ignore-errors", "unused"]);
     lcovTestCmd.extend(["--exclude", "*Wrapper.cpp", "--exclude", "LinuxWrapper.h",  "--exclude", "JsonCppWrapperFactory.cpp", "--exclude", "JsonCppWrapperFactory.h", "--exclude", "JsonCppWrapper.h"])
     # Should be added?...
