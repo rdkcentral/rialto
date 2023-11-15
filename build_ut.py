@@ -253,7 +253,6 @@ def generateCoverageReport(outputDir, resultsFile, suites):
     lcovCommon.extend(["--exclude", "*Wrapper.cpp", "--exclude", "LinuxWrapper.h",  "--exclude", "JsonCppWrapperFactory.cpp", "--exclude", "JsonCppWrapperFactory.h", "--exclude", "JsonCppWrapper.h"])
     lcovCommon.extend(["--exclude", "GstProtectionMetadataWrapper.h", "--exclude", "GstProtectionMetadataWrapperFactory.h", "--exclude", "GstWrapper.h", "--exclude", "GlibWrapper.h"])
     
-    # The lcov command will fail if the --exclude file does not exist, only run '--exclude *Wrapper*' for the relevent suites
     lcovBaseCmd = ["lcov", "-c", "-i", "-d", ".", "--output-file", "coverage_base.info"]
     lcovBaseCmd.extend(lcovCommon);
     
