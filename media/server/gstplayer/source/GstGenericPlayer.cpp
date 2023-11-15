@@ -216,7 +216,7 @@ void GstGenericPlayer::initMsePipeline()
     m_glibWrapper->gSignalConnect(m_context.pipeline, "deep-element-added",
                                   G_CALLBACK(&GstGenericPlayer::deepElementAdded), this);
     m_glibWrapper->gSignalConnect(m_context.pipeline, "child-added",
-                                  G_CALLBACK(&GStreamerAudioSink::PlaybinChildAddedCallback), this);
+                                  G_CALLBACK(&GstGenericPlayer::PlaybinChildAddedCallback), this);
 
     // Set uri
     m_glibWrapper->gObjectSet(m_context.pipeline, "uri", "rialto://", nullptr);

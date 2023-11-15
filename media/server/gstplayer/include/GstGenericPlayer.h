@@ -183,6 +183,16 @@ private:
     static void deepElementAdded(GstBin *pipeline, GstBin *bin, GstElement *element, GstGenericPlayer *self);
 
     /**
+     * @brief Callback on element-setup. Called by the Gstreamer thread
+     *
+     * @param[in] pipeline  : The pipeline the signal was fired from.
+     * @param[in] bin       : the GstBin the element was added to
+     * @param[in] element   : an element that was added to the playbin hierarchy
+     * @param[in] self      : Reference to the calling object.
+     */
+    static void PlaybinChildAddedCallback(GstChildProxy * self, GObject * object, gchar * name, gpointer user_data);
+
+    /**
      * @brief Creates a Westeros sink and sets the res-usage flag for a secondary video.
      *
      * @retval true on success.
