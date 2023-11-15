@@ -243,15 +243,14 @@ def AddValgrind(suite, outputToFile, outputToXml):
 
 def generateCoverageReport(outputDir, resultsFile, suites):
     # The lcov command will fail if the --exclude file does not exist, only run '--exclude *Wrapper*' for the relevent suites
-    ExcludeWrapperSuitesBase = ['serveripc', 'serverservice', 'servergstplayer', 'servermain', 'manager', 'clientipc', 'client', 'common']
-    ExcludeWrapperSuitesTest = ['servergstplayer', 'servermain', 'manager']
-
     lcovBaseCmd = ["lcov", "-c", "-i", "-d", ".", "--output-file", "coverage_base.info", "--exclude", "/usr/*",
                    "--exclude", "*build/*", "--exclude", "*tests/*", "--filter", "brace,function,trivial"]
-    for suite in ExcludeWrapperSuitesBase:
-        if suite in suites:
-            lcovBaseCmd.extend(["--exclude", "*Wrapper*"])
-            break
+    lcovBaseCmd.extend(["--parallel", "10"]);
+    lcovBaseCmd.extend(["--ignore-errors", "unused"]);
+    lcovBaseCmd.extend(["--exclude", "*Wrapper.cpp", "--exclude", "LinuxWrapper.h",  "--exclude", "JsonCppWrapperFactory.cpp", "--exclude", "JsonCppWrapperFactory.h", "--exclude", "JsonCppWrapper.h"])
+    # Should be added?...
+    lcovBaseCmd.extend(["--exclude", "GstProtectionMetadataWrapper.h", "--exclude", "GstProtectionMetadataWrapperFactory.h", "--exclude", "GstWrapper.h", "--exclude", "GlibWrapper.h"])
+    
     if resultsFile:
         lcovBaseStatus = runcmd(lcovBaseCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
     else:
@@ -259,11 +258,13 @@ def generateCoverageReport(outputDir, resultsFile, suites):
     if not lcovBaseStatus:
         return False
     lcovTestCmd = ["lcov", "-c", "-d", ".", "--output-file", "coverage_test.info", "--exclude", "/usr/*",
-                   "--exclude", "*build/*", "--exclude", "*tests/*","--filter", "brace,function,trivial"]
-    for suite in ExcludeWrapperSuitesTest:
-        if suite in suites:
-            lcovTestCmd.extend(["--exclude", "*Wrapper*"])
-            break
+                   "--exclude", "*build/*", "--exclude", "*tests/*","--filter", "brace,function,trivial"] 
+    lcovTestCmd.extend(["--parallel", "10"]);
+    lcovTestCmd.extend(["--ignore-errors", "unused"]);
+    lcovTestCmd.extend(["--exclude", "*Wrapper.cpp", "--exclude", "LinuxWrapper.h",  "--exclude", "JsonCppWrapperFactory.cpp", "--exclude", "JsonCppWrapperFactory.h", "--exclude", "JsonCppWrapper.h"])
+    # Should be added?...
+    lcovBaseCmd.extend(["--exclude", "GstProtectionMetadataWrapper.h", "--exclude", "GstProtectionMetadataWrapperFactory.h", "--exclude", "GstWrapper.h", "--exclude", "GlibWrapper.h"])
+
     if resultsFile:
         lcovTestStatus = runcmd(lcovTestCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
     else:
@@ -272,6 +273,7 @@ def generateCoverageReport(outputDir, resultsFile, suites):
         return False
     lcovCombineCmd = ["lcov", "-a", "coverage_base.info", "-a", "coverage_test.info", "-o", "coverage.info", "--filter",
                       "brace,function,trivial"]
+    lcovCombineCmd.extend(["--ignore-errors", "empty"]);
     if resultsFile:
         lcovCombineStatus = runcmd(lcovCombineCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
     else:
@@ -279,11 +281,13 @@ def generateCoverageReport(outputDir, resultsFile, suites):
     if not lcovCombineStatus:
         return False
     genHtmlCmd = ["genhtml", "coverage.info", "--output-directory", "gh_pages/coverage_report", "--filter", "brace,function,trivial"]
+    genHtmlCmd.extend(["--ignore-errors", "empty"]);
     if resultsFile:
         genHtmlStatus = runcmd(genHtmlCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
     else:
         genHtmlStatus = runcmd(genHtmlCmd, cwd=os.getcwd() + '/' + outputDir, stderr=subprocess.STDOUT)
     genStatsCmd = ["lcov", "--summary", "coverage.info", "--filter", "brace,function,trivial"]
+    genStatsCmd.extend(["--ignore-errors", "empty"]);
     statsFile = open(os.getcwd() + '/' + outputDir + '/' + "coverage_statistics.txt", "w")
     if statsFile:
         genStatsStatus = runcmd(genStatsCmd, cwd=os.getcwd() + '/' + outputDir, stdout=statsFile, stderr=subprocess.STDOUT)
