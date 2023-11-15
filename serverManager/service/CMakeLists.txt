@@ -84,7 +84,7 @@ if ( COVERAGE_ENABLED )
         )
 endif()
 
-if( NOT CMAKE_BUILD_TYPE STREQUAL "UnitTests" )
+if( NOT CMAKE_BUILD_TYPE STREQUAL "UnitTests" AND NOT CMAKE_BUILD_TYPE STREQUAL "ComponentTests" )
         include( GNUInstallDirs )
         install (
                 TARGETS RialtoServerManager LIBRARY

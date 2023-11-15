@@ -190,6 +190,11 @@ if( NATIVE_BUILD )
     )
 endif()
 
+if( CMAKE_BUILD_FLAG STREQUAL "ComponentTests" )
+    add_subdirectory( tests/componenttests/server/stubs/rdk_gstreamer_utils )
+    add_subdirectory( tests/componenttests/server/stubs/opencdm )
+endif()
+
 # Include the new IPC library components
 add_subdirectory( ipc )
 
@@ -215,5 +220,14 @@ if( CMAKE_BUILD_FLAG STREQUAL "UnitTests" )
     add_subdirectory( tests/media/common EXCLUDE_FROM_ALL )
     add_subdirectory( tests/media/interface EXCLUDE_FROM_ALL )
     add_subdirectory( tests/ipc EXCLUDE_FROM_ALL )
+
+endif()
+
+# Config and target for building the unit tests
+if( CMAKE_BUILD_FLAG STREQUAL "ComponentTests" )
+
+    include( cmake/googletest.cmake )
+
+    add_subdirectory( tests/componenttests/server EXCLUDE_FROM_ALL )
 
 endif()

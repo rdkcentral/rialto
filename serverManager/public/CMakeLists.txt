@@ -34,7 +34,7 @@ target_include_directories(
         include
     )
 
-if( NOT CMAKE_BUILD_TYPE STREQUAL "UnitTests" )
+if( NOT CMAKE_BUILD_TYPE STREQUAL "UnitTests" AND NOT CMAKE_BUILD_TYPE STREQUAL "ComponentTests" )
         include( GNUInstallDirs )
         set (LIB_RIALTO_SERVER_MANAGER_PUBLIC_HEADERS
                 include/ILogHandler.h

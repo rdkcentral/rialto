@@ -39,7 +39,7 @@ target_include_directories(
         ${CMAKE_BINARY_DIR}/common/public/include
     )
 
-if( NOT CMAKE_BUILD_TYPE STREQUAL "UnitTests" )
+if( NOT CMAKE_BUILD_TYPE STREQUAL "UnitTests" AND NOT CMAKE_BUILD_TYPE STREQUAL "ComponentTests" )
         include( GNUInstallDirs )
         set (LIB_RIALTO_COMMON_PUBLIC_HEADERS
                 ${CMAKE_BINARY_DIR}/common/public/include/SessionServerCommon.h

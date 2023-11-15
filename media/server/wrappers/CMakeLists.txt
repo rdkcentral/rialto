@@ -24,6 +24,10 @@ if( NATIVE_BUILD )
     set(ocdm_DIR "${CMAKE_BINARY_DIR}/stubs/opencdm/" )
 endif()
 
+if( CMAKE_BUILD_FLAG STREQUAL "ComponentTests" )
+    set(ocdm_DIR "${CMAKE_BINARY_DIR}/tests/componenttests/server/stubs/opencdm/" )
+endif()
+
 if( NOT CMAKE_BUILD_FLAG STREQUAL "UnitTests" )
 
     find_package( ocdm REQUIRED )
@@ -39,6 +43,7 @@ if( NOT CMAKE_BUILD_FLAG STREQUAL "UnitTests" )
         source/RdkGstreamerUtilsWrapper.cpp
         )
 
+    message(${OCdm_INCLUDE_DIRS})
     target_include_directories(
         RialtoServerWrappers
 
