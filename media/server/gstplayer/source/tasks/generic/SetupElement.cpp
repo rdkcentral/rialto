@@ -80,7 +80,12 @@ SetupElement::~SetupElement()
 void SetupElement::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing SetupElement");
-    if (m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "westerossink"))
+    
+    // In playbin3 AutoVideoSink uses names like videosink-actual-sink-brcmvideo whereas playbin
+    // creates sink with names brcmvideosink*, so it is better to check actual type here
+    const gchar *elementTypeName = g_type_name(G_OBJECT_TYPE(m_element));
+    if (m_glibWrapper->g_strcmp0(elementTypeName, "Gstbrcmvideosink") ||
+        m_glibWrapper->g_strcmp0(elementTypeName, "GstWesterosSink"))
     {
         if (!m_context.pendingGeometry.empty())
         {

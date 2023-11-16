@@ -215,8 +215,6 @@ void GstGenericPlayer::initMsePipeline()
     m_glibWrapper->gSignalConnect(m_context.pipeline, "element-setup", G_CALLBACK(&GstGenericPlayer::setupElement), this);
     m_glibWrapper->gSignalConnect(m_context.pipeline, "deep-element-added",
                                   G_CALLBACK(&GstGenericPlayer::deepElementAdded), this);
-    m_glibWrapper->gSignalConnect(m_context.pipeline, "child-added",
-                                  G_CALLBACK(&GstGenericPlayer::PlaybinChildAddedCallback), this);
 
     // Set uri
     m_glibWrapper->gObjectSet(m_context.pipeline, "uri", "rialto://", nullptr);
@@ -310,16 +308,6 @@ void GstGenericPlayer::deepElementAdded(GstBin *pipeline, GstBin *bin, GstElemen
     {
         self->m_workerThread->enqueueTask(
             self->m_taskFactory->createDeepElementAdded(self->m_context, *self, pipeline, bin, element));
-    }
-}
-
-void GstGenericPlayer::PlaybinChildAddedCallback(GstChildProxy * self, GObject * object, gchar * name, gpointer user_data)
-{
-    RIALTO_SERVER_LOG_ERROR("Child %s added to the pipeline", name);
-    if (self->m_workerThread)
-    {
-        //self->m_workerThread->enqueueTask(
-        //    self->m_taskFactory->createPlaybinChildAddedCallback(self->m_context, *self, pipeline, bin, element));
     }
 }
 
@@ -754,17 +742,46 @@ bool GstGenericPlayer::setWesterossinkRectangle()
     bool result = false;
     GstElement *videoSink = nullptr;
     m_glibWrapper->gObjectGet(m_context.pipeline, "video-sink", &videoSink, nullptr);
-    if (videoSink && m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink), "rectangle"))
+    if (videoSink)
     {
-        char rect[64];
-        snprintf(rect, sizeof(rect), "%d,%d,%d,%d", m_context.pendingGeometry.x, m_context.pendingGeometry.y,
-                 m_context.pendingGeometry.width, m_context.pendingGeometry.height);
-        m_glibWrapper->gObjectSet(videoSink, "rectangle", rect, nullptr);
-        m_context.pendingGeometry.clear();
-        result = true;
+        // If video-sink is autovideosink element, we need to check the child sink
+        const gchar *elementType = g_type_name(G_OBJECT_TYPE(videoSink));
+        GstElement *actualVideoSink = nullptr;
+        if (m_glibWrapper->g_strcmp0(elementTypeName, "GstAutoVideoSink"))
+        {
+            GstIterator *sinks = gst_bin_iterate_sinks(GST_BIN(videoSink));
+            GValue item;
+            while (gst_iterator_next(sinks, &item) == GST_ITERATOR_OK) 
+            {
+                const gchar *elementName = gst_element_get_name(g_value_get_object(&item));
+                if (GST_IS_VIDEO_SINK(g_value_get_object(&item)))
+                {
+                    RIALTO_SERVER_LOG_ERROR("lukewill: GST_IS_VIDEO_SINK");
+                }
+                RIALTO_SERVER_LOG_ERROR("lukewill: sink element name: %s", elementName);
+
+                g_free((gpointer)elementName);
+            }
+        }
+        else
+        {
+            actualVideoSink = videoSink;
+        }
+
+        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink), "rectangle"))
+        {
+            char rect[64];
+            snprintf(rect, sizeof(rect), "%d,%d,%d,%d", m_context.pendingGeometry.x, m_context.pendingGeometry.y,
+                    m_context.pendingGeometry.width, m_context.pendingGeometry.height);
+            m_glibWrapper->gObjectSet(videoSink, "rectangle", rect, nullptr);
+            m_context.pendingGeometry.clear();
+            result = true;
+        }
     }
     else
     {
+        const gchar *elementType = g_type_name(G_OBJECT_TYPE(videoSink));
+        RIALTO_SERVER_LOG_ERROR("lukewill: found video sink, %s", elementType);
         RIALTO_SERVER_LOG_ERROR("Failed to set the westerossink rectangle");
     }
 
