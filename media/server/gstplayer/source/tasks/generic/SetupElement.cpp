@@ -84,8 +84,8 @@ void SetupElement::execute() const
     // In playbin3 AutoVideoSink uses names like videosink-actual-sink-brcmvideo whereas playbin
     // creates sink with names brcmvideosink*, so it is better to check actual type here
     const gchar *elementTypeName = g_type_name(G_OBJECT_TYPE(m_element));
-    if (m_glibWrapper->g_strcmp0(elementTypeName, "Gstbrcmvideosink") ||
-        m_glibWrapper->g_strcmp0(elementTypeName, "GstWesterosSink"))
+    if ((0 == g_strcmp0(elementTypeName, "Gstbrcmvideosink")) ||
+        (0 == g_strcmp0(elementTypeName, "GstWesterosSink")))
     {
         if (!m_context.pendingGeometry.empty())
         {

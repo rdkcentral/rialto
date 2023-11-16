@@ -26,6 +26,7 @@
 #include "tasks/generic/GenericPlayerTaskFactory.h"
 #include <IMediaPipeline.h>
 #include <chrono>
+#include <gst/video/gstvideosink.h>
 
 namespace
 {
@@ -744,45 +745,36 @@ bool GstGenericPlayer::setWesterossinkRectangle()
     m_glibWrapper->gObjectGet(m_context.pipeline, "video-sink", &videoSink, nullptr);
     if (videoSink)
     {
-        // If video-sink is autovideosink element, we need to check the child sink
-        const gchar *elementType = g_type_name(G_OBJECT_TYPE(videoSink));
+        // If video-sink is autovideosink element, we need to check the child sink for the property
+        const gchar *elementTypeName = g_type_name(G_OBJECT_TYPE(videoSink));
         GstElement *actualVideoSink = nullptr;
-        if (m_glibWrapper->g_strcmp0(elementTypeName, "GstAutoVideoSink"))
+        if (0 == g_strcmp0(elementTypeName, "GstAutoVideoSink"))
         {
             GstIterator *sinks = gst_bin_iterate_sinks(GST_BIN(videoSink));
-            GValue item;
-            while (gst_iterator_next(sinks, &item) == GST_ITERATOR_OK) 
+            GValue elem = G_VALUE_INIT;
+            if (gst_iterator_next(sinks, &elem) == GST_ITERATOR_OK)
             {
-                const gchar *elementName = gst_element_get_name(g_value_get_object(&item));
-                RIALTO_SERVER_LOG_ERROR("lukewill: sink element name: %s", elementName);
-                if (GST_IS_VIDEO_SINK(g_value_get_object(&item)))
-                {
-                    RIALTO_SERVER_LOG_ERROR("lukewill: GST_IS_VIDEO_SINK");
-                    actualVideoSink = g_value_get_object(&item);
-                }
-
-                g_free((gpointer)elementName);
+                actualVideoSink = GST_ELEMENT(g_value_get_object(&elem));
             }
+            gst_iterator_free(sinks);
         }
         else
         {
             actualVideoSink = videoSink;
         }
 
-        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink), "rectangle"))
+        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(actualVideoSink), "rectangle"))
         {
             char rect[64];
             snprintf(rect, sizeof(rect), "%d,%d,%d,%d", m_context.pendingGeometry.x, m_context.pendingGeometry.y,
                     m_context.pendingGeometry.width, m_context.pendingGeometry.height);
-            m_glibWrapper->gObjectSet(videoSink, "rectangle", rect, nullptr);
+            m_glibWrapper->gObjectSet(actualVideoSink, "rectangle", rect, nullptr);
             m_context.pendingGeometry.clear();
             result = true;
         }
     }
     else
     {
-        const gchar *elementType = g_type_name(G_OBJECT_TYPE(videoSink));
-        RIALTO_SERVER_LOG_ERROR("lukewill: found video sink, %s", elementType);
         RIALTO_SERVER_LOG_ERROR("Failed to set the westerossink rectangle");
     }
 
