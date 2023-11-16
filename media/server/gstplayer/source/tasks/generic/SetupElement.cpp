@@ -60,6 +60,22 @@ void videoUnderflowCallback(GstElement *object, guint fifoDepth, gpointer queueD
         static_cast<firebolt::rialto::server::IGstGenericPlayerPrivate *>(self);
     player->scheduleVideoUnderflow();
 }
+
+void autoVideoSinkChildAddedCallback(GstChildProxy* obj, GObject* object, gchar* name, gpointer self)
+{
+    RIALTO_SERVER_LOG_DEBUG("AutoVideoSink added element %s", name);
+    firebolt::rialto::server::IGstGenericPlayerPrivate *player =
+        static_cast<firebolt::rialto::server::IGstGenericPlayerPrivate *>(self);
+    player->updateAutoVideoSinkChild(object);
+}
+
+void autoVideoSinkChildRemovedCallback(GstChildProxy* obj, GObject* object, gchar* name, gpointer self)
+{
+    RIALTO_SERVER_LOG_DEBUG("AutoVideoSink removed element %s", name);
+    firebolt::rialto::server::IGstGenericPlayerPrivate *player =
+        static_cast<firebolt::rialto::server::IGstGenericPlayerPrivate *>(self);
+    player->updateAutoVideoSinkChild(nullptr);
+}
 } // namespace
 
 namespace firebolt::rialto::server::tasks::generic
@@ -80,10 +96,20 @@ SetupElement::~SetupElement()
 void SetupElement::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing SetupElement");
+
+    const gchar *elementTypeName = g_type_name(G_OBJECT_TYPE(m_element));
+
+    // For AutoVideoSink listen for child sink updates
+    if (0 == g_strcmp0(elementTypeName, "GstAutoVideoSink"))
+    {
+        m_glibWrapper->gSignalConnect(m_element, "child-added", G_CALLBACK(autoVideoSinkChildAddedCallback),
+                                      &m_player);
+        m_glibWrapper->gSignalConnect(m_element, "child-removed", G_CALLBACK(autoVideoSinkChildRemovedCallback),
+                                      &m_player);
+    }
     
     // In playbin3 AutoVideoSink uses names like videosink-actual-sink-brcmvideo whereas playbin
     // creates sink with names brcmvideosink*, so it is better to check actual type here
-    const gchar *elementTypeName = g_type_name(G_OBJECT_TYPE(m_element));
     if ((0 == g_strcmp0(elementTypeName, "Gstbrcmvideosink")) ||
         (0 == g_strcmp0(elementTypeName, "GstWesterosSink")))
     {

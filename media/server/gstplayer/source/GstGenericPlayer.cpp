@@ -26,7 +26,6 @@
 #include "tasks/generic/GenericPlayerTaskFactory.h"
 #include <IMediaPipeline.h>
 #include <chrono>
-#include <gst/video/gstvideosink.h>
 
 namespace
 {
@@ -746,23 +745,7 @@ bool GstGenericPlayer::setWesterossinkRectangle()
     if (videoSink)
     {
         // If video-sink is autovideosink element, we need to check the child sink for the property
-        const gchar *elementTypeName = g_type_name(G_OBJECT_TYPE(videoSink));
-        GstElement *actualVideoSink = nullptr;
-        if (0 == g_strcmp0(elementTypeName, "GstAutoVideoSink"))
-        {
-            GstIterator *sinks = gst_bin_iterate_sinks(GST_BIN(videoSink));
-            GValue elem = G_VALUE_INIT;
-            if (gst_iterator_next(sinks, &elem) == GST_ITERATOR_OK)
-            {
-                actualVideoSink = GST_ELEMENT(g_value_get_object(&elem));
-            }
-            gst_iterator_free(sinks);
-        }
-        else
-        {
-            actualVideoSink = videoSink;
-        }
-
+        GstElement *actualVideoSink = (nullptr == m_context.autoVideoChildSink) ? videoSink | m_context.autoVideoChildSink;
         if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(actualVideoSink), "rectangle"))
         {
             char rect[64];
@@ -929,6 +912,18 @@ void GstGenericPlayer::handleBusMessage(GstMessage *message)
 void GstGenericPlayer::updatePlaybackGroup(GstElement *typefind, const GstCaps *caps)
 {
     m_workerThread->enqueueTask(m_taskFactory->createUpdatePlaybackGroup(m_context, typefind, caps));
+}
+
+void GstGenericPlayer::updateAutoVideoSinkChild(GObject* object)
+{
+    if (object)
+    {
+        m_context.autoVideoChildSink = GST_ELEMENT(object);
+    }
+    else
+    {
+        m_context.autoVideoChildSink = nullptr;
+    }
 }
 
 bool GstGenericPlayer::shouldEnableNativeAudio()

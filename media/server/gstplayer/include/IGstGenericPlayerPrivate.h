@@ -144,6 +144,11 @@ public:
      * @brief Updates Playback Group in PlayerContext.
      */
     virtual void updatePlaybackGroup(GstElement *typefind, const GstCaps *caps) = 0;
+
+    /**
+     * @brief Updates Playback Group in PlayerContext.
+     */
+    virtual void updateAutoVideoSinkChild(GObject* object) = 0;
 };
 } // namespace firebolt::rialto::server
 
