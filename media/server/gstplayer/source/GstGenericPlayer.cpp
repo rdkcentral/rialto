@@ -754,11 +754,12 @@ bool GstGenericPlayer::setWesterossinkRectangle()
             while (gst_iterator_next(sinks, &item) == GST_ITERATOR_OK) 
             {
                 const gchar *elementName = gst_element_get_name(g_value_get_object(&item));
+                RIALTO_SERVER_LOG_ERROR("lukewill: sink element name: %s", elementName);
                 if (GST_IS_VIDEO_SINK(g_value_get_object(&item)))
                 {
                     RIALTO_SERVER_LOG_ERROR("lukewill: GST_IS_VIDEO_SINK");
+                    actualVideoSink = g_value_get_object(&item);
                 }
-                RIALTO_SERVER_LOG_ERROR("lukewill: sink element name: %s", elementName);
 
                 g_free((gpointer)elementName);
             }
