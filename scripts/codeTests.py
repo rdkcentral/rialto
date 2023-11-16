@@ -18,7 +18,24 @@
 # limitations under the License.
 #
 
-# Build script for running rialto unittests
+# Script for running rialto source code tests
+#
+# When a github pull request is issued on the rialto project
+# several automatic tests are run to check the quality of the
+# source code. Some of these tests can be performed by this
+# script on your local machine.
+#
+# To perform all tests...
+#    cd <railto directory>
+#    ./scripts/codeTests.py
+# or
+#    ./scripts/codeTests.py --all
+#
+# To run a single test...
+#    cd <railto directory>
+#    ./scripts/codeTests.py -h
+#  this will show the available tests. To run the valgrind test, for example...
+#    ./scripts/codeTests.py -v
 
 import subprocess
 import os
@@ -61,22 +78,30 @@ def printOk(str):
 
 def doCheckExtra():
     print("Extra checks...")
+    print("    Looking for iostream")
+    print("    Looking for const variables that don't begin with 'k'")
     files = getSourceFiles()
-    # The code shouldn't include iostream
     for file in files:
+        # The code shouldn't include iostream
         executeCmd = ["grep", "-n", "iostream", file, "/dev/null"]
         if not runcmd(1, executeCmd, cwd=baseDir):
+            print("    The code shouldn't include iostream")
             exit(1)
 
         if file.endswith("ShmCommon.h") or ("/I" in file and file.endswith(".h")):
             continue
 
-        #  variable name constant must begin with a k
+        # Variable name of a constant must begin with a k
+        #
+        # show const variables that don't begin with m or k
         executeCmd = [ "egrep", "-n", "^[^\(<]*(const|constexpr) ([a-zA-Z0-9:<>_]+ )+[\*&]*[^km\*&][a-zA-Z0-9_]+[ ]*[=\{]", file, "/dev/null"]
         if not runcmd(1, executeCmd, cwd=baseDir):
+            print("    Variable name of a constant must begin with a k")
             exit(1)
+        # show const variables that begin with "m" but aren't "m_"
         executeCmd = [ "egrep", "-n", "^[^\(<]*(const|constexpr) ([a-zA-Z0-9:<>_]+ )+[\*&]*m[a-zA-Z0-9][a-zA-Z0-9_]+[ ]*[=\{]", file, "/dev/null"]
         if not runcmd(1, executeCmd, cwd=baseDir):
+            print("    Variable name of a constant must begin with a k")
             exit(1)
     printOk("")
 
@@ -144,14 +169,14 @@ def main():
 
 
     # Get arguments
-    argParser = argparse.ArgumentParser(description='Run code tests.', formatter_class=argparse.RawTextHelpFormatter)
-    argParser.add_argument("-a", "--all", action='store_true', help="run all tests")
+    argParser = argparse.ArgumentParser(description='Perform rialto source code tests. RUN THIS SCRIPT FROM THE TOP LEVEL RIALTO DIRECTORY. If no arguments are supplied then all tests will be performed', formatter_class=argparse.RawTextHelpFormatter)
+    argParser.add_argument("-a", "--all", action='store_true', help="run all tests (this is the default if no arguments are passed)")
     argParser.add_argument("-c", "--clang", action='store_true', help="")
     argParser.add_argument("-d", "--doxygen", action='store_true', help="")
     argParser.add_argument("-p", "--cppcheck", action='store_true', help="")
     argParser.add_argument("-l", "--cpplint", action='store_true', help="")
     argParser.add_argument("-v", "--valgrind", action='store_true', help="")
-    argParser.add_argument("-e", "--extra", action='store_true', help="")
+    argParser.add_argument("-e", "--extra", action='store_true', help="tests that aren't currently performed by CI")
     args = vars(argParser.parse_args())
 
     # Run them all if no agument is passed or "-a" or "--all"
