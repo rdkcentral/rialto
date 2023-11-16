@@ -21,14 +21,14 @@
 
 MATCHER_P(PlayRequestMatcher, sessionId, "")
 {
-    const ::firebolt::rialto::PlayRequest *request = dynamic_cast<const ::firebolt::rialto::PlayRequest *>(arg);
-    return (request->session_id() == sessionId);
+    const ::firebolt::rialto::PlayRequest *kRequest = dynamic_cast<const ::firebolt::rialto::PlayRequest *>(arg);
+    return (kRequest->session_id() == sessionId);
 }
 
 MATCHER_P(PauseRequestMatcher, sessionId, "")
 {
-    const ::firebolt::rialto::PauseRequest *request = dynamic_cast<const ::firebolt::rialto::PauseRequest *>(arg);
-    return (request->session_id() == sessionId);
+    const ::firebolt::rialto::PauseRequest *kRequest = dynamic_cast<const ::firebolt::rialto::PauseRequest *>(arg);
+    return (kRequest->session_id() == sessionId);
 }
 
 class RialtoClientMediaPipelineIpcPlayPauseTest : public MediaPipelineIpcTestBase

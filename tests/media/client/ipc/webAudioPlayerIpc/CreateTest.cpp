@@ -22,16 +22,16 @@
 
 MATCHER_P3(createWebAudioPlayerRequestMatcher, audioMimeType, priority, config, "")
 {
-    const ::firebolt::rialto::CreateWebAudioPlayerRequest *request =
+    const ::firebolt::rialto::CreateWebAudioPlayerRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::CreateWebAudioPlayerRequest *>(arg);
-    return ((request->audio_mime_type() == audioMimeType) && (request->priority() == priority));
+    return ((kRequest->audio_mime_type() == audioMimeType) && (kRequest->priority() == priority));
 }
 
 MATCHER_P(destroyWebAudioPlayerRequestMatcher, web_audio_player_handle, "")
 {
-    const ::firebolt::rialto::DestroyWebAudioPlayerRequest *request =
+    const ::firebolt::rialto::DestroyWebAudioPlayerRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::DestroyWebAudioPlayerRequest *>(arg);
-    return (request->web_audio_player_handle() == web_audio_player_handle);
+    return (kRequest->web_audio_player_handle() == web_audio_player_handle);
 }
 
 class RialtoClientCreateWebAudioPlayerIpcTest : public WebAudioPlayerIpcTestBase

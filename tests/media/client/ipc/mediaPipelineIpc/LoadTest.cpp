@@ -21,9 +21,9 @@
 
 MATCHER_P4(loadRequestMatcher, sessionId, type, mimeType, url, "")
 {
-    const ::firebolt::rialto::LoadRequest *request = dynamic_cast<const ::firebolt::rialto::LoadRequest *>(arg);
-    return ((request->session_id() == sessionId) && (request->type() == type) && (request->mime_type() == mimeType) &&
-            (request->url() == url));
+    const ::firebolt::rialto::LoadRequest *kRequest = dynamic_cast<const ::firebolt::rialto::LoadRequest *>(arg);
+    return ((kRequest->session_id() == sessionId) && (kRequest->type() == type) &&
+            (kRequest->mime_type() == mimeType) && (kRequest->url() == url));
 }
 
 class RialtoClientMediaPipelineIpcLoadTest : public MediaPipelineIpcTestBase

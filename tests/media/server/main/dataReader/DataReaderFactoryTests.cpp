@@ -30,21 +30,21 @@ protected:
 
 TEST_F(DataReaderFactoryTests, shouldFailToCreateDataReaderForUnknownVersion)
 {
-    constexpr auto mediaSourceType = firebolt::rialto::MediaSourceType::VIDEO;
-    constexpr std::uint32_t numFrames{1};
+    constexpr auto kMediaSourceType = firebolt::rialto::MediaSourceType::VIDEO;
+    constexpr std::uint32_t kNumFrames{1};
     std::uint32_t version{23};
     std::uint8_t *data{reinterpret_cast<std::uint8_t *>(&version)};
-    auto reader = m_sut.createDataReader(mediaSourceType, data, 0, numFrames);
+    auto reader = m_sut.createDataReader(kMediaSourceType, data, 0, kNumFrames);
     ASSERT_EQ(nullptr, reader);
 }
 
 TEST_F(DataReaderFactoryTests, shouldCreateDataReaderV1)
 {
-    constexpr auto mediaSourceType = firebolt::rialto::MediaSourceType::VIDEO;
-    constexpr std::uint32_t numFrames{1};
+    constexpr auto kMediaSourceType = firebolt::rialto::MediaSourceType::VIDEO;
+    constexpr std::uint32_t kNumFrames{1};
     std::uint32_t version{1};
     std::uint8_t *data{reinterpret_cast<std::uint8_t *>(&version)};
-    auto reader = m_sut.createDataReader(mediaSourceType, data, 0, numFrames);
+    auto reader = m_sut.createDataReader(kMediaSourceType, data, 0, kNumFrames);
     ASSERT_NE(nullptr, reader);
     firebolt::rialto::server::DataReaderV1 *v1Reader =
         dynamic_cast<firebolt::rialto::server::DataReaderV1 *>(reader.get());
@@ -53,11 +53,11 @@ TEST_F(DataReaderFactoryTests, shouldCreateDataReaderV1)
 
 TEST_F(DataReaderFactoryTests, shouldCreateDataReaderV2)
 {
-    constexpr auto mediaSourceType = firebolt::rialto::MediaSourceType::VIDEO;
-    constexpr std::uint32_t numFrames{1};
+    constexpr auto kMediaSourceType = firebolt::rialto::MediaSourceType::VIDEO;
+    constexpr std::uint32_t kNumFrames{1};
     std::uint32_t version{2};
     std::uint8_t *data{reinterpret_cast<std::uint8_t *>(&version)};
-    auto reader = m_sut.createDataReader(mediaSourceType, data, 0, numFrames);
+    auto reader = m_sut.createDataReader(kMediaSourceType, data, 0, kNumFrames);
     ASSERT_NE(nullptr, reader);
     firebolt::rialto::server::DataReaderV2 *v2Reader =
         dynamic_cast<firebolt::rialto::server::DataReaderV2 *>(reader.get());

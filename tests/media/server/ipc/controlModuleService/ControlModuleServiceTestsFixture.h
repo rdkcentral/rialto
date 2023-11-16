@@ -56,7 +56,7 @@ public:
     void sendClientConnected();
     void sendClientDisconnected();
     void sendRegisterClientRequestAndReceiveResponse(
-        const std::optional<firebolt::rialto::common::SchemaVersion> &schemaVersion = std::nullopt);
+        const std::optional<firebolt::rialto::common::SchemaVersion> &kSchemaVersion = std::nullopt);
     void sendRegisterClientRequestWithInvalidControllerAndReceiveFailure();
     void sendGetSharedMemoryRequestAndReceiveResponse();
     void sendGetSharedMemoryRequestAndExpectFailure();

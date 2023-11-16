@@ -25,15 +25,18 @@
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::common;
 
-const uint32_t MAX_METADATA_BYTES = 6;
-const uint32_t MAX_MEDIA_BYTES = 4;
+namespace
+{
+const uint32_t kMaxMetadataBytes = 6;
+const uint32_t kMaxMediaBytes = 4;
+} // namespace
 
 class RialtoPlayerCommonCreateMediaFrameWriterV2Test : public ::testing::Test
 {
 protected:
     std::shared_ptr<IMediaFrameWriterFactory> m_mediaFrameWriterFactory;
 
-    uint8_t m_shmBuffer[MAX_METADATA_BYTES + MAX_MEDIA_BYTES] = {0};
+    uint8_t m_shmBuffer[kMaxMetadataBytes + kMaxMediaBytes] = {0};
     std::shared_ptr<MediaPlayerShmInfo> m_shmInfo;
 
     virtual void SetUp()
@@ -42,10 +45,10 @@ protected:
 
         // init shm info
         m_shmInfo = std::make_shared<MediaPlayerShmInfo>();
-        m_shmInfo->maxMetadataBytes = MAX_METADATA_BYTES;
+        m_shmInfo->maxMetadataBytes = kMaxMetadataBytes;
         m_shmInfo->metadataOffset = 0;
-        m_shmInfo->mediaDataOffset = MAX_METADATA_BYTES;
-        m_shmInfo->maxMediaBytes = MAX_MEDIA_BYTES;
+        m_shmInfo->mediaDataOffset = kMaxMetadataBytes;
+        m_shmInfo->maxMediaBytes = kMaxMediaBytes;
     }
 
     virtual void TearDown() { m_mediaFrameWriterFactory.reset(); }
@@ -82,7 +85,7 @@ TEST_F(RialtoPlayerCommonCreateMediaFrameWriterV2Test, CheckSharedBufferData)
     EXPECT_EQ(readLEUint32(m_shmBuffer), 2U);
 
     // Rest of the data should be zeroed
-    constexpr size_t kZeroedMemSize{MAX_METADATA_BYTES + MAX_MEDIA_BYTES - VERSION_SIZE_BYTES};
+    constexpr size_t kZeroedMemSize{kMaxMetadataBytes + kMaxMediaBytes - VERSION_SIZE_BYTES};
     uint8_t zeroedMem[kZeroedMemSize] = {0};
     EXPECT_EQ(memcmp(zeroedMem, m_shmBuffer + VERSION_SIZE_BYTES, kZeroedMemSize), 0);
 }
@@ -105,7 +108,7 @@ TEST_F(RialtoPlayerCommonCreateMediaFrameWriterV2Test, Offset)
     EXPECT_EQ(readLEUint32(m_shmBuffer + m_shmInfo->metadataOffset), 2U);
 
     // Rest of the metadata should be zeroed
-    constexpr size_t kZeroedMemSize{MAX_METADATA_BYTES + MAX_MEDIA_BYTES - VERSION_SIZE_BYTES - kOffset};
+    constexpr size_t kZeroedMemSize{kMaxMetadataBytes + kMaxMediaBytes - VERSION_SIZE_BYTES - kOffset};
     uint8_t zeroedMem[kZeroedMemSize] = {0};
     EXPECT_EQ(memcmp(zeroedMem, m_shmBuffer + VERSION_SIZE_BYTES + kOffset, kZeroedMemSize), 0);
 }

@@ -93,11 +93,11 @@ void ServerManagerModuleService::setConfiguration(::google::protobuf::RpcControl
     RIALTO_SERVER_LOG_DEBUG("SetConfiguration received from ServerManager");
     common::MaxResourceCapabilitites maxResource{request->resources().maxplaybacks(),
                                                  request->resources().maxwebaudioplayers()};
-    const auto clientDisplayName = request->has_clientdisplayname() ? request->clientdisplayname() : "";
+    const auto kClientDisplayName = request->has_clientdisplayname() ? request->clientdisplayname() : "";
     bool success =
         m_sessionServerManager.setConfiguration(request->sessionmanagementsocketname(),
                                                 convertSessionServerState(request->initialsessionserverstate()),
-                                                maxResource, clientDisplayName, request->socketpermissions(),
+                                                maxResource, kClientDisplayName, request->socketpermissions(),
                                                 request->socketowner(), request->socketgroup());
     m_sessionServerManager.setLogLevels(static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().defaultloglevels()),
                                         static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().clientloglevels()),

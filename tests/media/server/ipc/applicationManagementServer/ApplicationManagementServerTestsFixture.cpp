@@ -28,7 +28,7 @@ using testing::Return;
 
 namespace
 {
-constexpr int socket{2};
+constexpr int kSocket{2};
 
 rialto::SessionServerState convertSessionServerState(const firebolt::rialto::common::SessionServerState &state)
 {
@@ -77,7 +77,7 @@ ApplicationManagementServerTests::~ApplicationManagementServerTests() {}
 
 void ApplicationManagementServerTests::clientWillBeInitialized()
 {
-    EXPECT_CALL(*m_serverMock, addClient(socket, _)).WillOnce(Return(m_clientMock));
+    EXPECT_CALL(*m_serverMock, addClient(kSocket, _)).WillOnce(Return(m_clientMock));
     EXPECT_CALL(*m_clientMock, exportService(_));
 }
 
@@ -111,12 +111,12 @@ void ApplicationManagementServerTests::clientWillBeDisconnected()
 
 void ApplicationManagementServerTests::initializeApplicationManager()
 {
-    EXPECT_TRUE(m_sut->initialize(socket));
+    EXPECT_TRUE(m_sut->initialize(kSocket));
 }
 
 void ApplicationManagementServerTests::initializeApplicationManagerAndExpectFailure()
 {
-    EXPECT_FALSE(m_sut->initialize(socket));
+    EXPECT_FALSE(m_sut->initialize(kSocket));
 }
 
 void ApplicationManagementServerTests::sendStateChangedEvent(const firebolt::rialto::common::SessionServerState &state)

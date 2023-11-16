@@ -35,37 +35,36 @@ using testing::SetArgReferee;
 
 namespace
 {
-constexpr firebolt::rialto::MediaSourceType mediaSourceType{firebolt::rialto::MediaSourceType::AUDIO};
-constexpr std::uint32_t width{1920};
-constexpr std::uint32_t height{1080};
-constexpr int hardcodedSessionId{2};
-const firebolt::rialto::MediaType mediaType{firebolt::rialto::MediaType::MSE};
-const std::string mimeType{"exampleMimeType"};
-constexpr uint32_t dolbyProfile{5};
-constexpr uint32_t numberOfChannels{6};
-constexpr uint32_t sampleRate{48000};
-const std::string codecSpecificConfigStr("1243567");
-const std::shared_ptr<firebolt::rialto::CodecData> codecData{std::make_shared<firebolt::rialto::CodecData>(
+constexpr firebolt::rialto::MediaSourceType kMediaSourceType{firebolt::rialto::MediaSourceType::AUDIO};
+constexpr std::uint32_t kWidth{1920};
+constexpr std::uint32_t kHeight{1080};
+constexpr int kHardcodedSessionId{2};
+const firebolt::rialto::MediaType kMediaType{firebolt::rialto::MediaType::MSE};
+const std::string kMimeType{"exampleMimeType"};
+constexpr uint32_t kDolbyProfile{5};
+constexpr uint32_t kNumberOfChannels{6};
+constexpr uint32_t kSampleRate{48000};
+const std::string kCodecSpecificConfigStr("1243567");
+const std::shared_ptr<firebolt::rialto::CodecData> kCodecData{std::make_shared<firebolt::rialto::CodecData>(
     firebolt::rialto::CodecData{std::vector<std::uint8_t>{'T', 'E', 'S', 'T'}, firebolt::rialto::CodecDataType::BUFFER})};
-const std::string url{"https://example.url.com"};
-constexpr int64_t position{2000000000};
-constexpr std::uint32_t requestId{2};
-const firebolt::rialto::MediaSourceStatus mediaSourceStatus{firebolt::rialto::MediaSourceStatus::CODEC_CHANGED};
-constexpr std::uint32_t numFrames{1};
-constexpr int x{30};
-constexpr int y{40};
-constexpr std::uint32_t size{456};
-constexpr std::int32_t sourceId{12};
-constexpr size_t frameCount{5};
-constexpr std::uint32_t maxBytes{2};
-constexpr std::uint32_t needDataRequestId{32};
-constexpr firebolt::rialto::MediaPlayerShmInfo shmInfo{15, 16, 17};
-constexpr firebolt::rialto::PlaybackState playbackState{firebolt::rialto::PlaybackState::PLAYING};
-constexpr firebolt::rialto::NetworkState networkState{firebolt::rialto::NetworkState::BUFFERED};
-constexpr firebolt::rialto::QosInfo qosInfo{5u, 2u};
-constexpr double rate{1.5};
-constexpr double volume{0.7};
-constexpr bool mute{false};
+const std::string kUrl{"https://example.url.com"};
+constexpr int64_t kPosition{2000000000};
+constexpr std::uint32_t kRequestId{2};
+const firebolt::rialto::MediaSourceStatus kMediaSourceStatus{firebolt::rialto::MediaSourceStatus::CODEC_CHANGED};
+constexpr std::uint32_t kNumFrames{1};
+constexpr int kX{30};
+constexpr int kY{40};
+constexpr std::int32_t kSourceId{12};
+constexpr size_t kFrameCount{5};
+constexpr std::uint32_t kMaxBytes{2};
+constexpr std::uint32_t kNeedDataRequestId{32};
+constexpr firebolt::rialto::MediaPlayerShmInfo kShmInfo{15, 16, 17};
+constexpr firebolt::rialto::PlaybackState kPlaybackState{firebolt::rialto::PlaybackState::PLAYING};
+constexpr firebolt::rialto::NetworkState kNetworkState{firebolt::rialto::NetworkState::BUFFERED};
+constexpr firebolt::rialto::QosInfo kQosInfo{5u, 2u};
+constexpr double kRate{1.5};
+constexpr double kVolume{0.7};
+constexpr bool kMute{false};
 } // namespace
 
 MATCHER_P(AttachedSourceMatcher, source, "")
@@ -120,52 +119,52 @@ MATCHER_P(AttachedSourceMatcher, source, "")
     return baseCompare && extraCompare;
 }
 
-MATCHER_P6(NeedMediaDataEventMatcher, sessionId, sourceId, needDataRequestId, frameCount, maxMediaBytes, shmInfo, "")
+MATCHER_P6(NeedMediaDataEventMatcher, sessionId, kSourceId, kNeedDataRequestId, kFrameCount, maxMediaBytes, kShmInfo, "")
 {
     std::shared_ptr<firebolt::rialto::NeedMediaDataEvent> event =
         std::dynamic_pointer_cast<firebolt::rialto::NeedMediaDataEvent>(arg);
 
-    return ((sessionId == event->session_id()) && (sourceId == event->source_id()) &&
-            (needDataRequestId == event->request_id()) && (frameCount == event->frame_count()) &&
-            (shmInfo->maxMetadataBytes == event->shm_info().max_metadata_bytes()) &&
-            (shmInfo->metadataOffset == event->shm_info().metadata_offset()) &&
-            (shmInfo->mediaDataOffset == event->shm_info().media_data_offset()) &&
-            (shmInfo->maxMediaBytes == event->shm_info().max_media_bytes()));
+    return ((sessionId == event->session_id()) && (kSourceId == event->source_id()) &&
+            (kNeedDataRequestId == event->request_id()) && (kFrameCount == event->frame_count()) &&
+            (kShmInfo->maxMetadataBytes == event->shm_info().max_metadata_bytes()) &&
+            (kShmInfo->metadataOffset == event->shm_info().metadata_offset()) &&
+            (kShmInfo->mediaDataOffset == event->shm_info().media_data_offset()) &&
+            (kShmInfo->maxMediaBytes == event->shm_info().max_media_bytes()));
 }
 
-MATCHER_P(PositionChangeEventMatcher, position, "")
+MATCHER_P(PositionChangeEventMatcher, kPosition, "")
 {
     std::shared_ptr<firebolt::rialto::PositionChangeEvent> event =
         std::dynamic_pointer_cast<firebolt::rialto::PositionChangeEvent>(arg);
-    return (position == event->position());
+    return (kPosition == event->position());
 }
 
-MATCHER_P3(QosEventMatcher, sourceId, processed, dropped, "")
+MATCHER_P3(QosEventMatcher, kSourceId, processed, dropped, "")
 {
     std::shared_ptr<firebolt::rialto::QosEvent> event = std::dynamic_pointer_cast<firebolt::rialto::QosEvent>(arg);
-    return ((sourceId == event->source_id()) && (processed == event->qos_info().processed()) &&
+    return ((kSourceId == event->source_id()) && (processed == event->qos_info().processed()) &&
             (dropped == event->qos_info().dropped()));
 }
 
-MATCHER_P(PlaybackStateChangeEventMatcher, playbackState, "")
+MATCHER_P(PlaybackStateChangeEventMatcher, kPlaybackState, "")
 {
     std::shared_ptr<firebolt::rialto::PlaybackStateChangeEvent> event =
         std::dynamic_pointer_cast<firebolt::rialto::PlaybackStateChangeEvent>(arg);
-    return (playbackState == event->state());
+    return (kPlaybackState == event->state());
 }
 
-MATCHER_P(NetworkStateChangeEventMatcher, networkState, "")
+MATCHER_P(NetworkStateChangeEventMatcher, kNetworkState, "")
 {
     std::shared_ptr<firebolt::rialto::NetworkStateChangeEvent> event =
         std::dynamic_pointer_cast<firebolt::rialto::NetworkStateChangeEvent>(arg);
-    return (networkState == event->state());
+    return (kNetworkState == event->state());
 }
 
 namespace firebolt::rialto
 {
-firebolt::rialto::LoadRequest_MediaType convertMediaType(const firebolt::rialto::MediaType &mediaType)
+firebolt::rialto::LoadRequest_MediaType convertMediaType(const firebolt::rialto::MediaType &kMediaType)
 {
-    switch (mediaType)
+    switch (kMediaType)
     {
     case firebolt::rialto::MediaType::UNKNOWN:
     {
@@ -179,9 +178,9 @@ firebolt::rialto::LoadRequest_MediaType convertMediaType(const firebolt::rialto:
     return firebolt::rialto::LoadRequest_MediaType::LoadRequest_MediaType_UNKNOWN;
 }
 
-firebolt::rialto::ProtoMediaSourceType convertProtoMediaSourceType(const firebolt::rialto::MediaSourceType &mediaSourceType)
+firebolt::rialto::ProtoMediaSourceType convertProtoMediaSourceType(const firebolt::rialto::MediaSourceType &kMediaSourceType)
 {
-    switch (mediaSourceType)
+    switch (kMediaSourceType)
     {
     case firebolt::rialto::MediaSourceType::UNKNOWN:
     {
@@ -243,9 +242,9 @@ convertHaveDataRequestMediaSourceStatus(const firebolt::rialto::MediaSourceStatu
 }
 
 firebolt::rialto::PlaybackStateChangeEvent_PlaybackState
-convertPlaybackState(const firebolt::rialto::PlaybackState &playbackState)
+convertPlaybackState(const firebolt::rialto::PlaybackState &kPlaybackState)
 {
-    switch (playbackState)
+    switch (kPlaybackState)
     {
     case firebolt::rialto::PlaybackState::UNKNOWN:
     {
@@ -288,9 +287,9 @@ convertPlaybackState(const firebolt::rialto::PlaybackState &playbackState)
 }
 
 firebolt::rialto::NetworkStateChangeEvent_NetworkState
-convertNetworkState(const firebolt::rialto::NetworkState &networkState)
+convertNetworkState(const firebolt::rialto::NetworkState &kNetworkState)
 {
-    switch (networkState)
+    switch (kNetworkState)
     {
     case firebolt::rialto::NetworkState::UNKNOWN:
     {
@@ -351,14 +350,14 @@ void MediaPipelineModuleServiceTests::clientWillConnect()
 
 void MediaPipelineModuleServiceTests::clientWillDisconnect()
 {
-    EXPECT_CALL(m_mediaPipelineServiceMock, destroySession(hardcodedSessionId));
+    EXPECT_CALL(m_mediaPipelineServiceMock, destroySession(kHardcodedSessionId));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillCreateSession()
 {
     expectRequestSuccess();
     EXPECT_CALL(*m_controllerMock, getClient()).Times(2).WillRepeatedly(Return(m_clientMock));
-    EXPECT_CALL(m_mediaPipelineServiceMock, createSession(_, _, width, height))
+    EXPECT_CALL(m_mediaPipelineServiceMock, createSession(_, _, kWidth, kHeight))
         .WillOnce(DoAll(SaveArg<1>(&m_mediaPipelineClient), Return(true)));
 }
 
@@ -366,188 +365,190 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToCreateSessio
 {
     expectRequestFailure();
     EXPECT_CALL(*m_controllerMock, getClient()).WillOnce(Return(m_clientMock));
-    EXPECT_CALL(m_mediaPipelineServiceMock, createSession(_, _, width, height)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineServiceMock, createSession(_, _, kWidth, kHeight)).WillOnce(Return(false));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillDestroySession()
 {
     expectRequestSuccess();
     EXPECT_CALL(*m_controllerMock, getClient()).WillOnce(Return(m_clientMock));
-    EXPECT_CALL(m_mediaPipelineServiceMock, destroySession(hardcodedSessionId)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineServiceMock, destroySession(kHardcodedSessionId)).WillOnce(Return(true));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToDestroySession()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_mediaPipelineServiceMock, destroySession(hardcodedSessionId)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineServiceMock, destroySession(kHardcodedSessionId)).WillOnce(Return(false));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillLoadSession()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_mediaPipelineServiceMock, load(hardcodedSessionId, mediaType, mimeType, url)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineServiceMock, load(kHardcodedSessionId, kMediaType, kMimeType, kUrl)).WillOnce(Return(true));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToLoadSession()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_mediaPipelineServiceMock, load(hardcodedSessionId, mediaType, mimeType, url)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineServiceMock, load(kHardcodedSessionId, kMediaType, kMimeType, kUrl)).WillOnce(Return(false));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillAttachSource()
 {
-    m_source = std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(mimeType);
+    m_source = std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(kMimeType);
     expectRequestSuccess();
-    EXPECT_CALL(m_mediaPipelineServiceMock, attachSource(hardcodedSessionId, AttachedSourceMatcher(ByRef(m_source))))
+    EXPECT_CALL(m_mediaPipelineServiceMock, attachSource(kHardcodedSessionId, AttachedSourceMatcher(ByRef(m_source))))
         .WillOnce(Return(true));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillAttachVideoSource()
 {
-    m_source = std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>(mimeType, true, width, height);
+    m_source = std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>(kMimeType, true, kWidth, kHeight);
     expectRequestSuccess();
-    EXPECT_CALL(m_mediaPipelineServiceMock, attachSource(hardcodedSessionId, AttachedSourceMatcher(ByRef(m_source))))
+    EXPECT_CALL(m_mediaPipelineServiceMock, attachSource(kHardcodedSessionId, AttachedSourceMatcher(ByRef(m_source))))
         .WillOnce(Return(true));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillAttachDolbySource()
 {
-    m_source = std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideoDolbyVision>(mimeType, dolbyProfile,
-                                                                                               true, width, height);
+    m_source = std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideoDolbyVision>(kMimeType, kDolbyProfile,
+                                                                                               true, kWidth, kHeight);
     expectRequestSuccess();
-    EXPECT_CALL(m_mediaPipelineServiceMock, attachSource(hardcodedSessionId, AttachedSourceMatcher(ByRef(m_source))))
+    EXPECT_CALL(m_mediaPipelineServiceMock, attachSource(kHardcodedSessionId, AttachedSourceMatcher(ByRef(m_source))))
         .WillOnce(Return(true));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillAttachAudioSourceWithAdditionaldata()
 {
     std::vector<uint8_t> codecSpecificConfig;
-    codecSpecificConfig.assign(codecSpecificConfigStr.begin(), codecSpecificConfigStr.end());
-    firebolt::rialto::AudioConfig audioConfig{numberOfChannels, sampleRate, codecSpecificConfig};
+    codecSpecificConfig.assign(kCodecSpecificConfigStr.begin(), kCodecSpecificConfigStr.end());
+    firebolt::rialto::AudioConfig audioConfig{kNumberOfChannels, kSampleRate, codecSpecificConfig};
     m_source =
-        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(mimeType, true, audioConfig,
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(kMimeType, true, audioConfig,
                                                                              firebolt::rialto::SegmentAlignment::UNDEFINED,
                                                                              firebolt::rialto::StreamFormat::RAW,
-                                                                             codecData);
+                                                                             kCodecData);
     expectRequestSuccess();
-    EXPECT_CALL(m_mediaPipelineServiceMock, attachSource(hardcodedSessionId, AttachedSourceMatcher(ByRef(m_source))))
+    EXPECT_CALL(m_mediaPipelineServiceMock, attachSource(kHardcodedSessionId, AttachedSourceMatcher(ByRef(m_source))))
         .WillOnce(Return(true));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToAttachSource()
 {
-    m_source = std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(mimeType);
+    m_source = std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(kMimeType);
     expectRequestFailure();
-    EXPECT_CALL(m_mediaPipelineServiceMock, attachSource(hardcodedSessionId, AttachedSourceMatcher(ByRef(m_source))))
+    EXPECT_CALL(m_mediaPipelineServiceMock, attachSource(kHardcodedSessionId, AttachedSourceMatcher(ByRef(m_source))))
         .WillOnce(Return(false));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSucceedAllSourcesAttached()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_mediaPipelineServiceMock, allSourcesAttached(hardcodedSessionId)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineServiceMock, allSourcesAttached(kHardcodedSessionId)).WillOnce(Return(true));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailAllSourcesAttached()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_mediaPipelineServiceMock, allSourcesAttached(hardcodedSessionId)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineServiceMock, allSourcesAttached(kHardcodedSessionId)).WillOnce(Return(false));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillPlay()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_mediaPipelineServiceMock, play(hardcodedSessionId)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineServiceMock, play(kHardcodedSessionId)).WillOnce(Return(true));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToPlay()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_mediaPipelineServiceMock, play(hardcodedSessionId)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineServiceMock, play(kHardcodedSessionId)).WillOnce(Return(false));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillPause()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_mediaPipelineServiceMock, pause(hardcodedSessionId)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineServiceMock, pause(kHardcodedSessionId)).WillOnce(Return(true));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToPause()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_mediaPipelineServiceMock, pause(hardcodedSessionId)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineServiceMock, pause(kHardcodedSessionId)).WillOnce(Return(false));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillStop()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_mediaPipelineServiceMock, stop(hardcodedSessionId)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineServiceMock, stop(kHardcodedSessionId)).WillOnce(Return(true));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToStop()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_mediaPipelineServiceMock, stop(hardcodedSessionId)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineServiceMock, stop(kHardcodedSessionId)).WillOnce(Return(false));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSetPosition()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_mediaPipelineServiceMock, setPosition(hardcodedSessionId, position)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineServiceMock, setPosition(kHardcodedSessionId, kPosition)).WillOnce(Return(true));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToSetPosition()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_mediaPipelineServiceMock, setPosition(hardcodedSessionId, position)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineServiceMock, setPosition(kHardcodedSessionId, kPosition)).WillOnce(Return(false));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSetVideoWindow()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_mediaPipelineServiceMock, setVideoWindow(hardcodedSessionId, x, y, width, height)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineServiceMock, setVideoWindow(kHardcodedSessionId, kX, kY, kWidth, kHeight))
+        .WillOnce(Return(true));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToSetVideoWindow()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_mediaPipelineServiceMock, setVideoWindow(hardcodedSessionId, x, y, width, height)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineServiceMock, setVideoWindow(kHardcodedSessionId, kX, kY, kWidth, kHeight))
+        .WillOnce(Return(false));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillHaveData()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_mediaPipelineServiceMock, haveData(hardcodedSessionId, mediaSourceStatus, numFrames, requestId))
+    EXPECT_CALL(m_mediaPipelineServiceMock, haveData(kHardcodedSessionId, kMediaSourceStatus, kNumFrames, kRequestId))
         .WillOnce(Return(true));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToHaveData()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_mediaPipelineServiceMock, haveData(hardcodedSessionId, mediaSourceStatus, numFrames, requestId))
+    EXPECT_CALL(m_mediaPipelineServiceMock, haveData(kHardcodedSessionId, kMediaSourceStatus, kNumFrames, kRequestId))
         .WillOnce(Return(false));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSetPlaybackRate()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_mediaPipelineServiceMock, setPlaybackRate(hardcodedSessionId, rate)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineServiceMock, setPlaybackRate(kHardcodedSessionId, kRate)).WillOnce(Return(true));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToSetPlaybackRate()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_mediaPipelineServiceMock, setPlaybackRate(hardcodedSessionId, rate)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineServiceMock, setPlaybackRate(kHardcodedSessionId, kRate)).WillOnce(Return(false));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillGetPosition()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_mediaPipelineServiceMock, getPosition(hardcodedSessionId, _))
+    EXPECT_CALL(m_mediaPipelineServiceMock, getPosition(kHardcodedSessionId, _))
         .WillOnce(Invoke(
             [&](int, std::int64_t &pos)
             {
-                pos = position;
+                pos = kPosition;
                 return true;
             }));
 }
@@ -555,41 +556,41 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillGetPosition()
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToGetPosition()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_mediaPipelineServiceMock, getPosition(hardcodedSessionId, _)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineServiceMock, getPosition(kHardcodedSessionId, _)).WillOnce(Return(false));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillRenderFrame()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_mediaPipelineServiceMock, renderFrame(hardcodedSessionId)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineServiceMock, renderFrame(kHardcodedSessionId)).WillOnce(Return(true));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToRenderFrame()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_mediaPipelineServiceMock, renderFrame(hardcodedSessionId)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineServiceMock, renderFrame(kHardcodedSessionId)).WillOnce(Return(false));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSetVolume()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_mediaPipelineServiceMock, setVolume(hardcodedSessionId, volume)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineServiceMock, setVolume(kHardcodedSessionId, kVolume)).WillOnce(Return(true));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToSetVolume()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_mediaPipelineServiceMock, setVolume(hardcodedSessionId, volume)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineServiceMock, setVolume(kHardcodedSessionId, kVolume)).WillOnce(Return(false));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillGetVolume()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_mediaPipelineServiceMock, getVolume(hardcodedSessionId, _))
+    EXPECT_CALL(m_mediaPipelineServiceMock, getVolume(kHardcodedSessionId, _))
         .WillOnce(Invoke(
             [&](int, double &vol)
             {
-                vol = volume;
+                vol = kVolume;
                 return true;
             }));
 }
@@ -597,29 +598,29 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillGetVolume()
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToGetVolume()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_mediaPipelineServiceMock, getVolume(hardcodedSessionId, _)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineServiceMock, getVolume(kHardcodedSessionId, _)).WillOnce(Return(false));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSetMute()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_mediaPipelineServiceMock, setMute(hardcodedSessionId, mute)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineServiceMock, setMute(kHardcodedSessionId, kMute)).WillOnce(Return(true));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToSetMute()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_mediaPipelineServiceMock, setMute(hardcodedSessionId, mute)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineServiceMock, setMute(kHardcodedSessionId, kMute)).WillOnce(Return(false));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillGetMute()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_mediaPipelineServiceMock, getMute(hardcodedSessionId, _))
+    EXPECT_CALL(m_mediaPipelineServiceMock, getMute(kHardcodedSessionId, _))
         .WillOnce(Invoke(
             [&](int, bool &mut)
             {
-                mut = mute;
+                mut = kMute;
                 return true;
             }));
 }
@@ -627,36 +628,36 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillGetMute()
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToGetMute()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_mediaPipelineServiceMock, getMute(hardcodedSessionId, _)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineServiceMock, getMute(kHardcodedSessionId, _)).WillOnce(Return(false));
 }
 
 void MediaPipelineModuleServiceTests::mediaClientWillSendPlaybackStateChangedEvent()
 {
-    EXPECT_CALL(*m_clientMock, sendEvent(PlaybackStateChangeEventMatcher(convertPlaybackState(playbackState))));
+    EXPECT_CALL(*m_clientMock, sendEvent(PlaybackStateChangeEventMatcher(convertPlaybackState(kPlaybackState))));
 }
 
 void MediaPipelineModuleServiceTests::mediaClientWillSendNetworkStateChangedEvent()
 {
-    EXPECT_CALL(*m_clientMock, sendEvent(NetworkStateChangeEventMatcher(convertNetworkState(networkState))));
+    EXPECT_CALL(*m_clientMock, sendEvent(NetworkStateChangeEventMatcher(convertNetworkState(kNetworkState))));
 }
 
 void MediaPipelineModuleServiceTests::mediaClientWillSendNeedMediaDataEvent(int sessionId)
 {
     std::shared_ptr<firebolt::rialto::MediaPlayerShmInfo> shmInfoPtr{
-        std::make_shared<firebolt::rialto::MediaPlayerShmInfo>(shmInfo)};
+        std::make_shared<firebolt::rialto::MediaPlayerShmInfo>(kShmInfo)};
 
-    EXPECT_CALL(*m_clientMock, sendEvent(NeedMediaDataEventMatcher(sessionId, sourceId, needDataRequestId, frameCount,
-                                                                   maxBytes, shmInfoPtr)));
+    EXPECT_CALL(*m_clientMock, sendEvent(NeedMediaDataEventMatcher(sessionId, kSourceId, kNeedDataRequestId,
+                                                                   kFrameCount, kMaxBytes, shmInfoPtr)));
 }
 
 void MediaPipelineModuleServiceTests::mediaClientWillSendPostionChangeEvent()
 {
-    EXPECT_CALL(*m_clientMock, sendEvent(PositionChangeEventMatcher(position)));
+    EXPECT_CALL(*m_clientMock, sendEvent(PositionChangeEventMatcher(kPosition)));
 }
 
 void MediaPipelineModuleServiceTests::mediaClientWillSendQosEvent()
 {
-    EXPECT_CALL(*m_clientMock, sendEvent(QosEventMatcher(sourceId, qosInfo.processed, qosInfo.dropped)));
+    EXPECT_CALL(*m_clientMock, sendEvent(QosEventMatcher(kSourceId, kQosInfo.processed, kQosInfo.dropped)));
 }
 
 void MediaPipelineModuleServiceTests::sendClientConnected()
@@ -677,8 +678,8 @@ int MediaPipelineModuleServiceTests::sendCreateSessionRequestAndReceiveResponse(
     // Set an invalid sessionId in the response
     response.set_session_id(-1);
 
-    request.set_max_width(width);
-    request.set_max_height(height);
+    request.set_max_width(kWidth);
+    request.set_max_height(kHeight);
 
     m_service->createSession(m_controllerMock.get(), &request, &response, m_closureMock.get());
     EXPECT_GE(response.session_id(), 0);
@@ -691,8 +692,8 @@ void MediaPipelineModuleServiceTests::sendCreateSessionRequestAndExpectFailure()
     firebolt::rialto::CreateSessionRequest request;
     firebolt::rialto::CreateSessionResponse response;
 
-    request.set_max_width(width);
-    request.set_max_height(height);
+    request.set_max_width(kWidth);
+    request.set_max_height(kHeight);
 
     m_service->createSession(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
@@ -702,7 +703,7 @@ void MediaPipelineModuleServiceTests::sendDestroySessionRequestAndReceiveRespons
     firebolt::rialto::DestroySessionRequest request;
     firebolt::rialto::DestroySessionResponse response;
 
-    request.set_session_id(hardcodedSessionId);
+    request.set_session_id(kHardcodedSessionId);
 
     m_service->destroySession(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
@@ -712,10 +713,10 @@ void MediaPipelineModuleServiceTests::sendLoadRequestAndReceiveResponse()
     firebolt::rialto::LoadRequest request;
     firebolt::rialto::LoadResponse response;
 
-    request.set_session_id(hardcodedSessionId);
-    request.set_type(convertMediaType(mediaType));
-    request.set_mime_type(mimeType);
-    request.set_url(url);
+    request.set_session_id(kHardcodedSessionId);
+    request.set_type(convertMediaType(kMediaType));
+    request.set_mime_type(kMimeType);
+    request.set_url(kUrl);
 
     m_service->load(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
@@ -725,9 +726,9 @@ void MediaPipelineModuleServiceTests::sendAttachSourceRequestAndReceiveResponse(
     firebolt::rialto::AttachSourceRequest request;
     firebolt::rialto::AttachSourceResponse response;
 
-    request.set_session_id(hardcodedSessionId);
+    request.set_session_id(kHardcodedSessionId);
     request.set_config_type(firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_AUDIO);
-    request.set_mime_type(mimeType);
+    request.set_mime_type(kMimeType);
     request.set_has_drm(true);
 
     m_service->attachSource(m_controllerMock.get(), &request, &response, m_closureMock.get());
@@ -738,12 +739,12 @@ void MediaPipelineModuleServiceTests::sendAttachVideoSourceRequestAndReceiveResp
     firebolt::rialto::AttachSourceRequest request;
     firebolt::rialto::AttachSourceResponse response;
 
-    request.set_session_id(hardcodedSessionId);
+    request.set_session_id(kHardcodedSessionId);
     request.set_config_type(firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_VIDEO);
-    request.set_mime_type(mimeType);
+    request.set_mime_type(kMimeType);
     request.set_has_drm(true);
-    request.set_width(width);
-    request.set_height(height);
+    request.set_width(kWidth);
+    request.set_height(kHeight);
 
     m_service->attachSource(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
@@ -753,13 +754,13 @@ void MediaPipelineModuleServiceTests::sendAttachDolbySourceRequestAndReceiveResp
     firebolt::rialto::AttachSourceRequest request;
     firebolt::rialto::AttachSourceResponse response;
 
-    request.set_session_id(hardcodedSessionId);
+    request.set_session_id(kHardcodedSessionId);
     request.set_config_type(firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_VIDEO_DOLBY_VISION);
-    request.set_mime_type(mimeType);
+    request.set_mime_type(kMimeType);
     request.set_has_drm(true);
-    request.set_width(width);
-    request.set_height(height);
-    request.set_dolby_vision_profile(dolbyProfile);
+    request.set_width(kWidth);
+    request.set_height(kHeight);
+    request.set_dolby_vision_profile(kDolbyProfile);
 
     m_service->attachSource(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
@@ -769,14 +770,14 @@ void MediaPipelineModuleServiceTests::sendAttachAudioSourceWithAdditionalDataReq
     firebolt::rialto::AttachSourceRequest request;
     firebolt::rialto::AttachSourceResponse response;
 
-    request.set_session_id(hardcodedSessionId);
+    request.set_session_id(kHardcodedSessionId);
     request.set_config_type(firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_AUDIO);
-    request.set_mime_type(mimeType);
+    request.set_mime_type(kMimeType);
     request.set_has_drm(true);
-    request.mutable_audio_config()->set_number_of_channels(numberOfChannels);
-    request.mutable_audio_config()->set_sample_rate(sampleRate);
-    request.mutable_audio_config()->set_codec_specific_config(codecSpecificConfigStr);
-    request.mutable_codec_data()->set_data(codecData->data.data(), codecData->data.size());
+    request.mutable_audio_config()->set_number_of_channels(kNumberOfChannels);
+    request.mutable_audio_config()->set_sample_rate(kSampleRate);
+    request.mutable_audio_config()->set_codec_specific_config(kCodecSpecificConfigStr);
+    request.mutable_codec_data()->set_data(kCodecData->data.data(), kCodecData->data.size());
     request.mutable_codec_data()->set_type(firebolt::rialto::AttachSourceRequest_CodecData_Type_BUFFER);
     request.set_stream_format(convertStreamFormat(firebolt::rialto::StreamFormat::RAW));
 
@@ -788,7 +789,7 @@ void MediaPipelineModuleServiceTests::sendAllSourcesAttachedRequestAndReceiveRes
     firebolt::rialto::AllSourcesAttachedRequest request;
     firebolt::rialto::AllSourcesAttachedResponse response;
 
-    request.set_session_id(hardcodedSessionId);
+    request.set_session_id(kHardcodedSessionId);
 
     m_service->allSourcesAttached(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
@@ -798,7 +799,7 @@ void MediaPipelineModuleServiceTests::sendPlayRequestAndReceiveResponse()
     firebolt::rialto::PlayRequest request;
     firebolt::rialto::PlayResponse response;
 
-    request.set_session_id(hardcodedSessionId);
+    request.set_session_id(kHardcodedSessionId);
 
     m_service->play(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
@@ -808,7 +809,7 @@ void MediaPipelineModuleServiceTests::sendPauseRequestAndReceiveResponse()
     firebolt::rialto::PauseRequest request;
     firebolt::rialto::PauseResponse response;
 
-    request.set_session_id(hardcodedSessionId);
+    request.set_session_id(kHardcodedSessionId);
 
     m_service->pause(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
@@ -818,7 +819,7 @@ void MediaPipelineModuleServiceTests::sendStopRequestAndReceiveResponse()
     firebolt::rialto::StopRequest request;
     firebolt::rialto::StopResponse response;
 
-    request.set_session_id(hardcodedSessionId);
+    request.set_session_id(kHardcodedSessionId);
 
     m_service->stop(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
@@ -828,8 +829,8 @@ void MediaPipelineModuleServiceTests::sendSetPositionRequestAndReceiveResponse()
     firebolt::rialto::SetPositionRequest request;
     firebolt::rialto::SetPositionResponse response;
 
-    request.set_session_id(hardcodedSessionId);
-    request.set_position(position);
+    request.set_session_id(kHardcodedSessionId);
+    request.set_position(kPosition);
 
     m_service->setPosition(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
@@ -839,11 +840,11 @@ void MediaPipelineModuleServiceTests::sendGetPositionRequestAndReceiveResponse()
     firebolt::rialto::GetPositionRequest request;
     firebolt::rialto::GetPositionResponse response;
 
-    request.set_session_id(hardcodedSessionId);
+    request.set_session_id(kHardcodedSessionId);
 
     m_service->getPosition(m_controllerMock.get(), &request, &response, m_closureMock.get());
 
-    EXPECT_EQ(response.position(), position);
+    EXPECT_EQ(response.position(), kPosition);
 }
 
 void MediaPipelineModuleServiceTests::sendGetPositionRequestAndReceiveResponseWithoutPositionMatch()
@@ -851,7 +852,7 @@ void MediaPipelineModuleServiceTests::sendGetPositionRequestAndReceiveResponseWi
     firebolt::rialto::GetPositionRequest request;
     firebolt::rialto::GetPositionResponse response;
 
-    request.set_session_id(hardcodedSessionId);
+    request.set_session_id(kHardcodedSessionId);
 
     m_service->getPosition(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
@@ -861,10 +862,10 @@ void MediaPipelineModuleServiceTests::sendHaveDataRequestAndReceiveResponse()
     firebolt::rialto::HaveDataRequest request;
     firebolt::rialto::HaveDataResponse response;
 
-    request.set_session_id(hardcodedSessionId);
-    request.set_status(convertHaveDataRequestMediaSourceStatus(mediaSourceStatus));
-    request.set_num_frames(numFrames);
-    request.set_request_id(requestId);
+    request.set_session_id(kHardcodedSessionId);
+    request.set_status(convertHaveDataRequestMediaSourceStatus(kMediaSourceStatus));
+    request.set_num_frames(kNumFrames);
+    request.set_request_id(kRequestId);
 
     m_service->haveData(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
@@ -874,8 +875,8 @@ void MediaPipelineModuleServiceTests::sendSetPlaybackRateRequestAndReceiveRespon
     firebolt::rialto::SetPlaybackRateRequest request;
     firebolt::rialto::SetPlaybackRateResponse response;
 
-    request.set_session_id(hardcodedSessionId);
-    request.set_rate(rate);
+    request.set_session_id(kHardcodedSessionId);
+    request.set_rate(kRate);
 
     m_service->setPlaybackRate(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
@@ -885,11 +886,11 @@ void MediaPipelineModuleServiceTests::sendSetVideoWindowRequestAndReceiveRespons
     firebolt::rialto::SetVideoWindowRequest request;
     firebolt::rialto::SetVideoWindowResponse response;
 
-    request.set_session_id(hardcodedSessionId);
-    request.set_x(x);
-    request.set_y(y);
-    request.set_width(width);
-    request.set_height(height);
+    request.set_session_id(kHardcodedSessionId);
+    request.set_x(kX);
+    request.set_y(kY);
+    request.set_width(kWidth);
+    request.set_height(kHeight);
 
     m_service->setVideoWindow(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
@@ -899,8 +900,8 @@ void MediaPipelineModuleServiceTests::sendSetVolumeRequestAndReceiveResponse()
     firebolt::rialto::SetVolumeRequest request;
     firebolt::rialto::SetVolumeResponse response;
 
-    request.set_session_id(hardcodedSessionId);
-    request.set_volume(volume);
+    request.set_session_id(kHardcodedSessionId);
+    request.set_volume(kVolume);
 
     m_service->setVolume(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
@@ -910,11 +911,11 @@ void MediaPipelineModuleServiceTests::sendGetVolumeRequestAndReceiveResponse()
     firebolt::rialto::GetVolumeRequest request;
     firebolt::rialto::GetVolumeResponse response;
 
-    request.set_session_id(hardcodedSessionId);
+    request.set_session_id(kHardcodedSessionId);
 
     m_service->getVolume(m_controllerMock.get(), &request, &response, m_closureMock.get());
 
-    EXPECT_EQ(response.volume(), volume);
+    EXPECT_EQ(response.volume(), kVolume);
 }
 
 void MediaPipelineModuleServiceTests::sendGetVolumeRequestAndReceiveResponseWithoutVolumeMatch()
@@ -922,7 +923,7 @@ void MediaPipelineModuleServiceTests::sendGetVolumeRequestAndReceiveResponseWith
     firebolt::rialto::GetVolumeRequest request;
     firebolt::rialto::GetVolumeResponse response;
 
-    request.set_session_id(hardcodedSessionId);
+    request.set_session_id(kHardcodedSessionId);
 
     m_service->getVolume(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
@@ -932,8 +933,8 @@ void MediaPipelineModuleServiceTests::sendSetMuteRequestAndReceiveResponse()
     firebolt::rialto::SetMuteRequest request;
     firebolt::rialto::SetMuteResponse response;
 
-    request.set_session_id(hardcodedSessionId);
-    request.set_mute(mute);
+    request.set_session_id(kHardcodedSessionId);
+    request.set_mute(kMute);
 
     m_service->setMute(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
@@ -943,11 +944,11 @@ void MediaPipelineModuleServiceTests::sendGetMuteRequestAndReceiveResponse()
     firebolt::rialto::GetMuteRequest request;
     firebolt::rialto::GetMuteResponse response;
 
-    request.set_session_id(hardcodedSessionId);
+    request.set_session_id(kHardcodedSessionId);
 
     m_service->getMute(m_controllerMock.get(), &request, &response, m_closureMock.get());
 
-    EXPECT_EQ(response.mute(), mute);
+    EXPECT_EQ(response.mute(), kMute);
 }
 
 void MediaPipelineModuleServiceTests::sendGetMuteRequestAndReceiveResponseWithoutMuteMatch()
@@ -955,7 +956,7 @@ void MediaPipelineModuleServiceTests::sendGetMuteRequestAndReceiveResponseWithou
     firebolt::rialto::GetMuteRequest request;
     firebolt::rialto::GetMuteResponse response;
 
-    request.set_session_id(hardcodedSessionId);
+    request.set_session_id(kHardcodedSessionId);
 
     m_service->getMute(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
@@ -963,33 +964,33 @@ void MediaPipelineModuleServiceTests::sendGetMuteRequestAndReceiveResponseWithou
 void MediaPipelineModuleServiceTests::sendPlaybackStateChangedEvent()
 {
     ASSERT_TRUE(m_mediaPipelineClient);
-    m_mediaPipelineClient->notifyPlaybackState(playbackState);
+    m_mediaPipelineClient->notifyPlaybackState(kPlaybackState);
 }
 
 void MediaPipelineModuleServiceTests::sendNetworkStateChangedEvent()
 {
     ASSERT_TRUE(m_mediaPipelineClient);
-    m_mediaPipelineClient->notifyNetworkState(networkState);
+    m_mediaPipelineClient->notifyNetworkState(kNetworkState);
 }
 
 void MediaPipelineModuleServiceTests::sendNeedMediaDataEvent()
 {
     ASSERT_TRUE(m_mediaPipelineClient);
     std::shared_ptr<firebolt::rialto::MediaPlayerShmInfo> shmInfoPtr{
-        std::make_shared<firebolt::rialto::MediaPlayerShmInfo>(shmInfo)};
-    m_mediaPipelineClient->notifyNeedMediaData(sourceId, frameCount, needDataRequestId, shmInfoPtr);
+        std::make_shared<firebolt::rialto::MediaPlayerShmInfo>(kShmInfo)};
+    m_mediaPipelineClient->notifyNeedMediaData(kSourceId, kFrameCount, kNeedDataRequestId, shmInfoPtr);
 }
 
 void MediaPipelineModuleServiceTests::sendPostionChangeEvent()
 {
     ASSERT_TRUE(m_mediaPipelineClient);
-    m_mediaPipelineClient->notifyPosition(position);
+    m_mediaPipelineClient->notifyPosition(kPosition);
 }
 
 void MediaPipelineModuleServiceTests::sendQosEvent()
 {
     ASSERT_TRUE(m_mediaPipelineClient);
-    m_mediaPipelineClient->notifyQos(sourceId, qosInfo);
+    m_mediaPipelineClient->notifyQos(kSourceId, kQosInfo);
 }
 
 void MediaPipelineModuleServiceTests::expectRequestSuccess()
@@ -1008,7 +1009,7 @@ void MediaPipelineModuleServiceTests::sendRenderFrameRequestAndReceiveResponse()
     firebolt::rialto::RenderFrameRequest request;
     firebolt::rialto::RenderFrameResponse response;
 
-    request.set_session_id(hardcodedSessionId);
+    request.set_session_id(kHardcodedSessionId);
 
     m_service->renderFrame(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }

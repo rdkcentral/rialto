@@ -21,9 +21,9 @@
 
 MATCHER_P2(SetPlaybackRateRequestMatcher, sessionId, rate, "")
 {
-    const ::firebolt::rialto::SetPlaybackRateRequest *request =
+    const ::firebolt::rialto::SetPlaybackRateRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::SetPlaybackRateRequest *>(arg);
-    return ((request->session_id() == sessionId) && (request->rate() == rate));
+    return ((kRequest->session_id() == sessionId) && (kRequest->rate() == rate));
 }
 
 class RialtoClientMediaPipelineIpcSetPlaybackRateTest : public MediaPipelineIpcTestBase

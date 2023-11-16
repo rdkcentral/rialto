@@ -71,13 +71,13 @@ bool IpcClient::connect()
     // check if either of following env vars are set to determine the location of the rialto socket
     //  - RIALTO_SOCKET_PATH should specify the absolute path to the socket to connect to
     //  - RIALTO_SOCKET_FD should specify the number of a file descriptor of the socket to connect to
-    const char *rialtoPath = getenv("RIALTO_SOCKET_PATH");
-    const char *rialtoFd = getenv("RIALTO_SOCKET_FD");
-    if (rialtoFd)
+    const char *kRialtoPath = getenv("RIALTO_SOCKET_PATH");
+    const char *kRialtoFd = getenv("RIALTO_SOCKET_FD");
+    if (kRialtoFd)
     {
         char *end = nullptr;
-        int fd = strtol(rialtoFd, &end, 10);
-        if ((errno != 0) || (rialtoFd == end) || (*end != '\0'))
+        int fd = strtol(kRialtoFd, &end, 10);
+        if ((errno != 0) || (kRialtoFd == end) || (*end != '\0'))
         {
             RIALTO_CLIENT_LOG_SYS_ERROR(errno, "Invalid value set in RIALTO_SOCKET_FD env var");
             return false;
@@ -85,9 +85,9 @@ bool IpcClient::connect()
 
         m_ipcChannel = m_ipcChannelFactory->createChannel(fd);
     }
-    else if (rialtoPath)
+    else if (kRialtoPath)
     {
-        m_ipcChannel = m_ipcChannelFactory->createChannel(rialtoPath);
+        m_ipcChannel = m_ipcChannelFactory->createChannel(kRialtoPath);
     }
     else
     {

@@ -23,8 +23,11 @@
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::common;
 
-const uint32_t MAX_MEDIA_BYTES = 100;
-const uint32_t MAX_METADATA_BYTES = VERSION_SIZE_BYTES + 24 * METADATA_V1_SIZE_PER_FRAME_BYTES;
+namespace
+{
+const uint32_t kMaxMediaBytes = 100;
+const uint32_t kMaxMetadataBytes = VERSION_SIZE_BYTES + 24 * METADATA_V1_SIZE_PER_FRAME_BYTES;
+} // namespace
 
 class RialtoPlayerCommonWriteFrameV1Test : public ::testing::Test
 {
@@ -32,7 +35,7 @@ protected:
     std::unique_ptr<IMediaFrameWriter> m_mediaFrameWriter;
 
     // Create a buffer that can hold 24 frames of metadata amd 100bytes of media data
-    uint8_t m_shmBuffer[MAX_METADATA_BYTES + MAX_MEDIA_BYTES] = {0};
+    uint8_t m_shmBuffer[kMaxMetadataBytes + kMaxMediaBytes] = {0};
     IMediaPipeline::MediaSegmentVector m_dataVec;
     int32_t m_sourceId = 1;
     std::shared_ptr<MediaPlayerShmInfo> m_shmInfo;
@@ -41,10 +44,10 @@ protected:
     {
         // Init shm info
         m_shmInfo = std::make_shared<MediaPlayerShmInfo>();
-        m_shmInfo->maxMetadataBytes = MAX_METADATA_BYTES;
+        m_shmInfo->maxMetadataBytes = kMaxMetadataBytes;
         m_shmInfo->metadataOffset = 0;
-        m_shmInfo->mediaDataOffset = MAX_METADATA_BYTES;
-        m_shmInfo->maxMediaBytes = MAX_MEDIA_BYTES;
+        m_shmInfo->mediaDataOffset = kMaxMetadataBytes;
+        m_shmInfo->maxMediaBytes = kMaxMediaBytes;
     }
 
     virtual void TearDown()

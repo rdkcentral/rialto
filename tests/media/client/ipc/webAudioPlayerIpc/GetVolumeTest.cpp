@@ -21,9 +21,9 @@
 
 MATCHER_P(WebAudioGetVolumeRequestMatcher, webAaudioPlayerHandle, "")
 {
-    const ::firebolt::rialto::WebAudioGetVolumeRequest *request =
+    const ::firebolt::rialto::WebAudioGetVolumeRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::WebAudioGetVolumeRequest *>(arg);
-    return ((request->web_audio_player_handle() == webAaudioPlayerHandle));
+    return ((kRequest->web_audio_player_handle() == webAaudioPlayerHandle));
 }
 
 class RialtoClientWebAudioPlayerIpcGetVolumeTest : public WebAudioPlayerIpcTestBase

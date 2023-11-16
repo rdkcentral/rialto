@@ -26,17 +26,17 @@ const std::vector<uint8_t> kDrmHeader{1, 2, 3};
 
 MATCHER_P3(setDrmHeaderRequestMatcher, mediaKeysHandle, keySessionId, drmHeader, "")
 {
-    const ::firebolt::rialto::SetDrmHeaderRequest *request =
+    const ::firebolt::rialto::SetDrmHeaderRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::SetDrmHeaderRequest *>(arg);
-    bool drmHeaderMatch{drmHeader.size() == static_cast<size_t>(request->request_data().size())};
+    bool drmHeaderMatch{drmHeader.size() == static_cast<size_t>(kRequest->request_data().size())};
     if (drmHeaderMatch)
     {
         for (size_t i = 0; i < drmHeader.size(); ++i)
         {
-            drmHeaderMatch &= request->request_data(i) == drmHeader[i];
+            drmHeaderMatch &= kRequest->request_data(i) == drmHeader[i];
         }
     }
-    return ((request->media_keys_handle() == mediaKeysHandle) && (request->key_session_id() == keySessionId) &&
+    return ((kRequest->media_keys_handle() == mediaKeysHandle) && (kRequest->key_session_id() == keySessionId) &&
             drmHeaderMatch);
 }
 
