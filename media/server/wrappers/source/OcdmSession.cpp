@@ -171,8 +171,10 @@ MediaKeyErrorStatus OcdmSession::storeLicenseData(const uint8_t challenge[], uin
         return MediaKeyErrorStatus::FAIL;
     }
 
-    // Rialto does not support secureStop
-    OpenCDMError status = opencdm_session_store_license_data(m_session, challenge, challengeSize, nullptr);
+    // Rialto does not support secureStop, but we need to pass buffer to avoid ocdm crash
+    constexpr size_t kSecureStopOutputBufferSize{16};
+    unsigned char secureStopBuffer[kSecureStopOutputBufferSize];
+    OpenCDMError status = opencdm_session_store_license_data(m_session, challenge, challengeSize, secureStopBuffer);
 
     RIALTO_SERVER_LOG_INFO("opencdm_session_store_license_data returned with status %u", status);
 
