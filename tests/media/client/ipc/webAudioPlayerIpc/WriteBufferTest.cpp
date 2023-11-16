@@ -21,10 +21,10 @@
 
 MATCHER_P2(WebAudioWriteBufferRequestMatcher, web_audio_player_handle, number_of_frames, "")
 {
-    const ::firebolt::rialto::WebAudioWriteBufferRequest *request =
+    const ::firebolt::rialto::WebAudioWriteBufferRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::WebAudioWriteBufferRequest *>(arg);
-    return ((request->web_audio_player_handle() == web_audio_player_handle) &&
-            (request->number_of_frames() == number_of_frames));
+    return ((kRequest->web_audio_player_handle() == web_audio_player_handle) &&
+            (kRequest->number_of_frames() == number_of_frames));
 }
 
 class RialtoClientWebAudioPlayerIpcWriteBufferTest : public WebAudioPlayerIpcTestBase

@@ -109,12 +109,12 @@ SetCaps::SetCaps(WebAudioPlayerContext &context, std::shared_ptr<IGstWrapper> gs
 
     if (m_audioMimeType == "audio/x-raw")
     {
-        std::shared_ptr<const WebAudioConfig> config = webAudioConfig.lock();
-        if (config == nullptr)
+        std::shared_ptr<const WebAudioConfig> kConfig = webAudioConfig.lock();
+        if (kConfig == nullptr)
         {
             throw std::runtime_error("Config is null for 'audio/x-raw'");
         }
-        m_config.pcm = config->pcm;
+        m_config.pcm = kConfig->pcm;
     }
 }
 

@@ -21,8 +21,8 @@
 
 MATCHER_P2(SetMuteRequestMatcher, sessionId, mute, "")
 {
-    const ::firebolt::rialto::SetMuteRequest *request = dynamic_cast<const ::firebolt::rialto::SetMuteRequest *>(arg);
-    return ((request->session_id() == sessionId) && (request->mute() == mute));
+    const ::firebolt::rialto::SetMuteRequest *kRequest = dynamic_cast<const ::firebolt::rialto::SetMuteRequest *>(arg);
+    return ((kRequest->session_id() == sessionId) && (kRequest->mute() == mute));
 }
 
 class RialtoClientMediaPipelineIpcSetMuteTest : public MediaPipelineIpcTestBase

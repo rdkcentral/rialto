@@ -21,9 +21,9 @@
 
 MATCHER_P(deleteKeyStoreRequestMatcher, mediaKeysHandle, "")
 {
-    const ::firebolt::rialto::DeleteKeyStoreRequest *request =
+    const ::firebolt::rialto::DeleteKeyStoreRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::DeleteKeyStoreRequest *>(arg);
-    return (request->media_keys_handle() == mediaKeysHandle);
+    return (kRequest->media_keys_handle() == mediaKeysHandle);
 }
 
 class RialtoClientMediaKeysIpcDeleteKeyStoreTest : public MediaKeysIpcTestBase

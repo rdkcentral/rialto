@@ -163,12 +163,12 @@ void ControlModuleService::registerClient(::google::protobuf::RpcController *con
     {
         RIALTO_SERVER_LOG_WARN("Client schema version not present in RegisterClientRequest message");
     }
-    const int controlId{generateControlId()};
+    const int kControlId{generateControlId()};
     auto ipcClient = ipcController->getClient();
-    auto controlClient{std::make_shared<ControlClientServerInternal>(controlId, ipcClient)};
-    m_controlService.addControl(controlId, controlClient);
-    m_controlIds[ipcClient].insert(controlId);
-    response->set_control_handle(controlId);
+    auto controlClient{std::make_shared<ControlClientServerInternal>(kControlId, ipcClient)};
+    m_controlService.addControl(kControlId, controlClient);
+    m_controlIds[ipcClient].insert(kControlId);
+    response->set_control_handle(kControlId);
     response->mutable_server_schema_version()->set_major(kCurrentSchemaVersion.major());
     response->mutable_server_schema_version()->set_minor(kCurrentSchemaVersion.minor());
     response->mutable_server_schema_version()->set_patch(kCurrentSchemaVersion.patch());

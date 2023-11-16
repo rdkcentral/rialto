@@ -25,8 +25,11 @@
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::common;
 
-const uint32_t MAX_MEDIA_BYTES = 10;
-const uint32_t MAX_METADATA_BYTES = VERSION_SIZE_BYTES + 24 * METADATA_V1_SIZE_PER_FRAME_BYTES;
+namespace
+{
+const uint32_t kMaxMediaBytes = 10;
+const uint32_t kMaxMetadataBytes = VERSION_SIZE_BYTES + 24 * METADATA_V1_SIZE_PER_FRAME_BYTES;
+} // namespace
 
 class RialtoPlayerCommonCreateMediaFrameWriterV1Test : public ::testing::Test
 {
@@ -34,7 +37,7 @@ protected:
     std::shared_ptr<IMediaFrameWriterFactory> m_mediaFrameWriterFactory;
 
     // Create a buffer that can hold 24 frames of metadata amd 10bytes of media data
-    uint8_t m_shmBuffer[MAX_METADATA_BYTES + MAX_MEDIA_BYTES] = {0};
+    uint8_t m_shmBuffer[kMaxMetadataBytes + kMaxMediaBytes] = {0};
     std::shared_ptr<MediaPlayerShmInfo> m_shmInfo;
 
     virtual void SetUp()
@@ -44,10 +47,10 @@ protected:
 
         // init shm info
         m_shmInfo = std::make_shared<MediaPlayerShmInfo>();
-        m_shmInfo->maxMetadataBytes = MAX_METADATA_BYTES;
+        m_shmInfo->maxMetadataBytes = kMaxMetadataBytes;
         m_shmInfo->metadataOffset = 0;
-        m_shmInfo->mediaDataOffset = MAX_METADATA_BYTES;
-        m_shmInfo->maxMediaBytes = MAX_MEDIA_BYTES;
+        m_shmInfo->mediaDataOffset = kMaxMetadataBytes;
+        m_shmInfo->maxMediaBytes = kMaxMediaBytes;
     }
 
     virtual void TearDown()
@@ -88,8 +91,8 @@ TEST_F(RialtoPlayerCommonCreateMediaFrameWriterV1Test, CheckSharedBufferData)
     EXPECT_EQ(readLEUint32(m_shmBuffer), 1U);
 
     // Rest of the metadata should be zeroed
-    uint8_t zeroedMem[MAX_METADATA_BYTES] = {0};
-    EXPECT_EQ(memcmp(zeroedMem, m_shmBuffer + VERSION_SIZE_BYTES, MAX_METADATA_BYTES), 0);
+    uint8_t zeroedMem[kMaxMetadataBytes] = {0};
+    EXPECT_EQ(memcmp(zeroedMem, m_shmBuffer + VERSION_SIZE_BYTES, kMaxMetadataBytes), 0);
 }
 
 /**
@@ -108,6 +111,6 @@ TEST_F(RialtoPlayerCommonCreateMediaFrameWriterV1Test, Offset)
     EXPECT_EQ(readLEUint32(m_shmBuffer + m_shmInfo->metadataOffset), 1U);
 
     // Rest of the metadata should be zeroed
-    uint8_t zeroedMem[MAX_METADATA_BYTES] = {0};
-    EXPECT_EQ(memcmp(zeroedMem, m_shmBuffer + VERSION_SIZE_BYTES + m_shmInfo->metadataOffset, MAX_METADATA_BYTES), 0);
+    uint8_t zeroedMem[kMaxMetadataBytes] = {0};
+    EXPECT_EQ(memcmp(zeroedMem, m_shmBuffer + VERSION_SIZE_BYTES + m_shmInfo->metadataOffset, kMaxMetadataBytes), 0);
 }

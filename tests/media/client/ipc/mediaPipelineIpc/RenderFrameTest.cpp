@@ -21,9 +21,9 @@
 
 MATCHER_P(RenderFrameRequestMatcher, sessionId, "")
 {
-    const ::firebolt::rialto::RenderFrameRequest *request =
+    const ::firebolt::rialto::RenderFrameRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::RenderFrameRequest *>(arg);
-    return ((request->session_id() == sessionId));
+    return ((kRequest->session_id() == sessionId));
 }
 
 class RialtoClientMediaPipelineIpcRenderFrameTest : public MediaPipelineIpcTestBase

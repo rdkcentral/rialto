@@ -21,8 +21,9 @@
 
 MATCHER_P2(SetVolumeRequestMatcher, sessionId, volume, "")
 {
-    const ::firebolt::rialto::SetVolumeRequest *request = dynamic_cast<const ::firebolt::rialto::SetVolumeRequest *>(arg);
-    return ((request->session_id() == sessionId) && (request->volume() == volume));
+    const ::firebolt::rialto::SetVolumeRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::SetVolumeRequest *>(arg);
+    return ((kRequest->session_id() == sessionId) && (kRequest->volume() == volume));
 }
 
 class RialtoClientMediaPipelineIpcSetVolumeTest : public MediaPipelineIpcTestBase

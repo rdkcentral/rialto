@@ -451,16 +451,16 @@ bool WebAudioPlayerIpc::createWebAudioPlayer(const std::string &audioMimeType, c
     firebolt::rialto::CreateWebAudioPlayerRequest request;
     request.set_audio_mime_type(audioMimeType);
     request.set_priority(priority);
-    std::shared_ptr<const WebAudioConfig> config = webAudioConfig.lock();
-    if (config)
+    std::shared_ptr<const WebAudioConfig> kConfig = webAudioConfig.lock();
+    if (kConfig)
     {
         ::firebolt::rialto::CreateWebAudioPlayerRequest_WebAudioPcmConfig pcm_config;
-        pcm_config.set_rate(config->pcm.rate);
-        pcm_config.set_channels(config->pcm.channels);
-        pcm_config.set_sample_size(config->pcm.sampleSize);
-        pcm_config.set_is_big_endian(config->pcm.isBigEndian);
-        pcm_config.set_is_signed(config->pcm.isSigned);
-        pcm_config.set_is_float(config->pcm.isFloat);
+        pcm_config.set_rate(kConfig->pcm.rate);
+        pcm_config.set_channels(kConfig->pcm.channels);
+        pcm_config.set_sample_size(kConfig->pcm.sampleSize);
+        pcm_config.set_is_big_endian(kConfig->pcm.isBigEndian);
+        pcm_config.set_is_signed(kConfig->pcm.isSigned);
+        pcm_config.set_is_float(kConfig->pcm.isFloat);
         request.mutable_config()->mutable_pcm()->CopyFrom(pcm_config);
     }
 

@@ -199,7 +199,7 @@ void SessionServerAppTests::timerWillBeActive() const
 
 bool SessionServerAppTests::triggerConfigure(const firebolt::rialto::common::AppConfig &appConfig) const
 {
-    const bool ret = m_sut->configure(kAppName, kInitialState, appConfig);
+    const bool kRet = m_sut->configure(kAppName, kInitialState, appConfig);
     EXPECT_EQ(kInitialState, m_sut->getInitialState());
-    return ret;
+    return kRet;
 }

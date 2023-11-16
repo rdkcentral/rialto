@@ -54,11 +54,6 @@ using ::testing::ReturnRef;
 using ::testing::SaveArg;
 using ::testing::StrictMock;
 
-namespace
-{
-constexpr int sessionId{1};
-} // namespace
-
 class MediaPipelineTestBase : public ::testing::Test
 {
 public:

@@ -31,11 +31,11 @@ using testing::Throw;
 
 namespace
 {
-constexpr std::int32_t shmFd{234};
-constexpr std::uint32_t shmSize{2048};
-constexpr std::int32_t maxPlaybacks{2};
-constexpr std::int32_t maxWebAudioPlayers{2};
-const std::string clientDisplayName{"westeros-rialto"};
+constexpr std::int32_t kShmFd{234};
+constexpr std::uint32_t kShmSize{2048};
+constexpr std::int32_t kMaxPlaybacks{2};
+constexpr std::int32_t kMaxWebAudioPlayers{2};
+const std::string kClientDisplayName{"westeros-rialto"};
 } // namespace
 
 PlaybackServiceTests::PlaybackServiceTests()
@@ -59,14 +59,14 @@ PlaybackServiceTests::PlaybackServiceTests()
 
 void PlaybackServiceTests::sharedMemoryBufferWillBeInitialized()
 {
-    EXPECT_CALL(m_shmBufferFactoryMock, createSharedMemoryBuffer(maxPlaybacks, maxWebAudioPlayers))
+    EXPECT_CALL(m_shmBufferFactoryMock, createSharedMemoryBuffer(kMaxPlaybacks, kMaxWebAudioPlayers))
         .WillOnce(Return(ByMove(std::move(m_shmBuffer))));
 }
 
 void PlaybackServiceTests::sharedMemoryBufferWillReturnFdAndSize()
 {
-    EXPECT_CALL(m_shmBufferMock, getFd()).WillOnce(Return(shmFd));
-    EXPECT_CALL(m_shmBufferMock, getSize()).WillOnce(Return(shmSize));
+    EXPECT_CALL(m_shmBufferMock, getFd()).WillOnce(Return(kShmFd));
+    EXPECT_CALL(m_shmBufferMock, getSize()).WillOnce(Return(kShmSize));
 }
 
 void PlaybackServiceTests::createPlaybackServiceShouldSuccess()
@@ -92,17 +92,17 @@ void PlaybackServiceTests::triggerSwitchToInactive()
 
 void PlaybackServiceTests::triggerSetMaxPlaybacks()
 {
-    m_sut->setMaxPlaybacks(maxPlaybacks);
+    m_sut->setMaxPlaybacks(kMaxPlaybacks);
 }
 
 void PlaybackServiceTests::triggerSetMaxWebAudioPlayers()
 {
-    m_sut->setMaxWebAudioPlayers(maxWebAudioPlayers);
+    m_sut->setMaxWebAudioPlayers(kMaxWebAudioPlayers);
 }
 
 void PlaybackServiceTests::triggerSetClientDisplayName()
 {
-    m_sut->setClientDisplayName(clientDisplayName);
+    m_sut->setClientDisplayName(kClientDisplayName);
 }
 
 void PlaybackServiceTests::triggerPing()
@@ -115,8 +115,8 @@ void PlaybackServiceTests::getSharedMemoryShouldSucceed()
     int32_t returnedFd = 0;
     uint32_t returnedSize = 0;
     EXPECT_TRUE(m_sut->getSharedMemory(returnedFd, returnedSize));
-    EXPECT_EQ(returnedFd, shmFd);
-    EXPECT_EQ(returnedSize, shmSize);
+    EXPECT_EQ(returnedFd, kShmFd);
+    EXPECT_EQ(returnedSize, kShmSize);
 }
 
 void PlaybackServiceTests::getSharedMemoryShouldFail()
@@ -140,16 +140,16 @@ void PlaybackServiceTests::getShmBufferShouldFail()
 
 void PlaybackServiceTests::getMaxPlaybacksShouldSucceed()
 {
-    EXPECT_EQ(m_sut->getMaxPlaybacks(), maxPlaybacks);
+    EXPECT_EQ(m_sut->getMaxPlaybacks(), kMaxPlaybacks);
 }
 
 void PlaybackServiceTests::getMaxWebAudioPlayersShouldSucceed()
 {
-    EXPECT_EQ(m_sut->getMaxWebAudioPlayers(), maxWebAudioPlayers);
+    EXPECT_EQ(m_sut->getMaxWebAudioPlayers(), kMaxWebAudioPlayers);
 }
 
 void PlaybackServiceTests::clientDisplayNameShouldBeSet()
 {
-    EXPECT_EQ(std::string(getenv("WAYLAND_DISPLAY")), clientDisplayName);
+    EXPECT_EQ(std::string(getenv("WAYLAND_DISPLAY")), kClientDisplayName);
     unsetenv("WAYLAND_DISPLAY");
 }

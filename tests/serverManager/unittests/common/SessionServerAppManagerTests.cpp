@@ -61,11 +61,11 @@ TEST_F(SessionServerAppManagerTests, InitiateApplicationShouldReturnFalseWhenCal
 
 TEST_F(SessionServerAppManagerTests, GetConnectionInfoShouldReturnProperSocket)
 {
-    const std::string APP_SOCKET{getenv("RIALTO_SOCKET_PATH")};
+    const std::string kAppSocket{getenv("RIALTO_SOCKET_PATH")};
     sessionServerWillLaunch(firebolt::rialto::common::SessionServerState::INACTIVE);
     ASSERT_TRUE(triggerInitiateApplication(firebolt::rialto::common::SessionServerState::INACTIVE));
-    sessionServerWillReturnAppSocketName(APP_SOCKET);
-    ASSERT_EQ(APP_SOCKET, triggerGetAppConnectionInfo());
+    sessionServerWillReturnAppSocketName(kAppSocket);
+    ASSERT_EQ(kAppSocket, triggerGetAppConnectionInfo());
     sessionServerWillKillRunningApplication();
 }
 

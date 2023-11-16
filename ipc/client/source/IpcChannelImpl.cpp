@@ -48,18 +48,18 @@ const std::chrono::milliseconds kDefaultIpcTimeout{3000};
 
 std::chrono::milliseconds getIpcTimeout()
 {
-    const char *customTimeout = getenv("RIALTO_CLIENT_IPC_TIMEOUT");
+    const char *kCustomTimeout = getenv("RIALTO_CLIENT_IPC_TIMEOUT");
     std::chrono::milliseconds timeout{kDefaultIpcTimeout};
-    if (customTimeout)
+    if (kCustomTimeout)
     {
         try
         {
-            timeout = std::chrono::milliseconds{std::stoull(customTimeout)};
-            RIALTO_IPC_LOG_INFO("Using custom Ipc timeout: %sms", customTimeout);
+            timeout = std::chrono::milliseconds{std::stoull(kCustomTimeout)};
+            RIALTO_IPC_LOG_INFO("Using custom Ipc timeout: %sms", kCustomTimeout);
         }
         catch (const std::exception &e)
         {
-            RIALTO_IPC_LOG_ERROR("Custom Ipc timeout invalid, ignoring: %s", customTimeout);
+            RIALTO_IPC_LOG_ERROR("Custom Ipc timeout invalid, ignoring: %s", kCustomTimeout);
         }
     }
     return timeout;
@@ -559,11 +559,11 @@ void ChannelImpl::processTimeoutEvent()
     std::vector<MethodCall> timedOuts;
 
     // remove the method calls that have expired
-    const auto now = std::chrono::steady_clock::now();
+    const auto kNow = std::chrono::steady_clock::now();
     auto it = m_methodCalls.begin();
     while (it != m_methodCalls.end())
     {
-        if (now >= it->second.timeoutDeadline)
+        if (kNow >= it->second.timeoutDeadline)
         {
             timedOuts.emplace_back(it->second);
             it = m_methodCalls.erase(it);
@@ -638,19 +638,19 @@ void ChannelImpl::updateTimeoutTimer()
         }
 
         // set the timerfd to the next duration
-        const std::chrono::microseconds duration =
+        const std::chrono::microseconds kDuration =
             std::chrono::duration_cast<std::chrono::microseconds>(nextTimeout - std::chrono::steady_clock::now());
-        if (duration <= std::chrono::microseconds::zero())
+        if (kDuration <= std::chrono::microseconds::zero())
         {
             ts.it_value.tv_nsec = 1000;
         }
         else
         {
-            ts.it_value.tv_sec = static_cast<time_t>(std::chrono::duration_cast<std::chrono::seconds>(duration).count());
-            ts.it_value.tv_nsec = static_cast<int32_t>((duration.count() % 1000000) * 1000);
+            ts.it_value.tv_sec = static_cast<time_t>(std::chrono::duration_cast<std::chrono::seconds>(kDuration).count());
+            ts.it_value.tv_nsec = static_cast<int32_t>((kDuration.count() % 1000000) * 1000);
         }
 
-        RIALTO_IPC_LOG_INFO("next timeout in %" PRId64 "us - %ld.%09lds", duration.count(), ts.it_value.tv_sec,
+        RIALTO_IPC_LOG_INFO("next timeout in %" PRId64 "us - %ld.%09lds", kDuration.count(), ts.it_value.tv_sec,
                             ts.it_value.tv_nsec);
     }
 
@@ -712,8 +712,8 @@ void ChannelImpl::processReplyFromServer(const transport::MethodCallReply &reply
     std::unique_lock<std::mutex> locker(m_lock);
 
     // find the original request
-    const uint64_t serialId = reply.reply_id();
-    auto it = m_methodCalls.find(serialId);
+    const uint64_t kSerialId = reply.reply_id();
+    auto it = m_methodCalls.find(kSerialId);
     if (it == m_methodCalls.end())
     {
         RIALTO_IPC_LOG_ERROR("failed to find request for received reply with id %" PRIu64 "", reply.reply_id());
@@ -743,7 +743,7 @@ void ChannelImpl::processReplyFromServer(const transport::MethodCallReply &reply
     }
     else if (methodCall.closure)
     {
-        RIALTO_IPC_LOG_DEBUG("reply{ serial %" PRIu64 " } - %s { %s }", serialId,
+        RIALTO_IPC_LOG_DEBUG("reply{ serial %" PRIu64 " } - %s { %s }", kSerialId,
                              methodCall.response->GetTypeName().c_str(), methodCall.response->ShortDebugString().c_str());
 
         complete(&methodCall);
@@ -763,8 +763,8 @@ void ChannelImpl::processErrorFromServer(const transport::MethodCallError &error
     std::unique_lock<std::mutex> locker(m_lock);
 
     // find the original request
-    const uint64_t serialId = error.reply_id();
-    auto it = m_methodCalls.find(serialId);
+    const uint64_t kSerialId = error.reply_id();
+    auto it = m_methodCalls.find(kSerialId);
     if (it == m_methodCalls.end())
     {
         RIALTO_IPC_LOG_ERROR("failed to find request for received reply with id %" PRIu64 "", error.reply_id());
@@ -781,7 +781,7 @@ void ChannelImpl::processErrorFromServer(const transport::MethodCallError &error
     // can now drop the lock
     locker.unlock();
 
-    RIALTO_IPC_LOG_DEBUG("error{ serial %" PRIu64 " } - %s", serialId, error.error_reason().c_str());
+    RIALTO_IPC_LOG_DEBUG("error{ serial %" PRIu64 " } - %s", kSerialId, error.error_reason().c_str());
 
     // complete the call with an error
     completeWithError(&methodCall, error.error_reason());
@@ -797,28 +797,28 @@ void ChannelImpl::processEventFromServer(const transport::EventFromServer &event
 {
     RIALTO_IPC_LOG_DEBUG("processing event from server");
 
-    const std::string &eventName = event.event_name();
+    const std::string &kEventName = event.event_name();
 
     std::lock_guard<std::mutex> locker(m_eventsLock);
 
-    auto range = m_eventHandlers.equal_range(eventName);
+    auto range = m_eventHandlers.equal_range(kEventName);
     if (range.first == range.second)
     {
-        RIALTO_IPC_LOG_WARN("no handler for event %s", eventName.c_str());
+        RIALTO_IPC_LOG_WARN("no handler for event %s", kEventName.c_str());
         return;
     }
 
-    const google::protobuf::Descriptor *descriptor = range.first->second.descriptor;
+    const google::protobuf::Descriptor *kDescriptor = range.first->second.descriptor;
 
-    const google::protobuf::Message *prototype =
-        google::protobuf::MessageFactory::generated_factory()->GetPrototype(descriptor);
-    if (!prototype)
+    const google::protobuf::Message *kPrototype =
+        google::protobuf::MessageFactory::generated_factory()->GetPrototype(kDescriptor);
+    if (!kPrototype)
     {
-        RIALTO_IPC_LOG_ERROR("failed to create prototype for event %s", eventName.c_str());
+        RIALTO_IPC_LOG_ERROR("failed to create prototype for event %s", kEventName.c_str());
         return;
     }
 
-    std::shared_ptr<google::protobuf::Message> message(prototype->New());
+    std::shared_ptr<google::protobuf::Message> message(kPrototype->New());
     if (!message)
     {
         RIALTO_IPC_LOG_ERROR("failed to create mutable message from prototype");
@@ -827,7 +827,7 @@ void ChannelImpl::processEventFromServer(const transport::EventFromServer &event
 
     if (!message->ParseFromString(event.message()))
     {
-        RIALTO_IPC_LOG_ERROR("failed to parse message for event %s", eventName.c_str());
+        RIALTO_IPC_LOG_ERROR("failed to parse message for event %s", kEventName.c_str());
     }
     else if (!addReplyFileDescriptors(message.get(), fds))
     {
@@ -835,7 +835,7 @@ void ChannelImpl::processEventFromServer(const transport::EventFromServer &event
     }
     else
     {
-        RIALTO_IPC_LOG_DEBUG("event{ %s } - %s { %s }", eventName.c_str(), message->GetTypeName().c_str(),
+        RIALTO_IPC_LOG_DEBUG("event{ %s } - %s { %s }", kEventName.c_str(), message->GetTypeName().c_str(),
                              message->ShortDebugString().c_str());
 
         for (auto it = range.first; it != range.second; ++it)
@@ -866,22 +866,22 @@ std::vector<FileDescriptor> ChannelImpl::readMessageFds(const struct msghdr *msg
     {
         if ((cmsg->cmsg_level == SOL_SOCKET) && (cmsg->cmsg_type == SCM_RIGHTS))
         {
-            const unsigned fdsLength = cmsg->cmsg_len - CMSG_LEN(0);
-            if ((fdsLength < sizeof(int)) || ((fdsLength % sizeof(int)) != 0))
+            const unsigned kFdsLength = cmsg->cmsg_len - CMSG_LEN(0);
+            if ((kFdsLength < sizeof(int)) || ((kFdsLength % sizeof(int)) != 0))
             {
                 RIALTO_IPC_LOG_ERROR("invalid fd array size");
             }
             else
             {
-                const size_t n = fdsLength / sizeof(int);
+                const size_t n = kFdsLength / sizeof(int);
                 RIALTO_IPC_LOG_DEBUG("received %zu fds", n);
 
                 fds.reserve(std::min(limit, n));
 
-                const int *fds_ = reinterpret_cast<int *>(CMSG_DATA(cmsg));
+                const int *kFds = reinterpret_cast<int *>(CMSG_DATA(cmsg));
                 for (size_t i = 0; i < n; i++)
                 {
-                    RIALTO_IPC_LOG_DEBUG("received fd %d", fds_[i]);
+                    RIALTO_IPC_LOG_DEBUG("received fd %d", kFds[i]);
 
                     if (fds.size() >= limit)
                     {
@@ -890,7 +890,7 @@ std::vector<FileDescriptor> ChannelImpl::readMessageFds(const struct msghdr *msg
                     }
                     else
                     {
-                        firebolt::rialto::ipc::FileDescriptor fd(fds_[i]);
+                        firebolt::rialto::ipc::FileDescriptor fd(kFds[i]);
                         if (!fd.isValid())
                         {
                             RIALTO_IPC_LOG_ERROR("received invalid fd (couldn't dup)");
@@ -901,7 +901,7 @@ std::vector<FileDescriptor> ChannelImpl::readMessageFds(const struct msghdr *msg
                         }
                     }
 
-                    if (close(fds_[i]) != 0)
+                    if (close(kFds[i]) != 0)
                         RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to close received fd");
                 }
             }
@@ -928,13 +928,13 @@ bool ChannelImpl::addReplyFileDescriptors(google::protobuf::Message *reply,
 {
     auto fdIterator = fds->begin();
 
-    const google::protobuf::Descriptor *descriptor = reply->GetDescriptor();
-    const google::protobuf::Reflection *reflection = nullptr;
+    const google::protobuf::Descriptor *kDescriptor = reply->GetDescriptor();
+    const google::protobuf::Reflection *kReflection = nullptr;
 
-    const int n = descriptor->field_count();
+    const int n = kDescriptor->field_count();
     for (int i = 0; i < n; i++)
     {
-        auto fieldDescriptor = descriptor->field(i);
+        auto fieldDescriptor = kDescriptor->field(i);
         if (fieldDescriptor->options().HasExtension(::firebolt::rialto::ipc::field_is_fd) &&
             fieldDescriptor->options().GetExtension(::firebolt::rialto::ipc::field_is_fd))
         {
@@ -944,12 +944,12 @@ bool ChannelImpl::addReplyFileDescriptors(google::protobuf::Message *reply,
                 return false;
             }
 
-            if (!reflection)
+            if (!kReflection)
             {
-                reflection = reply->GetReflection();
+                kReflection = reply->GetReflection();
             }
 
-            if (reflection->HasField(*reply, fieldDescriptor))
+            if (kReflection->HasField(*reply, fieldDescriptor))
             {
                 if (fdIterator == fds->end())
                 {
@@ -957,7 +957,7 @@ bool ChannelImpl::addReplyFileDescriptors(google::protobuf::Message *reply,
                     return false;
                 }
 
-                reflection->SetInt32(reply, fieldDescriptor, fdIterator->fd());
+                kReflection->SetInt32(reply, fieldDescriptor, fdIterator->fd());
                 ++fdIterator;
             }
         }
@@ -1078,12 +1078,12 @@ void ChannelImpl::CallMethod(const google::protobuf::MethodDescriptor *method, /
                           dynamic_cast<ClientControllerImpl *>(controller), response, done};
 
     //
-    const uint64_t serialId = m_serialCounter++;
+    const uint64_t kSerialId = m_serialCounter++;
 
     // create the transport request
     transport::MessageToServer message;
     transport::MethodCall *call = message.mutable_call();
-    call->set_serial_id(serialId);
+    call->set_serial_id(kSerialId);
     call->set_service_name(method->service()->full_name());
     call->set_method_name(method->name());
 
@@ -1091,42 +1091,42 @@ void ChannelImpl::CallMethod(const google::protobuf::MethodDescriptor *method, /
     std::string reqString = request->SerializeAsString();
     call->set_request_message(std::move(reqString));
 
-    const size_t requiredDataLen = message.ByteSizeLong();
-    if (requiredDataLen > kMaxMessageSize)
+    const size_t kRequiredDataLen = message.ByteSizeLong();
+    if (kRequiredDataLen > kMaxMessageSize)
     {
-        RIALTO_IPC_LOG_ERROR("method call to big to send (%zu, max %zu", requiredDataLen, kMaxMessageSize);
+        RIALTO_IPC_LOG_ERROR("method call to big to send (%zu, max %zu", kRequiredDataLen, kMaxMessageSize);
         completeWithError(&methodCall, "Method call to big");
         return;
     }
 
     // extract the fds from the message
-    const std::vector<int> fds = getMessageFds(*request);
-    const size_t requiredCtrlLen = fds.empty() ? 0 : CMSG_SPACE(sizeof(int) * fds.size());
+    const std::vector<int> kFds = getMessageFds(*request);
+    const size_t kRequiredCtrlLen = kFds.empty() ? 0 : CMSG_SPACE(sizeof(int) * kFds.size());
 
     // build the socket message to send
     auto msgBuf =
-        m_sendBufPool.allocateShared<uint8_t>(sizeof(msghdr) + sizeof(iovec) + requiredCtrlLen + requiredDataLen);
+        m_sendBufPool.allocateShared<uint8_t>(sizeof(msghdr) + sizeof(iovec) + kRequiredCtrlLen + kRequiredDataLen);
 
     auto *header = reinterpret_cast<msghdr *>(msgBuf.get());
     bzero(header, sizeof(msghdr));
 
     auto *ctrl = reinterpret_cast<uint8_t *>(msgBuf.get() + sizeof(msghdr));
     header->msg_control = ctrl;
-    header->msg_controllen = requiredCtrlLen;
+    header->msg_controllen = kRequiredCtrlLen;
 
-    auto *iov = reinterpret_cast<iovec *>(msgBuf.get() + sizeof(msghdr) + requiredCtrlLen);
+    auto *iov = reinterpret_cast<iovec *>(msgBuf.get() + sizeof(msghdr) + kRequiredCtrlLen);
     header->msg_iov = iov;
     header->msg_iovlen = 1;
 
-    auto *data = reinterpret_cast<uint8_t *>(msgBuf.get() + sizeof(msghdr) + requiredCtrlLen + sizeof(iovec));
+    auto *data = reinterpret_cast<uint8_t *>(msgBuf.get() + sizeof(msghdr) + kRequiredCtrlLen + sizeof(iovec));
     iov->iov_base = data;
-    iov->iov_len = requiredDataLen;
+    iov->iov_len = kRequiredDataLen;
 
     // copy in the data
     message.SerializeWithCachedSizesToArray(data);
 
     // next check if the request is sending any fd's
-    if (!fds.empty())
+    if (!kFds.empty())
     {
         struct cmsghdr *cmsg = CMSG_FIRSTHDR(header);
         if (!cmsg)
@@ -1138,14 +1138,14 @@ void ChannelImpl::CallMethod(const google::protobuf::MethodDescriptor *method, /
 
         cmsg->cmsg_level = SOL_SOCKET;
         cmsg->cmsg_type = SCM_RIGHTS;
-        cmsg->cmsg_len = CMSG_LEN(sizeof(int) * fds.size());
-        memcpy(CMSG_DATA(cmsg), fds.data(), sizeof(int) * fds.size());
+        cmsg->cmsg_len = CMSG_LEN(sizeof(int) * kFds.size());
+        memcpy(CMSG_DATA(cmsg), kFds.data(), sizeof(int) * kFds.size());
         header->msg_controllen = cmsg->cmsg_len;
     }
 
     // check if the method is expecting a reply
-    const bool noReplyExpected = method->options().HasExtension(::firebolt::rialto::ipc::no_reply) &&
-                                 method->options().GetExtension(::firebolt::rialto::ipc::no_reply);
+    const bool kNoReplyExpected = method->options().HasExtension(::firebolt::rialto::ipc::no_reply) &&
+                                  method->options().GetExtension(::firebolt::rialto::ipc::no_reply);
 
     // finally, send the message
     std::unique_lock<std::mutex> locker(m_lock);
@@ -1155,17 +1155,17 @@ void ChannelImpl::CallMethod(const google::protobuf::MethodDescriptor *method, /
         locker.unlock();
         completeWithError(&methodCall, "Not connected");
     }
-    else if (sendmsg(m_sock, header, MSG_NOSIGNAL) != static_cast<ssize_t>(requiredDataLen))
+    else if (sendmsg(m_sock, header, MSG_NOSIGNAL) != static_cast<ssize_t>(kRequiredDataLen))
     {
         locker.unlock();
         completeWithError(&methodCall, "Failed to send message");
     }
     else
     {
-        RIALTO_IPC_LOG_DEBUG("call{ serial %" PRIu64 " } - %s.%s { %s }", serialId, call->service_name().c_str(),
+        RIALTO_IPC_LOG_DEBUG("call{ serial %" PRIu64 " } - %s.%s { %s }", kSerialId, call->service_name().c_str(),
                              call->method_name().c_str(), request->ShortDebugString().c_str());
 
-        if (noReplyExpected)
+        if (kNoReplyExpected)
         {
             // no reply from server is expected, however if the caller supplied
             // a closure (it shouldn't) we should still call it now to indicate
@@ -1176,7 +1176,7 @@ void ChannelImpl::CallMethod(const google::protobuf::MethodDescriptor *method, /
         else
         {
             // add the message to the queue so we pick-up the reply
-            m_methodCalls.emplace(serialId, methodCall);
+            m_methodCalls.emplace(kSerialId, methodCall);
 
             // update the single timeout timer
             updateTimeoutTimer();
@@ -1184,14 +1184,14 @@ void ChannelImpl::CallMethod(const google::protobuf::MethodDescriptor *method, /
     }
 }
 
-int ChannelImpl::subscribeImpl(const std::string &eventName, const google::protobuf::Descriptor *descriptor,
+int ChannelImpl::subscribeImpl(const std::string &kEventName, const google::protobuf::Descriptor *descriptor,
                                EventHandler &&handler)
 {
     std::lock_guard<std::mutex> locker(m_eventsLock);
 
-    const int tag = m_eventTagCounter++;
-    m_eventHandlers.emplace(eventName, Event{tag, descriptor, std::move(handler)});
+    const int kTag = m_eventTagCounter++;
+    m_eventHandlers.emplace(kEventName, Event{kTag, descriptor, std::move(handler)});
 
-    return tag;
+    return kTag;
 }
 }; // namespace firebolt::rialto::ipc

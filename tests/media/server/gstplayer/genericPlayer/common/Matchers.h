@@ -49,10 +49,10 @@ MATCHER(NotNullMatcher, "")
 
 MATCHER_P(arrayMatcher, vec, "")
 {
-    const uint8_t *array = static_cast<const uint8_t *>(arg);
+    const uint8_t *kArray = static_cast<const uint8_t *>(arg);
     for (unsigned int i = 0; i < vec.size(); ++i)
     {
-        if (vec[i] != array[i])
+        if (vec[i] != kArray[i])
         {
             return false;
         }

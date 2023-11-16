@@ -37,19 +37,19 @@ using testing::Throw;
 
 namespace
 {
-constexpr int appManagementSocket{3};
-constexpr int maxPlaybacks{2};
-constexpr int maxWebAudioPlayers{1};
-constexpr int pingId{12};
-constexpr firebolt::rialto::common::MaxResourceCapabilitites maxResource{maxPlaybacks, maxWebAudioPlayers};
-constexpr RIALTO_DEBUG_LEVEL logLvl{RIALTO_DEBUG_LEVEL_DEFAULT};
-const std::string sessionManagementSocket{"/tmp/rialtosessionservermanagertests-0"};
-constexpr unsigned int sessionManagementSocketPermissions{0777};
+constexpr int kAppManagementSocket{3};
+constexpr int kMaxPlaybacks{2};
+constexpr int kMaxWebAudioPlayers{1};
+constexpr int kPingId{12};
+constexpr firebolt::rialto::common::MaxResourceCapabilitites kMaxResource{kMaxPlaybacks, kMaxWebAudioPlayers};
+constexpr RIALTO_DEBUG_LEVEL kLogLvl{RIALTO_DEBUG_LEVEL_DEFAULT};
+const std::string kSessionManagementSocket{"/tmp/rialtosessionservermanagertests-0"};
+constexpr unsigned int kSessionManagementSocketPermissions{0777};
 // Empty strings for kSocketOwner and kSocketGroup means that chown() won't be called. This will leave the created
 // socket being owned by the user executing the code (and the group would be their primary group)
 const std::string kSocketOwner{};
 const std::string kSocketGroup{};
-const std::string clientDisplayName{"westeros-rialto"};
+const std::string kClientDisplayName{"westeros-rialto"};
 } // namespace
 
 SessionServerManagerTests::SessionServerManagerTests()
@@ -102,47 +102,47 @@ void SessionServerManagerTests::willNotInitializeWithWrongSocket()
 
 void SessionServerManagerTests::willNotInitializeWhenApplicationManagementServerFailsToInit()
 {
-    EXPECT_CALL(m_applicationManagementServerMock, initialize(appManagementSocket)).WillOnce(Return(false));
+    EXPECT_CALL(m_applicationManagementServerMock, initialize(kAppManagementSocket)).WillOnce(Return(false));
     EXPECT_TRUE(m_sut);
     std::string arg1{"AppName"};
-    std::string arg2{std::to_string(appManagementSocket)};
+    std::string arg2{std::to_string(kAppManagementSocket)};
     char *args[]{&arg1[0], &arg2[0]};
     EXPECT_FALSE(m_sut->initialize(2, args));
 }
 
 void SessionServerManagerTests::willNotInitializeWhenApplicationManagementServerThrows()
 {
-    EXPECT_CALL(m_applicationManagementServerMock, initialize(appManagementSocket))
+    EXPECT_CALL(m_applicationManagementServerMock, initialize(kAppManagementSocket))
         .WillOnce(Throw(std::logic_error("some error")));
     EXPECT_TRUE(m_sut);
     std::string arg1{"AppName"};
-    std::string arg2{std::to_string(appManagementSocket)};
+    std::string arg2{std::to_string(kAppManagementSocket)};
     char *args[]{&arg1[0], &arg2[0]};
     EXPECT_FALSE(m_sut->initialize(2, args));
 }
 
 void SessionServerManagerTests::willNotInitializeWhenApplicationManagementServerFailsToSendEvent()
 {
-    EXPECT_CALL(m_applicationManagementServerMock, initialize(appManagementSocket)).WillOnce(Return(true));
+    EXPECT_CALL(m_applicationManagementServerMock, initialize(kAppManagementSocket)).WillOnce(Return(true));
     EXPECT_CALL(m_applicationManagementServerMock, start());
     EXPECT_CALL(m_applicationManagementServerMock, sendStateChangedEvent(SessionServerState::UNINITIALIZED))
         .WillOnce(Return(false));
     EXPECT_TRUE(m_sut);
     std::string arg1{"AppName"};
-    std::string arg2{std::to_string(appManagementSocket)};
+    std::string arg2{std::to_string(kAppManagementSocket)};
     char *args[]{&arg1[0], &arg2[0]};
     EXPECT_FALSE(m_sut->initialize(2, args));
 }
 
 void SessionServerManagerTests::willInitialize()
 {
-    EXPECT_CALL(m_applicationManagementServerMock, initialize(appManagementSocket)).WillOnce(Return(true));
+    EXPECT_CALL(m_applicationManagementServerMock, initialize(kAppManagementSocket)).WillOnce(Return(true));
     EXPECT_CALL(m_applicationManagementServerMock, start());
     EXPECT_CALL(m_applicationManagementServerMock, sendStateChangedEvent(SessionServerState::UNINITIALIZED))
         .WillOnce(Return(true));
     EXPECT_TRUE(m_sut);
     std::string arg1{"AppName"};
-    std::string arg2{std::to_string(appManagementSocket)};
+    std::string arg2{std::to_string(kAppManagementSocket)};
     char *args[]{&arg1[0], &arg2[0]};
     EXPECT_TRUE(m_sut->initialize(2, args));
 }
@@ -150,50 +150,50 @@ void SessionServerManagerTests::willInitialize()
 void SessionServerManagerTests::willFailToSetConfigurationWhenSessionManagementServerFailsToInit()
 {
     EXPECT_CALL(m_sessionManagementServerMock,
-                initialize(sessionManagementSocket, sessionManagementSocketPermissions, kSocketOwner, kSocketGroup))
+                initialize(kSessionManagementSocket, kSessionManagementSocketPermissions, kSocketOwner, kSocketGroup))
         .WillOnce(Return(false));
     EXPECT_TRUE(m_sut);
-    EXPECT_FALSE(m_sut->setConfiguration(sessionManagementSocket, SessionServerState::INACTIVE, maxResource,
-                                         clientDisplayName, sessionManagementSocketPermissions, kSocketOwner,
+    EXPECT_FALSE(m_sut->setConfiguration(kSessionManagementSocket, SessionServerState::INACTIVE, kMaxResource,
+                                         kClientDisplayName, kSessionManagementSocketPermissions, kSocketOwner,
                                          kSocketGroup));
 }
 
 void SessionServerManagerTests::willFailToSetConfigurationWhenSessionManagementServerFailsToSetInitialState()
 {
     EXPECT_CALL(m_sessionManagementServerMock,
-                initialize(sessionManagementSocket, sessionManagementSocketPermissions, kSocketOwner, kSocketGroup))
+                initialize(kSessionManagementSocket, kSessionManagementSocketPermissions, kSocketOwner, kSocketGroup))
         .WillOnce(Return(true));
     EXPECT_CALL(m_sessionManagementServerMock, start());
-    EXPECT_CALL(m_playbackServiceMock, setMaxPlaybacks(maxPlaybacks));
-    EXPECT_CALL(m_playbackServiceMock, setMaxWebAudioPlayers(maxWebAudioPlayers));
-    EXPECT_CALL(m_playbackServiceMock, setClientDisplayName(clientDisplayName));
+    EXPECT_CALL(m_playbackServiceMock, setMaxPlaybacks(kMaxPlaybacks));
+    EXPECT_CALL(m_playbackServiceMock, setMaxWebAudioPlayers(kMaxWebAudioPlayers));
+    EXPECT_CALL(m_playbackServiceMock, setClientDisplayName(kClientDisplayName));
     EXPECT_CALL(m_playbackServiceMock, switchToInactive());
     EXPECT_CALL(m_cdmServiceMock, switchToInactive());
     EXPECT_CALL(m_applicationManagementServerMock, sendStateChangedEvent(SessionServerState::INACTIVE))
         .WillOnce(Return(false));
     EXPECT_TRUE(m_sut);
-    EXPECT_FALSE(m_sut->setConfiguration(sessionManagementSocket, SessionServerState::INACTIVE, maxResource,
-                                         clientDisplayName, sessionManagementSocketPermissions, kSocketOwner,
+    EXPECT_FALSE(m_sut->setConfiguration(kSessionManagementSocket, SessionServerState::INACTIVE, kMaxResource,
+                                         kClientDisplayName, kSessionManagementSocketPermissions, kSocketOwner,
                                          kSocketGroup));
 }
 
 void SessionServerManagerTests::willSetConfiguration()
 {
     EXPECT_CALL(m_sessionManagementServerMock,
-                initialize(sessionManagementSocket, sessionManagementSocketPermissions, kSocketOwner, kSocketGroup))
+                initialize(kSessionManagementSocket, kSessionManagementSocketPermissions, kSocketOwner, kSocketGroup))
         .WillOnce(Return(true));
     EXPECT_CALL(m_sessionManagementServerMock, start());
-    EXPECT_CALL(m_playbackServiceMock, setMaxPlaybacks(maxPlaybacks));
-    EXPECT_CALL(m_playbackServiceMock, setMaxWebAudioPlayers(maxWebAudioPlayers));
-    EXPECT_CALL(m_playbackServiceMock, setClientDisplayName(clientDisplayName));
+    EXPECT_CALL(m_playbackServiceMock, setMaxPlaybacks(kMaxPlaybacks));
+    EXPECT_CALL(m_playbackServiceMock, setMaxWebAudioPlayers(kMaxWebAudioPlayers));
+    EXPECT_CALL(m_playbackServiceMock, setClientDisplayName(kClientDisplayName));
     EXPECT_CALL(m_playbackServiceMock, switchToInactive());
     EXPECT_CALL(m_cdmServiceMock, switchToInactive());
     EXPECT_CALL(m_controlServiceMock, setApplicationState(ApplicationState::INACTIVE));
     EXPECT_CALL(m_applicationManagementServerMock, sendStateChangedEvent(SessionServerState::INACTIVE))
         .WillOnce(Return(true));
     EXPECT_TRUE(m_sut);
-    EXPECT_TRUE(m_sut->setConfiguration(sessionManagementSocket, SessionServerState::INACTIVE, maxResource,
-                                        clientDisplayName, sessionManagementSocketPermissions, kSocketOwner,
+    EXPECT_TRUE(m_sut->setConfiguration(kSessionManagementSocket, SessionServerState::INACTIVE, kMaxResource,
+                                        kClientDisplayName, kSessionManagementSocketPermissions, kSocketOwner,
                                         kSocketGroup));
 }
 
@@ -280,7 +280,7 @@ void SessionServerManagerTests::willSetStateNotRunning()
 
 void SessionServerManagerTests::willPing()
 {
-    EXPECT_CALL(m_heartbeatProcedureFactoryMock, createHeartbeatProcedure(_, pingId))
+    EXPECT_CALL(m_heartbeatProcedureFactoryMock, createHeartbeatProcedure(_, kPingId))
         .WillOnce(Return(m_heartbeatProcedureMock));
     EXPECT_CALL(m_cdmServiceMock, ping(_));
     EXPECT_CALL(m_playbackServiceMock, ping(_));
@@ -289,7 +289,7 @@ void SessionServerManagerTests::willPing()
 
 void SessionServerManagerTests::willFailToPing()
 {
-    EXPECT_CALL(m_heartbeatProcedureFactoryMock, createHeartbeatProcedure(_, pingId))
+    EXPECT_CALL(m_heartbeatProcedureFactoryMock, createHeartbeatProcedure(_, kPingId))
         .WillOnce(Return(m_heartbeatProcedureMock));
     EXPECT_CALL(m_cdmServiceMock, ping(_));
     EXPECT_CALL(m_playbackServiceMock, ping(_));
@@ -298,7 +298,7 @@ void SessionServerManagerTests::willFailToPing()
 
 void SessionServerManagerTests::willSetLogLevels()
 {
-    EXPECT_CALL(m_sessionManagementServerMock, setLogLevels(logLvl, logLvl, logLvl, logLvl));
+    EXPECT_CALL(m_sessionManagementServerMock, setLogLevels(kLogLvl, kLogLvl, kLogLvl, kLogLvl));
 }
 
 void SessionServerManagerTests::setStateShouldFail(const SessionServerState &state)
@@ -322,17 +322,17 @@ void SessionServerManagerTests::triggerStartService()
 void SessionServerManagerTests::triggerSetLogLevels()
 {
     EXPECT_TRUE(m_sut);
-    m_sut->setLogLevels(logLvl, logLvl, logLvl, logLvl, logLvl, logLvl);
+    m_sut->setLogLevels(kLogLvl, kLogLvl, kLogLvl, kLogLvl, kLogLvl, kLogLvl);
 }
 
 void SessionServerManagerTests::pingShouldSucceed()
 {
     EXPECT_TRUE(m_sut);
-    EXPECT_TRUE(m_sut->ping(pingId, m_ackSenderMock));
+    EXPECT_TRUE(m_sut->ping(kPingId, m_ackSenderMock));
 }
 
 void SessionServerManagerTests::pingShouldFail()
 {
     EXPECT_TRUE(m_sut);
-    EXPECT_FALSE(m_sut->ping(pingId, m_ackSenderMock));
+    EXPECT_FALSE(m_sut->ping(kPingId, m_ackSenderMock));
 }

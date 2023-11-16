@@ -70,15 +70,15 @@ public:
 
 TEST_F(GstWebAudioPlayerTest, shouldSetCaps)
 {
-    const std::string audioMimeType{"audio/x-raw"};
+    const std::string kAudioMimeType{"audio/x-raw"};
     std::shared_ptr<const WebAudioConfig> config = std::make_shared<const WebAudioConfig>();
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createSetCaps(_, audioMimeType, webAudioConfigMatcher(config)))
+    EXPECT_CALL(m_taskFactoryMock, createSetCaps(_, kAudioMimeType, webAudioConfigMatcher(config)))
         .WillOnce(Return(ByMove(std::move(task))));
     executeTaskWhenEnqueued();
 
-    m_sut->setCaps(audioMimeType, config);
+    m_sut->setCaps(kAudioMimeType, config);
 }
 
 TEST_F(GstWebAudioPlayerTest, shouldPlay)

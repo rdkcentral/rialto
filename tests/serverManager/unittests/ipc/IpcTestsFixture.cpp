@@ -130,16 +130,16 @@ void IpcTests::triggerRemoveClient()
 bool IpcTests::triggerPerformSetConfiguration()
 {
     EXPECT_TRUE(m_sut);
-    const auto initialState{firebolt::rialto::common::SessionServerState::INACTIVE};
-    const std::string socketName{getenv("RIALTO_SOCKET_PATH")};
-    const std::string clientSocketName{"westeros-rialto"};
-    constexpr firebolt::rialto::common::MaxResourceCapabilitites maxResource{2, 1};
+    const auto kInitialState{firebolt::rialto::common::SessionServerState::INACTIVE};
+    const std::string kSocketName{getenv("RIALTO_SOCKET_PATH")};
+    const std::string kClientSocketName{"westeros-rialto"};
+    constexpr firebolt::rialto::common::MaxResourceCapabilitites kMaxResource{2, 1};
     constexpr unsigned int kSocketPermissions{0777};
     // Empty strings for kSocketOwner and kSocketGroup means that chown() won't be called. This will leave the created
     // socket being owned by the user executing the code (and the group would be their primary group)
     const std::string kSocketOwner{};
     const std::string kSocketGroup{};
-    return m_sut->performSetConfiguration(kServerId, initialState, socketName, clientSocketName, maxResource,
+    return m_sut->performSetConfiguration(kServerId, kInitialState, kSocketName, kClientSocketName, kMaxResource,
                                           kSocketPermissions, kSocketOwner, kSocketGroup);
 }
 

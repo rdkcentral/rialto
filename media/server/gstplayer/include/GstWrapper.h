@@ -332,9 +332,9 @@ public:
 #if (GLIB_CHECK_VERSION(2, 67, 3))
         GstBuffer *tmp = gst_buffer_new_wrapped(g_memdup2(data, size), size);
 #else
-        const gsize byte_size = static_cast<gsize>(size);
-        assert(byte_size >= 0);
-        GstBuffer *tmp = gst_buffer_new_wrapped(g_memdup(data, byte_size), size);
+        const gsize kByteSize = static_cast<gsize>(size);
+        assert(kByteSize >= 0);
+        GstBuffer *tmp = gst_buffer_new_wrapped(g_memdup(data, kByteSize), size);
 #endif
         GstCaps *gst_caps = gst_codec_utils_opus_create_caps_from_header(tmp, NULL);
         gst_buffer_unref(tmp);

@@ -21,9 +21,9 @@
 
 MATCHER_P(getKeyStoreHashRequestMatcher, mediaKeysHandle, "")
 {
-    const ::firebolt::rialto::GetKeyStoreHashRequest *request =
+    const ::firebolt::rialto::GetKeyStoreHashRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::GetKeyStoreHashRequest *>(arg);
-    return (request->media_keys_handle() == mediaKeysHandle);
+    return (kRequest->media_keys_handle() == mediaKeysHandle);
 }
 
 class RialtoClientMediaKeysIpcGetKeyStoreHashTest : public MediaKeysIpcTestBase
