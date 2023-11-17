@@ -740,15 +740,10 @@ void GstGenericPlayer::setEos(const firebolt::rialto::MediaSourceType &type)
 bool GstGenericPlayer::setWesterossinkRectangle()
 {
     bool result = false;
-    GstElement *videoSink = nullptr;
-    if (nullptr == m_context.autoVideoChildSink)
+    GstElement *videoSink = m_context.autoVideoChildSink;
+    if (!videoSink)
     {
         m_glibWrapper->gObjectGet(m_context.pipeline, "video-sink", &videoSink, nullptr);
-    }
-    else
-    {
-        // For autovideosink we need to check the child sink for the property
-        videoSink = m_context.autoVideoChildSink;
     }
 
     if (videoSink && m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink), "rectangle"))
@@ -925,14 +920,7 @@ void GstGenericPlayer::updateAutoVideoSinkChild(GObject* object)
         RIALTO_SERVER_LOG_WARN("AutoVideoSink child is been overwritten");
     }
 
-    if (object)
-    {
-        m_context.autoVideoChildSink = GST_ELEMENT(object);
-    }
-    else
-    {
-        m_context.autoVideoChildSink = nullptr;
-    }
+    m_context.autoVideoChildSink = (object) ? GST_ELEMENT(object) : nullptr;
 }
 
 bool GstGenericPlayer::shouldEnableNativeAudio()
