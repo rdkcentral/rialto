@@ -38,11 +38,11 @@ InitDataType covertInitDataType(GenerateRequestRequest_InitDataType protoInitDat
 
 MATCHER_P4(generateRequestRequestMatcher, mediaKeysHandle, keySessionId, initDataType, initData, "")
 {
-    const ::firebolt::rialto::GenerateRequestRequest *request =
+    const ::firebolt::rialto::GenerateRequestRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::GenerateRequestRequest *>(arg);
-    return ((request->media_keys_handle() == mediaKeysHandle) && (request->key_session_id() == keySessionId) &&
-            (covertInitDataType(request->init_data_type()) == initDataType) &&
-            (std::vector<std::uint8_t>{request->init_data().begin(), request->init_data().end()} == initData));
+    return ((kRequest->media_keys_handle() == mediaKeysHandle) && (kRequest->key_session_id() == keySessionId) &&
+            (covertInitDataType(kRequest->init_data_type()) == initDataType) &&
+            (std::vector<std::uint8_t>{kRequest->init_data().begin(), kRequest->init_data().end()} == initData));
 }
 
 class RialtoClientMediaKeysIpcGenerateRequestTest : public MediaKeysIpcTestBase

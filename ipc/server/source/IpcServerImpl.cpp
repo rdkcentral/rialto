@@ -110,16 +110,16 @@ ServerImpl::~ServerImpl()
 
     for (const auto &entry : m_sockets)
     {
-        const Socket &socket = entry.second;
+        const Socket &kSocket = entry.second;
 
-        if (unlink(socket.sockPath.c_str()) != 0)
-            RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to remove socket @ '%s'", socket.sockPath.c_str());
-        if (close(socket.sockFd) != 0)
+        if (unlink(kSocket.sockPath.c_str()) != 0)
+            RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to remove socket @ '%s'", kSocket.sockPath.c_str());
+        if (close(kSocket.sockFd) != 0)
             RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to close listening socket");
 
-        if (unlink(socket.lockPath.c_str()) != 0)
-            RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to remove socket lock file @ '%s'", socket.lockPath.c_str());
-        if (close(socket.lockFd) != 0)
+        if (unlink(kSocket.lockPath.c_str()) != 0)
+            RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to remove socket lock file @ '%s'", kSocket.lockPath.c_str());
+        if (close(kSocket.lockFd) != 0)
             RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to close socket lock file");
     }
 }
@@ -247,8 +247,8 @@ bool ServerImpl::addSocket(const std::string &socketPath,
     }
 
     // create an id for the listening socket
-    const uint64_t socketId = m_socketIdCounter++;
-    if (socketId >= FIRST_CLIENT_ID)
+    const uint64_t kSocketId = m_socketIdCounter++;
+    if (kSocketId >= FIRST_CLIENT_ID)
     {
         // should never happen, we'd run out of file descriptors before
         // we hit the 10k limit on listening sockets
@@ -259,7 +259,7 @@ bool ServerImpl::addSocket(const std::string &socketPath,
     }
 
     // add the socket to epoll
-    epoll_event event = {.events = EPOLLIN, .data = {.u64 = socketId}};
+    epoll_event event = {.events = EPOLLIN, .data = {.u64 = kSocketId}};
     if (epoll_ctl(m_pollFd, EPOLL_CTL_ADD, socket.sockFd, &event) != 0)
     {
         RIALTO_IPC_LOG_SYS_ERROR(errno, "epoll_ctl failed to add listening socket");
@@ -274,7 +274,7 @@ bool ServerImpl::addSocket(const std::string &socketPath,
 
     // add to the internal map
     std::lock_guard<std::mutex> locker(m_socketsLock);
-    m_sockets.emplace(socketId, std::move(socket));
+    m_sockets.emplace(kSocketId, std::move(socket));
 
     RIALTO_IPC_LOG_INFO("added listening socket '%s' to server", socketPath.c_str());
 
@@ -398,10 +398,10 @@ bool ServerImpl::process()
     }
 
     // read up to 32 events
-    const int maxEvents = 32;
-    struct epoll_event events[maxEvents];
+    const int kMaxEvents = 32;
+    struct epoll_event events[kMaxEvents];
 
-    int rc = TEMP_FAILURE_RETRY(epoll_wait(m_pollFd, events, maxEvents, 0));
+    int rc = TEMP_FAILURE_RETRY(epoll_wait(m_pollFd, events, kMaxEvents, 0));
     if (rc < 0)
     {
         RIALTO_IPC_LOG_SYS_ERROR(errno, "epoll_wait failed");
@@ -411,10 +411,10 @@ bool ServerImpl::process()
     // process the events (maybe 0 if timed out)
     for (int i = 0; i < rc; i++)
     {
-        const struct epoll_event &event = events[i];
+        const struct epoll_event &kEvent = events[i];
 
         // check if a wake event, in which case just clear the eventfd
-        if (event.data.u64 == WAKE_EVENT_ID)
+        if (kEvent.data.u64 == WAKE_EVENT_ID)
         {
             uint64_t ignore;
             if (TEMP_FAILURE_RETRY(::read(m_wakeEventFd, &ignore, sizeof(ignore))) != sizeof(ignore))
@@ -424,18 +424,18 @@ bool ServerImpl::process()
         }
 
         // check for events on the listening socket
-        else if (event.data.u64 < FIRST_CLIENT_ID)
+        else if (kEvent.data.u64 < FIRST_CLIENT_ID)
         {
-            if (event.events & EPOLLIN)
-                processNewConnection(event.data.u64);
-            if (event.events & EPOLLERR)
+            if (kEvent.events & EPOLLIN)
+                processNewConnection(kEvent.data.u64);
+            if (kEvent.events & EPOLLERR)
                 RIALTO_IPC_LOG_ERROR("error occurred on listening socket");
         }
 
         // otherwise, the event must have come from a socket
         else
         {
-            processClientSocket(event.data.u64, event.events);
+            processClientSocket(kEvent.data.u64, kEvent.events);
         }
     }
 
@@ -518,10 +518,10 @@ std::shared_ptr<ClientImpl> ServerImpl::addClientSocket(int socketFd, const std:
     }
 
     // create a new unique client id for the connection
-    const uint64_t clientId = m_clientIdCounter++;
+    const uint64_t kClientId = m_clientIdCounter++;
 
     // add the new socket to the poll loop
-    epoll_event event = {.events = EPOLLIN, .data = {.u64 = clientId}};
+    epoll_event event = {.events = EPOLLIN, .data = {.u64 = kClientId}};
     if (epoll_ctl(m_pollFd, EPOLL_CTL_ADD, socketFd, &event) != 0)
     {
         RIALTO_IPC_LOG_SYS_ERROR(errno, "epoll_ctl failed to add client socket");
@@ -529,7 +529,7 @@ std::shared_ptr<ClientImpl> ServerImpl::addClientSocket(int socketFd, const std:
     }
 
     // create initial client object for the socket
-    auto client = std::make_shared<ClientImpl>(shared_from_this(), clientId, clientCreds);
+    auto client = std::make_shared<ClientImpl>(shared_from_this(), kClientId, clientCreds);
 
     // and the details for the internal list
     ClientDetails clientDetails;
@@ -540,10 +540,10 @@ std::shared_ptr<ClientImpl> ServerImpl::addClientSocket(int socketFd, const std:
     // add to the set of clients
     {
         std::lock_guard<std::mutex> locker(m_clientsLock);
-        m_clients.emplace(clientId, clientDetails);
+        m_clients.emplace(kClientId, clientDetails);
     }
 
-    RIALTO_IPC_LOG_INFO("new client connected - giving id %" PRIu64, clientId);
+    RIALTO_IPC_LOG_INFO("new client connected - giving id %" PRIu64, kClientId);
 
     return client;
 }
@@ -572,27 +572,27 @@ void ServerImpl::processNewConnection(uint64_t socketId)
         return;
     }
 
-    const Socket &socket = it->second;
+    const Socket &kSocket = it->second;
 
     // accept the connection from the client
     struct sockaddr clientAddr = {0};
     socklen_t clientAddrLen = sizeof(clientAddr);
 
-    int clientSock = accept4(socket.sockFd, &clientAddr, &clientAddrLen, SOCK_NONBLOCK | SOCK_CLOEXEC);
+    int clientSock = accept4(kSocket.sockFd, &clientAddr, &clientAddrLen, SOCK_NONBLOCK | SOCK_CLOEXEC);
     if (clientSock < 0)
     {
         RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to accept client connection");
         return;
     }
 
-    const std::string sockPath = socket.sockPath;
-    std::function<void(const std::shared_ptr<IClient> &)> connectedCb = socket.connectedCb;
-    std::function<void(const std::shared_ptr<IClient> &)> disconnectedCb = socket.disconnectedCb;
+    const std::string kSockPath = kSocket.sockPath;
+    std::function<void(const std::shared_ptr<IClient> &)> connectedCb = kSocket.connectedCb;
+    std::function<void(const std::shared_ptr<IClient> &)> disconnectedCb = kSocket.disconnectedCb;
 
     socketLocker.unlock();
 
     // attempt to add the socket to the client list
-    auto client = addClientSocket(clientSock, sockPath, std::move(disconnectedCb));
+    auto client = addClientSocket(clientSock, kSockPath, std::move(disconnectedCb));
     if (!client)
     {
         close(clientSock);
@@ -625,22 +625,22 @@ static std::vector<FileDescriptor> readMessageFds(const struct msghdr *msg, size
     {
         if ((cmsg->cmsg_level == SOL_SOCKET) && (cmsg->cmsg_type == SCM_RIGHTS))
         {
-            const unsigned fdsLength = cmsg->cmsg_len - CMSG_LEN(0);
-            if ((fdsLength < sizeof(int)) || ((fdsLength % sizeof(int)) != 0))
+            const unsigned kFdsLength = cmsg->cmsg_len - CMSG_LEN(0);
+            if ((kFdsLength < sizeof(int)) || ((kFdsLength % sizeof(int)) != 0))
             {
                 RIALTO_IPC_LOG_ERROR("invalid fd array size");
             }
             else
             {
-                const size_t n = fdsLength / sizeof(int);
+                const size_t n = kFdsLength / sizeof(int);
                 RIALTO_IPC_LOG_DEBUG("received %zu fds", n);
 
                 fds.reserve(std::min(limit, n));
 
-                const int *fds_ = reinterpret_cast<int *>(CMSG_DATA(cmsg));
+                const int *kFds = reinterpret_cast<int *>(CMSG_DATA(cmsg));
                 for (size_t i = 0; i < n; i++)
                 {
-                    RIALTO_IPC_LOG_DEBUG("received fd %d", fds_[i]);
+                    RIALTO_IPC_LOG_DEBUG("received fd %d", kFds[i]);
 
                     if (fds.size() >= limit)
                     {
@@ -649,7 +649,7 @@ static std::vector<FileDescriptor> readMessageFds(const struct msghdr *msg, size
                     }
                     else
                     {
-                        FileDescriptor fd(fds_[i]);
+                        FileDescriptor fd(kFds[i]);
                         if (!fd.isValid())
                         {
                             RIALTO_IPC_LOG_ERROR("received invalid fd (couldn't dup)");
@@ -660,7 +660,7 @@ static std::vector<FileDescriptor> readMessageFds(const struct msghdr *msg, size
                         }
                     }
 
-                    if (close(fds_[i]) != 0)
+                    if (close(kFds[i]) != 0)
                     {
                         RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to close received fd");
                     }
@@ -699,7 +699,7 @@ void ServerImpl::processClientSocket(uint64_t clientId, unsigned events)
     }
 
     // get the socket that corresponds to the client connection
-    const int sockFd = it->second.sock;
+    const int kSockFd = it->second.sock;
 
     // get the client object
     std::shared_ptr<ClientImpl> clientObj = it->second.client;
@@ -731,7 +731,7 @@ void ServerImpl::processClientSocket(uint64_t clientId, unsigned events)
             msg.msg_controllen = sizeof(m_recvCtrlBuf);
 
             // read one message
-            ssize_t rd = TEMP_FAILURE_RETRY(recvmsg(sockFd, &msg, MSG_CMSG_CLOEXEC));
+            ssize_t rd = TEMP_FAILURE_RETRY(recvmsg(kSockFd, &msg, MSG_CMSG_CLOEXEC));
             if (rd < 0)
             {
                 if (errno != EWOULDBLOCK)
@@ -788,13 +788,13 @@ static bool addRequestFileDescriptors(google::protobuf::Message *request, const 
 {
     auto fdIterator = requestFds.begin();
 
-    const google::protobuf::Descriptor *descriptor = request->GetDescriptor();
-    const google::protobuf::Reflection *reflection = nullptr;
+    const google::protobuf::Descriptor *kDescriptor = request->GetDescriptor();
+    const google::protobuf::Reflection *kReflection = nullptr;
 
-    const int n = descriptor->field_count();
+    const int n = kDescriptor->field_count();
     for (int i = 0; i < n; i++)
     {
-        auto fieldDescriptor = descriptor->field(i);
+        auto fieldDescriptor = kDescriptor->field(i);
         if (fieldDescriptor->options().HasExtension(field_is_fd) && fieldDescriptor->options().GetExtension(field_is_fd))
         {
             if (fieldDescriptor->type() != google::protobuf::FieldDescriptor::TYPE_INT32)
@@ -803,12 +803,12 @@ static bool addRequestFileDescriptors(google::protobuf::Message *request, const 
                 return false;
             }
 
-            if (!reflection)
+            if (!kReflection)
             {
-                reflection = request->GetReflection();
+                kReflection = request->GetReflection();
             }
 
-            if (reflection->HasField(*request, fieldDescriptor))
+            if (kReflection->HasField(*request, fieldDescriptor))
             {
                 if (fdIterator == requestFds.end())
                 {
@@ -816,7 +816,7 @@ static bool addRequestFileDescriptors(google::protobuf::Message *request, const 
                     return false;
                 }
 
-                reflection->SetInt32(request, fieldDescriptor, fdIterator->fd());
+                kReflection->SetInt32(request, fieldDescriptor, fdIterator->fd());
                 ++fdIterator;
             }
         }
@@ -873,34 +873,34 @@ void ServerImpl::processMethodCall(const std::shared_ptr<ClientImpl> &client, co
                                    const std::vector<FileDescriptor> &fds)
 {
     // try and find the service with the given name
-    const std::string &serviceName = call.service_name();
-    auto it = client->m_services.find(serviceName);
+    const std::string &kServiceName = call.service_name();
+    auto it = client->m_services.find(kServiceName);
     if (it == client->m_services.end())
     {
-        RIALTO_IPC_LOG_ERROR("unknown service request '%s'", serviceName.c_str());
+        RIALTO_IPC_LOG_ERROR("unknown service request '%s'", kServiceName.c_str());
 
-        sendErrorReply(client, call.serial_id(), "Unknown service '%s'", serviceName.c_str());
+        sendErrorReply(client, call.serial_id(), "Unknown service '%s'", kServiceName.c_str());
         return;
     }
 
     std::shared_ptr<google::protobuf::Service> service = it->second;
 
     // try and find the method
-    const std::string &methodName = call.method_name();
-    const google::protobuf::MethodDescriptor *method = service->GetDescriptor()->FindMethodByName(methodName);
-    if (!method)
+    const std::string &kMethodName = call.method_name();
+    const google::protobuf::MethodDescriptor *kMethod = service->GetDescriptor()->FindMethodByName(kMethodName);
+    if (!kMethod)
     {
-        RIALTO_IPC_LOG_ERROR("no method with name '%s'", methodName.c_str());
+        RIALTO_IPC_LOG_ERROR("no method with name '%s'", kMethodName.c_str());
 
-        sendErrorReply(client, call.serial_id(), "Unknown method '%s'", methodName.c_str());
+        sendErrorReply(client, call.serial_id(), "Unknown method '%s'", kMethodName.c_str());
         return;
     }
 
     // check if the method is expecting a reply
-    const bool noReply = method->options().HasExtension(no_reply) && method->options().GetExtension(no_reply);
+    const bool kNoReply = kMethod->options().HasExtension(no_reply) && kMethod->options().GetExtension(no_reply);
 
     // parse the request data
-    google::protobuf::Message *requestMessage = service->GetRequestPrototype(method).New();
+    google::protobuf::Message *requestMessage = service->GetRequestPrototype(kMethod).New();
     if (!requestMessage->ParseFromString(call.request_message()))
     {
         RIALTO_IPC_LOG_ERROR("failed to parse method from array");
@@ -911,27 +911,27 @@ void ServerImpl::processMethodCall(const std::shared_ptr<ClientImpl> &client, co
     }
     else
     {
-        RIALTO_IPC_LOG_DEBUG("call{ serial %" PRIu64 " } - %s.%s { %s }", call.serial_id(), serviceName.c_str(),
-                             methodName.c_str(), requestMessage->ShortDebugString().c_str());
+        RIALTO_IPC_LOG_DEBUG("call{ serial %" PRIu64 " } - %s.%s { %s }", call.serial_id(), kServiceName.c_str(),
+                             kMethodName.c_str(), requestMessage->ShortDebugString().c_str());
 
         auto *controller = new ServerControllerImpl(client, call.serial_id());
 
-        if (noReply)
+        if (kNoReply)
         {
             // we should not send a reply for this call, so call the code to handle the
             // request, but no need to pass a controller, response or closure object
             static google::protobuf::internal::FunctionClosure0 nullClosure(&google::protobuf::DoNothing, false);
-            service->CallMethod(method, controller, requestMessage, nullptr, &nullClosure);
+            service->CallMethod(kMethod, controller, requestMessage, nullptr, &nullClosure);
 
             delete controller;
         }
         else
         {
             // create a response
-            google::protobuf::Message *responseMessage = service->GetResponsePrototype(method).New();
+            google::protobuf::Message *responseMessage = service->GetResponsePrototype(kMethod).New();
 
             // this is finally where we call the service implementation to process the request
-            service->CallMethod(method, controller, requestMessage, responseMessage,
+            service->CallMethod(kMethod, controller, requestMessage, responseMessage,
                                 google::protobuf::NewCallback(this, &ServerImpl::handleResponse, controller,
                                                               responseMessage));
         }
@@ -1014,17 +1014,17 @@ void ServerImpl::handleResponse(ServerControllerImpl *controller, google::protob
         return;
     }
 
-    const std::shared_ptr<const ClientImpl> client = controller->m_kClient;
-    const uint64_t clientId = client->id();
+    const std::shared_ptr<const ClientImpl> kClient = controller->m_kClient;
+    const uint64_t kClientId = kClient->id();
 
     std::shared_ptr<msghdr> message;
     if (!controller->m_failed)
     {
-        message = populateReply(client, controller->m_kSerialId, response);
+        message = populateReply(kClient, controller->m_kSerialId, response);
     }
     else
     {
-        message = populateErrorReply(client, controller->m_kSerialId, controller->m_failureReason);
+        message = populateErrorReply(kClient, controller->m_kSerialId, controller->m_failureReason);
     }
 
     // no longer need the controller or the response objects
@@ -1032,7 +1032,7 @@ void ServerImpl::handleResponse(ServerControllerImpl *controller, google::protob
     delete controller;
 
     // send the reply message to the given client
-    sendReply(clientId, message);
+    sendReply(kClientId, message);
 }
 
 // -----------------------------------------------------------------------------
@@ -1053,13 +1053,13 @@ static std::vector<int> getResponseFileDescriptors(google::protobuf::Message *re
     std::vector<int> fds;
 
     // process any file descriptors from the response message
-    const google::protobuf::Descriptor *descriptor = response->GetDescriptor();
-    const google::protobuf::Reflection *reflection = nullptr;
+    const google::protobuf::Descriptor *kDescriptor = response->GetDescriptor();
+    const google::protobuf::Reflection *kReflection = nullptr;
 
-    const int n = descriptor->field_count();
+    const int n = kDescriptor->field_count();
     for (int i = 0; i < n; i++)
     {
-        auto fieldDescriptor = descriptor->field(i);
+        auto fieldDescriptor = kDescriptor->field(i);
         if (fieldDescriptor->options().HasExtension(field_is_fd) && fieldDescriptor->options().GetExtension(field_is_fd))
         {
             if (fieldDescriptor->type() != google::protobuf::FieldDescriptor::TYPE_INT32)
@@ -1068,15 +1068,15 @@ static std::vector<int> getResponseFileDescriptors(google::protobuf::Message *re
                 return {};
             }
 
-            if (!reflection)
+            if (!kReflection)
             {
-                reflection = response->GetReflection();
+                kReflection = response->GetReflection();
             }
 
-            if (reflection->HasField(*response, fieldDescriptor))
+            if (kReflection->HasField(*response, fieldDescriptor))
             {
-                fds.push_back(reflection->GetInt32(*response, fieldDescriptor));
-                reflection->SetInt32(response, fieldDescriptor, -1);
+                fds.push_back(kReflection->GetInt32(*response, fieldDescriptor));
+                kReflection->SetInt32(response, fieldDescriptor, -1);
             }
         }
     }
@@ -1113,14 +1113,14 @@ std::shared_ptr<msghdr> ServerImpl::populateReply(const std::shared_ptr<const Cl
 
     // next need to check if the response message has any file descriptors in
     // it that need to be attached
-    const std::vector<int> fds = getResponseFileDescriptors(response);
-    const size_t requiredCtrlLen = fds.empty() ? 0 : CMSG_SPACE(sizeof(int) * fds.size());
+    const std::vector<int> kFds = getResponseFileDescriptors(response);
+    const size_t kRequiredCtrlLen = kFds.empty() ? 0 : CMSG_SPACE(sizeof(int) * kFds.size());
 
     // calculate the size of the reply
-    const size_t requiredDataLen = message.ByteSizeLong();
-    if (requiredDataLen > m_kMaxMessageLen)
+    const size_t kRequiredDataLen = message.ByteSizeLong();
+    if (kRequiredDataLen > m_kMaxMessageLen)
     {
-        RIALTO_IPC_LOG_ERROR("reply exceeds maximum message limit (%zu, max %zu)", requiredDataLen, m_kMaxMessageLen);
+        RIALTO_IPC_LOG_ERROR("reply exceeds maximum message limit (%zu, max %zu)", kRequiredDataLen, m_kMaxMessageLen);
 
         // error message is too big, replace with a generic error
         return populateErrorReply(client, serialId, "Internal error - reply message to large");
@@ -1128,28 +1128,28 @@ std::shared_ptr<msghdr> ServerImpl::populateReply(const std::shared_ptr<const Cl
 
     // build the socket message to send
     auto msgBuf =
-        m_sendBufPool.allocateShared<uint8_t>(sizeof(msghdr) + sizeof(iovec) + requiredCtrlLen + requiredDataLen);
+        m_sendBufPool.allocateShared<uint8_t>(sizeof(msghdr) + sizeof(iovec) + kRequiredCtrlLen + kRequiredDataLen);
 
     auto *header = reinterpret_cast<msghdr *>(msgBuf.get());
     bzero(header, sizeof(msghdr));
 
     auto *ctrl = reinterpret_cast<uint8_t *>(msgBuf.get() + sizeof(msghdr));
     header->msg_control = ctrl;
-    header->msg_controllen = requiredCtrlLen;
+    header->msg_controllen = kRequiredCtrlLen;
 
-    auto *iov = reinterpret_cast<iovec *>(msgBuf.get() + sizeof(msghdr) + requiredCtrlLen);
+    auto *iov = reinterpret_cast<iovec *>(msgBuf.get() + sizeof(msghdr) + kRequiredCtrlLen);
     header->msg_iov = iov;
     header->msg_iovlen = 1;
 
-    auto *data = reinterpret_cast<uint8_t *>(msgBuf.get() + sizeof(msghdr) + requiredCtrlLen + sizeof(iovec));
+    auto *data = reinterpret_cast<uint8_t *>(msgBuf.get() + sizeof(msghdr) + kRequiredCtrlLen + sizeof(iovec));
     iov->iov_base = data;
-    iov->iov_len = requiredDataLen;
+    iov->iov_len = kRequiredDataLen;
 
     // copy in the data
     message.SerializeWithCachedSizesToArray(data);
 
     // add the fds
-    if (!fds.empty())
+    if (!kFds.empty())
     {
         struct cmsghdr *cmsg = CMSG_FIRSTHDR(header);
         if (!cmsg)
@@ -1160,8 +1160,8 @@ std::shared_ptr<msghdr> ServerImpl::populateReply(const std::shared_ptr<const Cl
 
         cmsg->cmsg_level = SOL_SOCKET;
         cmsg->cmsg_type = SCM_RIGHTS;
-        cmsg->cmsg_len = CMSG_LEN(sizeof(int) * fds.size());
-        memcpy(CMSG_DATA(cmsg), fds.data(), sizeof(int) * fds.size());
+        cmsg->cmsg_len = CMSG_LEN(sizeof(int) * kFds.size());
+        memcpy(CMSG_DATA(cmsg), kFds.data(), sizeof(int) * kFds.size());
         header->msg_controllen = cmsg->cmsg_len;
     }
 
@@ -1269,8 +1269,8 @@ void ServerImpl::disconnectClient(uint64_t clientId)
 bool ServerImpl::sendEvent(uint64_t clientId, const std::shared_ptr<google::protobuf::Message> &eventMessage)
 {
     // gets the file descriptors from the event message
-    const std::vector<int> fds = getResponseFileDescriptors(eventMessage.get());
-    const size_t requiredCtrlLen = fds.empty() ? 0 : CMSG_SPACE(sizeof(int) * fds.size());
+    const std::vector<int> kFds = getResponseFileDescriptors(eventMessage.get());
+    const size_t kRequiredCtrlLen = kFds.empty() ? 0 : CMSG_SPACE(sizeof(int) * kFds.size());
 
     // create the base reply
     transport::MessageFromServer message;
@@ -1300,20 +1300,20 @@ bool ServerImpl::sendEvent(uint64_t clientId, const std::shared_ptr<google::prot
 
     // build the socket message to send
     auto msgBuf =
-        m_sendBufPool.allocateShared<uint8_t>(sizeof(msghdr) + sizeof(iovec) + requiredCtrlLen + requiredDataLen);
+        m_sendBufPool.allocateShared<uint8_t>(sizeof(msghdr) + sizeof(iovec) + kRequiredCtrlLen + requiredDataLen);
 
     auto *header = reinterpret_cast<msghdr *>(msgBuf.get());
     bzero(header, sizeof(msghdr));
 
     auto *ctrl = reinterpret_cast<uint8_t *>(msgBuf.get() + sizeof(msghdr));
     header->msg_control = ctrl;
-    header->msg_controllen = requiredCtrlLen;
+    header->msg_controllen = kRequiredCtrlLen;
 
-    auto *iov = reinterpret_cast<iovec *>(msgBuf.get() + sizeof(msghdr) + requiredCtrlLen);
+    auto *iov = reinterpret_cast<iovec *>(msgBuf.get() + sizeof(msghdr) + kRequiredCtrlLen);
     header->msg_iov = iov;
     header->msg_iovlen = 1;
 
-    auto *data = reinterpret_cast<uint8_t *>(msgBuf.get() + sizeof(msghdr) + requiredCtrlLen + sizeof(iovec));
+    auto *data = reinterpret_cast<uint8_t *>(msgBuf.get() + sizeof(msghdr) + kRequiredCtrlLen + sizeof(iovec));
     iov->iov_base = data;
     iov->iov_len = requiredDataLen;
 
@@ -1321,7 +1321,7 @@ bool ServerImpl::sendEvent(uint64_t clientId, const std::shared_ptr<google::prot
     message.SerializeWithCachedSizesToArray(data);
 
     // add the fds
-    if (!fds.empty())
+    if (!kFds.empty())
     {
         struct cmsghdr *cmsg = CMSG_FIRSTHDR(header);
         if (!cmsg)
@@ -1332,8 +1332,8 @@ bool ServerImpl::sendEvent(uint64_t clientId, const std::shared_ptr<google::prot
 
         cmsg->cmsg_level = SOL_SOCKET;
         cmsg->cmsg_type = SCM_RIGHTS;
-        cmsg->cmsg_len = CMSG_LEN(sizeof(int) * fds.size());
-        memcpy(CMSG_DATA(cmsg), fds.data(), sizeof(int) * fds.size());
+        cmsg->cmsg_len = CMSG_LEN(sizeof(int) * kFds.size());
+        memcpy(CMSG_DATA(cmsg), kFds.data(), sizeof(int) * kFds.size());
         header->msg_controllen = cmsg->cmsg_len;
     }
 

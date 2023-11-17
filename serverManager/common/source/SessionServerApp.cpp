@@ -36,11 +36,11 @@
 
 namespace
 {
-constexpr int maxPlaybackSessions{2};
-constexpr int maxWebAudioPlayers{1};
-const std::string sessionManagementSocketDefaultDir{"/tmp/"};
-const std::string sessionManagementSocketDefaultName{"rialto-"};
-const std::string logPathEnvVariable{"RIALTO_LOG_PATH"};
+constexpr int kMaxPlaybackSessions{2};
+constexpr int kMaxWebAudioPlayers{1};
+const std::string kSessionManagementSocketDefaultDir{"/tmp/"};
+const std::string kSessionManagementSocketDefaultName{"rialto-"};
+const std::string kLogPathEnvVariable{"RIALTO_LOG_PATH"};
 
 int generateServerId()
 {
@@ -51,7 +51,7 @@ int generateServerId()
 std::string generateSessionManagementSocketPath()
 {
     static int sessionNum{0};
-    return sessionManagementSocketDefaultDir + sessionManagementSocketDefaultName + std::to_string(sessionNum++);
+    return kSessionManagementSocketDefaultDir + kSessionManagementSocketDefaultName + std::to_string(sessionNum++);
 }
 
 std::string getSessionManagementSocketPath(const firebolt::rialto::common::AppConfig &appConfig)
@@ -69,7 +69,7 @@ std::string getSessionManagementSocketPath(const firebolt::rialto::common::AppCo
         return appConfig.clientIpcSocketName;
     }
     // Socket name
-    return sessionManagementSocketDefaultDir + appConfig.clientIpcSocketName;
+    return kSessionManagementSocketDefaultDir + appConfig.clientIpcSocketName;
 }
 } // namespace
 
@@ -148,21 +148,21 @@ bool SessionServerApp::launch()
         return false;
     }
     setupStartupTimer();
-    const int childSocket{m_socks[0]};
-    const bool result = spawnSessionServer();
+    const int kChildSocket{m_socks[0]};
+    const bool kResult = spawnSessionServer();
     std::unique_lock<std::mutex> lock{m_processStartupMutex};
     if (!m_processStartupCv.wait_for(lock, std::chrono::seconds{1}, [this]() { return m_childInitialized; }))
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("Child initialization failed. Timeout on waiting for process startup");
         return false;
     }
-    RIALTO_SERVER_MANAGER_LOG_DEBUG("Child initialized. Parent process will close the socket: %d now.", childSocket);
-    if (0 != m_linuxWrapper->close(childSocket))
+    RIALTO_SERVER_MANAGER_LOG_DEBUG("Child initialized. Parent process will close the socket: %d now.", kChildSocket);
+    if (0 != m_linuxWrapper->close(kChildSocket))
     {
-        RIALTO_SERVER_MANAGER_LOG_SYS_ERROR(errno, "Close of socket %d failed in parent process", childSocket);
+        RIALTO_SERVER_MANAGER_LOG_SYS_ERROR(errno, "Close of socket %d failed in parent process", kChildSocket);
     }
     m_socks[0] = -1;
-    return result;
+    return kResult;
 }
 
 bool SessionServerApp::isPreloaded() const
@@ -240,12 +240,12 @@ int SessionServerApp::getAppManagementSocketName() const
 
 int SessionServerApp::getMaxPlaybackSessions() const
 {
-    return maxPlaybackSessions; // temporarily hardcoded
+    return kMaxPlaybackSessions; // temporarily hardcoded
 }
 
 int SessionServerApp::getMaxWebAudioPlayers() const
 {
-    return maxWebAudioPlayers; // temporarily hardcoded
+    return kMaxWebAudioPlayers; // temporarily hardcoded
 }
 
 void SessionServerApp::cancelStartupTimer()
@@ -265,7 +265,7 @@ void SessionServerApp::cancelStartupTimerInternal()
 
 std::string SessionServerApp::addAppSuffixToLogFile(const std::string &envVar) const
 {
-    if (envVar.find(logPathEnvVariable) != std::string::npos)
+    if (envVar.find(kLogPathEnvVariable) != std::string::npos)
     {
         return envVar + "." + std::to_string(m_kServerId);
     }
@@ -376,8 +376,8 @@ bool SessionServerApp::spawnSessionServer()
                         devNull = -1;
                     }
                 }
-                const std::string appMgmtSocketStr{std::to_string(newSocket)};
-                char *const appArguments[] = {strdup(m_kSessionServerPath.c_str()), strdup(appMgmtSocketStr.c_str()),
+                const std::string kAppMgmtSocketStr{std::to_string(newSocket)};
+                char *const appArguments[] = {strdup(m_kSessionServerPath.c_str()), strdup(kAppMgmtSocketStr.c_str()),
                                               nullptr};
                 RIALTO_SERVER_MANAGER_LOG_DEBUG("PID: %d, executing: \"%s\" \"%s\"", m_linuxWrapper->getpid(),
                                                 appArguments[0], appArguments[1]);

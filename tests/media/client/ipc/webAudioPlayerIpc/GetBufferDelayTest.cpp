@@ -21,9 +21,9 @@
 
 MATCHER_P(WebAudioGetBufferDelayRequestMatcher, webAaudioPlayerHandle, "")
 {
-    const ::firebolt::rialto::WebAudioGetBufferDelayRequest *request =
+    const ::firebolt::rialto::WebAudioGetBufferDelayRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::WebAudioGetBufferDelayRequest *>(arg);
-    return ((request->web_audio_player_handle() == webAaudioPlayerHandle));
+    return ((kRequest->web_audio_player_handle() == webAaudioPlayerHandle));
 }
 
 class RialtoClientWebAudioPlayerIpcGetBufferDelayTest : public WebAudioPlayerIpcTestBase

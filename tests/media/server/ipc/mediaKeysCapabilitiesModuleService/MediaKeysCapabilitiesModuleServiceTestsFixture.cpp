@@ -34,8 +34,8 @@ using testing::SetArgReferee;
 namespace
 {
 const std::vector<std::string> keySystems{"expectedKeySystem1", "expectedKeySystem2", "expectedKeySystem3"};
-const std::string version{"123"};
-constexpr bool isKeySystemSupported{true};
+const std::string kVersion{"123"};
+constexpr bool kIsKeySystemSupported{true};
 } // namespace
 
 MediaKeysCapabilitiesModuleServiceTests::MediaKeysCapabilitiesModuleServiceTests()
@@ -70,7 +70,7 @@ void MediaKeysCapabilitiesModuleServiceTests::cdmServiceWillGetSupportedKeySyste
 {
     expectRequestSuccess();
     EXPECT_CALL(m_cdmServiceMock, getSupportedKeySystemVersion(keySystems[0], _))
-        .WillOnce(DoAll(SetArgReferee<1>(version), Return(true)));
+        .WillOnce(DoAll(SetArgReferee<1>(kVersion), Return(true)));
 }
 
 void MediaKeysCapabilitiesModuleServiceTests::cdmServiceWillFailToGetSupportedKeySystemVersion()
@@ -101,7 +101,7 @@ void MediaKeysCapabilitiesModuleServiceTests::sendSupportsKeySystemRequestAndRec
     request.set_key_system(keySystems[0]);
 
     m_service->supportsKeySystem(m_controllerMock.get(), &request, &response, m_closureMock.get());
-    EXPECT_EQ(response.is_supported(), isKeySystemSupported);
+    EXPECT_EQ(response.is_supported(), kIsKeySystemSupported);
 }
 
 void MediaKeysCapabilitiesModuleServiceTests::sendGetSupportedKeySystemVersionRequestAndReceiveResponse()
@@ -112,7 +112,7 @@ void MediaKeysCapabilitiesModuleServiceTests::sendGetSupportedKeySystemVersionRe
     request.set_key_system(keySystems[0]);
 
     m_service->getSupportedKeySystemVersion(m_controllerMock.get(), &request, &response, m_closureMock.get());
-    EXPECT_EQ(response.version(), version);
+    EXPECT_EQ(response.version(), kVersion);
 }
 
 void MediaKeysCapabilitiesModuleServiceTests::sendGetSupportedKeySystemVersionRequestAndExpectFailure()

@@ -250,32 +250,32 @@ static void rialtoLog(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, cons
         len += static_cast<int>(extra);
         mbuf[len] = '\0';
     }
-    const char *fname = nullptr;
+    const char *kFname = nullptr;
     if (file)
     {
-        if ((fname = strrchr(file, '/')) == nullptr)
-            fname = file;
+        if ((kFname = strrchr(file, '/')) == nullptr)
+            kFname = file;
         else
-            fname++;
+            kFname++;
     }
 
-    const auto &logFileHandle = firebolt::rialto::logging::LogFileHandle::instance();
+    const auto &kLogFileHandle = firebolt::rialto::logging::LogFileHandle::instance();
     /* If log handler had not been set, use default */
     if (g_logHandler[component])
     {
-        g_logHandler[component](level, fname, line, func, mbuf, len);
+        g_logHandler[component](level, kFname, line, func, mbuf, len);
     }
-    else if (g_envVariableParser.isFileLoggingEnabled() && logFileHandle.isOpen())
+    else if (g_envVariableParser.isFileLoggingEnabled() && kLogFileHandle.isOpen())
     {
-        fdLogHandler(logFileHandle.fd(), component, level, fname, line, func, mbuf, len);
+        fdLogHandler(kLogFileHandle.fd(), component, level, kFname, line, func, mbuf, len);
     }
     else if (g_envVariableParser.isConsoleLoggingEnabled())
     {
-        fdLogHandler(STDERR_FILENO, component, level, fname, line, func, mbuf, len);
+        fdLogHandler(STDERR_FILENO, component, level, kFname, line, func, mbuf, len);
     }
     else
     {
-        journaldLogHandler(component, level, fname, line, func, mbuf, len);
+        journaldLogHandler(component, level, kFname, line, func, mbuf, len);
     }
 }
 
@@ -298,27 +298,27 @@ void rialtoLogSysPrintf(RIALTO_COMPONENT component, int err, RIALTO_DEBUG_LEVEL 
                         const char *func, int line, const char *fmt, ...)
 {
     va_list ap;
-    const char *errmsg{nullptr};
+    const char *kErrmsg{nullptr};
     char appendbuf[96];
-    const char *append = nullptr;
+    const char *kAppend = nullptr;
 #if defined(__linux__)
     char errbuf[64];
-    errmsg = strerror_r(err, errbuf, sizeof(errbuf));
+    kErrmsg = strerror_r(err, errbuf, sizeof(errbuf));
 #elif defined(__APPLE__)
     char errbuf[64];
     if (strerror_r(err, errbuf, sizeof(errbuf)) != 0)
-        errmsg = "Unknown error";
+        kErrmsg = "Unknown error";
     else
-        errmsg = errbuf;
+        kErrmsg = errbuf;
 #endif
-    if (errmsg)
+    if (kErrmsg)
     {
-        snprintf(appendbuf, sizeof(appendbuf), " (%d - %s)", err, errmsg);
+        snprintf(appendbuf, sizeof(appendbuf), " (%d - %s)", err, kErrmsg);
         appendbuf[sizeof(appendbuf) - 1] = '\0';
-        append = appendbuf;
+        kAppend = appendbuf;
     }
     va_start(ap, fmt);
-    rialtoLog(component, level, file, func, line, fmt, ap, append);
+    rialtoLog(component, level, file, func, line, fmt, ap, kAppend);
     va_end(ap);
 }
 

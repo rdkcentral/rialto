@@ -189,10 +189,10 @@ TEST_F(RialtoIpcTest, MultiVarEvent)
  */
 TEST_F(RialtoIpcTest, Timeout)
 {
-    constexpr bool expectMessage{false};
+    constexpr bool kExpectMessage{false};
     ::google::protobuf::RpcController *controller;
     ::google::protobuf::Closure *done;
-    m_clientStub->startMessageThread(expectMessage);
+    m_clientStub->startMessageThread(kExpectMessage);
 
     EXPECT_CALL(*m_testModuleMock, TestRequestSingleVar(_, SingleVarRequestMatcher(m_int), _, _))
         .WillOnce(WithArgs<0, 3>(Invoke(
@@ -212,8 +212,8 @@ TEST_F(RialtoIpcTest, Timeout)
  */
 TEST_F(RialtoIpcTest, NoReply)
 {
-    constexpr bool expectMessage{false};
-    m_clientStub->startMessageThread(expectMessage);
+    constexpr bool kExpectMessage{false};
+    m_clientStub->startMessageThread(kExpectMessage);
 
     std::mutex messageReceivedMutex;
     std::condition_variable messageReceivedCond;

@@ -32,9 +32,9 @@ MATCHER_P(ShmInfoMatcher, shmInfo, "")
 
 MATCHER_P4(HaveDataRequestMatcher, sessionId, status, numFrames, requestId, "")
 {
-    const ::firebolt::rialto::HaveDataRequest *request = dynamic_cast<const ::firebolt::rialto::HaveDataRequest *>(arg);
-    return ((request->session_id() == sessionId) && (request->status() == status) &&
-            (request->request_id() == requestId) && (request->num_frames() == numFrames));
+    const ::firebolt::rialto::HaveDataRequest *kRequest = dynamic_cast<const ::firebolt::rialto::HaveDataRequest *>(arg);
+    return ((kRequest->session_id() == sessionId) && (kRequest->status() == status) &&
+            (kRequest->request_id() == requestId) && (kRequest->num_frames() == numFrames));
 }
 
 class RialtoClientMediaPipelineIpcDataTest : public MediaPipelineIpcTestBase

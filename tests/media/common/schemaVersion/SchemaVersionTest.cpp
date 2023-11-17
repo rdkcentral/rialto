@@ -32,10 +32,10 @@ TEST(SchemaVersionTests, shouldInitialize)
 
 TEST(SchemaVersionTests, shouldReturnCurrentSchemaVersion)
 {
-    const auto currentSchemaVersion{firebolt::rialto::common::getCurrentSchemaVersion()};
-    const std::string expectedSchemaVersion{std::string(PROJECT_VER_MAJOR) + "." + std::string(PROJECT_VER_MINOR) +
-                                            "." + std::string(PROJECT_VER_PATCH)};
-    EXPECT_EQ(currentSchemaVersion.str(), expectedSchemaVersion);
+    const auto kCurrentSchemaVersion{firebolt::rialto::common::getCurrentSchemaVersion()};
+    const std::string kExpectedSchemaVersion{std::string(PROJECT_VER_MAJOR) + "." + std::string(PROJECT_VER_MINOR) +
+                                             "." + std::string(PROJECT_VER_PATCH)};
+    EXPECT_EQ(kCurrentSchemaVersion.str(), kExpectedSchemaVersion);
 }
 
 TEST(SchemaVersionTests, shouldEqual)
