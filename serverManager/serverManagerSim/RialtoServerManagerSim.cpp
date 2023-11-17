@@ -26,29 +26,29 @@ namespace
 {
 std::string getSessionServerPath()
 {
-    const char *customPath = getenv("RIALTO_SESSION_SERVER_PATH");
-    if (customPath)
+    const char *kCustomPath = getenv("RIALTO_SESSION_SERVER_PATH");
+    if (kCustomPath)
     {
-        fprintf(stderr, "Using custom SessionServer path: %s", customPath);
-        return std::string(customPath);
+        fprintf(stderr, "Using custom SessionServer path: %s", kCustomPath);
+        return std::string(kCustomPath);
     }
     return "/usr/bin/RialtoServer";
 }
 
 std::chrono::milliseconds getStartupTimeout()
 {
-    const char *customTimeout = getenv("RIALTO_SESSION_SERVER_STARTUP_TIMEOUT_MS");
+    const char *kCustomTimeout = getenv("RIALTO_SESSION_SERVER_STARTUP_TIMEOUT_MS");
     std::chrono::milliseconds timeout{0};
-    if (customTimeout)
+    if (kCustomTimeout)
     {
         try
         {
-            timeout = std::chrono::milliseconds{std::stoull(customTimeout)};
-            fprintf(stderr, "Using custom SessionServer startup timeout: %sms", customTimeout);
+            timeout = std::chrono::milliseconds{std::stoull(kCustomTimeout)};
+            fprintf(stderr, "Using custom SessionServer startup timeout: %sms", kCustomTimeout);
         }
         catch (const std::exception &e)
         {
-            fprintf(stderr, "Custom SessionServer startup timeout invalid, ignoring: %s", customTimeout);
+            fprintf(stderr, "Custom SessionServer startup timeout invalid, ignoring: %s", kCustomTimeout);
         }
     }
     return timeout;
@@ -57,10 +57,10 @@ std::chrono::milliseconds getStartupTimeout()
 std::list<std::string> getEnvironmentVariables()
 {
     std::list<std::string> environmentVariables;
-    const char *sessionServerEnvVars = getenv("SESSION_SERVER_ENV_VARS");
-    if (sessionServerEnvVars)
+    const char *kSessionServerEnvVars = getenv("SESSION_SERVER_ENV_VARS");
+    if (kSessionServerEnvVars)
     {
-        std::string envVarsStr{sessionServerEnvVars};
+        std::string envVarsStr{kSessionServerEnvVars};
         size_t pos = 0;
         while ((pos = envVarsStr.find(";")) != std::string::npos)
         {
@@ -75,11 +75,11 @@ std::list<std::string> getEnvironmentVariables()
 unsigned getNumberOfPreloadedServers()
 try
 {
-    const char *numOfPreloadedServersEnvVar = getenv("RIALTO_PRELOADED_SERVERS");
-    if (numOfPreloadedServersEnvVar)
+    const char *kNumOfPreloadedServersEnvVar = getenv("RIALTO_PRELOADED_SERVERS");
+    if (kNumOfPreloadedServersEnvVar)
     {
-        fprintf(stderr, "Number of preloaded servers: %s", numOfPreloadedServersEnvVar);
-        return std::stoi(std::string(numOfPreloadedServersEnvVar));
+        fprintf(stderr, "Number of preloaded servers: %s", kNumOfPreloadedServersEnvVar);
+        return std::stoi(std::string(kNumOfPreloadedServersEnvVar));
     }
     return 0;
 }

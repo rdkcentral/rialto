@@ -283,6 +283,47 @@ jobs:
           key: ${{ runner.os }}-clientipc-coverage-${{ github.run_id }}-${{ github.run_number }}
 
   # This job sets up the repo with the dependancies then runs the common tests
+  run-playercommon:
+    name: Build and test playercommon unittests
+
+    # Runs on ubuntu
+    runs-on: ubuntu-22.04
+
+    # Timeout after
+    timeout-minutes: 10
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: checkout repo
+        uses: actions/checkout@v3
+
+      # Initialises the host ready to run unittests
+      - name: Initialise host
+        uses: ./.github/workflows/actions/init_ut
+
+      # Run the build script for playercommon
+      - name: build_ut.py script playercommon
+        run: |
+              python build_ut.py -c -xml -f -cov -s playercommon
+
+      # Processes the results of the unittests and the lcov output
+      - name: Process output
+        uses: ./.github/workflows/actions/process_results_ut
+        if: success() || failure()
+        with:
+          suite: 'playercommon'
+
+      # Cache lcov output
+      - name: Cache playercommon coverage
+        id: cache-playercommon-coverage
+        uses: actions/cache@v3
+        if: success()
+        with:
+          path: build/coverage-playercommon.info
+          key: ${{ runner.os }}-playercommon-coverage-${{ github.run_id }}-${{ github.run_number }}
+
+  # This job sets up the repo with the dependancies then runs the common tests
   run-common:
     name: Build and test common unittests
 
@@ -457,7 +498,7 @@ jobs:
     # Timeout after
     timeout-minutes: 10
 
-    needs: [run-servermain, run-servergstplayer, run-serveripc, run-serverservice, run-client, run-clientipc, run-common, run-logging, run-manager, run-ipc]
+    needs: [run-servermain, run-servergstplayer, run-serveripc, run-serverservice, run-client, run-clientipc, run-common, run-playercommon, run-logging, run-manager, run-ipc]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -538,6 +579,15 @@ jobs:
           path: build/coverage-common.info
           key: ${{ runner.os }}-common-coverage-${{ github.run_id }}-${{ github.run_number }}
 
+      # Get cached lcov playercommon output
+      - name: Get playercommon coverage
+        id: cache-playercommon-coverage
+        uses: actions/cache@v3
+        if: success()
+        with:
+          path: build/coverage-playercommon.info
+          key: ${{ runner.os }}-playercommon-coverage-${{ github.run_id }}-${{ github.run_number }}
+
       # Get cached lcov logging output
       - name: Get logging coverage
         id: cache-logging-coverage
@@ -570,7 +620,7 @@ jobs:
         run: |
           cd build
           lcov -a coverage-servermain.info -a coverage-servergstplayer.info -a coverage-serveripc.info -a coverage-serverservice.info \
-          -a coverage-client.info -a coverage-clientipc.info -a coverage-common.info -a coverage-logging.info -a coverage-manager.info \
+          -a coverage-client.info -a coverage-clientipc.info -a coverage-common.info -a coverage-playercommon.info -a coverage-logging.info -a coverage-manager.info \
           -a coverage-ipc.info -o coverage.info --filter brace,function,trivial
 
       - name: Generate html

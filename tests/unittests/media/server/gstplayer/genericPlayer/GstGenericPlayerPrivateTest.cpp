@@ -31,7 +31,7 @@ using testing::StrEq;
 
 namespace
 {
-constexpr std::chrono::milliseconds positionReportTimerMs{250};
+constexpr std::chrono::milliseconds kPositionReportTimerMs{250};
 constexpr int32_t kSampleRate{13};
 constexpr int32_t kNumberOfChannels{4};
 constexpr int32_t kInvalidSampleRate{0};
@@ -868,7 +868,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldChangePlaybackState)
 TEST_F(GstGenericPlayerPrivateTest, shouldStartPositionReportingTimer)
 {
     std::unique_ptr<common::ITimer> timerMock = std::make_unique<StrictMock<TimerMock>>();
-    EXPECT_CALL(*m_timerFactoryMock, createTimer(positionReportTimerMs, _, common::TimerType::PERIODIC))
+    EXPECT_CALL(*m_timerFactoryMock, createTimer(kPositionReportTimerMs, _, common::TimerType::PERIODIC))
         .WillOnce(Return(ByMove(std::move(timerMock))));
     m_sut->startPositionReportingAndCheckAudioUnderflowTimer();
 }
@@ -877,7 +877,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldNotStartPositionReportingTimerWhenItIs
 {
     std::unique_ptr<common::ITimer> timerMock = std::make_unique<StrictMock<TimerMock>>();
     EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*timerMock), isActive()).WillOnce(Return(true));
-    EXPECT_CALL(*m_timerFactoryMock, createTimer(positionReportTimerMs, _, common::TimerType::PERIODIC))
+    EXPECT_CALL(*m_timerFactoryMock, createTimer(kPositionReportTimerMs, _, common::TimerType::PERIODIC))
         .WillOnce(Return(ByMove(std::move(timerMock))));
     m_sut->startPositionReportingAndCheckAudioUnderflowTimer();
     m_sut->startPositionReportingAndCheckAudioUnderflowTimer();
@@ -892,7 +892,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldScheduleReportPositionWhenPositionRepo
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task2), execute());
     EXPECT_CALL(m_taskFactoryMock, createReportPosition(_)).WillOnce(Return(ByMove(std::move(task))));
     EXPECT_CALL(m_taskFactoryMock, createCheckAudioUnderflow(_, _)).WillOnce(Return(ByMove(std::move(task2))));
-    EXPECT_CALL(*m_timerFactoryMock, createTimer(positionReportTimerMs, _, common::TimerType::PERIODIC))
+    EXPECT_CALL(*m_timerFactoryMock, createTimer(kPositionReportTimerMs, _, common::TimerType::PERIODIC))
         .WillOnce(Invoke(
             [&](const std::chrono::milliseconds &timeout, const std::function<void()> &callback, common::TimerType timerType)
             {
@@ -907,7 +907,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldStopActivePositionReportingTimer)
     std::unique_ptr<common::ITimer> timerMock = std::make_unique<StrictMock<TimerMock>>();
     EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*timerMock), isActive()).WillOnce(Return(true));
     EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*timerMock), cancel());
-    EXPECT_CALL(*m_timerFactoryMock, createTimer(positionReportTimerMs, _, common::TimerType::PERIODIC))
+    EXPECT_CALL(*m_timerFactoryMock, createTimer(kPositionReportTimerMs, _, common::TimerType::PERIODIC))
         .WillOnce(Return(ByMove(std::move(timerMock))));
     m_sut->startPositionReportingAndCheckAudioUnderflowTimer();
     m_sut->stopPositionReportingAndCheckAudioUnderflowTimer();
@@ -917,7 +917,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldNotStopInactivePositionReportingTimer)
 {
     std::unique_ptr<common::ITimer> timerMock = std::make_unique<StrictMock<TimerMock>>();
     EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*timerMock), isActive()).WillOnce(Return(false));
-    EXPECT_CALL(*m_timerFactoryMock, createTimer(positionReportTimerMs, _, common::TimerType::PERIODIC))
+    EXPECT_CALL(*m_timerFactoryMock, createTimer(kPositionReportTimerMs, _, common::TimerType::PERIODIC))
         .WillOnce(Return(ByMove(std::move(timerMock))));
     m_sut->startPositionReportingAndCheckAudioUnderflowTimer();
     m_sut->stopPositionReportingAndCheckAudioUnderflowTimer();

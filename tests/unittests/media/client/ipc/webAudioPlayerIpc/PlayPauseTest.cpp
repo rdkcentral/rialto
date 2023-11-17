@@ -24,16 +24,16 @@
 
 MATCHER_P(WebAudioPlayRequestMatcher, web_audio_player_handle, "")
 {
-    const ::firebolt::rialto::WebAudioPlayRequest *request =
+    const ::firebolt::rialto::WebAudioPlayRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::WebAudioPlayRequest *>(arg);
-    return (request->web_audio_player_handle() == web_audio_player_handle);
+    return (kRequest->web_audio_player_handle() == web_audio_player_handle);
 }
 
 MATCHER_P(WebAudioPauseRequestMatcher, web_audio_player_handle, "")
 {
-    const ::firebolt::rialto::WebAudioPauseRequest *request =
+    const ::firebolt::rialto::WebAudioPauseRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::WebAudioPauseRequest *>(arg);
-    return (request->web_audio_player_handle() == web_audio_player_handle);
+    return (kRequest->web_audio_player_handle() == web_audio_player_handle);
 }
 
 class RialtoClientWebAudioPlayerIpcPlayPauseTest : public WebAudioPlayerIpcTestBase

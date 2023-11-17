@@ -59,11 +59,11 @@
 
 namespace
 {
-const char *memoryBufferName{"rialto_avbuf"};
-constexpr int NO_ID_ASSIGNED{-1};
-constexpr uint32_t videoRegionSize = 7 * 1024 * 1024; // 7MB
-constexpr uint32_t audioRegionSize = 1 * 1024 * 1024; // 1MB
-constexpr uint32_t webAudioRegionSize = 10 * 1024;    // 10KB
+const char *kMemoryBufferName{"rialto_avbuf"};
+constexpr int kNoIdAssigned{-1};
+constexpr uint32_t kVideoRegionSize = 7 * 1024 * 1024; // 7MB
+constexpr uint32_t kAudioRegionSize = 1 * 1024 * 1024; // 1MB
+constexpr uint32_t kWebAudioRegionSize = 10 * 1024;    // 10KB
 
 std::vector<firebolt::rialto::server::SharedMemoryBuffer::Partition>
 calculatePartitionSize(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType, int num)
@@ -71,13 +71,13 @@ calculatePartitionSize(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlayb
     if (firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC == playbackType)
     {
         // As (for now) resolution of playback (for example HD or UHD) is not known, partitions have the same size.
-        firebolt::rialto::server::SharedMemoryBuffer::Partition singlePlaybackDataBuffer{NO_ID_ASSIGNED, audioRegionSize,
-                                                                                         videoRegionSize};
+        firebolt::rialto::server::SharedMemoryBuffer::Partition singlePlaybackDataBuffer{kNoIdAssigned, kAudioRegionSize,
+                                                                                         kVideoRegionSize};
         return std::vector<firebolt::rialto::server::SharedMemoryBuffer::Partition>(num, singlePlaybackDataBuffer);
     }
     else if (firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO == playbackType)
     {
-        firebolt::rialto::server::SharedMemoryBuffer::Partition webAudioDataBuffer{NO_ID_ASSIGNED, webAudioRegionSize, 0};
+        firebolt::rialto::server::SharedMemoryBuffer::Partition webAudioDataBuffer{kNoIdAssigned, kWebAudioRegionSize, 0};
         return std::vector<firebolt::rialto::server::SharedMemoryBuffer::Partition>(num, webAudioDataBuffer);
     }
     else
@@ -121,15 +121,15 @@ SharedMemoryBuffer::SharedMemoryBuffer(unsigned numOfPlaybacks, unsigned numOfWe
       m_webAudioPartitions{calculatePartitionSize(MediaPlaybackType::WEB_AUDIO, numOfWebAudioPlayers)},
       m_dataBufferLen{0}, m_dataBufferFd{-1}, m_dataBuffer{nullptr}
 {
-    int fd = syscall(SYS_memfd_create, memoryBufferName, MFD_CLOEXEC | MFD_ALLOW_SEALING);
+    int fd = syscall(SYS_memfd_create, kMemoryBufferName, MFD_CLOEXEC | MFD_ALLOW_SEALING);
     if (fd < 0)
     {
         RIALTO_SERVER_LOG_SYS_ERROR(errno, "failed to create memory buffer");
     }
     else
     {
-        const size_t bufferSize{calculateBufferSize()};
-        if (ftruncate(fd, static_cast<off_t>(bufferSize)) == -1)
+        const size_t kBufferSize{calculateBufferSize()};
+        if (ftruncate(fd, static_cast<off_t>(kBufferSize)) == -1)
         {
             RIALTO_SERVER_LOG_SYS_ERROR(errno, "failed to resize memfd");
         }
@@ -139,10 +139,10 @@ SharedMemoryBuffer::SharedMemoryBuffer(unsigned numOfPlaybacks, unsigned numOfWe
         }
         else
         {
-            void *addr = mmap(nullptr, bufferSize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+            void *addr = mmap(nullptr, kBufferSize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
             if (addr != MAP_FAILED)
             {
-                m_dataBufferLen = bufferSize;
+                m_dataBufferLen = kBufferSize;
                 m_dataBufferFd = fd;
                 m_dataBuffer = reinterpret_cast<uint8_t *>(addr);
                 RIALTO_SERVER_LOG_INFO("Shared Memory Buffer size: %d, ptr: %p", m_dataBufferLen, m_dataBuffer);
@@ -195,7 +195,7 @@ bool SharedMemoryBuffer::mapPartition(MediaPlaybackType playbackType, int id)
         return true;
     }
     auto freePartition =
-        std::find_if(partitions->begin(), partitions->end(), [](const auto &p) { return p.id == NO_ID_ASSIGNED; });
+        std::find_if(partitions->begin(), partitions->end(), [](const auto &p) { return p.id == kNoIdAssigned; });
     if (freePartition == partitions->end())
     {
         RIALTO_SERVER_LOG_ERROR("Failed to map Shm partition for id: %d. No free partition available.", id);
@@ -221,21 +221,21 @@ bool SharedMemoryBuffer::unmapPartition(MediaPlaybackType playbackType, int id)
         RIALTO_SERVER_LOG_WARN("Failed to unmap Shm partition for id: %d. - partition could not be found", id);
         return false;
     }
-    partition->id = NO_ID_ASSIGNED;
+    partition->id = kNoIdAssigned;
     return true;
 }
 
 bool SharedMemoryBuffer::clearData(MediaPlaybackType playbackType, int id, const MediaSourceType &mediaSourceType) const
 {
-    const std::vector<Partition> *partitions = getPlaybackTypePartition(playbackType);
-    if (!partitions)
+    const std::vector<Partition> *kPartitions = getPlaybackTypePartition(playbackType);
+    if (!kPartitions)
     {
         RIALTO_SERVER_LOG_ERROR("Cannot clear the data for playback type %s with id: %d", toString(playbackType), id);
         return false;
     }
 
-    auto partition = std::find_if(partitions->begin(), partitions->end(), [id](const auto &p) { return p.id == id; });
-    if (partition == partitions->end())
+    auto partition = std::find_if(kPartitions->begin(), kPartitions->end(), [id](const auto &p) { return p.id == id; });
+    if (partition == kPartitions->end())
     {
         RIALTO_SERVER_LOG_WARN("Failed to clear data for playback type %s with id: %d. - partition could not be found",
                                toString(playbackType), id);
@@ -279,16 +279,16 @@ std::uint32_t SharedMemoryBuffer::getDataOffset(MediaPlaybackType playbackType, 
 std::uint32_t SharedMemoryBuffer::getMaxDataLen(MediaPlaybackType playbackType, int id,
                                                 const MediaSourceType &mediaSourceType) const
 {
-    const std::vector<Partition> *partitions = getPlaybackTypePartition(playbackType);
-    if (!partitions)
+    const std::vector<Partition> *kPartitions = getPlaybackTypePartition(playbackType);
+    if (!kPartitions)
     {
         RIALTO_SERVER_LOG_ERROR("Cannot get the max data length for playback type %s with id: %d",
                                 toString(playbackType), id);
         return false;
     }
 
-    auto partition = std::find_if(partitions->begin(), partitions->end(), [id](const auto &p) { return p.id == id; });
-    if (partition == partitions->end())
+    auto partition = std::find_if(kPartitions->begin(), kPartitions->end(), [id](const auto &p) { return p.id == id; });
+    if (partition == kPartitions->end())
     {
         RIALTO_SERVER_LOG_WARN("Failed to get buffer length for playback type %s with id: %d. - partition could not be "
                                "found",
@@ -309,16 +309,16 @@ std::uint32_t SharedMemoryBuffer::getMaxDataLen(MediaPlaybackType playbackType, 
 std::uint8_t *SharedMemoryBuffer::getDataPtr(MediaPlaybackType playbackType, int id,
                                              const MediaSourceType &mediaSourceType) const
 {
-    const std::vector<Partition> *partitions = getPlaybackTypePartition(playbackType);
-    if (!partitions)
+    const std::vector<Partition> *kPartitions = getPlaybackTypePartition(playbackType);
+    if (!kPartitions)
     {
         RIALTO_SERVER_LOG_ERROR("Cannot get the buffer offset for playback type %s with id: %d", toString(playbackType),
                                 id);
         return nullptr;
     }
 
-    auto partition = std::find_if(partitions->begin(), partitions->end(), [id](const auto &p) { return p.id == id; });
-    if (partition == partitions->end())
+    auto partition = std::find_if(kPartitions->begin(), kPartitions->end(), [id](const auto &p) { return p.id == id; });
+    if (partition == kPartitions->end())
     {
         RIALTO_SERVER_LOG_WARN("Failed to get buffer offset for playback type %s with id: %d. - partition could not be "
                                "found",

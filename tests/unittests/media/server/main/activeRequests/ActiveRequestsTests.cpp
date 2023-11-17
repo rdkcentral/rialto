@@ -144,9 +144,9 @@ TEST_F(ActiveRequestsTests, shouldAddAndGetSegments)
     segment->setData(data.size(), data.data());
     EXPECT_EQ(0, m_sut.insert(firebolt::rialto::MediaSourceType::AUDIO, std::numeric_limits<std::uint32_t>::max()));
     EXPECT_EQ(m_sut.addSegment(0, segment), firebolt::rialto::AddSegmentStatus::OK);
-    const firebolt::rialto::IMediaPipeline::MediaSegmentVector &segments = m_sut.getSegments(0);
-    ASSERT_EQ(1, segments.size());
-    EXPECT_EQ(segments[0]->getType(), firebolt::rialto::MediaSourceType::AUDIO);
+    const firebolt::rialto::IMediaPipeline::MediaSegmentVector &kSegments = m_sut.getSegments(0);
+    ASSERT_EQ(1, kSegments.size());
+    EXPECT_EQ(kSegments[0]->getType(), firebolt::rialto::MediaSourceType::AUDIO);
 }
 
 TEST_F(ActiveRequestsTests, shouldAddAndRemoveSegments)

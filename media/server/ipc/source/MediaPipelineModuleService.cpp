@@ -343,14 +343,14 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
 
     if (configType == firebolt::rialto::SourceConfigType::AUDIO)
     {
-        const auto &config = request->audio_config();
-        uint32_t numberofchannels = config.number_of_channels();
-        uint32_t sampleRate = config.sample_rate();
+        const auto &kConfig = request->audio_config();
+        uint32_t numberofchannels = kConfig.number_of_channels();
+        uint32_t sampleRate = kConfig.sample_rate();
 
         std::vector<uint8_t> codecSpecificConfig;
-        if (config.has_codec_specific_config())
+        if (kConfig.has_codec_specific_config())
         {
-            auto codecSpecificConfigStr = config.codec_specific_config();
+            auto codecSpecificConfigStr = kConfig.codec_specific_config();
             codecSpecificConfig.assign(codecSpecificConfigStr.begin(), codecSpecificConfigStr.end());
         }
         AudioConfig audioConfig{numberofchannels, sampleRate, codecSpecificConfig};

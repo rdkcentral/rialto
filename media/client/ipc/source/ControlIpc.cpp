@@ -163,24 +163,24 @@ bool ControlIpc::registerClient()
         return true;
     }
 
-    const common::SchemaVersion serverSchemaVersion{response.server_schema_version().major(),
-                                                    response.server_schema_version().minor(),
-                                                    response.server_schema_version().patch()};
-    if (kCurrentSchemaVersion == serverSchemaVersion)
+    const common::SchemaVersion kServerSchemaVersion{response.server_schema_version().major(),
+                                                     response.server_schema_version().minor(),
+                                                     response.server_schema_version().patch()};
+    if (kCurrentSchemaVersion == kServerSchemaVersion)
     {
         RIALTO_CLIENT_LOG_DEBUG("Server and Client proto schema versions are equal");
     }
-    else if (kCurrentSchemaVersion.isCompatible(serverSchemaVersion))
+    else if (kCurrentSchemaVersion.isCompatible(kServerSchemaVersion))
     {
         RIALTO_CLIENT_LOG_INFO("Server and Client proto schema versions are compatible. Server schema version: %s, "
                                "Client schema version: %s",
-                               serverSchemaVersion.str().c_str(), kCurrentSchemaVersion.str().c_str());
+                               kServerSchemaVersion.str().c_str(), kCurrentSchemaVersion.str().c_str());
     }
     else
     {
         RIALTO_CLIENT_LOG_ERROR("Server and Client proto schema versions are not compatible. Server schema version: "
                                 "%s, Client schema version: %s",
-                                serverSchemaVersion.str().c_str(), kCurrentSchemaVersion.str().c_str());
+                                kServerSchemaVersion.str().c_str(), kCurrentSchemaVersion.str().c_str());
         return false;
     }
 

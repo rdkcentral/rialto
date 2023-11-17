@@ -46,12 +46,12 @@ catch (const std::exception &e)
 
 MediaFrameWriterFactory::MediaFrameWriterFactory() : m_metadataVersion{kLatestMetadataVersion}
 {
-    const char *envVar = getenv(kMetadataEnvVariableName);
-    if (!envVar)
+    const char *kEnvVar = getenv(kMetadataEnvVariableName);
+    if (!kEnvVar)
     {
         return;
     }
-    std::string envVarStr{envVar};
+    std::string envVarStr{kEnvVar};
     try
     {
         m_metadataVersion = std::stoi(envVarStr);

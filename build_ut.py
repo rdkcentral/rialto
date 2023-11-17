@@ -35,7 +35,8 @@ suiteInfo = {
     "serverservice" : {"suite" : "RialtoServerServiceUnitTests", "path" : "/tests/unittests/media/server/service/"},
     "client" : {"suite" : "RialtoClientUnitTests", "path" : "/tests/unittests/media/client/main/"},
     "clientipc" : {"suite" : "RialtoClientIpcUnitTests", "path" : "/tests/unittests/media/client/ipc/"},
-    "common" : {"suite" : "RialtoPlayerCommonUnitTests", "path" : "/tests/unittests/media/common/"},
+    "playercommon" : {"suite" : "RialtoPlayerCommonUnitTests", "path" : "/tests/unittests/media/common/"},
+    "common" : {"suite" : "RialtoCommonUnitTests", "path" : "/tests/unittests/common/unittests/"},
     "logging" : {"suite" : "RialtoLoggingUnitTests", "path" : "/tests/unittests/logging/"},
     "manager" : {"suite" : "RialtoServerManagerUnitTests", "path" : "/tests/unittests/serverManager/"},
     "ipc" : {"suite" : "RialtoIpcUnitTests", "path" : "/tests/unittests/ipc/"},
@@ -241,28 +242,29 @@ def AddValgrind(suite, outputToFile, outputToXml):
     return executeCmd
 
 def generateCoverageReport(outputDir, resultsFile, suites):
-    # The lcov command will fail if the --exclude file does not exist, only run '--exclude *Wrapper*' for the relevent suites
-    ExcludeWrapperSuitesBase = ['serveripc', 'serverservice', 'servergstplayer', 'servermain', 'manager', 'clientipc', 'client']
-    ExcludeWrapperSuitesTest = ['servergstplayer', 'servermain', 'manager']
-
-    lcovBaseCmd = ["lcov", "-c", "-i", "-d", ".", "--output-file", "coverage_base.info", "--exclude", "/usr/*",
-                   "--exclude", "*build/*", "--exclude", "*tests/*", "--filter", "brace,function,trivial"]
-    for suite in ExcludeWrapperSuitesBase:
-        if suite in suites:
-            lcovBaseCmd.extend(["--exclude", "*Wrapper*"])
-            break
+    lcovCommon = [];
+    lcovCommon.extend(["--exclude", "/usr/*"]);
+    lcovCommon.extend(["--exclude", "*build/*", "--exclude", "*tests/*", "--filter", "brace,function,trivial"])
+    lcovCommon.extend(["--parallel",  str(multiprocessing.cpu_count())])
+    
+    # the following line tells lcov to ignore any errors caused by include/exclude/erase/omit/substitute pattern which did not match any file pathnames
+    lcovCommon.extend(["--ignore-errors", "unused"]);
+    
+    lcovCommon.extend(["--exclude", "*Wrapper.cpp", "--exclude", "LinuxWrapper.h",  "--exclude", "JsonCppWrapperFactory.cpp", "--exclude", "JsonCppWrapperFactory.h", "--exclude", "JsonCppWrapper.h"])
+    lcovCommon.extend(["--exclude", "GstProtectionMetadataWrapper.h", "--exclude", "GstProtectionMetadataWrapperFactory.h", "--exclude", "GstWrapper.h", "--exclude", "GlibWrapper.h"])
+    
+    lcovBaseCmd = ["lcov", "-c", "-i", "-d", ".", "--output-file", "coverage_base.info"]
+    lcovBaseCmd.extend(lcovCommon);
+    
     if resultsFile:
         lcovBaseStatus = runcmd(lcovBaseCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
     else:
         lcovBaseStatus = runcmd(lcovBaseCmd, cwd=os.getcwd() + '/' + outputDir, stderr=subprocess.STDOUT)
     if not lcovBaseStatus:
         return False
-    lcovTestCmd = ["lcov", "-c", "-d", ".", "--output-file", "coverage_test.info", "--exclude", "/usr/*",
-                   "--exclude", "*build/*", "--exclude", "*tests/*","--filter", "brace,function,trivial"]
-    for suite in ExcludeWrapperSuitesTest:
-        if suite in suites:
-            lcovTestCmd.extend(["--exclude", "*Wrapper*"])
-            break
+    lcovTestCmd = ["lcov", "-c", "-d", ".", "--output-file", "coverage_test.info"] 
+    lcovTestCmd.extend(lcovCommon);
+
     if resultsFile:
         lcovTestStatus = runcmd(lcovTestCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
     else:
@@ -271,6 +273,7 @@ def generateCoverageReport(outputDir, resultsFile, suites):
         return False
     lcovCombineCmd = ["lcov", "-a", "coverage_base.info", "-a", "coverage_test.info", "-o", "coverage.info", "--filter",
                       "brace,function,trivial"]
+    lcovCombineCmd.extend(["--ignore-errors", "empty"]);
     if resultsFile:
         lcovCombineStatus = runcmd(lcovCombineCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
     else:
@@ -278,11 +281,13 @@ def generateCoverageReport(outputDir, resultsFile, suites):
     if not lcovCombineStatus:
         return False
     genHtmlCmd = ["genhtml", "coverage.info", "--output-directory", "gh_pages/coverage_report", "--filter", "brace,function,trivial"]
+    genHtmlCmd.extend(["--ignore-errors", "empty"]);
     if resultsFile:
         genHtmlStatus = runcmd(genHtmlCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
     else:
         genHtmlStatus = runcmd(genHtmlCmd, cwd=os.getcwd() + '/' + outputDir, stderr=subprocess.STDOUT)
     genStatsCmd = ["lcov", "--summary", "coverage.info", "--filter", "brace,function,trivial"]
+    genStatsCmd.extend(["--ignore-errors", "empty"]);
     statsFile = open(os.getcwd() + '/' + outputDir + '/' + "coverage_statistics.txt", "w")
     if statsFile:
         genStatsStatus = runcmd(genStatsCmd, cwd=os.getcwd() + '/' + outputDir, stdout=statsFile, stderr=subprocess.STDOUT)

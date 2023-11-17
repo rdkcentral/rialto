@@ -34,19 +34,17 @@ using testing::Throw;
 
 namespace
 {
-constexpr int webAudioPlayerHandle{0};
-const std::string audioMimeType{"audio/x-raw"};
-constexpr uint32_t priority{4};
-constexpr firebolt::rialto::WebAudioPcmConfig pcmConfig{1, 2, 3, false, true, false};
-constexpr firebolt::rialto::WebAudioPlayerState webAudioPlayerState{firebolt::rialto::WebAudioPlayerState::END_OF_STREAM};
-constexpr uint32_t availableFrames{11};
-const firebolt::rialto::WebAudioShmInfo shmInfo{12, 13, 14, 15};
-constexpr uint32_t delayFrames{16};
-constexpr uint32_t numberOfFrames{17};
-constexpr uint32_t preferredFrames{18};
-constexpr uint32_t maximumFrames{19};
-constexpr bool supportDeferredPlay{true};
-constexpr double volume{1.5};
+constexpr int kWebAudioPlayerHandle{0};
+const std::string kAudioMimeType{"audio/x-raw"};
+constexpr uint32_t kPriority{4};
+constexpr uint32_t kAvailableFrames{11};
+const firebolt::rialto::WebAudioShmInfo kShmInfo{12, 13, 14, 15};
+constexpr uint32_t kDelayFrames{16};
+constexpr uint32_t kNumberOfFrames{17};
+constexpr uint32_t kPreferredFrames{18};
+constexpr uint32_t kMaximumFrames{19};
+constexpr bool kSupportDeferredPlay{true};
+constexpr double kVolume{1.5};
 const std::shared_ptr<firebolt::rialto::IWebAudioPlayerClient> webAudioPlayerClient; // nullptr as it's not used anywhere in tests
 } // namespace
 
@@ -59,7 +57,7 @@ WebAudioPlayerServiceTests::WebAudioPlayerServiceTests()
       m_webAudioPlayerMock{
           dynamic_cast<StrictMock<firebolt::rialto::server::WebAudioPlayerServerInternalMock> &>(*m_webAudioPlayer)},
       m_heartbeatProcedureMock{std::make_shared<StrictMock<firebolt::rialto::server::HeartbeatProcedureMock>>()},
-      m_shmInfo{std::make_shared<firebolt::rialto::WebAudioShmInfo>(shmInfo)}
+      m_shmInfo{std::make_shared<firebolt::rialto::WebAudioShmInfo>(kShmInfo)}
 {
 }
 
@@ -96,7 +94,7 @@ void WebAudioPlayerServiceTests::webAudioPlayerWillFailToSetEos()
 void WebAudioPlayerServiceTests::webAudioPlayerWillGetBufferAvailable()
 {
     EXPECT_CALL(m_webAudioPlayerMock, getBufferAvailable(_, _))
-        .WillOnce(DoAll(SetArgReferee<0>(availableFrames), SetArgReferee<1>(m_shmInfo), Return(true)));
+        .WillOnce(DoAll(SetArgReferee<0>(kAvailableFrames), SetArgReferee<1>(m_shmInfo), Return(true)));
 }
 
 void WebAudioPlayerServiceTests::webAudioPlayerWillFailToGetBufferAvailable()
@@ -106,7 +104,7 @@ void WebAudioPlayerServiceTests::webAudioPlayerWillFailToGetBufferAvailable()
 
 void WebAudioPlayerServiceTests::webAudioPlayerWillGetBufferDelay()
 {
-    EXPECT_CALL(m_webAudioPlayerMock, getBufferDelay(_)).WillOnce(DoAll(SetArgReferee<0>(delayFrames), Return(true)));
+    EXPECT_CALL(m_webAudioPlayerMock, getBufferDelay(_)).WillOnce(DoAll(SetArgReferee<0>(kDelayFrames), Return(true)));
 }
 
 void WebAudioPlayerServiceTests::webAudioPlayerWillFailToGetBufferDelay()
@@ -116,19 +114,19 @@ void WebAudioPlayerServiceTests::webAudioPlayerWillFailToGetBufferDelay()
 
 void WebAudioPlayerServiceTests::webAudioPlayerWillWriteBuffer()
 {
-    EXPECT_CALL(m_webAudioPlayerMock, writeBuffer(numberOfFrames, _)).WillOnce(Return(true));
+    EXPECT_CALL(m_webAudioPlayerMock, writeBuffer(kNumberOfFrames, _)).WillOnce(Return(true));
 }
 
 void WebAudioPlayerServiceTests::webAudioPlayerWillFailToWriteBuffer()
 {
-    EXPECT_CALL(m_webAudioPlayerMock, writeBuffer(numberOfFrames, _)).WillOnce(Return(false));
+    EXPECT_CALL(m_webAudioPlayerMock, writeBuffer(kNumberOfFrames, _)).WillOnce(Return(false));
 }
 
 void WebAudioPlayerServiceTests::webAudioPlayerWillGetDeviceInfo()
 {
     EXPECT_CALL(m_webAudioPlayerMock, getDeviceInfo(_, _, _))
-        .WillOnce(DoAll(SetArgReferee<0>(preferredFrames), SetArgReferee<1>(maximumFrames),
-                        SetArgReferee<2>(supportDeferredPlay), Return(true)));
+        .WillOnce(DoAll(SetArgReferee<0>(kPreferredFrames), SetArgReferee<1>(kMaximumFrames),
+                        SetArgReferee<2>(kSupportDeferredPlay), Return(true)));
 }
 
 void WebAudioPlayerServiceTests::webAudioPlayerWillFailToGetDeviceInfo()
@@ -138,17 +136,17 @@ void WebAudioPlayerServiceTests::webAudioPlayerWillFailToGetDeviceInfo()
 
 void WebAudioPlayerServiceTests::webAudioPlayerWillSetVolume()
 {
-    EXPECT_CALL(m_webAudioPlayerMock, setVolume(volume)).WillOnce(Return(true));
+    EXPECT_CALL(m_webAudioPlayerMock, setVolume(kVolume)).WillOnce(Return(true));
 }
 
 void WebAudioPlayerServiceTests::webAudioPlayerWillFailToSetVolume()
 {
-    EXPECT_CALL(m_webAudioPlayerMock, setVolume(volume)).WillOnce(Return(false));
+    EXPECT_CALL(m_webAudioPlayerMock, setVolume(kVolume)).WillOnce(Return(false));
 }
 
 void WebAudioPlayerServiceTests::webAudioPlayerWillGetVolume()
 {
-    EXPECT_CALL(m_webAudioPlayerMock, getVolume(_)).WillOnce(DoAll(SetArgReferee<0>(volume), Return(true)));
+    EXPECT_CALL(m_webAudioPlayerMock, getVolume(_)).WillOnce(DoAll(SetArgReferee<0>(kVolume), Return(true)));
 }
 
 void WebAudioPlayerServiceTests::webAudioPlayerWillFailToGetVolume()
@@ -166,14 +164,14 @@ void WebAudioPlayerServiceTests::webAudioPlayerWillPing()
 void WebAudioPlayerServiceTests::webAudioPlayerFactoryWillCreateWebAudioPlayer()
 {
     EXPECT_CALL(*m_webAudioPlayerFactoryMock,
-                createWebAudioPlayerServerInternal(_, audioMimeType, priority, _, _, webAudioPlayerHandle, _, _, _))
+                createWebAudioPlayerServerInternal(_, kAudioMimeType, kPriority, _, _, kWebAudioPlayerHandle, _, _, _))
         .WillOnce(Return(ByMove(std::move(m_webAudioPlayer))));
 }
 
 void WebAudioPlayerServiceTests::webAudioPlayerFactoryWillReturnNullptr()
 {
     EXPECT_CALL(*m_webAudioPlayerFactoryMock,
-                createWebAudioPlayerServerInternal(_, audioMimeType, priority, _, _, webAudioPlayerHandle, _, _, _))
+                createWebAudioPlayerServerInternal(_, kAudioMimeType, kPriority, _, _, kWebAudioPlayerHandle, _, _, _))
         .WillOnce(Return(ByMove(std::unique_ptr<firebolt::rialto::server::IWebAudioPlayerServerInternal>())));
 }
 
@@ -205,96 +203,96 @@ void WebAudioPlayerServiceTests::createWebAudioPlayerService()
 
 void WebAudioPlayerServiceTests::createWebAudioPlayerShouldSucceed()
 {
-    EXPECT_TRUE(m_sut->createWebAudioPlayer(webAudioPlayerHandle, webAudioPlayerClient, audioMimeType, priority,
+    EXPECT_TRUE(m_sut->createWebAudioPlayer(kWebAudioPlayerHandle, webAudioPlayerClient, kAudioMimeType, kPriority,
                                             std::shared_ptr<const firebolt::rialto::WebAudioConfig>{}));
 }
 
 void WebAudioPlayerServiceTests::createWebAudioPlayerShouldFail()
 {
-    EXPECT_FALSE(m_sut->createWebAudioPlayer(webAudioPlayerHandle, webAudioPlayerClient, audioMimeType, priority,
+    EXPECT_FALSE(m_sut->createWebAudioPlayer(kWebAudioPlayerHandle, webAudioPlayerClient, kAudioMimeType, kPriority,
                                              std::shared_ptr<const firebolt::rialto::WebAudioConfig>{}));
 }
 
 void WebAudioPlayerServiceTests::destroyWebAudioPlayerShouldSucceed()
 {
-    EXPECT_TRUE(m_sut->destroyWebAudioPlayer(webAudioPlayerHandle));
+    EXPECT_TRUE(m_sut->destroyWebAudioPlayer(kWebAudioPlayerHandle));
 }
 
 void WebAudioPlayerServiceTests::destroyWebAudioPlayerShouldFail()
 {
-    EXPECT_FALSE(m_sut->destroyWebAudioPlayer(webAudioPlayerHandle));
+    EXPECT_FALSE(m_sut->destroyWebAudioPlayer(kWebAudioPlayerHandle));
 }
 
 void WebAudioPlayerServiceTests::playShouldSucceed()
 {
-    EXPECT_TRUE(m_sut->play(webAudioPlayerHandle));
+    EXPECT_TRUE(m_sut->play(kWebAudioPlayerHandle));
 }
 
 void WebAudioPlayerServiceTests::playShouldFail()
 {
-    EXPECT_FALSE(m_sut->play(webAudioPlayerHandle));
+    EXPECT_FALSE(m_sut->play(kWebAudioPlayerHandle));
 }
 
 void WebAudioPlayerServiceTests::pauseShouldSucceed()
 {
-    EXPECT_TRUE(m_sut->pause(webAudioPlayerHandle));
+    EXPECT_TRUE(m_sut->pause(kWebAudioPlayerHandle));
 }
 
 void WebAudioPlayerServiceTests::pauseShouldFail()
 {
-    EXPECT_FALSE(m_sut->pause(webAudioPlayerHandle));
+    EXPECT_FALSE(m_sut->pause(kWebAudioPlayerHandle));
 }
 
 void WebAudioPlayerServiceTests::setEosShouldSucceed()
 {
-    EXPECT_TRUE(m_sut->setEos(webAudioPlayerHandle));
+    EXPECT_TRUE(m_sut->setEos(kWebAudioPlayerHandle));
 }
 
 void WebAudioPlayerServiceTests::setEosShouldFail()
 {
-    EXPECT_FALSE(m_sut->setEos(webAudioPlayerHandle));
+    EXPECT_FALSE(m_sut->setEos(kWebAudioPlayerHandle));
 }
 
 void WebAudioPlayerServiceTests::getBufferAvailableShouldSucceed()
 {
     uint32_t availableFramesReturn{};
     std::shared_ptr<firebolt::rialto::WebAudioShmInfo> shmInfoReturn;
-    EXPECT_TRUE(m_sut->getBufferAvailable(webAudioPlayerHandle, availableFramesReturn, shmInfoReturn));
-    EXPECT_EQ(availableFramesReturn, availableFrames);
-    EXPECT_EQ(shmInfoReturn->offsetMain, shmInfo.offsetMain);
-    EXPECT_EQ(shmInfoReturn->lengthMain, shmInfo.lengthMain);
-    EXPECT_EQ(shmInfoReturn->offsetWrap, shmInfo.offsetWrap);
-    EXPECT_EQ(shmInfoReturn->lengthWrap, shmInfo.lengthWrap);
+    EXPECT_TRUE(m_sut->getBufferAvailable(kWebAudioPlayerHandle, availableFramesReturn, shmInfoReturn));
+    EXPECT_EQ(availableFramesReturn, kAvailableFrames);
+    EXPECT_EQ(shmInfoReturn->offsetMain, kShmInfo.offsetMain);
+    EXPECT_EQ(shmInfoReturn->lengthMain, kShmInfo.lengthMain);
+    EXPECT_EQ(shmInfoReturn->offsetWrap, kShmInfo.offsetWrap);
+    EXPECT_EQ(shmInfoReturn->lengthWrap, kShmInfo.lengthWrap);
 }
 
 void WebAudioPlayerServiceTests::getBufferAvailableShouldFail()
 {
     uint32_t availableFramesReturn{};
     std::shared_ptr<firebolt::rialto::WebAudioShmInfo> shmInfoReturn;
-    EXPECT_FALSE(m_sut->getBufferAvailable(webAudioPlayerHandle, availableFramesReturn, shmInfoReturn));
+    EXPECT_FALSE(m_sut->getBufferAvailable(kWebAudioPlayerHandle, availableFramesReturn, shmInfoReturn));
 }
 
 void WebAudioPlayerServiceTests::getBufferDelayShouldSucceed()
 {
     uint32_t delayFramesReturn{};
-    EXPECT_TRUE(m_sut->getBufferDelay(webAudioPlayerHandle, delayFramesReturn));
-    EXPECT_EQ(delayFramesReturn, delayFrames);
+    EXPECT_TRUE(m_sut->getBufferDelay(kWebAudioPlayerHandle, delayFramesReturn));
+    EXPECT_EQ(delayFramesReturn, kDelayFrames);
 }
 
 void WebAudioPlayerServiceTests::getBufferDelayShouldFail()
 {
     uint32_t delayFramesReturn{};
-    EXPECT_FALSE(m_sut->getBufferDelay(webAudioPlayerHandle, delayFramesReturn));
+    EXPECT_FALSE(m_sut->getBufferDelay(kWebAudioPlayerHandle, delayFramesReturn));
 }
 
 void WebAudioPlayerServiceTests::writeBufferShouldSucceed()
 {
-    EXPECT_TRUE(m_sut->writeBuffer(webAudioPlayerHandle, numberOfFrames, nullptr));
+    EXPECT_TRUE(m_sut->writeBuffer(kWebAudioPlayerHandle, kNumberOfFrames, nullptr));
 }
 
 void WebAudioPlayerServiceTests::writeBufferShouldFail()
 {
-    EXPECT_FALSE(m_sut->writeBuffer(webAudioPlayerHandle, numberOfFrames, nullptr));
+    EXPECT_FALSE(m_sut->writeBuffer(kWebAudioPlayerHandle, kNumberOfFrames, nullptr));
 }
 
 void WebAudioPlayerServiceTests::getDeviceInfoShouldSucceed()
@@ -302,7 +300,7 @@ void WebAudioPlayerServiceTests::getDeviceInfoShouldSucceed()
     uint32_t preferredFramesReturn{};
     uint32_t maximumFramesReturn{};
     bool supportDeferredPlayReturn{};
-    EXPECT_TRUE(m_sut->getDeviceInfo(webAudioPlayerHandle, preferredFramesReturn, maximumFramesReturn,
+    EXPECT_TRUE(m_sut->getDeviceInfo(kWebAudioPlayerHandle, preferredFramesReturn, maximumFramesReturn,
                                      supportDeferredPlayReturn));
 }
 
@@ -311,31 +309,31 @@ void WebAudioPlayerServiceTests::getDeviceInfoShouldFail()
     uint32_t preferredFramesReturn{};
     uint32_t maximumFramesReturn{};
     bool supportDeferredPlayReturn{};
-    EXPECT_FALSE(m_sut->getDeviceInfo(webAudioPlayerHandle, preferredFramesReturn, maximumFramesReturn,
+    EXPECT_FALSE(m_sut->getDeviceInfo(kWebAudioPlayerHandle, preferredFramesReturn, maximumFramesReturn,
                                       supportDeferredPlayReturn));
 }
 
 void WebAudioPlayerServiceTests::setVolumeShouldSucceed()
 {
-    EXPECT_TRUE(m_sut->setVolume(webAudioPlayerHandle, volume));
+    EXPECT_TRUE(m_sut->setVolume(kWebAudioPlayerHandle, kVolume));
 }
 
 void WebAudioPlayerServiceTests::setVolumeShouldFail()
 {
-    EXPECT_FALSE(m_sut->setVolume(webAudioPlayerHandle, volume));
+    EXPECT_FALSE(m_sut->setVolume(kWebAudioPlayerHandle, kVolume));
 }
 
 void WebAudioPlayerServiceTests::getVolumeShouldSucceed()
 {
     double volumeReturn{};
-    EXPECT_TRUE(m_sut->getVolume(webAudioPlayerHandle, volumeReturn));
-    EXPECT_EQ(volumeReturn, volume);
+    EXPECT_TRUE(m_sut->getVolume(kWebAudioPlayerHandle, volumeReturn));
+    EXPECT_EQ(volumeReturn, kVolume);
 }
 
 void WebAudioPlayerServiceTests::getVolumeShouldFail()
 {
     double volumeReturn{};
-    EXPECT_FALSE(m_sut->getVolume(webAudioPlayerHandle, volumeReturn));
+    EXPECT_FALSE(m_sut->getVolume(kWebAudioPlayerHandle, volumeReturn));
 }
 
 void WebAudioPlayerServiceTests::clearWebAudioPlayers()

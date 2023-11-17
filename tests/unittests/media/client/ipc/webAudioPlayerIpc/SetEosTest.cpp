@@ -21,9 +21,9 @@
 
 MATCHER_P(WebAudioSetWosRequestMatcher, web_audio_player_handle, "")
 {
-    const ::firebolt::rialto::WebAudioSetEosRequest *request =
+    const ::firebolt::rialto::WebAudioSetEosRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::WebAudioSetEosRequest *>(arg);
-    return ((request->web_audio_player_handle() == web_audio_player_handle));
+    return ((kRequest->web_audio_player_handle() == web_audio_player_handle));
 }
 
 class RialtoClientWebAudioPlayerIpcSetEosTest : public WebAudioPlayerIpcTestBase

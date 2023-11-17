@@ -115,10 +115,10 @@ TEST_F(RialtoServerCreateWebAudioPlayerTest, InvalidBytesPerFrame)
  */
 TEST_F(RialtoServerCreateWebAudioPlayerTest, InvalidMimeType)
 {
-    const std::string invalidMimeType{"invalid"};
+    const std::string kInvalidMimeType{"invalid"};
 
     EXPECT_THROW(m_webAudioPlayer =
-                     std::make_unique<WebAudioPlayerServerInternal>(m_webAudioPlayerClientMock, invalidMimeType,
+                     std::make_unique<WebAudioPlayerServerInternal>(m_webAudioPlayerClientMock, kInvalidMimeType,
                                                                     m_priority, m_config, m_sharedMemoryBufferMock,
                                                                     m_webAudioPlayerHandle, m_mainThreadFactoryMock,
                                                                     m_gstPlayerFactoryMock, m_timerFactoryMock),

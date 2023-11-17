@@ -21,9 +21,9 @@
 
 MATCHER_P2(removeKeySessionRequestMatcher, mediaKeysHandle, keySessionId, "")
 {
-    const ::firebolt::rialto::RemoveKeySessionRequest *request =
+    const ::firebolt::rialto::RemoveKeySessionRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::RemoveKeySessionRequest *>(arg);
-    return ((request->media_keys_handle() == mediaKeysHandle) && (request->key_session_id() == keySessionId));
+    return ((kRequest->media_keys_handle() == mediaKeysHandle) && (kRequest->key_session_id() == keySessionId));
 }
 
 class RialtoClientMediaKeysIpcRemoveKeySessionTest : public MediaKeysIpcTestBase

@@ -21,9 +21,9 @@
 
 MATCHER_P(WebAudioGetDeviceInfoRequestMatcher, webAaudioPlayerHandle, "")
 {
-    const ::firebolt::rialto::WebAudioGetDeviceInfoRequest *request =
+    const ::firebolt::rialto::WebAudioGetDeviceInfoRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::WebAudioGetDeviceInfoRequest *>(arg);
-    return ((request->web_audio_player_handle() == webAaudioPlayerHandle));
+    return ((kRequest->web_audio_player_handle() == webAaudioPlayerHandle));
 }
 
 class RialtoClientWebAudioPlayerIpcGetDeviceInfoTest : public WebAudioPlayerIpcTestBase

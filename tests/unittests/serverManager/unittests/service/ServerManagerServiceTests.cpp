@@ -23,40 +23,40 @@
 
 namespace
 {
-const std::string APP_NAME{"YouTube"};
-const firebolt::rialto::common::SessionServerState APP_STATE{firebolt::rialto::common::SessionServerState::INACTIVE};
-const std::string APP_SOCKET{getenv("RIALTO_SOCKET_PATH")};
-const firebolt::rialto::common::AppConfig APP_CONFIG{APP_SOCKET};
+const std::string kAppName{"YouTube"};
+const firebolt::rialto::common::SessionServerState kAppState{firebolt::rialto::common::SessionServerState::INACTIVE};
+const std::string kAppSocket{getenv("RIALTO_SOCKET_PATH")};
+const firebolt::rialto::common::AppConfig kAppConfig{kAppSocket};
 } // namespace
 
 TEST_F(ServerManagerServiceTests, initiateApplicationShouldReturnTrueIfOperationSucceeded)
 {
-    initiateApplicationWillBeCalled(APP_NAME, APP_STATE, APP_CONFIG, true);
-    ASSERT_TRUE(triggerInitiateApplication(APP_NAME, APP_STATE, APP_CONFIG));
+    initiateApplicationWillBeCalled(kAppName, kAppState, kAppConfig, true);
+    ASSERT_TRUE(triggerInitiateApplication(kAppName, kAppState, kAppConfig));
 }
 
 TEST_F(ServerManagerServiceTests, initiateApplicationShouldReturnFalseIfOperationFailed)
 {
-    initiateApplicationWillBeCalled(APP_NAME, APP_STATE, APP_CONFIG, false);
-    ASSERT_FALSE(triggerInitiateApplication(APP_NAME, APP_STATE, APP_CONFIG));
+    initiateApplicationWillBeCalled(kAppName, kAppState, kAppConfig, false);
+    ASSERT_FALSE(triggerInitiateApplication(kAppName, kAppState, kAppConfig));
 }
 
 TEST_F(ServerManagerServiceTests, setStateShouldReturnTrueIfOperationSucceeded)
 {
-    setSessionServerStateWillBeCalled(APP_NAME, APP_STATE, true);
-    ASSERT_TRUE(triggerChangeSessionServerState(APP_NAME, APP_STATE));
+    setSessionServerStateWillBeCalled(kAppName, kAppState, true);
+    ASSERT_TRUE(triggerChangeSessionServerState(kAppName, kAppState));
 }
 
 TEST_F(ServerManagerServiceTests, setStateShouldReturnFalseIfOperationFailed)
 {
-    setSessionServerStateWillBeCalled(APP_NAME, APP_STATE, false);
-    ASSERT_FALSE(triggerChangeSessionServerState(APP_NAME, APP_STATE));
+    setSessionServerStateWillBeCalled(kAppName, kAppState, false);
+    ASSERT_FALSE(triggerChangeSessionServerState(kAppName, kAppState));
 }
 
 TEST_F(ServerManagerServiceTests, getSessionServerInfoShouldReturnAppSocket)
 {
-    getAppConnectionInfoWillBeCalled(APP_NAME, APP_SOCKET);
-    EXPECT_EQ(triggerGetAppConnectionInfo(APP_NAME), APP_SOCKET);
+    getAppConnectionInfoWillBeCalled(kAppName, kAppSocket);
+    EXPECT_EQ(triggerGetAppConnectionInfo(kAppName), kAppSocket);
 }
 
 TEST_F(ServerManagerServiceTests, setLogLevelsShouldReturnTrueIfOperationSucceeded)

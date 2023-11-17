@@ -86,16 +86,16 @@ WebAudioPlayer::WebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, cons
 
     if (audioMimeType == "audio/x-raw")
     {
-        std::shared_ptr<const WebAudioConfig> config = webAudioConfig.lock();
-        if (!config)
+        std::shared_ptr<const WebAudioConfig> kConfig = webAudioConfig.lock();
+        if (!kConfig)
         {
             throw std::runtime_error("Config is null for 'audio/x-raw'");
         }
-        m_bytesPerFrame = config->pcm.channels * (config->pcm.sampleSize / CHAR_BIT);
+        m_bytesPerFrame = kConfig->pcm.channels * (kConfig->pcm.sampleSize / CHAR_BIT);
         if (m_bytesPerFrame == 0)
         {
-            throw std::runtime_error("Bytes per frame cannot be 0, channels " + std::to_string(config->pcm.channels) +
-                                     ", sampleSize " + std::to_string(config->pcm.sampleSize));
+            throw std::runtime_error("Bytes per frame cannot be 0, channels " + std::to_string(kConfig->pcm.channels) +
+                                     ", sampleSize " + std::to_string(kConfig->pcm.sampleSize));
         }
     }
 

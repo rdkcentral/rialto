@@ -187,13 +187,13 @@ public:
     GstCaps *gstCapsNewSimple(const char *media_type, const char *fieldname, ...) const override
     {
         va_list args;
-        const gchar *property = fieldname;
+        const gchar *kProperty = fieldname;
 
         va_start(args, fieldname);
 
         GType intType = va_arg(args, GType);
         int intValue = va_arg(args, int);
-        GstCaps *result = gstCapsNewSimpleIntStub(media_type, property, intType, intValue);
+        GstCaps *result = gstCapsNewSimpleIntStub(media_type, kProperty, intType, intValue);
 
         va_end(args);
 
@@ -203,50 +203,50 @@ public:
     void gstCapsSetSimple(GstCaps *caps, const gchar *field, ...) const override
     {
         va_list args;
-        const gchar *property = field;
+        const gchar *kProperty = field;
 
         va_start(args, field);
 
-        while (NULL != property)
+        while (NULL != kProperty)
         {
             GType type = va_arg(args, GType);
             if (g_type_is_a(type, G_TYPE_INT))
             {
                 int intValue = va_arg(args, int);
-                gstCapsSetSimpleIntStub(caps, property, type, intValue);
+                gstCapsSetSimpleIntStub(caps, kProperty, type, intValue);
             }
             else if (g_type_is_a(type, G_TYPE_STRING))
             {
-                const char *val = va_arg(args, const char *);
-                gstCapsSetSimpleStringStub(caps, property, type, val);
+                const char *kVal = va_arg(args, const char *);
+                gstCapsSetSimpleStringStub(caps, kProperty, type, kVal);
             }
             else if (g_type_is_a(type, GST_TYPE_BUFFER))
             {
                 GstBuffer *buf = va_arg(args, GstBuffer *);
-                gstCapsSetSimpleBufferStub(caps, property, type, buf);
+                gstCapsSetSimpleBufferStub(caps, kProperty, type, buf);
             }
             else if (g_type_is_a(type, G_TYPE_BOOLEAN))
             {
                 gboolean val = va_arg(args, gboolean);
-                gstCapsSetSimpleBooleanStub(caps, property, type, val);
+                gstCapsSetSimpleBooleanStub(caps, kProperty, type, val);
             }
             else if (g_type_is_a(type, G_TYPE_UINT))
             {
                 unsigned val = va_arg(args, unsigned);
-                gstCapsSetSimpleUintStub(caps, property, type, val);
+                gstCapsSetSimpleUintStub(caps, kProperty, type, val);
             }
             else if (g_type_is_a(type, GST_TYPE_BITMASK))
             {
                 uint64_t val = va_arg(args, uint64_t);
-                gstCapsSetSimpleBitMaskStub(caps, property, type, val);
+                gstCapsSetSimpleBitMaskStub(caps, kProperty, type, val);
             }
             else if (g_type_is_a(type, GST_TYPE_FRACTION))
             {
                 int val1 = va_arg(args, int);
                 int val2 = va_arg(args, int);
-                gstCapsSetSimpleFractionStub(caps, property, type, val1, val2);
+                gstCapsSetSimpleFractionStub(caps, kProperty, type, val1, val2);
             }
-            property = va_arg(args, const gchar *);
+            kProperty = va_arg(args, const gchar *);
         }
 
         va_end(args);
@@ -256,39 +256,39 @@ public:
     {
         GstStructure *structure{nullptr};
         va_list args;
-        const gchar *property = firstfield;
+        const gchar *kProperty = firstfield;
 
         va_start(args, firstfield);
 
-        while (NULL != property)
+        while (NULL != kProperty)
         {
             GType valueType = va_arg(args, GType);
             if (g_type_is_a(valueType, G_TYPE_DOUBLE))
             {
                 double value = va_arg(args, double);
-                structure = gstStructureNewDoubleStub(name, property, valueType, value);
+                structure = gstStructureNewDoubleStub(name, kProperty, valueType, value);
             }
             else if (g_type_is_a(valueType, G_TYPE_BOOLEAN))
             {
                 gboolean value = va_arg(args, gboolean);
-                structure = gstStructureNewBoolStub(name, property, valueType, value);
+                structure = gstStructureNewBoolStub(name, kProperty, valueType, value);
             }
             else if (g_type_is_a(valueType, GST_TYPE_BUFFER))
             {
                 GstBuffer *value = va_arg(args, GstBuffer *);
-                structure = gstStructureNewBufferStub(name, property, valueType, value);
+                structure = gstStructureNewBufferStub(name, kProperty, valueType, value);
             }
             else if (g_type_is_a(valueType, G_TYPE_UINT))
             {
                 uint32_t value = va_arg(args, guint32);
-                structure = gstStructureNewUintStub(name, property, valueType, value);
+                structure = gstStructureNewUintStub(name, kProperty, valueType, value);
             }
             else if (g_type_is_a(valueType, G_TYPE_STRING))
             {
-                const char *value = va_arg(args, const char *);
-                structure = gstStructureNewStringStub(name, property, valueType, value);
+                const char *kValue = va_arg(args, const char *);
+                structure = gstStructureNewStringStub(name, kProperty, valueType, kValue);
             }
-            property = va_arg(args, const gchar *);
+            kProperty = va_arg(args, const gchar *);
         }
 
         va_end(args);
@@ -298,24 +298,24 @@ public:
     void gstStructureSet(GstStructure *structure, const gchar *firstname, ...) const override
     {
         va_list args;
-        const gchar *field = firstname;
+        const gchar *kField = firstname;
 
         va_start(args, firstname);
 
-        while (NULL != field)
+        while (NULL != kField)
         {
             GType type = va_arg(args, GType);
             if (g_type_is_a(type, G_TYPE_STRING))
             {
-                const char *val = va_arg(args, const char *);
-                gstStructureSetStringStub(structure, field, type, val);
+                const char *kVal = va_arg(args, const char *);
+                gstStructureSetStringStub(structure, kField, type, kVal);
             }
             else if (g_type_is_a(type, G_TYPE_UINT))
             {
-                unsigned val = va_arg(args, unsigned);
-                gstStructureSetUintStub(structure, field, type, val);
+                unsigned kVal = va_arg(args, unsigned);
+                gstStructureSetUintStub(structure, kField, type, kVal);
             }
-            field = va_arg(args, const gchar *);
+            kField = va_arg(args, const gchar *);
         }
 
         va_end(args);

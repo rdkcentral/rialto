@@ -69,17 +69,17 @@ protected:
 
     void addCodecDataToCaps(GstCaps *caps) const
     {
-        const std::shared_ptr<CodecData> &codecData = m_attachedSource.getCodecData();
-        if (codecData && CodecDataType::BUFFER == codecData->type)
+        const std::shared_ptr<CodecData> &kCodecData = m_attachedSource.getCodecData();
+        if (kCodecData && CodecDataType::BUFFER == kCodecData->type)
         {
-            gpointer memory = m_glibWrapper->gMemdup(codecData->data.data(), codecData->data.size());
-            GstBuffer *buf = m_gstWrapper->gstBufferNewWrapped(memory, codecData->data.size());
+            gpointer memory = m_glibWrapper->gMemdup(kCodecData->data.data(), kCodecData->data.size());
+            GstBuffer *buf = m_gstWrapper->gstBufferNewWrapped(memory, kCodecData->data.size());
             m_gstWrapper->gstCapsSetSimple(caps, "codec_data", GST_TYPE_BUFFER, buf, nullptr);
             m_gstWrapper->gstBufferUnref(buf);
         }
-        else if (codecData && CodecDataType::STRING == codecData->type)
+        else if (kCodecData && CodecDataType::STRING == kCodecData->type)
         {
-            std::string codecDataStr{codecData->data.begin(), codecData->data.end()};
+            std::string codecDataStr{kCodecData->data.begin(), kCodecData->data.end()};
             m_gstWrapper->gstCapsSetSimple(caps, "codec_data", G_TYPE_STRING, codecDataStr.c_str(), nullptr);
         }
     }
@@ -367,24 +367,24 @@ GstCaps *AttachSource::createCapsFromMediaSource() const
     firebolt::rialto::SourceConfigType configType = m_attachedSource->getConfigType();
     if (configType == firebolt::rialto::SourceConfigType::AUDIO)
     {
-        const IMediaPipeline::MediaSourceAudio &source =
+        const IMediaPipeline::MediaSourceAudio &kSource =
             dynamic_cast<IMediaPipeline::MediaSourceAudio &>(*m_attachedSource);
 
-        capsBuilder = std::make_unique<MediaSourceAudioCapsBuilder>(m_gstWrapper, m_glibWrapper, source);
+        capsBuilder = std::make_unique<MediaSourceAudioCapsBuilder>(m_gstWrapper, m_glibWrapper, kSource);
     }
     else if (configType == firebolt::rialto::SourceConfigType::VIDEO)
     {
-        const IMediaPipeline::MediaSourceVideo &source =
+        const IMediaPipeline::MediaSourceVideo &kSource =
             dynamic_cast<IMediaPipeline::MediaSourceVideo &>(*m_attachedSource);
 
-        capsBuilder = std::make_unique<MediaSourceVideoCapsBuilder>(m_gstWrapper, m_glibWrapper, source);
+        capsBuilder = std::make_unique<MediaSourceVideoCapsBuilder>(m_gstWrapper, m_glibWrapper, kSource);
     }
     else if (configType == firebolt::rialto::SourceConfigType::VIDEO_DOLBY_VISION)
     {
-        const IMediaPipeline::MediaSourceVideoDolbyVision &source =
+        const IMediaPipeline::MediaSourceVideoDolbyVision &kSource =
             dynamic_cast<IMediaPipeline::MediaSourceVideoDolbyVision &>(*m_attachedSource);
 
-        capsBuilder = std::make_unique<MediaSourceVideoDolbyVisionCapsBuilder>(m_gstWrapper, m_glibWrapper, source);
+        capsBuilder = std::make_unique<MediaSourceVideoDolbyVisionCapsBuilder>(m_gstWrapper, m_glibWrapper, kSource);
     }
     else
     {
@@ -397,8 +397,8 @@ GstCaps *AttachSource::createCapsFromMediaSource() const
 
 AudioAttributesPrivate AttachSource::createAudioAttributes() const
 {
-    const IMediaPipeline::MediaSourceAudio &source = dynamic_cast<IMediaPipeline::MediaSourceAudio &>(*m_attachedSource);
-    firebolt::rialto::AudioConfig audioConfig = source.getAudioConfig();
+    const IMediaPipeline::MediaSourceAudio &kSource = dynamic_cast<IMediaPipeline::MediaSourceAudio &>(*m_attachedSource);
+    firebolt::rialto::AudioConfig audioConfig = kSource.getAudioConfig();
     AudioAttributesPrivate audioAttributes{"", // param set below.
                                            audioConfig.numberOfChannels,
                                            audioConfig.sampleRate,
