@@ -201,7 +201,6 @@ void GstGenericPlayer::initMsePipeline()
 {
     // Make playbin
     m_context.pipeline = m_gstWrapper->gstElementFactoryMake("playbin", "media_pipeline");
-
     // Set pipeline flags
     unsigned flagAudio = getGstPlayFlag("audio");
     unsigned flagVideo = getGstPlayFlag("video");
@@ -737,7 +736,7 @@ void GstGenericPlayer::setEos(const firebolt::rialto::MediaSourceType &type)
     }
 }
 
-bool GstGenericPlayer::setWesterossinkRectangle()
+bool GstGenericPlayer::setVideoSinkRectangle()
 {
     bool result = false;
     GstElement *videoSink = m_context.autoVideoChildSink;
@@ -750,7 +749,7 @@ bool GstGenericPlayer::setWesterossinkRectangle()
     {
         char rect[64];
         snprintf(rect, sizeof(rect), "%d,%d,%d,%d", m_context.pendingGeometry.x, m_context.pendingGeometry.y,
-                m_context.pendingGeometry.width, m_context.pendingGeometry.height);
+                 m_context.pendingGeometry.width, m_context.pendingGeometry.height);
         m_glibWrapper->gObjectSet(videoSink, "rectangle", rect, nullptr);
         m_context.pendingGeometry.clear();
         result = true;

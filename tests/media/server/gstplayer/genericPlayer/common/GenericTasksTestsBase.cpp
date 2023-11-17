@@ -318,7 +318,7 @@ void GenericTasksTestsBase::shouldSetupVideoElementWesterossink()
     testContext->m_context.pendingGeometry = kRectangle;
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("westerossink"))).WillOnce(Return(true));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("amlhalasink"))).WillOnce(Return(false));
-    EXPECT_CALL(testContext->m_gstPlayer, setWesterossinkRectangle());
+    EXPECT_CALL(testContext->m_gstPlayer, setVideoSinkRectangle());
     expectSetupVideoElement();
 }
 
@@ -397,7 +397,7 @@ void GenericTasksTestsBase::triggerSetVideoGeometryFailure()
 
 void GenericTasksTestsBase::shouldSetVideoGeometry()
 {
-    EXPECT_CALL(testContext->m_gstPlayer, setWesterossinkRectangle());
+    EXPECT_CALL(testContext->m_gstPlayer, setVideoSinkRectangle());
 }
 
 void GenericTasksTestsBase::triggerSetVideoGeometrySuccess()

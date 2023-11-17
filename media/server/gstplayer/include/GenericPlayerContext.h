@@ -79,7 +79,7 @@ struct GenericPlayerContext
     StreamInfoMap streamInfo{};
 
     /**
-     * @brief The gstreamer source.
+     * @brief Child sink of the autovideosink.
      */
     GstElement *autoVideoChildSink{nullptr};
 

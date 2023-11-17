@@ -69,7 +69,7 @@ public:
      *
      * @retval true on success.
      */
-    virtual bool setWesterossinkRectangle() = 0;
+    virtual bool setVideoSinkRectangle() = 0;
 
     /**
      * @brief Sends NeedMediaData notification. Called by the worker thread.
@@ -146,7 +146,7 @@ public:
     virtual void updatePlaybackGroup(GstElement *typefind, const GstCaps *caps) = 0;
 
     /**
-     * @brief Updates Playback Group in PlayerContext.
+     * @brief Updates the autovideosink child element stored in the player context.
      */
     virtual void updateAutoVideoSinkChild(GObject* object) = 0;
 };
