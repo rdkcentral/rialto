@@ -86,6 +86,16 @@ SetupElement::SetupElement(GenericPlayerContext &context, std::shared_ptr<IGstWr
     : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_player{player}, m_element{element}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetupElement");
+
+    // Signal connection has to happen immediately (we cannot wait for thread switch)
+    const gchar *m_elementTypeName = g_type_name(G_OBJECT_TYPE(m_element));
+    if (0 == g_strcmp0(m_elementTypeName, "GstAutoVideoSink"))
+    {
+        m_glibWrapper->gSignalConnect(m_element, "child-added", G_CALLBACK(autoVideoSinkChildAddedCallback),
+                                      &m_player);
+        m_glibWrapper->gSignalConnect(m_element, "child-removed", G_CALLBACK(autoVideoSinkChildRemovedCallback),
+                                      &m_player);
+    }
 }
 
 SetupElement::~SetupElement()
@@ -96,22 +106,11 @@ SetupElement::~SetupElement()
 void SetupElement::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing SetupElement");
-
-    const gchar *elementTypeName = g_type_name(G_OBJECT_TYPE(m_element));
-
-    // For AutoVideoSink listen for child sink updates
-    if (0 == g_strcmp0(elementTypeName, "GstAutoVideoSink"))
-    {
-        m_glibWrapper->gSignalConnect(m_element, "child-added", G_CALLBACK(autoVideoSinkChildAddedCallback),
-                                      &m_player);
-        m_glibWrapper->gSignalConnect(m_element, "child-removed", G_CALLBACK(autoVideoSinkChildRemovedCallback),
-                                      &m_player);
-    }
     
     // In playbin3 AutoVideoSink uses names like videosink-actual-sink-brcmvideo whereas playbin
     // creates sink with names brcmvideosink*, so it is better to check actual type here
-    if ((0 == g_strcmp0(elementTypeName, "Gstbrcmvideosink")) ||
-        (0 == g_strcmp0(elementTypeName, "GstWesterosSink")))
+    if ((0 == g_strcmp0(m_elementTypeName, "Gstbrcmvideosink")) ||
+        (0 == g_strcmp0(m_elementTypeName, "GstWesterosSink")))
     {
         if (!m_context.pendingGeometry.empty())
         {

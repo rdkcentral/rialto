@@ -741,27 +741,31 @@ bool GstGenericPlayer::setWesterossinkRectangle()
 {
     bool result = false;
     GstElement *videoSink = nullptr;
-    m_glibWrapper->gObjectGet(m_context.pipeline, "video-sink", &videoSink, nullptr);
-    if (videoSink)
+    if (nullptr == m_context.autoVideoChildSink)
     {
-        // If video-sink is autovideosink element, we need to check the child sink for the property
-        GstElement *actualVideoSink = (nullptr == m_context.autoVideoChildSink) ? videoSink | m_context.autoVideoChildSink;
-        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(actualVideoSink), "rectangle"))
-        {
-            char rect[64];
-            snprintf(rect, sizeof(rect), "%d,%d,%d,%d", m_context.pendingGeometry.x, m_context.pendingGeometry.y,
-                    m_context.pendingGeometry.width, m_context.pendingGeometry.height);
-            m_glibWrapper->gObjectSet(actualVideoSink, "rectangle", rect, nullptr);
-            m_context.pendingGeometry.clear();
-            result = true;
-        }
+        m_glibWrapper->gObjectGet(m_context.pipeline, "video-sink", &videoSink, nullptr);
+    }
+    else
+    {
+        // For autovideosink we need to check the child sink for the property
+        videoSink = m_context.autoVideoChildSink;
+    }
+
+    if (videoSink && m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink), "rectangle"))
+    {
+        char rect[64];
+        snprintf(rect, sizeof(rect), "%d,%d,%d,%d", m_context.pendingGeometry.x, m_context.pendingGeometry.y,
+                m_context.pendingGeometry.width, m_context.pendingGeometry.height);
+        m_glibWrapper->gObjectSet(videoSink, "rectangle", rect, nullptr);
+        m_context.pendingGeometry.clear();
+        result = true;
     }
     else
     {
         RIALTO_SERVER_LOG_ERROR("Failed to set the westerossink rectangle");
     }
 
-    if (videoSink)
+    if (!m_context.autoVideoChildSink && videoSink)
         m_gstWrapper->gstObjectUnref(GST_OBJECT(videoSink));
 
     return result;
@@ -916,6 +920,11 @@ void GstGenericPlayer::updatePlaybackGroup(GstElement *typefind, const GstCaps *
 
 void GstGenericPlayer::updateAutoVideoSinkChild(GObject* object)
 {
+    if (m_context.autoVideoChildSink && object)
+    {
+        RIALTO_SERVER_LOG_WARN("AutoVideoSink child is been overwritten");
+    }
+
     if (object)
     {
         m_context.autoVideoChildSink = GST_ELEMENT(object);

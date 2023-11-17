@@ -44,6 +44,7 @@ private:
     std::shared_ptr<IGlibWrapper> m_glibWrapper;
     IGstGenericPlayerPrivate &m_player;
     GstElement *m_element;
+    gchar *m_elementTypeName;
 };
 } // namespace firebolt::rialto::server::tasks::generic
 
