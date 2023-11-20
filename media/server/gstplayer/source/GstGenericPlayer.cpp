@@ -739,27 +739,38 @@ void GstGenericPlayer::setEos(const firebolt::rialto::MediaSourceType &type)
 bool GstGenericPlayer::setVideoSinkRectangle()
 {
     bool result = false;
-    GstElement *videoSink = m_context.autoVideoChildSink;
-    if (!videoSink)
+    GstElement *videoSink = nullptr;
+    m_glibWrapper->gObjectGet(m_context.pipeline, "video-sink", &videoSink, nullptr);
+    if (videoSink)
     {
-        m_glibWrapper->gObjectGet(m_context.pipeline, "video-sink", &videoSink, nullptr);
+        // For AutoVideoSink we set properties on the child sink
+        GstElement *actualVideoSink = nullptr;
+        const std::string elementTypeName = m_glibWrapper->gTypeName(G_OBJECT_TYPE(videoSink));
+        if (elementTypeName == "GstAutoVideoSink" && m_context.autoVideoChildSink)
+        {
+            actualVideoSink = m_context.autoVideoChildSink;
+        }
+        else
+        {
+            actualVideoSink = videoSink;
+        }
+    
+        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(actualVideoSink), "rectangle"))
+        {
+            char rect[64];
+            snprintf(rect, sizeof(rect), "%d,%d,%d,%d", m_context.pendingGeometry.x, m_context.pendingGeometry.y,
+                    m_context.pendingGeometry.width, m_context.pendingGeometry.height);
+            m_glibWrapper->gObjectSet(actualVideoSink, "rectangle", rect, nullptr);
+            m_context.pendingGeometry.clear();
+            result = true;
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to set the westerossink rectangle");
+        }
     }
 
-    if (videoSink && m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink), "rectangle"))
-    {
-        char rect[64];
-        snprintf(rect, sizeof(rect), "%d,%d,%d,%d", m_context.pendingGeometry.x, m_context.pendingGeometry.y,
-                 m_context.pendingGeometry.width, m_context.pendingGeometry.height);
-        m_glibWrapper->gObjectSet(videoSink, "rectangle", rect, nullptr);
-        m_context.pendingGeometry.clear();
-        result = true;
-    }
-    else
-    {
-        RIALTO_SERVER_LOG_ERROR("Failed to set the westerossink rectangle");
-    }
-
-    if (!m_context.autoVideoChildSink && videoSink)
+    if (videoSink)
         m_gstWrapper->gstObjectUnref(GST_OBJECT(videoSink));
 
     return result;
