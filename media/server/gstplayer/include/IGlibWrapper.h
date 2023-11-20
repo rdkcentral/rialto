@@ -315,7 +315,14 @@ public:
      *
      * @retval < 0 or > 0 if str1 < or > str2, 0 if they are equal.
      */
-    virtual GObject* gValueGetObject(const GValue* value) const = 0;
+    virtual gpointer gValueGetObject(const GValue* value) const = 0;
+
+    /**
+     * @brief Clears the value and unsets the type. 
+     *
+     * @param[in] value : Value to unset.
+     */
+    virtual void gValueUnset(GValue* value) const = 0;
 };
 
 }; // namespace firebolt::rialto::server

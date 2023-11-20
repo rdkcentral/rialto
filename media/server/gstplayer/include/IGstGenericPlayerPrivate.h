@@ -146,9 +146,14 @@ public:
     virtual void updatePlaybackGroup(GstElement *typefind, const GstCaps *caps) = 0;
 
     /**
-     * @brief Updates the autovideosink child element stored in the player context.
+     * @brief Adds the autovideosink child element to the player context.
      */
-    virtual void updateAutoVideoSinkChild(GObject* object) = 0;
+    virtual void addAutoVideoSinkChild(GObject* object) = 0;
+
+    /**
+     * @brief Adds the autovideosink child element from the player context.
+     */
+    virtual void removeAutoVideoSinkChild(GObject* object) = 0;
 };
 } // namespace firebolt::rialto::server
 

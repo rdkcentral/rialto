@@ -912,14 +912,39 @@ void GstGenericPlayer::updatePlaybackGroup(GstElement *typefind, const GstCaps *
     m_workerThread->enqueueTask(m_taskFactory->createUpdatePlaybackGroup(m_context, typefind, caps));
 }
 
-void GstGenericPlayer::updateAutoVideoSinkChild(GObject* object)
+void GstGenericPlayer::addAutoVideoSinkChild(GObject* object)
 {
-    if (m_context.autoVideoChildSink && object)
+    // Only store sinks
+    GstElementFlags flags;
+    m_glibWrapper->gObjectGet(object, "flags", &flags, nullptr);
+    if (flags & GST_ELEMENT_FLAG_SINK) 
     {
-        RIALTO_SERVER_LOG_WARN("AutoVideoSink child is been overwritten");
-    }
+        RIALTO_SERVER_LOG_DEBUG("Store AutoVideoSink child sink");
 
-    m_context.autoVideoChildSink = (object) ? GST_ELEMENT(object) : nullptr;
+        if (!m_context.autoVideoChildSink && m_context.autoVideoChildSink != GST_ELEMENT(object))
+        {
+            RIALTO_SERVER_LOG_WARN("AutoVideoSink child is been overwritten");
+        }
+        m_context.autoVideoChildSink = GST_ELEMENT(object);
+    }
+}
+
+void GstGenericPlayer::removeAutoVideoSinkChild(GObject* object)
+{
+    GstElementFlags flags;
+    m_glibWrapper->gObjectGet(object, "flags", &flags, nullptr);
+    if (flags & GST_ELEMENT_FLAG_SINK) 
+    {
+        RIALTO_SERVER_LOG_DEBUG("Remove AutoVideoSink child sink");
+    
+        if (m_context.autoVideoChildSink && m_context.autoVideoChildSink != GST_ELEMENT(object))
+        {
+            RIALTO_SERVER_LOG_WARN("AutoVideoSink child sink is not the same as the one stored");
+            return;
+        }
+
+        m_context.autoVideoChildSink = nullptr;
+    }
 }
 
 bool GstGenericPlayer::shouldEnableNativeAudio()

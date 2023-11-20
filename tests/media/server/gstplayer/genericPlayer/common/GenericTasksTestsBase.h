@@ -37,6 +37,7 @@ using ::testing::ReturnRef;
 using ::testing::SaveArg;
 using ::testing::StrEq;
 using ::testing::StrictMock;
+using ::testing::SetArgPointee;
 
 /**
  * @brief GenericTasksTest Base class
@@ -76,13 +77,21 @@ protected:
     void shouldSetupVideoElementOnly();
     void shouldSetupVideoElementWesterossink();
     void shouldSetupVideoElementAmlhalasink();
-    void shouldSetupVideoElementPendingGeometryNonWesterissink();
+    void shouldSetupVideoElementPendingGeometryNotSupported();
+    void shouldSetupVideoElementBrcmvideosink();
+    void shouldSetupVideoElementAutoVideoSinkWithChildren();
+    void shouldSetupVideoElementAutoVideoSinkWithoutChildren();
     void shouldSetupAudioElementOnly();
     void shouldSetVideoUnderflowCallback();
     void triggerSetupElement();
     void triggerVideoUnderflowCallback();
     void shouldSetAudioUnderflowCallback();
     void triggerAudioUnderflowCallback();
+    void shouldAddFirstAutoVideoSinkChild();
+    void shouldAddAutoVideoSinkChildCallback();
+    void triggerAutoVideoSinkChildAddedCallback();
+    void shouldRemoveAutoVideoSinkChildCallback();
+    void triggerAutoVideoSinkChildRemovedCallback();
 
     // SetVideoGeometry test methods
     void setPipelineToNull();
@@ -299,6 +308,7 @@ private:
     // SetupElement helper methods
     void expectSetupVideoElement();
     void expectSetupAudioElement();
+    void expectSetupVideoElementAutoVideoSink(bool hasChilden);
 
     // AttachSource helper methods
     void expectSetGenericVideoCaps();

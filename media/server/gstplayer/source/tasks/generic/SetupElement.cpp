@@ -66,7 +66,7 @@ void autoVideoSinkChildAddedCallback(GstChildProxy* obj, GObject* object, gchar*
     RIALTO_SERVER_LOG_DEBUG("AutoVideoSink added element %s", name);
     firebolt::rialto::server::IGstGenericPlayerPrivate *player =
         static_cast<firebolt::rialto::server::IGstGenericPlayerPrivate *>(self);
-    player->updateAutoVideoSinkChild(object);
+    player->addAutoVideoSinkChild(object);
 }
 
 void autoVideoSinkChildRemovedCallback(GstChildProxy* obj, GObject* object, gchar* name, gpointer self)
@@ -74,7 +74,7 @@ void autoVideoSinkChildRemovedCallback(GstChildProxy* obj, GObject* object, gcha
     RIALTO_SERVER_LOG_DEBUG("AutoVideoSink removed element %s", name);
     firebolt::rialto::server::IGstGenericPlayerPrivate *player =
         static_cast<firebolt::rialto::server::IGstGenericPlayerPrivate *>(self);
-    player->updateAutoVideoSinkChild(nullptr);
+    player->removeAutoVideoSinkChild(object);
 }
 } // namespace
 
@@ -85,11 +85,13 @@ SetupElement::SetupElement(GenericPlayerContext &context, std::shared_ptr<IGstWr
                            GstElement *element)
     : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_player{player}, m_element{element}
 {
+    RIALTO_SERVER_LOG_ERROR("lukewill:");
     RIALTO_SERVER_LOG_DEBUG("Constructing SetupElement");
 }
 
 SetupElement::~SetupElement()
 {
+    RIALTO_SERVER_LOG_ERROR("lukewill:");
     RIALTO_SERVER_LOG_DEBUG("SetupElement finished");
 }
 
@@ -97,10 +99,12 @@ void SetupElement::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing SetupElement");
     
-    const gchar *elementTypeName = m_glibWrapper->gTypeName(G_OBJECT_TYPE(m_element));
+    // In playbin3 AutoVideoSink uses names like videosink-actual-sink-brcmvideo whereas playbin
+    // creates sink with names brcmvideosink*, so it is better to check actual type name here
+    const std::string elementTypeName = m_glibWrapper->gTypeName(G_OBJECT_TYPE(m_element));
 
     // Check and store child sink so we can set underlying properties
-    if (0 == m_glibWrapper->gStrcmp0(elementTypeName, "GstAutoVideoSink"))
+    if (elementTypeName == "GstAutoVideoSink")
     {
         m_glibWrapper->gSignalConnect(m_element, "child-added", G_CALLBACK(autoVideoSinkChildAddedCallback),
                                       &m_player);
@@ -108,26 +112,24 @@ void SetupElement::execute() const
                                       &m_player);
 
         // AutoVideoSink sets child before it is setup on the pipeline, so check for children here
-        GstIterator *sinks = gst_bin_iterate_sinks(GST_BIN(m_element));
+        GstIterator *sinks = m_gstWrapper->gstBinIterateSinks(GST_BIN(m_element));
         if (sinks && sinks->size > 1)
         {
             RIALTO_SERVER_LOG_WARN("More than one child sink attached");
         }
 
         GValue elem = G_VALUE_INIT;
-        if (gst_iterator_next(sinks, &elem) == GST_ITERATOR_OK)
+        if (m_gstWrapper->gstIteratorNext(sinks, &elem) == GST_ITERATOR_OK)
         {
-            m_player.updateAutoVideoSinkChild(reinterpret_cast<GObject*>(g_value_get_object(&elem)));
+            m_player.addAutoVideoSinkChild(reinterpret_cast<GObject*>(m_glibWrapper->gValueGetObject(&elem)));
         }
+        m_glibWrapper->gValueUnset(&elem);
 
         if (sinks)
-            gst_iterator_free(sinks);
+            m_gstWrapper->gstIteratorFree(sinks);
     }
 
-    // In playbin3 AutoVideoSink uses names like videosink-actual-sink-brcmvideo whereas playbin
-    // creates sink with names brcmvideosink*, so it is better to check actual type here
-    if ((0 == m_glibWrapper->gStrcmp0(elementTypeName, "Gstbrcmvideosink")) ||
-        (0 == m_glibWrapper->gStrcmp0(elementTypeName, "GstWesterosSink")))
+    if (elementTypeName == "GstWesterosSink" || elementTypeName == "Gstbrcmvideosink")
     {
         if (!m_context.pendingGeometry.empty())
         {

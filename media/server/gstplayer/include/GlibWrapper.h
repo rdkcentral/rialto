@@ -137,7 +137,9 @@ public:
 
     int gStrcmp0(const char* str1, const char* str2) const override { return g_strcmp0(str1, str2); }
 
-    GObject* gValueGetObject(const GValue* value) const override { return g_value_get_object(value); }
+    gpointer gValueGetObject(const GValue* value) const override { return g_value_get_object(value); }
+
+    void gValueUnset(GValue* value) const override { return g_value_unset(value); }
 };
 
 }; // namespace firebolt::rialto::server
