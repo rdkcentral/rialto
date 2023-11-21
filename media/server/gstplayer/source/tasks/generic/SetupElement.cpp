@@ -101,9 +101,9 @@ void SetupElement::execute() const
     // creates sink with names brcmvideosink*, so it is better to check actual type name here
     const std::string elementTypeName = m_glibWrapper->gTypeName(G_OBJECT_TYPE(m_element));
 
-    // Check and store child sink so we can set underlying properties
     if (elementTypeName == "GstAutoVideoSink")
     {
+        // Check and store child sink so we can set underlying properties
         m_glibWrapper->gSignalConnect(m_element, "child-added", G_CALLBACK(autoVideoSinkChildAddedCallback), &m_player);
         m_glibWrapper->gSignalConnect(m_element, "child-removed", G_CALLBACK(autoVideoSinkChildRemovedCallback),
                                       &m_player);
