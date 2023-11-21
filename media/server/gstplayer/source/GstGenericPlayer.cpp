@@ -744,25 +744,7 @@ bool GstGenericPlayer::setVideoSinkRectangle()
     if (videoSink)
     {
         // For AutoVideoSink we set properties on the child sink
-        GstElement *actualVideoSink = nullptr;
-        const std::string elementTypeName = m_glibWrapper->gTypeName(G_OBJECT_TYPE(videoSink));
-        if (elementTypeName == "GstAutoVideoSink")
-        {
-            if (!m_context.autoVideoChildSink)
-            {
-                RIALTO_SERVER_LOG_WARN("No child sink has been added to the autovideosink");
-                actualVideoSink = videoSink;
-            }
-            else
-            {
-                actualVideoSink = m_context.autoVideoChildSink;
-            }
-        }
-        else
-        {
-            actualVideoSink = videoSink;
-        }
-
+        GstElement *actualVideoSink = getSinkChildIfAutoVideoSink(videoSink);
         if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(actualVideoSink), "rectangle"))
         {
             char rect[64];
@@ -776,10 +758,9 @@ bool GstGenericPlayer::setVideoSinkRectangle()
         {
             RIALTO_SERVER_LOG_ERROR("Failed to set the video rectangle");
         }
-    }
 
-    if (videoSink)
         m_gstWrapper->gstObjectUnref(GST_OBJECT(videoSink));
+    }
 
     return result;
 }
@@ -868,7 +849,7 @@ void GstGenericPlayer::renderFrame()
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createRenderFrame(m_context));
+        m_workerThread->enqueueTask(m_taskFactory->createRenderFrame(m_context, *this));
     }
 }
 
@@ -959,6 +940,27 @@ void GstGenericPlayer::removeAutoVideoSinkChild(GObject *object)
         }
 
         m_context.autoVideoChildSink = nullptr;
+    }
+}
+
+GstElement* GstGenericPlayer::getSinkChildIfAutoVideoSink(GstElement *sink)
+{
+    const std::string elementTypeName = m_glibWrapper->gTypeName(G_OBJECT_TYPE(sink));
+    if (elementTypeName == "GstAutoVideoSink")
+    {
+        if (!m_context.autoVideoChildSink)
+        {
+            RIALTO_SERVER_LOG_WARN("No child sink has been added to the autovideosink");
+            return sink;
+        }
+        else
+        {
+            return m_context.autoVideoChildSink;
+        }
+    }
+    else
+    {
+        return sink;
     }
 }
 

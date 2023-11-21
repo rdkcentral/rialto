@@ -160,6 +160,16 @@ public:
      * @param[in] object    : Element removed from the autovideosink.
      */
     virtual void removeAutoVideoSinkChild(GObject *object) = 0;
+
+    /**
+     * @brief Gets the video sink element child sink if present.
+     *        Only gets children for GstAutoVideoSink's.
+     *
+     * @param[in] sink    : Sink element to check.
+     *
+     * @retval Underlying child video sink or 'sink' if there are no children.
+     */
+    virtual GstElement* getSinkChildIfAutoVideoSink(GstElement *sink) = 0;
 };
 } // namespace firebolt::rialto::server
 

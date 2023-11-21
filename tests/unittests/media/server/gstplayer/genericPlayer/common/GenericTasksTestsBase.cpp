@@ -1916,6 +1916,7 @@ void GenericTasksTestsBase::shouldRenderFrame()
                 *elementPtr = testContext->m_element;
             }));
 
+    EXPECT_CALL(testContext->m_gstPlayer, getSinkChildIfAutoVideoSink(testContext->m_element));
     EXPECT_CALL(*testContext->m_glibWrapper,
                 gObjectClassFindProperty(G_OBJECT_GET_CLASS(testContext->m_element), StrEq("frame-step-on-preroll")))
         .WillOnce(Return(&testContext->m_paramSpec));
@@ -1930,7 +1931,7 @@ void GenericTasksTestsBase::shouldRenderFrame()
 void GenericTasksTestsBase::triggerRenderFrame()
 {
     firebolt::rialto::server::tasks::generic::RenderFrame task{testContext->m_context, testContext->m_gstWrapper,
-                                                               testContext->m_glibWrapper};
+                                                               testContext->m_glibWrapper, testContext->m_gstPlayer};
     task.execute();
 }
 

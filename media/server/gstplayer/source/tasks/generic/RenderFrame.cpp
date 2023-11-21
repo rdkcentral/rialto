@@ -27,8 +27,8 @@
 namespace firebolt::rialto::server::tasks::generic
 {
 RenderFrame::RenderFrame(GenericPlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper,
-                         std::shared_ptr<IGlibWrapper> glibWrapper)
-    : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper(glibWrapper)
+                         std::shared_ptr<IGlibWrapper> glibWrapper, IGstGenericPlayerPrivate &player)
+    : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper(glibWrapper), m_player{player}
 {
 }
 
@@ -40,14 +40,16 @@ void RenderFrame::execute() const
     m_glibWrapper->gObjectGet(m_context.pipeline, "video-sink", &videoSink, nullptr);
     if (videoSink)
     {
-        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink), kStepOnPrerollPropertyName.c_str()))
+        // For AutoVideoSink we set properties on the child sink
+        GstElement *actualVideoSink = m_player.getSinkChildIfAutoVideoSink(videoSink);
+        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(actualVideoSink), kStepOnPrerollPropertyName.c_str()))
         {
             RIALTO_SERVER_LOG_INFO("Rendering preroll");
 
-            m_glibWrapper->gObjectSet(videoSink, kStepOnPrerollPropertyName.c_str(), 1, nullptr);
-            m_gstWrapper->gstElementSendEvent(videoSink,
+            m_glibWrapper->gObjectSet(actualVideoSink, kStepOnPrerollPropertyName.c_str(), 1, nullptr);
+            m_gstWrapper->gstElementSendEvent(actualVideoSink,
                                               m_gstWrapper->gstEventNewStep(GST_FORMAT_BUFFERS, 1, 1.0, true, false));
-            m_glibWrapper->gObjectSet(videoSink, kStepOnPrerollPropertyName.c_str(), 0, nullptr);
+            m_glibWrapper->gObjectSet(actualVideoSink, kStepOnPrerollPropertyName.c_str(), 0, nullptr);
         }
         else
         {
