@@ -483,11 +483,14 @@ public:
         return gst_message_parse_error(message, gerror, debug);
     }
 
-    GstIterator *gstBinIterateSinks(GstBin * bin) const override { return gst_bin_iterate_sinks(bin); }
+    GstIterator *gstBinIterateSinks(GstBin *bin) const override { return gst_bin_iterate_sinks(bin); }
 
-    GstIteratorResult gstIteratorNext(GstIterator * it, GValue * elem) const override { return gst_iterator_next(it, elem); }
+    GstIteratorResult gstIteratorNext(GstIterator *it, GValue *elem) const override
+    {
+        return gst_iterator_next(it, elem);
+    }
 
-    void gstIteratorFree(GstIterator * it) const override { return gst_iterator_free(it); }
+    void gstIteratorFree(GstIterator *it) const override { return gst_iterator_free(it); }
 };
 
 }; // namespace firebolt::rialto::server

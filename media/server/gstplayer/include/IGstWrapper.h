@@ -1122,7 +1122,7 @@ public:
      *
      * @retval an iterator of sink elements.
      */
-    virtual GstIterator *gstBinIterateSinks(GstBin * bin) const = 0;
+    virtual GstIterator *gstBinIterateSinks(GstBin *bin) const = 0;
 
     /**
      * @brief Gets the next item from the iterator.
@@ -1135,14 +1135,14 @@ public:
      *         GST_ITERATOR_RESYNC if the element list was concurrently updated.
      *         GST_ITERATOR_ERROR if an error occured.
      */
-    virtual GstIteratorResult gstIteratorNext(GstIterator * it, GValue * elem) const = 0;
+    virtual GstIteratorResult gstIteratorNext(GstIterator *it, GValue *elem) const = 0;
 
     /**
      * @brief Free the iterator.
      *
      * @param[in]  it   : the iterator to free.
      */
-    virtual void gstIteratorFree(GstIterator * it) const = 0;
+    virtual void gstIteratorFree(GstIterator *it) const = 0;
 };
 
 }; // namespace firebolt::rialto::server

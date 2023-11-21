@@ -103,7 +103,7 @@ protected:
         std::mutex m_waitMutex;
         std::condition_variable m_waitCv;
         bool m_waitBool = false;
-    
+
         // Call any method to modify GstGenericPlayer context
         GstAppSrc appSrc{};
         std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
@@ -125,7 +125,7 @@ protected:
         m_waitCv.wait(lock, [&] { return m_waitBool; });
     }
 
-    GstElement* initRealElement()
+    GstElement *initRealElement()
     {
         gst_init(nullptr, nullptr);
         GstElementFactory *elementFactory = gst_element_factory_find("fakesrc");
@@ -134,20 +134,16 @@ protected:
         return element;
     }
 
-    GstElement* setAutoVideoSinkChild()
+    GstElement *setAutoVideoSinkChild()
     {
         modifyContext([&](GenericPlayerContext &context) { context.autoVideoChildSink = &m_element; });
         return &m_element;
     }
 
-    GenericPlayerContext* getPlayerContext()
+    GenericPlayerContext *getPlayerContext()
     {
         GenericPlayerContext *saveContext;
-        modifyContext(
-        [&](GenericPlayerContext &context)
-        {
-            saveContext = &context;
-        });
+        modifyContext([&](GenericPlayerContext &context) { saveContext = &context; });
         return saveContext;
     }
 };
@@ -262,8 +258,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldNotSetVideoRectangleWhenVideoSinkDoesN
                 GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
                 *elementPtr = m_realElement;
             }));
-    EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_realElement)))
-        .WillOnce(Return(kElementTypeName.c_str()));
+    EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_realElement))).WillOnce(Return(kElementTypeName.c_str()));
     EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, CharStrMatcher("rectangle"))).WillOnce(Return(nullptr));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_realElement));
     EXPECT_FALSE(m_sut->setVideoSinkRectangle());
@@ -280,8 +275,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldSetVideoRectangle)
                 GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
                 *elementPtr = m_realElement;
             }));
-    EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_realElement)))
-        .WillOnce(Return(kElementTypeName.c_str()));
+    EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_realElement))).WillOnce(Return(kElementTypeName.c_str()));
     EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, CharStrMatcher("rectangle")))
         .WillOnce(Return(&m_rectangleSpec));
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_realElement, CharStrMatcher("rectangle")));
@@ -1072,7 +1066,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldNotRemoveAutoVideoSinkChildIfDifferent
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldNotRemoveAutoVideoSinkChildIfNotAdded)
-{ 
+{
     GenericPlayerContext *context = getPlayerContext();
 
     GST_OBJECT_FLAG_SET(GST_OBJECT(m_realElement), GST_ELEMENT_FLAG_SINK);

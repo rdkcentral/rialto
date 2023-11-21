@@ -762,12 +762,12 @@ bool GstGenericPlayer::setVideoSinkRectangle()
         {
             actualVideoSink = videoSink;
         }
-    
+
         if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(actualVideoSink), "rectangle"))
         {
             char rect[64];
             snprintf(rect, sizeof(rect), "%d,%d,%d,%d", m_context.pendingGeometry.x, m_context.pendingGeometry.y,
-                    m_context.pendingGeometry.width, m_context.pendingGeometry.height);
+                     m_context.pendingGeometry.width, m_context.pendingGeometry.height);
             m_glibWrapper->gObjectSet(actualVideoSink, "rectangle", rect, nullptr);
             m_context.pendingGeometry.clear();
             result = true;
@@ -931,10 +931,10 @@ void GstGenericPlayer::updatePlaybackGroup(GstElement *typefind, const GstCaps *
     m_workerThread->enqueueTask(m_taskFactory->createUpdatePlaybackGroup(m_context, typefind, caps));
 }
 
-void GstGenericPlayer::addAutoVideoSinkChild(GObject* object)
+void GstGenericPlayer::addAutoVideoSinkChild(GObject *object)
 {
     // Only add children that are sinks
-    if (GST_OBJECT_FLAG_IS_SET(GST_ELEMENT(object), GST_ELEMENT_FLAG_SINK)) 
+    if (GST_OBJECT_FLAG_IS_SET(GST_ELEMENT(object), GST_ELEMENT_FLAG_SINK))
     {
         RIALTO_SERVER_LOG_DEBUG("Store AutoVideoSink child sink");
 
@@ -946,12 +946,12 @@ void GstGenericPlayer::addAutoVideoSinkChild(GObject* object)
     }
 }
 
-void GstGenericPlayer::removeAutoVideoSinkChild(GObject* object)
+void GstGenericPlayer::removeAutoVideoSinkChild(GObject *object)
 {
-    if (GST_OBJECT_FLAG_IS_SET(GST_ELEMENT(object), GST_ELEMENT_FLAG_SINK)) 
+    if (GST_OBJECT_FLAG_IS_SET(GST_ELEMENT(object), GST_ELEMENT_FLAG_SINK))
     {
         RIALTO_SERVER_LOG_DEBUG("Remove AutoVideoSink child sink");
-    
+
         if (m_context.autoVideoChildSink && m_context.autoVideoChildSink != GST_ELEMENT(object))
         {
             RIALTO_SERVER_LOG_WARN("AutoVideoSink child sink is not the same as the one stored");

@@ -151,7 +151,7 @@ public:
      *
      * @param[in] object    : Element added to the autovideosink.
      */
-    virtual void addAutoVideoSinkChild(GObject* object) = 0;
+    virtual void addAutoVideoSinkChild(GObject *object) = 0;
 
     /**
      * @brief Notification that a child element has been removed from the autovideosink.
@@ -159,7 +159,7 @@ public:
      *
      * @param[in] object    : Element removed from the autovideosink.
      */
-    virtual void removeAutoVideoSinkChild(GObject* object) = 0;
+    virtual void removeAutoVideoSinkChild(GObject *object) = 0;
 };
 } // namespace firebolt::rialto::server
 

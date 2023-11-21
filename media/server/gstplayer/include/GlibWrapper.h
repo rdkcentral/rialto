@@ -133,13 +133,13 @@ public:
 
     void gErrorFree(GError *error) const override { g_error_free(error); }
 
-    const gchar* gTypeName(GType type) const override { return g_type_name(type); }
+    const gchar *gTypeName(GType type) const override { return g_type_name(type); }
 
-    int gStrcmp0(const char* str1, const char* str2) const override { return g_strcmp0(str1, str2); }
+    int gStrcmp0(const char *str1, const char *str2) const override { return g_strcmp0(str1, str2); }
 
-    gpointer gValueGetObject(const GValue* value) const override { return g_value_get_object(value); }
+    gpointer gValueGetObject(const GValue *value) const override { return g_value_get_object(value); }
 
-    void gValueUnset(GValue* value) const override { return g_value_unset(value); }
+    void gValueUnset(GValue *value) const override { return g_value_unset(value); }
 };
 
 }; // namespace firebolt::rialto::server

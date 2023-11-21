@@ -393,8 +393,9 @@ void GenericTasksTestsBase::expectSetupVideoElementAutoVideoSink(bool hasChilden
                 testContext->m_childAddedCallback = c_handler;
                 return kSignalId;
             }));
-    EXPECT_CALL(*testContext->m_glibWrapper, gSignalConnect(G_OBJECT(testContext->m_element),
-                                                            CharStrMatcher("child-removed"), _, &testContext->m_gstPlayer))
+    EXPECT_CALL(*testContext->m_glibWrapper,
+                gSignalConnect(G_OBJECT(testContext->m_element), CharStrMatcher("child-removed"), _,
+                               &testContext->m_gstPlayer))
         .WillOnce(Invoke(
             [&](gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data)
             {
@@ -404,7 +405,8 @@ void GenericTasksTestsBase::expectSetupVideoElementAutoVideoSink(bool hasChilden
     EXPECT_CALL(*testContext->m_gstWrapper, gstBinIterateSinks(GST_BIN(testContext->m_element)))
         .WillOnce(Return(&testContext->m_iterator));
     EXPECT_CALL(*testContext->m_gstWrapper, gstIteratorNext(&testContext->m_iterator, _))
-        .WillOnce(DoAll(SetArgPointee<1>(testContext->m_value), Return(hasChilden ? GST_ITERATOR_OK : GST_ITERATOR_ERROR)));
+        .WillOnce(
+            DoAll(SetArgPointee<1>(testContext->m_value), Return(hasChilden ? GST_ITERATOR_OK : GST_ITERATOR_ERROR)));
     EXPECT_CALL(*testContext->m_glibWrapper, gValueUnset(_));
     EXPECT_CALL(*testContext->m_gstWrapper, gstIteratorFree(&testContext->m_iterator));
     expectSetupVideoElement();
@@ -449,9 +451,9 @@ void GenericTasksTestsBase::shouldAddAutoVideoSinkChildCallback()
 void GenericTasksTestsBase::triggerAutoVideoSinkChildAddedCallback()
 {
     ASSERT_TRUE(testContext->m_childAddedCallback);
-    ((void (*)(GstChildProxy* obj, GObject* object, gchar* name, gpointer self))testContext->m_childAddedCallback)((GstChildProxy*) testContext->m_element,
-                                                                                               &testContext->m_gObj, "GstAutoVideoSink", 
-                                                                                               &testContext->m_gstPlayer);
+    ((void (*)(GstChildProxy * obj, GObject * object, gchar * name, gpointer self))
+         testContext->m_childAddedCallback)(reinterpret_cast<GstChildProxy *>(testContext->m_element), &testContext->m_gObj,
+                                            "GstAutoVideoSink", &testContext->m_gstPlayer);
 }
 
 void GenericTasksTestsBase::shouldRemoveAutoVideoSinkChildCallback()
@@ -462,9 +464,9 @@ void GenericTasksTestsBase::shouldRemoveAutoVideoSinkChildCallback()
 void GenericTasksTestsBase::triggerAutoVideoSinkChildRemovedCallback()
 {
     ASSERT_TRUE(testContext->m_childRemovedCallback);
-    ((void (*)(GstChildProxy* obj, GObject* object, gchar* name, gpointer self))testContext->m_childRemovedCallback)((GstChildProxy*) testContext->m_element,
-                                                                                               &testContext->m_gObj, "GstAutoVideoSink", 
-                                                                                               &testContext->m_gstPlayer);
+    ((void (*)(GstChildProxy * obj, GObject * object, gchar * name, gpointer self))
+         testContext->m_childRemovedCallback)(reinterpret_cast<GstChildProxy *>(testContext->m_element), &testContext->m_gObj,
+                                              "GstAutoVideoSink", &testContext->m_gstPlayer);
 }
 
 void GenericTasksTestsBase::triggerSetupElement()
@@ -496,7 +498,7 @@ void GenericTasksTestsBase::shouldSetVideoGeometry()
 void GenericTasksTestsBase::shouldAddFirstAutoVideoSinkChild()
 {
     EXPECT_CALL(*testContext->m_glibWrapper, gValueGetObject(_)).WillOnce(Return(testContext->m_element));
-    EXPECT_CALL(testContext->m_gstPlayer, addAutoVideoSinkChild(reinterpret_cast<GObject*>(testContext->m_element)));
+    EXPECT_CALL(testContext->m_gstPlayer, addAutoVideoSinkChild(reinterpret_cast<GObject *>(testContext->m_element)));
 }
 
 void GenericTasksTestsBase::triggerSetVideoGeometrySuccess()
