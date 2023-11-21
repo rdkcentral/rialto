@@ -59,6 +59,8 @@ const std::string kCodecDataStr{"test"};
 const std::shared_ptr<firebolt::rialto::CodecData> kCodecDataWithString{std::make_shared<firebolt::rialto::CodecData>(
     firebolt::rialto::CodecData{std::vector<std::uint8_t>{kCodecDataStr.begin(), kCodecDataStr.end()},
                                 firebolt::rialto::CodecDataType::STRING})};
+const std::string kAutoVideoSinkTypeName{"GstAutoVideoSink"};
+const std::string kElementTypeName{"GenericSink"};
 } // namespace
 
 bool operator==(const GstRialtoProtectionData &lhs, const GstRialtoProtectionData &rhs)
@@ -92,6 +94,10 @@ protected:
 
     void modifyContext(const std::function<void(GenericPlayerContext &)> &fun)
     {
+        std::mutex m_waitMutex;
+        std::condition_variable m_waitCv;
+        bool m_waitBool = false;
+    
         // Call any method to modify GstGenericPlayer context
         GstAppSrc appSrc{};
         std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
@@ -101,10 +107,25 @@ protected:
                 [&](GenericPlayerContext &context, GstAppSrc *src)
                 {
                     fun(context);
+                    std::unique_lock<std::mutex> lock{m_waitMutex};
+                    m_waitBool = true;
+                    m_waitCv.notify_one();
                     return std::move(task);
                 }));
 
         m_sut->scheduleNeedMediaData(&appSrc);
+
+        std::unique_lock<std::mutex> lock{m_waitMutex};
+        m_waitCv.wait(lock, [&] { return m_waitBool; });
+    }
+
+    GstElement* initRealVideoSink()
+    {
+        gst_init(nullptr, nullptr);
+        GstElementFactory *videoSinkFactory = gst_element_factory_find("fakesrc");
+        GstElement *videoSink = gst_element_factory_create(videoSinkFactory, nullptr);
+        gst_object_unref(videoSinkFactory);
+        return videoSink;
     }
 };
 
@@ -211,35 +232,72 @@ TEST_F(GstGenericPlayerPrivateTest, shouldNotSetVideoRectangleWhenVideoSinkIsNul
 
 TEST_F(GstGenericPlayerPrivateTest, shouldNotSetVideoRectangleWhenVideoSinkDoesNotHaveRectangleProperty)
 {
-    GstElement videoSink{};
+    GstElement *videoSink = initRealVideoSink();
+
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, CharStrMatcher("video-sink"), _))
         .WillOnce(Invoke(
             [&](gpointer object, const gchar *first_property_name, void *element)
             {
                 GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
-                *elementPtr = &videoSink;
+                *elementPtr = videoSink;
             }));
+    EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(videoSink)))
+        .WillOnce(Return(kElementTypeName.c_str()));
     EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, CharStrMatcher("rectangle"))).WillOnce(Return(nullptr));
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&videoSink));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(videoSink));
     EXPECT_FALSE(m_sut->setVideoSinkRectangle());
+    
+    gst_object_unref(videoSink);
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldSetVideoRectangle)
 {
-    GstElement videoSink{};
+    GstElement *videoSink = initRealVideoSink();
     GParamSpec rectangleSpec{};
+    GstElement autoVideoSinkChild{};
+    modifyContext([&](GenericPlayerContext &context) { context.autoVideoChildSink = &autoVideoSinkChild; });
+
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, CharStrMatcher("video-sink"), _))
         .WillOnce(Invoke(
             [&](gpointer object, const gchar *first_property_name, void *element)
             {
                 GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
-                *elementPtr = &videoSink;
+                *elementPtr = videoSink;
             }));
+    EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(videoSink)))
+        .WillOnce(Return(kElementTypeName.c_str()));
     EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, CharStrMatcher("rectangle")))
         .WillOnce(Return(&rectangleSpec));
-    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(_, CharStrMatcher("rectangle")));
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&videoSink));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(videoSink, CharStrMatcher("rectangle")));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(videoSink));
     EXPECT_TRUE(m_sut->setVideoSinkRectangle());
+
+    gst_object_unref(videoSink);
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldSetVideoRectangleAutoVideoSink)
+{
+    GstElement *videoSink = initRealVideoSink();
+    GParamSpec rectangleSpec{};
+    GstElement autoVideoSinkChild{};
+    modifyContext([&](GenericPlayerContext &context) { context.autoVideoChildSink = &autoVideoSinkChild; });
+
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, CharStrMatcher("video-sink"), _))
+        .WillOnce(Invoke(
+            [&](gpointer object, const gchar *first_property_name, void *element)
+            {
+                GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
+                *elementPtr = videoSink;
+            }));
+    EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(videoSink)))
+        .WillOnce(Return(kAutoVideoSinkTypeName.c_str()));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, CharStrMatcher("rectangle")))
+        .WillOnce(Return(&rectangleSpec));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&autoVideoSinkChild, CharStrMatcher("rectangle")));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(videoSink));
+    EXPECT_TRUE(m_sut->setVideoSinkRectangle());
+
+    gst_object_unref(videoSink);
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldNotifyNeedAudioData)
@@ -943,4 +1001,114 @@ TEST_F(GstGenericPlayerPrivateTest, shouldUpdatePlaybackGroup)
     EXPECT_CALL(m_taskFactoryMock, createUpdatePlaybackGroup(_, &typefind, &caps)).WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->updatePlaybackGroup(&typefind, &caps);
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldAddAutoVideoSinkChildSink)
+{
+    GenericPlayerContext *saveContext;
+    modifyContext(
+        [&](GenericPlayerContext &context)
+        {
+            saveContext = &context;
+        });
+
+    GstElement *element = initRealVideoSink();
+    GST_OBJECT_FLAG_SET(GST_OBJECT(element), GST_ELEMENT_FLAG_SINK);
+    m_sut->addAutoVideoSinkChild(G_OBJECT(element));
+    EXPECT_EQ(saveContext->autoVideoChildSink, element);
+
+    gst_object_unref(element);
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldNotAddAutoVideoSinkChildIfNotASink)
+{
+    GenericPlayerContext *saveContext;
+    modifyContext(
+        [&](GenericPlayerContext &context)
+        {
+            saveContext = &context;
+        });
+
+    GstElement *element = initRealVideoSink();
+    m_sut->addAutoVideoSinkChild(G_OBJECT(element));
+    EXPECT_EQ(saveContext->autoVideoChildSink, nullptr);
+
+    gst_object_unref(element);
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldAddAutoVideoSinkChildAndOverwrite)
+{
+    GenericPlayerContext *saveContext;
+    modifyContext(
+        [&](GenericPlayerContext &context)
+        {
+            saveContext = &context;
+        });
+
+    GstElement *element1 = initRealVideoSink();
+    GstElement *element2 = initRealVideoSink();
+    GST_OBJECT_FLAG_SET(GST_OBJECT(element1), GST_ELEMENT_FLAG_SINK);
+    GST_OBJECT_FLAG_SET(GST_OBJECT(element2), GST_ELEMENT_FLAG_SINK);
+    saveContext->autoVideoChildSink = element1;
+    m_sut->addAutoVideoSinkChild(G_OBJECT(element2));
+    EXPECT_EQ(saveContext->autoVideoChildSink, element2);
+
+    gst_object_unref(element2);
+    gst_object_unref(element1);
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldRemoveAutoVideoSinkChildSink)
+{
+    GenericPlayerContext *saveContext;
+    modifyContext(
+        [&](GenericPlayerContext &context)
+        {
+            saveContext = &context;
+        });
+
+    GstElement *element = initRealVideoSink();
+    GST_OBJECT_FLAG_SET(GST_OBJECT(element), GST_ELEMENT_FLAG_SINK);
+    saveContext->autoVideoChildSink = element;
+    m_sut->removeAutoVideoSinkChild(G_OBJECT(element));
+    EXPECT_EQ(saveContext->autoVideoChildSink, nullptr);
+
+    gst_object_unref(element);
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldNotRemoveAutoVideoSinkChildIfDifferentSink)
+{
+    GenericPlayerContext *saveContext;
+    modifyContext(
+        [&](GenericPlayerContext &context)
+        {
+            saveContext = &context;
+        });
+
+    GstElement *element1 = initRealVideoSink();
+    GstElement *element2 = initRealVideoSink();
+    GST_OBJECT_FLAG_SET(GST_OBJECT(element1), GST_ELEMENT_FLAG_SINK);
+    GST_OBJECT_FLAG_SET(GST_OBJECT(element2), GST_ELEMENT_FLAG_SINK);
+    saveContext->autoVideoChildSink = element1;
+    m_sut->removeAutoVideoSinkChild(G_OBJECT(element2));
+    EXPECT_EQ(saveContext->autoVideoChildSink, element1);
+
+    gst_object_unref(element1);
+    gst_object_unref(element2);
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldNotRemoveAutoVideoSinkChildIfNotAdded)
+{ 
+    GenericPlayerContext *saveContext;
+    modifyContext(
+        [&](GenericPlayerContext &context)
+        {
+            saveContext = &context;
+        });
+
+    GstElement *element = initRealVideoSink();
+    GST_OBJECT_FLAG_SET(GST_OBJECT(element), GST_ELEMENT_FLAG_SINK);
+    m_sut->removeAutoVideoSinkChild(G_OBJECT(element));
+    EXPECT_EQ(saveContext->autoVideoChildSink, nullptr);
+
+    gst_object_unref(element);
 }

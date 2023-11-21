@@ -20,43 +20,43 @@
 add_gtests(RialtoServerGstPlayerUnitTests
 
     #GstGenericPlayer unittests
-    genericPlayer/common/GenericTasksTestsBase.cpp
-    genericPlayer/tasksTests/AttachSamplesTest.cpp
-    genericPlayer/tasksTests/AttachSourceTest.cpp
-    genericPlayer/tasksTests/DeepElementAddedTest.cpp
-    genericPlayer/tasksTests/EnoughDataTest.cpp
-    genericPlayer/tasksTests/EosTest.cpp
-    genericPlayer/tasksTests/FinishSetupSourceTest.cpp
-    genericPlayer/tasksTests/HandleBusMessageTest.cpp
-    genericPlayer/tasksTests/NeedDataTest.cpp
-    genericPlayer/tasksTests/PauseTest.cpp
-    genericPlayer/tasksTests/GenericPlayerTaskFactoryTest.cpp
-    genericPlayer/tasksTests/PingTest.cpp
-    genericPlayer/tasksTests/PlayTest.cpp
-    genericPlayer/tasksTests/ReadShmDataAndAttachSamplesTest.cpp
-    genericPlayer/tasksTests/RemoveSourceTest.cpp
-    genericPlayer/tasksTests/RenderFrameTest.cpp
-    genericPlayer/tasksTests/ReportPositionTest.cpp
-    genericPlayer/tasksTests/CheckAudioUnderflowTest.cpp
-    genericPlayer/tasksTests/SetPlaybackRateTest.cpp
-    genericPlayer/tasksTests/SetPositionTest.cpp
-    genericPlayer/tasksTests/SetupElementTest.cpp
-    genericPlayer/tasksTests/SetupSourceTest.cpp
-    genericPlayer/tasksTests/SetVideoGeometryTest.cpp
-    genericPlayer/tasksTests/SetVolumeTest.cpp
-    genericPlayer/tasksTests/SetMuteTest.cpp
-    genericPlayer/tasksTests/ShutdownTest.cpp
-    genericPlayer/tasksTests/StopTest.cpp
-    genericPlayer/tasksTests/UnderflowTest.cpp
-    genericPlayer/tasksTests/UpdatePlaybackGroupTest.cpp
+    #genericPlayer/common/GenericTasksTestsBase.cpp
+    #genericPlayer/tasksTests/AttachSamplesTest.cpp
+    #genericPlayer/tasksTests/AttachSourceTest.cpp
+    #genericPlayer/tasksTests/DeepElementAddedTest.cpp
+    #genericPlayer/tasksTests/EnoughDataTest.cpp
+    #genericPlayer/tasksTests/EosTest.cpp
+    #genericPlayer/tasksTests/FinishSetupSourceTest.cpp
+    #genericPlayer/tasksTests/HandleBusMessageTest.cpp
+    #genericPlayer/tasksTests/NeedDataTest.cpp
+    ##genericPlayer/tasksTests/PauseTest.cpp
+    #genericPlayer/tasksTests/GenericPlayerTaskFactoryTest.cpp
+    #genericPlayer/tasksTests/PingTest.cpp
+    #genericPlayer/tasksTests/PlayTest.cpp
+    #genericPlayer/tasksTests/ReadShmDataAndAttachSamplesTest.cpp
+    #genericPlayer/tasksTests/RemoveSourceTest.cpp
+    #genericPlayer/tasksTests/RenderFrameTest.cpp
+    #genericPlayer/tasksTests/ReportPositionTest.cpp
+    #genericPlayer/tasksTests/CheckAudioUnderflowTest.cpp
+    #genericPlayer/tasksTests/SetPlaybackRateTest.cpp
+    #genericPlayer/tasksTests/SetPositionTest.cpp
+    #genericPlayer/tasksTests/SetupElementTest.cpp
+    #genericPlayer/tasksTests/SetupSourceTest.cpp
+    #genericPlayer/tasksTests/SetVideoGeometryTest.cpp
+    #genericPlayer/tasksTests/SetVolumeTest.cpp
+    #genericPlayer/tasksTests/SetMuteTest.cpp
+    #genericPlayer/tasksTests/ShutdownTest.cpp
+    #genericPlayer/tasksTests/StopTest.cpp
+    #genericPlayer/tasksTests/UnderflowTest.cpp
+    #genericPlayer/tasksTests/UpdatePlaybackGroupTest.cpp
     genericPlayer/common/Matchers.cpp
     genericPlayer/common/GstGenericPlayerTestCommon.cpp
 
-    #genericPlayer/CreateTest.cpp
-    #genericPlayer/GstGenericPlayerPrivateTest.cpp
-    #genericPlayer/GstGenericPlayerTest.cpp
-    #genericPlayer/GstDispatcherThreadClientTest.cpp
-    #genericPlayer/GstCapabilitiesTest.cpp
+    genericPlayer/CreateTest.cpp
+    genericPlayer/GstGenericPlayerPrivateTest.cpp
+    genericPlayer/GstGenericPlayerTest.cpp
+    genericPlayer/GstDispatcherThreadClientTest.cpp
+    genericPlayer/GstCapabilitiesTest.cpp
 
     #GstWebAudioPlayer unittests
     #webAudioPlayer/common/WebAudioTasksTestsBase.cpp

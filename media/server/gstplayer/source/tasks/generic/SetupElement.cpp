@@ -121,7 +121,7 @@ void SetupElement::execute() const
         GValue elem = G_VALUE_INIT;
         if (m_gstWrapper->gstIteratorNext(sinks, &elem) == GST_ITERATOR_OK)
         {
-            m_player.addAutoVideoSinkChild(reinterpret_cast<GObject*>(m_glibWrapper->gValueGetObject(&elem)));
+            m_player.addAutoVideoSinkChild(G_OBJECT(m_glibWrapper->gValueGetObject(&elem)));
         }
         m_glibWrapper->gValueUnset(&elem);
 
