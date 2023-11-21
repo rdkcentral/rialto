@@ -79,8 +79,7 @@ protected:
     void shouldSetupVideoElementAmlhalasink();
     void shouldSetupVideoElementPendingGeometryNotSupported();
     void shouldSetupVideoElementBrcmvideosink();
-    void shouldSetupVideoElementAutoVideoSinkWithChildren();
-    void shouldSetupVideoElementAutoVideoSinkWithoutChildren();
+    void shouldSetupVideoElementAutoVideoSink();
     void shouldSetupVideoElementAutoVideoSinkWithMultipleChildren();
     void shouldSetupAudioElementOnly();
     void shouldSetVideoUnderflowCallback();
@@ -89,6 +88,7 @@ protected:
     void shouldSetAudioUnderflowCallback();
     void triggerAudioUnderflowCallback();
     void shouldAddFirstAutoVideoSinkChild();
+    void shouldNotAddAutoVideoSinkChild();
     void shouldAddAutoVideoSinkChildCallback();
     void triggerAutoVideoSinkChildAddedCallback();
     void shouldRemoveAutoVideoSinkChildCallback();
@@ -309,7 +309,6 @@ private:
     // SetupElement helper methods
     void expectSetupVideoElement();
     void expectSetupAudioElement();
-    void expectSetupVideoElementAutoVideoSink(bool hasChilden);
 
     // AttachSource helper methods
     void expectSetGenericVideoCaps();

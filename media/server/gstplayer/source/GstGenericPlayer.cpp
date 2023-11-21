@@ -747,10 +747,10 @@ bool GstGenericPlayer::setVideoSinkRectangle()
         GstElement *actualVideoSink = getSinkChildIfAutoVideoSink(videoSink);
         if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(actualVideoSink), "rectangle"))
         {
-            char rect[64];
-            snprintf(rect, sizeof(rect), "%d,%d,%d,%d", m_context.pendingGeometry.x, m_context.pendingGeometry.y,
-                     m_context.pendingGeometry.width, m_context.pendingGeometry.height);
-            m_glibWrapper->gObjectSet(actualVideoSink, "rectangle", rect, nullptr);
+            std::string rect =
+                std::to_string(m_context.pendingGeometry.x) + ',' + std::to_string(m_context.pendingGeometry.y) + ',' +
+                std::to_string(m_context.pendingGeometry.width) + ',' + std::to_string(m_context.pendingGeometry.height);
+            m_glibWrapper->gObjectSet(actualVideoSink, "rectangle", rect.c_str(), nullptr);
             m_context.pendingGeometry.clear();
             result = true;
         }
@@ -945,8 +945,8 @@ void GstGenericPlayer::removeAutoVideoSinkChild(GObject *object)
 
 GstElement *GstGenericPlayer::getSinkChildIfAutoVideoSink(GstElement *sink)
 {
-    const std::string elementTypeName = m_glibWrapper->gTypeName(G_OBJECT_TYPE(sink));
-    if (elementTypeName == "GstAutoVideoSink")
+    const std::string kElementTypeName = m_glibWrapper->gTypeName(G_OBJECT_TYPE(sink));
+    if (kElementTypeName == "GstAutoVideoSink")
     {
         if (!m_context.autoVideoChildSink)
         {

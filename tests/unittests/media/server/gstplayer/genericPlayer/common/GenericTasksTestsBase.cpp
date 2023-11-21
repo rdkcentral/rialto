@@ -364,23 +364,13 @@ void GenericTasksTestsBase::shouldSetupVideoElementBrcmvideosink()
     expectSetupVideoElement();
 }
 
-void GenericTasksTestsBase::shouldSetupVideoElementAutoVideoSinkWithChildren()
-{
-    expectSetupVideoElementAutoVideoSink(true);
-}
-
-void GenericTasksTestsBase::shouldSetupVideoElementAutoVideoSinkWithoutChildren()
-{
-    expectSetupVideoElementAutoVideoSink(false);
-}
-
 void GenericTasksTestsBase::shouldSetupVideoElementAutoVideoSinkWithMultipleChildren()
 {
     testContext->m_iterator.size = 2;
-    expectSetupVideoElementAutoVideoSink(true);
+    shouldSetupVideoElementAutoVideoSink();
 }
 
-void GenericTasksTestsBase::expectSetupVideoElementAutoVideoSink(bool hasChilden)
+void GenericTasksTestsBase::shouldSetupVideoElementAutoVideoSink()
 {
     EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
         .WillOnce(Return(kAutoVideoSinkTypeName.c_str()));
@@ -404,9 +394,6 @@ void GenericTasksTestsBase::expectSetupVideoElementAutoVideoSink(bool hasChilden
             }));
     EXPECT_CALL(*testContext->m_gstWrapper, gstBinIterateSinks(GST_BIN(testContext->m_element)))
         .WillOnce(Return(&testContext->m_iterator));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstIteratorNext(&testContext->m_iterator, _))
-        .WillOnce(
-            DoAll(SetArgPointee<1>(testContext->m_value), Return(hasChilden ? GST_ITERATOR_OK : GST_ITERATOR_ERROR)));
     EXPECT_CALL(*testContext->m_glibWrapper, gValueUnset(_));
     EXPECT_CALL(*testContext->m_gstWrapper, gstIteratorFree(&testContext->m_iterator));
     expectSetupVideoElement();
@@ -497,8 +484,16 @@ void GenericTasksTestsBase::shouldSetVideoGeometry()
 
 void GenericTasksTestsBase::shouldAddFirstAutoVideoSinkChild()
 {
+    EXPECT_CALL(*testContext->m_gstWrapper, gstIteratorNext(&testContext->m_iterator, _))
+        .WillOnce(DoAll(SetArgPointee<1>(testContext->m_value), Return(GST_ITERATOR_OK)));
     EXPECT_CALL(*testContext->m_glibWrapper, gValueGetObject(_)).WillOnce(Return(testContext->m_element));
     EXPECT_CALL(testContext->m_gstPlayer, addAutoVideoSinkChild(reinterpret_cast<GObject *>(testContext->m_element)));
+}
+
+void GenericTasksTestsBase::shouldNotAddAutoVideoSinkChild()
+{
+    EXPECT_CALL(*testContext->m_gstWrapper, gstIteratorNext(&testContext->m_iterator, _))
+        .WillOnce(DoAll(SetArgPointee<1>(testContext->m_value), Return(GST_ITERATOR_ERROR)));
 }
 
 void GenericTasksTestsBase::triggerSetVideoGeometrySuccess()
