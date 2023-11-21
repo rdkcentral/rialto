@@ -140,7 +140,7 @@ private:
     void updatePlaybackGroup(GstElement *typefind, const GstCaps *caps) override;
     void addAutoVideoSinkChild(GObject *object) override;
     void removeAutoVideoSinkChild(GObject *object) override;
-    GstElement* getSinkChildIfAutoVideoSink(GstElement *sink) override;
+    GstElement *getSinkChildIfAutoVideoSink(GstElement *sink) override;
 
 private:
     /**

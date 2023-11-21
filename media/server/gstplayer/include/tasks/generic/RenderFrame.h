@@ -22,9 +22,9 @@
 
 #include "GenericPlayerContext.h"
 #include "IGlibWrapper.h"
+#include "IGstGenericPlayerPrivate.h"
 #include "IGstWrapper.h"
 #include "IPlayerTask.h"
-#include "IGstGenericPlayerPrivate.h"
 #include <cstdint>
 #include <memory>
 

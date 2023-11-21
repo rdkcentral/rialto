@@ -169,7 +169,7 @@ public:
      *
      * @retval Underlying child video sink or 'sink' if there are no children.
      */
-    virtual GstElement* getSinkChildIfAutoVideoSink(GstElement *sink) = 0;
+    virtual GstElement *getSinkChildIfAutoVideoSink(GstElement *sink) = 0;
 };
 } // namespace firebolt::rialto::server
 

@@ -54,7 +54,7 @@ public:
     MOCK_METHOD(void, updatePlaybackGroup, (GstElement * typefind, const GstCaps *caps), (override));
     MOCK_METHOD(void, addAutoVideoSinkChild, (GObject * object), (override));
     MOCK_METHOD(void, removeAutoVideoSinkChild, (GObject * object), (override));
-    MOCK_METHOD(GstElement*, getSinkChildIfAutoVideoSink, (GstElement *sink), (override));
+    MOCK_METHOD(GstElement *, getSinkChildIfAutoVideoSink, (GstElement * sink), (override));
 };
 } // namespace firebolt::rialto::server
 

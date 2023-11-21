@@ -943,7 +943,7 @@ void GstGenericPlayer::removeAutoVideoSinkChild(GObject *object)
     }
 }
 
-GstElement* GstGenericPlayer::getSinkChildIfAutoVideoSink(GstElement *sink)
+GstElement *GstGenericPlayer::getSinkChildIfAutoVideoSink(GstElement *sink)
 {
     const std::string elementTypeName = m_glibWrapper->gTypeName(G_OBJECT_TYPE(sink));
     if (elementTypeName == "GstAutoVideoSink")

@@ -42,7 +42,8 @@ void RenderFrame::execute() const
     {
         // For AutoVideoSink we set properties on the child sink
         GstElement *actualVideoSink = m_player.getSinkChildIfAutoVideoSink(videoSink);
-        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(actualVideoSink), kStepOnPrerollPropertyName.c_str()))
+        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(actualVideoSink),
+                                                    kStepOnPrerollPropertyName.c_str()))
         {
             RIALTO_SERVER_LOG_INFO("Rendering preroll");
 

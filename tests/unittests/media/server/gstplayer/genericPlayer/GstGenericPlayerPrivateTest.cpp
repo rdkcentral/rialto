@@ -266,8 +266,6 @@ TEST_F(GstGenericPlayerPrivateTest, shouldNotSetVideoRectangleWhenVideoSinkDoesN
 
 TEST_F(GstGenericPlayerPrivateTest, shouldSetVideoRectangle)
 {
-    setAutoVideoSinkChild();
-
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, CharStrMatcher("video-sink"), _))
         .WillOnce(Invoke(
             [&](gpointer object, const gchar *first_property_name, void *element)
@@ -286,7 +284,6 @@ TEST_F(GstGenericPlayerPrivateTest, shouldSetVideoRectangle)
 TEST_F(GstGenericPlayerPrivateTest, shouldSetVideoRectangleAutoVideoSink)
 {
     GstElement *autoVideoSinkChild = setAutoVideoSinkChild();
-
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, CharStrMatcher("video-sink"), _))
         .WillOnce(Invoke(
             [&](gpointer object, const gchar *first_property_name, void *element)
@@ -301,6 +298,28 @@ TEST_F(GstGenericPlayerPrivateTest, shouldSetVideoRectangleAutoVideoSink)
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(autoVideoSinkChild, CharStrMatcher("rectangle")));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_realElement));
     EXPECT_TRUE(m_sut->setVideoSinkRectangle());
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldGetSinkChildAutoVideoSink)
+{
+    GstElement *autoVideoSinkChild = setAutoVideoSinkChild();
+    EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_realElement)))
+        .WillOnce(Return(kAutoVideoSinkTypeName.c_str()));
+    EXPECT_EQ(autoVideoSinkChild, m_sut->getSinkChildIfAutoVideoSink(m_realElement));
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldNotGetSinkChildGenericSink)
+{
+    setAutoVideoSinkChild();
+    EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_realElement))).WillOnce(Return(kElementTypeName.c_str()));
+    EXPECT_EQ(m_realElement, m_sut->getSinkChildIfAutoVideoSink(m_realElement));
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldNotGetSinkChildAutoVideoSink)
+{
+    EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_realElement)))
+        .WillOnce(Return(kAutoVideoSinkTypeName.c_str()));
+    EXPECT_EQ(m_realElement, m_sut->getSinkChildIfAutoVideoSink(m_realElement));
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldNotifyNeedAudioData)

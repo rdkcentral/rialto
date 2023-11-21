@@ -79,6 +79,7 @@ public:
     GstSegment m_segment{};
     GstEvent m_event2{};
     GstIterator m_iterator{};
+    GstElement m_childElement{};
 
     // Glib members
     guint m_signals[1]{123};

@@ -452,8 +452,8 @@ void GenericTasksTestsBase::triggerAutoVideoSinkChildAddedCallback()
 {
     ASSERT_TRUE(testContext->m_childAddedCallback);
     ((void (*)(GstChildProxy * obj, GObject * object, gchar * name, gpointer self))
-         testContext->m_childAddedCallback)(reinterpret_cast<GstChildProxy *>(testContext->m_element), &testContext->m_gObj,
-                                            "GstAutoVideoSink", &testContext->m_gstPlayer);
+         testContext->m_childAddedCallback)(reinterpret_cast<GstChildProxy *>(testContext->m_element),
+                                            &testContext->m_gObj, "GstAutoVideoSink", &testContext->m_gstPlayer);
 }
 
 void GenericTasksTestsBase::shouldRemoveAutoVideoSinkChildCallback()
@@ -465,8 +465,8 @@ void GenericTasksTestsBase::triggerAutoVideoSinkChildRemovedCallback()
 {
     ASSERT_TRUE(testContext->m_childRemovedCallback);
     ((void (*)(GstChildProxy * obj, GObject * object, gchar * name, gpointer self))
-         testContext->m_childRemovedCallback)(reinterpret_cast<GstChildProxy *>(testContext->m_element), &testContext->m_gObj,
-                                              "GstAutoVideoSink", &testContext->m_gstPlayer);
+         testContext->m_childRemovedCallback)(reinterpret_cast<GstChildProxy *>(testContext->m_element),
+                                              &testContext->m_gObj, "GstAutoVideoSink", &testContext->m_gstPlayer);
 }
 
 void GenericTasksTestsBase::triggerSetupElement()
@@ -1916,15 +1916,17 @@ void GenericTasksTestsBase::shouldRenderFrame()
                 *elementPtr = testContext->m_element;
             }));
 
-    EXPECT_CALL(testContext->m_gstPlayer, getSinkChildIfAutoVideoSink(testContext->m_element));
-    EXPECT_CALL(*testContext->m_glibWrapper,
-                gObjectClassFindProperty(G_OBJECT_GET_CLASS(testContext->m_element), StrEq("frame-step-on-preroll")))
+    EXPECT_CALL(testContext->m_gstPlayer, getSinkChildIfAutoVideoSink(testContext->m_element))
+        .WillOnce(Return(&testContext->m_childElement));
+    EXPECT_CALL(*testContext->m_glibWrapper, gObjectClassFindProperty(G_OBJECT_GET_CLASS(&testContext->m_childElement),
+                                                                      StrEq("frame-step-on-preroll")))
         .WillOnce(Return(&testContext->m_paramSpec));
-    EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(testContext->m_element, StrEq("frame-step-on-preroll")))
+    EXPECT_CALL(*testContext->m_glibWrapper,
+                gObjectSetStub(&testContext->m_childElement, StrEq("frame-step-on-preroll")))
         .Times(2);
     EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewStep(GST_FORMAT_BUFFERS, 1, 1.0, true, false))
         .WillOnce(Return(&testContext->m_event));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstElementSendEvent(testContext->m_element, &testContext->m_event));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstElementSendEvent(&testContext->m_childElement, &testContext->m_event));
     EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(GST_OBJECT(testContext->m_element)));
 }
 
@@ -1956,6 +1958,8 @@ void GenericTasksTestsBase::shouldFindPropertyFailure()
                 *elementPtr = testContext->m_element;
             }));
 
+    EXPECT_CALL(testContext->m_gstPlayer, getSinkChildIfAutoVideoSink(testContext->m_element))
+        .WillOnce(Return(testContext->m_element));
     EXPECT_CALL(*testContext->m_glibWrapper,
                 gObjectClassFindProperty(G_OBJECT_GET_CLASS(testContext->m_element), StrEq("frame-step-on-preroll")))
         .WillOnce(Return(nullptr));
