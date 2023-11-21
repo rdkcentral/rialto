@@ -81,6 +81,7 @@ protected:
     void shouldSetupVideoElementBrcmvideosink();
     void shouldSetupVideoElementAutoVideoSinkWithChildren();
     void shouldSetupVideoElementAutoVideoSinkWithoutChildren();
+    void shouldSetupVideoElementAutoVideoSinkWithMultipleChildren();
     void shouldSetupAudioElementOnly();
     void shouldSetVideoUnderflowCallback();
     void triggerSetupElement();

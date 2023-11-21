@@ -275,7 +275,6 @@ void GenericTasksTestsBase::expectSetupVideoElement()
                 return kSignalId;
             }));
     EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(_));
-    std::cout << "lukewill 3" << std::endl;
 }
 
 void GenericTasksTestsBase::expectSetupAudioElement()
@@ -338,11 +337,11 @@ void GenericTasksTestsBase::shouldSetupVideoElementAmlhalasink()
         .WillOnce(Return(kElementTypeName.c_str()));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("amlhalasink"))).WillOnce(Return(true));
     EXPECT_CALL(*testContext->m_glibWrapper,
-                gObjectSetStub(G_OBJECT((testContext->m_element)), CharStrMatcher("wait-video")));
+                gObjectSetStub(G_OBJECT(testContext->m_element), CharStrMatcher("wait-video")));
     EXPECT_CALL(*testContext->m_glibWrapper,
-                gObjectSetStub(G_OBJECT((testContext->m_element)), CharStrMatcher("a-wait-timeout")));
+                gObjectSetStub(G_OBJECT(testContext->m_element), CharStrMatcher("a-wait-timeout")));
     EXPECT_CALL(*testContext->m_glibWrapper,
-                gObjectSetStub(G_OBJECT((testContext->m_element)), CharStrMatcher("disable-xrun")));
+                gObjectSetStub(G_OBJECT(testContext->m_element), CharStrMatcher("disable-xrun")));
     expectSetupVideoElement();
 }
 
@@ -373,6 +372,12 @@ void GenericTasksTestsBase::shouldSetupVideoElementAutoVideoSinkWithChildren()
 void GenericTasksTestsBase::shouldSetupVideoElementAutoVideoSinkWithoutChildren()
 {
     expectSetupVideoElementAutoVideoSink(false);
+}
+
+void GenericTasksTestsBase::shouldSetupVideoElementAutoVideoSinkWithMultipleChildren()
+{
+    testContext->m_iterator.size = 2;
+    expectSetupVideoElementAutoVideoSink(true);
 }
 
 void GenericTasksTestsBase::expectSetupVideoElementAutoVideoSink(bool hasChilden)

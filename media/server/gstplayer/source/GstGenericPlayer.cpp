@@ -746,9 +746,17 @@ bool GstGenericPlayer::setVideoSinkRectangle()
         // For AutoVideoSink we set properties on the child sink
         GstElement *actualVideoSink = nullptr;
         const std::string elementTypeName = m_glibWrapper->gTypeName(G_OBJECT_TYPE(videoSink));
-        if (elementTypeName == "GstAutoVideoSink" && m_context.autoVideoChildSink)
+        if (elementTypeName == "GstAutoVideoSink")
         {
-            actualVideoSink = m_context.autoVideoChildSink;
+            if (!m_context.autoVideoChildSink)
+            {
+                RIALTO_SERVER_LOG_WARN("No child sink has been added to the autovideosink");
+                actualVideoSink = videoSink;
+            }
+            else
+            {
+                actualVideoSink = m_context.autoVideoChildSink;
+            }
         }
         else
         {
@@ -766,7 +774,7 @@ bool GstGenericPlayer::setVideoSinkRectangle()
         }
         else
         {
-            RIALTO_SERVER_LOG_ERROR("Failed to set the westerossink rectangle");
+            RIALTO_SERVER_LOG_ERROR("Failed to set the video rectangle");
         }
     }
 

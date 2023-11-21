@@ -85,13 +85,11 @@ SetupElement::SetupElement(GenericPlayerContext &context, std::shared_ptr<IGstWr
                            GstElement *element)
     : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_player{player}, m_element{element}
 {
-    RIALTO_SERVER_LOG_ERROR("lukewill:");
     RIALTO_SERVER_LOG_DEBUG("Constructing SetupElement");
 }
 
 SetupElement::~SetupElement()
 {
-    RIALTO_SERVER_LOG_ERROR("lukewill:");
     RIALTO_SERVER_LOG_DEBUG("SetupElement finished");
 }
 

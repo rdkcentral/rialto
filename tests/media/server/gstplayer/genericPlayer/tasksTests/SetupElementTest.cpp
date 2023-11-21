@@ -66,6 +66,13 @@ TEST_F(SetupElementTest, shouldSetupVideoElementWithoutChildSinkForAutoVideoSink
     triggerSetupElement();
 }
 
+TEST_F(SetupElementTest, shouldSetupVideoElementWithMultpileChildSinkForAutoVideoSink)
+{
+    shouldSetupVideoElementAutoVideoSinkWithMultipleChildren();
+    shouldAddFirstAutoVideoSinkChild();
+    triggerSetupElement();
+}
+
 TEST_F(SetupElementTest, shouldSetupAudioElement)
 {
     shouldSetupAudioElementOnly();
