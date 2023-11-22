@@ -331,7 +331,7 @@ void GenericTasksTestsBase::shouldSetupVideoElementWithPendingGeometry()
 {
     testContext->m_context.pendingGeometry = kRectangle;
     EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
-        .WillOnce(Return(kWesterosSinkTypeName.c_str()));
+        .WillOnce(Return(kElementTypeName.c_str()));
     EXPECT_CALL(*testContext->m_gstWrapper,
                 gstElementFactoryListIsType(testContext->m_elementFactory,
                                             GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
@@ -391,6 +391,10 @@ void GenericTasksTestsBase::shouldSetupVideoElementAutoVideoSink()
         .WillOnce(Return(&testContext->m_iterator));
     EXPECT_CALL(*testContext->m_glibWrapper, gValueUnset(_));
     EXPECT_CALL(*testContext->m_gstWrapper, gstIteratorFree(&testContext->m_iterator));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstElementFactoryListIsType(testContext->m_elementFactory,
+                                            GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
+        .WillOnce(Return(TRUE));
     expectSetupVideoElement();
 }
 

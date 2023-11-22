@@ -138,17 +138,14 @@ void SetupElement::execute() const
         if (sinks)
             m_gstWrapper->gstIteratorFree(sinks);
     }
-    else
+
+    GstElementFactory *elementFactory = m_gstWrapper->gstElementGetFactory(m_element);
+    if (m_gstWrapper->gstElementFactoryListIsType(elementFactory,
+                                                  GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
     {
-        // We don't want to set rectangle for AutoVideoSink as it will be set when the child sink is setup
-        GstElementFactory *elementFactory = m_gstWrapper->gstElementGetFactory(m_element);
-        if (m_gstWrapper->gstElementFactoryListIsType(elementFactory, GST_ELEMENT_FACTORY_TYPE_SINK |
-                                                                          GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
+        if (!m_context.pendingGeometry.empty())
         {
-            if (!m_context.pendingGeometry.empty())
-            {
-                m_player.setVideoSinkRectangle();
-            }
+            m_player.setVideoSinkRectangle();
         }
     }
 
