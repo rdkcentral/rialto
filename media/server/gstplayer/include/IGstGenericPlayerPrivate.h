@@ -65,11 +65,11 @@ public:
     virtual void scheduleAllSourcesAttached() = 0;
 
     /**
-     * @brief Sets Westeros sink rectangle. Called by the worker thread.
+     * @brief Sets video sink rectangle. Called by the worker thread.
      *
      * @retval true on success.
      */
-    virtual bool setWesterossinkRectangle() = 0;
+    virtual bool setVideoSinkRectangle() = 0;
 
     /**
      * @brief Sends NeedMediaData notification. Called by the worker thread.
@@ -144,6 +144,32 @@ public:
      * @brief Updates Playback Group in PlayerContext.
      */
     virtual void updatePlaybackGroup(GstElement *typefind, const GstCaps *caps) = 0;
+
+    /**
+     * @brief Notification that a new child element has been added to the autovideosink.
+     *        Stores the child video sink in the player context.
+     *
+     * @param[in] object    : Element added to the autovideosink.
+     */
+    virtual void addAutoVideoSinkChild(GObject *object) = 0;
+
+    /**
+     * @brief Notification that a child element has been removed from the autovideosink.
+     *        Removes the child video sink in the player context if it has been stored.
+     *
+     * @param[in] object    : Element removed from the autovideosink.
+     */
+    virtual void removeAutoVideoSinkChild(GObject *object) = 0;
+
+    /**
+     * @brief Gets the video sink element child sink if present.
+     *        Only gets children for GstAutoVideoSink's.
+     *
+     * @param[in] sink    : Sink element to check.
+     *
+     * @retval Underlying child video sink or 'sink' if there are no children.
+     */
+    virtual GstElement *getSinkChildIfAutoVideoSink(GstElement *sink) = 0;
 };
 } // namespace firebolt::rialto::server
 

@@ -60,6 +60,38 @@ void videoUnderflowCallback(GstElement *object, guint fifoDepth, gpointer queueD
         static_cast<firebolt::rialto::server::IGstGenericPlayerPrivate *>(self);
     player->scheduleVideoUnderflow();
 }
+
+/**
+ * @brief Callback for a autovideosink when a child has been added to the sink.
+ *
+ * @param[in] obj        : the parent element (autovideosink)
+ * @param[in] object     : the child element
+ * @param[in] name       : the name of the child element
+ * @param[in] self       : The pointer to IGstGenericPlayerPrivate
+ */
+void autoVideoSinkChildAddedCallback(GstChildProxy *obj, GObject *object, gchar *name, gpointer self)
+{
+    RIALTO_SERVER_LOG_DEBUG("AutoVideoSink added element %s", name);
+    firebolt::rialto::server::IGstGenericPlayerPrivate *player =
+        static_cast<firebolt::rialto::server::IGstGenericPlayerPrivate *>(self);
+    player->addAutoVideoSinkChild(object);
+}
+
+/**
+ * @brief Callback for a autovideosink when a child has been removed from the sink.
+ *
+ * @param[in] obj        : the parent element (autovideosink)
+ * @param[in] object     : the child element
+ * @param[in] name       : the name of the child element
+ * @param[in] self       : The pointer to IGstGenericPlayerPrivate
+ */
+void autoVideoSinkChildRemovedCallback(GstChildProxy *obj, GObject *object, gchar *name, gpointer self)
+{
+    RIALTO_SERVER_LOG_DEBUG("AutoVideoSink removed element %s", name);
+    firebolt::rialto::server::IGstGenericPlayerPrivate *player =
+        static_cast<firebolt::rialto::server::IGstGenericPlayerPrivate *>(self);
+    player->removeAutoVideoSinkChild(object);
+}
 } // namespace
 
 namespace firebolt::rialto::server::tasks::generic
@@ -80,11 +112,40 @@ SetupElement::~SetupElement()
 void SetupElement::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing SetupElement");
-    if (m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "westerossink"))
+
+    const std::string kElementTypeName = m_glibWrapper->gTypeName(G_OBJECT_TYPE(m_element));
+    if (kElementTypeName == "GstAutoVideoSink")
+    {
+        // Check and store child sink so we can set underlying properties
+        m_glibWrapper->gSignalConnect(m_element, "child-added", G_CALLBACK(autoVideoSinkChildAddedCallback), &m_player);
+        m_glibWrapper->gSignalConnect(m_element, "child-removed", G_CALLBACK(autoVideoSinkChildRemovedCallback),
+                                      &m_player);
+
+        // AutoVideoSink sets child before it is setup on the pipeline, so check for children here
+        GstIterator *sinks = m_gstWrapper->gstBinIterateSinks(GST_BIN(m_element));
+        if (sinks && sinks->size > 1)
+        {
+            RIALTO_SERVER_LOG_WARN("More than one child sink attached");
+        }
+
+        GValue elem = G_VALUE_INIT;
+        if (m_gstWrapper->gstIteratorNext(sinks, &elem) == GST_ITERATOR_OK)
+        {
+            m_player.addAutoVideoSinkChild(G_OBJECT(m_glibWrapper->gValueGetObject(&elem)));
+        }
+        m_glibWrapper->gValueUnset(&elem);
+
+        if (sinks)
+            m_gstWrapper->gstIteratorFree(sinks);
+    }
+
+    GstElementFactory *elementFactory = m_gstWrapper->gstElementGetFactory(m_element);
+    if (m_gstWrapper->gstElementFactoryListIsType(elementFactory,
+                                                  GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
     {
         if (!m_context.pendingGeometry.empty())
         {
-            m_player.setWesterossinkRectangle();
+            m_player.setVideoSinkRectangle();
         }
     }
 

@@ -79,6 +79,11 @@ struct GenericPlayerContext
     StreamInfoMap streamInfo{};
 
     /**
+     * @brief Child sink of the autovideosink.
+     */
+    GstElement *autoVideoChildSink{nullptr};
+
+    /**
      * @brief Flag used to check, if we need to request for new audio data.
      *
      * Flag can be used only in worker thread

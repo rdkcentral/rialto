@@ -58,7 +58,7 @@ public:
         std::make_shared<StrictMock<firebolt::rialto::server::DataReaderMock>>()};
 
     // Gstreamer members
-    GstElement m_element{};
+    GstElement *m_element{};
     GstElementFactory *m_elementFactory{};
     GstElement m_pipeline{};
     GstBuffer m_audioBuffer{};
@@ -77,13 +77,16 @@ public:
     GstStructure m_structure{};
     GstEvent m_event{};
     GstSegment m_segment{};
-    GParamSpec m_paramSpec{};
     GstEvent m_event2{};
+    GstIterator m_iterator{};
+    GstElement m_childElement{};
 
     // Glib members
     guint m_signals[1]{123};
     GCallback m_audioUnderflowCallback;
     GCallback m_videoUnderflowCallback;
+    GCallback m_childAddedCallback;
+    GCallback m_childRemovedCallback;
     gchar m_capsStr{};
     gchar m_videoStr[7]{"video/"};
     gchar m_audioStr[7]{"audio/"};
@@ -96,6 +99,9 @@ public:
     gchar m_xEac3Str[13]{"audio/x-eac3"};
     gpointer m_videoUserData{};
     gpointer m_audioUserData{};
+    GValue m_value{};
+    GParamSpec m_paramSpec{};
+    GObject m_gObj{};
 
     // Standard members
     bool m_underflowFlag{false};

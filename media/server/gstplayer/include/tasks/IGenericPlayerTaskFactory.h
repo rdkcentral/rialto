@@ -326,7 +326,8 @@ public:
     virtual std::unique_ptr<IPlayerTask> createUpdatePlaybackGroup(GenericPlayerContext &context, GstElement *typefind,
                                                                    const GstCaps *caps) const = 0;
 
-    virtual std::unique_ptr<IPlayerTask> createRenderFrame(GenericPlayerContext &context) const = 0;
+    virtual std::unique_ptr<IPlayerTask> createRenderFrame(GenericPlayerContext &context,
+                                                           IGstGenericPlayerPrivate &player) const = 0;
 
     /**
      * @brief Creates a Ping task.

@@ -736,27 +736,31 @@ void GstGenericPlayer::setEos(const firebolt::rialto::MediaSourceType &type)
     }
 }
 
-bool GstGenericPlayer::setWesterossinkRectangle()
+bool GstGenericPlayer::setVideoSinkRectangle()
 {
     bool result = false;
     GstElement *videoSink = nullptr;
     m_glibWrapper->gObjectGet(m_context.pipeline, "video-sink", &videoSink, nullptr);
-    if (videoSink && m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink), "rectangle"))
-    {
-        char rect[64];
-        snprintf(rect, sizeof(rect), "%d,%d,%d,%d", m_context.pendingGeometry.x, m_context.pendingGeometry.y,
-                 m_context.pendingGeometry.width, m_context.pendingGeometry.height);
-        m_glibWrapper->gObjectSet(videoSink, "rectangle", rect, nullptr);
-        m_context.pendingGeometry.clear();
-        result = true;
-    }
-    else
-    {
-        RIALTO_SERVER_LOG_ERROR("Failed to set the westerossink rectangle");
-    }
-
     if (videoSink)
+    {
+        // For AutoVideoSink we set properties on the child sink
+        GstElement *actualVideoSink = getSinkChildIfAutoVideoSink(videoSink);
+        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(actualVideoSink), "rectangle"))
+        {
+            std::string rect =
+                std::to_string(m_context.pendingGeometry.x) + ',' + std::to_string(m_context.pendingGeometry.y) + ',' +
+                std::to_string(m_context.pendingGeometry.width) + ',' + std::to_string(m_context.pendingGeometry.height);
+            m_glibWrapper->gObjectSet(actualVideoSink, "rectangle", rect.c_str(), nullptr);
+            m_context.pendingGeometry.clear();
+            result = true;
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to set the video rectangle");
+        }
+
         m_gstWrapper->gstObjectUnref(GST_OBJECT(videoSink));
+    }
 
     return result;
 }
@@ -845,7 +849,7 @@ void GstGenericPlayer::renderFrame()
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createRenderFrame(m_context));
+        m_workerThread->enqueueTask(m_taskFactory->createRenderFrame(m_context, *this));
     }
 }
 
@@ -906,6 +910,58 @@ void GstGenericPlayer::handleBusMessage(GstMessage *message)
 void GstGenericPlayer::updatePlaybackGroup(GstElement *typefind, const GstCaps *caps)
 {
     m_workerThread->enqueueTask(m_taskFactory->createUpdatePlaybackGroup(m_context, typefind, caps));
+}
+
+void GstGenericPlayer::addAutoVideoSinkChild(GObject *object)
+{
+    // Only add children that are sinks
+    if (GST_OBJECT_FLAG_IS_SET(GST_ELEMENT(object), GST_ELEMENT_FLAG_SINK))
+    {
+        RIALTO_SERVER_LOG_DEBUG("Store AutoVideoSink child sink");
+
+        if (m_context.autoVideoChildSink && m_context.autoVideoChildSink != GST_ELEMENT(object))
+        {
+            RIALTO_SERVER_LOG_MIL("AutoVideoSink child is been overwritten");
+        }
+        m_context.autoVideoChildSink = GST_ELEMENT(object);
+    }
+}
+
+void GstGenericPlayer::removeAutoVideoSinkChild(GObject *object)
+{
+    if (GST_OBJECT_FLAG_IS_SET(GST_ELEMENT(object), GST_ELEMENT_FLAG_SINK))
+    {
+        RIALTO_SERVER_LOG_DEBUG("Remove AutoVideoSink child sink");
+
+        if (m_context.autoVideoChildSink && m_context.autoVideoChildSink != GST_ELEMENT(object))
+        {
+            RIALTO_SERVER_LOG_MIL("AutoVideoSink child sink is not the same as the one stored");
+            return;
+        }
+
+        m_context.autoVideoChildSink = nullptr;
+    }
+}
+
+GstElement *GstGenericPlayer::getSinkChildIfAutoVideoSink(GstElement *sink)
+{
+    const std::string kElementTypeName = m_glibWrapper->gTypeName(G_OBJECT_TYPE(sink));
+    if (kElementTypeName == "GstAutoVideoSink")
+    {
+        if (!m_context.autoVideoChildSink)
+        {
+            RIALTO_SERVER_LOG_WARN("No child sink has been added to the autovideosink");
+            return sink;
+        }
+        else
+        {
+            return m_context.autoVideoChildSink;
+        }
+    }
+    else
+    {
+        return sink;
+    }
 }
 
 bool GstGenericPlayer::shouldEnableNativeAudio()

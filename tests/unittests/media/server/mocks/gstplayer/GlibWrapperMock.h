@@ -95,6 +95,10 @@ public:
     MOCK_METHOD(void, gOnceInitLeave, (gsize * location, gsize result), (const, override));
     MOCK_METHOD(gchar *, gStrrstr, (const gchar *haystack, const gchar *needle), (const, override));
     MOCK_METHOD(void, gErrorFree, (GError * error), (const, override));
+    MOCK_METHOD(const gchar *, gTypeName, (GType type), (const, override));
+    MOCK_METHOD(int, gStrcmp0, (const char *str1, const char *str2), (const, override));
+    MOCK_METHOD(gpointer, gValueGetObject, (const GValue *value), (const, override));
+    MOCK_METHOD(void, gValueUnset, (GValue * value), (const, override));
 };
 } // namespace firebolt::rialto::server
 

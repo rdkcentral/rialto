@@ -1114,6 +1114,35 @@ public:
      * @param[out] debug    : pointer to the debug string.
      */
     virtual void gstMessageParseError(GstMessage *message, GError **gerror, gchar **debug) const = 0;
+
+    /**
+     * @brief Gets an iterator for the bin that contains all the elements with the GST_ELEMENT_FLAG_SINK flag set.
+     *
+     * @param[in]  bin  : the bin.
+     *
+     * @retval an iterator of sink elements.
+     */
+    virtual GstIterator *gstBinIterateSinks(GstBin *bin) const = 0;
+
+    /**
+     * @brief Gets the next item from the iterator.
+     *
+     * @param[in]  it   : the iterator to iterate.
+     * @param[out] elem : pointer to hold the next element.
+     *
+     * @retval GST_ITERATOR_OK if a valid element is found.
+     *         GST_ITERATOR_DONE if there are no more elements.
+     *         GST_ITERATOR_RESYNC if the element list was concurrently updated.
+     *         GST_ITERATOR_ERROR if an error occured.
+     */
+    virtual GstIteratorResult gstIteratorNext(GstIterator *it, GValue *elem) const = 0;
+
+    /**
+     * @brief Free the iterator.
+     *
+     * @param[in]  it   : the iterator to free.
+     */
+    virtual void gstIteratorFree(GstIterator *it) const = 0;
 };
 
 }; // namespace firebolt::rialto::server

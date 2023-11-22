@@ -270,7 +270,7 @@ TEST_F(GstGenericPlayerTest, shouldRenderFrame)
 {
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createRenderFrame(_)).WillOnce(Return(ByMove(std::move(task))));
+    EXPECT_CALL(m_taskFactoryMock, createRenderFrame(_, _)).WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->renderFrame();
 }

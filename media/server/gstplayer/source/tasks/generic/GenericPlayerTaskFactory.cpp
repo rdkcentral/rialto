@@ -217,9 +217,10 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createUpdatePlaybackGroup
     return std::make_unique<tasks::generic::UpdatePlaybackGroup>(context, m_gstWrapper, m_glibWrapper, typefind, caps);
 }
 
-std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createRenderFrame(GenericPlayerContext &context) const
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createRenderFrame(GenericPlayerContext &context,
+                                                                         IGstGenericPlayerPrivate &player) const
 {
-    return std::make_unique<tasks::generic::RenderFrame>(context, m_gstWrapper, m_glibWrapper);
+    return std::make_unique<tasks::generic::RenderFrame>(context, m_gstWrapper, m_glibWrapper, player);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createPing(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) const

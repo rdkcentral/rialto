@@ -35,7 +35,7 @@ public:
     MOCK_METHOD(void, scheduleAudioUnderflow, (), (override));
     MOCK_METHOD(void, scheduleVideoUnderflow, (), (override));
     MOCK_METHOD(void, scheduleAllSourcesAttached, (), (override));
-    MOCK_METHOD(bool, setWesterossinkRectangle, (), (override));
+    MOCK_METHOD(bool, setVideoSinkRectangle, (), (override));
     MOCK_METHOD(void, notifyNeedMediaData, (bool audioNotificationNeeded, bool videoNotificationNeeded), (override));
     MOCK_METHOD(GstBuffer *, createBuffer, (const IMediaPipeline::MediaSegment &mediaSegment), (const, override));
     MOCK_METHOD(void, attachAudioData, (), (override));
@@ -52,6 +52,9 @@ public:
     MOCK_METHOD(void, cancelUnderflow, (bool &underflowFlag), (override));
     MOCK_METHOD(void, setPendingPlaybackRate, (), (override));
     MOCK_METHOD(void, updatePlaybackGroup, (GstElement * typefind, const GstCaps *caps), (override));
+    MOCK_METHOD(void, addAutoVideoSinkChild, (GObject * object), (override));
+    MOCK_METHOD(void, removeAutoVideoSinkChild, (GObject * object), (override));
+    MOCK_METHOD(GstElement *, getSinkChildIfAutoVideoSink, (GstElement * sink), (override));
 };
 } // namespace firebolt::rialto::server
 

@@ -31,7 +31,7 @@ TEST_F(SetupElementTest, shouldSetupVideoElement)
 
 TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingGeometry)
 {
-    shouldSetupVideoElementWesterossink();
+    shouldSetupVideoElementWithPendingGeometry();
     triggerSetupElement();
 }
 
@@ -41,9 +41,24 @@ TEST_F(SetupElementTest, shouldSetupVideoElementForAmlhalasink)
     triggerSetupElement();
 }
 
-TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingGeometryOtherThanWesterosSink)
+TEST_F(SetupElementTest, shouldSetupVideoElementWithChildSinkForAutoVideoSink)
 {
-    shouldSetupVideoElementPendingGeometryNonWesterissink();
+    shouldSetupVideoElementAutoVideoSink();
+    shouldAddFirstAutoVideoSinkChild();
+    triggerSetupElement();
+}
+
+TEST_F(SetupElementTest, shouldSetupVideoElementWithoutChildSinkForAutoVideoSink)
+{
+    shouldSetupVideoElementAutoVideoSink();
+    shouldNotAddAutoVideoSinkChild();
+    triggerSetupElement();
+}
+
+TEST_F(SetupElementTest, shouldSetupVideoElementWithMultpileChildSinkForAutoVideoSink)
+{
+    shouldSetupVideoElementAutoVideoSinkWithMultipleChildren();
+    shouldAddFirstAutoVideoSinkChild();
     triggerSetupElement();
 }
 
@@ -69,4 +84,24 @@ TEST_F(SetupElementTest, shouldReportAudioUnderflow)
 
     shouldSetAudioUnderflowCallback();
     triggerAudioUnderflowCallback();
+}
+
+TEST_F(SetupElementTest, shouldReportAutoVideoSinkChildAdded)
+{
+    shouldSetupVideoElementAutoVideoSink();
+    shouldNotAddAutoVideoSinkChild();
+    triggerSetupElement();
+
+    shouldAddAutoVideoSinkChildCallback();
+    triggerAutoVideoSinkChildAddedCallback();
+}
+
+TEST_F(SetupElementTest, shouldReportAutoVideoSinkChildRemoved)
+{
+    shouldSetupVideoElementAutoVideoSink();
+    shouldNotAddAutoVideoSinkChild();
+    triggerSetupElement();
+
+    shouldRemoveAutoVideoSinkChildCallback();
+    triggerAutoVideoSinkChildRemovedCallback();
 }

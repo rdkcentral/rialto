@@ -35,6 +35,7 @@ using ::testing::Ref;
 using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::SaveArg;
+using ::testing::SetArgPointee;
 using ::testing::StrEq;
 using ::testing::StrictMock;
 
@@ -74,15 +75,22 @@ protected:
 
     // SetupElement test methods
     void shouldSetupVideoElementOnly();
-    void shouldSetupVideoElementWesterossink();
+    void shouldSetupVideoElementWithPendingGeometry();
     void shouldSetupVideoElementAmlhalasink();
-    void shouldSetupVideoElementPendingGeometryNonWesterissink();
+    void shouldSetupVideoElementAutoVideoSink();
+    void shouldSetupVideoElementAutoVideoSinkWithMultipleChildren();
     void shouldSetupAudioElementOnly();
     void shouldSetVideoUnderflowCallback();
     void triggerSetupElement();
     void triggerVideoUnderflowCallback();
     void shouldSetAudioUnderflowCallback();
     void triggerAudioUnderflowCallback();
+    void shouldAddFirstAutoVideoSinkChild();
+    void shouldNotAddAutoVideoSinkChild();
+    void shouldAddAutoVideoSinkChildCallback();
+    void triggerAutoVideoSinkChildAddedCallback();
+    void shouldRemoveAutoVideoSinkChildCallback();
+    void triggerAutoVideoSinkChildRemovedCallback();
 
     // SetVideoGeometry test methods
     void setPipelineToNull();

@@ -287,6 +287,42 @@ public:
      * @param[in] error : GError to free.
      */
     virtual void gErrorFree(GError *error) const = 0;
+
+    /**
+     * @brief Gets the name of the given type.
+     *
+     * @param[in] type : type id.
+     *
+     * @retval type name or NULL.
+     */
+    virtual const gchar *gTypeName(GType type) const = 0;
+
+    /**
+     * @brief Compare strings. NULL strings are handled, comparing two NULL
+     *        strings returns 0.
+     *
+     * @param[in] str1 : First string.
+     * @param[in] str2 : Second string.
+     *
+     * @retval type name or NULL.
+     */
+    virtual int gStrcmp0(const char *str1, const char *str2) const = 0;
+
+    /**
+     * @brief Get the object from the value.
+     *
+     * @param[in] value : The value to get.
+     *
+     * @retval < 0 or > 0 if str1 < or > str2, 0 if they are equal.
+     */
+    virtual gpointer gValueGetObject(const GValue *value) const = 0;
+
+    /**
+     * @brief Clears the value and unsets the type.
+     *
+     * @param[in] value : Value to unset.
+     */
+    virtual void gValueUnset(GValue *value) const = 0;
 };
 
 }; // namespace firebolt::rialto::server

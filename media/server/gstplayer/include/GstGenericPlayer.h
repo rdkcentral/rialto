@@ -121,7 +121,7 @@ private:
     void scheduleAudioUnderflow() override;
     void scheduleVideoUnderflow() override;
     void scheduleAllSourcesAttached() override;
-    bool setWesterossinkRectangle() override;
+    bool setVideoSinkRectangle() override;
     void notifyNeedMediaData(bool audioNotificationNeeded, bool videoNotificationNeeded) override;
     GstBuffer *createBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const override;
     void attachAudioData() override;
@@ -138,6 +138,9 @@ private:
     void renderFrame() override;
     void handleBusMessage(GstMessage *message) override;
     void updatePlaybackGroup(GstElement *typefind, const GstCaps *caps) override;
+    void addAutoVideoSinkChild(GObject *object) override;
+    void removeAutoVideoSinkChild(GObject *object) override;
+    GstElement *getSinkChildIfAutoVideoSink(GstElement *sink) override;
 
 private:
     /**
