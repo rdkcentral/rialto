@@ -921,7 +921,7 @@ void GstGenericPlayer::addAutoVideoSinkChild(GObject *object)
 
         if (m_context.autoVideoChildSink && m_context.autoVideoChildSink != GST_ELEMENT(object))
         {
-            RIALTO_SERVER_LOG_WARN("AutoVideoSink child is been overwritten");
+            RIALTO_SERVER_LOG_MIL("AutoVideoSink child is been overwritten");
         }
         m_context.autoVideoChildSink = GST_ELEMENT(object);
     }
@@ -935,7 +935,7 @@ void GstGenericPlayer::removeAutoVideoSinkChild(GObject *object)
 
         if (m_context.autoVideoChildSink && m_context.autoVideoChildSink != GST_ELEMENT(object))
         {
-            RIALTO_SERVER_LOG_WARN("AutoVideoSink child sink is not the same as the one stored");
+            RIALTO_SERVER_LOG_MIL("AutoVideoSink child sink is not the same as the one stored");
             return;
         }
 

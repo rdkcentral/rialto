@@ -61,6 +61,14 @@ void videoUnderflowCallback(GstElement *object, guint fifoDepth, gpointer queueD
     player->scheduleVideoUnderflow();
 }
 
+/**
+ * @brief Callback for a autovideosink when a child has been added to the sink.
+ *
+ * @param[in] obj        : the parent element (autovideosink)
+ * @param[in] object     : the child element
+ * @param[in] name       : the name of the child element
+ * @param[in] self       : The pointer to IGstGenericPlayerPrivate
+ */
 void autoVideoSinkChildAddedCallback(GstChildProxy *obj, GObject *object, gchar *name, gpointer self)
 {
     RIALTO_SERVER_LOG_DEBUG("AutoVideoSink added element %s", name);
@@ -69,6 +77,14 @@ void autoVideoSinkChildAddedCallback(GstChildProxy *obj, GObject *object, gchar 
     player->addAutoVideoSinkChild(object);
 }
 
+/**
+ * @brief Callback for a autovideosink when a child has been removed from the sink.
+ *
+ * @param[in] obj        : the parent element (autovideosink)
+ * @param[in] object     : the child element
+ * @param[in] name       : the name of the child element
+ * @param[in] self       : The pointer to IGstGenericPlayerPrivate
+ */
 void autoVideoSinkChildRemovedCallback(GstChildProxy *obj, GObject *object, gchar *name, gpointer self)
 {
     RIALTO_SERVER_LOG_DEBUG("AutoVideoSink removed element %s", name);
@@ -97,11 +113,8 @@ void SetupElement::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing SetupElement");
 
-    // In playbin3 AutoVideoSink uses names like videosink-actual-sink-brcmvideo whereas playbin
-    // creates sink with names brcmvideosink*, so it is better to check actual type name here
-    const std::string elementTypeName = m_glibWrapper->gTypeName(G_OBJECT_TYPE(m_element));
-
-    if (elementTypeName == "GstAutoVideoSink")
+    const std::string kElementTypeName = m_glibWrapper->gTypeName(G_OBJECT_TYPE(m_element));
+    if (kElementTypeName == "GstAutoVideoSink")
     {
         // Check and store child sink so we can set underlying properties
         m_glibWrapper->gSignalConnect(m_element, "child-added", G_CALLBACK(autoVideoSinkChildAddedCallback), &m_player);
@@ -125,12 +138,17 @@ void SetupElement::execute() const
         if (sinks)
             m_gstWrapper->gstIteratorFree(sinks);
     }
-
-    if (elementTypeName == "GstWesterosSink" || elementTypeName == "Gstbrcmvideosink")
+    else
     {
-        if (!m_context.pendingGeometry.empty())
+        // We don't want to set rectangle for AutoVideoSink as it will be set when the child sink is setup
+        GstElementFactory *elementFactory = gst_element_get_factory(m_element);
+        guint factoryType = gst_element_factory_get_element_type(elementFactory);
+        if ((factoryType & GST_ELEMENT_FACTORY_TYPE_SINK) && (factoryType & GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
         {
-            m_player.setVideoSinkRectangle();
+            if (!m_context.pendingGeometry.empty())
+            {
+                m_player.setVideoSinkRectangle();
+            }
         }
     }
 
