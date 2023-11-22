@@ -75,10 +75,8 @@ protected:
 
     // SetupElement test methods
     void shouldSetupVideoElementOnly();
-    void shouldSetupVideoElementWesterossink();
+    void shouldSetupVideoElementWithPendingGeometry();
     void shouldSetupVideoElementAmlhalasink();
-    void shouldSetupVideoElementPendingGeometryNotSupported();
-    void shouldSetupVideoElementBrcmvideosink();
     void shouldSetupVideoElementAutoVideoSink();
     void shouldSetupVideoElementAutoVideoSinkWithMultipleChildren();
     void shouldSetupAudioElementOnly();

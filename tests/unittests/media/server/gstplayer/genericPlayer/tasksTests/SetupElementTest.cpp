@@ -29,27 +29,15 @@ TEST_F(SetupElementTest, shouldSetupVideoElement)
     triggerSetupElement();
 }
 
-TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingGeometryForWesterossink)
+TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingGeometry)
 {
-    shouldSetupVideoElementWesterossink();
-    triggerSetupElement();
-}
-
-TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingGeometryForBrcmvideosink)
-{
-    shouldSetupVideoElementBrcmvideosink();
+    shouldSetupVideoElementWithPendingGeometry();
     triggerSetupElement();
 }
 
 TEST_F(SetupElementTest, shouldSetupVideoElementForAmlhalasink)
 {
     shouldSetupVideoElementAmlhalasink();
-    triggerSetupElement();
-}
-
-TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingGeometryOtherThanWesterosSink)
-{
-    shouldSetupVideoElementPendingGeometryNotSupported();
     triggerSetupElement();
 }
 

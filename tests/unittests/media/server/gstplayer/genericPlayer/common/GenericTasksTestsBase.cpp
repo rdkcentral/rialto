@@ -91,8 +91,6 @@ const std::shared_ptr<firebolt::rialto::CodecData> kCodecDataStr{std::make_share
 const std::string kVidName{"vidsrc"};
 const std::string kAudName{"audsrc"};
 const std::string kAutoVideoSinkTypeName{"GstAutoVideoSink"};
-const std::string kWesterosSinkTypeName{"GstWesterosSink"};
-const std::string kBrcmSinkTypeName{"Gstbrcmvideosink"};
 const std::string kElementTypeName{"GenericSink"};
 
 firebolt::rialto::IMediaPipeline::MediaSegmentVector buildAudioSamples()
@@ -249,7 +247,7 @@ void GenericTasksTestsBase::setContextNeedDataAudioOnly()
 
 void GenericTasksTestsBase::expectSetupVideoElement()
 {
-    EXPECT_CALL(*testContext->m_gstWrapper, gstElementGetFactory(_)).WillOnce(Return(testContext->m_elementFactory));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstElementGetFactory(_)).WillRepeatedly(Return(testContext->m_elementFactory));
     EXPECT_CALL(*testContext->m_gstWrapper,
                 gstElementFactoryListIsType(testContext->m_elementFactory, GST_ELEMENT_FACTORY_TYPE_DECODER))
         .WillOnce(Return(TRUE));
@@ -281,6 +279,10 @@ void GenericTasksTestsBase::expectSetupAudioElement()
 {
     EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
         .WillOnce(Return(kElementTypeName.c_str()));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstElementFactoryListIsType(testContext->m_elementFactory,
+                                            GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
+        .WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("amlhalasink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementGetFactory(_)).WillRepeatedly(Return(testContext->m_elementFactory));
     EXPECT_CALL(*testContext->m_gstWrapper,
@@ -317,15 +319,23 @@ void GenericTasksTestsBase::shouldSetupVideoElementOnly()
 {
     EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
         .WillOnce(Return(kElementTypeName.c_str()));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstElementFactoryListIsType(testContext->m_elementFactory,
+                                            GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
+        .WillOnce(Return(TRUE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("amlhalasink"))).WillOnce(Return(FALSE));
     expectSetupVideoElement();
 }
 
-void GenericTasksTestsBase::shouldSetupVideoElementWesterossink()
+void GenericTasksTestsBase::shouldSetupVideoElementWithPendingGeometry()
 {
     testContext->m_context.pendingGeometry = kRectangle;
     EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
         .WillOnce(Return(kWesterosSinkTypeName.c_str()));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstElementFactoryListIsType(testContext->m_elementFactory,
+                                            GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
+        .WillOnce(Return(TRUE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("amlhalasink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(testContext->m_gstPlayer, setVideoSinkRectangle());
     expectSetupVideoElement();
@@ -335,6 +345,10 @@ void GenericTasksTestsBase::shouldSetupVideoElementAmlhalasink()
 {
     EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
         .WillOnce(Return(kElementTypeName.c_str()));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstElementFactoryListIsType(testContext->m_elementFactory,
+                                            GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
+        .WillOnce(Return(TRUE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("amlhalasink"))).WillOnce(Return(true));
     EXPECT_CALL(*testContext->m_glibWrapper,
                 gObjectSetStub(G_OBJECT(testContext->m_element), CharStrMatcher("wait-video")));
@@ -342,25 +356,6 @@ void GenericTasksTestsBase::shouldSetupVideoElementAmlhalasink()
                 gObjectSetStub(G_OBJECT(testContext->m_element), CharStrMatcher("a-wait-timeout")));
     EXPECT_CALL(*testContext->m_glibWrapper,
                 gObjectSetStub(G_OBJECT(testContext->m_element), CharStrMatcher("disable-xrun")));
-    expectSetupVideoElement();
-}
-
-void GenericTasksTestsBase::shouldSetupVideoElementPendingGeometryNotSupported()
-{
-    testContext->m_context.pendingGeometry = kRectangle;
-    EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
-        .WillOnce(Return(kElementTypeName.c_str()));
-    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("amlhalasink"))).WillOnce(Return(false));
-    expectSetupVideoElement();
-}
-
-void GenericTasksTestsBase::shouldSetupVideoElementBrcmvideosink()
-{
-    testContext->m_context.pendingGeometry = kRectangle;
-    EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
-        .WillOnce(Return(kBrcmSinkTypeName.c_str()));
-    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, CharStrMatcher("amlhalasink"))).WillOnce(Return(false));
-    EXPECT_CALL(testContext->m_gstPlayer, setVideoSinkRectangle());
     expectSetupVideoElement();
 }
 
