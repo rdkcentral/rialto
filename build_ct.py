@@ -3,7 +3,7 @@
 # If not stated otherwise in this file or this component's LICENSE file the
 # following copyright and licenses apply:
 #
-# Copyright 2022 Sky UK
+# Copyright 2023 Sky UK
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,13 +20,37 @@
 
 # Entry script for running rialto componenttests
 
-import scripts.gtest.build_and_run_tests as build_and_run
+import argparse
+from scripts.gtest.build_and_run_tests import getGenericArguments, buildAndRunGTests
+from scripts.gtest.utils import getSuitesToRun, getOutputFile
+from scripts.gtest.generate_coverage import generateCoverageReport, generateSpecificCoverageStats
 
 # Rialto Component Tests & Paths
 # {Component Name : {Test Suite, Test Path}}
 suiteInfo = {
-    "client" : {"suite" : "RialtoClientComponentTests", "path" : "/tests/componenttests/client"}
+    "client" : {"suite" : "RialtoClientComponentTests", "path" : "/tests/componenttests/client/"}
 }
 
 if __name__ == "__main__":
-    build_and_run.buildAndRunGTests("ComponentTests", suiteInfo)
+    # Parse arguments
+    argParser = argparse.ArgumentParser(description='Run the rialto Component Tests.', formatter_class=argparse.RawTextHelpFormatter)
+    getGenericArguments(argParser, suiteInfo)
+    args = vars(argParser.parse_args())
+
+    # Get suites
+    suitesToRun = getSuitesToRun(args['suites'], suiteInfo)
+
+    # Get output file
+    outputFile = getOutputFile(args['file'])
+
+    # Build and run tests
+    buildDefines = ["-DCMAKE_BUILD_FLAG=ComponentTests", "-DRIALTO_ENABLE_CONFIG_FILE=1", "-DRIALTO_BUILD_TYPE=Debug"]
+    buildAndRunGTests(args, outputFile, buildDefines, suitesToRun)
+
+    # Generate coverage
+    if args['coverage'] == True:
+        generateCoverageReport(args['output'], outputFile, suitesToRun, [],)
+
+        # Also generate coverage stats for just on public interfaces
+        files = ["*/public/include/I*"]
+        generateSpecificCoverageStats(args['output'], outputFile, files, "coverage_statistics_public_apis")

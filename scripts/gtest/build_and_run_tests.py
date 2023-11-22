@@ -24,7 +24,7 @@ import subprocess
 import os
 import argparse
 import multiprocessing
-import sys
+from .utils import strOfKeys, runcmd
 
 
 # Default variables
@@ -33,10 +33,8 @@ valgrindOutput = "valgrind_report"
 valgrindErrorCode = 101
 valgrindIgnore = "rialto.supp"
 
-
-def buildAndRunGTests(testName, suiteInfo):
+def getGenericArguments(argParser, suiteInfo):
     # Get arguments
-    argParser = argparse.ArgumentParser(description='Run the rialto ' + testName + '.', formatter_class=argparse.RawTextHelpFormatter)
     argParser.add_argument("-o", "--output", default="build",
                         help="Location to write the build files to (default 'build').")
     argParser.add_argument("-f", "--file", nargs='?', const="",
@@ -66,29 +64,20 @@ def buildAndRunGTests(testName, suiteInfo):
                              + "Output written to xml if -xml option specified '*suite_name*_" + valgrindOutput + ".xml' \n" \
                              + "Note: Valgrind can only write output to one source (log or xml). \n" \
                              + "Note: Requires version valgrind 3.17.0+ installed. \n")
-    argParser.add_argument("-cov", "--coverage", action='store_true', help="Generates the " + testName + " coverage report")
-    args = vars(argParser.parse_args())
+    argParser.add_argument("-cov", "--coverage", action='store_true', help="Generates the full coverage report")
+
+
+def buildAndRunGTests(args, f, buildDefines, suitesToRun):
 
     # Set env variable
     os.environ["RIALTO_SOCKET_PATH"] = "/tmp/rialto-0"
     # Set env variable to disable journald logging
     os.environ["RIALTO_CONSOLE_LOG"] = "1"
 
-    suitesToRun = getSuitesToRun(args['suites'])
-
     # Clean if required
     if args['clean'] == True:
         executeCmd = ["rm", "-rf", args['output'], resultOutput + ".log", valgrindOutput + ".log"]
         runcmd(executeCmd, cwd=os.getcwd())
-
-    # Get output file name if any
-    if args['file'] != None:
-        if args['file'] == "":
-            f = open(resultOutput + ".log", "w")
-        else:
-            f = open(args['file'], "w")
-    else:
-        f = None
 
     # Get xml output file name if any
     if args['xml'] != None:
@@ -101,44 +90,21 @@ def buildAndRunGTests(testName, suiteInfo):
 
     # Build the test executables
     if args['noBuild'] == False:
-        buildTargets(suitesToRun, args['output'], f, args['valgrind'], args['coverage'])
+        buildTargets(suitesToRun, buildDefines, args['output'], f, args['valgrind'], args['coverage'])
 
     # Run the tests with the optional settings
     if args['noTest'] == False:
         runTests(suitesToRun, args['listTests'], args['googletestFilter'], args['output'], f, xml, args['valgrind'],
                  args['coverage'])
 
-# Gets the list of keys as a csv string
-def strOfKeys (directory):
-    str = ""
-    for key in directory :
-        if str != "":
-            str += ", "
-        str += key
-    return str
-
-# Get a dict of the suites to run
-# Returns all possible suites if none requested
-def getSuitesToRun (suitesRequested):
-    suitesToRun = {}
-    # Get a dict of information of the suites to run
-    if suitesRequested != None:
-        for suite in suitesRequested:
-            if suiteInfo[suite] != None:
-                suitesToRun[suite] = suiteInfo[suite]
-            else:
-                print("Could not find suite: " + suite)
-    else:
-        suitesToRun = suiteInfo
-    return suitesToRun
 
 # Build the target executables
-def buildTargets (suites, outputDir, resultsFile, debug, coverage):
+def buildTargets (suites, buildDefines, outputDir, resultsFile, debug, coverage):
     # Run cmake
-    cmakeCmd = ["cmake", "-B", outputDir , "-DCMAKE_BUILD_FLAG=UnitTests", "-DRIALTO_ENABLE_DECRYPT_BUFFER=1",
-                "-DRIALTO_ENABLE_CONFIG_FILE=1"]
-    # Debug Mode /Release Mode
-    cmakeCmd.append("-DRIALTO_BUILD_TYPE=Debug")
+    cmakeCmd = ["cmake", "-B", outputDir]
+    for define in buildDefines:
+        cmakeCmd.append(define)
+
     # Coverage
     if coverage:
         cmakeCmd.append("-DCOVERAGE_ENABLED=1")
@@ -195,8 +161,6 @@ def runTests (suites, doListTests, gtestFilter, outputDir, resultsFile, xmlFile,
 
     if hasFailed:
         raise Exception( f"runTests has failed, exiting" )
-    elif coverage:
-        generateCoverageReport(outputDir, resultsFile, suites)
 
 # Returns the valgrind command arguments
 def AddValgrind(suite, outputToFile, outputToXml):
@@ -216,58 +180,3 @@ def AddValgrind(suite, outputToFile, outputToXml):
     executeCmd.append("--suppressions=" + filePath + "/" + valgrindIgnore)
 
     return executeCmd
-
-def generateCoverageReport(outputDir, resultsFile, suites):
-    lcovCommon = [];
-    lcovCommon.extend(["--exclude", "/usr/*"]);
-    lcovCommon.extend(["--exclude", "*build/*", "--exclude", "*tests/*", "--filter", "brace,function,trivial"])
-    lcovCommon.extend(["--parallel",  str(multiprocessing.cpu_count())])
-    
-    # the following line tells lcov to ignore any errors caused by include/exclude/erase/omit/substitute pattern which did not match any file pathnames
-    lcovCommon.extend(["--ignore-errors", "unused"]);
-    
-    lcovCommon.extend(["--exclude", "*Wrapper.cpp", "--exclude", "LinuxWrapper.h",  "--exclude", "JsonCppWrapperFactory.cpp", "--exclude", "JsonCppWrapperFactory.h", "--exclude", "JsonCppWrapper.h"])
-    lcovCommon.extend(["--exclude", "GstProtectionMetadataWrapper.h", "--exclude", "GstProtectionMetadataWrapperFactory.h", "--exclude", "GstWrapper.h", "--exclude", "GlibWrapper.h"])
-    
-    lcovBaseCmd = ["lcov", "-c", "-i", "-d", ".", "--output-file", "coverage_base.info"]
-    lcovBaseCmd.extend(lcovCommon);
-    
-    if resultsFile:
-        lcovBaseStatus = runcmd(lcovBaseCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
-    else:
-        lcovBaseStatus = runcmd(lcovBaseCmd, cwd=os.getcwd() + '/' + outputDir, stderr=subprocess.STDOUT)
-    if not lcovBaseStatus:
-        return False
-    lcovTestCmd = ["lcov", "-c", "-d", ".", "--output-file", "coverage_test.info"] 
-    lcovTestCmd.extend(lcovCommon);
-
-    if resultsFile:
-        lcovTestStatus = runcmd(lcovTestCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
-    else:
-        lcovTestStatus = runcmd(lcovTestCmd, cwd=os.getcwd() + '/' + outputDir, stderr=subprocess.STDOUT)
-    if not lcovTestStatus:
-        return False
-    lcovCombineCmd = ["lcov", "-a", "coverage_base.info", "-a", "coverage_test.info", "-o", "coverage.info", "--filter",
-                      "brace,function,trivial"]
-    lcovCombineCmd.extend(["--ignore-errors", "empty"]);
-    if resultsFile:
-        lcovCombineStatus = runcmd(lcovCombineCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
-    else:
-        lcovCombineStatus = runcmd(lcovCombineCmd, cwd=os.getcwd() + '/' + outputDir, stderr=subprocess.STDOUT)
-    if not lcovCombineStatus:
-        return False
-    genHtmlCmd = ["genhtml", "coverage.info", "--output-directory", "gh_pages/coverage_report", "--filter", "brace,function,trivial"]
-    genHtmlCmd.extend(["--ignore-errors", "empty"]);
-    if resultsFile:
-        genHtmlStatus = runcmd(genHtmlCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
-    else:
-        genHtmlStatus = runcmd(genHtmlCmd, cwd=os.getcwd() + '/' + outputDir, stderr=subprocess.STDOUT)
-    genStatsCmd = ["lcov", "--summary", "coverage.info", "--filter", "brace,function,trivial"]
-    genStatsCmd.extend(["--ignore-errors", "empty"]);
-    statsFile = open(os.getcwd() + '/' + outputDir + '/' + "coverage_statistics.txt", "w")
-    if statsFile:
-        genStatsStatus = runcmd(genStatsCmd, cwd=os.getcwd() + '/' + outputDir, stdout=statsFile, stderr=subprocess.STDOUT)
-    else:
-        genStatsStatus = False
-    statsFile.close()
-    return genHtmlStatus and genStatsStatus
