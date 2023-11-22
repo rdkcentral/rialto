@@ -54,10 +54,11 @@ public:
      */
     static std::weak_ptr<IGstGenericPlayerFactory> m_factory;
 
-    std::unique_ptr<IGstGenericPlayer> createGstGenericPlayer(
-        IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
-        const VideoRequirements &videoRequirements,
-        const std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactory) override;
+    std::unique_ptr<IGstGenericPlayer>
+    createGstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
+                           const VideoRequirements &videoRequirements,
+                           const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory>
+                               &rdkGstreamerUtilsWrapperFactory) override;
 };
 
 /**
@@ -82,8 +83,9 @@ public:
      * @param[in] gstDispatcherThreadFactory   : The gst dispatcher thread factory
      */
     GstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
-                     const VideoRequirements &videoRequirements, const std::shared_ptr<IGstWrapper> &gstWrapper,
-                     const std::shared_ptr<IGlibWrapper> &glibWrapper,
+                     const VideoRequirements &videoRequirements,
+                     const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                     const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
                      const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
                      std::shared_ptr<common::ITimerFactory> timerFactory,
                      std::unique_ptr<IGenericPlayerTaskFactory> taskFactory,
@@ -228,12 +230,12 @@ private:
     /**
      * @brief The gstreamer wrapper object.
      */
-    std::shared_ptr<IGstWrapper> m_gstWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
 
     /**
      * @brief The glib wrapper object.
      */
-    std::shared_ptr<IGlibWrapper> m_glibWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
 
     /**
      * @brief Thread for handling player tasks.

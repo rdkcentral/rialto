@@ -65,7 +65,8 @@ public:
     virtual std::unique_ptr<IGstGenericPlayer>
     createGstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
                            const VideoRequirements &videoRequirements,
-                           const std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactory) = 0;
+                           const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory>
+                               &rdkGstreamerUtilsWrapperFactory) = 0;
 };
 
 class IGstGenericPlayer

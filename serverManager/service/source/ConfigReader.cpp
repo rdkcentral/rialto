@@ -24,7 +24,8 @@
 
 namespace rialto::servermanager::service
 {
-ConfigReader::ConfigReader(std::shared_ptr<IJsonCppWrapper> jsonWrapper, std::shared_ptr<IFileReader> fileReader)
+ConfigReader::ConfigReader(std::shared_ptr<firebolt::rialto::wrappers::IJsonCppWrapper> jsonWrapper,
+                           std::shared_ptr<IFileReader> fileReader)
     : m_jsonWrapper(jsonWrapper), m_fileReader(fileReader)
 {
 }
@@ -36,7 +37,7 @@ bool ConfigReader::read()
         return false;
     }
 
-    std::shared_ptr<IJsonValueWrapper> root;
+    std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root;
     Json::CharReaderBuilder builder;
     if (!m_jsonWrapper->parseFromStream(builder, m_fileReader->get(), root, nullptr))
     {
@@ -58,11 +59,11 @@ bool ConfigReader::read()
     return true;
 }
 
-void ConfigReader::parseEnvironmentVariables(std::shared_ptr<IJsonValueWrapper> root)
+void ConfigReader::parseEnvironmentVariables(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
 {
     if (root->isMember("environment_variables") && root->at("environment_variables")->isArray())
     {
-        std::shared_ptr<IJsonValueWrapper> envVarsJson = root->at("environment_variables");
+        std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> envVarsJson = root->at("environment_variables");
         Json::ArrayIndex size = envVarsJson->size();
         for (Json::ArrayIndex index = 0; index < size; ++index)
         {
@@ -74,7 +75,7 @@ void ConfigReader::parseEnvironmentVariables(std::shared_ptr<IJsonValueWrapper> 
     }
 }
 
-void ConfigReader::parseSessionServerPath(std::shared_ptr<IJsonValueWrapper> root)
+void ConfigReader::parseSessionServerPath(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
 {
     if (root->isMember("session_server_path") && root->at("session_server_path")->isString())
     {
@@ -82,7 +83,7 @@ void ConfigReader::parseSessionServerPath(std::shared_ptr<IJsonValueWrapper> roo
     }
 }
 
-void ConfigReader::parseSessionServerStartupTimeout(std::shared_ptr<IJsonValueWrapper> root)
+void ConfigReader::parseSessionServerStartupTimeout(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
 {
     if (root->isMember("startup_timeout_ms") && root->at("startup_timeout_ms")->isUInt())
     {
@@ -90,7 +91,7 @@ void ConfigReader::parseSessionServerStartupTimeout(std::shared_ptr<IJsonValueWr
     }
 }
 
-void ConfigReader::parseHealthcheckInterval(std::shared_ptr<IJsonValueWrapper> root)
+void ConfigReader::parseHealthcheckInterval(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
 {
     if (root->isMember("healthcheck_interval_s") && root->at("healthcheck_interval_s")->isUInt())
     {
@@ -98,7 +99,7 @@ void ConfigReader::parseHealthcheckInterval(std::shared_ptr<IJsonValueWrapper> r
     }
 }
 
-void ConfigReader::parseSocketPermissions(std::shared_ptr<IJsonValueWrapper> root)
+void ConfigReader::parseSocketPermissions(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
 {
     if (root->isMember("socket_permissions") && root->at("socket_permissions")->isUInt())
     {
@@ -112,7 +113,7 @@ void ConfigReader::parseSocketPermissions(std::shared_ptr<IJsonValueWrapper> roo
     }
 }
 
-void ConfigReader::parseSocketOwner(std::shared_ptr<IJsonValueWrapper> root)
+void ConfigReader::parseSocketOwner(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
 {
     const char *kFieldString = "socket_owner";
     if (root->isMember(kFieldString) && root->at(kFieldString)->isString())
@@ -121,7 +122,7 @@ void ConfigReader::parseSocketOwner(std::shared_ptr<IJsonValueWrapper> root)
     }
 }
 
-void ConfigReader::parseSocketGroup(std::shared_ptr<IJsonValueWrapper> root)
+void ConfigReader::parseSocketGroup(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
 {
     const char *kFieldString = "socket_group";
     if (root->isMember(kFieldString) && root->at(kFieldString)->isString())
@@ -130,7 +131,7 @@ void ConfigReader::parseSocketGroup(std::shared_ptr<IJsonValueWrapper> root)
     }
 }
 
-void ConfigReader::parseNumOfPreloadedServers(std::shared_ptr<IJsonValueWrapper> root)
+void ConfigReader::parseNumOfPreloadedServers(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
 {
     if (root->isMember("num_of_preloaded_servers") && root->at("num_of_preloaded_servers")->isUInt())
     {
@@ -138,7 +139,7 @@ void ConfigReader::parseNumOfPreloadedServers(std::shared_ptr<IJsonValueWrapper>
     }
 }
 
-void ConfigReader::parseLogLevel(std::shared_ptr<IJsonValueWrapper> root)
+void ConfigReader::parseLogLevel(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
 {
     if (root->isMember("log_level") && root->at("log_level")->isUInt())
     {
@@ -173,7 +174,7 @@ void ConfigReader::parseLogLevel(std::shared_ptr<IJsonValueWrapper> root)
     }
 }
 
-void ConfigReader::parseNumOfPingsBeforeRecovery(std::shared_ptr<IJsonValueWrapper> root)
+void ConfigReader::parseNumOfPingsBeforeRecovery(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
 {
     if (root->isMember("num_of_pings_before_recovery") && root->at("num_of_pings_before_recovery")->isUInt())
     {

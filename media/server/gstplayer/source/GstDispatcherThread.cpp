@@ -22,15 +22,15 @@
 
 namespace firebolt::rialto::server
 {
-std::unique_ptr<IGstDispatcherThread>
-GstDispatcherThreadFactory::createGstDispatcherThread(IGstDispatcherThreadClient &client, GstElement *pipeline,
-                                                      const std::shared_ptr<IGstWrapper> &gstWrapper) const
+std::unique_ptr<IGstDispatcherThread> GstDispatcherThreadFactory::createGstDispatcherThread(
+    IGstDispatcherThreadClient &client, GstElement *pipeline,
+    const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper) const
 {
     return std::make_unique<GstDispatcherThread>(client, pipeline, gstWrapper);
 }
 
 GstDispatcherThread::GstDispatcherThread(IGstDispatcherThreadClient &client, GstElement *pipeline,
-                                         const std::shared_ptr<IGstWrapper> &gstWrapper)
+                                         const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper)
     : m_client{client}, m_gstWrapper{gstWrapper}, m_isGstreamerDispatcherActive{true}
 {
     RIALTO_SERVER_LOG_INFO("GstDispatcherThread is starting");

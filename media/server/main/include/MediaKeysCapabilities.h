@@ -57,8 +57,8 @@ public:
      * @param[in] ocdmFactory : The ocdm factory.
      * @param[in] ocdmSystemFactory : The ocdmSystem factory.
      */
-    MediaKeysCapabilities(std::shared_ptr<IOcdmFactory> ocdmFactory,
-                          std::shared_ptr<IOcdmSystemFactory> ocdmSystemFactory);
+    MediaKeysCapabilities(std::shared_ptr<firebolt::rialto::wrappers::IOcdmFactory> ocdmFactory,
+                          std::shared_ptr<firebolt::rialto::wrappers::IOcdmSystemFactory> ocdmSystemFactory);
 
     /**
      * @brief Virtual destructor.
@@ -75,12 +75,12 @@ private:
     /**
      * @brief The IOcdm instance.
      */
-    std::shared_ptr<IOcdm> m_ocdm;
+    std::shared_ptr<firebolt::rialto::wrappers::IOcdm> m_ocdm;
 
     /**
      * @brief The IOcdmSystem factory.
      */
-    std::shared_ptr<IOcdmSystemFactory> m_ocdmSystemFactory;
+    std::shared_ptr<firebolt::rialto::wrappers::IOcdmSystemFactory> m_ocdmSystemFactory;
 };
 
 }; // namespace firebolt::rialto::server

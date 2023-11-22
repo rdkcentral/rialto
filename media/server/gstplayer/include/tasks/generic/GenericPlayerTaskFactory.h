@@ -32,9 +32,10 @@ namespace firebolt::rialto::server
 class GenericPlayerTaskFactory : public IGenericPlayerTaskFactory
 {
 public:
-    GenericPlayerTaskFactory(IGstGenericPlayerClient *client, const std::shared_ptr<IGstWrapper> &gstWrapper,
-                             const std::shared_ptr<IGlibWrapper> &glibWrapper,
-                             const std::shared_ptr<IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper);
+    GenericPlayerTaskFactory(
+        IGstGenericPlayerClient *client, const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+        const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
+        const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper);
     ~GenericPlayerTaskFactory() override = default;
 
     std::unique_ptr<IPlayerTask> createAttachSamples(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
@@ -89,9 +90,9 @@ public:
 
 private:
     IGstGenericPlayerClient *m_client;
-    std::shared_ptr<IGstWrapper> m_gstWrapper;
-    std::shared_ptr<IGlibWrapper> m_glibWrapper;
-    std::shared_ptr<IRdkGstreamerUtilsWrapper> m_rdkGstreamerUtilsWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> m_rdkGstreamerUtilsWrapper;
 };
 } // namespace firebolt::rialto::server
 

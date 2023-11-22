@@ -39,7 +39,7 @@ constexpr gid_t kNoGroupChange = -1; // -1 means chown() won't change the group
 namespace firebolt::rialto::server::ipc
 {
 SessionManagementServer::SessionManagementServer(
-    std::weak_ptr<firebolt::rialto::common::ILinuxWrapper> linuxWrapper,
+    std::weak_ptr<firebolt::rialto::wrappers::ILinuxWrapper> linuxWrapper,
     const std::shared_ptr<firebolt::rialto::ipc::IServerFactory> &ipcFactory,
     const std::shared_ptr<IMediaPipelineModuleServiceFactory> &mediaPipelineModuleFactory,
     const std::shared_ptr<IMediaPipelineCapabilitiesModuleServiceFactory> &mediaPipelineCapabilitiesModuleFactory,

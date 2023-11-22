@@ -34,8 +34,8 @@ public:
     GstProtectionMetadataWrapperFactory() = default;
     ~GstProtectionMetadataWrapperFactory() override = default;
 
-    std::unique_ptr<IGstProtectionMetadataWrapper>
-    createProtectionMetadataWrapper(const std::shared_ptr<IGstWrapper> &gstWrapper) const override;
+    std::unique_ptr<IGstProtectionMetadataWrapper> createProtectionMetadataWrapper(
+        const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper) const override;
 };
 
 }; // namespace firebolt::rialto::server

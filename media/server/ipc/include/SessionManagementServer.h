@@ -22,6 +22,7 @@
 
 #include "IControlModuleService.h"
 #include "IControlService.h"
+#include "ILinuxWrapper.h"
 #include "IMediaKeysCapabilitiesModuleService.h"
 #include "IMediaKeysModuleService.h"
 #include "IMediaPipelineCapabilitiesModuleService.h"
@@ -43,7 +44,7 @@ class SessionManagementServer : public ISessionManagementServer
 {
 public:
     SessionManagementServer(
-        std::weak_ptr<firebolt::rialto::common::ILinuxWrapper> linuxWrapper,
+        std::weak_ptr<firebolt::rialto::wrappers::ILinuxWrapper> linuxWrapper,
         const std::shared_ptr<firebolt::rialto::ipc::IServerFactory> &serverFactory,
         const std::shared_ptr<IMediaPipelineModuleServiceFactory> &mediaPipelineModuleFactory,
         const std::shared_ptr<IMediaPipelineCapabilitiesModuleServiceFactory> &mediaPipelineCapabilitiesModuleFactory,
@@ -83,7 +84,7 @@ private:
     std::shared_ptr<IMediaKeysCapabilitiesModuleService> m_mediaKeysCapabilitiesModule;
     std::shared_ptr<IWebAudioPlayerModuleService> m_webAudioPlayerModule;
     std::shared_ptr<IControlModuleService> m_controlModule;
-    std::shared_ptr<firebolt::rialto::common::ILinuxWrapper> m_linuxWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::ILinuxWrapper> m_linuxWrapper;
     SetLogLevelsService m_setLogLevelsService;
 };
 } // namespace firebolt::rialto::server::ipc

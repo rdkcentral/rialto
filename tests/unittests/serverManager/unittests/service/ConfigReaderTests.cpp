@@ -39,10 +39,10 @@ class ConfigReaderTests : public testing::Test
 {
 public:
     ConfigReaderTests()
-        : m_jsonCppWrapperMock(std::make_shared<StrictMock<JsonCppWrapperMock>>()),
+        : m_jsonCppWrapperMock(std::make_shared<StrictMock<firebolt::rialto::wrappers::JsonCppWrapperMock>>()),
           m_fileReaderMock(std::make_shared<StrictMock<FileReaderMock>>()),
-          m_rootJsonValueMock(std::make_shared<StrictMock<JsonValueWrapperMock>>()),
-          m_objectJsonValueMock(std::make_shared<StrictMock<JsonValueWrapperMock>>())
+          m_rootJsonValueMock(std::make_shared<StrictMock<firebolt::rialto::wrappers::JsonValueWrapperMock>>()),
+          m_objectJsonValueMock(std::make_shared<StrictMock<firebolt::rialto::wrappers::JsonValueWrapperMock>>())
     {
         m_sut = std::make_unique<ConfigReader>(m_jsonCppWrapperMock, m_fileReaderMock);
     }
@@ -96,10 +96,10 @@ public:
     ~ConfigReaderTests() override = default;
 
 protected:
-    std::shared_ptr<StrictMock<JsonCppWrapperMock>> m_jsonCppWrapperMock;
+    std::shared_ptr<StrictMock<firebolt::rialto::wrappers::JsonCppWrapperMock>> m_jsonCppWrapperMock;
     std::shared_ptr<StrictMock<FileReaderMock>> m_fileReaderMock;
-    std::shared_ptr<StrictMock<JsonValueWrapperMock>> m_rootJsonValueMock;
-    std::shared_ptr<StrictMock<JsonValueWrapperMock>> m_objectJsonValueMock;
+    std::shared_ptr<StrictMock<firebolt::rialto::wrappers::JsonValueWrapperMock>> m_rootJsonValueMock;
+    std::shared_ptr<StrictMock<firebolt::rialto::wrappers::JsonValueWrapperMock>> m_objectJsonValueMock;
 
     std::ifstream m_jsonFile;
 
@@ -170,8 +170,8 @@ TEST_F(ConfigReaderTests, envVariablesEmptyArray)
 
 TEST_F(ConfigReaderTests, envVariablesOneElementArrayNotString)
 {
-    std::shared_ptr<StrictMock<JsonValueWrapperMock>> object1JsonValueMock =
-        std::make_shared<StrictMock<JsonValueWrapperMock>>();
+    std::shared_ptr<StrictMock<firebolt::rialto::wrappers::JsonValueWrapperMock>> object1JsonValueMock =
+        std::make_shared<StrictMock<firebolt::rialto::wrappers::JsonValueWrapperMock>>();
 
     expectSuccessfulParsing();
 
@@ -190,10 +190,10 @@ TEST_F(ConfigReaderTests, envVariablesOneElementArrayNotString)
 
 TEST_F(ConfigReaderTests, envVariablesMultipleElementArray)
 {
-    std::shared_ptr<StrictMock<JsonValueWrapperMock>> object1JsonValueMock =
-        std::make_shared<StrictMock<JsonValueWrapperMock>>();
-    std::shared_ptr<StrictMock<JsonValueWrapperMock>> object2JsonValueMock =
-        std::make_shared<StrictMock<JsonValueWrapperMock>>();
+    std::shared_ptr<StrictMock<firebolt::rialto::wrappers::JsonValueWrapperMock>> object1JsonValueMock =
+        std::make_shared<StrictMock<firebolt::rialto::wrappers::JsonValueWrapperMock>>();
+    std::shared_ptr<StrictMock<firebolt::rialto::wrappers::JsonValueWrapperMock>> object2JsonValueMock =
+        std::make_shared<StrictMock<firebolt::rialto::wrappers::JsonValueWrapperMock>>();
 
     expectSuccessfulParsing();
 

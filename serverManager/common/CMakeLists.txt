@@ -40,12 +40,14 @@ target_include_directories (
         PRIVATE
         $<TARGET_PROPERTY:RialtoServerManagerPublic,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoCommon,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoWrappers,INTERFACE_INCLUDE_DIRECTORIES>
 )
 target_link_libraries (
         RialtoServerManagerCommon
         PRIVATE
         RialtoLogging
         RialtoCommon
+        RialtoWrappers
         RialtoServerManagerIpc
         Threads::Threads
 )

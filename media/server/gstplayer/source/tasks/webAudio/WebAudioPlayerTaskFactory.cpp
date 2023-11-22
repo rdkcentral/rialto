@@ -30,9 +30,9 @@
 
 namespace firebolt::rialto::server
 {
-WebAudioPlayerTaskFactory::WebAudioPlayerTaskFactory(IGstWebAudioPlayerClient *client,
-                                                     const std::shared_ptr<IGstWrapper> &gstWrapper,
-                                                     const std::shared_ptr<IGlibWrapper> &glibWrapper)
+WebAudioPlayerTaskFactory::WebAudioPlayerTaskFactory(
+    IGstWebAudioPlayerClient *client, const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+    const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper)
     : m_client{client}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}
 {
 }

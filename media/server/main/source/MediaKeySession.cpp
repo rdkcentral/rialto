@@ -41,10 +41,9 @@ std::shared_ptr<IMediaKeySessionFactory> IMediaKeySessionFactory::createFactory(
     return factory;
 }
 
-std::unique_ptr<IMediaKeySession>
-MediaKeySessionFactory::createMediaKeySession(const std::string &keySystem, int32_t keySessionId,
-                                              const IOcdmSystem &ocdmSystem, KeySessionType sessionType,
-                                              std::weak_ptr<IMediaKeysClient> client, bool isLDL) const
+std::unique_ptr<IMediaKeySession> MediaKeySessionFactory::createMediaKeySession(
+    const std::string &keySystem, int32_t keySessionId, const firebolt::rialto::wrappers::IOcdmSystem &ocdmSystem,
+    KeySessionType sessionType, std::weak_ptr<IMediaKeysClient> client, bool isLDL) const
 {
     std::unique_ptr<IMediaKeySession> mediaKeys;
     try
@@ -60,8 +59,9 @@ MediaKeySessionFactory::createMediaKeySession(const std::string &keySystem, int3
     return mediaKeys;
 }
 
-MediaKeySession::MediaKeySession(const std::string &keySystem, int32_t keySessionId, const IOcdmSystem &ocdmSystem,
-                                 KeySessionType sessionType, std::weak_ptr<IMediaKeysClient> client, bool isLDL,
+MediaKeySession::MediaKeySession(const std::string &keySystem, int32_t keySessionId,
+                                 const firebolt::rialto::wrappers::IOcdmSystem &ocdmSystem, KeySessionType sessionType,
+                                 std::weak_ptr<IMediaKeysClient> client, bool isLDL,
                                  const std::shared_ptr<IMainThreadFactory> &mainThreadFactory)
     : m_kKeySystem(keySystem), m_kKeySessionId(keySessionId), m_kSessionType(sessionType), m_mediaKeysClient(client),
       m_kIsLDL(isLDL), m_isSessionConstructed(false), m_licenseRequested(false), m_ongoingOcdmOperation(false),

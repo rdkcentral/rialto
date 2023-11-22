@@ -65,7 +65,7 @@ target_include_directories(
         $<TARGET_PROPERTY:RialtoServerGstPlayer,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoServerCommon,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoPlayerCommon,INTERFACE_INCLUDE_DIRECTORIES>
-        $<TARGET_PROPERTY:RialtoServerWrappers,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoWrappers,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoCommon,INTERFACE_INCLUDE_DIRECTORIES>
         )
 
@@ -87,7 +87,7 @@ target_link_libraries(
         PRIVATE
         RialtoLogging
         RialtoServerGstPlayer
-        RialtoServerWrappers
+        RialtoWrappers
         RialtoCommon
 
         Threads::Threads

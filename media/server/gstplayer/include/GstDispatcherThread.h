@@ -34,14 +34,14 @@ public:
     ~GstDispatcherThreadFactory() override = default;
     std::unique_ptr<IGstDispatcherThread>
     createGstDispatcherThread(IGstDispatcherThreadClient &client, GstElement *pipeline,
-                              const std::shared_ptr<IGstWrapper> &gstWrapper) const override;
+                              const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper) const override;
 };
 
 class GstDispatcherThread : public IGstDispatcherThread
 {
 public:
     GstDispatcherThread(IGstDispatcherThreadClient &client, GstElement *pipeline,
-                        const std::shared_ptr<IGstWrapper> &gstWrapper);
+                        const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper);
     ~GstDispatcherThread() override;
 
 private:
@@ -61,7 +61,7 @@ private:
     /**
      * @brief The gstreamer wrapper object.
      */
-    std::shared_ptr<IGstWrapper> m_gstWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
 
     /**
      * @brief Flag used to check, if task thread is active

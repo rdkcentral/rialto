@@ -51,9 +51,9 @@ public:
     bool triggerConfigure(const firebolt::rialto::common::AppConfig &appConfig) const;
 
 private:
-    std::unique_ptr<testing::StrictMock<firebolt::rialto::common::LinuxWrapperMock>> m_linuxWrapper{
-        std::make_unique<testing::StrictMock<firebolt::rialto::common::LinuxWrapperMock>>()};
-    testing::StrictMock<firebolt::rialto::common::LinuxWrapperMock> &m_linuxWrapperMock{*m_linuxWrapper};
+    std::unique_ptr<testing::StrictMock<firebolt::rialto::wrappers::LinuxWrapperMock>> m_linuxWrapper{
+        std::make_unique<testing::StrictMock<firebolt::rialto::wrappers::LinuxWrapperMock>>()};
+    testing::StrictMock<firebolt::rialto::wrappers::LinuxWrapperMock> &m_linuxWrapperMock{*m_linuxWrapper};
     std::shared_ptr<testing::StrictMock<firebolt::rialto::server::TimerFactoryMock>> m_timerFactoryMock{
         std::make_shared<testing::StrictMock<firebolt::rialto::server::TimerFactoryMock>>()};
     std::unique_ptr<testing::StrictMock<firebolt::rialto::server::TimerMock>> m_timer{

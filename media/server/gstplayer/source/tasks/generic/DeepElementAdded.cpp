@@ -33,9 +33,9 @@ void onHaveType(GstElement *typefind, guint probability, const GstCaps *caps, gp
 namespace firebolt::rialto::server::tasks::generic
 {
 DeepElementAdded::DeepElementAdded(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                   const std::shared_ptr<IGstWrapper> &gstWrapper,
-                                   const std::shared_ptr<IGlibWrapper> &glibWrapper, GstBin *pipeline, GstBin *bin,
-                                   GstElement *element)
+                                   const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                                   const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
+                                   GstBin *pipeline, GstBin *bin, GstElement *element)
     : m_context{context}, m_player{player}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
       m_pipeline{pipeline}, m_bin{bin}, m_element{element}, m_elementName{nullptr}, m_callbackRegistered{false}
 {

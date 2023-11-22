@@ -26,8 +26,10 @@
 
 namespace firebolt::rialto::server::tasks::generic
 {
-RenderFrame::RenderFrame(GenericPlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper,
-                         std::shared_ptr<IGlibWrapper> glibWrapper, IGstGenericPlayerPrivate &player)
+RenderFrame::RenderFrame(GenericPlayerContext &context,
+                         std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
+                         std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
+                         IGstGenericPlayerPrivate &player)
     : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper(glibWrapper), m_player{player}
 {
 }

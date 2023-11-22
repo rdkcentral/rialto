@@ -39,8 +39,8 @@ std::shared_ptr<IGstProtectionMetadataWrapperFactory> IGstProtectionMetadataWrap
     return factory;
 }
 
-std::unique_ptr<IGstProtectionMetadataWrapper>
-GstProtectionMetadataWrapperFactory::createProtectionMetadataWrapper(const std::shared_ptr<IGstWrapper> &gstWrapper) const
+std::unique_ptr<IGstProtectionMetadataWrapper> GstProtectionMetadataWrapperFactory::createProtectionMetadataWrapper(
+    const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper) const
 {
     return std::make_unique<GstProtectionMetadataWrapper>(gstWrapper);
 }

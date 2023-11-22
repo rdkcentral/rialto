@@ -50,7 +50,7 @@ public:
      * @retval a decryptor element instance or null on error.
      */
     virtual std::unique_ptr<IGstProtectionMetadataWrapper>
-    createProtectionMetadataWrapper(const std::shared_ptr<IGstWrapper> &gstWrapper) const = 0;
+    createProtectionMetadataWrapper(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper) const = 0;
 };
 
 }; // namespace firebolt::rialto::server

@@ -36,7 +36,7 @@ public:
 
     virtual std::unique_ptr<IGstDispatcherThread>
     createGstDispatcherThread(IGstDispatcherThreadClient &client, GstElement *pipeline,
-                              const std::shared_ptr<IGstWrapper> &gstWrapper) const = 0;
+                              const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper) const = 0;
 };
 
 class IGstDispatcherThread

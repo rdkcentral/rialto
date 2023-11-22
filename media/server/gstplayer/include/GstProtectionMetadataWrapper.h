@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_GST_PROTECTION_METADATA_WRAPPER_H_
 
 #include "IGstProtectionMetadataWrapper.h"
+#include "IGstWrapper.h"
 #include <memory>
 
 namespace firebolt::rialto::server
@@ -28,7 +29,10 @@ namespace firebolt::rialto::server
 class GstProtectionMetadataWrapper : public IGstProtectionMetadataWrapper
 {
 public:
-    explicit GstProtectionMetadataWrapper(const std::shared_ptr<IGstWrapper> &gstWrapper) : m_gstWrapper(gstWrapper) {}
+    explicit GstProtectionMetadataWrapper(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper)
+        : m_gstWrapper(gstWrapper)
+    {
+    }
     ~GstProtectionMetadataWrapper() override = default;
     GstMeta *addProtectionMetadata(GstBuffer *gstBuffer, GstRialtoProtectionData &data) override;
     GstRialtoProtectionData *getProtectionMetadataData(GstBuffer *gstBuffer) override;
@@ -38,7 +42,7 @@ private:
     /**
      * @brief The gstreamer wrapper object.
      */
-    std::shared_ptr<IGstWrapper> m_gstWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
 };
 }; // namespace firebolt::rialto::server
 

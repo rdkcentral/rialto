@@ -25,6 +25,7 @@
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::server;
+using namespace firebolt::rialto::wrappers;
 
 using ::testing::_;
 using ::testing::DoAll;

@@ -38,7 +38,7 @@ public:
      * @param[in] gstWrapperFactory : The gstreamer wrapper factory.
      */
     GstRialtoDecryptorPrivate(GstBaseTransform *parentElement,
-                              const std::shared_ptr<IGstWrapperFactory> &gstWrapperFactory);
+                              const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapperFactory> &gstWrapperFactory);
 
     /**
      * @brief Decrypts the gst buffer.
@@ -68,7 +68,7 @@ private:
     /**
      * @brief The gstreamer wrapper object.
      */
-    std::shared_ptr<IGstWrapper> m_gstWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
 
     /**
      * @brief The parent decryptor element.

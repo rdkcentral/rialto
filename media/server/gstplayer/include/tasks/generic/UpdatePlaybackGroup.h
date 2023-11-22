@@ -32,15 +32,17 @@ namespace firebolt::rialto::server::tasks::generic
 class UpdatePlaybackGroup : public IPlayerTask
 {
 public:
-    UpdatePlaybackGroup(GenericPlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper,
-                        std::shared_ptr<IGlibWrapper> glibWrapper, GstElement *typefind, const GstCaps *caps);
+    UpdatePlaybackGroup(GenericPlayerContext &context,
+                        std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
+                        std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper, GstElement *typefind,
+                        const GstCaps *caps);
     ~UpdatePlaybackGroup() override;
     void execute() const override;
 
 private:
     GenericPlayerContext &m_context;
-    std::shared_ptr<IGstWrapper> m_gstWrapper;
-    std::shared_ptr<IGlibWrapper> m_glibWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
     GstElement *m_typefind;
     const GstCaps *m_caps;
 };

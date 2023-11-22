@@ -65,17 +65,17 @@ std::shared_ptr<IGstGenericPlayerFactory> IGstGenericPlayerFactory::getFactory()
 std::unique_ptr<IGstGenericPlayer> GstGenericPlayerFactory::createGstGenericPlayer(
     IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
     const VideoRequirements &videoRequirements,
-    const std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactory)
+    const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactory)
 {
     std::unique_ptr<IGstGenericPlayer> gstPlayer;
 
     try
     {
-        auto gstWrapperFactory = IGstWrapperFactory::getFactory();
-        auto glibWrapperFactory = IGlibWrapperFactory::getFactory();
-        std::shared_ptr<IGstWrapper> gstWrapper;
-        std::shared_ptr<IGlibWrapper> glibWrapper;
-        std::shared_ptr<IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper;
+        auto gstWrapperFactory = firebolt::rialto::wrappers::IGstWrapperFactory::getFactory();
+        auto glibWrapperFactory = firebolt::rialto::wrappers::IGlibWrapperFactory::getFactory();
+        std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper;
+        std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper;
+        std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper;
         if ((!gstWrapperFactory) || (!(gstWrapper = gstWrapperFactory->getGstWrapper())))
         {
             throw std::runtime_error("Cannot create GstWrapper");
@@ -109,8 +109,8 @@ std::unique_ptr<IGstGenericPlayer> GstGenericPlayerFactory::createGstGenericPlay
 
 GstGenericPlayer::GstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionService &decryptionService,
                                    MediaType type, const VideoRequirements &videoRequirements,
-                                   const std::shared_ptr<IGstWrapper> &gstWrapper,
-                                   const std::shared_ptr<IGlibWrapper> &glibWrapper,
+                                   const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                                   const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
                                    const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
                                    std::shared_ptr<common::ITimerFactory> timerFactory,
                                    std::unique_ptr<IGenericPlayerTaskFactory> taskFactory,

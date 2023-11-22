@@ -32,8 +32,8 @@ namespace firebolt::rialto::server::tasks::generic
 class CheckAudioUnderflow : public IPlayerTask
 {
 public:
-    CheckAudioUnderflow(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                        IGstGenericPlayerClient *client, std::shared_ptr<IGstWrapper> gstWrapper);
+    CheckAudioUnderflow(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client,
+                        std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper);
     ~CheckAudioUnderflow() override = default;
     void execute() const override;
 
@@ -41,7 +41,7 @@ private:
     GenericPlayerContext &m_context;
     IGstGenericPlayerPrivate &m_player;
     IGstGenericPlayerClient *m_gstPlayerClient;
-    std::shared_ptr<IGstWrapper> m_gstWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
 };
 } // namespace firebolt::rialto::server::tasks::generic
 

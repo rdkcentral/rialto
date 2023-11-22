@@ -29,7 +29,7 @@ const char *underflowSignals[]{"buffer-underflow-callback", "vidsink-underflow-c
 
 namespace firebolt::rialto::server
 {
-bool isVideoDecoder(const IGstWrapper &gstWrapper, GstElement *element)
+bool isVideoDecoder(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element)
 {
     if (!element)
     {
@@ -44,7 +44,7 @@ bool isVideoDecoder(const IGstWrapper &gstWrapper, GstElement *element)
            gstWrapper.gstElementFactoryListIsType(factory, GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO);
 }
 
-bool isAudioDecoder(const IGstWrapper &gstWrapper, GstElement *element)
+bool isAudioDecoder(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element)
 {
     if (!element)
     {
@@ -59,7 +59,7 @@ bool isAudioDecoder(const IGstWrapper &gstWrapper, GstElement *element)
            gstWrapper.gstElementFactoryListIsType(factory, GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO);
 }
 
-std::string getUnderflowSignalName(const IGlibWrapper &glibWrapper, GstElement *element)
+std::string getUnderflowSignalName(const firebolt::rialto::wrappers::IGlibWrapper &glibWrapper, GstElement *element)
 {
     for (GType type = glibWrapper.gObjectType(element); type; type = glibWrapper.gTypeParent(type))
     {

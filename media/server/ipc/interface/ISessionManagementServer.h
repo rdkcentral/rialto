@@ -20,7 +20,6 @@
 #ifndef FIREBOLT_RIALTO_SERVER_IPC_I_SESSION_MANAGEMENT_SERVER_H_
 #define FIREBOLT_RIALTO_SERVER_IPC_I_SESSION_MANAGEMENT_SERVER_H_
 
-#include "ILinuxWrapper.h"
 #include "RialtoServerLogging.h"
 #include <memory>
 #include <string>

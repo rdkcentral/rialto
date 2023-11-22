@@ -32,8 +32,9 @@ namespace firebolt::rialto::server
 class WebAudioPlayerTaskFactory : public IWebAudioPlayerTaskFactory
 {
 public:
-    WebAudioPlayerTaskFactory(IGstWebAudioPlayerClient *client, const std::shared_ptr<IGstWrapper> &gstWrapper,
-                              const std::shared_ptr<IGlibWrapper> &glibWrapper);
+    WebAudioPlayerTaskFactory(IGstWebAudioPlayerClient *client,
+                              const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                              const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper);
     ~WebAudioPlayerTaskFactory() override = default;
 
     std::unique_ptr<IPlayerTask> createShutdown(IGstWebAudioPlayerPrivate &player) const override;
@@ -52,8 +53,8 @@ public:
 
 private:
     IGstWebAudioPlayerClient *m_client;
-    std::shared_ptr<IGstWrapper> m_gstWrapper;
-    std::shared_ptr<IGlibWrapper> m_glibWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
 };
 } // namespace firebolt::rialto::server
 

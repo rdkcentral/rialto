@@ -32,8 +32,8 @@ namespace firebolt::rialto::server::tasks::webaudio
 class SetCaps : public IPlayerTask
 {
 public:
-    SetCaps(WebAudioPlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper,
-            std::shared_ptr<IGlibWrapper> glibWrapper, const std::string &audioMimeType,
+    SetCaps(WebAudioPlayerContext &context, std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
+            std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper, const std::string &audioMimeType,
             std::weak_ptr<const WebAudioConfig> config);
     ~SetCaps() override;
     void execute() const override;
@@ -43,8 +43,8 @@ private:
     void setBytesPerSample() const;
 
     WebAudioPlayerContext &m_context;
-    std::shared_ptr<IGstWrapper> m_gstWrapper;
-    std::shared_ptr<IGlibWrapper> m_glibWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
     const std::string m_audioMimeType;
     WebAudioConfig m_config;
 };

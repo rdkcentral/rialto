@@ -27,7 +27,6 @@ add_subdirectory(gstplayer)
 add_subdirectory(main)
 add_subdirectory(ipc)
 add_subdirectory(service)
-add_subdirectory(wrappers)
 
 add_executable (
         RialtoServer

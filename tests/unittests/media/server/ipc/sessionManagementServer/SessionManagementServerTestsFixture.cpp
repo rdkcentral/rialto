@@ -69,7 +69,7 @@ MATCHER_P4(SetLogLevelsEventMatcher, defaultLogLevels, clientLogLevels, ipcLogLe
 }
 
 SessionManagementServerTests::SessionManagementServerTests()
-    : m_linuxWrapperMock{std::make_shared<testing::StrictMock<firebolt::rialto::common::LinuxWrapperMock>>()},
+    : m_linuxWrapperMock{std::make_shared<testing::StrictMock<firebolt::rialto::wrappers::LinuxWrapperMock>>()},
       m_clientMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ClientMock>>()},
       m_serverMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ServerMock>>()},
       m_mediaPipelineModuleMock{

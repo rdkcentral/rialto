@@ -44,12 +44,12 @@ public:
     // Mocks
     StrictMock<firebolt::rialto::server::GstGenericPlayerPrivateMock> m_gstPlayer;
     StrictMock<firebolt::rialto::server::GstGenericPlayerClientMock> m_gstPlayerClient;
-    std::shared_ptr<firebolt::rialto::server::GlibWrapperMock> m_glibWrapper{
-        std::make_shared<StrictMock<firebolt::rialto::server::GlibWrapperMock>>()};
-    std::shared_ptr<firebolt::rialto::server::GstWrapperMock> m_gstWrapper{
-        std::make_shared<StrictMock<firebolt::rialto::server::GstWrapperMock>>()};
-    std::shared_ptr<firebolt::rialto::server::RdkGstreamerUtilsWrapperMock> m_rdkGstreamerUtilsWrapper{
-        std::make_shared<StrictMock<firebolt::rialto::server::RdkGstreamerUtilsWrapperMock>>()};
+    std::shared_ptr<firebolt::rialto::wrappers::GlibWrapperMock> m_glibWrapper{
+        std::make_shared<StrictMock<firebolt::rialto::wrappers::GlibWrapperMock>>()};
+    std::shared_ptr<firebolt::rialto::wrappers::GstWrapperMock> m_gstWrapper{
+        std::make_shared<StrictMock<firebolt::rialto::wrappers::GstWrapperMock>>()};
+    std::shared_ptr<firebolt::rialto::wrappers::RdkGstreamerUtilsWrapperMock> m_rdkGstreamerUtilsWrapper{
+        std::make_shared<StrictMock<firebolt::rialto::wrappers::RdkGstreamerUtilsWrapperMock>>()};
     std::shared_ptr<StrictMock<firebolt::rialto::server::DecryptionServiceMock>> m_decryptionServiceMock{
         std::make_shared<StrictMock<firebolt::rialto::server::DecryptionServiceMock>>()};
     std::shared_ptr<StrictMock<firebolt::rialto::server::GstSrcMock>> m_gstSrc{
