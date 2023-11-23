@@ -30,7 +30,7 @@ from .utils import runcmd
 def generateCoverageReport(outputDir, resultsFile, suites, excludeFiles):
     lcovCommon = []
     lcovCommon.extend(["--exclude", "/usr/*"])
-    lcovCommon.extend(["--exclude", "*build/*", "--exclude", "*tests/*", "--filter", "brace,function,trivial"])
+    lcovCommon.extend(["--exclude", "*build/*", "--exclude", "*tests/*", "--exclude", "*wrappers/*", "--filter", "brace,function,trivial"])
     lcovCommon.extend(["--parallel",  str(multiprocessing.cpu_count())])
     
     # the following line tells lcov to ignore any errors caused by include/exclude/erase/omit/substitute pattern which did not match any file pathnames
