@@ -21,7 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_I_GST_PROTECTION_METADATA_WRAPPER_FACTORY_H_
 
 #include "IDecryptionService.h"
-#include "IGstProtectionMetadataWrapper.h"
+#include "IGstProtectionMetadataHelper.h"
 #include "IGstWrapper.h"
 #include <gst/gst.h>
 #include <memory>
@@ -29,27 +29,27 @@
 namespace firebolt::rialto::server
 {
 /**
- * @brief IGstProtectionMetadataWrapperFactory factory class, for the creation of a GstProtectionMetadataWrapper.
+ * @brief IGstProtectionMetadataHelperFactory factory class, for the creation of a GstProtectionMetadataHelper.
  */
-class IGstProtectionMetadataWrapperFactory
+class IGstProtectionMetadataHelperFactory
 {
 public:
-    IGstProtectionMetadataWrapperFactory() = default;
-    virtual ~IGstProtectionMetadataWrapperFactory() = default;
+    IGstProtectionMetadataHelperFactory() = default;
+    virtual ~IGstProtectionMetadataHelperFactory() = default;
 
     /**
-     * @brief Creates a IGstProtectionMetadataWrapperFactory instance.
+     * @brief Creates a IGstProtectionMetadataHelperFactory instance.
      *
      * @retval the factory instance or null on error.
      */
-    static std::shared_ptr<IGstProtectionMetadataWrapperFactory> createFactory();
+    static std::shared_ptr<IGstProtectionMetadataHelperFactory> createFactory();
 
     /**
-     * @brief Creates a IGstProtectionMetadataWrapperFactory.
+     * @brief Creates a IGstProtectionMetadataHelperFactory.
      *
      * @retval a decryptor element instance or null on error.
      */
-    virtual std::unique_ptr<IGstProtectionMetadataWrapper>
+    virtual std::unique_ptr<IGstProtectionMetadataHelper>
     createProtectionMetadataWrapper(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper) const = 0;
 };
 

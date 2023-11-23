@@ -17,19 +17,19 @@
  * limitations under the License.
  */
 
-#include "GstProtectionMetadataWrapper.h"
-#include "GstProtectionMetadataWrapperFactory.h"
+#include "GstProtectionMetadataHelper.h"
+#include "GstProtectionMetadataHelperFactory.h"
 #include "RialtoServerLogging.h"
 
 namespace firebolt::rialto::server
 {
-std::shared_ptr<IGstProtectionMetadataWrapperFactory> IGstProtectionMetadataWrapperFactory::createFactory()
+std::shared_ptr<IGstProtectionMetadataHelperFactory> IGstProtectionMetadataHelperFactory::createFactory()
 {
-    std::shared_ptr<IGstProtectionMetadataWrapperFactory> factory;
+    std::shared_ptr<IGstProtectionMetadataHelperFactory> factory;
 
     try
     {
-        factory = std::make_shared<GstProtectionMetadataWrapperFactory>();
+        factory = std::make_shared<GstProtectionMetadataHelperFactory>();
     }
     catch (const std::exception &e)
     {
@@ -39,18 +39,18 @@ std::shared_ptr<IGstProtectionMetadataWrapperFactory> IGstProtectionMetadataWrap
     return factory;
 }
 
-std::unique_ptr<IGstProtectionMetadataWrapper> GstProtectionMetadataWrapperFactory::createProtectionMetadataWrapper(
+std::unique_ptr<IGstProtectionMetadataHelper> GstProtectionMetadataHelperFactory::createProtectionMetadataWrapper(
     const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper) const
 {
-    return std::make_unique<GstProtectionMetadataWrapper>(gstWrapper);
+    return std::make_unique<GstProtectionMetadataHelper>(gstWrapper);
 }
 
-GstMeta *GstProtectionMetadataWrapper::addProtectionMetadata(GstBuffer *gstBuffer, GstRialtoProtectionData &data)
+GstMeta *GstProtectionMetadataHelper::addProtectionMetadata(GstBuffer *gstBuffer, GstRialtoProtectionData &data)
 {
     return m_gstWrapper->gstBufferAddMeta(gstBuffer, GST_RIALTO_PROTECTION_METADATA_INFO, &data);
 }
 
-GstRialtoProtectionData *GstProtectionMetadataWrapper::getProtectionMetadataData(GstBuffer *gstBuffer)
+GstRialtoProtectionData *GstProtectionMetadataHelper::getProtectionMetadataData(GstBuffer *gstBuffer)
 {
     GstMeta *meta = m_gstWrapper->gstBufferGetMeta(gstBuffer, GST_RIALTO_PROTECTION_METADATA_GET_TYPE);
     if (!meta)
@@ -62,7 +62,7 @@ GstRialtoProtectionData *GstProtectionMetadataWrapper::getProtectionMetadataData
     return &protectionMetadata->data;
 }
 
-void GstProtectionMetadataWrapper::removeProtectionMetadata(GstBuffer *gstBuffer)
+void GstProtectionMetadataHelper::removeProtectionMetadata(GstBuffer *gstBuffer)
 {
     GstMeta *meta = m_gstWrapper->gstBufferGetMeta(gstBuffer, GST_RIALTO_PROTECTION_METADATA_GET_TYPE);
     if (meta)

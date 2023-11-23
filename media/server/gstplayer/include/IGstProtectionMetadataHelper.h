@@ -17,21 +17,22 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_GST_PROTECTION_METADATA_WRAPPER_FACTORY_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_GST_PROTECTION_METADATA_WRAPPER_FACTORY_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_I_GST_PROTECTION_METADATA_WRAPPER_H_
+#define FIREBOLT_RIALTO_SERVER_I_GST_PROTECTION_METADATA_WRAPPER_H_
 
-#include "IGstProtectionMetadataWrapperFactory.h"
-#include <gmock/gmock.h>
-#include <memory>
+#include "GstProtectionMetadata.h"
 
 namespace firebolt::rialto::server
 {
-class GstProtectionMetadataWrapperFactoryMock : public IGstProtectionMetadataWrapperFactory
+class IGstProtectionMetadataHelper
 {
 public:
-    MOCK_METHOD(std::unique_ptr<IGstProtectionMetadataWrapper>, createProtectionMetadataWrapper,
-                (const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper), (const, override));
+    IGstProtectionMetadataHelper() = default;
+    virtual ~IGstProtectionMetadataHelper() = default;
+    virtual GstMeta *addProtectionMetadata(GstBuffer *gstBuffer, GstRialtoProtectionData &data) = 0;
+    virtual GstRialtoProtectionData *getProtectionMetadataData(GstBuffer *gstBuffer) = 0;
+    virtual void removeProtectionMetadata(GstBuffer *gstBuffer) = 0;
 };
-} // namespace firebolt::rialto::server
+}; // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_GST_PROTECTION_METADATA_WRAPPER_FACTORY_MOCK_H_
+#endif // FIREBOLT_RIALTO_SERVER_I_GST_PROTECTION_METADATA_WRAPPER_H_

@@ -20,21 +20,21 @@
 #ifndef FIREBOLT_RIALTO_SERVER_GST_PROTECTION_METADATA_WRAPPER_FACTORY_H_
 #define FIREBOLT_RIALTO_SERVER_GST_PROTECTION_METADATA_WRAPPER_FACTORY_H_
 
-#include "IGstProtectionMetadataWrapperFactory.h"
+#include "IGstProtectionMetadataHelperFactory.h"
 #include <memory>
 
 namespace firebolt::rialto::server
 {
 /**
- * @brief GstProtectionMetadataWrapperFactory factory class, for the creation of a GstProtectionMetadataWrapper.
+ * @brief GstProtectionMetadataHelperFactory factory class, for the creation of a GstProtectionMetadataHelper.
  */
-class GstProtectionMetadataWrapperFactory : public IGstProtectionMetadataWrapperFactory
+class GstProtectionMetadataHelperFactory : public IGstProtectionMetadataHelperFactory
 {
 public:
-    GstProtectionMetadataWrapperFactory() = default;
-    ~GstProtectionMetadataWrapperFactory() override = default;
+    GstProtectionMetadataHelperFactory() = default;
+    ~GstProtectionMetadataHelperFactory() override = default;
 
-    std::unique_ptr<IGstProtectionMetadataWrapper> createProtectionMetadataWrapper(
+    std::unique_ptr<IGstProtectionMetadataHelper> createProtectionMetadataWrapper(
         const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper) const override;
 };
 

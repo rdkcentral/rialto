@@ -20,20 +20,20 @@
 #ifndef FIREBOLT_RIALTO_SERVER_GST_PROTECTION_METADATA_WRAPPER_H_
 #define FIREBOLT_RIALTO_SERVER_GST_PROTECTION_METADATA_WRAPPER_H_
 
-#include "IGstProtectionMetadataWrapper.h"
+#include "IGstProtectionMetadataHelper.h"
 #include "IGstWrapper.h"
 #include <memory>
 
 namespace firebolt::rialto::server
 {
-class GstProtectionMetadataWrapper : public IGstProtectionMetadataWrapper
+class GstProtectionMetadataHelper : public IGstProtectionMetadataHelper
 {
 public:
-    explicit GstProtectionMetadataWrapper(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper)
+    explicit GstProtectionMetadataHelper(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper)
         : m_gstWrapper(gstWrapper)
     {
     }
-    ~GstProtectionMetadataWrapper() override = default;
+    ~GstProtectionMetadataHelper() override = default;
     GstMeta *addProtectionMetadata(GstBuffer *gstBuffer, GstRialtoProtectionData &data) override;
     GstRialtoProtectionData *getProtectionMetadataData(GstBuffer *gstBuffer) override;
     void removeProtectionMetadata(GstBuffer *gstBuffer) override;

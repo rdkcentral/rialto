@@ -79,7 +79,7 @@ add_library(
         source/GstGenericPlayer.cpp
         source/GstWebAudioPlayer.cpp
         source/GstProtectionMetadata.cpp
-        source/GstProtectionMetadataWrapper.cpp
+        source/GstProtectionMetadataHelper.cpp
         source/GstSrc.cpp
         source/Utils.cpp
         source/WorkerThread.cpp

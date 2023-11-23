@@ -18,7 +18,7 @@
  */
 #include "DecryptionServiceMock.h"
 #include "GstDecryptorPrivate.h"
-#include "GstProtectionMetadataWrapperMock.h"
+#include "GstProtectionMetadataHelperMock.h"
 #include "GstWrapperFactoryMock.h"
 #include "GstWrapperMock.h"
 #include <gtest/gtest.h>
@@ -74,8 +74,8 @@ protected:
     std::shared_ptr<StrictMock<GstWrapperMock>> m_gstWrapperMock;
     std::unique_ptr<GstRialtoDecryptorPrivate> m_gstRialtoDecryptorPrivate;
     std::shared_ptr<StrictMock<DecryptionServiceMock>> m_decryptionServiceMock;
-    StrictMock<GstProtectionMetadataWrapperMock> *m_protectionMetadataWrapperMock;
-    std::unique_ptr<StrictMock<GstProtectionMetadataWrapperMock>> protectionMetadataWrapperMock;
+    StrictMock<GstProtectionMetadataHelperMock> *m_protectionMetadataWrapperMock;
+    std::unique_ptr<StrictMock<GstProtectionMetadataHelperMock>> protectionMetadataWrapperMock;
 
     GstBaseTransform m_decryptorBase = {};
     GstBuffer m_buffer = {};
@@ -116,7 +116,7 @@ protected:
 
         m_gstRialtoDecryptorPrivate->setDecryptionService(m_decryptionServiceMock.get());
 
-        protectionMetadataWrapperMock = std::make_unique<StrictMock<GstProtectionMetadataWrapperMock>>();
+        protectionMetadataWrapperMock = std::make_unique<StrictMock<GstProtectionMetadataHelperMock>>();
         m_protectionMetadataWrapperMock = protectionMetadataWrapperMock.get();
         m_gstRialtoDecryptorPrivate->setProtectionMetadataWrapper(std::move(protectionMetadataWrapperMock));
     }

@@ -21,7 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_GST_DECRYPTOR_PRIVATE_H_
 
 #include "IDecryptionService.h"
-#include "IGstProtectionMetadataWrapper.h"
+#include "IGstProtectionMetadataHelper.h"
 #include "IGstWrapper.h"
 #include <gst/gst.h>
 #include <memory>
@@ -62,7 +62,7 @@ public:
      *
      * @param[in] metadataWrapper     : The protection metadata object
      */
-    void setProtectionMetadataWrapper(std::unique_ptr<IGstProtectionMetadataWrapper> &&metadataWrapper);
+    void setProtectionMetadataWrapper(std::unique_ptr<IGstProtectionMetadataHelper> &&metadataWrapper);
 
 private:
     /**
@@ -83,7 +83,7 @@ private:
     /**
      * @brief The protection metadata object
      */
-    std::unique_ptr<IGstProtectionMetadataWrapper> m_metadataWrapper;
+    std::unique_ptr<IGstProtectionMetadataHelper> m_metadataWrapper;
 
     /**
      * @brief Creates the protection meta structure.
