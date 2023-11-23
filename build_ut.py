@@ -61,4 +61,4 @@ if __name__ == "__main__":
         # Exclude wrappers for unittests as they are mocked
         excludeFiles = ["*Wrapper.cpp", "LinuxWrapper.h", "JsonCppWrapperFactory.cpp", "JsonCppWrapperFactory.h", "JsonCppWrapper.h",
                         "GstProtectionMetadataWrapper.h", "GstProtectionMetadataWrapperFactory.h", "GstWrapper.h", "GlibWrapper.h"]
-        generateCoverageReport(args['output'], outputFile, suitesToRun, excludeFiles, ".")
+        generateCoverageReport(args['output'], outputFile, suitesToRun, excludeFiles)

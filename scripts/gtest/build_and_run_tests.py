@@ -18,19 +18,16 @@
 # limitations under the License.
 #
 
-# Build script for running rialto googletests
+# Functions for building and running rialto googletests
 
 import subprocess
 import os
 import argparse
 import multiprocessing
-from .utils import strOfKeys, runcmd
-
+from .utils import *
 
 # Default variables
-resultOutput = "gtest_result"
 valgrindOutput = "valgrind_report"
-valgrindErrorCode = 101
 valgrindIgnore = "rialto.supp"
 
 def getGenericArguments(argParser, suiteInfo):
@@ -38,11 +35,11 @@ def getGenericArguments(argParser, suiteInfo):
     argParser.add_argument("-o", "--output", default="build",
                         help="Location to write the build files to (default 'build').")
     argParser.add_argument("-f", "--file", nargs='?', const="",
-                        help="Write the build and test output to a file (default '" + resultOutput + ".log') \n" \
+                        help="Write the build and test output to a file (default '" + getDefaultResultsOutputFileName() + ".log') \n" \
                              + "Valgrind output also written to file, default file name only \n" \
                              + "'*suite_name*_" + valgrindOutput + ".txt' (if -xml not specified).")
     argParser.add_argument("-xml", "--xml", nargs='?', const="",
-                        help="Convert the test results to xml (default '*suite_name*_" + resultOutput + ".xml') \n" \
+                        help="Convert the test results to xml (default '*suite_name*_" + getDefaultResultsOutputFileName() + ".xml') \n" \
                              + "Valgrind output also converted to xml, default file name only \n" \
                              + "'*suite_name*_" + valgrindOutput + ".xml'.")
     argParser.add_argument("-s", "--suites", nargs='*',
@@ -76,13 +73,13 @@ def buildAndRunGTests(args, f, buildDefines, suitesToRun):
 
     # Clean if required
     if args['clean'] == True:
-        executeCmd = ["rm", "-rf", args['output'], resultOutput + ".log", valgrindOutput + ".log"]
+        executeCmd = ["rm", "-rf", args['output'], getDefaultResultsOutputFileName() + ".log", valgrindOutput + ".log"]
         runcmd(executeCmd, cwd=os.getcwd())
 
     # Get xml output file name if any
     if args['xml'] != None:
         if args['xml'] == "":
-            xml = resultOutput + ".xml"
+            xml = getDefaultResultsOutputFileName() + ".xml"
         else:
             xml = args['xml']
     else:
@@ -152,7 +149,7 @@ def runTests (suites, doListTests, gtestFilter, outputDir, resultsFile, xmlFile,
             status = runcmd(executeCmd, cwd=os.getcwd() + '/' + outputDir, stderr=subprocess.STDOUT)
 
         # Check for error code
-        if status.returncode == valgrindErrorCode:
+        if status.returncode == getvalgrindErrorCode():
             print("Valgrind failed for suite '" + key +"'")
             hasFailed = True
         elif status.returncode != 0:
@@ -164,7 +161,7 @@ def runTests (suites, doListTests, gtestFilter, outputDir, resultsFile, xmlFile,
 
 # Returns the valgrind command arguments
 def AddValgrind(suite, outputToFile, outputToXml):
-    executeCmd = ["valgrind", "--leak-check=full", "--show-leak-kinds=all", "--track-origins=yes", "--verbose", "--error-exitcode=" + str(valgrindErrorCode)]
+    executeCmd = ["valgrind", "--leak-check=full", "--show-leak-kinds=all", "--track-origins=yes", "--verbose", "--error-exitcode=" + str(getvalgrindErrorCode())]
 
     # Xml redirects the output to xml, cannot output to logfile at the same time
     if outputToXml:
