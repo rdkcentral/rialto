@@ -30,6 +30,7 @@ from .utils import *
 valgrindOutput = "valgrind_report"
 valgrindIgnore = "rialto.supp"
 
+# Get the arguments supported by the googletest script
 def getGenericArguments(argParser, suiteInfo):
     # Get arguments
     argParser.add_argument("-o", "--output", default="build",
@@ -63,9 +64,8 @@ def getGenericArguments(argParser, suiteInfo):
                              + "Note: Requires version valgrind 3.17.0+ installed. \n")
     argParser.add_argument("-cov", "--coverage", action='store_true', help="Generates the full coverage report")
 
-
+# Builds and runs googletests for the given suites
 def buildAndRunGTests(args, f, buildDefines, suitesToRun):
-
     # Set env variable
     os.environ["RIALTO_SOCKET_PATH"] = "/tmp/rialto-0"
     # Set env variable to disable journald logging

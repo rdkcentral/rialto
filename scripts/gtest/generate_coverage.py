@@ -26,6 +26,7 @@ import multiprocessing
 import sys
 from .utils import runcmd
 
+# Generates the coverage stats and produces html github pages for all files in the src tree excluding excludeFiles
 def generateCoverageReport(outputDir, resultsFile, suites, excludeFiles):
     lcovCommon = []
     lcovCommon.extend(["--exclude", "/usr/*"])
@@ -56,6 +57,7 @@ def generateCoverageReport(outputDir, resultsFile, suites, excludeFiles):
         lcovTestStatus = runcmd(lcovTestCmd, cwd=os.getcwd() + '/' + outputDir, stderr=subprocess.STDOUT)
     if not lcovTestStatus:
         return False
+
     lcovCombineCmd = ["lcov", "-a", "coverage_base.info", "-a", "coverage_test.info", "-o", "coverage.info", "--filter",
                       "brace,function,trivial"]
     lcovCombineCmd.extend(["--ignore-errors", "empty"])
@@ -65,12 +67,14 @@ def generateCoverageReport(outputDir, resultsFile, suites, excludeFiles):
         lcovCombineStatus = runcmd(lcovCombineCmd, cwd=os.getcwd() + '/' + outputDir, stderr=subprocess.STDOUT)
     if not lcovCombineStatus:
         return False
+
     genHtmlCmd = ["genhtml", "coverage.info", "--output-directory", "gh_pages/coverage_report", "--filter", "brace,function,trivial"]
     genHtmlCmd.extend(["--ignore-errors", "empty"])
     if resultsFile:
         genHtmlStatus = runcmd(genHtmlCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
     else:
         genHtmlStatus = runcmd(genHtmlCmd, cwd=os.getcwd() + '/' + outputDir, stderr=subprocess.STDOUT)
+
     genStatsCmd = ["lcov", "--summary", "coverage.info", "--filter", "brace,function,trivial"]
     genStatsCmd.extend(["--ignore-errors", "empty"])
     statsFile = open(os.getcwd() + '/' + outputDir + '/' + "coverage_statistics.txt", "w")
@@ -79,8 +83,10 @@ def generateCoverageReport(outputDir, resultsFile, suites, excludeFiles):
     else:
         genStatsStatus = False
     statsFile.close()
+
     return genHtmlStatus and genStatsStatus
 
+# Generates a stats file based on the file patterns given in includeFiles. generateCoverageReport must have been run first.
 def generateSpecificCoverageStats(outputDir, resultsFile, includeFiles, statsFileName):
     genStatsCmd = ["lcov", "--summary", "coverage.info", "--filter", "brace,function,trivial"]
     genStatsCmd.extend(["--ignore-errors", "empty"])
@@ -94,4 +100,5 @@ def generateSpecificCoverageStats(outputDir, resultsFile, includeFiles, statsFil
     else:
         genStatsStatus = False
     statsFile.close()
+
     return genStatsStatus

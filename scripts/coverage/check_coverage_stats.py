@@ -19,6 +19,8 @@
 # limitations under the License.
 #
 
+# Checks the given coverage stats file for failure based on the minimum coverage percentage
+
 import sys
 
 def main():
@@ -29,6 +31,7 @@ def main():
     percentage_failure = sys.argv[2]
     check_coverage(stats, percentage_failure)
 
+# Parse the stats file a file_path
 def parse_statistics(file_path):
     try:
         file = open(file_path, "r")
@@ -43,6 +46,7 @@ def parse_statistics(file_path):
         print("Can't compare coverage stats - Could not open statistics file")
         return (0.0, 0.0)
 
+# Checks the coverage stats agains the minimum coverage percentage
 def check_coverage(stats, percentage_failure):
     is_failure = False
 

@@ -17,8 +17,9 @@
 # limitations under the License.
 #
 
-# This workflow builds and runs the rialto unittests. The workflow shall fail if any test fails
-# and the results of the tests are checked and displayed in github. Logs are uploaded on failure.
+# This workflow builds and runs the rialto client component tests. The workflow shall fail if any test fails
+# and the results of the tests are checked and displayed in github. Coverage of the api interfaces are also
+# checked, the workflow shall fail if these are not 100% covered. Logs are uploaded on failure.
 
 name: client_component_tests
 
@@ -38,13 +39,13 @@ jobs:
 
   # This job sets up the repo with the dependancies then runs the client component tests
   run-client-test:
-    name: Build and test ipc unittests
+    name: Build and test client component tests
 
     # Runs on ubuntu
     runs-on: ubuntu-22.04
 
     # Timeout after
-    timeout-minutes: 10
+    timeout-minutes: 5
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -61,7 +62,7 @@ jobs:
         run: |
               python build_ct.py -c -xml -f -cov -s client
 
-      # Processes the results of the unittests and the lcov output
+      # Processes the results of the component test and the lcov output
       - name: Process output
         uses: ./.github/workflows/actions/process_results_ut
         if: success() || failure()
@@ -93,8 +94,8 @@ jobs:
           name: coverage_report_stats_component
           path: build/coverage_statistics.txt
 
-  # This job runs the coverage report
-  # Will only check stats on PR not master
+  # This job checks the api coverage
+  # Will only check stats on pull request
   check-interface-api-coverage:
     name: Checks the coverage statistics of the api interface
 
@@ -111,6 +112,7 @@ jobs:
 
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: checkout repo
+        if: ${{ github.ref != 'refs/heads/master' }}
         uses: actions/checkout@v3
 
       # Get cached lcov client component tests interface api stats
@@ -125,4 +127,4 @@ jobs:
       # Run the check_coverage_stats script
       - name: Process Coverage Statistics
         if: ${{ success() && github.ref != 'refs/heads/master' }}
-        run: python scripts/coverage/check_coverage_stats.py build/coverage_statistics_public_apis.txt 10
+        run: python scripts/coverage/check_coverage_stats.py build/coverage_statistics_public_apis.txt 8
