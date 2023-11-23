@@ -74,7 +74,7 @@ jobs:
         uses: actions/cache@v3
         if: success()
         with:
-          path: build/coverage_statistics_public_apis.info
+          path: build/coverage_statistics_public_apis.txt
           key: ${{ runner.os }}-client-component-coverage-stats-${{ github.run_id }}-${{ github.run_number }}
 
       # Upload coverage report on success
@@ -119,7 +119,7 @@ jobs:
         uses: actions/cache@v3
         if: ${{ github.ref != 'refs/heads/master' }}
         with:
-          path: build/coverage_statistics_public_apis.info
+          path: build/coverage_statistics_public_apis.txt
           key: ${{ runner.os }}-client-component-coverage-stats-${{ github.run_id }}-${{ github.run_number }}
 
       # Run the check_coverage_stats script
