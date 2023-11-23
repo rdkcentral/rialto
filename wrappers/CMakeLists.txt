@@ -22,6 +22,12 @@ set( CMAKE_CXX_STANDARD 17 )
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
 include( CheckCXXCompilerFlag )
 
+# RIALTO-197: deprecated-declarations error in the latest stable2 for gstreamer.
+# Should be removed once the issue is fixed.
+add_compile_options(
+  "-Wno-deprecated-declarations"
+)
+
 find_package( PkgConfig REQUIRED )
 pkg_check_modules( GStreamerApp REQUIRED IMPORTED_TARGET gstreamer-app-1.0 gstreamer-pbutils-1.0 gstreamer-audio-1.0)
 
