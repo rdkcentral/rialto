@@ -59,14 +59,14 @@ jobs:
       # Run the build script for client
       - name: build_ct.py script client
         run: |
-              python build_ct.py -c -xml -f -cov -s ipc
+              python build_ct.py -c -xml -f -cov -s client
 
       # Processes the results of the unittests and the lcov output
       - name: Process output
         uses: ./.github/workflows/actions/process_results_ut
         if: success() || failure()
         with:
-          suite: 'ipc'
+          suite: 'client'
 
       # Cache lcov output
       - name: Cache client component tests interface stats
@@ -156,7 +156,7 @@ jobs:
           path: build/coverage_statistics_public_apis.info
           key: ${{ runner.os }}-client-component-coverage-stats-${{ github.run_id }}-${{ github.run_number }}
 
-      # Run the process_coverage_stats script
+      # Run the check_coverage_stats script
       - name: Process Coverage Statistics
         if: ${{ success() && github.ref != 'refs/heads/master' }}
         run: python scripts/coverage/check_coverage_stats.py build/coverage_statistics_public_apis.info 8
