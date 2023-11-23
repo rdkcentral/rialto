@@ -121,9 +121,6 @@ OcdmSession::OcdmSession(struct OpenCDMSystem *systemHandle, IOcdmSessionClient 
                    {
                        m_ocdmGstSessionDecryptEx =
                            (OcdmGstSessionDecryptExFn)dlsym(RTLD_DEFAULT, "opencdm_gstreamer_session_decrypt_ex");
-                       if (m_ocdmGstSessionDecryptEx)
-                       {
-                       }
                    });
 }
 
