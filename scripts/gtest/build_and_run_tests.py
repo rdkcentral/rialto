@@ -174,6 +174,6 @@ def AddValgrind(suite, outputToFile, outputToXml):
     # the buffer. Supress these errors.
     #executeCmd.append("--gen-suppressions=all")
     filePath = os.path.realpath(os.path.dirname(__file__))
-    executeCmd.append("--suppressions=" + filePath + "/" + valgrindIgnore)
+    executeCmd.append("--suppressions=" + filePath + "/../../" + valgrindIgnore)
 
     return executeCmd
