@@ -312,7 +312,8 @@ std::shared_ptr<IGstSrc> GstSrcFactory::getGstSrc()
     {
         try
         {
-            gstSrc = std::make_shared<GstSrc>(IGstWrapperFactory::getFactory(), IGlibWrapperFactory::getFactory(),
+            gstSrc = std::make_shared<GstSrc>(firebolt::rialto::wrappers::IGstWrapperFactory::getFactory(),
+                                              firebolt::rialto::wrappers::IGlibWrapperFactory::getFactory(),
                                               IGstDecryptorElementFactory::createFactory());
         }
         catch (const std::exception &e)
@@ -326,8 +327,8 @@ std::shared_ptr<IGstSrc> GstSrcFactory::getGstSrc()
     return gstSrc;
 }
 
-GstSrc::GstSrc(const std::shared_ptr<IGstWrapperFactory> &gstWrapperFactory,
-               const std::shared_ptr<IGlibWrapperFactory> &glibWrapperFactory,
+GstSrc::GstSrc(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapperFactory> &gstWrapperFactory,
+               const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapperFactory> &glibWrapperFactory,
                const std::shared_ptr<IGstDecryptorElementFactory> &decryptorFactory)
     : m_decryptorFactory(decryptorFactory)
 {

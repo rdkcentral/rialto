@@ -43,7 +43,7 @@ namespace firebolt::rialto::server
  * not found, an empty GstCaps object is returned
  */
 
-inline GstCaps *createSimpleCapsFromMimeType(std::shared_ptr<IGstWrapper> m_gstWrapper,
+inline GstCaps *createSimpleCapsFromMimeType(std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper,
                                              const IMediaPipeline::MediaSource &m_attachedSource)
 {
     static const std::unordered_map<std::string, std::string> mimeToMediaType =
@@ -69,8 +69,9 @@ inline GstCaps *createSimpleCapsFromMimeType(std::shared_ptr<IGstWrapper> m_gstW
  * @retval an unordered set of strings representing the supported MIME types
  */
 
-inline std::unordered_set<std::string> convertFromCapsVectorToMimeSet(const std::vector<GstCaps *> &supportedCaps,
-                                                                      std::shared_ptr<IGstWrapper> m_gstWrapper)
+inline std::unordered_set<std::string>
+convertFromCapsVectorToMimeSet(const std::vector<GstCaps *> &supportedCaps,
+                               std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper)
 {
     std::vector<std::pair<GstCaps *, std::vector<std::string>>> capsToMimeVec =
         {{m_gstWrapper->gstCapsFromString("audio/mpeg, mpegversion=(int)4"), {"audio/mp4", "audio/aac", "audio/x-eac3"}},

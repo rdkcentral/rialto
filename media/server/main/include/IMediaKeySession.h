@@ -60,8 +60,9 @@ public:
      * @retval the new media keys instance or null on error.
      */
     virtual std::unique_ptr<IMediaKeySession>
-    createMediaKeySession(const std::string &keySystem, int32_t keySessionId, const IOcdmSystem &ocdmSystem,
-                          KeySessionType sessionType, std::weak_ptr<IMediaKeysClient> client, bool isLDL) const = 0;
+    createMediaKeySession(const std::string &keySystem, int32_t keySessionId,
+                          const firebolt::rialto::wrappers::IOcdmSystem &ocdmSystem, KeySessionType sessionType,
+                          std::weak_ptr<IMediaKeysClient> client, bool isLDL) const = 0;
 };
 
 /**

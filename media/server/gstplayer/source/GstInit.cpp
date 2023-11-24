@@ -18,7 +18,6 @@
  */
 
 #include "GstLogForwarding.h"
-#include "IGlibWrapper.h"
 #include "IGstWrapper.h"
 #include "RialtoServerLogging.h"
 
@@ -26,8 +25,9 @@ namespace firebolt::rialto::server
 {
 bool gstInitalise(int argc, char **argv)
 {
-    std::shared_ptr<IGstWrapperFactory> factory = IGstWrapperFactory::getFactory();
-    std::shared_ptr<IGstWrapper> gstWrapper = factory->getGstWrapper();
+    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapperFactory> factory =
+        firebolt::rialto::wrappers::IGstWrapperFactory::getFactory();
+    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper = factory->getGstWrapper();
 
     if (!gstWrapper)
     {

@@ -51,7 +51,7 @@ public:
 class GstCapabilities : public IGstCapabilities
 {
 public:
-    explicit GstCapabilities(const std::shared_ptr<IGstWrapper> &gstWrapper);
+    explicit GstCapabilities(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper);
     ~GstCapabilities() = default;
 
     GstCapabilities(const GstCapabilities &) = delete;
@@ -116,7 +116,7 @@ private:
     /**
      * @brief The gstreamer wrapper object.
      */
-    std::shared_ptr<IGstWrapper> m_gstWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
 };
 
 }; // namespace firebolt::rialto::server

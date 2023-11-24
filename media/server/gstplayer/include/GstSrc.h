@@ -111,8 +111,8 @@ public:
      * @param[in] glibWrapperFactory    : The glib wrapper factory.
      * @param[in] decryptorFactory      : The decryptor factory.
      */
-    GstSrc(const std::shared_ptr<IGstWrapperFactory> &gstWrapperFactory,
-           const std::shared_ptr<IGlibWrapperFactory> &glibWrapperFactory,
+    GstSrc(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapperFactory> &gstWrapperFactory,
+           const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapperFactory> &glibWrapperFactory,
            const std::shared_ptr<IGstDecryptorElementFactory> &decryptorFactory);
 
     /**
@@ -132,12 +132,12 @@ protected:
     /**
      * @brief The gstreamer wrapper object.
      */
-    std::shared_ptr<IGstWrapper> m_gstWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
 
     /**
      * @brief The glib wrapper object.
      */
-    std::shared_ptr<IGlibWrapper> m_glibWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
 
     /**
      * @brief The gst decryptor element factory object.

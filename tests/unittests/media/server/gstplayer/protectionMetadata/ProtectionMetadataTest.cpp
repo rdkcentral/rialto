@@ -17,12 +17,13 @@
  * limitations under the License.
  */
 
-#include "GstProtectionMetadataWrapper.h"
+#include "GstProtectionMetadataHelper.h"
 #include "GstWrapperMock.h"
 #include <gtest/gtest.h>
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::server;
+using namespace firebolt::rialto::wrappers;
 
 using ::testing::_;
 using ::testing::DoAll;
@@ -40,7 +41,7 @@ protected:
     }
 
     std::shared_ptr<StrictMock<GstWrapperMock>> m_gstWrapperMock;
-    GstProtectionMetadataWrapper m_sut;
+    GstProtectionMetadataHelper m_sut;
 };
 
 TEST_F(RialtoProtectionMetadataTest, addProtectionMetadata)

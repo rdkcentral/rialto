@@ -35,7 +35,8 @@ public:
     MOCK_METHOD(std::unique_ptr<IGstGenericPlayer>, createGstGenericPlayer,
                 (IGstGenericPlayerClient * client, IDecryptionService &decryptionService, MediaType type,
                  const VideoRequirements &videoRequirements,
-                 const std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactory),
+                 const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory>
+                     &rdkGstreamerUtilsWrapperFactory),
                 (override));
 };
 } // namespace firebolt::rialto::server

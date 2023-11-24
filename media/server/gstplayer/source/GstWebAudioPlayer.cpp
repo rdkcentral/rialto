@@ -60,10 +60,10 @@ std::unique_ptr<IGstWebAudioPlayer> GstWebAudioPlayerFactory::createGstWebAudioP
 
     try
     {
-        auto gstWrapperFactory = IGstWrapperFactory::getFactory();
-        auto glibWrapperFactory = IGlibWrapperFactory::getFactory();
-        std::shared_ptr<IGstWrapper> gstWrapper;
-        std::shared_ptr<IGlibWrapper> glibWrapper;
+        auto gstWrapperFactory = firebolt::rialto::wrappers::IGstWrapperFactory::getFactory();
+        auto glibWrapperFactory = firebolt::rialto::wrappers::IGlibWrapperFactory::getFactory();
+        std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper;
+        std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper;
         if ((!gstWrapperFactory) || (!(gstWrapper = gstWrapperFactory->getGstWrapper())))
         {
             throw std::runtime_error("Cannot create GstWrapper");
@@ -88,8 +88,8 @@ std::unique_ptr<IGstWebAudioPlayer> GstWebAudioPlayerFactory::createGstWebAudioP
 }
 
 GstWebAudioPlayer::GstWebAudioPlayer(IGstWebAudioPlayerClient *client, const uint32_t priority,
-                                     const std::shared_ptr<IGstWrapper> &gstWrapper,
-                                     const std::shared_ptr<IGlibWrapper> &glibWrapper,
+                                     const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                                     const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
                                      const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
                                      std::unique_ptr<IWebAudioPlayerTaskFactory> taskFactory,
                                      std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,

@@ -20,14 +20,16 @@
 #include "ConfigReaderFactory.h"
 #include "ConfigReader.h"
 #include "FileReaderFactory.h"
-#include "JsonCppWrapperFactory.h"
+#include "IJsonCppWrapperFactory.h"
 
 namespace rialto::servermanager::service
 {
 std::shared_ptr<IConfigReader> ConfigReaderFactory::createConfigReader(const std::string &filePath) const
 {
-    std::unique_ptr<IJsonCppWrapperFactory> jsonCppWrapperFactory = std::make_unique<JsonCppWrapperFactory>();
-    std::shared_ptr<IJsonCppWrapper> jsonWrapper = jsonCppWrapperFactory->createJsonCppWrapper();
+    std::unique_ptr<firebolt::rialto::wrappers::IJsonCppWrapperFactory> jsonCppWrapperFactory =
+        firebolt::rialto::wrappers::IJsonCppWrapperFactory::createFactory();
+    std::shared_ptr<firebolt::rialto::wrappers::IJsonCppWrapper> jsonWrapper =
+        jsonCppWrapperFactory->createJsonCppWrapper();
 
     std::unique_ptr<IFileReaderFactory> fileReaderFactory = std::make_unique<FileReaderFactory>();
     std::shared_ptr<IFileReader> fileReader = fileReaderFactory->createFileReader(filePath);

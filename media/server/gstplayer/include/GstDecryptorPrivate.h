@@ -21,7 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_GST_DECRYPTOR_PRIVATE_H_
 
 #include "IDecryptionService.h"
-#include "IGstProtectionMetadataWrapper.h"
+#include "IGstProtectionMetadataHelper.h"
 #include "IGstWrapper.h"
 #include <gst/gst.h>
 #include <memory>
@@ -38,7 +38,7 @@ public:
      * @param[in] gstWrapperFactory : The gstreamer wrapper factory.
      */
     GstRialtoDecryptorPrivate(GstBaseTransform *parentElement,
-                              const std::shared_ptr<IGstWrapperFactory> &gstWrapperFactory);
+                              const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapperFactory> &gstWrapperFactory);
 
     /**
      * @brief Decrypts the gst buffer.
@@ -62,13 +62,13 @@ public:
      *
      * @param[in] metadataWrapper     : The protection metadata object
      */
-    void setProtectionMetadataWrapper(std::unique_ptr<IGstProtectionMetadataWrapper> &&metadataWrapper);
+    void setProtectionMetadataWrapper(std::unique_ptr<IGstProtectionMetadataHelper> &&metadataWrapper);
 
 private:
     /**
      * @brief The gstreamer wrapper object.
      */
-    std::shared_ptr<IGstWrapper> m_gstWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
 
     /**
      * @brief The parent decryptor element.
@@ -83,7 +83,7 @@ private:
     /**
      * @brief The protection metadata object
      */
-    std::unique_ptr<IGstProtectionMetadataWrapper> m_metadataWrapper;
+    std::unique_ptr<IGstProtectionMetadataHelper> m_metadataWrapper;
 
     /**
      * @brief Creates the protection meta structure.

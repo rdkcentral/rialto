@@ -18,13 +18,10 @@
  */
 
 #include "GstInit.h"
-#include "GstWrapperMock.h"
 #include <gtest/gtest.h>
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::server;
-
-using ::testing::StrictMock;
 
 class RialtoServerInitGstPlayerTest : public ::testing::Test
 {

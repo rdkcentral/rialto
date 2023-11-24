@@ -52,7 +52,7 @@ private:
     const unsigned int m_kSocketPermissions;
     const std::string m_kSocketOwner;
     const std::string m_kSocketGroup;
-    std::shared_ptr<firebolt::rialto::common::ILinuxWrapperFactory> m_linuxWrapperFactory;
+    std::shared_ptr<firebolt::rialto::wrappers::ILinuxWrapperFactory> m_linuxWrapperFactory;
 };
 } // namespace rialto::servermanager::common
 

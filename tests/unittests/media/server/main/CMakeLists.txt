@@ -112,6 +112,7 @@ target_include_directories(
         $<TARGET_PROPERTY:RialtoPlayerPublicMocks,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoCommonMisc,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoCommonMocks,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoWrappersMocks,INTERFACE_INCLUDE_DIRECTORIES>
 
         # Test Bases
         mediaKeys/base
@@ -126,8 +127,8 @@ target_link_libraries(
         # # Link application source
         RialtoServerMain
         RialtoPlayerCommon
-        RialtoServerStubs
         RialtoCommonMisc
+        RialtoWrappersStubs
         )
 
 if ( COVERAGE_ENABLED )

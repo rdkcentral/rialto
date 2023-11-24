@@ -34,16 +34,17 @@ class DeepElementAdded : public IPlayerTask
 {
 public:
     DeepElementAdded(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                     const std::shared_ptr<IGstWrapper> &gstWrapper, const std::shared_ptr<IGlibWrapper> &glibWrapper,
-                     GstBin *pipeline, GstBin *bin, GstElement *element);
+                     const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                     const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper, GstBin *pipeline,
+                     GstBin *bin, GstElement *element);
     ~DeepElementAdded() override;
     void execute() const override;
 
 private:
     GenericPlayerContext &m_context;
     IGstGenericPlayerPrivate &m_player;
-    std::shared_ptr<IGstWrapper> m_gstWrapper;
-    std::shared_ptr<IGlibWrapper> m_glibWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
     GstBin *m_pipeline;
     GstBin *m_bin;
     GstElement *m_element;

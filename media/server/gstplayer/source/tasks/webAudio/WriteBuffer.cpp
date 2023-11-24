@@ -25,7 +25,8 @@
 
 namespace firebolt::rialto::server::tasks::webaudio
 {
-WriteBuffer::WriteBuffer(WebAudioPlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper, uint8_t *mainPtr,
+WriteBuffer::WriteBuffer(WebAudioPlayerContext &context,
+                         std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper, uint8_t *mainPtr,
                          uint32_t mainLength, uint8_t *wrapPtr, uint32_t wrapLength)
     : m_context{context}, m_gstWrapper{gstWrapper}, m_mainPtr{mainPtr}, m_mainLength{mainLength}, m_wrapPtr{wrapPtr},
       m_wrapLength{wrapLength}

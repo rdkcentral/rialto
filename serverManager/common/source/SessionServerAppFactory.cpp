@@ -33,7 +33,7 @@ SessionServerAppFactory::SessionServerAppFactory(const std::list<std::string> &e
     : m_kEnvironmentVariables{environmentVariables}, m_kSessionServerPath{sessionServerPath},
       m_kSessionServerStartupTimeout{sessionServerStartupTimeout}, m_kSocketPermissions{socketPermissions},
       m_kSocketOwner{socketOwner}, m_kSocketGroup{socketGroup},
-      m_linuxWrapperFactory{firebolt::rialto::common::ILinuxWrapperFactory::createFactory()}
+      m_linuxWrapperFactory{firebolt::rialto::wrappers::ILinuxWrapperFactory::createFactory()}
 {
 }
 

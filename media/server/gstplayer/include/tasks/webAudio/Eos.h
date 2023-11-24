@@ -32,13 +32,13 @@ namespace firebolt::rialto::server::tasks::webaudio
 class Eos : public IPlayerTask
 {
 public:
-    Eos(WebAudioPlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper);
+    Eos(WebAudioPlayerContext &context, std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper);
     ~Eos() override;
     void execute() const override;
 
 private:
     WebAudioPlayerContext &m_context;
-    std::shared_ptr<IGstWrapper> m_gstWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
 };
 } // namespace firebolt::rialto::server::tasks::webaudio
 

@@ -23,7 +23,8 @@
 
 namespace firebolt::rialto::server::tasks::generic
 {
-SetMute::SetMute(GenericPlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper, bool mute)
+SetMute::SetMute(GenericPlayerContext &context, std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
+                 bool mute)
     : m_context{context}, m_gstWrapper{gstWrapper}, m_mute{mute}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetMute");

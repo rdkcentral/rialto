@@ -79,9 +79,7 @@ add_library(
         source/GstGenericPlayer.cpp
         source/GstWebAudioPlayer.cpp
         source/GstProtectionMetadata.cpp
-        source/GstProtectionMetadataWrapper.cpp
-        source/GstWrapper.cpp
-        source/GlibWrapper.cpp
+        source/GstProtectionMetadataHelper.cpp
         source/GstSrc.cpp
         source/Utils.cpp
         source/WorkerThread.cpp
@@ -104,7 +102,7 @@ target_include_directories(
         $<TARGET_PROPERTY:RialtoPlayerPublic,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoServerCommon,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoServerMain,INTERFACE_INCLUDE_DIRECTORIES>
-        $<TARGET_PROPERTY:RialtoServerWrappers,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoWrappers,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoCommon,INTERFACE_INCLUDE_DIRECTORIES>
         ${GStreamerApp_INCLUDE_DIRS}
 
@@ -123,7 +121,7 @@ target_link_libraries(
         PRIVATE
         RialtoLogging
         RialtoServerMain
-        RialtoServerWrappers
+        RialtoWrappers
         RialtoCommon
         ${GStreamerApp_LIBRARIES}
 

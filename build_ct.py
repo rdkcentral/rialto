@@ -49,7 +49,7 @@ if __name__ == "__main__":
 
     # Generate coverage
     if args['coverage'] == True:
-        generateCoverageReport(args['output'], outputFile, suitesToRun, [])
+        generateCoverageReport(args['output'], outputFile, suitesToRun)
 
         # Also generate coverage stats for public interfaces only
         files = ["*/public/include/I*"]
