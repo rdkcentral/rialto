@@ -35,6 +35,10 @@ add_gtests (
         # Main
         main.cpp
 
+        # Component test Fixture
+        tests/fixture/ComponentTestFixture.cpp
+        tests/fixture/ControlTestMethods.cpp
+
         # Component tests
         tests/ApplicationStateChangeTest.cpp
         )
@@ -60,6 +64,7 @@ target_include_directories(
         $<TARGET_PROPERTY:RialtoIpcMocks,INTERFACE_INCLUDE_DIRECTORIES>
 
         mocks
+        tests/fixture
         )
 
 target_link_libraries(

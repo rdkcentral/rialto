@@ -23,13 +23,13 @@
 #include "IControlClient.h"
 #include <gmock/gmock.h>
 
-namespace firebolt::rialto
+namespace firebolt::rialto::componenttest::mock
 {
 class ControlClientMock : public IControlClient
 {
 public:
     MOCK_METHOD(void, notifyApplicationState, (ApplicationState state), (override));
 };
-} // namespace firebolt::rialto
+} // namespace firebolt::rialto::componenttest::mock
 
 #endif // FIREBOLT_RIALTO_CONTROL_CLIENT_MOCK_H_

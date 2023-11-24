@@ -32,6 +32,7 @@ add_library (
         ${PROTO_HEADERS}
 
         ServerStub.cpp
+        ControlModuleStub.cpp
 )
 
 set_property (
