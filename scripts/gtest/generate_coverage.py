@@ -26,8 +26,8 @@ import multiprocessing
 import sys
 from .utils import runcmd
 
-# Generates the coverage stats and produces html github pages for all files in the src tree excluding excludeFiles
-def generateCoverageReport(outputDir, resultsFile, suites, excludeFiles):
+# Generates the coverage stats and produces html github pages for all files in the src tree
+def generateCoverageReport(outputDir, resultsFile, suites):
     lcovCommon = []
     lcovCommon.extend(["--exclude", "/usr/*"])
     lcovCommon.extend(["--exclude", "*build/*", "--exclude", "*tests/*", "--exclude", "*wrappers/*", "--filter", "brace,function,trivial"])
@@ -35,9 +35,6 @@ def generateCoverageReport(outputDir, resultsFile, suites, excludeFiles):
     
     # the following line tells lcov to ignore any errors caused by include/exclude/erase/omit/substitute pattern which did not match any file pathnames
     lcovCommon.extend(["--ignore-errors", "unused"])
-    
-    for file in excludeFiles:
-        lcovCommon.extend(["--exclude", file])
     
     lcovBaseCmd = ["lcov", "-c", "-i", "-d", ".", "--output-file", "coverage_base.info"]
     lcovBaseCmd.extend(lcovCommon)
