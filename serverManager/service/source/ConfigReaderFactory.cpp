@@ -26,7 +26,7 @@ namespace rialto::servermanager::service
 {
 std::shared_ptr<IConfigReader> ConfigReaderFactory::createConfigReader(const std::string &filePath) const
 {
-    std::unique_ptr<firebolt::rialto::wrappers::IJsonCppWrapperFactory> jsonCppWrapperFactory =
+    std::shared_ptr<firebolt::rialto::wrappers::IJsonCppWrapperFactory> jsonCppWrapperFactory =
         firebolt::rialto::wrappers::IJsonCppWrapperFactory::createFactory();
     std::shared_ptr<firebolt::rialto::wrappers::IJsonCppWrapper> jsonWrapper =
         jsonCppWrapperFactory->createJsonCppWrapper();

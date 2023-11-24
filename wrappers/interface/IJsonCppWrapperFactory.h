@@ -30,7 +30,7 @@ class IJsonCppWrapperFactory
 {
 public:
     virtual ~IJsonCppWrapperFactory() = default;
-    static std::unique_ptr<IJsonCppWrapperFactory> createFactory();
+    static std::shared_ptr<IJsonCppWrapperFactory> createFactory();
     virtual std::shared_ptr<IJsonCppWrapper> createJsonCppWrapper() const = 0;
 };
 

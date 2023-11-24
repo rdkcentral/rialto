@@ -44,6 +44,8 @@ if( RIALTO_ENABLE_CONFIG_FILE )
 endif()
 
 if( NOT CMAKE_BUILD_FLAG STREQUAL "UnitTests" AND NOT CMAKE_BUILD_FLAG STREQUAL "ComponentTests" )
+    add_compile_definitions(WRAPPERS_ENABLED)
+
     find_package( ocdm REQUIRED )
 
     set(RDK_INCLUDES
@@ -66,6 +68,7 @@ add_library(
         RialtoWrappers
 
         STATIC
+        source/FactoryAccessor.cpp
         source/GlibWrapper.cpp
         source/GstWrapper.cpp
         source/LinuxWrapper.cpp
