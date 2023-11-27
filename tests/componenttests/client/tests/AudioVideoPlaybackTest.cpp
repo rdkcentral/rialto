@@ -17,11 +17,24 @@
  * limitations under the License.
  */
 
-#include "ComponentTestFixture.h"
+#include "ClientComponentTest.h"
 #include <gtest/gtest.h>
 
-class ApplicationStateChangeTest : public ComponentTestFixture
+class AudioVideoPlaybackTest : public ClientComponentTest
 {
+public:
+    AudioVideoPlaybackTest()
+        : ClientComponentTest()
+    {
+        // Test Initialize 
+        ControlTestMethods::createControl();
+        ControlTestMethods::shouldRegisterClient();
+        ControlTestMethods::registerClient();
+        ControlTestMethods::shouldNotifyApplicationStateInactive();
+        ControlTestMethods::sendNotifyApplicationStateInactive();
+        ControlTestMethods::shouldNotifyApplicationStateRunning();
+        ControlTestMethods::sendNotifyApplicationStateRunning();
+    }
 };
 
 /*
@@ -52,10 +65,6 @@ class ApplicationStateChangeTest : public ComponentTestFixture
  *
  * Code:
  */
-TEST_F(ApplicationStateChangeTest, lifecycle)
+TEST_F(AudioVideoPlaybackTest, playback)
 {
-    // Step 1: Initialize media player
-    //std::shared_ptr<firebolt::rialto::IControlFactory> factory = firebolt::rialto::IControlFactory::createFactory();
-    //std::shared_ptr<IControl> control = factory->createControl();
-    //EXPECT_NE(control, nullptr);
 }

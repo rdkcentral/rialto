@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-#include "ComponentTestFixture.h"
+#include "ClientComponentTest.h"
 #include <memory>
 #include <utility>
 #include <linux/memfd.h>
@@ -29,27 +29,23 @@ namespace
 constexpr std::chrono::milliseconds kEventTimeout{200};
 } // namespace
 
-ComponentTestFixture::ComponentTestFixture()
+ClientComponentTest::ClientComponentTest()
     : m_serverStub{std::make_shared<ServerStub>(m_controlModuleMock)}
 {
-    // Create a valid file descriptor
-    // Create a proper shared memory region if we are writing to this buffer
-    m_fd = memfd_create("memfdfile", 0);
 }
 
-ComponentTestFixture::~ComponentTestFixture()
+ClientComponentTest::~ClientComponentTest()
 {
-    close(m_fd);
 }
 
-void ComponentTestFixture::notifyEvent()
+void ClientComponentTest::notifyEvent()
 {
     std::unique_lock<std::mutex> locker(m_eventsLock);
     m_eventReceived = true;
     m_eventsCond.notify_all();
 }
 
-void ComponentTestFixture::waitEvent()
+void ClientComponentTest::waitEvent()
 {
     std::unique_lock<std::mutex> locker(m_eventsLock);
     if (!m_eventReceived)
@@ -60,7 +56,12 @@ void ComponentTestFixture::waitEvent()
     m_eventReceived = false;
 }
 
-std::shared_ptr<ServerStub>& ComponentTestFixture::getServerStub()
+std::shared_ptr<ServerStub>& ClientComponentTest::getServerStub()
 {
     return m_serverStub;
+}
+
+void ClientComponentTest::disconnectServer()
+{
+    m_serverStub.reset();
 }

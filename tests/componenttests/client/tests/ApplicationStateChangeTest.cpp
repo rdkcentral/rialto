@@ -17,10 +17,10 @@
  * limitations under the License.
  */
 
-#include "ComponentTestFixture.h"
+#include "ClientComponentTest.h"
 #include <gtest/gtest.h>
 
-class ApplicationStateChangeTest : public ComponentTestFixture
+class ApplicationStateChangeTest : public ClientComponentTest
 {
 };
 
@@ -61,6 +61,10 @@ class ApplicationStateChangeTest : public ComponentTestFixture
  *   Server notifys the client that the state has changed to INACTIVE.
  *   Expect that the state change notification is propagated to the client.
  *
+ *  Step 6: Disconnect the server
+ *   Server notifys the client that it has disconnected.
+ *   Expect that the state is changed to UNKNOWN in the client.
+ *
  * Test Teardown:
  *  Memory region created for the shared buffer is closed.
  *  Server is terminated.
@@ -85,19 +89,14 @@ TEST_F(ApplicationStateChangeTest, lifecycle)
     ControlTestMethods::sendNotifyApplicationStateInactive();
 
     // Step 4: Change state to RUNNING
-    //m_eventReceived = false;
-    //EXPECT_CALL(*m_controlClientMock, notifyApplicationState(ApplicationState::RUNNING))
-    //    .WillOnce(Invoke(this, &ApplicationStateChangeTest::notifyEvent));
-    //EXPECT_CALL(*m_controlModuleMock, getSharedMemory(_, _, _, _))
-    //    .WillOnce(DoAll(SetArgPointee<2>(m_controlModuleMock->getSharedMemoryResponse(m_fd, m_size)),
-    //                    WithArgs<0, 3>(Invoke(&(*m_controlModuleMock), &ControlModuleMock::defaultReturn))));
-    //m_serverStub->notifyApplicationStateEvent(kControlId, ApplicationState::RUNNING);
-    //waitEvent();
+    ControlTestMethods::shouldNotifyApplicationStateRunning();
+    ControlTestMethods::sendNotifyApplicationStateRunning();
 
     // Step 5: Change state to INACTIVE
-    //m_eventReceived = false;
-    //EXPECT_CALL(*m_controlClientMock, notifyApplicationState(ApplicationState::INACTIVE))
-    //    .WillOnce(Invoke(this, &ApplicationStateChangeTest::notifyEvent));
-    //m_serverStub->notifyApplicationStateEvent(kControlId, ApplicationState::INACTIVE);
-    //waitEvent();
+    ControlTestMethods::shouldNotifyApplicationStateInactive();
+    ControlTestMethods::sendNotifyApplicationStateInactive();
+
+    // Step 6: Disconnect the server
+    ControlTestMethods::shouldNotifyApplicationStateUnknown();
+    ClientComponentTest::disconnectServer();
 }

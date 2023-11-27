@@ -24,8 +24,6 @@
 #include "controlmodule.pb.h"
 #include <gmock/gmock.h>
 
-namespace firebolt::rialto::componenttest::mock
-{
 class ControlModuleMock : public ::firebolt::rialto::ControlModule
 {
 public:
@@ -72,6 +70,5 @@ public:
     ControlModuleMock() {}
     virtual ~ControlModuleMock() = default;
 };
-} // namespace firebolt::rialto::componenttest::mock
 
 #endif // FIREBOLT_RIALTO_IPC_CONTROL_MODULE_MOCK_H_

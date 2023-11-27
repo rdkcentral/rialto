@@ -35,7 +35,6 @@ using ::testing::StrictMock;
 using ::testing::WithArgs;
 
 using namespace firebolt::rialto;
-using namespace firebolt::rialto::componenttest::mock;
 using namespace firebolt::rialto::componenttest::stub;
 
 class ControlTestMethods
@@ -53,16 +52,28 @@ protected:
     std::shared_ptr<IControlFactory> m_controlFactory;
     std::shared_ptr<IControl> m_control;
 
+    int32_t m_fd{-1};
+    void *m_address{nullptr};
+    uint32_t m_size{1000};
+
     void createControl();
     void shouldRegisterClient();
     void registerClient();
     void shouldNotifyApplicationStateInactive();
     void sendNotifyApplicationStateInactive();
+    void shouldNotifyApplicationStateUnknown();
+    void shouldNotifyApplicationStateRunning();
+    void sendNotifyApplicationStateRunning();
+    void disconnectServer();
 
     // Component test helper
     virtual void notifyEvent() = 0;
     virtual void waitEvent() = 0;
     virtual std::shared_ptr<ServerStub>& getServerStub() = 0;
+
+private:
+    void initRealShm();
+    void termRealShm();
 };
 
 #endif // CONTROL_TEST_METHODS_H_

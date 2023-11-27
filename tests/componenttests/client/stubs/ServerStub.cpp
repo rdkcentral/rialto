@@ -89,6 +89,12 @@ void ServerStub::init()
 
 ServerStub::~ServerStub()
 {
+    // Disconnect client
+    if (m_client && m_client->isConnected())
+    {
+        m_client->disconnect();
+    }
+
     if (m_serverThread.joinable())
     {
         m_running = false;

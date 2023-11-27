@@ -34,14 +34,13 @@ using ::testing::StrictMock;
 using ::testing::WithArgs;
 
 using namespace firebolt::rialto;
-using namespace firebolt::rialto::componenttest::mock;
 using namespace firebolt::rialto::componenttest::stub;
 
-class ComponentTestFixture : public ::testing::Test, public ControlTestMethods
+class ClientComponentTest : public ::testing::Test, public ControlTestMethods
 {
 public:
-    ComponentTestFixture();
-    virtual ~ComponentTestFixture();
+    ClientComponentTest();
+    virtual ~ClientComponentTest();
 
 protected:
     // Server stub
@@ -52,14 +51,13 @@ protected:
     std::condition_variable m_eventsCond;
     bool m_eventReceived{false};
 
-    int32_t m_fd{-1};
-    uint32_t m_size{456};
-
     // Event helpers
     void notifyEvent() override;
     void waitEvent() override;
 
     std::shared_ptr<ServerStub>& getServerStub() override;
+
+    void disconnectServer();
 };
 
 #endif // COMPONENT_TEST_BASE_H_
