@@ -48,17 +48,18 @@ if( NOT CMAKE_BUILD_FLAG STREQUAL "UnitTests" AND NOT CMAKE_BUILD_FLAG STREQUAL 
 
     find_package( ocdm REQUIRED )
 
-    set(RDK_INCLUDES
+    set(WRAPPER_INCLUDES
         ${OCdm_INCLUDE_DIRS})
 
-    set(RDK_LIBS
+    set(WRAPPER_LIBS
         rdkgstreamerutils
         ocdm::ocdm
         ${CMAKE_DL_LIBS})
 
-    set(RDK_SOURCES
+    set(WRAPPER_SOURCES
         source/GlibWrapper.cpp
         source/GstWrapper.cpp
+        source/LinuxWrapper.cpp
         source/Ocdm.cpp
         source/OcdmCommon.cpp
         source/OcdmSystem.cpp
@@ -73,8 +74,8 @@ add_library(
         source/FactoryAccessor.cpp
         source/GlibWrapperFactoryAccessor.cpp
         source/GstWrapperFactoryAccessor.cpp
-        source/LinuxWrapper.cpp
-        ${RDK_SOURCES}
+        source/LinuxWrapperFactoryAccessor.cpp
+        ${WRAPPER_SOURCES}
         ${JSONCPP_WRAPPER_SOURCE_FILES}
     )
 
@@ -94,14 +95,14 @@ target_include_directories(
         include
         ${GStreamerApp_INCLUDE_DIRS}
         $<TARGET_PROPERTY:RialtoPlayerPublic,INTERFACE_INCLUDE_DIRECTORIES>
-        ${RDK_INCLUDES}
+        ${WRAPPER_INCLUDES}
     )
 
 target_link_libraries (
         RialtoWrappers
 
         PRIVATE
-        ${RDK_LIBS}
+        ${WRAPPER_LIBS}
         ${GStreamerApp_LIBRARIES}
     )
 

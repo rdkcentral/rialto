@@ -22,9 +22,6 @@
 
 #include "IGlibWrapper.h"
 #include "IGstWrapper.h"
-#ifdef JSONCPP_ENABLED
-#include "IJsonCppWrapperFactory.h"
-#endif // JSONCPP_ENABLED
 #include "ILinuxWrapper.h"
 #include "IOcdm.h"
 #include "IOcdmSystem.h"
@@ -69,15 +66,6 @@ public:
      * @retval non-const (by purpose) reference to the factory instance ptr
      */
     virtual std::shared_ptr<IGstWrapperFactory> &gstWrapperFactory() = 0;
-
-#ifdef JSONCPP_ENABLED
-    /**
-     * @brief Access the IJsonCppWrapperFactory instance.
-     *
-     * @retval non-const (by purpose) reference to the factory instance ptr
-     */
-    virtual std::shared_ptr<IJsonCppWrapperFactory> &jsonCppWrapperFactory() = 0;
-#endif // JSONCPP_ENABLED
 
     /**
      * @brief Access the ILinuxWrapperFactory instance.

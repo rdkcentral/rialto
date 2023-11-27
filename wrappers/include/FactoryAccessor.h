@@ -32,9 +32,6 @@ public:
 
     std::shared_ptr<IGlibWrapperFactory> &glibWrapperFactory() override;
     std::shared_ptr<IGstWrapperFactory> &gstWrapperFactory() override;
-#ifdef JSONCPP_ENABLED
-    std::shared_ptr<IJsonCppWrapperFactory> &jsonCppWrapperFactory() override;
-#endif // JSONCPP_ENABLED
     std::shared_ptr<ILinuxWrapperFactory> &linuxWrapperFactory() override;
     std::shared_ptr<IOcdmFactory> &ocdmFactory() override;
     std::shared_ptr<IOcdmSystemFactory> &ocdmSystemFactory() override;
@@ -43,9 +40,6 @@ public:
 private:
     std::shared_ptr<IGlibWrapperFactory> m_glibWrapperFactory{nullptr};
     std::shared_ptr<IGstWrapperFactory> m_gstWrapperFactory{nullptr};
-#ifdef JSONCPP_ENABLED
-    std::shared_ptr<IJsonCppWrapperFactory> m_jsonCppWrapperFactory{nullptr};
-#endif // JSONCPP_ENABLED
     std::shared_ptr<ILinuxWrapperFactory> m_linuxWrapperFactory{nullptr};
     std::shared_ptr<IOcdmFactory> m_ocdmFactory{nullptr};
     std::shared_ptr<IOcdmSystemFactory> m_ocdmSystemFactory{nullptr};

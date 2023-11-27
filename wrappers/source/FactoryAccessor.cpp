@@ -22,9 +22,6 @@
 #ifdef WRAPPERS_ENABLED
 #include "GlibWrapper.h"
 #include "GstWrapper.h"
-#ifdef JSONCPP_ENABLED
-#include "JsonCppWrapperFactory.h"
-#endif // JSONCPP_ENABLED
 #include "LinuxWrapper.h"
 #include "Ocdm.h"
 #include "OcdmSystem.h"
@@ -44,9 +41,6 @@ FactoryAccessor::FactoryAccessor()
 #ifdef WRAPPERS_ENABLED
     m_glibWrapperFactory = std::make_shared<GlibWrapperFactory>();
     m_gstWrapperFactory = std::make_shared<GstWrapperFactory>();
-#ifdef JSONCPP_ENABLED
-    m_jsonCppWrapperFactory = std::make_shared<JsonCppWrapperFactory>();
-#endif // JSONCPP_ENABLED
     m_linuxWrapperFactory = std::make_shared<LinuxWrapperFactory>();
     m_ocdmFactory = std::make_shared<OcdmFactory>();
     m_ocdmSystemFactory = std::make_shared<OcdmSystemFactory>();
@@ -63,13 +57,6 @@ std::shared_ptr<IGstWrapperFactory> &FactoryAccessor::gstWrapperFactory()
 {
     return m_gstWrapperFactory;
 }
-
-#ifdef JSONCPP_ENABLED
-std::shared_ptr<IJsonCppWrapperFactory> &FactoryAccessor::jsonCppWrapperFactory()
-{
-    return m_jsonCppWrapperFactory;
-}
-#endif // JSONCPP_ENABLED
 
 std::shared_ptr<ILinuxWrapperFactory> &FactoryAccessor::linuxWrapperFactory()
 {
