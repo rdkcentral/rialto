@@ -18,20 +18,31 @@
  */
 
 #include "GstInit.h"
+#include "GstWrapperFactoryMock.h"
+#include "GstWrapperMock.h"
+#include "IFactoryAccessor.h"
+#include "Matchers.h"
 #include <gtest/gtest.h>
 
+using testing::_;
+using testing::Return;
+using testing::StrictMock;
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::server;
+using namespace firebolt::rialto::wrappers;
 
 class RialtoServerInitGstPlayerTest : public ::testing::Test
 {
 protected:
+    std::shared_ptr<StrictMock<GstWrapperMock>> m_gstWrapperMock{std::make_shared<StrictMock<GstWrapperMock>>()};
+    std::shared_ptr<StrictMock<GstWrapperFactoryMock>> m_gstWrapperFactoryMock{
+        std::make_shared<StrictMock<GstWrapperFactoryMock>>()};
     int argc = 2;
     char *argv[3] = {"a", "b", nullptr};
 
-    virtual void SetUp() {}
+    void SetUp() override { IFactoryAccessor::instance().gstWrapperFactory() = m_gstWrapperFactoryMock; }
 
-    virtual void TearDown() {}
+    void TearDown() { IFactoryAccessor::instance().gstWrapperFactory() = nullptr; }
 };
 
 /**
@@ -39,6 +50,10 @@ protected:
  */
 TEST_F(RialtoServerInitGstPlayerTest, Init)
 {
+    EXPECT_CALL(*m_gstWrapperFactoryMock, getGstWrapper()).WillOnce(Return(m_gstWrapperMock));
+    EXPECT_CALL(*m_gstWrapperMock, gstInit(_, _));
+    EXPECT_CALL(*m_gstWrapperMock, gstRegistryGet()).WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_gstWrapperMock, gstRegistryFindPlugin(nullptr, CharStrMatcher("rialtosinks"))).WillOnce(Return(nullptr));
     bool status = false;
     EXPECT_NO_THROW(status = gstInitalise(argc, static_cast<char **>(argv)));
     EXPECT_EQ(status, true);

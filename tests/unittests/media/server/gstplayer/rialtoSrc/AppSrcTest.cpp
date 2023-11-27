@@ -86,15 +86,20 @@ protected:
         m_decryptionServiceMock = std::make_shared<StrictMock<DecryptionServiceMock>>();
 
         IFactoryAccessor::instance().glibWrapperFactory() = m_glibWrapperFactoryMock;
+        IFactoryAccessor::instance().gstWrapperFactory() = m_gstWrapperFactoryMock;
 
         createGstSrc();
     }
 
-    void TearDown() override { IFactoryAccessor::instance().glibWrapperFactory() = nullptr; }
+    void TearDown() override
+    {
+        IFactoryAccessor::instance().glibWrapperFactory() = nullptr;
+        IFactoryAccessor::instance().gstWrapperFactory() = nullptr;
+    }
 
     void createGstSrc()
     {
-        EXPECT_CALL(*m_gstWrapperFactoryMock, getGstWrapper()).WillOnce(Return(m_gstWrapperMock));
+        EXPECT_CALL(*m_gstWrapperFactoryMock, getGstWrapper()).WillRepeatedly(Return(m_gstWrapperMock));
         EXPECT_CALL(*m_glibWrapperFactoryMock, getGlibWrapper()).WillRepeatedly(Return(m_glibWrapperMock));
 
         EXPECT_NO_THROW(m_gstSrc = std::make_unique<GstSrc>(m_gstWrapperFactoryMock, m_glibWrapperFactoryMock,

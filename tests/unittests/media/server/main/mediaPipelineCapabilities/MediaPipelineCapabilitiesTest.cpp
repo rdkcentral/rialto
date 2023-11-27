@@ -20,10 +20,14 @@
 #include "MediaPipelineCapabilities.h"
 #include "GstCapabilitiesFactoryMock.h"
 #include "GstCapabilitiesMock.h"
+#include "GstWrapperFactoryMock.h"
+#include "GstWrapperMock.h"
+#include "IFactoryAccessor.h"
 #include <gtest/gtest.h>
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::server;
+using namespace firebolt::rialto::wrappers;
 
 using ::testing::ByMove;
 using ::testing::Return;
@@ -33,12 +37,15 @@ class MediaPipelineCapabilitiesTest : public ::testing::Test
 {
 public:
     MediaPipelineCapabilitiesTest()
-        : m_gstCapabilitiesFactoryMock{std::make_unique<StrictMock<GstCapabilitiesFactoryMock>>()},
+        : m_gstWrapperMock{std::make_shared<StrictMock<GstWrapperMock>>()},
+          m_gstWrapperFactoryMock{std::make_shared<StrictMock<GstWrapperFactoryMock>>()},
+          m_gstCapabilitiesFactoryMock{std::make_unique<StrictMock<GstCapabilitiesFactoryMock>>()},
           m_gstCapabilities{std::make_unique<StrictMock<GstCapabilitiesMock>>()},
           m_gstCapabilitiesMock{static_cast<StrictMock<GstCapabilitiesMock> *>(m_gstCapabilities.get())}
     {
+        IFactoryAccessor::instance().gstWrapperFactory() = m_gstWrapperFactoryMock;
     }
-    ~MediaPipelineCapabilitiesTest() = default;
+    ~MediaPipelineCapabilitiesTest() override { IFactoryAccessor::instance().gstWrapperFactory() = nullptr; }
 
     void createMediaPipelineCapabilities()
     {
@@ -57,6 +64,8 @@ public:
     }
 
 protected:
+    std::shared_ptr<StrictMock<GstWrapperMock>> m_gstWrapperMock;
+    std::shared_ptr<StrictMock<GstWrapperFactoryMock>> m_gstWrapperFactoryMock;
     std::shared_ptr<StrictMock<GstCapabilitiesFactoryMock>> m_gstCapabilitiesFactoryMock;
     std::unique_ptr<StrictMock<GstCapabilitiesMock>> m_gstCapabilities;
     StrictMock<GstCapabilitiesMock> *m_gstCapabilitiesMock;
@@ -73,6 +82,9 @@ TEST_F(MediaPipelineCapabilitiesTest, failToCreateMediaPipelineCapabilities)
  */
 TEST_F(MediaPipelineCapabilitiesTest, FactoryCreatesObject)
 {
+    EXPECT_CALL(*m_gstWrapperFactoryMock, getGstWrapper()).WillOnce(Return(m_gstWrapperMock));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL))
+        .WillOnce(Return(nullptr));
     std::shared_ptr<firebolt::rialto::IMediaPipelineCapabilitiesFactory> factory =
         firebolt::rialto::IMediaPipelineCapabilitiesFactory::createFactory();
     EXPECT_NE(factory, nullptr);

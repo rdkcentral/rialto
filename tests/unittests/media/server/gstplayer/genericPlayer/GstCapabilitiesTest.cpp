@@ -17,7 +17,9 @@
  * limitations under the License.
  */
 
+#include "GstWrapperFactoryMock.h"
 #include "GstWrapperMock.h"
+#include "IFactoryAccessor.h"
 #include <GstCapabilities.h>
 #include <gtest/gtest.h>
 #include <unordered_map>
@@ -68,8 +70,10 @@ public:
                     {"video/x-av1(memory:DMABuf)", {}},
                     {"video/x-vp9(memory:DMABuf)", {}}}
     {
+        IFactoryAccessor::instance().gstWrapperFactory() = m_gstWrapperFactoryMock;
     }
-    ~GstCapabilitiesTest() = default;
+
+    ~GstCapabilitiesTest() override { IFactoryAccessor::instance().gstWrapperFactory() = nullptr; }
 
     void expectCapsToMimeMapping()
     {
@@ -114,6 +118,8 @@ public:
     }
 
     std::shared_ptr<StrictMock<GstWrapperMock>> m_gstWrapperMock{std::make_shared<StrictMock<GstWrapperMock>>()};
+    std::shared_ptr<StrictMock<GstWrapperFactoryMock>> m_gstWrapperFactoryMock{
+        std::make_shared<StrictMock<GstWrapperFactoryMock>>()};
     std::unordered_map<std::string, GstCaps> m_capsMap;
     std::unique_ptr<GstCapabilities> m_sut;
 };
@@ -136,6 +142,9 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_NoDecoders)
  */
 TEST_F(GstCapabilitiesTest, FactoryCreatesObject)
 {
+    EXPECT_CALL(*m_gstWrapperFactoryMock, getGstWrapper()).WillOnce(Return(m_gstWrapperMock));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL))
+        .WillOnce(Return(nullptr));
     std::shared_ptr<firebolt::rialto::server::IGstCapabilitiesFactory> factory =
         firebolt::rialto::server::IGstCapabilitiesFactory::getFactory();
     EXPECT_NE(factory, nullptr);

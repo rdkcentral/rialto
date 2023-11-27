@@ -19,10 +19,13 @@
 
 #include "GlibWrapperFactoryMock.h"
 #include "GstWebAudioPlayerTestCommon.h"
+#include "GstWrapperFactoryMock.h"
 #include "IFactoryAccessor.h"
 #include "Matchers.h"
+#include <condition_variable>
 #include <gtest/gtest.h>
 #include <memory>
+#include <mutex>
 
 class RialtoServerCreateGstWebAudioPlayerTest : public GstWebAudioPlayerTestCommon
 {
@@ -53,16 +56,51 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, CreateDestroyLlamaSuccess)
  */
 TEST_F(RialtoServerCreateGstWebAudioPlayerTest, FactoryCreatesObject)
 {
-    std::shared_ptr<firebolt::rialto::wrappers::GlibWrapperFactoryMock> glibWrapperFactoryMock{
-        std::make_shared<firebolt::rialto::wrappers::GlibWrapperFactoryMock>()};
+    bool dispatcherThreadCreated{false};
+    std::mutex dispatcherThreadMutex{};
+    std::condition_variable dispatcherThreadCv;
+    std::shared_ptr<StrictMock<firebolt::rialto::wrappers::GlibWrapperFactoryMock>> glibWrapperFactoryMock{
+        std::make_shared<StrictMock<firebolt::rialto::wrappers::GlibWrapperFactoryMock>>()};
+    std::shared_ptr<StrictMock<firebolt::rialto::wrappers::GstWrapperFactoryMock>> gstWrapperFactoryMock{
+        std::make_shared<StrictMock<firebolt::rialto::wrappers::GstWrapperFactoryMock>>()};
     firebolt::rialto::wrappers::IFactoryAccessor::instance().glibWrapperFactory() = glibWrapperFactoryMock;
+    firebolt::rialto::wrappers::IFactoryAccessor::instance().gstWrapperFactory() = gstWrapperFactoryMock;
     EXPECT_CALL(*glibWrapperFactoryMock, getGlibWrapper()).WillRepeatedly(Return(m_glibWrapperMock));
-    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(_, CharStrMatcher("format")));
+    EXPECT_CALL(*gstWrapperFactoryMock, getGstWrapper()).WillRepeatedly(Return(m_gstWrapperMock));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(CharStrMatcher("rialtosrc"))).WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementRegister(0, CharStrMatcher("rialtosrc"), GST_RANK_PRIMARY + 100, _))
+        .WillOnce(Return(true));
+    expectCreatePipeline();
+    expectInitAppSrc();
+    expectAddElementsAmlhalaSink();
+    EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(&m_pipeline)))
+        .WillOnce(Invoke(
+            [&](GstPipeline *)
+            {
+                std::unique_lock lock{dispatcherThreadMutex};
+                dispatcherThreadCreated = true;
+                dispatcherThreadCv.notify_one();
+                return nullptr; // hack to avoid more expects ;)
+            }));
     std::shared_ptr<firebolt::rialto::server::IGstWebAudioPlayerFactory> factory =
         firebolt::rialto::server::IGstWebAudioPlayerFactory::getFactory();
     EXPECT_NE(factory, nullptr);
-    EXPECT_NE(factory->createGstWebAudioPlayer(&m_gstPlayerClient, m_priority), nullptr);
+    auto webAudioPlayer{factory->createGstWebAudioPlayer(&m_gstPlayerClient, m_priority)};
+    EXPECT_NE(webAudioPlayer, nullptr);
+
+    // Wait for dispatcher thread creation
+    {
+        std::unique_lock lock{dispatcherThreadMutex};
+        dispatcherThreadCv.wait_for(lock, std::chrono::milliseconds(50), [&]() { return dispatcherThreadCreated; });
+        EXPECT_TRUE(dispatcherThreadCreated);
+    }
+
+    EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&m_pipeline, GST_STATE_NULL))
+        .WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
+    expectTermPipeline();
+    webAudioPlayer.reset();
     firebolt::rialto::wrappers::IFactoryAccessor::instance().glibWrapperFactory() = nullptr;
+    firebolt::rialto::wrappers::IFactoryAccessor::instance().gstWrapperFactory() = nullptr;
 }
 
 /**

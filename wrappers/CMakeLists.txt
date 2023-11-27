@@ -58,6 +58,7 @@ if( NOT CMAKE_BUILD_FLAG STREQUAL "UnitTests" AND NOT CMAKE_BUILD_FLAG STREQUAL 
 
     set(RDK_SOURCES
         source/GlibWrapper.cpp
+        source/GstWrapper.cpp
         source/Ocdm.cpp
         source/OcdmCommon.cpp
         source/OcdmSystem.cpp
@@ -71,7 +72,7 @@ add_library(
         STATIC
         source/FactoryAccessor.cpp
         source/GlibWrapperFactoryAccessor.cpp
-        source/GstWrapper.cpp
+        source/GstWrapperFactoryAccessor.cpp
         source/LinuxWrapper.cpp
         ${RDK_SOURCES}
         ${JSONCPP_WRAPPER_SOURCE_FILES}
