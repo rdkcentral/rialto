@@ -57,6 +57,7 @@ if( NOT CMAKE_BUILD_FLAG STREQUAL "UnitTests" AND NOT CMAKE_BUILD_FLAG STREQUAL 
         ${CMAKE_DL_LIBS})
 
     set(RDK_SOURCES
+        source/GlibWrapper.cpp
         source/Ocdm.cpp
         source/OcdmCommon.cpp
         source/OcdmSystem.cpp
@@ -69,7 +70,7 @@ add_library(
 
         STATIC
         source/FactoryAccessor.cpp
-        source/GlibWrapper.cpp
+        source/GlibWrapperFactoryAccessor.cpp
         source/GstWrapper.cpp
         source/LinuxWrapper.cpp
         ${RDK_SOURCES}

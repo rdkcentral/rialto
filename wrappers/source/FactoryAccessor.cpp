@@ -54,39 +54,39 @@ FactoryAccessor::FactoryAccessor()
 #endif // WRAPPERS_ENABLED
 }
 
-std::shared_ptr<IGlibWrapperFactory> &FactoryAccessor::getGlibWrapperFactory()
+std::shared_ptr<IGlibWrapperFactory> &FactoryAccessor::glibWrapperFactory()
 {
     return m_glibWrapperFactory;
 }
 
-std::shared_ptr<IGstWrapperFactory> &FactoryAccessor::getGstWrapperFactory()
+std::shared_ptr<IGstWrapperFactory> &FactoryAccessor::gstWrapperFactory()
 {
     return m_gstWrapperFactory;
 }
 
 #ifdef JSONCPP_ENABLED
-std::shared_ptr<IJsonCppWrapperFactory> &FactoryAccessor::getJsonCppWrapperFactory()
+std::shared_ptr<IJsonCppWrapperFactory> &FactoryAccessor::jsonCppWrapperFactory()
 {
     return m_jsonCppWrapperFactory;
 }
 #endif // JSONCPP_ENABLED
 
-std::shared_ptr<ILinuxWrapperFactory> &FactoryAccessor::getLinuxWrapperFactory()
+std::shared_ptr<ILinuxWrapperFactory> &FactoryAccessor::linuxWrapperFactory()
 {
     return m_linuxWrapperFactory;
 }
 
-std::shared_ptr<IOcdmFactory> &FactoryAccessor::getOcdmFactory()
+std::shared_ptr<IOcdmFactory> &FactoryAccessor::ocdmFactory()
 {
     return m_ocdmFactory;
 }
 
-std::shared_ptr<IOcdmSystemFactory> &FactoryAccessor::getOcdmSystemFactory()
+std::shared_ptr<IOcdmSystemFactory> &FactoryAccessor::ocdmSystemFactory()
 {
     return m_ocdmSystemFactory;
 }
 
-std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> &FactoryAccessor::getRdkGstreamerUtilsWrapperFactoryFactory()
+std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> &FactoryAccessor::rdkGstreamerUtilsWrapperFactoryFactory()
 {
     return m_rdkGstreamerUtilsWrapperFactory;
 }

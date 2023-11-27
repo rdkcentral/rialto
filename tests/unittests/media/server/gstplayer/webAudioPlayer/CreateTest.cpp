@@ -17,7 +17,9 @@
  * limitations under the License.
  */
 
+#include "GlibWrapperFactoryMock.h"
 #include "GstWebAudioPlayerTestCommon.h"
+#include "IFactoryAccessor.h"
 #include "Matchers.h"
 #include <gtest/gtest.h>
 #include <memory>
@@ -51,10 +53,16 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, CreateDestroyLlamaSuccess)
  */
 TEST_F(RialtoServerCreateGstWebAudioPlayerTest, FactoryCreatesObject)
 {
+    std::shared_ptr<firebolt::rialto::wrappers::GlibWrapperFactoryMock> glibWrapperFactoryMock{
+        std::make_shared<firebolt::rialto::wrappers::GlibWrapperFactoryMock>()};
+    firebolt::rialto::wrappers::IFactoryAccessor::instance().glibWrapperFactory() = glibWrapperFactoryMock;
+    EXPECT_CALL(*glibWrapperFactoryMock, getGlibWrapper()).WillRepeatedly(Return(m_glibWrapperMock));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(_, CharStrMatcher("format")));
     std::shared_ptr<firebolt::rialto::server::IGstWebAudioPlayerFactory> factory =
         firebolt::rialto::server::IGstWebAudioPlayerFactory::getFactory();
     EXPECT_NE(factory, nullptr);
     EXPECT_NE(factory->createGstWebAudioPlayer(&m_gstPlayerClient, m_priority), nullptr);
+    firebolt::rialto::wrappers::IFactoryAccessor::instance().glibWrapperFactory() = nullptr;
 }
 
 /**

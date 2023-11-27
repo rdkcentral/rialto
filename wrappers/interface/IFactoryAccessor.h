@@ -57,55 +57,55 @@ public:
     static IFactoryAccessor &instance();
 
     /**
-     * @brief Gets the IGlibWrapperFactory instance.
+     * @brief Access the IGlibWrapperFactory instance.
      *
      * @retval non-const (by purpose) reference to the factory instance ptr
      */
-    virtual std::shared_ptr<IGlibWrapperFactory> &getGlibWrapperFactory() = 0;
+    virtual std::shared_ptr<IGlibWrapperFactory> &glibWrapperFactory() = 0;
 
     /**
-     * @brief Gets the IGstWrapperFactory instance.
+     * @brief Access the IGstWrapperFactory instance.
      *
      * @retval non-const (by purpose) reference to the factory instance ptr
      */
-    virtual std::shared_ptr<IGstWrapperFactory> &getGstWrapperFactory() = 0;
+    virtual std::shared_ptr<IGstWrapperFactory> &gstWrapperFactory() = 0;
 
 #ifdef JSONCPP_ENABLED
     /**
-     * @brief Gets the IJsonCppWrapperFactory instance.
+     * @brief Access the IJsonCppWrapperFactory instance.
      *
      * @retval non-const (by purpose) reference to the factory instance ptr
      */
-    virtual std::shared_ptr<IJsonCppWrapperFactory> &getJsonCppWrapperFactory() = 0;
+    virtual std::shared_ptr<IJsonCppWrapperFactory> &jsonCppWrapperFactory() = 0;
 #endif // JSONCPP_ENABLED
 
     /**
-     * @brief Gets the ILinuxWrapperFactory instance.
+     * @brief Access the ILinuxWrapperFactory instance.
      *
      * @retval non-const (by purpose) reference to the factory instance ptr
      */
-    virtual std::shared_ptr<ILinuxWrapperFactory> &getLinuxWrapperFactory() = 0;
+    virtual std::shared_ptr<ILinuxWrapperFactory> &linuxWrapperFactory() = 0;
 
     /**
-     * @brief Gets the IOcdmFactory instance.
+     * @brief Access the IOcdmFactory instance.
      *
      * @retval non-const (by purpose) reference to the factory instance ptr
      */
-    virtual std::shared_ptr<IOcdmFactory> &getOcdmFactory() = 0;
+    virtual std::shared_ptr<IOcdmFactory> &ocdmFactory() = 0;
 
     /**
-     * @brief Gets the IOcdmSystemFactory instance.
+     * @brief Access the IOcdmSystemFactory instance.
      *
      * @retval non-const (by purpose) reference to the factory instance ptr
      */
-    virtual std::shared_ptr<IOcdmSystemFactory> &getOcdmSystemFactory() = 0;
+    virtual std::shared_ptr<IOcdmSystemFactory> &ocdmSystemFactory() = 0;
 
     /**
-     * @brief Gets the IRdkGstreamerUtilsWrapperFactory instance.
+     * @brief Access the IRdkGstreamerUtilsWrapperFactory instance.
      *
      * @retval non-const (by purpose) reference to the factory instance ptr
      */
-    virtual std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> &getRdkGstreamerUtilsWrapperFactoryFactory() = 0;
+    virtual std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactoryFactory() = 0;
 
 protected:
     /**

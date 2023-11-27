@@ -30,15 +30,15 @@ public:
     FactoryAccessor();
     ~FactoryAccessor() override = default;
 
-    std::shared_ptr<IGlibWrapperFactory> &getGlibWrapperFactory() override;
-    std::shared_ptr<IGstWrapperFactory> &getGstWrapperFactory() override;
+    std::shared_ptr<IGlibWrapperFactory> &glibWrapperFactory() override;
+    std::shared_ptr<IGstWrapperFactory> &gstWrapperFactory() override;
 #ifdef JSONCPP_ENABLED
-    std::shared_ptr<IJsonCppWrapperFactory> &getJsonCppWrapperFactory() override;
+    std::shared_ptr<IJsonCppWrapperFactory> &jsonCppWrapperFactory() override;
 #endif // JSONCPP_ENABLED
-    std::shared_ptr<ILinuxWrapperFactory> &getLinuxWrapperFactory() override;
-    std::shared_ptr<IOcdmFactory> &getOcdmFactory() override;
-    std::shared_ptr<IOcdmSystemFactory> &getOcdmSystemFactory() override;
-    std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> &getRdkGstreamerUtilsWrapperFactoryFactory() override;
+    std::shared_ptr<ILinuxWrapperFactory> &linuxWrapperFactory() override;
+    std::shared_ptr<IOcdmFactory> &ocdmFactory() override;
+    std::shared_ptr<IOcdmSystemFactory> &ocdmSystemFactory() override;
+    std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactoryFactory() override;
 
 private:
     std::shared_ptr<IGlibWrapperFactory> m_glibWrapperFactory{nullptr};

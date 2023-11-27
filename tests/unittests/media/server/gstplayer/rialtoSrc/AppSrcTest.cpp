@@ -24,6 +24,7 @@
 #include "GstSrc.h"
 #include "GstWrapperFactoryMock.h"
 #include "GstWrapperMock.h"
+#include "IFactoryAccessor.h"
 #include "MediaSourceUtil.h"
 #include <gtest/gtest.h>
 
@@ -73,7 +74,7 @@ protected:
 
     RialtoServerAppSrcGstSrcTest() : m_streamInfo{&m_appsrc, true} {}
 
-    virtual void SetUp()
+    void SetUp() override
     {
         m_gstWrapperFactoryMock = std::make_shared<StrictMock<GstWrapperFactoryMock>>();
         m_gstWrapperMock = std::make_shared<StrictMock<GstWrapperMock>>();
@@ -84,15 +85,17 @@ protected:
         m_decryptorFactoryMock = std::make_shared<StrictMock<GstDecryptorElementFactoryMock>>();
         m_decryptionServiceMock = std::make_shared<StrictMock<DecryptionServiceMock>>();
 
+        IFactoryAccessor::instance().glibWrapperFactory() = m_glibWrapperFactoryMock;
+
         createGstSrc();
     }
 
-    virtual void TearDown() {}
+    void TearDown() override { IFactoryAccessor::instance().glibWrapperFactory() = nullptr; }
 
     void createGstSrc()
     {
         EXPECT_CALL(*m_gstWrapperFactoryMock, getGstWrapper()).WillOnce(Return(m_gstWrapperMock));
-        EXPECT_CALL(*m_glibWrapperFactoryMock, getGlibWrapper()).WillOnce(Return(m_glibWrapperMock));
+        EXPECT_CALL(*m_glibWrapperFactoryMock, getGlibWrapper()).WillRepeatedly(Return(m_glibWrapperMock));
 
         EXPECT_NO_THROW(m_gstSrc = std::make_unique<GstSrc>(m_gstWrapperFactoryMock, m_glibWrapperFactoryMock,
                                                             m_decryptorFactoryMock));
