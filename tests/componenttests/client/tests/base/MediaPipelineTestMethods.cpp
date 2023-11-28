@@ -23,7 +23,15 @@
 namespace
 {
     constexpr VideoRequirements kVideoRequirements{123, 456};
+    constexpr int32_t kSessionId{10};
 } // namespace
+
+MATCHER_P2(createSessionRequestMatcher, maxWidth, maxHeight, "")
+{
+    const ::firebolt::rialto::CreateSessionRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::CreateSessionRequest *>(arg);
+    return ((kRequest->max_width() == maxWidth) && (kRequest->max_height() == maxHeight));
+}
 
 MediaPipelineTestMethods::MediaPipelineTestMethods()
     : m_mediaPipelineClientMock{std::make_shared<StrictMock<MediaPipelineClientMock>>()},
@@ -33,6 +41,13 @@ MediaPipelineTestMethods::MediaPipelineTestMethods()
 
 MediaPipelineTestMethods::~MediaPipelineTestMethods()
 {
+}
+
+void MediaPipelineTestMethods::shouldCreateMediaSession()
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock, createSession(_, createSessionRequestMatcher(kVideoRequirements.maxWidth, kVideoRequirements.maxHeight), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->createSessionResponse(kSessionId)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
 }
 
 void MediaPipelineTestMethods::createMediaPipeline()

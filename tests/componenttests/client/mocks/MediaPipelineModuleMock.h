@@ -96,6 +96,13 @@ public:
         done->Run();
     }
 
+    ::firebolt::rialto::CreateSessionResponse createSessionResponse(const int32_t sessionId)
+    {
+        firebolt::rialto::CreateSessionResponse response;
+        response.set_session_id(sessionId);
+        return response;
+    }
+
     MediaPipelineModuleMock() {}
     virtual ~MediaPipelineModuleMock() = default;
 };

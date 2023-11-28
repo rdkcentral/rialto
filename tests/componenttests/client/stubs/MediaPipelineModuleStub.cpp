@@ -117,9 +117,9 @@ convertNetworkState(const firebolt::rialto::NetworkState &networkState)
 
 namespace firebolt::rialto::componenttest::stub
 {
-MediaPipelineModuleStub::MediaPipelineModuleStub(const std::shared_ptr<::firebolt::rialto::MediaPipelineModule>& mediaPipelineMock)
+MediaPipelineModuleStub::MediaPipelineModuleStub(const std::shared_ptr<::firebolt::rialto::MediaPipelineModule>& mediaPipelineModuleMock)
 {
-    m_mediaPipelineMock = mediaPipelineMock;
+    m_mediaPipelineModuleMock = mediaPipelineModuleMock;
 }
 
 MediaPipelineModuleStub::~MediaPipelineModuleStub()

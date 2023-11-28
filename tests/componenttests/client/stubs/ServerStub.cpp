@@ -51,6 +51,8 @@ void ServerStub::clientConnected(const std::shared_ptr<::firebolt::rialto::ipc::
     // export the RPC services to the m_client if it has been set in the stub
     if (m_controlModuleMock)
         client->exportService(m_controlModuleMock);
+    if (m_mediaPipelineModuleMock)
+        client->exportService(m_mediaPipelineModuleMock);
 
     // Notify listening thread
     m_clientConnectCond.notify_one();

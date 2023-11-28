@@ -30,7 +30,7 @@ namespace firebolt::rialto::componenttest::stub
 class MediaPipelineModuleStub
 {
 public:
-    MediaPipelineModuleStub(const std::shared_ptr<::firebolt::rialto::MediaPipelineModule>& mediaPipelineMock);
+    MediaPipelineModuleStub(const std::shared_ptr<::firebolt::rialto::MediaPipelineModule>& mediaPipelineModuleMock);
     ~MediaPipelineModuleStub();
 
     void notifyPlaybackStateChangeEvent(int sessionId, PlaybackState state);
@@ -48,7 +48,7 @@ public:
     virtual std::shared_ptr<::firebolt::rialto::ipc::IClient>& getClient() = 0;
 
 protected:
-    std::shared_ptr<::firebolt::rialto::MediaPipelineModule> m_mediaPipelineMock;
+    std::shared_ptr<::firebolt::rialto::MediaPipelineModule> m_mediaPipelineModuleMock;
 };
 } // namespace firebolt::rialto::componenttest::stub
 

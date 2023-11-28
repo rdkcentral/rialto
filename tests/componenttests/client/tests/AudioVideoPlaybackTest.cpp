@@ -52,8 +52,9 @@ public:
  *  Initalise the control state to running for this test application.
  *
  * Test Steps:
- *  Step 1: Create new MediaPipeline
+ *  Step 1: Create a new media session
  *   Create an instance of MediaPipeline.
+ *   Expect that a session is created on the server.
  *   Check that the object returned is valid.
  * 
  * Test Teardown:
@@ -68,6 +69,7 @@ public:
  */
 TEST_F(AudioVideoPlaybackTest, playback)
 {
-    // Step 1: Create new MediaPipeline
+    // Step 1: Create a new media session
+    MediaPipelineTestMethods::shouldCreateMediaSession();
     MediaPipelineTestMethods::createMediaPipeline();
 }

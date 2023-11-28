@@ -54,6 +54,7 @@ protected:
     std::unique_ptr<IMediaPipeline> m_mediaPipeline;
 
     // Test methods
+    void shouldCreateMediaSession();
     void createMediaPipeline();
 
     // Component test helpers
