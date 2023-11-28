@@ -161,6 +161,11 @@ MediaSegmentMetadata MediaFrameWriterV2::buildMetadata(const std::unique_ptr<IMe
         metadata.set_height(videoSegment.getHeight());
         metadata.mutable_frame_rate()->set_numerator(videoSegment.getFrameRate().numerator);
         metadata.mutable_frame_rate()->set_denominator(videoSegment.getFrameRate().denominator);
+
+        if (!videoSegment.getSecureToken().empty())
+        {
+            metadata.set_secure_token(videoSegment.getSecureToken().data(), videoSegment.getSecureToken().size());
+        }
     }
     else
     {

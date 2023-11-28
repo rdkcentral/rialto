@@ -124,5 +124,6 @@ target_link_libraries(
         RialtoWrappers
         RialtoCommon
         ${GStreamerApp_LIBRARIES}
+        gstsvpext # todo: create find cmake
 
         )

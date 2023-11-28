@@ -113,11 +113,18 @@ createSegment(const firebolt::rialto::MediaSegmentMetadata &metadata, const fire
         {
             frameRate = {metadata.frame_rate().numerator(), metadata.frame_rate().denominator()};
         }
+
+        std::vector<uint8_t> secureToken;
+        if (metadata.has_secure_token())
+        {
+            secureToken = std::vector<uint8_t>(metadata.secure_token().begin(), metadata.secure_token().end());
+        }
+
         segment = std::make_unique<firebolt::rialto::IMediaPipeline::MediaSegmentVideo>(metadata.stream_id(),
                                                                                         metadata.time_position(),
                                                                                         metadata.sample_duration(),
                                                                                         metadata.width(),
-                                                                                        metadata.height(), frameRate);
+                                                                                        metadata.height(), frameRate, secureToken);
     }
     else
     {

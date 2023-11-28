@@ -24,6 +24,13 @@
 #include "IMediaPipeline.h"
 #include "RialtoServerLogging.h"
 
+#include <gst_svp_meta.h>
+#include <gst/app/gstappsrc.h>
+#include <gst/audio/streamvolume.h>
+#include <gst/base/gstbasetransform.h>
+#include <gst/base/gstbytewriter.h>
+#include <gst/gst.h>
+
 namespace firebolt::rialto::server::tasks::generic
 {
 ReadShmDataAndAttachSamples::ReadShmDataAndAttachSamples(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
@@ -44,6 +51,11 @@ void ReadShmDataAndAttachSamples::execute() const
     // Read media segments from shared memory
     IMediaPipeline::MediaSegmentVector mediaSegments = m_dataReader->readData();
 
+    static void *svpCtx = nullptr;
+
+    if (!svpCtx)
+        gst_svp_ext_get_context(&svpCtx, Server, 0);
+
     for (const auto &mediaSegment : mediaSegments)
     {
         GstBuffer *gstBuffer = m_player.createBuffer(*mediaSegment);
@@ -55,6 +67,47 @@ void ReadShmDataAndAttachSamples::execute() const
                     dynamic_cast<IMediaPipeline::MediaSegmentVideo &>(*mediaSegment);
                 m_player.updateVideoCaps(videoSegment.getWidth(), videoSegment.getHeight(), videoSegment.getFrameRate(),
                                          videoSegment.getCodecData());
+
+                if (!videoSegment.getSecureToken().empty())
+                {
+                    if (videoSegment.getSecureToken().size() == svp_token_size())
+                    {
+                        //todo: check if svp context not null
+                        auto subsamplesRawSize = videoSegment.getSubSamples().size() *
+                                                 (sizeof(guint16) + sizeof(guint32));
+                        guint8 *subsamplesRaw = static_cast<guint8 *>(g_malloc(subsamplesRawSize));
+                        GstByteWriter writer;
+                        gst_byte_writer_init_with_data(&writer, subsamplesRaw, subsamplesRawSize, FALSE);
+
+                        for (const auto &subSample : videoSegment.getSubSamples())
+                        {
+                            gst_byte_writer_put_uint16_be(&writer, subSample.numClearBytes);
+                            gst_byte_writer_put_uint32_be(&writer, subSample.numEncryptedBytes);
+                        }
+                        GstBuffer *subsamples = gst_buffer_new_wrapped(subsamplesRaw, subsamplesRawSize);
+
+                        void *secToken = nullptr;
+                        svp_buffer_alloc_token(&secToken);
+                        memcpy(secToken, videoSegment.getSecureToken().data(), svp_token_size());
+
+                        gst_buffer_append_svp_transform(svpCtx, gstBuffer, subsamples,
+                                                        videoSegment.getSubSamples().size(),
+                                                        static_cast<uint8_t *>(secToken), mediaSegment->getDataLength());
+                        //todo: make sure how to process clear buffers on amlogic
+                        //gst_buffer_svp_transform_from_cleardata(svpCtx, gstBuffer, Video);
+                        if (subsamples)
+                        {
+                            gst_buffer_unref(subsamples);
+                        }
+
+                        svp_buffer_free_token(secToken);
+                        RIALTO_SERVER_LOG_DEBUG("Added secure token to the buffer");
+                    }
+                    else
+                    {
+                        RIALTO_SERVER_LOG_ERROR("Secure token has invalid size %u", videoSegment.getSecureToken().size());
+                    }
+                }
             }
             catch (const std::exception &e)
             {

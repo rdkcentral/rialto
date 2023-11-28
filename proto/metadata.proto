@@ -76,4 +76,5 @@ message MediaSegmentMetadata {
     optional uint32           crypt                = 18;                /* Crypt byte block value */
     optional uint32           skip                 = 19;                /* Skip byte block value */
     optional Fraction         frame_rate           = 20;                /* Fractional frame rate of the video segments */
+    optional bytes            secure_token         = 21;                /* SVP token */
 }

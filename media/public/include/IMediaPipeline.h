@@ -880,9 +880,10 @@ public:
                           int32_t width = firebolt::rialto::kUndefinedSize,
                           int32_t height = firebolt::rialto::kUndefinedSize,
                           firebolt::rialto::Fraction frameRate = {firebolt::rialto::kUndefinedSize,
-                                                                  firebolt::rialto::kUndefinedSize})
+                                                                  firebolt::rialto::kUndefinedSize},
+                          const std::vector<uint8_t>& secureToken = {})
             : MediaSegment(sourceId, MediaSourceType::VIDEO, timeStamp, duration), m_width(width), m_height(height),
-              m_frameRate(frameRate)
+              m_frameRate(frameRate), m_secureToken(secureToken)
         {
         }
 
@@ -925,6 +926,18 @@ public:
         firebolt::rialto::Fraction getFrameRate() const { return m_frameRate; }
 
         /**
+         * @brief Gets the SVP token
+         */
+        void setSecureToken(const std::vector<uint8_t>& secureToken) { m_secureToken = secureToken; }
+
+        /**
+         * @brief Gets the SVP token
+         *
+         * @retval the SVP token
+         */
+        const std::vector<uint8_t>& getSecureToken() const { return m_secureToken; }
+
+        /**
          * @brief Copy assignment operator.
          *
          * @retval the copy.
@@ -955,6 +968,11 @@ public:
          * @brief The fractional framerate of the sample.
          */
         firebolt::rialto::Fraction m_frameRate;
+
+        /**
+         * @brief The SVP token
+         */
+        std::vector<uint8_t> m_secureToken;
     };
 
     /**
