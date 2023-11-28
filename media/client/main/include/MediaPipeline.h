@@ -45,13 +45,8 @@ public:
     ~MediaPipelineFactory() override = default;
 
     std::unique_ptr<IMediaPipeline>
-    createMediaPipeline(std::weak_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements) const override;
-    
-    // Inject mocks
-    std::unique_ptr<IMediaPipeline>
     createMediaPipeline(std::weak_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements,
-                        std::weak_ptr<client::IMediaPipelineIpcFactory> mediaPipelineIpcFactory,
-                        std::weak_ptr<client::IClientController> clientController) const;
+                        std::weak_ptr<client::IClientController> clientController) const override;
 };
 
 }; // namespace firebolt::rialto

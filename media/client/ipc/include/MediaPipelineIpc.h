@@ -40,9 +40,10 @@ public:
     /**
      * @brief Weak pointer to the singleton factory object.
      */
-    static std::weak_ptr<IMediaPipelineIpcFactory> m_factory;
+    static std::shared_ptr<IMediaPipelineIpcFactory> m_factory;
+    std::unique_ptr<IMediaPipelineIpc> mediaPipelineIpc;
 
-    std::unique_ptr<IMediaPipelineIpc> createMediaPipelineIpc(IMediaPipelineIpcClient *client,
+    std::unique_ptr<IMediaPipelineIpc> &createMediaPipelineIpc(IMediaPipelineIpcClient *client,
                                                               const VideoRequirements &videoRequirements,
                                                               std::weak_ptr<IIpcClient> ipcClient) override;
 };

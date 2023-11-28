@@ -48,7 +48,7 @@ public:
      *
      * @retval the factory instance or null on error.
      */
-    static std::shared_ptr<IMediaPipelineIpcFactory> getFactory();
+    static std::shared_ptr<IMediaPipelineIpcFactory> &getFactory();
 
     /**
      * @brief Creates a IMediaPipelineIpc object.
@@ -58,7 +58,7 @@ public:
      *
      * @retval the new media player ipc instance or null on error.
      */
-    virtual std::unique_ptr<IMediaPipelineIpc> createMediaPipelineIpc(IMediaPipelineIpcClient *client,
+    virtual std::unique_ptr<IMediaPipelineIpc> &createMediaPipelineIpc(IMediaPipelineIpcClient *client,
                                                                       const VideoRequirements &videoRequirements,
                                                                       std::weak_ptr<IIpcClient> ipcClient = {}) = 0;
 };

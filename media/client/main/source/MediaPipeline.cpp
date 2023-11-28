@@ -117,26 +117,16 @@ std::shared_ptr<IMediaPipelineFactory> IMediaPipelineFactory::createFactory()
 }
 
 std::unique_ptr<IMediaPipeline>
-MediaPipelineFactory::createMediaPipeline(std::weak_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements) const
-{
-    return createMediaPipeline(client, videoRequirements, {}, {});
-}
-
-std::unique_ptr<IMediaPipeline>
 MediaPipelineFactory::createMediaPipeline(std::weak_ptr<IMediaPipelineClient> client,
                                           const VideoRequirements &videoRequirements,
-                                          std::weak_ptr<client::IMediaPipelineIpcFactory> mediaPipelineIpcFactoryParam,
                                           std::weak_ptr<client::IClientController> clientControllerParam) const
 {
     std::unique_ptr<IMediaPipeline> mediaPipeline;
     try
     {
-        std::shared_ptr<client::IMediaPipelineIpcFactory> mediaPipelineIpcFactory = mediaPipelineIpcFactoryParam.lock();
         std::shared_ptr<client::IClientController> clientController = clientControllerParam.lock();
         mediaPipeline = std::make_unique<client::MediaPipeline>(client, videoRequirements,
-                                                                mediaPipelineIpcFactory
-                                                                    ? mediaPipelineIpcFactory
-                                                                    : client::IMediaPipelineIpcFactory::getFactory(),
+                                                                client::IMediaPipelineIpcFactory::getFactory(),
                                                                 common::IMediaFrameWriterFactory::getFactory(),
                                                                 clientController
                                                                     ? *clientController
