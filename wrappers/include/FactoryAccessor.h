@@ -28,7 +28,7 @@ namespace firebolt::rialto::wrappers
 class FactoryAccessor : public IFactoryAccessor
 {
 public:
-    FactoryAccessor();
+    FactoryAccessor() = default;
     ~FactoryAccessor() override = default;
 
     std::shared_ptr<IGlibWrapperFactory> &glibWrapperFactory() override;

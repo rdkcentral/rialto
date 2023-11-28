@@ -36,45 +36,69 @@ IFactoryAccessor &IFactoryAccessor::instance()
     return accessor;
 }
 
-FactoryAccessor::FactoryAccessor()
-{
-#ifdef WRAPPERS_ENABLED
-    m_glibWrapperFactory = std::make_shared<GlibWrapperFactory>();
-    m_gstWrapperFactory = std::make_shared<GstWrapperFactory>();
-    m_linuxWrapperFactory = std::make_shared<LinuxWrapperFactory>();
-    m_ocdmFactory = std::make_shared<OcdmFactory>();
-    m_ocdmSystemFactory = std::make_shared<OcdmSystemFactory>();
-    m_rdkGstreamerUtilsWrapperFactory = std::make_shared<RdkGstreamerUtilsWrapperFactory>();
-#endif // WRAPPERS_ENABLED
-}
-
 std::shared_ptr<IGlibWrapperFactory> &FactoryAccessor::glibWrapperFactory()
 {
+#ifdef WRAPPERS_ENABLED
+    if (!m_glibWrapperFactory)
+    {
+        m_glibWrapperFactory = std::make_shared<GlibWrapperFactory>();
+    }
+#endif // WRAPPERS_ENABLED
     return m_glibWrapperFactory;
 }
 
 std::shared_ptr<IGstWrapperFactory> &FactoryAccessor::gstWrapperFactory()
 {
+#ifdef WRAPPERS_ENABLED
+    if (!m_gstWrapperFactory)
+    {
+        m_gstWrapperFactory = std::make_shared<GstWrapperFactory>();
+    }
+#endif // WRAPPERS_ENABLED
     return m_gstWrapperFactory;
 }
 
 std::shared_ptr<ILinuxWrapperFactory> &FactoryAccessor::linuxWrapperFactory()
 {
+#ifdef WRAPPERS_ENABLED
+    if (!m_linuxWrapperFactory)
+    {
+        m_linuxWrapperFactory = std::make_shared<LinuxWrapperFactory>();
+    }
+#endif // WRAPPERS_ENABLED
     return m_linuxWrapperFactory;
 }
 
 std::shared_ptr<IOcdmFactory> &FactoryAccessor::ocdmFactory()
 {
+#ifdef WRAPPERS_ENABLED
+    if (!m_ocdmFactory)
+    {
+        m_ocdmFactory = std::make_shared<OcdmFactory>();
+    }
+#endif // WRAPPERS_ENABLED
     return m_ocdmFactory;
 }
 
 std::shared_ptr<IOcdmSystemFactory> &FactoryAccessor::ocdmSystemFactory()
 {
+#ifdef WRAPPERS_ENABLED
+    if (!m_ocdmSystemFactory)
+    {
+        m_ocdmSystemFactory = std::make_shared<OcdmSystemFactory>();
+    }
+#endif // WRAPPERS_ENABLED
     return m_ocdmSystemFactory;
 }
 
 std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> &FactoryAccessor::rdkGstreamerUtilsWrapperFactory()
 {
+#ifdef WRAPPERS_ENABLED
+    if (!m_rdkGstreamerUtilsWrapperFactory)
+    {
+        m_rdkGstreamerUtilsWrapperFactory = std::make_shared<RdkGstreamerUtilsWrapperFactory>();
+    }
+#endif // WRAPPERS_ENABLED
     return m_rdkGstreamerUtilsWrapperFactory;
 }
 } // namespace firebolt::rialto::wrappers
