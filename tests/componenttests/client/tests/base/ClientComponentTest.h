@@ -21,6 +21,7 @@
 #define COMPONENT_TEST_BASE_H_
 
 #include "ControlTestMethods.h"
+#include "MediaPipelineTestMethods.h"
 #include "ServerStub.h"
 #include <gtest/gtest.h>
 #include <memory>
@@ -36,7 +37,7 @@ using ::testing::WithArgs;
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::componenttest::stub;
 
-class ClientComponentTest : public ::testing::Test, public ControlTestMethods
+class ClientComponentTest : public ::testing::Test, public ControlTestMethods, public MediaPipelineTestMethods
 {
 public:
     ClientComponentTest();
@@ -55,8 +56,12 @@ protected:
     void notifyEvent() override;
     void waitEvent() override;
 
+    // Get server
     std::shared_ptr<ServerStub>& getServerStub() override;
 
+    // Test Methods
+    void startApplicationRunning();
+    void stopApplication();
     void disconnectServer();
 };
 

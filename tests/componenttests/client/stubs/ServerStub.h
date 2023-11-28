@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_COMPONENTTESTS_SERVER_STUB_H_
 
 #include "ControlModuleStub.h"
+#include "MediaPipelineModuleStub.h"
 #include "IIpcServer.h"
 #include <atomic>
 #include <condition_variable>
@@ -29,10 +30,11 @@
 
 namespace firebolt::rialto::componenttest::stub
 {
-class ServerStub : public ControlModuleStub
+class ServerStub : public ControlModuleStub, MediaPipelineModuleStub
 {
 public:
-    explicit ServerStub(const std::shared_ptr<::firebolt::rialto::ControlModule>& controlModuleMock);
+    explicit ServerStub(const std::shared_ptr<::firebolt::rialto::ControlModule>& controlModuleMock,
+                        const std::shared_ptr<::firebolt::rialto::MediaPipelineModule>& mediaPipelineModuleMock);
     ~ServerStub();
 
     void clientDisconnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &client);

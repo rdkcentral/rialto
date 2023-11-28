@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-#include "ClientComponentTest.h"
+#include "ControlTestMethods.h"
 #include <memory>
 #include <cstring>
 #include <fcntl.h>
@@ -75,11 +75,9 @@ ControlTestMethods::~ControlTestMethods()
 
 void ControlTestMethods::createControl()
 {
-    std::cout<<"createControl 1"<<std::endl;
     m_controlFactory = firebolt::rialto::IControlFactory::createFactory();
     m_control = m_controlFactory->createControl();
     EXPECT_NE(m_control, nullptr);
-    std::cout<<"createControl 2"<<std::endl;
 }
 
 void ControlTestMethods::shouldRegisterClient()
@@ -92,11 +90,9 @@ void ControlTestMethods::shouldRegisterClient()
 
 void ControlTestMethods::registerClient()
 {
-    std::cout<<"registerClient 1"<<std::endl;
     ApplicationState appState;
     EXPECT_TRUE(m_control->registerClient(m_controlClientMock, appState));
     EXPECT_EQ(ApplicationState::UNKNOWN, appState);
-    std::cout<<"registerClient 2"<<std::endl;
 }
 
 void ControlTestMethods::shouldNotifyApplicationStateInactive()
@@ -134,7 +130,6 @@ void ControlTestMethods::sendNotifyApplicationStateRunning()
 
 void ControlTestMethods::initRealShm()
 {
-    std::cout<<m_fd<<std::endl;
     int fd = syscall(SYS_memfd_create, "rialto_avbuf", MFD_CLOEXEC | MFD_ALLOW_SEALING);
     ASSERT_GT(fd, 0);
     
@@ -146,7 +141,6 @@ void ControlTestMethods::initRealShm()
 
     m_fd = fd;
     m_address = addr;
-    std::cout<<m_fd<<std::endl;
 }
 
 void ControlTestMethods::termRealShm()
@@ -154,6 +148,4 @@ void ControlTestMethods::termRealShm()
     ASSERT_EQ(munmap(m_address, m_size), 0);
     std::cout<<m_fd<<std::endl;
     close(m_fd);
-    //ASSERT_EQ(close(m_fd), 0);
-    std::cout<<strerror(errno)<<std::endl;
 }

@@ -26,14 +26,12 @@ public:
     AudioVideoPlaybackTest()
         : ClientComponentTest()
     {
-        // Test Initialize 
-        ControlTestMethods::createControl();
-        ControlTestMethods::shouldRegisterClient();
-        ControlTestMethods::registerClient();
-        ControlTestMethods::shouldNotifyApplicationStateInactive();
-        ControlTestMethods::sendNotifyApplicationStateInactive();
-        ControlTestMethods::shouldNotifyApplicationStateRunning();
-        ControlTestMethods::sendNotifyApplicationStateRunning();
+        startApplicationRunning();
+    }
+
+    ~AudioVideoPlaybackTest()
+    {
+        stopApplication();
     }
 };
 
@@ -49,15 +47,18 @@ public:
  *  Components: 
  *
  * Test Initialize:
- *  
- *  
+ *  Create memory region for the shared buffer.
+ *  Create a server that handles Control IPC requests.
+ *  Initalise the control state to running for this test application.
  *
  * Test Steps:
- *  Step 1: 
+ *  Step 1: Create new MediaPipeline
+ *   Create an instance of MediaPipeline.
+ *   Check that the object returned is valid.
  * 
  * Test Teardown:
- *  
- * 
+ *  Memory region created for the shared buffer is closed.
+ *  Server is terminated.
  *
  * Expected Results:
  * 
@@ -67,4 +68,6 @@ public:
  */
 TEST_F(AudioVideoPlaybackTest, playback)
 {
+    // Step 1: Create new MediaPipeline
+    MediaPipelineTestMethods::createMediaPipeline();
 }

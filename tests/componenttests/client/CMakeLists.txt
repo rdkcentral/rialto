@@ -19,7 +19,9 @@
 
 # Run the protoc tool to generate the code
 set( Protobuf_IMPORT_DIRS "${CMAKE_SYSROOT}/usr/include" "${CMAKE_CURRENT_LIST_DIR}/../../../ipc/common/proto/" )
-protobuf_generate_cpp( PROTO_SRCS PROTO_HEADERS ../../../proto/controlmodule.proto)
+protobuf_generate_cpp( PROTO_SRCS PROTO_HEADERS ../../../proto/controlmodule.proto ../../../proto/rialtocommon.proto ../../../proto/mediapipelinemodule.proto
+        ../../../proto/mediapipelinecapabilitiesmodule.proto ../../../proto/mediakeysmodule.proto ../../../proto/mediakeyscapabilitiesmodule.proto
+        ../../../proto/servermanagermodule.proto ../../../proto/webaudioplayermodule.proto)
 
 list( GET PROTO_HEADERS 0 PROTO_HEADER )
 get_filename_component( PROTO_DIR ${PROTO_HEADER} DIRECTORY )
@@ -35,9 +37,10 @@ add_gtests (
         # Main
         main.cpp
 
-        # Component test Fixture
+        # Component test base
         tests/base/ClientComponentTest.cpp
         tests/base/ControlTestMethods.cpp
+        tests/base/MediaPipelineTestMethods.cpp
 
         # Component tests
         tests/ApplicationStateChangeTest.cpp

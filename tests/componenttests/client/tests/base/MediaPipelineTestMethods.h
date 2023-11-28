@@ -17,13 +17,13 @@
  * limitations under the License.
  */
 
-#ifndef CONTROL_TEST_METHODS_H_
-#define CONTROL_TEST_METHODS_H_
+#ifndef MEDIA_PIPELINE_TEST_METHODS_H_
+#define MEDIA_PIPELINE_TEST_METHODS_H_
 
-#include "ControlClientMock.h"
-#include "ControlModuleMock.h"
+#include "MediaPipelineClientMock.h"
+#include "MediaPipelineModuleMock.h"
 #include "ServerStub.h"
-#include "IControl.h"
+#include "IMediaPipeline.h"
 #include <gtest/gtest.h>
 
 using ::testing::_;
@@ -35,37 +35,26 @@ using ::testing::StrictMock;
 using ::testing::WithArgs;
 
 using namespace firebolt::rialto;
+using namespace firebolt::rialto::client;
 using namespace firebolt::rialto::componenttest::stub;
 
-class ControlTestMethods
+class MediaPipelineTestMethods
 {
 public:
-    ControlTestMethods();
-    virtual ~ControlTestMethods();
+    MediaPipelineTestMethods();
+    virtual ~MediaPipelineTestMethods();
 
 protected:
     // Strict Mocks
-    std::shared_ptr<StrictMock<ControlClientMock>> m_controlClientMock;
-    std::shared_ptr<StrictMock<ControlModuleMock>> m_controlModuleMock;
+    std::shared_ptr<StrictMock<MediaPipelineClientMock>> m_mediaPipelineClientMock;
+    std::shared_ptr<StrictMock<MediaPipelineModuleMock>> m_mediaPipelineModuleMock;
 
     // Objects
-    std::shared_ptr<IControlFactory> m_controlFactory;
-    std::shared_ptr<IControl> m_control;
-
-    int32_t m_fd{-1};
-    void *m_address{nullptr};
-    uint32_t m_size{1000};
+    std::shared_ptr<IMediaPipelineFactory> m_mediaPipelineFactory;
+    std::unique_ptr<IMediaPipeline> m_mediaPipeline;
 
     // Test methods
-    void createControl();
-    void shouldRegisterClient();
-    void registerClient();
-    void shouldNotifyApplicationStateInactive();
-    void sendNotifyApplicationStateInactive();
-    void shouldNotifyApplicationStateUnknown();
-    void shouldNotifyApplicationStateRunning();
-    void sendNotifyApplicationStateRunning();
-    void disconnectServer();
+    void createMediaPipeline();
 
     // Component test helpers
     virtual void notifyEvent() = 0;
@@ -73,8 +62,6 @@ protected:
     virtual std::shared_ptr<ServerStub>& getServerStub() = 0;
 
 private:
-    void initRealShm();
-    void termRealShm();
 };
 
-#endif // CONTROL_TEST_METHODS_H_
+#endif // MEDIA_PIPELINE_TEST_METHODS_H_

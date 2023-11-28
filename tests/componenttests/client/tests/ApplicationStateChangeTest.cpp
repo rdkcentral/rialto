@@ -99,4 +99,5 @@ TEST_F(ApplicationStateChangeTest, lifecycle)
     // Step 6: Disconnect the server
     ControlTestMethods::shouldNotifyApplicationStateUnknown();
     ClientComponentTest::disconnectServer();
+    ClientComponentTest::waitEvent();
 }

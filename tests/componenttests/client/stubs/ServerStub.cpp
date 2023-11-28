@@ -56,8 +56,9 @@ void ServerStub::clientConnected(const std::shared_ptr<::firebolt::rialto::ipc::
     m_clientConnectCond.notify_one();
 }
 
-ServerStub::ServerStub(const std::shared_ptr<::firebolt::rialto::ControlModule>& controlModuleMock)
-    : ControlModuleStub{controlModuleMock}
+ServerStub::ServerStub(const std::shared_ptr<::firebolt::rialto::ControlModule>& controlModuleMock,
+                       const std::shared_ptr<::firebolt::rialto::MediaPipelineModule>& mediaPipelineModuleMock)
+    : ControlModuleStub{controlModuleMock}, MediaPipelineModuleStub{mediaPipelineModuleMock}
 {
     init();
 }

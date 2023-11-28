@@ -30,7 +30,7 @@ constexpr std::chrono::milliseconds kEventTimeout{200};
 } // namespace
 
 ClientComponentTest::ClientComponentTest()
-    : m_serverStub{std::make_shared<ServerStub>(m_controlModuleMock)}
+    : m_serverStub{std::make_shared<ServerStub>(m_controlModuleMock, m_mediaPipelineModuleMock)}
 {
 }
 
@@ -64,4 +64,22 @@ std::shared_ptr<ServerStub>& ClientComponentTest::getServerStub()
 void ClientComponentTest::disconnectServer()
 {
     m_serverStub.reset();
+}
+
+void ClientComponentTest::startApplicationRunning()
+{
+    createControl();
+    shouldRegisterClient();
+    registerClient();
+    shouldNotifyApplicationStateInactive();
+    sendNotifyApplicationStateInactive();
+    shouldNotifyApplicationStateRunning();
+    sendNotifyApplicationStateRunning();
+}
+
+void ClientComponentTest::stopApplication()
+{
+    shouldNotifyApplicationStateUnknown();
+    disconnectServer();
+    waitEvent();
 }
