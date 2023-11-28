@@ -20,4 +20,3 @@
 add_subdirectory(ipc)
 add_subdirectory(main)
 add_subdirectory(mocks)
-add_subdirectory(stubs)
