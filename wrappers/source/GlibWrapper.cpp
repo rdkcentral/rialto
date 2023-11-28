@@ -25,6 +25,7 @@ std::shared_ptr<IGlibWrapper> GlibWrapperFactory::getGlibWrapper()
 {
     static std::shared_ptr<IGlibWrapper> gstWrapper{};
     if (!gstWrapper)
+    {
         try
         {
             gstWrapper = std::make_shared<GlibWrapper>();
@@ -32,6 +33,7 @@ std::shared_ptr<IGlibWrapper> GlibWrapperFactory::getGlibWrapper()
         catch (const std::exception &)
         {
         }
+    }
 
     return gstWrapper;
 }

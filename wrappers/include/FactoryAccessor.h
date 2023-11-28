@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_WRAPPERS_FACTORY_ACCESSOR_H_
 
 #include "IFactoryAccessor.h"
+#include <memory>
 
 namespace firebolt::rialto::wrappers
 {

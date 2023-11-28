@@ -25,6 +25,7 @@ std::shared_ptr<IGstWrapper> GstWrapperFactory::getGstWrapper()
 {
     static std::shared_ptr<IGstWrapper> gstWrapper{};
     if (!gstWrapper)
+    {
         try
         {
             gstWrapper = std::make_shared<GstWrapper>();
@@ -32,6 +33,7 @@ std::shared_ptr<IGstWrapper> GstWrapperFactory::getGstWrapper()
         catch (const std::exception &e)
         {
         }
+    }
 
     return gstWrapper;
 }

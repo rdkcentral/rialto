@@ -75,7 +75,7 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, FactoryCreatesObject)
     expectAddElementsAmlhalaSink();
     EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(&m_pipeline)))
         .WillOnce(Invoke(
-            [&](GstPipeline *)
+            [&](GstPipeline *) // NOLINT(readability/casting)
             {
                 std::unique_lock lock{dispatcherThreadMutex};
                 dispatcherThreadCreated = true;

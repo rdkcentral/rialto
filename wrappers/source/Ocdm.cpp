@@ -26,6 +26,7 @@ std::shared_ptr<IOcdm> OcdmFactory::getOcdm() const
 {
     static std::shared_ptr<IOcdm> ocdm;
     if (!ocdm)
+    {
         try
         {
             ocdm = std::make_shared<Ocdm>();
@@ -33,6 +34,7 @@ std::shared_ptr<IOcdm> OcdmFactory::getOcdm() const
         catch (const std::exception &e)
         {
         }
+    }
     return ocdm;
 }
 
