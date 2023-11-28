@@ -22,32 +22,10 @@
 
 namespace firebolt::rialto::wrappers
 {
-std::weak_ptr<IOcdm> OcdmFactory::m_ocdm;
-std::mutex OcdmFactory::m_creationMutex;
-
-std::shared_ptr<IOcdmFactory> IOcdmFactory::createFactory()
-{
-    std::shared_ptr<OcdmFactory> factory;
-
-    try
-    {
-        factory = std::make_shared<OcdmFactory>();
-    }
-    catch (const std::exception &e)
-    {
-    }
-
-    return factory;
-}
-
 std::shared_ptr<IOcdm> OcdmFactory::getOcdm() const
 {
-    std::lock_guard<std::mutex> lock{m_creationMutex};
-
-    std::shared_ptr<IOcdm> ocdm = OcdmFactory::m_ocdm.lock();
-
+    static std::shared_ptr<IOcdm> ocdm;
     if (!ocdm)
-    {
         try
         {
             ocdm = std::make_shared<Ocdm>();
@@ -55,10 +33,6 @@ std::shared_ptr<IOcdm> OcdmFactory::getOcdm() const
         catch (const std::exception &e)
         {
         }
-
-        OcdmFactory::m_ocdm = ocdm;
-    }
-
     return ocdm;
 }
 

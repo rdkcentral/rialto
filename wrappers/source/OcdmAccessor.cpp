@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2022 Sky UK
+ * Copyright 2023 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,13 @@
  * limitations under the License.
  */
 
+#include "IFactoryAccessor.h"
 #include "IOcdm.h"
-#include <memory>
 
 namespace firebolt::rialto::wrappers
 {
-// Stub create factory for compilation.
 std::shared_ptr<IOcdmFactory> IOcdmFactory::createFactory()
 {
-    return nullptr;
+    return IFactoryAccessor::instance().ocdmFactory();
 }
 } // namespace firebolt::rialto::wrappers

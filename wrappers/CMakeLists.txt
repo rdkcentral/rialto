@@ -75,6 +75,9 @@ add_library(
         source/GlibWrapperFactoryAccessor.cpp
         source/GstWrapperFactoryAccessor.cpp
         source/LinuxWrapperFactoryAccessor.cpp
+        source/OcdmAccessor.cpp
+        source/OcdmSystemAccessor.cpp
+        source/RdkGstreamerUtilsWrapperAccessor.cpp
         ${WRAPPER_SOURCES}
         ${JSONCPP_WRAPPER_SOURCE_FILES}
     )

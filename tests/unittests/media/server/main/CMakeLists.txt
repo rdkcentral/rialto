@@ -128,7 +128,6 @@ target_link_libraries(
         RialtoServerMain
         RialtoPlayerCommon
         RialtoCommonMisc
-        RialtoWrappersStubs
         )
 
 if ( COVERAGE_ENABLED )

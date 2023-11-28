@@ -73,7 +73,7 @@ std::shared_ptr<IOcdmSystemFactory> &FactoryAccessor::ocdmSystemFactory()
     return m_ocdmSystemFactory;
 }
 
-std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> &FactoryAccessor::rdkGstreamerUtilsWrapperFactoryFactory()
+std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> &FactoryAccessor::rdkGstreamerUtilsWrapperFactory()
 {
     return m_rdkGstreamerUtilsWrapperFactory;
 }

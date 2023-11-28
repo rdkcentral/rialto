@@ -93,7 +93,7 @@ public:
      *
      * @retval non-const (by purpose) reference to the factory instance ptr
      */
-    virtual std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactoryFactory() = 0;
+    virtual std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactory() = 0;
 
 protected:
     /**

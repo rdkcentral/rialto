@@ -22,16 +22,6 @@
 
 namespace firebolt::rialto::wrappers
 {
-std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> IRdkGstreamerUtilsWrapperFactory::getFactory()
-{
-    static std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> factory;
-    if (!factory)
-    {
-        factory = std::make_shared<RdkGstreamerUtilsWrapperFactory>();
-    }
-    return factory;
-}
-
 std::shared_ptr<IRdkGstreamerUtilsWrapper> RdkGstreamerUtilsWrapperFactory::createRdkGstreamerUtilsWrapper() const
 {
     return std::make_shared<RdkGstreamerUtilsWrapper>();

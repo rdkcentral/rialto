@@ -35,7 +35,7 @@ public:
     std::shared_ptr<ILinuxWrapperFactory> &linuxWrapperFactory() override;
     std::shared_ptr<IOcdmFactory> &ocdmFactory() override;
     std::shared_ptr<IOcdmSystemFactory> &ocdmSystemFactory() override;
-    std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactoryFactory() override;
+    std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactory() override;
 
 private:
     std::shared_ptr<IGlibWrapperFactory> m_glibWrapperFactory{nullptr};

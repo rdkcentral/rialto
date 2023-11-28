@@ -25,21 +25,6 @@
 
 namespace firebolt::rialto::wrappers
 {
-std::shared_ptr<IOcdmSystemFactory> IOcdmSystemFactory::createFactory()
-{
-    std::shared_ptr<OcdmSystemFactory> factory;
-
-    try
-    {
-        factory = std::make_shared<OcdmSystemFactory>();
-    }
-    catch (const std::exception &e)
-    {
-    }
-
-    return factory;
-}
-
 std::unique_ptr<IOcdmSystem> OcdmSystemFactory::createOcdmSystem(const std::string &keySystem) const
 {
     std::unique_ptr<IOcdmSystem> ocdmSystem;
