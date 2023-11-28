@@ -98,6 +98,7 @@ target_link_libraries(
         RialtoCommonMisc
         # # Link application source
         RialtoClient
+        RialtoClientStub
         )
 
 if ( COVERAGE_ENABLED )

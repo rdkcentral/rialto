@@ -128,9 +128,7 @@ MediaPipelineFactory::createMediaPipeline(std::weak_ptr<IMediaPipelineClient> cl
         std::shared_ptr<client::IMediaPipelineIpcFactory> mediaPipelineIpcFactory = mediaPipelineIpcFactoryParam.lock();
         std::shared_ptr<client::IClientController> clientController = clientControllerParam.lock();
         mediaPipeline = std::make_unique<client::MediaPipeline>(client, videoRequirements,
-                                                                mediaPipelineIpcFactory
-                                                                    ? mediaPipelineIpcFactory
-                                                                    : client::IMediaPipelineIpcFactory::getFactory(),
+                                                                client::IMediaPipelineIpcFactory::getFactory(),
                                                                 common::IMediaFrameWriterFactory::getFactory(),
                                                                 clientController
                                                                     ? *clientController

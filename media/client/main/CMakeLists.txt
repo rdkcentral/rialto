@@ -80,7 +80,6 @@ target_link_libraries(
 
         PRIVATE
         RialtoPlayerCommon
-        RialtoClientIpcImpl
         RialtoCommon
         RialtoLogging
 
