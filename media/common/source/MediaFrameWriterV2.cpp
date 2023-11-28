@@ -200,14 +200,17 @@ MediaSegmentMetadata MediaFrameWriterV2::buildMetadata(const std::unique_ptr<IMe
             metadata.set_crypt(crypt);
             metadata.set_skip(skip);
         }
-
-        for (const auto &subSample : data->getSubSamples())
-        {
-            auto subSamplePair = metadata.mutable_sub_sample_info()->Add();
-            subSamplePair->set_num_clear_bytes(static_cast<uint32_t>(subSample.numClearBytes));
-            subSamplePair->set_num_encrypted_bytes(static_cast<uint32_t>(subSample.numEncryptedBytes));
-        }
     }
+
+    // todo: why might need to have additional variable to indicate if we transport buffers which should be moved to svp
+    // depending if app is going to move clear buffers to svp or server
+    for (const auto &subSample : data->getSubSamples())
+    {
+        auto subSamplePair = metadata.mutable_sub_sample_info()->Add();
+        subSamplePair->set_num_clear_bytes(static_cast<uint32_t>(subSample.numClearBytes));
+        subSamplePair->set_num_encrypted_bytes(static_cast<uint32_t>(subSample.numEncryptedBytes));
+    }
+
     return metadata;
 }
 } // namespace firebolt::rialto::common
