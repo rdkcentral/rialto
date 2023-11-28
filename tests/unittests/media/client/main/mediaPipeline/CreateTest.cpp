@@ -72,6 +72,9 @@ TEST_F(RialtoClientCreateMediaPipelineTest, FactoryCreatesObject)
         firebolt::rialto::IMediaPipelineFactory::createFactory();
     EXPECT_NE(factory, nullptr);
 
+    std::shared_ptr<firebolt::rialto::MediaPipelineFactory> factory2 = std::dynamic_pointer_cast<firebolt::rialto::MediaPipelineFactory>(factory);
+
+
     std::unique_ptr<StrictMock<MediaPipelineIpcMock>> mediaPipelineIpcMock =
         std::make_unique<StrictMock<MediaPipelineIpcMock>>();
     EXPECT_CALL(*m_clientControllerMock, registerClient(NotNull(), _)).WillOnce(Return(true));
@@ -79,8 +82,8 @@ TEST_F(RialtoClientCreateMediaPipelineTest, FactoryCreatesObject)
         .WillOnce(Return(ByMove(std::move(mediaPipelineIpcMock))));
 
     std::unique_ptr<IMediaPipeline> mediaPipeline;
-    EXPECT_NO_THROW(mediaPipeline = factory->createMediaPipeline(m_mediaPipelineClientMock, m_videoReq,
-                                                                 m_mediaPipelineIpcFactoryMock, m_clientControllerMock));
+    EXPECT_NO_THROW(mediaPipeline = factory2->createMediaPipeline(m_mediaPipelineClientMock, m_videoReq,
+                                                                  m_mediaPipelineIpcFactoryMock, m_clientControllerMock));
     EXPECT_NE(mediaPipeline, nullptr);
 
     // Unregister client on destroy

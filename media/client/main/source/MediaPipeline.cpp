@@ -117,6 +117,12 @@ std::shared_ptr<IMediaPipelineFactory> IMediaPipelineFactory::createFactory()
 }
 
 std::unique_ptr<IMediaPipeline>
+MediaPipelineFactory::createMediaPipeline(std::weak_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements) const
+{
+    return createMediaPipeline(client, videoRequirements, {}, {});
+}
+
+std::unique_ptr<IMediaPipeline>
 MediaPipelineFactory::createMediaPipeline(std::weak_ptr<IMediaPipelineClient> client,
                                           const VideoRequirements &videoRequirements,
                                           std::weak_ptr<client::IMediaPipelineIpcFactory> mediaPipelineIpcFactoryParam,
