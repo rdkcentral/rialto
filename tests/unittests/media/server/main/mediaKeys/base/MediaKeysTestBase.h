@@ -60,7 +60,7 @@ protected:
     std::unique_ptr<StrictMock<MediaKeySessionMock>> m_mediaKeySession;
     StrictMock<MediaKeySessionMock> *m_mediaKeySessionMock;
     std::shared_ptr<StrictMock<OcdmSystemFactoryMock>> m_ocdmSystemFactoryMock;
-    std::unique_ptr<StrictMock<OcdmSystemMock>> m_ocdmSystem;
+    std::shared_ptr<StrictMock<OcdmSystemMock>> m_ocdmSystem;
     StrictMock<OcdmSystemMock> *m_ocdmSystemMock;
     std::shared_ptr<StrictMock<MainThreadFactoryMock>> m_mainThreadFactoryMock;
     std::shared_ptr<StrictMock<MainThreadMock>> m_mainThreadMock;

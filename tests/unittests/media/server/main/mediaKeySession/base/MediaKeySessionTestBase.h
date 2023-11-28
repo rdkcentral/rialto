@@ -54,7 +54,7 @@ protected:
 
     // Strict Mocks
     std::shared_ptr<StrictMock<MediaKeysClientMock>> m_mediaKeysClientMock;
-    std::unique_ptr<StrictMock<OcdmSystemMock>> m_ocdmSystemMock;
+    std::shared_ptr<StrictMock<OcdmSystemMock>> m_ocdmSystemMock;
     std::unique_ptr<StrictMock<OcdmSessionMock>> m_ocdmSession;
     StrictMock<OcdmSessionMock> *m_ocdmSessionMock;
     std::shared_ptr<StrictMock<MainThreadFactoryMock>> m_mainThreadFactoryMock;

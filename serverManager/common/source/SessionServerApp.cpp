@@ -75,7 +75,7 @@ std::string getSessionManagementSocketPath(const firebolt::rialto::common::AppCo
 
 namespace rialto::servermanager::common
 {
-SessionServerApp::SessionServerApp(std::unique_ptr<firebolt::rialto::wrappers::ILinuxWrapper> &&linuxWrapper,
+SessionServerApp::SessionServerApp(const std::shared_ptr<firebolt::rialto::wrappers::ILinuxWrapper> &linuxWrapper,
                                    const std::shared_ptr<firebolt::rialto::common::ITimerFactory> &timerFactory,
                                    ISessionServerAppManager &sessionServerAppManager,
                                    const std::list<std::string> &environmentVariables,
@@ -83,7 +83,7 @@ SessionServerApp::SessionServerApp(std::unique_ptr<firebolt::rialto::wrappers::I
                                    std::chrono::milliseconds sessionServerStartupTimeout, unsigned int socketPermissions,
                                    const std::string &socketOwner, const std::string &socketGroup)
     : m_kServerId{generateServerId()}, m_initialState{firebolt::rialto::common::SessionServerState::UNINITIALIZED},
-      m_socks{-1, -1}, m_linuxWrapper{std::move(linuxWrapper)}, m_timerFactory{timerFactory},
+      m_socks{-1, -1}, m_linuxWrapper{linuxWrapper}, m_timerFactory{timerFactory},
       m_sessionServerAppManager{sessionServerAppManager}, m_pid{-1}, m_isPreloaded{true},
       m_kSessionServerPath{sessionServerPath}, m_kSessionServerStartupTimeout{sessionServerStartupTimeout},
       m_kSessionManagementSocketPermissions{socketPermissions}, m_kSessionManagementSocketOwner{socketOwner},
@@ -99,7 +99,7 @@ SessionServerApp::SessionServerApp(std::unique_ptr<firebolt::rialto::wrappers::I
 SessionServerApp::SessionServerApp(const std::string &appName,
                                    const firebolt::rialto::common::SessionServerState &initialState,
                                    const firebolt::rialto::common::AppConfig &appConfig,
-                                   std::unique_ptr<firebolt::rialto::wrappers::ILinuxWrapper> &&linuxWrapper,
+                                   const std::shared_ptr<firebolt::rialto::wrappers::ILinuxWrapper> &linuxWrapper,
                                    const std::shared_ptr<firebolt::rialto::common::ITimerFactory> &timerFactory,
                                    ISessionServerAppManager &sessionServerAppManager,
                                    const std::list<std::string> &environmentVariables,
@@ -108,7 +108,7 @@ SessionServerApp::SessionServerApp(const std::string &appName,
                                    const std::string &socketOwner, const std::string &socketGroup)
     : m_kServerId{generateServerId()}, m_appName{appName}, m_initialState{initialState},
       m_sessionManagementSocketName{getSessionManagementSocketPath(appConfig)},
-      m_clientDisplayName{appConfig.clientDisplayName}, m_socks{-1, -1}, m_linuxWrapper{std::move(linuxWrapper)},
+      m_clientDisplayName{appConfig.clientDisplayName}, m_socks{-1, -1}, m_linuxWrapper{linuxWrapper},
       m_timerFactory{timerFactory}, m_sessionServerAppManager{sessionServerAppManager}, m_pid{-1}, m_isPreloaded{false},
       m_kSessionServerPath{sessionServerPath}, m_kSessionServerStartupTimeout{sessionServerStartupTimeout},
       m_kSessionManagementSocketPermissions{socketPermissions}, m_kSessionManagementSocketOwner{socketOwner},

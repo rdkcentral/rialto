@@ -17,20 +17,34 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_WRAPPERS_LINUX_WRAPPER_FACTORY_MOCK_H_
-#define FIREBOLT_RIALTO_WRAPPERS_LINUX_WRAPPER_FACTORY_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_CT_SERVER_MANAGER_STUB_H_
+#define FIREBOLT_RIALTO_SERVER_CT_SERVER_MANAGER_STUB_H_
 
-#include "ILinuxWrapper.h"
-#include <gmock/gmock.h>
+#include "IStub.h"
+#include <IIpcChannel.h>
+#include <array>
 #include <memory>
+#include <thread>
 
-namespace firebolt::rialto::wrappers
+namespace firebolt::rialto::server::ct
 {
-class LinuxWrapperFactoryMock : public ILinuxWrapperFactory
+class ServerManagerStub : public IStub
 {
 public:
-    MOCK_METHOD(std::shared_ptr<ILinuxWrapper>, createLinuxWrapper, (), (const, override));
-};
-} // namespace firebolt::rialto::wrappers
+    ServerManagerStub();
+    ~ServerManagerStub() override;
 
-#endif // FIREBOLT_RIALTO_WRAPPERS_LINUX_WRAPPER_FACTORY_MOCK_H_
+    int getServerSocket() const;
+    std::shared_ptr<::firebolt::rialto::ipc::IChannel> getChannel() override;
+
+private:
+    void ipcThread();
+
+private:
+    std::thread m_clientThread;
+    std::shared_ptr<::firebolt::rialto::ipc::IChannel> m_ipcChannel;
+    std::array<int, 2> m_socks{-1, -1};
+};
+} // namespace firebolt::rialto::server::ct
+
+#endif // FIREBOLT_RIALTO_SERVER_CT_SERVER_MANAGER_STUB_H_

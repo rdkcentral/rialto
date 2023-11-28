@@ -143,7 +143,7 @@ private:
     /**
      * @brief The IOcdmSystem instance.
      */
-    std::unique_ptr<firebolt::rialto::wrappers::IOcdmSystem> m_ocdmSystem;
+    std::shared_ptr<firebolt::rialto::wrappers::IOcdmSystem> m_ocdmSystem;
 
     /**
      * @brief Map containing created sessions.

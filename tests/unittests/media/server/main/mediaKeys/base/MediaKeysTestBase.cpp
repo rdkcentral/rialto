@@ -28,7 +28,7 @@ MediaKeysTestBase::MediaKeysTestBase()
       m_mediaKeySession{std::make_unique<StrictMock<MediaKeySessionMock>>()},
       m_mediaKeySessionMock{m_mediaKeySession.get()},
       m_ocdmSystemFactoryMock{std::make_shared<StrictMock<OcdmSystemFactoryMock>>()},
-      m_ocdmSystem{std::make_unique<StrictMock<OcdmSystemMock>>()}, m_ocdmSystemMock{m_ocdmSystem.get()},
+      m_ocdmSystem{std::make_shared<StrictMock<OcdmSystemMock>>()}, m_ocdmSystemMock{m_ocdmSystem.get()},
       m_mainThreadFactoryMock{std::make_shared<StrictMock<MainThreadFactoryMock>>()},
       m_mainThreadMock{std::make_shared<StrictMock<MainThreadMock>>()}
 {

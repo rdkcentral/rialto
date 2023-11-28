@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2022 Sky UK
+ * Copyright 2023 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,21 +17,20 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_WRAPPERS_OCDM_SYSTEM_FACTORY_MOCK_H_
-#define FIREBOLT_RIALTO_WRAPPERS_OCDM_SYSTEM_FACTORY_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_CT_I_STUB_H_
+#define FIREBOLT_RIALTO_SERVER_CT_I_STUB_H_
 
-#include "IOcdmSystem.h"
-#include <gmock/gmock.h>
+#include <IIpcChannel.h>
 #include <memory>
-#include <string>
 
-namespace firebolt::rialto::wrappers
+namespace firebolt::rialto::server::ct
 {
-class OcdmSystemFactoryMock : public IOcdmSystemFactory
+class IStub
 {
 public:
-    MOCK_METHOD(std::shared_ptr<IOcdmSystem>, createOcdmSystem, (const std::string &keySystem), (const, override));
+    virtual ~IStub() = default;
+    virtual std::shared_ptr<::firebolt::rialto::ipc::IChannel> getChannel() = 0;
 };
-} // namespace firebolt::rialto::wrappers
+} // namespace firebolt::rialto::server::ct
 
-#endif // FIREBOLT_RIALTO_WRAPPERS_OCDM_SYSTEM_FACTORY_MOCK_H_
+#endif // FIREBOLT_RIALTO_SERVER_CT_I_STUB_H_

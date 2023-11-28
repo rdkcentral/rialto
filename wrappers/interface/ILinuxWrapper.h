@@ -55,7 +55,7 @@ public:
      *
      * @retval the new linux wrapper instance or null on error.
      */
-    virtual std::unique_ptr<ILinuxWrapper> createLinuxWrapper() const = 0;
+    virtual std::shared_ptr<ILinuxWrapper> createLinuxWrapper() const = 0;
 };
 
 class ILinuxWrapper

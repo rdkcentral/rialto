@@ -226,5 +226,6 @@ if( CMAKE_BUILD_FLAG STREQUAL "ComponentTests" )
     include( cmake/googletest.cmake )
 
     add_subdirectory( tests/componenttests/client EXCLUDE_FROM_ALL )
+    add_subdirectory( tests/componenttests/server EXCLUDE_FROM_ALL )
 
 endif()

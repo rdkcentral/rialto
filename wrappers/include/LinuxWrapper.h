@@ -31,7 +31,7 @@ public:
     LinuxWrapperFactory() = default;
     ~LinuxWrapperFactory() override = default;
 
-    std::unique_ptr<ILinuxWrapper> createLinuxWrapper() const override;
+    std::shared_ptr<ILinuxWrapper> createLinuxWrapper() const override;
 };
 
 class LinuxWrapper : public ILinuxWrapper
