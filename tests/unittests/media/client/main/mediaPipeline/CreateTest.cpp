@@ -97,8 +97,6 @@ TEST_F(RialtoClientCreateMediaPipelineTest, FactoryFailsToCreateObject)
             firebolt::rialto::IMediaPipelineFactory::createFactory());
     EXPECT_NE(factory, nullptr);
 
-    std::unique_ptr<StrictMock<MediaPipelineIpcMock>> mediaPipelineIpcMock =
-        std::make_unique<StrictMock<MediaPipelineIpcMock>>();
     EXPECT_CALL(*m_clientControllerMock, registerClient(NotNull(), _)).WillOnce(Return(false));
 
     std::unique_ptr<IMediaPipeline> mediaPipeline;
