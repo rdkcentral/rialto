@@ -24,28 +24,33 @@
 
 namespace firebolt::rialto::client
 {
-std::shared_ptr<IMediaPipelineIpcFactory> MediaPipelineIpcFactory::m_factory;
+std::weak_ptr<IMediaPipelineIpcFactory> MediaPipelineIpcFactory::m_factory;
 
-std::shared_ptr<IMediaPipelineIpcFactory> &IMediaPipelineIpcFactory::getFactory()
+std::shared_ptr<IMediaPipelineIpcFactory> IMediaPipelineIpcFactory::getFactory()
 {
-    if (!MediaPipelineIpcFactory::m_factory)
+    std::shared_ptr<IMediaPipelineIpcFactory> factory = MediaPipelineIpcFactory::m_factory.lock();
+
+    if (!factory)
     {
         try
         {
-            MediaPipelineIpcFactory::m_factory = std::make_shared<MediaPipelineIpcFactory>();
+            factory = std::make_shared<MediaPipelineIpcFactory>();
         }
         catch (const std::exception &e)
         {
             RIALTO_CLIENT_LOG_ERROR("Failed to create the media player ipc factory, reason: %s", e.what());
         }
+
+        MediaPipelineIpcFactory::m_factory = factory;
     }
 
-    return MediaPipelineIpcFactory::m_factory;
+    return factory;
 }
 
-std::unique_ptr<IMediaPipelineIpc> &MediaPipelineIpcFactory::createMediaPipelineIpc(
+std::unique_ptr<IMediaPipelineIpc> MediaPipelineIpcFactory::createMediaPipelineIpc(
     IMediaPipelineIpcClient *client, const VideoRequirements &videoRequirements, std::weak_ptr<IIpcClient> ipcClientParam)
 {
+    std::unique_ptr<IMediaPipelineIpc> mediaPipelineIpc;
     try
     {
         std::shared_ptr<IIpcClient> ipcClient = ipcClientParam.lock();

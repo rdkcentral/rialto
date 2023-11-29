@@ -87,8 +87,7 @@ std::shared_ptr<MediaPipelineServerInternalFactory> MediaPipelineServerInternalF
 }
 
 std::unique_ptr<IMediaPipeline> MediaPipelineServerInternalFactory::createMediaPipeline(
-    std::weak_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements,
-                        std::weak_ptr<client::IClientController> clientController) const
+    std::weak_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements) const
 {
     RIALTO_SERVER_LOG_ERROR(
         "This function can't be used by rialto server. Please use createMediaPipelineServerInternal");
