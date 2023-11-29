@@ -53,8 +53,7 @@ std::shared_ptr<IMediaKeysServerInternalFactory> IMediaKeysServerInternalFactory
     return factory;
 }
 
-std::unique_ptr<IMediaKeys> MediaKeysServerInternalFactory::createMediaKeys(
-    const std::string &keySystem) const
+std::unique_ptr<IMediaKeys> MediaKeysServerInternalFactory::createMediaKeys(const std::string &keySystem) const
 {
     RIALTO_SERVER_LOG_ERROR("This function can't be used by rialto server. Please use createMediaKeysServerInternal");
     return nullptr;
