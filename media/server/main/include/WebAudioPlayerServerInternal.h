@@ -43,9 +43,7 @@ public:
 
     std::unique_ptr<IWebAudioPlayer>
     createWebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
-                         const uint32_t priority, std::weak_ptr<const WebAudioConfig> config,
-                         std::weak_ptr<client::IWebAudioPlayerIpcFactory> webAudioPlayerIpcFactory,
-                         std::weak_ptr<client::IClientController> clientController) const override;
+                         const uint32_t priority, std::weak_ptr<const WebAudioConfig> config) const override;
 
     std::unique_ptr<IWebAudioPlayerServerInternal> createWebAudioPlayerServerInternal(
         std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType, const uint32_t priority,

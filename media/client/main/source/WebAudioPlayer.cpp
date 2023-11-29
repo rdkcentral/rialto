@@ -45,22 +45,29 @@ std::shared_ptr<IWebAudioPlayerFactory> IWebAudioPlayerFactory::createFactory()
 
 std::unique_ptr<IWebAudioPlayer> WebAudioPlayerFactory::createWebAudioPlayer(
     std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType, const uint32_t priority,
+    std::weak_ptr<const WebAudioConfig> config) const
+{
+    return createWebAudioPlayer(client, audioMimeType, priority, config);
+}
+
+std::unique_ptr<IWebAudioPlayer> WebAudioPlayerFactory::createWebAudioPlayer(
+    std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType, const uint32_t priority,
     std::weak_ptr<const WebAudioConfig> config,
-    std::weak_ptr<client::IWebAudioPlayerIpcFactory> webAudioPlayerIpcFactoryParam,
-    std::weak_ptr<client::IClientController> clientControllerParam) const
+    std::weak_ptr<client::IWebAudioPlayerIpcFactory> webAudioPlayerIpcFactory,
+    std::weak_ptr<client::IClientController> clientController) const
 {
     std::unique_ptr<IWebAudioPlayer> webAudioPlayer;
     try
     {
-        std::shared_ptr<client::IWebAudioPlayerIpcFactory> webAudioPlayerIpcFactory =
-            webAudioPlayerIpcFactoryParam.lock();
-        std::shared_ptr<client::IClientController> clientController = clientControllerParam.lock();
+        std::shared_ptr<client::IWebAudioPlayerIpcFactory> webAudioPlayerIpcFactoryLocked =
+            webAudioPlayerIpcFactory.lock();
+        std::shared_ptr<client::IClientController> clientControllerLocked = clientController.lock();
         webAudioPlayer = std::make_unique<client::WebAudioPlayer>(client, audioMimeType, priority, config,
-                                                                  webAudioPlayerIpcFactory
-                                                                      ? webAudioPlayerIpcFactory
+                                                                  webAudioPlayerIpcFactoryLocked
+                                                                      ? webAudioPlayerIpcFactoryLocked
                                                                       : client::IWebAudioPlayerIpcFactory::getFactory(),
-                                                                  clientController
-                                                                      ? *clientController
+                                                                  clientControllerLocked
+                                                                      ? *clientControllerLocked
                                                                       : client::IClientControllerAccessor::instance()
                                                                             .getClientController());
     }

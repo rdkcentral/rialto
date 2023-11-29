@@ -88,8 +88,8 @@ TEST_F(RialtoClientCreateWebAudioPlayerTest, Create)
  */
 TEST_F(RialtoClientCreateWebAudioPlayerTest, FactoryCreatesObject)
 {
-    std::shared_ptr<firebolt::rialto::IWebAudioPlayerFactory> factory =
-        firebolt::rialto::IWebAudioPlayerFactory::createFactory();
+    std::shared_ptr<firebolt::rialto::WebAudioPlayerFactory> factory =
+        std::dynamic_pointer_cast<firebolt::rialto::WebAudioPlayerFactory>(firebolt::rialto::IWebAudioPlayerFactory::createFactory());
     EXPECT_NE(factory, nullptr);
 
     std::unique_ptr<StrictMock<WebAudioPlayerIpcMock>> webAudioPlayerIpcMock =
@@ -105,6 +105,24 @@ TEST_F(RialtoClientCreateWebAudioPlayerTest, FactoryCreatesObject)
 
     // Unregister client on destroy
     EXPECT_CALL(*m_clientControllerMock, unregisterClient(_)).WillOnce(Return(true));
+}
+
+/**
+ * Test factory returns a nullptr if the creation of the object fails.
+ */
+TEST_F(RialtoClientCreateWebAudioPlayerTest, FactoryFailsToCreateObject)
+{
+    std::shared_ptr<firebolt::rialto::WebAudioPlayerFactory> factory =
+        std::dynamic_pointer_cast<firebolt::rialto::WebAudioPlayerFactory>(firebolt::rialto::IWebAudioPlayerFactory::createFactory());
+    EXPECT_NE(factory, nullptr);
+
+    EXPECT_CALL(*m_webAudioPlayerIpcFactoryMock, createWebAudioPlayerIpc(_, _, _, _, _)).WillOnce(Return(nullptr));
+
+    std::unique_ptr<IWebAudioPlayer> webAudioPlayer;
+    EXPECT_NO_THROW(webAudioPlayer = factory->createWebAudioPlayer(m_webAudioPlayerClientMock, m_audioMimeType,
+                                                                   m_priority, m_config, m_webAudioPlayerIpcFactoryMock,
+                                                                   m_clientControllerMock));
+    EXPECT_EQ(webAudioPlayer, nullptr);
 }
 
 /**
