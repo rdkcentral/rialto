@@ -89,3 +89,18 @@ TEST_F(MediaPipelineCapabilitiesTest, isMimeTypeSupported)
     EXPECT_CALL(*m_mediaPipelineCapabilitiesIpcMock, isMimeTypeSupported("video/h264")).WillOnce(Return(true));
     EXPECT_TRUE(m_sut->isMimeTypeSupported("video/h264"));
 }
+
+/**
+ * Test the factory failure
+ */
+TEST_F(MediaPipelineCapabilitiesTest, CapabilitiesFactoryFails)
+{
+    std::shared_ptr<firebolt::rialto::IMediaPipelineCapabilitiesFactory> factory =
+        firebolt::rialto::IMediaPipelineCapabilitiesFactory::createFactory();
+    EXPECT_NE(factory, nullptr);
+
+    // The following call is expected to fail because it's difficult to inject a mock
+    // version of IMediaPipelineCapabilitiesIpcFactory without affecting a lot of code on both
+    // the client and server
+    EXPECT_EQ(factory->createMediaPipelineCapabilities(), nullptr);
+}

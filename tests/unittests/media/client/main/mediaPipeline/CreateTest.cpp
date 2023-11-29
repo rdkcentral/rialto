@@ -17,7 +17,6 @@
  * limitations under the License.
  */
 
-#include "MediaPipelineCapabilities.h"
 #include "MediaPipelineTestBase.h"
 
 MATCHER(NotNull, "")
@@ -68,8 +67,9 @@ TEST_F(RialtoClientCreateMediaPipelineTest, Create)
  */
 TEST_F(RialtoClientCreateMediaPipelineTest, FactoryCreatesObject)
 {
-    std::shared_ptr<firebolt::rialto::IMediaPipelineFactory> factory =
-        firebolt::rialto::IMediaPipelineFactory::createFactory();
+    std::shared_ptr<firebolt::rialto::MediaPipelineFactory> factory =
+        std::dynamic_pointer_cast<firebolt::rialto::MediaPipelineFactory>(
+            firebolt::rialto::IMediaPipelineFactory::createFactory());
     EXPECT_NE(factory, nullptr);
 
     std::unique_ptr<StrictMock<MediaPipelineIpcMock>> mediaPipelineIpcMock =
@@ -88,18 +88,21 @@ TEST_F(RialtoClientCreateMediaPipelineTest, FactoryCreatesObject)
 }
 
 /**
- * Test the factory
+ * Test factory returns a nullptr if the creation of the object fails.
  */
-TEST_F(RialtoClientCreateMediaPipelineTest, CapabilitiesFactoryFails)
+TEST_F(RialtoClientCreateMediaPipelineTest, FactoryFailsToCreateObject)
 {
-    std::shared_ptr<firebolt::rialto::IMediaPipelineCapabilitiesFactory> factory =
-        firebolt::rialto::IMediaPipelineCapabilitiesFactory::createFactory();
+    std::shared_ptr<firebolt::rialto::MediaPipelineFactory> factory =
+        std::dynamic_pointer_cast<firebolt::rialto::MediaPipelineFactory>(
+            firebolt::rialto::IMediaPipelineFactory::createFactory());
     EXPECT_NE(factory, nullptr);
 
-    // The following call is expected to fail because it's difficult to inject a mock
-    // version of IMediaPipelineCapabilitiesIpcFactory without affecting a lot of code on both
-    // the client and server
-    EXPECT_EQ(factory->createMediaPipelineCapabilities(), nullptr);
+    EXPECT_CALL(*m_clientControllerMock, registerClient(NotNull(), _)).WillOnce(Return(false));
+
+    std::unique_ptr<IMediaPipeline> mediaPipeline;
+    EXPECT_NO_THROW(mediaPipeline = factory->createMediaPipeline(m_mediaPipelineClientMock, m_videoReq,
+                                                                 m_mediaPipelineIpcFactoryMock, m_clientControllerMock));
+    EXPECT_EQ(mediaPipeline, nullptr);
 }
 
 /**

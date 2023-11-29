@@ -44,10 +44,23 @@ public:
     MediaPipelineFactory() = default;
     ~MediaPipelineFactory() override = default;
 
+    std::unique_ptr<IMediaPipeline> createMediaPipeline(std::weak_ptr<IMediaPipelineClient> client,
+                                                        const VideoRequirements &videoRequirements) const override;
+
+    /**
+     * @brief IMediaPipeline factory method with factory parameters for mock injection.
+     *
+     * @param[in] client                  : The Rialto media player client.
+     * @param[in] videoRequirements       : The video decoder requirements for the MediaPipeline session.
+     * @param[in] mediaPipelineIpcFactory : This was added for the test environment where a mock object needs to be passed in.
+     * @param[in] clientController        : This was added for the test environment where a mock object needs to be passed in.
+     *
+     * @retval the new backend instance or null on error.
+     */
     std::unique_ptr<IMediaPipeline>
     createMediaPipeline(std::weak_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements,
                         std::weak_ptr<client::IMediaPipelineIpcFactory> mediaPipelineIpcFactory,
-                        std::weak_ptr<client::IClientController> clientController) const override;
+                        std::weak_ptr<client::IClientController> clientController) const;
 };
 
 }; // namespace firebolt::rialto
