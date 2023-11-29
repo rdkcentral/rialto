@@ -44,9 +44,9 @@ public:
     MediaPipelineFactory() = default;
     ~MediaPipelineFactory() override = default;
 
-    std::unique_ptr<IMediaPipeline>
-    createMediaPipeline(std::weak_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements) const override;
-    
+    std::unique_ptr<IMediaPipeline> createMediaPipeline(std::weak_ptr<IMediaPipelineClient> client,
+                                                        const VideoRequirements &videoRequirements) const override;
+
     /**
      * @brief IMediaPipeline factory method with factory parameters for mock injection.
      *

@@ -43,8 +43,8 @@ public:
     MediaPipelineServerInternalFactory() = default;
     ~MediaPipelineServerInternalFactory() override = default;
 
-    std::unique_ptr<IMediaPipeline>
-    createMediaPipeline(std::weak_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements) const override;
+    std::unique_ptr<IMediaPipeline> createMediaPipeline(std::weak_ptr<IMediaPipelineClient> client,
+                                                        const VideoRequirements &videoRequirements) const override;
 
     std::unique_ptr<server::IMediaPipelineServerInternal> createMediaPipelineServerInternal(
         std::weak_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements, int sessionId,

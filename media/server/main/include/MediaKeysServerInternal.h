@@ -40,8 +40,7 @@ public:
     MediaKeysServerInternalFactory() = default;
     ~MediaKeysServerInternalFactory() override = default;
 
-    std::unique_ptr<IMediaKeys>
-    createMediaKeys(const std::string &keySystem) const override;
+    std::unique_ptr<IMediaKeys> createMediaKeys(const std::string &keySystem) const override;
     std::unique_ptr<IMediaKeysServerInternal> createMediaKeysServerInternal(const std::string &keySystem) const override;
 };
 

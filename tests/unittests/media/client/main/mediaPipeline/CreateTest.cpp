@@ -68,7 +68,8 @@ TEST_F(RialtoClientCreateMediaPipelineTest, Create)
 TEST_F(RialtoClientCreateMediaPipelineTest, FactoryCreatesObject)
 {
     std::shared_ptr<firebolt::rialto::MediaPipelineFactory> factory =
-        std::dynamic_pointer_cast<firebolt::rialto::MediaPipelineFactory>(firebolt::rialto::IMediaPipelineFactory::createFactory());
+        std::dynamic_pointer_cast<firebolt::rialto::MediaPipelineFactory>(
+            firebolt::rialto::IMediaPipelineFactory::createFactory());
     EXPECT_NE(factory, nullptr);
 
     std::unique_ptr<StrictMock<MediaPipelineIpcMock>> mediaPipelineIpcMock =
@@ -79,7 +80,7 @@ TEST_F(RialtoClientCreateMediaPipelineTest, FactoryCreatesObject)
 
     std::unique_ptr<IMediaPipeline> mediaPipeline;
     EXPECT_NO_THROW(mediaPipeline = factory->createMediaPipeline(m_mediaPipelineClientMock, m_videoReq,
-                                                                  m_mediaPipelineIpcFactoryMock, m_clientControllerMock));
+                                                                 m_mediaPipelineIpcFactoryMock, m_clientControllerMock));
     EXPECT_NE(mediaPipeline, nullptr);
 
     // Unregister client on destroy
@@ -92,7 +93,8 @@ TEST_F(RialtoClientCreateMediaPipelineTest, FactoryCreatesObject)
 TEST_F(RialtoClientCreateMediaPipelineTest, FactoryFailsToCreateObject)
 {
     std::shared_ptr<firebolt::rialto::MediaPipelineFactory> factory =
-        std::dynamic_pointer_cast<firebolt::rialto::MediaPipelineFactory>(firebolt::rialto::IMediaPipelineFactory::createFactory());
+        std::dynamic_pointer_cast<firebolt::rialto::MediaPipelineFactory>(
+            firebolt::rialto::IMediaPipelineFactory::createFactory());
     EXPECT_NE(factory, nullptr);
 
     std::unique_ptr<StrictMock<MediaPipelineIpcMock>> mediaPipelineIpcMock =
@@ -101,7 +103,7 @@ TEST_F(RialtoClientCreateMediaPipelineTest, FactoryFailsToCreateObject)
 
     std::unique_ptr<IMediaPipeline> mediaPipeline;
     EXPECT_NO_THROW(mediaPipeline = factory->createMediaPipeline(m_mediaPipelineClientMock, m_videoReq,
-                                                                  m_mediaPipelineIpcFactoryMock, m_clientControllerMock));
+                                                                 m_mediaPipelineIpcFactoryMock, m_clientControllerMock));
     EXPECT_EQ(mediaPipeline, nullptr);
 }
 

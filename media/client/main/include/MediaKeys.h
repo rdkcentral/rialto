@@ -37,8 +37,7 @@ public:
     MediaKeysFactory() = default;
     ~MediaKeysFactory() override = default;
 
-    std::unique_ptr<IMediaKeys>
-    createMediaKeys(const std::string &keySystem) const override;
+    std::unique_ptr<IMediaKeys> createMediaKeys(const std::string &keySystem) const override;
 
     /**
      * @brief IMediaKeys factory method with factory parameters for mock injection.

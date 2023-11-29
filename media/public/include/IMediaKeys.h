@@ -62,8 +62,7 @@ public:
      *
      * @retval the new media keys instance or null on error.
      */
-    virtual std::unique_ptr<IMediaKeys>
-    createMediaKeys(const std::string &keySystem) const = 0;
+    virtual std::unique_ptr<IMediaKeys> createMediaKeys(const std::string &keySystem) const = 0;
 };
 
 /**

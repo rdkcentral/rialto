@@ -66,8 +66,8 @@ public:
      *
      * @retval the new backend instance or null on error.
      */
-    virtual std::unique_ptr<IMediaPipeline>
-    createMediaPipeline(std::weak_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements) const = 0;
+    virtual std::unique_ptr<IMediaPipeline> createMediaPipeline(std::weak_ptr<IMediaPipelineClient> client,
+                                                                const VideoRequirements &videoRequirements) const = 0;
 };
 
 /**

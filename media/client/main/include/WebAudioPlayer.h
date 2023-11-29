@@ -42,9 +42,9 @@ public:
     WebAudioPlayerFactory() = default;
     ~WebAudioPlayerFactory() override = default;
 
-    std::unique_ptr<IWebAudioPlayer>
-    createWebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
-                         const uint32_t priority, std::weak_ptr<const WebAudioConfig> config) const override;
+    std::unique_ptr<IWebAudioPlayer> createWebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client,
+                                                          const std::string &audioMimeType, const uint32_t priority,
+                                                          std::weak_ptr<const WebAudioConfig> config) const override;
 
     /**
      * @brief IWebAudioPlayer factory method with factory parameters for mock injection.
@@ -53,8 +53,10 @@ public:
      * @param[in] audioMimeType             : The audio encoding format, currently only "audio/x-raw" (PCM).
      * @param[in] priority                  : Priority value for this pipeline.
      * @param[in] config                    : Additional type dependent configuration data or nullptr.
-     * @param[in] webAudioPlayerIpcFactory  : This was added for the test environment where a mock object needs to be passed in.
-     * @param[in] clientController          : This was added for the test environment where a mock object needs to be passed in.
+     * @param[in] webAudioPlayerIpcFactory  : This was added for the test environment where a mock object needs to be
+     * passed in.
+     * @param[in] clientController          : This was added for the test environment where a mock object needs to be
+     * passed in.
      *
      * @retval the new Web Audio Player instance or null on error.
      */

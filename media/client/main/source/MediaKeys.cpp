@@ -54,9 +54,9 @@ std::unique_ptr<IMediaKeys> MediaKeysFactory::createMediaKeys(const std::string 
     return createMediaKeys(keySystem, {});
 }
 
-std::unique_ptr<IMediaKeys> MediaKeysFactory::createMediaKeys(
-    const std::string &keySystem,
-    std::weak_ptr<firebolt::rialto::client::IMediaKeysIpcFactory> mediaKeysIpcFactory) const
+std::unique_ptr<IMediaKeys>
+MediaKeysFactory::createMediaKeys(const std::string &keySystem,
+                                  std::weak_ptr<firebolt::rialto::client::IMediaKeysIpcFactory> mediaKeysIpcFactory) const
 {
     std::unique_ptr<IMediaKeys> mediaKeys;
     try

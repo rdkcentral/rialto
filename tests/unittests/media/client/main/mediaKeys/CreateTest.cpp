@@ -62,7 +62,9 @@ TEST_F(RialtoClientCreateMediaKeysTest, Create)
  */
 TEST_F(RialtoClientCreateMediaKeysTest, FactoryCreatesObject)
 {
-    std::shared_ptr<firebolt::rialto::MediaKeysFactory> factory = std::dynamic_pointer_cast<firebolt::rialto::MediaKeysFactory>(firebolt::rialto::IMediaKeysFactory::createFactory());
+    std::shared_ptr<firebolt::rialto::MediaKeysFactory> factory =
+        std::dynamic_pointer_cast<firebolt::rialto::MediaKeysFactory>(
+            firebolt::rialto::IMediaKeysFactory::createFactory());
     EXPECT_NE(factory, nullptr);
 
     std::unique_ptr<IMediaKeys> mediaKeys;
@@ -80,7 +82,9 @@ TEST_F(RialtoClientCreateMediaKeysTest, FactoryCreatesObject)
  */
 TEST_F(RialtoClientCreateMediaKeysTest, FactoryFailsToCreateObject)
 {
-    std::shared_ptr<firebolt::rialto::MediaKeysFactory> factory = std::dynamic_pointer_cast<firebolt::rialto::MediaKeysFactory>(firebolt::rialto::IMediaKeysFactory::createFactory());
+    std::shared_ptr<firebolt::rialto::MediaKeysFactory> factory =
+        std::dynamic_pointer_cast<firebolt::rialto::MediaKeysFactory>(
+            firebolt::rialto::IMediaKeysFactory::createFactory());
     EXPECT_NE(factory, nullptr);
 
     std::unique_ptr<IMediaKeys> mediaKeys;

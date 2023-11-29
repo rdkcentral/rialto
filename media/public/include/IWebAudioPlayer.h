@@ -72,9 +72,10 @@ public:
      *
      * @retval the new Web Audio Player instance or null on error.
      */
-    virtual std::unique_ptr<IWebAudioPlayer>
-    createWebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
-                         const uint32_t priority, std::weak_ptr<const WebAudioConfig> config) const = 0;
+    virtual std::unique_ptr<IWebAudioPlayer> createWebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client,
+                                                                  const std::string &audioMimeType,
+                                                                  const uint32_t priority,
+                                                                  std::weak_ptr<const WebAudioConfig> config) const = 0;
 };
 
 /**
