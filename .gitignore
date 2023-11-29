@@ -8,7 +8,7 @@
 /clang-format_errors.xml
 /cppcheck_report.txt
 /cmake/ocdm-config.cmake
-*__pycache__*
+*__pycache__
 
 # These files are fetched by cmake during building rialto for the native platform
 /stubs/opencdm/third-party/*

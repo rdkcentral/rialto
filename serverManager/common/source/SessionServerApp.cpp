@@ -75,7 +75,7 @@ std::string getSessionManagementSocketPath(const firebolt::rialto::common::AppCo
 
 namespace rialto::servermanager::common
 {
-SessionServerApp::SessionServerApp(std::unique_ptr<firebolt::rialto::common::ILinuxWrapper> &&linuxWrapper,
+SessionServerApp::SessionServerApp(std::unique_ptr<firebolt::rialto::wrappers::ILinuxWrapper> &&linuxWrapper,
                                    const std::shared_ptr<firebolt::rialto::common::ITimerFactory> &timerFactory,
                                    ISessionServerAppManager &sessionServerAppManager,
                                    const std::list<std::string> &environmentVariables,
@@ -99,7 +99,7 @@ SessionServerApp::SessionServerApp(std::unique_ptr<firebolt::rialto::common::ILi
 SessionServerApp::SessionServerApp(const std::string &appName,
                                    const firebolt::rialto::common::SessionServerState &initialState,
                                    const firebolt::rialto::common::AppConfig &appConfig,
-                                   std::unique_ptr<firebolt::rialto::common::ILinuxWrapper> &&linuxWrapper,
+                                   std::unique_ptr<firebolt::rialto::wrappers::ILinuxWrapper> &&linuxWrapper,
                                    const std::shared_ptr<firebolt::rialto::common::ITimerFactory> &timerFactory,
                                    ISessionServerAppManager &sessionServerAppManager,
                                    const std::list<std::string> &environmentVariables,

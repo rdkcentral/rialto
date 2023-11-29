@@ -30,13 +30,14 @@ namespace firebolt::rialto::server::tasks::webaudio
 class SetVolume : public IPlayerTask
 {
 public:
-    SetVolume(WebAudioPlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper, double volume);
+    SetVolume(WebAudioPlayerContext &context, std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
+              double volume);
     ~SetVolume() override;
     void execute() const override;
 
 private:
     WebAudioPlayerContext &m_context;
-    std::shared_ptr<IGstWrapper> m_gstWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
     double m_volume;
 };
 } // namespace firebolt::rialto::server::tasks::webaudio

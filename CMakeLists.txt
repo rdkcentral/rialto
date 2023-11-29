@@ -197,6 +197,7 @@ add_subdirectory( ipc )
 add_subdirectory( common )
 add_subdirectory( media )
 add_subdirectory( logging )
+add_subdirectory( wrappers )
 
 if( ENABLE_SERVER_MANAGER )
     add_subdirectory( serverManager )

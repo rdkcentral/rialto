@@ -33,9 +33,7 @@ class WebAudioPlayerServerInternalFactoryMock : public IWebAudioPlayerServerInte
 public:
     MOCK_METHOD(std::unique_ptr<IWebAudioPlayer>, createWebAudioPlayer,
                 (std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType, const uint32_t priority,
-                 std::weak_ptr<const WebAudioConfig> config,
-                 std::weak_ptr<client::IWebAudioPlayerIpcFactory> webAudioPlayerIpcFactory,
-                 std::weak_ptr<client::IClientController> clientController),
+                 std::weak_ptr<const WebAudioConfig> config),
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IWebAudioPlayerServerInternal>, createWebAudioPlayerServerInternal,
                 (std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType, const uint32_t priority,

@@ -35,5 +35,4 @@ target_include_directories(
         ipc
         main
         service
-        wrappers
     )

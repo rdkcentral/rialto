@@ -19,6 +19,7 @@
 
 add_subdirectory( common EXCLUDE_FROM_ALL )
 add_subdirectory( logging EXCLUDE_FROM_ALL )
+add_subdirectory( wrappers EXCLUDE_FROM_ALL )
 add_subdirectory( serverManager EXCLUDE_FROM_ALL )
 add_subdirectory( media/client EXCLUDE_FROM_ALL )
 add_subdirectory( media/server EXCLUDE_FROM_ALL )

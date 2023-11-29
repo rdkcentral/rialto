@@ -34,14 +34,14 @@ class SetPosition : public IPlayerTask
 {
 public:
     SetPosition(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client,
-                std::shared_ptr<IGstWrapper> gstWrapper, std::int64_t position);
+                std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper, std::int64_t position);
     ~SetPosition() override;
     void execute() const override;
 
 private:
     GenericPlayerContext &m_context;
     IGstGenericPlayerClient *m_gstPlayerClient;
-    std::shared_ptr<IGstWrapper> m_gstWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
     std::int64_t m_position;
 };
 } // namespace firebolt::rialto::server::tasks::generic

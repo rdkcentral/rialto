@@ -27,8 +27,8 @@
 #include "GstDispatcherThreadMock.h"
 #include "GstGenericPlayer.h"
 #include "GstGenericPlayerClientMock.h"
-#include "GstProtectionMetadataWrapperFactoryMock.h"
-#include "GstProtectionMetadataWrapperMock.h"
+#include "GstProtectionMetadataHelperFactoryMock.h"
+#include "GstProtectionMetadataHelperMock.h"
 #include "GstSrcFactoryMock.h"
 #include "GstSrcMock.h"
 #include "GstWrapperMock.h"
@@ -41,6 +41,7 @@
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::server;
+using namespace firebolt::rialto::wrappers;
 
 using ::testing::StrictMock;
 
@@ -76,11 +77,11 @@ public:
     StrictMock<GstDispatcherThreadMock> &m_gstDispatcherThreadMock{
         dynamic_cast<StrictMock<GstDispatcherThreadMock> &>(*gstDispatcherThread)};
     StrictMock<DecryptionServiceMock> m_decryptionServiceMock;
-    std::shared_ptr<StrictMock<GstProtectionMetadataWrapperFactoryMock>> m_gstProtectionMetadataFactoryMock{
-        std::make_shared<StrictMock<GstProtectionMetadataWrapperFactoryMock>>()};
-    std::unique_ptr<StrictMock<GstProtectionMetadataWrapperMock>> m_gstProtectionMetadataWrapper{
-        std::make_unique<StrictMock<GstProtectionMetadataWrapperMock>>()};
-    StrictMock<GstProtectionMetadataWrapperMock> *m_gstProtectionMetadataWrapperMock{m_gstProtectionMetadataWrapper.get()};
+    std::shared_ptr<StrictMock<GstProtectionMetadataHelperFactoryMock>> m_gstProtectionMetadataFactoryMock{
+        std::make_shared<StrictMock<GstProtectionMetadataHelperFactoryMock>>()};
+    std::unique_ptr<StrictMock<GstProtectionMetadataHelperMock>> m_gstProtectionMetadataWrapper{
+        std::make_unique<StrictMock<GstProtectionMetadataHelperMock>>()};
+    StrictMock<GstProtectionMetadataHelperMock> *m_gstProtectionMetadataWrapperMock{m_gstProtectionMetadataWrapper.get()};
 
 public:
     void setPipelineState(const GstState &state);

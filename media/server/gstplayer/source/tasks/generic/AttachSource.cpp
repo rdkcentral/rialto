@@ -32,7 +32,8 @@ namespace
 class MediaSourceCapsBuilder
 {
 public:
-    MediaSourceCapsBuilder(std::shared_ptr<IGstWrapper> gstWrapper, std::shared_ptr<IGlibWrapper> glibWrapper,
+    MediaSourceCapsBuilder(std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
+                           std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
                            const firebolt::rialto::IMediaPipeline::MediaSource &source)
         : m_gstWrapper(gstWrapper), m_glibWrapper(glibWrapper), m_attachedSource(source)
     {
@@ -40,8 +41,8 @@ public:
     virtual GstCaps *buildCaps() { return buildCommonCaps(); }
 
 protected:
-    std::shared_ptr<IGstWrapper> m_gstWrapper;
-    std::shared_ptr<IGlibWrapper> m_glibWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
     const IMediaPipeline::MediaSource &m_attachedSource;
 
     GstCaps *buildCommonCaps()
@@ -102,7 +103,8 @@ protected:
 class MediaSourceAudioCapsBuilder : public MediaSourceCapsBuilder
 {
 public:
-    MediaSourceAudioCapsBuilder(std::shared_ptr<IGstWrapper> gstWrapper, std::shared_ptr<IGlibWrapper> glibWrapper,
+    MediaSourceAudioCapsBuilder(std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
+                                std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
                                 const IMediaPipeline::MediaSourceAudio &source)
         : MediaSourceCapsBuilder(gstWrapper, glibWrapper, source), m_attachedAudioSource(source)
     {
@@ -180,7 +182,8 @@ protected:
 class MediaSourceVideoCapsBuilder : public MediaSourceCapsBuilder
 {
 public:
-    MediaSourceVideoCapsBuilder(std::shared_ptr<IGstWrapper> gstWrapper, std::shared_ptr<IGlibWrapper> glibWrapper,
+    MediaSourceVideoCapsBuilder(std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
+                                std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
                                 const IMediaPipeline::MediaSourceVideo &source)
         : MediaSourceCapsBuilder(gstWrapper, glibWrapper, source), m_attachedVideoSource(source)
     {
@@ -204,8 +207,8 @@ protected:
 class MediaSourceVideoDolbyVisionCapsBuilder : public MediaSourceVideoCapsBuilder
 {
 public:
-    MediaSourceVideoDolbyVisionCapsBuilder(std::shared_ptr<IGstWrapper> gstWrapper,
-                                           std::shared_ptr<IGlibWrapper> glibWrapper,
+    MediaSourceVideoDolbyVisionCapsBuilder(std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
+                                           std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
                                            const IMediaPipeline::MediaSourceVideoDolbyVision &source)
         : MediaSourceVideoCapsBuilder(gstWrapper, glibWrapper, source), m_attachedDolbySource(source)
     {
@@ -225,10 +228,11 @@ protected:
 };
 }; // namespace
 
-AttachSource::AttachSource(GenericPlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper,
-                           std::shared_ptr<IGlibWrapper> glibWrapper,
-                           const std::shared_ptr<IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper,
-                           IGstGenericPlayerPrivate &player, const std::unique_ptr<IMediaPipeline::MediaSource> &source)
+AttachSource::AttachSource(
+    GenericPlayerContext &context, std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
+    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
+    const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper,
+    IGstGenericPlayerPrivate &player, const std::unique_ptr<IMediaPipeline::MediaSource> &source)
     : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
       m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}, m_player{player}, m_attachedSource{source->copy()}
 {
@@ -327,7 +331,7 @@ void AttachSource::switchAudioSource(GstCaps *caps, const std::string &strCaps) 
     RIALTO_SERVER_LOG_MIL("Switching audio source.");
     RIALTO_SERVER_LOG_MIL("Old caps: %s", oldCapsStr.c_str());
     RIALTO_SERVER_LOG_MIL("New caps: %s", strCaps.c_str());
-    AudioAttributesPrivate audioAttributes{createAudioAttributes()};
+    firebolt::rialto::wrappers::AudioAttributesPrivate audioAttributes{createAudioAttributes()};
     int sampleAttributes{0}; // rdk_gstreamer_utils::performAudioTrackCodecChannelSwitch checks if this param != NULL only.
     std::uint32_t status{0};   // must be 0 to make rdk_gstreamer_utils::performAudioTrackCodecChannelSwitch work
     unsigned int ui32Delay{0}; // output param
@@ -395,17 +399,18 @@ GstCaps *AttachSource::createCapsFromMediaSource() const
     return capsBuilder->buildCaps();
 }
 
-AudioAttributesPrivate AttachSource::createAudioAttributes() const
+firebolt::rialto::wrappers::AudioAttributesPrivate AttachSource::createAudioAttributes() const
 {
     const IMediaPipeline::MediaSourceAudio &kSource = dynamic_cast<IMediaPipeline::MediaSourceAudio &>(*m_attachedSource);
     firebolt::rialto::AudioConfig audioConfig = kSource.getAudioConfig();
-    AudioAttributesPrivate audioAttributes{"", // param set below.
-                                           audioConfig.numberOfChannels,
-                                           audioConfig.sampleRate,
-                                           0, // used only in one of logs in rdk_gstreamer_utils, no need to set this param.
-                                           0, // used only in one of logs in rdk_gstreamer_utils, no need to set this param.
-                                           audioConfig.codecSpecificConfig.data(),
-                                           static_cast<std::uint32_t>(audioConfig.codecSpecificConfig.size())};
+    firebolt::rialto::wrappers::AudioAttributesPrivate
+        audioAttributes{"", // param set below.
+                        audioConfig.numberOfChannels,
+                        audioConfig.sampleRate,
+                        0, // used only in one of logs in rdk_gstreamer_utils, no need to set this param.
+                        0, // used only in one of logs in rdk_gstreamer_utils, no need to set this param.
+                        audioConfig.codecSpecificConfig.data(),
+                        static_cast<std::uint32_t>(audioConfig.codecSpecificConfig.size())};
     if (m_attachedSource->getMimeType() == "audio/mp4" || m_attachedSource->getMimeType() == "audio/aac")
     {
         audioAttributes.m_codecParam = "mp4a.40.2, mp4a.40.5";

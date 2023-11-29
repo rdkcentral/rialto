@@ -32,7 +32,8 @@ namespace firebolt::rialto::server::tasks::generic
 class Eos : public IPlayerTask
 {
 public:
-    Eos(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, std::shared_ptr<IGstWrapper> gstWrapper,
+    Eos(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+        std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
         const firebolt::rialto::MediaSourceType &type);
     ~Eos() override;
     void execute() const override;
@@ -40,7 +41,7 @@ public:
 private:
     GenericPlayerContext &m_context;
     IGstGenericPlayerPrivate &m_player;
-    std::shared_ptr<IGstWrapper> m_gstWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
     firebolt::rialto::MediaSourceType m_type;
 };
 } // namespace firebolt::rialto::server::tasks::generic

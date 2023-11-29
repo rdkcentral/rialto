@@ -53,8 +53,7 @@ std::shared_ptr<IMediaKeysServerInternalFactory> IMediaKeysServerInternalFactory
     return factory;
 }
 
-std::unique_ptr<IMediaKeys> MediaKeysServerInternalFactory::createMediaKeys(
-    const std::string &keySystem, std::weak_ptr<firebolt::rialto::client::IMediaKeysIpcFactory> mediaKeysIpcFactory) const
+std::unique_ptr<IMediaKeys> MediaKeysServerInternalFactory::createMediaKeys(const std::string &keySystem) const
 {
     RIALTO_SERVER_LOG_ERROR("This function can't be used by rialto server. Please use createMediaKeysServerInternal");
     return nullptr;
@@ -68,7 +67,7 @@ MediaKeysServerInternalFactory::createMediaKeysServerInternal(const std::string 
     {
         mediaKeys = std::make_unique<server::MediaKeysServerInternal>(keySystem,
                                                                       server::IMainThreadFactory::createFactory(),
-                                                                      server::IOcdmSystemFactory::createFactory(),
+                                                                      wrappers::IOcdmSystemFactory::createFactory(),
                                                                       server::IMediaKeySessionFactory::createFactory());
     }
     catch (const std::exception &e)
@@ -82,10 +81,10 @@ MediaKeysServerInternalFactory::createMediaKeysServerInternal(const std::string 
 
 namespace firebolt::rialto::server
 {
-MediaKeysServerInternal::MediaKeysServerInternal(const std::string &keySystem,
-                                                 const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
-                                                 std::shared_ptr<IOcdmSystemFactory> ocdmSystemFactory,
-                                                 std::shared_ptr<IMediaKeySessionFactory> mediaKeySessionFactory)
+MediaKeysServerInternal::MediaKeysServerInternal(
+    const std::string &keySystem, const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
+    std::shared_ptr<firebolt::rialto::wrappers::IOcdmSystemFactory> ocdmSystemFactory,
+    std::shared_ptr<IMediaKeySessionFactory> mediaKeySessionFactory)
     : m_mediaKeySessionFactory(mediaKeySessionFactory), m_keySystem(keySystem)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");

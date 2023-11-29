@@ -55,8 +55,9 @@ std::unique_ptr<IGstCapabilities> GstCapabilitiesFactory::createGstCapabilities(
     std::unique_ptr<IGstCapabilities> gstCapabilities;
     try
     {
-        std::shared_ptr<IGstWrapperFactory> gstWrapperFactory = IGstWrapperFactory::getFactory();
-        std::shared_ptr<IGstWrapper> gstWrapper;
+        std::shared_ptr<firebolt::rialto::wrappers::IGstWrapperFactory> gstWrapperFactory =
+            firebolt::rialto::wrappers::IGstWrapperFactory::getFactory();
+        std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper;
 
         if ((!gstWrapperFactory) || (!(gstWrapper = gstWrapperFactory->getGstWrapper())))
         {
@@ -73,7 +74,8 @@ std::unique_ptr<IGstCapabilities> GstCapabilitiesFactory::createGstCapabilities(
     return gstCapabilities;
 }
 
-GstCapabilities::GstCapabilities(const std::shared_ptr<IGstWrapper> &gstWrapper) : m_gstWrapper{gstWrapper}
+GstCapabilities::GstCapabilities(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper)
+    : m_gstWrapper{gstWrapper}
 {
     fillSupportedMimeTypes();
 }

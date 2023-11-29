@@ -66,7 +66,7 @@ public:
     void sendSetLogLevels();
 
 private:
-    std::shared_ptr<firebolt::rialto::common::LinuxWrapperMock> m_linuxWrapperMock;
+    std::shared_ptr<firebolt::rialto::wrappers::LinuxWrapperMock> m_linuxWrapperMock;
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ClientMock>> m_clientMock;
     StrictMock<firebolt::rialto::server::service::PlaybackServiceMock> m_playbackServiceMock;
     StrictMock<firebolt::rialto::server::service::MediaPipelineServiceMock> m_mediaPipelineServiceMock;

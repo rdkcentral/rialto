@@ -31,8 +31,9 @@ class MediaKeySessionFactoryMock : public IMediaKeySessionFactory
 {
 public:
     MOCK_METHOD(std::unique_ptr<IMediaKeySession>, createMediaKeySession,
-                (const std::string &keySystem, int32_t keySessionId, const IOcdmSystem &ocdmSystem,
-                 KeySessionType sessionType, std::weak_ptr<IMediaKeysClient> client, bool isLDL),
+                (const std::string &keySystem, int32_t keySessionId,
+                 const firebolt::rialto::wrappers::IOcdmSystem &ocdmSystem, KeySessionType sessionType,
+                 std::weak_ptr<IMediaKeysClient> client, bool isLDL),
                 (const, override));
 };
 } // namespace firebolt::rialto::server

@@ -40,9 +40,7 @@ public:
     MediaKeysServerInternalFactory() = default;
     ~MediaKeysServerInternalFactory() override = default;
 
-    std::unique_ptr<IMediaKeys>
-    createMediaKeys(const std::string &keySystem,
-                    std::weak_ptr<firebolt::rialto::client::IMediaKeysIpcFactory> mediaKeysIpcFactory) const override;
+    std::unique_ptr<IMediaKeys> createMediaKeys(const std::string &keySystem) const override;
     std::unique_ptr<IMediaKeysServerInternal> createMediaKeysServerInternal(const std::string &keySystem) const override;
 };
 
@@ -72,7 +70,7 @@ public:
      *
      */
     MediaKeysServerInternal(const std::string &keySystem, const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
-                            std::shared_ptr<IOcdmSystemFactory> ocdmSystemFactory,
+                            std::shared_ptr<firebolt::rialto::wrappers::IOcdmSystemFactory> ocdmSystemFactory,
                             std::shared_ptr<IMediaKeySessionFactory> mediaKeySessionFactory);
 
     /**
@@ -145,7 +143,7 @@ private:
     /**
      * @brief The IOcdmSystem instance.
      */
-    std::unique_ptr<IOcdmSystem> m_ocdmSystem;
+    std::unique_ptr<firebolt::rialto::wrappers::IOcdmSystem> m_ocdmSystem;
 
     /**
      * @brief Map containing created sessions.

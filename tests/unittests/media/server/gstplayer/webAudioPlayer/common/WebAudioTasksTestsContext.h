@@ -38,10 +38,10 @@ public:
     firebolt::rialto::server::WebAudioPlayerContext m_context;
 
     // Mocks
-    std::shared_ptr<firebolt::rialto::server::GstWrapperMock> m_gstWrapper{
-        std::make_shared<StrictMock<firebolt::rialto::server::GstWrapperMock>>()};
-    std::shared_ptr<firebolt::rialto::server::GlibWrapperMock> m_glibWrapper{
-        std::make_shared<StrictMock<firebolt::rialto::server::GlibWrapperMock>>()};
+    std::shared_ptr<firebolt::rialto::wrappers::GstWrapperMock> m_gstWrapper{
+        std::make_shared<StrictMock<firebolt::rialto::wrappers::GstWrapperMock>>()};
+    std::shared_ptr<firebolt::rialto::wrappers::GlibWrapperMock> m_glibWrapper{
+        std::make_shared<StrictMock<firebolt::rialto::wrappers::GlibWrapperMock>>()};
     StrictMock<firebolt::rialto::server::GstWebAudioPlayerPrivateMock> m_gstPlayer;
     StrictMock<firebolt::rialto::server::GstWebAudioPlayerClientMock> m_gstPlayerClient;
 

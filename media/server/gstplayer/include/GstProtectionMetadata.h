@@ -21,7 +21,6 @@
 #define FIREBOLT_RIALTO_SERVER_GST_PROTECTION_METADATA_H_
 
 #include "IDecryptionService.h"
-#include "IGstWrapper.h"
 #include <gst/gst.h>
 
 G_BEGIN_DECLS

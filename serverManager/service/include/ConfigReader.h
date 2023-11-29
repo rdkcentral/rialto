@@ -34,7 +34,8 @@ namespace rialto::servermanager::service
 class ConfigReader : public IConfigReader
 {
 public:
-    ConfigReader(std::shared_ptr<IJsonCppWrapper> jsonWrapper, std::shared_ptr<IFileReader> fileReader);
+    ConfigReader(std::shared_ptr<firebolt::rialto::wrappers::IJsonCppWrapper> jsonWrapper,
+                 std::shared_ptr<IFileReader> fileReader);
     bool read() override;
 
     std::list<std::string> getEnvironmentVariables() override;
@@ -49,18 +50,18 @@ public:
     std::optional<unsigned int> getNumOfPingsBeforeRecovery() override;
 
 private:
-    void parseEnvironmentVariables(std::shared_ptr<IJsonValueWrapper> root);
-    void parseSessionServerPath(std::shared_ptr<IJsonValueWrapper> root);
-    void parseSessionServerStartupTimeout(std::shared_ptr<IJsonValueWrapper> root);
-    void parseHealthcheckInterval(std::shared_ptr<IJsonValueWrapper> root);
-    void parseSocketPermissions(std::shared_ptr<IJsonValueWrapper> root);
-    void parseSocketOwner(std::shared_ptr<IJsonValueWrapper> root);
-    void parseSocketGroup(std::shared_ptr<IJsonValueWrapper> root);
-    void parseNumOfPreloadedServers(std::shared_ptr<IJsonValueWrapper> root);
-    void parseLogLevel(std::shared_ptr<IJsonValueWrapper> root);
-    void parseNumOfPingsBeforeRecovery(std::shared_ptr<IJsonValueWrapper> root);
+    void parseEnvironmentVariables(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root);
+    void parseSessionServerPath(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root);
+    void parseSessionServerStartupTimeout(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root);
+    void parseHealthcheckInterval(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root);
+    void parseSocketPermissions(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root);
+    void parseSocketOwner(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root);
+    void parseSocketGroup(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root);
+    void parseNumOfPreloadedServers(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root);
+    void parseLogLevel(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root);
+    void parseNumOfPingsBeforeRecovery(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root);
 
-    std::shared_ptr<IJsonCppWrapper> m_jsonWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IJsonCppWrapper> m_jsonWrapper;
     std::shared_ptr<IFileReader> m_fileReader;
 
     std::list<std::string> m_envVars;

@@ -35,8 +35,8 @@ class HandleBusMessage : public IPlayerTask
 {
 public:
     HandleBusMessage(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client,
-                     std::shared_ptr<IGstWrapper> gstWrapper, std::shared_ptr<IGlibWrapper> glibWrapper,
-                     GstMessage *message);
+                     std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
+                     std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper, GstMessage *message);
     ~HandleBusMessage() override;
     void execute() const override;
 
@@ -46,8 +46,8 @@ private:
     GenericPlayerContext &m_context;
     IGstGenericPlayerPrivate &m_player;
     IGstGenericPlayerClient *m_gstPlayerClient;
-    std::shared_ptr<IGstWrapper> m_gstWrapper;
-    std::shared_ptr<IGlibWrapper> m_glibWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
     GstMessage *m_message;
 };
 } // namespace firebolt::rialto::server::tasks::generic

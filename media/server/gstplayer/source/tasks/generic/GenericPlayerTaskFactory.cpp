@@ -48,10 +48,10 @@
 
 namespace firebolt::rialto::server
 {
-GenericPlayerTaskFactory::GenericPlayerTaskFactory(IGstGenericPlayerClient *client,
-                                                   const std::shared_ptr<IGstWrapper> &gstWrapper,
-                                                   const std::shared_ptr<IGlibWrapper> &glibWrapper,
-                                                   const std::shared_ptr<IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper)
+GenericPlayerTaskFactory::GenericPlayerTaskFactory(
+    IGstGenericPlayerClient *client, const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+    const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
+    const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper)
     : m_client{client}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_rdkGstreamerUtilsWrapper{
                                                                                   rdkGstreamerUtilsWrapper}
 {

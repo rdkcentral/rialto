@@ -86,10 +86,9 @@ std::shared_ptr<MediaPipelineServerInternalFactory> MediaPipelineServerInternalF
     return factory;
 }
 
-std::unique_ptr<IMediaPipeline> MediaPipelineServerInternalFactory::createMediaPipeline(
-    std::weak_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements,
-    std::weak_ptr<client::IMediaPipelineIpcFactory> mediaPipelineIpcFactory,
-    std::weak_ptr<client::IClientController> clientController) const
+std::unique_ptr<IMediaPipeline>
+MediaPipelineServerInternalFactory::createMediaPipeline(std::weak_ptr<IMediaPipelineClient> client,
+                                                        const VideoRequirements &videoRequirements) const
 {
     RIALTO_SERVER_LOG_ERROR(
         "This function can't be used by rialto server. Please use createMediaPipelineServerInternal");
@@ -210,8 +209,10 @@ bool MediaPipelineServerInternal::loadInternal(MediaType type, const std::string
         m_gstPlayer.reset();
     }
 
-    m_gstPlayer = m_kGstPlayerFactory->createGstGenericPlayer(this, m_decryptionService, type, m_kVideoRequirements,
-                                                              IRdkGstreamerUtilsWrapperFactory::getFactory());
+    m_gstPlayer =
+        m_kGstPlayerFactory
+            ->createGstGenericPlayer(this, m_decryptionService, type, m_kVideoRequirements,
+                                     firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory::getFactory());
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to load gstreamer player");

@@ -23,7 +23,8 @@
 namespace firebolt::rialto::server::tasks::generic
 {
 RemoveSource::RemoveSource(GenericPlayerContext &context, IGstGenericPlayerClient *client,
-                           std::shared_ptr<IGstWrapper> gstWrapper, const MediaSourceType &type)
+                           std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
+                           const MediaSourceType &type)
     : m_context{context}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}, m_type{type}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing RemoveSource");

@@ -21,9 +21,7 @@ if( RIALTO_ENABLE_CONFIG_FILE )
     find_package( jsoncpp REQUIRED )
     set(RIALTO_CONFIG_SOURCE_FILES
         source/ConfigReader.cpp
-        source/JsonCppWrapper.cpp
         source/FileReaderFactory.cpp
-        source/JsonCppWrapperFactory.cpp
         source/ConfigReaderFactory.cpp)
 endif()
 
@@ -54,6 +52,7 @@ target_include_directories (
         $<TARGET_PROPERTY:RialtoServerManagerCommon,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoServerManagerPublic,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoCommon,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoWrappers,INTERFACE_INCLUDE_DIRECTORIES>
 )
 target_link_libraries (
         RialtoServerManager
@@ -61,6 +60,7 @@ target_link_libraries (
         RialtoLogging
         RialtoServerManagerCommon
         RialtoServerManagerIpc
+        RialtoWrappers
         Threads::Threads
 )
 

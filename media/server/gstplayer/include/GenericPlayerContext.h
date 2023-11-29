@@ -212,7 +212,7 @@ struct GenericPlayerContext
      *
      * Attribute can be used only in worker thread
      */
-    PlaybackGroupPrivate playbackGroup;
+    firebolt::rialto::wrappers::PlaybackGroupPrivate playbackGroup;
 
     /**
      * @brief A map of streams that have ended.
