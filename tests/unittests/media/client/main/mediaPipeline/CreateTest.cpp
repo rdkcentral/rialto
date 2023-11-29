@@ -87,6 +87,25 @@ TEST_F(RialtoClientCreateMediaPipelineTest, FactoryCreatesObject)
 }
 
 /**
+ * Test factory returns a nullptr if the creation of the object fails.
+ */
+TEST_F(RialtoClientCreateMediaPipelineTest, FactoryFailsToCreateObject)
+{
+    std::shared_ptr<firebolt::rialto::MediaPipelineFactory> factory =
+        std::dynamic_pointer_cast<firebolt::rialto::MediaPipelineFactory>(firebolt::rialto::IMediaPipelineFactory::createFactory());
+    EXPECT_NE(factory, nullptr);
+
+    std::unique_ptr<StrictMock<MediaPipelineIpcMock>> mediaPipelineIpcMock =
+        std::make_unique<StrictMock<MediaPipelineIpcMock>>();
+    EXPECT_CALL(*m_clientControllerMock, registerClient(NotNull(), _)).WillOnce(Return(false));
+
+    std::unique_ptr<IMediaPipeline> mediaPipeline;
+    EXPECT_NO_THROW(mediaPipeline = factory->createMediaPipeline(m_mediaPipelineClientMock, m_videoReq,
+                                                                  m_mediaPipelineIpcFactoryMock, m_clientControllerMock));
+    EXPECT_EQ(mediaPipeline, nullptr);
+}
+
+/**
  * Test that a MediaPipeline object throws an exeption if failure occurs during construction.
  * In this case, MediaPipeline fails to register a client with the ClientController.
  */
