@@ -24,7 +24,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-namespace firebolt::rialto::componenttest::stub
+namespace firebolt::rialto::ct::stub
 {
 void ServerStub::clientDisconnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &client)
 {
@@ -120,4 +120,4 @@ std::shared_ptr<::firebolt::rialto::ipc::IClient>& ServerStub::getClient()
     return m_client;
 }
 
-} // namespace firebolt::rialto::componenttests
+} // namespace firebolt::rialto::ct

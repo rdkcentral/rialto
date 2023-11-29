@@ -28,7 +28,7 @@
 #include <memory>
 #include <thread>
 
-namespace firebolt::rialto::componenttest::stub
+namespace firebolt::rialto::ct::stub
 {
 class ServerStub : public ControlModuleStub, MediaPipelineModuleStub
 {
@@ -53,6 +53,6 @@ private:
     void waitForClientConnect() override;
     std::shared_ptr<::firebolt::rialto::ipc::IClient>& getClient() override;
 };
-} // namespace firebolt::rialto::componenttest::stub
+} // namespace firebolt::rialto::ct::stub
 
 #endif // FIREBOLT_RIALTO_COMPONENTTESTS_SERVER_STUB_H_

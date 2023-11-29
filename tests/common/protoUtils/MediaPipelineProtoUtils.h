@@ -17,19 +17,26 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_CONTROL_CLIENT_MOCK_H_
-#define FIREBOLT_RIALTO_CONTROL_CLIENT_MOCK_H_
+#ifndef MEDIA_PIPELINE_PROTO_UTILS_H_
+#define MEDIA_PIPELINE_PROTO_UTILS_H_
 
-#include "IControlClient.h"
-#include <gmock/gmock.h>
+#include "mediapipelinemodule.pb.h"
+#include "MediaCommon.h"
 
-namespace firebolt::rialto
+firebolt::rialto::LoadRequest_MediaType convertMediaType(const firebolt::rialto::MediaType &kMediaType)
 {
-class ControlClientMock : public IControlClient
-{
-public:
-    MOCK_METHOD(void, notifyApplicationState, (ApplicationState state), (override));
-};
-} // namespace firebolt::rialto
+    switch (kMediaType)
+    {
+    case firebolt::rialto::MediaType::UNKNOWN:
+    {
+        return firebolt::rialto::LoadRequest_MediaType::LoadRequest_MediaType_UNKNOWN;
+    }
+    case firebolt::rialto::MediaType::MSE:
+    {
+        return firebolt::rialto::LoadRequest_MediaType::LoadRequest_MediaType_MSE;
+    }
+    }
+    return firebolt::rialto::LoadRequest_MediaType::LoadRequest_MediaType_UNKNOWN;
+}
 
-#endif // FIREBOLT_RIALTO_CONTROL_CLIENT_MOCK_H_
+#endif // MEDIA_PIPELINE_PROTO_UTILS_H_

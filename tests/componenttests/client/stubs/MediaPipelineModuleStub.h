@@ -25,7 +25,7 @@
 #include "mediapipelinemodule.pb.h"
 #include "RialtoLogging.h"
 
-namespace firebolt::rialto::componenttest::stub
+namespace firebolt::rialto::ct::stub
 {
 class MediaPipelineModuleStub
 {
@@ -50,6 +50,6 @@ public:
 protected:
     std::shared_ptr<::firebolt::rialto::MediaPipelineModule> m_mediaPipelineModuleMock;
 };
-} // namespace firebolt::rialto::componenttest::stub
+} // namespace firebolt::rialto::ct::stub
 
 #endif // FIREBOLT_RIALTO_COMPONENTTESTS_MEDIA_PIPELINE_MODULE_STUB_H_

@@ -20,6 +20,7 @@
 #include "MediaPipelineModuleServiceTestsFixture.h"
 #include "MediaPipelineModuleService.h"
 #include "MediaSourceUtil.h"
+#include "MediaPipelineProtoUtils.h"
 #include <fcntl.h>
 #include <string>
 #include <sys/stat.h>
@@ -162,22 +163,6 @@ MATCHER_P(NetworkStateChangeEventMatcher, kNetworkState, "")
 
 namespace firebolt::rialto
 {
-firebolt::rialto::LoadRequest_MediaType convertMediaType(const firebolt::rialto::MediaType &kMediaType)
-{
-    switch (kMediaType)
-    {
-    case firebolt::rialto::MediaType::UNKNOWN:
-    {
-        return firebolt::rialto::LoadRequest_MediaType::LoadRequest_MediaType_UNKNOWN;
-    }
-    case firebolt::rialto::MediaType::MSE:
-    {
-        return firebolt::rialto::LoadRequest_MediaType::LoadRequest_MediaType_MSE;
-    }
-    }
-    return firebolt::rialto::LoadRequest_MediaType::LoadRequest_MediaType_UNKNOWN;
-}
-
 firebolt::rialto::ProtoMediaSourceType convertProtoMediaSourceType(const firebolt::rialto::MediaSourceType &kMediaSourceType)
 {
     switch (kMediaSourceType)

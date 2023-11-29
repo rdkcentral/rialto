@@ -43,7 +43,7 @@ convertApplicationState(const firebolt::rialto::ApplicationState &state)
 }
 } // namespace
 
-namespace firebolt::rialto::componenttest::stub
+namespace firebolt::rialto::ct::stub
 {
 ControlModuleStub::ControlModuleStub(const std::shared_ptr<::firebolt::rialto::ControlModule>& controlModuleMock)
 {
@@ -65,4 +65,4 @@ void ControlModuleStub::notifyApplicationStateEvent(const int32_t controlId, con
     getClient()->sendEvent(event);
 }
 
-} // namespace firebolt::rialto::componenttests
+} // namespace firebolt::rialto::ct

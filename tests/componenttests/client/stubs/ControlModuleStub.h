@@ -24,7 +24,7 @@
 #include "IIpcServer.h"
 #include "controlmodule.pb.h"
 
-namespace firebolt::rialto::componenttest::stub
+namespace firebolt::rialto::ct::stub
 {
 class ControlModuleStub
 {
@@ -41,6 +41,6 @@ public:
 protected:
     std::shared_ptr<::firebolt::rialto::ControlModule> m_controlModuleMock;
 };
-} // namespace firebolt::rialto::componenttest::stub
+} // namespace firebolt::rialto::ct::stub
 
 #endif // FIREBOLT_RIALTO_COMPONENTTESTS_CONTROL_MODULE_STUB_H_

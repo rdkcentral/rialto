@@ -36,7 +36,7 @@ using ::testing::WithArgs;
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::client;
-using namespace firebolt::rialto::componenttest::stub;
+using namespace firebolt::rialto::ct::stub;
 
 class MediaPipelineTestMethods
 {
@@ -56,6 +56,8 @@ protected:
     // Test methods
     void shouldCreateMediaSession();
     void createMediaPipeline();
+    void shouldLoad();
+    void load();
 
     // Component test helpers
     virtual void notifyEvent() = 0;

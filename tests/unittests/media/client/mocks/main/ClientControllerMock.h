@@ -33,8 +33,8 @@ public:
     virtual ~ClientControllerMock() = default;
 
     MOCK_METHOD(std::shared_ptr<ISharedMemoryHandle>, getSharedMemoryHandle, (), (override));
-    MOCK_METHOD(bool, registerClient, (std::weak_ptr<IControlClient> client, ApplicationState &appState), (override));
-    MOCK_METHOD(bool, unregisterClient, (std::weak_ptr<IControlClient> client), (override));
+    MOCK_METHOD(bool, registerClient, (IControlClient *client, ApplicationState &appState), (override));
+    MOCK_METHOD(bool, unregisterClient, (IControlClient *client), (override));
 };
 } // namespace firebolt::rialto::client
 

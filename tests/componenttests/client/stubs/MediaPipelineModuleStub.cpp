@@ -115,7 +115,7 @@ convertNetworkState(const firebolt::rialto::NetworkState &networkState)
 }
 } // namespace
 
-namespace firebolt::rialto::componenttest::stub
+namespace firebolt::rialto::ct::stub
 {
 MediaPipelineModuleStub::MediaPipelineModuleStub(const std::shared_ptr<::firebolt::rialto::MediaPipelineModule>& mediaPipelineModuleMock)
 {
@@ -214,4 +214,4 @@ void MediaPipelineModuleStub::notifySetLogLevelsEvent(RIALTO_DEBUG_LEVEL default
     getClient()->sendEvent(event);
 }
 
-} // namespace firebolt::rialto::componenttests
+} // namespace firebolt::rialto::ct

@@ -18,13 +18,7 @@
  */
 
 #include "MediaPipelineIpcTestBase.h"
-
-MATCHER_P2(createSessionRequestMatcher, maxWidth, maxHeight, "")
-{
-    const ::firebolt::rialto::CreateSessionRequest *kRequest =
-        dynamic_cast<const ::firebolt::rialto::CreateSessionRequest *>(arg);
-    return ((kRequest->max_width() == maxWidth) && (kRequest->max_height() == maxHeight));
-}
+#include "MediaPipelineMatchers.h"
 
 MATCHER_P(destroySessionRequestMatcher, sessionId, "")
 {

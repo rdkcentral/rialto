@@ -35,7 +35,7 @@ using ::testing::StrictMock;
 using ::testing::WithArgs;
 
 using namespace firebolt::rialto;
-using namespace firebolt::rialto::componenttest::stub;
+using namespace firebolt::rialto::ct::stub;
 
 class ClientComponentTest : public ::testing::Test, public ControlTestMethods, public MediaPipelineTestMethods
 {

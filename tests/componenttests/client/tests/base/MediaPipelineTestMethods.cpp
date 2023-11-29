@@ -18,20 +18,18 @@
  */
 
 #include "MediaPipelineTestMethods.h"
+#include "MediaPipelineMatchers.h"
+#include "MediaPipelineProtoUtils.h"
 #include <memory>
 
 namespace
 {
     constexpr VideoRequirements kVideoRequirements{123, 456};
     constexpr int32_t kSessionId{10};
+    constexpr MediaType kMediaType = MediaType::MSE;
+    const std::string kMimeType = "mime";
+    const std::string kUrl = "mse://1";
 } // namespace
-
-MATCHER_P2(createSessionRequestMatcher, maxWidth, maxHeight, "")
-{
-    const ::firebolt::rialto::CreateSessionRequest *kRequest =
-        dynamic_cast<const ::firebolt::rialto::CreateSessionRequest *>(arg);
-    return ((kRequest->max_width() == maxWidth) && (kRequest->max_height() == maxHeight));
-}
 
 MediaPipelineTestMethods::MediaPipelineTestMethods()
     : m_mediaPipelineClientMock{std::make_shared<StrictMock<MediaPipelineClientMock>>()},
@@ -55,4 +53,15 @@ void MediaPipelineTestMethods::createMediaPipeline()
     m_mediaPipelineFactory = firebolt::rialto::IMediaPipelineFactory::createFactory();
     m_mediaPipeline = m_mediaPipelineFactory->createMediaPipeline(m_mediaPipelineClientMock, kVideoRequirements);
     EXPECT_NE(m_mediaPipeline, nullptr);
+}
+
+void MediaPipelineTestMethods::shouldLoad()
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock, load(_, loadRequestMatcher(kSessionId, convertMediaType(kMediaType), kMimeType, kUrl), _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
+}
+
+void MediaPipelineTestMethods::load()
+{
+    EXPECT_EQ(m_mediaPipeline->load(kMediaType, kMimeType, kUrl), true);
 }

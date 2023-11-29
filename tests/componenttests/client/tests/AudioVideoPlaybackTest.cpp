@@ -133,4 +133,8 @@ TEST_F(AudioVideoPlaybackTest, playback)
     // Step 1: Create a new media session
     MediaPipelineTestMethods::shouldCreateMediaSession();
     MediaPipelineTestMethods::createMediaPipeline();
+
+    // Step 2: Load content
+    MediaPipelineTestMethods::shouldLoad();
+    MediaPipelineTestMethods::load();
 }
