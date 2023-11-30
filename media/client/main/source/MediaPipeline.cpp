@@ -116,24 +116,30 @@ std::shared_ptr<IMediaPipelineFactory> IMediaPipelineFactory::createFactory()
     return factory;
 }
 
+std::unique_ptr<IMediaPipeline> MediaPipelineFactory::createMediaPipeline(std::weak_ptr<IMediaPipelineClient> client,
+                                                                          const VideoRequirements &videoRequirements) const
+{
+    return createMediaPipeline(client, videoRequirements, {}, {});
+}
+
 std::unique_ptr<IMediaPipeline>
 MediaPipelineFactory::createMediaPipeline(std::weak_ptr<IMediaPipelineClient> client,
                                           const VideoRequirements &videoRequirements,
-                                          std::weak_ptr<client::IMediaPipelineIpcFactory> mediaPipelineIpcFactoryParam,
-                                          std::weak_ptr<client::IClientController> clientControllerParam) const
+                                          std::weak_ptr<client::IMediaPipelineIpcFactory> mediaPipelineIpcFactory,
+                                          std::weak_ptr<client::IClientController> clientController) const
 {
     std::unique_ptr<IMediaPipeline> mediaPipeline;
     try
     {
-        std::shared_ptr<client::IMediaPipelineIpcFactory> mediaPipelineIpcFactory = mediaPipelineIpcFactoryParam.lock();
-        std::shared_ptr<client::IClientController> clientController = clientControllerParam.lock();
+        std::shared_ptr<client::IMediaPipelineIpcFactory> mediaPipelineIpcFactoryLocked = mediaPipelineIpcFactory.lock();
+        std::shared_ptr<client::IClientController> clientControllerLocked = clientController.lock();
         mediaPipeline = std::make_unique<client::MediaPipeline>(client, videoRequirements,
-                                                                mediaPipelineIpcFactory
-                                                                    ? mediaPipelineIpcFactory
+                                                                mediaPipelineIpcFactoryLocked
+                                                                    ? mediaPipelineIpcFactoryLocked
                                                                     : client::IMediaPipelineIpcFactory::getFactory(),
                                                                 common::IMediaFrameWriterFactory::getFactory(),
-                                                                clientController
-                                                                    ? *clientController
+                                                                clientControllerLocked
+                                                                    ? *clientControllerLocked
                                                                     : client::IClientControllerAccessor::instance()
                                                                           .getClientController());
     }
