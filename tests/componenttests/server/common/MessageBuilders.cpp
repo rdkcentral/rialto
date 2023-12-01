@@ -20,15 +20,11 @@
 #include "MessageBuilders.h"
 #include "Constants.h"
 
-namespace
-{
-constexpr int kLogLevel{63};
-} // namespace
-
 namespace firebolt::rialto::server::ct
 {
 ::rialto::SetConfigurationRequest createGenericSetConfigurationReq()
 {
+    constexpr int kLogLevel{63};
     ::rialto::LogLevels logLevels;
     logLevels.set_defaultloglevels(kLogLevel);
     logLevels.set_clientloglevels(kLogLevel);
@@ -47,6 +43,24 @@ namespace firebolt::rialto::server::ct
     request.set_socketgroup(kOwnerName);
     *(request.mutable_loglevels()) = logLevels;
 
+    return request;
+}
+
+::firebolt::rialto::CreateSessionRequest createCreateSessionRequest(const VideoRequirements &requirements)
+{
+    ::firebolt::rialto::CreateSessionRequest request;
+    request.set_max_width(requirements.maxWidth);
+    request.set_max_height(requirements.maxHeight);
+    return request;
+}
+
+::firebolt::rialto::LoadRequest createLoadRequest(int sessionId)
+{
+    ::firebolt::rialto::LoadRequest request;
+    request.set_session_id(sessionId);
+    request.set_type(::firebolt::rialto::LoadRequest_MediaType_MSE);
+    request.set_mime_type("mimetype");
+    request.set_url("url");
     return request;
 }
 } // namespace firebolt::rialto::server::ct

@@ -62,6 +62,11 @@ void RialtoServerComponentTest::configureSutInActiveState()
     EXPECT_EQ(receivedMessage->sessionserverstate(), ::rialto::SessionServerState::ACTIVE);
 }
 
+void RialtoServerComponentTest::connectClient()
+{
+    EXPECT_TRUE(m_clientStub.connect());
+}
+
 void RialtoServerComponentTest::configureWrappers() const
 {
     EXPECT_CALL(*m_glibWrapperFactoryMock, getGlibWrapper()).WillRepeatedly(Return(m_glibWrapperMock));

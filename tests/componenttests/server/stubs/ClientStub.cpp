@@ -17,47 +17,44 @@
  * limitations under the License.
  */
 
-#include "ServerManagerStub.h"
-#include <functional>
-#include <gtest/gtest.h>
-#include <sys/socket.h>
-#include <sys/wait.h>
-#include <unistd.h>
+#include "ClientStub.h"
+#include "Constants.h"
 
 namespace firebolt::rialto::server::ct
 {
-ServerManagerStub::ServerManagerStub()
+ClientStub::~ClientStub()
 {
-    EXPECT_GE(socketpair(AF_UNIX, SOCK_SEQPACKET | SOCK_CLOEXEC | SOCK_NONBLOCK, 0, m_socks.data()), 0);
-    m_ipcThread = std::thread(std::bind(&ServerManagerStub::ipcThread, this));
-}
-
-ServerManagerStub::~ServerManagerStub()
-{
+    if (m_ipcChannel)
+    {
+        m_ipcChannel->disconnect();
+    }
     if (m_ipcThread.joinable())
     {
         m_ipcThread.join();
     }
 }
 
-void ServerManagerStub::ipcThread()
+std::shared_ptr<::firebolt::rialto::ipc::IChannel> ClientStub::getChannel()
 {
-    auto factory = firebolt::rialto::ipc::IChannelFactory::createFactory();
-    m_ipcChannel = factory->createChannel(m_socks[1]);
-    EXPECT_TRUE(m_ipcChannel);
+    return m_ipcChannel;
+}
+
+bool ClientStub::connect()
+{
+    m_ipcChannel = ipc::IChannelFactory::createFactory()->createChannel(kSocketName);
+    if (!m_ipcChannel)
+    {
+        return false;
+    }
+    m_ipcThread = std::thread(&ClientStub::ipcThread, this);
+    return true;
+}
+
+void ClientStub::ipcThread()
+{
     while (m_ipcChannel->process())
     {
         m_ipcChannel->wait(-1);
     }
-}
-
-int ServerManagerStub::getServerSocket() const
-{
-    return m_socks[0];
-}
-
-std::shared_ptr<::firebolt::rialto::ipc::IChannel> ServerManagerStub::getChannel()
-{
-    return m_ipcChannel;
 }
 } // namespace firebolt::rialto::server::ct

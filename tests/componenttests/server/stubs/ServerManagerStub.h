@@ -41,7 +41,7 @@ private:
     void ipcThread();
 
 private:
-    std::thread m_clientThread;
+    std::thread m_ipcThread;
     std::shared_ptr<::firebolt::rialto::ipc::IChannel> m_ipcChannel;
     std::array<int, 2> m_socks{-1, -1};
 };

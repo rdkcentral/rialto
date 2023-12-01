@@ -17,16 +17,31 @@
  * limitations under the License.
  */
 
-#ifndef MATCHERS_H_
-#define MATCHERS_H_
+#ifndef FIREBOLT_RIALTO_SERVER_CT_CLIENT_STUB_H_
+#define FIREBOLT_RIALTO_SERVER_CT_CLIENT_STUB_H_
 
-#include <gmock/gmock.h>
-#include <string>
+#include "IStub.h"
+#include <memory>
+#include <thread>
 
-MATCHER_P(CharStrMatcher, expectedStr, "")
+namespace firebolt::rialto::server::ct
 {
-    std::string actualStr = (const char *)arg;
-    return expectedStr == actualStr;
-}
+class ClientStub : public IStub
+{
+public:
+    ClientStub() = default;
+    ~ClientStub() override;
 
-#endif // MATCHERS_H_
+    std::shared_ptr<::firebolt::rialto::ipc::IChannel> getChannel() override;
+    bool connect();
+
+private:
+    void ipcThread();
+
+private:
+    std::shared_ptr<::firebolt::rialto::ipc::IChannel> m_ipcChannel;
+    std::thread m_ipcThread;
+};
+} // namespace firebolt::rialto::server::ct
+
+#endif // FIREBOLT_RIALTO_SERVER_CT_CLIENT_STUB_H_

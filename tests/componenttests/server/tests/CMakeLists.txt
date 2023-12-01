@@ -22,6 +22,7 @@ add_gtests (
 
         # gtest code
         SessionServerStateChangeTest.cpp
+        MediaPipelineTest.cpp
         )
 
 target_include_directories(
