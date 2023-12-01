@@ -17,21 +17,30 @@
  * limitations under the License.
  */
 
-#ifndef MATCHERS_H_
-#define MATCHERS_H_
+#include "ActionTraits.h"
+#include "ConfigureAction.h"
+#include "MediaPipelineTestFixture.h"
+#include "MessageBuilders.h"
 
-#include <gmock/gmock.h>
-#include <string>
-
-MATCHER_P(CharStrMatcher, expectedStr, "")
+namespace firebolt::rialto::server::ct
 {
-    std::string actualStr = (const char *)arg;
-    return expectedStr == actualStr;
+TEST_F(MediaPipelineTest, shouldCreatePipeline)
+{
+    createSession();
 }
 
-MATCHER(NotNullMatcher, "")
+TEST_F(MediaPipelineTest, shouldFailToLoadWhenSessionIdIsWrong)
 {
-    return nullptr != arg;
+    createSession();
+    auto request = createLoadRequest(m_sessionId + 1);
+    ConfigureAction<Load>(m_clientStub).send(request).expectFailure();
 }
 
-#endif // MATCHERS_H_
+TEST_F(MediaPipelineTest, shouldLoad)
+{
+    createSession();
+    gstPlayerWillBeCreated();
+    load();
+    gstPlayerWillBeDestructed();
+}
+} // namespace firebolt::rialto::server::ct

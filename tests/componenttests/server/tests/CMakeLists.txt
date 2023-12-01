@@ -21,8 +21,9 @@ add_gtests (
         RialtoServerComponentTests
 
         # gtest code
-        SessionServerStateChangeTest.cpp
-        MediaPipelineTest.cpp
+        sessionServerStateChange/SessionServerStateChangeTest.cpp
+        mediaPipeline/MediaPipelineTestFixture.cpp
+        mediaPipeline/MediaPipelineTest.cpp
         )
 
 target_include_directories(
