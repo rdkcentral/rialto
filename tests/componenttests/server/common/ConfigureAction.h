@@ -25,13 +25,14 @@
 #include <IIpcControllerFactory.h>
 #include <functional>
 #include <gtest/gtest.h>
+#include <memory>
 
 namespace firebolt::rialto::server::ct
 {
 template <typename Action> class ConfigureAction
 {
 public:
-    ConfigureAction(IStub &stub)
+    explicit ConfigureAction(IStub &stub)
     {
         m_serviceStub = std::make_unique<typename Action::Stub>(stub.getChannel().get());
         EXPECT_TRUE(m_serviceStub);

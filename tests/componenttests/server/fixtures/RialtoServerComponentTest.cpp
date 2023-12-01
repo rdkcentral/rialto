@@ -26,6 +26,7 @@
 #include "Matchers.h"
 #include "MessageBuilders.h"
 #include "servermanagermodule.pb.h"
+#include <string>
 
 using testing::_;
 using testing::AtLeast;

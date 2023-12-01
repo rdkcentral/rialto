@@ -20,6 +20,8 @@
 #ifndef MATCHERS_H_
 #define MATCHERS_H_
 
+#include <string>
+
 MATCHER_P(CharStrMatcher, expectedStr, "")
 {
     std::string actualStr = (const char *)arg;

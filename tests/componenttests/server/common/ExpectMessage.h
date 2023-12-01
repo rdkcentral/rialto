@@ -33,7 +33,7 @@ namespace firebolt::rialto::server::ct
 template <typename MessageType> class ExpectMessage
 {
 public:
-    ExpectMessage(IStub &stub) : m_channel{stub.getChannel()}
+    explicit ExpectMessage(IStub &stub) : m_channel{stub.getChannel()}
     {
         if (!m_channel)
         {
