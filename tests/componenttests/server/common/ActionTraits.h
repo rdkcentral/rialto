@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_CT_ACTION_TRAITS_H_
 #define FIREBOLT_RIALTO_SERVER_CT_ACTION_TRAITS_H_
 
+#include "mediakeysmodule.pb.h"
 #include "mediapipelinemodule.pb.h"
 #include "servermanagermodule.pb.h"
 
@@ -55,6 +56,27 @@ struct Load
     using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
                                         google::protobuf::Closure *);
     static constexpr FunctionType m_kFunction{&Stub::load};
+};
+
+// mediakeys module
+struct CreateMediaKeys
+{
+    using RequestType = ::firebolt::rialto::CreateMediaKeysRequest;
+    using ResponseType = ::firebolt::rialto::CreateMediaKeysResponse;
+    using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::createMediaKeys};
+};
+
+struct CreateKeySession
+{
+    using RequestType = ::firebolt::rialto::CreateKeySessionRequest;
+    using ResponseType = ::firebolt::rialto::CreateKeySessionResponse;
+    using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::createKeySession};
 };
 } // namespace firebolt::rialto::server::ct
 

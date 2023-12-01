@@ -63,4 +63,20 @@ namespace firebolt::rialto::server::ct
     request.set_url("url");
     return request;
 }
+
+::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequest()
+{
+    ::firebolt::rialto::CreateMediaKeysRequest request;
+    request.set_key_system("com.widevine.alpha");
+    return request;
+}
+
+::firebolt::rialto::CreateKeySessionRequest createCreateKeySessionRequest(int mediaKeysHandle)
+{
+    ::firebolt::rialto::CreateKeySessionRequest request;
+    request.set_media_keys_handle(mediaKeysHandle);
+    request.set_session_type(::firebolt::rialto::CreateKeySessionRequest_KeySessionType_TEMPORARY);
+    request.set_is_ldl(false);
+    return request;
+}
 } // namespace firebolt::rialto::server::ct

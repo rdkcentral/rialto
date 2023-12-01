@@ -24,6 +24,7 @@ add_gtests (
         sessionServerStateChange/SessionServerStateChangeTest.cpp
         mediaPipeline/MediaPipelineTestFixture.cpp
         mediaPipeline/MediaPipelineTest.cpp
+        mediaKeys/MediaKeysTest.cpp
         )
 
 target_include_directories(

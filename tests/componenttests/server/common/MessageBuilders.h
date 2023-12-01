@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_CT_MESSAGE_BUILDERS_H_
 
 #include "MediaCommon.h"
+#include "mediakeysmodule.pb.h"
 #include "mediapipelinemodule.pb.h"
 #include "servermanagermodule.pb.h"
 
@@ -32,6 +33,10 @@ namespace firebolt::rialto::server::ct
 // media pipeline module
 ::firebolt::rialto::CreateSessionRequest createCreateSessionRequest(const VideoRequirements &requirements);
 ::firebolt::rialto::LoadRequest createLoadRequest(int sessionId);
+
+// media keys module
+::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequest();
+::firebolt::rialto::CreateKeySessionRequest createCreateKeySessionRequest(int mediaKeysHandle);
 } // namespace firebolt::rialto::server::ct
 
 #endif // FIREBOLT_RIALTO_SERVER_CT_MESSAGE_BUILDERS_H_
