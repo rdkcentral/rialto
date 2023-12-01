@@ -54,7 +54,7 @@ public:
      *
      * @retval the wrapper instance or null on error.
      */
-    virtual std::unique_ptr<IOcdmSystem> createOcdmSystem(const std::string &keySystem) const = 0;
+    virtual std::shared_ptr<IOcdmSystem> createOcdmSystem(const std::string &keySystem) const = 0;
 };
 
 class IOcdmSystem

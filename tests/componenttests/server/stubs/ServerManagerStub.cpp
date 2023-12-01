@@ -1,0 +1,63 @@
+/*
+ * If not stated otherwise in this file or this component's LICENSE file the
+ * following copyright and licenses apply:
+ *
+ * Copyright 2023 Sky UK
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#include "ServerManagerStub.h"
+#include <functional>
+#include <gtest/gtest.h>
+#include <sys/socket.h>
+#include <sys/wait.h>
+#include <unistd.h>
+
+namespace firebolt::rialto::server::ct
+{
+ServerManagerStub::ServerManagerStub()
+{
+    EXPECT_GE(socketpair(AF_UNIX, SOCK_SEQPACKET | SOCK_CLOEXEC | SOCK_NONBLOCK, 0, m_socks.data()), 0);
+    m_clientThread = std::thread(std::bind(&ServerManagerStub::ipcThread, this));
+}
+
+ServerManagerStub::~ServerManagerStub()
+{
+    if (m_clientThread.joinable())
+    {
+        m_clientThread.join();
+    }
+}
+
+void ServerManagerStub::ipcThread()
+{
+    auto factory = firebolt::rialto::ipc::IChannelFactory::createFactory();
+    m_ipcChannel = factory->createChannel(m_socks[1]);
+    EXPECT_TRUE(m_ipcChannel);
+    while (m_ipcChannel->process())
+    {
+        m_ipcChannel->wait(-1);
+    }
+}
+
+int ServerManagerStub::getServerSocket() const
+{
+    return m_socks[0];
+}
+
+std::shared_ptr<::firebolt::rialto::ipc::IChannel> ServerManagerStub::getChannel()
+{
+    return m_ipcChannel;
+}
+} // namespace firebolt::rialto::server::ct

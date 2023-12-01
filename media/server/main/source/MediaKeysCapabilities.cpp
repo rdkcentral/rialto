@@ -137,7 +137,7 @@ bool MediaKeysCapabilities::supportsKeySystem(const std::string &keySystem)
 
 bool MediaKeysCapabilities::getSupportedKeySystemVersion(const std::string &keySystem, std::string &version)
 {
-    std::unique_ptr<firebolt::rialto::wrappers::IOcdmSystem> ocdmSystem =
+    std::shared_ptr<firebolt::rialto::wrappers::IOcdmSystem> ocdmSystem =
         m_ocdmSystemFactory->createOcdmSystem(keySystem);
     if (!ocdmSystem)
     {

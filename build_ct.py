@@ -28,7 +28,8 @@ from scripts.gtest.generate_coverage import generateCoverageReport, generateSpec
 # Rialto Component Tests & Paths
 # {Component Name : {Test Suite, Test Path}}
 suiteInfo = {
-    "client" : {"suite" : "RialtoClientComponentTests", "path" : "/tests/componenttests/client/"}
+    "client" : {"suite" : "RialtoClientComponentTests", "path" : "/tests/componenttests/client/"},
+    "server" : {"suite" : "RialtoServerComponentTests", "path" : "/tests/componenttests/server/tests/"},
 }
 
 if __name__ == "__main__":

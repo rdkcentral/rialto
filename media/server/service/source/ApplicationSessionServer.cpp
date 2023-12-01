@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2022 Sky UK
+ * Copyright 2023 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,21 +17,27 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_WRAPPERS_OCDM_SYSTEM_FACTORY_MOCK_H_
-#define FIREBOLT_RIALTO_WRAPPERS_OCDM_SYSTEM_FACTORY_MOCK_H_
+#include "ApplicationSessionServer.h"
 
-#include "IOcdmSystem.h"
-#include <gmock/gmock.h>
-#include <memory>
-#include <string>
-
-namespace firebolt::rialto::wrappers
+namespace firebolt::rialto::server
 {
-class OcdmSystemFactoryMock : public IOcdmSystemFactory
+std::unique_ptr<IApplicationSessionServerFactory> IApplicationSessionServerFactory::getFactory()
 {
-public:
-    MOCK_METHOD(std::shared_ptr<IOcdmSystem>, createOcdmSystem, (const std::string &keySystem), (const, override));
-};
-} // namespace firebolt::rialto::wrappers
+    return std::make_unique<ApplicationSessionServerFactory>();
+}
 
-#endif // FIREBOLT_RIALTO_WRAPPERS_OCDM_SYSTEM_FACTORY_MOCK_H_
+std::unique_ptr<IApplicationSessionServer> ApplicationSessionServerFactory::createApplicationSessionServer() const
+{
+    return std::make_unique<ApplicationSessionServer>();
+}
+
+bool ApplicationSessionServer::init(int argc, char *argv[])
+{
+    return m_serviceManager.initialize(argc, argv);
+}
+
+void ApplicationSessionServer::startService()
+{
+    m_serviceManager.startService();
+}
+} // namespace firebolt::rialto::server
