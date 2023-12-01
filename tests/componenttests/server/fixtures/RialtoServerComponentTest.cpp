@@ -41,6 +41,16 @@ RialtoServerComponentTest::RialtoServerComponentTest()
     initializeSut();
 }
 
+RialtoServerComponentTest::~RialtoServerComponentTest()
+{
+    wrappers::IFactoryAccessor::instance().glibWrapperFactory() = nullptr;
+    wrappers::IFactoryAccessor::instance().gstWrapperFactory() = nullptr;
+    wrappers::IFactoryAccessor::instance().linuxWrapperFactory() = nullptr;
+    wrappers::IFactoryAccessor::instance().ocdmFactory() = nullptr;
+    wrappers::IFactoryAccessor::instance().ocdmSystemFactory() = nullptr;
+    wrappers::IFactoryAccessor::instance().rdkGstreamerUtilsWrapperFactory() = nullptr;
+}
+
 void RialtoServerComponentTest::willConfigureSocket()
 {
     EXPECT_CALL(*m_linuxWrapperMock, chmod(CharStrMatcher(kSocketName), kDefaultPermissions)).WillOnce(Return(0));

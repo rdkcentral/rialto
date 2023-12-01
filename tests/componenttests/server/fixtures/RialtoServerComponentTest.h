@@ -44,7 +44,7 @@ class RialtoServerComponentTest : public ::testing::Test
 {
 public:
     RialtoServerComponentTest();
-    ~RialtoServerComponentTest() override = default;
+    ~RialtoServerComponentTest() override;
 
     void willConfigureSocket();
     void configureSutInActiveState();
