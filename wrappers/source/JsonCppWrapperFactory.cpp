@@ -25,7 +25,7 @@
 
 namespace firebolt::rialto::wrappers
 {
-std::unique_ptr<IJsonCppWrapperFactory> IJsonCppWrapperFactory::createFactory()
+std::shared_ptr<IJsonCppWrapperFactory> IJsonCppWrapperFactory::createFactory()
 {
     return std::make_unique<JsonCppWrapperFactory>();
 }

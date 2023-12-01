@@ -17,12 +17,13 @@
  * limitations under the License.
  */
 
-#include "IRdkGstreamerUtilsWrapper.h"
+#include "IFactoryAccessor.h"
+#include "ILinuxWrapper.h"
 
 namespace firebolt::rialto::wrappers
 {
-std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> IRdkGstreamerUtilsWrapperFactory::getFactory()
+std::shared_ptr<ILinuxWrapperFactory> ILinuxWrapperFactory::createFactory()
 {
-    return nullptr;
+    return IFactoryAccessor::instance().linuxWrapperFactory();
 }
 } // namespace firebolt::rialto::wrappers

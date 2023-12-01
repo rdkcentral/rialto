@@ -21,47 +21,18 @@
 
 namespace firebolt::rialto::wrappers
 {
-std::weak_ptr<IGlibWrapperFactory> GlibWrapperFactory::m_factory;
-std::weak_ptr<IGlibWrapper> GlibWrapperFactory::m_gstWrapper;
-std::mutex GlibWrapperFactory::m_creationMutex;
-
-std::shared_ptr<IGlibWrapperFactory> IGlibWrapperFactory::getFactory()
-{
-    std::shared_ptr<IGlibWrapperFactory> factory = GlibWrapperFactory::m_factory.lock();
-
-    if (!factory)
-    {
-        try
-        {
-            factory = std::make_shared<GlibWrapperFactory>();
-        }
-        catch (const std::exception &e)
-        {
-        }
-
-        GlibWrapperFactory::m_factory = factory;
-    }
-
-    return factory;
-}
-
 std::shared_ptr<IGlibWrapper> GlibWrapperFactory::getGlibWrapper()
 {
-    std::lock_guard<std::mutex> lock{m_creationMutex};
-
-    std::shared_ptr<IGlibWrapper> gstWrapper = GlibWrapperFactory::m_gstWrapper.lock();
-
+    static std::shared_ptr<IGlibWrapper> gstWrapper{};
     if (!gstWrapper)
     {
         try
         {
             gstWrapper = std::make_shared<GlibWrapper>();
         }
-        catch (const std::exception &e)
+        catch (const std::exception &)
         {
         }
-
-        GlibWrapperFactory::m_gstWrapper = gstWrapper;
     }
 
     return gstWrapper;

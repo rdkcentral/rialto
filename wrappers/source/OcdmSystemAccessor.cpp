@@ -17,23 +17,13 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_WRAPPERS_I_JSON_CPP_WRAPPER_FACTORY_H_
-#define FIREBOLT_RIALTO_WRAPPERS_I_JSON_CPP_WRAPPER_FACTORY_H_
-
-#include "IJsonCppWrapper.h"
-#include <memory>
-#include <string>
+#include "IFactoryAccessor.h"
+#include "IOcdmSystem.h"
 
 namespace firebolt::rialto::wrappers
 {
-class IJsonCppWrapperFactory
+std::shared_ptr<IOcdmSystemFactory> IOcdmSystemFactory::createFactory()
 {
-public:
-    virtual ~IJsonCppWrapperFactory() = default;
-    static std::shared_ptr<IJsonCppWrapperFactory> createFactory();
-    virtual std::shared_ptr<IJsonCppWrapper> createJsonCppWrapper() const = 0;
-};
-
+    return IFactoryAccessor::instance().ocdmSystemFactory();
+}
 } // namespace firebolt::rialto::wrappers
-
-#endif // FIREBOLT_RIALTO_WRAPPERS_I_JSON_CPP_WRAPPER_FACTORY_H_

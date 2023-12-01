@@ -21,36 +21,9 @@
 
 namespace firebolt::rialto::wrappers
 {
-std::weak_ptr<IGstWrapperFactory> GstWrapperFactory::m_factory;
-std::weak_ptr<IGstWrapper> GstWrapperFactory::m_gstWrapper;
-std::mutex GstWrapperFactory::m_creationMutex;
-
-std::shared_ptr<IGstWrapperFactory> IGstWrapperFactory::getFactory()
-{
-    std::shared_ptr<IGstWrapperFactory> factory = GstWrapperFactory::m_factory.lock();
-
-    if (!factory)
-    {
-        try
-        {
-            factory = std::make_shared<GstWrapperFactory>();
-        }
-        catch (const std::exception &e)
-        {
-        }
-
-        GstWrapperFactory::m_factory = factory;
-    }
-
-    return factory;
-}
-
 std::shared_ptr<IGstWrapper> GstWrapperFactory::getGstWrapper()
 {
-    std::lock_guard<std::mutex> lock{m_creationMutex};
-
-    std::shared_ptr<IGstWrapper> gstWrapper = GstWrapperFactory::m_gstWrapper.lock();
-
+    static std::shared_ptr<IGstWrapper> gstWrapper{};
     if (!gstWrapper)
     {
         try
@@ -60,8 +33,6 @@ std::shared_ptr<IGstWrapper> GstWrapperFactory::getGstWrapper()
         catch (const std::exception &e)
         {
         }
-
-        GstWrapperFactory::m_gstWrapper = gstWrapper;
     }
 
     return gstWrapper;
