@@ -18,18 +18,7 @@
  */
 
 #include "MediaPipelineIpcTestBase.h"
-
-MATCHER_P(PlayRequestMatcher, sessionId, "")
-{
-    const ::firebolt::rialto::PlayRequest *kRequest = dynamic_cast<const ::firebolt::rialto::PlayRequest *>(arg);
-    return (kRequest->session_id() == sessionId);
-}
-
-MATCHER_P(PauseRequestMatcher, sessionId, "")
-{
-    const ::firebolt::rialto::PauseRequest *kRequest = dynamic_cast<const ::firebolt::rialto::PauseRequest *>(arg);
-    return (kRequest->session_id() == sessionId);
-}
+#include "MediaPipelineProtoRequestMatchers.h"
 
 class RialtoClientMediaPipelineIpcPlayPauseTest : public MediaPipelineIpcTestBase
 {
@@ -57,7 +46,7 @@ TEST_F(RialtoClientMediaPipelineIpcPlayPauseTest, PlaySuccess)
     expectIpcApiCallSuccess();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("play"), m_controllerMock.get(),
-                                           PlayRequestMatcher(m_sessionId), _, m_blockingClosureMock.get()));
+                                           playRequestMatcher(m_sessionId), _, m_blockingClosureMock.get()));
 
     EXPECT_EQ(m_mediaPipelineIpc->play(), true);
 }
@@ -111,7 +100,7 @@ TEST_F(RialtoClientMediaPipelineIpcPlayPauseTest, PauseSuccess)
     expectIpcApiCallSuccess();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("pause"), m_controllerMock.get(),
-                                           PauseRequestMatcher(m_sessionId), _, m_blockingClosureMock.get()));
+                                           pauseRequestMatcher(m_sessionId), _, m_blockingClosureMock.get()));
 
     EXPECT_EQ(m_mediaPipelineIpc->pause(), true);
 }

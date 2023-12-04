@@ -19,42 +19,6 @@
 
 #include "ControlTestMethods.h"
 #include <memory>
-#include <cstring>
-#include <fcntl.h>
-#include <numeric>
-#include <stdexcept>
-#include <sys/mman.h>
-#include <syscall.h>
-#include <unistd.h>
-
-#if !defined(SYS_memfd_create)
-#if defined(__NR_memfd_create)
-#define SYS_memfd_create __NR_memfd_create
-#elif defined(__arm__)
-#define SYS_memfd_create 385
-#endif
-#endif
-
-#if !defined(MFD_CLOEXEC)
-#define MFD_CLOEXEC 0x0001U
-#endif
-
-#if !defined(MFD_ALLOW_SEALING)
-#define MFD_ALLOW_SEALING 0x0002U
-#endif
-
-#if !defined(F_ADD_SEALS)
-#if !defined(F_LINUX_SPECIFIC_BASE)
-#define F_LINUX_SPECIFIC_BASE 1024
-#endif
-#define F_ADD_SEALS (F_LINUX_SPECIFIC_BASE + 9)
-#define F_GET_SEALS (F_LINUX_SPECIFIC_BASE + 10)
-
-#define F_SEAL_SEAL 0x0001
-#define F_SEAL_SHRINK 0x0002
-#define F_SEAL_GROW 0x0004
-#define F_SEAL_WRITE 0x0008
-#endif
 
 namespace
 {
@@ -65,12 +29,10 @@ ControlTestMethods::ControlTestMethods()
     : m_controlClientMock{std::make_shared<StrictMock<ControlClientMock>>()},
       m_controlModuleMock{std::make_shared<StrictMock<ControlModuleMock>>()}
 {
-    initRealShm();
 }
 
 ControlTestMethods::~ControlTestMethods()
 {
-    termRealShm();
 }
 
 void ControlTestMethods::createControl()
@@ -118,7 +80,7 @@ void ControlTestMethods::shouldNotifyApplicationStateRunning()
     EXPECT_CALL(*m_controlClientMock, notifyApplicationState(ApplicationState::RUNNING))
         .WillOnce(Invoke(this, &ControlTestMethods::notifyEvent));
     EXPECT_CALL(*m_controlModuleMock, getSharedMemory(_, _, _, _))
-        .WillOnce(DoAll(SetArgPointee<2>(m_controlModuleMock->getSharedMemoryResponse(m_fd, m_size)),
+        .WillOnce(DoAll(SetArgPointee<2>(m_controlModuleMock->getSharedMemoryResponse(getShmFd(), getShmSize())),
                         WithArgs<0, 3>(Invoke(&(*m_controlModuleMock), &ControlModuleMock::defaultReturn))));
 }
 
@@ -126,26 +88,4 @@ void ControlTestMethods::sendNotifyApplicationStateRunning()
 {
     getServerStub()->notifyApplicationStateEvent(kControlId, ApplicationState::RUNNING);
     waitEvent();
-}
-
-void ControlTestMethods::initRealShm()
-{
-    int fd = syscall(SYS_memfd_create, "rialto_avbuf", MFD_CLOEXEC | MFD_ALLOW_SEALING);
-    ASSERT_GT(fd, 0);
-    
-    ASSERT_NE(ftruncate(fd, static_cast<off_t>(m_size)), -1);
-    ASSERT_NE(fcntl(fd, F_ADD_SEALS, (F_SEAL_SEAL | F_SEAL_GROW | F_SEAL_SHRINK)), -1);
-
-    void *addr = mmap(nullptr, m_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-    ASSERT_NE(addr, MAP_FAILED);
-
-    m_fd = fd;
-    m_address = addr;
-}
-
-void ControlTestMethods::termRealShm()
-{
-    ASSERT_EQ(munmap(m_address, m_size), 0);
-    std::cout<<m_fd<<std::endl;
-    close(m_fd);
 }

@@ -21,7 +21,7 @@
 set( Protobuf_IMPORT_DIRS "${CMAKE_SYSROOT}/usr/include" "${CMAKE_CURRENT_LIST_DIR}/../../../ipc/common/proto/" )
 protobuf_generate_cpp( PROTO_SRCS PROTO_HEADERS ../../../proto/controlmodule.proto ../../../proto/rialtocommon.proto ../../../proto/mediapipelinemodule.proto
         ../../../proto/mediapipelinecapabilitiesmodule.proto ../../../proto/mediakeysmodule.proto ../../../proto/mediakeyscapabilitiesmodule.proto
-        ../../../proto/servermanagermodule.proto ../../../proto/webaudioplayermodule.proto)
+        ../../../proto/servermanagermodule.proto ../../../proto/webaudioplayermodule.proto ../../../proto/metadata.proto)
 
 list( GET PROTO_HEADERS 0 PROTO_HEADER )
 get_filename_component( PROTO_DIR ${PROTO_HEADER} DIRECTORY )

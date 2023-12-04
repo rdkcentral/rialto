@@ -52,10 +52,6 @@ protected:
     std::shared_ptr<IControlFactory> m_controlFactory;
     std::shared_ptr<IControl> m_control;
 
-    int32_t m_fd{-1};
-    void *m_address{nullptr};
-    uint32_t m_size{1000};
-
     // Test methods
     void createControl();
     void shouldRegisterClient();
@@ -71,10 +67,9 @@ protected:
     virtual void notifyEvent() = 0;
     virtual void waitEvent() = 0;
     virtual std::shared_ptr<ServerStub>& getServerStub() = 0;
-
-private:
-    void initRealShm();
-    void termRealShm();
+    virtual int32_t getShmFd() = 0;
+    virtual void * getShmAddress() = 0;
+    virtual uint32_t getShmSize() = 0;
 };
 
 #endif // CONTROL_TEST_METHODS_H_

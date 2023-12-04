@@ -18,14 +18,7 @@
  */
 
 #include "MediaPipelineIpcTestBase.h"
-#include "MediaPipelineMatchers.h"
-
-MATCHER_P(destroySessionRequestMatcher, sessionId, "")
-{
-    const ::firebolt::rialto::DestroySessionRequest *kRequest =
-        dynamic_cast<const ::firebolt::rialto::DestroySessionRequest *>(arg);
-    return (kRequest->session_id() == sessionId);
-}
+#include "MediaPipelineProtoRequestMatchers.h"
 
 class RialtoClientCreateMediaPipelineIpcTest : public MediaPipelineIpcTestBase
 {

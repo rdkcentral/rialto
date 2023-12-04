@@ -39,4 +39,58 @@ firebolt::rialto::LoadRequest_MediaType convertMediaType(const firebolt::rialto:
     return firebolt::rialto::LoadRequest_MediaType::LoadRequest_MediaType_UNKNOWN;
 }
 
+firebolt::rialto::AttachSourceRequest_StreamFormat
+convertStreamFormat(const firebolt::rialto::StreamFormat &streamFormat)
+{
+    switch (streamFormat)
+    {
+    case firebolt::rialto::StreamFormat::UNDEFINED:
+    {
+        return firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_UNDEFINED;
+    }
+    case firebolt::rialto::StreamFormat::RAW:
+    {
+        return firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_RAW;
+    }
+    case firebolt::rialto::StreamFormat::AVC:
+    {
+        return firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_AVC;
+    }
+    case firebolt::rialto::StreamFormat::BYTE_STREAM:
+    {
+        return firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_BYTE_STREAM;
+    }
+    }
+    return firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_UNDEFINED;
+}
+
+firebolt::rialto::HaveDataRequest_MediaSourceStatus
+convertMediaSourceStatus(const firebolt::rialto::MediaSourceStatus &status)
+{
+    firebolt::rialto::HaveDataRequest_MediaSourceStatus protoMediaSourceStatus =
+        firebolt::rialto::HaveDataRequest_MediaSourceStatus_UNKNOWN;
+    switch (status)
+    {
+    case MediaSourceStatus::OK:
+        protoMediaSourceStatus = firebolt::rialto::HaveDataRequest_MediaSourceStatus_OK;
+        break;
+    case MediaSourceStatus::EOS:
+        protoMediaSourceStatus = firebolt::rialto::HaveDataRequest_MediaSourceStatus_EOS;
+        break;
+    case MediaSourceStatus::ERROR:
+        protoMediaSourceStatus = firebolt::rialto::HaveDataRequest_MediaSourceStatus_ERROR;
+        break;
+    case MediaSourceStatus::CODEC_CHANGED:
+        protoMediaSourceStatus = firebolt::rialto::HaveDataRequest_MediaSourceStatus_CODEC_CHANGED;
+        break;
+    case MediaSourceStatus::NO_AVAILABLE_SAMPLES:
+        protoMediaSourceStatus = firebolt::rialto::HaveDataRequest_MediaSourceStatus_NO_AVAILABLE_SAMPLES;
+        break;
+    default:
+        break;
+    }
+
+    return protoMediaSourceStatus;
+}
+
 #endif // MEDIA_PIPELINE_PROTO_UTILS_H_

@@ -30,7 +30,7 @@
 
 namespace firebolt::rialto::ct::stub
 {
-class ServerStub : public ControlModuleStub, MediaPipelineModuleStub
+class ServerStub : public ControlModuleStub, public MediaPipelineModuleStub
 {
 public:
     explicit ServerStub(const std::shared_ptr<::firebolt::rialto::ControlModule>& controlModuleMock,

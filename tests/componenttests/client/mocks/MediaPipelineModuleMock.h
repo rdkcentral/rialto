@@ -103,6 +103,13 @@ public:
         return response;
     }
 
+    ::firebolt::rialto::AttachSourceResponse attachSourceResponse(const int32_t sourceId)
+    {
+        firebolt::rialto::AttachSourceResponse response;
+        response.set_source_id(sourceId);
+        return response;
+    }
+
     MediaPipelineModuleMock() {}
     virtual ~MediaPipelineModuleMock() = default;
 };

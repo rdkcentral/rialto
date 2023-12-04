@@ -18,13 +18,7 @@
  */
 
 #include "MediaPipelineIpcTestBase.h"
-
-MATCHER_P4(loadRequestMatcher, sessionId, type, mimeType, url, "")
-{
-    const ::firebolt::rialto::LoadRequest *kRequest = dynamic_cast<const ::firebolt::rialto::LoadRequest *>(arg);
-    return ((kRequest->session_id() == sessionId) && (kRequest->type() == type) &&
-            (kRequest->mime_type() == mimeType) && (kRequest->url() == url));
-}
+#include "MediaPipelineProtoRequestMatchers.h"
 
 class RialtoClientMediaPipelineIpcLoadTest : public MediaPipelineIpcTestBase
 {

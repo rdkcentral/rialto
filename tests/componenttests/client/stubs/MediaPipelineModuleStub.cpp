@@ -157,7 +157,7 @@ void MediaPipelineModuleStub::notifyPositionChangeEvent(int sessionId, int64_t p
 }
 
 void MediaPipelineModuleStub::notifyNeedMediaDataEvent(int sessionId, int32_t sourceId, size_t frameCount, uint32_t needDataRequestId,
-                                              const std::shared_ptr<MediaPlayerShmInfo> &shmInfo)
+                                                       const std::shared_ptr<MediaPlayerShmInfo> &shmInfo)
 {
     waitForClientConnect();
 
