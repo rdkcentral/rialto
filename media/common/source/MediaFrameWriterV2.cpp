@@ -19,7 +19,6 @@
 
 #include "MediaFrameWriterV2.h"
 #include "RialtoCommonLogging.h"
-#include <inttypes.h>
 
 namespace
 {

@@ -20,20 +20,20 @@
 #include "ClientComponentTest.h"
 #include <gtest/gtest.h>
 
+namespace
+{
+constexpr uint32_t kNumberOfNeedDatasBeforePreroll{2};
+constexpr uint32_t kNumberOfFramesPerNeedDataBeforePreroll{3};
+constexpr uint32_t kNumberOfNeedDatasAfterPreroll{1};
+constexpr uint32_t kNumberOfFramesPerNeedDataAfterPreroll{20};
+}; // namespace
+
 class AudioVideoPlaybackTest : public ClientComponentTest
 {
 public:
-    const uint32_t kNumberOfNeedDatasBeforePreroll = 2;
-    const uint32_t kNumberOfFramesPerNeedDataBeforePreroll = 3;
-    const uint32_t kNumberOfNeedDatasAfterPreroll = 1;
-    const uint32_t kNumberOfFramesPerNeedDataAfterPreroll = 20;
+    int32_t m_segmentId{-1};
 
-    AudioVideoPlaybackTest() : ClientComponentTest()
-    {
-        // Set the metadata version shared.
-        setenv("RIALTO_METADATA_VERSION", "2", 1);
-        ClientComponentTest::startApplicationRunning();
-    }
+    AudioVideoPlaybackTest() : ClientComponentTest() { ClientComponentTest::startApplicationRunning(); }
 
     ~AudioVideoPlaybackTest() { ClientComponentTest::stopApplication(); }
 };
@@ -160,8 +160,6 @@ public:
  */
 TEST_F(AudioVideoPlaybackTest, playback)
 {
-    int32_t segmentId = -1;
-
     // Step 1: Create a new media session
     MediaPipelineTestMethods::shouldCreateMediaSession();
     MediaPipelineTestMethods::createMediaPipeline();
@@ -194,8 +192,8 @@ TEST_F(AudioVideoPlaybackTest, playback)
 
         for (uint32_t j = 0; j < kNumberOfFramesPerNeedDataBeforePreroll; j++)
         {
-            segmentId = MediaPipelineTestMethods::addSegmentMseAudio();
-            MediaPipelineTestMethods::checkMseAudioSegmentWritten(segmentId);
+            m_segmentId = MediaPipelineTestMethods::addSegmentMseAudio();
+            MediaPipelineTestMethods::checkMseAudioSegmentWritten(m_segmentId);
         }
 
         MediaPipelineTestMethods::shouldHaveDataBeforePreroll();
@@ -210,8 +208,8 @@ TEST_F(AudioVideoPlaybackTest, playback)
 
         for (uint32_t j = 0; j < kNumberOfFramesPerNeedDataBeforePreroll; j++)
         {
-            segmentId = MediaPipelineTestMethods::addSegmentMseVideo();
-            MediaPipelineTestMethods::checkMseVideoSegmentWritten(segmentId);
+            m_segmentId = MediaPipelineTestMethods::addSegmentMseVideo();
+            MediaPipelineTestMethods::checkMseVideoSegmentWritten(m_segmentId);
         }
 
         MediaPipelineTestMethods::shouldHaveDataBeforePreroll();
@@ -240,8 +238,8 @@ TEST_F(AudioVideoPlaybackTest, playback)
 
         for (uint32_t j = 0; j < kNumberOfFramesPerNeedDataAfterPreroll; j++)
         {
-            segmentId = MediaPipelineTestMethods::addSegmentMseAudio();
-            MediaPipelineTestMethods::checkMseAudioSegmentWritten(segmentId);
+            m_segmentId = MediaPipelineTestMethods::addSegmentMseAudio();
+            MediaPipelineTestMethods::checkMseAudioSegmentWritten(m_segmentId);
         }
 
         MediaPipelineTestMethods::shouldHaveDataAfterPreroll();
@@ -256,8 +254,8 @@ TEST_F(AudioVideoPlaybackTest, playback)
 
         for (uint32_t j = 0; j < kNumberOfFramesPerNeedDataAfterPreroll; j++)
         {
-            segmentId = MediaPipelineTestMethods::addSegmentMseVideo();
-            MediaPipelineTestMethods::checkMseVideoSegmentWritten(segmentId);
+            m_segmentId = MediaPipelineTestMethods::addSegmentMseVideo();
+            MediaPipelineTestMethods::checkMseVideoSegmentWritten(m_segmentId);
         }
 
         MediaPipelineTestMethods::shouldHaveDataAfterPreroll();
@@ -267,16 +265,16 @@ TEST_F(AudioVideoPlaybackTest, playback)
     // Step 12: End of audio stream
     MediaPipelineTestMethods::shouldNotifyNeedDataAudioAfterPreroll();
     MediaPipelineTestMethods::sendNotifyNeedDataAudioAfterPreroll();
-    segmentId = MediaPipelineTestMethods::addSegmentMseAudio();
-    MediaPipelineTestMethods::checkMseAudioSegmentWritten(segmentId);
+    m_segmentId = MediaPipelineTestMethods::addSegmentMseAudio();
+    MediaPipelineTestMethods::checkMseAudioSegmentWritten(m_segmentId);
     MediaPipelineTestMethods::shouldHaveDataEos(1);
     MediaPipelineTestMethods::haveDataEos();
 
     // Step 13: End of video stream
     MediaPipelineTestMethods::shouldNotifyNeedDataVideoAfterPreroll();
     MediaPipelineTestMethods::sendNotifyNeedDataVideoAfterPreroll();
-    segmentId = MediaPipelineTestMethods::addSegmentMseVideo();
-    MediaPipelineTestMethods::checkMseVideoSegmentWritten(segmentId);
+    m_segmentId = MediaPipelineTestMethods::addSegmentMseVideo();
+    MediaPipelineTestMethods::checkMseVideoSegmentWritten(m_segmentId);
     MediaPipelineTestMethods::shouldHaveDataEos(1);
     MediaPipelineTestMethods::haveDataEos();
 

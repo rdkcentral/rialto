@@ -44,6 +44,20 @@ public:
     virtual ~ClientComponentTest();
 
 protected:
+    // Test Methods
+    void disconnectServer();
+    void startApplicationRunning();
+    void stopApplication();
+
+private:
+    // Derived class helpers
+    void notifyEvent() override;
+    void waitEvent() override;
+    std::shared_ptr<ServerStub> &getServerStub() override;
+    int32_t getShmFd() override;
+    void *getShmAddress() override;
+    uint32_t getShmSize() override;
+
     // Server stub
     std::shared_ptr<ServerStub> m_serverStub;
 
@@ -52,26 +66,9 @@ protected:
     std::condition_variable m_eventsCond;
     bool m_eventReceived{false};
 
+    // Shared Memory
     int32_t m_fd{-1};
     void *m_address{nullptr};
-
-    // Event helpers
-    void notifyEvent() override;
-    void waitEvent() override;
-
-    // Get server
-    std::shared_ptr<ServerStub> &getServerStub() override;
-
-    int32_t getShmFd() override;
-    void *getShmAddress() override;
-    uint32_t getShmSize() override;
-
-    // Test Methods
-    void disconnectServer();
-    void startApplicationRunning();
-    void stopApplication();
-
-private:
     void initRealShm();
     void termRealShm();
 };

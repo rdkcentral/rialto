@@ -118,6 +118,7 @@ protected:
     virtual void *getShmAddress() = 0;
 
 private:
+    // Const variables
     const MediaPlayerShmInfo &m_kAudioShmInfo;
     const MediaPlayerShmInfo &m_kVideoShmInfo;
 
