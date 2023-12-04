@@ -20,6 +20,7 @@
 #include "MediaPipelineTestMethods.h"
 #include "MediaPipelineProtoRequestMatchers.h"
 #include "MediaPipelineProtoUtils.h"
+#include "MetadataProtoMatchers.h"
 #include "MetadataProtoUtils.h"
 #include "metadata.pb.h"
 #include <memory>

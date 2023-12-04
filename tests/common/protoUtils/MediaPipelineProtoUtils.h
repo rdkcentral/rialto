@@ -70,19 +70,19 @@ convertMediaSourceStatus(const firebolt::rialto::MediaSourceStatus &status)
         firebolt::rialto::HaveDataRequest_MediaSourceStatus_UNKNOWN;
     switch (status)
     {
-    case MediaSourceStatus::OK:
+    case firebolt::rialto::MediaSourceStatus::OK:
         protoMediaSourceStatus = firebolt::rialto::HaveDataRequest_MediaSourceStatus_OK;
         break;
-    case MediaSourceStatus::EOS:
+    case firebolt::rialto::MediaSourceStatus::EOS:
         protoMediaSourceStatus = firebolt::rialto::HaveDataRequest_MediaSourceStatus_EOS;
         break;
-    case MediaSourceStatus::ERROR:
+    case firebolt::rialto::MediaSourceStatus::ERROR:
         protoMediaSourceStatus = firebolt::rialto::HaveDataRequest_MediaSourceStatus_ERROR;
         break;
-    case MediaSourceStatus::CODEC_CHANGED:
+    case firebolt::rialto::MediaSourceStatus::CODEC_CHANGED:
         protoMediaSourceStatus = firebolt::rialto::HaveDataRequest_MediaSourceStatus_CODEC_CHANGED;
         break;
-    case MediaSourceStatus::NO_AVAILABLE_SAMPLES:
+    case firebolt::rialto::MediaSourceStatus::NO_AVAILABLE_SAMPLES:
         protoMediaSourceStatus = firebolt::rialto::HaveDataRequest_MediaSourceStatus_NO_AVAILABLE_SAMPLES;
         break;
     default:

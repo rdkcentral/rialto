@@ -22,7 +22,6 @@
 
 #include "MediaCommon.h"
 #include "mediapipelinemodule.pb.h"
-#include "metadata.pb.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <memory>
@@ -214,14 +213,6 @@ MATCHER_P4(haveDataRequestMatcher, sessionId, status, numFrames, requestId, "")
     const ::firebolt::rialto::HaveDataRequest *kRequest = dynamic_cast<const ::firebolt::rialto::HaveDataRequest *>(arg);
     return ((kRequest->session_id() == sessionId) && (kRequest->status() == status) &&
             (kRequest->request_id() == requestId) && (kRequest->num_frames() == numFrames));
-}
-
-MATCHER_P(frameRateMatcher, expectedFrameRate, "")
-{
-    const MediaSegmentMetadata_Fraction kFrameRate = arg;
-    return ((kFrameRate.has_numerator()) && (kFrameRate.has_denominator()) &&
-            (kFrameRate.numerator() == expectedFrameRate.numerator) &&
-            (kFrameRate.denominator() == expectedFrameRate.denominator));
 }
 
 MATCHER_P(stopRequestMatcher, sessionId, "")

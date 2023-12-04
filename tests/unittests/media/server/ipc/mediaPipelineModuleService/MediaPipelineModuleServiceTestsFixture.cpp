@@ -183,30 +183,6 @@ firebolt::rialto::ProtoMediaSourceType convertProtoMediaSourceType(const firebol
     return firebolt::rialto::ProtoMediaSourceType::UNKNOWN;
 }
 
-firebolt::rialto::AttachSourceRequest_StreamFormat convertStreamFormat(const firebolt::rialto::StreamFormat &streamFormat)
-{
-    switch (streamFormat)
-    {
-    case firebolt::rialto::StreamFormat::UNDEFINED:
-    {
-        return firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_UNDEFINED;
-    }
-    case firebolt::rialto::StreamFormat::RAW:
-    {
-        return firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_RAW;
-    }
-    case firebolt::rialto::StreamFormat::AVC:
-    {
-        return firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_AVC;
-    }
-    case firebolt::rialto::StreamFormat::BYTE_STREAM:
-    {
-        return firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_BYTE_STREAM;
-    }
-    }
-    return firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_UNDEFINED;
-}
-
 firebolt::rialto::HaveDataRequest_MediaSourceStatus
 convertHaveDataRequestMediaSourceStatus(const firebolt::rialto::MediaSourceStatus &status)
 {
