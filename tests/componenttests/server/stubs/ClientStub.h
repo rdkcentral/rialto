@@ -17,26 +17,31 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_CT_MESSAGE_BUILDERS_H_
-#define FIREBOLT_RIALTO_SERVER_CT_MESSAGE_BUILDERS_H_
+#ifndef FIREBOLT_RIALTO_SERVER_CT_CLIENT_STUB_H_
+#define FIREBOLT_RIALTO_SERVER_CT_CLIENT_STUB_H_
 
-#include "MediaCommon.h"
-#include "mediakeysmodule.pb.h"
-#include "mediapipelinemodule.pb.h"
-#include "servermanagermodule.pb.h"
+#include "IStub.h"
+#include <memory>
+#include <thread>
 
 namespace firebolt::rialto::server::ct
 {
-// server manager module
-::rialto::SetConfigurationRequest createGenericSetConfigurationReq();
+class ClientStub : public IStub
+{
+public:
+    ClientStub() = default;
+    ~ClientStub() override;
 
-// media pipeline module
-::firebolt::rialto::CreateSessionRequest createCreateSessionRequest(const VideoRequirements &requirements);
-::firebolt::rialto::LoadRequest createLoadRequest(int sessionId);
+    std::shared_ptr<::firebolt::rialto::ipc::IChannel> getChannel() override;
+    bool connect();
 
-// media keys module
-::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequest();
-::firebolt::rialto::CreateKeySessionRequest createCreateKeySessionRequest(int mediaKeysHandle);
+private:
+    void ipcThread();
+
+private:
+    std::shared_ptr<::firebolt::rialto::ipc::IChannel> m_ipcChannel;
+    std::thread m_ipcThread;
+};
 } // namespace firebolt::rialto::server::ct
 
-#endif // FIREBOLT_RIALTO_SERVER_CT_MESSAGE_BUILDERS_H_
+#endif // FIREBOLT_RIALTO_SERVER_CT_CLIENT_STUB_H_

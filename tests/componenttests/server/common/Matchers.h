@@ -20,12 +20,18 @@
 #ifndef MATCHERS_H_
 #define MATCHERS_H_
 
+#include <gmock/gmock.h>
 #include <string>
 
 MATCHER_P(CharStrMatcher, expectedStr, "")
 {
     std::string actualStr = (const char *)arg;
     return expectedStr == actualStr;
+}
+
+MATCHER(NotNullMatcher, "")
+{
+    return nullptr != arg;
 }
 
 #endif // MATCHERS_H_

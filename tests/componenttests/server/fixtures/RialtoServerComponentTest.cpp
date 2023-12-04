@@ -41,6 +41,16 @@ RialtoServerComponentTest::RialtoServerComponentTest()
     initializeSut();
 }
 
+RialtoServerComponentTest::~RialtoServerComponentTest()
+{
+    wrappers::IFactoryAccessor::instance().glibWrapperFactory() = nullptr;
+    wrappers::IFactoryAccessor::instance().gstWrapperFactory() = nullptr;
+    wrappers::IFactoryAccessor::instance().linuxWrapperFactory() = nullptr;
+    wrappers::IFactoryAccessor::instance().ocdmFactory() = nullptr;
+    wrappers::IFactoryAccessor::instance().ocdmSystemFactory() = nullptr;
+    wrappers::IFactoryAccessor::instance().rdkGstreamerUtilsWrapperFactory() = nullptr;
+}
+
 void RialtoServerComponentTest::willConfigureSocket()
 {
     EXPECT_CALL(*m_linuxWrapperMock, chmod(CharStrMatcher(kSocketName), kDefaultPermissions)).WillOnce(Return(0));
@@ -60,6 +70,11 @@ void RialtoServerComponentTest::configureSutInActiveState()
     auto receivedMessage = expectedMessage.getMessage();
     ASSERT_TRUE(receivedMessage);
     EXPECT_EQ(receivedMessage->sessionserverstate(), ::rialto::SessionServerState::ACTIVE);
+}
+
+void RialtoServerComponentTest::connectClient()
+{
+    EXPECT_TRUE(m_clientStub.connect());
 }
 
 void RialtoServerComponentTest::configureWrappers() const

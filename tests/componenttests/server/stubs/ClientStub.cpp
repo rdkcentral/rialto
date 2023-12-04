@@ -17,26 +17,44 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_CT_MESSAGE_BUILDERS_H_
-#define FIREBOLT_RIALTO_SERVER_CT_MESSAGE_BUILDERS_H_
-
-#include "MediaCommon.h"
-#include "mediakeysmodule.pb.h"
-#include "mediapipelinemodule.pb.h"
-#include "servermanagermodule.pb.h"
+#include "ClientStub.h"
+#include "Constants.h"
 
 namespace firebolt::rialto::server::ct
 {
-// server manager module
-::rialto::SetConfigurationRequest createGenericSetConfigurationReq();
+ClientStub::~ClientStub()
+{
+    if (m_ipcChannel)
+    {
+        m_ipcChannel->disconnect();
+    }
+    if (m_ipcThread.joinable())
+    {
+        m_ipcThread.join();
+    }
+}
 
-// media pipeline module
-::firebolt::rialto::CreateSessionRequest createCreateSessionRequest(const VideoRequirements &requirements);
-::firebolt::rialto::LoadRequest createLoadRequest(int sessionId);
+std::shared_ptr<::firebolt::rialto::ipc::IChannel> ClientStub::getChannel()
+{
+    return m_ipcChannel;
+}
 
-// media keys module
-::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequest();
-::firebolt::rialto::CreateKeySessionRequest createCreateKeySessionRequest(int mediaKeysHandle);
+bool ClientStub::connect()
+{
+    m_ipcChannel = ipc::IChannelFactory::createFactory()->createChannel(kSocketName);
+    if (!m_ipcChannel)
+    {
+        return false;
+    }
+    m_ipcThread = std::thread(&ClientStub::ipcThread, this);
+    return true;
+}
+
+void ClientStub::ipcThread()
+{
+    while (m_ipcChannel->process())
+    {
+        m_ipcChannel->wait(-1);
+    }
+}
 } // namespace firebolt::rialto::server::ct
-
-#endif // FIREBOLT_RIALTO_SERVER_CT_MESSAGE_BUILDERS_H_

@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_CT_RIALTO_SERVER_COMPONENT_TEST_H_
 #define FIREBOLT_RIALTO_SERVER_CT_RIALTO_SERVER_COMPONENT_TEST_H_
 
+#include "ClientStub.h"
 #include "GlibWrapperFactoryMock.h"
 #include "GlibWrapperMock.h"
 #include "GstWrapperFactoryMock.h"
@@ -43,10 +44,11 @@ class RialtoServerComponentTest : public ::testing::Test
 {
 public:
     RialtoServerComponentTest();
-    ~RialtoServerComponentTest() override = default;
+    ~RialtoServerComponentTest() override;
 
     void willConfigureSocket();
     void configureSutInActiveState();
+    void connectClient();
 
 private:
     void configureWrappers() const;
@@ -55,6 +57,7 @@ private:
 
 protected:
     ServerManagerStub m_serverManagerStub;
+    ClientStub m_clientStub;
     std::shared_ptr<testing::StrictMock<wrappers::GlibWrapperFactoryMock>> m_glibWrapperFactoryMock{
         std::make_shared<testing::StrictMock<wrappers::GlibWrapperFactoryMock>>()};
     std::shared_ptr<testing::StrictMock<wrappers::GlibWrapperMock>> m_glibWrapperMock{

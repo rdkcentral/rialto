@@ -29,14 +29,14 @@ namespace firebolt::rialto::server::ct
 ServerManagerStub::ServerManagerStub()
 {
     EXPECT_GE(socketpair(AF_UNIX, SOCK_SEQPACKET | SOCK_CLOEXEC | SOCK_NONBLOCK, 0, m_socks.data()), 0);
-    m_clientThread = std::thread(std::bind(&ServerManagerStub::ipcThread, this));
+    m_ipcThread = std::thread(std::bind(&ServerManagerStub::ipcThread, this));
 }
 
 ServerManagerStub::~ServerManagerStub()
 {
-    if (m_clientThread.joinable())
+    if (m_ipcThread.joinable())
     {
-        m_clientThread.join();
+        m_ipcThread.join();
     }
 }
 

@@ -54,4 +54,20 @@
         <id>unassignedVariable</id>
         <fileName>serverManager/service/source/ConfigHelper.cpp</fileName>
     </suppress>
+    <suppress>
+        <id>syntaxError</id>
+        <fileName>tests/componenttests/server/tests/mediaKeys/MediaKeysTest.cpp</fileName>
+    </suppress>
+    <suppress>
+        <id>syntaxError</id>
+        <fileName>tests/componenttests/server/tests/mediaPipeline/MediaPipelineTest.cpp</fileName>
+    </suppress>
+    <suppress>
+        <id>unusedFunction</id>
+        <fileName>tests/componenttests/server/common/MessageBuilders.cpp</fileName>
+    </suppress>
+    <suppress>
+        <id>unusedFunction</id>
+        <fileName>tests/componenttests/server/tests/mediaPipeline/MediaPipelineTestFixture.cpp</fileName>
+    </suppress>
 </suppressions>

@@ -17,26 +17,30 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_CT_MESSAGE_BUILDERS_H_
-#define FIREBOLT_RIALTO_SERVER_CT_MESSAGE_BUILDERS_H_
-
-#include "MediaCommon.h"
-#include "mediakeysmodule.pb.h"
-#include "mediapipelinemodule.pb.h"
-#include "servermanagermodule.pb.h"
+#include "ActionTraits.h"
+#include "ConfigureAction.h"
+#include "MediaPipelineTestFixture.h"
+#include "MessageBuilders.h"
 
 namespace firebolt::rialto::server::ct
 {
-// server manager module
-::rialto::SetConfigurationRequest createGenericSetConfigurationReq();
+TEST_F(MediaPipelineTest, shouldCreatePipeline)
+{
+    createSession();
+}
 
-// media pipeline module
-::firebolt::rialto::CreateSessionRequest createCreateSessionRequest(const VideoRequirements &requirements);
-::firebolt::rialto::LoadRequest createLoadRequest(int sessionId);
+TEST_F(MediaPipelineTest, shouldFailToLoadWhenSessionIdIsWrong)
+{
+    createSession();
+    auto request = createLoadRequest(m_sessionId + 1);
+    ConfigureAction<Load>(m_clientStub).send(request).expectFailure();
+}
 
-// media keys module
-::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequest();
-::firebolt::rialto::CreateKeySessionRequest createCreateKeySessionRequest(int mediaKeysHandle);
+TEST_F(MediaPipelineTest, shouldLoad)
+{
+    createSession();
+    gstPlayerWillBeCreated();
+    load();
+    gstPlayerWillBeDestructed();
+}
 } // namespace firebolt::rialto::server::ct
-
-#endif // FIREBOLT_RIALTO_SERVER_CT_MESSAGE_BUILDERS_H_
