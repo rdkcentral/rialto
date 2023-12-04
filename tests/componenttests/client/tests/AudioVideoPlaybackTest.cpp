@@ -45,13 +45,14 @@ public:
 /*
  * Component Test:
  * Test Objective:
- * 
- * 
+ *  Test the playback of video and audio MSE content. The test transitions through the playback states
+ *  buffering 27 frames of both audio and video content before termination of the session. All the metadata and 
+ *  media data written to the shared buffer is checked for accuracy.
  *
  * Test Setup:
  *  Language: C++
  *  Testing Framework: Google Test
- *  Components: 
+ *  Components: MediaPipeline
  *
  * Test Initialize:
  *  Create memory region for the shared buffer.
@@ -148,14 +149,16 @@ public:
  *
  *  Step 17: Destroy media session
  *   Destroy instance of MediaPipeline.
+ *   Expect that the session is destroyed on the server.
  *
  * Test Teardown:
  *  Memory region created for the shared buffer is closed.
  *  Server is terminated.
  *
  * Expected Results:
- * 
- *  
+ *  All API calls are propagated to the server.
+ *  The state of the MediaPipeline is successfully negotiationed in the normal playback scenario.
+ *  Data is successfully written to the shared memory for both audio and video.
  *
  * Code:
  */

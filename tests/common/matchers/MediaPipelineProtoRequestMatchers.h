@@ -26,11 +26,6 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#define MATCHER_P13(name, p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, description) \
-  GMOCK_INTERNAL_MATCHER(name, name##MatcherP11, description,                  \
-                         (#p0, #p1, #p2, #p3, #p4, #p5, #p6, #p7, #p8, #p9, #p10, #p11, #p12),   \
-                         (p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12))
-
 MATCHER_P2(createSessionRequestMatcher, maxWidth, maxHeight, "")
 {
     const ::firebolt::rialto::CreateSessionRequest *kRequest =
