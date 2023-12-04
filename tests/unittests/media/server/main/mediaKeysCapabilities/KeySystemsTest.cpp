@@ -42,7 +42,7 @@ protected:
     std::shared_ptr<StrictMock<OcdmFactoryMock>> m_ocdmFactoryMock;
     std::shared_ptr<StrictMock<OcdmMock>> m_ocdmMock;
     std::shared_ptr<StrictMock<OcdmSystemFactoryMock>> m_ocdmSystemFactoryMock;
-    std::unique_ptr<StrictMock<OcdmSystemMock>> m_ocdmSystem;
+    std::shared_ptr<StrictMock<OcdmSystemMock>> m_ocdmSystem;
     StrictMock<OcdmSystemMock> *m_ocdmSystemMock;
     std::shared_ptr<IMediaKeysCapabilities> m_mediaKeysCapabilities;
 
@@ -54,7 +54,7 @@ protected:
         : m_ocdmFactoryMock{std::make_shared<StrictMock<OcdmFactoryMock>>()},
           m_ocdmMock{std::make_shared<StrictMock<OcdmMock>>()},
           m_ocdmSystemFactoryMock{std::make_shared<StrictMock<OcdmSystemFactoryMock>>()},
-          m_ocdmSystem{std::make_unique<StrictMock<OcdmSystemMock>>()}, m_ocdmSystemMock{m_ocdmSystem.get()}
+          m_ocdmSystem{std::make_shared<StrictMock<OcdmSystemMock>>()}, m_ocdmSystemMock{m_ocdmSystem.get()}
     {
         EXPECT_CALL(*m_ocdmFactoryMock, getOcdm()).WillOnce(Return(m_ocdmMock));
 

@@ -22,14 +22,9 @@
 
 namespace firebolt::rialto::wrappers
 {
-std::shared_ptr<ILinuxWrapperFactory> ILinuxWrapperFactory::createFactory()
+std::shared_ptr<ILinuxWrapper> LinuxWrapperFactory::createLinuxWrapper() const
 {
-    return std::make_shared<LinuxWrapperFactory>();
-}
-
-std::unique_ptr<ILinuxWrapper> LinuxWrapperFactory::createLinuxWrapper() const
-{
-    return std::make_unique<LinuxWrapper>();
+    return std::make_shared<LinuxWrapper>();
 }
 
 int LinuxWrapper::close(int fd) const

@@ -17,14 +17,21 @@
  * limitations under the License.
  */
 
-#include "IOcdm.h"
+#ifndef FIREBOLT_RIALTO_WRAPPERS_OCDM_SYSTEM_FACTORY_MOCK_H_
+#define FIREBOLT_RIALTO_WRAPPERS_OCDM_SYSTEM_FACTORY_MOCK_H_
+
+#include "IOcdmSystem.h"
+#include <gmock/gmock.h>
 #include <memory>
+#include <string>
 
 namespace firebolt::rialto::wrappers
 {
-// Stub create factory for compilation.
-std::shared_ptr<IOcdmFactory> IOcdmFactory::createFactory()
+class OcdmSystemFactoryMock : public IOcdmSystemFactory
 {
-    return nullptr;
-}
+public:
+    MOCK_METHOD(std::shared_ptr<IOcdmSystem>, createOcdmSystem, (const std::string &keySystem), (const, override));
+};
 } // namespace firebolt::rialto::wrappers
+
+#endif // FIREBOLT_RIALTO_WRAPPERS_OCDM_SYSTEM_FACTORY_MOCK_H_

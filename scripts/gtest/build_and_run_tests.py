@@ -70,6 +70,8 @@ def buildAndRunGTests(args, f, buildDefines, suitesToRun):
     os.environ["RIALTO_SOCKET_PATH"] = "/tmp/rialto-0"
     # Set env variable to disable journald logging
     os.environ["RIALTO_CONSOLE_LOG"] = "1"
+    # Set env variable to enable debug prints
+    os.environ["RIALTO_DEBUG"] = "5"
 
     # Clean if required
     if args['clean'] == True:

@@ -33,7 +33,7 @@ namespace firebolt::rialto::wrappers
 class OcdmSystemFactory : public IOcdmSystemFactory
 {
 public:
-    std::unique_ptr<IOcdmSystem> createOcdmSystem(const std::string &keySystem) const override;
+    std::shared_ptr<IOcdmSystem> createOcdmSystem(const std::string &keySystem) const override;
 };
 
 /**

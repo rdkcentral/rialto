@@ -17,24 +17,10 @@
  * limitations under the License.
  */
 
-#include "CdmService.h"
-#include "ControlService.h"
 #include "GstInit.h"
-#include "IControlServerInternal.h"
-#include "IHeartbeatProcedure.h"
-#include "IMediaKeysCapabilities.h"
-#include "IMediaKeysServerInternal.h"
-#include "IMediaPipelineCapabilities.h"
-#include "IMediaPipelineServerInternal.h"
-#include "ISharedMemoryBuffer.h"
-#include "IWebAudioPlayerServerInternal.h"
-#include "IpcFactory.h"
-#include "PlaybackService.h"
+#include "IApplicationSessionServer.h"
 #include "RialtoServerLogging.h"
-#include "SessionServerManager.h"
-#include <cstdlib>
 #include <cstring>
-#include <thread>
 
 // NOLINT(build/filename_format)
 
@@ -53,24 +39,13 @@ int main(int argc, char *argv[])
 
     firebolt::rialto::server::gstInitalise(argc, argv);
 
-    firebolt::rialto::server::ipc::IpcFactory ipcFactory;
-    firebolt::rialto::server::service::ControlService controlService{
-        firebolt::rialto::server::IControlServerInternalFactory::createFactory()};
-    firebolt::rialto::server::service::CdmService
-        cdmService{firebolt::rialto::server::IMediaKeysServerInternalFactory::createFactory(),
-                   firebolt::rialto::IMediaKeysCapabilitiesFactory::createFactory()};
-    firebolt::rialto::server::service::PlaybackService
-        playbackService{firebolt::rialto::server::IMediaPipelineServerInternalFactory::createFactory(),
-                        firebolt::rialto::IMediaPipelineCapabilitiesFactory::createFactory(),
-                        firebolt::rialto::server::IWebAudioPlayerServerInternalFactory::createFactory(),
-                        firebolt::rialto::server::ISharedMemoryBufferFactory::createFactory(), cdmService};
-    firebolt::rialto::server::service::SessionServerManager
-        serviceManager{ipcFactory, playbackService, cdmService, controlService,
-                       firebolt::rialto::server::IHeartbeatProcedureFactory::createFactory()};
-    if (!serviceManager.initialize(argc, argv))
+    auto appSessionServer =
+        firebolt::rialto::server::IApplicationSessionServerFactory::getFactory()->createApplicationSessionServer();
+
+    if (!appSessionServer->init(argc, argv))
     {
         return EXIT_FAILURE;
     }
-    serviceManager.startService();
+    appSessionServer->startService();
     return EXIT_SUCCESS;
 }

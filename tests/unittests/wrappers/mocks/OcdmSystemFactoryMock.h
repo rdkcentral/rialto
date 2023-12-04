@@ -30,7 +30,7 @@ namespace firebolt::rialto::wrappers
 class OcdmSystemFactoryMock : public IOcdmSystemFactory
 {
 public:
-    MOCK_METHOD(std::unique_ptr<IOcdmSystem>, createOcdmSystem, (const std::string &keySystem), (const, override));
+    MOCK_METHOD(std::shared_ptr<IOcdmSystem>, createOcdmSystem, (const std::string &keySystem), (const, override));
 };
 } // namespace firebolt::rialto::wrappers
 

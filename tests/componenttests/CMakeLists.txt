@@ -18,3 +18,4 @@
 #
 
 add_subdirectory( client EXCLUDE_FROM_ALL )
+add_subdirectory( server EXCLUDE_FROM_ALL )

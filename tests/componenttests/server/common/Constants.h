@@ -17,12 +17,18 @@
  * limitations under the License.
  */
 
-#include "IRdkGstreamerUtilsWrapper.h"
+#ifndef FIREBOLT_RIALTO_SERVER_CT_CONSTANTS_H_
+#define FIREBOLT_RIALTO_SERVER_CT_CONSTANTS_H_
 
-namespace firebolt::rialto::wrappers
+#include <string>
+
+namespace firebolt::rialto::server::ct
 {
-std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> IRdkGstreamerUtilsWrapperFactory::getFactory()
-{
-    return nullptr;
-}
-} // namespace firebolt::rialto::wrappers
+constexpr int kMaxPlaybacks{2};
+constexpr unsigned kDefaultPermissions{0666};
+const std::string kSocketName{"/tmp/rialto-0"};
+const std::string kDisplayName{"waylanddisplay"};
+const std::string kOwnerName{"root"};
+} // namespace firebolt::rialto::server::ct
+
+#endif // FIREBOLT_RIALTO_SERVER_CT_CONSTANTS_H_
