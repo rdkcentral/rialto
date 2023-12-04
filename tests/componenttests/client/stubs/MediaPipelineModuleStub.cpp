@@ -120,8 +120,8 @@ namespace firebolt::rialto::ct::stub
 {
 MediaPipelineModuleStub::MediaPipelineModuleStub(
     const std::shared_ptr<::firebolt::rialto::MediaPipelineModule> &mediaPipelineModuleMock)
+    : m_controlModuleMock{mediaPipelineModuleMock}
 {
-    m_mediaPipelineModuleMock = mediaPipelineModuleMock;
 }
 
 MediaPipelineModuleStub::~MediaPipelineModuleStub() {}
@@ -146,16 +146,6 @@ void MediaPipelineModuleStub::notifyNetworkStateChangeEvent(int sessionId, Netwo
     getClient()->sendEvent(event);
 }
 
-void MediaPipelineModuleStub::notifyPositionChangeEvent(int sessionId, int64_t position)
-{
-    waitForClientConnect();
-
-    auto event = std::make_shared<firebolt::rialto::PositionChangeEvent>();
-    event->set_session_id(sessionId);
-    event->set_position(position);
-    getClient()->sendEvent(event);
-}
-
 void MediaPipelineModuleStub::notifyNeedMediaDataEvent(int sessionId, int32_t sourceId, size_t frameCount,
                                                        uint32_t needDataRequestId,
                                                        const std::shared_ptr<MediaPlayerShmInfo> &shmInfo)
@@ -171,45 +161,6 @@ void MediaPipelineModuleStub::notifyNeedMediaDataEvent(int sessionId, int32_t so
     event->mutable_shm_info()->set_metadata_offset(shmInfo->metadataOffset);
     event->mutable_shm_info()->set_media_data_offset(shmInfo->mediaDataOffset);
     event->mutable_shm_info()->set_max_media_bytes(shmInfo->maxMediaBytes);
-
-    getClient()->sendEvent(event);
-}
-
-void MediaPipelineModuleStub::notifyQosEvent(int sessionId, int32_t sourceId, const QosInfo &qosInfo)
-{
-    waitForClientConnect();
-
-    auto event = std::make_shared<firebolt::rialto::QosEvent>();
-    event->set_session_id(sessionId);
-    event->set_source_id(sourceId);
-    event->mutable_qos_info()->set_processed(qosInfo.processed);
-    event->mutable_qos_info()->set_dropped(qosInfo.dropped);
-
-    getClient()->sendEvent(event);
-}
-
-void MediaPipelineModuleStub::notifyBufferUnderflowEvent(int sessionId, int32_t sourceId)
-{
-    waitForClientConnect();
-
-    auto event = std::make_shared<firebolt::rialto::BufferUnderflowEvent>();
-    event->set_session_id(sessionId);
-    event->set_source_id(sourceId);
-
-    getClient()->sendEvent(event);
-}
-
-void MediaPipelineModuleStub::notifySetLogLevelsEvent(RIALTO_DEBUG_LEVEL defaultLogLevels,
-                                                      RIALTO_DEBUG_LEVEL clientLogLevels,
-                                                      RIALTO_DEBUG_LEVEL ipcLogLevels, RIALTO_DEBUG_LEVEL commonLogLevels)
-{
-    waitForClientConnect();
-
-    auto event = std::make_shared<firebolt::rialto::SetLogLevelsEvent>();
-    event->set_defaultloglevels(static_cast<std::uint32_t>(defaultLogLevels));
-    event->set_clientloglevels(static_cast<std::uint32_t>(clientLogLevels));
-    event->set_ipcloglevels(static_cast<std::uint32_t>(ipcLogLevels));
-    event->set_commonloglevels(static_cast<std::uint32_t>(commonLogLevels));
 
     getClient()->sendEvent(event);
 }

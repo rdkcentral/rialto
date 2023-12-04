@@ -46,8 +46,8 @@ convertApplicationState(const firebolt::rialto::ApplicationState &state)
 namespace firebolt::rialto::ct::stub
 {
 ControlModuleStub::ControlModuleStub(const std::shared_ptr<::firebolt::rialto::ControlModule> &controlModuleMock)
+    : m_controlModuleMock{controlModuleMock}
 {
-    m_controlModuleMock = controlModuleMock;
 }
 
 ControlModuleStub::~ControlModuleStub() {}
