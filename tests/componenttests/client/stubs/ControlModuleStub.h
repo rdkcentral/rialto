@@ -17,30 +17,31 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_COMPONENTTESTS_CONTROL_MODULE_STUB_H_
-#define FIREBOLT_RIALTO_COMPONENTTESTS_CONTROL_MODULE_STUB_H_
+#ifndef FIREBOLT_RIALTO_CT_STUB_CONTROL_MODULE_STUB_H_
+#define FIREBOLT_RIALTO_CT_STUB_CONTROL_MODULE_STUB_H_
 
 #include "ControlCommon.h"
 #include "IIpcServer.h"
 #include "controlmodule.pb.h"
+#include <memory>
 
 namespace firebolt::rialto::ct::stub
 {
 class ControlModuleStub
 {
 public:
-    ControlModuleStub(const std::shared_ptr<::firebolt::rialto::ControlModule>& controlModuleMock);
+    explicit ControlModuleStub(const std::shared_ptr<::firebolt::rialto::ControlModule> &controlModuleMock);
     ~ControlModuleStub();
 
     void notifyApplicationStateEvent(const int32_t controlId, const firebolt::rialto::ApplicationState &state);
 
     // Client helpers
     virtual void waitForClientConnect() = 0;
-    virtual std::shared_ptr<::firebolt::rialto::ipc::IClient>& getClient() = 0;
+    virtual std::shared_ptr<::firebolt::rialto::ipc::IClient> &getClient() = 0;
 
 protected:
     std::shared_ptr<::firebolt::rialto::ControlModule> m_controlModuleMock;
 };
 } // namespace firebolt::rialto::ct::stub
 
-#endif // FIREBOLT_RIALTO_COMPONENTTESTS_CONTROL_MODULE_STUB_H_
+#endif // FIREBOLT_RIALTO_CT_STUB_CONTROL_MODULE_STUB_H_

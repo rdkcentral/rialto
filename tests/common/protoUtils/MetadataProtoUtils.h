@@ -20,8 +20,8 @@
 #ifndef METADATA_PROTO_UTILS_H_
 #define METADATA_PROTO_UTILS_H_
 
-#include "metadata.pb.h"
 #include "MediaCommon.h"
+#include "metadata.pb.h"
 
 firebolt::rialto::SegmentAlignment
 convertSegmentAlignment(const firebolt::rialto::MediaSegmentMetadata_SegmentAlignment &segmentAlignment)

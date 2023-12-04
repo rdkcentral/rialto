@@ -31,9 +31,7 @@ ControlTestMethods::ControlTestMethods()
 {
 }
 
-ControlTestMethods::~ControlTestMethods()
-{
-}
+ControlTestMethods::~ControlTestMethods() {}
 
 void ControlTestMethods::createControl()
 {

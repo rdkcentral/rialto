@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef COMPONENT_TEST_BASE_H_
-#define COMPONENT_TEST_BASE_H_
+#ifndef CLIENT_COMPONENT_TEST_H_
+#define CLIENT_COMPONENT_TEST_H_
 
 #include "ControlTestMethods.h"
 #include "MediaPipelineTestMethods.h"
@@ -60,10 +60,10 @@ protected:
     void waitEvent() override;
 
     // Get server
-    std::shared_ptr<ServerStub>& getServerStub() override;
+    std::shared_ptr<ServerStub> &getServerStub() override;
 
     int32_t getShmFd() override;
-    void * getShmAddress() override;
+    void *getShmAddress() override;
     uint32_t getShmSize() override;
 
     // Test Methods
@@ -76,4 +76,4 @@ private:
     void termRealShm();
 };
 
-#endif // COMPONENT_TEST_BASE_H_
+#endif // CLIENT_COMPONENT_TEST_H_

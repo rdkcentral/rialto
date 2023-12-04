@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_IPC_MEDIA_PIPELINE_MODULE_MOCK_H_
-#define FIREBOLT_RIALTO_IPC_MEDIA_PIPELINE_MODULE_MOCK_H_
+#ifndef MEDIA_PIPELINE_MODULE_MOCK_H_
+#define MEDIA_PIPELINE_MODULE_MOCK_H_
 
 #include "SchemaVersion.h"
 #include "mediapipelinemodule.pb.h"
@@ -43,7 +43,8 @@ public:
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::RemoveSourceRequest *request,
                  ::firebolt::rialto::RemoveSourceResponse *response, ::google::protobuf::Closure *done));
     MOCK_METHOD(void, allSourcesAttached,
-                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::AllSourcesAttachedRequest *request,
+                (::google::protobuf::RpcController * controller,
+                 const ::firebolt::rialto::AllSourcesAttachedRequest *request,
                  ::firebolt::rialto::AllSourcesAttachedResponse *response, ::google::protobuf::Closure *done));
     MOCK_METHOD(void, setVideoWindow,
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::SetVideoWindowRequest *request,
@@ -114,4 +115,4 @@ public:
     virtual ~MediaPipelineModuleMock() = default;
 };
 
-#endif // FIREBOLT_RIALTO_IPC_MEDIA_PIPELINE_MODULE_MOCK_H_
+#endif // MEDIA_PIPELINE_MODULE_MOCK_H_

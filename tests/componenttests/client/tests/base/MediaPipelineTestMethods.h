@@ -20,20 +20,22 @@
 #ifndef MEDIA_PIPELINE_TEST_METHODS_H_
 #define MEDIA_PIPELINE_TEST_METHODS_H_
 
+#include "IMediaPipeline.h"
 #include "MediaPipelineClientMock.h"
 #include "MediaPipelineModuleMock.h"
 #include "ServerStub.h"
-#include "IMediaPipeline.h"
 #include <gtest/gtest.h>
+#include <map>
+#include <memory>
 
 using ::testing::_;
 using ::testing::DoAll;
 using ::testing::Invoke;
+using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
 using ::testing::SetArgPointee;
 using ::testing::StrictMock;
 using ::testing::WithArgs;
-using ::testing::InvokeWithoutArgs;
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::ct::stub;
@@ -112,8 +114,8 @@ protected:
     // Component test helpers
     virtual void notifyEvent() = 0;
     virtual void waitEvent() = 0;
-    virtual std::shared_ptr<ServerStub>& getServerStub() = 0;
-    virtual void * getShmAddress() = 0;
+    virtual std::shared_ptr<ServerStub> &getServerStub() = 0;
+    virtual void *getShmAddress() = 0;
 
 private:
     const MediaPlayerShmInfo &m_kAudioShmInfo;

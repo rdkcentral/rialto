@@ -19,8 +19,8 @@
 
 #include "MediaPipelineModuleServiceTestsFixture.h"
 #include "MediaPipelineModuleService.h"
-#include "MediaSourceUtil.h"
 #include "MediaPipelineProtoUtils.h"
+#include "MediaSourceUtil.h"
 #include <fcntl.h>
 #include <string>
 #include <sys/stat.h>

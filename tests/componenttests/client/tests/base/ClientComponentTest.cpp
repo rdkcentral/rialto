@@ -18,16 +18,16 @@
  */
 
 #include "ClientComponentTest.h"
-#include <memory>
-#include <utility>
-#include <linux/memfd.h>
 #include <cstring>
 #include <fcntl.h>
+#include <linux/memfd.h>
+#include <memory>
 #include <numeric>
 #include <stdexcept>
 #include <sys/mman.h>
 #include <syscall.h>
 #include <unistd.h>
+#include <utility>
 
 #if !defined(SYS_memfd_create)
 #if defined(__NR_memfd_create)
@@ -57,7 +57,6 @@
 #define F_SEAL_GROW 0x0004
 #define F_SEAL_WRITE 0x0008
 #endif
-
 
 namespace
 {
@@ -98,7 +97,7 @@ void ClientComponentTest::waitEvent()
     m_eventReceived = false;
 }
 
-std::shared_ptr<ServerStub>& ClientComponentTest::getServerStub()
+std::shared_ptr<ServerStub> &ClientComponentTest::getServerStub()
 {
     return m_serverStub;
 }
@@ -126,7 +125,7 @@ void ClientComponentTest::initRealShm()
 void ClientComponentTest::termRealShm()
 {
     ASSERT_EQ(munmap(m_address, kSharedMemorySize), 0);
-    std::cout<<m_fd<<std::endl;
+    std::cout << m_fd << std::endl;
     close(m_fd);
 }
 
@@ -135,7 +134,7 @@ int32_t ClientComponentTest::getShmFd()
     return m_fd;
 }
 
-void * ClientComponentTest::getShmAddress()
+void *ClientComponentTest::getShmAddress()
 {
     return m_address;
 }

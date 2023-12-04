@@ -23,41 +23,96 @@
 #include "MetadataProtoUtils.h"
 #include "metadata.pb.h"
 #include <memory>
+#include <string>
+#include <vector>
 
 namespace
 {
-    constexpr VideoRequirements kVideoRequirements{123, 456};
-    constexpr int32_t kSessionId{10};
-    constexpr MediaType kMediaType = MediaType::MSE;
-    const std::string kMimeType = "mime";
-    const std::string kUrl = "mse://1";
-    constexpr int32_t kAudioSourceId = 1;
-    constexpr int32_t kVideoSourceId = 2;
-    constexpr firebolt::rialto::SegmentAlignment kAlignment = firebolt::rialto::SegmentAlignment::UNDEFINED;
-    constexpr firebolt::rialto::StreamFormat kStreamFormat = firebolt::rialto::StreamFormat::RAW;
-    constexpr int32_t kWidthUhd = 3840;
-    constexpr int32_t kHeightUhd = 2160;
-    constexpr uint32_t kNumberOfChannels = 6;
-    constexpr uint32_t kSampleRate = 48000;
-    constexpr bool kHasNoDrm = false;
-    const std::string kCodecSpecificConfigStr = "1243567";
-    const std::shared_ptr<firebolt::rialto::CodecData> kCodecData{std::make_shared<firebolt::rialto::CodecData>()};
-    constexpr size_t kFrameCountBeforePreroll = 3;
-    constexpr size_t kMaxFrameCount = 20;
-    const std::shared_ptr<MediaPlayerShmInfo> kNullShmInfo;
-    constexpr int64_t kTimeStamp = 1701352637000;
-    constexpr int64_t kDuration = 1;
-    firebolt::rialto::Fraction kFrameRate = {1,1};
+constexpr VideoRequirements kVideoRequirements{123, 456};
+constexpr int32_t kSessionId{10};
+constexpr MediaType kMediaType = MediaType::MSE;
+const std::string kMimeType = "mime";
+const std::string kUrl = "mse://1";
+constexpr int32_t kAudioSourceId = 1;
+constexpr int32_t kVideoSourceId = 2;
+constexpr firebolt::rialto::SegmentAlignment kAlignment = firebolt::rialto::SegmentAlignment::UNDEFINED;
+constexpr firebolt::rialto::StreamFormat kStreamFormat = firebolt::rialto::StreamFormat::RAW;
+constexpr int32_t kWidthUhd = 3840;
+constexpr int32_t kHeightUhd = 2160;
+constexpr uint32_t kNumberOfChannels = 6;
+constexpr uint32_t kSampleRate = 48000;
+constexpr bool kHasNoDrm = false;
+const std::string kCodecSpecificConfigStr = "1243567";
+const std::shared_ptr<firebolt::rialto::CodecData> kCodecData{std::make_shared<firebolt::rialto::CodecData>()};
+constexpr size_t kFrameCountBeforePreroll = 3;
+constexpr size_t kMaxFrameCount = 20;
+const std::shared_ptr<MediaPlayerShmInfo> kNullShmInfo;
+constexpr int64_t kTimeStamp = 1701352637000;
+constexpr int64_t kDuration = 1;
+firebolt::rialto::Fraction kFrameRate = {1, 1};
 
-    //MediaSegments
-    const std::string kAudioSegments[27] = {"plhyftrsf", "svgywwx", "0kine64hd~;envss", "nxwfy5fvbgg^sfh7&", "svrvy63fbw1sxg", "dfc", "fhji94gjbf", "g0494vf", "fso4[;dw]", "pp[;,6mkf]", "o", "gre94", "g04[]", "ogjow", "fgrejvfd", "gjkt92ijs", "xnute", "0g", "9jsonf", "g0e9r0[fsss]", "44444444", "gf0iksikgs", "ge943pv", "ge-q[[]]", "803batvgff", "vfe83", "94FG"};
-    const std::string kVideoSegments[27] = {"lloefewhrwohruwhfr9eee8833hbcjka", "#mcuruiw83udbhc", "cnvbvfbuhrew8383hbvbckzoaopalwlelhvrwvc", "nvid9", "viru80202-idendhjx cefebfihgrwwwwcdcwd", "ncie83uuwonvbbvaoaodoekjvbv  vyreifur779y", "yr6w4hgsbhjk674kuur", "g5u7khdhg;popuyteyeyjhdjy", "fhttwtjbts5568khdtjy", "hrjkl8p09[jtrwhstry5twyyuhhgdhtyww455y]", "htrkuyr", "yu764thgkio9p9trw545jjhf", "ju;p'#hsgr55hthghh", "hrtjnaty54", "huykil0[-thtshngds5435yjjiulkitgdhhh]", "hdml;pup'654sfshgshyu65tgni5566754ui76i", "fdshyj7647whyjdjl;;pyuhdgtyhyjey", "trjjyte", "hdth4y67ggshqqq125tjytel7t", "ku00-uyuj766677jkutjytydyj", "yyt", "shtrnkkil ik;oiy,etq 525425", "hyrejhye y6u2255y6858geqszz", "ngkyirlkrst45ghmn,", "jkl;p'#tshr4faggra", "greabfdbnmur7y64wnguyoyrar55shshjw", "G9042HG"};
+// MediaSegments
+const std::string kAudioSegments[27] = {"plhyftrsf",
+                                        "svgywwx",
+                                        "0kine64hd~;envss",
+                                        "nxwfy5fvbgg^sfh7&",
+                                        "svrvy63fbw1sxg",
+                                        "dfc",
+                                        "fhji94gjbf",
+                                        "g0494vf",
+                                        "fso4[;dw]",
+                                        "pp[;,6mkf]",
+                                        "o",
+                                        "gre94",
+                                        "g04[]",
+                                        "ogjow",
+                                        "fgrejvfd",
+                                        "gjkt92ijs",
+                                        "xnute",
+                                        "0g",
+                                        "9jsonf",
+                                        "g0e9r0[fsss]",
+                                        "44444444",
+                                        "gf0iksikgs",
+                                        "ge943pv",
+                                        "ge-q[[]]",
+                                        "803batvgff",
+                                        "vfe83",
+                                        "94FG"};
+const std::string kVideoSegments[27] = {"lloefewhrwohruwhfr9eee8833hbcjka",
+                                        "#mcuruiw83udbhc",
+                                        "cnvbvfbuhrew8383hbvbckzoaopalwlelhvrwvc",
+                                        "nvid9",
+                                        "viru80202-idendhjx cefebfihgrwwwwcdcwd",
+                                        "ncie83uuwonvbbvaoaodoekjvbv  vyreifur779y",
+                                        "yr6w4hgsbhjk674kuur",
+                                        "g5u7khdhg;popuyteyeyjhdjy",
+                                        "fhttwtjbts5568khdtjy",
+                                        "hrjkl8p09[jtrwhstry5twyyuhhgdhtyww455y]",
+                                        "htrkuyr",
+                                        "yu764thgkio9p9trw545jjhf",
+                                        "ju;p'#hsgr55hthghh",
+                                        "hrtjnaty54",
+                                        "huykil0[-thtshngds5435yjjiulkitgdhhh]",
+                                        "hdml;pup'654sfshgshyu65tgni5566754ui76i",
+                                        "fdshyj7647whyjdjl;;pyuhdgtyhyjey",
+                                        "trjjyte",
+                                        "hdth4y67ggshqqq125tjytel7t",
+                                        "ku00-uyuj766677jkutjytydyj",
+                                        "yyt",
+                                        "shtrnkkil ik;oiy,etq 525425",
+                                        "hyrejhye y6u2255y6858geqszz",
+                                        "ngkyirlkrst45ghmn,",
+                                        "jkl;p'#tshr4faggra",
+                                        "greabfdbnmur7y64wnguyoyrar55shshjw",
+                                        "G9042HG"};
 } // namespace
 
-MediaPipelineTestMethods::MediaPipelineTestMethods(const MediaPlayerShmInfo &audioShmInfo, const MediaPlayerShmInfo &videoShmInfo)
+MediaPipelineTestMethods::MediaPipelineTestMethods(const MediaPlayerShmInfo &audioShmInfo,
+                                                   const MediaPlayerShmInfo &videoShmInfo)
     : m_mediaPipelineClientMock{std::make_shared<StrictMock<MediaPipelineClientMock>>()},
-      m_mediaPipelineModuleMock{std::make_shared<StrictMock<MediaPipelineModuleMock>>()},
-      m_kAudioShmInfo{audioShmInfo}, m_kVideoShmInfo{videoShmInfo}
+      m_mediaPipelineModuleMock{std::make_shared<StrictMock<MediaPipelineModuleMock>>()}, m_kAudioShmInfo{audioShmInfo},
+      m_kVideoShmInfo{videoShmInfo}
 {
     kCodecData->data = std::vector<std::uint8_t>{'T', 'E', 'S', 'T'};
     kCodecData->type = firebolt::rialto::CodecDataType::BUFFER;
@@ -65,11 +120,10 @@ MediaPipelineTestMethods::MediaPipelineTestMethods(const MediaPlayerShmInfo &aud
     resetWriteLocation(audioShmInfo, videoShmInfo);
 }
 
-MediaPipelineTestMethods::~MediaPipelineTestMethods()
-{
-}
+MediaPipelineTestMethods::~MediaPipelineTestMethods() {}
 
-void MediaPipelineTestMethods::resetWriteLocation(const MediaPlayerShmInfo &audioShmInfo, const MediaPlayerShmInfo &videoShmInfo)
+void MediaPipelineTestMethods::resetWriteLocation(const MediaPlayerShmInfo &audioShmInfo,
+                                                  const MediaPlayerShmInfo &videoShmInfo)
 {
     m_locationToWriteAudio->maxMetadataBytes = audioShmInfo.maxMetadataBytes;
     m_locationToWriteAudio->metadataOffset = audioShmInfo.metadataOffset;
@@ -83,7 +137,9 @@ void MediaPipelineTestMethods::resetWriteLocation(const MediaPlayerShmInfo &audi
 
 void MediaPipelineTestMethods::shouldCreateMediaSession()
 {
-    EXPECT_CALL(*m_mediaPipelineModuleMock, createSession(_, createSessionRequestMatcher(kVideoRequirements.maxWidth, kVideoRequirements.maxHeight), _, _))
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                createSession(_, createSessionRequestMatcher(kVideoRequirements.maxWidth, kVideoRequirements.maxHeight),
+                              _, _))
         .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->createSessionResponse(kSessionId)),
                         WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
 }
@@ -97,7 +153,8 @@ void MediaPipelineTestMethods::createMediaPipeline()
 
 void MediaPipelineTestMethods::shouldLoad()
 {
-    EXPECT_CALL(*m_mediaPipelineModuleMock, load(_, loadRequestMatcher(kSessionId, convertMediaType(kMediaType), kMimeType, kUrl), _, _))
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                load(_, loadRequestMatcher(kSessionId, convertMediaType(kMediaType), kMimeType, kUrl), _, _))
         .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
 }
 
@@ -131,8 +188,12 @@ void MediaPipelineTestMethods::pause()
 
 void MediaPipelineTestMethods::shouldAttachVideoSource()
 {
-    EXPECT_CALL(*m_mediaPipelineModuleMock, attachSource(_, attachSourceRequestMatcherVideo(kSessionId,
-                                                           kMimeType.c_str(), kHasNoDrm, kWidthUhd, kHeightUhd, kAlignment, kCodecData, convertStreamFormat(kStreamFormat)), _, _))
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                attachSource(_,
+                             attachSourceRequestMatcherVideo(kSessionId, kMimeType.c_str(), kHasNoDrm, kWidthUhd,
+                                                             kHeightUhd, kAlignment, kCodecData,
+                                                             convertStreamFormat(kStreamFormat)),
+                             _, _))
         .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->attachSourceResponse(kVideoSourceId)),
                         WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
 }
@@ -140,14 +201,19 @@ void MediaPipelineTestMethods::shouldAttachVideoSource()
 void MediaPipelineTestMethods::attachSourceVideo()
 {
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
-        std::make_unique<IMediaPipeline::MediaSourceVideo>(kMimeType.c_str(), kHasNoDrm, kWidthUhd, kHeightUhd, kAlignment, kStreamFormat, kCodecData);
+        std::make_unique<IMediaPipeline::MediaSourceVideo>(kMimeType.c_str(), kHasNoDrm, kWidthUhd, kHeightUhd,
+                                                           kAlignment, kStreamFormat, kCodecData);
     EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), true);
 }
 
 void MediaPipelineTestMethods::shouldAttachAudioSource()
 {
-    EXPECT_CALL(*m_mediaPipelineModuleMock, attachSource(_, attachSourceRequestMatcherAudio(kSessionId,
-                                                           kMimeType.c_str(), kHasNoDrm, kAlignment, kNumberOfChannels, kSampleRate, kCodecSpecificConfigStr, kCodecData, convertStreamFormat(kStreamFormat)), _, _))
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                attachSource(_,
+                             attachSourceRequestMatcherAudio(kSessionId, kMimeType.c_str(), kHasNoDrm, kAlignment,
+                                                             kNumberOfChannels, kSampleRate, kCodecSpecificConfigStr,
+                                                             kCodecData, convertStreamFormat(kStreamFormat)),
+                             _, _))
         .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->attachSourceResponse(kAudioSourceId)),
                         WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
 }
@@ -159,7 +225,8 @@ void MediaPipelineTestMethods::attachSourceAudio()
     AudioConfig audioConfig{kNumberOfChannels, kSampleRate, codecSpecificConfig};
 
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
-        std::make_unique<IMediaPipeline::MediaSourceAudio>(kMimeType.c_str(), kHasNoDrm, audioConfig, kAlignment, kStreamFormat, kCodecData);
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(kMimeType.c_str(), kHasNoDrm, audioConfig, kAlignment,
+                                                           kStreamFormat, kCodecData);
     EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), true);
 }
 
@@ -188,8 +255,10 @@ void MediaPipelineTestMethods::sendNotifyPlaybackStateIdle()
 
 void MediaPipelineTestMethods::shouldNotifyNeedDataAudioBeforePreroll()
 {
-    EXPECT_CALL(*m_mediaPipelineClientMock, notifyNeedMediaData(kAudioSourceId, kFrameCountBeforePreroll, m_needDataRequestId, kNullShmInfo))
-        .WillOnce(InvokeWithoutArgs([&]()
+    EXPECT_CALL(*m_mediaPipelineClientMock,
+                notifyNeedMediaData(kAudioSourceId, kFrameCountBeforePreroll, m_needDataRequestId, kNullShmInfo))
+        .WillOnce(InvokeWithoutArgs(
+            [&]()
             {
                 // Set the firstSegment flag
                 m_firstSegmentOfNeedData = true;
@@ -199,14 +268,17 @@ void MediaPipelineTestMethods::shouldNotifyNeedDataAudioBeforePreroll()
 
 void MediaPipelineTestMethods::sendNotifyNeedDataAudioBeforePreroll()
 {
-    getServerStub()->notifyNeedMediaDataEvent(kSessionId, kAudioSourceId, kFrameCountBeforePreroll, m_needDataRequestId, m_locationToWriteAudio);
+    getServerStub()->notifyNeedMediaDataEvent(kSessionId, kAudioSourceId, kFrameCountBeforePreroll, m_needDataRequestId,
+                                              m_locationToWriteAudio);
     waitEvent();
 }
 
 void MediaPipelineTestMethods::shouldNotifyNeedDataVideoBeforePreroll()
 {
-    EXPECT_CALL(*m_mediaPipelineClientMock, notifyNeedMediaData(kVideoSourceId, kFrameCountBeforePreroll, m_needDataRequestId, kNullShmInfo))
-        .WillOnce(InvokeWithoutArgs([&]()
+    EXPECT_CALL(*m_mediaPipelineClientMock,
+                notifyNeedMediaData(kVideoSourceId, kFrameCountBeforePreroll, m_needDataRequestId, kNullShmInfo))
+        .WillOnce(InvokeWithoutArgs(
+            [&]()
             {
                 // Set the firstSegment flag
                 m_firstSegmentOfNeedData = true;
@@ -216,7 +288,8 @@ void MediaPipelineTestMethods::shouldNotifyNeedDataVideoBeforePreroll()
 
 void MediaPipelineTestMethods::sendNotifyNeedDataVideoBeforePreroll()
 {
-    getServerStub()->notifyNeedMediaDataEvent(kSessionId, kVideoSourceId, kFrameCountBeforePreroll, m_needDataRequestId, m_locationToWriteVideo);
+    getServerStub()->notifyNeedMediaDataEvent(kSessionId, kVideoSourceId, kFrameCountBeforePreroll, m_needDataRequestId,
+                                              m_locationToWriteVideo);
     waitEvent();
 }
 
@@ -234,8 +307,10 @@ int32_t MediaPipelineTestMethods::addSegmentMseAudio()
 {
     int64_t timestamp = kTimeStamp + 1000 * (m_audioSegmentCount + 1);
     std::unique_ptr<IMediaPipeline::MediaSegment> mseData =
-        std::make_unique<IMediaPipeline::MediaSegmentAudio>(kAudioSourceId, timestamp, kDuration, kSampleRate, kNumberOfChannels);
-    mseData->setData(kAudioSegments[m_audioSegmentCount].size(), (const uint8_t*)kAudioSegments[m_audioSegmentCount].c_str());
+        std::make_unique<IMediaPipeline::MediaSegmentAudio>(kAudioSourceId, timestamp, kDuration, kSampleRate,
+                                                            kNumberOfChannels);
+    mseData->setData(kAudioSegments[m_audioSegmentCount].size(),
+                     (const uint8_t *)kAudioSegments[m_audioSegmentCount].c_str());
     EXPECT_EQ(m_mediaPipeline->addSegment(m_needDataRequestId, mseData), AddSegmentStatus::OK);
 
     // Store where the segment should be written so we can check the data
@@ -302,7 +377,7 @@ void MediaPipelineTestMethods::checkMseAudioSegmentWritten(int32_t segmentId)
 
     EXPECT_TRUE(metadata.has_length());
     dataPosition += *metadataSize;
-    std::string data = std::string(reinterpret_cast<char*>(dataPosition), metadata.length());
+    std::string data = std::string(reinterpret_cast<char *>(dataPosition), metadata.length());
     EXPECT_EQ(data, kAudioSegments[segmentId]);
 }
 
@@ -310,8 +385,10 @@ int32_t MediaPipelineTestMethods::addSegmentMseVideo()
 {
     int64_t timestamp = kTimeStamp + 1000 * (m_videoSegmentCount + 1);
     std::unique_ptr<IMediaPipeline::MediaSegment> mseData =
-        std::make_unique<IMediaPipeline::MediaSegmentVideo>(kVideoSourceId, timestamp, kDuration, kWidthUhd, kHeightUhd, kFrameRate);
-    mseData->setData(kVideoSegments[m_videoSegmentCount].size(), (const uint8_t*)kVideoSegments[m_videoSegmentCount].c_str());
+        std::make_unique<IMediaPipeline::MediaSegmentVideo>(kVideoSourceId, timestamp, kDuration, kWidthUhd, kHeightUhd,
+                                                            kFrameRate);
+    mseData->setData(kVideoSegments[m_videoSegmentCount].size(),
+                     (const uint8_t *)kVideoSegments[m_videoSegmentCount].c_str());
     EXPECT_EQ(m_mediaPipeline->addSegment(m_needDataRequestId, mseData), AddSegmentStatus::OK);
 
     // Store where the segment should be written so we can check the data
@@ -379,7 +456,7 @@ void MediaPipelineTestMethods::checkMseVideoSegmentWritten(int32_t segmentId)
 
     EXPECT_TRUE(metadata.has_length());
     dataPosition += *metadataSize;
-    std::string data = std::string(reinterpret_cast<char*>(dataPosition), metadata.length());
+    std::string data = std::string(reinterpret_cast<char *>(dataPosition), metadata.length());
     EXPECT_EQ(data, kVideoSegments[segmentId]);
 }
 
@@ -432,8 +509,10 @@ void MediaPipelineTestMethods::play()
 
 void MediaPipelineTestMethods::shouldNotifyNeedDataAudioAfterPreroll()
 {
-    EXPECT_CALL(*m_mediaPipelineClientMock, notifyNeedMediaData(kAudioSourceId, kMaxFrameCount, m_needDataRequestId, kNullShmInfo))
-        .WillOnce(InvokeWithoutArgs([&]()
+    EXPECT_CALL(*m_mediaPipelineClientMock,
+                notifyNeedMediaData(kAudioSourceId, kMaxFrameCount, m_needDataRequestId, kNullShmInfo))
+        .WillOnce(InvokeWithoutArgs(
+            [&]()
             {
                 // Set the firstSegment flag
                 m_firstSegmentOfNeedData = true;
@@ -443,14 +522,17 @@ void MediaPipelineTestMethods::shouldNotifyNeedDataAudioAfterPreroll()
 
 void MediaPipelineTestMethods::sendNotifyNeedDataAudioAfterPreroll()
 {
-    getServerStub()->notifyNeedMediaDataEvent(kSessionId, kAudioSourceId, kMaxFrameCount, m_needDataRequestId, m_locationToWriteAudio);
+    getServerStub()->notifyNeedMediaDataEvent(kSessionId, kAudioSourceId, kMaxFrameCount, m_needDataRequestId,
+                                              m_locationToWriteAudio);
     waitEvent();
 }
 
 void MediaPipelineTestMethods::shouldNotifyNeedDataVideoAfterPreroll()
 {
-    EXPECT_CALL(*m_mediaPipelineClientMock, notifyNeedMediaData(kVideoSourceId, kMaxFrameCount, m_needDataRequestId, kNullShmInfo))
-        .WillOnce(InvokeWithoutArgs([&]()
+    EXPECT_CALL(*m_mediaPipelineClientMock,
+                notifyNeedMediaData(kVideoSourceId, kMaxFrameCount, m_needDataRequestId, kNullShmInfo))
+        .WillOnce(InvokeWithoutArgs(
+            [&]()
             {
                 // Set the firstSegment flag
                 m_firstSegmentOfNeedData = true;
@@ -460,7 +542,8 @@ void MediaPipelineTestMethods::shouldNotifyNeedDataVideoAfterPreroll()
 
 void MediaPipelineTestMethods::sendNotifyNeedDataVideoAfterPreroll()
 {
-    getServerStub()->notifyNeedMediaDataEvent(kSessionId, kVideoSourceId, kMaxFrameCount, m_needDataRequestId, m_locationToWriteVideo);
+    getServerStub()->notifyNeedMediaDataEvent(kSessionId, kVideoSourceId, kMaxFrameCount, m_needDataRequestId,
+                                              m_locationToWriteVideo);
     waitEvent();
 }
 
@@ -471,7 +554,11 @@ void MediaPipelineTestMethods::shouldHaveDataAfterPreroll()
 
 void MediaPipelineTestMethods::shouldHaveDataOk(size_t framesWritten)
 {
-    EXPECT_CALL(*m_mediaPipelineModuleMock, haveData(_, haveDataRequestMatcher(kSessionId, convertMediaSourceStatus(MediaSourceStatus::OK), framesWritten, m_needDataRequestId), _, _))
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                haveData(_,
+                         haveDataRequestMatcher(kSessionId, convertMediaSourceStatus(MediaSourceStatus::OK),
+                                                framesWritten, m_needDataRequestId),
+                         _, _))
         .WillOnce(WithArgs<0, 3>(Invoke(
             [&](::google::protobuf::RpcController *controller, ::google::protobuf::Closure *done)
             {
@@ -484,7 +571,11 @@ void MediaPipelineTestMethods::shouldHaveDataOk(size_t framesWritten)
 
 void MediaPipelineTestMethods::shouldHaveDataEos(size_t framesWritten)
 {
-    EXPECT_CALL(*m_mediaPipelineModuleMock, haveData(_, haveDataRequestMatcher(kSessionId, convertMediaSourceStatus(MediaSourceStatus::EOS), framesWritten, m_needDataRequestId), _, _))
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                haveData(_,
+                         haveDataRequestMatcher(kSessionId, convertMediaSourceStatus(MediaSourceStatus::EOS),
+                                                framesWritten, m_needDataRequestId),
+                         _, _))
         .WillOnce(WithArgs<0, 3>(Invoke(
             [&](::google::protobuf::RpcController *controller, ::google::protobuf::Closure *done)
             {

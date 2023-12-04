@@ -28,25 +28,21 @@ public:
     const uint32_t kNumberOfNeedDatasAfterPreroll = 1;
     const uint32_t kNumberOfFramesPerNeedDataAfterPreroll = 20;
 
-    AudioVideoPlaybackTest()
-        : ClientComponentTest()
+    AudioVideoPlaybackTest() : ClientComponentTest()
     {
         // Set the metadata version shared.
         setenv("RIALTO_METADATA_VERSION", "2", 1);
         ClientComponentTest::startApplicationRunning();
     }
 
-    ~AudioVideoPlaybackTest()
-    {
-        ClientComponentTest::stopApplication();
-    }
+    ~AudioVideoPlaybackTest() { ClientComponentTest::stopApplication(); }
 };
 
 /*
  * Component Test:
  * Test Objective:
  *  Test the playback of video and audio MSE content. The test transitions through the playback states
- *  buffering 27 frames of both audio and video content before termination of the session. All the metadata and 
+ *  buffering 27 frames of both audio and video content before termination of the session. All the metadata and
  *  media data written to the shared buffer is checked for accuracy.
  *
  * Test Setup:
@@ -70,7 +66,7 @@ public:
  *   Expect that load is propagated to the server.
  *   Server notifys the client that the NetworkState has changed to BUFFERING.
  *   Expect that the state change notification is propagated to the client.
- * 
+ *
  *  Step 3: Attach all sources
  *   Attach the video source.
  *   Expect that attach source for video propagated to the server.
@@ -80,7 +76,7 @@ public:
  *   Expect that all source attached is propagated to the server.
  *   Server notifys the client that the Playback state has changed to IDLE.
  *   Expect that the state change notification is propagated to the client.
- * 
+ *
  *  Step 4: Pause
  *   Pause the content.
  *   Expect that pause is propagated to the server.
@@ -110,7 +106,7 @@ public:
  *   Expect that play propagated to the server.
  *   Server notifys the client that the Playback state has changed to PLAYING.
  *   Expect that the state change notification is propagated to the client.
- *   
+ *
  *  Step 10: Write 20 audio frames
  *   Server notifys the client that it needs 20 frames of audio data.
  *   Writes 5 frames of audio data to the shared buffer.
@@ -195,7 +191,7 @@ TEST_F(AudioVideoPlaybackTest, playback)
     {
         MediaPipelineTestMethods::shouldNotifyNeedDataAudioBeforePreroll();
         MediaPipelineTestMethods::sendNotifyNeedDataAudioBeforePreroll();
-        
+
         for (uint32_t j = 0; j < kNumberOfFramesPerNeedDataBeforePreroll; j++)
         {
             segmentId = MediaPipelineTestMethods::addSegmentMseAudio();
@@ -211,7 +207,7 @@ TEST_F(AudioVideoPlaybackTest, playback)
     {
         MediaPipelineTestMethods::shouldNotifyNeedDataVideoBeforePreroll();
         MediaPipelineTestMethods::sendNotifyNeedDataVideoBeforePreroll();
-        
+
         for (uint32_t j = 0; j < kNumberOfFramesPerNeedDataBeforePreroll; j++)
         {
             segmentId = MediaPipelineTestMethods::addSegmentMseVideo();
@@ -241,7 +237,7 @@ TEST_F(AudioVideoPlaybackTest, playback)
     {
         MediaPipelineTestMethods::shouldNotifyNeedDataAudioAfterPreroll();
         MediaPipelineTestMethods::sendNotifyNeedDataAudioAfterPreroll();
-        
+
         for (uint32_t j = 0; j < kNumberOfFramesPerNeedDataAfterPreroll; j++)
         {
             segmentId = MediaPipelineTestMethods::addSegmentMseAudio();
@@ -257,7 +253,7 @@ TEST_F(AudioVideoPlaybackTest, playback)
     {
         MediaPipelineTestMethods::shouldNotifyNeedDataVideoAfterPreroll();
         MediaPipelineTestMethods::sendNotifyNeedDataVideoAfterPreroll();
-        
+
         for (uint32_t j = 0; j < kNumberOfFramesPerNeedDataAfterPreroll; j++)
         {
             segmentId = MediaPipelineTestMethods::addSegmentMseVideo();

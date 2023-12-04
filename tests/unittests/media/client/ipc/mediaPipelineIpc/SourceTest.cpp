@@ -68,15 +68,16 @@ public:
 TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachSourceSuccess)
 {
     expectIpcApiCallSuccess();
-    EXPECT_CALL(*m_channelMock,
-                CallMethod(methodMatcher("attachSource"), m_controllerMock.get(),
-                           attachSourceRequestMatcherVideo(m_sessionId,
-                                                           m_kMimeType, true, m_kWidth, m_kHeight, m_kAlignment, m_kNullCodecData, convertStreamFormat(m_kStreamFormat)),
-                           _, m_blockingClosureMock.get()))
+    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("attachSource"), m_controllerMock.get(),
+                                           attachSourceRequestMatcherVideo(m_sessionId, m_kMimeType, true, m_kWidth,
+                                                                           m_kHeight, m_kAlignment, m_kNullCodecData,
+                                                                           convertStreamFormat(m_kStreamFormat)),
+                                           _, m_blockingClosureMock.get()))
         .WillOnce(WithArgs<3>(Invoke(this, &RialtoClientMediaPipelineIpcSourceTest::setAttachSourceResponse)));
 
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
-        std::make_unique<IMediaPipeline::MediaSourceVideo>(m_kMimeType, true, m_kWidth, m_kHeight, m_kAlignment, m_kStreamFormat);
+        std::make_unique<IMediaPipeline::MediaSourceVideo>(m_kMimeType, true, m_kWidth, m_kHeight, m_kAlignment,
+                                                           m_kStreamFormat);
 
     EXPECT_EQ(m_mediaPipelineIpc->attachSource(mediaSource, m_id), true);
 }
@@ -87,15 +88,16 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachSourceSuccess)
 TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachSourceNoDrmSuccess)
 {
     expectIpcApiCallSuccess();
-    EXPECT_CALL(*m_channelMock,
-                CallMethod(methodMatcher("attachSource"), m_controllerMock.get(),
-                           attachSourceRequestMatcherVideo(m_sessionId,
-                                                           m_kMimeType, false, m_kWidth, m_kHeight, m_kAlignment, m_kNullCodecData, convertStreamFormat(m_kStreamFormat)),
-                           _, m_blockingClosureMock.get()))
+    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("attachSource"), m_controllerMock.get(),
+                                           attachSourceRequestMatcherVideo(m_sessionId, m_kMimeType, false, m_kWidth,
+                                                                           m_kHeight, m_kAlignment, m_kNullCodecData,
+                                                                           convertStreamFormat(m_kStreamFormat)),
+                                           _, m_blockingClosureMock.get()))
         .WillOnce(WithArgs<3>(Invoke(this, &RialtoClientMediaPipelineIpcSourceTest::setAttachSourceResponse)));
 
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
-        std::make_unique<IMediaPipeline::MediaSourceVideo>(m_kMimeType, false, m_kWidth, m_kHeight, m_kAlignment, m_kStreamFormat);
+        std::make_unique<IMediaPipeline::MediaSourceVideo>(m_kMimeType, false, m_kWidth, m_kHeight, m_kAlignment,
+                                                           m_kStreamFormat);
 
     EXPECT_EQ(m_mediaPipelineIpc->attachSource(mediaSource, m_id), true);
 }
@@ -108,8 +110,9 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachAudioSourceWithAdditionalda
     expectIpcApiCallSuccess();
     EXPECT_CALL(*m_channelMock,
                 CallMethod(methodMatcher("attachSource"), m_controllerMock.get(),
-                           attachSourceRequestMatcherAudio(m_sessionId,
-                                                           m_kMimeType, true, m_kAlignment, m_kNumberOfChannels, m_kSampleRate, m_kCodecSpecificConfigStr, m_kCodecData, convertStreamFormat(m_kStreamFormat)),
+                           attachSourceRequestMatcherAudio(m_sessionId, m_kMimeType, true, m_kAlignment,
+                                                           m_kNumberOfChannels, m_kSampleRate, m_kCodecSpecificConfigStr,
+                                                           m_kCodecData, convertStreamFormat(m_kStreamFormat)),
                            _, m_blockingClosureMock.get()))
         .WillOnce(WithArgs<3>(Invoke(this, &RialtoClientMediaPipelineIpcSourceTest::setAttachSourceResponse)));
 
@@ -118,8 +121,8 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachAudioSourceWithAdditionalda
     AudioConfig audioConfig{m_kNumberOfChannels, m_kSampleRate, codecSpecificConfig};
 
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
-        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType, true, audioConfig, m_kAlignment, m_kStreamFormat,
-                                                           m_kCodecData);
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType, true, audioConfig, m_kAlignment,
+                                                           m_kStreamFormat, m_kCodecData);
 
     EXPECT_EQ(m_mediaPipelineIpc->attachSource(mediaSource, m_id), true);
 }
@@ -132,8 +135,9 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachAudioSourceWithEmptyCodecDa
     expectIpcApiCallSuccess();
     EXPECT_CALL(*m_channelMock,
                 CallMethod(methodMatcher("attachSource"), m_controllerMock.get(),
-                           attachSourceRequestMatcherAudio(m_sessionId,
-                                                           m_kMimeType, true, m_kAlignment, m_kNumberOfChannels, m_kSampleRate, m_kCodecSpecificConfigStr, m_kNullCodecData, convertStreamFormat(m_kStreamFormat)),
+                           attachSourceRequestMatcherAudio(m_sessionId, m_kMimeType, true, m_kAlignment,
+                                                           m_kNumberOfChannels, m_kSampleRate, m_kCodecSpecificConfigStr,
+                                                           m_kNullCodecData, convertStreamFormat(m_kStreamFormat)),
                            _, m_blockingClosureMock.get()))
         .WillOnce(WithArgs<3>(Invoke(this, &RialtoClientMediaPipelineIpcSourceTest::setAttachSourceResponse)));
 
@@ -142,8 +146,8 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachAudioSourceWithEmptyCodecDa
     AudioConfig audioConfig{m_kNumberOfChannels, m_kSampleRate, codecSpecificConfig};
 
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
-        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType, true, audioConfig, m_kAlignment, m_kStreamFormat,
-                                                           m_kNullCodecData);
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType, true, audioConfig, m_kAlignment,
+                                                           m_kStreamFormat, m_kNullCodecData);
 
     EXPECT_EQ(m_mediaPipelineIpc->attachSource(mediaSource, m_id), true);
 }
@@ -155,14 +159,16 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachDolbyVisionSourceWithSucces
     uint32_t dolbyVisionProfile = 5;
     EXPECT_CALL(*m_channelMock,
                 CallMethod(methodMatcher("attachSource"), m_controllerMock.get(),
-                           attachSourceRequestMatcherDolby(m_sessionId,
-                                                           m_kMimeType, true, m_kWidth, m_kHeight, m_kAlignment, m_kCodecData, convertStreamFormat(m_kStreamFormat), dolbyVisionProfile),
+                           attachSourceRequestMatcherDolby(m_sessionId, m_kMimeType, true, m_kWidth, m_kHeight,
+                                                           m_kAlignment, m_kCodecData,
+                                                           convertStreamFormat(m_kStreamFormat), dolbyVisionProfile),
                            _, m_blockingClosureMock.get()))
         .WillOnce(WithArgs<3>(Invoke(this, &RialtoClientMediaPipelineIpcSourceTest::setAttachSourceResponse)));
 
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
         std::make_unique<IMediaPipeline::MediaSourceVideoDolbyVision>(m_kMimeType, dolbyVisionProfile, true, m_kWidth,
-                                                                      m_kHeight, m_kAlignment, m_kStreamFormat, m_kCodecData);
+                                                                      m_kHeight, m_kAlignment, m_kStreamFormat,
+                                                                      m_kCodecData);
 
     EXPECT_EQ(m_mediaPipelineIpc->attachSource(mediaSource, m_id), true);
 }

@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-#include "ServerStub.h"
+#include "ControlModuleStub.h"
 #include <IIpcServer.h>
 #include <IIpcServerFactory.h>
 #include <gtest/gtest.h>
@@ -45,16 +45,15 @@ convertApplicationState(const firebolt::rialto::ApplicationState &state)
 
 namespace firebolt::rialto::ct::stub
 {
-ControlModuleStub::ControlModuleStub(const std::shared_ptr<::firebolt::rialto::ControlModule>& controlModuleMock)
+ControlModuleStub::ControlModuleStub(const std::shared_ptr<::firebolt::rialto::ControlModule> &controlModuleMock)
 {
     m_controlModuleMock = controlModuleMock;
 }
 
-ControlModuleStub::~ControlModuleStub()
-{
-}
+ControlModuleStub::~ControlModuleStub() {}
 
-void ControlModuleStub::notifyApplicationStateEvent(const int32_t controlId, const firebolt::rialto::ApplicationState &state)
+void ControlModuleStub::notifyApplicationStateEvent(const int32_t controlId,
+                                                    const firebolt::rialto::ApplicationState &state)
 {
     waitForClientConnect();
 
@@ -65,4 +64,4 @@ void ControlModuleStub::notifyApplicationStateEvent(const int32_t controlId, con
     getClient()->sendEvent(event);
 }
 
-} // namespace firebolt::rialto::ct
+} // namespace firebolt::rialto::ct::stub

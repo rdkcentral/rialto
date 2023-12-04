@@ -22,9 +22,10 @@
 
 #include "ControlClientMock.h"
 #include "ControlModuleMock.h"
-#include "ServerStub.h"
 #include "IControl.h"
+#include "ServerStub.h"
 #include <gtest/gtest.h>
+#include <memory>
 
 using ::testing::_;
 using ::testing::DoAll;
@@ -66,9 +67,9 @@ protected:
     // Component test helpers
     virtual void notifyEvent() = 0;
     virtual void waitEvent() = 0;
-    virtual std::shared_ptr<ServerStub>& getServerStub() = 0;
+    virtual std::shared_ptr<ServerStub> &getServerStub() = 0;
     virtual int32_t getShmFd() = 0;
-    virtual void * getShmAddress() = 0;
+    virtual void *getShmAddress() = 0;
     virtual uint32_t getShmSize() = 0;
 };
 

@@ -17,12 +17,12 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_COMPONENTTESTS_SERVER_STUB_H_
-#define FIREBOLT_RIALTO_COMPONENTTESTS_SERVER_STUB_H_
+#ifndef FIREBOLT_RIALTO_CT_STUB_SERVER_STUB_H_
+#define FIREBOLT_RIALTO_CT_STUB_SERVER_STUB_H_
 
 #include "ControlModuleStub.h"
-#include "MediaPipelineModuleStub.h"
 #include "IIpcServer.h"
+#include "MediaPipelineModuleStub.h"
 #include <atomic>
 #include <condition_variable>
 #include <memory>
@@ -33,8 +33,8 @@ namespace firebolt::rialto::ct::stub
 class ServerStub : public ControlModuleStub, public MediaPipelineModuleStub
 {
 public:
-    explicit ServerStub(const std::shared_ptr<::firebolt::rialto::ControlModule>& controlModuleMock,
-                        const std::shared_ptr<::firebolt::rialto::MediaPipelineModule>& mediaPipelineModuleMock);
+    explicit ServerStub(const std::shared_ptr<::firebolt::rialto::ControlModule> &controlModuleMock,
+                        const std::shared_ptr<::firebolt::rialto::MediaPipelineModule> &mediaPipelineModuleMock);
     ~ServerStub();
 
     void clientDisconnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &client);
@@ -51,8 +51,8 @@ private:
 
     void init();
     void waitForClientConnect() override;
-    std::shared_ptr<::firebolt::rialto::ipc::IClient>& getClient() override;
+    std::shared_ptr<::firebolt::rialto::ipc::IClient> &getClient() override;
 };
 } // namespace firebolt::rialto::ct::stub
 
-#endif // FIREBOLT_RIALTO_COMPONENTTESTS_SERVER_STUB_H_
+#endif // FIREBOLT_RIALTO_CT_STUB_SERVER_STUB_H_

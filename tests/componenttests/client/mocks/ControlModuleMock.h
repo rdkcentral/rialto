@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_IPC_CONTROL_MODULE_MOCK_H_
-#define FIREBOLT_RIALTO_IPC_CONTROL_MODULE_MOCK_H_
+#ifndef CONTROL_MODULE_MOCK_H_
+#define CONTROL_MODULE_MOCK_H_
 
 #include "SchemaVersion.h"
 #include "controlmodule.pb.h"
@@ -71,4 +71,4 @@ public:
     virtual ~ControlModuleMock() = default;
 };
 
-#endif // FIREBOLT_RIALTO_IPC_CONTROL_MODULE_MOCK_H_
+#endif // CONTROL_MODULE_MOCK_H_

@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_CONTROL_CLIENT_MOCK_H_
-#define FIREBOLT_RIALTO_CONTROL_CLIENT_MOCK_H_
+#ifndef CONTROL_CLIENT_MOCK_H_
+#define CONTROL_CLIENT_MOCK_H_
 
 #include "IControlClient.h"
 #include <gmock/gmock.h>
@@ -29,4 +29,4 @@ public:
     MOCK_METHOD(void, notifyApplicationState, (firebolt::rialto::ApplicationState state), (override));
 };
 
-#endif // FIREBOLT_RIALTO_CONTROL_CLIENT_MOCK_H_
+#endif // CONTROL_CLIENT_MOCK_H_

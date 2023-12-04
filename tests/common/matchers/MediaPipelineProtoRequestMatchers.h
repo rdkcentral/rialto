@@ -20,11 +20,13 @@
 #ifndef MEDIA_PIPELINE_PROTO_REQUEST_MATCHERS_H_
 #define MEDIA_PIPELINE_PROTO_REQUEST_MATCHERS_H_
 
+#include "MediaCommon.h"
 #include "mediapipelinemodule.pb.h"
 #include "metadata.pb.h"
-#include "MediaCommon.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <memory>
+#include <vector>
 
 MATCHER_P2(createSessionRequestMatcher, maxWidth, maxHeight, "")
 {
@@ -52,8 +54,8 @@ MATCHER_P(pauseRequestMatcher, sessionId, "")
     return (kRequest->session_id() == sessionId);
 }
 
-MATCHER_P9(attachSourceRequestMatcherAudio, sessionId, mimeType, hasDrm, alignment, numberOfChannels, sampleRate, codecSpecificConfig,
-           codecData, streamFormat, "")
+MATCHER_P9(attachSourceRequestMatcherAudio, sessionId, mimeType, hasDrm, alignment, numberOfChannels, sampleRate,
+           codecSpecificConfig, codecData, streamFormat, "")
 {
     const ::firebolt::rialto::AttachSourceRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::AttachSourceRequest *>(arg);
@@ -82,10 +84,11 @@ MATCHER_P9(attachSourceRequestMatcherAudio, sessionId, mimeType, hasDrm, alignme
     {
         checkCodec = codecDataFromReq == codecData;
     }
-    
+
     // Only check optional parameters if the config type is correct
     bool checkAudio = false;
-    if (static_cast<const unsigned int>(kRequest->config_type()) == static_cast<const unsigned int>(SourceConfigType::AUDIO))
+    if (static_cast<const unsigned int>(kRequest->config_type()) ==
+        static_cast<const unsigned int>(SourceConfigType::AUDIO))
     {
         if ((kRequest->has_audio_config()) && (kRequest->audio_config().number_of_channels() == numberOfChannels) &&
             (kRequest->audio_config().sample_rate() == sampleRate) &&
@@ -95,14 +98,12 @@ MATCHER_P9(attachSourceRequestMatcherAudio, sessionId, mimeType, hasDrm, alignme
         }
     }
 
-    return ((kRequest->session_id() == sessionId) &&
-            (kRequest->mime_type() == mimeType) && (kRequest->has_drm() == hasDrm) && 
-            (kRequest->stream_format() == streamFormat) && 
-            checkCodec && checkAudio);
+    return ((kRequest->session_id() == sessionId) && (kRequest->mime_type() == mimeType) &&
+            (kRequest->has_drm() == hasDrm) && (kRequest->stream_format() == streamFormat) && checkCodec && checkAudio);
 }
 
-MATCHER_P8(attachSourceRequestMatcherVideo, sessionId, mimeType, hasDrm, width, height, alignment,
-           codecData, streamFormat, "")
+MATCHER_P8(attachSourceRequestMatcherVideo, sessionId, mimeType, hasDrm, width, height, alignment, codecData,
+           streamFormat, "")
 {
     const ::firebolt::rialto::AttachSourceRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::AttachSourceRequest *>(arg);
@@ -131,10 +132,11 @@ MATCHER_P8(attachSourceRequestMatcherVideo, sessionId, mimeType, hasDrm, width, 
     {
         checkCodec = codecDataFromReq == codecData;
     }
-    
+
     // Only check optional parameters if the config type is correct
     bool checkVideo = false;
-    if (static_cast<const unsigned int>(kRequest->config_type()) == static_cast<const unsigned int>(SourceConfigType::VIDEO))
+    if (static_cast<const unsigned int>(kRequest->config_type()) ==
+        static_cast<const unsigned int>(SourceConfigType::VIDEO))
     {
         if ((kRequest->width() == width) && (kRequest->height() == height))
         {
@@ -142,14 +144,12 @@ MATCHER_P8(attachSourceRequestMatcherVideo, sessionId, mimeType, hasDrm, width, 
         }
     }
 
-    return ((kRequest->session_id() == sessionId) &&
-            (kRequest->mime_type() == mimeType) && (kRequest->has_drm() == hasDrm) && 
-            (kRequest->stream_format() == streamFormat) && 
-            checkCodec && checkVideo);
+    return ((kRequest->session_id() == sessionId) && (kRequest->mime_type() == mimeType) &&
+            (kRequest->has_drm() == hasDrm) && (kRequest->stream_format() == streamFormat) && checkCodec && checkVideo);
 }
 
-MATCHER_P9(attachSourceRequestMatcherDolby, sessionId, mimeType, hasDrm, width, height, alignment,
-           codecData, streamFormat, dolbyVisionProfile, "")
+MATCHER_P9(attachSourceRequestMatcherDolby, sessionId, mimeType, hasDrm, width, height, alignment, codecData,
+           streamFormat, dolbyVisionProfile, "")
 {
     const ::firebolt::rialto::AttachSourceRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::AttachSourceRequest *>(arg);
@@ -178,21 +178,21 @@ MATCHER_P9(attachSourceRequestMatcherDolby, sessionId, mimeType, hasDrm, width, 
     {
         checkCodec = codecDataFromReq == codecData;
     }
-    
+
     // Only check optional parameters if the config type is correct
     bool checkDolby = false;
-    if (static_cast<const unsigned int>(kRequest->config_type()) == static_cast<const unsigned int>(SourceConfigType::VIDEO_DOLBY_VISION))
+    if (static_cast<const unsigned int>(kRequest->config_type()) ==
+        static_cast<const unsigned int>(SourceConfigType::VIDEO_DOLBY_VISION))
     {
-        if ((kRequest->width() == width) && (kRequest->height() == height) && (kRequest->dolby_vision_profile() == dolbyVisionProfile))
+        if ((kRequest->width() == width) && (kRequest->height() == height) &&
+            (kRequest->dolby_vision_profile() == dolbyVisionProfile))
         {
             checkDolby = true;
         }
     }
 
-    return ((kRequest->session_id() == sessionId) &&
-            (kRequest->mime_type() == mimeType) && (kRequest->has_drm() == hasDrm) && 
-            (kRequest->stream_format() == streamFormat) && 
-            checkCodec && checkDolby);
+    return ((kRequest->session_id() == sessionId) && (kRequest->mime_type() == mimeType) &&
+            (kRequest->has_drm() == hasDrm) && (kRequest->stream_format() == streamFormat) && checkCodec && checkDolby);
 }
 
 MATCHER_P2(removeSourceRequestMatcher, sessionId, sourceId, "")
@@ -232,7 +232,8 @@ MATCHER_P(stopRequestMatcher, sessionId, "")
 
 MATCHER_P(destroySessionRequestMatcher, sessionId, "")
 {
-    const ::firebolt::rialto::DestroySessionRequest *kRequest = dynamic_cast<const ::firebolt::rialto::DestroySessionRequest *>(arg);
+    const ::firebolt::rialto::DestroySessionRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::DestroySessionRequest *>(arg);
     return (kRequest->session_id() == sessionId);
 }
 

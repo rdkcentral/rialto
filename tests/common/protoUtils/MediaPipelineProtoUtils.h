@@ -20,8 +20,8 @@
 #ifndef MEDIA_PIPELINE_PROTO_UTILS_H_
 #define MEDIA_PIPELINE_PROTO_UTILS_H_
 
-#include "mediapipelinemodule.pb.h"
 #include "MediaCommon.h"
+#include "mediapipelinemodule.pb.h"
 
 firebolt::rialto::LoadRequest_MediaType convertMediaType(const firebolt::rialto::MediaType &kMediaType)
 {
@@ -39,8 +39,7 @@ firebolt::rialto::LoadRequest_MediaType convertMediaType(const firebolt::rialto:
     return firebolt::rialto::LoadRequest_MediaType::LoadRequest_MediaType_UNKNOWN;
 }
 
-firebolt::rialto::AttachSourceRequest_StreamFormat
-convertStreamFormat(const firebolt::rialto::StreamFormat &streamFormat)
+firebolt::rialto::AttachSourceRequest_StreamFormat convertStreamFormat(const firebolt::rialto::StreamFormat &streamFormat)
 {
     switch (streamFormat)
     {

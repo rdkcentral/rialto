@@ -21,6 +21,7 @@
 #include <IIpcServer.h>
 #include <IIpcServerFactory.h>
 #include <gtest/gtest.h>
+#include <memory>
 
 namespace
 {
@@ -117,14 +118,13 @@ convertNetworkState(const firebolt::rialto::NetworkState &networkState)
 
 namespace firebolt::rialto::ct::stub
 {
-MediaPipelineModuleStub::MediaPipelineModuleStub(const std::shared_ptr<::firebolt::rialto::MediaPipelineModule>& mediaPipelineModuleMock)
+MediaPipelineModuleStub::MediaPipelineModuleStub(
+    const std::shared_ptr<::firebolt::rialto::MediaPipelineModule> &mediaPipelineModuleMock)
 {
     m_mediaPipelineModuleMock = mediaPipelineModuleMock;
 }
 
-MediaPipelineModuleStub::~MediaPipelineModuleStub()
-{
-}
+MediaPipelineModuleStub::~MediaPipelineModuleStub() {}
 
 void MediaPipelineModuleStub::notifyPlaybackStateChangeEvent(int sessionId, PlaybackState state)
 {
@@ -156,7 +156,8 @@ void MediaPipelineModuleStub::notifyPositionChangeEvent(int sessionId, int64_t p
     getClient()->sendEvent(event);
 }
 
-void MediaPipelineModuleStub::notifyNeedMediaDataEvent(int sessionId, int32_t sourceId, size_t frameCount, uint32_t needDataRequestId,
+void MediaPipelineModuleStub::notifyNeedMediaDataEvent(int sessionId, int32_t sourceId, size_t frameCount,
+                                                       uint32_t needDataRequestId,
                                                        const std::shared_ptr<MediaPlayerShmInfo> &shmInfo)
 {
     waitForClientConnect();
@@ -187,7 +188,6 @@ void MediaPipelineModuleStub::notifyQosEvent(int sessionId, int32_t sourceId, co
     getClient()->sendEvent(event);
 }
 
-
 void MediaPipelineModuleStub::notifyBufferUnderflowEvent(int sessionId, int32_t sourceId)
 {
     waitForClientConnect();
@@ -199,8 +199,8 @@ void MediaPipelineModuleStub::notifyBufferUnderflowEvent(int sessionId, int32_t 
     getClient()->sendEvent(event);
 }
 
-
-void MediaPipelineModuleStub::notifySetLogLevelsEvent(RIALTO_DEBUG_LEVEL defaultLogLevels, RIALTO_DEBUG_LEVEL clientLogLevels,
+void MediaPipelineModuleStub::notifySetLogLevelsEvent(RIALTO_DEBUG_LEVEL defaultLogLevels,
+                                                      RIALTO_DEBUG_LEVEL clientLogLevels,
                                                       RIALTO_DEBUG_LEVEL ipcLogLevels, RIALTO_DEBUG_LEVEL commonLogLevels)
 {
     waitForClientConnect();
@@ -214,4 +214,4 @@ void MediaPipelineModuleStub::notifySetLogLevelsEvent(RIALTO_DEBUG_LEVEL default
     getClient()->sendEvent(event);
 }
 
-} // namespace firebolt::rialto::ct
+} // namespace firebolt::rialto::ct::stub
