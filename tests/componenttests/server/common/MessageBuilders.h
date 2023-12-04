@@ -20,7 +20,6 @@
 #ifndef FIREBOLT_RIALTO_SERVER_CT_MESSAGE_BUILDERS_H_
 #define FIREBOLT_RIALTO_SERVER_CT_MESSAGE_BUILDERS_H_
 
-#include "MediaCommon.h"
 #include "mediakeysmodule.pb.h"
 #include "mediapipelinemodule.pb.h"
 #include "servermanagermodule.pb.h"
@@ -31,8 +30,10 @@ namespace firebolt::rialto::server::ct
 ::rialto::SetConfigurationRequest createGenericSetConfigurationReq();
 
 // media pipeline module
-::firebolt::rialto::CreateSessionRequest createCreateSessionRequest(const VideoRequirements &requirements);
+::firebolt::rialto::CreateSessionRequest createCreateSessionRequest();
 ::firebolt::rialto::LoadRequest createLoadRequest(int sessionId);
+::firebolt::rialto::AttachSourceRequest createAttachAudioSourceRequest(int sessionId);
+::firebolt::rialto::AttachSourceRequest createAttachVideoSourceRequest(int sessionId);
 
 // media keys module
 ::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequest();

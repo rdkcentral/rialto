@@ -24,11 +24,11 @@
 
 namespace firebolt::rialto::server::ct
 {
-constexpr int kMaxPlaybacks{2};
 constexpr unsigned kDefaultPermissions{0666};
 const std::string kSocketName{"/tmp/rialto-0"};
-const std::string kDisplayName{"waylanddisplay"};
 const std::string kOwnerName{"root"};
+constexpr int kWidth{1920};
+constexpr int kHeight{1080};
 } // namespace firebolt::rialto::server::ct
 
 #endif // FIREBOLT_RIALTO_SERVER_CT_CONSTANTS_H_

@@ -32,12 +32,16 @@ public:
 
     void gstPlayerWillBeCreated();
     void gstPlayerWillBeDestructed();
+    void audioSourceWillBeAttached();
     void createSession();
     void load();
+    void attachAudioSource();
 
     int m_sessionId{-1};
+    int m_audioSourceId{-1};
     GstElement m_pipeline{};
     GstElement m_playsink{};
+    GstAppSrc m_audioAppSrc{};
     GstBus m_bus{};
     GFlagsClass m_flagsClass{};
     GType m_gstPlayFlagsType = static_cast<GType>(123);
@@ -53,6 +57,8 @@ public:
     gulong m_setupSourceSignalId{0};
     gulong m_setupElementSignalId{1};
     gulong m_deepElementAddedSignalId{2};
+    GstCaps m_audioCaps{};
+    gchar m_capsStr{};
 };
 } // namespace firebolt::rialto::server::ct
 

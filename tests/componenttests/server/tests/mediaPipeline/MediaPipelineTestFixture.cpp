@@ -29,11 +29,6 @@ using testing::_;
 using testing::Invoke;
 using testing::Return;
 
-namespace
-{
-constexpr firebolt::rialto::VideoRequirements kVideoRequirements{1920, 1080};
-} // namespace
-
 namespace firebolt::rialto::server::ct
 {
 MediaPipelineTest::MediaPipelineTest()
@@ -105,10 +100,28 @@ void MediaPipelineTest::gstPlayerWillBeDestructed()
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_pipeline));
 }
 
+void MediaPipelineTest::audioSourceWillBeAttached()
+{
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsNewEmptySimple(CharStrMatcher("audio/mpeg"))).WillOnce(Return(&m_audioCaps));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleStringStub(&m_audioCaps, CharStrMatcher("alignment"), G_TYPE_STRING,
+                                                              CharStrMatcher("nal")));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleStringStub(&m_audioCaps, CharStrMatcher("stream-format"),
+                                                              G_TYPE_STRING, CharStrMatcher("raw")));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_audioCaps, CharStrMatcher("mpegversion"), G_TYPE_INT, 4));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_audioCaps, CharStrMatcher("channels"), G_TYPE_INT, 2));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_audioCaps, CharStrMatcher("rate"), G_TYPE_INT, 48000));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsToString(&m_audioCaps)).WillOnce(Return(&m_capsStr));
+    EXPECT_CALL(*m_glibWrapperMock, gFree(&m_capsStr));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(CharStrMatcher("appsrc"), CharStrMatcher("audsrc")))
+        .WillOnce(Return(GST_ELEMENT(&m_audioAppSrc)));
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(&m_audioAppSrc, &m_audioCaps));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_audioCaps));
+}
+
 void MediaPipelineTest::createSession()
 {
     // Use matchResponse to store session id
-    auto request{createCreateSessionRequest(kVideoRequirements)};
+    auto request{createCreateSessionRequest()};
     ConfigureAction<CreateSession>(m_clientStub)
         .send(request)
         .expectSuccess()
@@ -126,5 +139,14 @@ void MediaPipelineTest::load()
     ASSERT_TRUE(receivedNetworkStateChange);
     EXPECT_EQ(receivedNetworkStateChange->session_id(), m_sessionId);
     EXPECT_EQ(receivedNetworkStateChange->state(), ::firebolt::rialto::NetworkStateChangeEvent_NetworkState_BUFFERING);
+}
+
+void MediaPipelineTest::attachAudioSource()
+{
+    auto attachAudioSourceReq{createAttachAudioSourceRequest(m_sessionId)};
+    ConfigureAction<AttachSource>(m_clientStub)
+        .send(attachAudioSourceReq)
+        .expectSuccess()
+        .matchResponse([&](const auto &resp) { m_audioSourceId = resp.source_id(); });
 }
 } // namespace firebolt::rialto::server::ct
