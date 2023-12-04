@@ -76,9 +76,7 @@ namespace firebolt::rialto::server::ct
     request.set_segment_alignment(::firebolt::rialto::AttachSourceRequest_SegmentAlignment_ALIGNMENT_NAL);
     request.mutable_audio_config()->set_number_of_channels(2);
     request.mutable_audio_config()->set_sample_rate(48000);
-    // request.set_codec_data();
     request.set_stream_format(::firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_RAW);
-    // request.set_dolby_vision_profile();
     return request;
 }
 
@@ -92,9 +90,7 @@ namespace firebolt::rialto::server::ct
     request.set_width(kWidth);
     request.set_height(kHeight);
     request.set_segment_alignment(::firebolt::rialto::AttachSourceRequest_SegmentAlignment_ALIGNMENT_NAL);
-    // request.set_codec_data();
     request.set_stream_format(::firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_RAW);
-    // request.set_dolby_vision_profile();
     return request;
 }
 

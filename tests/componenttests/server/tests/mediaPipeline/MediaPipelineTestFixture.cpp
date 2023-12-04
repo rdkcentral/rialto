@@ -20,6 +20,7 @@
 #include "MediaPipelineTestFixture.h"
 #include "ActionTraits.h"
 #include "ConfigureAction.h"
+#include "Constants.h"
 #include "ExpectMessage.h"
 #include "Matchers.h"
 #include "MediaCommon.h"
@@ -118,6 +119,23 @@ void MediaPipelineTest::audioSourceWillBeAttached()
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_audioCaps));
 }
 
+void MediaPipelineTest::videoSourceWillBeAttached()
+{
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsNewEmptySimple(CharStrMatcher("video/x-h264"))).WillOnce(Return(&m_videoCaps));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleStringStub(&m_videoCaps, CharStrMatcher("alignment"), G_TYPE_STRING,
+                                                              CharStrMatcher("nal")));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleStringStub(&m_videoCaps, CharStrMatcher("stream-format"),
+                                                              G_TYPE_STRING, CharStrMatcher("raw")));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_videoCaps, CharStrMatcher("width"), G_TYPE_INT, kWidth));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_videoCaps, CharStrMatcher("height"), G_TYPE_INT, kHeight));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsToString(&m_videoCaps)).WillOnce(Return(&m_capsStr));
+    EXPECT_CALL(*m_glibWrapperMock, gFree(&m_capsStr));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(CharStrMatcher("appsrc"), CharStrMatcher("vidsrc")))
+        .WillOnce(Return(GST_ELEMENT(&m_videoAppSrc)));
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(&m_videoAppSrc, &m_videoCaps));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_videoCaps));
+}
+
 void MediaPipelineTest::createSession()
 {
     // Use matchResponse to store session id
@@ -148,5 +166,14 @@ void MediaPipelineTest::attachAudioSource()
         .send(attachAudioSourceReq)
         .expectSuccess()
         .matchResponse([&](const auto &resp) { m_audioSourceId = resp.source_id(); });
+}
+
+void MediaPipelineTest::attachVideoSource()
+{
+    auto attachVideoSourceReq{createAttachVideoSourceRequest(m_sessionId)};
+    ConfigureAction<AttachSource>(m_clientStub)
+        .send(attachVideoSourceReq)
+        .expectSuccess()
+        .matchResponse([&](const auto &resp) { m_videoSourceId = resp.source_id(); });
 }
 } // namespace firebolt::rialto::server::ct
