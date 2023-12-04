@@ -120,7 +120,7 @@ namespace firebolt::rialto::ct::stub
 {
 MediaPipelineModuleStub::MediaPipelineModuleStub(
     const std::shared_ptr<::firebolt::rialto::MediaPipelineModule> &mediaPipelineModuleMock)
-    : m_controlModuleMock{mediaPipelineModuleMock}
+    : m_mediaPipelineModuleMock{mediaPipelineModuleMock}
 {
 }
 

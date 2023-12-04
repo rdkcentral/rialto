@@ -36,13 +36,8 @@ public:
 
     void notifyPlaybackStateChangeEvent(int sessionId, PlaybackState state);
     void notifyNetworkStateChangeEvent(int sessionId, NetworkState state);
-    void notifyPositionChangeEvent(int sessionId, int64_t position);
     void notifyNeedMediaDataEvent(int sessionId, int32_t sourceId, size_t frameCount, uint32_t needDataRequestId,
                                   const std::shared_ptr<MediaPlayerShmInfo> &shmInfo);
-    void notifyQosEvent(int sessionId, int32_t sourceId, const QosInfo &qosInfo);
-    void notifyBufferUnderflowEvent(int sessionId, int32_t sourceId);
-    void notifySetLogLevelsEvent(RIALTO_DEBUG_LEVEL defaultLogLevels, RIALTO_DEBUG_LEVEL clientLogLevels,
-                                 RIALTO_DEBUG_LEVEL ipcLogLevels, RIALTO_DEBUG_LEVEL commonLogLevels);
 
     // Client helpers
     virtual void waitForClientConnect() = 0;
