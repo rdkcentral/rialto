@@ -45,14 +45,14 @@ public:
 
 protected:
     // Test Methods
+    void notifyEvent() override;
+    void waitEvent() override;
     void disconnectServer();
     void startApplicationRunning();
     void stopApplication();
 
 private:
     // Derived class helpers
-    void notifyEvent() override;
-    void waitEvent() override;
     std::shared_ptr<ServerStub> &getServerStub() override;
     int32_t getShmFd() override;
     void *getShmAddress() override;
