@@ -111,6 +111,9 @@ protected:
     void shouldDestroyMediaSession();
     void destroyMediaPipeline();
 
+    void startAudioVideoMediaSessionWaitForPreroll();
+    void endAudioVideoMediaSession();
+    
     // Component test helpers
     virtual void notifyEvent() = 0;
     virtual void waitEvent() = 0;

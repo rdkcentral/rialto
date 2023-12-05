@@ -42,9 +42,11 @@ add_gtests (
         tests/base/ControlTestMethods.cpp
         tests/base/MediaPipelineTestMethods.cpp
 
-        # Component tests
-        tests/ApplicationStateChangeTest.cpp
-        tests/AudioVideoPlaybackTest.cpp
+        # Control Component tests
+        tests/control/ApplicationStateChangeTest.cpp
+
+        # MSE Component tests
+        tests/mse/AudioVideoPlaybackSequenceTest.cpp
         )
 
 add_subdirectory(mocks)

@@ -20,30 +20,28 @@
 #include "ClientComponentTest.h"
 #include <gtest/gtest.h>
 
-namespace
-{
-constexpr uint32_t kNumberOfNeedDatasBeforePreroll{2};
-constexpr uint32_t kNumberOfFramesPerNeedDataBeforePreroll{3};
-constexpr uint32_t kNumberOfNeedDatasAfterPreroll{1};
-constexpr uint32_t kNumberOfFramesPerNeedDataAfterPreroll{20};
-}; // namespace
-
-class AudioVideoPlaybackTest : public ClientComponentTest
+class AudioVideoPlaybackSequenceTest : public ClientComponentTest
 {
 public:
     int32_t m_segmentId{-1};
 
-    AudioVideoPlaybackTest() : ClientComponentTest() { ClientComponentTest::startApplicationRunning(); }
+    AudioVideoPlaybackSequenceTest() : ClientComponentTest() { ClientComponentTest::startApplicationRunning(); }
 
-    ~AudioVideoPlaybackTest() { ClientComponentTest::stopApplication(); }
+    ~AudioVideoPlaybackSequenceTest() { ClientComponentTest::stopApplication(); }
 };
 
 /*
- * Component Test:
+ * Component Test: Audio Video Playback Sequence
  * Test Objective:
  *  Test the playback of video and audio MSE content. The test transitions through the playback states
- *  buffering 27 frames of both audio and video content before termination of the session. All the metadata and
- *  media data written to the shared buffer is checked for accuracy.
+ *  buffering 1 frame of both audio and video content before preroll and 1 frame of both audio and video 
+ *  content after preroll. The session is then terminated. All the metadata and media data written to the 
+ *  shared buffer is checked for accuracy.
+ *
+ * Sequence Diagrams:
+ *  Create, Destroy - https://wiki.rdkcentral.com/display/ASP/Rialto+MSE+Misc+Sequence+Diagrams
+ *  Start/Resume Playback, Pause Playback, Stop, End of stream, Shared memory buffer refill
+ *   - https://wiki.rdkcentral.com/display/ASP/Rialto+Playback+Design
  *
  * Test Setup:
  *  Language: C++
@@ -81,17 +79,15 @@ public:
  *   Pause the content.
  *   Expect that pause is propagated to the server.
  *
- *  Step 5: Write 6 audio frames
+ *  Step 5: Write 1 audio frame
  *   Server notifys the client that it needs 3 frames of audio data.
- *   Writes 3 frames of audio data to the shared buffer.
+ *   Writes 1 frame of audio data to the shared buffer.
  *   Notify the server that the data has been written.
- *   x2
  *
- *  Step 6: Write 6 video frames
+ *  Step 6: Write 1 video frame
  *   Server notifys the client that it needs 3 frames of video data.
- *   Writes 3 frames of video data to the shared buffer.
+ *   Writes 1 frame of video data to the shared buffer.
  *   Notify the server that the data has been written.
- *   x2
  *
  *  Step 7: Notify buffered
  *   Server notifys the client that the Network state has changed to BUFFERED.
@@ -107,25 +103,23 @@ public:
  *   Server notifys the client that the Playback state has changed to PLAYING.
  *   Expect that the state change notification is propagated to the client.
  *
- *  Step 10: Write 20 audio frames
+ *  Step 10: Write 1 audio frame
  *   Server notifys the client that it needs 20 frames of audio data.
- *   Writes 5 frames of audio data to the shared buffer.
+ *   Writes 1 frames of audio data to the shared buffer.
  *   Notify the server that the data has been written.
  *
- *  Step 11: Write 20 video frames
+ *  Step 11: Write 1 video frame
  *   Server notifys the client that it needs 20 frames of video data.
- *   Writes 5 frames of video data to the shared buffer.
+ *   Writes 1 frame of video data to the shared buffer.
  *   Notify the server that the data has been written.
  *
  *  Step 12: End of audio stream
  *   Server notifys the client that it needs 20 frames of audio data.
- *   Writes 1 frame to the shared buffer.
- *   Send EOS status with samples.
+ *   Send EOS status with haveData.
  *
  *  Step 13: End of video stream
  *   Server notifys the client that it needs 20 frames of video data.
- *   Writes 1 frame to the shared buffer.
- *   Send EOS status with samples.
+ *   Send EOS status with haveData.
  *
  *  Step 14: Notify end of stream
  *   Server notifys the client that the Network state has changed to END_OF_STREAM.
@@ -158,7 +152,7 @@ public:
  *
  * Code:
  */
-TEST_F(AudioVideoPlaybackTest, playback)
+TEST_F(AudioVideoPlaybackSequenceTest, playback)
 {
     // Step 1: Create a new media session
     MediaPipelineTestMethods::shouldCreateMediaSession();
@@ -184,37 +178,21 @@ TEST_F(AudioVideoPlaybackTest, playback)
     MediaPipelineTestMethods::shouldPause();
     MediaPipelineTestMethods::pause();
 
-    // Step 5: Write 6 audio frames
-    for (uint32_t i = 0; i < kNumberOfNeedDatasBeforePreroll; i++)
-    {
-        MediaPipelineTestMethods::shouldNotifyNeedDataAudioBeforePreroll();
-        MediaPipelineTestMethods::sendNotifyNeedDataAudioBeforePreroll();
+    // Step 5: Write 1 audio frame
+    MediaPipelineTestMethods::shouldNotifyNeedDataAudioBeforePreroll();
+    MediaPipelineTestMethods::sendNotifyNeedDataAudioBeforePreroll();
+    m_segmentId = MediaPipelineTestMethods::addSegmentMseAudio();
+    MediaPipelineTestMethods::checkMseAudioSegmentWritten(m_segmentId);
+    MediaPipelineTestMethods::shouldHaveDataOk(1);
+    MediaPipelineTestMethods::haveDataOk();
 
-        for (uint32_t j = 0; j < kNumberOfFramesPerNeedDataBeforePreroll; j++)
-        {
-            m_segmentId = MediaPipelineTestMethods::addSegmentMseAudio();
-            MediaPipelineTestMethods::checkMseAudioSegmentWritten(m_segmentId);
-        }
-
-        MediaPipelineTestMethods::shouldHaveDataBeforePreroll();
-        MediaPipelineTestMethods::haveDataOk();
-    }
-
-    // Step 6: Write 6 video frames
-    for (uint32_t i = 0; i < kNumberOfNeedDatasBeforePreroll; i++)
-    {
-        MediaPipelineTestMethods::shouldNotifyNeedDataVideoBeforePreroll();
-        MediaPipelineTestMethods::sendNotifyNeedDataVideoBeforePreroll();
-
-        for (uint32_t j = 0; j < kNumberOfFramesPerNeedDataBeforePreroll; j++)
-        {
-            m_segmentId = MediaPipelineTestMethods::addSegmentMseVideo();
-            MediaPipelineTestMethods::checkMseVideoSegmentWritten(m_segmentId);
-        }
-
-        MediaPipelineTestMethods::shouldHaveDataBeforePreroll();
-        MediaPipelineTestMethods::haveDataOk();
-    }
+    // Step 6: Write 1 video frame
+    MediaPipelineTestMethods::shouldNotifyNeedDataVideoBeforePreroll();
+    MediaPipelineTestMethods::sendNotifyNeedDataVideoBeforePreroll();
+    m_segmentId = MediaPipelineTestMethods::addSegmentMseVideo();
+    MediaPipelineTestMethods::checkMseVideoSegmentWritten(m_segmentId);
+    MediaPipelineTestMethods::shouldHaveDataOk(1);
+    MediaPipelineTestMethods::haveDataOk();
 
     // Step 7: Notify buffered
     MediaPipelineTestMethods::shouldNotifyNetworkStateBuffered();
@@ -230,52 +208,32 @@ TEST_F(AudioVideoPlaybackTest, playback)
     MediaPipelineTestMethods::shouldNotifyPlaybackStatePlay();
     MediaPipelineTestMethods::sendNotifyPlaybackStatePlay();
 
-    // Step 10: Write 20 audio frames
-    for (uint32_t i = 0; i < kNumberOfNeedDatasAfterPreroll; i++)
-    {
-        MediaPipelineTestMethods::shouldNotifyNeedDataAudioAfterPreroll();
-        MediaPipelineTestMethods::sendNotifyNeedDataAudioAfterPreroll();
-
-        for (uint32_t j = 0; j < kNumberOfFramesPerNeedDataAfterPreroll; j++)
-        {
-            m_segmentId = MediaPipelineTestMethods::addSegmentMseAudio();
-            MediaPipelineTestMethods::checkMseAudioSegmentWritten(m_segmentId);
-        }
-
-        MediaPipelineTestMethods::shouldHaveDataAfterPreroll();
-        MediaPipelineTestMethods::haveDataOk();
-    }
-
-    // Step 11: Write 20 video frames
-    for (uint32_t i = 0; i < kNumberOfNeedDatasAfterPreroll; i++)
-    {
-        MediaPipelineTestMethods::shouldNotifyNeedDataVideoAfterPreroll();
-        MediaPipelineTestMethods::sendNotifyNeedDataVideoAfterPreroll();
-
-        for (uint32_t j = 0; j < kNumberOfFramesPerNeedDataAfterPreroll; j++)
-        {
-            m_segmentId = MediaPipelineTestMethods::addSegmentMseVideo();
-            MediaPipelineTestMethods::checkMseVideoSegmentWritten(m_segmentId);
-        }
-
-        MediaPipelineTestMethods::shouldHaveDataAfterPreroll();
-        MediaPipelineTestMethods::haveDataOk();
-    }
-
-    // Step 12: End of audio stream
+    // Step 10: Write 1 audio frame
     MediaPipelineTestMethods::shouldNotifyNeedDataAudioAfterPreroll();
     MediaPipelineTestMethods::sendNotifyNeedDataAudioAfterPreroll();
     m_segmentId = MediaPipelineTestMethods::addSegmentMseAudio();
     MediaPipelineTestMethods::checkMseAudioSegmentWritten(m_segmentId);
-    MediaPipelineTestMethods::shouldHaveDataEos(1);
+    MediaPipelineTestMethods::shouldHaveDataOk(1);
+    MediaPipelineTestMethods::haveDataOk();
+
+    // Step 11: Write 1 video frame
+    MediaPipelineTestMethods::shouldNotifyNeedDataVideoAfterPreroll();
+    MediaPipelineTestMethods::sendNotifyNeedDataVideoAfterPreroll();
+    m_segmentId = MediaPipelineTestMethods::addSegmentMseVideo();
+    MediaPipelineTestMethods::checkMseVideoSegmentWritten(m_segmentId);
+    MediaPipelineTestMethods::shouldHaveDataOk(1);
+    MediaPipelineTestMethods::haveDataOk();
+
+    // Step 12: End of audio stream
+    MediaPipelineTestMethods::shouldNotifyNeedDataAudioAfterPreroll();
+    MediaPipelineTestMethods::sendNotifyNeedDataAudioAfterPreroll();
+    MediaPipelineTestMethods::shouldHaveDataEos(0);
     MediaPipelineTestMethods::haveDataEos();
 
     // Step 13: End of video stream
     MediaPipelineTestMethods::shouldNotifyNeedDataVideoAfterPreroll();
     MediaPipelineTestMethods::sendNotifyNeedDataVideoAfterPreroll();
-    m_segmentId = MediaPipelineTestMethods::addSegmentMseVideo();
-    MediaPipelineTestMethods::checkMseVideoSegmentWritten(m_segmentId);
-    MediaPipelineTestMethods::shouldHaveDataEos(1);
+    MediaPipelineTestMethods::shouldHaveDataEos(0);
     MediaPipelineTestMethods::haveDataEos();
 
     // Step 14: Notify end of stream

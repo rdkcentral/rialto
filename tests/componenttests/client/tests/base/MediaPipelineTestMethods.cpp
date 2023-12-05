@@ -659,3 +659,52 @@ void MediaPipelineTestMethods::destroyMediaPipeline()
 {
     m_mediaPipeline.reset();
 }
+
+void MediaPipelineTestMethods::startAudioVideoMediaSessionWaitForPreroll()
+{
+    // Create a new media session
+    MediaPipelineTestMethods::shouldCreateMediaSession();
+    MediaPipelineTestMethods::createMediaPipeline();
+
+    // Load content
+    MediaPipelineTestMethods::shouldLoad();
+    MediaPipelineTestMethods::load();
+    MediaPipelineTestMethods::shouldNotifyNetworkStateBuffering();
+    MediaPipelineTestMethods::sendNotifyNetworkStateBuffering();
+
+    // Attach all sources
+    MediaPipelineTestMethods::shouldAttachVideoSource();
+    MediaPipelineTestMethods::attachSourceVideo();
+    MediaPipelineTestMethods::shouldAttachAudioSource();
+    MediaPipelineTestMethods::attachSourceAudio();
+    MediaPipelineTestMethods::shouldAllSourcesAttached();
+    MediaPipelineTestMethods::allSourcesAttached();
+
+    // Notify Idle
+    MediaPipelineTestMethods::shouldNotifyPlaybackStateIdle();
+    MediaPipelineTestMethods::sendNotifyPlaybackStateIdle();
+
+    // Pause
+    MediaPipelineTestMethods::shouldPause();
+    MediaPipelineTestMethods::pause();
+
+}
+
+void MediaPipelineTestMethods::endAudioVideoMediaSession()
+{
+    // Remove sources
+    MediaPipelineTestMethods::shouldRemoveVideoSource();
+    MediaPipelineTestMethods::removeSourceVideo();
+    MediaPipelineTestMethods::shouldRemoveAudioSource();
+    MediaPipelineTestMethods::removeSourceAudio();
+
+    // Stop
+    MediaPipelineTestMethods::shouldStop();
+    MediaPipelineTestMethods::stop();
+    MediaPipelineTestMethods::shouldNotifyPlaybackStateStopped();
+    MediaPipelineTestMethods::sendNotifyPlaybackStateStopped();
+
+    // Destroy media session
+    MediaPipelineTestMethods::shouldDestroyMediaSession();
+    MediaPipelineTestMethods::destroyMediaPipeline();
+}
