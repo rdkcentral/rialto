@@ -208,15 +208,8 @@ if( CMAKE_BUILD_FLAG STREQUAL "UnitTests" )
 
     include( cmake/googletest.cmake )
 
-    add_subdirectory( tests/unittests/common EXCLUDE_FROM_ALL )
-    add_subdirectory( tests/unittests/logging EXCLUDE_FROM_ALL )
-    add_subdirectory( tests/unittests/wrappers EXCLUDE_FROM_ALL )
-    add_subdirectory( tests/unittests/serverManager EXCLUDE_FROM_ALL )
-    add_subdirectory( tests/unittests/media/client EXCLUDE_FROM_ALL )
-    add_subdirectory( tests/unittests/media/server EXCLUDE_FROM_ALL )
-    add_subdirectory( tests/unittests/media/common EXCLUDE_FROM_ALL )
-    add_subdirectory( tests/unittests/media/interface EXCLUDE_FROM_ALL )
-    add_subdirectory( tests/unittests/ipc EXCLUDE_FROM_ALL )
+    add_subdirectory( tests/common EXCLUDE_FROM_ALL )
+    add_subdirectory( tests/unittests EXCLUDE_FROM_ALL )
 
 endif()
 
@@ -225,7 +218,7 @@ if( CMAKE_BUILD_FLAG STREQUAL "ComponentTests" )
 
     include( cmake/googletest.cmake )
 
-    add_subdirectory( tests/componenttests/client EXCLUDE_FROM_ALL )
-    add_subdirectory( tests/componenttests/server EXCLUDE_FROM_ALL )
+    add_subdirectory( tests/common EXCLUDE_FROM_ALL )
+    add_subdirectory( tests/componenttests EXCLUDE_FROM_ALL )
 
 endif()

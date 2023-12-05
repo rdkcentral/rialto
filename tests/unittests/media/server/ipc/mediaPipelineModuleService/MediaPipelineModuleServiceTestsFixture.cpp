@@ -19,6 +19,7 @@
 
 #include "MediaPipelineModuleServiceTestsFixture.h"
 #include "MediaPipelineModuleService.h"
+#include "MediaPipelineProtoUtils.h"
 #include "MediaSourceUtil.h"
 #include <fcntl.h>
 #include <string>
@@ -162,22 +163,6 @@ MATCHER_P(NetworkStateChangeEventMatcher, kNetworkState, "")
 
 namespace firebolt::rialto
 {
-firebolt::rialto::LoadRequest_MediaType convertMediaType(const firebolt::rialto::MediaType &kMediaType)
-{
-    switch (kMediaType)
-    {
-    case firebolt::rialto::MediaType::UNKNOWN:
-    {
-        return firebolt::rialto::LoadRequest_MediaType::LoadRequest_MediaType_UNKNOWN;
-    }
-    case firebolt::rialto::MediaType::MSE:
-    {
-        return firebolt::rialto::LoadRequest_MediaType::LoadRequest_MediaType_MSE;
-    }
-    }
-    return firebolt::rialto::LoadRequest_MediaType::LoadRequest_MediaType_UNKNOWN;
-}
-
 firebolt::rialto::ProtoMediaSourceType convertProtoMediaSourceType(const firebolt::rialto::MediaSourceType &kMediaSourceType)
 {
     switch (kMediaSourceType)
@@ -196,30 +181,6 @@ firebolt::rialto::ProtoMediaSourceType convertProtoMediaSourceType(const firebol
     }
     }
     return firebolt::rialto::ProtoMediaSourceType::UNKNOWN;
-}
-
-firebolt::rialto::AttachSourceRequest_StreamFormat convertStreamFormat(const firebolt::rialto::StreamFormat &streamFormat)
-{
-    switch (streamFormat)
-    {
-    case firebolt::rialto::StreamFormat::UNDEFINED:
-    {
-        return firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_UNDEFINED;
-    }
-    case firebolt::rialto::StreamFormat::RAW:
-    {
-        return firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_RAW;
-    }
-    case firebolt::rialto::StreamFormat::AVC:
-    {
-        return firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_AVC;
-    }
-    case firebolt::rialto::StreamFormat::BYTE_STREAM:
-    {
-        return firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_BYTE_STREAM;
-    }
-    }
-    return firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_UNDEFINED;
 }
 
 firebolt::rialto::HaveDataRequest_MediaSourceStatus

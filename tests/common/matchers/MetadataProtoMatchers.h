@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2022 Sky UK
+ * Copyright 2023 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,19 +17,19 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_CONTROL_CLIENT_MOCK_H_
-#define FIREBOLT_RIALTO_CONTROL_CLIENT_MOCK_H_
+#ifndef METADATA_PROTO_MATCHERS_H_
+#define METADATA_PROTO_MATCHERS_H_
 
-#include "IControlClient.h"
+#include "MediaCommon.h"
+#include "metadata.pb.h"
 #include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
-namespace firebolt::rialto
+MATCHER_P(frameRateMatcher, expectedFrameRate, "")
 {
-class ControlClientMock : public IControlClient
-{
-public:
-    MOCK_METHOD(void, notifyApplicationState, (ApplicationState state), (override));
-};
-} // namespace firebolt::rialto
-
-#endif // FIREBOLT_RIALTO_CONTROL_CLIENT_MOCK_H_
+    const MediaSegmentMetadata_Fraction kFrameRate = arg;
+    return ((kFrameRate.has_numerator()) && (kFrameRate.has_denominator()) &&
+            (kFrameRate.numerator() == expectedFrameRate.numerator) &&
+            (kFrameRate.denominator() == expectedFrameRate.denominator));
+}
+#endif // METADATA_PROTO_MATCHERS_H_

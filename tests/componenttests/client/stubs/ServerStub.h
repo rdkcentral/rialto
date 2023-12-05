@@ -17,43 +17,42 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_COMPONENTTESTS_SERVER_STUB_H_
-#define FIREBOLT_RIALTO_COMPONENTTESTS_SERVER_STUB_H_
+#ifndef FIREBOLT_RIALTO_CT_STUB_SERVER_STUB_H_
+#define FIREBOLT_RIALTO_CT_STUB_SERVER_STUB_H_
 
-#include "ControlCommon.h"
+#include "ControlModuleStub.h"
 #include "IIpcServer.h"
-#include "controlmodule.pb.h"
+#include "MediaPipelineModuleStub.h"
 #include <atomic>
 #include <condition_variable>
 #include <memory>
 #include <thread>
 
-namespace firebolt::rialto::componenttests
+namespace firebolt::rialto::ct::stub
 {
-class ServerStub
+class ServerStub : public ControlModuleStub, public MediaPipelineModuleStub
 {
 public:
-    ServerStub();
-    explicit ServerStub(std::shared_ptr<::firebolt::rialto::ControlModule> controlModuleMock);
+    explicit ServerStub(const std::shared_ptr<::firebolt::rialto::ControlModule> &controlModuleMock,
+                        const std::shared_ptr<::firebolt::rialto::MediaPipelineModule> &mediaPipelineModuleMock);
     ~ServerStub();
 
     void clientDisconnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &client);
     void clientConnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &client);
-
-    void notifyApplicationStateEvent(const int32_t controlId, const firebolt::rialto::ApplicationState &state);
 
 private:
     std::shared_ptr<::firebolt::rialto::ipc::IServer> m_server;
     std::shared_ptr<::firebolt::rialto::ipc::IClient> m_client;
     std::thread m_serverThread;
     std::atomic<bool> m_running;
-    std::shared_ptr<::firebolt::rialto::ControlModule> m_controlModuleMock;
     std::atomic<bool> m_clientConnected;
     std::mutex m_clientConnectMutex;
     std::condition_variable m_clientConnectCond;
 
     void init();
+    void waitForClientConnect() override;
+    std::shared_ptr<::firebolt::rialto::ipc::IClient> &getClient() override;
 };
-} // namespace firebolt::rialto::componenttests
+} // namespace firebolt::rialto::ct::stub
 
-#endif // FIREBOLT_RIALTO_COMPONENTTESTS_SERVER_STUB_H_
+#endif // FIREBOLT_RIALTO_CT_STUB_SERVER_STUB_H_

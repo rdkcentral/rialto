@@ -18,6 +18,7 @@
  */
 
 #include "MediaPipelineIpcTestBase.h"
+#include "MediaPipelineProtoRequestMatchers.h"
 
 MATCHER(IsNull, "")
 {
@@ -28,13 +29,6 @@ MATCHER_P(ShmInfoMatcher, shmInfo, "")
 {
     return ((arg->maxMetadataBytes == shmInfo->maxMetadataBytes) && (arg->metadataOffset == shmInfo->metadataOffset) &&
             (arg->mediaDataOffset == shmInfo->mediaDataOffset) && (arg->maxMediaBytes == shmInfo->maxMediaBytes));
-}
-
-MATCHER_P4(HaveDataRequestMatcher, sessionId, status, numFrames, requestId, "")
-{
-    const ::firebolt::rialto::HaveDataRequest *kRequest = dynamic_cast<const ::firebolt::rialto::HaveDataRequest *>(arg);
-    return ((kRequest->session_id() == sessionId) && (kRequest->status() == status) &&
-            (kRequest->request_id() == requestId) && (kRequest->num_frames() == numFrames));
 }
 
 class RialtoClientMediaPipelineIpcDataTest : public MediaPipelineIpcTestBase
@@ -144,7 +138,7 @@ TEST_F(RialtoClientMediaPipelineIpcDataTest, HaveDataSuccess)
 
     EXPECT_CALL(*m_channelMock,
                 CallMethod(methodMatcher("haveData"), m_controllerMock.get(),
-                           HaveDataRequestMatcher(m_sessionId, firebolt::rialto::HaveDataRequest_MediaSourceStatus_OK,
+                           haveDataRequestMatcher(m_sessionId, firebolt::rialto::HaveDataRequest_MediaSourceStatus_OK,
                                                   m_numFrames, m_requestId),
                            _, m_blockingClosureMock.get()));
 

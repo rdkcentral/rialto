@@ -17,15 +17,13 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_IPC_CONTROL_MODULE_MOCK_H_
-#define FIREBOLT_RIALTO_IPC_CONTROL_MODULE_MOCK_H_
+#ifndef CONTROL_MODULE_MOCK_H_
+#define CONTROL_MODULE_MOCK_H_
 
 #include "SchemaVersion.h"
 #include "controlmodule.pb.h"
 #include <gmock/gmock.h>
 
-namespace firebolt::rialto::ipc
-{
 class ControlModuleMock : public ::firebolt::rialto::ControlModule
 {
 public:
@@ -72,6 +70,5 @@ public:
     ControlModuleMock() {}
     virtual ~ControlModuleMock() = default;
 };
-} // namespace firebolt::rialto::ipc
 
-#endif // FIREBOLT_RIALTO_IPC_CONTROL_MODULE_MOCK_H_
+#endif // CONTROL_MODULE_MOCK_H_
