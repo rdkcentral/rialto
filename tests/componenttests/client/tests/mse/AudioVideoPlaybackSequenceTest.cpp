@@ -40,7 +40,7 @@ public:
  *
  * Sequence Diagrams:
  *  Create, Destroy - https://wiki.rdkcentral.com/display/ASP/Rialto+MSE+Misc+Sequence+Diagrams
- *  Start/Resume Playback, Pause Playback, Stop, End of stream, Shared memory buffer refill
+ *  Start/Resume Playback, Pause Playback, Stop, End of stream
  *   - https://wiki.rdkcentral.com/display/ASP/Rialto+Playback+Design
  *
  * Test Setup:

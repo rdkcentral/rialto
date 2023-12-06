@@ -46,8 +46,11 @@ public:
  *  Test the writting of audio and video segments during playback. The test starts off with a media session in the
  *  wait for preroll state ready for media segments to be injected. The test buffers 8 frames of both audio
  *  and video before preroll and 25 frames of both audio and video after preroll, this is to check that
- * needData/haveData is fullilled with the maximum number of frames and partial number of frames added to the media
- * session. All the metadata and media data written to the shared buffer is checked for accuracy.
+ *  needData/haveData is fullilled with the maximum number of frames and partial number of frames added to the media
+ *  session. All the metadata and media data written to the shared buffer is checked for accuracy.
+ *
+ * Sequence Diagrams:
+ *  Shared memory buffer refill - https://wiki.rdkcentral.com/display/ASP/Rialto+Playback+Design
  *
  * Test Setup:
  *  Language: C++
