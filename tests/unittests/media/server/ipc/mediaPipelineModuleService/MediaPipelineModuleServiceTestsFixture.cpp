@@ -692,7 +692,7 @@ void MediaPipelineModuleServiceTests::sendHaveDataRequestAndReceiveResponse()
     firebolt::rialto::HaveDataResponse response;
 
     request.set_session_id(kHardcodedSessionId);
-    request.set_status(convertHaveDataRequestMediaSourceStatus(kMediaSourceStatus));
+    request.set_status(convertMediaSourceStatus(kMediaSourceStatus));
     request.set_num_frames(kNumFrames);
     request.set_request_id(kRequestId);
 

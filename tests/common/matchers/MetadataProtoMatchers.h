@@ -27,7 +27,7 @@
 
 MATCHER_P(frameRateMatcher, expectedFrameRate, "")
 {
-    const MediaSegmentMetadata_Fraction kFrameRate = arg;
+    const firebolt::rialto::MediaSegmentMetadata_Fraction kFrameRate = arg;
     return ((kFrameRate.has_numerator()) && (kFrameRate.has_denominator()) &&
             (kFrameRate.numerator() == expectedFrameRate.numerator) &&
             (kFrameRate.denominator() == expectedFrameRate.denominator));
