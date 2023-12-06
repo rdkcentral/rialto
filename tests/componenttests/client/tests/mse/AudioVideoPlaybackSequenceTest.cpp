@@ -34,8 +34,8 @@ public:
  * Component Test: Audio Video Playback Sequence
  * Test Objective:
  *  Test the playback of video and audio MSE content. The test transitions through the playback states
- *  buffering 1 frame of both audio and video content before preroll and 1 frame of both audio and video 
- *  content after preroll. The session is then terminated. All the metadata and media data written to the 
+ *  buffering 1 frame of both audio and video content before preroll and 1 frame of both audio and video
+ *  content after preroll. The session is then terminated. All the metadata and media data written to the
  *  shared buffer is checked for accuracy.
  *
  * Sequence Diagrams:

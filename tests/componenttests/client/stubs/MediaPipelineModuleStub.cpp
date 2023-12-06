@@ -18,103 +18,11 @@
  */
 
 #include "MediaPipelineModuleStub.h"
+#include "MediaPipelineProtoUtils.h"
 #include <IIpcServer.h>
 #include <IIpcServerFactory.h>
 #include <gtest/gtest.h>
 #include <memory>
-
-namespace
-{
-firebolt::rialto::PlaybackStateChangeEvent_PlaybackState
-convertPlaybackState(const firebolt::rialto::PlaybackState &playbackState)
-{
-    switch (playbackState)
-    {
-    case firebolt::rialto::PlaybackState::UNKNOWN:
-    {
-        return firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_UNKNOWN;
-    }
-    case firebolt::rialto::PlaybackState::IDLE:
-    {
-        return firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_IDLE;
-    }
-    case firebolt::rialto::PlaybackState::PLAYING:
-    {
-        return firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_PLAYING;
-    }
-    case firebolt::rialto::PlaybackState::PAUSED:
-    {
-        return firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_PAUSED;
-    }
-    case firebolt::rialto::PlaybackState::SEEKING:
-    {
-        return firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_SEEKING;
-    }
-    case firebolt::rialto::PlaybackState::FLUSHED:
-    {
-        return firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_FLUSHED;
-    }
-    case firebolt::rialto::PlaybackState::STOPPED:
-    {
-        return firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_STOPPED;
-    }
-    case firebolt::rialto::PlaybackState::END_OF_STREAM:
-    {
-        return firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_END_OF_STREAM;
-    }
-    case firebolt::rialto::PlaybackState::FAILURE:
-    {
-        return firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_FAILURE;
-    }
-    }
-    return firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_UNKNOWN;
-}
-
-firebolt::rialto::NetworkStateChangeEvent_NetworkState
-convertNetworkState(const firebolt::rialto::NetworkState &networkState)
-{
-    switch (networkState)
-    {
-    case firebolt::rialto::NetworkState::UNKNOWN:
-    {
-        return firebolt::rialto::NetworkStateChangeEvent_NetworkState_UNKNOWN;
-    }
-    case firebolt::rialto::NetworkState::IDLE:
-    {
-        return firebolt::rialto::NetworkStateChangeEvent_NetworkState_IDLE;
-    }
-    case firebolt::rialto::NetworkState::BUFFERING:
-    {
-        return firebolt::rialto::NetworkStateChangeEvent_NetworkState_BUFFERING;
-    }
-    case firebolt::rialto::NetworkState::BUFFERING_PROGRESS:
-    {
-        return firebolt::rialto::NetworkStateChangeEvent_NetworkState_BUFFERING_PROGRESS;
-    }
-    case firebolt::rialto::NetworkState::BUFFERED:
-    {
-        return firebolt::rialto::NetworkStateChangeEvent_NetworkState_BUFFERED;
-    }
-    case firebolt::rialto::NetworkState::STALLED:
-    {
-        return firebolt::rialto::NetworkStateChangeEvent_NetworkState_STALLED;
-    }
-    case firebolt::rialto::NetworkState::FORMAT_ERROR:
-    {
-        return firebolt::rialto::NetworkStateChangeEvent_NetworkState_FORMAT_ERROR;
-    }
-    case firebolt::rialto::NetworkState::NETWORK_ERROR:
-    {
-        return firebolt::rialto::NetworkStateChangeEvent_NetworkState_NETWORK_ERROR;
-    }
-    case firebolt::rialto::NetworkState::DECODE_ERROR:
-    {
-        return firebolt::rialto::NetworkStateChangeEvent_NetworkState_DECODE_ERROR;
-    }
-    }
-    return firebolt::rialto::NetworkStateChangeEvent_NetworkState_UNKNOWN;
-}
-} // namespace
 
 namespace firebolt::rialto::ct::stub
 {

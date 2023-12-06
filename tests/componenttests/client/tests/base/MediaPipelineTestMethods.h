@@ -40,6 +40,12 @@ using ::testing::WithArgs;
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::ct::stub;
 
+// Forward declare metadata so we dont have to include proto file
+namespace firebolt::rialto
+{
+class MediaSegmentMetadata;
+};
+
 class MediaPipelineTestMethods
 {
 public:
@@ -55,66 +61,72 @@ protected:
     std::shared_ptr<IMediaPipelineFactory> m_mediaPipelineFactory;
     std::unique_ptr<IMediaPipeline> m_mediaPipeline;
 
-    // Test methods
+    // Expect methods
     void shouldCreateMediaSession();
-    void createMediaPipeline();
     void shouldLoad();
-    void load();
     void shouldNotifyNetworkStateBuffering();
-    void sendNotifyNetworkStateBuffering();
     void shouldPause();
-    void pause();
     void shouldAttachVideoSource();
-    void attachSourceVideo();
     void shouldAttachAudioSource();
-    void attachSourceAudio();
     void shouldAllSourcesAttached();
-    void allSourcesAttached();
     void shouldNotifyPlaybackStateIdle();
-    void sendNotifyPlaybackStateIdle();
     void shouldNotifyNeedDataAudioBeforePreroll();
-    void sendNotifyNeedDataAudioBeforePreroll();
     void shouldNotifyNeedDataVideoBeforePreroll();
-    void sendNotifyNeedDataVideoBeforePreroll();
     void shouldHaveDataBeforePreroll();
-    void haveDataOk();
-    int32_t addSegmentMseAudio();
-    void checkMseAudioSegmentWritten(int32_t segmentId);
-    int32_t addSegmentMseVideo();
-    void checkMseVideoSegmentWritten(int32_t segmentId);
     void shouldNotifyNetworkStateBuffered();
-    void sendNotifyNetworkStateBuffered();
     void shouldNotifyPlaybackStatePaused();
-    void sendNotifyPlaybackStatePaused();
     void shouldNotifyPlaybackStatePlay();
-    void sendNotifyPlaybackStatePlay();
     void shouldPlay();
-    void play();
     void shouldNotifyNeedDataAudioAfterPreroll();
-    void sendNotifyNeedDataAudioAfterPreroll();
     void shouldNotifyNeedDataVideoAfterPreroll();
-    void sendNotifyNeedDataVideoAfterPreroll();
     void shouldHaveDataAfterPreroll();
     void shouldHaveDataOk(size_t framesWritten);
     void shouldHaveDataEos(size_t framesWritten);
-    void haveDataEos();
     void shouldNotifyPlaybackStateEndOfStream();
-    void sendNotifyPlaybackStateEndOfStream();
     void shouldRemoveVideoSource();
-    void removeSourceVideo();
     void shouldRemoveAudioSource();
-    void removeSourceAudio();
     void shouldStop();
-    void stop();
     void shouldNotifyPlaybackStateStopped();
-    void sendNotifyPlaybackStateStopped();
     void shouldDestroyMediaSession();
+
+    // Api methods
+    void createMediaPipeline();
+    void load();
+    void pause();
+    void attachSourceVideo();
+    void attachSourceAudio();
+    void allSourcesAttached();
+    int32_t addSegmentMseAudio();
+    int32_t addSegmentMseVideo();
+    void haveDataOk();
+    void play();
+    void haveDataEos();
+    void removeSourceVideo();
+    void removeSourceAudio();
+    void stop();
     void destroyMediaPipeline();
 
+    // Event methods
+    void sendNotifyNetworkStateBuffering();
+    void sendNotifyPlaybackStateIdle();
+    void sendNotifyNeedDataAudioBeforePreroll();
+    void sendNotifyNeedDataVideoBeforePreroll();
+    void sendNotifyNetworkStateBuffered();
+    void sendNotifyPlaybackStatePaused();
+    void sendNotifyPlaybackStatePlay();
+    void sendNotifyNeedDataAudioAfterPreroll();
+    void sendNotifyNeedDataVideoAfterPreroll();
+    void sendNotifyPlaybackStateEndOfStream();
+    void sendNotifyPlaybackStateStopped();
+
+    // Check methods
+    void checkMseAudioSegmentWritten(int32_t segmentId);
+    void checkMseVideoSegmentWritten(int32_t segmentId);
+
+    // Helper methods
     void startAudioVideoMediaSessionWaitForPreroll();
     void endAudioVideoMediaSession();
-    
-    // Component test helpers
+
     virtual void notifyEvent() = 0;
     virtual void waitEvent() = 0;
     virtual std::shared_ptr<ServerStub> &getServerStub() = 0;
@@ -136,6 +148,17 @@ private:
     bool m_firstSegmentOfNeedData{false};
 
     void resetWriteLocation(const MediaPlayerShmInfo &audioShmInfo, const MediaPlayerShmInfo &videoShmInfo);
+    uint32_t getTimestamp(uint32_t segmentId);
+    void incrementWriteLocation(uint32_t sizeOfSegmentData, const std::shared_ptr<MediaPlayerShmInfo> &writeLocation);
+    void checkAudioMetadata(const MediaSegmentMetadata &metadata, uint32_t segmentId);
+    void checkHasNoAudioMetadata(const MediaSegmentMetadata &metadata);
+    void checkVideoMetadata(const MediaSegmentMetadata &metadata, uint32_t segmentId);
+    void checkHasNoVideoMetadata(const MediaSegmentMetadata &metadata);
+    void checkHasNoEncryptionMetadata(const MediaSegmentMetadata &metadata);
+    void checkHasNoCodacData(const MediaSegmentMetadata &metadata);
+    void checkHasNoSegmentAlignment(const MediaSegmentMetadata &metadata);
+    void checkHasNoExtraData(const MediaSegmentMetadata &metadata);
+    void checkSegmentData(const MediaSegmentMetadata &metadata, uint8_t* dataPtr, const std::string &expectedSegmentData);
 };
 
 #endif // MEDIA_PIPELINE_TEST_METHODS_H_

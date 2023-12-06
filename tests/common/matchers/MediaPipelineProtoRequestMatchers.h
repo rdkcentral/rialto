@@ -53,36 +53,43 @@ MATCHER_P(pauseRequestMatcher, sessionId, "")
     return (kRequest->session_id() == sessionId);
 }
 
+#define CHECK_ATTACH_SOURCE_CODAC_DATA(attachSourceRequest, expectedCodecData, checkCodec)                             \
+    do                                                                                                                 \
+    {                                                                                                                  \
+        std::shared_ptr<firebolt::rialto::CodecData> codecDataFromReq{};                                               \
+        if (attachSourceRequest->has_codec_data())                                                                     \
+        {                                                                                                              \
+            codecDataFromReq = std::make_shared<firebolt::rialto::CodecData>();                                        \
+            codecDataFromReq->data = std::vector<std::uint8_t>(attachSourceRequest->codec_data().data().begin(),       \
+                                                               attachSourceRequest->codec_data().data().end());        \
+            if (attachSourceRequest->codec_data().type() == AttachSourceRequest_CodecData_Type_STRING)                 \
+            {                                                                                                          \
+                codecDataFromReq->type = firebolt::rialto::CodecDataType::STRING;                                      \
+            }                                                                                                          \
+            else                                                                                                       \
+            {                                                                                                          \
+                codecDataFromReq->type = firebolt::rialto::CodecDataType::BUFFER;                                      \
+            }                                                                                                          \
+        }                                                                                                              \
+                                                                                                                       \
+        if (codecDataFromReq && expectedCodecData)                                                                     \
+        {                                                                                                              \
+            checkCodec = codecDataFromReq->data == expectedCodecData->data &&                                          \
+                         codecDataFromReq->type == expectedCodecData->type;                                            \
+        }                                                                                                              \
+        else                                                                                                           \
+        {                                                                                                              \
+            checkCodec = codecDataFromReq == expectedCodecData;                                                        \
+        }                                                                                                              \
+    } while (0)
+
 MATCHER_P9(attachSourceRequestMatcherAudio, sessionId, mimeType, hasDrm, alignment, numberOfChannels, sampleRate,
            codecSpecificConfig, codecData, streamFormat, "")
 {
     const ::firebolt::rialto::AttachSourceRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::AttachSourceRequest *>(arg);
-    std::shared_ptr<firebolt::rialto::CodecData> codecDataFromReq{};
-    if (kRequest->has_codec_data())
-    {
-        codecDataFromReq = std::make_shared<firebolt::rialto::CodecData>();
-        codecDataFromReq->data =
-            std::vector<std::uint8_t>(kRequest->codec_data().data().begin(), kRequest->codec_data().data().end());
-        if (kRequest->codec_data().type() == AttachSourceRequest_CodecData_Type_STRING)
-        {
-            codecDataFromReq->type = firebolt::rialto::CodecDataType::STRING;
-        }
-        else
-        {
-            codecDataFromReq->type = firebolt::rialto::CodecDataType::BUFFER;
-        }
-    }
-
     bool checkCodec = false;
-    if (codecDataFromReq && codecData)
-    {
-        checkCodec = codecDataFromReq->data == codecData->data && codecDataFromReq->type == codecData->type;
-    }
-    else
-    {
-        checkCodec = codecDataFromReq == codecData;
-    }
+    CHECK_ATTACH_SOURCE_CODAC_DATA(kRequest, codecData, checkCodec);
 
     // Only check optional parameters if the config type is correct
     bool checkAudio = false;
@@ -106,31 +113,8 @@ MATCHER_P8(attachSourceRequestMatcherVideo, sessionId, mimeType, hasDrm, width, 
 {
     const ::firebolt::rialto::AttachSourceRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::AttachSourceRequest *>(arg);
-    std::shared_ptr<firebolt::rialto::CodecData> codecDataFromReq{};
-    if (kRequest->has_codec_data())
-    {
-        codecDataFromReq = std::make_shared<firebolt::rialto::CodecData>();
-        codecDataFromReq->data =
-            std::vector<std::uint8_t>(kRequest->codec_data().data().begin(), kRequest->codec_data().data().end());
-        if (kRequest->codec_data().type() == AttachSourceRequest_CodecData_Type_STRING)
-        {
-            codecDataFromReq->type = firebolt::rialto::CodecDataType::STRING;
-        }
-        else
-        {
-            codecDataFromReq->type = firebolt::rialto::CodecDataType::BUFFER;
-        }
-    }
-
     bool checkCodec = false;
-    if (codecDataFromReq && codecData)
-    {
-        checkCodec = codecDataFromReq->data == codecData->data && codecDataFromReq->type == codecData->type;
-    }
-    else
-    {
-        checkCodec = codecDataFromReq == codecData;
-    }
+    CHECK_ATTACH_SOURCE_CODAC_DATA(kRequest, codecData, checkCodec);
 
     // Only check optional parameters if the config type is correct
     bool checkVideo = false;
@@ -152,31 +136,8 @@ MATCHER_P9(attachSourceRequestMatcherDolby, sessionId, mimeType, hasDrm, width, 
 {
     const ::firebolt::rialto::AttachSourceRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::AttachSourceRequest *>(arg);
-    std::shared_ptr<firebolt::rialto::CodecData> codecDataFromReq{};
-    if (kRequest->has_codec_data())
-    {
-        codecDataFromReq = std::make_shared<firebolt::rialto::CodecData>();
-        codecDataFromReq->data =
-            std::vector<std::uint8_t>(kRequest->codec_data().data().begin(), kRequest->codec_data().data().end());
-        if (kRequest->codec_data().type() == AttachSourceRequest_CodecData_Type_STRING)
-        {
-            codecDataFromReq->type = firebolt::rialto::CodecDataType::STRING;
-        }
-        else
-        {
-            codecDataFromReq->type = firebolt::rialto::CodecDataType::BUFFER;
-        }
-    }
-
     bool checkCodec = false;
-    if (codecDataFromReq && codecData)
-    {
-        checkCodec = codecDataFromReq->data == codecData->data && codecDataFromReq->type == codecData->type;
-    }
-    else
-    {
-        checkCodec = codecDataFromReq == codecData;
-    }
+    CHECK_ATTACH_SOURCE_CODAC_DATA(kRequest, codecData, checkCodec);
 
     // Only check optional parameters if the config type is correct
     bool checkDolby = false;
