@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_CT_MEDIA_PIPELINE_TEST_FIXTURE_H_
 
 #include "GstSrc.h"
+#include "GstreamerStub.h"
 #include "RialtoServerComponentTest.h"
 
 namespace firebolt::rialto::server::ct
@@ -38,45 +39,36 @@ public:
     void sourceWillBeSetup();
     void willSetupAndAddSource(GstAppSrc *appSrc);
     void willFinishSetupAndAddSource();
+    void willPause();
+
     void createSession();
     void load();
     void attachAudioSource();
     void attachVideoSource();
     void setupSource();
     void indicateAllSourcesAttached();
+    void pause();
 
     int m_sessionId{-1};
     int m_audioSourceId{-1};
     int m_videoSourceId{-1};
     GstElement m_pipeline{};
+    GstBus m_bus{};
     GstElement m_playsink{};
     GstBin m_rialtoSrcBin = {};
     GstRialtoSrcPrivate m_rialtoSrcPriv = {};
     GstRialtoSrc m_rialtoSource = {m_rialtoSrcBin, &m_rialtoSrcPriv};
+    GstreamerStub m_gstreamerStub{m_glibWrapperMock, m_gstWrapperMock, &m_pipeline, &m_bus, GST_ELEMENT(&m_rialtoSource)};
     GstAppSrc m_audioAppSrc{};
     GstAppSrc m_videoAppSrc{};
-    GstBus m_bus{};
     GFlagsClass m_flagsClass{};
-    GType m_gstPlayFlagsType = static_cast<GType>(123);
     GFlagsValue m_audioFlag{1, "audio", "audio"};
     GFlagsValue m_videoFlag{2, "video", "video"};
     GFlagsValue m_nativeVideoFlag{3, "native-video", "native-video"};
-    gpointer m_setupSourceUserData;
-    GCallback m_setupSourceFunc;
-    gpointer m_setupElementUserData;
-    GCallback m_setupElementFunc;
-    gpointer m_deepElementAddedUserData;
-    GCallback m_deepElementAddedFunc;
-    gulong m_setupSourceSignalId{0};
-    gulong m_setupElementSignalId{1};
-    gulong m_deepElementAddedSignalId{2};
     GstCaps m_audioCaps{};
     GstCaps m_videoCaps{};
     gchar m_audioCapsStr{};
     gchar m_videoCapsStr{};
-    GstAppSrcCallbacks m_audioAppSourceCallbacks{nullptr, nullptr, nullptr};
-    GstAppSrcCallbacks m_videoAppSourceCallbacks{nullptr, nullptr, nullptr};
-    gpointer m_appSourceCallbacksUserData{nullptr};
     std::string m_sourceName{"src_0"};
     GstPad m_pad{};
     GstPad m_ghostPad{};

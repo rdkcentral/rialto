@@ -68,4 +68,24 @@ TEST_F(MediaPipelineTest, shouldAttachBothSources)
     indicateAllSourcesAttached();
     gstPlayerWillBeDestructed();
 }
+
+TEST_F(MediaPipelineTest, playback)
+{
+    createSession();
+    gstPlayerWillBeCreated();
+    load();
+    audioSourceWillBeAttached();
+    attachAudioSource();
+    videoSourceWillBeAttached();
+    attachVideoSource();
+    sourceWillBeSetup();
+    setupSource();
+    willSetupAndAddSource(&m_audioAppSrc);
+    willSetupAndAddSource(&m_videoAppSrc);
+    willFinishSetupAndAddSource();
+    indicateAllSourcesAttached();
+    willPause();
+    pause();
+    gstPlayerWillBeDestructed();
+}
 } // namespace firebolt::rialto::server::ct

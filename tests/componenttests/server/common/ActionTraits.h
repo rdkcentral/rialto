@@ -78,6 +78,16 @@ struct AllSourcesAttached
     static constexpr FunctionType m_kFunction{&Stub::allSourcesAttached};
 };
 
+struct Pause
+{
+    using RequestType = ::firebolt::rialto::PauseRequest;
+    using ResponseType = ::firebolt::rialto::PauseResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::pause};
+};
+
 // mediakeys module
 struct CreateMediaKeys
 {

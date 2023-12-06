@@ -101,6 +101,13 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
+::firebolt::rialto::PauseRequest createPauseRequest(int sessionId)
+{
+    ::firebolt::rialto::PauseRequest request;
+    request.set_session_id(sessionId);
+    return request;
+}
+
 ::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequest()
 {
     ::firebolt::rialto::CreateMediaKeysRequest request;
