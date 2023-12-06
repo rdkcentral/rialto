@@ -259,8 +259,8 @@ int32_t MediaPipelineTestMethods::addSegmentMseAudio()
     EXPECT_LT(m_audioSegmentCount, sizeof(kAudioSegments) / sizeof(kAudioSegments[0]));
 
     std::unique_ptr<IMediaPipeline::MediaSegment> mseData =
-        std::make_unique<IMediaPipeline::MediaSegmentAudio>(kAudioSourceId, getTimestamp(m_audioSegmentCount), kDuration, kSampleRate,
-                                                            kNumberOfChannels);
+        std::make_unique<IMediaPipeline::MediaSegmentAudio>(kAudioSourceId, getTimestamp(m_audioSegmentCount),
+                                                            kDuration, kSampleRate, kNumberOfChannels);
     mseData->setData(kAudioSegments[m_audioSegmentCount].size(),
                      (const uint8_t *)kAudioSegments[m_audioSegmentCount].c_str());
     EXPECT_EQ(m_mediaPipeline->addSegment(m_needDataRequestId, mseData), AddSegmentStatus::OK);
@@ -275,7 +275,8 @@ int32_t MediaPipelineTestMethods::addSegmentMseAudio()
     return segmentId;
 }
 
-void MediaPipelineTestMethods::incrementWriteLocation(uint32_t sizeOfSegmentData, const std::shared_ptr<MediaPlayerShmInfo> &writeLocation)
+void MediaPipelineTestMethods::incrementWriteLocation(uint32_t sizeOfSegmentData,
+                                                      const std::shared_ptr<MediaPlayerShmInfo> &writeLocation)
 {
     // Calibrate the shm info based on segment written
     uint32_t metadataSize = 0;
@@ -286,9 +287,9 @@ void MediaPipelineTestMethods::incrementWriteLocation(uint32_t sizeOfSegmentData
         metadataSize += sizeof(uint32_t);
         m_firstSegmentOfNeedData = false;
     }
-    uint32_t metadataBytesWrittenInMedia = sizeof(uint32_t) +
-                                           *reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(getShmAddress()) +
-                                                                         writeLocation->mediaDataOffset);
+    uint32_t metadataBytesWrittenInMedia =
+        sizeof(uint32_t) +
+        *reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(getShmAddress()) + writeLocation->mediaDataOffset);
     uint32_t segmentDataSize = sizeOfSegmentData + metadataBytesWrittenInMedia;
     writeLocation->maxMetadataBytes = writeLocation->maxMetadataBytes - metadataSize;
     writeLocation->metadataOffset = writeLocation->metadataOffset + metadataSize;
@@ -321,8 +322,8 @@ int32_t MediaPipelineTestMethods::addSegmentMseVideo()
     EXPECT_LT(m_videoSegmentCount, sizeof(kVideoSegments) / sizeof(kVideoSegments[0]));
 
     std::unique_ptr<IMediaPipeline::MediaSegment> mseData =
-        std::make_unique<IMediaPipeline::MediaSegmentVideo>(kVideoSourceId, getTimestamp(m_videoSegmentCount), kDuration, kWidthUhd, kHeightUhd,
-                                                            kFrameRate);
+        std::make_unique<IMediaPipeline::MediaSegmentVideo>(kVideoSourceId, getTimestamp(m_videoSegmentCount),
+                                                            kDuration, kWidthUhd, kHeightUhd, kFrameRate);
     mseData->setData(kVideoSegments[m_videoSegmentCount].size(),
                      (const uint8_t *)kVideoSegments[m_videoSegmentCount].c_str());
     EXPECT_EQ(m_mediaPipeline->addSegment(m_needDataRequestId, mseData), AddSegmentStatus::OK);
@@ -431,7 +432,8 @@ void MediaPipelineTestMethods::checkHasNoExtraData(const MediaSegmentMetadata &m
     EXPECT_FALSE(metadata.has_extra_data());
 }
 
-void MediaPipelineTestMethods::checkSegmentData(const MediaSegmentMetadata &metadata, uint8_t* dataPtr, const std::string &expectedSegmentData)
+void MediaPipelineTestMethods::checkSegmentData(const MediaSegmentMetadata &metadata, uint8_t *dataPtr,
+                                                const std::string &expectedSegmentData)
 {
     EXPECT_TRUE(metadata.has_length());
     std::string data = std::string(reinterpret_cast<char *>(dataPtr), metadata.length());

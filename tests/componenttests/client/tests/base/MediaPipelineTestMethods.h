@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef MEDIA_PIPELINE_TEST_METHODS_H_
-#define MEDIA_PIPELINE_TEST_METHODS_H_
+#ifndef FIREBOLT_RIALTO_MEDIA_PIPELINE_TEST_METHODS_H_
+#define FIREBOLT_RIALTO_MEDIA_PIPELINE_TEST_METHODS_H_
 
 #include "IMediaPipeline.h"
 #include "MediaPipelineClientMock.h"
@@ -27,6 +27,7 @@
 #include <gtest/gtest.h>
 #include <map>
 #include <memory>
+#include <string>
 
 using ::testing::_;
 using ::testing::DoAll;
@@ -158,7 +159,7 @@ private:
     void checkHasNoCodacData(const MediaSegmentMetadata &metadata);
     void checkHasNoSegmentAlignment(const MediaSegmentMetadata &metadata);
     void checkHasNoExtraData(const MediaSegmentMetadata &metadata);
-    void checkSegmentData(const MediaSegmentMetadata &metadata, uint8_t* dataPtr, const std::string &expectedSegmentData);
+    void checkSegmentData(const MediaSegmentMetadata &metadata, uint8_t *dataPtr, const std::string &expectedSegmentData);
 };
 
-#endif // MEDIA_PIPELINE_TEST_METHODS_H_
+#endif // FIREBOLT_RIALTO_MEDIA_PIPELINE_TEST_METHODS_H_

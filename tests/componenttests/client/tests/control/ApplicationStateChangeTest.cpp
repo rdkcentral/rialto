@@ -31,8 +31,8 @@ class ApplicationStateChangeTest : public ClientComponentTest
  *  and the shared memory initalised correctly.
  *
  * Sequence Diagrams:
- *  Application state change: Inactive to Running, Switch Application from Running to Inactive State, 
- *  Stop Application from Inactive State
+ *  Start Application in Inactive State, Application state change: Inactive to Running,
+ *  Switch Application from Running to Inactive State, Stop Application from Inactive State
  *   - https://wiki.rdkcentral.com/display/ASP/Rialto+Application+Session+Management
  *
  * Test Setup:
