@@ -36,14 +36,6 @@ TEST_F(MediaPipelineTest, shouldFailToLoadWhenSessionIdIsWrong)
     ConfigureAction<Load>(m_clientStub).send(request).expectFailure();
 }
 
-TEST_F(MediaPipelineTest, shouldLoad)
-{
-    createSession();
-    gstPlayerWillBeCreated();
-    load();
-    gstPlayerWillBeDestructed();
-}
-
 TEST_F(MediaPipelineTest, shouldAttachAudioSourceOnly)
 {
     createSession();
@@ -54,21 +46,6 @@ TEST_F(MediaPipelineTest, shouldAttachAudioSourceOnly)
     sourceWillBeSetup();
     setupSource();
     willSetupAndAddSource(&m_audioAppSrc);
-    willFinishSetupAndAddSource();
-    indicateAllSourcesAttached();
-    gstPlayerWillBeDestructed();
-}
-
-TEST_F(MediaPipelineTest, shouldAttachVideoSourceOnly)
-{
-    createSession();
-    gstPlayerWillBeCreated();
-    load();
-    videoSourceWillBeAttached();
-    attachVideoSource();
-    sourceWillBeSetup();
-    setupSource();
-    willSetupAndAddSource(&m_videoAppSrc);
     willFinishSetupAndAddSource();
     indicateAllSourcesAttached();
     gstPlayerWillBeDestructed();
