@@ -18,6 +18,7 @@
  */
 
 #include "MediaFrameWriterV2.h"
+#include "MetadataProtoMatchers.h"
 #include "metadata.pb.h"
 #include <gtest/gtest.h>
 #include <memory>
@@ -109,8 +110,7 @@ void checkVideoMetadata(const MediaSegmentMetadata &metadata)
     EXPECT_FALSE(metadata.has_channels_num());
     EXPECT_EQ(metadata.width(), kWidth);
     EXPECT_EQ(metadata.height(), kHeight);
-    EXPECT_EQ(metadata.frame_rate().numerator(), kFrameRate.numerator);
-    EXPECT_EQ(metadata.frame_rate().denominator(), kFrameRate.denominator);
+    EXPECT_THAT(metadata.frame_rate(), frameRateMatcher(kFrameRate));
 }
 
 void checkOptionalMetadataNotPresent(const MediaSegmentMetadata &metadata)

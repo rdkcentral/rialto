@@ -125,7 +125,6 @@ void ClientComponentTest::initRealShm()
 void ClientComponentTest::termRealShm()
 {
     ASSERT_EQ(munmap(m_address, kSharedMemorySize), 0);
-    std::cout << m_fd << std::endl;
     close(m_fd);
 }
 

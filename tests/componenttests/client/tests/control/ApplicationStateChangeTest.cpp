@@ -30,6 +30,11 @@ class ApplicationStateChangeTest : public ClientComponentTest
  *  Test the full lifecycle of an application and verify that the client is always notified,
  *  and the shared memory initalised correctly.
  *
+ * Sequence Diagrams:
+ *  Start Application in Inactive State, Application state change: Inactive to Running,
+ *  Switch Application from Running to Inactive State, Stop Application from Inactive State
+ *   - https://wiki.rdkcentral.com/display/ASP/Rialto+Application+Session+Management
+ *
  * Test Setup:
  *  Language: C++
  *  Testing Framework: Google Test

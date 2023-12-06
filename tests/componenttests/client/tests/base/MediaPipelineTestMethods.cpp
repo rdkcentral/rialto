@@ -20,6 +20,7 @@
 #include "MediaPipelineTestMethods.h"
 #include "MediaPipelineProtoRequestMatchers.h"
 #include "MediaPipelineProtoUtils.h"
+#include "MediaSegments.h"
 #include "MetadataProtoMatchers.h"
 #include "MetadataProtoUtils.h"
 #include "metadata.pb.h"
@@ -51,62 +52,6 @@ const std::shared_ptr<MediaPlayerShmInfo> kNullShmInfo;
 constexpr int64_t kTimeStamp = 1701352637000;
 constexpr int64_t kDuration = 1;
 firebolt::rialto::Fraction kFrameRate = {1, 1};
-
-// MediaSegments
-const std::string kAudioSegments[27] = {"plhyftrsf",
-                                        "svgywwx",
-                                        "0kine64hd~;envss",
-                                        "nxwfy5fvbgg^sfh7&",
-                                        "svrvy63fbw1sxg",
-                                        "dfc",
-                                        "fhji94gjbf",
-                                        "g0494vf",
-                                        "fso4[;dw]",
-                                        "pp[;,6mkf]",
-                                        "o",
-                                        "gre94",
-                                        "g04[]",
-                                        "ogjow",
-                                        "fgrejvfd",
-                                        "gjkt92ijs",
-                                        "xnute",
-                                        "0g",
-                                        "9jsonf",
-                                        "g0e9r0[fsss]",
-                                        "44444444",
-                                        "gf0iksikgs",
-                                        "ge943pv",
-                                        "ge-q[[]]",
-                                        "803batvgff",
-                                        "vfe83",
-                                        "94FG"};
-const std::string kVideoSegments[27] = {"lloefewhrwohruwhfr9eee8833hbcjka",
-                                        "#mcuruiw83udbhc",
-                                        "cnvbvfbuhrew8383hbvbckzoaopalwlelhvrwvc",
-                                        "nvid9",
-                                        "viru80202-idendhjx cefebfihgrwwwwcdcwd",
-                                        "ncie83uuwonvbbvaoaodoekjvbv  vyreifur779y",
-                                        "yr6w4hgsbhjk674kuur",
-                                        "g5u7khdhg;popuyteyeyjhdjy",
-                                        "fhttwtjbts5568khdtjy",
-                                        "hrjkl8p09[jtrwhstry5twyyuhhgdhtyww455y]",
-                                        "htrkuyr",
-                                        "yu764thgkio9p9trw545jjhf",
-                                        "ju;p'#hsgr55hthghh",
-                                        "hrtjnaty54",
-                                        "huykil0[-thtshngds5435yjjiulkitgdhhh]",
-                                        "hdml;pup'654sfshgshyu65tgni5566754ui76i",
-                                        "fdshyj7647whyjdjl;;pyuhdgtyhyjey",
-                                        "trjjyte",
-                                        "hdth4y67ggshqqq125tjytel7t",
-                                        "ku00-uyuj766677jkutjytydyj",
-                                        "yyt",
-                                        "shtrnkkil ik;oiy,etq 525425",
-                                        "hyrejhye y6u2255y6858geqszz",
-                                        "ngkyirlkrst45ghmn,",
-                                        "jkl;p'#tshr4faggra",
-                                        "greabfdbnmur7y64wnguyoyrar55shshjw",
-                                        "G9042HG"};
 } // namespace
 
 MediaPipelineTestMethods::MediaPipelineTestMethods(const MediaPlayerShmInfo &audioShmInfo,
@@ -304,12 +249,18 @@ void MediaPipelineTestMethods::haveDataOk()
     EXPECT_EQ(m_mediaPipeline->haveData(MediaSourceStatus::OK, m_needDataRequestId), true);
 }
 
+uint32_t MediaPipelineTestMethods::getTimestamp(uint32_t segmentId)
+{
+    return kTimeStamp + 1000 * (segmentId + 1);
+}
+
 int32_t MediaPipelineTestMethods::addSegmentMseAudio()
 {
-    int64_t timestamp = kTimeStamp + 1000 * (m_audioSegmentCount + 1);
+    EXPECT_LT(m_audioSegmentCount, sizeof(kAudioSegments) / sizeof(kAudioSegments[0]));
+
     std::unique_ptr<IMediaPipeline::MediaSegment> mseData =
-        std::make_unique<IMediaPipeline::MediaSegmentAudio>(kAudioSourceId, timestamp, kDuration, kSampleRate,
-                                                            kNumberOfChannels);
+        std::make_unique<IMediaPipeline::MediaSegmentAudio>(kAudioSourceId, getTimestamp(m_audioSegmentCount),
+                                                            kDuration, kSampleRate, kNumberOfChannels);
     mseData->setData(kAudioSegments[m_audioSegmentCount].size(),
                      (const uint8_t *)kAudioSegments[m_audioSegmentCount].c_str());
     EXPECT_EQ(m_mediaPipeline->addSegment(m_needDataRequestId, mseData), AddSegmentStatus::OK);
@@ -318,23 +269,32 @@ int32_t MediaPipelineTestMethods::addSegmentMseAudio()
     int32_t segmentId = m_audioSegmentCount;
     writtenAudioSegments.insert({segmentId, *m_locationToWriteAudio});
 
+    incrementWriteLocation(kAudioSegments[segmentId].size(), m_locationToWriteAudio);
+
+    m_audioSegmentCount++;
+    return segmentId;
+}
+
+void MediaPipelineTestMethods::incrementWriteLocation(uint32_t sizeOfSegmentData,
+                                                      const std::shared_ptr<MediaPlayerShmInfo> &writeLocation)
+{
     // Calibrate the shm info based on segment written
-    uint32_t metaDataSize = 0;
+    uint32_t metadataSize = 0;
     if (m_firstSegmentOfNeedData)
     {
         // For first segment we write the metadata version
         // In V2 we dont set anymore data in the metadata buffer
-        metaDataSize += 4;
+        metadataSize += sizeof(uint32_t);
         m_firstSegmentOfNeedData = false;
     }
-    uint32_t segmentDataSize = kAudioSegments[m_audioSegmentCount].size() + 19 + 4; // Not sure why 4 works
-    m_locationToWriteAudio->maxMetadataBytes = m_locationToWriteAudio->maxMetadataBytes - metaDataSize;
-    m_locationToWriteAudio->metadataOffset = m_locationToWriteAudio->metadataOffset + metaDataSize;
-    m_locationToWriteAudio->maxMediaBytes = m_locationToWriteAudio->maxMediaBytes - segmentDataSize;
-    m_locationToWriteAudio->mediaDataOffset = m_locationToWriteAudio->mediaDataOffset + segmentDataSize;
-
-    m_audioSegmentCount++;
-    return segmentId;
+    uint32_t metadataBytesWrittenInMedia =
+        sizeof(uint32_t) +
+        *reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(getShmAddress()) + writeLocation->mediaDataOffset);
+    uint32_t segmentDataSize = sizeOfSegmentData + metadataBytesWrittenInMedia;
+    writeLocation->maxMetadataBytes = writeLocation->maxMetadataBytes - metadataSize;
+    writeLocation->metadataOffset = writeLocation->metadataOffset + metadataSize;
+    writeLocation->maxMediaBytes = writeLocation->maxMediaBytes - segmentDataSize;
+    writeLocation->mediaDataOffset = writeLocation->mediaDataOffset + segmentDataSize;
 }
 
 void MediaPipelineTestMethods::checkMseAudioSegmentWritten(int32_t segmentId)
@@ -348,46 +308,22 @@ void MediaPipelineTestMethods::checkMseAudioSegmentWritten(int32_t segmentId)
     MediaSegmentMetadata metadata;
     ASSERT_TRUE(metadata.ParseFromArray(dataPosition, *metadataSize));
 
-    EXPECT_TRUE(metadata.has_length());
-    EXPECT_EQ(metadata.length(), kAudioSegments[segmentId].size());
-    EXPECT_TRUE(metadata.has_time_position());
-    EXPECT_EQ(metadata.time_position(), kTimeStamp + 1000 * (segmentId + 1));
-    EXPECT_TRUE(metadata.has_sample_duration());
-    EXPECT_EQ(metadata.sample_duration(), kDuration);
-    EXPECT_TRUE(metadata.has_stream_id());
-    EXPECT_EQ(metadata.stream_id(), kAudioSourceId);
-    EXPECT_TRUE(metadata.has_sample_rate());
-    EXPECT_EQ(metadata.sample_rate(), kSampleRate);
-    EXPECT_TRUE(metadata.channels_num());
-    EXPECT_EQ(metadata.channels_num(), kNumberOfChannels);
-
-    EXPECT_FALSE(metadata.has_width());
-    EXPECT_FALSE(metadata.has_height());
-    EXPECT_FALSE(metadata.has_segment_alignment());
-    EXPECT_FALSE(metadata.has_extra_data());
-    EXPECT_FALSE(metadata.has_media_key_session_id());
-    EXPECT_FALSE(metadata.has_key_id());
-    EXPECT_FALSE(metadata.has_init_vector());
-    EXPECT_FALSE(metadata.has_init_with_last_15());
-    EXPECT_EQ(metadata.sub_sample_info().size(), 0);
-    EXPECT_FALSE(metadata.has_codec_data());
-    EXPECT_FALSE(metadata.has_cipher_mode());
-    EXPECT_FALSE(metadata.has_crypt());
-    EXPECT_FALSE(metadata.has_skip());
-    EXPECT_FALSE(metadata.has_frame_rate());
-
-    EXPECT_TRUE(metadata.has_length());
-    dataPosition += *metadataSize;
-    std::string data = std::string(reinterpret_cast<char *>(dataPosition), metadata.length());
-    EXPECT_EQ(data, kAudioSegments[segmentId]);
+    checkAudioMetadata(metadata, segmentId);
+    checkHasNoVideoMetadata(metadata);
+    checkHasNoEncryptionMetadata(metadata);
+    checkHasNoCodacData(metadata);
+    checkHasNoSegmentAlignment(metadata);
+    checkHasNoExtraData(metadata);
+    checkSegmentData(metadata, dataPosition += *metadataSize, kAudioSegments[segmentId]);
 }
 
 int32_t MediaPipelineTestMethods::addSegmentMseVideo()
 {
-    int64_t timestamp = kTimeStamp + 1000 * (m_videoSegmentCount + 1);
+    EXPECT_LT(m_videoSegmentCount, sizeof(kVideoSegments) / sizeof(kVideoSegments[0]));
+
     std::unique_ptr<IMediaPipeline::MediaSegment> mseData =
-        std::make_unique<IMediaPipeline::MediaSegmentVideo>(kVideoSourceId, timestamp, kDuration, kWidthUhd, kHeightUhd,
-                                                            kFrameRate);
+        std::make_unique<IMediaPipeline::MediaSegmentVideo>(kVideoSourceId, getTimestamp(m_videoSegmentCount),
+                                                            kDuration, kWidthUhd, kHeightUhd, kFrameRate);
     mseData->setData(kVideoSegments[m_videoSegmentCount].size(),
                      (const uint8_t *)kVideoSegments[m_videoSegmentCount].c_str());
     EXPECT_EQ(m_mediaPipeline->addSegment(m_needDataRequestId, mseData), AddSegmentStatus::OK);
@@ -396,20 +332,7 @@ int32_t MediaPipelineTestMethods::addSegmentMseVideo()
     int32_t segmentId = m_videoSegmentCount;
     writtenVideoSegments.insert({segmentId, *m_locationToWriteVideo});
 
-    // Calibrate the shm info based on segment written
-    uint32_t metaDataSize = 0;
-    if (m_firstSegmentOfNeedData)
-    {
-        // For first segment we write the metadata version
-        // In V2 we dont set anymore data in the metadata buffer
-        metaDataSize += 4;
-        m_firstSegmentOfNeedData = false;
-    }
-    uint32_t segmentDataSize = kVideoSegments[m_videoSegmentCount].size() + 26 + 4; // Not sure why 4 works
-    m_locationToWriteVideo->maxMetadataBytes = m_locationToWriteVideo->maxMetadataBytes - metaDataSize;
-    m_locationToWriteVideo->metadataOffset = m_locationToWriteVideo->metadataOffset + metaDataSize;
-    m_locationToWriteVideo->maxMediaBytes = m_locationToWriteVideo->maxMediaBytes - segmentDataSize;
-    m_locationToWriteVideo->mediaDataOffset = m_locationToWriteVideo->mediaDataOffset + segmentDataSize;
+    incrementWriteLocation(kVideoSegments[m_videoSegmentCount].size(), m_locationToWriteVideo);
 
     m_videoSegmentCount++;
     return segmentId;
@@ -426,10 +349,43 @@ void MediaPipelineTestMethods::checkMseVideoSegmentWritten(int32_t segmentId)
     MediaSegmentMetadata metadata;
     ASSERT_TRUE(metadata.ParseFromArray(dataPosition, *metadataSize));
 
+    checkVideoMetadata(metadata, segmentId);
+    checkHasNoAudioMetadata(metadata);
+    checkHasNoEncryptionMetadata(metadata);
+    checkHasNoCodacData(metadata);
+    checkHasNoSegmentAlignment(metadata);
+    checkHasNoExtraData(metadata);
+    checkSegmentData(metadata, dataPosition += *metadataSize, kVideoSegments[segmentId]);
+}
+
+void MediaPipelineTestMethods::checkAudioMetadata(const MediaSegmentMetadata &metadata, uint32_t segmentId)
+{
+    EXPECT_TRUE(metadata.has_length());
+    EXPECT_EQ(metadata.length(), kAudioSegments[segmentId].size());
+    EXPECT_TRUE(metadata.has_time_position());
+    EXPECT_EQ(metadata.time_position(), getTimestamp(segmentId));
+    EXPECT_TRUE(metadata.has_sample_duration());
+    EXPECT_EQ(metadata.sample_duration(), kDuration);
+    EXPECT_TRUE(metadata.has_stream_id());
+    EXPECT_EQ(metadata.stream_id(), kAudioSourceId);
+    EXPECT_TRUE(metadata.has_sample_rate());
+    EXPECT_EQ(metadata.sample_rate(), kSampleRate);
+    EXPECT_TRUE(metadata.channels_num());
+    EXPECT_EQ(metadata.channels_num(), kNumberOfChannels);
+}
+
+void MediaPipelineTestMethods::checkHasNoAudioMetadata(const MediaSegmentMetadata &metadata)
+{
+    EXPECT_FALSE(metadata.has_sample_rate());
+    EXPECT_FALSE(metadata.channels_num());
+}
+
+void MediaPipelineTestMethods::checkVideoMetadata(const MediaSegmentMetadata &metadata, uint32_t segmentId)
+{
     EXPECT_TRUE(metadata.has_length());
     EXPECT_EQ(metadata.length(), kVideoSegments[segmentId].size());
     EXPECT_TRUE(metadata.has_time_position());
-    EXPECT_EQ(metadata.time_position(), kTimeStamp + 1000 * (segmentId + 1));
+    EXPECT_EQ(metadata.time_position(), getTimestamp(segmentId));
     EXPECT_TRUE(metadata.has_sample_duration());
     EXPECT_EQ(metadata.sample_duration(), kDuration);
     EXPECT_TRUE(metadata.has_stream_id());
@@ -440,25 +396,48 @@ void MediaPipelineTestMethods::checkMseVideoSegmentWritten(int32_t segmentId)
     EXPECT_EQ(metadata.height(), kHeightUhd);
     EXPECT_TRUE(metadata.has_frame_rate());
     EXPECT_THAT(metadata.frame_rate(), frameRateMatcher(kFrameRate));
+}
 
-    EXPECT_FALSE(metadata.has_sample_rate());
-    EXPECT_FALSE(metadata.channels_num());
-    EXPECT_FALSE(metadata.has_segment_alignment());
-    EXPECT_FALSE(metadata.has_extra_data());
+void MediaPipelineTestMethods::checkHasNoVideoMetadata(const MediaSegmentMetadata &metadata)
+{
+    EXPECT_FALSE(metadata.has_width());
+    EXPECT_FALSE(metadata.has_height());
+    EXPECT_FALSE(metadata.has_frame_rate());
+}
+
+void MediaPipelineTestMethods::checkHasNoEncryptionMetadata(const MediaSegmentMetadata &metadata)
+{
     EXPECT_FALSE(metadata.has_media_key_session_id());
     EXPECT_FALSE(metadata.has_key_id());
     EXPECT_FALSE(metadata.has_init_vector());
     EXPECT_FALSE(metadata.has_init_with_last_15());
     EXPECT_EQ(metadata.sub_sample_info().size(), 0);
-    EXPECT_FALSE(metadata.has_codec_data());
     EXPECT_FALSE(metadata.has_cipher_mode());
     EXPECT_FALSE(metadata.has_crypt());
     EXPECT_FALSE(metadata.has_skip());
+}
 
+void MediaPipelineTestMethods::checkHasNoCodacData(const MediaSegmentMetadata &metadata)
+{
+    EXPECT_FALSE(metadata.has_codec_data());
+}
+
+void MediaPipelineTestMethods::checkHasNoSegmentAlignment(const MediaSegmentMetadata &metadata)
+{
+    EXPECT_FALSE(metadata.has_segment_alignment());
+}
+
+void MediaPipelineTestMethods::checkHasNoExtraData(const MediaSegmentMetadata &metadata)
+{
+    EXPECT_FALSE(metadata.has_extra_data());
+}
+
+void MediaPipelineTestMethods::checkSegmentData(const MediaSegmentMetadata &metadata, uint8_t *dataPtr,
+                                                const std::string &expectedSegmentData)
+{
     EXPECT_TRUE(metadata.has_length());
-    dataPosition += *metadataSize;
-    std::string data = std::string(reinterpret_cast<char *>(dataPosition), metadata.length());
-    EXPECT_EQ(data, kVideoSegments[segmentId]);
+    std::string data = std::string(reinterpret_cast<char *>(dataPtr), metadata.length());
+    EXPECT_EQ(data, expectedSegmentData);
 }
 
 void MediaPipelineTestMethods::shouldNotifyNetworkStateBuffered()
@@ -658,4 +637,52 @@ void MediaPipelineTestMethods::shouldDestroyMediaSession()
 void MediaPipelineTestMethods::destroyMediaPipeline()
 {
     m_mediaPipeline.reset();
+}
+
+void MediaPipelineTestMethods::startAudioVideoMediaSessionWaitForPreroll()
+{
+    // Create a new media session
+    MediaPipelineTestMethods::shouldCreateMediaSession();
+    MediaPipelineTestMethods::createMediaPipeline();
+
+    // Load content
+    MediaPipelineTestMethods::shouldLoad();
+    MediaPipelineTestMethods::load();
+    MediaPipelineTestMethods::shouldNotifyNetworkStateBuffering();
+    MediaPipelineTestMethods::sendNotifyNetworkStateBuffering();
+
+    // Attach all sources
+    MediaPipelineTestMethods::shouldAttachVideoSource();
+    MediaPipelineTestMethods::attachSourceVideo();
+    MediaPipelineTestMethods::shouldAttachAudioSource();
+    MediaPipelineTestMethods::attachSourceAudio();
+    MediaPipelineTestMethods::shouldAllSourcesAttached();
+    MediaPipelineTestMethods::allSourcesAttached();
+
+    // Notify Idle
+    MediaPipelineTestMethods::shouldNotifyPlaybackStateIdle();
+    MediaPipelineTestMethods::sendNotifyPlaybackStateIdle();
+
+    // Pause
+    MediaPipelineTestMethods::shouldPause();
+    MediaPipelineTestMethods::pause();
+}
+
+void MediaPipelineTestMethods::endAudioVideoMediaSession()
+{
+    // Remove sources
+    MediaPipelineTestMethods::shouldRemoveVideoSource();
+    MediaPipelineTestMethods::removeSourceVideo();
+    MediaPipelineTestMethods::shouldRemoveAudioSource();
+    MediaPipelineTestMethods::removeSourceAudio();
+
+    // Stop
+    MediaPipelineTestMethods::shouldStop();
+    MediaPipelineTestMethods::stop();
+    MediaPipelineTestMethods::shouldNotifyPlaybackStateStopped();
+    MediaPipelineTestMethods::sendNotifyPlaybackStateStopped();
+
+    // Destroy media session
+    MediaPipelineTestMethods::shouldDestroyMediaSession();
+    MediaPipelineTestMethods::destroyMediaPipeline();
 }
