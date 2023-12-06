@@ -74,8 +74,8 @@ namespace firebolt::rialto::server::ct
     request.set_mime_type("audio/mp4");
     request.set_has_drm(false);
     request.set_segment_alignment(::firebolt::rialto::AttachSourceRequest_SegmentAlignment_ALIGNMENT_NAL);
-    request.mutable_audio_config()->set_number_of_channels(2);
-    request.mutable_audio_config()->set_sample_rate(48000);
+    request.mutable_audio_config()->set_number_of_channels(kNumOfChannels);
+    request.mutable_audio_config()->set_sample_rate(kSampleRate);
     request.set_stream_format(::firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_RAW);
     return request;
 }
@@ -91,6 +91,13 @@ namespace firebolt::rialto::server::ct
     request.set_height(kHeight);
     request.set_segment_alignment(::firebolt::rialto::AttachSourceRequest_SegmentAlignment_ALIGNMENT_NAL);
     request.set_stream_format(::firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_RAW);
+    return request;
+}
+
+::firebolt::rialto::AllSourcesAttachedRequest createAllSourcesAttachedRequest(int sessionId)
+{
+    ::firebolt::rialto::AllSourcesAttachedRequest request;
+    request.set_session_id(sessionId);
     return request;
 }
 

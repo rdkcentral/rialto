@@ -27,8 +27,11 @@
 #include "MessageBuilders.h"
 
 using testing::_;
+using testing::DoAll;
 using testing::Invoke;
 using testing::Return;
+using testing::SaveArg;
+using testing::SaveArgPointee;
 
 namespace firebolt::rialto::server::ct
 {
@@ -109,10 +112,12 @@ void MediaPipelineTest::audioSourceWillBeAttached()
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleStringStub(&m_audioCaps, CharStrMatcher("stream-format"),
                                                               G_TYPE_STRING, CharStrMatcher("raw")));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_audioCaps, CharStrMatcher("mpegversion"), G_TYPE_INT, 4));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_audioCaps, CharStrMatcher("channels"), G_TYPE_INT, 2));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_audioCaps, CharStrMatcher("rate"), G_TYPE_INT, 48000));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsToString(&m_audioCaps)).WillOnce(Return(&m_capsStr));
-    EXPECT_CALL(*m_glibWrapperMock, gFree(&m_capsStr));
+    EXPECT_CALL(*m_gstWrapperMock,
+                gstCapsSetSimpleIntStub(&m_audioCaps, CharStrMatcher("channels"), G_TYPE_INT, kNumOfChannels));
+    EXPECT_CALL(*m_gstWrapperMock,
+                gstCapsSetSimpleIntStub(&m_audioCaps, CharStrMatcher("rate"), G_TYPE_INT, kSampleRate));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsToString(&m_audioCaps)).WillOnce(Return(&m_audioCapsStr));
+    EXPECT_CALL(*m_glibWrapperMock, gFree(&m_audioCapsStr));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(CharStrMatcher("appsrc"), CharStrMatcher("audsrc")))
         .WillOnce(Return(GST_ELEMENT(&m_audioAppSrc)));
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(&m_audioAppSrc, &m_audioCaps));
@@ -128,12 +133,51 @@ void MediaPipelineTest::videoSourceWillBeAttached()
                                                               G_TYPE_STRING, CharStrMatcher("raw")));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_videoCaps, CharStrMatcher("width"), G_TYPE_INT, kWidth));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_videoCaps, CharStrMatcher("height"), G_TYPE_INT, kHeight));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsToString(&m_videoCaps)).WillOnce(Return(&m_capsStr));
-    EXPECT_CALL(*m_glibWrapperMock, gFree(&m_capsStr));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsToString(&m_videoCaps)).WillOnce(Return(&m_videoCapsStr));
+    EXPECT_CALL(*m_glibWrapperMock, gFree(&m_videoCapsStr));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(CharStrMatcher("appsrc"), CharStrMatcher("vidsrc")))
         .WillOnce(Return(GST_ELEMENT(&m_videoAppSrc)));
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(&m_videoAppSrc, &m_videoCaps));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_videoCaps));
+}
+
+void MediaPipelineTest::sourceWillBeSetup()
+{
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(&m_rialtoSource));
+    // Source will be unreferenced when GstPlayer is destructed.
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_rialtoSource));
+}
+
+void MediaPipelineTest::willSetupAndAddSource(GstAppSrc *appSrc)
+{
+    const guint64 kMaxBytes = ((appSrc == &m_audioAppSrc) ? (512 * 1024) : (8 * 1024 * 1024));
+    GstAppSrcCallbacks *callbacks{(appSrc == &m_audioAppSrc) ? &m_audioAppSourceCallbacks : &m_videoAppSourceCallbacks};
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(GST_ELEMENT(appSrc), CharStrMatcher("block")));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(GST_ELEMENT(appSrc), CharStrMatcher("format")));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(GST_ELEMENT(appSrc), CharStrMatcher("stream-type")));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(GST_ELEMENT(appSrc), CharStrMatcher("min-percent")));
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCallbacks(appSrc, _, _, nullptr))
+        .WillOnce(DoAll(SaveArgPointee<1>(callbacks), SaveArg<2>(&m_appSourceCallbacksUserData)));
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetMaxBytes(appSrc, kMaxBytes));
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetStreamType(appSrc, GST_APP_STREAM_TYPE_SEEKABLE));
+    EXPECT_CALL(*m_glibWrapperMock, gStrdupPrintfStub(_)).WillOnce(Return(m_sourceName.data())).RetiresOnSaturation();
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_rialtoSource), GST_ELEMENT(appSrc)));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetStaticPad(GST_ELEMENT(appSrc), CharStrMatcher("src")))
+        .WillOnce(Return(&m_pad));
+    EXPECT_CALL(*m_gstWrapperMock, gstGhostPadNew(CharStrMatcher(m_sourceName.data()), &m_pad))
+        .WillOnce(Return(&m_ghostPad))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*m_gstWrapperMock, gstPadSetQueryFunction(&m_ghostPad, NotNullMatcher())).RetiresOnSaturation();
+    EXPECT_CALL(*m_gstWrapperMock, gstPadSetActive(&m_ghostPad, TRUE)).RetiresOnSaturation();
+    EXPECT_CALL(*m_gstWrapperMock, gstElementAddPad(GST_ELEMENT(&m_rialtoSource), &m_ghostPad)).RetiresOnSaturation();
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_pad)).RetiresOnSaturation();
+    EXPECT_CALL(*m_gstWrapperMock, gstElementSyncStateWithParent(GST_ELEMENT(appSrc)));
+    EXPECT_CALL(*m_glibWrapperMock, gFree(CharStrMatcher(m_sourceName.data()))).RetiresOnSaturation();
+}
+
+void MediaPipelineTest::willFinishSetupAndAddSource()
+{
+    EXPECT_CALL(*m_gstWrapperMock, gstElementNoMorePads(GST_ELEMENT(&m_rialtoSource)));
 }
 
 void MediaPipelineTest::createSession()
@@ -175,5 +219,25 @@ void MediaPipelineTest::attachVideoSource()
         .send(attachVideoSourceReq)
         .expectSuccess()
         .matchResponse([&](const auto &resp) { m_videoSourceId = resp.source_id(); });
+}
+
+void MediaPipelineTest::setupSource()
+{
+    ASSERT_TRUE(m_setupSourceFunc);
+    ((void (*)(GstElement *, GstElement *, gpointer))m_setupSourceFunc)(&m_pipeline, GST_ELEMENT(&m_rialtoSource),
+                                                                        m_setupSourceUserData);
+}
+
+void MediaPipelineTest::indicateAllSourcesAttached()
+{
+    ExpectMessage<firebolt::rialto::PlaybackStateChangeEvent> expectedPlaybackStateChange(m_clientStub);
+
+    auto allSourcesAttachedReq{createAllSourcesAttachedRequest(m_sessionId)};
+    ConfigureAction<AllSourcesAttached>(m_clientStub).send(allSourcesAttachedReq).expectSuccess();
+
+    auto receivedPlaybackStateChange{expectedPlaybackStateChange.getMessage()};
+    ASSERT_TRUE(receivedPlaybackStateChange);
+    EXPECT_EQ(receivedPlaybackStateChange->session_id(), m_sessionId);
+    EXPECT_EQ(receivedPlaybackStateChange->state(), ::firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_IDLE);
 }
 } // namespace firebolt::rialto::server::ct

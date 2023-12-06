@@ -29,6 +29,8 @@ const std::string kSocketName{"/tmp/rialto-0"};
 const std::string kOwnerName{"root"};
 constexpr int kWidth{1920};
 constexpr int kHeight{1080};
+constexpr int kNumOfChannels{2};
+constexpr int kSampleRate{48000};
 } // namespace firebolt::rialto::server::ct
 
 #endif // FIREBOLT_RIALTO_SERVER_CT_CONSTANTS_H_

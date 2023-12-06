@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_CT_MEDIA_PIPELINE_TEST_FIXTURE_H_
 #define FIREBOLT_RIALTO_SERVER_CT_MEDIA_PIPELINE_TEST_FIXTURE_H_
 
+#include "GstSrc.h"
 #include "RialtoServerComponentTest.h"
 
 namespace firebolt::rialto::server::ct
@@ -34,16 +35,24 @@ public:
     void gstPlayerWillBeDestructed();
     void audioSourceWillBeAttached();
     void videoSourceWillBeAttached();
+    void sourceWillBeSetup();
+    void willSetupAndAddSource(GstAppSrc *appSrc);
+    void willFinishSetupAndAddSource();
     void createSession();
     void load();
     void attachAudioSource();
     void attachVideoSource();
+    void setupSource();
+    void indicateAllSourcesAttached();
 
     int m_sessionId{-1};
     int m_audioSourceId{-1};
     int m_videoSourceId{-1};
     GstElement m_pipeline{};
     GstElement m_playsink{};
+    GstBin m_rialtoSrcBin = {};
+    GstRialtoSrcPrivate m_rialtoSrcPriv = {};
+    GstRialtoSrc m_rialtoSource = {m_rialtoSrcBin, &m_rialtoSrcPriv};
     GstAppSrc m_audioAppSrc{};
     GstAppSrc m_videoAppSrc{};
     GstBus m_bus{};
@@ -63,7 +72,14 @@ public:
     gulong m_deepElementAddedSignalId{2};
     GstCaps m_audioCaps{};
     GstCaps m_videoCaps{};
-    gchar m_capsStr{};
+    gchar m_audioCapsStr{};
+    gchar m_videoCapsStr{};
+    GstAppSrcCallbacks m_audioAppSourceCallbacks{nullptr, nullptr, nullptr};
+    GstAppSrcCallbacks m_videoAppSourceCallbacks{nullptr, nullptr, nullptr};
+    gpointer m_appSourceCallbacksUserData{nullptr};
+    std::string m_sourceName{"src_0"};
+    GstPad m_pad{};
+    GstPad m_ghostPad{};
 };
 } // namespace firebolt::rialto::server::ct
 

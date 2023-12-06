@@ -68,6 +68,16 @@ struct AttachSource
     static constexpr FunctionType m_kFunction{&Stub::attachSource};
 };
 
+struct AllSourcesAttached
+{
+    using RequestType = ::firebolt::rialto::AllSourcesAttachedRequest;
+    using ResponseType = ::firebolt::rialto::AllSourcesAttachedResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::allSourcesAttached};
+};
+
 // mediakeys module
 struct CreateMediaKeys
 {
