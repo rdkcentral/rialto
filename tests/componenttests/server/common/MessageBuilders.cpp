@@ -64,8 +64,9 @@ namespace firebolt::rialto::server::ct
 ::rialto::SetLogLevelsRequest createSetLogLevelsRequest()
 {
     const ::google::protobuf::uint32 kLogLevel = 2;
+    ::rialto::SetLogLevelsRequest request;
+    auto levels = request.mutable_loglevels();
 
-    ::rialto::LogLevels *levels = new ::rialto::LogLevels;
     levels->set_defaultloglevels(kLogLevel);
     levels->set_clientloglevels(kLogLevel);
     levels->set_sessionserverloglevels(kLogLevel);
@@ -73,15 +74,7 @@ namespace firebolt::rialto::server::ct
     levels->set_servermanagerloglevels(kLogLevel);
     levels->set_commonloglevels(kLogLevel);
 
-    ::rialto::SetLogLevelsRequest request;
-    request.set_allocated_loglevels(levels);
-
     return request;
-}
-
-void deleteSetLogLevelsRequest(::rialto::SetLogLevelsRequest request)
-{
-    delete request.release_loglevels();
 }
 
 ::firebolt::rialto::LoadRequest createLoadRequest(int sessionId)

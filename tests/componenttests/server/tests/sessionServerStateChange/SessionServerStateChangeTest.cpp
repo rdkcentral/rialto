@@ -78,7 +78,6 @@ public:
         ConfigureAction<::firebolt::rialto::server::ct::SetLogLevelsRequest>(m_serverManagerStub)
             .send(request)
             .expectSuccess();
-        deleteSetLogLevelsRequest(request);
     }
 };
 
