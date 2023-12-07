@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_CT_MESSAGE_BUILDERS_H_
 #define FIREBOLT_RIALTO_SERVER_CT_MESSAGE_BUILDERS_H_
 
+#include "controlmodule.pb.h"
 #include "mediakeysmodule.pb.h"
 #include "mediapipelinemodule.pb.h"
 #include "servermanagermodule.pb.h"
@@ -40,6 +41,9 @@ namespace firebolt::rialto::server::ct
 // media keys module
 ::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequest();
 ::firebolt::rialto::CreateKeySessionRequest createCreateKeySessionRequest(int mediaKeysHandle);
+
+// control module
+::firebolt::rialto::GetSharedMemoryRequest createGetSharedMemoryRequest();
 } // namespace firebolt::rialto::server::ct
 
 #endif // FIREBOLT_RIALTO_SERVER_CT_MESSAGE_BUILDERS_H_

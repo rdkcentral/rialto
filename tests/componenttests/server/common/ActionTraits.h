@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_CT_ACTION_TRAITS_H_
 #define FIREBOLT_RIALTO_SERVER_CT_ACTION_TRAITS_H_
 
+#include "controlmodule.pb.h"
 #include "mediakeysmodule.pb.h"
 #include "mediapipelinemodule.pb.h"
 #include "servermanagermodule.pb.h"
@@ -107,6 +108,17 @@ struct CreateKeySession
     using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
                                         google::protobuf::Closure *);
     static constexpr FunctionType m_kFunction{&Stub::createKeySession};
+};
+
+// control module
+struct GetSharedMemory
+{
+    using RequestType = ::firebolt::rialto::GetSharedMemoryRequest;
+    using ResponseType = ::firebolt::rialto::GetSharedMemoryResponse;
+    using Stub = ::firebolt::rialto::ControlModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::getSharedMemory};
 };
 } // namespace firebolt::rialto::server::ct
 

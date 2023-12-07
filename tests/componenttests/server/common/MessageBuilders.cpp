@@ -123,4 +123,9 @@ namespace firebolt::rialto::server::ct
     request.set_is_ldl(false);
     return request;
 }
+
+::firebolt::rialto::GetSharedMemoryRequest createGetSharedMemoryRequest()
+{
+    return ::firebolt::rialto::GetSharedMemoryRequest();
+}
 } // namespace firebolt::rialto::server::ct

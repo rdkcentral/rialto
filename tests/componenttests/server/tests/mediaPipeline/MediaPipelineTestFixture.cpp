@@ -48,6 +48,7 @@ MediaPipelineTest::MediaPipelineTest()
     willConfigureSocket();
     configureSutInActiveState();
     connectClient();
+    initShm();
 }
 
 void MediaPipelineTest::gstPlayerWillBeCreated()
@@ -251,5 +252,14 @@ void MediaPipelineTest::pause()
     ASSERT_TRUE(receivedPlaybackStateChange);
     EXPECT_EQ(receivedPlaybackStateChange->session_id(), m_sessionId);
     EXPECT_EQ(receivedPlaybackStateChange->state(), ::firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_PAUSED);
+}
+
+void MediaPipelineTest::initShm()
+{
+    auto getShmReq{createGetSharedMemoryRequest()};
+    ConfigureAction<GetSharedMemory>(m_clientStub)
+        .send(getShmReq)
+        .expectSuccess()
+        .matchResponse([&](const auto &resp) { m_shmHandle.init(resp.fd(), resp.size()); });
 }
 } // namespace firebolt::rialto::server::ct

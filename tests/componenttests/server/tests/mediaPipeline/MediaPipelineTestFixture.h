@@ -23,6 +23,7 @@
 #include "GstSrc.h"
 #include "GstreamerStub.h"
 #include "RialtoServerComponentTest.h"
+#include "ShmHandle.h"
 
 namespace firebolt::rialto::server::ct
 {
@@ -49,9 +50,14 @@ public:
     void indicateAllSourcesAttached();
     void pause();
 
+private:
+    void initShm();
+
+protected:
     int m_sessionId{-1};
     int m_audioSourceId{-1};
     int m_videoSourceId{-1};
+    ShmHandle m_shmHandle;
     GstElement m_pipeline{};
     GstBus m_bus{};
     GstElement m_playsink{};
