@@ -77,6 +77,13 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
+::rialto::PingRequest createPingRequest(::google::protobuf::int32 id)
+{
+    ::rialto::PingRequest request;
+    request.set_id(id);
+    return request;
+}
+
 ::firebolt::rialto::LoadRequest createLoadRequest(int sessionId)
 {
     ::firebolt::rialto::LoadRequest request;

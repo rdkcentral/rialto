@@ -79,6 +79,20 @@ public:
             .send(request)
             .expectSuccess();
     }
+
+    void sendAndRecievePing()
+    {
+        ::google::protobuf::int32 kMyId{3};
+        ::rialto::PingRequest request{createPingRequest(kMyId)};
+
+        ExpectMessage<::rialto::AckEvent> expectedMessage(m_serverManagerStub);
+
+        ConfigureAction<::firebolt::rialto::server::ct::PingRequest>(m_serverManagerStub).send(request).expectSuccess();
+        auto receivedMessage = expectedMessage.getMessage();
+        ASSERT_TRUE(receivedMessage);
+        EXPECT_EQ(receivedMessage->id(), kMyId);
+        EXPECT_EQ(receivedMessage->success(), true);
+    }
 };
 
 TEST_F(SessionServerStateChangeTest, ShouldConfigureInInactiveState)
@@ -112,4 +126,11 @@ TEST_F(SessionServerStateChangeTest, ShouldSetLogLevels)
     willConfigureSocket();
     configureSutInInactiveState();
     setLogLevels();
+}
+
+TEST_F(SessionServerStateChangeTest, ShouldAcknowledgePing)
+{
+    willConfigureSocket();
+    configureSutInActiveState();
+    sendAndRecievePing();
 }

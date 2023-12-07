@@ -57,6 +57,16 @@ struct SetLogLevelsRequest
     static constexpr FunctionType m_kFunction{&Stub::setLogLevels};
 };
 
+struct PingRequest
+{
+    using RequestType = ::rialto::PingRequest;
+    using ResponseType = ::rialto::PingResponse;
+    using Stub = ::rialto::ServerManagerModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::ping};
+};
+
 // mediapipeline module
 struct CreateSession
 {
