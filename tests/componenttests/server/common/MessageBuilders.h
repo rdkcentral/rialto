@@ -36,7 +36,6 @@ namespace firebolt::rialto::server::ct
 
 ::rialto::SetStateRequest createSetStateRequest(::rialto::SessionServerState value);
 ::rialto::SetLogLevelsRequest createSetLogLevelsRequest();
-void deleteSetLogLevelsRequest(::rialto::SetLogLevelsRequest request);
 
 // media keys module
 ::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequest();
