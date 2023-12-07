@@ -44,6 +44,42 @@ public:
         ASSERT_TRUE(receivedMessage);
         EXPECT_EQ(receivedMessage->sessionserverstate(), ::rialto::SessionServerState::INACTIVE);
     }
+
+    void setStateActive()
+    {
+        ::rialto::SetStateRequest request{createSetStateRequest(::rialto::SessionServerState::ACTIVE)};
+
+        ExpectMessage<::rialto::StateChangedEvent> expectedMessage(m_serverManagerStub);
+
+        ConfigureAction<::firebolt::rialto::server::ct::SetStateRequest>(m_serverManagerStub).send(request).expectSuccess();
+
+        auto receivedMessage = expectedMessage.getMessage();
+        ASSERT_TRUE(receivedMessage);
+        EXPECT_EQ(receivedMessage->sessionserverstate(), ::rialto::SessionServerState::ACTIVE);
+    }
+
+    void setStateInactive()
+    {
+        ::rialto::SetStateRequest request{createSetStateRequest(::rialto::SessionServerState::INACTIVE)};
+
+        ExpectMessage<::rialto::StateChangedEvent> expectedMessage(m_serverManagerStub);
+
+        ConfigureAction<::firebolt::rialto::server::ct::SetStateRequest>(m_serverManagerStub).send(request).expectSuccess();
+
+        auto receivedMessage = expectedMessage.getMessage();
+        ASSERT_TRUE(receivedMessage);
+        EXPECT_EQ(receivedMessage->sessionserverstate(), ::rialto::SessionServerState::INACTIVE);
+    }
+
+    void setLogLevels()
+    {
+        ::rialto::SetLogLevelsRequest request{createSetLogLevelsRequest()};
+
+        ConfigureAction<::firebolt::rialto::server::ct::SetLogLevelsRequest>(m_serverManagerStub)
+            .send(request)
+            .expectSuccess();
+        deleteSetLogLevelsRequest(request);
+    }
 };
 
 TEST_F(SessionServerStateChangeTest, ShouldConfigureInInactiveState)
@@ -56,4 +92,25 @@ TEST_F(SessionServerStateChangeTest, ShouldConfigureInActiveState)
 {
     willConfigureSocket();
     configureSutInActiveState();
+}
+
+TEST_F(SessionServerStateChangeTest, ShouldChangeFromInactiveToActive)
+{
+    willConfigureSocket();
+    configureSutInInactiveState();
+    setStateActive();
+}
+
+TEST_F(SessionServerStateChangeTest, ShouldChangeFromActiveToInactive)
+{
+    willConfigureSocket();
+    configureSutInActiveState();
+    setStateInactive();
+}
+
+TEST_F(SessionServerStateChangeTest, ShouldSetLogLevels)
+{
+    willConfigureSocket();
+    configureSutInInactiveState();
+    setLogLevels();
 }

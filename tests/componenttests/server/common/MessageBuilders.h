@@ -34,6 +34,10 @@ namespace firebolt::rialto::server::ct
 ::firebolt::rialto::CreateSessionRequest createCreateSessionRequest(const VideoRequirements &requirements);
 ::firebolt::rialto::LoadRequest createLoadRequest(int sessionId);
 
+::rialto::SetStateRequest createSetStateRequest(::rialto::SessionServerState value);
+::rialto::SetLogLevelsRequest createSetLogLevelsRequest();
+void deleteSetLogLevelsRequest(::rialto::SetLogLevelsRequest request);
+
 // media keys module
 ::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequest();
 ::firebolt::rialto::CreateKeySessionRequest createCreateKeySessionRequest(int mediaKeysHandle);

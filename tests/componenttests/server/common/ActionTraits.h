@@ -37,6 +37,26 @@ struct SetConfiguration
     static constexpr FunctionType m_kFunction{&Stub::setConfiguration};
 };
 
+struct SetStateRequest
+{
+    using RequestType = ::rialto::SetStateRequest;
+    using ResponseType = ::rialto::SetStateResponse;
+    using Stub = ::rialto::ServerManagerModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::setState};
+};
+
+struct SetLogLevelsRequest
+{
+    using RequestType = ::rialto::SetLogLevelsRequest;
+    using ResponseType = ::rialto::SetLogLevelsResponse;
+    using Stub = ::rialto::ServerManagerModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::setLogLevels};
+};
+
 // mediapipeline module
 struct CreateSession
 {
