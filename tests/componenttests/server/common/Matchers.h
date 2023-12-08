@@ -29,6 +29,11 @@ MATCHER_P(CharStrMatcher, expectedStr, "")
     return expectedStr == actualStr;
 }
 
+MATCHER_P2(BufferMatcher, expectedBuffer, expectedLength, "")
+{
+    return memcmp(arg, expectedBuffer, expectedLength) == 0;
+}
+
 MATCHER(NotNullMatcher, "")
 {
     return nullptr != arg;

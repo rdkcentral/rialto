@@ -101,6 +101,16 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
+::firebolt::rialto::HaveDataRequest createHaveDataRequest(int sessionId, unsigned numOfFrames, unsigned requestId)
+{
+    ::firebolt::rialto::HaveDataRequest request;
+    request.set_session_id(sessionId);
+    request.set_status(::firebolt::rialto::HaveDataRequest_MediaSourceStatus_OK);
+    request.set_num_frames(numOfFrames);
+    request.set_request_id(requestId);
+    return request;
+}
+
 ::firebolt::rialto::PauseRequest createPauseRequest(int sessionId)
 {
     ::firebolt::rialto::PauseRequest request;

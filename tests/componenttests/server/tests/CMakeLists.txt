@@ -32,6 +32,7 @@ target_include_directories(
 
         PRIVATE
         $<TARGET_PROPERTY:RialtoCommon,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoPlayerCommon,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoServerComponentTestsFixtures,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoServerGstPlayer,INCLUDE_DIRECTORIES> # For GstRialtoSrc
 )
@@ -39,6 +40,7 @@ target_include_directories(
 target_link_libraries(
         RialtoServerComponentTests
         RialtoCommon
+        RialtoPlayerCommon
         RialtoServerComponentTestsFixtures
 )
 

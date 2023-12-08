@@ -22,9 +22,11 @@
 #include "ConfigureAction.h"
 #include "Constants.h"
 #include "ExpectMessage.h"
+#include "IMediaFrameWriter.h"
 #include "Matchers.h"
 #include "MediaCommon.h"
 #include "MessageBuilders.h"
+#include "SegmentBuilder.h"
 
 using testing::_;
 using testing::DoAll;
@@ -39,6 +41,7 @@ namespace
 const std::string kNullStateName{"NULL"};
 const std::string kPausedStateName{"PAUSED"};
 constexpr GType kGstPlayFlagsType{static_cast<GType>(123)};
+constexpr unsigned kNeededDataLength{1};
 } // namespace
 
 namespace firebolt::rialto::server::ct
@@ -180,6 +183,25 @@ void MediaPipelineTest::willPause()
     EXPECT_CALL(*m_gstWrapperMock, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
 }
 
+void MediaPipelineTest::willPushAudioData(const std::unique_ptr<IMediaPipeline::MediaSegment> &segment,
+                                          GstBuffer &buffer, GstCaps &capsCopy)
+{
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferNewAllocate(nullptr, segment->getDataLength(), nullptr))
+        .WillOnce(Return(&buffer));
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferFill(&buffer, 0, BufferMatcher(segment->getData(), segment->getDataLength()),
+                                                 segment->getDataLength()))
+        .WillOnce(Return(segment->getDataLength()));
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(&m_audioAppSrc)).WillOnce(Return(&m_audioCaps));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCopy(&m_audioCaps)).WillOnce(Return(&capsCopy));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&capsCopy, CharStrMatcher("rate"), G_TYPE_INT, kSampleRate));
+    EXPECT_CALL(*m_gstWrapperMock,
+                gstCapsSetSimpleIntStub(&capsCopy, CharStrMatcher("channels"), G_TYPE_INT, kNumOfChannels));
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(&m_audioAppSrc, &capsCopy));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_audioCaps));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&capsCopy));
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(&m_audioAppSrc, _));
+}
+
 void MediaPipelineTest::createSession()
 {
     // Use matchResponse to store session id
@@ -252,6 +274,57 @@ void MediaPipelineTest::pause()
     ASSERT_TRUE(receivedPlaybackStateChange);
     EXPECT_EQ(receivedPlaybackStateChange->session_id(), m_sessionId);
     EXPECT_EQ(receivedPlaybackStateChange->state(), ::firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_PAUSED);
+}
+
+void MediaPipelineTest::gstNeedData(GstAppSrc *appSrc, int frameCount)
+{
+    const int kSourceId = ((appSrc == &m_audioAppSrc) ? m_audioSourceId : m_videoSourceId);
+    auto &needDataPtr = ((appSrc == &m_audioAppSrc) ? m_lastAudioNeedData : m_lastVideoNeedData);
+
+    ExpectMessage<firebolt::rialto::NeedMediaDataEvent> expectedNeedData{m_clientStub};
+    m_gstreamerStub.needData(appSrc, kNeededDataLength);
+    auto receivedNeedData{expectedNeedData.getMessage()};
+    ASSERT_TRUE(receivedNeedData);
+    EXPECT_EQ(receivedNeedData->session_id(), m_sessionId);
+    EXPECT_EQ(receivedNeedData->source_id(), kSourceId);
+    EXPECT_EQ(receivedNeedData->frame_count(), frameCount);
+    needDataPtr = receivedNeedData;
+}
+
+void MediaPipelineTest::pushAudioData(unsigned count)
+{
+    // First, generate new data
+    std::vector<std::unique_ptr<IMediaPipeline::MediaSegment>> segments(count);
+    std::generate(segments.begin(), segments.end(),
+                  [&]() { return SegmentBuilder().basicAudioSegment(m_audioSourceId)(); });
+    std::vector<GstBuffer> buffers(count);
+    std::vector<GstCaps> copies(count);
+
+    // Next, create frame writer
+    ASSERT_TRUE(m_lastAudioNeedData);
+    std::shared_ptr<MediaPlayerShmInfo> shmInfo{
+        std::make_shared<MediaPlayerShmInfo>(MediaPlayerShmInfo{m_lastAudioNeedData->shm_info().max_metadata_bytes(),
+                                                                m_lastAudioNeedData->shm_info().metadata_offset(),
+                                                                m_lastAudioNeedData->shm_info().media_data_offset(),
+                                                                m_lastAudioNeedData->shm_info().max_media_bytes()})};
+    auto writer{common::IMediaFrameWriterFactory::getFactory()->createFrameWriter(m_shmHandle.getShm(), shmInfo)};
+
+    // Write frames to shm and add gst expects
+    for (unsigned i = 0; i < count; ++i)
+    {
+        EXPECT_EQ(writer->writeFrame(segments[i]), AddSegmentStatus::OK);
+        willPushAudioData(segments[i], buffers[i], copies[i]);
+    }
+
+    // Finally, send HaveData and receive new NeedData
+    ExpectMessage<firebolt::rialto::NeedMediaDataEvent> expectedNeedData{m_clientStub};
+    auto haveDataReq{createHaveDataRequest(m_sessionId, writer->getNumFrames(), m_lastAudioNeedData->request_id())};
+    ConfigureAction<HaveData>(m_clientStub).send(haveDataReq).expectSuccess();
+    auto receivedNeedData{expectedNeedData.getMessage()};
+    ASSERT_TRUE(receivedNeedData);
+    EXPECT_EQ(receivedNeedData->session_id(), m_sessionId);
+    EXPECT_EQ(receivedNeedData->source_id(), m_audioSourceId);
+    m_lastAudioNeedData = receivedNeedData;
 }
 
 void MediaPipelineTest::initShm()

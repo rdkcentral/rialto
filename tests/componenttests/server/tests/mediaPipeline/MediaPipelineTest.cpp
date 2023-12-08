@@ -22,6 +22,11 @@
 #include "MediaPipelineTestFixture.h"
 #include "MessageBuilders.h"
 
+namespace
+{
+constexpr int kFrameCountInPausedState{3};
+} // namespace
+
 namespace firebolt::rialto::server::ct
 {
 TEST_F(MediaPipelineTest, shouldCreatePipeline)
@@ -86,6 +91,9 @@ TEST_F(MediaPipelineTest, playback)
     indicateAllSourcesAttached();
     willPause();
     pause();
+    gstNeedData(&m_audioAppSrc, kFrameCountInPausedState);
+    gstNeedData(&m_videoAppSrc, kFrameCountInPausedState);
+    pushAudioData();
     gstPlayerWillBeDestructed();
 }
 } // namespace firebolt::rialto::server::ct

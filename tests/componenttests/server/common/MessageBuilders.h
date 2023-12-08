@@ -36,6 +36,7 @@ namespace firebolt::rialto::server::ct
 ::firebolt::rialto::AttachSourceRequest createAttachAudioSourceRequest(int sessionId);
 ::firebolt::rialto::AttachSourceRequest createAttachVideoSourceRequest(int sessionId);
 ::firebolt::rialto::AllSourcesAttachedRequest createAllSourcesAttachedRequest(int sessionId);
+::firebolt::rialto::HaveDataRequest createHaveDataRequest(int sessionId, unsigned numOfFrames, unsigned requestId);
 ::firebolt::rialto::PauseRequest createPauseRequest(int sessionId);
 
 // media keys module

@@ -22,8 +22,11 @@
 
 #include "GstSrc.h"
 #include "GstreamerStub.h"
+#include "IMediaPipeline.h"
 #include "RialtoServerComponentTest.h"
 #include "ShmHandle.h"
+#include "mediapipelinemodule.pb.h"
+#include <memory>
 
 namespace firebolt::rialto::server::ct
 {
@@ -49,9 +52,13 @@ public:
     void setupSource();
     void indicateAllSourcesAttached();
     void pause();
+    void gstNeedData(GstAppSrc *appSrc, int frameCount);
+    void pushAudioData(unsigned count = 1);
 
 private:
     void initShm();
+    void willPushAudioData(const std::unique_ptr<IMediaPipeline::MediaSegment> &segment, GstBuffer &buffer,
+                           GstCaps &capsCopy);
 
 protected:
     int m_sessionId{-1};
@@ -78,6 +85,8 @@ protected:
     std::string m_sourceName{"src_0"};
     GstPad m_pad{};
     GstPad m_ghostPad{};
+    std::shared_ptr<::firebolt::rialto::NeedMediaDataEvent> m_lastAudioNeedData{nullptr};
+    std::shared_ptr<::firebolt::rialto::NeedMediaDataEvent> m_lastVideoNeedData{nullptr};
 };
 } // namespace firebolt::rialto::server::ct
 
