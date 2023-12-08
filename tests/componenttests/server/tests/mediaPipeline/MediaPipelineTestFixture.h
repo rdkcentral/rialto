@@ -54,10 +54,13 @@ public:
     void pause();
     void gstNeedData(GstAppSrc *appSrc, int frameCount);
     void pushAudioData(unsigned count = 1);
+    void pushVideoData(unsigned count = 1);
 
 private:
     void initShm();
     void willPushAudioData(const std::unique_ptr<IMediaPipeline::MediaSegment> &segment, GstBuffer &buffer,
+                           GstCaps &capsCopy);
+    void willPushVideoData(const std::unique_ptr<IMediaPipeline::MediaSegment> &segment, GstBuffer &buffer,
                            GstCaps &capsCopy);
 
 protected:

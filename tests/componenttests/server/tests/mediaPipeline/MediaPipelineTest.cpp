@@ -94,6 +94,7 @@ TEST_F(MediaPipelineTest, playback)
     gstNeedData(&m_audioAppSrc, kFrameCountInPausedState);
     gstNeedData(&m_videoAppSrc, kFrameCountInPausedState);
     pushAudioData();
+    pushVideoData();
     gstPlayerWillBeDestructed();
 }
 } // namespace firebolt::rialto::server::ct

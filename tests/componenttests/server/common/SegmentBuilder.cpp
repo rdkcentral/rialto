@@ -23,7 +23,6 @@
 
 namespace
 {
-constexpr firebolt::rialto::Fraction kFrameRate{15, 1};
 const std::string kSegments[] = {"lloefewhrwohruwhfr9eee8833hbcjka",
                                  "hyrejhye y6u2255y6858geqszz",
                                  "nvid9",

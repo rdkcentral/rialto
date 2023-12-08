@@ -203,6 +203,27 @@ void MediaPipelineTest::willPushAudioData(const std::unique_ptr<IMediaPipeline::
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(&m_audioAppSrc, _)).RetiresOnSaturation();
 }
 
+void MediaPipelineTest::willPushVideoData(const std::unique_ptr<IMediaPipeline::MediaSegment> &segment,
+                                          GstBuffer &buffer, GstCaps &capsCopy)
+{
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferNewAllocate(nullptr, segment->getDataLength(), nullptr))
+        .WillOnce(Return(&buffer))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferFill(&buffer, 0, BufferMatcher(segment->getData(), segment->getDataLength()),
+                                                 segment->getDataLength()))
+        .WillOnce(Return(segment->getDataLength()));
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(&m_videoAppSrc)).WillOnce(Return(&m_videoCaps)).RetiresOnSaturation();
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCopy(&m_videoCaps)).WillOnce(Return(&capsCopy)).RetiresOnSaturation();
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&capsCopy, CharStrMatcher("width"), G_TYPE_INT, kWidth));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&capsCopy, CharStrMatcher("height"), G_TYPE_INT, kHeight));
+    EXPECT_CALL(*m_gstWrapperMock,
+                gstCapsSetSimpleFractionStub(&capsCopy, CharStrMatcher("framerate"), GST_TYPE_FRACTION, _, _));
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(&m_videoAppSrc, &capsCopy));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_videoCaps)).RetiresOnSaturation();
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&capsCopy));
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(&m_videoAppSrc, _)).RetiresOnSaturation();
+}
+
 void MediaPipelineTest::createSession()
 {
     // Use matchResponse to store session id
@@ -326,6 +347,42 @@ void MediaPipelineTest::pushAudioData(unsigned count)
     EXPECT_EQ(receivedNeedData->session_id(), m_sessionId);
     EXPECT_EQ(receivedNeedData->source_id(), m_audioSourceId);
     m_lastAudioNeedData = receivedNeedData;
+}
+
+void MediaPipelineTest::pushVideoData(unsigned count)
+{
+    // First, generate new data
+    std::vector<std::unique_ptr<IMediaPipeline::MediaSegment>> segments(count);
+    std::generate(segments.begin(), segments.end(),
+                  [&]() { return SegmentBuilder().basicVideoSegment(m_videoSourceId)(); });
+    std::vector<GstBuffer> buffers(count);
+    std::vector<GstCaps> copies(count);
+
+    // Next, create frame writer
+    ASSERT_TRUE(m_lastVideoNeedData);
+    std::shared_ptr<MediaPlayerShmInfo> shmInfo{
+        std::make_shared<MediaPlayerShmInfo>(MediaPlayerShmInfo{m_lastVideoNeedData->shm_info().max_metadata_bytes(),
+                                                                m_lastVideoNeedData->shm_info().metadata_offset(),
+                                                                m_lastVideoNeedData->shm_info().media_data_offset(),
+                                                                m_lastVideoNeedData->shm_info().max_media_bytes()})};
+    auto writer{common::IMediaFrameWriterFactory::getFactory()->createFrameWriter(m_shmHandle.getShm(), shmInfo)};
+
+    // Write frames to shm and add gst expects
+    for (unsigned i = 0; i < count; ++i)
+    {
+        EXPECT_EQ(writer->writeFrame(segments[i]), AddSegmentStatus::OK);
+        willPushVideoData(segments[i], buffers[i], copies[i]);
+    }
+
+    // Finally, send HaveData and receive new NeedData
+    ExpectMessage<firebolt::rialto::NeedMediaDataEvent> expectedNeedData{m_clientStub};
+    auto haveDataReq{createHaveDataRequest(m_sessionId, writer->getNumFrames(), m_lastVideoNeedData->request_id())};
+    ConfigureAction<HaveData>(m_clientStub).send(haveDataReq).expectSuccess();
+    auto receivedNeedData{expectedNeedData.getMessage()};
+    ASSERT_TRUE(receivedNeedData);
+    EXPECT_EQ(receivedNeedData->session_id(), m_sessionId);
+    EXPECT_EQ(receivedNeedData->source_id(), m_videoSourceId);
+    m_lastVideoNeedData = receivedNeedData;
 }
 
 void MediaPipelineTest::initShm()

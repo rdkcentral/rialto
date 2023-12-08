@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_CT_CONSTANTS_H_
 #define FIREBOLT_RIALTO_SERVER_CT_CONSTANTS_H_
 
+#include "MediaCommon.h"
 #include <string>
 
 namespace firebolt::rialto::server::ct
@@ -31,6 +32,7 @@ constexpr int kWidth{1920};
 constexpr int kHeight{1080};
 constexpr int kNumOfChannels{2};
 constexpr int kSampleRate{48000};
+constexpr firebolt::rialto::Fraction kFrameRate{15, 1};
 } // namespace firebolt::rialto::server::ct
 
 #endif // FIREBOLT_RIALTO_SERVER_CT_CONSTANTS_H_
