@@ -25,8 +25,6 @@ namespace
 constexpr int32_t kControlId = 1;
 } // namespace
 
-namespace firebolt::rialto::client::ct
-{
 ControlTestMethods::ControlTestMethods()
     : m_controlClientMock{std::make_shared<StrictMock<ControlClientMock>>()},
       m_controlModuleMock{std::make_shared<StrictMock<ControlModuleMock>>()}
@@ -89,4 +87,3 @@ void ControlTestMethods::sendNotifyApplicationStateRunning()
     getServerStub()->notifyApplicationStateEvent(kControlId, ApplicationState::RUNNING);
     waitEvent();
 }
-} // namespace firebolt::rialto::client::ct

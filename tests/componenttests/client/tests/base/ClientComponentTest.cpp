@@ -67,8 +67,6 @@ constexpr firebolt::rialto::MediaPlayerShmInfo kShmInfoAudio{1000, 101000, 10200
 constexpr firebolt::rialto::MediaPlayerShmInfo kShmInfoWebAudio{1000, 112000, 113000, 10000};
 } // namespace
 
-namespace firebolt::rialto::client::ct
-{
 ClientComponentTest::ClientComponentTest()
     : MediaPipelineTestMethods(kShmInfoAudio, kShmInfoVideo),
       m_serverStub{std::make_shared<ServerStub>(m_controlModuleMock, m_mediaPipelineModuleMock)}
@@ -162,4 +160,3 @@ void ClientComponentTest::stopApplication()
     disconnectServer();
     waitEvent();
 }
-} // namespace firebolt::rialto::client::ct

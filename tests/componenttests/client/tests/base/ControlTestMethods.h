@@ -38,8 +38,6 @@ using ::testing::WithArgs;
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::ct::stub;
 
-namespace firebolt::rialto::client::ct
-{
 class ControlTestMethods
 {
 public:
@@ -74,6 +72,5 @@ protected:
     virtual void *getShmAddress() = 0;
     virtual uint32_t getShmSize() = 0;
 };
-} // namespace firebolt::rialto::client::ct
 
 #endif // CONTROL_TEST_METHODS_H_

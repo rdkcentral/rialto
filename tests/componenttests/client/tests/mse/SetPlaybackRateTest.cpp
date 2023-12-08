@@ -20,8 +20,6 @@
 #include "ClientComponentTest.h"
 #include <gtest/gtest.h>
 
-namespace firebolt::rialto::client::ct
-{
 class SetPlaybackRateTest : public ClientComponentTest
 {
 public:
@@ -117,4 +115,3 @@ TEST_F(SetPlaybackRateTest, setPlaybackRate)
     MediaPipelineTestMethods::shouldSetPlaybackRateFailure();
     MediaPipelineTestMethods::setPlaybackRateFailure();
 }
-} // namespace firebolt::rialto::client::ct

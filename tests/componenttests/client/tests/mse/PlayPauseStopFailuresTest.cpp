@@ -20,8 +20,6 @@
 #include "ClientComponentTest.h"
 #include <gtest/gtest.h>
 
-namespace firebolt::rialto::client::ct
-{
 class PlayPauseStopFailuresTest : public ClientComponentTest
 {
 public:
@@ -168,4 +166,3 @@ TEST_F(PlayPauseStopFailuresTest, playbackFailures)
     MediaPipelineTestMethods::shouldNotifyPlaybackStateStopped();
     MediaPipelineTestMethods::sendNotifyPlaybackStateStopped();
 }
-} // namespace firebolt::rialto::client::ct

@@ -20,8 +20,6 @@
 #include "ClientComponentTest.h"
 #include <gtest/gtest.h>
 
-namespace firebolt::rialto::client::ct
-{
 class AudioVideoPlaybackWriteSegmentsTest : public ClientComponentTest
 {
 public:
@@ -265,4 +263,3 @@ TEST_F(AudioVideoPlaybackWriteSegmentsTest, playback)
     MediaPipelineTestMethods::shouldHaveDataOk(5);
     MediaPipelineTestMethods::haveDataOk();
 }
-} // namespace firebolt::rialto::client::ct

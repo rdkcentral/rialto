@@ -20,8 +20,6 @@
 #include "ClientComponentTest.h"
 #include <gtest/gtest.h>
 
-namespace firebolt::rialto::client::ct
-{
 class ApplicationStateChangeTest : public ClientComponentTest
 {
 };
@@ -108,4 +106,3 @@ TEST_F(ApplicationStateChangeTest, lifecycle)
     ClientComponentTest::disconnectServer();
     ClientComponentTest::waitEvent();
 }
-} // namespace firebolt::rialto::client::ct
