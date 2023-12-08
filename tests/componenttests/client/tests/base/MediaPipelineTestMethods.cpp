@@ -882,3 +882,20 @@ void MediaPipelineTestMethods::writeVideoEos()
     MediaPipelineTestMethods::shouldHaveDataEos(0);
     MediaPipelineTestMethods::haveDataEos();
 }
+
+void MediaPipelineTestMethods::setPositionFailure()
+{
+    EXPECT_EQ(m_mediaPipeline->setPosition(0), false);
+}
+
+void MediaPipelineTestMethods::addSegmentFailure()
+{
+    EXPECT_LT(m_audioSegmentCount, sizeof(kAudioSegments) / sizeof(kAudioSegments[0]));
+
+    std::unique_ptr<IMediaPipeline::MediaSegment> mseData =
+        std::make_unique<IMediaPipeline::MediaSegmentAudio>(kAudioSourceId, getTimestamp(m_audioSegmentCount),
+                                                            kDuration, kSampleRate, kNumberOfChannels);
+    mseData->setData(kAudioSegments[m_audioSegmentCount].size(),
+                     (const uint8_t *)kAudioSegments[m_audioSegmentCount].c_str());
+    EXPECT_EQ(m_mediaPipeline->addSegment(m_needDataRequestId, mseData), AddSegmentStatus::ERROR);
+}

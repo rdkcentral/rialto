@@ -206,10 +206,10 @@ TEST_F(SetPositionTest, successStates)
  *   Server notifys the client that the Playback state has changed to SEEKING.
  *   Expect that the state change notification is propagated to the client.
  *
- *  Step 3: Have data
- *   Write audio frames.
- *   Write video frames.
- *   Notify the server that the data has been written.
+ *  Step 3: Data request
+ *   Add a segment.
+ *   Expect that addSegment return failure.
+ *   Notify the server of have data.
  *   Expect that have data is not propagted to the server while seeking.
  *
  *  Step 4: Seek complete
@@ -222,7 +222,7 @@ TEST_F(SetPositionTest, successStates)
  *  Server is terminated.
  *
  * Expected Results:
- *  Have data requests while seek is ongoing are silently ignored and not notifed to the server.
+ *  Segments cannot be added and have data requests are silently ignored when a seek is in progress.
  *
  * Code:
  */
@@ -238,9 +238,8 @@ TEST_F(SetPositionTest, flushed)
     MediaPipelineTestMethods::shouldNotifyPlaybackStateSeeking();
     MediaPipelineTestMethods::sendNotifyPlaybackStateSeeking();
     
-    // Step 3: Have data
-    uint32_t segmentId = MediaPipelineTestMethods::addSegmentMseAudio();
-    MediaPipelineTestMethods::checkMseAudioSegmentWritten(segmentId);
+    // Step 3: Data request
+    MediaPipelineTestMethods::addSegmentFailure();
     MediaPipelineTestMethods::haveDataOk();
 
     // Step 4: Seek complete
@@ -310,4 +309,32 @@ TEST_F(SetPositionTest, flushed)
  */
 TEST_F(SetPositionTest, failures)
 {
+    // Step 1: SetPosition in paused state
+    MediaPipelineTestMethods::shouldSetPositionTo10();
+    MediaPipelineTestMethods::setPosition10();
+    MediaPipelineTestMethods::shouldNotifyPlaybackStateSeeking();
+    MediaPipelineTestMethods::sendNotifyPlaybackStateSeeking();
+
+    // Step 2: SetPosition state failure
+    MediaPipelineTestMethods::shouldNotifyPlaybackStateFailure();
+    MediaPipelineTestMethods::sendNotifyPlaybackStateFailure();
+
+    // Step 3: SetPosition in failure state
+    MediaPipelineTestMethods::setPositionFailure();
+
+    // Step 4: Pause
+    MediaPipelineTestMethods::shouldPlay();
+    MediaPipelineTestMethods::play();
+    MediaPipelineTestMethods::shouldNotifyPlaybackStatePlaying();
+    MediaPipelineTestMethods::sendNotifyPlaybackStatePlaying();
+
+    // Step 5: SetPosition in play state
+    MediaPipelineTestMethods::shouldSetPositionTo10();
+    MediaPipelineTestMethods::setPosition10();
+    MediaPipelineTestMethods::shouldNotifyPlaybackStatePlaying();
+    MediaPipelineTestMethods::sendNotifyPlaybackStatePlaying();
+ 
+    // Step 6: Seek complete
+    MediaPipelineTestMethods::shouldNotifyPlaybackStateFlushed();
+    MediaPipelineTestMethods::sendNotifyPlaybackStateFlushed();
 }

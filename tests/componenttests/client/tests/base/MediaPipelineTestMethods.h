@@ -125,6 +125,8 @@ protected:
     void setPlaybackRateFailure();
     void setPosition10();
     void setPosition0();
+    void setPositionFailure();
+    void addSegmentFailure();
  
     // Event methods
     void sendNotifyNetworkStateBuffering();
