@@ -47,6 +47,8 @@ namespace firebolt::rialto
 class MediaSegmentMetadata;
 };
 
+namespace firebolt::rialto::client::ct
+{
 class MediaPipelineTestMethods
 {
 public:
@@ -190,5 +192,6 @@ private:
     void checkHasNoExtraData(const MediaSegmentMetadata &metadata);
     void checkSegmentData(const MediaSegmentMetadata &metadata, uint8_t *dataPtr, const std::string &expectedSegmentData);
 };
+} // namespace firebolt::rialto::client::ct
 
 #endif // FIREBOLT_RIALTO_MEDIA_PIPELINE_TEST_METHODS_H_
