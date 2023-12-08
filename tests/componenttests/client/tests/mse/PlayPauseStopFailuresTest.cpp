@@ -23,14 +23,14 @@
 class PlayPauseStopFailuresTest : public ClientComponentTest
 {
 public:
-    PlayPauseStopFailuresTest() : ClientComponentTest() 
-    { 
+    PlayPauseStopFailuresTest() : ClientComponentTest()
+    {
         ClientComponentTest::startApplicationRunning();
         MediaPipelineTestMethods::startAudioVideoMediaSessionPrerollPaused();
     }
 
-    ~PlayPauseStopFailuresTest() 
-    { 
+    ~PlayPauseStopFailuresTest()
+    {
         MediaPipelineTestMethods::endAudioVideoMediaSession();
         ClientComponentTest::stopApplication();
     }
@@ -41,7 +41,7 @@ public:
  * Test Objective:
  *  Check that failures returned directly from the Play, Pause and Stop apis and failures returned asyncronously
  *  during server state changes are handled correctly. Subsequent Api requests after failures are successful.
- *  
+ *
  * Sequence Diagrams:
  *  Start/Resume Playback, Pause Playback, Stop - https://wiki.rdkcentral.com/display/ASP/Rialto+Playback+Design
  *

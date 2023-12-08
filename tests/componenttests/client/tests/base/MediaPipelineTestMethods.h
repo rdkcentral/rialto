@@ -127,7 +127,7 @@ protected:
     void setPosition0();
     void setPositionFailure();
     void addSegmentFailure();
- 
+
     // Event methods
     void sendNotifyNetworkStateBuffering();
     void sendNotifyPlaybackStateIdle();

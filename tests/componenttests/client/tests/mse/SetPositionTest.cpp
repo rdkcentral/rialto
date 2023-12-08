@@ -23,14 +23,14 @@
 class SetPositionTest : public ClientComponentTest
 {
 public:
-    SetPositionTest() : ClientComponentTest() 
-    { 
+    SetPositionTest() : ClientComponentTest()
+    {
         ClientComponentTest::startApplicationRunning();
         MediaPipelineTestMethods::startAudioVideoMediaSessionPrerollPaused();
     }
 
-    ~SetPositionTest() 
-    { 
+    ~SetPositionTest()
+    {
         MediaPipelineTestMethods::endAudioVideoMediaSession();
         ClientComponentTest::stopApplication();
     }
@@ -40,7 +40,7 @@ public:
  * Component Test: Set position success states
  * Test Objective:
  *  Test that seek is successfully handled is PAUSED, PLAYING and END_OF_STREAM state.
- *  
+ *
  * Sequence Diagrams:
  *  Seek - https://wiki.rdkcentral.com/display/ASP/Rialto+Seek+Design
  *
@@ -124,7 +124,7 @@ TEST_F(SetPositionTest, successStates)
     MediaPipelineTestMethods::setPosition10();
     MediaPipelineTestMethods::shouldNotifyPlaybackStateSeeking();
     MediaPipelineTestMethods::sendNotifyPlaybackStateSeeking();
- 
+
     // Step 2: Seek complete
     MediaPipelineTestMethods::shouldNotifyPlaybackStateFlushed();
     MediaPipelineTestMethods::sendNotifyPlaybackStateFlushed();
@@ -182,7 +182,7 @@ TEST_F(SetPositionTest, successStates)
  * Component Test: Set position flush
  * Test Objective:
  *  Test that when seek is in progress data requests are flushed.
- *  
+ *
  * Sequence Diagrams:
  *  Seek - https://wiki.rdkcentral.com/display/ASP/Rialto+Seek+Design
  *
@@ -198,7 +198,7 @@ TEST_F(SetPositionTest, successStates)
  *  Initalise a audio video media session paused and prerolled.
  *
  * Test Steps:
- *  Step 1: Need data 
+ *  Step 1: Need data
  *   Server notifys the client that it needs 20 frames of audio data.
  *
  *  Step 2: SetPosition in paused state
@@ -228,7 +228,7 @@ TEST_F(SetPositionTest, successStates)
  */
 TEST_F(SetPositionTest, flushed)
 {
-    // Step 1: Need data 
+    // Step 1: Need data
     MediaPipelineTestMethods::shouldNotifyNeedDataAudioBeforePreroll();
     MediaPipelineTestMethods::sendNotifyNeedDataAudioBeforePreroll();
 
@@ -237,7 +237,7 @@ TEST_F(SetPositionTest, flushed)
     MediaPipelineTestMethods::setPosition10();
     MediaPipelineTestMethods::shouldNotifyPlaybackStateSeeking();
     MediaPipelineTestMethods::sendNotifyPlaybackStateSeeking();
-    
+
     // Step 3: Data request
     MediaPipelineTestMethods::addSegmentFailure();
     MediaPipelineTestMethods::haveDataOk();
@@ -252,7 +252,7 @@ TEST_F(SetPositionTest, flushed)
  * Test Objective:
  *  Check that failures returned directly from the SetPosition api and failures returned asyncronously
  *  during server state changes are handled correctly.
- *  
+ *
  * Sequence Diagrams:
  *  Seek - https://wiki.rdkcentral.com/display/ASP/Rialto+Seek+Design
  *
@@ -333,7 +333,7 @@ TEST_F(SetPositionTest, failures)
     MediaPipelineTestMethods::setPosition10();
     MediaPipelineTestMethods::shouldNotifyPlaybackStatePlaying();
     MediaPipelineTestMethods::sendNotifyPlaybackStatePlaying();
- 
+
     // Step 6: Seek complete
     MediaPipelineTestMethods::shouldNotifyPlaybackStateFlushed();
     MediaPipelineTestMethods::sendNotifyPlaybackStateFlushed();

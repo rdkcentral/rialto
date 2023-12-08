@@ -668,7 +668,7 @@ void MediaPipelineTestMethods::startAudioVideoMediaSessionWaitForPreroll()
     MediaPipelineTestMethods::pause();
 }
 
-void  MediaPipelineTestMethods::startAudioVideoMediaSessionPrerollPaused()
+void MediaPipelineTestMethods::startAudioVideoMediaSessionPrerollPaused()
 {
     startAudioVideoMediaSessionWaitForPreroll();
 
@@ -693,7 +693,6 @@ void  MediaPipelineTestMethods::startAudioVideoMediaSessionPrerollPaused()
     MediaPipelineTestMethods::sendNotifyNetworkStateBuffered();
     MediaPipelineTestMethods::shouldNotifyPlaybackStatePaused();
     MediaPipelineTestMethods::sendNotifyPlaybackStatePaused();
-
 }
 
 void MediaPipelineTestMethods::endAudioVideoMediaSession()

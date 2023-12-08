@@ -23,14 +23,14 @@
 class SetPlaybackRateTest : public ClientComponentTest
 {
 public:
-    SetPlaybackRateTest() : ClientComponentTest() 
-    { 
+    SetPlaybackRateTest() : ClientComponentTest()
+    {
         ClientComponentTest::startApplicationRunning();
         MediaPipelineTestMethods::startAudioVideoMediaSessionPrerollPaused();
     }
 
-    ~SetPlaybackRateTest() 
-    { 
+    ~SetPlaybackRateTest()
+    {
         MediaPipelineTestMethods::endAudioVideoMediaSession();
         ClientComponentTest::stopApplication();
     }
@@ -41,7 +41,7 @@ public:
  * Test Objective:
  *  Test the that set playback rate can be called in paused and playing state, that set playback rate
  *  can accept positive and negative playback rates and that failure is handled correctly.
- *  
+ *
  * Sequence Diagrams:
  *  Set Playback Rate - https://wiki.rdkcentral.com/display/ASP/Rialto+Playback+Design
  *
