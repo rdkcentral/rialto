@@ -47,7 +47,7 @@ std::unique_ptr<IWebAudioPlayer>
 WebAudioPlayerFactory::createWebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
                                             const uint32_t priority, std::weak_ptr<const WebAudioConfig> config) const
 {
-    return createWebAudioPlayer(client, audioMimeType, priority, config);
+    return createWebAudioPlayer(client, audioMimeType, priority, config, {}, {});
 }
 
 std::unique_ptr<IWebAudioPlayer>
