@@ -70,4 +70,12 @@
         <id>unusedFunction</id>
         <fileName>tests/componenttests/server/tests/mediaPipeline/MediaPipelineTestFixture.cpp</fileName>
     </suppress>
+    <suppress>
+        <id>ctuOneDefinitionRuleViolation</id>
+        <fileName>tests/componenttests/client/tests/mse/SetPlaybackRateTest.cpp</fileName>
+    </suppress>
+    <suppress>
+        <id>ctuOneDefinitionRuleViolation</id>
+        <fileName>tests/componenttests/client/tests/mse/SetPositionTest.cpp</fileName>
+    </suppress>
 </suppressions>
