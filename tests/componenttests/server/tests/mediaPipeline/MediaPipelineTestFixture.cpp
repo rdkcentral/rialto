@@ -315,14 +315,14 @@ void MediaPipelineTest::gstNeedData(GstAppSrc *appSrc, int frameCount)
     needDataPtr = receivedNeedData;
 }
 
-void MediaPipelineTest::pushAudioData(unsigned count)
+void MediaPipelineTest::pushAudioData(unsigned dataCountToPush, int needDataFrameCount)
 {
     // First, generate new data
-    std::vector<std::unique_ptr<IMediaPipeline::MediaSegment>> segments(count);
+    std::vector<std::unique_ptr<IMediaPipeline::MediaSegment>> segments(dataCountToPush);
     std::generate(segments.begin(), segments.end(),
                   [&]() { return SegmentBuilder().basicAudioSegment(m_audioSourceId)(); });
-    std::vector<GstBuffer> buffers(count);
-    std::vector<GstCaps> copies(count);
+    std::vector<GstBuffer> buffers(dataCountToPush);
+    std::vector<GstCaps> copies(dataCountToPush);
 
     // Next, create frame writer
     ASSERT_TRUE(m_lastAudioNeedData);
@@ -334,7 +334,7 @@ void MediaPipelineTest::pushAudioData(unsigned count)
     auto writer{common::IMediaFrameWriterFactory::getFactory()->createFrameWriter(m_shmHandle.getShm(), shmInfo)};
 
     // Write frames to shm and add gst expects
-    for (unsigned i = 0; i < count; ++i)
+    for (unsigned i = 0; i < dataCountToPush; ++i)
     {
         EXPECT_EQ(writer->writeFrame(segments[i]), AddSegmentStatus::OK);
         willPushAudioData(segments[i], buffers[i], copies[i]);
@@ -348,17 +348,18 @@ void MediaPipelineTest::pushAudioData(unsigned count)
     ASSERT_TRUE(receivedNeedData);
     EXPECT_EQ(receivedNeedData->session_id(), m_sessionId);
     EXPECT_EQ(receivedNeedData->source_id(), m_audioSourceId);
+    EXPECT_EQ(receivedNeedData->frame_count(), needDataFrameCount);
     m_lastAudioNeedData = receivedNeedData;
 }
 
-void MediaPipelineTest::pushVideoData(unsigned count)
+void MediaPipelineTest::pushVideoData(unsigned dataCountToPush, int needDataFrameCount)
 {
     // First, generate new data
-    std::vector<std::unique_ptr<IMediaPipeline::MediaSegment>> segments(count);
+    std::vector<std::unique_ptr<IMediaPipeline::MediaSegment>> segments(dataCountToPush);
     std::generate(segments.begin(), segments.end(),
                   [&]() { return SegmentBuilder().basicVideoSegment(m_videoSourceId)(); });
-    std::vector<GstBuffer> buffers(count);
-    std::vector<GstCaps> copies(count);
+    std::vector<GstBuffer> buffers(dataCountToPush);
+    std::vector<GstCaps> copies(dataCountToPush);
 
     // Next, create frame writer
     ASSERT_TRUE(m_lastVideoNeedData);
@@ -370,7 +371,7 @@ void MediaPipelineTest::pushVideoData(unsigned count)
     auto writer{common::IMediaFrameWriterFactory::getFactory()->createFrameWriter(m_shmHandle.getShm(), shmInfo)};
 
     // Write frames to shm and add gst expects
-    for (unsigned i = 0; i < count; ++i)
+    for (unsigned i = 0; i < dataCountToPush; ++i)
     {
         EXPECT_EQ(writer->writeFrame(segments[i]), AddSegmentStatus::OK);
         willPushVideoData(segments[i], buffers[i], copies[i]);
@@ -384,6 +385,7 @@ void MediaPipelineTest::pushVideoData(unsigned count)
     ASSERT_TRUE(receivedNeedData);
     EXPECT_EQ(receivedNeedData->session_id(), m_sessionId);
     EXPECT_EQ(receivedNeedData->source_id(), m_videoSourceId);
+    EXPECT_EQ(receivedNeedData->frame_count(), needDataFrameCount);
     m_lastVideoNeedData = receivedNeedData;
 }
 

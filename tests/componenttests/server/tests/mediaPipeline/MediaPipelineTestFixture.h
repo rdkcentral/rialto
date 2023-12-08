@@ -53,8 +53,8 @@ public:
     void indicateAllSourcesAttached();
     void pause();
     void gstNeedData(GstAppSrc *appSrc, int frameCount);
-    void pushAudioData(unsigned count = 1);
-    void pushVideoData(unsigned count = 1);
+    void pushAudioData(unsigned dataCountToPush, int needDataFrameCount);
+    void pushVideoData(unsigned dataCountToPush, int needDataFrameCount);
 
 private:
     void initShm();

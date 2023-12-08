@@ -95,10 +95,11 @@ TEST_F(MediaPipelineTest, playback)
     gstNeedData(&m_audioAppSrc, kFrameCountInPausedState);
     gstNeedData(&m_videoAppSrc, kFrameCountInPausedState);
     {
+        constexpr unsigned kFramesToPush{1};
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
-        pushAudioData(3);
-        pushVideoData(3);
+        pushAudioData(kFramesToPush, kFrameCountInPausedState);
+        pushVideoData(kFramesToPush, kFrameCountInPausedState);
 
         auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
         ASSERT_TRUE(receivedNetworkStateChange);
