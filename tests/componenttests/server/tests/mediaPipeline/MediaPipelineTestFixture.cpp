@@ -187,19 +187,20 @@ void MediaPipelineTest::willPushAudioData(const std::unique_ptr<IMediaPipeline::
                                           GstBuffer &buffer, GstCaps &capsCopy)
 {
     EXPECT_CALL(*m_gstWrapperMock, gstBufferNewAllocate(nullptr, segment->getDataLength(), nullptr))
-        .WillOnce(Return(&buffer));
+        .WillOnce(Return(&buffer))
+        .RetiresOnSaturation();
     EXPECT_CALL(*m_gstWrapperMock, gstBufferFill(&buffer, 0, BufferMatcher(segment->getData(), segment->getDataLength()),
                                                  segment->getDataLength()))
         .WillOnce(Return(segment->getDataLength()));
-    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(&m_audioAppSrc)).WillOnce(Return(&m_audioCaps));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsCopy(&m_audioCaps)).WillOnce(Return(&capsCopy));
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(&m_audioAppSrc)).WillOnce(Return(&m_audioCaps)).RetiresOnSaturation();
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCopy(&m_audioCaps)).WillOnce(Return(&capsCopy)).RetiresOnSaturation();
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&capsCopy, CharStrMatcher("rate"), G_TYPE_INT, kSampleRate));
     EXPECT_CALL(*m_gstWrapperMock,
                 gstCapsSetSimpleIntStub(&capsCopy, CharStrMatcher("channels"), G_TYPE_INT, kNumOfChannels));
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(&m_audioAppSrc, &capsCopy));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_audioCaps));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_audioCaps)).RetiresOnSaturation();
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&capsCopy));
-    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(&m_audioAppSrc, _));
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(&m_audioAppSrc, _)).RetiresOnSaturation();
 }
 
 void MediaPipelineTest::createSession()
