@@ -464,13 +464,13 @@ void MediaPipelineTestMethods::sendNotifyPlaybackStatePaused()
     waitEvent();
 }
 
-void MediaPipelineTestMethods::shouldNotifyPlaybackStatePlay()
+void MediaPipelineTestMethods::shouldNotifyPlaybackStatePlaying()
 {
     EXPECT_CALL(*m_mediaPipelineClientMock, notifyPlaybackState(PlaybackState::PLAYING))
         .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
 }
 
-void MediaPipelineTestMethods::sendNotifyPlaybackStatePlay()
+void MediaPipelineTestMethods::sendNotifyPlaybackStatePlaying()
 {
     getServerStub()->notifyPlaybackStateChangeEvent(kSessionId, PlaybackState::PLAYING);
     waitEvent();
@@ -668,6 +668,34 @@ void MediaPipelineTestMethods::startAudioVideoMediaSessionWaitForPreroll()
     MediaPipelineTestMethods::pause();
 }
 
+void  MediaPipelineTestMethods::startAudioVideoMediaSessionPrerollPaused()
+{
+    startAudioVideoMediaSessionWaitForPreroll();
+
+    // Write 1 audio frame
+    MediaPipelineTestMethods::shouldNotifyNeedDataAudioBeforePreroll();
+    MediaPipelineTestMethods::sendNotifyNeedDataAudioBeforePreroll();
+    uint32_t segmentId = MediaPipelineTestMethods::addSegmentMseAudio();
+    MediaPipelineTestMethods::checkMseAudioSegmentWritten(segmentId);
+    MediaPipelineTestMethods::shouldHaveDataOk(1);
+    MediaPipelineTestMethods::haveDataOk();
+
+    // Write 1 video frame
+    MediaPipelineTestMethods::shouldNotifyNeedDataVideoBeforePreroll();
+    MediaPipelineTestMethods::sendNotifyNeedDataVideoBeforePreroll();
+    segmentId = MediaPipelineTestMethods::addSegmentMseVideo();
+    MediaPipelineTestMethods::checkMseVideoSegmentWritten(segmentId);
+    MediaPipelineTestMethods::shouldHaveDataOk(1);
+    MediaPipelineTestMethods::haveDataOk();
+
+    // Preroll paused
+    MediaPipelineTestMethods::shouldNotifyNetworkStateBuffered();
+    MediaPipelineTestMethods::sendNotifyNetworkStateBuffered();
+    MediaPipelineTestMethods::shouldNotifyPlaybackStatePaused();
+    MediaPipelineTestMethods::sendNotifyPlaybackStatePaused();
+
+}
+
 void MediaPipelineTestMethods::endAudioVideoMediaSession()
 {
     // Remove sources
@@ -685,4 +713,172 @@ void MediaPipelineTestMethods::endAudioVideoMediaSession()
     // Destroy media session
     MediaPipelineTestMethods::shouldDestroyMediaSession();
     MediaPipelineTestMethods::destroyMediaPipeline();
+}
+
+void MediaPipelineTestMethods::shouldPlayWithFailure()
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock, play(_, _, _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::failureReturn)));
+}
+
+void MediaPipelineTestMethods::shouldPauseWithFailure()
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock, pause(_, _, _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::failureReturn)));
+}
+
+void MediaPipelineTestMethods::shouldStopWithFailure()
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock, stop(_, _, _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::failureReturn)));
+}
+
+void MediaPipelineTestMethods::shouldNotifyPlaybackStateFailure()
+{
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyPlaybackState(PlaybackState::FAILURE))
+        .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
+}
+
+void MediaPipelineTestMethods::playFailure()
+{
+    EXPECT_EQ(m_mediaPipeline->play(), false);
+}
+
+void MediaPipelineTestMethods::pauseFailure()
+{
+    EXPECT_EQ(m_mediaPipeline->pause(), false);
+}
+
+void MediaPipelineTestMethods::stopFailure()
+{
+    EXPECT_EQ(m_mediaPipeline->stop(), false);
+}
+
+void MediaPipelineTestMethods::sendNotifyPlaybackStateFailure()
+{
+    getServerStub()->notifyPlaybackStateChangeEvent(kSessionId, PlaybackState::FAILURE);
+    waitEvent();
+}
+
+void MediaPipelineTestMethods::shouldSetPlaybackRate2x()
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock, setPlaybackRate(_, setPlaybackRateRequestMatcher(kSessionId, 2.0), _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
+}
+
+void MediaPipelineTestMethods::shouldSetPlaybackRateNegative2x()
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock, setPlaybackRate(_, setPlaybackRateRequestMatcher(kSessionId, -2.0), _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
+}
+
+void MediaPipelineTestMethods::shouldSetPlaybackRateFailure()
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock, setPlaybackRate(_, _, _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::failureReturn)));
+}
+
+void MediaPipelineTestMethods::setPlaybackRate2x()
+{
+    EXPECT_EQ(m_mediaPipeline->setPlaybackRate(2.0), true);
+}
+
+void MediaPipelineTestMethods::setPlaybackRateNegative2x()
+{
+    EXPECT_EQ(m_mediaPipeline->setPlaybackRate(-2.0), true);
+}
+
+void MediaPipelineTestMethods::setPlaybackRateFailure()
+{
+    EXPECT_EQ(m_mediaPipeline->setPlaybackRate(0.0), false);
+}
+
+void MediaPipelineTestMethods::shouldNotifyPlaybackStateSeeking()
+{
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyPlaybackState(PlaybackState::SEEKING))
+        .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
+}
+
+void MediaPipelineTestMethods::shouldNotifyPlaybackStateFlushed()
+{
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyPlaybackState(PlaybackState::FLUSHED))
+        .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
+}
+
+void MediaPipelineTestMethods::shouldSetPositionTo10()
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock, setPosition(_, setPositionRequestMatcher(kSessionId, 10), _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
+}
+
+void MediaPipelineTestMethods::setPosition10()
+{
+    EXPECT_EQ(m_mediaPipeline->setPosition(10), true);
+}
+
+void MediaPipelineTestMethods::sendNotifyPlaybackStateSeeking()
+{
+    getServerStub()->notifyPlaybackStateChangeEvent(kSessionId, PlaybackState::SEEKING);
+    waitEvent();
+}
+
+void MediaPipelineTestMethods::sendNotifyPlaybackStateFlushed()
+{
+    getServerStub()->notifyPlaybackStateChangeEvent(kSessionId, PlaybackState::FLUSHED);
+    waitEvent();
+}
+
+void MediaPipelineTestMethods::writeAudioFrames()
+{
+    MediaPipelineTestMethods::shouldNotifyNeedDataAudioBeforePreroll();
+    MediaPipelineTestMethods::sendNotifyNeedDataAudioBeforePreroll();
+    uint32_t segmentId = MediaPipelineTestMethods::addSegmentMseAudio();
+    MediaPipelineTestMethods::checkMseAudioSegmentWritten(segmentId);
+    segmentId = MediaPipelineTestMethods::addSegmentMseAudio();
+    MediaPipelineTestMethods::checkMseAudioSegmentWritten(segmentId);
+    segmentId = MediaPipelineTestMethods::addSegmentMseAudio();
+    MediaPipelineTestMethods::checkMseAudioSegmentWritten(segmentId);
+    MediaPipelineTestMethods::shouldHaveDataBeforePreroll();
+    MediaPipelineTestMethods::haveDataOk();
+}
+
+void MediaPipelineTestMethods::writeVideoFrames()
+{
+    MediaPipelineTestMethods::shouldNotifyNeedDataVideoBeforePreroll();
+    MediaPipelineTestMethods::sendNotifyNeedDataVideoBeforePreroll();
+    uint32_t segmentId = MediaPipelineTestMethods::addSegmentMseVideo();
+    MediaPipelineTestMethods::checkMseVideoSegmentWritten(segmentId);
+    segmentId = MediaPipelineTestMethods::addSegmentMseVideo();
+    MediaPipelineTestMethods::checkMseVideoSegmentWritten(segmentId);
+    segmentId = MediaPipelineTestMethods::addSegmentMseVideo();
+    MediaPipelineTestMethods::checkMseVideoSegmentWritten(segmentId);
+    MediaPipelineTestMethods::shouldHaveDataBeforePreroll();
+    MediaPipelineTestMethods::haveDataOk();
+}
+
+void MediaPipelineTestMethods::shouldSetPositionTo0()
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock, setPosition(_, setPositionRequestMatcher(kSessionId, 0), _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
+}
+
+void MediaPipelineTestMethods::setPosition0()
+{
+    EXPECT_EQ(m_mediaPipeline->setPosition(0), true);
+}
+
+void MediaPipelineTestMethods::writeAudioEos()
+{
+    MediaPipelineTestMethods::shouldNotifyNeedDataAudioAfterPreroll();
+    MediaPipelineTestMethods::sendNotifyNeedDataAudioAfterPreroll();
+    MediaPipelineTestMethods::shouldHaveDataEos(0);
+    MediaPipelineTestMethods::haveDataEos();
+}
+
+void MediaPipelineTestMethods::writeVideoEos()
+{
+    MediaPipelineTestMethods::shouldNotifyNeedDataVideoAfterPreroll();
+    MediaPipelineTestMethods::sendNotifyNeedDataVideoAfterPreroll();
+    MediaPipelineTestMethods::shouldHaveDataEos(0);
+    MediaPipelineTestMethods::haveDataEos();
 }

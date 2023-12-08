@@ -76,7 +76,7 @@ protected:
     void shouldHaveDataBeforePreroll();
     void shouldNotifyNetworkStateBuffered();
     void shouldNotifyPlaybackStatePaused();
-    void shouldNotifyPlaybackStatePlay();
+    void shouldNotifyPlaybackStatePlaying();
     void shouldPlay();
     void shouldNotifyNeedDataAudioAfterPreroll();
     void shouldNotifyNeedDataVideoAfterPreroll();
@@ -89,6 +89,17 @@ protected:
     void shouldStop();
     void shouldNotifyPlaybackStateStopped();
     void shouldDestroyMediaSession();
+    void shouldPlayWithFailure();
+    void shouldPauseWithFailure();
+    void shouldStopWithFailure();
+    void shouldNotifyPlaybackStateFailure();
+    void shouldSetPlaybackRate2x();
+    void shouldSetPlaybackRateNegative2x();
+    void shouldSetPlaybackRateFailure();
+    void shouldSetPositionTo10();
+    void shouldSetPositionTo0();
+    void shouldNotifyPlaybackStateSeeking();
+    void shouldNotifyPlaybackStateFlushed();
 
     // Api methods
     void createMediaPipeline();
@@ -106,7 +117,15 @@ protected:
     void removeSourceAudio();
     void stop();
     void destroyMediaPipeline();
-
+    void playFailure();
+    void pauseFailure();
+    void stopFailure();
+    void setPlaybackRate2x();
+    void setPlaybackRateNegative2x();
+    void setPlaybackRateFailure();
+    void setPosition10();
+    void setPosition0();
+ 
     // Event methods
     void sendNotifyNetworkStateBuffering();
     void sendNotifyPlaybackStateIdle();
@@ -114,11 +133,14 @@ protected:
     void sendNotifyNeedDataVideoBeforePreroll();
     void sendNotifyNetworkStateBuffered();
     void sendNotifyPlaybackStatePaused();
-    void sendNotifyPlaybackStatePlay();
+    void sendNotifyPlaybackStatePlaying();
     void sendNotifyNeedDataAudioAfterPreroll();
     void sendNotifyNeedDataVideoAfterPreroll();
     void sendNotifyPlaybackStateEndOfStream();
     void sendNotifyPlaybackStateStopped();
+    void sendNotifyPlaybackStateFailure();
+    void sendNotifyPlaybackStateSeeking();
+    void sendNotifyPlaybackStateFlushed();
 
     // Check methods
     void checkMseAudioSegmentWritten(int32_t segmentId);
@@ -126,7 +148,12 @@ protected:
 
     // Helper methods
     void startAudioVideoMediaSessionWaitForPreroll();
+    void startAudioVideoMediaSessionPrerollPaused();
     void endAudioVideoMediaSession();
+    void writeAudioFrames();
+    void writeVideoFrames();
+    void writeAudioEos();
+    void writeVideoEos();
 
     virtual void notifyEvent() = 0;
     virtual void waitEvent() = 0;

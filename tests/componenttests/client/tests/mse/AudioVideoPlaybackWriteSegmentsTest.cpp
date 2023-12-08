@@ -178,7 +178,7 @@ TEST_F(AudioVideoPlaybackWriteSegmentsTest, playback)
         MediaPipelineTestMethods::checkMseAudioSegmentWritten(m_segmentId);
     }
 
-    MediaPipelineTestMethods::shouldHaveDataBeforePreroll();
+    MediaPipelineTestMethods::shouldHaveDataOk(2);
     MediaPipelineTestMethods::haveDataOk();
 
     // Step 4: Write 2 video frames
@@ -192,7 +192,7 @@ TEST_F(AudioVideoPlaybackWriteSegmentsTest, playback)
         MediaPipelineTestMethods::checkMseVideoSegmentWritten(m_segmentId);
     }
 
-    MediaPipelineTestMethods::shouldHaveDataBeforePreroll();
+    MediaPipelineTestMethods::shouldHaveDataOk(2);
     MediaPipelineTestMethods::haveDataOk();
 
     // Step 5: Preroll
@@ -204,8 +204,8 @@ TEST_F(AudioVideoPlaybackWriteSegmentsTest, playback)
     // Step 6: Play
     MediaPipelineTestMethods::shouldPlay();
     MediaPipelineTestMethods::play();
-    MediaPipelineTestMethods::shouldNotifyPlaybackStatePlay();
-    MediaPipelineTestMethods::sendNotifyPlaybackStatePlay();
+    MediaPipelineTestMethods::shouldNotifyPlaybackStatePlaying();
+    MediaPipelineTestMethods::sendNotifyPlaybackStatePlaying();
 
     // Step 7: Write 20 audio frames
     MediaPipelineTestMethods::shouldNotifyNeedDataAudioAfterPreroll();
@@ -246,7 +246,7 @@ TEST_F(AudioVideoPlaybackWriteSegmentsTest, playback)
         MediaPipelineTestMethods::checkMseAudioSegmentWritten(m_segmentId);
     }
 
-    MediaPipelineTestMethods::shouldHaveDataAfterPreroll();
+    MediaPipelineTestMethods::shouldHaveDataOk(5);
     MediaPipelineTestMethods::haveDataOk();
 
     // Step 10: Write 5 video frames
@@ -260,6 +260,6 @@ TEST_F(AudioVideoPlaybackWriteSegmentsTest, playback)
         MediaPipelineTestMethods::checkMseVideoSegmentWritten(m_segmentId);
     }
 
-    MediaPipelineTestMethods::shouldHaveDataAfterPreroll();
+    MediaPipelineTestMethods::shouldHaveDataOk(5);
     MediaPipelineTestMethods::haveDataOk();
 }

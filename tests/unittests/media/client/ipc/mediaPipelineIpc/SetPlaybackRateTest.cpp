@@ -18,13 +18,7 @@
  */
 
 #include "MediaPipelineIpcTestBase.h"
-
-MATCHER_P2(SetPlaybackRateRequestMatcher, sessionId, rate, "")
-{
-    const ::firebolt::rialto::SetPlaybackRateRequest *kRequest =
-        dynamic_cast<const ::firebolt::rialto::SetPlaybackRateRequest *>(arg);
-    return ((kRequest->session_id() == sessionId) && (kRequest->rate() == rate));
-}
+#include "MediaPipelineProtoRequestMatchers.h"
 
 class RialtoClientMediaPipelineIpcSetPlaybackRateTest : public MediaPipelineIpcTestBase
 {
@@ -55,7 +49,7 @@ TEST_F(RialtoClientMediaPipelineIpcSetPlaybackRateTest, Success)
 
     EXPECT_CALL(*m_channelMock,
                 CallMethod(methodMatcher("setPlaybackRate"), m_controllerMock.get(),
-                           SetPlaybackRateRequestMatcher(m_sessionId, m_rate), _, m_blockingClosureMock.get()));
+                           setPlaybackRateRequestMatcher(m_sessionId, m_rate), _, m_blockingClosureMock.get()));
 
     EXPECT_EQ(m_mediaPipelineIpc->setPlaybackRate(m_rate), true);
 }
