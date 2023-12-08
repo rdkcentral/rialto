@@ -19,49 +19,78 @@
 
 #include "SegmentBuilder.h"
 #include "Constants.h"
+#include <random>
 
 namespace
 {
-constexpr int64_t kTimeStamp{4135000000000};
-constexpr int64_t kDuration{90000000000};
 constexpr firebolt::rialto::Fraction kFrameRate{15, 1};
-std::vector<uint8_t> kMediaData{'T', 'E', 'S', 'T', '_', 'M', 'E', 'D', 'I', 'A'};
-const std::vector<uint8_t> kExtraData{1, 2, 3, 4};
+const std::string kSegments[] = {"lloefewhrwohruwhfr9eee8833hbcjka",
+                                 "hyrejhye y6u2255y6858geqszz",
+                                 "nvid9",
+                                 "#mcuruiw83udbhc",
+                                 "yr6w4hgsbhjk674kuur",
+                                 "hrjkl8p09[jtrwhstry5twyyuhhgdhtyww455y]",
+                                 "cnvbvfbuhrew8383hbvbckzoaopalwlelhvrwvc",
+                                 "yu764thgkio9p9trw545jjhf",
+                                 "R080E",
+                                 "nvid9",
+                                 "yyt",
+                                 "greabfdbnmur7y64wnguyoyrar55shshjw",
+                                 "viru80202-idendhjx cefebfihgrwwwwcdcwd",
+                                 "shtrnkkil ik;oiy,etq 525425",
+                                 "nvid9",
+                                 "ncie83uuwonvbbvaoaodoekjvbv  vyreifur779y",
+                                 "yu764thgkio9p9trw545jjhf",
+                                 "greabfdbnmur7y64wnguyoyrar55shshjw",
+                                 "yr6w4hgsbhjk674kuur",
+                                 "viru80202-idendhjx cefebfihgrwwwwcdcwd",
+                                 "ncie83uuwonvbbvaoaodoekjvbv  vyreifur779y"};
 const firebolt::rialto::CodecData kCodecData{std::vector<std::uint8_t>(std::vector<std::uint8_t>{4, 3, 2, 1}),
                                              firebolt::rialto::CodecDataType::BUFFER};
-const int32_t kMksId{43};
-const std::vector<uint8_t> kKeyId{9, 2, 6, 2, 0, 1};
-const std::vector<uint8_t> kInitVector{34, 53, 54, 62, 56};
-constexpr size_t kNumClearBytes{2};
-constexpr size_t kNumEncryptedBytes{7};
 constexpr uint32_t kInitWithLast15{1};
 constexpr firebolt::rialto::SegmentAlignment kSegmentAlignment{firebolt::rialto::SegmentAlignment::NAL};
 
-constexpr uint32_t kCryptBlocks{131};
-constexpr uint32_t kSkipBlocks{242};
+template <typename T> T generate(T max = std::numeric_limits<T>::max())
+{
+    std::random_device rd;
+    std::default_random_engine gen(rd());
+    std::uniform_int_distribution<T> distrib(0, max);
+    return distrib(gen);
+}
+
+std::vector<uint8_t> generateBytes()
+{
+    constexpr size_t kMaxSize{10};
+    const std::size_t bytesLen{generate<std::size_t>(kMaxSize)};
+    std::vector<uint8_t> bytes(bytesLen);
+    std::generate(bytes.begin(), bytes.end(), []() { return generate<uint8_t>(); });
+    return bytes;
+}
 } // namespace
 
 namespace firebolt::rialto::server::ct
 {
 SegmentBuilder &SegmentBuilder::basicVideoSegment(int sourceId)
 {
-    m_segment = std::make_unique<IMediaPipeline::MediaSegmentVideo>(sourceId, kTimeStamp, kDuration, kWidth, kHeight,
-                                                                    kFrameRate);
-    m_segment->setData(kMediaData.size(), kMediaData.data());
+    m_segment = std::make_unique<IMediaPipeline::MediaSegmentVideo>(sourceId, generate<int64_t>(), generate<int64_t>(),
+                                                                    kWidth, kHeight, kFrameRate);
+    const size_t kIdx{generate<std::size_t>(std::size(kSegments))};
+    m_segment->setData(kSegments[kIdx].size(), reinterpret_cast<const uint8_t *>(kSegments[kIdx].data()));
     return *this;
 }
 
 SegmentBuilder &SegmentBuilder::basicAudioSegment(int sourceId)
 {
-    m_segment = std::make_unique<IMediaPipeline::MediaSegmentAudio>(sourceId, kTimeStamp, kDuration, kSampleRate,
-                                                                    kNumOfChannels);
-    m_segment->setData(kMediaData.size(), kMediaData.data());
+    m_segment = std::make_unique<IMediaPipeline::MediaSegmentAudio>(sourceId, generate<int64_t>(), generate<int64_t>(),
+                                                                    kSampleRate, kNumOfChannels);
+    const size_t kIdx{generate<std::size_t>(std::size(kSegments))};
+    m_segment->setData(kSegments[kIdx].size(), reinterpret_cast<const uint8_t *>(kSegments[kIdx].data()));
     return *this;
 }
 
 SegmentBuilder &SegmentBuilder::withOptionalData()
 {
-    m_segment->setExtraData(kExtraData);
+    m_segment->setExtraData(generateBytes());
     m_segment->setSegmentAlignment(kSegmentAlignment);
     m_segment->setCodecData(std::make_shared<firebolt::rialto::CodecData>(kCodecData));
     return *this;
@@ -70,10 +99,10 @@ SegmentBuilder &SegmentBuilder::withOptionalData()
 SegmentBuilder &SegmentBuilder::withEncryptionData()
 {
     m_segment->setEncrypted(true);
-    m_segment->setMediaKeySessionId(kMksId);
-    m_segment->setKeyId(kKeyId);
-    m_segment->setInitVector(kInitVector);
-    m_segment->addSubSample(kNumClearBytes, kNumEncryptedBytes);
+    m_segment->setMediaKeySessionId(generate<int32_t>());
+    m_segment->setKeyId(generateBytes());
+    m_segment->setInitVector(generateBytes());
+    m_segment->addSubSample(generate<std::size_t>(), generate<std::size_t>());
     m_segment->setInitWithLast15(kInitWithLast15);
 
     return *this;
@@ -82,7 +111,7 @@ SegmentBuilder &SegmentBuilder::withEncryptionData()
 SegmentBuilder &SegmentBuilder::withCBCSCipherMode()
 {
     m_segment->setCipherMode(CipherMode::CBCS);
-    m_segment->setEncryptionPattern(kCryptBlocks, kSkipBlocks);
+    m_segment->setEncryptionPattern(generate<uint32_t>(), generate<uint32_t>());
 
     return *this;
 }
@@ -96,7 +125,7 @@ SegmentBuilder &SegmentBuilder::withCENCCipherMode()
 SegmentBuilder &SegmentBuilder::withCENSCipherMode()
 {
     m_segment->setCipherMode(CipherMode::CENS);
-    m_segment->setEncryptionPattern(kCryptBlocks, kSkipBlocks);
+    m_segment->setEncryptionPattern(generate<uint32_t>(), generate<uint32_t>());
     return *this;
 }
 
