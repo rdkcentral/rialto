@@ -38,6 +38,7 @@ namespace firebolt::rialto::server::ct
 ::firebolt::rialto::AllSourcesAttachedRequest createAllSourcesAttachedRequest(int sessionId);
 ::firebolt::rialto::HaveDataRequest createHaveDataRequest(int sessionId, unsigned numOfFrames, unsigned requestId);
 ::firebolt::rialto::PauseRequest createPauseRequest(int sessionId);
+::firebolt::rialto::PlayRequest createPlayRequest(int sessionId);
 
 // media keys module
 ::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequest();

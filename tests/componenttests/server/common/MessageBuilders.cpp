@@ -118,6 +118,13 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
+::firebolt::rialto::PlayRequest createPlayRequest(int sessionId)
+{
+    ::firebolt::rialto::PlayRequest request;
+    request.set_session_id(sessionId);
+    return request;
+}
+
 ::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequest()
 {
     ::firebolt::rialto::CreateMediaKeysRequest request;

@@ -40,6 +40,7 @@ namespace
 {
 const std::string kNullStateName{"NULL"};
 const std::string kPausedStateName{"PAUSED"};
+const std::string kPlayingStateName{"PLAYING"};
 constexpr GType kGstPlayFlagsType{static_cast<GType>(123)};
 constexpr unsigned kNeededDataLength{1};
 } // namespace
@@ -226,6 +227,19 @@ void MediaPipelineTest::willPushVideoData(const std::unique_ptr<IMediaPipeline::
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(&m_videoAppSrc, _)).RetiresOnSaturation();
 }
 
+void MediaPipelineTest::willPlay()
+{
+    EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&m_pipeline, GST_STATE_PLAYING))
+        .WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
+    EXPECT_CALL(*m_gstWrapperMock, gstMessageParseStateChanged(_, _, _, _))
+        .WillRepeatedly(DoAll(SetArgPointee<1>(GST_STATE_NULL), SetArgPointee<2>(GST_STATE_PLAYING),
+                              SetArgPointee<3>(GST_STATE_NULL)));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementStateGetName(GST_STATE_NULL)).WillRepeatedly(Return(kNullStateName.c_str()));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementStateGetName(GST_STATE_PLAYING))
+        .WillRepeatedly(Return(kPlayingStateName.c_str()));
+    EXPECT_CALL(*m_gstWrapperMock, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
+}
+
 void MediaPipelineTest::createSession()
 {
     // Use matchResponse to store session id
@@ -387,6 +401,21 @@ void MediaPipelineTest::pushVideoData(unsigned dataCountToPush, int needDataFram
     EXPECT_EQ(receivedNeedData->source_id(), m_videoSourceId);
     EXPECT_EQ(receivedNeedData->frame_count(), needDataFrameCount);
     m_lastVideoNeedData = receivedNeedData;
+}
+
+void MediaPipelineTest::play()
+{
+    auto playReq{createPlayRequest(m_sessionId)};
+    ConfigureAction<Play>(m_clientStub).send(playReq).expectSuccess();
+
+    ExpectMessage<firebolt::rialto::PlaybackStateChangeEvent> expectedPlaybackStateChange{m_clientStub};
+
+    m_gstreamerStub.sendStateChanged(GST_STATE_NULL, GST_STATE_PLAYING, GST_STATE_NULL);
+
+    auto receivedPlaybackStateChange{expectedPlaybackStateChange.getMessage()};
+    ASSERT_TRUE(receivedPlaybackStateChange);
+    EXPECT_EQ(receivedPlaybackStateChange->session_id(), m_sessionId);
+    EXPECT_EQ(receivedPlaybackStateChange->state(), ::firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_PLAYING);
 }
 
 void MediaPipelineTest::initShm()

@@ -106,6 +106,8 @@ TEST_F(MediaPipelineTest, playback)
         EXPECT_EQ(receivedNetworkStateChange->session_id(), m_sessionId);
         EXPECT_EQ(receivedNetworkStateChange->state(), ::firebolt::rialto::NetworkStateChangeEvent_NetworkState_BUFFERED);
     }
+    willPlay();
+    play();
     gstPlayerWillBeDestructed();
 }
 } // namespace firebolt::rialto::server::ct

@@ -99,6 +99,16 @@ struct Pause
     static constexpr FunctionType m_kFunction{&Stub::pause};
 };
 
+struct Play
+{
+    using RequestType = ::firebolt::rialto::PlayRequest;
+    using ResponseType = ::firebolt::rialto::PlayResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::play};
+};
+
 // mediakeys module
 struct CreateMediaKeys
 {

@@ -44,6 +44,7 @@ public:
     void willSetupAndAddSource(GstAppSrc *appSrc);
     void willFinishSetupAndAddSource();
     void willPause();
+    void willPlay();
 
     void createSession();
     void load();
@@ -55,6 +56,7 @@ public:
     void gstNeedData(GstAppSrc *appSrc, int frameCount);
     void pushAudioData(unsigned dataCountToPush, int needDataFrameCount);
     void pushVideoData(unsigned dataCountToPush, int needDataFrameCount);
+    void play();
 
 private:
     void initShm();
