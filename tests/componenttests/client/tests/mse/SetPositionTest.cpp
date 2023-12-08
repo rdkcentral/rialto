@@ -68,6 +68,8 @@ public:
  *  Step 3: Buffer to paused state
  *   Write audio frames.
  *   Write video frames.
+ *   Server notifys the client that the Network state has changed to BUFFERED.
+ *   Expect that the state change notification is propagated to the client.
  *   Server notifys the client that the Playback state has changed to PAUSED.
  *   Expect that the state change notification is propagated to the client.
  *
@@ -89,6 +91,8 @@ public:
  *  Step 7: Buffer to playing state
  *   Write audio frames.
  *   Write video frames.
+ *   Server notifys the client that the Network state has changed to BUFFERED.
+ *   Expect that the state change notification is propagated to the client.
  *   Server notifys the client that the Playback state has changed to PLAYING.
  *   Expect that the state change notification is propagated to the client.
  *
@@ -206,13 +210,15 @@ TEST_F(SetPositionTest, successStates)
  *   Server notifys the client that the Playback state has changed to SEEKING.
  *   Expect that the state change notification is propagated to the client.
  *
- *  Step 3: Data request
+ *  Step 3: Add segment failure
  *   Add a segment.
  *   Expect that addSegment return failure.
+ *
+ *  Step 4: Have data ignored
  *   Notify the server of have data.
  *   Expect that have data is not propagted to the server while seeking.
  *
- *  Step 4: Seek complete
+ *  Step 5: Seek complete
  *   Server notifys the client that the Playback state has changed to FLUSHED.
  *   Expect that the state change notification is propagated to the client.
  *
@@ -238,11 +244,13 @@ TEST_F(SetPositionTest, flushed)
     MediaPipelineTestMethods::shouldNotifyPlaybackStateSeeking();
     MediaPipelineTestMethods::sendNotifyPlaybackStateSeeking();
 
-    // Step 3: Data request
+    // Step 3: Add segment failure
     MediaPipelineTestMethods::addSegmentFailure();
+
+    // Step 4: Have data ignored
     MediaPipelineTestMethods::haveDataOk();
 
-    // Step 4: Seek complete
+    // Step 5: Seek complete
     MediaPipelineTestMethods::shouldNotifyPlaybackStateFlushed();
     MediaPipelineTestMethods::sendNotifyPlaybackStateFlushed();
 }
@@ -287,7 +295,7 @@ TEST_F(SetPositionTest, flushed)
  *   Server notifys the client that the Playback state has changed to PAUSED.
  *   Expect that the state change notification is propagated to the client.
  *
- *  Step 5: SetPosition in play state
+ *  Step 5: SetPosition in paused state
  *   SetPosition to position 0s.
  *   Server notifys the client that the Playback state has changed to SEEKING.
  *   Expect that the state change notification is propagated to the client.
@@ -323,16 +331,16 @@ TEST_F(SetPositionTest, failures)
     MediaPipelineTestMethods::setPositionFailure();
 
     // Step 4: Pause
-    MediaPipelineTestMethods::shouldPlay();
-    MediaPipelineTestMethods::play();
-    MediaPipelineTestMethods::shouldNotifyPlaybackStatePlaying();
-    MediaPipelineTestMethods::sendNotifyPlaybackStatePlaying();
+    MediaPipelineTestMethods::shouldPause();
+    MediaPipelineTestMethods::pause();
+    MediaPipelineTestMethods::shouldNotifyPlaybackStatePaused();
+    MediaPipelineTestMethods::sendNotifyPlaybackStatePaused();
 
-    // Step 5: SetPosition in play state
+    // Step 5: SetPosition in paused state
     MediaPipelineTestMethods::shouldSetPositionTo10();
     MediaPipelineTestMethods::setPosition10();
-    MediaPipelineTestMethods::shouldNotifyPlaybackStatePlaying();
-    MediaPipelineTestMethods::sendNotifyPlaybackStatePlaying();
+    MediaPipelineTestMethods::shouldNotifyPlaybackStateSeeking();
+    MediaPipelineTestMethods::sendNotifyPlaybackStateSeeking();
 
     // Step 6: Seek complete
     MediaPipelineTestMethods::shouldNotifyPlaybackStateFlushed();

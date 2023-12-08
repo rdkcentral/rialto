@@ -79,7 +79,7 @@ public:
  *
  *  Step 5: Paused state failure
  *   Pause the content.
- *   Expect that play propagated to the server.
+ *   Expect that pause propagated to the server.
  *   Server notifys the client that the Playback state has changed to FAILURE.
  *   Expect that the state change notification is propagated to the client.
  *
