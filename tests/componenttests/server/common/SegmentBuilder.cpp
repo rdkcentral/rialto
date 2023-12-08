@@ -43,7 +43,10 @@ const std::string kSegments[] = {"lloefewhrwohruwhfr9eee8833hbcjka",
                                  "greabfdbnmur7y64wnguyoyrar55shshjw",
                                  "yr6w4hgsbhjk674kuur",
                                  "viru80202-idendhjx cefebfihgrwwwwcdcwd",
-                                 "ncie83uuwonvbbvaoaodoekjvbv  vyreifur779y"};
+                                 "ncie83uuwonvbbvaoaodoekjvbv  vyreifur779y",
+                                 "pdfigjiudfhgoidfhgiudfhgiudfhg",
+                                 "t98ygurvschv98egjow9eufwrpg",
+                                 "do9 gynq9rfy9weuf8eroigh9u"};
 const firebolt::rialto::CodecData kCodecData{std::vector<std::uint8_t>(std::vector<std::uint8_t>{4, 3, 2, 1}),
                                              firebolt::rialto::CodecDataType::BUFFER};
 constexpr uint32_t kInitWithLast15{1};

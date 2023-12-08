@@ -19,6 +19,7 @@
 
 #include "ActionTraits.h"
 #include "ConfigureAction.h"
+#include "ExpectMessage.h"
 #include "MediaPipelineTestFixture.h"
 #include "MessageBuilders.h"
 
@@ -93,8 +94,17 @@ TEST_F(MediaPipelineTest, playback)
     pause();
     gstNeedData(&m_audioAppSrc, kFrameCountInPausedState);
     gstNeedData(&m_videoAppSrc, kFrameCountInPausedState);
-    pushAudioData();
-    pushVideoData();
+    {
+        ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
+
+        pushAudioData(3);
+        pushVideoData(3);
+
+        auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
+        ASSERT_TRUE(receivedNetworkStateChange);
+        EXPECT_EQ(receivedNetworkStateChange->session_id(), m_sessionId);
+        EXPECT_EQ(receivedNetworkStateChange->state(), ::firebolt::rialto::NetworkStateChangeEvent_NetworkState_BUFFERED);
+    }
     gstPlayerWillBeDestructed();
 }
 } // namespace firebolt::rialto::server::ct
