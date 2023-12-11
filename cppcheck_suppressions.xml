@@ -28,14 +28,6 @@
     </suppress>
     <suppress>
         <id>unusedFunction</id>
-        <symbolName>MATCHER_P5</symbolName>
-    </suppress>
-    <suppress>
-        <id>syntaxError</id>
-        <fileName>tests/unittests/serverManager/unittests/common/SessionServerAppTestsFixture.cpp</fileName>
-    </suppress>
-    <suppress>
-        <id>unusedFunction</id>
         <symbolName>rialto_mse_add_protection_metadata</symbolName>
     </suppress>
     <suppress>
@@ -54,21 +46,10 @@
         <id>unassignedVariable</id>
         <fileName>serverManager/service/source/ConfigHelper.cpp</fileName>
     </suppress>
-    <suppress>
-        <id>syntaxError</id>
-        <fileName>tests/componenttests/server/tests/mediaKeys/MediaKeysTest.cpp</fileName>
-    </suppress>
-    <suppress>
-        <id>syntaxError</id>
-        <fileName>tests/componenttests/server/tests/mediaPipeline/MediaPipelineTest.cpp</fileName>
-    </suppress>
-    <suppress>
+    <suppress> // Suppress all TEST and TEST_F googletest declarations as there use is not detected properly
         <id>unusedFunction</id>
-        <fileName>tests/componenttests/server/common/MessageBuilders.cpp</fileName>
-    </suppress>
-    <suppress>
-        <id>unusedFunction</id>
-        <fileName>tests/componenttests/server/tests/mediaPipeline/MediaPipelineTestFixture.cpp</fileName>
+        <fileName>tests/*</fileName>
+        <symbolName>__*</symbolName>
     </suppress>
     <suppress>
         <id>ctuOneDefinitionRuleViolation</id>

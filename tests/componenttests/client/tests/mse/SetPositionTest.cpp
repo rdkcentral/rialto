@@ -20,6 +20,8 @@
 #include "ClientComponentTest.h"
 #include <gtest/gtest.h>
 
+namespace firebolt::rialto::client::ct
+{
 class SetPositionTest : public ClientComponentTest
 {
 public:
@@ -346,3 +348,4 @@ TEST_F(SetPositionTest, failures)
     MediaPipelineTestMethods::shouldNotifyPlaybackStateFlushed();
     MediaPipelineTestMethods::sendNotifyPlaybackStateFlushed();
 }
+} // namespace firebolt::rialto::client::ct

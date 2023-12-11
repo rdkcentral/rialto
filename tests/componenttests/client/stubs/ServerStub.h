@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_CT_STUB_SERVER_STUB_H_
-#define FIREBOLT_RIALTO_CT_STUB_SERVER_STUB_H_
+#ifndef FIREBOLT_RIALTO_CLIENT_CT_SERVER_STUB_H_
+#define FIREBOLT_RIALTO_CLIENT_CT_SERVER_STUB_H_
 
 #include "ControlModuleStub.h"
 #include "IIpcServer.h"
@@ -28,7 +28,7 @@
 #include <memory>
 #include <thread>
 
-namespace firebolt::rialto::ct::stub
+namespace firebolt::rialto::client::ct
 {
 class ServerStub : public ControlModuleStub, public MediaPipelineModuleStub
 {
@@ -53,6 +53,6 @@ private:
     void waitForClientConnect() override;
     std::shared_ptr<::firebolt::rialto::ipc::IClient> &getClient() override;
 };
-} // namespace firebolt::rialto::ct::stub
+} // namespace firebolt::rialto::client::ct
 
-#endif // FIREBOLT_RIALTO_CT_STUB_SERVER_STUB_H_
+#endif // FIREBOLT_RIALTO_CLIENT_CT_SERVER_STUB_H_

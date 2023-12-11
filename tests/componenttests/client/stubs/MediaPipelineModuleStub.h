@@ -16,9 +16,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#ifndef FIREBOLT_RIALTO_CT_STUB_MEDIA_PIPELINE_MODULE_STUB_H_
-#define FIREBOLT_RIALTO_CT_STUB_MEDIA_PIPELINE_MODULE_STUB_H_
+#ifndef FIREBOLT_RIALTO_CLIENT_CT_MEDIA_PIPELINE_MODULE_STUB_H_
+#define FIREBOLT_RIALTO_CLIENT_CT_MEDIA_PIPELINE_MODULE_STUB_H_
 
 #include "IIpcServer.h"
 #include "MediaCommon.h"
@@ -26,7 +25,7 @@
 #include "mediapipelinemodule.pb.h"
 #include <memory>
 
-namespace firebolt::rialto::ct::stub
+namespace firebolt::rialto::client::ct
 {
 class MediaPipelineModuleStub
 {
@@ -46,6 +45,6 @@ public:
 protected:
     std::shared_ptr<::firebolt::rialto::MediaPipelineModule> m_mediaPipelineModuleMock;
 };
-} // namespace firebolt::rialto::ct::stub
+} // namespace firebolt::rialto::client::ct
 
-#endif // FIREBOLT_RIALTO_CT_STUB_MEDIA_PIPELINE_MODULE_STUB_H_
+#endif // FIREBOLT_RIALTO_CLIENT_CT_MEDIA_PIPELINE_MODULE_STUB_H_
