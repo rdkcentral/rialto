@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_CT_MEDIA_PIPELINE_TEST_FIXTURE_H_
-#define FIREBOLT_RIALTO_SERVER_CT_MEDIA_PIPELINE_TEST_FIXTURE_H_
+#ifndef FIREBOLT_RIALTO_SERVER_CT_MEDIA_PIPELINE_TEST_H_
+#define FIREBOLT_RIALTO_SERVER_CT_MEDIA_PIPELINE_TEST_H_
 
 #include "GstSrc.h"
 #include "GstreamerStub.h"
@@ -27,6 +27,7 @@
 #include "ShmHandle.h"
 #include "mediapipelinemodule.pb.h"
 #include <memory>
+#include <string>
 
 namespace firebolt::rialto::server::ct
 {
@@ -106,4 +107,4 @@ protected:
 };
 } // namespace firebolt::rialto::server::ct
 
-#endif // FIREBOLT_RIALTO_SERVER_CT_MEDIA_PIPELINE_TEST_FIXTURE_H_
+#endif // FIREBOLT_RIALTO_SERVER_CT_MEDIA_PIPELINE_TEST_H_

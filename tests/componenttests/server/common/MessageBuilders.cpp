@@ -19,6 +19,7 @@
 
 #include "MessageBuilders.h"
 #include "Constants.h"
+#include <string>
 
 namespace firebolt::rialto::server::ct
 {

@@ -19,7 +19,11 @@
 
 #include "SegmentBuilder.h"
 #include "Constants.h"
+#include <limits>
 #include <random>
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace
 {

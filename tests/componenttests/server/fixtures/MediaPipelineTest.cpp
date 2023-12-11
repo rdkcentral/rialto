@@ -27,6 +27,8 @@
 #include "MediaCommon.h"
 #include "MessageBuilders.h"
 #include "SegmentBuilder.h"
+#include <string>
+#include <vector>
 
 using testing::_;
 using testing::AtLeast;
