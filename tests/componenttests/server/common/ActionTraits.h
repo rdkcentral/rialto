@@ -109,6 +109,16 @@ struct Play
     static constexpr FunctionType m_kFunction{&Stub::play};
 };
 
+struct RemoveSource
+{
+    using RequestType = ::firebolt::rialto::RemoveSourceRequest;
+    using ResponseType = ::firebolt::rialto::RemoveSourceResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::removeSource};
+};
+
 // mediakeys module
 struct CreateMediaKeys
 {

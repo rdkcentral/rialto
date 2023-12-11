@@ -25,7 +25,9 @@
 
 namespace
 {
+constexpr unsigned kFramesToPush{1};
 constexpr int kFrameCountInPausedState{3};
+constexpr int kFrameCountInPlayingState{24};
 } // namespace
 
 namespace firebolt::rialto::server::ct
@@ -95,7 +97,6 @@ TEST_F(MediaPipelineTest, playback)
     gstNeedData(&m_audioAppSrc, kFrameCountInPausedState);
     gstNeedData(&m_videoAppSrc, kFrameCountInPausedState);
     {
-        constexpr unsigned kFramesToPush{1};
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
         pushAudioData(kFramesToPush, kFrameCountInPausedState);
@@ -108,6 +109,16 @@ TEST_F(MediaPipelineTest, playback)
     }
     willPlay();
     play();
+    pushAudioData(kFramesToPush, kFrameCountInPlayingState);
+    pushVideoData(kFramesToPush, kFrameCountInPlayingState);
+    willEos(&m_audioAppSrc);
+    eosAudio(kFramesToPush);
+    willEos(&m_videoAppSrc);
+    eosVideo(kFramesToPush);
+    gstNotifyEos();
+    willRemoveAudioSource();
+    removeSource(m_audioSourceId);
+    removeSource(m_videoSourceId);
     gstPlayerWillBeDestructed();
 }
 } // namespace firebolt::rialto::server::ct

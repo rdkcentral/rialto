@@ -116,4 +116,11 @@ void GstreamerStub::needData(GstAppSrc *appSrc, guint dataLength)
     ASSERT_TRUE(userData->second);
     ((void (*)(GstAppSrc *, guint, gpointer))callbacks->second.need_data)(appSrc, dataLength, userData->second);
 }
+
+void GstreamerStub::sendEos()
+{
+    std::unique_lock lock(m_mutex);
+    m_message = gst_message_new_eos(GST_OBJECT(m_pipeline));
+    m_cv.notify_one();
+}
 } // namespace firebolt::rialto::server::ct

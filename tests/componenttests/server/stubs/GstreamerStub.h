@@ -44,6 +44,7 @@ public:
     void setupAppSrcCallbacks(GstAppSrc *appSrc);
     void sendStateChanged(GstState oldState, GstState newState, GstState pendingState);
     void needData(GstAppSrc *appSrc, guint dataLength);
+    void sendEos();
 
 private:
     std::shared_ptr<testing::StrictMock<wrappers::GlibWrapperMock>> m_glibWrapperMock;

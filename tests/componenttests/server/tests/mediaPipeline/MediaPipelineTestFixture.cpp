@@ -29,6 +29,7 @@
 #include "SegmentBuilder.h"
 
 using testing::_;
+using testing::AtLeast;
 using testing::DoAll;
 using testing::Invoke;
 using testing::Return;
@@ -79,6 +80,11 @@ void MediaPipelineTest::gstPlayerWillBeCreated()
         .WillOnce(Return(&m_playsink));
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_playsink, CharStrMatcher("send-event-mode")));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_playsink));
+
+    // In case of longer testruns, GstPlayer may request to query position
+    EXPECT_CALL(*m_gstWrapperMock, gstElementQueryPosition(&m_pipeline, GST_FORMAT_TIME, _))
+        .Times(AtLeast(0))
+        .WillRepeatedly(Return(false));
 }
 
 void MediaPipelineTest::gstPlayerWillBeDestructed()
@@ -238,6 +244,21 @@ void MediaPipelineTest::willPlay()
     EXPECT_CALL(*m_gstWrapperMock, gstElementStateGetName(GST_STATE_PLAYING))
         .WillRepeatedly(Return(kPlayingStateName.c_str()));
     EXPECT_CALL(*m_gstWrapperMock, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
+}
+
+void MediaPipelineTest::willEos(GstAppSrc *appSrc)
+{
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcEndOfStream(appSrc)).WillOnce(Return(GST_FLOW_OK));
+}
+
+void MediaPipelineTest::willRemoveAudioSource()
+{
+    EXPECT_CALL(*m_gstWrapperMock, gstEventNewFlushStart()).WillOnce(Return(&m_flushStartEvent));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementSendEvent(GST_ELEMENT(&m_audioAppSrc), &m_flushStartEvent))
+        .WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstEventNewFlushStop(0)).WillOnce(Return(&m_flushStopEvent));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementSendEvent(GST_ELEMENT(&m_audioAppSrc), &m_flushStopEvent))
+        .WillOnce(Return(TRUE));
 }
 
 void MediaPipelineTest::createSession()
@@ -403,6 +424,69 @@ void MediaPipelineTest::pushVideoData(unsigned dataCountToPush, int needDataFram
     m_lastVideoNeedData = receivedNeedData;
 }
 
+void MediaPipelineTest::eosAudio(unsigned dataCountToPush)
+{
+    // First, generate new data
+    std::vector<std::unique_ptr<IMediaPipeline::MediaSegment>> segments(dataCountToPush);
+    std::generate(segments.begin(), segments.end(),
+                  [&]() { return SegmentBuilder().basicAudioSegment(m_audioSourceId)(); });
+    std::vector<GstBuffer> buffers(dataCountToPush);
+    std::vector<GstCaps> copies(dataCountToPush);
+
+    // Next, create frame writer
+    ASSERT_TRUE(m_lastAudioNeedData);
+    std::shared_ptr<MediaPlayerShmInfo> shmInfo{
+        std::make_shared<MediaPlayerShmInfo>(MediaPlayerShmInfo{m_lastAudioNeedData->shm_info().max_metadata_bytes(),
+                                                                m_lastAudioNeedData->shm_info().metadata_offset(),
+                                                                m_lastAudioNeedData->shm_info().media_data_offset(),
+                                                                m_lastAudioNeedData->shm_info().max_media_bytes()})};
+    auto writer{common::IMediaFrameWriterFactory::getFactory()->createFrameWriter(m_shmHandle.getShm(), shmInfo)};
+
+    // Write frames to shm and add gst expects
+    for (unsigned i = 0; i < dataCountToPush; ++i)
+    {
+        EXPECT_EQ(writer->writeFrame(segments[i]), AddSegmentStatus::OK);
+        willPushAudioData(segments[i], buffers[i], copies[i]);
+    }
+
+    // Finally, send HaveData with EOS status
+    auto haveDataReq{createHaveDataRequest(m_sessionId, writer->getNumFrames(), m_lastAudioNeedData->request_id())};
+    haveDataReq.set_status(HaveDataRequest_MediaSourceStatus_EOS);
+    ConfigureAction<HaveData>(m_clientStub).send(haveDataReq).expectSuccess();
+}
+
+void MediaPipelineTest::eosVideo(unsigned dataCountToPush)
+{
+    // First, generate new data
+    std::vector<std::unique_ptr<IMediaPipeline::MediaSegment>> segments(dataCountToPush);
+    std::generate(segments.begin(), segments.end(),
+                  [&]() { return SegmentBuilder().basicVideoSegment(m_videoSourceId)(); });
+    std::vector<GstBuffer> buffers(dataCountToPush);
+    std::vector<GstCaps> copies(dataCountToPush);
+
+    // Next, create frame writer
+    ASSERT_TRUE(m_lastVideoNeedData);
+    std::shared_ptr<MediaPlayerShmInfo> shmInfo{
+        std::make_shared<MediaPlayerShmInfo>(MediaPlayerShmInfo{m_lastVideoNeedData->shm_info().max_metadata_bytes(),
+                                                                m_lastVideoNeedData->shm_info().metadata_offset(),
+                                                                m_lastVideoNeedData->shm_info().media_data_offset(),
+                                                                m_lastVideoNeedData->shm_info().max_media_bytes()})};
+    auto writer{common::IMediaFrameWriterFactory::getFactory()->createFrameWriter(m_shmHandle.getShm(), shmInfo)};
+
+    // Write frames to shm and add gst expects
+    for (unsigned i = 0; i < dataCountToPush; ++i)
+    {
+        EXPECT_EQ(writer->writeFrame(segments[i]), AddSegmentStatus::OK);
+        willPushVideoData(segments[i], buffers[i], copies[i]);
+    }
+
+    // Finally, send HaveData and receive new NeedData
+    ExpectMessage<firebolt::rialto::NeedMediaDataEvent> expectedNeedData{m_clientStub};
+    auto haveDataReq{createHaveDataRequest(m_sessionId, writer->getNumFrames(), m_lastVideoNeedData->request_id())};
+    haveDataReq.set_status(HaveDataRequest_MediaSourceStatus_EOS);
+    ConfigureAction<HaveData>(m_clientStub).send(haveDataReq).expectSuccess();
+}
+
 void MediaPipelineTest::play()
 {
     auto playReq{createPlayRequest(m_sessionId)};
@@ -416,6 +500,25 @@ void MediaPipelineTest::play()
     ASSERT_TRUE(receivedPlaybackStateChange);
     EXPECT_EQ(receivedPlaybackStateChange->session_id(), m_sessionId);
     EXPECT_EQ(receivedPlaybackStateChange->state(), ::firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_PLAYING);
+}
+
+void MediaPipelineTest::gstNotifyEos()
+{
+    ExpectMessage<firebolt::rialto::PlaybackStateChangeEvent> expectedPlaybackStateChange{m_clientStub};
+
+    m_gstreamerStub.sendEos();
+
+    auto receivedPlaybackStateChange{expectedPlaybackStateChange.getMessage()};
+    ASSERT_TRUE(receivedPlaybackStateChange);
+    EXPECT_EQ(receivedPlaybackStateChange->session_id(), m_sessionId);
+    EXPECT_EQ(receivedPlaybackStateChange->state(),
+              ::firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_END_OF_STREAM);
+}
+
+void MediaPipelineTest::removeSource(int sourceId)
+{
+    auto removeSourceReq{createRemoveSourceRequest(m_sessionId, sourceId)};
+    ConfigureAction<RemoveSource>(m_clientStub).send(removeSourceReq).expectSuccess();
 }
 
 void MediaPipelineTest::initShm()

@@ -45,6 +45,8 @@ public:
     void willFinishSetupAndAddSource();
     void willPause();
     void willPlay();
+    void willEos(GstAppSrc *appSrc);
+    void willRemoveAudioSource();
 
     void createSession();
     void load();
@@ -57,6 +59,10 @@ public:
     void pushAudioData(unsigned dataCountToPush, int needDataFrameCount);
     void pushVideoData(unsigned dataCountToPush, int needDataFrameCount);
     void play();
+    void eosAudio(unsigned dataCountToPush);
+    void eosVideo(unsigned dataCountToPush);
+    void gstNotifyEos();
+    void removeSource(int sourceId);
 
 private:
     void initShm();
@@ -90,6 +96,8 @@ protected:
     std::string m_sourceName{"src_0"};
     GstPad m_pad{};
     GstPad m_ghostPad{};
+    GstEvent m_flushStartEvent{};
+    GstEvent m_flushStopEvent{};
     std::shared_ptr<::firebolt::rialto::NeedMediaDataEvent> m_lastAudioNeedData{nullptr};
     std::shared_ptr<::firebolt::rialto::NeedMediaDataEvent> m_lastVideoNeedData{nullptr};
 };

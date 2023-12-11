@@ -39,6 +39,7 @@ namespace firebolt::rialto::server::ct
 ::firebolt::rialto::HaveDataRequest createHaveDataRequest(int sessionId, unsigned numOfFrames, unsigned requestId);
 ::firebolt::rialto::PauseRequest createPauseRequest(int sessionId);
 ::firebolt::rialto::PlayRequest createPlayRequest(int sessionId);
+::firebolt::rialto::RemoveSourceRequest createRemoveSourceRequest(int sessionId, int sourceId);
 
 // media keys module
 ::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequest();

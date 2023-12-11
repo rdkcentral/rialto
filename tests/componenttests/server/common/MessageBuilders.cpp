@@ -125,6 +125,14 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
+::firebolt::rialto::RemoveSourceRequest createRemoveSourceRequest(int sessionId, int sourceId)
+{
+    ::firebolt::rialto::RemoveSourceRequest request;
+    request.set_session_id(sessionId);
+    request.set_source_id(sourceId);
+    return request;
+}
+
 ::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequest()
 {
     ::firebolt::rialto::CreateMediaKeysRequest request;
