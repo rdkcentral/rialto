@@ -23,7 +23,7 @@ add_gtests (
         # gtest code
         sessionServerStateChange/SessionServerStateChangeTest.cpp
         mediaPipeline/CreatePipelineTest.cpp
-        mediaPipeline/FailuresTests.cpp
+        mediaPipeline/FailureTests.cpp
         mediaPipeline/PlaybackTest.cpp
         mediaPipeline/SourceTest.cpp
         mediaKeys/MediaKeysTest.cpp
