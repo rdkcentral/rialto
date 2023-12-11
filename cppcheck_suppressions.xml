@@ -31,6 +31,18 @@
         <symbolName>rialto_mse_add_protection_metadata</symbolName>
     </suppress>
     <suppress>
+        <id>ctuOneDefinitionRuleViolation</id>
+        <fileName>tests/unittests/media/client/main/mediaPipeline/base/MediaPipelineTestBase.h</fileName>
+    </suppress>
+    <suppress>
+        <id>ctuOneDefinitionRuleViolation</id>
+        <fileName>tests/unittests/media/client/main/webAudioPlayer/base/WebAudioPlayerTestBase.h</fileName>
+    </suppress>
+    <suppress>
+        <id>ctuOneDefinitionRuleViolation</id>
+        <fileName>tests/unittests/media/client/main/mediaPipelineCapabilities/MediaPipelineCapabilitiesTest.cpp</fileName>
+    </suppress>
+    <suppress>
         <id>unassignedVariable</id>
         <fileName>serverManager/service/source/ConfigHelper.cpp</fileName>
     </suppress>
