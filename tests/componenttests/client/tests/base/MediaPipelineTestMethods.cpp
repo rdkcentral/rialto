@@ -54,6 +54,8 @@ constexpr int64_t kDuration = 1;
 firebolt::rialto::Fraction kFrameRate = {1, 1};
 } // namespace
 
+namespace firebolt::rialto::client::ct
+{
 MediaPipelineTestMethods::MediaPipelineTestMethods(const MediaPlayerShmInfo &audioShmInfo,
                                                    const MediaPlayerShmInfo &videoShmInfo)
     : m_mediaPipelineClientMock{std::make_shared<StrictMock<MediaPipelineClientMock>>()},
@@ -686,3 +688,4 @@ void MediaPipelineTestMethods::endAudioVideoMediaSession()
     MediaPipelineTestMethods::shouldDestroyMediaSession();
     MediaPipelineTestMethods::destroyMediaPipeline();
 }
+} // namespace firebolt::rialto::client::ct
