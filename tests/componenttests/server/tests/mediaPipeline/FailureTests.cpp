@@ -30,7 +30,7 @@ namespace firebolt::rialto::server::ct
  *  Test the gstreamer pipeline is not created when LoadRequest with invalid session id is sent
  *
  * Sequence Diagrams:
- *  Create, Destroy - https://wiki.rdkcentral.com/display/ASP/Rialto+MSE+Misc+Sequence+Diagrams
+ *  Create, Destroy - https://wiki.rdkcentral.com/pages/viewpage.action?pageId=226375556
  *
  * Test Setup:
  *  Language: C++

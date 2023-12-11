@@ -24,10 +24,10 @@ namespace firebolt::rialto::server::ct
 /*
  * Component Test: Attach/Remove Source Sequence
  * Test Objective:
- *  Test the audio and video sources can be successfully created and removed
+ *  Test the audio source can be successfully attached and removed
  *
  * Sequence Diagrams:
- *  Create, Destroy - https://wiki.rdkcentral.com/display/ASP/Rialto+MSE+Misc+Sequence+Diagrams
+ *  Create, Destroy - https://wiki.rdkcentral.com/pages/viewpage.action?pageId=226375556
  *
  * Test Setup:
  *  Language: C++
@@ -114,7 +114,7 @@ TEST_F(MediaPipelineTest, shouldAttachAudioSourceOnly)
 /*
  * Component Test: Attach/Remove Source Sequence
  * Test Objective:
- *  Test the audio and video sources can be successfully created and removed
+ *  Test the audio and video sources can be successfully attached and removed
  *
  * Sequence Diagrams:
  *  Create, Destroy - https://wiki.rdkcentral.com/display/ASP/Rialto+MSE+Misc+Sequence+Diagrams
