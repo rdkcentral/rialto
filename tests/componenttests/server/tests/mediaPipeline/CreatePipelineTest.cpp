@@ -21,8 +21,49 @@
 
 namespace firebolt::rialto::server::ct
 {
+/*
+ * Component Test: Create Media Pipeline Sequence
+ * Test Objective:
+ *  Test the media pipeline can be successfully created and destroyed
+ *
+ * Sequence Diagrams:
+ *  Create, Destroy - https://wiki.rdkcentral.com/display/ASP/Rialto+MSE+Misc+Sequence+Diagrams
+ *
+ * Test Setup:
+ *  Language: C++
+ *  Testing Framework: Google Test
+ *  Components: MediaPipeline
+ *
+ * Test Initialize:
+ *  Set Rialto Server to Active
+ *  Connect Rialto Client Stub
+ *  Map Shared Memory
+ *
+ * Test Steps:
+ *  Step 1: Create a new media session
+ *   Send CreateSessionRequest to Rialto Server
+ *   Expect that successful CreateSessionResponse is received
+ *   Save returned session id
+ *
+ *  Step 2: Destroy media session
+ *   Send DestroySessionRequest.
+ *   Expect that the session is destroyed on the server.
+ *
+ * Test Teardown:
+ *  Memory region created for the shared buffer is unmapped.
+ *  Server is terminated.
+ *
+ * Expected Results:
+ *  All API calls are handled by the server.
+ *
+ * Code:
+ */
 TEST_F(MediaPipelineTest, shouldCreatePipeline)
 {
+    // Step 1: Create a new media session
     createSession();
+
+    // Step 2: Destroy media session
+    destroySession();
 }
 } // namespace firebolt::rialto::server::ct
