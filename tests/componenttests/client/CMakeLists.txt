@@ -47,6 +47,10 @@ add_gtests (
 
         # MSE Component tests
         tests/mse/AudioVideoPlaybackSequenceTest.cpp
+        tests/mse/AudioVideoPlaybackWriteSegmentsTest.cpp
+        tests/mse/PlayPauseStopFailuresTest.cpp
+        tests/mse/SetPlaybackRateTest.cpp
+        tests/mse/SetPositionTest.cpp
         tests/mse/SingleSourcePlaybackTest.cpp
         )
 

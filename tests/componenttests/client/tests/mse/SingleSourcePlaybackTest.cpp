@@ -108,8 +108,8 @@ public:
  *
  * Expected Results:
  *  All API calls are propagated to the server.
- *  The state of the MediaPipeline is successfully negotiationed in the audio only playback scenario.
- *  Data is successfully written to the shared memory for both audio.
+ *  The state of the MediaPipeline is successfully negotiationed in the video only playback scenario.
+ *  Data is successfully written to the shared memory.
  *
  * Code:
  */
@@ -242,7 +242,7 @@ TEST_F(SingleSourcePlaybackTest, audioOnly)
  *
  * Expected Results:
  *  All API calls are propagated to the server.
- *  The state of the MediaPipeline is successfully negotiationed in the audio only playback scenario.
+ *  The state of the MediaPipeline is successfully negotiationed in the video only playback scenario.
  *  Data is successfully written to the shared memory.
  *
  * Code:
