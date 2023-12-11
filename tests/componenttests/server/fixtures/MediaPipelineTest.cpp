@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-#include "MediaPipelineTestFixture.h"
+#include "MediaPipelineTest.h"
 #include "ActionTraits.h"
 #include "ConfigureAction.h"
 #include "Constants.h"

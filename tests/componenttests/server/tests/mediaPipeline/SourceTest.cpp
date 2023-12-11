@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-#include "MediaPipelineTestFixture.h"
+#include "MediaPipelineTest.h"
 
 namespace firebolt::rialto::server::ct
 {

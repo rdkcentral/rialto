@@ -18,7 +18,7 @@
  */
 
 #include "ExpectMessage.h"
-#include "MediaPipelineTestFixture.h"
+#include "MediaPipelineTest.h"
 
 namespace
 {

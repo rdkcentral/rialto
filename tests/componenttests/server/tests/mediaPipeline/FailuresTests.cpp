@@ -19,7 +19,7 @@
 
 #include "ActionTraits.h"
 #include "ConfigureAction.h"
-#include "MediaPipelineTestFixture.h"
+#include "MediaPipelineTest.h"
 #include "MessageBuilders.h"
 
 namespace firebolt::rialto::server::ct

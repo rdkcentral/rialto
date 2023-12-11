@@ -24,7 +24,7 @@ add_library (
         RialtoServerComponentTestsFixtures
         STATIC
         RialtoServerComponentTest.cpp
-        MediaPipelineTestFixture.cpp
+        MediaPipelineTest.cpp
 )
 
 set_property (
