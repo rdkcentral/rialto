@@ -38,7 +38,7 @@ namespace firebolt::rialto::server::ct
 
     ::rialto::SetConfigurationRequest request;
     request.set_sessionmanagementsocketname(kSocketName);
-    request.set_clientdisplayname("kDisplayName");
+    request.set_clientdisplayname(kDisplayName);
     request.mutable_resources()->set_maxplaybacks(kMaxPlaybacks);
     request.mutable_resources()->set_maxwebaudioplayers(kMaxPlaybacks);
     request.set_socketpermissions(kDefaultPermissions);
