@@ -77,7 +77,7 @@ protected:
     void shouldHaveDataBeforePreroll();
     void shouldNotifyNetworkStateBuffered();
     void shouldNotifyPlaybackStatePaused();
-    void shouldNotifyPlaybackStatePlay();
+    void shouldNotifyPlaybackStatePlaying();
     void shouldPlay();
     void shouldNotifyNeedDataAudioAfterPreroll();
     void shouldNotifyNeedDataVideoAfterPreroll();
@@ -115,7 +115,7 @@ protected:
     void sendNotifyNeedDataVideoBeforePreroll();
     void sendNotifyNetworkStateBuffered();
     void sendNotifyPlaybackStatePaused();
-    void sendNotifyPlaybackStatePlay();
+    void sendNotifyPlaybackStatePlaying();
     void sendNotifyNeedDataAudioAfterPreroll();
     void sendNotifyNeedDataVideoAfterPreroll();
     void sendNotifyPlaybackStateEndOfStream();
@@ -128,6 +128,8 @@ protected:
     // Helper methods
     void startAudioVideoMediaSessionWaitForPreroll();
     void endAudioVideoMediaSession();
+    void writeAudioFrames();
+    void writeVideoFrames();
 
     virtual void notifyEvent() = 0;
     virtual void waitEvent() = 0;

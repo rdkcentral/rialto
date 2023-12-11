@@ -466,13 +466,13 @@ void MediaPipelineTestMethods::sendNotifyPlaybackStatePaused()
     waitEvent();
 }
 
-void MediaPipelineTestMethods::shouldNotifyPlaybackStatePlay()
+void MediaPipelineTestMethods::shouldNotifyPlaybackStatePlaying()
 {
     EXPECT_CALL(*m_mediaPipelineClientMock, notifyPlaybackState(PlaybackState::PLAYING))
         .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
 }
 
-void MediaPipelineTestMethods::sendNotifyPlaybackStatePlay()
+void MediaPipelineTestMethods::sendNotifyPlaybackStatePlaying()
 {
     getServerStub()->notifyPlaybackStateChangeEvent(kSessionId, PlaybackState::PLAYING);
     waitEvent();
@@ -639,6 +639,34 @@ void MediaPipelineTestMethods::shouldDestroyMediaSession()
 void MediaPipelineTestMethods::destroyMediaPipeline()
 {
     m_mediaPipeline.reset();
+}
+
+void MediaPipelineTestMethods::writeAudioFrames()
+{
+    MediaPipelineTestMethods::shouldNotifyNeedDataAudioBeforePreroll();
+    MediaPipelineTestMethods::sendNotifyNeedDataAudioBeforePreroll();
+    uint32_t segmentId = MediaPipelineTestMethods::addSegmentMseAudio();
+    MediaPipelineTestMethods::checkMseAudioSegmentWritten(segmentId);
+    segmentId = MediaPipelineTestMethods::addSegmentMseAudio();
+    MediaPipelineTestMethods::checkMseAudioSegmentWritten(segmentId);
+    segmentId = MediaPipelineTestMethods::addSegmentMseAudio();
+    MediaPipelineTestMethods::checkMseAudioSegmentWritten(segmentId);
+    MediaPipelineTestMethods::shouldHaveDataBeforePreroll();
+    MediaPipelineTestMethods::haveDataOk();
+}
+
+void MediaPipelineTestMethods::writeVideoFrames()
+{
+    MediaPipelineTestMethods::shouldNotifyNeedDataVideoBeforePreroll();
+    MediaPipelineTestMethods::sendNotifyNeedDataVideoBeforePreroll();
+    uint32_t segmentId = MediaPipelineTestMethods::addSegmentMseVideo();
+    MediaPipelineTestMethods::checkMseVideoSegmentWritten(segmentId);
+    segmentId = MediaPipelineTestMethods::addSegmentMseVideo();
+    MediaPipelineTestMethods::checkMseVideoSegmentWritten(segmentId);
+    segmentId = MediaPipelineTestMethods::addSegmentMseVideo();
+    MediaPipelineTestMethods::checkMseVideoSegmentWritten(segmentId);
+    MediaPipelineTestMethods::shouldHaveDataBeforePreroll();
+    MediaPipelineTestMethods::haveDataOk();
 }
 
 void MediaPipelineTestMethods::startAudioVideoMediaSessionWaitForPreroll()

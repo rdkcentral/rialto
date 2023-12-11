@@ -206,8 +206,8 @@ TEST_F(AudioVideoPlaybackWriteSegmentsTest, playback)
     // Step 6: Play
     MediaPipelineTestMethods::shouldPlay();
     MediaPipelineTestMethods::play();
-    MediaPipelineTestMethods::shouldNotifyPlaybackStatePlay();
-    MediaPipelineTestMethods::sendNotifyPlaybackStatePlay();
+    MediaPipelineTestMethods::shouldNotifyPlaybackStatePlaying();
+    MediaPipelineTestMethods::sendNotifyPlaybackStatePlaying();
 
     // Step 7: Write 20 audio frames
     MediaPipelineTestMethods::shouldNotifyNeedDataAudioAfterPreroll();

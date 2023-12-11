@@ -47,6 +47,7 @@ add_gtests (
 
         # MSE Component tests
         tests/mse/AudioVideoPlaybackSequenceTest.cpp
+        tests/mse/SingleSourcePlaybackTest.cpp
         )
 
 add_subdirectory(mocks)
