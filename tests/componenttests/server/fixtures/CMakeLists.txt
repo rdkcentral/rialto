@@ -24,6 +24,7 @@ add_library (
         RialtoServerComponentTestsFixtures
         STATIC
         RialtoServerComponentTest.cpp
+        MediaPipelineTestFixture.cpp
 )
 
 set_property (
@@ -43,6 +44,8 @@ target_include_directories (
         $<TARGET_PROPERTY:RialtoServerService,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoPlayerPublic,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoWrappers,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoPlayerCommon,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoServerGstPlayer,INCLUDE_DIRECTORIES> # For GstRialtoSrc
         ${GStreamerApp_INCLUDE_DIRS}
 
         PRIVATE
@@ -55,6 +58,7 @@ target_link_libraries (
         RialtoServerComponentTestsCommon
         RialtoServerComponentTestsStubs
         RialtoServerService
+        RialtoPlayerCommon
         GoogleTest::gtest
         GoogleTest::gmock
 )
