@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_MEDIA_PIPELINE_TEST_METHODS_H_
-#define FIREBOLT_RIALTO_MEDIA_PIPELINE_TEST_METHODS_H_
+#ifndef FIREBOLT_RIALTO_CLIENT_CT_MEDIA_PIPELINE_TEST_METHODS_H_
+#define FIREBOLT_RIALTO_CLIENT_CT_MEDIA_PIPELINE_TEST_METHODS_H_
 
 #include "IMediaPipeline.h"
 #include "MediaPipelineClientMock.h"
@@ -39,7 +39,6 @@ using ::testing::StrictMock;
 using ::testing::WithArgs;
 
 using namespace firebolt::rialto;
-using namespace firebolt::rialto::ct::stub;
 
 // Forward declare metadata so we dont have to include proto file
 namespace firebolt::rialto
@@ -47,6 +46,8 @@ namespace firebolt::rialto
 class MediaSegmentMetadata;
 };
 
+namespace firebolt::rialto::client::ct
+{
 class MediaPipelineTestMethods
 {
 public:
@@ -161,5 +162,6 @@ private:
     void checkHasNoExtraData(const MediaSegmentMetadata &metadata);
     void checkSegmentData(const MediaSegmentMetadata &metadata, uint8_t *dataPtr, const std::string &expectedSegmentData);
 };
+} // namespace firebolt::rialto::client::ct
 
-#endif // FIREBOLT_RIALTO_MEDIA_PIPELINE_TEST_METHODS_H_
+#endif // FIREBOLT_RIALTO_CLIENT_CT_MEDIA_PIPELINE_TEST_METHODS_H_

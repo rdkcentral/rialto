@@ -17,15 +17,15 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_CT_STUB_CONTROL_MODULE_STUB_H_
-#define FIREBOLT_RIALTO_CT_STUB_CONTROL_MODULE_STUB_H_
+#ifndef FIREBOLT_RIALTO_CLIENT_CT_CONTROL_MODULE_STUB_H_
+#define FIREBOLT_RIALTO_CLIENT_CT_CONTROL_MODULE_STUB_H_
 
 #include "ControlCommon.h"
 #include "IIpcServer.h"
 #include "controlmodule.pb.h"
 #include <memory>
 
-namespace firebolt::rialto::ct::stub
+namespace firebolt::rialto::client::ct
 {
 class ControlModuleStub
 {
@@ -42,6 +42,6 @@ public:
 protected:
     std::shared_ptr<::firebolt::rialto::ControlModule> m_controlModuleMock;
 };
-} // namespace firebolt::rialto::ct::stub
+} // namespace firebolt::rialto::client::ct
 
-#endif // FIREBOLT_RIALTO_CT_STUB_CONTROL_MODULE_STUB_H_
+#endif // FIREBOLT_RIALTO_CLIENT_CT_CONTROL_MODULE_STUB_H_

@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef CONTROL_TEST_METHODS_H_
-#define CONTROL_TEST_METHODS_H_
+#ifndef FIREBOLT_RIALTO_CLIENT_CT_CONTROL_TEST_METHODS_H_
+#define FIREBOLT_RIALTO_CLIENT_CT_CONTROL_TEST_METHODS_H_
 
 #include "ControlClientMock.h"
 #include "ControlModuleMock.h"
@@ -36,8 +36,9 @@ using ::testing::StrictMock;
 using ::testing::WithArgs;
 
 using namespace firebolt::rialto;
-using namespace firebolt::rialto::ct::stub;
 
+namespace firebolt::rialto::client::ct
+{
 class ControlTestMethods
 {
 public:
@@ -72,5 +73,6 @@ protected:
     virtual void *getShmAddress() = 0;
     virtual uint32_t getShmSize() = 0;
 };
+} // namespace firebolt::rialto::client::ct
 
-#endif // CONTROL_TEST_METHODS_H_
+#endif // FIREBOLT_RIALTO_CLIENT_CT_CONTROL_TEST_METHODS_H_
