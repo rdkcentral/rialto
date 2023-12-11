@@ -17,11 +17,8 @@
  * limitations under the License.
  */
 
-#include "ActionTraits.h"
-#include "ConfigureAction.h"
 #include "ExpectMessage.h"
 #include "MediaPipelineTestFixture.h"
-#include "MessageBuilders.h"
 
 namespace
 {
@@ -32,60 +29,6 @@ constexpr int kFrameCountInPlayingState{24};
 
 namespace firebolt::rialto::server::ct
 {
-TEST_F(MediaPipelineTest, shouldCreatePipeline)
-{
-    createSession();
-}
-
-TEST_F(MediaPipelineTest, shouldFailToLoadWhenSessionIdIsWrong)
-{
-    createSession();
-    auto request = createLoadRequest(m_sessionId + 1);
-    ConfigureAction<Load>(m_clientStub).send(request).expectFailure();
-}
-
-TEST_F(MediaPipelineTest, shouldAttachAudioSourceOnly)
-{
-    createSession();
-    gstPlayerWillBeCreated();
-    load();
-    audioSourceWillBeAttached();
-    attachAudioSource();
-    sourceWillBeSetup();
-    setupSource();
-    willSetupAndAddSource(&m_audioAppSrc);
-    willFinishSetupAndAddSource();
-    indicateAllSourcesAttached();
-    willRemoveAudioSource();
-    removeSource(m_audioSourceId);
-    willStop();
-    stop();
-    gstPlayerWillBeDestructed();
-}
-
-TEST_F(MediaPipelineTest, shouldAttachBothSources)
-{
-    createSession();
-    gstPlayerWillBeCreated();
-    load();
-    audioSourceWillBeAttached();
-    attachAudioSource();
-    videoSourceWillBeAttached();
-    attachVideoSource();
-    sourceWillBeSetup();
-    setupSource();
-    willSetupAndAddSource(&m_audioAppSrc);
-    willSetupAndAddSource(&m_videoAppSrc);
-    willFinishSetupAndAddSource();
-    indicateAllSourcesAttached();
-    willRemoveAudioSource();
-    removeSource(m_audioSourceId);
-    removeSource(m_videoSourceId);
-    willStop();
-    stop();
-    gstPlayerWillBeDestructed();
-}
-
 TEST_F(MediaPipelineTest, playback)
 {
     createSession();
