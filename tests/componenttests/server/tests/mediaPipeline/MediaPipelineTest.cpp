@@ -119,6 +119,9 @@ TEST_F(MediaPipelineTest, playback)
     willRemoveAudioSource();
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
+    willStop();
+    stop();
     gstPlayerWillBeDestructed();
+    destroySession();
 }
 } // namespace firebolt::rialto::server::ct

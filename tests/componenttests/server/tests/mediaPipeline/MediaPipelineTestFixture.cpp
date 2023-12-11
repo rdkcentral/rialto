@@ -261,6 +261,12 @@ void MediaPipelineTest::willRemoveAudioSource()
         .WillOnce(Return(TRUE));
 }
 
+void MediaPipelineTest::willStop()
+{
+    EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&m_pipeline, GST_STATE_NULL))
+        .WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
+}
+
 void MediaPipelineTest::createSession()
 {
     // Use matchResponse to store session id
@@ -519,6 +525,18 @@ void MediaPipelineTest::removeSource(int sourceId)
 {
     auto removeSourceReq{createRemoveSourceRequest(m_sessionId, sourceId)};
     ConfigureAction<RemoveSource>(m_clientStub).send(removeSourceReq).expectSuccess();
+}
+
+void MediaPipelineTest::stop()
+{
+    auto stopReq{createStopRequest(m_sessionId)};
+    ConfigureAction<Stop>(m_clientStub).send(stopReq).expectSuccess();
+}
+
+void MediaPipelineTest::destroySession()
+{
+    auto destroySessionReq{createDestroySessionRequest(m_sessionId)};
+    ConfigureAction<DestroySession>(m_clientStub).send(destroySessionReq).expectSuccess();
 }
 
 void MediaPipelineTest::initShm()

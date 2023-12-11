@@ -47,6 +47,7 @@ public:
     void willPlay();
     void willEos(GstAppSrc *appSrc);
     void willRemoveAudioSource();
+    void willStop();
 
     void createSession();
     void load();
@@ -63,6 +64,8 @@ public:
     void eosVideo(unsigned dataCountToPush);
     void gstNotifyEos();
     void removeSource(int sourceId);
+    void stop();
+    void destroySession();
 
 private:
     void initShm();

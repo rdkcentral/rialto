@@ -119,6 +119,26 @@ struct RemoveSource
     static constexpr FunctionType m_kFunction{&Stub::removeSource};
 };
 
+struct Stop
+{
+    using RequestType = ::firebolt::rialto::StopRequest;
+    using ResponseType = ::firebolt::rialto::StopResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::stop};
+};
+
+struct DestroySession
+{
+    using RequestType = ::firebolt::rialto::DestroySessionRequest;
+    using ResponseType = ::firebolt::rialto::DestroySessionResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::destroySession};
+};
+
 // mediakeys module
 struct CreateMediaKeys
 {

@@ -133,6 +133,20 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
+::firebolt::rialto::StopRequest createStopRequest(int sessionId)
+{
+    ::firebolt::rialto::StopRequest request;
+    request.set_session_id(sessionId);
+    return request;
+}
+
+::firebolt::rialto::DestroySessionRequest createDestroySessionRequest(int sessionId)
+{
+    ::firebolt::rialto::DestroySessionRequest request;
+    request.set_session_id(sessionId);
+    return request;
+}
+
 ::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequest()
 {
     ::firebolt::rialto::CreateMediaKeysRequest request;
