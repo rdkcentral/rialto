@@ -56,6 +56,10 @@ TEST_F(MediaPipelineTest, shouldAttachAudioSourceOnly)
     willSetupAndAddSource(&m_audioAppSrc);
     willFinishSetupAndAddSource();
     indicateAllSourcesAttached();
+    willRemoveAudioSource();
+    removeSource(m_audioSourceId);
+    willStop();
+    stop();
     gstPlayerWillBeDestructed();
 }
 
@@ -74,6 +78,11 @@ TEST_F(MediaPipelineTest, shouldAttachBothSources)
     willSetupAndAddSource(&m_videoAppSrc);
     willFinishSetupAndAddSource();
     indicateAllSourcesAttached();
+    willRemoveAudioSource();
+    removeSource(m_audioSourceId);
+    removeSource(m_videoSourceId);
+    willStop();
+    stop();
     gstPlayerWillBeDestructed();
 }
 

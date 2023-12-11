@@ -89,17 +89,11 @@ void MediaPipelineTest::gstPlayerWillBeCreated()
 
 void MediaPipelineTest::gstPlayerWillBeDestructed()
 {
-    EXPECT_CALL(*m_gstWrapperMock, gstMessageParseStateChanged(_, _, _, _))
-        .WillRepeatedly(DoAll(SetArgPointee<1>(GST_STATE_NULL), SetArgPointee<2>(GST_STATE_NULL),
-                              SetArgPointee<3>(GST_STATE_NULL)));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementStateGetName(GST_STATE_NULL)).WillRepeatedly(Return(kNullStateName.c_str()));
-    EXPECT_CALL(*m_gstWrapperMock, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
-    m_gstreamerStub.sendStateChanged(GST_STATE_NULL, GST_STATE_NULL, GST_STATE_NULL);
     EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&m_pipeline, GST_STATE_NULL))
         .WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
     EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(&m_pipeline))).WillOnce(Return(&m_bus));
     EXPECT_CALL(*m_gstWrapperMock, gstBusSetSyncHandler(&m_bus, nullptr, nullptr, nullptr));
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus)).Times(2);
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_pipeline));
 }
 
@@ -265,6 +259,12 @@ void MediaPipelineTest::willStop()
 {
     EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&m_pipeline, GST_STATE_NULL))
         .WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
+    EXPECT_CALL(*m_gstWrapperMock, gstMessageParseStateChanged(_, _, _, _))
+        .WillRepeatedly(DoAll(SetArgPointee<1>(GST_STATE_NULL), SetArgPointee<2>(GST_STATE_NULL),
+                              SetArgPointee<3>(GST_STATE_NULL)));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementStateGetName(GST_STATE_NULL)).WillRepeatedly(Return(kNullStateName.c_str()));
+    EXPECT_CALL(*m_gstWrapperMock, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus));
 }
 
 void MediaPipelineTest::createSession()
@@ -531,6 +531,15 @@ void MediaPipelineTest::stop()
 {
     auto stopReq{createStopRequest(m_sessionId)};
     ConfigureAction<Stop>(m_clientStub).send(stopReq).expectSuccess();
+
+    ExpectMessage<firebolt::rialto::PlaybackStateChangeEvent> expectedPlaybackStateChange{m_clientStub};
+
+    m_gstreamerStub.sendStateChanged(GST_STATE_NULL, GST_STATE_NULL, GST_STATE_NULL);
+
+    auto receivedPlaybackStateChange{expectedPlaybackStateChange.getMessage()};
+    ASSERT_TRUE(receivedPlaybackStateChange);
+    EXPECT_EQ(receivedPlaybackStateChange->session_id(), m_sessionId);
+    EXPECT_EQ(receivedPlaybackStateChange->state(), ::firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_STOPPED);
 }
 
 void MediaPipelineTest::destroySession()
