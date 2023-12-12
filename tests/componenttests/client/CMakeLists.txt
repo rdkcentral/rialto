@@ -52,6 +52,7 @@ add_gtests (
         tests/mse/SetPlaybackRateTest.cpp
         tests/mse/SetPositionTest.cpp
         tests/mse/SingleSourcePlaybackTest.cpp
+        tests/mse/DualVideoPlaybackTest.cpp
         )
 
 add_subdirectory(mocks)

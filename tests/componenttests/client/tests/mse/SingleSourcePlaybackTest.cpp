@@ -25,8 +25,6 @@ namespace firebolt::rialto::client::ct
 class SingleSourcePlaybackTest : public ClientComponentTest
 {
 public:
-    int32_t m_segmentId{-1};
-
     SingleSourcePlaybackTest() : ClientComponentTest() { ClientComponentTest::startApplicationRunning(); }
 
     ~SingleSourcePlaybackTest() { ClientComponentTest::stopApplication(); }
@@ -35,7 +33,7 @@ public:
 /*
  * Component Test: Audio Only Playback
  * Test Objective:
- *  Test tha playback of single source audio MSE content. Check that all states are transitioned successfully
+ *  Test the playback of single source audio MSE content. Check that all states are transitioned successfully
  *  and data is written to the buffer.
  *
  * Sequence Diagrams:
@@ -169,11 +167,13 @@ TEST_F(SingleSourcePlaybackTest, audioOnly)
 /*
  * Component Test: Video Only Playback
  * Test Objective:
- *  Test tha playback of single source video MSE content. Check that all states are transitioned successfully
+ *  Test the playback of single source video MSE content. Check that all states are transitioned successfully
  *  and data is written to the buffer.
  *
  * Sequence Diagrams:
- *  
+ *  Create, Destroy - https://wiki.rdkcentral.com/pages/viewpage.action?pageId=226375556
+ *  Start/Resume Playback, Pause Playback, Stop
+ *   - https://wiki.rdkcentral.com/display/ASP/Rialto+Playback+Design
  *
  * Test Setup:
  *  Language: C++

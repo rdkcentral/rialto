@@ -51,17 +51,19 @@ namespace firebolt::rialto::client::ct
 class MediaPipelineTestMethods
 {
 public:
-    MediaPipelineTestMethods(const MediaPlayerShmInfo &audioShmInfo, const MediaPlayerShmInfo &videoShmInfo);
+    MediaPipelineTestMethods(const std::vector<firebolt::rialto::MediaPlayerShmInfo> &audioShmInfo, const std::vector<firebolt::rialto::MediaPlayerShmInfo> &videoShmInfo);
     virtual ~MediaPipelineTestMethods();
 
 protected:
     // Strict Mocks
     std::shared_ptr<StrictMock<MediaPipelineClientMock>> m_mediaPipelineClientMock;
     std::shared_ptr<StrictMock<MediaPipelineModuleMock>> m_mediaPipelineModuleMock;
+    std::shared_ptr<StrictMock<MediaPipelineClientMock>> m_mediaPipelineClientSecondaryMock;
 
     // Objects
     std::shared_ptr<IMediaPipelineFactory> m_mediaPipelineFactory;
     std::unique_ptr<IMediaPipeline> m_mediaPipeline;
+    std::unique_ptr<IMediaPipeline> m_mediaPipelineSecondary;
 
     // Expect methods
     void shouldCreateMediaSession();
@@ -101,6 +103,22 @@ protected:
     void shouldSetPositionTo0();
     void shouldNotifyPlaybackStateSeeking();
     void shouldNotifyPlaybackStateFlushed();
+    void shouldCreateMediaSessionSecondary();
+    void shouldRemoveVideoSourceSecondary();
+    void shouldStopSecondary();
+    void shouldNotifyPlaybackStateStoppedSecondary();
+    void shouldDestroyMediaSessionSecondary();
+    void shouldLoadSecondary();
+    void shouldNotifyNetworkStateBufferingSecondary();
+    void shouldAttachVideoSourceSecondary();
+    void shouldAllSourcesAttachedSecondary();
+    void shouldNotifyPlaybackStateIdleSecondary();
+    void shouldNotifyNetworkStateBufferedSecondary();
+    void shouldNotifyPlaybackStatePausedSecondary();
+    void shouldNotifyNeedDataVideoSecondary(uint32_t framesToWrite);
+    void shouldHaveDataSecondary(uint32_t framesToWrite);
+    void shouldPlaySecondary();
+    void shouldNotifyPlaybackStatePlayingSecondary();
 
     // Api methods
     void createMediaPipeline();
@@ -128,6 +146,16 @@ protected:
     void setPosition0();
     void setPositionFailure();
     void addSegmentFailure();
+    void createMediaPipelineSecondary();
+    void removeSourceVideoSecondary();
+    void stopSecondary();
+    void destroyMediaPipelineSecondary();
+    void loadSecondary();
+    void attachSourceVideoSecondary();
+    void allSourcesAttachedSecondary();
+    int32_t addSegmentMseVideoSecondary();
+    void haveDataOkSecondary();
+    void playSecondary();
 
     // Event methods
     void sendNotifyNetworkStateBuffering();
@@ -144,6 +172,13 @@ protected:
     void sendNotifyPlaybackStateFailure();
     void sendNotifyPlaybackStateSeeking();
     void sendNotifyPlaybackStateFlushed();
+    void sendNotifyPlaybackStateStoppedSecondary();
+    void sendNotifyNetworkStateBufferingSecondary();
+    void sendNotifyPlaybackStateIdleSecondary();
+    void sendNotifyNetworkStateBufferedSecondary();
+    void sendNotifyPlaybackStatePausedSecondary();
+    void sendNotifyNeedDataVideoSecondary(uint32_t framesToWrite);
+    void sendNotifyPlaybackStatePlayingSecondary();
 
     // Check methods
     void checkMseAudioSegmentWritten(int32_t segmentId);
@@ -157,6 +192,7 @@ protected:
     void writeVideoFrames();
     void writeAudioEos();
     void writeVideoEos();
+    void writeVideoFramesSecondary();
 
     virtual void notifyEvent() = 0;
     virtual void waitEvent() = 0;
@@ -165,20 +201,20 @@ protected:
 
 private:
     // Const variables
-    const MediaPlayerShmInfo &m_kAudioShmInfo;
-    const MediaPlayerShmInfo &m_kVideoShmInfo;
+    const std::vector<firebolt::rialto::MediaPlayerShmInfo> m_kAudioShmInfo;
+    const std::vector<firebolt::rialto::MediaPlayerShmInfo> m_kVideoShmInfo;
 
     // None const variables
     uint32_t m_needDataRequestId{0};
-    std::shared_ptr<MediaPlayerShmInfo> m_locationToWriteAudio{std::make_shared<MediaPlayerShmInfo>()};
-    std::shared_ptr<MediaPlayerShmInfo> m_locationToWriteVideo{std::make_shared<MediaPlayerShmInfo>()};
+    std::vector<std::shared_ptr<MediaPlayerShmInfo>> m_locationToWriteAudio;
+    std::vector<std::shared_ptr<MediaPlayerShmInfo>> m_locationToWriteVideo;
     uint32_t m_audioSegmentCount{0};
     uint32_t m_videoSegmentCount{0};
     std::map<int32_t, MediaPlayerShmInfo> writtenAudioSegments;
     std::map<int32_t, MediaPlayerShmInfo> writtenVideoSegments;
     bool m_firstSegmentOfNeedData{false};
 
-    void resetWriteLocation(const MediaPlayerShmInfo &audioShmInfo, const MediaPlayerShmInfo &videoShmInfo);
+    void resetWriteLocation(uint32_t partitionId);
     uint32_t getTimestamp(uint32_t segmentId);
     void incrementWriteLocation(uint32_t sizeOfSegmentData, const std::shared_ptr<MediaPlayerShmInfo> &writeLocation);
     void checkAudioMetadata(const MediaSegmentMetadata &metadata, uint32_t segmentId);
