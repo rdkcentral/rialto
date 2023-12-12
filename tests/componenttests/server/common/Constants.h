@@ -33,6 +33,7 @@ constexpr int kHeight{1080};
 constexpr int kNumOfChannels{2};
 constexpr int kSampleRate{48000};
 constexpr firebolt::rialto::Fraction kFrameRate{15, 1};
+constexpr double kPlaybackRate{0.5};
 } // namespace firebolt::rialto::server::ct
 
 #endif // FIREBOLT_RIALTO_SERVER_CT_CONSTANTS_H_

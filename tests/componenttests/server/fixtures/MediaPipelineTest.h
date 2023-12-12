@@ -49,9 +49,6 @@ public:
     void willEos(GstAppSrc *appSrc);
     void willRemoveAudioSource();
     void willStop();
-    void willFailToPause();
-    void willFailToPlay();
-    void willFailToStop();
 
     void createSession();
     void load();
@@ -70,9 +67,6 @@ public:
     void removeSource(int sourceId);
     void stop();
     void destroySession();
-    void pauseAndExpectFailure();
-    void playAndExpectFailure();
-    void stopAndExpectFailure();
 
 private:
     void initShm();

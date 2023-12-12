@@ -148,6 +148,14 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
+::firebolt::rialto::SetPlaybackRateRequest createSetPlaybackRateRequest(int sessionId)
+{
+    ::firebolt::rialto::SetPlaybackRateRequest request;
+    request.set_session_id(sessionId);
+    request.set_rate(kPlaybackRate);
+    return request;
+}
+
 ::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequest()
 {
     ::firebolt::rialto::CreateMediaKeysRequest request;

@@ -17,8 +17,13 @@
  * limitations under the License.
  */
 
+#include "ActionTraits.h"
+#include "ConfigureAction.h"
 #include "ExpectMessage.h"
 #include "MediaPipelineTest.h"
+#include "MessageBuilders.h"
+
+using testing::Return;
 
 namespace
 {
@@ -28,6 +33,72 @@ constexpr int kFrameCountInPausedState{3};
 
 namespace firebolt::rialto::server::ct
 {
+class PlayPauseStopFailuresTest : public MediaPipelineTest
+{
+public:
+    PlayPauseStopFailuresTest() = default;
+    ~PlayPauseStopFailuresTest() override = default;
+
+    void willFailToPause()
+    {
+        EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&m_pipeline, GST_STATE_PAUSED))
+            .WillOnce(Return(GST_STATE_CHANGE_FAILURE));
+    }
+
+    void willFailToPlay()
+    {
+        EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&m_pipeline, GST_STATE_PLAYING))
+            .WillOnce(Return(GST_STATE_CHANGE_FAILURE));
+    }
+
+    void willFailToStop()
+    {
+        EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&m_pipeline, GST_STATE_NULL))
+            .WillOnce(Return(GST_STATE_CHANGE_FAILURE));
+    }
+
+    void pauseAndExpectFailure()
+    {
+        ExpectMessage<firebolt::rialto::PlaybackStateChangeEvent> expectedPlaybackStateChange{m_clientStub};
+
+        auto pauseReq{createPauseRequest(m_sessionId)};
+        ConfigureAction<Pause>(m_clientStub).send(pauseReq).expectSuccess();
+
+        auto receivedPlaybackStateChange{expectedPlaybackStateChange.getMessage()};
+        ASSERT_TRUE(receivedPlaybackStateChange);
+        EXPECT_EQ(receivedPlaybackStateChange->session_id(), m_sessionId);
+        EXPECT_EQ(receivedPlaybackStateChange->state(),
+                  ::firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_FAILURE);
+    }
+
+    void playAndExpectFailure()
+    {
+        ExpectMessage<firebolt::rialto::PlaybackStateChangeEvent> expectedPlaybackStateChange{m_clientStub};
+
+        auto playReq{createPlayRequest(m_sessionId)};
+        ConfigureAction<Play>(m_clientStub).send(playReq).expectSuccess();
+
+        auto receivedPlaybackStateChange{expectedPlaybackStateChange.getMessage()};
+        ASSERT_TRUE(receivedPlaybackStateChange);
+        EXPECT_EQ(receivedPlaybackStateChange->session_id(), m_sessionId);
+        EXPECT_EQ(receivedPlaybackStateChange->state(),
+                  ::firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_FAILURE);
+    }
+
+    void stopAndExpectFailure()
+    {
+        ExpectMessage<firebolt::rialto::PlaybackStateChangeEvent> expectedPlaybackStateChange{m_clientStub};
+
+        auto stopReq{createStopRequest(m_sessionId)};
+        ConfigureAction<Stop>(m_clientStub).send(stopReq).expectSuccess();
+
+        auto receivedPlaybackStateChange{expectedPlaybackStateChange.getMessage()};
+        ASSERT_TRUE(receivedPlaybackStateChange);
+        EXPECT_EQ(receivedPlaybackStateChange->session_id(), m_sessionId);
+        EXPECT_EQ(receivedPlaybackStateChange->state(),
+                  ::firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_FAILURE);
+    }
+};
 /*
  * Component Test: Pause Api Failure
  * Test Objective:
@@ -92,7 +163,7 @@ namespace firebolt::rialto::server::ct
  *
  * Code:
  */
-TEST_F(MediaPipelineTest, PauseFailure)
+TEST_F(PlayPauseStopFailuresTest, PauseFailure)
 {
     // Step 1: Create a new media session
     createSession();
@@ -117,11 +188,11 @@ TEST_F(MediaPipelineTest, PauseFailure)
     willFailToPause();
     pauseAndExpectFailure();
 
-    // Step 15: Stop
+    // Step 5: Stop
     willStop();
     stop();
 
-    // Step 16: Destroy media session
+    // Step 6: Destroy media session
     gstPlayerWillBeDestructed();
     destroySession();
 }
@@ -190,7 +261,7 @@ TEST_F(MediaPipelineTest, PauseFailure)
  *
  * Code:
  */
-TEST_F(MediaPipelineTest, PlayFailure)
+TEST_F(PlayPauseStopFailuresTest, PlayFailure)
 {
     // Step 1: Create a new media session
     createSession();
@@ -215,11 +286,11 @@ TEST_F(MediaPipelineTest, PlayFailure)
     willFailToPlay();
     playAndExpectFailure();
 
-    // Step 15: Stop
+    // Step 5: Stop
     willStop();
     stop();
 
-    // Step 16: Destroy media session
+    // Step 6: Destroy media session
     gstPlayerWillBeDestructed();
     destroySession();
 }
@@ -288,7 +359,7 @@ TEST_F(MediaPipelineTest, PlayFailure)
  *
  * Code:
  */
-TEST_F(MediaPipelineTest, StopFailure)
+TEST_F(PlayPauseStopFailuresTest, StopFailure)
 {
     // Step 1: Create a new media session
     createSession();
@@ -313,11 +384,11 @@ TEST_F(MediaPipelineTest, StopFailure)
     willFailToStop();
     stopAndExpectFailure();
 
-    // Step 15: Stop
+    // Step 5: Stop
     willStop();
     stop();
 
-    // Step 16: Destroy media session
+    // Step 6: Destroy media session
     gstPlayerWillBeDestructed();
     destroySession();
 }
