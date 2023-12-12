@@ -132,16 +132,24 @@ protected:
     void pause();
     void attachSourceVideo();
     void attachSourceAudio();
+    void attachSourceVideoSecondary();
     void allSourcesAttached();
+    void allSourcesAttachedSecondary();
     int32_t addSegmentMseAudio();
     int32_t addSegmentMseVideo();
+    int32_t addSegmentMseVideoSecondary();
     void haveDataOk();
-    void play();
     void haveDataEos();
+    void haveDataOkSecondary();
+    void play();
+    void playSecondary();
     void removeSourceVideo();
     void removeSourceAudio();
+    void removeSourceVideoSecondary();
     void stop();
+    void stopSecondary();
     void destroyMediaPipeline();
+    void destroyMediaPipelineSecondary();
     void playFailure();
     void pauseFailure();
     void stopFailure();
@@ -152,14 +160,6 @@ protected:
     void setPosition0();
     void setPositionFailure();
     void addSegmentFailure();
-    void removeSourceVideoSecondary();
-    void stopSecondary();
-    void destroyMediaPipelineSecondary();
-    void attachSourceVideoSecondary();
-    void allSourcesAttachedSecondary();
-    int32_t addSegmentMseVideoSecondary();
-    void haveDataOkSecondary();
-    void playSecondary();
 
     // Event methods
     void sendNotifyNetworkStateBuffering();
@@ -233,7 +233,7 @@ private:
     void shouldCreateMediaSessionInternal(const int32_t sessionId, const VideoRequirements &videoRequirements);
     void createMediaPipelineInternal(std::unique_ptr<IMediaPipeline> &mediaPipeline, const std::shared_ptr<StrictMock<MediaPipelineClientMock>> &client, const VideoRequirements &videoRequirements);
     void shouldLoadInternal(const int32_t sessionId, const MediaType &mediaType, const std::string &mimeType, const std::string &url);
-    void shouldRemoveVideoSourceInternal(const int32_t sessionId);
+    void shouldRemoveSourceInternal(const int32_t sessionId, const int32_t sourceId);
     void shouldStopInternal(const int32_t sessionId);
     void shouldPlayInternal(const int32_t sessionId);
     void shouldDestroyMediaSessionInternal(const int32_t sessionId);
@@ -243,6 +243,15 @@ private:
     void shouldNotifyPlaybackState(const std::shared_ptr<StrictMock<MediaPipelineClientMock>> &clientMock, const PlaybackState &state);
     void shouldNotifyNetworkState(const std::shared_ptr<StrictMock<MediaPipelineClientMock>> &clientMock, const NetworkState &state);
     void shouldNotifyNeedDataInternal(const std::shared_ptr<StrictMock<MediaPipelineClientMock>> &clientMock, const int32_t sourceId, const size_t framesToWrite);
+    void loadInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline, const MediaType &mediaType, const std::string &mimeType, const std::string &url, const bool status);
+    void removeSourceInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline, const int32_t sourceId, const bool status);
+    void stopInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline, const bool status);
+    void attachSourceVideoInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline, const std::string &mimeType, bool hasNoDrm, const int32_t width, const int32_t height, const firebolt::rialto::SegmentAlignment &alignment, const std::shared_ptr<firebolt::rialto::CodecData> &codacData, const firebolt::rialto::StreamFormat &streamFormat, const bool status);
+    void allSourcesAttachedInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline, const bool status);
+    int32_t addSegmentMseVideoInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline, const int64_t duration, const int32_t width, const int32_t height, const Fraction &frameRate, const uint32_t partitionId, const AddSegmentStatus &status);
+    void haveDataInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline, const MediaSourceStatus &mediaStatus, const bool status);
+    void playInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline, const bool status);
+
 };
 } // namespace firebolt::rialto::client::ct
 
