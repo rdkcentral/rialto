@@ -223,6 +223,12 @@ public:
                 const char *kVal = va_arg(args, const char *);
                 gstCapsSetSimpleStringStub(caps, kProperty, type, kVal);
             }
+            else if (g_type_is_a(type, GST_TYPE_FRACTION))
+            {
+                int val1 = va_arg(args, int);
+                int val2 = va_arg(args, int);
+                gstCapsSetSimpleFractionStub(caps, kProperty, type, val1, val2);
+            }
             else if (g_type_is_a(type, GST_TYPE_BUFFER))
             {
                 GstBuffer *buf = va_arg(args, GstBuffer *);
@@ -242,12 +248,6 @@ public:
             {
                 uint64_t val = va_arg(args, uint64_t);
                 gstCapsSetSimpleBitMaskStub(caps, kProperty, type, val);
-            }
-            else if (g_type_is_a(type, GST_TYPE_FRACTION))
-            {
-                int val1 = va_arg(args, int);
-                int val2 = va_arg(args, int);
-                gstCapsSetSimpleFractionStub(caps, kProperty, type, val1, val2);
             }
             kProperty = va_arg(args, const gchar *);
         }

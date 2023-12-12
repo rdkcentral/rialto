@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_CT_ACTION_TRAITS_H_
 #define FIREBOLT_RIALTO_SERVER_CT_ACTION_TRAITS_H_
 
+#include "controlmodule.pb.h"
 #include "mediakeysmodule.pb.h"
 #include "mediapipelinemodule.pb.h"
 #include "servermanagermodule.pb.h"
@@ -58,6 +59,86 @@ struct Load
     static constexpr FunctionType m_kFunction{&Stub::load};
 };
 
+struct AttachSource
+{
+    using RequestType = ::firebolt::rialto::AttachSourceRequest;
+    using ResponseType = ::firebolt::rialto::AttachSourceResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::attachSource};
+};
+
+struct AllSourcesAttached
+{
+    using RequestType = ::firebolt::rialto::AllSourcesAttachedRequest;
+    using ResponseType = ::firebolt::rialto::AllSourcesAttachedResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::allSourcesAttached};
+};
+
+struct HaveData
+{
+    using RequestType = ::firebolt::rialto::HaveDataRequest;
+    using ResponseType = ::firebolt::rialto::HaveDataResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::haveData};
+};
+
+struct Pause
+{
+    using RequestType = ::firebolt::rialto::PauseRequest;
+    using ResponseType = ::firebolt::rialto::PauseResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::pause};
+};
+
+struct Play
+{
+    using RequestType = ::firebolt::rialto::PlayRequest;
+    using ResponseType = ::firebolt::rialto::PlayResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::play};
+};
+
+struct RemoveSource
+{
+    using RequestType = ::firebolt::rialto::RemoveSourceRequest;
+    using ResponseType = ::firebolt::rialto::RemoveSourceResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::removeSource};
+};
+
+struct Stop
+{
+    using RequestType = ::firebolt::rialto::StopRequest;
+    using ResponseType = ::firebolt::rialto::StopResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::stop};
+};
+
+struct DestroySession
+{
+    using RequestType = ::firebolt::rialto::DestroySessionRequest;
+    using ResponseType = ::firebolt::rialto::DestroySessionResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::destroySession};
+};
+
 // mediakeys module
 struct CreateMediaKeys
 {
@@ -77,6 +158,17 @@ struct CreateKeySession
     using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
                                         google::protobuf::Closure *);
     static constexpr FunctionType m_kFunction{&Stub::createKeySession};
+};
+
+// control module
+struct GetSharedMemory
+{
+    using RequestType = ::firebolt::rialto::GetSharedMemoryRequest;
+    using ResponseType = ::firebolt::rialto::GetSharedMemoryResponse;
+    using Stub = ::firebolt::rialto::ControlModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::getSharedMemory};
 };
 } // namespace firebolt::rialto::server::ct
 

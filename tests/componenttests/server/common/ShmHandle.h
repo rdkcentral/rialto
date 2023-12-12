@@ -17,26 +17,27 @@
  * limitations under the License.
  */
 
-#ifndef MATCHERS_H_
-#define MATCHERS_H_
+#ifndef FIREBOLT_RIALTO_SERVER_CT_SHM_HANDLE_H_
+#define FIREBOLT_RIALTO_SERVER_CT_SHM_HANDLE_H_
 
-#include <gmock/gmock.h>
-#include <string>
+#include <cstdint>
 
-MATCHER_P(CharStrMatcher, expectedStr, "")
+namespace firebolt::rialto::server::ct
 {
-    std::string actualStr = (const char *)arg;
-    return expectedStr == actualStr;
-}
-
-MATCHER_P2(BufferMatcher, expectedBuffer, expectedLength, "")
+class ShmHandle
 {
-    return memcmp(arg, expectedBuffer, expectedLength) == 0;
-}
+public:
+    ShmHandle() = default;
+    ~ShmHandle();
 
-MATCHER(NotNullMatcher, "")
-{
-    return nullptr != arg;
-}
+    void init(std::int32_t fd, std::uint32_t length);
+    std::uint8_t *getShm() const;
 
-#endif // MATCHERS_H_
+private:
+    std::int32_t m_shmFd{-1};
+    std::uint32_t m_shmBufferLen{0};
+    std::uint8_t *m_shmBuffer{nullptr};
+};
+} // namespace firebolt::rialto::server::ct
+
+#endif // FIREBOLT_RIALTO_SERVER_CT_SHM_HANDLE_H_
