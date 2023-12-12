@@ -189,11 +189,11 @@ void MediaPipelineTest::willPause()
 void MediaPipelineTest::willPushAudioData(const std::unique_ptr<IMediaPipeline::MediaSegment> &segment,
                                           GstBuffer &buffer, GstCaps &capsCopy)
 {
+    std::string dataCopy(segment->getData(), segment->getData() + segment->getDataLength());
     EXPECT_CALL(*m_gstWrapperMock, gstBufferNewAllocate(nullptr, segment->getDataLength(), nullptr))
         .WillOnce(Return(&buffer))
         .RetiresOnSaturation();
-    EXPECT_CALL(*m_gstWrapperMock, gstBufferFill(&buffer, 0, BufferMatcher(segment->getData(), segment->getDataLength()),
-                                                 segment->getDataLength()))
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferFill(&buffer, 0, BufferMatcher(dataCopy), segment->getDataLength()))
         .WillOnce(Return(segment->getDataLength()))
         .RetiresOnSaturation();
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(&m_audioAppSrc)).WillOnce(Return(&m_audioCaps)).RetiresOnSaturation();
@@ -210,11 +210,11 @@ void MediaPipelineTest::willPushAudioData(const std::unique_ptr<IMediaPipeline::
 void MediaPipelineTest::willPushVideoData(const std::unique_ptr<IMediaPipeline::MediaSegment> &segment,
                                           GstBuffer &buffer, GstCaps &capsCopy)
 {
+    std::string dataCopy(segment->getData(), segment->getData() + segment->getDataLength());
     EXPECT_CALL(*m_gstWrapperMock, gstBufferNewAllocate(nullptr, segment->getDataLength(), nullptr))
         .WillOnce(Return(&buffer))
         .RetiresOnSaturation();
-    EXPECT_CALL(*m_gstWrapperMock, gstBufferFill(&buffer, 0, BufferMatcher(segment->getData(), segment->getDataLength()),
-                                                 segment->getDataLength()))
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferFill(&buffer, 0, BufferMatcher(dataCopy), segment->getDataLength()))
         .WillOnce(Return(segment->getDataLength()))
         .RetiresOnSaturation();
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(&m_videoAppSrc)).WillOnce(Return(&m_videoCaps)).RetiresOnSaturation();
