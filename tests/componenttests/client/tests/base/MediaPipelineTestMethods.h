@@ -65,64 +65,68 @@ protected:
     std::unique_ptr<IMediaPipeline> m_mediaPipeline;
     std::unique_ptr<IMediaPipeline> m_mediaPipelineSecondary;
 
-    // Expect methods
+    // MediaPipeline Expect methods
     void shouldCreateMediaSession();
+    void shouldCreateMediaSessionSecondary();
     void shouldLoad();
-    void shouldNotifyNetworkStateBuffering();
+    void shouldLoadSecondary();
     void shouldPause();
     void shouldAttachVideoSource();
+    void shouldAttachVideoSourceSecondary();
     void shouldAttachAudioSource();
     void shouldAllSourcesAttached();
-    void shouldNotifyPlaybackStateIdle();
-    void shouldNotifyNeedDataAudioBeforePreroll();
-    void shouldNotifyNeedDataVideoBeforePreroll();
-    void shouldHaveDataBeforePreroll();
-    void shouldNotifyNetworkStateBuffered();
-    void shouldNotifyPlaybackStatePaused();
-    void shouldNotifyPlaybackStatePlaying();
+    void shouldAllSourcesAttachedSecondary();
     void shouldPlay();
-    void shouldNotifyNeedDataAudioAfterPreroll();
-    void shouldNotifyNeedDataVideoAfterPreroll();
+    void shouldPlaySecondary();
     void shouldHaveDataAfterPreroll();
+    void shouldHaveDataBeforePreroll();
     void shouldHaveDataOk(size_t framesWritten);
     void shouldHaveDataEos(size_t framesWritten);
-    void shouldNotifyPlaybackStateEndOfStream();
+    void shouldHaveDataOkSecondary(size_t framesWritten);
     void shouldRemoveVideoSource();
+    void shouldRemoveVideoSourceSecondary();
     void shouldRemoveAudioSource();
     void shouldStop();
-    void shouldNotifyPlaybackStateStopped();
+    void shouldStopSecondary();
     void shouldDestroyMediaSession();
+    void shouldDestroyMediaSessionSecondary();
     void shouldPlayWithFailure();
     void shouldPauseWithFailure();
     void shouldStopWithFailure();
-    void shouldNotifyPlaybackStateFailure();
     void shouldSetPlaybackRate2x();
     void shouldSetPlaybackRateNegative2x();
     void shouldSetPlaybackRateFailure();
     void shouldSetPositionTo10();
     void shouldSetPositionTo0();
+
+    // MediaPipelineClient Expect methods
+    void shouldNotifyNetworkStateBuffering();
+    void shouldNotifyPlaybackStateIdle();
+    void shouldNotifyNeedDataAudioBeforePreroll();
+    void shouldNotifyNeedDataVideoBeforePreroll();
+    void shouldNotifyNetworkStateBuffered();
+    void shouldNotifyPlaybackStatePaused();
+    void shouldNotifyPlaybackStatePlaying();
+    void shouldNotifyNeedDataAudioAfterPreroll();
+    void shouldNotifyNeedDataVideoAfterPreroll();
+    void shouldNotifyPlaybackStateEndOfStream();
+    void shouldNotifyPlaybackStateStopped();
+    void shouldNotifyPlaybackStateFailure();
     void shouldNotifyPlaybackStateSeeking();
     void shouldNotifyPlaybackStateFlushed();
-    void shouldCreateMediaSessionSecondary();
-    void shouldRemoveVideoSourceSecondary();
-    void shouldStopSecondary();
     void shouldNotifyPlaybackStateStoppedSecondary();
-    void shouldDestroyMediaSessionSecondary();
-    void shouldLoadSecondary();
     void shouldNotifyNetworkStateBufferingSecondary();
-    void shouldAttachVideoSourceSecondary();
-    void shouldAllSourcesAttachedSecondary();
     void shouldNotifyPlaybackStateIdleSecondary();
     void shouldNotifyNetworkStateBufferedSecondary();
     void shouldNotifyPlaybackStatePausedSecondary();
     void shouldNotifyNeedDataVideoSecondary(uint32_t framesToWrite);
-    void shouldHaveDataSecondary(uint32_t framesToWrite);
-    void shouldPlaySecondary();
     void shouldNotifyPlaybackStatePlayingSecondary();
 
     // Api methods
     void createMediaPipeline();
+    void createMediaPipelineSecondary();
     void load();
+    void loadSecondary();
     void pause();
     void attachSourceVideo();
     void attachSourceAudio();
@@ -146,11 +150,9 @@ protected:
     void setPosition0();
     void setPositionFailure();
     void addSegmentFailure();
-    void createMediaPipelineSecondary();
     void removeSourceVideoSecondary();
     void stopSecondary();
     void destroyMediaPipelineSecondary();
-    void loadSecondary();
     void attachSourceVideoSecondary();
     void allSourcesAttachedSecondary();
     int32_t addSegmentMseVideoSecondary();
@@ -226,6 +228,16 @@ private:
     void checkHasNoSegmentAlignment(const MediaSegmentMetadata &metadata);
     void checkHasNoExtraData(const MediaSegmentMetadata &metadata);
     void checkSegmentData(const MediaSegmentMetadata &metadata, uint8_t *dataPtr, const std::string &expectedSegmentData);
+    void shouldCreateMediaSessionInternal(const int32_t sessionId, const VideoRequirements &videoRequirements);
+    void createMediaPipelineInternal(std::unique_ptr<IMediaPipeline> &mediaPipeline, const std::shared_ptr<StrictMock<MediaPipelineClientMock>> &client, const VideoRequirements &videoRequirements);
+    void shouldLoadInternal(const int32_t sessionId, const MediaType &mediaType, const std::string &mimeType, const std::string &url);
+    void shouldRemoveVideoSourceInternal(const int32_t sessionId);
+    void shouldStopInternal(const int32_t sessionId);
+    void shouldPlayInternal(const int32_t sessionId);
+    void shouldDestroyMediaSessionInternal(const int32_t sessionId);
+    void shouldAttachVideoSourceInternal(const int32_t sessionId, const std::string &mimeType, bool hasNoDrm, const int32_t width, const int32_t height, const firebolt::rialto::SegmentAlignment &alignment, const std::shared_ptr<firebolt::rialto::CodecData> &codacData, const firebolt::rialto::StreamFormat &streamFormat);
+    void shouldAllSourcesAttachedInternal(const int32_t sessionId);
+    void shouldHaveDataInternal(const int32_t sessionId, const MediaSourceStatus status, const size_t framesWritten, const uint32_t partition);
 };
 } // namespace firebolt::rialto::client::ct
 
