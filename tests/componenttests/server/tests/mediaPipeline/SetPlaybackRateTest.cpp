@@ -167,4 +167,110 @@ TEST_F(SetPlaybackRateTest, SetPlaybackRate)
     gstPlayerWillBeDestructed();
     destroySession();
 }
+
+/*
+ * Component Test: Set Playback Rate Failure
+ * Test Objective:
+ *  Test that set playback rate fails when session id is wrong.
+ *
+ * Sequence Diagrams:
+ *  Set Playback Rate - https://wiki.rdkcentral.com/display/ASP/Rialto+Playback+Design
+ *
+ * Test Setup:
+ *  Language: C++
+ *  Testing Framework: Google Test
+ *  Components: MediaPipeline
+ *
+ * Test Initialize:
+ *  Set Rialto Server to Active
+ *  Connect Rialto Client Stub
+ *  Map Shared Memory
+ *
+ * Test Steps:
+ *  Step 1: Create a new media session
+ *   Send CreateSessionRequest to Rialto Server
+ *   Expect that successful CreateSessionResponse is received
+ *   Save returned session id
+ *
+ *  Step 2: Load content
+ *   Send LoadRequest to Rialto Server
+ *   Expect that successful LoadResponse is received
+ *   Expect that GstPlayer instance is created.
+ *   Expect that client is notified that the NetworkState has changed to BUFFERING.
+ *
+ *  Step 3: Attach all sources
+ *   Attach the audio source.
+ *   Expect that audio source is attached.
+ *   Attach the video source.
+ *   Expect that video source is attached.
+ *   Expect that rialto source is setup
+ *   Expect that all sources are attached.
+ *   Expect that the Playback state has changed to IDLE.
+ *
+ *  Step 4: Play
+ *   Play the content.
+ *   Expect that gstreamer pipeline is in playing state
+ *   Expect that server notifies the client that the Playback state has changed to PLAYING.
+ *
+ *  Step 5: SetPlaybackRate failure
+ *   Send SetPlaybackRateRequest with wrong session id. Expect failure.
+ *
+ *  Step 6: Stop
+ *   Stop the playback.
+ *   Expect that stop propagated to the gstreamer pipeline.
+ *   Expect that server notifies the client that the Playback state has changed to STOPPED.
+ *
+ *  Step 7: Destroy media session
+ *   Send DestroySessionRequest.
+ *   Expect that the session is destroyed on the server.
+ *
+ * Test Teardown:
+ *  Memory region created for the shared buffer is unmapped.
+ *  Server is terminated.
+ *
+ * Expected Results:
+ *  All API calls are handled by the server.
+ *  The state of the Gstreamer Pipeline is successfully negotiationed in the normal playback scenario.
+ *  Data is successfully read from the shared memory and pushed to gstreamer pipeline for both audio and video.
+ *
+ * Code:
+ */
+TEST_F(SetPlaybackRateTest, SetPlaybackRateFailure)
+{
+    // Step 1: Create a new media session
+    createSession();
+
+    // Step 2: Load content
+    gstPlayerWillBeCreated();
+    load();
+
+    // Step 3: Attach all sources
+    audioSourceWillBeAttached();
+    attachAudioSource();
+    videoSourceWillBeAttached();
+    attachVideoSource();
+    sourceWillBeSetup();
+    setupSource();
+    willSetupAndAddSource(&m_audioAppSrc);
+    willSetupAndAddSource(&m_videoAppSrc);
+    willFinishSetupAndAddSource();
+    indicateAllSourcesAttached();
+
+    // Step 4: Play
+    willPlay();
+    play();
+    setPipelineStatePlaying();
+
+    // Step 5: SetPlaybackRate failure
+    auto req{createSetPlaybackRateRequest(m_sessionId + 1)};
+    ConfigureAction<SetPlaybackRate>(m_clientStub).send(req).expectFailure();
+
+    // Step 6: Stop
+    willStop();
+    stop();
+
+    // Step 7: Destroy media session
+    gstPlayerWillBeDestructed();
+    destroySession();
+}
 } // namespace firebolt::rialto::server::ct
