@@ -19,12 +19,13 @@
 
 #include "MessageBuilders.h"
 #include "Constants.h"
+#include "RialtoLogging.h"
 
 namespace firebolt::rialto::server::ct
 {
 ::rialto::SetConfigurationRequest createGenericSetConfigurationReq()
 {
-    constexpr int kLogLevel{63};
+    constexpr int kLogLevel{RIALTO_DEBUG_LEVEL_DEFAULT};
     ::rialto::LogLevels logLevels;
     logLevels.set_defaultloglevels(kLogLevel);
     logLevels.set_clientloglevels(kLogLevel);
@@ -63,16 +64,15 @@ namespace firebolt::rialto::server::ct
 
 ::rialto::SetLogLevelsRequest createSetLogLevelsRequest()
 {
-    const ::google::protobuf::uint32 kLogLevel = 2;
     ::rialto::SetLogLevelsRequest request;
     auto levels = request.mutable_loglevels();
 
-    levels->set_defaultloglevels(kLogLevel);
-    levels->set_clientloglevels(kLogLevel);
-    levels->set_sessionserverloglevels(kLogLevel);
-    levels->set_ipcloglevels(kLogLevel);
-    levels->set_servermanagerloglevels(kLogLevel);
-    levels->set_commonloglevels(kLogLevel);
+    levels->set_defaultloglevels(RIALTO_DEBUG_LEVEL_FATAL);
+    levels->set_clientloglevels(RIALTO_DEBUG_LEVEL_ERROR);
+    levels->set_sessionserverloglevels(RIALTO_DEBUG_LEVEL_WARNING);
+    levels->set_ipcloglevels(RIALTO_DEBUG_LEVEL_MILESTONE);
+    levels->set_servermanagerloglevels(RIALTO_DEBUG_LEVEL_INFO);
+    levels->set_commonloglevels(RIALTO_DEBUG_LEVEL_DEBUG);
 
     return request;
 }

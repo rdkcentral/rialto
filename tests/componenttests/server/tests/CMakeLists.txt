@@ -22,6 +22,8 @@ add_gtests (
 
         # gtest code
         sessionServerStateChange/SessionServerStateChangeTest.cpp
+        sessionServerStateChange/SessionServerHealthCheckTest.cpp
+        sessionServerStateChange/SessionServerLogLevelTest.cpp
         mediaPipeline/MediaPipelineTestFixture.cpp
         mediaPipeline/MediaPipelineTest.cpp
         mediaKeys/MediaKeysTest.cpp
@@ -33,6 +35,8 @@ target_include_directories(
         PRIVATE
         $<TARGET_PROPERTY:RialtoCommon,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoServerComponentTestsFixtures,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoIpcServerStub,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoIpcServer,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
 target_link_libraries(

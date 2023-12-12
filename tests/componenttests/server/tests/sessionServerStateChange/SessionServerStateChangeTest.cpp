@@ -70,43 +70,38 @@ public:
         ASSERT_TRUE(receivedMessage);
         EXPECT_EQ(receivedMessage->sessionserverstate(), ::rialto::SessionServerState::INACTIVE);
     }
-
-    void setLogLevels()
-    {
-        ::rialto::SetLogLevelsRequest request{createSetLogLevelsRequest()};
-
-        ConfigureAction<::firebolt::rialto::server::ct::SetLogLevelsRequest>(m_serverManagerStub)
-            .send(request)
-            .expectSuccess();
-    }
-
-    void sendAndRecievePing()
-    {
-        ::google::protobuf::int32 kMyId{3};
-        ::rialto::PingRequest request{createPingRequest(kMyId)};
-
-        ExpectMessage<::rialto::AckEvent> expectedMessage(m_serverManagerStub);
-
-        ConfigureAction<::firebolt::rialto::server::ct::PingRequest>(m_serverManagerStub).send(request).expectSuccess();
-        auto receivedMessage = expectedMessage.getMessage();
-        ASSERT_TRUE(receivedMessage);
-        EXPECT_EQ(receivedMessage->id(), kMyId);
-        EXPECT_EQ(receivedMessage->success(), true);
-    }
 };
 
-TEST_F(SessionServerStateChangeTest, ShouldConfigureInInactiveState)
-{
-    willConfigureSocket();
-    configureSutInInactiveState();
-}
-
-TEST_F(SessionServerStateChangeTest, ShouldConfigureInActiveState)
-{
-    willConfigureSocket();
-    configureSutInActiveState();
-}
-
+/*
+ * Component Test: <Test Description>
+ * Test Objective:
+ *  <Detailed Test Description>
+ *
+ * Sequence Diagrams:
+ *  <Links To Relevant Sequence Diagrams>
+ *
+ * Test Setup:
+ *  Language: C++
+ *  Testing Framework: Google Test
+ *  Components: <Component Tested>
+ *
+ * Test Initialize:
+ *  <Test Initialization Steps>
+ *
+ * Test Steps:
+ *  Step 1: <Test Step Name>
+ *   <Test Step Description>
+ *
+ *  <Further Test Steps>
+ *
+ * Test Teardown:
+ *  <Test Termination Steps>
+ *
+ * Expected Results:
+ *  <Description Of Results To Expect>
+ *
+ * Code:
+ */
 TEST_F(SessionServerStateChangeTest, ShouldChangeFromInactiveToActive)
 {
     willConfigureSocket();
@@ -114,23 +109,39 @@ TEST_F(SessionServerStateChangeTest, ShouldChangeFromInactiveToActive)
     setStateActive();
 }
 
+/*
+ * Component Test: <Test Description>
+ * Test Objective:
+ *  <Detailed Test Description>
+ *
+ * Sequence Diagrams:
+ *  <Links To Relevant Sequence Diagrams>
+ *
+ * Test Setup:
+ *  Language: C++
+ *  Testing Framework: Google Test
+ *  Components: <Component Tested>
+ *
+ * Test Initialize:
+ *  <Test Initialization Steps>
+ *
+ * Test Steps:
+ *  Step 1: <Test Step Name>
+ *   <Test Step Description>
+ *
+ *  <Further Test Steps>
+ *
+ * Test Teardown:
+ *  <Test Termination Steps>
+ *
+ * Expected Results:
+ *  <Description Of Results To Expect>
+ *
+ * Code:
+ */
 TEST_F(SessionServerStateChangeTest, ShouldChangeFromActiveToInactive)
 {
     willConfigureSocket();
     configureSutInActiveState();
     setStateInactive();
-}
-
-TEST_F(SessionServerStateChangeTest, ShouldSetLogLevels)
-{
-    willConfigureSocket();
-    configureSutInInactiveState();
-    setLogLevels();
-}
-
-TEST_F(SessionServerStateChangeTest, ShouldAcknowledgePing)
-{
-    willConfigureSocket();
-    configureSutInActiveState();
-    sendAndRecievePing();
 }
