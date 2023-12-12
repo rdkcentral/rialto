@@ -101,26 +101,28 @@ protected:
 
     // MediaPipelineClient Expect methods
     void shouldNotifyNetworkStateBuffering();
+    void shouldNotifyNetworkStateBufferingSecondary();
     void shouldNotifyPlaybackStateIdle();
+    void shouldNotifyPlaybackStateIdleSecondary();
     void shouldNotifyNeedDataAudioBeforePreroll();
     void shouldNotifyNeedDataVideoBeforePreroll();
     void shouldNotifyNetworkStateBuffered();
+    void shouldNotifyNetworkStateBufferedSecondary();
     void shouldNotifyPlaybackStatePaused();
+    void shouldNotifyPlaybackStatePausedSecondary();
     void shouldNotifyPlaybackStatePlaying();
+    void shouldNotifyPlaybackStatePlayingSecondary();
     void shouldNotifyNeedDataAudioAfterPreroll();
     void shouldNotifyNeedDataVideoAfterPreroll();
     void shouldNotifyPlaybackStateEndOfStream();
     void shouldNotifyPlaybackStateStopped();
+    void shouldNotifyPlaybackStateStoppedSecondary();
     void shouldNotifyPlaybackStateFailure();
     void shouldNotifyPlaybackStateSeeking();
     void shouldNotifyPlaybackStateFlushed();
-    void shouldNotifyPlaybackStateStoppedSecondary();
-    void shouldNotifyNetworkStateBufferingSecondary();
-    void shouldNotifyPlaybackStateIdleSecondary();
-    void shouldNotifyNetworkStateBufferedSecondary();
-    void shouldNotifyPlaybackStatePausedSecondary();
-    void shouldNotifyNeedDataVideoSecondary(uint32_t framesToWrite);
-    void shouldNotifyPlaybackStatePlayingSecondary();
+    void shouldNotifyNeedDataAudio(const size_t framesToWrite);
+    void shouldNotifyNeedDataVideo(const size_t framesToWrite);
+    void shouldNotifyNeedDataVideoSecondary(const size_t framesToWrite);
 
     // Api methods
     void createMediaPipeline();
@@ -238,6 +240,9 @@ private:
     void shouldAttachVideoSourceInternal(const int32_t sessionId, const std::string &mimeType, bool hasNoDrm, const int32_t width, const int32_t height, const firebolt::rialto::SegmentAlignment &alignment, const std::shared_ptr<firebolt::rialto::CodecData> &codacData, const firebolt::rialto::StreamFormat &streamFormat);
     void shouldAllSourcesAttachedInternal(const int32_t sessionId);
     void shouldHaveDataInternal(const int32_t sessionId, const MediaSourceStatus status, const size_t framesWritten, const uint32_t partition);
+    void shouldNotifyPlaybackState(const std::shared_ptr<StrictMock<MediaPipelineClientMock>> &clientMock, const PlaybackState &state);
+    void shouldNotifyNetworkState(const std::shared_ptr<StrictMock<MediaPipelineClientMock>> &clientMock, const NetworkState &state);
+    void shouldNotifyNeedDataInternal(const std::shared_ptr<StrictMock<MediaPipelineClientMock>> &clientMock, const int32_t sourceId, const size_t framesToWrite);
 };
 } // namespace firebolt::rialto::client::ct
 

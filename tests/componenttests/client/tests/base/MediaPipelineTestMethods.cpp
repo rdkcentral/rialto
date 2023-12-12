@@ -155,10 +155,20 @@ void MediaPipelineTestMethods::loadSecondary()
     EXPECT_EQ(m_mediaPipelineSecondary->load(kMediaType, kMimeType, kUrl), true);
 }
 
+void MediaPipelineTestMethods::shouldNotifyNetworkState(const std::shared_ptr<StrictMock<MediaPipelineClientMock>> &clientMock, const NetworkState &state)
+{
+    EXPECT_CALL(*clientMock, notifyNetworkState(state))
+        .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
+}
+
 void MediaPipelineTestMethods::shouldNotifyNetworkStateBuffering()
 {
-    EXPECT_CALL(*m_mediaPipelineClientMock, notifyNetworkState(NetworkState::BUFFERING))
-        .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
+    shouldNotifyNetworkState(m_mediaPipelineClientMock, NetworkState::BUFFERING);
+}
+
+void MediaPipelineTestMethods::shouldNotifyNetworkStateBufferingSecondary()
+{
+    shouldNotifyNetworkState(m_mediaPipelineClientSecondaryMock, NetworkState::BUFFERING);
 }
 
 void MediaPipelineTestMethods::sendNotifyNetworkStateBuffering()
@@ -255,8 +265,12 @@ void MediaPipelineTestMethods::allSourcesAttached()
 
 void MediaPipelineTestMethods::shouldNotifyPlaybackStateIdle()
 {
-    EXPECT_CALL(*m_mediaPipelineClientMock, notifyPlaybackState(PlaybackState::IDLE))
-        .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
+    shouldNotifyPlaybackState(m_mediaPipelineClientMock, PlaybackState::IDLE);
+}
+
+void MediaPipelineTestMethods::shouldNotifyPlaybackStateIdleSecondary()
+{
+    shouldNotifyPlaybackState(m_mediaPipelineClientSecondaryMock, PlaybackState::IDLE);
 }
 
 void MediaPipelineTestMethods::sendNotifyPlaybackStateIdle()
@@ -267,15 +281,7 @@ void MediaPipelineTestMethods::sendNotifyPlaybackStateIdle()
 
 void MediaPipelineTestMethods::shouldNotifyNeedDataAudioBeforePreroll()
 {
-    EXPECT_CALL(*m_mediaPipelineClientMock,
-                notifyNeedMediaData(kAudioSourceId, kFrameCountBeforePreroll, m_needDataRequestId, kNullShmInfo))
-        .WillOnce(InvokeWithoutArgs(
-            [&]()
-            {
-                // Set the firstSegment flag
-                m_firstSegmentOfNeedData = true;
-                notifyEvent();
-            }));
+    shouldNotifyNeedDataInternal(m_mediaPipelineClientMock, kAudioSourceId, kFrameCountBeforePreroll);
 }
 
 void MediaPipelineTestMethods::sendNotifyNeedDataAudioBeforePreroll()
@@ -287,15 +293,7 @@ void MediaPipelineTestMethods::sendNotifyNeedDataAudioBeforePreroll()
 
 void MediaPipelineTestMethods::shouldNotifyNeedDataVideoBeforePreroll()
 {
-    EXPECT_CALL(*m_mediaPipelineClientMock,
-                notifyNeedMediaData(kVideoSourceId, kFrameCountBeforePreroll, m_needDataRequestId, kNullShmInfo))
-        .WillOnce(InvokeWithoutArgs(
-            [&]()
-            {
-                // Set the firstSegment flag
-                m_firstSegmentOfNeedData = true;
-                notifyEvent();
-            }));
+    shouldNotifyNeedDataInternal(m_mediaPipelineClientMock, kVideoSourceId, kFrameCountBeforePreroll);
 }
 
 void MediaPipelineTestMethods::sendNotifyNeedDataVideoBeforePreroll()
@@ -503,8 +501,12 @@ void MediaPipelineTestMethods::checkSegmentData(const MediaSegmentMetadata &meta
 
 void MediaPipelineTestMethods::shouldNotifyNetworkStateBuffered()
 {
-    EXPECT_CALL(*m_mediaPipelineClientMock, notifyNetworkState(NetworkState::BUFFERED))
-        .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
+    shouldNotifyNetworkState(m_mediaPipelineClientMock, NetworkState::BUFFERED);
+}
+
+void MediaPipelineTestMethods::shouldNotifyNetworkStateBufferedSecondary()
+{
+    shouldNotifyNetworkState(m_mediaPipelineClientSecondaryMock, NetworkState::BUFFERED);
 }
 
 void MediaPipelineTestMethods::sendNotifyNetworkStateBuffered()
@@ -515,8 +517,12 @@ void MediaPipelineTestMethods::sendNotifyNetworkStateBuffered()
 
 void MediaPipelineTestMethods::shouldNotifyPlaybackStatePaused()
 {
-    EXPECT_CALL(*m_mediaPipelineClientMock, notifyPlaybackState(PlaybackState::PAUSED))
-        .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
+    shouldNotifyPlaybackState(m_mediaPipelineClientMock, PlaybackState::PAUSED);
+}
+
+void MediaPipelineTestMethods::shouldNotifyPlaybackStatePausedSecondary()
+{
+    shouldNotifyPlaybackState(m_mediaPipelineClientSecondaryMock, PlaybackState::PAUSED);
 }
 
 void MediaPipelineTestMethods::sendNotifyPlaybackStatePaused()
@@ -527,8 +533,12 @@ void MediaPipelineTestMethods::sendNotifyPlaybackStatePaused()
 
 void MediaPipelineTestMethods::shouldNotifyPlaybackStatePlaying()
 {
-    EXPECT_CALL(*m_mediaPipelineClientMock, notifyPlaybackState(PlaybackState::PLAYING))
-        .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
+    shouldNotifyPlaybackState(m_mediaPipelineClientMock, PlaybackState::PLAYING);
+}
+
+void MediaPipelineTestMethods::shouldNotifyPlaybackStatePlayingSecondary()
+{
+    shouldNotifyPlaybackState(m_mediaPipelineClientSecondaryMock, PlaybackState::PLAYING);
 }
 
 void MediaPipelineTestMethods::sendNotifyPlaybackStatePlaying()
@@ -560,15 +570,7 @@ void MediaPipelineTestMethods::play()
 
 void MediaPipelineTestMethods::shouldNotifyNeedDataAudioAfterPreroll()
 {
-    EXPECT_CALL(*m_mediaPipelineClientMock,
-                notifyNeedMediaData(kAudioSourceId, kMaxFrameCount, m_needDataRequestId, kNullShmInfo))
-        .WillOnce(InvokeWithoutArgs(
-            [&]()
-            {
-                // Set the firstSegment flag
-                m_firstSegmentOfNeedData = true;
-                notifyEvent();
-            }));
+    shouldNotifyNeedDataInternal(m_mediaPipelineClientMock, kAudioSourceId, kMaxFrameCount);
 }
 
 void MediaPipelineTestMethods::sendNotifyNeedDataAudioAfterPreroll()
@@ -580,15 +582,7 @@ void MediaPipelineTestMethods::sendNotifyNeedDataAudioAfterPreroll()
 
 void MediaPipelineTestMethods::shouldNotifyNeedDataVideoAfterPreroll()
 {
-    EXPECT_CALL(*m_mediaPipelineClientMock,
-                notifyNeedMediaData(kVideoSourceId, kMaxFrameCount, m_needDataRequestId, kNullShmInfo))
-        .WillOnce(InvokeWithoutArgs(
-            [&]()
-            {
-                // Set the firstSegment flag
-                m_firstSegmentOfNeedData = true;
-                notifyEvent();
-            }));
+    shouldNotifyNeedDataInternal(m_mediaPipelineClientMock, kAudioSourceId, kMaxFrameCount);
 }
 
 void MediaPipelineTestMethods::sendNotifyNeedDataVideoAfterPreroll()
@@ -626,7 +620,7 @@ void MediaPipelineTestMethods::shouldHaveDataInternal(const int32_t sessionId, c
                                                 framesWritten, m_needDataRequestId),
                          _, _))
         .WillOnce(WithArgs<0, 3>(Invoke(
-            [&](::google::protobuf::RpcController *controller, ::google::protobuf::Closure *done)
+            [&, partition](::google::protobuf::RpcController *controller, ::google::protobuf::Closure *done)
             {
                 // Increment needData request Id
                 m_needDataRequestId++;
@@ -647,8 +641,7 @@ void MediaPipelineTestMethods::haveDataEos()
 
 void MediaPipelineTestMethods::shouldNotifyPlaybackStateEndOfStream()
 {
-    EXPECT_CALL(*m_mediaPipelineClientMock, notifyPlaybackState(PlaybackState::END_OF_STREAM))
-        .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
+    shouldNotifyPlaybackState(m_mediaPipelineClientMock, PlaybackState::END_OF_STREAM);
 }
 
 void MediaPipelineTestMethods::sendNotifyPlaybackStateEndOfStream()
@@ -712,7 +705,17 @@ void MediaPipelineTestMethods::stop()
 
 void MediaPipelineTestMethods::shouldNotifyPlaybackStateStopped()
 {
-    EXPECT_CALL(*m_mediaPipelineClientMock, notifyPlaybackState(PlaybackState::STOPPED))
+    shouldNotifyPlaybackState(m_mediaPipelineClientMock, PlaybackState::STOPPED);
+}
+
+void MediaPipelineTestMethods::shouldNotifyPlaybackStateStoppedSecondary()
+{
+    shouldNotifyPlaybackState(m_mediaPipelineClientSecondaryMock, PlaybackState::STOPPED);
+}
+
+void MediaPipelineTestMethods::shouldNotifyPlaybackState(const std::shared_ptr<StrictMock<MediaPipelineClientMock>> &clientMock, const PlaybackState &state)
+{
+    EXPECT_CALL(*clientMock, notifyPlaybackState(state))
         .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
 }
 
@@ -838,8 +841,7 @@ void MediaPipelineTestMethods::shouldStopWithFailure()
 
 void MediaPipelineTestMethods::shouldNotifyPlaybackStateFailure()
 {
-    EXPECT_CALL(*m_mediaPipelineClientMock, notifyPlaybackState(PlaybackState::FAILURE))
-        .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
+    shouldNotifyPlaybackState(m_mediaPipelineClientMock, PlaybackState::FAILURE);
 }
 
 void MediaPipelineTestMethods::playFailure()
@@ -898,14 +900,12 @@ void MediaPipelineTestMethods::setPlaybackRateFailure()
 
 void MediaPipelineTestMethods::shouldNotifyPlaybackStateSeeking()
 {
-    EXPECT_CALL(*m_mediaPipelineClientMock, notifyPlaybackState(PlaybackState::SEEKING))
-        .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
+    shouldNotifyPlaybackState(m_mediaPipelineClientMock, PlaybackState::SEEKING);
 }
 
 void MediaPipelineTestMethods::shouldNotifyPlaybackStateFlushed()
 {
-    EXPECT_CALL(*m_mediaPipelineClientMock, notifyPlaybackState(PlaybackState::FLUSHED))
-        .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
+    shouldNotifyPlaybackState(m_mediaPipelineClientMock, PlaybackState::FLUSHED);
 }
 
 void MediaPipelineTestMethods::shouldSetPositionTo10()
@@ -931,9 +931,38 @@ void MediaPipelineTestMethods::sendNotifyPlaybackStateFlushed()
     waitEvent();
 }
 
+void MediaPipelineTestMethods::shouldNotifyNeedDataAudio(const size_t framesToWrite)
+{
+    shouldNotifyNeedDataInternal(m_mediaPipelineClientMock, kAudioSourceId, framesToWrite);
+}
+
+void MediaPipelineTestMethods::shouldNotifyNeedDataVideo(const size_t framesToWrite)
+{
+    shouldNotifyNeedDataInternal(m_mediaPipelineClientMock, kVideoSourceId, framesToWrite);
+}
+
+void MediaPipelineTestMethods::shouldNotifyNeedDataVideoSecondary(const size_t framesToWrite)
+{
+    shouldNotifyNeedDataInternal(m_mediaPipelineClientSecondaryMock, kVideoSourceId, framesToWrite);
+}
+
+void MediaPipelineTestMethods::shouldNotifyNeedDataInternal(const std::shared_ptr<StrictMock<MediaPipelineClientMock>> &clientMock, const int32_t sourceId, const size_t framesToWrite)
+{
+    EXPECT_CALL(*clientMock,
+                notifyNeedMediaData(sourceId, framesToWrite, m_needDataRequestId, kNullShmInfo))
+        .WillOnce(InvokeWithoutArgs(
+            [&]()
+            {
+                // Set the firstSegment flag
+                m_firstSegmentOfNeedData = true;
+                notifyEvent();
+            }));
+}
+
 void MediaPipelineTestMethods::writeAudioFrames()
 {
-    MediaPipelineTestMethods::shouldNotifyNeedDataAudioBeforePreroll();
+    uint32_t framesToWrite = 3;
+    MediaPipelineTestMethods::shouldNotifyNeedDataAudio(framesToWrite);
     MediaPipelineTestMethods::sendNotifyNeedDataAudioBeforePreroll();
     uint32_t segmentId = MediaPipelineTestMethods::addSegmentMseAudio();
     MediaPipelineTestMethods::checkMseAudioSegmentWritten(segmentId);
@@ -941,12 +970,14 @@ void MediaPipelineTestMethods::writeAudioFrames()
     MediaPipelineTestMethods::checkMseAudioSegmentWritten(segmentId);
     segmentId = MediaPipelineTestMethods::addSegmentMseAudio();
     MediaPipelineTestMethods::checkMseAudioSegmentWritten(segmentId);
-    MediaPipelineTestMethods::shouldHaveDataBeforePreroll();
+    MediaPipelineTestMethods::shouldHaveDataOk(framesToWrite);
     MediaPipelineTestMethods::haveDataOk();
 }
 
 void MediaPipelineTestMethods::writeVideoFrames()
 {
+    uint32_t framesToWrite = 3;
+    MediaPipelineTestMethods::shouldNotifyNeedDataVideo(framesToWrite);
     MediaPipelineTestMethods::shouldNotifyNeedDataVideoBeforePreroll();
     MediaPipelineTestMethods::sendNotifyNeedDataVideoBeforePreroll();
     uint32_t segmentId = MediaPipelineTestMethods::addSegmentMseVideo();
@@ -955,7 +986,7 @@ void MediaPipelineTestMethods::writeVideoFrames()
     MediaPipelineTestMethods::checkMseVideoSegmentWritten(segmentId);
     segmentId = MediaPipelineTestMethods::addSegmentMseVideo();
     MediaPipelineTestMethods::checkMseVideoSegmentWritten(segmentId);
-    MediaPipelineTestMethods::shouldHaveDataBeforePreroll();
+    MediaPipelineTestMethods::shouldHaveDataOk(framesToWrite);
     MediaPipelineTestMethods::haveDataOk();
 }
 
@@ -1013,12 +1044,6 @@ void MediaPipelineTestMethods::stopSecondary()
     EXPECT_EQ(m_mediaPipelineSecondary->stop(), true);
 }
 
-void MediaPipelineTestMethods::shouldNotifyPlaybackStateStoppedSecondary()
-{
-    EXPECT_CALL(*m_mediaPipelineClientSecondaryMock, notifyPlaybackState(PlaybackState::STOPPED))
-        .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
-}
-
 void MediaPipelineTestMethods::sendNotifyPlaybackStateStoppedSecondary()
 {
     getServerStub()->notifyPlaybackStateChangeEvent(kSessionIdSecondary, PlaybackState::STOPPED);
@@ -1028,12 +1053,6 @@ void MediaPipelineTestMethods::sendNotifyPlaybackStateStoppedSecondary()
 void MediaPipelineTestMethods::destroyMediaPipelineSecondary()
 {
     m_mediaPipelineSecondary.reset();
-}
-
-void MediaPipelineTestMethods::shouldNotifyNetworkStateBufferingSecondary()
-{
-    EXPECT_CALL(*m_mediaPipelineClientSecondaryMock, notifyNetworkState(NetworkState::BUFFERING))
-        .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
 }
 
 void MediaPipelineTestMethods::sendNotifyNetworkStateBufferingSecondary()
@@ -1053,12 +1072,6 @@ void MediaPipelineTestMethods::attachSourceVideoSecondary()
 void MediaPipelineTestMethods::allSourcesAttachedSecondary()
 {
     EXPECT_EQ(m_mediaPipelineSecondary->allSourcesAttached(), true);
-}
-
-void MediaPipelineTestMethods::shouldNotifyPlaybackStateIdleSecondary()
-{
-    EXPECT_CALL(*m_mediaPipelineClientSecondaryMock, notifyPlaybackState(PlaybackState::IDLE))
-        .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
 }
 
 void MediaPipelineTestMethods::sendNotifyPlaybackStateIdleSecondary()
@@ -1081,20 +1094,6 @@ void MediaPipelineTestMethods::writeVideoFramesSecondary()
     MediaPipelineTestMethods::shouldHaveDataOkSecondary(framesToWrite);
     MediaPipelineTestMethods::haveDataOkSecondary();
 }
-
-void MediaPipelineTestMethods::shouldNotifyNeedDataVideoSecondary(uint32_t framesToWrite)
-{
-    EXPECT_CALL(*m_mediaPipelineClientSecondaryMock,
-                notifyNeedMediaData(kVideoSourceId, framesToWrite, m_needDataRequestId, kNullShmInfo))
-        .WillOnce(InvokeWithoutArgs(
-            [&]()
-            {
-                // Set the firstSegment flag
-                m_firstSegmentOfNeedData = true;
-                notifyEvent();
-            }));
-}
-
 void MediaPipelineTestMethods::sendNotifyNeedDataVideoSecondary(uint32_t framesToWrite)
 {
     getServerStub()->notifyNeedMediaDataEvent(kSessionIdSecondary, kVideoSourceId, framesToWrite, m_needDataRequestId,
@@ -1128,24 +1127,11 @@ void MediaPipelineTestMethods::haveDataOkSecondary()
     EXPECT_EQ(m_mediaPipelineSecondary->haveData(MediaSourceStatus::OK, m_needDataRequestId), true);
 }
 
-void MediaPipelineTestMethods::shouldNotifyNetworkStateBufferedSecondary()
-{
-    EXPECT_CALL(*m_mediaPipelineClientSecondaryMock, notifyNetworkState(NetworkState::BUFFERED))
-        .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
-}
-
 void MediaPipelineTestMethods::sendNotifyNetworkStateBufferedSecondary()
 {
     getServerStub()->notifyNetworkStateChangeEvent(kSessionIdSecondary, NetworkState::BUFFERED);
     waitEvent();
 }
-
-void MediaPipelineTestMethods::shouldNotifyPlaybackStatePausedSecondary()
-{
-    EXPECT_CALL(*m_mediaPipelineClientSecondaryMock, notifyPlaybackState(PlaybackState::PAUSED))
-        .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
-}
-
 void MediaPipelineTestMethods::sendNotifyPlaybackStatePausedSecondary()
 {
     getServerStub()->notifyPlaybackStateChangeEvent(kSessionIdSecondary, PlaybackState::PAUSED);
@@ -1156,12 +1142,6 @@ void MediaPipelineTestMethods::playSecondary()
 {
     EXPECT_EQ(m_mediaPipelineSecondary->play(), true);
 
-}
-
-void MediaPipelineTestMethods::shouldNotifyPlaybackStatePlayingSecondary()
-{
-    EXPECT_CALL(*m_mediaPipelineClientSecondaryMock, notifyPlaybackState(PlaybackState::PLAYING))
-        .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
 }
 
 void MediaPipelineTestMethods::sendNotifyPlaybackStatePlayingSecondary()
