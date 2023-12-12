@@ -269,6 +269,24 @@ void MediaPipelineTest::willStop()
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus));
 }
 
+void MediaPipelineTest::willFailToPause()
+{
+    EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&m_pipeline, GST_STATE_PAUSED))
+        .WillOnce(Return(GST_STATE_CHANGE_FAILURE));
+}
+
+void MediaPipelineTest::willFailToPlay()
+{
+    EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&m_pipeline, GST_STATE_PLAYING))
+        .WillOnce(Return(GST_STATE_CHANGE_FAILURE));
+}
+
+void MediaPipelineTest::willFailToStop()
+{
+    EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&m_pipeline, GST_STATE_NULL))
+        .WillOnce(Return(GST_STATE_CHANGE_FAILURE));
+}
+
 void MediaPipelineTest::createSession()
 {
     // Use matchResponse to store session id
@@ -548,6 +566,45 @@ void MediaPipelineTest::destroySession()
 {
     auto destroySessionReq{createDestroySessionRequest(m_sessionId)};
     ConfigureAction<DestroySession>(m_clientStub).send(destroySessionReq).expectSuccess();
+}
+
+void MediaPipelineTest::pauseAndExpectFailure()
+{
+    ExpectMessage<firebolt::rialto::PlaybackStateChangeEvent> expectedPlaybackStateChange{m_clientStub};
+
+    auto pauseReq{createPauseRequest(m_sessionId)};
+    ConfigureAction<Pause>(m_clientStub).send(pauseReq).expectSuccess();
+
+    auto receivedPlaybackStateChange{expectedPlaybackStateChange.getMessage()};
+    ASSERT_TRUE(receivedPlaybackStateChange);
+    EXPECT_EQ(receivedPlaybackStateChange->session_id(), m_sessionId);
+    EXPECT_EQ(receivedPlaybackStateChange->state(), ::firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_FAILURE);
+}
+
+void MediaPipelineTest::playAndExpectFailure()
+{
+    ExpectMessage<firebolt::rialto::PlaybackStateChangeEvent> expectedPlaybackStateChange{m_clientStub};
+
+    auto playReq{createPlayRequest(m_sessionId)};
+    ConfigureAction<Play>(m_clientStub).send(playReq).expectSuccess();
+
+    auto receivedPlaybackStateChange{expectedPlaybackStateChange.getMessage()};
+    ASSERT_TRUE(receivedPlaybackStateChange);
+    EXPECT_EQ(receivedPlaybackStateChange->session_id(), m_sessionId);
+    EXPECT_EQ(receivedPlaybackStateChange->state(), ::firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_FAILURE);
+}
+
+void MediaPipelineTest::stopAndExpectFailure()
+{
+    ExpectMessage<firebolt::rialto::PlaybackStateChangeEvent> expectedPlaybackStateChange{m_clientStub};
+
+    auto stopReq{createStopRequest(m_sessionId)};
+    ConfigureAction<Stop>(m_clientStub).send(stopReq).expectSuccess();
+
+    auto receivedPlaybackStateChange{expectedPlaybackStateChange.getMessage()};
+    ASSERT_TRUE(receivedPlaybackStateChange);
+    EXPECT_EQ(receivedPlaybackStateChange->session_id(), m_sessionId);
+    EXPECT_EQ(receivedPlaybackStateChange->state(), ::firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_FAILURE);
 }
 
 void MediaPipelineTest::initShm()
