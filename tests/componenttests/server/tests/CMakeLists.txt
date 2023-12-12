@@ -26,6 +26,7 @@ add_gtests (
         mediaPipeline/FailureTests.cpp
         mediaPipeline/PlaybackTest.cpp
         mediaPipeline/SourceTest.cpp
+        mediaPipeline/WriteSegmentsTest.cpp
         mediaKeys/MediaKeysTest.cpp
         )
 
