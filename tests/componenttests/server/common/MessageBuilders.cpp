@@ -19,12 +19,15 @@
 
 #include "MessageBuilders.h"
 #include "Constants.h"
+#include <string>
 
 namespace firebolt::rialto::server::ct
 {
 ::rialto::SetConfigurationRequest createGenericSetConfigurationReq()
 {
     constexpr int kLogLevel{63};
+    constexpr int kMaxPlaybacks{2};
+    const std::string kDisplayName{"waylanddisplay"};
     ::rialto::LogLevels logLevels;
     logLevels.set_defaultloglevels(kLogLevel);
     logLevels.set_clientloglevels(kLogLevel);
@@ -35,7 +38,7 @@ namespace firebolt::rialto::server::ct
 
     ::rialto::SetConfigurationRequest request;
     request.set_sessionmanagementsocketname(kSocketName);
-    request.set_clientdisplayname("kDisplayName");
+    request.set_clientdisplayname(kDisplayName);
     request.mutable_resources()->set_maxplaybacks(kMaxPlaybacks);
     request.mutable_resources()->set_maxwebaudioplayers(kMaxPlaybacks);
     request.set_socketpermissions(kDefaultPermissions);
@@ -46,11 +49,11 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
-::firebolt::rialto::CreateSessionRequest createCreateSessionRequest(const VideoRequirements &requirements)
+::firebolt::rialto::CreateSessionRequest createCreateSessionRequest()
 {
     ::firebolt::rialto::CreateSessionRequest request;
-    request.set_max_width(requirements.maxWidth);
-    request.set_max_height(requirements.maxHeight);
+    request.set_max_width(kWidth);
+    request.set_max_height(kHeight);
     return request;
 }
 
@@ -61,6 +64,87 @@ namespace firebolt::rialto::server::ct
     request.set_type(::firebolt::rialto::LoadRequest_MediaType_MSE);
     request.set_mime_type("mimetype");
     request.set_url("url");
+    return request;
+}
+
+::firebolt::rialto::AttachSourceRequest createAttachAudioSourceRequest(int sessionId)
+{
+    ::firebolt::rialto::AttachSourceRequest request;
+    request.set_session_id(sessionId);
+    request.set_config_type(::firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_AUDIO);
+    request.set_mime_type("audio/mp4");
+    request.set_has_drm(false);
+    request.set_segment_alignment(::firebolt::rialto::AttachSourceRequest_SegmentAlignment_ALIGNMENT_NAL);
+    request.mutable_audio_config()->set_number_of_channels(kNumOfChannels);
+    request.mutable_audio_config()->set_sample_rate(kSampleRate);
+    request.set_stream_format(::firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_RAW);
+    return request;
+}
+
+::firebolt::rialto::AttachSourceRequest createAttachVideoSourceRequest(int sessionId)
+{
+    ::firebolt::rialto::AttachSourceRequest request;
+    request.set_session_id(sessionId);
+    request.set_config_type(::firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_VIDEO);
+    request.set_mime_type("video/h264");
+    request.set_has_drm(false);
+    request.set_width(kWidth);
+    request.set_height(kHeight);
+    request.set_segment_alignment(::firebolt::rialto::AttachSourceRequest_SegmentAlignment_ALIGNMENT_NAL);
+    request.set_stream_format(::firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_RAW);
+    return request;
+}
+
+::firebolt::rialto::AllSourcesAttachedRequest createAllSourcesAttachedRequest(int sessionId)
+{
+    ::firebolt::rialto::AllSourcesAttachedRequest request;
+    request.set_session_id(sessionId);
+    return request;
+}
+
+::firebolt::rialto::HaveDataRequest createHaveDataRequest(int sessionId, unsigned numOfFrames, unsigned requestId)
+{
+    ::firebolt::rialto::HaveDataRequest request;
+    request.set_session_id(sessionId);
+    request.set_status(::firebolt::rialto::HaveDataRequest_MediaSourceStatus_OK);
+    request.set_num_frames(numOfFrames);
+    request.set_request_id(requestId);
+    return request;
+}
+
+::firebolt::rialto::PauseRequest createPauseRequest(int sessionId)
+{
+    ::firebolt::rialto::PauseRequest request;
+    request.set_session_id(sessionId);
+    return request;
+}
+
+::firebolt::rialto::PlayRequest createPlayRequest(int sessionId)
+{
+    ::firebolt::rialto::PlayRequest request;
+    request.set_session_id(sessionId);
+    return request;
+}
+
+::firebolt::rialto::RemoveSourceRequest createRemoveSourceRequest(int sessionId, int sourceId)
+{
+    ::firebolt::rialto::RemoveSourceRequest request;
+    request.set_session_id(sessionId);
+    request.set_source_id(sourceId);
+    return request;
+}
+
+::firebolt::rialto::StopRequest createStopRequest(int sessionId)
+{
+    ::firebolt::rialto::StopRequest request;
+    request.set_session_id(sessionId);
+    return request;
+}
+
+::firebolt::rialto::DestroySessionRequest createDestroySessionRequest(int sessionId)
+{
+    ::firebolt::rialto::DestroySessionRequest request;
+    request.set_session_id(sessionId);
     return request;
 }
 
@@ -78,5 +162,10 @@ namespace firebolt::rialto::server::ct
     request.set_session_type(::firebolt::rialto::CreateKeySessionRequest_KeySessionType_TEMPORARY);
     request.set_is_ldl(false);
     return request;
+}
+
+::firebolt::rialto::GetSharedMemoryRequest createGetSharedMemoryRequest()
+{
+    return ::firebolt::rialto::GetSharedMemoryRequest();
 }
 } // namespace firebolt::rialto::server::ct
