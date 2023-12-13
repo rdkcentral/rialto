@@ -72,7 +72,6 @@ public:
     }
 };
 
-
 /*
  * Component Test: RialtoApplicationSessionServer goes from Not Running -> Unitialized (server preloading) -> active sequence
  * Test Objective:
@@ -89,7 +88,7 @@ public:
  * Test Initialize:
  *   RialtoServerComponentTest::RialtoServerComponentTest() will set up wrappers and
  *      starts the application server running in its own thread
- * 
+ *
  *
  * Test Steps:
  *  Step A1: monitor socket creation
@@ -127,12 +126,9 @@ TEST_F(SessionServerStateChangeTest, ShouldChangeFromInactiveToActive)
     setStateActive();
 }
 
-
-
 /*
- * Component Test: RialtoApplicationSessionServer goes from Not Running -> Initialized (active state) -> inactive sequence
- * Test Objective:
- *  Test that the server can be successfully started in an active state and then de-activated
+ * Component Test: RialtoApplicationSessionServer goes from Not Running -> Initialized (active state) -> inactive
+ * sequence Test Objective: Test that the server can be successfully started in an active state and then de-activated
  *
  * Sequence Diagrams:
  *  https://wiki.rdkcentral.com/pages/viewpage.action?spaceKey=ASP&title=Rialto+Application+Session+Management

@@ -82,8 +82,13 @@ public:
  *  Step 2: send a SetConfiguration message to make server active; and then expect StateChangedEvent message
  *      There doesn't seem to be a sequence diagram for this
  *
- *  Step 3: Perform ping test
- *      In the sequence diagram "Ping/Ack" this implements steps 1 and 6
+ *  Step 3: Perform log level test
+ *      - Check that the default log levels are used initially by
+ *          calling getLogLevels() since RialtoServerManager is running in a different thread
+ *          within this process. This is a slightly "backdoor" method of obtaining the information
+ *      - Send a SetLogLevelsRequest and expect a SetLogLevelsResponse
+ *      - Check that the new log levels, defined in the function createSetLogLevelsRequest(), are being used
+ *          by RialtoServerManager
  *
  * Test Teardown:
  *  Server is terminated.
@@ -101,6 +106,6 @@ TEST_F(SessionServerLogLevelTest, ShouldSetLogLevels)
     // Step 2: send a SetConfiguration message to make server active; and then expect StateChangedEvent message
     configureSutInActiveState();
 
-    // Step 3: Perform ping test
+    // Step 3: Perform log level test
     setLogLevels();
 }
