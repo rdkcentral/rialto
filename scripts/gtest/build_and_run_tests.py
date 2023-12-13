@@ -75,7 +75,7 @@ def buildAndRunGTests(args, f, buildDefines, suitesToRun):
 
     # Clean if required
     if args['clean'] == True:
-        executeCmd = ["rm", "-rf", args['output'], getDefaultResultsOutputFileName() + ".log", valgrindOutput + ".log"]
+        executeCmd = ["rm", "-rf", args['output'], valgrindOutput + ".log"]
         runcmd(executeCmd, cwd=os.getcwd())
 
     # Get xml output file name if any

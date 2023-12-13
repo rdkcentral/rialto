@@ -28,6 +28,7 @@
 #include <syscall.h>
 #include <unistd.h>
 #include <utility>
+#include <vector>
 
 #if !defined(SYS_memfd_create)
 #if defined(__NR_memfd_create)
@@ -61,18 +62,47 @@
 namespace
 {
 constexpr std::chrono::milliseconds kEventTimeout{200};
-constexpr uint32_t kSharedMemorySize{123000};
-constexpr firebolt::rialto::MediaPlayerShmInfo kShmInfoVideo{1000, 0, 1000, 100000};
-constexpr firebolt::rialto::MediaPlayerShmInfo kShmInfoAudio{1000, 101000, 102000, 10000};
-constexpr firebolt::rialto::MediaPlayerShmInfo kShmInfoWebAudio{1000, 112000, 113000, 10000};
+constexpr uint32_t kNumOfAVPartitions{2};
+constexpr uint32_t kNumOfWebAudioPartitions{0};
+constexpr uint32_t kVideoPartitionSize = 100000;
+constexpr uint32_t kAudioPartitionSize = 10000;
+constexpr uint32_t kWebAudioPartitionSize = 10000;
+constexpr uint32_t kMetadataPartitionSize = 1000;
+
+const std::vector<firebolt::rialto::MediaPlayerShmInfo> getVideoPartitions()
+{
+    std::vector<firebolt::rialto::MediaPlayerShmInfo> videoPartitions;
+    for (uint32_t i = 0; i < kNumOfAVPartitions; i++)
+    {
+        uint32_t baseLocation = (2 * kMetadataPartitionSize + kAudioPartitionSize + kVideoPartitionSize) * i;
+        videoPartitions.push_back(
+            {kMetadataPartitionSize, baseLocation, baseLocation + kMetadataPartitionSize, kVideoPartitionSize});
+    }
+    return videoPartitions;
+}
+const std::vector<firebolt::rialto::MediaPlayerShmInfo> getAudioPartitions()
+{
+    std::vector<firebolt::rialto::MediaPlayerShmInfo> audioPartitions;
+    for (uint32_t i = 0; i < kNumOfAVPartitions; i++)
+    {
+        uint32_t baseLocation = (2 * kMetadataPartitionSize + kAudioPartitionSize + kVideoPartitionSize) * i +
+                                kMetadataPartitionSize + kVideoPartitionSize;
+        audioPartitions.push_back(
+            {kMetadataPartitionSize, baseLocation, baseLocation + kMetadataPartitionSize, kAudioPartitionSize});
+    }
+    return audioPartitions;
+}
 } // namespace
 
 namespace firebolt::rialto::client::ct
 {
 ClientComponentTest::ClientComponentTest()
-    : MediaPipelineTestMethods(kShmInfoAudio, kShmInfoVideo),
+    : MediaPipelineTestMethods(getAudioPartitions(), getVideoPartitions()),
       m_serverStub{std::make_shared<ServerStub>(m_controlModuleMock, m_mediaPipelineModuleMock)}
 {
+    // Calculate shm size
+    m_shmSize = kNumOfAVPartitions * (2 * kMetadataPartitionSize + kAudioPartitionSize + kVideoPartitionSize) +
+                kWebAudioPartitionSize * (kMetadataPartitionSize + kWebAudioPartitionSize);
     initRealShm();
 }
 
@@ -114,10 +144,10 @@ void ClientComponentTest::initRealShm()
     int fd = syscall(SYS_memfd_create, "rialto_avbuf", MFD_CLOEXEC | MFD_ALLOW_SEALING);
     ASSERT_GT(fd, 0);
 
-    ASSERT_NE(ftruncate(fd, static_cast<off_t>(kSharedMemorySize)), -1);
+    ASSERT_NE(ftruncate(fd, static_cast<off_t>(m_shmSize)), -1);
     ASSERT_NE(fcntl(fd, F_ADD_SEALS, (F_SEAL_SEAL | F_SEAL_GROW | F_SEAL_SHRINK)), -1);
 
-    void *addr = mmap(nullptr, kSharedMemorySize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    void *addr = mmap(nullptr, m_shmSize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     ASSERT_NE(addr, MAP_FAILED);
 
     m_fd = fd;
@@ -126,7 +156,7 @@ void ClientComponentTest::initRealShm()
 
 void ClientComponentTest::termRealShm()
 {
-    ASSERT_EQ(munmap(m_address, kSharedMemorySize), 0);
+    ASSERT_EQ(munmap(m_address, m_shmSize), 0);
     close(m_fd);
 }
 
@@ -142,7 +172,7 @@ void *ClientComponentTest::getShmAddress()
 
 uint32_t ClientComponentTest::getShmSize()
 {
-    return kSharedMemorySize;
+    return m_shmSize;
 }
 
 void ClientComponentTest::startApplicationRunning()

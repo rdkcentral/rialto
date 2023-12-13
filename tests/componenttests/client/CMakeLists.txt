@@ -51,6 +51,8 @@ add_gtests (
         tests/mse/PlayPauseStopFailuresTest.cpp
         tests/mse/SetPlaybackRateTest.cpp
         tests/mse/SetPositionTest.cpp
+        tests/mse/SingleSourcePlaybackTest.cpp
+        tests/mse/DualVideoPlaybackTest.cpp
         tests/mse/AudioSwitchingTest.cpp
         )
 

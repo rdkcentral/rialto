@@ -69,6 +69,16 @@ jobs:
         with:
           suite: 'server'
 
+      # Upload logs on failure
+      - name: Upload logs
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: logs
+          path: |
+            gtest_result.log
+            build/*gtest_result.xml
+
       # Cache lcov output
       - name: Cache server component tests interface stats
         id: cache-server-component-coverage-stats
