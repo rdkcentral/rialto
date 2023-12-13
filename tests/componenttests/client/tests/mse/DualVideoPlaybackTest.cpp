@@ -37,7 +37,7 @@ public:
  *  and data is written to the buffer.
  *
  * Sequence Diagrams:
- *  
+ *
  *
  * Test Setup:
  *  Language: C++

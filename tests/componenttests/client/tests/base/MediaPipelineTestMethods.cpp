@@ -59,7 +59,7 @@ constexpr size_t kMaxFrameCount = 20;
 const std::shared_ptr<MediaPlayerShmInfo> kNullShmInfo;
 constexpr int64_t kTimeStamp = 1701352637000;
 constexpr int64_t kDuration = 105;
-constexpr int64_t kDurationSeondary = 402;
+constexpr int64_t kDurationSecondary = 402;
 firebolt::rialto::Fraction kFrameRateEmpty = {0, 0};
 firebolt::rialto::Fraction kFrameRateSecondary = {15, 1};
 constexpr VideoRequirements kVideoRequirementsSecondary{426, 240};
@@ -70,11 +70,12 @@ constexpr uint32_t kSecondaryPartition{1};
 
 namespace firebolt::rialto::client::ct
 {
-MediaPipelineTestMethods::MediaPipelineTestMethods(const std::vector<firebolt::rialto::MediaPlayerShmInfo> &audioShmInfo, const std::vector<firebolt::rialto::MediaPlayerShmInfo> &videoShmInfo)
+MediaPipelineTestMethods::MediaPipelineTestMethods(const std::vector<firebolt::rialto::MediaPlayerShmInfo> &audioShmInfo,
+                                                   const std::vector<firebolt::rialto::MediaPlayerShmInfo> &videoShmInfo)
     : m_mediaPipelineClientMock{std::make_shared<StrictMock<MediaPipelineClientMock>>()},
       m_mediaPipelineModuleMock{std::make_shared<StrictMock<MediaPipelineModuleMock>>()},
-      m_mediaPipelineClientSecondaryMock{std::make_shared<StrictMock<MediaPipelineClientMock>>()}, m_kAudioShmInfo{audioShmInfo},
-      m_kVideoShmInfo{videoShmInfo}
+      m_mediaPipelineClientSecondaryMock{std::make_shared<StrictMock<MediaPipelineClientMock>>()},
+      m_kAudioShmInfo{audioShmInfo}, m_kVideoShmInfo{videoShmInfo}
 {
     kCodecData->data = std::vector<std::uint8_t>{'T', 'E', 'S', 'T'};
     kCodecData->type = firebolt::rialto::CodecDataType::BUFFER;
@@ -107,7 +108,8 @@ void MediaPipelineTestMethods::createMediaPipeline()
 
 void MediaPipelineTestMethods::createMediaPipelineSecondary()
 {
-    createMediaPipelineInternal(m_mediaPipelineSecondary, m_mediaPipelineClientSecondaryMock, kVideoRequirementsSecondary);
+    createMediaPipelineInternal(m_mediaPipelineSecondary, m_mediaPipelineClientSecondaryMock,
+                                kVideoRequirementsSecondary);
 }
 
 void MediaPipelineTestMethods::shouldLoad()
@@ -163,22 +165,26 @@ void MediaPipelineTestMethods::pause()
 
 void MediaPipelineTestMethods::shouldAttachVideoSource()
 {
-    shouldAttachVideoSourceInternal(kSessionId, kVideoVp9, kHasNoDrm, kWidth720p, kHeight720p, kAlignment, kCodecData, kStreamFormatRaw);
+    shouldAttachVideoSourceInternal(kSessionId, kVideoVp9, kHasNoDrm, kWidth720p, kHeight720p, kAlignment, kCodecData,
+                                    kStreamFormatRaw);
 }
 
 void MediaPipelineTestMethods::shouldAttachVideoSourceSecondary()
 {
-    shouldAttachVideoSourceInternal(kSessionIdSecondary, kVideoH264, kHasNoDrm, kWidthSecondary, kHeightSecondary, kAlignment, kCodecData, kStreamFormatByteStream);
+    shouldAttachVideoSourceInternal(kSessionIdSecondary, kVideoH264, kHasNoDrm, kWidthSecondary, kHeightSecondary,
+                                    kAlignment, kCodecData, kStreamFormatByteStream);
 }
 
 void MediaPipelineTestMethods::attachSourceVideo()
 {
-    attachSourceVideoInternal(m_mediaPipeline, kVideoVp9, kHasNoDrm, kWidth720p, kHeight720p, kAlignment, kCodecData, kStreamFormatRaw, true);
+    attachSourceVideoInternal(m_mediaPipeline, kVideoVp9, kHasNoDrm, kWidth720p, kHeight720p, kAlignment, kCodecData,
+                              kStreamFormatRaw, true);
 }
 
 void MediaPipelineTestMethods::attachSourceVideoSecondary()
 {
-    attachSourceVideoInternal(m_mediaPipelineSecondary, kVideoH264, kHasNoDrm, kWidthSecondary, kHeightSecondary, kAlignment, kCodecData, kStreamFormatByteStream, true);
+    attachSourceVideoInternal(m_mediaPipelineSecondary, kVideoH264, kHasNoDrm, kWidthSecondary, kHeightSecondary,
+                              kAlignment, kCodecData, kStreamFormatByteStream, true);
 }
 
 void MediaPipelineTestMethods::shouldAttachAudioSource()
@@ -252,7 +258,8 @@ void MediaPipelineTestMethods::shouldNotifyNeedDataAudioBeforePreroll()
 
 void MediaPipelineTestMethods::sendNotifyNeedDataAudioBeforePreroll()
 {
-    sendNotifyNeedDataInternal(kSessionId, kAudioSourceId, m_locationToWriteAudio[kPrimaryPartition], kFrameCountBeforePreroll);
+    sendNotifyNeedDataInternal(kSessionId, kAudioSourceId, m_locationToWriteAudio[kPrimaryPartition],
+                               kFrameCountBeforePreroll);
 }
 
 void MediaPipelineTestMethods::shouldNotifyNeedDataVideoBeforePreroll()
@@ -262,7 +269,8 @@ void MediaPipelineTestMethods::shouldNotifyNeedDataVideoBeforePreroll()
 
 void MediaPipelineTestMethods::sendNotifyNeedDataVideoBeforePreroll()
 {
-    sendNotifyNeedDataInternal(kSessionId, kVideoSourceId, m_locationToWriteVideo[kPrimaryPartition], kFrameCountBeforePreroll);
+    sendNotifyNeedDataInternal(kSessionId, kVideoSourceId, m_locationToWriteVideo[kPrimaryPartition],
+                               kFrameCountBeforePreroll);
 }
 
 void MediaPipelineTestMethods::haveDataOk()
@@ -323,12 +331,14 @@ void MediaPipelineTestMethods::checkMseAudioSegmentWritten(int32_t segmentId)
 
 int32_t MediaPipelineTestMethods::addSegmentMseVideo()
 {
-    return addSegmentMseVideoInternal(m_mediaPipeline, kDuration, kWidth720p, kHeight720p, kFrameRateEmpty, kPrimaryPartition, AddSegmentStatus::OK);
+    return addSegmentMseVideoInternal(m_mediaPipeline, kDuration, kWidth720p, kHeight720p, kFrameRateEmpty,
+                                      kPrimaryPartition, AddSegmentStatus::OK);
 }
 
 int32_t MediaPipelineTestMethods::addSegmentMseVideoSecondary()
 {
-    return addSegmentMseVideoInternal(m_mediaPipelineSecondary, kDurationSeondary, kWidthSecondary, kHeightSecondary, kFrameRateSecondary, kSecondaryPartition, AddSegmentStatus::OK); //TODO: Different?
+    return addSegmentMseVideoInternal(m_mediaPipelineSecondary, kDurationSecondary, kWidthSecondary, kHeightSecondary,
+                                      kFrameRateSecondary, kSecondaryPartition, AddSegmentStatus::OK);
 }
 
 void MediaPipelineTestMethods::checkMseVideoSegmentWritten(int32_t segmentId)
@@ -429,7 +439,6 @@ void MediaPipelineTestMethods::sendNotifyPlaybackStatePlayingSecondary()
 {
     sendNotifyPlaybackStateInternal(kSessionIdSecondary, PlaybackState::PLAYING);
 }
-
 
 void MediaPipelineTestMethods::shouldPlay()
 {
@@ -805,7 +814,8 @@ void MediaPipelineTestMethods::sendNotifyNeedDataAudio(uint32_t framesToWrite)
 
 void MediaPipelineTestMethods::sendNotifyNeedDataVideoSecondary(uint32_t framesToWrite)
 {
-    sendNotifyNeedDataInternal(kSessionIdSecondary, kVideoSourceId, m_locationToWriteVideo[kSecondaryPartition], framesToWrite);
+    sendNotifyNeedDataInternal(kSessionIdSecondary, kVideoSourceId, m_locationToWriteVideo[kSecondaryPartition],
+                               framesToWrite);
 }
 
 void MediaPipelineTestMethods::writeAudioFrames()
@@ -985,7 +995,7 @@ void MediaPipelineTestMethods::checkVideoMetadataSecondary(const MediaSegmentMet
     EXPECT_TRUE(metadata.has_time_position());
     EXPECT_EQ(metadata.time_position(), getTimestamp(segmentId));
     EXPECT_TRUE(metadata.has_sample_duration());
-    EXPECT_EQ(metadata.sample_duration(), kDurationSeondary);
+    EXPECT_EQ(metadata.sample_duration(), kDurationSecondary);
     EXPECT_TRUE(metadata.has_stream_id());
     EXPECT_EQ(metadata.stream_id(), kVideoSourceId);
     EXPECT_TRUE(metadata.has_width());
@@ -1038,16 +1048,18 @@ void MediaPipelineTestMethods::checkSegmentData(const MediaSegmentMetadata &meta
     EXPECT_EQ(data, expectedSegmentData);
 }
 
-void MediaPipelineTestMethods::shouldCreateMediaSessionInternal(const int32_t sessionId, const VideoRequirements &videoRequirements)
+void MediaPipelineTestMethods::shouldCreateMediaSessionInternal(const int32_t sessionId,
+                                                                const VideoRequirements &videoRequirements)
 {
     EXPECT_CALL(*m_mediaPipelineModuleMock,
                 createSession(_, createSessionRequestMatcher(videoRequirements.maxWidth, videoRequirements.maxHeight),
                               _, _))
         .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->createSessionResponse(sessionId)),
-                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)))); 
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
 }
 
-void MediaPipelineTestMethods::shouldLoadInternal(const int32_t sessionId, const MediaType &mediaType, const std::string &mimeType, const std::string &url)
+void MediaPipelineTestMethods::shouldLoadInternal(const int32_t sessionId, const MediaType &mediaType,
+                                                  const std::string &mimeType, const std::string &url)
 {
     EXPECT_CALL(*m_mediaPipelineModuleMock,
                 load(_, loadRequestMatcher(sessionId, convertMediaType(mediaType), mimeType, url), _, _))
@@ -1078,13 +1090,15 @@ void MediaPipelineTestMethods::shouldDestroyMediaSessionInternal(const int32_t s
         .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
 }
 
-void MediaPipelineTestMethods::shouldAttachVideoSourceInternal(const int32_t sessionId, const std::string &mimeType, bool hasNoDrm, const int32_t width, const int32_t height, const firebolt::rialto::SegmentAlignment &alignment, const std::shared_ptr<firebolt::rialto::CodecData> &codacData, const firebolt::rialto::StreamFormat &streamFormat)
+void MediaPipelineTestMethods::shouldAttachVideoSourceInternal(
+    const int32_t sessionId, const std::string &mimeType, bool hasNoDrm, const int32_t width, const int32_t height,
+    const firebolt::rialto::SegmentAlignment &alignment, const std::shared_ptr<firebolt::rialto::CodecData> &codacData,
+    const firebolt::rialto::StreamFormat &streamFormat)
 {
     EXPECT_CALL(*m_mediaPipelineModuleMock,
                 attachSource(_,
-                             attachSourceRequestMatcherVideo(sessionId, mimeType.c_str(), hasNoDrm, width, //TODO: Different?
-                                                             height, alignment, codacData,
-                                                             convertStreamFormat(streamFormat)),
+                             attachSourceRequestMatcherVideo(sessionId, mimeType.c_str(), hasNoDrm, width, height,
+                                                             alignment, codacData, convertStreamFormat(streamFormat)),
                              _, _))
         .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->attachSourceResponse(kVideoSourceId)),
                         WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
@@ -1096,13 +1110,13 @@ void MediaPipelineTestMethods::shouldAllSourcesAttachedInternal(const int32_t se
         .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
 }
 
-void MediaPipelineTestMethods::shouldHaveDataInternal(const int32_t sessionId, const MediaSourceStatus status, const size_t framesWritten, const uint32_t partition)
+void MediaPipelineTestMethods::shouldHaveDataInternal(const int32_t sessionId, const MediaSourceStatus status,
+                                                      const size_t framesWritten, const uint32_t partition)
 {
-    EXPECT_CALL(*m_mediaPipelineModuleMock,
-                haveData(_,
-                         haveDataRequestMatcher(sessionId, convertMediaSourceStatus(status),
-                                                framesWritten, m_needDataRequestId),
-                         _, _))
+    EXPECT_CALL(*m_mediaPipelineModuleMock, haveData(_,
+                                                     haveDataRequestMatcher(sessionId, convertMediaSourceStatus(status),
+                                                                            framesWritten, m_needDataRequestId),
+                                                     _, _))
         .WillOnce(WithArgs<0, 3>(Invoke(
             [&, partition](::google::protobuf::RpcController *controller, ::google::protobuf::Closure *done)
             {
@@ -1113,22 +1127,23 @@ void MediaPipelineTestMethods::shouldHaveDataInternal(const int32_t sessionId, c
             })));
 }
 
-void MediaPipelineTestMethods::shouldNotifyPlaybackStateInternal(const std::shared_ptr<StrictMock<MediaPipelineClientMock>> &clientMock, const PlaybackState &state)
+void MediaPipelineTestMethods::shouldNotifyPlaybackStateInternal(
+    const std::shared_ptr<StrictMock<MediaPipelineClientMock>> &clientMock, const PlaybackState &state)
 {
-    EXPECT_CALL(*clientMock, notifyPlaybackState(state))
-        .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
+    EXPECT_CALL(*clientMock, notifyPlaybackState(state)).WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
 }
 
-void MediaPipelineTestMethods::shouldNotifyNetworkStateInternal(const std::shared_ptr<StrictMock<MediaPipelineClientMock>> &clientMock, const NetworkState &state)
+void MediaPipelineTestMethods::shouldNotifyNetworkStateInternal(
+    const std::shared_ptr<StrictMock<MediaPipelineClientMock>> &clientMock, const NetworkState &state)
 {
-    EXPECT_CALL(*clientMock, notifyNetworkState(state))
-        .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
+    EXPECT_CALL(*clientMock, notifyNetworkState(state)).WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
 }
 
-void MediaPipelineTestMethods::shouldNotifyNeedDataInternal(const std::shared_ptr<StrictMock<MediaPipelineClientMock>> &clientMock, const int32_t sourceId, const size_t framesToWrite)
+void MediaPipelineTestMethods::shouldNotifyNeedDataInternal(
+    const std::shared_ptr<StrictMock<MediaPipelineClientMock>> &clientMock, const int32_t sourceId,
+    const size_t framesToWrite)
 {
-    EXPECT_CALL(*clientMock,
-                notifyNeedMediaData(sourceId, framesToWrite, m_needDataRequestId, kNullShmInfo))
+    EXPECT_CALL(*clientMock, notifyNeedMediaData(sourceId, framesToWrite, m_needDataRequestId, kNullShmInfo))
         .WillOnce(InvokeWithoutArgs(
             [&]()
             {
@@ -1138,19 +1153,24 @@ void MediaPipelineTestMethods::shouldNotifyNeedDataInternal(const std::shared_pt
             }));
 }
 
-void MediaPipelineTestMethods::createMediaPipelineInternal(std::unique_ptr<IMediaPipeline> &mediaPipeline, const std::shared_ptr<StrictMock<MediaPipelineClientMock>> &client, const VideoRequirements &videoRequirements)
+void MediaPipelineTestMethods::createMediaPipelineInternal(std::unique_ptr<IMediaPipeline> &mediaPipeline,
+                                                           const std::shared_ptr<StrictMock<MediaPipelineClientMock>> &client,
+                                                           const VideoRequirements &videoRequirements)
 {
     m_mediaPipelineFactory = firebolt::rialto::IMediaPipelineFactory::createFactory();
     mediaPipeline = m_mediaPipelineFactory->createMediaPipeline(client, videoRequirements);
     EXPECT_NE(mediaPipeline, nullptr);
 }
 
-void MediaPipelineTestMethods::loadInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline, const MediaType &mediaType, const std::string &mimeType, const std::string &url, const bool status)
+void MediaPipelineTestMethods::loadInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline,
+                                            const MediaType &mediaType, const std::string &mimeType,
+                                            const std::string &url, const bool status)
 {
     EXPECT_EQ(mediaPipeline->load(mediaType, mimeType, url), status);
 }
 
-void MediaPipelineTestMethods::removeSourceInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline, const int32_t sourceId, const bool status)
+void MediaPipelineTestMethods::removeSourceInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline,
+                                                    const int32_t sourceId, const bool status)
 {
     EXPECT_EQ(mediaPipeline->removeSource(sourceId), status);
 }
@@ -1160,26 +1180,36 @@ void MediaPipelineTestMethods::stopInternal(const std::unique_ptr<IMediaPipeline
     EXPECT_EQ(mediaPipeline->stop(), status);
 }
 
-void MediaPipelineTestMethods::attachSourceVideoInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline, const std::string &mimeType, bool hasNoDrm, const int32_t width, const int32_t height, const firebolt::rialto::SegmentAlignment &alignment, const std::shared_ptr<firebolt::rialto::CodecData> &codacData, const firebolt::rialto::StreamFormat &streamFormat, const bool status)
+void MediaPipelineTestMethods::attachSourceVideoInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline,
+                                                         const std::string &mimeType, bool hasNoDrm,
+                                                         const int32_t width, const int32_t height,
+                                                         const firebolt::rialto::SegmentAlignment &alignment,
+                                                         const std::shared_ptr<firebolt::rialto::CodecData> &codacData,
+                                                         const firebolt::rialto::StreamFormat &streamFormat,
+                                                         const bool status)
 {
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
-        std::make_unique<IMediaPipeline::MediaSourceVideo>(mimeType.c_str(), hasNoDrm, width, height,
-                                                           alignment, streamFormat, codacData); //TODO: Different?
+        std::make_unique<IMediaPipeline::MediaSourceVideo>(mimeType.c_str(), hasNoDrm, width, height, alignment,
+                                                           streamFormat, codacData);
     EXPECT_EQ(mediaPipeline->attachSource(mediaSource), status);
 }
 
-void MediaPipelineTestMethods::allSourcesAttachedInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline, const bool status)
+void MediaPipelineTestMethods::allSourcesAttachedInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline,
+                                                          const bool status)
 {
     EXPECT_EQ(mediaPipeline->allSourcesAttached(), status);
 }
 
-int32_t MediaPipelineTestMethods::addSegmentMseVideoInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline, const int64_t duration, const int32_t width, const int32_t height, const Fraction &frameRate, const uint32_t partitionId, const AddSegmentStatus &status)
+int32_t MediaPipelineTestMethods::addSegmentMseVideoInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline,
+                                                             const int64_t duration, const int32_t width,
+                                                             const int32_t height, const Fraction &frameRate,
+                                                             const uint32_t partitionId, const AddSegmentStatus &status)
 {
     EXPECT_LT(m_videoSegmentCount, sizeof(kVideoSegments) / sizeof(kVideoSegments[0]));
 
     std::unique_ptr<IMediaPipeline::MediaSegment> mseData =
-        std::make_unique<IMediaPipeline::MediaSegmentVideo>(kVideoSourceId, getTimestamp(m_videoSegmentCount),
-                                                            duration, width, height, frameRate);
+        std::make_unique<IMediaPipeline::MediaSegmentVideo>(kVideoSourceId, getTimestamp(m_videoSegmentCount), duration,
+                                                            width, height, frameRate);
     mseData->setData(kVideoSegments[m_videoSegmentCount].size(),
                      (const uint8_t *)kVideoSegments[m_videoSegmentCount].c_str());
     EXPECT_EQ(mediaPipeline->addSegment(m_needDataRequestId, mseData), status);
@@ -1194,7 +1224,8 @@ int32_t MediaPipelineTestMethods::addSegmentMseVideoInternal(const std::unique_p
     return segmentId;
 }
 
-void MediaPipelineTestMethods::haveDataInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline, const MediaSourceStatus &mediaStatus, const bool status)
+void MediaPipelineTestMethods::haveDataInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline,
+                                                const MediaSourceStatus &mediaStatus, const bool status)
 {
     EXPECT_EQ(mediaPipeline->haveData(mediaStatus, m_needDataRequestId), status);
 }
@@ -1216,7 +1247,9 @@ void MediaPipelineTestMethods::sendNotifyNetworkStateInternal(const int32_t sess
     waitEvent();
 }
 
-void MediaPipelineTestMethods::sendNotifyNeedDataInternal(const int32_t sessionId, const int32_t sourceId, const std::shared_ptr<MediaPlayerShmInfo> &location, uint32_t framesToWrite)
+void MediaPipelineTestMethods::sendNotifyNeedDataInternal(const int32_t sessionId, const int32_t sourceId,
+                                                          const std::shared_ptr<MediaPlayerShmInfo> &location,
+                                                          uint32_t framesToWrite)
 {
     getServerStub()->notifyNeedMediaDataEvent(sessionId, sourceId, framesToWrite, m_needDataRequestId, location);
     waitEvent();

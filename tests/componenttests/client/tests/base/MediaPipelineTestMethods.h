@@ -28,6 +28,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 using ::testing::_;
 using ::testing::DoAll;
@@ -51,7 +52,8 @@ namespace firebolt::rialto::client::ct
 class MediaPipelineTestMethods
 {
 public:
-    MediaPipelineTestMethods(const std::vector<firebolt::rialto::MediaPlayerShmInfo> &audioShmInfo, const std::vector<firebolt::rialto::MediaPlayerShmInfo> &videoShmInfo);
+    MediaPipelineTestMethods(const std::vector<firebolt::rialto::MediaPlayerShmInfo> &audioShmInfo,
+                             const std::vector<firebolt::rialto::MediaPlayerShmInfo> &videoShmInfo);
     virtual ~MediaPipelineTestMethods();
 
 protected:
@@ -235,29 +237,50 @@ private:
     void checkHasNoExtraData(const MediaSegmentMetadata &metadata);
     void checkSegmentData(const MediaSegmentMetadata &metadata, uint8_t *dataPtr, const std::string &expectedSegmentData);
     void shouldCreateMediaSessionInternal(const int32_t sessionId, const VideoRequirements &videoRequirements);
-    void shouldLoadInternal(const int32_t sessionId, const MediaType &mediaType, const std::string &mimeType, const std::string &url);
+    void shouldLoadInternal(const int32_t sessionId, const MediaType &mediaType, const std::string &mimeType,
+                            const std::string &url);
     void shouldRemoveSourceInternal(const int32_t sessionId, const int32_t sourceId);
     void shouldStopInternal(const int32_t sessionId);
     void shouldPlayInternal(const int32_t sessionId);
     void shouldDestroyMediaSessionInternal(const int32_t sessionId);
-    void shouldAttachVideoSourceInternal(const int32_t sessionId, const std::string &mimeType, bool hasNoDrm, const int32_t width, const int32_t height, const firebolt::rialto::SegmentAlignment &alignment, const std::shared_ptr<firebolt::rialto::CodecData> &codacData, const firebolt::rialto::StreamFormat &streamFormat);
+    void shouldAttachVideoSourceInternal(const int32_t sessionId, const std::string &mimeType, bool hasNoDrm,
+                                         const int32_t width, const int32_t height,
+                                         const firebolt::rialto::SegmentAlignment &alignment,
+                                         const std::shared_ptr<firebolt::rialto::CodecData> &codacData,
+                                         const firebolt::rialto::StreamFormat &streamFormat);
     void shouldAllSourcesAttachedInternal(const int32_t sessionId);
-    void shouldHaveDataInternal(const int32_t sessionId, const MediaSourceStatus status, const size_t framesWritten, const uint32_t partition);
-    void shouldNotifyPlaybackStateInternal(const std::shared_ptr<StrictMock<MediaPipelineClientMock>> &clientMock, const PlaybackState &state);
-    void shouldNotifyNetworkStateInternal(const std::shared_ptr<StrictMock<MediaPipelineClientMock>> &clientMock, const NetworkState &state);
-    void shouldNotifyNeedDataInternal(const std::shared_ptr<StrictMock<MediaPipelineClientMock>> &clientMock, const int32_t sourceId, const size_t framesToWrite);
-    void createMediaPipelineInternal(std::unique_ptr<IMediaPipeline> &mediaPipeline, const std::shared_ptr<StrictMock<MediaPipelineClientMock>> &client, const VideoRequirements &videoRequirements);
-    void loadInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline, const MediaType &mediaType, const std::string &mimeType, const std::string &url, const bool status);
-    void removeSourceInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline, const int32_t sourceId, const bool status);
+    void shouldHaveDataInternal(const int32_t sessionId, const MediaSourceStatus status, const size_t framesWritten,
+                                const uint32_t partition);
+    void shouldNotifyPlaybackStateInternal(const std::shared_ptr<StrictMock<MediaPipelineClientMock>> &clientMock,
+                                           const PlaybackState &state);
+    void shouldNotifyNetworkStateInternal(const std::shared_ptr<StrictMock<MediaPipelineClientMock>> &clientMock,
+                                          const NetworkState &state);
+    void shouldNotifyNeedDataInternal(const std::shared_ptr<StrictMock<MediaPipelineClientMock>> &clientMock,
+                                      const int32_t sourceId, const size_t framesToWrite);
+    void createMediaPipelineInternal(std::unique_ptr<IMediaPipeline> &mediaPipeline,
+                                     const std::shared_ptr<StrictMock<MediaPipelineClientMock>> &client,
+                                     const VideoRequirements &videoRequirements);
+    void loadInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline, const MediaType &mediaType,
+                      const std::string &mimeType, const std::string &url, const bool status);
+    void removeSourceInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline, const int32_t sourceId,
+                              const bool status);
     void stopInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline, const bool status);
-    void attachSourceVideoInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline, const std::string &mimeType, bool hasNoDrm, const int32_t width, const int32_t height, const firebolt::rialto::SegmentAlignment &alignment, const std::shared_ptr<firebolt::rialto::CodecData> &codacData, const firebolt::rialto::StreamFormat &streamFormat, const bool status);
+    void attachSourceVideoInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline, const std::string &mimeType,
+                                   bool hasNoDrm, const int32_t width, const int32_t height,
+                                   const firebolt::rialto::SegmentAlignment &alignment,
+                                   const std::shared_ptr<firebolt::rialto::CodecData> &codacData,
+                                   const firebolt::rialto::StreamFormat &streamFormat, const bool status);
     void allSourcesAttachedInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline, const bool status);
-    int32_t addSegmentMseVideoInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline, const int64_t duration, const int32_t width, const int32_t height, const Fraction &frameRate, const uint32_t partitionId, const AddSegmentStatus &status);
-    void haveDataInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline, const MediaSourceStatus &mediaStatus, const bool status);
+    int32_t addSegmentMseVideoInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline, const int64_t duration,
+                                       const int32_t width, const int32_t height, const Fraction &frameRate,
+                                       const uint32_t partitionId, const AddSegmentStatus &status);
+    void haveDataInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline, const MediaSourceStatus &mediaStatus,
+                          const bool status);
     void playInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline, const bool status);
     void sendNotifyPlaybackStateInternal(const int32_t sessionId, const PlaybackState &state);
     void sendNotifyNetworkStateInternal(const int32_t sessionId, const NetworkState &state);
-    void sendNotifyNeedDataInternal(const int32_t sessionId, const int32_t sourceId, const std::shared_ptr<MediaPlayerShmInfo> &location, uint32_t framesToWrite);
+    void sendNotifyNeedDataInternal(const int32_t sessionId, const int32_t sourceId,
+                                    const std::shared_ptr<MediaPlayerShmInfo> &location, uint32_t framesToWrite);
 };
 } // namespace firebolt::rialto::client::ct
 
