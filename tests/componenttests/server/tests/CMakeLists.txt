@@ -21,9 +21,9 @@ add_gtests (
         RialtoServerComponentTests
 
         # gtest code
-        sessionServerStateChange/SessionServerStateChangeTest.cpp
-        sessionServerStateChange/SessionServerHealthCheckTest.cpp
-        sessionServerStateChange/SessionServerLogLevelTest.cpp
+        sessionServer/SessionServerStateChangeTest.cpp
+        sessionServer/SessionServerHealthCheckTest.cpp
+        sessionServer/SessionServerLogLevelTest.cpp
         mediaPipeline/CreatePipelineTest.cpp
         mediaPipeline/FailureTests.cpp
         mediaPipeline/PlaybackTest.cpp
