@@ -140,7 +140,7 @@ constexpr int kFrameCountInPlayingState{24};
  *  Server is terminated.
  *
  * Expected Results:
- *  Rialto client can handle the addition of the maximum number of frames and partial number of frames
+ *  Rialto client can handle the addition of > 1 frames
  *  before and after preroll. Data is successfully written to the shared memory for both audio and video.
  *
  * Code:
