@@ -37,7 +37,7 @@ public:
  *  and data is written to the buffer.
  *
  * Sequence Diagrams:
- *  Create Secondary Player (westeros) - https://wiki.rdkcentral.com/pages/viewpage.action?pageId=226375556
+ *  Create, Destroy - https://wiki.rdkcentral.com/pages/viewpage.action?pageId=226375556
  *
  * Test Setup:
  *  Language: C++
