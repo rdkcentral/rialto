@@ -70,6 +70,7 @@ private:
     // Shared Memory
     int32_t m_fd{-1};
     void *m_address{nullptr};
+    uint32_t m_shmSize{0};
     void initRealShm();
     void termRealShm();
 };
