@@ -22,16 +22,16 @@
 
 namespace firebolt::rialto::client::ct
 {
-class SetPlaybackRateTest : public ClientComponentTest
+class AudioSwitchingTest : public ClientComponentTest
 {
 public:
-    SetPlaybackRateTest() : ClientComponentTest()
+    AudioSwitchingTest() : ClientComponentTest()
     {
         ClientComponentTest::startApplicationRunning();
         MediaPipelineTestMethods::startAudioVideoMediaSessionPrerollPaused();
     }
 
-    ~SetPlaybackRateTest()
+    ~AudioSwitchingTest()
     {
         MediaPipelineTestMethods::endAudioVideoMediaSession();
         ClientComponentTest::stopApplication();
@@ -39,13 +39,13 @@ public:
 };
 
 /*
- * Component Test: Set Playback Rate
+ * Component Test: Audio Switching
  * Test Objective:
- *  Test the that set playback rate can be called in paused and playing state, that set playback rate
- *  can accept positive and negative playback rates and that failure is handled correctly.
+ *  Test that media pipeline can switch between audio sources multiple times during playback where
+ *  paused or playing.
  *
  * Sequence Diagrams:
- *  Set Playback Rate - https://wiki.rdkcentral.com/display/ASP/Rialto+Playback+Design
+ *  Audio Stream Switching - https://wiki.rdkcentral.com/display/ASP/Rialto+Dynamic+Audio+Stream+Switching
  *
  * Test Setup:
  *  Language: C++
@@ -59,27 +59,55 @@ public:
  *  Initalise a audio video media session paused and prerolled.
  *
  * Test Steps:
- *  Step 1: Set playback rate to 2.0x in paused state
- *   SetPlaybackRate to 2.0x.
- *   Expect that SetPlaybackRate propagated to the server.
+ *  Step 1: Remove audio source
+ *   Remove the audio source.
+ *   Expect that remove source for audio propagated to the server.
  *
- *  Step 2: Play
+ *  Step 2: Attach mpeg audio source
+ *   Attach the new audio source.
+ *   Expect that attach source for audio propagated to the server.
+ *
+ *  Step 3: Write audio frame
+ *   Write audio frames.
+ *
+ *  Step 4: Remove audio source
+ *   Remove the audio source.
+ *   Expect that remove source for audio propagated to the server.
+ *
+ *  Step 5: Attach eacs audio source
+ *   Attach the new audio source.
+ *   Expect that attach source for audio propagated to the server.
+ *
+ *  Step 6: Write audio frame
+ *   Write audio frames.
+ *
+ *  Step 7: Play
  *   Play the content.
  *   Expect that play propagated to the server.
  *   Server notifys the client that the Playback state has changed to PLAYING.
  *   Expect that the state change notification is propagated to the client.
  *
- *  Step 3: Set playback rate to 2.0x in playing state
- *   SetPlaybackRate to 2.0x.
- *   Expect that SetPlaybackRate propagated to the server.
+ *  Step 8: Remove audio source
+ *   Remove the audio source.
+ *   Expect that remove source for audio propagated to the server.
  *
- *  Step 4: Set playback rate to -2.0x in playing state
- *   SetPlaybackRate to -2.0x.
- *   Expect that SetPlaybackRate propagated to the server.
+ *  Step 9: Attach mp4 audio source
+ *   Attach the new audio source.
+ *   Expect that attach source for audio propagated to the server.
  *
- *  Step 5: Set playback rate failure
- *   SetPlaybackRate to 0.0x.
- *   Expect that SetPlaybackRate propagated to the server and return failure.
+ *  Step 10: Write audio frame
+ *   Write audio frames.
+ *
+ *  Step 11: Remove audio source
+ *   Remove the audio source.
+ *   Expect that remove source for audio propagated to the server.
+ *
+ *  Step 12: Attach eacs audio source
+ *   Attach the new audio source.
+ *   Expect that attach source for audio propagated to the server.
+ *
+ *  Step 13: Write audio frame
+ *   Write audio frames.
  *
  * Test Teardown:
  *  Terminate the media session.
@@ -87,34 +115,61 @@ public:
  *  Server is terminated.
  *
  * Expected Results:
- *  Set playback rate succeeds in the playing and pause state.
- *  Set playback rate succeeds with positive and negative playback rates.
- *  Failure is returned to the application.
+ *  The audio source can be removed and added during ongoing playback (paused/playing).
+ *  Minimal disruption of the playback, no state changes.
  *
  * Code:
  */
-TEST_F(SetPlaybackRateTest, setPlaybackRate)
+TEST_F(AudioSwitchingTest, multiSwitching)
 {
-    // Step 1: Set playback rate to 2.0x in paused state
-    MediaPipelineTestMethods::shouldSetPlaybackRate2x();
-    MediaPipelineTestMethods::setPlaybackRate2x();
+    // Step 1: Remove audio source
+    MediaPipelineTestMethods::shouldRemoveAudioSource();
+    MediaPipelineTestMethods::removeSourceAudio();
 
-    // Step 2: Play
+    // Step 2: Attach mpeg audio source
+    MediaPipelineTestMethods::shouldAttachAudioSourceMpeg();
+    MediaPipelineTestMethods::attachSourceAudioMpeg();
+
+    // Step 3: Write audio frame
+    writeAudioFrames();
+
+    // Step 4: Remove audio source
+    MediaPipelineTestMethods::shouldRemoveAudioSource();
+    MediaPipelineTestMethods::removeSourceAudio();
+
+    // Step 5: Attach eacs audio source
+    MediaPipelineTestMethods::shouldAttachAudioSourceEacs();
+    MediaPipelineTestMethods::attachSourceAudioEacs();
+
+    // Step 6: Write audio frame
+    writeAudioFrames();
+
+    // Step 7: Play
     MediaPipelineTestMethods::shouldPlay();
     MediaPipelineTestMethods::play();
     MediaPipelineTestMethods::shouldNotifyPlaybackStatePlaying();
     MediaPipelineTestMethods::sendNotifyPlaybackStatePlaying();
 
-    // Step 3: Set playback rate to 2.0x in playing state
-    MediaPipelineTestMethods::shouldSetPlaybackRate2x();
-    MediaPipelineTestMethods::setPlaybackRate2x();
+    // Step 8: Remove audio source
+    MediaPipelineTestMethods::shouldRemoveAudioSource();
+    MediaPipelineTestMethods::removeSourceAudio();
 
-    // Step 4: Set playback rate to -2.0x in playing state
-    MediaPipelineTestMethods::shouldSetPlaybackRateNegative2x();
-    MediaPipelineTestMethods::setPlaybackRateNegative2x();
+    // Step 9: Attach mp4 audio source
+    MediaPipelineTestMethods::shouldAttachAudioSourceMp4();
+    MediaPipelineTestMethods::attachSourceAudioMp4();
 
-    // Step 5: Set playback rate failure
-    MediaPipelineTestMethods::shouldSetPlaybackRateFailure();
-    MediaPipelineTestMethods::setPlaybackRateFailure();
+    // Step 10: Write audio frame
+    writeAudioFrames();
+
+    // Step 11: Remove audio source
+    MediaPipelineTestMethods::shouldRemoveAudioSource();
+    MediaPipelineTestMethods::removeSourceAudio();
+
+    // Step 12: Attach eacs audio source
+    MediaPipelineTestMethods::shouldAttachAudioSourceEacs();
+    MediaPipelineTestMethods::attachSourceAudioEacs();
+
+    // Step 13: Write audio frame
+    writeAudioFrames();
 }
 } // namespace firebolt::rialto::client::ct

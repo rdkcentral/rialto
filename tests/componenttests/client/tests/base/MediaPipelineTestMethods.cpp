@@ -32,40 +32,46 @@ namespace
 {
 constexpr VideoRequirements kVideoRequirements{3840, 2160};
 constexpr int32_t kSessionId{10};
-constexpr MediaType kMediaType = MediaType::MSE;
-const std::string kEmptyMimeType = "";
-const std::string kVideoH264 = "video/h264";
-const std::string kVideoVp9 = "video/x-vp9";
-const std::string kAudioMp4 = "audio/mp4";
-const std::string kUrl = "mse://1";
-constexpr int32_t kAudioSourceId = 1;
-constexpr int32_t kVideoSourceId = 2;
-constexpr firebolt::rialto::SegmentAlignment kAlignment = firebolt::rialto::SegmentAlignment::UNDEFINED;
-constexpr firebolt::rialto::StreamFormat kStreamFormatRaw = firebolt::rialto::StreamFormat::RAW;
-constexpr firebolt::rialto::StreamFormat kStreamFormatByteStream = firebolt::rialto::StreamFormat::BYTE_STREAM;
-constexpr int32_t kWidthUhd = 3840;
-constexpr int32_t kHeightUhd = 2160;
-constexpr int32_t kWidth720p = 1280;
-constexpr int32_t kHeight720p = 720;
-constexpr int32_t kWidthSecondary = 426;
-constexpr int32_t kHeightSecondary = 240;
-constexpr uint32_t kNumberOfChannels = 6;
-constexpr uint32_t kSampleRate = 48000;
-constexpr bool kHasNoDrm = false;
-const std::string kCodecSpecificConfigStr = "1243567";
+constexpr MediaType kMediaType{MediaType::MSE};
+const std::string kEmptyMimeType{""};
+const std::string kVideoH264{"video/h264"};
+const std::string kVideoVp9{"video/x-vp9"};
+const std::string kAudioMp4{"audio/mp4"};
+const std::string kAudioMpeg{"audio/mpeg"};
+const std::string kAudioEacs{"audio/x-eac3"};
+const std::string kUrl{"mse://1"};
+constexpr int32_t kAudioSourceId{1};
+constexpr int32_t kVideoSourceId{2};
+constexpr firebolt::rialto::SegmentAlignment kAlignment{firebolt::rialto::SegmentAlignment::UNDEFINED};
+constexpr firebolt::rialto::StreamFormat kStreamFormatRaw{firebolt::rialto::StreamFormat::RAW};
+constexpr firebolt::rialto::StreamFormat kStreamFormatByteStream{firebolt::rialto::StreamFormat::BYTE_STREAM};
+constexpr int32_t kWidthUhd{3840};
+constexpr int32_t kHeightUhd{2160};
+constexpr int32_t kWidth720p{1280};
+constexpr int32_t kHeight720p{720};
+constexpr int32_t kWidthSecondary{426};
+constexpr int32_t kHeightSecondary{240};
+constexpr uint32_t kNumberOfChannels{6};
+constexpr uint32_t kSampleRate{48000};
+constexpr bool kHasNoDrm{false};
+const std::string kCodecSpecificConfigStr{"1243567"};
 const std::shared_ptr<firebolt::rialto::CodecData> kCodecData{std::make_shared<firebolt::rialto::CodecData>()};
-constexpr size_t kFrameCountBeforePreroll = 3;
-constexpr size_t kMaxFrameCount = 20;
+constexpr size_t kFrameCountBeforePreroll{3};
+constexpr size_t kMaxFrameCount{20};
 const std::shared_ptr<MediaPlayerShmInfo> kNullShmInfo;
-constexpr int64_t kTimeStamp = 1701352637000;
-constexpr int64_t kDuration = 105;
-constexpr int64_t kDurationSecondary = 402;
-firebolt::rialto::Fraction kFrameRateEmpty = {0, 0};
-firebolt::rialto::Fraction kFrameRateSecondary = {15, 1};
+constexpr int64_t kTimeStamp{1701352637000};
+constexpr int64_t kDuration{105};
+constexpr int64_t kDurationSecondary{402};
+firebolt::rialto::Fraction kFrameRateEmpty{0, 0};
+firebolt::rialto::Fraction kFrameRateSecondary{15, 1};
 constexpr VideoRequirements kVideoRequirementsSecondary{426, 240};
 constexpr int32_t kSessionIdSecondary{11};
 constexpr uint32_t kPrimaryPartition{0};
 constexpr uint32_t kSecondaryPartition{1};
+constexpr uint32_t kNumberOfChannelsMpeg{2};
+constexpr uint32_t kSampleRateMpeg{26000};
+constexpr uint32_t kNumberOfChannelsEacs{1};
+constexpr uint32_t kSampleRateEacs{1000};
 } // namespace
 
 namespace firebolt::rialto::client::ct
@@ -189,26 +195,45 @@ void MediaPipelineTestMethods::attachSourceVideoSecondary()
 
 void MediaPipelineTestMethods::shouldAttachAudioSource()
 {
-    EXPECT_CALL(*m_mediaPipelineModuleMock,
-                attachSource(_,
-                             attachSourceRequestMatcherAudio(kSessionId, kAudioMp4.c_str(), kHasNoDrm, kAlignment,
-                                                             kNumberOfChannels, kSampleRate, kCodecSpecificConfigStr,
-                                                             kCodecData, convertStreamFormat(kStreamFormatRaw)),
-                             _, _))
-        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->attachSourceResponse(kAudioSourceId)),
-                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
+    shouldAttachAudioSourceInternal(kAudioMp4, kHasNoDrm, kAlignment, kNumberOfChannels, kSampleRate, kCodecSpecificConfigStr, kCodecData, kStreamFormatRaw);
+}
+
+void MediaPipelineTestMethods::shouldAttachAudioSourceMpeg()
+{
+    shouldAttachAudioSourceInternal(kAudioMpeg, kHasNoDrm, kAlignment, kNumberOfChannelsMpeg, kSampleRateMpeg, kCodecSpecificConfigStr, kCodecData, kStreamFormatRaw);
+}
+
+void MediaPipelineTestMethods::shouldAttachAudioSourceMp4()
+{
+    shouldAttachAudioSource();
+}
+
+void MediaPipelineTestMethods::shouldAttachAudioSourceEacs()
+{
+    shouldAttachAudioSourceInternal(kAudioEacs, kHasNoDrm, kAlignment, kNumberOfChannelsEacs, kSampleRateEacs, kCodecSpecificConfigStr, kCodecData, kStreamFormatRaw);
 }
 
 void MediaPipelineTestMethods::attachSourceAudio()
 {
-    std::vector<uint8_t> codecSpecificConfig;
-    codecSpecificConfig.assign(kCodecSpecificConfigStr.begin(), kCodecSpecificConfigStr.end());
-    AudioConfig audioConfig{kNumberOfChannels, kSampleRate, codecSpecificConfig};
+    attachSourceAudioInternal(kAudioMp4, kHasNoDrm, kAlignment, kNumberOfChannels, kSampleRate, kCodecSpecificConfigStr,
+                              kCodecData, kStreamFormatRaw, true);
+}
 
-    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
-        std::make_unique<IMediaPipeline::MediaSourceAudio>(kAudioMp4.c_str(), kHasNoDrm, audioConfig, kAlignment,
-                                                           kStreamFormatRaw, kCodecData);
-    EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), true);
+void MediaPipelineTestMethods::attachSourceAudioMpeg()
+{
+    attachSourceAudioInternal(kAudioMpeg, kHasNoDrm, kAlignment, kNumberOfChannelsMpeg, kSampleRateMpeg, kCodecSpecificConfigStr,
+                              kCodecData, kStreamFormatRaw, true);
+}
+
+void MediaPipelineTestMethods::attachSourceAudioMp4()
+{
+    attachSourceAudio();
+}
+
+void MediaPipelineTestMethods::attachSourceAudioEacs()
+{
+    attachSourceAudioInternal(kAudioEacs, kHasNoDrm, kAlignment, kNumberOfChannelsEacs, kSampleRateEacs, kCodecSpecificConfigStr,
+                              kCodecData, kStreamFormatRaw, true);
 }
 
 void MediaPipelineTestMethods::shouldAllSourcesAttached()
@@ -1104,6 +1129,22 @@ void MediaPipelineTestMethods::shouldAttachVideoSourceInternal(
                         WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
 }
 
+void MediaPipelineTestMethods::shouldAttachAudioSourceInternal(
+    const std::string &mimeType, bool hasNoDrm,
+    const firebolt::rialto::SegmentAlignment &alignment, const uint32_t noOfChannels, const uint32_t sampleRate,
+    const std::string &codecSpecificConfigStr, const std::shared_ptr<firebolt::rialto::CodecData> &codacData,
+    const firebolt::rialto::StreamFormat &streamFormat)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                attachSource(_,
+                             attachSourceRequestMatcherAudio(kSessionId, mimeType, hasNoDrm, alignment,
+                                                             noOfChannels, sampleRate, codecSpecificConfigStr,
+                                                             codacData, convertStreamFormat(streamFormat)),
+                             _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->attachSourceResponse(kAudioSourceId)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
+}
+
 void MediaPipelineTestMethods::shouldAllSourcesAttachedInternal(const int32_t sessionId)
 {
     EXPECT_CALL(*m_mediaPipelineModuleMock, allSourcesAttached(_, allSourcesAttachedRequestMatcher(sessionId), _, _))
@@ -1192,6 +1233,24 @@ void MediaPipelineTestMethods::attachSourceVideoInternal(const std::unique_ptr<I
         std::make_unique<IMediaPipeline::MediaSourceVideo>(mimeType.c_str(), hasNoDrm, width, height, alignment,
                                                            streamFormat, codacData);
     EXPECT_EQ(mediaPipeline->attachSource(mediaSource), status);
+}
+
+void MediaPipelineTestMethods::attachSourceAudioInternal(const std::string &mimeType, bool hasNoDrm,
+                                                         const firebolt::rialto::SegmentAlignment &alignment,
+                                                         const uint32_t noOfChannels, const uint32_t sampleRate,
+                                                         const std::string &codecSpecificConfigStr,
+                                                         const std::shared_ptr<firebolt::rialto::CodecData> &codacData,
+                                                         const firebolt::rialto::StreamFormat &streamFormat,
+                                                         const bool status)
+{
+    std::vector<uint8_t> codecSpecificConfig;
+    codecSpecificConfig.assign(codecSpecificConfigStr.begin(), codecSpecificConfigStr.end());
+    AudioConfig audioConfig{noOfChannels, sampleRate, codecSpecificConfig};
+
+    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(mimeType.c_str(), hasNoDrm, audioConfig, alignment,
+                                                           streamFormat, codacData);
+    EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), true);
 }
 
 void MediaPipelineTestMethods::allSourcesAttachedInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline,
