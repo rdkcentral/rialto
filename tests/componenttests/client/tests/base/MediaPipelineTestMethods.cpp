@@ -33,14 +33,22 @@ namespace
 constexpr VideoRequirements kVideoRequirements{3840, 2160};
 constexpr int32_t kSessionId{10};
 constexpr MediaType kMediaType = MediaType::MSE;
-const std::string kMimeType = "mime";
+const std::string kEmptyMimeType = "";
+const std::string kVideoH264 = "video/h264";
+const std::string kVideoVp9 = "video/x-vp9";
+const std::string kAudioMp4 = "audio/mp4";
 const std::string kUrl = "mse://1";
 constexpr int32_t kAudioSourceId = 1;
 constexpr int32_t kVideoSourceId = 2;
 constexpr firebolt::rialto::SegmentAlignment kAlignment = firebolt::rialto::SegmentAlignment::UNDEFINED;
-constexpr firebolt::rialto::StreamFormat kStreamFormat = firebolt::rialto::StreamFormat::RAW;
+constexpr firebolt::rialto::StreamFormat kStreamFormatRaw = firebolt::rialto::StreamFormat::RAW;
+constexpr firebolt::rialto::StreamFormat kStreamFormatByteStream = firebolt::rialto::StreamFormat::BYTE_STREAM;
 constexpr int32_t kWidthUhd = 3840;
 constexpr int32_t kHeightUhd = 2160;
+constexpr int32_t kWidth720p = 1280;
+constexpr int32_t kHeight720p = 720;
+constexpr int32_t kWidthSecondary = 426;
+constexpr int32_t kHeightSecondary = 240;
 constexpr uint32_t kNumberOfChannels = 6;
 constexpr uint32_t kSampleRate = 48000;
 constexpr bool kHasNoDrm = false;
@@ -50,9 +58,11 @@ constexpr size_t kFrameCountBeforePreroll = 3;
 constexpr size_t kMaxFrameCount = 20;
 const std::shared_ptr<MediaPlayerShmInfo> kNullShmInfo;
 constexpr int64_t kTimeStamp = 1701352637000;
-constexpr int64_t kDuration = 1;
-firebolt::rialto::Fraction kFrameRate = {1, 1};
-constexpr VideoRequirements kVideoRequirementsSecondary{456, 123};
+constexpr int64_t kDuration = 105;
+constexpr int64_t kDurationSeondary = 402;
+firebolt::rialto::Fraction kFrameRateEmpty = {0, 0};
+firebolt::rialto::Fraction kFrameRateSecondary = {15, 1};
+constexpr VideoRequirements kVideoRequirementsSecondary{426, 240};
 constexpr int32_t kSessionIdSecondary{11};
 constexpr uint32_t kPrimaryPartition{0};
 constexpr uint32_t kSecondaryPartition{1};
@@ -102,22 +112,22 @@ void MediaPipelineTestMethods::createMediaPipelineSecondary()
 
 void MediaPipelineTestMethods::shouldLoad()
 {
-    shouldLoadInternal(kSessionId, kMediaType, kMimeType, kUrl);
+    shouldLoadInternal(kSessionId, kMediaType, kEmptyMimeType, kUrl);
 }
 
 void MediaPipelineTestMethods::shouldLoadSecondary()
 {
-    shouldLoadInternal(kSessionIdSecondary, kMediaType, kMimeType, kUrl); //TODO: Different?
+    shouldLoadInternal(kSessionIdSecondary, kMediaType, kEmptyMimeType, kUrl);
 }
 
 void MediaPipelineTestMethods::load()
 {
-    loadInternal(m_mediaPipeline, kMediaType, kMimeType, kUrl, true);
+    loadInternal(m_mediaPipeline, kMediaType, kEmptyMimeType, kUrl, true);
 }
 
 void MediaPipelineTestMethods::loadSecondary()
 {
-    loadInternal(m_mediaPipelineSecondary, kMediaType, kMimeType, kUrl, true);
+    loadInternal(m_mediaPipelineSecondary, kMediaType, kEmptyMimeType, kUrl, true);
 }
 
 void MediaPipelineTestMethods::shouldNotifyNetworkStateBuffering()
@@ -153,31 +163,31 @@ void MediaPipelineTestMethods::pause()
 
 void MediaPipelineTestMethods::shouldAttachVideoSource()
 {
-    shouldAttachVideoSourceInternal(kSessionId, kMimeType, kHasNoDrm, kWidthUhd, kHeightUhd, kAlignment, kCodecData, kStreamFormat);
+    shouldAttachVideoSourceInternal(kSessionId, kVideoVp9, kHasNoDrm, kWidth720p, kHeight720p, kAlignment, kCodecData, kStreamFormatRaw);
 }
 
 void MediaPipelineTestMethods::shouldAttachVideoSourceSecondary()
 {
-    shouldAttachVideoSourceInternal(kSessionIdSecondary, kMimeType, kHasNoDrm, kWidthUhd, kHeightUhd, kAlignment, kCodecData, kStreamFormat); //TODO: Different?
+    shouldAttachVideoSourceInternal(kSessionIdSecondary, kVideoH264, kHasNoDrm, kWidthSecondary, kHeightSecondary, kAlignment, kCodecData, kStreamFormatByteStream);
 }
 
 void MediaPipelineTestMethods::attachSourceVideo()
 {
-    attachSourceVideoInternal(m_mediaPipeline, kMimeType, kHasNoDrm, kWidthUhd, kHeightUhd, kAlignment, kCodecData, kStreamFormat, true);
+    attachSourceVideoInternal(m_mediaPipeline, kVideoVp9, kHasNoDrm, kWidth720p, kHeight720p, kAlignment, kCodecData, kStreamFormatRaw, true);
 }
 
 void MediaPipelineTestMethods::attachSourceVideoSecondary()
 {
-    attachSourceVideoInternal(m_mediaPipelineSecondary, kMimeType, kHasNoDrm, kWidthUhd, kHeightUhd, kAlignment, kCodecData, kStreamFormat, true);
+    attachSourceVideoInternal(m_mediaPipelineSecondary, kVideoH264, kHasNoDrm, kWidthSecondary, kHeightSecondary, kAlignment, kCodecData, kStreamFormatByteStream, true);
 }
 
 void MediaPipelineTestMethods::shouldAttachAudioSource()
 {
     EXPECT_CALL(*m_mediaPipelineModuleMock,
                 attachSource(_,
-                             attachSourceRequestMatcherAudio(kSessionId, kMimeType.c_str(), kHasNoDrm, kAlignment,
+                             attachSourceRequestMatcherAudio(kSessionId, kAudioMp4.c_str(), kHasNoDrm, kAlignment,
                                                              kNumberOfChannels, kSampleRate, kCodecSpecificConfigStr,
-                                                             kCodecData, convertStreamFormat(kStreamFormat)),
+                                                             kCodecData, convertStreamFormat(kStreamFormatRaw)),
                              _, _))
         .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->attachSourceResponse(kAudioSourceId)),
                         WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
@@ -190,8 +200,8 @@ void MediaPipelineTestMethods::attachSourceAudio()
     AudioConfig audioConfig{kNumberOfChannels, kSampleRate, codecSpecificConfig};
 
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
-        std::make_unique<IMediaPipeline::MediaSourceAudio>(kMimeType.c_str(), kHasNoDrm, audioConfig, kAlignment,
-                                                           kStreamFormat, kCodecData);
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(kAudioMp4.c_str(), kHasNoDrm, audioConfig, kAlignment,
+                                                           kStreamFormatRaw, kCodecData);
     EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), true);
 }
 
@@ -313,12 +323,12 @@ void MediaPipelineTestMethods::checkMseAudioSegmentWritten(int32_t segmentId)
 
 int32_t MediaPipelineTestMethods::addSegmentMseVideo()
 {
-    return addSegmentMseVideoInternal(m_mediaPipeline, kDuration, kWidthUhd, kHeightUhd, kFrameRate, kPrimaryPartition, AddSegmentStatus::OK);
+    return addSegmentMseVideoInternal(m_mediaPipeline, kDuration, kWidth720p, kHeight720p, kFrameRateEmpty, kPrimaryPartition, AddSegmentStatus::OK);
 }
 
 int32_t MediaPipelineTestMethods::addSegmentMseVideoSecondary()
 {
-    return addSegmentMseVideoInternal(m_mediaPipelineSecondary, kDuration, kWidthUhd, kHeightUhd, kFrameRate, kSecondaryPartition, AddSegmentStatus::OK); //TODO: Different?
+    return addSegmentMseVideoInternal(m_mediaPipelineSecondary, kDurationSeondary, kWidthSecondary, kHeightSecondary, kFrameRateSecondary, kSecondaryPartition, AddSegmentStatus::OK); //TODO: Different?
 }
 
 void MediaPipelineTestMethods::checkMseVideoSegmentWritten(int32_t segmentId)
@@ -333,6 +343,26 @@ void MediaPipelineTestMethods::checkMseVideoSegmentWritten(int32_t segmentId)
     ASSERT_TRUE(metadata.ParseFromArray(dataPosition, *metadataSize));
 
     checkVideoMetadata(metadata, segmentId);
+    checkHasNoAudioMetadata(metadata);
+    checkHasNoEncryptionMetadata(metadata);
+    checkHasNoCodacData(metadata);
+    checkHasNoSegmentAlignment(metadata);
+    checkHasNoExtraData(metadata);
+    checkSegmentData(metadata, dataPosition += *metadataSize, kVideoSegments[segmentId]);
+}
+
+void MediaPipelineTestMethods::checkMseVideoSegmentWrittenSecondary(int32_t segmentId)
+{
+    auto it = writtenVideoSegments.find(segmentId);
+    ASSERT_NE(it, writtenVideoSegments.end());
+
+    uint8_t *dataPosition{reinterpret_cast<uint8_t *>(getShmAddress()) + it->second.mediaDataOffset};
+    std::uint32_t *metadataSize{reinterpret_cast<uint32_t *>(dataPosition)};
+    dataPosition += sizeof(uint32_t);
+    MediaSegmentMetadata metadata;
+    ASSERT_TRUE(metadata.ParseFromArray(dataPosition, *metadataSize));
+
+    checkVideoMetadataSecondary(metadata, segmentId);
     checkHasNoAudioMetadata(metadata);
     checkHasNoEncryptionMetadata(metadata);
     checkHasNoCodacData(metadata);
@@ -782,7 +812,7 @@ void MediaPipelineTestMethods::writeAudioFrames()
 {
     uint32_t framesToWrite = 3;
     MediaPipelineTestMethods::shouldNotifyNeedDataAudio(framesToWrite);
-    MediaPipelineTestMethods::sendNotifyNeedDataAudioBeforePreroll();
+    MediaPipelineTestMethods::sendNotifyNeedDataAudio(framesToWrite);
     uint32_t segmentId = MediaPipelineTestMethods::addSegmentMseAudio();
     MediaPipelineTestMethods::checkMseAudioSegmentWritten(segmentId);
     segmentId = MediaPipelineTestMethods::addSegmentMseAudio();
@@ -797,7 +827,7 @@ void MediaPipelineTestMethods::writeVideoFrames()
 {
     uint32_t framesToWrite = 3;
     MediaPipelineTestMethods::shouldNotifyNeedDataVideo(framesToWrite);
-    MediaPipelineTestMethods::sendNotifyNeedDataVideoBeforePreroll();
+    MediaPipelineTestMethods::sendNotifyNeedDataVideo(framesToWrite);
     uint32_t segmentId = MediaPipelineTestMethods::addSegmentMseVideo();
     MediaPipelineTestMethods::checkMseVideoSegmentWritten(segmentId);
     segmentId = MediaPipelineTestMethods::addSegmentMseVideo();
@@ -858,11 +888,11 @@ void MediaPipelineTestMethods::writeVideoFramesSecondary()
     MediaPipelineTestMethods::shouldNotifyNeedDataVideoSecondary(framesToWrite);
     MediaPipelineTestMethods::sendNotifyNeedDataVideoSecondary(framesToWrite);
     int32_t segmentId = MediaPipelineTestMethods::addSegmentMseVideoSecondary();
-    MediaPipelineTestMethods::checkMseVideoSegmentWritten(segmentId);
+    MediaPipelineTestMethods::checkMseVideoSegmentWrittenSecondary(segmentId);
     segmentId = MediaPipelineTestMethods::addSegmentMseVideoSecondary();
-    MediaPipelineTestMethods::checkMseVideoSegmentWritten(segmentId);
+    MediaPipelineTestMethods::checkMseVideoSegmentWrittenSecondary(segmentId);
     segmentId = MediaPipelineTestMethods::addSegmentMseVideoSecondary();
-    MediaPipelineTestMethods::checkMseVideoSegmentWritten(segmentId);
+    MediaPipelineTestMethods::checkMseVideoSegmentWrittenSecondary(segmentId);
     MediaPipelineTestMethods::shouldHaveDataOkSecondary(framesToWrite);
     MediaPipelineTestMethods::haveDataOkSecondary();
 }
@@ -941,11 +971,29 @@ void MediaPipelineTestMethods::checkVideoMetadata(const MediaSegmentMetadata &me
     EXPECT_TRUE(metadata.has_stream_id());
     EXPECT_EQ(metadata.stream_id(), kVideoSourceId);
     EXPECT_TRUE(metadata.has_width());
-    EXPECT_EQ(metadata.width(), kWidthUhd);
+    EXPECT_EQ(metadata.width(), kWidth720p);
     EXPECT_TRUE(metadata.has_height());
-    EXPECT_EQ(metadata.height(), kHeightUhd);
+    EXPECT_EQ(metadata.height(), kHeight720p);
     EXPECT_TRUE(metadata.has_frame_rate());
-    EXPECT_THAT(metadata.frame_rate(), frameRateMatcher(kFrameRate));
+    EXPECT_THAT(metadata.frame_rate(), frameRateMatcher(kFrameRateEmpty));
+}
+
+void MediaPipelineTestMethods::checkVideoMetadataSecondary(const MediaSegmentMetadata &metadata, uint32_t segmentId)
+{
+    EXPECT_TRUE(metadata.has_length());
+    EXPECT_EQ(metadata.length(), kVideoSegments[segmentId].size());
+    EXPECT_TRUE(metadata.has_time_position());
+    EXPECT_EQ(metadata.time_position(), getTimestamp(segmentId));
+    EXPECT_TRUE(metadata.has_sample_duration());
+    EXPECT_EQ(metadata.sample_duration(), kDurationSeondary);
+    EXPECT_TRUE(metadata.has_stream_id());
+    EXPECT_EQ(metadata.stream_id(), kVideoSourceId);
+    EXPECT_TRUE(metadata.has_width());
+    EXPECT_EQ(metadata.width(), kWidthSecondary);
+    EXPECT_TRUE(metadata.has_height());
+    EXPECT_EQ(metadata.height(), kHeightSecondary);
+    EXPECT_TRUE(metadata.has_frame_rate());
+    EXPECT_THAT(metadata.frame_rate(), frameRateMatcher(kFrameRateSecondary));
 }
 
 void MediaPipelineTestMethods::checkHasNoVideoMetadata(const MediaSegmentMetadata &metadata)

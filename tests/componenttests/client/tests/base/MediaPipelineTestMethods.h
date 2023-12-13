@@ -189,6 +189,7 @@ protected:
     // Check methods
     void checkMseAudioSegmentWritten(int32_t segmentId);
     void checkMseVideoSegmentWritten(int32_t segmentId);
+    void checkMseVideoSegmentWrittenSecondary(int32_t segmentId);
 
     // Helper methods
     void startAudioVideoMediaSessionWaitForPreroll();
@@ -226,6 +227,7 @@ private:
     void checkAudioMetadata(const MediaSegmentMetadata &metadata, uint32_t segmentId);
     void checkHasNoAudioMetadata(const MediaSegmentMetadata &metadata);
     void checkVideoMetadata(const MediaSegmentMetadata &metadata, uint32_t segmentId);
+    void checkVideoMetadataSecondary(const MediaSegmentMetadata &metadata, uint32_t segmentId);
     void checkHasNoVideoMetadata(const MediaSegmentMetadata &metadata);
     void checkHasNoEncryptionMetadata(const MediaSegmentMetadata &metadata);
     void checkHasNoCodacData(const MediaSegmentMetadata &metadata);
