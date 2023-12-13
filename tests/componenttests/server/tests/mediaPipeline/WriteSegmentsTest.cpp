@@ -33,9 +33,9 @@ constexpr int kFrameCountInPlayingState{24};
  * Test Objective:
  *  Test the writting of audio and video segments during playback. The test starts off with a media session in the
  *  wait for preroll state ready for media segments to be injected. The test buffers 3 frames of both audio
- *  and video before preroll and 24 frames of both audio and video after preroll, this is to check that
- *  needData/haveData is fullilled with the maximum number of frames and partial number of frames added to the media
- *  session. All the metadata and media data written to the shared buffer is checked for accuracy.
+ *  and video before preroll and 4 frames of both audio and video after preroll, this is to check that
+ *  needData/haveData is fullilled with more than one frame added to the media session. All the metadata and media
+ *  data written to the shared buffer is checked for accuracy.
  *
  * Sequence Diagrams:
  *  Shared memory buffer refill - https://wiki.rdkcentral.com/display/ASP/Rialto+Playback+Design
@@ -108,12 +108,12 @@ constexpr int kFrameCountInPlayingState{24};
  *   Send HaveData
  *   Expect that server notifies the client that it needs 24 frames of video data.
  *
- *  Step 11: Send 24 frames and end of audio stream
- *   Send audio haveData with 24 frames and EOS status
+ *  Step 11: Send 4 frames and end of audio stream
+ *   Send audio haveData with 4 frames and EOS status
  *   Expect that Gstreamer is notified about end of stream
  *
- *  Step 12: Send 24 frames and end of video stream
- *   Send video haveData with 24 frames and EOS status
+ *  Step 12: Send 4 frames and end of video stream
+ *   Send video haveData with 4 frames and EOS status
  *   Expect that Gstreamer is notified about end of stream
  *
  *  Step 13: Notify end of stream
@@ -198,8 +198,8 @@ TEST_F(MediaPipelineTest, WriteSegments)
     pushAudioData(kFramesToPushBeforePreroll, kFrameCountInPlayingState);
     pushVideoData(kFramesToPushBeforePreroll, kFrameCountInPlayingState);
 
-    // Step 11: Send 24 frames and end of audio stream
-    // Step 12: Send 24 frames and end of video stream
+    // Step 11: Send 4 frames and end of audio stream
+    // Step 12: Send 4 frames and end of video stream
     willEos(&m_audioAppSrc);
     eosAudio(kFramesToPushAfterPreroll);
     willEos(&m_videoAppSrc);
