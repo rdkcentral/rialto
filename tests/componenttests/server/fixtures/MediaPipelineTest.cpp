@@ -173,19 +173,6 @@ void MediaPipelineTest::willFinishSetupAndAddSource()
     EXPECT_CALL(*m_gstWrapperMock, gstElementNoMorePads(GST_ELEMENT(&m_rialtoSource)));
 }
 
-void MediaPipelineTest::willPause()
-{
-    EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&m_pipeline, GST_STATE_PAUSED))
-        .WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
-    EXPECT_CALL(*m_gstWrapperMock, gstMessageParseStateChanged(_, _, _, _))
-        .WillRepeatedly(DoAll(SetArgPointee<1>(GST_STATE_NULL), SetArgPointee<2>(GST_STATE_PAUSED),
-                              SetArgPointee<3>(GST_STATE_NULL)));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementStateGetName(GST_STATE_NULL)).WillRepeatedly(Return(kNullStateName.c_str()));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementStateGetName(GST_STATE_PAUSED))
-        .WillRepeatedly(Return(kPausedStateName.c_str()));
-    EXPECT_CALL(*m_gstWrapperMock, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
-}
-
 void MediaPipelineTest::willPushAudioData(const std::unique_ptr<IMediaPipeline::MediaSegment> &segment,
                                           GstBuffer &buffer, GstCaps &capsCopy)
 {
@@ -227,6 +214,19 @@ void MediaPipelineTest::willPushVideoData(const std::unique_ptr<IMediaPipeline::
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_videoCaps)).RetiresOnSaturation();
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&capsCopy));
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(&m_videoAppSrc, _)).RetiresOnSaturation();
+}
+
+void MediaPipelineTest::willPause()
+{
+    EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&m_pipeline, GST_STATE_PAUSED))
+        .WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
+    EXPECT_CALL(*m_gstWrapperMock, gstMessageParseStateChanged(_, _, _, _))
+        .WillRepeatedly(DoAll(SetArgPointee<1>(GST_STATE_NULL), SetArgPointee<2>(GST_STATE_PAUSED),
+                              SetArgPointee<3>(GST_STATE_NULL)));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementStateGetName(GST_STATE_NULL)).WillRepeatedly(Return(kNullStateName.c_str()));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementStateGetName(GST_STATE_PAUSED))
+        .WillRepeatedly(Return(kPausedStateName.c_str()));
+    EXPECT_CALL(*m_gstWrapperMock, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
 }
 
 void MediaPipelineTest::willPlay()
