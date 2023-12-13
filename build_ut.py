@@ -51,7 +51,7 @@ if __name__ == "__main__":
     suitesToRun = getSuitesToRun(args['suites'], suiteInfo)
 
     # Get output file
-    outputFile = getOutputFile(args['file'])
+    outputFile = getOutputFile(args['file'], args['clean'])
 
     # Build and run tests
     buildDefines = ["-DCMAKE_BUILD_FLAG=UnitTests", "-DRIALTO_ENABLE_DECRYPT_BUFFER=1", "-DRIALTO_ENABLE_CONFIG_FILE=1", "-DRIALTO_BUILD_TYPE=Debug"]
