@@ -255,4 +255,5 @@ TEST_F(DualVideoPlaybackTest, playback)
     MediaPipelineTestMethods::shouldDestroyMediaSession();
     MediaPipelineTestMethods::destroyMediaPipeline();
 }
+
 } // namespace firebolt::rialto::client::ct
