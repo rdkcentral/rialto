@@ -178,8 +178,12 @@ void MediaPipelineTestMethods::shouldNotifyNetworkStateBufferingSecondary()
 
 void MediaPipelineTestMethods::sendNotifyNetworkStateBuffering()
 {
-    getServerStub()->notifyNetworkStateChangeEvent(kSessionId, NetworkState::BUFFERING);
-    waitEvent();
+    sendNotifyNetworkStateInternal(kSessionId, NetworkState::BUFFERING);
+}
+
+void MediaPipelineTestMethods::sendNotifyNetworkStateBufferingSecondary()
+{
+    sendNotifyNetworkStateInternal(kSessionIdSecondary, NetworkState::BUFFERING);
 }
 
 void MediaPipelineTestMethods::shouldPause()
@@ -301,10 +305,26 @@ void MediaPipelineTestMethods::shouldNotifyPlaybackStateIdleSecondary()
     shouldNotifyPlaybackState(m_mediaPipelineClientSecondaryMock, PlaybackState::IDLE);
 }
 
+void MediaPipelineTestMethods::sendNotifyPlaybackStateInternal(const int32_t sessionId, const PlaybackState &state)
+{
+    getServerStub()->notifyPlaybackStateChangeEvent(sessionId, state);
+    waitEvent();
+}
+
+void MediaPipelineTestMethods::sendNotifyNetworkStateInternal(const int32_t sessionId, const NetworkState &state)
+{
+    getServerStub()->notifyNetworkStateChangeEvent(sessionId, state);
+    waitEvent();
+}
+
 void MediaPipelineTestMethods::sendNotifyPlaybackStateIdle()
 {
-    getServerStub()->notifyPlaybackStateChangeEvent(kSessionId, PlaybackState::IDLE);
-    waitEvent();
+    sendNotifyPlaybackStateInternal(kSessionId, PlaybackState::IDLE);
+}
+
+void MediaPipelineTestMethods::sendNotifyPlaybackStateIdleSecondary()
+{
+    sendNotifyPlaybackStateInternal(kSessionIdSecondary, PlaybackState::IDLE);
 }
 
 void MediaPipelineTestMethods::shouldNotifyNeedDataAudioBeforePreroll()
@@ -314,9 +334,7 @@ void MediaPipelineTestMethods::shouldNotifyNeedDataAudioBeforePreroll()
 
 void MediaPipelineTestMethods::sendNotifyNeedDataAudioBeforePreroll()
 {
-    getServerStub()->notifyNeedMediaDataEvent(kSessionId, kAudioSourceId, kFrameCountBeforePreroll, m_needDataRequestId,
-                                              m_locationToWriteAudio[kPrimaryPartition]);
-    waitEvent();
+    sendNotifyNeedDataInternal(kSessionId, kAudioSourceId, m_locationToWriteAudio[kPrimaryPartition], kFrameCountBeforePreroll);
 }
 
 void MediaPipelineTestMethods::shouldNotifyNeedDataVideoBeforePreroll()
@@ -326,9 +344,7 @@ void MediaPipelineTestMethods::shouldNotifyNeedDataVideoBeforePreroll()
 
 void MediaPipelineTestMethods::sendNotifyNeedDataVideoBeforePreroll()
 {
-    getServerStub()->notifyNeedMediaDataEvent(kSessionId, kVideoSourceId, kFrameCountBeforePreroll, m_needDataRequestId,
-                                              m_locationToWriteVideo[kPrimaryPartition]);
-    waitEvent();
+    sendNotifyNeedDataInternal(kSessionId, kVideoSourceId, m_locationToWriteVideo[kPrimaryPartition], kFrameCountBeforePreroll);
 }
 
 void MediaPipelineTestMethods::haveDataOk()
@@ -564,8 +580,12 @@ void MediaPipelineTestMethods::shouldNotifyNetworkStateBufferedSecondary()
 
 void MediaPipelineTestMethods::sendNotifyNetworkStateBuffered()
 {
-    getServerStub()->notifyNetworkStateChangeEvent(kSessionId, NetworkState::BUFFERED);
-    waitEvent();
+    sendNotifyNetworkStateInternal(kSessionId, NetworkState::BUFFERED);
+}
+
+void MediaPipelineTestMethods::sendNotifyNetworkStateBufferedSecondary()
+{
+    sendNotifyNetworkStateInternal(kSessionIdSecondary, NetworkState::BUFFERED);
 }
 
 void MediaPipelineTestMethods::shouldNotifyPlaybackStatePaused()
@@ -580,15 +600,18 @@ void MediaPipelineTestMethods::shouldNotifyPlaybackStatePausedSecondary()
 
 void MediaPipelineTestMethods::sendNotifyPlaybackStatePaused()
 {
-    getServerStub()->notifyPlaybackStateChangeEvent(kSessionId, PlaybackState::PAUSED);
-    waitEvent();
+    sendNotifyPlaybackStateInternal(kSessionId, PlaybackState::PAUSED);
+}
+
+void MediaPipelineTestMethods::sendNotifyPlaybackStatePausedSecondary()
+{
+    sendNotifyPlaybackStateInternal(kSessionIdSecondary, PlaybackState::PAUSED);
 }
 
 void MediaPipelineTestMethods::shouldNotifyPlaybackStatePlaying()
 {
     shouldNotifyPlaybackState(m_mediaPipelineClientMock, PlaybackState::PLAYING);
 }
-
 void MediaPipelineTestMethods::shouldNotifyPlaybackStatePlayingSecondary()
 {
     shouldNotifyPlaybackState(m_mediaPipelineClientSecondaryMock, PlaybackState::PLAYING);
@@ -596,9 +619,14 @@ void MediaPipelineTestMethods::shouldNotifyPlaybackStatePlayingSecondary()
 
 void MediaPipelineTestMethods::sendNotifyPlaybackStatePlaying()
 {
-    getServerStub()->notifyPlaybackStateChangeEvent(kSessionId, PlaybackState::PLAYING);
-    waitEvent();
+    sendNotifyPlaybackStateInternal(kSessionId, PlaybackState::PLAYING);
 }
+
+void MediaPipelineTestMethods::sendNotifyPlaybackStatePlayingSecondary()
+{
+    sendNotifyPlaybackStateInternal(kSessionIdSecondary, PlaybackState::PLAYING);
+}
+
 
 void MediaPipelineTestMethods::shouldPlay()
 {
@@ -638,9 +666,7 @@ void MediaPipelineTestMethods::shouldNotifyNeedDataAudioAfterPreroll()
 
 void MediaPipelineTestMethods::sendNotifyNeedDataAudioAfterPreroll()
 {
-    getServerStub()->notifyNeedMediaDataEvent(kSessionId, kAudioSourceId, kMaxFrameCount, m_needDataRequestId,
-                                              m_locationToWriteAudio[kPrimaryPartition]);
-    waitEvent();
+    sendNotifyNeedDataInternal(kSessionId, kAudioSourceId, m_locationToWriteAudio[kPrimaryPartition], kMaxFrameCount);
 }
 
 void MediaPipelineTestMethods::shouldNotifyNeedDataVideoAfterPreroll()
@@ -650,9 +676,7 @@ void MediaPipelineTestMethods::shouldNotifyNeedDataVideoAfterPreroll()
 
 void MediaPipelineTestMethods::sendNotifyNeedDataVideoAfterPreroll()
 {
-    getServerStub()->notifyNeedMediaDataEvent(kSessionId, kVideoSourceId, kMaxFrameCount, m_needDataRequestId,
-                                              m_locationToWriteVideo[kPrimaryPartition]);
-    waitEvent();
+    sendNotifyNeedDataInternal(kSessionId, kVideoSourceId, m_locationToWriteVideo[kPrimaryPartition], kMaxFrameCount);
 }
 
 void MediaPipelineTestMethods::shouldHaveDataAfterPreroll()
@@ -704,8 +728,7 @@ void MediaPipelineTestMethods::shouldNotifyPlaybackStateEndOfStream()
 
 void MediaPipelineTestMethods::sendNotifyPlaybackStateEndOfStream()
 {
-    getServerStub()->notifyPlaybackStateChangeEvent(kSessionId, PlaybackState::END_OF_STREAM);
-    waitEvent();
+    sendNotifyPlaybackStateInternal(kSessionId, PlaybackState::END_OF_STREAM);
 }
 
 void MediaPipelineTestMethods::shouldRemoveVideoSource()
@@ -799,8 +822,12 @@ void MediaPipelineTestMethods::shouldNotifyPlaybackState(const std::shared_ptr<S
 
 void MediaPipelineTestMethods::sendNotifyPlaybackStateStopped()
 {
-    getServerStub()->notifyPlaybackStateChangeEvent(kSessionId, PlaybackState::STOPPED);
-    waitEvent();
+    sendNotifyPlaybackStateInternal(kSessionId, PlaybackState::STOPPED);
+}
+
+void MediaPipelineTestMethods::sendNotifyPlaybackStateStoppedSecondary()
+{
+    sendNotifyPlaybackStateInternal(kSessionIdSecondary, PlaybackState::STOPPED);
 }
 
 void MediaPipelineTestMethods::shouldDestroyMediaSession()
@@ -944,8 +971,7 @@ void MediaPipelineTestMethods::stopFailure()
 
 void MediaPipelineTestMethods::sendNotifyPlaybackStateFailure()
 {
-    getServerStub()->notifyPlaybackStateChangeEvent(kSessionId, PlaybackState::FAILURE);
-    waitEvent();
+    sendNotifyPlaybackStateInternal(kSessionId, PlaybackState::FAILURE);
 }
 
 void MediaPipelineTestMethods::shouldSetPlaybackRate2x()
@@ -1004,14 +1030,12 @@ void MediaPipelineTestMethods::setPosition10()
 
 void MediaPipelineTestMethods::sendNotifyPlaybackStateSeeking()
 {
-    getServerStub()->notifyPlaybackStateChangeEvent(kSessionId, PlaybackState::SEEKING);
-    waitEvent();
+    sendNotifyPlaybackStateInternal(kSessionId, PlaybackState::SEEKING);
 }
 
 void MediaPipelineTestMethods::sendNotifyPlaybackStateFlushed()
 {
-    getServerStub()->notifyPlaybackStateChangeEvent(kSessionId, PlaybackState::FLUSHED);
-    waitEvent();
+    sendNotifyPlaybackStateInternal(kSessionId, PlaybackState::FLUSHED);
 }
 
 void MediaPipelineTestMethods::shouldNotifyNeedDataAudio(const size_t framesToWrite)
@@ -1040,6 +1064,27 @@ void MediaPipelineTestMethods::shouldNotifyNeedDataInternal(const std::shared_pt
                 m_firstSegmentOfNeedData = true;
                 notifyEvent();
             }));
+}
+
+void MediaPipelineTestMethods::sendNotifyNeedDataVideo(uint32_t framesToWrite)
+{
+    sendNotifyNeedDataInternal(kSessionId, kVideoSourceId, m_locationToWriteVideo[kPrimaryPartition], framesToWrite);
+}
+
+void MediaPipelineTestMethods::sendNotifyNeedDataAudio(uint32_t framesToWrite)
+{
+    sendNotifyNeedDataInternal(kSessionId, kAudioSourceId, m_locationToWriteAudio[kPrimaryPartition], framesToWrite);
+}
+
+void MediaPipelineTestMethods::sendNotifyNeedDataVideoSecondary(uint32_t framesToWrite)
+{
+    sendNotifyNeedDataInternal(kSessionIdSecondary, kVideoSourceId, m_locationToWriteVideo[kSecondaryPartition], framesToWrite);
+}
+
+void MediaPipelineTestMethods::sendNotifyNeedDataInternal(const int32_t sessionId, const int32_t sourceId, const std::shared_ptr<MediaPlayerShmInfo> &location, uint32_t framesToWrite)
+{
+    getServerStub()->notifyNeedMediaDataEvent(sessionId, sourceId, framesToWrite, m_needDataRequestId, location);
+    waitEvent();
 }
 
 void MediaPipelineTestMethods::writeAudioFrames()
@@ -1116,24 +1161,6 @@ void MediaPipelineTestMethods::addSegmentFailure()
     EXPECT_EQ(m_mediaPipeline->addSegment(m_needDataRequestId, mseData), AddSegmentStatus::ERROR);
 }
 
-void MediaPipelineTestMethods::sendNotifyPlaybackStateStoppedSecondary()
-{
-    getServerStub()->notifyPlaybackStateChangeEvent(kSessionIdSecondary, PlaybackState::STOPPED);
-    waitEvent();
-}
-
-void MediaPipelineTestMethods::sendNotifyNetworkStateBufferingSecondary()
-{
-    getServerStub()->notifyNetworkStateChangeEvent(kSessionIdSecondary, NetworkState::BUFFERING);
-    waitEvent();
-}
-
-void MediaPipelineTestMethods::sendNotifyPlaybackStateIdleSecondary()
-{
-    getServerStub()->notifyPlaybackStateChangeEvent(kSessionIdSecondary, PlaybackState::IDLE);
-    waitEvent();
-}
-
 void MediaPipelineTestMethods::writeVideoFramesSecondary()
 {
     uint32_t framesToWrite = 3;
@@ -1147,30 +1174,6 @@ void MediaPipelineTestMethods::writeVideoFramesSecondary()
     MediaPipelineTestMethods::checkMseVideoSegmentWritten(segmentId);
     MediaPipelineTestMethods::shouldHaveDataOkSecondary(framesToWrite);
     MediaPipelineTestMethods::haveDataOkSecondary();
-}
-void MediaPipelineTestMethods::sendNotifyNeedDataVideoSecondary(uint32_t framesToWrite)
-{
-    getServerStub()->notifyNeedMediaDataEvent(kSessionIdSecondary, kVideoSourceId, framesToWrite, m_needDataRequestId,
-                                              m_locationToWriteVideo[kSecondaryPartition]);
-    waitEvent();
-}
-
-void MediaPipelineTestMethods::sendNotifyNetworkStateBufferedSecondary()
-{
-    getServerStub()->notifyNetworkStateChangeEvent(kSessionIdSecondary, NetworkState::BUFFERED);
-    waitEvent();
-}
-
-void MediaPipelineTestMethods::sendNotifyPlaybackStatePausedSecondary()
-{
-    getServerStub()->notifyPlaybackStateChangeEvent(kSessionIdSecondary, PlaybackState::PAUSED);
-    waitEvent();
-}
-
-void MediaPipelineTestMethods::sendNotifyPlaybackStatePlayingSecondary()
-{
-    getServerStub()->notifyPlaybackStateChangeEvent(kSessionIdSecondary, PlaybackState::PLAYING);
-    waitEvent();
 }
 
 } // namespace firebolt::rialto::client::ct

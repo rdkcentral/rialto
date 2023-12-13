@@ -163,26 +163,28 @@ protected:
 
     // Event methods
     void sendNotifyNetworkStateBuffering();
+    void sendNotifyNetworkStateBufferingSecondary();
     void sendNotifyPlaybackStateIdle();
+    void sendNotifyPlaybackStateIdleSecondary();
     void sendNotifyNeedDataAudioBeforePreroll();
     void sendNotifyNeedDataVideoBeforePreroll();
-    void sendNotifyNetworkStateBuffered();
-    void sendNotifyPlaybackStatePaused();
-    void sendNotifyPlaybackStatePlaying();
     void sendNotifyNeedDataAudioAfterPreroll();
     void sendNotifyNeedDataVideoAfterPreroll();
+    void sendNotifyNeedDataVideo(uint32_t framesToWrite);
+    void sendNotifyNeedDataAudio(uint32_t framesToWrite);
+    void sendNotifyNeedDataVideoSecondary(uint32_t framesToWrite);
+    void sendNotifyNetworkStateBuffered();
+    void sendNotifyNetworkStateBufferedSecondary();
+    void sendNotifyPlaybackStatePaused();
+    void sendNotifyPlaybackStatePausedSecondary();
+    void sendNotifyPlaybackStatePlaying();
+    void sendNotifyPlaybackStatePlayingSecondary();
     void sendNotifyPlaybackStateEndOfStream();
     void sendNotifyPlaybackStateStopped();
+    void sendNotifyPlaybackStateStoppedSecondary();
     void sendNotifyPlaybackStateFailure();
     void sendNotifyPlaybackStateSeeking();
     void sendNotifyPlaybackStateFlushed();
-    void sendNotifyPlaybackStateStoppedSecondary();
-    void sendNotifyNetworkStateBufferingSecondary();
-    void sendNotifyPlaybackStateIdleSecondary();
-    void sendNotifyNetworkStateBufferedSecondary();
-    void sendNotifyPlaybackStatePausedSecondary();
-    void sendNotifyNeedDataVideoSecondary(uint32_t framesToWrite);
-    void sendNotifyPlaybackStatePlayingSecondary();
 
     // Check methods
     void checkMseAudioSegmentWritten(int32_t segmentId);
@@ -251,7 +253,9 @@ private:
     int32_t addSegmentMseVideoInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline, const int64_t duration, const int32_t width, const int32_t height, const Fraction &frameRate, const uint32_t partitionId, const AddSegmentStatus &status);
     void haveDataInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline, const MediaSourceStatus &mediaStatus, const bool status);
     void playInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline, const bool status);
-
+    void sendNotifyPlaybackStateInternal(const int32_t sessionId, const PlaybackState &state);
+    void sendNotifyNetworkStateInternal(const int32_t sessionId, const NetworkState &state);
+    void sendNotifyNeedDataInternal(const int32_t sessionId, const int32_t sourceId, const std::shared_ptr<MediaPlayerShmInfo> &location, uint32_t framesToWrite);
 };
 } // namespace firebolt::rialto::client::ct
 
