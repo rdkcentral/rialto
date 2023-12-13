@@ -43,6 +43,7 @@ namespace firebolt::rialto::server::ct
 ::firebolt::rialto::StopRequest createStopRequest(int sessionId);
 ::firebolt::rialto::DestroySessionRequest createDestroySessionRequest(int sessionId);
 ::firebolt::rialto::SetPlaybackRateRequest createSetPlaybackRateRequest(int sessionId);
+::firebolt::rialto::SetPositionRequest createSetPositionRequest(int sessionId, std::int64_t position);
 
 // media keys module
 ::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequest();

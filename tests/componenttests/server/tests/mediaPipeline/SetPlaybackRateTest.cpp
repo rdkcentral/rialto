@@ -123,9 +123,8 @@ private:
  *  Server is terminated.
  *
  * Expected Results:
- *  All API calls are handled by the server.
- *  The state of the Gstreamer Pipeline is successfully negotiationed in the normal playback scenario.
- *  Data is successfully read from the shared memory and pushed to gstreamer pipeline for both audio and video.
+ *  Set playback rate succeeds in the playing state.
+ *  Success response is returned to client.
  *
  * Code:
  */
@@ -229,9 +228,8 @@ TEST_F(SetPlaybackRateTest, SetPlaybackRate)
  *  Server is terminated.
  *
  * Expected Results:
- *  All API calls are handled by the server.
- *  The state of the Gstreamer Pipeline is successfully negotiationed in the normal playback scenario.
- *  Data is successfully read from the shared memory and pushed to gstreamer pipeline for both audio and video.
+ *  Set playback rate fails.
+ *  Failure is returned to the client.
  *
  * Code:
  */
