@@ -38,6 +38,8 @@ public:
  *
  * Sequence Diagrams:
  *  Create, Destroy - https://wiki.rdkcentral.com/pages/viewpage.action?pageId=226375556
+ *  Start/Resume Playback, Pause Playback, Stop
+ *   - https://wiki.rdkcentral.com/display/ASP/Rialto+Playback+Design
  *
  * Test Setup:
  *  Language: C++
