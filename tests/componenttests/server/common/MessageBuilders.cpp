@@ -27,7 +27,7 @@ namespace firebolt::rialto::server::ct
 {
 ::rialto::SetConfigurationRequest createGenericSetConfigurationReq()
 {
-    constexpr int kLogLevel{RIALTO_DEBUG_LEVEL_DEFAULT};
+    constexpr int kLogLevel{kAllLogs};
     constexpr int kMaxPlaybacks{2};
     const std::string kDisplayName{"waylanddisplay"};
     ::rialto::LogLevels logLevels;

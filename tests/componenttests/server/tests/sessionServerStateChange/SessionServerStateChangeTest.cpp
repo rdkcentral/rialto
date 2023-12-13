@@ -51,7 +51,7 @@ public:
 
         ExpectMessage<::rialto::StateChangedEvent> expectedMessage(m_serverManagerStub);
 
-        ConfigureAction<::firebolt::rialto::server::ct::SetStateRequest>(m_serverManagerStub).send(request).expectSuccess();
+        ConfigureAction<::firebolt::rialto::server::ct::SetState>(m_serverManagerStub).send(request).expectSuccess();
 
         auto receivedMessage = expectedMessage.getMessage();
         ASSERT_TRUE(receivedMessage);
@@ -64,7 +64,7 @@ public:
 
         ExpectMessage<::rialto::StateChangedEvent> expectedMessage(m_serverManagerStub);
 
-        ConfigureAction<::firebolt::rialto::server::ct::SetStateRequest>(m_serverManagerStub).send(request).expectSuccess();
+        ConfigureAction<::firebolt::rialto::server::ct::SetState>(m_serverManagerStub).send(request).expectSuccess();
 
         auto receivedMessage = expectedMessage.getMessage();
         ASSERT_TRUE(receivedMessage);

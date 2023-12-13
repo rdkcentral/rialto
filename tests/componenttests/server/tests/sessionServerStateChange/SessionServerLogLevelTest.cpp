@@ -19,6 +19,7 @@
 
 #include "ActionTraits.h"
 #include "ConfigureAction.h"
+#include "Constants.h"
 #include "ExpectMessage.h"
 #include "MessageBuilders.h"
 #include "RialtoLogging.h"
@@ -37,16 +38,14 @@ public:
     {
         ::rialto::SetLogLevelsRequest request{createSetLogLevelsRequest()};
 
-        ASSERT_EQ(getLogLevels(RIALTO_COMPONENT_DEFAULT), RIALTO_DEBUG_LEVEL_DEFAULT);
-        ASSERT_EQ(getLogLevels(RIALTO_COMPONENT_CLIENT), RIALTO_DEBUG_LEVEL_DEFAULT);
-        ASSERT_EQ(getLogLevels(RIALTO_COMPONENT_SERVER), RIALTO_DEBUG_LEVEL_DEFAULT);
-        ASSERT_EQ(getLogLevels(RIALTO_COMPONENT_IPC), RIALTO_DEBUG_LEVEL_DEFAULT);
-        ASSERT_EQ(getLogLevels(RIALTO_COMPONENT_SERVER_MANAGER), RIALTO_DEBUG_LEVEL_DEFAULT);
-        ASSERT_EQ(getLogLevels(RIALTO_COMPONENT_COMMON), RIALTO_DEBUG_LEVEL_DEFAULT);
+        ASSERT_EQ(getLogLevels(RIALTO_COMPONENT_DEFAULT), kAllLogs);
+        ASSERT_EQ(getLogLevels(RIALTO_COMPONENT_CLIENT), kAllLogs);
+        ASSERT_EQ(getLogLevels(RIALTO_COMPONENT_SERVER), kAllLogs);
+        ASSERT_EQ(getLogLevels(RIALTO_COMPONENT_IPC), kAllLogs);
+        ASSERT_EQ(getLogLevels(RIALTO_COMPONENT_SERVER_MANAGER), kAllLogs);
+        ASSERT_EQ(getLogLevels(RIALTO_COMPONENT_COMMON), kAllLogs);
 
-        ConfigureAction<::firebolt::rialto::server::ct::SetLogLevelsRequest>(m_serverManagerStub)
-            .send(request)
-            .expectSuccess();
+        ConfigureAction<::firebolt::rialto::server::ct::SetLogLevels>(m_serverManagerStub).send(request).expectSuccess();
 
         ASSERT_EQ(getLogLevels(RIALTO_COMPONENT_DEFAULT), RIALTO_DEBUG_LEVEL_FATAL);
         ASSERT_EQ(getLogLevels(RIALTO_COMPONENT_CLIENT), RIALTO_DEBUG_LEVEL_ERROR);

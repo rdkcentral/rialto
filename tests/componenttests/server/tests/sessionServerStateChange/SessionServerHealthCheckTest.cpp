@@ -39,7 +39,7 @@ public:
 
         ExpectMessage<::rialto::AckEvent> expectedMessage(m_serverManagerStub);
 
-        ConfigureAction<::firebolt::rialto::server::ct::PingRequest>(m_serverManagerStub).send(request).expectSuccess();
+        ConfigureAction<::firebolt::rialto::server::ct::Ping>(m_serverManagerStub).send(request).expectSuccess();
 
         auto receivedMessage = expectedMessage.getMessage();
         ASSERT_TRUE(receivedMessage);

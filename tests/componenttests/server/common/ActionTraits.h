@@ -38,7 +38,7 @@ struct SetConfiguration
     static constexpr FunctionType m_kFunction{&Stub::setConfiguration};
 };
 
-struct SetStateRequest
+struct SetState
 {
     using RequestType = ::rialto::SetStateRequest;
     using ResponseType = ::rialto::SetStateResponse;
@@ -48,7 +48,7 @@ struct SetStateRequest
     static constexpr FunctionType m_kFunction{&Stub::setState};
 };
 
-struct SetLogLevelsRequest
+struct SetLogLevels
 {
     using RequestType = ::rialto::SetLogLevelsRequest;
     using ResponseType = ::rialto::SetLogLevelsResponse;
@@ -58,7 +58,7 @@ struct SetLogLevelsRequest
     static constexpr FunctionType m_kFunction{&Stub::setLogLevels};
 };
 
-struct PingRequest
+struct Ping
 {
     using RequestType = ::rialto::PingRequest;
     using ResponseType = ::rialto::PingResponse;
