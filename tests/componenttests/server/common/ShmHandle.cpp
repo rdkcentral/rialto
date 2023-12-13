@@ -17,30 +17,42 @@
  * limitations under the License.
  */
 
-#include "ActionTraits.h"
-#include "ConfigureAction.h"
-#include "MediaPipelineTestFixture.h"
-#include "MessageBuilders.h"
+#include "ShmHandle.h"
+#include <gtest/gtest.h>
+#include <sys/mman.h>
+#include <sys/un.h>
+#include <unistd.h>
 
 namespace firebolt::rialto::server::ct
 {
-TEST_F(MediaPipelineTest, shouldCreatePipeline)
+ShmHandle::~ShmHandle()
 {
-    createSession();
+    if (-1 == m_shmFd)
+    {
+        return;
+    }
+
+    EXPECT_NE(-1, munmap(m_shmBuffer, m_shmBufferLen));
+    close(m_shmFd);
 }
 
-TEST_F(MediaPipelineTest, shouldFailToLoadWhenSessionIdIsWrong)
+void ShmHandle::init(std::int32_t fd, std::uint32_t length)
 {
-    createSession();
-    auto request = createLoadRequest(m_sessionId + 1);
-    ConfigureAction<Load>(m_clientStub).send(request).expectFailure();
+    m_shmFd = fd;
+    m_shmBufferLen = length;
+    m_shmBuffer = reinterpret_cast<uint8_t *>(mmap(NULL, m_shmBufferLen, PROT_READ | PROT_WRITE, MAP_SHARED, m_shmFd, 0));
+    EXPECT_NE(MAP_FAILED, m_shmBuffer);
+    if (MAP_FAILED == m_shmBuffer)
+    {
+        close(m_shmFd);
+        m_shmFd = -1;
+        m_shmBuffer = nullptr;
+        m_shmBufferLen = 0U;
+    }
 }
 
-TEST_F(MediaPipelineTest, shouldLoad)
+std::uint8_t *ShmHandle::getShm() const
 {
-    createSession();
-    gstPlayerWillBeCreated();
-    load();
-    gstPlayerWillBeDestructed();
+    return m_shmBuffer;
 }
 } // namespace firebolt::rialto::server::ct

@@ -72,76 +72,109 @@ public:
     }
 };
 
+
 /*
- * Component Test: <Test Description>
+ * Component Test: RialtoApplicationSessionServer goes from Not Running -> Unitialized (server preloading) -> active sequence
  * Test Objective:
- *  <Detailed Test Description>
+ *  Test that the server can be successfully started in an uninitialised state and then activated
  *
  * Sequence Diagrams:
- *  <Links To Relevant Sequence Diagrams>
+ *  https://wiki.rdkcentral.com/pages/viewpage.action?spaceKey=ASP&title=Rialto+Application+Session+Management
  *
  * Test Setup:
  *  Language: C++
  *  Testing Framework: Google Test
- *  Components: <Component Tested>
+ *  Components: RialtoApplicationSessionServer with stubs for RialtoClient and RialtoServerManager
  *
  * Test Initialize:
- *  <Test Initialization Steps>
+ *   RialtoServerComponentTest::RialtoServerComponentTest() will set up wrappers and
+ *      starts the application server running in its own thread
+ * 
  *
  * Test Steps:
- *  Step 1: <Test Step Name>
- *   <Test Step Description>
+ *  Step A1: monitor socket creation
+ *      sets up the Linux Wrapper so that socket creation is expected and monitored
  *
- *  <Further Test Steps>
+ *  Step A2: send a SetConfiguration message to make server inactive; and then expect a StateChangedEvent message
+ *      - send a SetConfiguration message
+ *        within sequence diagram "Unitialized to Inactive" this implements steps 2 and 3
+ *      - expect a StateChangedEvent message
+ *        within sequence diagram "Unitialized to Inactive" this implements step 7
+ *
+ *  Step A3: send a SetStateRequest message to make server active; and then expect StateChangedEvent message
+ *      - send a SetStateRequest message
+ *        within sequence diagram "Inactive to Active" this implements steps 2 and 3
+ *      - expect StateChangedEvent message
+ *        within sequence diagram "Inactive to Active" this implements step 7
  *
  * Test Teardown:
- *  <Test Termination Steps>
+ *  Server is terminated.
  *
  * Expected Results:
- *  <Description Of Results To Expect>
+ *  All API calls are handled by the server.
  *
  * Code:
  */
 TEST_F(SessionServerStateChangeTest, ShouldChangeFromInactiveToActive)
 {
+    // Step A1: monitor socket creation
     willConfigureSocket();
+
+    // Step A2: send a SetConfiguration message to make server inactive; and then expect a StateChangedEvent message
     configureSutInInactiveState();
+
+    // Step A3: send a SetStateRequest message to make server active; and then expect StateChangedEvent message
     setStateActive();
 }
 
+
+
 /*
- * Component Test: <Test Description>
+ * Component Test: RialtoApplicationSessionServer goes from Not Running -> Initialized (active state) -> inactive sequence
  * Test Objective:
- *  <Detailed Test Description>
+ *  Test that the server can be successfully started in an active state and then de-activated
  *
  * Sequence Diagrams:
- *  <Links To Relevant Sequence Diagrams>
+ *  https://wiki.rdkcentral.com/pages/viewpage.action?spaceKey=ASP&title=Rialto+Application+Session+Management
  *
  * Test Setup:
  *  Language: C++
  *  Testing Framework: Google Test
- *  Components: <Component Tested>
+ *  Components: RialtoApplicationSessionServer with stubs for RialtoClient and RialtoServerManager
  *
  * Test Initialize:
- *  <Test Initialization Steps>
+ *   RialtoServerComponentTest::RialtoServerComponentTest() will set up wrappers and
+ *      starts the application server running in its own thread
  *
  * Test Steps:
- *  Step 1: <Test Step Name>
- *   <Test Step Description>
+ *  Step B1: monitor socket creation
+ *      sets up the Linux Wrapper so that socket creation is expected and monitored
  *
- *  <Further Test Steps>
+ *  Step B2: send a SetConfiguration message to make server active; and then expect StateChangedEvent message
+ *      There doesn't seem to be a sequence diagram for this
+ *
+ *  Step B3: send a SetStateRequest message to make server inactive; and then expect StateChangedEvent message
+ *      - send a SetStateRequest message
+ *        within sequence diagram "Active to Inactive" this implements steps 2 and 3
+ *      - expect StateChangedEvent message
+ *        within sequence diagram "Active to Inactive" this implements step 9
  *
  * Test Teardown:
- *  <Test Termination Steps>
+ *  Server is terminated.
  *
  * Expected Results:
- *  <Description Of Results To Expect>
+ *  All API calls are handled by the server.
  *
  * Code:
  */
 TEST_F(SessionServerStateChangeTest, ShouldChangeFromActiveToInactive)
 {
+    // Step B1: monitor socket creation
     willConfigureSocket();
+
+    // Step B2: send a SetConfiguration message to make server active; and then expect StateChangedEvent message
     configureSutInActiveState();
+
+    // Step B3: send a SetStateRequest message to make server inactive; and then expect StateChangedEvent message
     setStateInactive();
 }

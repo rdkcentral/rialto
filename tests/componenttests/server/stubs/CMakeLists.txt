@@ -25,6 +25,7 @@ add_library (
         STATIC
         ClientStub.cpp
         ServerManagerStub.cpp
+        GstreamerStub.cpp
 )
 
 set_property (
@@ -38,8 +39,11 @@ target_include_directories (
 
         PUBLIC
         ${CMAKE_CURRENT_LIST_DIR}
+        ${GStreamerApp_INCLUDE_DIRS}
         $<TARGET_PROPERTY:RialtoIpcClient,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoServerComponentTestsCommon,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoWrappers,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoServerComponentTestsMocks,INTERFACE_INCLUDE_DIRECTORIES>
 
         PRIVATE
         $<TARGET_PROPERTY:RialtoIpcCommon,INTERFACE_INCLUDE_DIRECTORIES>

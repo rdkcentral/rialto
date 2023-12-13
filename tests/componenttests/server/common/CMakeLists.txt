@@ -37,6 +37,8 @@ add_library (
         ${PROTO_HEADERS}
 
         MessageBuilders.cpp
+        SegmentBuilder.cpp
+        ShmHandle.cpp
 )
 
 set_property (

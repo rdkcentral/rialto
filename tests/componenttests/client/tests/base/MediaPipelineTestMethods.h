@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_MEDIA_PIPELINE_TEST_METHODS_H_
-#define FIREBOLT_RIALTO_MEDIA_PIPELINE_TEST_METHODS_H_
+#ifndef FIREBOLT_RIALTO_CLIENT_CT_MEDIA_PIPELINE_TEST_METHODS_H_
+#define FIREBOLT_RIALTO_CLIENT_CT_MEDIA_PIPELINE_TEST_METHODS_H_
 
 #include "IMediaPipeline.h"
 #include "MediaPipelineClientMock.h"
@@ -39,7 +39,6 @@ using ::testing::StrictMock;
 using ::testing::WithArgs;
 
 using namespace firebolt::rialto;
-using namespace firebolt::rialto::ct::stub;
 
 // Forward declare metadata so we dont have to include proto file
 namespace firebolt::rialto
@@ -47,6 +46,8 @@ namespace firebolt::rialto
 class MediaSegmentMetadata;
 };
 
+namespace firebolt::rialto::client::ct
+{
 class MediaPipelineTestMethods
 {
 public:
@@ -76,7 +77,7 @@ protected:
     void shouldHaveDataBeforePreroll();
     void shouldNotifyNetworkStateBuffered();
     void shouldNotifyPlaybackStatePaused();
-    void shouldNotifyPlaybackStatePlay();
+    void shouldNotifyPlaybackStatePlaying();
     void shouldPlay();
     void shouldNotifyNeedDataAudioAfterPreroll();
     void shouldNotifyNeedDataVideoAfterPreroll();
@@ -89,6 +90,17 @@ protected:
     void shouldStop();
     void shouldNotifyPlaybackStateStopped();
     void shouldDestroyMediaSession();
+    void shouldPlayWithFailure();
+    void shouldPauseWithFailure();
+    void shouldStopWithFailure();
+    void shouldNotifyPlaybackStateFailure();
+    void shouldSetPlaybackRate2x();
+    void shouldSetPlaybackRateNegative2x();
+    void shouldSetPlaybackRateFailure();
+    void shouldSetPositionTo10();
+    void shouldSetPositionTo0();
+    void shouldNotifyPlaybackStateSeeking();
+    void shouldNotifyPlaybackStateFlushed();
 
     // Api methods
     void createMediaPipeline();
@@ -106,6 +118,16 @@ protected:
     void removeSourceAudio();
     void stop();
     void destroyMediaPipeline();
+    void playFailure();
+    void pauseFailure();
+    void stopFailure();
+    void setPlaybackRate2x();
+    void setPlaybackRateNegative2x();
+    void setPlaybackRateFailure();
+    void setPosition10();
+    void setPosition0();
+    void setPositionFailure();
+    void addSegmentFailure();
 
     // Event methods
     void sendNotifyNetworkStateBuffering();
@@ -114,11 +136,14 @@ protected:
     void sendNotifyNeedDataVideoBeforePreroll();
     void sendNotifyNetworkStateBuffered();
     void sendNotifyPlaybackStatePaused();
-    void sendNotifyPlaybackStatePlay();
+    void sendNotifyPlaybackStatePlaying();
     void sendNotifyNeedDataAudioAfterPreroll();
     void sendNotifyNeedDataVideoAfterPreroll();
     void sendNotifyPlaybackStateEndOfStream();
     void sendNotifyPlaybackStateStopped();
+    void sendNotifyPlaybackStateFailure();
+    void sendNotifyPlaybackStateSeeking();
+    void sendNotifyPlaybackStateFlushed();
 
     // Check methods
     void checkMseAudioSegmentWritten(int32_t segmentId);
@@ -126,7 +151,12 @@ protected:
 
     // Helper methods
     void startAudioVideoMediaSessionWaitForPreroll();
+    void startAudioVideoMediaSessionPrerollPaused();
     void endAudioVideoMediaSession();
+    void writeAudioFrames();
+    void writeVideoFrames();
+    void writeAudioEos();
+    void writeVideoEos();
 
     virtual void notifyEvent() = 0;
     virtual void waitEvent() = 0;
@@ -161,5 +191,6 @@ private:
     void checkHasNoExtraData(const MediaSegmentMetadata &metadata);
     void checkSegmentData(const MediaSegmentMetadata &metadata, uint8_t *dataPtr, const std::string &expectedSegmentData);
 };
+} // namespace firebolt::rialto::client::ct
 
-#endif // FIREBOLT_RIALTO_MEDIA_PIPELINE_TEST_METHODS_H_
+#endif // FIREBOLT_RIALTO_CLIENT_CT_MEDIA_PIPELINE_TEST_METHODS_H_

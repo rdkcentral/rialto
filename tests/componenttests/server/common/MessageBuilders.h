@@ -20,7 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_CT_MESSAGE_BUILDERS_H_
 #define FIREBOLT_RIALTO_SERVER_CT_MESSAGE_BUILDERS_H_
 
-#include "MediaCommon.h"
+#include "controlmodule.pb.h"
 #include "mediakeysmodule.pb.h"
 #include "mediapipelinemodule.pb.h"
 #include "servermanagermodule.pb.h"
@@ -34,12 +34,24 @@ namespace firebolt::rialto::server::ct
 ::rialto::PingRequest createPingRequest(::google::protobuf::int32 id);
 
 // media pipeline module
-::firebolt::rialto::CreateSessionRequest createCreateSessionRequest(const VideoRequirements &requirements);
+::firebolt::rialto::CreateSessionRequest createCreateSessionRequest();
 ::firebolt::rialto::LoadRequest createLoadRequest(int sessionId);
+::firebolt::rialto::AttachSourceRequest createAttachAudioSourceRequest(int sessionId);
+::firebolt::rialto::AttachSourceRequest createAttachVideoSourceRequest(int sessionId);
+::firebolt::rialto::AllSourcesAttachedRequest createAllSourcesAttachedRequest(int sessionId);
+::firebolt::rialto::HaveDataRequest createHaveDataRequest(int sessionId, unsigned numOfFrames, unsigned requestId);
+::firebolt::rialto::PauseRequest createPauseRequest(int sessionId);
+::firebolt::rialto::PlayRequest createPlayRequest(int sessionId);
+::firebolt::rialto::RemoveSourceRequest createRemoveSourceRequest(int sessionId, int sourceId);
+::firebolt::rialto::StopRequest createStopRequest(int sessionId);
+::firebolt::rialto::DestroySessionRequest createDestroySessionRequest(int sessionId);
 
 // media keys module
 ::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequest();
 ::firebolt::rialto::CreateKeySessionRequest createCreateKeySessionRequest(int mediaKeysHandle);
+
+// control module
+::firebolt::rialto::GetSharedMemoryRequest createGetSharedMemoryRequest();
 } // namespace firebolt::rialto::server::ct
 
 #endif // FIREBOLT_RIALTO_SERVER_CT_MESSAGE_BUILDERS_H_

@@ -24,7 +24,7 @@
 #include <gtest/gtest.h>
 #include <memory>
 
-namespace firebolt::rialto::ct::stub
+namespace firebolt::rialto::client::ct
 {
 MediaPipelineModuleStub::MediaPipelineModuleStub(
     const std::shared_ptr<::firebolt::rialto::MediaPipelineModule> &mediaPipelineModuleMock)
@@ -73,4 +73,4 @@ void MediaPipelineModuleStub::notifyNeedMediaDataEvent(int sessionId, int32_t so
     getClient()->sendEvent(event);
 }
 
-} // namespace firebolt::rialto::ct::stub
+} // namespace firebolt::rialto::client::ct

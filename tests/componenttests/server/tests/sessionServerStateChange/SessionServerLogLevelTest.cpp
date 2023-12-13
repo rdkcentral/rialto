@@ -43,7 +43,7 @@ public:
         ASSERT_EQ(getLogLevels(RIALTO_COMPONENT_IPC), RIALTO_DEBUG_LEVEL_DEFAULT);
         ASSERT_EQ(getLogLevels(RIALTO_COMPONENT_SERVER_MANAGER), RIALTO_DEBUG_LEVEL_DEFAULT);
         ASSERT_EQ(getLogLevels(RIALTO_COMPONENT_COMMON), RIALTO_DEBUG_LEVEL_DEFAULT);
-        
+
         ConfigureAction<::firebolt::rialto::server::ct::SetLogLevelsRequest>(m_serverManagerStub)
             .send(request)
             .expectSuccess();
@@ -58,38 +58,49 @@ public:
 };
 
 /*
- * Component Test: <Test Description>
+ * Component Test: RialtoApplicationSessionServer will receive ping from RialtoServerManager and respond
  * Test Objective:
- *  <Detailed Test Description>
+ *   RialtoApplicationSessionServer component is under test and will receive ping from stubbed RialtoServerManager
+ *   and respond to RialtoServerManager with an acknowledgement
  *
  * Sequence Diagrams:
- *  <Links To Relevant Sequence Diagrams>
+ *  https://wiki.rdkcentral.com/pages/viewpage.action?spaceKey=ASP&title=Rialto+Application+Session+Management
  *
  * Test Setup:
  *  Language: C++
  *  Testing Framework: Google Test
- *  Components: <Component Tested>
+ *  Components: RialtoApplicationSessionServer with stubs for RialtoClient and RialtoServerManager
  *
  * Test Initialize:
- *  <Test Initialization Steps>
+ *   RialtoServerComponentTest::RialtoServerComponentTest() will set up wrappers and
+ *      starts the application server running in its own thread
  *
  * Test Steps:
- *  Step 1: <Test Step Name>
- *   <Test Step Description>
+ *  Step 1: monitor socket creation
+ *      sets up the Linux Wrapper so that socket creation is expected and monitored
  *
- *  <Further Test Steps>
+ *  Step 2: send a SetConfiguration message to make server active; and then expect StateChangedEvent message
+ *      There doesn't seem to be a sequence diagram for this
+ *
+ *  Step 3: Perform ping test
+ *      In the sequence diagram "Ping/Ack" this implements steps 1 and 6
  *
  * Test Teardown:
- *  <Test Termination Steps>
+ *  Server is terminated.
  *
  * Expected Results:
- *  <Description Of Results To Expect>
+ *  All API calls are handled by the server.
  *
  * Code:
  */
 TEST_F(SessionServerLogLevelTest, ShouldSetLogLevels)
 {
+    // Step 1: monitor socket creation
     willConfigureSocket();
+
+    // Step 2: send a SetConfiguration message to make server active; and then expect StateChangedEvent message
     configureSutInActiveState();
+
+    // Step 3: Perform ping test
     setLogLevels();
 }

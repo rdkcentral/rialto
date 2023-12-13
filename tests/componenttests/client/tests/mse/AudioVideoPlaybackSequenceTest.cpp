@@ -20,6 +20,8 @@
 #include "ClientComponentTest.h"
 #include <gtest/gtest.h>
 
+namespace firebolt::rialto::client::ct
+{
 class AudioVideoPlaybackSequenceTest : public ClientComponentTest
 {
 public:
@@ -205,8 +207,8 @@ TEST_F(AudioVideoPlaybackSequenceTest, playback)
     // Step 9: Play
     MediaPipelineTestMethods::shouldPlay();
     MediaPipelineTestMethods::play();
-    MediaPipelineTestMethods::shouldNotifyPlaybackStatePlay();
-    MediaPipelineTestMethods::sendNotifyPlaybackStatePlay();
+    MediaPipelineTestMethods::shouldNotifyPlaybackStatePlaying();
+    MediaPipelineTestMethods::sendNotifyPlaybackStatePlaying();
 
     // Step 10: Write 1 audio frame
     MediaPipelineTestMethods::shouldNotifyNeedDataAudioAfterPreroll();
@@ -256,3 +258,4 @@ TEST_F(AudioVideoPlaybackSequenceTest, playback)
     MediaPipelineTestMethods::shouldDestroyMediaSession();
     MediaPipelineTestMethods::destroyMediaPipeline();
 }
+} // namespace firebolt::rialto::client::ct

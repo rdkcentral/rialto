@@ -24,8 +24,10 @@ add_gtests (
         sessionServerStateChange/SessionServerStateChangeTest.cpp
         sessionServerStateChange/SessionServerHealthCheckTest.cpp
         sessionServerStateChange/SessionServerLogLevelTest.cpp
-        mediaPipeline/MediaPipelineTestFixture.cpp
-        mediaPipeline/MediaPipelineTest.cpp
+        mediaPipeline/CreatePipelineTest.cpp
+        mediaPipeline/FailureTests.cpp
+        mediaPipeline/PlaybackTest.cpp
+        mediaPipeline/SourceTest.cpp
         mediaKeys/MediaKeysTest.cpp
         )
 

@@ -189,4 +189,18 @@ MATCHER_P(destroySessionRequestMatcher, sessionId, "")
     return (kRequest->session_id() == sessionId);
 }
 
+MATCHER_P2(setPlaybackRateRequestMatcher, sessionId, rate, "")
+{
+    const ::firebolt::rialto::SetPlaybackRateRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::SetPlaybackRateRequest *>(arg);
+    return ((kRequest->session_id() == sessionId) && (kRequest->rate() == rate));
+}
+
+MATCHER_P2(setPositionRequestMatcher, sessionId, position, "")
+{
+    const ::firebolt::rialto::SetPositionRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::SetPositionRequest *>(arg);
+    return ((kRequest->session_id() == sessionId) && (kRequest->position() == position));
+}
+
 #endif // MEDIA_PIPELINE_PROTO_REQUEST_MATCHERS_H_
