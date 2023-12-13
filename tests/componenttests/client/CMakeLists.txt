@@ -51,6 +51,7 @@ add_gtests (
         tests/mse/PlayPauseStopFailuresTest.cpp
         tests/mse/SetPlaybackRateTest.cpp
         tests/mse/SetPositionTest.cpp
+        tests/mse/AudioSwitchingTest.cpp
         )
 
 add_subdirectory(mocks)
