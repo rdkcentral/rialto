@@ -255,9 +255,10 @@ private:
                                          const std::shared_ptr<firebolt::rialto::CodecData> &codacData,
                                          const firebolt::rialto::StreamFormat &streamFormat);
     void shouldAttachAudioSourceInternal(const std::string &mimeType, bool hasNoDrm,
-                                        const firebolt::rialto::SegmentAlignment &alignment, const uint32_t noOfChannels, const uint32_t sampleRate,
-                                        const std::string &codecSpecificConfigStr, const std::shared_ptr<firebolt::rialto::CodecData> &codacData,
-                                        const firebolt::rialto::StreamFormat &streamFormat);
+                                         const firebolt::rialto::SegmentAlignment &alignment, const uint32_t noOfChannels,
+                                         const uint32_t sampleRate, const std::string &codecSpecificConfigStr,
+                                         const std::shared_ptr<firebolt::rialto::CodecData> &codacData,
+                                         const firebolt::rialto::StreamFormat &streamFormat);
     void shouldAllSourcesAttachedInternal(const int32_t sessionId);
     void shouldHaveDataInternal(const int32_t sessionId, const MediaSourceStatus status, const size_t framesWritten,
                                 const uint32_t partition);
@@ -281,12 +282,10 @@ private:
                                    const std::shared_ptr<firebolt::rialto::CodecData> &codacData,
                                    const firebolt::rialto::StreamFormat &streamFormat, const bool status);
     void attachSourceAudioInternal(const std::string &mimeType, bool hasNoDrm,
-                                   const firebolt::rialto::SegmentAlignment &alignment,
-                                   const uint32_t noOfChannels, const uint32_t sampleRate,
-                                   const std::string &codecSpecificConfigStr,
+                                   const firebolt::rialto::SegmentAlignment &alignment, const uint32_t noOfChannels,
+                                   const uint32_t sampleRate, const std::string &codecSpecificConfigStr,
                                    const std::shared_ptr<firebolt::rialto::CodecData> &codacData,
-                                   const firebolt::rialto::StreamFormat &streamFormat,
-                                   const bool status);
+                                   const firebolt::rialto::StreamFormat &streamFormat, const bool status);
     void allSourcesAttachedInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline, const bool status);
     int32_t addSegmentMseVideoInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline, const int64_t duration,
                                        const int32_t width, const int32_t height, const Fraction &frameRate,

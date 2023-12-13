@@ -195,12 +195,14 @@ void MediaPipelineTestMethods::attachSourceVideoSecondary()
 
 void MediaPipelineTestMethods::shouldAttachAudioSource()
 {
-    shouldAttachAudioSourceInternal(kAudioMp4, kHasNoDrm, kAlignment, kNumberOfChannels, kSampleRate, kCodecSpecificConfigStr, kCodecData, kStreamFormatRaw);
+    shouldAttachAudioSourceInternal(kAudioMp4, kHasNoDrm, kAlignment, kNumberOfChannels, kSampleRate,
+                                    kCodecSpecificConfigStr, kCodecData, kStreamFormatRaw);
 }
 
 void MediaPipelineTestMethods::shouldAttachAudioSourceMpeg()
 {
-    shouldAttachAudioSourceInternal(kAudioMpeg, kHasNoDrm, kAlignment, kNumberOfChannelsMpeg, kSampleRateMpeg, kCodecSpecificConfigStr, kCodecData, kStreamFormatRaw);
+    shouldAttachAudioSourceInternal(kAudioMpeg, kHasNoDrm, kAlignment, kNumberOfChannelsMpeg, kSampleRateMpeg,
+                                    kCodecSpecificConfigStr, kCodecData, kStreamFormatRaw);
 }
 
 void MediaPipelineTestMethods::shouldAttachAudioSourceMp4()
@@ -210,7 +212,8 @@ void MediaPipelineTestMethods::shouldAttachAudioSourceMp4()
 
 void MediaPipelineTestMethods::shouldAttachAudioSourceEacs()
 {
-    shouldAttachAudioSourceInternal(kAudioEacs, kHasNoDrm, kAlignment, kNumberOfChannelsEacs, kSampleRateEacs, kCodecSpecificConfigStr, kCodecData, kStreamFormatRaw);
+    shouldAttachAudioSourceInternal(kAudioEacs, kHasNoDrm, kAlignment, kNumberOfChannelsEacs, kSampleRateEacs,
+                                    kCodecSpecificConfigStr, kCodecData, kStreamFormatRaw);
 }
 
 void MediaPipelineTestMethods::attachSourceAudio()
@@ -221,8 +224,8 @@ void MediaPipelineTestMethods::attachSourceAudio()
 
 void MediaPipelineTestMethods::attachSourceAudioMpeg()
 {
-    attachSourceAudioInternal(kAudioMpeg, kHasNoDrm, kAlignment, kNumberOfChannelsMpeg, kSampleRateMpeg, kCodecSpecificConfigStr,
-                              kCodecData, kStreamFormatRaw, true);
+    attachSourceAudioInternal(kAudioMpeg, kHasNoDrm, kAlignment, kNumberOfChannelsMpeg, kSampleRateMpeg,
+                              kCodecSpecificConfigStr, kCodecData, kStreamFormatRaw, true);
 }
 
 void MediaPipelineTestMethods::attachSourceAudioMp4()
@@ -232,8 +235,8 @@ void MediaPipelineTestMethods::attachSourceAudioMp4()
 
 void MediaPipelineTestMethods::attachSourceAudioEacs()
 {
-    attachSourceAudioInternal(kAudioEacs, kHasNoDrm, kAlignment, kNumberOfChannelsEacs, kSampleRateEacs, kCodecSpecificConfigStr,
-                              kCodecData, kStreamFormatRaw, true);
+    attachSourceAudioInternal(kAudioEacs, kHasNoDrm, kAlignment, kNumberOfChannelsEacs, kSampleRateEacs,
+                              kCodecSpecificConfigStr, kCodecData, kStreamFormatRaw, true);
 }
 
 void MediaPipelineTestMethods::shouldAllSourcesAttached()
@@ -1130,16 +1133,15 @@ void MediaPipelineTestMethods::shouldAttachVideoSourceInternal(
 }
 
 void MediaPipelineTestMethods::shouldAttachAudioSourceInternal(
-    const std::string &mimeType, bool hasNoDrm,
-    const firebolt::rialto::SegmentAlignment &alignment, const uint32_t noOfChannels, const uint32_t sampleRate,
-    const std::string &codecSpecificConfigStr, const std::shared_ptr<firebolt::rialto::CodecData> &codacData,
-    const firebolt::rialto::StreamFormat &streamFormat)
+    const std::string &mimeType, bool hasNoDrm, const firebolt::rialto::SegmentAlignment &alignment,
+    const uint32_t noOfChannels, const uint32_t sampleRate, const std::string &codecSpecificConfigStr,
+    const std::shared_ptr<firebolt::rialto::CodecData> &codacData, const firebolt::rialto::StreamFormat &streamFormat)
 {
     EXPECT_CALL(*m_mediaPipelineModuleMock,
                 attachSource(_,
-                             attachSourceRequestMatcherAudio(kSessionId, mimeType, hasNoDrm, alignment,
-                                                             noOfChannels, sampleRate, codecSpecificConfigStr,
-                                                             codacData, convertStreamFormat(streamFormat)),
+                             attachSourceRequestMatcherAudio(kSessionId, mimeType, hasNoDrm, alignment, noOfChannels,
+                                                             sampleRate, codecSpecificConfigStr, codacData,
+                                                             convertStreamFormat(streamFormat)),
                              _, _))
         .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->attachSourceResponse(kAudioSourceId)),
                         WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));

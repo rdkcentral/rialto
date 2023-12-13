@@ -41,8 +41,7 @@ public:
 /*
  * Component Test: Audio Switching
  * Test Objective:
- *  Test that media pipeline can switch between audio sources multiple times during playback where
- *  paused or playing.
+ *  Test that media pipeline can switch between audio sources multiple times when paused or playing.
  *
  * Sequence Diagrams:
  *  Audio Stream Switching - https://wiki.rdkcentral.com/display/ASP/Rialto+Dynamic+Audio+Stream+Switching
