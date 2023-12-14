@@ -53,6 +53,7 @@ namespace firebolt::rialto::server::ct
 ::firebolt::rialto::GetVolumeRequest createGetVolumeRequest(int sessionId);
 ::firebolt::rialto::SetMuteRequest createSetMuteRequest(int sessionId);
 ::firebolt::rialto::GetMuteRequest createGetMuteRequest(int sessionId);
+::firebolt::rialto::SetVideoWindowRequest createSetVideoWindowRequest(int sessionId);
 
 // media keys module
 ::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequest();

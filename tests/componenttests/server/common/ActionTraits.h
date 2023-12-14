@@ -249,6 +249,16 @@ struct GetMute
     static constexpr FunctionType m_kFunction{&Stub::getMute};
 };
 
+struct SetVideoWindow
+{
+    using RequestType = ::firebolt::rialto::SetVideoWindowRequest;
+    using ResponseType = ::firebolt::rialto::SetVideoWindowResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::setVideoWindow};
+};
+
 // mediakeys module
 struct CreateMediaKeys
 {

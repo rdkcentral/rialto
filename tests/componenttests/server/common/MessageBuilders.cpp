@@ -239,6 +239,17 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
+::firebolt::rialto::SetVideoWindowRequest createSetVideoWindowRequest(int sessionId)
+{
+    ::firebolt::rialto::SetVideoWindowRequest request;
+    request.set_session_id(sessionId);
+    request.set_x(kX);
+    request.set_y(kY);
+    request.set_width(kWidth);
+    request.set_height(kHeight);
+    return request;
+}
+
 ::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequest()
 {
     ::firebolt::rialto::CreateMediaKeysRequest request;
