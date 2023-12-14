@@ -189,6 +189,16 @@ struct SetPosition
     static constexpr FunctionType m_kFunction{&Stub::setPosition};
 };
 
+struct GetPosition
+{
+    using RequestType = ::firebolt::rialto::GetPositionRequest;
+    using ResponseType = ::firebolt::rialto::GetPositionResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::getPosition};
+};
+
 // mediakeys module
 struct CreateMediaKeys
 {

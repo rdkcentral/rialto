@@ -195,6 +195,13 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
+::firebolt::rialto::GetPositionRequest createGetPositionRequest(int sessionId)
+{
+    ::firebolt::rialto::GetPositionRequest request;
+    request.set_session_id(sessionId);
+    return request;
+}
+
 ::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequest()
 {
     ::firebolt::rialto::CreateMediaKeysRequest request;

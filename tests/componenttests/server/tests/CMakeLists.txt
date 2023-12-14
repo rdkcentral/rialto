@@ -31,6 +31,7 @@ add_gtests (
         mediaPipeline/FailureTests.cpp
         mediaPipeline/PlaybackTest.cpp
         mediaPipeline/PlayPauseStopFailuresTest.cpp
+        mediaPipeline/PositionUpdatesTest.cpp
         mediaPipeline/SetPlaybackRateTest.cpp
         mediaPipeline/SetPositionTest.cpp
         mediaPipeline/SourceTest.cpp
