@@ -71,7 +71,7 @@ public:
  *   Attach the video source.
  *   Expect that attach source for video propagated to the server.
  *   Attach the audio source.
- *   Expect thatattach source for audio propagated to the server.
+ *   Expect that attach source for audio propagated to the server.
  *   Set all sources attached.
  *   Expect that all source attached is propagated to the server.
  *   Server notifys the client that the Playback state has changed to IDLE.
