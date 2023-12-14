@@ -224,6 +224,21 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
+::firebolt::rialto::SetMuteRequest createSetMuteRequest(int sessionId)
+{
+    ::firebolt::rialto::SetMuteRequest request;
+    request.set_session_id(sessionId);
+    request.set_mute(true);
+    return request;
+}
+
+::firebolt::rialto::GetMuteRequest createGetMuteRequest(int sessionId)
+{
+    ::firebolt::rialto::GetMuteRequest request;
+    request.set_session_id(sessionId);
+    return request;
+}
+
 ::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequest()
 {
     ::firebolt::rialto::CreateMediaKeysRequest request;

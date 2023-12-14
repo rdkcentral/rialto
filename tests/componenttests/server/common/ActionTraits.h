@@ -229,6 +229,26 @@ struct GetVolume
     static constexpr FunctionType m_kFunction{&Stub::getVolume};
 };
 
+struct SetMute
+{
+    using RequestType = ::firebolt::rialto::SetMuteRequest;
+    using ResponseType = ::firebolt::rialto::SetMuteResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::setMute};
+};
+
+struct GetMute
+{
+    using RequestType = ::firebolt::rialto::GetMuteRequest;
+    using ResponseType = ::firebolt::rialto::GetMuteResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::getMute};
+};
+
 // mediakeys module
 struct CreateMediaKeys
 {
