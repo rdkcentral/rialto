@@ -22,10 +22,16 @@ add_gtests (
 
         # gtest code
         sessionServerStateChange/SessionServerStateChangeTest.cpp
+        mediaPipeline/AudioOnlyPlaybackTest.cpp
         mediaPipeline/CreatePipelineTest.cpp
+        mediaPipeline/EncryptedPlaybackTest.cpp
         mediaPipeline/FailureTests.cpp
         mediaPipeline/PlaybackTest.cpp
+        mediaPipeline/PlayPauseStopFailuresTest.cpp
+        mediaPipeline/SetPlaybackRateTest.cpp
+        mediaPipeline/SetPositionTest.cpp
         mediaPipeline/SourceTest.cpp
+        mediaPipeline/WriteSegmentsTest.cpp
         mediaKeys/MediaKeysTest.cpp
         )
 

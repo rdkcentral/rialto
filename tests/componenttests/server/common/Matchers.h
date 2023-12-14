@@ -29,9 +29,11 @@ MATCHER_P(CharStrMatcher, expectedStr, "")
     return expectedStr == actualStr;
 }
 
-MATCHER_P2(BufferMatcher, expectedBuffer, expectedLength, "")
+MATCHER_P(BufferMatcher, expectedBuffer, "")
 {
-    return memcmp(arg, expectedBuffer, expectedLength) == 0;
+    const char *argCharPtr{reinterpret_cast<const char *>(arg)};
+    std::string dataCopy(argCharPtr, argCharPtr + expectedBuffer.size());
+    return dataCopy == expectedBuffer;
 }
 
 MATCHER(NotNullMatcher, "")

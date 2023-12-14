@@ -498,7 +498,10 @@ void GstGenericPlayer::attachAudioData()
         }
         m_context.audioBuffers.clear();
         m_context.audioDataPushed = true;
-        if (!m_context.bufferedNotificationSent && m_context.videoDataPushed && m_gstPlayerClient)
+        const bool kSingleAudio{m_context.wereAllSourcesAttached &&
+                                m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO) ==
+                                    m_context.streamInfo.end()};
+        if (!m_context.bufferedNotificationSent && (m_context.videoDataPushed || kSingleAudio) && m_gstPlayerClient)
         {
             m_context.bufferedNotificationSent = true;
             m_gstPlayerClient->notifyNetworkState(NetworkState::BUFFERED);
@@ -529,7 +532,10 @@ void GstGenericPlayer::attachVideoData()
         }
         m_context.videoBuffers.clear();
         m_context.videoDataPushed = true;
-        if (!m_context.bufferedNotificationSent && m_context.audioDataPushed && m_gstPlayerClient)
+        const bool kSingleVideo{m_context.wereAllSourcesAttached &&
+                                m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO) ==
+                                    m_context.streamInfo.end()};
+        if (!m_context.bufferedNotificationSent && (m_context.audioDataPushed || kSingleVideo) && m_gstPlayerClient)
         {
             m_context.bufferedNotificationSent = true;
             m_gstPlayerClient->notifyNetworkState(NetworkState::BUFFERED);
