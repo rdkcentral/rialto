@@ -61,12 +61,17 @@ public:
         return m_message;
     }
 
+    void setFilter(const std::function<bool(const MessageType &)> &filter) { m_filter = filter; }
+
 private:
     void onEvent(const std::shared_ptr<MessageType> &event)
     {
-        std::unique_lock lock{m_messageMutex};
-        m_message = event;
-        m_messageCv.notify_one();
+        if (m_filter(*event))
+        {
+            std::unique_lock lock{m_messageMutex};
+            m_message = event;
+            m_messageCv.notify_one();
+        }
     }
 
 private:
@@ -75,6 +80,7 @@ private:
     int m_subscriptionTag{-1};
     std::shared_ptr<::firebolt::rialto::ipc::IChannel> m_channel{nullptr};
     std::shared_ptr<MessageType> m_message{nullptr};
+    std::function<bool(const MessageType &)> m_filter{[](const MessageType &) { return true; }};
 };
 } // namespace firebolt::rialto::server::ct
 

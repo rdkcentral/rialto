@@ -22,6 +22,7 @@
 
 import subprocess
 import sys
+import os
 
 # Default variables
 resultOutput = "gtest_result"
@@ -42,13 +43,19 @@ def getSuitesToRun (suitesRequested, allSuites):
         suitesToRun = allSuites
     return suitesToRun
 
-def getOutputFile(argInput):
+def getOutputFile(argInput, clean):
     # Get output file name if any
     if argInput != None:
-        if argInput == "":
-            f = open(resultOutput + ".log", "w")
-        else:
-            f = open(argInput, "w")
+
+        outputFile = resultOutput + ".log"
+        if argInput != "":
+            outputFile = argInput
+
+        if clean == True:
+            executeCmd = ["rm", "-rf", outputFile]
+            runcmd(executeCmd, cwd=os.getcwd())
+    
+        f = open(outputFile, "w")
     else:
         f = None
 

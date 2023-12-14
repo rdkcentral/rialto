@@ -28,7 +28,7 @@ add_compile_definitions(PROJECT_VER_PATCH="${PROJECT_VERSION_PATCH}")
 set(CMAKE_CXX_STANDARD 17)
 
 if ( COVERAGE_ENABLED )
-    add_compile_options(-coverage)
+    add_compile_options(-coverage -fprofile-update=atomic)
 endif()
 
 add_compile_options(-Wall -Werror)
