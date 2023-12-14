@@ -49,6 +49,8 @@ namespace firebolt::rialto::server::ct
 ::firebolt::rialto::SetPositionRequest createSetPositionRequest(int sessionId, std::int64_t position);
 ::firebolt::rialto::GetPositionRequest createGetPositionRequest(int sessionId);
 ::firebolt::rialto::RenderFrameRequest createRenderFrameRequest(int sessionId);
+::firebolt::rialto::SetVolumeRequest createSetVolumeRequest(int sessionId);
+::firebolt::rialto::GetVolumeRequest createGetVolumeRequest(int sessionId);
 
 // media keys module
 ::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequest();

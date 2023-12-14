@@ -39,6 +39,7 @@ constexpr int kAllLogs{RIALTO_DEBUG_LEVEL_FATAL | RIALTO_DEBUG_LEVEL_ERROR | RIA
                        RIALTO_DEBUG_LEVEL_MILESTONE | RIALTO_DEBUG_LEVEL_INFO | RIALTO_DEBUG_LEVEL_DEBUG};
 constexpr double kPlaybackRate{0.5};
 constexpr std::int64_t kCurrentPosition{1234};
+constexpr double kVolume{0.7};
 } // namespace firebolt::rialto::server::ct
 
 #endif // FIREBOLT_RIALTO_SERVER_CT_CONSTANTS_H_

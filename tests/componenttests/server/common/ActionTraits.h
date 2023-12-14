@@ -209,6 +209,26 @@ struct RenderFrame
     static constexpr FunctionType m_kFunction{&Stub::renderFrame};
 };
 
+struct SetVolume
+{
+    using RequestType = ::firebolt::rialto::SetVolumeRequest;
+    using ResponseType = ::firebolt::rialto::SetVolumeResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::setVolume};
+};
+
+struct GetVolume
+{
+    using RequestType = ::firebolt::rialto::GetVolumeRequest;
+    using ResponseType = ::firebolt::rialto::GetVolumeResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::getVolume};
+};
+
 // mediakeys module
 struct CreateMediaKeys
 {

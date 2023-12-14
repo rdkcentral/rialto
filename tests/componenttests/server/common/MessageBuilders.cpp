@@ -209,6 +209,21 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
+::firebolt::rialto::SetVolumeRequest createSetVolumeRequest(int sessionId)
+{
+    ::firebolt::rialto::SetVolumeRequest request;
+    request.set_session_id(sessionId);
+    request.set_volume(kVolume);
+    return request;
+}
+
+::firebolt::rialto::GetVolumeRequest createGetVolumeRequest(int sessionId)
+{
+    ::firebolt::rialto::GetVolumeRequest request;
+    request.set_session_id(sessionId);
+    return request;
+}
+
 ::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequest()
 {
     ::firebolt::rialto::CreateMediaKeysRequest request;
