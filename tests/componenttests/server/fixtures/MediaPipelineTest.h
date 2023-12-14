@@ -44,6 +44,10 @@ public:
     void sourceWillBeSetup();
     void willSetupAndAddSource(GstAppSrc *appSrc);
     void willFinishSetupAndAddSource();
+    void willPushAudioData(const std::unique_ptr<IMediaPipeline::MediaSegment> &segment, GstBuffer &buffer,
+                           GstCaps &capsCopy);
+    void willPushVideoData(const std::unique_ptr<IMediaPipeline::MediaSegment> &segment, GstBuffer &buffer,
+                           GstCaps &capsCopy);
     void willPause();
     void willPlay();
     void willEos(GstAppSrc *appSrc);
@@ -70,10 +74,6 @@ public:
 
 private:
     void initShm();
-    void willPushAudioData(const std::unique_ptr<IMediaPipeline::MediaSegment> &segment, GstBuffer &buffer,
-                           GstCaps &capsCopy);
-    void willPushVideoData(const std::unique_ptr<IMediaPipeline::MediaSegment> &segment, GstBuffer &buffer,
-                           GstCaps &capsCopy);
 
 protected:
     int m_sessionId{-1};
