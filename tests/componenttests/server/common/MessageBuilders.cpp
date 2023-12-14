@@ -202,6 +202,13 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
+::firebolt::rialto::RenderFrameRequest createRenderFrameRequest(int sessionId)
+{
+    ::firebolt::rialto::RenderFrameRequest request;
+    request.set_session_id(sessionId);
+    return request;
+}
+
 ::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequest()
 {
     ::firebolt::rialto::CreateMediaKeysRequest request;
