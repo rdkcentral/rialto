@@ -63,7 +63,8 @@ void ServerStub::clientConnected(const std::shared_ptr<::firebolt::rialto::ipc::
 ServerStub::ServerStub(const std::shared_ptr<::firebolt::rialto::ControlModule> &controlModuleMock,
                        const std::shared_ptr<::firebolt::rialto::MediaPipelineModule> &mediaPipelineModuleMock,
                        const std::shared_ptr<::firebolt::rialto::MediaKeysModule> &mediaKeysModuleMock)
-    : ControlModuleStub{controlModuleMock}, MediaPipelineModuleStub{mediaPipelineModuleMock}, MediaKeysModuleStub{mediaKeysModuleMock}
+    : ControlModuleStub{controlModuleMock}, MediaPipelineModuleStub{mediaPipelineModuleMock}, MediaKeysModuleStub{
+                                                                                                  mediaKeysModuleMock}
 {
     init();
 }

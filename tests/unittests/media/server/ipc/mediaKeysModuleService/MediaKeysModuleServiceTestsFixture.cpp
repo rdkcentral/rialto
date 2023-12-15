@@ -20,6 +20,7 @@
 #include "MediaKeysModuleServiceTestsFixture.h"
 #include "MediaKeysClient.h"
 #include "MediaKeysModuleService.h"
+#include "MediaKeysProtoUtils.h"
 #include <fcntl.h>
 #include <string>
 #include <sys/stat.h>

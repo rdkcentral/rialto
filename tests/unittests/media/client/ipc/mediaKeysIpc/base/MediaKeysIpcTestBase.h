@@ -24,8 +24,8 @@
 #include "EventThreadMock.h"
 #include "IpcModuleBase.h"
 #include "MediaKeysClientMock.h"
-#include "MediaKeysProtoRequestMatchers.h"
 #include "MediaKeysIpc.h"
+#include "MediaKeysProtoRequestMatchers.h"
 #include <gtest/gtest.h>
 #include <memory>
 #include <string>

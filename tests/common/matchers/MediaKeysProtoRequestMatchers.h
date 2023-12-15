@@ -45,8 +45,8 @@ MATCHER_P3(createKeySessionRequestMatcher, mediaKeysHandle, sessionType, isLdl, 
 {
     const ::firebolt::rialto::CreateKeySessionRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::CreateKeySessionRequest *>(arg);
-    return ((kRequest->media_keys_handle() == mediaKeysHandle) &&
-            (kRequest->session_type() == sessionType) && (kRequest->is_ldl() == isLdl));
+    return ((kRequest->media_keys_handle() == mediaKeysHandle) && (kRequest->session_type() == sessionType) &&
+            (kRequest->is_ldl() == isLdl));
 }
 
 MATCHER_P4(generateRequestRequestMatcher, mediaKeysHandle, keySessionId, initDataType, initData, "")

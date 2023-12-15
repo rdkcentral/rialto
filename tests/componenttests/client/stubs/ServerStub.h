@@ -22,8 +22,8 @@
 
 #include "ControlModuleStub.h"
 #include "IIpcServer.h"
-#include "MediaPipelineModuleStub.h"
 #include "MediaKeysModuleStub.h"
+#include "MediaPipelineModuleStub.h"
 #include <atomic>
 #include <condition_variable>
 #include <memory>

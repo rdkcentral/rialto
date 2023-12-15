@@ -33,8 +33,8 @@ public:
     explicit MediaKeysModuleStub(const std::shared_ptr<::firebolt::rialto::MediaKeysModule> &mediaKeysModuleMock);
     ~MediaKeysModuleStub();
 
-    void notifyLicenseRequestEvent(int32_t mediaKeysHandle, int32_t keySessionId, const std::vector<unsigned char> &licenseRequestMessage, const std::string &url);
-    void notifyLicenseRenewalEvent(int32_t mediaKeysHandle, int32_t keySessionId, const std::vector<unsigned char> &licenseRenewalMessage);
+    void notifyLicenseRequestEvent(int32_t mediaKeysHandle, int32_t keySessionId,
+                                   const std::vector<unsigned char> &licenseRequestMessage, const std::string &url);
     void notifyKeyStatusesChangedEvent(int32_t mediaKeysHandle, int32_t keySessionId, const KeyStatusVector &keyStatuses);
 
     // Client helpers

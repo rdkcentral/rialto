@@ -26,15 +26,16 @@
 
 namespace firebolt::rialto::client::ct
 {
-MediaKeysModuleStub::MediaKeysModuleStub(
-    const std::shared_ptr<::firebolt::rialto::MediaKeysModule> &mediaKeysModuleMock)
+MediaKeysModuleStub::MediaKeysModuleStub(const std::shared_ptr<::firebolt::rialto::MediaKeysModule> &mediaKeysModuleMock)
     : m_mediaKeysModuleMock{mediaKeysModuleMock}
 {
 }
 
 MediaKeysModuleStub::~MediaKeysModuleStub() {}
 
-void MediaKeysModuleStub::notifyLicenseRequestEvent(int32_t mediaKeysHandle, int32_t keySessionId, const std::vector<unsigned char> &licenseRequestMessage, const std::string &url)
+void MediaKeysModuleStub::notifyLicenseRequestEvent(int32_t mediaKeysHandle, int32_t keySessionId,
+                                                    const std::vector<unsigned char> &licenseRequestMessage,
+                                                    const std::string &url)
 {
     waitForClientConnect();
 
@@ -49,21 +50,8 @@ void MediaKeysModuleStub::notifyLicenseRequestEvent(int32_t mediaKeysHandle, int
     getClient()->sendEvent(event);
 }
 
-void MediaKeysModuleStub::notifyLicenseRenewalEvent(int32_t mediaKeysHandle, int32_t keySessionId, const std::vector<unsigned char> &licenseRenewalMessage)
-{
-    waitForClientConnect();
-
-    auto event = std::make_shared<firebolt::rialto::LicenseRenewalEvent>();
-    for (auto it = licenseRenewalMessage.begin(); it != licenseRenewalMessage.end(); it++)
-    {
-        event->add_license_renewal_message(*it);
-    }
-    event->set_media_keys_handle(mediaKeysHandle);
-    event->set_key_session_id(keySessionId);
-    getClient()->sendEvent(event);
-}
-
-void MediaKeysModuleStub::notifyKeyStatusesChangedEvent(int32_t mediaKeysHandle, int32_t keySessionId, const KeyStatusVector &keyStatuses)
+void MediaKeysModuleStub::notifyKeyStatusesChangedEvent(int32_t mediaKeysHandle, int32_t keySessionId,
+                                                        const KeyStatusVector &keyStatuses)
 {
     waitForClientConnect();
 

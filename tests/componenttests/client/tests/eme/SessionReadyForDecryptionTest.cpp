@@ -190,7 +190,7 @@ TEST_F(SessionReadyForDecryptionTest, playready)
     MediaKeysTestMethods::createKeySession();
 
     // Step 3: Generate license request
-    MediaKeysTestMethods::shouldGenerateRequestAndNotifyLicenseRequest();
+    MediaKeysTestMethods::shouldGenerateRequestAndSendNotifyLicenseRequest();
     MediaKeysTestMethods::shouldNotifyLicenseRequest();
     MediaKeysTestMethods::generateRequest();
     ClientComponentTest::waitEvent();

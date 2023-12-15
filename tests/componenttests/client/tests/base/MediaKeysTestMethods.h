@@ -20,9 +20,9 @@
 #ifndef FIREBOLT_RIALTO_CLIENT_CT_MEDIA_KEYS_TEST_METHODS_H_
 #define FIREBOLT_RIALTO_CLIENT_CT_MEDIA_KEYS_TEST_METHODS_H_
 
+#include "IMediaKeys.h"
 #include "MediaKeysClientMock.h"
 #include "MediaKeysModuleMock.h"
-#include "IMediaKeys.h"
 #include "ServerStub.h"
 #include <gtest/gtest.h>
 #include <memory>
@@ -62,7 +62,7 @@ protected:
     void shouldCreateKeySession();
     void createKeySession();
     void shouldGenerateRequest();
-    void shouldGenerateRequestAndNotifyLicenseRequest();
+    void shouldGenerateRequestAndSendNotifyLicenseRequest();
     void generateRequest();
     void shouldNotifyLicenseRequest();
     void sendNotifyLicenseRequest();

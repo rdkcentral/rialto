@@ -129,9 +129,10 @@ convertKeySessionType(const firebolt::rialto::KeySessionType &kKeySessionType)
     }
 }
 
-inline firebolt::rialto::GenerateRequestRequest_InitDataType convertInitDataType(firebolt::rialto::InitDataType kInitDataType)
+inline firebolt::rialto::GenerateRequestRequest_InitDataType
+convertInitDataType(const firebolt::rialto::InitDataType &initDataType)
 {
-    switch (kInitDataType)
+    switch (initDataType)
     {
     case firebolt::rialto::InitDataType::CENC:
         return firebolt::rialto::GenerateRequestRequest_InitDataType::GenerateRequestRequest_InitDataType_CENC;

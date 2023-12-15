@@ -20,8 +20,8 @@
 #ifndef MEDIA_KEYS_MODULE_MOCK_H_
 #define MEDIA_KEYS_MODULE_MOCK_H_
 
-#include "mediakeysmodule.pb.h"
 #include "MediaKeysProtoUtils.h"
+#include "mediakeysmodule.pb.h"
 #include <gmock/gmock.h>
 
 class MediaKeysModuleMock : public ::firebolt::rialto::MediaKeysModule
@@ -31,13 +31,15 @@ public:
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::CreateMediaKeysRequest *request,
                  ::firebolt::rialto::CreateMediaKeysResponse *response, ::google::protobuf::Closure *done));
     MOCK_METHOD(void, destroyMediaKeys,
-                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::DestroyMediaKeysRequest *request,
+                (::google::protobuf::RpcController * controller,
+                 const ::firebolt::rialto::DestroyMediaKeysRequest *request,
                  ::firebolt::rialto::DestroyMediaKeysResponse *response, ::google::protobuf::Closure *done));
     MOCK_METHOD(void, containsKey,
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::ContainsKeyRequest *request,
                  ::firebolt::rialto::ContainsKeyResponse *response, ::google::protobuf::Closure *done));
     MOCK_METHOD(void, createKeySession,
-                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::CreateKeySessionRequest *request,
+                (::google::protobuf::RpcController * controller,
+                 const ::firebolt::rialto::CreateKeySessionRequest *request,
                  ::firebolt::rialto::CreateKeySessionResponse *response, ::google::protobuf::Closure *done));
     MOCK_METHOD(void, generateRequest,
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::GenerateRequestRequest *request,
@@ -55,7 +57,8 @@ public:
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::CloseKeySessionRequest *request,
                  ::firebolt::rialto::CloseKeySessionResponse *response, ::google::protobuf::Closure *done));
     MOCK_METHOD(void, removeKeySession,
-                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::RemoveKeySessionRequest *request,
+                (::google::protobuf::RpcController * controller,
+                 const ::firebolt::rialto::RemoveKeySessionRequest *request,
                  ::firebolt::rialto::RemoveKeySessionResponse *response, ::google::protobuf::Closure *done));
     MOCK_METHOD(void, deleteDrmStore,
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::DeleteDrmStoreRequest *request,
@@ -70,7 +73,8 @@ public:
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::GetKeyStoreHashRequest *request,
                  ::firebolt::rialto::GetKeyStoreHashResponse *response, ::google::protobuf::Closure *done));
     MOCK_METHOD(void, getLdlSessionsLimit,
-                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::GetLdlSessionsLimitRequest *request,
+                (::google::protobuf::RpcController * controller,
+                 const ::firebolt::rialto::GetLdlSessionsLimitRequest *request,
                  ::firebolt::rialto::GetLdlSessionsLimitResponse *response, ::google::protobuf::Closure *done));
     MOCK_METHOD(void, getLastDrmError,
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::GetLastDrmErrorRequest *request,
@@ -79,7 +83,8 @@ public:
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::GetDrmTimeRequest *request,
                  ::firebolt::rialto::GetDrmTimeResponse *response, ::google::protobuf::Closure *done));
     MOCK_METHOD(void, getCdmKeySessionId,
-                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::GetCdmKeySessionIdRequest *request,
+                (::google::protobuf::RpcController * controller,
+                 const ::firebolt::rialto::GetCdmKeySessionIdRequest *request,
                  ::firebolt::rialto::GetCdmKeySessionIdResponse *response, ::google::protobuf::Closure *done));
 
     void defaultReturn(::google::protobuf::RpcController *controller, ::google::protobuf::Closure *done)
@@ -100,7 +105,8 @@ public:
         return response;
     }
 
-    ::firebolt::rialto::CreateKeySessionResponse createKeySessionResponse(const firebolt::rialto::MediaKeyErrorStatus &status, const int32_t keySessionId)
+    ::firebolt::rialto::CreateKeySessionResponse
+    createKeySessionResponse(const firebolt::rialto::MediaKeyErrorStatus &status, const int32_t keySessionId)
     {
         firebolt::rialto::CreateKeySessionResponse response;
         response.set_error_status(convertMediaKeyErrorStatus(status));

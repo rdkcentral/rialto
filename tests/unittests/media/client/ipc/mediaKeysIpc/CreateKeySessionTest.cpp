@@ -49,9 +49,11 @@ TEST_F(RialtoClientMediaKeysIpcCreateKeySessionTest, Success)
     int32_t returnKeySessionid;
     expectIpcApiCallSuccess();
 
-    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("createKeySession"), m_controllerMock.get(),
-                                           createKeySessionRequestMatcher(m_mediaKeysHandle, convertKeySessionType(m_keySessionType), m_isLdl),
-                                           _, m_blockingClosureMock.get()))
+    EXPECT_CALL(*m_channelMock,
+                CallMethod(methodMatcher("createKeySession"), m_controllerMock.get(),
+                           createKeySessionRequestMatcher(m_mediaKeysHandle, convertKeySessionType(m_keySessionType),
+                                                          m_isLdl),
+                           _, m_blockingClosureMock.get()))
         .WillOnce(WithArgs<3>(
             Invoke(this, &RialtoClientMediaKeysIpcCreateKeySessionTest::setCreateKeySessionResponseSuccess)));
 

@@ -31,10 +31,17 @@ constexpr bool IsNotLdl{false};
 constexpr int32_t kKeySessionId{999};
 constexpr firebolt::rialto::MediaKeyErrorStatus kStatusOk{firebolt::rialto::MediaKeyErrorStatus::OK};
 constexpr firebolt::rialto::InitDataType kInitDataTypeCenc{firebolt::rialto::InitDataType::CENC};
-const std::vector<std::uint8_t> kInitData{0x4C, 0x69, 0x63, 0x65, 0x6E, 0x73, 0x65, 0x20, 0x4B, 0x65, 0x79, 0x20, 0x31, 0x32, 0x33, 0x34};
-const KeyStatusVector kKeyStatuses{std::make_pair(std::vector<unsigned char>{'q', '3', 'p'}, firebolt::rialto::KeyStatus::USABLE), std::make_pair(std::vector<unsigned char>{'p', 'r', '3'}, firebolt::rialto::KeyStatus::EXPIRED), std::make_pair(std::vector<unsigned char>{'h', ':', 'd'}, firebolt::rialto::KeyStatus::OUTPUT_RESTRICTED)};
+const std::vector<std::uint8_t> kInitData{0x4C, 0x69, 0x63, 0x65, 0x6E, 0x73, 0x65, 0x20,
+                                          0x4B, 0x65, 0x79, 0x20, 0x31, 0x32, 0x33, 0x34};
+const KeyStatusVector kKeyStatuses{std::make_pair(std::vector<unsigned char>{'q', '3', 'p'},
+                                                  firebolt::rialto::KeyStatus::USABLE),
+                                   std::make_pair(std::vector<unsigned char>{'p', 'r', '3'},
+                                                  firebolt::rialto::KeyStatus::EXPIRED),
+                                   std::make_pair(std::vector<unsigned char>{'h', ':', 'd'},
+                                                  firebolt::rialto::KeyStatus::OUTPUT_RESTRICTED)};
 const std::vector<unsigned char> kLicenseRequestMessage{'r', 'e', 'q', 'u', 'e', 's', 't'};
-const std::vector<uint8_t> kLicenseResponse{0x4D, 0x79, 0x4C, 0x69, 0x63, 0x65, 0x6E, 0x73, 0x65, 0x44, 0x61, 0x74, 0x61, 0x3A, 0x20, 0x31};
+const std::vector<uint8_t> kLicenseResponse{0x4D, 0x79, 0x4C, 0x69, 0x63, 0x65, 0x6E, 0x73,
+                                            0x65, 0x44, 0x61, 0x74, 0x61, 0x3A, 0x20, 0x31};
 const std::string kUrl{"www.licenseServer.com"};
 } // namespace
 
@@ -50,9 +57,7 @@ MediaKeysTestMethods::~MediaKeysTestMethods() {}
 
 void MediaKeysTestMethods::shouldCreateMediaKeysWidevine()
 {
-    EXPECT_CALL(*m_mediaKeysModuleMock,
-                createMediaKeys(_, createMediaKeysRequestMatcher(kKeySystemWidevine),
-                              _, _))
+    EXPECT_CALL(*m_mediaKeysModuleMock, createMediaKeys(_, createMediaKeysRequestMatcher(kKeySystemWidevine), _, _))
         .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->createMediaKeysResponse(kMediaKeysHandle)),
                         WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
 }
@@ -66,9 +71,7 @@ void MediaKeysTestMethods::createMediaKeysWidevine()
 
 void MediaKeysTestMethods::shouldCreateMediaKeysPlayready()
 {
-    EXPECT_CALL(*m_mediaKeysModuleMock,
-                createMediaKeys(_, createMediaKeysRequestMatcher(kKeySystemPlayready),
-                              _, _))
+    EXPECT_CALL(*m_mediaKeysModuleMock, createMediaKeys(_, createMediaKeysRequestMatcher(kKeySystemPlayready), _, _))
         .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->createMediaKeysResponse(kMediaKeysHandle)),
                         WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
 }
@@ -83,8 +86,10 @@ void MediaKeysTestMethods::createMediaKeysPlayready()
 void MediaKeysTestMethods::shouldCreateKeySession()
 {
     EXPECT_CALL(*m_mediaKeysModuleMock,
-                createKeySession(_, createKeySessionRequestMatcher(kMediaKeysHandle, convertKeySessionType(kSessionTypeTemp), IsNotLdl),
-                              _, _))
+                createKeySession(_,
+                                 createKeySessionRequestMatcher(kMediaKeysHandle,
+                                                                convertKeySessionType(kSessionTypeTemp), IsNotLdl),
+                                 _, _))
         .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->createKeySessionResponse(kStatusOk, kKeySessionId)),
                         WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
 }
@@ -99,23 +104,29 @@ void MediaKeysTestMethods::createKeySession()
 void MediaKeysTestMethods::shouldGenerateRequest()
 {
     EXPECT_CALL(*m_mediaKeysModuleMock,
-                generateRequest(_, generateRequestRequestMatcher(kMediaKeysHandle, kKeySessionId, convertInitDataType(kInitDataTypeCenc), kInitData),
-                              _, _))
+                generateRequest(_,
+                                generateRequestRequestMatcher(kMediaKeysHandle, kKeySessionId,
+                                                              convertInitDataType(kInitDataTypeCenc), kInitData),
+                                _, _))
         .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->generateRequestResponse(kStatusOk)),
                         WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
 }
 
-void MediaKeysTestMethods::shouldGenerateRequestAndNotifyLicenseRequest()
+void MediaKeysTestMethods::shouldGenerateRequestAndSendNotifyLicenseRequest()
 {
     EXPECT_CALL(*m_mediaKeysModuleMock,
-                generateRequest(_, generateRequestRequestMatcher(kMediaKeysHandle, kKeySessionId, convertInitDataType(kInitDataTypeCenc), kInitData),
-                              _, _))
+                generateRequest(_,
+                                generateRequestRequestMatcher(kMediaKeysHandle, kKeySessionId,
+                                                              convertInitDataType(kInitDataTypeCenc), kInitData),
+                                _, _))
         .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->generateRequestResponse(kStatusOk)),
-                        WithArgs<0, 3>(Invoke([this](::google::protobuf::RpcController *controller, ::google::protobuf::Closure *done)
-                        { 
-                            getServerStub()->notifyLicenseRequestEvent(kMediaKeysHandle, kKeySessionId, kLicenseRequestMessage, kUrl);
-                            m_mediaKeysModuleMock->defaultReturn(controller, done);
-                        }))));
+                        WithArgs<0, 3>(Invoke(
+                            [this](::google::protobuf::RpcController *controller, ::google::protobuf::Closure *done)
+                            {
+                                getServerStub()->notifyLicenseRequestEvent(kMediaKeysHandle, kKeySessionId,
+                                                                           kLicenseRequestMessage, kUrl);
+                                m_mediaKeysModuleMock->defaultReturn(controller, done);
+                            }))));
 }
 
 void MediaKeysTestMethods::generateRequest()
@@ -125,7 +136,8 @@ void MediaKeysTestMethods::generateRequest()
 
 void MediaKeysTestMethods::shouldNotifyLicenseRequest()
 {
-    EXPECT_CALL(*m_mediaKeysClientMock, onLicenseRequest(kKeySessionId, kLicenseRequestMessage, kUrl)).WillOnce(Invoke(this, &MediaKeysTestMethods::notifyEvent));
+    EXPECT_CALL(*m_mediaKeysClientMock, onLicenseRequest(kKeySessionId, kLicenseRequestMessage, kUrl))
+        .WillOnce(Invoke(this, &MediaKeysTestMethods::notifyEvent));
 }
 
 void MediaKeysTestMethods::sendNotifyLicenseRequest()
@@ -136,7 +148,8 @@ void MediaKeysTestMethods::sendNotifyLicenseRequest()
 
 void MediaKeysTestMethods::shouldNotifyKeyStatusesChanged()
 {
-    EXPECT_CALL(*m_mediaKeysClientMock, onKeyStatusesChanged(kKeySessionId, kKeyStatuses)).WillOnce(Invoke(this, &MediaKeysTestMethods::notifyEvent));
+    EXPECT_CALL(*m_mediaKeysClientMock, onKeyStatusesChanged(kKeySessionId, kKeyStatuses))
+        .WillOnce(Invoke(this, &MediaKeysTestMethods::notifyEvent));
 }
 
 void MediaKeysTestMethods::sendNotifyKeyStatusesChanged()
@@ -148,8 +161,7 @@ void MediaKeysTestMethods::sendNotifyKeyStatusesChanged()
 void MediaKeysTestMethods::shouldUpdateSession()
 {
     EXPECT_CALL(*m_mediaKeysModuleMock,
-                updateSession(_, updateSessionRequestMatcher(kMediaKeysHandle, kKeySessionId, kLicenseResponse),
-                              _, _))
+                updateSession(_, updateSessionRequestMatcher(kMediaKeysHandle, kKeySessionId, kLicenseResponse), _, _))
         .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->updateSessionResponse(kStatusOk)),
                         WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
 }
@@ -162,8 +174,7 @@ void MediaKeysTestMethods::updateSession()
 void MediaKeysTestMethods::shouldCloseKeySession()
 {
     EXPECT_CALL(*m_mediaKeysModuleMock,
-                closeKeySession(_, closeKeySessionRequestMatcher(kMediaKeysHandle, kKeySessionId),
-                              _, _))
+                closeKeySession(_, closeKeySessionRequestMatcher(kMediaKeysHandle, kKeySessionId), _, _))
         .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->closeKeySessionResponse(kStatusOk)),
                         WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
 }
