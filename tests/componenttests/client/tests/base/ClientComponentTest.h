@@ -22,6 +22,7 @@
 
 #include "ControlTestMethods.h"
 #include "MediaPipelineTestMethods.h"
+#include "MediaKeysTestMethods.h"
 #include "ServerStub.h"
 #include <gtest/gtest.h>
 #include <memory>
@@ -38,7 +39,7 @@ using namespace firebolt::rialto;
 
 namespace firebolt::rialto::client::ct
 {
-class ClientComponentTest : public ::testing::Test, public ControlTestMethods, public MediaPipelineTestMethods
+class ClientComponentTest : public ::testing::Test, public ControlTestMethods, public MediaPipelineTestMethods, public MediaKeysTestMethods
 {
 public:
     ClientComponentTest();

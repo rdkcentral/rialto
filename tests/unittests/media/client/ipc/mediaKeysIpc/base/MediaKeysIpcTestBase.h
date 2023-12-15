@@ -24,6 +24,7 @@
 #include "EventThreadMock.h"
 #include "IpcModuleBase.h"
 #include "MediaKeysClientMock.h"
+#include "MediaKeysProtoRequestMatchers.h"
 #include "MediaKeysIpc.h"
 #include <gtest/gtest.h>
 #include <memory>
@@ -41,20 +42,6 @@ using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::StrictMock;
 using ::testing::WithArgs;
-
-MATCHER_P(createMediaKeysRequestMatcher, keySystem, "")
-{
-    const ::firebolt::rialto::CreateMediaKeysRequest *kRequest =
-        dynamic_cast<const ::firebolt::rialto::CreateMediaKeysRequest *>(arg);
-    return (kRequest->key_system() == keySystem);
-}
-
-MATCHER_P(destroyMediaKeysRequestMatcher, mediaKeysHandle, "")
-{
-    const ::firebolt::rialto::DestroyMediaKeysRequest *kRequest =
-        dynamic_cast<const ::firebolt::rialto::DestroyMediaKeysRequest *>(arg);
-    return (kRequest->media_keys_handle() == mediaKeysHandle);
-}
 
 class MediaKeysIpcTestBase : public IpcModuleBase, public ::testing::Test
 {

@@ -41,6 +41,7 @@ add_gtests (
         tests/base/ClientComponentTest.cpp
         tests/base/ControlTestMethods.cpp
         tests/base/MediaPipelineTestMethods.cpp
+        tests/base/MediaKeysTestMethods.cpp
 
         # Control Component tests
         tests/control/ApplicationStateChangeTest.cpp
@@ -55,7 +56,7 @@ add_gtests (
         tests/mse/DualVideoPlaybackTest.cpp
 
         # EME Component tests
-        tests/eme/KeyCreationTest.cpp
+        tests/eme/SessionReadyForDecryptionTest.cpp
         )
 
 add_subdirectory(mocks)

@@ -18,38 +18,7 @@
  */
 
 #include "MediaKeysIpcTestBase.h"
-
-firebolt::rialto::KeyStatusesChangedEvent_KeyStatus convertKeyStatus(const firebolt::rialto::KeyStatus &keyStatus)
-{
-    switch (keyStatus)
-    {
-    case firebolt::rialto::KeyStatus::USABLE:
-    {
-        return firebolt::rialto::KeyStatusesChangedEvent_KeyStatus_USABLE;
-    }
-    case firebolt::rialto::KeyStatus::EXPIRED:
-    {
-        return firebolt::rialto::KeyStatusesChangedEvent_KeyStatus_EXPIRED;
-    }
-    case firebolt::rialto::KeyStatus::OUTPUT_RESTRICTED:
-    {
-        return firebolt::rialto::KeyStatusesChangedEvent_KeyStatus_OUTPUT_RESTRICTED;
-    }
-    case firebolt::rialto::KeyStatus::PENDING:
-    {
-        return firebolt::rialto::KeyStatusesChangedEvent_KeyStatus_PENDING;
-    }
-    case firebolt::rialto::KeyStatus::INTERNAL_ERROR:
-    {
-        return firebolt::rialto::KeyStatusesChangedEvent_KeyStatus_INTERNAL_ERROR;
-    }
-    case firebolt::rialto::KeyStatus::RELEASED:
-    {
-        return firebolt::rialto::KeyStatusesChangedEvent_KeyStatus_RELEASED;
-    }
-    }
-    return firebolt::rialto::KeyStatusesChangedEvent_KeyStatus_INTERNAL_ERROR;
-}
+#include "MediaKeysProtoUtils.h"
 
 MATCHER_P(QosInfoMatcher, expectedQosInfo, "")
 {

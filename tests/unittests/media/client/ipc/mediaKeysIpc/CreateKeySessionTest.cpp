@@ -18,29 +18,8 @@
  */
 
 #include "MediaKeysIpcTestBase.h"
-
-KeySessionType covertKeySessionType(CreateKeySessionRequest_KeySessionType protoKeySessionType)
-{
-    switch (protoKeySessionType)
-    {
-    case CreateKeySessionRequest_KeySessionType::CreateKeySessionRequest_KeySessionType_TEMPORARY:
-        return KeySessionType::TEMPORARY;
-    case CreateKeySessionRequest_KeySessionType::CreateKeySessionRequest_KeySessionType_PERSISTENT_LICENCE:
-        return KeySessionType::PERSISTENT_LICENCE;
-    case CreateKeySessionRequest_KeySessionType::CreateKeySessionRequest_KeySessionType_PERSISTENT_RELEASE_MESSAGE:
-        return KeySessionType::PERSISTENT_RELEASE_MESSAGE;
-    default:
-        return KeySessionType::UNKNOWN;
-    }
-}
-
-MATCHER_P3(createKeySessionRequestMatcher, mediaKeysHandle, sessionType, isLdl, "")
-{
-    const ::firebolt::rialto::CreateKeySessionRequest *kRequest =
-        dynamic_cast<const ::firebolt::rialto::CreateKeySessionRequest *>(arg);
-    return ((kRequest->media_keys_handle() == mediaKeysHandle) &&
-            (covertKeySessionType(kRequest->session_type()) == sessionType) && (kRequest->is_ldl() == isLdl));
-}
+#include "MediaKeysProtoRequestMatchers.h"
+#include "MediaKeysProtoUtils.h"
 
 class RialtoClientMediaKeysIpcCreateKeySessionTest : public MediaKeysIpcTestBase
 {
@@ -71,7 +50,7 @@ TEST_F(RialtoClientMediaKeysIpcCreateKeySessionTest, Success)
     expectIpcApiCallSuccess();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("createKeySession"), m_controllerMock.get(),
-                                           createKeySessionRequestMatcher(m_mediaKeysHandle, m_keySessionType, m_isLdl),
+                                           createKeySessionRequestMatcher(m_mediaKeysHandle, convertKeySessionType(m_keySessionType), m_isLdl),
                                            _, m_blockingClosureMock.get()))
         .WillOnce(WithArgs<3>(
             Invoke(this, &RialtoClientMediaKeysIpcCreateKeySessionTest::setCreateKeySessionResponseSuccess)));

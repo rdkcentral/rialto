@@ -18,6 +18,8 @@
  */
 
 #include "MediaKeysIpcTestBase.h"
+#include "MediaKeysProtoRequestMatchers.h"
+#include "MediaKeysProtoUtils.h"
 
 InitDataType covertInitDataType(GenerateRequestRequest_InitDataType protoInitDataType)
 {
@@ -34,15 +36,6 @@ InitDataType covertInitDataType(GenerateRequestRequest_InitDataType protoInitDat
     default:
         return InitDataType::UNKNOWN;
     }
-}
-
-MATCHER_P4(generateRequestRequestMatcher, mediaKeysHandle, keySessionId, initDataType, initData, "")
-{
-    const ::firebolt::rialto::GenerateRequestRequest *kRequest =
-        dynamic_cast<const ::firebolt::rialto::GenerateRequestRequest *>(arg);
-    return ((kRequest->media_keys_handle() == mediaKeysHandle) && (kRequest->key_session_id() == keySessionId) &&
-            (covertInitDataType(kRequest->init_data_type()) == initDataType) &&
-            (std::vector<std::uint8_t>{kRequest->init_data().begin(), kRequest->init_data().end()} == initData));
 }
 
 class RialtoClientMediaKeysIpcGenerateRequestTest : public MediaKeysIpcTestBase
@@ -81,7 +74,7 @@ TEST_F(RialtoClientMediaKeysIpcGenerateRequestTest, Success)
 
     EXPECT_CALL(*m_channelMock,
                 CallMethod(methodMatcher("generateRequest"), m_controllerMock.get(),
-                           generateRequestRequestMatcher(m_mediaKeysHandle, m_kKeySessionId, m_initDataType, m_initData),
+                           generateRequestRequestMatcher(m_mediaKeysHandle, m_kKeySessionId, convertInitDataType(m_initDataType), m_initData),
                            _, m_blockingClosureMock.get()))
         .WillOnce(
             WithArgs<3>(Invoke(this, &RialtoClientMediaKeysIpcGenerateRequestTest::setGenerateRequestResponseSuccess)));
@@ -97,7 +90,7 @@ TEST_F(RialtoClientMediaKeysIpcGenerateRequestTest, ChannelDisconnected)
     expectIpcApiCallDisconnected();
     expectUnsubscribeEvents();
 
-    EXPECT_EQ(m_mediaKeysIpc->generateRequest(m_kKeySessionId, m_initDataType, m_initData), MediaKeyErrorStatus::FAIL);
+    EXPECT_EQ(m_mediaKeysIpc->generateRequest(m_kKeySessionId, convertInitDataType(m_initDataType), m_initData), MediaKeyErrorStatus::FAIL);
 
     // Reattach channel on destroySession
     EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
