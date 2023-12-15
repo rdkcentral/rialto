@@ -17,15 +17,17 @@
  * limitations under the License.
  */
 
-#include "MessageBuilders.h"
-#include "Constants.h"
 #include <string>
+
+#include "Constants.h"
+#include "MessageBuilders.h"
+#include "RialtoLogging.h"
 
 namespace firebolt::rialto::server::ct
 {
 ::rialto::SetConfigurationRequest createGenericSetConfigurationReq()
 {
-    constexpr int kLogLevel{63};
+    constexpr int kLogLevel{kAllLogs};
     constexpr int kMaxPlaybacks{2};
     const std::string kDisplayName{"waylanddisplay"};
     ::rialto::LogLevels logLevels;
@@ -54,6 +56,35 @@ namespace firebolt::rialto::server::ct
     ::firebolt::rialto::CreateSessionRequest request;
     request.set_max_width(kWidth);
     request.set_max_height(kHeight);
+    return request;
+}
+
+::rialto::SetStateRequest createSetStateRequest(::rialto::SessionServerState value)
+{
+    ::rialto::SetStateRequest request;
+    request.set_sessionserverstate(value);
+    return request;
+}
+
+::rialto::SetLogLevelsRequest createSetLogLevelsRequest()
+{
+    ::rialto::SetLogLevelsRequest request;
+    auto levels = request.mutable_loglevels();
+
+    levels->set_defaultloglevels(RIALTO_DEBUG_LEVEL_FATAL);
+    levels->set_clientloglevels(RIALTO_DEBUG_LEVEL_ERROR);
+    levels->set_sessionserverloglevels(RIALTO_DEBUG_LEVEL_WARNING);
+    levels->set_ipcloglevels(RIALTO_DEBUG_LEVEL_MILESTONE);
+    levels->set_servermanagerloglevels(RIALTO_DEBUG_LEVEL_INFO);
+    levels->set_commonloglevels(RIALTO_DEBUG_LEVEL_DEBUG);
+
+    return request;
+}
+
+::rialto::PingRequest createPingRequest(::google::protobuf::int32 id)
+{
+    ::rialto::PingRequest request;
+    request.set_id(id);
     return request;
 }
 

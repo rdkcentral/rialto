@@ -20,8 +20,10 @@
 #ifndef FIREBOLT_RIALTO_SERVER_CT_CONSTANTS_H_
 #define FIREBOLT_RIALTO_SERVER_CT_CONSTANTS_H_
 
-#include "MediaCommon.h"
 #include <string>
+
+#include "MediaCommon.h"
+#include "RialtoLogging.h"
 
 namespace firebolt::rialto::server::ct
 {
@@ -33,6 +35,8 @@ constexpr int kHeight{1080};
 constexpr int kNumOfChannels{2};
 constexpr int kSampleRate{48000};
 constexpr firebolt::rialto::Fraction kFrameRate{15, 1};
+constexpr int kAllLogs{RIALTO_DEBUG_LEVEL_FATAL | RIALTO_DEBUG_LEVEL_ERROR | RIALTO_DEBUG_LEVEL_WARNING |
+                       RIALTO_DEBUG_LEVEL_MILESTONE | RIALTO_DEBUG_LEVEL_INFO | RIALTO_DEBUG_LEVEL_DEBUG};
 constexpr double kPlaybackRate{0.5};
 } // namespace firebolt::rialto::server::ct
 

@@ -29,6 +29,9 @@ namespace firebolt::rialto::server::ct
 {
 // server manager module
 ::rialto::SetConfigurationRequest createGenericSetConfigurationReq();
+::rialto::SetStateRequest createSetStateRequest(::rialto::SessionServerState value);
+::rialto::SetLogLevelsRequest createSetLogLevelsRequest();
+::rialto::PingRequest createPingRequest(::google::protobuf::int32 id);
 
 // media pipeline module
 ::firebolt::rialto::CreateSessionRequest createCreateSessionRequest();

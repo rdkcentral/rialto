@@ -53,6 +53,7 @@ target_include_directories (
         PUBLIC
         $<TARGET_PROPERTY:RialtoPlayerPublic,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoIpcCommon,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoLogging,INTERFACE_INCLUDE_DIRECTORIES>
         ${CMAKE_CURRENT_LIST_DIR}
         ${PROTO_DIR}
 

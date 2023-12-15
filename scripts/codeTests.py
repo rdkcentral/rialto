@@ -126,8 +126,8 @@ def doCheckDoxygen():
 
 def doCheckCppcheck():
     print("Running cppcheck...")
-    executeCmd = ["cppcheck", "-q", "-ibuild", "--enable=all", "--std=c++17", "--error-exitcode=1",
-                  "--suppress-xml=cppcheck_suppressions.xml", "--template='{file}:{line},{severity},{id},{message}'", "."]
+    executeCmd = ["cppcheck", "-q", "-ibuild", "--enable=all", "--std=c++17",
+                  "--error-exitcode=1", "--suppress-xml=cppcheck_suppressions.xml", "--library=googletest", "."]
     if not runcmd(0, executeCmd, cwd=baseDir):
             exit(1)
     printOk("")
@@ -189,14 +189,14 @@ def main():
     if runAll or args['doxygen'] == True:
         doCheckDoxygen()
 
-    if runAll or args['cppcheck'] == True:
-        doCheckCppcheck()
-
     if runAll or args['cpplint'] == True:
         doCheckCpplint()
 
     if runAll or args['clang'] == True:
         doCheckClang()
+
+    if runAll or args['cppcheck'] == True:
+        doCheckCppcheck()
 
     if runAll or args['valgrind'] == True:
         doCheckValgrind()
