@@ -25,15 +25,9 @@ namespace firebolt::rialto::client::ct
 class SessionReadyForDecryptionTest : public ClientComponentTest
 {
 public:
-    SessionReadyForDecryptionTest() : ClientComponentTest()
-    {
-        ClientComponentTest::startApplicationRunning();
-    }
+    SessionReadyForDecryptionTest() : ClientComponentTest() { ClientComponentTest::startApplicationRunning(); }
 
-    ~SessionReadyForDecryptionTest()
-    {
-        ClientComponentTest::stopApplication();
-    }
+    ~SessionReadyForDecryptionTest() { ClientComponentTest::stopApplication(); }
 };
 
 /*

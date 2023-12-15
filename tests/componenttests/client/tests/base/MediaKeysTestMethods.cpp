@@ -20,6 +20,9 @@
 #include "MediaKeysTestMethods.h"
 #include "MediaKeysProtoRequestMatchers.h"
 #include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace
 {
@@ -27,7 +30,7 @@ const std::string kKeySystemWidevine{"com.widevine.alpha"};
 const std::string kKeySystemPlayready{"com.microsoft.playready"};
 constexpr int32_t kMediaKeysHandle{1};
 constexpr firebolt::rialto::KeySessionType kSessionTypeTemp{firebolt::rialto::KeySessionType::TEMPORARY};
-constexpr bool IsNotLdl{false};
+constexpr bool kIsNotLdl{false};
 constexpr int32_t kKeySessionId{999};
 constexpr firebolt::rialto::MediaKeyErrorStatus kStatusOk{firebolt::rialto::MediaKeyErrorStatus::OK};
 constexpr firebolt::rialto::InitDataType kInitDataTypeCenc{firebolt::rialto::InitDataType::CENC};
@@ -88,7 +91,7 @@ void MediaKeysTestMethods::shouldCreateKeySession()
     EXPECT_CALL(*m_mediaKeysModuleMock,
                 createKeySession(_,
                                  createKeySessionRequestMatcher(kMediaKeysHandle,
-                                                                convertKeySessionType(kSessionTypeTemp), IsNotLdl),
+                                                                convertKeySessionType(kSessionTypeTemp), kIsNotLdl),
                                  _, _))
         .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->createKeySessionResponse(kStatusOk, kKeySessionId)),
                         WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
@@ -97,7 +100,7 @@ void MediaKeysTestMethods::shouldCreateKeySession()
 void MediaKeysTestMethods::createKeySession()
 {
     int32_t keySessionId;
-    EXPECT_EQ(m_mediaKeys->createKeySession(kSessionTypeTemp, m_mediaKeysClientMock, IsNotLdl, keySessionId), kStatusOk);
+    EXPECT_EQ(m_mediaKeys->createKeySession(kSessionTypeTemp, m_mediaKeysClientMock, kIsNotLdl, keySessionId), kStatusOk);
     EXPECT_EQ(keySessionId, kKeySessionId);
 }
 

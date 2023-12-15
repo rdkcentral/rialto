@@ -24,6 +24,8 @@
 #include "RialtoLogging.h"
 #include "mediakeysmodule.pb.h"
 #include <memory>
+#include <string>
+#include <vector>
 
 namespace firebolt::rialto::client::ct
 {
