@@ -26,6 +26,7 @@ add_gtests (
         sessionServer/SessionServerLogLevelTest.cpp
         sessionServer/SessionServerStateChangeTest.cpp
         mediaPipeline/AudioOnlyPlaybackTest.cpp
+        mediaPipeline/AudioSourceSwitchTest.cpp
         mediaPipeline/CreatePipelineTest.cpp
         mediaPipeline/EncryptedPlaybackTest.cpp
         mediaPipeline/FailureTests.cpp
