@@ -148,6 +148,22 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
+::firebolt::rialto::SetPlaybackRateRequest createSetPlaybackRateRequest(int sessionId)
+{
+    ::firebolt::rialto::SetPlaybackRateRequest request;
+    request.set_session_id(sessionId);
+    request.set_rate(kPlaybackRate);
+    return request;
+}
+
+::firebolt::rialto::SetPositionRequest createSetPositionRequest(int sessionId, std::int64_t position)
+{
+    ::firebolt::rialto::SetPositionRequest request;
+    request.set_session_id(sessionId);
+    request.set_position(position);
+    return request;
+}
+
 ::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequest()
 {
     ::firebolt::rialto::CreateMediaKeysRequest request;

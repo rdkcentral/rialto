@@ -139,6 +139,26 @@ struct DestroySession
     static constexpr FunctionType m_kFunction{&Stub::destroySession};
 };
 
+struct SetPlaybackRate
+{
+    using RequestType = ::firebolt::rialto::SetPlaybackRateRequest;
+    using ResponseType = ::firebolt::rialto::SetPlaybackRateResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::setPlaybackRate};
+};
+
+struct SetPosition
+{
+    using RequestType = ::firebolt::rialto::SetPositionRequest;
+    using ResponseType = ::firebolt::rialto::SetPositionResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::setPosition};
+};
+
 // mediakeys module
 struct CreateMediaKeys
 {
