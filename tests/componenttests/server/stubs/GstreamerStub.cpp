@@ -18,6 +18,7 @@
  */
 
 #include "GstreamerStub.h"
+#include "Constants.h"
 #include "Matchers.h"
 
 using testing::_;
@@ -121,6 +122,17 @@ void GstreamerStub::sendEos()
 {
     std::unique_lock lock(m_mutex);
     m_message = gst_message_new_eos(GST_OBJECT(m_pipeline));
+    m_cv.notify_one();
+}
+
+void GstreamerStub::sendQos(GstElement *src)
+{
+    constexpr bool kLive{true};
+    constexpr std::uint64_t kRunningTime{2};
+    constexpr std::uint64_t kStreamTime{1};
+    std::unique_lock lock(m_mutex);
+    m_message =
+        gst_message_new_qos(GST_OBJECT(src), kLive, kRunningTime, kStreamTime, kQosInfo.processed, kQosInfo.dropped);
     m_cv.notify_one();
 }
 } // namespace firebolt::rialto::server::ct
