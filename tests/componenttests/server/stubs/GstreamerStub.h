@@ -42,6 +42,7 @@ public:
     void setupPipeline();
     void setupRialtoSource();
     void setupAppSrcCallbacks(GstAppSrc *appSrc);
+    void setupElement(GstElement *element);
     void sendStateChanged(GstState oldState, GstState newState, GstState pendingState);
     void needData(GstAppSrc *appSrc, guint dataLength);
     void sendEos();

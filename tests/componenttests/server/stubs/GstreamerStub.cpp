@@ -100,6 +100,12 @@ void GstreamerStub::setupAppSrcCallbacks(GstAppSrc *appSrc)
         .WillOnce(DoAll(SaveArgPointee<1>(&callbacks), SaveArg<2>(&userData)));
 }
 
+void GstreamerStub::setupElement(GstElement *element)
+{
+    ASSERT_TRUE(m_setupElementFunc);
+    ((void (*)(GstElement *, GstElement *, gpointer))m_setupElementFunc)(m_pipeline, element, m_setupElementUserData);
+}
+
 void GstreamerStub::sendStateChanged(GstState oldState, GstState newState, GstState pendingState)
 {
     std::unique_lock lock(m_mutex);

@@ -40,6 +40,7 @@ add_gtests (
         mediaPipeline/SetPositionTest.cpp
         mediaPipeline/SetVideoWindowTest.cpp
         mediaPipeline/SourceTest.cpp
+        mediaPipeline/UnderflowTest.cpp
         mediaPipeline/VolumeTest.cpp
         mediaPipeline/WriteSegmentsTest.cpp
         mediaKeys/MediaKeysTest.cpp
