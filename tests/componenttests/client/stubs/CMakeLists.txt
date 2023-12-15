@@ -36,6 +36,7 @@ add_library (
         ServerStub.cpp
         ControlModuleStub.cpp
         MediaPipelineModuleStub.cpp
+        MediaKeysModuleStub.cpp
 )
 
 set_property (

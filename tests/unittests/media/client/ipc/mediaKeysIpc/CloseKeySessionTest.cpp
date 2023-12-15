@@ -18,13 +18,7 @@
  */
 
 #include "MediaKeysIpcTestBase.h"
-
-MATCHER_P2(closeKeySessionRequestMatcher, mediaKeysHandle, keySessionId, "")
-{
-    const ::firebolt::rialto::CloseKeySessionRequest *kRequest =
-        dynamic_cast<const ::firebolt::rialto::CloseKeySessionRequest *>(arg);
-    return ((kRequest->media_keys_handle() == mediaKeysHandle) && (kRequest->key_session_id() == keySessionId));
-}
+#include "MediaKeysProtoRequestMatchers.h"
 
 class RialtoClientMediaKeysIpcCloseKeySessionTest : public MediaKeysIpcTestBase
 {

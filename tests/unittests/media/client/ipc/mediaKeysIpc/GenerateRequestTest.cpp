@@ -18,32 +18,8 @@
  */
 
 #include "MediaKeysIpcTestBase.h"
-
-InitDataType covertInitDataType(GenerateRequestRequest_InitDataType protoInitDataType)
-{
-    switch (protoInitDataType)
-    {
-    case GenerateRequestRequest_InitDataType::GenerateRequestRequest_InitDataType_CENC:
-        return InitDataType::CENC;
-    case GenerateRequestRequest_InitDataType::GenerateRequestRequest_InitDataType_KEY_IDS:
-        return InitDataType::KEY_IDS;
-    case GenerateRequestRequest_InitDataType::GenerateRequestRequest_InitDataType_WEBM:
-        return InitDataType::WEBM;
-    case GenerateRequestRequest_InitDataType::GenerateRequestRequest_InitDataType_DRMHEADER:
-        return InitDataType::DRMHEADER;
-    default:
-        return InitDataType::UNKNOWN;
-    }
-}
-
-MATCHER_P4(generateRequestRequestMatcher, mediaKeysHandle, keySessionId, initDataType, initData, "")
-{
-    const ::firebolt::rialto::GenerateRequestRequest *kRequest =
-        dynamic_cast<const ::firebolt::rialto::GenerateRequestRequest *>(arg);
-    return ((kRequest->media_keys_handle() == mediaKeysHandle) && (kRequest->key_session_id() == keySessionId) &&
-            (covertInitDataType(kRequest->init_data_type()) == initDataType) &&
-            (std::vector<std::uint8_t>{kRequest->init_data().begin(), kRequest->init_data().end()} == initData));
-}
+#include "MediaKeysProtoRequestMatchers.h"
+#include "MediaKeysProtoUtils.h"
 
 class RialtoClientMediaKeysIpcGenerateRequestTest : public MediaKeysIpcTestBase
 {
@@ -79,10 +55,10 @@ TEST_F(RialtoClientMediaKeysIpcGenerateRequestTest, Success)
 {
     expectIpcApiCallSuccess();
 
-    EXPECT_CALL(*m_channelMock,
-                CallMethod(methodMatcher("generateRequest"), m_controllerMock.get(),
-                           generateRequestRequestMatcher(m_mediaKeysHandle, m_kKeySessionId, m_initDataType, m_initData),
-                           _, m_blockingClosureMock.get()))
+    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("generateRequest"), m_controllerMock.get(),
+                                           generateRequestRequestMatcher(m_mediaKeysHandle, m_kKeySessionId,
+                                                                         convertInitDataType(m_initDataType), m_initData),
+                                           _, m_blockingClosureMock.get()))
         .WillOnce(
             WithArgs<3>(Invoke(this, &RialtoClientMediaKeysIpcGenerateRequestTest::setGenerateRequestResponseSuccess)));
 

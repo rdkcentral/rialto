@@ -18,15 +18,7 @@
  */
 
 #include "MediaKeysIpcTestBase.h"
-
-MATCHER_P3(updateSessionRequestMatcher, mediaKeysHandle, keySessionId, requestData, "")
-{
-    const ::firebolt::rialto::UpdateSessionRequest *kRequest =
-        dynamic_cast<const ::firebolt::rialto::UpdateSessionRequest *>(arg);
-    return (
-        (kRequest->media_keys_handle() == mediaKeysHandle) && (kRequest->key_session_id() == keySessionId) &&
-        (std::vector<std::uint8_t>{kRequest->response_data().begin(), kRequest->response_data().end()} == requestData));
-}
+#include "MediaKeysProtoRequestMatchers.h"
 
 class RialtoClientMediaKeysIpcUpdateSessionTest : public MediaKeysIpcTestBase
 {
