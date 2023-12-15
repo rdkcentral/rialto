@@ -68,8 +68,8 @@ template <typename T> T generate(T max = std::numeric_limits<T>::max())
 std::vector<uint8_t> generateBytes()
 {
     constexpr size_t kMaxSize{10};
-    const std::size_t bytesLen{generate<std::size_t>(kMaxSize)};
-    std::vector<uint8_t> bytes(bytesLen);
+    const std::size_t kBytesLen{generate<std::size_t>(kMaxSize)};
+    std::vector<uint8_t> bytes(kBytesLen);
     std::generate(bytes.begin(), bytes.end(), []() { return generate<uint8_t>(); });
     return bytes;
 }

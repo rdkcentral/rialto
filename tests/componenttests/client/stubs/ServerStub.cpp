@@ -76,12 +76,12 @@ void ServerStub::init()
     auto factory = ::firebolt::rialto::ipc::IServerFactory::createFactory();
     m_server = factory->create();
 
-    const char *rialtoPath = getenv("RIALTO_SOCKET_PATH");
-    if (!rialtoPath)
+    const char *kRialtoPath = getenv("RIALTO_SOCKET_PATH");
+    if (!kRialtoPath)
     {
         printf("RIALTO_SOCKET_PATH not defined\n");
     }
-    m_server->addSocket(rialtoPath, std::bind(&ServerStub::clientConnected, this, std::placeholders::_1),
+    m_server->addSocket(kRialtoPath, std::bind(&ServerStub::clientConnected, this, std::placeholders::_1),
                         std::bind(&ServerStub::clientDisconnected, this, std::placeholders::_1));
 
     m_serverThread = std::thread(
