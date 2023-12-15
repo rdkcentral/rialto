@@ -28,6 +28,7 @@ add_gtests (
         mediaPipeline/AudioOnlyPlaybackTest.cpp
         mediaPipeline/AudioSourceSwitchTest.cpp
         mediaPipeline/CreatePipelineTest.cpp
+        mediaPipeline/DualVideoPlaybackTest.cpp
         mediaPipeline/EncryptedPlaybackTest.cpp
         mediaPipeline/FailureTests.cpp
         mediaPipeline/HaveDataFailureTest.cpp
