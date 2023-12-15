@@ -83,7 +83,7 @@ public:
  *  Server is terminated.
  *
  * Expected Results:
- *  For a widevine key system, the application can create new sessions, generate license 
+ *  For a widevine key system, the application can create new sessions, generate license
  *  requests and update keys ready for decryption of content.
  *
  * Code:
@@ -168,7 +168,7 @@ TEST_F(SessionReadyForDecryptionTest, widevine)
  *  Server is terminated.
  *
  * Expected Results:
- *  For a playready key system, the application can create new sessions, generate license 
+ *  For a playready key system, the application can create new sessions, generate license
  *  requests and update keys ready for decryption of content.
  *
  * Code:
