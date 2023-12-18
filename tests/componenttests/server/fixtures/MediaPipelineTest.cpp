@@ -86,7 +86,12 @@ void MediaPipelineTest::gstPlayerWillBeCreated()
     // In case of longer testruns, GstPlayer may request to query position
     EXPECT_CALL(*m_gstWrapperMock, gstElementQueryPosition(&m_pipeline, GST_FORMAT_TIME, _))
         .Times(AtLeast(0))
-        .WillRepeatedly(Return(false));
+        .WillRepeatedly(Invoke(
+            [](GstElement *, GstFormat, gint64 *cur)
+            {
+                *cur = kCurrentPosition;
+                return true;
+            }));
 }
 
 void MediaPipelineTest::gstPlayerWillBeDestructed()

@@ -189,6 +189,76 @@ struct SetPosition
     static constexpr FunctionType m_kFunction{&Stub::setPosition};
 };
 
+struct GetPosition
+{
+    using RequestType = ::firebolt::rialto::GetPositionRequest;
+    using ResponseType = ::firebolt::rialto::GetPositionResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::getPosition};
+};
+
+struct RenderFrame
+{
+    using RequestType = ::firebolt::rialto::RenderFrameRequest;
+    using ResponseType = ::firebolt::rialto::RenderFrameResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::renderFrame};
+};
+
+struct SetVolume
+{
+    using RequestType = ::firebolt::rialto::SetVolumeRequest;
+    using ResponseType = ::firebolt::rialto::SetVolumeResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::setVolume};
+};
+
+struct GetVolume
+{
+    using RequestType = ::firebolt::rialto::GetVolumeRequest;
+    using ResponseType = ::firebolt::rialto::GetVolumeResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::getVolume};
+};
+
+struct SetMute
+{
+    using RequestType = ::firebolt::rialto::SetMuteRequest;
+    using ResponseType = ::firebolt::rialto::SetMuteResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::setMute};
+};
+
+struct GetMute
+{
+    using RequestType = ::firebolt::rialto::GetMuteRequest;
+    using ResponseType = ::firebolt::rialto::GetMuteResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::getMute};
+};
+
+struct SetVideoWindow
+{
+    using RequestType = ::firebolt::rialto::SetVideoWindowRequest;
+    using ResponseType = ::firebolt::rialto::SetVideoWindowResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::setVideoWindow};
+};
+
 // mediakeys module
 struct CreateMediaKeys
 {

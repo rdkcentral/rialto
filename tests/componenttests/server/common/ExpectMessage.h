@@ -57,11 +57,13 @@ public:
     std::shared_ptr<MessageType> getMessage()
     {
         std::unique_lock lock{m_messageMutex};
-        m_messageCv.wait_for(lock, std::chrono::milliseconds(200), [&]() { return static_cast<bool>(m_message); });
+        m_messageCv.wait_for(lock, m_timeout, [&]() { return static_cast<bool>(m_message); });
         return m_message;
     }
 
     void setFilter(const std::function<bool(const MessageType &)> &filter) { m_filter = filter; }
+
+    void setTimeout(const std::chrono::milliseconds &timeout) { m_timeout = timeout; }
 
 private:
     void onEvent(const std::shared_ptr<MessageType> &event)
@@ -81,6 +83,7 @@ private:
     std::shared_ptr<::firebolt::rialto::ipc::IChannel> m_channel{nullptr};
     std::shared_ptr<MessageType> m_message{nullptr};
     std::function<bool(const MessageType &)> m_filter{[](const MessageType &) { return true; }};
+    std::chrono::milliseconds m_timeout{200};
 };
 } // namespace firebolt::rialto::server::ct
 

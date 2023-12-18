@@ -42,9 +42,11 @@ public:
     void setupPipeline();
     void setupRialtoSource();
     void setupAppSrcCallbacks(GstAppSrc *appSrc);
+    void setupElement(GstElement *element);
     void sendStateChanged(GstState oldState, GstState newState, GstState pendingState);
     void needData(GstAppSrc *appSrc, guint dataLength);
     void sendEos();
+    void sendQos(GstElement *src);
 
 private:
     std::shared_ptr<testing::StrictMock<wrappers::GlibWrapperMock>> m_glibWrapperMock;

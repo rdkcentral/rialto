@@ -26,14 +26,24 @@ add_gtests (
         sessionServer/SessionServerLogLevelTest.cpp
         sessionServer/SessionServerStateChangeTest.cpp
         mediaPipeline/AudioOnlyPlaybackTest.cpp
+        mediaPipeline/AudioSourceSwitchTest.cpp
         mediaPipeline/CreatePipelineTest.cpp
+        mediaPipeline/DualVideoPlaybackTest.cpp
         mediaPipeline/EncryptedPlaybackTest.cpp
         mediaPipeline/FailureTests.cpp
+        mediaPipeline/HaveDataFailureTest.cpp
+        mediaPipeline/MuteTest.cpp
         mediaPipeline/PlaybackTest.cpp
         mediaPipeline/PlayPauseStopFailuresTest.cpp
+        mediaPipeline/PositionUpdatesTest.cpp
+        mediaPipeline/QosUpdatesTest.cpp
+        mediaPipeline/RenderFrameTest.cpp
         mediaPipeline/SetPlaybackRateTest.cpp
         mediaPipeline/SetPositionTest.cpp
+        mediaPipeline/SetVideoWindowTest.cpp
         mediaPipeline/SourceTest.cpp
+        mediaPipeline/UnderflowTest.cpp
+        mediaPipeline/VolumeTest.cpp
         mediaPipeline/WriteSegmentsTest.cpp
         mediaKeys/MediaKeysTest.cpp
         )
