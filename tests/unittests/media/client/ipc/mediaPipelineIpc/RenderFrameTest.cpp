@@ -18,6 +18,7 @@
  */
 
 #include "MediaPipelineIpcTestBase.h"
+#include "MediaPipelineProtoRequestMatchers.h"
 
 class RialtoClientMediaPipelineIpcRenderFrameTest : public MediaPipelineIpcTestBase
 {

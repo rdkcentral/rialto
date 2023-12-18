@@ -51,7 +51,7 @@ TEST_F(RialtoClientMediaPipelineIpcSetVideoWindowTest, Success)
     expectIpcApiCallSuccess();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("setVideoWindow"), m_controllerMock.get(),
-                                           SetVideoWindowRequestMatcher(m_sessionId, m_x, m_y, m_width, m_height), _,
+                                           setVideoWindowRequestMatcher(m_sessionId, m_x, m_y, m_width, m_height), _,
                                            m_blockingClosureMock.get()));
 
     EXPECT_EQ(m_mediaPipelineIpc->setVideoWindow(m_x, m_y, m_width, m_height), true);
