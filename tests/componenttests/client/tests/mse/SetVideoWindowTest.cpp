@@ -49,7 +49,7 @@ public:
  *  Test the set video window API.
  *
  * Sequence Diagrams:
- *  Set Video Window Size & Position 
+ *  Set Video Window Size & Position
  *   - https://wiki.rdkcentral.com/display/ASP/Rialto+MSE+Misc+Sequence+Diagrams
  *
  * Test Setup:

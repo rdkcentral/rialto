@@ -102,7 +102,7 @@ public:
  *  Server is terminated.
  *
  * Expected Results:
- *  Render frame is successful if playback is paused either at the start of playback or 
+ *  Render frame is successful if playback is paused either at the start of playback or
  *  immediately after a seek operation, failure otherwise.
  *
  * Code:

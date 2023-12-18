@@ -107,7 +107,8 @@ protected:
     void shouldGetVolume(const double volume);
     void shouldSetMute(const bool expectedMute);
     void shouldGetMute(const bool mute);
-    void shouldSetVideoWindow(const uint32_t expectedX, const uint32_t expectedY, const uint32_t expectedWidth, const uint32_t expectedHeight);
+    void shouldSetVideoWindow(const uint32_t expectedX, const uint32_t expectedY, const uint32_t expectedWidth,
+                              const uint32_t expectedHeight);
     void shouldRenderFrame();
     void shouldRenderFrameFailure();
     void shouldGetPosition(const int64_t position);

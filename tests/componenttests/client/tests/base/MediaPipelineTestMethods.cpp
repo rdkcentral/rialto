@@ -987,13 +987,18 @@ void MediaPipelineTestMethods::getMute(const bool expectedMute)
     EXPECT_EQ(returnMute, expectedMute);
 }
 
-void MediaPipelineTestMethods::shouldSetVideoWindow(const uint32_t expectedX, const uint32_t expectedY, const uint32_t expectedWidth, const uint32_t expectedHeight)
+void MediaPipelineTestMethods::shouldSetVideoWindow(const uint32_t expectedX, const uint32_t expectedY,
+                                                    const uint32_t expectedWidth, const uint32_t expectedHeight)
 {
-    EXPECT_CALL(*m_mediaPipelineModuleMock, setVideoWindow(_, setVideoWindowRequestMatcher(kSessionId, expectedX, expectedY, expectedWidth, expectedHeight), _, _))
+    EXPECT_CALL(*m_mediaPipelineModuleMock, setVideoWindow(_,
+                                                           setVideoWindowRequestMatcher(kSessionId, expectedX, expectedY,
+                                                                                        expectedWidth, expectedHeight),
+                                                           _, _))
         .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
 }
 
-void MediaPipelineTestMethods::setSetVideoWindow(const uint32_t x, const uint32_t y, const uint32_t width, const uint32_t height)
+void MediaPipelineTestMethods::setSetVideoWindow(const uint32_t x, const uint32_t y, const uint32_t width,
+                                                 const uint32_t height)
 {
     EXPECT_EQ(m_mediaPipeline->setVideoWindow(x, y, width, height), true);
 }
@@ -1022,7 +1027,8 @@ void MediaPipelineTestMethods::renderFrameFailure()
 
 void MediaPipelineTestMethods::shouldNotifyPosition(const uint32_t expectedPosition)
 {
-    EXPECT_CALL(*m_mediaPipelineClientMock, notifyPosition(expectedPosition)).WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyPosition(expectedPosition))
+        .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
 }
 
 void MediaPipelineTestMethods::sendNotifyPositionChanged(const int64_t position)
