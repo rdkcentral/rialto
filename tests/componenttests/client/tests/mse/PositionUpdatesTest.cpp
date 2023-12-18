@@ -80,7 +80,8 @@ public:
  *  Server is terminated.
  *
  * Expected Results:
- *  Mute can be set and got multiple times without issue.
+ *  Position is notified correctly from the server.
+ *  Position is retrieved correctly from the server.
  *
  * Code:
  */

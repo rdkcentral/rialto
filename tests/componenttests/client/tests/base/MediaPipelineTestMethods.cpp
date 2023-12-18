@@ -72,8 +72,6 @@ constexpr uint32_t kNumberOfChannelsMpeg{2};
 constexpr uint32_t kSampleRateMpeg{26000};
 constexpr uint32_t kNumberOfChannelsEacs{1};
 constexpr uint32_t kSampleRateEacs{1000};
-constexpr double kVolumeLow{0.1};
-constexpr double kVolumeFull{1.0};
 } // namespace
 
 namespace firebolt::rialto::client::ct
@@ -796,15 +794,15 @@ void MediaPipelineTestMethods::shouldNotifyPlaybackStateFlushed()
     shouldNotifyPlaybackStateInternal(m_mediaPipelineClientMock, PlaybackState::FLUSHED);
 }
 
-void MediaPipelineTestMethods::shouldSetPositionTo10()
+void MediaPipelineTestMethods::shouldSetPosition(const int64_t expectedPosition)
 {
-    EXPECT_CALL(*m_mediaPipelineModuleMock, setPosition(_, setPositionRequestMatcher(kSessionId, 10), _, _))
+    EXPECT_CALL(*m_mediaPipelineModuleMock, setPosition(_, setPositionRequestMatcher(kSessionId, expectedPosition), _, _))
         .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
 }
 
-void MediaPipelineTestMethods::setPosition10()
+void MediaPipelineTestMethods::setPosition(const int64_t position)
 {
-    EXPECT_EQ(m_mediaPipeline->setPosition(10), true);
+    EXPECT_EQ(m_mediaPipeline->setPosition(position), true);
 }
 
 void MediaPipelineTestMethods::sendNotifyPlaybackStateSeeking()
@@ -876,17 +874,6 @@ void MediaPipelineTestMethods::writeVideoFrames()
     MediaPipelineTestMethods::checkMseVideoSegmentWritten(segmentId);
     MediaPipelineTestMethods::shouldHaveDataOk(framesToWrite);
     MediaPipelineTestMethods::haveDataOk();
-}
-
-void MediaPipelineTestMethods::shouldSetPositionTo0()
-{
-    EXPECT_CALL(*m_mediaPipelineModuleMock, setPosition(_, setPositionRequestMatcher(kSessionId, 0), _, _))
-        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
-}
-
-void MediaPipelineTestMethods::setPosition0()
-{
-    EXPECT_EQ(m_mediaPipeline->setPosition(0), true);
 }
 
 void MediaPipelineTestMethods::writeAudioEos()

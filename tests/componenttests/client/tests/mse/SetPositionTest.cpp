@@ -25,6 +25,7 @@ namespace firebolt::rialto::client::ct
 class SetPositionTest : public ClientComponentTest
 {
 public:
+    int64_t m_position = 0;
     SetPositionTest() : ClientComponentTest()
     {
         ClientComponentTest::startApplicationRunning();
@@ -126,8 +127,9 @@ public:
 TEST_F(SetPositionTest, successStates)
 {
     // Step 1: SetPosition in paused state
-    MediaPipelineTestMethods::shouldSetPositionTo10();
-    MediaPipelineTestMethods::setPosition10();
+    m_position = 10;
+    MediaPipelineTestMethods::shouldSetPosition(m_position);
+    MediaPipelineTestMethods::setPosition(m_position);
     MediaPipelineTestMethods::shouldNotifyPlaybackStateSeeking();
     MediaPipelineTestMethods::sendNotifyPlaybackStateSeeking();
 
@@ -150,8 +152,9 @@ TEST_F(SetPositionTest, successStates)
     MediaPipelineTestMethods::sendNotifyPlaybackStatePlaying();
 
     // Step 5: SetPosition in play state
-    MediaPipelineTestMethods::shouldSetPositionTo0();
-    MediaPipelineTestMethods::setPosition0();
+    m_position = 0;
+    MediaPipelineTestMethods::shouldSetPosition(m_position);
+    MediaPipelineTestMethods::setPosition(m_position);
     MediaPipelineTestMethods::shouldNotifyPlaybackStateSeeking();
     MediaPipelineTestMethods::sendNotifyPlaybackStateSeeking();
 
@@ -174,8 +177,9 @@ TEST_F(SetPositionTest, successStates)
     MediaPipelineTestMethods::sendNotifyPlaybackStateEndOfStream();
 
     // Step 9: SetPosition in end of stream state
-    MediaPipelineTestMethods::shouldSetPositionTo10();
-    MediaPipelineTestMethods::setPosition10();
+    m_position = 10;
+    MediaPipelineTestMethods::shouldSetPosition(m_position);
+    MediaPipelineTestMethods::setPosition(m_position);
     MediaPipelineTestMethods::shouldNotifyPlaybackStateSeeking();
     MediaPipelineTestMethods::sendNotifyPlaybackStateSeeking();
 
@@ -241,8 +245,9 @@ TEST_F(SetPositionTest, flushed)
     MediaPipelineTestMethods::sendNotifyNeedDataAudioBeforePreroll();
 
     // Step 2: SetPosition in paused state
-    MediaPipelineTestMethods::shouldSetPositionTo10();
-    MediaPipelineTestMethods::setPosition10();
+    m_position = 10;
+    MediaPipelineTestMethods::shouldSetPosition(m_position);
+    MediaPipelineTestMethods::setPosition(m_position);
     MediaPipelineTestMethods::shouldNotifyPlaybackStateSeeking();
     MediaPipelineTestMethods::sendNotifyPlaybackStateSeeking();
 
@@ -320,8 +325,9 @@ TEST_F(SetPositionTest, flushed)
 TEST_F(SetPositionTest, failures)
 {
     // Step 1: SetPosition in paused state
-    MediaPipelineTestMethods::shouldSetPositionTo10();
-    MediaPipelineTestMethods::setPosition10();
+    m_position = 10;
+    MediaPipelineTestMethods::shouldSetPosition(m_position);
+    MediaPipelineTestMethods::setPosition(m_position);
     MediaPipelineTestMethods::shouldNotifyPlaybackStateSeeking();
     MediaPipelineTestMethods::sendNotifyPlaybackStateSeeking();
 
@@ -339,8 +345,8 @@ TEST_F(SetPositionTest, failures)
     MediaPipelineTestMethods::sendNotifyPlaybackStatePaused();
 
     // Step 5: SetPosition in paused state
-    MediaPipelineTestMethods::shouldSetPositionTo10();
-    MediaPipelineTestMethods::setPosition10();
+    MediaPipelineTestMethods::shouldSetPosition(m_position);
+    MediaPipelineTestMethods::setPosition(m_position);
     MediaPipelineTestMethods::shouldNotifyPlaybackStateSeeking();
     MediaPipelineTestMethods::sendNotifyPlaybackStateSeeking();
 

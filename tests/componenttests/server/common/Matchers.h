@@ -31,8 +31,8 @@ MATCHER_P(CharStrMatcher, expectedStr, "")
 
 MATCHER_P(BufferMatcher, expectedBuffer, "")
 {
-    const char *argCharPtr{reinterpret_cast<const char *>(arg)};
-    std::string dataCopy(argCharPtr, argCharPtr + expectedBuffer.size());
+    const char *kArgCharPtr{reinterpret_cast<const char *>(arg)};
+    std::string dataCopy(kArgCharPtr, kArgCharPtr + expectedBuffer.size());
     return dataCopy == expectedBuffer;
 }
 

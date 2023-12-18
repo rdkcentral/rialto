@@ -65,7 +65,7 @@ public:
  *   Expect that SetMute propagated to the server.
  *
  *  Step 2: Get Mute
- *   GetMute
+ *   GetMute.
  *   Expect that GetMute propagated to the server and returns the mute status.
  *
  *  Step 3: Unmute the playback
@@ -73,7 +73,7 @@ public:
  *   Expect that SetMute propagated to the server.
  *
  *  Step 4: Get Mute
- *   GetMute
+ *   GetMute.
  *   Expect that GetMute propagated to the server and returns the mute status.
  *
  * Test Teardown:

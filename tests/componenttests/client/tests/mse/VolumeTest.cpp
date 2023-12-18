@@ -65,7 +65,7 @@ public:
  *   Expect that SetVolume propagated to the server.
  *
  *  Step 2: Get Volume
- *   GetVolume
+ *   GetVolume.
  *   Expect that GetVolume propagated to the server and returns the volume.
  *
  *  Step 3: Set Volume 1
@@ -73,7 +73,7 @@ public:
  *   Expect that SetVolume propagated to the server.
  *
  *  Step 4: Get Volume
- *   GetVolume
+ *   GetVolume.
  *   Expect that GetVolume propagated to the server and returns the volume.
  *
  * Test Teardown:

@@ -101,8 +101,7 @@ protected:
     void shouldSetPlaybackRate2x();
     void shouldSetPlaybackRateNegative2x();
     void shouldSetPlaybackRateFailure();
-    void shouldSetPositionTo10();
-    void shouldSetPositionTo0();
+    void shouldSetPosition(const int64_t expectedPosition);
     void shouldSetVolume(const double expectedVolume);
     void shouldGetVolume(const double volume);
     void shouldSetMute(const bool expectedMute);
@@ -174,8 +173,7 @@ protected:
     void setPlaybackRate2x();
     void setPlaybackRateNegative2x();
     void setPlaybackRateFailure();
-    void setPosition10();
-    void setPosition0();
+    void setPosition(const int64_t position);
     void setPositionFailure();
     void addSegmentFailure();
     void setVolume(const double volume);

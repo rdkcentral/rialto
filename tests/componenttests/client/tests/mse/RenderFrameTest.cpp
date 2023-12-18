@@ -130,8 +130,8 @@ TEST_F(RenderFrameTest, successAndFailure)
     MediaPipelineTestMethods::sendNotifyPlaybackStatePaused();
 
     // Step 5: Seek
-    MediaPipelineTestMethods::shouldSetPositionTo0();
-    MediaPipelineTestMethods::setPosition0();
+    MediaPipelineTestMethods::shouldSetPosition(0);
+    MediaPipelineTestMethods::setPosition(0);
     MediaPipelineTestMethods::shouldNotifyPlaybackStateSeeking();
     MediaPipelineTestMethods::sendNotifyPlaybackStateSeeking();
     MediaPipelineTestMethods::shouldNotifyPlaybackStateFlushed();
