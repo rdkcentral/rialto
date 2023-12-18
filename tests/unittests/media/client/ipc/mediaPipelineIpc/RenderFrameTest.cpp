@@ -19,13 +19,6 @@
 
 #include "MediaPipelineIpcTestBase.h"
 
-MATCHER_P(RenderFrameRequestMatcher, sessionId, "")
-{
-    const ::firebolt::rialto::RenderFrameRequest *kRequest =
-        dynamic_cast<const ::firebolt::rialto::RenderFrameRequest *>(arg);
-    return ((kRequest->session_id() == sessionId));
-}
-
 class RialtoClientMediaPipelineIpcRenderFrameTest : public MediaPipelineIpcTestBase
 {
 protected:
@@ -49,7 +42,7 @@ TEST_F(RialtoClientMediaPipelineIpcRenderFrameTest, Success)
     expectIpcApiCallSuccess();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("renderFrame"), m_controllerMock.get(),
-                                           RenderFrameRequestMatcher(m_sessionId), _, m_blockingClosureMock.get()));
+                                           renderFrameRequestMatcher(m_sessionId), _, m_blockingClosureMock.get()));
 
     EXPECT_TRUE(m_mediaPipelineIpc->renderFrame());
 }

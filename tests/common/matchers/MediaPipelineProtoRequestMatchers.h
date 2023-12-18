@@ -203,4 +203,52 @@ MATCHER_P2(setPositionRequestMatcher, sessionId, position, "")
     return ((kRequest->session_id() == sessionId) && (kRequest->position() == position));
 }
 
+MATCHER_P2(setVolumeRequestMatcher, sessionId, volume, "")
+{
+    const ::firebolt::rialto::SetVolumeRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::SetVolumeRequest *>(arg);
+    return ((kRequest->session_id() == sessionId) && (kRequest->volume() == volume));
+}
+
+MATCHER_P(getVolumeRequestMatcher, sessionId, "")
+{
+    const ::firebolt::rialto::GetVolumeRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::GetVolumeRequest *>(arg);
+    return ((kRequest->session_id() == sessionId));
+}
+
+MATCHER_P2(setMuteRequestMatcher, sessionId, mute, "")
+{
+    const ::firebolt::rialto::SetMuteRequest *kRequest = dynamic_cast<const ::firebolt::rialto::SetMuteRequest *>(arg);
+    return ((kRequest->session_id() == sessionId) && (kRequest->mute() == mute));
+}
+
+MATCHER_P(getMuteRequestMatcher, sessionId, "")
+{
+    const ::firebolt::rialto::GetMuteRequest *kRequest = dynamic_cast<const ::firebolt::rialto::GetMuteRequest *>(arg);
+    return ((kRequest->session_id() == sessionId));
+}
+
+MATCHER_P5(setVideoWindowRequestMatcher, sessionId, x, y, width, height, "")
+{
+    const ::firebolt::rialto::SetVideoWindowRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::SetVideoWindowRequest *>(arg);
+    return ((kRequest->session_id() == sessionId) && (kRequest->x() == x) && (kRequest->y() == y) &&
+            (kRequest->width() == width) && (kRequest->height() == height));
+}
+
+MATCHER_P(renderFrameRequestMatcher, sessionId, "")
+{
+    const ::firebolt::rialto::RenderFrameRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::RenderFrameRequest *>(arg);
+    return ((kRequest->session_id() == sessionId));
+}
+
+MATCHER_P(getPositionRequestMatcher, sessionId, "")
+{
+    const ::firebolt::rialto::GetPositionRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::GetPositionRequest *>(arg);
+    return ((kRequest->session_id() == sessionId));
+}
+
 #endif // MEDIA_PIPELINE_PROTO_REQUEST_MATCHERS_H_
