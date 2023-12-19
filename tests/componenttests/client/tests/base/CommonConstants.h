@@ -20,8 +20,8 @@
 #ifndef FIREBOLT_RIALTO_CLIENT_CT_COMMON_CONSTANTS_H_
 #define FIREBOLT_RIALTO_CLIENT_CT_COMMON_CONSTANTS_H_
 
-#include <vector>
 #include <utility>
+#include <vector>
 
 #include "MediaCommon.h"
 
