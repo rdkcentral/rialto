@@ -44,8 +44,7 @@ convertSegmentAlignment(const firebolt::rialto::MediaSegmentMetadata_SegmentAlig
     return firebolt::rialto::SegmentAlignment::UNDEFINED;
 }
 
-firebolt::rialto::MediaSegmentMetadata_CipherMode
-convertCipherMode(const firebolt::rialto::CipherMode &cipherMode)
+firebolt::rialto::MediaSegmentMetadata_CipherMode convertCipherMode(const firebolt::rialto::CipherMode &cipherMode)
 {
     switch (cipherMode)
     {

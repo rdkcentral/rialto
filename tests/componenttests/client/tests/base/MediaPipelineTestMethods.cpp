@@ -18,12 +18,12 @@
  */
 
 #include "MediaPipelineTestMethods.h"
+#include "CommonConstants.h"
 #include "MediaPipelineProtoRequestMatchers.h"
 #include "MediaPipelineProtoUtils.h"
 #include "MediaSegments.h"
 #include "MetadataProtoMatchers.h"
 #include "MetadataProtoUtils.h"
-#include "CommonConstants.h"
 #include "metadata.pb.h"
 #include <memory>
 #include <string>
@@ -462,8 +462,8 @@ int32_t MediaPipelineTestMethods::addSegmentEncryptedVideo(uint32_t keyIndex)
     EXPECT_LT(m_videoSegmentCount, sizeof(kVideoSegments) / sizeof(kVideoSegments[0]));
 
     std::unique_ptr<IMediaPipeline::MediaSegment> mseData =
-        std::make_unique<IMediaPipeline::MediaSegmentVideo>(kVideoSourceId, getTimestamp(m_videoSegmentCount), kDuration,
-                                                            kWidth720p, kHeight720p, kFrameRateEmpty);
+        std::make_unique<IMediaPipeline::MediaSegmentVideo>(kVideoSourceId, getTimestamp(m_videoSegmentCount),
+                                                            kDuration, kWidth720p, kHeight720p, kFrameRateEmpty);
     mseData->setData(kVideoSegments[m_videoSegmentCount].size(),
                      (const uint8_t *)kVideoSegments[m_videoSegmentCount].c_str());
     addEncryptedDataToSegment(mseData, keyIndex);
@@ -1293,7 +1293,8 @@ void MediaPipelineTestMethods::checkSegmentData(const MediaSegmentMetadata &meta
     EXPECT_EQ(data, expectedSegmentData);
 }
 
-void MediaPipelineTestMethods::addEncryptedDataToSegment(std::unique_ptr<IMediaPipeline::MediaSegment> &mseData, uint32_t keyIndex)
+void MediaPipelineTestMethods::addEncryptedDataToSegment(std::unique_ptr<IMediaPipeline::MediaSegment> &mseData,
+                                                         uint32_t keyIndex)
 {
     mseData->setEncrypted(true);
     mseData->setMediaKeySessionId(kKeySessionId);

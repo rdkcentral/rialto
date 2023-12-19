@@ -18,8 +18,8 @@
  */
 
 #include "MediaKeysTestMethods.h"
-#include "MediaKeysProtoRequestMatchers.h"
 #include "CommonConstants.h"
+#include "MediaKeysProtoRequestMatchers.h"
 #include <memory>
 #include <string>
 #include <utility>
