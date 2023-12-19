@@ -884,15 +884,15 @@ void MediaPipelineTestMethods::shouldNotifyPlaybackStateFlushed()
     shouldNotifyPlaybackStateInternal(m_mediaPipelineClientMock, PlaybackState::FLUSHED);
 }
 
-void MediaPipelineTestMethods::shouldSetPositionTo10()
+void MediaPipelineTestMethods::shouldSetPosition(const int64_t expectedPosition)
 {
-    EXPECT_CALL(*m_mediaPipelineModuleMock, setPosition(_, setPositionRequestMatcher(kSessionId, 10), _, _))
+    EXPECT_CALL(*m_mediaPipelineModuleMock, setPosition(_, setPositionRequestMatcher(kSessionId, expectedPosition), _, _))
         .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
 }
 
-void MediaPipelineTestMethods::setPosition10()
+void MediaPipelineTestMethods::setPosition(const int64_t position)
 {
-    EXPECT_EQ(m_mediaPipeline->setPosition(10), true);
+    EXPECT_EQ(m_mediaPipeline->setPosition(position), true);
 }
 
 void MediaPipelineTestMethods::sendNotifyPlaybackStateSeeking()
@@ -966,17 +966,6 @@ void MediaPipelineTestMethods::writeVideoFrames()
     MediaPipelineTestMethods::haveDataOk();
 }
 
-void MediaPipelineTestMethods::shouldSetPositionTo0()
-{
-    EXPECT_CALL(*m_mediaPipelineModuleMock, setPosition(_, setPositionRequestMatcher(kSessionId, 0), _, _))
-        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
-}
-
-void MediaPipelineTestMethods::setPosition0()
-{
-    EXPECT_EQ(m_mediaPipeline->setPosition(0), true);
-}
-
 void MediaPipelineTestMethods::writeAudioEos()
 {
     MediaPipelineTestMethods::shouldNotifyNeedDataAudioAfterPreroll();
@@ -1023,6 +1012,120 @@ void MediaPipelineTestMethods::writeVideoFramesSecondary()
     MediaPipelineTestMethods::checkMseVideoSegmentWrittenSecondary(segmentId);
     MediaPipelineTestMethods::shouldHaveDataOkSecondary(framesToWrite);
     MediaPipelineTestMethods::haveDataOkSecondary();
+}
+
+void MediaPipelineTestMethods::shouldSetVolume(const double expectedVolume)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock, setVolume(_, setVolumeRequestMatcher(kSessionId, expectedVolume), _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
+}
+
+void MediaPipelineTestMethods::shouldGetVolume(const double volume)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock, getVolume(_, getVolumeRequestMatcher(kSessionId), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->getVolumeResponse(volume)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::setVolume(const double volume)
+{
+    EXPECT_EQ(m_mediaPipeline->setVolume(volume), true);
+}
+
+void MediaPipelineTestMethods::getVolume(const double expectedVolume)
+{
+    double returnVolume;
+    EXPECT_EQ(m_mediaPipeline->getVolume(returnVolume), true);
+    EXPECT_EQ(returnVolume, expectedVolume);
+}
+
+void MediaPipelineTestMethods::shouldSetMute(const bool expectedMute)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock, setMute(_, setMuteRequestMatcher(kSessionId, expectedMute), _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
+}
+
+void MediaPipelineTestMethods::shouldGetMute(const bool mute)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock, getMute(_, getMuteRequestMatcher(kSessionId), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->getMuteResponse(mute)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::setMute(const bool mute)
+{
+    EXPECT_EQ(m_mediaPipeline->setMute(mute), true);
+}
+
+void MediaPipelineTestMethods::getMute(const bool expectedMute)
+{
+    bool returnMute;
+    EXPECT_EQ(m_mediaPipeline->getMute(returnMute), true);
+    EXPECT_EQ(returnMute, expectedMute);
+}
+
+void MediaPipelineTestMethods::shouldSetVideoWindow(const uint32_t expectedX, const uint32_t expectedY,
+                                                    const uint32_t expectedWidth, const uint32_t expectedHeight)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock, setVideoWindow(_,
+                                                           setVideoWindowRequestMatcher(kSessionId, expectedX, expectedY,
+                                                                                        expectedWidth, expectedHeight),
+                                                           _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
+}
+
+void MediaPipelineTestMethods::setSetVideoWindow(const uint32_t x, const uint32_t y, const uint32_t width,
+                                                 const uint32_t height)
+{
+    EXPECT_EQ(m_mediaPipeline->setVideoWindow(x, y, width, height), true);
+}
+
+void MediaPipelineTestMethods::shouldRenderFrame()
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock, renderFrame(_, renderFrameRequestMatcher(kSessionId), _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
+}
+
+void MediaPipelineTestMethods::renderFrame()
+{
+    EXPECT_EQ(m_mediaPipeline->renderFrame(), true);
+}
+
+void MediaPipelineTestMethods::shouldRenderFrameFailure()
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock, renderFrame(_, renderFrameRequestMatcher(kSessionId), _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::failureReturn)));
+}
+
+void MediaPipelineTestMethods::renderFrameFailure()
+{
+    EXPECT_EQ(m_mediaPipeline->renderFrame(), false);
+}
+
+void MediaPipelineTestMethods::shouldNotifyPosition(const uint32_t expectedPosition)
+{
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyPosition(expectedPosition))
+        .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
+}
+
+void MediaPipelineTestMethods::sendNotifyPositionChanged(const int64_t position)
+{
+    getServerStub()->notifyPositionChangeEvent(kSessionId, position);
+    waitEvent();
+}
+
+void MediaPipelineTestMethods::shouldGetPosition(const int64_t position)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock, getPosition(_, getPositionRequestMatcher(kSessionId), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->getPositionResponse(position)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::getPosition(const int64_t expectedPosition)
+{
+    int64_t returnPosition;
+    EXPECT_EQ(m_mediaPipeline->getPosition(returnPosition), true);
+    EXPECT_EQ(returnPosition, expectedPosition);
 }
 
 /*************************** Private methods ********************************/

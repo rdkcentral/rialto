@@ -55,6 +55,11 @@ add_gtests (
         tests/mse/SingleSourcePlaybackTest.cpp
         tests/mse/DualVideoPlaybackTest.cpp
         tests/mse/AudioSwitchingTest.cpp
+        tests/mse/VolumeTest.cpp
+        tests/mse/MuteTest.cpp
+        tests/mse/SetVideoWindowTest.cpp
+        tests/mse/RenderFrameTest.cpp
+        tests/mse/PositionUpdatesTest.cpp
 
         # EME Component tests
         tests/eme/SessionReadyForDecryptionTest.cpp

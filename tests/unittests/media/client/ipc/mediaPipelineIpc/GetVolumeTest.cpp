@@ -18,13 +18,7 @@
  */
 
 #include "MediaPipelineIpcTestBase.h"
-
-MATCHER_P(GetVolumeRequestMatcher, sessionId, "")
-{
-    const ::firebolt::rialto::GetVolumeRequest *kRequest =
-        dynamic_cast<const ::firebolt::rialto::GetVolumeRequest *>(arg);
-    return ((kRequest->session_id() == sessionId));
-}
+#include "MediaPipelineProtoRequestMatchers.h"
 
 class RialtoClientMediaPipelineIpcGetVolumeTest : public MediaPipelineIpcTestBase
 {
@@ -53,7 +47,7 @@ TEST_F(RialtoClientMediaPipelineIpcGetVolumeTest, Success)
     expectIpcApiCallSuccess();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getVolume"), m_controllerMock.get(),
-                                           GetVolumeRequestMatcher(m_sessionId), _, m_blockingClosureMock.get()))
+                                           getVolumeRequestMatcher(m_sessionId), _, m_blockingClosureMock.get()))
         .WillOnce(Invoke(
             [&](const google::protobuf::MethodDescriptor *, google::protobuf::RpcController *,
                 const google::protobuf::Message *, google::protobuf::Message *response, google::protobuf::Closure *)
