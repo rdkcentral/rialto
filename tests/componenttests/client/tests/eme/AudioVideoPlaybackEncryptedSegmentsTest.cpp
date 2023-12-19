@@ -47,7 +47,7 @@ public:
 /*
  * Component Test: Audio Video Playback Encrypted Segments
  * Test Objective:
- *  Test the writting of encrypted audio and video segments during playback.
+ *  Test the writing of encrypted audio and video segments during playback.
  *
  * Sequence Diagrams:
  *  Shared memory buffer refill - https://wiki.rdkcentral.com/display/ASP/Rialto+Playback+Design
@@ -130,7 +130,7 @@ public:
  *
  * Code:
  */
-TEST_F(AudioVideoPlaybackEncryptedSegmentsTest, playback)
+TEST_F(AudioVideoPlaybackEncryptedSegmentsTest, encryptedPlayback)
 {
     // Step 1: Write 6 encrypted audio frames with key 1
     m_numberOfNeedDatas = 2;

@@ -27,13 +27,13 @@
 
 namespace
 {
-constexpr int32_t kMediaKeysHandle{1};
 const std::string kKeySystemWidevine{"com.widevine.alpha"};
 const std::string kKeySystemPlayready{"com.microsoft.playready"};
-constexpr firebolt::rialto::InitDataType kInitDataTypeCenc{firebolt::rialto::InitDataType::CENC};
+constexpr int32_t kMediaKeysHandle{1};
 constexpr firebolt::rialto::KeySessionType kSessionTypeTemp{firebolt::rialto::KeySessionType::TEMPORARY};
 constexpr bool kIsNotLdl{false};
 constexpr firebolt::rialto::MediaKeyErrorStatus kStatusOk{firebolt::rialto::MediaKeyErrorStatus::OK};
+constexpr firebolt::rialto::InitDataType kInitDataTypeCenc{firebolt::rialto::InitDataType::CENC};
 const std::vector<unsigned char> kLicenseRequestMessage{'r', 'e', 'q', 'u', 'e', 's', 't'};
 const std::vector<uint8_t> kLicenseResponse{0x4D, 0x79, 0x4C, 0x69, 0x63, 0x65, 0x6E, 0x73,
                                             0x65, 0x44, 0x61, 0x74, 0x61, 0x3A, 0x20, 0x31};
@@ -192,7 +192,6 @@ void MediaKeysTestMethods::destroyMediaKeys()
 
 void MediaKeysTestMethods::initaliseMediaKeySession()
 {
-
     // Create a new widevine media keys object
     MediaKeysTestMethods::shouldCreateMediaKeysWidevine();
     MediaKeysTestMethods::createMediaKeysWidevine();
