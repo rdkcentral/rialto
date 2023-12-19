@@ -19,6 +19,7 @@
 
 #include "MediaKeysTestMethods.h"
 #include "MediaKeysProtoRequestMatchers.h"
+#include "CommonConstants.h"
 #include <memory>
 #include <string>
 #include <utility>
@@ -26,22 +27,13 @@
 
 namespace
 {
+constexpr int32_t kMediaKeysHandle{1};
 const std::string kKeySystemWidevine{"com.widevine.alpha"};
 const std::string kKeySystemPlayready{"com.microsoft.playready"};
-constexpr int32_t kMediaKeysHandle{1};
+constexpr firebolt::rialto::InitDataType kInitDataTypeCenc{firebolt::rialto::InitDataType::CENC};
 constexpr firebolt::rialto::KeySessionType kSessionTypeTemp{firebolt::rialto::KeySessionType::TEMPORARY};
 constexpr bool kIsNotLdl{false};
-constexpr int32_t kKeySessionId{999};
 constexpr firebolt::rialto::MediaKeyErrorStatus kStatusOk{firebolt::rialto::MediaKeyErrorStatus::OK};
-constexpr firebolt::rialto::InitDataType kInitDataTypeCenc{firebolt::rialto::InitDataType::CENC};
-const std::vector<std::uint8_t> kInitData{0x4C, 0x69, 0x63, 0x65, 0x6E, 0x73, 0x65, 0x20,
-                                          0x4B, 0x65, 0x79, 0x20, 0x31, 0x32, 0x33, 0x34};
-const KeyStatusVector kKeyStatuses{std::make_pair(std::vector<unsigned char>{'q', '3', 'p'},
-                                                  firebolt::rialto::KeyStatus::USABLE),
-                                   std::make_pair(std::vector<unsigned char>{'p', 'r', '3'},
-                                                  firebolt::rialto::KeyStatus::EXPIRED),
-                                   std::make_pair(std::vector<unsigned char>{'h', ':', 'd'},
-                                                  firebolt::rialto::KeyStatus::OUTPUT_RESTRICTED)};
 const std::vector<unsigned char> kLicenseRequestMessage{'r', 'e', 'q', 'u', 'e', 's', 't'};
 const std::vector<uint8_t> kLicenseResponse{0x4D, 0x79, 0x4C, 0x69, 0x63, 0x65, 0x6E, 0x73,
                                             0x65, 0x44, 0x61, 0x74, 0x61, 0x3A, 0x20, 0x31};
@@ -185,6 +177,52 @@ void MediaKeysTestMethods::shouldCloseKeySession()
 void MediaKeysTestMethods::closeKeySession()
 {
     EXPECT_EQ(m_mediaKeys->closeKeySession(kKeySessionId), kStatusOk);
+}
+
+void MediaKeysTestMethods::shouldDestroyMediaKeys()
+{
+    EXPECT_CALL(*m_mediaKeysModuleMock, destroyMediaKeys(_, destroyMediaKeysRequestMatcher(kMediaKeysHandle), _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn)));
+}
+
+void MediaKeysTestMethods::destroyMediaKeys()
+{
+    m_mediaKeys.reset();
+}
+
+void MediaKeysTestMethods::initaliseMediaKeySession()
+{
+
+    // Create a new widevine media keys object
+    MediaKeysTestMethods::shouldCreateMediaKeysWidevine();
+    MediaKeysTestMethods::createMediaKeysWidevine();
+
+    // Create new key session
+    MediaKeysTestMethods::shouldCreateKeySession();
+    MediaKeysTestMethods::createKeySession();
+
+    // Generate license request
+    MediaKeysTestMethods::shouldGenerateRequest();
+    MediaKeysTestMethods::generateRequest();
+    MediaKeysTestMethods::shouldNotifyLicenseRequest();
+    MediaKeysTestMethods::sendNotifyLicenseRequest();
+
+    // Update session
+    MediaKeysTestMethods::shouldUpdateSession();
+    MediaKeysTestMethods::updateSession();
+    MediaKeysTestMethods::shouldNotifyKeyStatusesChanged();
+    MediaKeysTestMethods::sendNotifyKeyStatusesChanged();
+}
+
+void MediaKeysTestMethods::terminateMediaKeySession()
+{
+    // Close session
+    MediaKeysTestMethods::shouldCloseKeySession();
+    MediaKeysTestMethods::closeKeySession();
+
+    // Destroy media keys
+    MediaKeysTestMethods::shouldDestroyMediaKeys();
+    MediaKeysTestMethods::destroyMediaKeys();
 }
 
 } // namespace firebolt::rialto::client::ct

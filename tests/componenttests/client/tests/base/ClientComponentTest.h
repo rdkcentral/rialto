@@ -57,7 +57,7 @@ protected:
     void stopApplication();
 
 private:
-    // Derived class helpers
+    // Control class helpers
     std::shared_ptr<ServerStub> &getServerStub() override;
     int32_t getShmFd() override;
     void *getShmAddress() override;
