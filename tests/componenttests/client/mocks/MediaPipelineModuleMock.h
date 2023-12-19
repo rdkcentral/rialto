@@ -111,6 +111,27 @@ public:
         return response;
     }
 
+    ::firebolt::rialto::GetVolumeResponse getVolumeResponse(const double volume)
+    {
+        firebolt::rialto::GetVolumeResponse response;
+        response.set_volume(volume);
+        return response;
+    }
+
+    ::firebolt::rialto::GetMuteResponse getMuteResponse(const bool mute)
+    {
+        firebolt::rialto::GetMuteResponse response;
+        response.set_mute(mute);
+        return response;
+    }
+
+    ::firebolt::rialto::GetPositionResponse getPositionResponse(const int64_t position)
+    {
+        firebolt::rialto::GetPositionResponse response;
+        response.set_position(position);
+        return response;
+    }
+
     MediaPipelineModuleMock() {}
     virtual ~MediaPipelineModuleMock() = default;
 };

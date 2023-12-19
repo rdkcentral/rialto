@@ -18,13 +18,7 @@
  */
 
 #include "MediaPipelineIpcTestBase.h"
-
-MATCHER_P2(SetVolumeRequestMatcher, sessionId, volume, "")
-{
-    const ::firebolt::rialto::SetVolumeRequest *kRequest =
-        dynamic_cast<const ::firebolt::rialto::SetVolumeRequest *>(arg);
-    return ((kRequest->session_id() == sessionId) && (kRequest->volume() == volume));
-}
+#include "MediaPipelineProtoRequestMatchers.h"
 
 class RialtoClientMediaPipelineIpcSetVolumeTest : public MediaPipelineIpcTestBase
 {
@@ -55,7 +49,7 @@ TEST_F(RialtoClientMediaPipelineIpcSetVolumeTest, Success)
 
     EXPECT_CALL(*m_channelMock,
                 CallMethod(methodMatcher("setVolume"), m_controllerMock.get(),
-                           SetVolumeRequestMatcher(m_sessionId, m_volume), _, m_blockingClosureMock.get()));
+                           setVolumeRequestMatcher(m_sessionId, m_volume), _, m_blockingClosureMock.get()));
 
     EXPECT_EQ(m_mediaPipelineIpc->setVolume(m_volume), true);
 }

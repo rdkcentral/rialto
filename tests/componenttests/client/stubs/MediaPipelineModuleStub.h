@@ -37,6 +37,7 @@ public:
     void notifyNetworkStateChangeEvent(int sessionId, NetworkState state);
     void notifyNeedMediaDataEvent(int sessionId, int32_t sourceId, size_t frameCount, uint32_t needDataRequestId,
                                   const std::shared_ptr<MediaPlayerShmInfo> &shmInfo);
+    void notifyPositionChangeEvent(int sessionId, int64_t position);
 
     // Client helpers
     virtual void waitForClientConnect() = 0;

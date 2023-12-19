@@ -18,12 +18,7 @@
  */
 
 #include "MediaPipelineIpcTestBase.h"
-
-MATCHER_P(GetMuteRequestMatcher, sessionId, "")
-{
-    const ::firebolt::rialto::GetMuteRequest *kRequest = dynamic_cast<const ::firebolt::rialto::GetMuteRequest *>(arg);
-    return ((kRequest->session_id() == sessionId));
-}
+#include "MediaPipelineProtoRequestMatchers.h"
 
 class RialtoClientMediaPipelineIpcGetMuteTest : public MediaPipelineIpcTestBase
 {
@@ -52,7 +47,7 @@ TEST_F(RialtoClientMediaPipelineIpcGetMuteTest, Success)
     expectIpcApiCallSuccess();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getMute"), m_controllerMock.get(),
-                                           GetMuteRequestMatcher(m_sessionId), _, m_blockingClosureMock.get()))
+                                           getMuteRequestMatcher(m_sessionId), _, m_blockingClosureMock.get()))
         .WillOnce(Invoke(
             [&](const google::protobuf::MethodDescriptor *, google::protobuf::RpcController *,
                 const google::protobuf::Message *, google::protobuf::Message *response, google::protobuf::Closure *)

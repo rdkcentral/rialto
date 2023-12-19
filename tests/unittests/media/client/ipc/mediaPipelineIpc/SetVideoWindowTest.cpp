@@ -18,14 +18,7 @@
  */
 
 #include "MediaPipelineIpcTestBase.h"
-
-MATCHER_P5(SetVideoWindowRequestMatcher, sessionId, x, y, width, height, "")
-{
-    const ::firebolt::rialto::SetVideoWindowRequest *kRequest =
-        dynamic_cast<const ::firebolt::rialto::SetVideoWindowRequest *>(arg);
-    return ((kRequest->session_id() == sessionId) && (kRequest->x() == x) && (kRequest->y() == y) &&
-            (kRequest->width() == width) && (kRequest->height() == height));
-}
+#include "MediaPipelineProtoRequestMatchers.h"
 
 class RialtoClientMediaPipelineIpcSetVideoWindowTest : public MediaPipelineIpcTestBase
 {
@@ -58,7 +51,7 @@ TEST_F(RialtoClientMediaPipelineIpcSetVideoWindowTest, Success)
     expectIpcApiCallSuccess();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("setVideoWindow"), m_controllerMock.get(),
-                                           SetVideoWindowRequestMatcher(m_sessionId, m_x, m_y, m_width, m_height), _,
+                                           setVideoWindowRequestMatcher(m_sessionId, m_x, m_y, m_width, m_height), _,
                                            m_blockingClosureMock.get()));
 
     EXPECT_EQ(m_mediaPipelineIpc->setVideoWindow(m_x, m_y, m_width, m_height), true);

@@ -101,8 +101,16 @@ protected:
     void shouldSetPlaybackRate2x();
     void shouldSetPlaybackRateNegative2x();
     void shouldSetPlaybackRateFailure();
-    void shouldSetPositionTo10();
-    void shouldSetPositionTo0();
+    void shouldSetPosition(const int64_t expectedPosition);
+    void shouldSetVolume(const double expectedVolume);
+    void shouldGetVolume(const double volume);
+    void shouldSetMute(const bool expectedMute);
+    void shouldGetMute(const bool mute);
+    void shouldSetVideoWindow(const uint32_t expectedX, const uint32_t expectedY, const uint32_t expectedWidth,
+                              const uint32_t expectedHeight);
+    void shouldRenderFrame();
+    void shouldRenderFrameFailure();
+    void shouldGetPosition(const int64_t position);
 
     // MediaPipelineClient Expect methods
     void shouldNotifyNetworkStateBuffering();
@@ -128,6 +136,7 @@ protected:
     void shouldNotifyNeedDataAudio(const size_t framesToWrite);
     void shouldNotifyNeedDataVideo(const size_t framesToWrite);
     void shouldNotifyNeedDataVideoSecondary(const size_t framesToWrite);
+    void shouldNotifyPosition(const uint32_t expectedPosition);
 
     // Api methods
     void createMediaPipeline();
@@ -164,10 +173,17 @@ protected:
     void setPlaybackRate2x();
     void setPlaybackRateNegative2x();
     void setPlaybackRateFailure();
-    void setPosition10();
-    void setPosition0();
+    void setPosition(const int64_t position);
     void setPositionFailure();
     void addSegmentFailure();
+    void setVolume(const double volume);
+    void getVolume(const double expectedVolume);
+    void setMute(const bool mute);
+    void getMute(const bool expectedMute);
+    void setSetVideoWindow(const uint32_t x, const uint32_t y, const uint32_t width, const uint32_t height);
+    void renderFrame();
+    void renderFrameFailure();
+    void getPosition(const int64_t expectedPosition);
 
     // Event methods
     void sendNotifyNetworkStateBuffering();
@@ -193,6 +209,7 @@ protected:
     void sendNotifyPlaybackStateFailure();
     void sendNotifyPlaybackStateSeeking();
     void sendNotifyPlaybackStateFlushed();
+    void sendNotifyPositionChanged(const int64_t position);
 
     // Check methods
     void checkMseAudioSegmentWritten(int32_t segmentId);
