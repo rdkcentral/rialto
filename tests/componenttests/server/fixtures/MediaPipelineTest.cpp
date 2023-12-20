@@ -65,22 +65,17 @@ void MediaPipelineTest::gstPlayerWillBeCreated()
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(StrEq("rialtosrc"))).WillOnce(Return(nullptr));
     EXPECT_CALL(*m_gstWrapperMock, gstElementRegister(0, StrEq("rialtosrc"), _, _));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("playbin"), _)).WillOnce(Return(&m_pipeline));
-    EXPECT_CALL(*m_glibWrapperMock, gTypeFromName(StrEq("GstPlayFlags")))
-        .Times(3)
-        .WillRepeatedly(Return(kGstPlayFlagsType));
+    EXPECT_CALL(*m_glibWrapperMock, gTypeFromName(StrEq("GstPlayFlags"))).Times(3).WillRepeatedly(Return(kGstPlayFlagsType));
     EXPECT_CALL(*m_glibWrapperMock, gTypeClassRef(kGstPlayFlagsType)).Times(3).WillRepeatedly(Return(&m_flagsClass));
 
-    EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("audio")))
-        .WillOnce(Return(&m_audioFlag));
-    EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("video")))
-        .WillOnce(Return(&m_videoFlag));
+    EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("audio"))).WillOnce(Return(&m_audioFlag));
+    EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("video"))).WillOnce(Return(&m_videoFlag));
     EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("native-video")))
         .WillOnce(Return(&m_nativeVideoFlag));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(StrEq("brcmaudiosink"))).WillOnce(Return(nullptr));
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_pipeline, StrEq("flags")));
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_pipeline, StrEq("uri")));
-    EXPECT_CALL(*m_gstWrapperMock, gstBinGetByName(GST_BIN(&m_pipeline), StrEq("playsink")))
-        .WillOnce(Return(&m_playsink));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinGetByName(GST_BIN(&m_pipeline), StrEq("playsink"))).WillOnce(Return(&m_playsink));
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_playsink, StrEq("send-event-mode")));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_playsink));
 
@@ -108,15 +103,13 @@ void MediaPipelineTest::gstPlayerWillBeDestructed()
 void MediaPipelineTest::audioSourceWillBeAttached()
 {
     EXPECT_CALL(*m_gstWrapperMock, gstCapsNewEmptySimple(StrEq("audio/mpeg"))).WillOnce(Return(&m_audioCaps));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleStringStub(&m_audioCaps, StrEq("alignment"), G_TYPE_STRING,
-                                                              StrEq("nal")));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleStringStub(&m_audioCaps, StrEq("stream-format"),
-                                                              G_TYPE_STRING, StrEq("raw")));
+    EXPECT_CALL(*m_gstWrapperMock,
+                gstCapsSetSimpleStringStub(&m_audioCaps, StrEq("alignment"), G_TYPE_STRING, StrEq("nal")));
+    EXPECT_CALL(*m_gstWrapperMock,
+                gstCapsSetSimpleStringStub(&m_audioCaps, StrEq("stream-format"), G_TYPE_STRING, StrEq("raw")));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_audioCaps, StrEq("mpegversion"), G_TYPE_INT, 4));
-    EXPECT_CALL(*m_gstWrapperMock,
-                gstCapsSetSimpleIntStub(&m_audioCaps, StrEq("channels"), G_TYPE_INT, kNumOfChannels));
-    EXPECT_CALL(*m_gstWrapperMock,
-                gstCapsSetSimpleIntStub(&m_audioCaps, StrEq("rate"), G_TYPE_INT, kSampleRate));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_audioCaps, StrEq("channels"), G_TYPE_INT, kNumOfChannels));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_audioCaps, StrEq("rate"), G_TYPE_INT, kSampleRate));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsToString(&m_audioCaps)).WillOnce(Return(&m_audioCapsStr));
     EXPECT_CALL(*m_glibWrapperMock, gFree(&m_audioCapsStr));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("appsrc"), StrEq("audsrc")))
@@ -128,10 +121,10 @@ void MediaPipelineTest::audioSourceWillBeAttached()
 void MediaPipelineTest::videoSourceWillBeAttached()
 {
     EXPECT_CALL(*m_gstWrapperMock, gstCapsNewEmptySimple(StrEq("video/x-h264"))).WillOnce(Return(&m_videoCaps));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleStringStub(&m_videoCaps, StrEq("alignment"), G_TYPE_STRING,
-                                                              StrEq("nal")));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleStringStub(&m_videoCaps, StrEq("stream-format"),
-                                                              G_TYPE_STRING, StrEq("raw")));
+    EXPECT_CALL(*m_gstWrapperMock,
+                gstCapsSetSimpleStringStub(&m_videoCaps, StrEq("alignment"), G_TYPE_STRING, StrEq("nal")));
+    EXPECT_CALL(*m_gstWrapperMock,
+                gstCapsSetSimpleStringStub(&m_videoCaps, StrEq("stream-format"), G_TYPE_STRING, StrEq("raw")));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_videoCaps, StrEq("width"), G_TYPE_INT, kWidth));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_videoCaps, StrEq("height"), G_TYPE_INT, kHeight));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsToString(&m_videoCaps)).WillOnce(Return(&m_videoCapsStr));
@@ -161,8 +154,7 @@ void MediaPipelineTest::willSetupAndAddSource(GstAppSrc *appSrc)
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetStreamType(appSrc, GST_APP_STREAM_TYPE_SEEKABLE));
     EXPECT_CALL(*m_glibWrapperMock, gStrdupPrintfStub(_)).WillOnce(Return(m_sourceName.data())).RetiresOnSaturation();
     EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_rialtoSource), GST_ELEMENT(appSrc)));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementGetStaticPad(GST_ELEMENT(appSrc), StrEq("src")))
-        .WillOnce(Return(&m_pad));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetStaticPad(GST_ELEMENT(appSrc), StrEq("src"))).WillOnce(Return(&m_pad));
     EXPECT_CALL(*m_gstWrapperMock, gstGhostPadNew(StrEq(m_sourceName), &m_pad))
         .WillOnce(Return(&m_ghostPad))
         .RetiresOnSaturation();
@@ -192,8 +184,7 @@ void MediaPipelineTest::willPushAudioData(const std::unique_ptr<IMediaPipeline::
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(&m_audioAppSrc)).WillOnce(Return(&m_audioCaps)).RetiresOnSaturation();
     EXPECT_CALL(*m_gstWrapperMock, gstCapsCopy(&m_audioCaps)).WillOnce(Return(&capsCopy)).RetiresOnSaturation();
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&capsCopy, StrEq("rate"), G_TYPE_INT, kSampleRate));
-    EXPECT_CALL(*m_gstWrapperMock,
-                gstCapsSetSimpleIntStub(&capsCopy, StrEq("channels"), G_TYPE_INT, kNumOfChannels));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&capsCopy, StrEq("channels"), G_TYPE_INT, kNumOfChannels));
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(&m_audioAppSrc, &capsCopy));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_audioCaps)).RetiresOnSaturation();
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&capsCopy));
@@ -214,8 +205,7 @@ void MediaPipelineTest::willPushVideoData(const std::unique_ptr<IMediaPipeline::
     EXPECT_CALL(*m_gstWrapperMock, gstCapsCopy(&m_videoCaps)).WillOnce(Return(&capsCopy)).RetiresOnSaturation();
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&capsCopy, StrEq("width"), G_TYPE_INT, kWidth));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&capsCopy, StrEq("height"), G_TYPE_INT, kHeight));
-    EXPECT_CALL(*m_gstWrapperMock,
-                gstCapsSetSimpleFractionStub(&capsCopy, StrEq("framerate"), GST_TYPE_FRACTION, _, _));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleFractionStub(&capsCopy, StrEq("framerate"), GST_TYPE_FRACTION, _, _));
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(&m_videoAppSrc, &capsCopy));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_videoCaps)).RetiresOnSaturation();
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&capsCopy));

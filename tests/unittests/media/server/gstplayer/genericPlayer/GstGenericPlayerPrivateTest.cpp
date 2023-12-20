@@ -274,8 +274,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldSetVideoRectangle)
                 *elementPtr = m_realElement;
             }));
     EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_realElement))).WillOnce(Return(kElementTypeName.c_str()));
-    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("rectangle")))
-        .WillOnce(Return(&m_rectangleSpec));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("rectangle"))).WillOnce(Return(&m_rectangleSpec));
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_realElement, StrEq("rectangle")));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_realElement));
     EXPECT_TRUE(m_sut->setVideoSinkRectangle());
@@ -293,8 +292,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldSetVideoRectangleAutoVideoSink)
             }));
     EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_realElement)))
         .WillOnce(Return(kAutoVideoSinkTypeName.c_str()));
-    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("rectangle")))
-        .WillOnce(Return(&m_rectangleSpec));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("rectangle"))).WillOnce(Return(&m_rectangleSpec));
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(autoVideoSinkChild, StrEq("rectangle")));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_realElement));
     EXPECT_TRUE(m_sut->setVideoSinkRectangle());
@@ -822,9 +820,8 @@ TEST_F(GstGenericPlayerPrivateTest, shouldUpdateVideoCaps)
     EXPECT_CALL(*m_gstWrapperMock, gstCapsCopy(&dummyCaps1)).WillOnce(Return(&dummyCaps2));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&dummyCaps2, StrEq("width"), G_TYPE_INT, kWidth));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&dummyCaps2, StrEq("height"), G_TYPE_INT, kHeight));
-    EXPECT_CALL(*m_gstWrapperMock,
-                gstCapsSetSimpleFractionStub(&dummyCaps2, StrEq("framerate"), GST_TYPE_FRACTION,
-                                             kFrameRate.numerator, kFrameRate.denominator));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleFractionStub(&dummyCaps2, StrEq("framerate"), GST_TYPE_FRACTION,
+                                                                kFrameRate.numerator, kFrameRate.denominator));
     EXPECT_CALL(*m_glibWrapperMock, gMemdup(arrayMatcher(kCodecDataWithBuffer->data), kCodecDataWithBuffer->data.size()))
         .WillOnce(Return(memory));
     EXPECT_CALL(*m_gstWrapperMock, gstBufferNewWrapped(memory, kCodecDataWithBuffer->data.size())).WillOnce(Return(&buf));
@@ -850,9 +847,8 @@ TEST_F(GstGenericPlayerPrivateTest, shouldUpdateVideoCapsWithStringCodecData)
     EXPECT_CALL(*m_gstWrapperMock, gstCapsCopy(&dummyCaps1)).WillOnce(Return(&dummyCaps2));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&dummyCaps2, StrEq("width"), G_TYPE_INT, kWidth));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&dummyCaps2, StrEq("height"), G_TYPE_INT, kHeight));
-    EXPECT_CALL(*m_gstWrapperMock,
-                gstCapsSetSimpleFractionStub(&dummyCaps2, StrEq("framerate"), GST_TYPE_FRACTION,
-                                             kFrameRate.numerator, kFrameRate.denominator));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleFractionStub(&dummyCaps2, StrEq("framerate"), GST_TYPE_FRACTION,
+                                                                kFrameRate.numerator, kFrameRate.denominator));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleStringStub(&dummyCaps2, StrEq("codec_data"), G_TYPE_STRING,
                                                               StrEq(kCodecDataStr.c_str())));
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(GST_APP_SRC(&videoSrc), &dummyCaps2));
@@ -875,9 +871,8 @@ TEST_F(GstGenericPlayerPrivateTest, shouldUpdateVideoCapsWithoutCodecData)
     EXPECT_CALL(*m_gstWrapperMock, gstCapsCopy(&dummyCaps1)).WillOnce(Return(&dummyCaps2));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&dummyCaps2, StrEq("width"), G_TYPE_INT, kWidth));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&dummyCaps2, StrEq("height"), G_TYPE_INT, kHeight));
-    EXPECT_CALL(*m_gstWrapperMock,
-                gstCapsSetSimpleFractionStub(&dummyCaps2, StrEq("framerate"), GST_TYPE_FRACTION,
-                                             kFrameRate.numerator, kFrameRate.denominator));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleFractionStub(&dummyCaps2, StrEq("framerate"), GST_TYPE_FRACTION,
+                                                                kFrameRate.numerator, kFrameRate.denominator));
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(GST_APP_SRC(&videoSrc), &dummyCaps2));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps1));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps2));

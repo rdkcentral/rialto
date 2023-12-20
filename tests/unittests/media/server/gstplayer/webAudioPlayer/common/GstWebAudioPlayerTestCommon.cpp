@@ -110,8 +110,7 @@ void GstWebAudioPlayerTestCommon::expectCreatePipeline()
 
 void GstWebAudioPlayerTestCommon::expectInitAppSrc()
 {
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("appsrc"), StrEq("audsrc")))
-        .WillOnce(Return(&m_appSrc));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("appsrc"), StrEq("audsrc"))).WillOnce(Return(&m_appSrc));
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetMaxBytes(GST_APP_SRC(&m_appSrc), 10 * 1024));
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(G_OBJECT(&m_appSrc), StrEq("format")));
 }
@@ -157,8 +156,7 @@ void GstWebAudioPlayerTestCommon::expectMakeRtkAudioSink()
     EXPECT_CALL(*m_gstWrapperMock, gstRegistryLookupFeature(&m_reg, StrEq("amlhalasink"))).WillOnce(Return(nullptr));
     EXPECT_CALL(*m_gstWrapperMock, gstRegistryLookupFeature(&m_reg, StrEq("rtkaudiosink")))
         .WillOnce(Return(GST_PLUGIN_FEATURE(&m_feature)));
-    EXPECT_CALL(*m_gstWrapperMock,
-                gstElementFactoryMake(StrEq("rtkaudiosink"), StrEq("webaudiosink")))
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("rtkaudiosink"), StrEq("webaudiosink")))
         .WillOnce(Return(&m_sink));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(GST_PLUGIN_FEATURE(&m_feature)));
 }
@@ -175,11 +173,9 @@ void GstWebAudioPlayerTestCommon::expectMakeAutoAudioSink()
 {
     EXPECT_CALL(*m_gstWrapperMock, gstRegistryGet()).WillOnce(Return(&m_reg));
     EXPECT_CALL(*m_gstWrapperMock, gstRegistryLookupFeature(&m_reg, StrEq("amlhalasink"))).WillOnce(Return(nullptr));
-    EXPECT_CALL(*m_gstWrapperMock, gstRegistryLookupFeature(&m_reg, StrEq("rtkaudiosink")))
-        .WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_gstWrapperMock, gstRegistryLookupFeature(&m_reg, StrEq("rtkaudiosink"))).WillOnce(Return(nullptr));
 
-    EXPECT_CALL(*m_gstWrapperMock,
-                gstElementFactoryMake(StrEq("autoaudiosink"), StrEq("webaudiosink")))
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("autoaudiosink"), StrEq("webaudiosink")))
         .WillOnce(Return(&m_sink));
 }
 

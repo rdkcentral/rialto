@@ -34,8 +34,8 @@ using namespace firebolt::rialto::wrappers;
 
 using ::testing::_;
 using ::testing::Return;
-using ::testing::StrictMock;
 using ::testing::StrEq;
+using ::testing::StrictMock;
 
 MATCHER_P(PtrStrMatcher, expectedStr, "")
 {
@@ -131,8 +131,7 @@ protected:
     {
         EXPECT_CALL(*m_glibWrapperMock, gStrdupPrintfStub(_)).WillOnce(Return(m_name));
 
-        EXPECT_CALL(*m_gstWrapperMock, gstElementGetStaticPad(expectedSrcElement, StrEq("src")))
-            .WillOnce(Return(&m_target));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementGetStaticPad(expectedSrcElement, StrEq("src"))).WillOnce(Return(&m_target));
         EXPECT_CALL(*m_gstWrapperMock, gstGhostPadNew(StrEq(m_name), &m_target)).WillOnce(Return(&m_pad));
         EXPECT_CALL(*m_gstWrapperMock, gstPadSetQueryFunction(&m_pad, NotNullMatcher()));
         EXPECT_CALL(*m_gstWrapperMock, gstPadSetActive(&m_pad, TRUE));

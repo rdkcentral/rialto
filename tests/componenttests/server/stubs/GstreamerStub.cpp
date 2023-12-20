@@ -41,8 +41,7 @@ GstreamerStub::GstreamerStub(const std::shared_ptr<testing::StrictMock<wrappers:
 
 void GstreamerStub::setupPipeline()
 {
-    EXPECT_CALL(*m_glibWrapperMock,
-                gSignalConnect(m_pipeline, StrEq("source-setup"), NotNullMatcher(), NotNullMatcher()))
+    EXPECT_CALL(*m_glibWrapperMock, gSignalConnect(m_pipeline, StrEq("source-setup"), NotNullMatcher(), NotNullMatcher()))
         .WillOnce(Invoke(
             [this](gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data)
             {

@@ -102,16 +102,15 @@ public:
         EXPECT_CALL(*m_gstWrapperMock, gstCapsNewEmptySimple(StrEq("video/x-h264")))
             .WillOnce(Return(&m_videoCaps))
             .RetiresOnSaturation();
-        EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleStringStub(&m_videoCaps, StrEq("alignment"),
-                                                                  G_TYPE_STRING, StrEq("nal")))
+        EXPECT_CALL(*m_gstWrapperMock,
+                    gstCapsSetSimpleStringStub(&m_videoCaps, StrEq("alignment"), G_TYPE_STRING, StrEq("nal")))
             .RetiresOnSaturation();
-        EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleStringStub(&m_videoCaps, StrEq("stream-format"),
-                                                                  G_TYPE_STRING, StrEq("raw")))
+        EXPECT_CALL(*m_gstWrapperMock,
+                    gstCapsSetSimpleStringStub(&m_videoCaps, StrEq("stream-format"), G_TYPE_STRING, StrEq("raw")))
             .RetiresOnSaturation();
         EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_videoCaps, StrEq("width"), G_TYPE_INT, kWidth))
             .RetiresOnSaturation();
-        EXPECT_CALL(*m_gstWrapperMock,
-                    gstCapsSetSimpleIntStub(&m_videoCaps, StrEq("height"), G_TYPE_INT, kHeight))
+        EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_videoCaps, StrEq("height"), G_TYPE_INT, kHeight))
             .RetiresOnSaturation();
         EXPECT_CALL(*m_gstWrapperMock, gstCapsToString(&m_videoCaps)).WillOnce(Return(&m_videoCapsStr)).RetiresOnSaturation();
         EXPECT_CALL(*m_glibWrapperMock, gFree(&m_videoCapsStr)).RetiresOnSaturation();
@@ -133,17 +132,14 @@ public:
         m_secondaryGstreamerStub.setupAppSrcCallbacks(&m_secondaryVideoAppSrc);
         EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(GST_ELEMENT(&m_secondaryVideoAppSrc), StrEq("block")));
         EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(GST_ELEMENT(&m_secondaryVideoAppSrc), StrEq("format")));
-        EXPECT_CALL(*m_glibWrapperMock,
-                    gObjectSetStub(GST_ELEMENT(&m_secondaryVideoAppSrc), StrEq("stream-type")));
-        EXPECT_CALL(*m_glibWrapperMock,
-                    gObjectSetStub(GST_ELEMENT(&m_secondaryVideoAppSrc), StrEq("min-percent")));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(GST_ELEMENT(&m_secondaryVideoAppSrc), StrEq("stream-type")));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(GST_ELEMENT(&m_secondaryVideoAppSrc), StrEq("min-percent")));
         EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetMaxBytes(&m_secondaryVideoAppSrc, (8 * 1024 * 1024)));
         EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetStreamType(&m_secondaryVideoAppSrc, GST_APP_STREAM_TYPE_SEEKABLE));
         EXPECT_CALL(*m_glibWrapperMock, gStrdupPrintfStub(_)).WillOnce(Return(m_sourceName.data())).RetiresOnSaturation();
         EXPECT_CALL(*m_gstWrapperMock,
                     gstBinAdd(GST_BIN(&m_secondaryRialtoSource), GST_ELEMENT(&m_secondaryVideoAppSrc)));
-        EXPECT_CALL(*m_gstWrapperMock,
-                    gstElementGetStaticPad(GST_ELEMENT(&m_secondaryVideoAppSrc), StrEq("src")))
+        EXPECT_CALL(*m_gstWrapperMock, gstElementGetStaticPad(GST_ELEMENT(&m_secondaryVideoAppSrc), StrEq("src")))
             .WillOnce(Return(&m_pad));
         EXPECT_CALL(*m_gstWrapperMock, gstGhostPadNew(StrEq(m_sourceName), &m_pad))
             .WillOnce(Return(&m_ghostPad))

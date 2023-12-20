@@ -29,8 +29,8 @@ using ::testing::DoAll;
 using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::SaveArg;
-using ::testing::StrictMock;
 using ::testing::StrEq;
+using ::testing::StrictMock;
 
 class RialtoServerCreateGstGenericPlayerTest : public GstGenericPlayerTestCommon
 {
@@ -87,8 +87,7 @@ protected:
         EXPECT_CALL(*m_gstWrapperMock,
                     gstElementFactoryCreate(reinterpret_cast<GstElementFactory *>(&m_westerousFactory), _))
             .WillOnce(Return(&m_westerousSink));
-        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("res-usage")))
-            .WillOnce(Return(&m_rectangleSpec));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("res-usage"))).WillOnce(Return(&m_rectangleSpec));
         EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(_, StrEq("res-usage")));
         EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(_, StrEq("video-sink")));
         EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(reinterpret_cast<GstElementFactory *>(&m_westerousFactory)));

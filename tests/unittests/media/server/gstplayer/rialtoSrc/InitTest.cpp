@@ -31,8 +31,8 @@ using namespace firebolt::rialto::wrappers;
 
 using ::testing::_;
 using ::testing::Return;
-using ::testing::StrictMock;
 using ::testing::StrEq;
+using ::testing::StrictMock;
 
 class RialtoServerInitGstSrcTest : public ::testing::Test
 {

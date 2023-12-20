@@ -31,8 +31,8 @@ using ::testing::_;
 using ::testing::DoAll;
 using ::testing::Return;
 using ::testing::SetArgPointee;
-using ::testing::StrictMock;
 using ::testing::StrEq;
+using ::testing::StrictMock;
 
 static const char *toString(const firebolt::rialto::CipherMode &cipherMode)
 {
@@ -160,31 +160,27 @@ protected:
     void expectAddGstProtectionMeta(bool encryptionPatternSet)
     {
 #ifdef RIALTO_ENABLE_DECRYPT_BUFFER
-        EXPECT_CALL(*m_gstWrapperMock, gstStructureNewBufferStub(StrEq("application/x-cenc"),
-                                                                 StrEq("kid"), GST_TYPE_BUFFER, &m_key))
-            .WillOnce(Return(&m_structure));
-        EXPECT_CALL(*m_gstWrapperMock, gstStructureNewBufferStub(StrEq("application/x-cenc"),
-                                                                 StrEq("iv"), GST_TYPE_BUFFER, &m_iv))
+        EXPECT_CALL(*m_gstWrapperMock,
+                    gstStructureNewBufferStub(StrEq("application/x-cenc"), StrEq("kid"), GST_TYPE_BUFFER, &m_key))
             .WillOnce(Return(&m_structure));
         EXPECT_CALL(*m_gstWrapperMock,
-                    gstStructureNewUintStub(StrEq("application/x-cenc"), StrEq("subsample_count"),
-                                            G_TYPE_UINT, m_subsampleCount))
+                    gstStructureNewBufferStub(StrEq("application/x-cenc"), StrEq("iv"), GST_TYPE_BUFFER, &m_iv))
+            .WillOnce(Return(&m_structure));
+        EXPECT_CALL(*m_gstWrapperMock, gstStructureNewUintStub(StrEq("application/x-cenc"), StrEq("subsample_count"),
+                                                               G_TYPE_UINT, m_subsampleCount))
+            .WillOnce(Return(&m_structure));
+        EXPECT_CALL(*m_gstWrapperMock, gstStructureNewBufferStub(StrEq("application/x-cenc"), StrEq("subsamples"),
+                                                                 GST_TYPE_BUFFER, &m_subsamples))
             .WillOnce(Return(&m_structure));
         EXPECT_CALL(*m_gstWrapperMock,
-                    gstStructureNewBufferStub(StrEq("application/x-cenc"), StrEq("subsamples"),
-                                              GST_TYPE_BUFFER, &m_subsamples))
+                    gstStructureNewUintStub(StrEq("application/x-cenc"), StrEq("encryption_scheme"), G_TYPE_UINT, 0))
             .WillOnce(Return(&m_structure));
-        EXPECT_CALL(*m_gstWrapperMock, gstStructureNewUintStub(StrEq("application/x-cenc"),
-                                                               StrEq("encryption_scheme"), G_TYPE_UINT, 0))
-            .WillOnce(Return(&m_structure));
-        EXPECT_CALL(*m_gstWrapperMock,
-                    gstStructureNewUintStub(StrEq("application/x-cenc"), StrEq("init_with_last_15"),
-                                            G_TYPE_UINT, m_initWithLast15))
+        EXPECT_CALL(*m_gstWrapperMock, gstStructureNewUintStub(StrEq("application/x-cenc"), StrEq("init_with_last_15"),
+                                                               G_TYPE_UINT, m_initWithLast15))
             .WillOnce(Return(&m_structure));
 #endif
-        EXPECT_CALL(*m_gstWrapperMock,
-                    gstStructureNewStringStub(StrEq("application/x-cenc"), StrEq("cipher-mode"),
-                                              G_TYPE_STRING, StrEq(toString(m_cipherMode))))
+        EXPECT_CALL(*m_gstWrapperMock, gstStructureNewStringStub(StrEq("application/x-cenc"), StrEq("cipher-mode"),
+                                                                 G_TYPE_STRING, StrEq(toString(m_cipherMode))))
             .WillOnce(Return(&m_structure));
 
         if (encryptionPatternSet)

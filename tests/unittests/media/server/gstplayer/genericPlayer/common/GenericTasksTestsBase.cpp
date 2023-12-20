@@ -350,12 +350,9 @@ void GenericTasksTestsBase::shouldSetupVideoElementAmlhalasink()
                                             GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
         .WillOnce(Return(TRUE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(true));
-    EXPECT_CALL(*testContext->m_glibWrapper,
-                gObjectSetStub(G_OBJECT(testContext->m_element), StrEq("wait-video")));
-    EXPECT_CALL(*testContext->m_glibWrapper,
-                gObjectSetStub(G_OBJECT(testContext->m_element), StrEq("a-wait-timeout")));
-    EXPECT_CALL(*testContext->m_glibWrapper,
-                gObjectSetStub(G_OBJECT(testContext->m_element), StrEq("disable-xrun")));
+    EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(G_OBJECT(testContext->m_element), StrEq("wait-video")));
+    EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(G_OBJECT(testContext->m_element), StrEq("a-wait-timeout")));
+    EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(G_OBJECT(testContext->m_element), StrEq("disable-xrun")));
     expectSetupVideoElement();
 }
 
@@ -370,8 +367,8 @@ void GenericTasksTestsBase::shouldSetupVideoElementAutoVideoSink()
     EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
         .WillOnce(Return(kAutoVideoSinkTypeName.c_str()));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(false));
-    EXPECT_CALL(*testContext->m_glibWrapper, gSignalConnect(G_OBJECT(testContext->m_element),
-                                                            StrEq("child-added"), _, &testContext->m_gstPlayer))
+    EXPECT_CALL(*testContext->m_glibWrapper,
+                gSignalConnect(G_OBJECT(testContext->m_element), StrEq("child-added"), _, &testContext->m_gstPlayer))
         .WillOnce(Invoke(
             [&](gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data)
             {
@@ -379,8 +376,7 @@ void GenericTasksTestsBase::shouldSetupVideoElementAutoVideoSink()
                 return kSignalId;
             }));
     EXPECT_CALL(*testContext->m_glibWrapper,
-                gSignalConnect(G_OBJECT(testContext->m_element), StrEq("child-removed"), _,
-                               &testContext->m_gstPlayer))
+                gSignalConnect(G_OBJECT(testContext->m_element), StrEq("child-removed"), _, &testContext->m_gstPlayer))
         .WillOnce(Invoke(
             [&](gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data)
             {
@@ -1018,8 +1014,8 @@ void GenericTasksTestsBase::shouldRegisterCallbackForTypefindElement()
         .WillOnce(Return(testContext->m_typefindElementName));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrrstr(testContext->m_typefindElementName, StrEq("typefind")))
         .WillOnce(Return(testContext->m_typefindElementName));
-    EXPECT_CALL(*testContext->m_glibWrapper, gSignalConnect(G_OBJECT(testContext->m_element),
-                                                            StrEq("have-type"), _, &testContext->m_gstPlayer))
+    EXPECT_CALL(*testContext->m_glibWrapper,
+                gSignalConnect(G_OBJECT(testContext->m_element), StrEq("have-type"), _, &testContext->m_gstPlayer))
         .WillOnce(Return(kSignalId));
     EXPECT_CALL(*testContext->m_glibWrapper, gFree(testContext->m_typefindElementName));
 }
@@ -1032,8 +1028,8 @@ void GenericTasksTestsBase::shouldUpdatePlaybackGroupWhenCallbackIsCalled()
         .WillOnce(Return(testContext->m_typefindElementName));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrrstr(testContext->m_typefindElementName, StrEq("typefind")))
         .WillOnce(Return(testContext->m_typefindElementName));
-    EXPECT_CALL(*testContext->m_glibWrapper, gSignalConnect(G_OBJECT(testContext->m_element),
-                                                            StrEq("have-type"), _, &testContext->m_gstPlayer))
+    EXPECT_CALL(*testContext->m_glibWrapper,
+                gSignalConnect(G_OBJECT(testContext->m_element), StrEq("have-type"), _, &testContext->m_gstPlayer))
         .WillOnce(Invoke(
             [&](gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data)
             {
@@ -1173,8 +1169,7 @@ void GenericTasksTestsBase::shouldHaveNonBinParentSink()
         .WillOnce(Return(GST_OBJECT(&testContext->m_audioParentSink)));
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementGetName(&testContext->m_audioParentSink))
         .WillOnce(Return(testContext->m_elementName));
-    EXPECT_CALL(*testContext->m_glibWrapper, gStrrstr(testContext->m_elementName, StrEq("bin")))
-        .WillOnce(Return(nullptr));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrrstr(testContext->m_elementName, StrEq("bin"))).WillOnce(Return(nullptr));
     EXPECT_CALL(*testContext->m_glibWrapper, gFree(testContext->m_elementName));
 }
 
@@ -1229,8 +1224,7 @@ void GenericTasksTestsBase::shouldDoNothingForVideoCaps()
 {
     EXPECT_CALL(*testContext->m_gstWrapper, gstCapsToString(&testContext->m_gstCaps1))
         .WillOnce(Return(testContext->m_videoStr));
-    EXPECT_CALL(*testContext->m_glibWrapper, gStrrstr(testContext->m_videoStr, StrEq("audio/")))
-        .WillOnce(Return(nullptr));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrrstr(testContext->m_videoStr, StrEq("audio/"))).WillOnce(Return(nullptr));
     EXPECT_CALL(*testContext->m_glibWrapper, gFree(testContext->m_videoStr));
 }
 
@@ -1798,8 +1792,8 @@ void GenericTasksTestsBase::setPipelinePlaying()
 void GenericTasksTestsBase::shouldSetPlaybackRateAudioSinkNullSuccess()
 {
     EXPECT_CALL(*testContext->m_glibWrapper, gObjectGetStub(_, StrEq("audio-sink"), _));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstStructureNewDoubleStub(StrEq("custom-instant-rate-change"),
-                                                                      StrEq("rate"), G_TYPE_DOUBLE, kRate))
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstStructureNewDoubleStub(StrEq("custom-instant-rate-change"), StrEq("rate"), G_TYPE_DOUBLE, kRate))
         .WillOnce(Return(&testContext->m_structure));
     EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB, &testContext->m_structure))
         .WillOnce(Return(&testContext->m_event));
@@ -1809,8 +1803,8 @@ void GenericTasksTestsBase::shouldSetPlaybackRateAudioSinkNullSuccess()
 void GenericTasksTestsBase::shouldSetPlaybackRateAudioSinkNullFailure()
 {
     EXPECT_CALL(*testContext->m_glibWrapper, gObjectGetStub(_, StrEq("audio-sink"), _));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstStructureNewDoubleStub(StrEq("custom-instant-rate-change"),
-                                                                      StrEq("rate"), G_TYPE_DOUBLE, kRate))
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstStructureNewDoubleStub(StrEq("custom-instant-rate-change"), StrEq("rate"), G_TYPE_DOUBLE, kRate))
         .WillOnce(Return(&testContext->m_structure));
     EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB, &testContext->m_structure))
         .WillOnce(Return(&testContext->m_event));
@@ -1827,8 +1821,8 @@ void GenericTasksTestsBase::shouldSetPlaybackRateAudioSinkOtherThanAmlhala()
                 *elementPtr = testContext->m_element;
             }));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstStructureNewDoubleStub(StrEq("custom-instant-rate-change"),
-                                                                      StrEq("rate"), G_TYPE_DOUBLE, kRate))
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstStructureNewDoubleStub(StrEq("custom-instant-rate-change"), StrEq("rate"), G_TYPE_DOUBLE, kRate))
         .WillOnce(Return(&testContext->m_structure));
     EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB, &testContext->m_structure))
         .WillOnce(Return(&testContext->m_event));
@@ -1846,8 +1840,8 @@ void GenericTasksTestsBase::shouldFailToSetPlaybackRateAudioSinkOtherThanAmlhala
                 *elementPtr = testContext->m_element;
             }));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstStructureNewDoubleStub(StrEq("custom-instant-rate-change"),
-                                                                      StrEq("rate"), G_TYPE_DOUBLE, kRate))
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstStructureNewDoubleStub(StrEq("custom-instant-rate-change"), StrEq("rate"), G_TYPE_DOUBLE, kRate))
         .WillOnce(Return(&testContext->m_structure));
     EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB, &testContext->m_structure))
         .WillOnce(Return(&testContext->m_event));

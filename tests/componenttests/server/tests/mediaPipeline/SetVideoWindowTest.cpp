@@ -58,8 +58,7 @@ public:
                     *elementPtr = m_videoSink;
                 }));
         EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_videoSink))).WillOnce(Return(kVideoSinkTypeName.c_str()));
-        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("rectangle")))
-            .WillOnce(Return(&m_paramSpec));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("rectangle"))).WillOnce(Return(&m_paramSpec));
         EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_videoSink, StrEq("rectangle")));
         EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_videoSink));
     }
