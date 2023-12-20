@@ -26,16 +26,12 @@ add_compile_definitions(PROJECT_VER_MINOR="${PROJECT_VERSION_MINOR}")
 add_compile_definitions(PROJECT_VER_PATCH="${PROJECT_VERSION_PATCH}")
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_BUILD_TYPE Debug)
 
 if ( COVERAGE_ENABLED )
     add_compile_options(-coverage -fprofile-update=atomic)
 endif()
 
 add_compile_options(-Wall -Werror)
-add_compile_options(
-  "-Wall" "-fexceptions" "-O0" "-g3" "-ggdb"
-)
 
 option(RIALTO_LOG_FATAL_ENABLED "Enable fatal logging for RialtoServer" ON)
 option(RIALTO_LOG_ERROR_ENABLED "Enable error logging for RialtoServer" ON)

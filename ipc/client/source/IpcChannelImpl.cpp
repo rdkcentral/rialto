@@ -808,19 +808,9 @@ void ChannelImpl::processEventFromServer(const transport::EventFromServer &event
         return;
     }
 
-    std::cout << "lukewill: 1" << std::endl;
     const google::protobuf::Descriptor *kDescriptor = range.first->second.descriptor;
-    if (!kDescriptor)
-    {
-        std::cout << "lukewill: ERROR kDescriptor is NULL" << std::endl;
-    }
-    google::protobuf::MessageFactory* factory = google::protobuf::MessageFactory::generated_factory();
-    if (!factory)
-    {
-        std::cout << "lukewill: ERROR factory is NULL" << std::endl;
-    }
-    std::cout << "lukewill: 2" << std::endl;
-    const google::protobuf::Message *kPrototype = factory->GetPrototype(kDescriptor);
+    const google::protobuf::Message *kPrototype =
+        google::protobuf::MessageFactory::generated_factory()->GetPrototype(kDescriptor);
     if (!kPrototype)
     {
         RIALTO_IPC_LOG_ERROR("failed to create prototype for event %s", kEventName.c_str());

@@ -21,7 +21,6 @@
 #include "IGlibWrapper.h"
 #include "IGstWrapper.h"
 #include <string.h>
-#include <iostream>
 
 namespace
 {
@@ -62,40 +61,30 @@ bool isAudioDecoder(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, G
 
 std::string getUnderflowSignalName(const firebolt::rialto::wrappers::IGlibWrapper &glibWrapper, GstElement *element)
 {
-    std::cout << "getUnderflowSignalName 1" << std::endl;
     for (GType type = glibWrapper.gObjectType(element); type; type = glibWrapper.gTypeParent(type))
     {
-        std::cout << "getUnderflowSignalName 2" << std::endl;
         if (type == GST_TYPE_ELEMENT || type == GST_TYPE_OBJECT)
             break;
 
-        std::cout << "getUnderflowSignalName 3" << std::endl;
         if (type == GST_TYPE_BIN && glibWrapper.gObjectType(element) != GST_TYPE_BIN)
             continue;
 
-        std::cout << "getUnderflowSignalName 4" << std::endl;
         guint nsignals{0};
         guint *signals = glibWrapper.gSignalListIds(type, &nsignals);
         for (guint i = 0; i < nsignals; i++)
         {
-            std::cout << "getUnderflowSignalName 5" << std::endl;
             GSignalQuery query;
             glibWrapper.gSignalQuery(signals[i], &query);
-            std::cout << "getUnderflowSignalName 6" << std::endl;
             for (const char *signalName : underflowSignals)
             {
-                std::cout << "getUnderflowSignalName 7" << std::endl;
                 if (strcmp(signalName, query.signal_name) == 0)
                 {
-                    std::cout << "getUnderflowSignalName 8" << std::endl;
                     glibWrapper.gFree(signals);
                     return std::string(signalName);
                 }
             }
         }
-        std::cout << "getUnderflowSignalName 9" << std::endl;
         glibWrapper.gFree(signals);
-        std::cout << "getUnderflowSignalName 10" << std::endl;
     }
     return "";
 }
