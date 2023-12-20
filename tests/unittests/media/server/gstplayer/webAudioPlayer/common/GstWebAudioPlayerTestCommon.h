@@ -43,6 +43,7 @@ using ::testing::ByMove;
 using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::StrictMock;
+using ::testing::StrEq;
 
 class GstWebAudioPlayerTestCommon : public ::testing::Test
 {

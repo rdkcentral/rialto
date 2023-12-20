@@ -23,6 +23,7 @@
 
 using testing::_;
 using testing::Return;
+using testing::StrEq;
 
 namespace
 {
@@ -39,17 +40,17 @@ public:
 
     void willSwitchAudioSource()
     {
-        EXPECT_CALL(*m_gstWrapperMock, gstCapsNewEmptySimple(CharStrMatcher("audio/mpeg"))).WillOnce(Return(&m_audioCaps));
-        EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleStringStub(&m_audioCaps, CharStrMatcher("alignment"),
-                                                                  G_TYPE_STRING, CharStrMatcher("nal")));
-        EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleStringStub(&m_audioCaps, CharStrMatcher("stream-format"),
-                                                                  G_TYPE_STRING, CharStrMatcher("raw")));
+        EXPECT_CALL(*m_gstWrapperMock, gstCapsNewEmptySimple(StrEq("audio/mpeg"))).WillOnce(Return(&m_audioCaps));
+        EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleStringStub(&m_audioCaps, StrEq("alignment"),
+                                                                  G_TYPE_STRING, StrEq("nal")));
+        EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleStringStub(&m_audioCaps, StrEq("stream-format"),
+                                                                  G_TYPE_STRING, StrEq("raw")));
         EXPECT_CALL(*m_gstWrapperMock,
-                    gstCapsSetSimpleIntStub(&m_audioCaps, CharStrMatcher("mpegversion"), G_TYPE_INT, 4));
+                    gstCapsSetSimpleIntStub(&m_audioCaps, StrEq("mpegversion"), G_TYPE_INT, 4));
         EXPECT_CALL(*m_gstWrapperMock,
-                    gstCapsSetSimpleIntStub(&m_audioCaps, CharStrMatcher("channels"), G_TYPE_INT, kNumOfChannels));
+                    gstCapsSetSimpleIntStub(&m_audioCaps, StrEq("channels"), G_TYPE_INT, kNumOfChannels));
         EXPECT_CALL(*m_gstWrapperMock,
-                    gstCapsSetSimpleIntStub(&m_audioCaps, CharStrMatcher("rate"), G_TYPE_INT, kSampleRate));
+                    gstCapsSetSimpleIntStub(&m_audioCaps, StrEq("rate"), G_TYPE_INT, kSampleRate));
         EXPECT_CALL(*m_gstWrapperMock, gstCapsToString(&m_audioCaps)).WillOnce(Return(&m_audioCapsStr));
         EXPECT_CALL(*m_glibWrapperMock, gFree(&m_audioCapsStr));
         EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(&m_audioAppSrc)).WillOnce(Return(&m_oldCaps));

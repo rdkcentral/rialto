@@ -27,6 +27,7 @@
 using testing::_;
 using testing::Invoke;
 using testing::Return;
+using testing::StrEq;
 
 namespace
 {
@@ -50,7 +51,7 @@ public:
 
     void willRenderFrame()
     {
-        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&m_pipeline, CharStrMatcher("video-sink"), _))
+        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&m_pipeline, StrEq("video-sink"), _))
             .WillOnce(Invoke(
                 [&](gpointer, const gchar *, void *element)
                 {
@@ -59,9 +60,9 @@ public:
                 }));
         EXPECT_CALL(*m_glibWrapperMock, gTypeName(_)).WillOnce(Return(kVideoSinkTypeName.c_str()));
         EXPECT_CALL(*m_glibWrapperMock,
-                    gObjectClassFindProperty(G_OBJECT_GET_CLASS(m_videoSink), CharStrMatcher("frame-step-on-preroll")))
+                    gObjectClassFindProperty(G_OBJECT_GET_CLASS(m_videoSink), StrEq("frame-step-on-preroll")))
             .WillOnce(Return(&m_paramSpec));
-        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(_, CharStrMatcher("frame-step-on-preroll"))).Times(2);
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(_, StrEq("frame-step-on-preroll"))).Times(2);
         EXPECT_CALL(*m_gstWrapperMock, gstEventNewStep(GST_FORMAT_BUFFERS, 1, 1.0, true, false))
             .WillOnce(Return(&m_newStepEvent));
         EXPECT_CALL(*m_gstWrapperMock, gstElementSendEvent(_, &m_newStepEvent));

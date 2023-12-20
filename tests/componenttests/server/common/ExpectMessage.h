@@ -40,6 +40,7 @@ public:
             EXPECT_TRUE(m_channel); // assert not possible in constructor, just to fail test and not crash
             return;
         }
+        // TODO(RIALTO-448): Unexpected messages not checked
         m_subscriptionTag =
             m_channel->subscribe<MessageType>(std::bind(&ExpectMessage::onEvent, this, std::placeholders::_1));
     }
@@ -51,11 +52,18 @@ public:
             EXPECT_TRUE(m_channel); // assert not possible in destructor, just to fail test and not crash
             return;
         }
+        if (!m_getMessageCalled)
+        {
+            // Creating an ExpectMessage and not checking for getMessage suggests that we DONT expect a message.
+            // Creating unexpected ExpectMessage's can cause race conditions in IPC.
+            EXPECT_TRUE(m_getMessageCalled);
+        }
         m_channel->unsubscribe(m_subscriptionTag);
     }
 
     std::shared_ptr<MessageType> getMessage()
     {
+        m_getMessageCalled = true;
         std::unique_lock lock{m_messageMutex};
         m_messageCv.wait_for(lock, m_timeout, [&]() { return static_cast<bool>(m_message); });
         return m_message;
@@ -84,6 +92,7 @@ private:
     std::shared_ptr<MessageType> m_message{nullptr};
     std::function<bool(const MessageType &)> m_filter{[](const MessageType &) { return true; }};
     std::chrono::milliseconds m_timeout{200};
+    bool m_getMessageCalled{false};
 };
 } // namespace firebolt::rialto::server::ct
 

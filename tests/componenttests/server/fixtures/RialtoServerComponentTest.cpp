@@ -31,6 +31,7 @@
 using testing::_;
 using testing::AtLeast;
 using testing::Return;
+using testing::StrEq;
 
 namespace firebolt::rialto::server::ct
 {
@@ -53,9 +54,9 @@ RialtoServerComponentTest::~RialtoServerComponentTest()
 
 void RialtoServerComponentTest::willConfigureSocket()
 {
-    EXPECT_CALL(*m_linuxWrapperMock, chmod(CharStrMatcher(kSocketName), kDefaultPermissions)).WillOnce(Return(0));
-    EXPECT_CALL(*m_linuxWrapperMock, getpwnam_r(CharStrMatcher(kOwnerName), _, _, _, _)).WillOnce(Return(0));
-    EXPECT_CALL(*m_linuxWrapperMock, getgrnam_r(CharStrMatcher(kOwnerName), _, _, _, _)).WillOnce(Return(0));
+    EXPECT_CALL(*m_linuxWrapperMock, chmod(StrEq(kSocketName), kDefaultPermissions)).WillOnce(Return(0));
+    EXPECT_CALL(*m_linuxWrapperMock, getpwnam_r(StrEq(kOwnerName), _, _, _, _)).WillOnce(Return(0));
+    EXPECT_CALL(*m_linuxWrapperMock, getgrnam_r(StrEq(kOwnerName), _, _, _, _)).WillOnce(Return(0));
 }
 
 void RialtoServerComponentTest::configureSutInActiveState()

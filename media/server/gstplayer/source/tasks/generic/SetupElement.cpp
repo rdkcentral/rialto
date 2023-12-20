@@ -163,23 +163,30 @@ void SetupElement::execute() const
 
     if (isVideoDecoder(*m_gstWrapper, m_element))
     {
+        RIALTO_SERVER_LOG_DEBUG("SetupElement 1");
         std::string underflowSignalName = getUnderflowSignalName(*m_glibWrapper, m_element);
         if (!underflowSignalName.empty())
         {
+            RIALTO_SERVER_LOG_DEBUG("SetupElement 2");
             m_glibWrapper->gSignalConnect(m_element, underflowSignalName.c_str(), G_CALLBACK(videoUnderflowCallback),
                                           &m_player);
         }
+        RIALTO_SERVER_LOG_DEBUG("SetupElement 3");
     }
     else if (isAudioDecoder(*m_gstWrapper, m_element))
     {
+        RIALTO_SERVER_LOG_DEBUG("SetupElement 1");
         std::string underflowSignalName = getUnderflowSignalName(*m_glibWrapper, m_element);
         if (!underflowSignalName.empty())
         {
+            RIALTO_SERVER_LOG_DEBUG("SetupElement 2");
             m_glibWrapper->gSignalConnect(m_element, underflowSignalName.c_str(), G_CALLBACK(audioUnderflowCallback),
                                           &m_player);
         }
+        RIALTO_SERVER_LOG_DEBUG("SetupElement 3");
     }
 
     m_gstWrapper->gstObjectUnref(m_element);
+    RIALTO_SERVER_LOG_DEBUG("FINISHING SetupElement");
 }
 } // namespace firebolt::rialto::server::tasks::generic

@@ -27,6 +27,7 @@
 
 using testing::_;
 using testing::Return;
+using testing::StrEq;
 
 namespace firebolt::rialto::server::ct
 {
@@ -40,9 +41,9 @@ public:
 
     void willSetPlaybackRate()
     {
-        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&m_pipeline, CharStrMatcher("audio-sink"), _));
-        EXPECT_CALL(*m_gstWrapperMock, gstStructureNewDoubleStub(CharStrMatcher("custom-instant-rate-change"),
-                                                                 CharStrMatcher("rate"), G_TYPE_DOUBLE, kPlaybackRate))
+        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&m_pipeline, StrEq("audio-sink"), _));
+        EXPECT_CALL(*m_gstWrapperMock, gstStructureNewDoubleStub(StrEq("custom-instant-rate-change"),
+                                                                 StrEq("rate"), G_TYPE_DOUBLE, kPlaybackRate))
             .WillOnce(Return(&m_structure));
         EXPECT_CALL(*m_gstWrapperMock, gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB, &m_structure))
             .WillOnce(Return(&m_event));

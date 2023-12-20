@@ -32,6 +32,7 @@ using testing::DoAll;
 using testing::Return;
 using testing::SetArgPointee;
 using testing::StrictMock;
+using ::testing::StrEq;
 
 MATCHER_P2(QosInfoMatcher, expectedProcessed, expectedSropped, "")
 {
@@ -312,7 +313,7 @@ TEST_F(HandleBusMessageTest, shouldNotHandleQosMessageForUnknownSourceType)
     EXPECT_CALL(*m_gstWrapper, gstMessageParseQosStats(&message, _, _, _))
         .WillOnce(DoAll(SetArgPointee<1>(format), SetArgPointee<2>(processed), SetArgPointee<3>(dropped)));
     EXPECT_CALL(*m_gstWrapper, gstElementClassGetMetadata(GST_ELEMENT_GET_CLASS(GST_MESSAGE_SRC(&message)),
-                                                          CharStrMatcher(GST_ELEMENT_METADATA_KLASS)))
+                                                          StrEq(GST_ELEMENT_METADATA_KLASS)))
         .WillOnce(Return("Unknown"));
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&message));
 
@@ -336,7 +337,7 @@ TEST_F(HandleBusMessageTest, shouldHandleQosMessageForVideo)
     EXPECT_CALL(*m_gstWrapper, gstMessageParseQosStats(&message, _, _, _))
         .WillOnce(DoAll(SetArgPointee<1>(format), SetArgPointee<2>(processed), SetArgPointee<3>(dropped)));
     EXPECT_CALL(*m_gstWrapper, gstElementClassGetMetadata(GST_ELEMENT_GET_CLASS(GST_MESSAGE_SRC(&message)),
-                                                          CharStrMatcher(GST_ELEMENT_METADATA_KLASS)))
+                                                          StrEq(GST_ELEMENT_METADATA_KLASS)))
         .WillOnce(Return("Video"));
     EXPECT_CALL(m_gstPlayerClient,
                 notifyQos(firebolt::rialto::MediaSourceType::VIDEO, QosInfoMatcher(processed, dropped)));
@@ -361,7 +362,7 @@ TEST_F(HandleBusMessageTest, shouldHandleQosMessageForAudio)
     EXPECT_CALL(*m_gstWrapper, gstMessageParseQosStats(&message, _, _, _))
         .WillOnce(DoAll(SetArgPointee<1>(format), SetArgPointee<2>(processed), SetArgPointee<3>(dropped)));
     EXPECT_CALL(*m_gstWrapper, gstElementClassGetMetadata(GST_ELEMENT_GET_CLASS(GST_MESSAGE_SRC(&message)),
-                                                          CharStrMatcher(GST_ELEMENT_METADATA_KLASS)))
+                                                          StrEq(GST_ELEMENT_METADATA_KLASS)))
         .WillOnce(Return("Audio"));
     EXPECT_CALL(m_gstPlayerClient,
                 notifyQos(firebolt::rialto::MediaSourceType::AUDIO, QosInfoMatcher(processed, dropped)));

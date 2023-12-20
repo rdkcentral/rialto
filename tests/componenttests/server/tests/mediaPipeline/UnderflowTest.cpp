@@ -25,6 +25,7 @@
 using testing::_;
 using testing::Invoke;
 using testing::Return;
+using testing::StrEq;
 
 namespace
 {
@@ -61,7 +62,7 @@ public:
         EXPECT_CALL(*m_glibWrapperMock, gTypeName(_)).WillRepeatedly(Return(kElementName.c_str()));
         EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(m_elementFactory, GST_ELEMENT_FACTORY_TYPE_DECODER))
             .WillRepeatedly(Return(TRUE));
-        EXPECT_CALL(*m_glibWrapperMock, gStrHasPrefix(_, CharStrMatcher("amlhalasink"))).WillRepeatedly(Return(FALSE));
+        EXPECT_CALL(*m_glibWrapperMock, gStrHasPrefix(_, StrEq("amlhalasink"))).WillRepeatedly(Return(FALSE));
         EXPECT_CALL(*m_gstWrapperMock,
                     gstElementFactoryListIsType(m_elementFactory,
                                                 GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
@@ -111,7 +112,7 @@ public:
             .WillOnce(Return(TRUE))
             .RetiresOnSaturation();
         EXPECT_CALL(*m_glibWrapperMock, gObjectType(m_videoDecoder)).WillRepeatedly(Return(G_TYPE_PARAM));
-        EXPECT_CALL(*m_glibWrapperMock, gSignalConnect(_, CharStrMatcher("buffer-underflow-callback"), _, _))
+        EXPECT_CALL(*m_glibWrapperMock, gSignalConnect(_, StrEq("buffer-underflow-callback"), _, _))
             .WillOnce(Invoke(
                 [&](gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data)
                 {

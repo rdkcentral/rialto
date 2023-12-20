@@ -32,12 +32,7 @@ using namespace firebolt::rialto::wrappers;
 using ::testing::_;
 using ::testing::Return;
 using ::testing::StrictMock;
-
-MATCHER_P(CharStrMatcher, expectedStr, "")
-{
-    std::string actualStr = arg;
-    return expectedStr == actualStr;
-}
+using ::testing::StrEq;
 
 class RialtoServerInitGstSrcTest : public ::testing::Test
 {
@@ -80,8 +75,8 @@ protected:
  */
 TEST_F(RialtoServerInitGstSrcTest, NoRialtoSrc)
 {
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(CharStrMatcher("rialtosrc"))).WillOnce(Return(nullptr));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementRegister(0, CharStrMatcher("rialtosrc"), _, _));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(StrEq("rialtosrc"))).WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementRegister(0, StrEq("rialtosrc"), _, _));
 
     m_gstSrc->initSrc();
 }
@@ -94,7 +89,7 @@ TEST_F(RialtoServerInitGstSrcTest, RialtoSrcExists)
     // GstElementFactory is an opaque data structure
     GstObject srcFactory = {};
 
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(CharStrMatcher("rialtosrc")))
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(StrEq("rialtosrc")))
         .WillOnce(Return(reinterpret_cast<GstElementFactory *>(&srcFactory)));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(reinterpret_cast<GstElementFactory *>(&srcFactory)));
 
