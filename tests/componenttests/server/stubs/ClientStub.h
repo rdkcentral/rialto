@@ -20,9 +20,10 @@
 #ifndef FIREBOLT_RIALTO_SERVER_CT_CLIENT_STUB_H_
 #define FIREBOLT_RIALTO_SERVER_CT_CLIENT_STUB_H_
 
-#include "IStub.h"
 #include <memory>
 #include <thread>
+
+#include "IStub.h"
 
 namespace firebolt::rialto::server::ct
 {
@@ -34,6 +35,8 @@ public:
 
     std::shared_ptr<::firebolt::rialto::ipc::IChannel> getChannel() override;
     bool connect();
+
+    std::shared_ptr<::firebolt::rialto::ipc::IChannel> getIpcChannel();
 
 private:
     void ipcThread();

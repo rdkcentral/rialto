@@ -69,7 +69,75 @@ public:
 
     void sessionWillBeCreated()
     {
-        EXPECT_CALL(*m_ocdmSystemMock, createSession(_)).WillOnce(Return(ByMove(std::move(m_ocdmSession))));
+        EXPECT_CALL(*m_ocdmSystemMock, createSession(_))
+            .WillOnce(testing::Invoke(
+                [&](firebolt::rialto::wrappers::IOcdmSessionClient *client)
+                    -> std::unique_ptr<firebolt::rialto::wrappers::IOcdmSession>
+                {
+                    m_client = client;
+                    return std::move(m_ocdmSession);
+                }));
+    }
+
+    void generateRequest()
+    {
+        auto request{createGenerateRequestRequest(m_mediaKeysHandle, m_mediaKeySessionId)};
+
+        bool ok{false};
+
+        // The following should match the details within the message "request"
+        EXPECT_CALL(m_ocdmSessionMock, constructSession(KeySessionType::TEMPORARY, InitDataType::CENC, _, 3))
+            .WillOnce(testing::Invoke(
+                [&](KeySessionType sessionType, InitDataType initDataType, const uint8_t initData[],
+                    uint32_t initDataSize) -> MediaKeyErrorStatus
+                {
+                    ok = (initData[0] == 1 && initData[1] == 2 && initData[2] == 3);
+                    return MediaKeyErrorStatus::OK;
+                }));
+
+        ConfigureAction<GenerateRequest>(m_clientStub)
+            .send(request)
+            .expectSuccess()
+            .matchResponse([&](const firebolt::rialto::GenerateRequestResponse &resp)
+                           { EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK); });
+
+        ASSERT_EQ(ok, true);
+
+        const std::string kUrl{"http://fictionalUrlForTest"};
+        const std::vector<unsigned char> kLicenseRequestMessage{'d', 'z', 'f'};
+        std::condition_variable myCondVar;
+
+        bool callFlag{false};
+        std::unique_lock<std::mutex> lock1(m_mutex);
+
+        std::function<void(const std::shared_ptr<::firebolt::rialto::LicenseRequestEvent> &message)> handler{
+            [&](const std::shared_ptr<LicenseRequestEvent> &message)
+            {
+                std::unique_lock<std::mutex> lock2(m_mutex);
+
+                ASSERT_EQ(message->media_keys_handle(), m_mediaKeysHandle);
+                ASSERT_EQ(message->key_session_id(), m_mediaKeySessionId);
+                EXPECT_TRUE(message->url() == kUrl);
+                unsigned int max = message->license_request_message_size();
+                ASSERT_EQ(max, kLicenseRequestMessage.size());
+                for (unsigned int i = 0; i < max; ++i)
+                {
+                    ASSERT_EQ(message->license_request_message(i), kLicenseRequestMessage[i]);
+                }
+
+                callFlag = true;
+                myCondVar.notify_all();
+            }};
+        m_clientStub.getIpcChannel()->subscribe(handler);
+
+        m_client->onProcessChallenge(kUrl.c_str(), &kLicenseRequestMessage[0], kLicenseRequestMessage.size());
+
+        myCondVar.wait_for(lock1, std::chrono::milliseconds{110});
+        EXPECT_TRUE(callFlag);
+
+        // For teardown...
+        EXPECT_CALL(m_ocdmSessionMock, close()).WillOnce(Return(MediaKeyErrorStatus::OK));
+        EXPECT_CALL(m_ocdmSessionMock, destructSession()).WillOnce(Return(MediaKeyErrorStatus::OK));
     }
 
     int m_mediaKeysHandle{-1};
@@ -77,6 +145,8 @@ public:
     std::unique_ptr<StrictMock<wrappers::OcdmSessionMock>> m_ocdmSession{
         std::make_unique<StrictMock<wrappers::OcdmSessionMock>>()};
     StrictMock<wrappers::OcdmSessionMock> &m_ocdmSessionMock{*m_ocdmSession};
+    firebolt::rialto::wrappers::IOcdmSessionClient *m_client{0};
+    std::mutex m_mutex;
 };
 
 TEST_F(MediaKeysTest, shouldCreateMediaKeys)
@@ -101,4 +171,13 @@ TEST_F(MediaKeysTest, shouldCreateSession)
     sessionWillBeCreated();
     createSession();
 }
+
+TEST_F(MediaKeysTest, shouldGenerate)
+{
+    createMediaKeys();
+    sessionWillBeCreated();
+    createSession();
+    generateRequest();
+}
+
 } // namespace firebolt::rialto::server::ct

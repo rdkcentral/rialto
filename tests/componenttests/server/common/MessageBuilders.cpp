@@ -211,6 +211,18 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
+::firebolt::rialto::GenerateRequestRequest createGenerateRequestRequest(int mediaKeysHandle, int keySessionId)
+{
+    ::firebolt::rialto::GenerateRequestRequest request;
+    request.set_media_keys_handle(mediaKeysHandle);
+    request.set_key_session_id(keySessionId);
+    request.set_init_data_type(::firebolt::rialto::GenerateRequestRequest_InitDataType_CENC);
+    request.add_init_data(1);
+    request.add_init_data(2);
+    request.add_init_data(3);
+    return request;
+}
+
 ::firebolt::rialto::GetSharedMemoryRequest createGetSharedMemoryRequest()
 {
     return ::firebolt::rialto::GetSharedMemoryRequest();

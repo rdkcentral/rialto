@@ -210,6 +210,16 @@ struct CreateKeySession
     static constexpr FunctionType m_kFunction{&Stub::createKeySession};
 };
 
+struct GenerateRequest
+{
+    using RequestType = ::firebolt::rialto::GenerateRequestRequest;
+    using ResponseType = ::firebolt::rialto::GenerateRequestResponse;
+    using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::generateRequest};
+};
+
 // control module
 struct GetSharedMemory
 {
