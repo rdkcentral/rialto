@@ -278,6 +278,7 @@ TEST_F(SetPositionTest, SetPosition)
     gstNeedData(&m_audioAppSrc, kFrameCount);
     gstNeedData(&m_videoAppSrc, kFrameCount);
     {
+        std::cout << "NetworkStateChangeEvent 30" << std::endl;
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
         pushAudioData(kFramesToPush, kFrameCount);
@@ -447,6 +448,7 @@ TEST_F(SetPositionTest, SetPositionFailure)
     gstNeedData(&m_audioAppSrc, kFrameCount);
     gstNeedData(&m_videoAppSrc, kFrameCount);
     {
+        std::cout << "NetworkStateChangeEvent 31" << std::endl;
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
         pushAudioData(kFramesToPush, kFrameCount);

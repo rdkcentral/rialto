@@ -35,6 +35,7 @@ template <typename MessageType> class ExpectMessage
 public:
     explicit ExpectMessage(IStub &stub) : m_channel{stub.getChannel()}
     {
+        std::cout << "ExpectMessage" << std::endl;
         if (!m_channel)
         {
             EXPECT_TRUE(m_channel); // assert not possible in constructor, just to fail test and not crash
@@ -47,6 +48,7 @@ public:
 
     ~ExpectMessage()
     {
+        std::cout << "~ExpectMessage" << std::endl;
         if (!m_channel)
         {
             EXPECT_TRUE(m_channel); // assert not possible in destructor, just to fail test and not crash
@@ -63,9 +65,11 @@ public:
 
     std::shared_ptr<MessageType> getMessage()
     {
+        std::cout << "getMessage start" << std::endl;
         m_getMessageCalled = true;
         std::unique_lock lock{m_messageMutex};
         m_messageCv.wait_for(lock, m_timeout, [&]() { return static_cast<bool>(m_message); });
+        std::cout << "getMessage stop" << std::endl;
         return m_message;
     }
 

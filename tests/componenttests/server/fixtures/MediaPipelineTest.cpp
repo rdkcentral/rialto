@@ -47,6 +47,7 @@ const std::string kPausedStateName{"PAUSED"};
 const std::string kPlayingStateName{"PLAYING"};
 constexpr GType kGstPlayFlagsType{static_cast<GType>(123)};
 constexpr unsigned kNeededDataLength{1};
+constexpr std::chrono::milliseconds kWorkerTimeout{200};
 } // namespace
 
 namespace firebolt::rialto::server::ct
@@ -115,7 +116,8 @@ void MediaPipelineTest::audioSourceWillBeAttached()
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("appsrc"), StrEq("audsrc")))
         .WillOnce(Return(GST_ELEMENT(&m_audioAppSrc)));
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(&m_audioAppSrc, &m_audioCaps));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_audioCaps));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_audioCaps))
+        .WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
 }
 
 void MediaPipelineTest::videoSourceWillBeAttached()
@@ -132,7 +134,8 @@ void MediaPipelineTest::videoSourceWillBeAttached()
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("appsrc"), StrEq("vidsrc")))
         .WillOnce(Return(GST_ELEMENT(&m_videoAppSrc)));
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(&m_videoAppSrc, &m_videoCaps));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_videoCaps));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_videoCaps))
+        .WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
 }
 
 void MediaPipelineTest::sourceWillBeSetup()
@@ -172,7 +175,7 @@ void MediaPipelineTest::willFinishSetupAndAddSource()
 }
 
 void MediaPipelineTest::willPushAudioData(const std::unique_ptr<IMediaPipeline::MediaSegment> &segment,
-                                          GstBuffer &buffer, GstCaps &capsCopy)
+                                          GstBuffer &buffer, GstCaps &capsCopy, bool shouldNotify)
 {
     std::string dataCopy(segment->getData(), segment->getData() + segment->getDataLength());
     EXPECT_CALL(*m_gstWrapperMock, gstBufferNewAllocate(nullptr, segment->getDataLength(), nullptr))
@@ -188,11 +191,23 @@ void MediaPipelineTest::willPushAudioData(const std::unique_ptr<IMediaPipeline::
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(&m_audioAppSrc, &capsCopy));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_audioCaps)).RetiresOnSaturation();
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&capsCopy));
-    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(&m_audioAppSrc, _)).RetiresOnSaturation();
+    if (!shouldNotify)
+    {
+        EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(&m_audioAppSrc, _)).InSequence(m_writeBufferSeq).RetiresOnSaturation();
+    }
+    else
+    {
+        EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(&m_audioAppSrc, _)).InSequence(m_writeBufferSeq)
+            .WillOnce(Invoke([this](GstAppSrc *appsrc, GstBuffer *buffer) {
+                workerFinished();
+                return GST_FLOW_OK;
+            })).RetiresOnSaturation();
+    }
 }
 
+// Only need to wait/notify here if there is no waiting for the NeedData Event
 void MediaPipelineTest::willPushVideoData(const std::unique_ptr<IMediaPipeline::MediaSegment> &segment,
-                                          GstBuffer &buffer, GstCaps &capsCopy)
+                                          GstBuffer &buffer, GstCaps &capsCopy, bool shouldNotify)
 {
     std::string dataCopy(segment->getData(), segment->getData() + segment->getDataLength());
     EXPECT_CALL(*m_gstWrapperMock, gstBufferNewAllocate(nullptr, segment->getDataLength(), nullptr))
@@ -209,7 +224,18 @@ void MediaPipelineTest::willPushVideoData(const std::unique_ptr<IMediaPipeline::
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(&m_videoAppSrc, &capsCopy));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_videoCaps)).RetiresOnSaturation();
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&capsCopy));
-    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(&m_videoAppSrc, _)).RetiresOnSaturation();
+    if (!shouldNotify)
+    {
+        EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(&m_videoAppSrc, _)).InSequence(m_writeBufferSeq).RetiresOnSaturation();
+    }
+    else
+    {
+        EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(&m_videoAppSrc, _)).InSequence(m_writeBufferSeq)
+            .WillOnce(Invoke([this](GstAppSrc *appsrc, GstBuffer *buffer) {
+                workerFinished();
+                return GST_FLOW_OK;
+            })).RetiresOnSaturation();
+    }
 }
 
 void MediaPipelineTest::willPause()
@@ -277,6 +303,7 @@ void MediaPipelineTest::createSession()
 
 void MediaPipelineTest::load()
 {
+    std::cout << "NetworkStateChangeEvent 1" << std::endl;
     ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
     auto request = createLoadRequest(m_sessionId);
@@ -295,6 +322,7 @@ void MediaPipelineTest::attachAudioSource()
         .send(attachAudioSourceReq)
         .expectSuccess()
         .matchResponse([&](const auto &resp) { m_audioSourceId = resp.source_id(); });
+    waitWorker();
 }
 
 void MediaPipelineTest::attachVideoSource()
@@ -304,6 +332,7 @@ void MediaPipelineTest::attachVideoSource()
         .send(attachVideoSourceReq)
         .expectSuccess()
         .matchResponse([&](const auto &resp) { m_videoSourceId = resp.source_id(); });
+    waitWorker();
 }
 
 void MediaPipelineTest::setupSource()
@@ -313,6 +342,7 @@ void MediaPipelineTest::setupSource()
 
 void MediaPipelineTest::indicateAllSourcesAttached()
 {
+    std::cout << "PlaybackStateChangeEvent 2" << std::endl;
     ExpectMessage<firebolt::rialto::PlaybackStateChangeEvent> expectedPlaybackStateChange(m_clientStub);
 
     auto allSourcesAttachedReq{createAllSourcesAttachedRequest(m_sessionId)};
@@ -329,6 +359,7 @@ void MediaPipelineTest::pause()
     auto pauseReq{createPauseRequest(m_sessionId)};
     ConfigureAction<Pause>(m_clientStub).send(pauseReq).expectSuccess();
 
+    std::cout << "PlaybackStateChangeEvent 3" << std::endl;
     ExpectMessage<firebolt::rialto::PlaybackStateChangeEvent> expectedPlaybackStateChange{m_clientStub};
 
     m_gstreamerStub.sendStateChanged(GST_STATE_NULL, GST_STATE_PAUSED, GST_STATE_NULL);
@@ -344,6 +375,7 @@ void MediaPipelineTest::gstNeedData(GstAppSrc *appSrc, int frameCount)
     const int kSourceId = ((appSrc == &m_audioAppSrc) ? m_audioSourceId : m_videoSourceId);
     auto &needDataPtr = ((appSrc == &m_audioAppSrc) ? m_lastAudioNeedData : m_lastVideoNeedData);
 
+    std::cout << "NeedMediaDataEvent 4" << std::endl;
     ExpectMessage<firebolt::rialto::NeedMediaDataEvent> expectedNeedData{m_clientStub};
     m_gstreamerStub.needData(appSrc, kNeededDataLength);
     auto receivedNeedData{expectedNeedData.getMessage()};
@@ -376,10 +408,11 @@ void MediaPipelineTest::pushAudioData(unsigned dataCountToPush, int needDataFram
     for (unsigned i = 0; i < dataCountToPush; ++i)
     {
         EXPECT_EQ(writer->writeFrame(segments[i]), AddSegmentStatus::OK);
-        willPushAudioData(segments[i], buffers[i], copies[i]);
+        willPushAudioData(segments[i], buffers[i], copies[i], false);
     }
 
     // Finally, send HaveData and receive new NeedData
+    std::cout << "NeedMediaDataEvent 5" << std::endl;
     ExpectMessage<firebolt::rialto::NeedMediaDataEvent> expectedNeedData{m_clientStub};
     auto haveDataReq{createHaveDataRequest(m_sessionId, writer->getNumFrames(), m_lastAudioNeedData->request_id())};
     ConfigureAction<HaveData>(m_clientStub).send(haveDataReq).expectSuccess();
@@ -413,10 +446,11 @@ void MediaPipelineTest::pushVideoData(unsigned dataCountToPush, int needDataFram
     for (unsigned i = 0; i < dataCountToPush; ++i)
     {
         EXPECT_EQ(writer->writeFrame(segments[i]), AddSegmentStatus::OK);
-        willPushVideoData(segments[i], buffers[i], copies[i]);
+        willPushVideoData(segments[i], buffers[i], copies[i], false);
     }
 
     // Finally, send HaveData and receive new NeedData
+    std::cout << "NeedMediaDataEvent 6" << std::endl;
     ExpectMessage<firebolt::rialto::NeedMediaDataEvent> expectedNeedData{m_clientStub};
     auto haveDataReq{createHaveDataRequest(m_sessionId, writer->getNumFrames(), m_lastVideoNeedData->request_id())};
     ConfigureAction<HaveData>(m_clientStub).send(haveDataReq).expectSuccess();
@@ -450,13 +484,22 @@ void MediaPipelineTest::eosAudio(unsigned dataCountToPush)
     for (unsigned i = 0; i < dataCountToPush; ++i)
     {
         EXPECT_EQ(writer->writeFrame(segments[i]), AddSegmentStatus::OK);
-        willPushAudioData(segments[i], buffers[i], copies[i]);
+        // On the last frame, trigger notification
+        if (i < dataCountToPush - 1)
+        {
+            willPushAudioData(segments[i], buffers[i], copies[i], false);
+        }
+        else
+        {
+            willPushAudioData(segments[i], buffers[i], copies[i], true);
+        }
     }
 
     // Finally, send HaveData with EOS status
     auto haveDataReq{createHaveDataRequest(m_sessionId, writer->getNumFrames(), m_lastAudioNeedData->request_id())};
     haveDataReq.set_status(HaveDataRequest_MediaSourceStatus_EOS);
     ConfigureAction<HaveData>(m_clientStub).send(haveDataReq).expectSuccess();
+    waitWorker();
 }
 
 void MediaPipelineTest::eosVideo(unsigned dataCountToPush)
@@ -481,13 +524,22 @@ void MediaPipelineTest::eosVideo(unsigned dataCountToPush)
     for (unsigned i = 0; i < dataCountToPush; ++i)
     {
         EXPECT_EQ(writer->writeFrame(segments[i]), AddSegmentStatus::OK);
-        willPushVideoData(segments[i], buffers[i], copies[i]);
+        // On the last frame, trigger notification
+        if (i < dataCountToPush - 1)
+        {
+            willPushVideoData(segments[i], buffers[i], copies[i], false);
+        }
+        else
+        {
+            willPushVideoData(segments[i], buffers[i], copies[i], true);
+        }
     }
 
     // Finally, send HaveData with EOS status
     auto haveDataReq{createHaveDataRequest(m_sessionId, writer->getNumFrames(), m_lastVideoNeedData->request_id())};
     haveDataReq.set_status(HaveDataRequest_MediaSourceStatus_EOS);
     ConfigureAction<HaveData>(m_clientStub).send(haveDataReq).expectSuccess();
+    waitWorker();
 }
 
 void MediaPipelineTest::play()
@@ -495,6 +547,7 @@ void MediaPipelineTest::play()
     auto playReq{createPlayRequest(m_sessionId)};
     ConfigureAction<Play>(m_clientStub).send(playReq).expectSuccess();
 
+    std::cout << "PlaybackStateChangeEvent 7" << std::endl;
     ExpectMessage<firebolt::rialto::PlaybackStateChangeEvent> expectedPlaybackStateChange{m_clientStub};
 
     m_gstreamerStub.sendStateChanged(GST_STATE_NULL, GST_STATE_PLAYING, GST_STATE_NULL);
@@ -507,6 +560,7 @@ void MediaPipelineTest::play()
 
 void MediaPipelineTest::gstNotifyEos()
 {
+    std::cout << "PlaybackStateChangeEvent 8" << std::endl;
     ExpectMessage<firebolt::rialto::PlaybackStateChangeEvent> expectedPlaybackStateChange{m_clientStub};
 
     m_gstreamerStub.sendEos();
@@ -529,6 +583,7 @@ void MediaPipelineTest::stop()
     auto stopReq{createStopRequest(m_sessionId)};
     ConfigureAction<Stop>(m_clientStub).send(stopReq).expectSuccess();
 
+    std::cout << "PlaybackStateChangeEvent 1" << std::endl;
     ExpectMessage<firebolt::rialto::PlaybackStateChangeEvent> expectedPlaybackStateChange{m_clientStub};
 
     m_gstreamerStub.sendStateChanged(GST_STATE_NULL, GST_STATE_NULL, GST_STATE_NULL);
@@ -552,5 +607,23 @@ void MediaPipelineTest::initShm()
         .send(getShmReq)
         .expectSuccess()
         .matchResponse([&](const auto &resp) { m_shmHandle.init(resp.fd(), resp.size()); });
+}
+
+void MediaPipelineTest::waitWorker()
+{
+    std::unique_lock<std::mutex> locker(m_workerLock);
+    if (!m_workerDone)
+    {
+        bool status = m_workerCond.wait_for(locker, kWorkerTimeout, [this]() { return m_workerDone; });
+        ASSERT_TRUE(status);
+    }
+    m_workerDone = false;
+}
+
+void MediaPipelineTest::workerFinished()
+{
+    std::unique_lock<std::mutex> locker(m_workerLock);
+    m_workerDone = true;
+    m_workerCond.notify_all();
 }
 } // namespace firebolt::rialto::server::ct

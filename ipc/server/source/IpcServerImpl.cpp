@@ -76,6 +76,7 @@ ServerImpl::ServerImpl()
     : m_pollFd(-1), m_wakeEventFd(-1), m_socketIdCounter(FIRST_LISTENING_SOCKET_ID),
       m_clientIdCounter(FIRST_CLIENT_ID), m_recvDataBuf{0}, m_recvCtrlBuf{0}
 {
+    RIALTO_IPC_LOG_ERROR("lukewill: ServerImpl");
     // create the eventfd use to wake the poll loop
     m_wakeEventFd = eventfd(0, EFD_CLOEXEC);
     if (m_wakeEventFd < 0)
@@ -102,6 +103,11 @@ ServerImpl::ServerImpl()
 
 ServerImpl::~ServerImpl()
 {
+    for (const auto &client : m_clients)
+    {
+        disconnectClient(client.first);
+    }
+    RIALTO_IPC_LOG_ERROR("lukewill: ~ServerImpl");
     if ((m_pollFd >= 0) && (close(m_pollFd) != 0))
         RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to close epoll");
 
@@ -112,6 +118,7 @@ ServerImpl::~ServerImpl()
     {
         const Socket &kSocket = entry.second;
 
+        RIALTO_IPC_LOG_ERROR("lukewill: socket");
         if (unlink(kSocket.sockPath.c_str()) != 0)
             RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to remove socket @ '%s'", kSocket.sockPath.c_str());
         if (close(kSocket.sockFd) != 0)
@@ -183,6 +190,7 @@ bool ServerImpl::getSocketLock(Socket *socket)
  */
 void ServerImpl::closeListeningSocket(Socket *socket)
 {
+    RIALTO_IPC_LOG_ERROR("lukewill: closeListeningSocket");
     if (!socket->sockPath.empty() && (unlink(socket->sockPath.c_str()) != 0) && (errno != ENOENT))
         RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to remove socket @ '%s'", socket->sockPath.c_str());
     if ((socket->sockFd >= 0) && (close(socket->sockFd) != 0))
@@ -204,6 +212,7 @@ bool ServerImpl::addSocket(const std::string &socketPath,
                            std::function<void(const std::shared_ptr<IClient> &)> clientConnectedCb,
                            std::function<void(const std::shared_ptr<IClient> &)> clientDisconnectedCb)
 {
+    RIALTO_IPC_LOG_ERROR("lukewill: addSocket");
     // store the path
     Socket socket;
     socket.sockPath = socketPath;

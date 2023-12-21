@@ -46,12 +46,15 @@ using testing::DoAll;
 using testing::Return;
 using testing::SetArgPointee;
 using testing::StrEq;
+using testing::Invoke;
 
 namespace firebolt::rialto::server::ct
 {
 class DualVideoPlaybackTest : public MediaPipelineTest
 {
 public:
+    testing::Sequence m_writeBufferSeq;
+
     DualVideoPlaybackTest() = default;
     ~DualVideoPlaybackTest() override = default;
 
@@ -117,7 +120,8 @@ public:
         EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("appsrc"), StrEq("vidsrc")))
             .WillOnce(Return(GST_ELEMENT(&m_secondaryVideoAppSrc)));
         EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(&m_secondaryVideoAppSrc, &m_videoCaps));
-        EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_videoCaps));
+        EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_videoCaps))
+            .WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
     }
 
     void secondarySourceWillBeSetup()
@@ -173,7 +177,7 @@ public:
     }
 
     void willPushSecondaryVideoData(const std::unique_ptr<IMediaPipeline::MediaSegment> &segment, GstBuffer &buffer,
-                                    GstCaps &capsCopy)
+                                    GstCaps &capsCopy, bool shouldNotify)
     {
         std::string dataCopy(segment->getData(), segment->getData() + segment->getDataLength());
         EXPECT_CALL(*m_gstWrapperMock, gstBufferNewAllocate(nullptr, segment->getDataLength(), nullptr))
@@ -193,7 +197,18 @@ public:
         EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(&m_secondaryVideoAppSrc, &capsCopy));
         EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_videoCaps)).RetiresOnSaturation();
         EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&capsCopy));
-        EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(&m_secondaryVideoAppSrc, _)).RetiresOnSaturation();
+        if (!shouldNotify)
+        {
+            EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(&m_secondaryVideoAppSrc, _)).InSequence(m_writeBufferSeq).RetiresOnSaturation();
+        }
+        else
+        {
+            EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(&m_secondaryVideoAppSrc, _)).InSequence(m_writeBufferSeq)
+                .WillOnce(Invoke([this](GstAppSrc *appsrc, GstBuffer *buffer) {
+                    workerFinished();
+                    return GST_FLOW_OK;
+                })).RetiresOnSaturation();
+        }
     }
 
     void secondaryWillStop()
@@ -233,6 +248,7 @@ public:
 
     void loadSecondary()
     {
+        std::cout << "NetworkStateChangeEvent 10" << std::endl;
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
         auto request = createLoadRequest(m_secondarySessionId);
@@ -252,12 +268,14 @@ public:
             .send(attachVideoSourceReq)
             .expectSuccess()
             .matchResponse([&](const auto &resp) { m_secondaryVideoSourceId = resp.source_id(); });
+        waitWorker();
     }
 
     void setupSecondarySource() { m_secondaryGstreamerStub.setupRialtoSource(); }
 
     void indicateAllSecondarySourcesAttached()
     {
+        std::cout << "PlaybackStateChangeEvent 11" << std::endl;
         ExpectMessage<firebolt::rialto::PlaybackStateChangeEvent> expectedPlaybackStateChange(m_clientStub);
 
         auto allSourcesAttachedReq{createAllSourcesAttachedRequest(m_secondarySessionId)};
@@ -274,6 +292,7 @@ public:
         auto playReq{createPlayRequest(m_secondarySessionId)};
         ConfigureAction<Play>(m_clientStub).send(playReq).expectSuccess();
 
+        std::cout << "PlaybackStateChangeEvent 12" << std::endl;
         ExpectMessage<firebolt::rialto::PlaybackStateChangeEvent> expectedPlaybackStateChange{m_clientStub};
         expectedPlaybackStateChange.setFilter([&](const auto &event)
                                               { return event.session_id() == m_secondarySessionId; });
@@ -289,6 +308,7 @@ public:
 
     void secondaryGstNeedData()
     {
+        std::cout << "NeedMediaDataEvent 13" << std::endl;
         ExpectMessage<firebolt::rialto::NeedMediaDataEvent> expectedNeedData{m_clientStub};
         m_secondaryGstreamerStub.needData(&m_secondaryVideoAppSrc, 1);
         auto receivedNeedData{expectedNeedData.getMessage()};
@@ -318,9 +338,10 @@ public:
 
         // Write frames to shm and add gst expects
         EXPECT_EQ(writer->writeFrame(segment), AddSegmentStatus::OK);
-        willPushSecondaryVideoData(segment, buffer, capsCopy);
+        willPushSecondaryVideoData(segment, buffer, capsCopy, false);
 
         // Finally, send HaveData and receive new NeedData
+        std::cout << "NeedMediaDataEvent 14" << std::endl;
         ExpectMessage<firebolt::rialto::NeedMediaDataEvent> expectedNeedData{m_clientStub};
         auto haveDataReq{
             createHaveDataRequest(m_secondarySessionId, writer->getNumFrames(), m_lastSecondaryNeedData->request_id())};
@@ -352,18 +373,19 @@ public:
 
         // Write frames to shm and add gst expects
         EXPECT_EQ(writer->writeFrame(segment), AddSegmentStatus::OK);
-        willPushSecondaryVideoData(segment, buffer, capsCopy);
+        willPushSecondaryVideoData(segment, buffer, capsCopy, true);
 
-        // Finally, send HaveData and receive new NeedData
-        ExpectMessage<firebolt::rialto::NeedMediaDataEvent> expectedNeedData{m_clientStub};
+        // Finally, send HaveData with EOS status
         auto haveDataReq{
             createHaveDataRequest(m_secondarySessionId, writer->getNumFrames(), m_lastSecondaryNeedData->request_id())};
         haveDataReq.set_status(HaveDataRequest_MediaSourceStatus_EOS);
         ConfigureAction<HaveData>(m_clientStub).send(haveDataReq).expectSuccess();
+        waitWorker();
     }
 
     void secondaryGstNotifyEos()
     {
+        std::cout << "PlaybackStateChangeEvent 15" << std::endl;
         ExpectMessage<firebolt::rialto::PlaybackStateChangeEvent> expectedPlaybackStateChange{m_clientStub};
 
         m_secondaryGstreamerStub.sendEos();
@@ -380,6 +402,7 @@ public:
         auto stopReq{createStopRequest(m_secondarySessionId)};
         ConfigureAction<Stop>(m_clientStub).send(stopReq).expectSuccess();
 
+        std::cout << "PlaybackStateChangeEvent 16" << std::endl;
         ExpectMessage<firebolt::rialto::PlaybackStateChangeEvent> expectedPlaybackStateChange{m_clientStub};
         expectedPlaybackStateChange.setFilter([&](const auto &event)
                                               { return event.session_id() == m_secondarySessionId; });
@@ -611,6 +634,7 @@ TEST_F(DualVideoPlaybackTest, playback)
     gstNeedData(&m_audioAppSrc, kFrameCountInPlayingState);
     gstNeedData(&m_videoAppSrc, kFrameCountInPlayingState);
     {
+        std::cout << "NetworkStateChangeEvent 17" << std::endl;
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
         pushAudioData(kFramesToPush, kFrameCountInPlayingState);
@@ -625,6 +649,7 @@ TEST_F(DualVideoPlaybackTest, playback)
     // Step 10: Push initial data for secondary session
     secondaryGstNeedData();
     {
+        std::cout << "NetworkStateChangeEvent 18" << std::endl;
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
         pushSecondaryVideoData();

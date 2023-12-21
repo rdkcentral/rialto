@@ -92,10 +92,11 @@ public:
 
         // Write frame to shm and add gst expects
         EXPECT_EQ(writer->writeFrame(segment), AddSegmentStatus::OK);
-        willPushAudioData(segment, buffer, capsCopy);
+        willPushAudioData(segment, buffer, capsCopy, false);
         willAddProtectionMetadata(segment, buffer, keyIdBuffer, initVectorBuffer, subsamplesBuffer, subsamples, meta);
 
         // Finally, send HaveData and receive new NeedData
+        std::cout << "NeedMediaDataEvent 19" << std::endl;
         ExpectMessage<firebolt::rialto::NeedMediaDataEvent> expectedNeedData{m_clientStub};
         auto haveDataReq{createHaveDataRequest(m_sessionId, writer->getNumFrames(), m_lastAudioNeedData->request_id())};
         ConfigureAction<HaveData>(m_clientStub).send(haveDataReq).expectSuccess();
@@ -130,10 +131,11 @@ public:
 
         // Write frame to shm and add gst expects
         EXPECT_EQ(writer->writeFrame(segment), AddSegmentStatus::OK);
-        willPushVideoData(segment, buffer, capsCopy);
+        willPushVideoData(segment, buffer, capsCopy, false);
         willAddProtectionMetadata(segment, buffer, keyIdBuffer, initVectorBuffer, subsamplesBuffer, subsamples, meta);
 
         // Finally, send HaveData and receive new NeedData
+        std::cout << "NeedMediaDataEvent 20" << std::endl;
         ExpectMessage<firebolt::rialto::NeedMediaDataEvent> expectedNeedData{m_clientStub};
         auto haveDataReq{createHaveDataRequest(m_sessionId, writer->getNumFrames(), m_lastVideoNeedData->request_id())};
         ConfigureAction<HaveData>(m_clientStub).send(haveDataReq).expectSuccess();
@@ -296,6 +298,7 @@ TEST_F(EncryptedPlaybackTest, EncryptedPlayback)
     gstNeedData(&m_audioAppSrc, kFrameCountInPausedState);
     gstNeedData(&m_videoAppSrc, kFrameCountInPausedState);
     {
+        std::cout << "NetworkStateChangeEvent 21" << std::endl;
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
         pushEncryptedAudioData(kFrameCountInPausedState);

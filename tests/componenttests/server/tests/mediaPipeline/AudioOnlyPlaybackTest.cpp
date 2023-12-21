@@ -154,6 +154,7 @@ TEST_F(MediaPipelineTest, AudioOnlyPlayback)
     // Step 6: Notify buffered
     gstNeedData(&m_audioAppSrc, kFrameCountInPausedState);
     {
+        std::cout << "NetworkStateChangeEvent 9" << std::endl;
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
         pushAudioData(kFramesToPush, kFrameCountInPausedState);

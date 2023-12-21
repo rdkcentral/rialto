@@ -59,7 +59,8 @@ public:
                                                         GST_ELEMENT(&m_audioAppSrc), _))
             .WillOnce(Return(true));
         EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_oldCaps));
-        EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_audioCaps));
+        EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_audioCaps))
+            .WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
     }
 
 private:

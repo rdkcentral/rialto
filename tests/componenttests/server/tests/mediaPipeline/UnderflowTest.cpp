@@ -101,7 +101,8 @@ public:
                     return kSignalId;
                 }))
             .RetiresOnSaturation();
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_audioDecoder));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_audioDecoder))
+            .WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
     }
 
     void willSetupVideoDecoder()
@@ -121,12 +122,21 @@ public:
                     return kSignalId;
                 }))
             .RetiresOnSaturation();
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_videoDecoder));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_videoDecoder))
+            .WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
     }
 
-    void setupAudioDecoder() { m_gstreamerStub.setupElement(m_audioDecoder); }
+    void setupAudioDecoder() 
+    { 
+        m_gstreamerStub.setupElement(m_audioDecoder); 
+        waitWorker();
+    }
 
-    void setupVideoDecoder() { m_gstreamerStub.setupElement(m_videoDecoder); }
+    void setupVideoDecoder() 
+    { 
+        m_gstreamerStub.setupElement(m_videoDecoder);
+        waitWorker();
+    }
 
     void audioUnderflow()
     {
@@ -330,6 +340,7 @@ TEST_F(UnderflowTest, underflow)
     gstNeedData(&m_audioAppSrc, kFrameCountInPausedState);
     gstNeedData(&m_videoAppSrc, kFrameCountInPausedState);
     {
+        std::cout << "NetworkStateChangeEvent 32" << std::endl;
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
         pushAudioData(kFramesToPush, kFrameCountInPausedState);

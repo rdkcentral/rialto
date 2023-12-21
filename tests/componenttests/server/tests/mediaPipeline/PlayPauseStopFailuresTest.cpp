@@ -59,6 +59,7 @@ public:
 
     void pauseAndExpectFailure()
     {
+        std::cout << "PlaybackStateChangeEvent 24" << std::endl;
         ExpectMessage<firebolt::rialto::PlaybackStateChangeEvent> expectedPlaybackStateChange{m_clientStub};
 
         auto pauseReq{createPauseRequest(m_sessionId)};
@@ -73,6 +74,7 @@ public:
 
     void playAndExpectFailure()
     {
+        std::cout << "PlaybackStateChangeEvent 25" << std::endl;
         ExpectMessage<firebolt::rialto::PlaybackStateChangeEvent> expectedPlaybackStateChange{m_clientStub};
 
         auto playReq{createPlayRequest(m_sessionId)};
@@ -87,6 +89,7 @@ public:
 
     void stopAndExpectFailure()
     {
+        std::cout << "PlaybackStateChangeEvent 26" << std::endl;
         ExpectMessage<firebolt::rialto::PlaybackStateChangeEvent> expectedPlaybackStateChange{m_clientStub};
 
         auto stopReq{createStopRequest(m_sessionId)};
