@@ -138,7 +138,7 @@ def runTests (suites, doListTests, gtestFilter, outputDir, resultsFile, xmlFile,
             executeCmd.append('--gtest_list_tests')
         elif gtestFilter != None:
             executeCmd.append('--gtest_filter=' + gtestFilter)
-        executeCmd.append('--gtest_repeat=100')
+        executeCmd.append('--gtest_repeat=20')
 
         # Dont output as xml for valgrind
         # Googletest xml output flags an UninitCondition error when converting to xml

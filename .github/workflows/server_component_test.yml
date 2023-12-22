@@ -60,9 +60,6 @@ jobs:
       # Run the build script for server
       - name: build_ct.py script server
         run: |
-              ulimit -n
-              ulimit -n 1000
-              ulimit -n
               python build_ct.py -c -xml -f -cov -s server
 
       # Processes the results of the component test and the lcov output

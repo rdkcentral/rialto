@@ -653,6 +653,7 @@ void GstGenericPlayer::scheduleAudioUnderflow()
     if (m_workerThread)
     {
         bool underflowEnabled = m_context.isPlaying && !m_context.audioSourceRemoved;
+        RIALTO_SERVER_LOG_DEBUG("lukewill: scheduleAudioUnderflow %u, %u", m_context.audioUnderflowOccured, underflowEnabled);
         m_workerThread->enqueueTask(m_taskFactory->createUnderflow(m_context, *this, m_context.audioUnderflowOccured,
                                                                    underflowEnabled, MediaSourceType::AUDIO));
     }
@@ -663,6 +664,7 @@ void GstGenericPlayer::scheduleVideoUnderflow()
     if (m_workerThread)
     {
         bool underflowEnabled = m_context.isPlaying;
+    RIALTO_SERVER_LOG_DEBUG("lukewill: scheduleVideoUnderflow %u, %u", m_context.videoUnderflowOccured, underflowEnabled);
         m_workerThread->enqueueTask(m_taskFactory->createUnderflow(m_context, *this, m_context.videoUnderflowOccured,
                                                                    underflowEnabled, MediaSourceType::VIDEO));
     }
