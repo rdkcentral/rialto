@@ -18,6 +18,7 @@
  */
 
 #include "MediaPipelineTestMethods.h"
+#include "CommonConstants.h"
 #include "MediaPipelineProtoRequestMatchers.h"
 #include "MediaPipelineProtoUtils.h"
 #include "MediaSegments.h"
@@ -72,6 +73,11 @@ constexpr uint32_t kNumberOfChannelsMpeg{2};
 constexpr uint32_t kSampleRateMpeg{26000};
 constexpr uint32_t kNumberOfChannelsEacs{1};
 constexpr uint32_t kSampleRateEacs{1000};
+constexpr uint32_t kInitWithLast15{6700};
+const std::vector<SubSamplePair> kSubSamplePairs{{42, 66}, {6654, 4}, {3, 3654}};
+constexpr firebolt::rialto::CipherMode kCipherModeCenc{firebolt::rialto::CipherMode::CENC};
+constexpr uint32_t kCrypt{7};
+constexpr uint32_t kSkip{8};
 } // namespace
 
 namespace firebolt::rialto::client::ct
@@ -407,6 +413,84 @@ void MediaPipelineTestMethods::checkMseVideoSegmentWrittenSecondary(int32_t segm
     checkHasNoSegmentAlignment(metadata);
     checkHasNoExtraData(metadata);
     checkSegmentData(metadata, dataPosition += *metadataSize, kVideoSegments[segmentId]);
+}
+
+int32_t MediaPipelineTestMethods::addSegmentEncryptedAudio(uint32_t keyIndex)
+{
+    EXPECT_LT(m_audioSegmentCount, sizeof(kAudioSegments) / sizeof(kAudioSegments[0]));
+
+    std::unique_ptr<IMediaPipeline::MediaSegment> mseData =
+        std::make_unique<IMediaPipeline::MediaSegmentAudio>(kAudioSourceId, getTimestamp(m_audioSegmentCount),
+                                                            kDuration, kSampleRate, kNumberOfChannels);
+    mseData->setData(kAudioSegments[m_audioSegmentCount].size(),
+                     (const uint8_t *)kAudioSegments[m_audioSegmentCount].c_str());
+    addEncryptedDataToSegment(mseData, keyIndex);
+    EXPECT_EQ(m_mediaPipeline->addSegment(m_needDataRequestId, mseData), AddSegmentStatus::OK);
+
+    // Store where the segment should be written so we can check the data
+    int32_t segmentId = m_audioSegmentCount;
+    writtenAudioSegments.insert({segmentId, *m_locationToWriteAudio[kPrimaryPartition]});
+
+    incrementWriteLocation(kAudioSegments[segmentId].size(), m_locationToWriteAudio[kPrimaryPartition]);
+
+    m_audioSegmentCount++;
+    return segmentId;
+}
+
+void MediaPipelineTestMethods::checkEncryptedAudioSegmentWritten(int32_t segmentId, uint32_t keyIndex)
+{
+    auto it = writtenAudioSegments.find(segmentId);
+    ASSERT_NE(it, writtenAudioSegments.end());
+
+    MediaSegmentMetadata metadata;
+    uint8_t *segmentPosition = parseMetadata(metadata, it->second.mediaDataOffset);
+
+    checkAudioMetadata(metadata, segmentId);
+    checkEncryptionMetadata(metadata, keyIndex);
+    checkHasNoVideoMetadata(metadata);
+    checkHasNoCodacData(metadata);
+    checkHasNoSegmentAlignment(metadata);
+    checkHasNoExtraData(metadata);
+    checkSegmentData(metadata, segmentPosition, kAudioSegments[segmentId]);
+}
+
+int32_t MediaPipelineTestMethods::addSegmentEncryptedVideo(uint32_t keyIndex)
+{
+    EXPECT_LT(m_videoSegmentCount, sizeof(kVideoSegments) / sizeof(kVideoSegments[0]));
+
+    std::unique_ptr<IMediaPipeline::MediaSegment> mseData =
+        std::make_unique<IMediaPipeline::MediaSegmentVideo>(kVideoSourceId, getTimestamp(m_videoSegmentCount),
+                                                            kDuration, kWidth720p, kHeight720p, kFrameRateEmpty);
+    mseData->setData(kVideoSegments[m_videoSegmentCount].size(),
+                     (const uint8_t *)kVideoSegments[m_videoSegmentCount].c_str());
+    addEncryptedDataToSegment(mseData, keyIndex);
+    EXPECT_EQ(m_mediaPipeline->addSegment(m_needDataRequestId, mseData), AddSegmentStatus::OK);
+
+    // Store where the segment should be written so we can check the data
+    int32_t segmentId = m_videoSegmentCount;
+    writtenVideoSegments.insert({segmentId, *m_locationToWriteVideo[kPrimaryPartition]});
+
+    incrementWriteLocation(kVideoSegments[m_videoSegmentCount].size(), m_locationToWriteVideo[kPrimaryPartition]);
+
+    m_videoSegmentCount++;
+    return segmentId;
+}
+
+void MediaPipelineTestMethods::checkEncryptedVideoSegmentWritten(int32_t segmentId, uint32_t keyIndex)
+{
+    auto it = writtenVideoSegments.find(segmentId);
+    ASSERT_NE(it, writtenVideoSegments.end());
+
+    MediaSegmentMetadata metadata;
+    uint8_t *segmentPosition = parseMetadata(metadata, it->second.mediaDataOffset);
+
+    checkVideoMetadata(metadata, segmentId);
+    checkEncryptionMetadata(metadata, keyIndex);
+    checkHasNoAudioMetadata(metadata);
+    checkHasNoCodacData(metadata);
+    checkHasNoSegmentAlignment(metadata);
+    checkHasNoExtraData(metadata);
+    checkSegmentData(metadata, segmentPosition, kVideoSegments[segmentId]);
 }
 
 void MediaPipelineTestMethods::shouldNotifyNetworkStateBuffered()
@@ -1137,6 +1221,30 @@ void MediaPipelineTestMethods::checkVideoMetadataSecondary(const MediaSegmentMet
     EXPECT_THAT(metadata.frame_rate(), frameRateMatcher(kFrameRateSecondary));
 }
 
+void MediaPipelineTestMethods::checkEncryptionMetadata(const MediaSegmentMetadata &metadata, uint32_t keyIndex)
+{
+    EXPECT_TRUE(metadata.has_media_key_session_id());
+    EXPECT_EQ(metadata.media_key_session_id(), kKeySessionId);
+    EXPECT_TRUE(metadata.has_key_id());
+    EXPECT_EQ(metadata.key_id(), std::string(kKeyStatuses[keyIndex].first.begin(), kKeyStatuses[keyIndex].first.end()));
+    EXPECT_TRUE(metadata.has_init_vector());
+    EXPECT_EQ(metadata.init_vector(), std::string(kInitData.begin(), kInitData.end()));
+    EXPECT_TRUE(metadata.has_init_with_last_15());
+    EXPECT_EQ(metadata.init_with_last_15(), kInitWithLast15);
+    EXPECT_NE(metadata.sub_sample_info().size(), 0);
+    for (int i = 0; i < metadata.sub_sample_info().size(); i++)
+    {
+        EXPECT_EQ(metadata.sub_sample_info()[i].num_clear_bytes(), kSubSamplePairs[i].numClearBytes);
+        EXPECT_EQ(metadata.sub_sample_info()[i].num_encrypted_bytes(), kSubSamplePairs[i].numEncryptedBytes);
+    }
+    EXPECT_TRUE(metadata.has_cipher_mode());
+    EXPECT_EQ(metadata.cipher_mode(), convertCipherMode(kCipherModeCenc));
+    EXPECT_TRUE(metadata.has_crypt());
+    EXPECT_EQ(metadata.crypt(), kCrypt);
+    EXPECT_TRUE(metadata.has_skip());
+    EXPECT_EQ(metadata.skip(), kSkip);
+}
+
 void MediaPipelineTestMethods::checkHasNoVideoMetadata(const MediaSegmentMetadata &metadata)
 {
     EXPECT_FALSE(metadata.has_width());
@@ -1177,6 +1285,22 @@ void MediaPipelineTestMethods::checkSegmentData(const MediaSegmentMetadata &meta
     EXPECT_TRUE(metadata.has_length());
     std::string data = std::string(reinterpret_cast<char *>(dataPtr), metadata.length());
     EXPECT_EQ(data, expectedSegmentData);
+}
+
+void MediaPipelineTestMethods::addEncryptedDataToSegment(std::unique_ptr<IMediaPipeline::MediaSegment> &mseData,
+                                                         uint32_t keyIndex)
+{
+    mseData->setEncrypted(true);
+    mseData->setMediaKeySessionId(kKeySessionId);
+    mseData->setKeyId(kKeyStatuses[keyIndex].first);
+    mseData->setInitVector(kInitData);
+    for (const auto &info : kSubSamplePairs)
+    {
+        mseData->addSubSample(info.numClearBytes, info.numEncryptedBytes);
+    }
+    mseData->setInitWithLast15(kInitWithLast15);
+    mseData->setCipherMode(kCipherModeCenc);
+    mseData->setEncryptionPattern(kCrypt, kSkip);
 }
 
 void MediaPipelineTestMethods::shouldCreateMediaSessionInternal(const int32_t sessionId,
@@ -1417,5 +1541,14 @@ void MediaPipelineTestMethods::sendNotifyNeedDataInternal(const int32_t sessionI
 {
     getServerStub()->notifyNeedMediaDataEvent(sessionId, sourceId, framesToWrite, m_needDataRequestId, location);
     waitEvent();
+}
+
+uint8_t *MediaPipelineTestMethods::parseMetadata(MediaSegmentMetadata &metadataStruct, const uint32_t metadataOffset)
+{
+    uint8_t *dataPosition{reinterpret_cast<uint8_t *>(getShmAddress()) + metadataOffset};
+    std::uint32_t *metadataSize{reinterpret_cast<uint32_t *>(dataPosition)};
+    dataPosition += sizeof(uint32_t);
+    EXPECT_TRUE(metadataStruct.ParseFromArray(dataPosition, *metadataSize));
+    return dataPosition + *metadataSize;
 }
 } // namespace firebolt::rialto::client::ct
