@@ -181,6 +181,7 @@ void MediaPipelineTest::willPushAudioData(const std::unique_ptr<IMediaPipeline::
     EXPECT_CALL(*m_gstWrapperMock, gstBufferNewAllocate(nullptr, segment->getDataLength(), nullptr))
         .WillOnce(Return(&buffer))
         .RetiresOnSaturation();
+    std::cout << "lukewill2: expect " << dataCopy << std::endl;
     EXPECT_CALL(*m_gstWrapperMock, gstBufferFill(&buffer, 0, BufferMatcher(dataCopy), segment->getDataLength()))
         .WillOnce(Return(segment->getDataLength()))
         .RetiresOnSaturation();

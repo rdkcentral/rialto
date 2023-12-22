@@ -654,6 +654,7 @@ void GstGenericPlayer::scheduleAudioUnderflow()
     {
         bool underflowEnabled = m_context.isPlaying && !m_context.audioSourceRemoved;
         RIALTO_SERVER_LOG_DEBUG("lukewill: scheduleAudioUnderflow %u, %u", m_context.audioUnderflowOccured, underflowEnabled);
+        RIALTO_SERVER_LOG_DEBUG("lukewill: isPlaying %u, audioSourceRemoved %u", m_context.isPlaying, m_context.audioSourceRemoved);
         m_workerThread->enqueueTask(m_taskFactory->createUnderflow(m_context, *this, m_context.audioUnderflowOccured,
                                                                    underflowEnabled, MediaSourceType::AUDIO));
     }

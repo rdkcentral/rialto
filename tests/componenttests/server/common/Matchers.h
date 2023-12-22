@@ -33,6 +33,7 @@ MATCHER_P(BufferMatcher, expectedBuffer, "")
 {
     const char *kArgCharPtr{reinterpret_cast<const char *>(arg)};
     std::string dataCopy(kArgCharPtr, kArgCharPtr + expectedBuffer.size());
+    std::cout << "lukewill2: " << expectedBuffer << ", " << dataCopy << std::endl;
     return dataCopy == expectedBuffer;
 }
 
