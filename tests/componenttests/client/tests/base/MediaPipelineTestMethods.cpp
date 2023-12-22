@@ -1548,7 +1548,7 @@ uint8_t *MediaPipelineTestMethods::parseMetadata(MediaSegmentMetadata &metadataS
     uint8_t *dataPosition{reinterpret_cast<uint8_t *>(getShmAddress()) + metadataOffset};
     std::uint32_t *metadataSize{reinterpret_cast<uint32_t *>(dataPosition)};
     dataPosition += sizeof(uint32_t);
-    EXPECT_TRUE(metadataStruct.ParseFromArray(dataPosition, *metadataSize)); 
+    EXPECT_TRUE(metadataStruct.ParseFromArray(dataPosition, *metadataSize));
     return dataPosition + *metadataSize;
 }
 } // namespace firebolt::rialto::client::ct
