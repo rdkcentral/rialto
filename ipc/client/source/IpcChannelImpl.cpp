@@ -182,6 +182,7 @@ bool ChannelImpl::createConnectedSocket(const std::string &socketPath)
     }
 
     m_sock = sock;
+    RIALTO_IPC_LOG_ERROR("lukewill: open socket %d", m_sock);
 
     return true;
 }
@@ -353,6 +354,7 @@ void ChannelImpl::disconnectNoLock()
     {
         RIALTO_IPC_LOG_SYS_ERROR(errno, "close error");
     }
+    RIALTO_IPC_LOG_ERROR("lukewill: close socket %d", m_sock);
 
     m_sock = -1;
 }
