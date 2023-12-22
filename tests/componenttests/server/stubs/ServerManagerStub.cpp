@@ -58,6 +58,7 @@ int ServerManagerStub::getServerSocket() const
 
 std::shared_ptr<::firebolt::rialto::ipc::IChannel> ServerManagerStub::getChannel()
 {
+    // TODO: Should wait for channel to be created if it isnt yet
     return m_ipcChannel;
 }
 } // namespace firebolt::rialto::server::ct
