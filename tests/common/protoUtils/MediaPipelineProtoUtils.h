@@ -134,8 +134,6 @@ convertPlaybackState(const firebolt::rialto::PlaybackState &kPlaybackState)
     {
         return firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_FAILURE;
     }
-    default:
-        break;
     }
     return firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_UNKNOWN;
 }
@@ -181,8 +179,6 @@ convertNetworkState(const firebolt::rialto::NetworkState &kNetworkState)
     {
         return firebolt::rialto::NetworkStateChangeEvent_NetworkState_DECODE_ERROR;
     }
-    default:
-        break;
     }
     return firebolt::rialto::NetworkStateChangeEvent_NetworkState_UNKNOWN;
 }
