@@ -320,6 +320,7 @@ private:
     void sendNotifyNetworkStateInternal(const int32_t sessionId, const NetworkState &state);
     void sendNotifyNeedDataInternal(const int32_t sessionId, const int32_t sourceId,
                                     const std::shared_ptr<MediaPlayerShmInfo> &location, uint32_t framesToWrite);
+    uint8_t *parseMetadata(MediaSegmentMetadata &metadataStruct, const uint32_t metadataOffset);
 };
 } // namespace firebolt::rialto::client::ct
 

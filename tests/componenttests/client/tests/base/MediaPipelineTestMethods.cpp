@@ -442,11 +442,8 @@ void MediaPipelineTestMethods::checkEncryptedAudioSegmentWritten(int32_t segment
     auto it = writtenAudioSegments.find(segmentId);
     ASSERT_NE(it, writtenAudioSegments.end());
 
-    uint8_t *dataPosition{reinterpret_cast<uint8_t *>(getShmAddress()) + it->second.mediaDataOffset};
-    std::uint32_t *metadataSize{reinterpret_cast<uint32_t *>(dataPosition)};
-    dataPosition += sizeof(uint32_t);
     MediaSegmentMetadata metadata;
-    ASSERT_TRUE(metadata.ParseFromArray(dataPosition, *metadataSize));
+    uint8_t *segmentPosition = parseMetadata(metadata, it->second.mediaDataOffset);
 
     checkAudioMetadata(metadata, segmentId);
     checkEncryptionMetadata(metadata, keyIndex);
@@ -454,7 +451,7 @@ void MediaPipelineTestMethods::checkEncryptedAudioSegmentWritten(int32_t segment
     checkHasNoCodacData(metadata);
     checkHasNoSegmentAlignment(metadata);
     checkHasNoExtraData(metadata);
-    checkSegmentData(metadata, dataPosition += *metadataSize, kAudioSegments[segmentId]);
+    checkSegmentData(metadata, segmentPosition, kAudioSegments[segmentId]);
 }
 
 int32_t MediaPipelineTestMethods::addSegmentEncryptedVideo(uint32_t keyIndex)
@@ -484,11 +481,8 @@ void MediaPipelineTestMethods::checkEncryptedVideoSegmentWritten(int32_t segment
     auto it = writtenVideoSegments.find(segmentId);
     ASSERT_NE(it, writtenVideoSegments.end());
 
-    uint8_t *dataPosition{reinterpret_cast<uint8_t *>(getShmAddress()) + it->second.mediaDataOffset};
-    std::uint32_t *metadataSize{reinterpret_cast<uint32_t *>(dataPosition)};
-    dataPosition += sizeof(uint32_t);
     MediaSegmentMetadata metadata;
-    ASSERT_TRUE(metadata.ParseFromArray(dataPosition, *metadataSize));
+    uint8_t *segmentPosition = parseMetadata(metadata, it->second.mediaDataOffset);
 
     checkVideoMetadata(metadata, segmentId);
     checkEncryptionMetadata(metadata, keyIndex);
@@ -496,7 +490,7 @@ void MediaPipelineTestMethods::checkEncryptedVideoSegmentWritten(int32_t segment
     checkHasNoCodacData(metadata);
     checkHasNoSegmentAlignment(metadata);
     checkHasNoExtraData(metadata);
-    checkSegmentData(metadata, dataPosition += *metadataSize, kVideoSegments[segmentId]);
+    checkSegmentData(metadata, segmentPosition, kVideoSegments[segmentId]);
 }
 
 void MediaPipelineTestMethods::shouldNotifyNetworkStateBuffered()
@@ -1547,5 +1541,14 @@ void MediaPipelineTestMethods::sendNotifyNeedDataInternal(const int32_t sessionI
 {
     getServerStub()->notifyNeedMediaDataEvent(sessionId, sourceId, framesToWrite, m_needDataRequestId, location);
     waitEvent();
+}
+
+uint8_t *MediaPipelineTestMethods::parseMetadata(MediaSegmentMetadata &metadataStruct, const uint32_t metadataOffset)
+{
+    uint8_t *dataPosition{reinterpret_cast<uint8_t *>(getShmAddress()) + metadataOffset};
+    std::uint32_t *metadataSize{reinterpret_cast<uint32_t *>(dataPosition)};
+    dataPosition += sizeof(uint32_t);
+    EXPECT_TRUE(metadataStruct.ParseFromArray(dataPosition, *metadataSize)); 
+    return dataPosition + *metadataSize;
 }
 } // namespace firebolt::rialto::client::ct
