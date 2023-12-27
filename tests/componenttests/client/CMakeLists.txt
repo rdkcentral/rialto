@@ -63,6 +63,7 @@ add_gtests (
 
         # EME Component tests
         tests/eme/SessionReadyForDecryptionTest.cpp
+        tests/eme/AudioVideoPlaybackEncryptedSegmentsTest.cpp
         )
 
 add_subdirectory(mocks)

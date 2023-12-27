@@ -155,6 +155,8 @@ protected:
     int32_t addSegmentMseAudio();
     int32_t addSegmentMseVideo();
     int32_t addSegmentMseVideoSecondary();
+    int32_t addSegmentEncryptedAudio(const uint32_t keyIndex);
+    int32_t addSegmentEncryptedVideo(const uint32_t keyIndex);
     void haveDataOk();
     void haveDataEos();
     void haveDataOkSecondary();
@@ -215,6 +217,8 @@ protected:
     void checkMseAudioSegmentWritten(int32_t segmentId);
     void checkMseVideoSegmentWritten(int32_t segmentId);
     void checkMseVideoSegmentWrittenSecondary(int32_t segmentId);
+    void checkEncryptedAudioSegmentWritten(int32_t segmentId, uint32_t keyIndex);
+    void checkEncryptedVideoSegmentWritten(int32_t segmentId, uint32_t keyIndex);
 
     // Helper methods
     void startAudioVideoMediaSessionWaitForPreroll();
@@ -253,12 +257,14 @@ private:
     void checkHasNoAudioMetadata(const MediaSegmentMetadata &metadata);
     void checkVideoMetadata(const MediaSegmentMetadata &metadata, uint32_t segmentId);
     void checkVideoMetadataSecondary(const MediaSegmentMetadata &metadata, uint32_t segmentId);
+    void checkEncryptionMetadata(const MediaSegmentMetadata &metadata, uint32_t keyIndex);
     void checkHasNoVideoMetadata(const MediaSegmentMetadata &metadata);
     void checkHasNoEncryptionMetadata(const MediaSegmentMetadata &metadata);
     void checkHasNoCodacData(const MediaSegmentMetadata &metadata);
     void checkHasNoSegmentAlignment(const MediaSegmentMetadata &metadata);
     void checkHasNoExtraData(const MediaSegmentMetadata &metadata);
     void checkSegmentData(const MediaSegmentMetadata &metadata, uint8_t *dataPtr, const std::string &expectedSegmentData);
+    void addEncryptedDataToSegment(std::unique_ptr<IMediaPipeline::MediaSegment> &mseData, uint32_t keyIndex);
     void shouldCreateMediaSessionInternal(const int32_t sessionId, const VideoRequirements &videoRequirements);
     void shouldLoadInternal(const int32_t sessionId, const MediaType &mediaType, const std::string &mimeType,
                             const std::string &url);
@@ -314,6 +320,7 @@ private:
     void sendNotifyNetworkStateInternal(const int32_t sessionId, const NetworkState &state);
     void sendNotifyNeedDataInternal(const int32_t sessionId, const int32_t sourceId,
                                     const std::shared_ptr<MediaPlayerShmInfo> &location, uint32_t framesToWrite);
+    uint8_t *parseMetadata(MediaSegmentMetadata &metadataStruct, const uint32_t metadataOffset);
 };
 } // namespace firebolt::rialto::client::ct
 

@@ -28,10 +28,6 @@ convertSegmentAlignment(const firebolt::rialto::MediaSegmentMetadata_SegmentAlig
 {
     switch (segmentAlignment)
     {
-    case firebolt::rialto::MediaSegmentMetadata_SegmentAlignment_ALIGNMENT_UNDEFINED:
-    {
-        return firebolt::rialto::SegmentAlignment::UNDEFINED;
-    }
     case firebolt::rialto::MediaSegmentMetadata_SegmentAlignment_ALIGNMENT_NAL:
     {
         return firebolt::rialto::SegmentAlignment::NAL;
@@ -40,8 +36,39 @@ convertSegmentAlignment(const firebolt::rialto::MediaSegmentMetadata_SegmentAlig
     {
         return firebolt::rialto::SegmentAlignment::AU;
     }
+    case firebolt::rialto::MediaSegmentMetadata_SegmentAlignment_ALIGNMENT_UNDEFINED:
+    default:
+    {
+        return firebolt::rialto::SegmentAlignment::UNDEFINED;
     }
-    return firebolt::rialto::SegmentAlignment::UNDEFINED;
+    }
 }
 
+firebolt::rialto::MediaSegmentMetadata_CipherMode convertCipherMode(const firebolt::rialto::CipherMode &cipherMode)
+{
+    switch (cipherMode)
+    {
+    case firebolt::rialto::CipherMode::CENC:
+    {
+        return firebolt::rialto::MediaSegmentMetadata_CipherMode_CENC;
+    }
+    case firebolt::rialto::CipherMode::CBC1:
+    {
+        return firebolt::rialto::MediaSegmentMetadata_CipherMode_CBC1;
+    }
+    case firebolt::rialto::CipherMode::CENS:
+    {
+        return firebolt::rialto::MediaSegmentMetadata_CipherMode_CENS;
+    }
+    case firebolt::rialto::CipherMode::CBCS:
+    {
+        return firebolt::rialto::MediaSegmentMetadata_CipherMode_CBCS;
+    }
+    case firebolt::rialto::CipherMode::UNKNOWN:
+    default:
+    {
+        return firebolt::rialto::MediaSegmentMetadata_CipherMode_UNKNOWN;
+    }
+    }
+}
 #endif // METADATA_PROTO_UTILS_H_

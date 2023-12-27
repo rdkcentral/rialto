@@ -72,6 +72,10 @@ protected:
     void updateSession();
     void shouldCloseKeySession();
     void closeKeySession();
+    void shouldDestroyMediaKeys();
+    void destroyMediaKeys();
+    void initaliseMediaKeySession();
+    void terminateMediaKeySession();
 
     // Component test helpers
     virtual void notifyEvent() = 0;
