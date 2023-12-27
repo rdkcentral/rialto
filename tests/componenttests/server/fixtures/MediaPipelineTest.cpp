@@ -116,8 +116,7 @@ void MediaPipelineTest::audioSourceWillBeAttached()
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("appsrc"), StrEq("audsrc")))
         .WillOnce(Return(GST_ELEMENT(&m_audioAppSrc)));
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(&m_audioAppSrc, &m_audioCaps));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_audioCaps))
-        .WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_audioCaps)).WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
 }
 
 void MediaPipelineTest::videoSourceWillBeAttached()
@@ -134,8 +133,7 @@ void MediaPipelineTest::videoSourceWillBeAttached()
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("appsrc"), StrEq("vidsrc")))
         .WillOnce(Return(GST_ELEMENT(&m_videoAppSrc)));
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(&m_videoAppSrc, &m_videoCaps));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_videoCaps))
-        .WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_videoCaps)).WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
 }
 
 void MediaPipelineTest::sourceWillBeSetup()
@@ -179,7 +177,8 @@ void MediaPipelineTest::willPushAudioData(const std::unique_ptr<IMediaPipeline::
                                           GstBuffer &buffer, GstCaps &capsCopy, bool shouldNotify)
 {
     std::string dataCopy(segment->getData(), segment->getData() + segment->getDataLength());
-    EXPECT_CALL(*m_gstWrapperMock, gstBufferNewAllocate(nullptr, segment->getDataLength(), nullptr)).InSequence(m_bufferAllocateSeq)
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferNewAllocate(nullptr, segment->getDataLength(), nullptr))
+        .InSequence(m_bufferAllocateSeq)
         .WillOnce(Return(&buffer))
         .RetiresOnSaturation();
     EXPECT_CALL(*m_gstWrapperMock, gstBufferFill(&buffer, 0, BufferMatcher(dataCopy), segment->getDataLength()))
@@ -194,15 +193,21 @@ void MediaPipelineTest::willPushAudioData(const std::unique_ptr<IMediaPipeline::
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&capsCopy));
     if (!shouldNotify)
     {
-        EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(&m_audioAppSrc, _)).InSequence(m_writeBufferSeq).RetiresOnSaturation();
+        EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(&m_audioAppSrc, _))
+            .InSequence(m_writeBufferSeq)
+            .RetiresOnSaturation();
     }
     else
     {
-        EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(&m_audioAppSrc, _)).InSequence(m_writeBufferSeq)
-            .WillOnce(Invoke([this](GstAppSrc *appsrc, GstBuffer *buffer) {
-                workerFinished();
-                return GST_FLOW_OK;
-            })).RetiresOnSaturation();
+        EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(&m_audioAppSrc, _))
+            .InSequence(m_writeBufferSeq)
+            .WillOnce(Invoke(
+                [this](GstAppSrc *appsrc, GstBuffer *buffer)
+                {
+                    workerFinished();
+                    return GST_FLOW_OK;
+                }))
+            .RetiresOnSaturation();
     }
 }
 
@@ -211,7 +216,8 @@ void MediaPipelineTest::willPushVideoData(const std::unique_ptr<IMediaPipeline::
                                           GstBuffer &buffer, GstCaps &capsCopy, bool shouldNotify)
 {
     std::string dataCopy(segment->getData(), segment->getData() + segment->getDataLength());
-    EXPECT_CALL(*m_gstWrapperMock, gstBufferNewAllocate(nullptr, segment->getDataLength(), nullptr)).InSequence(m_bufferAllocateSeq)
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferNewAllocate(nullptr, segment->getDataLength(), nullptr))
+        .InSequence(m_bufferAllocateSeq)
         .WillOnce(Return(&buffer))
         .RetiresOnSaturation();
     EXPECT_CALL(*m_gstWrapperMock, gstBufferFill(&buffer, 0, BufferMatcher(dataCopy), segment->getDataLength()))
@@ -227,15 +233,21 @@ void MediaPipelineTest::willPushVideoData(const std::unique_ptr<IMediaPipeline::
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&capsCopy));
     if (!shouldNotify)
     {
-        EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(&m_videoAppSrc, _)).InSequence(m_writeBufferSeq).RetiresOnSaturation();
+        EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(&m_videoAppSrc, _))
+            .InSequence(m_writeBufferSeq)
+            .RetiresOnSaturation();
     }
     else
     {
-        EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(&m_videoAppSrc, _)).InSequence(m_writeBufferSeq)
-            .WillOnce(Invoke([this](GstAppSrc *appsrc, GstBuffer *buffer) {
-                workerFinished();
-                return GST_FLOW_OK;
-            })).RetiresOnSaturation();
+        EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(&m_videoAppSrc, _))
+            .InSequence(m_writeBufferSeq)
+            .WillOnce(Invoke(
+                [this](GstAppSrc *appsrc, GstBuffer *buffer)
+                {
+                    workerFinished();
+                    return GST_FLOW_OK;
+                }))
+            .RetiresOnSaturation();
     }
 }
 

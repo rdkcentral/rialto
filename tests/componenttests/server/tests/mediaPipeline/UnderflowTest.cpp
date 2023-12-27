@@ -126,14 +126,14 @@ public:
             .WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
     }
 
-    void setupAudioDecoder() 
-    { 
-        m_gstreamerStub.setupElement(m_audioDecoder); 
+    void setupAudioDecoder()
+    {
+        m_gstreamerStub.setupElement(m_audioDecoder);
         waitWorker();
     }
 
-    void setupVideoDecoder() 
-    { 
+    void setupVideoDecoder()
+    {
         m_gstreamerStub.setupElement(m_videoDecoder);
         waitWorker();
     }

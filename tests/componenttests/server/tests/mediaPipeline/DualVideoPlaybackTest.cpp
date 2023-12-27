@@ -43,10 +43,10 @@ const std::string kDummyStateName{"dummy"};
 using testing::_;
 using testing::AtLeast;
 using testing::DoAll;
+using testing::Invoke;
 using testing::Return;
 using testing::SetArgPointee;
 using testing::StrEq;
-using testing::Invoke;
 
 namespace firebolt::rialto::server::ct
 {
@@ -120,8 +120,7 @@ public:
         EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("appsrc"), StrEq("vidsrc")))
             .WillOnce(Return(GST_ELEMENT(&m_secondaryVideoAppSrc)));
         EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(&m_secondaryVideoAppSrc, &m_videoCaps));
-        EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_videoCaps))
-            .WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
+        EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_videoCaps)).WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
     }
 
     void secondarySourceWillBeSetup()
@@ -199,15 +198,21 @@ public:
         EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&capsCopy));
         if (!shouldNotify)
         {
-            EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(&m_secondaryVideoAppSrc, _)).InSequence(m_writeBufferSeq).RetiresOnSaturation();
+            EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(&m_secondaryVideoAppSrc, _))
+                .InSequence(m_writeBufferSeq)
+                .RetiresOnSaturation();
         }
         else
         {
-            EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(&m_secondaryVideoAppSrc, _)).InSequence(m_writeBufferSeq)
-                .WillOnce(Invoke([this](GstAppSrc *appsrc, GstBuffer *buffer) {
-                    workerFinished();
-                    return GST_FLOW_OK;
-                })).RetiresOnSaturation();
+            EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(&m_secondaryVideoAppSrc, _))
+                .InSequence(m_writeBufferSeq)
+                .WillOnce(Invoke(
+                    [this](GstAppSrc *appsrc, GstBuffer *buffer)
+                    {
+                        workerFinished();
+                        return GST_FLOW_OK;
+                    }))
+                .RetiresOnSaturation();
         }
     }
 

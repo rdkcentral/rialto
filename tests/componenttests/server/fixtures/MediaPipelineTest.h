@@ -115,7 +115,7 @@ protected:
     testing::Sequence m_bufferAllocateSeq;
 
     // Mock objects should not be used on different threads at the same time, this can lead
-    // to race conditions. This mutex and cond is required to avoid the gst worker thread 
+    // to race conditions. This mutex and cond is required to avoid the gst worker thread
     // checking expect calls while the main thread is setting expect calls.
     std::mutex m_workerLock;
     std::condition_variable m_workerCond;
