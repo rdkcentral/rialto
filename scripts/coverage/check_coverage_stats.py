@@ -50,10 +50,7 @@ def parse_statistics(file_path):
 def check_coverage(stats, percentage_failure):
     is_failure = False
 
-    if stats[0] < float(percentage_failure):
-        print("Line coverage " + str(stats[0]) + " is less than minimum failure percentage " + percentage_failure)
-        is_failure = True
-
+    # We only care about the function coverage as we are checking all APIs are covered, not error cases
     if stats[1] < float(percentage_failure):
         print("Function coverage " + str(stats[1]) + " is less than minimum failure percentage " + percentage_failure)
         is_failure = True

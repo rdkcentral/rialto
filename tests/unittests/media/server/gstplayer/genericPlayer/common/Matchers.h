@@ -36,12 +36,6 @@ namespace firebolt::rialto
 bool operator==(const Fraction &lhs, const Fraction &rhs);
 } // namespace firebolt::rialto
 
-MATCHER_P(CharStrMatcher, expectedStr, "")
-{
-    std::string actualStr = arg;
-    return expectedStr == actualStr;
-}
-
 MATCHER(NotNullMatcher, "")
 {
     return nullptr != arg;

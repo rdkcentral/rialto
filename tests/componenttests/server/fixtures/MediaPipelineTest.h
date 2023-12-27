@@ -45,9 +45,9 @@ public:
     void willSetupAndAddSource(GstAppSrc *appSrc);
     void willFinishSetupAndAddSource();
     void willPushAudioData(const std::unique_ptr<IMediaPipeline::MediaSegment> &segment, GstBuffer &buffer,
-                           GstCaps &capsCopy);
+                           GstCaps &capsCopy, bool shouldNotify);
     void willPushVideoData(const std::unique_ptr<IMediaPipeline::MediaSegment> &segment, GstBuffer &buffer,
-                           GstCaps &capsCopy);
+                           GstCaps &capsCopy, bool shouldNotify);
     void willPause();
     void willPlay();
     void willEos(GstAppSrc *appSrc);
@@ -71,6 +71,8 @@ public:
     void removeSource(int sourceId);
     void stop();
     void destroySession();
+    void waitWorker();
+    void workerFinished();
 
 private:
     void initShm();
@@ -104,6 +106,20 @@ protected:
     GstEvent m_flushStopEvent{};
     std::shared_ptr<::firebolt::rialto::NeedMediaDataEvent> m_lastAudioNeedData{nullptr};
     std::shared_ptr<::firebolt::rialto::NeedMediaDataEvent> m_lastVideoNeedData{nullptr};
+
+    // Used to syncronise the writing of the data to gstreamer
+    testing::Sequence m_writeBufferSeq;
+
+    // Required to syncronise gstBufferNewAllocate, this method only takes a size parameter, if the
+    // size of two buffers are equal the test can fail.
+    testing::Sequence m_bufferAllocateSeq;
+
+    // Mock objects should not be used on different threads at the same time, this can lead
+    // to race conditions. This mutex and cond is required to avoid the gst worker thread
+    // checking expect calls while the main thread is setting expect calls.
+    std::mutex m_workerLock;
+    std::condition_variable m_workerCond;
+    bool m_workerDone{false};
 };
 } // namespace firebolt::rialto::server::ct
 

@@ -29,6 +29,7 @@ using ::testing::DoAll;
 using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::SaveArg;
+using ::testing::StrEq;
 using ::testing::StrictMock;
 
 class RialtoServerCreateGstGenericPlayerTest : public GstGenericPlayerTestCommon
@@ -81,15 +82,14 @@ protected:
 
     void expectSetSecondaryVideo()
     {
-        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(CharStrMatcher("westerossink")))
+        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(StrEq("westerossink")))
             .WillOnce(Return(reinterpret_cast<GstElementFactory *>(&m_westerousFactory)));
         EXPECT_CALL(*m_gstWrapperMock,
                     gstElementFactoryCreate(reinterpret_cast<GstElementFactory *>(&m_westerousFactory), _))
             .WillOnce(Return(&m_westerousSink));
-        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, CharStrMatcher("res-usage")))
-            .WillOnce(Return(&m_rectangleSpec));
-        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(_, CharStrMatcher("res-usage")));
-        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(_, CharStrMatcher("video-sink")));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("res-usage"))).WillOnce(Return(&m_rectangleSpec));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(_, StrEq("res-usage")));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(_, StrEq("video-sink")));
         EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(reinterpret_cast<GstElementFactory *>(&m_westerousFactory)));
     }
 };
@@ -152,7 +152,7 @@ TEST_F(RialtoServerCreateGstGenericPlayerTest, CreateDestroySecondaryVideoNoWest
     m_videoReq.maxWidth = kMinPrimaryVideoWidth;
     m_videoReq.maxHeight = kMinPrimaryVideoHeight - 1;
 
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(CharStrMatcher("westerossink"))).WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(StrEq("westerossink"))).WillOnce(Return(nullptr));
 
     createGstGenericPlayerSuccess();
 
@@ -171,7 +171,7 @@ TEST_F(RialtoServerCreateGstGenericPlayerTest, CreateWesterossinkFailureForSecon
     gstPlayerWillBeDestroyed();
     executeTaskWhenEnqueued();
 
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(CharStrMatcher("westerossink")))
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(StrEq("westerossink")))
         .WillOnce(Return(reinterpret_cast<GstElementFactory *>(&m_westerousFactory)));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryCreate(reinterpret_cast<GstElementFactory *>(&m_westerousFactory), _))
         .WillOnce(Return(nullptr));
@@ -199,11 +199,11 @@ TEST_F(RialtoServerCreateGstGenericPlayerTest, SetResUsageFailureForSecondaryVid
     gstPlayerWillBeDestroyed();
     executeTaskWhenEnqueued();
 
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(CharStrMatcher("westerossink")))
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(StrEq("westerossink")))
         .WillOnce(Return(reinterpret_cast<GstElementFactory *>(&m_westerousFactory)));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryCreate(reinterpret_cast<GstElementFactory *>(&m_westerousFactory), _))
         .WillOnce(Return(&m_westerousSink));
-    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, CharStrMatcher("res-usage"))).WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("res-usage"))).WillOnce(Return(nullptr));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(reinterpret_cast<GstElementFactory *>(&m_westerousSink)));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(reinterpret_cast<GstElementFactory *>(&m_westerousFactory)));
 
@@ -309,7 +309,7 @@ TEST_F(RialtoServerCreateGstGenericPlayerTest, PlaysinkNotFound)
     EXPECT_CALL(*m_gstProtectionMetadataFactoryMock, createProtectionMetadataWrapper(_))
         .WillOnce(Return(ByMove(std::move(m_gstProtectionMetadataWrapper))));
 
-    EXPECT_CALL(*m_gstWrapperMock, gstBinGetByName(_, CharStrMatcher("playsink"))).WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinGetByName(_, StrEq("playsink"))).WillOnce(Return(nullptr));
 
     EXPECT_NO_THROW(m_gstPlayer = std::make_unique<GstGenericPlayer>(&m_gstPlayerClient, m_decryptionServiceMock,
                                                                      m_type, m_videoReq, m_gstWrapperMock,

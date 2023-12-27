@@ -24,6 +24,11 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+namespace
+{
+constexpr std::chrono::milliseconds kChannelTimeout{200};
+} // namespace
+
 namespace firebolt::rialto::server::ct
 {
 ServerManagerStub::ServerManagerStub()
@@ -47,9 +52,13 @@ ServerManagerStub::~ServerManagerStub()
 
 void ServerManagerStub::ipcThread()
 {
-    auto factory = firebolt::rialto::ipc::IChannelFactory::createFactory();
-    m_ipcChannel = factory->createChannel(m_socks[1]);
-    EXPECT_TRUE(m_ipcChannel);
+    {
+        std::unique_lock<std::mutex> locker(m_channelLock);
+        auto factory = firebolt::rialto::ipc::IChannelFactory::createFactory();
+        m_ipcChannel = factory->createChannel(m_socks[1]);
+        EXPECT_TRUE(m_ipcChannel);
+        m_channelCond.notify_all();
+    }
     while (m_ipcChannel->process())
     {
         m_ipcChannel->wait(-1);
@@ -63,6 +72,12 @@ int ServerManagerStub::getServerSocket() const
 
 std::shared_ptr<::firebolt::rialto::ipc::IChannel> ServerManagerStub::getChannel()
 {
+    // Wait for the channel to be created incase it hasn't yet
+    std::unique_lock<std::mutex> locker(m_channelLock);
+    if (!m_ipcChannel)
+    {
+        m_channelCond.wait_for(locker, kChannelTimeout, [this]() { return static_cast<bool>(m_ipcChannel); });
+    }
     return m_ipcChannel;
 }
 } // namespace firebolt::rialto::server::ct

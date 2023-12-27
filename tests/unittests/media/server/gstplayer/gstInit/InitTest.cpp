@@ -26,6 +26,7 @@
 
 using testing::_;
 using testing::Return;
+using testing::StrEq;
 using testing::StrictMock;
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::server;
@@ -53,7 +54,7 @@ TEST_F(RialtoServerInitGstPlayerTest, Init)
     EXPECT_CALL(*m_gstWrapperFactoryMock, getGstWrapper()).WillOnce(Return(m_gstWrapperMock));
     EXPECT_CALL(*m_gstWrapperMock, gstInit(_, _));
     EXPECT_CALL(*m_gstWrapperMock, gstRegistryGet()).WillOnce(Return(nullptr));
-    EXPECT_CALL(*m_gstWrapperMock, gstRegistryFindPlugin(nullptr, CharStrMatcher("rialtosinks"))).WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_gstWrapperMock, gstRegistryFindPlugin(nullptr, StrEq("rialtosinks"))).WillOnce(Return(nullptr));
     bool status = false;
     EXPECT_NO_THROW(status = gstInitalise(argc, static_cast<char **>(argv)));
     EXPECT_EQ(status, true);

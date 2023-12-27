@@ -52,6 +52,6 @@ if __name__ == "__main__":
     if args['coverage'] == True:
         generateCoverageReport(args['output'], outputFile, suitesToRun)
 
-        # Also generate coverage stats for public interfaces only
-        files = ["*/public/include/I*"]
+        # Also generate coverage stats for public interfaces source
+        files = ["*/main/source/*"]
         generateSpecificCoverageStats(args['output'], outputFile, files, "coverage_statistics_public_apis")
