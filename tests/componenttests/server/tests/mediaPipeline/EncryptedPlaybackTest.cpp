@@ -53,7 +53,6 @@ public:
             .InSequence(m_bufferAllocateSeq)
             .WillOnce(Return(&keyIdBuffer))
             .RetiresOnSaturation();
-        std::cout << "lukewill4: keyIdBuffer " << &keyIdBuffer << std::endl;
         EXPECT_CALL(*m_gstWrapperMock, gstBufferFill(&keyIdBuffer, 0, _, segment->getKeyId().size()))
             .WillOnce(Return(segment->getKeyId().size()))
             .RetiresOnSaturation();
@@ -61,7 +60,6 @@ public:
             .InSequence(m_bufferAllocateSeq)
             .WillOnce(Return(&initVectorBuffer))
             .RetiresOnSaturation();
-        std::cout << "lukewill4: initVectorBuffer " << &initVectorBuffer << std::endl;
         EXPECT_CALL(*m_gstWrapperMock, gstBufferFill(&initVectorBuffer, 0, _, segment->getInitVector().size()))
             .WillOnce(Return(segment->getInitVector().size()))
             .RetiresOnSaturation();
@@ -92,10 +90,6 @@ public:
                                                                     m_lastAudioNeedData->shm_info().metadata_offset(),
                                                                     m_lastAudioNeedData->shm_info().media_data_offset(),
                                                                     m_lastAudioNeedData->shm_info().max_media_bytes()})};
-        std::cout << "lukewill4: max metadata " << m_lastAudioNeedData->shm_info().max_metadata_bytes()
-                  << ", metadata offset " << m_lastAudioNeedData->shm_info().metadata_offset() << std::endl;
-        std::cout << "lukewill4: max data " << m_lastAudioNeedData->shm_info().max_media_bytes() << ", data offset "
-                  << m_lastAudioNeedData->shm_info().media_data_offset() << std::endl;
         auto writer{common::IMediaFrameWriterFactory::getFactory()->createFrameWriter(m_shmHandle.getShm(), shmInfo)};
 
         // Write frame to shm and add gst expects
@@ -104,7 +98,6 @@ public:
         willAddProtectionMetadata(segment, buffer, keyIdBuffer, initVectorBuffer, subsamplesBuffer, subsamples, meta);
 
         // Finally, send HaveData and receive new NeedData
-        std::cout << "NeedMediaDataEvent 19" << std::endl;
         ExpectMessage<firebolt::rialto::NeedMediaDataEvent> expectedNeedData{m_clientStub};
         auto haveDataReq{createHaveDataRequest(m_sessionId, writer->getNumFrames(), m_lastAudioNeedData->request_id())};
         ConfigureAction<HaveData>(m_clientStub).send(haveDataReq).expectSuccess();
@@ -143,7 +136,6 @@ public:
         willAddProtectionMetadata(segment, buffer, keyIdBuffer, initVectorBuffer, subsamplesBuffer, subsamples, meta);
 
         // Finally, send HaveData and receive new NeedData
-        std::cout << "NeedMediaDataEvent 20" << std::endl;
         ExpectMessage<firebolt::rialto::NeedMediaDataEvent> expectedNeedData{m_clientStub};
         auto haveDataReq{createHaveDataRequest(m_sessionId, writer->getNumFrames(), m_lastVideoNeedData->request_id())};
         ConfigureAction<HaveData>(m_clientStub).send(haveDataReq).expectSuccess();
@@ -306,7 +298,6 @@ TEST_F(EncryptedPlaybackTest, EncryptedPlayback)
     gstNeedData(&m_audioAppSrc, kFrameCountInPausedState);
     gstNeedData(&m_videoAppSrc, kFrameCountInPausedState);
     {
-        std::cout << "NetworkStateChangeEvent 21" << std::endl;
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
         pushEncryptedAudioData(kFrameCountInPausedState);

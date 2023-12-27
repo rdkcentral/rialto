@@ -340,7 +340,6 @@ TEST_F(UnderflowTest, underflow)
     gstNeedData(&m_audioAppSrc, kFrameCountInPausedState);
     gstNeedData(&m_videoAppSrc, kFrameCountInPausedState);
     {
-        std::cout << "NetworkStateChangeEvent 32" << std::endl;
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
         pushAudioData(kFramesToPush, kFrameCountInPausedState);

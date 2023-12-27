@@ -178,7 +178,6 @@ TEST_F(MediaPipelineTest, WriteSegments)
     gstNeedData(&m_audioAppSrc, kFrameCountInPausedState);
     gstNeedData(&m_videoAppSrc, kFrameCountInPausedState);
     {
-        std::cout << "NetworkStateChangeEvent 33" << std::endl;
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
         pushAudioData(kFramesToPushBeforePreroll, kFrameCountInPausedState);
