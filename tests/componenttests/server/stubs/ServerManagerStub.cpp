@@ -38,6 +38,11 @@ ServerManagerStub::~ServerManagerStub()
     {
         m_ipcThread.join();
     }
+
+    // Shutdown and close the server socket
+    // Other socket will be closed by the ipc channel
+    shutdown(m_socks[0], SHUT_RDWR);
+    close(m_socks[0]);
 }
 
 void ServerManagerStub::ipcThread()
