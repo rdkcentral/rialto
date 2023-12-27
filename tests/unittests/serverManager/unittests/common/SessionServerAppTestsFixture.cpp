@@ -50,8 +50,8 @@ using testing::DoAll;
 using testing::InvokeArgument;
 using testing::Return;
 using testing::SetArrayArgument;
-using testing::StrictMock;
 using testing::StrEq;
+using testing::StrictMock;
 
 void SessionServerAppTests::createPreloadedAppSut()
 {
