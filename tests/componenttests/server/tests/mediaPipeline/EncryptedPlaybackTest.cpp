@@ -49,15 +49,17 @@ public:
                                    guint8 &subsamples, GstMeta &meta)
     {
         const std::size_t kSubsamplesSize{segment->getSubSamples().size() * (sizeof(guint16) + sizeof(guint32))};
-        EXPECT_CALL(*m_gstWrapperMock, gstBufferNewAllocate(nullptr, segment->getKeyId().size(), nullptr))
+        EXPECT_CALL(*m_gstWrapperMock, gstBufferNewAllocate(nullptr, segment->getKeyId().size(), nullptr)).InSequence(m_bufferAllocateSeq)
             .WillOnce(Return(&keyIdBuffer))
             .RetiresOnSaturation();
+        std::cout << "lukewill4: keyIdBuffer " << &keyIdBuffer << std::endl;
         EXPECT_CALL(*m_gstWrapperMock, gstBufferFill(&keyIdBuffer, 0, _, segment->getKeyId().size()))
             .WillOnce(Return(segment->getKeyId().size()))
             .RetiresOnSaturation();
-        EXPECT_CALL(*m_gstWrapperMock, gstBufferNewAllocate(nullptr, segment->getInitVector().size(), nullptr))
+        EXPECT_CALL(*m_gstWrapperMock, gstBufferNewAllocate(nullptr, segment->getInitVector().size(), nullptr)).InSequence(m_bufferAllocateSeq)
             .WillOnce(Return(&initVectorBuffer))
             .RetiresOnSaturation();
+        std::cout << "lukewill4: initVectorBuffer " << &initVectorBuffer << std::endl;
         EXPECT_CALL(*m_gstWrapperMock, gstBufferFill(&initVectorBuffer, 0, _, segment->getInitVector().size()))
             .WillOnce(Return(segment->getInitVector().size()))
             .RetiresOnSaturation();
@@ -88,6 +90,8 @@ public:
                                                                     m_lastAudioNeedData->shm_info().metadata_offset(),
                                                                     m_lastAudioNeedData->shm_info().media_data_offset(),
                                                                     m_lastAudioNeedData->shm_info().max_media_bytes()})};
+        std::cout << "lukewill4: max metadata " << m_lastAudioNeedData->shm_info().max_metadata_bytes() << ", metadata offset " << m_lastAudioNeedData->shm_info().metadata_offset() << std::endl;
+        std::cout << "lukewill4: max data " << m_lastAudioNeedData->shm_info().max_media_bytes() << ", data offset " << m_lastAudioNeedData->shm_info().media_data_offset() << std::endl;
         auto writer{common::IMediaFrameWriterFactory::getFactory()->createFrameWriter(m_shmHandle.getShm(), shmInfo)};
 
         // Write frame to shm and add gst expects

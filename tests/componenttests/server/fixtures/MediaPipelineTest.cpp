@@ -39,6 +39,7 @@ using testing::SaveArg;
 using testing::SaveArgPointee;
 using testing::SetArgPointee;
 using testing::StrEq;
+using testing::ElementsAreArray;
 
 namespace
 {
@@ -178,10 +179,12 @@ void MediaPipelineTest::willPushAudioData(const std::unique_ptr<IMediaPipeline::
                                           GstBuffer &buffer, GstCaps &capsCopy, bool shouldNotify)
 {
     std::string dataCopy(segment->getData(), segment->getData() + segment->getDataLength());
-    EXPECT_CALL(*m_gstWrapperMock, gstBufferNewAllocate(nullptr, segment->getDataLength(), nullptr))
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferNewAllocate(nullptr, segment->getDataLength(), nullptr)).InSequence(m_bufferAllocateSeq)
         .WillOnce(Return(&buffer))
         .RetiresOnSaturation();
-    std::cout << "lukewill2: expect " << dataCopy << std::endl;
+    // Expect calls are checked asyncronously, the buffer data gets freed when createBuffer completes so 
+    // we need to wait for this expect call to get checked before completing the method.
+        std::cout << "lukewill4: buffer " << &buffer << std::endl;
     EXPECT_CALL(*m_gstWrapperMock, gstBufferFill(&buffer, 0, BufferMatcher(dataCopy), segment->getDataLength()))
         .WillOnce(Return(segment->getDataLength()))
         .RetiresOnSaturation();
@@ -211,9 +214,10 @@ void MediaPipelineTest::willPushVideoData(const std::unique_ptr<IMediaPipeline::
                                           GstBuffer &buffer, GstCaps &capsCopy, bool shouldNotify)
 {
     std::string dataCopy(segment->getData(), segment->getData() + segment->getDataLength());
-    EXPECT_CALL(*m_gstWrapperMock, gstBufferNewAllocate(nullptr, segment->getDataLength(), nullptr))
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferNewAllocate(nullptr, segment->getDataLength(), nullptr)).InSequence(m_bufferAllocateSeq)
         .WillOnce(Return(&buffer))
         .RetiresOnSaturation();
+    std::cout << "lukewill4: buffer " << &buffer << std::endl;
     EXPECT_CALL(*m_gstWrapperMock, gstBufferFill(&buffer, 0, BufferMatcher(dataCopy), segment->getDataLength()))
         .WillOnce(Return(segment->getDataLength()))
         .RetiresOnSaturation();

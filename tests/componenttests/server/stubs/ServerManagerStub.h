@@ -25,6 +25,8 @@
 #include <array>
 #include <memory>
 #include <thread>
+#include <mutex>
+#include <condition_variable>
 
 namespace firebolt::rialto::server::ct
 {
@@ -44,6 +46,8 @@ private:
     std::thread m_ipcThread;
     std::shared_ptr<::firebolt::rialto::ipc::IChannel> m_ipcChannel;
     std::array<int, 2> m_socks{-1, -1};
+    std::mutex m_channelLock;
+    std::condition_variable m_channelCond;
 };
 } // namespace firebolt::rialto::server::ct
 

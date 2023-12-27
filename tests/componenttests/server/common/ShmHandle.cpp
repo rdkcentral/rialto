@@ -40,7 +40,7 @@ void ShmHandle::init(std::int32_t fd, std::uint32_t length)
 {
     m_shmFd = fd;
     m_shmBufferLen = length;
-    std::cout
+
     m_shmBuffer = reinterpret_cast<uint8_t *>(mmap(NULL, m_shmBufferLen, PROT_READ | PROT_WRITE, MAP_SHARED, m_shmFd, 0));
     EXPECT_NE(MAP_FAILED, m_shmBuffer);
     if (MAP_FAILED == m_shmBuffer)
@@ -50,6 +50,7 @@ void ShmHandle::init(std::int32_t fd, std::uint32_t length)
         m_shmBuffer = nullptr;
         m_shmBufferLen = 0U;
     }
+    std::cout << "lukewill4: fd " << fd << ", length " << m_shmBufferLen << std::endl;
 }
 
 std::uint8_t *ShmHandle::getShm() const

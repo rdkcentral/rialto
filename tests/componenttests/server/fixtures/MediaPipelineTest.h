@@ -106,7 +106,13 @@ protected:
     GstEvent m_flushStopEvent{};
     std::shared_ptr<::firebolt::rialto::NeedMediaDataEvent> m_lastAudioNeedData{nullptr};
     std::shared_ptr<::firebolt::rialto::NeedMediaDataEvent> m_lastVideoNeedData{nullptr};
+
+    // Used to syncronise the writing of the data to gstreamer
     testing::Sequence m_writeBufferSeq;
+
+    // Required to syncronise gstBufferNewAllocate, this method only takes a size parameter, if the
+    // size of two buffers are equal the test can fail.
+    testing::Sequence m_bufferAllocateSeq;
 
     // Mock objects should not be used on different threads at the same time, this can lead
     // to race conditions. This mutex and cond is required to avoid the gst worker thread 
