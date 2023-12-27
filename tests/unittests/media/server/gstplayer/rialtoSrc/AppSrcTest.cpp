@@ -34,9 +34,10 @@ using namespace firebolt::rialto::wrappers;
 
 using ::testing::_;
 using ::testing::Return;
+using ::testing::StrEq;
 using ::testing::StrictMock;
 
-MATCHER_P(CharStrMatcher, expectedStr, "")
+MATCHER_P(PtrStrMatcher, expectedStr, "")
 {
     std::string actualStr = (const char *)arg;
     return expectedStr == actualStr;
@@ -109,10 +110,10 @@ protected:
 
     void expectSettings(guint64 max)
     {
-        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, CharStrMatcher("block")));
-        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, CharStrMatcher("format")));
-        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, CharStrMatcher("stream-type")));
-        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, CharStrMatcher("min-percent")));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, StrEq("block")));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, StrEq("format")));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, StrEq("stream-type")));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, StrEq("min-percent")));
 
         EXPECT_CALL(*m_gstWrapperMock,
                     gstAppSrcSetCallbacks(GST_APP_SRC(m_streamInfo.appSrc), &m_callbacks, this, nullptr));
@@ -130,15 +131,14 @@ protected:
     {
         EXPECT_CALL(*m_glibWrapperMock, gStrdupPrintfStub(_)).WillOnce(Return(m_name));
 
-        EXPECT_CALL(*m_gstWrapperMock, gstElementGetStaticPad(expectedSrcElement, CharStrMatcher("src")))
-            .WillOnce(Return(&m_target));
-        EXPECT_CALL(*m_gstWrapperMock, gstGhostPadNew(CharStrMatcher(m_name), &m_target)).WillOnce(Return(&m_pad));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementGetStaticPad(expectedSrcElement, StrEq("src"))).WillOnce(Return(&m_target));
+        EXPECT_CALL(*m_gstWrapperMock, gstGhostPadNew(StrEq(m_name), &m_target)).WillOnce(Return(&m_pad));
         EXPECT_CALL(*m_gstWrapperMock, gstPadSetQueryFunction(&m_pad, NotNullMatcher()));
         EXPECT_CALL(*m_gstWrapperMock, gstPadSetActive(&m_pad, TRUE));
         EXPECT_CALL(*m_gstWrapperMock, gstElementAddPad(GST_ELEMENT(&m_rialtoSrc), &m_pad));
 
         EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_target));
-        EXPECT_CALL(*m_glibWrapperMock, gFree(CharStrMatcher(m_name)));
+        EXPECT_CALL(*m_glibWrapperMock, gFree(PtrStrMatcher(m_name)));
     }
 
     void expectSyncElement(GstElement *expectedElement)
@@ -159,7 +159,7 @@ protected:
     void expectLinkPayloader(GstElement *expectedSrcElement)
     {
         EXPECT_CALL(*m_glibWrapperMock, gOnceInitEnter(_)).WillOnce(Return(TRUE));
-        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(CharStrMatcher("svppay")))
+        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(StrEq("svppay")))
             .WillOnce(Return(reinterpret_cast<GstElementFactory *>(&m_factory)));
         EXPECT_CALL(*m_glibWrapperMock, gOnceInitLeave(_, 1));
         EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryCreate(reinterpret_cast<GstElementFactory *>(&m_factory), _))
@@ -172,12 +172,12 @@ protected:
 
     void expectLinkQueue(GstElement *expectedSrcElement)
     {
-        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(CharStrMatcher("queue"), _)).WillOnce(Return(&m_queue));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("queue"), _)).WillOnce(Return(&m_queue));
 
-        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_queue, CharStrMatcher("max-size-buffers")));
-        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_queue, CharStrMatcher("max-size-bytes")));
-        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_queue, CharStrMatcher("max-size-time")));
-        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_queue, CharStrMatcher("silent")));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_queue, StrEq("max-size-buffers")));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_queue, StrEq("max-size-bytes")));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_queue, StrEq("max-size-time")));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_queue, StrEq("silent")));
 
         expectBin(&m_queue);
         expectSyncElement(&m_queue);
@@ -263,7 +263,7 @@ TEST_F(RialtoServerAppSrcGstSrcTest, PayloaderFailure)
     guint64 videoMaxBytes = 8 * 1024 * 1024;
 
     EXPECT_CALL(*m_glibWrapperMock, gOnceInitEnter(_)).WillOnce(Return(TRUE));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(CharStrMatcher("svppay")))
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(StrEq("svppay")))
         .WillOnce(Return(reinterpret_cast<GstElementFactory *>(&m_factory)));
     EXPECT_CALL(*m_glibWrapperMock, gOnceInitLeave(_, 1));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryCreate(reinterpret_cast<GstElementFactory *>(&m_factory), _))
@@ -287,7 +287,7 @@ TEST_F(RialtoServerAppSrcGstSrcTest, QueueFailure)
 {
     guint64 videoMaxBytes = 8 * 1024 * 1024;
 
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(CharStrMatcher("queue"), _)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("queue"), _)).WillOnce(Return(nullptr));
 
     expectSettings(videoMaxBytes);
     expectBin(m_streamInfo.appSrc);

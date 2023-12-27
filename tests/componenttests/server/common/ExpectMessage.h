@@ -40,6 +40,7 @@ public:
             EXPECT_TRUE(m_channel); // assert not possible in constructor, just to fail test and not crash
             return;
         }
+        // TODO(RIALTO-448): Unexpected messages not checked
         m_subscriptionTag =
             m_channel->subscribe<MessageType>(std::bind(&ExpectMessage::onEvent, this, std::placeholders::_1));
     }

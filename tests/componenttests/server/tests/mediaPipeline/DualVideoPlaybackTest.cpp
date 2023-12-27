@@ -43,51 +43,55 @@ const std::string kDummyStateName{"dummy"};
 using testing::_;
 using testing::AtLeast;
 using testing::DoAll;
+using testing::Invoke;
 using testing::Return;
 using testing::SetArgPointee;
+using testing::StrEq;
 
 namespace firebolt::rialto::server::ct
 {
 class DualVideoPlaybackTest : public MediaPipelineTest
 {
 public:
+    testing::Sequence m_writeBufferSeq;
+
     DualVideoPlaybackTest() = default;
     ~DualVideoPlaybackTest() override = default;
 
     void secondaryGstPlayerWillBeCreated()
     {
         m_secondaryGstreamerStub.setupPipeline();
-        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(CharStrMatcher("rialtosrc")))
+        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(StrEq("rialtosrc")))
             .WillOnce(Return(nullptr))
             .RetiresOnSaturation();
-        EXPECT_CALL(*m_gstWrapperMock, gstElementRegister(0, CharStrMatcher("rialtosrc"), _, _)).RetiresOnSaturation();
-        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(CharStrMatcher("playbin"), _))
+        EXPECT_CALL(*m_gstWrapperMock, gstElementRegister(0, StrEq("rialtosrc"), _, _)).RetiresOnSaturation();
+        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("playbin"), _))
             .WillOnce(Return(&m_secondaryPipeline))
             .RetiresOnSaturation();
-        EXPECT_CALL(*m_glibWrapperMock, gTypeFromName(CharStrMatcher("GstPlayFlags")))
+        EXPECT_CALL(*m_glibWrapperMock, gTypeFromName(StrEq("GstPlayFlags")))
             .Times(3)
             .WillRepeatedly(Return(kSecondaryGstPlayFlagsType))
             .RetiresOnSaturation();
         EXPECT_CALL(*m_glibWrapperMock, gTypeClassRef(kSecondaryGstPlayFlagsType))
             .Times(3)
             .WillRepeatedly(Return(&m_flagsClass));
-        EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, CharStrMatcher("audio")))
+        EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("audio")))
             .WillOnce(Return(&m_audioFlag))
             .RetiresOnSaturation();
-        EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, CharStrMatcher("video")))
+        EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("video")))
             .WillOnce(Return(&m_videoFlag))
             .RetiresOnSaturation();
-        EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, CharStrMatcher("native-video")))
+        EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("native-video")))
             .WillOnce(Return(&m_nativeVideoFlag))
             .RetiresOnSaturation();
-        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(CharStrMatcher("brcmaudiosink")))
+        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(StrEq("brcmaudiosink")))
             .WillOnce(Return(nullptr))
             .RetiresOnSaturation();
-        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_secondaryPipeline, CharStrMatcher("flags")));
-        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_secondaryPipeline, CharStrMatcher("uri")));
-        EXPECT_CALL(*m_gstWrapperMock, gstBinGetByName(GST_BIN(&m_secondaryPipeline), CharStrMatcher("playsink")))
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_secondaryPipeline, StrEq("flags")));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_secondaryPipeline, StrEq("uri")));
+        EXPECT_CALL(*m_gstWrapperMock, gstBinGetByName(GST_BIN(&m_secondaryPipeline), StrEq("playsink")))
             .WillOnce(Return(&m_secondaryPlaysink));
-        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_secondaryPlaysink, CharStrMatcher("send-event-mode")));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_secondaryPlaysink, StrEq("send-event-mode")));
         EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_secondaryPlaysink));
 
         // In case of longer testruns, GstPlayer may request to query position
@@ -98,26 +102,25 @@ public:
 
     void secondaryVideoSourceWillBeAttached()
     {
-        EXPECT_CALL(*m_gstWrapperMock, gstCapsNewEmptySimple(CharStrMatcher("video/x-h264")))
+        EXPECT_CALL(*m_gstWrapperMock, gstCapsNewEmptySimple(StrEq("video/x-h264")))
             .WillOnce(Return(&m_videoCaps))
             .RetiresOnSaturation();
-        EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleStringStub(&m_videoCaps, CharStrMatcher("alignment"),
-                                                                  G_TYPE_STRING, CharStrMatcher("nal")))
-            .RetiresOnSaturation();
-        EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleStringStub(&m_videoCaps, CharStrMatcher("stream-format"),
-                                                                  G_TYPE_STRING, CharStrMatcher("raw")))
-            .RetiresOnSaturation();
-        EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_videoCaps, CharStrMatcher("width"), G_TYPE_INT, kWidth))
+        EXPECT_CALL(*m_gstWrapperMock,
+                    gstCapsSetSimpleStringStub(&m_videoCaps, StrEq("alignment"), G_TYPE_STRING, StrEq("nal")))
             .RetiresOnSaturation();
         EXPECT_CALL(*m_gstWrapperMock,
-                    gstCapsSetSimpleIntStub(&m_videoCaps, CharStrMatcher("height"), G_TYPE_INT, kHeight))
+                    gstCapsSetSimpleStringStub(&m_videoCaps, StrEq("stream-format"), G_TYPE_STRING, StrEq("raw")))
+            .RetiresOnSaturation();
+        EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_videoCaps, StrEq("width"), G_TYPE_INT, kWidth))
+            .RetiresOnSaturation();
+        EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_videoCaps, StrEq("height"), G_TYPE_INT, kHeight))
             .RetiresOnSaturation();
         EXPECT_CALL(*m_gstWrapperMock, gstCapsToString(&m_videoCaps)).WillOnce(Return(&m_videoCapsStr)).RetiresOnSaturation();
         EXPECT_CALL(*m_glibWrapperMock, gFree(&m_videoCapsStr)).RetiresOnSaturation();
-        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(CharStrMatcher("appsrc"), CharStrMatcher("vidsrc")))
+        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("appsrc"), StrEq("vidsrc")))
             .WillOnce(Return(GST_ELEMENT(&m_secondaryVideoAppSrc)));
         EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(&m_secondaryVideoAppSrc, &m_videoCaps));
-        EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_videoCaps));
+        EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_videoCaps)).WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
     }
 
     void secondarySourceWillBeSetup()
@@ -130,21 +133,18 @@ public:
     void willSetupAndAddSecondarySource()
     {
         m_secondaryGstreamerStub.setupAppSrcCallbacks(&m_secondaryVideoAppSrc);
-        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(GST_ELEMENT(&m_secondaryVideoAppSrc), CharStrMatcher("block")));
-        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(GST_ELEMENT(&m_secondaryVideoAppSrc), CharStrMatcher("format")));
-        EXPECT_CALL(*m_glibWrapperMock,
-                    gObjectSetStub(GST_ELEMENT(&m_secondaryVideoAppSrc), CharStrMatcher("stream-type")));
-        EXPECT_CALL(*m_glibWrapperMock,
-                    gObjectSetStub(GST_ELEMENT(&m_secondaryVideoAppSrc), CharStrMatcher("min-percent")));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(GST_ELEMENT(&m_secondaryVideoAppSrc), StrEq("block")));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(GST_ELEMENT(&m_secondaryVideoAppSrc), StrEq("format")));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(GST_ELEMENT(&m_secondaryVideoAppSrc), StrEq("stream-type")));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(GST_ELEMENT(&m_secondaryVideoAppSrc), StrEq("min-percent")));
         EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetMaxBytes(&m_secondaryVideoAppSrc, (8 * 1024 * 1024)));
         EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetStreamType(&m_secondaryVideoAppSrc, GST_APP_STREAM_TYPE_SEEKABLE));
         EXPECT_CALL(*m_glibWrapperMock, gStrdupPrintfStub(_)).WillOnce(Return(m_sourceName.data())).RetiresOnSaturation();
         EXPECT_CALL(*m_gstWrapperMock,
                     gstBinAdd(GST_BIN(&m_secondaryRialtoSource), GST_ELEMENT(&m_secondaryVideoAppSrc)));
-        EXPECT_CALL(*m_gstWrapperMock,
-                    gstElementGetStaticPad(GST_ELEMENT(&m_secondaryVideoAppSrc), CharStrMatcher("src")))
+        EXPECT_CALL(*m_gstWrapperMock, gstElementGetStaticPad(GST_ELEMENT(&m_secondaryVideoAppSrc), StrEq("src")))
             .WillOnce(Return(&m_pad));
-        EXPECT_CALL(*m_gstWrapperMock, gstGhostPadNew(CharStrMatcher(m_sourceName.data()), &m_pad))
+        EXPECT_CALL(*m_gstWrapperMock, gstGhostPadNew(StrEq(m_sourceName), &m_pad))
             .WillOnce(Return(&m_ghostPad))
             .RetiresOnSaturation();
         EXPECT_CALL(*m_gstWrapperMock, gstPadSetQueryFunction(&m_ghostPad, NotNullMatcher())).RetiresOnSaturation();
@@ -153,7 +153,7 @@ public:
             .RetiresOnSaturation();
         EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_pad)).RetiresOnSaturation();
         EXPECT_CALL(*m_gstWrapperMock, gstElementSyncStateWithParent(GST_ELEMENT(&m_secondaryVideoAppSrc)));
-        EXPECT_CALL(*m_glibWrapperMock, gFree(CharStrMatcher(m_sourceName.data()))).RetiresOnSaturation();
+        EXPECT_CALL(*m_glibWrapperMock, gFree(PtrStrMatcher(m_sourceName.data()))).RetiresOnSaturation();
     }
 
     void willFinishSetupAndAddSecondarySource()
@@ -176,7 +176,7 @@ public:
     }
 
     void willPushSecondaryVideoData(const std::unique_ptr<IMediaPipeline::MediaSegment> &segment, GstBuffer &buffer,
-                                    GstCaps &capsCopy)
+                                    GstCaps &capsCopy, bool shouldNotify)
     {
         std::string dataCopy(segment->getData(), segment->getData() + segment->getDataLength());
         EXPECT_CALL(*m_gstWrapperMock, gstBufferNewAllocate(nullptr, segment->getDataLength(), nullptr))
@@ -189,14 +189,31 @@ public:
             .WillOnce(Return(&m_videoCaps))
             .RetiresOnSaturation();
         EXPECT_CALL(*m_gstWrapperMock, gstCapsCopy(&m_videoCaps)).WillOnce(Return(&capsCopy)).RetiresOnSaturation();
-        EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&capsCopy, CharStrMatcher("width"), G_TYPE_INT, kWidth));
-        EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&capsCopy, CharStrMatcher("height"), G_TYPE_INT, kHeight));
+        EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&capsCopy, StrEq("width"), G_TYPE_INT, kWidth));
+        EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&capsCopy, StrEq("height"), G_TYPE_INT, kHeight));
         EXPECT_CALL(*m_gstWrapperMock,
-                    gstCapsSetSimpleFractionStub(&capsCopy, CharStrMatcher("framerate"), GST_TYPE_FRACTION, _, _));
+                    gstCapsSetSimpleFractionStub(&capsCopy, StrEq("framerate"), GST_TYPE_FRACTION, _, _));
         EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(&m_secondaryVideoAppSrc, &capsCopy));
         EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_videoCaps)).RetiresOnSaturation();
         EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&capsCopy));
-        EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(&m_secondaryVideoAppSrc, _)).RetiresOnSaturation();
+        if (!shouldNotify)
+        {
+            EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(&m_secondaryVideoAppSrc, _))
+                .InSequence(m_writeBufferSeq)
+                .RetiresOnSaturation();
+        }
+        else
+        {
+            EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(&m_secondaryVideoAppSrc, _))
+                .InSequence(m_writeBufferSeq)
+                .WillOnce(Invoke(
+                    [this](GstAppSrc *appsrc, GstBuffer *buffer)
+                    {
+                        workerFinished();
+                        return GST_FLOW_OK;
+                    }))
+                .RetiresOnSaturation();
+        }
     }
 
     void secondaryWillStop()
@@ -255,6 +272,7 @@ public:
             .send(attachVideoSourceReq)
             .expectSuccess()
             .matchResponse([&](const auto &resp) { m_secondaryVideoSourceId = resp.source_id(); });
+        waitWorker();
     }
 
     void setupSecondarySource() { m_secondaryGstreamerStub.setupRialtoSource(); }
@@ -321,7 +339,7 @@ public:
 
         // Write frames to shm and add gst expects
         EXPECT_EQ(writer->writeFrame(segment), AddSegmentStatus::OK);
-        willPushSecondaryVideoData(segment, buffer, capsCopy);
+        willPushSecondaryVideoData(segment, buffer, capsCopy, false);
 
         // Finally, send HaveData and receive new NeedData
         ExpectMessage<firebolt::rialto::NeedMediaDataEvent> expectedNeedData{m_clientStub};
@@ -355,14 +373,14 @@ public:
 
         // Write frames to shm and add gst expects
         EXPECT_EQ(writer->writeFrame(segment), AddSegmentStatus::OK);
-        willPushSecondaryVideoData(segment, buffer, capsCopy);
+        willPushSecondaryVideoData(segment, buffer, capsCopy, true);
 
-        // Finally, send HaveData and receive new NeedData
-        ExpectMessage<firebolt::rialto::NeedMediaDataEvent> expectedNeedData{m_clientStub};
+        // Finally, send HaveData with EOS status
         auto haveDataReq{
             createHaveDataRequest(m_secondarySessionId, writer->getNumFrames(), m_lastSecondaryNeedData->request_id())};
         haveDataReq.set_status(HaveDataRequest_MediaSourceStatus_EOS);
         ConfigureAction<HaveData>(m_clientStub).send(haveDataReq).expectSuccess();
+        waitWorker();
     }
 
     void secondaryGstNotifyEos()

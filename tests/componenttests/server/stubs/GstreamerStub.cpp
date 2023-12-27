@@ -27,6 +27,7 @@ using testing::Invoke;
 using testing::Return;
 using testing::SaveArg;
 using testing::SaveArgPointee;
+using testing::StrEq;
 
 namespace firebolt::rialto::server::ct
 {
@@ -40,8 +41,7 @@ GstreamerStub::GstreamerStub(const std::shared_ptr<testing::StrictMock<wrappers:
 
 void GstreamerStub::setupPipeline()
 {
-    EXPECT_CALL(*m_glibWrapperMock,
-                gSignalConnect(m_pipeline, CharStrMatcher("source-setup"), NotNullMatcher(), NotNullMatcher()))
+    EXPECT_CALL(*m_glibWrapperMock, gSignalConnect(m_pipeline, StrEq("source-setup"), NotNullMatcher(), NotNullMatcher()))
         .WillOnce(Invoke(
             [this](gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data)
             {
@@ -50,7 +50,7 @@ void GstreamerStub::setupPipeline()
                 return m_setupSourceSignalId;
             }));
     EXPECT_CALL(*m_glibWrapperMock,
-                gSignalConnect(m_pipeline, CharStrMatcher("element-setup"), NotNullMatcher(), NotNullMatcher()))
+                gSignalConnect(m_pipeline, StrEq("element-setup"), NotNullMatcher(), NotNullMatcher()))
         .WillOnce(Invoke(
             [this](gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data)
             {
@@ -59,7 +59,7 @@ void GstreamerStub::setupPipeline()
                 return m_setupElementSignalId;
             }));
     EXPECT_CALL(*m_glibWrapperMock,
-                gSignalConnect(m_pipeline, CharStrMatcher("deep-element-added"), NotNullMatcher(), NotNullMatcher()))
+                gSignalConnect(m_pipeline, StrEq("deep-element-added"), NotNullMatcher(), NotNullMatcher()))
         .WillOnce(Invoke(
             [this](gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data)
             {
