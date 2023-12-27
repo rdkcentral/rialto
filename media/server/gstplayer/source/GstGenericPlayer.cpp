@@ -384,23 +384,15 @@ bool GstGenericPlayer::getPosition(std::int64_t &position)
 
 GstBuffer *GstGenericPlayer::createBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const
 {
-    RIALTO_SERVER_LOG_WARN("lukewill4: getDataLength %u", mediaSegment.getDataLength());
-    RIALTO_SERVER_LOG_WARN("lukewill4: dataStr %s",  mediaSegment.getData());
     GstBuffer *gstBuffer = m_gstWrapper->gstBufferNewAllocate(nullptr, mediaSegment.getDataLength(), nullptr);
-    gsize bytesCopied = m_gstWrapper->gstBufferFill(gstBuffer, 0, mediaSegment.getData(), mediaSegment.getDataLength());
-    RIALTO_SERVER_LOG_WARN("lukewill4: 2 getDataLength %u", mediaSegment.getDataLength());
-    RIALTO_SERVER_LOG_WARN("lukewill4: 2 dataStr %s", mediaSegment.getData());
-    RIALTO_SERVER_LOG_WARN("lukewill4: data ptr 0x %p", mediaSegment.getData());
-    RIALTO_SERVER_LOG_WARN("lukewill4: bytesCopied %lu", bytesCopied);
+    m_gstWrapper->gstBufferFill(gstBuffer, 0, mediaSegment.getData(), mediaSegment.getDataLength());
 
     if (mediaSegment.isEncrypted())
     {
         GstBuffer *keyId = m_gstWrapper->gstBufferNewAllocate(nullptr, mediaSegment.getKeyId().size(), nullptr);
-    RIALTO_SERVER_LOG_WARN("lukewill4: 2 KeyId %s %p",  mediaSegment.getKeyId().data(), mediaSegment.getKeyId().data());
         m_gstWrapper->gstBufferFill(keyId, 0, mediaSegment.getKeyId().data(), mediaSegment.getKeyId().size());
 
         GstBuffer *initVector = m_gstWrapper->gstBufferNewAllocate(nullptr, mediaSegment.getInitVector().size(), nullptr);
-    RIALTO_SERVER_LOG_WARN("lukewill4: 2 initVector %s %p", mediaSegment.getInitVector().data(), mediaSegment.getInitVector().data());
         m_gstWrapper->gstBufferFill(initVector, 0, mediaSegment.getInitVector().data(),
                                     mediaSegment.getInitVector().size());
         auto subsamplesRawSize = mediaSegment.getSubSamples().size() * (sizeof(guint16) + sizeof(guint32));
@@ -661,8 +653,6 @@ void GstGenericPlayer::scheduleAudioUnderflow()
     if (m_workerThread)
     {
         bool underflowEnabled = m_context.isPlaying && !m_context.audioSourceRemoved;
-        RIALTO_SERVER_LOG_DEBUG("lukewill: scheduleAudioUnderflow %u, %u", m_context.audioUnderflowOccured, underflowEnabled);
-        RIALTO_SERVER_LOG_DEBUG("lukewill: isPlaying %u, audioSourceRemoved %u", m_context.isPlaying, m_context.audioSourceRemoved);
         m_workerThread->enqueueTask(m_taskFactory->createUnderflow(m_context, *this, m_context.audioUnderflowOccured,
                                                                    underflowEnabled, MediaSourceType::AUDIO));
     }
@@ -673,7 +663,6 @@ void GstGenericPlayer::scheduleVideoUnderflow()
     if (m_workerThread)
     {
         bool underflowEnabled = m_context.isPlaying;
-    RIALTO_SERVER_LOG_DEBUG("lukewill: scheduleVideoUnderflow %u, %u", m_context.videoUnderflowOccured, underflowEnabled);
         m_workerThread->enqueueTask(m_taskFactory->createUnderflow(m_context, *this, m_context.videoUnderflowOccured,
                                                                    underflowEnabled, MediaSourceType::VIDEO));
     }

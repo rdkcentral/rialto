@@ -46,6 +46,8 @@ private:
     std::thread m_ipcThread;
     std::shared_ptr<::firebolt::rialto::ipc::IChannel> m_ipcChannel;
     std::array<int, 2> m_socks{-1, -1};
+
+    // Its possible that getChannel can be called before the ipcThread creates the channel
     std::mutex m_channelLock;
     std::condition_variable m_channelCond;
 };

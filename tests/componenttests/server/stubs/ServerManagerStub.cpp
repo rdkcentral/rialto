@@ -67,7 +67,7 @@ int ServerManagerStub::getServerSocket() const
 
 std::shared_ptr<::firebolt::rialto::ipc::IChannel> ServerManagerStub::getChannel()
 {
-    // Wait for the channel to be created incase it hasnt been created yet
+    // Wait for the channel to be created incase it hasn't yet
     std::unique_lock<std::mutex> locker(m_channelLock);
     if (!m_ipcChannel)
     {

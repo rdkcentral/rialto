@@ -39,7 +39,6 @@ public:
 
     void failHaveData(std::shared_ptr<::firebolt::rialto::NeedMediaDataEvent> &needData)
     {
-        std::cout << "NeedMediaDataEvent 22" << std::endl;
         ExpectMessage<firebolt::rialto::NeedMediaDataEvent> expectedNeedData{m_clientStub};
 
         auto haveDataReq{createHaveDataRequest(m_sessionId, 0, needData->request_id())};

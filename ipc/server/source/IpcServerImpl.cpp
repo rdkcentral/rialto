@@ -44,11 +44,6 @@
 #include <sys/un.h>
 #include <unistd.h>
 
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <sstream>
-
 #define WAKE_EVENT_ID uint64_t(0)
 #define FIRST_LISTENING_SOCKET_ID uint64_t(1)
 #define FIRST_CLIENT_ID uint64_t(10000)
@@ -81,7 +76,6 @@ ServerImpl::ServerImpl()
     : m_pollFd(-1), m_wakeEventFd(-1), m_socketIdCounter(FIRST_LISTENING_SOCKET_ID),
       m_clientIdCounter(FIRST_CLIENT_ID), m_recvDataBuf{0}, m_recvCtrlBuf{0}
 {
-    RIALTO_IPC_LOG_ERROR("lukewill: ServerImpl");
     // create the eventfd use to wake the poll loop
     m_wakeEventFd = eventfd(0, EFD_CLOEXEC);
     if (m_wakeEventFd < 0)
@@ -108,12 +102,6 @@ ServerImpl::ServerImpl()
 
 ServerImpl::~ServerImpl()
 {
-    for (const auto &client : m_clients)
-    {
-        RIALTO_IPC_LOG_ERROR("lukewill: close socket id %lu, socket %d", client.first, client.second.sock);
-        disconnectClient(client.first);
-    }
-
     if ((m_pollFd >= 0) && (close(m_pollFd) != 0))
         RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to close epoll");
 
@@ -124,7 +112,6 @@ ServerImpl::~ServerImpl()
     {
         const Socket &kSocket = entry.second;
 
-        RIALTO_IPC_LOG_ERROR("lukewill: socket");
         if (unlink(kSocket.sockPath.c_str()) != 0)
             RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to remove socket @ '%s'", kSocket.sockPath.c_str());
         if (close(kSocket.sockFd) != 0)
@@ -196,7 +183,6 @@ bool ServerImpl::getSocketLock(Socket *socket)
  */
 void ServerImpl::closeListeningSocket(Socket *socket)
 {
-    RIALTO_IPC_LOG_ERROR("lukewill: closeListeningSocket");
     if (!socket->sockPath.empty() && (unlink(socket->sockPath.c_str()) != 0) && (errno != ENOENT))
         RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to remove socket @ '%s'", socket->sockPath.c_str());
     if ((socket->sockFd >= 0) && (close(socket->sockFd) != 0))
@@ -218,14 +204,12 @@ bool ServerImpl::addSocket(const std::string &socketPath,
                            std::function<void(const std::shared_ptr<IClient> &)> clientConnectedCb,
                            std::function<void(const std::shared_ptr<IClient> &)> clientDisconnectedCb)
 {
-    RIALTO_IPC_LOG_ERROR("lukewill: addSocket");
     // store the path
     Socket socket;
     socket.sockPath = socketPath;
 
     // create the socket
     socket.sockFd = ::socket(AF_UNIX, SOCK_SEQPACKET | SOCK_CLOEXEC | SOCK_NONBLOCK, 0);
-    RIALTO_IPC_LOG_ERROR("lukewill: Create server socket %d", socket.sockFd);
     if (socket.sockFd == -1)
     {
         RIALTO_IPC_LOG_SYS_ERROR(errno, "socket error");
@@ -460,7 +444,6 @@ bool ServerImpl::process()
     std::unique_lock<std::mutex> locker(m_clientsLock);
     if (!m_condemnedClients.empty())
     {
-        RIALTO_IPC_LOG_ERROR("lukewill: m_condemnedClients");
         // take a copy of the set so we can process without the lock held
         std::set<uint64_t> theCondemned;
         m_condemnedClients.swap(theCondemned);
@@ -485,8 +468,6 @@ bool ServerImpl::process()
             // remove the socket from epoll and close it
             if (details.sock >= 0)
             {
-                RIALTO_IPC_LOG_ERROR("lukewill: close socket id %lu, socket %d", clientId, details.sock);
-                RIALTO_IPC_LOG_ERROR("lukewill: close m_condemnedClients");
                 if (epoll_ctl(m_pollFd, EPOLL_CTL_DEL, details.sock, nullptr) != 0)
                     RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to remove socket from epoll");
 
@@ -558,7 +539,6 @@ std::shared_ptr<ClientImpl> ServerImpl::addClientSocket(int socketFd, const std:
 
     // add to the set of clients
     {
-        RIALTO_IPC_LOG_ERROR("lukewill: open socket id %lu, socket %d", kClientId, socketFd);
         std::lock_guard<std::mutex> locker(m_clientsLock);
         m_clients.emplace(kClientId, clientDetails);
     }
@@ -594,12 +574,6 @@ void ServerImpl::processNewConnection(uint64_t socketId)
 
     const Socket &kSocket = it->second;
 
-    std::ifstream procFile("/proc/net/raw");
-    std::string line;
-    std::getline(procFile, line);
-    while (std::getline(procFile, line)) {
-         RIALTO_IPC_LOG_ERROR("lukewill: %s", line.c_str());
-    }
     // accept the connection from the client
     struct sockaddr clientAddr = {0};
     socklen_t clientAddrLen = sizeof(clientAddr);
@@ -710,7 +684,6 @@ void ServerImpl::processClientSocket(uint64_t clientId, unsigned events)
     // take the lock while accessing the client list
     std::unique_lock<std::mutex> locker(m_clientsLock);
 
-    RIALTO_IPC_LOG_ERROR("lukewill: processClientSocket %lu", clientId);
     auto it = m_clients.find(clientId);
     if (it == m_clients.end())
     {
@@ -737,7 +710,7 @@ void ServerImpl::processClientSocket(uint64_t clientId, unsigned events)
     // if there was an error disconnect the socket
     if (events & EPOLLERR)
     {
-        RIALTO_IPC_LOG_ERROR("lukewill: error detected on client socket - disconnecting client");
+        RIALTO_IPC_LOG_ERROR("error detected on client socket - disconnecting client");
         disconnectClient(clientId);
         return;
     }
@@ -771,7 +744,6 @@ void ServerImpl::processClientSocket(uint64_t clientId, unsigned events)
             }
             else if (rd == 0)
             {
-                RIALTO_IPC_LOG_ERROR("lukewill: client closed connection");
                 // client closed connection, and we've read all data, add to the condemned set
                 // so is cleaned up once all the events are processed
                 disconnectClient(clientId);

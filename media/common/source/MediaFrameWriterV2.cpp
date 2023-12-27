@@ -114,7 +114,6 @@ try
 {
     auto metadata{buildMetadata(data)};
     size_t metadataSize{metadata.ByteSizeLong()};
-    RIALTO_COMMON_LOG_ERROR("lukewill3: metadataSize %ld", metadataSize);
     if (m_bytesWritten + sizeof(metadataSize) + metadataSize + data->getDataLength() > m_kMaxBytes)
     {
         RIALTO_COMMON_LOG_ERROR("Not enough memory available to write MediaSegment");
@@ -130,9 +129,6 @@ try
     m_dataOffset += metadataSize;
     m_dataOffset = m_byteWriter.writeBytes(m_shmBuffer, m_dataOffset, data->getData(), data->getDataLength());
 
-    std::string dataStr = (char*)(data->getData());
-    RIALTO_COMMON_LOG_ERROR("lukewill3: getDataLength %u", data->getDataLength());
-    RIALTO_COMMON_LOG_ERROR("lukewill3: dataStr %s",  data->getData());
     // Track the amount of bytes written
     m_bytesWritten += sizeof(metadataSize) + metadataSize + data->getDataLength();
     ++m_numFrames;
