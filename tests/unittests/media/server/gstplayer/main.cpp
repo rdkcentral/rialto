@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#include <gtest/gtest.h>
 #include <gst/gst.h>
+#include <gtest/gtest.h>
 
 int main(int argc, char **argv) // NOLINT(build/filename_format)
 {
