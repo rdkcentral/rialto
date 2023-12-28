@@ -138,7 +138,6 @@ def runTests (suites, doListTests, gtestFilter, outputDir, resultsFile, xmlFile,
             executeCmd.append('--gtest_list_tests')
         elif gtestFilter != None:
             executeCmd.append('--gtest_filter=' + gtestFilter)
-        executeCmd.append('--gtest_repeat=20')
 
         # Dont output as xml for valgrind
         # Googletest xml output flags an UninitCondition error when converting to xml
@@ -175,7 +174,7 @@ def AddValgrind(suite, outputToFile, outputToXml):
     # Some shared libraries throw errors for 'possible leaks', these usually occur when
     # incrementing and decrementing pointers as valgrind thinks you have lost the start of
     # the buffer. Supress these errors.
-    executeCmd.append("--gen-suppressions=all")
+    #executeCmd.append("--gen-suppressions=all")
     filePath = os.path.realpath(os.path.dirname(__file__))
     executeCmd.append("--suppressions=" + filePath + "/../../" + valgrindIgnore)
 
