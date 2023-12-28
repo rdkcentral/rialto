@@ -54,8 +54,8 @@ TEST_F(MediaPipelineModuleServiceTests, shouldDestroySessionWhenDisconnectClient
     clientWillConnect();
     sendClientConnected();
     mediaPipelineServiceWillCreateSession();
-    sendCreateSessionRequestAndReceiveResponse();
-    clientWillDisconnect();
+    int sessionId = sendCreateSessionRequestAndReceiveResponse();
+    clientWillDisconnect(sessionId);
     sendClientDisconnected();
 }
 

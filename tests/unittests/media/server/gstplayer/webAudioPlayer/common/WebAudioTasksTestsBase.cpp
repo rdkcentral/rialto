@@ -52,8 +52,6 @@ WebAudioTasksTestsBase::WebAudioTasksTestsBase()
 {
     testContext = std::make_shared<WebAudioTasksTestsContext>();
 
-    gst_init(nullptr, nullptr);
-
     testContext->m_context.pipeline = &testContext->m_pipeline;
     testContext->m_context.source = &testContext->m_src;
 }
