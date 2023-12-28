@@ -175,7 +175,7 @@ def AddValgrind(suite, outputToFile, outputToXml):
     # Some shared libraries throw errors for 'possible leaks', these usually occur when
     # incrementing and decrementing pointers as valgrind thinks you have lost the start of
     # the buffer. Supress these errors.
-    #executeCmd.append("--gen-suppressions=all")
+    executeCmd.append("--gen-suppressions=all")
     filePath = os.path.realpath(os.path.dirname(__file__))
     executeCmd.append("--suppressions=" + filePath + "/../../" + valgrindIgnore)
 
