@@ -35,8 +35,11 @@ constexpr bool kIsNotLdl{false};
 constexpr firebolt::rialto::MediaKeyErrorStatus kStatusOk{firebolt::rialto::MediaKeyErrorStatus::OK};
 constexpr firebolt::rialto::InitDataType kInitDataTypeCenc{firebolt::rialto::InitDataType::CENC};
 const std::vector<unsigned char> kLicenseRequestMessage{'r', 'e', 'q', 'u', 'e', 's', 't'};
+const std::vector<unsigned char> kLicensRenewalMessage{'r', 'e', 'n', 'e', 'w', 'a', 'l'};
 const std::vector<uint8_t> kLicenseResponse{0x4D, 0x79, 0x4C, 0x69, 0x63, 0x65, 0x6E, 0x73,
                                             0x65, 0x44, 0x61, 0x74, 0x61, 0x3A, 0x20, 0x31};
+const std::vector<uint8_t> kLicenseRenewalResponse{0x1A, 0xB3, 0x7F, 0x8E, 0xD4, 0x60, 0x2F, 0x91,
+                                                   0x66, 0x9E, 0x3E, 0xA7, 0xD2, 0x81, 0x4F};
 const std::string kUrl{"www.licenseServer.com"};
 } // namespace
 
@@ -166,6 +169,22 @@ void MediaKeysTestMethods::updateSession()
     EXPECT_EQ(m_mediaKeys->updateSession(kKeySessionId, kLicenseResponse), kStatusOk);
 }
 
+void MediaKeysTestMethods::shouldUpdateSessionRenewal()
+{
+    EXPECT_CALL(*m_mediaKeysModuleMock,
+                updateSession(_, updateSessionRequestMatcher(kMediaKeysHandle, kKeySessionId, kLicenseRenewalResponse), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->updateSessionResponse(kStatusOk)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
+}
+
+void MediaKeysTestMethods::updateSessionRenewal()
+{
+    EXPECT_CALL(*m_mediaKeysModuleMock,
+                updateSession(_, updateSessionRequestMatcher(kMediaKeysHandle, kKeySessionId, kLicenseRenewalResponse), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->updateSessionResponse(kStatusOk)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
+}
+
 void MediaKeysTestMethods::shouldCloseKeySession()
 {
     EXPECT_CALL(*m_mediaKeysModuleMock,
@@ -222,6 +241,18 @@ void MediaKeysTestMethods::terminateMediaKeySession()
     // Destroy media keys
     MediaKeysTestMethods::shouldDestroyMediaKeys();
     MediaKeysTestMethods::destroyMediaKeys();
+}
+
+void MediaKeysTestMethods::shouldNotifyLicenseRenewal()
+{
+    EXPECT_CALL(*m_mediaKeysClientMock, onLicenseRenewal(kKeySessionId, kLicensRenewalMessage))
+        .WillOnce(Invoke(this, &MediaKeysTestMethods::notifyEvent));
+}
+
+void MediaKeysTestMethods::sendNotifyLicenseRenewal()
+{
+    getServerStub()->notifyLicenseRenewal(kMediaKeysHandle, kKeySessionId, kLicensRenewalMessage);
+    waitEvent();
 }
 
 } // namespace firebolt::rialto::client::ct

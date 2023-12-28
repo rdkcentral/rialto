@@ -73,4 +73,19 @@ void MediaKeysModuleStub::notifyKeyStatusesChangedEvent(int32_t mediaKeysHandle,
     getClient()->sendEvent(event);
 }
 
+void MediaKeysModuleStub::notifyLicenseRenewal(int32_t mediaKeysHandle, int32_t keySessionId, const std::vector<unsigned char> &licenseRenewalMessage)
+{
+    waitForClientConnect();
+
+    auto event = std::make_shared<firebolt::rialto::LicenseRenewalEvent>();
+    for (auto it = licenseRenewalMessage.begin(); it != licenseRenewalMessage.end(); it++)
+    {
+        event->add_license_renewal_message(*it);
+    }
+    event->set_media_keys_handle(mediaKeysHandle);
+    event->set_key_session_id(keySessionId);
+
+    getClient()->sendEvent(event);
+}
+
 } // namespace firebolt::rialto::client::ct

@@ -70,12 +70,16 @@ protected:
     void sendNotifyKeyStatusesChanged();
     void shouldUpdateSession();
     void updateSession();
+    void shouldUpdateSessionRenewal();
+    void updateSessionRenewal();
     void shouldCloseKeySession();
     void closeKeySession();
     void shouldDestroyMediaKeys();
     void destroyMediaKeys();
     void initaliseMediaKeySession();
     void terminateMediaKeySession();
+    void shouldNotifyLicenseRenewal();
+    void sendNotifyLicenseRenewal();
 
     // Component test helpers
     virtual void notifyEvent() = 0;
