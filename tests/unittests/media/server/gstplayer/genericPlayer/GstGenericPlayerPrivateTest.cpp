@@ -127,7 +127,6 @@ protected:
 
     GstElement *initRealElement()
     {
-        gst_init(nullptr, nullptr);
         GstElementFactory *elementFactory = gst_element_factory_find("fakesrc");
         GstElement *element = gst_element_factory_create(elementFactory, nullptr);
         gst_object_unref(elementFactory);

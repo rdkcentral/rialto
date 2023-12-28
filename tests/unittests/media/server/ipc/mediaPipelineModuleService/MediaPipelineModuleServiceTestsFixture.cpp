@@ -177,9 +177,9 @@ void MediaPipelineModuleServiceTests::clientWillConnect()
     EXPECT_CALL(*m_clientMock, exportService(_));
 }
 
-void MediaPipelineModuleServiceTests::clientWillDisconnect()
+void MediaPipelineModuleServiceTests::clientWillDisconnect(int sessionId)
 {
-    EXPECT_CALL(m_mediaPipelineServiceMock, destroySession(kHardcodedSessionId));
+    EXPECT_CALL(m_mediaPipelineServiceMock, destroySession(sessionId));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillCreateSession()

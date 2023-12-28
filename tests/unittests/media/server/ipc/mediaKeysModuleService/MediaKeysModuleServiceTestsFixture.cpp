@@ -107,9 +107,9 @@ void MediaKeysModuleServiceTests::clientWillConnect()
     EXPECT_CALL(*m_clientMock, exportService(_));
 }
 
-void MediaKeysModuleServiceTests::clientWillDisconnect()
+void MediaKeysModuleServiceTests::clientWillDisconnect(int sessionId)
 {
-    EXPECT_CALL(m_cdmServiceMock, destroyMediaKeys(kHardcodedMediaKeysHandle));
+    EXPECT_CALL(m_cdmServiceMock, destroyMediaKeys(sessionId));
 }
 
 void MediaKeysModuleServiceTests::cdmServiceWillCreateMediaKeys()
