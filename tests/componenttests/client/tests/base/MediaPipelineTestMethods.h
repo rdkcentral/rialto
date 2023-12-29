@@ -155,8 +155,8 @@ protected:
     int32_t addSegmentMseAudio();
     int32_t addSegmentMseVideo();
     int32_t addSegmentMseVideoSecondary();
-    int32_t addSegmentEncryptedAudio(const uint32_t keyIndex);
-    int32_t addSegmentEncryptedVideo(const uint32_t keyIndex);
+    int32_t addSegmentEncryptedAudio(const int32_t keyIndex = -1);
+    int32_t addSegmentEncryptedVideo(const int32_t keyIndex = -1);
     void haveDataOk();
     void haveDataEos();
     void haveDataOkSecondary();
@@ -219,6 +219,8 @@ protected:
     void checkMseVideoSegmentWrittenSecondary(int32_t segmentId);
     void checkEncryptedAudioSegmentWritten(int32_t segmentId, uint32_t keyIndex);
     void checkEncryptedVideoSegmentWritten(int32_t segmentId, uint32_t keyIndex);
+    void checkAudioKeyId(int32_t segmentId, uint32_t keyIndex);
+    void checkVideoKeyId(int32_t segmentId, uint32_t keyIndex);
 
     // Helper methods
     void startAudioVideoMediaSessionWaitForPreroll();
@@ -264,7 +266,8 @@ private:
     void checkHasNoSegmentAlignment(const MediaSegmentMetadata &metadata);
     void checkHasNoExtraData(const MediaSegmentMetadata &metadata);
     void checkSegmentData(const MediaSegmentMetadata &metadata, uint8_t *dataPtr, const std::string &expectedSegmentData);
-    void addEncryptedDataToSegment(std::unique_ptr<IMediaPipeline::MediaSegment> &mseData, uint32_t keyIndex);
+    void checkKeyId(const MediaPlayerShmInfo& shmInfo, uint32_t keyIndex);
+    void addEncryptedDataToSegment(std::unique_ptr<IMediaPipeline::MediaSegment> &mseData, int32_t keyIndex);
     void shouldCreateMediaSessionInternal(const int32_t sessionId, const VideoRequirements &videoRequirements);
     void shouldLoadInternal(const int32_t sessionId, const MediaType &mediaType, const std::string &mimeType,
                             const std::string &url);

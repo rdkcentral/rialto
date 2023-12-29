@@ -28,7 +28,7 @@ public:
     LicenseRenewalTest() : ClientComponentTest() 
     { 
         ClientComponentTest::startApplicationRunning(); 
-        ClientComponentTest::initaliseMediaKeySession(); 
+        ClientComponentTest::initaliseWidevineMediaKeySession(); 
     }
 
     ~LicenseRenewalTest() 

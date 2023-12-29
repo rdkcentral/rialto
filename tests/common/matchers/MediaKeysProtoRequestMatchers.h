@@ -74,4 +74,34 @@ MATCHER_P2(closeKeySessionRequestMatcher, mediaKeysHandle, keySessionId, "")
     return ((kRequest->media_keys_handle() == mediaKeysHandle) && (kRequest->key_session_id() == keySessionId));
 }
 
+MATCHER_P2(loadSessionRequestMatcher, mediaKeysHandle, keySessionId, "")
+{
+    const ::firebolt::rialto::LoadSessionRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::LoadSessionRequest *>(arg);
+    return ((kRequest->media_keys_handle() == mediaKeysHandle) && (kRequest->key_session_id() == keySessionId));
+}
+
+MATCHER_P3(containsKeyRequestMatcher, mediaKeysHandle, keySessionId, keyId, "")
+{
+    const ::firebolt::rialto::ContainsKeyRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::ContainsKeyRequest *>(arg);
+    bool keyIdMatch{keyId.size() == static_cast<size_t>(kRequest->key_id().size())};
+    if (keyIdMatch)
+    {
+        for (size_t i = 0; i < keyId.size(); ++i)
+        {
+            keyIdMatch &= kRequest->key_id(i) == keyId[i];
+        }
+    }
+    return ((kRequest->media_keys_handle() == mediaKeysHandle) && (kRequest->key_session_id() == keySessionId) &&
+            keyIdMatch);
+}
+
+MATCHER_P2(removeKeySessionRequestMatcher, mediaKeysHandle, keySessionId, "")
+{
+    const ::firebolt::rialto::RemoveKeySessionRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::RemoveKeySessionRequest *>(arg);
+    return ((kRequest->media_keys_handle() == mediaKeysHandle) && (kRequest->key_session_id() == keySessionId));
+}
+
 #endif // MEDIA_KEYS_PROTO_REQUEST_MATCHERS_H_

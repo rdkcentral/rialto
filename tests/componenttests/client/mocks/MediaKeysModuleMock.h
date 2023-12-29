@@ -135,6 +135,27 @@ public:
         return response;
     }
 
+    ::firebolt::rialto::LoadSessionResponse loadSessionResponse(const firebolt::rialto::MediaKeyErrorStatus &status)
+    {
+        firebolt::rialto::LoadSessionResponse response;
+        response.set_error_status(convertMediaKeyErrorStatus(status));
+        return response;
+    }
+
+    ::firebolt::rialto::ContainsKeyResponse containsKeyResponse(const bool containsKey)
+    {
+        firebolt::rialto::ContainsKeyResponse response;
+        response.set_contains_key(containsKey);
+        return response;
+    }
+
+    ::firebolt::rialto::RemoveKeySessionResponse removeKeySessionResponse(const firebolt::rialto::MediaKeyErrorStatus &status)
+    {
+        firebolt::rialto::RemoveKeySessionResponse response;
+        response.set_error_status(convertMediaKeyErrorStatus(status));
+        return response;
+    }
+
     MediaKeysModuleMock() {}
     virtual ~MediaKeysModuleMock() = default;
 };

@@ -76,10 +76,20 @@ protected:
     void closeKeySession();
     void shouldDestroyMediaKeys();
     void destroyMediaKeys();
-    void initaliseMediaKeySession();
+    void initaliseWidevineMediaKeySession();
+    void initalisePlayreadyMediaKeySession();
     void terminateMediaKeySession();
     void shouldNotifyLicenseRenewal();
     void sendNotifyLicenseRenewal();
+    void shouldLoadSession();
+    void loadSession();
+    void shouldContainsKey();
+    void containsKey();
+    void shouldNotContainKey();
+    void doesNotContainKey();
+    void selectKeyId(const uint32_t keyIndex);
+    void shouldRemoveKeySession();
+    void removeKeySession();
 
     // Component test helpers
     virtual void notifyEvent() = 0;

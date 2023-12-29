@@ -100,6 +100,7 @@ MediaKeyErrorStatus MediaKeys::selectKeyId(int32_t keySessionId, const std::vect
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
+    RIALTO_CLIENT_LOG_DEBUG("lukewill: %s", std::string(keyId.begin(), keyId.end()).c_str());
     if (KeyIdMap::instance().updateKey(keySessionId, keyId))
     {
         return MediaKeyErrorStatus::OK;

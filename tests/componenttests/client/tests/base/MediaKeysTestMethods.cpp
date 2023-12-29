@@ -39,7 +39,9 @@ const std::vector<unsigned char> kLicensRenewalMessage{'r', 'e', 'n', 'e', 'w', 
 const std::vector<uint8_t> kLicenseResponse{0x4D, 0x79, 0x4C, 0x69, 0x63, 0x65, 0x6E, 0x73,
                                             0x65, 0x44, 0x61, 0x74, 0x61, 0x3A, 0x20, 0x31};
 const std::vector<uint8_t> kLicenseRenewalResponse{0x1A, 0xB3, 0x7F, 0x8E, 0xD4, 0x60, 0x2F, 0x91,
-                                                   0x66, 0x9E, 0x3E, 0xA7, 0xD2, 0x81, 0x4F};
+                                                   0x66, 0x9E, 0x3E, 0xA7, 0xD2, 0x81, 0x4F, 0xC2};
+const std::vector<uint8_t> kInvalidKeyId{0x45, 0x9F, 0x27, 0xF8, 0x14, 0xC2, 0x7B, 0xE9,
+                                     0x5A, 0x36, 0x3E, 0xA7, 0x9E, 0x73, 0xC8, 0xC2};
 const std::string kUrl{"www.licenseServer.com"};
 } // namespace
 
@@ -179,10 +181,7 @@ void MediaKeysTestMethods::shouldUpdateSessionRenewal()
 
 void MediaKeysTestMethods::updateSessionRenewal()
 {
-    EXPECT_CALL(*m_mediaKeysModuleMock,
-                updateSession(_, updateSessionRequestMatcher(kMediaKeysHandle, kKeySessionId, kLicenseRenewalResponse), _, _))
-        .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->updateSessionResponse(kStatusOk)),
-                        WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
+    EXPECT_EQ(m_mediaKeys->updateSession(kKeySessionId, kLicenseRenewalResponse), kStatusOk);
 }
 
 void MediaKeysTestMethods::shouldCloseKeySession()
@@ -209,11 +208,34 @@ void MediaKeysTestMethods::destroyMediaKeys()
     m_mediaKeys.reset();
 }
 
-void MediaKeysTestMethods::initaliseMediaKeySession()
+void MediaKeysTestMethods::initaliseWidevineMediaKeySession()
 {
     // Create a new widevine media keys object
     MediaKeysTestMethods::shouldCreateMediaKeysWidevine();
     MediaKeysTestMethods::createMediaKeysWidevine();
+
+    // Create new key session
+    MediaKeysTestMethods::shouldCreateKeySession();
+    MediaKeysTestMethods::createKeySession();
+
+    // Generate license request
+    MediaKeysTestMethods::shouldGenerateRequest();
+    MediaKeysTestMethods::generateRequest();
+    MediaKeysTestMethods::shouldNotifyLicenseRequest();
+    MediaKeysTestMethods::sendNotifyLicenseRequest();
+
+    // Update session
+    MediaKeysTestMethods::shouldUpdateSession();
+    MediaKeysTestMethods::updateSession();
+    MediaKeysTestMethods::shouldNotifyKeyStatusesChanged();
+    MediaKeysTestMethods::sendNotifyKeyStatusesChanged();
+}
+
+void MediaKeysTestMethods::initalisePlayreadyMediaKeySession()
+{
+    // Create a new playready media keys object
+    MediaKeysTestMethods::shouldCreateMediaKeysPlayready();
+    MediaKeysTestMethods::createMediaKeysPlayready();
 
     // Create new key session
     MediaKeysTestMethods::shouldCreateKeySession();
@@ -253,6 +275,63 @@ void MediaKeysTestMethods::sendNotifyLicenseRenewal()
 {
     getServerStub()->notifyLicenseRenewal(kMediaKeysHandle, kKeySessionId, kLicensRenewalMessage);
     waitEvent();
+}
+
+void MediaKeysTestMethods::shouldLoadSession()
+{
+    EXPECT_CALL(*m_mediaKeysModuleMock,
+                loadSession(_, loadSessionRequestMatcher(kMediaKeysHandle, kKeySessionId), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->loadSessionResponse(kStatusOk)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
+}
+
+void MediaKeysTestMethods::loadSession()
+{
+    EXPECT_EQ(m_mediaKeys->loadSession(kKeySessionId), kStatusOk);
+}
+
+void MediaKeysTestMethods::shouldContainsKey()
+{
+    EXPECT_CALL(*m_mediaKeysModuleMock,
+                containsKey(_, containsKeyRequestMatcher(kMediaKeysHandle, kKeySessionId, kKeyStatuses[0].first), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->containsKeyResponse(true)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
+}
+
+void MediaKeysTestMethods::containsKey()
+{
+    EXPECT_EQ(m_mediaKeys->containsKey(kKeySessionId, kKeyStatuses[0].first), true);
+}
+
+void MediaKeysTestMethods::shouldNotContainKey()
+{
+    EXPECT_CALL(*m_mediaKeysModuleMock,
+                containsKey(_, containsKeyRequestMatcher(kMediaKeysHandle, kKeySessionId, kInvalidKeyId), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->containsKeyResponse(false)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
+}
+
+void MediaKeysTestMethods::doesNotContainKey()
+{
+    EXPECT_EQ(m_mediaKeys->containsKey(kKeySessionId, kInvalidKeyId), false);
+}
+
+void MediaKeysTestMethods::selectKeyId(const uint32_t keyIndex)
+{
+    EXPECT_EQ(m_mediaKeys->selectKeyId(kKeySessionId, kKeyStatuses[keyIndex].first), kStatusOk);
+}
+
+void MediaKeysTestMethods::shouldRemoveKeySession()
+{
+    EXPECT_CALL(*m_mediaKeysModuleMock,
+                removeKeySession(_, removeKeySessionRequestMatcher(kMediaKeysHandle, kKeySessionId), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->removeKeySessionResponse(kStatusOk)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
+}
+
+void MediaKeysTestMethods::removeKeySession()
+{
+    EXPECT_EQ(m_mediaKeys->removeKeySession(kKeySessionId), kStatusOk);
 }
 
 } // namespace firebolt::rialto::client::ct
