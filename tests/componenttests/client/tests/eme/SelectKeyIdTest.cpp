@@ -54,7 +54,7 @@ public:
  * Test Setup:
  *  Language: C++
  *  Testing Framework: Google Test
- *  Components: MediaKeys
+ *  Components: MediaKeys, MediaPipeline
  *
  * Test Initialize:
  *  Create memory region for the shared buffer.
@@ -91,9 +91,7 @@ public:
  *  Server is terminated.
  *
  * Expected Results:
- *   Load a closed key session successfully.
- *   Query if keys exist or not in the session using containsKey.
- *   Remove key session successfully.
+ *  Keys can be selected using the selectKeyId API for playready segments.
  *
  * Code:
  */

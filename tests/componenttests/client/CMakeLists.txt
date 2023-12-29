@@ -66,7 +66,8 @@ add_gtests (
         tests/eme/AudioVideoPlaybackEncryptedSegmentsTest.cpp
         tests/eme/LicenseRenewalTest.cpp
         tests/eme/KeyApisTest.cpp
-        tests/eme/SelectKeyIdTest.cpp
+        tests/eme/DrmStoreTest.cpp
+        tests/eme/KeyStoreTest.cpp
         )
 
 add_subdirectory(mocks)
