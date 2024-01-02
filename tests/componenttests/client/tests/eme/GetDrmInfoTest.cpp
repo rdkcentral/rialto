@@ -81,7 +81,7 @@ public:
  *  Server is terminated.
  *
  * Expected Results:
- *  Client can set the drm header at will.
+ *  Client can get both the ldl session limit and DRM time from the MediaKeys object.
  *
  * Code:
  */

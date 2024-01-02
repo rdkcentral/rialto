@@ -34,13 +34,13 @@ public:
         MediaKeysTestMethods::createMediaKeysWidevine();
     }
 
-    ~DrmStoreTest() 
-    { 
+    ~DrmStoreTest()
+    {
         // Destroy media keys
         MediaKeysTestMethods::shouldDestroyMediaKeys();
         MediaKeysTestMethods::destroyMediaKeys();
-    
-        ClientComponentTest::stopApplication(); 
+
+        ClientComponentTest::stopApplication();
     }
 };
 

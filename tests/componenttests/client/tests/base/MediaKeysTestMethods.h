@@ -54,66 +54,74 @@ protected:
     std::shared_ptr<IMediaKeysFactory> m_mediaKeysFactory;
     std::shared_ptr<IMediaKeys> m_mediaKeys;
 
-    // Test methods
+    // MediaKeys Expect methods
     void shouldCreateMediaKeysWidevine();
-    void createMediaKeysWidevine();
     void shouldCreateMediaKeysPlayready();
-    void createMediaKeysPlayready();
     void shouldCreateKeySession();
-    void createKeySession();
     void shouldGenerateRequest();
-    void shouldGenerateRequestAndSendNotifyLicenseRequest();
-    void generateRequest();
-    void shouldNotifyLicenseRequest();
-    void sendNotifyLicenseRequest();
-    void shouldNotifyKeyStatusesChanged();
-    void sendNotifyKeyStatusesChanged();
     void shouldUpdateSession();
-    void updateSession();
     void shouldUpdateSessionRenewal();
-    void updateSessionRenewal();
     void shouldCloseKeySession();
-    void closeKeySession();
     void shouldDestroyMediaKeys();
+    void shouldLoadSession();
+    void shouldContainsKey();
+    void shouldNotContainKey();
+    void shouldRemoveKeySession();
+    void shouldGetKeyStoreHash();
+    void shouldGetDrmStoreHash();
+    void shouldFailToGetKeyStoreHash();
+    void shouldFailToGetDrmStoreHash();
+    void shouldDeleteKeyStore();
+    void shouldDeleteDrmStore();
+    void shouldSetDrmHeader();
+    void shouldSetDrmHeaderSecond();
+    void shouldGetCdmKeySessionId();
+    void shouldGetLastDrmError();
+    void shouldgetLdlSessionsLimit();
+    void shouldGetDrmTime();
+
+    // MediaPipelineClient Expect methods
+    void shouldNotifyLicenseRequest();
+    void shouldNotifyKeyStatusesChanged();
+    void shouldNotifyLicenseRenewal();
+
+    // Api methods
+    void createMediaKeysWidevine();
+    void createMediaKeysPlayready();
+    void createKeySession();
+    void generateRequest();
+    void updateSession();
+    void updateSessionRenewal();
+    void closeKeySession();
     void destroyMediaKeys();
+    void loadSession();
+    void containsKey();
+    void doesNotContainKey();
+    void selectKeyId(const uint32_t keyIndex);
+    void removeKeySession();
+    void getKeyStoreHash();
+    void getDrmStoreHash();
+    void getKeyStoreHashFailure();
+    void getDrmStoreHashFailure();
+    void deleteKeyStore();
+    void deleteDrmStore();
+    void setDrmHeader();
+    void setDrmHeaderSecond();
+    void getCdmKeySessionId();
+    void getLastDrmError();
+    void getLdlSessionsLimit();
+    void getDrmTime();
+
+    // Event methods
+    void sendNotifyLicenseRequest();
+    void sendNotifyKeyStatusesChanged();
+    void sendNotifyLicenseRenewal();
+
+    // Helper methods
     void initaliseWidevineMediaKeySession();
     void initalisePlayreadyMediaKeySession();
     void terminateMediaKeySession();
-    void shouldNotifyLicenseRenewal();
-    void sendNotifyLicenseRenewal();
-    void shouldLoadSession();
-    void loadSession();
-    void shouldContainsKey();
-    void containsKey();
-    void shouldNotContainKey();
-    void doesNotContainKey();
-    void selectKeyId(const uint32_t keyIndex);
-    void shouldRemoveKeySession();
-    void removeKeySession();
-    void shouldGetKeyStoreHash();
-    void getKeyStoreHash();
-    void shouldGetDrmStoreHash();
-    void getDrmStoreHash();
-    void shouldFailToGetKeyStoreHash();
-    void getKeyStoreHashFailure();
-    void shouldFailToGetDrmStoreHash();
-    void getDrmStoreHashFailure();
-    void shouldDeleteKeyStore();
-    void deleteKeyStore();
-    void shouldDeleteDrmStore();
-    void deleteDrmStore();
-    void shouldSetDrmHeader();
-    void setDrmHeader();
-    void shouldSetDrmHeaderSecond();
-    void setDrmHeaderSecond();
-    void shouldGetCdmKeySessionId();
-    void getCdmKeySessionId();
-    void shouldGetLastDrmError();
-    void getLastDrmError();
-    void shouldgetLdlSessionsLimit();
-    void getLdlSessionsLimit();
-    void shouldGetDrmTime();
-    void getDrmTime();
+    void shouldGenerateRequestAndSendNotifyLicenseRequest();
 
     // Component test helpers
     virtual void notifyEvent() = 0;

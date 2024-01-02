@@ -79,7 +79,7 @@ public:
  *   Api call returns with success.
  *   Check cdm key session id.
  *
- *  Step 2: Get the last drm error.
+ *  Step 2: Get the last drm error
  *   getLastDrmError.
  *   Expect that getLastDrmError is propagated to the server.
  *   Api call returns with success.
@@ -91,7 +91,7 @@ public:
  *  Server is terminated.
  *
  * Expected Results:
- *  Client can set the drm header at will.
+ *  Client can get both the cdm key session id and last drm error from the media key session.
  *
  * Code:
  */
@@ -101,7 +101,7 @@ TEST_F(GetSessionInfoTest, getApis)
     MediaKeysTestMethods::shouldGetCdmKeySessionId();
     MediaKeysTestMethods::getCdmKeySessionId();
 
-    // Step 2: Get the last drm error.
+    // Step 2: Get the last drm error
     MediaKeysTestMethods::shouldGetLastDrmError();
     MediaKeysTestMethods::getLastDrmError();
 }
