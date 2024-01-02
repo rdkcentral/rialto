@@ -294,6 +294,62 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
+::firebolt::rialto::ContainsKeyRequest createContainsKeyRequest(int mediaKeysHandle, int keySessionId, const std::vector<unsigned char>& keyId)
+{
+    ::firebolt::rialto::ContainsKeyRequest request;
+    request.set_media_keys_handle(mediaKeysHandle);
+    request.set_key_session_id(keySessionId);
+    for (auto i : keyId)
+    {
+        request.add_key_id(i);
+    }
+    return request;
+}
+
+::firebolt::rialto::RemoveKeySessionRequest createRemoveKeySessionRequest(int mediaKeysHandle, int keySessionId)
+{
+    ::firebolt::rialto::RemoveKeySessionRequest request;
+    request.set_media_keys_handle(mediaKeysHandle);
+    request.set_key_session_id(keySessionId);
+    return request;
+}
+
+::firebolt::rialto::LoadSessionRequest createLoadSessionRequest(int mediaKeysHandle, int keySessionId)
+{
+    ::firebolt::rialto::LoadSessionRequest request;
+    request.set_media_keys_handle(mediaKeysHandle);
+    request.set_key_session_id(keySessionId);
+    return request;
+}
+
+::firebolt::rialto::CloseKeySessionRequest createCloseKeySessionRequest(int mediaKeysHandle, int keySessionId)
+{
+    ::firebolt::rialto::CloseKeySessionRequest request;
+    request.set_media_keys_handle(mediaKeysHandle);
+    request.set_key_session_id(keySessionId);
+    return request;
+}
+
+::firebolt::rialto::SetDrmHeaderRequest createSetDrmHeaderRequest(int mediaKeysHandle, int keySessionId, const std::vector<unsigned char>& keyId)
+{
+    ::firebolt::rialto::SetDrmHeaderRequest request;
+    request.set_media_keys_handle(mediaKeysHandle);
+    request.set_key_session_id(keySessionId);
+    for (auto i : keyId)
+    {
+        request.add_request_data(i);
+    }
+    return request;
+}
+
+::firebolt::rialto::GetLastDrmErrorRequest createGetLastDrmErrorRequest(int mediaKeysHandle, int keySessionId)
+{
+    ::firebolt::rialto::GetLastDrmErrorRequest request;
+    request.set_media_keys_handle(mediaKeysHandle);
+    request.set_key_session_id(keySessionId);
+    return request;
+}
+
 ::firebolt::rialto::GetSharedMemoryRequest createGetSharedMemoryRequest()
 {
     return ::firebolt::rialto::GetSharedMemoryRequest();

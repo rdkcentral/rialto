@@ -61,6 +61,12 @@ namespace firebolt::rialto::server::ct
 ::firebolt::rialto::CreateKeySessionRequest createCreateKeySessionRequest(int mediaKeysHandle);
 ::firebolt::rialto::GenerateRequestRequest createGenerateRequestRequest(int mediaKeysHandle, int keySessionId);
 ::firebolt::rialto::UpdateSessionRequest createUpdateSessionRequest(int mediaKeysHandle, int keySessionId);
+::firebolt::rialto::ContainsKeyRequest createContainsKeyRequest(int mediaKeysHandle, int keySessionId, const std::vector<unsigned char>& keyId);
+::firebolt::rialto::RemoveKeySessionRequest createRemoveKeySessionRequest(int mediaKeysHandle, int keySessionId);
+::firebolt::rialto::LoadSessionRequest createLoadSessionRequest(int mediaKeysHandle, int keySessionId);
+::firebolt::rialto::CloseKeySessionRequest createCloseKeySessionRequest(int mediaKeysHandle, int keySessionId);
+::firebolt::rialto::SetDrmHeaderRequest createSetDrmHeaderRequest(int mediaKeysHandle, int keySessionId, const std::vector<unsigned char>& keyId);
+::firebolt::rialto::GetLastDrmErrorRequest createGetLastDrmErrorRequest(int mediaKeysHandle, int keySessionId);
 
 // control module
 ::firebolt::rialto::GetSharedMemoryRequest createGetSharedMemoryRequest();
