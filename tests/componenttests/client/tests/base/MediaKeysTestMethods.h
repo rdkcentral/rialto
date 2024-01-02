@@ -90,6 +90,30 @@ protected:
     void selectKeyId(const uint32_t keyIndex);
     void shouldRemoveKeySession();
     void removeKeySession();
+    void shouldGetKeyStoreHash();
+    void getKeyStoreHash();
+    void shouldGetDrmStoreHash();
+    void getDrmStoreHash();
+    void shouldFailToGetKeyStoreHash();
+    void getKeyStoreHashFailure();
+    void shouldFailToGetDrmStoreHash();
+    void getDrmStoreHashFailure();
+    void shouldDeleteKeyStore();
+    void deleteKeyStore();
+    void shouldDeleteDrmStore();
+    void deleteDrmStore();
+    void shouldSetDrmHeader();
+    void setDrmHeader();
+    void shouldSetDrmHeaderSecond();
+    void setDrmHeaderSecond();
+    void shouldGetCdmKeySessionId();
+    void getCdmKeySessionId();
+    void shouldGetLastDrmError();
+    void getLastDrmError();
+    void shouldgetLdlSessionsLimit();
+    void getLdlSessionsLimit();
+    void shouldGetDrmTime();
+    void getDrmTime();
 
     // Component test helpers
     virtual void notifyEvent() = 0;

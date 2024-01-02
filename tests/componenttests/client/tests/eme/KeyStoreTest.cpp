@@ -86,7 +86,15 @@ public:
 TEST_F(KeyStoreTest, getAndDelete)
 {
     // Step 1: Get the key store
+    MediaKeysTestMethods::shouldGetKeyStoreHash();
+    MediaKeysTestMethods::getKeyStoreHash();
+
     // Step 2: Delete the key store
+    MediaKeysTestMethods::shouldDeleteKeyStore();
+    MediaKeysTestMethods::deleteKeyStore();
+
     // Step 3: Get the key store failure
+    MediaKeysTestMethods::shouldFailToGetKeyStoreHash();
+    MediaKeysTestMethods::getKeyStoreHashFailure();
 }
 } // namespace firebolt::rialto::client::ct

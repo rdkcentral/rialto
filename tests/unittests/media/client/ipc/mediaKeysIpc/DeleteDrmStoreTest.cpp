@@ -18,13 +18,7 @@
  */
 
 #include "MediaKeysIpcTestBase.h"
-
-MATCHER_P(deleteDrmStoreRequestMatcher, mediaKeysHandle, "")
-{
-    const ::firebolt::rialto::DeleteDrmStoreRequest *kRequest =
-        dynamic_cast<const ::firebolt::rialto::DeleteDrmStoreRequest *>(arg);
-    return (kRequest->media_keys_handle() == mediaKeysHandle);
-}
+#include "MediaKeysProtoRequestMatchers.h"
 
 class RialtoClientMediaKeysIpcDeleteDrmStoreTest : public MediaKeysIpcTestBase
 {

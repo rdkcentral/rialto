@@ -22,29 +22,35 @@
 
 namespace firebolt::rialto::client::ct
 {
-class DrmStoreTest : public ClientComponentTest
+class GetDrmInfoTest : public ClientComponentTest
 {
 public:
-    DrmStoreTest() : ClientComponentTest() 
+    GetDrmInfoTest() : ClientComponentTest() 
     { 
         ClientComponentTest::startApplicationRunning();
-        MediaKeysTestMethods::shouldCreateMediaKeysWidevine();
-        MediaKeysTestMethods::createMediaKeysWidevine();
+    
+        // Create a new playready media keys object
+        MediaKeysTestMethods::shouldCreateMediaKeysPlayready();
+        MediaKeysTestMethods::createMediaKeysPlayready();
     }
 
-    ~DrmStoreTest() 
-    { 
+    ~GetDrmInfoTest() 
+    {
+        // Destroy media keys
+        MediaKeysTestMethods::shouldDestroyMediaKeys();
+        MediaKeysTestMethods::destroyMediaKeys();
+
         ClientComponentTest::stopApplication(); 
     }
 };
 
 /*
- * Component Test: Drm Store APIs.
+ * Component Test: Get various infomation stored in the system.
  * Test Objective:
- *  Test the deleteDrmStore and getDrmStoreHash APIs.
+ *  Test the getLdlSessionsLimit & getDrmTime APIs.
  *
  * Sequence Diagrams:
- *  Delete DRM Store, Get DRM Store Hash
+ *  Get LDL Session Limit, Get DRM Time
  *   - https://wiki.rdkcentral.com/display/ASP/Rialto+EME+Misc+Design
  *
  * Test Setup:
@@ -58,43 +64,35 @@ public:
  *  Create a MediaKeys object.
  *
  * Test Steps:
- *  Step 1: Get the drm store
- *   getDrmStoreHash.
- *   Expect that getDrmStoreHash is propagated to the server.
+ *  Step 1: Get the ldl session limit
+ *   getLdlSessionsLimit.
+ *   Expect that getLdlSessionsLimit is propagated to the server.
  *   Api call returns with success.
- *   Check drm store hash.
+ *   Check ldl session limit.
  *
- *  Step 2: Delete the drm store
- *   deleteDrmStore.
- *   Expect that deleteDrmStore is propagated to the server.
+ *  Step 2: Get the drm time
+ *   getDrmTime.
+ *   Expect that getDrmTime is propagated to the server.
  *   Api call returns with success.
- *
- *  Step 3: Get the drm store failure
- *   getDrmStoreHash.
- *   Expect that getDrmStoreHash is propagated to the server.
- *   Api call returns with failure.
+ *   Check drm time.
  *
  * Test Teardown:
  *  Destroy MediaKeys.
  *  Server is terminated.
  *
  * Expected Results:
- *  Client can get and delete the drm store successfully.
+ *  Client can set the drm header at will.
  *
  * Code:
  */
-TEST_F(DrmStoreTest, getAndDelete)
+TEST_F(GetDrmInfoTest, getApis)
 {
-    // Step 1: Get the drm store
-    MediaKeysTestMethods::shouldGetDrmStoreHash();
-    MediaKeysTestMethods::getDrmStoreHash();
+    // Step 1: Get the ldl session limit
+    MediaKeysTestMethods::shouldgetLdlSessionsLimit();
+    MediaKeysTestMethods::getLdlSessionsLimit();
 
-    // Step 2: Delete the drm store
-    MediaKeysTestMethods::shouldDeleteDrmStore();
-    MediaKeysTestMethods::deleteDrmStore();
-
-    // Step 3: Get the drm store failure
-    MediaKeysTestMethods::shouldFailToGetDrmStoreHash();
-    MediaKeysTestMethods::getDrmStoreHashFailure();
+    // Step 2: Get the drm time
+    MediaKeysTestMethods::shouldGetDrmTime();
+    MediaKeysTestMethods::getDrmTime();
 }
 } // namespace firebolt::rialto::client::ct

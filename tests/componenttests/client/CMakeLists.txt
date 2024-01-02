@@ -68,6 +68,9 @@ add_gtests (
         tests/eme/KeyApisTest.cpp
         tests/eme/DrmStoreTest.cpp
         tests/eme/KeyStoreTest.cpp
+        tests/eme/SetDrmHeaderTest.cpp
+        tests/eme/GetSessionInfoTest.cpp
+        tests/eme/GetDrmInfoTest.cpp
         )
 
 add_subdirectory(mocks)
