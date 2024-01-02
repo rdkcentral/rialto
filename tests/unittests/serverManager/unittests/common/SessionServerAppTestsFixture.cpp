@@ -41,12 +41,6 @@ constexpr int kMaxWebAudioPlayers{1};
 const std::array<int, 2> kSocketPair{1, 2};
 const int kDuplicatedSocket{3};
 constexpr pid_t kPid{123};
-MATCHER_P(CharStrMatcher, expectedStr, "")
-{
-    std::string actualStr = arg;
-    return expectedStr == actualStr;
-}
-
 } // namespace
 
 using testing::_;
@@ -56,6 +50,7 @@ using testing::DoAll;
 using testing::InvokeArgument;
 using testing::Return;
 using testing::SetArrayArgument;
+using testing::StrEq;
 using testing::StrictMock;
 
 void SessionServerAppTests::createPreloadedAppSut()
@@ -158,7 +153,7 @@ void SessionServerAppTests::willLaunchApp() const
     EXPECT_CALL(m_linuxWrapperMock, close(kSocketPair[0])).Times(2).WillRepeatedly(Return(-1));
     EXPECT_CALL(m_linuxWrapperMock, getpid()).WillOnce(Return(kPid));
     EXPECT_CALL(m_linuxWrapperMock, dup(kSocketPair[0])).WillOnce(Return(kDuplicatedSocket));
-    EXPECT_CALL(m_linuxWrapperMock, execve(CharStrMatcher(kSessionServerPath), _, _)).WillOnce(Return(-1));
+    EXPECT_CALL(m_linuxWrapperMock, execve(StrEq(kSessionServerPath), _, _)).WillOnce(Return(-1));
     EXPECT_CALL(m_linuxWrapperMock, exit(EXIT_FAILURE)); // Not possible to stop on execve with mock :-)
 }
 

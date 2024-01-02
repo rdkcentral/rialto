@@ -18,13 +18,7 @@
  */
 
 #include "MediaPipelineIpcTestBase.h"
-
-MATCHER_P(GetPositionRequestMatcher, sessionId, "")
-{
-    const ::firebolt::rialto::GetPositionRequest *kRequest =
-        dynamic_cast<const ::firebolt::rialto::GetPositionRequest *>(arg);
-    return ((kRequest->session_id() == sessionId));
-}
+#include "MediaPipelineProtoRequestMatchers.h"
 
 class RialtoClientMediaPipelineIpcGetPositionTest : public MediaPipelineIpcTestBase
 {
@@ -52,7 +46,7 @@ TEST_F(RialtoClientMediaPipelineIpcGetPositionTest, Success)
     expectIpcApiCallSuccess();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getPosition"), m_controllerMock.get(),
-                                           GetPositionRequestMatcher(m_sessionId), _, m_blockingClosureMock.get()));
+                                           getPositionRequestMatcher(m_sessionId), _, m_blockingClosureMock.get()));
 
     int64_t position;
     EXPECT_TRUE(m_mediaPipelineIpc->getPosition(position));

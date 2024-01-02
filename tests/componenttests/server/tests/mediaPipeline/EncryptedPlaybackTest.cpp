@@ -50,12 +50,14 @@ public:
     {
         const std::size_t kSubsamplesSize{segment->getSubSamples().size() * (sizeof(guint16) + sizeof(guint32))};
         EXPECT_CALL(*m_gstWrapperMock, gstBufferNewAllocate(nullptr, segment->getKeyId().size(), nullptr))
+            .InSequence(m_bufferAllocateSeq)
             .WillOnce(Return(&keyIdBuffer))
             .RetiresOnSaturation();
         EXPECT_CALL(*m_gstWrapperMock, gstBufferFill(&keyIdBuffer, 0, _, segment->getKeyId().size()))
             .WillOnce(Return(segment->getKeyId().size()))
             .RetiresOnSaturation();
         EXPECT_CALL(*m_gstWrapperMock, gstBufferNewAllocate(nullptr, segment->getInitVector().size(), nullptr))
+            .InSequence(m_bufferAllocateSeq)
             .WillOnce(Return(&initVectorBuffer))
             .RetiresOnSaturation();
         EXPECT_CALL(*m_gstWrapperMock, gstBufferFill(&initVectorBuffer, 0, _, segment->getInitVector().size()))
@@ -92,7 +94,7 @@ public:
 
         // Write frame to shm and add gst expects
         EXPECT_EQ(writer->writeFrame(segment), AddSegmentStatus::OK);
-        willPushAudioData(segment, buffer, capsCopy);
+        willPushAudioData(segment, buffer, capsCopy, false);
         willAddProtectionMetadata(segment, buffer, keyIdBuffer, initVectorBuffer, subsamplesBuffer, subsamples, meta);
 
         // Finally, send HaveData and receive new NeedData
@@ -130,7 +132,7 @@ public:
 
         // Write frame to shm and add gst expects
         EXPECT_EQ(writer->writeFrame(segment), AddSegmentStatus::OK);
-        willPushVideoData(segment, buffer, capsCopy);
+        willPushVideoData(segment, buffer, capsCopy, false);
         willAddProtectionMetadata(segment, buffer, keyIdBuffer, initVectorBuffer, subsamplesBuffer, subsamples, meta);
 
         // Finally, send HaveData and receive new NeedData

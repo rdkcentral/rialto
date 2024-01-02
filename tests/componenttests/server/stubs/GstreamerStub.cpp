@@ -18,6 +18,7 @@
  */
 
 #include "GstreamerStub.h"
+#include "Constants.h"
 #include "Matchers.h"
 
 using testing::_;
@@ -26,6 +27,7 @@ using testing::Invoke;
 using testing::Return;
 using testing::SaveArg;
 using testing::SaveArgPointee;
+using testing::StrEq;
 
 namespace firebolt::rialto::server::ct
 {
@@ -39,8 +41,7 @@ GstreamerStub::GstreamerStub(const std::shared_ptr<testing::StrictMock<wrappers:
 
 void GstreamerStub::setupPipeline()
 {
-    EXPECT_CALL(*m_glibWrapperMock,
-                gSignalConnect(m_pipeline, CharStrMatcher("source-setup"), NotNullMatcher(), NotNullMatcher()))
+    EXPECT_CALL(*m_glibWrapperMock, gSignalConnect(m_pipeline, StrEq("source-setup"), NotNullMatcher(), NotNullMatcher()))
         .WillOnce(Invoke(
             [this](gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data)
             {
@@ -49,7 +50,7 @@ void GstreamerStub::setupPipeline()
                 return m_setupSourceSignalId;
             }));
     EXPECT_CALL(*m_glibWrapperMock,
-                gSignalConnect(m_pipeline, CharStrMatcher("element-setup"), NotNullMatcher(), NotNullMatcher()))
+                gSignalConnect(m_pipeline, StrEq("element-setup"), NotNullMatcher(), NotNullMatcher()))
         .WillOnce(Invoke(
             [this](gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data)
             {
@@ -58,7 +59,7 @@ void GstreamerStub::setupPipeline()
                 return m_setupElementSignalId;
             }));
     EXPECT_CALL(*m_glibWrapperMock,
-                gSignalConnect(m_pipeline, CharStrMatcher("deep-element-added"), NotNullMatcher(), NotNullMatcher()))
+                gSignalConnect(m_pipeline, StrEq("deep-element-added"), NotNullMatcher(), NotNullMatcher()))
         .WillOnce(Invoke(
             [this](gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data)
             {
@@ -99,6 +100,12 @@ void GstreamerStub::setupAppSrcCallbacks(GstAppSrc *appSrc)
         .WillOnce(DoAll(SaveArgPointee<1>(&callbacks), SaveArg<2>(&userData)));
 }
 
+void GstreamerStub::setupElement(GstElement *element)
+{
+    ASSERT_TRUE(m_setupElementFunc);
+    ((void (*)(GstElement *, GstElement *, gpointer))m_setupElementFunc)(m_pipeline, element, m_setupElementUserData);
+}
+
 void GstreamerStub::sendStateChanged(GstState oldState, GstState newState, GstState pendingState)
 {
     std::unique_lock lock(m_mutex);
@@ -121,6 +128,17 @@ void GstreamerStub::sendEos()
 {
     std::unique_lock lock(m_mutex);
     m_message = gst_message_new_eos(GST_OBJECT(m_pipeline));
+    m_cv.notify_one();
+}
+
+void GstreamerStub::sendQos(GstElement *src)
+{
+    constexpr bool kLive{true};
+    constexpr std::uint64_t kRunningTime{2};
+    constexpr std::uint64_t kStreamTime{1};
+    std::unique_lock lock(m_mutex);
+    m_message =
+        gst_message_new_qos(GST_OBJECT(src), kLive, kRunningTime, kStreamTime, kQosInfo.processed, kQosInfo.dropped);
     m_cv.notify_one();
 }
 } // namespace firebolt::rialto::server::ct

@@ -86,7 +86,6 @@ void HandleBusMessage::execute() const
             }
             case GST_STATE_PLAYING:
             {
-                m_gstPlayerClient->notifyPlaybackState(PlaybackState::PLAYING);
                 if (m_context.pendingPlaybackRate != kNoPendingPlaybackRate)
                 {
                     m_player.setPendingPlaybackRate();
@@ -94,6 +93,7 @@ void HandleBusMessage::execute() const
                 m_player.startPositionReportingAndCheckAudioUnderflowTimer();
 
                 m_context.isPlaying = true;
+                m_gstPlayerClient->notifyPlaybackState(PlaybackState::PLAYING);
                 break;
             }
             case GST_STATE_VOID_PENDING:

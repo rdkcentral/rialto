@@ -17,14 +17,12 @@
  * limitations under the License.
  */
 
-#include <iostream>
-
 #include "ActionTraits.h"
 #include "ConfigureAction.h"
+#include "Matchers.h"
 #include "MessageBuilders.h"
 #include "OcdmSessionMock.h"
 #include "RialtoServerComponentTest.h"
-#include "Matchers.h"
 
 using testing::_;
 using testing::ByMove;
@@ -45,7 +43,7 @@ public:
     ~MediaKeysTest() override = default;
 
 private:
-    void createMediaKeys(const ::firebolt::rialto::CreateMediaKeysRequest& request)
+    void createMediaKeys(const ::firebolt::rialto::CreateMediaKeysRequest &request)
     {
         // Use matchResponse to store media keys handle
         ConfigureAction<CreateMediaKeys>(m_clientStub)
@@ -54,17 +52,11 @@ private:
             .matchResponse([&](const ::firebolt::rialto::CreateMediaKeysResponse &resp)
                            { m_mediaKeysHandle = resp.media_keys_handle(); });
     }
+
 public:
+    void createMediaKeysWidevine() { createMediaKeys(createCreateMediaKeysRequestWidevine()); }
 
-    void createMediaKeysWidevine()
-    {
-        createMediaKeys(createCreateMediaKeysRequestWidevine());
-    }
-
-    void createMediaKeysNetflix()
-    {
-        createMediaKeys(createCreateMediaKeysRequestNetflix());
-    }
+    void createMediaKeysNetflix() { createMediaKeys(createCreateMediaKeysRequestNetflix()); }
 
     void createKeySession()
     {
@@ -100,13 +92,14 @@ public:
         bool ok{false};
 
         // The following should match the details within the message "request"
-        EXPECT_CALL(m_ocdmSessionMock, constructSession(KeySessionType::TEMPORARY, InitDataType::CENC, _, request.init_data_size()))
+        EXPECT_CALL(m_ocdmSessionMock,
+                    constructSession(KeySessionType::TEMPORARY, InitDataType::CENC, _, request.init_data_size()))
             .WillOnce(testing::Invoke(
                 [&](KeySessionType sessionType, InitDataType initDataType, const uint8_t initData[],
                     uint32_t initDataSize) -> MediaKeyErrorStatus
                 {
                     ok = true;
-                    for (uint32_t i = 0; i<initDataSize; ++i)
+                    for (uint32_t i = 0; i < initDataSize; ++i)
                     {
                         if (initData[i] != request.init_data(i))
                             ok = false;
@@ -167,16 +160,16 @@ public:
         // The following should match the details within the message "request"
         EXPECT_CALL(m_ocdmSessionMock, update(_, request.response_data_size()))
             .WillOnce(testing::Invoke(
-                                      [&](const uint8_t response[], uint32_t responseSize) -> MediaKeyErrorStatus
-                                      {
-                                          ok = true;
-                                          for (uint32_t i = 0; i<responseSize; ++i)
-                                              {
-                                                  if (response[i] != request.response_data(i))
-                                                      ok = false;
-                                              }
-                                          return MediaKeyErrorStatus::OK;
-                                      }));
+                [&](const uint8_t response[], uint32_t responseSize) -> MediaKeyErrorStatus
+                {
+                    ok = true;
+                    for (uint32_t i = 0; i < responseSize; ++i)
+                    {
+                        if (response[i] != request.response_data(i))
+                            ok = false;
+                    }
+                    return MediaKeyErrorStatus::OK;
+                }));
 
         ConfigureAction<UpdateSession>(m_clientStub)
             .send(request)
@@ -186,9 +179,8 @@ public:
 
         ASSERT_EQ(ok, true);
 
-
 #if 0
-        // TODO - why teardown doesn't work
+        // TODO(proudmanp): why teardown doesn't work
         // For teardown...
         EXPECT_CALL(m_ocdmSessionMock, close()).WillOnce(Return(MediaKeyErrorStatus::OK));
         EXPECT_CALL(m_ocdmSessionMock, destructSession()).WillOnce(Return(MediaKeyErrorStatus::OK));
@@ -203,16 +195,16 @@ public:
         // The following should match the details within the message "request"
         EXPECT_CALL(m_ocdmSessionMock, storeLicenseData(_, request.response_data_size()))
             .WillOnce(testing::Invoke(
-                                      [&](const uint8_t challenge[], uint32_t challengeSize) -> MediaKeyErrorStatus
-                                      {
-                                          ok = true;
-                                          for (uint32_t i = 0; i<challengeSize; ++i)
-                                              {
-                                                  if (challenge[i] != request.response_data(i))
-                                                      ok = false;
-                                              }
-                                          return MediaKeyErrorStatus::OK;
-                                      }));
+                [&](const uint8_t challenge[], uint32_t challengeSize) -> MediaKeyErrorStatus
+                {
+                    ok = true;
+                    for (uint32_t i = 0; i < challengeSize; ++i)
+                    {
+                        if (challenge[i] != request.response_data(i))
+                            ok = false;
+                    }
+                    return MediaKeyErrorStatus::OK;
+                }));
 
         ConfigureAction<UpdateSession>(m_clientStub)
             .send(request)
@@ -222,9 +214,8 @@ public:
 
         ASSERT_EQ(ok, true);
 
-
 #if 0
-        // TODO - why teardown doesn't work
+        // TODO(proudmanp): why teardown doesn't work
         // For teardown...
         EXPECT_CALL(m_ocdmSessionMock, close()).WillOnce(Return(MediaKeyErrorStatus::OK));
         EXPECT_CALL(m_ocdmSessionMock, destructSession()).WillOnce(Return(MediaKeyErrorStatus::OK));
@@ -246,7 +237,7 @@ public:
                 ASSERT_EQ(message->key_session_id(), m_mediaKeySessionId);
 
 #if 0
-                // TODO? check the value of this???
+                // TODO(proudmanp): check the value of this???
                 const ::google::protobuf::RepeatedPtrField< ::firebolt::rialto::KeyStatusesChangedEvent_KeyStatusPair >& key_statuses = message-> key_statuses();
 #endif
 
@@ -254,7 +245,6 @@ public:
                 myCondVar.notify_all();
             }};
         m_clientStub.getIpcChannel()->subscribe(handler);
-
 
         m_ocdmSessionClient->onAllKeysUpdated();
 
@@ -266,7 +256,7 @@ public:
     {
         const std::vector<unsigned char> kKeyId{'a', 'z', 'q', 'l'};
 
-        // TODO - write a lambda to check the parameters passed in here...
+        // TODO(proudmanp): write a lambda to check the parameters passed in here...
         EXPECT_CALL(m_ocdmSessionMock, getStatus(::arrayMatcher(kKeyId), kKeyId.size())).WillOnce(Return(KeyStatus::USABLE));
 
         m_ocdmSessionClient->onKeyUpdated(&kKeyId[0], kKeyId.size());

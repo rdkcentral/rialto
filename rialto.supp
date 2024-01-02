@@ -123,3 +123,14 @@
    fun:dlopen_implementation
    fun:dlopen@@GLIBC_2.34
 }
+{
+   ignore_log_fowarding_definitly_lost
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:g_slist_prepend
+   fun:gst_debug_add_log_function
+   ...
+}

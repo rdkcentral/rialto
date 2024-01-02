@@ -195,6 +195,61 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
+::firebolt::rialto::GetPositionRequest createGetPositionRequest(int sessionId)
+{
+    ::firebolt::rialto::GetPositionRequest request;
+    request.set_session_id(sessionId);
+    return request;
+}
+
+::firebolt::rialto::RenderFrameRequest createRenderFrameRequest(int sessionId)
+{
+    ::firebolt::rialto::RenderFrameRequest request;
+    request.set_session_id(sessionId);
+    return request;
+}
+
+::firebolt::rialto::SetVolumeRequest createSetVolumeRequest(int sessionId)
+{
+    ::firebolt::rialto::SetVolumeRequest request;
+    request.set_session_id(sessionId);
+    request.set_volume(kVolume);
+    return request;
+}
+
+::firebolt::rialto::GetVolumeRequest createGetVolumeRequest(int sessionId)
+{
+    ::firebolt::rialto::GetVolumeRequest request;
+    request.set_session_id(sessionId);
+    return request;
+}
+
+::firebolt::rialto::SetMuteRequest createSetMuteRequest(int sessionId)
+{
+    ::firebolt::rialto::SetMuteRequest request;
+    request.set_session_id(sessionId);
+    request.set_mute(true);
+    return request;
+}
+
+::firebolt::rialto::GetMuteRequest createGetMuteRequest(int sessionId)
+{
+    ::firebolt::rialto::GetMuteRequest request;
+    request.set_session_id(sessionId);
+    return request;
+}
+
+::firebolt::rialto::SetVideoWindowRequest createSetVideoWindowRequest(int sessionId)
+{
+    ::firebolt::rialto::SetVideoWindowRequest request;
+    request.set_session_id(sessionId);
+    request.set_x(kX);
+    request.set_y(kY);
+    request.set_width(kWidth);
+    request.set_height(kHeight);
+    return request;
+}
+
 ::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequestWidevine()
 {
     ::firebolt::rialto::CreateMediaKeysRequest request;

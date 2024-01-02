@@ -42,7 +42,7 @@ public:
     void testFactoryCreatesObject();
 
     void clientWillConnect();
-    void clientWillDisconnect();
+    void clientWillDisconnect(int sessionId);
     void cdmServiceWillCreateMediaKeys();
     void cdmServiceWillFailToCreateMediaKeys();
     void cdmServiceWillDestroyMediaKeys();

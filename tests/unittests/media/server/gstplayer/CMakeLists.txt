@@ -17,7 +17,12 @@
 #limitations under the License.
 #
 
+unset(GTEST_MAIN_LIBRARY) # do not link g_test_main
+
 add_gtests(RialtoServerGstPlayerUnitTests
+
+    # Main
+    main.cpp
 
     #GstGenericPlayer unittests
     genericPlayer/common/GenericTasksTestsBase.cpp

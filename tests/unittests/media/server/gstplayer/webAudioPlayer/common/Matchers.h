@@ -24,12 +24,6 @@
 #include <gtest/gtest.h>
 #include <string>
 
-MATCHER_P(CharStrMatcher, expectedStr, "")
-{
-    std::string actualStr = arg;
-    return expectedStr == actualStr;
-}
-
 MATCHER(NotNullMatcher, "")
 {
     return nullptr != arg;

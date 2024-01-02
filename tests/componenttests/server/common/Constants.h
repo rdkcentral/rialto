@@ -32,12 +32,17 @@ const std::string kSocketName{"/tmp/rialto-0"};
 const std::string kOwnerName{"root"};
 constexpr int kWidth{1920};
 constexpr int kHeight{1080};
+constexpr int kX{10};
+constexpr int kY{15};
 constexpr int kNumOfChannels{2};
 constexpr int kSampleRate{48000};
 constexpr firebolt::rialto::Fraction kFrameRate{15, 1};
 constexpr int kAllLogs{RIALTO_DEBUG_LEVEL_FATAL | RIALTO_DEBUG_LEVEL_ERROR | RIALTO_DEBUG_LEVEL_WARNING |
                        RIALTO_DEBUG_LEVEL_MILESTONE | RIALTO_DEBUG_LEVEL_INFO | RIALTO_DEBUG_LEVEL_DEBUG};
 constexpr double kPlaybackRate{0.5};
+constexpr std::int64_t kCurrentPosition{1234};
+constexpr double kVolume{0.7};
+constexpr QosInfo kQosInfo{234, 567};
 } // namespace firebolt::rialto::server::ct
 
 #endif // FIREBOLT_RIALTO_SERVER_CT_CONSTANTS_H_

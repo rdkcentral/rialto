@@ -73,4 +73,14 @@ void MediaPipelineModuleStub::notifyNeedMediaDataEvent(int sessionId, int32_t so
     getClient()->sendEvent(event);
 }
 
+void MediaPipelineModuleStub::notifyPositionChangeEvent(int sessionId, int64_t position)
+{
+    waitForClientConnect();
+
+    auto event = std::make_shared<firebolt::rialto::PositionChangeEvent>();
+    event->set_session_id(sessionId);
+    event->set_position(position);
+    getClient()->sendEvent(event);
+}
+
 } // namespace firebolt::rialto::client::ct

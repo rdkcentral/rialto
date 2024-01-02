@@ -23,8 +23,7 @@
 #include <gmock/gmock.h>
 #include <string>
 
-namespace {
-MATCHER_P(CharStrMatcher, expectedStr, "")
+MATCHER_P(PtrStrMatcher, expectedStr, "")
 {
     std::string actualStr = (const char *)arg;
     return expectedStr == actualStr;
@@ -53,7 +52,6 @@ MATCHER_P(arrayMatcher, vec, "")
         }
     }
     return true;
-}
 }
 
 #endif // MATCHERS_H_
