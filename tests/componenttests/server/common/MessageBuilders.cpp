@@ -195,10 +195,16 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
-::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequest()
+::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequestWidevine()
 {
     ::firebolt::rialto::CreateMediaKeysRequest request;
     request.set_key_system("com.widevine.alpha");
+    return request;
+}
+::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequestNetflix()
+{
+    ::firebolt::rialto::CreateMediaKeysRequest request;
+    request.set_key_system("com.netflix.playready");
     return request;
 }
 
@@ -220,6 +226,16 @@ namespace firebolt::rialto::server::ct
     request.add_init_data(1);
     request.add_init_data(2);
     request.add_init_data(3);
+    return request;
+}
+
+::firebolt::rialto::UpdateSessionRequest createUpdateSessionRequest(int mediaKeysHandle, int keySessionId)
+{
+    ::firebolt::rialto::UpdateSessionRequest request;
+    request.set_media_keys_handle(mediaKeysHandle);
+    request.set_key_session_id(keySessionId);
+    request.add_response_data(5);
+    request.add_response_data(6);
     return request;
 }
 

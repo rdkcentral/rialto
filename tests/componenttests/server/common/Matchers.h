@@ -23,6 +23,7 @@
 #include <gmock/gmock.h>
 #include <string>
 
+namespace {
 MATCHER_P(CharStrMatcher, expectedStr, "")
 {
     std::string actualStr = (const char *)arg;
@@ -39,6 +40,20 @@ MATCHER_P(BufferMatcher, expectedBuffer, "")
 MATCHER(NotNullMatcher, "")
 {
     return nullptr != arg;
+}
+
+MATCHER_P(arrayMatcher, vec, "")
+{
+    const uint8_t *kArray = static_cast<const uint8_t *>(arg);
+    for (unsigned int i = 0; i < vec.size(); ++i)
+    {
+        if (vec[i] != kArray[i])
+        {
+            return false;
+        }
+    }
+    return true;
+}
 }
 
 #endif // MATCHERS_H_

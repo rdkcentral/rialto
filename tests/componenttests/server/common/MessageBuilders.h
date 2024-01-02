@@ -49,9 +49,11 @@ namespace firebolt::rialto::server::ct
 ::firebolt::rialto::SetPositionRequest createSetPositionRequest(int sessionId, std::int64_t position);
 
 // media keys module
-::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequest();
+::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequestWidevine();
+::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequestNetflix();
 ::firebolt::rialto::CreateKeySessionRequest createCreateKeySessionRequest(int mediaKeysHandle);
 ::firebolt::rialto::GenerateRequestRequest createGenerateRequestRequest(int mediaKeysHandle, int keySessionId);
+::firebolt::rialto::UpdateSessionRequest createUpdateSessionRequest(int mediaKeysHandle, int keySessionId);
 
 // control module
 ::firebolt::rialto::GetSharedMemoryRequest createGetSharedMemoryRequest();
