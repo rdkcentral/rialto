@@ -25,16 +25,16 @@ namespace firebolt::rialto::client::ct
 class KeyApisTest : public ClientComponentTest
 {
 public:
-    KeyApisTest() : ClientComponentTest() 
-    { 
-        ClientComponentTest::startApplicationRunning(); 
-        ClientComponentTest::initaliseWidevineMediaKeySession(); 
+    KeyApisTest() : ClientComponentTest()
+    {
+        ClientComponentTest::startApplicationRunning();
+        ClientComponentTest::initaliseWidevineMediaKeySession();
     }
 
-    ~KeyApisTest() 
-    { 
+    ~KeyApisTest()
+    {
         ClientComponentTest::terminateMediaKeySession();
-        ClientComponentTest::stopApplication(); 
+        ClientComponentTest::stopApplication();
     }
 };
 

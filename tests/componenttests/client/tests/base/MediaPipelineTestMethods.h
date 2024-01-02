@@ -266,7 +266,7 @@ private:
     void checkHasNoSegmentAlignment(const MediaSegmentMetadata &metadata);
     void checkHasNoExtraData(const MediaSegmentMetadata &metadata);
     void checkSegmentData(const MediaSegmentMetadata &metadata, uint8_t *dataPtr, const std::string &expectedSegmentData);
-    void checkKeyId(const MediaPlayerShmInfo& shmInfo, uint32_t keyIndex);
+    void checkKeyId(const MediaPlayerShmInfo &shmInfo, uint32_t keyIndex);
     void addEncryptedDataToSegment(std::unique_ptr<IMediaPipeline::MediaSegment> &mseData, int32_t keyIndex);
     void shouldCreateMediaSessionInternal(const int32_t sessionId, const VideoRequirements &videoRequirements);
     void shouldLoadInternal(const int32_t sessionId, const MediaType &mediaType, const std::string &mimeType,

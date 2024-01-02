@@ -25,22 +25,22 @@ namespace firebolt::rialto::client::ct
 class GetDrmInfoTest : public ClientComponentTest
 {
 public:
-    GetDrmInfoTest() : ClientComponentTest() 
-    { 
+    GetDrmInfoTest() : ClientComponentTest()
+    {
         ClientComponentTest::startApplicationRunning();
-    
+
         // Create a new playready media keys object
         MediaKeysTestMethods::shouldCreateMediaKeysPlayready();
         MediaKeysTestMethods::createMediaKeysPlayready();
     }
 
-    ~GetDrmInfoTest() 
+    ~GetDrmInfoTest()
     {
         // Destroy media keys
         MediaKeysTestMethods::shouldDestroyMediaKeys();
         MediaKeysTestMethods::destroyMediaKeys();
 
-        ClientComponentTest::stopApplication(); 
+        ClientComponentTest::stopApplication();
     }
 };
 

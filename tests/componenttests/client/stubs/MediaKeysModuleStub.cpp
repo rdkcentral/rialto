@@ -73,7 +73,8 @@ void MediaKeysModuleStub::notifyKeyStatusesChangedEvent(int32_t mediaKeysHandle,
     getClient()->sendEvent(event);
 }
 
-void MediaKeysModuleStub::notifyLicenseRenewal(int32_t mediaKeysHandle, int32_t keySessionId, const std::vector<unsigned char> &licenseRenewalMessage)
+void MediaKeysModuleStub::notifyLicenseRenewal(int32_t mediaKeysHandle, int32_t keySessionId,
+                                               const std::vector<unsigned char> &licenseRenewalMessage)
 {
     waitForClientConnect();
 

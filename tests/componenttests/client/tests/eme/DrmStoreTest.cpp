@@ -25,17 +25,14 @@ namespace firebolt::rialto::client::ct
 class DrmStoreTest : public ClientComponentTest
 {
 public:
-    DrmStoreTest() : ClientComponentTest() 
-    { 
+    DrmStoreTest() : ClientComponentTest()
+    {
         ClientComponentTest::startApplicationRunning();
         MediaKeysTestMethods::shouldCreateMediaKeysWidevine();
         MediaKeysTestMethods::createMediaKeysWidevine();
     }
 
-    ~DrmStoreTest() 
-    { 
-        ClientComponentTest::stopApplication(); 
-    }
+    ~DrmStoreTest() { ClientComponentTest::stopApplication(); }
 };
 
 /*

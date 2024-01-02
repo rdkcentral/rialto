@@ -25,10 +25,10 @@ namespace firebolt::rialto::client::ct
 class GetSessionInfoTest : public ClientComponentTest
 {
 public:
-    GetSessionInfoTest() : ClientComponentTest() 
-    { 
+    GetSessionInfoTest() : ClientComponentTest()
+    {
         ClientComponentTest::startApplicationRunning();
-    
+
         // Create a new playready media keys object
         MediaKeysTestMethods::shouldCreateMediaKeysPlayready();
         MediaKeysTestMethods::createMediaKeysPlayready();
@@ -38,7 +38,7 @@ public:
         MediaKeysTestMethods::createKeySession();
     }
 
-    ~GetSessionInfoTest() 
+    ~GetSessionInfoTest()
     {
         // Close session
         MediaKeysTestMethods::shouldCloseKeySession();
@@ -48,7 +48,7 @@ public:
         MediaKeysTestMethods::shouldDestroyMediaKeys();
         MediaKeysTestMethods::destroyMediaKeys();
 
-        ClientComponentTest::stopApplication(); 
+        ClientComponentTest::stopApplication();
     }
 };
 

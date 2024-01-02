@@ -42,7 +42,7 @@ const std::vector<uint8_t> kLicenseResponse{0x4D, 0x79, 0x4C, 0x69, 0x63, 0x65, 
 const std::vector<uint8_t> kLicenseRenewalResponse{0x1A, 0xB3, 0x7F, 0x8E, 0xD4, 0x60, 0x2F, 0x91,
                                                    0x66, 0x9E, 0x3E, 0xA7, 0xD2, 0x81, 0x4F, 0xC2};
 const std::vector<uint8_t> kInvalidKeyId{0x45, 0x9F, 0x27, 0xF8, 0x14, 0xC2, 0x7B, 0xE9,
-                                     0x5A, 0x36, 0x3E, 0xA7, 0x9E, 0x73, 0xC8, 0xC2};
+                                         0x5A, 0x36, 0x3E, 0xA7, 0x9E, 0x73, 0xC8, 0xC2};
 const std::vector<unsigned char> kKeyStoreHash{'k', 'e', 'y', 'h', 'a', 's', 'h'};
 const std::vector<unsigned char> kDrmStoreHash{'d', 'r', 'm', 'h', 'a', 's', 'h'};
 const std::vector<uint8_t> kDrmHeader{0x91, 0x2E, 0x5D, 0xF3, 0x77, 0xA4, 0x4B, 0xD6,
@@ -185,7 +185,8 @@ void MediaKeysTestMethods::updateSession()
 void MediaKeysTestMethods::shouldUpdateSessionRenewal()
 {
     EXPECT_CALL(*m_mediaKeysModuleMock,
-                updateSession(_, updateSessionRequestMatcher(kMediaKeysHandle, kKeySessionId, kLicenseRenewalResponse), _, _))
+                updateSession(_, updateSessionRequestMatcher(kMediaKeysHandle, kKeySessionId, kLicenseRenewalResponse),
+                              _, _))
         .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->updateSessionResponse(kStatusOk)),
                         WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
 }
@@ -290,8 +291,7 @@ void MediaKeysTestMethods::sendNotifyLicenseRenewal()
 
 void MediaKeysTestMethods::shouldLoadSession()
 {
-    EXPECT_CALL(*m_mediaKeysModuleMock,
-                loadSession(_, loadSessionRequestMatcher(kMediaKeysHandle, kKeySessionId), _, _))
+    EXPECT_CALL(*m_mediaKeysModuleMock, loadSession(_, loadSessionRequestMatcher(kMediaKeysHandle, kKeySessionId), _, _))
         .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->loadSessionResponse(kStatusOk)),
                         WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
 }
@@ -347,8 +347,7 @@ void MediaKeysTestMethods::removeKeySession()
 
 void MediaKeysTestMethods::shouldGetKeyStoreHash()
 {
-    EXPECT_CALL(*m_mediaKeysModuleMock,
-                getKeyStoreHash(_, getKeyStoreHashRequestMatcher(kMediaKeysHandle), _, _))
+    EXPECT_CALL(*m_mediaKeysModuleMock, getKeyStoreHash(_, getKeyStoreHashRequestMatcher(kMediaKeysHandle), _, _))
         .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->getKeyStoreHashResponse(kStatusOk, kKeyStoreHash)),
                         WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
 }
@@ -362,8 +361,7 @@ void MediaKeysTestMethods::getKeyStoreHash()
 
 void MediaKeysTestMethods::shouldGetDrmStoreHash()
 {
-    EXPECT_CALL(*m_mediaKeysModuleMock,
-                getDrmStoreHash(_, getDrmStoreHashRequestMatcher(kMediaKeysHandle), _, _))
+    EXPECT_CALL(*m_mediaKeysModuleMock, getDrmStoreHash(_, getDrmStoreHashRequestMatcher(kMediaKeysHandle), _, _))
         .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->getDrmStoreHashResponse(kStatusOk, kDrmStoreHash)),
                         WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
 }
@@ -377,8 +375,7 @@ void MediaKeysTestMethods::getDrmStoreHash()
 
 void MediaKeysTestMethods::shouldFailToGetKeyStoreHash()
 {
-    EXPECT_CALL(*m_mediaKeysModuleMock,
-                getKeyStoreHash(_, getKeyStoreHashRequestMatcher(kMediaKeysHandle), _, _))
+    EXPECT_CALL(*m_mediaKeysModuleMock, getKeyStoreHash(_, getKeyStoreHashRequestMatcher(kMediaKeysHandle), _, _))
         .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->getKeyStoreHashResponse(kStatusFailed, {})),
                         WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
 }
@@ -391,8 +388,7 @@ void MediaKeysTestMethods::getKeyStoreHashFailure()
 
 void MediaKeysTestMethods::shouldFailToGetDrmStoreHash()
 {
-    EXPECT_CALL(*m_mediaKeysModuleMock,
-                getDrmStoreHash(_, getDrmStoreHashRequestMatcher(kMediaKeysHandle), _, _))
+    EXPECT_CALL(*m_mediaKeysModuleMock, getDrmStoreHash(_, getDrmStoreHashRequestMatcher(kMediaKeysHandle), _, _))
         .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->getDrmStoreHashResponse(kStatusFailed, {})),
                         WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
 }
@@ -405,8 +401,7 @@ void MediaKeysTestMethods::getDrmStoreHashFailure()
 
 void MediaKeysTestMethods::shouldDeleteKeyStore()
 {
-    EXPECT_CALL(*m_mediaKeysModuleMock,
-                deleteKeyStore(_, deleteKeyStoreRequestMatcher(kMediaKeysHandle), _, _))
+    EXPECT_CALL(*m_mediaKeysModuleMock, deleteKeyStore(_, deleteKeyStoreRequestMatcher(kMediaKeysHandle), _, _))
         .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->deleteKeyStoreResponse(kStatusOk)),
                         WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
 }
@@ -418,8 +413,7 @@ void MediaKeysTestMethods::deleteKeyStore()
 
 void MediaKeysTestMethods::shouldDeleteDrmStore()
 {
-    EXPECT_CALL(*m_mediaKeysModuleMock,
-                deleteDrmStore(_, deleteDrmStoreRequestMatcher(kMediaKeysHandle), _, _))
+    EXPECT_CALL(*m_mediaKeysModuleMock, deleteDrmStore(_, deleteDrmStoreRequestMatcher(kMediaKeysHandle), _, _))
         .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->deleteDrmStoreResponse(kStatusOk)),
                         WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
 }
@@ -487,8 +481,7 @@ void MediaKeysTestMethods::getLastDrmError()
 
 void MediaKeysTestMethods::shouldgetLdlSessionsLimit()
 {
-    EXPECT_CALL(*m_mediaKeysModuleMock,
-                getLdlSessionsLimit(_, getLdlSessionsLimitRequestMatcher(kMediaKeysHandle), _, _))
+    EXPECT_CALL(*m_mediaKeysModuleMock, getLdlSessionsLimit(_, getLdlSessionsLimitRequestMatcher(kMediaKeysHandle), _, _))
         .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->getLdlSessionsLimitResponse(kStatusOk, kLdlSessionLimit)),
                         WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
 }
@@ -502,8 +495,7 @@ void MediaKeysTestMethods::getLdlSessionsLimit()
 
 void MediaKeysTestMethods::shouldGetDrmTime()
 {
-    EXPECT_CALL(*m_mediaKeysModuleMock,
-                getDrmTime(_, getDrmTimeRequestMatcher(kMediaKeysHandle), _, _))
+    EXPECT_CALL(*m_mediaKeysModuleMock, getDrmTime(_, getDrmTimeRequestMatcher(kMediaKeysHandle), _, _))
         .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->getDrmTimeResponse(kStatusOk, kDrmTime)),
                         WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
 }

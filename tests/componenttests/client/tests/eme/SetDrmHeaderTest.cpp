@@ -25,10 +25,10 @@ namespace firebolt::rialto::client::ct
 class SetDrmHeaderTest : public ClientComponentTest
 {
 public:
-    SetDrmHeaderTest() : ClientComponentTest() 
-    { 
+    SetDrmHeaderTest() : ClientComponentTest()
+    {
         ClientComponentTest::startApplicationRunning();
-    
+
         // Create a new playready media keys object
         MediaKeysTestMethods::shouldCreateMediaKeysPlayready();
         MediaKeysTestMethods::createMediaKeysPlayready();
@@ -38,7 +38,7 @@ public:
         MediaKeysTestMethods::createKeySession();
     }
 
-    ~SetDrmHeaderTest() 
+    ~SetDrmHeaderTest()
     {
         // Close session
         MediaKeysTestMethods::shouldCloseKeySession();
@@ -48,7 +48,7 @@ public:
         MediaKeysTestMethods::shouldDestroyMediaKeys();
         MediaKeysTestMethods::destroyMediaKeys();
 
-        ClientComponentTest::stopApplication(); 
+        ClientComponentTest::stopApplication();
     }
 };
 

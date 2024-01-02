@@ -27,15 +27,15 @@ class SelectKeyIdTest : public ClientComponentTest
 public:
     int32_t m_segmentId{-1};
 
-    SelectKeyIdTest() : ClientComponentTest() 
-    { 
-        ClientComponentTest::startApplicationRunning(); 
+    SelectKeyIdTest() : ClientComponentTest()
+    {
+        ClientComponentTest::startApplicationRunning();
         MediaKeysTestMethods::initalisePlayreadyMediaKeySession();
-        MediaPipelineTestMethods::startAudioVideoMediaSessionWaitForPreroll(); 
+        MediaPipelineTestMethods::startAudioVideoMediaSessionWaitForPreroll();
     }
 
-    ~SelectKeyIdTest() 
-    { 
+    ~SelectKeyIdTest()
+    {
         MediaPipelineTestMethods::endAudioVideoMediaSession();
         MediaKeysTestMethods::terminateMediaKeySession();
         ClientComponentTest::stopApplication();

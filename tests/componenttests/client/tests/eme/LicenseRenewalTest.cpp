@@ -25,16 +25,16 @@ namespace firebolt::rialto::client::ct
 class LicenseRenewalTest : public ClientComponentTest
 {
 public:
-    LicenseRenewalTest() : ClientComponentTest() 
-    { 
-        ClientComponentTest::startApplicationRunning(); 
-        ClientComponentTest::initaliseWidevineMediaKeySession(); 
+    LicenseRenewalTest() : ClientComponentTest()
+    {
+        ClientComponentTest::startApplicationRunning();
+        ClientComponentTest::initaliseWidevineMediaKeySession();
     }
 
-    ~LicenseRenewalTest() 
-    { 
+    ~LicenseRenewalTest()
+    {
         ClientComponentTest::terminateMediaKeySession();
-        ClientComponentTest::stopApplication(); 
+        ClientComponentTest::stopApplication();
     }
 };
 

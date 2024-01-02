@@ -1303,7 +1303,7 @@ void MediaPipelineTestMethods::checkSegmentData(const MediaSegmentMetadata &meta
     EXPECT_EQ(data, expectedSegmentData);
 }
 
-void MediaPipelineTestMethods::checkKeyId(const MediaPlayerShmInfo& shmInfo, uint32_t keyIndex)
+void MediaPipelineTestMethods::checkKeyId(const MediaPlayerShmInfo &shmInfo, uint32_t keyIndex)
 {
     MediaSegmentMetadata metadata;
     parseMetadata(metadata, shmInfo.mediaDataOffset);
