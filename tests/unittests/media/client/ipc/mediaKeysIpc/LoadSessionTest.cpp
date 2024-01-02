@@ -18,7 +18,7 @@
  */
 
 #include "MediaKeysIpcTestBase.h"
-#include "MediaKeysProtoRequestMatcher.h"
+#include "MediaKeysProtoRequestMatchers.h"
 
 class RialtoClientMediaKeysIpcLoadSessionTest : public MediaKeysIpcTestBase
 {

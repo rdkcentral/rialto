@@ -18,7 +18,6 @@
  */
 
 #include "KeyIdMap.h"
-#include <iostream>
 
 namespace firebolt::rialto::client
 {
