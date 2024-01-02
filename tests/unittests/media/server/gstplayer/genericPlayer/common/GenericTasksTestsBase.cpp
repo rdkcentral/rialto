@@ -124,8 +124,6 @@ GenericTasksTestsBase::GenericTasksTestsBase()
 {
     testContext = std::make_shared<GenericTasksTestsContext>();
 
-    gst_init(nullptr, nullptr);
-
     testContext->m_elementFactory = gst_element_factory_find("fakesrc");
     testContext->m_element = gst_element_factory_create(testContext->m_elementFactory, nullptr);
     testContext->m_context.pipeline = &testContext->m_pipeline;

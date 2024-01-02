@@ -41,7 +41,6 @@ class RenderFrameTest : public MediaPipelineTest
 public:
     RenderFrameTest()
     {
-        gst_init(nullptr, nullptr);
         GstElementFactory *elementFactory = gst_element_factory_find("fakesrc");
         m_videoSink = gst_element_factory_create(elementFactory, nullptr);
         gst_object_unref(elementFactory);

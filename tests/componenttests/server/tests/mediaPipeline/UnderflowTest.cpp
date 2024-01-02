@@ -43,7 +43,6 @@ class UnderflowTest : public MediaPipelineTest
 public:
     UnderflowTest()
     {
-        gst_init(nullptr, nullptr);
         m_elementFactory = gst_element_factory_find("fakesrc");
         m_audioDecoder = gst_element_factory_create(m_elementFactory, nullptr);
         m_videoDecoder = gst_element_factory_create(m_elementFactory, nullptr);

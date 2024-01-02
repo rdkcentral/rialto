@@ -40,7 +40,7 @@ public:
     void testFactoryCreatesObject();
 
     void clientWillConnect();
-    void clientWillDisconnect();
+    void clientWillDisconnect(int sessionId);
     void mediaPipelineServiceWillCreateSession();
     void mediaPipelineServiceWillFailToCreateSession();
     void mediaPipelineServiceWillDestroySession();

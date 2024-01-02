@@ -52,8 +52,8 @@ TEST_F(MediaKeysModuleServiceTests, shouldDestroyMediaKeysWhenDisconnectClient)
     clientWillConnect();
     sendClientConnected();
     cdmServiceWillCreateMediaKeys();
-    sendCreateMediaKeysRequestAndReceiveResponse();
-    clientWillDisconnect();
+    int sessionId = sendCreateMediaKeysRequestAndReceiveResponse();
+    clientWillDisconnect(sessionId);
     sendClientDisconnected();
 }
 
