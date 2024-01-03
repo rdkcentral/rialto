@@ -21,6 +21,8 @@
 #define MEDIA_PIPELINE_STRUCTURE_MATCHERS_H_
 
 #include "MediaCommon.h"
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
 MATCHER_P(qosInfoMatcher, expectedQosInfo, "")
 {
