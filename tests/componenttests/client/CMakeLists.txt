@@ -60,6 +60,8 @@ add_gtests (
         tests/mse/SetVideoWindowTest.cpp
         tests/mse/RenderFrameTest.cpp
         tests/mse/PositionUpdatesTest.cpp
+        tests/mse/CreateMediaPipelineFailuresTest.cpp
+        tests/mse/WriteSegmentEdgeCasesTest.cpp
 
         # EME Component tests
         tests/eme/SessionReadyForDecryptionTest.cpp

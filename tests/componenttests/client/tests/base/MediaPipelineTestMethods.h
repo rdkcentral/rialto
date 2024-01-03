@@ -69,6 +69,7 @@ protected:
 
     // MediaPipeline Expect methods
     void shouldCreateMediaSession();
+    void shouldCreateMediaSessionFailure();
     void shouldCreateMediaSessionSecondary();
     void shouldLoad();
     void shouldLoadSecondary();
@@ -87,7 +88,10 @@ protected:
     void shouldHaveDataBeforePreroll();
     void shouldHaveDataOk(size_t framesWritten);
     void shouldHaveDataEos(size_t framesWritten);
+    void shouldHaveDataNoAvailableSamples();
+    void shouldHaveDataError();
     void shouldHaveDataOkSecondary(size_t framesWritten);
+    void shouldHaveDataFailure(size_t framesWritten);
     void shouldRemoveVideoSource();
     void shouldRemoveVideoSourceSecondary();
     void shouldRemoveAudioSource();
@@ -140,6 +144,7 @@ protected:
 
     // Api methods
     void createMediaPipeline();
+    void createMediaPipelineFailure();
     void createMediaPipelineSecondary();
     void load();
     void loadSecondary();
@@ -157,9 +162,13 @@ protected:
     int32_t addSegmentMseVideoSecondary();
     int32_t addSegmentEncryptedAudio(const uint32_t keyIndex);
     int32_t addSegmentEncryptedVideo(const uint32_t keyIndex);
+    void addSegmentMseVideoNoSpace();
     void haveDataOk();
     void haveDataEos();
+    void haveDataNoAvailableSamples();
+    void haveDataError();
     void haveDataOkSecondary();
+    void haveDataFailure();
     void play();
     void playSecondary();
     void removeSourceVideo();
@@ -234,6 +243,7 @@ protected:
     virtual void waitEvent() = 0;
     virtual std::shared_ptr<ServerStub> &getServerStub() = 0;
     virtual void *getShmAddress() = 0;
+    virtual uint32_t getShmSize() = 0;
 
 private:
     // Const variables
