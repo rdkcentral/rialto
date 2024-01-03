@@ -126,7 +126,8 @@ void MediaKeysTestMethods::createKeySession()
 void MediaKeysTestMethods::createKeySessionFailure()
 {
     int32_t keySessionId;
-    EXPECT_EQ(m_mediaKeys->createKeySession(kSessionTypeTemp, m_mediaKeysClientMock, kIsNotLdl, keySessionId), kStatusFailed);
+    EXPECT_EQ(m_mediaKeys->createKeySession(kSessionTypeTemp, m_mediaKeysClientMock, kIsNotLdl, keySessionId),
+              kStatusFailed);
 }
 
 void MediaKeysTestMethods::shouldGenerateRequest()

@@ -25,22 +25,22 @@ namespace firebolt::rialto::client::ct
 class SessionFailuresTest : public ClientComponentTest
 {
 public:
-    SessionFailuresTest() : ClientComponentTest() 
-    { 
-        ClientComponentTest::startApplicationRunning(); 
+    SessionFailuresTest() : ClientComponentTest()
+    {
+        ClientComponentTest::startApplicationRunning();
 
         // Create a new widevine media keys object
         MediaKeysTestMethods::shouldCreateMediaKeysWidevine();
         MediaKeysTestMethods::createMediaKeysWidevine();
     }
 
-    ~SessionFailuresTest() 
-    { 
+    ~SessionFailuresTest()
+    {
         // Destroy media keys
         MediaKeysTestMethods::shouldDestroyMediaKeys();
         MediaKeysTestMethods::destroyMediaKeys();
 
-        ClientComponentTest::stopApplication(); 
+        ClientComponentTest::stopApplication();
     }
 };
 
@@ -66,7 +66,7 @@ public:
  *
  * Test Steps:
  *  Step 1: Create new key session failure
- *   Create temporary key session .
+ *   Create temporary key session.
  *   Expect that create key session is propagated to the server.
  *   Set media key status failed in the response.
  *   Api call returns with failure.
@@ -159,6 +159,5 @@ TEST_F(SessionFailuresTest, failures)
     // Step 8: Close session
     MediaKeysTestMethods::shouldCloseKeySession();
     MediaKeysTestMethods::closeKeySession();
-
 }
 } // namespace firebolt::rialto::client::ct
