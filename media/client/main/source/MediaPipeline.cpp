@@ -342,6 +342,7 @@ bool MediaPipeline::handleHaveData(MediaSourceStatus status, uint32_t needDataRe
         auto needDataRequestIt = m_needDataRequestMap.find(needDataRequestId);
         if (needDataRequestIt == m_needDataRequestMap.end())
         {
+            // Return success here as the data written is just ignored
             RIALTO_CLIENT_LOG_WARN("Could not find need data request, with id %u", needDataRequestId);
             return true;
         }

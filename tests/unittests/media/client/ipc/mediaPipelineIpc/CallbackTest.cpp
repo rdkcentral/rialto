@@ -18,11 +18,7 @@
  */
 
 #include "MediaPipelineIpcTestBase.h"
-
-MATCHER_P(QosInfoMatcher, expectedQosInfo, "")
-{
-    return ((expectedQosInfo.processed == arg.processed) && (expectedQosInfo.dropped == arg.dropped));
-}
+#include "MediaPipelineStructureMatchers.h"
 
 class RialtoClientMediaPipelineIpcCallbackTest : public MediaPipelineIpcTestBase
 {
@@ -117,7 +113,7 @@ TEST_F(RialtoClientMediaPipelineIpcCallbackTest, NotifyQos)
 
     EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
 
-    EXPECT_CALL(*m_clientMock, notifyQos(m_sourceId, QosInfoMatcher(m_qosInfo)));
+    EXPECT_CALL(*m_clientMock, notifyQos(m_sourceId, qosInfoMatcher(m_qosInfo)));
 
     m_qosCb(updateQosEvent);
 }

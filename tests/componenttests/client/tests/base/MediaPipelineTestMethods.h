@@ -141,6 +141,10 @@ protected:
     void shouldNotifyNeedDataVideo(const size_t framesToWrite);
     void shouldNotifyNeedDataVideoSecondary(const size_t framesToWrite);
     void shouldNotifyPosition(const uint32_t expectedPosition);
+    void shouldNotifyQosAudio();
+    void shouldNotifyQosVideo();
+    void shouldNotifyBufferUnderflowAudio();
+    void shouldNotifyBufferUnderflowVideo();
 
     // Api methods
     void createMediaPipeline();
@@ -221,6 +225,10 @@ protected:
     void sendNotifyPlaybackStateSeeking();
     void sendNotifyPlaybackStateFlushed();
     void sendNotifyPositionChanged(const int64_t position);
+    void sendNotifyQosAudio();
+    void sendNotifyQosVideo();
+    void sendNotifyBufferUnderflowAudio();
+    void sendNotifyBufferUnderflowVideo();
 
     // Check methods
     void checkMseAudioSegmentWritten(int32_t segmentId);
@@ -228,6 +236,7 @@ protected:
     void checkMseVideoSegmentWrittenSecondary(int32_t segmentId);
     void checkEncryptedAudioSegmentWritten(int32_t segmentId, uint32_t keyIndex);
     void checkEncryptedVideoSegmentWritten(int32_t segmentId, uint32_t keyIndex);
+    void checkMediaPipelineClient();
 
     // Helper methods
     void startAudioVideoMediaSessionWaitForPreroll();

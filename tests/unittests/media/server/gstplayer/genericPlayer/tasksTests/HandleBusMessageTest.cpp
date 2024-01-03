@@ -24,6 +24,7 @@
 #include "GstGenericPlayerPrivateMock.h"
 #include "GstWrapperMock.h"
 #include "Matchers.h"
+#include "MediaPipelineStructureMatchers.h"
 #include <gst/gst.h>
 #include <gtest/gtest.h>
 
@@ -33,11 +34,6 @@ using testing::Return;
 using testing::SetArgPointee;
 using ::testing::StrEq;
 using testing::StrictMock;
-
-MATCHER_P2(QosInfoMatcher, expectedProcessed, expectedSropped, "")
-{
-    return ((expectedProcessed == arg.processed) && (expectedSropped == arg.dropped));
-}
 
 class HandleBusMessageTest : public testing::Test
 {
@@ -340,7 +336,7 @@ TEST_F(HandleBusMessageTest, shouldHandleQosMessageForVideo)
                                                           StrEq(GST_ELEMENT_METADATA_KLASS)))
         .WillOnce(Return("Video"));
     EXPECT_CALL(m_gstPlayerClient,
-                notifyQos(firebolt::rialto::MediaSourceType::VIDEO, QosInfoMatcher(processed, dropped)));
+                notifyQos(firebolt::rialto::MediaSourceType::VIDEO, qosInfoMatcher(processed, dropped)));
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&message));
     firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,    m_gstPlayer,   &m_gstPlayerClient,
                                                                     m_gstWrapper, m_glibWrapper, &message};
@@ -365,7 +361,7 @@ TEST_F(HandleBusMessageTest, shouldHandleQosMessageForAudio)
                                                           StrEq(GST_ELEMENT_METADATA_KLASS)))
         .WillOnce(Return("Audio"));
     EXPECT_CALL(m_gstPlayerClient,
-                notifyQos(firebolt::rialto::MediaSourceType::AUDIO, QosInfoMatcher(processed, dropped)));
+                notifyQos(firebolt::rialto::MediaSourceType::AUDIO, qosInfoMatcher(processed, dropped)));
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&message));
     firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,    m_gstPlayer,   &m_gstPlayerClient,
                                                                     m_gstWrapper, m_glibWrapper, &message};

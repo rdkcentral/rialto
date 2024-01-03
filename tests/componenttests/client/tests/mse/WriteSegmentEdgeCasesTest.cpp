@@ -105,8 +105,12 @@ public:
  *  Server is terminated.
  *
  * Expected Results:
- *  Rialto client can handle the addition of the maximum number of frames and partial number of frames
- *  before and after preroll. Data is successfully written to the shared memory for both audio and video.
+ *  Various edge cases that occur during the writing of data are handled correctly and successfully:
+ *   HaveData with no paired need data should return success and be ignored.
+ *   Client can handle HaveData with NO_AVAILABLE_SAMPLES status.
+ *   Client can handle HaveData with ERROR status.
+ *   NO_SPACE is returned from addSegment if the MediaSegment data is too large.
+ *   Client can handle HaveData server failure.
  *
  * Code:
  */
@@ -145,5 +149,7 @@ TEST_F(WriteSegmentEdgeCasesTest, edgeCaseScenarios)
     // Step 9: Send have data ok response but failure in server
     MediaPipelineTestMethods::shouldHaveDataFailure(m_framesToWrite);
     MediaPipelineTestMethods::haveDataFailure();
+    MediaPipelineTestMethods::shouldNotifyPlaybackStateFailure();
+    MediaPipelineTestMethods::sendNotifyPlaybackStateFailure();
 }
 } // namespace firebolt::rialto::client::ct

@@ -18,11 +18,7 @@
  */
 
 #include "MediaPipelineTestBase.h"
-
-MATCHER_P(QosInfoMatcher, expectedQosInfo, "")
-{
-    return ((expectedQosInfo.processed == arg.processed) && (expectedQosInfo.dropped == arg.dropped));
-}
+#include "MediaPipelineStructureMatchers.h"
 
 class RialtoServerMediaPipelineCallbackTest : public MediaPipelineTestBase
 {
@@ -187,7 +183,7 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyQos)
     QosInfo qosInfo{5u, 2u};
 
     mainThreadWillEnqueueTask();
-    EXPECT_CALL(*m_mediaPipelineClientMock, notifyQos(sourceId, QosInfoMatcher(qosInfo)));
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyQos(sourceId, qosInfoMatcher(qosInfo)));
 
     m_gstPlayerCallback->notifyQos(mediaSourceType, qosInfo);
 }

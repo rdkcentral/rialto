@@ -60,6 +60,7 @@ public:
  *   Create an instance of MediaPipeline.
  *   Expect that a session is created on the server.
  *   Check that the object returned is valid.
+ *   Check that media client has been added.
  *
  *  Step 2: Load content
  *   Load MSE.
@@ -159,6 +160,7 @@ TEST_F(AudioVideoPlaybackSequenceTest, playback)
     // Step 1: Create a new media session
     MediaPipelineTestMethods::shouldCreateMediaSession();
     MediaPipelineTestMethods::createMediaPipeline();
+    MediaPipelineTestMethods::checkMediaPipelineClient();
 
     // Step 2: Load content
     MediaPipelineTestMethods::shouldLoad();

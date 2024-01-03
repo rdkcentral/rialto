@@ -20,6 +20,7 @@
 #include "MediaPipelineTestMethods.h"
 #include "CommonConstants.h"
 #include "MediaPipelineProtoRequestMatchers.h"
+#include "MediaPipelineStructureMatchers.h"
 #include "MediaPipelineProtoUtils.h"
 #include "MediaSegments.h"
 #include "MetadataProtoMatchers.h"
@@ -63,8 +64,8 @@ const std::shared_ptr<MediaPlayerShmInfo> kNullShmInfo;
 constexpr int64_t kTimeStamp{1701352637000};
 constexpr int64_t kDuration{105};
 constexpr int64_t kDurationSecondary{402};
-firebolt::rialto::Fraction kFrameRateEmpty{0, 0};
-firebolt::rialto::Fraction kFrameRateSecondary{15, 1};
+constexpr firebolt::rialto::Fraction kFrameRateEmpty{0, 0};
+constexpr firebolt::rialto::Fraction kFrameRateSecondary{15, 1};
 constexpr VideoRequirements kVideoRequirementsSecondary{426, 240};
 constexpr int32_t kSessionIdSecondary{11};
 constexpr uint32_t kPrimaryPartition{0};
@@ -78,6 +79,8 @@ const std::vector<SubSamplePair> kSubSamplePairs{{42, 66}, {6654, 4}, {3, 3654}}
 constexpr firebolt::rialto::CipherMode kCipherModeCenc{firebolt::rialto::CipherMode::CENC};
 constexpr uint32_t kCrypt{7};
 constexpr uint32_t kSkip{8};
+constexpr firebolt::rialto::QosInfo kQosInfoAudio{766, 6};
+constexpr firebolt::rialto::QosInfo kQosInfoVideo{98, 2};
 } // namespace
 
 namespace firebolt::rialto::client::ct
@@ -533,6 +536,11 @@ void MediaPipelineTestMethods::checkEncryptedVideoSegmentWritten(int32_t segment
     checkHasNoSegmentAlignment(metadata);
     checkHasNoExtraData(metadata);
     checkSegmentData(metadata, segmentPosition, kVideoSegments[segmentId]);
+}
+
+void MediaPipelineTestMethods::checkMediaPipelineClient()
+{
+    EXPECT_EQ(m_mediaPipeline->getClient().lock(), m_mediaPipelineClientMock);
 }
 
 void MediaPipelineTestMethods::shouldNotifyNetworkStateBuffered()
@@ -1167,6 +1175,54 @@ void MediaPipelineTestMethods::shouldNotifyPosition(const uint32_t expectedPosit
 void MediaPipelineTestMethods::sendNotifyPositionChanged(const int64_t position)
 {
     getServerStub()->notifyPositionChangeEvent(kSessionId, position);
+    waitEvent();
+}
+
+void MediaPipelineTestMethods::shouldNotifyQosAudio()
+{
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyQos(kAudioSourceId, qosInfoMatcher(kQosInfoAudio)))
+        .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
+}
+
+void MediaPipelineTestMethods::shouldNotifyQosVideo()
+{
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyQos(kVideoSourceId, qosInfoMatcher(kQosInfoVideo)))
+        .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
+}
+
+void MediaPipelineTestMethods::sendNotifyQosAudio()
+{
+    getServerStub()->notifyQosEvent(kSessionId, kAudioSourceId, kQosInfoAudio);
+    waitEvent();
+}
+
+void MediaPipelineTestMethods::sendNotifyQosVideo()
+{
+    getServerStub()->notifyQosEvent(kSessionId, kVideoSourceId, kQosInfoVideo);
+    waitEvent();
+}
+
+void MediaPipelineTestMethods::shouldNotifyBufferUnderflowAudio()
+{
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyBufferUnderflow(kAudioSourceId))
+        .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
+}
+
+void MediaPipelineTestMethods::shouldNotifyBufferUnderflowVideo()
+{
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyBufferUnderflow(kVideoSourceId))
+        .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
+}
+
+void MediaPipelineTestMethods::sendNotifyBufferUnderflowAudio()
+{
+    getServerStub()->notifyBufferUnderflowEvent(kSessionId, kAudioSourceId);
+    waitEvent();
+}
+
+void MediaPipelineTestMethods::sendNotifyBufferUnderflowVideo()
+{
+    getServerStub()->notifyBufferUnderflowEvent(kSessionId, kVideoSourceId);
     waitEvent();
 }
 

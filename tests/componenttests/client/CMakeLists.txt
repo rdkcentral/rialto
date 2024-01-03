@@ -62,6 +62,8 @@ add_gtests (
         tests/mse/PositionUpdatesTest.cpp
         tests/mse/CreateMediaPipelineFailuresTest.cpp
         tests/mse/WriteSegmentEdgeCasesTest.cpp
+        tests/mse/UnderflowNotificationTest.cpp
+        tests/mse/QosNotificationTest.cpp
 
         # EME Component tests
         tests/eme/SessionReadyForDecryptionTest.cpp
