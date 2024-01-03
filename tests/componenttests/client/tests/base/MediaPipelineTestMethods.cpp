@@ -20,8 +20,8 @@
 #include "MediaPipelineTestMethods.h"
 #include "CommonConstants.h"
 #include "MediaPipelineProtoRequestMatchers.h"
-#include "MediaPipelineStructureMatchers.h"
 #include "MediaPipelineProtoUtils.h"
+#include "MediaPipelineStructureMatchers.h"
 #include "MediaSegments.h"
 #include "MetadataProtoMatchers.h"
 #include "MetadataProtoUtils.h"
@@ -513,11 +513,11 @@ int32_t MediaPipelineTestMethods::addSegmentEncryptedVideo(uint32_t keyIndex)
 void MediaPipelineTestMethods::addSegmentMseVideoNoSpace()
 {
     std::unique_ptr<IMediaPipeline::MediaSegment> mseData =
-        std::make_unique<IMediaPipeline::MediaSegmentVideo>(kVideoSourceId, getTimestamp(0), kDuration,
-                                                            kWidth720p, kHeight720p, kFrameRateEmpty);
+        std::make_unique<IMediaPipeline::MediaSegmentVideo>(kVideoSourceId, getTimestamp(0), kDuration, kWidth720p,
+                                                            kHeight720p, kFrameRateEmpty);
 
     // Set data as the shared memory buffer as we know this is too large
-    mseData->setData(getShmSize() + 1, reinterpret_cast<uint8_t*>(getShmAddress()));
+    mseData->setData(getShmSize() + 1, reinterpret_cast<uint8_t *>(getShmAddress()));
     EXPECT_EQ(m_mediaPipeline->addSegment(m_needDataRequestId, mseData), AddSegmentStatus::NO_SPACE);
 }
 
@@ -679,11 +679,11 @@ void MediaPipelineTestMethods::shouldHaveDataOkSecondary(size_t framesWritten)
 
 void MediaPipelineTestMethods::shouldHaveDataFailure(size_t framesWritten)
 {
-
-    EXPECT_CALL(*m_mediaPipelineModuleMock, haveData(_,
-                                                     haveDataRequestMatcher(kSessionId, convertMediaSourceStatus(MediaSourceStatus::OK),
-                                                                            framesWritten, m_needDataRequestId),
-                                                     _, _))
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                haveData(_,
+                         haveDataRequestMatcher(kSessionId, convertMediaSourceStatus(MediaSourceStatus::OK),
+                                                framesWritten, m_needDataRequestId),
+                         _, _))
         .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::failureReturn)));
 }
 

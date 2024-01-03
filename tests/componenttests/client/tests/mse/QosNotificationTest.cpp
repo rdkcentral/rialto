@@ -88,11 +88,11 @@ public:
  */
 TEST_F(QosNotificationTest, notifications)
 {
-   // Step 1: Notify qos audio
+    // Step 1: Notify qos audio
     MediaPipelineTestMethods::shouldNotifyQosAudio();
     MediaPipelineTestMethods::sendNotifyQosAudio();
 
-   // Step 2: Notify qos video
+    // Step 2: Notify qos video
     MediaPipelineTestMethods::shouldNotifyQosVideo();
     MediaPipelineTestMethods::sendNotifyQosVideo();
 }

@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#include "MediaPipelineTestBase.h"
 #include "MediaPipelineStructureMatchers.h"
+#include "MediaPipelineTestBase.h"
 
 class RialtoClientMediaPipelineCallbackTest : public MediaPipelineTestBase
 {

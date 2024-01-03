@@ -107,29 +107,29 @@ public:
  */
 TEST_F(UnderflowNotificationTest, notifications)
 {
-   // Step 1: Notify need data for audio
+    // Step 1: Notify need data for audio
     MediaPipelineTestMethods::shouldNotifyNeedDataAudio(m_framesToWrite);
     MediaPipelineTestMethods::sendNotifyNeedDataAudio(m_framesToWrite);
 
-   // Step 2: Notify audio underflow
+    // Step 2: Notify audio underflow
     MediaPipelineTestMethods::shouldNotifyBufferUnderflowAudio();
     MediaPipelineTestMethods::sendNotifyBufferUnderflowAudio();
 
-   // Step 3: Recover audio underflow
+    // Step 3: Recover audio underflow
     m_segmentId = MediaPipelineTestMethods::addSegmentMseAudio();
     MediaPipelineTestMethods::checkMseAudioSegmentWritten(m_segmentId);
     MediaPipelineTestMethods::shouldHaveDataOk(m_framesToWrite);
     MediaPipelineTestMethods::haveDataOk();
 
-   // Step 4: Notify need data for video
+    // Step 4: Notify need data for video
     MediaPipelineTestMethods::shouldNotifyNeedDataVideo(m_framesToWrite);
     MediaPipelineTestMethods::sendNotifyNeedDataVideo(m_framesToWrite);
 
-   // Step 5: Notify video underflow
+    // Step 5: Notify video underflow
     MediaPipelineTestMethods::shouldNotifyBufferUnderflowVideo();
     MediaPipelineTestMethods::sendNotifyBufferUnderflowVideo();
 
-   // Step 6: Recover video underflow
+    // Step 6: Recover video underflow
     m_segmentId = MediaPipelineTestMethods::addSegmentMseVideo();
     MediaPipelineTestMethods::checkMseVideoSegmentWritten(m_segmentId);
     MediaPipelineTestMethods::shouldHaveDataOk(m_framesToWrite);
