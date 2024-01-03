@@ -25,8 +25,6 @@ namespace firebolt::rialto::client::ct
 class QosNotificationTest : public ClientComponentTest
 {
 public:
-    double m_volume = 0;
-
     QosNotificationTest() : ClientComponentTest()
     {
         ClientComponentTest::startApplicationRunning();
