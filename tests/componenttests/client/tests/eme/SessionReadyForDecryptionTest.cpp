@@ -79,6 +79,10 @@ public:
  *   Expect that closeSession is propagated to the server.
  *   Api call returns with success.
  *
+ *  Step 6: Destroy media keys
+ *   Destroy instance of MediaKeys.
+ *   Expect that media keys is destroyed on the server.
+ *
  * Test Teardown:
  *  Server is terminated.
  *
@@ -113,6 +117,10 @@ TEST_F(SessionReadyForDecryptionTest, widevine)
     // Step 5: Close session
     MediaKeysTestMethods::shouldCloseKeySession();
     MediaKeysTestMethods::closeKeySession();
+
+    // Step 6: Destroy media keys
+    MediaKeysTestMethods::shouldDestroyMediaKeys();
+    MediaKeysTestMethods::destroyMediaKeys();
 }
 
 /*
