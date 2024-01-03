@@ -105,11 +105,28 @@ void MediaKeysTestMethods::shouldCreateKeySession()
                         WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
 }
 
+void MediaKeysTestMethods::shouldCreateKeySessionFailure()
+{
+    EXPECT_CALL(*m_mediaKeysModuleMock,
+                createKeySession(_,
+                                 createKeySessionRequestMatcher(kMediaKeysHandle,
+                                                                convertKeySessionType(kSessionTypeTemp), kIsNotLdl),
+                                 _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->createKeySessionResponse(kStatusFailed, kKeySessionId)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
+}
+
 void MediaKeysTestMethods::createKeySession()
 {
     int32_t keySessionId;
     EXPECT_EQ(m_mediaKeys->createKeySession(kSessionTypeTemp, m_mediaKeysClientMock, kIsNotLdl, keySessionId), kStatusOk);
     EXPECT_EQ(keySessionId, kKeySessionId);
+}
+
+void MediaKeysTestMethods::createKeySessionFailure()
+{
+    int32_t keySessionId;
+    EXPECT_EQ(m_mediaKeys->createKeySession(kSessionTypeTemp, m_mediaKeysClientMock, kIsNotLdl, keySessionId), kStatusFailed);
 }
 
 void MediaKeysTestMethods::shouldGenerateRequest()
@@ -120,6 +137,17 @@ void MediaKeysTestMethods::shouldGenerateRequest()
                                                               convertInitDataType(kInitDataTypeCenc), kInitData),
                                 _, _))
         .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->generateRequestResponse(kStatusOk)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
+}
+
+void MediaKeysTestMethods::shouldGenerateRequestFailure()
+{
+    EXPECT_CALL(*m_mediaKeysModuleMock,
+                generateRequest(_,
+                                generateRequestRequestMatcher(kMediaKeysHandle, kKeySessionId,
+                                                              convertInitDataType(kInitDataTypeCenc), kInitData),
+                                _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->generateRequestResponse(kStatusFailed)),
                         WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
 }
 
@@ -143,6 +171,11 @@ void MediaKeysTestMethods::shouldGenerateRequestAndSendNotifyLicenseRequest()
 void MediaKeysTestMethods::generateRequest()
 {
     EXPECT_EQ(m_mediaKeys->generateRequest(kKeySessionId, kInitDataTypeCenc, kInitData), kStatusOk);
+}
+
+void MediaKeysTestMethods::generateRequestFailure()
+{
+    EXPECT_EQ(m_mediaKeys->generateRequest(kKeySessionId, kInitDataTypeCenc, kInitData), kStatusFailed);
 }
 
 void MediaKeysTestMethods::shouldNotifyLicenseRequest()
@@ -177,9 +210,22 @@ void MediaKeysTestMethods::shouldUpdateSession()
                         WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
 }
 
+void MediaKeysTestMethods::shouldUpdateSessionFailure()
+{
+    EXPECT_CALL(*m_mediaKeysModuleMock,
+                updateSession(_, updateSessionRequestMatcher(kMediaKeysHandle, kKeySessionId, kLicenseResponse), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->updateSessionResponse(kStatusFailed)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
+}
+
 void MediaKeysTestMethods::updateSession()
 {
     EXPECT_EQ(m_mediaKeys->updateSession(kKeySessionId, kLicenseResponse), kStatusOk);
+}
+
+void MediaKeysTestMethods::updateSessionFailure()
+{
+    EXPECT_EQ(m_mediaKeys->updateSession(kKeySessionId, kLicenseResponse), kStatusFailed);
 }
 
 void MediaKeysTestMethods::shouldUpdateSessionRenewal()
@@ -204,9 +250,22 @@ void MediaKeysTestMethods::shouldCloseKeySession()
                         WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
 }
 
+void MediaKeysTestMethods::shouldCloseKeySessionFailure()
+{
+    EXPECT_CALL(*m_mediaKeysModuleMock,
+                closeKeySession(_, closeKeySessionRequestMatcher(kMediaKeysHandle, kKeySessionId), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->closeKeySessionResponse(kStatusFailed)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
+}
+
 void MediaKeysTestMethods::closeKeySession()
 {
     EXPECT_EQ(m_mediaKeys->closeKeySession(kKeySessionId), kStatusOk);
+}
+
+void MediaKeysTestMethods::closeKeySessionFailure()
+{
+    EXPECT_EQ(m_mediaKeys->closeKeySession(kKeySessionId), kStatusFailed);
 }
 
 void MediaKeysTestMethods::shouldDestroyMediaKeys()

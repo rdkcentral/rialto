@@ -71,6 +71,7 @@ add_gtests (
         tests/eme/SetDrmHeaderTest.cpp
         tests/eme/GetSessionInfoTest.cpp
         tests/eme/GetDrmInfoTest.cpp
+        tests/eme/SessionFailuresTest.cpp
         )
 
 add_subdirectory(mocks)
