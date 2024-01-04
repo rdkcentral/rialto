@@ -415,7 +415,7 @@ void MediaPipelineTestMethods::checkMseVideoSegmentWrittenSecondary(int32_t segm
     checkSegmentData(metadata, dataPosition += *metadataSize, kVideoSegments[segmentId]);
 }
 
-int32_t MediaPipelineTestMethods::addSegmentEncryptedAudio(uint32_t keyIndex)
+int32_t MediaPipelineTestMethods::addSegmentEncryptedAudio(int32_t keyIndex)
 {
     EXPECT_LT(m_audioSegmentCount, sizeof(kAudioSegments) / sizeof(kAudioSegments[0]));
 
@@ -454,7 +454,7 @@ void MediaPipelineTestMethods::checkEncryptedAudioSegmentWritten(int32_t segment
     checkSegmentData(metadata, segmentPosition, kAudioSegments[segmentId]);
 }
 
-int32_t MediaPipelineTestMethods::addSegmentEncryptedVideo(uint32_t keyIndex)
+int32_t MediaPipelineTestMethods::addSegmentEncryptedVideo(int32_t keyIndex)
 {
     EXPECT_LT(m_videoSegmentCount, sizeof(kVideoSegments) / sizeof(kVideoSegments[0]));
 
@@ -491,6 +491,22 @@ void MediaPipelineTestMethods::checkEncryptedVideoSegmentWritten(int32_t segment
     checkHasNoSegmentAlignment(metadata);
     checkHasNoExtraData(metadata);
     checkSegmentData(metadata, segmentPosition, kVideoSegments[segmentId]);
+}
+
+void MediaPipelineTestMethods::checkAudioKeyId(int32_t segmentId, uint32_t keyIndex)
+{
+    auto it = writtenAudioSegments.find(segmentId);
+    ASSERT_NE(it, writtenAudioSegments.end());
+
+    checkKeyId(it->second, keyIndex);
+}
+
+void MediaPipelineTestMethods::checkVideoKeyId(int32_t segmentId, uint32_t keyIndex)
+{
+    auto it = writtenVideoSegments.find(segmentId);
+    ASSERT_NE(it, writtenVideoSegments.end());
+
+    checkKeyId(it->second, keyIndex);
 }
 
 void MediaPipelineTestMethods::shouldNotifyNetworkStateBuffered()
@@ -1287,12 +1303,24 @@ void MediaPipelineTestMethods::checkSegmentData(const MediaSegmentMetadata &meta
     EXPECT_EQ(data, expectedSegmentData);
 }
 
+void MediaPipelineTestMethods::checkKeyId(const MediaPlayerShmInfo &shmInfo, uint32_t keyIndex)
+{
+    MediaSegmentMetadata metadata;
+    parseMetadata(metadata, shmInfo.mediaDataOffset);
+
+    EXPECT_TRUE(metadata.has_key_id());
+    EXPECT_EQ(metadata.key_id(), std::string(kKeyStatuses[keyIndex].first.begin(), kKeyStatuses[keyIndex].first.end()));
+}
+
 void MediaPipelineTestMethods::addEncryptedDataToSegment(std::unique_ptr<IMediaPipeline::MediaSegment> &mseData,
-                                                         uint32_t keyIndex)
+                                                         int32_t keyIndex)
 {
     mseData->setEncrypted(true);
     mseData->setMediaKeySessionId(kKeySessionId);
-    mseData->setKeyId(kKeyStatuses[keyIndex].first);
+    if (keyIndex >= 0)
+    {
+        mseData->setKeyId(kKeyStatuses[keyIndex].first);
+    }
     mseData->setInitVector(kInitData);
     for (const auto &info : kSubSamplePairs)
     {
