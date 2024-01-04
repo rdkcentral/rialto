@@ -17,6 +17,8 @@
  * limitations under the License.
  */
 
+#include <vector>
+
 #include "ActionTraits.h"
 #include "ConfigureAction.h"
 #include "Matchers.h"
@@ -28,6 +30,10 @@ using testing::_;
 using testing::ByMove;
 using testing::Return;
 using testing::StrictMock;
+
+namespace {
+    const std::vector<unsigned char> kOneKeyId{'a', 'z', 'q', 'l', 'D'};
+};
 
 namespace firebolt::rialto::server::ct
 {
@@ -130,9 +136,9 @@ public:
                 ASSERT_EQ(message->media_keys_handle(), m_mediaKeysHandle);
                 ASSERT_EQ(message->key_session_id(), m_mediaKeySessionId);
                 EXPECT_TRUE(message->url() == kUrl);
-                unsigned int max = message->license_request_message_size();
-                ASSERT_EQ(max, kLicenseRequestMessage.size());
-                for (unsigned int i = 0; i < max; ++i)
+                const unsigned int kMax = message->license_request_message_size();
+                ASSERT_EQ(kMax, kLicenseRequestMessage.size());
+                for (unsigned int i = 0; i < kMax; ++i)
                 {
                     ASSERT_EQ(message->license_request_message(i), kLicenseRequestMessage[i]);
                 }
@@ -178,13 +184,6 @@ public:
                            { EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK); });
 
         ASSERT_EQ(ok, true);
-
-#if 0
-        // TODO(proudmanp): why teardown doesn't work
-        // For teardown...
-        EXPECT_CALL(m_ocdmSessionMock, close()).WillOnce(Return(MediaKeyErrorStatus::OK));
-        EXPECT_CALL(m_ocdmSessionMock, destructSession()).WillOnce(Return(MediaKeyErrorStatus::OK));
-#endif
     }
 
     void updateSessionNetflix()
@@ -213,13 +212,6 @@ public:
                            { EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK); });
 
         ASSERT_EQ(ok, true);
-
-#if 0
-        // TODO(proudmanp): why teardown doesn't work
-        // For teardown...
-        EXPECT_CALL(m_ocdmSessionMock, close()).WillOnce(Return(MediaKeyErrorStatus::OK));
-        EXPECT_CALL(m_ocdmSessionMock, destructSession()).WillOnce(Return(MediaKeyErrorStatus::OK));
-#endif
     }
 
     void updateAllKeys()
@@ -236,12 +228,20 @@ public:
                 ASSERT_EQ(message->media_keys_handle(), m_mediaKeysHandle);
                 ASSERT_EQ(message->key_session_id(), m_mediaKeySessionId);
 
-#if 0
-                // TODO(proudmanp): check the value of this???
-                const ::google::protobuf::RepeatedPtrField< ::firebolt::rialto::KeyStatusesChangedEvent_KeyStatusPair >& key_statuses = message-> key_statuses();
-#endif
+                const ::google::protobuf::RepeatedPtrField< ::firebolt::rialto::KeyStatusesChangedEvent_KeyStatusPair > &key_statuses = message->key_statuses();
 
-                callFlag = true;
+                for (const ::firebolt::rialto::KeyStatusesChangedEvent_KeyStatusPair & i : key_statuses)
+                {
+                    ASSERT_EQ(i.key_status(), KeyStatusesChangedEvent_KeyStatus_USABLE);
+
+                    const unsigned int kMax = i.key_id_size();
+                    ASSERT_EQ(kMax, kOneKeyId.size());
+                    for (unsigned int j = 0; j<kMax; ++j)
+                    {
+                        ASSERT_EQ(i.key_id(j), kOneKeyId[j]);
+                    }
+                    callFlag = true;
+                }
                 myCondVar.notify_all();
             }};
         m_clientStub.getIpcChannel()->subscribe(handler);
@@ -254,12 +254,9 @@ public:
 
     void updateOneKey()
     {
-        const std::vector<unsigned char> kKeyId{'a', 'z', 'q', 'l'};
+        EXPECT_CALL(m_ocdmSessionMock, getStatus(::arrayMatcher(kOneKeyId), kOneKeyId.size())).WillOnce(Return(KeyStatus::USABLE));
 
-        // TODO(proudmanp): write a lambda to check the parameters passed in here...
-        EXPECT_CALL(m_ocdmSessionMock, getStatus(::arrayMatcher(kKeyId), kKeyId.size())).WillOnce(Return(KeyStatus::USABLE));
-
-        m_ocdmSessionClient->onKeyUpdated(&kKeyId[0], kKeyId.size());
+        m_ocdmSessionClient->onKeyUpdated(&kOneKeyId[0], kOneKeyId.size());
     }
 
     void licenseRenewal()
@@ -278,9 +275,9 @@ public:
 
                 ASSERT_EQ(message->media_keys_handle(), m_mediaKeysHandle);
                 ASSERT_EQ(message->key_session_id(), m_mediaKeySessionId);
-                unsigned int max = message->license_renewal_message_size();
-                ASSERT_EQ(max, kLicenseRenewalMessage.size());
-                for (unsigned int i = 0; i < max; ++i)
+                const unsigned int kMax = message->license_renewal_message_size();
+                ASSERT_EQ(kMax, kLicenseRenewalMessage.size());
+                for (unsigned int i = 0; i < kMax; ++i)
                 {
                     ASSERT_EQ(message->license_renewal_message(i), kLicenseRenewalMessage[i]);
                 }
@@ -307,11 +304,7 @@ public:
         ConfigureAction<ContainsKey>(m_clientStub)
             .send(request)
             .expectSuccess()
-            .matchResponse(
-                [&](const firebolt::rialto::ContainsKeyResponse &resp)
-                {
-                    ASSERT_TRUE(resp.contains_key());
-                });
+            .matchResponse([&](const firebolt::rialto::ContainsKeyResponse &resp) { ASSERT_TRUE(resp.contains_key()); });
     }
 
     void doesNotContainKey()
@@ -325,11 +318,7 @@ public:
         ConfigureAction<ContainsKey>(m_clientStub)
             .send(request)
             .expectSuccess()
-            .matchResponse(
-                [&](const firebolt::rialto::ContainsKeyResponse &resp)
-                {
-                    ASSERT_FALSE(resp.contains_key());
-                });
+            .matchResponse([&](const firebolt::rialto::ContainsKeyResponse &resp) { ASSERT_FALSE(resp.contains_key()); });
     }
 
     void removeKeySession()
@@ -341,11 +330,8 @@ public:
         ConfigureAction<RemoveKeySession>(m_clientStub)
             .send(request)
             .expectSuccess()
-            .matchResponse(
-                [&](const firebolt::rialto::RemoveKeySessionResponse &resp)
-                {
-                    EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK);
-                });
+            .matchResponse([&](const firebolt::rialto::RemoveKeySessionResponse &resp)
+                           { EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK); });
     }
 
     void loadKeySession()
@@ -357,11 +343,8 @@ public:
         ConfigureAction<LoadSession>(m_clientStub)
             .send(request)
             .expectSuccess()
-            .matchResponse(
-                [&](const firebolt::rialto::LoadSessionResponse &resp)
-                {
-                    EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK);
-                });
+            .matchResponse([&](const firebolt::rialto::LoadSessionResponse &resp)
+                           { EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK); });
     }
 
     void closeKeySessionWidevine()
@@ -374,11 +357,8 @@ public:
         ConfigureAction<CloseKeySession>(m_clientStub)
             .send(request)
             .expectSuccess()
-            .matchResponse(
-                [&](const firebolt::rialto::CloseKeySessionResponse &resp)
-                {
-                    EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK);
-                });
+            .matchResponse([&](const firebolt::rialto::CloseKeySessionResponse &resp)
+                           { EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK); });
     }
 
     void closeKeySessionNetflix()
@@ -392,11 +372,8 @@ public:
         ConfigureAction<CloseKeySession>(m_clientStub)
             .send(request)
             .expectSuccess()
-            .matchResponse(
-                [&](const firebolt::rialto::CloseKeySessionResponse &resp)
-                {
-                    EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK);
-                });
+            .matchResponse([&](const firebolt::rialto::CloseKeySessionResponse &resp)
+                           { EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK); });
     }
 
     void setDrmHeader()
@@ -405,16 +382,14 @@ public:
 
         auto request{createSetDrmHeaderRequest(m_mediaKeysHandle, m_mediaKeySessionId, kKeyId)};
 
-        EXPECT_CALL(m_ocdmSessionMock, setDrmHeader(::arrayMatcher(kKeyId), kKeyId.size())).WillOnce(Return(MediaKeyErrorStatus::OK));
+        EXPECT_CALL(m_ocdmSessionMock, setDrmHeader(::arrayMatcher(kKeyId), kKeyId.size()))
+            .WillOnce(Return(MediaKeyErrorStatus::OK));
 
         ConfigureAction<SetDrmHeader>(m_clientStub)
             .send(request)
             .expectSuccess()
-            .matchResponse(
-                [&](const firebolt::rialto::SetDrmHeaderResponse &resp)
-                {
-                    EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK);
-                });
+            .matchResponse([&](const firebolt::rialto::SetDrmHeaderResponse &resp)
+                           { EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK); });
     }
 
     void getLastDrmError()
@@ -423,7 +398,8 @@ public:
 
         const uint32_t kTestErrorCode{8};
 
-        EXPECT_CALL(m_ocdmSessionMock, getLastDrmError(_)).WillOnce(testing::Invoke(
+        EXPECT_CALL(m_ocdmSessionMock, getLastDrmError(_))
+            .WillOnce(testing::Invoke(
                 [&](uint32_t &errorCode) -> MediaKeyErrorStatus
                 {
                     errorCode = kTestErrorCode;
@@ -440,6 +416,239 @@ public:
                     EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK);
                 });
     }
+
+    void getCdmKeySessionId()
+    {
+        auto request{createGetCdmKeySessionIdRequest(m_mediaKeysHandle, m_mediaKeySessionId)};
+
+        const std::string kTestString{"Test_str"};
+
+        EXPECT_CALL(m_ocdmSessionMock, getCdmKeySessionId(_))
+            .WillOnce(testing::Invoke(
+                [&](std::string &cdmKeySessionId) -> MediaKeyErrorStatus
+                {
+                    cdmKeySessionId = kTestString;
+                    return MediaKeyErrorStatus::OK;
+                }));
+
+        ConfigureAction<GetCdmKeySessionId>(m_clientStub)
+            .send(request)
+            .expectSuccess()
+            .matchResponse(
+                [&](const firebolt::rialto::GetCdmKeySessionIdResponse &resp)
+                {
+                    EXPECT_EQ(resp.cdm_key_session_id(), kTestString);
+                    EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK);
+                });
+    }
+
+    void destroyMediaKeysRequest()
+    {
+        auto request{createDestroyMediaKeysRequest(m_mediaKeysHandle)};
+
+        ConfigureAction<DestroyMediaKeys>(m_clientStub)
+            .send(request)
+            .expectSuccess()
+            .matchResponse(
+                [&](const firebolt::rialto::DestroyMediaKeysResponse &resp)
+                {
+                });
+    }
+
+    void deleteDrmStoreRequest()
+    {
+        auto request{createDeleteDrmStoreRequest(m_mediaKeysHandle)};
+
+        EXPECT_CALL(*m_ocdmSystemMock, deleteSecureStore())
+            .WillOnce(Return(MediaKeyErrorStatus::OK));
+
+        ConfigureAction<DeleteDrmStore>(m_clientStub)
+            .send(request)
+            .expectSuccess()
+            .matchResponse(
+                [&](const firebolt::rialto::DeleteDrmStoreResponse &resp)
+                {
+                    EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK);
+                });
+    }
+
+    void deleteKeyStoreRequest()
+    {
+        auto request{createDeleteKeyStoreRequest(m_mediaKeysHandle)};
+
+        EXPECT_CALL(*m_ocdmSystemMock, deleteKeyStore())
+            .WillOnce(Return(MediaKeyErrorStatus::OK));
+
+        ConfigureAction<DeleteKeyStore>(m_clientStub)
+            .send(request)
+            .expectSuccess()
+            .matchResponse(
+                [&](const firebolt::rialto::DeleteKeyStoreResponse &resp)
+                {
+                    EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK);
+                });
+    }
+
+    void getDrmStoreHashRequest()
+    {
+        auto request{createGetDrmStoreHashRequest(m_mediaKeysHandle)};
+
+        const std::vector<unsigned char> kHashTest{'d', 'z', 'f'};
+
+        EXPECT_CALL(*m_ocdmSystemMock, getSecureStoreHash(_, _))
+            .WillOnce(testing::Invoke(
+                [&](uint8_t secureStoreHash[], uint32_t secureStoreHashLength)
+                    -> MediaKeyErrorStatus
+                {
+                    // The real wrapper calls opencdm_get_secure_store_hash_ext()
+                    // defined in opencdm/opencdm_ext.h
+                    // and this header specifies the length should be at least 64
+                    // (but doesn't return the number of bytes actually filled)
+                    EXPECT_GT(secureStoreHashLength, 64);
+                    size_t i = 0;
+                    for (; i < kHashTest.size(); ++i)
+                    {
+                        secureStoreHash[i] = kHashTest[i];
+                    }
+                    // Pad with zeros in case valgrind complains...
+                    for (; i < secureStoreHashLength; ++i)
+                    {
+                        secureStoreHash[i] = 0;
+                    }
+                    return MediaKeyErrorStatus::OK;
+                }));
+
+        ConfigureAction<GetDrmStoreHash>(m_clientStub)
+            .send(request)
+            .expectSuccess()
+            .matchResponse(
+                [&](const firebolt::rialto::GetDrmStoreHashResponse &resp)
+                {
+                    EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK);
+                    for (size_t i = 0; i < kHashTest.size(); ++i)
+                    {
+                        EXPECT_EQ(resp.drm_store_hash(i) , kHashTest[i]);
+                    }
+                });
+    }
+
+    void getDrmStoreHashRequestFails()
+    {
+        auto request{createGetDrmStoreHashRequest(m_mediaKeysHandle)};
+
+        EXPECT_CALL(*m_ocdmSystemMock, getSecureStoreHash(_, _))
+            .WillOnce(testing::Invoke(
+                [&](uint8_t secureStoreHash[], uint32_t secureStoreHashLength)
+                    -> MediaKeyErrorStatus
+                {
+                    return MediaKeyErrorStatus::NOT_SUPPORTED;
+                }));
+
+        ConfigureAction<GetDrmStoreHash>(m_clientStub)
+            .send(request)
+            .expectSuccess()
+            .matchResponse(
+                [&](const firebolt::rialto::GetDrmStoreHashResponse &resp)
+                {
+                    EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::NOT_SUPPORTED);
+                });
+    }
+
+    void getKeyStoreHashRequest()
+    {
+        auto request{createGetKeyStoreHashRequest(m_mediaKeysHandle)};
+
+        const std::vector<unsigned char> kHashTest{'d', 'z', 'f'};
+
+        EXPECT_CALL(*m_ocdmSystemMock, getKeyStoreHash(_, _))
+            .WillOnce(testing::Invoke(
+                [&](uint8_t keyStoreHash[], uint32_t keyStoreHashLength)
+                    -> MediaKeyErrorStatus
+                {
+                    // The real wrapper calls opencdm_get_key_store_hash_ext()
+                    // defined in opencdm/opencdm_ext.h
+                    // and this header specifies the length should be at least 64
+                    // (but doesn't return the number of bytes actually filled)
+                    EXPECT_GT(keyStoreHashLength, 64);
+                    size_t i = 0;
+                    for (; i < kHashTest.size(); ++i)
+                    {
+                        keyStoreHash[i] = kHashTest[i];
+                    }
+                    // Pad with zeros in case valgrind complains...
+                    for (; i < keyStoreHashLength; ++i)
+                    {
+                        keyStoreHash[i] = 0;
+                    }
+                    return MediaKeyErrorStatus::OK;
+                }));
+
+        ConfigureAction<GetKeyStoreHash>(m_clientStub)
+            .send(request)
+            .expectSuccess()
+            .matchResponse(
+                [&](const firebolt::rialto::GetKeyStoreHashResponse &resp)
+                {
+                    EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK);
+                    for (size_t i = 0; i < kHashTest.size(); ++i)
+                    {
+                        EXPECT_EQ(resp.key_store_hash(i) , kHashTest[i]);
+                    }
+                });
+    }
+
+    void getLdlSessionsLimitRequest()
+    {
+        auto request{createGetLdlSessionsLimitRequest(m_mediaKeysHandle)};
+
+        const uint32_t kTestLdlLimit = 34;
+
+        EXPECT_CALL(*m_ocdmSystemMock, getLdlSessionsLimit(_))
+            .WillOnce(testing::Invoke(
+                [&](uint32_t *ldlLimit)
+                    -> MediaKeyErrorStatus
+                {
+                    *ldlLimit = kTestLdlLimit;
+                    return MediaKeyErrorStatus::OK;
+                }));
+
+        ConfigureAction<GetLdlSessionsLimit>(m_clientStub)
+            .send(request)
+            .expectSuccess()
+            .matchResponse(
+                [&](const firebolt::rialto::GetLdlSessionsLimitResponse &resp)
+                {
+                    EXPECT_EQ(resp.ldl_limit(), kTestLdlLimit);
+                    EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK);
+                });
+    }
+
+    void getDrmTimeRequest()
+    {
+        auto request{createGetDrmTimeRequest(m_mediaKeysHandle)};
+
+        const uint32_t kTestTime = 34;
+
+        EXPECT_CALL(*m_ocdmSystemMock, getDrmTime(_))
+            .WillOnce(testing::Invoke(
+                [&](uint64_t *time)
+                    -> MediaKeyErrorStatus
+                {
+                    *time = kTestTime;
+                    return MediaKeyErrorStatus::OK;
+                }));
+
+        ConfigureAction<GetDrmTime>(m_clientStub)
+            .send(request)
+            .expectSuccess()
+            .matchResponse(
+                [&](const firebolt::rialto::GetDrmTimeResponse &resp)
+                {
+                    EXPECT_EQ(resp.drm_time(), kTestTime);
+                    EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK);
+                });
+    }
+
 
     int m_mediaKeysHandle{-1};
     int m_mediaKeySessionId{-1};
@@ -500,52 +709,47 @@ TEST_F(MediaKeysTest, shouldGenerate)
     generateRequest();
 }
 
-TEST_F(MediaKeysTest, shouldUpdateWidevineAllKeys)
-{
-    createMediaKeysWidevine();
-    ocdmSessionWillBeCreated();
-    createKeySession();
-    updateSessionWidevine();
-    updateAllKeys();
-    licenseRenewal();
-}
-
-TEST_F(MediaKeysTest, shouldUpdateWidevineOneKey)
+TEST_F(MediaKeysTest, shouldUpdateWidevine)
 {
     createMediaKeysWidevine();
     ocdmSessionWillBeCreated();
     createKeySession();
     updateSessionWidevine();
     updateOneKey();
+    updateAllKeys();
     licenseRenewal();
     closeKeySessionWidevine();
 }
 
-TEST_F(MediaKeysTest, shouldUpdatNetflixAllKeys)
-{
-    createMediaKeysNetflix();
-    ocdmSessionWillBeCreated();
-    createKeySession();
-    updateSessionNetflix();
-    updateAllKeys();
-    licenseRenewal();
-}
-
-TEST_F(MediaKeysTest, shouldUpdatNetflixOneKey)
+TEST_F(MediaKeysTest, shouldUpdatNetflix)
 {
     createMediaKeysNetflix();
     ocdmSessionWillBeCreated();
     createKeySession();
     updateSessionNetflix();
     updateOneKey();
+    updateAllKeys();
     licenseRenewal();
     containsKey();
     doesNotContainKey();
+    
     loadKeySession();
+    
     removeKeySession();
     setDrmHeader();
     getLastDrmError();
+    getCdmKeySessionId();
+
+    deleteDrmStoreRequest();
+    deleteKeyStoreRequest();
+    getDrmStoreHashRequest();
+    getDrmStoreHashRequestFails();
+    getKeyStoreHashRequest();
+    getLdlSessionsLimitRequest();
+    getDrmTimeRequest();
+
     closeKeySessionNetflix();
+    destroyMediaKeysRequest();
 }
 
 } // namespace firebolt::rialto::server::ct

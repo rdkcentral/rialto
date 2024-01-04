@@ -360,6 +360,86 @@ struct GetLastDrmError
     static constexpr FunctionType m_kFunction{&Stub::getLastDrmError};
 };
 
+struct GetCdmKeySessionId
+{
+    using RequestType = ::firebolt::rialto::GetCdmKeySessionIdRequest;
+    using ResponseType = ::firebolt::rialto::GetCdmKeySessionIdResponse;
+    using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::getCdmKeySessionId};
+};
+
+struct DestroyMediaKeys
+{
+    using RequestType = ::firebolt::rialto::DestroyMediaKeysRequest;
+    using ResponseType = ::firebolt::rialto::DestroyMediaKeysResponse;
+    using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::destroyMediaKeys};
+};
+
+struct DeleteDrmStore
+{
+    using RequestType = ::firebolt::rialto::DeleteDrmStoreRequest;
+    using ResponseType = ::firebolt::rialto::DeleteDrmStoreResponse;
+    using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::deleteDrmStore};
+};
+
+struct DeleteKeyStore
+{
+    using RequestType = ::firebolt::rialto::DeleteKeyStoreRequest;
+    using ResponseType = ::firebolt::rialto::DeleteKeyStoreResponse;
+    using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::deleteKeyStore};
+};
+
+struct GetDrmStoreHash
+{
+    using RequestType = ::firebolt::rialto::GetDrmStoreHashRequest;
+    using ResponseType = ::firebolt::rialto::GetDrmStoreHashResponse;
+    using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::getDrmStoreHash};
+};
+
+struct GetKeyStoreHash
+{
+    using RequestType = ::firebolt::rialto::GetKeyStoreHashRequest;
+    using ResponseType = ::firebolt::rialto::GetKeyStoreHashResponse;
+    using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::getKeyStoreHash};
+};
+
+struct GetLdlSessionsLimit
+{
+    using RequestType = ::firebolt::rialto::GetLdlSessionsLimitRequest;
+    using ResponseType = ::firebolt::rialto::GetLdlSessionsLimitResponse;
+    using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::getLdlSessionsLimit};
+};
+
+struct GetDrmTime
+{
+    using RequestType = ::firebolt::rialto::GetDrmTimeRequest;
+    using ResponseType = ::firebolt::rialto::GetDrmTimeResponse;
+    using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
+    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
+                                        google::protobuf::Closure *);
+    static constexpr FunctionType m_kFunction{&Stub::getDrmTime};
+};
+
 // control module
 struct GetSharedMemory
 {
