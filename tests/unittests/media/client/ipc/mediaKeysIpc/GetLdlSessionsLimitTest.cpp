@@ -18,13 +18,7 @@
  */
 
 #include "MediaKeysIpcTestBase.h"
-
-MATCHER_P(getLdlSessionsLimitRequestMatcher, mediaKeysHandle, "")
-{
-    const ::firebolt::rialto::GetLdlSessionsLimitRequest *kRequest =
-        dynamic_cast<const ::firebolt::rialto::GetLdlSessionsLimitRequest *>(arg);
-    return (kRequest->media_keys_handle() == mediaKeysHandle);
-}
+#include "MediaKeysProtoRequestMatchers.h"
 
 class RialtoClientMediaKeysIpcGetLdlSessionsLimitTest : public MediaKeysIpcTestBase
 {

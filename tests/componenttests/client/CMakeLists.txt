@@ -68,6 +68,15 @@ add_gtests (
         # EME Component tests
         tests/eme/SessionReadyForDecryptionTest.cpp
         tests/eme/AudioVideoPlaybackEncryptedSegmentsTest.cpp
+        tests/eme/LicenseRenewalTest.cpp
+        tests/eme/KeyApisTest.cpp
+        tests/eme/DrmStoreTest.cpp
+        tests/eme/KeyStoreTest.cpp
+        tests/eme/SetDrmHeaderTest.cpp
+        tests/eme/GetSessionInfoTest.cpp
+        tests/eme/GetDrmInfoTest.cpp
+        tests/eme/SelectKeyIdTest.cpp
+        tests/eme/SessionFailuresTest.cpp
         )
 
 add_subdirectory(mocks)

@@ -18,18 +18,12 @@
  */
 
 #include "MediaKeysIpcTestBase.h"
+#include "MediaKeysProtoRequestMatchers.h"
 
 namespace
 {
 const std::string kCdmKeySessionId{"0"};
 } // namespace
-
-MATCHER_P2(getCdmKeySessionIdRequestMatcher, mediaKeysHandle, keySessionId, "")
-{
-    const ::firebolt::rialto::GetCdmKeySessionIdRequest *kRequest =
-        dynamic_cast<const ::firebolt::rialto::GetCdmKeySessionIdRequest *>(arg);
-    return ((kRequest->media_keys_handle() == mediaKeysHandle) && (kRequest->key_session_id() == keySessionId));
-}
 
 class RialtoClientMediaKeysIpcGetCdmKeySessionIdTest : public MediaKeysIpcTestBase
 {

@@ -32,7 +32,7 @@ public:
     AudioVideoPlaybackEncryptedSegmentsTest() : ClientComponentTest()
     {
         ClientComponentTest::startApplicationRunning();
-        MediaKeysTestMethods::initaliseMediaKeySession();
+        MediaKeysTestMethods::initaliseWidevineMediaKeySession();
         MediaPipelineTestMethods::startAudioVideoMediaSessionWaitForPreroll();
     }
 

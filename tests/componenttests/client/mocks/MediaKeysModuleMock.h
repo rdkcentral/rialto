@@ -23,6 +23,8 @@
 #include "MediaKeysProtoUtils.h"
 #include "mediakeysmodule.pb.h"
 #include <gmock/gmock.h>
+#include <string>
+#include <vector>
 
 class MediaKeysModuleMock : public ::firebolt::rialto::MediaKeysModule
 {
@@ -132,6 +134,109 @@ public:
     {
         firebolt::rialto::CloseKeySessionResponse response;
         response.set_error_status(convertMediaKeyErrorStatus(status));
+        return response;
+    }
+
+    ::firebolt::rialto::LoadSessionResponse loadSessionResponse(const firebolt::rialto::MediaKeyErrorStatus &status)
+    {
+        firebolt::rialto::LoadSessionResponse response;
+        response.set_error_status(convertMediaKeyErrorStatus(status));
+        return response;
+    }
+
+    ::firebolt::rialto::ContainsKeyResponse containsKeyResponse(const bool containsKey)
+    {
+        firebolt::rialto::ContainsKeyResponse response;
+        response.set_contains_key(containsKey);
+        return response;
+    }
+
+    ::firebolt::rialto::RemoveKeySessionResponse
+    removeKeySessionResponse(const firebolt::rialto::MediaKeyErrorStatus &status)
+    {
+        firebolt::rialto::RemoveKeySessionResponse response;
+        response.set_error_status(convertMediaKeyErrorStatus(status));
+        return response;
+    }
+
+    ::firebolt::rialto::GetKeyStoreHashResponse getKeyStoreHashResponse(const firebolt::rialto::MediaKeyErrorStatus &status,
+                                                                        const std::vector<unsigned char> &keyStoreHash)
+    {
+        firebolt::rialto::GetKeyStoreHashResponse response;
+        response.set_error_status(convertMediaKeyErrorStatus(status));
+        for (auto it = keyStoreHash.begin(); it != keyStoreHash.end(); it++)
+        {
+            response.add_key_store_hash(*it);
+        }
+        return response;
+    }
+
+    ::firebolt::rialto::GetDrmStoreHashResponse getDrmStoreHashResponse(const firebolt::rialto::MediaKeyErrorStatus &status,
+                                                                        const std::vector<unsigned char> &drmStoreHash)
+    {
+        firebolt::rialto::GetDrmStoreHashResponse response;
+        response.set_error_status(convertMediaKeyErrorStatus(status));
+        for (auto it = drmStoreHash.begin(); it != drmStoreHash.end(); it++)
+        {
+            response.add_drm_store_hash(*it);
+        }
+        return response;
+    }
+
+    ::firebolt::rialto::DeleteKeyStoreResponse deleteKeyStoreResponse(const firebolt::rialto::MediaKeyErrorStatus &status)
+    {
+        firebolt::rialto::DeleteKeyStoreResponse response;
+        response.set_error_status(convertMediaKeyErrorStatus(status));
+        return response;
+    }
+
+    ::firebolt::rialto::DeleteDrmStoreResponse deleteDrmStoreResponse(const firebolt::rialto::MediaKeyErrorStatus &status)
+    {
+        firebolt::rialto::DeleteDrmStoreResponse response;
+        response.set_error_status(convertMediaKeyErrorStatus(status));
+        return response;
+    }
+
+    ::firebolt::rialto::SetDrmHeaderResponse setDrmHeaderResponse(const firebolt::rialto::MediaKeyErrorStatus &status)
+    {
+        firebolt::rialto::SetDrmHeaderResponse response;
+        response.set_error_status(convertMediaKeyErrorStatus(status));
+        return response;
+    }
+
+    ::firebolt::rialto::GetCdmKeySessionIdResponse
+    getCdmKeySessionIdResponse(const firebolt::rialto::MediaKeyErrorStatus &status, const std::string &cdmKeySessionId)
+    {
+        firebolt::rialto::GetCdmKeySessionIdResponse response;
+        response.set_error_status(convertMediaKeyErrorStatus(status));
+        response.set_cdm_key_session_id(cdmKeySessionId);
+        return response;
+    }
+
+    ::firebolt::rialto::GetLastDrmErrorResponse
+    getLastDrmErrorResponse(const firebolt::rialto::MediaKeyErrorStatus &status, const uint32_t errorCode)
+    {
+        firebolt::rialto::GetLastDrmErrorResponse response;
+        response.set_error_status(convertMediaKeyErrorStatus(status));
+        response.set_error_code(errorCode);
+        return response;
+    }
+
+    ::firebolt::rialto::GetLdlSessionsLimitResponse
+    getLdlSessionsLimitResponse(const firebolt::rialto::MediaKeyErrorStatus &status, const uint32_t ldlLimit)
+    {
+        firebolt::rialto::GetLdlSessionsLimitResponse response;
+        response.set_error_status(convertMediaKeyErrorStatus(status));
+        response.set_ldl_limit(ldlLimit);
+        return response;
+    }
+
+    ::firebolt::rialto::GetDrmTimeResponse getDrmTimeResponse(const firebolt::rialto::MediaKeyErrorStatus &status,
+                                                              const uint64_t drmTime)
+    {
+        firebolt::rialto::GetDrmTimeResponse response;
+        response.set_error_status(convertMediaKeyErrorStatus(status));
+        response.set_drm_time(drmTime);
         return response;
     }
 

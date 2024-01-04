@@ -18,27 +18,12 @@
  */
 
 #include "MediaKeysIpcTestBase.h"
+#include "MediaKeysProtoRequestMatchers.h"
 
 namespace
 {
 const std::vector<uint8_t> kKeyId{1, 2, 3};
 } // namespace
-
-MATCHER_P3(containsKeyRequestMatcher, mediaKeysHandle, keySessionId, keyId, "")
-{
-    const ::firebolt::rialto::ContainsKeyRequest *kRequest =
-        dynamic_cast<const ::firebolt::rialto::ContainsKeyRequest *>(arg);
-    bool keyIdMatch{kKeyId.size() == static_cast<size_t>(kRequest->key_id().size())};
-    if (keyIdMatch)
-    {
-        for (size_t i = 0; i < kKeyId.size(); ++i)
-        {
-            keyIdMatch &= kRequest->key_id(i) == keyId[i];
-        }
-    }
-    return ((kRequest->media_keys_handle() == mediaKeysHandle) && (kRequest->key_session_id() == keySessionId) &&
-            keyIdMatch);
-}
 
 class RialtoClientMediaKeysIpcContainsKeyTest : public MediaKeysIpcTestBase
 {
