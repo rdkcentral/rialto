@@ -18,13 +18,7 @@
  */
 
 #include "MediaKeysIpcTestBase.h"
-
-MATCHER_P(getDrmStoreHashRequestMatcher, mediaKeysHandle, "")
-{
-    const ::firebolt::rialto::GetDrmStoreHashRequest *kRequest =
-        dynamic_cast<const ::firebolt::rialto::GetDrmStoreHashRequest *>(arg);
-    return (kRequest->media_keys_handle() == mediaKeysHandle);
-}
+#include "MediaKeysProtoRequestMatchers.h"
 
 class RialtoClientMediaKeysIpcGetDrmStoreHashTest : public MediaKeysIpcTestBase
 {

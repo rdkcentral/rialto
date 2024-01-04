@@ -18,13 +18,7 @@
  */
 
 #include "MediaKeysIpcTestBase.h"
-
-MATCHER_P2(getLastDrmErrorRequestMatcher, mediaKeysHandle, keySessionId, "")
-{
-    const ::firebolt::rialto::GetLastDrmErrorRequest *kRequest =
-        dynamic_cast<const ::firebolt::rialto::GetLastDrmErrorRequest *>(arg);
-    return ((kRequest->media_keys_handle() == mediaKeysHandle) && (kRequest->key_session_id() == keySessionId));
-}
+#include "MediaKeysProtoRequestMatchers.h"
 
 class RialtoClientMediaKeysIpcGetLastDrmErrorTest : public MediaKeysIpcTestBase
 {
