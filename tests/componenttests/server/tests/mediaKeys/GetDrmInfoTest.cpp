@@ -31,56 +31,63 @@ using testing::StrictMock;
 
 namespace firebolt::rialto::server::ct
 {
-class MediaKeysTest : public MediaKeysTestMethods
+class GetDrmInfoTest : public MediaKeysTestMethods
 {
 public:
-    MediaKeysTest() {}
-    virtual ~MediaKeysTest() {}
+    GetDrmInfoTest() {}
+    virtual ~GetDrmInfoTest() {}
 };
 
-TEST_F(MediaKeysTest, shouldFailToCreateSessionWhenMksIdIsWrong)
-{
-    createMediaKeysWidevine();
-    shouldFailToCreateSessionWhenMksIdIsWrong();
-}
-
 /*
- * Component Test:
+ * Component Test: Get various infomation stored in the system.
  * Test Objective:
- *
+ *  Test the getLdlSessionsLimit & getDrmTime APIs.
  *
  * Sequence Diagrams:
- *
+ *  Get LDL Session Limit, Get DRM Time
+ *   - https://wiki.rdkcentral.com/display/ASP/Rialto+EME+Misc+Design
  *
  * Test Setup:
  *  Language: C++
  *  Testing Framework: Google Test
- *  Components: RialtoApplicationSessionServer with stubs for RialtoClient and RialtoServerManager
+ *  Components: MediaKeys
  *
  * Test Initialize:
- *   RialtoServerComponentTest::RialtoServerComponentTest() will set up wrappers and
- *      starts the application server running in its own thread
- *
+ *  Create a server that handles Control IPC requests.
+ *  Initalise the control state to running for this test application.
+ *  Create a MediaKeys object.
  *
  * Test Steps:
- *  Step A1:
+ *  Step 1: Get the ldl session limit
+ *   Expect that getLdlSessionsLimit is processed by the server.
+ *   Api call returns with success.
+ *   Check ldl session limit.
  *
- *
+ *  Step 2: Get the drm time
+ *   Expect that getDrmTime is processed by the server.
+ *   Api call returns with success.
+ *   Check drm time.
  *
  * Test Teardown:
+ *  Destroy MediaKeys.
  *  Server is terminated.
  *
  * Expected Results:
- *  All API calls are handled by the server.
+ *  Client can get both the ldl session limit and DRM time from the MediaKeys object.
  *
  * Code:
  */
-TEST_F(MediaKeysTest, shouldGenerate)
+TEST_F(GetDrmInfoTest, shouldDrminfo)
 {
-    createMediaKeysWidevine();
+    createMediaKeysNetflix();
     ocdmSessionWillBeCreated();
     createKeySession();
-    generateRequest();
+
+    // Step 1: Get the ldl session limit
+    getLdlSessionsLimitRequest();
+
+    // Step 2: Get the drm time
+    getDrmTimeRequest();
 }
 
 } // namespace firebolt::rialto::server::ct

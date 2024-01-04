@@ -31,56 +31,65 @@ using testing::StrictMock;
 
 namespace firebolt::rialto::server::ct
 {
-class MediaKeysTest : public MediaKeysTestMethods
+class SetDrmHeaderTest : public MediaKeysTestMethods
 {
 public:
-    MediaKeysTest() {}
-    virtual ~MediaKeysTest() {}
+    SetDrmHeaderTest() {}
+    virtual ~SetDrmHeaderTest() {}
 };
 
-TEST_F(MediaKeysTest, shouldFailToCreateSessionWhenMksIdIsWrong)
-{
-    createMediaKeysWidevine();
-    shouldFailToCreateSessionWhenMksIdIsWrong();
-}
-
 /*
- * Component Test:
+ * Component Test: Set Drm Header API.
  * Test Objective:
- *
+ *  Test the setDrmHeader API.
  *
  * Sequence Diagrams:
- *
+ *  Set DRM Header
+ *   - https://wiki.rdkcentral.com/display/ASP/Rialto+Media+Key+Session+Management+Design
  *
  * Test Setup:
  *  Language: C++
  *  Testing Framework: Google Test
- *  Components: RialtoApplicationSessionServer with stubs for RialtoClient and RialtoServerManager
+ *  Components: MediaKeys
  *
  * Test Initialize:
- *   RialtoServerComponentTest::RialtoServerComponentTest() will set up wrappers and
- *      starts the application server running in its own thread
- *
+ *  Create a server that handles Control IPC requests.
+ *  Initalise the control state to running for this test application.
+ *  Create a MediaKeys object.
+ *  Create a MediaKeySession.
  *
  * Test Steps:
- *  Step A1:
+ *  Step 1: Set the drm header
+ *   setDrmHeader first header.
+ *   Expect that setDrmHeader is processed by the server.
+ *   Api call returns with success.
  *
- *
+ *  Step 2: Set the drm header for a second time with different header
+ *   setDrmHeader second header.
+ *   Expect that setDrmHeader is processed by the server.
+ *   Api call returns with success.
  *
  * Test Teardown:
+ *  Close session.
+ *  Destroy MediaKeys.
  *  Server is terminated.
  *
  * Expected Results:
- *  All API calls are handled by the server.
+ *  Client can set the drm header at will.
  *
  * Code:
  */
-TEST_F(MediaKeysTest, shouldGenerate)
+TEST_F(SetDrmHeaderTest, multiple)
 {
-    createMediaKeysWidevine();
+    createMediaKeysNetflix();
     ocdmSessionWillBeCreated();
     createKeySession();
-    generateRequest();
+
+    // Step 1: Set the drm header
+    setDrmHeader();
+
+    // Step 2: Set the drm header for a second time with different header
+    setDrmHeader2();
 }
 
 } // namespace firebolt::rialto::server::ct

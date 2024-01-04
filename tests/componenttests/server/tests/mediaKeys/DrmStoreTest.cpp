@@ -31,56 +31,69 @@ using testing::StrictMock;
 
 namespace firebolt::rialto::server::ct
 {
-class MediaKeysTest : public MediaKeysTestMethods
+class DrmStoreTest : public MediaKeysTestMethods
 {
 public:
-    MediaKeysTest() {}
-    virtual ~MediaKeysTest() {}
+    DrmStoreTest() {}
+    virtual ~DrmStoreTest() {}
 };
 
-TEST_F(MediaKeysTest, shouldFailToCreateSessionWhenMksIdIsWrong)
-{
-    createMediaKeysWidevine();
-    shouldFailToCreateSessionWhenMksIdIsWrong();
-}
-
 /*
- * Component Test:
+ * Component Test: Drm Store APIs.
  * Test Objective:
- *
+ *  Test the deleteDrmStore and getDrmStoreHash APIs.
  *
  * Sequence Diagrams:
- *
+ *  Delete DRM Store, Get DRM Store Hash
+ *   - https://wiki.rdkcentral.com/display/ASP/Rialto+EME+Misc+Design
  *
  * Test Setup:
  *  Language: C++
  *  Testing Framework: Google Test
- *  Components: RialtoApplicationSessionServer with stubs for RialtoClient and RialtoServerManager
+ *  Components: MediaKeys
  *
  * Test Initialize:
- *   RialtoServerComponentTest::RialtoServerComponentTest() will set up wrappers and
- *      starts the application server running in its own thread
- *
+ *  Create a server that handles Control IPC requests.
+ *  Initalise the control state to running for this test application.
+ *  Create a MediaKeys object.
  *
  * Test Steps:
- *  Step A1:
+ *  Step 1: Get the drm store
+ *   Expect that getDrmStoreHash is processed by the server.
+ *   Api call returns with success
+ *   Check drm store hash.
  *
+ *  Step 2: Get the drm store failure
+ *   Expect that getDrmStoreHash is processed by the server.
+ *   Api call returns with failure.
  *
+ *  Step 3: Delete the drm store
+ *   Expect that deleteDrmStore is processed by the server.
+ *   Api call returns with success.
  *
  * Test Teardown:
+ *  Destroy MediaKeys.
  *  Server is terminated.
  *
  * Expected Results:
- *  All API calls are handled by the server.
+ *  Client can get and delete the drm store successfully.
  *
  * Code:
  */
-TEST_F(MediaKeysTest, shouldGenerate)
+TEST_F(DrmStoreTest, shouldDrmstore)
 {
-    createMediaKeysWidevine();
+    createMediaKeysNetflix();
     ocdmSessionWillBeCreated();
     createKeySession();
-    generateRequest();
+
+    // Step 1: Get the drm store
+    getDrmStoreHashRequest();
+
+    // Step 2: Get the drm store failure
+    getDrmStoreHashRequestFails();
+
+    // Step 3: Delete the drm store
+    deleteDrmStoreRequest();
 }
 
 } // namespace firebolt::rialto::server::ct

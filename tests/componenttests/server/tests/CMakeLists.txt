@@ -49,7 +49,16 @@ add_gtests (
         mediaPipeline/UnderflowTest.cpp
         mediaPipeline/VolumeTest.cpp
         mediaPipeline/WriteSegmentsTest.cpp
+        mediaKeys/MediaKeysTestMethods.cpp
         mediaKeys/MediaKeysTest.cpp
+        mediaKeys/SessionReadyForDecryptionTest.cpp
+        mediaKeys/KeyStoreTest.cpp
+        mediaKeys/DrmStoreTest.cpp
+        mediaKeys/GetDrmInfoTest.cpp
+        mediaKeys/KeyApisTest.cpp
+        mediaKeys/GetSessionInfoTest.cpp
+        mediaKeys/SetDrmHeaderTest.cpp
+        mediaKeys/LicenseRenewalTest.cpp
         )
 
 target_include_directories(
