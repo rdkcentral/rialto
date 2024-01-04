@@ -305,11 +305,11 @@ TEST_F(RialtoClientMediaPipelineDataTest, NeedDataEventInvalidStates)
 }
 
 /**
- * Test that a have data call without a paired need data notification returns error.
+ * Test that a have data call without a paired need data notification returns success.
  */
 TEST_F(RialtoClientMediaPipelineDataTest, HaveDataNoNeedData)
 {
-    EXPECT_EQ(m_mediaPipeline->haveData(m_status, m_requestId), false);
+    EXPECT_EQ(m_mediaPipeline->haveData(m_status, m_requestId), true);
 }
 
 TEST_F(RialtoClientMediaPipelineDataTest, HaveDataNoSegments)
@@ -649,7 +649,8 @@ TEST_F(RialtoClientMediaPipelineDataTest, HaveDataSeeking)
     // Check that the needDataRequest has been discarded by initiating another haveData
     setPlaybackState(PlaybackState::PLAYING);
 
-    EXPECT_EQ(m_mediaPipeline->haveData(m_status, m_requestId), false);
+    // haveData should return success but will not be forwarded to media ipc
+    EXPECT_EQ(m_mediaPipeline->haveData(m_status, m_requestId), true);
 }
 
 /**
@@ -670,7 +671,8 @@ TEST_F(RialtoClientMediaPipelineDataTest, HaveDataAfterSeekCompleted)
     // Check that new haveData is handled after changing state to FLUSHED
     setPlaybackState(PlaybackState::FLUSHED);
 
-    EXPECT_EQ(m_mediaPipeline->haveData(m_status, m_requestId), false);
+    // haveData should return success but will not be forwarded to media ipc
+    EXPECT_EQ(m_mediaPipeline->haveData(m_status, m_requestId), true);
 }
 
 /**
@@ -697,7 +699,8 @@ TEST_F(RialtoClientMediaPipelineDataTest, HaveDataInvalidStates)
         // Check that the needDataRequest has been discarded by initiating another haveData
         setPlaybackState(PlaybackState::PLAYING);
 
-        EXPECT_EQ(m_mediaPipeline->haveData(m_status, m_requestId), false);
+        // haveData should return success but will not be forwarded to media ipc
+        EXPECT_EQ(m_mediaPipeline->haveData(m_status, m_requestId), true);
     }
 }
 

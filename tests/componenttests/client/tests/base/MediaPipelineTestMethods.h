@@ -69,6 +69,7 @@ protected:
 
     // MediaPipeline Expect methods
     void shouldCreateMediaSession();
+    void shouldCreateMediaSessionFailure();
     void shouldCreateMediaSessionSecondary();
     void shouldLoad();
     void shouldLoadSecondary();
@@ -87,7 +88,10 @@ protected:
     void shouldHaveDataBeforePreroll();
     void shouldHaveDataOk(size_t framesWritten);
     void shouldHaveDataEos(size_t framesWritten);
+    void shouldHaveDataNoAvailableSamples();
+    void shouldHaveDataError();
     void shouldHaveDataOkSecondary(size_t framesWritten);
+    void shouldHaveDataFailure(size_t framesWritten);
     void shouldRemoveVideoSource();
     void shouldRemoveVideoSourceSecondary();
     void shouldRemoveAudioSource();
@@ -137,9 +141,14 @@ protected:
     void shouldNotifyNeedDataVideo(const size_t framesToWrite);
     void shouldNotifyNeedDataVideoSecondary(const size_t framesToWrite);
     void shouldNotifyPosition(const uint32_t expectedPosition);
+    void shouldNotifyQosAudio();
+    void shouldNotifyQosVideo();
+    void shouldNotifyBufferUnderflowAudio();
+    void shouldNotifyBufferUnderflowVideo();
 
     // Api methods
     void createMediaPipeline();
+    void createMediaPipelineFailure();
     void createMediaPipelineSecondary();
     void load();
     void loadSecondary();
@@ -157,9 +166,13 @@ protected:
     int32_t addSegmentMseVideoSecondary();
     int32_t addSegmentEncryptedAudio(const int32_t keyIndex = -1);
     int32_t addSegmentEncryptedVideo(const int32_t keyIndex = -1);
+    void addSegmentMseVideoNoSpace();
     void haveDataOk();
     void haveDataEos();
+    void haveDataNoAvailableSamples();
+    void haveDataError();
     void haveDataOkSecondary();
+    void haveDataFailure();
     void play();
     void playSecondary();
     void removeSourceVideo();
@@ -212,6 +225,10 @@ protected:
     void sendNotifyPlaybackStateSeeking();
     void sendNotifyPlaybackStateFlushed();
     void sendNotifyPositionChanged(const int64_t position);
+    void sendNotifyQosAudio();
+    void sendNotifyQosVideo();
+    void sendNotifyBufferUnderflowAudio();
+    void sendNotifyBufferUnderflowVideo();
 
     // Check methods
     void checkMseAudioSegmentWritten(int32_t segmentId);
@@ -219,6 +236,7 @@ protected:
     void checkMseVideoSegmentWrittenSecondary(int32_t segmentId);
     void checkEncryptedAudioSegmentWritten(int32_t segmentId, uint32_t keyIndex);
     void checkEncryptedVideoSegmentWritten(int32_t segmentId, uint32_t keyIndex);
+    void checkMediaPipelineClient();
     void checkAudioKeyId(int32_t segmentId, uint32_t keyIndex);
     void checkVideoKeyId(int32_t segmentId, uint32_t keyIndex);
 
@@ -236,6 +254,7 @@ protected:
     virtual void waitEvent() = 0;
     virtual std::shared_ptr<ServerStub> &getServerStub() = 0;
     virtual void *getShmAddress() = 0;
+    virtual uint32_t getShmSize() = 0;
 
 private:
     // Const variables

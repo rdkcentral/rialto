@@ -83,4 +83,26 @@ void MediaPipelineModuleStub::notifyPositionChangeEvent(int sessionId, int64_t p
     getClient()->sendEvent(event);
 }
 
+void MediaPipelineModuleStub::notifyQosEvent(int sessionId, int32_t sourceId, const ::firebolt::rialto::QosInfo &qosInfo)
+{
+    waitForClientConnect();
+
+    auto event = std::make_shared<firebolt::rialto::QosEvent>();
+    event->set_session_id(sessionId);
+    event->set_source_id(sourceId);
+    event->mutable_qos_info()->set_processed(qosInfo.processed);
+    event->mutable_qos_info()->set_dropped(qosInfo.dropped);
+    getClient()->sendEvent(event);
+}
+
+void MediaPipelineModuleStub::notifyBufferUnderflowEvent(int sessionId, int32_t sourceId)
+{
+    waitForClientConnect();
+
+    auto event = std::make_shared<firebolt::rialto::BufferUnderflowEvent>();
+    event->set_session_id(sessionId);
+    event->set_source_id(sourceId);
+    getClient()->sendEvent(event);
+}
+
 } // namespace firebolt::rialto::client::ct
