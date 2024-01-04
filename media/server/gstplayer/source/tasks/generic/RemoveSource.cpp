@@ -78,20 +78,30 @@ void RemoveSource::execute() const
     while (!done) {
         switch (gst_iterator_next(iterator, &value)) {
         case GST_ITERATOR_OK:
-            pad = g_value_dup_object (&value);
+        {
+            pad = GST_PAD(g_value_dup_object(&value));
             gchar* name = gst_pad_get_name(pad);
             RIALTO_SERVER_LOG_WARN("lukewill: found pad %s", name);
             g_free(name);
             g_value_reset (&value);
             break;
+        }
         case GST_ITERATOR_RESYNC:
+        {
             gst_iterator_resync (iterator);
             break;
+        }
         case GST_ITERATOR_ERROR:
+        {
             done = TRUE;
             break;
+        }
         case GST_ITERATOR_DONE:
+        {
             done = TRUE;
+            break;
+        }
+        default:
             break;
         }
     }
