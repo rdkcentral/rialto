@@ -362,6 +362,7 @@ void GstSrc::initSrc()
 void GstSrc::setupAndAddAppArc(IDecryptionService *decryptionService, GstElement *source, StreamInfo &streamInfo,
                                GstAppSrcCallbacks *callbacks, gpointer userData, firebolt::rialto::MediaSourceType type)
 {
+    GST_WARNING("lukewill: setupAndAddAppArc start");
     // Configure and add appsrc
     m_glibWrapper->gObjectSet(streamInfo.appSrc, "block", FALSE, "format", GST_FORMAT_TIME, "stream-type",
                               GST_APP_STREAM_TYPE_STREAM, "min-percent", 20, nullptr);
@@ -378,6 +379,7 @@ void GstSrc::setupAndAddAppArc(IDecryptionService *decryptionService, GstElement
 
     GstRialtoSrc *src = GST_RIALTO_SRC(source);
     gchar *name = m_glibWrapper->gStrdupPrintf("src_%u", src->priv->appsrc_count);
+    GST_WARNING("lukewill: src_%u", src->priv->appsrc_count);
     src->priv->appsrc_count++;
     m_gstWrapper->gstBinAdd(GST_BIN(source), streamInfo.appSrc);
 
@@ -452,6 +454,8 @@ void GstSrc::setupAndAddAppArc(IDecryptionService *decryptionService, GstElement
 
     m_glibWrapper->gFree(name);
     m_gstWrapper->gstObjectUnref(target);
+
+    GST_WARNING("lukewill: setupAndAddAppArc stop");
 }
 
 void GstSrc::allAppSrcsAdded(GstElement *element)
