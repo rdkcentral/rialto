@@ -69,5 +69,33 @@ void RemoveSource::execute() const
     {
         RIALTO_SERVER_LOG_WARN("failed to send flush-stop event");
     }
+
+    RIALTO_SERVER_LOG_WARN("lukewill: pad investigation start");
+    GstIterator * iterator = gst_element_iterate_pads(source);
+    gboolean done = FALSE;
+    GValue value = { 0, };
+    GstPad *pad;
+    while (!done) {
+        switch (gst_iterator_next(iterator, &value)) {
+        case GST_ITERATOR_OK:
+            pad = g_value_dup_object (&value);
+            gchar* name = gst_pad_get_name(pad);
+            RIALTO_SERVER_LOG_WARN("lukewill: found pad %s", name);
+            g_free(name);
+            g_value_reset (&value);
+            break;
+        case GST_ITERATOR_RESYNC:
+            gst_iterator_resync (iterator);
+            break;
+        case GST_ITERATOR_ERROR:
+            done = TRUE;
+            break;
+        case GST_ITERATOR_DONE:
+            done = TRUE;
+            break;
+        }
+    }
+    gst_iterator_free (iterator);
+    RIALTO_SERVER_LOG_WARN("lukewill: pad investigation finish");
 }
 } // namespace firebolt::rialto::server::tasks::generic
