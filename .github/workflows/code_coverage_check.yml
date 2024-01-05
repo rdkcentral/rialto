@@ -21,7 +21,7 @@ on:
     branches:
       - "master"
       - "rdkcentral:master"
-      
+
   push:
     branches:
       - "RIALTO-421"
@@ -54,15 +54,15 @@ jobs:
             cd lcov-2.0
             sudo make install
   
-      - name: Generate html
-        run: |
-            cd build
-            genhtml coverage.info --output-directory gh_pages/coverage_report --filter brace,function,trivial
+    #   - name: Generate html
+    #     run: |
+    #         cd build
+    #         genhtml coverage.info --output-directory gh_pages/coverage_report --filter brace,function,trivial
     
-      - name: Generate coverage stats
-        run: |
-          cd build
-          lcov --summary coverage.info --filter brace,function,trivial > coverage_statistics.txt  
+    #   - name: Generate coverage stats
+    #     run: |
+    #       cd build
+    #       lcov --summary coverage.info --filter brace,function,trivial > coverage_statistics.txt  
 
       # Upload coverage report on success
       - name: Upload Coverage Report
