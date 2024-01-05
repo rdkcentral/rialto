@@ -31,7 +31,7 @@ using testing::StrictMock;
 
 namespace firebolt::rialto::server::ct
 {
-class LicenseRenewalTest : public MediaKeysTestMethods
+class LicenseRenewalTest : public virtual MediaKeysTestLicenceRenewal, public virtual MediaKeysTestUpdateSessionNetflix
 {
 public:
     LicenseRenewalTest() {}
@@ -87,9 +87,11 @@ TEST_F(LicenseRenewalTest, licenseRenewal)
     createKeySession();
 
     // Step 1: Notify license renewal
-    licenseRenewal();
+    willLicenseRenew();
+    licenseRenew();
 
     // Step 2: Update session
+    willUpdateSessionNetflix();
     updateSessionNetflix();
 
     // Step 3: Notify key statuses changed

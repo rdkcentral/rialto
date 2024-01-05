@@ -284,13 +284,16 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
-::firebolt::rialto::UpdateSessionRequest createUpdateSessionRequest(int mediaKeysHandle, int keySessionId)
+::firebolt::rialto::UpdateSessionRequest createUpdateSessionRequest(int mediaKeysHandle, int keySessionId,
+                                                                    const std::vector<unsigned char> &response)
 {
     ::firebolt::rialto::UpdateSessionRequest request;
     request.set_media_keys_handle(mediaKeysHandle);
     request.set_key_session_id(keySessionId);
-    request.add_response_data(5);
-    request.add_response_data(6);
+    for (auto i : response)
+    {
+        request.add_response_data(i);
+    }
     return request;
 }
 

@@ -31,7 +31,9 @@ using testing::StrictMock;
 
 namespace firebolt::rialto::server::ct
 {
-class SessionReadyForDecryptionTest : public MediaKeysTestMethods
+class SessionReadyForDecryptionTest : public virtual MediaKeysTestLicenceRenewal,
+                                      public virtual MediaKeysTestUpdateSessionNetflix
+
 {
 public:
     SessionReadyForDecryptionTest() {}
@@ -110,7 +112,8 @@ TEST_F(SessionReadyForDecryptionTest, shouldUpdateWidevine)
     createKeySession();
 
     // Step 3: Generate license request
-    licenseRenewal();
+    willLicenseRenew();
+    licenseRenew();
 
     // Step 4: Update session
     updateSessionWidevine();
@@ -194,9 +197,11 @@ TEST_F(SessionReadyForDecryptionTest, shouldUpdatNetflix)
     createKeySession();
 
     // Step 3: Generate license request
-    licenseRenewal();
+    willLicenseRenew();
+    licenseRenew();
 
     // Step 4: Update session
+    willUpdateSessionNetflix();
     updateSessionNetflix();
 
     // Step 5: Close session

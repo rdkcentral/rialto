@@ -17,7 +17,6 @@
  * limitations under the License.
  */
 
-#include <string>
 #include <utility>
 
 #include "ActionTraits.h"
@@ -160,7 +159,9 @@ void MediaKeysTestMethods::generateRequest()
 
 void MediaKeysTestMethods::updateSessionWidevine()
 {
-    auto request{createUpdateSessionRequest(m_mediaKeysHandle, m_mediaKeySessionId)};
+    const std::vector<unsigned char> kResponse{4, 1, 3};
+
+    auto request{createUpdateSessionRequest(m_mediaKeysHandle, m_mediaKeySessionId, kResponse)};
 
     bool ok{false};
     // The following should match the details within the message "request"
@@ -186,32 +187,31 @@ void MediaKeysTestMethods::updateSessionWidevine()
     ASSERT_EQ(ok, true);
 }
 
-void MediaKeysTestMethods::updateSessionNetflix()
+void MediaKeysTestUpdateSessionNetflix::willUpdateSessionNetflix()
 {
-    auto request{createUpdateSessionRequest(m_mediaKeysHandle, m_mediaKeySessionId)};
-
-    bool ok{false};
-    // The following should match the details within the message "request"
-    EXPECT_CALL(m_ocdmSessionMock, storeLicenseData(_, request.response_data_size()))
+    EXPECT_CALL(m_ocdmSessionMock, storeLicenseData(_, m_kResponse.size()))
         .WillOnce(testing::Invoke(
             [&](const uint8_t challenge[], uint32_t challengeSize) -> MediaKeyErrorStatus
             {
-                ok = true;
+                m_storedAndMessageChecked = true;
                 for (uint32_t i = 0; i < challengeSize; ++i)
                 {
-                    if (challenge[i] != request.response_data(i))
-                        ok = false;
+                    if (challenge[i] != m_kResponse[i])
+                        m_storedAndMessageChecked = false;
                 }
                 return MediaKeyErrorStatus::OK;
             }));
-
+}
+void MediaKeysTestUpdateSessionNetflix::updateSessionNetflix()
+{
+    auto request = createUpdateSessionRequest(m_mediaKeysHandle, m_mediaKeySessionId, m_kResponse);
     ConfigureAction<UpdateSession>(m_clientStub)
         .send(request)
         .expectSuccess()
         .matchResponse([&](const firebolt::rialto::UpdateSessionResponse &resp)
                        { EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK); });
 
-    ASSERT_EQ(ok, true);
+    ASSERT_EQ(m_storedAndMessageChecked, true);
 }
 
 void MediaKeysTestMethods::updateAllKeys()
@@ -261,15 +261,8 @@ void MediaKeysTestMethods::updateOneKey()
     m_ocdmSessionClient->onKeyUpdated(&kOneKeyId[0], kOneKeyId.size());
 }
 
-void MediaKeysTestMethods::licenseRenewal()
+void MediaKeysTestLicenceRenewal::willLicenseRenew()
 {
-    const std::string kUrl{"NOT PASSED TO CALLBACK"};
-    const std::vector<unsigned char> kLicenseRenewalMessage{'x', 'u', 'A'};
-
-    std::condition_variable myCondVar;
-    bool callFlag{false};
-    std::unique_lock<std::mutex> lock1(m_mutex);
-
     std::function<void(const std::shared_ptr<::firebolt::rialto::LicenseRenewalEvent> &message)> handler{
         [&](const std::shared_ptr<LicenseRenewalEvent> &message)
         {
@@ -278,21 +271,26 @@ void MediaKeysTestMethods::licenseRenewal()
             ASSERT_EQ(message->media_keys_handle(), m_mediaKeysHandle);
             ASSERT_EQ(message->key_session_id(), m_mediaKeySessionId);
             const unsigned int kMax = message->license_renewal_message_size();
-            ASSERT_EQ(kMax, kLicenseRenewalMessage.size());
+            ASSERT_EQ(kMax, m_kLicenseRenewalMessage.size());
             for (unsigned int i = 0; i < kMax; ++i)
             {
-                ASSERT_EQ(message->license_renewal_message(i), kLicenseRenewalMessage[i]);
+                ASSERT_EQ(message->license_renewal_message(i), m_kLicenseRenewalMessage[i]);
             }
 
-            callFlag = true;
-            myCondVar.notify_all();
+            m_callFlag = true;
+            m_myCondVar.notify_all();
         }};
     m_clientStub.getIpcChannel()->subscribe(handler);
+}
+void MediaKeysTestLicenceRenewal::licenseRenew()
+{
+    std::unique_lock<std::mutex> lock1(m_mutex);
+    const std::string kUrl{"NOT PASSED TO CALLBACK"};
 
-    m_ocdmSessionClient->onProcessChallenge(kUrl.c_str(), &kLicenseRenewalMessage[0], kLicenseRenewalMessage.size());
+    m_ocdmSessionClient->onProcessChallenge(kUrl.c_str(), &m_kLicenseRenewalMessage[0], m_kLicenseRenewalMessage.size());
 
-    myCondVar.wait_for(lock1, std::chrono::milliseconds{110});
-    EXPECT_TRUE(callFlag);
+    m_myCondVar.wait_for(lock1, std::chrono::milliseconds{110});
+    EXPECT_TRUE(m_callFlag);
 }
 
 void MediaKeysTestMethods::containsKey()

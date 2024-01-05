@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_CT_MEDIA_KEYS_TEST_METHODS_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "MessageBuilders.h"
@@ -46,10 +47,8 @@ public:
     void generateRequest();
 
     void updateSessionWidevine();
-    void updateSessionNetflix();
     void updateAllKeys();
     void updateOneKey();
-    void licenseRenewal();
     void containsKey();
     void doesNotContainKey();
     void removeKeySession();
@@ -74,6 +73,7 @@ private:
     void setDrmHeader(const std::vector<unsigned char> &kKeyId);
     void createMediaKeys(const ::firebolt::rialto::CreateMediaKeysRequest &request);
 
+protected:
     int m_mediaKeysHandle{-1};
     int m_mediaKeySessionId{-1};
     std::unique_ptr<testing::StrictMock<wrappers::OcdmSessionMock>> m_ocdmSession{
@@ -82,6 +82,30 @@ private:
     firebolt::rialto::wrappers::IOcdmSessionClient *m_ocdmSessionClient{0};
     std::mutex m_mutex;
 };
+
+class MediaKeysTestLicenceRenewal : public virtual MediaKeysTestMethods
+{
+public:
+    void willLicenseRenew();
+    void licenseRenew();
+
+private:
+    const std::vector<unsigned char> m_kLicenseRenewalMessage{'x', 'u', 'A'};
+    std::condition_variable m_myCondVar;
+    bool m_callFlag{false};
+};
+
+class MediaKeysTestUpdateSessionNetflix : public virtual MediaKeysTestMethods
+{
+public:
+    void willUpdateSessionNetflix();
+    void updateSessionNetflix();
+
+private:
+    const std::vector<unsigned char> m_kResponse{5, 6};
+    bool m_storedAndMessageChecked{false};
+};
+
 } // namespace firebolt::rialto::server::ct
 
 #endif // FIREBOLT_RIALTO_SERVER_CT_MEDIA_KEYS_TEST_METHODS_H_
