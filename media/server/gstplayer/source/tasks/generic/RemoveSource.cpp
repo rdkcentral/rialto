@@ -107,5 +107,9 @@ void RemoveSource::execute() const
     }
     gst_iterator_free (iterator);
     RIALTO_SERVER_LOG_WARN("lukewill: pad investigation finish");
+    
+    GstPad *target = gst_element_get_static_pad(source, "src");
+    gboolean result = gst_element_remove_pad(source, target);
+    RIALTO_SERVER_LOG_WARN("lukewill: removed pad %u", result);
 }
 } // namespace firebolt::rialto::server::tasks::generic
