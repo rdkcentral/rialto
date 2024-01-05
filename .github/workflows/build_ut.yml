@@ -681,3 +681,76 @@ jobs:
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: ${{ steps.get-comment-body.outputs.body }}
+
+  checks-the-cov-report:
+    name: Checks the coverage report
+
+    # Runs on ubuntu
+    runs-on: ubuntu-22.04
+
+    # Timeout after
+    timeout-minutes: 10
+
+    # Define the dependencies on the previous coverage jobs
+    needs: [generate-coverage-report]
+    
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+    
+      # Download the current and previous coverage statistics
+      - name: Download Current Coverage Statistics
+        uses: actions/download-artifact@v2
+        with:
+          name: coverage_report_stats
+          path: current_artifacts
+        
+      - name: Download Previous Coverage Statistics
+        uses: actions/download-artifact@v2
+        with:
+          name: coverage_report_stats
+          path: previous_artifacts
+        if: success()
+        
+      # Run the process_coverage_stats script for the current coverage
+      - name: Process Current Coverage Statistics
+        run: python scripts/coverage/process_coverage_stats.py ./current_artifacts/coverage_statistics.txt current_coverage_statistics.txt
+        
+      # Run the process_coverage_stats script for the previous coverage
+      - name: Process Previous Coverage Statistics
+        if: success()
+        run: python scripts/coverage/process_coverage_stats.py ./previous_artifacts/coverage_statistics.txt previous_coverage_statistics.txt
+        
+      # Compare the current and previous coverage
+      - name: Compare Coverage
+        id: compare-coverage
+        run: python scripts/coverage/compare_coverage.py current_coverage_statistics.txt previous_coverage_statistics.txt
+        
+      # Get the comparison output
+      - name: Get Comparison Output
+        id: get-comparison-output
+        run: |
+          body="$(cat comparison_output.txt)"
+          body="${body//'%'/'%25'}"
+          body="${body//$'\n'/'%0A'}"
+          body="${body//$'\r'/'%0D'}"
+          echo "::set-output name=body::$body"
+        
+      # Check if coverage decreased and set the output accordingly
+      - name: Check Coverage Decrease
+        id: check-coverage-decrease
+        run: echo "::set-output name=coverage-decreased::${{ steps.compare-coverage.outputs.coverage-decreased }}"
+        
+      # Fail the job if coverage decreased
+      - name: Fail on Coverage Decrease
+        if: steps.check-coverage-decrease.outputs.coverage-decreased == 'true'
+        run: exit 1
+        
+      # Comment with coverage comparison info
+      - name: Create Coverage Comment
+        if: steps.check-coverage-decrease.outputs.coverage-decreased == 'true'
+        uses: peter-evans/create-or-update-comment@v2
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: ${{ steps.get-comparison-output.outputs.body }}
+        
