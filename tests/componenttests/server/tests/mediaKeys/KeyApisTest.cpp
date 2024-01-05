@@ -36,7 +36,81 @@ class KeyApisTest : public MediaKeysTestMethods
 public:
     KeyApisTest() {}
     virtual ~KeyApisTest() {}
+
+    void willContainsKey();
+    void containsKey();
+
+    void willDoesNotContainKey();
+    void doesNotContainKey();
+
+    void willRemoveKeySession();
+    void removeKeySession();
+
+    void willLoadKeySession();
+    void loadKeySession();
+
+    const std::vector<unsigned char> m_kKeyId1{'a', 'z', 'q', 'l', 'K'};
+    const std::vector<unsigned char> m_kKeyId2{'a', 'x', 'v'};
 };
+
+void KeyApisTest::willContainsKey()
+{
+    EXPECT_CALL(m_ocdmSessionMock, hasKeyId(::arrayMatcher(m_kKeyId1), m_kKeyId1.size())).WillOnce(Return(1));
+}
+
+void KeyApisTest::containsKey()
+{
+    auto request{createContainsKeyRequest(m_mediaKeysHandle, m_mediaKeySessionId, m_kKeyId1)};
+
+    ConfigureAction<ContainsKey>(m_clientStub)
+        .send(request)
+        .expectSuccess()
+        .matchResponse([&](const firebolt::rialto::ContainsKeyResponse &resp) { ASSERT_TRUE(resp.contains_key()); });
+}
+
+void KeyApisTest::willDoesNotContainKey()
+{
+    EXPECT_CALL(m_ocdmSessionMock, hasKeyId(::arrayMatcher(m_kKeyId2), m_kKeyId2.size())).WillOnce(Return(0));
+}
+void KeyApisTest::doesNotContainKey()
+{
+    auto request{createContainsKeyRequest(m_mediaKeysHandle, m_mediaKeySessionId, m_kKeyId2)};
+
+    ConfigureAction<ContainsKey>(m_clientStub)
+        .send(request)
+        .expectSuccess()
+        .matchResponse([&](const firebolt::rialto::ContainsKeyResponse &resp) { ASSERT_FALSE(resp.contains_key()); });
+}
+
+void KeyApisTest::willRemoveKeySession()
+{
+    EXPECT_CALL(m_ocdmSessionMock, remove()).WillOnce(Return(MediaKeyErrorStatus::OK));
+}
+void KeyApisTest::removeKeySession()
+{
+    auto request{createRemoveKeySessionRequest(m_mediaKeysHandle, m_mediaKeySessionId)};
+
+    ConfigureAction<RemoveKeySession>(m_clientStub)
+        .send(request)
+        .expectSuccess()
+        .matchResponse([&](const firebolt::rialto::RemoveKeySessionResponse &resp)
+                       { EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK); });
+}
+
+void KeyApisTest::willLoadKeySession()
+{
+    EXPECT_CALL(m_ocdmSessionMock, load()).WillOnce(Return(MediaKeyErrorStatus::OK));
+}
+void KeyApisTest::loadKeySession()
+{
+    auto request{createLoadSessionRequest(m_mediaKeysHandle, m_mediaKeySessionId)};
+
+    ConfigureAction<LoadSession>(m_clientStub)
+        .send(request)
+        .expectSuccess()
+        .matchResponse([&](const firebolt::rialto::LoadSessionResponse &resp)
+                       { EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK); });
+}
 
 /*
  * Component Test: Key APIs.
@@ -97,15 +171,19 @@ TEST_F(KeyApisTest, keyManagement)
     createKeySession();
 
     // Step 1: Load session
+    willLoadKeySession();
     loadKeySession();
 
     // Step 2: Does not contain key
+    willDoesNotContainKey();
     doesNotContainKey();
 
     // Step 3: Does contain key
+    willContainsKey();
     containsKey();
 
     // Step 4: Remove session
+    willRemoveKeySession();
     removeKeySession();
 }
 

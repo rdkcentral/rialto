@@ -36,7 +36,67 @@ class GetSessionInfoTest : public MediaKeysTestMethods
 public:
     GetSessionInfoTest() {}
     virtual ~GetSessionInfoTest() {}
+
+    void willGetLastDrmError();
+    void getLastDrmError();
+
+    void willGetCdmKeySessionId();
+    void getCdmKeySessionId();
+
+private:
+    const std::string m_kTestString{"Test_str"};
+    const uint32_t m_kTestErrorCode{8};
 };
+
+void GetSessionInfoTest::willGetLastDrmError()
+{
+    EXPECT_CALL(m_ocdmSessionMock, getLastDrmError(_))
+        .WillOnce(testing::Invoke(
+            [&](uint32_t &errorCode) -> MediaKeyErrorStatus
+            {
+                errorCode = m_kTestErrorCode;
+                return MediaKeyErrorStatus::OK;
+            }));
+}
+void GetSessionInfoTest::getLastDrmError()
+{
+    auto request{createGetLastDrmErrorRequest(m_mediaKeysHandle, m_mediaKeySessionId)};
+
+    ConfigureAction<GetLastDrmError>(m_clientStub)
+        .send(request)
+        .expectSuccess()
+        .matchResponse(
+            [&](const firebolt::rialto::GetLastDrmErrorResponse &resp)
+            {
+                EXPECT_EQ(resp.error_code(), m_kTestErrorCode);
+                EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK);
+            });
+}
+
+void GetSessionInfoTest::willGetCdmKeySessionId()
+{
+    EXPECT_CALL(m_ocdmSessionMock, getCdmKeySessionId(_))
+        .WillOnce(testing::Invoke(
+            [&](std::string &cdmKeySessionId) -> MediaKeyErrorStatus
+            {
+                cdmKeySessionId = m_kTestString;
+                return MediaKeyErrorStatus::OK;
+            }));
+}
+void GetSessionInfoTest::getCdmKeySessionId()
+{
+    auto request{createGetCdmKeySessionIdRequest(m_mediaKeysHandle, m_mediaKeySessionId)};
+
+    ConfigureAction<GetCdmKeySessionId>(m_clientStub)
+        .send(request)
+        .expectSuccess()
+        .matchResponse(
+            [&](const firebolt::rialto::GetCdmKeySessionIdResponse &resp)
+            {
+                EXPECT_EQ(resp.cdm_key_session_id(), m_kTestString);
+                EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK);
+            });
+}
 
 /*
  * Component Test: Get various infomation stored in the session.
@@ -86,9 +146,11 @@ TEST_F(GetSessionInfoTest, getApis)
     createKeySession();
 
     // Step 1: Get the cdm key session id
+    willGetCdmKeySessionId();
     getCdmKeySessionId();
 
     // Step 2: Get the last drm error
+    willGetLastDrmError();
     getLastDrmError();
 }
 

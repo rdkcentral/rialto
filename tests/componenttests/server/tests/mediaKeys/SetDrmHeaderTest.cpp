@@ -29,6 +29,11 @@ using testing::ByMove;
 using testing::Return;
 using testing::StrictMock;
 
+namespace
+{
+const std::vector<unsigned char> kKeyId1{'a', 'j', 'l'};
+const std::vector<unsigned char> kKeyId2{'b', 'U', 's'};
+} // namespace
 namespace firebolt::rialto::server::ct
 {
 class SetDrmHeaderTest : public MediaKeysTestMethods
@@ -36,7 +41,28 @@ class SetDrmHeaderTest : public MediaKeysTestMethods
 public:
     SetDrmHeaderTest() {}
     virtual ~SetDrmHeaderTest() {}
+
+    void willSetDrmHeader(const std::vector<unsigned char> &kKeyId);
+    void setDrmHeader(const std::vector<unsigned char> &kKeyId);
+
+private:
 };
+
+void SetDrmHeaderTest::willSetDrmHeader(const std::vector<unsigned char> &kKeyId)
+{
+    EXPECT_CALL(m_ocdmSessionMock, setDrmHeader(::arrayMatcher(kKeyId), kKeyId.size()))
+        .WillOnce(Return(MediaKeyErrorStatus::OK));
+}
+void SetDrmHeaderTest::setDrmHeader(const std::vector<unsigned char> &kKeyId)
+{
+    auto request{createSetDrmHeaderRequest(m_mediaKeysHandle, m_mediaKeySessionId, kKeyId)};
+
+    ConfigureAction<SetDrmHeader>(m_clientStub)
+        .send(request)
+        .expectSuccess()
+        .matchResponse([&](const firebolt::rialto::SetDrmHeaderResponse &resp)
+                       { EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK); });
+}
 
 /*
  * Component Test: Set Drm Header API.
@@ -86,10 +112,12 @@ TEST_F(SetDrmHeaderTest, multiple)
     createKeySession();
 
     // Step 1: Set the drm header
-    setDrmHeader();
+    willSetDrmHeader(kKeyId1);
+    setDrmHeader(kKeyId1);
 
     // Step 2: Set the drm header for a second time with different header
-    setDrmHeader2();
+    willSetDrmHeader(kKeyId2);
+    setDrmHeader(kKeyId2);
 }
 
 } // namespace firebolt::rialto::server::ct

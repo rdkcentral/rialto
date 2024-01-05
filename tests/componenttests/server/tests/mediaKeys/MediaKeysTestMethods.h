@@ -38,39 +38,17 @@ public:
 
     void createMediaKeysWidevine();
     void createMediaKeysNetflix();
-
     void createKeySession();
     void ocdmSessionWillBeCreated();
+    void licenseRenew();
 
-    void shouldFailToCreateSessionWhenMksIdIsWrong();
+    void willUpdateSessionNetflix();
+    void updateSessionNetflix();
 
-    void generateRequest();
-
-    void updateSessionWidevine();
-    void updateAllKeys();
-    void updateOneKey();
-    void containsKey();
-    void doesNotContainKey();
-    void removeKeySession();
-    void loadKeySession();
-    void closeKeySessionWidevine();
-    void closeKeySessionNetflix();
-    void setDrmHeader();
-    void setDrmHeader2();
-    void getLastDrmError();
-    void getCdmKeySessionId();
-    void destroyMediaKeysRequest();
-    void deleteDrmStoreRequest();
-    void deleteKeyStoreRequest();
-    void getDrmStoreHashRequest();
-    void getDrmStoreHashRequestFails();
-    void getKeyStoreHashRequest();
-    void getKeyStoreHashRequestFails();
-    void getLdlSessionsLimitRequest();
-    void getDrmTimeRequest();
+    void willTeardown();
+    void willDestruct();
 
 private:
-    void setDrmHeader(const std::vector<unsigned char> &kKeyId);
     void createMediaKeys(const ::firebolt::rialto::CreateMediaKeysRequest &request);
 
 protected:
@@ -80,30 +58,9 @@ protected:
         std::make_unique<testing::StrictMock<wrappers::OcdmSessionMock>>()};
     testing::StrictMock<wrappers::OcdmSessionMock> &m_ocdmSessionMock{*m_ocdmSession};
     firebolt::rialto::wrappers::IOcdmSessionClient *m_ocdmSessionClient{0};
-    std::mutex m_mutex;
-};
 
-class MediaKeysTestLicenceRenewal : public virtual MediaKeysTestMethods
-{
-public:
-    void willLicenseRenew();
-    void licenseRenew();
-
-private:
-    const std::vector<unsigned char> m_kLicenseRenewalMessage{'x', 'u', 'A'};
-    std::condition_variable m_myCondVar;
-    bool m_callFlag{false};
-};
-
-class MediaKeysTestUpdateSessionNetflix : public virtual MediaKeysTestMethods
-{
-public:
-    void willUpdateSessionNetflix();
-    void updateSessionNetflix();
-
-private:
-    const std::vector<unsigned char> m_kResponse{5, 6};
-    bool m_storedAndMessageChecked{false};
+    // Used by updateSessionNetflix and willUpdateSessionNetflix...
+    const std::vector<unsigned char> m_kUpdateSessionNetflixResponse{5, 6};
 };
 
 } // namespace firebolt::rialto::server::ct

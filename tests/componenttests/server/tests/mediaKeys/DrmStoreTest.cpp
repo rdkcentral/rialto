@@ -36,7 +36,92 @@ class DrmStoreTest : public MediaKeysTestMethods
 public:
     DrmStoreTest() {}
     virtual ~DrmStoreTest() {}
+
+    void willDeleteDrmStoreRequest();
+    void deleteDrmStoreRequest();
+
+    void willGetDrmStoreHashRequest();
+    void getDrmStoreHashRequest();
+
+    void willGetDrmStoreHashRequestFails();
+    void getDrmStoreHashRequestFails();
+
+    const std::vector<unsigned char> m_kHashTest{'d', 'z', 'f'};
 };
+
+void DrmStoreTest::willDeleteDrmStoreRequest()
+{
+    EXPECT_CALL(*m_ocdmSystemMock, deleteSecureStore()).WillOnce(Return(MediaKeyErrorStatus::OK));
+}
+void DrmStoreTest::deleteDrmStoreRequest()
+{
+    auto request{createDeleteDrmStoreRequest(m_mediaKeysHandle)};
+
+    ConfigureAction<DeleteDrmStore>(m_clientStub)
+        .send(request)
+        .expectSuccess()
+        .matchResponse([&](const firebolt::rialto::DeleteDrmStoreResponse &resp)
+                       { EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK); });
+}
+
+void DrmStoreTest::willGetDrmStoreHashRequest()
+{
+    EXPECT_CALL(*m_ocdmSystemMock, getSecureStoreHash(_, _))
+        .WillOnce(testing::Invoke(
+            [&](uint8_t secureStoreHash[], uint32_t secureStoreHashLength) -> MediaKeyErrorStatus
+            {
+                // The real wrapper calls opencdm_get_secure_store_hash_ext()
+                // defined in opencdm/opencdm_ext.h
+                // and this header specifies the length should be at least 64
+                // (but doesn't return the number of bytes actually filled)
+                EXPECT_GT(secureStoreHashLength, 64);
+                size_t i = 0;
+                for (; i < m_kHashTest.size(); ++i)
+                {
+                    secureStoreHash[i] = m_kHashTest[i];
+                }
+                // Pad with zeros in case valgrind complains...
+                for (; i < secureStoreHashLength; ++i)
+                {
+                    secureStoreHash[i] = 0;
+                }
+                return MediaKeyErrorStatus::OK;
+            }));
+}
+void DrmStoreTest::getDrmStoreHashRequest()
+{
+    auto request{createGetDrmStoreHashRequest(m_mediaKeysHandle)};
+
+    ConfigureAction<GetDrmStoreHash>(m_clientStub)
+        .send(request)
+        .expectSuccess()
+        .matchResponse(
+            [&](const firebolt::rialto::GetDrmStoreHashResponse &resp)
+            {
+                EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK);
+                for (size_t i = 0; i < m_kHashTest.size(); ++i)
+                {
+                    EXPECT_EQ(resp.drm_store_hash(i), m_kHashTest[i]);
+                }
+            });
+}
+
+void DrmStoreTest::willGetDrmStoreHashRequestFails()
+{
+    EXPECT_CALL(*m_ocdmSystemMock, getSecureStoreHash(_, _))
+        .WillOnce(testing::Invoke([&](uint8_t secureStoreHash[], uint32_t secureStoreHashLength) -> MediaKeyErrorStatus
+                                  { return MediaKeyErrorStatus::NOT_SUPPORTED; }));
+}
+void DrmStoreTest::getDrmStoreHashRequestFails()
+{
+    auto request{createGetDrmStoreHashRequest(m_mediaKeysHandle)};
+
+    ConfigureAction<GetDrmStoreHash>(m_clientStub)
+        .send(request)
+        .expectSuccess()
+        .matchResponse([&](const firebolt::rialto::GetDrmStoreHashResponse &resp)
+                       { EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::NOT_SUPPORTED); });
+}
 
 /*
  * Component Test: Drm Store APIs.
@@ -87,12 +172,15 @@ TEST_F(DrmStoreTest, shouldDrmstore)
     createKeySession();
 
     // Step 1: Get the drm store
+    willGetDrmStoreHashRequest();
     getDrmStoreHashRequest();
 
     // Step 2: Get the drm store failure
+    willGetDrmStoreHashRequestFails();
     getDrmStoreHashRequestFails();
 
     // Step 3: Delete the drm store
+    willDeleteDrmStoreRequest();
     deleteDrmStoreRequest();
 }
 

@@ -235,9 +235,7 @@ struct GenerateRequest
     using RequestType = ::firebolt::rialto::GenerateRequestRequest;
     using ResponseType = ::firebolt::rialto::GenerateRequestResponse;
     using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
-    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
-                                        google::protobuf::Closure *);
-    static constexpr FunctionType m_kFunction{&Stub::generateRequest};
+    static constexpr auto m_kFunction{&Stub::generateRequest};
 };
 
 struct UpdateSession
@@ -245,9 +243,7 @@ struct UpdateSession
     using RequestType = ::firebolt::rialto::UpdateSessionRequest;
     using ResponseType = ::firebolt::rialto::UpdateSessionResponse;
     using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
-    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
-                                        google::protobuf::Closure *);
-    static constexpr FunctionType m_kFunction{&Stub::updateSession};
+    static constexpr auto m_kFunction{&Stub::updateSession};
 };
 
 struct ContainsKey
@@ -255,9 +251,7 @@ struct ContainsKey
     using RequestType = ::firebolt::rialto::ContainsKeyRequest;
     using ResponseType = ::firebolt::rialto::ContainsKeyResponse;
     using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
-    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
-                                        google::protobuf::Closure *);
-    static constexpr FunctionType m_kFunction{&Stub::containsKey};
+    static constexpr auto m_kFunction{&Stub::containsKey};
 };
 
 struct RemoveKeySession
@@ -265,9 +259,7 @@ struct RemoveKeySession
     using RequestType = ::firebolt::rialto::RemoveKeySessionRequest;
     using ResponseType = ::firebolt::rialto::RemoveKeySessionResponse;
     using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
-    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
-                                        google::protobuf::Closure *);
-    static constexpr FunctionType m_kFunction{&Stub::removeKeySession};
+    static constexpr auto m_kFunction{&Stub::removeKeySession};
 };
 
 struct LoadSession
@@ -275,9 +267,7 @@ struct LoadSession
     using RequestType = ::firebolt::rialto::LoadSessionRequest;
     using ResponseType = ::firebolt::rialto::LoadSessionResponse;
     using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
-    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
-                                        google::protobuf::Closure *);
-    static constexpr FunctionType m_kFunction{&Stub::loadSession};
+    static constexpr auto m_kFunction{&Stub::loadSession};
 };
 
 struct CloseKeySession
@@ -285,9 +275,7 @@ struct CloseKeySession
     using RequestType = ::firebolt::rialto::CloseKeySessionRequest;
     using ResponseType = ::firebolt::rialto::CloseKeySessionResponse;
     using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
-    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
-                                        google::protobuf::Closure *);
-    static constexpr FunctionType m_kFunction{&Stub::closeKeySession};
+    static constexpr auto m_kFunction{&Stub::closeKeySession};
 };
 
 struct SetDrmHeader
@@ -295,9 +283,7 @@ struct SetDrmHeader
     using RequestType = ::firebolt::rialto::SetDrmHeaderRequest;
     using ResponseType = ::firebolt::rialto::SetDrmHeaderResponse;
     using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
-    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
-                                        google::protobuf::Closure *);
-    static constexpr FunctionType m_kFunction{&Stub::setDrmHeader};
+    static constexpr auto m_kFunction{&Stub::setDrmHeader};
 };
 
 struct GetLastDrmError
@@ -305,9 +291,7 @@ struct GetLastDrmError
     using RequestType = ::firebolt::rialto::GetLastDrmErrorRequest;
     using ResponseType = ::firebolt::rialto::GetLastDrmErrorResponse;
     using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
-    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
-                                        google::protobuf::Closure *);
-    static constexpr FunctionType m_kFunction{&Stub::getLastDrmError};
+    static constexpr auto m_kFunction{&Stub::getLastDrmError};
 };
 
 struct GetCdmKeySessionId
@@ -315,9 +299,7 @@ struct GetCdmKeySessionId
     using RequestType = ::firebolt::rialto::GetCdmKeySessionIdRequest;
     using ResponseType = ::firebolt::rialto::GetCdmKeySessionIdResponse;
     using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
-    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
-                                        google::protobuf::Closure *);
-    static constexpr FunctionType m_kFunction{&Stub::getCdmKeySessionId};
+    static constexpr auto m_kFunction{&Stub::getCdmKeySessionId};
 };
 
 struct DestroyMediaKeys
@@ -325,9 +307,7 @@ struct DestroyMediaKeys
     using RequestType = ::firebolt::rialto::DestroyMediaKeysRequest;
     using ResponseType = ::firebolt::rialto::DestroyMediaKeysResponse;
     using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
-    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
-                                        google::protobuf::Closure *);
-    static constexpr FunctionType m_kFunction{&Stub::destroyMediaKeys};
+    static constexpr auto m_kFunction{&Stub::destroyMediaKeys};
 };
 
 struct DeleteDrmStore
@@ -335,9 +315,7 @@ struct DeleteDrmStore
     using RequestType = ::firebolt::rialto::DeleteDrmStoreRequest;
     using ResponseType = ::firebolt::rialto::DeleteDrmStoreResponse;
     using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
-    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
-                                        google::protobuf::Closure *);
-    static constexpr FunctionType m_kFunction{&Stub::deleteDrmStore};
+    static constexpr auto m_kFunction{&Stub::deleteDrmStore};
 };
 
 struct DeleteKeyStore
@@ -345,9 +323,7 @@ struct DeleteKeyStore
     using RequestType = ::firebolt::rialto::DeleteKeyStoreRequest;
     using ResponseType = ::firebolt::rialto::DeleteKeyStoreResponse;
     using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
-    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
-                                        google::protobuf::Closure *);
-    static constexpr FunctionType m_kFunction{&Stub::deleteKeyStore};
+    static constexpr auto m_kFunction{&Stub::deleteKeyStore};
 };
 
 struct GetDrmStoreHash
@@ -355,9 +331,7 @@ struct GetDrmStoreHash
     using RequestType = ::firebolt::rialto::GetDrmStoreHashRequest;
     using ResponseType = ::firebolt::rialto::GetDrmStoreHashResponse;
     using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
-    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
-                                        google::protobuf::Closure *);
-    static constexpr FunctionType m_kFunction{&Stub::getDrmStoreHash};
+    static constexpr auto m_kFunction{&Stub::getDrmStoreHash};
 };
 
 struct GetKeyStoreHash
@@ -365,9 +339,7 @@ struct GetKeyStoreHash
     using RequestType = ::firebolt::rialto::GetKeyStoreHashRequest;
     using ResponseType = ::firebolt::rialto::GetKeyStoreHashResponse;
     using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
-    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
-                                        google::protobuf::Closure *);
-    static constexpr FunctionType m_kFunction{&Stub::getKeyStoreHash};
+    static constexpr auto m_kFunction{&Stub::getKeyStoreHash};
 };
 
 struct GetLdlSessionsLimit
@@ -375,9 +347,7 @@ struct GetLdlSessionsLimit
     using RequestType = ::firebolt::rialto::GetLdlSessionsLimitRequest;
     using ResponseType = ::firebolt::rialto::GetLdlSessionsLimitResponse;
     using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
-    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
-                                        google::protobuf::Closure *);
-    static constexpr FunctionType m_kFunction{&Stub::getLdlSessionsLimit};
+    static constexpr auto m_kFunction{&Stub::getLdlSessionsLimit};
 };
 
 struct GetDrmTime
@@ -385,9 +355,7 @@ struct GetDrmTime
     using RequestType = ::firebolt::rialto::GetDrmTimeRequest;
     using ResponseType = ::firebolt::rialto::GetDrmTimeResponse;
     using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
-    using FunctionType = void (Stub::*)(google::protobuf::RpcController *, const RequestType *, ResponseType *,
-                                        google::protobuf::Closure *);
-    static constexpr FunctionType m_kFunction{&Stub::getDrmTime};
+    static constexpr auto m_kFunction{&Stub::getDrmTime};
 };
 
 // control module

@@ -31,14 +31,87 @@ using testing::StrictMock;
 
 namespace firebolt::rialto::server::ct
 {
-class SessionReadyForDecryptionTest : public virtual MediaKeysTestLicenceRenewal,
-                                      public virtual MediaKeysTestUpdateSessionNetflix
 
+class SessionReadyForDecryptionTest : public virtual MediaKeysTestMethods
 {
 public:
     SessionReadyForDecryptionTest() {}
     virtual ~SessionReadyForDecryptionTest() {}
+
+    void willUpdateSessionWidevine();
+    void updateSessionWidevine();
+    void closeKeySessionWidevine();
+
+    void willCloseKeySessionNetflix();
+    void closeKeySessionNetflix();
+
+    void destroyMediaKeysRequest();
+
+    const std::vector<unsigned char> kResponse{4, 1, 3};
 };
+
+void SessionReadyForDecryptionTest::willUpdateSessionWidevine()
+{
+    // The following should match the details within the message "request"
+    EXPECT_CALL(m_ocdmSessionMock, update(_, kResponse.size()))
+        .WillOnce(testing::Invoke(
+            [&](const uint8_t response[], uint32_t responseSize) -> MediaKeyErrorStatus
+            {
+                for (uint32_t i = 0; i < responseSize; ++i)
+                {
+                    EXPECT_EQ(response[i], kResponse[i]);
+                }
+                return MediaKeyErrorStatus::OK;
+            }));
+}
+
+void SessionReadyForDecryptionTest::updateSessionWidevine()
+{
+    auto request{createUpdateSessionRequest(m_mediaKeysHandle, m_mediaKeySessionId, kResponse)};
+
+    ConfigureAction<UpdateSession>(m_clientStub)
+        .send(request)
+        .expectSuccess()
+        .matchResponse([&](const firebolt::rialto::UpdateSessionResponse &resp)
+                       { EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK); });
+}
+
+void SessionReadyForDecryptionTest::closeKeySessionWidevine()
+{
+    auto request{createCloseKeySessionRequest(m_mediaKeysHandle, m_mediaKeySessionId)};
+
+    ConfigureAction<CloseKeySession>(m_clientStub)
+        .send(request)
+        .expectSuccess()
+        .matchResponse([&](const firebolt::rialto::CloseKeySessionResponse &resp)
+                       { EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK); });
+}
+
+void SessionReadyForDecryptionTest::willCloseKeySessionNetflix()
+{
+    EXPECT_CALL(m_ocdmSessionMock, cancelChallengeData()).WillOnce(Return(MediaKeyErrorStatus::OK));
+    EXPECT_CALL(m_ocdmSessionMock, cleanDecryptContext()).WillOnce(Return(MediaKeyErrorStatus::OK));
+}
+void SessionReadyForDecryptionTest::closeKeySessionNetflix()
+{
+    auto request{createCloseKeySessionRequest(m_mediaKeysHandle, m_mediaKeySessionId)};
+
+    ConfigureAction<CloseKeySession>(m_clientStub)
+        .send(request)
+        .expectSuccess()
+        .matchResponse([&](const firebolt::rialto::CloseKeySessionResponse &resp)
+                       { EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK); });
+}
+
+void SessionReadyForDecryptionTest::destroyMediaKeysRequest()
+{
+    auto request{createDestroyMediaKeysRequest(m_mediaKeysHandle)};
+
+    ConfigureAction<DestroyMediaKeys>(m_clientStub)
+        .send(request)
+        .expectSuccess()
+        .matchResponse([&](const firebolt::rialto::DestroyMediaKeysResponse &resp) {});
+}
 
 /*
  * Component Test: Session initalised and ready for decryption for widevine
@@ -71,10 +144,7 @@ public:
  *   Check that a valid key id is returned.
  *
  *  Step 3: Generate license request
- *   generateRequest.
- *   Expect that generateRequest is propagated to the server.
- *   Api call returns with success.
- *   Server notifys the client of license request.
+ *   Server notifies the client of license request.
  *   Expect that the license request notification is propagated to the client.
  *
  *  Step 4: Update session
@@ -112,13 +182,15 @@ TEST_F(SessionReadyForDecryptionTest, shouldUpdateWidevine)
     createKeySession();
 
     // Step 3: Generate license request
-    willLicenseRenew();
     licenseRenew();
 
     // Step 4: Update session
+    willUpdateSessionWidevine();
     updateSessionWidevine();
 
     // Step 5: Close session
+    willTeardown();
+    willDestruct();
     closeKeySessionWidevine();
 
     // Step 6: Destroy media keys
@@ -156,9 +228,6 @@ TEST_F(SessionReadyForDecryptionTest, shouldUpdateWidevine)
  *   Check that a valid key id is returned.
  *
  *  Step 3: Generate license request
- *   generateRequest.
- *   Expect that generateRequest is processed by the server.
- *   Before replying to the API call notify the client of license request.
  *   Expect that the license request notification is processed by the client.
  *   Api call returns with success.
  *
@@ -197,7 +266,6 @@ TEST_F(SessionReadyForDecryptionTest, shouldUpdatNetflix)
     createKeySession();
 
     // Step 3: Generate license request
-    willLicenseRenew();
     licenseRenew();
 
     // Step 4: Update session
@@ -205,6 +273,8 @@ TEST_F(SessionReadyForDecryptionTest, shouldUpdatNetflix)
     updateSessionNetflix();
 
     // Step 5: Close session
+    willDestruct();
+    willCloseKeySessionNetflix();
     closeKeySessionNetflix();
 
     // Step 6: Destroy media keys

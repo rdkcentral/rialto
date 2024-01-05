@@ -36,7 +36,90 @@ class KeyStoreTest : public MediaKeysTestMethods
 public:
     KeyStoreTest() {}
     virtual ~KeyStoreTest() {}
+
+    void willGetKeyStoreHashRequest();
+    void getKeyStoreHashRequest();
+
+    void willGetKeyStoreHashRequestFails();
+    void getKeyStoreHashRequestFails();
+
+    void willDeleteKeyStoreRequest();
+    void deleteKeyStoreRequest();
+
+private:
+    const std::vector<unsigned char> m_kHashTest1{'d', 'z', 'f'};
 };
+void KeyStoreTest::willGetKeyStoreHashRequest()
+{
+    EXPECT_CALL(*m_ocdmSystemMock, getKeyStoreHash(_, _))
+        .WillOnce(testing::Invoke(
+            [&](uint8_t keyStoreHash[], uint32_t keyStoreHashLength) -> MediaKeyErrorStatus
+            {
+                // The real wrapper calls opencdm_get_key_store_hash_ext()
+                // defined in opencdm/opencdm_ext.h
+                // and this header specifies the length should be at least 64
+                // (but doesn't return the number of bytes actually filled)
+                EXPECT_GT(keyStoreHashLength, 64);
+                size_t i = 0;
+                for (; i < m_kHashTest1.size(); ++i)
+                {
+                    keyStoreHash[i] = m_kHashTest1[i];
+                }
+                // Pad with zeros in case valgrind complains...
+                for (; i < keyStoreHashLength; ++i)
+                {
+                    keyStoreHash[i] = 0;
+                }
+                return MediaKeyErrorStatus::OK;
+            }));
+}
+void KeyStoreTest::getKeyStoreHashRequest()
+{
+    auto request{createGetKeyStoreHashRequest(m_mediaKeysHandle)};
+
+    ConfigureAction<GetKeyStoreHash>(m_clientStub)
+        .send(request)
+        .expectSuccess()
+        .matchResponse(
+            [&](const firebolt::rialto::GetKeyStoreHashResponse &resp)
+            {
+                EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK);
+                for (size_t i = 0; i < m_kHashTest1.size(); ++i)
+                {
+                    EXPECT_EQ(resp.key_store_hash(i), m_kHashTest1[i]);
+                }
+            });
+}
+
+void KeyStoreTest::willGetKeyStoreHashRequestFails()
+{
+    EXPECT_CALL(*m_ocdmSystemMock, getKeyStoreHash(_, _)).WillOnce(Return(MediaKeyErrorStatus::FAIL));
+}
+void KeyStoreTest::getKeyStoreHashRequestFails()
+{
+    auto request{createGetKeyStoreHashRequest(m_mediaKeysHandle)};
+
+    ConfigureAction<GetKeyStoreHash>(m_clientStub)
+        .send(request)
+        .expectSuccess()
+        .matchResponse([&](const firebolt::rialto::GetKeyStoreHashResponse &resp)
+                       { EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::FAIL); });
+}
+
+void KeyStoreTest::willDeleteKeyStoreRequest()
+{
+    EXPECT_CALL(*m_ocdmSystemMock, deleteKeyStore()).WillOnce(Return(MediaKeyErrorStatus::OK));
+}
+void KeyStoreTest::deleteKeyStoreRequest()
+{
+    auto request{createDeleteKeyStoreRequest(m_mediaKeysHandle)};
+
+    ConfigureAction<DeleteKeyStore>(m_clientStub)
+        .send(request)
+        .expectSuccess()
+        .matchResponse([&](const firebolt::rialto::DeleteKeyStoreResponse &resp)
+                       { EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK); });
+}
 
 /*
  * Component Test: Key Store APIs.
@@ -90,12 +173,15 @@ TEST_F(KeyStoreTest, shouldKeystore)
     createKeySession();
 
     // Step 1: Get the key store
+    willGetKeyStoreHashRequest();
     getKeyStoreHashRequest();
 
     // Step 2: Delete the key store
+    willDeleteKeyStoreRequest();
     deleteKeyStoreRequest();
 
     // Step 3: Get the key store failure
+    willGetKeyStoreHashRequestFails();
     getKeyStoreHashRequestFails();
 }
 } // namespace firebolt::rialto::server::ct

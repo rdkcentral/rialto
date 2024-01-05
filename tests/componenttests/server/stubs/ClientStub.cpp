@@ -57,9 +57,4 @@ void ClientStub::ipcThread()
         m_ipcChannel->wait(-1);
     }
 }
-
-std::shared_ptr<::firebolt::rialto::ipc::IChannel> ClientStub::getIpcChannel()
-{
-    return m_ipcChannel;
-}
 } // namespace firebolt::rialto::server::ct

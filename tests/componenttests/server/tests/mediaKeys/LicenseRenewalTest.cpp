@@ -21,6 +21,7 @@
 
 #include "ActionTraits.h"
 #include "ConfigureAction.h"
+#include "ExpectMessage.h"
 #include "Matchers.h"
 #include "MediaKeysTestMethods.h"
 
@@ -31,12 +32,53 @@ using testing::StrictMock;
 
 namespace firebolt::rialto::server::ct
 {
-class LicenseRenewalTest : public virtual MediaKeysTestLicenceRenewal, public virtual MediaKeysTestUpdateSessionNetflix
+class LicenseRenewalTest : public virtual MediaKeysTestMethods
 {
 public:
     LicenseRenewalTest() {}
     virtual ~LicenseRenewalTest() {}
+
+    void updateAllKeys();
+    void updateOneKey();
+
+    const std::vector<unsigned char> kOneKeyId{'a', 'z', 'q', 'l', 'D'};
 };
+
+void LicenseRenewalTest::updateAllKeys()
+{
+    ExpectMessage<::firebolt::rialto::KeyStatusesChangedEvent> expectedMessage(m_clientStub);
+
+    m_ocdmSessionClient->onAllKeysUpdated();
+
+    auto message = expectedMessage.getMessage();
+    ASSERT_TRUE(message);
+    ASSERT_EQ(message->media_keys_handle(), m_mediaKeysHandle);
+    ASSERT_EQ(message->key_session_id(), m_mediaKeySessionId);
+
+    const ::google::protobuf::RepeatedPtrField<::firebolt::rialto::KeyStatusesChangedEvent_KeyStatusPair> &key_statuses =
+        message->key_statuses();
+
+    EXPECT_FALSE(key_statuses.empty());
+    for (const ::firebolt::rialto::KeyStatusesChangedEvent_KeyStatusPair &i : key_statuses)
+    {
+        ASSERT_EQ(i.key_status(), KeyStatusesChangedEvent_KeyStatus_USABLE);
+
+        const unsigned int kMax = i.key_id_size();
+        ASSERT_EQ(kMax, kOneKeyId.size());
+        for (unsigned int j = 0; j < kMax; ++j)
+        {
+            ASSERT_EQ(i.key_id(j), kOneKeyId[j]);
+        }
+    }
+}
+
+void LicenseRenewalTest::updateOneKey()
+{
+    EXPECT_CALL(m_ocdmSessionMock, getStatus(::arrayMatcher(kOneKeyId), kOneKeyId.size()))
+        .WillOnce(Return(KeyStatus::USABLE));
+
+    m_ocdmSessionClient->onKeyUpdated(&kOneKeyId[0], kOneKeyId.size());
+}
 
 /*
  * Component Test: License renewal sequence.
@@ -87,7 +129,6 @@ TEST_F(LicenseRenewalTest, licenseRenewal)
     createKeySession();
 
     // Step 1: Notify license renewal
-    willLicenseRenew();
     licenseRenew();
 
     // Step 2: Update session

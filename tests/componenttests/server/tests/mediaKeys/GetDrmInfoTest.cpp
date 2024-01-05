@@ -36,7 +36,67 @@ class GetDrmInfoTest : public MediaKeysTestMethods
 public:
     GetDrmInfoTest() {}
     virtual ~GetDrmInfoTest() {}
+
+    void willGetLdlSessionsLimitRequest();
+    void getLdlSessionsLimitRequest();
+
+    void willGetDrmTimeRequest();
+    void getDrmTimeRequest();
+
+private:
+    const uint32_t m_kTestTime = 34;
+    const uint32_t m_kTestLdlLimit = 34;
 };
+
+void GetDrmInfoTest::willGetLdlSessionsLimitRequest()
+{
+    EXPECT_CALL(*m_ocdmSystemMock, getLdlSessionsLimit(_))
+        .WillOnce(testing::Invoke(
+            [&](uint32_t *ldlLimit) -> MediaKeyErrorStatus
+            {
+                *ldlLimit = m_kTestLdlLimit;
+                return MediaKeyErrorStatus::OK;
+            }));
+}
+void GetDrmInfoTest::getLdlSessionsLimitRequest()
+{
+    auto request{createGetLdlSessionsLimitRequest(m_mediaKeysHandle)};
+
+    ConfigureAction<GetLdlSessionsLimit>(m_clientStub)
+        .send(request)
+        .expectSuccess()
+        .matchResponse(
+            [&](const firebolt::rialto::GetLdlSessionsLimitResponse &resp)
+            {
+                EXPECT_EQ(resp.ldl_limit(), m_kTestLdlLimit);
+                EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK);
+            });
+}
+
+void GetDrmInfoTest::willGetDrmTimeRequest()
+{
+    EXPECT_CALL(*m_ocdmSystemMock, getDrmTime(_))
+        .WillOnce(testing::Invoke(
+            [&](uint64_t *time) -> MediaKeyErrorStatus
+            {
+                *time = m_kTestTime;
+                return MediaKeyErrorStatus::OK;
+            }));
+}
+void GetDrmInfoTest::getDrmTimeRequest()
+{
+    auto request{createGetDrmTimeRequest(m_mediaKeysHandle)};
+
+    ConfigureAction<GetDrmTime>(m_clientStub)
+        .send(request)
+        .expectSuccess()
+        .matchResponse(
+            [&](const firebolt::rialto::GetDrmTimeResponse &resp)
+            {
+                EXPECT_EQ(resp.drm_time(), m_kTestTime);
+                EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK);
+            });
+}
 
 /*
  * Component Test: Get various infomation stored in the system.
@@ -84,9 +144,11 @@ TEST_F(GetDrmInfoTest, shouldDrminfo)
     createKeySession();
 
     // Step 1: Get the ldl session limit
+    willGetLdlSessionsLimitRequest();
     getLdlSessionsLimitRequest();
 
     // Step 2: Get the drm time
+    willGetDrmTimeRequest();
     getDrmTimeRequest();
 }
 
