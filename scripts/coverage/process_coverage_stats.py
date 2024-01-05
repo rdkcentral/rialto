@@ -38,9 +38,13 @@ def main():
     print(lines_output)
     print(functions_output)
 
-    # Exit if either lines or functions coverage has decreased or remained unchanged
-    if "WARNING" in lines_output or "WARNING" in functions_output:
-        sys.exit("Coverage has decreased or remained unchanged. Exiting...")
+    # Exit if lines coverage has decreased
+    if "WARNING" in lines_output:
+        sys.exit("Lines coverage has decreased. Exiting...")
+
+    # Exit if functions coverage has decreased
+    if "WARNING" in functions_output:
+        sys.exit("Functions coverage has decreased. Exiting...")
 
     write_output(lines_output + functions_output)
 
