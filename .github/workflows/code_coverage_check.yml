@@ -45,6 +45,11 @@ jobs:
       - name: Initialise host
         uses: ./.github/workflows/actions/init_ut
 
+    # Run the build script 
+      - name: build_ut.py script 
+        run: |
+              python build_ut.py -c -xml -f -cov
+
       # Install lcov
       - name: Install lcov library
         run: |
