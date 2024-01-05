@@ -29,7 +29,10 @@ def main():
     current_stats = parse_statistics(sys.argv[2])
     comparison_output = compare_coverage(master_stats, current_stats)
     write_output(comparison_output)
-
+    
+    if current_stats[0] <= master_stats[0] or current_stats[1] <= master_stats[1]:
+           sys.exit("Code coverage decreased or remained the same. Exiting with a non-zero status code.")
+           
 def parse_statistics(file_path):
     try:
         file = open(file_path, "r")
@@ -49,11 +52,9 @@ def compare_coverage(master_stats, current_stats):
     if current_stats[0] < master_stats[0]:
         output_text += "WARNING: Lines coverage decreased from: " + str(master_stats[0]) + "% to "
         output_text += str(current_stats[0]) + "%\n"
-        sys.exit(1)
 
     elif current_stats[0] == master_stats[0]:
         output_text += "Lines coverage stays unchanged and is: " + str(current_stats[0]) + "%\n"
-        sys.exit(1)
     else:
         output_text += "Congratulations, your commit improved lines coverage from: " + str(master_stats[0])
         output_text += "% to " + str(current_stats[0]) + "%\n"
