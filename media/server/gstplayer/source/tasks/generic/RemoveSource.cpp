@@ -32,7 +32,11 @@ void print_linked_elements(GstPad* elementPad, int depth = 0)
         nextPad = gst_element_get_static_pad(linked_element, "src");
         if (!nextPad)
         {
-            nextPad = gst_element_get_static_pad(linked_element, "src_0");
+            nextPad = gst_element_get_static_pad(linked_element, "src_1");
+            if (!nextPad)
+            {
+                nextPad = gst_element_get_static_pad(linked_element, "src_0");
+            }
         }
         gst_object_unref(linked_element);
     }
@@ -57,21 +61,24 @@ void print_linked_elements(GstPad* elementPad, int depth = 0)
         }
     }
 
-    GstPad* peer_pad = gst_pad_get_peer(nextPad);
-    if(!peer_pad) 
+    if(nextPad)
     {
-        GstPad* proxyPad1 = GST_PAD(gst_proxy_pad_get_internal(GST_PROXY_PAD(elementPad)));
-        RIALTO_SERVER_LOG_WARN("lukewill: proxyPad1 - %s", GST_OBJECT_NAME(proxyPad1));
+        GstPad* peer_pad = gst_pad_get_peer(nextPad);
+        if(!peer_pad) 
+        {
+            GstPad* proxyPad1 = GST_PAD(gst_proxy_pad_get_internal(GST_PROXY_PAD(elementPad)));
+            RIALTO_SERVER_LOG_WARN("lukewill: proxyPad1 - %s", GST_OBJECT_NAME(proxyPad1));
 
-        peer_pad = gst_pad_get_peer(proxyPad1);
-        RIALTO_SERVER_LOG_WARN("lukewill: peer_pad_2 - %s", GST_OBJECT_NAME(peer_pad));
-    }
+            peer_pad = gst_pad_get_peer(proxyPad1);
+            RIALTO_SERVER_LOG_WARN("lukewill: peer_pad_2 - %s", GST_OBJECT_NAME(peer_pad));
+        }
 
-    if (peer_pad)
-    {
-        RIALTO_SERVER_LOG_WARN("lukewill: peer pad - %s", GST_OBJECT_NAME(peer_pad));
-        print_linked_elements(peer_pad, depth + 1);
-        gst_object_unref(peer_pad);
+        if (peer_pad)
+        {
+            RIALTO_SERVER_LOG_WARN("lukewill: peer pad - %s", GST_OBJECT_NAME(peer_pad));
+            print_linked_elements(peer_pad, depth + 1);
+            gst_object_unref(peer_pad);
+        }
     }
 }
 }
