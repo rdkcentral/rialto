@@ -20,11 +20,6 @@
 #include "MediaKeysIpcTestBase.h"
 #include "MediaKeysProtoUtils.h"
 
-MATCHER_P(QosInfoMatcher, expectedQosInfo, "")
-{
-    return ((expectedQosInfo.processed == arg.processed) && (expectedQosInfo.dropped == arg.dropped));
-}
-
 class RialtoClientMediaKeysIpcCallbackTest : public MediaKeysIpcTestBase
 {
 protected:

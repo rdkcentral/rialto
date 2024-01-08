@@ -83,9 +83,10 @@ protected:
         EXPECT_EQ(m_mediaPipeline->setPosition(m_position), true);
 
         // needData requests should have been removed
+        // haveData should return success but will not be forwarded to media ipc
         setPlaybackState(PlaybackState::PLAYING);
-        EXPECT_FALSE(m_mediaPipeline->haveData(status, requestId1));
-        EXPECT_FALSE(m_mediaPipeline->haveData(status, requestId2));
+        EXPECT_TRUE(m_mediaPipeline->haveData(status, requestId1));
+        EXPECT_TRUE(m_mediaPipeline->haveData(status, requestId2));
     }
 
     void testNeedDataRequestRemovedOnSetPosition(NetworkState state)
@@ -114,8 +115,9 @@ protected:
 
         // NeedData requests should have been removed
         setPlaybackState(PlaybackState::PLAYING);
-        EXPECT_FALSE(m_mediaPipeline->haveData(status, requestId1));
-        EXPECT_FALSE(m_mediaPipeline->haveData(status, requestId2));
+        // haveData should return success but will not be forwarded to media ipc
+        EXPECT_TRUE(m_mediaPipeline->haveData(status, requestId1));
+        EXPECT_TRUE(m_mediaPipeline->haveData(status, requestId2));
     }
 };
 

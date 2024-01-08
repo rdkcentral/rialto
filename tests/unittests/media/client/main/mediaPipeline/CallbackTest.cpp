@@ -17,12 +17,8 @@
  * limitations under the License.
  */
 
+#include "MediaPipelineStructureMatchers.h"
 #include "MediaPipelineTestBase.h"
-
-MATCHER_P(QosInfoMatcher, expectedQosInfo, "")
-{
-    return ((expectedQosInfo.processed == arg.processed) && (expectedQosInfo.dropped == arg.dropped));
-}
 
 class RialtoClientMediaPipelineCallbackTest : public MediaPipelineTestBase
 {
@@ -72,7 +68,7 @@ TEST_F(RialtoClientMediaPipelineCallbackTest, NotifyQos)
     QosInfo qosInfo{5u, 2u};
     int32_t sourceId = 1;
 
-    EXPECT_CALL(*m_mediaPipelineClientMock, notifyQos(sourceId, QosInfoMatcher(qosInfo)));
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyQos(sourceId, qosInfoMatcher(qosInfo)));
 
     m_mediaPipelineCallback->notifyQos(sourceId, qosInfo);
 }
