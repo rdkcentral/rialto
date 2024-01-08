@@ -30,6 +30,10 @@ void print_linked_elements(GstPad* elementPad, int depth = 0)
     {
         RIALTO_SERVER_LOG_WARN("lukewill: %*s%s", depth * 2, "", GST_OBJECT_NAME(linked_element));
         nextPad = gst_element_get_static_pad(linked_element, "src");
+        if (!nextPad)
+        {
+            nextPad = gst_element_get_static_pad(linked_element, "src_0");
+        }
         gst_object_unref(linked_element);
     }
     else
@@ -63,9 +67,12 @@ void print_linked_elements(GstPad* elementPad, int depth = 0)
         RIALTO_SERVER_LOG_WARN("lukewill: peer_pad_2 - %s", GST_OBJECT_NAME(peer_pad));
     }
 
-    RIALTO_SERVER_LOG_WARN("lukewill: peer pad - %s", GST_OBJECT_NAME(peer_pad));
-    print_linked_elements(peer_pad, depth + 1);
-    gst_object_unref(peer_pad);
+    if (peer_pad)
+    {
+        RIALTO_SERVER_LOG_WARN("lukewill: peer pad - %s", GST_OBJECT_NAME(peer_pad));
+        print_linked_elements(peer_pad, depth + 1);
+        gst_object_unref(peer_pad);
+    }
 }
 }
 namespace firebolt::rialto::server::tasks::generic
