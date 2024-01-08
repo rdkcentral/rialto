@@ -26,38 +26,28 @@ void print_linked_elements(GstElement* element, int depth = 0) {
     RIALTO_SERVER_LOG_WARN("lukewill: %*s%s", depth * 2, "", element_name);
 
     // Iterate over all source pads of the element
-    RIALTO_SERVER_LOG_WARN("lukewill:");
     GstIterator* iter = gst_element_iterate_pads (element);
-    RIALTO_SERVER_LOG_WARN("lukewill:");
     GValue value = { 0, };
     GstPad* pad = nullptr;
     while (gst_iterator_next(iter, &value) == GST_ITERATOR_OK) {
         // Get the peer pad and the linked element
-        RIALTO_SERVER_LOG_WARN("lukewill:");
         pad = GST_PAD(g_value_dup_object(&value));
-        RIALTO_SERVER_LOG_WARN("lukewill:");
         GstPad* peer_pad = gst_pad_get_peer(pad);
 
-        RIALTO_SERVER_LOG_WARN("lukewill:");
         if (peer_pad) {
-            RIALTO_SERVER_LOG_WARN("lukewill:");
             GstElement* linked_element = gst_pad_get_parent_element(peer_pad);
             gst_object_unref(peer_pad);
 
-            RIALTO_SERVER_LOG_WARN("lukewill:");
-            if (linked_element)
+            if (GST_IS_BIN(linked_element))
             {
                 // Recursively print linked elements
                 print_linked_elements(linked_element, depth + 1);
-
-                RIALTO_SERVER_LOG_WARN("lukewill:");
-                // Clean up the linked element
-                gst_object_unref(linked_element);
             }
-            RIALTO_SERVER_LOG_WARN("lukewill:");
+
+            // Clean up the linked element
+            gst_object_unref(linked_element);
         }
         g_value_reset (&value);
-        RIALTO_SERVER_LOG_WARN("lukewill:");
     }
     gst_iterator_free(iter);
 }
