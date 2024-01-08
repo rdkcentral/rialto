@@ -244,11 +244,12 @@ def main():
     master_stats = parse_statistics(sys.argv[1])
     current_stats = parse_statistics(sys.argv[2])
     comparison_output = compare_coverage(master_stats, current_stats)
+    print(f"Should print out the comparison output now:")
     write_output(comparison_output)
 
     # Check if coverage remains unchanged
     if current_stats == master_stats:
-        write_output("Coverage remains unchanged. Exiting.")
+        print(f"Coverage remains unchanged. Exiting.")
         write_output(comparison_output)
         sys.exit(1)
 
@@ -267,6 +268,7 @@ def parse_statistics(file_path):
         return (0.0, 0.0)
 
 def compare_coverage(master_stats, current_stats):
+    print(f"inside the compare_coverage function now")
     output_text = "Coverage statistics of your commit:\n"
     if current_stats[0] < master_stats[0]:
         output_text += "WARNING: Lines coverage decreased from: " + str(master_stats[0]) + "% to "
