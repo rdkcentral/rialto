@@ -40,6 +40,15 @@ void print_linked_elements(GstPad* elementPad, int depth = 0)
         {
             nextPad = GST_PAD(gst_proxy_pad_get_internal(GST_PROXY_PAD(elementPad)));
             RIALTO_SERVER_LOG_WARN("lukewill: internal_pad - %s", GST_OBJECT_NAME(nextPad));
+    
+            GstPad* peer_pad_2 = gst_pad_get_peer(nextPad);
+            GstElement* linked_element_2 = gst_pad_get_parent_element(peer_pad_2);
+            RIALTO_SERVER_LOG_WARN("lukewill: linked_element_2 - %s", GST_OBJECT_NAME(linked_element_2));
+            GstPad *target = gst_element_get_static_pad(linked_element_2, "src");
+    
+            RIALTO_SERVER_LOG_WARN("lukewill: pad_2 - %s", GST_OBJECT_NAME(target));
+            print_linked_elements(target, depth + 1);
+            return;
         }
         else
         {
