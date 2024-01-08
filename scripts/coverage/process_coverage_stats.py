@@ -28,24 +28,26 @@ def main():
     master_stats = parse_statistics(sys.argv[1])
     current_stats = parse_statistics(sys.argv[2])
     comparison_output = compare_coverage(master_stats, current_stats)
-    write_output(comparison_output)
+    
     
      # Check if both line and function coverage decreased
     if current_stats[0] < master_stats[0] and current_stats[1] < master_stats[1]:
-        sys.exit("Error: Both lines and functions coverage decreased.")
+        sys.exit("Both lines and functions coverage decreased.")
     elif current_stats[0] < master_stats[0]:
-        sys.exit("Error: Lines coverage decreased.")
+            sys.exit("Only line coverage decreased.")
     elif current_stats[1] < master_stats[1]:
-        sys.exit("Error: Functions coverage decreased.")
+        sys.exit("Only function coverage decreased.")
 
     # Check if both line and function coverage are unchanged
     if current_stats[0] == master_stats[0] and current_stats[1] == master_stats[1]:
         sys.exit("Lines and functions coverage remain unchanged.")
     elif current_stats[0] == master_stats[0]:
-        sys.exit("Lines coverage remains unchanged.")
+        sys.exit("Only line coverage remains unchanged.")
     elif current_stats[1] == master_stats[1]:
-        sys.exit("Functions coverage remains unchanged.")
+        sys.exit("Only function coverage remains unchanged.")
     
+    write_output(comparison_output)
+
     # # if current_stats[0] <= master_stats[0] or current_stats[1] <= master_stats[1]:
     # #        sys.exit("Code coverage decreased or remained the same. Exiting with a non-zero status code.")
     # lines_output, functions_output = compare_coverage(master_stats, current_stats)
