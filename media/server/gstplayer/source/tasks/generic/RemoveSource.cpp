@@ -50,15 +50,7 @@ void print_linked_elements(GstElement* element, int depth = 0) {
                 GstPad* sink_pad = gst_element_get_static_pad(element, "sink");
                 if (sink_pad)
                 {
-                    GstElement* linked_element2 = gst_pad_get_parent_element(sink_pad);
-                    if (linked_element2)
-                    {
-                        RIALTO_SERVER_LOG_WARN("lukewill: linked - %s", GST_OBJECT_NAME(linked_element2));
-                    }
-                    else
-                    {
-                        RIALTO_SERVER_LOG_WARN("lukewill: none element");
-                    }
+                    RIALTO_SERVER_LOG_WARN("lukewill: linked - %s", GST_OBJECT_NAME(sink_pad));
                 }
                 else
                 {
