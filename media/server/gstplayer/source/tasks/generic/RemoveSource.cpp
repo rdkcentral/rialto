@@ -25,16 +25,22 @@ void print_linked_elements(GstPad* elementPad, int depth = 0)
 {
     RIALTO_SERVER_LOG_WARN("lukewill: pad - %s", GST_OBJECT_NAME(elementPad));
     GstElement* linked_element = gst_pad_get_parent_element(elementPad);
+    GstPad* nextPad;
     if (linked_element)
     {
         RIALTO_SERVER_LOG_WARN("lukewill: %*s%s", depth * 2, "", GST_OBJECT_NAME(linked_element));
+        nextPad = gst_element_get_static_pad(linked_element, "src");
         gst_object_unref(linked_element);
     }
+    else
+    {
+        nextPad = elementPad;
+    }
 
-    GstPad* peer_pad = gst_pad_get_peer(elementPad);
+    GstPad* peer_pad = gst_pad_get_peer(nextPad);
     if (peer_pad) 
     {
-        RIALTO_SERVER_LOG_WARN("lukewill: peer pad - %s", GST_OBJECT_NAME(elementPad));
+        RIALTO_SERVER_LOG_WARN("lukewill: peer pad - %s", GST_OBJECT_NAME(peer_pad));
         print_linked_elements(peer_pad, depth + 1);
         gst_object_unref(peer_pad);
     }
