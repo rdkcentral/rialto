@@ -109,7 +109,15 @@ void RemoveSource::execute() const
     RIALTO_SERVER_LOG_WARN("lukewill: pad investigation finish");
     
     GstPad *target = gst_element_get_static_pad(source, "src");
+    gst_pad_set_active(target, FALSE);
+    gst_pad_unlink(target, gst_pad_get_peer(target));
     gboolean result = gst_element_remove_pad(source, target);
+    gst_object_unref(target);
     RIALTO_SERVER_LOG_WARN("lukewill: removed pad %u", result);
+
+    gst_element_no_more_pads(source);
+
+    RIALTO_SERVER_LOG_WARN("lukewill: no more pads");
+    m_context.audioNeedData = false;
 }
 } // namespace firebolt::rialto::server::tasks::generic
