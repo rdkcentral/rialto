@@ -20,6 +20,24 @@
 #include "tasks/generic/RemoveSource.h"
 #include "RialtoServerLogging.h"
 
+namespace{
+    void print_bin_names(GstElement* element) {
+    if (GST_IS_BIN(element)) {
+        RIALTO_SERVER_LOG_WARN("lukewill: Bin: %s", GST_OBJECT_NAME(element));
+        
+        // Iterate through the elements in the bin
+        GstIterator* iter = gst_bin_iterate_elements(GST_BIN(element));
+        GValue value = { 0, };
+        GstElement* bin_element;
+        while (gst_iterator_next(iter, &value) == GST_ITERATOR_OK) {
+            bin_element = GST_ELEMENT(g_value_dup_object(&value));
+            print_bin_names(bin_element);
+            g_value_reset (&value);
+        }
+        gst_iterator_free(iter);
+    }
+}
+}
 namespace firebolt::rialto::server::tasks::generic
 {
 RemoveSource::RemoveSource(GenericPlayerContext &context, IGstGenericPlayerClient *client,
@@ -108,6 +126,8 @@ void RemoveSource::execute() const
     gst_iterator_free (iterator);
     RIALTO_SERVER_LOG_WARN("lukewill: pad investigation finish");
     
+    print_bin_names(source);
+
     GstPad *target = gst_element_get_static_pad(source, "src");
     gst_pad_set_active(target, FALSE);
     gst_pad_unlink(target, gst_pad_get_peer(target));
@@ -118,6 +138,5 @@ void RemoveSource::execute() const
     gst_element_no_more_pads(source);
 
     RIALTO_SERVER_LOG_WARN("lukewill: no more pads");
-    m_context.audioNeedData = false;
 }
 } // namespace firebolt::rialto::server::tasks::generic
