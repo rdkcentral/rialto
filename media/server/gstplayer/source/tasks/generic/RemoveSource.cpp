@@ -21,67 +21,23 @@
 #include "RialtoServerLogging.h"
 
 namespace{
-void print_linked_elements(GstElement* element, int depth = 0) {
-    gchar* element_name = GST_OBJECT_NAME(element);
-    RIALTO_SERVER_LOG_WARN("lukewill: %*s%s", depth * 2, "", element_name);
-
-    // Iterate over all source pads of the element
-    GstIterator* iter = gst_element_iterate_src_pads (element);
-    GValue value = { 0, };
-    GstPad* pad = nullptr;
-    while (gst_iterator_next(iter, &value) == GST_ITERATOR_OK) {
-        // Get the peer pad and the linked element
-        pad = GST_PAD(g_value_dup_object(&value));
-        GstPad* peer_pad = gst_pad_get_peer(pad);
-        RIALTO_SERVER_LOG_WARN("lukewill: pad - %s", GST_OBJECT_NAME(peer_pad));
-
-        if (peer_pad) {
-            GstElement* linked_element = gst_pad_get_parent_element(peer_pad);
-            gst_object_unref(peer_pad);
-
-            if (linked_element)
-            {
-                RIALTO_SERVER_LOG_WARN("lukewill: linked - %s", GST_OBJECT_NAME(linked_element));
-
-                // Recursively print linked elements
-                print_linked_elements(linked_element, depth + 1);
-            }
-            else
-            {
-                GstPad* sink_pad = gst_element_get_static_pad(element, "sink");
-                if (sink_pad)
-                {
-                    GstPad* peer_pad2 = gst_pad_get_peer(sink_pad);
-                    if (peer_pad2)
-                    {
-                        GstElement* linked_element2 = gst_pad_get_parent_element(peer_pad2);
-                        if (linked_element2)
-                        {
-                            RIALTO_SERVER_LOG_WARN("lukewill: linked - %s", GST_OBJECT_NAME(linked_element2));
-                            //print_linked_elements(linked_element2);
-                        }
-                        else
-                        {
-                            RIALTO_SERVER_LOG_WARN("lukewill: none linked");
-                        }
-                    }
-                    else
-                    {
-                        RIALTO_SERVER_LOG_WARN("lukewill: none peer");
-                    }
-                }
-                else
-                {
-                    RIALTO_SERVER_LOG_WARN("lukewill: none sink");
-                }
-            }
-
-            // Clean up the linked element
-            gst_object_unref(linked_element);
-        }
-        g_value_reset (&value);
+void print_linked_elements(GstPad* elementPad, int depth = 0) 
+{
+    RIALTO_SERVER_LOG_WARN("lukewill: pad - %s", GST_OBJECT_NAME(elementPad));
+    GstElement* linked_element = gst_pad_get_parent_element(elementPad);
+    if (linked_element)
+    {
+        RIALTO_SERVER_LOG_WARN("lukewill: %*s%s", depth * 2, "", GST_OBJECT_NAME(linked_element));
+        gst_object_unref(linked_element);
     }
-    gst_iterator_free(iter);
+
+    GstPad* peer_pad = gst_pad_get_peer(elementPad);
+    if (peer_pad) 
+    {
+        RIALTO_SERVER_LOG_WARN("lukewill: peer pad - %s", GST_OBJECT_NAME(elementPad));
+        print_linked_elements(peer_pad, depth + 1);
+        gst_object_unref(peer_pad);
+    }
 }
 }
 namespace firebolt::rialto::server::tasks::generic
@@ -172,7 +128,7 @@ void RemoveSource::execute() const
     gst_iterator_free (iterator);
     RIALTO_SERVER_LOG_WARN("lukewill: pad investigation finish");
     
-    print_linked_elements(source);
+    print_linked_elements(gst_element_get_static_pad(source, "src"));
 
     GstPad *target = gst_element_get_static_pad(source, "src");
     gst_pad_set_active(target, FALSE);
