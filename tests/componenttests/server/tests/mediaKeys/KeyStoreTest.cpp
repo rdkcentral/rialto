@@ -136,9 +136,12 @@ void KeyStoreTest::deleteKeyStoreRequest()
  *  Components: MediaKeys
  *
  * Test Initialize:
- *  Create a server that handles Control IPC requests.
- *  Initalise the control state to running for this test application.
- *  Initalise MediaKeys object ready for decryption.
+ *   RialtoServerComponentTest::RialtoServerComponentTest() will set up wrappers and
+ *      starts rialtoServer running in its own thread
+ *   send a CreateMediaKeys message to rialtoServer
+ *   expect a "createSession" call (to OCDM mock)
+ *   send a CreateKeySession message to rialtoServer
+ *
  *
  * Test Steps:
  *  Step 1: Get the key store
@@ -158,7 +161,6 @@ void KeyStoreTest::deleteKeyStoreRequest()
  *   Api call returns with failure.
  *
  * Test Teardown:
- *  Terminate MediaKeys.
  *  Server is terminated.
  *
  * Expected Results:

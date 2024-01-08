@@ -143,7 +143,8 @@ void MediaKeysTest::shouldFailToCreateKeySessionWhenMksIdIsWrong()
  *
  * Test Initialize:
  *   RialtoServerComponentTest::RialtoServerComponentTest() will set up wrappers and
- *      starts the application server running in its own thread
+ *      starts rialtoServer running in its own thread
+ *   send a createMediaKeys message to rialtoServer
  *
  *
  * Test Steps:
@@ -187,7 +188,10 @@ TEST_F(MediaKeysTest, shouldFailToCreateKeySessionWhenMksIdIsWrong)
  *
  * Test Initialize:
  *   RialtoServerComponentTest::RialtoServerComponentTest() will set up wrappers and
- *      starts the application server running in its own thread
+ *      starts rialtoServer running in its own thread
+ *   send a CreateMediaKeys message to rialtoServer
+ *   expect a "createSession" call (to OCDM mock)
+ *   send a CreateKeySession message to rialtoServer
  *
  *
  * Test Steps:
@@ -242,7 +246,10 @@ TEST_F(MediaKeysTest, shouldGenerate)
  *
  * Test Initialize:
  *   RialtoServerComponentTest::RialtoServerComponentTest() will set up wrappers and
- *      starts the application server running in its own thread
+ *      starts rialtoServer running in its own thread
+ *   send a CreateMediaKeys message to rialtoServer
+ *   expect a "createSession" call (to OCDM mock)
+ *   send a CreateKeySession message to rialtoServer
  *
  *
  * Test Steps:

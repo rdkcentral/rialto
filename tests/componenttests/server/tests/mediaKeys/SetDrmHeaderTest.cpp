@@ -79,10 +79,12 @@ void SetDrmHeaderTest::setDrmHeader(const std::vector<unsigned char> &kKeyId)
  *  Components: MediaKeys
  *
  * Test Initialize:
- *  Create a server that handles Control IPC requests.
- *  Initalise the control state to running for this test application.
- *  Create a MediaKeys object.
- *  Create a MediaKeySession.
+ *   RialtoServerComponentTest::RialtoServerComponentTest() will set up wrappers and
+ *      starts rialtoServer running in its own thread
+ *   send a CreateMediaKeys message to rialtoServer
+ *   expect a "createSession" call (to OCDM mock)
+ *   send a CreateKeySession message to rialtoServer
+ *
  *
  * Test Steps:
  *  Step 1: Set the drm header
@@ -96,8 +98,6 @@ void SetDrmHeaderTest::setDrmHeader(const std::vector<unsigned char> &kKeyId)
  *   Api call returns with success.
  *
  * Test Teardown:
- *  Close session.
- *  Destroy MediaKeys.
  *  Server is terminated.
  *
  * Expected Results:

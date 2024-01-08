@@ -113,10 +113,11 @@ void GetSessionInfoTest::getCdmKeySessionId()
  *  Components: MediaKeys
  *
  * Test Initialize:
- *  Create a server that handles Control IPC requests.
- *  Initalise the control state to running for this test application.
- *  Create a MediaKeys object.
- *  Create a MediaKeySession.
+ *   RialtoServerComponentTest::RialtoServerComponentTest() will set up wrappers and
+ *      starts rialtoServer running in its own thread
+ *   send a CreateMediaKeys message to rialtoServer
+ *   expect a "createSession" call (to OCDM mock)
+ *   send a CreateKeySession message to rialtoServer
  *
  * Test Steps:
  *  Step 1: Get the cdm key session id
@@ -130,8 +131,6 @@ void GetSessionInfoTest::getCdmKeySessionId()
  *   Check error code.
  *
  * Test Teardown:
- *  Close session.
- *  Destroy MediaKeys.
  *  Server is terminated.
  *
  * Expected Results:

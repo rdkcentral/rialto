@@ -129,37 +129,29 @@ void SessionReadyForDecryptionTest::destroyMediaKeysRequest()
  *  Components: MediaKeys
  *
  * Test Initialize:
- *  Create a server that handles Control IPC requests.
- *  Initalise the control state to running for this test application.
+ *   RialtoServerComponentTest::RialtoServerComponentTest() will set up wrappers and
+ *      starts rialtoServer running in its own thread
+ *   send a CreateMediaKeys message to rialtoServer
+ *   expect a "createSession" call (to OCDM mock)
+ *   send a CreateKeySession message to rialtoServer
  *
- * Test Steps:
- *  Step 1: Create a new widevine media keys object
- *   Create an instance of MediaKeys with widevine key system.
- *   Expect that a create media keys is called on the server.
- *   Check that the object returned is valid.
- *
- *  Step 2: Create new key session
- *   Create temporary key session.
- *   Expect that create key session is propagated to the server.
- *   Check that a valid key id is returned.
- *
- *  Step 3: Generate license request
+ *  Step 1: Generate license request
  *   Server notifies the client of license request.
  *   Expect that the license request notification is propagated to the client.
  *
- *  Step 4: Update session
+ *  Step 2: Update session
  *   updateSession with a key.
  *   Expect that updateSession is propagated to the server.
  *   Api call returns with success.
  *   Server notifys the client of key statuses changed.
  *   Expect that the key statuses changed notification is propagated to the client.
  *
- *  Step 5: Close session
+ *  Step 3: Close session
  *   closeSession.
  *   Expect that closeSession is propagated to the server.
  *   Api call returns with success.
  *
- *  Step 6: Destroy media keys
+ *  Step 4: Destroy media keys
  *   Destroy instance of MediaKeys.
  *   Expect that media keys is destroyed on the server.
  *
@@ -174,26 +166,23 @@ void SessionReadyForDecryptionTest::destroyMediaKeysRequest()
  */
 TEST_F(SessionReadyForDecryptionTest, shouldUpdateWidevine)
 {
-    // Step 1: Create a new widevine media keys object
     createMediaKeysWidevine();
     ocdmSessionWillBeCreated();
-
-    // Step 2: Create new key session
     createKeySession();
 
-    // Step 3: Generate license request
+    // Step 1: Generate license request
     licenseRenew();
 
-    // Step 4: Update session
+    // Step 2: Update session
     willUpdateSessionWidevine();
     updateSessionWidevine();
 
-    // Step 5: Close session
+    // Step 3: Close session
     willTeardown();
     willDestruct();
     closeKeySessionWidevine();
 
-    // Step 6: Destroy media keys
+    // Step 4: Destroy media keys
     destroyMediaKeysRequest();
 }
 
@@ -213,37 +202,31 @@ TEST_F(SessionReadyForDecryptionTest, shouldUpdateWidevine)
  *  Components: MediaKeys
  *
  * Test Initialize:
- *  Create a server that handles Control IPC requests.
- *  Initalise the control state to running for this test application.
+ *   RialtoServerComponentTest::RialtoServerComponentTest() will set up wrappers and
+ *      starts rialtoServer running in its own thread
+ *   send a CreateMediaKeys message to rialtoServer
+ *   expect a "createSession" call (to OCDM mock)
+ *   send a CreateKeySession message to rialtoServer
+ *
  *
  * Test Steps:
- *  Step 1: Create a new playready media keys object
- *   Create an instance of MediaKeys with widevine key system.
- *   Expect that a create media keys is called on the server.
- *   Check that the object returned is valid.
- *
- *  Step 2: Create new key session
- *   Create temporary key session.
- *   Expect that create key session is processed by the server.
- *   Check that a valid key id is returned.
- *
- *  Step 3: Generate license request
+ *  Step 1: Generate license request
  *   Expect that the license request notification is processed by the client.
  *   Api call returns with success.
  *
- *  Step 4: Update session
+ *  Step 2: Update session
  *   updateSession with a key.
  *   Expect that updateSession is processed by the server.
  *   Api call returns with success.
  *   Server notifys the client of key statuses changed.
  *   Expect that the key statuses changed notification is processed by the client.
  *
- *  Step 5: Close session
+ *  Step 3: Close session
  *   closeSession.
  *   Expect that closeSession is processed by the server.
  *   Api call returns with success.
  *
- *  Step 6: Destroy media keys
+ *  Step 4: Destroy media keys
  *   Destroy instance of MediaKeys.
  *   Expect that media keys is destroyed on the server.
  *
@@ -258,26 +241,23 @@ TEST_F(SessionReadyForDecryptionTest, shouldUpdateWidevine)
  */
 TEST_F(SessionReadyForDecryptionTest, shouldUpdatNetflix)
 {
-    // Step 1: Create a new playready media keys object
     createMediaKeysNetflix();
     ocdmSessionWillBeCreated();
-
-    // Step 2: Create new key session
     createKeySession();
 
-    // Step 3: Generate license request
+    // Step 1: Generate license request
     licenseRenew();
 
-    // Step 4: Update session
+    // Step 2: Update session
     willUpdateSessionNetflix();
     updateSessionNetflix();
 
-    // Step 5: Close session
+    // Step 3: Close session
     willDestruct();
     willCloseKeySessionNetflix();
     closeKeySessionNetflix();
 
-    // Step 6: Destroy media keys
+    // Step 4: Destroy media keys
     destroyMediaKeysRequest();
 }
 

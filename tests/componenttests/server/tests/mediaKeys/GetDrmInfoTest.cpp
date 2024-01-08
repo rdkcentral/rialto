@@ -113,9 +113,11 @@ void GetDrmInfoTest::getDrmTimeRequest()
  *  Components: MediaKeys
  *
  * Test Initialize:
- *  Create a server that handles Control IPC requests.
- *  Initalise the control state to running for this test application.
- *  Create a MediaKeys object.
+ *   RialtoServerComponentTest::RialtoServerComponentTest() will set up wrappers and
+ *      starts rialtoServer running in its own thread
+ *   send a CreateMediaKeys message to rialtoServer
+ *   expect a "createSession" call (to OCDM mock)
+ *   send a CreateKeySession message to rialtoServer
  *
  * Test Steps:
  *  Step 1: Get the ldl session limit
@@ -129,7 +131,6 @@ void GetDrmInfoTest::getDrmTimeRequest()
  *   Check drm time.
  *
  * Test Teardown:
- *  Destroy MediaKeys.
  *  Server is terminated.
  *
  * Expected Results:

@@ -128,9 +128,12 @@ void KeyApisTest::loadKeySession()
  *  Components: MediaKeys
  *
  * Test Initialize:
- *  Create a server that handles Control IPC requests.
- *  Initalise the control state to running for this test application.
- *  Initalise MediaKeys object ready for decryption.
+ *   RialtoServerComponentTest::RialtoServerComponentTest() will set up wrappers and
+ *      starts rialtoServer running in its own thread
+ *   send a CreateMediaKeys message to rialtoServer
+ *   expect a "createSession" call (to OCDM mock)
+ *   send a CreateKeySession message to rialtoServer
+ *
  *
  * Test Steps:
  *  Step 1: Load session
@@ -154,7 +157,6 @@ void KeyApisTest::loadKeySession()
  *   Api call returns with success.
  *
  * Test Teardown:
- *  Terminate MediaKeys.
  *  Server is terminated.
  *
  * Expected Results:
