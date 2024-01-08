@@ -45,12 +45,15 @@ void print_linked_elements(GstElement* element, int depth = 0) {
             gst_object_unref(peer_pad);
 
             RIALTO_SERVER_LOG_WARN("lukewill:");
-            // Recursively print linked elements
-            print_linked_elements(linked_element, depth + 1);
+            if (linked_element)
+            {
+                // Recursively print linked elements
+                print_linked_elements(linked_element, depth + 1);
 
-            RIALTO_SERVER_LOG_WARN("lukewill:");
-            // Clean up the linked element
-            gst_object_unref(linked_element);
+                RIALTO_SERVER_LOG_WARN("lukewill:");
+                // Clean up the linked element
+                gst_object_unref(linked_element);
+            }
             RIALTO_SERVER_LOG_WARN("lukewill:");
         }
         g_value_reset (&value);
