@@ -33,7 +33,7 @@ void print_linked_elements(GstElement* element, int depth = 0) {
         // Get the peer pad and the linked element
         pad = GST_PAD(g_value_dup_object(&value));
         GstPad* peer_pad = gst_pad_get_peer(pad);
-        RIALTO_SERVER_LOG_WARN("lukewill: pad - %s", GST_OBJECT_NAME(linked_element));
+        RIALTO_SERVER_LOG_WARN("lukewill: pad - %s", GST_OBJECT_NAME(peer_pad));
 
         if (peer_pad) {
             GstElement* linked_element = gst_pad_get_parent_element(peer_pad);
