@@ -38,10 +38,12 @@ void print_linked_elements(GstElement* element, int depth = 0) {
             GstElement* linked_element = gst_pad_get_parent_element(peer_pad);
             gst_object_unref(peer_pad);
 
-            if (GST_IS_BIN(linked_element))
+            if (linked_element)
             {
+                RIALTO_SERVER_LOG_WARN("lukewill: linked - %s", GST_OBJECT_NAME(linked_element));
+
                 // Recursively print linked elements
-                print_linked_elements(linked_element, depth + 1);
+                //print_linked_elements(linked_element, depth + 1);
             }
 
             // Clean up the linked element
