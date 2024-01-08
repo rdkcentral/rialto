@@ -34,7 +34,17 @@ void print_linked_elements(GstPad* elementPad, int depth = 0)
     }
     else
     {
-        nextPad = elementPad;
+        const gchar* peer_pad_name = GST_OBJECT_NAME(elementPad);
+        RIALTO_SERVER_LOG_WARN("lukewill: internal_pad - %s",peer_pad_name);
+        if (g_str_has_prefix(peer_pad_name, "proxy")) 
+        {
+            nextPad = GST_PAD(gst_proxy_pad_get_internal(GST_PROXY_PAD(elementPad)));
+            RIALTO_SERVER_LOG_WARN("lukewill: internal_pad - %s", GST_OBJECT_NAME(nextPad));
+        }
+        else
+        {
+            return;
+        }
     }
 
     GstPad* peer_pad = gst_pad_get_peer(nextPad);
