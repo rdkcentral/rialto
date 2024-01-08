@@ -21,21 +21,32 @@
 #include "RialtoServerLogging.h"
 
 namespace{
-    void print_bin_names(GstElement* element) {
-    if (GST_IS_BIN(element)) {
-        RIALTO_SERVER_LOG_WARN("lukewill: Bin: %s", GST_OBJECT_NAME(element));
-        
-        // Iterate through the elements in the bin
-        GstIterator* iter = gst_bin_iterate_elements(GST_BIN(element));
-        GValue value = { 0, };
-        GstElement* bin_element;
-        while (gst_iterator_next(iter, &value) == GST_ITERATOR_OK) {
-            bin_element = GST_ELEMENT(g_value_dup_object(&value));
-            print_bin_names(bin_element);
-            g_value_reset (&value);
+void print_linked_elements(GstElement* element, int depth = 0) {
+    gchar* element_name = GST_OBJECT_NAME(element);
+    RIALTO_SERVER_LOG_WARN("lukewill: %*s%s", depth * 2, "", element_name);
+
+    // Iterate over all source pads of the element
+    GstIterator* iter = gst_element_iterate_src_pads(element);
+    GValue value = { 0, };
+    GstPad* pad = nullptr;
+    while (gst_iterator_next(iter, &value) == GST_ITERATOR_OK) {
+        // Get the peer pad and the linked element
+        pad = GST_PAD(g_value_dup_object(&value));
+        GstPad* peer_pad = gst_pad_get_peer(pad);
+
+        if (peer_pad) {
+            GstElement* linked_element = gst_pad_get_parent_element(peer_pad);
+            gst_object_unref(peer_pad);
+
+            // Recursively print linked elements
+            print_linked_elements(linked_element, depth + 1);
+
+            // Clean up the linked element
+            gst_object_unref(linked_element);
         }
-        gst_iterator_free(iter);
+        g_value_reset (&value);
     }
+    gst_iterator_free(iter);
 }
 }
 namespace firebolt::rialto::server::tasks::generic
@@ -126,7 +137,7 @@ void RemoveSource::execute() const
     gst_iterator_free (iterator);
     RIALTO_SERVER_LOG_WARN("lukewill: pad investigation finish");
     
-    print_bin_names(source);
+    print_linked_elements(source);
 
     GstPad *target = gst_element_get_static_pad(source, "src");
     gst_pad_set_active(target, FALSE);
