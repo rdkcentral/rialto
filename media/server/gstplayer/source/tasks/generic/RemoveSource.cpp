@@ -26,7 +26,7 @@ void print_linked_elements(GstElement* element, int depth = 0) {
     RIALTO_SERVER_LOG_WARN("lukewill: %*s%s", depth * 2, "", element_name);
 
     // Iterate over all source pads of the element
-    GstIterator* iter = gst_element_iterate_pads (element);
+    GstIterator* iter = gst_element_iterate_src_pads (element);
     GValue value = { 0, };
     GstPad* pad = nullptr;
     while (gst_iterator_next(iter, &value) == GST_ITERATOR_OK) {
@@ -43,7 +43,27 @@ void print_linked_elements(GstElement* element, int depth = 0) {
                 RIALTO_SERVER_LOG_WARN("lukewill: linked - %s", GST_OBJECT_NAME(linked_element));
 
                 // Recursively print linked elements
-                //print_linked_elements(linked_element, depth + 1);
+                print_linked_elements(linked_element, depth + 1);
+            }
+            else
+            {
+                GstPad* sink_pad = gst_element_get_static_pad(element, "sink");
+                if (sink_pad)
+                {
+                    GstElement* linked_element2 = gst_pad_get_parent_element(sink_pad);
+                    if (linked_element2)
+                    {
+                        RIALTO_SERVER_LOG_WARN("lukewill: linked - %s", GST_OBJECT_NAME(linked_element2));
+                    }
+                    else
+                    {
+                        RIALTO_SERVER_LOG_WARN("lukewill: none element");
+                    }
+                }
+                else
+                {
+                    RIALTO_SERVER_LOG_WARN("lukewill: none linked");
+                }
             }
 
             // Clean up the linked element
