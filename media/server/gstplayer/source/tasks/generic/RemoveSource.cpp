@@ -27,7 +27,7 @@ void print_linked_elements(GstElement* element, int depth = 0) {
 
     // Iterate over all source pads of the element
     RIALTO_SERVER_LOG_WARN("lukewill:");
-    GstIterator* iter = gst_element_iterate_src_pads(element);
+    GstIterator* iter = gst_element_iterate_pads (element);
     RIALTO_SERVER_LOG_WARN("lukewill:");
     GValue value = { 0, };
     GstPad* pad = nullptr;
