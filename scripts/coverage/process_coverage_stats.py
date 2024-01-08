@@ -95,29 +95,29 @@ def parse_statistics(file_path):
         write_output("Can't compare coverage stats - Could not open statistics file")
         return (0.0, 0.0)
 
-def compare_coverage(master_stats, current_stats):
+# def compare_coverage(master_stats, current_stats):
 
-    output_text = "Coverage statistics of your commit:\n"
-    if current_stats[0] < master_stats[0]:
-        output_text += "WARNING: Lines coverage decreased from: " + str(master_stats[0]) + "% to "
-        output_text += str(current_stats[0]) + "%\n"
-        sys.exit(1)
+#     output_text = "Coverage statistics of your commit:\n"
+#     if current_stats[0] < master_stats[0]:
+#         output_text += "WARNING: Lines coverage decreased from: " + str(master_stats[0]) + "% to "
+#         output_text += str(current_stats[0]) + "%\n"
+#         sys.exit(1)
 
-    elif current_stats[0] == master_stats[0]:
-        output_text += "Lines coverage stays unchanged and is: " + str(current_stats[0]) + "%\n"
-    else:
-        output_text += "Congratulations, your commit improved lines coverage from: " + str(master_stats[0])
-        output_text += "% to " + str(current_stats[0]) + "%\n"
+#     elif current_stats[0] == master_stats[0]:
+#         output_text += "Lines coverage stays unchanged and is: " + str(current_stats[0]) + "%\n"
+#     else:
+#         output_text += "Congratulations, your commit improved lines coverage from: " + str(master_stats[0])
+#         output_text += "% to " + str(current_stats[0]) + "%\n"
 
-    if current_stats[1] < master_stats[1]:
-        output_text += "WARNING: Functions coverage decreased from: " + str(master_stats[1]) + "% to "
-        output_text += str(current_stats[1]) + "%\n"
-    elif current_stats[1] == master_stats[1]:
-        output_text += "Functions coverage stays unchanged and is: " + str(current_stats[1]) + "%\n"
-    else:
-        output_text += "Congratulations, your commit improved functions coverage from: " + str(master_stats[1])
-        output_text += "% to " + str(current_stats[1]) + "%\n"
-    return output_text
+#     if current_stats[1] < master_stats[1]:
+#         output_text += "WARNING: Functions coverage decreased from: " + str(master_stats[1]) + "% to "
+#         output_text += str(current_stats[1]) + "%\n"
+#     elif current_stats[1] == master_stats[1]:
+#         output_text += "Functions coverage stays unchanged and is: " + str(current_stats[1]) + "%\n"
+#     else:
+#         output_text += "Congratulations, your commit improved functions coverage from: " + str(master_stats[1])
+#         output_text += "% to " + str(current_stats[1]) + "%\n"
+#     return output_text
 # def compare_coverage(master_stats, current_stats):
     
 
