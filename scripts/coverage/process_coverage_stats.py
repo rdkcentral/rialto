@@ -51,8 +51,8 @@ def compare_coverage(master_stats, current_stats):
         output_text += "Line coverage and Function coverage are both unchanged: \n" 
         output_text += "Line coverage remains unchanged and is: " + str(current_stats[0]) + "%\n"
         output_text += "Function coverage remains unchanged and is " + str(current_stats[1]) + "%\n"
-        write_output(output_text)
-        sys.exit("Failing as they both remained unchanged")
+        # write_output(output_text)
+        sys.exit(output_text)
     
     if current_stats[0] < master_stats[0]:
         output_text += "WARNING: Lines coverage decreased from: " + str(master_stats[0]) + "% to "
