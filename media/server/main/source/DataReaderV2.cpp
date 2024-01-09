@@ -85,6 +85,7 @@ firebolt::rialto::CodecDataType convertCodecDataType(const firebolt::rialto::Med
 std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSegment>
 createSegment(const firebolt::rialto::MediaSegmentMetadata &metadata, const firebolt::rialto::MediaSourceType &type)
 {
+    RIALTO_SERVER_LOG_ERROR("lukewill: Create segment");
     // Create segment
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSegment> segment;
     if (type == firebolt::rialto::MediaSourceType::AUDIO)
