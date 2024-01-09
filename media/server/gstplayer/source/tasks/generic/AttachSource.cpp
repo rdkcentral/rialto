@@ -254,6 +254,15 @@ void AttachSource::execute() const
         return;
     }
 
+    RIALTO_SERVER_LOG_WARN("lukewill: Reset flags back to normal start");
+    GFlagsClass *flagsClass =
+        static_cast<GFlagsClass *>(g_type_class_ref(g_type_from_name("GstPlayFlags")));
+    GFlagsValue *flagAudio = g_flags_get_value_by_nick (flagsClass, "audio");
+    GFlagsValue *flagVideo = g_flags_get_value_by_nick (flagsClass, "video");
+    GFlagsValue *flagNativeVideo = g_flags_get_value_by_nick (flagsClass, "native-video");
+    g_object_set(m_context.pipeline, "flags", flagVideo->value | flagNativeVideo->value | flagAudio->value, nullptr);
+    RIALTO_SERVER_LOG_WARN("lukewill: Reset flags back to normal stop");
+
     GstCaps *caps = createCapsFromMediaSource();
     gchar *capsStr = m_gstWrapper->gstCapsToString(caps);
     std::string strCaps = capsStr;
