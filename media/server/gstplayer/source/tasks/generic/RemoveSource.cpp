@@ -155,13 +155,13 @@ void RemoveSource::execute() const
     //print_linked_elements(gst_element_get_static_pad(source, "src"));
 
     // Remove src pad
-    GstPad *target = gst_element_get_static_pad(source, "src");
-    gst_pad_set_active(target, FALSE);
-    gst_pad_unlink(target, gst_pad_get_peer(target));
-    gboolean result = gst_element_remove_pad(source, target);
-    gst_object_unref(target);
-    RIALTO_SERVER_LOG_WARN("lukewill: removed pad %u", result);
-    m_context.streamInfo.erase(m_type);
+    //GstPad *target = gst_element_get_static_pad(source, "src");
+    //gst_pad_set_active(target, FALSE);
+    //gst_pad_unlink(target, gst_pad_get_peer(target));
+    //gboolean result = gst_element_remove_pad(source, target);
+    //gst_object_unref(target);
+    //RIALTO_SERVER_LOG_WARN("lukewill: removed pad %u", result);
+    //m_context.streamInfo.erase(m_type);
 
     // Turn audio off
     GFlagsClass *flagsClass =
