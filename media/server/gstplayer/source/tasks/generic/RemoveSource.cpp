@@ -161,6 +161,7 @@ void RemoveSource::execute() const
     gboolean result = gst_element_remove_pad(source, target);
     gst_object_unref(target);
     RIALTO_SERVER_LOG_WARN("lukewill: removed pad %u", result);
+    m_context.streamInfo.erase(m_type);
 
     // Turn audio off
     GFlagsClass *flagsClass =
