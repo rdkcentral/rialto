@@ -25,7 +25,7 @@ void print_linked_elements(GstPad* elementPad, int depth = 0)
 {
     RIALTO_SERVER_LOG_WARN("lukewill: pad - %s", GST_OBJECT_NAME(elementPad));
     GstElement* linked_element = gst_pad_get_parent_element(elementPad);
-    GstPad* nextPad;
+    GstPad* nextPad = nullptr;
     if (linked_element)
     {
         RIALTO_SERVER_LOG_WARN("lukewill: %*s%s", depth * 2, "", GST_OBJECT_NAME(linked_element));
@@ -88,6 +88,7 @@ void print_linked_elements(GstPad* elementPad, int depth = 0)
 
     if (linked_element && nextPad && peer_pad)
     {
+        RIALTO_SERVER_LOG_WARN("lukewill: unlink linked_element %s, nextPad %s, peer_pad %s", GST_OBJECT_NAME(elementPad), GST_OBJECT_NAME(nextPad), GST_OBJECT_NAME(peer_pad));
         gst_pad_unlink(nextPad, peer_pad);
         gboolean result = gst_element_remove_pad(linked_element, nextPad);
         RIALTO_SERVER_LOG_WARN("lukewill: %u", result);
