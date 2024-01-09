@@ -38,7 +38,6 @@ void print_linked_elements(GstPad* elementPad, int depth = 0)
                 nextPad = gst_element_get_static_pad(linked_element, "src_0");
             }
         }
-        gst_object_unref(linked_element);
     }
     else
     {
@@ -67,7 +66,7 @@ void print_linked_elements(GstPad* elementPad, int depth = 0)
         peer_pad = gst_pad_get_peer(nextPad);
     }
 
-    if(!peer_pad) 
+    if(nextPad && !peer_pad) 
     {
         GstPad* proxyPad1 = GST_PAD(gst_proxy_pad_get_internal(GST_PROXY_PAD(elementPad)));
         RIALTO_SERVER_LOG_WARN("lukewill: proxyPad1 - %s", GST_OBJECT_NAME(proxyPad1));
@@ -88,11 +87,12 @@ void print_linked_elements(GstPad* elementPad, int depth = 0)
 
     if (linked_element && nextPad && peer_pad)
     {
-        RIALTO_SERVER_LOG_WARN("lukewill: unlink linked_element %s, nextPad %s, peer_pad %s", GST_OBJECT_NAME(elementPad), GST_OBJECT_NAME(nextPad), GST_OBJECT_NAME(peer_pad));
+        RIALTO_SERVER_LOG_WARN("lukewill: unlink linked_element %s, nextPad %s, peer_pad %s", GST_OBJECT_NAME(linked_element), GST_OBJECT_NAME(nextPad), GST_OBJECT_NAME(peer_pad));
         gst_pad_unlink(nextPad, peer_pad);
         gboolean result = gst_element_remove_pad(linked_element, nextPad);
         RIALTO_SERVER_LOG_WARN("lukewill: %u", result);
     }
+    gst_object_unref(linked_element);
     gst_object_unref(nextPad);
     gst_object_unref(peer_pad);
 }
