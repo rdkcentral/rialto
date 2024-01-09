@@ -150,54 +150,24 @@ void RemoveSource::execute() const
         RIALTO_SERVER_LOG_WARN("failed to send flush-stop event");
     }
 
-    RIALTO_SERVER_LOG_WARN("lukewill: pad investigation start");
-    GstIterator * iterator = gst_element_iterate_pads(source);
-    gboolean done = FALSE;
-    GValue value = { 0, };
-    GstPad *pad;
-    while (!done) {
-        switch (gst_iterator_next(iterator, &value)) {
-        case GST_ITERATOR_OK:
-        {
-            pad = GST_PAD(g_value_dup_object(&value));
-            gchar* name = gst_pad_get_name(pad);
-            RIALTO_SERVER_LOG_WARN("lukewill: found pad %s", name);
-            g_free(name);
-            g_value_reset (&value);
-            break;
-        }
-        case GST_ITERATOR_RESYNC:
-        {
-            gst_iterator_resync (iterator);
-            break;
-        }
-        case GST_ITERATOR_ERROR:
-        {
-            done = TRUE;
-            break;
-        }
-        case GST_ITERATOR_DONE:
-        {
-            done = TRUE;
-            break;
-        }
-        default:
-            break;
-        }
-    }
-    gst_iterator_free (iterator);
-    RIALTO_SERVER_LOG_WARN("lukewill: pad investigation finish");
+    RIALTO_SERVER_LOG_WARN("lukewill: pad investigation");
     
-    print_linked_elements(gst_element_get_static_pad(source, "src"));
+    //print_linked_elements(gst_element_get_static_pad(source, "src"));
 
+    // Remove src pad
     GstPad *target = gst_element_get_static_pad(source, "src");
-    gst_pad_set_active(target, FALSE);
-    gst_pad_unlink(target, gst_pad_get_peer(target));
     gboolean result = gst_element_remove_pad(source, target);
     gst_object_unref(target);
     RIALTO_SERVER_LOG_WARN("lukewill: removed pad %u", result);
 
-    gst_element_no_more_pads(source);
+    // Turn audio off
+    GFlagsClass *flagsClass =
+        static_cast<GFlagsClass *>(g_type_class_ref(g_type_from_name("GstPlayFlags")));
+    GFlagsValue *flagVideo = g_flags_get_value_by_nick (flagsClass, "video");
+    GFlagsValue *flagNativeVideo = g_flags_get_value_by_nick (flagsClass, "native-video");
+    g_object_set(m_context.pipeline, "flags", flagVideo->value | flagNativeVideo->value , nullptr);
+    
+    //gst_element_no_more_pads(source);
 
     RIALTO_SERVER_LOG_WARN("lukewill: no more pads");
 }
