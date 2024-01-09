@@ -22,6 +22,7 @@
 #include "DataReaderV2.h"
 #include "ShmCommon.h"
 #include "ShmUtils.h"
+#include "RialtoServerLogging.h"
 
 namespace
 {
@@ -51,6 +52,7 @@ std::shared_ptr<IDataReader> DataReaderFactory::createDataReader(const MediaSour
         std::uint32_t v2DataOffset = dataOffset + getMaxMetadataBytes();
         return std::make_shared<DataReaderV2>(mediaSourceType, buffer, v2DataOffset, numFrames);
     }
+    RIALTO_SERVER_LOG_ERROR("lukewill: fail metadata version %u", version);
     return nullptr;
 }
 } // namespace firebolt::rialto::server
