@@ -61,7 +61,7 @@ void print_linked_elements(GstPad* elementPad, int depth = 0)
         }
     }
 
-    GstPad* peer_pad;
+    GstPad* peer_pad = nullptr;
     if (nextPad)
     {
         peer_pad = gst_pad_get_peer(nextPad);
