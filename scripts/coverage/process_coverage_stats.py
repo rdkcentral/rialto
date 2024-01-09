@@ -30,6 +30,10 @@ def main():
     comparison_output = compare_coverage(master_stats, current_stats)
     write_output(comparison_output)
 
+    # Checking that line and function are both unchanged, if so then exit
+    if current_stats[0] == master_stats[0] and current_stats[1] == master_stats[1]:
+        sys.exit("Line coverage and Function coverage are both unchanged")
+        
 def parse_statistics(file_path):
     try:
         file = open(file_path, "r")
@@ -46,13 +50,13 @@ def parse_statistics(file_path):
 
 def compare_coverage(master_stats, current_stats):
     output_text = "Coverage statistics of your commit:\n"
-    # Should check that both line and function are unchanged, and then display it and then fail
-    if current_stats[0] == master_stats[0] and current_stats[1] == master_stats[1]:
-        output_text += "Line coverage and Function coverage are both unchanged: \n" 
-        output_text += "Line coverage remains unchanged and is: " + str(current_stats[0]) + "%\n"
-        output_text += "Function coverage remains unchanged and is " + str(current_stats[1]) + "%\n"
-        # write_output(output_text)
-        sys.exit(output_text)
+    # # Should check that both line and function are unchanged, and then display it and then fail
+    # if current_stats[0] == master_stats[0] and current_stats[1] == master_stats[1]:
+    #     output_text += "Line coverage and Function coverage are both unchanged: \n" 
+    #     output_text += "Line coverage remains unchanged and is: " + str(current_stats[0]) + "%\n"
+    #     output_text += "Function coverage remains unchanged and is " + str(current_stats[1]) + "%\n"
+    #     # write_output(output_text)
+    #     sys.exit(output_text)
     
     if current_stats[0] < master_stats[0]:
         output_text += "WARNING: Lines coverage decreased from: " + str(master_stats[0]) + "% to "
@@ -61,8 +65,8 @@ def compare_coverage(master_stats, current_stats):
     # If onloy line is unchanged
     elif current_stats[0] == master_stats[0]:
         output_text += "Lines coverage stays unchanged and is: " + str(current_stats[0]) + "%\n"
-        write_output(output_text)
-        sys.exit("Line coverage remains unchanged")
+        # write_output(output_text)
+        # sys.exit("Line coverage remains unchanged")
         
     else:
         output_text += "Congratulations, your commit improved lines coverage from: " + str(master_stats[0])
@@ -75,8 +79,8 @@ def compare_coverage(master_stats, current_stats):
     # If only function is unchanged
     elif current_stats[1] == master_stats[1]:
         output_text += "Functions coverage stays unchanged and is: " + str(current_stats[1]) + "%\n"
-        write_output(output_text)
-        sys.exit("Functions coverage remains unchanged")
+        # write_output(output_text)
+        # sys.exit("Functions coverage remains unchanged")
     else:
         output_text += "Congratulations, your commit improved functions coverage from: " + str(master_stats[1])
         output_text += "% to " + str(current_stats[1]) + "%\n"
