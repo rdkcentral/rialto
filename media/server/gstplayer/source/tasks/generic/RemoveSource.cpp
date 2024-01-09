@@ -81,6 +81,7 @@ void print_linked_elements(GstPad* elementPad, int depth = 0)
         print_linked_elements(peer_pad, depth + 1);
     }
 
+    RIALTO_SERVER_LOG_WARN("lukewill:");
     if (linked_element && nextPad && peer_pad)
     {
         RIALTO_SERVER_LOG_WARN("lukewill: unlink linked_element %s, nextPad %s, peer_pad %s", GST_OBJECT_NAME(linked_element), GST_OBJECT_NAME(nextPad), GST_OBJECT_NAME(peer_pad));
@@ -89,12 +90,14 @@ void print_linked_elements(GstPad* elementPad, int depth = 0)
         RIALTO_SERVER_LOG_WARN("lukewill: %u", result);
     }
 
+    RIALTO_SERVER_LOG_WARN("lukewill:");
     if (linked_element)
         gst_object_unref(linked_element);
     if (nextPad)
         gst_object_unref(nextPad);
     if (peer_pad)
         gst_object_unref(peer_pad);
+    RIALTO_SERVER_LOG_WARN("lukewill:");
 }
 }
 namespace firebolt::rialto::server::tasks::generic
