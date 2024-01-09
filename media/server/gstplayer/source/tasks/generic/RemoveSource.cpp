@@ -156,6 +156,8 @@ void RemoveSource::execute() const
 
     // Remove src pad
     GstPad *target = gst_element_get_static_pad(source, "src");
+    gst_pad_set_active(target, FALSE);
+    gst_pad_unlink(target, gst_pad_get_peer(target));
     gboolean result = gst_element_remove_pad(source, target);
     gst_object_unref(target);
     RIALTO_SERVER_LOG_WARN("lukewill: removed pad %u", result);
