@@ -27,7 +27,9 @@ def main():
         sys.exit("Wrong number of script arguments")
     master_stats = parse_statistics(sys.argv[1])
     current_stats = parse_statistics(sys.argv[2])
+    print(f"compare_coverage starting...")
     comparison_output = compare_coverage(master_stats, current_stats)
+    print(f"compare_coverage finishing...")
     write_output(comparison_output)
     print(f"write_output done")
 
