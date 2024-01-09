@@ -88,9 +88,13 @@ void print_linked_elements(GstPad* elementPad, int depth = 0)
         gboolean result = gst_element_remove_pad(linked_element, nextPad);
         RIALTO_SERVER_LOG_WARN("lukewill: %u", result);
     }
-    gst_object_unref(linked_element);
-    gst_object_unref(nextPad);
-    gst_object_unref(peer_pad);
+
+    if (linked_element)
+        gst_object_unref(linked_element);
+    if (nextPad)
+        gst_object_unref(nextPad);
+    if (peer_pad)
+        gst_object_unref(peer_pad);
 }
 }
 namespace firebolt::rialto::server::tasks::generic
