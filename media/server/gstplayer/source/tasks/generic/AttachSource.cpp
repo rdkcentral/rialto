@@ -370,6 +370,8 @@ void AttachSource::switchAudioSource(GstCaps *caps, const std::string &strCaps) 
         RIALTO_SERVER_LOG_WARN("performAudioTrackCodecChannelSwitch failed! Result: %d, retval %d", result, retVal);
     }
 
+    //gst_element_no_more_pads(m_context.streamInfo[m_attachedSource->getType()].appSrc);
+
     m_context.audioNeedData = true;
     m_context.audioSourceRemoved = false;
     m_context.lastAudioSampleTimestamps = currentDispPts;
