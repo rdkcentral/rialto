@@ -21,7 +21,7 @@
 #define ACK_SENDER_TESTS_FIXTURE_H_
 
 #include "AckSender.h"
-#include "IpcClientMock.h"
+#include "ClientMock.h"
 #include "servermanagermodule.pb.h"
 #include <gtest/gtest.h>
 #include <memory>

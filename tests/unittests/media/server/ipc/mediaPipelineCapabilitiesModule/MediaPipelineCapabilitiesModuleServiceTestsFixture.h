@@ -20,9 +20,9 @@
 #ifndef MEDIA_PIPELINE_CAPABILITIES_MODULE_SERVICE_TESTS_FIXTURE_H_
 #define MEDIA_PIPELINE_CAPABILITIES_MODULE_SERVICE_TESTS_FIXTURE_H_
 
+#include "ClientMock.h"
 #include "ClosureMock.h"
 #include "IMediaPipelineCapabilitiesModuleService.h"
-#include "IpcClientMock.h"
 #include "IpcControllerMock.h"
 #include "IpcServerMock.h"
 #include "MediaPipelineServiceMock.h"

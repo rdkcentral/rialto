@@ -113,6 +113,7 @@ target_include_directories(
         $<TARGET_PROPERTY:RialtoPlayerPublicClientMocks,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoCommonMisc,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoCommonMocks,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoUnittestCommonMocks,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoWrappersMocks,INTERFACE_INCLUDE_DIRECTORIES>
 
         # Test Bases

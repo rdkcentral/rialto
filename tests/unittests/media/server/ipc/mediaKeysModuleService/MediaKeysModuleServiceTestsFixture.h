@@ -21,10 +21,10 @@
 #define MEDIA_KEYS_MODULE_SERVICE_TESTS_FIXTURE_H_
 
 #include "CdmServiceMock.h"
+#include "ClientMock.h"
 #include "ClosureMock.h"
 #include "IMediaKeysClient.h"
 #include "IMediaKeysModuleService.h"
-#include "IpcClientMock.h"
 #include "IpcControllerMock.h"
 #include "IpcServerMock.h"
 #include "RpcControllerMock.h"

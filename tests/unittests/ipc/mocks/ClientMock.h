@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_IPC_IPC_CLIENT_MOCK_H_
-#define FIREBOLT_RIALTO_IPC_IPC_CLIENT_MOCK_H_
+#ifndef FIREBOLT_RIALTO_IPC_CLIENT_MOCK_H_
+#define FIREBOLT_RIALTO_IPC_CLIENT_MOCK_H_
 
 #include "IIpcServer.h"
 #include <gmock/gmock.h>
@@ -42,4 +42,4 @@ public:
 };
 } // namespace firebolt::rialto::ipc
 
-#endif // FIREBOLT_RIALTO_IPC_IPC_CLIENT_MOCK_H_
+#endif // FIREBOLT_RIALTO_IPC_CLIENT_MOCK_H_
