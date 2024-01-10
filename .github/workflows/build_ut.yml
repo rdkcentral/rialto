@@ -490,7 +490,7 @@ jobs:
 
   # This job runs the coverage report
   generate-coverage-report:
-    name: Runs the coverage report
+    name: Generates Coverage Report
 
     # Runs on ubuntu
     runs-on: ubuntu-22.04
@@ -651,7 +651,7 @@ jobs:
 
 
   checks-the-cov-report:
-    name: Checks the coverage report
+    name: Checks and Runs the Coverage Report
 
     # Runs on ubuntu
     runs-on: ubuntu-22.04
