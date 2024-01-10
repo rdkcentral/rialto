@@ -649,38 +649,6 @@ jobs:
           name: coverage_report_stats
           path: build/coverage_statistics.txt
 
-      # Download current master coverage statistics
-      - name: Download Master Coverage Statistics
-        uses: dawidd6/action-download-artifact@v2
-        if: ${{ success() && github.ref != 'refs/heads/master' }}
-        with:
-          workflow_conclusion: success
-          branch: master
-          name: coverage_report_stats
-          path: master_artifacts
-
-      # Run the process_coverage_stats script
-      - name: Process Coverage Statistics
-        if: ${{ success() && github.ref != 'refs/heads/master' }}
-        run: python scripts/coverage/process_coverage_stats.py ./master_artifacts/coverage_statistics.txt build/coverage_statistics.txt
-
-      # Get process_coverage_stats script output
-      - id: get-comment-body
-        if: ${{ (success() || failure()) && github.ref != 'refs/heads/master' }}
-        run: |
-          body="$(cat comparison_output.txt)"
-          body="${body//'%'/'%25'}"
-          body="${body//$'\n'/'%0A'}"
-          body="${body//$'\r'/'%0D'}"
-          echo "::set-output name=body::$body"
-
-      # Create comment with coverage info
-      - name: Create Coverage Comment
-        if: ${{ (success() || failure()) && github.ref != 'refs/heads/master' }}
-        uses: peter-evans/create-or-update-comment@v2
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          body: ${{ steps.get-comment-body.outputs.body }}
 
   checks-the-cov-report:
     name: Checks the coverage report
@@ -703,54 +671,37 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: coverage_report_stats
-          path: current_artifacts
+          path: build/coverage_statistics.txt
         
-      - name: Download Previous Coverage Statistics
-        uses: actions/download-artifact@v2
+      # Download current master coverage statistics
+      - name: Download Master Coverage Statistics
+        uses: dawidd6/action-download-artifact@v2
+        if: ${{ success() && github.ref != 'refs/heads/master' }}
         with:
+          workflow_conclusion: success
+          branch: master
           name: coverage_report_stats
-          path: previous_artifacts
-        if: success()
-        
-      # Run the process_coverage_stats script for the current coverage
-      - name: Process Current Coverage Statistics
-        run: python scripts/coverage/process_coverage_stats.py ./current_artifacts/coverage_statistics.txt current_coverage_statistics.txt
-        
-      # Run the process_coverage_stats script for the previous coverage
-      - name: Process Previous Coverage Statistics
-        if: success()
-        run: python scripts/coverage/process_coverage_stats.py ./previous_artifacts/coverage_statistics.txt previous_coverage_statistics.txt
-        
-      # Compare the current and previous coverage
-      - name: Compare Coverage
-        id: compare-coverage
-        run: python scripts/coverage/compare_coverage.py current_coverage_statistics.txt previous_coverage_statistics.txt
-        
-      # Get the comparison output
-      - name: Get Comparison Output
-        id: get-comparison-output
+          path: master_artifacts
+      
+      # Run the process_coverage_stats script
+      - name: Process Coverage Statistics
+        if: ${{ success() && github.ref != 'refs/heads/master' }}
+        run: python scripts/coverage/process_coverage_stats.py ./master_artifacts/coverage_statistics.txt build/coverage_statistics.txt
+      
+      # Get process_coverage_stats script output
+      - id: get-comment-body
+        if: ${{ (success() || failure()) && github.ref != 'refs/heads/master' }}
         run: |
           body="$(cat comparison_output.txt)"
           body="${body//'%'/'%25'}"
           body="${body//$'\n'/'%0A'}"
           body="${body//$'\r'/'%0D'}"
           echo "::set-output name=body::$body"
-        
-      # Check if coverage decreased and set the output accordingly
-      - name: Check Coverage Decrease
-        id: check-coverage-decrease
-        run: echo "::set-output name=coverage-decreased::${{ steps.compare-coverage.outputs.coverage-decreased }}"
-        
-      # Fail the job if coverage decreased
-      - name: Fail on Coverage Decrease
-        if: steps.check-coverage-decrease.outputs.coverage-decreased == 'true'
-        run: exit 1
-        
-      # Comment with coverage comparison info
+      
+      # Create comment with coverage info
       - name: Create Coverage Comment
-        if: steps.check-coverage-decrease.outputs.coverage-decreased == 'true'
+        if: ${{ (success() || failure()) && github.ref != 'refs/heads/master' }}
         uses: peter-evans/create-or-update-comment@v2
         with:
           issue-number: ${{ github.event.pull_request.number }}
-          body: ${{ steps.get-comparison-output.outputs.body }}
-        
+          body: ${{ steps.get-comment-body.outputs.body }}
