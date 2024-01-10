@@ -66,7 +66,7 @@ public:
  *  Step 2: Play
  *   Play the content.
  *   Expect that play propagated to the server.
- *   Server notifys the client that the Playback state has changed to PLAYING.
+ *   Server notifies the client that the Playback state has changed to PLAYING.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 3: Set playback rate to 2.0x in playing state

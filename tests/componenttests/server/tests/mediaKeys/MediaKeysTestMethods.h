@@ -40,7 +40,6 @@ public:
     void createMediaKeysNetflix();
     void createKeySession();
     void ocdmSessionWillBeCreated();
-    void licenseRenew();
 
     void willUpdateSessionNetflix();
     void updateSessionNetflix();
@@ -59,7 +58,6 @@ protected:
     testing::StrictMock<wrappers::OcdmSessionMock> &m_ocdmSessionMock{*m_ocdmSession};
     firebolt::rialto::wrappers::IOcdmSessionClient *m_ocdmSessionClient{0};
 
-    // Used by updateSessionNetflix and willUpdateSessionNetflix...
     const std::vector<unsigned char> m_kUpdateSessionNetflixResponse{5, 6};
 };
 

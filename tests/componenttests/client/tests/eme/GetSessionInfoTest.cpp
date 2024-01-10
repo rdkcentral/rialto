@@ -53,7 +53,7 @@ public:
 };
 
 /*
- * Component Test: Get various infomation stored in the session.
+ * Component Test: Get various information stored in the session.
  * Test Objective:
  *  Test the getLastDrmError & getCdmKeySessionId APIs.
  *
@@ -85,7 +85,7 @@ public:
  *   Api call returns with success.
  *   Check error code.
  *
- * Test Teardown:
+ * Test Tear-down:
  *  Close session.
  *  Destroy MediaKeys.
  *  Server is terminated.

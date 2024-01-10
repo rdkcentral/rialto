@@ -159,7 +159,7 @@ void DrmStoreTest::getDrmStoreHashRequestFails()
  *   Expect that deleteDrmStore is processed by the server.
  *   Api call returns with success.
  *
- * Test Teardown:
+ * Test Tear-down:
  *  Server is terminated.
  *
  * Expected Results:

@@ -110,27 +110,6 @@ void MediaKeysTestMethods::updateSessionNetflix()
                        { EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK); });
 }
 
-void MediaKeysTestMethods::licenseRenew()
-{
-    ExpectMessage<::firebolt::rialto::LicenseRenewalEvent> expectedMessage(m_clientStub);
-
-    const std::string kUrl{"NOT PASSED TO CALLBACK"};
-    const std::vector<unsigned char> kLicenseRenewalMessage{'x', 'u', 'A'};
-
-    m_ocdmSessionClient->onProcessChallenge(kUrl.c_str(), &kLicenseRenewalMessage[0], kLicenseRenewalMessage.size());
-
-    auto message = expectedMessage.getMessage();
-    ASSERT_TRUE(message);
-    ASSERT_EQ(message->media_keys_handle(), m_mediaKeysHandle);
-    ASSERT_EQ(message->key_session_id(), m_mediaKeySessionId);
-    const unsigned int kMax = message->license_renewal_message_size();
-    ASSERT_EQ(kMax, kLicenseRenewalMessage.size());
-    for (unsigned int i = 0; i < kMax; ++i)
-    {
-        ASSERT_EQ(message->license_renewal_message(i), kLicenseRenewalMessage[i]);
-    }
-}
-
 void MediaKeysTestMethods::willTeardown()
 {
     // For teardown...

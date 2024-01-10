@@ -56,20 +56,20 @@ class ApplicationStateChangeTest : public ClientComponentTest
  *   Check that the initial state is UNKNOWN.
  *
  *  Step 3: Change state to INACTIVE
- *   Server notifys the client that the state has changed to INACTIVE.
+ *   Server notifies the client that the state has changed to INACTIVE.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 4: Change state to RUNNING
- *   Server notifys the client that the state has changed to RUNNING.
+ *   Server notifies the client that the state has changed to RUNNING.
  *   Expect that the state change notification is propagated to the client.
  *   Expect that the shared memory region is fetched from the server.
  *
  *  Step 5: Change state to INACTIVE
- *   Server notifys the client that the state has changed to INACTIVE.
+ *   Server notifies the client that the state has changed to INACTIVE.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 6: Disconnect the server
- *   Server notifys the client that it has disconnected.
+ *   Server notifies the client that it has disconnected.
  *   Expect that the state is changed to UNKNOWN in the client.
  *
  * Test Teardown:

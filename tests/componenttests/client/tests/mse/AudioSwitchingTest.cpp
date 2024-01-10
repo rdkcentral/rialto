@@ -83,7 +83,7 @@ public:
  *  Step 7: Play
  *   Play the content.
  *   Expect that play propagated to the server.
- *   Server notifys the client that the Playback state has changed to PLAYING.
+ *   Server notifies the client that the Playback state has changed to PLAYING.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 8: Remove audio source

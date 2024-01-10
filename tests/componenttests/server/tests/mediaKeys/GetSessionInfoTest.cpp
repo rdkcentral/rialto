@@ -99,7 +99,7 @@ void GetSessionInfoTest::getCdmKeySessionId()
 }
 
 /*
- * Component Test: Get various infomation stored in the session.
+ * Component Test: Get various information stored in the session.
  * Test Objective:
  *  Test the getLastDrmError & getCdmKeySessionId APIs.
  *
@@ -130,7 +130,7 @@ void GetSessionInfoTest::getCdmKeySessionId()
  *   Api call returns with success.
  *   Check error code.
  *
- * Test Teardown:
+ * Test Tear-down:
  *  Server is terminated.
  *
  * Expected Results:

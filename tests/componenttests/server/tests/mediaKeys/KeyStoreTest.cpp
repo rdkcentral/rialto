@@ -160,7 +160,7 @@ void KeyStoreTest::deleteKeyStoreRequest()
  *   Expect that getKeyStoreHash is processed by the server.
  *   Api call returns with failure.
  *
- * Test Teardown:
+ * Test Tear-down:
  *  Server is terminated.
  *
  * Expected Results:

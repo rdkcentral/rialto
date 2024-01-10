@@ -97,7 +97,7 @@ void SetDrmHeaderTest::setDrmHeader(const std::vector<unsigned char> &kKeyId)
  *   Expect that setDrmHeader is processed by the server.
  *   Api call returns with success.
  *
- * Test Teardown:
+ * Test Tear-down:
  *  Server is terminated.
  *
  * Expected Results:

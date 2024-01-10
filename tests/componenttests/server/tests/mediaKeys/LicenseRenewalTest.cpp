@@ -38,11 +38,34 @@ public:
     LicenseRenewalTest() {}
     virtual ~LicenseRenewalTest() {}
 
+    void licenseRenew();
+
     void updateAllKeys();
     void updateOneKey();
 
     const std::vector<unsigned char> kOneKeyId{'a', 'z', 'q', 'l', 'D'};
 };
+
+void LicenseRenewalTest::licenseRenew()
+{
+    ExpectMessage<::firebolt::rialto::LicenseRenewalEvent> expectedMessage(m_clientStub);
+
+    const std::string kUrl{"NOT PASSED TO CALLBACK"};
+    const std::vector<unsigned char> kLicenseRenewalMessage{'x', 'u', 'A'};
+
+    m_ocdmSessionClient->onProcessChallenge(kUrl.c_str(), &kLicenseRenewalMessage[0], kLicenseRenewalMessage.size());
+
+    auto message = expectedMessage.getMessage();
+    ASSERT_TRUE(message);
+    ASSERT_EQ(message->media_keys_handle(), m_mediaKeysHandle);
+    ASSERT_EQ(message->key_session_id(), m_mediaKeySessionId);
+    const unsigned int kMax = message->license_renewal_message_size();
+    ASSERT_EQ(kMax, kLicenseRenewalMessage.size());
+    for (unsigned int i = 0; i < kMax; ++i)
+    {
+        ASSERT_EQ(message->license_renewal_message(i), kLicenseRenewalMessage[i]);
+    }
+}
 
 void LicenseRenewalTest::updateAllKeys()
 {
@@ -104,7 +127,7 @@ void LicenseRenewalTest::updateOneKey()
  *
  * Test Steps:
  *  Step 1: Notify license renewal
- *   Server notifys the client that of license renewal.
+ *   Server notifies the client that of license renewal.
  *   Expect that the license renewal notification is processed by the client.
  *
  *  Step 2: Update session
@@ -113,10 +136,10 @@ void LicenseRenewalTest::updateOneKey()
  *   Api call returns with success.
  *
  *  Step 3: Notify key statuses changed
- *   Server notifys the client of key statuses changed.
+ *   Server notifies the client of key statuses changed.
  *   Expect that the key statuses changed notification is processed by the client.
  *
- * Test Teardown:
+ * Test Tear-down:
  *  Server is terminated.
  *
  * Expected Results:

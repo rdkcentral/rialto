@@ -99,7 +99,7 @@ void GetDrmInfoTest::getDrmTimeRequest()
 }
 
 /*
- * Component Test: Get various infomation stored in the system.
+ * Component Test: Get various information stored in the system.
  * Test Objective:
  *  Test the getLdlSessionsLimit & getDrmTime APIs.
  *
@@ -130,7 +130,7 @@ void GetDrmInfoTest::getDrmTimeRequest()
  *   Api call returns with success.
  *   Check drm time.
  *
- * Test Teardown:
+ * Test Tear-down:
  *  Server is terminated.
  *
  * Expected Results:

@@ -21,6 +21,7 @@
 
 #include "ActionTraits.h"
 #include "ConfigureAction.h"
+#include "ExpectMessage.h"
 #include "Matchers.h"
 #include "MediaKeysTestMethods.h"
 
@@ -38,6 +39,13 @@ public:
     SessionReadyForDecryptionTest() {}
     virtual ~SessionReadyForDecryptionTest() {}
 
+    void willGenerateRequestWidevine();
+    void generateRequestWidevine();
+    void processChallengeWidevine();
+
+    void willGenerateRequestNetflix();
+    void generateRequestNetflix();
+
     void willUpdateSessionWidevine();
     void updateSessionWidevine();
     void closeKeySessionWidevine();
@@ -48,7 +56,119 @@ public:
     void destroyMediaKeysRequest();
 
     const std::vector<unsigned char> kResponse{4, 1, 3};
+    const std::vector<unsigned char> m_kInitData{1, 2, 7};
+    const std::vector<uint8_t> kLicenseRequestMessage{'d', 'z', 'f'};
 };
+
+void SessionReadyForDecryptionTest::willGenerateRequestWidevine()
+{
+    EXPECT_CALL(m_ocdmSessionMock, constructSession(KeySessionType::TEMPORARY, InitDataType::CENC, _, m_kInitData.size()))
+        .WillOnce(testing::Invoke(
+            [&](KeySessionType sessionType, InitDataType initDataType, const uint8_t initData[],
+                uint32_t initDataSize) -> MediaKeyErrorStatus
+            {
+                for (uint32_t i = 0; i < initDataSize; ++i)
+                {
+                    EXPECT_EQ(initData[i], m_kInitData[i]);
+                }
+
+                return MediaKeyErrorStatus::OK;
+            }));
+}
+
+void SessionReadyForDecryptionTest::generateRequestWidevine()
+{
+    auto request{createGenerateRequestRequest(m_mediaKeysHandle, m_mediaKeySessionId, m_kInitData)};
+
+    ConfigureAction<GenerateRequest>(m_clientStub)
+        .send(request)
+        .expectSuccess()
+        .matchResponse([&](const firebolt::rialto::GenerateRequestResponse &resp)
+                       { EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK); });
+}
+
+void SessionReadyForDecryptionTest::processChallengeWidevine()
+{
+    const std::string kUrl{"http://fictionalUrlForTest"};
+    const std::vector<unsigned char> kLicenseRequestMessage{'d', 'z', 'f'};
+
+    ExpectMessage<::firebolt::rialto::LicenseRequestEvent> expectedMessage(m_clientStub);
+    m_ocdmSessionClient->onProcessChallenge(kUrl.c_str(), &kLicenseRequestMessage[0], kLicenseRequestMessage.size());
+
+    auto message = expectedMessage.getMessage();
+    ASSERT_TRUE(message);
+    ASSERT_EQ(message->media_keys_handle(), m_mediaKeysHandle);
+    ASSERT_EQ(message->key_session_id(), m_mediaKeySessionId);
+    EXPECT_TRUE(message->url() == kUrl);
+    const unsigned int kMax = message->license_request_message_size();
+    ASSERT_EQ(kMax, kLicenseRequestMessage.size());
+    for (unsigned int i = 0; i < kMax; ++i)
+    {
+        ASSERT_EQ(message->license_request_message(i), kLicenseRequestMessage[i]);
+    }
+}
+
+void SessionReadyForDecryptionTest::willGenerateRequestNetflix()
+{
+    EXPECT_CALL(m_ocdmSessionMock, constructSession(KeySessionType::TEMPORARY, InitDataType::CENC, _, m_kInitData.size()))
+        .WillOnce(testing::Invoke(
+            [&](KeySessionType sessionType, InitDataType initDataType, const uint8_t initData[],
+                uint32_t initDataSize) -> MediaKeyErrorStatus
+            {
+                for (uint32_t i = 0; i < initDataSize; ++i)
+                {
+                    EXPECT_EQ(initData[i], m_kInitData[i]);
+                }
+
+                return MediaKeyErrorStatus::OK;
+            }));
+
+    EXPECT_CALL(m_ocdmSessionMock, getChallengeData(false, _, _))
+        .WillOnce(testing::Invoke(
+            [&](bool isLDL, const uint8_t *challenge, uint32_t *challengeSize) -> MediaKeyErrorStatus
+            {
+                // This first call asks for the size of the data
+                EXPECT_EQ(challenge, nullptr);
+                *challengeSize = kLicenseRequestMessage.size();
+                return MediaKeyErrorStatus::OK;
+            }))
+        .WillOnce(testing::Invoke(
+            [&](bool isLDL, uint8_t *challenge, const uint32_t *challengeSize) -> MediaKeyErrorStatus
+            {
+                // This second call asks for the data
+                EXPECT_EQ(*challengeSize, kLicenseRequestMessage.size());
+                for (size_t i = 0; i < kLicenseRequestMessage.size(); ++i)
+                {
+                    challenge[i] = kLicenseRequestMessage[i];
+                }
+                return MediaKeyErrorStatus::OK;
+            }));
+}
+
+void SessionReadyForDecryptionTest::generateRequestNetflix()
+{
+    auto request{createGenerateRequestRequest(m_mediaKeysHandle, m_mediaKeySessionId, m_kInitData)};
+
+    ExpectMessage<::firebolt::rialto::LicenseRequestEvent> expectedMessage(m_clientStub);
+
+    ConfigureAction<GenerateRequest>(m_clientStub)
+        .send(request)
+        .expectSuccess()
+        .matchResponse([&](const firebolt::rialto::GenerateRequestResponse &resp)
+                       { EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK); });
+
+    auto message = expectedMessage.getMessage();
+    ASSERT_TRUE(message);
+    ASSERT_EQ(message->media_keys_handle(), m_mediaKeysHandle);
+    ASSERT_EQ(message->key_session_id(), m_mediaKeySessionId);
+    EXPECT_EQ(message->url(), "");
+    const unsigned int kMax = message->license_request_message_size();
+    ASSERT_EQ(kMax, kLicenseRequestMessage.size());
+    for (unsigned int i = 0; i < kMax; ++i)
+    {
+        ASSERT_EQ(message->license_request_message(i), kLicenseRequestMessage[i]);
+    }
+}
 
 void SessionReadyForDecryptionTest::willUpdateSessionWidevine()
 {
@@ -139,23 +259,23 @@ void SessionReadyForDecryptionTest::destroyMediaKeysRequest()
  *   Server notifies the client of license request.
  *   Expect that the license request notification is propagated to the client.
  *
- *  Step 2: Update session
+ *  Step 3: Update session
  *   updateSession with a key.
  *   Expect that updateSession is propagated to the server.
  *   Api call returns with success.
- *   Server notifys the client of key statuses changed.
+ *   Server notifies the client of key statuses changed.
  *   Expect that the key statuses changed notification is propagated to the client.
  *
- *  Step 3: Close session
+ *  Step 4: Close session
  *   closeSession.
  *   Expect that closeSession is propagated to the server.
  *   Api call returns with success.
  *
- *  Step 4: Destroy media keys
+ *  Step 5: Destroy media keys
  *   Destroy instance of MediaKeys.
  *   Expect that media keys is destroyed on the server.
  *
- * Test Teardown:
+ * Test Tear-down:
  *  Server is terminated.
  *
  * Expected Results:
@@ -171,18 +291,22 @@ TEST_F(SessionReadyForDecryptionTest, shouldUpdateWidevine)
     createKeySession();
 
     // Step 1: Generate license request
-    licenseRenew();
+    willGenerateRequestWidevine();
+    generateRequestWidevine();
 
-    // Step 2: Update session
+    // Step 2: process challenge from OCDM
+    processChallengeWidevine();
+
+    // Step 3: Update session
     willUpdateSessionWidevine();
     updateSessionWidevine();
 
-    // Step 3: Close session
+    // Step 4: Close session
     willTeardown();
     willDestruct();
     closeKeySessionWidevine();
 
-    // Step 4: Destroy media keys
+    // Step 5: Destroy media keys
     destroyMediaKeysRequest();
 }
 
@@ -210,15 +334,22 @@ TEST_F(SessionReadyForDecryptionTest, shouldUpdateWidevine)
  *
  *
  * Test Steps:
- *  Step 1: Generate license request
- *   Expect that the license request notification is processed by the client.
- *   Api call returns with success.
+ *  Step 1: generateRequest
+ *      client sends generateRequest message to rialtoServer
+ *      rialtoServer passes request to OCDM library
+ *      ocdm lib returns success
+ *      rialtoServer returns a success message to the client
+ *
+ *      rialtoServer calls OCDM library get_challenge_data()
+ *      rialtoServer should forward this request, via an onLicenceRequest
+ *      message, to the client. The content of this message should match
+ *      the details from the ocdm library
  *
  *  Step 2: Update session
  *   updateSession with a key.
  *   Expect that updateSession is processed by the server.
  *   Api call returns with success.
- *   Server notifys the client of key statuses changed.
+ *   Server notifies the client of key statuses changed.
  *   Expect that the key statuses changed notification is processed by the client.
  *
  *  Step 3: Close session
@@ -230,7 +361,7 @@ TEST_F(SessionReadyForDecryptionTest, shouldUpdateWidevine)
  *   Destroy instance of MediaKeys.
  *   Expect that media keys is destroyed on the server.
  *
- * Test Teardown:
+ * Test Tear-down:
  *  Server is terminated.
  *
  * Expected Results:
@@ -245,8 +376,9 @@ TEST_F(SessionReadyForDecryptionTest, shouldUpdatNetflix)
     ocdmSessionWillBeCreated();
     createKeySession();
 
-    // Step 1: Generate license request
-    licenseRenew();
+    // Step 1: generateRequest
+    willGenerateRequestNetflix();
+    generateRequestNetflix();
 
     // Step 2: Update session
     willUpdateSessionNetflix();

@@ -156,7 +156,7 @@ void KeyApisTest::loadKeySession()
  *   Expect that removeKeySession is processed by the server.
  *   Api call returns with success.
  *
- * Test Teardown:
+ * Test Tear-down:
  *  Server is terminated.
  *
  * Expected Results:

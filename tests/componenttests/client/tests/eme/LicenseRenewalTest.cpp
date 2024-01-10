@@ -59,7 +59,7 @@ public:
  *
  * Test Steps:
  *  Step 1: Notify license renewal
- *   Server notifys the client that of license renewal.
+ *   Server notifies the client that of license renewal.
  *   Expect that the license renewal notification is propagated to the client.
  *
  *  Step 2: Update session
@@ -68,7 +68,7 @@ public:
  *   Api call returns with success.
  *
  *  Step 3: Notify key statuses changed
- *   Server notifys the client of key statuses changed.
+ *   Server notifies the client of key statuses changed.
  *   Expect that the key statuses changed notification is propagated to the client.
  *
  * Test Teardown:
