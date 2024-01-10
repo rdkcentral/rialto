@@ -349,9 +349,9 @@ void AttachSource::switchAudioSource(GstCaps *caps, const std::string &strCaps) 
     // unsigned int ui32Delay{0}; // output param
     // long long audioChangeTargetPts{-1}; // NOLINT(runtime/int) output param. Set audioChangeTargetPts = currentDispPts
     //                                     // in rdk_gstreamer_utils function stub
-    // std::int64_t currentDispPts64b;     // In netflix code it's currentDisplayPosition + offset
-    // m_gstWrapper->gstElementQueryPosition(m_context.pipeline, GST_FORMAT_TIME, &currentDispPts64b);
-    // long long currentDispPts = currentDispPts64b; // NOLINT(runtime/int)
+    std::int64_t currentDispPts64b;     // In netflix code it's currentDisplayPosition + offset
+    m_gstWrapper->gstElementQueryPosition(m_context.pipeline, GST_FORMAT_TIME, &currentDispPts64b);
+    long long currentDispPts = currentDispPts64b; // NOLINT(runtime/int)
     // unsigned int audioChangeStage{0}; // Output param. Set to AUDCHG_ALIGN in rdk_gstreamer_utils function stub
     // bool audioAac{oldCapsStr.find("audio/mpeg") != std::string::npos};
     // bool svpEnabled{true}; // assume always true
@@ -372,7 +372,7 @@ void AttachSource::switchAudioSource(GstCaps *caps, const std::string &strCaps) 
 
     //gst_element_no_more_pads(m_context.streamInfo[m_attachedSource->getType()].appSrc);
 
-    RIALTO_SERVER_LOG_MIL("lukewill: no audio switch");
+    RIALTO_SERVER_LOG_MIL("lukewill: no audio switch, %lld", currentDispPts);
     m_context.audioNeedData = true;
     m_context.audioSourceRemoved = false;
     m_context.lastAudioSampleTimestamps = currentDispPts;
