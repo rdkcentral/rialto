@@ -662,17 +662,23 @@ jobs:
       # Run the process_coverage_stats script
       - name: Process Coverage Statistics
         if: ${{ success() && github.ref != 'refs/heads/master' }}
-        run: python scripts/coverage/process_coverage_stats.py ./master_artifacts/coverage_statistics.txt build/coverage_statistics.txt
-
-      # Get process_coverage_stats script output
-      - id: get-comment-body
-        if: ${{ success() && github.ref != 'refs/heads/master' }}
         run: |
-          body="$(cat comparison_output.txt)"
-          body="${body//'%'/'%25'}"
-          body="${body//$'\n'/'%0A'}"
-          body="${body//$'\r'/'%0D'}"
-          echo "::set-output name=body::$body"
+         python scripts/coverage/process_coverage_stats.py ./master_artifacts/coverage_statistics.txt build/coverage_statistics.txt
+         body="$(cat comparison_output.txt)"
+         body="${body//'%'/'%25'}"
+         body="${body//$'\n'/'%0A'}"
+         body="${body//$'\r'/'%0D'}"
+         echo "::set-output name=body::$body"
+
+      # # Get process_coverage_stats script output 
+      # - id: get-comment-body
+      #   
+      #   run: |  
+            # body="$(cat comparison_output.txt)"
+      #     body="${body//'%'/'%25'}"
+      #     body="${body//$'\n'/'%0A'}"
+      #     body="${body//$'\r'/'%0D'}"
+      #     echo "::set-output name=body::$body"
 
       # Create comment with coverage info
       - name: Create Coverage Comment

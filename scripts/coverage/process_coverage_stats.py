@@ -33,10 +33,10 @@ def main():
     write_output(comparison_output)
     print(f"write_output done")
 
-    # # Checking that line and function are both unchanged, if so then exit
-    # if current_stats[0] == master_stats[0] and current_stats[1] == master_stats[1]:
-    #     print(f"inside the if statement in def main")
-    #     sys.exit(comparison_output)
+    # Checking that line and function are both unchanged, if so then exit
+    if current_stats[0] == master_stats[0] and current_stats[1] == master_stats[1]:
+        print(f"inside the if statement in def main")
+        sys.exit("Line coverage and Function coverage are both unchanged")
 
 def parse_statistics(file_path):
     try:
