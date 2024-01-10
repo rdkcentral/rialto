@@ -676,7 +676,7 @@ jobs:
 
       # Create comment with coverage info
       - name: Create Coverage Comment
-        if: ${{ success() && github.ref != 'refs/heads/master' }}
+        if: ${{ (success() || failure()) && github.ref != 'refs/heads/master' }}
         uses: peter-evans/create-or-update-comment@v2
         with:
           issue-number: ${{ github.event.pull_request.number }}

@@ -98,6 +98,7 @@ def compare_coverage(master_stats, current_stats):
         output_text += str(current_stats[0]) + "%\n"
 
     elif current_stats[0] == master_stats[0]:
+        print()
         output_text += "Lines coverage stays unchanged and is: " + str(current_stats[0]) + "%\n"
     else:
         output_text += "Congratulations, your commit improved lines coverage from: " + str(master_stats[0])
@@ -117,6 +118,20 @@ def write_output(output_text):
     output_file = open("comparison_output.txt", "w")
     output_file.write(output_text)
     output_file.close()
+
+# def write_output(output_text):
+#     # Print to console
+#     print(output_text)
+
+#     # Write to file
+#     with open("comparison_output.txt", "w") as output_file:
+#         output_file.write(output_text)
+
+#     # Read and print the contents of the file
+#     with open("comparison_output.txt", "r") as file:
+#         content = file.read()
+#         print(content)
+
 
 if __name__ == "__main__":
     main()
