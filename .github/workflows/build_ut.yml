@@ -671,7 +671,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: coverage_report_stats
-          path: build/coverage_statistics.txt
+          path: build
         
       # Download current master coverage statistics
       - name: Download Master Coverage Statistics
