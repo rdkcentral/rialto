@@ -151,6 +151,7 @@ void RemoveSource::execute() const
     }
 
     // Turn audio off, removing audio sink from playsink
+    RIALTO_SERVER_LOG_MIL("lukewill: mute");
     m_gstWrapper->gstStreamVolumeSetMute(GST_STREAM_VOLUME(m_context.pipeline), true);
     // GFlagsClass *flagsClass =
     //     static_cast<GFlagsClass *>(g_type_class_ref(g_type_from_name("GstPlayFlags")));
