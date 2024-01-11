@@ -65,7 +65,7 @@ public:
  *  Step 2: Load content
  *   Load MSE.
  *   Expect that load is propagated to the server.
- *   Server notifys the client that the NetworkState has changed to BUFFERING.
+ *   Server notifies the client that the NetworkState has changed to BUFFERING.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 3: Attach all sources
@@ -75,7 +75,7 @@ public:
  *   Expect that attach source for audio propagated to the server.
  *   Set all sources attached.
  *   Expect that all source attached is propagated to the server.
- *   Server notifys the client that the Playback state has changed to IDLE.
+ *   Server notifies the client that the Playback state has changed to IDLE.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 4: Pause
@@ -83,49 +83,49 @@ public:
  *   Expect that pause is propagated to the server.
  *
  *  Step 5: Write 1 audio frame
- *   Server notifys the client that it needs 3 frames of audio data.
+ *   Server notifies the client that it needs 3 frames of audio data.
  *   Writes 1 frame of audio data to the shared buffer.
  *   Notify the server that the data has been written.
  *
  *  Step 6: Write 1 video frame
- *   Server notifys the client that it needs 3 frames of video data.
+ *   Server notifies the client that it needs 3 frames of video data.
  *   Writes 1 frame of video data to the shared buffer.
  *   Notify the server that the data has been written.
  *
  *  Step 7: Notify buffered
- *   Server notifys the client that the Network state has changed to BUFFERED.
+ *   Server notifies the client that the Network state has changed to BUFFERED.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 8: Notify paused
- *   Server notifys the client that the Network state has changed to PAUSED.
+ *   Server notifies the client that the Network state has changed to PAUSED.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 9: Play
  *   Play the content.
  *   Expect that play propagated to the server.
- *   Server notifys the client that the Playback state has changed to PLAYING.
+ *   Sierver notifys the client that the Playback state has changed to PLAYING.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 10: Write 1 audio frame
- *   Server notifys the client that it needs 20 frames of audio data.
+ *   Server notifies the client that it needs 20 frames of audio data.
  *   Writes 1 frames of audio data to the shared buffer.
  *   Notify the server that the data has been written.
  *
  *  Step 11: Write 1 video frame
- *   Server notifys the client that it needs 20 frames of video data.
+ *   Server notifies the client that it needs 20 frames of video data.
  *   Writes 1 frame of video data to the shared buffer.
  *   Notify the server that the data has been written.
  *
  *  Step 12: End of audio stream
- *   Server notifys the client that it needs 20 frames of audio data.
+ *   Server notifies the client that it needs 20 frames of audio data.
  *   Send EOS status with haveData.
  *
  *  Step 13: End of video stream
- *   Server notifys the client that it needs 20 frames of video data.
+ *   Server notifies the client that it needs 20 frames of video data.
  *   Send EOS status with haveData.
  *
  *  Step 14: Notify end of stream
- *   Server notifys the client that the Network state has changed to END_OF_STREAM.
+ *   Server notifies the client that the Network state has changed to END_OF_STREAM.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 15: Remove sources
@@ -137,7 +137,7 @@ public:
  *  Step 16: Stop
  *   Stop the playback.
  *   Expect that stop propagated to the server.
- *   Server notifys the client that the Playback state has changed to STOPPED.
+ *   Server notifies the client that the Playback state has changed to STOPPED.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 17: Destroy media session

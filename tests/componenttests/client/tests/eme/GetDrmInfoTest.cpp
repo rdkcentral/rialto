@@ -45,7 +45,7 @@ public:
 };
 
 /*
- * Component Test: Get various infomation stored in the system.
+ * Component Test: Get various information stored in the system.
  * Test Objective:
  *  Test the getLdlSessionsLimit & getDrmTime APIs.
  *
@@ -76,7 +76,7 @@ public:
  *   Api call returns with success.
  *   Check drm time.
  *
- * Test Teardown:
+ * Test Tear-down:
  *  Destroy MediaKeys.
  *  Server is terminated.
  *
