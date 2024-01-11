@@ -22,7 +22,6 @@
 #include "DataReaderV2.h"
 #include "ShmCommon.h"
 #include "ShmUtils.h"
-#include "RialtoServerLogging.h"
 
 namespace
 {

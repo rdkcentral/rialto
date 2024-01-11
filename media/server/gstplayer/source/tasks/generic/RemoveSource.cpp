@@ -20,86 +20,6 @@
 #include "tasks/generic/RemoveSource.h"
 #include "RialtoServerLogging.h"
 
-namespace{
-void print_linked_elements(GstPad* elementPad, int depth = 0) 
-{
-    RIALTO_SERVER_LOG_WARN("lukewill: pad - %s", GST_OBJECT_NAME(elementPad));
-    GstElement* linked_element = gst_pad_get_parent_element(elementPad);
-    GstPad* nextPad = nullptr;
-    if (linked_element)
-    {
-        RIALTO_SERVER_LOG_WARN("lukewill: %*s%s", depth * 2, "", GST_OBJECT_NAME(linked_element));
-        nextPad = gst_element_get_static_pad(linked_element, "src");
-        if (!nextPad)
-        {
-            nextPad = gst_element_get_static_pad(linked_element, "src_1");
-            if (!nextPad)
-            {
-                nextPad = gst_element_get_static_pad(linked_element, "src_0");
-            }
-        }
-    }
-    else
-    {
-        const gchar* peer_pad_name = GST_OBJECT_NAME(elementPad);
-        RIALTO_SERVER_LOG_WARN("lukewill: internal_pad - %s", peer_pad_name);
-        if (g_str_has_prefix(peer_pad_name, "proxy")) 
-        {
-            GstPad* proxyPad1 = GST_PAD(gst_proxy_pad_get_internal(GST_PROXY_PAD(elementPad)));
-            RIALTO_SERVER_LOG_WARN("lukewill: proxyPad1 - %s", GST_OBJECT_NAME(proxyPad1));
-    
-            GstPad* peer_pad_2 = gst_pad_get_peer(proxyPad1);
-            RIALTO_SERVER_LOG_WARN("lukewill: peer_pad_2 - %s", GST_OBJECT_NAME(peer_pad_2));
-    
-            nextPad = GST_PAD(gst_proxy_pad_get_internal(GST_PROXY_PAD(peer_pad_2)));
-            RIALTO_SERVER_LOG_WARN("lukewill: prxPad_2 - %s", GST_OBJECT_NAME(nextPad));
-        }
-        else
-        {
-            return;
-        }
-    }
-
-    GstPad* peer_pad = nullptr;
-    if (nextPad)
-    {
-        peer_pad = gst_pad_get_peer(nextPad);
-    }
-
-    if(!peer_pad && (linked_element && !g_str_has_prefix(GST_OBJECT_NAME(linked_element), "rtkaudiosink"))) 
-    {
-        GstPad* proxyPad1 = GST_PAD(gst_proxy_pad_get_internal(GST_PROXY_PAD(elementPad)));
-        RIALTO_SERVER_LOG_WARN("lukewill: proxyPad1 - %s", GST_OBJECT_NAME(proxyPad1));
-
-        peer_pad = gst_pad_get_peer(proxyPad1);
-        RIALTO_SERVER_LOG_WARN("lukewill: peer_pad_2 - %s", GST_OBJECT_NAME(peer_pad));
-    }
-
-    if (peer_pad)
-    {
-        RIALTO_SERVER_LOG_WARN("lukewill: peer pad - %s", GST_OBJECT_NAME(peer_pad));
-        print_linked_elements(peer_pad, depth + 1);
-    }
-
-    RIALTO_SERVER_LOG_WARN("lukewill:");
-    if (linked_element && nextPad && peer_pad)
-    {
-        RIALTO_SERVER_LOG_WARN("lukewill: unlink linked_element %s, nextPad %s, peer_pad %s", GST_OBJECT_NAME(linked_element), GST_OBJECT_NAME(nextPad), GST_OBJECT_NAME(peer_pad));
-        gst_pad_unlink(nextPad, peer_pad);
-        gboolean result = gst_element_remove_pad(linked_element, nextPad);
-        RIALTO_SERVER_LOG_WARN("lukewill: %u", result);
-    }
-
-    //RIALTO_SERVER_LOG_WARN("lukewill:");
-    //if (linked_element)
-    //    gst_object_unref(linked_element);
-    //if (nextPad)
-    //    gst_object_unref(nextPad);
-    //if (peer_pad)
-    //    gst_object_unref(peer_pad);
-    //RIALTO_SERVER_LOG_WARN("lukewill:");
-}
-}
 namespace firebolt::rialto::server::tasks::generic
 {
 RemoveSource::RemoveSource(GenericPlayerContext &context, IGstGenericPlayerClient *client,
@@ -151,6 +71,7 @@ void RemoveSource::execute() const
     }
 
     // Turn audio off, removing audio sink from playsink
+    // TODO: Move to common method
     GFlagsClass *flagsClass =
         static_cast<GFlagsClass *>(g_type_class_ref(g_type_from_name("GstPlayFlags")));
     GFlagsValue *flagVideo = g_flags_get_value_by_nick (flagsClass, "video");

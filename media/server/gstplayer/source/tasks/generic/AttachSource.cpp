@@ -368,6 +368,7 @@ void AttachSource::reattachAudioSource(GstCaps *caps, const std::string &strCaps
     }
 
     // Restart audio sink
+    // TODO: Move to common method
     GFlagsClass *flagsClass =
         static_cast<GFlagsClass *>(g_type_class_ref(g_type_from_name("GstPlayFlags")));
     GFlagsValue *flagAudio = g_flags_get_value_by_nick (flagsClass, "audio");
