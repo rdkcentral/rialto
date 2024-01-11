@@ -86,7 +86,7 @@ public:
  *   generateRequest.
  *   Expect that generateRequest is propagated to the server.
  *   Api call returns with success.
- *   Server notifys the client of license request.
+ *   Server notifies the client of license request.
  *   Expect that the license request notification is propagated to the client.
  *
  *  Step 5: Update session failure
@@ -99,7 +99,7 @@ public:
  *   updateSession with a key.
  *   Expect that updateSession is propagated to the server.
  *   Api call returns with success.
- *   Server notifys the client of key statuses changed.
+ *   Server notifies the client of key statuses changed.
  *   Expect that the key statuses changed notification is propagated to the client.
  *
  *  Step 7: Close session failure

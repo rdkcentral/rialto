@@ -20,6 +20,8 @@
 #ifndef FIREBOLT_RIALTO_SERVER_CT_MESSAGE_BUILDERS_H_
 #define FIREBOLT_RIALTO_SERVER_CT_MESSAGE_BUILDERS_H_
 
+#include <vector>
+
 #include "controlmodule.pb.h"
 #include "mediakeysmodule.pb.h"
 #include "mediapipelinemodule.pb.h"
@@ -56,8 +58,29 @@ namespace firebolt::rialto::server::ct
 ::firebolt::rialto::SetVideoWindowRequest createSetVideoWindowRequest(int sessionId);
 
 // media keys module
-::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequest();
+::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequestWidevine();
+::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequestNetflix();
 ::firebolt::rialto::CreateKeySessionRequest createCreateKeySessionRequest(int mediaKeysHandle);
+::firebolt::rialto::GenerateRequestRequest createGenerateRequestRequest(int mediaKeysHandle, int keySessionId,
+                                                                        const std::vector<unsigned char> &initData);
+::firebolt::rialto::UpdateSessionRequest createUpdateSessionRequest(int mediaKeysHandle, int keySessionId,
+                                                                    const std::vector<unsigned char> &response);
+::firebolt::rialto::ContainsKeyRequest createContainsKeyRequest(int mediaKeysHandle, int keySessionId,
+                                                                const std::vector<unsigned char> &keyId);
+::firebolt::rialto::RemoveKeySessionRequest createRemoveKeySessionRequest(int mediaKeysHandle, int keySessionId);
+::firebolt::rialto::LoadSessionRequest createLoadSessionRequest(int mediaKeysHandle, int keySessionId);
+::firebolt::rialto::CloseKeySessionRequest createCloseKeySessionRequest(int mediaKeysHandle, int keySessionId);
+::firebolt::rialto::SetDrmHeaderRequest createSetDrmHeaderRequest(int mediaKeysHandle, int keySessionId,
+                                                                  const std::vector<unsigned char> &keyId);
+::firebolt::rialto::GetLastDrmErrorRequest createGetLastDrmErrorRequest(int mediaKeysHandle, int keySessionId);
+::firebolt::rialto::GetCdmKeySessionIdRequest createGetCdmKeySessionIdRequest(int mediaKeysHandle, int keySessionId);
+::firebolt::rialto::DestroyMediaKeysRequest createDestroyMediaKeysRequest(int mediaKeysHandle);
+::firebolt::rialto::DeleteDrmStoreRequest createDeleteDrmStoreRequest(int mediaKeysHandle);
+::firebolt::rialto::DeleteKeyStoreRequest createDeleteKeyStoreRequest(int mediaKeysHandle);
+::firebolt::rialto::GetDrmStoreHashRequest createGetDrmStoreHashRequest(int mediaKeysHandle);
+::firebolt::rialto::GetKeyStoreHashRequest createGetKeyStoreHashRequest(int mediaKeysHandle);
+::firebolt::rialto::GetLdlSessionsLimitRequest createGetLdlSessionsLimitRequest(int mediaKeysHandle);
+::firebolt::rialto::GetDrmTimeRequest createGetDrmTimeRequest(int mediaKeysHandle);
 
 // control module
 ::firebolt::rialto::GetSharedMemoryRequest createGetSharedMemoryRequest();

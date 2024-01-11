@@ -17,11 +17,12 @@
  * limitations under the License.
  */
 
-#include "WebAudioPlayerTestBase.h"
-#include "WebAudioUtil.h"
 #include <memory>
 #include <string>
 #include <utility>
+
+#include "WebAudioPlayerTestBase.h"
+#include "WebAudioUtil.h"
 
 namespace
 {
@@ -147,8 +148,6 @@ void WebAudioPlayerTestBase::expectWriteStoredFrames(uint32_t storedFramesToWrit
     {
         // Should start reading data from the end of the main free buffer
         expectedStoredMainPtr = &m_dataPtr + m_webAudioShmInfo->offsetMain + m_webAudioShmInfo->lengthMain;
-        std::cout << m_dataLen << ", " << m_webAudioShmInfo->offsetMain << ", " << m_webAudioShmInfo->lengthMain
-                  << std::endl;
         expectedStoredMainLength = m_dataLen -
                                    ((m_webAudioShmInfo->offsetMain - m_dataOffset) + m_webAudioShmInfo->lengthMain);
         // Continue reading data from the start of the buffer
@@ -156,7 +155,6 @@ void WebAudioPlayerTestBase::expectWriteStoredFrames(uint32_t storedFramesToWrit
         expectedStoredWrapLength = m_webAudioShmInfo->offsetMain - m_webAudioShmInfo->offsetWrap;
     }
 
-    std::cout << expectedStoredMainLength << ", " << expectedStoredWrapLength << std::endl;
     EXPECT_CALL(*m_gstPlayerMock, writeBuffer(expectedStoredMainPtr, expectedStoredMainLength, expectedStoredWrapPtr,
                                               expectedStoredWrapLength))
         .WillOnce(Return(storedFramesWritten * 4))

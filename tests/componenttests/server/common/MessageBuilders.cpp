@@ -250,10 +250,16 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
-::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequest()
+::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequestWidevine()
 {
     ::firebolt::rialto::CreateMediaKeysRequest request;
     request.set_key_system("com.widevine.alpha");
+    return request;
+}
+::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequestNetflix()
+{
+    ::firebolt::rialto::CreateMediaKeysRequest request;
+    request.set_key_system("com.netflix.playready");
     return request;
 }
 
@@ -263,6 +269,148 @@ namespace firebolt::rialto::server::ct
     request.set_media_keys_handle(mediaKeysHandle);
     request.set_session_type(::firebolt::rialto::CreateKeySessionRequest_KeySessionType_TEMPORARY);
     request.set_is_ldl(false);
+    return request;
+}
+
+::firebolt::rialto::GenerateRequestRequest createGenerateRequestRequest(int mediaKeysHandle, int keySessionId,
+                                                                        const std::vector<unsigned char> &initData)
+{
+    ::firebolt::rialto::GenerateRequestRequest request;
+    request.set_media_keys_handle(mediaKeysHandle);
+    request.set_key_session_id(keySessionId);
+    request.set_init_data_type(::firebolt::rialto::GenerateRequestRequest_InitDataType_CENC);
+    for (auto i : initData)
+    {
+        request.add_init_data(i);
+    }
+    return request;
+}
+
+::firebolt::rialto::UpdateSessionRequest createUpdateSessionRequest(int mediaKeysHandle, int keySessionId,
+                                                                    const std::vector<unsigned char> &response)
+{
+    ::firebolt::rialto::UpdateSessionRequest request;
+    request.set_media_keys_handle(mediaKeysHandle);
+    request.set_key_session_id(keySessionId);
+    for (auto i : response)
+    {
+        request.add_response_data(i);
+    }
+    return request;
+}
+
+::firebolt::rialto::ContainsKeyRequest createContainsKeyRequest(int mediaKeysHandle, int keySessionId,
+                                                                const std::vector<unsigned char> &keyId)
+{
+    ::firebolt::rialto::ContainsKeyRequest request;
+    request.set_media_keys_handle(mediaKeysHandle);
+    request.set_key_session_id(keySessionId);
+    for (auto i : keyId)
+    {
+        request.add_key_id(i);
+    }
+    return request;
+}
+
+::firebolt::rialto::RemoveKeySessionRequest createRemoveKeySessionRequest(int mediaKeysHandle, int keySessionId)
+{
+    ::firebolt::rialto::RemoveKeySessionRequest request;
+    request.set_media_keys_handle(mediaKeysHandle);
+    request.set_key_session_id(keySessionId);
+    return request;
+}
+
+::firebolt::rialto::LoadSessionRequest createLoadSessionRequest(int mediaKeysHandle, int keySessionId)
+{
+    ::firebolt::rialto::LoadSessionRequest request;
+    request.set_media_keys_handle(mediaKeysHandle);
+    request.set_key_session_id(keySessionId);
+    return request;
+}
+
+::firebolt::rialto::CloseKeySessionRequest createCloseKeySessionRequest(int mediaKeysHandle, int keySessionId)
+{
+    ::firebolt::rialto::CloseKeySessionRequest request;
+    request.set_media_keys_handle(mediaKeysHandle);
+    request.set_key_session_id(keySessionId);
+    return request;
+}
+
+::firebolt::rialto::SetDrmHeaderRequest createSetDrmHeaderRequest(int mediaKeysHandle, int keySessionId,
+                                                                  const std::vector<unsigned char> &keyId)
+{
+    ::firebolt::rialto::SetDrmHeaderRequest request;
+    request.set_media_keys_handle(mediaKeysHandle);
+    request.set_key_session_id(keySessionId);
+    for (auto i : keyId)
+    {
+        request.add_request_data(i);
+    }
+    return request;
+}
+
+::firebolt::rialto::GetLastDrmErrorRequest createGetLastDrmErrorRequest(int mediaKeysHandle, int keySessionId)
+{
+    ::firebolt::rialto::GetLastDrmErrorRequest request;
+    request.set_media_keys_handle(mediaKeysHandle);
+    request.set_key_session_id(keySessionId);
+    return request;
+}
+
+::firebolt::rialto::GetCdmKeySessionIdRequest createGetCdmKeySessionIdRequest(int mediaKeysHandle, int keySessionId)
+{
+    ::firebolt::rialto::GetCdmKeySessionIdRequest request;
+    request.set_media_keys_handle(mediaKeysHandle);
+    request.set_key_session_id(keySessionId);
+    return request;
+}
+
+::firebolt::rialto::DestroyMediaKeysRequest createDestroyMediaKeysRequest(int mediaKeysHandle)
+{
+    ::firebolt::rialto::DestroyMediaKeysRequest request;
+    request.set_media_keys_handle(mediaKeysHandle);
+    return request;
+}
+
+::firebolt::rialto::DeleteDrmStoreRequest createDeleteDrmStoreRequest(int mediaKeysHandle)
+{
+    ::firebolt::rialto::DeleteDrmStoreRequest request;
+    request.set_media_keys_handle(mediaKeysHandle);
+    return request;
+}
+
+::firebolt::rialto::DeleteKeyStoreRequest createDeleteKeyStoreRequest(int mediaKeysHandle)
+{
+    ::firebolt::rialto::DeleteKeyStoreRequest request;
+    request.set_media_keys_handle(mediaKeysHandle);
+    return request;
+}
+
+::firebolt::rialto::GetDrmStoreHashRequest createGetDrmStoreHashRequest(int mediaKeysHandle)
+{
+    ::firebolt::rialto::GetDrmStoreHashRequest request;
+    request.set_media_keys_handle(mediaKeysHandle);
+    return request;
+}
+
+::firebolt::rialto::GetKeyStoreHashRequest createGetKeyStoreHashRequest(int mediaKeysHandle)
+{
+    ::firebolt::rialto::GetKeyStoreHashRequest request;
+    request.set_media_keys_handle(mediaKeysHandle);
+    return request;
+}
+
+::firebolt::rialto::GetLdlSessionsLimitRequest createGetLdlSessionsLimitRequest(int mediaKeysHandle)
+{
+    ::firebolt::rialto::GetLdlSessionsLimitRequest request;
+    request.set_media_keys_handle(mediaKeysHandle);
+    return request;
+}
+
+::firebolt::rialto::GetDrmTimeRequest createGetDrmTimeRequest(int mediaKeysHandle)
+{
+    ::firebolt::rialto::GetDrmTimeRequest request;
+    request.set_media_keys_handle(mediaKeysHandle);
     return request;
 }
 
