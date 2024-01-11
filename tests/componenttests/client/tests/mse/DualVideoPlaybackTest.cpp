@@ -60,7 +60,7 @@ public:
  *  Step 2: Load content on primary
  *   Load MSE.
  *   Expect that load is propagated to the server.
- *   Server notifys the client that the NetworkState has changed to BUFFERING.
+ *   Server notifies the client that the NetworkState has changed to BUFFERING.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 3: Attach all sources to primary
@@ -70,7 +70,7 @@ public:
  *   Expect that attach source for audio propagated to the server.
  *   Set all sources attached.
  *   Expect that all source attached is propagated to the server.
- *   Server notifys the client that the Playback state has changed to IDLE.
+ *   Server notifies the client that the Playback state has changed to IDLE.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 4: Create a new media session for secondary video
@@ -81,7 +81,7 @@ public:
  *  Step 5: Load content on secondary
  *   Load MSE.
  *   Expect that load is propagated to the server.
- *   Server notifys the client that the NetworkState has changed to BUFFERING.
+ *   Server notifies the client that the NetworkState has changed to BUFFERING.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 6: Attach video only source to secondary
@@ -89,34 +89,34 @@ public:
  *   Expect that attach source for video propagated to the server.
  *   Set all sources attached.
  *   Expect that all source attached is propagated to the server.
- *   Server notifys the client that the Playback state has changed to IDLE.
+ *   Server notifies the client that the Playback state has changed to IDLE.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 7: Buffer to paused state on primary
  *   Write video frames.
  *   Write audio frames.
- *   Server notifys the client that the Network state has changed to BUFFERED.
+ *   Server notifies the client that the Network state has changed to BUFFERED.
  *   Expect that the state change notification is propagated to the client.
- *   Server notifys the client that the Playback state has changed to PAUSED.
+ *   Server notifies the client that the Playback state has changed to PAUSED.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 8: Buffer to paused state on secondary
  *   Write video frames.
- *   Server notifys the client that the Network state has changed to BUFFERED.
+ *   Server notifies the client that the Network state has changed to BUFFERED.
  *   Expect that the state change notification is propagated to the client.
- *   Server notifys the client that the Playback state has changed to PAUSED.
+ *   Server notifies the client that the Playback state has changed to PAUSED.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 9: Play primary
  *   Play the primary AV content.
  *   Expect that play propagated to the server.
- *   Server notifys the client that the Playback state has changed to PLAYING.
+ *   Server notifies the client that the Playback state has changed to PLAYING.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 9: Play secondary
  *   Play the secondary video only content.
  *   Expect that play propagated to the server.
- *   Server notifys the client that the Playback state has changed to PLAYING.
+ *   Server notifies the client that the Playback state has changed to PLAYING.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 10: Buffer more primary content
@@ -131,7 +131,7 @@ public:
  *  Step 12: Terminate the secondary media session
  *   Stop the playback on secondary session.
  *   Expect that stop propagated to the server.
- *   Server notifys the client that the Playback state has changed to STOPPED.
+ *   Server notifies the client that the Playback state has changed to STOPPED.
  *   Expect that the state change notification is propagated to the client.
  *   Destroy instance of MediaPipeline.
  *   Expect that the secondary session is destroyed on the server.
@@ -139,7 +139,7 @@ public:
  *  Step 13: Terminate the primary media session
  *   Stop the playback on primary session.
  *   Expect that stop propagated to the server.
- *   Server notifys the client that the Playback state has changed to STOPPED.
+ *   Server notifies the client that the Playback state has changed to STOPPED.
  *   Expect that the state change notification is propagated to the client.
  *   Destroy instance of MediaPipeline.
  *   Expect that the primary session is destroyed on the server.

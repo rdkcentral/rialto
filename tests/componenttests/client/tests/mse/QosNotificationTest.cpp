@@ -65,22 +65,22 @@ public:
  *
  * Test Steps:
  *  Step 1: Notify qos audio
- *   Server notifys the client qos for audio.
+ *   Server notifies the client qos for audio.
  *   Expect that the qos notification is propagated to the client.
  *   Check qos info.
  *
  *  Step 2: Notify qos video
- *   Server notifys the client qos for video.
+ *   Server notify the client qos for video.
  *   Expect that the qos notification is propagated to the client.
  *   Check qos info.
  *
- * Test Teardown:
+ * Test Tear-down:
  *  Terminate the media session.
  *  Memory region created for the shared buffer is closed.
  *  Server is terminated.
  *
  * Expected Results:
- *  Qos notifications for audio or video are handled by rialto client and the infomation is sent to the application.
+ *  Qos notifications for audio or video are handled by rialto client and the information is sent to the application.
  *
  * Code:
  */

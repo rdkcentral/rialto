@@ -230,6 +230,134 @@ struct CreateKeySession
     static constexpr auto m_kFunction{&Stub::createKeySession};
 };
 
+struct GenerateRequest
+{
+    using RequestType = ::firebolt::rialto::GenerateRequestRequest;
+    using ResponseType = ::firebolt::rialto::GenerateRequestResponse;
+    using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
+    static constexpr auto m_kFunction{&Stub::generateRequest};
+};
+
+struct UpdateSession
+{
+    using RequestType = ::firebolt::rialto::UpdateSessionRequest;
+    using ResponseType = ::firebolt::rialto::UpdateSessionResponse;
+    using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
+    static constexpr auto m_kFunction{&Stub::updateSession};
+};
+
+struct ContainsKey
+{
+    using RequestType = ::firebolt::rialto::ContainsKeyRequest;
+    using ResponseType = ::firebolt::rialto::ContainsKeyResponse;
+    using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
+    static constexpr auto m_kFunction{&Stub::containsKey};
+};
+
+struct RemoveKeySession
+{
+    using RequestType = ::firebolt::rialto::RemoveKeySessionRequest;
+    using ResponseType = ::firebolt::rialto::RemoveKeySessionResponse;
+    using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
+    static constexpr auto m_kFunction{&Stub::removeKeySession};
+};
+
+struct LoadSession
+{
+    using RequestType = ::firebolt::rialto::LoadSessionRequest;
+    using ResponseType = ::firebolt::rialto::LoadSessionResponse;
+    using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
+    static constexpr auto m_kFunction{&Stub::loadSession};
+};
+
+struct CloseKeySession
+{
+    using RequestType = ::firebolt::rialto::CloseKeySessionRequest;
+    using ResponseType = ::firebolt::rialto::CloseKeySessionResponse;
+    using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
+    static constexpr auto m_kFunction{&Stub::closeKeySession};
+};
+
+struct SetDrmHeader
+{
+    using RequestType = ::firebolt::rialto::SetDrmHeaderRequest;
+    using ResponseType = ::firebolt::rialto::SetDrmHeaderResponse;
+    using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
+    static constexpr auto m_kFunction{&Stub::setDrmHeader};
+};
+
+struct GetLastDrmError
+{
+    using RequestType = ::firebolt::rialto::GetLastDrmErrorRequest;
+    using ResponseType = ::firebolt::rialto::GetLastDrmErrorResponse;
+    using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
+    static constexpr auto m_kFunction{&Stub::getLastDrmError};
+};
+
+struct GetCdmKeySessionId
+{
+    using RequestType = ::firebolt::rialto::GetCdmKeySessionIdRequest;
+    using ResponseType = ::firebolt::rialto::GetCdmKeySessionIdResponse;
+    using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
+    static constexpr auto m_kFunction{&Stub::getCdmKeySessionId};
+};
+
+struct DestroyMediaKeys
+{
+    using RequestType = ::firebolt::rialto::DestroyMediaKeysRequest;
+    using ResponseType = ::firebolt::rialto::DestroyMediaKeysResponse;
+    using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
+    static constexpr auto m_kFunction{&Stub::destroyMediaKeys};
+};
+
+struct DeleteDrmStore
+{
+    using RequestType = ::firebolt::rialto::DeleteDrmStoreRequest;
+    using ResponseType = ::firebolt::rialto::DeleteDrmStoreResponse;
+    using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
+    static constexpr auto m_kFunction{&Stub::deleteDrmStore};
+};
+
+struct DeleteKeyStore
+{
+    using RequestType = ::firebolt::rialto::DeleteKeyStoreRequest;
+    using ResponseType = ::firebolt::rialto::DeleteKeyStoreResponse;
+    using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
+    static constexpr auto m_kFunction{&Stub::deleteKeyStore};
+};
+
+struct GetDrmStoreHash
+{
+    using RequestType = ::firebolt::rialto::GetDrmStoreHashRequest;
+    using ResponseType = ::firebolt::rialto::GetDrmStoreHashResponse;
+    using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
+    static constexpr auto m_kFunction{&Stub::getDrmStoreHash};
+};
+
+struct GetKeyStoreHash
+{
+    using RequestType = ::firebolt::rialto::GetKeyStoreHashRequest;
+    using ResponseType = ::firebolt::rialto::GetKeyStoreHashResponse;
+    using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
+    static constexpr auto m_kFunction{&Stub::getKeyStoreHash};
+};
+
+struct GetLdlSessionsLimit
+{
+    using RequestType = ::firebolt::rialto::GetLdlSessionsLimitRequest;
+    using ResponseType = ::firebolt::rialto::GetLdlSessionsLimitResponse;
+    using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
+    static constexpr auto m_kFunction{&Stub::getLdlSessionsLimit};
+};
+
+struct GetDrmTime
+{
+    using RequestType = ::firebolt::rialto::GetDrmTimeRequest;
+    using ResponseType = ::firebolt::rialto::GetDrmTimeResponse;
+    using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
+    static constexpr auto m_kFunction{&Stub::getDrmTime};
+};
+
 // control module
 struct GetSharedMemory
 {
