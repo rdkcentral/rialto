@@ -650,13 +650,13 @@ jobs:
           path: build/coverage_statistics.txt
 
   checks-the-cov-report:
-    name: Checks and Runs the Coverage Report
+    name: Checks the Coverage Report
 
     # Runs on ubuntu
     runs-on: ubuntu-22.04
 
     # Timeout after
-    timeout-minutes: 10
+    timeout-minutes: 2
 
     # Define the dependencies on the previous coverage jobs
     needs: [generate-coverage-report]
@@ -665,7 +665,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
     
-      # Download the current and previous coverage statistics
+      # Download the current coverage statistics
       - name: Download Current Coverage Statistics
         uses: actions/download-artifact@v2
         with:
