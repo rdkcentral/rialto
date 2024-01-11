@@ -21,7 +21,7 @@
 #include "GstGenericPlayerTestCommon.h"
 #include "HeartbeatHandlerMock.h"
 #include "IMediaPipeline.h"
-#include "Matchers.h"
+#include "MatchersGenericPlayer.h"
 #include "MediaSourceUtil.h"
 #include "PlayerTaskMock.h"
 

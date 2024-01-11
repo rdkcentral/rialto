@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2022 Sky UK
+ * Copyright 2024 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_MATCHERS_H_
-#define FIREBOLT_RIALTO_SERVER_MATCHERS_H_
+#ifndef FIREBOLT_RIALTO_SERVER_MATCHERS_GENERIC_PLAYER_H_
+#define FIREBOLT_RIALTO_SERVER_MATCHERS_GENERIC_PLAYER_H_
 
 #include "GenericPlayerContext.h"
 
@@ -36,22 +36,4 @@ namespace firebolt::rialto
 bool operator==(const Fraction &lhs, const Fraction &rhs);
 } // namespace firebolt::rialto
 
-MATCHER(NotNullMatcher, "")
-{
-    return nullptr != arg;
-}
-
-MATCHER_P(arrayMatcher, vec, "")
-{
-    const uint8_t *kArray = static_cast<const uint8_t *>(arg);
-    for (unsigned int i = 0; i < vec.size(); ++i)
-    {
-        if (vec[i] != kArray[i])
-        {
-            return false;
-        }
-    }
-    return true;
-}
-
-#endif // FIREBOLT_RIALTO_SERVER_MATCHERS_H_
+#endif // FIREBOLT_RIALTO_SERVER_MATCHERS_GENERIC_PLAYER_H_

@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_COMMON_MATCHERS_H_
-#define FIREBOLT_RIALTO_COMMON_MATCHERS_H_
+#ifndef FIREBOLT_RIALTO_COMMON_MATCHERS_SERVER_MANAGER_H_
+#define FIREBOLT_RIALTO_COMMON_MATCHERS_SERVER_MANAGER_H_
 
 #include "SessionServerCommon.h"
 
@@ -27,4 +27,4 @@ namespace firebolt::rialto::common
 bool operator==(const AppConfig &lhs, const AppConfig &rhs);
 } // namespace firebolt::rialto::common
 
-#endif // FIREBOLT_RIALTO_COMMON_MATCHERS_H_
+#endif // FIREBOLT_RIALTO_COMMON_MATCHERS_SERVER_MANAGER_H_

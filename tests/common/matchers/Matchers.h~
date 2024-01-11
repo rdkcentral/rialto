@@ -21,8 +21,20 @@
 #define MATCHERS_H_
 
 #include <gmock/gmock.h>
-#include <gtest/gtest.h>
 #include <string>
+
+MATCHER_P(PtrStrMatcher, expectedStr, "")
+{
+    std::string actualStr = (const char *)arg;
+    return expectedStr == actualStr;
+}
+
+MATCHER_P(BufferMatcher, expectedBuffer, "")
+{
+    const char *kArgCharPtr{reinterpret_cast<const char *>(arg)};
+    std::string dataCopy(kArgCharPtr, kArgCharPtr + expectedBuffer.size());
+    return dataCopy == expectedBuffer;
+}
 
 MATCHER(NotNullMatcher, "")
 {

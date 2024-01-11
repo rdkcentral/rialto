@@ -17,12 +17,13 @@
  * limitations under the License.
  */
 
-#include "SessionServerAppManagerTestsFixture.h"
-#include "LoggingLevels.h"
-#include "Matchers.h"
-#include "SessionServerAppManager.h"
 #include <string>
 #include <utility>
+
+#include "LoggingLevels.h"
+#include "MatchersServerManager.h"
+#include "SessionServerAppManager.h"
+#include "SessionServerAppManagerTestsFixture.h"
 
 using testing::_;
 using testing::ByMove;
