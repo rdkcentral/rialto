@@ -374,6 +374,7 @@ void AttachSource::reattachAudioSource(GstCaps *caps, const std::string &strCaps
     // GFlagsValue *flagVideo = g_flags_get_value_by_nick (flagsClass, "video");
     // GFlagsValue *flagNativeVideo = g_flags_get_value_by_nick (flagsClass, "native-video");
     // g_object_set(m_context.pipeline, "flags", flagVideo->value | flagNativeVideo->value | flagAudio->value, nullptr);
+    RIALTO_SERVER_LOG_MIL("lukewill: unmute");
     m_gstWrapper->gstStreamVolumeSetMute(GST_STREAM_VOLUME(m_context.pipeline), false);
 
     m_context.audioNeedData = true;
