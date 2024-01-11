@@ -356,7 +356,7 @@ void AttachSource::reattachAudioSource(GstCaps *caps, const std::string &strCaps
                                                     &caps, // may fail for amlogic - that implementation changes
                                                             // this parameter, it's probably used by Netflix later
                                                     &audioAac, svpEnabled,
-                                                    appSrc, &retVal);
+                                                    GST_ELEMENT(appSrc), &retVal);
         if (!result || !retVal)
         {
             RIALTO_SERVER_LOG_WARN("performAudioTrackCodecChannelSwitch failed! Result: %d, retval %d", result, retVal);
@@ -368,12 +368,13 @@ void AttachSource::reattachAudioSource(GstCaps *caps, const std::string &strCaps
     }
 
     // Restart audio sink
-    GFlagsClass *flagsClass =
-        static_cast<GFlagsClass *>(g_type_class_ref(g_type_from_name("GstPlayFlags")));
-    GFlagsValue *flagAudio = g_flags_get_value_by_nick (flagsClass, "audio");
-    GFlagsValue *flagVideo = g_flags_get_value_by_nick (flagsClass, "video");
-    GFlagsValue *flagNativeVideo = g_flags_get_value_by_nick (flagsClass, "native-video");
-    g_object_set(m_context.pipeline, "flags", flagVideo->value | flagNativeVideo->value | flagAudio->value, nullptr);
+    // GFlagsClass *flagsClass =
+    //     static_cast<GFlagsClass *>(g_type_class_ref(g_type_from_name("GstPlayFlags")));
+    // GFlagsValue *flagAudio = g_flags_get_value_by_nick (flagsClass, "audio");
+    // GFlagsValue *flagVideo = g_flags_get_value_by_nick (flagsClass, "video");
+    // GFlagsValue *flagNativeVideo = g_flags_get_value_by_nick (flagsClass, "native-video");
+    // g_object_set(m_context.pipeline, "flags", flagVideo->value | flagNativeVideo->value | flagAudio->value, nullptr);
+    m_gstWrapper->gstStreamVolumeSetMute(GST_STREAM_VOLUME(m_context.pipeline), false);
 
     m_context.audioNeedData = true;
     m_context.audioSourceRemoved = false;

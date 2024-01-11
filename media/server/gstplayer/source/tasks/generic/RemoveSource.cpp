@@ -151,10 +151,11 @@ void RemoveSource::execute() const
     }
 
     // Turn audio off, removing audio sink from playsink
-    GFlagsClass *flagsClass =
-        static_cast<GFlagsClass *>(g_type_class_ref(g_type_from_name("GstPlayFlags")));
-    GFlagsValue *flagVideo = g_flags_get_value_by_nick (flagsClass, "video");
-    GFlagsValue *flagNativeVideo = g_flags_get_value_by_nick (flagsClass, "native-video");
-    g_object_set(m_context.pipeline, "flags", flagVideo->value | flagNativeVideo->value , nullptr);
+    m_gstWrapper->gstStreamVolumeSetMute(GST_STREAM_VOLUME(m_context.pipeline), true);
+    // GFlagsClass *flagsClass =
+    //     static_cast<GFlagsClass *>(g_type_class_ref(g_type_from_name("GstPlayFlags")));
+    // GFlagsValue *flagVideo = g_flags_get_value_by_nick (flagsClass, "video");
+    // GFlagsValue *flagNativeVideo = g_flags_get_value_by_nick (flagsClass, "native-video");
+    // g_object_set(m_context.pipeline, "flags", flagVideo->value | flagNativeVideo->value , nullptr);
 }
 } // namespace firebolt::rialto::server::tasks::generic
