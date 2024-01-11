@@ -649,7 +649,6 @@ jobs:
           name: coverage_report_stats
           path: build/coverage_statistics.txt
 
-
   checks-the-cov-report:
     name: Checks and Runs the Coverage Report
 
