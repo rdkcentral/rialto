@@ -55,6 +55,7 @@ public:
     MOCK_METHOD(void, addAutoVideoSinkChild, (GObject * object), (override));
     MOCK_METHOD(void, removeAutoVideoSinkChild, (GObject * object), (override));
     MOCK_METHOD(GstElement *, getSinkChildIfAutoVideoSink, (GstElement * sink), (override));
+    MOCK_METHOD(void, setAudioVideoFlags, (bool enableAudio, bool enableVideo), (override));
 };
 } // namespace firebolt::rialto::server
 

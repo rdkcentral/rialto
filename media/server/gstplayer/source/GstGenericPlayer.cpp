@@ -202,12 +202,7 @@ void GstGenericPlayer::initMsePipeline()
     // Make playbin
     m_context.pipeline = m_gstWrapper->gstElementFactoryMake("playbin", "media_pipeline");
     // Set pipeline flags
-    unsigned flagAudio = getGstPlayFlag("audio");
-    unsigned flagVideo = getGstPlayFlag("video");
-    unsigned flagNativeVideo = getGstPlayFlag("native-video");
-    unsigned flagNativeAudio = shouldEnableNativeAudio() ? getGstPlayFlag("native-audio") : 0;
-    m_glibWrapper->gObjectSet(m_context.pipeline, "flags", flagAudio | flagVideo | flagNativeVideo | flagNativeAudio,
-                              nullptr);
+    setAudioVideoFlags(true, true);
 
     // Set callbacks
     m_glibWrapper->gSignalConnect(m_context.pipeline, "source-setup", G_CALLBACK(&GstGenericPlayer::setupSource), this);
@@ -322,7 +317,7 @@ void GstGenericPlayer::removeSource(const MediaSourceType &mediaSourceType)
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createRemoveSource(m_context, mediaSourceType));
+        m_workerThread->enqueueTask(m_taskFactory->createRemoveSource(m_context, *this, mediaSourceType));
     }
 }
 
@@ -968,6 +963,26 @@ GstElement *GstGenericPlayer::getSinkChildIfAutoVideoSink(GstElement *sink)
     {
         return sink;
     }
+}
+
+void GstGenericPlayer::setAudioVideoFlags(bool enableAudio, bool enableVideo)
+{
+    unsigned flagAudio{0};
+    unsigned flagNativeAudio{0};
+    unsigned flagVideo{0};
+    unsigned flagNativeVideo{0};
+    if (enableAudio)
+    {
+        flagAudio = getGstPlayFlag("audio");
+        flagNativeAudio = shouldEnableNativeAudio() ? getGstPlayFlag("native-audio") : 0;
+    }
+    if (enableVideo)
+    {
+        flagVideo = getGstPlayFlag("video");
+        flagNativeVideo = getGstPlayFlag("native-video");
+    }
+    m_glibWrapper->gObjectSet(m_context.pipeline, "flags", flagAudio | flagVideo | flagNativeVideo | flagNativeAudio,
+                              nullptr);
 }
 
 bool GstGenericPlayer::shouldEnableNativeAudio()

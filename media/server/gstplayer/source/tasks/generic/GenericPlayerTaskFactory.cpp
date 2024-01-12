@@ -129,10 +129,10 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createReadShmDataAndAttac
     return std::make_unique<tasks::generic::ReadShmDataAndAttachSamples>(context, player, dataReader);
 }
 
-std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createRemoveSource(GenericPlayerContext &context,
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createRemoveSource(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                                                           const firebolt::rialto::MediaSourceType &type) const
 {
-    return std::make_unique<tasks::generic::RemoveSource>(context, m_client, m_gstWrapper, type);
+    return std::make_unique<tasks::generic::RemoveSource>(context, player, m_client, m_gstWrapper, type);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createReportPosition(GenericPlayerContext &context) const

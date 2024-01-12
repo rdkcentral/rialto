@@ -325,14 +325,13 @@ void AttachSource::reattachAudioSource(GstCaps *caps, const std::string &strCaps
 
     GstAppSrc *appSrc{GST_APP_SRC(m_context.streamInfo[m_attachedSource->getType()].appSrc)};
     GstCaps *oldCaps = m_gstWrapper->gstAppSrcGetCaps(appSrc);
-    if ((!oldCaps) || (!m_gstWrapper->gstCapsIsEqual(oldCaps, caps)))
+    if ((!oldCaps) || (!m_gstWrapper->gstCapsIsEqual(caps, oldCaps)))
     {
         RIALTO_SERVER_LOG_MIL("Switching audio source.");
 
         gchar *oldCapsCStr = m_gstWrapper->gstCapsToString(oldCaps);
         std::string oldCapsStr = std::string(oldCapsCStr);
         m_glibWrapper->gFree(oldCapsCStr);
-        m_gstWrapper->gstCapsUnref(oldCaps);
         
         RIALTO_SERVER_LOG_MIL("Old caps: %s", oldCapsStr.c_str());
         RIALTO_SERVER_LOG_MIL("New caps: %s", strCaps.c_str());
@@ -364,17 +363,11 @@ void AttachSource::reattachAudioSource(GstCaps *caps, const std::string &strCaps
     }
     else
     { 
-        RIALTO_SERVER_LOG_MIL("Reattaching indentical audio source.");
+        RIALTO_SERVER_LOG_MIL("Reattaching identical audio source.");
     }
 
     // Restart audio sink
-    // TODO: Move to common method
-    GFlagsClass *flagsClass =
-        static_cast<GFlagsClass *>(g_type_class_ref(g_type_from_name("GstPlayFlags")));
-    GFlagsValue *flagAudio = g_flags_get_value_by_nick (flagsClass, "audio");
-    GFlagsValue *flagVideo = g_flags_get_value_by_nick (flagsClass, "video");
-    GFlagsValue *flagNativeVideo = g_flags_get_value_by_nick (flagsClass, "native-video");
-    g_object_set(m_context.pipeline, "flags", flagVideo->value | flagNativeVideo->value | flagAudio->value, nullptr);
+    m_player.setAudioVideoFlags(true, true);
 
     m_context.audioNeedData = true;
     m_context.audioSourceRemoved = false;

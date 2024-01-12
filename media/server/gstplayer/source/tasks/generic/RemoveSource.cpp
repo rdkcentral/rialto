@@ -22,10 +22,10 @@
 
 namespace firebolt::rialto::server::tasks::generic
 {
-RemoveSource::RemoveSource(GenericPlayerContext &context, IGstGenericPlayerClient *client,
+RemoveSource::RemoveSource(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client,
                            std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
                            const MediaSourceType &type)
-    : m_context{context}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}, m_type{type}
+    : m_context{context}, m_player{player}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}, m_type{type}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing RemoveSource");
 }
@@ -71,11 +71,6 @@ void RemoveSource::execute() const
     }
 
     // Turn audio off, removing audio sink from playsink
-    // TODO: Move to common method
-    GFlagsClass *flagsClass =
-        static_cast<GFlagsClass *>(g_type_class_ref(g_type_from_name("GstPlayFlags")));
-    GFlagsValue *flagVideo = g_flags_get_value_by_nick (flagsClass, "video");
-    GFlagsValue *flagNativeVideo = g_flags_get_value_by_nick (flagsClass, "native-video");
-    g_object_set(m_context.pipeline, "flags", flagVideo->value | flagNativeVideo->value , nullptr);
+    m_player.setAudioVideoFlags(false, true);
 }
 } // namespace firebolt::rialto::server::tasks::generic
