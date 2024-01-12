@@ -30,6 +30,14 @@ def main():
     comparison_output = compare_coverage(master_stats, current_stats)
     write_output(comparison_output)
 
+    # If line coverage, funtion coverage individually or both decrease, it should exit
+    if current_stats[0] < master_stats[0] and current_stats[1] < master_stats[1]:
+        sys.exit("Line coverage and function coverage have both decreased. Exiting...")
+    elif current_stats[0] < master_stats[0]:
+        sys.exit("Line coverage has decreased. Exiting...")
+    elif current_stats[1] < master_stats[1]:
+        sys.exit("Function coverage has decreased. Exiting...")
+
 def parse_statistics(file_path):
     try:
         file = open(file_path, "r")
