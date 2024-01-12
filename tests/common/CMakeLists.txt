@@ -18,6 +18,6 @@
 #
 
 add_subdirectory(publicClientMocks)
+add_subdirectory(externalLibraryMocks)
 add_subdirectory(matchers)
 add_subdirectory(protoUtils)
-add_subdirectory(mocks)
