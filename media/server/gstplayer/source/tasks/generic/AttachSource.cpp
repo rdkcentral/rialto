@@ -347,7 +347,6 @@ void AttachSource::reattachAudioSource(GstCaps *caps, const std::string &strCaps
         bool svpEnabled{true}; // assume always true
         bool retVal{false};    // Output param. Set to TRUE in rdk_gstreamer_utils function stub
 
-        RIALTO_SERVER_LOG_MIL("lukewill: performAudioTrackCodecChannelSwitch start");
         bool result =
             m_rdkGstreamerUtilsWrapper
                 ->performAudioTrackCodecChannelSwitch(&m_context.playbackGroup, &sampleAttributes, &audioAttributes, &status,
