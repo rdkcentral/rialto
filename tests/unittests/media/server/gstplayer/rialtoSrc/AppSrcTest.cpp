@@ -25,6 +25,7 @@
 #include "GstWrapperFactoryMock.h"
 #include "GstWrapperMock.h"
 #include "IFactoryAccessor.h"
+#include "Matchers.h"
 #include "MediaSourceUtil.h"
 #include <gtest/gtest.h>
 
@@ -36,17 +37,6 @@ using ::testing::_;
 using ::testing::Return;
 using ::testing::StrEq;
 using ::testing::StrictMock;
-
-MATCHER_P(PtrStrMatcher, expectedStr, "")
-{
-    std::string actualStr = (const char *)arg;
-    return expectedStr == actualStr;
-}
-
-MATCHER(NotNullMatcher, "")
-{
-    return nullptr != arg;
-}
 
 class RialtoServerAppSrcGstSrcTest : public ::testing::Test
 {

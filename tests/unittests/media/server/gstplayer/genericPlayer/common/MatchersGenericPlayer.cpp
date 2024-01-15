@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2022 Sky UK
+ * Copyright 2024 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,21 +17,19 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_WRAPPERS_OCDM_MOCK_H_
-#define FIREBOLT_RIALTO_WRAPPERS_OCDM_MOCK_H_
+#include "MatchersGenericPlayer.h"
 
-#include "IOcdm.h"
-#include <gmock/gmock.h>
-#include <memory>
-#include <string>
-
-namespace firebolt::rialto::wrappers
+namespace firebolt::rialto::server
 {
-class OcdmMock : public IOcdm
+bool operator==(const Rectangle &lhs, const Rectangle &rhs)
 {
-public:
-    MOCK_METHOD(MediaKeyErrorStatus, isTypeSupported, (std::string keySystem), (override));
-};
-} // namespace firebolt::rialto::wrappers
-
-#endif // FIREBOLT_RIALTO_WRAPPERS_OCDM_MOCK_H_
+    return lhs.x == rhs.x && lhs.y == rhs.y && lhs.width == rhs.width && lhs.height == rhs.height;
+}
+} // namespace firebolt::rialto::server
+namespace firebolt::rialto
+{
+bool operator==(const Fraction &lhs, const Fraction &rhs)
+{
+    return lhs.numerator == rhs.numerator && lhs.denominator == rhs.denominator;
+}
+} // namespace firebolt::rialto

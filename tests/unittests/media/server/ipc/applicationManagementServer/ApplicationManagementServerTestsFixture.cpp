@@ -19,7 +19,7 @@
 
 #include "ApplicationManagementServerTestsFixture.h"
 #include "ApplicationManagementServer.h"
-#include "IpcClientMock.h"
+#include "ClientMock.h"
 #include "IpcServerFactoryMock.h"
 #include "ServerManagerModuleServiceFactoryMock.h"
 

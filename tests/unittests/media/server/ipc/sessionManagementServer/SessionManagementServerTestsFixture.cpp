@@ -18,8 +18,8 @@
  */
 
 #include "SessionManagementServerTestsFixture.h"
+#include "ClientMock.h"
 #include "ControlModuleServiceFactoryMock.h"
-#include "IpcClientMock.h"
 #include "IpcServerFactoryMock.h"
 #include "LinuxWrapperMock.h"
 #include "MediaKeysCapabilitiesModuleServiceFactoryMock.h"

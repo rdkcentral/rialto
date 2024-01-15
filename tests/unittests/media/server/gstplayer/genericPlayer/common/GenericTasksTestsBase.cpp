@@ -22,6 +22,7 @@
 #include "HeartbeatHandlerMock.h"
 #include "IMediaPipeline.h"
 #include "Matchers.h"
+#include "MatchersGenericPlayer.h"
 #include "tasks/generic/AttachSamples.h"
 #include "tasks/generic/AttachSource.h"
 #include "tasks/generic/CheckAudioUnderflow.h"

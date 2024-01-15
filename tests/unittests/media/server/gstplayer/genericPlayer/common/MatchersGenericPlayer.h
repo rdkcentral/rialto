@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2022 Sky UK
+ * Copyright 2024 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,21 +17,23 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_WRAPPERS_OCDM_SYSTEM_FACTORY_MOCK_H_
-#define FIREBOLT_RIALTO_WRAPPERS_OCDM_SYSTEM_FACTORY_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_MATCHERS_GENERIC_PLAYER_H_
+#define FIREBOLT_RIALTO_SERVER_MATCHERS_GENERIC_PLAYER_H_
 
-#include "IOcdmSystem.h"
+#include "GenericPlayerContext.h"
+
 #include <gmock/gmock.h>
-#include <memory>
+#include <gtest/gtest.h>
 #include <string>
 
-namespace firebolt::rialto::wrappers
+namespace firebolt::rialto::server
 {
-class OcdmSystemFactoryMock : public IOcdmSystemFactory
-{
-public:
-    MOCK_METHOD(std::shared_ptr<IOcdmSystem>, createOcdmSystem, (const std::string &keySystem), (const, override));
-};
-} // namespace firebolt::rialto::wrappers
+bool operator==(const Rectangle &lhs, const Rectangle &rhs);
+} // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_WRAPPERS_OCDM_SYSTEM_FACTORY_MOCK_H_
+namespace firebolt::rialto
+{
+bool operator==(const Fraction &lhs, const Fraction &rhs);
+} // namespace firebolt::rialto
+
+#endif // FIREBOLT_RIALTO_SERVER_MATCHERS_GENERIC_PLAYER_H_

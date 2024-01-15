@@ -20,9 +20,9 @@
 #ifndef WEB_AUDIO_PLAYER_MODULE_SERVICE_TESTS_FIXTURE_H_
 #define WEB_AUDIO_PLAYER_MODULE_SERVICE_TESTS_FIXTURE_H_
 
+#include "ClientMock.h"
 #include "ClosureMock.h"
 #include "IWebAudioPlayerModuleService.h"
-#include "IpcClientMock.h"
 #include "IpcControllerMock.h"
 #include "IpcServerMock.h"
 #include "WebAudioPlayerServiceMock.h"
