@@ -296,21 +296,6 @@ void AttachSource::addSource(GstCaps *caps, bool hasDrm) const
     m_context.streamInfo.emplace(m_attachedSource->getType(), StreamInfo{appSrc, hasDrm});
 }
 
-void AttachSource::updateSource(GstCaps *caps, const std::string &strCaps) const
-{
-    GstAppSrc *appSrc{GST_APP_SRC(m_context.streamInfo[m_attachedSource->getType()].appSrc)};
-    GstCaps *appsrcCaps = m_gstWrapper->gstAppSrcGetCaps(appSrc);
-    if ((!appsrcCaps) || (!m_gstWrapper->gstCapsIsEqual(appsrcCaps, caps)))
-    {
-        RIALTO_SERVER_LOG_MIL("Updating %s appsrc caps to '%s'",
-                              m_attachedSource->getType() == MediaSourceType::AUDIO ? "Audio" : "Video", strCaps.c_str());
-        m_gstWrapper->gstAppSrcSetCaps(appSrc, caps);
-    }
-
-    if (appsrcCaps)
-        m_gstWrapper->gstCapsUnref(appsrcCaps);
-}
-
 void AttachSource::reattachAudioSource(GstCaps *caps, const std::string &strCaps) const
 {
     if (m_attachedSource->getMimeType().empty())
@@ -372,7 +357,7 @@ void AttachSource::reattachAudioSource(GstCaps *caps, const std::string &strCaps
     m_context.audioNeedData = true;
     m_context.audioSourceRemoved = false;
     m_context.lastAudioSampleTimestamps = currentDispPts;
-    m_player.notifyNeedMediaData(true, false);
+    m_player.scheduleNeedMediaData(appSrc);
 
     if (oldCaps)
         m_gstWrapper->gstCapsUnref(oldCaps);
