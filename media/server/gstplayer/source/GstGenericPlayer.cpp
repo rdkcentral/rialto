@@ -270,7 +270,6 @@ void GstGenericPlayer::termPipeline()
 
 unsigned GstGenericPlayer::getGstPlayFlag(const char *nick)
 {
-    RIALTO_SERVER_LOG_ERROR("lukewill: %s", nick);
     GFlagsClass *flagsClass =
         static_cast<GFlagsClass *>(m_glibWrapper->gTypeClassRef(m_glibWrapper->gTypeFromName("GstPlayFlags")));
     GFlagsValue *flag = m_glibWrapper->gFlagsGetValueByNick(flagsClass, nick);

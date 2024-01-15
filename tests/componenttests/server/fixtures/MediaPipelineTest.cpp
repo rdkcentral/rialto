@@ -404,8 +404,6 @@ void MediaPipelineTest::gstNeedData(GstAppSrc *appSrc, int frameCount)
     const int kSourceId = ((appSrc == &m_audioAppSrc) ? m_audioSourceId : m_videoSourceId);
     auto &needDataPtr = ((appSrc == &m_audioAppSrc) ? m_lastAudioNeedData : m_lastVideoNeedData);
 
-    std::cout << "lukewill: kSourceId, m_lastAudioNeedData      " << kSourceId << ", " << m_lastAudioNeedData
-              << std::endl;
     ExpectMessage<firebolt::rialto::NeedMediaDataEvent> expectedNeedData{m_clientStub};
     m_gstreamerStub.needData(appSrc, kNeededDataLength);
     auto receivedNeedData{expectedNeedData.getMessage()};

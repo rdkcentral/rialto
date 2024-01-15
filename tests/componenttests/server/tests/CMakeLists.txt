@@ -50,6 +50,7 @@ add_gtests (
         mediaPipeline/VolumeTest.cpp
         mediaPipeline/WriteSegmentsTest.cpp
         mediaPipeline/RemoveAudioPlaybackTest.cpp
+        mediaKeys/MediaKeysTestMethods.cpp
         mediaKeys/MediaKeysTest.cpp
         mediaKeys/SessionReadyForDecryptionTest.cpp
         mediaKeys/KeyStoreTest.cpp
