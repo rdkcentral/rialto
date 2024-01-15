@@ -179,7 +179,8 @@ public:
      *
      * @retval the new Remove Source task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createRemoveSource(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+    virtual std::unique_ptr<IPlayerTask> createRemoveSource(GenericPlayerContext &context,
+                                                            IGstGenericPlayerPrivate &player,
                                                             const firebolt::rialto::MediaSourceType &type) const = 0;
 
     /**

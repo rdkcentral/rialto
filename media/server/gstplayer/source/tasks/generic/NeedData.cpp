@@ -42,14 +42,11 @@ void NeedData::execute() const
     auto elem = m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO);
     if (elem != m_context.streamInfo.end())
     {
-        RIALTO_SERVER_LOG_DEBUG("lukewill: 1");
         if (elem->second.appSrc == GST_ELEMENT(m_src))
         {
-            RIALTO_SERVER_LOG_DEBUG("lukewill: 2");
             m_context.audioNeedData = true;
             if (m_gstPlayerClient && !m_context.audioNeedDataPending && !m_context.audioSourceRemoved)
             {
-                RIALTO_SERVER_LOG_DEBUG("lukewill: 3");
                 m_context.audioNeedDataPending = m_gstPlayerClient->notifyNeedMediaData(MediaSourceType::AUDIO);
             }
         }
@@ -57,14 +54,11 @@ void NeedData::execute() const
     elem = m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO);
     if (elem != m_context.streamInfo.end())
     {
-        RIALTO_SERVER_LOG_DEBUG("lukewill: 4");
         if (elem->second.appSrc == GST_ELEMENT(m_src))
         {
-            RIALTO_SERVER_LOG_DEBUG("lukewill: 5");
             m_context.videoNeedData = true;
             if (m_gstPlayerClient && !m_context.videoNeedDataPending)
             {
-                RIALTO_SERVER_LOG_DEBUG("lukewill: 6");
                 m_context.videoNeedDataPending = m_gstPlayerClient->notifyNeedMediaData(MediaSourceType::VIDEO);
             }
         }

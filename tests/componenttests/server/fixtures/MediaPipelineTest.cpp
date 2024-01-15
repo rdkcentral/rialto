@@ -290,7 +290,7 @@ void MediaPipelineTest::willRemoveAudioSource()
     EXPECT_CALL(*m_gstWrapperMock, gstEventNewFlushStop(0)).WillOnce(Return(&m_flushStopEvent));
     EXPECT_CALL(*m_gstWrapperMock, gstElementSendEvent(GST_ELEMENT(&m_audioAppSrc), &m_flushStopEvent))
         .WillOnce(Return(TRUE));
-        
+
     EXPECT_CALL(*m_glibWrapperMock, gTypeFromName(StrEq("GstPlayFlags"))).Times(2).WillRepeatedly(Return(kGstPlayFlagsType));
     EXPECT_CALL(*m_glibWrapperMock, gTypeClassRef(kGstPlayFlagsType)).Times(2).WillRepeatedly(Return(&m_flagsClass));
     EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("video"))).WillOnce(Return(&m_videoFlag));
@@ -404,7 +404,8 @@ void MediaPipelineTest::gstNeedData(GstAppSrc *appSrc, int frameCount)
     const int kSourceId = ((appSrc == &m_audioAppSrc) ? m_audioSourceId : m_videoSourceId);
     auto &needDataPtr = ((appSrc == &m_audioAppSrc) ? m_lastAudioNeedData : m_lastVideoNeedData);
 
-    std::cout << "lukewill: kSourceId, m_lastAudioNeedData      " << kSourceId << ", " << m_lastAudioNeedData << std::endl;
+    std::cout << "lukewill: kSourceId, m_lastAudioNeedData      " << kSourceId << ", " << m_lastAudioNeedData
+              << std::endl;
     ExpectMessage<firebolt::rialto::NeedMediaDataEvent> expectedNeedData{m_clientStub};
     m_gstreamerStub.needData(appSrc, kNeededDataLength);
     auto receivedNeedData{expectedNeedData.getMessage()};

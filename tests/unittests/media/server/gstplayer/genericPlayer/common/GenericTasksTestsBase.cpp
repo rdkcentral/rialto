@@ -1994,7 +1994,8 @@ void GenericTasksTestsBase::shouldDisableAudioFlag()
 
 void GenericTasksTestsBase::triggerRemoveSourceAudio()
 {
-    firebolt::rialto::server::tasks::generic::RemoveSource task{testContext->m_context, testContext->m_gstPlayer, &testContext->m_gstPlayerClient,
+    firebolt::rialto::server::tasks::generic::RemoveSource task{testContext->m_context, testContext->m_gstPlayer,
+                                                                &testContext->m_gstPlayerClient,
                                                                 testContext->m_gstWrapper,
                                                                 firebolt::rialto::MediaSourceType::AUDIO};
     task.execute();
@@ -2002,7 +2003,8 @@ void GenericTasksTestsBase::triggerRemoveSourceAudio()
 
 void GenericTasksTestsBase::triggerRemoveSourceVideo()
 {
-    firebolt::rialto::server::tasks::generic::RemoveSource task{testContext->m_context, testContext->m_gstPlayer, &testContext->m_gstPlayerClient,
+    firebolt::rialto::server::tasks::generic::RemoveSource task{testContext->m_context, testContext->m_gstPlayer,
+                                                                &testContext->m_gstPlayerClient,
                                                                 testContext->m_gstWrapper,
                                                                 firebolt::rialto::MediaSourceType::VIDEO};
     task.execute();
