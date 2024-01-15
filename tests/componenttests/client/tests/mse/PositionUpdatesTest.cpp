@@ -63,11 +63,11 @@ public:
  *  Step 1: Play
  *   Play the content.
  *   Expect that play propagated to the server.
- *   Server notifys the client that the Playback state has changed to PLAYING.
+ *   Server notifies the client that the Playback state has changed to PLAYING.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 2: Notify position
- *   Server notifys the client of position 10.
+ *   Server notifies the client of position 10.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 3: Get position

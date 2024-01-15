@@ -79,6 +79,8 @@ def printOk(str):
 def doCheckExtra():
     print("Extra checks...")
     print("    Looking for iostream")
+    print("    Looking for cout")
+    print("    Looking for tabs")
     print("    Looking for const variables that don't begin with 'k'")
     files = getSourceFiles()
     for file in files:
@@ -86,6 +88,18 @@ def doCheckExtra():
         executeCmd = ["grep", "-n", "iostream", file, "/dev/null"]
         if not runcmd(1, executeCmd, cwd=baseDir):
             print("    The code shouldn't include iostream")
+            exit(1)
+
+        # The code shouldn't have cout
+        executeCmd = ["egrep", "-n", "(cout|cerr[^n])", file, "/dev/null"]
+        if not runcmd(1, executeCmd, cwd=baseDir):
+            print("    The code shouldn't use cout")
+            exit(1)
+
+        # The code shouldn't have tabs
+        executeCmd = ["egrep", "-n", "[\t]", file, "/dev/null"]
+        if not runcmd(1, executeCmd, cwd=baseDir):
+            print("    The code shouldn't have tabs")
             exit(1)
 
         if file.endswith("ShmCommon.h") or ("/I" in file and file.endswith(".h")):

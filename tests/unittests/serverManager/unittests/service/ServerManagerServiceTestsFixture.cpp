@@ -17,14 +17,16 @@
  * limitations under the License.
  */
 
-#include "ServerManagerServiceTestsFixture.h"
-#include "LogHandlerMock.h"
-#include "Matchers.h"
-#include "RialtoServerManagerLogging.h"
-#include "ServerManagerService.h"
-#include "ServiceContextMock.h"
 #include <string>
 #include <utility>
+
+#include "LogHandlerMock.h"
+#include "Matchers.h"
+#include "MatchersServerManager.h"
+#include "RialtoServerManagerLogging.h"
+#include "ServerManagerService.h"
+#include "ServerManagerServiceTestsFixture.h"
+#include "ServiceContextMock.h"
 
 using testing::_;
 using testing::AtLeast;
@@ -35,7 +37,13 @@ namespace
 {
 constexpr unsigned kNumOfPreloadedServers{2};
 const std::string kLogText{"RialtoServerManager Test Log"};
+const int kLineNumberOfLogCodeMinus4 =
+    __LINE__; // The call to RIALTO_SERVER_MANAGER_LOG_INFO() should be 4 lines below this line
 } // namespace
+void ServerManagerServiceTests::triggerServerManagerLog()
+{
+    RIALTO_SERVER_MANAGER_LOG_INFO("%s", kLogText.c_str());
+}
 
 ServerManagerServiceTests::ServerManagerServiceTests()
 {
@@ -74,8 +82,9 @@ std::shared_ptr<rialto::servermanager::service::ILogHandler> ServerManagerServic
 {
     auto logHandler = std::make_shared<StrictMock<rialto::servermanager::service::LogHandlerMock>>();
 
-    EXPECT_CALL(*logHandler, log(rialto::servermanager::service::ILogHandler::Level::Info,
-                                 "ServerManagerServiceTestsFixture.cpp", 118, "triggerServerManagerLog", kLogText));
+    EXPECT_CALL(*logHandler,
+                log(rialto::servermanager::service::ILogHandler::Level::Info, "ServerManagerServiceTestsFixture.cpp",
+                    kLineNumberOfLogCodeMinus4 + 4, "triggerServerManagerLog", kLogText));
     return logHandler;
 }
 
@@ -111,9 +120,4 @@ bool ServerManagerServiceTests::triggerRegisterLogHandler(
 {
     EXPECT_TRUE(m_sut);
     return m_sut->registerLogHandler(handler);
-}
-
-void ServerManagerServiceTests::triggerServerManagerLog()
-{
-    RIALTO_SERVER_MANAGER_LOG_INFO("%s", kLogText.c_str());
 }

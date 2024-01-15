@@ -66,7 +66,7 @@ public:
  *  Step 2: Play
  *   Play the content.
  *   Expect that play propagated to the server.
- *   Server notifys the client that the Playback state has changed to PLAYING.
+ *   Server notifies the client that the Playback state has changed to PLAYING.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 3: Render frame failure
@@ -76,20 +76,20 @@ public:
  *  Step 4: Pause
  *   Pause the content.
  *   Expect that pause propagated to the server.
- *   Server notifys the client that the Playback state has changed to PAUSED.
+ *   Server notifies the client that the Playback state has changed to PAUSED.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 5: Seek
  *   SetPosition to position 0s.
- *   Server notifys the client that the Playback state has changed to SEEKING.
+ *   Server notifies the client that the Playback state has changed to SEEKING.
  *   Expect that the state change notification is propagated to the client.
- *   Server notifys the client that the Playback state has changed to FLUSHED.
+ *   Server notifies the client that the Playback state has changed to FLUSHED.
  *   Expect that the state change notification is propagated to the client.
  *   Write audio frames.
  *   Write video frames.
- *   Server notifys the client that the Network state has changed to BUFFERED.
+ *   Server notifies the client that the Network state has changed to BUFFERED.
  *   Expect that the state change notification is propagated to the client.
- *   Server notifys the client that the Playback state has changed to PAUSED.
+ *   Server notifies the client that the Playback state has changed to PAUSED.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 6: Render frame after seek

@@ -69,7 +69,7 @@ public:
  *   Api call returns with success.
  *
  *  Step 2: Add encrypted video segment
- *   Server notifys the client that it needs 20 frames of video data.
+ *   Server notifies the client that it needs 20 frames of video data.
  *   Writes 1 frame of video data to the shared buffer with key session id set.
  *   Check that the key id has been added to the metadata.
  *   Notify the server that the data has been written.
@@ -79,7 +79,7 @@ public:
  *   Api call returns with success.
  *
  *  Step 4: Add encrypted audio segment
- *   Server notifys the client that it needs 20 frames of audio data.
+ *   Server notifies the client that it needs 20 frames of audio data.
  *   Writes 1 frame of audio data to the shared buffer with key session id set.
  *   Check that the key id has been added to the metadata.
  *   Notify the server that the data has been written.

@@ -17,23 +17,14 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_COMMON_EVENT_THREAD_MOCK_H_
-#define FIREBOLT_RIALTO_COMMON_EVENT_THREAD_MOCK_H_
+#ifndef FIREBOLT_RIALTO_COMMON_MATCHERS_SERVER_MANAGER_H_
+#define FIREBOLT_RIALTO_COMMON_MATCHERS_SERVER_MANAGER_H_
 
-#include "IEventThread.h"
-#include <gmock/gmock.h>
+#include "SessionServerCommon.h"
 
 namespace firebolt::rialto::common
 {
-class EventThreadMock : public IEventThread
-{
-public:
-    EventThreadMock() = default;
-    virtual ~EventThreadMock() = default;
-
-    MOCK_METHOD(void, flush, (), (override));
-    MOCK_METHOD(void, addImpl, (std::function<void()> && func), (override));
-};
+bool operator==(const AppConfig &lhs, const AppConfig &rhs);
 } // namespace firebolt::rialto::common
 
-#endif // FIREBOLT_RIALTO_COMMON_EVENT_THREAD_MOCK_H_
+#endif // FIREBOLT_RIALTO_COMMON_MATCHERS_SERVER_MANAGER_H_

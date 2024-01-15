@@ -66,56 +66,56 @@ public:
  *
  * Test Steps:
  *  Step 1: Write 6 encrypted audio frames with key 1
- *   Server notifys the client that it needs 3 frames of audio data.
+ *   Server notifies the client that it needs 3 frames of audio data.
  *   Writes 3 encrypted frames of audio data to the shared buffer.
  *   Notify the server that the data has been written.
  *   x2
  *
  *  Step 2: Write 6 encrypted video frames with key 1
- *   Server notifys the client that it needs 3 frames of video data.
+ *   Server notifies the client that it needs 3 frames of video data.
  *   Writes 3 encrypted frames of video data to the shared buffer.
  *   Notify the server that the data has been written.
  *   x2
  *
  *  Step 3: Write 2 encrypted audio frames with key 2
- *   Server notifys the client that it needs 3 frames of audio data.
+ *   Server notifies the client that it needs 3 frames of audio data.
  *   Writes 2 encrypted frames of audio data to the shared buffer.
  *   Notify the server that the data has been written.
  *
  *  Step 4: Write 2 encrypted video frames with key 2
- *   Server notifys the client that it needs 3 frames of video data.
+ *   Server notifies the client that it needs 3 frames of video data.
  *   Writes 2 encrypted frames of video data to the shared buffer.
  *   Notify the server that the data has been written.
  *
  *  Step 5: Preroll
- *   Server notifys the client that the Network state has changed to BUFFERED.
+ *   Server notifies the client that the Network state has changed to BUFFERED.
  *   Expect that the state change notification is propagated to the client.
- *   Server notifys the client that the Network state has changed to PAUSED.
+ *   Server notifies the client that the Network state has changed to PAUSED.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 6: Play
  *   Play the content.
  *   Expect that play propagated to the server.
- *   Server notifys the client that the Playback state has changed to PLAYING.
+ *   Server notifies the client that the Playback state has changed to PLAYING.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 7: Write 20 encrypted audio frames with key 3
- *   Server notifys the client that it needs 20 frames of audio data.
+ *   Server notifies the client that it needs 20 frames of audio data.
  *   Writes 20 encrypted frames of audio data to the shared buffer.
  *   Notify the server that the data has been written.
  *
  *  Step 8: Write 20 encrypted video frames with key 3
- *   Server notifys the client that it needs 20 frames of video data.
+ *   Server notifies the client that it needs 20 frames of video data.
  *   Writes 20 encrypted frames of video data to the shared buffer.
  *   Notify the server that the data has been written.
  *
  *  Step 9: Write 5 encrypted audio frames with key 1
- *   Server notifys the client that it needs 20 frames of audio data.
+ *   Server notifies the client that it needs 20 frames of audio data.
  *   Writes 5 encrypted frames of audio data to the shared buffer.
  *   Notify the server that the data has been written.
  *
  *  Step 10: Write 5 encrypted video frames with key 1
- *   Server notifys the client that it needs 20 frames of video data.
+ *   Server notifies the client that it needs 20 frames of video data.
  *   Writes 5 encrypted frames of video data to the shared buffer.
  *   Notify the server that the data has been written.
  *

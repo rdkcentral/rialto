@@ -29,7 +29,6 @@ add_gtests (
         sessionServer/SessionServerStateChangeTest.cpp
         sessionServer/SessionServerHealthCheckTest.cpp
         sessionServer/SessionServerLogLevelTest.cpp
-        sessionServer/SessionServerStateChangeTest.cpp
         mediaPipeline/AudioOnlyPlaybackTest.cpp
         mediaPipeline/AudioSourceSwitchTest.cpp
         mediaPipeline/CreatePipelineTest.cpp
@@ -52,6 +51,14 @@ add_gtests (
         mediaPipeline/WriteSegmentsTest.cpp
         mediaPipeline/RemoveAudioPlaybackTest.cpp
         mediaKeys/MediaKeysTest.cpp
+        mediaKeys/SessionReadyForDecryptionTest.cpp
+        mediaKeys/KeyStoreTest.cpp
+        mediaKeys/DrmStoreTest.cpp
+        mediaKeys/GetDrmInfoTest.cpp
+        mediaKeys/KeyApisTest.cpp
+        mediaKeys/GetSessionInfoTest.cpp
+        mediaKeys/SetDrmHeaderTest.cpp
+        mediaKeys/LicenseRenewalTest.cpp
         )
 
 target_include_directories(

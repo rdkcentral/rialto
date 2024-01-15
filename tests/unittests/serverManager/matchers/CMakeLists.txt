@@ -24,7 +24,7 @@ add_library (
         RialtoServerManagerMatchers
 
         STATIC
-        Matchers.cpp
+        MatchersServerManager.cpp
 )
 
 target_include_directories (
