@@ -343,7 +343,7 @@ void AttachSource::reattachAudioSource(GstCaps *caps, const std::string &strCaps
         unsigned int ui32Delay{0}; // output param
         long long audioChangeTargetPts{-1}; // NOLINT(runtime/int) output param. Set audioChangeTargetPts =
                                             // currentDispPts in rdk_gstreamer_utils function stub
-        unsigned int audioChangeStage{0}; // Output param. Set to AUDCHG_ALIGN in rdk_gstreamer_utils function stub
+        unsigned int audioChangeStage{0};   // Output param. Set to AUDCHG_ALIGN in rdk_gstreamer_utils function stub
         bool audioAac{oldCapsStr.find("audio/mpeg") != std::string::npos};
         bool svpEnabled{true}; // assume always true
         bool retVal{false};    // Output param. Set to TRUE in rdk_gstreamer_utils function stub
