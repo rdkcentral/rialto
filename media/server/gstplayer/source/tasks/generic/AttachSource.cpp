@@ -357,7 +357,7 @@ void AttachSource::reattachAudioSource(GstCaps *caps, const std::string &strCaps
     m_context.audioNeedData = true;
     m_context.audioSourceRemoved = false;
     m_context.lastAudioSampleTimestamps = currentDispPts;
-    m_player.scheduleNeedMediaData(appSrc);
+    m_player.notifyNeedMediaData(true, false);
 
     if (oldCaps)
         m_gstWrapper->gstCapsUnref(oldCaps);
