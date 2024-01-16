@@ -22,6 +22,7 @@
 
 #include "GenericPlayerContext.h"
 #include "IGstGenericPlayerClient.h"
+#include "IGstGenericPlayerPrivate.h"
 #include "IGstWrapper.h"
 #include "IPlayerTask.h"
 #include <memory>
@@ -31,13 +32,14 @@ namespace firebolt::rialto::server::tasks::generic
 class RemoveSource : public IPlayerTask
 {
 public:
-    RemoveSource(GenericPlayerContext &context, IGstGenericPlayerClient *client,
+    RemoveSource(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client,
                  std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper, const MediaSourceType &type);
     ~RemoveSource() override;
     void execute() const override;
 
 private:
     GenericPlayerContext &m_context;
+    IGstGenericPlayerPrivate &m_player;
     IGstGenericPlayerClient *m_gstPlayerClient;
     std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
     MediaSourceType m_type;

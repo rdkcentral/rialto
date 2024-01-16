@@ -23,6 +23,7 @@
 #include "IIpcServer.h"
 #include "IMediaPipelineClient.h"
 #include <memory>
+#include <mutex>
 
 namespace firebolt::rialto::server::ipc
 {
@@ -48,6 +49,11 @@ public:
 private:
     int m_sessionId;
     std::shared_ptr<::firebolt::rialto::ipc::IClient> m_ipcClient;
+
+    // It is possible for a needData to be sent while a source is been attached,
+    // this causes an issue in client side as they recieve a needData from a source
+    // id they are unaware of.
+    std::mutex m_needDataMutex;
 };
 } // namespace firebolt::rialto::server::ipc
 

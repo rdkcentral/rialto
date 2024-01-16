@@ -298,6 +298,7 @@ bool MediaPipelineServerInternal::removeSourceInternal(int32_t id)
     }
 
     m_gstPlayer->removeSource(sourceIter->first);
+    m_needMediaDataTimers.erase(sourceIter->first);
     m_attachedSources.erase(sourceIter);
     return true;
 }
