@@ -200,6 +200,12 @@ bool MediaPipeline::attachSource(const std::unique_ptr<IMediaPipeline::MediaSour
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
+    // We should not process needDatas while attach source is ongoing
+    {
+        std::unique_lock<std::mutex> lock{m_attachSourceMutex};
+        m_attachingSource = true;
+    }
+
     int32_t sourceId = -1;
 
     bool status = m_mediaPipelineIpc->attachSource(source, sourceId);
@@ -207,6 +213,13 @@ bool MediaPipeline::attachSource(const std::unique_ptr<IMediaPipeline::MediaSour
     {
         source->setId(sourceId);
         m_attachedSources.add(sourceId, source->getType());
+    }
+
+    // Unblock needDatas
+    {
+        std::unique_lock<std::mutex> lock{m_attachSourceMutex};
+        m_attachingSource = false;
+        m_attachSourceCond.notify_all();
     }
     return status;
 }
@@ -590,6 +603,13 @@ void MediaPipeline::notifyNeedMediaData(int32_t sourceId, size_t frameCount, uin
                                         const std::shared_ptr<MediaPlayerShmInfo> &shmInfo)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    // If attach source is ongoing wait till it has completed so that all sources are attached
+    {
+        std::unique_lock<std::mutex> lock{m_attachSourceMutex};
+        if (m_attachingSource)
+            m_attachSourceCond.wait(lock, [this] { return m_attachingSource; });
+    }
 
     if (MediaSourceType::UNKNOWN == m_attachedSources.get(sourceId))
     {

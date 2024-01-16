@@ -133,10 +133,11 @@ protected:
     void shouldAttachVideoSourceWithDolbyVisionSource();
     void triggerAttachVideoSourceWithDolbyVisionSource();
     void shouldSwitchAudioSource();
-    void triggerSwitchAudioSource();
+    void shouldReattachAudioSource();
+    void triggerReattachAudioSource();
     void checkNewAudioSourceAttached();
     void shouldNotSwitchAudioSourceWhenMimeTypeIsEmpty();
-    void triggerSwitchAudioSourceWithEmptyMimeType();
+    void triggerReattachAudioSourceWithEmptyMimeType();
 
     // CheckAudioUnderflow test methods
     void shouldQueryPositionAndSetToZero();
@@ -289,11 +290,6 @@ protected:
     void triggerRenderFrame();
     void shouldGetVideoSinkFailure();
     void shouldFindPropertyFailure();
-    void shouldInvalidateActiveAudioRequests();
-    void triggerRemoveSourceAudio();
-    void triggerRemoveSourceVideo();
-    void checkAudioSourceRemoved();
-    void checkAudioSourceNotRemoved();
     void shouldFlushAudioSrcSuccess();
     void shouldFlushAudioSrcFailure();
 
@@ -302,6 +298,14 @@ protected:
     void shouldReadVideoData();
     void triggerReadShmDataAndAttachSamplesAudio();
     void triggerReadShmDataAndAttachSamplesVideo();
+
+    // RemoveSource test methods
+    void shouldInvalidateActiveAudioRequests();
+    void shouldDisableAudioFlag();
+    void triggerRemoveSourceAudio();
+    void triggerRemoveSourceVideo();
+    void checkAudioSourceRemoved();
+    void checkAudioSourceNotRemoved();
 
 private:
     // SetupElement helper methods

@@ -44,8 +44,7 @@ public:
 
 private:
     void addSource(GstCaps *caps, bool isDrm) const;
-    void updateSource(GstCaps *caps, const std::string &strCaps) const;
-    void switchAudioSource(GstCaps *caps, const std::string &strCaps) const;
+    void reattachAudioSource(GstCaps *caps, const std::string &strCaps) const;
     GstCaps *createCapsFromMediaSource() const;
     firebolt::rialto::wrappers::AudioAttributesPrivate createAudioAttributes() const;
 

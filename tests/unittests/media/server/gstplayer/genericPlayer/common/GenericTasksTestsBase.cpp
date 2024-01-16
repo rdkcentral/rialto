@@ -860,6 +860,8 @@ void GenericTasksTestsBase::shouldSwitchAudioSource()
     EXPECT_CALL(*testContext->m_glibWrapper, gFree(&testContext->m_capsStr));
     EXPECT_CALL(*testContext->m_gstWrapper, gstAppSrcGetCaps(GST_APP_SRC(&testContext->m_appSrcAudio)))
         .WillOnce(Return(&testContext->m_gstCaps2));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsIsEqual(&testContext->m_gstCaps1, &testContext->m_gstCaps2))
+        .WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_gstWrapper, gstCapsToString(&testContext->m_gstCaps2))
         .WillOnce(Return(testContext->m_xEac3Str));
     EXPECT_CALL(*testContext->m_glibWrapper, gFree(testContext->m_xEac3Str));
@@ -875,11 +877,38 @@ void GenericTasksTestsBase::shouldSwitchAudioSource()
                 performAudioTrackCodecChannelSwitch(&testContext->m_context.playbackGroup, _, _, _, _, _, _, _, _, _, _,
                                                     _, _))
         .WillOnce(Return(true));
+    EXPECT_CALL(testContext->m_gstPlayer, setAudioVideoFlags(true, true));
     EXPECT_CALL(testContext->m_gstPlayer, notifyNeedMediaData(true, false));
     EXPECT_CALL(*testContext->m_gstWrapper, gstCapsUnref(&testContext->m_gstCaps1));
 }
 
-void GenericTasksTestsBase::triggerSwitchAudioSource()
+void GenericTasksTestsBase::shouldReattachAudioSource()
+{
+    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsNewEmptySimple(StrEq("audio/mpeg")))
+        .WillOnce(Return(&testContext->m_gstCaps1));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstCapsSetSimpleIntStub(&testContext->m_gstCaps1, StrEq("mpegversion"), G_TYPE_INT, 4));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsToString(&testContext->m_gstCaps1))
+        .WillOnce(Return(&testContext->m_capsStr));
+    EXPECT_CALL(*testContext->m_glibWrapper, gFree(&testContext->m_capsStr));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstAppSrcGetCaps(GST_APP_SRC(&testContext->m_appSrcAudio)))
+        .WillOnce(Return(&testContext->m_gstCaps2));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsIsEqual(&testContext->m_gstCaps1, &testContext->m_gstCaps2))
+        .WillOnce(Return(TRUE));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsUnref(&testContext->m_gstCaps2));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstElementQueryPosition(_, GST_FORMAT_TIME, _))
+        .WillOnce(Invoke(
+            [this](GstElement *element, GstFormat format, gint64 *cur)
+            {
+                *cur = kPosition;
+                return TRUE;
+            }));
+    EXPECT_CALL(testContext->m_gstPlayer, setAudioVideoFlags(true, true));
+    EXPECT_CALL(testContext->m_gstPlayer, notifyNeedMediaData(true, false));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsUnref(&testContext->m_gstCaps1));
+}
+
+void GenericTasksTestsBase::triggerReattachAudioSource()
 {
     testContext->m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, &testContext->m_appSrcAudio);
     testContext->m_context.audioSourceRemoved = true;
@@ -902,7 +931,7 @@ void GenericTasksTestsBase::shouldNotSwitchAudioSourceWhenMimeTypeIsEmpty()
     EXPECT_CALL(*testContext->m_gstWrapper, gstCapsUnref(&testContext->m_gstCaps2));
 }
 
-void GenericTasksTestsBase::triggerSwitchAudioSourceWithEmptyMimeType()
+void GenericTasksTestsBase::triggerReattachAudioSourceWithEmptyMimeType()
 {
     testContext->m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, &testContext->m_appSrcAudio);
     testContext->m_context.audioSourceRemoved = true;
@@ -1958,9 +1987,15 @@ void GenericTasksTestsBase::shouldInvalidateActiveAudioRequests()
     EXPECT_CALL(testContext->m_gstPlayerClient, invalidateActiveRequests(firebolt::rialto::MediaSourceType::AUDIO));
 }
 
+void GenericTasksTestsBase::shouldDisableAudioFlag()
+{
+    EXPECT_CALL(testContext->m_gstPlayer, setAudioVideoFlags(false, true));
+}
+
 void GenericTasksTestsBase::triggerRemoveSourceAudio()
 {
-    firebolt::rialto::server::tasks::generic::RemoveSource task{testContext->m_context, &testContext->m_gstPlayerClient,
+    firebolt::rialto::server::tasks::generic::RemoveSource task{testContext->m_context, testContext->m_gstPlayer,
+                                                                &testContext->m_gstPlayerClient,
                                                                 testContext->m_gstWrapper,
                                                                 firebolt::rialto::MediaSourceType::AUDIO};
     task.execute();
@@ -1968,7 +2003,8 @@ void GenericTasksTestsBase::triggerRemoveSourceAudio()
 
 void GenericTasksTestsBase::triggerRemoveSourceVideo()
 {
-    firebolt::rialto::server::tasks::generic::RemoveSource task{testContext->m_context, &testContext->m_gstPlayerClient,
+    firebolt::rialto::server::tasks::generic::RemoveSource task{testContext->m_context, testContext->m_gstPlayer,
+                                                                &testContext->m_gstPlayerClient,
                                                                 testContext->m_gstWrapper,
                                                                 firebolt::rialto::MediaSourceType::VIDEO};
     task.execute();

@@ -267,7 +267,7 @@ void AttachSource::execute() const
     }
     else if (m_attachedSource->getType() == MediaSourceType::AUDIO && m_context.audioSourceRemoved)
     {
-        switchAudioSource(caps, strCaps);
+        reattachAudioSource(caps, strCaps);
     }
     else
     {
@@ -296,72 +296,71 @@ void AttachSource::addSource(GstCaps *caps, bool hasDrm) const
     m_context.streamInfo.emplace(m_attachedSource->getType(), StreamInfo{appSrc, hasDrm});
 }
 
-void AttachSource::updateSource(GstCaps *caps, const std::string &strCaps) const
-{
-    GstAppSrc *appSrc{GST_APP_SRC(m_context.streamInfo[m_attachedSource->getType()].appSrc)};
-    GstCaps *appsrcCaps = m_gstWrapper->gstAppSrcGetCaps(appSrc);
-    if ((!appsrcCaps) || (!m_gstWrapper->gstCapsIsEqual(appsrcCaps, caps)))
-    {
-        RIALTO_SERVER_LOG_MIL("Updating %s appsrc caps to '%s'",
-                              m_attachedSource->getType() == MediaSourceType::AUDIO ? "Audio" : "Video", strCaps.c_str());
-        m_gstWrapper->gstAppSrcSetCaps(appSrc, caps);
-    }
-
-    if (appsrcCaps)
-        m_gstWrapper->gstCapsUnref(appsrcCaps);
-}
-
-void AttachSource::switchAudioSource(GstCaps *caps, const std::string &strCaps) const
+void AttachSource::reattachAudioSource(GstCaps *caps, const std::string &strCaps) const
 {
     if (m_attachedSource->getMimeType().empty())
     {
-        RIALTO_SERVER_LOG_WARN("SKIP switching audio source. Unknown mime type");
+        RIALTO_SERVER_LOG_WARN("SKIP reattach audio source. Unknown mime type");
         return;
     }
-    GstAppSrc *appSrc{GST_APP_SRC(m_context.streamInfo[m_attachedSource->getType()].appSrc)};
-    std::string oldCapsStr;
-    GstCaps *oldCaps = m_gstWrapper->gstAppSrcGetCaps(appSrc);
-    if (oldCaps)
-    {
-        gchar *oldCapsCStr = m_gstWrapper->gstCapsToString(oldCaps);
-        oldCapsStr = std::string(oldCapsCStr);
-        m_glibWrapper->gFree(oldCapsCStr);
-        m_gstWrapper->gstCapsUnref(oldCaps);
-    }
-    RIALTO_SERVER_LOG_MIL("Switching audio source.");
-    RIALTO_SERVER_LOG_MIL("Old caps: %s", oldCapsStr.c_str());
-    RIALTO_SERVER_LOG_MIL("New caps: %s", strCaps.c_str());
-    firebolt::rialto::wrappers::AudioAttributesPrivate audioAttributes{createAudioAttributes()};
-    int sampleAttributes{0}; // rdk_gstreamer_utils::performAudioTrackCodecChannelSwitch checks if this param != NULL only.
-    std::uint32_t status{0};   // must be 0 to make rdk_gstreamer_utils::performAudioTrackCodecChannelSwitch work
-    unsigned int ui32Delay{0}; // output param
-    long long audioChangeTargetPts{-1}; // NOLINT(runtime/int) output param. Set audioChangeTargetPts = currentDispPts
-                                        // in rdk_gstreamer_utils function stub
-    std::int64_t currentDispPts64b;     // In netflix code it's currentDisplayPosition + offset
+
+    std::int64_t currentDispPts64b; // In netflix code it's currentDisplayPosition + offset
     m_gstWrapper->gstElementQueryPosition(m_context.pipeline, GST_FORMAT_TIME, &currentDispPts64b);
     long long currentDispPts = currentDispPts64b; // NOLINT(runtime/int)
-    unsigned int audioChangeStage{0}; // Output param. Set to AUDCHG_ALIGN in rdk_gstreamer_utils function stub
-    bool audioAac{oldCapsStr.find("audio/mpeg") != std::string::npos};
-    bool svpEnabled{true}; // assume always true
-    bool retVal{false};    // Output param. Set to TRUE in rdk_gstreamer_utils function stub
 
-    bool result =
-        m_rdkGstreamerUtilsWrapper
-            ->performAudioTrackCodecChannelSwitch(&m_context.playbackGroup, &sampleAttributes, &audioAttributes, &status,
-                                                  &ui32Delay, &audioChangeTargetPts, &currentDispPts, &audioChangeStage,
-                                                  &caps, // may fail for amlogic - that implementation changes
-                                                         // this parameter, it's probably used by Netflix later
-                                                  &audioAac, svpEnabled,
-                                                  m_context.streamInfo[m_attachedSource->getType()].appSrc, &retVal);
-    if (!result || !retVal)
+    GstAppSrc *appSrc{GST_APP_SRC(m_context.streamInfo[m_attachedSource->getType()].appSrc)};
+    GstCaps *oldCaps = m_gstWrapper->gstAppSrcGetCaps(appSrc);
+    if ((!oldCaps) || (!m_gstWrapper->gstCapsIsEqual(caps, oldCaps)))
     {
-        RIALTO_SERVER_LOG_WARN("performAudioTrackCodecChannelSwitch failed! Result: %d, retval %d", result, retVal);
+        RIALTO_SERVER_LOG_MIL("Switching audio source.");
+
+        gchar *oldCapsCStr = m_gstWrapper->gstCapsToString(oldCaps);
+        std::string oldCapsStr = std::string(oldCapsCStr);
+        m_glibWrapper->gFree(oldCapsCStr);
+
+        RIALTO_SERVER_LOG_MIL("Old caps: %s", oldCapsStr.c_str());
+        RIALTO_SERVER_LOG_MIL("New caps: %s", strCaps.c_str());
+
+        firebolt::rialto::wrappers::AudioAttributesPrivate audioAttributes{createAudioAttributes()};
+        int sampleAttributes{
+            0}; // rdk_gstreamer_utils::performAudioTrackCodecChannelSwitch checks if this param != NULL only.
+        std::uint32_t status{0};   // must be 0 to make rdk_gstreamer_utils::performAudioTrackCodecChannelSwitch work
+        unsigned int ui32Delay{0}; // output param
+        long long audioChangeTargetPts{-1}; // NOLINT(runtime/int) output param. Set audioChangeTargetPts =
+                                            // currentDispPts in rdk_gstreamer_utils function stub
+        unsigned int audioChangeStage{0};   // Output param. Set to AUDCHG_ALIGN in rdk_gstreamer_utils function stub
+        bool audioAac{oldCapsStr.find("audio/mpeg") != std::string::npos};
+        bool svpEnabled{true}; // assume always true
+        bool retVal{false};    // Output param. Set to TRUE in rdk_gstreamer_utils function stub
+
+        bool result =
+            m_rdkGstreamerUtilsWrapper
+                ->performAudioTrackCodecChannelSwitch(&m_context.playbackGroup, &sampleAttributes, &audioAttributes,
+                                                      &status, &ui32Delay, &audioChangeTargetPts, &currentDispPts,
+                                                      &audioChangeStage,
+                                                      &caps, // may fail for amlogic - that implementation changes
+                                                             // this parameter, it's probably used by Netflix later
+                                                      &audioAac, svpEnabled, GST_ELEMENT(appSrc), &retVal);
+        if (!result || !retVal)
+        {
+            RIALTO_SERVER_LOG_WARN("performAudioTrackCodecChannelSwitch failed! Result: %d, retval %d", result, retVal);
+        }
     }
+    else
+    {
+        RIALTO_SERVER_LOG_MIL("Reattaching identical audio source.");
+    }
+
+    // Restart audio sink
+    m_player.setAudioVideoFlags(true, true);
 
     m_context.audioNeedData = true;
     m_context.audioSourceRemoved = false;
     m_context.lastAudioSampleTimestamps = currentDispPts;
     m_player.notifyNeedMediaData(true, false);
+
+    if (oldCaps)
+        m_gstWrapper->gstCapsUnref(oldCaps);
 }
 
 GstCaps *AttachSource::createCapsFromMediaSource() const

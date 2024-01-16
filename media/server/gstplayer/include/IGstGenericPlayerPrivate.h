@@ -170,6 +170,14 @@ public:
      * @retval Underlying child video sink or 'sink' if there are no children.
      */
     virtual GstElement *getSinkChildIfAutoVideoSink(GstElement *sink) = 0;
+
+    /**
+     * @brief Sets the audio and video flags on the pipeline based on the input.
+     *
+     * @param[in] enableAudio : Whether to enable audio flags.
+     * @param[in] enableVideo : Whether to enable video flags.
+     */
+    virtual void setAudioVideoFlags(bool enableAudio, bool enableVideo) = 0;
 };
 } // namespace firebolt::rialto::server
 
