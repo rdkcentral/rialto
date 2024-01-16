@@ -200,6 +200,7 @@ bool MediaPipeline::attachSource(const std::unique_ptr<IMediaPipeline::MediaSour
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
+    // We should not process needDatas while attach source is ongoing
     {
         std::unique_lock<std::mutex> lock{m_attachSourceMutex};
         m_attachingSource = true;

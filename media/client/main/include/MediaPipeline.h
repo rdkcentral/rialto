@@ -217,17 +217,17 @@ protected:
     std::atomic<State> m_currentState;
 
     /**
-     * @brief The shared memory mutex.
+     * @brief The attach source mutex.
      */
     std::mutex m_attachSourceMutex;
 
     /**
-     * @brief The current state of the MediaPipeline.
+     * @brief The attach source condition variable.
      */
     std::condition_variable m_attachSourceCond;
 
     /**
-     * @brief The current state of the MediaPipeline.
+     * @brief Whether attachSource is currently in progress.
      */
     bool m_attachingSource;
 
