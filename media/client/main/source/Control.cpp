@@ -21,6 +21,33 @@
 #include "IControlIpc.h"
 #include "RialtoClientLogging.h"
 
+namespace
+{
+firebolt::rialto::IClientLogHandler::Level convertLevel(const RIALTO_DEBUG_LEVEL &level)
+{
+    switch (level)
+    {
+    case RIALTO_DEBUG_LEVEL_FATAL:
+        return firebolt::rialto::IClientLogHandler::Level::Fatal;
+    case RIALTO_DEBUG_LEVEL_ERROR:
+        return firebolt::rialto::IClientLogHandler::Level::Error;
+    case RIALTO_DEBUG_LEVEL_WARNING:
+        return firebolt::rialto::IClientLogHandler::Level::Warning;
+    case RIALTO_DEBUG_LEVEL_MILESTONE:
+        return firebolt::rialto::IClientLogHandler::Level::Milestone;
+    case RIALTO_DEBUG_LEVEL_INFO:
+        return firebolt::rialto::IClientLogHandler::Level::Info;
+    case RIALTO_DEBUG_LEVEL_DEBUG:
+        return firebolt::rialto::IClientLogHandler::Level::Debug;
+    case RIALTO_DEBUG_LEVEL_EXTERNAL:
+        return firebolt::rialto::IClientLogHandler::Level::External;
+    case RIALTO_DEBUG_LEVEL_DEFAULT:
+        return firebolt::rialto::IClientLogHandler::Level::Milestone;
+    }
+    return firebolt::rialto::IClientLogHandler::Level::Debug;
+}
+} // namespace
+
 namespace firebolt::rialto
 {
 std::shared_ptr<IControlFactory> IControlFactory::createFactory()
@@ -81,5 +108,25 @@ bool Control::registerClient(std::weak_ptr<IControlClient> client, ApplicationSt
     }
     RIALTO_CLIENT_LOG_WARN("Unable to register client");
     return false;
+}
+
+void Control::registerLogHandler(std::shared_ptr<IClientLogHandler> &handler)
+{
+    m_logHandler = handler;
+    firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_CLIENT,
+        std::bind(&Control::forwardLog, this,
+                                                              std::placeholders::_1, std::placeholders::_2,
+                                                              std::placeholders::_3, std::placeholders::_4,
+                                                              std::placeholders::_5, std::placeholders::_6));
+}
+
+void Control::forwardLog(RIALTO_DEBUG_LEVEL level, const char *file, int line, const char *function,
+                                      const char *message, std::size_t messageLen) const
+{
+    if (!m_logHandler)
+    {
+        return;
+    }
+    m_logHandler->log(convertLevel(level), std::string(file), line, std::string(function), std::string(message));
 }
 }; // namespace firebolt::rialto::client

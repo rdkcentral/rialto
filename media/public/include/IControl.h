@@ -29,10 +29,12 @@
  * including the IPC connection and shared memory.
  */
 
-#include "ControlCommon.h"
-#include "IControlClient.h"
 #include <memory>
 #include <stdint.h>
+
+#include "ControlCommon.h"
+#include "IClientLogHandler.h"
+#include "IControlClient.h"
 
 namespace firebolt::rialto
 {
@@ -88,6 +90,8 @@ public:
      * @retval true on success, false otherwise.
      */
     virtual bool registerClient(std::weak_ptr<IControlClient> client, ApplicationState &appState) = 0;
+
+    virtual void registerLogHandler(std::shared_ptr<IClientLogHandler> &handler) = 0;
 };
 
 }; // namespace firebolt::rialto

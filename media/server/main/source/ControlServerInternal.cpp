@@ -160,4 +160,8 @@ bool ControlServerInternal::registerClient(std::weak_ptr<IControlClient> client,
     setApplicationState(appState);
     return true;
 }
+void ControlServerInternal::registerLogHandler(std::shared_ptr<IClientLogHandler> &handler)
+{
+    abort();
+}
 } // namespace firebolt::rialto::server

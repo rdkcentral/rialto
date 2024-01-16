@@ -20,12 +20,14 @@
 #ifndef FIREBOLT_RIALTO_CLIENT_CONTROL_H_
 #define FIREBOLT_RIALTO_CLIENT_CONTROL_H_
 
-#include "IClientController.h"
-#include "IControl.h"
-#include "IControlClient.h"
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "IClientController.h"
+#include "IControl.h"
+#include "IControlClient.h"
+#include "RialtoLogging.h"
 
 namespace firebolt::rialto::client
 {
@@ -66,7 +68,13 @@ public:
 
     bool registerClient(std::weak_ptr<IControlClient> client, ApplicationState &appState) override;
 
+    void registerLogHandler(std::shared_ptr<IClientLogHandler> &handler) override;
+
 private:
+    void forwardLog(RIALTO_DEBUG_LEVEL level, const char *file, int line, const char *function, const char *message,
+                    std::size_t messageLen) const;
+    std::shared_ptr<IClientLogHandler> m_logHandler;
+
     /**
      * @brief The registered control clients
      */

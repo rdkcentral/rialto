@@ -106,3 +106,37 @@ TEST_F(RialtoClientControlTest, RegisterClientFailureDueToOperationFailure)
     // Destroy
     control.reset();
 }
+
+class TestClientLogHandler : public IClientLogHandler
+{
+public:
+    ~TestClientLogHandler()
+    {
+    }
+
+    void log(Level level, const std::string &file, int line, const std::string &function,
+                     const std::string &message)
+    {
+        called = true;
+    }
+
+    bool called{false};
+};
+
+TEST_F(RialtoClientControlTest, RegisterLogHandler)
+{
+    std::unique_ptr<IControl> control;
+
+    EXPECT_NO_THROW(control = std::make_unique<Control>(m_clientControllerMock));
+
+    std::shared_ptr<TestClientLogHandler> logHandler = std::make_shared<TestClientLogHandler>();
+    {
+        std::shared_ptr<IClientLogHandler> tmp = logHandler;
+        control->registerLogHandler(tmp);
+    }
+
+    // Destroy
+    control.reset();
+
+    ASSERT_TRUE(logHandler->called);
+}
