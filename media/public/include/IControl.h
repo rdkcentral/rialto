@@ -91,6 +91,13 @@ public:
      */
     virtual bool registerClient(std::weak_ptr<IControlClient> client, ApplicationState &appState) = 0;
 
+    /**
+     * @brief Register new log handler
+     *
+     * @param[in]  handler   : Client object for callbacks
+     *
+     * @retval none
+     */
     virtual void registerLogHandler(std::shared_ptr<IClientLogHandler> &handler) = 0;
 };
 

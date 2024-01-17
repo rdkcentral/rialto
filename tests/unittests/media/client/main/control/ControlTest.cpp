@@ -17,10 +17,12 @@
  * limitations under the License.
  */
 
-#include "Control.h"
-#include "ClientControllerMock.h"
-#include "ControlClientMock.h"
 #include <gtest/gtest.h>
+
+#include "ClientControllerMock.h"
+#include "Control.h"
+#include "ControlClientMock.h"
+#include "RialtoClientLogging.h"
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::client;
@@ -30,6 +32,12 @@ using ::testing::DoAll;
 using ::testing::Return;
 using ::testing::SetArgReferee;
 using ::testing::StrictMock;
+
+namespace
+{
+constexpr uint32_t kMaxTimeoutMs{2000};
+const std::string kLogTestStr("Test ABC");
+} // namespace
 
 class RialtoClientControlTest : public ::testing::Test
 {
@@ -110,17 +118,17 @@ TEST_F(RialtoClientControlTest, RegisterClientFailureDueToOperationFailure)
 class TestClientLogHandler : public IClientLogHandler
 {
 public:
-    ~TestClientLogHandler()
+    ~TestClientLogHandler() {}
+
+    void log(Level level, const std::string &file, int line, const std::string &function, const std::string &message)
     {
+        if (message == kLogTestStr)
+        {
+            m_gotExpectedLogMessage = true;
+        }
     }
 
-    void log(Level level, const std::string &file, int line, const std::string &function,
-                     const std::string &message)
-    {
-        called = true;
-    }
-
-    bool called{false};
+    bool m_gotExpectedLogMessage{false};
 };
 
 TEST_F(RialtoClientControlTest, RegisterLogHandler)
@@ -135,8 +143,11 @@ TEST_F(RialtoClientControlTest, RegisterLogHandler)
         control->registerLogHandler(tmp);
     }
 
+    // Generate a log entry
+    RIALTO_CLIENT_LOG_ERROR("%s", kLogTestStr.c_str());
+
+    ASSERT_TRUE(logHandler->m_gotExpectedLogMessage);
+
     // Destroy
     control.reset();
-
-    ASSERT_TRUE(logHandler->called);
 }

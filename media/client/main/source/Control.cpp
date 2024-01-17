@@ -96,6 +96,10 @@ Control::~Control()
     {
         m_clientController.unregisterClient(client.get());
     }
+    if (m_logHandler)
+    {
+        firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_CLIENT, 0);
+    }
 }
 
 bool Control::registerClient(std::weak_ptr<IControlClient> client, ApplicationState &appState)
@@ -114,14 +118,13 @@ void Control::registerLogHandler(std::shared_ptr<IClientLogHandler> &handler)
 {
     m_logHandler = handler;
     firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_CLIENT,
-        std::bind(&Control::forwardLog, this,
-                                                              std::placeholders::_1, std::placeholders::_2,
-                                                              std::placeholders::_3, std::placeholders::_4,
-                                                              std::placeholders::_5, std::placeholders::_6));
+                                             std::bind(&Control::forwardLog, this, std::placeholders::_1,
+                                                       std::placeholders::_2, std::placeholders::_3, std::placeholders::_4,
+                                                       std::placeholders::_5, std::placeholders::_6));
 }
 
 void Control::forwardLog(RIALTO_DEBUG_LEVEL level, const char *file, int line, const char *function,
-                                      const char *message, std::size_t messageLen) const
+                         const char *message, std::size_t messageLen) const
 {
     if (!m_logHandler)
     {
