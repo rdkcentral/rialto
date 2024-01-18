@@ -608,7 +608,7 @@ void MediaPipeline::notifyNeedMediaData(int32_t sourceId, size_t frameCount, uin
     {
         std::unique_lock<std::mutex> lock{m_attachSourceMutex};
         if (m_attachingSource)
-            m_attachSourceCond.wait(lock, [this] { return m_attachingSource; });
+            m_attachSourceCond.wait(lock, [this] { return !m_attachingSource; });
     }
 
     if (MediaSourceType::UNKNOWN == m_attachedSources.get(sourceId))
