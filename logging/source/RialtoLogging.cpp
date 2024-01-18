@@ -220,18 +220,26 @@ static void journaldLogHandler(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL le
     }
 }
 
-static void rialtoLog(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char *file, const char *func,
-                      int line, const char *fmt, va_list ap, const char *append)
+bool firebolt::rialto::logging::isLoggingEnabledFor(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level)
 {
     /* Must be valid component */
     if (component >= RIALTO_COMPONENT_LAST)
-        return;
+        return false;
 
     /* If log levels have not been set, set to Default */
     if (!g_rialtoLogLevels[component])
         g_rialtoLogLevels[component] = g_envVariableParser.getLevel(component);
 
     if (!(level & g_rialtoLogLevels[component]))
+        return false;
+
+    return true;
+}
+
+static void rialtoLog(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char *file, const char *func,
+                      int line, const char *fmt, va_list ap, const char *append)
+{
+    if (!firebolt::rialto::logging::isLoggingEnabledFor(component, level))
         return;
     char mbuf[512];
     int len;

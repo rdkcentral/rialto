@@ -99,6 +99,8 @@ Control::~Control()
     if (m_logHandler)
     {
         firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_CLIENT, 0);
+        firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_IPC, 0);
+        firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_COMMON, 0);
     }
 }
 
@@ -118,15 +120,26 @@ void Control::registerLogHandler(std::shared_ptr<IClientLogHandler> &handler)
 {
     m_logHandler = handler;
     firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_CLIENT,
-                                             std::bind(&Control::forwardLog, this, std::placeholders::_1,
-                                                       std::placeholders::_2, std::placeholders::_3, std::placeholders::_4,
+                                             std::bind(&Control::forwardLog, this, RIALTO_COMPONENT_CLIENT,
+                                                       std::placeholders::_1, std::placeholders::_2,
+                                                       std::placeholders::_3, std::placeholders::_4,
+                                                       std::placeholders::_5, std::placeholders::_6));
+    firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_IPC,
+                                             std::bind(&Control::forwardLog, this, RIALTO_COMPONENT_IPC,
+                                                       std::placeholders::_1, std::placeholders::_2,
+                                                       std::placeholders::_3, std::placeholders::_4,
+                                                       std::placeholders::_5, std::placeholders::_6));
+    firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_COMMON,
+                                             std::bind(&Control::forwardLog, this, RIALTO_COMPONENT_COMMON,
+                                                       std::placeholders::_1, std::placeholders::_2,
+                                                       std::placeholders::_3, std::placeholders::_4,
                                                        std::placeholders::_5, std::placeholders::_6));
 }
 
-void Control::forwardLog(RIALTO_DEBUG_LEVEL level, const char *file, int line, const char *function,
-                         const char *message, std::size_t messageLen) const
+void Control::forwardLog(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char *file, int line,
+                         const char *function, const char *message, std::size_t messageLen) const
 {
-    if (!m_logHandler)
+    if (!m_logHandler || !firebolt::rialto::logging::isLoggingEnabledFor(component, level))
     {
         return;
     }

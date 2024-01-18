@@ -71,8 +71,8 @@ public:
     void registerLogHandler(std::shared_ptr<IClientLogHandler> &handler) override;
 
 private:
-    void forwardLog(RIALTO_DEBUG_LEVEL level, const char *file, int line, const char *function, const char *message,
-                    std::size_t messageLen) const;
+    void forwardLog(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char *file, int line,
+                    const char *function, const char *message, std::size_t messageLen) const;
 
     /**
      * @brief The registered log handler
