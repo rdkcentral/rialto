@@ -140,7 +140,7 @@ TEST_F(RialtoClientControlTest, RegisterLogHandler)
     std::shared_ptr<TestClientLogHandler> logHandler = std::make_shared<TestClientLogHandler>();
     {
         std::shared_ptr<IClientLogHandler> tmp = logHandler;
-        control->registerLogHandler(tmp);
+        control->registerLogHandler(tmp, true);
     }
 
     // Generate a log entry

@@ -95,10 +95,11 @@ public:
      * @brief Register new log handler
      *
      * @param[in]  handler   : Client object for callbacks
+     * @param[in]  ignoreLogLevels   : If true then the handler will receive ALL log level messages regardless of the currently configured log level
      *
      * @retval none
      */
-    virtual void registerLogHandler(std::shared_ptr<IClientLogHandler> &handler) = 0;
+    virtual void registerLogHandler(std::shared_ptr<IClientLogHandler> &handler, bool ignoreLogLevels) = 0;
 };
 
 }; // namespace firebolt::rialto

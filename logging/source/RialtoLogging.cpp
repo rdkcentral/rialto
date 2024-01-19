@@ -48,6 +48,7 @@ static void fdLogHandler(int fd, RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL 
 static void journaldLogHandler(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char *file, int line,
                                const char *function, const char *message, size_t messageLen);
 static firebolt::rialto::logging::LogHandler g_logHandler[RIALTO_COMPONENT_LAST] = {};
+static bool g_ignoreLogLevels[RIALTO_COMPONENT_LAST] = {};
 static std::string componentToString(RIALTO_COMPONENT component);
 static std::string levelToString(RIALTO_DEBUG_LEVEL level);
 
@@ -231,7 +232,11 @@ static void rialtoLog(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, cons
     if (!g_rialtoLogLevels[component])
         g_rialtoLogLevels[component] = g_envVariableParser.getLevel(component);
 
-    if (!(level & g_rialtoLogLevels[component]))
+    bool checkLogLevels = true;
+    if (g_logHandler[component])
+        checkLogLevels = !g_ignoreLogLevels[component];
+
+    if (!(level & g_rialtoLogLevels[component]) && checkLogLevels)
         return;
     char mbuf[512];
     int len;
@@ -347,13 +352,14 @@ RIALTO_DEBUG_LEVEL getLogLevels(RIALTO_COMPONENT component)
     return RIALTO_DEBUG_LEVEL_DEFAULT;
 }
 
-RialtoLoggingStatus setLogHandler(RIALTO_COMPONENT component, LogHandler handler)
+RialtoLoggingStatus setLogHandler(RIALTO_COMPONENT component, LogHandler handler, bool ignoreLogLevels)
 {
     RialtoLoggingStatus status = RIALTO_LOGGING_STATUS_ERROR;
     if (component < RIALTO_COMPONENT_LAST)
     {
         /* not thread-safe, but doubt this will be an issue */
         g_logHandler[component] = std::move(handler);
+        g_ignoreLogLevels[component] = ignoreLogLevels;
         status = RIALTO_LOGGING_STATUS_OK;
     }
 

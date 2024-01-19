@@ -212,7 +212,7 @@ RIALTO_DEBUG_LEVEL getLogLevels(RIALTO_COMPONENT component);
  */
 using LogHandler = std::function<void(RIALTO_DEBUG_LEVEL level, const char *file, int line, const char *function,
                                       const char *message, std::size_t messageLen)>;
-RialtoLoggingStatus setLogHandler(RIALTO_COMPONENT component, LogHandler handler);
+RialtoLoggingStatus setLogHandler(RIALTO_COMPONENT component, LogHandler handler, bool ignoreLogLevels);
 
 /**
  * @brief Checks if rialto logs to console.

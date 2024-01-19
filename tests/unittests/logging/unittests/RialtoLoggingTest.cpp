@@ -106,7 +106,7 @@ TEST_F(RialtoLoggingTest, SetLogLevelsInvalidComponent)
  */
 TEST_F(RialtoLoggingTest, SetLogHandlerInvalidComponent)
 {
-    setLogHandler(RIALTO_COMPONENT_LAST, RialtoLoggingTest::TestLogHandler);
+    setLogHandler(RIALTO_COMPONENT_LAST, RialtoLoggingTest::TestLogHandler, false);
 }
 /**
  * Test that all the defined components can set handler and levels .
@@ -119,12 +119,12 @@ TEST_F(RialtoLoggingTest, AllComponents)
     for (uint32_t i = RIALTO_COMPONENT_DEFAULT; i < RIALTO_COMPONENT_LAST; i++)
     {
         RIALTO_COMPONENT component = static_cast<RIALTO_COMPONENT>(i);
-        setLogHandler(component, RialtoLoggingTest::TestLogHandler);
+        setLogHandler(component, RialtoLoggingTest::TestLogHandler, false);
         setLogLevels(component, logLevel);
         TestExpectLogCalls(component, logLevel);
 
         /* Reset to default incase all components are using the variables */
-        setLogHandler(component, RialtoLoggingTest::EmptyLogHandler);
+        setLogHandler(component, RialtoLoggingTest::EmptyLogHandler, false);
         setLogLevels(component, defaultLogLevel);
     }
 }
@@ -136,7 +136,7 @@ TEST_F(RialtoLoggingTest, SetLogLevelFatal)
 {
     RIALTO_DEBUG_LEVEL logLevel = RIALTO_DEBUG_LEVEL_FATAL;
 
-    setLogHandler(RIALTO_COMPONENT_DEFAULT, RialtoLoggingTest::TestLogHandler);
+    setLogHandler(RIALTO_COMPONENT_DEFAULT, RialtoLoggingTest::TestLogHandler, false);
     setLogLevels(RIALTO_COMPONENT_DEFAULT, logLevel);
 
     TestExpectLogCalls(RIALTO_COMPONENT_DEFAULT, logLevel);
@@ -149,7 +149,7 @@ TEST_F(RialtoLoggingTest, SetLogLevelError)
 {
     RIALTO_DEBUG_LEVEL logLevel = RIALTO_DEBUG_LEVEL_ERROR;
 
-    setLogHandler(RIALTO_COMPONENT_DEFAULT, RialtoLoggingTest::TestLogHandler);
+    setLogHandler(RIALTO_COMPONENT_DEFAULT, RialtoLoggingTest::TestLogHandler, false);
     setLogLevels(RIALTO_COMPONENT_DEFAULT, logLevel);
 
     TestExpectLogCalls(RIALTO_COMPONENT_DEFAULT, logLevel);
@@ -162,7 +162,7 @@ TEST_F(RialtoLoggingTest, SetLogLevelWarning)
 {
     RIALTO_DEBUG_LEVEL logLevel = RIALTO_DEBUG_LEVEL_WARNING;
 
-    setLogHandler(RIALTO_COMPONENT_DEFAULT, RialtoLoggingTest::TestLogHandler);
+    setLogHandler(RIALTO_COMPONENT_DEFAULT, RialtoLoggingTest::TestLogHandler, false);
     setLogLevels(RIALTO_COMPONENT_DEFAULT, logLevel);
 
     TestExpectLogCalls(RIALTO_COMPONENT_DEFAULT, logLevel);
@@ -175,7 +175,7 @@ TEST_F(RialtoLoggingTest, SetLogLevelMilestone)
 {
     RIALTO_DEBUG_LEVEL logLevel = RIALTO_DEBUG_LEVEL_MILESTONE;
 
-    setLogHandler(RIALTO_COMPONENT_DEFAULT, RialtoLoggingTest::TestLogHandler);
+    setLogHandler(RIALTO_COMPONENT_DEFAULT, RialtoLoggingTest::TestLogHandler, false);
     setLogLevels(RIALTO_COMPONENT_DEFAULT, logLevel);
 
     TestExpectLogCalls(RIALTO_COMPONENT_DEFAULT, logLevel);
@@ -188,7 +188,7 @@ TEST_F(RialtoLoggingTest, SetLogLevelInfo)
 {
     RIALTO_DEBUG_LEVEL logLevel = RIALTO_DEBUG_LEVEL_INFO;
 
-    setLogHandler(RIALTO_COMPONENT_DEFAULT, RialtoLoggingTest::TestLogHandler);
+    setLogHandler(RIALTO_COMPONENT_DEFAULT, RialtoLoggingTest::TestLogHandler, false);
     setLogLevels(RIALTO_COMPONENT_DEFAULT, logLevel);
 
     TestExpectLogCalls(RIALTO_COMPONENT_DEFAULT, logLevel);
@@ -201,7 +201,7 @@ TEST_F(RialtoLoggingTest, SetLogLevelDebug)
 {
     RIALTO_DEBUG_LEVEL logLevel = RIALTO_DEBUG_LEVEL_DEBUG;
 
-    setLogHandler(RIALTO_COMPONENT_DEFAULT, RialtoLoggingTest::TestLogHandler);
+    setLogHandler(RIALTO_COMPONENT_DEFAULT, RialtoLoggingTest::TestLogHandler, false);
     setLogLevels(RIALTO_COMPONENT_DEFAULT, logLevel);
 
     TestExpectLogCalls(RIALTO_COMPONENT_DEFAULT, logLevel);
@@ -215,7 +215,7 @@ TEST_F(RialtoLoggingTest, SetLogLevelMultiple)
     RIALTO_DEBUG_LEVEL logLevel = static_cast<RIALTO_DEBUG_LEVEL>(RIALTO_DEBUG_LEVEL_INFO | RIALTO_DEBUG_LEVEL_ERROR |
                                                                   RIALTO_DEBUG_LEVEL_MILESTONE);
 
-    setLogHandler(RIALTO_COMPONENT_DEFAULT, RialtoLoggingTest::TestLogHandler);
+    setLogHandler(RIALTO_COMPONENT_DEFAULT, RialtoLoggingTest::TestLogHandler, false);
     setLogLevels(RIALTO_COMPONENT_DEFAULT, logLevel);
 
     TestExpectLogCalls(RIALTO_COMPONENT_DEFAULT, logLevel);
@@ -228,7 +228,7 @@ TEST_F(RialtoLoggingTest, GetLogLevelDebug)
 {
     RIALTO_DEBUG_LEVEL logLevel = RIALTO_DEBUG_LEVEL_DEBUG;
 
-    setLogHandler(RIALTO_COMPONENT_DEFAULT, RialtoLoggingTest::TestLogHandler);
+    setLogHandler(RIALTO_COMPONENT_DEFAULT, RialtoLoggingTest::TestLogHandler, false);
     setLogLevels(RIALTO_COMPONENT_DEFAULT, logLevel);
 
     ASSERT_EQ(getLogLevels(RIALTO_COMPONENT_DEFAULT), logLevel);

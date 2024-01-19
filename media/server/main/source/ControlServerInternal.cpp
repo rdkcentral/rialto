@@ -160,7 +160,7 @@ bool ControlServerInternal::registerClient(std::weak_ptr<IControlClient> client,
     setApplicationState(appState);
     return true;
 }
-void ControlServerInternal::registerLogHandler(std::shared_ptr<IClientLogHandler> &handler)
+void ControlServerInternal::registerLogHandler(std::shared_ptr<IClientLogHandler> &handler, bool ignoreLogLevels)
 {
     // Intended for use on the client library only
     abort();
