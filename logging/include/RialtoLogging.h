@@ -221,13 +221,6 @@ RialtoLoggingStatus setLogHandler(RIALTO_COMPONENT component, LogHandler handler
  */
 bool isConsoleLoggingEnabled();
 
-/**
- * @brief Checks if this component/ level is being logged
- *
- * @retval: Returns true, if rialto is logging
- */
-bool isLoggingEnabledFor(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level);
-
 } // namespace firebolt::rialto::logging
 
 #endif // defined(__cplusplus)

@@ -139,10 +139,8 @@ void Control::registerLogHandler(std::shared_ptr<IClientLogHandler> &handler)
 void Control::forwardLog(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char *file, int line,
                          const char *function, const char *message, std::size_t messageLen) const
 {
-    if (!m_logHandler || !firebolt::rialto::logging::isLoggingEnabledFor(component, level))
-    {
+    if (!m_logHandler)
         return;
-    }
     m_logHandler->log(convertLevel(level), std::string(file), line, std::string(function), std::string(message));
 }
 }; // namespace firebolt::rialto::client
