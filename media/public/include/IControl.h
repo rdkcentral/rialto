@@ -98,9 +98,9 @@ public:
      * @param[in]  ignoreLogLevels   : If true then the handler will receive ALL log level messages regardless of the
      * currently configured log level
      *
-     * @retval none
+     * @retval true if successful
      */
-    virtual void registerLogHandler(std::shared_ptr<IClientLogHandler> &handler, bool ignoreLogLevels) = 0;
+    virtual bool registerLogHandler(std::shared_ptr<IClientLogHandler> &handler, bool ignoreLogLevels) = 0;
 };
 
 }; // namespace firebolt::rialto

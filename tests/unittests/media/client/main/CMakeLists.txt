@@ -43,6 +43,7 @@ add_gtests (
 
         # Control tests
         control/ControlTest.cpp
+        control/ControlRegisterLogHandler.cpp
 
         # MediaKeys tests
         mediaKeys/CreateTest.cpp

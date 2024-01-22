@@ -68,7 +68,7 @@ public:
 
     bool registerClient(std::weak_ptr<IControlClient> client, ApplicationState &appState) override;
 
-    void registerLogHandler(std::shared_ptr<IClientLogHandler> &handler, bool ignoreLogLevels) override;
+    bool registerLogHandler(std::shared_ptr<IClientLogHandler> &handler, bool ignoreLogLevels) override;
 
 private:
     void forwardLog(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char *file, int line,

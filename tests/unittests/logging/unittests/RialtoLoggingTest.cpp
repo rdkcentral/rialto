@@ -222,6 +222,30 @@ TEST_F(RialtoLoggingTest, SetLogLevelMultiple)
 }
 
 /**
+ * Test that setting the log handler to ignore levels works
+ */
+TEST_F(RialtoLoggingTest, SetLogLevelIgnoreForHandler)
+{
+    RIALTO_DEBUG_LEVEL logLevelNone = static_cast<RIALTO_DEBUG_LEVEL>(0);
+
+    // Set up the logging to report NOTHING...
+    setLogLevels(RIALTO_COMPONENT_DEFAULT, logLevelNone);
+
+    // Ask the log handler to ignore any log levels...
+    setLogHandler(RIALTO_COMPONENT_DEFAULT, RialtoLoggingTest::TestLogHandler, true);
+
+    // Because we're ignoring log levels now, we expect the following...
+    ASSERT_EQ(getLogLevels(RIALTO_COMPONENT_DEFAULT), RIALTO_DEBUG_LEVEL_EXTERNAL);
+
+    // Expect the log handler to be called for all types of log despite
+    // the current log level of nothing...
+    RIALTO_DEBUG_LEVEL logLevelAll = static_cast<RIALTO_DEBUG_LEVEL>(
+        RIALTO_DEBUG_LEVEL_INFO | RIALTO_DEBUG_LEVEL_ERROR | RIALTO_DEBUG_LEVEL_WARNING | RIALTO_DEBUG_LEVEL_FATAL |
+        RIALTO_DEBUG_LEVEL_MILESTONE | RIALTO_DEBUG_LEVEL_DEBUG);
+    TestExpectLogCalls(RIALTO_COMPONENT_DEFAULT, logLevelAll);
+}
+
+/**
  * Test that getting the log levels returns set log level.
  */
 TEST_F(RialtoLoggingTest, GetLogLevelDebug)

@@ -160,9 +160,9 @@ bool ControlServerInternal::registerClient(std::weak_ptr<IControlClient> client,
     setApplicationState(appState);
     return true;
 }
-void ControlServerInternal::registerLogHandler(std::shared_ptr<IClientLogHandler> &handler, bool ignoreLogLevels)
+bool ControlServerInternal::registerLogHandler(std::shared_ptr<IClientLogHandler> &handler, bool ignoreLogLevels)
 {
-    // Intended for use on the client library only
-    abort();
+    RIALTO_SERVER_LOG_DEBUG("Method intended for use on the client library only");
+    return false;
 }
 } // namespace firebolt::rialto::server

@@ -98,9 +98,9 @@ Control::~Control()
     }
     if (m_logHandler)
     {
-        firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_CLIENT, 0, false);
-        firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_IPC, 0, false);
-        firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_COMMON, 0, false);
+        firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_CLIENT, nullptr, false);
+        firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_IPC, nullptr, false);
+        firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_COMMON, nullptr, false);
     }
 }
 
@@ -116,7 +116,7 @@ bool Control::registerClient(std::weak_ptr<IControlClient> client, ApplicationSt
     return false;
 }
 
-void Control::registerLogHandler(std::shared_ptr<IClientLogHandler> &handler, bool ignoreLogLevels)
+bool Control::registerLogHandler(std::shared_ptr<IClientLogHandler> &handler, bool ignoreLogLevels)
 {
     m_logHandler = handler;
     firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_CLIENT,
@@ -137,6 +137,7 @@ void Control::registerLogHandler(std::shared_ptr<IClientLogHandler> &handler, bo
                                                        std::placeholders::_3, std::placeholders::_4,
                                                        std::placeholders::_5, std::placeholders::_6),
                                              ignoreLogLevels);
+    return true;
 }
 
 void Control::forwardLog(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char *file, int line,

@@ -232,11 +232,7 @@ static void rialtoLog(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, cons
     if (!g_rialtoLogLevels[component])
         g_rialtoLogLevels[component] = g_envVariableParser.getLevel(component);
 
-    bool checkLogLevels = true;
-    if (g_logHandler[component])
-        checkLogLevels = !g_ignoreLogLevels[component];
-
-    if (!(level & g_rialtoLogLevels[component]) && checkLogLevels)
+    if (!(level & g_rialtoLogLevels[component]) && !g_ignoreLogLevels[component])
         return;
     char mbuf[512];
     int len;
@@ -332,7 +328,7 @@ namespace firebolt::rialto::logging
 RialtoLoggingStatus setLogLevels(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL logLevels)
 {
     RialtoLoggingStatus status = RIALTO_LOGGING_STATUS_ERROR;
-    if (component < RIALTO_COMPONENT_LAST)
+    if (component < RIALTO_COMPONENT_LAST && !g_ignoreLogLevels[component])
     {
         g_rialtoLogLevels[component] = logLevels;
         status = RIALTO_LOGGING_STATUS_OK;
@@ -345,6 +341,9 @@ RIALTO_DEBUG_LEVEL getLogLevels(RIALTO_COMPONENT component)
 {
     if (component < RIALTO_COMPONENT_LAST)
     {
+        if (g_ignoreLogLevels[component])
+            return RIALTO_DEBUG_LEVEL_EXTERNAL;
+
         if (!g_rialtoLogLevels[component])
             g_rialtoLogLevels[component] = g_envVariableParser.getLevel(component);
         return g_rialtoLogLevels[component];
@@ -359,7 +358,11 @@ RialtoLoggingStatus setLogHandler(RIALTO_COMPONENT component, LogHandler handler
     {
         /* not thread-safe, but doubt this will be an issue */
         g_logHandler[component] = std::move(handler);
-        g_ignoreLogLevels[component] = ignoreLogLevels;
+
+        // Ignoring log levels is only an option if we're registering
+        // a non-null log handler
+        g_ignoreLogLevels[component] = (g_logHandler[component]) ? ignoreLogLevels : false;
+
         status = RIALTO_LOGGING_STATUS_OK;
     }
 

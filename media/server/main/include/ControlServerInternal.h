@@ -50,7 +50,7 @@ public:
     void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) override;
 
 private:
-    void registerLogHandler(std::shared_ptr<IClientLogHandler> &handler, bool ignoreLogLevels);
+    bool registerLogHandler(std::shared_ptr<IClientLogHandler> &handler, bool ignoreLogLevels);
     const int m_controlId;
     std::shared_ptr<IControlClientServerInternal> m_client;
     ApplicationState m_currentState;

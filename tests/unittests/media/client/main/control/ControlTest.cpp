@@ -22,7 +22,6 @@
 #include "ClientControllerMock.h"
 #include "Control.h"
 #include "ControlClientMock.h"
-#include "RialtoClientLogging.h"
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::client;
@@ -32,12 +31,6 @@ using ::testing::DoAll;
 using ::testing::Return;
 using ::testing::SetArgReferee;
 using ::testing::StrictMock;
-
-namespace
-{
-constexpr uint32_t kMaxTimeoutMs{2000};
-const std::string kLogTestStr("Test ABC");
-} // namespace
 
 class RialtoClientControlTest : public ::testing::Test
 {
@@ -110,43 +103,6 @@ TEST_F(RialtoClientControlTest, RegisterClientFailureDueToOperationFailure)
 
     EXPECT_CALL(m_clientControllerMock, registerClient(m_controlClientMock.get(), _)).WillOnce(Return(false));
     control->registerClient(m_controlClientMock, appState);
-
-    // Destroy
-    control.reset();
-}
-
-class TestClientLogHandler : public IClientLogHandler
-{
-public:
-    ~TestClientLogHandler() {}
-
-    void log(Level level, const std::string &file, int line, const std::string &function, const std::string &message)
-    {
-        if (message == kLogTestStr)
-        {
-            m_gotExpectedLogMessage = true;
-        }
-    }
-
-    bool m_gotExpectedLogMessage{false};
-};
-
-TEST_F(RialtoClientControlTest, RegisterLogHandler)
-{
-    std::unique_ptr<IControl> control;
-
-    EXPECT_NO_THROW(control = std::make_unique<Control>(m_clientControllerMock));
-
-    std::shared_ptr<TestClientLogHandler> logHandler = std::make_shared<TestClientLogHandler>();
-    {
-        std::shared_ptr<IClientLogHandler> tmp = logHandler;
-        control->registerLogHandler(tmp, true);
-    }
-
-    // Generate a log entry
-    RIALTO_CLIENT_LOG_ERROR("%s", kLogTestStr.c_str());
-
-    ASSERT_TRUE(logHandler->m_gotExpectedLogMessage);
 
     // Destroy
     control.reset();
