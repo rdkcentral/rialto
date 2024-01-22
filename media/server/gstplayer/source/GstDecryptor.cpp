@@ -336,8 +336,7 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer, GstCaps *cap
         m_metadataWrapper->removeProtectionMetadata(buffer);
     }
 
-    // pass it through even in case of failed decryption
-    return GST_FLOW_OK;
+    return returnStatus;
 }
 
 GstStructure *GstRialtoDecryptorPrivate::createProtectionMetaInfo(GstRialtoProtectionData *protectionData)

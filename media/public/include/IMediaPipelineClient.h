@@ -202,8 +202,8 @@ public:
      *
      * PlaybackState remains unchanged when an error occurs.
      *
-     * @param[in] sourceId  : The id of the source that produced the error occured.
-     * @param[in] error     : The type of error that has occured.
+     * @param[in] sourceId  : The id of the source that produced the error.
+     * @param[in] error     : The type of error that occured.
      */
     virtual void notifyPlaybackError(int32_t sourceId, const PlaybackError& error) = 0;
 };
