@@ -73,6 +73,7 @@ public:
 private:
     void forwardLog(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char *file, int line,
                     const char *function, const char *message, std::size_t messageLen) const;
+    void cancelLogHandler();
 
     /**
      * @brief The registered log handler
