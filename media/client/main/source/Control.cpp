@@ -123,17 +123,20 @@ void Control::registerLogHandler(std::shared_ptr<IClientLogHandler> &handler, bo
                                              std::bind(&Control::forwardLog, this, RIALTO_COMPONENT_CLIENT,
                                                        std::placeholders::_1, std::placeholders::_2,
                                                        std::placeholders::_3, std::placeholders::_4,
-                                                       std::placeholders::_5, std::placeholders::_6), ignoreLogLevels);
+                                                       std::placeholders::_5, std::placeholders::_6),
+                                             ignoreLogLevels);
     firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_IPC,
                                              std::bind(&Control::forwardLog, this, RIALTO_COMPONENT_IPC,
                                                        std::placeholders::_1, std::placeholders::_2,
                                                        std::placeholders::_3, std::placeholders::_4,
-                                                       std::placeholders::_5, std::placeholders::_6), ignoreLogLevels);
+                                                       std::placeholders::_5, std::placeholders::_6),
+                                             ignoreLogLevels);
     firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_COMMON,
                                              std::bind(&Control::forwardLog, this, RIALTO_COMPONENT_COMMON,
                                                        std::placeholders::_1, std::placeholders::_2,
                                                        std::placeholders::_3, std::placeholders::_4,
-                                                       std::placeholders::_5, std::placeholders::_6), ignoreLogLevels);
+                                                       std::placeholders::_5, std::placeholders::_6),
+                                             ignoreLogLevels);
 }
 
 void Control::forwardLog(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char *file, int line,

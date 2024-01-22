@@ -102,7 +102,8 @@ bool ServerManagerService::registerLogHandler(const std::shared_ptr<ILogHandler>
                                                     std::bind(&ServerManagerService::forwardLog, this,
                                                               std::placeholders::_1, std::placeholders::_2,
                                                               std::placeholders::_3, std::placeholders::_4,
-                                                              std::placeholders::_5, std::placeholders::_6), false);
+                                                              std::placeholders::_5, std::placeholders::_6),
+                                                    false);
 }
 
 void ServerManagerService::forwardLog(RIALTO_DEBUG_LEVEL level, const char *file, int line, const char *function,
