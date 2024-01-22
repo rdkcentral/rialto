@@ -196,6 +196,16 @@ public:
      * @param[in] sourceId  : The id of the source that produced the buffer underflow
      */
     virtual void notifyBufferUnderflow(int32_t sourceId) = 0;
+
+    /**
+     * @brief Notifies the client that a none fatal error has occured in the player.
+     *
+     * PlaybackState remains unchanged when an error occurs.
+     *
+     * @param[in] sourceId  : The id of the source that produced the error occured.
+     * @param[in] error     : The type of error that has occured.
+     */
+    virtual void notifyPlaybackError(int32_t sourceId, const PlaybackError& error) = 0;
 };
 
 }; // namespace firebolt::rialto

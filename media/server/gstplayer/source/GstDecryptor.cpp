@@ -231,9 +231,11 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer, GstCaps *cap
 {
     GstRialtoDecryptor *self = GST_RIALTO_DECRYPTOR(m_decryptorElement);
     GstRialtoProtectionData *protectionData = m_metadataWrapper->getProtectionMetadataData(buffer);
+    GstFlowReturn returnStatus = GST_BASE_TRANSFORM_FLOW_DROPPED; // By default drop frame on failure 
     if (!protectionData)
     {
         GST_TRACE_OBJECT(self, "Clear sample");
+        returnStatus = GST_FLOW_OK;
     }
     else
     {
@@ -295,6 +297,7 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer, GstCaps *cap
                 else
                 {
                     GST_TRACE_OBJECT(self, "Decryption successful");
+                    returnStatus = GST_FLOW_OK;
                 }
             }
 #else
@@ -325,6 +328,7 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer, GstCaps *cap
             else
             {
                 GST_TRACE_OBJECT(self, "Decryption successful");
+                returnStatus = GST_FLOW_OK;
             }
 #endif
         }

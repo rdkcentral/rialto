@@ -376,6 +376,15 @@ struct CodecData
     CodecDataType type{CodecDataType::BUFFER}; /**< The codec data type */
 };
 
+/**
+ * @brief None fatel asynchronous errors reported by the player.
+ */
+enum class PlaybackError
+{
+    UNKNOWN,
+    DECRYPTION, /* Player failed to decrypt a buffer and the frame has been dropped */ 
+};
+
 } // namespace firebolt::rialto
 
 #endif // FIREBOLT_RIALTO_MEDIA_COMMON_H_
