@@ -52,6 +52,7 @@ public:
         EXPECT_CALL(*m_gstWrapperMock, gstCapsToString(&m_audioCaps)).WillOnce(Return(&m_audioCapsStr));
         EXPECT_CALL(*m_glibWrapperMock, gFree(&m_audioCapsStr));
         EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(&m_audioAppSrc)).WillOnce(Return(&m_oldCaps));
+        EXPECT_CALL(*m_gstWrapperMock, gstCapsIsEqual(&m_audioCaps, &m_oldCaps)).WillOnce(Return(FALSE));
         EXPECT_CALL(*m_gstWrapperMock, gstCapsToString(&m_oldCaps)).WillOnce(Return(&m_oldCapsStr));
         EXPECT_CALL(*m_glibWrapperMock, gFree(&m_oldCapsStr));
         EXPECT_CALL(*m_rdkGstreamerUtilsWrapperMock,
@@ -60,6 +61,8 @@ public:
             .WillOnce(Return(true));
         EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_oldCaps));
         EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_audioCaps)).WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
+
+        willSetAudioAndVideoFlags();
     }
 
 private:

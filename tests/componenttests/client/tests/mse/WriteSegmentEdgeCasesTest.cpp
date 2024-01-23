@@ -66,7 +66,7 @@ public:
  *   Api call returns with success.
  *
  *  Step 2: Notify need data
- *   Server notifys the client that it needs 3 frames of video data.
+ *   Server notifies the client that it needs 3 frames of video data.
  *
  *  Step 3: Send have data response with no available samples status
  *   haveData with status NO_AVAILABLE_SAMPLES.
@@ -74,7 +74,7 @@ public:
  *   Api call returns with success.
  *
  *  Step 4: Notify need data
- *   Server notifys the client that it needs 3 frames of video data.
+ *   Server notifies the client that it needs 3 frames of video data.
  *
  *  Step 5: Send have data response with error status
  *   haveData with status ERROR.
@@ -82,7 +82,7 @@ public:
  *   Api call returns with success.
  *
  *  Step 6: Notify need data
- *   Server notifys the client that it needs 3 frames of video data.
+ *   Server notifies the client that it needs 3 frames of video data.
  *
  *  Step 7: Add segments no space
  *   addSegment with large frame.
@@ -96,7 +96,7 @@ public:
  *   haveData with status OK.
  *   Expect that haveData is propagated to the server.
  *   Api call returns with error.
- *   Server notifys the client that the Playback state has changed to ERROR.
+ *   Server notifies the client that the Playback state has changed to ERROR.
  *   Expect that the state change notification is propagated to the client.
  *
  * Test Teardown:

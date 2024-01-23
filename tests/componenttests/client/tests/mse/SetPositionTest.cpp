@@ -61,57 +61,57 @@ public:
  * Test Steps:
  *  Step 1: SetPosition in paused state
  *   SetPosition to position 10s.
- *   Server notifys the client that the Playback state has changed to SEEKING.
+ *   Server notifies the client that the Playback state has changed to SEEKING.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 2: Seek complete
- *   Server notifys the client that the Playback state has changed to FLUSHED.
+ *   Server notifies the client that the Playback state has changed to FLUSHED.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 3: Buffer to paused state
  *   Write audio frames.
  *   Write video frames.
- *   Server notifys the client that the Network state has changed to BUFFERED.
+ *   Server notifies the client that the Network state has changed to BUFFERED.
  *   Expect that the state change notification is propagated to the client.
- *   Server notifys the client that the Playback state has changed to PAUSED.
+ *   Server notifies the client that the Playback state has changed to PAUSED.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 4: Play
  *   Play the content.
  *   Expect that play propagated to the server.
- *   Server notifys the client that the Playback state has changed to PLAYING.
+ *   Server notifies the client that the Playback state has changed to PLAYING.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 5: SetPosition in play state
  *   SetPosition to position 0s.
- *   Server notifys the client that the Playback state has changed to SEEKING.
+ *   Server notifies the client that the Playback state has changed to SEEKING.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 6: Seek complete
- *   Server notifys the client that the Playback state has changed to FLUSHED.
+ *   Server notifies the client that the Playback state has changed to FLUSHED.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 7: Buffer to playing state
  *   Write audio frames.
  *   Write video frames.
- *   Server notifys the client that the Network state has changed to BUFFERED.
+ *   Server notifies the client that the Network state has changed to BUFFERED.
  *   Expect that the state change notification is propagated to the client.
- *   Server notifys the client that the Playback state has changed to PLAYING.
+ *   Server notifies the client that the Playback state has changed to PLAYING.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 8: End of stream
  *   Write audio data end of stream.
  *   Write video data end of stream.
- *   Server notifys the client that the Network state has changed to END_OF_STREAM.
+ *   Server notifies the client that the Network state has changed to END_OF_STREAM.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 9: SetPosition in end of stream state
  *   SetPosition to position 0s.
- *   Server notifys the client that the Playback state has changed to SEEKING.
+ *   Server notifies the client that the Playback state has changed to SEEKING.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 10: Seek complete
- *   Server notifys the client that the Playback state has changed to FLUSHED.
+ *   Server notifies the client that the Playback state has changed to FLUSHED.
  *   Expect that the state change notification is propagated to the client.
  *
  * Test Teardown:
@@ -209,11 +209,11 @@ TEST_F(SetPositionTest, successStates)
  *
  * Test Steps:
  *  Step 1: Need data
- *   Server notifys the client that it needs 20 frames of audio data.
+ *   Server notifies the client that it needs 20 frames of audio data.
  *
  *  Step 2: SetPosition in paused state
  *   SetPosition to position 10s.
- *   Server notifys the client that the Playback state has changed to SEEKING.
+ *   Server notifies the client that the Playback state has changed to SEEKING.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 3: Add segment failure
@@ -225,7 +225,7 @@ TEST_F(SetPositionTest, successStates)
  *   Expect that have data is not propagted to the server while seeking.
  *
  *  Step 5: Seek complete
- *   Server notifys the client that the Playback state has changed to FLUSHED.
+ *   Server notifies the client that the Playback state has changed to FLUSHED.
  *   Expect that the state change notification is propagated to the client.
  *
  * Test Teardown:
@@ -285,11 +285,11 @@ TEST_F(SetPositionTest, flushed)
  * Test Steps:
  *  Step 1: SetPosition in paused state
  *   SetPosition to position 10s.
- *   Server notifys the client that the Playback state has changed to SEEKING.
+ *   Server notifies the client that the Playback state has changed to SEEKING.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 2: SetPosition state failure
- *   Server notifys the client that the Playback state has changed to FAILURE.
+ *   Server notifies the client that the Playback state has changed to FAILURE.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 3: SetPosition in failure state
@@ -299,16 +299,16 @@ TEST_F(SetPositionTest, flushed)
  *  Step 4: Pause
  *   Pause the content.
  *   Expect that pause propagated to the server.
- *   Server notifys the client that the Playback state has changed to PAUSED.
+ *   Server notifies the client that the Playback state has changed to PAUSED.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 5: SetPosition in paused state
  *   SetPosition to position 0s.
- *   Server notifys the client that the Playback state has changed to SEEKING.
+ *   Server notifies the client that the Playback state has changed to SEEKING.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 6: Seek complete
- *   Server notifys the client that the Playback state has changed to FLUSHED.
+ *   Server notifies the client that the Playback state has changed to FLUSHED.
  *   Expect that the state change notification is propagated to the client.
  *
  * Test Teardown:

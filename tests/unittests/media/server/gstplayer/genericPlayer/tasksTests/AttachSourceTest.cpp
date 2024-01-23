@@ -75,12 +75,19 @@ TEST_F(AttachSourceTest, shouldAttachVideoDolbyVisionSource)
 TEST_F(AttachSourceTest, shouldSwitchAudioSource)
 {
     shouldSwitchAudioSource();
-    triggerSwitchAudioSource();
+    triggerReattachAudioSource();
     checkNewAudioSourceAttached();
 }
 
-TEST_F(AttachSourceTest, shouldNotSwitchAudioSourceWhenMimeTypeIsEmpty)
+TEST_F(AttachSourceTest, shouldReattachAudioSource)
+{
+    shouldReattachAudioSource();
+    triggerReattachAudioSource();
+    checkNewAudioSourceAttached();
+}
+
+TEST_F(AttachSourceTest, shouldNotReattachAudioSourceWhenMimeTypeIsEmpty)
 {
     shouldNotSwitchAudioSourceWhenMimeTypeIsEmpty();
-    triggerSwitchAudioSourceWithEmptyMimeType();
+    triggerReattachAudioSourceWithEmptyMimeType();
 }

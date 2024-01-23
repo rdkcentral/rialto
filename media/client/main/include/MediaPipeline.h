@@ -27,6 +27,7 @@
 #include "IMediaPipeline.h"
 #include "IMediaPipelineIpc.h"
 #include <atomic>
+#include <condition_variable>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -214,6 +215,21 @@ protected:
      * @brief The current state of the MediaPipeline.
      */
     std::atomic<State> m_currentState;
+
+    /**
+     * @brief The attach source mutex.
+     */
+    std::mutex m_attachSourceMutex;
+
+    /**
+     * @brief The attach source condition variable.
+     */
+    std::condition_variable m_attachSourceCond;
+
+    /**
+     * @brief Whether attachSource is currently in progress.
+     */
+    bool m_attachingSource;
 
     /**
      * @brief The container with attached source id <-> MediaSourceType mapping

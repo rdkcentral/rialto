@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2022 Sky UK
+ * Copyright 2024 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,24 +17,24 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_MATCHERS_H_
-#define FIREBOLT_RIALTO_SERVER_MATCHERS_H_
-
-#include "GenericPlayerContext.h"
+#ifndef MATCHERS_H_
+#define MATCHERS_H_
 
 #include <gmock/gmock.h>
-#include <gtest/gtest.h>
 #include <string>
 
-namespace firebolt::rialto::server
+MATCHER_P(PtrStrMatcher, expectedStr, "")
 {
-bool operator==(const Rectangle &lhs, const Rectangle &rhs);
-} // namespace firebolt::rialto::server
+    std::string actualStr = (const char *)arg;
+    return expectedStr == actualStr;
+}
 
-namespace firebolt::rialto
+MATCHER_P(BufferMatcher, expectedBuffer, "")
 {
-bool operator==(const Fraction &lhs, const Fraction &rhs);
-} // namespace firebolt::rialto
+    const char *kArgCharPtr{reinterpret_cast<const char *>(arg)};
+    std::string dataCopy(kArgCharPtr, kArgCharPtr + expectedBuffer.size());
+    return dataCopy == expectedBuffer;
+}
 
 MATCHER(NotNullMatcher, "")
 {
@@ -54,4 +54,4 @@ MATCHER_P(arrayMatcher, vec, "")
     return true;
 }
 
-#endif // FIREBOLT_RIALTO_SERVER_MATCHERS_H_
+#endif // MATCHERS_H_

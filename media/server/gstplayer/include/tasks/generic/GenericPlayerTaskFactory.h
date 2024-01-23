@@ -60,7 +60,7 @@ public:
     std::unique_ptr<IPlayerTask>
     createReadShmDataAndAttachSamples(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                       const std::shared_ptr<IDataReader> &dataReader) const override;
-    std::unique_ptr<IPlayerTask> createRemoveSource(GenericPlayerContext &context,
+    std::unique_ptr<IPlayerTask> createRemoveSource(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                                     const firebolt::rialto::MediaSourceType &type) const override;
     std::unique_ptr<IPlayerTask> createReportPosition(GenericPlayerContext &context) const override;
     std::unique_ptr<IPlayerTask> createCheckAudioUnderflow(GenericPlayerContext &context,

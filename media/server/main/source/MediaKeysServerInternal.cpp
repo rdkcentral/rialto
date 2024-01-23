@@ -17,9 +17,10 @@
  * limitations under the License.
  */
 
+#include <stdexcept>
+
 #include "MediaKeysServerInternal.h"
 #include "RialtoServerLogging.h"
-#include <stdexcept>
 
 namespace firebolt::rialto
 {
@@ -434,10 +435,9 @@ MediaKeyErrorStatus MediaKeysServerInternal::getDrmStoreHash(std::vector<unsigne
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
     constexpr size_t kHashSize{256};
-    drmStoreHash.reserve(kHashSize);
+    drmStoreHash.resize(kHashSize);
     MediaKeyErrorStatus status;
     auto task = [&]() { status = m_ocdmSystem->getSecureStoreHash(&drmStoreHash[0], kHashSize); };
-
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return status;
 }
@@ -446,10 +446,9 @@ MediaKeyErrorStatus MediaKeysServerInternal::getKeyStoreHash(std::vector<unsigne
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
     constexpr size_t kHashSize{256};
-    keyStoreHash.reserve(kHashSize);
+    keyStoreHash.resize(kHashSize);
     MediaKeyErrorStatus status;
     auto task = [&]() { status = m_ocdmSystem->getKeyStoreHash(&keyStoreHash[0], kHashSize); };
-
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return status;
 }

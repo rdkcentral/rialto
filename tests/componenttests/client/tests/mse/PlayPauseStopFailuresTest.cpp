@@ -66,13 +66,13 @@ public:
  *  Step 2: Playing state failure
  *   Play the content.
  *   Expect that play propagated to the server.
- *   Server notifys the client that the Playback state has changed to FAILURE.
+ *   Server notifies the client that the Playback state has changed to FAILURE.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 3: Play
  *   Play the content.
  *   Expect that play propagated to the server.
- *   Server notifys the client that the Playback state has changed to PLAYING.
+ *   Server notifies the client that the Playback state has changed to PLAYING.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 4: Pause api failure
@@ -82,13 +82,13 @@ public:
  *  Step 5: Paused state failure
  *   Pause the content.
  *   Expect that pause propagated to the server.
- *   Server notifys the client that the Playback state has changed to FAILURE.
+ *   Server notifies the client that the Playback state has changed to FAILURE.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 6: Pause
  *   Pause the content.
  *   Expect that pause propagated to the server.
- *   Server notifys the client that the Playback state has changed to PAUSED.
+ *   Server notifies the client that the Playback state has changed to PAUSED.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 7: Stop api failure
@@ -98,13 +98,13 @@ public:
  *  Step 8: Stopped state failure
  *   Stop the content.
  *   Expect that stop propagated to the server.
- *   Server notifys the client that the Playback state has changed to FAILURE.
+ *   Server notifies the client that the Playback state has changed to FAILURE.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 9: Stop
  *   Stop the playback.
  *   Expect that stop propagated to the server.
- *   Server notifys the client that the Playback state has changed to STOPPED.
+ *   Server notifies the client that the Playback state has changed to STOPPED.
  *   Expect that the state change notification is propagated to the client.
  *
  * Test Teardown:

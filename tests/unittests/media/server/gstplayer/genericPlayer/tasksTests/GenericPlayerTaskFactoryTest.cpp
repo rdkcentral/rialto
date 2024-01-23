@@ -159,7 +159,7 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateReadShmDataAndAttachSamples)
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateRemoveSource)
 {
-    auto task = m_sut.createRemoveSource(m_context, firebolt::rialto::MediaSourceType::AUDIO);
+    auto task = m_sut.createRemoveSource(m_context, m_gstPlayer, firebolt::rialto::MediaSourceType::AUDIO);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::RemoveSource &>(*task));
 }

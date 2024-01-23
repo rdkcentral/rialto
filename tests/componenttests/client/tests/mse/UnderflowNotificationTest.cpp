@@ -68,10 +68,10 @@ public:
  *
  * Test Steps:
  *  Step 1: Notify need data for audio
- *   Server notifys the client that it needs 20 frames of audio data.
+ *   Server notifies the client that it needs 20 frames of audio data.
  *
  *  Step 2: Notify audio underflow
- *   Server notifys the client underflow with source id audio.
+ *   Server notifies the client underflow with source id audio.
  *   Expect that the underflow notification is propagated to the client.
  *
  *  Step 3: Recover audio underflow
@@ -82,10 +82,10 @@ public:
  *   Api call returns with success.
  *
  *  Step 4: Notify need data for video
- *   Server notifys the client that it needs 20 frames of video data.
+ *   Server notifies the client that it needs 20 frames of video data.
  *
  *  Step 5: Notify video underflow
- *   Server notifys the client underflow with source id video.
+ *   Server notifies the client underflow with source id video.
  *   Expect that the underflow notification is propagated to the client.
  *
  *  Step 6: Recover video underflow

@@ -20,8 +20,8 @@
 #ifndef APPLICATION_MANAGEMENT_SERVER_TESTS_FIXTURE_H_
 #define APPLICATION_MANAGEMENT_SERVER_TESTS_FIXTURE_H_
 
+#include "ClientMock.h"
 #include "IApplicationManagementServer.h"
-#include "IpcClientMock.h"
 #include "IpcServerMock.h"
 #include "ServerManagerModuleServiceMock.h"
 #include "SessionServerCommon.h"
