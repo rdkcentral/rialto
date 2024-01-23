@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2022 Sky UK
+ * Copyright 2023 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,24 @@
  * limitations under the License.
  */
 
-#include "Matchers.h"
+#ifndef FIREBOLT_RIALTO_WEB_AUDIO_PLAYER_CLIENT_MOCK_H_
+#define FIREBOLT_RIALTO_WEB_AUDIO_PLAYER_CLIENT_MOCK_H_
 
-namespace firebolt::rialto::common
+#include <gmock/gmock.h>
+#include <memory>
+
+#include "IWebAudioPlayerClient.h"
+#include "MediaCommon.h"
+
+namespace firebolt::rialto
 {
-bool operator==(const AppConfig &lhs, const AppConfig &rhs)
+class WebAudioPlayerClientMock : public IWebAudioPlayerClient
 {
-    return lhs.clientIpcSocketName == rhs.clientIpcSocketName;
-}
-} // namespace firebolt::rialto::common
+public:
+    WebAudioPlayerClientMock() = default;
+    virtual ~WebAudioPlayerClientMock() = default;
+    MOCK_METHOD(void, notifyState, (WebAudioPlayerState state), (override));
+};
+} // namespace firebolt::rialto
+
+#endif // FIREBOLT_RIALTO_WEB_AUDIO_PLAYER_CLIENT_MOCK_H_

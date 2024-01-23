@@ -20,8 +20,8 @@
 #ifndef CONTROL_CLIENT_TESTS_FIXTURE_H_
 #define CONTROL_CLIENT_TESTS_FIXTURE_H_
 
+#include "ClientMock.h"
 #include "ControlClientServerInternal.h"
-#include "IpcClientMock.h"
 #include "controlmodule.pb.h"
 #include <gtest/gtest.h>
 #include <memory>

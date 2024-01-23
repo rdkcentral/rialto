@@ -174,11 +174,13 @@ public:
      * @brief Creates a Remove Source task.
      *
      * @param[in] context : The GstPlayer context
+     * @param[in] player  : The GstGenericPlayer instance
      * @param[in] type    : The media source type to remove
      *
      * @retval the new Remove Source task instance.
      */
     virtual std::unique_ptr<IPlayerTask> createRemoveSource(GenericPlayerContext &context,
+                                                            IGstGenericPlayerPrivate &player,
                                                             const firebolt::rialto::MediaSourceType &type) const = 0;
 
     /**

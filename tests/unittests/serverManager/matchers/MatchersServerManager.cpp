@@ -17,14 +17,12 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_COMMON_MATCHERS_H_
-#define FIREBOLT_RIALTO_COMMON_MATCHERS_H_
-
-#include "SessionServerCommon.h"
+#include "MatchersServerManager.h"
 
 namespace firebolt::rialto::common
 {
-bool operator==(const AppConfig &lhs, const AppConfig &rhs);
+bool operator==(const AppConfig &lhs, const AppConfig &rhs)
+{
+    return lhs.clientIpcSocketName == rhs.clientIpcSocketName;
+}
 } // namespace firebolt::rialto::common
-
-#endif // FIREBOLT_RIALTO_COMMON_MATCHERS_H_

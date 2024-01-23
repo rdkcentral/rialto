@@ -53,6 +53,7 @@ public:
     void willEos(GstAppSrc *appSrc);
     void willRemoveAudioSource();
     void willStop();
+    void willSetAudioAndVideoFlags();
 
     void createSession();
     void load();

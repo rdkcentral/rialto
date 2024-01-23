@@ -54,7 +54,7 @@ add_gtests(RialtoServerGstPlayerUnitTests
     genericPlayer/tasksTests/StopTest.cpp
     genericPlayer/tasksTests/UnderflowTest.cpp
     genericPlayer/tasksTests/UpdatePlaybackGroupTest.cpp
-    genericPlayer/common/Matchers.cpp
+    genericPlayer/common/MatchersGenericPlayer.cpp
     genericPlayer/common/GstGenericPlayerTestCommon.cpp
 
     genericPlayer/CreateTest.cpp
@@ -112,9 +112,11 @@ target_include_directories(RialtoServerGstPlayerUnitTests
         $<TARGET_PROPERTY:RialtoLogging,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoServerGstPlayer,INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoServerMocks,INTERFACE_INCLUDE_DIRECTORIES>
-        $<TARGET_PROPERTY:RialtoCommonMocks,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:ExternalLibraryMocks,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoUnittestCommonMocks,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoCommonMisc,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoWrappersMocks,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoTestCommonMatchers,INTERFACE_INCLUDE_DIRECTORIES>
 
         genericPlayer/common/
         webAudioPlayer/common/

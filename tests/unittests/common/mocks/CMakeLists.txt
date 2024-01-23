@@ -23,12 +23,12 @@ set( CMAKE_CXX_STANDARD_REQUIRED ON )
 include( CheckCXXCompilerFlag )
 
 add_library(
-        RialtoCommonMocks
+        RialtoUnittestCommonMocks
         INTERFACE
     )
 
 target_include_directories(
-        RialtoCommonMocks
+        RialtoUnittestCommonMocks
 
         INTERFACE
         .

@@ -21,10 +21,10 @@
 #define SESSION_MANAGEMENT_SERVER_TESTS_FIXTURE_H_
 
 #include "CdmServiceMock.h"
+#include "ClientMock.h"
 #include "ControlModuleServiceMock.h"
 #include "ControlServiceMock.h"
 #include "ISessionManagementServer.h"
-#include "IpcClientMock.h"
 #include "IpcServerMock.h"
 #include "LinuxWrapperMock.h"
 #include "MediaKeysCapabilitiesModuleServiceMock.h"
