@@ -22,6 +22,7 @@
 
 #include "MediaCommon.h"
 #include "mediakeysmodule.pb.h"
+#include "mediakeyscapabilitiesmodule.pb.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <memory>
