@@ -21,8 +21,8 @@
 #define MEDIA_KEYS_PROTO_REQUEST_MATCHERS_H_
 
 #include "MediaCommon.h"
-#include "mediakeysmodule.pb.h"
 #include "mediakeyscapabilitiesmodule.pb.h"
+#include "mediakeysmodule.pb.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <memory>
