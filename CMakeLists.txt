@@ -32,6 +32,7 @@ if ( COVERAGE_ENABLED )
 endif()
 
 add_compile_options(-Wall -Werror)
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 
 option(RIALTO_LOG_FATAL_ENABLED "Enable fatal logging for RialtoServer" ON)
 option(RIALTO_LOG_ERROR_ENABLED "Enable error logging for RialtoServer" ON)
@@ -198,6 +199,7 @@ add_subdirectory( common )
 add_subdirectory( media )
 add_subdirectory( logging )
 add_subdirectory( wrappers )
+add_subdirectory( proto )
 
 if( ENABLE_SERVER_MANAGER )
     add_subdirectory( serverManager )
