@@ -25,7 +25,6 @@ namespace firebolt::rialto::client::ct
 class MediaKeysCapabiltiesTest : public ClientComponentTest
 {
 public:
-
     MediaKeysCapabiltiesTest() : ClientComponentTest()
     {
         ClientComponentTest::startApplicationRunning();
@@ -39,12 +38,12 @@ public:
     }
 };
 /*
- * Component Test: MediaKeyCapabilities API 
+ * Component Test: MediaKeyCapabilities API
  * Test Objective:
  *  Test the getSupportedKeySystems, supportKeySystem and getSupportedKeySystemVersion APIs
  *
  * Sequence Diagrams:
- *  Check Supported Key Systems - indicative use of Rialto and Get DRM Version - Netflix/native Rialto 
+ *  Check Supported Key Systems - indicative use of Rialto and Get DRM Version - Netflix/native Rialto
  *                              - https://wiki.rdkcentral.com/pages/viewpage.action?pageId=226375556
  *
  * Test Setup:
@@ -114,9 +113,8 @@ TEST_F(MediaKeysCapabilitiesTest, checkSupportedKeySystems)
     MediaKeysTestMethods::shouldGetSupportedKeySystemVersion();
     MediaKeysTestMethods::getSupportedKeySystemVersion()
 
-    // Step 5: Get the supported key system version - failure
-    MediaKeysTestMethods::shouldNotGetSupportedKeySystemVersion();
+        // Step 5: Get the supported key system version - failure
+        MediaKeysTestMethods::shouldNotGetSupportedKeySystemVersion();
     MediaKeysTestMethods::doesNotGetSupportedKeySystemVersion();
-
 }
 } // namespace firebolt::rialto::client::ct

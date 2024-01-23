@@ -21,8 +21,8 @@
 #define MEDIA_KEYS_MODULE_MOCK_H_
 
 #include "MediaKeysProtoUtils.h"
-#include "mediakeysmodule.pb.h"
 #include "mediakeyscapabilitiesmodule.pb.h"
+#include "mediakeysmodule.pb.h"
 #include <gmock/gmock.h>
 #include <string>
 #include <vector>
@@ -90,17 +90,17 @@ public:
                  const ::firebolt::rialto::GetCdmKeySessionIdRequest *request,
                  ::firebolt::rialto::GetCdmKeySessionIdResponse *response, ::google::protobuf::Closure *done));
     MOCK_METHOD(void, getSupportedKeySystems,
-                (::google::protobuf::RpcController* controller,
+                (::google::protobuf::RpcController * controller,
                  const ::firebolt::rialto::GetSupportedKeySystemsRequest *request,
-                 ::firebolt::rialto::GetSupportedKeySystemsResponse *response, ::google::protobuf::Closure* done));
+                 ::firebolt::rialto::GetSupportedKeySystemsResponse *response, ::google::protobuf::Closure *done));
     MOCK_METHOD(void, supportsKeySystem,
-                (::google::protobuf::RpcController* controller,
+                (::google::protobuf::RpcController * controller,
                  const ::firebolt::rialto::SupportsKeySystemRequest *request,
-                 ::firebolt::rialto::SupportsKeySystemResponse *response, ::google::protobuf::Closure* done));
+                 ::firebolt::rialto::SupportsKeySystemResponse *response, ::google::protobuf::Closure *done));
     MOCK_METHOD(void, getSupportedKeySystemVersion,
-                (::google::protobuf::RpcController* controller,
+                (::google::protobuf::RpcController * controller,
                  const ::firebolt::rialto::GetSupportedKeySystemVersionRequest *request,
-                 ::firebolt::rialto::GetSupportedKeySystemVersionResponse *response, ::google::protobuf::Closure* done));
+                 ::firebolt::rialto::GetSupportedKeySystemVersionResponse *response, ::google::protobuf::Closure *done));
 
     void defaultReturn(::google::protobuf::RpcController *controller, ::google::protobuf::Closure *done)
     {
@@ -253,13 +253,14 @@ public:
         return response;
     }
 
-    firebolt::rialto::GetSupportedKeySystemsResponse getSupportedKeySystemsResponse(const std::vector<std::string>& values) 
+    firebolt::rialto::GetSupportedKeySystemsResponse getSupportedKeySystemsResponse(const std::vector<std::string> &values)
     {
         firebolt::rialto::GetSupportedKeySystemsResponse response;
 
-            for (const auto& value : values) {
-                response.add_key_systems(value);
-            }
+        for (const auto &value : values)
+        {
+            response.add_key_systems(value);
+        }
 
         return response;
     }
@@ -271,12 +272,11 @@ public:
         return response;
     }
 
-    firebolt::rialto::GetSupportedKeySystemVersionResponse getSupportedKeySystemVersionResponse(const std::string& value)
+    firebolt::rialto::GetSupportedKeySystemVersionResponse getSupportedKeySystemVersionResponse(const std::string &value)
     {
         firebolt::rialto::GetSupportedKeySystemVersionResponse response;
         response.set_version(value);
         return response;
-
     }
 
     MediaKeysModuleMock() {}
