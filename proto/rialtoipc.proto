@@ -23,6 +23,9 @@ import "google/protobuf/descriptor.proto";
 
 package firebolt.rialto.ipc;
 
+// Optimise for code size
+option optimize_for = CODE_SIZE;
+
 extend google.protobuf.FieldOptions {
   optional bool field_is_fd = 50001;
 }

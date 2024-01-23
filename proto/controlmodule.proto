@@ -27,6 +27,9 @@ package firebolt.rialto;
 // You need this to generate the rpc service stubs
 option cc_generic_services = true;
 
+// Optimise for code size
+option optimize_for = CODE_SIZE;
+
 /**
  * @fn int getSharedMemoryFd()
  *
