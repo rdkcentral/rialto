@@ -67,3 +67,7 @@ target_link_libraries (
         PRIVATE
         protobuf::libprotobuf
 )
+
+install( TARGETS RialtoProtobuf LIBRARY
+         DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        )
