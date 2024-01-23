@@ -582,7 +582,6 @@ void MediaKeysTestMethods::getSupportedKeySystems()
 
 void MediaKeysTestMethods::shouldSupportKeySystems()
 {
-
     EXPECT_CALL(*m_mediaKeysModuleMock, supportsKeySystem(_, supportsKeySystemRequestMatcher(kKeySystems[0]), _, _))
         .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->supportsKeySystemResponse(true)),
                         WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
