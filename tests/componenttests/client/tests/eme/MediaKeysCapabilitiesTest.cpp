@@ -113,8 +113,8 @@ TEST_F(MediaKeysCapabilitiesTest, checkSupportedKeySystems)
     MediaKeysTestMethods::shouldGetSupportedKeySystemVersion();
     MediaKeysTestMethods::getSupportedKeySystemVersion()
 
-    // Step 5: Get the supported key system version - failure
-    MediaKeysTestMethods::shouldNotGetSupportedKeySystemVersion();
+        // Step 5: Get the supported key system version - failure
+        MediaKeysTestMethods::shouldNotGetSupportedKeySystemVersion();
     MediaKeysTestMethods::doesNotGetSupportedKeySystemVersion();
 }
 } // namespace firebolt::rialto::client::ct
