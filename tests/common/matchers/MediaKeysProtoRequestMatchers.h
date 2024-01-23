@@ -176,4 +176,18 @@ MATCHER_P(getDrmTimeRequestMatcher, mediaKeysHandle, "")
     return (kRequest->media_keys_handle() == mediaKeysHandle);
 }
 
+MATCHER_P(supportsKeySystemRequestMatcher, keySystem, "")
+{
+    const ::firebolt::rialto::SupportsKeySystemRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::SupportsKeySystemRequest*>(arg);
+    return (kRequest->key_system() == keySystem);
+}
+
+MATCHER_P(getSupportedKeySystemVersionRequestMatcher, keySystem, "")
+{
+    const ::firebolt::rialto::GetSupportedKeySystemVersionRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::GetSupportedKeySystemVersionRequest*>(arg);
+    return (kRequest->key_system() == keySystem);
+}
+
 #endif // MEDIA_KEYS_PROTO_REQUEST_MATCHERS_H_
