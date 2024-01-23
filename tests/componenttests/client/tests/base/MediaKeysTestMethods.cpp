@@ -54,7 +54,7 @@ const std::string kCdmKeySessionId{"CDM ID"};
 constexpr uint32_t kErrorCode{98538};
 constexpr uint32_t kLdlSessionLimit{5};
 constexpr uint64_t kDrmTime{1704200814000000000};
-const std::vector<std::string> kKeySystems{"expectedKeySystem1", "expectedKeySystem2", "expectedKeySystem3"};
+const std::vector<std::string> kKeySystems{"com.netflix.playready", "com.widevine.alpha", "com.microsoft.playready"};
 } // namespace
 
 namespace firebolt::rialto::client::ct
