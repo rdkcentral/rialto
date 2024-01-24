@@ -30,7 +30,7 @@ namespace firebolt::rialto::wrappers
 class OcdmMock : public IOcdm
 {
 public:
-    MOCK_METHOD(MediaKeyErrorStatus, isTypeSupported, (std::string keySystem), (override));
+    MOCK_METHOD(MediaKeyErrorStatus, isTypeSupported, (const std::string &keySystem), (override));
 };
 } // namespace firebolt::rialto::wrappers
 

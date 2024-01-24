@@ -19,10 +19,10 @@
 
 #include <stdexcept>
 
+#include "MediaCommon.h"
 #include "MediaKeysCapabilities.h"
 #include "MediaKeysCommon.h"
 #include "RialtoServerLogging.h"
-#include <MediaCommon.h>
 
 namespace
 {

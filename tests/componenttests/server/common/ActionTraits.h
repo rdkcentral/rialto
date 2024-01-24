@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_CT_ACTION_TRAITS_H_
 
 #include "controlmodule.pb.h"
+#include "mediakeyscapabilitiesmodule.pb.h"
 #include "mediakeysmodule.pb.h"
 #include "mediapipelinemodule.pb.h"
 #include "servermanagermodule.pb.h"
@@ -356,6 +357,31 @@ struct GetDrmTime
     using ResponseType = ::firebolt::rialto::GetDrmTimeResponse;
     using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
     static constexpr auto m_kFunction{&Stub::getDrmTime};
+};
+
+// mediakeyscapabilities module
+struct GetSupportedKeySystems
+{
+    using RequestType = ::firebolt::rialto::GetSupportedKeySystemsRequest;
+    using ResponseType = ::firebolt::rialto::GetSupportedKeySystemsResponse;
+    using Stub = ::firebolt::rialto::MediaKeysCapabilitiesModule_Stub;
+    static constexpr auto m_kFunction{&Stub::getSupportedKeySystems};
+};
+
+struct SupportsKeySystem
+{
+    using RequestType = ::firebolt::rialto::SupportsKeySystemRequest;
+    using ResponseType = ::firebolt::rialto::SupportsKeySystemResponse;
+    using Stub = ::firebolt::rialto::MediaKeysCapabilitiesModule_Stub;
+    static constexpr auto m_kFunction{&Stub::supportsKeySystem};
+};
+
+struct GetSupportedKeySystemVersion
+{
+    using RequestType = ::firebolt::rialto::GetSupportedKeySystemVersionRequest;
+    using ResponseType = ::firebolt::rialto::GetSupportedKeySystemVersionResponse;
+    using Stub = ::firebolt::rialto::MediaKeysCapabilitiesModule_Stub;
+    static constexpr auto m_kFunction{&Stub::getSupportedKeySystemVersion};
 };
 
 // control module

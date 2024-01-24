@@ -17,14 +17,15 @@
  * limitations under the License.
  */
 
-#include "CdmService.h"
-#include "RialtoServerLogging.h"
 #include <algorithm>
 #include <exception>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "CdmService.h"
+#include "RialtoServerLogging.h"
 
 namespace firebolt::rialto::server::service
 {

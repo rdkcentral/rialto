@@ -62,7 +62,7 @@ public:
      */
     virtual ~Ocdm() {}
 
-    MediaKeyErrorStatus isTypeSupported(std::string keySystem) override;
+    MediaKeyErrorStatus isTypeSupported(const std::string &keySystem) override;
 };
 
 }; // namespace firebolt::rialto::wrappers
