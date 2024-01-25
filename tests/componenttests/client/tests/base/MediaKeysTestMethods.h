@@ -22,6 +22,7 @@
 
 #include "IMediaKeys.h"
 #include "IMediaKeysCapabilities.h"
+#include "MediaKeysCapabilitiesModuleMock.h"
 #include "MediaKeysClientMock.h"
 #include "MediaKeysModuleMock.h"
 #include "ServerStub.h"
@@ -50,10 +51,12 @@ protected:
     // Strict Mocks
     std::shared_ptr<StrictMock<MediaKeysClientMock>> m_mediaKeysClientMock;
     std::shared_ptr<StrictMock<MediaKeysModuleMock>> m_mediaKeysModuleMock;
+    std::shared_ptr<StrictMock<MediaKeysCapabilitiesModuleMock>> m_mediaKeysCapabilitiesModuleMock;
 
     // Objects
     std::shared_ptr<IMediaKeysFactory> m_mediaKeysFactory;
     std::shared_ptr<IMediaKeys> m_mediaKeys;
+    std::shared_ptr<IMediaKeysCapabilitiesFactory> m_mediaKeysCapabilitiesFactory;
     std::shared_ptr<IMediaKeysCapabilities> m_mediaKeysCapabilities;
 
     // MediaKeys Expect methods
@@ -92,6 +95,8 @@ protected:
     void shouldNotifyLicenseRenewal();
 
     // MediaKeysCapabilities Expect methods
+    void createMediaKeysCapabilitiesObject();
+    void destroyMediaKeysCapabilitiesObject();
     void shouldGetSupportedKeySystems();
     void shouldSupportKeySystems();
     void shouldNotSupportKeySystems();

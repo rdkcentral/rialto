@@ -22,20 +22,12 @@
 
 namespace firebolt::rialto::client::ct
 {
-class MediaKeysCapabiltiesTest : public ClientComponentTest
+class MediaKeysCapabilitiesTest : public ClientComponentTest
 {
 public:
-    MediaKeysCapabiltiesTest() : ClientComponentTest()
-    {
-        ClientComponentTest::startApplicationRunning();
-        MediaKeysTestMethods::initaliseWidevineMediaKeySession();
-    }
+    MediaKeysCapabilitiesTest() : ClientComponentTest() { ClientComponentTest::startApplicationRunning(); }
 
-    ~MediaKeysCapabiltiesTest()
-    {
-        MediaKeysTestMethods::terminateMediaKeySession();
-        ClientComponentTest::stopApplication();
-    }
+    ~MediaKeysCapabilitiesTest() { ClientComponentTest::stopApplication(); }
 };
 /*
  * Component Test: MediaKeyCapabilities API
@@ -54,39 +46,42 @@ public:
  * Test Initialize:
  *  Create a server that handles Control IPC requests.
  *  Initalise the control state to running for this test application.
- *  Create a MediaKeysCabilities object.
  *
  * Test Steps:
- *  Step 1: Get the supported key systems
+ *  Step 1: Create a MediaKeysCapabilities object.
+ *
+ *  Step 2: Get the supported key systems
  *   getSupportedKeySystems.
  *   Expect that getSupportedKeySystems is propagated to the server.
  *   Api call return the supported key systems.
  *   Check supported key systems.
  *
- *  Step 2: Check if key is supported - success
+ *  Step 3: Check if key is supported - success
  *   supportsKeySystem.
  *   Expect that supportsKeySystem is propagated to server.
  *   Api call returns with success.
  *   Check if key is supported
  *
- *  Step 3: Check if key is supported - failure
+ *  Step 4: Check if key is supported - failure
  *   supportsKeySystem.
  *   Expect that supportsKeySystem is propagated to server.
  *   Api call returns with failure.
  *
- *  Step 4: Get the supported key system version - success
+ *  Step 5: Get the supported key system version - success
  *   getSupportedKeySystemVersion.
  *   Expect that supportsKeySystem is propagated to server.
  *   Api call returns with success.
  *   Check if version is supported for the key system
  *
- *  Step 5: Get the supported key system version - failure
+ *  Step 6: Get the supported key system version - failure
  *   getSupportedKeySystemVersion.
  *   Expect that supportsKeySystem is propagated to server.
  *   Api call returns with failure.
  *
+ *  Step 7: Destroy MediaKeysCapabilities.
+ *
+ *
  * Test Teardown:
- *  Destroy MediaKeysCabilities .
  *  Server is terminated.
  *
  * Expected Results:
@@ -97,24 +92,30 @@ public:
 
 TEST_F(MediaKeysCapabilitiesTest, checkSupportedKeySystems)
 {
-    // Step 1: Get the supported key systems
+    // Step 1: Create a MediaKeysCapabilities object.
+    MediaKeysTestMethods::createMediaKeysCapabilitiesObject();
+
+    // Step 2: Get the supported key systems
     MediaKeysTestMethods::shouldGetSupportedKeySystems();
     MediaKeysTestMethods::getSupportedKeySystems();
 
-    // Step 2: Check if key is supported - success
+    // Step 3: Check if key is supported - success
     MediaKeysTestMethods::shouldSupportKeySystems();
     MediaKeysTestMethods::supportsKeySystem();
 
-    // Step 3: Check if key is supported - failure
+    // Step 4: Check if key is supported - failure
     MediaKeysTestMethods::shouldNotSupportKeySystems();
     MediaKeysTestMethods::doesNotsupportsKeySystem();
 
-    // Step 4: Get the supported key system version - success
+    // Step 5: Get the supported key system version - success
     MediaKeysTestMethods::shouldGetSupportedKeySystemVersion();
-    MediaKeysTestMethods::getSupportedKeySystemVersion()
+    MediaKeysTestMethods::getSupportedKeySystemVersion();
 
-        // Step 5: Get the supported key system version - failure
-        MediaKeysTestMethods::shouldNotGetSupportedKeySystemVersion();
+    // Step 6: Get the supported key system version - failure
+    MediaKeysTestMethods::shouldNotGetSupportedKeySystemVersion();
     MediaKeysTestMethods::doesNotGetSupportedKeySystemVersion();
+
+    // Step 7: Destroy MediaKeysCabilities.
+    MediaKeysTestMethods::destroyMediaKeysCapabilitiesObject();
 }
 } // namespace firebolt::rialto::client::ct
