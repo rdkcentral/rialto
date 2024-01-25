@@ -321,7 +321,7 @@ void MediaKeysCapabilitiesTest::getSupportedKeySystemVersionRequestFail()
  *
  * Code:
  */
-TEST_F(MediaKeysCapabilitiesTest, philTest2)
+TEST_F(MediaKeysCapabilitiesTest, getSupportedKeySystemsWithOneUnsupportedWorks)
 {
     // Step A1: Get the supported key systems
     willGetSupportedKeySystemsWithOneUnsupported();
@@ -358,11 +358,11 @@ TEST_F(MediaKeysCapabilitiesTest, philTest2)
  *  Server is terminated.
  *
  * Expected Results:
- *    The tests detailed in Step 1 should be successful
+ *    The tests detailed in Step B1 should be successful
  *
  * Code:
  */
-TEST_F(MediaKeysCapabilitiesTest, philTest3)
+TEST_F(MediaKeysCapabilitiesTest, getSupportedKeySystemsWithNoneSupportedWorks)
 {
     // Step B1: Get no supported key systems
     willGetSupportedKeySystemsWithNoneSupported();
@@ -432,11 +432,12 @@ TEST_F(MediaKeysCapabilitiesTest, philTest3)
  *  Server is terminated.
  *
  * Expected Results:
- *    All of the detailed steps outlined above should be performed
+ *    All of the detailed steps, with expected results, outlined above
+ *    should be performed
  *
  * Code:
  */
-TEST_F(MediaKeysCapabilitiesTest, philTest)
+TEST_F(MediaKeysCapabilitiesTest, testAllApisWithMultipleQueries)
 {
     // Step C1: Get all the supported key systems
     willGetSupportedKeySystemsWithAllSupported();
