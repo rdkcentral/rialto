@@ -40,25 +40,31 @@ endfunction()
 get_unique_paths(UNIQUE_INCLUDE_PATHS ${PROTO_HEADERS})
 message("${UNIQUE_INCLUDE_PATHS}")
 
-add_library (
-        RialtoProtobuf
-        SHARED
+# Enable protobuf shared library
+# Not recommended if libRialtoClient and RialtoServer are not built and installed at the same time 
+if( ENABLE_PROTO_OPTIMIZATION )
+        add_library (
+                RialtoProtobuf
+                SHARED
 
-        ${PROTO_SRCS}
-        ${PROTO_HEADERS}
-)
+                ${PROTO_SRCS}
+                ${PROTO_HEADERS}
+        )
+else()
+        add_library (
+                RialtoProtobuf
+                STATIC
+
+                ${PROTO_SRCS}
+                ${PROTO_HEADERS}
+        )
+endif()
 
 target_include_directories( 
         RialtoProtobuf
 
         PUBLIC
         ${UNIQUE_INCLUDE_PATHS}
-)
-
-set_property (
-        TARGET
-        RialtoProtobuf
-        PROPERTY POSITION_INDEPENDENT_CODE ON
 )
 
 target_link_libraries (
@@ -68,6 +74,10 @@ target_link_libraries (
         protobuf::libprotobuf
 )
 
-install( TARGETS RialtoProtobuf LIBRARY
-         DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        )
+# Install sharing protobuf library for sharing between binaries
+if( ENABLE_PROTO_OPTIMIZATION )
+        install( TARGETS RialtoProtobuf LIBRARY
+                DESTINATION ${CMAKE_INSTALL_LIBDIR}
+                )
+endif()
+
