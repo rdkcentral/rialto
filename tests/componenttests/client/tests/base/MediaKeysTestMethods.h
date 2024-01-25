@@ -95,8 +95,6 @@ protected:
     void shouldNotifyLicenseRenewal();
 
     // MediaKeysCapabilities Expect methods
-    void createMediaKeysCapabilitiesObject();
-    void destroyMediaKeysCapabilitiesObject();
     void shouldGetSupportedKeySystems();
     void shouldSupportKeySystems();
     void shouldNotSupportKeySystems();
@@ -138,6 +136,8 @@ protected:
     void doesNotsupportsKeySystem();
     void getSupportedKeySystemVersion();
     void doesNotGetSupportedKeySystemVersion();
+    void createMediaKeysCapabilitiesObject();
+    void destroyMediaKeysCapabilitiesObject();
 
     // Event methods
     void sendNotifyLicenseRequest();

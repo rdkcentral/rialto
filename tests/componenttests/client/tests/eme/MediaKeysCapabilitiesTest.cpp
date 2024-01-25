@@ -69,13 +69,13 @@ public:
  *
  *  Step 5: Get the supported key system version - success
  *   getSupportedKeySystemVersion.
- *   Expect that supportsKeySystem is propagated to server.
+ *   Expect that getSupportedKeySystemVersion is propagated to server.
  *   Api call returns with success.
  *   Check if version is supported for the key system
  *
  *  Step 6: Get the supported key system version - failure
  *   getSupportedKeySystemVersion.
- *   Expect that supportsKeySystem is propagated to server.
+ *   Expect that getSupportedKeySystemVersion is propagated to server.
  *   Api call returns with failure.
  *
  *  Step 7: Destroy MediaKeysCapabilities.
