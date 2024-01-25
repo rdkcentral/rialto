@@ -32,7 +32,7 @@ if ( COVERAGE_ENABLED )
 endif()
 
 add_compile_options(-Wall -Werror)
-set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+#set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 
 option(RIALTO_LOG_FATAL_ENABLED "Enable fatal logging for RialtoServer" ON)
 option(RIALTO_LOG_ERROR_ENABLED "Enable error logging for RialtoServer" ON)
