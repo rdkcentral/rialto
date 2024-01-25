@@ -74,6 +74,13 @@ target_link_libraries (
 
 # Install sharing protobuf library for sharing between binaries
 if( ENABLE_PROTO_OPTIMIZATION )
+        set_target_properties(
+                RialtoProtobuf
+                PROPERTIES LINK_FLAGS "-Wl,--unresolved-symbols=report-all"
+                        SOVERSION  ${PROJECT_VERSION_MAJOR}
+                        VERSION    ${CMAKE_PROJECT_VERSION}
+                )
+
         install( TARGETS RialtoProtobuf LIBRARY
                 DESTINATION ${CMAKE_INSTALL_LIBDIR}
                 )
