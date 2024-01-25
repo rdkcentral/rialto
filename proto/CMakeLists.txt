@@ -2,7 +2,7 @@
 # If not stated otherwise in this file or this component's LICENSE file the
 # following copyright and licenses apply:
 #
-# Copyright 2022 Sky UK
+# Copyright 2024 Sky UK
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@
 
 # Run the protoc tool to generate the code
 include( FindProtobuf )
-message("${CMAKE_CURRENT_LIST_DIR}")
 set( Protobuf_IMPORT_DIRS "${CMAKE_SYSROOT}/usr/include" "${CMAKE_CURRENT_LIST_DIR}/../ipc/common/proto" )
 protobuf_generate_cpp( PROTO_SRCS PROTO_HEADERS rialtocommon.proto mediapipelinemodule.proto  mediapipelinecapabilitiesmodule.proto
         mediakeysmodule.proto mediakeyscapabilitiesmodule.proto controlmodule.proto webaudioplayermodule.proto rialtoipc.proto 
@@ -37,8 +36,7 @@ function(get_unique_paths result_list)
     list(REMOVE_DUPLICATES unique_paths)
     set(${result_list} ${unique_paths} PARENT_SCOPE)
 endfunction()
-get_unique_paths(UNIQUE_INCLUDE_PATHS ${PROTO_HEADERS})
-message("${UNIQUE_INCLUDE_PATHS}")
+get_unique_paths(PROTO_INCLUDE_PATHS ${PROTO_HEADERS})
 
 # Enable protobuf shared library
 # Not recommended if libRialtoClient and RialtoServer are not built and installed at the same time 
@@ -64,7 +62,7 @@ target_include_directories(
         RialtoProtobuf
 
         PUBLIC
-        ${UNIQUE_INCLUDE_PATHS}
+        ${PROTO_INCLUDE_PATHS}
 )
 
 target_link_libraries (
