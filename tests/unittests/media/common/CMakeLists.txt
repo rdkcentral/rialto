@@ -17,17 +17,11 @@
 # limitations under the License.
 #
 
-set( Protobuf_IMPORT_DIRS "${CMAKE_SYSROOT}/usr/include" "${CMAKE_CURRENT_LIST_DIR}/../../../../ipc/common/proto/" )
-protobuf_generate_cpp( PROTO_SRCS PROTO_HEADERS ../../../../proto/metadata.proto )
-
 # Find includes in corresponding build directories
 set( CMAKE_INCLUDE_CURRENT_DIR ON )
 
 add_gtests (
         RialtoPlayerCommonUnitTests
-
-        ${PROTO_SRCS}
-        ${PROTO_HEADERS}
 
         # tests
         mediaFrameWriterV1/CreateTest.cpp
@@ -57,7 +51,7 @@ target_link_libraries(
 
         # # Link application source
         RialtoPlayerCommon
-        protobuf::libprotobuf
+        RialtoProtobuf
         )
 
 if ( COVERAGE_ENABLED )
