@@ -24,9 +24,6 @@ import "rialtoipc.proto";
 
 package firebolt.rialto.ipc.transport;
 
-// Optimise for code size
-option optimize_for = CODE_SIZE;
-
 message MethodCall {
   optional uint64 serial_id = 1;
   optional string service_name = 2;

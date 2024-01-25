@@ -21,9 +21,6 @@ syntax = "proto2";
 
 package firebolt.rialto;
 
-// Optimise for code size
-option optimize_for = CODE_SIZE;
-
 message MediaSegmentMetadata {
     enum SegmentAlignment {
         ALIGNMENT_UNDEFINED = 0;
