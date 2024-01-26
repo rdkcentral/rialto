@@ -71,7 +71,7 @@ public:
      *
      * @retval the return status.
      */
-    virtual MediaKeyErrorStatus isTypeSupported(std::string keySystem) = 0;
+    virtual MediaKeyErrorStatus isTypeSupported(const std::string &keySystem) = 0;
 };
 
 }; // namespace firebolt::rialto::wrappers

@@ -17,12 +17,13 @@
  * limitations under the License.
  */
 
-#include "MediaKeysCapabilitiesModuleService.h"
-#include "ICdmService.h"
-#include "RialtoServerLogging.h"
 #include <IIpcController.h>
 #include <algorithm>
 #include <cstdint>
+
+#include "ICdmService.h"
+#include "MediaKeysCapabilitiesModuleService.h"
+#include "RialtoServerLogging.h"
 
 namespace firebolt::rialto::server::ipc
 {
