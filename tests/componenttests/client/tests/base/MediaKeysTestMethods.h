@@ -21,6 +21,8 @@
 #define FIREBOLT_RIALTO_CLIENT_CT_MEDIA_KEYS_TEST_METHODS_H_
 
 #include "IMediaKeys.h"
+#include "IMediaKeysCapabilities.h"
+#include "MediaKeysCapabilitiesModuleMock.h"
 #include "MediaKeysClientMock.h"
 #include "MediaKeysModuleMock.h"
 #include "ServerStub.h"
@@ -49,10 +51,13 @@ protected:
     // Strict Mocks
     std::shared_ptr<StrictMock<MediaKeysClientMock>> m_mediaKeysClientMock;
     std::shared_ptr<StrictMock<MediaKeysModuleMock>> m_mediaKeysModuleMock;
+    std::shared_ptr<StrictMock<MediaKeysCapabilitiesModuleMock>> m_mediaKeysCapabilitiesModuleMock;
 
     // Objects
     std::shared_ptr<IMediaKeysFactory> m_mediaKeysFactory;
     std::shared_ptr<IMediaKeys> m_mediaKeys;
+    std::shared_ptr<IMediaKeysCapabilitiesFactory> m_mediaKeysCapabilitiesFactory;
+    std::shared_ptr<IMediaKeysCapabilities> m_mediaKeysCapabilities;
 
     // MediaKeys Expect methods
     void shouldCreateMediaKeysWidevine();
@@ -89,6 +94,13 @@ protected:
     void shouldNotifyKeyStatusesChanged();
     void shouldNotifyLicenseRenewal();
 
+    // MediaKeysCapabilities Expect methods
+    void shouldGetSupportedKeySystems();
+    void shouldSupportKeySystems();
+    void shouldNotSupportKeySystems();
+    void shouldGetSupportedKeySystemVersion();
+    void shouldNotGetSupportedKeySystemVersion();
+
     // Api methods
     void createMediaKeysWidevine();
     void createMediaKeysPlayready();
@@ -119,6 +131,13 @@ protected:
     void getLastDrmError();
     void getLdlSessionsLimit();
     void getDrmTime();
+    void getSupportedKeySystems();
+    void supportsKeySystem();
+    void doesNotsupportsKeySystem();
+    void getSupportedKeySystemVersion();
+    void doesNotGetSupportedKeySystemVersion();
+    void createMediaKeysCapabilitiesObject();
+    void destroyMediaKeysCapabilitiesObject();
 
     // Event methods
     void sendNotifyLicenseRequest();
