@@ -20,9 +20,11 @@
 #ifndef FIREBOLT_RIALTO_SERVER_CT_MESSAGE_BUILDERS_H_
 #define FIREBOLT_RIALTO_SERVER_CT_MESSAGE_BUILDERS_H_
 
+#include <string>
 #include <vector>
 
 #include "controlmodule.pb.h"
+#include "mediakeyscapabilitiesmodule.pb.h"
 #include "mediakeysmodule.pb.h"
 #include "mediapipelinemodule.pb.h"
 #include "servermanagermodule.pb.h"
@@ -81,6 +83,12 @@ namespace firebolt::rialto::server::ct
 ::firebolt::rialto::GetKeyStoreHashRequest createGetKeyStoreHashRequest(int mediaKeysHandle);
 ::firebolt::rialto::GetLdlSessionsLimitRequest createGetLdlSessionsLimitRequest(int mediaKeysHandle);
 ::firebolt::rialto::GetDrmTimeRequest createGetDrmTimeRequest(int mediaKeysHandle);
+
+// media keys capabilities module
+::firebolt::rialto::GetSupportedKeySystemsRequest createGetSupportedKeySystemsRequest();
+::firebolt::rialto::SupportsKeySystemRequest createSupportsKeySystemRequest(const std::string &keySystem);
+::firebolt::rialto::GetSupportedKeySystemVersionRequest
+createGetSupportedKeySystemVersionRequest(const std::string &keySystem);
 
 // control module
 ::firebolt::rialto::GetSharedMemoryRequest createGetSharedMemoryRequest();
