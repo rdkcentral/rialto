@@ -66,6 +66,7 @@ add_gtests (
         tests/eme/GetDrmInfoTest.cpp
         tests/eme/SelectKeyIdTest.cpp
         tests/eme/SessionFailuresTest.cpp
+        tests/eme/MediaKeysCapabilitiesTest.cpp
         )
 
 add_subdirectory(mocks)
@@ -88,6 +89,7 @@ target_include_directories(
         $<TARGET_PROPERTY:RialtoPlayerPublicClientMocks,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoTestCommonMatchers,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoTestCommonProtoUtils,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoServerMain,INCLUDE_DIRECTORIES>
 
         mocks
         tests/base

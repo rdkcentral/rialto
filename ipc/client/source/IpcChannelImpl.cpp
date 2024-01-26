@@ -17,11 +17,6 @@
  * limitations under the License.
  */
 
-#include "IpcChannelImpl.h"
-#include "IpcLogging.h"
-
-#include "rialtoipc.pb.h"
-
 #include <algorithm>
 #include <cinttypes>
 #include <cstdarg>
@@ -36,6 +31,10 @@
 #include <sys/timerfd.h>
 #include <sys/un.h>
 #include <unistd.h>
+
+#include "IpcChannelImpl.h"
+#include "IpcLogging.h"
+#include "rialtoipc.pb.h"
 
 #if !defined(SCM_MAX_FD)
 #define SCM_MAX_FD 255

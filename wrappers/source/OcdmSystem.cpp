@@ -17,11 +17,12 @@
  * limitations under the License.
  */
 
-#include "OcdmSystem.h"
+#include <stdexcept>
+
 #include "OcdmCommon.h"
 #include "OcdmSession.h"
+#include "OcdmSystem.h"
 #include "opencdm/open_cdm_ext.h"
-#include <stdexcept>
 
 namespace firebolt::rialto::wrappers
 {

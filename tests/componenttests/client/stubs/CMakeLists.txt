@@ -28,6 +28,7 @@ add_library (
         ControlModuleStub.cpp
         MediaPipelineModuleStub.cpp
         MediaKeysModuleStub.cpp
+        MediaKeysCapabilitiesModuleStub.cpp
 )
 
 set_property (
