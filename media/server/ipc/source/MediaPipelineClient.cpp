@@ -246,6 +246,7 @@ void MediaPipelineClient::notifyPlaybackError(int32_t sourceId, const PlaybackEr
     RIALTO_SERVER_LOG_DEBUG("Sending notifyPlaybackError...");
 
     auto event = std::make_shared<firebolt::rialto::PlaybackErrorEvent>();
+    event->set_session_id(m_sessionId);
     event->set_source_id(sourceId);
     event->set_error(convertPlaybackError(error));
 

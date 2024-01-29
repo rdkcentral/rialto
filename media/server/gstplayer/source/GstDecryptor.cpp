@@ -336,6 +336,13 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer, GstCaps *cap
         m_metadataWrapper->removeProtectionMetadata(buffer);
     }
 
+    static int i = 0;
+    if (i == 5)
+    {
+        returnStatus = GST_BASE_TRANSFORM_FLOW_DROPPED;
+    }
+    i++;
+
     if (GST_BASE_TRANSFORM_FLOW_DROPPED == returnStatus)
     {
         // Notify dropped frame upstream as a non-fatal message 
