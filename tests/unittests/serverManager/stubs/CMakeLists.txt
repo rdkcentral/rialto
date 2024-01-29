@@ -17,19 +17,12 @@
 # limitations under the License.
 #
 
-# Run the protoc tool to generate the code
-set( Protobuf_IMPORT_DIRS "${CMAKE_SYSROOT}/usr/include" "${CMAKE_CURRENT_LIST_DIR}/../../../../ipc/common/proto/" )
-protobuf_generate_cpp( PROTO_SRCS PROTO_HEADERS ../../../../serverManager/ipc/proto/servermanagermodule.proto )
-
 # Find includes in corresponding build directories
 set( CMAKE_INCLUDE_CURRENT_DIR ON )
 
 add_library (
         RialtoServerManagerStub
         STATIC
-
-        ${PROTO_SRCS}
-        ${PROTO_HEADERS}
 
         RialtoSessionServerStub.cpp
 )
@@ -56,7 +49,7 @@ target_link_libraries (
         PRIVATE
         RialtoIpcServer
         RialtoIpcCommon
-        protobuf::libprotobuf
+        RialtoProtobuf
         GoogleTest::gtest
         GoogleTest::gmock
 )

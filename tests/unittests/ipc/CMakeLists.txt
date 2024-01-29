@@ -61,6 +61,7 @@ target_link_libraries(
         RialtoIpcCommon
         RialtoIpcServer
         RialtoIpcStub
+        RialtoProtobuf
         )
 
 if ( COVERAGE_ENABLED )
