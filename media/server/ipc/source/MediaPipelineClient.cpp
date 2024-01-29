@@ -113,6 +113,23 @@ convertNetworkState(const firebolt::rialto::NetworkState &networkState)
     }
     return firebolt::rialto::NetworkStateChangeEvent_NetworkState_UNKNOWN;
 }
+
+firebolt::rialto::PlaybackErrorEvent_PlaybackError
+convertPlaybackError(const firebolt::rialto::PlaybackError &playbackError)
+{
+    switch (playbackError)
+    {
+    case firebolt::rialto::PlaybackError::UNKNOWN:
+    {
+        return firebolt::rialto::PlaybackErrorEvent_PlaybackError_UNKNOWN;
+    }
+    case firebolt::rialto::PlaybackError::DECRYPTION:
+    {
+        return firebolt::rialto::PlaybackErrorEvent_PlaybackError_DECRYPTION;
+    }
+    }
+    return firebolt::rialto::PlaybackErrorEvent_PlaybackError_UNKNOWN;
+}
 } // namespace
 
 namespace firebolt::rialto::server::ipc
@@ -227,5 +244,11 @@ void MediaPipelineClient::notifyBufferUnderflow(int32_t sourceId)
 void MediaPipelineClient::notifyPlaybackError(int32_t sourceId, const PlaybackError& error)
 {
     RIALTO_SERVER_LOG_DEBUG("Sending notifyPlaybackError...");
+
+    auto event = std::make_shared<firebolt::rialto::PlaybackErrorEvent>();
+    event->set_source_id(sourceId);
+    event->set_error(convertPlaybackError(error));
+
+    m_ipcClient->sendEvent(event);
 }
 } // namespace firebolt::rialto::server::ipc

@@ -95,6 +95,15 @@ public:
      * @param[in] sourceId  : The id of the source that produced the buffer underflow
      */
     virtual void notifyBufferUnderflow(int32_t sourceId) = 0;
+    
+    /**
+     * @brief 
+     *
+     * 
+     *
+     * @param[in] sourceId  : 
+     */
+    virtual void notifyPlaybackError(int32_t sourceId, const PlaybackError& error) = 0;
 };
 
 }; // namespace firebolt::rialto::client

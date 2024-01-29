@@ -61,7 +61,7 @@ void GstDispatcherThread::gstBusEventHandler(GstElement *pipeline)
         GstMessage *message =
             m_gstWrapper->gstBusTimedPopFiltered(bus, 100 * GST_MSECOND,
                                                  static_cast<GstMessageType>(GST_MESSAGE_STATE_CHANGED | GST_MESSAGE_QOS |
-                                                                             GST_MESSAGE_EOS | GST_MESSAGE_ERROR));
+                                                                             GST_MESSAGE_EOS | GST_MESSAGE_ERROR | GST_MESSAGE_WARNING));
 
         if (message)
         {

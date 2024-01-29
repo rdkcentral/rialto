@@ -336,6 +336,14 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer, GstCaps *cap
         m_metadataWrapper->removeProtectionMetadata(buffer);
     }
 
+    if (GST_BASE_TRANSFORM_FLOW_DROPPED == returnStatus)
+    {
+        // Notify dropped frame upstream as a non-fatal message 
+        std::string message = "Failed to decrypt buffer, dropping frame and continuing";
+        GError *gError{g_error_new_literal(GST_STREAM_ERROR, GST_STREAM_ERROR_DECRYPT, message.c_str())};
+        gst_element_post_message(GST_ELEMENT_CAST(self), gst_message_new_warning(GST_OBJECT_CAST(self), gError, message.c_str()));
+        g_error_free(gError);
+    }
     return returnStatus;
 }
 

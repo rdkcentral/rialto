@@ -538,6 +538,24 @@ message BufferUnderflowEvent {
 }
 
 /**
+ * @brief 
+ *
+ * @param source_id         The id of the media source the request is for.
+ *
+ * This is sent by the server whenever buffer underflow occurs
+ */
+message PlaybackErrorEvent {
+    enum PlaybackError {
+        UNKNOWN = 0;            ///< An unknown or undefined network state.
+        DECRYPTION = 1;         ///< Player failed to decrypt a buffer and the frame has been dropped.
+    }
+
+    optional int32 session_id = 1 [default = -1];
+    optional int32 source_id = 2 [default = -1];
+    optional PlaybackError error = 3;
+}
+
+/**
  * @brief Requests RialtoClient to change its log levels
  *
  * @param[in]  defaultLogLevels       Desired default log level

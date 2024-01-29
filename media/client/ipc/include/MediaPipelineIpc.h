@@ -171,6 +171,13 @@ private:
     void onBufferUnderflow(const std::shared_ptr<firebolt::rialto::BufferUnderflowEvent> &event);
 
     /**
+     * @brief 
+     *
+     * @param[in] event : 
+     */
+    void onPlaybackError(const std::shared_ptr<firebolt::rialto::PlaybackErrorEvent> &event);
+
+    /**
      * @brief Create a new player session.
      *
      * @param[in] videoRequirements : The video decoder requirements for the MediaPipeline session.

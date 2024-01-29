@@ -148,6 +148,8 @@ public:
 
     void notifyBufferUnderflow(MediaSourceType mediaSourceType) override;
 
+    void notifyPlaybackError(MediaSourceType mediaSourceType, const PlaybackError& error) override;
+
 protected:
     /**
      * @brief The media player client.

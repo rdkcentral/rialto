@@ -196,6 +196,50 @@ void HandleBusMessage::execute() const
         m_glibWrapper->gErrorFree(err);
         break;
     }
+    case GST_MESSAGE_WARNING:
+    {
+        PlaybackError rialtoError = PlaybackError::UNKNOWN;
+        GError *err = nullptr;
+        gchar *debug = nullptr;
+        gst_message_parse_warning(m_message, &err, &debug);
+
+        if ((err->domain == GST_STREAM_ERROR) && (err->code == GST_STREAM_ERROR_DECRYPT))
+        {
+            RIALTO_SERVER_LOG_WARN("Decrypt error %s - %d: %s (%s)", GST_OBJECT_NAME(GST_MESSAGE_SRC(m_message)),
+                                    err->code, err->message, debug);
+            rialtoError = PlaybackError::DECRYPTION;
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_WARN("Unknown warning, ignoring %s - %d: %s (%s)", GST_OBJECT_NAME(GST_MESSAGE_SRC(m_message)),
+                                    err->code, err->message, debug);
+        }
+
+        if ((PlaybackError::UNKNOWN != rialtoError) && (m_gstPlayerClient))
+        {
+            // TODO: Check this
+            const gchar *klass;
+            klass = m_gstWrapper->gstElementClassGetMetadata(GST_ELEMENT_GET_CLASS(GST_MESSAGE_SRC(m_message)),
+                                                                GST_ELEMENT_METADATA_KLASS);
+
+            if (g_strrstr(klass, "Video"))
+            {
+                m_gstPlayerClient->notifyPlaybackError(firebolt::rialto::MediaSourceType::VIDEO, PlaybackError::DECRYPTION);
+            }
+            else if (g_strrstr(klass, "Audio"))
+            {
+                m_gstPlayerClient->notifyPlaybackError(firebolt::rialto::MediaSourceType::AUDIO, PlaybackError::DECRYPTION);
+            }
+            else
+            {
+                RIALTO_SERVER_LOG_WARN("Unknown source type for class '%s', not propagating error", klass);
+            }
+        }
+
+        m_glibWrapper->gFree(debug);
+        m_glibWrapper->gErrorFree(err);
+        break;
+    }
     default:
         break;
     }

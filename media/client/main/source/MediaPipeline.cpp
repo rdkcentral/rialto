@@ -695,4 +695,15 @@ void MediaPipeline::notifyBufferUnderflow(int32_t sourceId)
     }
 }
 
+void MediaPipeline::notifyPlaybackError(int32_t sourceId, const PlaybackError& error)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    std::shared_ptr<IMediaPipelineClient> client = m_mediaPipelineClient.lock();
+    if (client)
+    {
+        client->notifyPlaybackError(sourceId, error);
+    }
+}
+
 }; // namespace firebolt::rialto::client
