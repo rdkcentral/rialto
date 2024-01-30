@@ -491,6 +491,10 @@ public:
     }
 
     void gstIteratorFree(GstIterator *it) const override { return gst_iterator_free(it); }
+
+    gboolean gstElementPostMessage(GstElement * element, GstMessage * message) const override { return gst_element_post_message(element, message); }
+
+    GstMessage *gstMessageNewWarning(GstObject * src, GError * error, const gchar * debug) const override { return gst_message_new_warning(src, error, debug); }
 };
 
 }; // namespace firebolt::rialto::wrappers

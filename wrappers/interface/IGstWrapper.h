@@ -1143,6 +1143,27 @@ public:
      * @param[in]  it   : the iterator to free.
      */
     virtual void gstIteratorFree(GstIterator *it) const = 0;
+
+    /**
+     * @brief Post a message on the elements bus.
+     *
+     * @param[in] element   : the element posting the message.
+     * @param[in] message   : message to post.
+     *
+     * @retval TRUE if the message was posted, FALSE otherwise.
+     */
+    virtual gboolean gstElementPostMessage(GstElement * element, GstMessage * message) const = 0;
+
+    /**
+     * @brief Create a new warning message.
+     *
+     * @param[in] src   : the origin of the message.
+     * @param[in] error : GError for this message.
+     * @param[in] debug : error info string.
+     *
+     * @retval New warning message.
+     */
+    virtual GstMessage *gstMessageNewWarning(GstObject * src, GError * error, const gchar * debug) const = 0;
 };
 
 }; // namespace firebolt::rialto::wrappers

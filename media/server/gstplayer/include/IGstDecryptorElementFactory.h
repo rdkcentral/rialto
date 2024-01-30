@@ -46,6 +46,9 @@ public:
     /**
      * @brief Creates a IGstDecryptorElement.
      *
+     * @param[in] decryptionService : The service used to decrypt frames.
+     * @param[in] gstWrapper        : The gstreamer wrapper.
+     *
      * @retval a decryptor element instance or null on error.
      */
     virtual GstElement *

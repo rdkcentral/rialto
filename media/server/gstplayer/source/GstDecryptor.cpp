@@ -125,7 +125,7 @@ static void gst_rialto_decryptor_init(GstRialtoDecryptor *self) // NOLINT(build/
         reinterpret_cast<GstRialtoDecryptorPrivate *>(gst_rialto_decryptor_get_instance_private(self));
     GstBaseTransform *base = GST_BASE_TRANSFORM(self);
 
-    self->priv = new (priv) GstRialtoDecryptorPrivate(base, firebolt::rialto::wrappers::IGstWrapperFactory::getFactory());
+    self->priv = new (priv) GstRialtoDecryptorPrivate(base, firebolt::rialto::wrappers::IGstWrapperFactory::getFactory(), firebolt::rialto::wrappers::IGlibWrapperFactory::getFactory());
 
     gst_base_transform_set_in_place(base, TRUE);
     gst_base_transform_set_passthrough(base, FALSE);
@@ -218,12 +218,18 @@ GstElement *GstDecryptorElementFactory::createDecryptorElement(
 
 GstRialtoDecryptorPrivate::GstRialtoDecryptorPrivate(
     GstBaseTransform *parentElement,
-    const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapperFactory> &gstWrapperFactory)
+    const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapperFactory> &gstWrapperFactory,
+    const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapperFactory> &glibWrapperFactory)
     : m_decryptorElement(parentElement)
 {
     if ((!gstWrapperFactory) || (!(m_gstWrapper = gstWrapperFactory->getGstWrapper())))
     {
         throw std::runtime_error("Cannot create GstWrapper");
+    }
+
+    if ((!glibWrapperFactory) || (!(m_glibWrapper = glibWrapperFactory->getGlibWrapper())))
+    {
+        throw std::runtime_error("Cannot create GlibWrapper");
     }
 }
 
@@ -347,9 +353,9 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer, GstCaps *cap
     {
         // Notify dropped frame upstream as a non-fatal message 
         std::string message = "Failed to decrypt buffer, dropping frame and continuing";
-        GError *gError{g_error_new_literal(GST_STREAM_ERROR, GST_STREAM_ERROR_DECRYPT, message.c_str())};
-        gst_element_post_message(GST_ELEMENT_CAST(self), gst_message_new_warning(GST_OBJECT_CAST(self), gError, message.c_str()));
-        g_error_free(gError);
+        GError *gError{m_glibWrapper->gErrorNewLiteral(GST_STREAM_ERROR, GST_STREAM_ERROR_DECRYPT, message.c_str())};
+        m_gstWrapper->gstElementPostMessage(GST_ELEMENT_CAST(self), m_gstWrapper->gstMessageNewWarning(GST_OBJECT_CAST(self), gError, message.c_str()));
+        m_glibWrapper->gErrorFree(gError);
     }
     return returnStatus;
 }

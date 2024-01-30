@@ -186,6 +186,8 @@ public:
     MOCK_METHOD(GstIterator *, gstBinIterateSinks, (GstBin * bin), (const, override));
     MOCK_METHOD(GstIteratorResult, gstIteratorNext, (GstIterator * it, GValue *elem), (const, override));
     MOCK_METHOD(void, gstIteratorFree, (GstIterator * it), (const, override));
+    MOCK_METHOD(gboolean, gstElementPostMessage, (GstElement * element, GstMessage * message), (const, override));
+    MOCK_METHOD(GstMessage *, gstMessageNewWarning, (GstObject * src, GError * error, const gchar * debug), (const, override));
 
     GstCaps *gstCapsNewSimple(const char *media_type, const char *fieldname, ...) const override
     {
