@@ -183,4 +183,20 @@ convertNetworkState(const firebolt::rialto::NetworkState &kNetworkState)
     return firebolt::rialto::NetworkStateChangeEvent_NetworkState_UNKNOWN;
 }
 
+firebolt::rialto::PlaybackErrorEvent_PlaybackError
+convertPlaybackError(const firebolt::rialto::PlaybackError &playbackError)
+{
+    switch (playbackError)
+    {
+    case firebolt::rialto::PlaybackError::UNKNOWN:
+    {
+        return firebolt::rialto::PlaybackErrorEvent_PlaybackError_UNKNOWN;
+    }
+    case firebolt::rialto::PlaybackError::DECRYPTION:
+    {
+        return firebolt::rialto::PlaybackErrorEvent_PlaybackError_DECRYPTION;
+    }
+    }
+    return firebolt::rialto::PlaybackErrorEvent_PlaybackError_UNKNOWN;
+}
 #endif // MEDIA_PIPELINE_PROTO_UTILS_H_

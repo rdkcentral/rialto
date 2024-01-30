@@ -265,6 +265,14 @@ TEST_F(MediaPipelineModuleServiceTests, shouldSendQosEvent)
     sendQosEvent();
 }
 
+TEST_F(MediaPipelineModuleServiceTests, shouldSendPlaybackErrorEvent)
+{
+    mediaPipelineServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    mediaClientWillSendPlaybackErrorEvent();
+    sendPlaybackErrorEvent();
+}
+
 TEST_F(MediaPipelineModuleServiceTests, shouldRenderFrame)
 {
     mediaPipelineServiceWillCreateSession();

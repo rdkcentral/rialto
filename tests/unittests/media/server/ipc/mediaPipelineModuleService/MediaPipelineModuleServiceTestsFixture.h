@@ -85,6 +85,7 @@ public:
     void mediaClientWillSendNeedMediaDataEvent(int sessionId);
     void mediaClientWillSendPostionChangeEvent();
     void mediaClientWillSendQosEvent();
+    void mediaClientWillSendPlaybackErrorEvent();
 
     void sendClientConnected();
     void sendClientDisconnected();
@@ -117,6 +118,7 @@ public:
     void sendNeedMediaDataEvent();
     void sendPostionChangeEvent();
     void sendQosEvent();
+    void sendPlaybackErrorEvent();
     void sendRenderFrameRequestAndReceiveResponse();
 
 private:

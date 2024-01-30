@@ -133,3 +133,35 @@ TEST_F(RialtoClientMediaPipelineIpcCallbackTest, InvalidSessionIdQos)
 
     m_qosCb(updateQosEvent);
 }
+
+/**
+ * Test that a playback error notification over IPC is forwarded to the client.
+ */
+TEST_F(RialtoClientMediaPipelineIpcCallbackTest, NotifyPlaybackError)
+{
+    auto updatePlaybackErrorEvent = std::make_shared<firebolt::rialto::PlaybackErrorEvent>();
+    updatePlaybackErrorEvent->set_session_id(m_sessionId);
+    updatePlaybackErrorEvent->set_source_id(m_sourceId);
+    updatePlaybackErrorEvent->set_error(firebolt::rialto::PlaybackErrorEvent_PlaybackError_DECRYPTION);
+
+    EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
+
+    EXPECT_CALL(*m_clientMock, notifyPlaybackError(m_sourceId, PlaybackError::DECRYPTION));
+
+    m_playbackErrorCb(updatePlaybackErrorEvent);
+}
+
+/**
+ * Test that if the session id of the event is not the same as the playback session the event will be ignored.
+ */
+TEST_F(RialtoClientMediaPipelineIpcCallbackTest, InvalidSessionIdPlaybackError)
+{
+    auto updatePlaybackErrorEvent = std::make_shared<firebolt::rialto::PlaybackErrorEvent>();
+    updatePlaybackErrorEvent->set_session_id(-1);
+    updatePlaybackErrorEvent->set_source_id(m_sourceId);
+    updatePlaybackErrorEvent->set_error(firebolt::rialto::PlaybackErrorEvent_PlaybackError_DECRYPTION);
+
+    EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
+
+    m_playbackErrorCb(updatePlaybackErrorEvent);
+}
