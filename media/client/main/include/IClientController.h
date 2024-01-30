@@ -20,11 +20,14 @@
 #ifndef FIREBOLT_RIALTO_CLIENT_I_CLIENT_CONTROLLER_H_
 #define FIREBOLT_RIALTO_CLIENT_I_CLIENT_CONTROLLER_H_
 
-#include "IControlClient.h"
-#include "ISharedMemoryHandle.h"
 #include <functional>
 #include <memory>
 #include <stdint.h>
+
+#include "IClientLogHandler.h"
+#include "IControlClient.h"
+#include "ISharedMemoryHandle.h"
+
 namespace firebolt::rialto::client
 {
 class IClientController;

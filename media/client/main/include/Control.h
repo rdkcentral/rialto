@@ -42,6 +42,8 @@ public:
 
     std::shared_ptr<IControl> createControl() const override;
 
+    bool preRegisterLogHandler(std::shared_ptr<IClientLogHandler> &handler, bool ignoreLogLevels) override;
+
     /**
      * @brief Create the control factory object.
      *
@@ -69,16 +71,17 @@ public:
     bool registerClient(std::weak_ptr<IControlClient> client, ApplicationState &appState) override;
 
     bool registerLogHandler(std::shared_ptr<IClientLogHandler> &handler, bool ignoreLogLevels) override;
+    static bool registerLogHandlerStatic(std::shared_ptr<IClientLogHandler> &handler, bool ignoreLogLevels);
 
 private:
-    void forwardLog(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char *file, int line,
-                    const char *function, const char *message, std::size_t messageLen) const;
-    void cancelLogHandler();
+    static void forwardLog(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char *file, int line,
+                           const char *function, const char *message, std::size_t messageLen);
+    static void cancelLogHandler();
 
     /**
      * @brief The registered log handler
      */
-    std::shared_ptr<IClientLogHandler> m_logHandler;
+    static std::shared_ptr<IClientLogHandler> m_logHandler;
 
     /**
      * @brief The registered control clients

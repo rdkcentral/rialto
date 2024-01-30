@@ -83,6 +83,12 @@ catch (const std::exception &e)
     RIALTO_CLIENT_LOG_ERROR("Failed to create the rialto control, reason: %s", e.what());
     return nullptr;
 }
+bool ControlFactory::preRegisterLogHandler(std::shared_ptr<IClientLogHandler> &handler, bool ignoreLogLevels)
+{
+    return Control::registerLogHandlerStatic(handler, ignoreLogLevels);
+}
+
+std::shared_ptr<IClientLogHandler> Control::m_logHandler;
 
 Control::Control(IClientController &clientController) : m_clientController(clientController)
 {
@@ -114,24 +120,41 @@ bool Control::registerClient(std::weak_ptr<IControlClient> client, ApplicationSt
 
 bool Control::registerLogHandler(std::shared_ptr<IClientLogHandler> &handler, bool ignoreLogLevels)
 {
+    return registerLogHandlerStatic(handler, ignoreLogLevels);
+}
+
+bool Control::registerLogHandlerStatic(std::shared_ptr<IClientLogHandler> &handler, bool ignoreLogLevels)
+{
+    if (m_logHandler)
+    {
+        if (handler)
+        {
+            RIALTO_CLIENT_LOG_WARN("Replacing old log handler");
+        }
+        cancelLogHandler();
+    }
+
     m_logHandler = handler;
 
+    if (!handler)
+        return true;
+
     if (firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_CLIENT,
-                                                 std::bind(&Control::forwardLog, this, RIALTO_COMPONENT_CLIENT,
+                                                 std::bind(&Control::forwardLog, RIALTO_COMPONENT_CLIENT,
                                                            std::placeholders::_1, std::placeholders::_2,
                                                            std::placeholders::_3, std::placeholders::_4,
                                                            std::placeholders::_5, std::placeholders::_6),
                                                  ignoreLogLevels) != firebolt::rialto::logging::RIALTO_LOGGING_STATUS_OK ||
 
         firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_IPC,
-                                                 std::bind(&Control::forwardLog, this, RIALTO_COMPONENT_IPC,
+                                                 std::bind(&Control::forwardLog, RIALTO_COMPONENT_IPC,
                                                            std::placeholders::_1, std::placeholders::_2,
                                                            std::placeholders::_3, std::placeholders::_4,
                                                            std::placeholders::_5, std::placeholders::_6),
                                                  ignoreLogLevels) != firebolt::rialto::logging::RIALTO_LOGGING_STATUS_OK ||
 
         firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_COMMON,
-                                                 std::bind(&Control::forwardLog, this, RIALTO_COMPONENT_COMMON,
+                                                 std::bind(&Control::forwardLog, RIALTO_COMPONENT_COMMON,
                                                            std::placeholders::_1, std::placeholders::_2,
                                                            std::placeholders::_3, std::placeholders::_4,
                                                            std::placeholders::_5, std::placeholders::_6),
@@ -146,6 +169,7 @@ bool Control::registerLogHandler(std::shared_ptr<IClientLogHandler> &handler, bo
 
 void Control::cancelLogHandler()
 {
+    RIALTO_CLIENT_LOG_INFO("Cancelling log handler");
     firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_CLIENT, nullptr, false);
     firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_IPC, nullptr, false);
     firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_COMMON, nullptr, false);
@@ -153,7 +177,7 @@ void Control::cancelLogHandler()
 }
 
 void Control::forwardLog(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char *file, int line,
-                         const char *function, const char *message, std::size_t messageLen) const
+                         const char *function, const char *message, std::size_t messageLen)
 {
     if (!m_logHandler)
         return;

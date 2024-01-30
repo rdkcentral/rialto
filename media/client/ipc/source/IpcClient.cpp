@@ -30,9 +30,14 @@ IIpcClientAccessor &IIpcClientAccessor::instance()
 
 IIpcClient &IpcClientAccessor::getIpcClient() const
 {
-    static IpcClient ipcClient{ipc::IChannelFactory::createFactory(), ipc::IControllerFactory::createFactory(),
-                               ipc::IBlockingClosureFactory::createFactory()};
-    return ipcClient;
+    static std::unique_ptr<IpcClient> ipcClient;
+    if (!ipcClient)
+    {
+        ipcClient = std::make_unique<IpcClient>(ipc::IChannelFactory::createFactory(),
+                                                ipc::IControllerFactory::createFactory(),
+                                                ipc::IBlockingClosureFactory::createFactory());
+    }
+    return *ipcClient;
 }
 
 IpcClient::IpcClient(const std::shared_ptr<ipc::IChannelFactory> &ipcChannelFactory,

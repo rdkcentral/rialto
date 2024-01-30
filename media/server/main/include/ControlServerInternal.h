@@ -35,6 +35,8 @@ public:
     std::shared_ptr<IControl> createControl() const override;
     std::shared_ptr<IControlServerInternal>
     createControlServerInternal(int id, const std::shared_ptr<IControlClientServerInternal> &client) const override;
+
+    bool preRegisterLogHandler(std::shared_ptr<IClientLogHandler> &handler, bool ignoreLogLevels);
 };
 
 class ControlServerInternal : public IControlServerInternal
