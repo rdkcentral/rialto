@@ -201,7 +201,7 @@ void HandleBusMessage::execute() const
         PlaybackError rialtoError = PlaybackError::UNKNOWN;
         GError *err = nullptr;
         gchar *debug = nullptr;
-        gst_message_parse_warning(m_message, &err, &debug);
+        m_gstWrapper->gstMessageParseWarning(m_message, &err, &debug);
     
         if ((err->domain == GST_STREAM_ERROR) && (err->code == GST_STREAM_ERROR_DECRYPT))
         {
@@ -218,18 +218,21 @@ void HandleBusMessage::execute() const
         if ((PlaybackError::UNKNOWN != rialtoError) && (m_gstPlayerClient))
         {
             const gchar* mimetype = nullptr;
-            GstPad* srcpad = gst_element_get_static_pad(GST_ELEMENT(GST_MESSAGE_SRC(m_message)), "src");
+            GstPad* srcpad = m_gstWrapper->gstElementGetStaticPad(GST_ELEMENT(GST_MESSAGE_SRC(m_message)), "src");
             if (srcpad)
             {
-                GstCaps* caps = gst_pad_get_current_caps(srcpad);
+                GstCaps* caps = m_gstWrapper->gstPadGetCurrentCaps(srcpad);
                 if (caps)
                 {
-                    GstStructure* structure = gst_caps_get_structure(caps, 0);
-                    mimetype = gst_structure_get_name(structure);
-                    g_object_unref(caps);
-                    g_object_unref(structure);
+                    GstStructure* structure = m_gstWrapper->gstCapsGetStructure(caps, 0);
+                    if (structure)
+                    {
+                        mimetype = m_gstWrapper->gstStructureGetName(structure);
+                        m_glibWrapper->gObjectUnref(structure);
+                    }
+                    m_glibWrapper->gObjectUnref(caps);
                 }
-                g_object_unref(srcpad);
+                m_glibWrapper->gObjectUnref(srcpad);
             }
 
             if (mimetype)

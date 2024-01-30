@@ -1164,6 +1164,43 @@ public:
      * @retval New warning message.
      */
     virtual GstMessage *gstMessageNewWarning(GstObject * src, GError * error, const gchar * debug) const = 0;
+
+    /**
+     * @brief Get the GError and error string from the message.
+     *
+     * @param[in]  message  : a message of type WARNING.
+     * @param[out] gerror   : loction to store the error.
+     * @param[out] debug    : loction to store the error string.
+     */
+    virtual void gstMessageParseWarning(GstMessage * message, GError ** gerror, gchar ** debug) const = 0;
+
+    /**
+     * @brief Get the capabilities from the pad.
+     *
+     * @param[in] pad   : pad to get the capabilities.
+     *
+     * @retval the current caps, NULL otherwise.
+     */
+    virtual GstCaps *gstPadGetCurrentCaps(GstPad * pad) const = 0;
+
+    /**
+     * @brief Finds the structure at index in the caps.
+     *
+     * @param[in] caps  : a GstCaps.
+     * @param[in] index : index in the caps to get the structure.
+     *
+     * @retval ptr to a structure.
+     */
+    virtual GstStructure *gstCapsGetStructure(const GstCaps * caps, guint index) const = 0;
+
+    /**
+     * @brief Gets the name of the structure.
+     *
+     * @param[in] structure : a GstStructure.
+     *
+     * @retval the name of the structure.
+     */
+    virtual const gchar *gstStructureGetName(const GstStructure * structure) const = 0;
 };
 
 }; // namespace firebolt::rialto::wrappers
