@@ -81,7 +81,6 @@ constexpr uint32_t kCrypt{7};
 constexpr uint32_t kSkip{8};
 constexpr firebolt::rialto::QosInfo kQosInfoAudio{766, 6};
 constexpr firebolt::rialto::QosInfo kQosInfoVideo{98, 2};
-
 const std::vector<std::string> kAudioMimeType{"audio/mp4", "audio/aac", "audio/x-eac3", "audio/x-opus"};
 const std::vector<std::string> kVideoMimeType{"video/h264", "video/h265", "video/x-av1", "video/x-vp9", "video/mp4"};
 const std::vector<std::string> kUnknownMimeType{};
