@@ -63,9 +63,8 @@ const std::string kVersion{"123"};
 constexpr int32_t kMediaSourceTypeUnknown{0};
 constexpr int32_t kMediaSourceTypeAudio{1};
 constexpr int32_t kMediaSourceTypeVideo{2};
-const std::vector<std::string> kAudioMimeType{"audio/mp4", "audio/aac", "audio/x-eac3", "audio/x-eac3", "audio/x-opus"};
-const std::vector<std::string> kVideoMimeType{"video/x-av1", "video/h264", "video/h265",  "video/x-vp9", "video/mp4",
-                                              "video/h264",  "video/h265", "video/x-av1", "video/x-vp9"};
+const std::vector<std::string> kAudioMimeType{"audio/mp4", "audio/aac", "audio/x-eac3", "audio/x-opus"};
+const std::vector<std::string> kVideoMimeType{"video/h264", "video/h265", "video/x-av1", "video/x-vp9", "video/mp4"};
 const std::vector<std::string> kUnknownMimeType{};
 const std::string kMimeType{"video/h264"};
 
@@ -312,7 +311,6 @@ void MediaKeysTestMethods::destroyMediaKeysCapabilitiesObject()
 void MediaKeysTestMethods::createMediaPipelineCapabilitiesObject()
 {
     m_mediaPipelineCapabilitiesFactory = firebolt::rialto::IMediaPipelineCapabilitiesFactory::createFactory();
-    // m_mediaPipelineCapabilities = m_mediaPipelineCapabilitiesFactory->getMediaPipelineCapabilities();
     m_mediaPipelineCapabilities = m_mediaPipelineCapabilitiesFactory->createMediaPipelineCapabilities();
     EXPECT_NE(m_mediaPipelineCapabilities, nullptr);
 }
