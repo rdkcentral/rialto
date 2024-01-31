@@ -60,6 +60,7 @@ add_gtests (
         mediaKeys/GetSessionInfoTest.cpp
         mediaKeys/SetDrmHeaderTest.cpp
         mediaKeys/LicenseRenewalTest.cpp
+        mediaKeysCapabilities/MediaKeysCapabilitiesTest.cpp
         )
 
 target_include_directories(
@@ -70,11 +71,13 @@ target_include_directories(
         $<TARGET_PROPERTY:RialtoServerComponentTestsFixtures,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoIpcServerStub,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoIpcServer,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoServerMain,INCLUDE_DIRECTORIES>
 )
 
 target_link_libraries(
         RialtoServerComponentTests
         RialtoCommon
+        RialtoProtobuf
         RialtoServerComponentTestsFixtures
 )
 

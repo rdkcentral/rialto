@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2022 Sky UK
+ * Copyright 2024 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,21 +17,23 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_WRAPPERS_OCDM_MOCK_H_
-#define FIREBOLT_RIALTO_WRAPPERS_OCDM_MOCK_H_
-
-#include "IOcdm.h"
-#include <gmock/gmock.h>
+#include "MediaKeysCapabilitiesModuleStub.h"
+#include "MediaKeysProtoUtils.h"
+#include <IIpcServer.h>
+#include <IIpcServerFactory.h>
+#include <gtest/gtest.h>
 #include <memory>
 #include <string>
+#include <vector>
 
-namespace firebolt::rialto::wrappers
+namespace firebolt::rialto::client::ct
 {
-class OcdmMock : public IOcdm
+MediaKeysCapabilitiesModuleStub::MediaKeysCapabilitiesModuleStub(
+    const std::shared_ptr<::firebolt::rialto::MediaKeysCapabilitiesModule> &mediaKeysCapabilitiesModuleMock)
+    : m_mediaKeysCapabilitiesModuleMock{mediaKeysCapabilitiesModuleMock}
 {
-public:
-    MOCK_METHOD(MediaKeyErrorStatus, isTypeSupported, (const std::string &keySystem), (override));
-};
-} // namespace firebolt::rialto::wrappers
+}
 
-#endif // FIREBOLT_RIALTO_WRAPPERS_OCDM_MOCK_H_
+MediaKeysCapabilitiesModuleStub::~MediaKeysCapabilitiesModuleStub() {}
+
+} // namespace firebolt::rialto::client::ct

@@ -38,7 +38,7 @@ std::shared_ptr<IOcdm> OcdmFactory::getOcdm() const
     return ocdm;
 }
 
-MediaKeyErrorStatus Ocdm::isTypeSupported(std::string keySystem)
+MediaKeyErrorStatus Ocdm::isTypeSupported(const std::string &keySystem)
 {
     // mimeType is currently ignored by ocdm
     OpenCDMError status = opencdm_is_type_supported(keySystem.c_str(), "");

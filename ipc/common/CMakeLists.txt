@@ -17,15 +17,6 @@
 # limitations under the License.
 #
 
-# Run the protoc tool to generate the code
-include( FindProtobuf )
-set( Protobuf_IMPORT_DIRS "${CMAKE_SYSROOT}/usr/include" )
-protobuf_generate_cpp( PROTO_SRCS PROTO_HEADERS proto/rialtoipc.proto proto/rialtoipc-transport.proto )
-
-# Get the directory where header was generated
-list( GET PROTO_HEADERS 0 FIRST_PROTO_HEADER )
-get_filename_component( PROTO_HEADER_DIR ${FIRST_PROTO_HEADER} DIRECTORY )
-
 # Find includes in corresponding build directories
 set( CMAKE_INCLUDE_CURRENT_DIR ON )
 
@@ -33,9 +24,6 @@ set( CMAKE_INCLUDE_CURRENT_DIR ON )
 add_library(
         RialtoIpcCommon
         STATIC
-
-        ${PROTO_SRCS}
-        ${PROTO_HEADERS}
 
         source/FileDescriptor.cpp
         source/SimpleBufferPool.cpp
@@ -47,7 +35,6 @@ target_include_directories(
 
         PUBLIC
         include
-        ${PROTO_HEADER_DIR}
         $<TARGET_PROPERTY:RialtoLogging,INTERFACE_INCLUDE_DIRECTORIES>
 
         PRIVATE
@@ -66,6 +53,6 @@ target_link_libraries(
         RialtoIpcCommon
 
         PRIVATE
-        protobuf::libprotobuf
+        RialtoProtobuf
 
         )

@@ -414,6 +414,27 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
+::firebolt::rialto::GetSupportedKeySystemsRequest createGetSupportedKeySystemsRequest()
+{
+    ::firebolt::rialto::GetSupportedKeySystemsRequest request;
+    return request;
+}
+
+::firebolt::rialto::SupportsKeySystemRequest createSupportsKeySystemRequest(const std::string &keySystem)
+{
+    ::firebolt::rialto::SupportsKeySystemRequest request;
+    request.set_key_system(keySystem.c_str());
+    return request;
+}
+
+::firebolt::rialto::GetSupportedKeySystemVersionRequest
+createGetSupportedKeySystemVersionRequest(const std::string &keySystem)
+{
+    ::firebolt::rialto::GetSupportedKeySystemVersionRequest request;
+    request.set_key_system(keySystem.c_str());
+    return request;
+}
+
 ::firebolt::rialto::GetSharedMemoryRequest createGetSharedMemoryRequest()
 {
     return ::firebolt::rialto::GetSharedMemoryRequest();

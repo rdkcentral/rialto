@@ -19,6 +19,7 @@
 
 #include "MediaKeysTestMethods.h"
 #include "CommonConstants.h"
+#include "MediaKeysCommon.h"
 #include "MediaKeysProtoRequestMatchers.h"
 #include <memory>
 #include <string>
@@ -54,13 +55,19 @@ const std::string kCdmKeySessionId{"CDM ID"};
 constexpr uint32_t kErrorCode{98538};
 constexpr uint32_t kLdlSessionLimit{5};
 constexpr uint64_t kDrmTime{1704200814000000000};
+const std::string kInvalidKeySystem{"notExpected"};
+// kKeySystems is using the full list of key systems from server that has been hardcoded
+const std::vector<std::string> kKeySystems(firebolt::rialto::server::kSupportedKeySystems.begin(),
+                                           firebolt::rialto::server::kSupportedKeySystems.end());
+const std::string kVersion{"123"};
 } // namespace
 
 namespace firebolt::rialto::client::ct
 {
 MediaKeysTestMethods::MediaKeysTestMethods()
     : m_mediaKeysClientMock{std::make_shared<StrictMock<MediaKeysClientMock>>()},
-      m_mediaKeysModuleMock{std::make_shared<StrictMock<MediaKeysModuleMock>>()}
+      m_mediaKeysModuleMock{std::make_shared<StrictMock<MediaKeysModuleMock>>()},
+      m_mediaKeysCapabilitiesModuleMock{std::make_shared<StrictMock<MediaKeysCapabilitiesModuleMock>>()}
 {
 }
 
@@ -278,6 +285,18 @@ void MediaKeysTestMethods::shouldDestroyMediaKeys()
 void MediaKeysTestMethods::destroyMediaKeys()
 {
     m_mediaKeys.reset();
+}
+
+void MediaKeysTestMethods::createMediaKeysCapabilitiesObject()
+{
+    m_mediaKeysCapabilitiesFactory = firebolt::rialto::IMediaKeysCapabilitiesFactory::createFactory();
+    m_mediaKeysCapabilities = m_mediaKeysCapabilitiesFactory->getMediaKeysCapabilities();
+    EXPECT_NE(m_mediaKeysCapabilities, nullptr);
+}
+
+void MediaKeysTestMethods::destroyMediaKeysCapabilitiesObject()
+{
+    m_mediaKeysCapabilities.reset();
 }
 
 void MediaKeysTestMethods::initaliseWidevineMediaKeySession()
@@ -565,6 +584,80 @@ void MediaKeysTestMethods::getDrmTime()
     uint64_t drmTime = 0;
     EXPECT_EQ(m_mediaKeys->getDrmTime(drmTime), kStatusOk);
     EXPECT_EQ(kDrmTime, drmTime);
+}
+
+void MediaKeysTestMethods::shouldGetSupportedKeySystems()
+{
+    EXPECT_CALL(*m_mediaKeysCapabilitiesModuleMock, getSupportedKeySystems(_, _, _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysCapabilitiesModuleMock->getSupportedKeySystemsResponse(kKeySystems)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaKeysCapabilitiesModuleMock),
+                                              &MediaKeysCapabilitiesModuleMock::defaultReturn))));
+}
+
+void MediaKeysTestMethods::getSupportedKeySystems()
+{
+    EXPECT_EQ(m_mediaKeysCapabilities->getSupportedKeySystems(), kKeySystems);
+}
+
+void MediaKeysTestMethods::shouldSupportKeySystems()
+{
+    EXPECT_CALL(*m_mediaKeysCapabilitiesModuleMock,
+                supportsKeySystem(_, supportsKeySystemRequestMatcher(kKeySystems[0]), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysCapabilitiesModuleMock->supportsKeySystemResponse(true)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaKeysCapabilitiesModuleMock),
+                                              &MediaKeysCapabilitiesModuleMock::defaultReturn))));
+}
+
+void MediaKeysTestMethods::supportsKeySystem()
+{
+    EXPECT_EQ(m_mediaKeysCapabilities->supportsKeySystem(kKeySystems[0]), true);
+}
+
+void MediaKeysTestMethods::shouldNotSupportKeySystems()
+{
+    EXPECT_CALL(*m_mediaKeysCapabilitiesModuleMock,
+                supportsKeySystem(_, supportsKeySystemRequestMatcher(kInvalidKeySystem), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysCapabilitiesModuleMock->supportsKeySystemResponse(false)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaKeysCapabilitiesModuleMock),
+                                              &MediaKeysCapabilitiesModuleMock::defaultReturn))));
+}
+
+void MediaKeysTestMethods::doesNotsupportsKeySystem()
+{
+    EXPECT_EQ(m_mediaKeysCapabilities->supportsKeySystem(kInvalidKeySystem), false);
+}
+
+void MediaKeysTestMethods::shouldGetSupportedKeySystemVersion()
+{
+    EXPECT_CALL(*m_mediaKeysCapabilitiesModuleMock,
+                getSupportedKeySystemVersion(_, getSupportedKeySystemVersionRequestMatcher(kKeySystems[0]), _, _))
+        .WillOnce(
+            DoAll(SetArgPointee<2>(m_mediaKeysCapabilitiesModuleMock->getSupportedKeySystemVersionResponse(kVersion)),
+                  WithArgs<0, 3>(
+                      Invoke(&(*m_mediaKeysCapabilitiesModuleMock), &MediaKeysCapabilitiesModuleMock::defaultReturn))));
+}
+
+void MediaKeysTestMethods::getSupportedKeySystemVersion()
+{
+    std::string version{};
+    EXPECT_EQ(m_mediaKeysCapabilities->getSupportedKeySystemVersion(kKeySystems[0], version), true);
+    EXPECT_EQ(version, kVersion);
+}
+
+void MediaKeysTestMethods::shouldNotGetSupportedKeySystemVersion()
+{
+    EXPECT_CALL(*m_mediaKeysCapabilitiesModuleMock,
+                getSupportedKeySystemVersion(_, getSupportedKeySystemVersionRequestMatcher(kKeySystems[0]), _, _))
+        .WillOnce(
+            DoAll(SetArgPointee<2>(m_mediaKeysCapabilitiesModuleMock->getSupportedKeySystemVersionResponse(kVersion)),
+                  WithArgs<0, 3>(
+                      Invoke(&(*m_mediaKeysCapabilitiesModuleMock), &MediaKeysCapabilitiesModuleMock::failureReturn))));
+}
+
+void MediaKeysTestMethods::doesNotGetSupportedKeySystemVersion()
+{
+    std::string version{};
+    EXPECT_EQ(m_mediaKeysCapabilities->getSupportedKeySystemVersion(kKeySystems[0], version), false);
 }
 
 } // namespace firebolt::rialto::client::ct

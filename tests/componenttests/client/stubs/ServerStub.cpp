@@ -55,6 +55,8 @@ void ServerStub::clientConnected(const std::shared_ptr<::firebolt::rialto::ipc::
         client->exportService(m_mediaPipelineModuleMock);
     if (m_mediaKeysModuleMock)
         client->exportService(m_mediaKeysModuleMock);
+    if (m_mediaKeysCapabilitiesModuleMock)
+        client->exportService(m_mediaKeysCapabilitiesModuleMock);
 
     // Notify listening thread
     m_clientConnectCond.notify_one();
@@ -62,9 +64,10 @@ void ServerStub::clientConnected(const std::shared_ptr<::firebolt::rialto::ipc::
 
 ServerStub::ServerStub(const std::shared_ptr<::firebolt::rialto::ControlModule> &controlModuleMock,
                        const std::shared_ptr<::firebolt::rialto::MediaPipelineModule> &mediaPipelineModuleMock,
-                       const std::shared_ptr<::firebolt::rialto::MediaKeysModule> &mediaKeysModuleMock)
-    : ControlModuleStub{controlModuleMock}, MediaPipelineModuleStub{mediaPipelineModuleMock}, MediaKeysModuleStub{
-                                                                                                  mediaKeysModuleMock}
+                       const std::shared_ptr<::firebolt::rialto::MediaKeysModule> &mediaKeysModuleMock,
+                       const std::shared_ptr<::firebolt::rialto::MediaKeysCapabilitiesModule> &mediaKeysCapabilitiesModuleMock)
+    : ControlModuleStub{controlModuleMock}, MediaPipelineModuleStub{mediaPipelineModuleMock},
+      MediaKeysModuleStub{mediaKeysModuleMock}, MediaKeysCapabilitiesModuleStub{mediaKeysCapabilitiesModuleMock}
 {
     init();
 }
