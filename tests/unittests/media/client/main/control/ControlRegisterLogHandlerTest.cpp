@@ -161,6 +161,7 @@ TEST_F(RialtoClientControlRegisterLogHandlerTest, ShouldCancelLogHandler)
 
     // Generate a log entry
     RIALTO_CLIENT_LOG_ERROR("%s", kLogTestStr.c_str());
+    EXPECT_TRUE(logHandler->m_gotExpectedLogMessage);
 
     // Cancel the log handler
     {
