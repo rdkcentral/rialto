@@ -83,6 +83,7 @@ catch (const std::exception &e)
     RIALTO_CLIENT_LOG_ERROR("Failed to create the rialto control, reason: %s", e.what());
     return nullptr;
 }
+
 bool ControlFactory::preRegisterLogHandler(std::shared_ptr<IClientLogHandler> &handler, bool ignoreLogLevels)
 {
     return Control::registerLogHandlerStatic(handler, ignoreLogLevels);
