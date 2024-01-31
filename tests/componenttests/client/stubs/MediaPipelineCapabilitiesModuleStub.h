@@ -19,13 +19,8 @@
 #ifndef FIREBOLT_RIALTO_CLIENT_CT_MEDIA_PIPELINE_CAPABILITIES_MODULE_STUB_H_
 #define FIREBOLT_RIALTO_CLIENT_CT_MEDIA_PIPELINE_CAPABILITIES_MODULE_STUB_H_
 
-#include "IIpcServer.h"
-#include "MediaCommon.h"
-#include "RialtoLogging.h"
 #include "mediapipelinecapabilitiesmodule.pb.h"
 #include <memory>
-#include <string>
-#include <vector>
 
 namespace firebolt::rialto::client::ct
 {

@@ -93,29 +93,29 @@ public:
 TEST_F(MediaPipelineCapabilitiesTest, checkSupportedMimeTypes)
 {
     // Step 1: Create a MediaPipelineCabilities object.
-    MediaKeysTestMethods::createMediaPipelineCapabilitiesObject();
+    MediaPipelineTestMethods::createMediaPipelineCapabilitiesObject();
 
     // Step 2: Get the supported audio mime types
-    MediaKeysTestMethods::shouldGetSupportedAudioMimeTypes();
-    MediaKeysTestMethods::getSupportedAudioMimeTypes();
+    MediaPipelineTestMethods::shouldGetSupportedAudioMimeTypes();
+    MediaPipelineTestMethods::getSupportedAudioMimeTypes();
 
     // Step 3: Get the supported video mime types
-    MediaKeysTestMethods::shouldGetSupportedVideoMimeTypes();
-    MediaKeysTestMethods::getSupportedVideoMimeTypes();
+    MediaPipelineTestMethods::shouldGetSupportedVideoMimeTypes();
+    MediaPipelineTestMethods::getSupportedVideoMimeTypes();
 
     // Step 4: Get the unknown mime types
-    MediaKeysTestMethods::shouldGetSupportedUnknownMimeTypes();
-    MediaKeysTestMethods::getUnknownMimeTypes();
+    MediaPipelineTestMethods::shouldGetSupportedUnknownMimeTypes();
+    MediaPipelineTestMethods::getUnknownMimeTypes();
 
     // Step 5: Check if mime type is supported - success
-    MediaKeysTestMethods::shouldCheckIsMimeTypeSupported();
-    MediaKeysTestMethods::isMimeTypeSupported();
+    MediaPipelineTestMethods::shouldCheckIsMimeTypeSupported();
+    MediaPipelineTestMethods::isMimeTypeSupported();
 
     // Step 6: Check if mime type is supported - failure
-    MediaKeysTestMethods::shouldCheckIsMimeTypeNotSupported();
-    MediaKeysTestMethods::isMimeTypeNotSupported();
+    MediaPipelineTestMethods::shouldCheckIsMimeTypeNotSupported();
+    MediaPipelineTestMethods::isMimeTypeNotSupported();
 
     // Step 7: Destroy MediaPipelineCapabilities
-    MediaKeysTestMethods::destroyMediaPipelineCapabilitiesObject();
+    MediaPipelineTestMethods::destroyMediaPipelineCapabilitiesObject();
 }
 } // namespace firebolt::rialto::client::ct

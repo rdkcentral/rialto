@@ -21,6 +21,7 @@
 #define MEDIA_PIPELINE_PROTO_REQUEST_MATCHERS_H_
 
 #include "MediaCommon.h"
+#include "mediapipelinecapabilitiesmodule.pb.h"
 #include "mediapipelinemodule.pb.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -249,6 +250,20 @@ MATCHER_P(getPositionRequestMatcher, sessionId, "")
     const ::firebolt::rialto::GetPositionRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::GetPositionRequest *>(arg);
     return ((kRequest->session_id() == sessionId));
+}
+
+MATCHER_P(getSupportedMimeTypesRequestMatcher, sourceType, "")
+{
+    const ::firebolt::rialto::GetSupportedMimeTypesRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::GetSupportedMimeTypesRequest *>(arg);
+    return (kRequest->media_type() == static_cast<firebolt::rialto::ProtoMediaSourceType>(sourceType));
+}
+
+MATCHER_P(isMimeTypeSupportedRequestMatcher, mimeType, "")
+{
+    const ::firebolt::rialto::IsMimeTypeSupportedRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::IsMimeTypeSupportedRequest *>(arg);
+    return (kRequest->mime_type() == mimeType);
 }
 
 #endif // MEDIA_PIPELINE_PROTO_REQUEST_MATCHERS_H_

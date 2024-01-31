@@ -18,13 +18,7 @@
  */
 
 #include "MediaPipelineCapabilitiesModuleStub.h"
-#include "MediaKeysProtoUtils.h"
-#include <IIpcServer.h>
-#include <IIpcServerFactory.h>
-#include <gtest/gtest.h>
 #include <memory>
-#include <string>
-#include <vector>
 
 namespace firebolt::rialto::client::ct
 {

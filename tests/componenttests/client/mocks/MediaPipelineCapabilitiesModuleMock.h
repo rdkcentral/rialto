@@ -20,7 +20,6 @@
 #ifndef MEDIA_PIPELINE_CAPABILITIES_MODULE_MOCK_H_
 #define MEDIA_PIPELINE_CAPABILITIES_MODULE_MOCK_H_
 
-#include "MediaKeysProtoUtils.h"
 #include "mediapipelinecapabilitiesmodule.pb.h"
 #include <gmock/gmock.h>
 #include <string>

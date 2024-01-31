@@ -23,7 +23,6 @@
 #include "MediaCommon.h"
 #include "mediakeyscapabilitiesmodule.pb.h"
 #include "mediakeysmodule.pb.h"
-#include "mediapipelinecapabilitiesmodule.pb.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <memory>
@@ -192,17 +191,4 @@ MATCHER_P(getSupportedKeySystemVersionRequestMatcher, keySystem, "")
     return (kRequest->key_system() == keySystem);
 }
 
-MATCHER_P(getSupportedMimeTypesRequestMatcher, sourceType, "")
-{
-    const ::firebolt::rialto::GetSupportedMimeTypesRequest *kRequest =
-        dynamic_cast<const ::firebolt::rialto::GetSupportedMimeTypesRequest *>(arg);
-    return (kRequest->media_type() == sourceType);
-}
-
-MATCHER_P(isMimeTypeSupportedRequestMatcher, mimeType, "")
-{
-    const ::firebolt::rialto::IsMimeTypeSupportedRequest *kRequest =
-        dynamic_cast<const ::firebolt::rialto::IsMimeTypeSupportedRequest *>(arg);
-    return (kRequest->mime_type() == mimeType);
-}
 #endif // MEDIA_KEYS_PROTO_REQUEST_MATCHERS_H_

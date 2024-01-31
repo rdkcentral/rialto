@@ -60,14 +60,6 @@ const std::string kInvalidKeySystem{"notExpected"};
 const std::vector<std::string> kKeySystems(firebolt::rialto::server::kSupportedKeySystems.begin(),
                                            firebolt::rialto::server::kSupportedKeySystems.end());
 const std::string kVersion{"123"};
-constexpr int32_t kMediaSourceTypeUnknown{0};
-constexpr int32_t kMediaSourceTypeAudio{1};
-constexpr int32_t kMediaSourceTypeVideo{2};
-const std::vector<std::string> kAudioMimeType{"audio/mp4", "audio/aac", "audio/x-eac3", "audio/x-opus"};
-const std::vector<std::string> kVideoMimeType{"video/h264", "video/h265", "video/x-av1", "video/x-vp9", "video/mp4"};
-const std::vector<std::string> kUnknownMimeType{};
-const std::string kMimeType{"video/h264"};
-
 } // namespace
 
 namespace firebolt::rialto::client::ct
@@ -75,8 +67,7 @@ namespace firebolt::rialto::client::ct
 MediaKeysTestMethods::MediaKeysTestMethods()
     : m_mediaKeysClientMock{std::make_shared<StrictMock<MediaKeysClientMock>>()},
       m_mediaKeysModuleMock{std::make_shared<StrictMock<MediaKeysModuleMock>>()},
-      m_mediaKeysCapabilitiesModuleMock{std::make_shared<StrictMock<MediaKeysCapabilitiesModuleMock>>()},
-      m_mediaPipelineCapabilitiesModuleMock{std::make_shared<StrictMock<MediaPipelineCapabilitiesModuleMock>>()}
+      m_mediaKeysCapabilitiesModuleMock{std::make_shared<StrictMock<MediaKeysCapabilitiesModuleMock>>()}
 {
 }
 
@@ -306,18 +297,6 @@ void MediaKeysTestMethods::createMediaKeysCapabilitiesObject()
 void MediaKeysTestMethods::destroyMediaKeysCapabilitiesObject()
 {
     m_mediaKeysCapabilities.reset();
-}
-
-void MediaKeysTestMethods::createMediaPipelineCapabilitiesObject()
-{
-    m_mediaPipelineCapabilitiesFactory = firebolt::rialto::IMediaPipelineCapabilitiesFactory::createFactory();
-    m_mediaPipelineCapabilities = m_mediaPipelineCapabilitiesFactory->createMediaPipelineCapabilities();
-    EXPECT_NE(m_mediaPipelineCapabilities, nullptr);
-}
-
-void MediaKeysTestMethods::destroyMediaPipelineCapabilitiesObject()
-{
-    m_mediaPipelineCapabilities.reset();
 }
 
 void MediaKeysTestMethods::initaliseWidevineMediaKeySession()
@@ -681,79 +660,4 @@ void MediaKeysTestMethods::doesNotGetSupportedKeySystemVersion()
     EXPECT_EQ(m_mediaKeysCapabilities->getSupportedKeySystemVersion(kKeySystems[0], version), false);
 }
 
-void MediaKeysTestMethods::shouldGetSupportedAudioMimeTypes()
-{
-    EXPECT_CALL(*m_mediaPipelineCapabilitiesModuleMock,
-                getSupportedMimeTypes(_, getSupportedMimeTypesRequestMatcher(kMediaSourceTypeAudio), _, _))
-        .WillOnce(
-            DoAll(SetArgPointee<2>(m_mediaPipelineCapabilitiesModuleMock->getSupportedMimeTypesResponse(kAudioMimeType)),
-                  WithArgs<0, 3>(Invoke(&(*m_mediaPipelineCapabilitiesModuleMock),
-                                        &MediaPipelineCapabilitiesModuleMock::defaultReturn))));
-}
-
-void MediaKeysTestMethods::getSupportedAudioMimeTypes()
-{
-    MediaSourceType sourceType = firebolt::rialto::MediaSourceType::AUDIO;
-    EXPECT_EQ(m_mediaPipelineCapabilities->getSupportedMimeTypes(sourceType), kAudioMimeType);
-}
-
-void MediaKeysTestMethods::shouldGetSupportedVideoMimeTypes()
-{
-    EXPECT_CALL(*m_mediaPipelineCapabilitiesModuleMock,
-                getSupportedMimeTypes(_, getSupportedMimeTypesRequestMatcher(kMediaSourceTypeVideo), _, _))
-        .WillOnce(
-            DoAll(SetArgPointee<2>(m_mediaPipelineCapabilitiesModuleMock->getSupportedMimeTypesResponse(kVideoMimeType)),
-                  WithArgs<0, 3>(Invoke(&(*m_mediaPipelineCapabilitiesModuleMock),
-                                        &MediaPipelineCapabilitiesModuleMock::defaultReturn))));
-}
-
-void MediaKeysTestMethods::getSupportedVideoMimeTypes()
-{
-    MediaSourceType sourceType = firebolt::rialto::MediaSourceType::VIDEO;
-    EXPECT_EQ(m_mediaPipelineCapabilities->getSupportedMimeTypes(sourceType), kVideoMimeType);
-}
-
-void MediaKeysTestMethods::shouldGetSupportedUnknownMimeTypes()
-{
-    EXPECT_CALL(*m_mediaPipelineCapabilitiesModuleMock,
-                getSupportedMimeTypes(_, getSupportedMimeTypesRequestMatcher(kMediaSourceTypeUnknown), _, _))
-        .WillOnce(DoAll(SetArgPointee<2>(
-                            m_mediaPipelineCapabilitiesModuleMock->getSupportedMimeTypesResponse(kUnknownMimeType)),
-                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineCapabilitiesModuleMock),
-                                              &MediaPipelineCapabilitiesModuleMock::defaultReturn))));
-}
-
-void MediaKeysTestMethods::getUnknownMimeTypes()
-{
-    MediaSourceType sourceType = firebolt::rialto::MediaSourceType::UNKNOWN;
-    EXPECT_EQ(m_mediaPipelineCapabilities->getSupportedMimeTypes(sourceType), kUnknownMimeType);
-}
-
-void MediaKeysTestMethods::shouldCheckIsMimeTypeSupported()
-{
-    EXPECT_CALL(*m_mediaPipelineCapabilitiesModuleMock,
-                isMimeTypeSupported(_, isMimeTypeSupportedRequestMatcher(kMimeType), _, _))
-        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineCapabilitiesModuleMock->isMimeTypeSupportedResponse(true)),
-                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineCapabilitiesModuleMock),
-                                              &MediaPipelineCapabilitiesModuleMock::defaultReturn))));
-}
-
-void MediaKeysTestMethods::isMimeTypeSupported()
-{
-    EXPECT_EQ(m_mediaPipelineCapabilities->isMimeTypeSupported(kMimeType), true);
-}
-
-void MediaKeysTestMethods::shouldCheckIsMimeTypeNotSupported()
-{
-    EXPECT_CALL(*m_mediaPipelineCapabilitiesModuleMock,
-                isMimeTypeSupported(_, isMimeTypeSupportedRequestMatcher(kMimeType), _, _))
-        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineCapabilitiesModuleMock->isMimeTypeSupportedResponse(false)),
-                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineCapabilitiesModuleMock),
-                                              &MediaPipelineCapabilitiesModuleMock::defaultReturn))));
-}
-
-void MediaKeysTestMethods::isMimeTypeNotSupported()
-{
-    EXPECT_EQ(m_mediaPipelineCapabilities->isMimeTypeSupported(kMimeType), false);
-}
 } // namespace firebolt::rialto::client::ct
