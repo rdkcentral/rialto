@@ -50,12 +50,12 @@ public:
  *  Test the PlaybackError notification for all sources.
  *
  * Sequence Diagrams:
- *  TODO
+ * Non-fatal Errors - https://wiki.rdkcentral.com/display/ASP/Rialto+Playback+Design
  *
  * Test Setup:
  *  Language: C++
  *  Testing Framework: Google Test
- *  Components: MediaPipeline
+ *  Components: MediaPipelineClient
  *
  * Test Initialize:
  *  Create memory region for the shared buffer.
@@ -67,12 +67,10 @@ public:
  *  Step 1: Notify playback error audio
  *   Server notifies the client playback error for audio.
  *   Expect that the playback error notification is propagated to the client.
- *   Check source & playback error.
  *
  *  Step 2: Notify playback error video
  *   Server notify the client playback error for video.
  *   Expect that the playback error notification is propagated to the client.
- *   Check source & playback error.
  *
  * Test Tear-down:
  *  Terminate the media session.

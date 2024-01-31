@@ -151,14 +151,14 @@ public:
     virtual void notifyBufferUnderflow(MediaSourceType mediaSourceType) = 0;
 
     /**
-     * @brief Notifies the client that a none fatal error has occured in the player.
+     * @brief Notifies the client that a none fatal error has occurred in the player.
      *
      * PlaybackState remains unchanged when an error occurs.
      *
      * @param[in] mediaSourceType  : The type of the source that produced the error.
-     * @param[in] error            : The type of error that occured.
+     * @param[in] error            : The type of error that occurred.
      */
-    virtual void notifyPlaybackError(MediaSourceType mediaSourceType, const PlaybackError &error) = 0;
+    virtual void notifyPlaybackError(MediaSourceType mediaSourceType, PlaybackError error) = 0;
 };
 
 }; // namespace firebolt::rialto::server

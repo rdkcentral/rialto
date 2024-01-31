@@ -240,7 +240,7 @@ void MediaPipelineClient::notifyBufferUnderflow(int32_t sourceId)
     m_ipcClient->sendEvent(event);
 }
 
-void MediaPipelineClient::notifyPlaybackError(int32_t sourceId, const PlaybackError &error)
+void MediaPipelineClient::notifyPlaybackError(int32_t sourceId, PlaybackError error)
 {
     RIALTO_SERVER_LOG_DEBUG("Sending notifyPlaybackError...");
 

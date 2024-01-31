@@ -148,7 +148,7 @@ public:
 
     void notifyBufferUnderflow(MediaSourceType mediaSourceType) override;
 
-    void notifyPlaybackError(MediaSourceType mediaSourceType, const PlaybackError &error) override;
+    void notifyPlaybackError(MediaSourceType mediaSourceType, PlaybackError error) override;
 
 protected:
     /**

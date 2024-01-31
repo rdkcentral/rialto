@@ -109,7 +109,7 @@ private:
  *  Test that after non-fatal errors on the gstreamer pipeline via GST_MESSAGE_WARNING are handled succcesfully.
  *
  * Sequence Diagrams:
- *  TODO
+ *  Non-fatal Errors - https://wiki.rdkcentral.com/display/ASP/Rialto+Playback+Design
  *
  * Test Setup:
  *  Language: C++
