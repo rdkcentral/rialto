@@ -22,9 +22,11 @@
 
 #include "IMediaKeys.h"
 #include "IMediaKeysCapabilities.h"
+#include "IMediaPipelineCapabilities.h"
 #include "MediaKeysCapabilitiesModuleMock.h"
 #include "MediaKeysClientMock.h"
 #include "MediaKeysModuleMock.h"
+#include "MediaPipelineCapabilitiesModuleMock.h"
 #include "ServerStub.h"
 #include <gtest/gtest.h>
 #include <memory>
@@ -52,12 +54,15 @@ protected:
     std::shared_ptr<StrictMock<MediaKeysClientMock>> m_mediaKeysClientMock;
     std::shared_ptr<StrictMock<MediaKeysModuleMock>> m_mediaKeysModuleMock;
     std::shared_ptr<StrictMock<MediaKeysCapabilitiesModuleMock>> m_mediaKeysCapabilitiesModuleMock;
+    std::shared_ptr<StrictMock<MediaPipelineCapabilitiesModuleMock>> m_mediaPipelineCapabilitiesModuleMock;
 
     // Objects
     std::shared_ptr<IMediaKeysFactory> m_mediaKeysFactory;
     std::shared_ptr<IMediaKeys> m_mediaKeys;
     std::shared_ptr<IMediaKeysCapabilitiesFactory> m_mediaKeysCapabilitiesFactory;
     std::shared_ptr<IMediaKeysCapabilities> m_mediaKeysCapabilities;
+    std::shared_ptr<IMediaPipelineCapabilitiesFactory> m_mediaPipelineCapabilitiesFactory;
+    std::shared_ptr<IMediaPipelineCapabilities> m_mediaPipelineCapabilities;
 
     // MediaKeys Expect methods
     void shouldCreateMediaKeysWidevine();
@@ -101,6 +106,13 @@ protected:
     void shouldGetSupportedKeySystemVersion();
     void shouldNotGetSupportedKeySystemVersion();
 
+    // MediaPipelineCapabilities Expect methods
+    void shouldGetSupportedAudioMimeTypes();
+    void shouldGetSupportedVideoMimeTypes();
+    void shouldGetSupportedUnknownMimeTypes();
+    void shouldCheckIsMimeTypeSupported();
+    void shouldCheckIsMimeTypeNotSupported();
+
     // Api methods
     void createMediaKeysWidevine();
     void createMediaKeysPlayready();
@@ -138,6 +150,13 @@ protected:
     void doesNotGetSupportedKeySystemVersion();
     void createMediaKeysCapabilitiesObject();
     void destroyMediaKeysCapabilitiesObject();
+    void createMediaPipelineCapabilitiesObject();
+    void destroyMediaPipelineCapabilitiesObject();
+    void getSupportedAudioMimeTypes();
+    void getSupportedVideoMimeTypes();
+    void getUnknownMimeTypes();
+    void isMimeTypeSupported();
+    void isMimeTypeNotSupported();
 
     // Event methods
     void sendNotifyLicenseRequest();
