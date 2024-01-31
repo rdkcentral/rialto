@@ -59,6 +59,7 @@ target_link_libraries (
         RialtoServerComponentTestsStubs
         RialtoServerService
         RialtoPlayerCommon
+        RialtoProtobuf
         GoogleTest::gtest
         GoogleTest::gmock
 )

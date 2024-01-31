@@ -33,6 +33,9 @@ endif()
 
 add_compile_options(-Wall -Werror)
 
+# By default set link time optimisation, can affect compilation performance
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+
 option(RIALTO_LOG_FATAL_ENABLED "Enable fatal logging for RialtoServer" ON)
 option(RIALTO_LOG_ERROR_ENABLED "Enable error logging for RialtoServer" ON)
 option(RIALTO_LOG_WARN_ENABLED "Enable warning logging for RialtoServer" ON)
@@ -198,6 +201,7 @@ add_subdirectory( common )
 add_subdirectory( media )
 add_subdirectory( logging )
 add_subdirectory( wrappers )
+add_subdirectory( proto )
 
 if( ENABLE_SERVER_MANAGER )
     add_subdirectory( serverManager )
@@ -205,6 +209,9 @@ endif()
 
 # Config and target for building the unit tests
 if( CMAKE_BUILD_FLAG STREQUAL "UnitTests" )
+
+    # Turn off link time optimisation to speed up compilation
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION FALSE)
 
     include( cmake/googletest.cmake )
 
@@ -215,6 +222,9 @@ endif()
 
 # Config and target for building the unit tests
 if( CMAKE_BUILD_FLAG STREQUAL "ComponentTests" )
+
+    # Turn off link time optimisation to speed up compilation
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION FALSE)
 
     include( cmake/googletest.cmake )
 

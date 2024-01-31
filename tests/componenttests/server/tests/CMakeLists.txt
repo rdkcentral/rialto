@@ -77,6 +77,7 @@ target_include_directories(
 target_link_libraries(
         RialtoServerComponentTests
         RialtoCommon
+        RialtoProtobuf
         RialtoServerComponentTestsFixtures
 )
 
