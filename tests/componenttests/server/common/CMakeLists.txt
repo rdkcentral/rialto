@@ -17,25 +17,12 @@
 # limitations under the License.
 #
 
-# Run the protoc tool to generate the code
-set( Protobuf_IMPORT_DIRS "${CMAKE_SYSROOT}/usr/include" "${CMAKE_CURRENT_LIST_DIR}/../../../../ipc/common/proto/" )
-protobuf_generate_cpp( PROTO_SRCS PROTO_HEADERS ../../../../proto/rialtocommon.proto
-        ../../../../proto/servermanagermodule.proto ../../../../proto/mediapipelinemodule.proto
-        ../../../../proto/mediakeysmodule.proto ../../../../proto/mediakeyscapabilitiesmodule.proto
-        ../../../../proto/controlmodule.proto)
-
-list( GET PROTO_HEADERS 0 PROTO_HEADER )
-get_filename_component( PROTO_DIR ${PROTO_HEADER} DIRECTORY )
-
 # Find includes in corresponding build directories
 set( CMAKE_INCLUDE_CURRENT_DIR ON )
 
 add_library (
         RialtoServerComponentTestsCommon
         STATIC
-
-        ${PROTO_SRCS}
-        ${PROTO_HEADERS}
 
         MessageBuilders.cpp
         SegmentBuilder.cpp
@@ -56,7 +43,6 @@ target_include_directories (
         $<TARGET_PROPERTY:RialtoIpcCommon,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoLogging,INTERFACE_INCLUDE_DIRECTORIES>
         ${CMAKE_CURRENT_LIST_DIR}
-        ${PROTO_DIR}
 
         PRIVATE
 )
@@ -65,7 +51,7 @@ target_link_libraries (
         RialtoServerComponentTestsCommon
 
         PRIVATE
-        protobuf::libprotobuf
+        RialtoProtobuf
         GoogleTest::gtest
         GoogleTest::gmock
 )

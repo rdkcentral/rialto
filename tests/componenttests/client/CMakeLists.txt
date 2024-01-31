@@ -17,22 +17,10 @@
 # limitations under the License.
 #
 
-# Run the protoc tool to generate the code
-set( Protobuf_IMPORT_DIRS "${CMAKE_SYSROOT}/usr/include" "${CMAKE_CURRENT_LIST_DIR}/../../../ipc/common/proto/" )
-protobuf_generate_cpp( PROTO_SRCS PROTO_HEADERS ../../../proto/controlmodule.proto ../../../proto/rialtocommon.proto ../../../proto/mediapipelinemodule.proto
-        ../../../proto/mediapipelinecapabilitiesmodule.proto ../../../proto/mediakeysmodule.proto ../../../proto/mediakeyscapabilitiesmodule.proto
-        ../../../proto/servermanagermodule.proto ../../../proto/webaudioplayermodule.proto ../../../proto/metadata.proto)
-
-list( GET PROTO_HEADERS 0 PROTO_HEADER )
-get_filename_component( PROTO_DIR ${PROTO_HEADER} DIRECTORY )
 unset(GTEST_MAIN_LIBRARY) # do not link g_test_main
 
 add_gtests (
         RialtoClientComponentTests
-
-        # proto files
-        ${PROTO_SRCS}
-        ${PROTO_HEADERS}
 
         # Main
         main.cpp
@@ -89,8 +77,6 @@ target_include_directories(
         RialtoClientComponentTests
 
         PRIVATE
-        ${PROTO_DIR}
-        ${PROTO_DIR}
         $<TARGET_PROPERTY:RialtoPlayerPublic,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoPlayerCommon,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoClientIpcImpl,INTERFACE_INCLUDE_DIRECTORIES>
@@ -121,6 +107,7 @@ target_link_libraries(
         RialtoClientIpcImpl
         RialtoClientCommon
         RialtoPlayerCommon
+        RialtoProtobuf
         )
 
 if ( COVERAGE_ENABLED )

@@ -62,6 +62,7 @@ target_link_libraries (
         RialtoIpcServer
         RialtoIpcClient
         RialtoIpcCommon
+        RialtoProtobuf
         protobuf::libprotobuf
         GoogleTest::gtest
         GoogleTest::gmock
