@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2023 Sky UK
+ * Copyright 2024 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,69 +20,105 @@
 #include "Constants.h"
 #include "ExpectMessage.h"
 #include "MediaPipelineTest.h"
+#include "MediaPipelineProtoUtils.h"
 
 using testing::_;
 using testing::DoAll;
 using testing::Return;
 using testing::SetArgPointee;
+using testing::StrEq;
 
 namespace
 {
 constexpr unsigned kFramesToPush{1};
 constexpr int kFrameCountInPausedState{3};
-const std::string kAudioSourceName{"Audio"};
-const std::string kVideoSourceName{"Video"};
+const std::string kAudioMimeType{"audio/mpeg"};
+const std::string kVideoMimeType{"video/x-h264"};
 } // namespace
+
+MATCHER_P2(gstWarningMatcher, error, debug, "")
+{
+    GstMessage* message = GST_MESSAGE_CAST(arg);
+    return (message->type == GST_MESSAGE_WARNING);
+}
 
 namespace firebolt::rialto::server::ct
 {
-class QosUpdatesTest : public MediaPipelineTest
+class NonFatalPlayerErrorUpdatesTest : public MediaPipelineTest
 {
 public:
-    QosUpdatesTest() = default;
-    ~QosUpdatesTest() override = default;
+    NonFatalPlayerErrorUpdatesTest() = default;
+    ~NonFatalPlayerErrorUpdatesTest() override = default;
 
-    void willQos(const std::string &sourceName)
+    void willHandleWarningMessage(GQuark domain, gint code)
     {
-        EXPECT_CALL(*m_gstWrapperMock, gstMessageParseQos(_, _, _, _, _, _));
-        EXPECT_CALL(*m_gstWrapperMock, gstMessageParseQosStats(_, _, _, _))
-            .WillOnce(DoAll(SetArgPointee<1>(GST_FORMAT_BUFFERS), SetArgPointee<2>(kQosInfo.processed),
-                            SetArgPointee<3>(kQosInfo.dropped)));
-        EXPECT_CALL(*m_gstWrapperMock, gstElementClassGetMetadata(_, _)).WillOnce(Return(sourceName.c_str()));
+        m_err.domain = domain;
+        m_err.code = code;
+        m_err.message = m_debug;
+    
+        EXPECT_CALL(*m_gstWrapperMock, gstMessageParseWarning(gstWarningMatcher(m_err, m_debug), _, _))
+            .WillOnce(DoAll(SetArgPointee<1>(&m_err), SetArgPointee<2>(m_debug)));
+        EXPECT_CALL(*m_glibWrapperMock, gFree(m_debug));
+        EXPECT_CALL(*m_glibWrapperMock, gErrorFree(&m_err)).WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
     }
 
-    void qos(int sourceId)
+    void gstWarning()
     {
-        ExpectMessage<QosEvent> expectedQos{m_clientStub};
+        m_gstreamerStub.sendWarning(&m_src, &m_err, m_debug);
 
-        m_gstreamerStub.sendQos(&m_src);
+        // Warning executed on the bus thread, wait for it to complete
+        waitWorker();
+    }
+    
+    void willGetMimeType(const char* mimeType)
+    {
+        EXPECT_CALL(*m_gstWrapperMock, gstElementGetStaticPad(GST_ELEMENT(&m_src), StrEq("src")))
+            .WillOnce(Return(&m_srcpad));
+        EXPECT_CALL(*m_gstWrapperMock, gstPadGetCurrentCaps(&m_srcpad))
+            .WillOnce(Return(&m_caps));
+        EXPECT_CALL(*m_gstWrapperMock, gstCapsGetStructure(&m_caps, 0))
+            .WillOnce(Return(&m_structure));
+        EXPECT_CALL(*m_gstWrapperMock, gstStructureGetName(&m_structure))
+            .WillOnce(Return(mimeType));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectUnref(&m_structure));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectUnref(&m_caps));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectUnref(&m_srcpad));
+    }
 
-        auto receivedQos = expectedQos.getMessage();
-        ASSERT_TRUE(receivedQos);
-        EXPECT_EQ(receivedQos->session_id(), m_sessionId);
-        EXPECT_EQ(receivedQos->source_id(), sourceId);
-        EXPECT_EQ(receivedQos->qos_info().processed(), kQosInfo.processed);
-        EXPECT_EQ(receivedQos->qos_info().dropped(), kQosInfo.dropped);
+    void notifyPlaybackError(int sourceId, PlaybackError error)
+    {
+        ExpectMessage<PlaybackErrorEvent> expectedPlaybackError{m_clientStub};
+
+        gstWarning();
+
+        auto receivedPlaybackError = expectedPlaybackError.getMessage();
+        ASSERT_TRUE(receivedPlaybackError);
+        EXPECT_EQ(receivedPlaybackError->session_id(), m_sessionId);
+        EXPECT_EQ(receivedPlaybackError->source_id(), sourceId);
+        EXPECT_EQ(receivedPlaybackError->error(), convertPlaybackError(error));
     }
 
 private:
     GstElement m_src{};
+    GError m_err{};
+    gchar m_debug[14]{"Error message"};
+    GstPad m_srcpad{};
+    GstCaps m_caps{};
+    GstStructure m_structure{};
 };
 
 /*
- * Component Test: Qos Updates Test
+ * Component Test: Non-fatal Player Error Updates Test
  * Test Objective:
- *  Test the notifyQos API. After receiving GST_MESSAGE_QOS, RialtoServer should send notifyQos to RialtoClient
+ *  Test that after non-fatal errors on the gstreamer pipeline via GST_MESSAGE_WARNING are handled succcesfully.
  *
  * Sequence Diagrams:
- *  Create, Destroy - https://wiki.rdkcentral.com/pages/viewpage.action?pageId=226375556
- *  Quality of Service
- *   - https://wiki.rdkcentral.com/display/ASP/Rialto+MSE+Misc+Sequence+Diagrams
+ *  TODO
  *
  * Test Setup:
  *  Language: C++
  *  Testing Framework: Google Test
- *  Components: MediaPipeline
+ *  Components: MediaPipelineClient
  *
  * Test Initialize:
  *  Set Rialto Server to Active
@@ -137,38 +173,50 @@ private:
  *   Expect that gstreamer pipeline is in playing state
  *   Expect that server notifies the client that the Playback state has changed to PLAYING.
  *
- *  Step 9: Audio QoS
- *   GST_MESSAGE_QOS should be received from audio source
- *   Rialto Server should send NotifyQos to Rialto Client
+ *  Step 9: Audio generic warning
+ *   GST_MESSAGE_WARNING should be received from audio source.
+ *   Error is set to GST_CORE_ERROR.
+ *   Expect no notification to the client.
  *
- *  Step 10: Video QoS
- *   GST_MESSAGE_QOS should be received from video source
- *   Rialto Server should send NotifyQos to Rialto Client
+ *  Step 10: Video generic warning
+ *   GST_MESSAGE_WARNING should be received from video source.
+ *   Error is set to GST_CORE_ERROR.
+ *   Expect no notification to the client.
  *
- *  Step 11: End of audio stream
+ *  Step 11: Audio decrypt warning
+ *   GST_MESSAGE_WARNING should be received from audio source.
+ *   Error is set to GST_STREAM_ERROR & GST_STREAM_ERROR_DECRYPT.
+ *   Expect that server notifies the client of an audio PlaybackError::DECRYPTION.
+ *
+ *  Step 12: Video decrypt warning
+ *   GST_MESSAGE_WARNING should be received from video source.
+ *   Error is set to GST_STREAM_ERROR & GST_STREAM_ERROR_DECRYPT.
+ *   Expect that server notifies the client of an video PlaybackError::DECRYPTION.
+ *
+ *  Step 13: End of audio stream
  *   Send audio haveData with one frame and EOS status
  *   Expect that Gstreamer is notified about end of stream
  *
- *  Step 12: End of video stream
+ *  Step 14: End of video stream
  *   Send video haveData with one frame and EOS status
  *   Expect that Gstreamer is notified about end of stream
  *
- *  Step 13: Notify end of stream
+ *  Step 15: Notify end of stream
  *   Simulate, that gst_message_eos is received by Rialto Server
  *   Expect that server notifies the client that the Network state has changed to END_OF_STREAM.
  *
- *  Step 14: Remove sources
+ *  Step 16: Remove sources
  *   Remove the audio source.
  *   Expect that audio source is removed.
  *   Remove the video source.
  *   Expect that video source is removed.
  *
- *  Step 15: Stop
+ *  Step 17: Stop
  *   Stop the playback.
  *   Expect that stop propagated to the gstreamer pipeline.
  *   Expect that server notifies the client that the Playback state has changed to STOPPED.
  *
- *  Step 16: Destroy media session
+ *  Step 18: Destroy media session
  *   Send DestroySessionRequest.
  *   Expect that the session is destroyed on the server.
  *
@@ -177,11 +225,11 @@ private:
  *  Server is terminated.
  *
  * Expected Results:
- *  Qos information from GStreamer is forwarded to Rialto Client
+ *  PlaybackError information from GStreamer is forwarded to Rialto Client
  *
  * Code:
  */
-TEST_F(QosUpdatesTest, QosUpdates)
+TEST_F(NonFatalPlayerErrorUpdatesTest, warningMessage)
 {
     // Step 1: Create a new media session
     createSession();
@@ -227,34 +275,44 @@ TEST_F(QosUpdatesTest, QosUpdates)
     willPlay();
     play();
 
-    // Step 9: Audio QoS
-    willQos(kAudioSourceName);
-    qos(m_audioSourceId);
+    // Step 9: Audio generic warning
+    willHandleWarningMessage(GST_CORE_ERROR, GST_CORE_ERROR_FAILED);
+    gstWarning();
 
-    // Step 10: Video QoS
-    willQos(kVideoSourceName);
-    qos(m_videoSourceId);
+    // Step 10: Video generic warning
+    willHandleWarningMessage(GST_CORE_ERROR, GST_CORE_ERROR_FAILED);
+    gstWarning();
 
-    // Step 11: End of audio stream
-    // Step 12: End of video stream
+    // Step 11: Audio decrypt warning
+    willHandleWarningMessage(GST_STREAM_ERROR, GST_STREAM_ERROR_DECRYPT);
+    willGetMimeType(kAudioMimeType.c_str());
+    notifyPlaybackError(m_audioSourceId, PlaybackError::DECRYPTION);
+
+    // Step 12: Video decrypt warning
+    willHandleWarningMessage(GST_STREAM_ERROR, GST_STREAM_ERROR_DECRYPT);
+    willGetMimeType(kVideoMimeType.c_str());
+    notifyPlaybackError(m_videoSourceId, PlaybackError::DECRYPTION);
+
+    // Step 13: End of audio stream
+    // Step 14: End of video stream
     willEos(&m_audioAppSrc);
     eosAudio(kFramesToPush);
     willEos(&m_videoAppSrc);
     eosVideo(kFramesToPush);
 
-    // Step 13: Notify end of stream
+    // Step 15: Notify end of stream
     gstNotifyEos();
     willRemoveAudioSource();
 
-    // Step 14: Remove sources
+    // Step 16: Remove sources
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 
-    // Step 15: Stop
+    // Step 17: Stop
     willStop();
     stop();
 
-    // Step 16: Destroy media session
+    // Step 18: Destroy media session
     gstPlayerWillBeDestructed();
     destroySession();
 }

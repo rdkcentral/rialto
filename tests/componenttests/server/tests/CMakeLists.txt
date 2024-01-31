@@ -50,6 +50,7 @@ add_gtests (
         mediaPipeline/VolumeTest.cpp
         mediaPipeline/WriteSegmentsTest.cpp
         mediaPipeline/RemoveAudioPlaybackTest.cpp
+        mediaPipeline/NonFatalPlayerErrorUpdatesTest.cpp
         mediaKeys/MediaKeysTestMethods.cpp
         mediaKeys/MediaKeysTest.cpp
         mediaKeys/SessionReadyForDecryptionTest.cpp
@@ -72,6 +73,7 @@ target_include_directories(
         $<TARGET_PROPERTY:RialtoIpcServerStub,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoIpcServer,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoServerMain,INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoTestCommonProtoUtils,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
 target_link_libraries(

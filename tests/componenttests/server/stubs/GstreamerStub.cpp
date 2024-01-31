@@ -141,4 +141,13 @@ void GstreamerStub::sendQos(GstElement *src)
         gst_message_new_qos(GST_OBJECT(src), kLive, kRunningTime, kStreamTime, kQosInfo.processed, kQosInfo.dropped);
     m_cv.notify_one();
 }
+
+void GstreamerStub::sendWarning(GstElement *src, GError *error, const gchar * debug)
+{
+    std::unique_lock lock(m_mutex);
+    m_message =
+        gst_message_new_warning(GST_OBJECT(src), error, debug);
+    m_cv.notify_one();
+}
+
 } // namespace firebolt::rialto::server::ct
