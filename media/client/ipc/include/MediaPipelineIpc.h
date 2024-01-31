@@ -171,9 +171,9 @@ private:
     void onBufferUnderflow(const std::shared_ptr<firebolt::rialto::BufferUnderflowEvent> &event);
 
     /**
-     * @brief 
+     * @brief Handler for a playback error notification from the server.
      *
-     * @param[in] event : 
+     * @param[in] event : The playback error event structure.
      */
     void onPlaybackError(const std::shared_ptr<firebolt::rialto::PlaybackErrorEvent> &event);
 

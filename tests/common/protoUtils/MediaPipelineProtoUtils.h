@@ -183,7 +183,7 @@ convertNetworkState(const firebolt::rialto::NetworkState &kNetworkState)
     return firebolt::rialto::NetworkStateChangeEvent_NetworkState_UNKNOWN;
 }
 
-firebolt::rialto::PlaybackErrorEvent_PlaybackError
+inline firebolt::rialto::PlaybackErrorEvent_PlaybackError
 convertPlaybackError(const firebolt::rialto::PlaybackError &playbackError)
 {
     switch (playbackError)

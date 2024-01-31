@@ -1242,6 +1242,30 @@ void MediaPipelineTestMethods::sendNotifyBufferUnderflowVideo()
     waitEvent();
 }
 
+void MediaPipelineTestMethods::shouldNotifyPlaybackErrorAudio()
+{
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyPlaybackError(kAudioSourceId, PlaybackError::DECRYPTION))
+        .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
+}
+
+void MediaPipelineTestMethods::shouldNotifyPlaybackErrorVideo()
+{
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyPlaybackError(kVideoSourceId, PlaybackError::DECRYPTION))
+        .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
+}
+
+void MediaPipelineTestMethods::sendNotifyPlaybackErrorAudio()
+{
+    getServerStub()->notifyPlaybackErrorEvent(kSessionId, kAudioSourceId, PlaybackError::DECRYPTION);
+    waitEvent();
+}
+
+void MediaPipelineTestMethods::sendNotifyPlaybackErrorVideo()
+{
+    getServerStub()->notifyPlaybackErrorEvent(kSessionId, kVideoSourceId, PlaybackError::DECRYPTION);
+    waitEvent();
+}
+
 void MediaPipelineTestMethods::shouldGetPosition(const int64_t position)
 {
     EXPECT_CALL(*m_mediaPipelineModuleMock, getPosition(_, getPositionRequestMatcher(kSessionId), _, _))

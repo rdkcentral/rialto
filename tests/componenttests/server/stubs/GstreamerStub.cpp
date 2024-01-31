@@ -71,7 +71,7 @@ void GstreamerStub::setupPipeline()
     EXPECT_CALL(*m_gstWrapperMock,
                 gstBusTimedPopFiltered(m_bus, 100 * GST_MSECOND,
                                        static_cast<GstMessageType>(GST_MESSAGE_STATE_CHANGED | GST_MESSAGE_QOS |
-                                                                   GST_MESSAGE_EOS | GST_MESSAGE_ERROR)))
+                                                                   GST_MESSAGE_EOS | GST_MESSAGE_ERROR | GST_MESSAGE_WARNING)))
         .WillRepeatedly(Invoke(
             [&](GstBus *bus, GstClockTime timeout, GstMessageType types)
             {

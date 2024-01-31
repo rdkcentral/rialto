@@ -145,6 +145,8 @@ protected:
     void shouldNotifyQosVideo();
     void shouldNotifyBufferUnderflowAudio();
     void shouldNotifyBufferUnderflowVideo();
+    void shouldNotifyPlaybackErrorAudio();
+    void shouldNotifyPlaybackErrorVideo();
 
     // Api methods
     void createMediaPipeline();
@@ -229,6 +231,8 @@ protected:
     void sendNotifyQosVideo();
     void sendNotifyBufferUnderflowAudio();
     void sendNotifyBufferUnderflowVideo();
+    void sendNotifyPlaybackErrorAudio();
+    void sendNotifyPlaybackErrorVideo();
 
     // Check methods
     void checkMseAudioSegmentWritten(int32_t segmentId);
