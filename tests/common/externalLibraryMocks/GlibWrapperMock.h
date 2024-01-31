@@ -99,7 +99,7 @@ public:
     MOCK_METHOD(int, gStrcmp0, (const char *str1, const char *str2), (const, override));
     MOCK_METHOD(gpointer, gValueGetObject, (const GValue *value), (const, override));
     MOCK_METHOD(void, gValueUnset, (GValue * value), (const, override));
-    MOCK_METHOD(GError*, gErrorNewLiteral, (GQuark domain, gint code, const gchar* message), (const, override));
+    MOCK_METHOD(GError *, gErrorNewLiteral, (GQuark domain, gint code, const gchar *message), (const, override));
 };
 } // namespace firebolt::rialto::wrappers
 

@@ -695,7 +695,7 @@ void MediaPipeline::notifyBufferUnderflow(int32_t sourceId)
     }
 }
 
-void MediaPipeline::notifyPlaybackError(int32_t sourceId, const PlaybackError& error)
+void MediaPipeline::notifyPlaybackError(int32_t sourceId, const PlaybackError &error)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 

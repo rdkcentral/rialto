@@ -17,12 +17,12 @@
  * limitations under the License.
  */
 #include "DecryptionServiceMock.h"
+#include "GlibWrapperFactoryMock.h"
+#include "GlibWrapperMock.h"
 #include "GstDecryptorPrivate.h"
 #include "GstProtectionMetadataHelperMock.h"
 #include "GstWrapperFactoryMock.h"
 #include "GstWrapperMock.h"
-#include "GlibWrapperFactoryMock.h"
-#include "GlibWrapperMock.h"
 #include <gtest/gtest.h>
 
 using namespace firebolt::rialto;
@@ -130,7 +130,8 @@ protected:
         EXPECT_CALL(*m_glibWrapperFactoryMock, getGlibWrapper()).WillOnce(Return(m_glibWrapperMock));
 
         EXPECT_NO_THROW(m_gstRialtoDecryptorPrivate =
-                            std::make_unique<GstRialtoDecryptorPrivate>(&m_decryptorBase, m_gstWrapperFactoryMock, m_glibWrapperFactoryMock));
+                            std::make_unique<GstRialtoDecryptorPrivate>(&m_decryptorBase, m_gstWrapperFactoryMock,
+                                                                        m_glibWrapperFactoryMock));
         EXPECT_NE(m_gstRialtoDecryptorPrivate, nullptr);
     }
 
@@ -206,13 +207,13 @@ protected:
 
     void expectDecryptWarning()
     {
-            EXPECT_CALL(*m_glibWrapperMock, gErrorNewLiteral(GST_STREAM_ERROR, GST_STREAM_ERROR_DECRYPT, _))
-                .WillOnce(Return(&m_gError));
-            EXPECT_CALL(*m_gstWrapperMock, gstMessageNewWarning(GST_OBJECT_CAST(&m_decryptorBase), &m_gError, _))
-                .WillOnce(Return(&m_message));
-            EXPECT_CALL(*m_gstWrapperMock, gstElementPostMessage(GST_ELEMENT_CAST(&m_decryptorBase), &m_message))
-                .WillOnce(Return(TRUE));
-            EXPECT_CALL(*m_glibWrapperMock, gErrorFree(&m_gError));
+        EXPECT_CALL(*m_glibWrapperMock, gErrorNewLiteral(GST_STREAM_ERROR, GST_STREAM_ERROR_DECRYPT, _))
+            .WillOnce(Return(&m_gError));
+        EXPECT_CALL(*m_gstWrapperMock, gstMessageNewWarning(GST_OBJECT_CAST(&m_decryptorBase), &m_gError, _))
+            .WillOnce(Return(&m_message));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementPostMessage(GST_ELEMENT_CAST(&m_decryptorBase), &m_message))
+            .WillOnce(Return(TRUE));
+        EXPECT_CALL(*m_glibWrapperMock, gErrorFree(&m_gError));
     }
 };
 

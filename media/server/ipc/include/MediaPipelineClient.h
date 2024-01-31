@@ -45,7 +45,7 @@ public:
     void notifyCancelNeedMediaData(int32_t sourceId) override;
     void notifyQos(int32_t sourceId, const QosInfo &qosInfo) override;
     void notifyBufferUnderflow(int32_t sourceId) override;
-    void notifyPlaybackError(int32_t sourceId, const PlaybackError& error) override;
+    void notifyPlaybackError(int32_t sourceId, const PlaybackError &error) override;
 
 private:
     int m_sessionId;

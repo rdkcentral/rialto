@@ -382,7 +382,7 @@ struct CodecData
 enum class PlaybackError
 {
     UNKNOWN,
-    DECRYPTION, /* Player failed to decrypt a buffer and the frame has been dropped */ 
+    DECRYPTION, /* Player failed to decrypt a buffer and the frame has been dropped */
 };
 
 } // namespace firebolt::rialto

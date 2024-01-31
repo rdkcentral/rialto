@@ -1152,7 +1152,7 @@ public:
      *
      * @retval TRUE if the message was posted, FALSE otherwise.
      */
-    virtual gboolean gstElementPostMessage(GstElement * element, GstMessage * message) const = 0;
+    virtual gboolean gstElementPostMessage(GstElement *element, GstMessage *message) const = 0;
 
     /**
      * @brief Create a new warning message.
@@ -1163,7 +1163,7 @@ public:
      *
      * @retval New warning message.
      */
-    virtual GstMessage *gstMessageNewWarning(GstObject * src, GError * error, const gchar * debug) const = 0;
+    virtual GstMessage *gstMessageNewWarning(GstObject *src, GError *error, const gchar *debug) const = 0;
 
     /**
      * @brief Get the GError and error string from the message.
@@ -1172,7 +1172,7 @@ public:
      * @param[out] gerror   : loction to store the error.
      * @param[out] debug    : loction to store the error string.
      */
-    virtual void gstMessageParseWarning(GstMessage * message, GError ** gerror, gchar ** debug) const = 0;
+    virtual void gstMessageParseWarning(GstMessage *message, GError **gerror, gchar **debug) const = 0;
 
     /**
      * @brief Get the capabilities from the pad.
@@ -1181,7 +1181,7 @@ public:
      *
      * @retval the current caps, NULL otherwise.
      */
-    virtual GstCaps *gstPadGetCurrentCaps(GstPad * pad) const = 0;
+    virtual GstCaps *gstPadGetCurrentCaps(GstPad *pad) const = 0;
 
     /**
      * @brief Finds the structure at index in the caps.
@@ -1191,7 +1191,7 @@ public:
      *
      * @retval ptr to a structure.
      */
-    virtual GstStructure *gstCapsGetStructure(const GstCaps * caps, guint index) const = 0;
+    virtual GstStructure *gstCapsGetStructure(const GstCaps *caps, guint index) const = 0;
 
     /**
      * @brief Gets the name of the structure.
@@ -1200,7 +1200,7 @@ public:
      *
      * @retval the name of the structure.
      */
-    virtual const gchar *gstStructureGetName(const GstStructure * structure) const = 0;
+    virtual const gchar *gstStructureGetName(const GstStructure *structure) const = 0;
 };
 
 }; // namespace firebolt::rialto::wrappers

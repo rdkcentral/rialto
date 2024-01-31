@@ -21,9 +21,9 @@
 #define FIREBOLT_RIALTO_SERVER_GST_DECRYPTOR_PRIVATE_H_
 
 #include "IDecryptionService.h"
+#include "IGlibWrapper.h"
 #include "IGstProtectionMetadataHelper.h"
 #include "IGstWrapper.h"
-#include "IGlibWrapper.h"
 #include <gst/gst.h>
 #include <memory>
 

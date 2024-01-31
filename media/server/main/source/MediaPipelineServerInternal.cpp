@@ -991,7 +991,7 @@ void MediaPipelineServerInternal::notifyBufferUnderflow(MediaSourceType mediaSou
     m_mainThread->enqueueTask(m_mainThreadClientId, task);
 }
 
-void MediaPipelineServerInternal::notifyPlaybackError(MediaSourceType mediaSourceType, const PlaybackError& error)
+void MediaPipelineServerInternal::notifyPlaybackError(MediaSourceType mediaSourceType, const PlaybackError &error)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 

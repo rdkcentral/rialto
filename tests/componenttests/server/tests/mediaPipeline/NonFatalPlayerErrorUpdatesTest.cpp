@@ -19,8 +19,8 @@
 
 #include "Constants.h"
 #include "ExpectMessage.h"
-#include "MediaPipelineTest.h"
 #include "MediaPipelineProtoUtils.h"
+#include "MediaPipelineTest.h"
 
 using testing::_;
 using testing::DoAll;
@@ -38,7 +38,7 @@ const std::string kVideoMimeType{"video/x-h264"};
 
 MATCHER_P2(gstWarningMatcher, error, debug, "")
 {
-    GstMessage* message = GST_MESSAGE_CAST(arg);
+    GstMessage *message = GST_MESSAGE_CAST(arg);
     return (message->type == GST_MESSAGE_WARNING);
 }
 
@@ -55,7 +55,7 @@ public:
         m_err.domain = domain;
         m_err.code = code;
         m_err.message = m_debug;
-    
+
         EXPECT_CALL(*m_gstWrapperMock, gstMessageParseWarning(gstWarningMatcher(m_err, m_debug), _, _))
             .WillOnce(DoAll(SetArgPointee<1>(&m_err), SetArgPointee<2>(m_debug)));
         EXPECT_CALL(*m_glibWrapperMock, gFree(m_debug));
@@ -69,17 +69,13 @@ public:
         // Warning executed on the bus thread, wait for it to complete
         waitWorker();
     }
-    
-    void willGetMimeType(const char* mimeType)
+
+    void willGetMimeType(const char *mimeType)
     {
-        EXPECT_CALL(*m_gstWrapperMock, gstElementGetStaticPad(GST_ELEMENT(&m_src), StrEq("src")))
-            .WillOnce(Return(&m_srcpad));
-        EXPECT_CALL(*m_gstWrapperMock, gstPadGetCurrentCaps(&m_srcpad))
-            .WillOnce(Return(&m_caps));
-        EXPECT_CALL(*m_gstWrapperMock, gstCapsGetStructure(&m_caps, 0))
-            .WillOnce(Return(&m_structure));
-        EXPECT_CALL(*m_gstWrapperMock, gstStructureGetName(&m_structure))
-            .WillOnce(Return(mimeType));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementGetStaticPad(GST_ELEMENT(&m_src), StrEq("src"))).WillOnce(Return(&m_srcpad));
+        EXPECT_CALL(*m_gstWrapperMock, gstPadGetCurrentCaps(&m_srcpad)).WillOnce(Return(&m_caps));
+        EXPECT_CALL(*m_gstWrapperMock, gstCapsGetStructure(&m_caps, 0)).WillOnce(Return(&m_structure));
+        EXPECT_CALL(*m_gstWrapperMock, gstStructureGetName(&m_structure)).WillOnce(Return(mimeType));
         EXPECT_CALL(*m_glibWrapperMock, gObjectUnref(&m_structure));
         EXPECT_CALL(*m_glibWrapperMock, gObjectUnref(&m_caps));
         EXPECT_CALL(*m_glibWrapperMock, gObjectUnref(&m_srcpad));

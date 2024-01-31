@@ -71,7 +71,8 @@ void GstreamerStub::setupPipeline()
     EXPECT_CALL(*m_gstWrapperMock,
                 gstBusTimedPopFiltered(m_bus, 100 * GST_MSECOND,
                                        static_cast<GstMessageType>(GST_MESSAGE_STATE_CHANGED | GST_MESSAGE_QOS |
-                                                                   GST_MESSAGE_EOS | GST_MESSAGE_ERROR | GST_MESSAGE_WARNING)))
+                                                                   GST_MESSAGE_EOS | GST_MESSAGE_ERROR |
+                                                                   GST_MESSAGE_WARNING)))
         .WillRepeatedly(Invoke(
             [&](GstBus *bus, GstClockTime timeout, GstMessageType types)
             {
@@ -142,11 +143,10 @@ void GstreamerStub::sendQos(GstElement *src)
     m_cv.notify_one();
 }
 
-void GstreamerStub::sendWarning(GstElement *src, GError *error, const gchar * debug)
+void GstreamerStub::sendWarning(GstElement *src, GError *error, const gchar *debug)
 {
     std::unique_lock lock(m_mutex);
-    m_message =
-        gst_message_new_warning(GST_OBJECT(src), error, debug);
+    m_message = gst_message_new_warning(GST_OBJECT(src), error, debug);
     m_cv.notify_one();
 }
 

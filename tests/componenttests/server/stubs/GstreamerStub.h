@@ -47,7 +47,7 @@ public:
     void needData(GstAppSrc *appSrc, guint dataLength);
     void sendEos();
     void sendQos(GstElement *src);
-    void sendWarning(GstElement *src, GError *error, const gchar * debug);
+    void sendWarning(GstElement *src, GError *error, const gchar *debug);
 
 private:
     std::shared_ptr<testing::StrictMock<wrappers::GlibWrapperMock>> m_glibWrapperMock;

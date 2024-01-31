@@ -158,7 +158,7 @@ public:
      * @param[in] mediaSourceType  : The type of the source that produced the error.
      * @param[in] error            : The type of error that occured.
      */
-    virtual void notifyPlaybackError(MediaSourceType mediaSourceType, const PlaybackError& error) = 0;
+    virtual void notifyPlaybackError(MediaSourceType mediaSourceType, const PlaybackError &error) = 0;
 };
 
 }; // namespace firebolt::rialto::server

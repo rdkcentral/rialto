@@ -73,12 +73,9 @@ protected:
             .WillOnce(DoAll(SetArgPointee<1>(&m_err), SetArgPointee<2>(m_debug)));
         EXPECT_CALL(*m_gstWrapper, gstElementGetStaticPad(GST_ELEMENT(&m_decryptorBase), StrEq("src")))
             .WillOnce(Return(&m_srcpad));
-        EXPECT_CALL(*m_gstWrapper, gstPadGetCurrentCaps(&m_srcpad))
-            .WillOnce(Return(&m_caps));
-        EXPECT_CALL(*m_gstWrapper, gstCapsGetStructure(&m_caps, 0))
-            .WillOnce(Return(&m_structure));
-        EXPECT_CALL(*m_gstWrapper, gstStructureGetName(&m_structure))
-            .WillOnce(Return(mimeType));
+        EXPECT_CALL(*m_gstWrapper, gstPadGetCurrentCaps(&m_srcpad)).WillOnce(Return(&m_caps));
+        EXPECT_CALL(*m_gstWrapper, gstCapsGetStructure(&m_caps, 0)).WillOnce(Return(&m_structure));
+        EXPECT_CALL(*m_gstWrapper, gstStructureGetName(&m_structure)).WillOnce(Return(mimeType));
         EXPECT_CALL(*m_glibWrapper, gObjectUnref(&m_structure));
         EXPECT_CALL(*m_glibWrapper, gObjectUnref(&m_caps));
         EXPECT_CALL(*m_glibWrapper, gObjectUnref(&m_srcpad));
@@ -526,9 +523,10 @@ TEST_F(HandleBusMessageTest, shouldHandleWarningMessageForAudioDecryption)
 
     gchar *audioMimeType = "audio/mpeg";
     expectGetMimeType(audioMimeType);
-    EXPECT_CALL(m_gstPlayerClient, notifyPlaybackError(firebolt::rialto::MediaSourceType::AUDIO, firebolt::rialto::PlaybackError::DECRYPTION));
+    EXPECT_CALL(m_gstPlayerClient, notifyPlaybackError(firebolt::rialto::MediaSourceType::AUDIO,
+                                                       firebolt::rialto::PlaybackError::DECRYPTION));
     expectFreeErrorMessage();
-    
+
     firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,    m_gstPlayer,   &m_gstPlayerClient,
                                                                     m_gstWrapper, m_glibWrapper, &m_message};
     task.execute();
@@ -546,7 +544,8 @@ TEST_F(HandleBusMessageTest, shouldHandleWarningMessageForVideoDecryption)
 
     gchar *videoMimeType = "video/mp4";
     expectGetMimeType(videoMimeType);
-    EXPECT_CALL(m_gstPlayerClient, notifyPlaybackError(firebolt::rialto::MediaSourceType::VIDEO, firebolt::rialto::PlaybackError::DECRYPTION));
+    EXPECT_CALL(m_gstPlayerClient, notifyPlaybackError(firebolt::rialto::MediaSourceType::VIDEO,
+                                                       firebolt::rialto::PlaybackError::DECRYPTION));
     expectFreeErrorMessage();
 
     firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,    m_gstPlayer,   &m_gstPlayerClient,

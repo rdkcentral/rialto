@@ -125,7 +125,8 @@ static void gst_rialto_decryptor_init(GstRialtoDecryptor *self) // NOLINT(build/
         reinterpret_cast<GstRialtoDecryptorPrivate *>(gst_rialto_decryptor_get_instance_private(self));
     GstBaseTransform *base = GST_BASE_TRANSFORM(self);
 
-    self->priv = new (priv) GstRialtoDecryptorPrivate(base, firebolt::rialto::wrappers::IGstWrapperFactory::getFactory(), firebolt::rialto::wrappers::IGlibWrapperFactory::getFactory());
+    self->priv = new (priv) GstRialtoDecryptorPrivate(base, firebolt::rialto::wrappers::IGstWrapperFactory::getFactory(),
+                                                      firebolt::rialto::wrappers::IGlibWrapperFactory::getFactory());
 
     gst_base_transform_set_in_place(base, TRUE);
     gst_base_transform_set_passthrough(base, FALSE);
@@ -237,7 +238,7 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer, GstCaps *cap
 {
     GstRialtoDecryptor *self = GST_RIALTO_DECRYPTOR(m_decryptorElement);
     GstRialtoProtectionData *protectionData = m_metadataWrapper->getProtectionMetadataData(buffer);
-    GstFlowReturn returnStatus = GST_BASE_TRANSFORM_FLOW_DROPPED; // By default drop frame on failure 
+    GstFlowReturn returnStatus = GST_BASE_TRANSFORM_FLOW_DROPPED; // By default drop frame on failure
     if (!protectionData)
     {
         GST_TRACE_OBJECT(self, "Clear sample");
@@ -344,10 +345,13 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer, GstCaps *cap
 
     if (GST_BASE_TRANSFORM_FLOW_DROPPED == returnStatus)
     {
-        // Notify dropped frame upstream as a non-fatal message 
+        // Notify dropped frame upstream as a non-fatal message
         std::string message = "Failed to decrypt buffer, dropping frame and continuing";
         GError *gError{m_glibWrapper->gErrorNewLiteral(GST_STREAM_ERROR, GST_STREAM_ERROR_DECRYPT, message.c_str())};
-        gboolean result = m_gstWrapper->gstElementPostMessage(GST_ELEMENT_CAST(self), m_gstWrapper->gstMessageNewWarning(GST_OBJECT_CAST(self), gError, message.c_str()));
+        gboolean result =
+            m_gstWrapper->gstElementPostMessage(GST_ELEMENT_CAST(self),
+                                                m_gstWrapper->gstMessageNewWarning(GST_OBJECT_CAST(self), gError,
+                                                                                   message.c_str()));
         if (!result)
         {
             GST_WARNING_OBJECT(self, "Could not post decrypt warning");

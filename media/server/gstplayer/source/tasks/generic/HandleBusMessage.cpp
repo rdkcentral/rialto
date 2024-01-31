@@ -202,29 +202,29 @@ void HandleBusMessage::execute() const
         GError *err = nullptr;
         gchar *debug = nullptr;
         m_gstWrapper->gstMessageParseWarning(m_message, &err, &debug);
-    
+
         if ((err->domain == GST_STREAM_ERROR) && (err->code == GST_STREAM_ERROR_DECRYPT))
         {
             RIALTO_SERVER_LOG_WARN("Decrypt error %s - %d: %s (%s)", GST_OBJECT_NAME(GST_MESSAGE_SRC(m_message)),
-                                    err->code, err->message, debug);
+                                   err->code, err->message, debug);
             rialtoError = PlaybackError::DECRYPTION;
         }
         else
         {
-            RIALTO_SERVER_LOG_WARN("Unknown warning, ignoring %s - %d: %s (%s)", GST_OBJECT_NAME(GST_MESSAGE_SRC(m_message)),
-                                    err->code, err->message, debug);
+            RIALTO_SERVER_LOG_WARN("Unknown warning, ignoring %s - %d: %s (%s)",
+                                   GST_OBJECT_NAME(GST_MESSAGE_SRC(m_message)), err->code, err->message, debug);
         }
 
         if ((PlaybackError::UNKNOWN != rialtoError) && (m_gstPlayerClient))
         {
-            const gchar* mimetype = nullptr;
-            GstPad* srcpad = m_gstWrapper->gstElementGetStaticPad(GST_ELEMENT(GST_MESSAGE_SRC(m_message)), "src");
+            const gchar *mimetype = nullptr;
+            GstPad *srcpad = m_gstWrapper->gstElementGetStaticPad(GST_ELEMENT(GST_MESSAGE_SRC(m_message)), "src");
             if (srcpad)
             {
-                GstCaps* caps = m_gstWrapper->gstPadGetCurrentCaps(srcpad);
+                GstCaps *caps = m_gstWrapper->gstPadGetCurrentCaps(srcpad);
                 if (caps)
                 {
-                    GstStructure* structure = m_gstWrapper->gstCapsGetStructure(caps, 0);
+                    GstStructure *structure = m_gstWrapper->gstCapsGetStructure(caps, 0);
                     if (structure)
                     {
                         mimetype = m_gstWrapper->gstStructureGetName(structure);
@@ -239,11 +239,13 @@ void HandleBusMessage::execute() const
             {
                 if (g_strrstr(mimetype, "video"))
                 {
-                    m_gstPlayerClient->notifyPlaybackError(firebolt::rialto::MediaSourceType::VIDEO, PlaybackError::DECRYPTION);
+                    m_gstPlayerClient->notifyPlaybackError(firebolt::rialto::MediaSourceType::VIDEO,
+                                                           PlaybackError::DECRYPTION);
                 }
                 else if (g_strrstr(mimetype, "audio"))
                 {
-                    m_gstPlayerClient->notifyPlaybackError(firebolt::rialto::MediaSourceType::AUDIO, PlaybackError::DECRYPTION);
+                    m_gstPlayerClient->notifyPlaybackError(firebolt::rialto::MediaSourceType::AUDIO,
+                                                           PlaybackError::DECRYPTION);
                 }
                 else
                 {

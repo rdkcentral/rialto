@@ -331,7 +331,7 @@ public:
      * @param[in] code      : Error code.
      * @param[in] message   : Error message.
      */
-    virtual GError* gErrorNewLiteral(GQuark domain, gint code, const gchar* message) const = 0;
+    virtual GError *gErrorNewLiteral(GQuark domain, gint code, const gchar *message) const = 0;
 };
 
 }; // namespace firebolt::rialto::wrappers

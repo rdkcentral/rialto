@@ -114,8 +114,7 @@ convertNetworkState(const firebolt::rialto::NetworkState &networkState)
     return firebolt::rialto::NetworkStateChangeEvent_NetworkState_UNKNOWN;
 }
 
-firebolt::rialto::PlaybackErrorEvent_PlaybackError
-convertPlaybackError(const firebolt::rialto::PlaybackError &playbackError)
+firebolt::rialto::PlaybackErrorEvent_PlaybackError convertPlaybackError(const firebolt::rialto::PlaybackError &playbackError)
 {
     switch (playbackError)
     {
@@ -241,7 +240,7 @@ void MediaPipelineClient::notifyBufferUnderflow(int32_t sourceId)
     m_ipcClient->sendEvent(event);
 }
 
-void MediaPipelineClient::notifyPlaybackError(int32_t sourceId, const PlaybackError& error)
+void MediaPipelineClient::notifyPlaybackError(int32_t sourceId, const PlaybackError &error)
 {
     RIALTO_SERVER_LOG_DEBUG("Sending notifyPlaybackError...");
 

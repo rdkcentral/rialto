@@ -150,7 +150,8 @@ MATCHER_P3(QosEventMatcher, kSourceId, processed, dropped, "")
 
 MATCHER_P2(PlaybackErrorEventMatcher, kExpectedSourceId, kExpectedPlaybackError, "")
 {
-    std::shared_ptr<firebolt::rialto::PlaybackErrorEvent> event = std::dynamic_pointer_cast<firebolt::rialto::PlaybackErrorEvent>(arg);
+    std::shared_ptr<firebolt::rialto::PlaybackErrorEvent> event =
+        std::dynamic_pointer_cast<firebolt::rialto::PlaybackErrorEvent>(arg);
     return ((kExpectedSourceId == event->source_id()) && (kExpectedPlaybackError == event->error()));
 }
 

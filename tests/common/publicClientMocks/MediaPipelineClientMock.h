@@ -46,7 +46,7 @@ public:
     MOCK_METHOD(void, notifyCancelNeedMediaData, (int32_t sourceId), (override));
     MOCK_METHOD(void, notifyQos, (int32_t sourceId, const QosInfo &qosInfo), (override));
     MOCK_METHOD(void, notifyBufferUnderflow, (int32_t sourceId), (override));
-    MOCK_METHOD(void, notifyPlaybackError, (int32_t sourceId, const PlaybackError& error), (override));
+    MOCK_METHOD(void, notifyPlaybackError, (int32_t sourceId, const PlaybackError &error), (override));
 };
 } // namespace firebolt::rialto
 
