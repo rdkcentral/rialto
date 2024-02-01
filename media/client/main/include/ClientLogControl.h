@@ -41,9 +41,9 @@ public:
     std::shared_ptr<IClientLogControl> createClientLogControl() override;
 
     /**
-     * @brief Create the control factory object.
+     * @brief Create the (singleton) object.
      *
-     * @retval the control factory instance or null on error.
+     * @retval the factory instance or null on error.
      */
     static std::shared_ptr<IClientLogControlFactory> createFactory();
 

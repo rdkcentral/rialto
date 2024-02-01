@@ -50,14 +50,14 @@ public:
     virtual ~IClientLogControlFactory() = default;
 
     /**
-     * @brief Creates a IClientLogControlFactory instance.
+     * @brief Creates the IClientLogControlFactory singleton
      *
      * @retval the factory instance or null on error.
      */
     static std::shared_ptr<IClientLogControlFactory> createFactory();
 
     /**
-     * @brief IClientLogControl factory method, returns a concrete implementation of IClientLogControl
+     * @brief IClientLogControl factory method, returns a concrete singleton implementation of IClientLogControl
      *
      * @retval the new IClientLogControl instance or null on error.
      */
@@ -67,7 +67,8 @@ public:
 /**
  * @brief The definition of the IClientLogControl interface.
  *
- * This interface defines the public API for control of the ipc and shared memory.
+ * This interface defines the public API for controlling Rialto client's
+ * log handling. This class is a singleton
  *
  */
 class IClientLogControl
