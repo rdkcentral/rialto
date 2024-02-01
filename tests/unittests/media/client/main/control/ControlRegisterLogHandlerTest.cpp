@@ -19,28 +19,28 @@
 
 #include <gtest/gtest.h>
 
-#include "ClientControllerMock.h"
-#include "Control.h"
+#include "ClientLogControl.h"
 #include "RialtoClientLogging.h"
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::client;
 
+#if 0
 using ::testing::_;
 using ::testing::DoAll;
 using ::testing::Return;
 using ::testing::SetArgReferee;
 using ::testing::StrictMock;
+#endif
 
 namespace
 {
 const std::string kLogTestStr("Test ABC");
 } // namespace
 
-class RialtoClientControlRegisterLogHandlerTest : public ::testing::Test
+class ClientLogControlTest : public ::testing::Test
 {
 protected:
-    StrictMock<ClientControllerMock> m_clientControllerMock;
 };
 
 class TestClientLogHandler : public IClientLogHandler
@@ -59,14 +59,11 @@ public:
     bool m_gotExpectedLogMessage{false};
 };
 
-TEST_F(RialtoClientControlRegisterLogHandlerTest, RegisterLogHandler)
+TEST_F(ClientLogControlTest, RegisterLogHandler)
 {
-    std::unique_ptr<IControl> control;
-
-    EXPECT_NO_THROW(control = std::make_unique<Control>(m_clientControllerMock));
-
     std::shared_ptr<TestClientLogHandler> logHandler = std::make_shared<TestClientLogHandler>();
     {
+        std::shared_ptr<IClientLogControl> control = ClientLogControlFactory::createFactory()->createClientLogControl();
         std::shared_ptr<IClientLogHandler> tmp = logHandler;
         EXPECT_TRUE(control->registerLogHandler(tmp, true));
     }
@@ -75,90 +72,44 @@ TEST_F(RialtoClientControlRegisterLogHandlerTest, RegisterLogHandler)
     RIALTO_CLIENT_LOG_ERROR("%s", kLogTestStr.c_str());
 
     EXPECT_TRUE(logHandler->m_gotExpectedLogMessage);
-
-    // Destroy
-    control.reset();
 }
 
-TEST_F(RialtoClientControlRegisterLogHandlerTest, PreRegisterLogHandler)
+TEST_F(ClientLogControlTest, ShouldUpdateLogHandler)
 {
-    auto factory = IControlFactory::createFactory();
-
-    std::shared_ptr<TestClientLogHandler> logHandler = std::make_shared<TestClientLogHandler>();
-    {
-        std::shared_ptr<IClientLogHandler> tmp = logHandler;
-        factory->preRegisterLogHandler(tmp, true);
-    }
-
-    std::shared_ptr<IControl> control;
-    // Can't use the real factory in test environment
-    EXPECT_NO_THROW(control = std::make_unique<Control>(m_clientControllerMock));
-    ASSERT_NE(control, nullptr);
-
-    // Generate a log entry
-    RIALTO_CLIENT_LOG_FATAL("%s", kLogTestStr.c_str());
-    // For code coverage we try the other levels...
-    RIALTO_CLIENT_LOG_MIL("%s", kLogTestStr.c_str());
-    RIALTO_CLIENT_LOG_WARN("%s", kLogTestStr.c_str());
-    RIALTO_CLIENT_LOG_INFO("%s", kLogTestStr.c_str());
-    RIALTO_CLIENT_LOG_SYS_ERROR(0, "%s", kLogTestStr.c_str());
-
-    EXPECT_TRUE(logHandler->m_gotExpectedLogMessage);
-
-    // Destroy
-    control.reset();
-}
-
-TEST_F(RialtoClientControlRegisterLogHandlerTest, ShouldUpdateLogHandler)
-{
-    auto factory = IControlFactory::createFactory();
+    std::shared_ptr<IClientLogControl> control1 = IClientLogControlFactory::createFactory()->createClientLogControl();
 
     std::shared_ptr<TestClientLogHandler> logHandler1 = std::make_shared<TestClientLogHandler>();
     {
         std::shared_ptr<IClientLogHandler> tmp = logHandler1;
-        factory->preRegisterLogHandler(tmp, true);
+        EXPECT_TRUE(control1->registerLogHandler(tmp, true));
     }
-
-    std::shared_ptr<IControl> control;
-    // Can't use the real factory in test environment
-    EXPECT_NO_THROW(control = std::make_unique<Control>(m_clientControllerMock));
-    ASSERT_NE(control, nullptr);
-
     // Generate a log entry
     RIALTO_CLIENT_LOG_ERROR("%s", kLogTestStr.c_str());
 
+    std::shared_ptr<IClientLogControl> control2 = IClientLogControlFactory::createFactory()->createClientLogControl();
+    EXPECT_EQ(control1, control2); // IClientLogControl Ought to be a singleton
+
     std::shared_ptr<TestClientLogHandler> logHandler2 = std::make_shared<TestClientLogHandler>();
     {
-        // Update the log handler
         std::shared_ptr<IClientLogHandler> tmp = logHandler2;
-        EXPECT_TRUE(control->registerLogHandler(tmp, true));
+        control2->registerLogHandler(tmp, true);
     }
-
     // Generate a log entry
     RIALTO_CLIENT_LOG_ERROR("%s", kLogTestStr.c_str());
 
     EXPECT_TRUE(logHandler1->m_gotExpectedLogMessage);
     EXPECT_TRUE(logHandler2->m_gotExpectedLogMessage);
-
-    // Destroy
-    control.reset();
 }
 
-TEST_F(RialtoClientControlRegisterLogHandlerTest, ShouldCancelLogHandler)
+TEST_F(ClientLogControlTest, ShouldCancelLogHandler)
 {
-    auto factory = IControlFactory::createFactory();
+    std::shared_ptr<IClientLogControl> control = IClientLogControlFactory::createFactory()->createClientLogControl();
 
     std::shared_ptr<TestClientLogHandler> logHandler = std::make_shared<TestClientLogHandler>();
     {
         std::shared_ptr<IClientLogHandler> tmp = logHandler;
-        factory->preRegisterLogHandler(tmp, true);
+        control->registerLogHandler(tmp, true);
     }
-
-    std::shared_ptr<IControl> control;
-    // Can't use the real factory in test environment
-    EXPECT_NO_THROW(control = std::make_unique<Control>(m_clientControllerMock));
-    ASSERT_NE(control, nullptr);
-
     // Generate a log entry
     RIALTO_CLIENT_LOG_ERROR("%s", kLogTestStr.c_str());
     EXPECT_TRUE(logHandler->m_gotExpectedLogMessage);
@@ -176,7 +127,4 @@ TEST_F(RialtoClientControlRegisterLogHandlerTest, ShouldCancelLogHandler)
 
     // Log handler should not have been used
     EXPECT_FALSE(logHandler->m_gotExpectedLogMessage);
-
-    // Destroy
-    control.reset();
 }

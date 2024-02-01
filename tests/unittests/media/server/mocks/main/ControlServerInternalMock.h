@@ -33,7 +33,6 @@ public:
     MOCK_METHOD(void, ack, (int32_t id), (override));
     MOCK_METHOD(void, ping, (std::unique_ptr<IHeartbeatHandler> && heartbeatHandler), (override));
     MOCK_METHOD(bool, registerClient, (std::weak_ptr<IControlClient> client, ApplicationState &appState), (override));
-    MOCK_METHOD(bool, registerLogHandler, (std::shared_ptr<IClientLogHandler> & handler, bool), (override));
 };
 } // namespace firebolt::rialto::server
 

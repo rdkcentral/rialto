@@ -17,68 +17,69 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_CLIENT_CONTROL_H_
-#define FIREBOLT_RIALTO_CLIENT_CONTROL_H_
+#ifndef FIREBOLT_RIALTO_CLIENT_CLIENT_LOG_CONTROL_H_
+#define FIREBOLT_RIALTO_CLIENT_CLIENT_LOG_CONTROL_H_
 
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "IClientController.h"
-#include "IControl.h"
-#include "IControlClient.h"
+#include "IClientLogControl.h"
 #include "RialtoLogging.h"
 
 namespace firebolt::rialto::client
 {
 /**
- * @brief IControl factory class definition.
+ * @brief IClientLogControl factory class definition.
  */
-class ControlFactory : public IControlFactory
+class ClientLogControlFactory : public IClientLogControlFactory
 {
 public:
-    ControlFactory() = default;
-    ~ControlFactory() override = default;
+    ClientLogControlFactory() = default;
+    ~ClientLogControlFactory() override = default;
 
-    std::shared_ptr<IControl> createControl() const override;
+    std::shared_ptr<IClientLogControl> createClientLogControl() override;
+
     /**
      * @brief Create the control factory object.
      *
      * @retval the control factory instance or null on error.
      */
-    static std::shared_ptr<ControlFactory> createFactory();
+    static std::shared_ptr<IClientLogControlFactory> createFactory();
+
+private:
+    std::shared_ptr<IClientLogControl> m_singletonInstance;
 };
 
 /**
  * @brief The definition of the Control.
  */
-class Control : public IControl
+class ClientLogControl : public IClientLogControl
 {
 public:
     /**
      * @brief The constructor.
      */
-    explicit Control(IClientController &clientController);
+    ClientLogControl();
 
     /**
      * @brief Virtual destructor.
      */
-    ~Control() override;
+    ~ClientLogControl() override;
 
-    bool registerClient(std::weak_ptr<IControlClient> client, ApplicationState &appState) override;
+    bool registerLogHandler(std::shared_ptr<IClientLogHandler> &handler, bool ignoreLogLevels) override;
 
 private:
-    /**
-     * @brief The registered control clients
-     */
-    std::vector<std::shared_ptr<IControlClient>> m_clients;
+    void forwardLog(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char *file, int line,
+                    const char *function, const char *message, std::size_t messageLen);
+    void cancelLogHandler();
 
     /**
-     * @brief The rialto client controller object.
+     * @brief The registered log handler
      */
-    IClientController &m_clientController;
+    std::shared_ptr<IClientLogHandler> m_logHandler;
 };
 
 }; // namespace firebolt::rialto::client
 
-#endif // FIREBOLT_RIALTO_CLIENT_CONTROL_H_
+#endif // FIREBOLT_RIALTO_CLIENT_CLIENT_LOG_CONTROL_H_

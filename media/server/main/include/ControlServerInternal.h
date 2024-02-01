@@ -20,9 +20,10 @@
 #ifndef FIREBOLT_RIALTO_SERVER_CONTROL_SERVER_INTERNAL_H_
 #define FIREBOLT_RIALTO_SERVER_CONTROL_SERVER_INTERNAL_H_
 
+#include <memory>
+
 #include "IControlServerInternal.h"
 #include "IMainThread.h"
-#include <memory>
 
 namespace firebolt::rialto::server
 {
@@ -35,8 +36,6 @@ public:
     std::shared_ptr<IControl> createControl() const override;
     std::shared_ptr<IControlServerInternal>
     createControlServerInternal(int id, const std::shared_ptr<IControlClientServerInternal> &client) const override;
-
-    bool preRegisterLogHandler(std::shared_ptr<IClientLogHandler> &handler, bool ignoreLogLevels);
 };
 
 class ControlServerInternal : public IControlServerInternal
@@ -52,7 +51,6 @@ public:
     void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) override;
 
 private:
-    bool registerLogHandler(std::shared_ptr<IClientLogHandler> &handler, bool ignoreLogLevels);
     const int m_controlId;
     std::shared_ptr<IControlClientServerInternal> m_client;
     ApplicationState m_currentState;

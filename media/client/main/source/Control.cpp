@@ -21,33 +21,6 @@
 #include "IControlIpc.h"
 #include "RialtoClientLogging.h"
 
-namespace
-{
-firebolt::rialto::IClientLogHandler::Level convertLevel(const RIALTO_DEBUG_LEVEL &level)
-{
-    switch (level)
-    {
-    case RIALTO_DEBUG_LEVEL_FATAL:
-        return firebolt::rialto::IClientLogHandler::Level::Fatal;
-    case RIALTO_DEBUG_LEVEL_ERROR:
-        return firebolt::rialto::IClientLogHandler::Level::Error;
-    case RIALTO_DEBUG_LEVEL_WARNING:
-        return firebolt::rialto::IClientLogHandler::Level::Warning;
-    case RIALTO_DEBUG_LEVEL_MILESTONE:
-        return firebolt::rialto::IClientLogHandler::Level::Milestone;
-    case RIALTO_DEBUG_LEVEL_INFO:
-        return firebolt::rialto::IClientLogHandler::Level::Info;
-    case RIALTO_DEBUG_LEVEL_DEBUG:
-        return firebolt::rialto::IClientLogHandler::Level::Debug;
-    case RIALTO_DEBUG_LEVEL_EXTERNAL:
-        return firebolt::rialto::IClientLogHandler::Level::External;
-    case RIALTO_DEBUG_LEVEL_DEFAULT:
-        return firebolt::rialto::IClientLogHandler::Level::Milestone;
-    }
-    return firebolt::rialto::IClientLogHandler::Level::Debug;
-}
-} // namespace
-
 namespace firebolt::rialto
 {
 std::shared_ptr<IControlFactory> IControlFactory::createFactory()
@@ -84,13 +57,6 @@ catch (const std::exception &e)
     return nullptr;
 }
 
-bool ControlFactory::preRegisterLogHandler(std::shared_ptr<IClientLogHandler> &handler, bool ignoreLogLevels)
-{
-    return Control::registerLogHandlerStatic(handler, ignoreLogLevels);
-}
-
-std::shared_ptr<IClientLogHandler> Control::m_logHandler;
-
 Control::Control(IClientController &clientController) : m_clientController(clientController)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
@@ -103,8 +69,6 @@ Control::~Control()
     {
         m_clientController.unregisterClient(client.get());
     }
-    if (m_logHandler)
-        cancelLogHandler();
 }
 
 bool Control::registerClient(std::weak_ptr<IControlClient> client, ApplicationState &appState)
@@ -119,69 +83,4 @@ bool Control::registerClient(std::weak_ptr<IControlClient> client, ApplicationSt
     return false;
 }
 
-bool Control::registerLogHandler(std::shared_ptr<IClientLogHandler> &handler, bool ignoreLogLevels)
-{
-    return registerLogHandlerStatic(handler, ignoreLogLevels);
-}
-
-bool Control::registerLogHandlerStatic(std::shared_ptr<IClientLogHandler> &handler, bool ignoreLogLevels)
-{
-    if (m_logHandler)
-    {
-        if (handler)
-        {
-            RIALTO_CLIENT_LOG_WARN("Replacing old log handler");
-        }
-        cancelLogHandler();
-    }
-
-    m_logHandler = handler;
-
-    if (!handler)
-        return true;
-
-    if (firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_CLIENT,
-                                                 std::bind(&Control::forwardLog, RIALTO_COMPONENT_CLIENT,
-                                                           std::placeholders::_1, std::placeholders::_2,
-                                                           std::placeholders::_3, std::placeholders::_4,
-                                                           std::placeholders::_5, std::placeholders::_6),
-                                                 ignoreLogLevels) != firebolt::rialto::logging::RIALTO_LOGGING_STATUS_OK ||
-
-        firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_IPC,
-                                                 std::bind(&Control::forwardLog, RIALTO_COMPONENT_IPC,
-                                                           std::placeholders::_1, std::placeholders::_2,
-                                                           std::placeholders::_3, std::placeholders::_4,
-                                                           std::placeholders::_5, std::placeholders::_6),
-                                                 ignoreLogLevels) != firebolt::rialto::logging::RIALTO_LOGGING_STATUS_OK ||
-
-        firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_COMMON,
-                                                 std::bind(&Control::forwardLog, RIALTO_COMPONENT_COMMON,
-                                                           std::placeholders::_1, std::placeholders::_2,
-                                                           std::placeholders::_3, std::placeholders::_4,
-                                                           std::placeholders::_5, std::placeholders::_6),
-                                                 ignoreLogLevels) != firebolt::rialto::logging::RIALTO_LOGGING_STATUS_OK)
-    {
-        RIALTO_CLIENT_LOG_WARN("Unable to register log handler");
-        cancelLogHandler();
-        return false;
-    }
-    return true;
-}
-
-void Control::cancelLogHandler()
-{
-    RIALTO_CLIENT_LOG_INFO("Cancelling log handler");
-    firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_CLIENT, nullptr, false);
-    firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_IPC, nullptr, false);
-    firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_COMMON, nullptr, false);
-    m_logHandler = nullptr;
-}
-
-void Control::forwardLog(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char *file, int line,
-                         const char *function, const char *message, std::size_t messageLen)
-{
-    if (!m_logHandler)
-        return;
-    m_logHandler->log(convertLevel(level), std::string(file), line, std::string(function), std::string(message));
-}
 }; // namespace firebolt::rialto::client

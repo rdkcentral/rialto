@@ -32,8 +32,6 @@ public:
     MOCK_METHOD(std::shared_ptr<IControl>, createControl, (), (const, override));
     MOCK_METHOD(std::shared_ptr<IControlServerInternal>, createControlServerInternal,
                 (int id, const std::shared_ptr<IControlClientServerInternal> &client), (const, override));
-    MOCK_METHOD(bool, preRegisterLogHandler, (std::shared_ptr<IClientLogHandler> & handler, bool ignoreLogLevels),
-                (override));
 };
 } // namespace firebolt::rialto::server
 

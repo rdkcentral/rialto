@@ -33,7 +33,6 @@
 #include <stdint.h>
 
 #include "ControlCommon.h"
-#include "IClientLogHandler.h"
 #include "IControlClient.h"
 
 namespace firebolt::rialto
@@ -62,17 +61,6 @@ public:
      * @retval the new IControl instance or null on error.
      */
     virtual std::shared_ptr<IControl> createControl() const = 0;
-
-    /**
-     * @brief Allows registration of a new log handler before Control is created
-     *
-     * @param[in]  handler   : Client object for callbacks
-     * @param[in]  ignoreLogLevels   : If true then the handler will receive ALL log level messages regardless of the
-     * currently configured log level
-     *
-     * @retval true if successful
-     */
-    virtual bool preRegisterLogHandler(std::shared_ptr<IClientLogHandler> &handler, bool ignoreLogLevels) = 0;
 };
 
 /**
@@ -101,17 +89,6 @@ public:
      * @retval true on success, false otherwise.
      */
     virtual bool registerClient(std::weak_ptr<IControlClient> client, ApplicationState &appState) = 0;
-
-    /**
-     * @brief Register new log handler
-     *
-     * @param[in]  handler   : Client object for callbacks
-     * @param[in]  ignoreLogLevels   : If true then the handler will receive ALL log level messages regardless of the
-     * currently configured log level
-     *
-     * @retval true if successful
-     */
-    virtual bool registerLogHandler(std::shared_ptr<IClientLogHandler> &handler, bool ignoreLogLevels) = 0;
 };
 
 }; // namespace firebolt::rialto
