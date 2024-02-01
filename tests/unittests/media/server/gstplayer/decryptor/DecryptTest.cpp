@@ -17,6 +17,8 @@
  * limitations under the License.
  */
 #include "DecryptionServiceMock.h"
+#include "GlibWrapperFactoryMock.h"
+#include "GlibWrapperMock.h"
 #include "GstDecryptorPrivate.h"
 #include "GstProtectionMetadataHelperMock.h"
 #include "GstWrapperFactoryMock.h"
@@ -66,7 +68,9 @@ class RialtoServerDecryptorPrivateDecryptTest : public ::testing::Test
 {
 protected:
     std::shared_ptr<StrictMock<GstWrapperFactoryMock>> m_gstWrapperFactoryMock;
+    std::shared_ptr<StrictMock<GlibWrapperFactoryMock>> m_glibWrapperFactoryMock;
     std::shared_ptr<StrictMock<GstWrapperMock>> m_gstWrapperMock;
+    std::shared_ptr<StrictMock<GlibWrapperMock>> m_glibWrapperMock;
     std::unique_ptr<GstRialtoDecryptorPrivate> m_gstRialtoDecryptorPrivate;
     std::shared_ptr<StrictMock<DecryptionServiceMock>> m_decryptionServiceMock;
     StrictMock<GstProtectionMetadataHelperMock> *m_protectionMetadataWrapperMock;
@@ -101,10 +105,14 @@ protected:
                                                 m_crypt,
                                                 m_skip,
                                                 true};
+    GError m_gError = {};
+    GstMessage m_message = {};
 
     RialtoServerDecryptorPrivateDecryptTest()
         : m_gstWrapperFactoryMock(std::make_shared<StrictMock<GstWrapperFactoryMock>>()),
+          m_glibWrapperFactoryMock(std::make_shared<StrictMock<GlibWrapperFactoryMock>>()),
           m_gstWrapperMock(std::make_shared<StrictMock<GstWrapperMock>>()),
+          m_glibWrapperMock(std::make_shared<StrictMock<GlibWrapperMock>>()),
           m_decryptionServiceMock(std::make_shared<StrictMock<DecryptionServiceMock>>())
     {
         createDecryptorPrivate();
@@ -119,9 +127,11 @@ protected:
     void createDecryptorPrivate()
     {
         EXPECT_CALL(*m_gstWrapperFactoryMock, getGstWrapper()).WillOnce(Return(m_gstWrapperMock));
+        EXPECT_CALL(*m_glibWrapperFactoryMock, getGlibWrapper()).WillOnce(Return(m_glibWrapperMock));
 
         EXPECT_NO_THROW(m_gstRialtoDecryptorPrivate =
-                            std::make_unique<GstRialtoDecryptorPrivate>(&m_decryptorBase, m_gstWrapperFactoryMock));
+                            std::make_unique<GstRialtoDecryptorPrivate>(&m_decryptorBase, m_gstWrapperFactoryMock,
+                                                                        m_glibWrapperFactoryMock));
         EXPECT_NE(m_gstRialtoDecryptorPrivate, nullptr);
     }
 
@@ -194,6 +204,17 @@ protected:
         EXPECT_CALL(*m_gstWrapperMock, gstBufferAddProtectionMeta(&m_buffer, &m_structure))
             .WillOnce(Return(&m_protectionMeta));
     }
+
+    void expectDecryptWarning()
+    {
+        EXPECT_CALL(*m_glibWrapperMock, gErrorNewLiteral(GST_STREAM_ERROR, GST_STREAM_ERROR_DECRYPT, _))
+            .WillOnce(Return(&m_gError));
+        EXPECT_CALL(*m_gstWrapperMock, gstMessageNewWarning(GST_OBJECT_CAST(&m_decryptorBase), &m_gError, _))
+            .WillOnce(Return(&m_message));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementPostMessage(GST_ELEMENT_CAST(&m_decryptorBase), &m_message))
+            .WillOnce(Return(TRUE));
+        EXPECT_CALL(*m_glibWrapperMock, gErrorFree(&m_gError));
+    }
 };
 
 #ifdef RIALTO_ENABLE_DECRYPT_BUFFER
@@ -237,11 +258,12 @@ TEST_F(RialtoServerDecryptorPrivateDecryptTest, DecryptionServiceDecryptFailure)
     expectGetInfoFromProtectionMeta();
     expectWidevineKeySystem();
     expectAddGstProtectionMeta(true);
+    expectDecryptWarning();
 
     EXPECT_CALL(*m_decryptionServiceMock, decrypt(m_keySessionId, &m_buffer, &m_caps))
         .WillOnce(Return(firebolt::rialto::MediaKeyErrorStatus::FAIL));
 
-    EXPECT_EQ(GST_FLOW_OK, m_gstRialtoDecryptorPrivate->decrypt(&m_buffer, &m_caps));
+    EXPECT_EQ(GST_BASE_TRANSFORM_FLOW_DROPPED, m_gstRialtoDecryptorPrivate->decrypt(&m_buffer, &m_caps));
 }
 
 /**
@@ -361,6 +383,7 @@ TEST_F(RialtoServerDecryptorPrivateDecryptTest, NoDecryptionService)
     m_gstRialtoDecryptorPrivate->setDecryptionService(nullptr);
 
     expectGetInfoFromProtectionMeta();
+    expectDecryptWarning();
 
-    EXPECT_EQ(GST_FLOW_OK, m_gstRialtoDecryptorPrivate->decrypt(&m_buffer, &m_caps));
+    EXPECT_EQ(GST_BASE_TRANSFORM_FLOW_DROPPED, m_gstRialtoDecryptorPrivate->decrypt(&m_buffer, &m_caps));
 }

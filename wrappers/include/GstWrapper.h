@@ -491,6 +491,33 @@ public:
     }
 
     void gstIteratorFree(GstIterator *it) const override { return gst_iterator_free(it); }
+
+    gboolean gstElementPostMessage(GstElement *element, GstMessage *message) const override
+    {
+        return gst_element_post_message(element, message);
+    }
+
+    GstMessage *gstMessageNewWarning(GstObject *src, GError *error, const gchar *debug) const override
+    {
+        return gst_message_new_warning(src, error, debug);
+    }
+
+    void gstMessageParseWarning(GstMessage *message, GError **gerror, gchar **debug) const override
+    {
+        gst_message_parse_warning(message, gerror, debug);
+    }
+
+    GstCaps *gstPadGetCurrentCaps(GstPad *pad) const override { return gst_pad_get_current_caps(pad); }
+
+    GstStructure *gstCapsGetStructure(const GstCaps *caps, guint index) const override
+    {
+        return gst_caps_get_structure(caps, index);
+    }
+
+    const gchar *gstStructureGetName(const GstStructure *structure) const override
+    {
+        return gst_structure_get_name(structure);
+    }
 };
 
 }; // namespace firebolt::rialto::wrappers

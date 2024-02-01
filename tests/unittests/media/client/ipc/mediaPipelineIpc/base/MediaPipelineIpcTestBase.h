@@ -64,7 +64,8 @@ protected:
         NetworkStateChangeEvent,
         NeedMediaDataEvent,
         QosEvent,
-        BufferUnderflowEvent
+        BufferUnderflowEvent,
+        PlaybackErrorEvent
     };
 
     // Callbacks
@@ -74,6 +75,7 @@ protected:
     std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> m_positionChangeCb;
     std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> m_qosCb;
     std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> m_bufferUnderflowCb;
+    std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> m_playbackErrorCb;
 
     void SetUp();
     void TearDown();

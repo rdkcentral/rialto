@@ -66,6 +66,7 @@ constexpr firebolt::rialto::QosInfo kQosInfo{5u, 2u};
 constexpr double kRate{1.5};
 constexpr double kVolume{0.7};
 constexpr bool kMute{false};
+constexpr firebolt::rialto::PlaybackError kPlaybackError{firebolt::rialto::PlaybackError::DECRYPTION};
 } // namespace
 
 MATCHER_P(AttachedSourceMatcher, source, "")
@@ -145,6 +146,13 @@ MATCHER_P3(QosEventMatcher, kSourceId, processed, dropped, "")
     std::shared_ptr<firebolt::rialto::QosEvent> event = std::dynamic_pointer_cast<firebolt::rialto::QosEvent>(arg);
     return ((kSourceId == event->source_id()) && (processed == event->qos_info().processed()) &&
             (dropped == event->qos_info().dropped()));
+}
+
+MATCHER_P2(PlaybackErrorEventMatcher, kExpectedSourceId, kExpectedPlaybackError, "")
+{
+    std::shared_ptr<firebolt::rialto::PlaybackErrorEvent> event =
+        std::dynamic_pointer_cast<firebolt::rialto::PlaybackErrorEvent>(arg);
+    return ((kExpectedSourceId == event->source_id()) && (kExpectedPlaybackError == event->error()));
 }
 
 MATCHER_P(PlaybackStateChangeEventMatcher, kPlaybackState, "")
@@ -489,6 +497,11 @@ void MediaPipelineModuleServiceTests::mediaClientWillSendQosEvent()
     EXPECT_CALL(*m_clientMock, sendEvent(QosEventMatcher(kSourceId, kQosInfo.processed, kQosInfo.dropped)));
 }
 
+void MediaPipelineModuleServiceTests::mediaClientWillSendPlaybackErrorEvent()
+{
+    EXPECT_CALL(*m_clientMock, sendEvent(PlaybackErrorEventMatcher(kSourceId, convertPlaybackError(kPlaybackError))));
+}
+
 void MediaPipelineModuleServiceTests::sendClientConnected()
 {
     m_service->clientConnected(m_clientMock);
@@ -820,6 +833,12 @@ void MediaPipelineModuleServiceTests::sendQosEvent()
 {
     ASSERT_TRUE(m_mediaPipelineClient);
     m_mediaPipelineClient->notifyQos(kSourceId, kQosInfo);
+}
+
+void MediaPipelineModuleServiceTests::sendPlaybackErrorEvent()
+{
+    ASSERT_TRUE(m_mediaPipelineClient);
+    m_mediaPipelineClient->notifyPlaybackError(kSourceId, kPlaybackError);
 }
 
 void MediaPipelineModuleServiceTests::expectRequestSuccess()

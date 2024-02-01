@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_GST_DECRYPTOR_PRIVATE_H_
 
 #include "IDecryptionService.h"
+#include "IGlibWrapper.h"
 #include "IGstProtectionMetadataHelper.h"
 #include "IGstWrapper.h"
 #include <gst/gst.h>
@@ -34,11 +35,13 @@ public:
     /**
      * @brief The constructor.
 
-     * @param[in] parentElement     : The parent decryptor element.
-     * @param[in] gstWrapperFactory : The gstreamer wrapper factory.
+     * @param[in] parentElement         : The parent decryptor element.
+     * @param[in] gstWrapperFactory     : The gstreamer wrapper factory.
+     * @param[in] glibWrapperFactory    : The glib wrapper factory.
      */
     GstRialtoDecryptorPrivate(GstBaseTransform *parentElement,
-                              const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapperFactory> &gstWrapperFactory);
+                              const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapperFactory> &gstWrapperFactory,
+                              const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapperFactory> &glibWrapperFactory);
 
     /**
      * @brief Decrypts the gst buffer.
@@ -69,6 +72,11 @@ private:
      * @brief The gstreamer wrapper object.
      */
     std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
+
+    /**
+     * @brief The glib wrapper object.
+     */
+    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
 
     /**
      * @brief The parent decryptor element.

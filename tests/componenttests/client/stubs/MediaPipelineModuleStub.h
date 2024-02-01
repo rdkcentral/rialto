@@ -40,6 +40,7 @@ public:
     void notifyPositionChangeEvent(int sessionId, int64_t position);
     void notifyQosEvent(int sessionId, int32_t sourceId, const ::firebolt::rialto::QosInfo &qosInfo);
     void notifyBufferUnderflowEvent(int sessionId, int32_t sourceId);
+    void notifyPlaybackErrorEvent(int sessionId, int32_t sourceId, PlaybackError error);
 
     // Client helpers
     virtual void waitForClientConnect() = 0;

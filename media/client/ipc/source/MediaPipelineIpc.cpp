@@ -157,6 +157,13 @@ bool MediaPipelineIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &i
         return false;
     m_eventTags.push_back(eventTag);
 
+    eventTag = ipcChannel->subscribe<firebolt::rialto::PlaybackErrorEvent>(
+        [this](const std::shared_ptr<firebolt::rialto::PlaybackErrorEvent> &event)
+        { m_eventThread->add(&MediaPipelineIpc::onPlaybackError, this, event); });
+    if (eventTag < 0)
+        return false;
+    m_eventTags.push_back(eventTag);
+
     return true;
 }
 
@@ -764,7 +771,7 @@ void MediaPipelineIpc::onPlaybackStateUpdated(const std::shared_ptr<firebolt::ri
             playbackState = PlaybackState::FAILURE;
             break;
         default:
-            RIALTO_CLIENT_LOG_WARN("Recieved unknown playback state");
+            RIALTO_CLIENT_LOG_WARN("Received unknown playback state");
             break;
         }
 
@@ -812,7 +819,7 @@ void MediaPipelineIpc::onNetworkStateUpdated(const std::shared_ptr<firebolt::ria
             networkState = NetworkState::NETWORK_ERROR;
             break;
         default:
-            RIALTO_CLIENT_LOG_WARN("Recieved unknown network state");
+            RIALTO_CLIENT_LOG_WARN("Received unknown network state");
             break;
         }
 
@@ -855,6 +862,26 @@ void MediaPipelineIpc::onBufferUnderflow(const std::shared_ptr<firebolt::rialto:
     if (event->session_id() == m_sessionId)
     {
         m_mediaPipelineIpcClient->notifyBufferUnderflow(event->source_id());
+    }
+}
+
+void MediaPipelineIpc::onPlaybackError(const std::shared_ptr<firebolt::rialto::PlaybackErrorEvent> &event)
+{
+    // Ignore event if not for this session
+    if (event->session_id() == m_sessionId)
+    {
+        PlaybackError playbackError = PlaybackError::UNKNOWN;
+        switch (event->error())
+        {
+        case firebolt::rialto::PlaybackErrorEvent_PlaybackError_DECRYPTION:
+            playbackError = PlaybackError::DECRYPTION;
+            break;
+        default:
+            RIALTO_CLIENT_LOG_WARN("Received unknown playback error");
+            break;
+        }
+
+        m_mediaPipelineIpcClient->notifyPlaybackError(event->source_id(), playbackError);
     }
 }
 
