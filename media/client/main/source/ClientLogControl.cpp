@@ -22,7 +22,8 @@
 
 namespace
 {
-std::vector<RIALTO_COMPONENT> kAllComonentsToLog{RIALTO_COMPONENT_CLIENT, RIALTO_COMPONENT_IPC, RIALTO_COMPONENT_COMMON};
+const std::vector<RIALTO_COMPONENT> kAllComonentsToLog{RIALTO_COMPONENT_CLIENT, RIALTO_COMPONENT_IPC,
+                                                       RIALTO_COMPONENT_COMMON};
 
 firebolt::rialto::IClientLogHandler::Level convertLevel(const RIALTO_DEBUG_LEVEL &level)
 {
