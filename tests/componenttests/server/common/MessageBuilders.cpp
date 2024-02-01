@@ -439,4 +439,13 @@ createGetSupportedKeySystemVersionRequest(const std::string &keySystem)
 {
     return ::firebolt::rialto::GetSharedMemoryRequest();
 }
+
+::firebolt::rialto::RegisterClientRequest createRegisterClientRequest()
+{
+    ::firebolt::rialto::RegisterClientRequest request;
+    request.mutable_client_schema_version()->set_major(std::stoul(PROJECT_VER_MAJOR));
+    request.mutable_client_schema_version()->set_minor(std::stoul(PROJECT_VER_MINOR));
+    request.mutable_client_schema_version()->set_patch(std::stoul(PROJECT_VER_PATCH));
+    return request;
+}
 } // namespace firebolt::rialto::server::ct

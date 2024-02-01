@@ -62,6 +62,7 @@ add_gtests (
         mediaKeys/SetDrmHeaderTest.cpp
         mediaKeys/LicenseRenewalTest.cpp
         mediaKeysCapabilities/MediaKeysCapabilitiesTest.cpp
+        control/ApplicationStateChangeTest.cpp
         )
 
 target_include_directories(
