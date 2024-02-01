@@ -81,6 +81,9 @@ constexpr uint32_t kCrypt{7};
 constexpr uint32_t kSkip{8};
 constexpr firebolt::rialto::QosInfo kQosInfoAudio{766, 6};
 constexpr firebolt::rialto::QosInfo kQosInfoVideo{98, 2};
+const std::vector<std::string> kAudioMimeType{"audio/mp4", "audio/aac", "audio/x-eac3", "audio/x-opus"};
+const std::vector<std::string> kVideoMimeType{"video/h264", "video/h265", "video/x-av1", "video/x-vp9", "video/mp4"};
+const std::vector<std::string> kUnknownMimeType{};
 } // namespace
 
 namespace firebolt::rialto::client::ct
@@ -90,6 +93,7 @@ MediaPipelineTestMethods::MediaPipelineTestMethods(const std::vector<firebolt::r
     : m_mediaPipelineClientMock{std::make_shared<StrictMock<MediaPipelineClientMock>>()},
       m_mediaPipelineModuleMock{std::make_shared<StrictMock<MediaPipelineModuleMock>>()},
       m_mediaPipelineClientSecondaryMock{std::make_shared<StrictMock<MediaPipelineClientMock>>()},
+      m_mediaPipelineCapabilitiesModuleMock{std::make_shared<StrictMock<MediaPipelineCapabilitiesModuleMock>>()},
       m_kAudioShmInfo{audioShmInfo}, m_kVideoShmInfo{videoShmInfo}
 {
     kCodecData->data = std::vector<std::uint8_t>{'T', 'E', 'S', 'T'};
@@ -1720,5 +1724,96 @@ uint8_t *MediaPipelineTestMethods::parseMetadata(MediaSegmentMetadata &metadataS
     dataPosition += sizeof(uint32_t);
     EXPECT_TRUE(metadataStruct.ParseFromArray(dataPosition, *metadataSize));
     return dataPosition + *metadataSize;
+}
+
+void MediaPipelineTestMethods::createMediaPipelineCapabilitiesObject()
+{
+    m_mediaPipelineCapabilitiesFactory = firebolt::rialto::IMediaPipelineCapabilitiesFactory::createFactory();
+    m_mediaPipelineCapabilities = m_mediaPipelineCapabilitiesFactory->createMediaPipelineCapabilities();
+    EXPECT_NE(m_mediaPipelineCapabilities, nullptr);
+}
+
+void MediaPipelineTestMethods::destroyMediaPipelineCapabilitiesObject()
+{
+    m_mediaPipelineCapabilities.reset();
+}
+
+void MediaPipelineTestMethods::shouldGetSupportedAudioMimeTypes()
+{
+    EXPECT_CALL(*m_mediaPipelineCapabilitiesModuleMock,
+                getSupportedMimeTypes(_, getSupportedMimeTypesRequestMatcher(firebolt::rialto::MediaSourceType::AUDIO),
+                                      _, _))
+        .WillOnce(
+            DoAll(SetArgPointee<2>(m_mediaPipelineCapabilitiesModuleMock->getSupportedMimeTypesResponse(kAudioMimeType)),
+                  WithArgs<0, 3>(Invoke(&(*m_mediaPipelineCapabilitiesModuleMock),
+                                        &MediaPipelineCapabilitiesModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::getSupportedAudioMimeTypes()
+{
+    MediaSourceType sourceType = firebolt::rialto::MediaSourceType::AUDIO;
+    EXPECT_EQ(m_mediaPipelineCapabilities->getSupportedMimeTypes(sourceType), kAudioMimeType);
+}
+
+void MediaPipelineTestMethods::shouldGetSupportedVideoMimeTypes()
+{
+    EXPECT_CALL(*m_mediaPipelineCapabilitiesModuleMock,
+                getSupportedMimeTypes(_, getSupportedMimeTypesRequestMatcher(firebolt::rialto::MediaSourceType::VIDEO),
+                                      _, _))
+        .WillOnce(
+            DoAll(SetArgPointee<2>(m_mediaPipelineCapabilitiesModuleMock->getSupportedMimeTypesResponse(kVideoMimeType)),
+                  WithArgs<0, 3>(Invoke(&(*m_mediaPipelineCapabilitiesModuleMock),
+                                        &MediaPipelineCapabilitiesModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::getSupportedVideoMimeTypes()
+{
+    MediaSourceType sourceType = firebolt::rialto::MediaSourceType::VIDEO;
+    EXPECT_EQ(m_mediaPipelineCapabilities->getSupportedMimeTypes(sourceType), kVideoMimeType);
+}
+
+void MediaPipelineTestMethods::shouldGetSupportedUnknownMimeTypes()
+{
+    EXPECT_CALL(*m_mediaPipelineCapabilitiesModuleMock,
+                getSupportedMimeTypes(_, getSupportedMimeTypesRequestMatcher(firebolt::rialto::MediaSourceType::UNKNOWN),
+                                      _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(
+                            m_mediaPipelineCapabilitiesModuleMock->getSupportedMimeTypesResponse(kUnknownMimeType)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineCapabilitiesModuleMock),
+                                              &MediaPipelineCapabilitiesModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::getUnknownMimeTypes()
+{
+    MediaSourceType sourceType = firebolt::rialto::MediaSourceType::UNKNOWN;
+    EXPECT_EQ(m_mediaPipelineCapabilities->getSupportedMimeTypes(sourceType), kUnknownMimeType);
+}
+
+void MediaPipelineTestMethods::shouldCheckIsMimeTypeSupported()
+{
+    EXPECT_CALL(*m_mediaPipelineCapabilitiesModuleMock,
+                isMimeTypeSupported(_, isMimeTypeSupportedRequestMatcher(kVideoMimeType[0]), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineCapabilitiesModuleMock->isMimeTypeSupportedResponse(true)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineCapabilitiesModuleMock),
+                                              &MediaPipelineCapabilitiesModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::isMimeTypeSupported()
+{
+    EXPECT_EQ(m_mediaPipelineCapabilities->isMimeTypeSupported(kVideoMimeType[0]), true);
+}
+
+void MediaPipelineTestMethods::shouldCheckIsMimeTypeNotSupported()
+{
+    EXPECT_CALL(*m_mediaPipelineCapabilitiesModuleMock,
+                isMimeTypeSupported(_, isMimeTypeSupportedRequestMatcher(kVideoMimeType[0]), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineCapabilitiesModuleMock->isMimeTypeSupportedResponse(false)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineCapabilitiesModuleMock),
+                                              &MediaPipelineCapabilitiesModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::isMimeTypeNotSupported()
+{
+    EXPECT_EQ(m_mediaPipelineCapabilities->isMimeTypeSupported(kVideoMimeType[0]), false);
 }
 } // namespace firebolt::rialto::client::ct
