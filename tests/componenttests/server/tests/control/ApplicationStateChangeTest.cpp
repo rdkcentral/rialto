@@ -18,12 +18,54 @@
  *
  */
 
+#include "ActionTraits.h"
+#include "ConfigureAction.h"
 #include "ControlTest.h"
 #include "ExpectMessage.h"
-#include "controlmodule.pb.h"
+#include "MessageBuilders.h"
 
 namespace firebolt::rialto::server::ct
 {
+class ApplicationStateChangeTest : public ControlTest
+{
+public:
+    ApplicationStateChangeTest() = default;
+    ~ApplicationStateChangeTest() override = default;
+
+    void changeStateToInactive()
+    {
+        ExpectMessage<ApplicationStateChangeEvent> m_expectedInactiveNotification{m_clientStub};
+
+        setStateInactive();
+
+        auto inactiveNotification{m_expectedInactiveNotification.getMessage()};
+        ASSERT_TRUE(inactiveNotification);
+        EXPECT_EQ(inactiveNotification->application_state(), ApplicationStateChangeEvent_ApplicationState_INACTIVE);
+    }
+
+    void changeStateToRunning()
+    {
+        ExpectMessage<ApplicationStateChangeEvent> m_expectedRunningNotification{m_clientStub};
+
+        setStateActive();
+
+        auto runningNotification{m_expectedRunningNotification.getMessage()};
+        ASSERT_TRUE(runningNotification);
+        EXPECT_EQ(runningNotification->application_state(), ApplicationStateChangeEvent_ApplicationState_RUNNING);
+    }
+
+    void getSharedMemoryWillFail()
+    {
+        auto getShmReq{createGetSharedMemoryRequest()};
+        ConfigureAction<GetSharedMemory>(m_clientStub).send(getShmReq).expectFailure();
+    }
+
+    void getSharedMemoryWillSucceed()
+    {
+        auto getShmReq{createGetSharedMemoryRequest()};
+        ConfigureAction<GetSharedMemory>(m_clientStub).send(getShmReq).expectSuccess();
+    }
+};
 /*
  * Component Test: Application state change from RUNNING->INACTIVE->RUNNING
  * Test Objective:
@@ -48,10 +90,12 @@ namespace firebolt::rialto::server::ct
  *  Step 1: Change state to INACTIVE
  *   ServerManager requests the server to change the state to INACTIVE.
  *   Expect that the state change notification is propagated to the client.
+ *   Expect that the shared memory region cannot be fetched from the server.
  *
  *  Step 2: Change state to RUNNING
  *   ServerManager requests the server to change the state to ACTIVE.
  *   Expect that the state change notification to RUNNING is propagated to the client.
+ *   Expect that the shared memory region is fetched from the server.
  *
  * Test Teardown:
  *  Server is terminated.
@@ -62,24 +106,14 @@ namespace firebolt::rialto::server::ct
  *
  * Code:
  */
-TEST_F(ControlTest, ShouldNotifyState)
+TEST_F(ApplicationStateChangeTest, lifecycle)
 {
     // Step 1: Change state to INACTIVE
-    ExpectMessage<ApplicationStateChangeEvent> m_expectedInactiveNotification{m_clientStub};
-
-    setStateInactive();
-
-    auto inactiveNotification{m_expectedInactiveNotification.getMessage()};
-    ASSERT_TRUE(inactiveNotification);
-    EXPECT_EQ(inactiveNotification->application_state(), ApplicationStateChangeEvent_ApplicationState_INACTIVE);
+    changeStateToInactive();
+    getSharedMemoryWillFail();
 
     // Step 2: Change state to RUNNING
-    ExpectMessage<ApplicationStateChangeEvent> m_expectedRunningNotification{m_clientStub};
-
-    setStateActive();
-
-    auto runningNotification{m_expectedRunningNotification.getMessage()};
-    ASSERT_TRUE(runningNotification);
-    EXPECT_EQ(runningNotification->application_state(), ApplicationStateChangeEvent_ApplicationState_RUNNING);
+    changeStateToRunning();
+    getSharedMemoryWillSucceed();
 }
 } // namespace firebolt::rialto::server::ct
