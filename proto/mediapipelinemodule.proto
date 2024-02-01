@@ -538,7 +538,7 @@ message BufferUnderflowEvent {
 }
 
 /**
- * @brief Event sent by the server when a none fatal error has occurred in the player.
+ * @brief Event sent by the server when a non-fatalrror has occurred in the player.
  *
  * @param session_id        The id of the A/V session the request is for.
  * @param source_id         The id of the media source the request is for.

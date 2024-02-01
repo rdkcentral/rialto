@@ -151,7 +151,7 @@ public:
     virtual void notifyBufferUnderflow(MediaSourceType mediaSourceType) = 0;
 
     /**
-     * @brief Notifies the client that a none fatal error has occurred in the player.
+     * @brief Notifies the client that a non-fatal error has occurred in the player.
      *
      * PlaybackState remains unchanged when an error occurs.
      *
