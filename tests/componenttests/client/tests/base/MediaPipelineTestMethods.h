@@ -21,6 +21,8 @@
 #define FIREBOLT_RIALTO_CLIENT_CT_MEDIA_PIPELINE_TEST_METHODS_H_
 
 #include "IMediaPipeline.h"
+#include "IMediaPipelineCapabilities.h"
+#include "MediaPipelineCapabilitiesModuleMock.h"
 #include "MediaPipelineClientMock.h"
 #include "MediaPipelineModuleMock.h"
 #include "ServerStub.h"
@@ -61,11 +63,14 @@ protected:
     std::shared_ptr<StrictMock<MediaPipelineClientMock>> m_mediaPipelineClientMock;
     std::shared_ptr<StrictMock<MediaPipelineModuleMock>> m_mediaPipelineModuleMock;
     std::shared_ptr<StrictMock<MediaPipelineClientMock>> m_mediaPipelineClientSecondaryMock;
+    std::shared_ptr<StrictMock<MediaPipelineCapabilitiesModuleMock>> m_mediaPipelineCapabilitiesModuleMock;
 
     // Objects
     std::shared_ptr<IMediaPipelineFactory> m_mediaPipelineFactory;
     std::unique_ptr<IMediaPipeline> m_mediaPipeline;
     std::unique_ptr<IMediaPipeline> m_mediaPipelineSecondary;
+    std::shared_ptr<IMediaPipelineCapabilitiesFactory> m_mediaPipelineCapabilitiesFactory;
+    std::shared_ptr<IMediaPipelineCapabilities> m_mediaPipelineCapabilities;
 
     // MediaPipeline Expect methods
     void shouldCreateMediaSession();
@@ -146,6 +151,13 @@ protected:
     void shouldNotifyBufferUnderflowAudio();
     void shouldNotifyBufferUnderflowVideo();
 
+    // MediaPipelineCapabilities Expect methods
+    void shouldGetSupportedAudioMimeTypes();
+    void shouldGetSupportedVideoMimeTypes();
+    void shouldGetSupportedUnknownMimeTypes();
+    void shouldCheckIsMimeTypeSupported();
+    void shouldCheckIsMimeTypeNotSupported();
+
     // Api methods
     void createMediaPipeline();
     void createMediaPipelineFailure();
@@ -199,6 +211,13 @@ protected:
     void renderFrame();
     void renderFrameFailure();
     void getPosition(const int64_t expectedPosition);
+    void createMediaPipelineCapabilitiesObject();
+    void destroyMediaPipelineCapabilitiesObject();
+    void getSupportedAudioMimeTypes();
+    void getSupportedVideoMimeTypes();
+    void getUnknownMimeTypes();
+    void isMimeTypeSupported();
+    void isMimeTypeNotSupported();
 
     // Event methods
     void sendNotifyNetworkStateBuffering();

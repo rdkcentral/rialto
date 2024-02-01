@@ -24,6 +24,7 @@
 #include "IIpcServer.h"
 #include "MediaKeysCapabilitiesModuleStub.h"
 #include "MediaKeysModuleStub.h"
+#include "MediaPipelineCapabilitiesModuleStub.h"
 #include "MediaPipelineModuleStub.h"
 #include <atomic>
 #include <condition_variable>
@@ -35,14 +36,16 @@ namespace firebolt::rialto::client::ct
 class ServerStub : public ControlModuleStub,
                    public MediaPipelineModuleStub,
                    public MediaKeysModuleStub,
-                   public MediaKeysCapabilitiesModuleStub
+                   public MediaKeysCapabilitiesModuleStub,
+                   public MediaPipelineCapabilitiesModuleStub
 {
 public:
     explicit ServerStub(
         const std::shared_ptr<::firebolt::rialto::ControlModule> &controlModuleMock,
         const std::shared_ptr<::firebolt::rialto::MediaPipelineModule> &mediaPipelineModuleMock,
         const std::shared_ptr<::firebolt::rialto::MediaKeysModule> &mediaKeysModuleMock,
-        const std::shared_ptr<::firebolt::rialto::MediaKeysCapabilitiesModule> &mediaKeysCapabilitiesModuleMock);
+        const std::shared_ptr<::firebolt::rialto::MediaKeysCapabilitiesModule> &mediaKeysCapabilitiesModuleMock,
+        const std::shared_ptr<::firebolt::rialto::MediaPipelineCapabilitiesModule> &mediaPipelineCapabilitiesModuleMock);
     ~ServerStub();
 
     void clientDisconnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &client);
