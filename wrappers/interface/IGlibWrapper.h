@@ -323,6 +323,15 @@ public:
      * @param[in] value : Value to unset.
      */
     virtual void gValueUnset(GValue *value) const = 0;
+
+    /**
+     * @brief Create a new GError.
+     *
+     * @param[in] domain    : Domain of the error.
+     * @param[in] code      : Error code.
+     * @param[in] message   : Error message.
+     */
+    virtual GError *gErrorNewLiteral(GQuark domain, gint code, const gchar *message) const = 0;
 };
 
 }; // namespace firebolt::rialto::wrappers

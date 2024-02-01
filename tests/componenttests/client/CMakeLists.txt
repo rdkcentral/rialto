@@ -53,6 +53,7 @@ add_gtests (
         tests/mse/UnderflowNotificationTest.cpp
         tests/mse/QosNotificationTest.cpp
         tests/mse/RemoveAudioPlaybackTest.cpp
+        tests/mse/PlaybackErrorNotificationTest.cpp
         tests/mse/MediaPipelineCapabilitiesTest.cpp
 
         # EME Component tests

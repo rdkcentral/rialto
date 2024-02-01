@@ -105,4 +105,15 @@ void MediaPipelineModuleStub::notifyBufferUnderflowEvent(int sessionId, int32_t 
     getClient()->sendEvent(event);
 }
 
+void MediaPipelineModuleStub::notifyPlaybackErrorEvent(int sessionId, int32_t sourceId, PlaybackError error)
+{
+    waitForClientConnect();
+
+    auto event = std::make_shared<firebolt::rialto::PlaybackErrorEvent>();
+    event->set_session_id(sessionId);
+    event->set_source_id(sourceId);
+    event->set_error(convertPlaybackError(error));
+    getClient()->sendEvent(event);
+}
+
 } // namespace firebolt::rialto::client::ct

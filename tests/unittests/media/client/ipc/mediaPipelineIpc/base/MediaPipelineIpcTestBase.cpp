@@ -112,6 +112,15 @@ void MediaPipelineIpcTestBase::expectSubscribeEvents()
                 return static_cast<int>(EventTags::BufferUnderflowEvent);
             }))
         .RetiresOnSaturation();
+    EXPECT_CALL(*m_channelMock, subscribeImpl("firebolt.rialto.PlaybackErrorEvent", _, _))
+        .WillOnce(Invoke(
+            [this](const std::string &eventName, const google::protobuf::Descriptor *descriptor,
+                   std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> &&handler)
+            {
+                m_playbackErrorCb = std::move(handler);
+                return static_cast<int>(EventTags::PlaybackErrorEvent);
+            }))
+        .RetiresOnSaturation();
 }
 
 void MediaPipelineIpcTestBase::expectUnsubscribeEvents()
@@ -122,6 +131,7 @@ void MediaPipelineIpcTestBase::expectUnsubscribeEvents()
     EXPECT_CALL(*m_channelMock, unsubscribe(static_cast<int>(EventTags::NeedMediaDataEvent))).WillOnce(Return(true));
     EXPECT_CALL(*m_channelMock, unsubscribe(static_cast<int>(EventTags::QosEvent))).WillOnce(Return(true));
     EXPECT_CALL(*m_channelMock, unsubscribe(static_cast<int>(EventTags::BufferUnderflowEvent))).WillOnce(Return(true));
+    EXPECT_CALL(*m_channelMock, unsubscribe(static_cast<int>(EventTags::PlaybackErrorEvent))).WillOnce(Return(true));
 }
 
 void MediaPipelineIpcTestBase::destroyMediaPipelineIpc()
