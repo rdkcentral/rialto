@@ -400,6 +400,14 @@ struct RegisterClient
     using Stub = ::firebolt::rialto::ControlModule_Stub;
     static constexpr auto m_kFunction{&Stub::registerClient};
 };
+
+struct Ack
+{
+    using RequestType = ::firebolt::rialto::AckRequest;
+    using ResponseType = ::firebolt::rialto::AckResponse;
+    using Stub = ::firebolt::rialto::ControlModule_Stub;
+    static constexpr auto m_kFunction{&Stub::ack};
+};
 } // namespace firebolt::rialto::server::ct
 
 #endif // FIREBOLT_RIALTO_SERVER_CT_ACTION_TRAITS_H_

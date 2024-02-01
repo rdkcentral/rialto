@@ -63,6 +63,7 @@ add_gtests (
         mediaKeys/LicenseRenewalTest.cpp
         mediaKeysCapabilities/MediaKeysCapabilitiesTest.cpp
         control/ApplicationStateChangeTest.cpp
+        control/HealthcheckTest.cpp
         )
 
 target_include_directories(

@@ -448,4 +448,12 @@ createGetSupportedKeySystemVersionRequest(const std::string &keySystem)
     request.mutable_client_schema_version()->set_patch(std::stoul(PROJECT_VER_PATCH));
     return request;
 }
+
+::firebolt::rialto::AckRequest createAckRequest(int controlHandle, int id)
+{
+    ::firebolt::rialto::AckRequest request;
+    request.set_control_handle(controlHandle);
+    request.set_id(id);
+    return request;
+}
 } // namespace firebolt::rialto::server::ct

@@ -34,7 +34,7 @@ public:
 private:
     void registerClient();
 
-private:
+protected:
     int m_controlHandle{-1};
 };
 } // namespace firebolt::rialto::server::ct
