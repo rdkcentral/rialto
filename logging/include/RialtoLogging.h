@@ -189,8 +189,9 @@ enum RialtoLoggingStatus : uint32_t
  *        See RIALTO_DEBUG_LEVEL_* for possible log levels. Multiple log levels can be set
  *        at once, for example: (RIALTO_DEBUG_LEVEL_FATAL | RIALTO_DEBUG_LEVEL_ERROR).
  *        Setting new log levels shall completely overwrite the previous log level set.
- *        If setLogHandler() has been called (for the component) with ignoreLogLevels==true then this will return
- * RIALTO_LOGGING_STATUS_ERROR
+ * @retval  RIALTO_LOGGING_STATUS_OK on success. Note that if setLogHandler() has been
+ *          called (for this component) with ignoreLogLevels==true then this will return
+ *          RIALTO_LOGGING_STATUS_ERROR
  *
  * @param[in] logLevels : The levels of logging to set.
  * @param[in] component : The component to set the log levels on.

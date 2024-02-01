@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2022 Sky UK
+ * Copyright 2024 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,12 +21,12 @@
 #define FIREBOLT_RIALTO_I_CLIENT_LOG_CONTROL_H_
 
 /**
- * @file IControl.h
+ * @file IClientLogControl.h
  *
- * The definition of the IControl interface.
+ * The definition of the IClientLogControl interface.
  *
- * This interface defines the public API of Rialto for control of Rialto,
- * including the IPC connection and shared memory.
+ * Via this interface the logging of the Rialto Client can
+ * be redirected to a user specified call handler
  */
 
 #include <memory>
@@ -83,11 +83,15 @@ public:
     IClientLogControl &operator=(IClientLogControl &&) = delete;
 
     /**
-     * @brief Register new log handler
+     * @brief Register a new log handler
      *
-     * @param[in]  handler   : Client object for callbacks
-     * @param[in]  ignoreLogLevels   : If true then the handler will receive ALL log level messages regardless of the
-     * currently configured log level
+     * @param[in]  handler         : The user can pass in an object that will henceforth
+     *                               receive callbacks to it's log(...) method for rialto client log events.
+     *                               Please see IClientLogHandler for the parameters that log() must accept.
+     *                               To cancel callbacks then call this method again but pass a nullptr for
+     *                               the handler.
+     * @param[in]  ignoreLogLevels : If true then the handler will receive ALL log level messages regardless of the
+     *                               currently configured log level
      *
      * @retval true if successful
      */

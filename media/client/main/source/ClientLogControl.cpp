@@ -22,8 +22,8 @@
 
 namespace
 {
-const std::vector<RIALTO_COMPONENT> kAllComonentsToLog{RIALTO_COMPONENT_CLIENT, RIALTO_COMPONENT_IPC,
-                                                       RIALTO_COMPONENT_COMMON};
+const std::vector<RIALTO_COMPONENT> kAllComponentsToLog{RIALTO_COMPONENT_CLIENT, RIALTO_COMPONENT_IPC,
+                                                        RIALTO_COMPONENT_COMMON};
 
 firebolt::rialto::IClientLogHandler::Level convertLevel(const RIALTO_DEBUG_LEVEL &level)
 {
@@ -65,7 +65,14 @@ std::shared_ptr<IClientLogControlFactory> ClientLogControlFactory::createFactory
     static std::shared_ptr<IClientLogControlFactory> factory;
     if (!factory)
     {
-        factory = std::make_shared<client::ClientLogControlFactory>();
+        try
+        {
+            factory = std::make_shared<client::ClientLogControlFactory>();
+        }
+        catch (const std::exception &e)
+        {
+            RIALTO_CLIENT_LOG_ERROR("Failed to create ClientLogControlFactory, reason: %s", e.what());
+        }
     }
     return factory;
 }
@@ -74,7 +81,14 @@ std::shared_ptr<IClientLogControl> ClientLogControlFactory::createClientLogContr
 {
     if (!m_singletonInstance)
     {
-        m_singletonInstance = std::make_shared<ClientLogControl>();
+        try
+        {
+            m_singletonInstance = std::make_shared<ClientLogControl>();
+        }
+        catch (const std::exception &e)
+        {
+            RIALTO_CLIENT_LOG_ERROR("Failed to create ClientLogControl, reason: %s", e.what());
+        }
     }
     return m_singletonInstance;
 }
@@ -107,7 +121,7 @@ bool ClientLogControl::registerLogHandler(std::shared_ptr<IClientLogHandler> &ha
     if (!handler)
         return true;
 
-    for (auto component : kAllComonentsToLog)
+    for (auto component : kAllComponentsToLog)
     {
         if (firebolt::rialto::logging::setLogHandler(component,
                                                      std::bind(&ClientLogControl::forwardLog, this, component,
@@ -128,7 +142,7 @@ bool ClientLogControl::registerLogHandler(std::shared_ptr<IClientLogHandler> &ha
 void ClientLogControl::cancelLogHandler()
 {
     RIALTO_CLIENT_LOG_INFO("Cancelling log handler");
-    for (auto component : kAllComonentsToLog)
+    for (auto component : kAllComponentsToLog)
     {
         firebolt::rialto::logging::setLogHandler(component, nullptr, false);
     }

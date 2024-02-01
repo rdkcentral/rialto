@@ -25,14 +25,6 @@
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::client;
 
-#if 0
-using ::testing::_;
-using ::testing::DoAll;
-using ::testing::Return;
-using ::testing::SetArgReferee;
-using ::testing::StrictMock;
-#endif
-
 namespace
 {
 const std::string kLogTestStr("Test ABC");
