@@ -49,6 +49,8 @@ public:
     void willConfigureSocket();
     void configureSutInActiveState();
     void connectClient();
+    void setStateActive();
+    void setStateInactive();
 
 private:
     void configureWrappers() const;
