@@ -456,4 +456,19 @@ createGetSupportedKeySystemVersionRequest(const std::string &keySystem)
     request.set_id(id);
     return request;
 }
+
+::firebolt::rialto::GetSupportedMimeTypesRequest createGetSupportedMimeTypesRequest(const MediaSourceType &mediaSourceType)
+{
+    ::firebolt::rialto::GetSupportedMimeTypesRequest request;
+    request.set_media_type(mediaSourceType == MediaSourceType::AUDIO ? ProtoMediaSourceType::AUDIO
+                                                                     : ProtoMediaSourceType::VIDEO);
+    return request;
+}
+
+::firebolt::rialto::IsMimeTypeSupportedRequest createIsMimeTypeSupportedRequest(const std::string &mimeType)
+{
+    ::firebolt::rialto::IsMimeTypeSupportedRequest request;
+    request.set_mime_type(mimeType);
+    return request;
+}
 } // namespace firebolt::rialto::server::ct
