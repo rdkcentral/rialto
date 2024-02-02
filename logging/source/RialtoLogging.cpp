@@ -368,7 +368,6 @@ RialtoLoggingStatus setLogHandler(RIALTO_COMPONENT component, LogHandler handler
     {
         std::unique_lock<std::mutex> lock{g_logHandlerMutex};
 
-        /* not thread-safe, but doubt this will be an issue */
         g_logHandler[component] = std::move(handler);
 
         // Ignoring log levels is only an option if we're registering
