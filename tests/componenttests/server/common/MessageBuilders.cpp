@@ -457,11 +457,11 @@ createGetSupportedKeySystemVersionRequest(const std::string &keySystem)
     return request;
 }
 
-::firebolt::rialto::GetSupportedMimeTypesRequest createGetSupportedMimeTypesRequest(const MediaSourceType &mediaSourceType)
+::firebolt::rialto::GetSupportedMimeTypesRequest
+createGetSupportedMimeTypesRequest(const ProtoMediaSourceType &mediaSourceType)
 {
     ::firebolt::rialto::GetSupportedMimeTypesRequest request;
-    request.set_media_type(mediaSourceType == MediaSourceType::AUDIO ? ProtoMediaSourceType::AUDIO
-                                                                     : ProtoMediaSourceType::VIDEO);
+    request.set_media_type(mediaSourceType);
     return request;
 }
 

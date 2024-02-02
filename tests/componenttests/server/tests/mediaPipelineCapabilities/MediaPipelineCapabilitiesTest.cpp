@@ -72,7 +72,7 @@ public:
 TEST_F(MediaPipelineCapabilitiesTest, getAudioCapabilities)
 {
     // Step 1: Get audio capabilities
-    auto request{createGetSupportedMimeTypesRequest(MediaSourceType::AUDIO)};
+    auto request{createGetSupportedMimeTypesRequest(ProtoMediaSourceType::AUDIO)};
     ConfigureAction<GetSupportedMimeTypes>{m_clientStub}.send(request).expectSuccess().matchResponse(
         [](const auto &resp)
         {
@@ -116,7 +116,7 @@ TEST_F(MediaPipelineCapabilitiesTest, getAudioCapabilities)
 TEST_F(MediaPipelineCapabilitiesTest, getVideoCapabilities)
 {
     // Step 1: Get video capabilities
-    auto request{createGetSupportedMimeTypesRequest(MediaSourceType::VIDEO)};
+    auto request{createGetSupportedMimeTypesRequest(ProtoMediaSourceType::VIDEO)};
     ConfigureAction<GetSupportedMimeTypes>{m_clientStub}.send(request).expectSuccess().matchResponse(
         [](const auto &resp)
         {
@@ -124,6 +124,45 @@ TEST_F(MediaPipelineCapabilitiesTest, getVideoCapabilities)
             // Returned mime types should intersect with "video/x-h264" static pad caps
             EXPECT_THAT(resp.mime_types(), UnorderedElementsAre("video/h264"));
         });
+};
+
+/*
+ * Component Test: Get unknown capabilities
+ * Test Objective:
+ *  Test if Rialto Server returns empty vector for unknown capabilities
+ *
+ * Sequence Diagrams:
+ *  Capabilities - Supported MIME types
+ *  https://wiki.rdkcentral.com/display/ASP/Rialto+MSE+Misc+Sequence+Diagrams#RialtoMSEMiscSequenceDiagrams-SupportedMIMETypes
+ *
+ * Test Setup:
+ *  Language: C++
+ *  Testing Framework: Google Test
+ *  Components: MediaPipelineCapabilities
+ *
+ * Test Initialize:
+ *  Set Rialto Server to Active
+ *  Connect Rialto Client Stub
+ *
+ * Test Steps:
+ *  Step 1: Get unknown capabilities
+ *   Client stub requests the server to get unknown capabilities
+ *   Expect that server returns empty vector
+ *
+ * Test Teardown:
+ *  Server is terminated.
+ *
+ * Expected Results:
+ *  Rialto server returns empty vector for unknwon capabilities.
+ *
+ * Code:
+ */
+TEST_F(MediaPipelineCapabilitiesTest, getUnknownCapabilities)
+{
+    // Step 1: Get unknown capabilities
+    auto request{createGetSupportedMimeTypesRequest(ProtoMediaSourceType::UNKNOWN)};
+    ConfigureAction<GetSupportedMimeTypes>{m_clientStub}.send(request).expectSuccess().matchResponse(
+        [](const auto &resp) { EXPECT_TRUE(resp.mime_types().empty()); });
 };
 
 /*
@@ -229,9 +268,9 @@ TEST_F(MediaPipelineCapabilitiesTest, checkVideoMimeTypes)
         .matchResponse([](const auto &resp) { EXPECT_TRUE(resp.is_supported()); });
 
     // Step 2: Check video/x-vp9 mime type
-    auto opusRequest{createIsMimeTypeSupportedRequest("video/x-vp9")};
+    auto vp9Request{createIsMimeTypeSupportedRequest("video/x-vp9")};
     ConfigureAction<IsMimeTypeSupported>{m_clientStub}
-        .send(opusRequest)
+        .send(vp9Request)
         .expectSuccess()
         .matchResponse([](const auto &resp) { EXPECT_FALSE(resp.is_supported()); });
 };
