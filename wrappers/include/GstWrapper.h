@@ -518,6 +518,11 @@ public:
     {
         return gst_structure_get_name(structure);
     }
+    
+    gboolean gstObjectSetName(GstObject * object, const gchar * name) const override
+    {
+        return gst_object_set_name(object, name);
+    }
 };
 
 }; // namespace firebolt::rialto::wrappers

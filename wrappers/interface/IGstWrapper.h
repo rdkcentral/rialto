@@ -1201,6 +1201,16 @@ public:
      * @retval the name of the structure.
      */
     virtual const gchar *gstStructureGetName(const GstStructure *structure) const = 0;
+
+    /**
+     * @brief Sets the name of an object.
+     *
+     * @param[in] object    : object to name.
+     * @param[in] name      : new name of object.
+     *
+     * @retval TRUE if name could be set.
+     */
+    virtual gboolean gstObjectSetName(GstObject * object, const gchar * name) const = 0;
 };
 
 }; // namespace firebolt::rialto::wrappers

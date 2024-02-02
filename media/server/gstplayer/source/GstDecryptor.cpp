@@ -201,7 +201,15 @@ GstElement *GstDecryptorElementFactory::createDecryptorElement(
 {
     GstRialtoDecryptor *decrypter = GST_RIALTO_DECRYPTOR(g_object_new(GST_RIALTO_DECRYPTOR_TYPE, nullptr));
     if (name) 
-        gst_object_set_name(GST_OBJECT(decrypter), name);
+    {
+        if (!gstWrapper->gstObjectSetName(GST_OBJECT(decrypter), name))
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to set the decryptor name too %s", name);
+            g_object_unref(GST_OBJECT(decrypter));
+            return nullptr;
+        }
+    }
+
     GstRialtoDecryptorPrivate *priv =
         reinterpret_cast<GstRialtoDecryptorPrivate *>(gst_rialto_decryptor_get_instance_private(decrypter));
     std::shared_ptr<firebolt::rialto::server::IGstProtectionMetadataHelperFactory> metadataFactory =
@@ -215,6 +223,7 @@ GstElement *GstDecryptorElementFactory::createDecryptorElement(
     else
     {
         RIALTO_SERVER_LOG_ERROR("Failed to create the decryptor element");
+        g_object_unref(GST_OBJECT(decrypter));
         return nullptr;
     }
 }
