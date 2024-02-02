@@ -91,4 +91,119 @@ TEST_F(ControlTest, healthcheckProcedure)
     EXPECT_EQ(receivedAck->id(), kPingId);
     EXPECT_EQ(receivedAck->success(), true);
 }
+
+/*
+ * Component Test: Healthcheck procedure without ACK from connected client
+ * Test Objective:
+ *  Test the healthcheck procedure with ping message sent to rialto client and no ACK
+ *
+ * Sequence Diagrams:
+ *  https://wiki.rdkcentral.com/pages/viewpage.action?spaceKey=ASP&title=Healthcheck+mechanism
+ *
+ * Test Setup:
+ *  Language: C++
+ *  Testing Framework: Google Test
+ *  Components: Control
+ *
+ * Test Initialize:
+ *  Set Rialto Server to Active
+ *  Connect Rialto Client Stub
+ *  Register Rialto Client Stub in RUNNING state
+ *
+ * Test Steps:
+ *  Step 1: Start healthcheck procedure
+ *   ServerManager stub requests the server to check state of all its components
+ *   Expect that all server services are not deadlocked.
+ *   Expect that PingEvent is received by connected Rialto Client stub.
+ *
+ *  Step 2: Fail healthcheck procedure
+ *   Rialto Client stub doesnt send Ack message to Rialto Server
+ *   Expect that Rialto Server doesnt send Ack to Server Manager Stub
+ *
+ * Test Teardown:
+ *  Server is terminated.
+ *
+ * Expected Results:
+ *  The healthcheck procedure is failed.
+ *
+ * Code:
+ */
+TEST_F(ControlTest, noAckWithoutClientResponse)
+{
+    // Step 1: Start healthcheck procedure
+    ExpectMessage<PingEvent> expectedPing{m_clientStub};
+
+    ::rialto::PingRequest request{createPingRequest(kPingId)};
+    ConfigureAction<::firebolt::rialto::server::ct::Ping>(m_serverManagerStub).send(request).expectSuccess();
+
+    auto receivedPing{expectedPing.getMessage()};
+    ASSERT_TRUE(receivedPing);
+    EXPECT_EQ(receivedPing->control_handle(), m_controlHandle);
+    EXPECT_EQ(receivedPing->id(), kPingId);
+
+    // Step 2: Fail healthcheck procedure
+    ExpectMessage<::rialto::AckEvent> expectedAck(m_serverManagerStub);
+
+    auto receivedAck = expectedAck.getMessage();
+    EXPECT_FALSE(receivedAck);
+}
+
+/*
+ * Component Test: Healthcheck procedure with ACK with wrong ID from connected client
+ * Test Objective:
+ *  Test the healthcheck procedure with ping message sent to rialto client and ACK with wrong ID
+ *
+ * Sequence Diagrams:
+ *  https://wiki.rdkcentral.com/pages/viewpage.action?spaceKey=ASP&title=Healthcheck+mechanism
+ *
+ * Test Setup:
+ *  Language: C++
+ *  Testing Framework: Google Test
+ *  Components: Control
+ *
+ * Test Initialize:
+ *  Set Rialto Server to Active
+ *  Connect Rialto Client Stub
+ *  Register Rialto Client Stub in RUNNING state
+ *
+ * Test Steps:
+ *  Step 1: Start healthcheck procedure
+ *   ServerManager stub requests the server to check state of all its components
+ *   Expect that all server services are not deadlocked.
+ *   Expect that PingEvent is received by connected Rialto Client stub.
+ *
+ *  Step 2: Fail healthcheck procedure
+ *   Rialto Client stub sends Ack message with wrong id to Rialto Server
+ *   Expect that Rialto Server doesnt send Ack to Server Manager Stub
+ *
+ * Test Teardown:
+ *  Server is terminated.
+ *
+ * Expected Results:
+ *  The healthcheck procedure is failed.
+ *
+ * Code:
+ */
+TEST_F(ControlTest, noAckWhenClientRespondsWithWrongId)
+{
+    // Step 1: Start healthcheck procedure
+    ExpectMessage<PingEvent> expectedPing{m_clientStub};
+
+    ::rialto::PingRequest request{createPingRequest(kPingId)};
+    ConfigureAction<::firebolt::rialto::server::ct::Ping>(m_serverManagerStub).send(request).expectSuccess();
+
+    auto receivedPing{expectedPing.getMessage()};
+    ASSERT_TRUE(receivedPing);
+    EXPECT_EQ(receivedPing->control_handle(), m_controlHandle);
+    EXPECT_EQ(receivedPing->id(), kPingId);
+
+    // Step 2: Fail healthcheck procedure
+    ExpectMessage<::rialto::AckEvent> expectedAck(m_serverManagerStub);
+
+    auto ackReq{createAckRequest(m_controlHandle, kPingId + 1)};
+    ConfigureAction<Ack>(m_clientStub).send(ackReq).expectSuccess();
+
+    auto receivedAck = expectedAck.getMessage();
+    EXPECT_FALSE(receivedAck);
+}
 } // namespace firebolt::rialto::server::ct
