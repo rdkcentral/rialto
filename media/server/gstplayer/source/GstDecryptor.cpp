@@ -199,7 +199,9 @@ GstElement *GstDecryptorElementFactory::createDecryptorElement(
     const gchar *name, firebolt::rialto::server::IDecryptionService *decryptionService,
     const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper) const
 {
-    GstRialtoDecryptor *decrypter = GST_RIALTO_DECRYPTOR(g_object_new(GST_RIALTO_DECRYPTOR_TYPE, name));
+    GstRialtoDecryptor *decrypter = GST_RIALTO_DECRYPTOR(g_object_new(GST_RIALTO_DECRYPTOR_TYPE, nullptr));
+    if (name) 
+        gst_object_set_name(GST_OBJECT(decrypter), name);
     GstRialtoDecryptorPrivate *priv =
         reinterpret_cast<GstRialtoDecryptorPrivate *>(gst_rialto_decryptor_get_instance_private(decrypter));
     std::shared_ptr<firebolt::rialto::server::IGstProtectionMetadataHelperFactory> metadataFactory =

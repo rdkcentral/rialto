@@ -232,7 +232,6 @@ void HandleBusMessage::execute() const
             {
                 RIALTO_SERVER_LOG_WARN("Unknown source type for class '%s', not propagating error", name);
             }
-            RIALTO_SERVER_LOG_WARN("lukewill: name '%s'", name);
         }
 
         m_glibWrapper->gFree(debug);
