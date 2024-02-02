@@ -84,7 +84,7 @@ TEST_F(GstDispatcherThreadTest, PollTimeout)
                                                   [this]() { return m_dispatcherThreadDone; });
     EXPECT_TRUE(status);
 }
-#if 0
+
 /**
  * Test that a GST_MESSAGE_STATE_CHANGED message is handled correctly.
  */
@@ -208,4 +208,3 @@ TEST_F(GstDispatcherThreadTest, Error)
                                                   [this]() { return m_dispatcherThreadDone; });
     EXPECT_TRUE(status);
 }
-#endif
