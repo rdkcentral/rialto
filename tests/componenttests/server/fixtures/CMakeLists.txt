@@ -25,6 +25,7 @@ add_library (
         STATIC
         RialtoServerComponentTest.cpp
         MediaPipelineTest.cpp
+        ControlTest.cpp
 )
 
 set_property (
