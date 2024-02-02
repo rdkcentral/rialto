@@ -38,8 +38,40 @@ public:
     ~MediaPipelineCapabilitiesTest() override = default;
 };
 
+/*
+ * Component Test: Get audio capabilities
+ * Test Objective:
+ *  Test if Rialto Server returns supported audio mime types
+ *
+ * Sequence Diagrams:
+ *  Capabilities - Supported MIME types
+ *  https://wiki.rdkcentral.com/display/ASP/Rialto+MSE+Misc+Sequence+Diagrams#RialtoMSEMiscSequenceDiagrams-SupportedMIMETypes
+ *
+ * Test Setup:
+ *  Language: C++
+ *  Testing Framework: Google Test
+ *  Components: MediaPipelineCapabilities
+ *
+ * Test Initialize:
+ *  Set Rialto Server to Active
+ *  Connect Rialto Client Stub
+ *
+ * Test Steps:
+ *  Step 1: Get audio capabilities
+ *   Client stub requests the server to get audio capabilities
+ *   Expect that server returns supported audio capabilities
+ *
+ * Test Teardown:
+ *  Server is terminated.
+ *
+ * Expected Results:
+ *  Rialto server returns supported audio capabilities.
+ *
+ * Code:
+ */
 TEST_F(MediaPipelineCapabilitiesTest, getAudioCapabilities)
 {
+    // Step 1: Get audio capabilities
     auto request{createGetSupportedMimeTypesRequest(MediaSourceType::AUDIO)};
     ConfigureAction<GetSupportedMimeTypes>{m_clientStub}.send(request).expectSuccess().matchResponse(
         [](const auto &resp)
@@ -48,5 +80,159 @@ TEST_F(MediaPipelineCapabilitiesTest, getAudioCapabilities)
             // Returned mime types should intersect with "audio/mpeg, mpegversion=(int)4" static pad caps
             EXPECT_THAT(resp.mime_types(), UnorderedElementsAre("audio/x-eac3", "audio/aac", "audio/mp4"));
         });
+};
+
+/*
+ * Component Test: Get video capabilities
+ * Test Objective:
+ *  Test if Rialto Server returns supported video mime types
+ *
+ * Sequence Diagrams:
+ *  Capabilities - Supported MIME types
+ *  https://wiki.rdkcentral.com/display/ASP/Rialto+MSE+Misc+Sequence+Diagrams#RialtoMSEMiscSequenceDiagrams-SupportedMIMETypes
+ *
+ * Test Setup:
+ *  Language: C++
+ *  Testing Framework: Google Test
+ *  Components: MediaPipelineCapabilities
+ *
+ * Test Initialize:
+ *  Set Rialto Server to Active
+ *  Connect Rialto Client Stub
+ *
+ * Test Steps:
+ *  Step 1: Get video capabilities
+ *   Client stub requests the server to get video capabilities
+ *   Expect that server returns supported video capabilities
+ *
+ * Test Teardown:
+ *  Server is terminated.
+ *
+ * Expected Results:
+ *  Rialto server returns supported video capabilities.
+ *
+ * Code:
+ */
+TEST_F(MediaPipelineCapabilitiesTest, getVideoCapabilities)
+{
+    // Step 1: Get video capabilities
+    auto request{createGetSupportedMimeTypesRequest(MediaSourceType::VIDEO)};
+    ConfigureAction<GetSupportedMimeTypes>{m_clientStub}.send(request).expectSuccess().matchResponse(
+        [](const auto &resp)
+        {
+            // NOTE: Supported Mime types are initialized during SUT initialization, in RialtoServerComponentTest::startSut()
+            // Returned mime types should intersect with "video/x-h264" static pad caps
+            EXPECT_THAT(resp.mime_types(), UnorderedElementsAre("video/h264"));
+        });
+};
+
+/*
+ * Component Test: Check, if audio mime type is supported
+ * Test Objective:
+ *  Test if requested mime type is supported by Rialto Server
+ *
+ * Sequence Diagrams:
+ *  Capabilities - Supported MIME types
+ *  https://wiki.rdkcentral.com/display/ASP/Rialto+MSE+Misc+Sequence+Diagrams#RialtoMSEMiscSequenceDiagrams-SupportedMIMETypes
+ *
+ * Test Setup:
+ *  Language: C++
+ *  Testing Framework: Google Test
+ *  Components: MediaPipelineCapabilities
+ *
+ * Test Initialize:
+ *  Set Rialto Server to Active
+ *  Connect Rialto Client Stub
+ *
+ * Test Steps:
+ *  Step 1: Check audio/mp4 mime type
+ *   Client stub requests the server to check, if audio/mp4 mime type is supported
+ *   Expect that server returns, that this mime type is supported
+ *
+ *  Step 2: Check audio/x-opus mime type
+ *   Client stub requests the server to check, if audio/x-opus mime type is supported
+ *   Expect that server returns, that this mime type is not supported
+ *
+ * Test Teardown:
+ *  Server is terminated.
+ *
+ * Expected Results:
+ *  Rialto server checks, if mime types are supported.
+ *
+ * Code:
+ */
+TEST_F(MediaPipelineCapabilitiesTest, checkAudioMimeTypes)
+{
+    // NOTE: Supported Mime types are initialized during SUT initialization, in RialtoServerComponentTest::startSut()
+    // Returned mime types should intersect with "audio/mpeg, mpegversion=(int)4" static pad caps
+
+    // Step 1: Check audio/mp4 mime type
+    auto mp4Request{createIsMimeTypeSupportedRequest("audio/mp4")};
+    ConfigureAction<IsMimeTypeSupported>{m_clientStub}
+        .send(mp4Request)
+        .expectSuccess()
+        .matchResponse([](const auto &resp) { EXPECT_TRUE(resp.is_supported()); });
+
+    // Step 2: Check audio/x-opus mime type
+    auto opusRequest{createIsMimeTypeSupportedRequest("audio/x-opus")};
+    ConfigureAction<IsMimeTypeSupported>{m_clientStub}
+        .send(opusRequest)
+        .expectSuccess()
+        .matchResponse([](const auto &resp) { EXPECT_FALSE(resp.is_supported()); });
+};
+
+/*
+ * Component Test: Check, if video mime type is supported
+ * Test Objective:
+ *  Test if requested mime type is supported by Rialto Server
+ *
+ * Sequence Diagrams:
+ *  Capabilities - Supported MIME types
+ *  https://wiki.rdkcentral.com/display/ASP/Rialto+MSE+Misc+Sequence+Diagrams#RialtoMSEMiscSequenceDiagrams-SupportedMIMETypes
+ *
+ * Test Setup:
+ *  Language: C++
+ *  Testing Framework: Google Test
+ *  Components: MediaPipelineCapabilities
+ *
+ * Test Initialize:
+ *  Set Rialto Server to Active
+ *  Connect Rialto Client Stub
+ *
+ * Test Steps:
+ *  Step 1: Check video/h264 mime type
+ *   Client stub requests the server to check, if video/h264 mime type is supported
+ *   Expect that server returns, that this mime type is supported
+ *
+ *  Step 2: Check video/x-vp9 mime type
+ *   Client stub requests the server to check, if video/x-vp9 mime type is supported
+ *   Expect that server returns, that this mime type is not supported
+ *
+ * Test Teardown:
+ *  Server is terminated.
+ *
+ * Expected Results:
+ *  Rialto server checks, if mime types are supported.
+ *
+ * Code:
+ */
+TEST_F(MediaPipelineCapabilitiesTest, checkVideoMimeTypes)
+{
+    // NOTE: Supported Mime types are initialized during SUT initialization, in RialtoServerComponentTest::startSut()
+    // Returned mime types should intersect with "audio/mpeg, mpegversion=(int)4" static pad caps
+
+    // Step 1: Check video/h264 mime type
+    auto h264Request{createIsMimeTypeSupportedRequest("video/h264")};
+    ConfigureAction<IsMimeTypeSupported>{m_clientStub}
+        .send(h264Request)
+        .expectSuccess()
+        .matchResponse([](const auto &resp) { EXPECT_TRUE(resp.is_supported()); });
+
+    // Step 2: Check video/x-vp9 mime type
+    auto opusRequest{createIsMimeTypeSupportedRequest("video/x-vp9")};
+    ConfigureAction<IsMimeTypeSupported>{m_clientStub}
+        .send(opusRequest)
+        .expectSuccess()
+        .matchResponse([](const auto &resp) { EXPECT_FALSE(resp.is_supported()); });
 };
 } // namespace firebolt::rialto::server::ct
