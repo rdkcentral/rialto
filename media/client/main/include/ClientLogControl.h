@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_CLIENT_CLIENT_LOG_CONTROL_H_
 
 #include <memory>
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -38,7 +39,7 @@ public:
     ClientLogControlFactory() = default;
     ~ClientLogControlFactory() override = default;
 
-    std::shared_ptr<IClientLogControl> createClientLogControl() override;
+    IClientLogControl &createClientLogControl() override;
 
     /**
      * @brief Create the (singleton) object.
@@ -46,9 +47,6 @@ public:
      * @retval the factory instance or null on error.
      */
     static std::shared_ptr<IClientLogControlFactory> createFactory();
-
-private:
-    std::shared_ptr<IClientLogControl> m_singletonInstance;
 };
 
 /**
@@ -61,6 +59,9 @@ public:
      * @brief The constructor.
      */
     ClientLogControl();
+
+    ClientLogControl(const ClientLogControl &) = delete;
+    ClientLogControl &operator=(const ClientLogControl &) = delete;
 
     /**
      * @brief Virtual destructor.
@@ -78,6 +79,7 @@ private:
      * @brief The registered log handler
      */
     std::shared_ptr<IClientLogHandler> m_logHandler;
+    std::mutex m_logHandlerMutex;
 };
 
 }; // namespace firebolt::rialto::client

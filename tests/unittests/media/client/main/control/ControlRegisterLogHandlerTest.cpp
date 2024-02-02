@@ -55,9 +55,9 @@ TEST_F(ClientLogControlTest, RegisterLogHandler)
 {
     std::shared_ptr<TestClientLogHandler> logHandler = std::make_shared<TestClientLogHandler>();
     {
-        std::shared_ptr<IClientLogControl> control = ClientLogControlFactory::createFactory()->createClientLogControl();
+        IClientLogControl &control = ClientLogControlFactory::createFactory()->createClientLogControl();
         std::shared_ptr<IClientLogHandler> tmp = logHandler;
-        EXPECT_TRUE(control->registerLogHandler(tmp, true));
+        EXPECT_TRUE(control.registerLogHandler(tmp, true));
     }
 
     // Generate a log entry
@@ -68,23 +68,23 @@ TEST_F(ClientLogControlTest, RegisterLogHandler)
 
 TEST_F(ClientLogControlTest, ShouldUpdateLogHandler)
 {
-    std::shared_ptr<IClientLogControl> control1 = IClientLogControlFactory::createFactory()->createClientLogControl();
+    IClientLogControl &control1 = IClientLogControlFactory::createFactory()->createClientLogControl();
 
     std::shared_ptr<TestClientLogHandler> logHandler1 = std::make_shared<TestClientLogHandler>();
     {
         std::shared_ptr<IClientLogHandler> tmp = logHandler1;
-        EXPECT_TRUE(control1->registerLogHandler(tmp, true));
+        EXPECT_TRUE(control1.registerLogHandler(tmp, true));
     }
     // Generate a log entry
     RIALTO_CLIENT_LOG_ERROR("%s", kLogTestStr.c_str());
 
-    std::shared_ptr<IClientLogControl> control2 = IClientLogControlFactory::createFactory()->createClientLogControl();
-    EXPECT_EQ(control1, control2); // IClientLogControl Ought to be a singleton
+    IClientLogControl &control2 = IClientLogControlFactory::createFactory()->createClientLogControl();
+    EXPECT_EQ(&control1, &control2); // IClientLogControl Ought to be a singleton
 
     std::shared_ptr<TestClientLogHandler> logHandler2 = std::make_shared<TestClientLogHandler>();
     {
         std::shared_ptr<IClientLogHandler> tmp = logHandler2;
-        control2->registerLogHandler(tmp, true);
+        control2.registerLogHandler(tmp, true);
     }
     // Generate a log entry
     RIALTO_CLIENT_LOG_ERROR("%s", kLogTestStr.c_str());
@@ -95,12 +95,12 @@ TEST_F(ClientLogControlTest, ShouldUpdateLogHandler)
 
 TEST_F(ClientLogControlTest, ShouldCancelLogHandler)
 {
-    std::shared_ptr<IClientLogControl> control = IClientLogControlFactory::createFactory()->createClientLogControl();
+    IClientLogControl &control = IClientLogControlFactory::createFactory()->createClientLogControl();
 
     std::shared_ptr<TestClientLogHandler> logHandler = std::make_shared<TestClientLogHandler>();
     {
         std::shared_ptr<IClientLogHandler> tmp = logHandler;
-        control->registerLogHandler(tmp, true);
+        control.registerLogHandler(tmp, true);
     }
     // Generate a log entry
     RIALTO_CLIENT_LOG_ERROR("%s", kLogTestStr.c_str());
@@ -109,7 +109,7 @@ TEST_F(ClientLogControlTest, ShouldCancelLogHandler)
     // Cancel the log handler
     {
         std::shared_ptr<IClientLogHandler> tmp; // nullptr
-        EXPECT_TRUE(control->registerLogHandler(tmp, false));
+        EXPECT_TRUE(control.registerLogHandler(tmp, false));
     }
 
     logHandler->m_gotExpectedLogMessage = false;

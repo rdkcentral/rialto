@@ -50,7 +50,7 @@ public:
     virtual ~IClientLogControlFactory() = default;
 
     /**
-     * @brief Creates the IClientLogControlFactory singleton
+     * @brief Creates the IClientLogControlFactory
      *
      * @retval the factory instance or null on error.
      */
@@ -61,7 +61,7 @@ public:
      *
      * @retval the new IClientLogControl instance or null on error.
      */
-    virtual std::shared_ptr<IClientLogControl> createClientLogControl() = 0;
+    virtual IClientLogControl &createClientLogControl() = 0;
 };
 
 /**

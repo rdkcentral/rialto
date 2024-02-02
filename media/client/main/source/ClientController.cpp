@@ -35,12 +35,8 @@ IClientControllerAccessor &IClientControllerAccessor::instance()
 
 IClientController &ClientControllerAccessor::getClientController() const
 {
-    static std::unique_ptr<ClientController> clientController;
-    if (!clientController)
-    {
-        clientController = std::make_unique<ClientController>(IControlIpcFactory::createFactory());
-    }
-    return *clientController;
+    static ClientController ClientController{IControlIpcFactory::createFactory()};
+    return ClientController;
 }
 
 ClientController::ClientController(const std::shared_ptr<IControlIpcFactory> &ControlIpcFactory)

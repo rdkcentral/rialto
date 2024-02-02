@@ -17,42 +17,49 @@
  * limitations under the License.
  */
 
-#include "RialtoLogging.h"
-#include "EnvVariableParser.h"
-#include "LogFileHandle.h"
 #include <atomic>
 #include <cstdarg>
 #include <cstdio>
 #include <cstring>
 #include <ctime>
+#include <mutex>
 #include <sys/syscall.h>
 #include <sys/uio.h>
 #include <syslog.h>
 #include <unistd.h>
 
+#include "EnvVariableParser.h"
+#include "LogFileHandle.h"
+#include "RialtoLogging.h"
+
+namespace
+{
 /**
  * Log levels for each component. By default will print all fatals, errors, warnings & milestones.
  */
-static std::atomic<RIALTO_DEBUG_LEVEL> g_rialtoLogLevels[RIALTO_COMPONENT_LAST] = {};
+std::atomic<RIALTO_DEBUG_LEVEL> g_rialtoLogLevels[RIALTO_COMPONENT_LAST] = {};
 
 /**
  * Default Log levels defined by RIALTO_DEBUG environment variable
  */
-static const firebolt::rialto::logging::EnvVariableParser g_envVariableParser;
+const firebolt::rialto::logging::EnvVariableParser g_envVariableParser;
 
 /**
  * Log handler for each component. By default will use journaldLogHandler.
  */
-static void fdLogHandler(int fd, RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char *file, int line,
-                         const char *function, const char *message, size_t messageLen);
-static void journaldLogHandler(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char *file, int line,
-                               const char *function, const char *message, size_t messageLen);
-static firebolt::rialto::logging::LogHandler g_logHandler[RIALTO_COMPONENT_LAST] = {};
-static bool g_ignoreLogLevels[RIALTO_COMPONENT_LAST] = {};
-static std::string componentToString(RIALTO_COMPONENT component);
-static std::string levelToString(RIALTO_DEBUG_LEVEL level);
+void fdLogHandler(int fd, RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char *file, int line,
+                  const char *function, const char *message, size_t messageLen);
+void journaldLogHandler(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char *file, int line,
+                        const char *function, const char *message, size_t messageLen);
 
-static std::string componentToString(RIALTO_COMPONENT component)
+firebolt::rialto::logging::LogHandler g_logHandler[RIALTO_COMPONENT_LAST] = {};
+bool g_ignoreLogLevels[RIALTO_COMPONENT_LAST] = {};
+std::mutex g_logHandlerMutex;
+
+std::string componentToString(RIALTO_COMPONENT component);
+std::string levelToString(RIALTO_DEBUG_LEVEL level);
+
+std::string componentToString(RIALTO_COMPONENT component)
 {
     switch (component)
     {
@@ -83,7 +90,7 @@ static std::string componentToString(RIALTO_COMPONENT component)
     }
 }
 
-static std::string levelToString(RIALTO_DEBUG_LEVEL level)
+std::string levelToString(RIALTO_DEBUG_LEVEL level)
 {
     switch (level)
     {
@@ -117,8 +124,8 @@ static std::string levelToString(RIALTO_DEBUG_LEVEL level)
 /**
  * File descriptor logging function for the library.
  */
-static void fdLogHandler(int fd, RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char *file, int line,
-                         const char *function, const char *message, size_t messageLen)
+void fdLogHandler(int fd, RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char *file, int line,
+                  const char *function, const char *message, size_t messageLen)
 {
     timespec ts = {0, 0};
     clock_gettime(CLOCK_MONOTONIC, &ts);
@@ -170,8 +177,8 @@ static void fdLogHandler(int fd, RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL 
 /**
  * Journald logging function for the library.
  */
-static void journaldLogHandler(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char *file, int line,
-                               const char *function, const char *message, size_t messageLen)
+void journaldLogHandler(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char *file, int line,
+                        const char *function, const char *message, size_t messageLen)
 {
     static thread_local pid_t threadId = 0;
     if (threadId <= 0)
@@ -221,8 +228,8 @@ static void journaldLogHandler(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL le
     }
 }
 
-static void rialtoLog(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char *file, const char *func,
-                      int line, const char *fmt, va_list ap, const char *append)
+void rialtoLog(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char *file, const char *func, int line,
+               const char *fmt, va_list ap, const char *append)
 {
     /* Must be valid component */
     if (component >= RIALTO_COMPONENT_LAST)
@@ -262,9 +269,10 @@ static void rialtoLog(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, cons
 
     const auto &kLogFileHandle = firebolt::rialto::logging::LogFileHandle::instance();
     /* If log handler had not been set, use default */
-    if (g_logHandler[component])
+    firebolt::rialto::logging::LogHandler logHandler = g_logHandler[component]; // local copy for thread safety
+    if (logHandler)
     {
-        g_logHandler[component](level, kFname, line, func, mbuf, len);
+        logHandler(level, kFname, line, func, mbuf, len);
     }
     else if (g_envVariableParser.isFileLoggingEnabled() && kLogFileHandle.isOpen())
     {
@@ -279,6 +287,8 @@ static void rialtoLog(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, cons
         journaldLogHandler(component, level, kFname, line, func, mbuf, len);
     }
 }
+
+} // namespace
 
 void rialtoLogVPrintf(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char *file, const char *func,
                       int line, const char *fmt, va_list ap)
@@ -356,6 +366,8 @@ RialtoLoggingStatus setLogHandler(RIALTO_COMPONENT component, LogHandler handler
     RialtoLoggingStatus status = RIALTO_LOGGING_STATUS_ERROR;
     if (component < RIALTO_COMPONENT_LAST)
     {
+        std::unique_lock<std::mutex> lock{g_logHandlerMutex};
+
         /* not thread-safe, but doubt this will be an issue */
         g_logHandler[component] = std::move(handler);
 

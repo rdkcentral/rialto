@@ -62,35 +62,13 @@ namespace firebolt::rialto::client
 {
 std::shared_ptr<IClientLogControlFactory> ClientLogControlFactory::createFactory()
 {
-    static std::shared_ptr<IClientLogControlFactory> factory;
-    if (!factory)
-    {
-        try
-        {
-            factory = std::make_shared<client::ClientLogControlFactory>();
-        }
-        catch (const std::exception &e)
-        {
-            RIALTO_CLIENT_LOG_ERROR("Failed to create ClientLogControlFactory, reason: %s", e.what());
-        }
-    }
-    return factory;
+    return std::make_shared<client::ClientLogControlFactory>();
 }
 
-std::shared_ptr<IClientLogControl> ClientLogControlFactory::createClientLogControl()
+IClientLogControl &ClientLogControlFactory::createClientLogControl()
 {
-    if (!m_singletonInstance)
-    {
-        try
-        {
-            m_singletonInstance = std::make_shared<ClientLogControl>();
-        }
-        catch (const std::exception &e)
-        {
-            RIALTO_CLIENT_LOG_ERROR("Failed to create ClientLogControl, reason: %s", e.what());
-        }
-    }
-    return m_singletonInstance;
+    static std::unique_ptr<IClientLogControl> clientLogControl{std::make_unique<ClientLogControl>()};
+    return *clientLogControl;
 }
 
 ClientLogControl::ClientLogControl()
@@ -101,12 +79,15 @@ ClientLogControl::ClientLogControl()
 ClientLogControl::~ClientLogControl()
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
+    std::unique_lock<std::mutex> lock{m_logHandlerMutex};
     if (m_logHandler)
         cancelLogHandler();
 }
 
 bool ClientLogControl::registerLogHandler(std::shared_ptr<IClientLogHandler> &handler, bool ignoreLogLevels)
 {
+    std::unique_lock<std::mutex> lock{m_logHandlerMutex};
+
     if (m_logHandler)
     {
         if (handler)
@@ -152,8 +133,11 @@ void ClientLogControl::cancelLogHandler()
 void ClientLogControl::forwardLog(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char *file, int line,
                                   const char *function, const char *message, std::size_t messageLen)
 {
-    if (!m_logHandler)
-        return;
-    m_logHandler->log(convertLevel(level), std::string(file), line, std::string(function), std::string(message));
+    // Take a local copy to ensure thread safety
+    std::shared_ptr<IClientLogHandler> logHandler{m_logHandler};
+    if (logHandler)
+    {
+        logHandler->log(convertLevel(level), std::string(file), line, std::string(function), std::string(message));
+    }
 }
 }; // namespace firebolt::rialto::client
