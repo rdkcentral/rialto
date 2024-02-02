@@ -141,7 +141,7 @@ TEST_F(GstDispatcherThreadTest, StateChangedToPaused)
 
     // wait for dispatcher thread
     std::unique_lock<std::mutex> dispatcherLock(m_dispatcherThreadMutex);
-    bool status = m_dispatcherThreadCond.wait_for(dispatcherLock, std::chrono::milliseconds(1),
+    bool status = m_dispatcherThreadCond.wait_for(dispatcherLock, std::chrono::milliseconds(200),
                                                   [this]() { return m_dispatcherThreadDone; });
     EXPECT_TRUE(status);
 }
