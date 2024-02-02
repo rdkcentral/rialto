@@ -9,6 +9,7 @@
 /cppcheck_report.txt
 /cmake/ocdm-config.cmake
 *__pycache__
+/.vscode/*
 
 # These files are fetched by cmake during building rialto for the native platform
 /stubs/opencdm/third-party/*
