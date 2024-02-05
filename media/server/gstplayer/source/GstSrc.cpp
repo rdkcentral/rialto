@@ -387,12 +387,12 @@ void GstSrc::setupAndAddAppArc(IDecryptionService *decryptionService, GstElement
     // Configure and add decryptor
     if (streamInfo.hasDrm)
     {
-        gchar *decrypterName =
+        gchar *decryptorName =
             m_glibWrapper->gStrdupPrintf("rialtodecryptor%s_%u",
                                          (type == firebolt::rialto::MediaSourceType::VIDEO) ? "video" : "audio", id);
         GstElement *decryptor =
-            m_decryptorFactory->createDecryptorElement(decrypterName, decryptionService, m_gstWrapper);
-        m_glibWrapper->gFree(decrypterName);
+            m_decryptorFactory->createDecryptorElement(decryptorName, decryptionService, m_gstWrapper);
+        m_glibWrapper->gFree(decryptorName);
         if (decryptor)
         {
             GST_DEBUG_OBJECT(src, "Injecting decryptor element %" GST_PTR_FORMAT, decryptor);

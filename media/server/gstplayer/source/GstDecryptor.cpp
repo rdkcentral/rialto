@@ -206,7 +206,7 @@ GstElement *GstDecryptorElementFactory::createDecryptorElement(
         if (!gstWrapper->gstObjectSetName(GST_OBJECT(decryptor), name))
         {
             RIALTO_SERVER_LOG_ERROR("Failed to set the decryptor name to %s", name);
-            g_object_unref(GST_OBJECT(decrypter));
+            g_object_unref(GST_OBJECT(decryptor));
             return nullptr;
         }
     }

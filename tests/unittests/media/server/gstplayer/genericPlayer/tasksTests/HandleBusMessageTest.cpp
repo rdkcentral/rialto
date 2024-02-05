@@ -504,10 +504,10 @@ TEST_F(HandleBusMessageTest, shouldHandleWarningMessageForAudioDecryption)
 {
     // Set decryptor audio
     GstObject *decryptor = GST_OBJECT_CAST(g_object_new(GST_TYPE_BIN, nullptr));
-    gst_object_set_name(decrypter, "rialtodecryptoraudio_0");
+    gst_object_set_name(decryptor, "rialtodecryptoraudio_0");
 
     GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_WARNING;
-    GST_MESSAGE_SRC(&m_message) = decrypter;
+    GST_MESSAGE_SRC(&m_message) = decryptor;
     m_err.domain = GST_STREAM_ERROR;
     m_err.code = GST_STREAM_ERROR_DECRYPT;
 
@@ -521,7 +521,7 @@ TEST_F(HandleBusMessageTest, shouldHandleWarningMessageForAudioDecryption)
                                                                     m_gstWrapper, m_glibWrapper, &m_message};
     task.execute();
 
-    g_object_unref(decrypter);
+    g_object_unref(decryptor);
 }
 
 /**
@@ -531,10 +531,10 @@ TEST_F(HandleBusMessageTest, shouldHandleWarningMessageForVideoDecryption)
 {
     // Set decryptor video
     GstObject *decryptor = GST_OBJECT_CAST(g_object_new(GST_TYPE_BIN, nullptr));
-    gst_object_set_name(decrypter, "rialtodecryptorvideo_0");
+    gst_object_set_name(decryptor, "rialtodecryptorvideo_0");
 
     GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_WARNING;
-    GST_MESSAGE_SRC(&m_message) = decrypter;
+    GST_MESSAGE_SRC(&m_message) = decryptor;
     m_err.domain = GST_STREAM_ERROR;
     m_err.code = GST_STREAM_ERROR_DECRYPT;
 
@@ -548,7 +548,7 @@ TEST_F(HandleBusMessageTest, shouldHandleWarningMessageForVideoDecryption)
                                                                     m_gstWrapper, m_glibWrapper, &m_message};
     task.execute();
 
-    g_object_unref(decrypter);
+    g_object_unref(decryptor);
 }
 
 /**

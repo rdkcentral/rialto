@@ -62,7 +62,8 @@ protected:
     GstPad m_target = {};
     GstPad m_pad = {};
     gchar *m_name = "src_0";
-    gchar *m_decryptorName = "rialtodecryptor_0";
+    gchar *m_audioDecryptorName = "rialtodecryptoraudio_0";
+    gchar *m_videoDecryptorName = "rialtodecryptorvideo_0";
     StreamInfo m_streamInfo;
 
     RialtoServerAppSrcGstSrcTest() : m_streamInfo{&m_appsrc, true} {}
@@ -138,9 +139,9 @@ protected:
         EXPECT_CALL(*m_gstWrapperMock, gstElementSyncStateWithParent(expectedElement));
     }
 
-    void expectLinkDecryptor(GstElement *expectedSrcElement)
+    void expectLinkDecryptor(GstElement *expectedSrcElement, gchar* decryptorName)
     {
-        expectCreateDecryptor();
+        expectCreateDecryptor(decryptorName);
         expectBin(&m_decryptor);
         expectSyncElement(&m_decryptor);
         EXPECT_CALL(*m_gstWrapperMock, gstElementLink(expectedSrcElement, &m_decryptor));
@@ -174,14 +175,14 @@ protected:
         EXPECT_CALL(*m_gstWrapperMock, gstElementLink(expectedSrcElement, &m_queue));
     }
 
-    void expectCreateDecryptor()
+    void expectCreateDecryptor(gchar* decryptorName)
     {
         EXPECT_CALL(*m_decryptorFactoryMock,
-                    createDecryptorElement(StrEq(m_decryptorName),
+                    createDecryptorElement(StrEq(decryptorName),
                                            reinterpret_cast<IDecryptionService *>(m_decryptionServiceMock.get()), _))
             .WillOnce(Return(&m_decryptor));
-        EXPECT_CALL(*m_glibWrapperMock, gStrdupPrintfStub(HasSubstr("rialtodecryptor"))).WillOnce(Return(m_decryptorName));
-        EXPECT_CALL(*m_glibWrapperMock, gFree(PtrStrMatcher(m_decryptorName)));
+        EXPECT_CALL(*m_glibWrapperMock, gStrdupPrintfStub(StrEq(decryptorName))).WillOnce(Return(decryptorName));
+        EXPECT_CALL(*m_glibWrapperMock, gFree(PtrStrMatcher(decryptorName)));
     }
 };
 
@@ -195,7 +196,7 @@ TEST_F(RialtoServerAppSrcGstSrcTest, SetupVideo)
     expectSettings(videoMaxBytes);
     expectBin(m_streamInfo.appSrc);
     expectSyncElement(m_streamInfo.appSrc);
-    expectLinkDecryptor(m_streamInfo.appSrc);
+    expectLinkDecryptor(m_streamInfo.appSrc, m_videoDecryptorName);
     expectLinkPayloader(&m_decryptor);
     expectLinkQueue(&m_payloader);
     expectSetupPad(&m_queue);
@@ -225,7 +226,7 @@ TEST_F(RialtoServerAppSrcGstSrcTest, SetupAudio)
     expectSettings(audioMaxBytes);
     expectBin(m_streamInfo.appSrc);
     expectSyncElement(m_streamInfo.appSrc);
-    expectLinkDecryptor(m_streamInfo.appSrc);
+    expectLinkDecryptor(m_streamInfo.appSrc, m_audioDecryptorName);
     expectLinkQueue(&m_decryptor);
     expectSetupPad(&m_queue);
 
@@ -240,12 +241,12 @@ TEST_F(RialtoServerAppSrcGstSrcTest, DecryptorFailure)
 {
     guint64 videoMaxBytes = 8 * 1024 * 1024;
 
-    EXPECT_CALL(*m_glibWrapperMock, gStrdupPrintfStub(HasSubstr("rialtodecryptor"))).WillOnce(Return(m_decryptorName));
+    EXPECT_CALL(*m_glibWrapperMock, gStrdupPrintfStub(StrEq(m_videoDecryptorName))).WillOnce(Return(m_videoDecryptorName));
     EXPECT_CALL(*m_decryptorFactoryMock,
-                createDecryptorElement(StrEq(m_decryptorName),
+                createDecryptorElement(StrEq(m_videoDecryptorName),
                                        reinterpret_cast<IDecryptionService *>(m_decryptionServiceMock.get()), _))
         .WillOnce(Return(nullptr));
-    EXPECT_CALL(*m_glibWrapperMock, gFree(PtrStrMatcher(m_decryptorName)));
+    EXPECT_CALL(*m_glibWrapperMock, gFree(PtrStrMatcher(m_videoDecryptorName)));
 
     expectSettings(videoMaxBytes);
     expectBin(m_streamInfo.appSrc);
@@ -275,7 +276,7 @@ TEST_F(RialtoServerAppSrcGstSrcTest, PayloaderFailure)
     expectSettings(videoMaxBytes);
     expectBin(m_streamInfo.appSrc);
     expectSyncElement(m_streamInfo.appSrc);
-    expectLinkDecryptor(m_streamInfo.appSrc);
+    expectLinkDecryptor(m_streamInfo.appSrc, m_videoDecryptorName);
     expectLinkQueue(&m_decryptor);
     expectSetupPad(&m_queue);
 
@@ -295,7 +296,7 @@ TEST_F(RialtoServerAppSrcGstSrcTest, QueueFailure)
     expectSettings(videoMaxBytes);
     expectBin(m_streamInfo.appSrc);
     expectSyncElement(m_streamInfo.appSrc);
-    expectLinkDecryptor(m_streamInfo.appSrc);
+    expectLinkDecryptor(m_streamInfo.appSrc, m_videoDecryptorName);
     expectLinkPayloader(&m_decryptor);
     expectSetupPad(&m_payloader);
 
