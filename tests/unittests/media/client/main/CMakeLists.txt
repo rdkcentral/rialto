@@ -43,6 +43,7 @@ add_gtests (
 
         # Control tests
         control/ControlTest.cpp
+        control/ControlRegisterLogHandlerTest.cpp
 
         # MediaKeys tests
         mediaKeys/CreateTest.cpp
@@ -86,6 +87,7 @@ target_include_directories(
         $<TARGET_PROPERTY:RialtoPlayerPublicClientMocks,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoCommonMisc,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoTestCommonMatchers,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoLogging,INTERFACE_INCLUDE_DIRECTORIES>
 
         mocks
 

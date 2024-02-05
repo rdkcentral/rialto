@@ -75,7 +75,7 @@ TEST_F(ServerManagerServiceTests, registerLogHandlerShouldSucceed)
 {
     EXPECT_TRUE(triggerRegisterLogHandler(configureLogHandler()));
     triggerServerManagerLog();
-    firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_SERVER_MANAGER, nullptr);
+    firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_SERVER_MANAGER, nullptr, false);
 }
 
 TEST_F(ServerManagerServiceTests, registerLogHandlerShouldFailWhenPtrIsNull)

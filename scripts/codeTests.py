@@ -61,7 +61,7 @@ def getSourceFiles():
         for file in files:
             if file.endswith(".cpp") or file.endswith(".h"):
                 f = os.path.join(root, file)
-                if "/build/" not in f:
+                if "/build/" not in f and "/third-party/" not in f:
                     rv.append(f)
     return rv
 

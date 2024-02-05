@@ -91,3 +91,10 @@ if( NOT CMAKE_BUILD_TYPE STREQUAL "UnitTests" )
                 DESTINATION ${CMAKE_INSTALL_LIBDIR}
         )
 endif()
+
+if( NATIVE_BUILD )
+      set_target_properties(
+        RialtoServerManager
+        PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib"
+      )
+endif()
