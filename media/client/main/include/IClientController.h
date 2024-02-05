@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2022 Sky UK
+ * Copyright 2024 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,14 @@
 #ifndef FIREBOLT_RIALTO_CLIENT_I_CLIENT_CONTROLLER_H_
 #define FIREBOLT_RIALTO_CLIENT_I_CLIENT_CONTROLLER_H_
 
-#include "IControlClient.h"
-#include "ISharedMemoryHandle.h"
 #include <functional>
 #include <memory>
 #include <stdint.h>
+
+#include "IClientLogHandler.h"
+#include "IControlClient.h"
+#include "ISharedMemoryHandle.h"
+
 namespace firebolt::rialto::client
 {
 class IClientController;

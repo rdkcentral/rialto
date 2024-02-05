@@ -36,18 +36,20 @@ target_include_directories(
 
 set (
         RIALTO_PLAYER_PUBLIC_HEADERS
-        include/IMediaPipeline.h
-        include/IMediaPipelineClient.h
-        include/IMediaPipelineCapabilities.h
-        include/IMediaKeys.h
-        include/IMediaKeysClient.h
-        include/IMediaKeysCapabilities.h
+        include/ControlCommon.h
+        include/IClientLogControl.h
+        include/IClientLogHandler.h
         include/IControl.h
         include/IControlClient.h
-        include/MediaCommon.h
-        include/ControlCommon.h
+        include/IMediaKeys.h
+        include/IMediaKeysCapabilities.h
+        include/IMediaKeysClient.h
+        include/IMediaPipeline.h
+        include/IMediaPipelineCapabilities.h
+        include/IMediaPipelineClient.h
         include/IWebAudioPlayer.h
         include/IWebAudioPlayerClient.h
+        include/MediaCommon.h
 )
 
 install (

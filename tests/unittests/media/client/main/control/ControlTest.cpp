@@ -17,10 +17,11 @@
  * limitations under the License.
  */
 
-#include "Control.h"
-#include "ClientControllerMock.h"
-#include "ControlClientMock.h"
 #include <gtest/gtest.h>
+
+#include "ClientControllerMock.h"
+#include "Control.h"
+#include "ControlClientMock.h"
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::client;

@@ -60,6 +60,10 @@ ServerManagerService::ServerManagerService(std::unique_ptr<IServiceContext> &&co
 ServerManagerService::~ServerManagerService()
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("RialtoServerManager is closing...");
+    if (m_logHandler)
+    {
+        firebolt::rialto::logging::setLogHandler(RIALTO_COMPONENT_SERVER_MANAGER, 0, false);
+    }
 }
 
 bool ServerManagerService::initiateApplication(const std::string &appId,
@@ -98,7 +102,8 @@ bool ServerManagerService::registerLogHandler(const std::shared_ptr<ILogHandler>
                                                     std::bind(&ServerManagerService::forwardLog, this,
                                                               std::placeholders::_1, std::placeholders::_2,
                                                               std::placeholders::_3, std::placeholders::_4,
-                                                              std::placeholders::_5, std::placeholders::_6));
+                                                              std::placeholders::_5, std::placeholders::_6),
+                                                    false);
 }
 
 void ServerManagerService::forwardLog(RIALTO_DEBUG_LEVEL level, const char *file, int line, const char *function,
