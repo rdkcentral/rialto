@@ -60,9 +60,9 @@ public:
         EXPECT_CALL(*m_glibWrapperMock, gErrorFree(&m_err)).WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
     }
 
-    void gstWarning(const char* srcName)
+    void gstWarning(const char *srcName)
     {
-        m_src = GST_OBJECT_CAST(g_object_new(GST_TYPE_BIN, nullptr)); 
+        m_src = GST_OBJECT_CAST(g_object_new(GST_TYPE_BIN, nullptr));
         gst_object_set_name(m_src, srcName);
         m_gstreamerStub.sendWarning(GST_ELEMENT(m_src), &m_err, m_debug);
 
@@ -72,7 +72,7 @@ public:
         g_object_unref(m_src);
     }
 
-    void notifyPlaybackError(int sourceId, PlaybackError error, const char* srcName)
+    void notifyPlaybackError(int sourceId, PlaybackError error, const char *srcName)
     {
         ExpectMessage<PlaybackErrorEvent> expectedPlaybackError{m_clientStub};
 
@@ -86,7 +86,7 @@ public:
     }
 
 private:
-    GstObject* m_src;
+    GstObject *m_src;
     GError m_err{};
     gchar m_debug[14]{"Error message"};
 };

@@ -1210,7 +1210,7 @@ public:
      *
      * @retval TRUE if name could be set.
      */
-    virtual gboolean gstObjectSetName(GstObject * object, const gchar * name) const = 0;
+    virtual gboolean gstObjectSetName(GstObject *object, const gchar *name) const = 0;
 };
 
 }; // namespace firebolt::rialto::wrappers

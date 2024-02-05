@@ -342,7 +342,7 @@ public:
      *
      * @retval A new GObject object, caller is responsible for freeing.
      */
-    virtual GObject* gObjectNew(GType object_type, const gchar* first_property_name, ...) = 0;
+    virtual GObject *gObjectNew(GType object_type, const gchar *first_property_name, ...) = 0;
 };
 
 }; // namespace firebolt::rialto::wrappers

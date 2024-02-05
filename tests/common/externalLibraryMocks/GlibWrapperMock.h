@@ -100,9 +100,9 @@ public:
     MOCK_METHOD(gpointer, gValueGetObject, (const GValue *value), (const, override));
     MOCK_METHOD(void, gValueUnset, (GValue * value), (const, override));
     MOCK_METHOD(GError *, gErrorNewLiteral, (GQuark domain, gint code, const gchar *message), (const, override));
-    GObject* gObjectNew(GType object_type, const gchar* first_property_name, ...) override
+    GObject *gObjectNew(GType object_type, const gchar *first_property_name, ...) override
     {
-        GObject* obj = nullptr;
+        GObject *obj = nullptr;
         va_list args;
         const gchar *kProperty = first_property_name;
 
@@ -127,7 +127,7 @@ public:
 
         return obj;
     }
-    MOCK_METHOD(GObject*, gObjectNewStub, (GType object_type, const gchar* first_property_name, void *element));
+    MOCK_METHOD(GObject *, gObjectNewStub, (GType object_type, const gchar *first_property_name, void *element));
 };
 } // namespace firebolt::rialto::wrappers
 

@@ -221,12 +221,12 @@ void HandleBusMessage::execute() const
             if (g_strrstr(name, "video"))
             {
                 m_gstPlayerClient->notifyPlaybackError(firebolt::rialto::MediaSourceType::VIDEO,
-                                                        PlaybackError::DECRYPTION);
+                                                       PlaybackError::DECRYPTION);
             }
             else if (g_strrstr(name, "audio"))
             {
                 m_gstPlayerClient->notifyPlaybackError(firebolt::rialto::MediaSourceType::AUDIO,
-                                                        PlaybackError::DECRYPTION);
+                                                       PlaybackError::DECRYPTION);
             }
             else
             {

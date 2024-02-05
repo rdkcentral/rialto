@@ -202,7 +202,7 @@ GstElement *GstDecryptorElementFactory::createDecryptorElement(
 {
     // Bypass the glib wrapper here, this is the only place we can create a proper Decrypter element
     GstRialtoDecryptor *decrypter = GST_RIALTO_DECRYPTOR(g_object_new(GST_RIALTO_DECRYPTOR_TYPE, nullptr));
-    if (name) 
+    if (name)
     {
         if (!gstWrapper->gstObjectSetName(GST_OBJECT(decrypter), name))
         {

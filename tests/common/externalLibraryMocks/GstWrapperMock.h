@@ -193,7 +193,7 @@ public:
     MOCK_METHOD(GstCaps *, gstPadGetCurrentCaps, (GstPad * pad), (const, override));
     MOCK_METHOD(GstStructure *, gstCapsGetStructure, (const GstCaps *caps, guint index), (const, override));
     MOCK_METHOD(const gchar *, gstStructureGetName, (const GstStructure *structure), (const, override));
-    MOCK_METHOD(gboolean, gstObjectSetName, (GstObject * object, const gchar * name), (const, override));
+    MOCK_METHOD(gboolean, gstObjectSetName, (GstObject * object, const gchar *name), (const, override));
 
     GstCaps *gstCapsNewSimple(const char *media_type, const char *fieldname, ...) const override
     {

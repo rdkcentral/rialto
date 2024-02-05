@@ -145,7 +145,7 @@ public:
     {
         return g_error_new_literal(domain, code, message);
     }
-    GObject* gObjectNew(GType object_type, const gchar* first_property_name, ...) override;
+    GObject *gObjectNew(GType object_type, const gchar *first_property_name, ...) override;
 };
 
 }; // namespace firebolt::rialto::wrappers
