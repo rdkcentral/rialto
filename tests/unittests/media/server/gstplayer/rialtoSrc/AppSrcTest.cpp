@@ -139,7 +139,7 @@ protected:
     void expectLinkDecryptor(GstElement *expectedSrcElement)
     {
         EXPECT_CALL(*m_decryptorFactoryMock,
-                    createDecryptorElement(_, reinterpret_cast<IDecryptionService *>(m_decryptionServiceMock.get()), _))
+                    createDecryptorElement(_, reinterpret_cast<IDecryptionService *>(m_decryptionServiceMock.get()), _, _))
             .WillOnce(Return(&m_decryptor));
         expectBin(&m_decryptor);
         expectSyncElement(&m_decryptor);
@@ -231,7 +231,7 @@ TEST_F(RialtoServerAppSrcGstSrcTest, DecryptorFailure)
     guint64 videoMaxBytes = 8 * 1024 * 1024;
 
     EXPECT_CALL(*m_decryptorFactoryMock,
-                createDecryptorElement(_, reinterpret_cast<IDecryptionService *>(m_decryptionServiceMock.get()), _))
+                createDecryptorElement(_, reinterpret_cast<IDecryptionService *>(m_decryptionServiceMock.get()), _, _))
         .WillOnce(Return(nullptr));
 
     expectSettings(videoMaxBytes);

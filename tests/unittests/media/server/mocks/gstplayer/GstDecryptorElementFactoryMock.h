@@ -34,7 +34,8 @@ public:
 
     MOCK_METHOD(GstElement *, createDecryptorElement,
                 (const gchar *name, firebolt::rialto::server::IDecryptionService *decryptionService,
-                 const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper),
+                 const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                 const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper),
                 (const, override));
 };
 } // namespace firebolt::rialto::server

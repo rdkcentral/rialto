@@ -74,4 +74,12 @@ gboolean GlibWrapper::gStrHasPrefix(const gchar *str, const gchar *prefix)
     return g_str_has_prefix(str, prefix);
 }
 
+GObject* gObjectNew(GType object_type, const gchar* first_property_name, ...)
+{
+    va_list vl;
+    va_start(vl, first_property_name);
+    g_object_new_valist(object_type, first_property_name, vl);
+    va_end(vl);
+}
+
 }; // namespace firebolt::rialto::wrappers

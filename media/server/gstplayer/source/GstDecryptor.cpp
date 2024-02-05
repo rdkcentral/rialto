@@ -197,15 +197,16 @@ std::shared_ptr<IGstDecryptorElementFactory> IGstDecryptorElementFactory::create
 
 GstElement *GstDecryptorElementFactory::createDecryptorElement(
     const gchar *name, firebolt::rialto::server::IDecryptionService *decryptionService,
-    const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper) const
+    const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+    const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper) const
 {
-    GstRialtoDecryptor *decrypter = GST_RIALTO_DECRYPTOR(g_object_new(GST_RIALTO_DECRYPTOR_TYPE, nullptr));
+    GstRialtoDecryptor *decrypter = GST_RIALTO_DECRYPTOR(glibWrapper->gObjectNew(GST_RIALTO_DECRYPTOR_TYPE, nullptr));
     if (name) 
     {
         if (!gstWrapper->gstObjectSetName(GST_OBJECT(decrypter), name))
         {
             RIALTO_SERVER_LOG_ERROR("Failed to set the decryptor name too %s", name);
-            g_object_unref(GST_OBJECT(decrypter));
+            glibWrapper->gObjectUnref(GST_OBJECT(decrypter));
             return nullptr;
         }
     }
@@ -223,7 +224,7 @@ GstElement *GstDecryptorElementFactory::createDecryptorElement(
     else
     {
         RIALTO_SERVER_LOG_ERROR("Failed to create the decryptor element");
-        g_object_unref(GST_OBJECT(decrypter));
+        glibWrapper->gObjectUnref(GST_OBJECT(decrypter));
         return nullptr;
     }
 }

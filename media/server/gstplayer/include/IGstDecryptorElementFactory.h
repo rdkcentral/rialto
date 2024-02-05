@@ -22,6 +22,7 @@
 
 #include "IDecryptionService.h"
 #include "IGstWrapper.h"
+#include "IGlibWrapper.h"
 #include <gst/gst.h>
 #include <memory>
 
@@ -48,12 +49,14 @@ public:
      *
      * @param[in] decryptionService : The service used to decrypt frames.
      * @param[in] gstWrapper        : The gstreamer wrapper.
+     * @param[in] glibWrapper       : The glib wrapper.
      *
      * @retval a decryptor element instance or null on error.
      */
     virtual GstElement *
     createDecryptorElement(const gchar *name, firebolt::rialto::server::IDecryptionService *decryptionService,
-                           const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper) const = 0;
+                           const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                           const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper) const = 0;
 };
 
 }; // namespace firebolt::rialto::server

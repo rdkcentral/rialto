@@ -556,7 +556,7 @@ TEST_F(HandleBusMessageTest, shouldHandleWarningMessageForVideoDecryption)
  */
 TEST_F(HandleBusMessageTest, shouldHandleWarningMessageGeneric)
 {
-    // Set decryptor video
+    // Set decryptor generic
     GstObject *element = GST_OBJECT_CAST(g_object_new(GST_TYPE_BIN, nullptr));
     gst_object_set_name(element, "element_0");
 
