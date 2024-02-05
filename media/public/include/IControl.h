@@ -29,10 +29,11 @@
  * including the IPC connection and shared memory.
  */
 
-#include "ControlCommon.h"
-#include "IControlClient.h"
 #include <memory>
 #include <stdint.h>
+
+#include "ControlCommon.h"
+#include "IControlClient.h"
 
 namespace firebolt::rialto
 {

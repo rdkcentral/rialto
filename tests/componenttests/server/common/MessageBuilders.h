@@ -26,6 +26,7 @@
 #include "controlmodule.pb.h"
 #include "mediakeyscapabilitiesmodule.pb.h"
 #include "mediakeysmodule.pb.h"
+#include "mediapipelinecapabilitiesmodule.pb.h"
 #include "mediapipelinemodule.pb.h"
 #include "servermanagermodule.pb.h"
 
@@ -94,6 +95,11 @@ createGetSupportedKeySystemVersionRequest(const std::string &keySystem);
 ::firebolt::rialto::GetSharedMemoryRequest createGetSharedMemoryRequest();
 ::firebolt::rialto::RegisterClientRequest createRegisterClientRequest();
 ::firebolt::rialto::AckRequest createAckRequest(int controlHandle, int id);
+
+// media pipeline capabilities module
+::firebolt::rialto::GetSupportedMimeTypesRequest
+createGetSupportedMimeTypesRequest(const ProtoMediaSourceType &mediaSourceType);
+::firebolt::rialto::IsMimeTypeSupportedRequest createIsMimeTypeSupportedRequest(const std::string &mimeType);
 } // namespace firebolt::rialto::server::ct
 
 #endif // FIREBOLT_RIALTO_SERVER_CT_MESSAGE_BUILDERS_H_

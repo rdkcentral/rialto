@@ -20,12 +20,14 @@
 #ifndef FIREBOLT_RIALTO_CLIENT_CONTROL_H_
 #define FIREBOLT_RIALTO_CLIENT_CONTROL_H_
 
-#include "IClientController.h"
-#include "IControl.h"
-#include "IControlClient.h"
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "IClientController.h"
+#include "IControl.h"
+#include "IControlClient.h"
+#include "RialtoLogging.h"
 
 namespace firebolt::rialto::client
 {
@@ -39,7 +41,6 @@ public:
     ~ControlFactory() override = default;
 
     std::shared_ptr<IControl> createControl() const override;
-
     /**
      * @brief Create the control factory object.
      *
