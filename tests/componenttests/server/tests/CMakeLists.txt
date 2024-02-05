@@ -64,6 +64,7 @@ add_gtests (
         mediaKeysCapabilities/MediaKeysCapabilitiesTest.cpp
         control/ApplicationStateChangeTest.cpp
         control/HealthcheckTest.cpp
+        mediaPipelineCapabilities/MediaPipelineCapabilitiesTest.cpp
         )
 
 target_include_directories(
