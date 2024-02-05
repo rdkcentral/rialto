@@ -32,6 +32,8 @@ namespace
 {
 constexpr unsigned kFramesToPush{1};
 constexpr int kFrameCountInPausedState{3};
+const std::string kAudioDecryptorName{"rialtodecryptoraudio_0"};
+const std::string kVideoDecryptorName{"rialtodecryptorvideo_0"};
 } // namespace
 
 MATCHER_P2(gstWarningMatcher, error, debug, "")
@@ -261,19 +263,19 @@ TEST_F(NonFatalPlayerErrorUpdatesTest, warningMessage)
 
     // Step 9: Audio generic warning
     willHandleWarningMessage(GST_CORE_ERROR, GST_CORE_ERROR_FAILED);
-    gstWarning("rialtodecryptoraudio_0");
+    gstWarning(kAudioDecryptorName.c_str());
 
     // Step 10: Video generic warning
     willHandleWarningMessage(GST_CORE_ERROR, GST_CORE_ERROR_FAILED);
-    gstWarning("rialtodecryptorvideo_0");
+    gstWarning(kVideoDecryptorName.c_str());
 
     // Step 11: Audio decrypt warning
     willHandleWarningMessage(GST_STREAM_ERROR, GST_STREAM_ERROR_DECRYPT);
-    notifyPlaybackError(m_audioSourceId, PlaybackError::DECRYPTION, "rialtodecryptoraudio_0");
+    notifyPlaybackError(m_audioSourceId, PlaybackError::DECRYPTION, kAudioDecryptorName.c_str());
 
     // Step 12: Video decrypt warning
     willHandleWarningMessage(GST_STREAM_ERROR, GST_STREAM_ERROR_DECRYPT);
-    notifyPlaybackError(m_videoSourceId, PlaybackError::DECRYPTION, "rialtodecryptorvideo_0");
+    notifyPlaybackError(m_videoSourceId, PlaybackError::DECRYPTION, kVideoDecryptorName.c_str());
 
     // Step 13: End of audio stream
     // Step 14: End of video stream

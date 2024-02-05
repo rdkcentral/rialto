@@ -332,17 +332,6 @@ public:
      * @param[in] message   : Error message.
      */
     virtual GError *gErrorNewLiteral(GQuark domain, gint code, const gchar *message) const = 0;
-
-    /**
-     * @brief Create a new GObject.
-     *
-     * @param[in] object_type           : The type id of the object to create.
-     * @param[in] first_property_name   : The first property name.
-     * @param[in] ...                   : Following optional name/value pairs, followed by NULL.
-     *
-     * @retval A new GObject object, caller is responsible for freeing.
-     */
-    virtual GObject *gObjectNew(GType object_type, const gchar *first_property_name, ...) = 0;
 };
 
 }; // namespace firebolt::rialto::wrappers

@@ -503,7 +503,7 @@ TEST_F(HandleBusMessageTest, shouldHandleStreamErrorMessageWhenEosAllSourcesAndE
 TEST_F(HandleBusMessageTest, shouldHandleWarningMessageForAudioDecryption)
 {
     // Set decryptor audio
-    GstObject *decrypter = GST_OBJECT_CAST(g_object_new(GST_TYPE_BIN, nullptr));
+    GstObject *decryptor = GST_OBJECT_CAST(g_object_new(GST_TYPE_BIN, nullptr));
     gst_object_set_name(decrypter, "rialtodecryptoraudio_0");
 
     GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_WARNING;
@@ -530,7 +530,7 @@ TEST_F(HandleBusMessageTest, shouldHandleWarningMessageForAudioDecryption)
 TEST_F(HandleBusMessageTest, shouldHandleWarningMessageForVideoDecryption)
 {
     // Set decryptor video
-    GstObject *decrypter = GST_OBJECT_CAST(g_object_new(GST_TYPE_BIN, nullptr));
+    GstObject *decryptor = GST_OBJECT_CAST(g_object_new(GST_TYPE_BIN, nullptr));
     gst_object_set_name(decrypter, "rialtodecryptorvideo_0");
 
     GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_WARNING;

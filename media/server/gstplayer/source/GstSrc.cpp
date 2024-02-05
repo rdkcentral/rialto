@@ -384,11 +384,9 @@ void GstSrc::setupAndAddAppArc(IDecryptionService *decryptionService, GstElement
 
     GstElement *src_elem = streamInfo.appSrc;
 
-    RIALTO_SERVER_LOG_ERROR("lukewill: setupAndAddAppArc");
     // Configure and add decryptor
     if (streamInfo.hasDrm)
     {
-        RIALTO_SERVER_LOG_ERROR("lukewill: streamInfo.hasDrm");
         gchar *decrypterName =
             m_glibWrapper->gStrdupPrintf("rialtodecryptor%s_%u",
                                          (type == firebolt::rialto::MediaSourceType::VIDEO) ? "video" : "audio", id);
