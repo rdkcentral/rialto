@@ -139,7 +139,7 @@ protected:
         EXPECT_CALL(*m_gstWrapperMock, gstElementSyncStateWithParent(expectedElement));
     }
 
-    void expectLinkDecryptor(GstElement *expectedSrcElement, gchar* decryptorName)
+    void expectLinkDecryptor(GstElement *expectedSrcElement, gchar *decryptorName)
     {
         expectCreateDecryptor(decryptorName);
         expectBin(&m_decryptor);
@@ -175,7 +175,7 @@ protected:
         EXPECT_CALL(*m_gstWrapperMock, gstElementLink(expectedSrcElement, &m_queue));
     }
 
-    void expectCreateDecryptor(gchar* decryptorName)
+    void expectCreateDecryptor(gchar *decryptorName)
     {
         EXPECT_CALL(*m_decryptorFactoryMock,
                     createDecryptorElement(StrEq(decryptorName),

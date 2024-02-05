@@ -80,16 +80,16 @@ public:
     }
     MOCK_METHOD(void, gObjectGetStub, (gpointer object, const gchar *first_property_name, void *element));
 
-    gchar *gStrdupPrintf(const gchar *format, ...) override 
+    gchar *gStrdupPrintf(const gchar *format, ...) override
     {
         gchar *buffer;
         va_list args;
 
-        va_start (args, format);
+        va_start(args, format);
         buffer = g_strdup_vprintf(format, args);
-        va_end (args);
-    
-        return gStrdupPrintfStub(buffer); 
+        va_end(args);
+
+        return gStrdupPrintfStub(buffer);
     };
     MOCK_METHOD(gchar *, gStrdupPrintfStub, (const gchar *format));
 
