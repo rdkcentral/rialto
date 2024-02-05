@@ -58,6 +58,7 @@ protected:
     GstPad m_srcpad{};
     GstCaps m_caps{};
     GstStructure m_structure{};
+    GstElement m_decryptorBase{};
 
     HandleBusMessageTest()
     {
@@ -502,11 +503,11 @@ TEST_F(HandleBusMessageTest, shouldHandleStreamErrorMessageWhenEosAllSourcesAndE
 TEST_F(HandleBusMessageTest, shouldHandleWarningMessageForAudioDecryption)
 {
     // Set decryptor audio
-    GstElement *decrypter = GST_ELEMENT(g_object_new(GST_TYPE_ELEMENT, nullptr));
-    gst_object_set_name(GST_OBJECT(decrypter), "rialtodecryptoraudio_0");
+    GstObject *decrypter = GST_OBJECT_CAST(g_object_new(GST_TYPE_BIN, nullptr));
+    gst_object_set_name(decrypter, "rialtodecryptoraudio_0");
 
     GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_WARNING;
-    GST_MESSAGE_SRC(&m_message) = GST_OBJECT_CAST(decrypter);
+    GST_MESSAGE_SRC(&m_message) = decrypter;
     m_err.domain = GST_STREAM_ERROR;
     m_err.code = GST_STREAM_ERROR_DECRYPT;
 
@@ -520,7 +521,7 @@ TEST_F(HandleBusMessageTest, shouldHandleWarningMessageForAudioDecryption)
                                                                     m_gstWrapper, m_glibWrapper, &m_message};
     task.execute();
 
-    g_object_unref(GST_OBJECT(decrypter));
+    g_object_unref(decrypter);
 }
 
 /**
@@ -529,11 +530,11 @@ TEST_F(HandleBusMessageTest, shouldHandleWarningMessageForAudioDecryption)
 TEST_F(HandleBusMessageTest, shouldHandleWarningMessageForVideoDecryption)
 {
     // Set decryptor video
-    GstElement *decrypter = GST_ELEMENT(g_object_new(GST_TYPE_ELEMENT, nullptr));
-    gst_object_set_name(GST_OBJECT(&decrypter), "rialtodecryptorvideo_0");
+    GstObject *decrypter = GST_OBJECT_CAST(g_object_new(GST_TYPE_BIN, nullptr));
+    gst_object_set_name(decrypter, "rialtodecryptorvideo_0");
 
     GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_WARNING;
-    GST_MESSAGE_SRC(&m_message) = GST_OBJECT_CAST(&decrypter);
+    GST_MESSAGE_SRC(&m_message) = decrypter;
     m_err.domain = GST_STREAM_ERROR;
     m_err.code = GST_STREAM_ERROR_DECRYPT;
 
@@ -547,7 +548,7 @@ TEST_F(HandleBusMessageTest, shouldHandleWarningMessageForVideoDecryption)
                                                                     m_gstWrapper, m_glibWrapper, &m_message};
     task.execute();
 
-    g_object_unref(GST_OBJECT(decrypter));
+    g_object_unref(decrypter);
 }
 
 /**
@@ -555,11 +556,12 @@ TEST_F(HandleBusMessageTest, shouldHandleWarningMessageForVideoDecryption)
  */
 TEST_F(HandleBusMessageTest, shouldHandleWarningMessageGeneric)
 {
-    GstElement *decrypter = GST_ELEMENT(g_object_new(GST_TYPE_ELEMENT, nullptr));
-    gst_object_set_name(GST_OBJECT(&decrypter), "element_0");
+    // Set decryptor video
+    GstObject *element = GST_OBJECT_CAST(g_object_new(GST_TYPE_BIN, nullptr));
+    gst_object_set_name(element, "element_0");
 
     GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_WARNING;
-    GST_MESSAGE_SRC(&m_message) = GST_OBJECT_CAST(&decrypter);
+    GST_MESSAGE_SRC(&m_message) = element;
     m_err.domain = GST_CORE_ERROR;
 
     EXPECT_CALL(*m_gstWrapper, gstMessageParseWarning(&m_message, _, _))
@@ -569,4 +571,6 @@ TEST_F(HandleBusMessageTest, shouldHandleWarningMessageGeneric)
     firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,    m_gstPlayer,   &m_gstPlayerClient,
                                                                     m_gstWrapper, m_glibWrapper, &m_message};
     task.execute();
+
+    g_object_unref(element);
 }
