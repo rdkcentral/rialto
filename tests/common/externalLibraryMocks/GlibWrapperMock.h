@@ -89,7 +89,12 @@ public:
         buffer = g_strdup_vprintf(format, args);
         va_end(args);
 
-        return gStrdupPrintfStub(buffer);
+        gchar *str = gStrdupPrintfStub(buffer);
+
+        // free the string
+        g_free(buffer);
+
+        return str;
     };
     MOCK_METHOD(gchar *, gStrdupPrintfStub, (const gchar *format));
 
