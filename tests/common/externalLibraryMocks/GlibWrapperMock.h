@@ -106,16 +106,24 @@ public:
         va_list args;
         const gchar *kProperty = first_property_name;
 
-        va_start(args, first_property_name);
-
-        while (NULL != kProperty)
+        // If no properties set, just return GObject
+        if (NULL != kProperty)
         {
-            void *element = va_arg(args, void *);
-            obj = gObjectNewStub(object_type, kProperty, element);
-            kProperty = va_arg(args, const gchar *);
+            obj = gObjectNewStub(object_type, nullptr, nullptr);
         }
+        else
+        {
+            va_start(args, first_property_name);
 
-        va_end(args);
+            while (NULL != kProperty)
+            {
+                void *element = va_arg(args, void *);
+                obj = gObjectNewStub(object_type, kProperty, element);
+                kProperty = va_arg(args, const gchar *);
+            }
+
+            va_end(args);
+        }
 
         return obj;
     }

@@ -37,6 +37,7 @@ using ::testing::_;
 using ::testing::Return;
 using ::testing::StrEq;
 using ::testing::StrictMock;
+using ::testing::HasSubstr;
 
 class RialtoServerAppSrcGstSrcTest : public ::testing::Test
 {
@@ -61,6 +62,7 @@ protected:
     GstPad m_target = {};
     GstPad m_pad = {};
     gchar *m_name = "src_0";
+    gchar *m_decryptorName = "rialtodecryptor_0";
     StreamInfo m_streamInfo;
 
     RialtoServerAppSrcGstSrcTest() : m_streamInfo{&m_appsrc, true} {}
@@ -119,7 +121,7 @@ protected:
 
     void expectSetupPad(GstElement *expectedSrcElement)
     {
-        EXPECT_CALL(*m_glibWrapperMock, gStrdupPrintfStub(_)).WillOnce(Return(m_name));
+        EXPECT_CALL(*m_glibWrapperMock, gStrdupPrintfStub(HasSubstr("src"))).WillOnce(Return(m_name));
 
         EXPECT_CALL(*m_gstWrapperMock, gstElementGetStaticPad(expectedSrcElement, StrEq("src"))).WillOnce(Return(&m_target));
         EXPECT_CALL(*m_gstWrapperMock, gstGhostPadNew(StrEq(m_name), &m_target)).WillOnce(Return(&m_pad));
@@ -138,9 +140,7 @@ protected:
 
     void expectLinkDecryptor(GstElement *expectedSrcElement)
     {
-        EXPECT_CALL(*m_decryptorFactoryMock,
-                    createDecryptorElement(_, reinterpret_cast<IDecryptionService *>(m_decryptionServiceMock.get()), _, _))
-            .WillOnce(Return(&m_decryptor));
+        expectCreateDecryptor();
         expectBin(&m_decryptor);
         expectSyncElement(&m_decryptor);
         EXPECT_CALL(*m_gstWrapperMock, gstElementLink(expectedSrcElement, &m_decryptor));
@@ -172,6 +172,15 @@ protected:
         expectBin(&m_queue);
         expectSyncElement(&m_queue);
         EXPECT_CALL(*m_gstWrapperMock, gstElementLink(expectedSrcElement, &m_queue));
+    }
+
+    void expectCreateDecryptor()
+    {
+        EXPECT_CALL(*m_decryptorFactoryMock,
+                    createDecryptorElement(StrEq(m_decryptorName), reinterpret_cast<IDecryptionService *>(m_decryptionServiceMock.get()), _))
+            .WillOnce(Return(&m_decryptor));
+        EXPECT_CALL(*m_glibWrapperMock, gStrdupPrintfStub(HasSubstr("rialtodecryptor"))).WillOnce(Return(m_decryptorName));
+        EXPECT_CALL(*m_glibWrapperMock, gFree(PtrStrMatcher(m_decryptorName)));
     }
 };
 
@@ -230,10 +239,12 @@ TEST_F(RialtoServerAppSrcGstSrcTest, DecryptorFailure)
 {
     guint64 videoMaxBytes = 8 * 1024 * 1024;
 
+    EXPECT_CALL(*m_glibWrapperMock, gStrdupPrintfStub(HasSubstr("rialtodecryptor"))).WillOnce(Return(m_decryptorName));
     EXPECT_CALL(*m_decryptorFactoryMock,
-                createDecryptorElement(_, reinterpret_cast<IDecryptionService *>(m_decryptionServiceMock.get()), _, _))
+                createDecryptorElement(StrEq(m_decryptorName), reinterpret_cast<IDecryptionService *>(m_decryptionServiceMock.get()), _))
         .WillOnce(Return(nullptr));
-
+    EXPECT_CALL(*m_glibWrapperMock, gFree(PtrStrMatcher(m_decryptorName)));
+ 
     expectSettings(videoMaxBytes);
     expectBin(m_streamInfo.appSrc);
     expectSyncElement(m_streamInfo.appSrc);

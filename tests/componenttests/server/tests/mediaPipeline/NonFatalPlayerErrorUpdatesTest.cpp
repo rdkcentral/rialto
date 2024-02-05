@@ -32,8 +32,6 @@ namespace
 {
 constexpr unsigned kFramesToPush{1};
 constexpr int kFrameCountInPausedState{3};
-const std::string kAudioMimeType{"audio/mpeg"};
-const std::string kVideoMimeType{"video/x-h264"};
 } // namespace
 
 MATCHER_P2(gstWarningMatcher, error, debug, "")
@@ -62,30 +60,23 @@ public:
         EXPECT_CALL(*m_glibWrapperMock, gErrorFree(&m_err)).WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
     }
 
-    void gstWarning()
+    void gstWarning(const char* srcName)
     {
-        m_gstreamerStub.sendWarning(&m_src, &m_err, m_debug);
+        m_src = GST_OBJECT_CAST(g_object_new(GST_TYPE_BIN, nullptr)); 
+        gst_object_set_name(m_src, srcName);
+        m_gstreamerStub.sendWarning(GST_ELEMENT(m_src), &m_err, m_debug);
 
         // Warning executed on the bus thread, wait for it to complete
         waitWorker();
+
+        g_object_unref(m_src);
     }
 
-    void willGetMimeType(const char *mimeType)
-    {
-        EXPECT_CALL(*m_gstWrapperMock, gstElementGetStaticPad(GST_ELEMENT(&m_src), StrEq("src"))).WillOnce(Return(&m_srcpad));
-        EXPECT_CALL(*m_gstWrapperMock, gstPadGetCurrentCaps(&m_srcpad)).WillOnce(Return(&m_caps));
-        EXPECT_CALL(*m_gstWrapperMock, gstCapsGetStructure(&m_caps, 0)).WillOnce(Return(&m_structure));
-        EXPECT_CALL(*m_gstWrapperMock, gstStructureGetName(&m_structure)).WillOnce(Return(mimeType));
-        EXPECT_CALL(*m_glibWrapperMock, gObjectUnref(&m_structure));
-        EXPECT_CALL(*m_glibWrapperMock, gObjectUnref(&m_caps));
-        EXPECT_CALL(*m_glibWrapperMock, gObjectUnref(&m_srcpad));
-    }
-
-    void notifyPlaybackError(int sourceId, PlaybackError error)
+    void notifyPlaybackError(int sourceId, PlaybackError error, const char* srcName)
     {
         ExpectMessage<PlaybackErrorEvent> expectedPlaybackError{m_clientStub};
 
-        gstWarning();
+        gstWarning(srcName);
 
         auto receivedPlaybackError = expectedPlaybackError.getMessage();
         ASSERT_TRUE(receivedPlaybackError);
@@ -95,12 +86,9 @@ public:
     }
 
 private:
-    GstElement m_src{};
+    GstObject* m_src;
     GError m_err{};
     gchar m_debug[14]{"Error message"};
-    GstPad m_srcpad{};
-    GstCaps m_caps{};
-    GstStructure m_structure{};
 };
 
 /*
@@ -273,21 +261,19 @@ TEST_F(NonFatalPlayerErrorUpdatesTest, warningMessage)
 
     // Step 9: Audio generic warning
     willHandleWarningMessage(GST_CORE_ERROR, GST_CORE_ERROR_FAILED);
-    gstWarning();
+    gstWarning("rialtodecryptoraudio_0");
 
     // Step 10: Video generic warning
     willHandleWarningMessage(GST_CORE_ERROR, GST_CORE_ERROR_FAILED);
-    gstWarning();
+    gstWarning("rialtodecryptorvideo_0");
 
     // Step 11: Audio decrypt warning
     willHandleWarningMessage(GST_STREAM_ERROR, GST_STREAM_ERROR_DECRYPT);
-    willGetMimeType(kAudioMimeType.c_str());
-    notifyPlaybackError(m_audioSourceId, PlaybackError::DECRYPTION);
+    notifyPlaybackError(m_audioSourceId, PlaybackError::DECRYPTION, "rialtodecryptoraudio_0");
 
     // Step 12: Video decrypt warning
     willHandleWarningMessage(GST_STREAM_ERROR, GST_STREAM_ERROR_DECRYPT);
-    willGetMimeType(kVideoMimeType.c_str());
-    notifyPlaybackError(m_videoSourceId, PlaybackError::DECRYPTION);
+    notifyPlaybackError(m_videoSourceId, PlaybackError::DECRYPTION, "rialtodecryptorvideo_0");
 
     // Step 13: End of audio stream
     // Step 14: End of video stream
