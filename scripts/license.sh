@@ -26,20 +26,25 @@
 #  licence.sh scripts/licence.py Apache_2_0
 #  licence.sh scripts/licence.py Lesser_GPL_2_1
 
-set -e
 licenceCommand=$1
 expect=$2
 
 returnStatus=0
-for f in $( \find . \( -type d \( -name build -o -name third-party -o -name .git \) -prune \) -o \( -type f \( -iname \*.h -o -iname \*.cpp -o -iname \*.cmake -o -iname CMakeLists.txt -o -name \*.yml -o -name \*.proto -o -name \*.py \) \) -print )
+for f in `find . \
+            \( -type d \( -name build -o -name third-party -o -name .git \) -prune \) -o \
+            \( -type f \
+            \( -iname \*.h -o -iname \*.cpp -o -iname \*.cmake -o \
+            -iname CMakeLists.txt -o -name \*.yml -o -name \*.proto -o \
+            -name \*.py -o -name \*.sh \) \) \
+            -print`
 do
     r=`python $licenceCommand $f`
     if [ "$r" != "$expect" ]
     then
-        echo "File: $f"
-        echo "$r"
-        echo
         returnStatus=1
+        echo "File   : $f"
+        echo "License: $r"
+        echo
     fi
 done
 exit $returnStatus

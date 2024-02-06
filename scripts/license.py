@@ -32,15 +32,16 @@ file1 = open(sys.argv[1], 'r')
 
 res = ""
 initial = True
+regMatch = re.compile('^(\*|#)(| .*)$')
 while line := file1.readline():
     line = line.strip()
     if line == "*/":
         break
-    elif initial and (line == '/*' or line == "#" or line == "" or re.match('^#!', line)):
+    elif initial and (line == '/*' or line == "#" or line == "" or line.startswith('#!')):
         pass # First or initial lines
     else:
         initial = False
-        m = re.match('^(\*|#)(| .*)$', line)
+        m = regMatch.match(line)
         if m:
             res += m.groups()[1]
         else:
@@ -58,7 +59,9 @@ if re.match("^ Copyright \(C\) 202[2-4] Sky UK This library is free software; yo
     print("Lesser_GPL_2_1");
     exit(0)
 
-
-print(res)
+if re == "":
+    print("No license comment found")
+    exit(1)
+    
+print("Unknown license comment: " + res)
 exit(1)
-
