@@ -24,6 +24,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include "IIpcServer.h"
 
 namespace firebolt::rialto::client::ct
 {

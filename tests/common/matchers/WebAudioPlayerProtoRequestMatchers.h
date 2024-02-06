@@ -27,11 +27,11 @@
 #include <memory>
 #include <vector>
 
-MATCHER_P3(createWebAudioPlayerRequestMatcher, audioMimeType, priority, config "")
+MATCHER_P3(createWebAudioPlayerRequestMatcher, audioMimeType, priority, config, "")
 {
     const ::firebolt::rialto::CreateWebAudioPlayerRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::CreateWebAudioPlayerRequest *>(arg);
-    return (kRequest->audio_mime_type() == audioMimeType && kRequest->priority() == priority());
+    return (kRequest->audio_mime_type() == audioMimeType && kRequest->priority() == priority);
 }
 
 

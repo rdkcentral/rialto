@@ -72,6 +72,9 @@ public:
 TEST_F(CreateWebAudioPlayerTest, createWebAudioPlayer)
 {
 
+    // Step 1: Create a new web audio player session
+    WebAudioPlayerTestMethods::shouldCreateWebAudioPlayer();
+    WebAudioPlayerTestMethods::createWebAudioPlayer();
 
 
 }

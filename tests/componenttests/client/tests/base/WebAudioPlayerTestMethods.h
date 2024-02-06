@@ -52,17 +52,18 @@ public:
 protected:
     // Strict Mocks
     std::shared_ptr<StrictMock<WebAudioPlayerModuleMock>> m_webAudioPlayerModuleMock;
+    std::shared_ptr<StrictMock<WebAudioPlayerClientMock>> m_webAudioPlayerClientMock;
 
     // Objects
     std::shared_ptr<IWebAudioPlayerFactory> m_webAudioPlayerFactory;
     std::shared_ptr<IWebAudioPlayer> m_webAudioPlayer;
 
     // Expect methods
-    void shouldCreateWebPlayerAudio();
+    void shouldCreateWebAudioPlayer();
 
 
     // Api methods
-    void createWebPlayerAudio();
+    void createWebAudioPlayer();
 
 };
 } // namespace firebolt::rialto::client::ct

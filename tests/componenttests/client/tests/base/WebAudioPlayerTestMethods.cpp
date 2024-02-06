@@ -18,40 +18,51 @@
  */
 
 #include "WebAudioPlayerTestMethods.h"
-#include "CommonConstants.h"
-// #include "WebAudioPlayerRequestMatcher.h"
-#include "MediaSegments.h"
-#include "MetadataProtoMatchers.h"
-#include "MetadataProtoUtils.h"
-#include "metadata.pb.h"
+#include "WebAudioPlayerProtoRequestMatchers.h"
 #include <memory>
 #include <string>
 #include <vector>
 
-// namespace
-// {
-// // const std::string kAudioMimeType{"audio/mp4"};
-// // const uint32_t kPriority{1};
-// } // namespace
+namespace
+{
+const std::string kAudioMimeType{"audio/x-raw"};
+const uint32_t kPriority{5};
+std::shared_ptr<const WebAudioConfig> kConfig = std::make_shared<const WebAudioConfig>();
+const int32_t kValue{1};
+} // namespace
 
 namespace firebolt::rialto::client::ct
 {
 WebAudioPlayerTestMethods::WebAudioPlayerTestMethods()
-    : m_webAudioPlayerModuleMock{std::make_shared<StrictMock<WebAudioPlayerModuleMock>>()}
+    : m_webAudioPlayerModuleMock{std::make_shared<StrictMock<WebAudioPlayerModuleMock>>()},
+      m_webAudioPlayerClientMock{std::make_shared<StrictMock<WebAudioPlayerClientMock>>()}
 {
 }
 
 void WebAudioPlayerTestMethods::shouldCreateWebAudioPlayer()
 {
-    // EXPECT_CALL(*m_webAudioPlayerModuleMock,
-    //             createAudioPlayer(_, webAudioPlayerRequestMatcher(kAudioMimeType, kPriority),
-    //                           _, _))
-    //     .WillOnce(WithArgs<0, 3>(Invoke(&(*m_webAudioPlayerModuleMock), &WebAudioPlayerModuleMock::defaultReturn)));
+    EXPECT_CALL(*m_webAudioPlayerModuleMock,
+                createWebAudioPlayer(_, createWebAudioPlayerRequestMatcher(kAudioMimeType, kPriority, kConfig),
+                              _, _))
+        .WillOnce
+            (DoAll(SetArgPointee<2>(m_webAudioPlayerModuleMock->createWebAudioPlayerResponse(kValue)),
+                (WithArgs<0, 3>(Invoke(&(*m_webAudioPlayerModuleMock), &WebAudioPlayerModuleMock::defaultReturn)))));
 }
 
+// void WebAudioPlayerTestMethods::shouldCreateWebAudioPlayer()
+// {
+//     EXPECT_CALL(*m_webAudioPlayerModuleMock,
+//                 createWebAudioPlayer(_, createWebAudioPlayerRequestMatcher(kAudioMimeType, kPriority, kConfig),
+//                               _, _))
+//         .WillOnce(WithArgs<0, 3>(Invoke(&(*m_webAudioPlayerModuleMock), &WebAudioPlayerModuleMock::defaultReturn)));
+// }
 void WebAudioPlayerTestMethods::createWebAudioPlayer()
 {
-    // createWebAudioPlayer()
+    m_webAudioPlayerFactory = firebolt::rialto::IWebAudioPlayerFactory::createFactory();
+    EXPECT_NO_THROW(
+        m_webAudioPlayer = m_webAudioPlayerFactory->createWebAudioPlayer(m_webAudioPlayerClientMock, kAudioMimeType, kPriority, kConfig));
+    EXPECT_EQ(m_webAudioPlayer, nullptr);
+
 }
 
 
