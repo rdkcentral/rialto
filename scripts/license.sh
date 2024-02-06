@@ -1,7 +1,5 @@
 #!/bin/sh
 
-# Deliberate mistake (this line shouldn't be before the licence)
-
 #
 # If not stated otherwise in this file or this component's LICENSE file the
 # following copyright and licenses apply:
