@@ -59,6 +59,8 @@ void ServerStub::clientConnected(const std::shared_ptr<::firebolt::rialto::ipc::
         client->exportService(m_mediaKeysCapabilitiesModuleMock);
     if (m_mediaPipelineCapabilitiesModuleMock)
         client->exportService(m_mediaPipelineCapabilitiesModuleMock);
+    if (m_webAudioPlayerModuleMock)
+        client->exportService(m_webAudioPlayerModuleMock);
 
     // Notify listening thread
     m_clientConnectCond.notify_one();
@@ -69,10 +71,11 @@ ServerStub::ServerStub(
     const std::shared_ptr<::firebolt::rialto::MediaPipelineModule> &mediaPipelineModuleMock,
     const std::shared_ptr<::firebolt::rialto::MediaKeysModule> &mediaKeysModuleMock,
     const std::shared_ptr<::firebolt::rialto::MediaKeysCapabilitiesModule> &mediaKeysCapabilitiesModuleMock,
-    const std::shared_ptr<::firebolt::rialto::MediaPipelineCapabilitiesModule> &mediaPipelineCapabilitiesModuleMock)
+    const std::shared_ptr<::firebolt::rialto::MediaPipelineCapabilitiesModule> &mediaPipelineCapabilitiesModuleMock,
+    const std::shared_ptr<::firebolt::rialto::WebAudioPlayerModule> &webAudioPlayerModuleMock)
     : ControlModuleStub{controlModuleMock}, MediaPipelineModuleStub{mediaPipelineModuleMock},
       MediaKeysModuleStub{mediaKeysModuleMock}, MediaKeysCapabilitiesModuleStub{mediaKeysCapabilitiesModuleMock},
-      MediaPipelineCapabilitiesModuleStub{mediaPipelineCapabilitiesModuleMock}
+      MediaPipelineCapabilitiesModuleStub{mediaPipelineCapabilitiesModuleMock}, WebAudioPlayerModuleStub{webAudioPlayerModuleMock}
 {
     init();
 }

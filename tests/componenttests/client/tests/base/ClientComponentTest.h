@@ -23,6 +23,7 @@
 #include "ControlTestMethods.h"
 #include "MediaKeysTestMethods.h"
 #include "MediaPipelineTestMethods.h"
+#include "WebAudioPlayerTestMethods.h"
 #include "ServerStub.h"
 #include <gtest/gtest.h>
 #include <memory>
@@ -42,7 +43,8 @@ namespace firebolt::rialto::client::ct
 class ClientComponentTest : public ::testing::Test,
                             public ControlTestMethods,
                             public MediaPipelineTestMethods,
-                            public MediaKeysTestMethods
+                            public MediaKeysTestMethods,
+                            public WebAudioPlayerTestMethods
 {
 public:
     ClientComponentTest();

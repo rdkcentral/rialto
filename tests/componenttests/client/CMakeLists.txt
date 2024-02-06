@@ -30,6 +30,7 @@ add_gtests (
         tests/base/ControlTestMethods.cpp
         tests/base/MediaPipelineTestMethods.cpp
         tests/base/MediaKeysTestMethods.cpp
+        tests/base/WebAudioPlayerTestMethods.cpp
 
         # Control Component tests
         tests/control/ApplicationStateChangeTest.cpp
@@ -54,7 +55,8 @@ add_gtests (
         tests/mse/QosNotificationTest.cpp
         tests/mse/RemoveAudioPlaybackTest.cpp
         tests/mse/MediaPipelineCapabilitiesTest.cpp
-
+        tests/mse/CreateWebAudioPlayerTest.cpp
+        
         # EME Component tests
         tests/eme/SessionReadyForDecryptionTest.cpp
         tests/eme/AudioVideoPlaybackEncryptedSegmentsTest.cpp
