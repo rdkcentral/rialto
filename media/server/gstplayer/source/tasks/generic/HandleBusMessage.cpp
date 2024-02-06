@@ -217,44 +217,20 @@ void HandleBusMessage::execute() const
 
         if ((PlaybackError::UNKNOWN != rialtoError) && (m_gstPlayerClient))
         {
-            const gchar *mimetype = nullptr;
-            GstPad *srcpad = m_gstWrapper->gstElementGetStaticPad(GST_ELEMENT(GST_MESSAGE_SRC(m_message)), "src");
-            if (srcpad)
+            const gchar *name = GST_ELEMENT_NAME(GST_ELEMENT(GST_MESSAGE_SRC(m_message)));
+            if (g_strrstr(name, "video"))
             {
-                GstCaps *caps = m_gstWrapper->gstPadGetCurrentCaps(srcpad);
-                if (caps)
-                {
-                    GstStructure *structure = m_gstWrapper->gstCapsGetStructure(caps, 0);
-                    if (structure)
-                    {
-                        mimetype = m_gstWrapper->gstStructureGetName(structure);
-                        m_glibWrapper->gObjectUnref(structure);
-                    }
-                    m_glibWrapper->gObjectUnref(caps);
-                }
-                m_glibWrapper->gObjectUnref(srcpad);
+                m_gstPlayerClient->notifyPlaybackError(firebolt::rialto::MediaSourceType::VIDEO,
+                                                       PlaybackError::DECRYPTION);
             }
-
-            if (mimetype)
+            else if (g_strrstr(name, "audio"))
             {
-                if (g_strrstr(mimetype, "video"))
-                {
-                    m_gstPlayerClient->notifyPlaybackError(firebolt::rialto::MediaSourceType::VIDEO,
-                                                           PlaybackError::DECRYPTION);
-                }
-                else if (g_strrstr(mimetype, "audio"))
-                {
-                    m_gstPlayerClient->notifyPlaybackError(firebolt::rialto::MediaSourceType::AUDIO,
-                                                           PlaybackError::DECRYPTION);
-                }
-                else
-                {
-                    RIALTO_SERVER_LOG_WARN("Unknown source type for class '%s', not propagating error", mimetype);
-                }
+                m_gstPlayerClient->notifyPlaybackError(firebolt::rialto::MediaSourceType::AUDIO,
+                                                       PlaybackError::DECRYPTION);
             }
             else
             {
-                RIALTO_SERVER_LOG_WARN("Could not get source type from elment, not propagating error");
+                RIALTO_SERVER_LOG_WARN("Unknown source type for element '%s', not propagating error", name);
             }
         }
 

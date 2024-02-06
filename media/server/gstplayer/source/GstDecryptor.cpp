@@ -199,20 +199,32 @@ GstElement *GstDecryptorElementFactory::createDecryptorElement(
     const gchar *name, firebolt::rialto::server::IDecryptionService *decryptionService,
     const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper) const
 {
-    GstRialtoDecryptor *decrypter = GST_RIALTO_DECRYPTOR(g_object_new(GST_RIALTO_DECRYPTOR_TYPE, name));
+    // Bypass the glib wrapper here, this is the only place we can create a proper Decryptor element
+    GstRialtoDecryptor *decryptor = GST_RIALTO_DECRYPTOR(g_object_new(GST_RIALTO_DECRYPTOR_TYPE, nullptr));
+    if (name)
+    {
+        if (!gstWrapper->gstObjectSetName(GST_OBJECT(decryptor), name))
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to set the decryptor name to %s", name);
+            g_object_unref(GST_OBJECT(decryptor));
+            return nullptr;
+        }
+    }
+
     GstRialtoDecryptorPrivate *priv =
-        reinterpret_cast<GstRialtoDecryptorPrivate *>(gst_rialto_decryptor_get_instance_private(decrypter));
+        reinterpret_cast<GstRialtoDecryptorPrivate *>(gst_rialto_decryptor_get_instance_private(decryptor));
     std::shared_ptr<firebolt::rialto::server::IGstProtectionMetadataHelperFactory> metadataFactory =
         firebolt::rialto::server::IGstProtectionMetadataHelperFactory::createFactory();
     if (priv)
     {
         priv->setDecryptionService(decryptionService);
         priv->setProtectionMetadataWrapper(metadataFactory->createProtectionMetadataWrapper(gstWrapper));
-        return GST_ELEMENT(decrypter);
+        return GST_ELEMENT(decryptor);
     }
     else
     {
         RIALTO_SERVER_LOG_ERROR("Failed to create the decryptor element");
+        g_object_unref(GST_OBJECT(decryptor));
         return nullptr;
     }
 }

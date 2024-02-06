@@ -58,27 +58,13 @@ protected:
     GstPad m_srcpad{};
     GstCaps m_caps{};
     GstStructure m_structure{};
-    GstBaseTransform m_decryptorBase = {};
+    GstElement m_decryptorBase{};
 
     HandleBusMessageTest()
     {
         m_context.pipeline = &m_pipeline;
         m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, GST_ELEMENT(&m_audioSrc));
         m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::VIDEO, GST_ELEMENT(&m_videoSrc));
-    }
-
-    void expectGetMimeType(const gchar *mimeType)
-    {
-        EXPECT_CALL(*m_gstWrapper, gstMessageParseWarning(&m_message, _, _))
-            .WillOnce(DoAll(SetArgPointee<1>(&m_err), SetArgPointee<2>(m_debug)));
-        EXPECT_CALL(*m_gstWrapper, gstElementGetStaticPad(GST_ELEMENT(&m_decryptorBase), StrEq("src")))
-            .WillOnce(Return(&m_srcpad));
-        EXPECT_CALL(*m_gstWrapper, gstPadGetCurrentCaps(&m_srcpad)).WillOnce(Return(&m_caps));
-        EXPECT_CALL(*m_gstWrapper, gstCapsGetStructure(&m_caps, 0)).WillOnce(Return(&m_structure));
-        EXPECT_CALL(*m_gstWrapper, gstStructureGetName(&m_structure)).WillOnce(Return(mimeType));
-        EXPECT_CALL(*m_glibWrapper, gObjectUnref(&m_structure));
-        EXPECT_CALL(*m_glibWrapper, gObjectUnref(&m_caps));
-        EXPECT_CALL(*m_glibWrapper, gObjectUnref(&m_srcpad));
     }
 
     void expectFreeErrorMessage()
@@ -516,13 +502,17 @@ TEST_F(HandleBusMessageTest, shouldHandleStreamErrorMessageWhenEosAllSourcesAndE
  */
 TEST_F(HandleBusMessageTest, shouldHandleWarningMessageForAudioDecryption)
 {
+    // Set decryptor audio
+    GstObject *decryptor = GST_OBJECT_CAST(g_object_new(GST_TYPE_BIN, nullptr));
+    gst_object_set_name(decryptor, "rialtodecryptoraudio_0");
+
     GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_WARNING;
-    GST_MESSAGE_SRC(&m_message) = GST_OBJECT_CAST(&m_decryptorBase);
+    GST_MESSAGE_SRC(&m_message) = decryptor;
     m_err.domain = GST_STREAM_ERROR;
     m_err.code = GST_STREAM_ERROR_DECRYPT;
 
-    gchar *audioMimeType = "audio/mpeg";
-    expectGetMimeType(audioMimeType);
+    EXPECT_CALL(*m_gstWrapper, gstMessageParseWarning(&m_message, _, _))
+        .WillOnce(DoAll(SetArgPointee<1>(&m_err), SetArgPointee<2>(m_debug)));
     EXPECT_CALL(m_gstPlayerClient, notifyPlaybackError(firebolt::rialto::MediaSourceType::AUDIO,
                                                        firebolt::rialto::PlaybackError::DECRYPTION));
     expectFreeErrorMessage();
@@ -530,6 +520,8 @@ TEST_F(HandleBusMessageTest, shouldHandleWarningMessageForAudioDecryption)
     firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,    m_gstPlayer,   &m_gstPlayerClient,
                                                                     m_gstWrapper, m_glibWrapper, &m_message};
     task.execute();
+
+    g_object_unref(decryptor);
 }
 
 /**
@@ -537,13 +529,17 @@ TEST_F(HandleBusMessageTest, shouldHandleWarningMessageForAudioDecryption)
  */
 TEST_F(HandleBusMessageTest, shouldHandleWarningMessageForVideoDecryption)
 {
+    // Set decryptor video
+    GstObject *decryptor = GST_OBJECT_CAST(g_object_new(GST_TYPE_BIN, nullptr));
+    gst_object_set_name(decryptor, "rialtodecryptorvideo_0");
+
     GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_WARNING;
-    GST_MESSAGE_SRC(&m_message) = GST_OBJECT_CAST(&m_decryptorBase);
+    GST_MESSAGE_SRC(&m_message) = decryptor;
     m_err.domain = GST_STREAM_ERROR;
     m_err.code = GST_STREAM_ERROR_DECRYPT;
 
-    gchar *videoMimeType = "video/mp4";
-    expectGetMimeType(videoMimeType);
+    EXPECT_CALL(*m_gstWrapper, gstMessageParseWarning(&m_message, _, _))
+        .WillOnce(DoAll(SetArgPointee<1>(&m_err), SetArgPointee<2>(m_debug)));
     EXPECT_CALL(m_gstPlayerClient, notifyPlaybackError(firebolt::rialto::MediaSourceType::VIDEO,
                                                        firebolt::rialto::PlaybackError::DECRYPTION));
     expectFreeErrorMessage();
@@ -551,6 +547,8 @@ TEST_F(HandleBusMessageTest, shouldHandleWarningMessageForVideoDecryption)
     firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,    m_gstPlayer,   &m_gstPlayerClient,
                                                                     m_gstWrapper, m_glibWrapper, &m_message};
     task.execute();
+
+    g_object_unref(decryptor);
 }
 
 /**
@@ -558,8 +556,12 @@ TEST_F(HandleBusMessageTest, shouldHandleWarningMessageForVideoDecryption)
  */
 TEST_F(HandleBusMessageTest, shouldHandleWarningMessageGeneric)
 {
+    // Set decryptor generic
+    GstObject *element = GST_OBJECT_CAST(g_object_new(GST_TYPE_BIN, nullptr));
+    gst_object_set_name(element, "element_0");
+
     GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_WARNING;
-    GST_MESSAGE_SRC(&m_message) = GST_OBJECT_CAST(&m_decryptorBase);
+    GST_MESSAGE_SRC(&m_message) = element;
     m_err.domain = GST_CORE_ERROR;
 
     EXPECT_CALL(*m_gstWrapper, gstMessageParseWarning(&m_message, _, _))
@@ -569,4 +571,6 @@ TEST_F(HandleBusMessageTest, shouldHandleWarningMessageGeneric)
     firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,    m_gstPlayer,   &m_gstPlayerClient,
                                                                     m_gstWrapper, m_glibWrapper, &m_message};
     task.execute();
+
+    g_object_unref(element);
 }
