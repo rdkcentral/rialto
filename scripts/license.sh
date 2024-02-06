@@ -1,3 +1,7 @@
+#!/bin/sh
+
+# Deliberate mistake (this line shouldn't be before the licence)
+
 #
 # If not stated otherwise in this file or this component's LICENSE file the
 # following copyright and licenses apply:
@@ -17,35 +21,25 @@
 # limitations under the License.
 #
 
-if ( COVERAGE_ENABLED )
-    add_compile_options(-coverage)
-endif()
 
-add_gtests (
-        RialtoCommonUnitTests
+# Run with:
+#  licence.sh scripts/licence.py Apache_2_0
+#  licence.sh scripts/licence.py Lesser_GPL_2_1
 
-        # gtest code
-        TimerTests.cpp
-        EventThreadTests.cpp
-        )
+set -e
+licenceCommand=$1
+expect=$2
 
-target_include_directories(
-        RialtoCommonUnitTests
-
-        PUBLIC
-        interface
-        $<TARGET_PROPERTY:RialtoCommon,INTERFACE_INCLUDE_DIRECTORIES>
-)
-
-target_link_libraries(
-        RialtoCommonUnitTests
-        RialtoCommon
-)
-
-if ( COVERAGE_ENABLED )
-    target_link_libraries(
-        RialtoCommonUnitTests
-
-        gcov
-        )
-endif()
+returnStatus=0
+for f in $( \find . \( -type d \( -name build -o -name third-party -o -name .git \) -prune \) -o \( -type f \( -iname \*.h -o -iname \*.cpp -o -iname \*.cmake -o -iname CMakeLists.txt -o -name \*.yml -o -name \*.proto -o -name \*.py \) \) -print )
+do
+    r=`python $licenceCommand $f`
+    if [ "$r" != "$expect" ]
+    then
+        echo "File: $f"
+        echo "$r"
+        echo
+        returnStatus=1
+    fi
+done
+exit $returnStatus
