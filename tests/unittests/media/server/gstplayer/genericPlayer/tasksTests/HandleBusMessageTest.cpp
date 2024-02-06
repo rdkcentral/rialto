@@ -558,11 +558,36 @@ TEST_F(HandleBusMessageTest, shouldHandleWarningMessageGeneric)
 {
     // Set decryptor generic
     GstObject *element = GST_OBJECT_CAST(g_object_new(GST_TYPE_BIN, nullptr));
-    gst_object_set_name(element, "element_0");
+    gst_object_set_name(element, "rialtodecryptorvideo_0");
 
     GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_WARNING;
     GST_MESSAGE_SRC(&m_message) = element;
     m_err.domain = GST_CORE_ERROR;
+
+    EXPECT_CALL(*m_gstWrapper, gstMessageParseWarning(&m_message, _, _))
+        .WillOnce(DoAll(SetArgPointee<1>(&m_err), SetArgPointee<2>(m_debug)));
+    expectFreeErrorMessage();
+
+    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,    m_gstPlayer,   &m_gstPlayerClient,
+                                                                    m_gstWrapper, m_glibWrapper, &m_message};
+    task.execute();
+
+    g_object_unref(element);
+}
+
+/**
+ * Test HandleBusMessage ignores decrypt warnings from unknown sources.
+ */
+TEST_F(HandleBusMessageTest, shouldHandleWarningMessageForUnknownSrcTypeDecryption)
+{
+    // Set decryptor generic
+    GstObject *element = GST_OBJECT_CAST(g_object_new(GST_TYPE_BIN, nullptr));
+    gst_object_set_name(element, "element_0");
+
+    GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_WARNING;
+    GST_MESSAGE_SRC(&m_message) = element;
+    m_err.domain = GST_STREAM_ERROR;
+    m_err.code = GST_STREAM_ERROR_DECRYPT;
 
     EXPECT_CALL(*m_gstWrapper, gstMessageParseWarning(&m_message, _, _))
         .WillOnce(DoAll(SetArgPointee<1>(&m_err), SetArgPointee<2>(m_debug)));
