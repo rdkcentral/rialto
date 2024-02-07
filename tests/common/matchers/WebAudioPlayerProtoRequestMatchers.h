@@ -20,7 +20,6 @@
 #ifndef WEB_AUDIO_PLAYER_PROTO_REQUEST_MATCHERS_H_
 #define WEB_AUDIO_PLAYER_PROTO_REQUEST_MATCHERS_H_
 
-// #include "MediaCommon.h"
 #include "webaudioplayermodule.pb.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -31,14 +30,20 @@ MATCHER_P3(createWebAudioPlayerRequestMatcher, audioMimeType, priority, config, 
 {
     const ::firebolt::rialto::CreateWebAudioPlayerRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::CreateWebAudioPlayerRequest *>(arg);
-    return (kRequest->audio_mime_type() == audioMimeType && kRequest->priority() == priority);
+    return ((kRequest->audio_mime_type() == audioMimeType) && (kRequest->priority() == priority) &&
+            (kRequest->config().pcm().rate() == config->pcm.rate &&
+             kRequest->config().pcm().channels() == config->pcm.channels &&
+             kRequest->config().pcm().sample_size() == config->pcm.sampleSize &&
+             kRequest->config().pcm().is_big_endian() == config->pcm.isBigEndian &&
+             kRequest->config().pcm().is_signed() == config->pcm.isSigned &&
+             kRequest->config().pcm().is_float() == config->pcm.isFloat));
 }
 
 MATCHER_P(destroyWebAudioPlayerRequestMatcher, webAudioPlayerHandle, "")
 {
     const ::firebolt::rialto::DestroyWebAudioPlayerRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::DestroyWebAudioPlayerRequest *>(arg);
-    return (kRequest->web_audio_player_handle());
+    return (kRequest->web_audio_player_handle() == webAudioPlayerHandle);
 }
 
 #endif // WEB_AUDIO_PLAYER_PROTO_REQUEST_MATCHERS_H_

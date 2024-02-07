@@ -27,8 +27,6 @@ namespace
 {
 const std::string kAudioMimeType{"audio/x-raw"};
 const uint32_t kPriority{5};
-std::shared_ptr<WebAudioConfig> m_config = std::make_shared<WebAudioConfig>();
-// const int32_t kValue{1};
 const int32_t kWebAudioPlayerHandle{1};
 } // namespace
 

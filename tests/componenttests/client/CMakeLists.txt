@@ -56,7 +56,9 @@ add_gtests (
         tests/mse/RemoveAudioPlaybackTest.cpp
         tests/mse/PlaybackErrorNotificationTest.cpp
         tests/mse/MediaPipelineCapabilitiesTest.cpp
-        tests/mse/CreateWebAudioPlayerTest.cpp
+        
+        # Web Audio Component tests
+        tests/webaudio/CreateWebAudioPlayerTest.cpp
         
         # EME Component tests
         tests/eme/SessionReadyForDecryptionTest.cpp

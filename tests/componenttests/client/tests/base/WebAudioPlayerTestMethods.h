@@ -31,10 +31,6 @@
 #include <vector>
 
 using ::testing::_;
-using ::testing::DoAll;
-using ::testing::Invoke;
-using ::testing::InvokeWithoutArgs;
-using ::testing::Return;
 using ::testing::SetArgPointee;
 using ::testing::StrictMock;
 using ::testing::WithArgs;
@@ -57,6 +53,7 @@ protected:
     // Objects
     std::shared_ptr<IWebAudioPlayerFactory> m_webAudioPlayerFactory;
     std::shared_ptr<IWebAudioPlayer> m_webAudioPlayer;
+    std::shared_ptr<WebAudioConfig> m_config = std::make_shared<WebAudioConfig>();
 
     // Expect methods
     void shouldCreateWebAudioPlayer();
