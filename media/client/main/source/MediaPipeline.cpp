@@ -461,7 +461,7 @@ bool MediaPipeline::getMute(bool &mute)
 bool MediaPipeline::flush(int32_t sourceId)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
-    return false;
+    return m_mediaPipelineIpc->flush(sourceId);
 }
 
 void MediaPipeline::discardNeedDataRequest(uint32_t needDataRequestId)

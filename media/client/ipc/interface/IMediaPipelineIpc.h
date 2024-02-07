@@ -228,6 +228,17 @@ public:
      * @retval true on success false otherwise
      */
     virtual bool getMute(bool &mute) = 0;
+
+    /**
+     * @brief Flushes a source.
+     *
+     * This method is called by Rialto Client to flush out all queued data for a media source stream.
+     *
+     * @param[in] sourceId : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     *
+     * @retval true on success.
+     */
+    virtual bool flush(int32_t sourceId) = 0;
 };
 
 }; // namespace firebolt::rialto::client

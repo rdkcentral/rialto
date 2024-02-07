@@ -413,6 +413,21 @@ message GetMuteResponse {
 }
 
 /**
+ * @fn void flush(int session_id, int source_id)
+ * @brief Flush a media source for a session.
+ *
+ * @param[in]  session_id   The id of the A/V session.
+ * @param[in]  source_id    The id of the media source to flush.
+ *
+ */
+message FlushRequest {
+  optional int32 session_id = 1 [default = -1];
+  optional int32 source_id = 2 [default = -1];
+}
+message FlushResponse {
+}
+
+/**
  * @brief Event sent the playback state has changed.
  *
  * @param session_id   The id of the A/V session the status is for.
@@ -703,5 +718,12 @@ service MediaPipelineModule {
      * @see GetMuteRequest
      */
     rpc getMute(GetMuteRequest) returns (GetMuteResponse) {
+    }
+
+    /**
+     * @brief Flush the media source.
+     * @see FlushRequest
+     */
+    rpc flush(FlushRequest) returns (FlushResponse) {
     }
 }
