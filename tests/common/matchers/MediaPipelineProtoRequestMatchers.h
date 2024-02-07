@@ -266,4 +266,10 @@ MATCHER_P(isMimeTypeSupportedRequestMatcher, mimeType, "")
     return (kRequest->mime_type() == mimeType);
 }
 
+MATCHER_P2(flushRequestMatcher, sessionId, sourceId, "")
+{
+    const ::firebolt::rialto::FlushRequest *kRequest = dynamic_cast<const ::firebolt::rialto::FlushRequest *>(arg);
+    return (kRequest->session_id() == sessionId) && (kRequest->source_id() == sourceId);
+}
+
 #endif // MEDIA_PIPELINE_PROTO_REQUEST_MATCHERS_H_
