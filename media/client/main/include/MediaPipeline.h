@@ -159,6 +159,8 @@ public:
 
     bool getMute(bool &mute) override;
 
+    bool flush(int32_t sourceId) override;
+
     void notifyApplicationState(ApplicationState state) override;
 
 protected:

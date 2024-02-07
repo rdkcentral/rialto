@@ -128,6 +128,8 @@ public:
 
     bool getMute(bool &mute) override;
 
+    bool flush(int32_t sourceId) override;
+
     AddSegmentStatus addSegment(uint32_t needDataRequestId, const std::unique_ptr<MediaSegment> &mediaSegment) override;
 
     std::weak_ptr<IMediaPipelineClient> getClient() override;

@@ -819,6 +819,11 @@ bool MediaPipelineServerInternal::getMuteInternal(bool &mute)
     return m_gstPlayer->getMute(mute);
 }
 
+bool MediaPipelineServerInternal::flush(int32_t sourceId)
+{
+    return false;
+}
+
 AddSegmentStatus MediaPipelineServerInternal::addSegment(uint32_t needDataRequestId,
                                                          const std::unique_ptr<MediaSegment> &mediaSegment)
 {
