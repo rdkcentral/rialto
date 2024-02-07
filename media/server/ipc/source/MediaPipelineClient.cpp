@@ -49,9 +49,9 @@ convertPlaybackState(const firebolt::rialto::PlaybackState &playbackState)
     {
         return firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_SEEKING;
     }
-    case firebolt::rialto::PlaybackState::FLUSHED:
+    case firebolt::rialto::PlaybackState::SEEK_DONE:
     {
-        return firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_FLUSHED;
+        return firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_SEEK_DONE;
     }
     case firebolt::rialto::PlaybackState::STOPPED:
     {

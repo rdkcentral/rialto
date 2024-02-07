@@ -91,7 +91,7 @@ void SetPosition::execute() const
     m_context.endOfStreamInfo.clear();
     m_context.eosNotified = false;
 
-    m_gstPlayerClient->notifyPlaybackState(PlaybackState::FLUSHED);
+    m_gstPlayerClient->notifyPlaybackState(PlaybackState::SEEK_DONE);
 
     // // Trigger NeedMediaData for all attached sources
     for (const auto streamInfo : m_context.streamInfo)

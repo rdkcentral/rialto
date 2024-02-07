@@ -789,8 +789,8 @@ void MediaPipelineIpc::onPlaybackStateUpdated(const std::shared_ptr<firebolt::ri
         case firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_SEEKING:
             playbackState = PlaybackState::SEEKING;
             break;
-        case firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_FLUSHED:
-            playbackState = PlaybackState::FLUSHED;
+        case firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_SEEK_DONE:
+            playbackState = PlaybackState::SEEK_DONE;
             break;
         case firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_STOPPED:
             playbackState = PlaybackState::STOPPED;

@@ -1076,7 +1076,7 @@ public:
      * Once the backend is seeking it should notify the media player
      * client of playback state
      * IMediaPipelineClient::PlaybackState::SEEKING. When seeking has
-     * completed the state IMediaPipelineClient::PlaybackState::FLUSHED
+     * completed the state IMediaPipelineClient::PlaybackState::SEEK_DONE
      * should be notified followed by
      * IMediaPipelineClient::PlaybackState::PLAYING.
      *

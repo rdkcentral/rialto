@@ -141,7 +141,7 @@ protected:
     void shouldNotifyPlaybackStateStoppedSecondary();
     void shouldNotifyPlaybackStateFailure();
     void shouldNotifyPlaybackStateSeeking();
-    void shouldNotifyPlaybackStateFlushed();
+    void shouldNotifyPlaybackStateSeekDone();
     void shouldNotifyNeedDataAudio(const size_t framesToWrite);
     void shouldNotifyNeedDataVideo(const size_t framesToWrite);
     void shouldNotifyNeedDataVideoSecondary(const size_t framesToWrite);
@@ -244,7 +244,7 @@ protected:
     void sendNotifyPlaybackStateStoppedSecondary();
     void sendNotifyPlaybackStateFailure();
     void sendNotifyPlaybackStateSeeking();
-    void sendNotifyPlaybackStateFlushed();
+    void sendNotifyPlaybackStateSeekDone();
     void sendNotifyPositionChanged(const int64_t position);
     void sendNotifyQosAudio();
     void sendNotifyQosVideo();

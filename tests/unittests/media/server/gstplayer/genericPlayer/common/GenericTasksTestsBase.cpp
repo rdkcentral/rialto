@@ -1523,7 +1523,7 @@ void GenericTasksTestsBase::shouldSeekSuccess()
                                static_cast<GstSeekFlags>(GST_SEEK_FLAG_FLUSH), GST_SEEK_TYPE_SET, kPosition,
                                GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE))
         .WillOnce(Return(true));
-    EXPECT_CALL(testContext->m_gstPlayerClient, notifyPlaybackState(firebolt::rialto::PlaybackState::FLUSHED));
+    EXPECT_CALL(testContext->m_gstPlayerClient, notifyPlaybackState(firebolt::rialto::PlaybackState::SEEK_DONE));
     EXPECT_CALL(testContext->m_gstPlayerClient, notifyNeedMediaData(firebolt::rialto::MediaSourceType::AUDIO))
         .WillOnce(Return(true));
     EXPECT_CALL(testContext->m_gstPlayerClient, notifyNeedMediaData(firebolt::rialto::MediaSourceType::VIDEO))

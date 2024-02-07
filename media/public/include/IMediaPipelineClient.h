@@ -124,7 +124,7 @@ public:
      * The player will start IDLE. Once play() has been called the player
      * will be PLAYING, or once pause() has been called the player will be
      * PAUSED. A seek() request will result in SEEKING and once the seek
-     * is complete FLUSHED will be issued followed by PLAYING. The STOPPED
+     * is complete SEEK_DONE will be issued followed by PLAYING. The STOPPED
      * state will be issued after a stop() request.
      *
      * @param[in] state : The new playback state.

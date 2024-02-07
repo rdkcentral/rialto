@@ -278,12 +278,12 @@ TEST_F(RialtoClientMediaPipelineDataTest, AudioNeedDataEventAfterFinishOfAudioSo
 }
 
 /**
- * Test that a need data notification is forwarded to the client on the event thread in the FLUSHED state.
+ * Test that a need data notification is forwarded to the client on the event thread in the SEEK_DONE state.
  * shmPosition is stored and invalid shmPosition is passed to the client.
  */
-TEST_F(RialtoClientMediaPipelineDataTest, NeedDataEventFlushed)
+TEST_F(RialtoClientMediaPipelineDataTest, NeedDataEventSeekDone)
 {
-    setPlaybackState(PlaybackState::FLUSHED);
+    setPlaybackState(PlaybackState::SEEK_DONE);
     needDataGeneric();
 }
 
@@ -655,7 +655,7 @@ TEST_F(RialtoClientMediaPipelineDataTest, HaveDataSeeking)
 
 /**
  * Test that a have data is ignored and the needDataRequest discarded in the SEEKING state.
- * haveData should return success when Seek is completed in FLUSHED state
+ * haveData should return success when Seek is completed in SEEK_DONE state
  */
 TEST_F(RialtoClientMediaPipelineDataTest, HaveDataAfterSeekCompleted)
 {
@@ -668,8 +668,8 @@ TEST_F(RialtoClientMediaPipelineDataTest, HaveDataAfterSeekCompleted)
 
     EXPECT_EQ(m_mediaPipeline->haveData(m_status, m_requestId), true);
 
-    // Check that new haveData is handled after changing state to FLUSHED
-    setPlaybackState(PlaybackState::FLUSHED);
+    // Check that new haveData is handled after changing state to SEEK_DONE
+    setPlaybackState(PlaybackState::SEEK_DONE);
 
     // haveData should return success but will not be forwarded to media ipc
     EXPECT_EQ(m_mediaPipeline->haveData(m_status, m_requestId), true);

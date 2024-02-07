@@ -57,8 +57,8 @@ const char *toString(const firebolt::rialto::PlaybackState &state)
         return "PAUSED";
     case firebolt::rialto::PlaybackState::SEEKING:
         return "SEEKING";
-    case firebolt::rialto::PlaybackState::FLUSHED:
-        return "FLUSHED";
+    case firebolt::rialto::PlaybackState::SEEK_DONE:
+        return "SEEK_DONE";
     case firebolt::rialto::PlaybackState::STOPPED:
         return "STOPPED";
     case firebolt::rialto::PlaybackState::END_OF_STREAM:
@@ -542,7 +542,7 @@ void MediaPipeline::updateState(PlaybackState state)
         newState = State::IDLE;
         break;
     }
-    case PlaybackState::FLUSHED:
+    case PlaybackState::SEEK_DONE:
     {
         newState = State::BUFFERING;
         break;

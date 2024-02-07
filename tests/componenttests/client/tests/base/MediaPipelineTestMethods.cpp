@@ -963,9 +963,9 @@ void MediaPipelineTestMethods::shouldNotifyPlaybackStateSeeking()
     shouldNotifyPlaybackStateInternal(m_mediaPipelineClientMock, PlaybackState::SEEKING);
 }
 
-void MediaPipelineTestMethods::shouldNotifyPlaybackStateFlushed()
+void MediaPipelineTestMethods::shouldNotifyPlaybackStateSeekDone()
 {
-    shouldNotifyPlaybackStateInternal(m_mediaPipelineClientMock, PlaybackState::FLUSHED);
+    shouldNotifyPlaybackStateInternal(m_mediaPipelineClientMock, PlaybackState::SEEK_DONE);
 }
 
 void MediaPipelineTestMethods::shouldSetPosition(const int64_t expectedPosition)
@@ -984,9 +984,9 @@ void MediaPipelineTestMethods::sendNotifyPlaybackStateSeeking()
     sendNotifyPlaybackStateInternal(kSessionId, PlaybackState::SEEKING);
 }
 
-void MediaPipelineTestMethods::sendNotifyPlaybackStateFlushed()
+void MediaPipelineTestMethods::sendNotifyPlaybackStateSeekDone()
 {
-    sendNotifyPlaybackStateInternal(kSessionId, PlaybackState::FLUSHED);
+    sendNotifyPlaybackStateInternal(kSessionId, PlaybackState::SEEK_DONE);
 }
 
 void MediaPipelineTestMethods::shouldNotifyNeedDataAudio(const size_t framesToWrite)
