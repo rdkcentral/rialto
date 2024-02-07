@@ -19,12 +19,12 @@
 #ifndef FIREBOLT_RIALTO_CLIENT_CT_WEB_AUDIO_PLAYER_MODULE_STUB_H_
 #define FIREBOLT_RIALTO_CLIENT_CT_WEB_AUDIO_PLAYER_MODULE_STUB_H_
 
+#include "IIpcServer.h"
 #include "MediaCommon.h"
 #include "webaudioplayermodule.pb.h"
 #include <memory>
 #include <string>
 #include <vector>
-#include "IIpcServer.h"
 
 namespace firebolt::rialto::client::ct
 {

@@ -29,10 +29,13 @@ class WebAudioPlayerModuleMock : public ::firebolt::rialto::WebAudioPlayerModule
 {
 public:
     MOCK_METHOD(void, createWebAudioPlayer,
-                    (::google::protobuf::RpcController *controller,
-                        const ::firebolt::rialto::CreateWebAudioPlayerRequest *request,
-                        ::firebolt::rialto::CreateWebAudioPlayerResponse *response,
-                        ::google::protobuf::Closure *done));
+                (::google::protobuf::RpcController * controller,
+                 const ::firebolt::rialto::CreateWebAudioPlayerRequest *request,
+                 ::firebolt::rialto::CreateWebAudioPlayerResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, destroyWebAudioPlayer,
+                (::google::protobuf::RpcController * controller,
+                 const ::firebolt::rialto::DestroyWebAudioPlayerRequest *request,
+                 ::firebolt::rialto::DestroyWebAudioPlayerResponse *response, ::google::protobuf::Closure *done));
 
     void defaultReturn(::google::protobuf::RpcController *controller, ::google::protobuf::Closure *done)
     {

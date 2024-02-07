@@ -23,8 +23,8 @@
 #include "ControlTestMethods.h"
 #include "MediaKeysTestMethods.h"
 #include "MediaPipelineTestMethods.h"
-#include "WebAudioPlayerTestMethods.h"
 #include "ServerStub.h"
+#include "WebAudioPlayerTestMethods.h"
 #include <gtest/gtest.h>
 #include <memory>
 

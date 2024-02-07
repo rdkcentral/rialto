@@ -21,9 +21,9 @@
 #define FIREBOLT_RIALTO_CLIENT_CT_WEB_AUDIO_PLAYER_TEST_METHODS_H_
 
 #include "IWebAudioPlayer.h"
-#include "WebAudioPlayerModuleMock.h"
-#include "WebAudioPlayerClientMock.h"
 #include "ServerStub.h"
+#include "WebAudioPlayerClientMock.h"
+#include "WebAudioPlayerModuleMock.h"
 #include <gtest/gtest.h>
 #include <map>
 #include <memory>
@@ -60,11 +60,11 @@ protected:
 
     // Expect methods
     void shouldCreateWebAudioPlayer();
-
+    void shouldDestroyWebAudioPlayer();
 
     // Api methods
     void createWebAudioPlayer();
-
+    void destroyWebAudioPlayer();
 };
 } // namespace firebolt::rialto::client::ct
 

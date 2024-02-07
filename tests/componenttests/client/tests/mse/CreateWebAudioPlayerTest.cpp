@@ -30,9 +30,8 @@ public:
     ~CreateWebAudioPlayerTest() { ClientComponentTest::stopApplication(); }
 };
 
-
 /*
- * Component Test: Create Web Audio Player 
+ * Component Test: Create Web Audio Player
  * Test Objective:
  *  Test the creation of web audio player.
  *
@@ -71,11 +70,12 @@ public:
  */
 TEST_F(CreateWebAudioPlayerTest, createWebAudioPlayer)
 {
-
     // Step 1: Create a new web audio player session
     WebAudioPlayerTestMethods::shouldCreateWebAudioPlayer();
     WebAudioPlayerTestMethods::createWebAudioPlayer();
 
-
+    // Step 2: Destroy web audio player session
+    WebAudioPlayerTestMethods::shouldDestroyWebAudioPlayer();
+    WebAudioPlayerTestMethods::destroyWebAudioPlayer();
 }
 } // namespace firebolt::rialto::client::ct

@@ -34,5 +34,11 @@ MATCHER_P3(createWebAudioPlayerRequestMatcher, audioMimeType, priority, config, 
     return (kRequest->audio_mime_type() == audioMimeType && kRequest->priority() == priority);
 }
 
+MATCHER_P(destroyWebAudioPlayerRequestMatcher, webAudioPlayerHandle, "")
+{
+    const ::firebolt::rialto::DestroyWebAudioPlayerRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::DestroyWebAudioPlayerRequest *>(arg);
+    return (kRequest->web_audio_player_handle());
+}
 
 #endif // WEB_AUDIO_PLAYER_PROTO_REQUEST_MATCHERS_H_

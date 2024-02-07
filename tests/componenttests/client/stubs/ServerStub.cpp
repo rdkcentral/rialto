@@ -75,7 +75,8 @@ ServerStub::ServerStub(
     const std::shared_ptr<::firebolt::rialto::WebAudioPlayerModule> &webAudioPlayerModuleMock)
     : ControlModuleStub{controlModuleMock}, MediaPipelineModuleStub{mediaPipelineModuleMock},
       MediaKeysModuleStub{mediaKeysModuleMock}, MediaKeysCapabilitiesModuleStub{mediaKeysCapabilitiesModuleMock},
-      MediaPipelineCapabilitiesModuleStub{mediaPipelineCapabilitiesModuleMock}, WebAudioPlayerModuleStub{webAudioPlayerModuleMock}
+      MediaPipelineCapabilitiesModuleStub{mediaPipelineCapabilitiesModuleMock}, WebAudioPlayerModuleStub{
+                                                                                    webAudioPlayerModuleMock}
 {
     init();
 }
