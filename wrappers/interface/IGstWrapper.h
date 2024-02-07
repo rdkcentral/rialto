@@ -1143,6 +1143,74 @@ public:
      * @param[in]  it   : the iterator to free.
      */
     virtual void gstIteratorFree(GstIterator *it) const = 0;
+
+    /**
+     * @brief Post a message on the elements bus.
+     *
+     * @param[in] element   : the element posting the message.
+     * @param[in] message   : message to post.
+     *
+     * @retval TRUE if the message was posted, FALSE otherwise.
+     */
+    virtual gboolean gstElementPostMessage(GstElement *element, GstMessage *message) const = 0;
+
+    /**
+     * @brief Create a new warning message.
+     *
+     * @param[in] src   : the origin of the message.
+     * @param[in] error : GError for this message.
+     * @param[in] debug : error info string.
+     *
+     * @retval New warning message.
+     */
+    virtual GstMessage *gstMessageNewWarning(GstObject *src, GError *error, const gchar *debug) const = 0;
+
+    /**
+     * @brief Get the GError and error string from the message.
+     *
+     * @param[in]  message  : a message of type WARNING.
+     * @param[out] gerror   : loction to store the error.
+     * @param[out] debug    : loction to store the error string.
+     */
+    virtual void gstMessageParseWarning(GstMessage *message, GError **gerror, gchar **debug) const = 0;
+
+    /**
+     * @brief Get the capabilities from the pad.
+     *
+     * @param[in] pad   : pad to get the capabilities.
+     *
+     * @retval the current caps, NULL otherwise.
+     */
+    virtual GstCaps *gstPadGetCurrentCaps(GstPad *pad) const = 0;
+
+    /**
+     * @brief Finds the structure at index in the caps.
+     *
+     * @param[in] caps  : a GstCaps.
+     * @param[in] index : index in the caps to get the structure.
+     *
+     * @retval ptr to a structure.
+     */
+    virtual GstStructure *gstCapsGetStructure(const GstCaps *caps, guint index) const = 0;
+
+    /**
+     * @brief Gets the name of the structure.
+     *
+     * @param[in] structure : a GstStructure.
+     *
+     * @retval the name of the structure.
+     */
+    virtual const gchar *gstStructureGetName(const GstStructure *structure) const = 0;
+
+    /**
+     * @brief Sets the name of an object.
+     *
+     * @param[in] object    : object to name.
+     * @param[in] name      : new name of object.
+     *
+     * @retval TRUE if name could be set.
+     */
+    virtual gboolean gstObjectSetName(GstObject *object, const gchar *name) const = 0;
 };
 
 }; // namespace firebolt::rialto::wrappers

@@ -44,32 +44,6 @@ public:
         ASSERT_TRUE(receivedMessage);
         EXPECT_EQ(receivedMessage->sessionserverstate(), ::rialto::SessionServerState::INACTIVE);
     }
-
-    void setStateActive()
-    {
-        ::rialto::SetStateRequest request{createSetStateRequest(::rialto::SessionServerState::ACTIVE)};
-
-        ExpectMessage<::rialto::StateChangedEvent> expectedMessage(m_serverManagerStub);
-
-        ConfigureAction<::firebolt::rialto::server::ct::SetState>(m_serverManagerStub).send(request).expectSuccess();
-
-        auto receivedMessage = expectedMessage.getMessage();
-        ASSERT_TRUE(receivedMessage);
-        EXPECT_EQ(receivedMessage->sessionserverstate(), ::rialto::SessionServerState::ACTIVE);
-    }
-
-    void setStateInactive()
-    {
-        ::rialto::SetStateRequest request{createSetStateRequest(::rialto::SessionServerState::INACTIVE)};
-
-        ExpectMessage<::rialto::StateChangedEvent> expectedMessage(m_serverManagerStub);
-
-        ConfigureAction<::firebolt::rialto::server::ct::SetState>(m_serverManagerStub).send(request).expectSuccess();
-
-        auto receivedMessage = expectedMessage.getMessage();
-        ASSERT_TRUE(receivedMessage);
-        EXPECT_EQ(receivedMessage->sessionserverstate(), ::rialto::SessionServerState::INACTIVE);
-    }
 };
 
 /*

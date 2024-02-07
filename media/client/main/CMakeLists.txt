@@ -26,15 +26,16 @@ include( CheckCXXCompilerFlag )
 
 set(LIB_RIALTO_CLIENT_SOURCES
         source/AttachedSources.cpp
-        source/MediaPipeline.cpp
-        source/MediaPipelineCapabilities.cpp
+        source/ClientController.cpp
+        source/ClientLogControl.cpp
         source/Control.cpp
+        source/KeyIdMap.cpp
         source/MediaKeys.cpp
         source/MediaKeysCapabilities.cpp
-        source/KeyIdMap.cpp
-        source/WebAudioPlayer.cpp
-        source/ClientController.cpp
+        source/MediaPipeline.cpp
+        source/MediaPipelineCapabilities.cpp
         source/SharedMemoryHandle.cpp
+        source/WebAudioPlayer.cpp
         )
 
 add_library( RialtoClient

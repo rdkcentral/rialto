@@ -140,6 +140,11 @@ public:
     gpointer gValueGetObject(const GValue *value) const override { return g_value_get_object(value); }
 
     void gValueUnset(GValue *value) const override { return g_value_unset(value); }
+
+    GError *gErrorNewLiteral(GQuark domain, gint code, const gchar *message) const override
+    {
+        return g_error_new_literal(domain, code, message);
+    }
 };
 
 }; // namespace firebolt::rialto::wrappers

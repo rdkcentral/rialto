@@ -80,7 +80,22 @@ public:
     }
     MOCK_METHOD(void, gObjectGetStub, (gpointer object, const gchar *first_property_name, void *element));
 
-    gchar *gStrdupPrintf(const gchar *format, ...) override { return gStrdupPrintfStub(format); };
+    gchar *gStrdupPrintf(const gchar *format, ...) override
+    {
+        gchar *buffer;
+        va_list args;
+
+        va_start(args, format);
+        buffer = g_strdup_vprintf(format, args);
+        va_end(args);
+
+        gchar *str = gStrdupPrintfStub(buffer);
+
+        // free the string
+        g_free(buffer);
+
+        return str;
+    };
     MOCK_METHOD(gchar *, gStrdupPrintfStub, (const gchar *format));
 
     MOCK_METHOD(GParamSpec *, gObjectClassFindProperty, (GObjectClass *, const gchar *), (override));
@@ -99,6 +114,7 @@ public:
     MOCK_METHOD(int, gStrcmp0, (const char *str1, const char *str2), (const, override));
     MOCK_METHOD(gpointer, gValueGetObject, (const GValue *value), (const, override));
     MOCK_METHOD(void, gValueUnset, (GValue * value), (const, override));
+    MOCK_METHOD(GError *, gErrorNewLiteral, (GQuark domain, gint code, const gchar *message), (const, override));
 };
 } // namespace firebolt::rialto::wrappers
 

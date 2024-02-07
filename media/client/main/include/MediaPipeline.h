@@ -147,6 +147,8 @@ public:
 
     void notifyBufferUnderflow(int32_t sourceId) override;
 
+    void notifyPlaybackError(int32_t sourceId, PlaybackError error) override;
+
     bool renderFrame() override;
 
     bool setVolume(double volume) override;

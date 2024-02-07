@@ -72,3 +72,16 @@ TEST_F(RialtoClientMediaPipelineCallbackTest, NotifyQos)
 
     m_mediaPipelineCallback->notifyQos(sourceId, qosInfo);
 }
+
+/**
+ * Test a notification of playback error is forwarded to the registered client.
+ */
+TEST_F(RialtoClientMediaPipelineCallbackTest, NotifyPlaybackError)
+{
+    int32_t sourceId = 1;
+    PlaybackError error = PlaybackError::DECRYPTION;
+
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyPlaybackError(sourceId, error));
+
+    m_mediaPipelineCallback->notifyPlaybackError(sourceId, error);
+}

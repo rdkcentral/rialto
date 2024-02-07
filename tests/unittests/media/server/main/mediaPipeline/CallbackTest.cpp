@@ -206,6 +206,34 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyQosFailureSourceIdNotFound)
 }
 
 /**
+ * Test a notification of playback error is forwarded to the registered client.
+ */
+TEST_F(RialtoServerMediaPipelineCallbackTest, notifyPlaybackError)
+{
+    auto mediaSourceType = firebolt::rialto::MediaSourceType::VIDEO;
+    auto error = firebolt::rialto::PlaybackError::DECRYPTION;
+    int sourceId = attachSource(mediaSourceType, "video/mp4");
+
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyPlaybackError(sourceId, error));
+
+    m_gstPlayerCallback->notifyPlaybackError(mediaSourceType, error);
+}
+
+/**
+ * Test a notification of playback error fails when sourceid cannot be found.
+ */
+TEST_F(RialtoServerMediaPipelineCallbackTest, notifyPlaybackErrorFailureSourceIdNotFound)
+{
+    auto mediaSourceType = firebolt::rialto::MediaSourceType::VIDEO;
+    auto error = firebolt::rialto::PlaybackError::DECRYPTION;
+
+    mainThreadWillEnqueueTask();
+
+    m_gstPlayerCallback->notifyPlaybackError(mediaSourceType, error);
+}
+
+/**
  * Tests if active request cache is cleared.
  */
 TEST_F(RialtoServerMediaPipelineCallbackTest, clearActiveRequestsCache)

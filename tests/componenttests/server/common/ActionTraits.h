@@ -23,6 +23,7 @@
 #include "controlmodule.pb.h"
 #include "mediakeyscapabilitiesmodule.pb.h"
 #include "mediakeysmodule.pb.h"
+#include "mediapipelinecapabilitiesmodule.pb.h"
 #include "mediapipelinemodule.pb.h"
 #include "servermanagermodule.pb.h"
 
@@ -391,6 +392,39 @@ struct GetSharedMemory
     using ResponseType = ::firebolt::rialto::GetSharedMemoryResponse;
     using Stub = ::firebolt::rialto::ControlModule_Stub;
     static constexpr auto m_kFunction{&Stub::getSharedMemory};
+};
+
+struct RegisterClient
+{
+    using RequestType = ::firebolt::rialto::RegisterClientRequest;
+    using ResponseType = ::firebolt::rialto::RegisterClientResponse;
+    using Stub = ::firebolt::rialto::ControlModule_Stub;
+    static constexpr auto m_kFunction{&Stub::registerClient};
+};
+
+struct Ack
+{
+    using RequestType = ::firebolt::rialto::AckRequest;
+    using ResponseType = ::firebolt::rialto::AckResponse;
+    using Stub = ::firebolt::rialto::ControlModule_Stub;
+    static constexpr auto m_kFunction{&Stub::ack};
+};
+
+// media pipeline capabilities module
+struct GetSupportedMimeTypes
+{
+    using RequestType = ::firebolt::rialto::GetSupportedMimeTypesRequest;
+    using ResponseType = ::firebolt::rialto::GetSupportedMimeTypesResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineCapabilitiesModule_Stub;
+    static constexpr auto m_kFunction{&Stub::getSupportedMimeTypes};
+};
+
+struct IsMimeTypeSupported
+{
+    using RequestType = ::firebolt::rialto::IsMimeTypeSupportedRequest;
+    using ResponseType = ::firebolt::rialto::IsMimeTypeSupportedResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineCapabilitiesModule_Stub;
+    static constexpr auto m_kFunction{&Stub::isMimeTypeSupported};
 };
 } // namespace firebolt::rialto::server::ct
 

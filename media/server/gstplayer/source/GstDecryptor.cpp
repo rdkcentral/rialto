@@ -125,7 +125,8 @@ static void gst_rialto_decryptor_init(GstRialtoDecryptor *self) // NOLINT(build/
         reinterpret_cast<GstRialtoDecryptorPrivate *>(gst_rialto_decryptor_get_instance_private(self));
     GstBaseTransform *base = GST_BASE_TRANSFORM(self);
 
-    self->priv = new (priv) GstRialtoDecryptorPrivate(base, firebolt::rialto::wrappers::IGstWrapperFactory::getFactory());
+    self->priv = new (priv) GstRialtoDecryptorPrivate(base, firebolt::rialto::wrappers::IGstWrapperFactory::getFactory(),
+                                                      firebolt::rialto::wrappers::IGlibWrapperFactory::getFactory());
 
     gst_base_transform_set_in_place(base, TRUE);
     gst_base_transform_set_passthrough(base, FALSE);
@@ -198,32 +199,50 @@ GstElement *GstDecryptorElementFactory::createDecryptorElement(
     const gchar *name, firebolt::rialto::server::IDecryptionService *decryptionService,
     const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper) const
 {
-    GstRialtoDecryptor *decrypter = GST_RIALTO_DECRYPTOR(g_object_new(GST_RIALTO_DECRYPTOR_TYPE, name));
+    // Bypass the glib wrapper here, this is the only place we can create a proper Decryptor element
+    GstRialtoDecryptor *decryptor = GST_RIALTO_DECRYPTOR(g_object_new(GST_RIALTO_DECRYPTOR_TYPE, nullptr));
+    if (name)
+    {
+        if (!gstWrapper->gstObjectSetName(GST_OBJECT(decryptor), name))
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to set the decryptor name to %s", name);
+            g_object_unref(GST_OBJECT(decryptor));
+            return nullptr;
+        }
+    }
+
     GstRialtoDecryptorPrivate *priv =
-        reinterpret_cast<GstRialtoDecryptorPrivate *>(gst_rialto_decryptor_get_instance_private(decrypter));
+        reinterpret_cast<GstRialtoDecryptorPrivate *>(gst_rialto_decryptor_get_instance_private(decryptor));
     std::shared_ptr<firebolt::rialto::server::IGstProtectionMetadataHelperFactory> metadataFactory =
         firebolt::rialto::server::IGstProtectionMetadataHelperFactory::createFactory();
     if (priv)
     {
         priv->setDecryptionService(decryptionService);
         priv->setProtectionMetadataWrapper(metadataFactory->createProtectionMetadataWrapper(gstWrapper));
-        return GST_ELEMENT(decrypter);
+        return GST_ELEMENT(decryptor);
     }
     else
     {
         RIALTO_SERVER_LOG_ERROR("Failed to create the decryptor element");
+        g_object_unref(GST_OBJECT(decryptor));
         return nullptr;
     }
 }
 
 GstRialtoDecryptorPrivate::GstRialtoDecryptorPrivate(
     GstBaseTransform *parentElement,
-    const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapperFactory> &gstWrapperFactory)
+    const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapperFactory> &gstWrapperFactory,
+    const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapperFactory> &glibWrapperFactory)
     : m_decryptorElement(parentElement)
 {
     if ((!gstWrapperFactory) || (!(m_gstWrapper = gstWrapperFactory->getGstWrapper())))
     {
         throw std::runtime_error("Cannot create GstWrapper");
+    }
+
+    if ((!glibWrapperFactory) || (!(m_glibWrapper = glibWrapperFactory->getGlibWrapper())))
+    {
+        throw std::runtime_error("Cannot create GlibWrapper");
     }
 }
 
@@ -231,9 +250,11 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer, GstCaps *cap
 {
     GstRialtoDecryptor *self = GST_RIALTO_DECRYPTOR(m_decryptorElement);
     GstRialtoProtectionData *protectionData = m_metadataWrapper->getProtectionMetadataData(buffer);
+    GstFlowReturn returnStatus = GST_BASE_TRANSFORM_FLOW_DROPPED; // By default drop frame on failure
     if (!protectionData)
     {
         GST_TRACE_OBJECT(self, "Clear sample");
+        returnStatus = GST_FLOW_OK;
     }
     else
     {
@@ -295,6 +316,7 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer, GstCaps *cap
                 else
                 {
                     GST_TRACE_OBJECT(self, "Decryption successful");
+                    returnStatus = GST_FLOW_OK;
                 }
             }
 #else
@@ -325,6 +347,7 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer, GstCaps *cap
             else
             {
                 GST_TRACE_OBJECT(self, "Decryption successful");
+                returnStatus = GST_FLOW_OK;
             }
 #endif
         }
@@ -332,8 +355,22 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer, GstCaps *cap
         m_metadataWrapper->removeProtectionMetadata(buffer);
     }
 
-    // pass it through even in case of failed decryption
-    return GST_FLOW_OK;
+    if (GST_BASE_TRANSFORM_FLOW_DROPPED == returnStatus)
+    {
+        // Notify dropped frame upstream as a non-fatal message
+        std::string message = "Failed to decrypt buffer, dropping frame and continuing";
+        GError *gError{m_glibWrapper->gErrorNewLiteral(GST_STREAM_ERROR, GST_STREAM_ERROR_DECRYPT, message.c_str())};
+        gboolean result =
+            m_gstWrapper->gstElementPostMessage(GST_ELEMENT_CAST(self),
+                                                m_gstWrapper->gstMessageNewWarning(GST_OBJECT_CAST(self), gError,
+                                                                                   message.c_str()));
+        if (!result)
+        {
+            GST_WARNING_OBJECT(self, "Could not post decrypt warning");
+        }
+        m_glibWrapper->gErrorFree(gError);
+    }
+    return returnStatus;
 }
 
 GstStructure *GstRialtoDecryptorPrivate::createProtectionMetaInfo(GstRialtoProtectionData *protectionData)

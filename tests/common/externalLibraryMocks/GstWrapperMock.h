@@ -186,6 +186,14 @@ public:
     MOCK_METHOD(GstIterator *, gstBinIterateSinks, (GstBin * bin), (const, override));
     MOCK_METHOD(GstIteratorResult, gstIteratorNext, (GstIterator * it, GValue *elem), (const, override));
     MOCK_METHOD(void, gstIteratorFree, (GstIterator * it), (const, override));
+    MOCK_METHOD(gboolean, gstElementPostMessage, (GstElement * element, GstMessage *message), (const, override));
+    MOCK_METHOD(GstMessage *, gstMessageNewWarning, (GstObject * src, GError *error, const gchar *debug),
+                (const, override));
+    MOCK_METHOD(void, gstMessageParseWarning, (GstMessage * message, GError **gerror, gchar **debug), (const, override));
+    MOCK_METHOD(GstCaps *, gstPadGetCurrentCaps, (GstPad * pad), (const, override));
+    MOCK_METHOD(GstStructure *, gstCapsGetStructure, (const GstCaps *caps, guint index), (const, override));
+    MOCK_METHOD(const gchar *, gstStructureGetName, (const GstStructure *structure), (const, override));
+    MOCK_METHOD(gboolean, gstObjectSetName, (GstObject * object, const gchar *name), (const, override));
 
     GstCaps *gstCapsNewSimple(const char *media_type, const char *fieldname, ...) const override
     {
