@@ -68,7 +68,7 @@ public:
      */
     ~ClientLogControl() override;
 
-    bool registerLogHandler(std::shared_ptr<IClientLogHandler> &handler, bool ignoreLogLevels) override;
+    bool registerLogHandler(const std::shared_ptr<IClientLogHandler> &handler, bool ignoreLogLevels) override;
 
 private:
     void forwardLog(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char *file, int line,

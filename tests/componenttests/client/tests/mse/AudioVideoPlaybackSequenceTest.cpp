@@ -103,7 +103,7 @@ public:
  *  Step 9: Play
  *   Play the content.
  *   Expect that play propagated to the server.
- *   Sierver notifys the client that the Playback state has changed to PLAYING.
+ *   Server notifys the client that the Playback state has changed to PLAYING.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 10: Write 1 audio frame

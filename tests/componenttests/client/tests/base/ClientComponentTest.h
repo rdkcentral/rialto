@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_CLIENT_CT_CLIENT_COMPONENT_TEST_H_
 #define FIREBOLT_RIALTO_CLIENT_CT_CLIENT_COMPONENT_TEST_H_
 
+#include "ClientLogControlTestMethods.h"
 #include "ControlTestMethods.h"
 #include "MediaKeysTestMethods.h"
 #include "MediaPipelineTestMethods.h"
@@ -42,6 +43,7 @@ namespace firebolt::rialto::client::ct
 {
 class ClientComponentTest : public ::testing::Test,
                             public ControlTestMethods,
+                            public ClientLogControlTestMethods,
                             public MediaPipelineTestMethods,
                             public MediaKeysTestMethods,
                             public WebAudioPlayerTestMethods
