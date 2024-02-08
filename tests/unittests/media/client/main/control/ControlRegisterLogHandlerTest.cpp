@@ -27,10 +27,10 @@ using namespace firebolt::rialto;
 using namespace firebolt::rialto::client;
 
 using ::testing::_;
+using ::testing::AnyNumber;
+using ::testing::Ne;
 using ::testing::StrictMock;
 using ::testing::StrNe;
-using ::testing::Ne;
-using ::testing::AnyNumber;
 
 namespace
 {
@@ -42,15 +42,9 @@ class ClientLogControlTest : public ::testing::Test
 protected:
     std::shared_ptr<StrictMock<ClientLogHandlerMock>> m_clientLogHandlerMock;
 
-    ClientLogControlTest()
-        : m_clientLogHandlerMock{std::make_shared<StrictMock<ClientLogHandlerMock>>()}
-    {
-    }
+    ClientLogControlTest() : m_clientLogHandlerMock{std::make_shared<StrictMock<ClientLogHandlerMock>>()} {}
 
-    ~ClientLogControlTest()
-    {
-        resetLogHandler(m_clientLogHandlerMock);
-    }
+    ~ClientLogControlTest() { resetLogHandler(m_clientLogHandlerMock); }
 
     void resetLogHandler(const std::shared_ptr<StrictMock<ClientLogHandlerMock>> &clientLogHandlerMock)
     {
@@ -85,7 +79,8 @@ TEST_F(ClientLogControlTest, ShouldUpdateLogHandler)
     EXPECT_EQ(&control1, &control2); // IClientLogControl Ought to be a singleton
 
     // Replace log handler
-    std::shared_ptr<StrictMock<ClientLogHandlerMock>> clientLogHandlerMock2 = std::make_shared<StrictMock<ClientLogHandlerMock>>();
+    std::shared_ptr<StrictMock<ClientLogHandlerMock>> clientLogHandlerMock2 =
+        std::make_shared<StrictMock<ClientLogHandlerMock>>();
     EXPECT_CALL(*m_clientLogHandlerMock, log(_, StrNe(""), Ne(0), StrNe(""), StrNe(""))).Times(2);
     EXPECT_TRUE(control2.registerLogHandler(clientLogHandlerMock2, true));
 

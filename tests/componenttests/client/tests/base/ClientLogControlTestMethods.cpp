@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2023 Sky UK
+ * Copyright 2024 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,11 @@
 #include "ClientLogControlTestMethods.h"
 #include "RialtoClientLogging.h"
 #include <memory>
+
+using ::testing::_;
+using ::testing::Ne;
+using ::testing::StrEq;
+using ::testing::StrNe;
 
 namespace firebolt::rialto::client::ct
 {
@@ -39,27 +44,28 @@ void ClientLogControlTestMethods::createClientLogControl()
 
 void ClientLogControlTestMethods::registerLogHandler()
 {
-    m_clientLogControl->registerLogHandler(m_clientLogHandlerMock, false);
+    EXPECT_EQ(m_clientLogControl->registerLogHandler(m_clientLogHandlerMock, false), true);
 }
 
 void ClientLogControlTestMethods::registerLogHandlerWithIgnoreLevels()
 {
-    m_clientLogControl->registerLogHandler(m_clientLogHandlerMock, true);
+    EXPECT_EQ(m_clientLogControl->registerLogHandler(m_clientLogHandlerMock, true), true);
 }
 
 void ClientLogControlTestMethods::unregisterLogHandler()
 {
-    m_clientLogControl->registerLogHandler(nullptr, false);
+    EXPECT_EQ(m_clientLogControl->registerLogHandler(nullptr, false), true);
 }
 
 void ClientLogControlTestMethods::setLogLevel(RIALTO_DEBUG_LEVEL level)
 {
-    firebolt::rialto::logging::setLogLevels(RIALTO_COMPONENT_CLIENT, level);
+    EXPECT_EQ(firebolt::rialto::logging::setLogLevels(RIALTO_COMPONENT_CLIENT, level), RIALTO_LOGGING_STATUS_OK);
 }
 
 void ClientLogControlTestMethods::shouldLog(IClientLogHandler::Level level)
 {
-    EXPECT_CALL(*m_clientLogHandlerMock, log(level, StrEq("ClientLogControlTestMethods.cpp"), Ne(0), StrNe(""), StrNe("")));
+    EXPECT_CALL(*m_clientLogHandlerMock,
+                log(level, StrEq("ClientLogControlTestMethods.cpp"), Ne(0), StrNe(""), StrNe("")));
 }
 
 void ClientLogControlTestMethods::shouldReplaceLogHandler()
@@ -69,29 +75,29 @@ void ClientLogControlTestMethods::shouldReplaceLogHandler()
 
 void ClientLogControlTestMethods::log(IClientLogHandler::Level level)
 {
-    switch(level)
+    switch (level)
     {
-        case IClientLogHandler::Level::Fatal:
-            RIALTO_CLIENT_LOG_FATAL("Test Fatal");
-            break;
-        case IClientLogHandler::Level::Error:
-            RIALTO_CLIENT_LOG_ERROR("Test Error");
-            break;
-        case IClientLogHandler::Level::Warning:
-            RIALTO_CLIENT_LOG_WARN("Test Warning");
-            break;
-        case IClientLogHandler::Level::Milestone:
-            RIALTO_CLIENT_LOG_MIL("Test Milestone");
-            break;
-        case IClientLogHandler::Level::Info:
-            RIALTO_CLIENT_LOG_INFO("Test Info");
-            break;
-        case IClientLogHandler::Level::Debug:
-            RIALTO_CLIENT_LOG_DEBUG("Test Debug");
-            break;
-        case IClientLogHandler::Level::External:
-        default:
-            break;
+    case IClientLogHandler::Level::Fatal:
+        RIALTO_CLIENT_LOG_FATAL("Test Fatal");
+        break;
+    case IClientLogHandler::Level::Error:
+        RIALTO_CLIENT_LOG_ERROR("Test Error");
+        break;
+    case IClientLogHandler::Level::Warning:
+        RIALTO_CLIENT_LOG_WARN("Test Warning");
+        break;
+    case IClientLogHandler::Level::Milestone:
+        RIALTO_CLIENT_LOG_MIL("Test Milestone");
+        break;
+    case IClientLogHandler::Level::Info:
+        RIALTO_CLIENT_LOG_INFO("Test Info");
+        break;
+    case IClientLogHandler::Level::Debug:
+        RIALTO_CLIENT_LOG_DEBUG("Test Debug");
+        break;
+    case IClientLogHandler::Level::External:
+    default:
+        break;
     }
 }
 

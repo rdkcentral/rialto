@@ -20,8 +20,8 @@
 #ifndef FIREBOLT_RIALTO_CLIENT_CT_CLIENT_COMPONENT_TEST_H_
 #define FIREBOLT_RIALTO_CLIENT_CT_CLIENT_COMPONENT_TEST_H_
 
-#include "ControlTestMethods.h"
 #include "ClientLogControlTestMethods.h"
+#include "ControlTestMethods.h"
 #include "MediaKeysTestMethods.h"
 #include "MediaPipelineTestMethods.h"
 #include "ServerStub.h"

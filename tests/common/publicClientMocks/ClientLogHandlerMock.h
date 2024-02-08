@@ -32,8 +32,9 @@ public:
     ClientLogHandlerMock() = default;
     virtual ~ClientLogHandlerMock() = default;
 
-    MOCK_METHOD(void, log, (Level level, const std::string &file, int line, const std::string &function,
-                            const std::string &message), (override));
+    MOCK_METHOD(void, log,
+                (Level level, const std::string &file, int line, const std::string &function, const std::string &message),
+                (override));
 };
 } // namespace firebolt::rialto
 

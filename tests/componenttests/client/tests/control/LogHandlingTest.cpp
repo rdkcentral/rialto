@@ -19,7 +19,6 @@
 
 #include "ClientComponentTest.h"
 #include "RialtoLogging.h"
-//#include "IClientLogHandler.h"
 #include <gtest/gtest.h>
 
 namespace firebolt::rialto::client::ct
@@ -29,15 +28,13 @@ class LogHandlingTest : public ClientComponentTest
 };
 
 /*
- * Component Test: Application state change from INACTIVE->RUNNING->INACTIVE
+ * Component Test: Test the client log control
  * Test Objective:
- *  Test the full lifecycle of an application and that state changes are notified to the client and
- *  handled by internal objects.
+ *  Test that the client can successfully set a log handler using client log control, and the correct
+ *  log messages are forwarded.
  *
  * Sequence Diagrams:
- *  Start Application in Inactive State, Application state change: Inactive to Running,
- *  Switch Application from Running to Inactive State, Stop Application from Inactive State
- *   - https://wiki.rdkcentral.com/display/ASP/Rialto+Application+Session+Management
+ *  Logging - https://wiki.rdkcentral.com/display/ASP/Logging
  *
  * Test Setup:
  *  Language: C++
@@ -45,8 +42,6 @@ class LogHandlingTest : public ClientComponentTest
  *  Components: ClientLogControl
  *
  * Test Initialize:
- *  Create memory region for the shared buffer.
- *  Create a server that handles Control IPC requests.
  *
  * Test Steps:
  *  Step 1: Create client log control
@@ -54,41 +49,53 @@ class LogHandlingTest : public ClientComponentTest
  *   Check that the object returned is valid.
  *
  *  Step 2: Set log level to Error only
- *   setLogLevel to error.
+ *   setLogLevel to error for client component.
  *
  *  Step 3: Set log handler with ignoreLogLevels
- *   registerLogHandler with ignoreLogLevels successfully.
+ *   registerLogHandler with ignoreLogLevels.
+ *   Expect success.
  *
  *  Step 4: Log Error
+ *   Log a client component error.
+ *   Expect that the log handler receives the new log.
  *
  *  Step 5: Log Debug, Info, Fatal, Warning & Milstone
+ *   Log all other levels.
+ *   Expect that the log handler receives all the logs.
  *
  *  Step 6: Set log handler without ignoreLogLevels
- *   registerLogHandler without ignoreLogLevels successfully.
+ *   registerLogHandler without ignoreLogLevels.
+ *   Expect success.
  *
  *  Step 7: Log Error
+ *   Log a client component error.
+ *   Expect that the log handler receives the new log.
  *
  *  Step 8: Does not log Debug, Info, Fatal, Warning & Milstone
+ *   Log all other levels.
+ *   Expect none of the logs are received by the log handler.
  *
  *  Step 9: Set log handler to default
- *   registerLogHandler with null.
+ *   registerLogHandler with ignoreLogLevels.
+ *   Expect success.
  *
  *  Step 10: Set log level to all logging
- *   setLogLevel to Error, Debug, Info, Fatal, Warning & Milstone.
+ *   setLogLevel to Error, Debug, Info, Fatal, Warning & Milstone for client component.
  *
  *  Step 11: Does not log Error, Debug, Info, Fatal, Warning & Milstone
+ *   Log all levels.
+ *   Expect none of the logs are received by the log handler.
  *
  * Test Teardown:
- *  Memory region created for the shared buffer is closed.
- *  Server is terminated.
  *
  * Expected Results:
- *  The lifecycle of an application is successfully negotiated and notfied to
- *  listening clients.
+ *  That the client can register a log handler and retreive log.
+ *  That log levels are ignored when ignoreLogLevels is set.
+ *  That a log handler can be removed.
  *
  * Code:
  */
-TEST_F(LogHandlingTest, logHandler)
+TEST_F(LogHandlingTest, clientControl)
 {
     // Step 1: Create client log control
     ClientLogControlTestMethods::createClientLogControl();
@@ -134,10 +141,10 @@ TEST_F(LogHandlingTest, logHandler)
     ClientLogControlTestMethods::unregisterLogHandler();
 
     // Step 10: Set log level to all logging
-    ClientLogControlTestMethods::setLogLevel(RIALTO_DEBUG_LEVEL(RIALTO_DEBUG_LEVEL_FATAL | RIALTO_DEBUG_LEVEL_ERROR |
-                                                    RIALTO_DEBUG_LEVEL_WARNING | RIALTO_DEBUG_LEVEL_MILESTONE |
-                                                    RIALTO_DEBUG_LEVEL_INFO | RIALTO_DEBUG_LEVEL_DEBUG));
-    
+    ClientLogControlTestMethods::setLogLevel(
+        RIALTO_DEBUG_LEVEL(RIALTO_DEBUG_LEVEL_FATAL | RIALTO_DEBUG_LEVEL_ERROR | RIALTO_DEBUG_LEVEL_WARNING |
+                           RIALTO_DEBUG_LEVEL_MILESTONE | RIALTO_DEBUG_LEVEL_INFO | RIALTO_DEBUG_LEVEL_DEBUG));
+
     // Step 11: Does not log Error, Debug, Info, Fatal, Warning & Milstone
     for (int lvl = 0; lvl < static_cast<int>(IClientLogHandler::Level::External); lvl++)
     {
