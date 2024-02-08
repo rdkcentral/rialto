@@ -63,8 +63,8 @@ TEST_F(RialtoClientCreateWebAudioPlayerIpcTest, CreateDestroy)
 
     EXPECT_CALL(*m_eventThreadFactoryMock, createEventThread(_)).WillOnce(Return(ByMove(std::move(m_eventThread))));
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("createWebAudioPlayer"), m_controllerMock.get(),
-                                           createWebAudioPlayerRequestMatcher(m_audioMimeType, m_priority, &m_config),
-                                           _, m_blockingClosureMock.get()))
+                                           createWebAudioPlayerRequestMatcher(m_audioMimeType, m_priority, m_config), _,
+                                           m_blockingClosureMock.get()))
         .WillOnce(WithArgs<3>(Invoke(this, &WebAudioPlayerIpcTestBase::setCreateWebAudioPlayerResponse)));
 
     EXPECT_NO_THROW(m_webAudioPlayerIpc = std::make_unique<WebAudioPlayerIpc>(m_clientMock, m_audioMimeType, m_priority,
@@ -99,8 +99,8 @@ TEST_F(RialtoClientCreateWebAudioPlayerIpcTest, FactoryCreatesObject)
     expectIpcApiCallSuccess();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("createWebAudioPlayer"), m_controllerMock.get(),
-                                           createWebAudioPlayerRequestMatcher(m_audioMimeType, m_priority, &m_config),
-                                           _, m_blockingClosureMock.get()))
+                                           createWebAudioPlayerRequestMatcher(m_audioMimeType, m_priority, m_config), _,
+                                           m_blockingClosureMock.get()))
         .WillOnce(WithArgs<3>(Invoke(this, &WebAudioPlayerIpcTestBase::setCreateWebAudioPlayerResponse)));
 
     EXPECT_NO_THROW(m_webAudioPlayerIpc = factory->createWebAudioPlayerIpc(m_clientMock, m_audioMimeType, m_priority,
