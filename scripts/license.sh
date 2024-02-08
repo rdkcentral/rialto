@@ -37,7 +37,7 @@ for f in `find . \
             -print`
 do
     r=`python $licenceCommand $f`
-    if [ "$r" != "$expect" ]
+    if [ $? != 0 -o "$r" != "$expect" ]
     then
         returnStatus=1
         echo "File   : $f"
