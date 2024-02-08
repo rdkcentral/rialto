@@ -59,7 +59,7 @@ void ClientLogControlTestMethods::unregisterLogHandler()
 
 void ClientLogControlTestMethods::setLogLevel(RIALTO_DEBUG_LEVEL level)
 {
-    EXPECT_EQ(firebolt::rialto::logging::setLogLevels(RIALTO_COMPONENT_CLIENT, level), RIALTO_LOGGING_STATUS_OK);
+    EXPECT_EQ(firebolt::rialto::logging::setLogLevels(RIALTO_COMPONENT_CLIENT, level), firebolt::rialto::logging::RIALTO_LOGGING_STATUS_OK);
 }
 
 void ClientLogControlTestMethods::shouldLog(IClientLogHandler::Level level)
