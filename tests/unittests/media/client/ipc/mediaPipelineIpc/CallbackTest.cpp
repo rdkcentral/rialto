@@ -165,3 +165,31 @@ TEST_F(RialtoClientMediaPipelineIpcCallbackTest, InvalidSessionIdPlaybackError)
 
     m_playbackErrorCb(updatePlaybackErrorEvent);
 }
+
+/**
+ * Test that a source flushed notification over IPC is forwarded to the client.
+ */
+TEST_F(RialtoClientMediaPipelineIpcCallbackTest, NotifySourceFlushed)
+{
+    auto sourceFlushedEvent = std::make_shared<firebolt::rialto::SourceFlushedEvent>();
+    sourceFlushedEvent->set_session_id(m_sessionId);
+    sourceFlushedEvent->set_source_id(m_sourceId);
+
+    EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
+    EXPECT_CALL(*m_clientMock, notifySourceFlushed(m_sourceId));
+
+    m_sourceFlushedCb(sourceFlushedEvent);
+}
+
+/**
+ * Test that if the session id of the event is not the same as the playback session the event will be ignored.
+ */
+TEST_F(RialtoClientMediaPipelineIpcCallbackTest, InvalidSessionIdSourceFlushed)
+{
+    auto sourceFlushedEvent = std::make_shared<firebolt::rialto::SourceFlushedEvent>();
+    sourceFlushedEvent->set_session_id(-1);
+
+    EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
+
+    m_sourceFlushedCb(sourceFlushedEvent);
+}
