@@ -586,6 +586,17 @@ message SetLogLevelsEvent {
     optional uint32 commonLogLevels = 4;
 }
 
+/**
+ * @brief Event sent by the server when a source has been flushed.
+ *
+ * @param session_id        The id of the A/V session the request is for.
+ * @param source_id         The id of the media source the request is for.
+ */
+message SourceFlushedEvent {
+    optional int32 session_id = 1 [default = -1];
+    optional int32 source_id = 2 [default = -1];
+}
+
 service MediaPipelineModule {
     /**
      * @brief Creates a new playback session.

@@ -180,6 +180,13 @@ private:
     void onPlaybackError(const std::shared_ptr<firebolt::rialto::PlaybackErrorEvent> &event);
 
     /**
+     * @brief Handler for a source flushed notification from the server.
+     *
+     * @param[in] event : The source flushed event structure.
+     */
+    void onSourceFlushed(const std::shared_ptr<firebolt::rialto::SourceFlushedEvent> &event);
+
+    /**
      * @brief Create a new player session.
      *
      * @param[in] videoRequirements : The video decoder requirements for the MediaPipeline session.

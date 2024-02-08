@@ -149,6 +149,8 @@ public:
 
     void notifyPlaybackError(int32_t sourceId, PlaybackError error) override;
 
+    void notifySourceFlushed(int32_t sourceId) override;
+
     bool renderFrame() override;
 
     bool setVolume(double volume) override;

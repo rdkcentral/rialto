@@ -712,4 +712,15 @@ void MediaPipeline::notifyPlaybackError(int32_t sourceId, PlaybackError error)
     }
 }
 
+void MediaPipeline::notifySourceFlushed(int32_t sourceId)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    std::shared_ptr<IMediaPipelineClient> client = m_mediaPipelineClient.lock();
+    if (client)
+    {
+        client->notifySourceFlushed(sourceId);
+    }
+}
+
 }; // namespace firebolt::rialto::client

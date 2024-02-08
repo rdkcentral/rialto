@@ -164,6 +164,13 @@ bool MediaPipelineIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &i
         return false;
     m_eventTags.push_back(eventTag);
 
+    eventTag = ipcChannel->subscribe<firebolt::rialto::SourceFlushedEvent>(
+        [this](const std::shared_ptr<firebolt::rialto::SourceFlushedEvent> &event)
+        { m_eventThread->add(&MediaPipelineIpc::onSourceFlushed, this, event); });
+    if (eventTag < 0)
+        return false;
+    m_eventTags.push_back(eventTag);
+
     return true;
 }
 
@@ -913,6 +920,15 @@ void MediaPipelineIpc::onPlaybackError(const std::shared_ptr<firebolt::rialto::P
         }
 
         m_mediaPipelineIpcClient->notifyPlaybackError(event->source_id(), playbackError);
+    }
+}
+
+void MediaPipelineIpc::onSourceFlushed(const std::shared_ptr<firebolt::rialto::SourceFlushedEvent> &event)
+{
+    // Ignore event if not for this session
+    if (event->session_id() == m_sessionId)
+    {
+        m_mediaPipelineIpcClient->notifySourceFlushed(event->source_id());
     }
 }
 
