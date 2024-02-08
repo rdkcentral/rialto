@@ -206,6 +206,15 @@ public:
      * @param[in] error     : The type of error that occured.
      */
     virtual void notifyPlaybackError(int32_t sourceId, PlaybackError error) = 0;
+
+    /**
+     * @brief Notifies the client that the source has been flushed.
+     *
+     * Notification shall be sent whenever a flush procedure is finished.
+     *
+     * @param[in] sourceId  : The id of the source that has been flushed.
+     */
+    virtual void notifySourceFlushed(int32_t sourceId) = 0;
 };
 
 }; // namespace firebolt::rialto

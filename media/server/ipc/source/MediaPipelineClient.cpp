@@ -251,4 +251,6 @@ void MediaPipelineClient::notifyPlaybackError(int32_t sourceId, PlaybackError er
 
     m_ipcClient->sendEvent(event);
 }
+
+void MediaPipelineClient::notifySourceFlushed(int32_t sourceId) {}
 } // namespace firebolt::rialto::server::ipc
