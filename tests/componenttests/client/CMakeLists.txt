@@ -28,11 +28,13 @@ add_gtests (
         # Component test base
         tests/base/ClientComponentTest.cpp
         tests/base/ControlTestMethods.cpp
+        tests/base/ClientLogControlTestMethods.cpp
         tests/base/MediaPipelineTestMethods.cpp
         tests/base/MediaKeysTestMethods.cpp
 
         # Control Component tests
         tests/control/ApplicationStateChangeTest.cpp
+        tests/control/LogHandlingTest.cpp
 
         # MSE Component tests
         tests/mse/AudioVideoPlaybackSequenceTest.cpp
