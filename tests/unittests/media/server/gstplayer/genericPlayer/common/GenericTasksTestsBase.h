@@ -307,6 +307,14 @@ protected:
     void checkAudioSourceRemoved();
     void checkAudioSourceNotRemoved();
 
+    // Flush test methods
+    void shouldFlushAudio();
+    void shouldFlushVideo();
+    void triggerFlush(firebolt::rialto::MediaSourceType sourceType);
+    void checkAudioFlushed();
+    void checkVideoFlushed();
+    void shouldFlushVideoSrcSuccess();
+
 private:
     // SetupElement helper methods
     void expectSetupVideoElement();

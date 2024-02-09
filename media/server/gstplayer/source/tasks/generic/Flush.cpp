@@ -24,8 +24,10 @@
 namespace firebolt::rialto::server::tasks::generic
 {
 Flush::Flush(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client,
-             std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper, const MediaSourceType &type)
-    : m_context{context}, m_player{player}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}, m_type{type}
+             std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper, const MediaSourceType &type,
+             bool resetTime)
+    : m_context{context}, m_player{player}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}, m_type{type},
+      m_resetTime{resetTime}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing Flush");
 }
@@ -44,7 +46,20 @@ void Flush::execute() const
         return;
     }
 
-    // Clear/invalidate old NeedDatas first
+    // Get source first
+    GstElement *source{nullptr};
+    auto sourceElem = m_context.streamInfo.find(m_type);
+    if (sourceElem != m_context.streamInfo.end())
+    {
+        source = sourceElem->second.appSrc;
+    }
+    if (!source)
+    {
+        RIALTO_SERVER_LOG_WARN("failed to flush - source is NULL");
+        return;
+    }
+
+    // Clear/invalidate old NeedDatas
     if (MediaSourceType::AUDIO == m_type)
     {
         m_context.audioNeedData = false;
@@ -68,23 +83,12 @@ void Flush::execute() const
     m_gstPlayerClient->invalidateActiveRequests(m_type);
 
     // Flush source
-    GstElement *source{nullptr};
-    auto sourceElem = m_context.streamInfo.find(m_type);
-    if (sourceElem != m_context.streamInfo.end())
-    {
-        source = sourceElem->second.appSrc;
-    }
-    if (!source)
-    {
-        RIALTO_SERVER_LOG_WARN("failed to flush - source is NULL");
-        return;
-    }
     GstEvent *flushStart = m_gstWrapper->gstEventNewFlushStart();
     if (!m_gstWrapper->gstElementSendEvent(source, flushStart))
     {
         RIALTO_SERVER_LOG_WARN("failed to send flush-start event");
     }
-    GstEvent *flushStop = m_gstWrapper->gstEventNewFlushStop(FALSE);
+    GstEvent *flushStop = m_gstWrapper->gstEventNewFlushStop(m_resetTime);
     if (!m_gstWrapper->gstElementSendEvent(source, flushStop))
     {
         RIALTO_SERVER_LOG_WARN("failed to send flush-stop event");

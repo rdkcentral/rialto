@@ -30,6 +30,7 @@
 #include "tasks/generic/EnoughData.h"
 #include "tasks/generic/Eos.h"
 #include "tasks/generic/FinishSetupSource.h"
+#include "tasks/generic/Flush.h"
 #include "tasks/generic/NeedData.h"
 #include "tasks/generic/Pause.h"
 #include "tasks/generic/Ping.h"
@@ -93,6 +94,7 @@ const std::string kVidName{"vidsrc"};
 const std::string kAudName{"audsrc"};
 const std::string kAutoVideoSinkTypeName{"GstAutoVideoSink"};
 const std::string kElementTypeName{"GenericSink"};
+constexpr bool kResetTime{false};
 
 firebolt::rialto::IMediaPipeline::MediaSegmentVector buildAudioSamples()
 {
@@ -2066,4 +2068,63 @@ void GenericTasksTestsBase::triggerReadShmDataAndAttachSamplesVideo()
                                                                                testContext->m_dataReader};
     task.execute();
     EXPECT_EQ(testContext->m_context.videoBuffers.size(), 2);
+}
+
+void GenericTasksTestsBase::shouldFlushAudio()
+{
+    EXPECT_CALL(*testContext->m_gstWrapper, gstBufferUnref(&testContext->m_audioBuffer));
+    EXPECT_CALL(testContext->m_gstPlayerClient, invalidateActiveRequests(firebolt::rialto::MediaSourceType::AUDIO));
+    EXPECT_CALL(testContext->m_gstPlayerClient, notifySourceFlushed(firebolt::rialto::MediaSourceType::AUDIO));
+    EXPECT_CALL(testContext->m_gstPlayerClient, notifyNeedMediaData(firebolt::rialto::MediaSourceType::AUDIO))
+        .WillOnce(Return(true));
+}
+
+void GenericTasksTestsBase::shouldFlushVideo()
+{
+    EXPECT_CALL(*testContext->m_gstWrapper, gstBufferUnref(&testContext->m_videoBuffer));
+    EXPECT_CALL(testContext->m_gstPlayerClient, invalidateActiveRequests(firebolt::rialto::MediaSourceType::VIDEO));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewFlushStart()).WillOnce(Return(&testContext->m_event));
+    EXPECT_CALL(testContext->m_gstPlayerClient, notifySourceFlushed(firebolt::rialto::MediaSourceType::VIDEO));
+    EXPECT_CALL(testContext->m_gstPlayerClient, notifyNeedMediaData(firebolt::rialto::MediaSourceType::VIDEO))
+        .WillOnce(Return(true));
+}
+
+void GenericTasksTestsBase::triggerFlush(firebolt::rialto::MediaSourceType sourceType)
+{
+    firebolt::rialto::server::tasks::generic::Flush task{testContext->m_context,
+                                                         testContext->m_gstPlayer,
+                                                         &testContext->m_gstPlayerClient,
+                                                         testContext->m_gstWrapper,
+                                                         sourceType,
+                                                         kResetTime};
+    task.execute();
+}
+
+void GenericTasksTestsBase::checkAudioFlushed()
+{
+    EXPECT_EQ(testContext->m_context.audioBuffers.size(), 0);
+    EXPECT_EQ(testContext->m_context.videoBuffers.size(), 1);
+    EXPECT_TRUE(testContext->m_context.audioNeedData);
+    EXPECT_TRUE(testContext->m_context.audioNeedDataPending);
+    EXPECT_FALSE(testContext->m_context.videoNeedData);
+    EXPECT_FALSE(testContext->m_context.videoNeedDataPending);
+}
+
+void GenericTasksTestsBase::checkVideoFlushed()
+{
+    EXPECT_EQ(testContext->m_context.audioBuffers.size(), 1);
+    EXPECT_EQ(testContext->m_context.videoBuffers.size(), 0);
+    EXPECT_FALSE(testContext->m_context.audioNeedData);
+    EXPECT_FALSE(testContext->m_context.audioNeedDataPending);
+    EXPECT_TRUE(testContext->m_context.videoNeedData);
+    EXPECT_TRUE(testContext->m_context.videoNeedDataPending);
+}
+
+void GenericTasksTestsBase::shouldFlushVideoSrcSuccess()
+{
+    EXPECT_CALL(*testContext->m_gstWrapper, gstElementSendEvent(&testContext->m_appSrcVideo, &testContext->m_event))
+        .WillOnce(Return(TRUE));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewFlushStop(FALSE)).WillOnce(Return(&testContext->m_event2));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstElementSendEvent(&testContext->m_appSrcVideo, &testContext->m_event2))
+        .WillOnce(Return(TRUE));
 }

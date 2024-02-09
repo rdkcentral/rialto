@@ -33,6 +33,7 @@
 #include "tasks/generic/EnoughData.h"
 #include "tasks/generic/Eos.h"
 #include "tasks/generic/FinishSetupSource.h"
+#include "tasks/generic/Flush.h"
 #include "tasks/generic/HandleBusMessage.h"
 #include "tasks/generic/NeedData.h"
 #include "tasks/generic/Pause.h"
@@ -264,4 +265,11 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreatePing)
     auto task = m_sut.createPing(std::make_unique<StrictMock<firebolt::rialto::server::HeartbeatHandlerMock>>());
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::Ping &>(*task));
+}
+
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateFlush)
+{
+    auto task = m_sut.createFlush(m_context, m_gstPlayer, firebolt::rialto::MediaSourceType::AUDIO, true);
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::Flush &>(*task));
 }
