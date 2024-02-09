@@ -25,6 +25,7 @@
 #include "MediaKeysTestMethods.h"
 #include "MediaPipelineTestMethods.h"
 #include "ServerStub.h"
+#include "WebAudioPlayerTestMethods.h"
 #include <gtest/gtest.h>
 #include <memory>
 
@@ -44,7 +45,8 @@ class ClientComponentTest : public ::testing::Test,
                             public ControlTestMethods,
                             public ClientLogControlTestMethods,
                             public MediaPipelineTestMethods,
-                            public MediaKeysTestMethods
+                            public MediaKeysTestMethods,
+                            public WebAudioPlayerTestMethods
 {
 public:
     ClientComponentTest();
