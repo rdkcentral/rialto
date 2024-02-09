@@ -434,6 +434,26 @@ TEST_F(MediaPipelineServiceTests, shouldGetMute)
     getMuteShouldSucceed();
 }
 
+TEST_F(MediaPipelineServiceTests, shouldFailToFlushForNotExistingSession)
+{
+    createMediaPipelineShouldSuccess();
+    flushShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToFlush)
+{
+    initSession();
+    mediaPipelineWillFailToFlush();
+    flushShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFlush)
+{
+    initSession();
+    mediaPipelineWillFlush();
+    flushShouldSucceed();
+}
+
 TEST_F(MediaPipelineServiceTests, shouldPing)
 {
     initSession();

@@ -265,6 +265,16 @@ void MediaPipelineServiceTests::mediaPipelineWillFailToGetMute()
     EXPECT_CALL(m_mediaPipelineMock, getMute(_)).WillOnce(Return(false));
 }
 
+void MediaPipelineServiceTests::mediaPipelineWillFlush()
+{
+    EXPECT_CALL(m_mediaPipelineMock, flush(kSourceId)).WillOnce(Return(true));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillFailToFlush()
+{
+    EXPECT_CALL(m_mediaPipelineMock, flush(kSourceId)).WillOnce(Return(false));
+}
+
 void MediaPipelineServiceTests::mediaPipelineWillPing()
 {
     EXPECT_CALL(*m_heartbeatProcedureMock, createHandler())
@@ -544,6 +554,17 @@ void MediaPipelineServiceTests::getMuteShouldFail()
     bool targetMute{};
     EXPECT_FALSE(m_sut->getMute(kSessionId, targetMute));
 }
+
+void MediaPipelineServiceTests::flushShouldSucceed()
+{
+    EXPECT_TRUE(m_sut->flush(kSessionId, kSourceId));
+}
+
+void MediaPipelineServiceTests::flushShouldFail()
+{
+    EXPECT_FALSE(m_sut->flush(kSessionId, kSourceId));
+}
+
 void MediaPipelineServiceTests::clearMediaPipelines()
 {
     m_sut->clearMediaPipelines();

@@ -252,5 +252,14 @@ void MediaPipelineClient::notifyPlaybackError(int32_t sourceId, PlaybackError er
     m_ipcClient->sendEvent(event);
 }
 
-void MediaPipelineClient::notifySourceFlushed(int32_t sourceId) {}
+void MediaPipelineClient::notifySourceFlushed(int32_t sourceId)
+{
+    RIALTO_SERVER_LOG_DEBUG("Sending SourceFlushedEvent...");
+
+    auto event = std::make_shared<firebolt::rialto::SourceFlushedEvent>();
+    event->set_session_id(m_sessionId);
+    event->set_source_id(sourceId);
+
+    m_ipcClient->sendEvent(event);
+}
 } // namespace firebolt::rialto::server::ipc

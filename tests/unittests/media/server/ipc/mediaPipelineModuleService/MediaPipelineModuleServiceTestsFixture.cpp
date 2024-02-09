@@ -169,6 +169,13 @@ MATCHER_P(NetworkStateChangeEventMatcher, kNetworkState, "")
     return (kNetworkState == event->state());
 }
 
+MATCHER_P(SourceFlushedEventMatcher, kSourceId, "")
+{
+    std::shared_ptr<firebolt::rialto::SourceFlushedEvent> event =
+        std::dynamic_pointer_cast<firebolt::rialto::SourceFlushedEvent>(arg);
+    return (kSourceId == event->source_id());
+}
+
 MediaPipelineModuleServiceTests::MediaPipelineModuleServiceTests()
     : m_clientMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ClientMock>>()},
       m_serverMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ServerMock>>()},
@@ -468,6 +475,18 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToGetMute()
     EXPECT_CALL(m_mediaPipelineServiceMock, getMute(kHardcodedSessionId, _)).WillOnce(Return(false));
 }
 
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFlush()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_mediaPipelineServiceMock, flush(kHardcodedSessionId, kSourceId)).WillOnce(Return(true));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToFlush()
+{
+    expectRequestFailure();
+    EXPECT_CALL(m_mediaPipelineServiceMock, flush(kHardcodedSessionId, kSourceId)).WillOnce(Return(false));
+}
+
 void MediaPipelineModuleServiceTests::mediaClientWillSendPlaybackStateChangedEvent()
 {
     EXPECT_CALL(*m_clientMock, sendEvent(PlaybackStateChangeEventMatcher(convertPlaybackState(kPlaybackState))));
@@ -500,6 +519,11 @@ void MediaPipelineModuleServiceTests::mediaClientWillSendQosEvent()
 void MediaPipelineModuleServiceTests::mediaClientWillSendPlaybackErrorEvent()
 {
     EXPECT_CALL(*m_clientMock, sendEvent(PlaybackErrorEventMatcher(kSourceId, convertPlaybackError(kPlaybackError))));
+}
+
+void MediaPipelineModuleServiceTests::mediaClientWillSendSourceFlushedEvent()
+{
+    EXPECT_CALL(*m_clientMock, sendEvent(SourceFlushedEventMatcher(kSourceId)));
 }
 
 void MediaPipelineModuleServiceTests::sendClientConnected()
@@ -803,6 +827,17 @@ void MediaPipelineModuleServiceTests::sendGetMuteRequestAndReceiveResponseWithou
     m_service->getMute(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
 
+void MediaPipelineModuleServiceTests::sendFlushRequestAndReceiveResponse()
+{
+    firebolt::rialto::FlushRequest request;
+    firebolt::rialto::FlushResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+    request.set_source_id(kSourceId);
+
+    m_service->flush(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
 void MediaPipelineModuleServiceTests::sendPlaybackStateChangedEvent()
 {
     ASSERT_TRUE(m_mediaPipelineClient);
@@ -839,6 +874,12 @@ void MediaPipelineModuleServiceTests::sendPlaybackErrorEvent()
 {
     ASSERT_TRUE(m_mediaPipelineClient);
     m_mediaPipelineClient->notifyPlaybackError(kSourceId, kPlaybackError);
+}
+
+void MediaPipelineModuleServiceTests::sendSourceFlushedEvent()
+{
+    ASSERT_TRUE(m_mediaPipelineClient);
+    m_mediaPipelineClient->notifySourceFlushed(kSourceId);
 }
 
 void MediaPipelineModuleServiceTests::expectRequestSuccess()

@@ -80,12 +80,15 @@ public:
     void mediaPipelineServiceWillFailToSetMute();
     void mediaPipelineServiceWillGetMute();
     void mediaPipelineServiceWillFailToGetMute();
+    void mediaPipelineServiceWillFlush();
+    void mediaPipelineServiceWillFailToFlush();
     void mediaClientWillSendPlaybackStateChangedEvent();
     void mediaClientWillSendNetworkStateChangedEvent();
     void mediaClientWillSendNeedMediaDataEvent(int sessionId);
     void mediaClientWillSendPostionChangeEvent();
     void mediaClientWillSendQosEvent();
     void mediaClientWillSendPlaybackErrorEvent();
+    void mediaClientWillSendSourceFlushedEvent();
 
     void sendClientConnected();
     void sendClientDisconnected();
@@ -113,12 +116,14 @@ public:
     void sendSetMuteRequestAndReceiveResponse();
     void sendGetMuteRequestAndReceiveResponse();
     void sendGetMuteRequestAndReceiveResponseWithoutMuteMatch();
+    void sendFlushRequestAndReceiveResponse();
     void sendPlaybackStateChangedEvent();
     void sendNetworkStateChangedEvent();
     void sendNeedMediaDataEvent();
     void sendPostionChangeEvent();
     void sendQosEvent();
     void sendPlaybackErrorEvent();
+    void sendSourceFlushedEvent();
     void sendRenderFrameRequestAndReceiveResponse();
 
 private:

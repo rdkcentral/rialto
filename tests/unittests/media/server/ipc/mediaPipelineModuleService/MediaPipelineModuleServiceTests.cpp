@@ -273,6 +273,14 @@ TEST_F(MediaPipelineModuleServiceTests, shouldSendPlaybackErrorEvent)
     sendPlaybackErrorEvent();
 }
 
+TEST_F(MediaPipelineModuleServiceTests, shouldSendSourceFlushedEvent)
+{
+    mediaPipelineServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    mediaClientWillSendSourceFlushedEvent();
+    sendSourceFlushedEvent();
+}
+
 TEST_F(MediaPipelineModuleServiceTests, shouldRenderFrame)
 {
     mediaPipelineServiceWillCreateSession();
@@ -335,4 +343,16 @@ TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetMute)
 {
     mediaPipelineServiceWillFailToGetMute();
     sendGetMuteRequestAndReceiveResponseWithoutMuteMatch();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFlush)
+{
+    mediaPipelineServiceWillFlush();
+    sendFlushRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToFlush)
+{
+    mediaPipelineServiceWillFailToFlush();
+    sendFlushRequestAndReceiveResponse();
 }

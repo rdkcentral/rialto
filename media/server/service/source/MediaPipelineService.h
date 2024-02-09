@@ -74,6 +74,7 @@ public:
     bool getVolume(int sessionId, double &volume) override;
     bool setMute(int sessionId, bool mute) override;
     bool getMute(int sessionId, bool &mute) override;
+    bool flush(int sessionId, std::int32_t sourceId) override;
     std::vector<std::string> getSupportedMimeTypes(MediaSourceType type) override;
     bool isMimeTypeSupported(const std::string &mimeType) override;
     void ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure) override;

@@ -74,6 +74,8 @@ public:
     void mediaPipelineWillFailToSetMute();
     void mediaPipelineWillGetMute();
     void mediaPipelineWillFailToGetMute();
+    void mediaPipelineWillFlush();
+    void mediaPipelineWillFailToFlush();
     void mediaPipelineWillPing();
 
     void mediaPipelineFactoryWillCreateMediaPipeline();
@@ -127,6 +129,8 @@ public:
     void setMuteShouldFail();
     void getMuteShouldSucceed();
     void getMuteShouldFail();
+    void flushShouldSucceed();
+    void flushShouldFail();
     void clearMediaPipelines();
     void initSession();
     void triggerPing();

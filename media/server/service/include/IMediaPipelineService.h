@@ -63,6 +63,7 @@ public:
     virtual bool getVolume(int sessionId, double &volume) = 0;
     virtual bool setMute(int sessionId, bool mute) = 0;
     virtual bool getMute(int sessionId, bool &mute) = 0;
+    virtual bool flush(int sessionId, std::int32_t sourceId) = 0;
     virtual std::vector<std::string> getSupportedMimeTypes(MediaSourceType type) = 0;
     virtual bool isMimeTypeSupported(const std::string &mimeType) = 0;
     virtual void ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure) = 0;
