@@ -418,11 +418,13 @@ message GetMuteResponse {
  *
  * @param[in]  session_id   The id of the A/V session.
  * @param[in]  source_id    The id of the media source to flush.
+ * @param[in]  reset_time   True if time should be reset
  *
  */
 message FlushRequest {
   optional int32 session_id = 1 [default = -1];
   optional int32 source_id = 2 [default = -1];
+  optional bool reset_time = 3 [default = false];
 }
 message FlushResponse {
 }

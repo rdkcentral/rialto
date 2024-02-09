@@ -67,6 +67,7 @@ constexpr double kRate{1.5};
 constexpr double kVolume{0.7};
 constexpr bool kMute{false};
 constexpr firebolt::rialto::PlaybackError kPlaybackError{firebolt::rialto::PlaybackError::DECRYPTION};
+constexpr bool kResetTime{true};
 } // namespace
 
 MATCHER_P(AttachedSourceMatcher, source, "")
@@ -478,13 +479,13 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToGetMute()
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFlush()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_mediaPipelineServiceMock, flush(kHardcodedSessionId, kSourceId)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineServiceMock, flush(kHardcodedSessionId, kSourceId, kResetTime)).WillOnce(Return(true));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToFlush()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_mediaPipelineServiceMock, flush(kHardcodedSessionId, kSourceId)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineServiceMock, flush(kHardcodedSessionId, kSourceId, kResetTime)).WillOnce(Return(false));
 }
 
 void MediaPipelineModuleServiceTests::mediaClientWillSendPlaybackStateChangedEvent()
@@ -834,6 +835,7 @@ void MediaPipelineModuleServiceTests::sendFlushRequestAndReceiveResponse()
 
     request.set_session_id(kHardcodedSessionId);
     request.set_source_id(kSourceId);
+    request.set_reset_time(kResetTime);
 
     m_service->flush(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }

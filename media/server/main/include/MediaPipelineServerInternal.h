@@ -128,7 +128,7 @@ public:
 
     bool getMute(bool &mute) override;
 
-    bool flush(int32_t sourceId) override;
+    bool flush(int32_t sourceId, bool resetTime) override;
 
     AddSegmentStatus addSegment(uint32_t needDataRequestId, const std::unique_ptr<MediaSegment> &mediaSegment) override;
 

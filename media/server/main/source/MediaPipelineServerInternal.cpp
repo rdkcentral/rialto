@@ -819,7 +819,7 @@ bool MediaPipelineServerInternal::getMuteInternal(bool &mute)
     return m_gstPlayer->getMute(mute);
 }
 
-bool MediaPipelineServerInternal::flush(int32_t sourceId)
+bool MediaPipelineServerInternal::flush(int32_t sourceId, bool resetTime)
 {
     return false;
 }

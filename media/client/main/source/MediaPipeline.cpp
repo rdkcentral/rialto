@@ -464,10 +464,10 @@ bool MediaPipeline::getMute(bool &mute)
     return m_mediaPipelineIpc->getMute(mute);
 }
 
-bool MediaPipeline::flush(int32_t sourceId)
+bool MediaPipeline::flush(int32_t sourceId, bool resetTime)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
-    if (m_mediaPipelineIpc->flush(sourceId))
+    if (m_mediaPipelineIpc->flush(sourceId, resetTime))
     {
         m_attachedSources.setFlushing(sourceId, true);
         // Clear all need datas for flushed source

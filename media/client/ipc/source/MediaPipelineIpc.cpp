@@ -745,7 +745,7 @@ bool MediaPipelineIpc::getMute(bool &mute)
     return true;
 }
 
-bool MediaPipelineIpc::flush(int32_t sourceId)
+bool MediaPipelineIpc::flush(int32_t sourceId, bool resetTime)
 {
     if (!reattachChannelIfRequired())
     {
@@ -757,6 +757,7 @@ bool MediaPipelineIpc::flush(int32_t sourceId)
 
     request.set_session_id(m_sessionId);
     request.set_source_id(sourceId);
+    request.set_reset_time(resetTime);
 
     firebolt::rialto::FlushResponse response;
     auto ipcController = m_ipc.createRpcController();

@@ -26,6 +26,7 @@ class RialtoClientMediaPipelineFlushTest : public MediaPipelineTestBase
 {
 protected:
     const int32_t m_kSourceId{1};
+    const bool m_kResetTime{true};
 
     virtual void SetUp()
     {
@@ -47,9 +48,9 @@ protected:
  */
 TEST_F(RialtoClientMediaPipelineFlushTest, FlushSuccess)
 {
-    EXPECT_CALL(*m_mediaPipelineIpcMock, flush(m_kSourceId)).WillOnce(Return(true));
+    EXPECT_CALL(*m_mediaPipelineIpcMock, flush(m_kSourceId, m_kResetTime)).WillOnce(Return(true));
 
-    EXPECT_EQ(m_mediaPipeline->flush(m_kSourceId), true);
+    EXPECT_EQ(m_mediaPipeline->flush(m_kSourceId, m_kResetTime), true);
 }
 
 /**
@@ -57,7 +58,7 @@ TEST_F(RialtoClientMediaPipelineFlushTest, FlushSuccess)
  */
 TEST_F(RialtoClientMediaPipelineFlushTest, FlushFailure)
 {
-    EXPECT_CALL(*m_mediaPipelineIpcMock, flush(m_kSourceId)).WillOnce(Return(false));
+    EXPECT_CALL(*m_mediaPipelineIpcMock, flush(m_kSourceId, m_kResetTime)).WillOnce(Return(false));
 
-    EXPECT_EQ(m_mediaPipeline->flush(m_kSourceId), false);
+    EXPECT_EQ(m_mediaPipeline->flush(m_kSourceId, m_kResetTime), false);
 }

@@ -45,6 +45,7 @@ protected:
     std::vector<uint8_t> m_keyId{1, 2, 3, 4};
     uint8_t m_shmBuffer;
     std::shared_ptr<MediaPlayerShmInfo> m_shmInfo;
+    const bool m_kResetTime{true};
     std::shared_ptr<SharedMemoryHandleMock> m_sharedMemoryHandleMock;
     MediaSourceStatus m_status = MediaSourceStatus::NO_AVAILABLE_SAMPLES;
     IMediaPipeline::MediaSegmentVector m_dataVec;
@@ -310,8 +311,8 @@ TEST_F(RialtoClientMediaPipelineDataTest, NeedDataEventInvalidStates)
 TEST_F(RialtoClientMediaPipelineDataTest, NeedDataEventFlushingSource)
 {
     // Flush source
-    EXPECT_CALL(*m_mediaPipelineIpcMock, flush(m_sourceId)).WillOnce(Return(true));
-    EXPECT_EQ(m_mediaPipeline->flush(m_sourceId), true);
+    EXPECT_CALL(*m_mediaPipelineIpcMock, flush(m_sourceId, m_kResetTime)).WillOnce(Return(true));
+    EXPECT_EQ(m_mediaPipeline->flush(m_sourceId, m_kResetTime), true);
 
     // Should not trigger any expect calls in all invalid states
     m_mediaPipelineCallback->notifyNeedMediaData(m_sourceId, m_frameCount, m_requestId, m_shmInfo);
@@ -323,8 +324,8 @@ TEST_F(RialtoClientMediaPipelineDataTest, NeedDataEventFlushingSource)
 TEST_F(RialtoClientMediaPipelineDataTest, NeedDataEventAfterFlushingSource)
 {
     // Flush source
-    EXPECT_CALL(*m_mediaPipelineIpcMock, flush(m_sourceId)).WillOnce(Return(true));
-    EXPECT_EQ(m_mediaPipeline->flush(m_sourceId), true);
+    EXPECT_CALL(*m_mediaPipelineIpcMock, flush(m_sourceId, m_kResetTime)).WillOnce(Return(true));
+    EXPECT_EQ(m_mediaPipeline->flush(m_sourceId, m_kResetTime), true);
 
     // Finish flush
     EXPECT_CALL(*m_mediaPipelineClientMock, notifySourceFlushed(m_sourceId));
@@ -716,8 +717,8 @@ TEST_F(RialtoClientMediaPipelineDataTest, HaveDataFlushing)
     std::vector<uint8_t> data{'T', 'E', 'S', 'T'};
     addFrames(MediaSourceType::AUDIO, m_numFrames, data);
 
-    EXPECT_CALL(*m_mediaPipelineIpcMock, flush(m_sourceId)).WillOnce(Return(true));
-    EXPECT_EQ(m_mediaPipeline->flush(m_sourceId), true);
+    EXPECT_CALL(*m_mediaPipelineIpcMock, flush(m_sourceId, m_kResetTime)).WillOnce(Return(true));
+    EXPECT_EQ(m_mediaPipeline->flush(m_sourceId, m_kResetTime), true);
 
     // haveData should return success but will not be forwarded to media ipc
     EXPECT_EQ(m_mediaPipeline->haveData(m_status, m_requestId), true);
@@ -733,8 +734,8 @@ TEST_F(RialtoClientMediaPipelineDataTest, HaveDataFlushCompleted)
     std::vector<uint8_t> data{'T', 'E', 'S', 'T'};
     addFrames(MediaSourceType::AUDIO, m_numFrames, data);
 
-    EXPECT_CALL(*m_mediaPipelineIpcMock, flush(m_sourceId)).WillOnce(Return(true));
-    EXPECT_EQ(m_mediaPipeline->flush(m_sourceId), true);
+    EXPECT_CALL(*m_mediaPipelineIpcMock, flush(m_sourceId, m_kResetTime)).WillOnce(Return(true));
+    EXPECT_EQ(m_mediaPipeline->flush(m_sourceId, m_kResetTime), true);
 
     EXPECT_EQ(m_mediaPipeline->haveData(m_status, m_requestId), true);
 

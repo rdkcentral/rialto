@@ -103,7 +103,7 @@ public:
 
     bool getMute(bool &mute) override;
 
-    bool flush(int32_t sourceId) override;
+    bool flush(int32_t sourceId, bool resetTime) override;
 
 private:
     /**

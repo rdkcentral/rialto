@@ -38,6 +38,7 @@ protected:
     }
 
     const int32_t m_kSourceId{1};
+    const bool m_kResetTime{true};
 };
 
 /**
@@ -51,7 +52,7 @@ TEST_F(RialtoClientMediaPipelineIpcFlushTest, FlushSuccess)
                 CallMethod(methodMatcher("flush"), m_controllerMock.get(),
                            flushRequestMatcher(m_sessionId, m_kSourceId), _, m_blockingClosureMock.get()));
 
-    EXPECT_EQ(m_mediaPipelineIpc->flush(m_kSourceId), true);
+    EXPECT_EQ(m_mediaPipelineIpc->flush(m_kSourceId, m_kResetTime), true);
 }
 
 /**
@@ -62,7 +63,7 @@ TEST_F(RialtoClientMediaPipelineIpcFlushTest, FlushChannelDisconnected)
     expectIpcApiCallDisconnected();
     expectUnsubscribeEvents();
 
-    EXPECT_EQ(m_mediaPipelineIpc->flush(m_kSourceId), false);
+    EXPECT_EQ(m_mediaPipelineIpc->flush(m_kSourceId, m_kResetTime), false);
 
     // Reattach channel on destroySession
     EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
@@ -80,7 +81,7 @@ TEST_F(RialtoClientMediaPipelineIpcFlushTest, FlushReconnectChannel)
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("flush"), _, _, _, _));
 
-    EXPECT_EQ(m_mediaPipelineIpc->flush(m_kSourceId), true);
+    EXPECT_EQ(m_mediaPipelineIpc->flush(m_kSourceId, m_kResetTime), true);
 }
 
 /**
@@ -92,5 +93,5 @@ TEST_F(RialtoClientMediaPipelineIpcFlushTest, FlushFailure)
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("flush"), _, _, _, _));
 
-    EXPECT_EQ(m_mediaPipelineIpc->flush(m_kSourceId), false);
+    EXPECT_EQ(m_mediaPipelineIpc->flush(m_kSourceId, m_kResetTime), false);
 }
