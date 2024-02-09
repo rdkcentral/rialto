@@ -159,6 +159,15 @@ public:
      * @param[in] error            : The type of error that occurred.
      */
     virtual void notifyPlaybackError(MediaSourceType mediaSourceType, PlaybackError error) = 0;
+
+    /**
+     * @brief Notifies the client that the source has been flushed.
+     *
+     * Notification shall be sent whenever a flush procedure is finished.
+     *
+     * @param[in] mediaSourceType  : The type of the source that has been flushed.
+     */
+    virtual void notifySourceFlushed(MediaSourceType mediaSourceType) = 0;
 };
 
 }; // namespace firebolt::rialto::server

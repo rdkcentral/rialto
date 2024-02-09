@@ -40,6 +40,7 @@ add_library(
         source/tasks/generic/EnoughData.cpp
         source/tasks/generic/Eos.cpp
         source/tasks/generic/FinishSetupSource.cpp
+        source/tasks/generic/Flush.cpp
         source/tasks/generic/HandleBusMessage.cpp
         source/tasks/generic/NeedData.cpp
         source/tasks/generic/Pause.cpp

@@ -152,6 +152,8 @@ public:
 
     void notifyPlaybackError(MediaSourceType mediaSourceType, PlaybackError error) override;
 
+    void notifySourceFlushed(MediaSourceType mediaSourceType) override;
+
 protected:
     /**
      * @brief The media player client.

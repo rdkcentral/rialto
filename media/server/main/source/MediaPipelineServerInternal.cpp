@@ -1017,6 +1017,11 @@ void MediaPipelineServerInternal::notifyPlaybackError(MediaSourceType mediaSourc
     m_mainThread->enqueueTask(m_mainThreadClientId, task);
 }
 
+void MediaPipelineServerInternal::notifySourceFlushed(MediaSourceType mediaSourceType)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+}
+
 void MediaPipelineServerInternal::scheduleNotifyNeedMediaData(MediaSourceType mediaSourceType)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
