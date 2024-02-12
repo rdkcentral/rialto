@@ -821,7 +821,32 @@ bool MediaPipelineServerInternal::getMuteInternal(bool &mute)
 
 bool MediaPipelineServerInternal::flush(int32_t sourceId, bool resetTime)
 {
-    return false;
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = flushInternal(sourceId, resetTime); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::flushInternal(int32_t sourceId, bool resetTime)
+{
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to flush - Gstreamer player has not been loaded");
+        return false;
+    }
+    auto sourceIter = std::find_if(m_attachedSources.begin(), m_attachedSources.end(),
+                                   [sourceId](const auto &src) { return src.second == sourceId; });
+    if (sourceIter == m_attachedSources.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to flush - Source not found");
+        return false;
+    }
+
+    m_gstPlayer->flush(sourceIter->first, resetTime);
+    return true;
 }
 
 AddSegmentStatus MediaPipelineServerInternal::addSegment(uint32_t needDataRequestId,
