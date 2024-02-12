@@ -30,10 +30,10 @@
 using namespace std; // todo remove
 
 using testing::_;
-using testing::Return;
-using testing::StrEq;
 using testing::AtLeast;
 using testing::Invoke;
+using testing::Return;
+using testing::StrEq;
 
 using ::google::protobuf::int32;
 using ::google::protobuf::uint32;
@@ -53,13 +53,33 @@ public:
 
     void willCreateWebAudioPlayer();
     void createWebAudioPlayer();
-    
+
+    void willWebAudioPlay();
+    void webAudioPlay();
+
+    void willWebAudioPause();
+    void webAudioPause();
+
+    void willWebAudioSetEos();
+    void webAudioSetEos();
+
+    void destroyWebAudioPlayer();
+
 protected:
+    int32 m_webAudioPlayerHandle;
+
     GstElement m_pipeline{};
     GstElement m_appSrc{};
     GstRegistry m_reg{};
     GstObject m_feature{};
     GstElement m_sink{};
+    GstBus m_bus{};
+    GstMessage m_message{};
+    GstCaps m_gstCaps1{};
+    GstCaps m_gstCaps2{};
+    GstElement m_convert{};
+    GstElement m_resample{};
+    gchar m_capsStr{};
 
     const uint32 m_kPcmRate{41000};
     const uint32 m_kPcmChannels{2};
@@ -72,29 +92,26 @@ protected:
 
 void WebAudioTest::willCreateWebAudioPlayer()
 {
+    constexpr int kGetBusNumberOfCalls{2};
+    constexpr uint64_t kChannelMask{5};
 
 #if 0
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(_)).WillOnce(Invoke(
-            [&](gpointer object) -> GstStateChangeReturn
+    EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillRepeatedly(Invoke(
+            [&](GstBus *bus, GstClockTime timeout, GstMessageType types) -> GstMessage*
             {
                 abort();
+                Return(&m_message);
             }));
 #endif
 
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(StrEq("rialtosrc"))).WillOnce(Return(nullptr));
 
-    EXPECT_CALL(*m_gstWrapperMock, gstElementRegister(_,_,_,_))
-        .WillOnce(Invoke(
-            [&](GstPlugin *plugin, const gchar *name, guint rank, GType type) -> gboolean
-            {
-                cout << "@@@" << name << endl;
-                return true;
-            }));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementRegister(nullptr, StrEq("rialtosrc"), _, _)).WillOnce(Return(true));
 
     EXPECT_CALL(*m_gstWrapperMock, gstPipelineNew(StrEq("webaudiopipeline3"))).WillOnce(Return(&m_pipeline));
 
     // Similar to tests in the class GstWebAudioPlayerTestCommon
-    
+
     // GstWebAudioPlayerTestCommon::expectInitAppSrc()
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetMaxBytes(GST_APP_SRC(&m_appSrc), 10 * 1024));
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(G_OBJECT(&m_appSrc), StrEq("format")));
@@ -112,93 +129,137 @@ void WebAudioTest::willCreateWebAudioPlayer()
     // From GstWebAudioPlayerTestCommon::expectInitAppSrc()
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("appsrc"), StrEq("audsrc"))).WillOnce(Return(&m_appSrc));
 
-
     // From GstWebAudioPlayerTestCommon::expectLinkElements()
-    GstElement convert{};
-    GstElement resample{};
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("audioconvert"), _)).WillOnce(Return(&convert));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("audioresample"), _)).WillOnce(Return(&resample));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("audioconvert"), _)).WillOnce(Return(&m_convert));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("audioresample"), _)).WillOnce(Return(&m_resample));
     EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &m_appSrc)).WillOnce(Return(TRUE));
-    EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &convert)).WillOnce(Return(TRUE));
-    EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &resample)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &m_convert)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &m_resample)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &m_sink)).WillOnce(Return(TRUE));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementLink(&m_appSrc, &convert)).WillOnce(Return(TRUE));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementLink(&convert, &resample)).WillOnce(Return(TRUE));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementLink(&resample, &m_sink)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementLink(&m_appSrc, &m_convert)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementLink(&m_convert, &m_resample)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementLink(&m_resample, &m_sink)).WillOnce(Return(TRUE));
 
     // Similar to GenericTasksTestsBase::shouldAttachAudioSourceWithChannelsAndRate()
-    GstCaps gstCaps1{};
-    GstCaps gstCaps2{};
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsNewEmptySimple(StrEq(m_kAudioMimeType)))
-        .WillOnce(Return(&gstCaps1));
-    EXPECT_CALL(*m_gstWrapperMock,
-                gstCapsSetSimpleIntStub(&gstCaps1, StrEq("channels"), G_TYPE_INT, m_kPcmChannels));
-    EXPECT_CALL(*m_gstWrapperMock,
-                gstCapsSetSimpleIntStub(&gstCaps1, StrEq("rate"), G_TYPE_INT, m_kPcmRate));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsNewEmptySimple(StrEq(m_kAudioMimeType))).WillOnce(Return(&m_gstCaps1));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_gstCaps1, StrEq("channels"), G_TYPE_INT, m_kPcmChannels));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_gstCaps1, StrEq("rate"), G_TYPE_INT, m_kPcmRate));
 
     ///////////////////////////////////////////////
     // The following EXPECTS are generated from GstDispatcherThread::gstBusEventHandler()
     // GstWebAudioPlayerTestCommon::expectTermPipeline ??
-    GstBus m_bus{};
-    constexpr int kGetBusNumberOfCalls{2};
-    GstMessage m_message{};
-    EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(&m_pipeline))).Times(kGetBusNumberOfCalls).WillRepeatedly(Return(&m_bus));
+    EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(&m_pipeline)))
+        .Times(kGetBusNumberOfCalls)
+        .WillRepeatedly(Return(&m_bus));
     EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillRepeatedly(Return(&m_message));
 
     // WebAudioTasksTestsBase::shouldBuildPcmCaps ??
     std::string formatStr{testcommon::getPcmFormat(m_kPcmIsFloat, m_kPcmIsSigned, m_kPcmSampleSize, m_kPcmIsBigEndian)};
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleStringStub(&gstCaps1, StrEq("format"), G_TYPE_STRING, StrEq(formatStr)));
+    EXPECT_CALL(*m_gstWrapperMock,
+                gstCapsSetSimpleStringStub(&m_gstCaps1, StrEq("format"), G_TYPE_STRING, StrEq(formatStr)));
 
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleStringStub(&gstCaps1, StrEq("layout"), G_TYPE_STRING, StrEq("interleaved")));
+    EXPECT_CALL(*m_gstWrapperMock,
+                gstCapsSetSimpleStringStub(&m_gstCaps1, StrEq("layout"), G_TYPE_STRING, StrEq("interleaved")));
 
-    constexpr uint64_t kChannelMask{5};
-    EXPECT_CALL(*m_gstWrapperMock, gstAudioChannelGetFallbackMask(m_kPcmChannels))
-        .WillOnce(Return(kChannelMask));
+    EXPECT_CALL(*m_gstWrapperMock, gstAudioChannelGetFallbackMask(m_kPcmChannels)).WillOnce(Return(kChannelMask));
 
     // WebAudioTasksTestsBase::shouldBuildPcmCaps()
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleBitMaskStub(&gstCaps1, StrEq("channel-mask"),
-                                                               GST_TYPE_BITMASK, kChannelMask));
+    EXPECT_CALL(*m_gstWrapperMock,
+                gstCapsSetSimpleBitMaskStub(&m_gstCaps1, StrEq("channel-mask"), GST_TYPE_BITMASK, kChannelMask));
 
     // WebAudioTasksTestsBase::shouldGetCapsStr()
-    gchar m_capsStr{};
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsToString(&gstCaps1)).WillOnce(Return(&m_capsStr));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsToString(&m_gstCaps1)).WillOnce(Return(&m_capsStr));
     EXPECT_CALL(*m_glibWrapperMock, gFree(&m_capsStr));
 
     // WebAudioTasksTestsBase::shouldNotSetCapsWhenCapsEqual()
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsEqual(&gstCaps2, &gstCaps1))
-        .WillOnce(Return(TRUE));
-    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(GST_APP_SRC(&m_appSrc)))
-        .WillOnce(Return(&gstCaps2));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsEqual(&m_gstCaps2, &m_gstCaps1)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(GST_APP_SRC(&m_appSrc))).WillOnce(Return(&m_gstCaps2));
 
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(_)).Times(AtLeast(1)); // Todo - work out where the passed in pointer comes from
-    EXPECT_CALL(*m_gstWrapperMock, gstMessageUnref(_)).Times(AtLeast(1)); // Todo - work out where the passed in pointer comes from
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_gstCaps1));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_gstCaps2));
+    EXPECT_CALL(*m_gstWrapperMock, gstMessageUnref(&m_message)).Times(AtLeast(1));
 
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus)).Times(kGetBusNumberOfCalls);
     // The above EXPECTS were generated from GstDispatcherThread::gstBusEventHandler()
     ///////////////////////////////////////////////
 
     // Generated from GstWebAudioPlayer::changePipelineState
-    EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&m_pipeline, _)).WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
-    
+    EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&m_pipeline, GST_STATE_NULL))
+        .WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
+
     EXPECT_CALL(*m_gstWrapperMock, gstBusSetSyncHandler(&m_bus, nullptr, nullptr, nullptr));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_pipeline));
-    }
-    
+}
+
 void WebAudioTest::createWebAudioPlayer()
 {
     constexpr uint32 kPriority{3};
-    auto request = createCreateWebAudioPlayerRequest(m_kPcmRate, m_kPcmChannels, m_kPcmSampleSize, m_kPcmIsBigEndian, m_kPcmIsSigned, m_kPcmIsFloat, m_kAudioMimeType, kPriority);
-    
+    auto request = createCreateWebAudioPlayerRequest(m_kPcmRate, m_kPcmChannels, m_kPcmSampleSize, m_kPcmIsBigEndian,
+                                                     m_kPcmIsSigned, m_kPcmIsFloat, m_kAudioMimeType, kPriority);
+
     ConfigureAction<CreateWebAudioPlayer>(m_clientStub)
         .send(request)
-        .expectSuccess();
+        .expectSuccess()
+        .matchResponse([&](const auto &resp) { m_webAudioPlayerHandle = resp.web_audio_player_handle(); });
+    ;
 }
 
-    
+void WebAudioTest::destroyWebAudioPlayer()
+{
+    auto request = createDestroyWebAudioPlayerRequest(m_webAudioPlayerHandle);
+
+    ConfigureAction<DestroyWebAudioPlayer>(m_clientStub).send(request).expectSuccess();
+}
+
+void WebAudioTest::willWebAudioPlay()
+{
+    EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&m_pipeline, GST_STATE_PLAYING))
+        .WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
+}
+
+void WebAudioTest::webAudioPlay()
+{
+    auto request = createWebAudioPlayRequest(m_webAudioPlayerHandle);
+    ConfigureAction<WebAudioPlay>(m_clientStub).send(request).expectSuccess();
+}
+
+void WebAudioTest::willWebAudioPause()
+{
+    EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&m_pipeline, GST_STATE_PAUSED))
+        .WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
+}
+
+void WebAudioTest::webAudioPause()
+{
+    auto request = createWebAudioPauseRequest(m_webAudioPlayerHandle);
+    ConfigureAction<WebAudioPause>(m_clientStub).send(request).expectSuccess();
+}
+
+void WebAudioTest::willWebAudioSetEos()
+{
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcEndOfStream(GST_APP_SRC(&m_appSrc))).WillOnce(Return(GST_FLOW_OK));
+}
+
+void WebAudioTest::webAudioSetEos()
+{
+    auto request = createWebAudioSetEosRequest(m_webAudioPlayerHandle);
+    ConfigureAction<WebAudioSetEos>(m_clientStub).send(request).expectSuccess();
+}
+
 TEST_F(WebAudioTest, testAllApisWithMultipleQueries)
 {
+    willCreateWebAudioPlayer();
+    createWebAudioPlayer();
 
-    willCreateWebAudioPlayer();    
-    createWebAudioPlayer();    
+    willWebAudioPlay();
+    webAudioPlay();
+
+    willWebAudioPause();
+    webAudioPause();
+
+    willWebAudioSetEos();
+    webAudioSetEos();
+
+    destroyWebAudioPlayer();
 }
 } // namespace firebolt::rialto::server::ct

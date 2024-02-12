@@ -180,7 +180,8 @@ void WebAudioTasksTestsBase::setS16BEConfig()
 
 std::string WebAudioTasksTestsBase::getPcmFormat()
 {
-    return testcommon::getPcmFormat(testContext->m_config->pcm.isFloat, testContext->m_config->pcm.isSigned, testContext->m_config->pcm.sampleSize, testContext->m_config->pcm.isBigEndian);
+    return testcommon::getPcmFormat(testContext->m_config->pcm.isFloat, testContext->m_config->pcm.isSigned,
+                                    testContext->m_config->pcm.sampleSize, testContext->m_config->pcm.isBigEndian);
 }
 
 void WebAudioTasksTestsBase::shouldBuildPcmCaps()

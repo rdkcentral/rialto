@@ -445,7 +445,7 @@ struct DestroyWebAudioPlayer
     static constexpr auto m_kFunction{&Stub::destroyWebAudioPlayer};
 };
 
-struct WebAudioPlayWebAudioPlayer
+struct WebAudioPlay
 {
     using RequestType = ::firebolt::rialto::WebAudioPlayRequest;
     using ResponseType = ::firebolt::rialto::WebAudioPlayResponse;

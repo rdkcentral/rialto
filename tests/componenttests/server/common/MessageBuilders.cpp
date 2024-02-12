@@ -475,7 +475,9 @@ createGetSupportedMimeTypesRequest(const ProtoMediaSourceType &mediaSourceType)
     return request;
 }
 
-::firebolt::rialto::CreateWebAudioPlayerRequest createCreateWebAudioPlayerRequest(uint32 pcmRate, uint32 pcmChannels, uint32 pcmSampleSize, bool pcmIsBigEndian, bool pcmIsSigned, bool pcmIsFloat, const std::string &audioMimeType, uint32 priority)
+::firebolt::rialto::CreateWebAudioPlayerRequest
+createCreateWebAudioPlayerRequest(uint32 pcmRate, uint32 pcmChannels, uint32 pcmSampleSize, bool pcmIsBigEndian,
+                                  bool pcmIsSigned, bool pcmIsFloat, const std::string &audioMimeType, uint32 priority)
 {
     ::firebolt::rialto::CreateWebAudioPlayerRequest request;
     auto configPcm = request.mutable_config()->mutable_pcm();
@@ -532,7 +534,8 @@ createGetSupportedMimeTypesRequest(const ProtoMediaSourceType &mediaSourceType)
     return request;
 }
 
-::firebolt::rialto::WebAudioWriteBufferRequest createWebAudioWriteBufferRequest(int32 webAudioPlayerHandle, uint32 numberOfFrames)
+::firebolt::rialto::WebAudioWriteBufferRequest createWebAudioWriteBufferRequest(int32 webAudioPlayerHandle,
+                                                                                uint32 numberOfFrames)
 {
     ::firebolt::rialto::WebAudioWriteBufferRequest request;
     request.set_web_audio_player_handle(webAudioPlayerHandle);

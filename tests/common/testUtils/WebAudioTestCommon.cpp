@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2023 Sky UK
+ * Copyright 2024 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,8 @@
 namespace firebolt::rialto::server::testcommon
 {
 
-std::string getPcmFormat(bool isFloat, bool isSigned, int sampleSize, bool isBigEndian) {
+std::string getPcmFormat(bool isFloat, bool isSigned, int sampleSize, bool isBigEndian)
+{
     std::string format;
 
     if (isFloat)
@@ -56,4 +57,4 @@ std::string getPcmFormat(bool isFloat, bool isSigned, int sampleSize, bool isBig
     return format;
 }
 
-}
+} // namespace firebolt::rialto::server::testcommon
