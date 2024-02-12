@@ -29,6 +29,7 @@
 #include "mediapipelinecapabilitiesmodule.pb.h"
 #include "mediapipelinemodule.pb.h"
 #include "servermanagermodule.pb.h"
+#include "webaudioplayermodule.pb.h"
 
 namespace firebolt::rialto::server::ct
 {
@@ -100,6 +101,20 @@ createGetSupportedKeySystemVersionRequest(const std::string &keySystem);
 ::firebolt::rialto::GetSupportedMimeTypesRequest
 createGetSupportedMimeTypesRequest(const ProtoMediaSourceType &mediaSourceType);
 ::firebolt::rialto::IsMimeTypeSupportedRequest createIsMimeTypeSupportedRequest(const std::string &mimeType);
+
+//web audio player module
+::firebolt::rialto::CreateWebAudioPlayerRequest createCreateWebAudioPlayerRequest(::google::protobuf::uint32 pcmRate, ::google::protobuf::uint32 pcmChannels, ::google::protobuf::uint32 pcmSampleSize, bool pcmIsBigEndian, bool pcmIsSigned, bool pcmIsFloat, const std::string &audioMimeType, ::google::protobuf::uint32 priority);
+::firebolt::rialto::DestroyWebAudioPlayerRequest createDestroyWebAudioPlayerRequest(::google::protobuf::int32 webAudioPlayerHandle);
+::firebolt::rialto::WebAudioPlayRequest createWebAudioPlayRequest(::google::protobuf::int32 webAudioPlayerHandle);
+::firebolt::rialto::WebAudioPauseRequest createWebAudioPauseRequest(::google::protobuf::int32 webAudioPlayerHandle);
+::firebolt::rialto::WebAudioSetEosRequest createWebAudioSetEosRequest(::google::protobuf::int32 webAudioPlayerHandle);
+::firebolt::rialto::WebAudioGetBufferAvailableRequest createWebAudioGetBufferAvailableRequest(::google::protobuf::int32 webAudioPlayerHandle);
+::firebolt::rialto::WebAudioGetBufferDelayRequest createWebAudioGetBufferDelayRequest(::google::protobuf::int32 webAudioPlayerHandle);
+::firebolt::rialto::WebAudioWriteBufferRequest createWebAudioWriteBufferRequest(::google::protobuf::int32 webAudioPlayerHandle, ::google::protobuf::uint32 numberOfFrames);
+::firebolt::rialto::WebAudioGetDeviceInfoRequest createWebAudioGetDeviceInfoRequest(::google::protobuf::int32 webAudioPlayerHandle);
+::firebolt::rialto::WebAudioSetVolumeRequest createWebAudioSetVolumeRequest(::google::protobuf::int32 webAudioPlayerHandle, double volume);
+::firebolt::rialto::WebAudioGetVolumeRequest createWebAudioGetVolumeRequest(::google::protobuf::int32 webAudioPlayerHandle);
+
 } // namespace firebolt::rialto::server::ct
 
 #endif // FIREBOLT_RIALTO_SERVER_CT_MESSAGE_BUILDERS_H_

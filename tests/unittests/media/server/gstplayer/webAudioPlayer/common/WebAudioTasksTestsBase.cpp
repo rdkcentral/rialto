@@ -17,9 +17,14 @@
  * limitations under the License.
  */
 
-#include "WebAudioTasksTestsBase.h"
+#include <gst/gst.h>
+#include <memory>
+#include <string>
+
 #include "Matchers.h"
+#include "WebAudioTasksTestsBase.h"
 #include "WebAudioTasksTestsContext.h"
+#include "WebAudioTestCommon.h"
 #include "tasks/webAudio/Eos.h"
 #include "tasks/webAudio/Pause.h"
 #include "tasks/webAudio/Play.h"
@@ -28,9 +33,6 @@
 #include "tasks/webAudio/Shutdown.h"
 #include "tasks/webAudio/Stop.h"
 #include "tasks/webAudio/WriteBuffer.h"
-#include <gst/gst.h>
-#include <memory>
-#include <string>
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::server;
@@ -178,33 +180,7 @@ void WebAudioTasksTestsBase::setS16BEConfig()
 
 std::string WebAudioTasksTestsBase::getPcmFormat()
 {
-    std::string format;
-
-    if (testContext->m_config->pcm.isFloat)
-    {
-        format += "F";
-    }
-    else if (testContext->m_config->pcm.isSigned)
-    {
-        format += "S";
-    }
-    else
-    {
-        format += "U";
-    }
-
-    format += std::to_string(testContext->m_config->pcm.sampleSize);
-
-    if (testContext->m_config->pcm.isBigEndian)
-    {
-        format += "BE";
-    }
-    else
-    {
-        format += "LE";
-    }
-
-    return format;
+    return testcommon::getPcmFormat(testContext->m_config->pcm.isFloat, testContext->m_config->pcm.isSigned, testContext->m_config->pcm.sampleSize, testContext->m_config->pcm.isBigEndian);
 }
 
 void WebAudioTasksTestsBase::shouldBuildPcmCaps()

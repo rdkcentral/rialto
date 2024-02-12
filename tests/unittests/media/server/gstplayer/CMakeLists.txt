@@ -117,6 +117,7 @@ target_include_directories(RialtoServerGstPlayerUnitTests
         $<TARGET_PROPERTY:RialtoCommonMisc,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoWrappersMocks,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoTestCommonMatchers,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoTestCommonUtils,INTERFACE_INCLUDE_DIRECTORIES>
 
         genericPlayer/common/
         webAudioPlayer/common/
@@ -128,6 +129,7 @@ target_link_libraries(RialtoServerGstPlayerUnitTests
     RialtoServerGstPlayer
     RialtoLogging
     RialtoCommonMisc
+    RialtoTestCommonUtils
 )
 
 if ( COVERAGE_ENABLED )

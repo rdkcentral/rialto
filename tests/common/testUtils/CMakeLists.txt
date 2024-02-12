@@ -17,8 +17,24 @@
 # limitations under the License.
 #
 
-add_subdirectory(publicClientMocks)
-add_subdirectory(externalLibraryMocks)
-add_subdirectory(matchers)
-add_subdirectory(protoUtils)
-add_subdirectory(testUtils)
+set( CMAKE_CXX_STANDARD 17 )
+
+set( CMAKE_CXX_STANDARD_REQUIRED ON )
+include( CheckCXXCompilerFlag )
+
+add_library(
+        RialtoTestCommonUtils
+        STATIC
+
+        WebAudioTestCommon.cpp
+    )
+
+target_include_directories(
+        RialtoTestCommonUtils
+
+        INTERFACE
+        .
+
+        PRIVATE
+        ${GTEST_INCLUDE_DIRS}
+    )

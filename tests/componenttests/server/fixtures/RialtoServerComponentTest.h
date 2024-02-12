@@ -20,6 +20,9 @@
 #ifndef FIREBOLT_RIALTO_SERVER_CT_RIALTO_SERVER_COMPONENT_TEST_H_
 #define FIREBOLT_RIALTO_SERVER_CT_RIALTO_SERVER_COMPONENT_TEST_H_
 
+#include <gtest/gtest.h>
+#include <memory>
+
 #include "ClientStub.h"
 #include "GlibWrapperFactoryMock.h"
 #include "GlibWrapperMock.h"
@@ -35,8 +38,6 @@
 #include "RdkGstreamerUtilsWrapperFactoryMock.h"
 #include "RdkGstreamerUtilsWrapperMock.h"
 #include "ServerManagerStub.h"
-#include <gtest/gtest.h>
-#include <memory>
 
 namespace firebolt::rialto::server::ct
 {
