@@ -84,7 +84,7 @@ ClientLogControl::~ClientLogControl()
         cancelLogHandler();
 }
 
-bool ClientLogControl::registerLogHandler(std::shared_ptr<IClientLogHandler> &handler, bool ignoreLogLevels)
+bool ClientLogControl::registerLogHandler(const std::shared_ptr<IClientLogHandler> &handler, bool ignoreLogLevels)
 {
     std::unique_lock<std::mutex> lock{m_logHandlerMutex};
 
