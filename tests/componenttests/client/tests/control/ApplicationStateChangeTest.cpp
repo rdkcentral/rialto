@@ -29,8 +29,8 @@ class ApplicationStateChangeTest : public ClientComponentTest
 /*
  * Component Test: Application state change from INACTIVE->RUNNING->INACTIVE
  * Test Objective:
- *  Test the full lifecycle of an application and verify that the client is always notified,
- *  and the shared memory initalised correctly.
+ *  Test the full lifecycle of an application and that state changes are notified to the client and
+ *  handled by internal objects.
  *
  * Sequence Diagrams:
  *  Start Application in Inactive State, Application state change: Inactive to Running,
@@ -55,20 +55,25 @@ class ApplicationStateChangeTest : public ClientComponentTest
  *   Register a client listener.
  *   Check that the initial state is UNKNOWN.
  *
- *  Step 3: Change state to INACTIVE
+ *  Step 3: Create a new media session that listens for state updates
+ *   Create an instance of MediaPipeline.
+ *   Expect that a session is created on the server.
+ *   Check that the object returned is valid.
+ *
+ *  Step 4: Change state to INACTIVE
  *   Server notifies the client that the state has changed to INACTIVE.
  *   Expect that the state change notification is propagated to the client.
  *
- *  Step 4: Change state to RUNNING
+ *  Step 5: Change state to RUNNING
  *   Server notifies the client that the state has changed to RUNNING.
  *   Expect that the state change notification is propagated to the client.
  *   Expect that the shared memory region is fetched from the server.
  *
- *  Step 5: Change state to INACTIVE
+ *  Step 6: Change state to INACTIVE
  *   Server notifies the client that the state has changed to INACTIVE.
  *   Expect that the state change notification is propagated to the client.
  *
- *  Step 6: Disconnect the server
+ *  Step 7: Disconnect the server
  *   Server notifies the client that it has disconnected.
  *   Expect that the state is changed to UNKNOWN in the client.
  *
@@ -91,19 +96,23 @@ TEST_F(ApplicationStateChangeTest, lifecycle)
     ControlTestMethods::shouldRegisterClient();
     ControlTestMethods::registerClient();
 
-    // Step 3: Change state to INACTIVE
+    // Step 3: Create a new media session that listens for state updates
+    MediaPipelineTestMethods::shouldCreateMediaSession();
+    MediaPipelineTestMethods::createMediaPipeline();
+
+    // Step 4: Change state to INACTIVE
     ControlTestMethods::shouldNotifyApplicationStateInactive();
     ControlTestMethods::sendNotifyApplicationStateInactive();
 
-    // Step 4: Change state to RUNNING
+    // Step 5: Change state to RUNNING
     ControlTestMethods::shouldNotifyApplicationStateRunning();
     ControlTestMethods::sendNotifyApplicationStateRunning();
 
-    // Step 5: Change state to INACTIVE
+    // Step 6: Change state to INACTIVE
     ControlTestMethods::shouldNotifyApplicationStateInactive();
     ControlTestMethods::sendNotifyApplicationStateInactive();
 
-    // Step 6: Disconnect the server
+    // Step 7: Disconnect the server
     ControlTestMethods::shouldNotifyApplicationStateUnknown();
     ClientComponentTest::disconnectServer();
     ClientComponentTest::waitEvent();

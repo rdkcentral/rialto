@@ -95,7 +95,7 @@ public:
      *
      * @retval true if successful
      */
-    virtual bool registerLogHandler(std::shared_ptr<IClientLogHandler> &handler, bool ignoreLogLevels) = 0;
+    virtual bool registerLogHandler(const std::shared_ptr<IClientLogHandler> &handler, bool ignoreLogLevels) = 0;
 };
 
 }; // namespace firebolt::rialto

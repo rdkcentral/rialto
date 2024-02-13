@@ -26,6 +26,7 @@
 #include "MediaKeysModuleStub.h"
 #include "MediaPipelineCapabilitiesModuleStub.h"
 #include "MediaPipelineModuleStub.h"
+#include "WebAudioPlayerModuleStub.h"
 #include <atomic>
 #include <condition_variable>
 #include <memory>
@@ -37,7 +38,8 @@ class ServerStub : public ControlModuleStub,
                    public MediaPipelineModuleStub,
                    public MediaKeysModuleStub,
                    public MediaKeysCapabilitiesModuleStub,
-                   public MediaPipelineCapabilitiesModuleStub
+                   public MediaPipelineCapabilitiesModuleStub,
+                   public WebAudioPlayerModuleStub
 {
 public:
     explicit ServerStub(
@@ -45,7 +47,8 @@ public:
         const std::shared_ptr<::firebolt::rialto::MediaPipelineModule> &mediaPipelineModuleMock,
         const std::shared_ptr<::firebolt::rialto::MediaKeysModule> &mediaKeysModuleMock,
         const std::shared_ptr<::firebolt::rialto::MediaKeysCapabilitiesModule> &mediaKeysCapabilitiesModuleMock,
-        const std::shared_ptr<::firebolt::rialto::MediaPipelineCapabilitiesModule> &mediaPipelineCapabilitiesModuleMock);
+        const std::shared_ptr<::firebolt::rialto::MediaPipelineCapabilitiesModule> &mediaPipelineCapabilitiesModuleMock,
+        const std::shared_ptr<::firebolt::rialto::WebAudioPlayerModule> &webAudioPlayerModuleMock);
     ~ServerStub();
 
     void clientDisconnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &client);

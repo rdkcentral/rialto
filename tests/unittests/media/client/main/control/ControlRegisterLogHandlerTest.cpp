@@ -20,10 +20,17 @@
 #include <gtest/gtest.h>
 
 #include "ClientLogControl.h"
+#include "ClientLogHandlerMock.h"
 #include "RialtoClientLogging.h"
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::client;
+
+using ::testing::_;
+using ::testing::AnyNumber;
+using ::testing::Ne;
+using ::testing::StrictMock;
+using ::testing::StrNe;
 
 namespace
 {
@@ -33,90 +40,67 @@ const std::string kLogTestStr("Test ABC");
 class ClientLogControlTest : public ::testing::Test
 {
 protected:
-};
+    std::shared_ptr<StrictMock<ClientLogHandlerMock>> m_clientLogHandlerMock;
 
-class TestClientLogHandler : public IClientLogHandler
-{
-public:
-    ~TestClientLogHandler() {}
+    ClientLogControlTest() : m_clientLogHandlerMock{std::make_shared<StrictMock<ClientLogHandlerMock>>()} {}
 
-    void log(Level level, const std::string &file, int line, const std::string &function, const std::string &message)
+    ~ClientLogControlTest() { resetLogHandler(m_clientLogHandlerMock); }
+
+    void resetLogHandler(const std::shared_ptr<StrictMock<ClientLogHandlerMock>> &clientLogHandlerMock)
     {
-        if (message == kLogTestStr)
-        {
-            m_gotExpectedLogMessage = true;
-        }
+        EXPECT_CALL(*clientLogHandlerMock, log(_, _, _, _, _)).Times(AnyNumber());
+        IClientLogControl &control = ClientLogControlFactory::createFactory()->createClientLogControl();
+        EXPECT_TRUE(control.registerLogHandler(nullptr, false));
     }
-
-    bool m_gotExpectedLogMessage{false};
 };
 
 TEST_F(ClientLogControlTest, RegisterLogHandler)
 {
-    std::shared_ptr<TestClientLogHandler> logHandler = std::make_shared<TestClientLogHandler>();
     {
         IClientLogControl &control = ClientLogControlFactory::createFactory()->createClientLogControl();
-        std::shared_ptr<IClientLogHandler> tmp = logHandler;
-        EXPECT_TRUE(control.registerLogHandler(tmp, true));
+        EXPECT_TRUE(control.registerLogHandler(m_clientLogHandlerMock, true));
     }
 
     // Generate a log entry
+    EXPECT_CALL(*m_clientLogHandlerMock, log(IClientLogHandler::Level::Error, StrNe(""), Ne(0), StrNe(""), StrNe("")));
     RIALTO_CLIENT_LOG_ERROR("%s", kLogTestStr.c_str());
-
-    EXPECT_TRUE(logHandler->m_gotExpectedLogMessage);
 }
 
 TEST_F(ClientLogControlTest, ShouldUpdateLogHandler)
 {
     IClientLogControl &control1 = IClientLogControlFactory::createFactory()->createClientLogControl();
+    EXPECT_TRUE(control1.registerLogHandler(m_clientLogHandlerMock, true));
 
-    std::shared_ptr<TestClientLogHandler> logHandler1 = std::make_shared<TestClientLogHandler>();
-    {
-        std::shared_ptr<IClientLogHandler> tmp = logHandler1;
-        EXPECT_TRUE(control1.registerLogHandler(tmp, true));
-    }
     // Generate a log entry
+    EXPECT_CALL(*m_clientLogHandlerMock, log(IClientLogHandler::Level::Error, StrNe(""), Ne(0), StrNe(""), StrNe("")));
     RIALTO_CLIENT_LOG_ERROR("%s", kLogTestStr.c_str());
 
     IClientLogControl &control2 = IClientLogControlFactory::createFactory()->createClientLogControl();
     EXPECT_EQ(&control1, &control2); // IClientLogControl Ought to be a singleton
 
-    std::shared_ptr<TestClientLogHandler> logHandler2 = std::make_shared<TestClientLogHandler>();
-    {
-        std::shared_ptr<IClientLogHandler> tmp = logHandler2;
-        control2.registerLogHandler(tmp, true);
-    }
+    // Replace log handler
+    std::shared_ptr<StrictMock<ClientLogHandlerMock>> clientLogHandlerMock2 =
+        std::make_shared<StrictMock<ClientLogHandlerMock>>();
+    EXPECT_CALL(*m_clientLogHandlerMock, log(_, StrNe(""), Ne(0), StrNe(""), StrNe(""))).Times(2);
+    EXPECT_TRUE(control2.registerLogHandler(clientLogHandlerMock2, true));
+
     // Generate a log entry
+    EXPECT_CALL(*clientLogHandlerMock2, log(IClientLogHandler::Level::Error, StrNe(""), Ne(0), StrNe(""), StrNe("")));
     RIALTO_CLIENT_LOG_ERROR("%s", kLogTestStr.c_str());
 
-    EXPECT_TRUE(logHandler1->m_gotExpectedLogMessage);
-    EXPECT_TRUE(logHandler2->m_gotExpectedLogMessage);
+    resetLogHandler(clientLogHandlerMock2);
 }
 
 TEST_F(ClientLogControlTest, ShouldCancelLogHandler)
 {
     IClientLogControl &control = IClientLogControlFactory::createFactory()->createClientLogControl();
-
-    std::shared_ptr<TestClientLogHandler> logHandler = std::make_shared<TestClientLogHandler>();
-    {
-        std::shared_ptr<IClientLogHandler> tmp = logHandler;
-        control.registerLogHandler(tmp, true);
-    }
-    // Generate a log entry
-    RIALTO_CLIENT_LOG_ERROR("%s", kLogTestStr.c_str());
-    EXPECT_TRUE(logHandler->m_gotExpectedLogMessage);
+    EXPECT_TRUE(control.registerLogHandler(m_clientLogHandlerMock, true));
 
     // Cancel the log handler
-    {
-        std::shared_ptr<IClientLogHandler> tmp; // nullptr
-        EXPECT_TRUE(control.registerLogHandler(tmp, false));
-    }
-
-    logHandler->m_gotExpectedLogMessage = false;
+    EXPECT_CALL(*m_clientLogHandlerMock, log(_, StrNe(""), Ne(0), StrNe(""), StrNe(""))).Times(1);
+    EXPECT_TRUE(control.registerLogHandler(nullptr, false));
 
     // Generate a log entry
+    // Log handler should not be used
     RIALTO_CLIENT_LOG_ERROR("%s", kLogTestStr.c_str());
-
-    // Log handler should not have been used
-    EXPECT_FALSE(logHandler->m_gotExpectedLogMessage);
 }

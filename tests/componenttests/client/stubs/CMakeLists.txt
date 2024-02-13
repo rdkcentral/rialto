@@ -30,6 +30,7 @@ add_library (
         MediaKeysModuleStub.cpp
         MediaKeysCapabilitiesModuleStub.cpp
         MediaPipelineCapabilitiesModuleStub.cpp
+        WebAudioPlayerModuleStub.cpp
 )
 
 set_property (
