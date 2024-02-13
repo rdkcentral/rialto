@@ -1045,6 +1045,22 @@ void MediaPipelineServerInternal::notifyPlaybackError(MediaSourceType mediaSourc
 void MediaPipelineServerInternal::notifySourceFlushed(MediaSourceType mediaSourceType)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    auto task = [&, mediaSourceType]()
+    {
+        if (m_mediaPipelineClient)
+        {
+            const auto kSourceIter = m_attachedSources.find(mediaSourceType);
+            if (m_attachedSources.cend() == kSourceIter)
+            {
+                RIALTO_SERVER_LOG_WARN("Source flushed notification failed - sourceId not found");
+                return;
+            }
+            m_mediaPipelineClient->notifySourceFlushed(kSourceIter->second);
+        }
+    };
+
+    m_mainThread->enqueueTask(m_mainThreadClientId, task);
 }
 
 void MediaPipelineServerInternal::scheduleNotifyNeedMediaData(MediaSourceType mediaSourceType)
