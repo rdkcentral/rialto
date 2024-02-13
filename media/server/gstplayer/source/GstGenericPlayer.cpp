@@ -17,15 +17,16 @@
  * limitations under the License.
  */
 
-#include "GstGenericPlayer.h"
+#include <chrono>
+
 #include "GstDispatcherThread.h"
+#include "GstGenericPlayer.h"
 #include "GstProtectionMetadata.h"
+#include "IMediaPipeline.h"
 #include "ITimer.h"
 #include "RialtoServerLogging.h"
 #include "WorkerThread.h"
 #include "tasks/generic/GenericPlayerTaskFactory.h"
-#include <IMediaPipeline.h>
-#include <chrono>
 
 namespace
 {

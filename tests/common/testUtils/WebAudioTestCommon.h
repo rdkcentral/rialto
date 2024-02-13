@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_TESTCOMMON_WEBAUDIOCOMMON_H_
-#define FIREBOLT_RIALTO_SERVER_TESTCOMMON_WEBAUDIOCOMMON_H_
+#ifndef FIREBOLT_RIALTO_SERVER_TESTCOMMON_WEB_AUDIO_TEST_COMMON_H_
+#define FIREBOLT_RIALTO_SERVER_TESTCOMMON_WEB_AUDIO_TEST_COMMON_H_
 
 #include <string>
 
@@ -27,4 +27,4 @@ namespace firebolt::rialto::server::testcommon
 std::string getPcmFormat(bool isFloat, bool isSigned, int sampleSize, bool isBigEndian);
 }
 
-#endif
+#endif // FIREBOLT_RIALTO_SERVER_TESTCOMMON_WEB_AUDIO_TEST_COMMON_H_

@@ -17,7 +17,6 @@
  * limitations under the License.
  */
 
-#include <iostream>
 #include <vector>
 
 #include "ActionTraits.h"
@@ -63,6 +62,22 @@ public:
     void willWebAudioSetEos();
     void webAudioSetEos();
 
+    void webAudioGetBufferAvailable();
+
+    void willWebAudioGetBufferDelay();
+    void webAudioGetBufferDelay();
+
+    void willWebAudioWriteBuffer();
+    void webAudioWriteBuffer();
+
+    void webAudioGetDeviceInfo();
+
+    void willWebAudioSetVolume();
+    void webAudioSetVolume();
+
+    void willWebAudioGetVolume();
+    void webAudioGetVolume();
+
     void destroyWebAudioPlayer();
 
 protected:
@@ -80,6 +95,7 @@ protected:
     GstElement m_convert{};
     GstElement m_resample{};
     gchar m_capsStr{};
+    GstBuffer m_buffer;
 
     const uint32 m_kPcmRate{41000};
     const uint32 m_kPcmChannels{2};
@@ -88,6 +104,10 @@ protected:
     const bool m_kPcmIsSigned{true};
     const bool m_kPcmIsFloat{false};
     const std::string m_kAudioMimeType{"audio/x-raw"};
+    const int m_kTestDelayFrames{191};
+    const int m_kTestBufLen{43};
+    const double m_kTestVolume1{0.31};
+    const double m_kTestVolume2{0.51};
 };
 
 void WebAudioTest::willCreateWebAudioPlayer()
@@ -201,7 +221,6 @@ void WebAudioTest::createWebAudioPlayer()
         .send(request)
         .expectSuccess()
         .matchResponse([&](const auto &resp) { m_webAudioPlayerHandle = resp.web_audio_player_handle(); });
-    ;
 }
 
 void WebAudioTest::destroyWebAudioPlayer()
@@ -246,6 +265,95 @@ void WebAudioTest::webAudioSetEos()
     ConfigureAction<WebAudioSetEos>(m_clientStub).send(request).expectSuccess();
 }
 
+void WebAudioTest::webAudioGetBufferAvailable()
+{
+    auto request = createWebAudioGetBufferAvailableRequest(m_webAudioPlayerHandle);
+    ConfigureAction<WebAudioGetBufferAvailable>(m_clientStub)
+        .send(request)
+        .expectSuccess()
+        .matchResponse(
+            [&](const auto &resp)
+            {
+                cout << "@@@ " << resp.available_frames() << endl;
+                auto x = resp.shm_info();
+                cout << "@@@ " << x.offset_main() << endl;
+                cout << "@@@ " << x.length_main() << endl;
+                cout << "@@@ " << x.offset_wrap() << endl;
+                cout << "@@@ " << x.length_wrap() << endl;
+            });
+}
+
+void WebAudioTest::willWebAudioGetBufferDelay()
+{
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCurrentLevelBytes(GST_APP_SRC(&m_appSrc)))
+        .WillOnce(Return(m_kTestDelayFrames * 4));
+}
+
+void WebAudioTest::webAudioGetBufferDelay()
+{
+    auto request = createWebAudioGetBufferDelayRequest(m_webAudioPlayerHandle);
+    ConfigureAction<WebAudioGetBufferDelay>(m_clientStub)
+        .send(request)
+        .expectSuccess()
+        .matchResponse([&](const auto &resp) { EXPECT_EQ(resp.delay_frames(), m_kTestDelayFrames); });
+}
+
+void WebAudioTest::willWebAudioWriteBuffer()
+{
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCurrentLevelBytes(GST_APP_SRC(&m_appSrc)))
+        .WillOnce(Return(m_kTestDelayFrames * 4));
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferNewAllocate(nullptr, m_kTestBufLen * 4, nullptr)).WillOnce(Return(&m_buffer));
+
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferFill(&m_buffer, 0, _, m_kTestBufLen * 4)).WillOnce(Return(m_kTestBufLen * 4));
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(GST_APP_SRC(&m_appSrc), &m_buffer)).WillOnce(Return(GST_FLOW_OK));
+}
+
+void WebAudioTest::webAudioWriteBuffer()
+{
+    auto request = createWebAudioWriteBufferRequest(m_webAudioPlayerHandle, m_kTestBufLen);
+    ConfigureAction<WebAudioWriteBuffer>(m_clientStub).send(request).expectSuccess();
+}
+
+void WebAudioTest::webAudioGetDeviceInfo()
+{
+    auto request = createWebAudioGetDeviceInfoRequest(m_webAudioPlayerHandle);
+    ConfigureAction<WebAudioGetDeviceInfo>(m_clientStub)
+        .send(request)
+        .expectSuccess()
+        .matchResponse(
+            [&](const auto &resp)
+            {
+                cout << "@@@ 1 " << resp.preferred_frames() << endl;
+                cout << "@@@ 2 " << resp.maximum_frames() << endl;
+                cout << "@@@ 3 " << resp.support_deferred_play() << endl;
+            });
+}
+
+void WebAudioTest::willWebAudioSetVolume()
+{
+    EXPECT_CALL(*m_gstWrapperMock, gstStreamVolumeSetVolume(_, _, m_kTestVolume1));
+}
+
+void WebAudioTest::webAudioSetVolume()
+{
+    auto request = createWebAudioSetVolumeRequest(m_webAudioPlayerHandle, m_kTestVolume1);
+    ConfigureAction<WebAudioSetVolume>(m_clientStub).send(request).expectSuccess();
+}
+
+void WebAudioTest::willWebAudioGetVolume()
+{
+    EXPECT_CALL(*m_gstWrapperMock, gstStreamVolumeGetVolume(_, _)).WillOnce(Return(m_kTestVolume2));
+}
+
+void WebAudioTest::webAudioGetVolume()
+{
+    auto request = createWebAudioGetVolumeRequest(m_webAudioPlayerHandle);
+    ConfigureAction<WebAudioGetVolume>(m_clientStub)
+        .send(request)
+        .expectSuccess()
+        .matchResponse([&](const auto &resp) { EXPECT_EQ(resp.volume(), m_kTestVolume2); });
+}
+
 TEST_F(WebAudioTest, testAllApisWithMultipleQueries)
 {
     willCreateWebAudioPlayer();
@@ -256,6 +364,22 @@ TEST_F(WebAudioTest, testAllApisWithMultipleQueries)
 
     willWebAudioPause();
     webAudioPause();
+
+    webAudioGetBufferAvailable();
+
+    willWebAudioGetBufferDelay();
+    webAudioGetBufferDelay();
+
+    willWebAudioWriteBuffer();
+    webAudioWriteBuffer();
+
+    webAudioGetDeviceInfo();
+
+    willWebAudioSetVolume();
+    webAudioSetVolume();
+
+    willWebAudioGetVolume();
+    webAudioGetVolume();
 
     willWebAudioSetEos();
     webAudioSetEos();
