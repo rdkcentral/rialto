@@ -29,7 +29,7 @@ const std::string kAudioMimeType{"audio/x-raw"};
 const uint32_t kPriority{5};
 const int32_t kWebAudioPlayerHandle{1};
 constexpr uint32_t kPreferredFrames{1};
-constexpr uint32_t kMaximumFrames{0};
+constexpr uint32_t kMaximumFrames{1};
 constexpr bool kSupportDeferredPlay{true};
 } // namespace
 

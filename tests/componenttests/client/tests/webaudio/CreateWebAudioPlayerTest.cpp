@@ -51,8 +51,9 @@ public:
  * Test Steps:
  *  Step 1: Create a new web audio player session
  *   Create an instance of WebAudioPlayer.
- *   Expect that  web audio api is called on the server
+ *   Expect that web audio api is called on the server
  *   Check that the object returned is valid.
+ *   Check that web audio player has been added.
  *
  *  Step 2: Notify state to IDLE
  *   WebAudioPlayerStateChange to IDLE

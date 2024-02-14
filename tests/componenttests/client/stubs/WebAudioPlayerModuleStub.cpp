@@ -18,36 +18,13 @@
  */
 
 #include "WebAudioPlayerModuleStub.h"
+#include "WebAudioPlayerProtoUtils.h"
 #include <IIpcServer.h>
 #include <IIpcServerFactory.h>
 #include <gtest/gtest.h>
 #include <memory>
 #include <string>
 #include <vector>
-
-namespace
-{
-firebolt::rialto::WebAudioPlayerStateEvent_WebAudioPlayerState
-convertWebAudioPlayerState(const firebolt::rialto::WebAudioPlayerState &state)
-{
-    switch (state)
-    {
-    case firebolt::rialto::WebAudioPlayerState::UNKNOWN:
-        return firebolt::rialto::WebAudioPlayerStateEvent_WebAudioPlayerState_UNKNOWN;
-    case firebolt::rialto::WebAudioPlayerState::IDLE:
-        return firebolt::rialto::WebAudioPlayerStateEvent_WebAudioPlayerState_IDLE;
-    case firebolt::rialto::WebAudioPlayerState::PLAYING:
-        return firebolt::rialto::WebAudioPlayerStateEvent_WebAudioPlayerState_PLAYING;
-    case firebolt::rialto::WebAudioPlayerState::PAUSED:
-        return firebolt::rialto::WebAudioPlayerStateEvent_WebAudioPlayerState_PAUSED;
-    case firebolt::rialto::WebAudioPlayerState::END_OF_STREAM:
-        return firebolt::rialto::WebAudioPlayerStateEvent_WebAudioPlayerState_END_OF_STREAM;
-    case firebolt::rialto::WebAudioPlayerState::FAILURE:
-        return firebolt::rialto::WebAudioPlayerStateEvent_WebAudioPlayerState_FAILURE;
-    }
-    return firebolt::rialto::WebAudioPlayerStateEvent_WebAudioPlayerState_UNKNOWN;
-}
-} // namespace
 
 namespace firebolt::rialto::client::ct
 {

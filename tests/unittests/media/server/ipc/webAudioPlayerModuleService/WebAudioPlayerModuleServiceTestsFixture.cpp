@@ -18,6 +18,7 @@
  */
 
 #include "WebAudioPlayerModuleServiceTestsFixture.h"
+#include "MediaPipelineProtoUtils.h"
 #include "WebAudioPlayerModuleService.h"
 #include "WebAudioUtil.h"
 #include <fcntl.h>
