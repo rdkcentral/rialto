@@ -215,6 +215,14 @@ struct SetVideoWindow
     static constexpr auto m_kFunction{&Stub::setVideoWindow};
 };
 
+struct Flush
+{
+    using RequestType = ::firebolt::rialto::FlushRequest;
+    using ResponseType = ::firebolt::rialto::FlushResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    static constexpr auto m_kFunction{&Stub::flush};
+};
+
 // mediakeys module
 struct CreateMediaKeys
 {
