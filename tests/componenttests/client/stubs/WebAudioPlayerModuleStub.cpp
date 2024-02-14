@@ -18,6 +18,9 @@
  */
 
 #include "WebAudioPlayerModuleStub.h"
+#include "WebAudioPlayerProtoUtils.h"
+#include <IIpcServer.h>
+#include <IIpcServerFactory.h>
 #include <gtest/gtest.h>
 #include <memory>
 #include <string>
@@ -32,5 +35,17 @@ WebAudioPlayerModuleStub::WebAudioPlayerModuleStub(
 }
 
 WebAudioPlayerModuleStub::~WebAudioPlayerModuleStub() {}
+
+void WebAudioPlayerModuleStub::notifyWebAudioPlayerStateEvent(int32_t webAudioPlayerHandle,
+                                                              const ::firebolt::rialto::WebAudioPlayerState &state)
+{
+    waitForClientConnect();
+
+    auto event = std::make_shared<firebolt::rialto::WebAudioPlayerStateEvent>();
+    event->set_web_audio_player_handle(webAudioPlayerHandle);
+    event->set_state(convertWebAudioPlayerState(state));
+
+    getClient()->sendEvent(event);
+}
 
 } // namespace firebolt::rialto::client::ct

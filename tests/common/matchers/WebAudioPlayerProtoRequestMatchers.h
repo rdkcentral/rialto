@@ -46,4 +46,11 @@ MATCHER_P(destroyWebAudioPlayerRequestMatcher, webAudioPlayerHandle, "")
     return (kRequest->web_audio_player_handle() == webAudioPlayerHandle);
 }
 
+MATCHER_P(webAudioGetDeviceInfoRequestMatcher, webAudioPlayerHandle, "")
+{
+    const ::firebolt::rialto::WebAudioGetDeviceInfoRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::WebAudioGetDeviceInfoRequest *>(arg);
+    return (kRequest->web_audio_player_handle() == webAudioPlayerHandle);
+}
+
 #endif // WEB_AUDIO_PLAYER_PROTO_REQUEST_MATCHERS_H_

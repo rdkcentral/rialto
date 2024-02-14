@@ -19,6 +19,7 @@
 
 #include "WebAudioPlayerModuleServiceTestsFixture.h"
 #include "WebAudioPlayerModuleService.h"
+#include "WebAudioPlayerProtoUtils.h"
 #include "WebAudioUtil.h"
 #include <fcntl.h>
 #include <string>
@@ -62,42 +63,6 @@ MATCHER_P(PcmConfigMatcher, expectedPcmConfig, "")
     std::shared_ptr<const firebolt::rialto::WebAudioConfig> argConfig = arg.lock();
     return argConfig && argConfig->pcm == expectedPcmConfig;
 }
-
-namespace firebolt::rialto
-{
-firebolt::rialto::WebAudioPlayerStateEvent_WebAudioPlayerState
-convertWebAudioPlayerState(const firebolt::rialto::WebAudioPlayerState &mediaType)
-{
-    switch (mediaType)
-    {
-    case firebolt::rialto::WebAudioPlayerState::UNKNOWN:
-    {
-        return firebolt::rialto::WebAudioPlayerStateEvent_WebAudioPlayerState::WebAudioPlayerStateEvent_WebAudioPlayerState_UNKNOWN;
-    }
-    case firebolt::rialto::WebAudioPlayerState::IDLE:
-    {
-        return firebolt::rialto::WebAudioPlayerStateEvent_WebAudioPlayerState::WebAudioPlayerStateEvent_WebAudioPlayerState_IDLE;
-    }
-    case firebolt::rialto::WebAudioPlayerState::PLAYING:
-    {
-        return firebolt::rialto::WebAudioPlayerStateEvent_WebAudioPlayerState::WebAudioPlayerStateEvent_WebAudioPlayerState_PLAYING;
-    }
-    case firebolt::rialto::WebAudioPlayerState::PAUSED:
-    {
-        return firebolt::rialto::WebAudioPlayerStateEvent_WebAudioPlayerState::WebAudioPlayerStateEvent_WebAudioPlayerState_PAUSED;
-    }
-    case firebolt::rialto::WebAudioPlayerState::END_OF_STREAM:
-    {
-        return firebolt::rialto::WebAudioPlayerStateEvent_WebAudioPlayerState::WebAudioPlayerStateEvent_WebAudioPlayerState_END_OF_STREAM;
-    }
-    case firebolt::rialto::WebAudioPlayerState::FAILURE:
-    {
-        return firebolt::rialto::WebAudioPlayerStateEvent_WebAudioPlayerState::WebAudioPlayerStateEvent_WebAudioPlayerState_FAILURE;
-    }
-    }
-    return firebolt::rialto::WebAudioPlayerStateEvent_WebAudioPlayerState::WebAudioPlayerStateEvent_WebAudioPlayerState_UNKNOWN;
-}
-} // namespace firebolt::rialto
 
 WebAudioPlayerModuleServiceTests::WebAudioPlayerModuleServiceTests()
     : m_clientMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ClientMock>>()},
