@@ -82,6 +82,7 @@ TEST_F(CreateWebAudioPlayerTest, createWebAudioPlayer)
     // Step 1: Create a new web audio player session
     WebAudioPlayerTestMethods::shouldCreateWebAudioPlayer();
     WebAudioPlayerTestMethods::createWebAudioPlayer();
+    WebAudioPlayerTestMethods::checkWebAudioPlayerClient();
 
     // Step 2: Notify state to IDLE
     WebAudioPlayerTestMethods::shouldNotifyWebAudioPlayerStateIdle();
