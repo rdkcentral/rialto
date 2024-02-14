@@ -64,6 +64,7 @@ protected:
     void shouldDestroyWebAudioPlayer();
     void shouldNotifyWebAudioPlayerStateIdle();
     void shouldGetDeviceInfo();
+    void checkWebAudioPlayerClient();
 
     // Api methods
     void createWebAudioPlayer();

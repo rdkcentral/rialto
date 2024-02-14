@@ -65,6 +65,11 @@ void WebAudioPlayerTestMethods::createWebAudioPlayer()
     EXPECT_NE(m_webAudioPlayer, nullptr);
 }
 
+void WebAudioPlayerTestMethods::checkWebAudioPlayerClient()
+{
+    EXPECT_EQ(m_webAudioPlayer->getClient().lock(), m_webAudioPlayerClientMock);
+}
+
 void WebAudioPlayerTestMethods::shouldDestroyWebAudioPlayer()
 {
     EXPECT_CALL(*m_webAudioPlayerModuleMock,
