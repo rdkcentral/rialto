@@ -54,7 +54,16 @@ public:
  *   Expect that  web audio api is called on the server
  *   Check that the object returned is valid.
  *
- *  Step 2: Destroy web audio player session
+ *  Step 2: Notify state to IDLE
+ *   WebAudioPlayerStateChange to IDLE
+ *
+ *  Step 3: Get the device info
+ *   getDeviceInfo.
+ *   Expect that getDeviceInfo is propagated to the server.
+ *   Api call return the preferred frames, maximum frames and the supported deferred play.
+ *   Check supported preferred frames, maximum frames and the supported deferred play.
+ *
+ *  Step 4: Destroy web audio player session
  *   Destroy instance of WebAudioPlayer.
  *   Expect that the session is destroyed on the server.
  *
@@ -72,6 +81,14 @@ TEST_F(CreateWebAudioPlayerTest, createWebAudioPlayer)
     // Step 1: Create a new web audio player session
     WebAudioPlayerTestMethods::shouldCreateWebAudioPlayer();
     WebAudioPlayerTestMethods::createWebAudioPlayer();
+
+    // Step 2: Notify state to IDLE
+    WebAudioPlayerTestMethods::shouldNotifyWebAudioPlayerStateIdle();
+    WebAudioPlayerTestMethods::sendNotifyWebAudioPlayerStateIdle();
+
+    // Step 3: Get the device info
+    WebAudioPlayerTestMethods::shouldGetDeviceInfo();
+    WebAudioPlayerTestMethods::getDeviceInfo();
 
     // Step 2: Destroy web audio player session
     WebAudioPlayerTestMethods::shouldDestroyWebAudioPlayer();

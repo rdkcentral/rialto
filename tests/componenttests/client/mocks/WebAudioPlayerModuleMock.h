@@ -36,6 +36,10 @@ public:
                 (::google::protobuf::RpcController * controller,
                  const ::firebolt::rialto::DestroyWebAudioPlayerRequest *request,
                  ::firebolt::rialto::DestroyWebAudioPlayerResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, getDeviceInfo,
+                (::google::protobuf::RpcController * controller,
+                 const ::firebolt::rialto::WebAudioGetDeviceInfoRequest *request,
+                 ::firebolt::rialto::WebAudioGetDeviceInfoResponse *response, ::google::protobuf::Closure *done));
 
     void defaultReturn(::google::protobuf::RpcController *controller, ::google::protobuf::Closure *done)
     {
@@ -55,6 +59,16 @@ public:
         return response;
     }
 
+    ::firebolt::rialto::WebAudioGetDeviceInfoResponse webAudioGetDeviceInfoResponse(const uint32_t &preferredFrames,
+                                                                                    const uint32_t &maximumFrames,
+                                                                                    const bool &supportDeferredPlay)
+    {
+        firebolt::rialto::WebAudioGetDeviceInfoResponse response;
+        response.set_preferred_frames(preferredFrames);
+        response.set_maximum_frames(maximumFrames);
+        response.set_support_deferred_play(supportDeferredPlay);
+        return response;
+    }
     WebAudioPlayerModuleMock() {}
     virtual ~WebAudioPlayerModuleMock() = default;
 };
