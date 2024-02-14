@@ -106,7 +106,7 @@ void WebAudioPlayerTestMethods::getDeviceInfo()
 {
     uint32_t preferredFrames = 0;
     uint32_t maximumFrames = 0;
-    bool supportDeferredPlay = true;
+    bool supportDeferredPlay = false;
 
     EXPECT_TRUE(m_webAudioPlayer->getDeviceInfo(preferredFrames, maximumFrames, supportDeferredPlay));
     EXPECT_EQ(kPreferredFrames, preferredFrames);
