@@ -34,6 +34,7 @@ using ::testing::_;
 using ::testing::SetArgPointee;
 using ::testing::StrictMock;
 using ::testing::WithArgs;
+using ::testing::Invoke;
 
 using namespace firebolt::rialto;
 
@@ -55,13 +56,25 @@ protected:
     std::shared_ptr<IWebAudioPlayer> m_webAudioPlayer;
     std::shared_ptr<WebAudioConfig> m_config = std::make_shared<WebAudioConfig>();
 
+    // Test methods
+    void sendNotifyWebAudioPlayerStateIdle();
+
     // Expect methods
     void shouldCreateWebAudioPlayer();
     void shouldDestroyWebAudioPlayer();
+    void shouldNotifyWebAudioPlayerStateIdle();
+    void shouldGetDeviceInfo();
 
     // Api methods
     void createWebAudioPlayer();
     void destroyWebAudioPlayer();
+     void getDeviceInfo();
+
+    // Component test helpers
+    virtual std::shared_ptr<ServerStub> &getServerStub() = 0;
+    virtual void waitEvent() = 0;
+    virtual void notifyEvent() = 0;
+    
 };
 } // namespace firebolt::rialto::client::ct
 

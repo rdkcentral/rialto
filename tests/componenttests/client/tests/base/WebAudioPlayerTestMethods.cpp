@@ -28,6 +28,9 @@ namespace
 const std::string kAudioMimeType{"audio/x-raw"};
 const uint32_t kPriority{5};
 const int32_t kWebAudioPlayerHandle{1};
+constexpr uint32_t kPreferredFrames{1};
+constexpr uint32_t kMaximumFrames{0};
+constexpr bool kSupportDeferredPlay{true};
 } // namespace
 
 namespace firebolt::rialto::client::ct
@@ -72,6 +75,38 @@ void WebAudioPlayerTestMethods::shouldDestroyWebAudioPlayer()
 void WebAudioPlayerTestMethods::destroyWebAudioPlayer()
 {
     m_webAudioPlayer.reset();
+}
+
+void WebAudioPlayerTestMethods::shouldNotifyWebAudioPlayerStateIdle()
+{
+    EXPECT_CALL(*m_webAudioPlayerClientMock, notifyState(WebAudioPlayerState::IDLE))
+        .WillOnce(Invoke(this, &WebAudioPlayerTestMethods::notifyEvent));
+}
+void WebAudioPlayerTestMethods::sendNotifyWebAudioPlayerStateIdle()
+{
+    getServerStub()->notifyWebAudioPlayerStateEvent(kWebAudioPlayerHandle, WebAudioPlayerState::IDLE);
+    waitEvent();
+}
+void WebAudioPlayerTestMethods::shouldGetDeviceInfo()
+{
+    EXPECT_CALL(*m_webAudioPlayerModuleMock,
+                getDeviceInfo(_, webAudioGetDeviceInfoRequestMatcher(kWebAudioPlayerHandle), _, _))
+        .WillOnce(
+            DoAll(SetArgPointee<2>(m_webAudioPlayerModuleMock->webAudioGetDeviceInfoResponse(kPreferredFrames,
+                                                                                             kMaximumFrames,
+                                                                                             kSupportDeferredPlay)),
+                  (WithArgs<0, 3>(Invoke(&(*m_webAudioPlayerModuleMock), &WebAudioPlayerModuleMock::defaultReturn)))));
+}
+void WebAudioPlayerTestMethods::getDeviceInfo()
+{
+    uint32_t preferredFrames = 0;
+    uint32_t maximumFrames = 0;
+    bool supportDeferredPlay = true;
+
+    EXPECT_TRUE(m_webAudioPlayer->getDeviceInfo(preferredFrames, maximumFrames, supportDeferredPlay));
+    EXPECT_EQ(kPreferredFrames, preferredFrames);
+    EXPECT_EQ(kMaximumFrames, maximumFrames);
+    EXPECT_EQ(kSupportDeferredPlay, true);
 }
 
 WebAudioPlayerTestMethods::~WebAudioPlayerTestMethods() {}
