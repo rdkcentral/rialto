@@ -31,10 +31,10 @@
 #include <vector>
 
 using ::testing::_;
+using ::testing::Invoke;
 using ::testing::SetArgPointee;
 using ::testing::StrictMock;
 using ::testing::WithArgs;
-using ::testing::Invoke;
 
 using namespace firebolt::rialto;
 
@@ -68,13 +68,12 @@ protected:
     // Api methods
     void createWebAudioPlayer();
     void destroyWebAudioPlayer();
-     void getDeviceInfo();
+    void getDeviceInfo();
 
     // Component test helpers
     virtual std::shared_ptr<ServerStub> &getServerStub() = 0;
     virtual void waitEvent() = 0;
     virtual void notifyEvent() = 0;
-    
 };
 } // namespace firebolt::rialto::client::ct
 

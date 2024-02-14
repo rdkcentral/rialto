@@ -53,7 +53,7 @@ public:
  *   Create an instance of WebAudioPlayer.
  *   Expect that  web audio api is called on the server
  *   Check that the object returned is valid.
- * 
+ *
  *  Step 2: Notify state to IDLE
  *   WebAudioPlayerStateChange to IDLE
  *

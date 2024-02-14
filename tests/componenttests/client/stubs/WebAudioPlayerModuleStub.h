@@ -41,7 +41,7 @@ public:
     // Client helper
     virtual void waitForClientConnect() = 0;
     virtual std::shared_ptr<::firebolt::rialto::ipc::IClient> &getClient() = 0;
-    
+
 protected:
     std::shared_ptr<::firebolt::rialto::WebAudioPlayerModule> m_webAudioPlayerModuleMock;
 };
