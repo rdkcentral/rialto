@@ -30,7 +30,7 @@ constexpr uint32_t kPriority{5};
 constexpr int32_t kWebAudioPlayerHandle{1};
 constexpr uint32_t kPreferredFrames{1};
 constexpr uint32_t kMaximumFrames{0};
-bool kSupportDeferredPlay{true};
+constexpr bool kSupportDeferredPlay{true};
 } // namespace
 
 namespace firebolt::rialto::client::ct
@@ -104,8 +104,9 @@ void WebAudioPlayerTestMethods::getDeviceInfo()
 {
     uint32_t preferredFrames = 0;
     uint32_t maximumFrames = 0;
+    bool supportDeferredPlaye = true;
 
-    EXPECT_TRUE(m_webAudioPlayer->getDeviceInfo(preferredFrames, maximumFrames, kSupportDeferredPlay));
+    EXPECT_TRUE(m_webAudioPlayer->getDeviceInfo(preferredFrames, maximumFrames, supportDeferredPlaye));
     EXPECT_EQ(kPreferredFrames, preferredFrames);
     EXPECT_EQ(kMaximumFrames, maximumFrames);
     EXPECT_EQ(kSupportDeferredPlay, true);
