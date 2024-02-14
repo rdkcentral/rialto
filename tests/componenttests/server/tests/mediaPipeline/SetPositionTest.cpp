@@ -139,7 +139,7 @@ public:
  *  Test that seek is successfully handled.
  *
  * Sequence Diagrams:
- *  Seek - https://wiki.rdkcentral.com/display/ASP/Rialto+Seek+Design
+ *  Seek - https://wiki.rdkcentral.com/display/ASP/Rialto+Flush+and+Seek+Design
  *
  * Test Setup:
  *  Language: C++
@@ -331,7 +331,7 @@ TEST_F(SetPositionTest, SetPosition)
  *  Test that seek failure is successfully handled.
  *
  * Sequence Diagrams:
- *  Seek - https://wiki.rdkcentral.com/display/ASP/Rialto+Seek+Design
+ *  Seek - https://wiki.rdkcentral.com/display/ASP/Rialto+Flush+and+Seek+Design
  *
  * Test Setup:
  *  Language: C++

@@ -120,6 +120,8 @@ protected:
     void shouldRenderFrame();
     void shouldRenderFrameFailure();
     void shouldGetPosition(const int64_t position);
+    void shouldFlush();
+    void shouldFailToFlush();
 
     // MediaPipelineClient Expect methods
     void shouldNotifyNetworkStateBuffering();
@@ -152,6 +154,7 @@ protected:
     void shouldNotifyBufferUnderflowVideo();
     void shouldNotifyPlaybackErrorAudio();
     void shouldNotifyPlaybackErrorVideo();
+    void shouldNotifySourceFlushed();
 
     // MediaPipelineCapabilities Expect methods
     void shouldGetSupportedAudioMimeTypes();
@@ -220,6 +223,8 @@ protected:
     void getUnknownMimeTypes();
     void isMimeTypeSupported();
     void isMimeTypeNotSupported();
+    void flush();
+    void flushFailure();
 
     // Event methods
     void sendNotifyNetworkStateBuffering();
@@ -252,6 +257,7 @@ protected:
     void sendNotifyBufferUnderflowVideo();
     void sendNotifyPlaybackErrorAudio();
     void sendNotifyPlaybackErrorVideo();
+    void sendNotifySourceFlushed();
 
     // Check methods
     void checkMseAudioSegmentWritten(int32_t segmentId);

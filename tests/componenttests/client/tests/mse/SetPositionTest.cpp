@@ -45,7 +45,7 @@ public:
  *  Test that seek is successfully handled is PAUSED, PLAYING and END_OF_STREAM state.
  *
  * Sequence Diagrams:
- *  Seek - https://wiki.rdkcentral.com/display/ASP/Rialto+Seek+Design
+ *  Seek - https://wiki.rdkcentral.com/display/ASP/Rialto+Flush+and+Seek+Design
  *
  * Test Setup:
  *  Language: C++
@@ -194,7 +194,7 @@ TEST_F(SetPositionTest, successStates)
  *  Test that when seek is in progress data requests are flushed.
  *
  * Sequence Diagrams:
- *  Seek - https://wiki.rdkcentral.com/display/ASP/Rialto+Seek+Design
+ *  Seek - https://wiki.rdkcentral.com/display/ASP/Rialto+Flush+and+Seek+Design
  *
  * Test Setup:
  *  Language: C++
@@ -269,7 +269,7 @@ TEST_F(SetPositionTest, flushed)
  *  during server state changes are handled correctly.
  *
  * Sequence Diagrams:
- *  Seek - https://wiki.rdkcentral.com/display/ASP/Rialto+Seek+Design
+ *  Seek - https://wiki.rdkcentral.com/display/ASP/Rialto+Flush+and+Seek+Design
  *
  * Test Setup:
  *  Language: C++

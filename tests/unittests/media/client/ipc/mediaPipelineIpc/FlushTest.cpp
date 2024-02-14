@@ -48,9 +48,9 @@ TEST_F(RialtoClientMediaPipelineIpcFlushTest, FlushSuccess)
 {
     expectIpcApiCallSuccess();
 
-    EXPECT_CALL(*m_channelMock,
-                CallMethod(methodMatcher("flush"), m_controllerMock.get(),
-                           flushRequestMatcher(m_sessionId, m_kSourceId), _, m_blockingClosureMock.get()));
+    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("flush"), m_controllerMock.get(),
+                                           flushRequestMatcher(m_sessionId, m_kSourceId, m_kResetTime), _,
+                                           m_blockingClosureMock.get()));
 
     EXPECT_EQ(m_mediaPipelineIpc->flush(m_kSourceId, m_kResetTime), true);
 }

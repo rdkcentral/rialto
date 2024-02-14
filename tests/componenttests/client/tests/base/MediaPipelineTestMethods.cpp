@@ -84,6 +84,7 @@ constexpr firebolt::rialto::QosInfo kQosInfoVideo{98, 2};
 const std::vector<std::string> kAudioMimeType{"audio/mp4", "audio/aac", "audio/x-eac3", "audio/x-opus"};
 const std::vector<std::string> kVideoMimeType{"video/h264", "video/h265", "video/x-av1", "video/x-vp9", "video/mp4"};
 const std::vector<std::string> kUnknownMimeType{};
+constexpr bool kResetTime{true};
 } // namespace
 
 namespace firebolt::rialto::client::ct
@@ -1270,6 +1271,18 @@ void MediaPipelineTestMethods::sendNotifyPlaybackErrorVideo()
     waitEvent();
 }
 
+void MediaPipelineTestMethods::shouldNotifySourceFlushed()
+{
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifySourceFlushed(kAudioSourceId))
+        .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
+}
+
+void MediaPipelineTestMethods::sendNotifySourceFlushed()
+{
+    getServerStub()->notifySourceFlushed(kSessionId, kAudioSourceId);
+    waitEvent();
+}
+
 void MediaPipelineTestMethods::shouldGetPosition(const int64_t position)
 {
     EXPECT_CALL(*m_mediaPipelineModuleMock, getPosition(_, getPositionRequestMatcher(kSessionId), _, _))
@@ -1282,6 +1295,28 @@ void MediaPipelineTestMethods::getPosition(const int64_t expectedPosition)
     int64_t returnPosition;
     EXPECT_EQ(m_mediaPipeline->getPosition(returnPosition), true);
     EXPECT_EQ(returnPosition, expectedPosition);
+}
+
+void MediaPipelineTestMethods::shouldFlush()
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock, flush(_, flushRequestMatcher(kSessionId, kAudioSourceId, kResetTime), _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
+}
+
+void MediaPipelineTestMethods::flush()
+{
+    EXPECT_TRUE(m_mediaPipeline->flush(kAudioSourceId, kResetTime));
+}
+
+void MediaPipelineTestMethods::shouldFailToFlush()
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock, flush(_, flushRequestMatcher(kSessionId, kAudioSourceId, kResetTime), _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::failureReturn)));
+}
+
+void MediaPipelineTestMethods::flushFailure()
+{
+    EXPECT_FALSE(m_mediaPipeline->flush(kAudioSourceId, kResetTime));
 }
 
 /*************************** Private methods ********************************/
