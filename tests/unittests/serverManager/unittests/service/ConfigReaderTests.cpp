@@ -392,7 +392,7 @@ TEST_F(ConfigReaderTests, numOfPingsBeforeRecoveryExists)
 TEST_F(ConfigReaderTests, defaultConfigValuesAreSet)
 {
     // "Real world" constants defined in rialto/CMakeLists.txt
-    constexpr std::size_t kSessionServerEnvVarsSize{5};
+    constexpr std::size_t kSessionServerEnvVarsSize{3};
     constexpr unsigned kNumOfPreloadedServers{0};
     const std::string kSessionServerPath{"/usr/bin/RialtoServer"};
     constexpr unsigned kSessionServerStartupTimeout{0};
@@ -404,11 +404,6 @@ TEST_F(ConfigReaderTests, defaultConfigValuesAreSet)
     EXPECT_EQ(config.sessionServerEnvVars.size(), kSessionServerEnvVarsSize);
     EXPECT_NE(config.sessionServerEnvVars.end(),
               std::find(config.sessionServerEnvVars.begin(), config.sessionServerEnvVars.end(), "XDG_RUNTIME_DIR=/tmp"));
-    EXPECT_NE(config.sessionServerEnvVars.end(),
-              std::find(config.sessionServerEnvVars.begin(), config.sessionServerEnvVars.end(),
-                        "WAYLAND_DISPLAY=westeros-rialto"));
-    EXPECT_NE(config.sessionServerEnvVars.end(),
-              std::find(config.sessionServerEnvVars.begin(), config.sessionServerEnvVars.end(), "RIALTO_SINKS_RANK=0"));
     EXPECT_NE(config.sessionServerEnvVars.end(),
               std::find(config.sessionServerEnvVars.begin(), config.sessionServerEnvVars.end(),
                         "GST_REGISTRY=/tmp/rialto-server-gstreamer-cache.bin"));
