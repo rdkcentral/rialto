@@ -77,6 +77,7 @@ protected:
     void shouldSetupVideoElementOnly();
     void shouldSetupVideoElementWithPendingGeometry();
     void shouldSetupVideoElementAmlhalasink();
+    void shouldSetupAudioElementBrcmAudioSink();
     void shouldSetupVideoElementAutoVideoSink();
     void shouldSetupVideoElementAutoVideoSinkWithMultipleChildren();
     void shouldSetupAudioElementOnly();

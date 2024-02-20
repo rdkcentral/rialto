@@ -285,6 +285,7 @@ void GenericTasksTestsBase::expectSetupAudioElement()
                                             GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
         .WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementGetFactory(_)).WillRepeatedly(Return(testContext->m_elementFactory));
     EXPECT_CALL(*testContext->m_gstWrapper,
                 gstElementFactoryListIsType(testContext->m_elementFactory, GST_ELEMENT_FACTORY_TYPE_DECODER))
@@ -325,6 +326,7 @@ void GenericTasksTestsBase::shouldSetupVideoElementOnly()
                                             GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
         .WillOnce(Return(TRUE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
     expectSetupVideoElement();
 }
 
@@ -338,6 +340,7 @@ void GenericTasksTestsBase::shouldSetupVideoElementWithPendingGeometry()
                                             GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
         .WillOnce(Return(TRUE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(testContext->m_gstPlayer, setVideoSinkRectangle());
     expectSetupVideoElement();
 }
@@ -351,10 +354,53 @@ void GenericTasksTestsBase::shouldSetupVideoElementAmlhalasink()
                                             GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
         .WillOnce(Return(TRUE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(true));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(G_OBJECT(testContext->m_element), StrEq("wait-video")));
     EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(G_OBJECT(testContext->m_element), StrEq("a-wait-timeout")));
     EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(G_OBJECT(testContext->m_element), StrEq("disable-xrun")));
     expectSetupVideoElement();
+}
+
+void GenericTasksTestsBase::shouldSetupAudioElementBrcmAudioSink()
+{
+    EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
+        .WillOnce(Return(kElementTypeName.c_str()));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstElementFactoryListIsType(testContext->m_elementFactory,
+                                            GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
+        .WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(false));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(true));
+    EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(G_OBJECT(testContext->m_element), StrEq("async")));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstElementGetFactory(_)).WillRepeatedly(Return(testContext->m_elementFactory));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstElementFactoryListIsType(testContext->m_elementFactory, GST_ELEMENT_FACTORY_TYPE_DECODER))
+        .WillRepeatedly(Return(TRUE));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstElementFactoryListIsType(testContext->m_elementFactory, GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
+        .WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstElementFactoryListIsType(testContext->m_elementFactory, GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
+        .WillOnce(Return(TRUE));
+    EXPECT_CALL(*testContext->m_glibWrapper, gObjectType(testContext->m_element)).WillRepeatedly(Return(G_TYPE_PARAM));
+    EXPECT_CALL(*testContext->m_glibWrapper, gSignalListIds(_, _))
+        .WillOnce(Invoke(
+            [&](GType itype, guint *n_ids)
+            {
+                *n_ids = 1;
+                return testContext->m_signals;
+            }));
+    EXPECT_CALL(*testContext->m_glibWrapper, gSignalQuery(testContext->m_signals[0], _))
+        .WillOnce(Invoke([&](guint signal_id, GSignalQuery *query) { query->signal_name = "buffer-underflow-callback"; }));
+    EXPECT_CALL(*testContext->m_glibWrapper, gFree(testContext->m_signals));
+    EXPECT_CALL(*testContext->m_glibWrapper, gSignalConnect(_, _, _, _))
+        .WillOnce(Invoke(
+            [&](gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data)
+            {
+                testContext->m_audioUnderflowCallback = c_handler;
+                return kSignalId;
+            }));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(_));
 }
 
 void GenericTasksTestsBase::shouldSetupVideoElementAutoVideoSinkWithMultipleChildren()
@@ -368,6 +414,7 @@ void GenericTasksTestsBase::shouldSetupVideoElementAutoVideoSink()
     EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
         .WillOnce(Return(kAutoVideoSinkTypeName.c_str()));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(false));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_glibWrapper,
                 gSignalConnect(G_OBJECT(testContext->m_element), StrEq("child-added"), _, &testContext->m_gstPlayer))
         .WillOnce(Invoke(
