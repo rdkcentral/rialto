@@ -53,4 +53,39 @@ MATCHER_P(webAudioGetDeviceInfoRequestMatcher, webAudioPlayerHandle, "")
     return (kRequest->web_audio_player_handle() == webAudioPlayerHandle);
 }
 
+MATCHER_P(webAudioPlayRequestMatcher, webAudioPlayerHandle, "")
+{
+    const ::firebolt::rialto::WebAudioPlayRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::WebAudioPlayRequest *>(arg);
+    return (kRequest->web_audio_player_handle() == webAudioPlayerHandle);
+}
+
+MATCHER_P(webAudioPauseRequestMatcher, webAudioPlayerHandle, "")
+{
+    const ::firebolt::rialto::WebAudioPauseRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::WebAudioPauseRequest *>(arg);
+    return (kRequest->web_audio_player_handle() == webAudioPlayerHandle);
+}
+
+MATCHER_P(webAudioSetEosRequestMatcher, webAudioPlayerHandle, "")
+{
+    const ::firebolt::rialto::WebAudioSetEosRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::WebAudioSetEosRequest *>(arg);
+    return (kRequest->web_audio_player_handle() == webAudioPlayerHandle);
+}
+
+MATCHER_P(webAudioGetBufferAvailableRequestMatcher, webAudioPlayerHandle, "")
+{
+    const ::firebolt::rialto::WebAudioGetBufferAvailableRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::WebAudioGetBufferAvailableRequest *>(arg);
+    return (kRequest->web_audio_player_handle() == webAudioPlayerHandle);
+}
+
+MATCHER_P2(webAudioWriteBufferRequestMatcher, webAudioPlayerHandle, numberOfFrames, "")
+{
+    const ::firebolt::rialto::WebAudioWriteBufferRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::WebAudioWriteBufferRequest *>(arg);
+    return (kRequest->web_audio_player_handle() == webAudioPlayerHandle && kRequest->number_of_frames() == numberOfFrames);
+}
+
 #endif // WEB_AUDIO_PLAYER_PROTO_REQUEST_MATCHERS_H_

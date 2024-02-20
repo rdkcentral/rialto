@@ -26,22 +26,21 @@
 namespace
 {
 const std::string kAudioMimeType{"audio/x-raw"};
+const uint32_t kNumberOfFrames{1};
+std::vector<uint8_t> dataSrc{1, 2, 3, 4, 55, 66, 77, 88};
 const uint32_t kPriority{5};
 const int32_t kWebAudioPlayerHandle{1};
 constexpr uint32_t kPreferredFrames{1};
 constexpr uint32_t kMaximumFrames{1};
 constexpr bool kSupportDeferredPlay{true};
+constexpr uint32_t kPartition{0};
 } // namespace
 
 namespace firebolt::rialto::client::ct
 {
-WebAudioPlayerTestMethods::WebAudioPlayerTestMethods()
+WebAudioPlayerTestMethods::WebAudioPlayerTestMethods(const std::vector<firebolt::rialto::WebAudioShmInfo> &webAudioShmInfo)
     : m_webAudioPlayerModuleMock{std::make_shared<StrictMock<WebAudioPlayerModuleMock>>()},
       m_webAudioPlayerClientMock{std::make_shared<StrictMock<WebAudioPlayerClientMock>>()}
-{
-}
-
-void WebAudioPlayerTestMethods::shouldCreateWebAudioPlayer()
 {
     m_config->pcm.rate = 1;
     m_config->pcm.channels = 2;
@@ -50,6 +49,56 @@ void WebAudioPlayerTestMethods::shouldCreateWebAudioPlayer()
     m_config->pcm.isSigned = false;
     m_config->pcm.isFloat = false;
 
+    m_bytesPerFrame = m_config->pcm.channels * (m_config->pcm.sampleSize / CHAR_BIT);
+}
+
+void WebAudioPlayerTestMethods::shouldGetBufferAvailable()
+{
+    if (m_webAudioShmInfo == nullptr) {
+        throw std::runtime_error("m_webAudioShmInfo is null");
+    }
+    
+    // This is used to calculate the availbaleFrames by taking the entire length of the buffer used by webaudio and dividing it by bytesPerFrame to convert it into frames
+    uint32_t availableFrames = (m_webAudioShmInfo->lengthMain + m_webAudioShmInfo->lengthWrap)/m_bytesPerFrame;
+
+    EXPECT_CALL(*m_webAudioPlayerModuleMock,
+                getBufferAvailable(_, webAudioGetBufferAvailableRequestMatcher(kWebAudioPlayerHandle), _, _))
+        .WillOnce(
+            DoAll(SetArgPointee<2>(m_webAudioPlayerModuleMock->webAudioGetBufferAvailableResponse(availableFrames, m_webAudioShmInfo)),
+                  (WithArgs<0, 3>(Invoke(&(*m_webAudioPlayerModuleMock), &WebAudioPlayerModuleMock::defaultReturn)))));
+}
+
+void WebAudioPlayerTestMethods::getBufferAvailable()
+{
+    
+    uint32_t availableFrames = (m_webAudioShmInfo->lengthMain + m_webAudioShmInfo->lengthWrap)/m_bytesPerFrame;
+
+    EXPECT_EQ(m_webAudioPlayer->getBufferAvailable(availableFrames, m_webAudioShmInfo), true);
+}
+
+void WebAudioPlayerTestMethods::shouldWriteBuffer()
+{
+        EXPECT_CALL(*m_webAudioPlayerModuleMock,
+                writeBuffer(_, webAudioWriteBufferRequestMatcher(kWebAudioPlayerHandle, kNumberOfFrames), _, _))
+                .WillOnce(WithArgs<0, 3>(Invoke(&(*m_webAudioPlayerModuleMock), &WebAudioPlayerModuleMock::defaultReturn)));
+}
+
+void WebAudioPlayerTestMethods::writeBuffer()
+{
+    EXPECT_FALSE(m_webAudioPlayer->writeBuffer(kNumberOfFrames, dataSrc.data())); 
+    // EXPECT_EQ(m_webAudioPlayer->writeBuffer(kNumberOfFrames, dataSrc.data()), true);
+}
+
+void WebAudioPlayerTestMethods::checkBuffer()
+{
+    uint8_t *dataPtr{reinterpret_cast<uint8_t *>(getShmAddress()) + m_webAudioShmInfo->offsetMain};
+    size_t dataLength = kNumberOfFrames * m_bytesPerFrame;
+    std::vector<uint8_t> data = std::vector<uint8_t>(dataPtr, dataPtr + dataLength);
+    EXPECT_EQ(data, dataSrc);
+}
+
+void WebAudioPlayerTestMethods::shouldCreateWebAudioPlayer()
+{
     EXPECT_CALL(*m_webAudioPlayerModuleMock,
                 createWebAudioPlayer(_, createWebAudioPlayerRequestMatcher(kAudioMimeType, kPriority, m_config), _, _))
         .WillOnce(
@@ -92,6 +141,40 @@ void WebAudioPlayerTestMethods::sendNotifyWebAudioPlayerStateIdle()
     getServerStub()->notifyWebAudioPlayerStateEvent(kWebAudioPlayerHandle, WebAudioPlayerState::IDLE);
     waitEvent();
 }
+
+void WebAudioPlayerTestMethods::shouldNotifyWebAudioPlayerStatePause()
+{
+    EXPECT_CALL(*m_webAudioPlayerClientMock, notifyState(WebAudioPlayerState::PAUSED))
+        .WillOnce(Invoke(this, &WebAudioPlayerTestMethods::notifyEvent));
+}
+void WebAudioPlayerTestMethods::sendNotifyWebAudioPlayerStatePause()
+{
+    getServerStub()->notifyWebAudioPlayerStateEvent(kWebAudioPlayerHandle, WebAudioPlayerState::PAUSED);
+    waitEvent();
+}
+
+void WebAudioPlayerTestMethods::shouldNotifyWebAudioPlayerStatePlay()
+{
+    EXPECT_CALL(*m_webAudioPlayerClientMock, notifyState(WebAudioPlayerState::PLAYING))
+        .WillOnce(Invoke(this, &WebAudioPlayerTestMethods::notifyEvent));
+}
+void WebAudioPlayerTestMethods::sendNotifyWebAudioPlayerStatePlay()
+{
+    getServerStub()->notifyWebAudioPlayerStateEvent(kWebAudioPlayerHandle, WebAudioPlayerState::PLAYING);
+    waitEvent();
+}
+
+void WebAudioPlayerTestMethods::shouldNotifyWebAudioPlayerStateEos()
+{
+    EXPECT_CALL(*m_webAudioPlayerClientMock, notifyState(WebAudioPlayerState::END_OF_STREAM))
+        .WillOnce(Invoke(this, &WebAudioPlayerTestMethods::notifyEvent));
+}
+void WebAudioPlayerTestMethods::sendNotifyWebAudioPlayerStateEos()
+{
+    getServerStub()->notifyWebAudioPlayerStateEvent(kWebAudioPlayerHandle, WebAudioPlayerState::END_OF_STREAM);
+    waitEvent();
+}
+
 void WebAudioPlayerTestMethods::shouldGetDeviceInfo()
 {
     EXPECT_CALL(*m_webAudioPlayerModuleMock,
@@ -114,6 +197,41 @@ void WebAudioPlayerTestMethods::getDeviceInfo()
     EXPECT_EQ(kSupportDeferredPlay, true);
 }
 
+void WebAudioPlayerTestMethods::shouldPlay()
+{
+    EXPECT_CALL(*m_webAudioPlayerModuleMock,
+                destroyWebAudioPlayer(_, webAudioPlayRequestMatcher(kWebAudioPlayerHandle), _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_webAudioPlayerModuleMock), &WebAudioPlayerModuleMock::defaultReturn)));
+}
+
+void WebAudioPlayerTestMethods::play()
+{
+    EXPECT_EQ(m_webAudioPlayer->play(), true);
+}
+
+void WebAudioPlayerTestMethods::shouldPause()
+{
+    EXPECT_CALL(*m_webAudioPlayerModuleMock,
+                destroyWebAudioPlayer(_, webAudioPauseRequestMatcher(kWebAudioPlayerHandle), _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_webAudioPlayerModuleMock), &WebAudioPlayerModuleMock::defaultReturn)));
+}
+
+void WebAudioPlayerTestMethods::pause()
+{
+    EXPECT_EQ(m_webAudioPlayer->pause(), true);
+}
+
+void WebAudioPlayerTestMethods::shouldEos()
+{
+    EXPECT_CALL(*m_webAudioPlayerModuleMock,
+                destroyWebAudioPlayer(_, webAudioSetEosRequestMatcher(kWebAudioPlayerHandle), _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_webAudioPlayerModuleMock), &WebAudioPlayerModuleMock::defaultReturn)));
+}
+
+void WebAudioPlayerTestMethods::setEos()
+{
+    EXPECT_EQ(m_webAudioPlayer->setEos(), true);
+}
 WebAudioPlayerTestMethods::~WebAudioPlayerTestMethods() {}
 
 } // namespace firebolt::rialto::client::ct

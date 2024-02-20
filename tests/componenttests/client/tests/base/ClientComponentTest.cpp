@@ -63,7 +63,7 @@ namespace
 {
 constexpr std::chrono::milliseconds kEventTimeout{200};
 constexpr uint32_t kNumOfAVPartitions{2};
-constexpr uint32_t kNumOfWebAudioPartitions{0};
+constexpr uint32_t kNumOfWebAudioPartitions{1};
 constexpr uint32_t kVideoPartitionSize = 100000;
 constexpr uint32_t kAudioPartitionSize = 10000;
 constexpr uint32_t kWebAudioPartitionSize = 10000;
@@ -92,12 +92,25 @@ const std::vector<firebolt::rialto::MediaPlayerShmInfo> getAudioPartitions()
     }
     return audioPartitions;
 }
+
+const std::vector<firebolt::rialto::WebAudioShmInfo> getWebAudioPartitions()
+{
+    std::vector<firebolt::rialto::WebAudioShmInfo> webAudioPartitions;
+    for (uint32_t i = 0; i < kNumOfWebAudioPartitions; i++)
+    {
+        uint32_t baseLocation =  kNumOfAVPartitions * (kMetadataPartitionSize + kAudioPartitionSize + kMetadataPartitionSize + kVideoPartitionSize)  + (kWebAudioPartitionSize * i);
+        webAudioPartitions.push_back(
+            {baseLocation, kWebAudioPartitionSize, baseLocation, 0});
+    }
+    return webAudioPartitions;
+}
 } // namespace
 
 namespace firebolt::rialto::client::ct
 {
 ClientComponentTest::ClientComponentTest()
     : MediaPipelineTestMethods(getAudioPartitions(), getVideoPartitions()),
+      WebAudioPlayerTestMethods(getWebAudioPartitions()),
       m_serverStub{std::make_shared<ServerStub>(m_controlModuleMock, m_mediaPipelineModuleMock, m_mediaKeysModuleMock,
                                                 m_mediaKeysCapabilitiesModuleMock,
                                                 m_mediaPipelineCapabilitiesModuleMock, m_webAudioPlayerModuleMock)}
