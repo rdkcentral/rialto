@@ -31,7 +31,6 @@
 #include <vector>
 
 using ::testing::_;
-using ::testing::DoAll;
 using ::testing::Invoke;
 using ::testing::SetArgPointee;
 using ::testing::StrictMock;
