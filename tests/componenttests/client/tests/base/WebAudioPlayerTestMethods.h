@@ -31,11 +31,11 @@
 #include <vector>
 
 using ::testing::_;
+using ::testing::DoAll;
 using ::testing::Invoke;
 using ::testing::SetArgPointee;
 using ::testing::StrictMock;
 using ::testing::WithArgs;
-using ::testing::DoAll;
 
 using namespace firebolt::rialto;
 
@@ -44,7 +44,7 @@ namespace firebolt::rialto::client::ct
 class WebAudioPlayerTestMethods
 {
 public:
-    WebAudioPlayerTestMethods(const std::vector<firebolt::rialto::WebAudioShmInfo> &webAudioShmInfo);
+    explicit WebAudioPlayerTestMethods(const std::vector<firebolt::rialto::WebAudioShmInfo> &webAudioShmInfo);
     virtual ~WebAudioPlayerTestMethods();
 
 protected:
@@ -98,10 +98,7 @@ protected:
     virtual void notifyEvent() = 0;
     virtual void *getShmAddress() = 0;
 
-private: 
-    // Const variables
-//    std::shared_ptr<firebolt::rialto::WebAudioShmInfo> m_kWebAudioShmInfo;
-
+private:
     // Non const variables
     std::vector<std::shared_ptr<WebAudioShmInfo>> m_locationToWriteWebAudio;
 

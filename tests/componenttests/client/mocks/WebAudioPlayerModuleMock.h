@@ -22,9 +22,9 @@
 
 #include "webaudioplayermodule.pb.h"
 #include <gmock/gmock.h>
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
 
 class WebAudioPlayerModuleMock : public ::firebolt::rialto::WebAudioPlayerModule
 {
@@ -42,25 +42,22 @@ public:
                  const ::firebolt::rialto::WebAudioGetDeviceInfoRequest *request,
                  ::firebolt::rialto::WebAudioGetDeviceInfoResponse *response, ::google::protobuf::Closure *done));
     MOCK_METHOD(void, play,
-                (::google::protobuf::RpcController * controller, 
-                 const ::firebolt::rialto::WebAudioPlayRequest *request,
+                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::WebAudioPlayRequest *request,
                  ::firebolt::rialto::WebAudioPlayResponse *response, ::google::protobuf::Closure *done));
     MOCK_METHOD(void, pause,
-                (::google::protobuf::RpcController * controller, 
-                 const ::firebolt::rialto::WebAudioPauseRequest *request,
+                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::WebAudioPauseRequest *request,
                  ::firebolt::rialto::WebAudioPauseResponse *response, ::google::protobuf::Closure *done));
     MOCK_METHOD(void, setEos,
-                (::google::protobuf::RpcController* controller, 
-                 const ::firebolt::rialto::WebAudioSetEosRequest *request,
-                ::firebolt::rialto::WebAudioSetEosResponse* response, ::google::protobuf::Closure* done));
+                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::WebAudioSetEosRequest *request,
+                 ::firebolt::rialto::WebAudioSetEosResponse *response, ::google::protobuf::Closure *done));
     MOCK_METHOD(void, getBufferAvailable,
-                (::google::protobuf::RpcController *controller,
-                 const ::firebolt::rialto::WebAudioGetBufferAvailableRequest *request, 
-                 ::firebolt::rialto::WebAudioGetBufferAvailableResponse *response,::google::protobuf::Closure *done));
+                (::google::protobuf::RpcController * controller,
+                 const ::firebolt::rialto::WebAudioGetBufferAvailableRequest *request,
+                 ::firebolt::rialto::WebAudioGetBufferAvailableResponse *response, ::google::protobuf::Closure *done));
     MOCK_METHOD(void, writeBuffer,
-                (::google::protobuf::RpcController *controller,
-                const ::firebolt::rialto::WebAudioWriteBufferRequest *request,
-                ::firebolt::rialto::WebAudioWriteBufferResponse *response,::google::protobuf::Closure *done));
+                (::google::protobuf::RpcController * controller,
+                 const ::firebolt::rialto::WebAudioWriteBufferRequest *request,
+                 ::firebolt::rialto::WebAudioWriteBufferResponse *response, ::google::protobuf::Closure *done));
 
     void defaultReturn(::google::protobuf::RpcController *controller, ::google::protobuf::Closure *done)
     {
@@ -91,8 +88,9 @@ public:
         return response;
     }
 
-    ::firebolt::rialto::WebAudioGetBufferAvailableResponse webAudioGetBufferAvailableResponse(const uint32_t &availableFrames, 
-                                                                                              const std::shared_ptr<firebolt::rialto::WebAudioShmInfo> &webAudioShmInfo)
+    ::firebolt::rialto::WebAudioGetBufferAvailableResponse
+    webAudioGetBufferAvailableResponse(const uint32_t &availableFrames,
+                                       const std::shared_ptr<firebolt::rialto::WebAudioShmInfo> &webAudioShmInfo)
     {
         firebolt::rialto::WebAudioGetBufferAvailableResponse response;
         response.set_available_frames(availableFrames);

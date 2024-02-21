@@ -98,9 +98,10 @@ const std::vector<firebolt::rialto::WebAudioShmInfo> getWebAudioPartitions()
     std::vector<firebolt::rialto::WebAudioShmInfo> webAudioPartitions;
     for (uint32_t i = 0; i < kNumOfWebAudioPartitions; i++)
     {
-        uint32_t baseLocation =  kNumOfAVPartitions * (kMetadataPartitionSize + kAudioPartitionSize + kMetadataPartitionSize + kVideoPartitionSize)  + (kWebAudioPartitionSize * i);
-        webAudioPartitions.push_back(
-            {baseLocation, kWebAudioPartitionSize, baseLocation, 0});
+        uint32_t baseLocation = kNumOfAVPartitions * (kMetadataPartitionSize + kAudioPartitionSize +
+                                                      kMetadataPartitionSize + kVideoPartitionSize) +
+                                (kWebAudioPartitionSize * i);
+        webAudioPartitions.push_back({baseLocation, kWebAudioPartitionSize, baseLocation, 0});
     }
     return webAudioPartitions;
 }

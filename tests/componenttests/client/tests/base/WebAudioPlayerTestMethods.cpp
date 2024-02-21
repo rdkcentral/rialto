@@ -27,7 +27,7 @@ namespace
 {
 const std::string kAudioMimeType{"audio/x-raw"};
 const uint32_t kNumberOfFrames{1};
-std::vector<uint8_t> dataSrc{1, 2, 3, 4, 55, 66, 77, 88};
+std::vector<uint8_t> dataSrc{1, 2, 3, 4};
 const uint32_t kPriority{5};
 const int32_t kWebAudioPlayerHandle{1};
 constexpr uint32_t kPreferredFrames{1};
@@ -54,39 +54,42 @@ WebAudioPlayerTestMethods::WebAudioPlayerTestMethods(const std::vector<firebolt:
 
 void WebAudioPlayerTestMethods::shouldGetBufferAvailable()
 {
-    if (m_webAudioShmInfo == nullptr) {
+    if (m_webAudioShmInfo == nullptr)
+    {
         throw std::runtime_error("m_webAudioShmInfo is null");
     }
-    
-    // This is used to calculate the availbaleFrames by taking the entire length of the buffer used by webaudio and dividing it by bytesPerFrame to convert it into frames
-    uint32_t availableFrames = (m_webAudioShmInfo->lengthMain + m_webAudioShmInfo->lengthWrap)/m_bytesPerFrame;
+
+    m_webAudioShmInfo->lengthMain = 4;
+
+    // This is used to calculate the availbaleFrames by taking the entire length of the buffer used by webaudio and
+    // dividing it by bytesPerFrame to convert it into frames
+    uint32_t availableFrames = (m_webAudioShmInfo->lengthMain + m_webAudioShmInfo->lengthWrap) / m_bytesPerFrame;
 
     EXPECT_CALL(*m_webAudioPlayerModuleMock,
                 getBufferAvailable(_, webAudioGetBufferAvailableRequestMatcher(kWebAudioPlayerHandle), _, _))
         .WillOnce(
-            DoAll(SetArgPointee<2>(m_webAudioPlayerModuleMock->webAudioGetBufferAvailableResponse(availableFrames, m_webAudioShmInfo)),
+            DoAll(SetArgPointee<2>(m_webAudioPlayerModuleMock->webAudioGetBufferAvailableResponse(availableFrames,
+                                                                                                  m_webAudioShmInfo)),
                   (WithArgs<0, 3>(Invoke(&(*m_webAudioPlayerModuleMock), &WebAudioPlayerModuleMock::defaultReturn)))));
 }
 
 void WebAudioPlayerTestMethods::getBufferAvailable()
 {
-    
-    uint32_t availableFrames = (m_webAudioShmInfo->lengthMain + m_webAudioShmInfo->lengthWrap)/m_bytesPerFrame;
+    uint32_t availableFrames = (m_webAudioShmInfo->lengthMain + m_webAudioShmInfo->lengthWrap) / m_bytesPerFrame;
 
     EXPECT_EQ(m_webAudioPlayer->getBufferAvailable(availableFrames, m_webAudioShmInfo), true);
 }
 
 void WebAudioPlayerTestMethods::shouldWriteBuffer()
 {
-        EXPECT_CALL(*m_webAudioPlayerModuleMock,
+    EXPECT_CALL(*m_webAudioPlayerModuleMock,
                 writeBuffer(_, webAudioWriteBufferRequestMatcher(kWebAudioPlayerHandle, kNumberOfFrames), _, _))
-                .WillOnce(WithArgs<0, 3>(Invoke(&(*m_webAudioPlayerModuleMock), &WebAudioPlayerModuleMock::defaultReturn)));
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_webAudioPlayerModuleMock), &WebAudioPlayerModuleMock::defaultReturn)));
 }
 
 void WebAudioPlayerTestMethods::writeBuffer()
 {
-    EXPECT_FALSE(m_webAudioPlayer->writeBuffer(kNumberOfFrames, dataSrc.data())); 
-    // EXPECT_EQ(m_webAudioPlayer->writeBuffer(kNumberOfFrames, dataSrc.data()), true);
+    EXPECT_EQ(m_webAudioPlayer->writeBuffer(kNumberOfFrames, dataSrc.data()), true);
 }
 
 void WebAudioPlayerTestMethods::checkBuffer()
@@ -199,8 +202,7 @@ void WebAudioPlayerTestMethods::getDeviceInfo()
 
 void WebAudioPlayerTestMethods::shouldPlay()
 {
-    EXPECT_CALL(*m_webAudioPlayerModuleMock,
-                destroyWebAudioPlayer(_, webAudioPlayRequestMatcher(kWebAudioPlayerHandle), _, _))
+    EXPECT_CALL(*m_webAudioPlayerModuleMock, play(_, webAudioPlayRequestMatcher(kWebAudioPlayerHandle), _, _))
         .WillOnce(WithArgs<0, 3>(Invoke(&(*m_webAudioPlayerModuleMock), &WebAudioPlayerModuleMock::defaultReturn)));
 }
 
@@ -211,8 +213,7 @@ void WebAudioPlayerTestMethods::play()
 
 void WebAudioPlayerTestMethods::shouldPause()
 {
-    EXPECT_CALL(*m_webAudioPlayerModuleMock,
-                destroyWebAudioPlayer(_, webAudioPauseRequestMatcher(kWebAudioPlayerHandle), _, _))
+    EXPECT_CALL(*m_webAudioPlayerModuleMock, pause(_, webAudioPauseRequestMatcher(kWebAudioPlayerHandle), _, _))
         .WillOnce(WithArgs<0, 3>(Invoke(&(*m_webAudioPlayerModuleMock), &WebAudioPlayerModuleMock::defaultReturn)));
 }
 
@@ -223,8 +224,7 @@ void WebAudioPlayerTestMethods::pause()
 
 void WebAudioPlayerTestMethods::shouldEos()
 {
-    EXPECT_CALL(*m_webAudioPlayerModuleMock,
-                destroyWebAudioPlayer(_, webAudioSetEosRequestMatcher(kWebAudioPlayerHandle), _, _))
+    EXPECT_CALL(*m_webAudioPlayerModuleMock, setEos(_, webAudioSetEosRequestMatcher(kWebAudioPlayerHandle), _, _))
         .WillOnce(WithArgs<0, 3>(Invoke(&(*m_webAudioPlayerModuleMock), &WebAudioPlayerModuleMock::defaultReturn)));
 }
 

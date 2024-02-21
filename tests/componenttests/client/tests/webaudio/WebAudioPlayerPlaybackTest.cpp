@@ -60,52 +60,52 @@ public:
  *   Expect that getBufferAvailable is propagated to the server.
  *   Api call return the available frames and web audio shm info.
  *   Check available frames and web audio shm info.
- *   
+ *
  *  Step 3: Get the write buffer
  *   writeBuffer.
  *   Expect that writeBuffer is propagated to the server.
  *   Api call return the web audio session, number of frames and data.
  *   Check web audio session, number of frames and data.
- *  
+ *
  *  Step 4: Pause
  *   pause().
  *   Expect that pause is propagated to the server.
  *   Api call return the status.
  *   Check status is paused.
- * 
+ *
  *  Step 5: Notify state to PAUSE
  *   WebAudioPlayerStateChange to PAUSE
- * 
+ *
  *  Step 6: Play
  *   play().
  *   Expect that play is propagated to the server.
  *   Api call return the status.
  *   Check status is play.
- * 
+ *
  *  Step 7: Notify state to PLAY
  *   WebAudioPlayerStateChange to PLAY
- * 
+ *
  *  Step 8: Get the available buffer
  *   getBufferAvailable.
  *   Expect that getBufferAvailable is propagated to the server.
  *   Api call return the available frames and web audio shm info.
  *   Check available frames and web audio shm info.
- *   
+ *
  *  Step 9: Get the write buffer
  *   writeBuffer.
  *   Expect that writeBuffer is propagated to the server.
  *   Api call return the web audio session, number of frames and data.
  *   Check web audio session, number of frames and data.
- *  
+ *
  *  Step 10: Set end of stream
  *   setEos.
  *   Expect that setEos is propagated to the server.
  *   Api call returns a status of true.
  *   Check return status is true.
- *  
+ *
  *  Step 11: Notify state to EOS
  *   WebAudioPlayerStateChange to EOS
- * 
+ *
  *  Step 12: Destroy web audio player session
  *   Destroy instance of WebAudioPlayer.
  *   Expect that the session is destroyed on the server.
@@ -129,44 +129,44 @@ TEST_F(WebAudioPlayerPlaybackTest, webAudioPlayerPlayback)
     // Step 2: Get the available buffer
     WebAudioPlayerTestMethods::shouldGetBufferAvailable();
     WebAudioPlayerTestMethods::getBufferAvailable();
-    
+
     // Step 3: Get the write buffer
     WebAudioPlayerTestMethods::shouldWriteBuffer();
     WebAudioPlayerTestMethods::writeBuffer();
     WebAudioPlayerTestMethods::checkBuffer();
 
-    // // Step 4: Pause
-    // WebAudioPlayerTestMethods::shouldPause();
-    // WebAudioPlayerTestMethods::pause();
+    // Step 4: Pause
+    WebAudioPlayerTestMethods::shouldPause();
+    WebAudioPlayerTestMethods::pause();
 
-    // // Step 5: Notify state to PAUSE
-    // WebAudioPlayerTestMethods::shouldNotifyWebAudioPlayerStatePause();
-    // WebAudioPlayerTestMethods::sendNotifyWebAudioPlayerStatePause();
+    // Step 5: Notify state to PAUSE
+    WebAudioPlayerTestMethods::shouldNotifyWebAudioPlayerStatePause();
+    WebAudioPlayerTestMethods::sendNotifyWebAudioPlayerStatePause();
 
-    // // Step 6: Play
-    // WebAudioPlayerTestMethods::shouldPlay();
-    // WebAudioPlayerTestMethods::play();
+    // Step 6: Play
+    WebAudioPlayerTestMethods::shouldPlay();
+    WebAudioPlayerTestMethods::play();
 
-    // // Step 7: Notify state to PLAY
-    // WebAudioPlayerTestMethods::shouldNotifyWebAudioPlayerStatePlay();
-    // WebAudioPlayerTestMethods::sendNotifyWebAudioPlayerStatePlay();
+    // Step 7: Notify state to PLAY
+    WebAudioPlayerTestMethods::shouldNotifyWebAudioPlayerStatePlay();
+    WebAudioPlayerTestMethods::sendNotifyWebAudioPlayerStatePlay();
 
-    // // Step 8: Get the available buffer
-    // WebAudioPlayerTestMethods::shouldGetBufferAvailable();
-    // WebAudioPlayerTestMethods::getBufferAvailable();
-    
-    // // Step 9: Get the write buffer
-    // WebAudioPlayerTestMethods::shouldWriteBuffer();
-    // WebAudioPlayerTestMethods::writeBuffer();
-    // WebAudioPlayerTestMethods::checkBuffer();
+    // Step 8: Get the available buffer
+    WebAudioPlayerTestMethods::shouldGetBufferAvailable();
+    WebAudioPlayerTestMethods::getBufferAvailable();
 
-    // // Step 10: Set end of stream
-    // WebAudioPlayerTestMethods::shouldEos();
-    // WebAudioPlayerTestMethods::setEos();
+    // Step 9: Get the write buffer
+    WebAudioPlayerTestMethods::shouldWriteBuffer();
+    WebAudioPlayerTestMethods::writeBuffer();
+    WebAudioPlayerTestMethods::checkBuffer();
 
-    // // Step 11: Notify state to EOS
-    // WebAudioPlayerTestMethods::shouldNotifyWebAudioPlayerStateEos ();
-    // WebAudioPlayerTestMethods::sendNotifyWebAudioPlayerStateEos();
+    // Step 10: Set end of stream
+    WebAudioPlayerTestMethods::shouldEos();
+    WebAudioPlayerTestMethods::setEos();
+
+    // Step 11: Notify state to EOS
+    WebAudioPlayerTestMethods::shouldNotifyWebAudioPlayerStateEos();
+    WebAudioPlayerTestMethods::sendNotifyWebAudioPlayerStateEos();
 
     // Step 12: Destroy web audio player session
     WebAudioPlayerTestMethods::shouldDestroyWebAudioPlayer();
