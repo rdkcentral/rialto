@@ -194,6 +194,17 @@ public:
     MOCK_METHOD(GstStructure *, gstCapsGetStructure, (const GstCaps *caps, guint index), (const, override));
     MOCK_METHOD(const gchar *, gstStructureGetName, (const GstStructure *structure), (const, override));
     MOCK_METHOD(gboolean, gstObjectSetName, (GstObject * object, const gchar *name), (const, override));
+    MOCK_METHOD(GstQuery *, gstQueryNewSegment, (GstFormat), (const, override));
+    MOCK_METHOD(gboolean, gstElementQuery, (GstElement *, GstQuery *), (const, override));
+    MOCK_METHOD(void, gstQueryParseSegment,
+                (GstQuery * query, gdouble *rate, GstFormat *format, gint64 *startValue, gint64 *stopValue),
+                (const, override));
+    MOCK_METHOD(void, gstQueryUnref, (GstQuery * query), (const, override));
+    MOCK_METHOD(gboolean, gstSegmentDoSeek,
+                (GstSegment *, gdouble, GstFormat, GstSeekFlags, GstSeekType, guint64, GstSeekType, guint64, gboolean *),
+                (const, override));
+    MOCK_METHOD(gboolean, gstBaseSrcNewSeamlessSegment, (GstBaseSrc * src, gint64 start, gint64 stop, gint64 time),
+                (const, override));
 
     GstCaps *gstCapsNewSimple(const char *media_type, const char *fieldname, ...) const override
     {

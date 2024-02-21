@@ -82,12 +82,49 @@ void Flush::execute() const
     }
     m_gstPlayerClient->invalidateActiveRequests(m_type);
 
+    // Query current segment, if we don't reset time
+    std::int64_t position{0};
+    double rate{0.0};
+    GstFormat format{GST_FORMAT_UNDEFINED};
+    gint64 start{0};
+    gint64 stop{0};
+    if (!m_resetTime)
+    {
+        m_gstWrapper->gstElementQueryPosition(m_context.pipeline, GST_FORMAT_TIME, &position);
+        GstQuery *query{m_gstWrapper->gstQueryNewSegment(GST_FORMAT_TIME)};
+        if (m_gstWrapper->gstElementQuery(m_context.pipeline, query))
+        {
+            m_gstWrapper->gstQueryParseSegment(query, &rate, &format, &start, &stop);
+        }
+        m_gstWrapper->gstQueryUnref(query);
+    }
+
     // Flush source
     GstEvent *flushStart = m_gstWrapper->gstEventNewFlushStart();
     if (!m_gstWrapper->gstElementSendEvent(source, flushStart))
     {
         RIALTO_SERVER_LOG_WARN("failed to send flush-start event");
     }
+
+    // Update segment if we don't reset time
+    if (!m_resetTime)
+    {
+        GstSegment *segment{m_gstWrapper->gstSegmentNew()};
+        m_gstWrapper->gstSegmentInit(segment, GST_FORMAT_TIME);
+        m_gstWrapper->gstSegmentDoSeek(segment, rate, GST_FORMAT_TIME, GST_SEEK_FLAG_NONE, GST_SEEK_TYPE_SET, position,
+                                       GST_SEEK_TYPE_SET, stop, nullptr);
+
+        RIALTO_SERVER_LOG_INFO("Set new seamless segment: [%" GST_TIME_FORMAT ", %" GST_TIME_FORMAT "], rate: %f \n",
+                               GST_TIME_ARGS(segment->start), GST_TIME_ARGS(segment->stop), segment->rate);
+
+        if (!m_gstWrapper->gstBaseSrcNewSeamlessSegment(GST_BASE_SRC(source), segment->start, segment->stop,
+                                                        segment->start))
+        {
+            RIALTO_SERVER_LOG_WARN("Failed to set seamless segment event");
+        }
+        m_gstWrapper->gstSegmentFree(segment);
+    }
+
     GstEvent *flushStop = m_gstWrapper->gstEventNewFlushStop(m_resetTime);
     if (!m_gstWrapper->gstElementSendEvent(source, flushStop))
     {

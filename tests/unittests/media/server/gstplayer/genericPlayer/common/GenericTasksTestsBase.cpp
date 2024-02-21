@@ -2074,7 +2074,7 @@ void GenericTasksTestsBase::shouldFlushAudioSrcSuccess()
     EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewFlushStart()).WillOnce(Return(&testContext->m_event));
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementSendEvent(&testContext->m_appSrcAudio, &testContext->m_event))
         .WillOnce(Return(TRUE));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewFlushStop(FALSE)).WillOnce(Return(&testContext->m_event2));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewFlushStop(kResetTime)).WillOnce(Return(&testContext->m_event2));
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementSendEvent(&testContext->m_appSrcAudio, &testContext->m_event2))
         .WillOnce(Return(TRUE));
 }
@@ -2084,7 +2084,7 @@ void GenericTasksTestsBase::shouldFlushAudioSrcFailure()
     EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewFlushStart()).WillOnce(Return(&testContext->m_event));
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementSendEvent(&testContext->m_appSrcAudio, &testContext->m_event))
         .WillOnce(Return(FALSE));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewFlushStop(FALSE)).WillOnce(Return(&testContext->m_event2));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewFlushStop(kResetTime)).WillOnce(Return(&testContext->m_event2));
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementSendEvent(&testContext->m_appSrcAudio, &testContext->m_event2))
         .WillOnce(Return(FALSE));
 }
@@ -2119,21 +2119,64 @@ void GenericTasksTestsBase::triggerReadShmDataAndAttachSamplesVideo()
 
 void GenericTasksTestsBase::shouldFlushAudio()
 {
+    EXPECT_CALL(*testContext->m_gstWrapper, gstElementQueryPosition(_, GST_FORMAT_TIME, _))
+        .WillOnce(Invoke(
+            [this](GstElement *element, GstFormat format, gint64 *cur)
+            {
+                *cur = kPosition;
+                return TRUE;
+            }));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstQueryNewSegment(GST_FORMAT_TIME)).WillOnce(Return(&testContext->m_query));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstElementQuery(&testContext->m_pipeline, &testContext->m_query))
+        .WillOnce(Return(true));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstQueryParseSegment(&testContext->m_query, _, _, _, _));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstQueryUnref(&testContext->m_query));
     EXPECT_CALL(*testContext->m_gstWrapper, gstBufferUnref(&testContext->m_audioBuffer));
     EXPECT_CALL(testContext->m_gstPlayerClient, invalidateActiveRequests(firebolt::rialto::MediaSourceType::AUDIO));
     EXPECT_CALL(testContext->m_gstPlayerClient, notifySourceFlushed(firebolt::rialto::MediaSourceType::AUDIO));
     EXPECT_CALL(testContext->m_gstPlayerClient, notifyNeedMediaData(firebolt::rialto::MediaSourceType::AUDIO))
         .WillOnce(Return(true));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstSegmentNew()).WillOnce(Return(&testContext->m_segment));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstSegmentInit(&testContext->m_segment, GST_FORMAT_TIME));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstSegmentDoSeek(&testContext->m_segment, _, GST_FORMAT_TIME, GST_SEEK_FLAG_NONE, GST_SEEK_TYPE_SET,
+                                 kPosition, GST_SEEK_TYPE_SET, _, nullptr))
+        .WillOnce(Return(true));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstBaseSrcNewSeamlessSegment(GST_BASE_SRC(&testContext->m_appSrcAudio), _, _, _))
+        .WillOnce(Return(false));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstSegmentFree(&testContext->m_segment));
 }
 
 void GenericTasksTestsBase::shouldFlushVideo()
 {
+    EXPECT_CALL(*testContext->m_gstWrapper, gstElementQueryPosition(_, GST_FORMAT_TIME, _))
+        .WillOnce(Invoke(
+            [this](GstElement *element, GstFormat format, gint64 *cur)
+            {
+                *cur = kPosition;
+                return TRUE;
+            }));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstQueryNewSegment(GST_FORMAT_TIME)).WillOnce(Return(&testContext->m_query));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstElementQuery(&testContext->m_pipeline, &testContext->m_query))
+        .WillOnce(Return(true));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstQueryParseSegment(&testContext->m_query, _, _, _, _));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstQueryUnref(&testContext->m_query));
     EXPECT_CALL(*testContext->m_gstWrapper, gstBufferUnref(&testContext->m_videoBuffer));
     EXPECT_CALL(testContext->m_gstPlayerClient, invalidateActiveRequests(firebolt::rialto::MediaSourceType::VIDEO));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewFlushStart()).WillOnce(Return(&testContext->m_event));
     EXPECT_CALL(testContext->m_gstPlayerClient, notifySourceFlushed(firebolt::rialto::MediaSourceType::VIDEO));
     EXPECT_CALL(testContext->m_gstPlayerClient, notifyNeedMediaData(firebolt::rialto::MediaSourceType::VIDEO))
         .WillOnce(Return(true));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstSegmentNew()).WillOnce(Return(&testContext->m_segment));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstSegmentInit(&testContext->m_segment, GST_FORMAT_TIME));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstSegmentDoSeek(&testContext->m_segment, _, GST_FORMAT_TIME, GST_SEEK_FLAG_NONE, GST_SEEK_TYPE_SET,
+                                 kPosition, GST_SEEK_TYPE_SET, _, nullptr))
+        .WillOnce(Return(true));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstBaseSrcNewSeamlessSegment(GST_BASE_SRC(&testContext->m_appSrcVideo), _, _, _))
+        .WillOnce(Return(true));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstSegmentFree(&testContext->m_segment));
 }
 
 void GenericTasksTestsBase::triggerFlush(firebolt::rialto::MediaSourceType sourceType)
@@ -2169,9 +2212,10 @@ void GenericTasksTestsBase::checkVideoFlushed()
 
 void GenericTasksTestsBase::shouldFlushVideoSrcSuccess()
 {
+    EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewFlushStart()).WillOnce(Return(&testContext->m_event));
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementSendEvent(&testContext->m_appSrcVideo, &testContext->m_event))
         .WillOnce(Return(TRUE));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewFlushStop(FALSE)).WillOnce(Return(&testContext->m_event2));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewFlushStop(kResetTime)).WillOnce(Return(&testContext->m_event2));
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementSendEvent(&testContext->m_appSrcVideo, &testContext->m_event2))
         .WillOnce(Return(TRUE));
 }
