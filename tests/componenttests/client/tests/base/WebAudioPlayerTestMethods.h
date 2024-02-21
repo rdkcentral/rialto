@@ -43,7 +43,7 @@ namespace firebolt::rialto::client::ct
 class WebAudioPlayerTestMethods
 {
 public:
-    WebAudioPlayerTestMethods();
+    explicit WebAudioPlayerTestMethods(const std::vector<firebolt::rialto::WebAudioShmInfo> &webAudioShmInfo);
     virtual ~WebAudioPlayerTestMethods();
 
 protected:
@@ -55,26 +55,53 @@ protected:
     std::shared_ptr<IWebAudioPlayerFactory> m_webAudioPlayerFactory;
     std::shared_ptr<IWebAudioPlayer> m_webAudioPlayer;
     std::shared_ptr<WebAudioConfig> m_config = std::make_shared<WebAudioConfig>();
+    uint32_t m_bytesPerFrame;
+    std::shared_ptr<WebAudioShmInfo> m_webAudioShmInfo = std::make_shared<WebAudioShmInfo>();
+    std::shared_ptr<WebAudioShmInfo> shmInfo = std::make_shared<WebAudioShmInfo>();
 
     // Test methods
     void sendNotifyWebAudioPlayerStateIdle();
+    void sendNotifyWebAudioPlayerStatePause();
+    void sendNotifyWebAudioPlayerStatePlay();
+    void sendNotifyWebAudioPlayerStateEos();
 
     // Expect methods
     void shouldCreateWebAudioPlayer();
     void shouldDestroyWebAudioPlayer();
     void shouldNotifyWebAudioPlayerStateIdle();
+    void shouldNotifyWebAudioPlayerStatePause();
+    void shouldNotifyWebAudioPlayerStatePlay();
+    void shouldNotifyWebAudioPlayerStateEos();
     void shouldGetDeviceInfo();
     void checkWebAudioPlayerClient();
+    void shouldPlay();
+    void shouldPause();
+    void shouldEos();
+    void shouldGetBufferAvailable();
+    void shouldWriteBuffer();
+    void checkBuffer();
 
     // Api methods
     void createWebAudioPlayer();
     void destroyWebAudioPlayer();
     void getDeviceInfo();
+    void play();
+    void pause();
+    void setEos();
+    void getBufferAvailable();
+    void writeBuffer();
 
     // Component test helpers
     virtual std::shared_ptr<ServerStub> &getServerStub() = 0;
     virtual void waitEvent() = 0;
     virtual void notifyEvent() = 0;
+    virtual void *getShmAddress() = 0;
+
+private:
+    // Non const variables
+    std::vector<std::shared_ptr<WebAudioShmInfo>> m_locationToWriteWebAudio;
+
+    void resetWriteLocation(uint32_t partitionId);
 };
 } // namespace firebolt::rialto::client::ct
 
