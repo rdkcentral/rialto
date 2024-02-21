@@ -542,7 +542,7 @@ public:
     gboolean gstSegmentDoSeek(GstSegment *segment, gdouble rate, GstFormat format, GstSeekFlags flags,
                               GstSeekType startType, guint64 start, GstSeekType stopType, guint64 stop,
                               gboolean *update) const override{
-        return gst_segment_do_seek(segment, rate, format, flags, startType, start, stopType, stop, update)}
+        return gst_segment_do_seek(segment, rate, format, flags, startType, start, stopType, stop, update); }
 
     gboolean gstBaseSrcNewSeamlessSegment(GstBaseSrc *src, gint64 start, gint64 stop, gint64 time) const override
     {
