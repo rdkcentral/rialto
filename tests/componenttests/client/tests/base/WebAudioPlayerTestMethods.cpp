@@ -295,9 +295,6 @@ void WebAudioPlayerTestMethods::shouldGetBufferDelay()
                 getBufferDelay(_, webAudioGetBufferDelayRequestMatcher(kWebAudioPlayerHandle), _, _))
         .WillOnce(DoAll(SetArgPointee<2>(m_webAudioPlayerModuleMock->webAudioGetBufferDelayResponse(kBufferDelay)),
                         WithArgs<0, 3>(Invoke(&(*m_webAudioPlayerModuleMock), &WebAudioPlayerModuleMock::defaultReturn))));
-    // EXPECT_CALL(*m_webAudioPlayerModuleMock,
-    //             destroyWebAudioPlayer(_, webAudioGetBufferDelayRequestMatcher(kWebAudioPlayerHandle), _, _))
-    //     .WillOnce(WithArgs<0, 3>(Invoke(&(*m_webAudioPlayerModuleMock), &WebAudioPlayerModuleMock::defaultReturn)));
 }
 
 void WebAudioPlayerTestMethods::getBufferDelay()
