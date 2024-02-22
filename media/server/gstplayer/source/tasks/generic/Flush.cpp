@@ -40,11 +40,6 @@ Flush::~Flush()
 void Flush::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing Flush");
-    if (MediaSourceType::UNKNOWN == m_type)
-    {
-        RIALTO_SERVER_LOG_WARN("Flush failed: Media source type not supported.");
-        return;
-    }
 
     // Get source first
     GstElement *source{nullptr};
@@ -60,7 +55,9 @@ void Flush::execute() const
     }
 
     // Clear/invalidate old NeedDatas
-    if (MediaSourceType::AUDIO == m_type)
+    switch (m_type)
+    {
+    case MediaSourceType::AUDIO:
     {
         m_context.audioNeedData = false;
         m_context.audioNeedDataPending = false;
@@ -69,8 +66,9 @@ void Flush::execute() const
             m_gstWrapper->gstBufferUnref(buffer);
         }
         m_context.audioBuffers.clear();
+        break;
     }
-    else // MediaSourceType::VIDEO
+    case MediaSourceType::VIDEO:
     {
         m_context.videoNeedData = false;
         m_context.videoNeedDataPending = false;
@@ -79,17 +77,25 @@ void Flush::execute() const
             m_gstWrapper->gstBufferUnref(buffer);
         }
         m_context.videoBuffers.clear();
+        break;
+    }
+    case MediaSourceType::UNKNOWN:
+    default:
+    {
+        RIALTO_SERVER_LOG_WARN("Flush failed: Media source type not supported.");
+        return;
+    }
     }
     m_gstPlayerClient->invalidateActiveRequests(m_type);
 
     // Query current segment, if we don't reset time
     std::int64_t position{0};
-    double rate{0.0};
-    GstFormat format{GST_FORMAT_UNDEFINED};
-    gint64 start{0};
-    gint64 stop{0};
+    double rate{1.0};
+    gint64 stop{-1};
     if (!m_resetTime)
     {
+        GstFormat format{GST_FORMAT_UNDEFINED};
+        gint64 start{0};
         m_gstWrapper->gstElementQueryPosition(m_context.pipeline, GST_FORMAT_TIME, &position);
         GstQuery *query{m_gstWrapper->gstQueryNewSegment(GST_FORMAT_TIME)};
         if (m_gstWrapper->gstElementQuery(m_context.pipeline, query))
