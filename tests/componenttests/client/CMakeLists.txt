@@ -63,7 +63,10 @@ add_gtests (
         # Web Audio Component tests
         tests/webaudio/CreateWebAudioPlayerTest.cpp
         tests/webaudio/WebAudioPlayerPlaybackTest.cpp
-        
+        tests/webaudio/GetBufferDelayTest.cpp
+        tests/webaudio/CreateWebAudioPlayerFailuresTest.cpp
+        tests/webaudio/PlayPauseFailuresTest.cpp
+
         # EME Component tests
         tests/eme/SessionReadyForDecryptionTest.cpp
         tests/eme/AudioVideoPlaybackEncryptedSegmentsTest.cpp

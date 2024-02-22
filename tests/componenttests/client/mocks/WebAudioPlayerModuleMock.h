@@ -58,6 +58,10 @@ public:
                 (::google::protobuf::RpcController * controller,
                  const ::firebolt::rialto::WebAudioWriteBufferRequest *request,
                  ::firebolt::rialto::WebAudioWriteBufferResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, getBufferDelay,
+                (::google::protobuf::RpcController * controller,
+                 const ::firebolt::rialto::WebAudioGetBufferDelayRequest *request,
+                 ::firebolt::rialto::WebAudioGetBufferDelayResponse *response, ::google::protobuf::Closure *done));
 
     void defaultReturn(::google::protobuf::RpcController *controller, ::google::protobuf::Closure *done)
     {
@@ -70,16 +74,16 @@ public:
         done->Run();
     }
 
-    ::firebolt::rialto::CreateWebAudioPlayerResponse createWebAudioPlayerResponse(const int &value)
+    ::firebolt::rialto::CreateWebAudioPlayerResponse createWebAudioPlayerResponse(const int value)
     {
         firebolt::rialto::CreateWebAudioPlayerResponse response;
         response.set_web_audio_player_handle(value);
         return response;
     }
 
-    ::firebolt::rialto::WebAudioGetDeviceInfoResponse webAudioGetDeviceInfoResponse(const uint32_t &preferredFrames,
-                                                                                    const uint32_t &maximumFrames,
-                                                                                    const bool &supportDeferredPlay)
+    ::firebolt::rialto::WebAudioGetDeviceInfoResponse webAudioGetDeviceInfoResponse(const uint32_t preferredFrames,
+                                                                                    const uint32_t maximumFrames,
+                                                                                    const bool supportDeferredPlay)
     {
         firebolt::rialto::WebAudioGetDeviceInfoResponse response;
         response.set_preferred_frames(preferredFrames);
@@ -89,7 +93,7 @@ public:
     }
 
     ::firebolt::rialto::WebAudioGetBufferAvailableResponse
-    webAudioGetBufferAvailableResponse(const uint32_t &availableFrames,
+    webAudioGetBufferAvailableResponse(const uint32_t availableFrames,
                                        const std::shared_ptr<firebolt::rialto::WebAudioShmInfo> &webAudioShmInfo)
     {
         firebolt::rialto::WebAudioGetBufferAvailableResponse response;
@@ -98,6 +102,13 @@ public:
         response.mutable_shm_info()->set_length_main(webAudioShmInfo->lengthMain);
         response.mutable_shm_info()->set_offset_wrap(webAudioShmInfo->offsetWrap);
         response.mutable_shm_info()->set_length_wrap(webAudioShmInfo->lengthWrap);
+        return response;
+    }
+
+    ::firebolt::rialto::WebAudioGetBufferDelayResponse webAudioGetBufferDelayResponse(const uint32_t delayFrames)
+    {
+        firebolt::rialto::WebAudioGetBufferDelayResponse response;
+        response.set_delay_frames(delayFrames);
         return response;
     }
 
