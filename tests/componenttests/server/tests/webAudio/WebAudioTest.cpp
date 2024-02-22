@@ -23,10 +23,8 @@
 #include "ConfigureAction.h"
 #include "MessageBuilders.h"
 #include "RialtoServerComponentTest.h"
+#include "SharedMemoryBuffer.h"
 #include "WebAudioTestCommon.h"
-
-#include <iostream>
-using namespace std; // todo remove
 
 using testing::_;
 using testing::AtLeast;
@@ -114,15 +112,6 @@ void WebAudioTest::willCreateWebAudioPlayer()
 {
     constexpr int kGetBusNumberOfCalls{2};
     constexpr uint64_t kChannelMask{5};
-
-#if 0
-    EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillRepeatedly(Invoke(
-            [&](GstBus *bus, GstClockTime timeout, GstMessageType types) -> GstMessage*
-            {
-                abort();
-                Return(&m_message);
-            }));
-#endif
 
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(StrEq("rialtosrc"))).WillOnce(Return(nullptr));
 
@@ -268,18 +257,22 @@ void WebAudioTest::webAudioSetEos()
 void WebAudioTest::webAudioGetBufferAvailable()
 {
     auto request = createWebAudioGetBufferAvailableRequest(m_webAudioPlayerHandle);
+    constexpr uint32_t kExpectedMinBytes{1024 * 1024}; // one MB
+    constexpr uint32_t kExpectedMinFrames{640};
+    constexpr uint32_t kExpectedMinLengthMain{2560};
+
     ConfigureAction<WebAudioGetBufferAvailable>(m_clientStub)
         .send(request)
         .expectSuccess()
         .matchResponse(
             [&](const auto &resp)
             {
-                cout << "@@@ " << resp.available_frames() << endl;
                 auto x = resp.shm_info();
-                cout << "@@@ " << x.offset_main() << endl;
-                cout << "@@@ " << x.length_main() << endl;
-                cout << "@@@ " << x.offset_wrap() << endl;
-                cout << "@@@ " << x.length_wrap() << endl;
+                EXPECT_LE(kExpectedMinBytes, x.offset_main());
+                EXPECT_LE(kExpectedMinBytes, x.offset_wrap());
+                EXPECT_LE(kExpectedMinFrames, resp.available_frames());
+                EXPECT_LE(kExpectedMinLengthMain, x.length_main());
+                EXPECT_EQ(0, x.length_wrap());
             });
 }
 
@@ -323,9 +316,14 @@ void WebAudioTest::webAudioGetDeviceInfo()
         .matchResponse(
             [&](const auto &resp)
             {
-                cout << "@@@ 1 " << resp.preferred_frames() << endl;
-                cout << "@@@ 2 " << resp.maximum_frames() << endl;
-                cout << "@@@ 3 " << resp.support_deferred_play() << endl;
+                // These values are (currently) returned from
+                // WebAudioPlayerServerInternal::getDeviceInfo
+                constexpr int kMaximumFramesMinValue{2560};
+                constexpr int kPreferredFramesMinValue{640};
+
+                EXPECT_GE(resp.maximum_frames(), kMaximumFramesMinValue);
+                EXPECT_GE(resp.preferred_frames(), kPreferredFramesMinValue);
+                EXPECT_TRUE(resp.support_deferred_play());
             });
 }
 

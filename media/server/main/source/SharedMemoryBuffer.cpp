@@ -17,16 +17,18 @@
  * limitations under the License.
  */
 
-#include "SharedMemoryBuffer.h"
-#include "RialtoServerLogging.h"
 #include <algorithm>
 #include <cstring>
-#include <fcntl.h>
 #include <numeric>
 #include <stdexcept>
+
+#include <fcntl.h>
 #include <sys/mman.h>
 #include <syscall.h>
 #include <unistd.h>
+
+#include "RialtoServerLogging.h"
+#include "SharedMemoryBuffer.h"
 
 #if !defined(SYS_memfd_create)
 #if defined(__NR_memfd_create)
