@@ -36,7 +36,7 @@ public:
  *  Test the playback of web audio player.
  *
  * Sequence Diagrams:
- *  Initialisation & Termination -> https://wiki.rdkcentral.com/display/ASP/Rialto+Web+Audio
+ *  GetBufferAvailable, WriteBuffer, Pause, Play, SetEOS -> https://wiki.rdkcentral.com/display/ASP/Rialto+Web+Audio
  *
  * Test Setup:
  *  Language: C++
@@ -116,6 +116,8 @@ public:
  *
  * Expected Results:
  *  To create a web audio player gracefully.
+ *  To get the available buffer and write to the buffer correctly.
+ *  To pause, play and set end of stream successfully.
  *
  * Code:
  */

@@ -34,6 +34,7 @@ constexpr uint32_t kPreferredFrames{1};
 constexpr uint32_t kMaximumFrames{1};
 constexpr bool kSupportDeferredPlay{true};
 constexpr uint32_t kPartition{0};
+constexpr uint32_t kBufferDelay{12};
 } // namespace
 
 namespace firebolt::rialto::client::ct
@@ -117,6 +118,23 @@ void WebAudioPlayerTestMethods::createWebAudioPlayer()
     EXPECT_NE(m_webAudioPlayer, nullptr);
 }
 
+void WebAudioPlayerTestMethods::shouldNotCreateWebAudioPlayer()
+{
+    EXPECT_CALL(*m_webAudioPlayerModuleMock,
+                createWebAudioPlayer(_, createWebAudioPlayerRequestMatcher(kAudioMimeType, kPriority, m_config), _, _))
+        .WillOnce(
+            DoAll(SetArgPointee<2>(m_webAudioPlayerModuleMock->createWebAudioPlayerResponse(kWebAudioPlayerHandle)),
+                  (WithArgs<0, 3>(Invoke(&(*m_webAudioPlayerModuleMock), &WebAudioPlayerModuleMock::failureReturn)))));
+}
+
+void WebAudioPlayerTestMethods::doesNotCreateWebAudioPlayer()
+{
+    m_webAudioPlayerFactory = firebolt::rialto::IWebAudioPlayerFactory::createFactory();
+    EXPECT_NO_THROW(m_webAudioPlayer = m_webAudioPlayerFactory->createWebAudioPlayer(m_webAudioPlayerClientMock,
+                                                                                     kAudioMimeType, kPriority, m_config));
+    EXPECT_EQ(m_webAudioPlayer, nullptr);
+}
+
 void WebAudioPlayerTestMethods::checkWebAudioPlayerClient()
 {
     EXPECT_EQ(m_webAudioPlayer->getClient().lock(), m_webAudioPlayerClientMock);
@@ -139,6 +157,7 @@ void WebAudioPlayerTestMethods::shouldNotifyWebAudioPlayerStateIdle()
     EXPECT_CALL(*m_webAudioPlayerClientMock, notifyState(WebAudioPlayerState::IDLE))
         .WillOnce(Invoke(this, &WebAudioPlayerTestMethods::notifyEvent));
 }
+
 void WebAudioPlayerTestMethods::sendNotifyWebAudioPlayerStateIdle()
 {
     getServerStub()->notifyWebAudioPlayerStateEvent(kWebAudioPlayerHandle, WebAudioPlayerState::IDLE);
@@ -150,6 +169,7 @@ void WebAudioPlayerTestMethods::shouldNotifyWebAudioPlayerStatePause()
     EXPECT_CALL(*m_webAudioPlayerClientMock, notifyState(WebAudioPlayerState::PAUSED))
         .WillOnce(Invoke(this, &WebAudioPlayerTestMethods::notifyEvent));
 }
+
 void WebAudioPlayerTestMethods::sendNotifyWebAudioPlayerStatePause()
 {
     getServerStub()->notifyWebAudioPlayerStateEvent(kWebAudioPlayerHandle, WebAudioPlayerState::PAUSED);
@@ -161,6 +181,7 @@ void WebAudioPlayerTestMethods::shouldNotifyWebAudioPlayerStatePlay()
     EXPECT_CALL(*m_webAudioPlayerClientMock, notifyState(WebAudioPlayerState::PLAYING))
         .WillOnce(Invoke(this, &WebAudioPlayerTestMethods::notifyEvent));
 }
+
 void WebAudioPlayerTestMethods::sendNotifyWebAudioPlayerStatePlay()
 {
     getServerStub()->notifyWebAudioPlayerStateEvent(kWebAudioPlayerHandle, WebAudioPlayerState::PLAYING);
@@ -172,9 +193,22 @@ void WebAudioPlayerTestMethods::shouldNotifyWebAudioPlayerStateEos()
     EXPECT_CALL(*m_webAudioPlayerClientMock, notifyState(WebAudioPlayerState::END_OF_STREAM))
         .WillOnce(Invoke(this, &WebAudioPlayerTestMethods::notifyEvent));
 }
+
 void WebAudioPlayerTestMethods::sendNotifyWebAudioPlayerStateEos()
 {
     getServerStub()->notifyWebAudioPlayerStateEvent(kWebAudioPlayerHandle, WebAudioPlayerState::END_OF_STREAM);
+    waitEvent();
+}
+
+void WebAudioPlayerTestMethods::shouldNotifyWebAudioPlayerStateFailure()
+{
+    EXPECT_CALL(*m_webAudioPlayerClientMock, notifyState(WebAudioPlayerState::FAILURE))
+        .WillOnce(Invoke(this, &WebAudioPlayerTestMethods::notifyEvent));
+}
+
+void WebAudioPlayerTestMethods::sendNotifyWebAudioPlayerStateFailure()
+{
+    getServerStub()->notifyWebAudioPlayerStateEvent(kWebAudioPlayerHandle, WebAudioPlayerState::FAILURE);
     waitEvent();
 }
 
@@ -211,6 +245,17 @@ void WebAudioPlayerTestMethods::play()
     EXPECT_EQ(m_webAudioPlayer->play(), true);
 }
 
+void WebAudioPlayerTestMethods::shouldNotPlay()
+{
+    EXPECT_CALL(*m_webAudioPlayerModuleMock, play(_, webAudioPlayRequestMatcher(kWebAudioPlayerHandle), _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_webAudioPlayerModuleMock), &WebAudioPlayerModuleMock::failureReturn)));
+}
+
+void WebAudioPlayerTestMethods::doesNotPlay()
+{
+    EXPECT_EQ(m_webAudioPlayer->play(), false);
+}
+
 void WebAudioPlayerTestMethods::shouldPause()
 {
     EXPECT_CALL(*m_webAudioPlayerModuleMock, pause(_, webAudioPauseRequestMatcher(kWebAudioPlayerHandle), _, _))
@@ -220,6 +265,17 @@ void WebAudioPlayerTestMethods::shouldPause()
 void WebAudioPlayerTestMethods::pause()
 {
     EXPECT_EQ(m_webAudioPlayer->pause(), true);
+}
+
+void WebAudioPlayerTestMethods::shouldNotPause()
+{
+    EXPECT_CALL(*m_webAudioPlayerModuleMock, pause(_, webAudioPauseRequestMatcher(kWebAudioPlayerHandle), _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_webAudioPlayerModuleMock), &WebAudioPlayerModuleMock::failureReturn)));
+}
+
+void WebAudioPlayerTestMethods::doesNotPause()
+{
+    EXPECT_EQ(m_webAudioPlayer->pause(), false);
 }
 
 void WebAudioPlayerTestMethods::shouldEos()
@@ -232,6 +288,25 @@ void WebAudioPlayerTestMethods::setEos()
 {
     EXPECT_EQ(m_webAudioPlayer->setEos(), true);
 }
+
+void WebAudioPlayerTestMethods::shouldGetBufferDelay()
+{
+    EXPECT_CALL(*m_webAudioPlayerModuleMock,
+                getBufferDelay(_, webAudioGetBufferDelayRequestMatcher(kWebAudioPlayerHandle), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_webAudioPlayerModuleMock->webAudioGetBufferDelayResponse(kBufferDelay)),
+                        WithArgs<0, 3>(Invoke(&(*m_webAudioPlayerModuleMock), &WebAudioPlayerModuleMock::defaultReturn))));
+    // EXPECT_CALL(*m_webAudioPlayerModuleMock,
+    //             destroyWebAudioPlayer(_, webAudioGetBufferDelayRequestMatcher(kWebAudioPlayerHandle), _, _))
+    //     .WillOnce(WithArgs<0, 3>(Invoke(&(*m_webAudioPlayerModuleMock), &WebAudioPlayerModuleMock::defaultReturn)));
+}
+
+void WebAudioPlayerTestMethods::getBufferDelay()
+{
+    uint32_t bufferDelay{51};
+    EXPECT_EQ(m_webAudioPlayer->getBufferDelay(bufferDelay), true);
+    EXPECT_EQ(kBufferDelay, bufferDelay);
+}
+
 WebAudioPlayerTestMethods::~WebAudioPlayerTestMethods() {}
 
 } // namespace firebolt::rialto::client::ct

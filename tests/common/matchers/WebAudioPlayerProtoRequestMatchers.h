@@ -88,4 +88,11 @@ MATCHER_P2(webAudioWriteBufferRequestMatcher, webAudioPlayerHandle, numberOfFram
     return (kRequest->web_audio_player_handle() == webAudioPlayerHandle && kRequest->number_of_frames() == numberOfFrames);
 }
 
+MATCHER_P(webAudioGetBufferDelayRequestMatcher, webAudioPlayerHandle, "")
+{
+    const ::firebolt::rialto::WebAudioGetBufferDelayRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::WebAudioGetBufferDelayRequest *>(arg);
+    return (kRequest->web_audio_player_handle() == webAudioPlayerHandle);
+}
+
 #endif // WEB_AUDIO_PLAYER_PROTO_REQUEST_MATCHERS_H_

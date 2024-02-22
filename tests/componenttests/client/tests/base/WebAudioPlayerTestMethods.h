@@ -64,22 +64,31 @@ protected:
     void sendNotifyWebAudioPlayerStatePause();
     void sendNotifyWebAudioPlayerStatePlay();
     void sendNotifyWebAudioPlayerStateEos();
+    void sendNotifyWebAudioPlayerStateFailure();
 
     // Expect methods
     void shouldCreateWebAudioPlayer();
+    void shouldNotCreateWebAudioPlayer();
+    void doesNotCreateWebAudioPlayer();
     void shouldDestroyWebAudioPlayer();
     void shouldNotifyWebAudioPlayerStateIdle();
     void shouldNotifyWebAudioPlayerStatePause();
     void shouldNotifyWebAudioPlayerStatePlay();
     void shouldNotifyWebAudioPlayerStateEos();
+    void shouldNotifyWebAudioPlayerStateFailure();
     void shouldGetDeviceInfo();
     void checkWebAudioPlayerClient();
     void shouldPlay();
+    void shouldNotPlay();
+    void doesNotPlay();
     void shouldPause();
+    void shouldNotPause();
+    void doesNotPause();
     void shouldEos();
     void shouldGetBufferAvailable();
     void shouldWriteBuffer();
     void checkBuffer();
+    void shouldGetBufferDelay();
 
     // Api methods
     void createWebAudioPlayer();
@@ -90,6 +99,7 @@ protected:
     void setEos();
     void getBufferAvailable();
     void writeBuffer();
+    void getBufferDelay();
 
     // Component test helpers
     virtual std::shared_ptr<ServerStub> &getServerStub() = 0;

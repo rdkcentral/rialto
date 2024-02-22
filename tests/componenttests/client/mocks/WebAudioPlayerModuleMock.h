@@ -58,6 +58,10 @@ public:
                 (::google::protobuf::RpcController * controller,
                  const ::firebolt::rialto::WebAudioWriteBufferRequest *request,
                  ::firebolt::rialto::WebAudioWriteBufferResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, getBufferDelay,
+                (::google::protobuf::RpcController * controller,
+                 const ::firebolt::rialto::WebAudioGetBufferDelayRequest *request,
+                 ::firebolt::rialto::WebAudioGetBufferDelayResponse *response, ::google::protobuf::Closure *done));
 
     void defaultReturn(::google::protobuf::RpcController *controller, ::google::protobuf::Closure *done)
     {
@@ -98,6 +102,13 @@ public:
         response.mutable_shm_info()->set_length_main(webAudioShmInfo->lengthMain);
         response.mutable_shm_info()->set_offset_wrap(webAudioShmInfo->offsetWrap);
         response.mutable_shm_info()->set_length_wrap(webAudioShmInfo->lengthWrap);
+        return response;
+    }
+
+    ::firebolt::rialto::WebAudioGetBufferDelayResponse webAudioGetBufferDelayResponse(const uint32_t &delayFrames)
+    {
+        firebolt::rialto::WebAudioGetBufferDelayResponse response;
+        response.set_delay_frames(delayFrames);
         return response;
     }
 
