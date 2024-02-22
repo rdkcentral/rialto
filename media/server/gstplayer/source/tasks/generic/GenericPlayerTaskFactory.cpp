@@ -25,6 +25,7 @@
 #include "tasks/generic/EnoughData.h"
 #include "tasks/generic/Eos.h"
 #include "tasks/generic/FinishSetupSource.h"
+#include "tasks/generic/Flush.h"
 #include "tasks/generic/HandleBusMessage.h"
 #include "tasks/generic/NeedData.h"
 #include "tasks/generic/Pause.h"
@@ -227,5 +228,13 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createRenderFrame(Generic
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createPing(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) const
 {
     return std::make_unique<tasks::generic::Ping>(std::move(heartbeatHandler));
+}
+
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createFlush(GenericPlayerContext &context,
+                                                                   IGstGenericPlayerPrivate &player,
+                                                                   const firebolt::rialto::MediaSourceType &type,
+                                                                   bool resetTime) const
+{
+    return std::make_unique<tasks::generic::Flush>(context, player, m_client, m_gstWrapper, type, resetTime);
 }
 } // namespace firebolt::rialto::server

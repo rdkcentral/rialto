@@ -77,6 +77,7 @@ protected:
     void shouldSetupVideoElementOnly();
     void shouldSetupVideoElementWithPendingGeometry();
     void shouldSetupVideoElementAmlhalasink();
+    void shouldSetupAudioElementBrcmAudioSink();
     void shouldSetupVideoElementAutoVideoSink();
     void shouldSetupVideoElementAutoVideoSinkWithMultipleChildren();
     void shouldSetupAudioElementOnly();
@@ -306,6 +307,14 @@ protected:
     void triggerRemoveSourceVideo();
     void checkAudioSourceRemoved();
     void checkAudioSourceNotRemoved();
+
+    // Flush test methods
+    void shouldFlushAudio();
+    void shouldFlushVideo();
+    void triggerFlush(firebolt::rialto::MediaSourceType sourceType);
+    void checkAudioFlushed();
+    void checkVideoFlushed();
+    void shouldFlushVideoSrcSuccess();
 
 private:
     // SetupElement helper methods

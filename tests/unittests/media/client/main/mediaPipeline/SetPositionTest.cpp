@@ -129,7 +129,7 @@ TEST_F(RialtoClientMediaPipelineSetPositionTest, ValidStates)
     attachSource();
 
     std::vector<PlaybackState> validPlaybackStates = {PlaybackState::PLAYING, PlaybackState::END_OF_STREAM,
-                                                      PlaybackState::SEEKING, PlaybackState::FLUSHED};
+                                                      PlaybackState::SEEKING, PlaybackState::SEEK_DONE};
     std::vector<NetworkState> validNetworkStates = {NetworkState::BUFFERING};
 
     for (auto it = validPlaybackStates.begin(); it != validPlaybackStates.end(); it++)

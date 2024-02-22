@@ -164,6 +164,13 @@ bool MediaPipelineIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &i
         return false;
     m_eventTags.push_back(eventTag);
 
+    eventTag = ipcChannel->subscribe<firebolt::rialto::SourceFlushedEvent>(
+        [this](const std::shared_ptr<firebolt::rialto::SourceFlushedEvent> &event)
+        { m_eventThread->add(&MediaPipelineIpc::onSourceFlushed, this, event); });
+    if (eventTag < 0)
+        return false;
+    m_eventTags.push_back(eventTag);
+
     return true;
 }
 
@@ -738,6 +745,38 @@ bool MediaPipelineIpc::getMute(bool &mute)
     return true;
 }
 
+bool MediaPipelineIpc::flush(int32_t sourceId, bool resetTime)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::FlushRequest request;
+
+    request.set_session_id(m_sessionId);
+    request.set_source_id(sourceId);
+    request.set_reset_time(resetTime);
+
+    firebolt::rialto::FlushResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->flush(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to flush due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    return true;
+}
+
 void MediaPipelineIpc::onPlaybackStateUpdated(const std::shared_ptr<firebolt::rialto::PlaybackStateChangeEvent> &event)
 {
     /* Ignore event if not for this session */
@@ -758,8 +797,8 @@ void MediaPipelineIpc::onPlaybackStateUpdated(const std::shared_ptr<firebolt::ri
         case firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_SEEKING:
             playbackState = PlaybackState::SEEKING;
             break;
-        case firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_FLUSHED:
-            playbackState = PlaybackState::FLUSHED;
+        case firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_SEEK_DONE:
+            playbackState = PlaybackState::SEEK_DONE;
             break;
         case firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_STOPPED:
             playbackState = PlaybackState::STOPPED;
@@ -882,6 +921,15 @@ void MediaPipelineIpc::onPlaybackError(const std::shared_ptr<firebolt::rialto::P
         }
 
         m_mediaPipelineIpcClient->notifyPlaybackError(event->source_id(), playbackError);
+    }
+}
+
+void MediaPipelineIpc::onSourceFlushed(const std::shared_ptr<firebolt::rialto::SourceFlushedEvent> &event)
+{
+    // Ignore event if not for this session
+    if (event->session_id() == m_sessionId)
+    {
+        m_mediaPipelineIpcClient->notifySourceFlushed(event->source_id());
     }
 }
 

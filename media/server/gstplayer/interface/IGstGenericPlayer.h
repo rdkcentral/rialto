@@ -251,6 +251,15 @@ public:
      *
      */
     virtual void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) = 0;
+
+    /**
+     * @brief Flushes a source.
+     *
+     * @param[in] mediaSourceType : The media source type to flush.
+     * @param[in] resetTime : True if time should be reset
+     *
+     */
+    virtual void flush(const MediaSourceType &mediaSourceType, bool resetTime) = 0;
 };
 
 }; // namespace firebolt::rialto::server

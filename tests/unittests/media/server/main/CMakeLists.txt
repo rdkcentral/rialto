@@ -38,6 +38,7 @@ add_gtests (
         mediaPipeline/CallbackTest.cpp
         mediaPipeline/MiscellaneousFunctionsTest.cpp
         mediaPipeline/HaveDataTest.cpp
+        mediaPipeline/FlushTest.cpp
 
         mediaPipelineCapabilities/MediaPipelineCapabilitiesTest.cpp
 

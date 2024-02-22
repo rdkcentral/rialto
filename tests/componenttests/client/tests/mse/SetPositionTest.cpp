@@ -45,7 +45,7 @@ public:
  *  Test that seek is successfully handled is PAUSED, PLAYING and END_OF_STREAM state.
  *
  * Sequence Diagrams:
- *  Seek - https://wiki.rdkcentral.com/display/ASP/Rialto+Seek+Design
+ *  Seek - https://wiki.rdkcentral.com/display/ASP/Rialto+Flush+and+Seek+Design
  *
  * Test Setup:
  *  Language: C++
@@ -65,7 +65,7 @@ public:
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 2: Seek complete
- *   Server notifies the client that the Playback state has changed to FLUSHED.
+ *   Server notifies the client that the Playback state has changed to SEEK_DONE.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 3: Buffer to paused state
@@ -88,7 +88,7 @@ public:
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 6: Seek complete
- *   Server notifies the client that the Playback state has changed to FLUSHED.
+ *   Server notifies the client that the Playback state has changed to SEEK_DONE.
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 7: Buffer to playing state
@@ -111,7 +111,7 @@ public:
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 10: Seek complete
- *   Server notifies the client that the Playback state has changed to FLUSHED.
+ *   Server notifies the client that the Playback state has changed to SEEK_DONE.
  *   Expect that the state change notification is propagated to the client.
  *
  * Test Teardown:
@@ -134,8 +134,8 @@ TEST_F(SetPositionTest, successStates)
     MediaPipelineTestMethods::sendNotifyPlaybackStateSeeking();
 
     // Step 2: Seek complete
-    MediaPipelineTestMethods::shouldNotifyPlaybackStateFlushed();
-    MediaPipelineTestMethods::sendNotifyPlaybackStateFlushed();
+    MediaPipelineTestMethods::shouldNotifyPlaybackStateSeekDone();
+    MediaPipelineTestMethods::sendNotifyPlaybackStateSeekDone();
 
     // Step 3: Buffer to paused state
     MediaPipelineTestMethods::writeAudioFrames();
@@ -159,8 +159,8 @@ TEST_F(SetPositionTest, successStates)
     MediaPipelineTestMethods::sendNotifyPlaybackStateSeeking();
 
     // Step 6: Seek complete
-    MediaPipelineTestMethods::shouldNotifyPlaybackStateFlushed();
-    MediaPipelineTestMethods::sendNotifyPlaybackStateFlushed();
+    MediaPipelineTestMethods::shouldNotifyPlaybackStateSeekDone();
+    MediaPipelineTestMethods::sendNotifyPlaybackStateSeekDone();
 
     // Step 7: Buffer to playing state
     MediaPipelineTestMethods::writeAudioFrames();
@@ -184,8 +184,8 @@ TEST_F(SetPositionTest, successStates)
     MediaPipelineTestMethods::sendNotifyPlaybackStateSeeking();
 
     // Step 10: Seek complete
-    MediaPipelineTestMethods::shouldNotifyPlaybackStateFlushed();
-    MediaPipelineTestMethods::sendNotifyPlaybackStateFlushed();
+    MediaPipelineTestMethods::shouldNotifyPlaybackStateSeekDone();
+    MediaPipelineTestMethods::sendNotifyPlaybackStateSeekDone();
 }
 
 /*
@@ -194,7 +194,7 @@ TEST_F(SetPositionTest, successStates)
  *  Test that when seek is in progress data requests are flushed.
  *
  * Sequence Diagrams:
- *  Seek - https://wiki.rdkcentral.com/display/ASP/Rialto+Seek+Design
+ *  Seek - https://wiki.rdkcentral.com/display/ASP/Rialto+Flush+and+Seek+Design
  *
  * Test Setup:
  *  Language: C++
@@ -225,7 +225,7 @@ TEST_F(SetPositionTest, successStates)
  *   Expect that have data is not propagted to the server while seeking.
  *
  *  Step 5: Seek complete
- *   Server notifies the client that the Playback state has changed to FLUSHED.
+ *   Server notifies the client that the Playback state has changed to SEEK_DONE.
  *   Expect that the state change notification is propagated to the client.
  *
  * Test Teardown:
@@ -258,8 +258,8 @@ TEST_F(SetPositionTest, flushed)
     MediaPipelineTestMethods::haveDataOk();
 
     // Step 5: Seek complete
-    MediaPipelineTestMethods::shouldNotifyPlaybackStateFlushed();
-    MediaPipelineTestMethods::sendNotifyPlaybackStateFlushed();
+    MediaPipelineTestMethods::shouldNotifyPlaybackStateSeekDone();
+    MediaPipelineTestMethods::sendNotifyPlaybackStateSeekDone();
 }
 
 /*
@@ -269,7 +269,7 @@ TEST_F(SetPositionTest, flushed)
  *  during server state changes are handled correctly.
  *
  * Sequence Diagrams:
- *  Seek - https://wiki.rdkcentral.com/display/ASP/Rialto+Seek+Design
+ *  Seek - https://wiki.rdkcentral.com/display/ASP/Rialto+Flush+and+Seek+Design
  *
  * Test Setup:
  *  Language: C++
@@ -308,7 +308,7 @@ TEST_F(SetPositionTest, flushed)
  *   Expect that the state change notification is propagated to the client.
  *
  *  Step 6: Seek complete
- *   Server notifies the client that the Playback state has changed to FLUSHED.
+ *   Server notifies the client that the Playback state has changed to SEEK_DONE.
  *   Expect that the state change notification is propagated to the client.
  *
  * Test Teardown:
@@ -351,7 +351,7 @@ TEST_F(SetPositionTest, failures)
     MediaPipelineTestMethods::sendNotifyPlaybackStateSeeking();
 
     // Step 6: Seek complete
-    MediaPipelineTestMethods::shouldNotifyPlaybackStateFlushed();
-    MediaPipelineTestMethods::sendNotifyPlaybackStateFlushed();
+    MediaPipelineTestMethods::shouldNotifyPlaybackStateSeekDone();
+    MediaPipelineTestMethods::sendNotifyPlaybackStateSeekDone();
 }
 } // namespace firebolt::rialto::client::ct

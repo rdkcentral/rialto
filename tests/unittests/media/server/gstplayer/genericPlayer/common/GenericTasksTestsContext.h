@@ -80,6 +80,7 @@ public:
     GstEvent m_event2{};
     GstIterator m_iterator{};
     GstElement m_childElement{};
+    GstQuery m_query{};
 
     // Glib members
     guint m_signals[1]{123};

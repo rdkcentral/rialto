@@ -903,6 +903,14 @@ void GstGenericPlayer::ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandle
     }
 }
 
+void GstGenericPlayer::flush(const MediaSourceType &mediaSourceType, bool resetTime)
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(m_taskFactory->createFlush(m_context, *this, mediaSourceType, resetTime));
+    }
+}
+
 void GstGenericPlayer::handleBusMessage(GstMessage *message)
 {
     m_workerThread->enqueueTask(m_taskFactory->createHandleBusMessage(m_context, *this, message));

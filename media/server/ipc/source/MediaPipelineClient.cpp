@@ -49,9 +49,9 @@ convertPlaybackState(const firebolt::rialto::PlaybackState &playbackState)
     {
         return firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_SEEKING;
     }
-    case firebolt::rialto::PlaybackState::FLUSHED:
+    case firebolt::rialto::PlaybackState::SEEK_DONE:
     {
-        return firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_FLUSHED;
+        return firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_SEEK_DONE;
     }
     case firebolt::rialto::PlaybackState::STOPPED:
     {
@@ -248,6 +248,17 @@ void MediaPipelineClient::notifyPlaybackError(int32_t sourceId, PlaybackError er
     event->set_session_id(m_sessionId);
     event->set_source_id(sourceId);
     event->set_error(convertPlaybackError(error));
+
+    m_ipcClient->sendEvent(event);
+}
+
+void MediaPipelineClient::notifySourceFlushed(int32_t sourceId)
+{
+    RIALTO_SERVER_LOG_DEBUG("Sending SourceFlushedEvent...");
+
+    auto event = std::make_shared<firebolt::rialto::SourceFlushedEvent>();
+    event->set_session_id(m_sessionId);
+    event->set_source_id(sourceId);
 
     m_ipcClient->sendEvent(event);
 }
