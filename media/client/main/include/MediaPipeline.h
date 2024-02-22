@@ -163,6 +163,8 @@ public:
 
     bool flush(int32_t sourceId, bool resetTime) override;
 
+    bool setSourcePosition(int32_t sourceId, int64_t position) override;
+
     void notifyApplicationState(ApplicationState state) override;
 
 protected:

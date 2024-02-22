@@ -488,6 +488,20 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToFlush()
     EXPECT_CALL(m_mediaPipelineServiceMock, flush(kHardcodedSessionId, kSourceId, kResetTime)).WillOnce(Return(false));
 }
 
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSetSourcePosition()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_mediaPipelineServiceMock, setSourcePosition(kHardcodedSessionId, kSourceId, kPosition))
+        .WillOnce(Return(true));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToSetSourcePosition()
+{
+    expectRequestFailure();
+    EXPECT_CALL(m_mediaPipelineServiceMock, setSourcePosition(kHardcodedSessionId, kSourceId, kPosition))
+        .WillOnce(Return(false));
+}
+
 void MediaPipelineModuleServiceTests::mediaClientWillSendPlaybackStateChangedEvent()
 {
     EXPECT_CALL(*m_clientMock, sendEvent(PlaybackStateChangeEventMatcher(convertPlaybackState(kPlaybackState))));
@@ -838,6 +852,18 @@ void MediaPipelineModuleServiceTests::sendFlushRequestAndReceiveResponse()
     request.set_reset_time(kResetTime);
 
     m_service->flush(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void MediaPipelineModuleServiceTests::sendSetSourcePositionRequestAndReceiveResponse()
+{
+    firebolt::rialto::SetSourcePositionRequest request;
+    firebolt::rialto::SetSourcePositionResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+    request.set_source_id(kSourceId);
+    request.set_position(kPosition);
+
+    m_service->setSourcePosition(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
 
 void MediaPipelineModuleServiceTests::sendPlaybackStateChangedEvent()

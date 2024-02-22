@@ -117,6 +117,7 @@ public:
     bool getMute(bool &mute) override;
     void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) override;
     void flush(const MediaSourceType &mediaSourceType, bool resetTime) override;
+    void setSourcePosition(const MediaSourceType &mediaSourceType, int64_t position) override;
 
 private:
     void scheduleNeedMediaData(GstAppSrc *src) override;
@@ -224,6 +225,16 @@ private:
      * @retval True if caps were changed
      */
     bool setCodecData(GstCaps *caps, const std::shared_ptr<CodecData> &codecData) const;
+
+    /**
+     * @brief Pushes GstSample if playback position has changed or new segment needs to be sent.
+     *
+     * @param[in] source          : The Gst Source element, that should receive new sample
+     * @param[in] buffer          : The next GstBuffer to push
+     *
+     * @retval True if operation was performed
+     */
+    bool pushSampleIfRequired(GstElement *source, GstBuffer *buffer);
 
 private:
     /**

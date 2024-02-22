@@ -33,12 +33,14 @@ TEST_F(FinishSetupSourceTest, shouldFinishSetupSource)
 {
     shouldFinishSetupSource();
     triggerFinishSetupSource();
+    checkSetupSourceFinished();
 }
 
 TEST_F(FinishSetupSourceTest, shouldScheduleAudioNeedData)
 {
     shouldFinishSetupSource();
     triggerFinishSetupSource();
+    checkSetupSourceFinished();
     shouldScheduleNeedMediaDataAudio();
     triggerAudioCallbackNeedData();
 }
@@ -47,6 +49,7 @@ TEST_F(FinishSetupSourceTest, shouldScheduleVideoNeedData)
 {
     shouldFinishSetupSource();
     triggerFinishSetupSource();
+    checkSetupSourceFinished();
     shouldScheduleNeedMediaDataVideo();
     triggerVideoCallbackNeedData();
 }
@@ -62,6 +65,7 @@ TEST_F(FinishSetupSourceTest, shouldScheduleVideoEnoughData)
 {
     shouldFinishSetupSource();
     triggerFinishSetupSource();
+    checkSetupSourceFinished();
     shouldScheduleEnoughDataVideo();
     triggerVideoCallbackEnoughData();
 }
@@ -70,6 +74,7 @@ TEST_F(FinishSetupSourceTest, shouldScheduleAudioSeekData)
 {
     shouldFinishSetupSource();
     triggerFinishSetupSource();
+    checkSetupSourceFinished();
     shouldScheduleEnoughDataAudio();
     triggerAudioCallbackSeekData();
 }
@@ -78,6 +83,7 @@ TEST_F(FinishSetupSourceTest, shouldScheduleVideoSeekData)
 {
     shouldFinishSetupSource();
     triggerFinishSetupSource();
+    checkSetupSourceFinished();
     shouldScheduleEnoughDataVideo();
     triggerVideoCallbackSeekData();
 }
@@ -86,4 +92,5 @@ TEST_F(FinishSetupSourceTest, shouldntFinishSetupSourceWhenSourceNotSet)
     setContextSourceNull();
     triggerFinishSetupSource();
     checkSourcesAttached();
+    checkSetupSourceUnfinished();
 }

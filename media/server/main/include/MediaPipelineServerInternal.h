@@ -130,6 +130,8 @@ public:
 
     bool flush(int32_t sourceId, bool resetTime) override;
 
+    bool setSourcePosition(int32_t sourceId, int64_t position) override;
+
     AddSegmentStatus addSegment(uint32_t needDataRequestId, const std::unique_ptr<MediaSegment> &mediaSegment) override;
 
     std::weak_ptr<IMediaPipelineClient> getClient() override;
@@ -445,7 +447,19 @@ protected:
      *
      * @retval true on success.
      */
-    virtual bool flushInternal(int32_t sourceId, bool resetTime);
+    bool flushInternal(int32_t sourceId, bool resetTime);
+
+    /**
+     * @brief Set the source position in nanoseconds.
+     *
+     * This method sets the start position for a source.
+     *
+     * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[in] position : The position in nanoseconds.
+     *
+     * @retval true on success.
+     */
+    bool setSourcePositionInternal(int32_t sourceId, int64_t position);
 };
 
 }; // namespace firebolt::rialto::server

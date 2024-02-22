@@ -485,6 +485,15 @@ void GstGenericPlayer::attachAudioData()
 
     if (m_context.audioAppSrc)
     {
+        GstBuffer *firstBuffer{nullptr};
+        if (!m_context.audioBuffers.empty())
+        {
+            firstBuffer = m_context.audioBuffers.front();
+        }
+        if (pushSampleIfRequired(m_context.audioAppSrc, firstBuffer) && firstBuffer)
+        {
+            m_context.audioBuffers.pop_front();
+        }
         for (GstBuffer *buffer : m_context.audioBuffers)
         {
             m_gstWrapper->gstAppSrcPushBuffer(GST_APP_SRC(m_context.audioAppSrc), buffer);
@@ -524,6 +533,15 @@ void GstGenericPlayer::attachVideoData()
     }
     if (m_context.videoAppSrc)
     {
+        GstBuffer *firstBuffer{nullptr};
+        if (!m_context.videoBuffers.empty())
+        {
+            firstBuffer = m_context.videoBuffers.front();
+        }
+        if (pushSampleIfRequired(m_context.videoAppSrc, firstBuffer) && firstBuffer)
+        {
+            m_context.videoBuffers.pop_front();
+        }
         for (GstBuffer *buffer : m_context.videoBuffers)
         {
             m_gstWrapper->gstAppSrcPushBuffer(GST_APP_SRC(m_context.videoAppSrc), buffer);
@@ -628,6 +646,41 @@ bool GstGenericPlayer::setCodecData(GstCaps *caps, const std::shared_ptr<CodecDa
         return true;
     }
     return false;
+}
+
+bool GstGenericPlayer::pushSampleIfRequired(GstElement *source, GstBuffer *buffer)
+{
+    auto initialPosition = m_context.initialPositions.find(source);
+    if (m_context.initialPositions.end() == initialPosition)
+    {
+        return false;
+    }
+    RIALTO_SERVER_LOG_DEBUG("Pushing new sample...");
+    GstSegment *segment{m_gstWrapper->gstSegmentNew()};
+    m_gstWrapper->gstSegmentInit(segment, GST_FORMAT_TIME);
+    if (!m_gstWrapper->gstSegmentDoSeek(segment, m_context.playbackRate, GST_FORMAT_TIME, GST_SEEK_FLAG_NONE,
+                                        GST_SEEK_TYPE_SET, initialPosition->second, GST_SEEK_TYPE_SET,
+                                        GST_CLOCK_TIME_NONE, nullptr))
+    {
+        RIALTO_SERVER_LOG_WARN("Segment seek failed.");
+        m_gstWrapper->gstSegmentFree(segment);
+        m_context.initialPositions.erase(initialPosition);
+        return false;
+    }
+
+    RIALTO_SERVER_LOG_INFO("New segment: [%" GST_TIME_FORMAT ", %" GST_TIME_FORMAT "], rate: %f \n",
+                           GST_TIME_ARGS(segment->start), GST_TIME_ARGS(segment->stop), segment->rate);
+
+    GstCaps *currentCaps = m_gstWrapper->gstAppSrcGetCaps(GST_APP_SRC(source));
+    GstSample *sample = m_gstWrapper->gstSampleNew(buffer, currentCaps, segment, nullptr);
+    m_gstWrapper->gstAppSrcPushSample(GST_APP_SRC(source), sample);
+    m_gstWrapper->gstSampleUnref(sample);
+    m_gstWrapper->gstCapsUnref(currentCaps);
+
+    m_gstWrapper->gstSegmentFree(segment);
+    m_context.initialPositions.erase(initialPosition);
+
+    return true;
 }
 
 void GstGenericPlayer::scheduleNeedMediaData(GstAppSrc *src)
@@ -938,6 +991,14 @@ void GstGenericPlayer::flush(const MediaSourceType &mediaSourceType, bool resetT
     if (m_workerThread)
     {
         m_workerThread->enqueueTask(m_taskFactory->createFlush(m_context, *this, mediaSourceType, resetTime));
+    }
+}
+
+void GstGenericPlayer::setSourcePosition(const MediaSourceType &mediaSourceType, int64_t position)
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(m_taskFactory->createSetSourcePosition(m_context, mediaSourceType, position));
     }
 }
 

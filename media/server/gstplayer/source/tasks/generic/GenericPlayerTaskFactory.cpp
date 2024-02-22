@@ -38,6 +38,7 @@
 #include "tasks/generic/SetMute.h"
 #include "tasks/generic/SetPlaybackRate.h"
 #include "tasks/generic/SetPosition.h"
+#include "tasks/generic/SetSourcePosition.h"
 #include "tasks/generic/SetVideoGeometry.h"
 #include "tasks/generic/SetVolume.h"
 #include "tasks/generic/SetupElement.h"
@@ -236,5 +237,11 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createFlush(GenericPlayer
                                                                    bool resetTime) const
 {
     return std::make_unique<tasks::generic::Flush>(context, player, m_client, m_gstWrapper, type, resetTime);
+}
+
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetSourcePosition(
+    GenericPlayerContext &context, const firebolt::rialto::MediaSourceType &type, std::int64_t position) const
+{
+    return std::make_unique<tasks::generic::SetSourcePosition>(context, m_client, m_gstWrapper, type, position);
 }
 } // namespace firebolt::rialto::server

@@ -82,6 +82,8 @@ public:
     void mediaPipelineServiceWillFailToGetMute();
     void mediaPipelineServiceWillFlush();
     void mediaPipelineServiceWillFailToFlush();
+    void mediaPipelineServiceWillSetSourcePosition();
+    void mediaPipelineServiceWillFailToSetSourcePosition();
     void mediaClientWillSendPlaybackStateChangedEvent();
     void mediaClientWillSendNetworkStateChangedEvent();
     void mediaClientWillSendNeedMediaDataEvent(int sessionId);
@@ -117,6 +119,7 @@ public:
     void sendGetMuteRequestAndReceiveResponse();
     void sendGetMuteRequestAndReceiveResponseWithoutMuteMatch();
     void sendFlushRequestAndReceiveResponse();
+    void sendSetSourcePositionRequestAndReceiveResponse();
     void sendPlaybackStateChangedEvent();
     void sendNetworkStateChangedEvent();
     void sendNeedMediaDataEvent();

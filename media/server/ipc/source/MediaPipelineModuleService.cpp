@@ -620,4 +620,18 @@ void MediaPipelineModuleService::flush(::google::protobuf::RpcController *contro
 
     done->Run();
 }
+
+void MediaPipelineModuleService::setSourcePosition(::google::protobuf::RpcController *controller,
+                                                   const ::firebolt::rialto::SetSourcePositionRequest *request,
+                                                   ::firebolt::rialto::SetSourcePositionResponse *response,
+                                                   ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    if (!m_mediaPipelineService.setSourcePosition(request->session_id(), request->source_id(), request->position()))
+    {
+        RIALTO_SERVER_LOG_ERROR("Set Source Position failed.");
+        controller->SetFailed("Operation failed");
+    }
+    done->Run();
+}
 } // namespace firebolt::rialto::server::ipc
