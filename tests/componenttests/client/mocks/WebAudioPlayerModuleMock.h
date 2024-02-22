@@ -94,7 +94,7 @@ public:
 
     ::firebolt::rialto::WebAudioGetBufferAvailableResponse
     webAudioGetBufferAvailableResponse(const uint32_t availableFrames,
-                                       const std::shared_ptr<firebolt::rialto::WebAudioShmInfo> webAudioShmInfo)
+                                       const std::shared_ptr<firebolt::rialto::WebAudioShmInfo> &webAudioShmInfo)
     {
         firebolt::rialto::WebAudioGetBufferAvailableResponse response;
         response.set_available_frames(availableFrames);
