@@ -243,3 +243,29 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, clearActiveRequestsCache)
 
     m_gstPlayerCallback->clearActiveRequestsCache();
 }
+
+/**
+ * Test a notification of source flushed is forwarded to the registered client.
+ */
+TEST_F(RialtoServerMediaPipelineCallbackTest, notifySourceFlushed)
+{
+    auto mediaSourceType = firebolt::rialto::MediaSourceType::VIDEO;
+    int sourceId = attachSource(mediaSourceType, "video/mp4");
+
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifySourceFlushed(sourceId));
+
+    m_gstPlayerCallback->notifySourceFlushed(mediaSourceType);
+}
+
+/**
+ * Test a notification of source flushed fails when sourceid cannot be found.
+ */
+TEST_F(RialtoServerMediaPipelineCallbackTest, notifySourceFlushedFailureSourceIdNotFound)
+{
+    auto mediaSourceType = firebolt::rialto::MediaSourceType::VIDEO;
+
+    mainThreadWillEnqueueTask();
+
+    m_gstPlayerCallback->notifySourceFlushed(mediaSourceType);
+}

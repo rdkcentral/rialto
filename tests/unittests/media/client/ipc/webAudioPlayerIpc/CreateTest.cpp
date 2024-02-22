@@ -18,27 +18,8 @@
  */
 
 #include "WebAudioPlayerIpcTestBase.h"
+#include "WebAudioPlayerProtoRequestMatchers.h"
 #include "webaudioplayermodule.pb.h"
-
-MATCHER_P3(createWebAudioPlayerRequestMatcher, audioMimeType, priority, config, "")
-{
-    const ::firebolt::rialto::CreateWebAudioPlayerRequest *kRequest =
-        dynamic_cast<const ::firebolt::rialto::CreateWebAudioPlayerRequest *>(arg);
-    return ((kRequest->audio_mime_type() == audioMimeType) && (kRequest->priority() == priority) &&
-            (kRequest->config().pcm().rate() == config->pcm.rate &&
-             kRequest->config().pcm().channels() == config->pcm.channels &&
-             kRequest->config().pcm().sample_size() == config->pcm.sampleSize &&
-             kRequest->config().pcm().is_big_endian() == config->pcm.isBigEndian &&
-             kRequest->config().pcm().is_signed() == config->pcm.isSigned &&
-             kRequest->config().pcm().is_float() == config->pcm.isFloat));
-}
-
-MATCHER_P(destroyWebAudioPlayerRequestMatcher, web_audio_player_handle, "")
-{
-    const ::firebolt::rialto::DestroyWebAudioPlayerRequest *kRequest =
-        dynamic_cast<const ::firebolt::rialto::DestroyWebAudioPlayerRequest *>(arg);
-    return (kRequest->web_audio_player_handle() == web_audio_player_handle);
-}
 
 class RialtoClientCreateWebAudioPlayerIpcTest : public WebAudioPlayerIpcTestBase
 {

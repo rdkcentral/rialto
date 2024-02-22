@@ -83,7 +83,7 @@ public:
  *   SetPosition to position 0s.
  *   Server notifies the client that the Playback state has changed to SEEKING.
  *   Expect that the state change notification is propagated to the client.
- *   Server notifies the client that the Playback state has changed to FLUSHED.
+ *   Server notifies the client that the Playback state has changed to SEEK_DONE.
  *   Expect that the state change notification is propagated to the client.
  *   Write audio frames.
  *   Write video frames.
@@ -134,8 +134,8 @@ TEST_F(RenderFrameTest, successAndFailure)
     MediaPipelineTestMethods::setPosition(0);
     MediaPipelineTestMethods::shouldNotifyPlaybackStateSeeking();
     MediaPipelineTestMethods::sendNotifyPlaybackStateSeeking();
-    MediaPipelineTestMethods::shouldNotifyPlaybackStateFlushed();
-    MediaPipelineTestMethods::sendNotifyPlaybackStateFlushed();
+    MediaPipelineTestMethods::shouldNotifyPlaybackStateSeekDone();
+    MediaPipelineTestMethods::sendNotifyPlaybackStateSeekDone();
     MediaPipelineTestMethods::writeAudioFrames();
     MediaPipelineTestMethods::writeVideoFrames();
     MediaPipelineTestMethods::shouldNotifyNetworkStateBuffered();

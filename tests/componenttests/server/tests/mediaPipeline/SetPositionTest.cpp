@@ -63,13 +63,13 @@ public:
 
         // During SetPosition procedure, two PlaybackStateChange events are received. Add expects for them.
         ExpectMessage<PlaybackStateChangeEvent> expectedSeekingPlaybackStateChange{m_clientStub};
-        ExpectMessage<PlaybackStateChangeEvent> expectedFlushedPlaybackStateChange{m_clientStub};
+        ExpectMessage<PlaybackStateChangeEvent> expectedSeekDonePlaybackStateChange{m_clientStub};
         expectedSeekingPlaybackStateChange.setFilter(
             [&](const PlaybackStateChangeEvent &event)
             { return event.state() == PlaybackStateChangeEvent_PlaybackState_SEEKING; });
-        expectedFlushedPlaybackStateChange.setFilter(
+        expectedSeekDonePlaybackStateChange.setFilter(
             [&](const PlaybackStateChangeEvent &event)
-            { return event.state() == PlaybackStateChangeEvent_PlaybackState_FLUSHED; });
+            { return event.state() == PlaybackStateChangeEvent_PlaybackState_SEEK_DONE; });
 
         // Send SetPositionRequest and expect success
         auto request{createSetPositionRequest(m_sessionId, position)};
@@ -80,9 +80,9 @@ public:
         ASSERT_TRUE(receivedSeekingPlaybackStateChange);
         EXPECT_EQ(receivedSeekingPlaybackStateChange->session_id(), m_sessionId);
 
-        auto receivedFlushedPlaybackStateChange{expectedFlushedPlaybackStateChange.getMessage()};
-        ASSERT_TRUE(receivedFlushedPlaybackStateChange);
-        EXPECT_EQ(receivedFlushedPlaybackStateChange->session_id(), m_sessionId);
+        auto receivedSeekDonePlaybackStateChange{expectedSeekDonePlaybackStateChange.getMessage()};
+        ASSERT_TRUE(receivedSeekDonePlaybackStateChange);
+        EXPECT_EQ(receivedSeekDonePlaybackStateChange->session_id(), m_sessionId);
 
         // Check received NeedDataReqs
         auto receivedAudioNeedData{expectedAudioNeedData.getMessage()};
@@ -127,9 +127,9 @@ public:
         ASSERT_TRUE(receivedSeekingPlaybackStateChange);
         EXPECT_EQ(receivedSeekingPlaybackStateChange->session_id(), m_sessionId);
 
-        auto receivedFlushedPlaybackStateChange{expectedFailurePlaybackStateChange.getMessage()};
-        ASSERT_TRUE(receivedFlushedPlaybackStateChange);
-        EXPECT_EQ(receivedFlushedPlaybackStateChange->session_id(), m_sessionId);
+        auto receivedSeekDonePlaybackStateChange{expectedFailurePlaybackStateChange.getMessage()};
+        ASSERT_TRUE(receivedSeekDonePlaybackStateChange);
+        EXPECT_EQ(receivedSeekDonePlaybackStateChange->session_id(), m_sessionId);
     }
 };
 
@@ -139,7 +139,7 @@ public:
  *  Test that seek is successfully handled.
  *
  * Sequence Diagrams:
- *  Seek - https://wiki.rdkcentral.com/display/ASP/Rialto+Seek+Design
+ *  Seek - https://wiki.rdkcentral.com/display/ASP/Rialto+Flush+and+Seek+Design
  *
  * Test Setup:
  *  Language: C++
@@ -198,7 +198,7 @@ public:
  *   SetPosition to position 10s.
  *   Server should notify the client that the Playback state has changed to SEEKING.
  *   Expect that SetPositionResponse has success status
- *   Server should notify the client that the Playback state has changed to FLUSHED.
+ *   Server should notify the client that the Playback state has changed to SEEK_DONE.
  *
  *  Step 9: Play
  *   Play the content.
@@ -209,7 +209,7 @@ public:
  *   SetPosition to position 0s.
  *   Server should notify the client that the Playback state has changed to SEEKING.
  *   Expect that SetPositionResponse has success status
- *   Server should notify the client that the Playback state has changed to FLUSHED.
+ *   Server should notify the client that the Playback state has changed to SEEK_DONE.
  *
  *  Step 11: End of audio stream
  *   Send audio haveData with one frame and EOS status
@@ -331,7 +331,7 @@ TEST_F(SetPositionTest, SetPosition)
  *  Test that seek failure is successfully handled.
  *
  * Sequence Diagrams:
- *  Seek - https://wiki.rdkcentral.com/display/ASP/Rialto+Seek+Design
+ *  Seek - https://wiki.rdkcentral.com/display/ASP/Rialto+Flush+and+Seek+Design
  *
  * Test Setup:
  *  Language: C++

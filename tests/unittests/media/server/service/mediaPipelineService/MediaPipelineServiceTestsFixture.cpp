@@ -50,6 +50,7 @@ constexpr std::uint32_t kNeedDataRequestId{17};
 constexpr std::uint32_t kNumFrames{1};
 constexpr double kVolume{0.7};
 constexpr bool kMute{false};
+constexpr bool kResetTime{true};
 } // namespace
 
 namespace firebolt::rialto
@@ -263,6 +264,16 @@ void MediaPipelineServiceTests::mediaPipelineWillGetMute()
 void MediaPipelineServiceTests::mediaPipelineWillFailToGetMute()
 {
     EXPECT_CALL(m_mediaPipelineMock, getMute(_)).WillOnce(Return(false));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillFlush()
+{
+    EXPECT_CALL(m_mediaPipelineMock, flush(kSourceId, kResetTime)).WillOnce(Return(true));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillFailToFlush()
+{
+    EXPECT_CALL(m_mediaPipelineMock, flush(kSourceId, kResetTime)).WillOnce(Return(false));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillPing()
@@ -544,6 +555,17 @@ void MediaPipelineServiceTests::getMuteShouldFail()
     bool targetMute{};
     EXPECT_FALSE(m_sut->getMute(kSessionId, targetMute));
 }
+
+void MediaPipelineServiceTests::flushShouldSucceed()
+{
+    EXPECT_TRUE(m_sut->flush(kSessionId, kSourceId, kResetTime));
+}
+
+void MediaPipelineServiceTests::flushShouldFail()
+{
+    EXPECT_FALSE(m_sut->flush(kSessionId, kSourceId, kResetTime));
+}
+
 void MediaPipelineServiceTests::clearMediaPipelines()
 {
     m_sut->clearMediaPipelines();

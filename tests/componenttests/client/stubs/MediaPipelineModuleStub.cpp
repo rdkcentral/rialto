@@ -116,4 +116,13 @@ void MediaPipelineModuleStub::notifyPlaybackErrorEvent(int sessionId, int32_t so
     getClient()->sendEvent(event);
 }
 
+void MediaPipelineModuleStub::notifySourceFlushed(int sessionId, int32_t sourceId)
+{
+    waitForClientConnect();
+
+    auto event = std::make_shared<firebolt::rialto::SourceFlushedEvent>();
+    event->set_session_id(sessionId);
+    event->set_source_id(sourceId);
+    getClient()->sendEvent(event);
+}
 } // namespace firebolt::rialto::client::ct

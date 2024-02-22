@@ -57,8 +57,8 @@ const char *toString(const firebolt::rialto::PlaybackState &state)
         return "PAUSED";
     case firebolt::rialto::PlaybackState::SEEKING:
         return "SEEKING";
-    case firebolt::rialto::PlaybackState::FLUSHED:
-        return "FLUSHED";
+    case firebolt::rialto::PlaybackState::SEEK_DONE:
+        return "SEEK_DONE";
     case firebolt::rialto::PlaybackState::STOPPED:
         return "STOPPED";
     case firebolt::rialto::PlaybackState::END_OF_STREAM:
@@ -363,6 +363,12 @@ bool MediaPipeline::handleHaveData(MediaSourceStatus status, uint32_t needDataRe
         needDataRequest = needDataRequestIt->second;
         m_needDataRequestMap.erase(needDataRequestIt);
     }
+    if (m_attachedSources.isFlushing(needDataRequest->sourceId))
+    {
+        RIALTO_CLIENT_LOG_WARN("Source %d is flushing. Ignoring need data request, with id %u",
+                               needDataRequest->sourceId, needDataRequestId);
+        return true;
+    }
 
     uint32_t numFrames = needDataRequest->frameWriter ? needDataRequest->frameWriter->getNumFrames() : 0;
     return m_mediaPipelineIpc->haveData(status, numFrames, needDataRequestId);
@@ -458,6 +464,30 @@ bool MediaPipeline::getMute(bool &mute)
     return m_mediaPipelineIpc->getMute(mute);
 }
 
+bool MediaPipeline::flush(int32_t sourceId, bool resetTime)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+    if (m_mediaPipelineIpc->flush(sourceId, resetTime))
+    {
+        m_attachedSources.setFlushing(sourceId, true);
+        // Clear all need datas for flushed source
+        std::lock_guard<std::mutex> lock{m_needDataRequestMapMutex};
+        for (auto it = m_needDataRequestMap.begin(); it != m_needDataRequestMap.end();)
+        {
+            if (it->second->sourceId == sourceId)
+            {
+                it = m_needDataRequestMap.erase(it);
+            }
+            else
+            {
+                ++it;
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
 void MediaPipeline::discardNeedDataRequest(uint32_t needDataRequestId)
 {
     // Find the needDataRequest for this needDataRequestId
@@ -536,7 +566,7 @@ void MediaPipeline::updateState(PlaybackState state)
         newState = State::IDLE;
         break;
     }
-    case PlaybackState::FLUSHED:
+    case PlaybackState::SEEK_DONE:
     {
         newState = State::BUFFERING;
         break;
@@ -611,9 +641,15 @@ void MediaPipeline::notifyNeedMediaData(int32_t sourceId, size_t frameCount, uin
             m_attachSourceCond.wait(lock, [this] { return !m_attachingSource; });
     }
 
-    if (MediaSourceType::UNKNOWN == m_attachedSources.get(sourceId))
+    if (MediaSourceType::UNKNOWN == m_attachedSources.getType(sourceId))
     {
         RIALTO_CLIENT_LOG_WARN("NeedMediaData received for unknown source %d, ignoring request id %u", sourceId,
+                               requestId);
+        return;
+    }
+    if (m_attachedSources.isFlushing(sourceId))
+    {
+        RIALTO_CLIENT_LOG_WARN("NeedMediaData received for flushing source %d, ignoring request id %u", sourceId,
                                requestId);
         return;
     }
@@ -624,6 +660,7 @@ void MediaPipeline::notifyNeedMediaData(int32_t sourceId, size_t frameCount, uin
     case State::PLAYING:
     {
         std::shared_ptr<NeedDataRequest> needDataRequest = std::make_shared<NeedDataRequest>();
+        needDataRequest->sourceId = sourceId;
         needDataRequest->shmInfo = shmInfo;
 
         {
@@ -703,6 +740,18 @@ void MediaPipeline::notifyPlaybackError(int32_t sourceId, PlaybackError error)
     if (client)
     {
         client->notifyPlaybackError(sourceId, error);
+    }
+}
+
+void MediaPipeline::notifySourceFlushed(int32_t sourceId)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    m_attachedSources.setFlushing(sourceId, false);
+    std::shared_ptr<IMediaPipelineClient> client = m_mediaPipelineClient.lock();
+    if (client)
+    {
+        client->notifySourceFlushed(sourceId);
     }
 }
 

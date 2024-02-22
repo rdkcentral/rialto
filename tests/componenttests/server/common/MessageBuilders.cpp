@@ -253,6 +253,15 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
+::firebolt::rialto::FlushRequest createFlushRequest(int sessionId, int sourceId, bool resetTime)
+{
+    ::firebolt::rialto::FlushRequest request;
+    request.set_session_id(sessionId);
+    request.set_source_id(sourceId);
+    request.set_reset_time(resetTime);
+    return request;
+}
+
 ::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequestWidevine()
 {
     ::firebolt::rialto::CreateMediaKeysRequest request;

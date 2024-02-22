@@ -41,6 +41,12 @@ TEST_F(SetupElementTest, shouldSetupVideoElementForAmlhalasink)
     triggerSetupElement();
 }
 
+TEST_F(SetupElementTest, shouldSetupAudioElementForBrcmAudioSink)
+{
+    shouldSetupAudioElementBrcmAudioSink();
+    triggerSetupElement();
+}
+
 TEST_F(SetupElementTest, shouldSetupVideoElementWithChildSinkForAutoVideoSink)
 {
     shouldSetupVideoElementAutoVideoSink();

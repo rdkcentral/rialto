@@ -605,4 +605,19 @@ void MediaPipelineModuleService::getMute(::google::protobuf::RpcController *cont
 
     done->Run();
 }
+
+void MediaPipelineModuleService::flush(::google::protobuf::RpcController *controller,
+                                       const ::firebolt::rialto::FlushRequest *request,
+                                       ::firebolt::rialto::FlushResponse *response, ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    if (!m_mediaPipelineService.flush(request->session_id(), request->source_id(), request->reset_time()))
+    {
+        RIALTO_SERVER_LOG_ERROR("Flush failed.");
+        controller->SetFailed("Operation failed");
+    }
+
+    done->Run();
+}
 } // namespace firebolt::rialto::server::ipc

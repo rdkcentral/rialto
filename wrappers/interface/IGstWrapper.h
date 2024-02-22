@@ -1211,6 +1211,76 @@ public:
      * @retval TRUE if name could be set.
      */
     virtual gboolean gstObjectSetName(GstObject *object, const gchar *name) const = 0;
+
+    /**
+     * @brief Constructs a new segment query object. A segment query is used to discover
+     *        information about the currently configured segment for playback.
+     *
+     * @param[in] format    : the GstFormat for the new query
+     *
+     * @retval a new GstQuery
+     */
+    virtual GstQuery *gstQueryNewSegment(GstFormat format) const = 0;
+
+    /**
+     * @brief Performs a query on the given element.
+     *
+     * @param[in] element : a GstElement to perform the query on.
+     * @param[in] query   : the GstQuery.
+     *
+     * @retval TRUE if the query could be performed. MT safe.
+     */
+    virtual gboolean gstElementQuery(GstElement *element, GstQuery *query) const = 0;
+
+    /**
+     * @brief Parse a segment query answer.
+     *
+     * @param[in]  query      : a GstQuery
+     * @param[out] rate       : the storage for the rate of the segment, or NULL
+     * @param[out] format     : the storage for the GstFormat of the values, or NULL
+     * @param[out] startValue : the storage for the start value, or NULL
+     * @param[out] stopValue  : the storage for the stop value, or NULL
+     */
+    virtual void gstQueryParseSegment(GstQuery *query, gdouble *rate, GstFormat *format, gint64 *startValue,
+                                      gint64 *stopValue) const = 0;
+
+    /**
+     * @brief Decreases the refcount of the query. If the refcount reaches 0, the query will be freed.
+     *
+     * @param[in]  query      : a GstQuery
+     */
+    virtual void gstQueryUnref(GstQuery *query) const = 0;
+
+    /**
+     * @brief Update the segment structure with the field values of a seek event (see gst_event_new_seek).
+     *
+     * @param[in] segment   : a GstSegment structure.
+     * @param[in] rate      : the rate of the segment.
+     * @param[in] format    : the format of the segment.
+     * @param[in] flags     : the segment flags for the segment
+     * @param[in] startType : the seek method
+     * @param[in] start     : the seek start value
+     * @param[in] stopType  : the seek method
+     * @param[in] stop      : the seek stop value
+     * @param[out] update   : boolean holding whether position was updated.
+     *
+     * @retval TRUE if the seek could be performed.
+     */
+    virtual gboolean gstSegmentDoSeek(GstSegment *segment, gdouble rate, GstFormat format, GstSeekFlags flags,
+                                      GstSeekType startType, guint64 start, GstSeekType stopType, guint64 stop,
+                                      gboolean *update) const = 0;
+
+    /**
+     * @brief Prepare a new seamless segment for emission downstream.
+     *
+     * @param[in] src   : The source
+     * @param[in] start : The new start value for the segment
+     * @param[in] stop  : Stop value for the new segment
+     * @param[in] time  : The new time value for the start of the new segent
+     *
+     * @retval TRUE if the seek could be performed.
+     */
+    virtual gboolean gstBaseSrcNewSeamlessSegment(GstBaseSrc *src, gint64 start, gint64 stop, gint64 time) const = 0;
 };
 
 }; // namespace firebolt::rialto::wrappers

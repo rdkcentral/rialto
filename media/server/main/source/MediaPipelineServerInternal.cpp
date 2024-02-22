@@ -819,6 +819,36 @@ bool MediaPipelineServerInternal::getMuteInternal(bool &mute)
     return m_gstPlayer->getMute(mute);
 }
 
+bool MediaPipelineServerInternal::flush(int32_t sourceId, bool resetTime)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = flushInternal(sourceId, resetTime); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::flushInternal(int32_t sourceId, bool resetTime)
+{
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to flush - Gstreamer player has not been loaded");
+        return false;
+    }
+    auto sourceIter = std::find_if(m_attachedSources.begin(), m_attachedSources.end(),
+                                   [sourceId](const auto &src) { return src.second == sourceId; });
+    if (sourceIter == m_attachedSources.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to flush - Source not found");
+        return false;
+    }
+
+    m_gstPlayer->flush(sourceIter->first, resetTime);
+    return true;
+}
+
 AddSegmentStatus MediaPipelineServerInternal::addSegment(uint32_t needDataRequestId,
                                                          const std::unique_ptr<MediaSegment> &mediaSegment)
 {
@@ -1006,6 +1036,27 @@ void MediaPipelineServerInternal::notifyPlaybackError(MediaSourceType mediaSourc
                 return;
             }
             m_mediaPipelineClient->notifyPlaybackError(kSourceIter->second, error);
+        }
+    };
+
+    m_mainThread->enqueueTask(m_mainThreadClientId, task);
+}
+
+void MediaPipelineServerInternal::notifySourceFlushed(MediaSourceType mediaSourceType)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    auto task = [&, mediaSourceType]()
+    {
+        if (m_mediaPipelineClient)
+        {
+            const auto kSourceIter = m_attachedSources.find(mediaSourceType);
+            if (m_attachedSources.cend() == kSourceIter)
+            {
+                RIALTO_SERVER_LOG_WARN("Source flushed notification failed - sourceId not found");
+                return;
+            }
+            m_mediaPipelineClient->notifySourceFlushed(kSourceIter->second);
         }
     };
 

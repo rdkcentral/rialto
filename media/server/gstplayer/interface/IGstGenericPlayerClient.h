@@ -60,7 +60,7 @@ public:
      * The player will start IDLE. Once play() has been called the player
      * will be PLAYING, or once pause() has been called the player will be
      * PAUSED. A seek() request will result in SEEKING and once the seek
-     * is complete FLUSHED will be issued followed by PLAYING. The STOPPED
+     * is complete SEEK_DONE will be issued followed by PLAYING. The STOPPED
      * state will be issued after a stop() request.
      *
      * @param[in] state : The new playback state.
@@ -159,6 +159,15 @@ public:
      * @param[in] error            : The type of error that occurred.
      */
     virtual void notifyPlaybackError(MediaSourceType mediaSourceType, PlaybackError error) = 0;
+
+    /**
+     * @brief Notifies the client that the source has been flushed.
+     *
+     * Notification shall be sent whenever a flush procedure is finished.
+     *
+     * @param[in] mediaSourceType  : The type of the source that has been flushed.
+     */
+    virtual void notifySourceFlushed(MediaSourceType mediaSourceType) = 0;
 };
 
 }; // namespace firebolt::rialto::server

@@ -116,6 +116,7 @@ public:
     void setMute(bool mute) override;
     bool getMute(bool &mute) override;
     void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) override;
+    void flush(const MediaSourceType &mediaSourceType, bool resetTime) override;
 
 private:
     void scheduleNeedMediaData(GstAppSrc *src) override;

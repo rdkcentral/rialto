@@ -85,6 +85,9 @@ public:
     MOCK_METHOD(void, getMute,
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::GetMuteRequest *request,
                  ::firebolt::rialto::GetMuteResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, flush,
+                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::FlushRequest *request,
+                 ::firebolt::rialto::FlushResponse *response, ::google::protobuf::Closure *done));
 
     void defaultReturn(::google::protobuf::RpcController *controller, ::google::protobuf::Closure *done)
     {
