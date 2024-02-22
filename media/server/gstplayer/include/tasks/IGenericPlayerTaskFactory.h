@@ -339,6 +339,20 @@ public:
      * @retval the new Ping task instance.
      */
     virtual std::unique_ptr<IPlayerTask> createPing(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) const = 0;
+
+    /**
+     * @brief Creates a Flush task.
+     *
+     * @param[in] context   : The GstPlayer context
+     * @param[in] player    : The GstGenericPlayer instance
+     * @param[in] type      : The media source type to flush
+     * @param[in] resetTime : True if time should be reset
+     *
+     * @retval the new Flush task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createFlush(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                                                     const firebolt::rialto::MediaSourceType &type,
+                                                     bool resetTime) const = 0;
 };
 
 } // namespace firebolt::rialto::server

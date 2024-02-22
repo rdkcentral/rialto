@@ -161,6 +161,11 @@ void SetupElement::execute() const
         m_glibWrapper->gObjectSet(m_element, "disable-xrun", TRUE, nullptr);
     }
 
+    if (m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "brcmaudiosink"))
+    {
+        m_glibWrapper->gObjectSet(m_element, "async", TRUE, nullptr);
+    }
+
     if (isVideoDecoder(*m_gstWrapper, m_element))
     {
         std::string underflowSignalName = getUnderflowSignalName(*m_glibWrapper, m_element);

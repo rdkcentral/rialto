@@ -103,6 +103,8 @@ public:
 
     bool getMute(bool &mute) override;
 
+    bool flush(int32_t sourceId, bool resetTime) override;
+
 private:
     /**
      * @brief The media player client ipc.
@@ -176,6 +178,13 @@ private:
      * @param[in] event : The playback error event structure.
      */
     void onPlaybackError(const std::shared_ptr<firebolt::rialto::PlaybackErrorEvent> &event);
+
+    /**
+     * @brief Handler for a source flushed notification from the server.
+     *
+     * @param[in] event : The source flushed event structure.
+     */
+    void onSourceFlushed(const std::shared_ptr<firebolt::rialto::SourceFlushedEvent> &event);
 
     /**
      * @brief Create a new player session.

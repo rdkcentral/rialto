@@ -268,7 +268,7 @@ message StopResponse {
  *
  * This method is asynchronous. For MSE playback Rialto Client will already be in the SEEKING state when this method is
  * called. This method is used to tell PLAYER that data for the new position will be supplied. When seeking has
- * completed and PLAYER is playing the new data the state FLUSHED is notified followed by PLAYING.
+ * completed and PLAYER is playing the new data the state SEEK_DONE is notified followed by PLAYING.
  *
  */
 message SetPositionRequest {
@@ -413,6 +413,23 @@ message GetMuteResponse {
 }
 
 /**
+ * @fn void flush(int session_id, int source_id)
+ * @brief Flush a media source for a session.
+ *
+ * @param[in]  session_id   The id of the A/V session.
+ * @param[in]  source_id    The id of the media source to flush.
+ * @param[in]  reset_time   True if time should be reset
+ *
+ */
+message FlushRequest {
+  optional int32 session_id = 1 [default = -1];
+  optional int32 source_id = 2 [default = -1];
+  optional bool reset_time = 3 [default = false];
+}
+message FlushResponse {
+}
+
+/**
  * @brief Event sent the playback state has changed.
  *
  * @param session_id   The id of the A/V session the status is for.
@@ -427,7 +444,7 @@ message PlaybackStateChangeEvent {
         PLAYING = 2;        ///< The backend player is playing media.
         PAUSED = 3;         ///< The backend player is paused.
         SEEKING = 4;        ///< The backend player is seeking a new playback position.
-        FLUSHED = 5;        ///< The backend player has flushed the media data.
+        SEEK_DONE = 5;      ///< The backend player has finished seek.
         STOPPED = 6;        ///< The backend player has stopped playback.
         END_OF_STREAM = 7;  ///< The backend player has got to the end of playback.
         FAILURE = 8;        ///< The backend player failed to set playback state.
@@ -571,6 +588,17 @@ message SetLogLevelsEvent {
     optional uint32 commonLogLevels = 4;
 }
 
+/**
+ * @brief Event sent by the server when a source has been flushed.
+ *
+ * @param session_id        The id of the A/V session the request is for.
+ * @param source_id         The id of the media source the request is for.
+ */
+message SourceFlushedEvent {
+    optional int32 session_id = 1 [default = -1];
+    optional int32 source_id = 2 [default = -1];
+}
+
 service MediaPipelineModule {
     /**
      * @brief Creates a new playback session.
@@ -703,5 +731,12 @@ service MediaPipelineModule {
      * @see GetMuteRequest
      */
     rpc getMute(GetMuteRequest) returns (GetMuteResponse) {
+    }
+
+    /**
+     * @brief Flush the media source.
+     * @see FlushRequest
+     */
+    rpc flush(FlushRequest) returns (FlushResponse) {
     }
 }

@@ -24,7 +24,7 @@ namespace firebolt::rialto::client
 void AttachedSources::add(std::uint32_t id, const MediaSourceType &mediaSourceType)
 {
     std::unique_lock<std::mutex> lock{m_mutex};
-    m_attachedSources.emplace(id, mediaSourceType);
+    m_attachedSources.emplace(id, Source{mediaSourceType});
 }
 
 void AttachedSources::remove(std::uint32_t id)
@@ -33,7 +33,7 @@ void AttachedSources::remove(std::uint32_t id)
     m_attachedSources.erase(id);
 }
 
-MediaSourceType AttachedSources::get(std::uint32_t id) const
+MediaSourceType AttachedSources::getType(std::uint32_t id) const
 {
     std::unique_lock<std::mutex> lock{m_mutex};
     auto iter = m_attachedSources.find(id);
@@ -41,6 +41,28 @@ MediaSourceType AttachedSources::get(std::uint32_t id) const
     {
         return MediaSourceType::UNKNOWN;
     }
-    return iter->second;
+    return iter->second.type;
+}
+
+bool AttachedSources::isFlushing(std::uint32_t id) const
+{
+    std::unique_lock<std::mutex> lock{m_mutex};
+    auto iter = m_attachedSources.find(id);
+    if (m_attachedSources.end() == iter)
+    {
+        return false;
+    }
+    return iter->second.isFlushing;
+}
+
+void AttachedSources::setFlushing(std::uint32_t id, bool flushing)
+{
+    std::unique_lock<std::mutex> lock{m_mutex};
+    auto iter = m_attachedSources.find(id);
+    if (m_attachedSources.end() == iter)
+    {
+        return;
+    }
+    iter->second.isFlushing = flushing;
 }
 } // namespace firebolt::rialto::client

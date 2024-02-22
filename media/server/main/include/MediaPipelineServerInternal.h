@@ -128,6 +128,8 @@ public:
 
     bool getMute(bool &mute) override;
 
+    bool flush(int32_t sourceId, bool resetTime) override;
+
     AddSegmentStatus addSegment(uint32_t needDataRequestId, const std::unique_ptr<MediaSegment> &mediaSegment) override;
 
     std::weak_ptr<IMediaPipelineClient> getClient() override;
@@ -149,6 +151,8 @@ public:
     void notifyBufferUnderflow(MediaSourceType mediaSourceType) override;
 
     void notifyPlaybackError(MediaSourceType mediaSourceType, PlaybackError error) override;
+
+    void notifySourceFlushed(MediaSourceType mediaSourceType) override;
 
 protected:
     /**
@@ -432,6 +436,16 @@ protected:
      * @param[out] heartbeatHandler : The heartbeat handler instance
      */
     void pingInternal(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler);
+
+    /**
+     * @brief Flushes a source.
+     *
+     * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[in] resetTime : True if time should be reset
+     *
+     * @retval true on success.
+     */
+    virtual bool flushInternal(int32_t sourceId, bool resetTime);
 };
 
 }; // namespace firebolt::rialto::server

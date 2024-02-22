@@ -149,6 +149,8 @@ public:
 
     void notifyPlaybackError(int32_t sourceId, PlaybackError error) override;
 
+    void notifySourceFlushed(int32_t sourceId) override;
+
     bool renderFrame() override;
 
     bool setVolume(double volume) override;
@@ -159,6 +161,8 @@ public:
 
     bool getMute(bool &mute) override;
 
+    bool flush(int32_t sourceId, bool resetTime) override;
+
     void notifyApplicationState(ApplicationState state) override;
 
 protected:
@@ -167,6 +171,7 @@ protected:
      */
     struct NeedDataRequest
     {
+        int32_t sourceId;                                       /**< The source id. */
         std::shared_ptr<MediaPlayerShmInfo> shmInfo;            /**< The shared memory information. */
         std::unique_ptr<common::IMediaFrameWriter> frameWriter; /**< The frame writer used to add segments. */
     };

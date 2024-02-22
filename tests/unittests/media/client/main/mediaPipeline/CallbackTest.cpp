@@ -85,3 +85,15 @@ TEST_F(RialtoClientMediaPipelineCallbackTest, NotifyPlaybackError)
 
     m_mediaPipelineCallback->notifyPlaybackError(sourceId, error);
 }
+
+/**
+ * Test a notification of sourceFlushed is forwarded to the registered client.
+ */
+TEST_F(RialtoClientMediaPipelineCallbackTest, SourceFlushed)
+{
+    int32_t sourceId = 1;
+
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifySourceFlushed(sourceId));
+
+    m_mediaPipelineCallback->notifySourceFlushed(sourceId);
+}

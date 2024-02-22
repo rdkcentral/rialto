@@ -120,6 +120,8 @@ protected:
     void shouldRenderFrame();
     void shouldRenderFrameFailure();
     void shouldGetPosition(const int64_t position);
+    void shouldFlush();
+    void shouldFailToFlush();
 
     // MediaPipelineClient Expect methods
     void shouldNotifyNetworkStateBuffering();
@@ -141,7 +143,7 @@ protected:
     void shouldNotifyPlaybackStateStoppedSecondary();
     void shouldNotifyPlaybackStateFailure();
     void shouldNotifyPlaybackStateSeeking();
-    void shouldNotifyPlaybackStateFlushed();
+    void shouldNotifyPlaybackStateSeekDone();
     void shouldNotifyNeedDataAudio(const size_t framesToWrite);
     void shouldNotifyNeedDataVideo(const size_t framesToWrite);
     void shouldNotifyNeedDataVideoSecondary(const size_t framesToWrite);
@@ -152,6 +154,7 @@ protected:
     void shouldNotifyBufferUnderflowVideo();
     void shouldNotifyPlaybackErrorAudio();
     void shouldNotifyPlaybackErrorVideo();
+    void shouldNotifySourceFlushed();
 
     // MediaPipelineCapabilities Expect methods
     void shouldGetSupportedAudioMimeTypes();
@@ -220,6 +223,8 @@ protected:
     void getUnknownMimeTypes();
     void isMimeTypeSupported();
     void isMimeTypeNotSupported();
+    void flush();
+    void flushFailure();
 
     // Event methods
     void sendNotifyNetworkStateBuffering();
@@ -244,7 +249,7 @@ protected:
     void sendNotifyPlaybackStateStoppedSecondary();
     void sendNotifyPlaybackStateFailure();
     void sendNotifyPlaybackStateSeeking();
-    void sendNotifyPlaybackStateFlushed();
+    void sendNotifyPlaybackStateSeekDone();
     void sendNotifyPositionChanged(const int64_t position);
     void sendNotifyQosAudio();
     void sendNotifyQosVideo();
@@ -252,6 +257,7 @@ protected:
     void sendNotifyBufferUnderflowVideo();
     void sendNotifyPlaybackErrorAudio();
     void sendNotifyPlaybackErrorVideo();
+    void sendNotifySourceFlushed();
 
     // Check methods
     void checkMseAudioSegmentWritten(int32_t segmentId);

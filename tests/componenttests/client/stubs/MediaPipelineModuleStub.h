@@ -41,6 +41,7 @@ public:
     void notifyQosEvent(int sessionId, int32_t sourceId, const ::firebolt::rialto::QosInfo &qosInfo);
     void notifyBufferUnderflowEvent(int sessionId, int32_t sourceId);
     void notifyPlaybackErrorEvent(int sessionId, int32_t sourceId, PlaybackError error);
+    void notifySourceFlushed(int sessionId, int32_t sourceId);
 
     // Client helpers
     virtual void waitForClientConnect() = 0;
