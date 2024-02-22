@@ -242,7 +242,7 @@ void WebAudioPlayerTestMethods::shouldPlay()
 
 void WebAudioPlayerTestMethods::play()
 {
-    EXPECT_EQ(m_webAudioPlayer->play(), true);
+    EXPECT_TRUE(m_webAudioPlayer->play());
 }
 
 void WebAudioPlayerTestMethods::shouldNotPlay()
@@ -253,7 +253,7 @@ void WebAudioPlayerTestMethods::shouldNotPlay()
 
 void WebAudioPlayerTestMethods::doesNotPlay()
 {
-    EXPECT_EQ(m_webAudioPlayer->play(), false);
+    EXPECT_FALSE(m_webAudioPlayer->play());
 }
 
 void WebAudioPlayerTestMethods::shouldPause()
@@ -264,7 +264,7 @@ void WebAudioPlayerTestMethods::shouldPause()
 
 void WebAudioPlayerTestMethods::pause()
 {
-    EXPECT_EQ(m_webAudioPlayer->pause(), true);
+    EXPECT_TRUE(m_webAudioPlayer->pause());
 }
 
 void WebAudioPlayerTestMethods::shouldNotPause()
@@ -275,7 +275,7 @@ void WebAudioPlayerTestMethods::shouldNotPause()
 
 void WebAudioPlayerTestMethods::doesNotPause()
 {
-    EXPECT_EQ(m_webAudioPlayer->pause(), false);
+    EXPECT_FALSE(m_webAudioPlayer->pause());
 }
 
 void WebAudioPlayerTestMethods::shouldEos()
