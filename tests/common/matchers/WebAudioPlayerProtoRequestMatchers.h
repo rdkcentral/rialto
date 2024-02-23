@@ -95,4 +95,17 @@ MATCHER_P(webAudioGetBufferDelayRequestMatcher, webAudioPlayerHandle, "")
     return (kRequest->web_audio_player_handle() == webAudioPlayerHandle);
 }
 
+MATCHER_P2(webAudioSetVolumeRequestMatcher, webAudioPlayerHandle, volume, "")
+{
+    const ::firebolt::rialto::WebAudioSetVolumeRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::WebAudioSetVolumeRequest *>(arg);
+    return ((kRequest->web_audio_player_handle() == webAudioPlayerHandle) && (kRequest->volume() == volume));
+}
+
+MATCHER_P(webAudioGetVolumeRequestMatcher, webAudioPlayerHandle, "")
+{
+    const ::firebolt::rialto::WebAudioGetVolumeRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::WebAudioGetVolumeRequest *>(arg);
+    return (kRequest->web_audio_player_handle() == webAudioPlayerHandle);
+}
 #endif // WEB_AUDIO_PLAYER_PROTO_REQUEST_MATCHERS_H_

@@ -66,6 +66,8 @@ add_gtests (
         tests/webaudio/GetBufferDelayTest.cpp
         tests/webaudio/CreateWebAudioPlayerFailuresTest.cpp
         tests/webaudio/PlayPauseFailuresTest.cpp
+        tests/webaudio/WriteBufferFailuresTest.cpp
+        tests/webaudio/WebAudioPlayerVolumeTest.cpp
 
         # EME Component tests
         tests/eme/SessionReadyForDecryptionTest.cpp
