@@ -49,6 +49,7 @@ public:
     void willPushVideoData(const std::unique_ptr<IMediaPipeline::MediaSegment> &segment, GstBuffer &buffer,
                            GstCaps &capsCopy, bool shouldNotify);
     void willPause();
+    void willNotifyPaused();
     void willPlay();
     void willEos(GstAppSrc *appSrc);
     void willRemoveAudioSource();
@@ -62,6 +63,7 @@ public:
     void setupSource();
     void indicateAllSourcesAttached();
     void pause();
+    void notifyPaused();
     void gstNeedData(GstAppSrc *appSrc, int frameCount);
     void pushAudioData(unsigned dataCountToPush, int needDataFrameCount);
     void pushVideoData(unsigned dataCountToPush, int needDataFrameCount);

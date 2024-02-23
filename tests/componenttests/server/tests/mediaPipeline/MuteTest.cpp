@@ -91,7 +91,6 @@ public:
  *  Step 4: Pause
  *   Pause the content.
  *   Expect that gstreamer pipeline is paused.
- *   Expect that server notifies the client that the Network state has changed to PAUSED.
  *
  *  Step 5: Set Mute
  *   Send SetMuteReq and expect successful response

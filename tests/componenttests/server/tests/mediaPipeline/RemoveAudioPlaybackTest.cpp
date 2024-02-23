@@ -123,12 +123,12 @@ private:
  *  Step 4: Pause
  *   Pause the content.
  *   Expect that gstreamer pipeline is paused.
- *   Expect that server notifies the client that the Network state has changed to PAUSED.
  *
  *  Step 5: Write video and audio frames
  *   Write video frames.
  *   Write audio frames.
  *   Expect that server notifies the client that the Network state has changed to BUFFERED.
+ *   Expect that server notifies the client that the Network state has changed to PAUSED.
  *
  *  Step 6: Play
  *   Play the content.
@@ -235,6 +235,8 @@ TEST_F(RemoveAudioPlaybackTest, RemoveAudio)
         EXPECT_EQ(receivedNetworkStateChange->session_id(), m_sessionId);
         EXPECT_EQ(receivedNetworkStateChange->state(), ::firebolt::rialto::NetworkStateChangeEvent_NetworkState_BUFFERED);
     }
+    willNotifyPaused();
+    notifyPaused();
 
     // Step 6: Play
     willPlay();
@@ -243,6 +245,8 @@ TEST_F(RemoveAudioPlaybackTest, RemoveAudio)
     // Step 7: Pause
     willPause();
     pause();
+    willNotifyPaused();
+    notifyPaused();
 
     // Step 8: Remove Audio Source
     willRemoveAudioSource();
@@ -258,6 +262,8 @@ TEST_F(RemoveAudioPlaybackTest, RemoveAudio)
     // Step 11: Pause
     willPause();
     pause();
+    willNotifyPaused();
+    notifyPaused();
 
     // Step 12: Reattach audio source
     willReattachAudioSource();

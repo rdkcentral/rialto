@@ -175,7 +175,6 @@ public:
  *  Step 4: Pause
  *   Pause the content.
  *   Expect that gstreamer pipeline is paused.
- *   Expect that server notifies the client that the Network state has changed to PAUSED.
  *
  *  Step 5: Write 1 audio frame
  *   Gstreamer Stub notifies, that it needs audio data
@@ -191,8 +190,9 @@ public:
  *   Send HaveData message
  *   Expect that server notifies the client that it needs 3 frames of video data.
  *
- *  Step 7: Notify buffered
+ *  Step 7: Notify buffered and Paused
  *   Expect that server notifies the client that the Network state has changed to BUFFERED.
+ *   Gstreamer Stub notifies, that pipeline state is in PAUSED state
  *
  *  Step 8: SetPosition in paused state
  *   SetPosition to position 10s.
@@ -274,7 +274,7 @@ TEST_F(SetPositionTest, SetPosition)
 
     // Step 5: Write 1 audio frame
     // Step 6: Write 1 video frame
-    // Step 7: Notify buffered
+    // Step 7: Notify buffered and Paused
     gstNeedData(&m_audioAppSrc, kFrameCount);
     gstNeedData(&m_videoAppSrc, kFrameCount);
     {
@@ -288,6 +288,8 @@ TEST_F(SetPositionTest, SetPosition)
         EXPECT_EQ(receivedNetworkStateChange->session_id(), m_sessionId);
         EXPECT_EQ(receivedNetworkStateChange->state(), ::firebolt::rialto::NetworkStateChangeEvent_NetworkState_BUFFERED);
     }
+    willNotifyPaused();
+    notifyPaused();
 
     // Step 8: SetPosition in paused state
     willSetPosition(kPositionInPaused);
@@ -367,7 +369,6 @@ TEST_F(SetPositionTest, SetPosition)
  *  Step 4: Pause
  *   Pause the content.
  *   Expect that gstreamer pipeline is paused.
- *   Expect that server notifies the client that the Network state has changed to PAUSED.
  *
  *  Step 5: Write 1 audio frame
  *   Gstreamer Stub notifies, that it needs audio data
@@ -383,8 +384,10 @@ TEST_F(SetPositionTest, SetPosition)
  *   Send HaveData message
  *   Expect that server notifies the client that it needs 3 frames of video data.
  *
- *  Step 7: Notify buffered
+ *  Step 7: Notify buffered and Paused
  *   Expect that server notifies the client that the Network state has changed to BUFFERED.
+ *   Gstreamer Stub notifies, that pipeline state is in PAUSED state
+ *   Expect that server notifies the client that the Network state has changed to PAUSED.
  *
  *  Step 8: SetPosition Failure
  *   SetPosition to position 10s.
@@ -443,7 +446,7 @@ TEST_F(SetPositionTest, SetPositionFailure)
 
     // Step 5: Write 1 audio frame
     // Step 6: Write 1 video frame
-    // Step 7: Notify buffered
+    // Step 7: Notify buffered and Paused
     gstNeedData(&m_audioAppSrc, kFrameCount);
     gstNeedData(&m_videoAppSrc, kFrameCount);
     {
@@ -457,6 +460,8 @@ TEST_F(SetPositionTest, SetPositionFailure)
         EXPECT_EQ(receivedNetworkStateChange->session_id(), m_sessionId);
         EXPECT_EQ(receivedNetworkStateChange->state(), ::firebolt::rialto::NetworkStateChangeEvent_NetworkState_BUFFERED);
     }
+    willNotifyPaused();
+    notifyPaused();
 
     // Step 8: SetPosition Failure
     willFailToSetPosition();
