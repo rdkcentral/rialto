@@ -72,7 +72,6 @@ constexpr int kFrameCountInPlayingState{24};
  *  Step 4: Pause
  *   Pause the content.
  *   Expect that gstreamer pipeline is paused.
- *   Expect that server notifies the client that the Network state has changed to PAUSED.
  *
  *  Step 5: Write 1 audio frame
  *   Gstreamer Stub notifies, that it needs audio data
@@ -84,34 +83,38 @@ constexpr int kFrameCountInPlayingState{24};
  *  Step 6: Notify buffered
  *   Expect that server notifies the client that the Network state has changed to BUFFERED.
  *
- *  Step 7: Play
+ *  Step 7: Notify Paused
+ *   Gstreamer Stub notifies, that pipeline state is in PAUSED state
+ *   Expect that server notifies the client that the Network state has changed to PAUSED.
+ *
+ *  Step 8: Play
  *   Play the content.
  *   Expect that gstreamer pipeline is in playing state
  *   Expect that server notifies the client that the Playback state has changed to PLAYING.
  *
- *  Step 8: Write 1 audio frame
+ *  Step 9: Write 1 audio frame
  *   Write 1 frame of audio data to the shared buffer.
  *   Send HaveData
  *   Expect that server notifies the client that it needs 24 frames of audio data.
  *
- *  Step 9: End of audio stream
+ *  Step 10: End of audio stream
  *   Send audio haveData with one frame and EOS status
  *   Expect that Gstreamer is notified about end of stream
  *
- *  Step 10: Notify end of stream
+ *  Step 11: Notify end of stream
  *   Simulate, that gst_message_eos is received by Rialto Server
  *   Expect that server notifies the client that the Network state has changed to END_OF_STREAM.
  *
- *  Step 11: Remove source
+ *  Step 12: Remove source
  *   Remove the audio source.
  *   Expect that audio source is removed.
  *
- *  Step 12: Stop
+ *  Step 13: Stop
  *   Stop the playback.
  *   Expect that stop propagated to the gstreamer pipeline.
  *   Expect that server notifies the client that the Playback state has changed to STOPPED.
  *
- *  Step 13: Destroy media session
+ *  Step 14: Destroy media session
  *   Send DestroySessionRequest.
  *   Expect that the session is destroyed on the server.
  *
@@ -164,29 +167,33 @@ TEST_F(MediaPipelineTest, AudioOnlyPlayback)
         EXPECT_EQ(receivedNetworkStateChange->state(), ::firebolt::rialto::NetworkStateChangeEvent_NetworkState_BUFFERED);
     }
 
-    // Step 7: Play
+    // Step 7: Notify Paused
+    willNotifyPaused();
+    notifyPaused();
+
+    // Step 8: Play
     willPlay();
     play();
 
-    // Step 8: Write 1 audio frame
+    // Step 9: Write 1 audio frame
     pushAudioData(kFramesToPush, kFrameCountInPlayingState);
 
-    // Step 9: End of audio stream
+    // Step 10: End of audio stream
     willEos(&m_audioAppSrc);
     eosAudio(kFramesToPush);
 
-    // Step 10: Notify end of stream
+    // Step 11: Notify end of stream
     gstNotifyEos();
 
-    // Step 11: Remove source
+    // Step 12: Remove source
     willRemoveAudioSource();
     removeSource(m_audioSourceId);
 
-    // Step 12: Stop
+    // Step 13: Stop
     willStop();
     stop();
 
-    // Step 13: Destroy media session
+    // Step 14: Destroy media session
     gstPlayerWillBeDestructed();
     destroySession();
 }

@@ -115,7 +115,6 @@ private:
  *  Step 4: Pause
  *   Pause the content.
  *   Expect that gstreamer pipeline is paused.
- *   Expect that server notifies the client that the Network state has changed to PAUSED.
  *
  *  Step 5: Set SetVideoWindow
  *   Send SetVideoWindowReq and expect successful response

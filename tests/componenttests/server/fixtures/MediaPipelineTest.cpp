@@ -255,6 +255,10 @@ void MediaPipelineTest::willPause()
 {
     EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&m_pipeline, GST_STATE_PAUSED))
         .WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
+}
+
+void MediaPipelineTest::willNotifyPaused()
+{
     EXPECT_CALL(*m_gstWrapperMock, gstMessageParseStateChanged(_, _, _, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(GST_STATE_NULL), SetArgPointee<2>(GST_STATE_PAUSED),
                               SetArgPointee<3>(GST_STATE_NULL)));
@@ -388,7 +392,10 @@ void MediaPipelineTest::pause()
 {
     auto pauseReq{createPauseRequest(m_sessionId)};
     ConfigureAction<Pause>(m_clientStub).send(pauseReq).expectSuccess();
+}
 
+void MediaPipelineTest::notifyPaused()
+{
     ExpectMessage<firebolt::rialto::PlaybackStateChangeEvent> expectedPlaybackStateChange{m_clientStub};
 
     m_gstreamerStub.sendStateChanged(GST_STATE_NULL, GST_STATE_PAUSED, GST_STATE_NULL);

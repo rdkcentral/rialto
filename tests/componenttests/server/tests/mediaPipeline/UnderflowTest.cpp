@@ -232,7 +232,6 @@ private:
  *  Step 6: Pause
  *   Pause the content.
  *   Expect that gstreamer pipeline is paused.
- *   Expect that server notifies the client that the Network state has changed to PAUSED.
  *
  *  Step 7: Write 1 audio frame
  *   Gstreamer Stub notifies, that it needs audio data
@@ -248,8 +247,10 @@ private:
  *   Send HaveData message
  *   Expect that server notifies the client that it needs 3 frames of video data.
  *
- *  Step 9: Notify buffered
+ *  Step 9: Notify buffered and Paused
  *   Expect that server notifies the client that the Network state has changed to BUFFERED.
+ *   Gstreamer Stub notifies, that pipeline state is in PAUSED state
+ *   Expect that server notifies the client that the Network state has changed to PAUSED.
  *
  *  Step 10: Play
  *   Play the content.
@@ -336,7 +337,7 @@ TEST_F(UnderflowTest, underflow)
 
     // Step 7: Write 1 audio frame
     // Step 8: Write 1 video frame
-    // Step 9: Notify buffered
+    // Step 9: Notify buffered and Paused
     gstNeedData(&m_audioAppSrc, kFrameCountInPausedState);
     gstNeedData(&m_videoAppSrc, kFrameCountInPausedState);
     {
@@ -350,6 +351,8 @@ TEST_F(UnderflowTest, underflow)
         EXPECT_EQ(receivedNetworkStateChange->session_id(), m_sessionId);
         EXPECT_EQ(receivedNetworkStateChange->state(), ::firebolt::rialto::NetworkStateChangeEvent_NetworkState_BUFFERED);
     }
+    willNotifyPaused();
+    notifyPaused();
 
     // Step 10: Play
     willPlay();
