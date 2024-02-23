@@ -62,6 +62,14 @@ public:
                 (::google::protobuf::RpcController * controller,
                  const ::firebolt::rialto::WebAudioGetBufferDelayRequest *request,
                  ::firebolt::rialto::WebAudioGetBufferDelayResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, setVolume,
+                (::google::protobuf::RpcController * controller,
+                 const ::firebolt::rialto::WebAudioSetVolumeRequest *request,
+                 ::firebolt::rialto::WebAudioSetVolumeResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, getVolume,
+                (::google::protobuf::RpcController * controller,
+                 const ::firebolt::rialto::WebAudioGetVolumeRequest *request,
+                 ::firebolt::rialto::WebAudioGetVolumeResponse *response, ::google::protobuf::Closure *done));
 
     void defaultReturn(::google::protobuf::RpcController *controller, ::google::protobuf::Closure *done)
     {
@@ -109,6 +117,13 @@ public:
     {
         firebolt::rialto::WebAudioGetBufferDelayResponse response;
         response.set_delay_frames(delayFrames);
+        return response;
+    }
+
+    ::firebolt::rialto::WebAudioGetVolumeResponse webAudioGetVolumeResponse(const double volume)
+    {
+        firebolt::rialto::WebAudioGetVolumeResponse response;
+        response.set_volume(volume);
         return response;
     }
 
