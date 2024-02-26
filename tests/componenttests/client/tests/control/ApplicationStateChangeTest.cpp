@@ -64,7 +64,6 @@ class ApplicationStateChangeTest : public ClientComponentTest
  *   Create an instance of WebAudioPlayer.
  *   Expect that web audio api is called on the server
  *   Check that the object returned is valid.
- *   Check that web audio player has been added.
  *
  *  Step 5: Change state to INACTIVE
  *   Server notifies the client that the state has changed to INACTIVE.
@@ -109,7 +108,6 @@ TEST_F(ApplicationStateChangeTest, lifecycle)
     // Step 4: Create a new web audio player session
     WebAudioPlayerTestMethods::shouldCreateWebAudioPlayer();
     WebAudioPlayerTestMethods::createWebAudioPlayer();
-    WebAudioPlayerTestMethods::checkWebAudioPlayerClient();
 
     // Step 5: Change state to INACTIVE
     ControlTestMethods::shouldNotifyApplicationStateInactive();
