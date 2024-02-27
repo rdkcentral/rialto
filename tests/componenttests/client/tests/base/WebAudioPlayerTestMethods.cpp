@@ -90,7 +90,7 @@ void WebAudioPlayerTestMethods::shouldWriteBuffer()
 
 void WebAudioPlayerTestMethods::writeBuffer()
 {
-    EXPECT_EQ(m_webAudioPlayer->writeBuffer(kNumberOfFrames, dataSrc.data()), true);
+    EXPECT_TRUE(m_webAudioPlayer->writeBuffer(kNumberOfFrames, dataSrc.data()));
 }
 
 void WebAudioPlayerTestMethods::checkBuffer()
@@ -99,6 +99,18 @@ void WebAudioPlayerTestMethods::checkBuffer()
     size_t dataLength = kNumberOfFrames * m_bytesPerFrame;
     std::vector<uint8_t> data = std::vector<uint8_t>(dataPtr, dataPtr + dataLength);
     EXPECT_EQ(data, dataSrc);
+}
+
+void WebAudioPlayerTestMethods::shouldNotWriteBuffer()
+{
+    EXPECT_CALL(*m_webAudioPlayerModuleMock,
+                writeBuffer(_, webAudioWriteBufferRequestMatcher(kWebAudioPlayerHandle, kNumberOfFrames), _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_webAudioPlayerModuleMock), &WebAudioPlayerModuleMock::failureReturn)));
+}
+
+void WebAudioPlayerTestMethods::doesNotWriteBuffer()
+{
+    EXPECT_FALSE(m_webAudioPlayer->writeBuffer(kNumberOfFrames, dataSrc.data()));
 }
 
 void WebAudioPlayerTestMethods::shouldCreateWebAudioPlayer()
@@ -302,6 +314,32 @@ void WebAudioPlayerTestMethods::getBufferDelay()
     uint32_t bufferDelay{51};
     EXPECT_EQ(m_webAudioPlayer->getBufferDelay(bufferDelay), true);
     EXPECT_EQ(kBufferDelay, bufferDelay);
+}
+
+void WebAudioPlayerTestMethods::shouldSetVolume(const double expectedVolume)
+{
+    EXPECT_CALL(*m_webAudioPlayerModuleMock,
+                setVolume(_, webAudioSetVolumeRequestMatcher(kWebAudioPlayerHandle, expectedVolume), _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_webAudioPlayerModuleMock), &WebAudioPlayerModuleMock::defaultReturn)));
+}
+
+void WebAudioPlayerTestMethods::shouldGetVolume(const double volume)
+{
+    EXPECT_CALL(*m_webAudioPlayerModuleMock, getVolume(_, webAudioGetVolumeRequestMatcher(kWebAudioPlayerHandle), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_webAudioPlayerModuleMock->webAudioGetVolumeResponse(volume)),
+                        WithArgs<0, 3>(Invoke(&(*m_webAudioPlayerModuleMock), &WebAudioPlayerModuleMock::defaultReturn))));
+}
+
+void WebAudioPlayerTestMethods::setVolume(const double volume)
+{
+    EXPECT_EQ(m_webAudioPlayer->setVolume(volume), true);
+}
+
+void WebAudioPlayerTestMethods::getVolume(const double expectedVolume)
+{
+    double returnVolume;
+    EXPECT_EQ(m_webAudioPlayer->getVolume(returnVolume), true);
+    EXPECT_EQ(returnVolume, expectedVolume);
 }
 
 WebAudioPlayerTestMethods::~WebAudioPlayerTestMethods() {}

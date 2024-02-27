@@ -60,20 +60,25 @@ class ApplicationStateChangeTest : public ClientComponentTest
  *   Expect that a session is created on the server.
  *   Check that the object returned is valid.
  *
- *  Step 4: Change state to INACTIVE
+ *  Step 4: Create a new web audio player session
+ *   Create an instance of WebAudioPlayer.
+ *   Expect that web audio api is called on the server
+ *   Check that the object returned is valid.
+ *
+ *  Step 5: Change state to INACTIVE
  *   Server notifies the client that the state has changed to INACTIVE.
  *   Expect that the state change notification is propagated to the client.
  *
- *  Step 5: Change state to RUNNING
+ *  Step 6: Change state to RUNNING
  *   Server notifies the client that the state has changed to RUNNING.
  *   Expect that the state change notification is propagated to the client.
  *   Expect that the shared memory region is fetched from the server.
  *
- *  Step 6: Change state to INACTIVE
+ *  Step 7: Change state to INACTIVE
  *   Server notifies the client that the state has changed to INACTIVE.
  *   Expect that the state change notification is propagated to the client.
  *
- *  Step 7: Disconnect the server
+ *  Step 8: Disconnect the server
  *   Server notifies the client that it has disconnected.
  *   Expect that the state is changed to UNKNOWN in the client.
  *
@@ -100,19 +105,23 @@ TEST_F(ApplicationStateChangeTest, lifecycle)
     MediaPipelineTestMethods::shouldCreateMediaSession();
     MediaPipelineTestMethods::createMediaPipeline();
 
-    // Step 4: Change state to INACTIVE
+    // Step 4: Create a new web audio player session
+    WebAudioPlayerTestMethods::shouldCreateWebAudioPlayer();
+    WebAudioPlayerTestMethods::createWebAudioPlayer();
+
+    // Step 5: Change state to INACTIVE
     ControlTestMethods::shouldNotifyApplicationStateInactive();
     ControlTestMethods::sendNotifyApplicationStateInactive();
 
-    // Step 5: Change state to RUNNING
+    // Step 6: Change state to RUNNING
     ControlTestMethods::shouldNotifyApplicationStateRunning();
     ControlTestMethods::sendNotifyApplicationStateRunning();
 
-    // Step 6: Change state to INACTIVE
+    // Step 7: Change state to INACTIVE
     ControlTestMethods::shouldNotifyApplicationStateInactive();
     ControlTestMethods::sendNotifyApplicationStateInactive();
 
-    // Step 7: Disconnect the server
+    // Step 8: Disconnect the server
     ControlTestMethods::shouldNotifyApplicationStateUnknown();
     ClientComponentTest::disconnectServer();
     ClientComponentTest::waitEvent();

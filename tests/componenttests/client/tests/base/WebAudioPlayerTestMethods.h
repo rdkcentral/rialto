@@ -87,8 +87,12 @@ protected:
     void shouldEos();
     void shouldGetBufferAvailable();
     void shouldWriteBuffer();
+    void shouldNotWriteBuffer();
+    void doesNotWriteBuffer();
     void checkBuffer();
     void shouldGetBufferDelay();
+    void shouldSetVolume(const double expectedVolume);
+    void shouldGetVolume(const double volume);
 
     // Api methods
     void createWebAudioPlayer();
@@ -100,6 +104,8 @@ protected:
     void getBufferAvailable();
     void writeBuffer();
     void getBufferDelay();
+    void setVolume(const double volume);
+    void getVolume(const double expectedVolume);
 
     // Component test helpers
     virtual std::shared_ptr<ServerStub> &getServerStub() = 0;
