@@ -32,6 +32,7 @@ public:
 
     void init(std::int32_t fd, std::uint32_t length);
     std::uint8_t *getShm() const;
+    std::uint32_t size() const;
 
 private:
     std::int32_t m_shmFd{-1};

@@ -66,6 +66,7 @@ add_gtests (
         control/ApplicationStateChangeTest.cpp
         control/HealthcheckTest.cpp
         mediaPipelineCapabilities/MediaPipelineCapabilitiesTest.cpp
+        webAudio/WebAudioTestMethods.cpp
         webAudio/WebAudioTest.cpp
         )
 

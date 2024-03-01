@@ -55,4 +55,9 @@ std::uint8_t *ShmHandle::getShm() const
 {
     return m_shmBuffer;
 }
+
+std::uint32_t ShmHandle::size() const
+{
+    return m_shmBufferLen;
+}
 } // namespace firebolt::rialto::server::ct
