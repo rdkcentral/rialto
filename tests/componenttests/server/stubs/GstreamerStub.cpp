@@ -99,7 +99,6 @@ void GstreamerStub::setupMessages(bool repeatedCallsToGstPipelineGetBus)
             {
                 std::unique_lock lock(m_mutex);
                 m_cv.wait_for(lock, std::chrono::milliseconds(kMessageTimeoutMs), [&]() { return m_message; });
-                // EXPECT_TRUE(m_message);
                 if (m_message)
                 {
                     GstMessage *msgCopy = m_message;
