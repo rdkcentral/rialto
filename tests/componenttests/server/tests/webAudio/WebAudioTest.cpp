@@ -174,7 +174,7 @@ TEST_F(WebAudioTest, testAllApisWithMultipleQueries)
     sendStateChanged(GST_STATE_PAUSED, GST_STATE_PLAYING, GST_STATE_NULL);
     checkMessageReceivedForStateChange(WebAudioPlayerStateEvent_WebAudioPlayerState_PLAYING);
 
-    // Step 6: Check the audio data has been sent to gsteamer
+    // Step 6: Check the audio data has been sent to gstreamer
     int avail = getBufferAvailable();
     EXPECT_EQ(avail, wholeLength);
     EXPECT_TRUE(m_dataFifo.empty());
@@ -186,7 +186,7 @@ TEST_F(WebAudioTest, testAllApisWithMultipleQueries)
     willWebAudioWriteBuffer(lengthToWrite);
     webAudioWriteBuffer(lengthToWrite);
 
-    // Step 9: Check the audio data has been sent to gsteamer
+    // Step 9: Check the audio data has been sent to gstreamer
     avail = getBufferAvailable();
     EXPECT_EQ(avail, wholeLength);
     EXPECT_TRUE(m_dataFifo.empty());
