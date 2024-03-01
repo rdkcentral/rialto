@@ -425,7 +425,11 @@ bool ChannelImpl::process()
     }
 
     if ((eventsMask & HaveSocketEvent) && !processSocketEvent())
+    {
+        std::lock_guard<std::mutex> locker(m_lock);
+        termChannel();
         return false;
+    }
 
     if (eventsMask & HaveTimeoutEvent)
         processTimeoutEvent();
