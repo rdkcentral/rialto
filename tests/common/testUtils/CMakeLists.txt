@@ -36,5 +36,4 @@ target_include_directories(
         .
 
         PRIVATE
-        ${GTEST_INCLUDE_DIRS}
     )

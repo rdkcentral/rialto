@@ -17,8 +17,6 @@
  * limitations under the License.
  */
 
-#include <gtest/gtest.h>
-
 #include "WebAudioTestCommon.h"
 
 namespace firebolt::rialto::server::testcommon
@@ -30,7 +28,6 @@ std::string getPcmFormat(bool isFloat, bool isSigned, int sampleSize, bool isBig
 
     if (isFloat)
     {
-        EXPECT_FALSE(isSigned); // Sanity check
         format += "F";
     }
     else if (isSigned)
@@ -46,7 +43,6 @@ std::string getPcmFormat(bool isFloat, bool isSigned, int sampleSize, bool isBig
 
     if (isBigEndian)
     {
-        EXPECT_FALSE(isFloat); // Sanity check
         format += "BE";
     }
     else
