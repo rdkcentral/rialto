@@ -49,6 +49,7 @@ public:
     void willConfigureSocket();
     void configureSutInActiveState();
     void connectClient();
+    void disconnectClient();
     void setStateActive();
     void setStateInactive();
 

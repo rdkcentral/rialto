@@ -71,6 +71,8 @@ RialtoServerComponentTest::RialtoServerComponentTest()
 
 RialtoServerComponentTest::~RialtoServerComponentTest()
 {
+    disconnectClient();
+
     wrappers::IFactoryAccessor::instance().glibWrapperFactory() = nullptr;
     wrappers::IFactoryAccessor::instance().gstWrapperFactory() = nullptr;
     wrappers::IFactoryAccessor::instance().linuxWrapperFactory() = nullptr;
@@ -103,6 +105,11 @@ void RialtoServerComponentTest::configureSutInActiveState()
 void RialtoServerComponentTest::connectClient()
 {
     EXPECT_TRUE(m_clientStub.connect());
+}
+
+void RialtoServerComponentTest::disconnectClient()
+{
+    m_clientStub.disconnect();
 }
 
 void RialtoServerComponentTest::setStateActive()

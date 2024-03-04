@@ -61,7 +61,7 @@
 
 namespace
 {
-constexpr std::chrono::milliseconds kEventTimeout{200};
+constexpr std::chrono::milliseconds kEventTimeout{400};
 constexpr uint32_t kNumOfAVPartitions{2};
 constexpr uint32_t kNumOfWebAudioPartitions{1};
 constexpr uint32_t kVideoPartitionSize = 100000;

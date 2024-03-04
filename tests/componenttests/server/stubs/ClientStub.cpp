@@ -24,14 +24,7 @@ namespace firebolt::rialto::server::ct
 {
 ClientStub::~ClientStub()
 {
-    if (m_ipcChannel)
-    {
-        m_ipcChannel->disconnect();
-    }
-    if (m_ipcThread.joinable())
-    {
-        m_ipcThread.join();
-    }
+    disconnect();
 }
 
 std::shared_ptr<::firebolt::rialto::ipc::IChannel> ClientStub::getChannel()
@@ -48,6 +41,19 @@ bool ClientStub::connect()
     }
     m_ipcThread = std::thread(&ClientStub::ipcThread, this);
     return true;
+}
+
+void ClientStub::disconnect()
+{
+    if (m_ipcChannel)
+    {
+        m_ipcChannel->disconnect();
+    }
+    if (m_ipcThread.joinable())
+    {
+        m_ipcThread.join();
+    }
+    m_ipcChannel.reset();
 }
 
 void ClientStub::ipcThread()
