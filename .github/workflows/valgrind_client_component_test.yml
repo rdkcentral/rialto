@@ -18,7 +18,7 @@
 #
 
 # This workflow builds and runs the rialto client component tests with valgrind. The workflow shall fail if 
-# any test fails or a memory leak is detectd by valgrind and the results of the tests are displayed in a table
+# any test fails or a memory leak is detected by valgrind and the results of the tests are displayed in a table
 # in github.
 
 name: valgrind_client_component_tests
@@ -27,9 +27,9 @@ name: valgrind_client_component_tests
 on:
   # Triggers the workflow on push or pull request events but only for the "master" branch
   push:
-    branches: [ "Add_valgrind_to_component_tests", "rdkcentral:Add_valgrind_to_component_tests" ]
+    branches: [ "master", "rdkcentral:master" ]
   pull_request:
-    branches: [ "Add_valgrind_to_component_tests", "rdkcentral:Add_valgrind_to_component_tests" ]
+    branches: [ "master", "rdkcentral:master" ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
