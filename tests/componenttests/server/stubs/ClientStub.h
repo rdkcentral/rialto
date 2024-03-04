@@ -34,6 +34,7 @@ public:
 
     std::shared_ptr<::firebolt::rialto::ipc::IChannel> getChannel() override;
     bool connect();
+    void disconnect();
 
 private:
     void ipcThread();
