@@ -426,8 +426,17 @@ bool ChannelImpl::process()
 
     if ((eventsMask & HaveSocketEvent) && !processSocketEvent())
     {
-        std::lock_guard<std::mutex> locker(m_lock);
-        termChannel();
+        std::map<uint64_t, MethodCall> callsToDelete;
+        {
+            std::lock_guard<std::mutex> locker(m_lock);
+            callsToDelete = m_methodCalls;
+            m_methodCalls.clear();
+        }
+
+        for (auto &entry : callsToDelete)
+        {
+            completeWithError(&entry.second, "Socket down");
+        }
         return false;
     }
 
