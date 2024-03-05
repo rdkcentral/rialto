@@ -1281,6 +1281,40 @@ public:
      * @retval TRUE if the seek could be performed.
      */
     virtual gboolean gstBaseSrcNewSeamlessSegment(GstBaseSrc *src, gint64 start, gint64 stop, gint64 time) const = 0;
+
+    /**
+     * @brief Create a new GstContext with the given parameters.
+     *
+     * @param context_type The type of the context to create.
+     * @param persistent Whether the context should be persistent.
+     * 
+     * @return GstContext* The newly created GstContext.
+     */
+    virtual GstContext *gstContextNew(const gchar *context_type, gboolean persistent) const = 0;
+
+    /**
+     * @brief Get a writable structure from a GstContext.
+     *
+     * @param[in] context The GstContext to get the structure from.
+     * 
+     * @return GstStructure* The writable structure from the context.
+     */
+    virtual GstStructure *gstContextWritableStructure(GstContext *context) const = 0;
+
+    /**
+     * @brief Set the context of a GstElement.
+     *
+     * @param[in] element The element to set the context for.
+     * @param[in] context The context to set.
+     */
+    virtual void gstElementSetContext(GstElement *element, GstContext *context) const = 0;
+
+    /**
+     * @brief Decrease the reference count of a GstContext.
+     *
+     * @param[in] context The context to unreference.
+     */
+    virtual void gstContextUnref(GstContext *context) const = 0;
 };
 
 }; // namespace firebolt::rialto::wrappers

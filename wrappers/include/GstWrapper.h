@@ -550,6 +550,23 @@ public:
     {
         return gst_base_src_new_seamless_segment(src, start, stop, time);
     }
+
+    GstContext* gstContextNew(const gchar* context_type, gboolean persistent) const override
+    {
+        return gst_context_new(context_type, persistent);
+    }
+
+    GstStructure* gstContextWritableStructure(GstContext * context) const override
+    {
+        return gst_context_writable_structure(context);
+    }
+
+    void gstElementSetContext(GstElement *element, GstContext *context) const override
+    {
+        gst_element_set_context(element, context);
+    }
+
+    void gstContextUnref(GstContext *context) const override { gst_context_unref(context); }
 };
 
 }; // namespace firebolt::rialto::wrappers
