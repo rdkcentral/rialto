@@ -181,7 +181,7 @@ void SessionManagementServer::start()
             {
                 m_ipcServer->wait(kPollInterval);
             }
-            RIALTO_SERVER_LOG_DEBUG("Session Management Server event loop finished.");
+            RIALTO_SERVER_LOG_MIL("Session Management Server event loop finished.");
         });
 }
 
