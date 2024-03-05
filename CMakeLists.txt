@@ -97,21 +97,49 @@ if ( RIALTO_ENABLE_DECRYPT_BUFFER )
     add_compile_definitions( RIALTO_ENABLE_DECRYPT_BUFFER )
 endif()
 
-# Retrieve the commit ID
+# Retrieve the commit ID or release tag
 execute_process(
-    COMMAND git rev-parse HEAD
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} 
-    RESULT_VARIABLE RESULT 
-    OUTPUT_VARIABLE COMMIT_ID 
+    COMMAND git tag --list "v[0-9]*.[0-9]*.[0-9]*" --sort=-creatordate
+    OUTPUT_VARIABLE TAGS
     OUTPUT_STRIP_TRAILING_WHITESPACE 
 )
 
+string(REGEX MATCH "v[0-9]*.[0-9]*.[0-9]*" LATEST_RELEASE_TAG "${TAGS}")
+
+if(LATEST_RELEASE_TAG STREQUAL "")
+    execute_process(
+        COMMAND git rev-parse HEAD
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} 
+        RESULT_VARIABLE RESULT 
+        OUTPUT_VARIABLE COMMIT_ID 
+        OUTPUT_STRIP_TRAILING_WHITESPACE 
+    )
+else()
+    set(COMMIT_ID ${LATEST_RELEASE_TAG})
+endif() 
+
 if(RESULT)
-    message("Failed to get git commit ID: ${RESULT}")
+    message("Failed to get git commit ID or release tag: ${RESULT}")
 endif()
 
 # Preprocesser Variable
 add_compile_definitions(COMMIT_ID="${COMMIT_ID}")
+
+# # Retrieve the commit ID
+# execute_process(
+#     COMMAND git rev-parse HEAD
+#     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} 
+#     RESULT_VARIABLE RESULT 
+#     OUTPUT_VARIABLE COMMIT_ID 
+#     OUTPUT_STRIP_TRAILING_WHITESPACE 
+# )
+
+# if(RESULT)
+#     message("Failed to get git commit ID: ${RESULT}")
+# endif()
+
+# # Preprocesser Variable
+# add_compile_definitions(COMMIT_ID="${COMMIT_ID}")
 
 # Add our local cmake directory to search for components
 set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake )

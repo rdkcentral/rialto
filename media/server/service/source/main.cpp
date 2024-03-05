@@ -27,14 +27,21 @@
 int main(int argc, char *argv[])
 {
     const char commitID[] = COMMIT_ID;
-
+    
     if (std::strlen(commitID) > 0)
     {
-        RIALTO_SERVER_LOG_MIL("Commit ID: %s", commitID);
+        if(commitID[0]=='v' && std::count(commitID, commitID + std::strlen(commitID), '.') == 2)
+        {
+            RIALTO_SERVER_LOG_MIL("Official Tag: %s", commitID);
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_MIL("Commit ID: %s", commitID);
+        }
     }
     else
     {
-        RIALTO_SERVER_LOG_WARN("Failed to get git commit ID.");
+        RIALTO_SERVER_LOG_WARN("Failed to get git commit ID!");
     }
 
     firebolt::rialto::server::gstInitalise(argc, argv);
