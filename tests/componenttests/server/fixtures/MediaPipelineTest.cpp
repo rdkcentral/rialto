@@ -300,7 +300,7 @@ void MediaPipelineTest::willRemoveAudioSource()
     EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("video"))).WillOnce(Return(&m_videoFlag));
     EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("native-video")))
         .WillOnce(Return(&m_nativeVideoFlag));
-    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_pipeline, StrEq("flags")));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_pipeline, StrEq("flags"))).WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
 }
 
 void MediaPipelineTest::willStop()
@@ -609,6 +609,10 @@ void MediaPipelineTest::removeSource(int sourceId)
 {
     auto removeSourceReq{createRemoveSourceRequest(m_sessionId, sourceId)};
     ConfigureAction<RemoveSource>(m_clientStub).send(removeSourceReq).expectSuccess();
+
+    // Sources other than audio do not do anything for RemoveSource 
+    if (m_audioSourceId == sourceId)
+        waitWorker();
 }
 
 void MediaPipelineTest::stop()
