@@ -2,7 +2,7 @@
 # If not stated otherwise in this file or this component's LICENSE file the
 # following copyright and licenses apply:
 #
-# Copyright 2023 Sky UK
+# Copyright 2024 Sky UK
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,8 +17,23 @@
 # limitations under the License.
 #
 
-add_subdirectory(publicClientMocks)
-add_subdirectory(externalLibraryMocks)
-add_subdirectory(matchers)
-add_subdirectory(protoUtils)
-add_subdirectory(testUtils)
+set( CMAKE_CXX_STANDARD 17 )
+
+set( CMAKE_CXX_STANDARD_REQUIRED ON )
+include( CheckCXXCompilerFlag )
+
+add_library(
+        RialtoTestCommonUtils
+        STATIC
+
+        WebAudioTestCommon.cpp
+    )
+
+target_include_directories(
+        RialtoTestCommonUtils
+
+        INTERFACE
+        .
+
+        PRIVATE
+    )

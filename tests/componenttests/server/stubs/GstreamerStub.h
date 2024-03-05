@@ -40,10 +40,11 @@ public:
     ~GstreamerStub() = default;
 
     void setupPipeline();
+    void setupMessages(bool repeatedCallsToGstPipelineGetBus);
     void setupRialtoSource();
     void setupAppSrcCallbacks(GstAppSrc *appSrc);
     void setupElement(GstElement *element);
-    void sendStateChanged(GstState oldState, GstState newState, GstState pendingState);
+    void sendStateChanged(GstState oldState, GstState newState, GstState pendingState, bool handleParseCall = false);
     void needData(GstAppSrc *appSrc, guint dataLength);
     void sendEos();
     void sendQos(GstElement *src);

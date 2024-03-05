@@ -241,10 +241,11 @@ void WebAudioPlayerModuleService::getBufferAvailable(::google::protobuf::RpcCont
     else
     {
         response->set_available_frames(availableFrames);
-        response->mutable_shm_info()->set_offset_main(shmInfo->offsetMain);
-        response->mutable_shm_info()->set_length_main(shmInfo->lengthMain);
-        response->mutable_shm_info()->set_offset_wrap(shmInfo->offsetWrap);
-        response->mutable_shm_info()->set_length_wrap(shmInfo->lengthWrap);
+        auto responseShmInfo = response->mutable_shm_info();
+        responseShmInfo->set_offset_main(shmInfo->offsetMain);
+        responseShmInfo->set_length_main(shmInfo->lengthMain);
+        responseShmInfo->set_offset_wrap(shmInfo->offsetWrap);
+        responseShmInfo->set_length_wrap(shmInfo->lengthWrap);
     }
     done->Run();
 }

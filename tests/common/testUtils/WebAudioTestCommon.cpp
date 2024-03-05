@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2023 Sky UK
+ * Copyright 2024 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,28 +17,40 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_CT_SHM_HANDLE_H_
-#define FIREBOLT_RIALTO_SERVER_CT_SHM_HANDLE_H_
+#include "WebAudioTestCommon.h"
 
-#include <cstdint>
-
-namespace firebolt::rialto::server::ct
+namespace firebolt::rialto::server::testcommon
 {
-class ShmHandle
+
+std::string getPcmFormat(bool isFloat, bool isSigned, int sampleSize, bool isBigEndian)
 {
-public:
-    ShmHandle() = default;
-    ~ShmHandle();
+    std::string format;
 
-    void init(std::int32_t fd, std::uint32_t length);
-    std::uint8_t *getShm() const;
-    std::uint32_t size() const;
+    if (isFloat)
+    {
+        format += "F";
+    }
+    else if (isSigned)
+    {
+        format += "S";
+    }
+    else
+    {
+        format += "U";
+    }
 
-private:
-    std::int32_t m_shmFd{-1};
-    std::uint32_t m_shmBufferLen{0};
-    std::uint8_t *m_shmBuffer{nullptr};
-};
-} // namespace firebolt::rialto::server::ct
+    format += std::to_string(sampleSize);
 
-#endif // FIREBOLT_RIALTO_SERVER_CT_SHM_HANDLE_H_
+    if (isBigEndian)
+    {
+        format += "BE";
+    }
+    else
+    {
+        format += "LE";
+    }
+
+    return format;
+}
+
+} // namespace firebolt::rialto::server::testcommon
