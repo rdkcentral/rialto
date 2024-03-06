@@ -725,7 +725,7 @@ TEST_F(DualVideoPlaybackTest, playbackFullDualVideo)
 /*
  * Component Test: No Resouce Manager Dual Video Playback Sequence
  * Test Objective:
- *  Test the playback of dual video content with "res-usage" disabled for the secondary video. 
+ *  Test the playback of dual video content with "res-usage" disabled for the secondary video.
  *  Check that all states are transitioned successfully
  *  and data is transferred to gstreamer.
  *
@@ -977,6 +977,5 @@ TEST_F(DualVideoPlaybackTest, playbackNoResouceManagerSecondaryVideo)
     gstPlayerWillBeDestructed();
     destroySession();
 }
-
 
 } // namespace firebolt::rialto::server::ct

@@ -1287,7 +1287,7 @@ public:
      *
      * @param context_type The type of the context to create.
      * @param persistent Whether the context should be persistent.
-     * 
+     *
      * @return GstContext* The newly created GstContext.
      */
     virtual GstContext *gstContextNew(const gchar *context_type, gboolean persistent) const = 0;
@@ -1296,7 +1296,7 @@ public:
      * @brief Get a writable structure from a GstContext.
      *
      * @param[in] context The GstContext to get the structure from.
-     * 
+     *
      * @return GstStructure* The writable structure from the context.
      */
     virtual GstStructure *gstContextWritableStructure(GstContext *context) const = 0;

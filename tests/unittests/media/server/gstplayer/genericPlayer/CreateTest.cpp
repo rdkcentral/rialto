@@ -93,8 +93,6 @@ protected:
         EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(_, StrEq("res-usage")));
         EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(_, StrEq("video-sink")));
         EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(reinterpret_cast<GstElementFactory *>(&m_westerosFactory)));
-
-
     }
 
     void expectSetContext()
@@ -200,8 +198,8 @@ TEST_F(RialtoServerCreateGstGenericPlayerTest, CreateWesterossinkFailureSetConte
 }
 
 /**
- * Test that a GstGenericPlayer can be created successfully for a secondary video if failure to set the res-usage flag on a westerossink, but context set
- * successfully.
+ * Test that a GstGenericPlayer can be created successfully for a secondary video if failure to set the res-usage flag
+ * on a westerossink, but context set successfully.
  */
 TEST_F(RialtoServerCreateGstGenericPlayerTest, SetResUsageFailureSetContextSuccessForSecondaryVideoSuccess)
 {
@@ -228,7 +226,7 @@ TEST_F(RialtoServerCreateGstGenericPlayerTest, SetResUsageFailureSetContextSucce
  */
 TEST_F(RialtoServerCreateGstGenericPlayerTest, CreateWesterossinkSuccessCreateContextFailureForSecondaryVideoSuccess)
 {
-        // Height < minimum
+    // Height < minimum
     m_videoReq.maxWidth = kMinPrimaryVideoWidth;
     m_videoReq.maxHeight = kMinPrimaryVideoHeight - 1;
 
@@ -245,7 +243,7 @@ TEST_F(RialtoServerCreateGstGenericPlayerTest, CreateWesterossinkSuccessCreateCo
  */
 TEST_F(RialtoServerCreateGstGenericPlayerTest, CreateWesterossinkSuccessCreateStructureFailureForSecondaryVideoSuccess)
 {
-        // Height < minimum
+    // Height < minimum
     m_videoReq.maxWidth = kMinPrimaryVideoWidth;
     m_videoReq.maxHeight = kMinPrimaryVideoHeight - 1;
 
@@ -265,7 +263,7 @@ TEST_F(RialtoServerCreateGstGenericPlayerTest, CreateWesterossinkSuccessCreateSt
  */
 TEST_F(RialtoServerCreateGstGenericPlayerTest, CreateWesterossinkFailsCreateContextFailureForSecondaryVideoFailure)
 {
-        // Height < minimum
+    // Height < minimum
     m_videoReq.maxWidth = kMinPrimaryVideoWidth;
     m_videoReq.maxHeight = kMinPrimaryVideoHeight - 1;
     expectCreatePipeline();

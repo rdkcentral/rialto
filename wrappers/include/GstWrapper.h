@@ -551,12 +551,12 @@ public:
         return gst_base_src_new_seamless_segment(src, start, stop, time);
     }
 
-    GstContext* gstContextNew(const gchar* context_type, gboolean persistent) const override
+    GstContext *gstContextNew(const gchar *context_type, gboolean persistent) const override
     {
         return gst_context_new(context_type, persistent);
     }
 
-    GstStructure* gstContextWritableStructure(GstContext * context) const override
+    GstStructure *gstContextWritableStructure(GstContext *context) const override
     {
         return gst_context_writable_structure(context);
     }
