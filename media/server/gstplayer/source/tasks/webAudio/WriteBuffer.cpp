@@ -17,11 +17,12 @@
  * limitations under the License.
  */
 
-#include "tasks/webAudio/WriteBuffer.h"
+#include <cinttypes>
+
 #include "IGstWrapper.h"
 #include "RialtoServerLogging.h"
 #include "WebAudioPlayerContext.h"
-#include <cinttypes>
+#include "tasks/webAudio/WriteBuffer.h"
 
 namespace firebolt::rialto::server::tasks::webaudio
 {
@@ -56,7 +57,10 @@ void WriteBuffer::execute() const
             if (bytesToWrite == m_mainLength + m_wrapLength)
             {
                 bytesWritten += m_gstWrapper->gstBufferFill(gstBuffer, 0, m_mainPtr, m_mainLength);
-                bytesWritten += m_gstWrapper->gstBufferFill(gstBuffer, bytesWritten, m_wrapPtr, m_wrapLength);
+                if (m_wrapLength > 0)
+                {
+                    bytesWritten += m_gstWrapper->gstBufferFill(gstBuffer, bytesWritten, m_wrapPtr, m_wrapLength);
+                }
             }
             else if (bytesToWrite > m_mainLength)
             {

@@ -29,6 +29,11 @@ using testing::SaveArg;
 using testing::SaveArgPointee;
 using testing::StrEq;
 
+namespace
+{
+constexpr int32_t kMessageTimeoutMs{200};
+}
+
 namespace firebolt::rialto::server::ct
 {
 GstreamerStub::GstreamerStub(const std::shared_ptr<testing::StrictMock<wrappers::GlibWrapperMock>> &glibWrapperMock,
@@ -67,7 +72,23 @@ void GstreamerStub::setupPipeline()
                 m_deepElementAddedUserData = data;
                 return m_deepElementAddedSignalId;
             }));
-    EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(m_pipeline))).WillOnce(Return(m_bus));
+    setupMessages(false);
+}
+
+void GstreamerStub::setupMessages(bool repeatedCallsToGstPipelineGetBus)
+{
+    if (repeatedCallsToGstPipelineGetBus)
+    {
+        // Web audio calls this twice, once from each of these...
+        //  GstDispatcherThread::gstBusEventHandler
+        //  GstWebAudioPlayer::termWebAudioPipeline
+        EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(m_pipeline))).WillRepeatedly(Return(m_bus));
+    }
+    else
+    {
+        EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(m_pipeline))).WillOnce(Return(m_bus));
+    }
+    // Called from the polling loop in GstDispatcherThread::gstBusEventHandler
     EXPECT_CALL(*m_gstWrapperMock,
                 gstBusTimedPopFiltered(m_bus, 100 * GST_MSECOND,
                                        static_cast<GstMessageType>(GST_MESSAGE_STATE_CHANGED | GST_MESSAGE_QOS |
@@ -77,12 +98,16 @@ void GstreamerStub::setupPipeline()
             [&](GstBus *bus, GstClockTime timeout, GstMessageType types)
             {
                 std::unique_lock lock(m_mutex);
-                m_cv.wait(lock, [&]() { return m_message; });
-                GstMessage *msgCopy = m_message;
-                m_message = nullptr;
-                EXPECT_CALL(*m_gstWrapperMock, gstMessageUnref(msgCopy))
-                    .WillOnce(Invoke([](GstMessage *msg) { gst_message_unref(msg); }));
-                return msgCopy;
+                m_cv.wait_for(lock, std::chrono::milliseconds(kMessageTimeoutMs), [&]() { return m_message; });
+                if (m_message)
+                {
+                    GstMessage *msgCopy = m_message;
+                    m_message = nullptr;
+                    EXPECT_CALL(*m_gstWrapperMock, gstMessageUnref(msgCopy))
+                        .WillOnce(Invoke([](GstMessage *msg) { gst_message_unref(msg); }));
+                    return msgCopy;
+                }
+                return m_message;
             }));
 }
 
@@ -107,10 +132,24 @@ void GstreamerStub::setupElement(GstElement *element)
     ((void (*)(GstElement *, GstElement *, gpointer))m_setupElementFunc)(m_pipeline, element, m_setupElementUserData);
 }
 
-void GstreamerStub::sendStateChanged(GstState oldState, GstState newState, GstState pendingState)
+void GstreamerStub::sendStateChanged(GstState oldState, GstState newState, GstState pendingState, bool handleParseCall)
 {
     std::unique_lock lock(m_mutex);
     m_message = gst_message_new_state_changed(GST_OBJECT(m_pipeline), oldState, newState, pendingState);
+
+    if (handleParseCall)
+    {
+        EXPECT_CALL(*m_gstWrapperMock, gstMessageParseStateChanged(m_message, _, _, _))
+            .WillRepeatedly(Invoke(
+                [oldState, newState, pendingState](GstMessage *message, GstState *p_oldstate, GstState *p_newstate,
+                                                   GstState *p_pending)
+                {
+                    *p_oldstate = oldState;
+                    *p_newstate = newState;
+                    *p_pending = pendingState;
+                }));
+    }
+
     m_cv.notify_one();
 }
 
