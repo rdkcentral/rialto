@@ -44,17 +44,17 @@ ClientController::ClientController(const std::shared_ptr<IControlIpcFactory> &Co
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    const char srcRev[] = SRCREV;
+    const char kSrcRev[] = SRCREV;
 
-    if (std::strlen(srcRev) > 0)
+    if (std::strlen(kSrcRev) > 0)
     {
-        if (srcRev[0] == 'v')
+        if (kSrcRev[0] == 'v')
         {
-            RIALTO_CLIENT_LOG_MIL("Release Tag(s): %s", srcRev);
+            RIALTO_CLIENT_LOG_MIL("Release Tag(s): %s", kSrcRev);
         }
         else
         {
-            RIALTO_CLIENT_LOG_MIL("Commit ID: %s", srcRev);
+            RIALTO_CLIENT_LOG_MIL("Commit ID: %s", kSrcRev);
         }
     }
     else

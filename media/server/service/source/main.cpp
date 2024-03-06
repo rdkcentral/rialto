@@ -26,17 +26,17 @@
 
 int main(int argc, char *argv[])
 {
-    const char srcRev[] = SRCREV;
+    const char kSrcRev[] = SRCREV;
 
-    if (std::strlen(srcRev) > 0)
+    if (std::strlen(kSrcRev) > 0)
     {
-        if (srcRev[0] == 'v')
+        if (kSrcRev[0] == 'v')
         {
-            RIALTO_SERVER_LOG_MIL("Release Tag(s): %s", srcRev);
+            RIALTO_SERVER_LOG_MIL("Release Tag(s): %s", kSrcRev);
         }
         else
         {
-            RIALTO_SERVER_LOG_MIL("Commit ID: %s", srcRev);
+            RIALTO_SERVER_LOG_MIL("Commit ID: %s", kSrcRev);
         }
     }
     else
