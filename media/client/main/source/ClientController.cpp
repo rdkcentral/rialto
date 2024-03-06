@@ -45,16 +45,17 @@ ClientController::ClientController(const std::shared_ptr<IControlIpcFactory> &Co
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     const char kSrcRev[] = SRCREV;
+    const char kTags[] = TAGS;
 
     if (std::strlen(kSrcRev) > 0)
     {
-        if (kSrcRev[0] == 'v')
+        if (kTags[0] == 'v')
         {
-            RIALTO_CLIENT_LOG_MIL("Release Tag(s): %s", kSrcRev);
+            RIALTO_CLIENT_LOG_MIL("Release Tag(s): %s (Commit ID: %s)", kTags, kSrcRev);
         }
         else
         {
-            RIALTO_CLIENT_LOG_MIL("Commit ID: %s", kSrcRev);
+            RIALTO_CLIENT_LOG_MIL("Release Tag(s): NO TAGS! (Commit ID: %s)", kSrcRev);
         }
     }
     else
