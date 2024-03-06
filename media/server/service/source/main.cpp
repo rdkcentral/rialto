@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
         }
         else
         {
-            RIALTO_SERVER_LOG_MIL("Release Tag(s): No Release Tags! (Commit ID: %s)", kTags, kSrcRev);
+            RIALTO_SERVER_LOG_MIL("Release Tag(s): No Release Tags! (Commit ID: %s)", kSrcRev);
         }
     }
     else
