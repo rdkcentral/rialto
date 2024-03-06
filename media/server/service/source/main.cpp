@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
     {
         if (srcRev[0] == 'v')
         {
-            RIALTO_SERVER_LOG_MIL("Official Tag(s): %s", srcRev);
+            RIALTO_SERVER_LOG_MIL("Release Tag(s): %s", srcRev);
         }
         else
         {

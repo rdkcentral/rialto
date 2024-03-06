@@ -50,7 +50,7 @@ ClientController::ClientController(const std::shared_ptr<IControlIpcFactory> &Co
     {
         if (srcRev[0] == 'v')
         {
-            RIALTO_CLIENT_LOG_MIL("Official Tag(s): %s", srcRev);
+            RIALTO_CLIENT_LOG_MIL("Release Tag(s): %s", srcRev);
         }
         else
         {
