@@ -121,7 +121,7 @@ GstGenericPlayer::GstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionS
     : m_gstPlayerClient(client), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_timerFactory{timerFactory},
       m_taskFactory{std::move(taskFactory)}
 {
-    RIALTO_SERVER_LOG_ERROR("KLOPS GstGenericPlayer is constructed.");
+    RIALTO_SERVER_LOG_DEBUG("GstGenericPlayer is constructed.");
 
     m_context.decryptionService = &decryptionService;
 
@@ -170,7 +170,7 @@ GstGenericPlayer::GstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionS
     // video in a dual video scenario.
     if ((kMinPrimaryVideoWidth > videoRequirements.maxWidth) || (kMinPrimaryVideoHeight > videoRequirements.maxHeight))
     {
-        RIALTO_SERVER_LOG_MIL("KLOPSSecondary video playback selected");
+        RIALTO_SERVER_LOG_MIL("Secondary video playback selected");
         bool westerossinkSecondaryVideoResult = setWesterossinkSecondaryVideo();
         bool ermContextResult = setErmContext();
         if (!westerossinkSecondaryVideoResult && !ermContextResult)
@@ -182,7 +182,7 @@ GstGenericPlayer::GstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionS
     }
     else
     {
-        RIALTO_SERVER_LOG_MIL("KLOPSPrimary video playback selected");
+        RIALTO_SERVER_LOG_MIL("Primary video playback selected");
     }
 
     m_gstDispatcherThread =
