@@ -66,6 +66,8 @@ add_gtests (
         control/ApplicationStateChangeTest.cpp
         control/HealthcheckTest.cpp
         mediaPipelineCapabilities/MediaPipelineCapabilitiesTest.cpp
+        webAudio/WebAudioTestMethods.cpp
+        webAudio/WebAudioTest.cpp
         )
 
 target_include_directories(
@@ -78,6 +80,7 @@ target_include_directories(
         $<TARGET_PROPERTY:RialtoIpcServer,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoServerMain,INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoTestCommonProtoUtils,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoTestCommonUtils,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
 target_link_libraries(
@@ -85,6 +88,7 @@ target_link_libraries(
         RialtoCommon
         RialtoProtobuf
         RialtoServerComponentTestsFixtures
+        RialtoTestCommonUtils
 )
 
 if ( COVERAGE_ENABLED )

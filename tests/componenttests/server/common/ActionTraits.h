@@ -26,6 +26,7 @@
 #include "mediapipelinecapabilitiesmodule.pb.h"
 #include "mediapipelinemodule.pb.h"
 #include "servermanagermodule.pb.h"
+#include "webaudioplayermodule.pb.h"
 
 namespace firebolt::rialto::server::ct
 {
@@ -434,6 +435,96 @@ struct IsMimeTypeSupported
     using Stub = ::firebolt::rialto::MediaPipelineCapabilitiesModule_Stub;
     static constexpr auto m_kFunction{&Stub::isMimeTypeSupported};
 };
+
+// web audio player module
+struct CreateWebAudioPlayer
+{
+    using RequestType = ::firebolt::rialto::CreateWebAudioPlayerRequest;
+    using ResponseType = ::firebolt::rialto::CreateWebAudioPlayerResponse;
+    using Stub = ::firebolt::rialto::WebAudioPlayerModule_Stub;
+    static constexpr auto m_kFunction{&Stub::createWebAudioPlayer};
+};
+
+struct DestroyWebAudioPlayer
+{
+    using RequestType = ::firebolt::rialto::DestroyWebAudioPlayerRequest;
+    using ResponseType = ::firebolt::rialto::DestroyWebAudioPlayerResponse;
+    using Stub = ::firebolt::rialto::WebAudioPlayerModule_Stub;
+    static constexpr auto m_kFunction{&Stub::destroyWebAudioPlayer};
+};
+
+struct WebAudioPlay
+{
+    using RequestType = ::firebolt::rialto::WebAudioPlayRequest;
+    using ResponseType = ::firebolt::rialto::WebAudioPlayResponse;
+    using Stub = ::firebolt::rialto::WebAudioPlayerModule_Stub;
+    static constexpr auto m_kFunction{&Stub::play};
+};
+
+struct WebAudioPause
+{
+    using RequestType = ::firebolt::rialto::WebAudioPauseRequest;
+    using ResponseType = ::firebolt::rialto::WebAudioPauseResponse;
+    using Stub = ::firebolt::rialto::WebAudioPlayerModule_Stub;
+    static constexpr auto m_kFunction{&Stub::pause};
+};
+
+struct WebAudioSetEos
+{
+    using RequestType = ::firebolt::rialto::WebAudioSetEosRequest;
+    using ResponseType = ::firebolt::rialto::WebAudioSetEosResponse;
+    using Stub = ::firebolt::rialto::WebAudioPlayerModule_Stub;
+    static constexpr auto m_kFunction{&Stub::setEos};
+};
+
+struct WebAudioGetBufferAvailable
+{
+    using RequestType = ::firebolt::rialto::WebAudioGetBufferAvailableRequest;
+    using ResponseType = ::firebolt::rialto::WebAudioGetBufferAvailableResponse;
+    using Stub = ::firebolt::rialto::WebAudioPlayerModule_Stub;
+    static constexpr auto m_kFunction{&Stub::getBufferAvailable};
+};
+
+struct WebAudioGetBufferDelay
+{
+    using RequestType = ::firebolt::rialto::WebAudioGetBufferDelayRequest;
+    using ResponseType = ::firebolt::rialto::WebAudioGetBufferDelayResponse;
+    using Stub = ::firebolt::rialto::WebAudioPlayerModule_Stub;
+    static constexpr auto m_kFunction{&Stub::getBufferDelay};
+};
+
+struct WebAudioWriteBuffer
+{
+    using RequestType = ::firebolt::rialto::WebAudioWriteBufferRequest;
+    using ResponseType = ::firebolt::rialto::WebAudioWriteBufferResponse;
+    using Stub = ::firebolt::rialto::WebAudioPlayerModule_Stub;
+    static constexpr auto m_kFunction{&Stub::writeBuffer};
+};
+
+struct WebAudioGetDeviceInfo
+{
+    using RequestType = ::firebolt::rialto::WebAudioGetDeviceInfoRequest;
+    using ResponseType = ::firebolt::rialto::WebAudioGetDeviceInfoResponse;
+    using Stub = ::firebolt::rialto::WebAudioPlayerModule_Stub;
+    static constexpr auto m_kFunction{&Stub::getDeviceInfo};
+};
+
+struct WebAudioSetVolume
+{
+    using RequestType = ::firebolt::rialto::WebAudioSetVolumeRequest;
+    using ResponseType = ::firebolt::rialto::WebAudioSetVolumeResponse;
+    using Stub = ::firebolt::rialto::WebAudioPlayerModule_Stub;
+    static constexpr auto m_kFunction{&Stub::setVolume};
+};
+
+struct WebAudioGetVolume
+{
+    using RequestType = ::firebolt::rialto::WebAudioGetVolumeRequest;
+    using ResponseType = ::firebolt::rialto::WebAudioGetVolumeResponse;
+    using Stub = ::firebolt::rialto::WebAudioPlayerModule_Stub;
+    static constexpr auto m_kFunction{&Stub::getVolume};
+};
+
 } // namespace firebolt::rialto::server::ct
 
 #endif // FIREBOLT_RIALTO_SERVER_CT_ACTION_TRAITS_H_

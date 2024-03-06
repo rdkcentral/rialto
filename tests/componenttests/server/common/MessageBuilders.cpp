@@ -23,6 +23,9 @@
 #include "MessageBuilders.h"
 #include "RialtoLogging.h"
 
+using ::google::protobuf::int32;
+using ::google::protobuf::uint32;
+
 namespace firebolt::rialto::server::ct
 {
 ::rialto::SetConfigurationRequest createGenericSetConfigurationReq()
@@ -81,7 +84,7 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
-::rialto::PingRequest createPingRequest(::google::protobuf::int32 id)
+::rialto::PingRequest createPingRequest(int32 id)
 {
     ::rialto::PingRequest request;
     request.set_id(id);
@@ -480,4 +483,95 @@ createGetSupportedMimeTypesRequest(const ProtoMediaSourceType &mediaSourceType)
     request.set_mime_type(mimeType);
     return request;
 }
+
+::firebolt::rialto::CreateWebAudioPlayerRequest
+createCreateWebAudioPlayerRequest(uint32 pcmRate, uint32 pcmChannels, uint32 pcmSampleSize, bool pcmIsBigEndian,
+                                  bool pcmIsSigned, bool pcmIsFloat, const std::string &audioMimeType, uint32 priority)
+{
+    ::firebolt::rialto::CreateWebAudioPlayerRequest request;
+    auto configPcm = request.mutable_config()->mutable_pcm();
+    configPcm->set_rate(pcmRate);
+    configPcm->set_channels(pcmChannels);
+    configPcm->set_sample_size(pcmSampleSize);
+    configPcm->set_is_big_endian(pcmIsBigEndian);
+    configPcm->set_is_signed(pcmIsSigned);
+    configPcm->set_is_float(pcmIsFloat);
+    request.set_audio_mime_type(audioMimeType);
+    request.set_priority(priority);
+    return request;
+}
+
+::firebolt::rialto::DestroyWebAudioPlayerRequest createDestroyWebAudioPlayerRequest(int32 webAudioPlayerHandle)
+{
+    ::firebolt::rialto::DestroyWebAudioPlayerRequest request;
+    request.set_web_audio_player_handle(webAudioPlayerHandle);
+    return request;
+}
+
+::firebolt::rialto::WebAudioPlayRequest createWebAudioPlayRequest(int32 webAudioPlayerHandle)
+{
+    ::firebolt::rialto::WebAudioPlayRequest request;
+    request.set_web_audio_player_handle(webAudioPlayerHandle);
+    return request;
+}
+
+::firebolt::rialto::WebAudioPauseRequest createWebAudioPauseRequest(int32 webAudioPlayerHandle)
+{
+    ::firebolt::rialto::WebAudioPauseRequest request;
+    request.set_web_audio_player_handle(webAudioPlayerHandle);
+    return request;
+}
+
+::firebolt::rialto::WebAudioSetEosRequest createWebAudioSetEosRequest(int32 webAudioPlayerHandle)
+{
+    ::firebolt::rialto::WebAudioSetEosRequest request;
+    request.set_web_audio_player_handle(webAudioPlayerHandle);
+    return request;
+}
+
+::firebolt::rialto::WebAudioGetBufferAvailableRequest createWebAudioGetBufferAvailableRequest(int32 webAudioPlayerHandle)
+{
+    ::firebolt::rialto::WebAudioGetBufferAvailableRequest request;
+    request.set_web_audio_player_handle(webAudioPlayerHandle);
+    return request;
+}
+
+::firebolt::rialto::WebAudioGetBufferDelayRequest createWebAudioGetBufferDelayRequest(int32 webAudioPlayerHandle)
+{
+    ::firebolt::rialto::WebAudioGetBufferDelayRequest request;
+    request.set_web_audio_player_handle(webAudioPlayerHandle);
+    return request;
+}
+
+::firebolt::rialto::WebAudioWriteBufferRequest createWebAudioWriteBufferRequest(int32 webAudioPlayerHandle,
+                                                                                uint32 numberOfFrames)
+{
+    ::firebolt::rialto::WebAudioWriteBufferRequest request;
+    request.set_web_audio_player_handle(webAudioPlayerHandle);
+    request.set_number_of_frames(numberOfFrames);
+    return request;
+}
+
+::firebolt::rialto::WebAudioGetDeviceInfoRequest createWebAudioGetDeviceInfoRequest(int32 webAudioPlayerHandle)
+{
+    ::firebolt::rialto::WebAudioGetDeviceInfoRequest request;
+    request.set_web_audio_player_handle(webAudioPlayerHandle);
+    return request;
+}
+
+::firebolt::rialto::WebAudioSetVolumeRequest createWebAudioSetVolumeRequest(int32 webAudioPlayerHandle, double volume)
+{
+    ::firebolt::rialto::WebAudioSetVolumeRequest request;
+    request.set_web_audio_player_handle(webAudioPlayerHandle);
+    request.set_volume(volume);
+    return request;
+}
+
+::firebolt::rialto::WebAudioGetVolumeRequest createWebAudioGetVolumeRequest(int32 webAudioPlayerHandle)
+{
+    ::firebolt::rialto::WebAudioGetVolumeRequest request;
+    request.set_web_audio_player_handle(webAudioPlayerHandle);
+    return request;
+}
+
 } // namespace firebolt::rialto::server::ct

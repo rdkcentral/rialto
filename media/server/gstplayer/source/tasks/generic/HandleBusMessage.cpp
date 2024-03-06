@@ -230,7 +230,7 @@ void HandleBusMessage::execute() const
             }
             else
             {
-                RIALTO_SERVER_LOG_WARN("Unknown source type for element '%s', not propagating error", name);
+                RIALTO_SERVER_LOG_WARN("Unknown source type for element '%s', not propagating error", kName);
             }
         }
 

@@ -17,9 +17,10 @@
  * limitations under the License.
  */
 
-#include "tasks/webAudio/SetVolume.h"
-#include "RialtoServerLogging.h"
 #include <gst/gst.h>
+
+#include "RialtoServerLogging.h"
+#include "tasks/webAudio/SetVolume.h"
 
 namespace firebolt::rialto::server::tasks::webaudio
 {

@@ -17,10 +17,11 @@
  * limitations under the License.
  */
 
-#include "WebAudioPlayerServerInternal.h"
-#include "RialtoServerLogging.h"
 #include <limits.h>
 #include <stdexcept>
+
+#include "RialtoServerLogging.h"
+#include "WebAudioPlayerServerInternal.h"
 
 namespace
 {
@@ -484,7 +485,7 @@ bool WebAudioPlayerServerInternal::setVolume(double volume)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    auto task = [&]() { m_gstPlayer->setVolume(volume); };
+    auto task = [&, volume]() { m_gstPlayer->setVolume(volume); };
 
     m_mainThread->enqueueTask(m_mainThreadClientId, task);
 
