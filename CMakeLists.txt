@@ -97,7 +97,6 @@ if ( RIALTO_ENABLE_DECRYPT_BUFFER )
     add_compile_definitions( RIALTO_ENABLE_DECRYPT_BUFFER )
 endif()
 
-
 # Retrieve the commit ID or release tag
 execute_process(
     COMMAND git rev-parse HEAD
@@ -111,17 +110,18 @@ if(RESULT)
     message("Failed to get git commit ID: ${RESULT}")
 else()
     execute_process(
-        COMMAND git tag --list "v[0-9]*.[0-9]*.[0-9]" --sort=-creatordate --contains ${SRCREV}
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} 
+        COMMAND bash -c "git tag --list --contains ${SRCREV} | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$'"
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}  
         OUTPUT_VARIABLE TAGS
         OUTPUT_STRIP_TRAILING_WHITESPACE 
     )
-    string(REPLACE "\n" ", " TAGS "${TAGS}")
-
-    if(NOT LATEST_RELEASE_TAG STREQUAL "")
-        set(SRCREV ${TAGS})
-    endif() 
 endif()
+
+string(REPLACE "\n" ", " TAGS "${TAGS}")
+
+if(NOT TAGS STREQUAL "")
+    set(SRCREV ${TAGS})
+endif() 
 
 # Preprocesser Variable
 add_compile_definitions(SRCREV="${SRCREV}")
