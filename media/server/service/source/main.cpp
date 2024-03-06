@@ -31,13 +31,13 @@ int main(int argc, char *argv[])
 
     if (std::strlen(kSrcRev) > 0)
     {
-        if (kTags[0] == 'v')
+        if (std::strlen(kTags) > 0)
         {
             RIALTO_SERVER_LOG_MIL("Release Tag(s): %s (Commit ID: %s)", kTags, kSrcRev);
         }
         else
         {
-            RIALTO_SERVER_LOG_MIL("Release Tag(s): NO TAGS! (Commit ID: %s)", kSrcRev);
+            RIALTO_SERVER_LOG_MIL("Release Tag(s): No Release Tags! (Commit ID: %s)", kTags, kSrcRev);
         }
     }
     else
