@@ -44,15 +44,22 @@ ClientController::ClientController(const std::shared_ptr<IControlIpcFactory> &Co
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    const char commitID[] = COMMIT_ID;
+    const char srcRev[] = SRCREV;
 
-    if (std::strlen(commitID) > 0)
+    if (std::strlen(srcRev) > 0)
     {
-        RIALTO_CLIENT_LOG_MIL("Commit ID: %s", commitID);
+        if (srcRev[0] == 'v')
+        {
+            RIALTO_CLIENT_LOG_MIL("Official Tag(s): %s", srcRev);
+        }
+        else
+        {
+            RIALTO_CLIENT_LOG_MIL("Commit ID: %s", srcRev);
+        }
     }
     else
     {
-        RIALTO_CLIENT_LOG_WARN("Failed to get git commit ID.");
+        RIALTO_CLIENT_LOG_WARN("Failed to get git commit ID!");
     }
 
     m_controlIpc = ControlIpcFactory->createControlIpc(this);

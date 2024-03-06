@@ -26,17 +26,17 @@
 
 int main(int argc, char *argv[])
 {
-    const char commitID[] = COMMIT_ID;
-    
-    if (std::strlen(commitID) > 0)
+    const char srcRev[] = SRCREV;
+
+    if (std::strlen(srcRev) > 0)
     {
-        if(commitID[0]=='v' && std::count(commitID, commitID + std::strlen(commitID), '.') == 2)
+        if (srcRev[0] == 'v')
         {
-            RIALTO_SERVER_LOG_MIL("Official Tag: %s", commitID);
+            RIALTO_SERVER_LOG_MIL("Official Tag(s): %s", srcRev);
         }
         else
         {
-            RIALTO_SERVER_LOG_MIL("Commit ID: %s", commitID);
+            RIALTO_SERVER_LOG_MIL("Commit ID: %s", srcRev);
         }
     }
     else
