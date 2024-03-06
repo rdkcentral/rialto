@@ -177,8 +177,8 @@ TEST_F(RialtoServerCreateGstGenericPlayerTest, CreateDestroySecondaryVideoNoWest
 }
 
 /**
- * Test that a GstGenericPlayer can be created successfully for a secondary video if no westeros sink, but context set
- * successfully.
+ * Test that a GstGenericPlayer can be created successfully for a secondary video if westerosink creation fails, but
+ * context set successfully.
  */
 TEST_F(RialtoServerCreateGstGenericPlayerTest, CreateWesterossinkFailureSetContextSuccessForSecondaryVideoSuccess)
 {

@@ -98,6 +98,11 @@ public:
         EXPECT_CALL(*m_gstWrapperMock, gstElementQueryPosition(&m_secondaryPipeline, GST_FORMAT_TIME, _))
             .Times(AtLeast(0))
             .WillRepeatedly(Return(false));
+    }
+
+    void secondaryGstPlayerWithNoResUsageWillBeCreated()
+    {
+        secondaryGstPlayerWillBeCreated();
 
         EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(StrEq("westerossink")))
             .WillOnce(Return(reinterpret_cast<GstElementFactory *>(&m_westerosFactory)));
@@ -723,7 +728,7 @@ TEST_F(DualVideoPlaybackTest, playbackFullDualVideo)
 }
 
 /*
- * Component Test: No Resouce Manager Dual Video Playback Sequence
+ * Component Test: No Resource Manager Dual Video Playback Sequence
  * Test Objective:
  *  Test the playback of dual video content with "res-usage" disabled for the secondary video.
  *  Check that all states are transitioned successfully
@@ -897,8 +902,8 @@ TEST_F(DualVideoPlaybackTest, playbackNoResouceManagerSecondaryVideo)
     // Step 4: Create a secondary media session
     createSecondaryLimitedSession();
 
-    // Step 5: Load content for secondary media session
-    secondaryGstPlayerWillBeCreated();
+    // Step 5: Load content for secondary media session with no resource usage
+    secondaryGstPlayerWithNoResUsageWillBeCreated();
     loadSecondary();
 
     // Step 6: Attach video only source to secondary

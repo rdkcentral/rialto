@@ -197,7 +197,7 @@ private:
     bool setWesterossinkSecondaryVideo();
 
     /**
-     * @brief Creates a "erm" gstreamer context
+     * @brief Creates an "erm" gstreamer context in the pipeline
      *
      * @retval true on success.
      */
