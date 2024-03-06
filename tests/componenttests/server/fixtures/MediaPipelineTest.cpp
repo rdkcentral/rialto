@@ -331,7 +331,7 @@ void MediaPipelineTest::willSetAudioAndVideoFlags()
 void MediaPipelineTest::createSession()
 {
     // Use matchResponse to store session id
-    auto request{createCreateSessionRequest()};
+    auto request{createCreateSessionRequest(kWidth, kHeight)};
     ConfigureAction<CreateSession>(m_clientStub)
         .send(request)
         .expectSuccess()

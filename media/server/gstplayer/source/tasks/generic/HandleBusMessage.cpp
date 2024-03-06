@@ -217,13 +217,13 @@ void HandleBusMessage::execute() const
 
         if ((PlaybackError::UNKNOWN != rialtoError) && (m_gstPlayerClient))
         {
-            const gchar *name = GST_ELEMENT_NAME(GST_ELEMENT(GST_MESSAGE_SRC(m_message)));
-            if (g_strrstr(name, "video"))
+            const gchar *kName = GST_ELEMENT_NAME(GST_ELEMENT(GST_MESSAGE_SRC(m_message)));
+            if (g_strrstr(kName, "video"))
             {
                 m_gstPlayerClient->notifyPlaybackError(firebolt::rialto::MediaSourceType::VIDEO,
                                                        PlaybackError::DECRYPTION);
             }
-            else if (g_strrstr(name, "audio"))
+            else if (g_strrstr(kName, "audio"))
             {
                 m_gstPlayerClient->notifyPlaybackError(firebolt::rialto::MediaSourceType::AUDIO,
                                                        PlaybackError::DECRYPTION);

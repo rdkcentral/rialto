@@ -51,11 +51,11 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
-::firebolt::rialto::CreateSessionRequest createCreateSessionRequest()
+::firebolt::rialto::CreateSessionRequest createCreateSessionRequest(int width, int height)
 {
     ::firebolt::rialto::CreateSessionRequest request;
-    request.set_max_width(kWidth);
-    request.set_max_height(kHeight);
+    request.set_max_width(width);
+    request.set_max_height(height);
     return request;
 }
 

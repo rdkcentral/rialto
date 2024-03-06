@@ -98,6 +98,24 @@ public:
         EXPECT_CALL(*m_gstWrapperMock, gstElementQueryPosition(&m_secondaryPipeline, GST_FORMAT_TIME, _))
             .Times(AtLeast(0))
             .WillRepeatedly(Return(false));
+
+        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(StrEq("westerossink")))
+            .WillOnce(Return(reinterpret_cast<GstElementFactory *>(&m_westerosFactory)));
+        EXPECT_CALL(*m_gstWrapperMock,
+                    gstElementFactoryCreate(reinterpret_cast<GstElementFactory *>(&m_westerosFactory), _))
+            .WillOnce(Return(&m_westerosSink));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("res-usage"))).WillOnce(Return(&m_rectangleSpec));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(_, StrEq("res-usage")));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(_, StrEq("video-sink")));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(reinterpret_cast<GstElementFactory *>(&m_westerosFactory)));
+        EXPECT_CALL(*m_gstWrapperMock, gstContextNew(StrEq("erm"), false))
+            .WillOnce(Return(reinterpret_cast<GstContext *>(&m_dummyContext)));
+        EXPECT_CALL(*m_gstWrapperMock, gstContextWritableStructure(reinterpret_cast<GstContext *>(&m_dummyContext)))
+            .WillOnce(Return(&m_contextStructure));
+        EXPECT_CALL(*m_gstWrapperMock,
+                    gstStructureSetUintStub(&m_contextStructure, StrEq("res-usage"), G_TYPE_UINT, 0x0u));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementSetContext(_, reinterpret_cast<GstContext *>(&m_dummyContext)));
+        EXPECT_CALL(*m_gstWrapperMock, gstContextUnref(reinterpret_cast<GstContext *>(&m_dummyContext)));
     }
 
     void secondaryVideoSourceWillBeAttached()
@@ -240,10 +258,21 @@ public:
         EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_secondaryPipeline));
     }
 
-    void createSecondarySession()
+    void createSecondaryFullSession()
     {
         // Use matchResponse to store session id
-        auto request{createCreateSessionRequest()};
+        auto request{createCreateSessionRequest(kWidth, kHeight)};
+        ConfigureAction<CreateSession>(m_clientStub)
+            .send(request)
+            .expectSuccess()
+            .matchResponse([&](const ::firebolt::rialto::CreateSessionResponse &resp)
+                           { m_secondarySessionId = resp.session_id(); });
+    }
+
+    void createSecondaryLimitedSession()
+    {
+        // Use matchResponse to store session id
+        auto request{createCreateSessionRequest(640, 360)};
         ConfigureAction<CreateSession>(m_clientStub)
             .send(request)
             .expectSuccess()
@@ -424,6 +453,11 @@ public:
     int m_secondarySessionId{-1};
     int m_secondaryVideoSourceId{-1};
     GstElement m_secondaryPipeline{};
+    GstObject m_westerosFactory{};
+    GstElement m_westerosSink{};
+    GParamSpec m_rectangleSpec{};
+    char m_dummyContext{};
+    GstStructure m_contextStructure{};
     GstBus m_secondaryBus{};
     GstElement m_secondaryPlaysink{};
     GstBin m_secondaryRialtoSrcBin = {};
@@ -435,7 +469,7 @@ public:
     std::shared_ptr<::firebolt::rialto::NeedMediaDataEvent> m_lastSecondaryNeedData{nullptr};
 };
 /*
- * Component Test: Dual Video Playback Sequence
+ * Component Test: Full Dual Video Playback Sequence
  * Test Objective:
  *  Test the playback of dual video content. Check that all states are transitioned successfully
  *  and data is transferred to gstreamer.
@@ -583,7 +617,7 @@ public:
  *
  * Code:
  */
-TEST_F(DualVideoPlaybackTest, playback)
+TEST_F(DualVideoPlaybackTest, playbackFullDualVideo)
 {
     // Step 1: Create a primary media session
     createSession();
@@ -605,7 +639,7 @@ TEST_F(DualVideoPlaybackTest, playback)
     indicateAllSourcesAttached();
 
     // Step 4: Create a secondary media session
-    createSecondarySession();
+    createSecondaryFullSession();
 
     // Step 5: Load content for secondary media session
     secondaryGstPlayerWillBeCreated();
@@ -687,4 +721,262 @@ TEST_F(DualVideoPlaybackTest, playback)
     gstPlayerWillBeDestructed();
     destroySession();
 }
+
+/*
+ * Component Test: No Resouce Manager Dual Video Playback Sequence
+ * Test Objective:
+ *  Test the playback of dual video content with "res-usage" disabled for the secondary video. 
+ *  Check that all states are transitioned successfully
+ *  and data is transferred to gstreamer.
+ *
+ * Sequence Diagrams:
+ *  Create, Destroy - https://wiki.rdkcentral.com/pages/viewpage.action?pageId=226375556
+ *  Start/Resume Playback, Pause Playback, Stop, End of stream
+ *   - https://wiki.rdkcentral.com/display/ASP/Rialto+Playback+Design
+ *
+ * Test Setup:
+ *  Language: C++
+ *  Testing Framework: Google Test
+ *  Components: MediaPipeline
+ *
+ * Test Initialize:
+ *  Set Rialto Server to Active
+ *  Connect Rialto Client Stub
+ *  Map Shared Memory
+ *
+ * Test Steps:
+ *  Step 1: Create a primary media session
+ *   Send CreateSessionRequest to Rialto Server
+ *   Expect that successful CreateSessionResponse is received
+ *   Save returned session id
+ *
+ *  Step 2: Load content for primary media session
+ *   Send LoadRequest to Rialto Server
+ *   Expect that successful LoadResponse is received
+ *   Expect that GstPlayer instance is created.
+ *   Expect that client is notified that the NetworkState has changed to BUFFERING.
+ *
+ *  Step 3: Attach all sources for primary media session
+ *   Attach the audio source.
+ *   Expect that audio source is attached.
+ *   Attach the video source.
+ *   Expect that video source is attached.
+ *   Expect that rialto source is setup
+ *   Expect that all sources are attached.
+ *   Expect that the Playback state has changed to IDLE.
+ *
+ *  Step 4: Create a secondary media session
+ *   Send CreateSessionRequest to Rialto Server
+ *   Expect that successful CreateSessionResponse is received
+ *   Save returned session id
+ *
+ *  Step 5: Load content for secondary media session
+ *   Send LoadRequest to Rialto Server
+ *   Expect that successful LoadResponse is received
+ *   Expect that GstPlayer instance is created.
+ *   Expect that client is notified that the NetworkState has changed to BUFFERING.
+ *
+ *  Step 6: Attach video only source to secondary
+ *   Attach the video source.
+ *   Expect that video source is attached.
+ *   Expect that "res-usage" is disabled for the secondary video source
+ *   Expect that all sources are attached.
+ *   Expect that all sources are attached.
+ *   Expect that the Playback state has changed to IDLE.
+ *
+ *  Step 7: Play for primary media session
+ *   Play the content.
+ *   Expect that gstreamer pipeline is in playing state
+ *   Expect that server notifies the client that the Playback state has changed to PLAYING.
+ *
+ *  Step 8: Play for secondary media session
+ *   Play the content.
+ *   Expect that gstreamer pipeline is in playing state
+ *   Expect that server notifies the client that the Playback state has changed to PLAYING.
+ *
+ *  Step 9: Push initial data for primary session
+ *   Gstreamer Stub notifies, that it needs audio data
+ *   Expect that server notifies the client that it needs 3 frames of audio data.
+ *   Write 1 frame of audio data to the shared buffer.
+ *   Send HaveData message
+ *   Expect that server notifies the client that it needs 3 frames of audio data.
+ *   Gstreamer Stub notifies, that it needs video data
+ *   Expect that server notifies the client that it needs 3 frames of video data.
+ *   Write 1 frame of video data to the shared buffer.
+ *   Send HaveData message
+ *   Expect that server notifies the client that it needs 3 frames of video data.
+ *   Expect that server notifies the client that the Network state has changed to BUFFERED.
+ *
+ *  Step 10: Push initial data for secondary session
+ *   Gstreamer Stub notifies, that it needs audio data
+ *   Expect that server notifies the client that it needs 3 frames of audio data.
+ *   Write 1 frame of audio data to the shared buffer.
+ *   Send HaveData message
+ *   Expect that server notifies the client that it needs 3 frames of audio data.
+ *   Gstreamer Stub notifies, that it needs video data
+ *   Expect that server notifies the client that it needs 3 frames of video data.
+ *   Write 1 frame of video data to the shared buffer.
+ *   Send HaveData message
+ *   Expect that server notifies the client that it needs 3 frames of video data.
+ *   Expect that server notifies the client that the Network state has changed to BUFFERED.
+ *
+ *  Step 11: End of stream for secondary session
+ *   Send audio haveData with one frame and EOS status
+ *   Expect that Gstreamer is notified about end of stream
+ *   Send video haveData with one frame and EOS status
+ *   Expect that Gstreamer is notified about end of stream
+ *
+ *  Step 12: Notify end of stream for secondary media session
+ *   Simulate, that gst_message_eos is received by Rialto Server
+ *   Expect that server notifies the client that the Network state has changed to END_OF_STREAM.
+ *
+ *  Step 13: End of stream for primary session
+ *   Send audio haveData with one frame and EOS status
+ *   Expect that Gstreamer is notified about end of stream
+ *   Send video haveData with one frame and EOS status
+ *   Expect that Gstreamer is notified about end of stream
+ *
+ *  Step 14: Notify end of stream for primary media session
+ *   Simulate, that gst_message_eos is received by Rialto Server
+ *   Expect that server notifies the client that the Network state has changed to END_OF_STREAM.
+ *
+ *  Step 15: Terminate the secondary media session
+ *   Remove the audio source.
+ *   Expect that audio source is removed.
+ *   Remove the video source.
+ *   Expect that video source is removed.
+ *   Stop the playback.
+ *   Expect that stop propagated to the gstreamer pipeline.
+ *   Expect that server notifies the client that the Playback state has changed to STOPPED.
+ *   Send DestroySessionRequest.
+ *   Expect that the session is destroyed on the server.
+ *
+ *  Step 16: Terminate the primary media session
+ *   Remove the audio source.
+ *   Expect that audio source is removed.
+ *   Remove the video source.
+ *   Expect that video source is removed.
+ *   Stop the playback.
+ *   Expect that stop propagated to the gstreamer pipeline.
+ *   Expect that server notifies the client that the Playback state has changed to STOPPED.
+ *   Send DestroySessionRequest.
+ *   Expect that the session is destroyed on the server.
+ *
+ * Test Teardown:
+ *  Memory region created for the shared buffer is unmapped.
+ *  Server is terminated.
+ *
+ * Expected Results:
+ *  All API calls are handled by the server.
+ *  The state of the Gstreamer Pipeline is successfully negotiationed in the normal playback scenario.
+ *  Data is successfully read from the shared memory and pushed to gstreamer pipeline for both audio and video.
+ *
+ * Code:
+ */
+TEST_F(DualVideoPlaybackTest, playbackNoResouceManagerSecondaryVideo)
+{
+    // Step 1: Create a primary media session
+    createSession();
+
+    // Step 2: Load content for primary media session
+    gstPlayerWillBeCreated();
+    load();
+
+    // Step 3: Attach all sources for primary media session
+    audioSourceWillBeAttached();
+    attachAudioSource();
+    videoSourceWillBeAttached();
+    attachVideoSource();
+    sourceWillBeSetup();
+    setupSource();
+    willSetupAndAddSource(&m_audioAppSrc);
+    willSetupAndAddSource(&m_videoAppSrc);
+    willFinishSetupAndAddSource();
+    indicateAllSourcesAttached();
+
+    // Step 4: Create a secondary media session
+    createSecondaryLimitedSession();
+
+    // Step 5: Load content for secondary media session
+    secondaryGstPlayerWillBeCreated();
+    loadSecondary();
+
+    // Step 6: Attach video only source to secondary
+    secondaryVideoSourceWillBeAttached();
+    attachSecondaryVideoSource();
+    secondarySourceWillBeSetup();
+    setupSecondarySource();
+    willSetupAndAddSecondarySource();
+    willFinishSetupAndAddSecondarySource();
+    indicateAllSecondarySourcesAttached();
+
+    // Step 7: Play for primary media session
+    willPlay();
+    play();
+
+    // Step 8: Play for secondary media session
+    secondaryWillPlay();
+    playSecondary();
+
+    // Step 9: Push initial data for primary session
+    gstNeedData(&m_audioAppSrc, kFrameCountInPlayingState);
+    gstNeedData(&m_videoAppSrc, kFrameCountInPlayingState);
+    {
+        ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
+
+        pushAudioData(kFramesToPush, kFrameCountInPlayingState);
+        pushVideoData(kFramesToPush, kFrameCountInPlayingState);
+
+        auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
+        ASSERT_TRUE(receivedNetworkStateChange);
+        EXPECT_EQ(receivedNetworkStateChange->session_id(), m_sessionId);
+        EXPECT_EQ(receivedNetworkStateChange->state(), ::firebolt::rialto::NetworkStateChangeEvent_NetworkState_BUFFERED);
+    }
+
+    // Step 10: Push initial data for secondary session
+    secondaryGstNeedData();
+    {
+        ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
+
+        pushSecondaryVideoData();
+
+        auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
+        ASSERT_TRUE(receivedNetworkStateChange);
+        EXPECT_EQ(receivedNetworkStateChange->session_id(), m_secondarySessionId);
+        EXPECT_EQ(receivedNetworkStateChange->state(), ::firebolt::rialto::NetworkStateChangeEvent_NetworkState_BUFFERED);
+    }
+
+    // Step 11: End of stream for secondary session
+    willEos(&m_secondaryVideoAppSrc);
+    eosSecondaryVideo();
+
+    // Step 12: Notify end of stream for secondary media session
+    secondaryGstNotifyEos();
+
+    // Step 13: End of stream for primary session
+    willEos(&m_audioAppSrc);
+    eosAudio(kFramesToPush);
+    willEos(&m_videoAppSrc);
+    eosVideo(kFramesToPush);
+
+    // Step 14: Notify end of stream for primary media session
+    gstNotifyEos();
+
+    // Step 15: Terminate the secondary media session
+    secondaryWillStop();
+    stopSecondary();
+    secondaryGstPlayerWillBeDestructed();
+    destroySecondarySession();
+
+    // Step 16: Terminate the primary media session
+    willRemoveAudioSource();
+    removeSource(m_audioSourceId);
+    removeSource(m_videoSourceId);
+    willStop();
+    stop();
+    gstPlayerWillBeDestructed();
+    destroySession();
+}
+
+
 } // namespace firebolt::rialto::server::ct

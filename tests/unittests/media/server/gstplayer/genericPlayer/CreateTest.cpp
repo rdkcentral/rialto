@@ -179,16 +179,14 @@ TEST_F(RialtoServerCreateGstGenericPlayerTest, CreateDestroySecondaryVideoNoWest
 }
 
 /**
- * Test that a GstGenericPlayer object throws an exception if failure to create a westerossink.
+ * Test that a GstGenericPlayer can be created successfully for a secondary video if no westeros sink, but context set
+ * successfully.
  */
-TEST_F(RialtoServerCreateGstGenericPlayerTest, CreateWesterossinkFailureForSecondaryVideo)
+TEST_F(RialtoServerCreateGstGenericPlayerTest, CreateWesterossinkFailureSetContextSuccessForSecondaryVideoSuccess)
 {
     // Height < minimum
     m_videoReq.maxWidth = kMinPrimaryVideoWidth;
     m_videoReq.maxHeight = kMinPrimaryVideoHeight - 1;
-    //expectCreatePipeline();
-    // gstPlayerWillBeDestroyed();
-    // executeTaskWhenEnqueued();
 
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(StrEq("westerossink")))
         .WillOnce(Return(reinterpret_cast<GstElementFactory *>(&m_westerosFactory)));
@@ -196,30 +194,21 @@ TEST_F(RialtoServerCreateGstGenericPlayerTest, CreateWesterossinkFailureForSecon
         .WillOnce(Return(nullptr));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(reinterpret_cast<GstElementFactory *>(&m_westerosFactory)));
     expectSetContext();
-    // EXPECT_THROW(m_gstPlayer = std::make_unique<GstGenericPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, m_type,
-    //                                                               m_videoReq, m_gstWrapperMock, m_glibWrapperMock,
-    //                                                               m_gstSrcFactoryMock, m_timerFactoryMock,
-    //                                                               std::move(m_taskFactory), std::move(workerThreadFactory),
-    //                                                               std::move(gstDispatcherThreadFactory),
-    //                                                               m_gstProtectionMetadataFactoryMock),
-    //              std::runtime_error);
 
     createGstGenericPlayerSuccess();
     destroyGstGenericPlayerSuccess();
 }
 
 /**
- * Test that a GstGenericPlayer object throws an exception if failure to set the res-usage flag on a westerossink.
+ * Test that a GstGenericPlayer can be created successfully for a secondary video if failure to set the res-usage flag on a westerossink, but context set
+ * successfully.
  */
-TEST_F(RialtoServerCreateGstGenericPlayerTest, SetResUsageFailureForSecondaryVideo)
+TEST_F(RialtoServerCreateGstGenericPlayerTest, SetResUsageFailureSetContextSuccessForSecondaryVideoSuccess)
 {
     // Height < minimum
     m_videoReq.maxWidth = kMinPrimaryVideoWidth;
     m_videoReq.maxHeight = kMinPrimaryVideoHeight - 1;
     expectSetContext();
-    // expectCreatePipeline();
-    // gstPlayerWillBeDestroyed();
-    // executeTaskWhenEnqueued();
 
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(StrEq("westerossink")))
         .WillOnce(Return(reinterpret_cast<GstElementFactory *>(&m_westerosFactory)));
@@ -229,38 +218,38 @@ TEST_F(RialtoServerCreateGstGenericPlayerTest, SetResUsageFailureForSecondaryVid
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(reinterpret_cast<GstElementFactory *>(&m_westerosSink)));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(reinterpret_cast<GstElementFactory *>(&m_westerosFactory)));
 
-    // EXPECT_THROW(m_gstPlayer = std::make_unique<GstGenericPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, m_type,
-    //                                                               m_videoReq, m_gstWrapperMock, m_glibWrapperMock,
-    //                                                               m_gstSrcFactoryMock, m_timerFactoryMock,
-    //                                                               std::move(m_taskFactory), std::move(workerThreadFactory),
-    //                                                               std::move(gstDispatcherThreadFactory),
-    //                                                               m_gstProtectionMetadataFactoryMock),
-    //              std::runtime_error);
-    // EXPECT_EQ(m_gstPlayer, nullptr);
     createGstGenericPlayerSuccess();
     destroyGstGenericPlayerSuccess();
 }
 
-TEST_F(RialtoServerCreateGstGenericPlayerTest, AAA)
+/**
+ * Test that a GstGenericPlayer can be created successfully for a secondary video if westerossink is created
+ * successfully, but creating context fails
+ */
+TEST_F(RialtoServerCreateGstGenericPlayerTest, CreateWesterossinkSuccessCreateContextFailureForSecondaryVideoSuccess)
 {
         // Height < minimum
     m_videoReq.maxWidth = kMinPrimaryVideoWidth;
     m_videoReq.maxHeight = kMinPrimaryVideoHeight - 1;
 
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(StrEq("westerossink"))).WillOnce(Return(nullptr));
+    expectSetWesterosSecondaryVideo();
 
     EXPECT_CALL(*m_gstWrapperMock, gstContextNew(StrEq("erm"), false)).WillOnce(Return(nullptr));
     createGstGenericPlayerSuccess();
     destroyGstGenericPlayerSuccess();
 }
 
-TEST_F(RialtoServerCreateGstGenericPlayerTest, BBB)
+/**
+ * Test that a GstGenericPlayer can be created successfully for a secondary video if westerossink is created
+ * successfully, but setting structure fails
+ */
+TEST_F(RialtoServerCreateGstGenericPlayerTest, CreateWesterossinkSuccessCreateStructureFailureForSecondaryVideoSuccess)
 {
         // Height < minimum
     m_videoReq.maxWidth = kMinPrimaryVideoWidth;
     m_videoReq.maxHeight = kMinPrimaryVideoHeight - 1;
 
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(StrEq("westerossink"))).WillOnce(Return(nullptr));
+    expectSetWesterosSecondaryVideo();
 
     EXPECT_CALL(*m_gstWrapperMock, gstContextNew(StrEq("erm"), false))
         .WillOnce(Return(reinterpret_cast<GstContext *>(&m_dummyContext)));
@@ -271,7 +260,10 @@ TEST_F(RialtoServerCreateGstGenericPlayerTest, BBB)
     destroyGstGenericPlayerSuccess();
 }
 
-TEST_F(RialtoServerCreateGstGenericPlayerTest, CCC)
+/**
+ * Test that a GstGenericPlayer creation fails for a secondary video if westerossink creation failsand context creation fails
+ */
+TEST_F(RialtoServerCreateGstGenericPlayerTest, CreateWesterossinkFailsCreateContextFailureForSecondaryVideoFailure)
 {
         // Height < minimum
     m_videoReq.maxWidth = kMinPrimaryVideoWidth;
