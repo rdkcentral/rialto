@@ -26,15 +26,23 @@
 
 int main(int argc, char *argv[])
 {
-    const char commitID[] = COMMIT_ID;
+    const char kSrcRev[] = SRCREV;
+    const char kTags[] = TAGS;
 
-    if (std::strlen(commitID) > 0)
+    if (std::strlen(kSrcRev) > 0)
     {
-        RIALTO_SERVER_LOG_MIL("Commit ID: %s", commitID);
+        if (std::strlen(kTags) > 0)
+        {
+            RIALTO_SERVER_LOG_MIL("Release Tag(s): %s (Commit ID: %s)", kTags, kSrcRev);
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_MIL("Release Tag(s): No Release Tags! (Commit ID: %s)", kSrcRev);
+        }
     }
     else
     {
-        RIALTO_SERVER_LOG_WARN("Failed to get git commit ID.");
+        RIALTO_SERVER_LOG_WARN("Failed to get git commit ID!");
     }
 
     firebolt::rialto::server::gstInitalise(argc, argv);
