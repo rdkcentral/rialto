@@ -40,8 +40,10 @@ protected:
     MediaType m_type{MediaType::MSE};
     VideoRequirements m_videoReq = {kMinPrimaryVideoWidth, kMinPrimaryVideoHeight};
     GenericPlayerContext m_storedPlayerContext;
-    GstObject m_westerousFactory{}; // GstElementFactory is an opaque data structure
-    GstElement m_westerousSink{};
+    GstObject m_westerosFactory{}; // GstElementFactory is an opaque data structure
+    char m_dummyContext{};
+    GstStructure m_contextStructure{};
+    GstElement m_westerosSink{};
     GParamSpec m_rectangleSpec{};
 
     void expectCreatePipeline()
@@ -80,17 +82,29 @@ protected:
         m_gstPlayer.reset();
     }
 
-    void expectSetSecondaryVideo()
+    void expectSetWesterosSecondaryVideo()
     {
         EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(StrEq("westerossink")))
-            .WillOnce(Return(reinterpret_cast<GstElementFactory *>(&m_westerousFactory)));
+            .WillOnce(Return(reinterpret_cast<GstElementFactory *>(&m_westerosFactory)));
         EXPECT_CALL(*m_gstWrapperMock,
-                    gstElementFactoryCreate(reinterpret_cast<GstElementFactory *>(&m_westerousFactory), _))
-            .WillOnce(Return(&m_westerousSink));
+                    gstElementFactoryCreate(reinterpret_cast<GstElementFactory *>(&m_westerosFactory), _))
+            .WillOnce(Return(&m_westerosSink));
         EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("res-usage"))).WillOnce(Return(&m_rectangleSpec));
         EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(_, StrEq("res-usage")));
         EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(_, StrEq("video-sink")));
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(reinterpret_cast<GstElementFactory *>(&m_westerousFactory)));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(reinterpret_cast<GstElementFactory *>(&m_westerosFactory)));
+    }
+
+    void expectSetContext()
+    {
+        EXPECT_CALL(*m_gstWrapperMock, gstContextNew(StrEq("erm"), false))
+            .WillOnce(Return(reinterpret_cast<GstContext *>(&m_dummyContext)));
+        EXPECT_CALL(*m_gstWrapperMock, gstContextWritableStructure(reinterpret_cast<GstContext *>(&m_dummyContext)))
+            .WillOnce(Return(&m_contextStructure));
+        EXPECT_CALL(*m_gstWrapperMock,
+                    gstStructureSetUintStub(&m_contextStructure, StrEq("res-usage"), G_TYPE_UINT, 0x0u));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementSetContext(_, reinterpret_cast<GstContext *>(&m_dummyContext)));
+        EXPECT_CALL(*m_gstWrapperMock, gstContextUnref(reinterpret_cast<GstContext *>(&m_dummyContext)));
     }
 };
 
@@ -123,7 +137,8 @@ TEST_F(RialtoServerCreateGstGenericPlayerTest, CreateDestroySecondaryVideoMinWid
     // Width < minimum
     m_videoReq.maxWidth = kMinPrimaryVideoWidth - 1;
     m_videoReq.maxHeight = kMinPrimaryVideoHeight;
-    expectSetSecondaryVideo();
+    expectSetWesterosSecondaryVideo();
+    expectSetContext();
     createGstGenericPlayerSuccess();
 
     destroyGstGenericPlayerSuccess();
@@ -137,16 +152,17 @@ TEST_F(RialtoServerCreateGstGenericPlayerTest, CreateDestroySecondaryVideoMinHei
     // Height < minimum
     m_videoReq.maxWidth = kMinPrimaryVideoWidth;
     m_videoReq.maxHeight = kMinPrimaryVideoHeight - 1;
-    expectSetSecondaryVideo();
+    expectSetWesterosSecondaryVideo();
+    expectSetContext();
     createGstGenericPlayerSuccess();
 
     destroyGstGenericPlayerSuccess();
 }
 
 /**
- * Test that a GstGenericPlayer can be created successfully for a secondary video if no westerous sink.
+ * Test that a GstGenericPlayer can be created successfully for a secondary video if no westeros sink.
  */
-TEST_F(RialtoServerCreateGstGenericPlayerTest, CreateDestroySecondaryVideoNoWesterousSuccess)
+TEST_F(RialtoServerCreateGstGenericPlayerTest, CreateDestroySecondaryVideoNoWesterosSuccess)
 {
     // Height < minimum
     m_videoReq.maxWidth = kMinPrimaryVideoWidth;
@@ -154,43 +170,98 @@ TEST_F(RialtoServerCreateGstGenericPlayerTest, CreateDestroySecondaryVideoNoWest
 
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(StrEq("westerossink"))).WillOnce(Return(nullptr));
 
+    expectSetContext();
     createGstGenericPlayerSuccess();
 
     destroyGstGenericPlayerSuccess();
 }
 
 /**
- * Test that a GstGenericPlayer object throws an exception if failure to create a westeroussink.
+ * Test that a GstGenericPlayer can be created successfully for a secondary video if westerosink creation fails, but
+ * context set successfully.
  */
-TEST_F(RialtoServerCreateGstGenericPlayerTest, CreateWesterossinkFailureForSecondaryVideo)
+TEST_F(RialtoServerCreateGstGenericPlayerTest, CreateWesterossinkFailureSetContextSuccessForSecondaryVideoSuccess)
 {
     // Height < minimum
     m_videoReq.maxWidth = kMinPrimaryVideoWidth;
     m_videoReq.maxHeight = kMinPrimaryVideoHeight - 1;
-    expectCreatePipeline();
-    gstPlayerWillBeDestroyed();
-    executeTaskWhenEnqueued();
 
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(StrEq("westerossink")))
-        .WillOnce(Return(reinterpret_cast<GstElementFactory *>(&m_westerousFactory)));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryCreate(reinterpret_cast<GstElementFactory *>(&m_westerousFactory), _))
+        .WillOnce(Return(reinterpret_cast<GstElementFactory *>(&m_westerosFactory)));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryCreate(reinterpret_cast<GstElementFactory *>(&m_westerosFactory), _))
         .WillOnce(Return(nullptr));
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(reinterpret_cast<GstElementFactory *>(&m_westerousFactory)));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(reinterpret_cast<GstElementFactory *>(&m_westerosFactory)));
+    expectSetContext();
 
-    EXPECT_THROW(m_gstPlayer = std::make_unique<GstGenericPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, m_type,
-                                                                  m_videoReq, m_gstWrapperMock, m_glibWrapperMock,
-                                                                  m_gstSrcFactoryMock, m_timerFactoryMock,
-                                                                  std::move(m_taskFactory), std::move(workerThreadFactory),
-                                                                  std::move(gstDispatcherThreadFactory),
-                                                                  m_gstProtectionMetadataFactoryMock),
-                 std::runtime_error);
-    EXPECT_EQ(m_gstPlayer, nullptr);
+    createGstGenericPlayerSuccess();
+    destroyGstGenericPlayerSuccess();
 }
 
 /**
- * Test that a GstGenericPlayer object throws an exception if failure to set the res-usage flag on a westerossink.
+ * Test that a GstGenericPlayer can be created successfully for a secondary video if failure to set the res-usage flag
+ * on a westerossink, but context set successfully.
  */
-TEST_F(RialtoServerCreateGstGenericPlayerTest, SetResUsageFailureForSecondaryVideo)
+TEST_F(RialtoServerCreateGstGenericPlayerTest, SetResUsageFailureSetContextSuccessForSecondaryVideoSuccess)
+{
+    // Height < minimum
+    m_videoReq.maxWidth = kMinPrimaryVideoWidth;
+    m_videoReq.maxHeight = kMinPrimaryVideoHeight - 1;
+    expectSetContext();
+
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(StrEq("westerossink")))
+        .WillOnce(Return(reinterpret_cast<GstElementFactory *>(&m_westerosFactory)));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryCreate(reinterpret_cast<GstElementFactory *>(&m_westerosFactory), _))
+        .WillOnce(Return(&m_westerosSink));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("res-usage"))).WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(reinterpret_cast<GstElementFactory *>(&m_westerosSink)));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(reinterpret_cast<GstElementFactory *>(&m_westerosFactory)));
+
+    createGstGenericPlayerSuccess();
+    destroyGstGenericPlayerSuccess();
+}
+
+/**
+ * Test that a GstGenericPlayer can be created successfully for a secondary video if westerossink is created
+ * successfully, but creating context fails
+ */
+TEST_F(RialtoServerCreateGstGenericPlayerTest, CreateWesterossinkSuccessCreateContextFailureForSecondaryVideoSuccess)
+{
+    // Height < minimum
+    m_videoReq.maxWidth = kMinPrimaryVideoWidth;
+    m_videoReq.maxHeight = kMinPrimaryVideoHeight - 1;
+
+    expectSetWesterosSecondaryVideo();
+
+    EXPECT_CALL(*m_gstWrapperMock, gstContextNew(StrEq("erm"), false)).WillOnce(Return(nullptr));
+    createGstGenericPlayerSuccess();
+    destroyGstGenericPlayerSuccess();
+}
+
+/**
+ * Test that a GstGenericPlayer can be created successfully for a secondary video if westerossink is created
+ * successfully, but setting structure fails
+ */
+TEST_F(RialtoServerCreateGstGenericPlayerTest, CreateWesterossinkSuccessCreateStructureFailureForSecondaryVideoSuccess)
+{
+    // Height < minimum
+    m_videoReq.maxWidth = kMinPrimaryVideoWidth;
+    m_videoReq.maxHeight = kMinPrimaryVideoHeight - 1;
+
+    expectSetWesterosSecondaryVideo();
+
+    EXPECT_CALL(*m_gstWrapperMock, gstContextNew(StrEq("erm"), false))
+        .WillOnce(Return(reinterpret_cast<GstContext *>(&m_dummyContext)));
+    EXPECT_CALL(*m_gstWrapperMock, gstContextWritableStructure(reinterpret_cast<GstContext *>(&m_dummyContext)))
+        .WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_gstWrapperMock, gstContextUnref(reinterpret_cast<GstContext *>(&m_dummyContext)));
+    createGstGenericPlayerSuccess();
+    destroyGstGenericPlayerSuccess();
+}
+
+/**
+ * Test that a GstGenericPlayer creation fails for a secondary video if westerossink creation failsand context creation fails
+ */
+TEST_F(RialtoServerCreateGstGenericPlayerTest, CreateWesterossinkFailsCreateContextFailureForSecondaryVideoFailure)
 {
     // Height < minimum
     m_videoReq.maxWidth = kMinPrimaryVideoWidth;
@@ -198,15 +269,13 @@ TEST_F(RialtoServerCreateGstGenericPlayerTest, SetResUsageFailureForSecondaryVid
     expectCreatePipeline();
     gstPlayerWillBeDestroyed();
     executeTaskWhenEnqueued();
-
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(StrEq("westerossink")))
-        .WillOnce(Return(reinterpret_cast<GstElementFactory *>(&m_westerousFactory)));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryCreate(reinterpret_cast<GstElementFactory *>(&m_westerousFactory), _))
-        .WillOnce(Return(&m_westerousSink));
-    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("res-usage"))).WillOnce(Return(nullptr));
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(reinterpret_cast<GstElementFactory *>(&m_westerousSink)));
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(reinterpret_cast<GstElementFactory *>(&m_westerousFactory)));
+        .WillOnce(Return(reinterpret_cast<GstElementFactory *>(&m_westerosFactory)));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryCreate(reinterpret_cast<GstElementFactory *>(&m_westerosFactory), _))
+        .WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(reinterpret_cast<GstElementFactory *>(&m_westerosFactory)));
 
+    EXPECT_CALL(*m_gstWrapperMock, gstContextNew(StrEq("erm"), false)).WillOnce(Return(nullptr));
     EXPECT_THROW(m_gstPlayer = std::make_unique<GstGenericPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, m_type,
                                                                   m_videoReq, m_gstWrapperMock, m_glibWrapperMock,
                                                                   m_gstSrcFactoryMock, m_timerFactoryMock,

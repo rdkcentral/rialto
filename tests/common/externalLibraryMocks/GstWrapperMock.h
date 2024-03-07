@@ -205,6 +205,10 @@ public:
                 (const, override));
     MOCK_METHOD(gboolean, gstBaseSrcNewSeamlessSegment, (GstBaseSrc * src, gint64 start, gint64 stop, gint64 time),
                 (const, override));
+    MOCK_METHOD(GstContext *, gstContextNew, (const gchar *context_type, gboolean persistent), (const, override));
+    MOCK_METHOD(GstStructure *, gstContextWritableStructure, (GstContext * context), (const, override));
+    MOCK_METHOD(void, gstElementSetContext, (GstElement * element, GstContext *context), (const, override));
+    MOCK_METHOD(void, gstContextUnref, (GstContext * context), (const, override));
 
     GstCaps *gstCapsNewSimple(const char *media_type, const char *fieldname, ...) const override
     {

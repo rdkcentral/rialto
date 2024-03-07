@@ -170,8 +170,10 @@ GstGenericPlayer::GstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionS
     // video in a dual video scenario.
     if ((kMinPrimaryVideoWidth > videoRequirements.maxWidth) || (kMinPrimaryVideoHeight > videoRequirements.maxHeight))
     {
-        RIALTO_SERVER_LOG_INFO("Secondary video playback selected");
-        if (!setWesterossinkSecondaryVideo())
+        RIALTO_SERVER_LOG_MIL("Secondary video playback selected");
+        bool westerossinkSecondaryVideoResult = setWesterossinkSecondaryVideo();
+        bool ermContextResult = setErmContext();
+        if (!westerossinkSecondaryVideoResult && !ermContextResult)
         {
             resetWorkerThread();
             termPipeline();
@@ -180,7 +182,7 @@ GstGenericPlayer::GstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionS
     }
     else
     {
-        RIALTO_SERVER_LOG_INFO("Primary video playback selected");
+        RIALTO_SERVER_LOG_MIL("Primary video playback selected");
     }
 
     m_gstDispatcherThread =
@@ -797,8 +799,35 @@ bool GstGenericPlayer::setWesterossinkSecondaryVideo()
     }
     else
     {
-        // No westerous sink
+        // No westeros sink
         result = true;
+    }
+
+    return result;
+}
+
+bool GstGenericPlayer::setErmContext()
+{
+    bool result = false;
+    GstContext *context = m_gstWrapper->gstContextNew("erm", false);
+    if (context)
+    {
+        GstStructure *contextStructure = m_gstWrapper->gstContextWritableStructure(context);
+        if (contextStructure)
+        {
+            m_gstWrapper->gstStructureSet(contextStructure, "res-usage", G_TYPE_UINT, 0x0u, nullptr);
+            m_gstWrapper->gstElementSetContext(GST_ELEMENT(m_context.pipeline), context);
+            result = true;
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to create the erm structure");
+        }
+        m_gstWrapper->gstContextUnref(context);
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to create the erm context");
     }
 
     return result;

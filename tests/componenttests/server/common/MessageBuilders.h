@@ -40,7 +40,7 @@ namespace firebolt::rialto::server::ct
 ::rialto::PingRequest createPingRequest(::google::protobuf::int32 id);
 
 // media pipeline module
-::firebolt::rialto::CreateSessionRequest createCreateSessionRequest();
+::firebolt::rialto::CreateSessionRequest createCreateSessionRequest(int width, int height);
 ::firebolt::rialto::LoadRequest createLoadRequest(int sessionId);
 ::firebolt::rialto::AttachSourceRequest createAttachAudioSourceRequest(int sessionId);
 ::firebolt::rialto::AttachSourceRequest createAttachVideoSourceRequest(int sessionId);
