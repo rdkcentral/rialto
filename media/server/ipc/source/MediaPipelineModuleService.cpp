@@ -103,6 +103,10 @@ firebolt::rialto::SourceConfigType convertConfigType(const firebolt::rialto::Att
     {
         return firebolt::rialto::SourceConfigType::VIDEO_DOLBY_VISION;
     }
+    case firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_SUBTITLE:
+    {
+        return firebolt::rialto::SourceConfigType::SUBTITLE;
+    }
     }
     return firebolt::rialto::SourceConfigType::UNKNOWN;
 }

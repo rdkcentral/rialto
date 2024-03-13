@@ -222,41 +222,51 @@ bool MediaPipelineIpc::attachSource(const std::unique_ptr<IMediaPipeline::MediaS
     request.set_config_type(convertConfigType(configType));
     request.set_mime_type(source->getMimeType());
     request.set_has_drm(source->getHasDrm());
-    request.set_segment_alignment(convertSegmentAlignment(source->getSegmentAlignment()));
 
-    if (source->getCodecData())
-    {
-        request.mutable_codec_data()->set_data(source->getCodecData()->data.data(), source->getCodecData()->data.size());
-        request.mutable_codec_data()->set_type(convertCodecDataType(source->getCodecData()->type));
-    }
-    request.set_stream_format(convertStreamFormat(source->getStreamFormat()));
 
-    if (configType == SourceConfigType::VIDEO_DOLBY_VISION)
+    if (configType == SourceConfigType::VIDEO_DOLBY_VISION || configType == SourceConfigType::VIDEO ||
+        configType == SourceConfigType::AUDIO)
     {
-        IMediaPipeline::MediaSourceVideoDolbyVision &mediaSourceDolby =
-            dynamic_cast<IMediaPipeline::MediaSourceVideoDolbyVision &>(*source);
+        IMediaPipeline::MediaSourceAV &mediaSourceAV = dynamic_cast<IMediaPipeline::MediaSourceAV &>(*source);
+        request.set_segment_alignment(convertSegmentAlignment(mediaSourceAV.getSegmentAlignment()));
 
-        request.set_width(mediaSourceDolby.getWidth());
-        request.set_height(mediaSourceDolby.getHeight());
-        request.set_dolby_vision_profile(mediaSourceDolby.getDolbyVisionProfile());
-    }
-    else if (configType == SourceConfigType::VIDEO)
-    {
-        IMediaPipeline::MediaSourceVideo &mediaSourceVideo = dynamic_cast<IMediaPipeline::MediaSourceVideo &>(*source);
-
-        request.set_width(mediaSourceVideo.getWidth());
-        request.set_height(mediaSourceVideo.getHeight());
-    }
-    else if (configType == SourceConfigType::AUDIO)
-    {
-        IMediaPipeline::MediaSourceAudio &mediaSourceAudio = dynamic_cast<IMediaPipeline::MediaSourceAudio &>(*source);
-        request.mutable_audio_config()->set_number_of_channels(mediaSourceAudio.getAudioConfig().numberOfChannels);
-        request.mutable_audio_config()->set_sample_rate(mediaSourceAudio.getAudioConfig().sampleRate);
-        if (!mediaSourceAudio.getAudioConfig().codecSpecificConfig.empty())
+        if (mediaSourceAV.getCodecData())
         {
-            request.mutable_audio_config()
-                ->set_codec_specific_config(mediaSourceAudio.getAudioConfig().codecSpecificConfig.data(),
-                                            mediaSourceAudio.getAudioConfig().codecSpecificConfig.size());
+            request.mutable_codec_data()->set_data(mediaSourceAV.getCodecData()->data.data(),
+                                                   mediaSourceAV.getCodecData()->data.size());
+            request.mutable_codec_data()->set_type(convertCodecDataType(mediaSourceAV.getCodecData()->type));
+        }
+        request.set_stream_format(convertStreamFormat(mediaSourceAV.getStreamFormat()));
+
+        if (configType == SourceConfigType::VIDEO_DOLBY_VISION)
+        {
+            IMediaPipeline::MediaSourceVideoDolbyVision &mediaSourceDolby =
+                dynamic_cast<IMediaPipeline::MediaSourceVideoDolbyVision &>(*source);
+
+            request.set_width(mediaSourceDolby.getWidth());
+            request.set_height(mediaSourceDolby.getHeight());
+            request.set_dolby_vision_profile(mediaSourceDolby.getDolbyVisionProfile());
+        }
+        else if (configType == SourceConfigType::VIDEO)
+        {
+            IMediaPipeline::MediaSourceVideo &mediaSourceVideo =
+                dynamic_cast<IMediaPipeline::MediaSourceVideo &>(*source);
+
+            request.set_width(mediaSourceVideo.getWidth());
+            request.set_height(mediaSourceVideo.getHeight());
+        }
+        else if (configType == SourceConfigType::AUDIO)
+        {
+            IMediaPipeline::MediaSourceAudio &mediaSourceAudio =
+                dynamic_cast<IMediaPipeline::MediaSourceAudio &>(*source);
+            request.mutable_audio_config()->set_number_of_channels(mediaSourceAudio.getAudioConfig().numberOfChannels);
+            request.mutable_audio_config()->set_sample_rate(mediaSourceAudio.getAudioConfig().sampleRate);
+            if (!mediaSourceAudio.getAudioConfig().codecSpecificConfig.empty())
+            {
+                request.mutable_audio_config()
+                    ->set_codec_specific_config(mediaSourceAudio.getAudioConfig().codecSpecificConfig.data(),
+                                                mediaSourceAudio.getAudioConfig().codecSpecificConfig.size());
+            }
         }
     }
 
@@ -1056,6 +1066,10 @@ MediaPipelineIpc::convertConfigType(const firebolt::rialto::SourceConfigType &co
     case firebolt::rialto::SourceConfigType::VIDEO_DOLBY_VISION:
     {
         return firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_VIDEO_DOLBY_VISION;
+    }
+    case firebolt::rialto::SourceConfigType::SUBTITLE:
+    {
+        return firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_SUBTITLE;
     }
     }
     return firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_UNKNOWN;

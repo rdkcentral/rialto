@@ -125,6 +125,7 @@ message AttachSourceRequest {
         CONFIG_TYPE_AUDIO              = 1;
         CONFIG_TYPE_VIDEO              = 2;
         CONFIG_TYPE_VIDEO_DOLBY_VISION = 3;
+        CONFIG_TYPE_SUBTITLE           = 4;
     }
 
     message AudioConfig {

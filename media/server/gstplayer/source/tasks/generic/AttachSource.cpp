@@ -34,7 +34,7 @@ class MediaSourceCapsBuilder
 public:
     MediaSourceCapsBuilder(std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
                            std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
-                           const firebolt::rialto::IMediaPipeline::MediaSource &source)
+                           const firebolt::rialto::IMediaPipeline::MediaSourceAV &source)
         : m_gstWrapper(gstWrapper), m_glibWrapper(glibWrapper), m_attachedSource(source)
     {
     }
@@ -43,7 +43,7 @@ public:
 protected:
     std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
     std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
-    const IMediaPipeline::MediaSource &m_attachedSource;
+    const IMediaPipeline::MediaSourceAV &m_attachedSource;
 
     GstCaps *buildCommonCaps()
     {

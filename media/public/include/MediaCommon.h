@@ -61,7 +61,8 @@ enum class MediaSourceType
 {
     UNKNOWN,
     AUDIO,
-    VIDEO
+    VIDEO,
+    SUBTITLE
 };
 
 /**
@@ -72,7 +73,8 @@ enum class SourceConfigType
     UNKNOWN,
     AUDIO,
     VIDEO,
-    VIDEO_DOLBY_VISION
+    VIDEO_DOLBY_VISION,
+    SUBTITLE
 };
 
 /**
