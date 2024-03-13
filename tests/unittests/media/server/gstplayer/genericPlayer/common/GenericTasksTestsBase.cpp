@@ -2149,12 +2149,8 @@ void GenericTasksTestsBase::shouldFlushVideo()
 
 void GenericTasksTestsBase::triggerFlush(firebolt::rialto::MediaSourceType sourceType)
 {
-    firebolt::rialto::server::tasks::generic::Flush task{testContext->m_context,
-                                                         testContext->m_gstPlayer,
-                                                         &testContext->m_gstPlayerClient,
-                                                         testContext->m_gstWrapper,
-                                                         sourceType,
-                                                         kResetTime};
+    firebolt::rialto::server::tasks::generic::Flush task{testContext->m_context, &testContext->m_gstPlayerClient,
+                                                         testContext->m_gstWrapper, sourceType, kResetTime};
     task.execute();
 }
 
