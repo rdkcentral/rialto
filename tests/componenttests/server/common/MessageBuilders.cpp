@@ -262,6 +262,16 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
+::firebolt::rialto::SetSourcePositionRequest createSetSourcePositionRequest(int sessionId, int sourceId,
+                                                                            std::int64_t position)
+{
+    ::firebolt::rialto::SetSourcePositionRequest request;
+    request.set_session_id(sessionId);
+    request.set_source_id(sourceId);
+    request.set_position(position);
+    return request;
+}
+
 ::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequestWidevine()
 {
     ::firebolt::rialto::CreateMediaKeysRequest request;

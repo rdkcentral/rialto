@@ -356,3 +356,15 @@ TEST_F(MediaPipelineModuleServiceTests, shouldFailToFlush)
     mediaPipelineServiceWillFailToFlush();
     sendFlushRequestAndReceiveResponse();
 }
+
+TEST_F(MediaPipelineModuleServiceTests, shouldSetSourcePosition)
+{
+    mediaPipelineServiceWillSetSourcePosition();
+    sendSetSourcePositionRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToSetSourcePosition)
+{
+    mediaPipelineServiceWillFailToSetSourcePosition();
+    sendSetSourcePositionRequestAndReceiveResponse();
+}

@@ -366,6 +366,20 @@ bool MediaPipelineService::flush(int sessionId, std::int32_t sourceId, bool rese
     return mediaPipelineIter->second->flush(sourceId, resetTime);
 }
 
+bool MediaPipelineService::setSourcePosition(int sessionId, int32_t sourceId, int64_t position)
+{
+    RIALTO_SERVER_LOG_DEBUG("Set Source Position requested, session id: %d", sessionId);
+
+    std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+    auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
+    if (mediaPipelineIter == m_mediaPipelines.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
+        return false;
+    }
+    return mediaPipelineIter->second->setSourcePosition(sourceId, position);
+}
+
 std::vector<std::string> MediaPipelineService::getSupportedMimeTypes(MediaSourceType type)
 {
     return m_mediaPipelineCapabilities->getSupportedMimeTypes(type);

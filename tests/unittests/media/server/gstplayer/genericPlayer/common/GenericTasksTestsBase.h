@@ -72,6 +72,7 @@ protected:
     void setContextAudioSourceRemoved();
     void setContextStreamInfoEmpty();
     void setContextNeedDataAudioOnly();
+    void setContextSetupSourceFinished();
 
     // SetupElement test methods
     void shouldSetupVideoElementOnly();
@@ -259,6 +260,8 @@ protected:
     void triggerAudioCallbackSeekData();
     void triggerVideoCallbackSeekData();
     void checkSourcesAttached();
+    void checkSetupSourceFinished();
+    void checkSetupSourceUnfinished();
 
     // NeedData test methods
     void triggerNeedDataAudio();
@@ -315,6 +318,11 @@ protected:
     void checkAudioFlushed();
     void checkVideoFlushed();
     void shouldFlushVideoSrcSuccess();
+
+    // Set Source Position test methods
+    void triggerSetSourcePosition(firebolt::rialto::MediaSourceType sourceType);
+    void checkInitialPositionSet(firebolt::rialto::MediaSourceType sourceType);
+    void checkInitialPositionNotSet(firebolt::rialto::MediaSourceType sourceType);
 
 private:
     // SetupElement helper methods

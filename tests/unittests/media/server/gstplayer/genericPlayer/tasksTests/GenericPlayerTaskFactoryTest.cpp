@@ -45,6 +45,7 @@
 #include "tasks/generic/SetMute.h"
 #include "tasks/generic/SetPlaybackRate.h"
 #include "tasks/generic/SetPosition.h"
+#include "tasks/generic/SetSourcePosition.h"
 #include "tasks/generic/SetVideoGeometry.h"
 #include "tasks/generic/SetVolume.h"
 #include "tasks/generic/SetupElement.h"
@@ -269,7 +270,14 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreatePing)
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateFlush)
 {
-    auto task = m_sut.createFlush(m_context, m_gstPlayer, firebolt::rialto::MediaSourceType::AUDIO, true);
+    auto task = m_sut.createFlush(m_context, firebolt::rialto::MediaSourceType::AUDIO, true);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::Flush &>(*task));
+}
+
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetSourcePosition)
+{
+    auto task = m_sut.createSetSourcePosition(m_context, firebolt::rialto::MediaSourceType::AUDIO, 0);
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetSourcePosition &>(*task));
 }

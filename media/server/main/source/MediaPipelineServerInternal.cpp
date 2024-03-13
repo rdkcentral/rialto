@@ -846,6 +846,52 @@ bool MediaPipelineServerInternal::flushInternal(int32_t sourceId, bool resetTime
     }
 
     m_gstPlayer->flush(sourceIter->first, resetTime);
+
+    // Reset Eos on flush
+    auto it = m_isMediaTypeEosMap.find(sourceIter->first);
+    if (it != m_isMediaTypeEosMap.end() && it->second)
+    {
+        it->second = false;
+    }
+
+    return true;
+}
+
+bool MediaPipelineServerInternal::setSourcePosition(int32_t sourceId, int64_t position)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = setSourcePositionInternal(sourceId, position); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::setSourcePositionInternal(int32_t sourceId, int64_t position)
+{
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to set source position - Gstreamer player has not been loaded");
+        return false;
+    }
+    auto sourceIter = std::find_if(m_attachedSources.begin(), m_attachedSources.end(),
+                                   [sourceId](const auto &src) { return src.second == sourceId; });
+    if (sourceIter == m_attachedSources.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to set source position - Source not found");
+        return false;
+    }
+
+    m_gstPlayer->setSourcePosition(sourceIter->first, position);
+
+    // Reset Eos on seek
+    auto it = m_isMediaTypeEosMap.find(sourceIter->first);
+    if (it != m_isMediaTypeEosMap.end() && it->second)
+    {
+        it->second = false;
+    }
+
     return true;
 }
 

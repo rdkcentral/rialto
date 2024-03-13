@@ -225,6 +225,20 @@ struct GenericPlayerContext
      * Attribute can be used only in worker thread
      */
     bool wereAllSourcesAttached{false};
+
+    /**
+     * @brief Flag used to check if FinishSetupSource is finished. It is needed to avoid need data overwriting.
+     *
+     * Attribute can be used only in worker thread
+     */
+    bool setupSourceFinished{false};
+
+    /**
+     * @brief Queued source positions. Used by SetSourcePosition task to request pushing new sample.
+     *
+     * Attribute can be used only in worker thread
+     */
+    std::map<GstElement *, std::uint64_t> initialPositions;
 };
 } // namespace firebolt::rialto::server
 
