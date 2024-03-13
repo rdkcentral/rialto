@@ -668,8 +668,8 @@ bool GstGenericPlayer::pushSampleIfRequired(GstElement *source, GstBuffer *buffe
         return false;
     }
 
-    RIALTO_SERVER_LOG_INFO("New segment: [%" GST_TIME_FORMAT ", %" GST_TIME_FORMAT "], rate: %f \n",
-                           GST_TIME_ARGS(segment->start), GST_TIME_ARGS(segment->stop), segment->rate);
+    RIALTO_SERVER_LOG_MIL("New segment: [%" GST_TIME_FORMAT ", %" GST_TIME_FORMAT "], rate: %f \n",
+                          GST_TIME_ARGS(segment->start), GST_TIME_ARGS(segment->stop), segment->rate);
 
     GstCaps *currentCaps = m_gstWrapper->gstAppSrcGetCaps(GST_APP_SRC(source));
     GstSample *sample = m_gstWrapper->gstSampleNew(buffer, currentCaps, segment, nullptr);
