@@ -269,6 +269,17 @@ bool MediaPipelineIpc::attachSource(const std::unique_ptr<IMediaPipeline::MediaS
             }
         }
     }
+    else if (configType == SourceConfigType::SUBTITLE)
+    {
+        IMediaPipeline::MediaSourceSubtitle &mediaSourceSubtitle =
+            dynamic_cast<IMediaPipeline::MediaSourceSubtitle &>(*source);
+        request.set_text_track_identifier(mediaSourceSubtitle.getTextTrackIdentifier());
+    }
+    else
+    {
+        RIALTO_CLIENT_LOG_ERROR("Unknown source type");
+        return false;
+    }
 
     firebolt::rialto::AttachSourceResponse response;
     auto ipcController = m_ipc.createRpcController();

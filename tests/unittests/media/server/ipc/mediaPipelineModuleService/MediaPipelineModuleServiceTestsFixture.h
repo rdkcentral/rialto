@@ -50,8 +50,10 @@ public:
     void mediaPipelineServiceWillAttachSource();
     void mediaPipelineServiceWillAttachVideoSource();
     void mediaPipelineServiceWillAttachDolbySource();
+    void mediaPipelineServiceWillAttachSubtitleSource();
     void mediaPipelineServiceWillAttachAudioSourceWithAdditionaldata();
     void mediaPipelineServiceWillFailToAttachSource();
+    void mediaPipelineServiceWillFailToAttachUnknownSource();
     void mediaPipelineServiceWillSucceedAllSourcesAttached();
     void mediaPipelineServiceWillFailAllSourcesAttached();
     void mediaPipelineServiceWillPlay();
@@ -101,6 +103,8 @@ public:
     void sendAttachSourceRequestAndReceiveResponse();
     void sendAttachVideoSourceRequestAndReceiveResponse();
     void sendAttachDolbySourceRequestAndReceiveResponse();
+    void sendAttachSubtitleSourceRequestAndReceiveResponse();
+    void sendAttachUnknownSourceRequestAndReceiveResponse();
     void sendAttachAudioSourceWithAdditionalDataRequestAndReceiveResponse();
     void sendAllSourcesAttachedRequestAndReceiveResponse();
     void sendPlayRequestAndReceiveResponse();

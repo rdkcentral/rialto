@@ -30,6 +30,7 @@ protected:
     const firebolt::rialto::StreamFormat m_kStreamFormat = firebolt::rialto::StreamFormat::RAW;
     const int m_kWidth = 1920;
     const int m_kHeight = 1080;
+    const std::string m_kTextTrackSelection = "CC1";
     const std::shared_ptr<CodecData> m_kNullCodecData;
     const uint32_t m_kNumberOfChannels = 6;
     const uint32_t m_kSampleRate = 48000;
@@ -169,6 +170,22 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachDolbyVisionSourceWithSucces
         std::make_unique<IMediaPipeline::MediaSourceVideoDolbyVision>(m_kMimeType, dolbyVisionProfile, true, m_kWidth,
                                                                       m_kHeight, m_kAlignment, m_kStreamFormat,
                                                                       m_kCodecData);
+
+    EXPECT_EQ(m_mediaPipelineIpc->attachSource(mediaSource, m_id), true);
+}
+
+TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachSubtitleSourceWithSuccess)
+{
+    expectIpcApiCallSuccess();
+
+    EXPECT_CALL(*m_channelMock,
+                CallMethod(methodMatcher("attachSource"), m_controllerMock.get(),
+                           attachSourceRequestMatcherSubtitle(m_sessionId, m_kMimeType, false, m_kTextTrackSelection),
+                           _, m_blockingClosureMock.get()))
+        .WillOnce(WithArgs<3>(Invoke(this, &RialtoClientMediaPipelineIpcSourceTest::setAttachSourceResponse)));
+
+    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
+        std::make_unique<IMediaPipeline::MediaSourceSubtitle>(m_kMimeType, m_kTextTrackSelection);
 
     EXPECT_EQ(m_mediaPipelineIpc->attachSource(mediaSource, m_id), true);
 }

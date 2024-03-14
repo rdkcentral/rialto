@@ -127,6 +127,8 @@ protected:
     void shouldAttachVideoSource();
     void triggerAttachVideoSource();
     void checkVideoSourceAttached();
+    void checkSubtitleSourceAttached();
+    void triggerAttachSubtitleSource();
     void shouldAttachVideoSourceWithStringCodecData();
     void triggerAttachVideoSourceWithStringCodecData();
     void checkVideoSourceAttachedWithDrm();

@@ -383,6 +383,17 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
                                                                           convertStreamFormat(request->stream_format()),
                                                                           codecData);
     }
+    else if (configType == firebolt::rialto::SourceConfigType::SUBTITLE)
+    {
+        mediaSource = std::make_unique<IMediaPipeline::MediaSourceSubtitle>(request->mime_type().c_str(), request->text_track_identifier());
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Unknown source type");
+        controller->SetFailed("Operation failed");
+        done->Run();
+        return;
+    }
 
     if (!m_mediaPipelineService.attachSource(request->session_id(), mediaSource))
     {

@@ -49,6 +49,7 @@ const std::string kCodecSpecificConfigStr("1243567");
 const std::shared_ptr<firebolt::rialto::CodecData> kCodecData{std::make_shared<firebolt::rialto::CodecData>(
     firebolt::rialto::CodecData{std::vector<std::uint8_t>{'T', 'E', 'S', 'T'}, firebolt::rialto::CodecDataType::BUFFER})};
 const std::string kUrl{"https://example.url.com"};
+const std::string kTextTrackIdentifier{"CC1"};
 constexpr int64_t kPosition{2000000000};
 constexpr std::uint32_t kRequestId{2};
 const firebolt::rialto::MediaSourceStatus kMediaSourceStatus{firebolt::rialto::MediaSourceStatus::CODEC_CHANGED};
@@ -129,6 +130,15 @@ MATCHER_P(AttachedSourceMatcher, source, "")
             extraCompare = extraCompare && dolbyArg.getDolbyVisionProfile() == dolbySrc.getDolbyVisionProfile() &&
                            dolbyArg.getWidth() == dolbySrc.getWidth() && dolbyArg.getHeight() == dolbySrc.getHeight();
         }
+    }
+    else if (arg->getConfigType() == firebolt::rialto::SourceConfigType::SUBTITLE)
+    {
+        firebolt::rialto::IMediaPipeline::MediaSourceSubtitle &subArg =
+            dynamic_cast<firebolt::rialto::IMediaPipeline::MediaSourceSubtitle &>(*arg);
+        firebolt::rialto::IMediaPipeline::MediaSourceSubtitle &subSrc =
+            dynamic_cast<firebolt::rialto::IMediaPipeline::MediaSourceSubtitle &>(*src);
+
+        extraCompare = subArg.getTextTrackIdentifier() == subSrc.getTextTrackIdentifier();
     }
 
     return baseCompare && extraCompare;
@@ -275,6 +285,14 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillAttachDolbySource(
         .WillOnce(Return(true));
 }
 
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillAttachSubtitleSource()
+{
+    m_source = std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceSubtitle>(kMimeType, kTextTrackIdentifier);
+    expectRequestSuccess();
+    EXPECT_CALL(m_mediaPipelineServiceMock, attachSource(kHardcodedSessionId, AttachedSourceMatcher(ByRef(m_source))))
+        .WillOnce(Return(true));
+}
+
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillAttachAudioSourceWithAdditionaldata()
 {
     std::vector<uint8_t> codecSpecificConfig;
@@ -296,6 +314,11 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToAttachSource
     expectRequestFailure();
     EXPECT_CALL(m_mediaPipelineServiceMock, attachSource(kHardcodedSessionId, AttachedSourceMatcher(ByRef(m_source))))
         .WillOnce(Return(false));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToAttachUnknownSource()
+{
+    expectRequestFailure();
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSucceedAllSourcesAttached()
@@ -654,6 +677,32 @@ void MediaPipelineModuleServiceTests::sendAttachDolbySourceRequestAndReceiveResp
     request.set_width(kWidth);
     request.set_height(kHeight);
     request.set_dolby_vision_profile(kDolbyProfile);
+
+    m_service->attachSource(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void MediaPipelineModuleServiceTests::sendAttachSubtitleSourceRequestAndReceiveResponse()
+{
+    firebolt::rialto::AttachSourceRequest request;
+    firebolt::rialto::AttachSourceResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+    request.set_config_type(firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_SUBTITLE);
+    request.set_mime_type(kMimeType);
+    request.set_has_drm(false);
+    request.set_text_track_identifier(kTextTrackIdentifier);
+
+    m_service->attachSource(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void MediaPipelineModuleServiceTests::sendAttachUnknownSourceRequestAndReceiveResponse()
+{
+    firebolt::rialto::AttachSourceRequest request;
+    firebolt::rialto::AttachSourceResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+    request.set_config_type(firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_UNKNOWN);
+    request.set_mime_type(kMimeType);
 
     m_service->attachSource(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }

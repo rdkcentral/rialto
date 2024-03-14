@@ -76,6 +76,7 @@ constexpr int32_t kSampleRate{13};
 constexpr int32_t kNumberOfChannels{4};
 constexpr int32_t kWidth{1024};
 constexpr int32_t kHeight{768};
+const std::string kTextTrackIdentifier{"SERVICE1"};
 constexpr firebolt::rialto::Fraction kFrameRate{15, 1};
 constexpr int32_t kDolbyVisionProfile{5};
 constexpr gint64 kPosition{1234};
@@ -761,6 +762,19 @@ void GenericTasksTestsBase::triggerAttachVideoSource()
     task.execute();
 }
 
+void GenericTasksTestsBase::triggerAttachSubtitleSource()
+{
+    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceSubtitle>("application/ttml+xml", kTextTrackIdentifier);
+    firebolt::rialto::server::tasks::generic::AttachSource task{testContext->m_context,
+                                                                testContext->m_gstWrapper,
+                                                                testContext->m_glibWrapper,
+                                                                testContext->m_rdkGstreamerUtilsWrapper,
+                                                                testContext->m_gstPlayer,
+                                                                source};
+    task.execute();
+}
+
 void GenericTasksTestsBase::checkVideoSourceAttached()
 {
     EXPECT_EQ(1, testContext->m_context.streamInfo.size());
@@ -769,6 +783,11 @@ void GenericTasksTestsBase::checkVideoSourceAttached()
     EXPECT_EQ(&testContext->m_appSrcVideo,
               testContext->m_context.streamInfo.at(firebolt::rialto::MediaSourceType::VIDEO).appSrc);
     EXPECT_FALSE(testContext->m_context.streamInfo.at(firebolt::rialto::MediaSourceType::VIDEO).hasDrm);
+}
+
+void GenericTasksTestsBase::checkSubtitleSourceAttached()
+{
+    EXPECT_EQ(0, testContext->m_context.streamInfo.size());
 }
 
 void GenericTasksTestsBase::shouldAttachVideoSourceWithStringCodecData()
