@@ -1213,45 +1213,6 @@ public:
     virtual gboolean gstObjectSetName(GstObject *object, const gchar *name) const = 0;
 
     /**
-     * @brief Constructs a new segment query object. A segment query is used to discover
-     *        information about the currently configured segment for playback.
-     *
-     * @param[in] format    : the GstFormat for the new query
-     *
-     * @retval a new GstQuery
-     */
-    virtual GstQuery *gstQueryNewSegment(GstFormat format) const = 0;
-
-    /**
-     * @brief Performs a query on the given element.
-     *
-     * @param[in] element : a GstElement to perform the query on.
-     * @param[in] query   : the GstQuery.
-     *
-     * @retval TRUE if the query could be performed. MT safe.
-     */
-    virtual gboolean gstElementQuery(GstElement *element, GstQuery *query) const = 0;
-
-    /**
-     * @brief Parse a segment query answer.
-     *
-     * @param[in]  query      : a GstQuery
-     * @param[out] rate       : the storage for the rate of the segment, or NULL
-     * @param[out] format     : the storage for the GstFormat of the values, or NULL
-     * @param[out] startValue : the storage for the start value, or NULL
-     * @param[out] stopValue  : the storage for the stop value, or NULL
-     */
-    virtual void gstQueryParseSegment(GstQuery *query, gdouble *rate, GstFormat *format, gint64 *startValue,
-                                      gint64 *stopValue) const = 0;
-
-    /**
-     * @brief Decreases the refcount of the query. If the refcount reaches 0, the query will be freed.
-     *
-     * @param[in]  query      : a GstQuery
-     */
-    virtual void gstQueryUnref(GstQuery *query) const = 0;
-
-    /**
      * @brief Update the segment structure with the field values of a seek event (see gst_event_new_seek).
      *
      * @param[in] segment   : a GstSegment structure.
@@ -1271,16 +1232,36 @@ public:
                                       gboolean *update) const = 0;
 
     /**
-     * @brief Prepare a new seamless segment for emission downstream.
+     * @brief Create a new GstSample with the provided details.
      *
-     * @param[in] src   : The source
-     * @param[in] start : The new start value for the segment
-     * @param[in] stop  : Stop value for the new segment
-     * @param[in] time  : The new time value for the start of the new segent
+     * @param[in] buffer  : a GstBuffer, or NULL
+     * @param[in] caps    : a GstCaps, or NULL
+     * @param[in] segment : a GstSegment, or NULL
+     * @param[in] info    : a GstStructure, or NULL
      *
-     * @retval TRUE if the seek could be performed.
+     * @retval the new GstSample. gst_sample_unref after usage.
      */
-    virtual gboolean gstBaseSrcNewSeamlessSegment(GstBaseSrc *src, gint64 start, gint64 stop, gint64 time) const = 0;
+    virtual GstSample *gstSampleNew(GstBuffer *buffer, GstCaps *caps, const GstSegment *segment,
+                                    GstStructure *info) const = 0;
+
+    /**
+     * @brief Decreases the refcount of the sample. If the refcount reaches 0, the sample will be freed.
+     *
+     * @param[in] sample  : a GstSample
+     */
+    virtual void gstSampleUnref(GstSample *sample) const = 0;
+
+    /**
+     * @brief Extract a buffer from the provided sample and adds it to the queue of buffers that the appsrc element will
+     * push to its source pad.
+     *
+     * @param[in] appsrc  : a GstAppSrc
+     * @param[in] sample  : a GstSample from which buffer and caps may be extracted
+     *
+     * @retval GST_FLOW_OK when the buffer was successfully queued. GST_FLOW_FLUSHING when appsrc is not PAUSED or
+     * PLAYING. GST_FLOW_EOS when EOS occurred.
+     */
+    virtual GstFlowReturn gstAppSrcPushSample(GstAppSrc *appsrc, GstSample *sample) const = 0;
 
     /**
      * @brief Create a new GstContext with the given parameters.

@@ -38,6 +38,7 @@ add_gtests (
         mediaPipeline/SetMuteTest.cpp
         mediaPipeline/GetMuteTest.cpp
         mediaPipeline/FlushTest.cpp
+        mediaPipeline/SetSourcePositionTest.cpp
 
         # MediaPipelineCapabilities tests
         mediaPipelineCapabilities/MediaPipelineCapabilitiesTest.cpp

@@ -46,6 +46,7 @@ add_gtests(RialtoServerGstPlayerUnitTests
     genericPlayer/tasksTests/CheckAudioUnderflowTest.cpp
     genericPlayer/tasksTests/SetPlaybackRateTest.cpp
     genericPlayer/tasksTests/SetPositionTest.cpp
+    genericPlayer/tasksTests/SetSourcePositionTest.cpp
     genericPlayer/tasksTests/SetupElementTest.cpp
     genericPlayer/tasksTests/SetupSourceTest.cpp
     genericPlayer/tasksTests/SetVideoGeometryTest.cpp

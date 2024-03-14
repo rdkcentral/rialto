@@ -1264,6 +1264,18 @@ public:
      * @retval true on success.
      */
     virtual bool flush(int32_t sourceId, bool resetTime) = 0;
+
+    /**
+     * @brief Set the source position in nanoseconds.
+     *
+     * This method sets the start position for a source.
+     *
+     * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[in] position : The position in nanoseconds.
+     *
+     * @retval true on success.
+     */
+    virtual bool setSourcePosition(int32_t sourceId, int64_t position) = 0;
 };
 
 }; // namespace firebolt::rialto

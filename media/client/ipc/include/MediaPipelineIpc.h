@@ -105,6 +105,8 @@ public:
 
     bool flush(int32_t sourceId, bool resetTime) override;
 
+    bool setSourcePosition(int32_t sourceId, int64_t position) override;
+
 private:
     /**
      * @brief The media player client ipc.

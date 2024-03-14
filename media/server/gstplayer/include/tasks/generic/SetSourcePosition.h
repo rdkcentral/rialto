@@ -17,24 +17,25 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_FLUSH_H_
-#define FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_FLUSH_H_
+#ifndef FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SET_SOURCE_POSITION_H_
+#define FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SET_SOURCE_POSITION_H_
 
 #include "GenericPlayerContext.h"
 #include "IGstGenericPlayerClient.h"
 #include "IGstWrapper.h"
 #include "IPlayerTask.h"
+#include <cstdint>
 #include <memory>
 
 namespace firebolt::rialto::server::tasks::generic
 {
-class Flush : public IPlayerTask
+class SetSourcePosition : public IPlayerTask
 {
 public:
-    Flush(GenericPlayerContext &context, IGstGenericPlayerClient *client,
-          std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper, const MediaSourceType &type,
-          bool resetTime);
-    ~Flush() override;
+    SetSourcePosition(GenericPlayerContext &context, IGstGenericPlayerClient *client,
+                      const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                      const MediaSourceType &type, std::int64_t position);
+    ~SetSourcePosition() override;
     void execute() const override;
 
 private:
@@ -42,8 +43,8 @@ private:
     IGstGenericPlayerClient *m_gstPlayerClient;
     std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
     MediaSourceType m_type;
-    bool m_resetTime;
+    std::int64_t m_position;
 };
 } // namespace firebolt::rialto::server::tasks::generic
 
-#endif // FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_FLUSH_H_
+#endif // FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SET_SOURCE_POSITION_H_

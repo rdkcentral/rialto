@@ -524,21 +524,6 @@ public:
         return gst_object_set_name(object, name);
     }
 
-    GstQuery *gstQueryNewSegment(GstFormat format) const override { return gst_query_new_segment(format); }
-
-    gboolean gstElementQuery(GstElement *element, GstQuery *query) const override
-    {
-        return gst_element_query(element, query);
-    }
-
-    void gstQueryParseSegment(GstQuery *query, gdouble *rate, GstFormat *format, gint64 *startValue,
-                              gint64 *stopValue) const override
-    {
-        gst_query_parse_segment(query, rate, format, startValue, stopValue);
-    }
-
-    void gstQueryUnref(GstQuery *query) const override { gst_query_unref(query); }
-
     gboolean gstSegmentDoSeek(GstSegment *segment, gdouble rate, GstFormat format, GstSeekFlags flags,
                               GstSeekType startType, guint64 start, GstSeekType stopType, guint64 stop,
                               gboolean *update) const override
@@ -546,9 +531,16 @@ public:
         return gst_segment_do_seek(segment, rate, format, flags, startType, start, stopType, stop, update);
     }
 
-    gboolean gstBaseSrcNewSeamlessSegment(GstBaseSrc *src, gint64 start, gint64 stop, gint64 time) const override
+    GstSample *gstSampleNew(GstBuffer *buffer, GstCaps *caps, const GstSegment *segment, GstStructure *info) const override
     {
-        return gst_base_src_new_seamless_segment(src, start, stop, time);
+        return gst_sample_new(buffer, caps, segment, info);
+    }
+
+    void gstSampleUnref(GstSample *sample) const override { gst_sample_unref(sample); }
+
+    GstFlowReturn gstAppSrcPushSample(GstAppSrc *appsrc, GstSample *sample) const override
+    {
+        return gst_app_src_push_sample(appsrc, sample);
     }
 
     GstContext *gstContextNew(const gchar *context_type, gboolean persistent) const override

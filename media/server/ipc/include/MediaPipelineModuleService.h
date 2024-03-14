@@ -96,6 +96,10 @@ public:
                  ::firebolt::rialto::GetMuteResponse *response, ::google::protobuf::Closure *done) override;
     void flush(::google::protobuf::RpcController *controller, const ::firebolt::rialto::FlushRequest *request,
                ::firebolt::rialto::FlushResponse *response, ::google::protobuf::Closure *done) override;
+    void setSourcePosition(::google::protobuf::RpcController *controller,
+                           const ::firebolt::rialto::SetSourcePositionRequest *request,
+                           ::firebolt::rialto::SetSourcePositionResponse *response,
+                           ::google::protobuf::Closure *done) override;
 
 private:
     service::IMediaPipelineService &m_mediaPipelineService;

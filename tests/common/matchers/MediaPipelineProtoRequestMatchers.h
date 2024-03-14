@@ -204,6 +204,14 @@ MATCHER_P2(setPositionRequestMatcher, sessionId, position, "")
     return ((kRequest->session_id() == sessionId) && (kRequest->position() == position));
 }
 
+MATCHER_P3(setSourcePositionRequestMatcher, sessionId, sourceId, position, "")
+{
+    const ::firebolt::rialto::SetSourcePositionRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::SetSourcePositionRequest *>(arg);
+    return ((kRequest->session_id() == sessionId) && (kRequest->position() == position) &&
+            (kRequest->source_id() == sourceId));
+}
+
 MATCHER_P2(setVolumeRequestMatcher, sessionId, volume, "")
 {
     const ::firebolt::rialto::SetVolumeRequest *kRequest =

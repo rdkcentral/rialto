@@ -151,6 +151,7 @@ void MediaPipelineTest::willSetupAndAddSource(GstAppSrc *appSrc)
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(GST_ELEMENT(appSrc), StrEq("format")));
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(GST_ELEMENT(appSrc), StrEq("stream-type")));
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(GST_ELEMENT(appSrc), StrEq("min-percent")));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(GST_ELEMENT(appSrc), StrEq("handle-segment-change")));
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetMaxBytes(appSrc, kMaxBytes));
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetStreamType(appSrc, GST_APP_STREAM_TYPE_SEEKABLE));
     EXPECT_CALL(*m_glibWrapperMock, gStrdupPrintfStub(_)).WillOnce(Return(m_sourceName.data())).RetiresOnSaturation();
@@ -249,6 +250,73 @@ void MediaPipelineTest::willPushVideoData(const std::unique_ptr<IMediaPipeline::
                 }))
             .RetiresOnSaturation();
     }
+}
+
+void MediaPipelineTest::willPushAudioSample(const std::unique_ptr<IMediaPipeline::MediaSegment> &segment,
+                                            GstBuffer &buffer, GstCaps &capsCopy)
+{
+    std::string dataCopy(segment->getData(), segment->getData() + segment->getDataLength());
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferNewAllocate(nullptr, segment->getDataLength(), nullptr))
+        .InSequence(m_bufferAllocateSeq)
+        .WillOnce(Return(&buffer))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferFill(&buffer, 0, BufferMatcher(dataCopy), segment->getDataLength()))
+        .WillOnce(Return(segment->getDataLength()))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(&m_audioAppSrc))
+        .Times(2)
+        .WillRepeatedly(Return(&m_audioCaps))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCopy(&m_audioCaps)).WillOnce(Return(&capsCopy)).RetiresOnSaturation();
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&capsCopy, StrEq("rate"), G_TYPE_INT, kSampleRate));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&capsCopy, StrEq("channels"), G_TYPE_INT, kNumOfChannels));
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(&m_audioAppSrc, &capsCopy));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_audioCaps)).Times(2).RetiresOnSaturation();
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&capsCopy));
+    EXPECT_CALL(*m_gstWrapperMock, gstSegmentNew()).WillOnce(Return(&m_segment));
+    EXPECT_CALL(*m_gstWrapperMock, gstSegmentInit(&m_segment, GST_FORMAT_TIME));
+    EXPECT_CALL(*m_gstWrapperMock,
+                gstSegmentDoSeek(&m_segment, kRate, GST_FORMAT_TIME, GST_SEEK_FLAG_NONE, GST_SEEK_TYPE_SET, kPosition,
+                                 GST_SEEK_TYPE_SET, GST_CLOCK_TIME_NONE, nullptr))
+        .WillOnce(Return(true));
+    EXPECT_CALL(*m_gstWrapperMock, gstSampleNew(&buffer, &m_audioCaps, &m_segment, nullptr)).WillOnce(Return(m_sample));
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushSample(&m_audioAppSrc, m_sample));
+    EXPECT_CALL(*m_gstWrapperMock, gstSampleUnref(m_sample));
+    EXPECT_CALL(*m_gstWrapperMock, gstSegmentFree(&m_segment));
+}
+
+void MediaPipelineTest::willPushVideoSample(const std::unique_ptr<IMediaPipeline::MediaSegment> &segment,
+                                            GstBuffer &buffer, GstCaps &capsCopy)
+{
+    std::string dataCopy(segment->getData(), segment->getData() + segment->getDataLength());
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferNewAllocate(nullptr, segment->getDataLength(), nullptr))
+        .InSequence(m_bufferAllocateSeq)
+        .WillOnce(Return(&buffer))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferFill(&buffer, 0, BufferMatcher(dataCopy), segment->getDataLength()))
+        .WillOnce(Return(segment->getDataLength()))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(&m_videoAppSrc))
+        .Times(2)
+        .WillRepeatedly(Return(&m_videoCaps))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCopy(&m_videoCaps)).WillOnce(Return(&capsCopy)).RetiresOnSaturation();
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&capsCopy, StrEq("width"), G_TYPE_INT, kWidth));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&capsCopy, StrEq("height"), G_TYPE_INT, kHeight));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleFractionStub(&capsCopy, StrEq("framerate"), GST_TYPE_FRACTION, _, _));
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(&m_videoAppSrc, &capsCopy));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_videoCaps)).Times(2).RetiresOnSaturation();
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&capsCopy));
+    EXPECT_CALL(*m_gstWrapperMock, gstSegmentNew()).WillOnce(Return(&m_segment));
+    EXPECT_CALL(*m_gstWrapperMock, gstSegmentInit(&m_segment, GST_FORMAT_TIME));
+    EXPECT_CALL(*m_gstWrapperMock,
+                gstSegmentDoSeek(&m_segment, kRate, GST_FORMAT_TIME, GST_SEEK_FLAG_NONE, GST_SEEK_TYPE_SET, kPosition,
+                                 GST_SEEK_TYPE_SET, GST_CLOCK_TIME_NONE, nullptr))
+        .WillOnce(Return(true));
+    EXPECT_CALL(*m_gstWrapperMock, gstSampleNew(&buffer, &m_videoCaps, &m_segment, nullptr)).WillOnce(Return(m_sample));
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushSample(&m_videoAppSrc, m_sample));
+    EXPECT_CALL(*m_gstWrapperMock, gstSampleUnref(m_sample));
+    EXPECT_CALL(*m_gstWrapperMock, gstSegmentFree(&m_segment));
 }
 
 void MediaPipelineTest::willPause()
@@ -483,6 +551,70 @@ void MediaPipelineTest::pushVideoData(unsigned dataCountToPush, int needDataFram
         EXPECT_EQ(writer->writeFrame(segments[i]), AddSegmentStatus::OK);
         willPushVideoData(segments[i], buffers[i], copies[i], false);
     }
+
+    // Finally, send HaveData and receive new NeedData
+    ExpectMessage<firebolt::rialto::NeedMediaDataEvent> expectedNeedData{m_clientStub};
+    auto haveDataReq{createHaveDataRequest(m_sessionId, writer->getNumFrames(), m_lastVideoNeedData->request_id())};
+    ConfigureAction<HaveData>(m_clientStub).send(haveDataReq).expectSuccess();
+    auto receivedNeedData{expectedNeedData.getMessage()};
+    ASSERT_TRUE(receivedNeedData);
+    EXPECT_EQ(receivedNeedData->session_id(), m_sessionId);
+    EXPECT_EQ(receivedNeedData->source_id(), m_videoSourceId);
+    EXPECT_EQ(receivedNeedData->frame_count(), needDataFrameCount);
+    m_lastVideoNeedData = receivedNeedData;
+}
+
+void MediaPipelineTest::pushAudioSample(int needDataFrameCount)
+{
+    // First, generate new data
+    std::unique_ptr<IMediaPipeline::MediaSegment> segment{SegmentBuilder().basicAudioSegment(m_audioSourceId)()};
+    GstBuffer buffer{};
+    GstCaps capsCopy{};
+
+    // Next, create frame writer
+    ASSERT_TRUE(m_lastAudioNeedData);
+    std::shared_ptr<MediaPlayerShmInfo> shmInfo{
+        std::make_shared<MediaPlayerShmInfo>(MediaPlayerShmInfo{m_lastAudioNeedData->shm_info().max_metadata_bytes(),
+                                                                m_lastAudioNeedData->shm_info().metadata_offset(),
+                                                                m_lastAudioNeedData->shm_info().media_data_offset(),
+                                                                m_lastAudioNeedData->shm_info().max_media_bytes()})};
+    auto writer{common::IMediaFrameWriterFactory::getFactory()->createFrameWriter(m_shmHandle.getShm(), shmInfo)};
+
+    // Write frames to shm and add gst expects
+    EXPECT_EQ(writer->writeFrame(segment), AddSegmentStatus::OK);
+    willPushAudioSample(segment, buffer, capsCopy);
+
+    // Finally, send HaveData and receive new NeedData
+    ExpectMessage<firebolt::rialto::NeedMediaDataEvent> expectedNeedData{m_clientStub};
+    auto haveDataReq{createHaveDataRequest(m_sessionId, writer->getNumFrames(), m_lastAudioNeedData->request_id())};
+    ConfigureAction<HaveData>(m_clientStub).send(haveDataReq).expectSuccess();
+    auto receivedNeedData{expectedNeedData.getMessage()};
+    ASSERT_TRUE(receivedNeedData);
+    EXPECT_EQ(receivedNeedData->session_id(), m_sessionId);
+    EXPECT_EQ(receivedNeedData->source_id(), m_audioSourceId);
+    EXPECT_EQ(receivedNeedData->frame_count(), needDataFrameCount);
+    m_lastAudioNeedData = receivedNeedData;
+}
+
+void MediaPipelineTest::pushVideoSample(int needDataFrameCount)
+{
+    // First, generate new data
+    std::unique_ptr<IMediaPipeline::MediaSegment> segment{SegmentBuilder().basicVideoSegment(m_videoSourceId)()};
+    GstBuffer buffer{};
+    GstCaps capsCopy{};
+
+    // Next, create frame writer
+    ASSERT_TRUE(m_lastVideoNeedData);
+    std::shared_ptr<MediaPlayerShmInfo> shmInfo{
+        std::make_shared<MediaPlayerShmInfo>(MediaPlayerShmInfo{m_lastVideoNeedData->shm_info().max_metadata_bytes(),
+                                                                m_lastVideoNeedData->shm_info().metadata_offset(),
+                                                                m_lastVideoNeedData->shm_info().media_data_offset(),
+                                                                m_lastVideoNeedData->shm_info().max_media_bytes()})};
+    auto writer{common::IMediaFrameWriterFactory::getFactory()->createFrameWriter(m_shmHandle.getShm(), shmInfo)};
+
+    // Write frames to shm and add gst expects
+    EXPECT_EQ(writer->writeFrame(segment), AddSegmentStatus::OK);
+    willPushVideoSample(segment, buffer, capsCopy);
 
     // Finally, send HaveData and receive new NeedData
     ExpectMessage<firebolt::rialto::NeedMediaDataEvent> expectedNeedData{m_clientStub};

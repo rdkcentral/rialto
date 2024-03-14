@@ -85,6 +85,7 @@ const std::vector<std::string> kAudioMimeType{"audio/mp4", "audio/aac", "audio/x
 const std::vector<std::string> kVideoMimeType{"video/h264", "video/h265", "video/x-av1", "video/x-vp9", "video/mp4"};
 const std::vector<std::string> kUnknownMimeType{};
 constexpr bool kResetTime{true};
+constexpr double kPosition{1234};
 } // namespace
 
 namespace firebolt::rialto::client::ct
@@ -1317,6 +1318,30 @@ void MediaPipelineTestMethods::shouldFailToFlush()
 void MediaPipelineTestMethods::flushFailure()
 {
     EXPECT_FALSE(m_mediaPipeline->flush(kAudioSourceId, kResetTime));
+}
+
+void MediaPipelineTestMethods::shouldSetSourcePosition()
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                setSourcePosition(_, setSourcePositionRequestMatcher(kSessionId, kAudioSourceId, kPosition), _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
+}
+
+void MediaPipelineTestMethods::setSourcePosition()
+{
+    EXPECT_TRUE(m_mediaPipeline->setSourcePosition(kAudioSourceId, kPosition));
+}
+
+void MediaPipelineTestMethods::shouldFailToSetSourcePosition()
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                setSourcePosition(_, setSourcePositionRequestMatcher(kSessionId, kAudioSourceId, kPosition), _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::failureReturn)));
+}
+
+void MediaPipelineTestMethods::setSourcePositionFailure()
+{
+    EXPECT_FALSE(m_mediaPipeline->setSourcePosition(kAudioSourceId, kPosition));
 }
 
 /*************************** Private methods ********************************/

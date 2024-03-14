@@ -454,6 +454,26 @@ TEST_F(MediaPipelineServiceTests, shouldFlush)
     flushShouldSucceed();
 }
 
+TEST_F(MediaPipelineServiceTests, shouldFailToSetSourcePositionForNotExistingSession)
+{
+    createMediaPipelineShouldSuccess();
+    setSourcePositionShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToSetSourcePosition)
+{
+    initSession();
+    mediaPipelineWillFailToSetSourcePosition();
+    setSourcePositionShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldSetSourcePosition)
+{
+    initSession();
+    mediaPipelineWillSetSourcePosition();
+    setSourcePositionShouldSucceed();
+}
+
 TEST_F(MediaPipelineServiceTests, shouldPing)
 {
     initSession();

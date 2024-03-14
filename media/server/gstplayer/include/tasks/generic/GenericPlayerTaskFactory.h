@@ -87,9 +87,11 @@ public:
     std::unique_ptr<IPlayerTask> createRenderFrame(GenericPlayerContext &context,
                                                    IGstGenericPlayerPrivate &player) const override;
     std::unique_ptr<IPlayerTask> createPing(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) const override;
-    std::unique_ptr<IPlayerTask> createFlush(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                             const firebolt::rialto::MediaSourceType &type,
+    std::unique_ptr<IPlayerTask> createFlush(GenericPlayerContext &context, const firebolt::rialto::MediaSourceType &type,
                                              bool resetTime) const override;
+    std::unique_ptr<IPlayerTask> createSetSourcePosition(GenericPlayerContext &context,
+                                                         const firebolt::rialto::MediaSourceType &type,
+                                                         std::int64_t position) const override;
 
 private:
     IGstGenericPlayerClient *m_client;

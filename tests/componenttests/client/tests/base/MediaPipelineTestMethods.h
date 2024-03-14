@@ -122,6 +122,8 @@ protected:
     void shouldGetPosition(const int64_t position);
     void shouldFlush();
     void shouldFailToFlush();
+    void shouldSetSourcePosition();
+    void shouldFailToSetSourcePosition();
 
     // MediaPipelineClient Expect methods
     void shouldNotifyNetworkStateBuffering();
@@ -225,6 +227,8 @@ protected:
     void isMimeTypeNotSupported();
     void flush();
     void flushFailure();
+    void setSourcePosition();
+    void setSourcePositionFailure();
 
     // Event methods
     void sendNotifyNetworkStateBuffering();

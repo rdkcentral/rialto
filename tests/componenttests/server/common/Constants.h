@@ -43,6 +43,8 @@ constexpr double kPlaybackRate{0.5};
 constexpr std::int64_t kCurrentPosition{1234};
 constexpr double kVolume{0.7};
 constexpr QosInfo kQosInfo{234, 567};
+constexpr std::uint64_t kPosition{1234};
+constexpr double kRate{1.0};
 } // namespace firebolt::rialto::server::ct
 
 #endif // FIREBOLT_RIALTO_SERVER_CT_CONSTANTS_H_

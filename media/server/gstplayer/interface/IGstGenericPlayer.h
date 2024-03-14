@@ -260,6 +260,16 @@ public:
      *
      */
     virtual void flush(const MediaSourceType &mediaSourceType, bool resetTime) = 0;
+
+    /**
+     * @brief Set the source position in nanoseconds.
+     *
+     * This method sets the start position for a source.
+     *
+     * @param[in] mediaSourceType : The media source type to flush.
+     * @param[in] position : The position in nanoseconds.
+     */
+    virtual void setSourcePosition(const MediaSourceType &mediaSourceType, int64_t position) = 0;
 };
 
 }; // namespace firebolt::rialto::server

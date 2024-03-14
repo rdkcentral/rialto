@@ -29,84 +29,39 @@ namespace
 {
 constexpr unsigned kFramesToPush{1};
 constexpr int kFrameCount{3};
-constexpr bool kResetTime{true};
 } // namespace
 
 using testing::Return;
 
 namespace firebolt::rialto::server::ct
 {
-class FlushTest : public MediaPipelineTest
+class SetSourcePositionTest : public MediaPipelineTest
 {
-    GstEvent m_flushStartEvent{};
-    GstEvent m_flushStopEvent{};
-    GstSegment m_segment{};
-
 public:
-    FlushTest() = default;
-    ~FlushTest() override = default;
+    SetSourcePositionTest() = default;
+    ~SetSourcePositionTest() override = default;
 
-    void willFlush()
+    void setSourcePosition(int sourceId)
     {
-        EXPECT_CALL(*m_gstWrapperMock, gstEventNewFlushStart()).WillOnce(Return(&m_flushStartEvent));
-        EXPECT_CALL(*m_gstWrapperMock, gstElementSendEvent(GST_ELEMENT(&m_audioAppSrc), &m_flushStartEvent))
-            .WillOnce(Return(true));
-        EXPECT_CALL(*m_gstWrapperMock, gstEventNewFlushStop(kResetTime)).WillOnce(Return(&m_flushStopEvent));
-        EXPECT_CALL(*m_gstWrapperMock, gstElementSendEvent(GST_ELEMENT(&m_audioAppSrc), &m_flushStopEvent))
-            .WillOnce(Return(true));
-    }
-
-    void flush()
-    {
-        // After successful Flush procedure, SourceFlushedEvent is sent.
-        ExpectMessage<SourceFlushedEvent> expectedSourceFlushed{m_clientStub};
-        expectedSourceFlushed.setFilter([&](const SourceFlushedEvent &event)
-                                        { return event.source_id() == m_audioSourceId; });
-
-        // Send FlushRequest and expect success
-        auto request{createFlushRequest(m_sessionId, m_audioSourceId, kResetTime)};
-        ConfigureAction<Flush>(m_clientStub).send(request).expectSuccess();
-
-        // Check received SourceFlushedEvent events
-        auto receivedSourceFlushed{expectedSourceFlushed.getMessage()};
-        ASSERT_TRUE(receivedSourceFlushed);
-        EXPECT_EQ(receivedSourceFlushed->session_id(), m_sessionId);
-        EXPECT_EQ(receivedSourceFlushed->source_id(), m_audioSourceId);
-    }
-
-    void setSourcePosition()
-    {
-        // After successful SetSourcePosition, NeedData for source is sent.
-        ExpectMessage<NeedMediaDataEvent> expectedAudioNeedData{m_clientStub};
-        expectedAudioNeedData.setFilter([&](const NeedMediaDataEvent &event)
-                                        { return event.source_id() == m_audioSourceId; });
-
         // Send SetSourcePositionRequest and expect success
-        auto request{createSetSourcePositionRequest(m_sessionId, m_audioSourceId, kPosition)};
+        auto request{createSetSourcePositionRequest(m_sessionId, sourceId, kPosition)};
         ConfigureAction<SetSourcePosition>(m_clientStub).send(request).expectSuccess();
-
-        // Check received NeedDataReqs
-        auto receivedAudioNeedData{expectedAudioNeedData.getMessage()};
-        ASSERT_TRUE(receivedAudioNeedData);
-        EXPECT_EQ(receivedAudioNeedData->session_id(), m_sessionId);
-        EXPECT_EQ(receivedAudioNeedData->source_id(), m_audioSourceId);
-        m_lastAudioNeedData = receivedAudioNeedData;
     }
 
-    void flushFailure()
+    void setSourcePositionFailure()
     {
-        auto request{createFlushRequest(m_sessionId, m_audioSourceId, kResetTime)};
-        ConfigureAction<Flush>(m_clientStub).send(request).expectFailure();
+        auto request{createSetSourcePositionRequest(m_sessionId, m_audioSourceId, kPosition)};
+        ConfigureAction<SetSourcePosition>(m_clientStub).send(request).expectFailure();
     }
 };
 
 /*
- * Component Test: Flush success
+ * Component Test: Set Source Position success
  * Test Objective:
- *  Test that flush is successfully handled.
+ *  Test that Set Source Position is successfully handled.
  *
  * Sequence Diagrams:
- *  Flush - https://wiki.rdkcentral.com/display/ASP/Rialto+Flush+and+Seek+Design
+ *  Set Source Position - https://wiki.rdkcentral.com/display/ASP/Rialto+Flush+and+Seek+Design
  *
  * Test Setup:
  *  Language: C++
@@ -162,16 +117,15 @@ public:
  *   Gstreamer Stub notifies, that pipeline state is in PAUSED state
  *   Expect that server notifies the client that the Network state has changed to PAUSED.
  *
- *  Step 8: Flush
- *   Trigger flush procedure
- *   Expect that FlushResponse has success status
- *   Server should notify the client that flush has been finished.
- *
- *  Step 9: Set Source Position
- *   Trigger set source position procedure
+ *  Step 8: Set Audio Source Position
+ *   Trigger set source position procedure for audio source
  *   Expect that SetSourcePositionResponse has success status
- *   Expect, that NeedData event is sent by Rialto Server
  *   Expect that after HaveData, new audio sample is pushed
+ *
+ *  Step 9: Set Video Source Position
+ *   Trigger set source position procedure for video source
+ *   Expect that SetSourcePositionResponse has success status
+ *   Expect that after HaveData, new video sample is pushed
  *
  *  Step 10: End of audio stream
  *   Send audio haveData with one frame and EOS status
@@ -205,11 +159,11 @@ public:
  *  Server is terminated.
  *
  * Expected Results:
- *  Flush is handled and forwarded to the gstreamer.
+ *  Set Source Position is handled and forwarded to the gstreamer.
  *
  * Code:
  */
-TEST_F(FlushTest, flushAudioSourceSuccess)
+TEST_F(SetSourcePositionTest, setSourcePositionSuccess)
 {
     // Step 1: Create a new media session
     createSession();
@@ -253,13 +207,13 @@ TEST_F(FlushTest, flushAudioSourceSuccess)
     willNotifyPaused();
     notifyPaused();
 
-    // Step 8: Flush
-    willFlush();
-    flush();
-
-    // Step 9: Set Source Position
-    setSourcePosition();
+    // Step 8: Set Audio Source Position
+    setSourcePosition(m_audioSourceId);
     pushAudioSample(kFrameCount);
+
+    // Step 9: Set Video Source Position
+    setSourcePosition(m_videoSourceId);
+    pushVideoSample(kFrameCount);
 
     // Step 10: End of audio stream
     // Step 11: End of video stream
@@ -286,12 +240,12 @@ TEST_F(FlushTest, flushAudioSourceSuccess)
 }
 
 /*
- * Component Test: Flush failure
+ * Component Test: Set Source Position failure
  * Test Objective:
- *  Test that flush failure is handled.
+ *  Test that Set Source Position failure is handled.
  *
  * Sequence Diagrams:
- *  Flush - https://wiki.rdkcentral.com/display/ASP/Rialto+Flush+and+Seek+Design
+ *  Set Source Position - https://wiki.rdkcentral.com/display/ASP/Rialto+Flush+and+Seek+Design
  *
  * Test Setup:
  *  Language: C++
@@ -315,9 +269,9 @@ TEST_F(FlushTest, flushAudioSourceSuccess)
  *   Expect that GstPlayer instance is created.
  *   Expect that client is notified that the NetworkState has changed to BUFFERING.
  *
- *  Step 3: Flush Failure
- *   Flush request sent for unknown source
- *   Expect that FlushResponse has error status
+ *  Step 3: Set Source Position Failure
+ *   SetSourcePositionRequest sent for unknown source
+ *   Expect that SetSourcePositionResponse has error status
  *
  *  Step 4: Stop
  *   Stop the playback.
@@ -333,11 +287,11 @@ TEST_F(FlushTest, flushAudioSourceSuccess)
  *  Server is terminated.
  *
  * Expected Results:
- *  Flush failure status is forwarded to client
+ *  Set Source Position failure status is forwarded to client
  *
  * Code:
  */
-TEST_F(FlushTest, FlushFailure)
+TEST_F(SetSourcePositionTest, SetSourcePositionFailure)
 {
     // Step 1: Create a new media session
     createSession();
@@ -346,8 +300,8 @@ TEST_F(FlushTest, FlushFailure)
     gstPlayerWillBeCreated();
     load();
 
-    // Step 3: Flush Failure
-    flushFailure();
+    // Step 3: Set Source Position Failure
+    setSourcePositionFailure();
 
     // Step 4: Stop
     willStop();

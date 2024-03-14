@@ -488,6 +488,13 @@ bool MediaPipeline::flush(int32_t sourceId, bool resetTime)
     return false;
 }
 
+bool MediaPipeline::setSourcePosition(int32_t sourceId, int64_t position)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    return m_mediaPipelineIpc->setSourcePosition(sourceId, position);
+}
+
 void MediaPipeline::discardNeedDataRequest(uint32_t needDataRequestId)
 {
     // Find the needDataRequest for this needDataRequestId

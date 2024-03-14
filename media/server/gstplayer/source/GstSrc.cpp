@@ -364,7 +364,7 @@ void GstSrc::setupAndAddAppArc(IDecryptionService *decryptionService, GstElement
 {
     // Configure and add appsrc
     m_glibWrapper->gObjectSet(streamInfo.appSrc, "block", FALSE, "format", GST_FORMAT_TIME, "stream-type",
-                              GST_APP_STREAM_TYPE_STREAM, "min-percent", 20, nullptr);
+                              GST_APP_STREAM_TYPE_STREAM, "min-percent", 20, "handle-segment-change", TRUE, nullptr);
     m_gstWrapper->gstAppSrcSetCallbacks(GST_APP_SRC(streamInfo.appSrc), callbacks, userData, nullptr);
     if (type == firebolt::rialto::MediaSourceType::VIDEO)
     {

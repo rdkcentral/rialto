@@ -562,7 +562,7 @@ bool MediaPipelineIpc::getPosition(int64_t &position)
     // check the result
     if (ipcController->Failed())
     {
-        RIALTO_CLIENT_LOG_ERROR("failed to set position due to '%s'", ipcController->ErrorText().c_str());
+        RIALTO_CLIENT_LOG_ERROR("failed to get position due to '%s'", ipcController->ErrorText().c_str());
         return false;
     }
 
@@ -781,6 +781,38 @@ bool MediaPipelineIpc::flush(int32_t sourceId, bool resetTime)
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to flush due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    return true;
+}
+
+bool MediaPipelineIpc::setSourcePosition(int32_t sourceId, int64_t position)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::SetSourcePositionRequest request;
+
+    request.set_session_id(m_sessionId);
+    request.set_source_id(sourceId);
+    request.set_position(position);
+
+    firebolt::rialto::SetSourcePositionResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->setSourcePosition(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to set source position due to '%s'", ipcController->ErrorText().c_str());
         return false;
     }
 
