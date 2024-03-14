@@ -116,7 +116,7 @@ public:
         /**
          * @brief Return if source has drm
          */
-        bool getHasDrm() const { return false; }
+        bool getHasDrm() const { return m_hasDrm; }
 
         /**
          * @brief Return the source config type.
@@ -138,10 +138,12 @@ public:
          *
          * @param[in]  configType   : The source config type.
          * @param[in]  mimeType     : The mime type string.
+         * @param[in]  hasDrm       : Information if source will use drm
          */
         explicit MediaSource(SourceConfigType configType = SourceConfigType::UNKNOWN,
-                             const std::string &mimeType = std::string())
-            : m_id(0), m_configType(configType), m_mimeType(mimeType)
+                             const std::string &mimeType = std::string(),
+                             bool hasDrm = true)
+            : m_id(0), m_configType(configType), m_mimeType(mimeType), m_hasDrm(hasDrm)
         {
         }
         /**
@@ -158,6 +160,11 @@ public:
          * @brief The MIME type.
          */
         std::string m_mimeType;
+
+        /**
+         * @brief Parameter to check if encrypted frames will be used for this source.
+         */
+        bool m_hasDrm;
     };
 
 
@@ -198,15 +205,10 @@ public:
                                SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                                StreamFormat streamFormat = StreamFormat::UNDEFINED,
                                const std::shared_ptr<CodecData> &codecData = nullptr)
-            : MediaSource(configType, mimeType), m_hasDrm(hasDrm), m_alignment(alignment), m_streamFormat(streamFormat),
+            : MediaSource(configType, mimeType, hasDrm), m_alignment(alignment), m_streamFormat(streamFormat),
               m_codecData(codecData)
         {
         }
-        /**
-         * @brief Parameter to check if encrypted frames will be used for this source.
-         */
-        bool m_hasDrm;
-
         /**
          * @brief The alignment of media segment
          */
@@ -398,6 +400,43 @@ public:
          * @brief Variable that stores the Dolby Vision Profile
          */
         uint32_t m_dolbyVisionProfile;
+    };
+
+    /**
+     * @brief A class that represents media source subtitle derived from media source video data
+     */
+    class MediaSourceSubtitle : public MediaSource
+    {
+    public:
+       /**
+        * @brief Construct a new Media Source Subtitle object
+        * 
+        * @param mimeType              : The mime type string
+        * @param textTrackIdentifier   : The text track identifier string
+        */
+        MediaSourceSubtitle(const std::string &mimeType, const std::string &textTrackIdentifier)
+            : MediaSource(SourceConfigType::SUBTITLE, mimeType, false),
+              m_textTrackIdentifier(textTrackIdentifier)
+        {
+        }
+
+        ~MediaSourceSubtitle() {}
+
+        MediaSourceType getType() const override { return MediaSourceType::SUBTITLE; }
+        std::unique_ptr<MediaSource> copy() const override { return std::make_unique<MediaSourceSubtitle>(*this); }
+
+        /**
+         * @brief Get the Text Track Identifier object
+         * 
+         * @return the text track identifier
+         */
+        const std::string &getTextTrackIdentifier() const { return m_textTrackIdentifier; }
+
+    protected:
+        /**
+         * @brief Variable that stores the text track identifier
+         */
+        std::string m_textTrackIdentifier;
     };
 
     /**

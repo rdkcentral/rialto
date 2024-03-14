@@ -253,6 +253,12 @@ void AttachSource::execute() const
         RIALTO_SERVER_LOG_ERROR("Unknown media source type");
         return;
     }
+    else if (m_attachedSource->getType() == MediaSourceType::SUBTITLE)
+    {
+        // just stub for now
+        RIALTO_SERVER_LOG_DEBUG("Subtitle source attached");
+        return;
+    }
 
     GstCaps *caps = createCapsFromMediaSource();
     gchar *capsStr = m_gstWrapper->gstCapsToString(caps);

@@ -73,50 +73,62 @@ constexpr bool kResetTime{true};
 MATCHER_P(AttachedSourceMatcher, source, "")
 {
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> &src = source.get();
-    bool codecDataEqual = false;
-    if (arg->getCodecData() && src->getCodecData())
-    {
-        codecDataEqual = arg->getCodecData()->data == src->getCodecData()->data &&
-                         arg->getCodecData()->type == src->getCodecData()->type;
-    }
-    else
-    {
-        codecDataEqual = arg->getCodecData() == src->getCodecData();
-    }
-
     bool baseCompare = arg->getConfigType() == src->getConfigType() && arg->getMimeType() == src->getMimeType() &&
-                       arg->getHasDrm() == src->getHasDrm() && arg->getSegmentAlignment() == src->getSegmentAlignment() &&
-                       codecDataEqual && arg->getStreamFormat() == src->getStreamFormat();
+                       arg->getHasDrm() == src->getHasDrm();
 
     bool extraCompare = true;
 
-    if (arg->getConfigType() == firebolt::rialto::SourceConfigType::AUDIO)
+    if (arg->getConfigType() == firebolt::rialto::SourceConfigType::AUDIO ||
+        arg->getConfigType() == firebolt::rialto::SourceConfigType::VIDEO ||
+        arg->getConfigType() == firebolt::rialto::SourceConfigType::VIDEO_DOLBY_VISION)
     {
-        firebolt::rialto::IMediaPipeline::MediaSourceAudio &audioArg =
-            dynamic_cast<firebolt::rialto::IMediaPipeline::MediaSourceAudio &>(*arg);
-        firebolt::rialto::IMediaPipeline::MediaSourceAudio &audioSrc =
-            dynamic_cast<firebolt::rialto::IMediaPipeline::MediaSourceAudio &>(*src);
+        firebolt::rialto::IMediaPipeline::MediaSourceAV &avArg =
+            dynamic_cast<firebolt::rialto::IMediaPipeline::MediaSourceAV &>(*arg);
+        firebolt::rialto::IMediaPipeline::MediaSourceAV &avSrc =
+            dynamic_cast<firebolt::rialto::IMediaPipeline::MediaSourceAV &>(*src);
 
-        extraCompare = audioArg.getStreamFormat() == audioSrc.getStreamFormat();
-    }
-    else if (arg->getConfigType() == firebolt::rialto::SourceConfigType::VIDEO)
-    {
-        firebolt::rialto::IMediaPipeline::MediaSourceVideo &videoArg =
-            dynamic_cast<firebolt::rialto::IMediaPipeline::MediaSourceVideo &>(*arg);
-        firebolt::rialto::IMediaPipeline::MediaSourceVideo &videoSrc =
-            dynamic_cast<firebolt::rialto::IMediaPipeline::MediaSourceVideo &>(*src);
+        bool codecDataEqual = false;
+        if (avArg.getCodecData() && avSrc.getCodecData())
+        {
+            codecDataEqual = avArg.getCodecData()->data == avSrc.getCodecData()->data &&
+                             avArg.getCodecData()->type == avSrc.getCodecData()->type;
+        }
+        else
+        {
+            codecDataEqual = avArg.getCodecData() == avSrc.getCodecData();
+        }
 
-        extraCompare = videoArg.getWidth() == videoSrc.getWidth() && videoArg.getHeight() == videoSrc.getHeight();
-    }
-    else if (arg->getConfigType() == firebolt::rialto::SourceConfigType::VIDEO_DOLBY_VISION)
-    {
-        firebolt::rialto::IMediaPipeline::MediaSourceVideoDolbyVision &dolbyArg =
-            dynamic_cast<firebolt::rialto::IMediaPipeline::MediaSourceVideoDolbyVision &>(*arg);
-        firebolt::rialto::IMediaPipeline::MediaSourceVideoDolbyVision &dolbySrc =
-            dynamic_cast<firebolt::rialto::IMediaPipeline::MediaSourceVideoDolbyVision &>(*src);
+        extraCompare = avArg.getSegmentAlignment() == avSrc.getSegmentAlignment() && codecDataEqual &&
+                       avArg.getStreamFormat() == avSrc.getStreamFormat();
 
-        extraCompare = dolbyArg.getDolbyVisionProfile() == dolbySrc.getDolbyVisionProfile() &&
-                       dolbyArg.getWidth() == dolbySrc.getWidth() && dolbyArg.getHeight() == dolbySrc.getHeight();
+        if (arg->getConfigType() == firebolt::rialto::SourceConfigType::AUDIO)
+        {
+            firebolt::rialto::IMediaPipeline::MediaSourceAudio &audioArg =
+                dynamic_cast<firebolt::rialto::IMediaPipeline::MediaSourceAudio &>(*arg);
+            firebolt::rialto::IMediaPipeline::MediaSourceAudio &audioSrc =
+                dynamic_cast<firebolt::rialto::IMediaPipeline::MediaSourceAudio &>(*src);
+
+            extraCompare = extraCompare && audioArg.getStreamFormat() == audioSrc.getStreamFormat();
+        }
+        else if (arg->getConfigType() == firebolt::rialto::SourceConfigType::VIDEO)
+        {
+            firebolt::rialto::IMediaPipeline::MediaSourceVideo &videoArg =
+                dynamic_cast<firebolt::rialto::IMediaPipeline::MediaSourceVideo &>(*arg);
+            firebolt::rialto::IMediaPipeline::MediaSourceVideo &videoSrc =
+                dynamic_cast<firebolt::rialto::IMediaPipeline::MediaSourceVideo &>(*src);
+
+            extraCompare = extraCompare && videoArg.getWidth() == videoSrc.getWidth() && videoArg.getHeight() == videoSrc.getHeight();
+        }
+        else if (arg->getConfigType() == firebolt::rialto::SourceConfigType::VIDEO_DOLBY_VISION)
+        {
+            firebolt::rialto::IMediaPipeline::MediaSourceVideoDolbyVision &dolbyArg =
+                dynamic_cast<firebolt::rialto::IMediaPipeline::MediaSourceVideoDolbyVision &>(*arg);
+            firebolt::rialto::IMediaPipeline::MediaSourceVideoDolbyVision &dolbySrc =
+                dynamic_cast<firebolt::rialto::IMediaPipeline::MediaSourceVideoDolbyVision &>(*src);
+
+            extraCompare = extraCompare && dolbyArg.getDolbyVisionProfile() == dolbySrc.getDolbyVisionProfile() &&
+                           dolbyArg.getWidth() == dolbySrc.getWidth() && dolbyArg.getHeight() == dolbySrc.getHeight();
+        }
     }
 
     return baseCompare && extraCompare;
