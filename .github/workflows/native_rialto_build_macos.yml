@@ -43,7 +43,13 @@ jobs:
 
       - name: Build Rialto
         run: |
-          cmake . -B build -DNATIVE_BUILD=ON -DRIALTO_BUILD_TYPE="Debug" > output_file.txt 2>&1
+          pkg-config --cflags gstreamer-1.0 > output_file.txt 2>&1
+          ls -l /Library/Frameworks/GStreamer.framework/Versions/1.0/bin >> output_file.txt 2>&1
+          tree /Library/Frameworks/GStreamer.framework/Versions/1.0/bin >> output_file.txt 2>&1
+
+          export PATH=/Library/Frameworks/GStreamer.framework/Versions/1.0/bin:$PATH
+          pkg-config --cflags gstreamer-1.0 >> output_file.txt 2>&1
+          cmake . -B build -DNATIVE_BUILD=ON -DRIALTO_BUILD_TYPE="Debug" >> output_file.txt 2>&1
           if [ $? -eq 0 ]
           then
             make -C build >> output_file.txt 2>&1
