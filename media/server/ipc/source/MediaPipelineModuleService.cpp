@@ -385,7 +385,8 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
     }
     else if (configType == firebolt::rialto::SourceConfigType::SUBTITLE)
     {
-        mediaSource = std::make_unique<IMediaPipeline::MediaSourceSubtitle>(request->mime_type().c_str(), request->text_track_identifier());
+        mediaSource = std::make_unique<IMediaPipeline::MediaSourceSubtitle>(request->mime_type().c_str(),
+                                                                            request->text_track_identifier());
     }
     else
     {

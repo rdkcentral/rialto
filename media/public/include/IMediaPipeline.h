@@ -132,6 +132,7 @@ public:
          * @brief Set the source id.
          */
         void setId(int32_t id) { m_id = id; }
+
     protected:
         /**
          * @brief Default constructor.
@@ -141,8 +142,7 @@ public:
          * @param[in]  hasDrm       : Information if source will use drm
          */
         explicit MediaSource(SourceConfigType configType = SourceConfigType::UNKNOWN,
-                             const std::string &mimeType = std::string(),
-                             bool hasDrm = true)
+                             const std::string &mimeType = std::string(), bool hasDrm = true)
             : m_id(0), m_configType(configType), m_mimeType(mimeType), m_hasDrm(hasDrm)
         {
         }
@@ -167,7 +167,10 @@ public:
         bool m_hasDrm;
     };
 
-
+    /**
+     * @brief A class that represents media source audio and video derived from MediaSource class, which represents the
+     * source of media data
+     */
     class MediaSourceAV : public MediaSource
     {
     public:
@@ -408,15 +411,14 @@ public:
     class MediaSourceSubtitle : public MediaSource
     {
     public:
-       /**
-        * @brief Construct a new Media Source Subtitle object
-        * 
-        * @param mimeType              : The mime type string
-        * @param textTrackIdentifier   : The text track identifier string
-        */
+        /**
+         * @brief Construct a new Media Source Subtitle object
+         *
+         * @param mimeType              : The mime type string
+         * @param textTrackIdentifier   : The text track identifier string
+         */
         MediaSourceSubtitle(const std::string &mimeType, const std::string &textTrackIdentifier)
-            : MediaSource(SourceConfigType::SUBTITLE, mimeType, false),
-              m_textTrackIdentifier(textTrackIdentifier)
+            : MediaSource(SourceConfigType::SUBTITLE, mimeType, false), m_textTrackIdentifier(textTrackIdentifier)
         {
         }
 
@@ -427,7 +429,7 @@ public:
 
         /**
          * @brief Get the Text Track Identifier object
-         * 
+         *
          * @return the text track identifier
          */
         const std::string &getTextTrackIdentifier() const { return m_textTrackIdentifier; }

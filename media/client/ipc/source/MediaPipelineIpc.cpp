@@ -223,7 +223,6 @@ bool MediaPipelineIpc::attachSource(const std::unique_ptr<IMediaPipeline::MediaS
     request.set_mime_type(source->getMimeType());
     request.set_has_drm(source->getHasDrm());
 
-
     if (configType == SourceConfigType::VIDEO_DOLBY_VISION || configType == SourceConfigType::VIDEO ||
         configType == SourceConfigType::AUDIO)
     {

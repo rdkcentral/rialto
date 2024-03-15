@@ -118,7 +118,8 @@ MATCHER_P(AttachedSourceMatcher, source, "")
             firebolt::rialto::IMediaPipeline::MediaSourceVideo &videoSrc =
                 dynamic_cast<firebolt::rialto::IMediaPipeline::MediaSourceVideo &>(*src);
 
-            extraCompare = extraCompare && videoArg.getWidth() == videoSrc.getWidth() && videoArg.getHeight() == videoSrc.getHeight();
+            extraCompare = extraCompare && videoArg.getWidth() == videoSrc.getWidth() &&
+                           videoArg.getHeight() == videoSrc.getHeight();
         }
         else if (arg->getConfigType() == firebolt::rialto::SourceConfigType::VIDEO_DOLBY_VISION)
         {

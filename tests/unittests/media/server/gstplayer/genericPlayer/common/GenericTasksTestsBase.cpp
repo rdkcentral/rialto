@@ -765,7 +765,8 @@ void GenericTasksTestsBase::triggerAttachVideoSource()
 void GenericTasksTestsBase::triggerAttachSubtitleSource()
 {
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
-        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceSubtitle>("application/ttml+xml", kTextTrackIdentifier);
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceSubtitle>("application/ttml+xml",
+                                                                                kTextTrackIdentifier);
     firebolt::rialto::server::tasks::generic::AttachSource task{testContext->m_context,
                                                                 testContext->m_gstWrapper,
                                                                 testContext->m_glibWrapper,
