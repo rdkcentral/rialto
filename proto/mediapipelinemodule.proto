@@ -430,6 +430,25 @@ message FlushResponse {
 }
 
 /**
+ * @fn void setSourcePosition(int session_id, int source_id, int64 position)
+ * @brief Set the source position in nanoseconds.
+ *
+ * @param[in]  session_id   The id of the A/V session.
+ * @param[in]  source_id    The id of the media source.
+ * @param[in]  position     The position in nanoseconds.
+ *
+ * This method sets the start position for a source.
+ *
+ */
+message SetSourcePositionRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional int32 source_id = 2 [default = -1];
+    optional int64 position = 3 [default = -1];
+}
+message SetSourcePositionResponse {
+}
+
+/**
  * @brief Event sent the playback state has changed.
  *
  * @param session_id   The id of the A/V session the status is for.
@@ -738,5 +757,12 @@ service MediaPipelineModule {
      * @see FlushRequest
      */
     rpc flush(FlushRequest) returns (FlushResponse) {
+    }
+
+    /**
+     * @brief This method sets the start position for a source.
+     * @see SetSourcePositionRequest
+     */
+    rpc setSourcePosition(SetSourcePositionRequest) returns (SetSourcePositionResponse) {
     }
 }

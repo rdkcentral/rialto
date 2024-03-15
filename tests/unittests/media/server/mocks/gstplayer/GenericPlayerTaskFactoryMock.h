@@ -99,8 +99,10 @@ public:
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createPing, (std::unique_ptr<IHeartbeatHandler> && heartbeatHandler),
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createFlush,
-                (GenericPlayerContext & context, IGstGenericPlayerPrivate &player,
-                 const firebolt::rialto::MediaSourceType &type, bool resetTime),
+                (GenericPlayerContext & context, const firebolt::rialto::MediaSourceType &type, bool resetTime),
+                (const, override));
+    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetSourcePosition,
+                (GenericPlayerContext & context, const firebolt::rialto::MediaSourceType &type, std::int64_t position),
                 (const, override));
 };
 } // namespace firebolt::rialto::server

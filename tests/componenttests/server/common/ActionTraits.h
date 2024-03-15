@@ -224,6 +224,14 @@ struct Flush
     static constexpr auto m_kFunction{&Stub::flush};
 };
 
+struct SetSourcePosition
+{
+    using RequestType = ::firebolt::rialto::SetSourcePositionRequest;
+    using ResponseType = ::firebolt::rialto::SetSourcePositionResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    static constexpr auto m_kFunction{&Stub::setSourcePosition};
+};
+
 // mediakeys module
 struct CreateMediaKeys
 {

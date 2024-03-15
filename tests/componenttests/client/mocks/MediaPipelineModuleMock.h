@@ -88,6 +88,10 @@ public:
     MOCK_METHOD(void, flush,
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::FlushRequest *request,
                  ::firebolt::rialto::FlushResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, setSourcePosition,
+                (::google::protobuf::RpcController * controller,
+                 const ::firebolt::rialto::SetSourcePositionRequest *request,
+                 ::firebolt::rialto::SetSourcePositionResponse *response, ::google::protobuf::Closure *done));
 
     void defaultReturn(::google::protobuf::RpcController *controller, ::google::protobuf::Closure *done)
     {

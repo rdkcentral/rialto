@@ -107,6 +107,7 @@ protected:
         EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, StrEq("format")));
         EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, StrEq("stream-type")));
         EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, StrEq("min-percent")));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, StrEq("handle-segment-change")));
 
         EXPECT_CALL(*m_gstWrapperMock,
                     gstAppSrcSetCallbacks(GST_APP_SRC(m_streamInfo.appSrc), &m_callbacks, this, nullptr));

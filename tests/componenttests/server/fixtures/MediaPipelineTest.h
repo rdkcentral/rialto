@@ -48,6 +48,10 @@ public:
                            GstCaps &capsCopy, bool shouldNotify);
     void willPushVideoData(const std::unique_ptr<IMediaPipeline::MediaSegment> &segment, GstBuffer &buffer,
                            GstCaps &capsCopy, bool shouldNotify);
+    void willPushAudioSample(const std::unique_ptr<IMediaPipeline::MediaSegment> &segment, GstBuffer &buffer,
+                             GstCaps &capsCopy);
+    void willPushVideoSample(const std::unique_ptr<IMediaPipeline::MediaSegment> &segment, GstBuffer &buffer,
+                             GstCaps &capsCopy);
     void willPause();
     void willNotifyPaused();
     void willPlay();
@@ -67,6 +71,8 @@ public:
     void gstNeedData(GstAppSrc *appSrc, int frameCount);
     void pushAudioData(unsigned dataCountToPush, int needDataFrameCount);
     void pushVideoData(unsigned dataCountToPush, int needDataFrameCount);
+    void pushAudioSample(int needDataFrameCount);
+    void pushVideoSample(int needDataFrameCount);
     void play();
     void eosAudio(unsigned dataCountToPush);
     void eosVideo(unsigned dataCountToPush);
@@ -107,6 +113,8 @@ protected:
     GstPad m_ghostPad{};
     GstEvent m_flushStartEvent{};
     GstEvent m_flushStopEvent{};
+    GstSegment m_segment{};
+    GstSample *m_sample{nullptr};
     std::shared_ptr<::firebolt::rialto::NeedMediaDataEvent> m_lastAudioNeedData{nullptr};
     std::shared_ptr<::firebolt::rialto::NeedMediaDataEvent> m_lastVideoNeedData{nullptr};
 

@@ -52,6 +52,7 @@ public:
     MOCK_METHOD(bool, setMute, (bool mute), (override));
     MOCK_METHOD(bool, getMute, (bool &mute), (override));
     MOCK_METHOD(bool, flush, (int32_t sourceId, bool resetTime), (override));
+    MOCK_METHOD(bool, setSourcePosition, (int32_t sourceId, int64_t position), (override));
 };
 } // namespace firebolt::rialto::client
 

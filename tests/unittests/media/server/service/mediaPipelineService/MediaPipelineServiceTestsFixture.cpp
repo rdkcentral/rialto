@@ -276,6 +276,16 @@ void MediaPipelineServiceTests::mediaPipelineWillFailToFlush()
     EXPECT_CALL(m_mediaPipelineMock, flush(kSourceId, kResetTime)).WillOnce(Return(false));
 }
 
+void MediaPipelineServiceTests::mediaPipelineWillSetSourcePosition()
+{
+    EXPECT_CALL(m_mediaPipelineMock, setSourcePosition(kSourceId, kPosition)).WillOnce(Return(true));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillFailToSetSourcePosition()
+{
+    EXPECT_CALL(m_mediaPipelineMock, setSourcePosition(kSourceId, kPosition)).WillOnce(Return(false));
+}
+
 void MediaPipelineServiceTests::mediaPipelineWillPing()
 {
     EXPECT_CALL(*m_heartbeatProcedureMock, createHandler())
@@ -564,6 +574,16 @@ void MediaPipelineServiceTests::flushShouldSucceed()
 void MediaPipelineServiceTests::flushShouldFail()
 {
     EXPECT_FALSE(m_sut->flush(kSessionId, kSourceId, kResetTime));
+}
+
+void MediaPipelineServiceTests::setSourcePositionShouldSucceed()
+{
+    EXPECT_TRUE(m_sut->setSourcePosition(kSessionId, kSourceId, kPosition));
+}
+
+void MediaPipelineServiceTests::setSourcePositionShouldFail()
+{
+    EXPECT_FALSE(m_sut->setSourcePosition(kSessionId, kSourceId, kPosition));
 }
 
 void MediaPipelineServiceTests::clearMediaPipelines()

@@ -120,5 +120,7 @@ void FinishSetupSource::execute() const
     // Notify GstPlayerClient of Idle state once setup has finished
     if (m_gstPlayerClient)
         m_gstPlayerClient->notifyPlaybackState(PlaybackState::IDLE);
+
+    m_context.setupSourceFinished = true;
 }
 } // namespace firebolt::rialto::server::tasks::generic

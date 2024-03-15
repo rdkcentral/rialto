@@ -21,23 +21,23 @@
 
 using ::testing::Ref;
 
-class RialtoServerMediaPipelineFlushTest : public MediaPipelineTestBase
+class RialtoServerMediaPipelineSetSourcePositionTest : public MediaPipelineTestBase
 {
 protected:
     const MediaSourceType m_kType{MediaSourceType::VIDEO};
     const char *m_kMimeType{"video/mpeg"};
-    const bool m_kResetTime{true};
+    const int64_t m_kPosition{4321};
     const int m_kDummySourceId{123};
 
-    RialtoServerMediaPipelineFlushTest() { createMediaPipeline(); }
+    RialtoServerMediaPipelineSetSourcePositionTest() { createMediaPipeline(); }
 
-    ~RialtoServerMediaPipelineFlushTest() { destroyMediaPipeline(); }
+    ~RialtoServerMediaPipelineSetSourcePositionTest() { destroyMediaPipeline(); }
 };
 
 /**
- * Test that Flush returns success if the gstreamer player API succeeds.
+ * Test that SetSourcePosition returns success if the gstreamer player API succeeds.
  */
-TEST_F(RialtoServerMediaPipelineFlushTest, FlushSuccess)
+TEST_F(RialtoServerMediaPipelineSetSourcePositionTest, SetSourcePositionSuccess)
 {
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
         std::make_unique<IMediaPipeline::MediaSourceVideo>(m_kMimeType);
@@ -50,34 +50,34 @@ TEST_F(RialtoServerMediaPipelineFlushTest, FlushSuccess)
     std::int32_t sourceId{mediaSource->getId()};
 
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_gstPlayerMock, flush(m_kType, m_kResetTime));
-    EXPECT_TRUE(m_mediaPipeline->flush(sourceId, m_kResetTime));
+    EXPECT_CALL(*m_gstPlayerMock, setSourcePosition(m_kType, m_kPosition));
+    EXPECT_TRUE(m_mediaPipeline->setSourcePosition(sourceId, m_kPosition));
 }
 
 /**
- * Test that Flush fails if load has not been called (no gstreamer player).
+ * Test that SetSourcePosition fails if load has not been called (no gstreamer player).
  */
-TEST_F(RialtoServerMediaPipelineFlushTest, FlushNoGstPlayerFailure)
+TEST_F(RialtoServerMediaPipelineSetSourcePositionTest, SetSourcePositionNoGstPlayerFailure)
 {
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_FALSE(m_mediaPipeline->flush(m_kDummySourceId, m_kResetTime));
+    EXPECT_FALSE(m_mediaPipeline->setSourcePosition(m_kDummySourceId, m_kPosition));
 }
 
 /**
- * Test that Flush fails if source is not present.
+ * Test that SetSourcePosition fails if source is not present.
  */
-TEST_F(RialtoServerMediaPipelineFlushTest, FlushNoSourcePresent)
+TEST_F(RialtoServerMediaPipelineSetSourcePositionTest, SetSourcePositionNoSourcePresent)
 {
     loadGstPlayer();
     mainThreadWillEnqueueTaskAndWait();
 
-    EXPECT_FALSE(m_mediaPipeline->flush(m_kDummySourceId, m_kResetTime));
+    EXPECT_FALSE(m_mediaPipeline->setSourcePosition(m_kDummySourceId, m_kPosition));
 }
 
 /**
- * Test that Flush resets the Eos flag on success
+ * Test that SetSourcePosition resets the Eos flag on success
  */
-TEST_F(RialtoServerMediaPipelineFlushTest, FlushResetEos)
+TEST_F(RialtoServerMediaPipelineSetSourcePositionTest, SetSourcePositionResetEos)
 {
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
         std::make_unique<IMediaPipeline::MediaSourceVideo>(m_kMimeType);
@@ -92,8 +92,8 @@ TEST_F(RialtoServerMediaPipelineFlushTest, FlushResetEos)
 
     mainThreadWillEnqueueTaskAndWait();
 
-    EXPECT_CALL(*m_gstPlayerMock, flush(m_kType, m_kResetTime));
-    EXPECT_TRUE(m_mediaPipeline->flush(sourceId, m_kResetTime));
+    EXPECT_CALL(*m_gstPlayerMock, setSourcePosition(m_kType, m_kPosition));
+    EXPECT_TRUE(m_mediaPipeline->setSourcePosition(sourceId, m_kPosition));
 
     // Expect need data notified to client
     expectNotifyNeedData(firebolt::rialto::MediaSourceType::VIDEO, sourceId, 3);
