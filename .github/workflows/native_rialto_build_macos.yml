@@ -42,10 +42,10 @@ jobs:
 
       - name: Build Rialto
         run: |
-          cmake . -B build -DNATIVE_BUILD=ON -DRIALTO_BUILD_TYPE="Debug" &> output_file.txt
+          cmake . -B build -DNATIVE_BUILD=ON -DRIALTO_BUILD_TYPE="Debug" > output_file.txt 2>&1
           if [ $? -eq 0 ]
           then
-            make -C build &>> output_file.txt
+            make -C build >> output_file.txt 2>&1
           else
             exit 1
           fi
