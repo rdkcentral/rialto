@@ -17,7 +17,7 @@
 # limitations under the License.
 #
 
-name: Native Rialto Build
+name: Native Rialto Build on Ubuntu
 
 on:
   pull_request:
