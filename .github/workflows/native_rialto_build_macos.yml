@@ -38,6 +38,7 @@ jobs:
         run: |
           brew install cmake
           brew install protobuf
+          brew install glib
           brew install gstreamer gst-plugins-base gst-plugins-bad
 
       - name: Build Rialto
