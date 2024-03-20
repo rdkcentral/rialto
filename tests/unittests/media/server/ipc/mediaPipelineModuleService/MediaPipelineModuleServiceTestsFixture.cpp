@@ -49,6 +49,7 @@ const std::string kCodecSpecificConfigStr("1243567");
 const std::shared_ptr<firebolt::rialto::CodecData> kCodecData{std::make_shared<firebolt::rialto::CodecData>(
     firebolt::rialto::CodecData{std::vector<std::uint8_t>{'T', 'E', 'S', 'T'}, firebolt::rialto::CodecDataType::BUFFER})};
 const std::string kUrl{"https://example.url.com"};
+const std::string kTextTrackIdentifier{"CC1"};
 constexpr int64_t kPosition{2000000000};
 constexpr std::uint32_t kRequestId{2};
 const firebolt::rialto::MediaSourceStatus kMediaSourceStatus{firebolt::rialto::MediaSourceStatus::CODEC_CHANGED};
@@ -73,50 +74,72 @@ constexpr bool kResetTime{true};
 MATCHER_P(AttachedSourceMatcher, source, "")
 {
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> &src = source.get();
-    bool codecDataEqual = false;
-    if (arg->getCodecData() && src->getCodecData())
-    {
-        codecDataEqual = arg->getCodecData()->data == src->getCodecData()->data &&
-                         arg->getCodecData()->type == src->getCodecData()->type;
-    }
-    else
-    {
-        codecDataEqual = arg->getCodecData() == src->getCodecData();
-    }
-
     bool baseCompare = arg->getConfigType() == src->getConfigType() && arg->getMimeType() == src->getMimeType() &&
-                       arg->getHasDrm() == src->getHasDrm() && arg->getSegmentAlignment() == src->getSegmentAlignment() &&
-                       codecDataEqual && arg->getStreamFormat() == src->getStreamFormat();
+                       arg->getHasDrm() == src->getHasDrm();
 
     bool extraCompare = true;
 
-    if (arg->getConfigType() == firebolt::rialto::SourceConfigType::AUDIO)
+    if (arg->getConfigType() == firebolt::rialto::SourceConfigType::AUDIO ||
+        arg->getConfigType() == firebolt::rialto::SourceConfigType::VIDEO ||
+        arg->getConfigType() == firebolt::rialto::SourceConfigType::VIDEO_DOLBY_VISION)
     {
-        firebolt::rialto::IMediaPipeline::MediaSourceAudio &audioArg =
-            dynamic_cast<firebolt::rialto::IMediaPipeline::MediaSourceAudio &>(*arg);
-        firebolt::rialto::IMediaPipeline::MediaSourceAudio &audioSrc =
-            dynamic_cast<firebolt::rialto::IMediaPipeline::MediaSourceAudio &>(*src);
+        firebolt::rialto::IMediaPipeline::MediaSourceAV &avArg =
+            dynamic_cast<firebolt::rialto::IMediaPipeline::MediaSourceAV &>(*arg);
+        firebolt::rialto::IMediaPipeline::MediaSourceAV &avSrc =
+            dynamic_cast<firebolt::rialto::IMediaPipeline::MediaSourceAV &>(*src);
 
-        extraCompare = audioArg.getStreamFormat() == audioSrc.getStreamFormat();
+        bool codecDataEqual = false;
+        if (avArg.getCodecData() && avSrc.getCodecData())
+        {
+            codecDataEqual = avArg.getCodecData()->data == avSrc.getCodecData()->data &&
+                             avArg.getCodecData()->type == avSrc.getCodecData()->type;
+        }
+        else
+        {
+            codecDataEqual = avArg.getCodecData() == avSrc.getCodecData();
+        }
+
+        extraCompare = avArg.getSegmentAlignment() == avSrc.getSegmentAlignment() && codecDataEqual &&
+                       avArg.getStreamFormat() == avSrc.getStreamFormat();
+
+        if (arg->getConfigType() == firebolt::rialto::SourceConfigType::AUDIO)
+        {
+            firebolt::rialto::IMediaPipeline::MediaSourceAudio &audioArg =
+                dynamic_cast<firebolt::rialto::IMediaPipeline::MediaSourceAudio &>(*arg);
+            firebolt::rialto::IMediaPipeline::MediaSourceAudio &audioSrc =
+                dynamic_cast<firebolt::rialto::IMediaPipeline::MediaSourceAudio &>(*src);
+
+            extraCompare = extraCompare && audioArg.getStreamFormat() == audioSrc.getStreamFormat();
+        }
+        else if (arg->getConfigType() == firebolt::rialto::SourceConfigType::VIDEO)
+        {
+            firebolt::rialto::IMediaPipeline::MediaSourceVideo &videoArg =
+                dynamic_cast<firebolt::rialto::IMediaPipeline::MediaSourceVideo &>(*arg);
+            firebolt::rialto::IMediaPipeline::MediaSourceVideo &videoSrc =
+                dynamic_cast<firebolt::rialto::IMediaPipeline::MediaSourceVideo &>(*src);
+
+            extraCompare = extraCompare && videoArg.getWidth() == videoSrc.getWidth() &&
+                           videoArg.getHeight() == videoSrc.getHeight();
+        }
+        else if (arg->getConfigType() == firebolt::rialto::SourceConfigType::VIDEO_DOLBY_VISION)
+        {
+            firebolt::rialto::IMediaPipeline::MediaSourceVideoDolbyVision &dolbyArg =
+                dynamic_cast<firebolt::rialto::IMediaPipeline::MediaSourceVideoDolbyVision &>(*arg);
+            firebolt::rialto::IMediaPipeline::MediaSourceVideoDolbyVision &dolbySrc =
+                dynamic_cast<firebolt::rialto::IMediaPipeline::MediaSourceVideoDolbyVision &>(*src);
+
+            extraCompare = extraCompare && dolbyArg.getDolbyVisionProfile() == dolbySrc.getDolbyVisionProfile() &&
+                           dolbyArg.getWidth() == dolbySrc.getWidth() && dolbyArg.getHeight() == dolbySrc.getHeight();
+        }
     }
-    else if (arg->getConfigType() == firebolt::rialto::SourceConfigType::VIDEO)
+    else if (arg->getConfigType() == firebolt::rialto::SourceConfigType::SUBTITLE)
     {
-        firebolt::rialto::IMediaPipeline::MediaSourceVideo &videoArg =
-            dynamic_cast<firebolt::rialto::IMediaPipeline::MediaSourceVideo &>(*arg);
-        firebolt::rialto::IMediaPipeline::MediaSourceVideo &videoSrc =
-            dynamic_cast<firebolt::rialto::IMediaPipeline::MediaSourceVideo &>(*src);
+        firebolt::rialto::IMediaPipeline::MediaSourceSubtitle &subArg =
+            dynamic_cast<firebolt::rialto::IMediaPipeline::MediaSourceSubtitle &>(*arg);
+        firebolt::rialto::IMediaPipeline::MediaSourceSubtitle &subSrc =
+            dynamic_cast<firebolt::rialto::IMediaPipeline::MediaSourceSubtitle &>(*src);
 
-        extraCompare = videoArg.getWidth() == videoSrc.getWidth() && videoArg.getHeight() == videoSrc.getHeight();
-    }
-    else if (arg->getConfigType() == firebolt::rialto::SourceConfigType::VIDEO_DOLBY_VISION)
-    {
-        firebolt::rialto::IMediaPipeline::MediaSourceVideoDolbyVision &dolbyArg =
-            dynamic_cast<firebolt::rialto::IMediaPipeline::MediaSourceVideoDolbyVision &>(*arg);
-        firebolt::rialto::IMediaPipeline::MediaSourceVideoDolbyVision &dolbySrc =
-            dynamic_cast<firebolt::rialto::IMediaPipeline::MediaSourceVideoDolbyVision &>(*src);
-
-        extraCompare = dolbyArg.getDolbyVisionProfile() == dolbySrc.getDolbyVisionProfile() &&
-                       dolbyArg.getWidth() == dolbySrc.getWidth() && dolbyArg.getHeight() == dolbySrc.getHeight();
+        extraCompare = subArg.getTextTrackIdentifier() == subSrc.getTextTrackIdentifier();
     }
 
     return baseCompare && extraCompare;
@@ -263,6 +286,14 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillAttachDolbySource(
         .WillOnce(Return(true));
 }
 
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillAttachSubtitleSource()
+{
+    m_source = std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceSubtitle>(kMimeType, kTextTrackIdentifier);
+    expectRequestSuccess();
+    EXPECT_CALL(m_mediaPipelineServiceMock, attachSource(kHardcodedSessionId, AttachedSourceMatcher(ByRef(m_source))))
+        .WillOnce(Return(true));
+}
+
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillAttachAudioSourceWithAdditionaldata()
 {
     std::vector<uint8_t> codecSpecificConfig;
@@ -284,6 +315,11 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToAttachSource
     expectRequestFailure();
     EXPECT_CALL(m_mediaPipelineServiceMock, attachSource(kHardcodedSessionId, AttachedSourceMatcher(ByRef(m_source))))
         .WillOnce(Return(false));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToAttachUnknownSource()
+{
+    expectRequestFailure();
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSucceedAllSourcesAttached()
@@ -642,6 +678,32 @@ void MediaPipelineModuleServiceTests::sendAttachDolbySourceRequestAndReceiveResp
     request.set_width(kWidth);
     request.set_height(kHeight);
     request.set_dolby_vision_profile(kDolbyProfile);
+
+    m_service->attachSource(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void MediaPipelineModuleServiceTests::sendAttachSubtitleSourceRequestAndReceiveResponse()
+{
+    firebolt::rialto::AttachSourceRequest request;
+    firebolt::rialto::AttachSourceResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+    request.set_config_type(firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_SUBTITLE);
+    request.set_mime_type(kMimeType);
+    request.set_has_drm(false);
+    request.set_text_track_identifier(kTextTrackIdentifier);
+
+    m_service->attachSource(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void MediaPipelineModuleServiceTests::sendAttachUnknownSourceRequestAndReceiveResponse()
+{
+    firebolt::rialto::AttachSourceRequest request;
+    firebolt::rialto::AttachSourceResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+    request.set_config_type(firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_UNKNOWN);
+    request.set_mime_type(kMimeType);
 
     m_service->attachSource(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }

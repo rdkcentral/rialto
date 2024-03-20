@@ -103,6 +103,10 @@ firebolt::rialto::SourceConfigType convertConfigType(const firebolt::rialto::Att
     {
         return firebolt::rialto::SourceConfigType::VIDEO_DOLBY_VISION;
     }
+    case firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_SUBTITLE:
+    {
+        return firebolt::rialto::SourceConfigType::SUBTITLE;
+    }
     }
     return firebolt::rialto::SourceConfigType::UNKNOWN;
 }
@@ -378,6 +382,18 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
                                                                               request->segment_alignment()),
                                                                           convertStreamFormat(request->stream_format()),
                                                                           codecData);
+    }
+    else if (configType == firebolt::rialto::SourceConfigType::SUBTITLE)
+    {
+        mediaSource = std::make_unique<IMediaPipeline::MediaSourceSubtitle>(request->mime_type().c_str(),
+                                                                            request->text_track_identifier());
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Unknown source type");
+        controller->SetFailed("Operation failed");
+        done->Run();
+        return;
     }
 
     if (!m_mediaPipelineService.attachSource(request->session_id(), mediaSource))

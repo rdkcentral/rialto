@@ -101,6 +101,18 @@ TEST_F(MediaPipelineModuleServiceTests, shouldAttachDolbySource)
     sendAttachDolbySourceRequestAndReceiveResponse();
 }
 
+TEST_F(MediaPipelineModuleServiceTests, shouldAttachSubtitleSource)
+{
+    mediaPipelineServiceWillAttachSubtitleSource();
+    sendAttachSubtitleSourceRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailAttachUnknownSource)
+{
+    mediaPipelineServiceWillFailToAttachUnknownSource();
+    sendAttachUnknownSourceRequestAndReceiveResponse();
+}
+
 TEST_F(MediaPipelineModuleServiceTests, shouldAttachAudioSourceWithAdditionalData)
 {
     mediaPipelineServiceWillAttachAudioSourceWithAdditionaldata();

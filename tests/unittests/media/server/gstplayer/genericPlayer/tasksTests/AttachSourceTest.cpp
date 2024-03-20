@@ -51,6 +51,12 @@ TEST_F(AttachSourceTest, shouldAttachVideoSource)
     checkVideoSourceAttached();
 }
 
+TEST_F(AttachSourceTest, shouldAttachSubtitleSource)
+{
+    triggerAttachSubtitleSource();
+    checkSubtitleSourceAttached();
+}
+
 TEST_F(AttachSourceTest, shouldAttachVideoSourceWithStringCodecData)
 {
     shouldAttachVideoSourceWithStringCodecData();

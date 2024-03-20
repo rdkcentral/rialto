@@ -106,7 +106,7 @@ public:
         /**
          * @brief Return the source type.
          */
-        virtual MediaSourceType getType() const = 0;
+        virtual MediaSourceType getType() const { return MediaSourceType::UNKNOWN; }
 
         /**
          * @brief Return the MIME type.
@@ -132,6 +132,50 @@ public:
          * @brief Set the source id.
          */
         void setId(int32_t id) { m_id = id; }
+
+    protected:
+        /**
+         * @brief Default constructor.
+         *
+         * @param[in]  configType   : The source config type.
+         * @param[in]  mimeType     : The mime type string.
+         * @param[in]  hasDrm       : Information if source will use drm
+         */
+        explicit MediaSource(SourceConfigType configType = SourceConfigType::UNKNOWN,
+                             const std::string &mimeType = std::string(), bool hasDrm = true)
+            : m_id(0), m_configType(configType), m_mimeType(mimeType), m_hasDrm(hasDrm)
+        {
+        }
+        /**
+         * @brief The source id. Parameter will be set by a successful call to attachSource()
+         */
+        int32_t m_id;
+
+        /**
+         * @brief The source config type.
+         */
+        SourceConfigType m_configType;
+
+        /**
+         * @brief The MIME type.
+         */
+        std::string m_mimeType;
+
+        /**
+         * @brief Parameter to check if encrypted frames will be used for this source.
+         */
+        bool m_hasDrm;
+    };
+
+    /**
+     * @brief A class that represents media source audio and video derived from MediaSource class, which represents the
+     * source of media data
+     */
+    class MediaSourceAV : public MediaSource
+    {
+    public:
+        ~MediaSourceAV() {}
+        std::unique_ptr<MediaSource> copy() const { return std::make_unique<MediaSourceAV>(*this); }
 
         /**
          * @brief Gets the segment alignment
@@ -159,35 +203,15 @@ public:
          * @param[in]  streamFormat : The stream format
          * @param[in]  codecData    : The additional data for decoder
          */
-        explicit MediaSource(SourceConfigType configType = SourceConfigType::UNKNOWN,
-                             const std::string &mimeType = std::string(), bool hasDrm = true,
-                             SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
-                             StreamFormat streamFormat = StreamFormat::UNDEFINED,
-                             const std::shared_ptr<CodecData> &codecData = nullptr)
-            : m_id(0), m_configType(configType), m_mimeType(mimeType), m_hasDrm(hasDrm), m_alignment(alignment),
-              m_streamFormat(streamFormat), m_codecData(codecData)
+        explicit MediaSourceAV(SourceConfigType configType = SourceConfigType::UNKNOWN,
+                               const std::string &mimeType = std::string(), bool hasDrm = true,
+                               SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
+                               StreamFormat streamFormat = StreamFormat::UNDEFINED,
+                               const std::shared_ptr<CodecData> &codecData = nullptr)
+            : MediaSource(configType, mimeType, hasDrm), m_alignment(alignment), m_streamFormat(streamFormat),
+              m_codecData(codecData)
         {
         }
-        /**
-         * @brief The source id. Parameter will be set by a successful call to attachSource()
-         */
-        int32_t m_id;
-
-        /**
-         * @brief The source config type.
-         */
-        SourceConfigType m_configType;
-
-        /**
-         * @brief The MIME type.
-         */
-        std::string m_mimeType;
-
-        /**
-         * @brief Parameter to check if encrypted frames will be used for this source.
-         */
-        bool m_hasDrm;
-
         /**
          * @brief The alignment of media segment
          */
@@ -209,7 +233,7 @@ public:
      * media data
      */
 
-    class MediaSourceAudio : public MediaSource
+    class MediaSourceAudio : public MediaSourceAV
     {
     public:
         /**
@@ -226,7 +250,7 @@ public:
                          SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                          StreamFormat streamFormat = StreamFormat::UNDEFINED,
                          const std::shared_ptr<CodecData> &codecData = nullptr)
-            : MediaSource(SourceConfigType::AUDIO, mimeType, hasDrm, alignment, streamFormat, codecData),
+            : MediaSourceAV(SourceConfigType::AUDIO, mimeType, hasDrm, alignment, streamFormat, codecData),
               m_audioConfig(audioConfig)
         {
         }
@@ -255,7 +279,7 @@ public:
      * media data
      */
 
-    class MediaSourceVideo : public MediaSource
+    class MediaSourceVideo : public MediaSourceAV
     {
     public:
         /**
@@ -275,7 +299,7 @@ public:
                          SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                          StreamFormat streamFormat = StreamFormat::UNDEFINED,
                          const std::shared_ptr<CodecData> &codecData = nullptr)
-            : MediaSource(SourceConfigType::VIDEO, mimeType, hasDrm, alignment, streamFormat, codecData),
+            : MediaSourceAV(SourceConfigType::VIDEO, mimeType, hasDrm, alignment, streamFormat, codecData),
               m_width(width), m_height(height)
         {
         }
@@ -317,7 +341,7 @@ public:
                          SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                          StreamFormat streamFormat = StreamFormat::UNDEFINED,
                          const std::shared_ptr<CodecData> &codecData = nullptr)
-            : MediaSource(sourceConfigType, mimeType, hasDrm, alignment, streamFormat, codecData), m_width(width),
+            : MediaSourceAV(sourceConfigType, mimeType, hasDrm, alignment, streamFormat, codecData), m_width(width),
               m_height(height)
         {
         }
@@ -379,6 +403,42 @@ public:
          * @brief Variable that stores the Dolby Vision Profile
          */
         uint32_t m_dolbyVisionProfile;
+    };
+
+    /**
+     * @brief A class that represents media source subtitle derived from media source video data
+     */
+    class MediaSourceSubtitle : public MediaSource
+    {
+    public:
+        /**
+         * @brief Construct a new Media Source Subtitle object
+         *
+         * @param mimeType              : The mime type string
+         * @param textTrackIdentifier   : The text track identifier string
+         */
+        MediaSourceSubtitle(const std::string &mimeType, const std::string &textTrackIdentifier)
+            : MediaSource(SourceConfigType::SUBTITLE, mimeType, false), m_textTrackIdentifier(textTrackIdentifier)
+        {
+        }
+
+        ~MediaSourceSubtitle() {}
+
+        MediaSourceType getType() const override { return MediaSourceType::SUBTITLE; }
+        std::unique_ptr<MediaSource> copy() const override { return std::make_unique<MediaSourceSubtitle>(*this); }
+
+        /**
+         * @brief Get the Text Track Identifier object
+         *
+         * @return the text track identifier
+         */
+        const std::string &getTextTrackIdentifier() const { return m_textTrackIdentifier; }
+
+    protected:
+        /**
+         * @brief Variable that stores the text track identifier
+         */
+        std::string m_textTrackIdentifier;
     };
 
     /**

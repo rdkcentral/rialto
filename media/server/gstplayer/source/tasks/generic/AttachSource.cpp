@@ -34,7 +34,7 @@ class MediaSourceCapsBuilder
 public:
     MediaSourceCapsBuilder(std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
                            std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
-                           const firebolt::rialto::IMediaPipeline::MediaSource &source)
+                           const firebolt::rialto::IMediaPipeline::MediaSourceAV &source)
         : m_gstWrapper(gstWrapper), m_glibWrapper(glibWrapper), m_attachedSource(source)
     {
     }
@@ -43,7 +43,7 @@ public:
 protected:
     std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
     std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
-    const IMediaPipeline::MediaSource &m_attachedSource;
+    const IMediaPipeline::MediaSourceAV &m_attachedSource;
 
     GstCaps *buildCommonCaps()
     {
@@ -251,6 +251,12 @@ void AttachSource::execute() const
     if (m_attachedSource->getType() == MediaSourceType::UNKNOWN)
     {
         RIALTO_SERVER_LOG_ERROR("Unknown media source type");
+        return;
+    }
+    else if (m_attachedSource->getType() == MediaSourceType::SUBTITLE)
+    {
+        // just stub for now
+        RIALTO_SERVER_LOG_DEBUG("Subtitle source attached");
         return;
     }
 

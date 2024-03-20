@@ -125,6 +125,7 @@ message AttachSourceRequest {
         CONFIG_TYPE_AUDIO              = 1;
         CONFIG_TYPE_VIDEO              = 2;
         CONFIG_TYPE_VIDEO_DOLBY_VISION = 3;
+        CONFIG_TYPE_SUBTITLE           = 4;
     }
 
     message AudioConfig {
@@ -152,7 +153,8 @@ message AttachSourceRequest {
     optional AudioConfig audio_config = 8;
     optional CodecData codec_data = 9;
     optional StreamFormat stream_format = 10;
-    optional uint32 dolby_vision_profile = 11; 
+    optional uint32 dolby_vision_profile = 11;
+    optional string text_track_identifier = 12;
 
 }
 message AttachSourceResponse {
