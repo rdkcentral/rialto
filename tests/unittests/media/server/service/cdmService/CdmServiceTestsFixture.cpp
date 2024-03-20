@@ -93,6 +93,11 @@ void CdmServiceTests::getSupportedKeySystemVersionWillFail()
         .WillOnce(DoAll(SetArgReferee<1>(kVersion), Return(false)));
 }
 
+void CdmServiceTests::supportsServerCertificateWillReturnTrue()
+{
+    EXPECT_CALL(m_mediaKeysCapabilitiesMock, isServerCertificateSupported()).WillOnce(Return(true));
+}
+
 void CdmServiceTests::triggerSwitchToActiveSuccess()
 {
     EXPECT_TRUE(m_sut.switchToActive());
@@ -412,6 +417,16 @@ void CdmServiceTests::getSupportedKeySystemVersionShouldFail()
 {
     std::string returnVersion;
     EXPECT_FALSE(m_sut.getSupportedKeySystemVersion(kKeySystems[0], returnVersion));
+}
+
+void CdmServiceTests::supportsServerCertificateReturnTrue()
+{
+    EXPECT_TRUE(m_sut.isServerCertificateSupported());
+}
+
+void CdmServiceTests::supportsServerCertificateReturnFalse()
+{
+    EXPECT_FALSE(m_sut.isServerCertificateSupported());
 }
 
 void CdmServiceTests::incrementSessionIdUsageCounter()

@@ -44,12 +44,14 @@ public:
     void cdmServiceWillSupportsKeySystem();
     void cdmServiceWillGetSupportedKeySystemVersion();
     void cdmServiceWillFailToGetSupportedKeySystemVersion();
+    void cdmServiceWillSupportServerCertificate();
 
     void sendClientConnected();
     void sendGetSupportedKeySystemsRequestAndReceiveResponse();
     void sendSupportsKeySystemRequestAndReceiveResponse();
     void sendGetSupportedKeySystemVersionRequestAndReceiveResponse();
     void sendGetSupportedKeySystemVersionRequestAndExpectFailure();
+    void sendIsServerCertificateSupportedRequestAndReceiveResponse();
 
 private:
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ClientMock>> m_clientMock;

@@ -58,6 +58,10 @@ public:
                                       const ::firebolt::rialto::GetSupportedKeySystemVersionRequest *request,
                                       ::firebolt::rialto::GetSupportedKeySystemVersionResponse *response,
                                       ::google::protobuf::Closure *done) override;
+    void isServerCertificateSupported(::google::protobuf::RpcController *controller,
+                                      const ::firebolt::rialto::IsServerCertificateSupportedRequest *request,
+                                      ::firebolt::rialto::IsServerCertificateSupportedResponse *response,
+                                      ::google::protobuf::Closure *done) override;
 
 private:
     service::ICdmService &m_cdmService;

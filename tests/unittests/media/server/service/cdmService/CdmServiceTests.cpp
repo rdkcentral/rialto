@@ -716,6 +716,26 @@ TEST_F(CdmServiceTests, shouldGetSupportedKeySystemVersionInActiveState)
     getSupportedKeySystemVersionShouldSucceed();
 }
 
+TEST_F(CdmServiceTests, shouldGetServerCertificateNotSupportedInInactiveState)
+{
+    supportsServerCertificateReturnFalse();
+}
+
+TEST_F(CdmServiceTests, shouldGetServerCertificateNotSupportedIfCreationFailureInActiveState)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysCapabilitiesFactoryWillReturnNullptr();
+    supportsServerCertificateReturnFalse();
+}
+
+TEST_F(CdmServiceTests, shouldGetServerCertificateSupportedIfSupportedInActiveState)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysCapabilitiesFactoryWillCreateMediaKeysCapabilities();
+    supportsServerCertificateWillReturnTrue();
+    supportsServerCertificateReturnTrue();
+}
+
 TEST_F(CdmServiceTests, shouldCheckThatKeySystemIsPlayready)
 {
     triggerSwitchToActiveSuccess();

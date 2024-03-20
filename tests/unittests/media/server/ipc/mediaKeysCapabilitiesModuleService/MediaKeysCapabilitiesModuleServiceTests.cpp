@@ -49,6 +49,12 @@ TEST_F(MediaKeysCapabilitiesModuleServiceTests, shouldFailToGetSupportedKeySyste
     sendGetSupportedKeySystemVersionRequestAndExpectFailure();
 }
 
+TEST_F(MediaKeysCapabilitiesModuleServiceTests, shouldSupportServerCertificate)
+{
+    cdmServiceWillSupportServerCertificate();
+    sendIsServerCertificateSupportedRequestAndReceiveResponse();
+}
+
 TEST_F(MediaKeysCapabilitiesModuleServiceTests, FactoryCreatesObject)
 {
     testFactoryCreatesObject();

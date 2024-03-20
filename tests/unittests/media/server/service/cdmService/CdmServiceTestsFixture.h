@@ -72,6 +72,7 @@ public:
     void supportsKeySystemWillReturnTrue();
     void getSupportedKeySystemVersionWillSucceed();
     void getSupportedKeySystemVersionWillFail();
+    void supportsServerCertificateWillReturnTrue();
 
     void triggerSwitchToActiveSuccess();
     void triggerSwitchToInactive();
@@ -113,6 +114,8 @@ public:
     void supportsKeySystemReturnFalse();
     void getSupportedKeySystemVersionShouldSucceed();
     void getSupportedKeySystemVersionShouldFail();
+    void supportsServerCertificateReturnTrue();
+    void supportsServerCertificateReturnFalse();
 
 private:
     std::shared_ptr<StrictMock<firebolt::rialto::server::MediaKeysServerInternalFactoryMock>> m_mediaKeysFactoryMock;
