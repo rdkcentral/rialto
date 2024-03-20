@@ -63,7 +63,7 @@ add_gtests (
         mediaKeys/GetDrmTimeTest.cpp
         mediaKeys/GetLastDrmErrorTest.cpp
         mediaKeys/SelectKeyIdTest.cpp
-        mediaKeys/IsPlayreadyKeySystemTest.cpp
+        mediaKeys/IsNetflixPlayreadyKeySystemTest.cpp
         mediaKeys/PingTest.cpp
 
         mediaKeysCapabilities/CreateTest.cpp
@@ -84,7 +84,7 @@ add_gtests (
         mediaKeySession/SetDrmHeaderTest.cpp
         mediaKeySession/GetLastDrmErrorTest.cpp
         mediaKeySession/SelectKeyIdTest.cpp
-        mediaKeySession/IsPlayreadyKeySystemTest.cpp
+        mediaKeySession/IsNetflixPlayreadyKeySystemTest.cpp
 
         sharedMemoryBuffer/SharedMemoryBufferTestsFixture.cpp
         sharedMemoryBuffer/SharedMemoryBufferTests.cpp

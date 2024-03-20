@@ -612,17 +612,17 @@ bool MediaKeysServerInternal::hasSession(int32_t keySessionId) const
     return result;
 }
 
-bool MediaKeysServerInternal::isPlayreadyKeySystem(int32_t keySessionId) const
+bool MediaKeysServerInternal::isNetflixPlayreadyKeySystem(int32_t keySessionId) const
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
     bool result;
-    auto task = [&]() { result = isPlayreadyKeySystemInternal(keySessionId); };
+    auto task = [&]() { result = isNetflixPlayreadyKeySystemInternal(keySessionId); };
 
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
-bool MediaKeysServerInternal::isPlayreadyKeySystemInternal(int32_t keySessionId) const
+bool MediaKeysServerInternal::isNetflixPlayreadyKeySystemInternal(int32_t keySessionId) const
 {
     auto sessionIter = m_mediaKeySessions.find(keySessionId);
     if (sessionIter == m_mediaKeySessions.end())
@@ -630,7 +630,7 @@ bool MediaKeysServerInternal::isPlayreadyKeySystemInternal(int32_t keySessionId)
         RIALTO_SERVER_LOG_ERROR("Failed to find the session %d", keySessionId);
         return false;
     }
-    return sessionIter->second.mediaKeySession->isPlayreadyKeySystem();
+    return sessionIter->second.mediaKeySession->isNetflixPlayreadyKeySystem();
 }
 
 void MediaKeysServerInternal::incrementSessionIdUsageCounter(int32_t keySessionId)

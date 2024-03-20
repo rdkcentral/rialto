@@ -123,7 +123,7 @@ public:
 
     bool hasSession(int32_t keySessionId) const override;
 
-    bool isPlayreadyKeySystem(int32_t keySessionId) const override;
+    bool isNetflixPlayreadyKeySystem(int32_t keySessionId) const override;
 
     void incrementSessionIdUsageCounter(int32_t keySessionId) override;
     void decrementSessionIdUsageCounter(int32_t keySessionId) override;
@@ -309,13 +309,13 @@ private:
     MediaKeyErrorStatus getLastDrmErrorInternal(int32_t keySessionId, uint32_t &errorCode);
 
     /**
-     * @brief Checks, if key system of media key session is Playready internally, only to be called on the main thread.
+     * @brief Checks, if key system of media key session is Netflix Playready internally, only to be called on the main thread.
      *
      * @param[in] keySessionId    : The session id for the session.
      *
      * @retval true if key system is Playready
      */
-    bool isPlayreadyKeySystemInternal(int32_t keySessionId) const;
+    bool isNetflixPlayreadyKeySystemInternal(int32_t keySessionId) const;
 
     void incrementSessionIdUsageCounterInternal(int32_t keySessionId);
     void decrementSessionIdUsageCounterInternal(int32_t keySessionId);

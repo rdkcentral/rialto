@@ -101,7 +101,7 @@ public:
     void getLdlSessionsLimitShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void getLastDrmErrorShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void getDrmTimeShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
-    void isPlayreadyKeySystemShouldReturn(bool result);
+    void isNetflixPlayreadyKeySystemShouldReturn(bool result);
     void incrementSessionIdUsageCounter();
     void decrementSessionIdUsageCounter();
     void incrementSessionIdUsageCounterFails();
