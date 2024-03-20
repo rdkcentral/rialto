@@ -113,4 +113,11 @@ bool MediaKeysCapabilities::getSupportedKeySystemVersion(const std::string &keyS
     return m_mediaKeysCapabilitiesIpc->getSupportedKeySystemVersion(keySystem, version);
 }
 
+bool MediaKeysCapabilities::isServerCertificateSupported()
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    return m_mediaKeysCapabilitiesIpc->isServerCertificateSupported();
+}
+
 }; // namespace firebolt::rialto::client

@@ -100,6 +100,8 @@ protected:
     void shouldNotSupportKeySystems();
     void shouldGetSupportedKeySystemVersion();
     void shouldNotGetSupportedKeySystemVersion();
+    void shouldSupportServerCertificate();
+    void shouldNotSupportServerCertificate();
 
     // Api methods
     void createMediaKeysWidevine();
@@ -138,6 +140,8 @@ protected:
     void doesNotGetSupportedKeySystemVersion();
     void createMediaKeysCapabilitiesObject();
     void destroyMediaKeysCapabilitiesObject();
+    void supportsServerCertificate();
+    void doesNotSupportServerCertificate();
 
     // Event methods
     void sendNotifyLicenseRequest();

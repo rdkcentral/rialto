@@ -156,4 +156,9 @@ bool MediaKeysCapabilities::getSupportedKeySystemVersion(const std::string &keyS
     return true;
 }
 
+bool MediaKeysCapabilities::isServerCertificateSupported()
+{
+    return false;
+}
+
 }; // namespace firebolt::rialto::server

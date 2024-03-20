@@ -71,6 +71,8 @@ public:
 
     bool getSupportedKeySystemVersion(const std::string &keySystem, std::string &version) override;
 
+    bool isServerCertificateSupported() override;
+
 private:
     /**
      * @brief The IOcdm instance.

@@ -660,4 +660,29 @@ void MediaKeysTestMethods::doesNotGetSupportedKeySystemVersion()
     EXPECT_EQ(m_mediaKeysCapabilities->getSupportedKeySystemVersion(kKeySystems[0], version), false);
 }
 
+void MediaKeysTestMethods::shouldSupportServerCertificate()
+{
+    EXPECT_CALL(*m_mediaKeysCapabilitiesModuleMock, isServerCertificateSupported(_, _, _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysCapabilitiesModuleMock->supportsServerCertificateResponse(true)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaKeysCapabilitiesModuleMock),
+                                              &MediaKeysCapabilitiesModuleMock::defaultReturn))));
+}
+
+void MediaKeysTestMethods::supportsServerCertificate()
+{
+    EXPECT_TRUE(m_mediaKeysCapabilities->isServerCertificateSupported());
+}
+
+void MediaKeysTestMethods::shouldNotSupportServerCertificate()
+{
+    EXPECT_CALL(*m_mediaKeysCapabilitiesModuleMock, isServerCertificateSupported(_, _, _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysCapabilitiesModuleMock->supportsServerCertificateResponse(false)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaKeysCapabilitiesModuleMock),
+                                              &MediaKeysCapabilitiesModuleMock::defaultReturn))));
+}
+
+void MediaKeysTestMethods::doesNotSupportServerCertificate()
+{
+    EXPECT_FALSE(m_mediaKeysCapabilities->isServerCertificateSupported());
+}
 } // namespace firebolt::rialto::client::ct
