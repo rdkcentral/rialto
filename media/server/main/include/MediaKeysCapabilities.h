@@ -71,7 +71,7 @@ public:
 
     bool getSupportedKeySystemVersion(const std::string &keySystem, std::string &version) override;
 
-    bool isServerCertificateSupported() override;
+    bool isServerCertificateSupported(const std::string &keySystem) override;
 
 private:
     /**

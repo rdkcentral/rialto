@@ -156,7 +156,7 @@ bool MediaKeysCapabilities::getSupportedKeySystemVersion(const std::string &keyS
     return true;
 }
 
-bool MediaKeysCapabilities::isServerCertificateSupported()
+bool MediaKeysCapabilities::isServerCertificateSupported(const std::string &keySystem)
 {
     return false;
 }

@@ -428,7 +428,7 @@ bool CdmService::getSupportedKeySystemVersion(const std::string &keySystem, std:
     return mediaKeysCapabilities->getSupportedKeySystemVersion(keySystem, version);
 }
 
-bool CdmService::isServerCertificateSupported()
+bool CdmService::isServerCertificateSupported(const std::string &keySystem)
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to isServerCertificateSupported");
 
@@ -444,7 +444,7 @@ bool CdmService::isServerCertificateSupported()
         RIALTO_SERVER_LOG_ERROR("Failed to create the mediaKeysCapabilities object");
         return false;
     }
-    return mediaKeysCapabilities->isServerCertificateSupported();
+    return mediaKeysCapabilities->isServerCertificateSupported(keySystem);
 }
 
 MediaKeyErrorStatus CdmService::decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps)

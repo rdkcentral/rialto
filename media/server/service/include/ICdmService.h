@@ -73,7 +73,7 @@ public:
     virtual std::vector<std::string> getSupportedKeySystems() = 0;
     virtual bool supportsKeySystem(const std::string &keySystem) = 0;
     virtual bool getSupportedKeySystemVersion(const std::string &keySystem, std::string &version) = 0;
-    virtual bool isServerCertificateSupported() = 0;
+    virtual bool isServerCertificateSupported(const std::string &keySystem) = 0;
 
     virtual void ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure) = 0;
 };

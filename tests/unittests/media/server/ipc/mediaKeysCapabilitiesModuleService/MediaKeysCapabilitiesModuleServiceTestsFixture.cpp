@@ -82,7 +82,7 @@ void MediaKeysCapabilitiesModuleServiceTests::cdmServiceWillFailToGetSupportedKe
 void MediaKeysCapabilitiesModuleServiceTests::cdmServiceWillSupportServerCertificate()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_cdmServiceMock, isServerCertificateSupported()).WillOnce(Return(true));
+    EXPECT_CALL(m_cdmServiceMock, isServerCertificateSupported(keySystems[0])).WillOnce(Return(true));
 }
 
 void MediaKeysCapabilitiesModuleServiceTests::sendClientConnected()
@@ -136,6 +136,8 @@ void MediaKeysCapabilitiesModuleServiceTests::sendIsServerCertificateSupportedRe
 {
     firebolt::rialto::IsServerCertificateSupportedRequest request;
     firebolt::rialto::IsServerCertificateSupportedResponse response;
+
+    request.set_key_system(keySystems[0]);
 
     m_service->isServerCertificateSupported(m_controllerMock.get(), &request, &response, m_closureMock.get());
     EXPECT_TRUE(response.is_supported());

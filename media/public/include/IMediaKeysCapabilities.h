@@ -111,11 +111,10 @@ public:
      * gets if system has support for that certificate.
      *
      * @param[in] keySystem    : The key system.
-     * @param[out] version     : The supported version of the key system
      *
      * @retval true if server certificate is supported
      */
-    virtual bool isServerCertificateSupported() = 0;
+    virtual bool isServerCertificateSupported(const std::string &keySystem) = 0;
 };
 
 }; // namespace firebolt::rialto

@@ -182,7 +182,7 @@ bool MediaKeysCapabilitiesIpc::getSupportedKeySystemVersion(const std::string &k
     return true;
 }
 
-bool MediaKeysCapabilitiesIpc::isServerCertificateSupported()
+bool MediaKeysCapabilitiesIpc::isServerCertificateSupported(const std::string &keySystem)
 {
     if (!reattachChannelIfRequired())
     {
@@ -191,6 +191,7 @@ bool MediaKeysCapabilitiesIpc::isServerCertificateSupported()
     }
 
     firebolt::rialto::IsServerCertificateSupportedRequest request;
+    request.set_key_system(keySystem);
 
     firebolt::rialto::IsServerCertificateSupportedResponse response;
     auto ipcController = m_ipc.createRpcController();

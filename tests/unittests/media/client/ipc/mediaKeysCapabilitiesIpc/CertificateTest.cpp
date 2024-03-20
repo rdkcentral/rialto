@@ -30,6 +30,11 @@ using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::WithArgs;
 
+namespace
+{
+const std::string kKeySystem{"com.netflix.playready"};
+} // namespace
+
 class RialtoClientMediaKeysCapabilitiesIpcCertificateTest : public IpcModuleBase, public ::testing::Test
 {
 protected:
@@ -71,7 +76,7 @@ TEST_F(RialtoClientMediaKeysCapabilitiesIpcCertificateTest, SupportsKeySystemSuc
         .WillOnce(WithArgs<3>(
             Invoke(this, &RialtoClientMediaKeysCapabilitiesIpcCertificateTest::setServerCertificateSupported)));
 
-    EXPECT_TRUE(m_mediaKeysCapabilitiesIpc->isServerCertificateSupported());
+    EXPECT_TRUE(m_mediaKeysCapabilitiesIpc->isServerCertificateSupported(kKeySystem));
 }
 
 /**
@@ -86,7 +91,7 @@ TEST_F(RialtoClientMediaKeysCapabilitiesIpcCertificateTest, SupportsKeySystemSuc
         .WillOnce(WithArgs<3>(
             Invoke(this, &RialtoClientMediaKeysCapabilitiesIpcCertificateTest::setServerCertificateNotSupported)));
 
-    EXPECT_FALSE(m_mediaKeysCapabilitiesIpc->isServerCertificateSupported());
+    EXPECT_FALSE(m_mediaKeysCapabilitiesIpc->isServerCertificateSupported(kKeySystem));
 }
 
 /**
@@ -96,7 +101,7 @@ TEST_F(RialtoClientMediaKeysCapabilitiesIpcCertificateTest, SupportsKeySystemCha
 {
     expectIpcApiCallDisconnected();
 
-    EXPECT_FALSE(m_mediaKeysCapabilitiesIpc->isServerCertificateSupported());
+    EXPECT_FALSE(m_mediaKeysCapabilitiesIpc->isServerCertificateSupported(kKeySystem));
 }
 
 /**
@@ -110,7 +115,7 @@ TEST_F(RialtoClientMediaKeysCapabilitiesIpcCertificateTest, SupportsKeySystemRec
         .WillOnce(WithArgs<3>(
             Invoke(this, &RialtoClientMediaKeysCapabilitiesIpcCertificateTest::setServerCertificateSupported)));
 
-    EXPECT_TRUE(m_mediaKeysCapabilitiesIpc->isServerCertificateSupported());
+    EXPECT_TRUE(m_mediaKeysCapabilitiesIpc->isServerCertificateSupported(kKeySystem));
 }
 
 /**
@@ -122,5 +127,5 @@ TEST_F(RialtoClientMediaKeysCapabilitiesIpcCertificateTest, SupportsKeySystemFai
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("isServerCertificateSupported"), _, _, _, _));
 
-    EXPECT_FALSE(m_mediaKeysCapabilitiesIpc->isServerCertificateSupported());
+    EXPECT_FALSE(m_mediaKeysCapabilitiesIpc->isServerCertificateSupported(kKeySystem));
 }

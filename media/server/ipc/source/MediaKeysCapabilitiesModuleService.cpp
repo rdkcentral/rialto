@@ -164,7 +164,7 @@ void MediaKeysCapabilitiesModuleService::isServerCertificateSupported(
         return;
     }
 
-    response->set_is_supported(m_cdmService.isServerCertificateSupported());
+    response->set_is_supported(m_cdmService.isServerCertificateSupported(request->key_system()));
     done->Run();
 }
 

@@ -31,6 +31,11 @@ using ::testing::Return;
 using ::testing::SetArgReferee;
 using ::testing::StrictMock;
 
+namespace
+{
+const std::string kKeySystem{"com.netflix.playready"};
+} // namespace
+
 class RialtoClientMediaKeysCapabilitiesCertificateTest : public ::testing::Test
 {
 protected:
@@ -57,9 +62,9 @@ protected:
  */
 TEST_F(RialtoClientMediaKeysCapabilitiesCertificateTest, GetSupportedKeySystemsSuccess)
 {
-    EXPECT_CALL(*m_mediaKeysCapabilitiesIpcMock, isServerCertificateSupported()).WillOnce(Return(true));
+    EXPECT_CALL(*m_mediaKeysCapabilitiesIpcMock, isServerCertificateSupported(kKeySystem)).WillOnce(Return(true));
 
-    EXPECT_TRUE(m_mediaKeysCapabilities->isServerCertificateSupported());
+    EXPECT_TRUE(m_mediaKeysCapabilities->isServerCertificateSupported(kKeySystem));
 }
 
 /**
@@ -67,7 +72,7 @@ TEST_F(RialtoClientMediaKeysCapabilitiesCertificateTest, GetSupportedKeySystemsS
  */
 TEST_F(RialtoClientMediaKeysCapabilitiesCertificateTest, GetSupportedKeySystemsFailure)
 {
-    EXPECT_CALL(*m_mediaKeysCapabilitiesIpcMock, isServerCertificateSupported()).WillOnce(Return(false));
+    EXPECT_CALL(*m_mediaKeysCapabilitiesIpcMock, isServerCertificateSupported(kKeySystem)).WillOnce(Return(false));
 
-    EXPECT_FALSE(m_mediaKeysCapabilities->isServerCertificateSupported());
+    EXPECT_FALSE(m_mediaKeysCapabilities->isServerCertificateSupported(kKeySystem));
 }

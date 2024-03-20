@@ -70,7 +70,7 @@ public:
     std::vector<std::string> getSupportedKeySystems() override;
     bool supportsKeySystem(const std::string &keySystem) override;
     bool getSupportedKeySystemVersion(const std::string &keySystem, std::string &version) override;
-    bool isServerCertificateSupported() override;
+    bool isServerCertificateSupported(const std::string &keySystem) override;
     MediaKeyErrorStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps) override;
     // TODO(RIALTO-127): Remove
     MediaKeyErrorStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstBuffer *subSample,
