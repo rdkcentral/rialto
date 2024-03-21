@@ -44,10 +44,59 @@ TEST_F(AttachSourceTest, shouldAttachOpusWithAudioSpecificConf)
     checkAudioSourceAttached();
 }
 
-TEST_F(AttachSourceTest, shouldAttachVideoSource)
+TEST_F(AttachSourceTest, shouldAttachVideoSourceAuAvc)
 {
-    shouldAttachVideoSource();
-    triggerAttachVideoSource();
+    std::string mimeType = "video/h264";
+    firebolt::rialto::SegmentAlignment alignment = firebolt::rialto::SegmentAlignment::AU;
+    firebolt::rialto::StreamFormat streamFormat = firebolt::rialto::StreamFormat::AVC;
+    std::string expectedMimeType = "video/x-h264";
+    std::string expectedAlignment = "au";
+    std::string expectedStreamFormat = "avc";
+
+    shouldAttachVideoSource(expectedMimeType, expectedAlignment, expectedStreamFormat);
+    triggerAttachVideoSource(mimeType, alignment, streamFormat);
+    checkVideoSourceAttached();
+}
+
+TEST_F(AttachSourceTest, shouldAttachVideoSourceNalAvc)
+{
+    std::string mimeType = "video/h264";
+    firebolt::rialto::SegmentAlignment alignment = firebolt::rialto::SegmentAlignment::NAL;
+    firebolt::rialto::StreamFormat streamFormat = firebolt::rialto::StreamFormat::AVC;
+    std::string expectedMimeType = "video/x-h264";
+    std::string expectedAlignment = "nal";
+    std::string expectedStreamFormat = "avc";
+
+    shouldAttachVideoSource(expectedMimeType, expectedAlignment, expectedStreamFormat);
+    triggerAttachVideoSource(mimeType, alignment, streamFormat);
+    checkVideoSourceAttached();
+}
+
+TEST_F(AttachSourceTest, shouldAttachVideoSourceAuHvc)
+{
+    std::string mimeType = "video/h265";
+    firebolt::rialto::SegmentAlignment alignment = firebolt::rialto::SegmentAlignment::AU;
+    firebolt::rialto::StreamFormat streamFormat = firebolt::rialto::StreamFormat::HVC1;
+    std::string expectedMimeType = "video/x-h265";
+    std::string expectedAlignment = "au";
+    std::string expectedStreamFormat = "hvc1";
+
+    shouldAttachVideoSource(expectedMimeType, expectedAlignment, expectedStreamFormat);
+    triggerAttachVideoSource(mimeType, alignment, streamFormat);
+    checkVideoSourceAttached();
+}
+
+TEST_F(AttachSourceTest, shouldAttachVideoSourceAuHev)
+{
+    std::string mimeType = "video/h265";
+    firebolt::rialto::SegmentAlignment alignment = firebolt::rialto::SegmentAlignment::AU;
+    firebolt::rialto::StreamFormat streamFormat = firebolt::rialto::StreamFormat::HEV1;
+    std::string expectedMimeType = "video/x-h265";
+    std::string expectedAlignment = "au";
+    std::string expectedStreamFormat = "hev1";
+
+    shouldAttachVideoSource(expectedMimeType, expectedAlignment, expectedStreamFormat);
+    triggerAttachVideoSource(mimeType, alignment, streamFormat);
     checkVideoSourceAttached();
 }
 

@@ -1171,7 +1171,6 @@ MediaPipelineIpc::convertStreamFormat(const firebolt::rialto::StreamFormat &stre
     return firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_UNDEFINED;
 }
 
-
 firebolt::rialto::AttachSourceRequest_CodecData_Type
 MediaPipelineIpc::convertCodecDataType(const firebolt::rialto::CodecDataType &codecDataType)
 {
