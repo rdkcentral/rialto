@@ -229,4 +229,9 @@ MediaKeyErrorStatus MediaKeys::getCdmKeySessionId(int32_t keySessionId, std::str
     return m_mediaKeysIpc->getCdmKeySessionId(keySessionId, cdmKeySessionId);
 }
 
+MediaKeyErrorStatus MediaKeys::releaseKeySession(int32_t keySessionId)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+    return m_mediaKeysIpc->releaseKeySession(keySessionId);
+}
 }; // namespace firebolt::rialto::client

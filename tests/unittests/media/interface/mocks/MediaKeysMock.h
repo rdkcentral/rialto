@@ -57,6 +57,7 @@ public:
     MOCK_METHOD(MediaKeyErrorStatus, getDrmTime, (uint64_t & drmTime), (override));
     MOCK_METHOD(MediaKeyErrorStatus, getCdmKeySessionId, (int32_t keySessionId, std::string &cdmKeySessionId),
                 (override));
+    MOCK_METHOD(MediaKeyErrorStatus, releaseKeySession, (int32_t keySessionId), (override));
 };
 } // namespace firebolt::rialto
 

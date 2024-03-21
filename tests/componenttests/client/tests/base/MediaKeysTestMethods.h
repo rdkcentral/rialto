@@ -88,6 +88,7 @@ protected:
     void shouldGetLastDrmError();
     void shouldgetLdlSessionsLimit();
     void shouldGetDrmTime();
+    void shouldReleaseKeySession();
 
     // MediaPipelineClient Expect methods
     void shouldNotifyLicenseRequest();
@@ -142,6 +143,7 @@ protected:
     void destroyMediaKeysCapabilitiesObject();
     void supportsServerCertificate();
     void doesNotSupportServerCertificate();
+    void releaseKeySession();
 
     // Event methods
     void sendNotifyLicenseRequest();

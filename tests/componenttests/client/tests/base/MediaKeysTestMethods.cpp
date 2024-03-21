@@ -586,6 +586,19 @@ void MediaKeysTestMethods::getDrmTime()
     EXPECT_EQ(kDrmTime, drmTime);
 }
 
+void MediaKeysTestMethods::shouldReleaseKeySession()
+{
+    EXPECT_CALL(*m_mediaKeysModuleMock,
+                releaseKeySession(_, releaseKeySessionRequestMatcher(kMediaKeysHandle, kKeySessionId), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->releaseKeySessionResponse(kStatusOk)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
+}
+
+void MediaKeysTestMethods::releaseKeySession()
+{
+    EXPECT_EQ(m_mediaKeys->releaseKeySession(kKeySessionId), kStatusOk);
+}
+
 void MediaKeysTestMethods::shouldGetSupportedKeySystems()
 {
     EXPECT_CALL(*m_mediaKeysCapabilitiesModuleMock, getSupportedKeySystems(_, _, _, _))

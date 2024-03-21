@@ -239,3 +239,13 @@ TEST_F(RialtoClientMediaKeysKeySessionTest, GetDrmTime)
 
     EXPECT_EQ(m_mediaKeys->getDrmTime(drmTime), m_mediaKeyErrorStatus);
 }
+
+/**
+ * Test that a ReleaseKeySession forwards the request to IPC and returns the error status.
+ */
+TEST_F(RialtoClientMediaKeysKeySessionTest, ReleaseKeySession)
+{
+    EXPECT_CALL(*m_mediaKeysIpcMock, releaseKeySession(m_kKeySessionId)).WillOnce(Return(m_mediaKeyErrorStatus));
+
+    EXPECT_EQ(m_mediaKeys->releaseKeySession(m_kKeySessionId), m_mediaKeyErrorStatus);
+}

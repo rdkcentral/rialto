@@ -513,6 +513,11 @@ MediaKeyErrorStatus MediaKeysServerInternal::getCdmKeySessionId(int32_t keySessi
     return status;
 }
 
+MediaKeyErrorStatus MediaKeysServerInternal::releaseKeySession(int32_t keySessionId)
+{
+    return MediaKeyErrorStatus::BAD_SESSION_ID;
+}
+
 MediaKeyErrorStatus MediaKeysServerInternal::getCdmKeySessionIdInternal(int32_t keySessionId, std::string &cdmKeySessionId)
 {
     auto sessionIter = m_mediaKeySessions.find(keySessionId);

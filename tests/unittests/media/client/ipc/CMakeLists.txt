@@ -78,6 +78,7 @@ add_gtests (
         mediaKeysIpc/GetLdlSessionsLimitTest.cpp
         mediaKeysIpc/GetLastDrmErrorTest.cpp
         mediaKeysIpc/GetDrmTimeTest.cpp
+        mediaKeysIpc/ReleaseKeySessionTest.cpp
 
         # MediaKeysCapabilitiesIpc tests
         mediaKeysCapabilitiesIpc/CreateTest.cpp

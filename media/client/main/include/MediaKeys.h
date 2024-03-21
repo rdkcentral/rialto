@@ -111,6 +111,8 @@ public:
 
     MediaKeyErrorStatus getCdmKeySessionId(int32_t keySessionId, std::string &cdmKeySessionId) override;
 
+    MediaKeyErrorStatus releaseKeySession(int32_t keySessionId) override;
+
 private:
     /**
      * @brief The media keys ipc object.

@@ -114,6 +114,8 @@ public:
 
     MediaKeyErrorStatus getCdmKeySessionId(int32_t keySessionId, std::string &cdmKeySessionId) override;
 
+    MediaKeyErrorStatus releaseKeySession(int32_t keySessionId) override;
+
     MediaKeyErrorStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps) override;
 
     // TODO(RIALTO-127): Remove
