@@ -135,6 +135,16 @@ public:
      * @retval the new IOcdmSession object or null on error.
      */
     virtual std::unique_ptr<IOcdmSession> createSession(IOcdmSessionClient *client) const = 0;
+
+    /**
+     * @brief Gets support server certificate.
+     *
+     * Some DRMs (e.g. WideVine) use a system-wide server certificate. This method
+     * gets if system has support for that certificate.
+     *
+     * @retval true if server certificate is supported
+     */
+    virtual bool supportsServerCertificate() const = 0;
 };
 
 }; // namespace firebolt::rialto::wrappers

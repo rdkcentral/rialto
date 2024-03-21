@@ -68,6 +68,7 @@ add_gtests (
 
         mediaKeysCapabilities/CreateTest.cpp
         mediaKeysCapabilities/KeySystemsTest.cpp
+        mediaKeysCapabilities/CertificateTest.cpp
 
         mediaKeySession/base/MediaKeySessionTestBase.cpp
         mediaKeySession/CreateTest.cpp

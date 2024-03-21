@@ -457,6 +457,14 @@ createGetSupportedKeySystemVersionRequest(const std::string &keySystem)
     return request;
 }
 
+::firebolt::rialto::IsServerCertificateSupportedRequest
+createIsServerCertificateSupportedRequest(const std::string &keySystem)
+{
+    ::firebolt::rialto::IsServerCertificateSupportedRequest request;
+    request.set_key_system(keySystem.c_str());
+    return request;
+}
+
 ::firebolt::rialto::GetSharedMemoryRequest createGetSharedMemoryRequest()
 {
     return ::firebolt::rialto::GetSharedMemoryRequest();

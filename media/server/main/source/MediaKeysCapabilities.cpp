@@ -158,7 +158,14 @@ bool MediaKeysCapabilities::getSupportedKeySystemVersion(const std::string &keyS
 
 bool MediaKeysCapabilities::isServerCertificateSupported(const std::string &keySystem)
 {
-    return false;
+    std::shared_ptr<firebolt::rialto::wrappers::IOcdmSystem> ocdmSystem =
+        m_ocdmSystemFactory->createOcdmSystem(keySystem);
+    if (!ocdmSystem)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to create the ocdm system object");
+        return false;
+    }
+    return ocdmSystem->supportsServerCertificate();
 }
 
 }; // namespace firebolt::rialto::server

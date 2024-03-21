@@ -402,6 +402,14 @@ struct GetSupportedKeySystemVersion
     static constexpr auto m_kFunction{&Stub::getSupportedKeySystemVersion};
 };
 
+struct IsServerCertificateSupported
+{
+    using RequestType = ::firebolt::rialto::IsServerCertificateSupportedRequest;
+    using ResponseType = ::firebolt::rialto::IsServerCertificateSupportedResponse;
+    using Stub = ::firebolt::rialto::MediaKeysCapabilitiesModule_Stub;
+    static constexpr auto m_kFunction{&Stub::isServerCertificateSupported};
+};
+
 // control module
 struct GetSharedMemory
 {

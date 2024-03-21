@@ -94,6 +94,8 @@ namespace firebolt::rialto::server::ct
 ::firebolt::rialto::SupportsKeySystemRequest createSupportsKeySystemRequest(const std::string &keySystem);
 ::firebolt::rialto::GetSupportedKeySystemVersionRequest
 createGetSupportedKeySystemVersionRequest(const std::string &keySystem);
+::firebolt::rialto::IsServerCertificateSupportedRequest
+createIsServerCertificateSupportedRequest(const std::string &keySystem);
 
 // control module
 ::firebolt::rialto::GetSharedMemoryRequest createGetSharedMemoryRequest();

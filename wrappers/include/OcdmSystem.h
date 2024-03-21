@@ -60,6 +60,7 @@ public:
     MediaKeyErrorStatus getSecureStoreHash(uint8_t secureStoreHash[], uint32_t secureStoreHashLength) override;
     MediaKeyErrorStatus getDrmTime(uint64_t *time) override;
     std::unique_ptr<IOcdmSession> createSession(IOcdmSessionClient *client) const override;
+    bool supportsServerCertificate() const override;
 
 private:
     /**

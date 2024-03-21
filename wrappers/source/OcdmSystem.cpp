@@ -114,4 +114,9 @@ std::unique_ptr<IOcdmSession> OcdmSystem::createSession(IOcdmSessionClient *clie
     return ocdmSession;
 }
 
+bool OcdmSystem::supportsServerCertificate() const
+{
+    return OpenCDMBool::OPENCDM_BOOL_TRUE == opencdm_system_supports_server_certificate(m_systemHandle);
+}
+
 }; // namespace firebolt::rialto::wrappers
