@@ -118,6 +118,8 @@ message AttachSourceRequest {
         STREAM_FORMAT_RAW         = 1;
         STREAM_FORMAT_AVC         = 2;
         STREAM_FORMAT_BYTE_STREAM = 3;
+        STREAM_FORMAT_HVC1        = 4;
+        STREAM_FORMAT_HEV1        = 5;
     }
 
     enum ConfigType {

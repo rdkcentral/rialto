@@ -283,7 +283,9 @@ enum class StreamFormat
     UNDEFINED,
     RAW,
     AVC,
-    BYTE_STREAM
+    BYTE_STREAM,
+    HVC1,
+    HEV1
 };
 
 /**

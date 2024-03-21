@@ -1159,9 +1159,18 @@ MediaPipelineIpc::convertStreamFormat(const firebolt::rialto::StreamFormat &stre
     {
         return firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_BYTE_STREAM;
     }
+    case firebolt::rialto::StreamFormat::HVC1:
+    {
+        return firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_HVC1;
+    }
+    case firebolt::rialto::StreamFormat::HEV1:
+    {
+        return firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_HEV1;
+    }
     }
     return firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_UNDEFINED;
 }
+
 
 firebolt::rialto::AttachSourceRequest_CodecData_Type
 MediaPipelineIpc::convertCodecDataType(const firebolt::rialto::CodecDataType &codecDataType)
