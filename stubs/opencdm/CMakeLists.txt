@@ -84,12 +84,6 @@ set_target_properties(
                    VERSION    ${CMAKE_PROJECT_VERSION}
         )
 
-target_link_libraries(
-        ocdm
-
-        PRIVATE
-        ${GStreamerApp_LIBRARIES}
-
 install(FILES "${PROJECT_CONFIG_FILE}"
   DESTINATION ${CMAKE_MODULE_PATH}
   COMPONENT development
