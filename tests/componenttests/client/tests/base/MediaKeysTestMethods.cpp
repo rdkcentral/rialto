@@ -29,7 +29,7 @@
 namespace
 {
 const std::string kKeySystemWidevine{"com.widevine.alpha"};
-const std::string kKeySystemPlayready{"com.microsoft.playready"};
+const std::string kKeySystemPlayready{"com.netflix.playready"};
 constexpr int32_t kMediaKeysHandle{1};
 constexpr firebolt::rialto::KeySessionType kSessionTypeTemp{firebolt::rialto::KeySessionType::TEMPORARY};
 constexpr bool kIsNotLdl{false};
