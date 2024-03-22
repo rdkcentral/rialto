@@ -58,7 +58,8 @@ public:
     {
         std::unique_ptr<IMediaKeySession> mediaKeySession;
         uint32_t bufCounter = 0;
-        bool shouldBeDestroyed = false;
+        bool shouldBeClosed = false;
+        bool shouldBeReleased = false;
     };
     /**
      * @brief The constructor.
@@ -318,6 +319,15 @@ private:
      * @retval true if key system is Playready
      */
     bool isNetflixPlayreadyKeySystemInternal(int32_t keySessionId) const;
+
+    /**
+     * @brief Releases a key session internally, only to be called on the main thread.
+     *
+     * @param[in] keySessionId : The key session id.
+     *
+     * @retval an error status.
+     */
+    MediaKeyErrorStatus releaseKeySessionInternal(int32_t keySessionId);
 
     void incrementSessionIdUsageCounterInternal(int32_t keySessionId);
     void decrementSessionIdUsageCounterInternal(int32_t keySessionId);

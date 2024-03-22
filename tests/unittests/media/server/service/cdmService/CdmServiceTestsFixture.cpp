@@ -205,6 +205,11 @@ void CdmServiceTests::mediaKeysWillGetDrmTimeWithStatus(firebolt::rialto::MediaK
     EXPECT_CALL(m_mediaKeysMock, getDrmTime(_)).WillOnce(Return(status));
 }
 
+void CdmServiceTests::mediaKeysWillReleaseKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
+{
+    EXPECT_CALL(m_mediaKeysMock, releaseKeySession(kKeySessionId)).WillOnce(Return(status));
+}
+
 void CdmServiceTests::mediaKeysWillDecryptDeprecatedWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
 {
     EXPECT_CALL(m_mediaKeysMock, hasSession(kKeySessionId)).WillOnce(Return(true));
@@ -379,6 +384,11 @@ void CdmServiceTests::getDrmTimeShouldReturnStatus(firebolt::rialto::MediaKeyErr
 {
     uint64_t drmTime;
     EXPECT_EQ(status, m_sut.getDrmTime(kMediaKeysHandle, drmTime));
+}
+
+void CdmServiceTests::releaseKeySessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status)
+{
+    EXPECT_EQ(status, m_sut.releaseKeySession(kMediaKeysHandle, kKeySessionId));
 }
 
 void CdmServiceTests::isNetflixPlayreadyKeySystemShouldReturn(bool result)

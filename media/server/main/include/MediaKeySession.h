@@ -152,6 +152,11 @@ private:
     bool m_isSessionConstructed;
 
     /**
+     * @brief Is the ocdm session closed.
+     */
+    bool m_isSessionClosed;
+
+    /**
      * @brief Set to true if generateRequest has complete and waiting for license response.
      */
     std::atomic<bool> m_licenseRequested;

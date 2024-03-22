@@ -79,6 +79,8 @@ public:
     void cdmServiceWillFailToGetLastDrmError();
     void cdmServiceWillGetDrmTime();
     void cdmServiceWillFailToGetDrmTime();
+    void cdmServiceWillReleaseKeySession();
+    void cdmServiceWillFailToReleaseKeySession();
 
     void mediaClientWillSendLicenseRequestEvent();
     void mediaClientWillSendLicenseRenewalEvent();
@@ -124,6 +126,8 @@ public:
     void sendGetLastDrmErrorRequestAndReceiveErrorResponse();
     void sendGetDrmTimeRequestAndReceiveResponse();
     void sendGetDrmTimeRequestAndReceiveErrorResponse();
+    void sendReleaseKeySessionRequestAndReceiveResponse();
+    void sendReleaseKeySessionRequestAndReceiveErrorResponse();
 
     void sendLicenseRequestEvent();
     void sendLicenseRenewalEvent();

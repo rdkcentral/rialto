@@ -66,6 +66,7 @@ public:
     MediaKeyErrorStatus getLdlSessionsLimit(int mediaKeysHandle, uint32_t &ldlLimit) override;
     MediaKeyErrorStatus getLastDrmError(int mediaKeysHandle, int32_t keySessionId, uint32_t &errorCode) override;
     MediaKeyErrorStatus getDrmTime(int mediaKeysHandle, uint64_t &drmTime) override;
+    MediaKeyErrorStatus releaseKeySession(int mediaKeysHandle, int32_t keySessionId) override;
 
     std::vector<std::string> getSupportedKeySystems() override;
     bool supportsKeySystem(const std::string &keySystem) override;

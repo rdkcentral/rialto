@@ -371,6 +371,20 @@ MediaKeyErrorStatus CdmService::getDrmTime(int mediaKeysHandle, uint64_t &drmTim
     return mediaKeysIter->second->getDrmTime(drmTime);
 }
 
+MediaKeyErrorStatus CdmService::releaseKeySession(int mediaKeysHandle, int32_t keySessionId)
+{
+    RIALTO_SERVER_LOG_DEBUG("CdmService requested to release key session: %d", mediaKeysHandle);
+
+    std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
+    auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
+    if (mediaKeysIter == m_mediaKeys.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Media keys handle: %d does not exists", mediaKeysHandle);
+        return MediaKeyErrorStatus::FAIL;
+    }
+    return mediaKeysIter->second->releaseKeySession(keySessionId);
+}
+
 std::vector<std::string> CdmService::getSupportedKeySystems()
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to getSupportedKeySystems");

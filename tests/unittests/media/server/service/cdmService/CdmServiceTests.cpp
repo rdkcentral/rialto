@@ -648,6 +648,32 @@ TEST_F(CdmServiceTests, shouldFailToGetDrmTimeWithStatusWhenMediaKeysFails)
     destroyMediaKeysShouldSucceed();
 }
 
+TEST_F(CdmServiceTests, shouldReleaseKeySession)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysFactoryWillCreateMediaKeys();
+    createMediaKeysShouldSucceed();
+    mediaKeysWillReleaseKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    releaseKeySessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    destroyMediaKeysShouldSucceed();
+}
+
+TEST_F(CdmServiceTests, shouldFailToReleaseKeySessionWhenNoMediaKeys)
+{
+    triggerSwitchToActiveSuccess();
+    releaseKeySessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::FAIL);
+}
+
+TEST_F(CdmServiceTests, shouldFailToReleaseKeySessionWhenMediaKeysFails)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysFactoryWillCreateMediaKeys();
+    createMediaKeysShouldSucceed();
+    mediaKeysWillReleaseKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE);
+    releaseKeySessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE);
+    destroyMediaKeysShouldSucceed();
+}
+
 TEST_F(CdmServiceTests, shouldGetNoKeySystemsFromGetSupportedKeySystemsInInactiveState)
 {
     getSupportedKeySystemsReturnNon();
