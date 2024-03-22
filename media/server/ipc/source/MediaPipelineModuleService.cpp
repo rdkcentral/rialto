@@ -149,6 +149,14 @@ firebolt::rialto::StreamFormat convertStreamFormat(const firebolt::rialto::Attac
     {
         return firebolt::rialto::StreamFormat::BYTE_STREAM;
     }
+    case firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_HVC1:
+    {
+        return firebolt::rialto::StreamFormat::HVC1;
+    }
+    case firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_HEV1:
+    {
+        return firebolt::rialto::StreamFormat::HEV1;
+    }
     default:
         return firebolt::rialto::StreamFormat::UNDEFINED;
     }

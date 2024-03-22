@@ -21,6 +21,7 @@
 #define GENERIC_TASKS_TESTS_BASE_H_
 
 #include "MediaCommon.h"
+#include <string>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -124,8 +125,9 @@ protected:
     void checkAudioSourceAttachedWithDrm();
     void shouldAttachAudioSourceWithAudioSpecificConf();
     void triggerAttachOpusAudioSourceWithAudioSpecificConf();
-    void shouldAttachVideoSource();
-    void triggerAttachVideoSource();
+    void shouldAttachVideoSource(const std::string &mime, const std::string &alignment, const std::string &format);
+    void triggerAttachVideoSource(const std::string &mimeType, firebolt::rialto::SegmentAlignment segmentAligment,
+                                  firebolt::rialto::StreamFormat streamFormat);
     void checkVideoSourceAttached();
     void checkSubtitleSourceAttached();
     void triggerAttachSubtitleSource();

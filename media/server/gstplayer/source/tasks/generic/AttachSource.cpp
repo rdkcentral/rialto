@@ -90,7 +90,9 @@ protected:
         static const std::unordered_map<firebolt::rialto::StreamFormat, std::string> formatMap =
             {{firebolt::rialto::StreamFormat::RAW, "raw"},
              {firebolt::rialto::StreamFormat::AVC, "avc"},
-             {firebolt::rialto::StreamFormat::BYTE_STREAM, "byte-stream"}};
+             {firebolt::rialto::StreamFormat::BYTE_STREAM, "byte-stream"},
+             {firebolt::rialto::StreamFormat::HVC1, "hvc1"},
+             {firebolt::rialto::StreamFormat::HEV1, "hev1"}};
 
         auto formatMapIt = formatMap.find(m_attachedSource.getStreamFormat());
         if (formatMapIt != formatMap.end())

@@ -731,12 +731,16 @@ void GenericTasksTestsBase::triggerAttachOpusAudioSourceWithAudioSpecificConf()
     task.execute();
 }
 
-void GenericTasksTestsBase::shouldAttachVideoSource()
+void GenericTasksTestsBase::shouldAttachVideoSource(const std::string &mime, const std::string &alignment,
+                                                    const std::string &format)
 {
     gpointer memory = nullptr;
     expectSetGenericVideoCaps();
-    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsNewEmptySimple(StrEq("video/x-h264")))
-        .WillOnce(Return(&testContext->m_gstCaps1));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstCapsSetSimpleStringStub(&testContext->m_gstCaps1, StrEq("alignment"), _, StrEq(alignment)));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstCapsSetSimpleStringStub(&testContext->m_gstCaps1, StrEq("stream-format"), _, StrEq(format)));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsNewEmptySimple(StrEq(mime))).WillOnce(Return(&testContext->m_gstCaps1));
     EXPECT_CALL(*testContext->m_glibWrapper, gMemdup(arrayMatcher(kCodecDataBuffer->data), kCodecDataBuffer->data.size()))
         .WillOnce(Return(memory));
     EXPECT_CALL(*testContext->m_gstWrapper, gstBufferNewWrapped(memory, kCodecDataBuffer->data.size()))
@@ -746,12 +750,13 @@ void GenericTasksTestsBase::shouldAttachVideoSource()
     EXPECT_CALL(*testContext->m_gstWrapper, gstBufferUnref(&(testContext->m_videoBuffer)));
 }
 
-void GenericTasksTestsBase::triggerAttachVideoSource()
+void GenericTasksTestsBase::triggerAttachVideoSource(const std::string &mimeType,
+                                                     firebolt::rialto::SegmentAlignment segmentAligment,
+                                                     firebolt::rialto::StreamFormat streamFormat)
 {
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
-        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>("video/h264", false, kWidth, kHeight,
-                                                                             firebolt::rialto::SegmentAlignment::AU,
-                                                                             firebolt::rialto::StreamFormat::AVC,
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>(mimeType, false, kWidth, kHeight,
+                                                                             segmentAligment, streamFormat,
                                                                              kCodecDataBuffer);
     firebolt::rialto::server::tasks::generic::AttachSource task{testContext->m_context,
                                                                 testContext->m_gstWrapper,
@@ -794,6 +799,10 @@ void GenericTasksTestsBase::checkSubtitleSourceAttached()
 void GenericTasksTestsBase::shouldAttachVideoSourceWithStringCodecData()
 {
     expectSetGenericVideoCaps();
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstCapsSetSimpleStringStub(&testContext->m_gstCaps1, StrEq("alignment"), _, StrEq("au")));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstCapsSetSimpleStringStub(&testContext->m_gstCaps1, StrEq("stream-format"), _, StrEq("avc")));
     EXPECT_CALL(*testContext->m_gstWrapper, gstCapsNewEmptySimple(StrEq("video/x-h264")))
         .WillOnce(Return(&testContext->m_gstCaps1));
     EXPECT_CALL(*testContext->m_gstWrapper, gstCapsSetSimpleStringStub(&testContext->m_gstCaps1, StrEq("codec_data"),
@@ -873,6 +882,10 @@ void GenericTasksTestsBase::shouldAttachVideoSourceWithDolbyVisionSource()
 {
     gpointer memory = nullptr;
     expectSetGenericVideoCaps();
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstCapsSetSimpleStringStub(&testContext->m_gstCaps1, StrEq("alignment"), _, StrEq("au")));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstCapsSetSimpleStringStub(&testContext->m_gstCaps1, StrEq("stream-format"), _, StrEq("avc")));
     EXPECT_CALL(*testContext->m_gstWrapper, gstCapsNewEmptySimple(StrEq("video/x-h265")))
         .WillOnce(Return(&testContext->m_gstCaps1));
     EXPECT_CALL(*testContext->m_glibWrapper, gMemdup(arrayMatcher(kCodecDataBuffer->data), kCodecDataBuffer->data.size()))
@@ -910,10 +923,6 @@ void GenericTasksTestsBase::expectSetGenericVideoCaps()
                 gstCapsSetSimpleIntStub(&testContext->m_gstCaps1, StrEq("width"), G_TYPE_INT, kWidth));
     EXPECT_CALL(*testContext->m_gstWrapper,
                 gstCapsSetSimpleIntStub(&testContext->m_gstCaps1, StrEq("height"), G_TYPE_INT, kHeight));
-    EXPECT_CALL(*testContext->m_gstWrapper,
-                gstCapsSetSimpleStringStub(&testContext->m_gstCaps1, StrEq("alignment"), _, StrEq("au")));
-    EXPECT_CALL(*testContext->m_gstWrapper,
-                gstCapsSetSimpleStringStub(&testContext->m_gstCaps1, StrEq("stream-format"), _, StrEq("avc")));
     EXPECT_CALL(*testContext->m_gstWrapper, gstCapsToString(&testContext->m_gstCaps1))
         .WillOnce(Return(&testContext->m_capsStr));
     EXPECT_CALL(*testContext->m_glibWrapper, gFree(&testContext->m_capsStr));
