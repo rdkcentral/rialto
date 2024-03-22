@@ -116,7 +116,7 @@ void MediaKeysTestMethods::willTeardown()
     EXPECT_CALL(m_ocdmSessionMock, close()).WillOnce(Return(MediaKeyErrorStatus::OK));
 }
 
-void MediaKeysTestMethods::willDestruct()
+void MediaKeysTestMethods::willRelease()
 {
     EXPECT_CALL(m_ocdmSessionMock, destructSession()).WillOnce(Return(MediaKeyErrorStatus::OK));
 }

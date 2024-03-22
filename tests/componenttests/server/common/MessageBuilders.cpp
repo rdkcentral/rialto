@@ -436,6 +436,14 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
+::firebolt::rialto::ReleaseKeySessionRequest createReleaseKeySessionRequest(int mediaKeysHandle, int keySessionId)
+{
+    ::firebolt::rialto::ReleaseKeySessionRequest request;
+    request.set_media_keys_handle(mediaKeysHandle);
+    request.set_key_session_id(keySessionId);
+    return request;
+}
+
 ::firebolt::rialto::GetSupportedKeySystemsRequest createGetSupportedKeySystemsRequest()
 {
     ::firebolt::rialto::GetSupportedKeySystemsRequest request;

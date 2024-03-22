@@ -53,6 +53,8 @@ public:
     void willCloseKeySessionNetflix();
     void closeKeySessionNetflix();
 
+    void releaseKeySession();
+
     void destroyMediaKeysRequest();
 
     const std::vector<unsigned char> kResponse{4, 1, 3};
@@ -223,6 +225,17 @@ void SessionReadyForDecryptionTest::closeKeySessionNetflix()
                        { EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK); });
 }
 
+void SessionReadyForDecryptionTest::releaseKeySession()
+{
+    auto request{createReleaseKeySessionRequest(m_mediaKeysHandle, m_mediaKeySessionId)};
+
+    ConfigureAction<ReleaseKeySession>(m_clientStub)
+        .send(request)
+        .expectSuccess()
+        .matchResponse([&](const firebolt::rialto::ReleaseKeySessionResponse &resp)
+                       { EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK); });
+}
+
 void SessionReadyForDecryptionTest::destroyMediaKeysRequest()
 {
     auto request{createDestroyMediaKeysRequest(m_mediaKeysHandle)};
@@ -273,6 +286,7 @@ void SessionReadyForDecryptionTest::destroyMediaKeysRequest()
  *
  *  Step 5: Destroy media keys
  *   Destroy instance of MediaKeys.
+ *   Expect that session is released automatically, if releaseKeySession is not called earlier
  *   Expect that media keys is destroyed on the server.
  *
  * Test Tear-down:
@@ -303,10 +317,10 @@ TEST_F(SessionReadyForDecryptionTest, shouldUpdateWidevine)
 
     // Step 4: Close session
     willTeardown();
-    willDestruct();
     closeKeySessionWidevine();
 
     // Step 5: Destroy media keys
+    willRelease();
     destroyMediaKeysRequest();
 }
 
@@ -359,6 +373,7 @@ TEST_F(SessionReadyForDecryptionTest, shouldUpdateWidevine)
  *
  *  Step 4: Destroy media keys
  *   Destroy instance of MediaKeys.
+ *   Expect that session is released automatically, if releaseKeySession is not called earlier
  *   Expect that media keys is destroyed on the server.
  *
  * Test Tear-down:
@@ -385,12 +400,95 @@ TEST_F(SessionReadyForDecryptionTest, shouldUpdatNetflix)
     updateSessionNetflix();
 
     // Step 3: Close session
-    willDestruct();
     willCloseKeySessionNetflix();
     closeKeySessionNetflix();
 
     // Step 4: Destroy media keys
+    willRelease();
     destroyMediaKeysRequest();
 }
 
+/*
+ * Component Test: Session initalised and released correctly
+ * Test Objective:
+ *  Test if session is released correctly after sending ReleaseKeySession
+ *
+ * Sequence Diagrams:
+ *  Create MKS - Cobalt/OCDM, Update MKS - Cobalt/OCDM, "Destroy" MKS - Cobalt/OCDM
+ *   - https://wiki.rdkcentral.com/display/ASP/Rialto+Media+Key+Session+Management+Design
+ *
+ * Test Setup:
+ *  Language: C++
+ *  Testing Framework: Google Test
+ *  Components: MediaKeys
+ *
+ * Test Initialize:
+ *   RialtoServerComponentTest::RialtoServerComponentTest() will set up wrappers and
+ *      starts rialtoServer running in its own thread
+ *   send a CreateMediaKeys message to rialtoServer
+ *   expect a "createSession" call (to OCDM mock)
+ *   send a CreateKeySession message to rialtoServer
+ *
+ *  Step 1: Generate license request
+ *   Server notifies the client of license request.
+ *   Expect that the license request notification is propagated to the client.
+ *
+ *  Step 3: Update session
+ *   updateSession with a key.
+ *   Expect that updateSession is propagated to the server.
+ *   Api call returns with success.
+ *   Server notifies the client of key statuses changed.
+ *   Expect that the key statuses changed notification is propagated to the client.
+ *
+ *  Step 4: Close session
+ *   closeSession.
+ *   Expect that closeSession is propagated to the server.
+ *   Api call returns with success.
+ *
+ *  Step 5: Release session
+ *   releaseKeySession
+ *   Expect that session is released
+ *   Api call returns with success.
+ *
+ *  Step 6: Destroy media keys
+ *   Destroy instance of MediaKeys.
+ *   Expect that media keys is destroyed on the server.
+ *
+ * Test Tear-down:
+ *  Server is terminated.
+ *
+ * Expected Results:
+ *  For a widevine key system, the application can create new sessions, generate license
+ *  requests and update keys ready for decryption of content.
+ *
+ * Code:
+ */
+TEST_F(SessionReadyForDecryptionTest, shouldReleaseKeySession)
+{
+    createMediaKeysWidevine();
+    ocdmSessionWillBeCreated();
+    createKeySession();
+
+    // Step 1: Generate license request
+    willGenerateRequestWidevine();
+    generateRequestWidevine();
+
+    // Step 2: process challenge from OCDM
+    processChallengeWidevine();
+
+    // Step 3: Update session
+    willUpdateSessionWidevine();
+    updateSessionWidevine();
+
+    // Step 4: Close session
+    willTeardown();
+    closeKeySessionWidevine();
+
+    // Step 5: Release session
+    willRelease();
+    releaseKeySession();
+
+    // Step 6: Destroy media keys
+    destroyMediaKeysRequest();
+}
 } // namespace firebolt::rialto::server::ct

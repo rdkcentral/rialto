@@ -45,7 +45,7 @@ public:
     void updateSessionNetflix();
 
     void willTeardown();
-    void willDestruct();
+    void willRelease();
 
 private:
     void createMediaKeys(const ::firebolt::rialto::CreateMediaKeysRequest &request);

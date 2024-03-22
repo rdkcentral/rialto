@@ -88,6 +88,7 @@ namespace firebolt::rialto::server::ct
 ::firebolt::rialto::GetKeyStoreHashRequest createGetKeyStoreHashRequest(int mediaKeysHandle);
 ::firebolt::rialto::GetLdlSessionsLimitRequest createGetLdlSessionsLimitRequest(int mediaKeysHandle);
 ::firebolt::rialto::GetDrmTimeRequest createGetDrmTimeRequest(int mediaKeysHandle);
+::firebolt::rialto::ReleaseKeySessionRequest createReleaseKeySessionRequest(int mediaKeysHandle, int keySessionId);
 
 // media keys capabilities module
 ::firebolt::rialto::GetSupportedKeySystemsRequest createGetSupportedKeySystemsRequest();

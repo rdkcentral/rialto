@@ -377,6 +377,14 @@ struct GetDrmTime
     static constexpr auto m_kFunction{&Stub::getDrmTime};
 };
 
+struct ReleaseKeySession
+{
+    using RequestType = ::firebolt::rialto::ReleaseKeySessionRequest;
+    using ResponseType = ::firebolt::rialto::ReleaseKeySessionResponse;
+    using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
+    static constexpr auto m_kFunction{&Stub::releaseKeySession};
+};
+
 // mediakeyscapabilities module
 struct GetSupportedKeySystems
 {
