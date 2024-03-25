@@ -18,7 +18,7 @@
 #
 
 # Run the protoc tool to generate the code
-set( Protobuf_IMPORT_DIRS "${CMAKE_SYSROOT}/usr/include" "${CMAKE_CURRENT_LIST_DIR}/../../../../ipc/common/proto/" )
+set( Protobuf_IMPORT_DIRS "${PROTOBUF_INCLUDE_PATH}" "${CMAKE_CURRENT_LIST_DIR}/../../../../ipc/common/proto/" )
 protobuf_generate_cpp( PROTO_SRCS PROTO_HEADERS ../proto/testmodule.proto )
 
 # Find includes in corresponding build directories

@@ -143,6 +143,10 @@ if( PROTOC_PATH )
     set_target_properties( protobuf::protoc PROPERTIES IMPORTED_LOCATION "${PROTOC_PATH}" )
 endif()
 
+if( NOT PROTOBUF_INCLUDE_PATH )
+    set( PROTOBUF_INCLUDE_PATH "${CMAKE_SYSROOT}/usr/local/include" )
+endif()
+
 # Import protobuf package
 find_package( Protobuf REQUIRED )
 
