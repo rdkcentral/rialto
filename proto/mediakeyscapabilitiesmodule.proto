@@ -68,6 +68,21 @@ message GetSupportedKeySystemVersionResponse {
   optional string version = 1;
 }
 
+/**
+ * @fn bool isServerCertificateSupported()
+ * @brief Gets support server certificate.
+ *
+ * @param[in]  key_system   The key system to check.
+ *
+ * @returns true if supported.
+ */
+message IsServerCertificateSupportedRequest {
+  optional string key_system = 1;
+}
+message IsServerCertificateSupportedResponse {
+  optional bool is_supported = 1;
+}
+
 service MediaKeysCapabilitiesModule {
     /**
      * @brief Returns the EME key systems supported by Rialto.
@@ -88,5 +103,12 @@ service MediaKeysCapabilitiesModule {
      * @see GetSupportedKeySystemVersionRequest
      */
     rpc getSupportedKeySystemVersion(GetSupportedKeySystemVersionRequest) returns (GetSupportedKeySystemVersionResponse) {
+    }
+
+    /**
+     * @brief Gets support server certificate.
+     * @see IsServerCertificateSupportedRequest
+     */
+    rpc isServerCertificateSupported(IsServerCertificateSupportedRequest) returns (IsServerCertificateSupportedResponse) {
     }
 }

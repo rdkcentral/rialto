@@ -100,7 +100,7 @@ public:
 
     MediaKeyErrorStatus selectKeyId(const std::vector<uint8_t> &keyId) override;
 
-    bool isPlayreadyKeySystem() const override;
+    bool isNetflixPlayreadyKeySystem() const override;
 
     void onProcessChallenge(const char url[], const uint8_t challenge[], const uint16_t challengeLength) override;
 
@@ -150,6 +150,11 @@ private:
      * @brief Is the ocdm session constructed.
      */
     bool m_isSessionConstructed;
+
+    /**
+     * @brief Is the ocdm session closed.
+     */
+    bool m_isSessionClosed;
 
     /**
      * @brief Set to true if generateRequest has complete and waiting for license response.

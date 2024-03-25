@@ -29,7 +29,7 @@
 namespace
 {
 const std::string kKeySystemWidevine{"com.widevine.alpha"};
-const std::string kKeySystemPlayready{"com.microsoft.playready"};
+const std::string kKeySystemPlayready{"com.netflix.playready"};
 constexpr int32_t kMediaKeysHandle{1};
 constexpr firebolt::rialto::KeySessionType kSessionTypeTemp{firebolt::rialto::KeySessionType::TEMPORARY};
 constexpr bool kIsNotLdl{false};
@@ -586,6 +586,19 @@ void MediaKeysTestMethods::getDrmTime()
     EXPECT_EQ(kDrmTime, drmTime);
 }
 
+void MediaKeysTestMethods::shouldReleaseKeySession()
+{
+    EXPECT_CALL(*m_mediaKeysModuleMock,
+                releaseKeySession(_, releaseKeySessionRequestMatcher(kMediaKeysHandle, kKeySessionId), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->releaseKeySessionResponse(kStatusOk)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
+}
+
+void MediaKeysTestMethods::releaseKeySession()
+{
+    EXPECT_EQ(m_mediaKeys->releaseKeySession(kKeySessionId), kStatusOk);
+}
+
 void MediaKeysTestMethods::shouldGetSupportedKeySystems()
 {
     EXPECT_CALL(*m_mediaKeysCapabilitiesModuleMock, getSupportedKeySystems(_, _, _, _))
@@ -660,4 +673,31 @@ void MediaKeysTestMethods::doesNotGetSupportedKeySystemVersion()
     EXPECT_EQ(m_mediaKeysCapabilities->getSupportedKeySystemVersion(kKeySystems[0], version), false);
 }
 
+void MediaKeysTestMethods::shouldSupportServerCertificate()
+{
+    EXPECT_CALL(*m_mediaKeysCapabilitiesModuleMock,
+                isServerCertificateSupported(_, isServerCertificateSupportedRequestMatcher(kKeySystems[0]), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysCapabilitiesModuleMock->supportsServerCertificateResponse(true)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaKeysCapabilitiesModuleMock),
+                                              &MediaKeysCapabilitiesModuleMock::defaultReturn))));
+}
+
+void MediaKeysTestMethods::supportsServerCertificate()
+{
+    EXPECT_TRUE(m_mediaKeysCapabilities->isServerCertificateSupported(kKeySystems[0]));
+}
+
+void MediaKeysTestMethods::shouldNotSupportServerCertificate()
+{
+    EXPECT_CALL(*m_mediaKeysCapabilitiesModuleMock,
+                isServerCertificateSupported(_, isServerCertificateSupportedRequestMatcher(kKeySystems[0]), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysCapabilitiesModuleMock->supportsServerCertificateResponse(false)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaKeysCapabilitiesModuleMock),
+                                              &MediaKeysCapabilitiesModuleMock::defaultReturn))));
+}
+
+void MediaKeysTestMethods::doesNotSupportServerCertificate()
+{
+    EXPECT_FALSE(m_mediaKeysCapabilities->isServerCertificateSupported(kKeySystems[0]));
+}
 } // namespace firebolt::rialto::client::ct

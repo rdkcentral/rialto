@@ -67,6 +67,9 @@ public:
     void willGetSupportedKeySystemVersionRequestFail();
     void getSupportedKeySystemVersionRequestFail();
 
+    void willSupportServerCertificate();
+    void checkIfServerCertificateIsSupported();
+
 private:
     std::shared_ptr<testing::StrictMock<wrappers::OcdmSystemMock>> m_alternateOcdmSystemMock{
         std::make_shared<testing::StrictMock<wrappers::OcdmSystemMock>>()};
@@ -285,6 +288,18 @@ void MediaKeysCapabilitiesTest::getSupportedKeySystemVersionRequestFail()
     ConfigureAction<GetSupportedKeySystemVersion>(m_clientStub).send(request).expectFailure();
 }
 
+void MediaKeysCapabilitiesTest::willSupportServerCertificate()
+{
+    EXPECT_CALL(*m_ocdmSystemFactoryMock, createOcdmSystem(kNetflixKeySystem)).WillOnce(Return(m_ocdmSystemMock));
+    EXPECT_CALL(*m_ocdmSystemMock, supportsServerCertificate()).WillOnce(Return(true));
+}
+
+void MediaKeysCapabilitiesTest::checkIfServerCertificateIsSupported()
+{
+    auto request = createIsServerCertificateSupportedRequest(kNetflixKeySystem);
+    ConfigureAction<IsServerCertificateSupported>(m_clientStub).send(request).expectSuccess();
+}
+
 /*
  * Component Test: MediaKeyCapabilities API
  * Test Objective:
@@ -428,6 +443,12 @@ TEST_F(MediaKeysCapabilitiesTest, getSupportedKeySystemsWithNoneSupportedWorks)
  *   The server should call OCDM getVersion() but it returns failure
  *   The server should respond to the client with the failure indication
  *
+ *  Step C7: Check if Server Certificate is supported
+ *   Expect that IsServerCertificateSupported is propagated to server.
+ *   The server should call createOcdmSystem() on the OCDM system factory for this key system
+ *   The server should call OCDMSystem supportServerCertificate() to check is cert is supported
+ *   The server should respond to the client with value returned by ocdm
+ *
  * Test Teardown:
  *  Server is terminated.
  *
@@ -462,5 +483,9 @@ TEST_F(MediaKeysCapabilitiesTest, testAllApisWithMultipleQueries)
     // Step C6: Get the supported key system version - failure
     willGetSupportedKeySystemVersionRequestFail();
     getSupportedKeySystemVersionRequestFail();
+
+    // Step C7: Check if Server Certificate is supported
+    willSupportServerCertificate();
+    checkIfServerCertificateIsSupported();
 }
 } // namespace firebolt::rialto::server::ct

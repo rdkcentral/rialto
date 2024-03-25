@@ -93,6 +93,11 @@ void CdmServiceTests::getSupportedKeySystemVersionWillFail()
         .WillOnce(DoAll(SetArgReferee<1>(kVersion), Return(false)));
 }
 
+void CdmServiceTests::supportsServerCertificateWillReturnTrue()
+{
+    EXPECT_CALL(m_mediaKeysCapabilitiesMock, isServerCertificateSupported(kKeySystems[0])).WillOnce(Return(true));
+}
+
 void CdmServiceTests::triggerSwitchToActiveSuccess()
 {
     EXPECT_TRUE(m_sut.switchToActive());
@@ -200,6 +205,11 @@ void CdmServiceTests::mediaKeysWillGetDrmTimeWithStatus(firebolt::rialto::MediaK
     EXPECT_CALL(m_mediaKeysMock, getDrmTime(_)).WillOnce(Return(status));
 }
 
+void CdmServiceTests::mediaKeysWillReleaseKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
+{
+    EXPECT_CALL(m_mediaKeysMock, releaseKeySession(kKeySessionId)).WillOnce(Return(status));
+}
+
 void CdmServiceTests::mediaKeysWillDecryptDeprecatedWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
 {
     EXPECT_CALL(m_mediaKeysMock, hasSession(kKeySessionId)).WillOnce(Return(true));
@@ -227,7 +237,7 @@ void CdmServiceTests::mediaKeysWillNotFindMediaKeySession()
 void CdmServiceTests::mediaKeysWillCheckIfKeySystemIsPlayready(bool result)
 {
     EXPECT_CALL(m_mediaKeysMock, hasSession(kKeySessionId)).WillOnce(Return(true));
-    EXPECT_CALL(m_mediaKeysMock, isPlayreadyKeySystem(kKeySessionId)).WillOnce(Return(result));
+    EXPECT_CALL(m_mediaKeysMock, isNetflixPlayreadyKeySystem(kKeySessionId)).WillOnce(Return(result));
 }
 
 void CdmServiceTests::mediaKeysWillPing()
@@ -376,9 +386,14 @@ void CdmServiceTests::getDrmTimeShouldReturnStatus(firebolt::rialto::MediaKeyErr
     EXPECT_EQ(status, m_sut.getDrmTime(kMediaKeysHandle, drmTime));
 }
 
-void CdmServiceTests::isPlayreadyKeySystemShouldReturn(bool result)
+void CdmServiceTests::releaseKeySessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status)
 {
-    EXPECT_EQ(result, m_sut.isPlayreadyKeySystem(kKeySessionId));
+    EXPECT_EQ(status, m_sut.releaseKeySession(kMediaKeysHandle, kKeySessionId));
+}
+
+void CdmServiceTests::isNetflixPlayreadyKeySystemShouldReturn(bool result)
+{
+    EXPECT_EQ(result, m_sut.isNetflixPlayreadyKeySystem(kKeySessionId));
 }
 
 void CdmServiceTests::getSupportedKeySystemsShouldSucceed()
@@ -412,6 +427,16 @@ void CdmServiceTests::getSupportedKeySystemVersionShouldFail()
 {
     std::string returnVersion;
     EXPECT_FALSE(m_sut.getSupportedKeySystemVersion(kKeySystems[0], returnVersion));
+}
+
+void CdmServiceTests::supportsServerCertificateReturnTrue()
+{
+    EXPECT_TRUE(m_sut.isServerCertificateSupported(kKeySystems[0]));
+}
+
+void CdmServiceTests::supportsServerCertificateReturnFalse()
+{
+    EXPECT_FALSE(m_sut.isServerCertificateSupported(kKeySystems[0]));
 }
 
 void CdmServiceTests::incrementSessionIdUsageCounter()

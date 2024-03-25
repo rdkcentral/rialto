@@ -78,7 +78,18 @@ public:
  *   Expect that getSupportedKeySystemVersion is propagated to server.
  *   Api call returns with failure.
  *
- *  Step 7: Destroy MediaKeysCapabilities.
+ *  Step 7: Check if system certificate is supported - success
+ *   isServerCertificateSupported.
+ *   Expect that isServerCertificateSupported is propagated to server.
+ *   Api call returns with success.
+ *   Check if system certificate is supported
+ *
+ *  Step 8: Check if system certificate is supported - failure
+ *   isServerCertificateSupported.
+ *   Expect that isServerCertificateSupported is propagated to server.
+ *   Api call returns with failure.
+ *
+ *  Step 9: Destroy MediaKeysCapabilities.
  *
  *
  * Test Teardown:
@@ -115,7 +126,15 @@ TEST_F(MediaKeysCapabilitiesTest, checkSupportedKeySystems)
     MediaKeysTestMethods::shouldNotGetSupportedKeySystemVersion();
     MediaKeysTestMethods::doesNotGetSupportedKeySystemVersion();
 
-    // Step 7: Destroy MediaKeysCabilities.
+    // Step 7: Check if system certificate is supported - success
+    MediaKeysTestMethods::shouldSupportServerCertificate();
+    MediaKeysTestMethods::supportsServerCertificate();
+
+    // Step 8: Check if system certificate is supported - failure
+    MediaKeysTestMethods::shouldNotSupportServerCertificate();
+    MediaKeysTestMethods::doesNotSupportServerCertificate();
+
+    // Step 9: Destroy MediaKeysCabilities.
     MediaKeysTestMethods::destroyMediaKeysCapabilitiesObject();
 }
 } // namespace firebolt::rialto::client::ct

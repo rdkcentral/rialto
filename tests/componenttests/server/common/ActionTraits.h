@@ -377,6 +377,14 @@ struct GetDrmTime
     static constexpr auto m_kFunction{&Stub::getDrmTime};
 };
 
+struct ReleaseKeySession
+{
+    using RequestType = ::firebolt::rialto::ReleaseKeySessionRequest;
+    using ResponseType = ::firebolt::rialto::ReleaseKeySessionResponse;
+    using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
+    static constexpr auto m_kFunction{&Stub::releaseKeySession};
+};
+
 // mediakeyscapabilities module
 struct GetSupportedKeySystems
 {
@@ -400,6 +408,14 @@ struct GetSupportedKeySystemVersion
     using ResponseType = ::firebolt::rialto::GetSupportedKeySystemVersionResponse;
     using Stub = ::firebolt::rialto::MediaKeysCapabilitiesModule_Stub;
     static constexpr auto m_kFunction{&Stub::getSupportedKeySystemVersion};
+};
+
+struct IsServerCertificateSupported
+{
+    using RequestType = ::firebolt::rialto::IsServerCertificateSupportedRequest;
+    using ResponseType = ::firebolt::rialto::IsServerCertificateSupportedResponse;
+    using Stub = ::firebolt::rialto::MediaKeysCapabilitiesModule_Stub;
+    static constexpr auto m_kFunction{&Stub::isServerCertificateSupported};
 };
 
 // control module

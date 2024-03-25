@@ -273,6 +273,18 @@ TEST_F(MediaKeysModuleServiceTests, shouldFailToGetDrmTime)
     sendGetDrmTimeRequestAndReceiveErrorResponse();
 }
 
+TEST_F(MediaKeysModuleServiceTests, shouldReleaseKeySession)
+{
+    cdmServiceWillReleaseKeySession();
+    sendReleaseKeySessionRequestAndReceiveResponse();
+}
+
+TEST_F(MediaKeysModuleServiceTests, shouldFailToReleaseKeySession)
+{
+    cdmServiceWillFailToReleaseKeySession();
+    sendReleaseKeySessionRequestAndReceiveErrorResponse();
+}
+
 TEST_F(MediaKeysModuleServiceTests, shouldSendLicenseRequest)
 {
     mediaClientWillSendLicenseRequestEvent();

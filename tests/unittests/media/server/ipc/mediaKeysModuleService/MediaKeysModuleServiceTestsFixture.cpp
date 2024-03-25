@@ -353,6 +353,19 @@ void MediaKeysModuleServiceTests::cdmServiceWillFailToGetDrmTime()
     EXPECT_CALL(m_cdmServiceMock, getDrmTime(kHardcodedMediaKeysHandle, _)).WillOnce(Return(kErrorStatus));
 }
 
+void MediaKeysModuleServiceTests::cdmServiceWillReleaseKeySession()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_cdmServiceMock, releaseKeySession(kHardcodedMediaKeysHandle, kKeySessionId))
+        .WillOnce(Return(firebolt::rialto::MediaKeyErrorStatus::OK));
+}
+
+void MediaKeysModuleServiceTests::cdmServiceWillFailToReleaseKeySession()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_cdmServiceMock, releaseKeySession(kHardcodedMediaKeysHandle, kKeySessionId)).WillOnce(Return(kErrorStatus));
+}
+
 void MediaKeysModuleServiceTests::mediaClientWillSendLicenseRequestEvent()
 {
     EXPECT_CALL(*m_clientMock, sendEvent(LicenseRequestEventMatcher(kKeySessionId, kHardcodedMediaKeysHandle,
@@ -873,6 +886,30 @@ void MediaKeysModuleServiceTests::sendGetDrmTimeRequestAndReceiveErrorResponse()
     request.set_media_keys_handle(kHardcodedMediaKeysHandle);
 
     m_service->getDrmTime(m_controllerMock.get(), &request, &response, m_closureMock.get());
+    EXPECT_EQ(kErrorStatus, convertMediaKeyErrorStatus(response.error_status()));
+}
+
+void MediaKeysModuleServiceTests::sendReleaseKeySessionRequestAndReceiveResponse()
+{
+    firebolt::rialto::ReleaseKeySessionRequest request;
+    firebolt::rialto::ReleaseKeySessionResponse response;
+
+    request.set_media_keys_handle(kHardcodedMediaKeysHandle);
+    request.set_key_session_id(kKeySessionId);
+
+    m_service->releaseKeySession(m_controllerMock.get(), &request, &response, m_closureMock.get());
+    EXPECT_EQ(firebolt::rialto::MediaKeyErrorStatus::OK, convertMediaKeyErrorStatus(response.error_status()));
+}
+
+void MediaKeysModuleServiceTests::sendReleaseKeySessionRequestAndReceiveErrorResponse()
+{
+    firebolt::rialto::ReleaseKeySessionRequest request;
+    firebolt::rialto::ReleaseKeySessionResponse response;
+
+    request.set_media_keys_handle(kHardcodedMediaKeysHandle);
+    request.set_key_session_id(kKeySessionId);
+
+    m_service->releaseKeySession(m_controllerMock.get(), &request, &response, m_closureMock.get());
     EXPECT_EQ(kErrorStatus, convertMediaKeyErrorStatus(response.error_status()));
 }
 

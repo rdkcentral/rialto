@@ -88,6 +88,10 @@ public:
                 (::google::protobuf::RpcController * controller,
                  const ::firebolt::rialto::GetCdmKeySessionIdRequest *request,
                  ::firebolt::rialto::GetCdmKeySessionIdResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, releaseKeySession,
+                (::google::protobuf::RpcController * controller,
+                 const ::firebolt::rialto::ReleaseKeySessionRequest *request,
+                 ::firebolt::rialto::ReleaseKeySessionResponse *response, ::google::protobuf::Closure *done));
 
     void defaultReturn(::google::protobuf::RpcController *controller, ::google::protobuf::Closure *done)
     {
@@ -237,6 +241,14 @@ public:
         firebolt::rialto::GetDrmTimeResponse response;
         response.set_error_status(convertMediaKeyErrorStatus(status));
         response.set_drm_time(drmTime);
+        return response;
+    }
+
+    ::firebolt::rialto::ReleaseKeySessionResponse
+    releaseKeySessionResponse(const firebolt::rialto::MediaKeyErrorStatus &status)
+    {
+        firebolt::rialto::ReleaseKeySessionResponse response;
+        response.set_error_status(convertMediaKeyErrorStatus(status));
         return response;
     }
 

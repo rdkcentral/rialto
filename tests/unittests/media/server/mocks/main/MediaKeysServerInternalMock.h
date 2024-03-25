@@ -64,10 +64,11 @@ public:
                  GstBuffer *IV, GstBuffer *keyId, uint32_t initWithLast15, GstCaps *caps),
                 (override));
     MOCK_METHOD(bool, hasSession, (int32_t keySessionId), (const, override));
-    MOCK_METHOD(bool, isPlayreadyKeySystem, (int32_t keySessionId), (const, override));
+    MOCK_METHOD(bool, isNetflixPlayreadyKeySystem, (int32_t keySessionId), (const, override));
     MOCK_METHOD(void, incrementSessionIdUsageCounter, (int32_t keySessionId), (override));
     MOCK_METHOD(void, decrementSessionIdUsageCounter, (int32_t keySessionId), (override));
     MOCK_METHOD(void, ping, (std::unique_ptr<IHeartbeatHandler> && heartbeatHandler), (override));
+    MOCK_METHOD(MediaKeyErrorStatus, releaseKeySession, (int32_t keySessionId), (override));
 };
 } // namespace firebolt::rialto::server
 

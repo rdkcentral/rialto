@@ -371,6 +371,20 @@ MediaKeyErrorStatus CdmService::getDrmTime(int mediaKeysHandle, uint64_t &drmTim
     return mediaKeysIter->second->getDrmTime(drmTime);
 }
 
+MediaKeyErrorStatus CdmService::releaseKeySession(int mediaKeysHandle, int32_t keySessionId)
+{
+    RIALTO_SERVER_LOG_DEBUG("CdmService requested to release key session: %d", mediaKeysHandle);
+
+    std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
+    auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
+    if (mediaKeysIter == m_mediaKeys.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Media keys handle: %d does not exists", mediaKeysHandle);
+        return MediaKeyErrorStatus::FAIL;
+    }
+    return mediaKeysIter->second->releaseKeySession(keySessionId);
+}
+
 std::vector<std::string> CdmService::getSupportedKeySystems()
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to getSupportedKeySystems");
@@ -428,6 +442,25 @@ bool CdmService::getSupportedKeySystemVersion(const std::string &keySystem, std:
     return mediaKeysCapabilities->getSupportedKeySystemVersion(keySystem, version);
 }
 
+bool CdmService::isServerCertificateSupported(const std::string &keySystem)
+{
+    RIALTO_SERVER_LOG_DEBUG("CdmService requested to isServerCertificateSupported");
+
+    if (!m_isActive)
+    {
+        RIALTO_SERVER_LOG_ERROR("Skip to check if server cert is supported: Session Server in Inactive state");
+        return false;
+    }
+
+    auto mediaKeysCapabilities = m_mediaKeysCapabilitiesFactory->getMediaKeysCapabilities();
+    if (!mediaKeysCapabilities)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to create the mediaKeysCapabilities object");
+        return false;
+    }
+    return mediaKeysCapabilities->isServerCertificateSupported(keySystem);
+}
+
 MediaKeyErrorStatus CdmService::decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps)
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to decrypt, key session id: %d", keySessionId);
@@ -462,7 +495,7 @@ MediaKeyErrorStatus CdmService::decrypt(int32_t keySessionId, GstBuffer *encrypt
                                           caps);
 }
 
-bool CdmService::isPlayreadyKeySystem(int32_t keySessionId)
+bool CdmService::isNetflixPlayreadyKeySystem(int32_t keySessionId)
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to check if key system is Playready, key session id: %d", keySessionId);
 
@@ -474,7 +507,7 @@ bool CdmService::isPlayreadyKeySystem(int32_t keySessionId)
         RIALTO_SERVER_LOG_ERROR("Media keys handle for mksId: %d does not exists", keySessionId);
         return false;
     }
-    return mediaKeysIter->second->isPlayreadyKeySystem(keySessionId);
+    return mediaKeysIter->second->isNetflixPlayreadyKeySystem(keySessionId);
 }
 
 MediaKeyErrorStatus CdmService::selectKeyId(int32_t keySessionId, const std::vector<uint8_t> &keyId)

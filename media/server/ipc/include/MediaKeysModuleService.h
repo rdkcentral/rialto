@@ -108,6 +108,10 @@ public:
                             const ::firebolt::rialto::GetCdmKeySessionIdRequest *request,
                             ::firebolt::rialto::GetCdmKeySessionIdResponse *response,
                             ::google::protobuf::Closure *done) override;
+    void releaseKeySession(::google::protobuf::RpcController *controller,
+                           const ::firebolt::rialto::ReleaseKeySessionRequest *request,
+                           ::firebolt::rialto::ReleaseKeySessionResponse *response,
+                           ::google::protobuf::Closure *done) override;
 
 private:
     service::ICdmService &m_cdmService;

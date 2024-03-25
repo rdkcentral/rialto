@@ -55,6 +55,7 @@ add_gtests (
         # MediaKeysCapabilities tests
         mediaKeysCapabilities/CreateTest.cpp
         mediaKeysCapabilities/KeySystemsTest.cpp
+        mediaKeysCapabilities/CertificateTest.cpp
 
         # ClientController tests
         clientController/CreateTest.cpp

@@ -191,4 +191,18 @@ MATCHER_P(getSupportedKeySystemVersionRequestMatcher, keySystem, "")
     return (kRequest->key_system() == keySystem);
 }
 
+MATCHER_P(isServerCertificateSupportedRequestMatcher, keySystem, "")
+{
+    const ::firebolt::rialto::IsServerCertificateSupportedRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::IsServerCertificateSupportedRequest *>(arg);
+    return (kRequest->key_system() == keySystem);
+}
+
+MATCHER_P2(releaseKeySessionRequestMatcher, mediaKeysHandle, keySessionId, "")
+{
+    const ::firebolt::rialto::ReleaseKeySessionRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::ReleaseKeySessionRequest *>(arg);
+    return ((kRequest->media_keys_handle() == mediaKeysHandle) && (kRequest->key_session_id() == keySessionId));
+}
+
 #endif // MEDIA_KEYS_PROTO_REQUEST_MATCHERS_H_

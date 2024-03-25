@@ -64,8 +64,8 @@ MediaKeySession::MediaKeySession(const std::string &keySystem, int32_t keySessio
                                  std::weak_ptr<IMediaKeysClient> client, bool isLDL,
                                  const std::shared_ptr<IMainThreadFactory> &mainThreadFactory)
     : m_kKeySystem(keySystem), m_kKeySessionId(keySessionId), m_kSessionType(sessionType), m_mediaKeysClient(client),
-      m_kIsLDL(isLDL), m_isSessionConstructed(false), m_licenseRequested(false), m_ongoingOcdmOperation(false),
-      m_ocdmError(false)
+      m_kIsLDL(isLDL), m_isSessionConstructed(false), m_isSessionClosed(false), m_licenseRequested(false),
+      m_ongoingOcdmOperation(false), m_ocdmError(false)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
@@ -89,7 +89,17 @@ MediaKeySession::~MediaKeySession()
 
     if (m_isSessionConstructed)
     {
-        static_cast<void>(closeKeySession());
+        if (!m_isSessionClosed)
+        {
+            if (MediaKeyErrorStatus::OK != closeKeySession())
+            {
+                RIALTO_SERVER_LOG_ERROR("Failed to close the key session");
+            }
+        }
+        if (MediaKeyErrorStatus::OK != m_ocdmSession->destructSession())
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to destruct the key session");
+        }
     }
 
     m_mainThread->unregisterClient(m_mainThreadClientId);
@@ -116,7 +126,7 @@ MediaKeyErrorStatus MediaKeySession::generateRequest(InitDataType initDataType, 
         else
         {
             m_isSessionConstructed = true;
-            if (isPlayreadyKeySystem())
+            if (isNetflixPlayreadyKeySystem())
             {
                 // Ocdm-playready does not notify onProcessChallenge when complete.
                 // Fetch the challenge manually.
@@ -179,7 +189,7 @@ MediaKeyErrorStatus MediaKeySession::updateSession(const std::vector<uint8_t> &r
     initOcdmErrorChecking();
 
     MediaKeyErrorStatus status;
-    if (isPlayreadyKeySystem())
+    if (isNetflixPlayreadyKeySystem())
     {
         status = m_ocdmSession->storeLicenseData(&responseData[0], responseData.size());
         if (MediaKeyErrorStatus::OK != status)
@@ -248,7 +258,7 @@ MediaKeyErrorStatus MediaKeySession::closeKeySession()
     initOcdmErrorChecking();
 
     MediaKeyErrorStatus status;
-    if (isPlayreadyKeySystem())
+    if (isNetflixPlayreadyKeySystem())
     {
         if (MediaKeyErrorStatus::OK != m_ocdmSession->cancelChallengeData())
         {
@@ -269,19 +279,7 @@ MediaKeyErrorStatus MediaKeySession::closeKeySession()
             RIALTO_SERVER_LOG_ERROR("Failed to Close the key session");
         }
     }
-
-    if (MediaKeyErrorStatus::OK == status)
-    {
-        status = m_ocdmSession->destructSession();
-        if (MediaKeyErrorStatus::OK != status)
-        {
-            RIALTO_SERVER_LOG_ERROR("Failed to destruct the key session");
-        }
-        else
-        {
-            m_isSessionConstructed = false;
-        }
-    }
+    m_isSessionClosed = (MediaKeyErrorStatus::OK == status);
 
     if ((checkForOcdmErrors("closeKeySession")) && (MediaKeyErrorStatus::OK == status))
     {
@@ -394,9 +392,9 @@ MediaKeyErrorStatus MediaKeySession::selectKeyId(const std::vector<uint8_t> &key
     return status;
 }
 
-bool MediaKeySession::isPlayreadyKeySystem() const
+bool MediaKeySession::isNetflixPlayreadyKeySystem() const
 {
-    return m_kKeySystem.find("playready") != std::string::npos;
+    return m_kKeySystem.find("netflix") != std::string::npos;
 }
 
 void MediaKeySession::onProcessChallenge(const char url[], const uint8_t challenge[], const uint16_t challengeLength)

@@ -84,6 +84,11 @@ public:
  *   Expect that removeKeySession is propagated to the server.
  *   Api call returns with success.
  *
+ *  Step 6: Release session
+ *   releaseKeySession.
+ *   Expect that releaseKeySession is propagated to the server.
+ *   Api call returns with success.
+ *
  * Test Teardown:
  *  Terminate MediaKeys.
  *  Server is terminated.
@@ -116,5 +121,9 @@ TEST_F(KeyApisTest, keyManagement)
     // Step 5: Remove session
     MediaKeysTestMethods::shouldRemoveKeySession();
     MediaKeysTestMethods::removeKeySession();
+
+    // Step 6: Release session
+    MediaKeysTestMethods::shouldReleaseKeySession();
+    MediaKeysTestMethods::releaseKeySession();
 }
 } // namespace firebolt::rialto::client::ct

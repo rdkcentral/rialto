@@ -72,4 +72,9 @@ extern "C"
     }
 
     OpenCDMError opencdm_session_system_error(const struct OpenCDMSession *session) { return ERROR_NONE; }
+
+    OpenCDMBool opencdm_system_supports_server_certificate(struct OpenCDMSystem *system)
+    {
+        return OpenCDMBool::OPENCDM_BOOL_TRUE;
+    }
 }

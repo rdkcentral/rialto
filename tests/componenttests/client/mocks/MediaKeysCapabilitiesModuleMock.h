@@ -41,6 +41,10 @@ public:
                 (::google::protobuf::RpcController * controller,
                  const ::firebolt::rialto::GetSupportedKeySystemVersionRequest *request,
                  ::firebolt::rialto::GetSupportedKeySystemVersionResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, isServerCertificateSupported,
+                (::google::protobuf::RpcController * controller,
+                 const ::firebolt::rialto::IsServerCertificateSupportedRequest *request,
+                 ::firebolt::rialto::IsServerCertificateSupportedResponse *response, ::google::protobuf::Closure *done));
 
     void defaultReturn(::google::protobuf::RpcController *controller, ::google::protobuf::Closure *done)
     {
@@ -76,6 +80,13 @@ public:
     {
         firebolt::rialto::GetSupportedKeySystemVersionResponse response;
         response.set_version(value);
+        return response;
+    }
+
+    ::firebolt::rialto::IsServerCertificateSupportedResponse supportsServerCertificateResponse(const bool value)
+    {
+        firebolt::rialto::IsServerCertificateSupportedResponse response;
+        response.set_is_supported(value);
         return response;
     }
 

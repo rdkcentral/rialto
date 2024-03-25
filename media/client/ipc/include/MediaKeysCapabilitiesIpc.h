@@ -78,6 +78,8 @@ public:
 
     bool getSupportedKeySystemVersion(const std::string &keySystem, std::string &version) override;
 
+    bool isServerCertificateSupported(const std::string &keySystem) override;
+
 private:
     /**
      * @brief The ipc protobuf media keys capabilities stub.

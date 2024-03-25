@@ -59,6 +59,7 @@ public:
     void mediaKeysWillGetLdlSessionsLimitWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillGetLastDrmErrorWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillGetDrmTimeWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
+    void mediaKeysWillReleaseKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillDecryptDeprecatedWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillDecryptWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillSelectKeyIdWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
@@ -72,6 +73,7 @@ public:
     void supportsKeySystemWillReturnTrue();
     void getSupportedKeySystemVersionWillSucceed();
     void getSupportedKeySystemVersionWillFail();
+    void supportsServerCertificateWillReturnTrue();
 
     void triggerSwitchToActiveSuccess();
     void triggerSwitchToInactive();
@@ -101,7 +103,8 @@ public:
     void getLdlSessionsLimitShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void getLastDrmErrorShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void getDrmTimeShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
-    void isPlayreadyKeySystemShouldReturn(bool result);
+    void releaseKeySessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
+    void isNetflixPlayreadyKeySystemShouldReturn(bool result);
     void incrementSessionIdUsageCounter();
     void decrementSessionIdUsageCounter();
     void incrementSessionIdUsageCounterFails();
@@ -113,6 +116,8 @@ public:
     void supportsKeySystemReturnFalse();
     void getSupportedKeySystemVersionShouldSucceed();
     void getSupportedKeySystemVersionShouldFail();
+    void supportsServerCertificateReturnTrue();
+    void supportsServerCertificateReturnFalse();
 
 private:
     std::shared_ptr<StrictMock<firebolt::rialto::server::MediaKeysServerInternalFactoryMock>> m_mediaKeysFactoryMock;

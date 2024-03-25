@@ -648,6 +648,32 @@ TEST_F(CdmServiceTests, shouldFailToGetDrmTimeWithStatusWhenMediaKeysFails)
     destroyMediaKeysShouldSucceed();
 }
 
+TEST_F(CdmServiceTests, shouldReleaseKeySession)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysFactoryWillCreateMediaKeys();
+    createMediaKeysShouldSucceed();
+    mediaKeysWillReleaseKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    releaseKeySessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    destroyMediaKeysShouldSucceed();
+}
+
+TEST_F(CdmServiceTests, shouldFailToReleaseKeySessionWhenNoMediaKeys)
+{
+    triggerSwitchToActiveSuccess();
+    releaseKeySessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::FAIL);
+}
+
+TEST_F(CdmServiceTests, shouldFailToReleaseKeySessionWhenMediaKeysFails)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysFactoryWillCreateMediaKeys();
+    createMediaKeysShouldSucceed();
+    mediaKeysWillReleaseKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE);
+    releaseKeySessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE);
+    destroyMediaKeysShouldSucceed();
+}
+
 TEST_F(CdmServiceTests, shouldGetNoKeySystemsFromGetSupportedKeySystemsInInactiveState)
 {
     getSupportedKeySystemsReturnNon();
@@ -716,20 +742,40 @@ TEST_F(CdmServiceTests, shouldGetSupportedKeySystemVersionInActiveState)
     getSupportedKeySystemVersionShouldSucceed();
 }
 
+TEST_F(CdmServiceTests, shouldGetServerCertificateNotSupportedInInactiveState)
+{
+    supportsServerCertificateReturnFalse();
+}
+
+TEST_F(CdmServiceTests, shouldGetServerCertificateNotSupportedIfCreationFailureInActiveState)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysCapabilitiesFactoryWillReturnNullptr();
+    supportsServerCertificateReturnFalse();
+}
+
+TEST_F(CdmServiceTests, shouldGetServerCertificateSupportedIfSupportedInActiveState)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysCapabilitiesFactoryWillCreateMediaKeysCapabilities();
+    supportsServerCertificateWillReturnTrue();
+    supportsServerCertificateReturnTrue();
+}
+
 TEST_F(CdmServiceTests, shouldCheckThatKeySystemIsPlayready)
 {
     triggerSwitchToActiveSuccess();
     mediaKeysFactoryWillCreateMediaKeys();
     createMediaKeysShouldSucceed();
     mediaKeysWillCheckIfKeySystemIsPlayready(true);
-    isPlayreadyKeySystemShouldReturn(true);
+    isNetflixPlayreadyKeySystemShouldReturn(true);
     destroyMediaKeysShouldSucceed();
 }
 
 TEST_F(CdmServiceTests, shouldReturnFalseWhenCheckingPlayreadyKeySystemWhenNoMediaKeys)
 {
     triggerSwitchToActiveSuccess();
-    isPlayreadyKeySystemShouldReturn(false);
+    isNetflixPlayreadyKeySystemShouldReturn(false);
 }
 
 TEST_F(CdmServiceTests, shouldReturnFalseWhenCheckingPlayreadyKeySystemWhenMediaKeysFails)
@@ -738,7 +784,7 @@ TEST_F(CdmServiceTests, shouldReturnFalseWhenCheckingPlayreadyKeySystemWhenMedia
     mediaKeysFactoryWillCreateMediaKeys();
     createMediaKeysShouldSucceed();
     mediaKeysWillCheckIfKeySystemIsPlayready(false);
-    isPlayreadyKeySystemShouldReturn(false);
+    isNetflixPlayreadyKeySystemShouldReturn(false);
     destroyMediaKeysShouldSucceed();
 }
 
@@ -748,7 +794,7 @@ TEST_F(CdmServiceTests, shouldReturnFalseWhenCheckingPlayreadyKeySystemWhenMedia
     mediaKeysFactoryWillCreateMediaKeys();
     createMediaKeysShouldSucceed();
     mediaKeysWillNotFindMediaKeySession();
-    isPlayreadyKeySystemShouldReturn(false);
+    isNetflixPlayreadyKeySystemShouldReturn(false);
     destroyMediaKeysShouldSucceed();
 }
 

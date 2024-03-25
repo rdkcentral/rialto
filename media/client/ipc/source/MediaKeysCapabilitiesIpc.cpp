@@ -182,4 +182,35 @@ bool MediaKeysCapabilitiesIpc::getSupportedKeySystemVersion(const std::string &k
     return true;
 }
 
+bool MediaKeysCapabilitiesIpc::isServerCertificateSupported(const std::string &keySystem)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::IsServerCertificateSupportedRequest request;
+    request.set_key_system(keySystem);
+
+    firebolt::rialto::IsServerCertificateSupportedResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaKeysCapabilitiesStub->isServerCertificateSupported(ipcController.get(), &request, &response,
+                                                              blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to check if server certificate is supported due to '%s'",
+                                ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    return response.is_supported();
+}
+
 }; // namespace firebolt::rialto::client

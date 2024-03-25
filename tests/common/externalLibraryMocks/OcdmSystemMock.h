@@ -39,6 +39,7 @@ public:
                 (override));
     MOCK_METHOD(MediaKeyErrorStatus, getDrmTime, (uint64_t * time), (override));
     MOCK_METHOD(std::unique_ptr<IOcdmSession>, createSession, (IOcdmSessionClient * client), (override, const));
+    MOCK_METHOD(bool, supportsServerCertificate, (), (const, override));
 };
 } // namespace firebolt::rialto::wrappers
 
