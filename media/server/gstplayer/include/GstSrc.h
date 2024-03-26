@@ -130,8 +130,8 @@ public:
 
 protected:
     /*
-    * @brief sets the default stream format if needed.
-    */
+     * @brief sets the default stream format if needed.
+     */
     void setDefaultStreamFormatIfNeeded(GstElement *appSrc);
 
     /**

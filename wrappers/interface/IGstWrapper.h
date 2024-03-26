@@ -1224,13 +1224,13 @@ public:
 
     /**
      * @brief Gets a pointer to the string value of the field.
-     * 
+     *
      * @param structure  : a GstStructure.
      * @param fieldname  : the name of the field
-     * 
+     *
      * @return a pointer to the string value of the field, or NULL if the field does not exist or is not a string.
      */
-    virtual const gchar *gstStructureGetString(const GstStructure *structure, const gchar * fieldname) const = 0;
+    virtual const gchar *gstStructureGetString(const GstStructure *structure, const gchar *fieldname) const = 0;
 
     /**
      * @brief Update the segment structure with the field values of a seek event (see gst_event_new_seek).
