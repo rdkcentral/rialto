@@ -519,9 +519,19 @@ public:
         return gst_structure_get_name(structure);
     }
 
+    bool gstStructureHasName(const GstStructure *structure, const gchar *name) const override
+    {
+        return gst_structure_has_name(structure, name);
+    }
+
     gboolean gstObjectSetName(GstObject *object, const gchar *name) const override
     {
         return gst_object_set_name(object, name);
+    }
+
+    const gchar *gstStructureGetString(const GstStructure *structure, const gchar *fieldname) const override
+    {
+        return gst_structure_get_string(structure, fieldname);
     }
 
     gboolean gstSegmentDoSeek(GstSegment *segment, gdouble rate, GstFormat format, GstSeekFlags flags,

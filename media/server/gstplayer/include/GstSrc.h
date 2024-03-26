@@ -129,6 +129,11 @@ public:
     void allAppSrcsAdded(GstElement *element) override;
 
 protected:
+    /*
+    * @brief sets the default stream format if needed.
+    */
+    void setDefaultStreamFormatIfNeeded(GstElement *appSrc);
+
     /**
      * @brief The gstreamer wrapper object.
      */

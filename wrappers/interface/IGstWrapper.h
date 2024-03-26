@@ -1203,6 +1203,16 @@ public:
     virtual const gchar *gstStructureGetName(const GstStructure *structure) const = 0;
 
     /**
+     * @brief Checks if the structure has the passed name
+     *
+     * @param[in] structure : a GstStructure.
+     * @param[in] name      : name which needs to be checked
+     *
+     * @retval TRUE if the structure has the passed name
+     */
+    virtual bool gstStructureHasName(const GstStructure *structure, const gchar *name) const = 0;
+
+    /**
      * @brief Sets the name of an object.
      *
      * @param[in] object    : object to name.
@@ -1211,6 +1221,16 @@ public:
      * @retval TRUE if name could be set.
      */
     virtual gboolean gstObjectSetName(GstObject *object, const gchar *name) const = 0;
+
+    /**
+     * @brief Gets a pointer to the string value of the field.
+     * 
+     * @param structure  : a GstStructure.
+     * @param fieldname  : the name of the field
+     * 
+     * @return a pointer to the string value of the field, or NULL if the field does not exist or is not a string.
+     */
+    virtual const gchar *gstStructureGetString(const GstStructure *structure, const gchar * fieldname) const = 0;
 
     /**
      * @brief Update the segment structure with the field values of a seek event (see gst_event_new_seek).
