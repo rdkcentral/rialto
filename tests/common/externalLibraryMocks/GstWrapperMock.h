@@ -205,6 +205,8 @@ public:
                 (GstBuffer * buffer, GstCaps *caps, const GstSegment *segment, GstStructure *info), (const, override));
     MOCK_METHOD(void, gstSampleUnref, (GstSample * sample), (const, override));
     MOCK_METHOD(GstFlowReturn, gstAppSrcPushSample, (GstAppSrc * appsrc, GstSample *sample), (const, override));
+    MOCK_METHOD(bool, gstStructureHasName, (const GstStructure *structure, const gchar *name), (const, override));
+    MOCK_METHOD(const gchar *, gstStructureGetString, (const GstStructure *structure, const gchar *fieldname), (const, override));
 
     GstCaps *gstCapsNewSimple(const char *media_type, const char *fieldname, ...) const override
     {

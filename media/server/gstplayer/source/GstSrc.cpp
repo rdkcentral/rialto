@@ -379,6 +379,7 @@ void GstSrc::setDefaultStreamFormatIfNeeded(GstElement *appSrc)
                 {
                     m_gstWrapper->gstCapsSetSimple(newCaps, "stream-format", G_TYPE_STRING, "byte-stream", nullptr);
                     m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(appSrc), newCaps);
+                    GST_INFO("Added stream-format=byte-stream to caps %" GST_PTR_FORMAT, newCaps);
                 }
                 m_gstWrapper->gstCapsUnref(newCaps);
             }
@@ -443,7 +444,7 @@ void GstSrc::setupAndAddAppArc(IDecryptionService *decryptionService, GstElement
             {
                 /*
                 h264secparse and h265secparse have problems with parsing blank caps (with no stream-format nor
-                codec_data defined). This is a workaround to set the stream-format to byte-stream
+                codec_data defined). This is a workaround to set the stream-format to byte-stream if needed.
                 */
                 setDefaultStreamFormatIfNeeded(streamInfo.appSrc);
 
