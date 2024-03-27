@@ -218,7 +218,6 @@ public:
         EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&capsCopy, StrEq("height"), G_TYPE_INT, kHeight));
         EXPECT_CALL(*m_gstWrapperMock,
                     gstCapsSetSimpleFractionStub(&capsCopy, StrEq("framerate"), GST_TYPE_FRACTION, _, _));
-        EXPECT_CALL(*m_gstWrapperMock, gstCapsIsEqual(&m_videoCaps, &capsCopy)).WillOnce(Return(false));
         EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(&m_secondaryVideoAppSrc, &capsCopy));
         EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_videoCaps)).RetiresOnSaturation();
         EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&capsCopy));
