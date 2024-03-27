@@ -369,23 +369,23 @@ void GstSrc::setDefaultStreamFormatIfNeeded(GstElement *appSrc)
         if (structure && (m_gstWrapper->gstStructureHasName(structure, "video/x-h264") ||
                           m_gstWrapper->gstStructureHasName(structure, "video/x-h265")))
         {
-            GstCaps *newCaps = m_gstWrapper->gstCapsCopy(currentCaps);
-            if (newCaps)
-            {
-                const gchar *streamFormat = m_gstWrapper->gstStructureGetString(structure, "stream-format");
-                const gchar *codecData = m_gstWrapper->gstStructureGetString(structure, "codec_data");
+            bool hasStreamFormat = m_gstWrapper->gstStructureHasField(structure, "stream-format");
+            bool hasCodecData = m_gstWrapper->gstStructureHasField(structure, "codec_data");
 
-                if (!streamFormat && !codecData)
+            if (!hasStreamFormat && !hasCodecData)
+            {
+                GstCaps *newCaps = m_gstWrapper->gstCapsCopy(currentCaps);
+                if (newCaps)
                 {
                     m_gstWrapper->gstCapsSetSimple(newCaps, "stream-format", G_TYPE_STRING, "byte-stream", nullptr);
                     m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(appSrc), newCaps);
                     GST_INFO("Added stream-format=byte-stream to caps %" GST_PTR_FORMAT, newCaps);
+                    m_gstWrapper->gstCapsUnref(newCaps);
                 }
-                m_gstWrapper->gstCapsUnref(newCaps);
             }
         }
-        m_gstWrapper->gstCapsUnref(currentCaps);
     }
+    m_gstWrapper->gstCapsUnref(currentCaps);
 }
 
 void GstSrc::setupAndAddAppArc(IDecryptionService *decryptionService, GstElement *source, StreamInfo &streamInfo,

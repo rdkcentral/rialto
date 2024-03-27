@@ -529,9 +529,9 @@ public:
         return gst_object_set_name(object, name);
     }
 
-    const gchar *gstStructureGetString(const GstStructure *structure, const gchar *fieldname) const override
+    bool gstStructureHasField(const GstStructure *structure, const gchar *fieldname) const override
     {
-        return gst_structure_get_string(structure, fieldname);
+        return gst_structure_has_field(structure, fieldname);
     }
 
     gboolean gstSegmentDoSeek(GstSegment *segment, gdouble rate, GstFormat format, GstSeekFlags flags,

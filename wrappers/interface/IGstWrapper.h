@@ -1223,14 +1223,15 @@ public:
     virtual gboolean gstObjectSetName(GstObject *object, const gchar *name) const = 0;
 
     /**
-     * @brief Gets a pointer to the string value of the field.
+     * @brief Check if the structure contains the given field
      *
      * @param structure  : a GstStructure.
      * @param fieldname  : the name of the field
      *
-     * @return a pointer to the string value of the field, or NULL if the field does not exist or is not a string.
+     * @return TRUE if the structure has the field
      */
-    virtual const gchar *gstStructureGetString(const GstStructure *structure, const gchar *fieldname) const = 0;
+
+    virtual bool gstStructureHasField(const GstStructure *structure, const gchar *fieldname) const = 0;
 
     /**
      * @brief Update the segment structure with the field values of a seek event (see gst_event_new_seek).
