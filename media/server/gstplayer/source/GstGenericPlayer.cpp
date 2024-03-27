@@ -614,15 +614,28 @@ void GstGenericPlayer::updateVideoCaps(int32_t width, int32_t height, Fraction f
         GstCaps *currentCaps = m_gstWrapper->gstAppSrcGetCaps(GST_APP_SRC(m_context.videoAppSrc));
         GstCaps *newCaps = m_gstWrapper->gstCapsCopy(currentCaps);
 
-        m_gstWrapper->gstCapsSetSimple(newCaps, "width", G_TYPE_INT, width, "height", G_TYPE_INT, height, NULL);
+        if (width > 0)
+        {
+            m_gstWrapper->gstCapsSetSimple(newCaps, "width", G_TYPE_INT, width, NULL);
+        }
+
+        if (height > 0)
+        {
+            m_gstWrapper->gstCapsSetSimple(newCaps, "height", G_TYPE_INT, height, NULL);
+        }
+
         if ((kUndefinedSize != frameRate.numerator) && (kUndefinedSize != frameRate.denominator))
         {
             m_gstWrapper->gstCapsSetSimple(newCaps, "framerate", GST_TYPE_FRACTION, frameRate.numerator,
                                            frameRate.denominator, NULL);
         }
+
         setCodecData(newCaps, codecData);
 
-        m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(m_context.videoAppSrc), newCaps);
+        if (!m_gstWrapper->gstCapsIsEqual(currentCaps, newCaps))
+        {
+            m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(m_context.videoAppSrc), newCaps);
+        }
 
         m_gstWrapper->gstCapsUnref(currentCaps);
         m_gstWrapper->gstCapsUnref(newCaps);
