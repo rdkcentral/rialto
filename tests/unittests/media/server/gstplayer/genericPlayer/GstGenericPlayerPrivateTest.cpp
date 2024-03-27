@@ -820,6 +820,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldUpdateAudioCaps)
     EXPECT_CALL(*m_gstWrapperMock, gstBufferNewWrapped(memory, kCodecDataWithBuffer->data.size())).WillOnce(Return(&buf));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleBufferStub(&dummyCaps2, StrEq("codec_data"), GST_TYPE_BUFFER, &buf));
     EXPECT_CALL(*m_gstWrapperMock, gstBufferUnref(&buf));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsEqual(&dummyCaps1, &dummyCaps2)).WillOnce(Return(false));
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(GST_APP_SRC(&audioSrc), &dummyCaps2));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps1));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps2));
@@ -843,6 +844,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldUpdateAudioCapsWithStringCodecData)
                 gstCapsSetSimpleIntStub(&dummyCaps2, StrEq("channels"), G_TYPE_INT, kNumberOfChannels));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleStringStub(&dummyCaps2, StrEq("codec_data"), G_TYPE_STRING,
                                                               StrEq(kCodecDataStr.c_str())));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsEqual(&dummyCaps1, &dummyCaps2)).WillOnce(Return(false));
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(GST_APP_SRC(&audioSrc), &dummyCaps2));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps1));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps2));
@@ -862,6 +864,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldUpdateAudioCapsSampleRateOnly)
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(GST_APP_SRC(&audioSrc))).WillOnce(Return(&dummyCaps1));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsCopy(&dummyCaps1)).WillOnce(Return(&dummyCaps2));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&dummyCaps2, StrEq("rate"), G_TYPE_INT, kSampleRate));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsEqual(&dummyCaps1, &dummyCaps2)).WillOnce(Return(false));
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(GST_APP_SRC(&audioSrc), &dummyCaps2));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps1));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps2));
@@ -882,6 +885,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldUpdateAudioCapsNumOfChannelsOnly)
     EXPECT_CALL(*m_gstWrapperMock, gstCapsCopy(&dummyCaps1)).WillOnce(Return(&dummyCaps2));
     EXPECT_CALL(*m_gstWrapperMock,
                 gstCapsSetSimpleIntStub(&dummyCaps2, StrEq("channels"), G_TYPE_INT, kNumberOfChannels));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsEqual(&dummyCaps1, &dummyCaps2)).WillOnce(Return(false));
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(GST_APP_SRC(&audioSrc), &dummyCaps2));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps1));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps2));
@@ -907,6 +911,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldUpdateAudioCapsCodecDataOnly)
     EXPECT_CALL(*m_gstWrapperMock, gstBufferNewWrapped(memory, kCodecDataWithBuffer->data.size())).WillOnce(Return(&buf));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleBufferStub(&dummyCaps2, StrEq("codec_data"), GST_TYPE_BUFFER, &buf));
     EXPECT_CALL(*m_gstWrapperMock, gstBufferUnref(&buf));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsEqual(&dummyCaps1, &dummyCaps2)).WillOnce(Return(false));
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(GST_APP_SRC(&audioSrc), &dummyCaps2));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps1));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps2));
@@ -925,6 +930,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldNotUpdateAudioCapsWhenValuesAreInvalid
 
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(GST_APP_SRC(&audioSrc))).WillOnce(Return(&dummyCaps1));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsCopy(&dummyCaps1)).WillOnce(Return(&dummyCaps2));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsEqual(&dummyCaps1, &dummyCaps2)).WillOnce(Return(true));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps1));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&dummyCaps2));
 
@@ -1101,7 +1107,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldUpdateVideoCapsWithoutHeight)
     m_sut->updateVideoCaps(kWidth, 0, kFrameRate, kCodecDataWithBuffer);
 }
 
-TEST_F(GstGenericPlayerPrivateTest, shouldUpdateVideoCapsNoChange)
+TEST_F(GstGenericPlayerPrivateTest, shouldNotUpdateVideoCapsNoChange)
 {
     GstAppSrc videoSrc{};
     GstCaps dummyCaps1;
