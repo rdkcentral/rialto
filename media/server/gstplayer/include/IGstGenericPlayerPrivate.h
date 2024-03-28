@@ -104,6 +104,15 @@ public:
                                  const std::shared_ptr<CodecData> &codecData) = 0;
 
     /**
+     * @brief Adds clipping meta to the audio buffer.
+     * 
+     * @param buffer the buffer to add the clipping meta to
+     * @param clippingStart the start of the clipping
+     * @param clippingEnd the end of the clipping
+     */
+    virtual void addAudioClippingToBuffer(GstBuffer *buffer, uint64_t clippingStart, uint64_t clippingEnd) = 0;
+
+    /**
      * @brief Changes pipeline state.
      *
      * @param[in] newState    : The desired state.

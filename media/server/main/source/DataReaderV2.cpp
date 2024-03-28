@@ -98,7 +98,9 @@ createSegment(const firebolt::rialto::MediaSegmentMetadata &metadata, const fire
                                                                                         metadata.time_position(),
                                                                                         metadata.sample_duration(),
                                                                                         metadata.sample_rate(),
-                                                                                        metadata.channels_num());
+                                                                                        metadata.channels_num(),
+                                                                                        metadata.clipping_start(),
+                                                                                        metadata.clipping_end());
     }
     else if (type == firebolt::rialto::MediaSourceType::VIDEO)
     {

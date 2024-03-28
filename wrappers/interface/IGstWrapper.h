@@ -1317,6 +1317,16 @@ public:
      * @param[in] context The context to unreference.
      */
     virtual void gstContextUnref(GstContext *context) const = 0;
+
+    /**
+     * @brief Adds clipping meta to the audio buffer.
+     * 
+     * @param buffer the buffer to add the clipping meta to
+     * @param format the GstFormat of start and clippingEnd
+     * @param start the amount of audio to clip from start of buffer
+     * @param end the amount of audio to clip from end of buffer
+     */
+    virtual void gstBufferAddAudioClippingMeta(GstBuffer *buffer, GstFormat format, guint64 start, guint64 end) const = 0;
 };
 
 }; // namespace firebolt::rialto::wrappers
