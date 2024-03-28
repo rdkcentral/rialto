@@ -189,6 +189,7 @@ void MediaPipelineTest::willPushAudioData(const std::unique_ptr<IMediaPipeline::
     EXPECT_CALL(*m_gstWrapperMock, gstCapsCopy(&m_audioCaps)).WillOnce(Return(&capsCopy)).RetiresOnSaturation();
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&capsCopy, StrEq("rate"), G_TYPE_INT, kSampleRate));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&capsCopy, StrEq("channels"), G_TYPE_INT, kNumOfChannels));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsEqual(&m_audioCaps, &capsCopy)).WillOnce(Return(false));
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(&m_audioAppSrc, &capsCopy));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_audioCaps)).RetiresOnSaturation();
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&capsCopy));
@@ -229,6 +230,7 @@ void MediaPipelineTest::willPushVideoData(const std::unique_ptr<IMediaPipeline::
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&capsCopy, StrEq("width"), G_TYPE_INT, kWidth));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&capsCopy, StrEq("height"), G_TYPE_INT, kHeight));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleFractionStub(&capsCopy, StrEq("framerate"), GST_TYPE_FRACTION, _, _));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsEqual(&m_videoCaps, &capsCopy)).WillOnce(Return(false));
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(&m_videoAppSrc, &capsCopy));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_videoCaps)).RetiresOnSaturation();
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&capsCopy));
@@ -270,6 +272,7 @@ void MediaPipelineTest::willPushAudioSample(const std::unique_ptr<IMediaPipeline
     EXPECT_CALL(*m_gstWrapperMock, gstCapsCopy(&m_audioCaps)).WillOnce(Return(&capsCopy)).RetiresOnSaturation();
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&capsCopy, StrEq("rate"), G_TYPE_INT, kSampleRate));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&capsCopy, StrEq("channels"), G_TYPE_INT, kNumOfChannels));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsEqual(&m_audioCaps, &capsCopy)).WillOnce(Return(false));
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(&m_audioAppSrc, &capsCopy));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_audioCaps)).Times(2).RetiresOnSaturation();
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&capsCopy));
@@ -304,6 +307,7 @@ void MediaPipelineTest::willPushVideoSample(const std::unique_ptr<IMediaPipeline
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&capsCopy, StrEq("width"), G_TYPE_INT, kWidth));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&capsCopy, StrEq("height"), G_TYPE_INT, kHeight));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleFractionStub(&capsCopy, StrEq("framerate"), GST_TYPE_FRACTION, _, _));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsEqual(&m_videoCaps, &capsCopy)).WillOnce(Return(false));
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(&m_videoAppSrc, &capsCopy));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_videoCaps)).Times(2).RetiresOnSaturation();
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&capsCopy));
