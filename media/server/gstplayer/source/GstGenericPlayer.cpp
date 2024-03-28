@@ -645,7 +645,7 @@ void GstGenericPlayer::updateVideoCaps(int32_t width, int32_t height, Fraction f
     }
 }
 
-void GstGenericPlayer::addAudioClippingToBuffer(GstBuffer *buffer, uint64_t clippingStart, uint64_t clippingEnd)
+void GstGenericPlayer::addAudioClippingToBuffer(GstBuffer *buffer, uint64_t clippingStart, uint64_t clippingEnd) const
 {
     if (clippingStart || clippingEnd)
     {

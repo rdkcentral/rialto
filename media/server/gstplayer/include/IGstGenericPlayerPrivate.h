@@ -110,7 +110,7 @@ public:
      * @param clippingStart the start of the clipping
      * @param clippingEnd the end of the clipping
      */
-    virtual void addAudioClippingToBuffer(GstBuffer *buffer, uint64_t clippingStart, uint64_t clippingEnd) = 0;
+    virtual void addAudioClippingToBuffer(GstBuffer *buffer, uint64_t clippingStart, uint64_t clippingEnd) const = 0;
 
     /**
      * @brief Changes pipeline state.
