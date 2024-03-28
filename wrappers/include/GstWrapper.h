@@ -569,6 +569,11 @@ public:
     }
 
     void gstContextUnref(GstContext *context) const override { gst_context_unref(context); }
+
+    virtual void gstBufferAddAudioClippingMeta(GstBuffer *buffer, GstFormat format, guint64 start, guint64 end) const
+    {
+        gst_buffer_add_audio_clipping_meta(buffer, format, start, end);
+    }
 };
 
 }; // namespace firebolt::rialto::wrappers

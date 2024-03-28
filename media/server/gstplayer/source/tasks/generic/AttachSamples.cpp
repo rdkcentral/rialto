@@ -53,8 +53,12 @@ AttachSamples::AttachSamples(GenericPlayerContext &context, IGstGenericPlayerPri
             {
                 IMediaPipeline::MediaSegmentAudio &audioSegment =
                     dynamic_cast<IMediaPipeline::MediaSegmentAudio &>(*mediaSegment);
-                AudioData audioData = {gstBuffer, audioSegment.getSampleRate(), audioSegment.getNumberOfChannels(),
-                                       audioSegment.getCodecData()};
+                AudioData audioData = {gstBuffer,
+                                       audioSegment.getSampleRate(),
+                                       audioSegment.getNumberOfChannels(),
+                                       audioSegment.getCodecData(),
+                                       audioSegment.getClippingStart(),
+                                       audioSegment.getClippingEnd()};
                 m_audioData.push_back(audioData);
             }
             catch (const std::exception &e)
@@ -76,6 +80,7 @@ void AttachSamples::execute() const
     for (AudioData audioData : m_audioData)
     {
         m_player.updateAudioCaps(audioData.rate, audioData.channels, audioData.codecData);
+        m_player.addAudioClippingToBuffer(audioData.buffer, audioData.clippingStart, audioData.clippingEnd);
 
         m_context.audioBuffers.push_back(audioData.buffer);
         m_player.attachAudioData();

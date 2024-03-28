@@ -74,6 +74,8 @@ constexpr gint64 kItWillHappenInTheFuture = 3823530248;
 constexpr int64_t kDuration{9000000000};
 constexpr int32_t kSampleRate{13};
 constexpr int32_t kNumberOfChannels{4};
+constexpr uint64_t kClippingStart{1024};
+constexpr uint64_t kClippingEnd{2048};
 constexpr int32_t kWidth{1024};
 constexpr int32_t kHeight{768};
 const std::string kTextTrackIdentifier{"SERVICE1"};
@@ -103,10 +105,16 @@ firebolt::rialto::IMediaPipeline::MediaSegmentVector buildAudioSamples()
     firebolt::rialto::IMediaPipeline::MediaSegmentVector dataVec;
     dataVec.emplace_back(
         std::make_unique<firebolt::rialto::IMediaPipeline::MediaSegmentAudio>(kAudioSourceId, kItHappenedInThePast,
-                                                                              kDuration, kSampleRate, kNumberOfChannels));
+                                                                              kDuration, kSampleRate, kNumberOfChannels,
+                                                                              kClippingStart, kClippingEnd));
     dataVec.emplace_back(
         std::make_unique<firebolt::rialto::IMediaPipeline::MediaSegmentAudio>(kAudioSourceId, kItWillHappenInTheFuture,
-                                                                              kDuration, kSampleRate, kNumberOfChannels));
+                                                                              kDuration, kSampleRate, kNumberOfChannels,
+                                                                              kClippingStart, 0));
+    dataVec.emplace_back(
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSegmentAudio>(kAudioSourceId, kItWillHappenInTheFuture,
+                                                                              kDuration, kSampleRate, kNumberOfChannels,
+                                                                              0, kClippingEnd));
     dataVec.back()->setCodecData(kCodecDataBuffer);
     return dataVec;
 }
@@ -586,10 +594,17 @@ void GenericTasksTestsBase::triggerSetVolume()
 void GenericTasksTestsBase::shouldAttachAllAudioSamples()
 {
     std::shared_ptr<firebolt::rialto::CodecData> kNullCodecData{};
-    EXPECT_CALL(testContext->m_gstPlayer, createBuffer(_)).Times(2).WillRepeatedly(Return(&testContext->m_audioBuffer));
-    EXPECT_CALL(testContext->m_gstPlayer, updateAudioCaps(kSampleRate, kNumberOfChannels, kNullCodecData));
+    EXPECT_CALL(testContext->m_gstPlayer, createBuffer(_)).Times(3).WillRepeatedly(Return(&testContext->m_audioBuffer));
+    EXPECT_CALL(testContext->m_gstPlayer, updateAudioCaps(kSampleRate, kNumberOfChannels, kNullCodecData)).Times(2);
     EXPECT_CALL(testContext->m_gstPlayer, updateAudioCaps(kSampleRate, kNumberOfChannels, kCodecDataBuffer));
-    EXPECT_CALL(testContext->m_gstPlayer, attachAudioData()).Times(2);
+    {
+        testing::InSequence seq;
+        EXPECT_CALL(testContext->m_gstPlayer,
+                    addAudioClippingToBuffer(&testContext->m_audioBuffer, kClippingStart, kClippingEnd));
+        EXPECT_CALL(testContext->m_gstPlayer, addAudioClippingToBuffer(&testContext->m_audioBuffer, kClippingStart, 0));
+        EXPECT_CALL(testContext->m_gstPlayer, addAudioClippingToBuffer(&testContext->m_audioBuffer, 0, kClippingEnd));
+    }
+    EXPECT_CALL(testContext->m_gstPlayer, attachAudioData()).Times(3);
     EXPECT_CALL(testContext->m_gstPlayer, notifyNeedMediaData(true, false));
 }
 
@@ -599,7 +614,7 @@ void GenericTasksTestsBase::triggerAttachSamplesAudio()
     firebolt::rialto::server::tasks::generic::AttachSamples task{testContext->m_context, testContext->m_gstPlayer,
                                                                  samples};
     task.execute();
-    EXPECT_EQ(testContext->m_context.audioBuffers.size(), 2);
+    EXPECT_EQ(testContext->m_context.audioBuffers.size(), 3);
 }
 
 void GenericTasksTestsBase::shouldAttachAllVideoSamples()
@@ -2150,7 +2165,7 @@ void GenericTasksTestsBase::triggerReadShmDataAndAttachSamplesAudio()
                                                                                testContext->m_gstPlayer,
                                                                                testContext->m_dataReader};
     task.execute();
-    EXPECT_EQ(testContext->m_context.audioBuffers.size(), 2);
+    EXPECT_EQ(testContext->m_context.audioBuffers.size(), 3);
 }
 
 void GenericTasksTestsBase::triggerReadShmDataAndAttachSamplesVideo()

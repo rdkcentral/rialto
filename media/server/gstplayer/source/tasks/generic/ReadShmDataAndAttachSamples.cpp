@@ -72,6 +72,8 @@ void ReadShmDataAndAttachSamples::execute() const
                     dynamic_cast<IMediaPipeline::MediaSegmentAudio &>(*mediaSegment);
                 m_player.updateAudioCaps(audioSegment.getSampleRate(), audioSegment.getNumberOfChannels(),
                                          audioSegment.getCodecData());
+                m_player.addAudioClippingToBuffer(gstBuffer, audioSegment.getClippingStart(),
+                                                  audioSegment.getClippingEnd());
             }
             catch (const std::exception &e)
             {

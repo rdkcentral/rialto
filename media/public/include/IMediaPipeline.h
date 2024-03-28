@@ -838,11 +838,13 @@ public:
          * @param[in] duration         : The duration in nanoseconds.
          * @param[in] sampleRate       : The sample rate in samples per second.
          * @param[in] numberOfChannels : The number of audio channels.
+         * @param[in] clippingStart    : The amount of audio to clip from start of buffer
+         * @param[in] clippingEnd      : The amount of audio to clip from end of buffer
          */
         MediaSegmentAudio(int32_t sourceId = 0, int64_t timeStamp = 0, int64_t duration = 0, int32_t sampleRate = 0,
-                          int32_t numberOfChannels = 0)
+                          int32_t numberOfChannels = 0, uint64_t clippingStart = 0, uint64_t clippingEnd = 0)
             : MediaSegment(sourceId, MediaSourceType::AUDIO, timeStamp, duration), m_sampleRate(sampleRate),
-              m_numberOfChannels(numberOfChannels)
+              m_numberOfChannels(numberOfChannels), m_clippingStart(clippingStart), m_clippingEnd(clippingEnd)
         {
         }
 
@@ -877,6 +879,20 @@ public:
         int32_t getNumberOfChannels() const { return m_numberOfChannels; }
 
         /**
+         * @brief Return the amount of audio to clip from start of buffer
+         *
+         * @retval the amount of audio to clip from start of buffer
+         */
+        uint64_t getClippingStart() const { return m_clippingStart; }
+
+        /**
+         * @brief Return the amount of audio to clip from end of buffer
+         *
+         * @retval the amount of audio to clip from end of buffer
+         */
+        uint64_t getClippingEnd() const { return m_clippingEnd; }
+
+        /**
          * @brief Copy assignment operator.
          *
          * @retval the copy.
@@ -902,6 +918,16 @@ public:
          * @brief The number of audio channels.
          */
         int32_t m_numberOfChannels;
+
+        /**
+         * @brief The amount of audio to clip from start of buffer
+         */
+        uint64_t m_clippingStart;
+
+        /**
+         * @brief The amount of audio to clip from end of buffer
+         */
+        uint64_t m_clippingEnd;
     };
 
     /**

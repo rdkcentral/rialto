@@ -153,6 +153,8 @@ MediaSegmentMetadata MediaFrameWriterV2::buildMetadata(const std::unique_ptr<IMe
         IMediaPipeline::MediaSegmentAudio &audioSegment = dynamic_cast<IMediaPipeline::MediaSegmentAudio &>(*data);
         metadata.set_sample_rate(static_cast<uint32_t>(audioSegment.getSampleRate()));
         metadata.set_channels_num(static_cast<uint32_t>(audioSegment.getNumberOfChannels()));
+        metadata.set_clipping_start(audioSegment.getClippingStart());
+        metadata.set_clipping_end(audioSegment.getClippingEnd());
     }
     else if (MediaSourceType::VIDEO == data->getType())
     {
