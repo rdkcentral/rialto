@@ -65,6 +65,9 @@ protected:
     gchar *m_audioDecryptorName = "rialtodecryptoraudio_0";
     gchar *m_videoDecryptorName = "rialtodecryptorvideo_0";
     StreamInfo m_streamInfo;
+    GstCaps m_dummyCaps;
+    GstCaps m_dummyCaps2;
+    GstStructure m_dummyStructure;
 
     RialtoServerAppSrcGstSrcTest() : m_streamInfo{&m_appsrc, true} {}
 
@@ -162,6 +165,22 @@ protected:
         EXPECT_CALL(*m_gstWrapperMock, gstElementLink(expectedSrcElement, &m_payloader));
     }
 
+    void expectAddDefaultStreamFormat()
+    {
+        EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(GST_APP_SRC(m_streamInfo.appSrc))).WillOnce(Return(&m_dummyCaps));
+        EXPECT_CALL(*m_gstWrapperMock, gstCapsGetStructure(&m_dummyCaps, 0)).WillOnce(Return(&m_dummyStructure));
+        EXPECT_CALL(*m_gstWrapperMock, gstStructureHasName(&m_dummyStructure, StrEq("video/x-h264"))).WillOnce(Return(true));
+        EXPECT_CALL(*m_gstWrapperMock, gstCapsCopy(&m_dummyCaps)).WillOnce(Return(&m_dummyCaps2));
+        EXPECT_CALL(*m_gstWrapperMock, gstStructureHasField(&m_dummyStructure, StrEq("stream-format")))
+            .WillOnce(Return(false));
+        EXPECT_CALL(*m_gstWrapperMock, gstStructureHasField(&m_dummyStructure, StrEq("codec_data"))).WillOnce(Return(false));
+        EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleStringStub(&m_dummyCaps2, StrEq("stream-format"), G_TYPE_STRING,
+                                                                  StrEq("byte-stream")));
+        EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(GST_APP_SRC(m_streamInfo.appSrc), &m_dummyCaps2));
+        EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_dummyCaps2));
+        EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_dummyCaps));
+    }
+
     void expectLinkQueue(GstElement *expectedSrcElement)
     {
         EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("queue"), _)).WillOnce(Return(&m_queue));
@@ -188,11 +207,89 @@ protected:
 };
 
 /**
- * Test that GstSrc can add and setup a video source.
+ * Test that GstSrc can add and setup a video source
  */
 TEST_F(RialtoServerAppSrcGstSrcTest, SetupVideo)
 {
     guint64 videoMaxBytes = 8 * 1024 * 1024;
+
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(GST_APP_SRC(m_streamInfo.appSrc))).WillOnce(Return(&m_dummyCaps));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsGetStructure(&m_dummyCaps, 0)).WillOnce(Return(&m_dummyStructure));
+    EXPECT_CALL(*m_gstWrapperMock, gstStructureHasName(&m_dummyStructure, StrEq("video/x-h264"))).WillOnce(Return(false));
+    EXPECT_CALL(*m_gstWrapperMock, gstStructureHasName(&m_dummyStructure, StrEq("video/x-h265"))).WillOnce(Return(false));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_dummyCaps));
+
+    expectSettings(videoMaxBytes);
+    expectBin(m_streamInfo.appSrc);
+    expectSyncElement(m_streamInfo.appSrc);
+    expectLinkDecryptor(m_streamInfo.appSrc, m_videoDecryptorName);
+    expectLinkPayloader(&m_decryptor);
+    expectLinkQueue(&m_payloader);
+    expectSetupPad(&m_queue);
+
+    m_gstSrc->setupAndAddAppArc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), m_streamInfo, &m_callbacks,
+                                this, MediaSourceType::VIDEO);
+}
+
+/**
+ * Test that GstSrc can add and setup a video source with no stream-format set.
+ */
+TEST_F(RialtoServerAppSrcGstSrcTest, SetupVideoH264WithoutStreamFormat)
+{
+    guint64 videoMaxBytes = 8 * 1024 * 1024;
+
+    expectSettings(videoMaxBytes);
+    expectBin(m_streamInfo.appSrc);
+    expectSyncElement(m_streamInfo.appSrc);
+    expectLinkDecryptor(m_streamInfo.appSrc, m_videoDecryptorName);
+    expectLinkPayloader(&m_decryptor);
+    expectAddDefaultStreamFormat();
+    expectLinkQueue(&m_payloader);
+    expectSetupPad(&m_queue);
+
+    m_gstSrc->setupAndAddAppArc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), m_streamInfo, &m_callbacks,
+                                this, MediaSourceType::VIDEO);
+}
+
+/**
+ * Test that GstSrc can add and setup a video source with stream-format set.
+ */
+TEST_F(RialtoServerAppSrcGstSrcTest, SetupVideoWithStreamFormat)
+{
+    guint64 videoMaxBytes = 8 * 1024 * 1024;
+
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(GST_APP_SRC(m_streamInfo.appSrc))).WillOnce(Return(&m_dummyCaps));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsGetStructure(&m_dummyCaps, 0)).WillOnce(Return(&m_dummyStructure));
+    EXPECT_CALL(*m_gstWrapperMock, gstStructureHasName(&m_dummyStructure, StrEq("video/x-h264"))).WillOnce(Return(true));
+    EXPECT_CALL(*m_gstWrapperMock, gstStructureHasField(&m_dummyStructure, StrEq("stream-format"))).WillOnce(Return(true));
+    EXPECT_CALL(*m_gstWrapperMock, gstStructureHasField(&m_dummyStructure, StrEq("codec_data"))).WillOnce(Return(false));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_dummyCaps));
+
+    expectSettings(videoMaxBytes);
+    expectBin(m_streamInfo.appSrc);
+    expectSyncElement(m_streamInfo.appSrc);
+    expectLinkDecryptor(m_streamInfo.appSrc, m_videoDecryptorName);
+    expectLinkPayloader(&m_decryptor);
+    expectLinkQueue(&m_payloader);
+    expectSetupPad(&m_queue);
+
+    m_gstSrc->setupAndAddAppArc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), m_streamInfo, &m_callbacks,
+                                this, MediaSourceType::VIDEO);
+}
+
+/**
+ * Test that GstSrc can add and setup a video source with codec data set.
+ */
+TEST_F(RialtoServerAppSrcGstSrcTest, SetupVideoWithCodecData)
+{
+    guint64 videoMaxBytes = 8 * 1024 * 1024;
+
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(GST_APP_SRC(m_streamInfo.appSrc))).WillOnce(Return(&m_dummyCaps));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsGetStructure(&m_dummyCaps, 0)).WillOnce(Return(&m_dummyStructure));
+    EXPECT_CALL(*m_gstWrapperMock, gstStructureHasName(&m_dummyStructure, StrEq("video/x-h264"))).WillOnce(Return(true));
+    EXPECT_CALL(*m_gstWrapperMock, gstStructureHasField(&m_dummyStructure, StrEq("stream-format"))).WillOnce(Return(false));
+    EXPECT_CALL(*m_gstWrapperMock, gstStructureHasField(&m_dummyStructure, StrEq("codec_data"))).WillOnce(Return(true));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_dummyCaps));
 
     expectSettings(videoMaxBytes);
     expectBin(m_streamInfo.appSrc);
@@ -253,6 +350,7 @@ TEST_F(RialtoServerAppSrcGstSrcTest, DecryptorFailure)
     expectBin(m_streamInfo.appSrc);
     expectSyncElement(m_streamInfo.appSrc);
     expectLinkPayloader(m_streamInfo.appSrc);
+    expectAddDefaultStreamFormat();
     expectLinkQueue(&m_payloader);
     expectSetupPad(&m_queue);
 
@@ -299,6 +397,7 @@ TEST_F(RialtoServerAppSrcGstSrcTest, QueueFailure)
     expectSyncElement(m_streamInfo.appSrc);
     expectLinkDecryptor(m_streamInfo.appSrc, m_videoDecryptorName);
     expectLinkPayloader(&m_decryptor);
+    expectAddDefaultStreamFormat();
     expectSetupPad(&m_payloader);
 
     m_gstSrc->setupAndAddAppArc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), m_streamInfo, &m_callbacks,

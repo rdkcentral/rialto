@@ -359,6 +359,35 @@ void GstSrc::initSrc()
         src_factory = nullptr;
     }
 }
+
+void GstSrc::setDefaultStreamFormatIfNeeded(GstElement *appSrc)
+{
+    GstCaps *currentCaps = m_gstWrapper->gstAppSrcGetCaps(GST_APP_SRC(appSrc));
+    if (currentCaps)
+    {
+        GstStructure *structure = m_gstWrapper->gstCapsGetStructure(currentCaps, 0);
+        if (structure && (m_gstWrapper->gstStructureHasName(structure, "video/x-h264") ||
+                          m_gstWrapper->gstStructureHasName(structure, "video/x-h265")))
+        {
+            bool hasStreamFormat = m_gstWrapper->gstStructureHasField(structure, "stream-format");
+            bool hasCodecData = m_gstWrapper->gstStructureHasField(structure, "codec_data");
+
+            if (!hasStreamFormat && !hasCodecData)
+            {
+                GstCaps *newCaps = m_gstWrapper->gstCapsCopy(currentCaps);
+                if (newCaps)
+                {
+                    m_gstWrapper->gstCapsSetSimple(newCaps, "stream-format", G_TYPE_STRING, "byte-stream", nullptr);
+                    m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(appSrc), newCaps);
+                    GST_INFO("Added stream-format=byte-stream to caps %" GST_PTR_FORMAT, newCaps);
+                    m_gstWrapper->gstCapsUnref(newCaps);
+                }
+            }
+        }
+    }
+    m_gstWrapper->gstCapsUnref(currentCaps);
+}
+
 void GstSrc::setupAndAddAppArc(IDecryptionService *decryptionService, GstElement *source, StreamInfo &streamInfo,
                                GstAppSrcCallbacks *callbacks, gpointer userData, firebolt::rialto::MediaSourceType type)
 {
@@ -413,6 +442,12 @@ void GstSrc::setupAndAddAppArc(IDecryptionService *decryptionService, GstElement
             GstElement *payloader = createPayloader();
             if (payloader)
             {
+                /*
+                h264secparse and h265secparse have problems with parsing blank caps (with no stream-format nor
+                codec_data defined). This is a workaround to set the stream-format to byte-stream if needed.
+                */
+                setDefaultStreamFormatIfNeeded(streamInfo.appSrc);
+
                 if (GST_IS_BASE_TRANSFORM(payloader))
                 {
                     m_gstWrapper->gstBaseTransformSetInPlace(GST_BASE_TRANSFORM(payloader), TRUE);
