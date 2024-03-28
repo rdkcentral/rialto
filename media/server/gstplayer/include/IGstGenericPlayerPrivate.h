@@ -105,7 +105,7 @@ public:
 
     /**
      * @brief Adds clipping meta to the audio buffer.
-     * 
+     *
      * @param buffer the buffer to add the clipping meta to
      * @param clippingStart the start of the clipping
      * @param clippingEnd the end of the clipping

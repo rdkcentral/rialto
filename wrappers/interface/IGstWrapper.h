@@ -1320,7 +1320,7 @@ public:
 
     /**
      * @brief Adds clipping meta to the audio buffer.
-     * 
+     *
      * @param buffer the buffer to add the clipping meta to
      * @param format the GstFormat of start and clippingEnd
      * @param start the amount of audio to clip from start of buffer
