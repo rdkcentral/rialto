@@ -230,11 +230,8 @@ private:
      * @brief Pushes GstSample if playback position has changed or new segment needs to be sent.
      *
      * @param[in] source          : The Gst Source element, that should receive new sample
-     * @param[in] buffer          : The next GstBuffer to push
-     *
-     * @retval True if operation was performed
      */
-    bool pushSampleIfRequired(GstElement *source, GstBuffer *buffer);
+    void pushSampleIfRequired(GstElement *source);
 
 private:
     /**
