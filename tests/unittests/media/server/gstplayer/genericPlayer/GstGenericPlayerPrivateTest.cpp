@@ -1141,6 +1141,40 @@ TEST_F(GstGenericPlayerPrivateTest, shouldNotUpdateAudioVideoCapsWhenNoSrc)
     m_sut->updateVideoCaps(kWidth, kHeight, kFrameRate, kEmptyCodecData);
 }
 
+TEST_F(GstGenericPlayerPrivateTest, shouldAddClippingMetaWhenStartAndEndNotZero)
+{
+    GstBuffer buf;
+    uint64_t clippingStart{1024};
+    uint64_t clippingEnd{2048};
+
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferAddAudioClippingMeta(&buf, GST_FORMAT_TIME, clippingStart, clippingEnd));
+    m_sut->addAudioClippingToBuffer(&buf, clippingStart, clippingEnd);
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldAddClippingMetaWhenStartNotZero)
+{
+    GstBuffer buf;
+    uint64_t clippingStart{1024};
+
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferAddAudioClippingMeta(&buf, GST_FORMAT_TIME, clippingStart, 0));
+    m_sut->addAudioClippingToBuffer(&buf, clippingStart, 0);
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldAddClippingMetaWhenEndNotZero)
+{
+    GstBuffer buf;
+    uint64_t clippingEnd{2048};
+
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferAddAudioClippingMeta(&buf, GST_FORMAT_TIME, 0, clippingEnd));
+    m_sut->addAudioClippingToBuffer(&buf, 0, clippingEnd);
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldAddClippingMetaWhenStartAndEndZero)
+{
+    GstBuffer buf;
+    m_sut->addAudioClippingToBuffer(&buf, 0, 0);
+}
+
 TEST_F(GstGenericPlayerPrivateTest, shouldFailToChangePlaybackStateWhenPipelineIsNull)
 {
     GstElement *pipelineCopy; // to make generic test destructor happy :-)

@@ -45,6 +45,8 @@ constexpr int32_t kHeight{768};
 constexpr firebolt::rialto::Fraction kFrameRate{15, 1};
 constexpr int32_t kSampleRate{13};
 constexpr int32_t kNumberOfChannels{4};
+constexpr uint64_t kClippingStart{1024};
+constexpr uint64_t kClippingEnd{2048};
 std::vector<uint8_t> kMediaData{'T', 'E', 'S', 'T', '_', 'M', 'E', 'D', 'I', 'A'};
 std::uint32_t kNumFrames{1};
 const std::vector<uint8_t> kExtraData{1, 2, 3, 4};
@@ -87,6 +89,8 @@ public:
         EXPECT_EQ(resultSegment->getType(), kAudioMediaSourceType);
         EXPECT_EQ(resultSegment->getSampleRate(), kSampleRate);
         EXPECT_EQ(resultSegment->getNumberOfChannels(), kNumberOfChannels);
+        EXPECT_EQ(resultSegment->getClippingStart(), kClippingStart);
+        EXPECT_EQ(resultSegment->getClippingEnd(), kClippingEnd);
         return *this;
     }
 
@@ -205,7 +209,8 @@ public:
     Build &basicAudioSegment()
     {
         m_segment = std::make_unique<IMediaPipeline::MediaSegmentAudio>(kAudioSourceId, kTimeStamp, kDuration,
-                                                                        kSampleRate, kNumberOfChannels);
+                                                                        kSampleRate, kNumberOfChannels, kClippingStart,
+                                                                        kClippingEnd);
         m_segment->setData(kMediaData.size(), kMediaData.data());
         return *this;
     }

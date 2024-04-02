@@ -36,6 +36,8 @@ constexpr int kX{10};
 constexpr int kY{15};
 constexpr int kNumOfChannels{2};
 constexpr int kSampleRate{48000};
+constexpr uint64_t kClippingStart{1024};
+constexpr uint64_t kClippingEnd{2048};
 constexpr firebolt::rialto::Fraction kFrameRate{15, 1};
 constexpr int kAllLogs{RIALTO_DEBUG_LEVEL_FATAL | RIALTO_DEBUG_LEVEL_ERROR | RIALTO_DEBUG_LEVEL_WARNING |
                        RIALTO_DEBUG_LEVEL_MILESTONE | RIALTO_DEBUG_LEVEL_INFO | RIALTO_DEBUG_LEVEL_DEBUG};

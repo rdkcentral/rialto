@@ -89,7 +89,8 @@ SegmentBuilder &SegmentBuilder::basicVideoSegment(int sourceId)
 SegmentBuilder &SegmentBuilder::basicAudioSegment(int sourceId)
 {
     m_segment = std::make_unique<IMediaPipeline::MediaSegmentAudio>(sourceId, generate<int64_t>(), generate<int64_t>(),
-                                                                    kSampleRate, kNumOfChannels);
+                                                                    kSampleRate, kNumOfChannels, kClippingStart,
+                                                                    kClippingEnd);
     const size_t kIdx{generate<std::size_t>(std::size(kSegments) - 1)};
     m_segment->setData(kSegments[kIdx].size(), reinterpret_cast<const uint8_t *>(kSegments[kIdx].data()));
     return *this;
