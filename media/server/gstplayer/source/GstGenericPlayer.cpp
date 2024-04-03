@@ -486,15 +486,7 @@ void GstGenericPlayer::attachAudioData()
 
     if (m_context.audioAppSrc)
     {
-        GstBuffer *firstBuffer{nullptr};
-        if (!m_context.audioBuffers.empty())
-        {
-            firstBuffer = m_context.audioBuffers.front();
-        }
-        if (pushSampleIfRequired(m_context.audioAppSrc, firstBuffer) && firstBuffer)
-        {
-            m_context.audioBuffers.pop_front();
-        }
+        pushSampleIfRequired(m_context.audioAppSrc);
         for (GstBuffer *buffer : m_context.audioBuffers)
         {
             m_gstWrapper->gstAppSrcPushBuffer(GST_APP_SRC(m_context.audioAppSrc), buffer);
@@ -534,15 +526,7 @@ void GstGenericPlayer::attachVideoData()
     }
     if (m_context.videoAppSrc)
     {
-        GstBuffer *firstBuffer{nullptr};
-        if (!m_context.videoBuffers.empty())
-        {
-            firstBuffer = m_context.videoBuffers.front();
-        }
-        if (pushSampleIfRequired(m_context.videoAppSrc, firstBuffer) && firstBuffer)
-        {
-            m_context.videoBuffers.pop_front();
-        }
+        pushSampleIfRequired(m_context.videoAppSrc);
         for (GstBuffer *buffer : m_context.videoBuffers)
         {
             m_gstWrapper->gstAppSrcPushBuffer(GST_APP_SRC(m_context.videoAppSrc), buffer);
@@ -674,12 +658,13 @@ bool GstGenericPlayer::setCodecData(GstCaps *caps, const std::shared_ptr<CodecDa
     return false;
 }
 
-bool GstGenericPlayer::pushSampleIfRequired(GstElement *source, GstBuffer *buffer)
+void GstGenericPlayer::pushSampleIfRequired(GstElement *source)
 {
     auto initialPosition = m_context.initialPositions.find(source);
     if (m_context.initialPositions.end() == initialPosition)
     {
-        return false;
+        // Sending initial sample not needed
+        return;
     }
     RIALTO_SERVER_LOG_DEBUG("Pushing new sample...");
     GstSegment *segment{m_gstWrapper->gstSegmentNew()};
@@ -691,22 +676,24 @@ bool GstGenericPlayer::pushSampleIfRequired(GstElement *source, GstBuffer *buffe
         RIALTO_SERVER_LOG_WARN("Segment seek failed.");
         m_gstWrapper->gstSegmentFree(segment);
         m_context.initialPositions.erase(initialPosition);
-        return false;
+        return;
     }
 
     RIALTO_SERVER_LOG_MIL("New segment: [%" GST_TIME_FORMAT ", %" GST_TIME_FORMAT "], rate: %f \n",
                           GST_TIME_ARGS(segment->start), GST_TIME_ARGS(segment->stop), segment->rate);
 
     GstCaps *currentCaps = m_gstWrapper->gstAppSrcGetCaps(GST_APP_SRC(source));
-    GstSample *sample = m_gstWrapper->gstSampleNew(buffer, currentCaps, segment, nullptr);
+    // We can't pass buffer in GstSample, because implementation of gst_app_src_push_sample
+    // uses gst_buffer_copy, which loses RialtoProtectionMeta (that causes problems with EME
+    // for first frame).
+    GstSample *sample = m_gstWrapper->gstSampleNew(nullptr, currentCaps, segment, nullptr);
     m_gstWrapper->gstAppSrcPushSample(GST_APP_SRC(source), sample);
     m_gstWrapper->gstSampleUnref(sample);
     m_gstWrapper->gstCapsUnref(currentCaps);
 
     m_gstWrapper->gstSegmentFree(segment);
     m_context.initialPositions.erase(initialPosition);
-
-    return true;
+    return;
 }
 
 void GstGenericPlayer::scheduleNeedMediaData(GstAppSrc *src)

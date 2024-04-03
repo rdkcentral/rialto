@@ -284,10 +284,11 @@ void MediaPipelineTest::willPushAudioSample(const std::unique_ptr<IMediaPipeline
                 gstSegmentDoSeek(&m_segment, kRate, GST_FORMAT_TIME, GST_SEEK_FLAG_NONE, GST_SEEK_TYPE_SET, kPosition,
                                  GST_SEEK_TYPE_SET, GST_CLOCK_TIME_NONE, nullptr))
         .WillOnce(Return(true));
-    EXPECT_CALL(*m_gstWrapperMock, gstSampleNew(&buffer, &m_audioCaps, &m_segment, nullptr)).WillOnce(Return(m_sample));
+    EXPECT_CALL(*m_gstWrapperMock, gstSampleNew(nullptr, &m_audioCaps, &m_segment, nullptr)).WillOnce(Return(m_sample));
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushSample(&m_audioAppSrc, m_sample));
     EXPECT_CALL(*m_gstWrapperMock, gstSampleUnref(m_sample));
     EXPECT_CALL(*m_gstWrapperMock, gstSegmentFree(&m_segment));
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(&m_audioAppSrc, &buffer)).RetiresOnSaturation();
 }
 
 void MediaPipelineTest::willPushVideoSample(const std::unique_ptr<IMediaPipeline::MediaSegment> &segment,
@@ -319,10 +320,11 @@ void MediaPipelineTest::willPushVideoSample(const std::unique_ptr<IMediaPipeline
                 gstSegmentDoSeek(&m_segment, kRate, GST_FORMAT_TIME, GST_SEEK_FLAG_NONE, GST_SEEK_TYPE_SET, kPosition,
                                  GST_SEEK_TYPE_SET, GST_CLOCK_TIME_NONE, nullptr))
         .WillOnce(Return(true));
-    EXPECT_CALL(*m_gstWrapperMock, gstSampleNew(&buffer, &m_videoCaps, &m_segment, nullptr)).WillOnce(Return(m_sample));
+    EXPECT_CALL(*m_gstWrapperMock, gstSampleNew(nullptr, &m_videoCaps, &m_segment, nullptr)).WillOnce(Return(m_sample));
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushSample(&m_videoAppSrc, m_sample));
     EXPECT_CALL(*m_gstWrapperMock, gstSampleUnref(m_sample));
     EXPECT_CALL(*m_gstWrapperMock, gstSegmentFree(&m_segment));
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(&m_videoAppSrc, &buffer)).RetiresOnSaturation();
 }
 
 void MediaPipelineTest::willPause()
