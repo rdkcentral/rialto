@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_WRAPPERS_I_GST_WRAPPER_H_
 
 #include <gst/app/gstappsrc.h>
+#include <gst/audio/audio.h>
 #include <gst/audio/streamvolume.h>
 #include <gst/base/gstbasetransform.h>
 #include <gst/base/gstbytewriter.h>
@@ -1325,8 +1326,11 @@ public:
      * @param format the GstFormat of start and clippingEnd
      * @param start the amount of audio to clip from start of buffer
      * @param end the amount of audio to clip from end of buffer
+     *
+     * @return the GstAudioClippingMeta that was added to the buffer
      */
-    virtual void gstBufferAddAudioClippingMeta(GstBuffer *buffer, GstFormat format, guint64 start, guint64 end) const = 0;
+    virtual GstAudioClippingMeta *gstBufferAddAudioClippingMeta(GstBuffer *buffer, GstFormat format, guint64 start,
+                                                                guint64 end) const = 0;
 };
 
 }; // namespace firebolt::rialto::wrappers

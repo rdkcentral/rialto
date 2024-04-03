@@ -633,9 +633,16 @@ void GstGenericPlayer::addAudioClippingToBuffer(GstBuffer *buffer, uint64_t clip
 {
     if (clippingStart || clippingEnd)
     {
-        m_gstWrapper->gstBufferAddAudioClippingMeta(buffer, GST_FORMAT_TIME, clippingStart, clippingEnd);
-        RIALTO_SERVER_LOG_DEBUG("Added audio clipping to buffer %p, start: %" PRIu64 ", end %" PRIu64, buffer,
-                                clippingStart, clippingEnd);
+        if (m_gstWrapper->gstBufferAddAudioClippingMeta(buffer, GST_FORMAT_TIME, clippingStart, clippingEnd))
+        {
+            RIALTO_SERVER_LOG_DEBUG("Added audio clipping to buffer %p, start: %" PRIu64 ", end %" PRIu64, buffer,
+                                    clippingStart, clippingEnd);
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_WARN("Failed to add audio clipping to buffer %p, start: %" PRIu64 ", end %" PRIu64,
+                                   buffer, clippingStart, clippingEnd);
+        }
     }
 }
 

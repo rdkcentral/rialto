@@ -27,6 +27,7 @@
 #include "MediaCommon.h"
 #include "MessageBuilders.h"
 #include "SegmentBuilder.h"
+#include <gst/audio/audio.h>
 #include <string>
 #include <vector>
 
@@ -48,6 +49,7 @@ const std::string kPlayingStateName{"PLAYING"};
 constexpr GType kGstPlayFlagsType{static_cast<GType>(123)};
 constexpr unsigned kNeededDataLength{1};
 constexpr std::chrono::milliseconds kWorkerTimeout{200};
+GstAudioClippingMeta kClippingMeta{};
 } // namespace
 
 namespace firebolt::rialto::server::ct
@@ -189,7 +191,8 @@ void MediaPipelineTest::willPushAudioData(const std::unique_ptr<IMediaPipeline::
     EXPECT_CALL(*m_gstWrapperMock, gstCapsCopy(&m_audioCaps)).WillOnce(Return(&capsCopy)).RetiresOnSaturation();
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&capsCopy, StrEq("rate"), G_TYPE_INT, kSampleRate));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&capsCopy, StrEq("channels"), G_TYPE_INT, kNumOfChannels));
-    EXPECT_CALL(*m_gstWrapperMock, gstBufferAddAudioClippingMeta(&buffer, GST_FORMAT_TIME, kClippingStart, kClippingEnd));
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferAddAudioClippingMeta(&buffer, GST_FORMAT_TIME, kClippingStart, kClippingEnd))
+        .WillOnce(Return(&kClippingMeta));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsIsEqual(&m_audioCaps, &capsCopy)).WillOnce(Return(false));
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(&m_audioAppSrc, &capsCopy));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_audioCaps)).RetiresOnSaturation();
@@ -273,7 +276,8 @@ void MediaPipelineTest::willPushAudioSample(const std::unique_ptr<IMediaPipeline
     EXPECT_CALL(*m_gstWrapperMock, gstCapsCopy(&m_audioCaps)).WillOnce(Return(&capsCopy)).RetiresOnSaturation();
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&capsCopy, StrEq("rate"), G_TYPE_INT, kSampleRate));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&capsCopy, StrEq("channels"), G_TYPE_INT, kNumOfChannels));
-    EXPECT_CALL(*m_gstWrapperMock, gstBufferAddAudioClippingMeta(&buffer, GST_FORMAT_TIME, kClippingStart, kClippingEnd));
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferAddAudioClippingMeta(&buffer, GST_FORMAT_TIME, kClippingStart, kClippingEnd))
+        .WillOnce(Return(&kClippingMeta));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsIsEqual(&m_audioCaps, &capsCopy)).WillOnce(Return(false));
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(&m_audioAppSrc, &capsCopy));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_audioCaps)).Times(2).RetiresOnSaturation();
