@@ -30,10 +30,22 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
+      - name: Check if rialto-gstreamer branch with the same name exists
+        id: check-branch
+        shell: sh +e {0}
+        run: |
+          branch=master
+          git ls-remote --exit-code --heads "https://github.com/rdkcentral/rialto-gstreamer.git" ${{ github.event.pull_request.head.ref }} > /dev/null
+          if [ $? -eq 0 ]; then
+            branch="${{ github.event.pull_request.head.ref }}"
+          fi
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+
       - name: Checkout rialto-gstreamer repo
         uses: actions/checkout@v4
         with:
           repository: rdkcentral/rialto-gstreamer
+          ref: ${{ steps.check-branch.outputs.branch }}
           path: rialto-gstreamer
           
       - name: Set up Python
