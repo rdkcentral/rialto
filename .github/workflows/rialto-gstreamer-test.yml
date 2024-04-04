@@ -32,7 +32,8 @@ jobs:
     steps:
       - name: Check if rialto-gstreamer branch with the same name exists
         id: check-branch
-        run:
+        shell: sh +e {0}
+        run: |
           branch=master
           git ls-remote --exit-code --heads "https://github.com/rdkcentral/rialto-gstreamer.git" ${{ github.event.pull_request.head.ref }} > /dev/null
           if [ $? -eq 0 ]; then
