@@ -22,6 +22,7 @@
 #include "MediaSourceUtil.h"
 #include "PlayerTaskMock.h"
 #include "TimerMock.h"
+#include <gst/audio/audio.h>
 
 using testing::_;
 using testing::ByMove;
@@ -1102,6 +1103,57 @@ TEST_F(GstGenericPlayerPrivateTest, shouldNotUpdateVideoCapsNoChange)
 TEST_F(GstGenericPlayerPrivateTest, shouldNotUpdateAudioVideoCapsWhenNoSrc)
 {
     m_sut->updateVideoCaps(kWidth, kHeight, kFrameRate, kEmptyCodecData);
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldAddClippingMetaWhenStartAndEndNotZero)
+{
+    GstBuffer buf;
+    uint64_t clippingStart{1024};
+    uint64_t clippingEnd{2048};
+    GstAudioClippingMeta clippingMeta{};
+
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferAddAudioClippingMeta(&buf, GST_FORMAT_TIME, clippingStart, clippingEnd))
+        .WillOnce(Return(&clippingMeta));
+    m_sut->addAudioClippingToBuffer(&buf, clippingStart, clippingEnd);
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldFailToAddClipping)
+{
+    GstBuffer buf;
+    uint64_t clippingStart{1024};
+    uint64_t clippingEnd{2048};
+
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferAddAudioClippingMeta(&buf, GST_FORMAT_TIME, clippingStart, clippingEnd))
+        .WillOnce(Return(nullptr));
+    m_sut->addAudioClippingToBuffer(&buf, clippingStart, clippingEnd);
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldAddClippingMetaWhenStartNotZero)
+{
+    GstBuffer buf;
+    uint64_t clippingStart{1024};
+    GstAudioClippingMeta clippingMeta{};
+
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferAddAudioClippingMeta(&buf, GST_FORMAT_TIME, clippingStart, 0))
+        .WillOnce(Return(&clippingMeta));
+    m_sut->addAudioClippingToBuffer(&buf, clippingStart, 0);
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldAddClippingMetaWhenEndNotZero)
+{
+    GstBuffer buf;
+    uint64_t clippingEnd{2048};
+    GstAudioClippingMeta clippingMeta{};
+
+    EXPECT_CALL(*m_gstWrapperMock, gstBufferAddAudioClippingMeta(&buf, GST_FORMAT_TIME, 0, clippingEnd))
+        .WillOnce(Return(&clippingMeta));
+    m_sut->addAudioClippingToBuffer(&buf, 0, clippingEnd);
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldAddClippingMetaWhenStartAndEndZero)
+{
+    GstBuffer buf;
+    m_sut->addAudioClippingToBuffer(&buf, 0, 0);
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldFailToChangePlaybackStateWhenPipelineIsNull)

@@ -27,6 +27,7 @@
 #include "RialtoServerLogging.h"
 #include "WorkerThread.h"
 #include "tasks/generic/GenericPlayerTaskFactory.h"
+#include <cinttypes>
 
 namespace
 {
@@ -625,6 +626,23 @@ void GstGenericPlayer::updateVideoCaps(int32_t width, int32_t height, Fraction f
 
         m_gstWrapper->gstCapsUnref(currentCaps);
         m_gstWrapper->gstCapsUnref(newCaps);
+    }
+}
+
+void GstGenericPlayer::addAudioClippingToBuffer(GstBuffer *buffer, uint64_t clippingStart, uint64_t clippingEnd) const
+{
+    if (clippingStart || clippingEnd)
+    {
+        if (m_gstWrapper->gstBufferAddAudioClippingMeta(buffer, GST_FORMAT_TIME, clippingStart, clippingEnd))
+        {
+            RIALTO_SERVER_LOG_DEBUG("Added audio clipping to buffer %p, start: %" PRIu64 ", end %" PRIu64, buffer,
+                                    clippingStart, clippingEnd);
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_WARN("Failed to add audio clipping to buffer %p, start: %" PRIu64 ", end %" PRIu64,
+                                   buffer, clippingStart, clippingEnd);
+        }
     }
 }
 

@@ -37,6 +37,8 @@ constexpr int64_t kTimeStamp{1423435};
 constexpr int64_t kDuration{12324};
 constexpr int32_t kSampleRate{3536};
 constexpr int32_t kNumberOfChannels{3};
+constexpr uint64_t kClippingStart{1024};
+constexpr uint64_t kClippingEnd{2048};
 constexpr int32_t kWidth{1024};
 constexpr int32_t kHeight{768};
 constexpr Fraction kFrameRate{15, 1};
@@ -58,7 +60,7 @@ uint32_t readLEUint32(const uint8_t *buffer)
 std::unique_ptr<IMediaPipeline::MediaSegment> createAudioSegment()
 {
     auto segment{std::make_unique<IMediaPipeline::MediaSegmentAudio>(kSourceId, kTimeStamp, kDuration, kSampleRate,
-                                                                     kNumberOfChannels)};
+                                                                     kNumberOfChannels, kClippingStart, kClippingEnd)};
     segment->setData(kMediaDataLength, kMediaData);
     return segment;
 }
@@ -100,6 +102,8 @@ void checkAudioMetadata(const MediaSegmentMetadata &metadata)
 {
     EXPECT_EQ(metadata.sample_rate(), kSampleRate);
     EXPECT_EQ(metadata.channels_num(), kNumberOfChannels);
+    EXPECT_EQ(metadata.clipping_start(), kClippingStart);
+    EXPECT_EQ(metadata.clipping_end(), kClippingEnd);
     EXPECT_FALSE(metadata.has_width());
     EXPECT_FALSE(metadata.has_height());
 }

@@ -164,8 +164,10 @@ protected:
         {
             int32_t sampleRate = 6;
             int32_t numberOfChannels = 7;
+            uint64_t clippingStart = 1024;
+            uint64_t clippingEnd = 2048;
             frame = std::make_unique<IMediaPipeline::MediaSegmentAudio>(m_sourceId, timestamp, duration, sampleRate,
-                                                                        numberOfChannels);
+                                                                        numberOfChannels, clippingStart, clippingEnd);
         }
         else if (sourceType == MediaSourceType::VIDEO)
         {
