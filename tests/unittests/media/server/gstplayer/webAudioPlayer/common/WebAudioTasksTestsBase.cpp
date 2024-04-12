@@ -89,7 +89,7 @@ void WebAudioTasksTestsBase::shouldPauseSuccess()
 void WebAudioTasksTestsBase::shouldPauseFailure()
 {
     EXPECT_CALL(testContext->m_gstPlayer, changePipelineState(GST_STATE_PAUSED)).WillOnce(Return(false));
-    EXPECT_CALL(testContext->m_gstPlayerClient, notifyState(firebolt::rialto::WebAudioPlayerState::FAILURE));
+    // The real (non-mock) changePipelineState will notify the client of failure
 }
 
 void WebAudioTasksTestsBase::triggerPause()
@@ -106,7 +106,7 @@ void WebAudioTasksTestsBase::shouldPlaySuccess()
 void WebAudioTasksTestsBase::shouldPlayFailure()
 {
     EXPECT_CALL(testContext->m_gstPlayer, changePipelineState(GST_STATE_PLAYING)).WillOnce(Return(false));
-    EXPECT_CALL(testContext->m_gstPlayerClient, notifyState(firebolt::rialto::WebAudioPlayerState::FAILURE));
+    // The real (non-mock) changePipelineState will notify the client of failure
 }
 
 void WebAudioTasksTestsBase::triggerPlay()

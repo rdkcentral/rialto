@@ -41,10 +41,15 @@ public:
     void willCreateWebAudioPlayer();
     void createWebAudioPlayer();
 
+    void willFailToCreateWebAudioPlayer();
+    void failToCreateWebAudioPlayer();
+
     void willWebAudioPlay();
+    void willWebAudioPlayFail();
     void webAudioPlay();
 
     void willWebAudioPause();
+    void willWebAudioPauseFail();
     void webAudioPause();
 
     void willWebAudioSetEos();

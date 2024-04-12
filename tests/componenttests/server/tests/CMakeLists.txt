@@ -69,6 +69,7 @@ add_gtests (
         mediaPipelineCapabilities/MediaPipelineCapabilitiesTest.cpp
         webAudio/WebAudioTestMethods.cpp
         webAudio/WebAudioTest.cpp
+        webAudio/WebAudioFailuresTest.cpp
         )
 
 target_include_directories(
