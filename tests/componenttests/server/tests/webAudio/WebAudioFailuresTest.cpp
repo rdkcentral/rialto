@@ -108,8 +108,8 @@ public:
  *  Server is terminated.
  *
  * Expected Results:
- *  To create a web audio player and process all of the above steps
- *  without any error
+ *  To create a web audio player and emulate playback and pause failures
+ *  and the server correctly notifies the client
  *
  * Code:
  */
@@ -177,20 +177,17 @@ TEST_F(WebAudioFailuresTest, testPlayAndPauseFailures)
  *  Start the server running in it's own thread
  *
  * Test Steps:
- *  Step 1: Create a new web audio player
- *   Same as Step 1 in WebAudioTest.cpp
- *   We expect that a specific (and large) number of gstreamer calls are made
- *     to initialise playback
- *   Create an instance of WebAudioPlayer.
- *   gstreamer state becomes ready
- *   the server sends a WebAudioPlayerStateEvent message to the client to signal that it is IDLE
+ *  Step 1: Failure to create a new web audio player
+ *   We emlate failure of the gstreamer calls
+ *   Attempt to create an instance of WebAudioPlayer.
+ *   gstreamer fails
+ *   the server sends a failure reponse message to the client
  *
  * Test Teardown:
  *  Server is terminated.
  *
  * Expected Results:
- *  To create a web audio player and process all of the above steps
- *  without any error
+ *  Failure is reported to the client successfully
  *
  * Code:
  */
