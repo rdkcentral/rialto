@@ -41,17 +41,18 @@ std::shared_ptr<IWebAudioPlayerIpcFactory> IWebAudioPlayerIpcFactory::getFactory
     return factory;
 }
 
-std::unique_ptr<IWebAudioPlayerIpc> WebAudioPlayerIpcFactory::createWebAudioPlayerIpc(IWebAudioPlayerIpcClient *client,
-                                                                                      const std::string &audioMimeType,
-                                                                                      const uint32_t priority,
-                                                                                      const WebAudioConfig *config)
+std::unique_ptr<IWebAudioPlayerIpc>
+WebAudioPlayerIpcFactory::createWebAudioPlayerIpc(IWebAudioPlayerIpcClient *client, const std::string &audioMimeType,
+                                                  const uint32_t priority, std::weak_ptr<const WebAudioConfig> config,
+                                                  std::weak_ptr<IIpcClient> ipcClientParam)
 {
     std::unique_ptr<IWebAudioPlayerIpc> webAudioPlayerIpc;
     try
     {
+        std::shared_ptr<IIpcClient> ipcClient = ipcClientParam.lock();
         webAudioPlayerIpc =
             std::make_unique<WebAudioPlayerIpc>(client, audioMimeType, priority, config,
-                                                IIpcClientAccessor::instance().getIpcClient(),
+                                                ipcClient ? *ipcClient : IIpcClientAccessor::instance().getIpcClient(),
                                                 firebolt::rialto::common::IEventThreadFactory::createFactory());
     }
     catch (const std::exception &e)
@@ -63,7 +64,8 @@ std::unique_ptr<IWebAudioPlayerIpc> WebAudioPlayerIpcFactory::createWebAudioPlay
 }
 
 WebAudioPlayerIpc::WebAudioPlayerIpc(IWebAudioPlayerIpcClient *client, const std::string &audioMimeType,
-                                     const uint32_t priority, const WebAudioConfig *config, IIpcClient &ipcClient,
+                                     const uint32_t priority, std::weak_ptr<const WebAudioConfig> config,
+                                     IIpcClient &ipcClient,
                                      const std::shared_ptr<common::IEventThreadFactory> &eventThreadFactory)
     : IpcModule(ipcClient), m_webAudioPlayerIpcClient(client),
       m_eventThread(eventThreadFactory->createEventThread("rialto-web-audio-player-events")), m_webAudioPlayerHandle(-1)
@@ -438,7 +440,7 @@ bool WebAudioPlayerIpc::getVolume(double &volume)
 }
 
 bool WebAudioPlayerIpc::createWebAudioPlayer(const std::string &audioMimeType, const uint32_t priority,
-                                             const WebAudioConfig *config)
+                                             std::weak_ptr<const WebAudioConfig> webAudioConfig)
 {
     if (!reattachChannelIfRequired())
     {
@@ -449,15 +451,16 @@ bool WebAudioPlayerIpc::createWebAudioPlayer(const std::string &audioMimeType, c
     firebolt::rialto::CreateWebAudioPlayerRequest request;
     request.set_audio_mime_type(audioMimeType);
     request.set_priority(priority);
-    if (config)
+    std::shared_ptr<const WebAudioConfig> kConfig = webAudioConfig.lock();
+    if (kConfig)
     {
         ::firebolt::rialto::CreateWebAudioPlayerRequest_WebAudioPcmConfig pcm_config;
-        pcm_config.set_rate(config->pcm.rate);
-        pcm_config.set_channels(config->pcm.channels);
-        pcm_config.set_sample_size(config->pcm.sampleSize);
-        pcm_config.set_is_big_endian(config->pcm.isBigEndian);
-        pcm_config.set_is_signed(config->pcm.isSigned);
-        pcm_config.set_is_float(config->pcm.isFloat);
+        pcm_config.set_rate(kConfig->pcm.rate);
+        pcm_config.set_channels(kConfig->pcm.channels);
+        pcm_config.set_sample_size(kConfig->pcm.sampleSize);
+        pcm_config.set_is_big_endian(kConfig->pcm.isBigEndian);
+        pcm_config.set_is_signed(kConfig->pcm.isSigned);
+        pcm_config.set_is_float(kConfig->pcm.isFloat);
         request.mutable_config()->mutable_pcm()->CopyFrom(pcm_config);
     }
 

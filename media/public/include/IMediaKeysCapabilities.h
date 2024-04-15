@@ -103,6 +103,18 @@ public:
      * @retval true if operation was successful
      */
     virtual bool getSupportedKeySystemVersion(const std::string &keySystem, std::string &version) = 0;
+
+    /**
+     * @brief Gets support server certificate.
+     *
+     * Some DRMs (e.g. WideVine) use a system-wide server certificate. This method
+     * gets if system has support for that certificate.
+     *
+     * @param[in] keySystem    : The key system.
+     *
+     * @retval true if server certificate is supported
+     */
+    virtual bool isServerCertificateSupported(const std::string &keySystem) = 0;
 };
 
 }; // namespace firebolt::rialto

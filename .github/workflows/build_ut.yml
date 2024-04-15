@@ -36,59 +36,15 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
 
-  # This job downloads and caches the protobuf library to speed up execution
-  download-protobuf:
-    name: Download and Cache Protobuf
+  # This job sets up the repo with the dependancies then runs the servermain tests
+  run-servermain:
+    name: Build and test servermain unittests
+
     # Runs on ubuntu
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
+
     # Timeout after
-    timeout-minutes: 90
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    # Protobuf isnt cached if any steps fail, hence it is isolated in its own job
-    steps:
-      # Setup github for protobuf 3.7.0
-      - name: Cache protobuf library
-        id: cache-protobuf-2
-        uses: actions/cache@v3
-        with:
-          path: protobuf
-          key: ${{ runner.os }}-protobuf-2
-      - name: Build protobuf library
-        if: steps.cache-protobuf-2.outputs.cache-hit != 'true'
-        run: |
-          git clone https://github.com/protocolbuffers/protobuf.git protobuf
-          cd protobuf
-          git checkout v3.7.0
-          git submodule update --init --recursive
-          ./autogen.sh
-          ./autogen.sh
-          ./configure
-          make
-          make check
-      - name: Install protobuf library
-        timeout-minutes: 2
-        run: |
-          cd protobuf
-          sudo make install
-          sudo ldconfig
-
-      # If this job was cancelled by protobuf install, the cache is likely corrupt
-      # See instructions on how to reset the cache - https://wiki.rdkcentral.com/display/ASP/Github+workflow+Failures
-      - name: Is Cancelled
-        if: cancelled()
-        run: |
-          echo "If this job was cancelled due to 'Install protobuf library' timeout, the cache is likely corrupt and needs deleting! (see https://wiki.rdkcentral.com/display/ASP/Github+workflow+Failures)" >> $GITHUB_STEP_SUMMARY
-
-  # This job sets up the repo with the dependancies then runs the tests
-  build-test:
-    name: Build and test build_ut
-    # Wait for protobuf to be cached first
-    needs: download-protobuf
-    # Runs on ubuntu
-    runs-on: ubuntu-20.04
-    # Timeout after
-    timeout-minutes: 60
+    timeout-minutes: 10
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -96,67 +52,586 @@ jobs:
       - name: checkout repo
         uses: actions/checkout@v3
 
-      # Setup github for python 3.8
-      - name: setup python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
+      # Initialises the host ready to run unittests
+      - name: Initialise host
+        uses: ./.github/workflows/actions/init_ut
 
-      # Setup gstreamer 1.0
-      - name: Build gstreamer library
+      # Run the build script for servermain
+      - name: build_ut.py script servermain
         run: |
-          sudo apt-get update
-          sudo apt-get install libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-doc gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio lcov
+              python build_ut.py -c -xml -f -cov -s servermain
 
-      # Setup github for protobuf 3.7.0
-      # Protobuf should always be cached here
-      - name: Cache protobuf library
-        id: cache-protobuf-2
-        uses: actions/cache@v3
-        with:
-          path: protobuf
-          key: ${{ runner.os }}-protobuf-2
-      - name: Check cache
-        if: steps.cache-protobuf-2.outputs.cache-hit != 'true'
-        run: |
-          exit 1
-      - name: Install protobuf library
-        timeout-minutes: 2
-        run: |
-          cd protobuf
-          sudo make install
-          sudo ldconfig
-
-      # If this job was cancelled by protobuf install, the cache is likely corrupt
-      # See instructions on how to reset the cache - https://wiki.rdkcentral.com/display/ASP/Github+workflow+Failures
-      - name: Is Cancelled
-        if: cancelled()
-        run: |
-          echo "If this job was cancelled due to 'Install protobuf library' timeout, the cache is likely corrupt and needs deleting! (see https://wiki.rdkcentral.com/display/ASP/Github+workflow+Failures)" >> $GITHUB_STEP_SUMMARY
-
-      # Run the build script
-      - name: build_ut.py script
-        run: |
-              python build_ut.py -c -xml -f -cov
-
-      # Process the test results
-      - name: Check results
-        uses: dorny/test-reporter@v1
+      # Processes the results of the unittests and the lcov output
+      - name: Process output
+        uses: ./.github/workflows/actions/process_results_ut
         if: success() || failure()
         with:
-          name: GTests
-          path: build/*gtest_result.xml
-          reporter: java-junit
+          suite: 'servermain'
 
-      # Upload logs on failure
-      - name: Upload logs
-        uses: actions/upload-artifact@v3
-        if: failure()
+      # Cache lcov output
+      - name: Cache servermain coverage
+        id: cache-servermain-coverage
+        uses: actions/cache@v3
+        if: success()
         with:
-          name: logs
-          path: |
-            gtest_result.log
-            build/*gtest_result.xml
+          path: build/coverage-servermain.info
+          key: ${{ runner.os }}-servermain-coverage-${{ github.run_id }}-${{ github.run_number }}
+
+  # This job sets up the repo with the dependancies then runs the servergstplayer tests
+  run-servergstplayer:
+    name: Build and test servergstplayer unittests
+
+    # Runs on ubuntu
+    runs-on: ubuntu-22.04
+
+    # Timeout after
+    timeout-minutes: 20
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: checkout repo
+        uses: actions/checkout@v3
+
+      # Initialises the host ready to run unittests
+      - name: Initialise host
+        uses: ./.github/workflows/actions/init_ut
+
+      # Run the build script for servergstplayer
+      - name: build_ut.py script servergstplayer
+        run: |
+              python build_ut.py -c -xml -f -cov -s servergstplayer
+
+      # Processes the results of the unittests and the lcov output
+      - name: Process output
+        uses: ./.github/workflows/actions/process_results_ut
+        if: success() || failure()
+        with:
+          suite: 'servergstplayer'
+
+      # Cache lcov output
+      - name: Cache servergstplayer coverage
+        id: cache-servergstplayer-coverage
+        uses: actions/cache@v3
+        if: success()
+        with:
+          path: build/coverage-servergstplayer.info
+          key: ${{ runner.os }}-servergstplayer-coverage-${{ github.run_id }}-${{ github.run_number }}
+
+  # This job sets up the repo with the dependancies then runs the serveripc tests
+  run-serveripc:
+    name: Build and test serveripc unittests
+
+    # Runs on ubuntu
+    runs-on: ubuntu-22.04
+
+    # Timeout after
+    timeout-minutes: 10
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: checkout repo
+        uses: actions/checkout@v3
+
+      # Initialises the host ready to run unittests
+      - name: Initialise host
+        uses: ./.github/workflows/actions/init_ut
+
+      # Run the build script for serveripc
+      - name: build_ut.py script serveripc
+        run: |
+              python build_ut.py -c -xml -f -cov -s serveripc
+
+      # Processes the results of the unittests and the lcov output
+      - name: Process output
+        uses: ./.github/workflows/actions/process_results_ut
+        if: success() || failure()
+        with:
+          suite: 'serveripc'
+
+      # Cache lcov output
+      - name: Cache serveripc coverage
+        id: cache-serveripc-coverage
+        uses: actions/cache@v3
+        if: success()
+        with:
+          path: build/coverage-serveripc.info
+          key: ${{ runner.os }}-serveripc-coverage-${{ github.run_id }}-${{ github.run_number }}
+
+  # This job sets up the repo with the dependancies then runs the serverservice tests
+  run-serverservice:
+    name: Build and test serverservice unittests
+
+    # Runs on ubuntu
+    runs-on: ubuntu-22.04
+
+    # Timeout after
+    timeout-minutes: 10
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: checkout repo
+        uses: actions/checkout@v3
+
+      # Initialises the host ready to run unittests
+      - name: Initialise host
+        uses: ./.github/workflows/actions/init_ut
+
+      # Run the build script for serverservice
+      - name: build_ut.py script serverservice
+        run: |
+              python build_ut.py -c -xml -f -cov -s serverservice
+
+      # Processes the results of the unittests and the lcov output
+      - name: Process output
+        uses: ./.github/workflows/actions/process_results_ut
+        if: success() || failure()
+        with:
+          suite: 'serverservice'
+
+      # Cache lcov output
+      - name: Cache serverservice coverage
+        id: cache-serverservice-coverage
+        uses: actions/cache@v3
+        if: success()
+        with:
+          path: build/coverage-serverservice.info
+          key: ${{ runner.os }}-serverservice-coverage-${{ github.run_id }}-${{ github.run_number }}
+
+  # This job sets up the repo with the dependancies then runs the client tests
+  run-client:
+    name: Build and test client unittests
+
+    # Runs on ubuntu
+    runs-on: ubuntu-22.04
+
+    # Timeout after
+    timeout-minutes: 10
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: checkout repo
+        uses: actions/checkout@v3
+
+      # Initialises the host ready to run unittests
+      - name: Initialise host
+        uses: ./.github/workflows/actions/init_ut
+
+      # Run the build script for client
+      - name: build_ut.py script client
+        run: |
+              python build_ut.py -c -xml -f -cov -s client
+
+      # Processes the results of the unittests and the lcov output
+      - name: Process output
+        uses: ./.github/workflows/actions/process_results_ut
+        if: success() || failure()
+        with:
+          suite: 'client'
+
+      # Cache lcov output
+      - name: Cache client coverage
+        id: cache-client-coverage
+        uses: actions/cache@v3
+        if: success()
+        with:
+          path: build/coverage-client.info
+          key: ${{ runner.os }}-client-coverage-${{ github.run_id }}-${{ github.run_number }}
+
+  # This job sets up the repo with the dependancies then runs the clientipc tests
+  run-clientipc:
+    name: Build and test clientipc unittests
+
+    # Runs on ubuntu
+    runs-on: ubuntu-22.04
+
+    # Timeout after
+    timeout-minutes: 10
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: checkout repo
+        uses: actions/checkout@v3
+
+      # Initialises the host ready to run unittests
+      - name: Initialise host
+        uses: ./.github/workflows/actions/init_ut
+
+      # Run the build script for clientipc
+      - name: build_ut.py script clientipc
+        run: |
+              python build_ut.py -c -xml -f -cov -s clientipc
+
+      # Processes the results of the unittests and the lcov output
+      - name: Process output
+        uses: ./.github/workflows/actions/process_results_ut
+        if: success() || failure()
+        with:
+          suite: 'clientipc'
+
+      # Cache lcov output
+      - name: Cache clientipc coverage
+        id: cache-clientipc-coverage
+        uses: actions/cache@v3
+        if: success()
+        with:
+          path: build/coverage-clientipc.info
+          key: ${{ runner.os }}-clientipc-coverage-${{ github.run_id }}-${{ github.run_number }}
+
+  # This job sets up the repo with the dependancies then runs the common tests
+  run-playercommon:
+    name: Build and test playercommon unittests
+
+    # Runs on ubuntu
+    runs-on: ubuntu-22.04
+
+    # Timeout after
+    timeout-minutes: 10
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: checkout repo
+        uses: actions/checkout@v3
+
+      # Initialises the host ready to run unittests
+      - name: Initialise host
+        uses: ./.github/workflows/actions/init_ut
+
+      # Run the build script for playercommon
+      - name: build_ut.py script playercommon
+        run: |
+              python build_ut.py -c -xml -f -cov -s playercommon
+
+      # Processes the results of the unittests and the lcov output
+      - name: Process output
+        uses: ./.github/workflows/actions/process_results_ut
+        if: success() || failure()
+        with:
+          suite: 'playercommon'
+
+      # Cache lcov output
+      - name: Cache playercommon coverage
+        id: cache-playercommon-coverage
+        uses: actions/cache@v3
+        if: success()
+        with:
+          path: build/coverage-playercommon.info
+          key: ${{ runner.os }}-playercommon-coverage-${{ github.run_id }}-${{ github.run_number }}
+
+  # This job sets up the repo with the dependancies then runs the common tests
+  run-common:
+    name: Build and test common unittests
+
+    # Runs on ubuntu
+    runs-on: ubuntu-22.04
+
+    # Timeout after
+    timeout-minutes: 10
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: checkout repo
+        uses: actions/checkout@v3
+
+      # Initialises the host ready to run unittests
+      - name: Initialise host
+        uses: ./.github/workflows/actions/init_ut
+
+      # Run the build script for common
+      - name: build_ut.py script common
+        run: |
+              python build_ut.py -c -xml -f -cov -s common
+
+      # Processes the results of the unittests and the lcov output
+      - name: Process output
+        uses: ./.github/workflows/actions/process_results_ut
+        if: success() || failure()
+        with:
+          suite: 'common'
+
+      # Cache lcov output
+      - name: Cache common coverage
+        id: cache-common-coverage
+        uses: actions/cache@v3
+        if: success()
+        with:
+          path: build/coverage-common.info
+          key: ${{ runner.os }}-common-coverage-${{ github.run_id }}-${{ github.run_number }}
+
+  # This job sets up the repo with the dependancies then runs the logging tests
+  run-logging:
+    name: Build and test logging unittests
+
+    # Runs on ubuntu
+    runs-on: ubuntu-22.04
+
+    # Timeout after
+    timeout-minutes: 10
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: checkout repo
+        uses: actions/checkout@v3
+
+      # Initialises the host ready to run unittests
+      - name: Initialise host
+        uses: ./.github/workflows/actions/init_ut
+
+      # Run the build script for logging
+      - name: build_ut.py script logging
+        run: |
+              python build_ut.py -c -xml -f -cov -s logging
+
+      # Processes the results of the unittests and the lcov output
+      - name: Process output
+        uses: ./.github/workflows/actions/process_results_ut
+        if: success() || failure()
+        with:
+          suite: 'logging'
+
+      # Cache lcov output
+      - name: Cache logging coverage
+        id: cache-logging-coverage
+        uses: actions/cache@v3
+        if: success()
+        with:
+          path: build/coverage-logging.info
+          key: ${{ runner.os }}-logging-coverage-${{ github.run_id }}-${{ github.run_number }}
+
+
+  # This job sets up the repo with the dependancies then runs the manager tests
+  run-manager:
+    name: Build and test manager unittests
+
+    # Runs on ubuntu
+    runs-on: ubuntu-22.04
+
+    # Timeout after
+    timeout-minutes: 10
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: checkout repo
+        uses: actions/checkout@v3
+
+      # Initialises the host ready to run unittests
+      - name: Initialise host
+        uses: ./.github/workflows/actions/init_ut
+
+      # Run the build script for manager
+      - name: build_ut.py script manager
+        run: |
+              python build_ut.py -c -xml -f -cov -s manager
+
+      # Processes the results of the unittests and the lcov output
+      - name: Process output
+        uses: ./.github/workflows/actions/process_results_ut
+        if: success() || failure()
+        with:
+          suite: 'manager'
+
+      # Cache lcov output
+      - name: Cache manager coverage
+        id: cache-manager-coverage
+        uses: actions/cache@v3
+        if: success()
+        with:
+          path: build/coverage-manager.info
+          key: ${{ runner.os }}-manager-coverage-${{ github.run_id }}-${{ github.run_number }}
+
+  # This job sets up the repo with the dependancies then runs the ipc tests
+  run-ipc:
+    name: Build and test ipc unittests
+
+    # Runs on ubuntu
+    runs-on: ubuntu-22.04
+
+    # Timeout after
+    timeout-minutes: 10
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: checkout repo
+        uses: actions/checkout@v3
+
+      # Initialises the host ready to run unittests
+      - name: Initialise host
+        uses: ./.github/workflows/actions/init_ut
+
+      # Run the build script for ipc
+      - name: build_ut.py script ipc
+        run: |
+              python build_ut.py -c -xml -f -cov -s ipc
+
+      # Processes the results of the unittests and the lcov output
+      - name: Process output
+        uses: ./.github/workflows/actions/process_results_ut
+        if: success() || failure()
+        with:
+          suite: 'ipc'
+
+      # Cache lcov output
+      - name: Cache ipc coverage
+        id: cache-ipc-coverage
+        uses: actions/cache@v3
+        if: success()
+        with:
+          path: build/coverage-ipc.info
+          key: ${{ runner.os }}-ipc-coverage-${{ github.run_id }}-${{ github.run_number }}
+
+  # This job runs the coverage report
+  generate-coverage-report:
+    name: Generates Coverage Report
+
+    # Runs on ubuntu
+    runs-on: ubuntu-22.04
+
+    # Timeout after
+    timeout-minutes: 10
+
+    needs: [run-servermain, run-servergstplayer, run-serveripc, run-serverservice, run-client, run-clientipc, run-common, run-playercommon, run-logging, run-manager, run-ipc]
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: checkout repo
+        uses: actions/checkout@v3
+
+      # Setup lcov 2.0
+      - name: Install lcov library
+        run: |
+          sudo apt-get install libjson-perl libperlio-gzip-perl perl libgd-gd2-perl libcapture-tiny-perl libdatetime-perl
+          wget https://github.com/linux-test-project/lcov/releases/download/v2.0/lcov-2.0.tar.gz
+          tar -xf lcov-2.0.tar.gz
+          cd lcov-2.0
+          sudo make install
+
+      # Get cached lcov servermain output
+      - name: Get servermain coverage
+        id: cache-servermain-coverage
+        uses: actions/cache@v3
+        if: success()
+        with:
+          path: build/coverage-servermain.info
+          key: ${{ runner.os }}-servermain-coverage-${{ github.run_id }}-${{ github.run_number }}
+
+      # Get cached lcov servergstplayer output
+      - name: Get servergstplayer coverage
+        id: cache-servergstplayer-coverage
+        uses: actions/cache@v3
+        if: success()
+        with:
+          path: build/coverage-servergstplayer.info
+          key: ${{ runner.os }}-servergstplayer-coverage-${{ github.run_id }}-${{ github.run_number }}
+
+      # Get cached lcov serveripc output
+      - name: Get serveripc coverage
+        id: cache-serveripc-coverage
+        uses: actions/cache@v3
+        if: success()
+        with:
+          path: build/coverage-serveripc.info
+          key: ${{ runner.os }}-serveripc-coverage-${{ github.run_id }}-${{ github.run_number }}
+
+      # Get cached lcov serverservice output
+      - name: Get serverservice coverage
+        id: cache-serverservice-coverage
+        uses: actions/cache@v3
+        if: success()
+        with:
+          path: build/coverage-serverservice.info
+          key: ${{ runner.os }}-serverservice-coverage-${{ github.run_id }}-${{ github.run_number }}
+
+      # Get cached lcov client output
+      - name: Get client coverage
+        id: cache-client-coverage
+        uses: actions/cache@v3
+        if: success()
+        with:
+          path: build/coverage-client.info
+          key: ${{ runner.os }}-client-coverage-${{ github.run_id }}-${{ github.run_number }}
+
+      # Get cached lcov clientipc output
+      - name: Get clientipc coverage
+        id: cache-clientipc-coverage
+        uses: actions/cache@v3
+        if: success()
+        with:
+          path: build/coverage-clientipc.info
+          key: ${{ runner.os }}-clientipc-coverage-${{ github.run_id }}-${{ github.run_number }}
+
+      # Get cached lcov common output
+      - name: Get common coverage
+        id: cache-common-coverage
+        uses: actions/cache@v3
+        if: success()
+        with:
+          path: build/coverage-common.info
+          key: ${{ runner.os }}-common-coverage-${{ github.run_id }}-${{ github.run_number }}
+
+      # Get cached lcov playercommon output
+      - name: Get playercommon coverage
+        id: cache-playercommon-coverage
+        uses: actions/cache@v3
+        if: success()
+        with:
+          path: build/coverage-playercommon.info
+          key: ${{ runner.os }}-playercommon-coverage-${{ github.run_id }}-${{ github.run_number }}
+
+      # Get cached lcov logging output
+      - name: Get logging coverage
+        id: cache-logging-coverage
+        uses: actions/cache@v3
+        if: success()
+        with:
+          path: build/coverage-logging.info
+          key: ${{ runner.os }}-logging-coverage-${{ github.run_id }}-${{ github.run_number }}
+
+      # Get cached lcov manager output
+      - name: Get manager coverage
+        id: cache-manager-coverage
+        uses: actions/cache@v3
+        if: success()
+        with:
+          path: build/coverage-manager.info
+          key: ${{ runner.os }}-manager-coverage-${{ github.run_id }}-${{ github.run_number }}
+
+      # Get cached lcov ipc output
+      - name: Get ipc coverage
+        id: cache-ipc-coverage
+        uses: actions/cache@v3
+        if: success()
+        with:
+          path: build/coverage-ipc.info
+          key: ${{ runner.os }}-ipc-coverage-${{ github.run_id }}-${{ github.run_number }}
+
+      # Generage full rialto coverage report
+      - name: Combine coverage reports
+        run: |
+          cd build
+          lcov -a coverage-servermain.info -a coverage-servergstplayer.info -a coverage-serveripc.info -a coverage-serverservice.info \
+          -a coverage-client.info -a coverage-clientipc.info -a coverage-common.info -a coverage-playercommon.info -a coverage-logging.info -a coverage-manager.info \
+          -a coverage-ipc.info -o coverage.info --filter brace,function,trivial
+
+      - name: Generate html
+        run: |
+          cd build
+          genhtml coverage.info --output-directory gh_pages/coverage_report --filter brace,function,trivial
+
+      - name: Generate coverage stats
+        run: |
+          cd build
+          lcov --summary coverage.info --filter brace,function,trivial > coverage_statistics.txt
 
       # Upload coverage report on success
       - name: Upload Coverage Report
@@ -174,6 +649,29 @@ jobs:
           name: coverage_report_stats
           path: build/coverage_statistics.txt
 
+  checks-the-cov-report:
+    name: Checks the Coverage Report
+
+    # Runs on ubuntu
+    runs-on: ubuntu-22.04
+
+    # Timeout after
+    timeout-minutes: 2
+
+    # Define the dependencies on the previous coverage jobs
+    needs: [generate-coverage-report]
+    
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+    
+      # Download the current coverage statistics
+      - name: Download Current Coverage Statistics
+        uses: actions/download-artifact@v2
+        with:
+          name: coverage_report_stats
+          path: build
+        
       # Download current master coverage statistics
       - name: Download Master Coverage Statistics
         uses: dawidd6/action-download-artifact@v2
@@ -183,25 +681,25 @@ jobs:
           branch: master
           name: coverage_report_stats
           path: master_artifacts
-
+      
       # Run the process_coverage_stats script
       - name: Process Coverage Statistics
         if: ${{ success() && github.ref != 'refs/heads/master' }}
         run: python scripts/coverage/process_coverage_stats.py ./master_artifacts/coverage_statistics.txt build/coverage_statistics.txt
-
+      
       # Get process_coverage_stats script output
       - id: get-comment-body
-        if: ${{ success() && github.ref != 'refs/heads/master' }}
+        if: ${{ (success() || failure()) && github.ref != 'refs/heads/master' }}
         run: |
           body="$(cat comparison_output.txt)"
           body="${body//'%'/'%25'}"
           body="${body//$'\n'/'%0A'}"
           body="${body//$'\r'/'%0D'}"
           echo "::set-output name=body::$body"
-
+      
       # Create comment with coverage info
       - name: Create Coverage Comment
-        if: ${{ success() && github.ref != 'refs/heads/master' }}
+        if: ${{ (success() || failure()) && github.ref != 'refs/heads/master' }}
         uses: peter-evans/create-or-update-comment@v2
         with:
           issue-number: ${{ github.event.pull_request.number }}

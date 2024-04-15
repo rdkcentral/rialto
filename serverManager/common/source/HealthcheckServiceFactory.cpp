@@ -23,8 +23,9 @@
 
 namespace rialto::servermanager::common
 {
-HealthcheckServiceFactory::HealthcheckServiceFactory(std::chrono::seconds healthcheckInterval)
-    : m_kHealthcheckFrequency{healthcheckInterval}
+HealthcheckServiceFactory::HealthcheckServiceFactory(std::chrono::seconds healthcheckInterval,
+                                                     unsigned numOfFailedPingsBeforeRecovery)
+    : m_kHealthcheckFrequency{healthcheckInterval}, m_kNumOfFailedPingsBeforeRecovery{numOfFailedPingsBeforeRecovery}
 {
 }
 
@@ -32,6 +33,6 @@ std::unique_ptr<IHealthcheckService>
 HealthcheckServiceFactory::createHealthcheckService(ISessionServerAppManager &appManager) const
 {
     return std::make_unique<HealthcheckService>(appManager, firebolt::rialto::common::ITimerFactory::getFactory(),
-                                                m_kHealthcheckFrequency);
+                                                m_kHealthcheckFrequency, m_kNumOfFailedPingsBeforeRecovery);
 }
 } // namespace rialto::servermanager::common

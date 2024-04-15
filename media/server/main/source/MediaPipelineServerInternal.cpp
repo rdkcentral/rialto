@@ -29,7 +29,6 @@
 
 namespace
 {
-constexpr unsigned int kMaxSkippedNoAvailableSamples = 10;
 constexpr std::chrono::milliseconds kNeedMediaDataResendTimeMs{100};
 const char *toString(const firebolt::rialto::MediaSourceStatus &status)
 {
@@ -210,8 +209,10 @@ bool MediaPipelineServerInternal::loadInternal(MediaType type, const std::string
         m_gstPlayer.reset();
     }
 
-    m_gstPlayer = m_kGstPlayerFactory->createGstGenericPlayer(this, m_decryptionService, type, m_kVideoRequirements,
-                                                              IRdkGstreamerUtilsWrapperFactory::getFactory());
+    m_gstPlayer =
+        m_kGstPlayerFactory
+            ->createGstGenericPlayer(this, m_decryptionService, type, m_kVideoRequirements,
+                                     firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory::getFactory());
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to load gstreamer player");
@@ -297,6 +298,7 @@ bool MediaPipelineServerInternal::removeSourceInternal(int32_t id)
     }
 
     m_gstPlayer->removeSource(sourceIter->first);
+    m_needMediaDataTimers.erase(sourceIter->first);
     m_attachedSources.erase(sourceIter);
     return true;
 }
@@ -531,19 +533,40 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
         return true;
     }
 
+    unsigned int &counter = m_noAvailableSamplesCounter[mediaSourceType];
     if (status != MediaSourceStatus::OK && status != MediaSourceStatus::EOS)
     {
-        RIALTO_SERVER_LOG_WARN("Data request for needDataRequestId: %u received with wrong status: %s",
-                               needDataRequestId, toString(status));
+        // Incrementing the counter allows us to track the occurrences where the status is other than OK or EOS.
+
+        ++counter;
+        if (status == MediaSourceStatus::NO_AVAILABLE_SAMPLES)
+        {
+            RIALTO_SERVER_LOG_DEBUG("Data request for needDataRequestId: %u. NO_AVAILABLE_SAMPLES received: %u "
+                                    "consecutively for mediaSourceType: %s",
+                                    needDataRequestId, counter,
+                                    (mediaSourceType == MediaSourceType::AUDIO) ? "AUDIO" : "VIDEO");
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_WARN("Data request for needDataRequestId: %u received with wrong status: %s",
+                                   needDataRequestId, toString(status));
+            counter = 0;
+        }
+
         m_activeRequests->erase(needDataRequestId);
         scheduleNotifyNeedMediaData(mediaSourceType);
         return true;
     }
+    else
+    {
+        RIALTO_SERVER_LOG_DEBUG("Data request for needDataRequestId: %u received with correct status", needDataRequestId);
+        counter = 0;
+    }
 
     try
     {
-        const IMediaPipeline::MediaSegmentVector &segments = m_activeRequests->getSegments(needDataRequestId);
-        m_gstPlayer->attachSamples(segments);
+        const IMediaPipeline::MediaSegmentVector &kSegments = m_activeRequests->getSegments(needDataRequestId);
+        m_gstPlayer->attachSamples(kSegments);
     }
     catch (const std::runtime_error &e)
     {
@@ -592,25 +615,15 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
     unsigned int &counter = m_noAvailableSamplesCounter[mediaSourceType];
     if (status != MediaSourceStatus::OK && status != MediaSourceStatus::EOS)
     {
-        // Incrementing the counter allows us to track the occurrences where the status is other than OK or EOS. By
-        // limiting the logging of the warning message to the number of NO_AVAILABLE_SAMPLES in a row, we prevent the
-        // warning from being repeatedly logged.
+        // Incrementing the counter allows us to track the occurrences where the status is other than OK or EOS.
+
+        ++counter;
         if (status == MediaSourceStatus::NO_AVAILABLE_SAMPLES)
         {
-            counter++;
-            if (counter == kMaxSkippedNoAvailableSamples)
-            {
-                RIALTO_SERVER_LOG_WARN("Received NO_AVAILABLE_SAMPLES status consecutively %u times for "
-                                       "mediaSourceType: %s",
-                                       counter, (mediaSourceType == MediaSourceType::AUDIO) ? "AUDIO" : "VIDEO");
-                counter = 0;
-            }
-            else
-            {
-                RIALTO_SERVER_LOG_DEBUG("Data request for needDataRequestId: %u. NO_AVAILABLE_SAMPLES received: %u "
-                                        "consecutively",
-                                        needDataRequestId, counter);
-            }
+            RIALTO_SERVER_LOG_DEBUG("Data request for needDataRequestId: %u. NO_AVAILABLE_SAMPLES received: %u "
+                                    "consecutively for mediaSourceType: %s",
+                                    needDataRequestId, counter,
+                                    (mediaSourceType == MediaSourceType::AUDIO) ? "AUDIO" : "VIDEO");
         }
         else
         {
@@ -667,6 +680,26 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
     }
 
     return true;
+}
+
+void MediaPipelineServerInternal::ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    auto task = [&]() { pingInternal(std::move(heartbeatHandler)); };
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+}
+
+void MediaPipelineServerInternal::pingInternal(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler)
+{
+    if (!m_gstPlayer)
+    {
+        // No need to check GstPlayer worker thread, we reached this function, so main thread is working fine.
+        heartbeatHandler.reset();
+        return;
+    }
+    // Check GstPlayer worker thread
+    m_gstPlayer->ping(std::move(heartbeatHandler));
 }
 
 bool MediaPipelineServerInternal::renderFrame()
@@ -784,6 +817,82 @@ bool MediaPipelineServerInternal::getMuteInternal(bool &mute)
         return false;
     }
     return m_gstPlayer->getMute(mute);
+}
+
+bool MediaPipelineServerInternal::flush(int32_t sourceId, bool resetTime)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = flushInternal(sourceId, resetTime); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::flushInternal(int32_t sourceId, bool resetTime)
+{
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to flush - Gstreamer player has not been loaded");
+        return false;
+    }
+    auto sourceIter = std::find_if(m_attachedSources.begin(), m_attachedSources.end(),
+                                   [sourceId](const auto &src) { return src.second == sourceId; });
+    if (sourceIter == m_attachedSources.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to flush - Source not found");
+        return false;
+    }
+
+    m_gstPlayer->flush(sourceIter->first, resetTime);
+
+    // Reset Eos on flush
+    auto it = m_isMediaTypeEosMap.find(sourceIter->first);
+    if (it != m_isMediaTypeEosMap.end() && it->second)
+    {
+        it->second = false;
+    }
+
+    return true;
+}
+
+bool MediaPipelineServerInternal::setSourcePosition(int32_t sourceId, int64_t position)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = setSourcePositionInternal(sourceId, position); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::setSourcePositionInternal(int32_t sourceId, int64_t position)
+{
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to set source position - Gstreamer player has not been loaded");
+        return false;
+    }
+    auto sourceIter = std::find_if(m_attachedSources.begin(), m_attachedSources.end(),
+                                   [sourceId](const auto &src) { return src.second == sourceId; });
+    if (sourceIter == m_attachedSources.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to set source position - Source not found");
+        return false;
+    }
+
+    m_gstPlayer->setSourcePosition(sourceIter->first, position);
+
+    // Reset Eos on seek
+    auto it = m_isMediaTypeEosMap.find(sourceIter->first);
+    if (it != m_isMediaTypeEosMap.end() && it->second)
+    {
+        it->second = false;
+    }
+
+    return true;
 }
 
 AddSegmentStatus MediaPipelineServerInternal::addSegment(uint32_t needDataRequestId,
@@ -952,6 +1061,48 @@ void MediaPipelineServerInternal::notifyBufferUnderflow(MediaSourceType mediaSou
                 return;
             }
             m_mediaPipelineClient->notifyBufferUnderflow(kSourceIter->second);
+        }
+    };
+
+    m_mainThread->enqueueTask(m_mainThreadClientId, task);
+}
+
+void MediaPipelineServerInternal::notifyPlaybackError(MediaSourceType mediaSourceType, PlaybackError error)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    auto task = [&, mediaSourceType, error]()
+    {
+        if (m_mediaPipelineClient)
+        {
+            const auto kSourceIter = m_attachedSources.find(mediaSourceType);
+            if (m_attachedSources.cend() == kSourceIter)
+            {
+                RIALTO_SERVER_LOG_WARN("Playback error notification failed - sourceId not found");
+                return;
+            }
+            m_mediaPipelineClient->notifyPlaybackError(kSourceIter->second, error);
+        }
+    };
+
+    m_mainThread->enqueueTask(m_mainThreadClientId, task);
+}
+
+void MediaPipelineServerInternal::notifySourceFlushed(MediaSourceType mediaSourceType)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    auto task = [&, mediaSourceType]()
+    {
+        if (m_mediaPipelineClient)
+        {
+            const auto kSourceIter = m_attachedSources.find(mediaSourceType);
+            if (m_attachedSources.cend() == kSourceIter)
+            {
+                RIALTO_SERVER_LOG_WARN("Source flushed notification failed - sourceId not found");
+                return;
+            }
+            m_mediaPipelineClient->notifySourceFlushed(kSourceIter->second);
         }
     };
 

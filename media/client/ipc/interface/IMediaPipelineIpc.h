@@ -25,14 +25,14 @@
 #include <memory>
 #include <string>
 
-#include <IMediaPipeline.h>
-#include <MediaCommon.h>
-
+#include "IMediaPipeline.h"
 #include "IMediaPipelineIpcClient.h"
+#include "MediaCommon.h"
 
 namespace firebolt::rialto::client
 {
 class IMediaPipelineIpc;
+class IIpcClient;
 
 /**
  * @brief IMediaPipelineIpc factory class, returns a concrete implementation of IMediaPipelineIpc
@@ -59,7 +59,8 @@ public:
      * @retval the new media player ipc instance or null on error.
      */
     virtual std::unique_ptr<IMediaPipelineIpc> createMediaPipelineIpc(IMediaPipelineIpcClient *client,
-                                                                      const VideoRequirements &videoRequirements) = 0;
+                                                                      const VideoRequirements &videoRequirements,
+                                                                      std::weak_ptr<IIpcClient> ipcClient = {}) = 0;
 };
 
 /**
@@ -227,6 +228,30 @@ public:
      * @retval true on success false otherwise
      */
     virtual bool getMute(bool &mute) = 0;
+
+    /**
+     * @brief Flushes a source.
+     *
+     * This method is called by Rialto Client to flush out all queued data for a media source stream.
+     *
+     * @param[in] sourceId : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[in] resetTime : True if time should be reset
+     *
+     * @retval true on success.
+     */
+    virtual bool flush(int32_t sourceId, bool resetTime) = 0;
+
+    /**
+     * @brief Set the source position in nanoseconds.
+     *
+     * This method sets the start position for a source.
+     *
+     * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[in] position : The position in nanoseconds.
+     *
+     * @retval true on success.
+     */
+    virtual bool setSourcePosition(int32_t sourceId, int64_t position) = 0;
 };
 
 }; // namespace firebolt::rialto::client

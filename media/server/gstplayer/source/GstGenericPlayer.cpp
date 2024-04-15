@@ -17,15 +17,17 @@
  * limitations under the License.
  */
 
-#include "GstGenericPlayer.h"
+#include <chrono>
+
 #include "GstDispatcherThread.h"
+#include "GstGenericPlayer.h"
 #include "GstProtectionMetadata.h"
+#include "IMediaPipeline.h"
 #include "ITimer.h"
 #include "RialtoServerLogging.h"
 #include "WorkerThread.h"
 #include "tasks/generic/GenericPlayerTaskFactory.h"
-#include <IMediaPipeline.h>
-#include <chrono>
+#include <cinttypes>
 
 namespace
 {
@@ -65,17 +67,17 @@ std::shared_ptr<IGstGenericPlayerFactory> IGstGenericPlayerFactory::getFactory()
 std::unique_ptr<IGstGenericPlayer> GstGenericPlayerFactory::createGstGenericPlayer(
     IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
     const VideoRequirements &videoRequirements,
-    const std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactory)
+    const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactory)
 {
     std::unique_ptr<IGstGenericPlayer> gstPlayer;
 
     try
     {
-        auto gstWrapperFactory = IGstWrapperFactory::getFactory();
-        auto glibWrapperFactory = IGlibWrapperFactory::getFactory();
-        std::shared_ptr<IGstWrapper> gstWrapper;
-        std::shared_ptr<IGlibWrapper> glibWrapper;
-        std::shared_ptr<IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper;
+        auto gstWrapperFactory = firebolt::rialto::wrappers::IGstWrapperFactory::getFactory();
+        auto glibWrapperFactory = firebolt::rialto::wrappers::IGlibWrapperFactory::getFactory();
+        std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper;
+        std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper;
+        std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper;
         if ((!gstWrapperFactory) || (!(gstWrapper = gstWrapperFactory->getGstWrapper())))
         {
             throw std::runtime_error("Cannot create GstWrapper");
@@ -97,7 +99,7 @@ std::unique_ptr<IGstGenericPlayer> GstGenericPlayerFactory::createGstGenericPlay
                                                                                           rdkGstreamerUtilsWrapper),
                                                std::make_unique<WorkerThreadFactory>(),
                                                std::make_unique<GstDispatcherThreadFactory>(),
-                                               IGstProtectionMetadataWrapperFactory::createFactory());
+                                               IGstProtectionMetadataHelperFactory::createFactory());
     }
     catch (const std::exception &e)
     {
@@ -109,14 +111,14 @@ std::unique_ptr<IGstGenericPlayer> GstGenericPlayerFactory::createGstGenericPlay
 
 GstGenericPlayer::GstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionService &decryptionService,
                                    MediaType type, const VideoRequirements &videoRequirements,
-                                   const std::shared_ptr<IGstWrapper> &gstWrapper,
-                                   const std::shared_ptr<IGlibWrapper> &glibWrapper,
+                                   const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                                   const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
                                    const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
                                    std::shared_ptr<common::ITimerFactory> timerFactory,
                                    std::unique_ptr<IGenericPlayerTaskFactory> taskFactory,
                                    std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
                                    std::unique_ptr<IGstDispatcherThreadFactory> gstDispatcherThreadFactory,
-                                   std::shared_ptr<IGstProtectionMetadataWrapperFactory> gstProtectionMetadataFactory)
+                                   std::shared_ptr<IGstProtectionMetadataHelperFactory> gstProtectionMetadataFactory)
     : m_gstPlayerClient(client), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_timerFactory{timerFactory},
       m_taskFactory{std::move(taskFactory)}
 {
@@ -169,8 +171,10 @@ GstGenericPlayer::GstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionS
     // video in a dual video scenario.
     if ((kMinPrimaryVideoWidth > videoRequirements.maxWidth) || (kMinPrimaryVideoHeight > videoRequirements.maxHeight))
     {
-        RIALTO_SERVER_LOG_INFO("Secondary video playback selected");
-        if (!setWesterossinkSecondaryVideo())
+        RIALTO_SERVER_LOG_MIL("Secondary video playback selected");
+        bool westerossinkSecondaryVideoResult = setWesterossinkSecondaryVideo();
+        bool ermContextResult = setErmContext();
+        if (!westerossinkSecondaryVideoResult && !ermContextResult)
         {
             resetWorkerThread();
             termPipeline();
@@ -179,7 +183,7 @@ GstGenericPlayer::GstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionS
     }
     else
     {
-        RIALTO_SERVER_LOG_INFO("Primary video playback selected");
+        RIALTO_SERVER_LOG_MIL("Primary video playback selected");
     }
 
     m_gstDispatcherThread =
@@ -202,12 +206,7 @@ void GstGenericPlayer::initMsePipeline()
     // Make playbin
     m_context.pipeline = m_gstWrapper->gstElementFactoryMake("playbin", "media_pipeline");
     // Set pipeline flags
-    unsigned flagAudio = getGstPlayFlag("audio");
-    unsigned flagVideo = getGstPlayFlag("video");
-    unsigned flagNativeVideo = getGstPlayFlag("native-video");
-    unsigned flagNativeAudio = shouldEnableNativeAudio() ? getGstPlayFlag("native-audio") : 0;
-    m_glibWrapper->gObjectSet(m_context.pipeline, "flags", flagAudio | flagVideo | flagNativeVideo | flagNativeAudio,
-                              nullptr);
+    setAudioVideoFlags(true, true);
 
     // Set callbacks
     m_glibWrapper->gSignalConnect(m_context.pipeline, "source-setup", G_CALLBACK(&GstGenericPlayer::setupSource), this);
@@ -322,7 +321,7 @@ void GstGenericPlayer::removeSource(const MediaSourceType &mediaSourceType)
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createRemoveSource(m_context, mediaSourceType));
+        m_workerThread->enqueueTask(m_taskFactory->createRemoveSource(m_context, *this, mediaSourceType));
     }
 }
 
@@ -487,6 +486,7 @@ void GstGenericPlayer::attachAudioData()
 
     if (m_context.audioAppSrc)
     {
+        pushSampleIfRequired(m_context.audioAppSrc);
         for (GstBuffer *buffer : m_context.audioBuffers)
         {
             m_gstWrapper->gstAppSrcPushBuffer(GST_APP_SRC(m_context.audioAppSrc), buffer);
@@ -498,7 +498,10 @@ void GstGenericPlayer::attachAudioData()
         }
         m_context.audioBuffers.clear();
         m_context.audioDataPushed = true;
-        if (!m_context.bufferedNotificationSent && m_context.videoDataPushed && m_gstPlayerClient)
+        const bool kSingleAudio{m_context.wereAllSourcesAttached &&
+                                m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO) ==
+                                    m_context.streamInfo.end()};
+        if (!m_context.bufferedNotificationSent && (m_context.videoDataPushed || kSingleAudio) && m_gstPlayerClient)
         {
             m_context.bufferedNotificationSent = true;
             m_gstPlayerClient->notifyNetworkState(NetworkState::BUFFERED);
@@ -523,13 +526,17 @@ void GstGenericPlayer::attachVideoData()
     }
     if (m_context.videoAppSrc)
     {
+        pushSampleIfRequired(m_context.videoAppSrc);
         for (GstBuffer *buffer : m_context.videoBuffers)
         {
             m_gstWrapper->gstAppSrcPushBuffer(GST_APP_SRC(m_context.videoAppSrc), buffer);
         }
         m_context.videoBuffers.clear();
         m_context.videoDataPushed = true;
-        if (!m_context.bufferedNotificationSent && m_context.audioDataPushed && m_gstPlayerClient)
+        const bool kSingleVideo{m_context.wereAllSourcesAttached &&
+                                m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO) ==
+                                    m_context.streamInfo.end()};
+        if (!m_context.bufferedNotificationSent && (m_context.audioDataPushed || kSingleVideo) && m_gstPlayerClient)
         {
             m_context.bufferedNotificationSent = true;
             m_gstPlayerClient->notifyNetworkState(NetworkState::BUFFERED);
@@ -552,24 +559,26 @@ void GstGenericPlayer::updateAudioCaps(int32_t rate, int32_t channels, const std
     if (m_context.audioAppSrc)
     {
         constexpr int kInvalidRate{0}, kInvalidChannels{0};
-        bool capsChanged{false};
         GstCaps *currentCaps = m_gstWrapper->gstAppSrcGetCaps(GST_APP_SRC(m_context.audioAppSrc));
         GstCaps *newCaps = m_gstWrapper->gstCapsCopy(currentCaps);
+
         if (rate != kInvalidRate)
         {
             m_gstWrapper->gstCapsSetSimple(newCaps, "rate", G_TYPE_INT, rate, NULL);
-            capsChanged = true;
         }
+
         if (channels != kInvalidChannels)
         {
             m_gstWrapper->gstCapsSetSimple(newCaps, "channels", G_TYPE_INT, channels, NULL);
-            capsChanged = true;
         }
-        capsChanged = setCodecData(newCaps, codecData) || capsChanged;
-        if (capsChanged)
+
+        setCodecData(newCaps, codecData);
+
+        if (!m_gstWrapper->gstCapsIsEqual(currentCaps, newCaps))
         {
             m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(m_context.audioAppSrc), newCaps);
         }
+
         m_gstWrapper->gstCapsUnref(newCaps);
         m_gstWrapper->gstCapsUnref(currentCaps);
     }
@@ -592,18 +601,48 @@ void GstGenericPlayer::updateVideoCaps(int32_t width, int32_t height, Fraction f
         GstCaps *currentCaps = m_gstWrapper->gstAppSrcGetCaps(GST_APP_SRC(m_context.videoAppSrc));
         GstCaps *newCaps = m_gstWrapper->gstCapsCopy(currentCaps);
 
-        m_gstWrapper->gstCapsSetSimple(newCaps, "width", G_TYPE_INT, width, "height", G_TYPE_INT, height, NULL);
+        if (width > 0)
+        {
+            m_gstWrapper->gstCapsSetSimple(newCaps, "width", G_TYPE_INT, width, NULL);
+        }
+
+        if (height > 0)
+        {
+            m_gstWrapper->gstCapsSetSimple(newCaps, "height", G_TYPE_INT, height, NULL);
+        }
+
         if ((kUndefinedSize != frameRate.numerator) && (kUndefinedSize != frameRate.denominator))
         {
             m_gstWrapper->gstCapsSetSimple(newCaps, "framerate", GST_TYPE_FRACTION, frameRate.numerator,
                                            frameRate.denominator, NULL);
         }
+
         setCodecData(newCaps, codecData);
 
-        m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(m_context.videoAppSrc), newCaps);
+        if (!m_gstWrapper->gstCapsIsEqual(currentCaps, newCaps))
+        {
+            m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(m_context.videoAppSrc), newCaps);
+        }
 
         m_gstWrapper->gstCapsUnref(currentCaps);
         m_gstWrapper->gstCapsUnref(newCaps);
+    }
+}
+
+void GstGenericPlayer::addAudioClippingToBuffer(GstBuffer *buffer, uint64_t clippingStart, uint64_t clippingEnd) const
+{
+    if (clippingStart || clippingEnd)
+    {
+        if (m_gstWrapper->gstBufferAddAudioClippingMeta(buffer, GST_FORMAT_TIME, clippingStart, clippingEnd))
+        {
+            RIALTO_SERVER_LOG_DEBUG("Added audio clipping to buffer %p, start: %" PRIu64 ", end %" PRIu64, buffer,
+                                    clippingStart, clippingEnd);
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_WARN("Failed to add audio clipping to buffer %p, start: %" PRIu64 ", end %" PRIu64,
+                                   buffer, clippingStart, clippingEnd);
+        }
     }
 }
 
@@ -624,6 +663,44 @@ bool GstGenericPlayer::setCodecData(GstCaps *caps, const std::shared_ptr<CodecDa
         return true;
     }
     return false;
+}
+
+void GstGenericPlayer::pushSampleIfRequired(GstElement *source)
+{
+    auto initialPosition = m_context.initialPositions.find(source);
+    if (m_context.initialPositions.end() == initialPosition)
+    {
+        // Sending initial sample not needed
+        return;
+    }
+    RIALTO_SERVER_LOG_DEBUG("Pushing new sample...");
+    GstSegment *segment{m_gstWrapper->gstSegmentNew()};
+    m_gstWrapper->gstSegmentInit(segment, GST_FORMAT_TIME);
+    if (!m_gstWrapper->gstSegmentDoSeek(segment, m_context.playbackRate, GST_FORMAT_TIME, GST_SEEK_FLAG_NONE,
+                                        GST_SEEK_TYPE_SET, initialPosition->second, GST_SEEK_TYPE_SET,
+                                        GST_CLOCK_TIME_NONE, nullptr))
+    {
+        RIALTO_SERVER_LOG_WARN("Segment seek failed.");
+        m_gstWrapper->gstSegmentFree(segment);
+        m_context.initialPositions.erase(initialPosition);
+        return;
+    }
+
+    RIALTO_SERVER_LOG_MIL("New segment: [%" GST_TIME_FORMAT ", %" GST_TIME_FORMAT "], rate: %f \n",
+                          GST_TIME_ARGS(segment->start), GST_TIME_ARGS(segment->stop), segment->rate);
+
+    GstCaps *currentCaps = m_gstWrapper->gstAppSrcGetCaps(GST_APP_SRC(source));
+    // We can't pass buffer in GstSample, because implementation of gst_app_src_push_sample
+    // uses gst_buffer_copy, which loses RialtoProtectionMeta (that causes problems with EME
+    // for first frame).
+    GstSample *sample = m_gstWrapper->gstSampleNew(nullptr, currentCaps, segment, nullptr);
+    m_gstWrapper->gstAppSrcPushSample(GST_APP_SRC(source), sample);
+    m_gstWrapper->gstSampleUnref(sample);
+    m_gstWrapper->gstCapsUnref(currentCaps);
+
+    m_gstWrapper->gstSegmentFree(segment);
+    m_context.initialPositions.erase(initialPosition);
+    return;
 }
 
 void GstGenericPlayer::scheduleNeedMediaData(GstAppSrc *src)
@@ -736,27 +813,31 @@ void GstGenericPlayer::setEos(const firebolt::rialto::MediaSourceType &type)
     }
 }
 
-bool GstGenericPlayer::setWesterossinkRectangle()
+bool GstGenericPlayer::setVideoSinkRectangle()
 {
     bool result = false;
     GstElement *videoSink = nullptr;
     m_glibWrapper->gObjectGet(m_context.pipeline, "video-sink", &videoSink, nullptr);
-    if (videoSink && m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink), "rectangle"))
-    {
-        char rect[64];
-        snprintf(rect, sizeof(rect), "%d,%d,%d,%d", m_context.pendingGeometry.x, m_context.pendingGeometry.y,
-                 m_context.pendingGeometry.width, m_context.pendingGeometry.height);
-        m_glibWrapper->gObjectSet(videoSink, "rectangle", rect, nullptr);
-        m_context.pendingGeometry.clear();
-        result = true;
-    }
-    else
-    {
-        RIALTO_SERVER_LOG_ERROR("Failed to set the westerossink rectangle");
-    }
-
     if (videoSink)
+    {
+        // For AutoVideoSink we set properties on the child sink
+        GstElement *actualVideoSink = getSinkChildIfAutoVideoSink(videoSink);
+        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(actualVideoSink), "rectangle"))
+        {
+            std::string rect =
+                std::to_string(m_context.pendingGeometry.x) + ',' + std::to_string(m_context.pendingGeometry.y) + ',' +
+                std::to_string(m_context.pendingGeometry.width) + ',' + std::to_string(m_context.pendingGeometry.height);
+            m_glibWrapper->gObjectSet(actualVideoSink, "rectangle", rect.c_str(), nullptr);
+            m_context.pendingGeometry.clear();
+            result = true;
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to set the video rectangle");
+        }
+
         m_gstWrapper->gstObjectUnref(GST_OBJECT(videoSink));
+    }
 
     return result;
 }
@@ -791,8 +872,35 @@ bool GstGenericPlayer::setWesterossinkSecondaryVideo()
     }
     else
     {
-        // No westerous sink
+        // No westeros sink
         result = true;
+    }
+
+    return result;
+}
+
+bool GstGenericPlayer::setErmContext()
+{
+    bool result = false;
+    GstContext *context = m_gstWrapper->gstContextNew("erm", false);
+    if (context)
+    {
+        GstStructure *contextStructure = m_gstWrapper->gstContextWritableStructure(context);
+        if (contextStructure)
+        {
+            m_gstWrapper->gstStructureSet(contextStructure, "res-usage", G_TYPE_UINT, 0x0u, nullptr);
+            m_gstWrapper->gstElementSetContext(GST_ELEMENT(m_context.pipeline), context);
+            result = true;
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to create the erm structure");
+        }
+        m_gstWrapper->gstContextUnref(context);
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to create the erm context");
     }
 
     return result;
@@ -845,7 +953,7 @@ void GstGenericPlayer::renderFrame()
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createRenderFrame(m_context));
+        m_workerThread->enqueueTask(m_taskFactory->createRenderFrame(m_context, *this));
     }
 }
 
@@ -890,6 +998,30 @@ bool GstGenericPlayer::getMute(bool &mute)
     return true;
 }
 
+void GstGenericPlayer::ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler)
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(m_taskFactory->createPing(std::move(heartbeatHandler)));
+    }
+}
+
+void GstGenericPlayer::flush(const MediaSourceType &mediaSourceType, bool resetTime)
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(m_taskFactory->createFlush(m_context, mediaSourceType, resetTime));
+    }
+}
+
+void GstGenericPlayer::setSourcePosition(const MediaSourceType &mediaSourceType, int64_t position)
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(m_taskFactory->createSetSourcePosition(m_context, mediaSourceType, position));
+    }
+}
+
 void GstGenericPlayer::handleBusMessage(GstMessage *message)
 {
     m_workerThread->enqueueTask(m_taskFactory->createHandleBusMessage(m_context, *this, message));
@@ -898,6 +1030,78 @@ void GstGenericPlayer::handleBusMessage(GstMessage *message)
 void GstGenericPlayer::updatePlaybackGroup(GstElement *typefind, const GstCaps *caps)
 {
     m_workerThread->enqueueTask(m_taskFactory->createUpdatePlaybackGroup(m_context, typefind, caps));
+}
+
+void GstGenericPlayer::addAutoVideoSinkChild(GObject *object)
+{
+    // Only add children that are sinks
+    if (GST_OBJECT_FLAG_IS_SET(GST_ELEMENT(object), GST_ELEMENT_FLAG_SINK))
+    {
+        RIALTO_SERVER_LOG_DEBUG("Store AutoVideoSink child sink");
+
+        if (m_context.autoVideoChildSink && m_context.autoVideoChildSink != GST_ELEMENT(object))
+        {
+            RIALTO_SERVER_LOG_MIL("AutoVideoSink child is been overwritten");
+        }
+        m_context.autoVideoChildSink = GST_ELEMENT(object);
+    }
+}
+
+void GstGenericPlayer::removeAutoVideoSinkChild(GObject *object)
+{
+    if (GST_OBJECT_FLAG_IS_SET(GST_ELEMENT(object), GST_ELEMENT_FLAG_SINK))
+    {
+        RIALTO_SERVER_LOG_DEBUG("Remove AutoVideoSink child sink");
+
+        if (m_context.autoVideoChildSink && m_context.autoVideoChildSink != GST_ELEMENT(object))
+        {
+            RIALTO_SERVER_LOG_MIL("AutoVideoSink child sink is not the same as the one stored");
+            return;
+        }
+
+        m_context.autoVideoChildSink = nullptr;
+    }
+}
+
+GstElement *GstGenericPlayer::getSinkChildIfAutoVideoSink(GstElement *sink)
+{
+    const std::string kElementTypeName = m_glibWrapper->gTypeName(G_OBJECT_TYPE(sink));
+    if (kElementTypeName == "GstAutoVideoSink")
+    {
+        if (!m_context.autoVideoChildSink)
+        {
+            RIALTO_SERVER_LOG_WARN("No child sink has been added to the autovideosink");
+            return sink;
+        }
+        else
+        {
+            return m_context.autoVideoChildSink;
+        }
+    }
+    else
+    {
+        return sink;
+    }
+}
+
+void GstGenericPlayer::setAudioVideoFlags(bool enableAudio, bool enableVideo)
+{
+    unsigned flagAudio{0};
+    unsigned flagNativeAudio{0};
+    unsigned flagVideo{0};
+    unsigned flagNativeVideo{0};
+    if (enableAudio)
+    {
+        flagAudio = getGstPlayFlag("audio");
+        flagNativeAudio = shouldEnableNativeAudio() ? getGstPlayFlag("native-audio") : 0;
+    }
+    if (enableVideo)
+    {
+        flagVideo = getGstPlayFlag("video");
+        flagNativeVideo = getGstPlayFlag("native-video");
+    }
+    m_glibWrapper->gObjectSet(m_context.pipeline, "flags", flagAudio | flagVideo | flagNativeVideo | flagNativeAudio,
+                              nullptr);
 }
 
 bool GstGenericPlayer::shouldEnableNativeAudio()

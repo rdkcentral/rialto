@@ -17,7 +17,7 @@
  * limitations under the License.
  */
 
-#include "open_cdm_adapter.h"
+#include "opencdm/open_cdm_adapter.h"
 extern "C"
 {
     OpenCDMError opencdm_gstreamer_session_decrypt(struct OpenCDMSession *session, GstBuffer *buffer,

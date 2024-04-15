@@ -22,6 +22,7 @@
 
 #include "GenericPlayerContext.h"
 #include "IGlibWrapper.h"
+#include "IGstGenericPlayerPrivate.h"
 #include "IGstWrapper.h"
 #include "IPlayerTask.h"
 #include <cstdint>
@@ -32,15 +33,16 @@ namespace firebolt::rialto::server::tasks::generic
 class RenderFrame : public IPlayerTask
 {
 public:
-    RenderFrame(GenericPlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper,
-                std::shared_ptr<IGlibWrapper> glibWrapper);
+    RenderFrame(GenericPlayerContext &context, std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
+                std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper, IGstGenericPlayerPrivate &player);
     ~RenderFrame() override = default;
     void execute() const override;
 
 private:
     GenericPlayerContext &m_context;
-    std::shared_ptr<IGstWrapper> m_gstWrapper;
-    std::shared_ptr<IGlibWrapper> m_glibWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
+    IGstGenericPlayerPrivate &m_player;
 };
 } // namespace firebolt::rialto::server::tasks::generic
 

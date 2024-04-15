@@ -28,30 +28,30 @@ namespace
 {
 std::string getRialtoDebug()
 {
-    const char *debugVar = getenv("RIALTO_DEBUG");
-    if (debugVar)
+    const char *kDebugVar = getenv("RIALTO_DEBUG");
+    if (kDebugVar)
     {
-        return std::string(debugVar);
+        return std::string(kDebugVar);
     }
     return "";
 }
 
 std::string getRialtoConsoleLog()
 {
-    const char *debugVar = getenv("RIALTO_CONSOLE_LOG");
-    if (debugVar)
+    const char *kDebugVar = getenv("RIALTO_CONSOLE_LOG");
+    if (kDebugVar)
     {
-        return std::string(debugVar);
+        return std::string(kDebugVar);
     }
     return "";
 }
 
 std::string getRialtoLogPath()
 {
-    const char *logPathEnvVar = getenv("RIALTO_LOG_PATH");
-    if (logPathEnvVar)
+    const char *kLogPathEnvVar = getenv("RIALTO_LOG_PATH");
+    if (kLogPathEnvVar)
     {
-        return std::string(logPathEnvVar);
+        return std::string(kLogPathEnvVar);
     }
     return "";
 }
@@ -61,7 +61,7 @@ inline bool isNumber(const std::string &str)
     return std::find_if(str.begin(), str.end(), [](unsigned char c) { return !std::isdigit(c); }) == str.end();
 }
 
-std::vector<std::string> split(std::string s, std::string delimiter)
+std::vector<std::string> split(std::string s, const std::string &delimiter)
 {
     std::vector<std::string> result;
     size_t pos = 0;

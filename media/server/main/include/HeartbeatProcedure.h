@@ -21,8 +21,8 @@
 #define FIREBOLT_RIALTO_SERVER_HEARTBEAT_PROCEDURE_H_
 
 #include "IHeartbeatProcedure.h"
+#include <atomic>
 #include <memory>
-#include <set>
 
 namespace firebolt::rialto::server
 {
@@ -40,16 +40,14 @@ class HeartbeatProcedure : public std::enable_shared_from_this<HeartbeatProcedur
     class HeartbeatHandler : public IHeartbeatHandler
     {
     public:
-        HeartbeatHandler(const std::shared_ptr<HeartbeatProcedure> &procedure, int controlId, std::int32_t pingId);
+        HeartbeatHandler(const std::shared_ptr<HeartbeatProcedure> &procedure, std::int32_t pingId);
         ~HeartbeatHandler() override;
 
-        void pingSent() override;
         void error() override;
         std::int32_t id() const override;
 
     private:
         std::shared_ptr<HeartbeatProcedure> m_procedure;
-        const int m_kControlId;
         const std::int32_t m_kPingId;
         bool m_success;
     };
@@ -57,18 +55,15 @@ class HeartbeatProcedure : public std::enable_shared_from_this<HeartbeatProcedur
 public:
     HeartbeatProcedure(const std::shared_ptr<IAckSender> &ackSender, std::int32_t pingId);
     ~HeartbeatProcedure() override;
-    std::unique_ptr<IHeartbeatHandler> createHandler(int controlId) override;
+    std::unique_ptr<IHeartbeatHandler> createHandler() override;
 
 private:
-    void onStart(int controlId);
-    void onFinish(int controlId, bool success);
+    void onFinish(bool success);
 
 private:
     std::shared_ptr<IAckSender> m_ackSender;
     const std::int32_t m_kPingId;
-    // Mutex not needed for attributes below - all methods are called in main thread.
-    bool m_success;
-    std::set<int> m_pingsSent;
+    std::atomic_bool m_success;
 };
 } // namespace firebolt::rialto::server
 

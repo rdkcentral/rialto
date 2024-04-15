@@ -27,8 +27,8 @@
 
 namespace firebolt::rialto::server::tasks::generic
 {
-SetPosition::SetPosition(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                         IGstGenericPlayerClient *client, std::shared_ptr<IGstWrapper> gstWrapper, std::int64_t position)
+SetPosition::SetPosition(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client,
+                         std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper, std::int64_t position)
     : m_context{context}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}, m_position{position}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetPosition");
@@ -91,7 +91,7 @@ void SetPosition::execute() const
     m_context.endOfStreamInfo.clear();
     m_context.eosNotified = false;
 
-    m_gstPlayerClient->notifyPlaybackState(PlaybackState::FLUSHED);
+    m_gstPlayerClient->notifyPlaybackState(PlaybackState::SEEK_DONE);
 
     // // Trigger NeedMediaData for all attached sources
     for (const auto streamInfo : m_context.streamInfo)

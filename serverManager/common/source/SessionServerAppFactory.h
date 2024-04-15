@@ -20,6 +20,7 @@
 #ifndef RIALTO_SERVERMANAGER_COMMON_SESSION_SERVER_APP_FACTORY_H_
 #define RIALTO_SERVERMANAGER_COMMON_SESSION_SERVER_APP_FACTORY_H_
 
+#include "ILinuxWrapper.h"
 #include "ISessionServerAppFactory.h"
 #include <chrono>
 #include <list>
@@ -33,7 +34,9 @@ class SessionServerAppFactory : public ISessionServerAppFactory
 public:
     explicit SessionServerAppFactory(const std::list<std::string> &environmentVariables,
                                      const std::string &sessionServerPath,
-                                     std::chrono::milliseconds sessionServerStartupTimeout);
+                                     std::chrono::milliseconds sessionServerStartupTimeout,
+                                     unsigned int socketPermissions, const std::string &socketOwner,
+                                     const std::string &socketGroup);
     ~SessionServerAppFactory() override = default;
 
     std::unique_ptr<ISessionServerApp> create(const std::string &appName,
@@ -46,6 +49,10 @@ private:
     const std::list<std::string> m_kEnvironmentVariables;
     const std::string m_kSessionServerPath;
     const std::chrono::milliseconds m_kSessionServerStartupTimeout;
+    const unsigned int m_kSocketPermissions;
+    const std::string m_kSocketOwner;
+    const std::string m_kSocketGroup;
+    std::shared_ptr<firebolt::rialto::wrappers::ILinuxWrapperFactory> m_linuxWrapperFactory;
 };
 } // namespace rialto::servermanager::common
 

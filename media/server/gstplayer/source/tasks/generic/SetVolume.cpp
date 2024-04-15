@@ -23,7 +23,8 @@
 
 namespace firebolt::rialto::server::tasks::generic
 {
-SetVolume::SetVolume(GenericPlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper, double volume)
+SetVolume::SetVolume(GenericPlayerContext &context, std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
+                     double volume)
     : m_context{context}, m_gstWrapper{gstWrapper}, m_volume{volume}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetVolume");

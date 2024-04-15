@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_SERVICE_I_MEDIA_PIPELINE_SERVICE_H_
 #define FIREBOLT_RIALTO_SERVER_SERVICE_I_MEDIA_PIPELINE_SERVICE_H_
 
+#include "IHeartbeatProcedure.h"
 #include "IMediaPipeline.h"
 #include "MediaCommon.h"
 #include <cstdint>
@@ -62,8 +63,11 @@ public:
     virtual bool getVolume(int sessionId, double &volume) = 0;
     virtual bool setMute(int sessionId, bool mute) = 0;
     virtual bool getMute(int sessionId, bool &mute) = 0;
+    virtual bool flush(int sessionId, std::int32_t sourceId, bool resetTime) = 0;
+    virtual bool setSourcePosition(int sessionId, int32_t sourceId, int64_t position) = 0;
     virtual std::vector<std::string> getSupportedMimeTypes(MediaSourceType type) = 0;
     virtual bool isMimeTypeSupported(const std::string &mimeType) = 0;
+    virtual void ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure) = 0;
 };
 } // namespace firebolt::rialto::server::service
 

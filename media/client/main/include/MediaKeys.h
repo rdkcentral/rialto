@@ -38,6 +38,18 @@ public:
     ~MediaKeysFactory() override = default;
 
     std::unique_ptr<IMediaKeys> createMediaKeys(const std::string &keySystem) const override;
+
+    /**
+     * @brief IMediaKeys factory method with factory parameters for mock injection.
+     *
+     * @param[in] keySystem           : The key system for which to create a Media Keys instance
+     * @param[in] mediaKeysIpcFactory : This was added for the test environment where a mock object needs to be passed in.
+     *
+     * @retval the new media keys instance or null on error.
+     */
+    std::unique_ptr<IMediaKeys>
+    createMediaKeys(const std::string &keySystem,
+                    std::weak_ptr<firebolt::rialto::client::IMediaKeysIpcFactory> mediaKeysIpcFactory) const;
 };
 
 }; // namespace firebolt::rialto
@@ -98,6 +110,8 @@ public:
     MediaKeyErrorStatus getDrmTime(uint64_t &drmTime) override;
 
     MediaKeyErrorStatus getCdmKeySessionId(int32_t keySessionId, std::string &cdmKeySessionId) override;
+
+    MediaKeyErrorStatus releaseKeySession(int32_t keySessionId) override;
 
 private:
     /**

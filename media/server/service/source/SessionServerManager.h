@@ -23,6 +23,7 @@
 #include "IApplicationManagementServer.h"
 #include "ICdmService.h"
 #include "IControlService.h"
+#include "IHeartbeatProcedure.h"
 #include "IIpcFactory.h"
 #include "IPlaybackService.h"
 #include "ISessionManagementServer.h"
@@ -39,7 +40,8 @@ class SessionServerManager : public ISessionServerManager
 {
 public:
     SessionServerManager(const ipc::IIpcFactory &ipcFactory, IPlaybackService &playbackService, ICdmService &cdmService,
-                         IControlService &controlService);
+                         IControlService &controlService,
+                         std::unique_ptr<IHeartbeatProcedureFactory> &&heartbeatProcedureFactory);
     ~SessionServerManager() override;
     SessionServerManager(const SessionServerManager &) = delete;
     SessionServerManager(SessionServerManager &&) = delete;
@@ -49,8 +51,9 @@ public:
     bool initialize(int argc, char *argv[]) override;
     void startService() override;
     bool setConfiguration(const std::string &socketName, const common::SessionServerState &state,
-                          const common::MaxResourceCapabilitites &maxResource,
-                          const std::string &clientDisplayName) override;
+                          const common::MaxResourceCapabilitites &maxResource, const std::string &clientDisplayName,
+                          unsigned int socketPermissions, const std::string &socketOwner,
+                          const std::string &socketGroup) override;
     bool setState(const common::SessionServerState &state) override;
     void setLogLevels(RIALTO_DEBUG_LEVEL defaultLogLevels, RIALTO_DEBUG_LEVEL clientLogLevels,
                       RIALTO_DEBUG_LEVEL sessionServerLogLevels, RIALTO_DEBUG_LEVEL ipcLogLevels,
@@ -67,6 +70,7 @@ private:
     IPlaybackService &m_playbackService;
     ICdmService &m_cdmService;
     IControlService &m_controlService;
+    std::unique_ptr<IHeartbeatProcedureFactory> m_heartbeatProcedureFactory;
     std::unique_ptr<ipc::IApplicationManagementServer> m_applicationManagementServer;
     std::unique_ptr<ipc::ISessionManagementServer> m_sessionManagementServer;
     std::mutex m_serviceMutex;

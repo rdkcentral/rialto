@@ -45,6 +45,8 @@ private:
         int32_t rate;
         int32_t channels;
         std::shared_ptr<CodecData> codecData;
+        uint64_t clippingStart;
+        uint64_t clippingEnd;
     };
     struct VideoData
     {

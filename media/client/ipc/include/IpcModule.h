@@ -110,6 +110,14 @@ protected:
      * @retval true if channel now connected, false otherwise.
      */
     bool reattachChannelIfRequired();
+
+private:
+    /**
+     * @brief Get connected IPC Channel
+     *
+     * @retval Ipc Channel if connected, nullptr otherwise
+     */
+    std::shared_ptr<ipc::IChannel> getConnectedChannel();
 };
 
 }; // namespace firebolt::rialto::client

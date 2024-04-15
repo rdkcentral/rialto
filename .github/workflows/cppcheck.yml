@@ -34,7 +34,7 @@ on:
 jobs:
   build:
     name: cppcheck
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Install cppcheck
         run: |
@@ -48,7 +48,7 @@ jobs:
       # Proccess returns error if failure detected
       - name: cppcheck command
         run: |
-              cppcheck -q -ibuild --enable=all --output-file=cppcheck_report.txt --std=c++14 --error-exitcode=1 --suppress-xml=cppcheck_suppressions.xml .
+              cppcheck -q -ibuild --enable=all --output-file=cppcheck_report.txt --std=c++17 --error-exitcode=1 --suppress-xml=cppcheck_suppressions.xml --library=googletest .
 
       # Upload logs on failure
       - name: Upload logs

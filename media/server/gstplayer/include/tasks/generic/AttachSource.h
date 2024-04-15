@@ -35,24 +35,23 @@ namespace firebolt::rialto::server::tasks::generic
 class AttachSource : public IPlayerTask
 {
 public:
-    AttachSource(GenericPlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper,
-                 std::shared_ptr<IGlibWrapper> glibWrapper,
-                 const std::shared_ptr<IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper,
+    AttachSource(GenericPlayerContext &context, std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
+                 std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
+                 const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper,
                  IGstGenericPlayerPrivate &player, const std::unique_ptr<IMediaPipeline::MediaSource> &source);
     ~AttachSource() override;
     void execute() const override;
 
 private:
     void addSource(GstCaps *caps, bool isDrm) const;
-    void updateSource(GstCaps *caps, const std::string &strCaps) const;
-    void switchAudioSource(GstCaps *caps, const std::string &strCaps) const;
+    void reattachAudioSource(GstCaps *caps, const std::string &strCaps) const;
     GstCaps *createCapsFromMediaSource() const;
-    AudioAttributesPrivate createAudioAttributes() const;
+    firebolt::rialto::wrappers::AudioAttributesPrivate createAudioAttributes() const;
 
     GenericPlayerContext &m_context;
-    std::shared_ptr<IGstWrapper> m_gstWrapper;
-    std::shared_ptr<IGlibWrapper> m_glibWrapper;
-    std::shared_ptr<IRdkGstreamerUtilsWrapper> m_rdkGstreamerUtilsWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> m_rdkGstreamerUtilsWrapper;
     IGstGenericPlayerPrivate &m_player;
     std::unique_ptr<IMediaPipeline::MediaSource> m_attachedSource;
 };

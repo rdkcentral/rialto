@@ -18,9 +18,9 @@
  */
 
 #include "MediaKeysClient.h"
+#include "IIpcServer.h"
 #include "RialtoServerLogging.h"
 #include "mediakeysmodule.pb.h"
-#include <IIpcServer.h>
 
 namespace
 {

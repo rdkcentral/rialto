@@ -19,10 +19,10 @@
 
 #include <stdexcept>
 
+#include "MediaCommon.h"
 #include "MediaKeysCapabilities.h"
 #include "MediaKeysCommon.h"
 #include "RialtoServerLogging.h"
-#include <MediaCommon.h>
 
 namespace
 {
@@ -72,8 +72,8 @@ std::shared_ptr<IMediaKeysCapabilities> MediaKeysCapabilitiesFactory::getMediaKe
     try
     {
         mediaKeysCapabilities =
-            std::make_shared<server::MediaKeysCapabilities>(server::IOcdmFactory::createFactory(),
-                                                            server::IOcdmSystemFactory::createFactory());
+            std::make_shared<server::MediaKeysCapabilities>(wrappers::IOcdmFactory::createFactory(),
+                                                            wrappers::IOcdmSystemFactory::createFactory());
     }
     catch (const std::exception &e)
     {
@@ -87,11 +87,16 @@ std::shared_ptr<IMediaKeysCapabilities> MediaKeysCapabilitiesFactory::getMediaKe
 
 namespace firebolt::rialto::server
 {
-MediaKeysCapabilities::MediaKeysCapabilities(std::shared_ptr<IOcdmFactory> ocdmFactory,
-                                             std::shared_ptr<IOcdmSystemFactory> ocdmSystemFactory)
+MediaKeysCapabilities::MediaKeysCapabilities(std::shared_ptr<firebolt::rialto::wrappers::IOcdmFactory> ocdmFactory,
+                                             std::shared_ptr<firebolt::rialto::wrappers::IOcdmSystemFactory> ocdmSystemFactory)
     : m_ocdmSystemFactory{ocdmSystemFactory}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    if (!ocdmFactory)
+    {
+        throw std::runtime_error("ocdmFactory invalid");
+    }
 
     m_ocdm = ocdmFactory->getOcdm();
     if (!m_ocdm)
@@ -132,7 +137,8 @@ bool MediaKeysCapabilities::supportsKeySystem(const std::string &keySystem)
 
 bool MediaKeysCapabilities::getSupportedKeySystemVersion(const std::string &keySystem, std::string &version)
 {
-    std::unique_ptr<IOcdmSystem> ocdmSystem = m_ocdmSystemFactory->createOcdmSystem(keySystem);
+    std::shared_ptr<firebolt::rialto::wrappers::IOcdmSystem> ocdmSystem =
+        m_ocdmSystemFactory->createOcdmSystem(keySystem);
     if (!ocdmSystem)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to create the ocdm system object");
@@ -148,6 +154,18 @@ bool MediaKeysCapabilities::getSupportedKeySystemVersion(const std::string &keyS
         return false;
     }
     return true;
+}
+
+bool MediaKeysCapabilities::isServerCertificateSupported(const std::string &keySystem)
+{
+    std::shared_ptr<firebolt::rialto::wrappers::IOcdmSystem> ocdmSystem =
+        m_ocdmSystemFactory->createOcdmSystem(keySystem);
+    if (!ocdmSystem)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to create the ocdm system object");
+        return false;
+    }
+    return ocdmSystem->supportsServerCertificate();
 }
 
 }; // namespace firebolt::rialto::server

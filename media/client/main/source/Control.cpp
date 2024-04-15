@@ -82,4 +82,5 @@ bool Control::registerClient(std::weak_ptr<IControlClient> client, ApplicationSt
     RIALTO_CLIENT_LOG_WARN("Unable to register client");
     return false;
 }
+
 }; // namespace firebolt::rialto::client

@@ -17,16 +17,18 @@
 # limitations under the License.
 #
 
-set( CMAKE_CXX_STANDARD 14 )
+set( CMAKE_CXX_STANDARD 17 )
 
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
 include( CheckCXXCompilerFlag )
-
+include( GNUInstallDirs )
 include(ExternalProject)
 
 if (NOT RDK_GSTREAMER_UTILS_TAG)
   set(RDK_GSTREAMER_UTILS_TAG "9f7bc92775d6b1c630952c2a53f807e838d38267")
 endif()
+
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/third-party)
 
 ExternalProject_Add(
   rdk-gstreamer-utils-repo
@@ -36,8 +38,8 @@ ExternalProject_Add(
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
   INSTALL_COMMAND ${CMAKE_COMMAND} -E copy 
-  ${CMAKE_CURRENT_SOURCE_DIR}/git/src/rdk-gstreamer-utils-repo/rdk_gstreamer_utils.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/
+  ${CMAKE_CURRENT_BINARY_DIR}/git/src/rdk-gstreamer-utils-repo/rdk_gstreamer_utils.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/third-party
 )
 
 find_package( PkgConfig REQUIRED )
@@ -53,11 +55,16 @@ add_library(
 target_include_directories(
     rdkgstreamerutils
 
-    INTERFACE
-    .
+    PUBLIC
+    third-party
 
     PRIVATE
     ${GStreamerApp_INCLUDE_DIRS}
     )
 
 add_dependencies( rdkgstreamerutils rdk-gstreamer-utils-repo )
+
+install (
+        TARGETS rdkgstreamerutils LIBRARY
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)

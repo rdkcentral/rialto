@@ -103,6 +103,10 @@ firebolt::rialto::SourceConfigType convertConfigType(const firebolt::rialto::Att
     {
         return firebolt::rialto::SourceConfigType::VIDEO_DOLBY_VISION;
     }
+    case firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_SUBTITLE:
+    {
+        return firebolt::rialto::SourceConfigType::SUBTITLE;
+    }
     }
     return firebolt::rialto::SourceConfigType::UNKNOWN;
 }
@@ -144,6 +148,14 @@ firebolt::rialto::StreamFormat convertStreamFormat(const firebolt::rialto::Attac
     case firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_BYTE_STREAM:
     {
         return firebolt::rialto::StreamFormat::BYTE_STREAM;
+    }
+    case firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_HVC1:
+    {
+        return firebolt::rialto::StreamFormat::HVC1;
+    }
+    case firebolt::rialto::AttachSourceRequest_StreamFormat_STREAM_FORMAT_HEV1:
+    {
+        return firebolt::rialto::StreamFormat::HEV1;
     }
     default:
         return firebolt::rialto::StreamFormat::UNDEFINED;
@@ -343,14 +355,14 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
 
     if (configType == firebolt::rialto::SourceConfigType::AUDIO)
     {
-        const auto &config = request->audio_config();
-        uint32_t numberofchannels = config.number_of_channels();
-        uint32_t sampleRate = config.sample_rate();
+        const auto &kConfig = request->audio_config();
+        uint32_t numberofchannels = kConfig.number_of_channels();
+        uint32_t sampleRate = kConfig.sample_rate();
 
         std::vector<uint8_t> codecSpecificConfig;
-        if (config.has_codec_specific_config())
+        if (kConfig.has_codec_specific_config())
         {
-            auto codecSpecificConfigStr = config.codec_specific_config();
+            auto codecSpecificConfigStr = kConfig.codec_specific_config();
             codecSpecificConfig.assign(codecSpecificConfigStr.begin(), codecSpecificConfigStr.end());
         }
         AudioConfig audioConfig{numberofchannels, sampleRate, codecSpecificConfig};
@@ -378,6 +390,18 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
                                                                               request->segment_alignment()),
                                                                           convertStreamFormat(request->stream_format()),
                                                                           codecData);
+    }
+    else if (configType == firebolt::rialto::SourceConfigType::SUBTITLE)
+    {
+        mediaSource = std::make_unique<IMediaPipeline::MediaSourceSubtitle>(request->mime_type().c_str(),
+                                                                            request->text_track_identifier());
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Unknown source type");
+        controller->SetFailed("Operation failed");
+        done->Run();
+        return;
     }
 
     if (!m_mediaPipelineService.attachSource(request->session_id(), mediaSource))
@@ -603,6 +627,35 @@ void MediaPipelineModuleService::getMute(::google::protobuf::RpcController *cont
         response->set_mute(mute);
     }
 
+    done->Run();
+}
+
+void MediaPipelineModuleService::flush(::google::protobuf::RpcController *controller,
+                                       const ::firebolt::rialto::FlushRequest *request,
+                                       ::firebolt::rialto::FlushResponse *response, ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    if (!m_mediaPipelineService.flush(request->session_id(), request->source_id(), request->reset_time()))
+    {
+        RIALTO_SERVER_LOG_ERROR("Flush failed.");
+        controller->SetFailed("Operation failed");
+    }
+
+    done->Run();
+}
+
+void MediaPipelineModuleService::setSourcePosition(::google::protobuf::RpcController *controller,
+                                                   const ::firebolt::rialto::SetSourcePositionRequest *request,
+                                                   ::firebolt::rialto::SetSourcePositionResponse *response,
+                                                   ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    if (!m_mediaPipelineService.setSourcePosition(request->session_id(), request->source_id(), request->position()))
+    {
+        RIALTO_SERVER_LOG_ERROR("Set Source Position failed.");
+        controller->SetFailed("Operation failed");
+    }
     done->Run();
 }
 } // namespace firebolt::rialto::server::ipc

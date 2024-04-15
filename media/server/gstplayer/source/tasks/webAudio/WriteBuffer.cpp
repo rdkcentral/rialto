@@ -17,15 +17,17 @@
  * limitations under the License.
  */
 
-#include "tasks/webAudio/WriteBuffer.h"
+#include <cinttypes>
+
 #include "IGstWrapper.h"
 #include "RialtoServerLogging.h"
 #include "WebAudioPlayerContext.h"
-#include <cinttypes>
+#include "tasks/webAudio/WriteBuffer.h"
 
 namespace firebolt::rialto::server::tasks::webaudio
 {
-WriteBuffer::WriteBuffer(WebAudioPlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper, uint8_t *mainPtr,
+WriteBuffer::WriteBuffer(WebAudioPlayerContext &context,
+                         std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper, uint8_t *mainPtr,
                          uint32_t mainLength, uint8_t *wrapPtr, uint32_t wrapLength)
     : m_context{context}, m_gstWrapper{gstWrapper}, m_mainPtr{mainPtr}, m_mainLength{mainLength}, m_wrapPtr{wrapPtr},
       m_wrapLength{wrapLength}
@@ -55,7 +57,10 @@ void WriteBuffer::execute() const
             if (bytesToWrite == m_mainLength + m_wrapLength)
             {
                 bytesWritten += m_gstWrapper->gstBufferFill(gstBuffer, 0, m_mainPtr, m_mainLength);
-                bytesWritten += m_gstWrapper->gstBufferFill(gstBuffer, bytesWritten, m_wrapPtr, m_wrapLength);
+                if (m_wrapLength > 0)
+                {
+                    bytesWritten += m_gstWrapper->gstBufferFill(gstBuffer, bytesWritten, m_wrapPtr, m_wrapLength);
+                }
             }
             else if (bytesToWrite > m_mainLength)
             {

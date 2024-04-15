@@ -40,7 +40,6 @@ void Pause::execute() const
     if (!m_player.changePipelineState(GST_STATE_PAUSED))
     {
         RIALTO_SERVER_LOG_ERROR("Failed to pause the web audio player");
-        m_gstPlayerClient->notifyState(WebAudioPlayerState::FAILURE);
     }
 }
 } // namespace firebolt::rialto::server::tasks::webaudio

@@ -26,8 +26,10 @@
 namespace firebolt::rialto::server::tasks::generic
 {
 HandleBusMessage::HandleBusMessage(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                   IGstGenericPlayerClient *client, std::shared_ptr<IGstWrapper> gstWrapper,
-                                   std::shared_ptr<IGlibWrapper> glibWrapper, GstMessage *message)
+                                   IGstGenericPlayerClient *client,
+                                   std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
+                                   std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
+                                   GstMessage *message)
     : m_context{context}, m_player{player}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper},
       m_glibWrapper{glibWrapper}, m_message{message}
 {
@@ -84,7 +86,6 @@ void HandleBusMessage::execute() const
             }
             case GST_STATE_PLAYING:
             {
-                m_gstPlayerClient->notifyPlaybackState(PlaybackState::PLAYING);
                 if (m_context.pendingPlaybackRate != kNoPendingPlaybackRate)
                 {
                     m_player.setPendingPlaybackRate();
@@ -92,6 +93,7 @@ void HandleBusMessage::execute() const
                 m_player.startPositionReportingAndCheckAudioUnderflowTimer();
 
                 m_context.isPlaying = true;
+                m_gstPlayerClient->notifyPlaybackState(PlaybackState::PLAYING);
                 break;
             }
             case GST_STATE_VOID_PENDING:
@@ -188,6 +190,48 @@ void HandleBusMessage::execute() const
             RIALTO_SERVER_LOG_ERROR("Error from %s - %d: %s (%s)", GST_OBJECT_NAME(GST_MESSAGE_SRC(m_message)),
                                     err->code, err->message, debug);
             m_gstPlayerClient->notifyPlaybackState(PlaybackState::FAILURE);
+        }
+
+        m_glibWrapper->gFree(debug);
+        m_glibWrapper->gErrorFree(err);
+        break;
+    }
+    case GST_MESSAGE_WARNING:
+    {
+        PlaybackError rialtoError = PlaybackError::UNKNOWN;
+        GError *err = nullptr;
+        gchar *debug = nullptr;
+        m_gstWrapper->gstMessageParseWarning(m_message, &err, &debug);
+
+        if ((err->domain == GST_STREAM_ERROR) && (err->code == GST_STREAM_ERROR_DECRYPT))
+        {
+            RIALTO_SERVER_LOG_WARN("Decrypt error %s - %d: %s (%s)", GST_OBJECT_NAME(GST_MESSAGE_SRC(m_message)),
+                                   err->code, err->message, debug);
+            rialtoError = PlaybackError::DECRYPTION;
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_WARN("Unknown warning, ignoring %s - %d: %s (%s)",
+                                   GST_OBJECT_NAME(GST_MESSAGE_SRC(m_message)), err->code, err->message, debug);
+        }
+
+        if ((PlaybackError::UNKNOWN != rialtoError) && (m_gstPlayerClient))
+        {
+            const gchar *kName = GST_ELEMENT_NAME(GST_ELEMENT(GST_MESSAGE_SRC(m_message)));
+            if (g_strrstr(kName, "video"))
+            {
+                m_gstPlayerClient->notifyPlaybackError(firebolt::rialto::MediaSourceType::VIDEO,
+                                                       PlaybackError::DECRYPTION);
+            }
+            else if (g_strrstr(kName, "audio"))
+            {
+                m_gstPlayerClient->notifyPlaybackError(firebolt::rialto::MediaSourceType::AUDIO,
+                                                       PlaybackError::DECRYPTION);
+            }
+            else
+            {
+                RIALTO_SERVER_LOG_WARN("Unknown source type for element '%s', not propagating error", kName);
+            }
         }
 
         m_glibWrapper->gFree(debug);

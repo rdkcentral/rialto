@@ -37,86 +37,16 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
 
-  # This job downloads and caches the protobuf library to speed up execution
-  download-protobuf:
-    name: Download and Cache Protobuf
-    # Runs on ubuntu
-    runs-on: ubuntu-20.04
-    # Timeout after
-    timeout-minutes: 90
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    # Protobuf isnt cached if any steps fail, hence it is isolated in its own job
-    steps:
-      # Setup github for protobuf 3.7.0
-      - name: Cache protobuf library
-        id: cache-protobuf-2
-        uses: actions/cache@v3
-        with:
-          path: protobuf
-          key: ${{ runner.os }}-protobuf-2
-      - name: Build protobuf library
-        if: steps.cache-protobuf-2.outputs.cache-hit != 'true'
-        run: |
-          git clone https://github.com/protocolbuffers/protobuf.git protobuf
-          cd protobuf
-          git checkout v3.7.0
-          git submodule update --init --recursive
-          ./autogen.sh
-          ./autogen.sh
-          ./configure
-          make
-          make check
-      - name: Install protobuf library
-        timeout-minutes: 2
-        run: |
-          cd protobuf
-          sudo make install
-          sudo ldconfig
-
-      # If this job was cancelled by protobuf install, the cache is likely corrupt
-      # See instructions on how to reset the cache - https://wiki.rdkcentral.com/display/ASP/Github+workflow+Failures
-      - name: Is Cancelled
-        if: cancelled()
-        run: |
-          echo "If this job was cancelled due to 'Install protobuf library' timeout, the cache is likely corrupt and needs deleting! (see https://wiki.rdkcentral.com/display/ASP/Github+workflow+Failures)" >> $GITHUB_STEP_SUMMARY
-
-  # This job downloads and caches valgrind to speed up execution
-  # An updated version of valgrind is required, the default version for ubuntu-18.04 is
-  # v3.13.0 which does not support F_ADD_SEALS.
-  download-valgrind:
-    name: Download and Cache Valgrind
-    # Runs on ubuntu
-    runs-on: ubuntu-20.04
-    # Timeout after
-    timeout-minutes: 10
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    # Protobuf isnt cached if any steps fail, hence it is isolated in its own job
-    steps:
-      # Setup github for valgrind 3.19.0
-      - name: Cache valgrind library
-        id: cache-valgrind
-        uses: actions/cache@v3
-        with:
-          path: valgrind-3.19.0
-          key: ${{ runner.os }}-valgrind
-      - name: Build valgrind library
-        if: steps.cache-valgrind.outputs.cache-hit != 'true'
-        run: |
-          wget https://sourceware.org/pub/valgrind/valgrind-3.19.0.tar.bz2
-          tar xvf valgrind-3.19.0.tar.bz2
-          cd valgrind-3.19.0
-          ./configure
-          make
-
   # This job sets up the repo with the dependancies then runs the tests with valgrind
   valgrind-test:
     name: Build and test build_ut with valgrind
-    # Wait for protobuf and valgrind to be cached first
-    needs: [download-protobuf, download-valgrind]
     # Runs on ubuntu
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
+
+    strategy:
+      matrix:
+        os: [ ubuntu-22.04 ]
+
     # Timeout after
     timeout-minutes: 60
 
@@ -133,7 +63,7 @@ jobs:
 
       # Setup github for python 3.8
       - name: setup python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: 3.8
 
@@ -144,51 +74,20 @@ jobs:
       # Setup gstreamer 1.0
       - name: Build gstreamer library
         run: |
-          sudo apt-get install libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-doc gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
+          sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
 
-      # Setup valgrind 3.19.0
-      # Valgrind should always be cached here
-      - name: Cache valgrind library
-        id: cache-valgrind
-        uses: actions/cache@v3
-        with:
-          path: valgrind-3.19.0
-          key: ${{ runner.os }}-valgrind
-      - name: Check cache
-        if: steps.cache-valgrind.outputs.cache-hit != 'true'
+      # Installation of jsoncpp
+      - name: Install jsoncpp
         run: |
-          exit 1
+          sudo apt-get install libjsoncpp-dev
+
+      - name: Install protobuf
+        run: |
+          sudo apt-get install protobuf-compiler
+
       - name: Install valgrind library
         run: |
-          cd valgrind-3.19.0
-          sudo make install
-          sudo cp /usr/local/bin/valgrind /usr/bin/
-
-      # Setup github for protobuf 3.7.0
-      # Protobuf should always be cached here
-      - name: Cache protobuf library
-        id: cache-protobuf-2
-        uses: actions/cache@v3
-        with:
-          path: protobuf
-          key: ${{ runner.os }}-protobuf-2
-      - name: Check cache
-        if: steps.cache-protobuf-2.outputs.cache-hit != 'true'
-        run: |
-          exit 1
-      - name: Install protobuf library
-        timeout-minutes: 2
-        run: |
-          cd protobuf
-          sudo make install
-          sudo ldconfig
-
-      # If this job was cancelled by protobuf install, the cache is likely corrupt
-      # See instructions on how to reset the cache - https://wiki.rdkcentral.com/display/ASP/Github+workflow+Failures
-      - name: Is Cancelled
-        if: cancelled()
-        run: |
-          echo "If this job was cancelled due to 'Install protobuf library' timeout, the cache is likely corrupt and needs deleting! (see https://wiki.rdkcentral.com/display/ASP/Github+workflow+Failures)" >> $GITHUB_STEP_SUMMARY
+          sudo apt-get install valgrind
 
       # Run the build script with valgrind
       - name: Run unittests with valgrind
@@ -217,11 +116,11 @@ jobs:
         with:
           csvinput: ${{ steps.csv-memory.outputs.content }}
 
-      # Add table to the summery
+      # Add table to the summary
       - name: Create results table
         if: failure()
         run: |
-          echo "Summery of the valgrind failures" >> $GITHUB_STEP_SUMMARY
+          echo "Summary of the valgrind failures" >> $GITHUB_STEP_SUMMARY
           echo "${{steps.results-table-output.outputs.markdown-table}}" >> $GITHUB_STEP_SUMMARY
 
       # Upload logs on failure

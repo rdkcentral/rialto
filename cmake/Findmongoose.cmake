@@ -50,12 +50,12 @@ else()
     BUILD_IN_SOURCE 1
     CONFIGURE_COMMAND ""
     BUILD_COMMAND  COPT="-Wl,--no-as-needed" make linux
-    INSTALL_COMMAND ${CMAKE_COMMAND} -E rename ${CMAKE_CURRENT_SOURCE_DIR}/third-party/Source/mongoose-source/_mongoose.so
-    ${CMAKE_CURRENT_SOURCE_DIR}/third-party/Source/mongoose-source/libmongoose.so
+    INSTALL_COMMAND ${CMAKE_COMMAND} -E rename ${CMAKE_CURRENT_BINARY_DIR}/third-party/Source/mongoose-source/_mongoose.so
+    ${CMAKE_CURRENT_BINARY_DIR}/third-party/Source/mongoose-source/libmongoose.so
   )
 
   ExternalProject_Get_Property( mongoose-source SOURCE_DIR )
-
+  set( MONGOOSE_LIBRARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/third-party/Source/mongoose-source/ )
   add_library(mongoose SHARED IMPORTED)
   set_target_properties(mongoose
   PROPERTIES

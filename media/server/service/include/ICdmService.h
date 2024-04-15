@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_SERVICE_I_CDM_SERVICE_H_
 #define FIREBOLT_RIALTO_SERVER_SERVICE_I_CDM_SERVICE_H_
 
+#include "IHeartbeatProcedure.h"
 #include "IMediaKeysCapabilities.h"
 #include "IMediaKeysServerInternal.h"
 #include "MediaCommon.h"
@@ -68,10 +69,14 @@ public:
     virtual MediaKeyErrorStatus getLdlSessionsLimit(int mediaKeysHandle, uint32_t &ldlLimit) = 0;
     virtual MediaKeyErrorStatus getLastDrmError(int mediaKeysHandle, int32_t keySessionId, uint32_t &errorCode) = 0;
     virtual MediaKeyErrorStatus getDrmTime(int mediaKeysHandle, uint64_t &drmTime) = 0;
+    virtual MediaKeyErrorStatus releaseKeySession(int mediaKeysHandle, int32_t keySessionId) = 0;
 
     virtual std::vector<std::string> getSupportedKeySystems() = 0;
     virtual bool supportsKeySystem(const std::string &keySystem) = 0;
     virtual bool getSupportedKeySystemVersion(const std::string &keySystem, std::string &version) = 0;
+    virtual bool isServerCertificateSupported(const std::string &keySystem) = 0;
+
+    virtual void ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure) = 0;
 };
 } // namespace firebolt::rialto::server::service
 

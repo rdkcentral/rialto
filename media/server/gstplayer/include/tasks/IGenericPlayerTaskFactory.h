@@ -23,6 +23,7 @@
 #include "GenericPlayerContext.h"
 #include "IDataReader.h"
 #include "IGstGenericPlayerPrivate.h"
+#include "IHeartbeatHandler.h"
 #include "IMediaPipeline.h"
 #include "IPlayerTask.h"
 #include "MediaCommon.h"
@@ -173,11 +174,13 @@ public:
      * @brief Creates a Remove Source task.
      *
      * @param[in] context : The GstPlayer context
+     * @param[in] player  : The GstGenericPlayer instance
      * @param[in] type    : The media source type to remove
      *
      * @retval the new Remove Source task instance.
      */
     virtual std::unique_ptr<IPlayerTask> createRemoveSource(GenericPlayerContext &context,
+                                                            IGstGenericPlayerPrivate &player,
                                                             const firebolt::rialto::MediaSourceType &type) const = 0;
 
     /**
@@ -325,7 +328,42 @@ public:
     virtual std::unique_ptr<IPlayerTask> createUpdatePlaybackGroup(GenericPlayerContext &context, GstElement *typefind,
                                                                    const GstCaps *caps) const = 0;
 
-    virtual std::unique_ptr<IPlayerTask> createRenderFrame(GenericPlayerContext &context) const = 0;
+    virtual std::unique_ptr<IPlayerTask> createRenderFrame(GenericPlayerContext &context,
+                                                           IGstGenericPlayerPrivate &player) const = 0;
+
+    /**
+     * @brief Creates a Ping task.
+     *
+     * @param[in] heartbeatHandler       : The HeartbeatHandler instance
+     *
+     * @retval the new Ping task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createPing(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) const = 0;
+
+    /**
+     * @brief Creates a Flush task.
+     *
+     * @param[in] context   : The GstPlayer context
+     * @param[in] type      : The media source type to flush
+     * @param[in] resetTime : True if time should be reset
+     *
+     * @retval the new Flush task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask>
+    createFlush(GenericPlayerContext &context, const firebolt::rialto::MediaSourceType &type, bool resetTime) const = 0;
+
+    /**
+     * @brief Creates a SetSourcePosition task.
+     *
+     * @param[in] context   : The GstPlayer context
+     * @param[in] type      : The media source type to set position
+     * @param[in] position  : The new source position
+     *
+     * @retval the new SetSourcePosition task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createSetSourcePosition(GenericPlayerContext &context,
+                                                                 const firebolt::rialto::MediaSourceType &type,
+                                                                 std::int64_t position) const = 0;
 };
 
 } // namespace firebolt::rialto::server

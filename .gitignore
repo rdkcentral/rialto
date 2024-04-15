@@ -7,3 +7,10 @@
 /clang-format_errors.log
 /clang-format_errors.xml
 /cppcheck_report.txt
+/cmake/ocdm-config.cmake
+*__pycache__
+/.vscode/*
+
+# These files are fetched by cmake during building rialto for the native platform
+/stubs/opencdm/third-party/*
+/stubs/rdk_gstreamer_utils/third-party/*

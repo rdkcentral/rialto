@@ -1,0 +1,74 @@
+# If not stated otherwise in this file or this component's LICENSE file the
+# following copyright and licenses apply:
+#
+# Copyright 2023 Sky UK
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Rialto GStreamer Test
+
+on:
+  pull_request:
+    branches:
+      - "master"
+      - "rdkcentral:master"
+
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Check if rialto-gstreamer branch with the same name exists
+        id: check-branch
+        shell: sh +e {0}
+        run: |
+          branch=master
+          git ls-remote --exit-code --heads "https://github.com/rdkcentral/rialto-gstreamer.git" ${{ github.event.pull_request.head.ref }} > /dev/null
+          if [ $? -eq 0 ]; then
+            branch="${{ github.event.pull_request.head.ref }}"
+          fi
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout rialto-gstreamer repo
+        uses: actions/checkout@v4
+        with:
+          repository: rdkcentral/rialto-gstreamer
+          ref: ${{ steps.check-branch.outputs.branch }}
+          path: rialto-gstreamer
+          
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Install dependencies and build GStreamer library
+        run: |
+          sudo apt-get update
+          sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav gstreamer1.0-tools gstreamer1.0-x gstreamer1.0-alsa gstreamer1.0-gl gstreamer1.0-gtk3 gstreamer1.0-qt5 gstreamer1.0-pulseaudio
+
+      - name: Run tests
+        run: |
+          cd rialto-gstreamer    
+          python build_ut.py -c -xml -f -b ${{ github.event.pull_request.head.ref }}
+        
+      - name: Upload logs
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: logs
+          path: |
+            rialto-gstreamer/gtest_result.log
+            rialto-gstreamer/build/*gtest_result.xml
+           

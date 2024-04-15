@@ -30,7 +30,7 @@
  */
 
 #include "IWebAudioPlayerClient.h"
-#include <MediaCommon.h>
+#include "MediaCommon.h"
 #include <memory>
 #include <stdint.h>
 #include <string>
@@ -75,7 +75,7 @@ public:
     virtual std::unique_ptr<IWebAudioPlayer> createWebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client,
                                                                   const std::string &audioMimeType,
                                                                   const uint32_t priority,
-                                                                  const WebAudioConfig *config) const = 0;
+                                                                  std::weak_ptr<const WebAudioConfig> config) const = 0;
 };
 
 /**

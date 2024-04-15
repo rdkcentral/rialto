@@ -17,13 +17,15 @@
  * limitations under the License.
  */
 
-#include "tasks/webAudio/SetVolume.h"
-#include "RialtoServerLogging.h"
 #include <gst/gst.h>
+
+#include "RialtoServerLogging.h"
+#include "tasks/webAudio/SetVolume.h"
 
 namespace firebolt::rialto::server::tasks::webaudio
 {
-SetVolume::SetVolume(WebAudioPlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper, double volume)
+SetVolume::SetVolume(WebAudioPlayerContext &context,
+                     std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper, double volume)
     : m_context{context}, m_gstWrapper{gstWrapper}, m_volume{volume}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetVolume");

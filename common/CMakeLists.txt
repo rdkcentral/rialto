@@ -17,7 +17,7 @@
 # limitations under the License.
 #
 
-set( CMAKE_CXX_STANDARD 14 )
+set( CMAKE_CXX_STANDARD 17 )
 
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
 include( CheckCXXCompilerFlag )
@@ -56,3 +56,10 @@ target_link_libraries (
         RialtoLogging
     )
 
+if ( COVERAGE_ENABLED )
+    target_link_libraries(
+        RialtoCommon
+        PRIVATE
+        gcov
+        )
+endif()

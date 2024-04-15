@@ -41,7 +41,8 @@ public:
     ~MediaKeySessionFactory() override = default;
 
     std::unique_ptr<IMediaKeySession> createMediaKeySession(const std::string &keySystem, int32_t keySessionId,
-                                                            const IOcdmSystem &ocdmSystem, KeySessionType sessionType,
+                                                            const firebolt::rialto::wrappers::IOcdmSystem &ocdmSystem,
+                                                            KeySessionType sessionType,
                                                             std::weak_ptr<IMediaKeysClient> client,
                                                             bool isLDL) const override;
 };
@@ -49,7 +50,7 @@ public:
 /**
  * @brief The definition of the MediaKeySession.
  */
-class MediaKeySession : public IMediaKeySession, public IOcdmSessionClient
+class MediaKeySession : public IMediaKeySession, public firebolt::rialto::wrappers::IOcdmSessionClient
 {
 public:
     /**
@@ -63,8 +64,9 @@ public:
      * @param[in]  isLDL                : Is this an LDL.
      * @param[in]  mainThreadFactory    : The main thread factory.
      */
-    MediaKeySession(const std::string &keySystem, int32_t keySessionId, const IOcdmSystem &ocdmSystem,
-                    KeySessionType sessionType, std::weak_ptr<IMediaKeysClient> client, bool isLDL,
+    MediaKeySession(const std::string &keySystem, int32_t keySessionId,
+                    const firebolt::rialto::wrappers::IOcdmSystem &ocdmSystem, KeySessionType sessionType,
+                    std::weak_ptr<IMediaKeysClient> client, bool isLDL,
                     const std::shared_ptr<IMainThreadFactory> &mainThreadFactory);
 
     /**
@@ -98,7 +100,7 @@ public:
 
     MediaKeyErrorStatus selectKeyId(const std::vector<uint8_t> &keyId) override;
 
-    bool isPlayreadyKeySystem() const override;
+    bool isNetflixPlayreadyKeySystem() const override;
 
     void onProcessChallenge(const char url[], const uint8_t challenge[], const uint16_t challengeLength) override;
 
@@ -132,7 +134,7 @@ private:
     /**
      * @brief The IOcdmSession instance.
      */
-    std::unique_ptr<IOcdmSession> m_ocdmSession;
+    std::unique_ptr<firebolt::rialto::wrappers::IOcdmSession> m_ocdmSession;
 
     /**
      * @brief The mainThread object.
@@ -148,6 +150,11 @@ private:
      * @brief Is the ocdm session constructed.
      */
     bool m_isSessionConstructed;
+
+    /**
+     * @brief Is the ocdm session closed.
+     */
+    bool m_isSessionClosed;
 
     /**
      * @brief Set to true if generateRequest has complete and waiting for license response.

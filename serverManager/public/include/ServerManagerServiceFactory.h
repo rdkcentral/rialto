@@ -36,6 +36,17 @@ namespace rialto::servermanager::service
 /**
  * @brief Create new ServerManagerService instance
  *
+ * This function is used to create a new ServerManagerService instance without supplying configuration data (accepting defaults)
+ *
+ * @param[in]    stateObserver        : A pointer to IStateObserver interface implementation
+ *
+ * @retval a pointer to a new ServerManagerService instance.
+ *
+ */
+std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserver> &stateObserver);
+/**
+ * @brief Create new ServerManagerService instance
+ *
  * This function is used to create a new ServerManagerService instance.
  *
  * @param[in]    stateObserver        : A pointer to IStateObserver interface implementation

@@ -17,16 +17,18 @@
 # limitations under the License.
 #
 
-set( CMAKE_CXX_STANDARD 14 )
+set( CMAKE_CXX_STANDARD 17 )
 
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
 include( CheckCXXCompilerFlag )
-
+include( GNUInstallDirs )
 include(ExternalProject)
 
 if (NOT THUNDER_CLIENT_TAG)
-  set(THUNDER_CLIENT_TAG "d3e3d6c2be6516dd6b4ccfc04b129f8725b59baa")
+  set(THUNDER_CLIENT_TAG "e5231feeb559fc024d7c72789707c0eaa715a0b5")
 endif()
+
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/third-party/opencdm)
 
 ExternalProject_Add(
   ThunderClientLibraries
@@ -36,10 +38,10 @@ ExternalProject_Add(
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
   INSTALL_COMMAND ${CMAKE_COMMAND} -E copy 
-  ${CMAKE_CURRENT_SOURCE_DIR}/git/src/ThunderClientLibraries/Source/ocdm/open_cdm.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/git/src/ThunderClientLibraries/Source/ocdm/open_cdm_ext.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/git/src/ThunderClientLibraries/Source/ocdm/adapter/open_cdm_adapter.h
-  ${CMAKE_CURRENT_SOURCE_DIR}/
+  ${CMAKE_CURRENT_BINARY_DIR}/git/src/ThunderClientLibraries/Source/ocdm/open_cdm.h
+  ${CMAKE_CURRENT_BINARY_DIR}/git/src/ThunderClientLibraries/Source/ocdm/open_cdm_ext.h
+  ${CMAKE_CURRENT_BINARY_DIR}/git/src/ThunderClientLibraries/Source/ocdm/adapter/open_cdm_adapter.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/third-party/opencdm
 )
 
 find_package( PkgConfig REQUIRED )
@@ -60,22 +62,50 @@ add_dependencies( ocdm ThunderClientLibraries )
 add_library(ocdm::ocdm ALIAS ocdm)
 
 include(CMakePackageConfigHelpers)
-set(OCDM_INCLUDE_INSTALL_DIR "${PROJECT_BINARY_DIR}/stubs" )
-set(PROJECT_CONFIG_FILE "${PROJECT_BINARY_DIR}/ocdm-config.cmake")
+set(OCDM_INCLUDE_INSTALL_DIR "${PROJECT_SOURCE_DIR}/stubs/opencdm/third-party" )
+set(PROJECT_CONFIG_FILE "${PROJECT_BINARY_DIR}/stubs/opencdm/ocdm-config.cmake")
 
 configure_package_config_file(ocdm-config.cmake.in
   ${CMAKE_CURRENT_BINARY_DIR}/ocdm-config.cmake
   INSTALL_DESTINATION ${CMAKE_MODULE_PATH}
   PATH_VARS OCDM_INCLUDE_INSTALL_DIR)
 
+target_include_directories(
+      ocdm
+
+      PRIVATE
+      third-party
+      ${GStreamerApp_INCLUDE_DIRS}
+)
+
+set_target_properties(
+        ocdm
+        PROPERTIES SOVERSION  ${PROJECT_VERSION_MAJOR}
+                   VERSION    ${CMAKE_PROJECT_VERSION}
+        )
+
 install(FILES "${PROJECT_CONFIG_FILE}"
   DESTINATION ${CMAKE_MODULE_PATH}
   COMPONENT development
 )
 
-target_include_directories(
-      ocdm
+set (OCDM_PUBLIC_HEADER
+      third-party/opencdm/open_cdm_adapter.h
+      third-party/opencdm/open_cdm_ext.h
+      third-party/opencdm/open_cdm.h
+)
 
-      PRIVATE
-      ${GStreamerApp_INCLUDE_DIRS}
+install (
+          FILES ${OCDM_PUBLIC_HEADER}
+          DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/opencdm
+)
+
+install (
+          FILES RialtoGStreamerEMEProtectionMetadata.h
+          DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/rialto
+)
+
+install (
+        TARGETS ocdm LIBRARY
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )

@@ -1,3 +1,22 @@
+#
+# If not stated otherwise in this file or this component's LICENSE file the
+# following copyright and licenses apply:
+#
+# Copyright 2024 Sky UK
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 name: Native Rialto Build
 
 on:
@@ -8,10 +27,10 @@ on:
   workflow_dispatch:
 
 jobs:
-  build: 
-      runs-on: ubuntu-20.04 
+  build:
+    runs-on: ubuntu-22.04
 
-      steps:
+    steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
@@ -20,31 +39,22 @@ jobs:
           sudo apt-get update
           sudo apt-get install build-essential
           sudo apt-get install cmake
-          sudo apt-get install libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev libgstreamer1.0-dev
+          sudo apt-get install libunwind-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev libgstreamer1.0-dev
 
-      # Protobuf should always be cached here. Cached from the build_ut and valgrind_ut workflows
-      - name: Cache protobuf library
-        id: cache-protobuf-2
-        uses: actions/cache@v3
-        with:
-          path: protobuf
-          key: ${{ runner.os }}-protobuf-2
-
-      - name: Check cache
-        if: steps.cache-protobuf-2.outputs.cache-hit != 'true'
+      - name: Install protobuf
         run: |
-          exit 1
-
-      - name: Install protobuf library
-        timeout-minutes: 2
-        run: |
-          cd protobuf
-          sudo make install
-          sudo ldconfig
+          sudo apt-get install protobuf-compiler
 
       - name: Build Rialto
-        run:
-          cmake . -B . -DNATIVE_BUILD=ON -DRIALTO_LOG_FATAL_ENABLED=OFF -DRIALTO_LOG_ERROR_ENABLED=OFF -DRIALTO_LOG_WARN_ENABLED=OFF -DRIALTO_LOG_MIL_ENABLED=OFF -DRIALTO_LOG_INFO_ENABLED=OFF -DRIALTO_LOG_DEBUG_ENABLED=OFF >> output_file.txt 2>&1
+        run: |
+          cmake . -B build -DNATIVE_BUILD=ON -DRIALTO_BUILD_TYPE="Debug" &> output_file.txt
+          if [ $? -eq 0 ]
+          then
+            make -C build &>> output_file.txt
+          else
+            exit 1
+          fi
+
 
       - name: Report Build Status Success
         if: success()
@@ -55,7 +65,7 @@ jobs:
       - name: Upload Logs on Failure
         uses: actions/upload-artifact@v3
         if: failure()
-        with: 
+        with:
           name: Output Logs
           path: |
             output_file.txt

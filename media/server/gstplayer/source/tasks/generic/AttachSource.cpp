@@ -32,17 +32,18 @@ namespace
 class MediaSourceCapsBuilder
 {
 public:
-    MediaSourceCapsBuilder(std::shared_ptr<IGstWrapper> gstWrapper, std::shared_ptr<IGlibWrapper> glibWrapper,
-                           const firebolt::rialto::IMediaPipeline::MediaSource &source)
+    MediaSourceCapsBuilder(std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
+                           std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
+                           const firebolt::rialto::IMediaPipeline::MediaSourceAV &source)
         : m_gstWrapper(gstWrapper), m_glibWrapper(glibWrapper), m_attachedSource(source)
     {
     }
     virtual GstCaps *buildCaps() { return buildCommonCaps(); }
 
 protected:
-    std::shared_ptr<IGstWrapper> m_gstWrapper;
-    std::shared_ptr<IGlibWrapper> m_glibWrapper;
-    const IMediaPipeline::MediaSource &m_attachedSource;
+    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
+    const IMediaPipeline::MediaSourceAV &m_attachedSource;
 
     GstCaps *buildCommonCaps()
     {
@@ -69,17 +70,17 @@ protected:
 
     void addCodecDataToCaps(GstCaps *caps) const
     {
-        const std::shared_ptr<CodecData> &codecData = m_attachedSource.getCodecData();
-        if (codecData && CodecDataType::BUFFER == codecData->type)
+        const std::shared_ptr<CodecData> &kCodecData = m_attachedSource.getCodecData();
+        if (kCodecData && CodecDataType::BUFFER == kCodecData->type)
         {
-            gpointer memory = m_glibWrapper->gMemdup(codecData->data.data(), codecData->data.size());
-            GstBuffer *buf = m_gstWrapper->gstBufferNewWrapped(memory, codecData->data.size());
+            gpointer memory = m_glibWrapper->gMemdup(kCodecData->data.data(), kCodecData->data.size());
+            GstBuffer *buf = m_gstWrapper->gstBufferNewWrapped(memory, kCodecData->data.size());
             m_gstWrapper->gstCapsSetSimple(caps, "codec_data", GST_TYPE_BUFFER, buf, nullptr);
             m_gstWrapper->gstBufferUnref(buf);
         }
-        else if (codecData && CodecDataType::STRING == codecData->type)
+        else if (kCodecData && CodecDataType::STRING == kCodecData->type)
         {
-            std::string codecDataStr{codecData->data.begin(), codecData->data.end()};
+            std::string codecDataStr{kCodecData->data.begin(), kCodecData->data.end()};
             m_gstWrapper->gstCapsSetSimple(caps, "codec_data", G_TYPE_STRING, codecDataStr.c_str(), nullptr);
         }
     }
@@ -89,7 +90,9 @@ protected:
         static const std::unordered_map<firebolt::rialto::StreamFormat, std::string> formatMap =
             {{firebolt::rialto::StreamFormat::RAW, "raw"},
              {firebolt::rialto::StreamFormat::AVC, "avc"},
-             {firebolt::rialto::StreamFormat::BYTE_STREAM, "byte-stream"}};
+             {firebolt::rialto::StreamFormat::BYTE_STREAM, "byte-stream"},
+             {firebolt::rialto::StreamFormat::HVC1, "hvc1"},
+             {firebolt::rialto::StreamFormat::HEV1, "hev1"}};
 
         auto formatMapIt = formatMap.find(m_attachedSource.getStreamFormat());
         if (formatMapIt != formatMap.end())
@@ -102,7 +105,8 @@ protected:
 class MediaSourceAudioCapsBuilder : public MediaSourceCapsBuilder
 {
 public:
-    MediaSourceAudioCapsBuilder(std::shared_ptr<IGstWrapper> gstWrapper, std::shared_ptr<IGlibWrapper> glibWrapper,
+    MediaSourceAudioCapsBuilder(std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
+                                std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
                                 const IMediaPipeline::MediaSourceAudio &source)
         : MediaSourceCapsBuilder(gstWrapper, glibWrapper, source), m_attachedAudioSource(source)
     {
@@ -180,7 +184,8 @@ protected:
 class MediaSourceVideoCapsBuilder : public MediaSourceCapsBuilder
 {
 public:
-    MediaSourceVideoCapsBuilder(std::shared_ptr<IGstWrapper> gstWrapper, std::shared_ptr<IGlibWrapper> glibWrapper,
+    MediaSourceVideoCapsBuilder(std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
+                                std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
                                 const IMediaPipeline::MediaSourceVideo &source)
         : MediaSourceCapsBuilder(gstWrapper, glibWrapper, source), m_attachedVideoSource(source)
     {
@@ -204,8 +209,8 @@ protected:
 class MediaSourceVideoDolbyVisionCapsBuilder : public MediaSourceVideoCapsBuilder
 {
 public:
-    MediaSourceVideoDolbyVisionCapsBuilder(std::shared_ptr<IGstWrapper> gstWrapper,
-                                           std::shared_ptr<IGlibWrapper> glibWrapper,
+    MediaSourceVideoDolbyVisionCapsBuilder(std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
+                                           std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
                                            const IMediaPipeline::MediaSourceVideoDolbyVision &source)
         : MediaSourceVideoCapsBuilder(gstWrapper, glibWrapper, source), m_attachedDolbySource(source)
     {
@@ -225,10 +230,11 @@ protected:
 };
 }; // namespace
 
-AttachSource::AttachSource(GenericPlayerContext &context, std::shared_ptr<IGstWrapper> gstWrapper,
-                           std::shared_ptr<IGlibWrapper> glibWrapper,
-                           const std::shared_ptr<IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper,
-                           IGstGenericPlayerPrivate &player, const std::unique_ptr<IMediaPipeline::MediaSource> &source)
+AttachSource::AttachSource(
+    GenericPlayerContext &context, std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
+    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
+    const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper,
+    IGstGenericPlayerPrivate &player, const std::unique_ptr<IMediaPipeline::MediaSource> &source)
     : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
       m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}, m_player{player}, m_attachedSource{source->copy()}
 {
@@ -249,6 +255,12 @@ void AttachSource::execute() const
         RIALTO_SERVER_LOG_ERROR("Unknown media source type");
         return;
     }
+    else if (m_attachedSource->getType() == MediaSourceType::SUBTITLE)
+    {
+        // just stub for now
+        RIALTO_SERVER_LOG_DEBUG("Subtitle source attached");
+        return;
+    }
 
     GstCaps *caps = createCapsFromMediaSource();
     gchar *capsStr = m_gstWrapper->gstCapsToString(caps);
@@ -263,7 +275,7 @@ void AttachSource::execute() const
     }
     else if (m_attachedSource->getType() == MediaSourceType::AUDIO && m_context.audioSourceRemoved)
     {
-        switchAudioSource(caps, strCaps);
+        reattachAudioSource(caps, strCaps);
     }
     else
     {
@@ -292,72 +304,71 @@ void AttachSource::addSource(GstCaps *caps, bool hasDrm) const
     m_context.streamInfo.emplace(m_attachedSource->getType(), StreamInfo{appSrc, hasDrm});
 }
 
-void AttachSource::updateSource(GstCaps *caps, const std::string &strCaps) const
-{
-    GstAppSrc *appSrc{GST_APP_SRC(m_context.streamInfo[m_attachedSource->getType()].appSrc)};
-    GstCaps *appsrcCaps = m_gstWrapper->gstAppSrcGetCaps(appSrc);
-    if ((!appsrcCaps) || (!m_gstWrapper->gstCapsIsEqual(appsrcCaps, caps)))
-    {
-        RIALTO_SERVER_LOG_MIL("Updating %s appsrc caps to '%s'",
-                              m_attachedSource->getType() == MediaSourceType::AUDIO ? "Audio" : "Video", strCaps.c_str());
-        m_gstWrapper->gstAppSrcSetCaps(appSrc, caps);
-    }
-
-    if (appsrcCaps)
-        m_gstWrapper->gstCapsUnref(appsrcCaps);
-}
-
-void AttachSource::switchAudioSource(GstCaps *caps, const std::string &strCaps) const
+void AttachSource::reattachAudioSource(GstCaps *caps, const std::string &strCaps) const
 {
     if (m_attachedSource->getMimeType().empty())
     {
-        RIALTO_SERVER_LOG_WARN("SKIP switching audio source. Unknown mime type");
+        RIALTO_SERVER_LOG_WARN("SKIP reattach audio source. Unknown mime type");
         return;
     }
-    GstAppSrc *appSrc{GST_APP_SRC(m_context.streamInfo[m_attachedSource->getType()].appSrc)};
-    std::string oldCapsStr;
-    GstCaps *oldCaps = m_gstWrapper->gstAppSrcGetCaps(appSrc);
-    if (oldCaps)
-    {
-        gchar *oldCapsCStr = m_gstWrapper->gstCapsToString(oldCaps);
-        oldCapsStr = std::string(oldCapsCStr);
-        m_glibWrapper->gFree(oldCapsCStr);
-        m_gstWrapper->gstCapsUnref(oldCaps);
-    }
-    RIALTO_SERVER_LOG_MIL("Switching audio source.");
-    RIALTO_SERVER_LOG_MIL("Old caps: %s", oldCapsStr.c_str());
-    RIALTO_SERVER_LOG_MIL("New caps: %s", strCaps.c_str());
-    AudioAttributesPrivate audioAttributes{createAudioAttributes()};
-    int sampleAttributes{0}; // rdk_gstreamer_utils::performAudioTrackCodecChannelSwitch checks if this param != NULL only.
-    std::uint32_t status{0};   // must be 0 to make rdk_gstreamer_utils::performAudioTrackCodecChannelSwitch work
-    unsigned int ui32Delay{0}; // output param
-    long long audioChangeTargetPts{-1}; // NOLINT(runtime/int) output param. Set audioChangeTargetPts = currentDispPts
-                                        // in rdk_gstreamer_utils function stub
-    std::int64_t currentDispPts64b;     // In netflix code it's currentDisplayPosition + offset
+
+    std::int64_t currentDispPts64b; // In netflix code it's currentDisplayPosition + offset
     m_gstWrapper->gstElementQueryPosition(m_context.pipeline, GST_FORMAT_TIME, &currentDispPts64b);
     long long currentDispPts = currentDispPts64b; // NOLINT(runtime/int)
-    unsigned int audioChangeStage{0}; // Output param. Set to AUDCHG_ALIGN in rdk_gstreamer_utils function stub
-    bool audioAac{oldCapsStr.find("audio/mpeg") != std::string::npos};
-    bool svpEnabled{true}; // assume always true
-    bool retVal{false};    // Output param. Set to TRUE in rdk_gstreamer_utils function stub
 
-    bool result =
-        m_rdkGstreamerUtilsWrapper
-            ->performAudioTrackCodecChannelSwitch(&m_context.playbackGroup, &sampleAttributes, &audioAttributes, &status,
-                                                  &ui32Delay, &audioChangeTargetPts, &currentDispPts, &audioChangeStage,
-                                                  &caps, // may fail for amlogic - that implementation changes
-                                                         // this parameter, it's probably used by Netflix later
-                                                  &audioAac, svpEnabled,
-                                                  m_context.streamInfo[m_attachedSource->getType()].appSrc, &retVal);
-    if (!result || !retVal)
+    GstAppSrc *appSrc{GST_APP_SRC(m_context.streamInfo[m_attachedSource->getType()].appSrc)};
+    GstCaps *oldCaps = m_gstWrapper->gstAppSrcGetCaps(appSrc);
+    if ((!oldCaps) || (!m_gstWrapper->gstCapsIsEqual(caps, oldCaps)))
     {
-        RIALTO_SERVER_LOG_WARN("performAudioTrackCodecChannelSwitch failed! Result: %d, retval %d", result, retVal);
+        RIALTO_SERVER_LOG_MIL("Switching audio source.");
+
+        gchar *oldCapsCStr = m_gstWrapper->gstCapsToString(oldCaps);
+        std::string oldCapsStr = std::string(oldCapsCStr);
+        m_glibWrapper->gFree(oldCapsCStr);
+
+        RIALTO_SERVER_LOG_MIL("Old caps: %s", oldCapsStr.c_str());
+        RIALTO_SERVER_LOG_MIL("New caps: %s", strCaps.c_str());
+
+        firebolt::rialto::wrappers::AudioAttributesPrivate audioAttributes{createAudioAttributes()};
+        int sampleAttributes{
+            0}; // rdk_gstreamer_utils::performAudioTrackCodecChannelSwitch checks if this param != NULL only.
+        std::uint32_t status{0};   // must be 0 to make rdk_gstreamer_utils::performAudioTrackCodecChannelSwitch work
+        unsigned int ui32Delay{0}; // output param
+        long long audioChangeTargetPts{-1}; // NOLINT(runtime/int) output param. Set audioChangeTargetPts =
+                                            // currentDispPts in rdk_gstreamer_utils function stub
+        unsigned int audioChangeStage{0};   // Output param. Set to AUDCHG_ALIGN in rdk_gstreamer_utils function stub
+        bool audioAac{oldCapsStr.find("audio/mpeg") != std::string::npos};
+        bool svpEnabled{true}; // assume always true
+        bool retVal{false};    // Output param. Set to TRUE in rdk_gstreamer_utils function stub
+
+        bool result =
+            m_rdkGstreamerUtilsWrapper
+                ->performAudioTrackCodecChannelSwitch(&m_context.playbackGroup, &sampleAttributes, &audioAttributes,
+                                                      &status, &ui32Delay, &audioChangeTargetPts, &currentDispPts,
+                                                      &audioChangeStage,
+                                                      &caps, // may fail for amlogic - that implementation changes
+                                                             // this parameter, it's probably used by Netflix later
+                                                      &audioAac, svpEnabled, GST_ELEMENT(appSrc), &retVal);
+        if (!result || !retVal)
+        {
+            RIALTO_SERVER_LOG_WARN("performAudioTrackCodecChannelSwitch failed! Result: %d, retval %d", result, retVal);
+        }
     }
+    else
+    {
+        RIALTO_SERVER_LOG_MIL("Reattaching identical audio source.");
+    }
+
+    // Restart audio sink
+    m_player.setAudioVideoFlags(true, true);
 
     m_context.audioNeedData = true;
     m_context.audioSourceRemoved = false;
     m_context.lastAudioSampleTimestamps = currentDispPts;
     m_player.notifyNeedMediaData(true, false);
+
+    if (oldCaps)
+        m_gstWrapper->gstCapsUnref(oldCaps);
 }
 
 GstCaps *AttachSource::createCapsFromMediaSource() const
@@ -367,24 +378,24 @@ GstCaps *AttachSource::createCapsFromMediaSource() const
     firebolt::rialto::SourceConfigType configType = m_attachedSource->getConfigType();
     if (configType == firebolt::rialto::SourceConfigType::AUDIO)
     {
-        const IMediaPipeline::MediaSourceAudio &source =
+        const IMediaPipeline::MediaSourceAudio &kSource =
             dynamic_cast<IMediaPipeline::MediaSourceAudio &>(*m_attachedSource);
 
-        capsBuilder = std::make_unique<MediaSourceAudioCapsBuilder>(m_gstWrapper, m_glibWrapper, source);
+        capsBuilder = std::make_unique<MediaSourceAudioCapsBuilder>(m_gstWrapper, m_glibWrapper, kSource);
     }
     else if (configType == firebolt::rialto::SourceConfigType::VIDEO)
     {
-        const IMediaPipeline::MediaSourceVideo &source =
+        const IMediaPipeline::MediaSourceVideo &kSource =
             dynamic_cast<IMediaPipeline::MediaSourceVideo &>(*m_attachedSource);
 
-        capsBuilder = std::make_unique<MediaSourceVideoCapsBuilder>(m_gstWrapper, m_glibWrapper, source);
+        capsBuilder = std::make_unique<MediaSourceVideoCapsBuilder>(m_gstWrapper, m_glibWrapper, kSource);
     }
     else if (configType == firebolt::rialto::SourceConfigType::VIDEO_DOLBY_VISION)
     {
-        const IMediaPipeline::MediaSourceVideoDolbyVision &source =
+        const IMediaPipeline::MediaSourceVideoDolbyVision &kSource =
             dynamic_cast<IMediaPipeline::MediaSourceVideoDolbyVision &>(*m_attachedSource);
 
-        capsBuilder = std::make_unique<MediaSourceVideoDolbyVisionCapsBuilder>(m_gstWrapper, m_glibWrapper, source);
+        capsBuilder = std::make_unique<MediaSourceVideoDolbyVisionCapsBuilder>(m_gstWrapper, m_glibWrapper, kSource);
     }
     else
     {
@@ -395,17 +406,18 @@ GstCaps *AttachSource::createCapsFromMediaSource() const
     return capsBuilder->buildCaps();
 }
 
-AudioAttributesPrivate AttachSource::createAudioAttributes() const
+firebolt::rialto::wrappers::AudioAttributesPrivate AttachSource::createAudioAttributes() const
 {
-    const IMediaPipeline::MediaSourceAudio &source = dynamic_cast<IMediaPipeline::MediaSourceAudio &>(*m_attachedSource);
-    firebolt::rialto::AudioConfig audioConfig = source.getAudioConfig();
-    AudioAttributesPrivate audioAttributes{"", // param set below.
-                                           audioConfig.numberOfChannels,
-                                           audioConfig.sampleRate,
-                                           0, // used only in one of logs in rdk_gstreamer_utils, no need to set this param.
-                                           0, // used only in one of logs in rdk_gstreamer_utils, no need to set this param.
-                                           audioConfig.codecSpecificConfig.data(),
-                                           static_cast<std::uint32_t>(audioConfig.codecSpecificConfig.size())};
+    const IMediaPipeline::MediaSourceAudio &kSource = dynamic_cast<IMediaPipeline::MediaSourceAudio &>(*m_attachedSource);
+    firebolt::rialto::AudioConfig audioConfig = kSource.getAudioConfig();
+    firebolt::rialto::wrappers::AudioAttributesPrivate
+        audioAttributes{"", // param set below.
+                        audioConfig.numberOfChannels,
+                        audioConfig.sampleRate,
+                        0, // used only in one of logs in rdk_gstreamer_utils, no need to set this param.
+                        0, // used only in one of logs in rdk_gstreamer_utils, no need to set this param.
+                        audioConfig.codecSpecificConfig.data(),
+                        static_cast<std::uint32_t>(audioConfig.codecSpecificConfig.size())};
     if (m_attachedSource->getMimeType() == "audio/mp4" || m_attachedSource->getMimeType() == "audio/aac")
     {
         audioAttributes.m_codecParam = "mp4a.40.2, mp4a.40.5";

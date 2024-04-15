@@ -60,8 +60,9 @@ public:
      * @retval the new media keys instance or null on error.
      */
     virtual std::unique_ptr<IMediaKeySession>
-    createMediaKeySession(const std::string &keySystem, int32_t keySessionId, const IOcdmSystem &ocdmSystem,
-                          KeySessionType sessionType, std::weak_ptr<IMediaKeysClient> client, bool isLDL) const = 0;
+    createMediaKeySession(const std::string &keySystem, int32_t keySessionId,
+                          const firebolt::rialto::wrappers::IOcdmSystem &ocdmSystem, KeySessionType sessionType,
+                          std::weak_ptr<IMediaKeysClient> client, bool isLDL) const = 0;
 };
 
 /**
@@ -201,11 +202,11 @@ public:
     virtual MediaKeyErrorStatus selectKeyId(const std::vector<uint8_t> &keyId) = 0;
 
     /**
-     * @brief Checks, if key system of media key session is playready.
+     * @brief Checks, if key system of media key session is Netflix playready.
      *
-     * @retval true if key system is playready
+     * @retval true if key system is Netflix playready
      */
-    virtual bool isPlayreadyKeySystem() const = 0;
+    virtual bool isNetflixPlayreadyKeySystem() const = 0;
 };
 } // namespace firebolt::rialto::server
 

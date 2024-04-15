@@ -17,12 +17,22 @@
 # limitations under the License.
 #
 
-set( CMAKE_CXX_STANDARD 14 )
+set( CMAKE_CXX_STANDARD 17 )
 
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
 include( CheckCXXCompilerFlag )
 
 find_package( mongoose REQUIRED )
+
+if( RIALTO_ENABLE_CONFIG_FILE )
+    if (NOT RIALTO_CONFIG_FILE_DIR)
+        set(RIALTO_CONFIG_FILE_DIR /etc)
+    endif()
+
+    if (NOT RIALTO_CONFIG_OVERRIDES_FILE_DIR)
+        set(RIALTO_CONFIG_OVERRIDES_FILE_DIR /opt/persistent/sky)
+    endif()
+endif()
 
 add_subdirectory(common)
 add_subdirectory(ipc)
@@ -56,6 +66,17 @@ target_include_directories (
         mongoose
 )
 
+if( RIALTO_ENABLE_CONFIG_FILE )
+    configure_file(
+        config/rialto-config.in.json
+        rialto-config.json
+        @ONLY )
+
+    install(
+        FILES       ${CMAKE_CURRENT_BINARY_DIR}/rialto-config.json
+        DESTINATION ${RIALTO_CONFIG_FILE_DIR} )
+endif()
+
 target_link_libraries (
         RialtoServerManagerSim
 
@@ -66,8 +87,14 @@ target_link_libraries (
         dl
 )
 
+if( NATIVE_BUILD )
+        set_target_properties(
+        RialtoServerManagerSim
+        PROPERTIES INSTALL_RPATH "${MONGOOSE_LIBRARY_DIR}:${CMAKE_INSTALL_PREFIX}/lib"
+)
+endif()
+
 install (
         TARGETS RialtoServerManagerSim
         DESTINATION bin
 )
-

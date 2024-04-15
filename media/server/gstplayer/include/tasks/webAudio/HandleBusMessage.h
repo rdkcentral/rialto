@@ -34,9 +34,9 @@ namespace firebolt::rialto::server::tasks::webaudio
 class HandleBusMessage : public IPlayerTask
 {
 public:
-    HandleBusMessage(WebAudioPlayerContext &context, IGstWebAudioPlayerPrivate &player,
-                     IGstWebAudioPlayerClient *client, std::shared_ptr<IGstWrapper> gstWrapper,
-                     std::shared_ptr<IGlibWrapper> glibWrapper, GstMessage *message);
+    HandleBusMessage(WebAudioPlayerContext &context, IGstWebAudioPlayerPrivate &player, IGstWebAudioPlayerClient *client,
+                     std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
+                     std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper, GstMessage *message);
     ~HandleBusMessage() override;
     void execute() const override;
 
@@ -44,8 +44,8 @@ private:
     WebAudioPlayerContext &m_context;
     IGstWebAudioPlayerPrivate &m_player;
     IGstWebAudioPlayerClient *m_gstPlayerClient;
-    std::shared_ptr<IGstWrapper> m_gstWrapper;
-    std::shared_ptr<IGlibWrapper> m_glibWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
     GstMessage *m_message;
 };
 } // namespace firebolt::rialto::server::tasks::webaudio

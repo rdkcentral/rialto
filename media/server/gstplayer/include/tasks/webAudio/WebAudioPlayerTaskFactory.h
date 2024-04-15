@@ -32,8 +32,9 @@ namespace firebolt::rialto::server
 class WebAudioPlayerTaskFactory : public IWebAudioPlayerTaskFactory
 {
 public:
-    WebAudioPlayerTaskFactory(IGstWebAudioPlayerClient *client, const std::shared_ptr<IGstWrapper> &gstWrapper,
-                              const std::shared_ptr<IGlibWrapper> &glibWrapper);
+    WebAudioPlayerTaskFactory(IGstWebAudioPlayerClient *client,
+                              const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                              const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper);
     ~WebAudioPlayerTaskFactory() override = default;
 
     std::unique_ptr<IPlayerTask> createShutdown(IGstWebAudioPlayerPrivate &player) const override;
@@ -41,18 +42,19 @@ public:
     std::unique_ptr<IPlayerTask> createPlay(IGstWebAudioPlayerPrivate &player) const override;
     std::unique_ptr<IPlayerTask> createPause(IGstWebAudioPlayerPrivate &player) const override;
     std::unique_ptr<IPlayerTask> createSetCaps(WebAudioPlayerContext &context, const std::string &audioMimeType,
-                                               const WebAudioConfig *config) const override;
+                                               std::weak_ptr<const WebAudioConfig> config) const override;
     std::unique_ptr<IPlayerTask> createEos(WebAudioPlayerContext &context) const override;
     std::unique_ptr<IPlayerTask> createSetVolume(WebAudioPlayerContext &context, double volume) const override;
     std::unique_ptr<IPlayerTask> createWriteBuffer(WebAudioPlayerContext &context, uint8_t *mainPtr, uint32_t mainLength,
                                                    uint8_t *wrapPtr, uint32_t wrapLength) const override;
     std::unique_ptr<IPlayerTask> createHandleBusMessage(WebAudioPlayerContext &context, IGstWebAudioPlayerPrivate &player,
                                                         GstMessage *message) const override;
+    std::unique_ptr<IPlayerTask> createPing(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) const override;
 
 private:
     IGstWebAudioPlayerClient *m_client;
-    std::shared_ptr<IGstWrapper> m_gstWrapper;
-    std::shared_ptr<IGlibWrapper> m_glibWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
 };
 } // namespace firebolt::rialto::server
 

@@ -794,6 +794,35 @@ MediaKeyErrorStatus MediaKeysIpc::getCdmKeySessionId(int32_t keySessionId, std::
     return getMediaKeyErrorStatusFromResponse("getCdmKeySessionId", ipcController, response.error_status());
 }
 
+MediaKeyErrorStatus MediaKeysIpc::releaseKeySession(int32_t keySessionId)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return MediaKeyErrorStatus::FAIL;
+    }
+
+    // Reset client
+    m_mediaKeysIpcClient.reset();
+
+    firebolt::rialto::ReleaseKeySessionRequest request;
+    request.set_media_keys_handle(m_mediaKeysHandle);
+    request.set_key_session_id(keySessionId);
+
+    firebolt::rialto::ReleaseKeySessionResponse response;
+    // Default error status to FAIL
+    response.set_error_status(ProtoMediaKeyErrorStatus::FAIL);
+
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaKeysStub->releaseKeySession(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    return getMediaKeyErrorStatusFromResponse("releaseKeySession", ipcController, response.error_status());
+}
+
 void MediaKeysIpc::onLicenseRequest(const std::shared_ptr<firebolt::rialto::LicenseRequestEvent> &event)
 {
     std::shared_ptr<IMediaKeysClient> mediaKeysIpcClient = m_mediaKeysIpcClient.lock();

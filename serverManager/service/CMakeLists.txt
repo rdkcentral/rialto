@@ -17,13 +17,25 @@
 # limitations under the License.
 #
 
+if( RIALTO_ENABLE_CONFIG_FILE )
+    find_package( jsoncpp REQUIRED )
+    set(RIALTO_CONFIG_SOURCE_FILES
+        source/ConfigReader.cpp
+        source/FileReaderFactory.cpp
+        source/ConfigReaderFactory.cpp)
+endif()
+
 find_package( PkgConfig REQUIRED )
+
 add_library (
         RialtoServerManager SHARED
+        source/ConfigHelper.cpp
         source/ServerManagerServiceFactory.cpp
         source/ServerManagerService.cpp
         source/ServiceContext.cpp
+        ${RIALTO_CONFIG_SOURCE_FILES}
 )
+
 set_target_properties (
         RialtoServerManager
         PROPERTIES LINK_FLAGS "-Wl,--unresolved-symbols=report-all"
@@ -40,6 +52,7 @@ target_include_directories (
         $<TARGET_PROPERTY:RialtoServerManagerCommon,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoServerManagerPublic,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoCommon,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoWrappers,INTERFACE_INCLUDE_DIRECTORIES>
 )
 target_link_libraries (
         RialtoServerManager
@@ -47,8 +60,21 @@ target_link_libraries (
         RialtoLogging
         RialtoServerManagerCommon
         RialtoServerManagerIpc
+        RialtoWrappers
         Threads::Threads
 )
+
+if( RIALTO_ENABLE_CONFIG_FILE )
+    add_compile_definitions(RIALTO_ENABLE_CONFIG_FILE)
+    add_compile_definitions(RIALTO_CONFIG_PATH="${RIALTO_CONFIG_FILE_DIR}/rialto-config.json")
+    add_compile_definitions(RIALTO_CONFIG_OVERRIDES_PATH="${RIALTO_CONFIG_OVERRIDES_FILE_DIR}/rialto-config-overrides.json")
+
+    target_link_libraries(
+        RialtoServerManager
+        PRIVATE
+        JsonCpp::JsonCpp
+        )
+endif()
 
 if ( COVERAGE_ENABLED )
     target_link_libraries(
@@ -64,4 +90,11 @@ if( NOT CMAKE_BUILD_TYPE STREQUAL "UnitTests" )
                 TARGETS RialtoServerManager LIBRARY
                 DESTINATION ${CMAKE_INSTALL_LIBDIR}
         )
+endif()
+
+if( NATIVE_BUILD )
+      set_target_properties(
+        RialtoServerManager
+        PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib"
+      )
 endif()

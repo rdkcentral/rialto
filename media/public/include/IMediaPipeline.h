@@ -36,7 +36,7 @@
 #include <vector>
 
 #include "IMediaPipelineClient.h"
-#include <MediaCommon.h>
+#include "MediaCommon.h"
 
 namespace firebolt::rialto
 {
@@ -61,8 +61,8 @@ public:
     /**
      * @brief IMediaPipeline factory method, returns a concrete implementation of IMediaPipeline
      *
-     * @param[in] client            : The Rialto media player client.
-     * @param[in] videoRequirements : The video decoder requirements for the MediaPipeline session
+     * @param[in] client                  : The Rialto media player client.
+     * @param[in] videoRequirements       : The video decoder requirements for the MediaPipeline session
      *
      * @retval the new backend instance or null on error.
      */
@@ -106,7 +106,7 @@ public:
         /**
          * @brief Return the source type.
          */
-        virtual MediaSourceType getType() const = 0;
+        virtual MediaSourceType getType() const { return MediaSourceType::UNKNOWN; }
 
         /**
          * @brief Return the MIME type.
@@ -132,6 +132,50 @@ public:
          * @brief Set the source id.
          */
         void setId(int32_t id) { m_id = id; }
+
+    protected:
+        /**
+         * @brief Default constructor.
+         *
+         * @param[in]  configType   : The source config type.
+         * @param[in]  mimeType     : The mime type string.
+         * @param[in]  hasDrm       : Information if source will use drm
+         */
+        explicit MediaSource(SourceConfigType configType = SourceConfigType::UNKNOWN,
+                             const std::string &mimeType = std::string(), bool hasDrm = true)
+            : m_id(0), m_configType(configType), m_mimeType(mimeType), m_hasDrm(hasDrm)
+        {
+        }
+        /**
+         * @brief The source id. Parameter will be set by a successful call to attachSource()
+         */
+        int32_t m_id;
+
+        /**
+         * @brief The source config type.
+         */
+        SourceConfigType m_configType;
+
+        /**
+         * @brief The MIME type.
+         */
+        std::string m_mimeType;
+
+        /**
+         * @brief Parameter to check if encrypted frames will be used for this source.
+         */
+        bool m_hasDrm;
+    };
+
+    /**
+     * @brief A class that represents media source audio and video derived from MediaSource class, which represents the
+     * source of media data
+     */
+    class MediaSourceAV : public MediaSource
+    {
+    public:
+        ~MediaSourceAV() {}
+        std::unique_ptr<MediaSource> copy() const { return std::make_unique<MediaSourceAV>(*this); }
 
         /**
          * @brief Gets the segment alignment
@@ -159,35 +203,15 @@ public:
          * @param[in]  streamFormat : The stream format
          * @param[in]  codecData    : The additional data for decoder
          */
-        explicit MediaSource(SourceConfigType configType = SourceConfigType::UNKNOWN,
-                             const std::string &mimeType = std::string(), bool hasDrm = true,
-                             SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
-                             StreamFormat streamFormat = StreamFormat::UNDEFINED,
-                             const std::shared_ptr<CodecData> &codecData = nullptr)
-            : m_id(0), m_configType(configType), m_mimeType(mimeType), m_hasDrm(hasDrm), m_alignment(alignment),
-              m_streamFormat(streamFormat), m_codecData(codecData)
+        explicit MediaSourceAV(SourceConfigType configType = SourceConfigType::UNKNOWN,
+                               const std::string &mimeType = std::string(), bool hasDrm = true,
+                               SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
+                               StreamFormat streamFormat = StreamFormat::UNDEFINED,
+                               const std::shared_ptr<CodecData> &codecData = nullptr)
+            : MediaSource(configType, mimeType, hasDrm), m_alignment(alignment), m_streamFormat(streamFormat),
+              m_codecData(codecData)
         {
         }
-        /**
-         * @brief The source id. Parameter will be set by a successful call to attachSource()
-         */
-        int32_t m_id;
-
-        /**
-         * @brief The source config type.
-         */
-        SourceConfigType m_configType;
-
-        /**
-         * @brief The MIME type.
-         */
-        std::string m_mimeType;
-
-        /**
-         * @brief Parameter to check if encrypted frames will be used for this source.
-         */
-        bool m_hasDrm;
-
         /**
          * @brief The alignment of media segment
          */
@@ -209,7 +233,7 @@ public:
      * media data
      */
 
-    class MediaSourceAudio : public MediaSource
+    class MediaSourceAudio : public MediaSourceAV
     {
     public:
         /**
@@ -226,7 +250,7 @@ public:
                          SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                          StreamFormat streamFormat = StreamFormat::UNDEFINED,
                          const std::shared_ptr<CodecData> &codecData = nullptr)
-            : MediaSource(SourceConfigType::AUDIO, mimeType, hasDrm, alignment, streamFormat, codecData),
+            : MediaSourceAV(SourceConfigType::AUDIO, mimeType, hasDrm, alignment, streamFormat, codecData),
               m_audioConfig(audioConfig)
         {
         }
@@ -255,7 +279,7 @@ public:
      * media data
      */
 
-    class MediaSourceVideo : public MediaSource
+    class MediaSourceVideo : public MediaSourceAV
     {
     public:
         /**
@@ -275,7 +299,7 @@ public:
                          SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                          StreamFormat streamFormat = StreamFormat::UNDEFINED,
                          const std::shared_ptr<CodecData> &codecData = nullptr)
-            : MediaSource(SourceConfigType::VIDEO, mimeType, hasDrm, alignment, streamFormat, codecData),
+            : MediaSourceAV(SourceConfigType::VIDEO, mimeType, hasDrm, alignment, streamFormat, codecData),
               m_width(width), m_height(height)
         {
         }
@@ -317,7 +341,7 @@ public:
                          SegmentAlignment alignment = SegmentAlignment::UNDEFINED,
                          StreamFormat streamFormat = StreamFormat::UNDEFINED,
                          const std::shared_ptr<CodecData> &codecData = nullptr)
-            : MediaSource(sourceConfigType, mimeType, hasDrm, alignment, streamFormat, codecData), m_width(width),
+            : MediaSourceAV(sourceConfigType, mimeType, hasDrm, alignment, streamFormat, codecData), m_width(width),
               m_height(height)
         {
         }
@@ -379,6 +403,42 @@ public:
          * @brief Variable that stores the Dolby Vision Profile
          */
         uint32_t m_dolbyVisionProfile;
+    };
+
+    /**
+     * @brief A class that represents media source subtitle derived from media source video data
+     */
+    class MediaSourceSubtitle : public MediaSource
+    {
+    public:
+        /**
+         * @brief Construct a new Media Source Subtitle object
+         *
+         * @param mimeType              : The mime type string
+         * @param textTrackIdentifier   : The text track identifier string
+         */
+        MediaSourceSubtitle(const std::string &mimeType, const std::string &textTrackIdentifier)
+            : MediaSource(SourceConfigType::SUBTITLE, mimeType, false), m_textTrackIdentifier(textTrackIdentifier)
+        {
+        }
+
+        ~MediaSourceSubtitle() {}
+
+        MediaSourceType getType() const override { return MediaSourceType::SUBTITLE; }
+        std::unique_ptr<MediaSource> copy() const override { return std::make_unique<MediaSourceSubtitle>(*this); }
+
+        /**
+         * @brief Get the Text Track Identifier object
+         *
+         * @return the text track identifier
+         */
+        const std::string &getTextTrackIdentifier() const { return m_textTrackIdentifier; }
+
+    protected:
+        /**
+         * @brief Variable that stores the text track identifier
+         */
+        std::string m_textTrackIdentifier;
     };
 
     /**
@@ -778,11 +838,13 @@ public:
          * @param[in] duration         : The duration in nanoseconds.
          * @param[in] sampleRate       : The sample rate in samples per second.
          * @param[in] numberOfChannels : The number of audio channels.
+         * @param[in] clippingStart    : The amount of audio to clip from start of buffer
+         * @param[in] clippingEnd      : The amount of audio to clip from end of buffer
          */
         MediaSegmentAudio(int32_t sourceId = 0, int64_t timeStamp = 0, int64_t duration = 0, int32_t sampleRate = 0,
-                          int32_t numberOfChannels = 0)
+                          int32_t numberOfChannels = 0, uint64_t clippingStart = 0, uint64_t clippingEnd = 0)
             : MediaSegment(sourceId, MediaSourceType::AUDIO, timeStamp, duration), m_sampleRate(sampleRate),
-              m_numberOfChannels(numberOfChannels)
+              m_numberOfChannels(numberOfChannels), m_clippingStart(clippingStart), m_clippingEnd(clippingEnd)
         {
         }
 
@@ -817,6 +879,20 @@ public:
         int32_t getNumberOfChannels() const { return m_numberOfChannels; }
 
         /**
+         * @brief Return the amount of audio to clip from start of buffer
+         *
+         * @retval the amount of audio to clip from start of buffer
+         */
+        uint64_t getClippingStart() const { return m_clippingStart; }
+
+        /**
+         * @brief Return the amount of audio to clip from end of buffer
+         *
+         * @retval the amount of audio to clip from end of buffer
+         */
+        uint64_t getClippingEnd() const { return m_clippingEnd; }
+
+        /**
          * @brief Copy assignment operator.
          *
          * @retval the copy.
@@ -842,6 +918,16 @@ public:
          * @brief The number of audio channels.
          */
         int32_t m_numberOfChannels;
+
+        /**
+         * @brief The amount of audio to clip from start of buffer
+         */
+        uint64_t m_clippingStart;
+
+        /**
+         * @brief The amount of audio to clip from end of buffer
+         */
+        uint64_t m_clippingEnd;
     };
 
     /**
@@ -1076,7 +1162,7 @@ public:
      * Once the backend is seeking it should notify the media player
      * client of playback state
      * IMediaPipelineClient::PlaybackState::SEEKING. When seeking has
-     * completed the state IMediaPipelineClient::PlaybackState::FLUSHED
+     * completed the state IMediaPipelineClient::PlaybackState::SEEK_DONE
      * should be notified followed by
      * IMediaPipelineClient::PlaybackState::PLAYING.
      *
@@ -1194,6 +1280,30 @@ public:
      * @retval true on success false otherwise
      */
     virtual bool getMute(bool &mute) = 0;
+
+    /**
+     * @brief Flushes a source.
+     *
+     * This method is called by Rialto Client to flush out all queued data for a media source stream.
+     *
+     * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[in] resetTime : True if time should be reset
+     *
+     * @retval true on success.
+     */
+    virtual bool flush(int32_t sourceId, bool resetTime) = 0;
+
+    /**
+     * @brief Set the source position in nanoseconds.
+     *
+     * This method sets the start position for a source.
+     *
+     * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[in] position : The position in nanoseconds.
+     *
+     * @retval true on success.
+     */
+    virtual bool setSourcePosition(int32_t sourceId, int64_t position) = 0;
 };
 
 }; // namespace firebolt::rialto

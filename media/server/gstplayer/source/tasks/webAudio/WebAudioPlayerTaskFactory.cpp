@@ -20,6 +20,7 @@
 #include "tasks/webAudio/Eos.h"
 #include "tasks/webAudio/HandleBusMessage.h"
 #include "tasks/webAudio/Pause.h"
+#include "tasks/webAudio/Ping.h"
 #include "tasks/webAudio/Play.h"
 #include "tasks/webAudio/SetCaps.h"
 #include "tasks/webAudio/SetVolume.h"
@@ -29,9 +30,9 @@
 
 namespace firebolt::rialto::server
 {
-WebAudioPlayerTaskFactory::WebAudioPlayerTaskFactory(IGstWebAudioPlayerClient *client,
-                                                     const std::shared_ptr<IGstWrapper> &gstWrapper,
-                                                     const std::shared_ptr<IGlibWrapper> &glibWrapper)
+WebAudioPlayerTaskFactory::WebAudioPlayerTaskFactory(
+    IGstWebAudioPlayerClient *client, const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+    const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper)
     : m_client{client}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}
 {
 }
@@ -63,7 +64,7 @@ std::unique_ptr<IPlayerTask> WebAudioPlayerTaskFactory::createEos(WebAudioPlayer
 
 std::unique_ptr<IPlayerTask> WebAudioPlayerTaskFactory::createSetCaps(WebAudioPlayerContext &context,
                                                                       const std::string &audioMimeType,
-                                                                      const WebAudioConfig *config) const
+                                                                      std::weak_ptr<const WebAudioConfig> config) const
 {
     return std::make_unique<tasks::webaudio::SetCaps>(context, m_gstWrapper, m_glibWrapper, audioMimeType, config);
 }
@@ -87,5 +88,10 @@ std::unique_ptr<IPlayerTask> WebAudioPlayerTaskFactory::createHandleBusMessage(W
 {
     return std::make_unique<tasks::webaudio::HandleBusMessage>(context, player, m_client, m_gstWrapper, m_glibWrapper,
                                                                message);
+}
+
+std::unique_ptr<IPlayerTask> WebAudioPlayerTaskFactory::createPing(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) const
+{
+    return std::make_unique<tasks::webaudio::Ping>(std::move(heartbeatHandler));
 }
 } // namespace firebolt::rialto::server

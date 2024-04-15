@@ -20,6 +20,7 @@
 #ifndef RIALTO_SERVERMANAGER_COMMON_SESSION_SERVER_APP_H_
 #define RIALTO_SERVERMANAGER_COMMON_SESSION_SERVER_APP_H_
 
+#include "ILinuxWrapper.h"
 #include "ISessionServerApp.h"
 #include "ITimer.h"
 #include "SessionServerAppManager.h"
@@ -38,12 +39,20 @@ namespace rialto::servermanager::common
 class SessionServerApp : public ISessionServerApp
 {
 public:
-    SessionServerApp(SessionServerAppManager &sessionServerAppManager, const std::list<std::string> &environmentVariables,
-                     const std::string &sessionServerPath, std::chrono::milliseconds sessionServerStartupTimeout);
+    SessionServerApp(const std::shared_ptr<firebolt::rialto::wrappers::ILinuxWrapper> &linuxWrapper,
+                     const std::shared_ptr<firebolt::rialto::common::ITimerFactory> &timerFactory,
+                     ISessionServerAppManager &sessionServerAppManager,
+                     const std::list<std::string> &environmentVariables, const std::string &sessionServerPath,
+                     std::chrono::milliseconds sessionServerStartupTimeout, unsigned int socketPermissions,
+                     const std::string &socketOwner, const std::string &socketGroup);
     SessionServerApp(const std::string &appName, const firebolt::rialto::common::SessionServerState &initialState,
                      const firebolt::rialto::common::AppConfig &appConfig,
-                     SessionServerAppManager &sessionServerAppManager, const std::list<std::string> &environmentVariables,
-                     const std::string &sessionServerPath, std::chrono::milliseconds sessionServerStartupTimeout);
+                     const std::shared_ptr<firebolt::rialto::wrappers::ILinuxWrapper> &linuxWrapper,
+                     const std::shared_ptr<firebolt::rialto::common::ITimerFactory> &timerFactory,
+                     ISessionServerAppManager &sessionServerAppManager,
+                     const std::list<std::string> &environmentVariables, const std::string &sessionServerPath,
+                     std::chrono::milliseconds sessionServerStartupTimeout, unsigned int socketPermissions,
+                     const std::string &socketOwner, const std::string &socketGroup);
     virtual ~SessionServerApp();
 
     bool launch() override;
@@ -52,6 +61,9 @@ public:
                    const firebolt::rialto::common::AppConfig &appConfig) override;
     bool isConnected() const override;
     std::string getSessionManagementSocketName() const override;
+    unsigned int getSessionManagementSocketPermissions() const override;
+    std::string getSessionManagementSocketOwner() const override;
+    std::string getSessionManagementSocketGroup() const override;
     firebolt::rialto::common::SessionServerState getInitialState() const override;
     int getServerId() const override;
     const std::string &getAppName() const override;
@@ -61,6 +73,8 @@ public:
     int getMaxWebAudioPlayers() const override;
     void cancelStartupTimer() override;
     void kill() const override;
+    void setExpectedState(const firebolt::rialto::common::SessionServerState &state) override;
+    firebolt::rialto::common::SessionServerState getExpectedState() const override;
 
 private:
     bool initializeSockets();
@@ -77,17 +91,23 @@ private:
     std::string m_sessionManagementSocketName;
     std::string m_clientDisplayName;
     std::array<int, 2> m_socks;
-    SessionServerAppManager &m_sessionServerAppManager;
+    std::shared_ptr<firebolt::rialto::wrappers::ILinuxWrapper> m_linuxWrapper;
+    std::shared_ptr<firebolt::rialto::common::ITimerFactory> m_timerFactory;
+    ISessionServerAppManager &m_sessionServerAppManager;
     pid_t m_pid;
     bool m_isPreloaded;
     const std::string m_kSessionServerPath;
     const std::chrono::milliseconds m_kSessionServerStartupTimeout;
+    const unsigned int m_kSessionManagementSocketPermissions;
+    const std::string m_kSessionManagementSocketOwner;
+    const std::string m_kSessionManagementSocketGroup;
     std::vector<char *> m_environmentVariables;
     mutable std::mutex m_timerMutex;
     std::unique_ptr<firebolt::rialto::common::ITimer> m_startupTimer;
     std::mutex m_processStartupMutex;
     std::condition_variable m_processStartupCv;
     bool m_childInitialized;
+    firebolt::rialto::common::SessionServerState m_expectedState;
 };
 } // namespace rialto::servermanager::common
 

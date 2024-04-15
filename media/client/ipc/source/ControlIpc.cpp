@@ -19,6 +19,7 @@
 
 #include "ControlIpc.h"
 #include "RialtoClientLogging.h"
+#include "SchemaVersion.h"
 
 namespace
 {
@@ -61,10 +62,13 @@ std::shared_ptr<ControlIpcFactory> ControlIpcFactory::createFactory()
     return factory;
 }
 
-std::shared_ptr<IControlIpc> ControlIpcFactory::getControlIpc(IControlClient *controlClient)
+std::shared_ptr<IControlIpc> ControlIpcFactory::createControlIpc(IControlClient *controlClient)
 {
-    return std::make_shared<ControlIpc>(controlClient, IIpcClientAccessor::instance().getIpcClient(),
-                                        firebolt::rialto::common::IEventThreadFactory::createFactory());
+    auto &ipcClient{IIpcClientAccessor::instance().getIpcClient()};
+    auto controlIpc{std::make_shared<ControlIpc>(controlClient, ipcClient,
+                                                 firebolt::rialto::common::IEventThreadFactory::createFactory())};
+    ipcClient.registerConnectionObserver(controlIpc);
+    return controlIpc;
 }
 
 ControlIpc::ControlIpc(IControlClient *controlClient, IIpcClient &ipcClient,
@@ -89,13 +93,13 @@ ControlIpc::~ControlIpc()
 
 bool ControlIpc::getSharedMemory(int32_t &fd, uint32_t &size)
 {
-    std::shared_ptr<::firebolt::rialto::ControlModule_Stub> controlStub = m_controlStub;
-
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
         return false;
     }
+
+    std::shared_ptr<::firebolt::rialto::ControlModule_Stub> controlStub = m_controlStub;
 
     firebolt::rialto::GetSharedMemoryRequest request;
 
@@ -122,16 +126,21 @@ bool ControlIpc::getSharedMemory(int32_t &fd, uint32_t &size)
 
 bool ControlIpc::registerClient()
 {
-    std::shared_ptr<::firebolt::rialto::ControlModule_Stub> controlStub = m_controlStub;
+    const auto kCurrentSchemaVersion{common::getCurrentSchemaVersion()};
 
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
         return false;
     }
+    std::shared_ptr<::firebolt::rialto::ControlModule_Stub> controlStub = m_controlStub;
 
     firebolt::rialto::RegisterClientRequest request;
     firebolt::rialto::RegisterClientResponse response;
+    firebolt::rialto::SchemaVersion clientSchemaVersion;
+    request.mutable_client_schema_version()->set_major(kCurrentSchemaVersion.major());
+    request.mutable_client_schema_version()->set_minor(kCurrentSchemaVersion.minor());
+    request.mutable_client_schema_version()->set_patch(kCurrentSchemaVersion.patch());
     auto ipcController = m_ipc.createRpcController();
     auto blockingClosure = m_ipc.createBlockingClosure();
     controlStub->registerClient(ipcController.get(), &request, &response, blockingClosure.get());
@@ -147,6 +156,33 @@ bool ControlIpc::registerClient()
     }
 
     m_controlHandle = response.control_handle();
+
+    if (!response.has_server_schema_version())
+    {
+        RIALTO_CLIENT_LOG_WARN("Server proto schema version not known");
+        return true;
+    }
+
+    const common::SchemaVersion kServerSchemaVersion{response.server_schema_version().major(),
+                                                     response.server_schema_version().minor(),
+                                                     response.server_schema_version().patch()};
+    if (kCurrentSchemaVersion == kServerSchemaVersion)
+    {
+        RIALTO_CLIENT_LOG_DEBUG("Server and Client proto schema versions are equal");
+    }
+    else if (kCurrentSchemaVersion.isCompatible(kServerSchemaVersion))
+    {
+        RIALTO_CLIENT_LOG_INFO("Server and Client proto schema versions are compatible. Server schema version: %s, "
+                               "Client schema version: %s",
+                               kServerSchemaVersion.str().c_str(), kCurrentSchemaVersion.str().c_str());
+    }
+    else
+    {
+        RIALTO_CLIENT_LOG_ERROR("Server and Client proto schema versions are not compatible. Server schema version: "
+                                "%s, Client schema version: %s",
+                                kServerSchemaVersion.str().c_str(), kCurrentSchemaVersion.str().c_str());
+        return false;
+    }
 
     return true;
 }
@@ -183,6 +219,11 @@ bool ControlIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &ipcChan
     m_eventTags.push_back(eventTag);
 
     return true;
+}
+
+void ControlIpc::onConnectionBroken()
+{
+    m_eventThread->add([this]() { m_controlClient->notifyApplicationState(ApplicationState::UNKNOWN); });
 }
 
 void ControlIpc::onApplicationStateUpdated(const std::shared_ptr<firebolt::rialto::ApplicationStateChangeEvent> &event)

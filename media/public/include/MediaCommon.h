@@ -61,7 +61,8 @@ enum class MediaSourceType
 {
     UNKNOWN,
     AUDIO,
-    VIDEO
+    VIDEO,
+    SUBTITLE
 };
 
 /**
@@ -72,7 +73,8 @@ enum class SourceConfigType
     UNKNOWN,
     AUDIO,
     VIDEO,
-    VIDEO_DOLBY_VISION
+    VIDEO_DOLBY_VISION,
+    SUBTITLE
 };
 
 /**
@@ -138,7 +140,7 @@ enum class NetworkState
  * The player will start IDLE. Once play() has been called the player
  * will be PLAYING, or once pause() has been called the player will be
  * PAUSED. A seek() request will result in SEEKING and once the seek
- * is complete FLUSHED will be issued followed by PLAYING. The STOPPED
+ * is complete SEEK_DONE will be issued followed by PLAYING. The STOPPED
  * state will be issued after a stop() request.
  */
 enum class PlaybackState
@@ -148,7 +150,7 @@ enum class PlaybackState
     PLAYING,       /**< The backend player is playing media. */
     PAUSED,        /**< The backend player is paused. */
     SEEKING,       /**< The backend player is seeking a new playback position. */
-    FLUSHED,       /**< The backend player has flushed the media data. */
+    SEEK_DONE,     /**< The backend player has finished seek. */
     STOPPED,       /**< The backend player has stopped playback. */
     END_OF_STREAM, /**< The backend player has got to the end of playback. */
     FAILURE        /**< The backend player failed to set playback state. */
@@ -281,7 +283,9 @@ enum class StreamFormat
     UNDEFINED,
     RAW,
     AVC,
-    BYTE_STREAM
+    BYTE_STREAM,
+    HVC1,
+    HEV1
 };
 
 /**
@@ -374,6 +378,15 @@ struct CodecData
 {
     std::vector<uint8_t> data{};               /**< The codec data */
     CodecDataType type{CodecDataType::BUFFER}; /**< The codec data type */
+};
+
+/**
+ * @brief None fatel asynchronous errors reported by the player.
+ */
+enum class PlaybackError
+{
+    UNKNOWN,
+    DECRYPTION, /* Player failed to decrypt a buffer and the frame has been dropped */
 };
 
 } // namespace firebolt::rialto

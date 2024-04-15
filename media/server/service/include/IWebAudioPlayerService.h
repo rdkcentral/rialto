@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_SERVICE_I_WEB_AUDIO_PLAYER_SERVICE_H_
 #define FIREBOLT_RIALTO_SERVER_SERVICE_I_WEB_AUDIO_PLAYER_SERVICE_H_
 
+#include "IHeartbeatProcedure.h"
 #include "IWebAudioPlayerClient.h"
 #include "MediaCommon.h"
 #include <cstdint>
@@ -42,7 +43,7 @@ public:
 
     virtual bool createWebAudioPlayer(int handle, const std::shared_ptr<IWebAudioPlayerClient> &webAudioPlayerClient,
                                       const std::string &audioMimeType, const uint32_t priority,
-                                      const WebAudioConfig *config) = 0;
+                                      std::weak_ptr<const WebAudioConfig> config) = 0;
     virtual bool destroyWebAudioPlayer(int handle) = 0;
     virtual bool play(int handle) = 0;
     virtual bool pause(int handle) = 0;
@@ -55,6 +56,7 @@ public:
                                bool &supportDeferredPlay) = 0;
     virtual bool setVolume(int handle, double volume) = 0;
     virtual bool getVolume(int handle, double &volume) = 0;
+    virtual void ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure) = 0;
 };
 } // namespace firebolt::rialto::server::service
 

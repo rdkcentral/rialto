@@ -43,7 +43,8 @@ public:
     static std::weak_ptr<IMediaPipelineIpcFactory> m_factory;
 
     std::unique_ptr<IMediaPipelineIpc> createMediaPipelineIpc(IMediaPipelineIpcClient *client,
-                                                              const VideoRequirements &videoRequirements) override;
+                                                              const VideoRequirements &videoRequirements,
+                                                              std::weak_ptr<IIpcClient> ipcClient) override;
 };
 
 /**
@@ -101,6 +102,10 @@ public:
     bool setMute(bool mute) override;
 
     bool getMute(bool &mute) override;
+
+    bool flush(int32_t sourceId, bool resetTime) override;
+
+    bool setSourcePosition(int32_t sourceId, int64_t position) override;
 
 private:
     /**
@@ -168,6 +173,20 @@ private:
      * @param[in] event : The buffer underflow event structure.
      */
     void onBufferUnderflow(const std::shared_ptr<firebolt::rialto::BufferUnderflowEvent> &event);
+
+    /**
+     * @brief Handler for a playback error notification from the server.
+     *
+     * @param[in] event : The playback error event structure.
+     */
+    void onPlaybackError(const std::shared_ptr<firebolt::rialto::PlaybackErrorEvent> &event);
+
+    /**
+     * @brief Handler for a source flushed notification from the server.
+     *
+     * @param[in] event : The source flushed event structure.
+     */
+    void onSourceFlushed(const std::shared_ptr<firebolt::rialto::SourceFlushedEvent> &event);
 
     /**
      * @brief Create a new player session.

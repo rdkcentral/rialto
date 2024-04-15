@@ -27,6 +27,7 @@
 #include "IMediaPipeline.h"
 #include "IMediaPipelineIpc.h"
 #include <atomic>
+#include <condition_variable>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -46,6 +47,21 @@ public:
 
     std::unique_ptr<IMediaPipeline> createMediaPipeline(std::weak_ptr<IMediaPipelineClient> client,
                                                         const VideoRequirements &videoRequirements) const override;
+
+    /**
+     * @brief IMediaPipeline factory method with factory parameters for mock injection.
+     *
+     * @param[in] client                  : The Rialto media player client.
+     * @param[in] videoRequirements       : The video decoder requirements for the MediaPipeline session.
+     * @param[in] mediaPipelineIpcFactory : This was added for the test environment where a mock object needs to be passed in.
+     * @param[in] clientController        : This was added for the test environment where a mock object needs to be passed in.
+     *
+     * @retval the new backend instance or null on error.
+     */
+    std::unique_ptr<IMediaPipeline>
+    createMediaPipeline(std::weak_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements,
+                        std::weak_ptr<client::IMediaPipelineIpcFactory> mediaPipelineIpcFactory,
+                        std::weak_ptr<client::IClientController> clientController) const;
 };
 
 }; // namespace firebolt::rialto
@@ -131,6 +147,10 @@ public:
 
     void notifyBufferUnderflow(int32_t sourceId) override;
 
+    void notifyPlaybackError(int32_t sourceId, PlaybackError error) override;
+
+    void notifySourceFlushed(int32_t sourceId) override;
+
     bool renderFrame() override;
 
     bool setVolume(double volume) override;
@@ -141,6 +161,10 @@ public:
 
     bool getMute(bool &mute) override;
 
+    bool flush(int32_t sourceId, bool resetTime) override;
+
+    bool setSourcePosition(int32_t sourceId, int64_t position) override;
+
     void notifyApplicationState(ApplicationState state) override;
 
 protected:
@@ -149,6 +173,7 @@ protected:
      */
     struct NeedDataRequest
     {
+        int32_t sourceId;                                       /**< The source id. */
         std::shared_ptr<MediaPlayerShmInfo> shmInfo;            /**< The shared memory information. */
         std::unique_ptr<common::IMediaFrameWriter> frameWriter; /**< The frame writer used to add segments. */
     };
@@ -199,6 +224,21 @@ protected:
      * @brief The current state of the MediaPipeline.
      */
     std::atomic<State> m_currentState;
+
+    /**
+     * @brief The attach source mutex.
+     */
+    std::mutex m_attachSourceMutex;
+
+    /**
+     * @brief The attach source condition variable.
+     */
+    std::condition_variable m_attachSourceCond;
+
+    /**
+     * @brief Whether attachSource is currently in progress.
+     */
+    bool m_attachingSource;
 
     /**
      * @brief The container with attached source id <-> MediaSourceType mapping

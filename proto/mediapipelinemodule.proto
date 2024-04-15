@@ -44,11 +44,11 @@ option cc_generic_services = true;
  * @returns a unique numeric session id value that should be used for all subsequent operations on the session.
  */
 message CreateSessionRequest {
-    required uint32 max_width = 1;
-    required uint32 max_height = 2;
+    optional uint32 max_width = 1;
+    optional uint32 max_height = 2;
 }
 message CreateSessionResponse {
-    required int32 session_id = 1;
+    optional int32 session_id = 1 [default = -1];
 }
 
 /**
@@ -61,7 +61,7 @@ message CreateSessionResponse {
  *
  */
 message DestroySessionRequest {
-  required int32 session_id = 1;
+  optional int32 session_id = 1 [default = -1];
 }
 message DestroySessionResponse {
 }
@@ -82,10 +82,10 @@ message LoadRequest {
         MSE = 1;            ///< Media is MSE and will request data.
     }
 
-    required int32      session_id = 1;
-    required MediaType  type = 2;
-    required string     mime_type = 3;
-    required string     url = 4;
+    optional int32      session_id = 1 [default = -1];
+    optional MediaType  type = 2;
+    optional string     mime_type = 3;
+    optional string     url = 4;
 }
 message LoadResponse {
 }
@@ -118,6 +118,8 @@ message AttachSourceRequest {
         STREAM_FORMAT_RAW         = 1;
         STREAM_FORMAT_AVC         = 2;
         STREAM_FORMAT_BYTE_STREAM = 3;
+        STREAM_FORMAT_HVC1        = 4;
+        STREAM_FORMAT_HEV1        = 5;
     }
 
     enum ConfigType {
@@ -125,11 +127,12 @@ message AttachSourceRequest {
         CONFIG_TYPE_AUDIO              = 1;
         CONFIG_TYPE_VIDEO              = 2;
         CONFIG_TYPE_VIDEO_DOLBY_VISION = 3;
+        CONFIG_TYPE_SUBTITLE           = 4;
     }
 
     message AudioConfig {
-        required uint32 number_of_channels = 1;   ///< The number of channels.
-        required uint32 sample_rate = 2;         ///< The sampling rate.
+        optional uint32 number_of_channels = 1;   ///< The number of channels.
+        optional uint32 sample_rate = 2;         ///< The sampling rate.
         optional bytes codec_specific_config = 3; ///The audio specific config. Zero length if no specific config
     }
 
@@ -138,24 +141,26 @@ message AttachSourceRequest {
             BUFFER = 1;
             STRING = 2;
         }
-        required bytes data = 1; /* Buffer containing updated codec data for video segments */
-        required Type type = 2;  /* Type of data */
+        optional bytes data = 1; /* Buffer containing updated codec data for video segments */
+        optional Type type = 2;  /* Type of data */
     }
 
-    required int32 session_id = 1;
-    required ConfigType config_type = 2;
-    required string mime_type = 3;
-    required bool has_drm = 4;
+    optional int32 session_id = 1 [default = -1];
+    optional ConfigType config_type = 2;
+    optional string mime_type = 3;
+    optional bool has_drm = 4;
     optional int32 width = 5;
     optional int32 height = 6;
-    required SegmentAlignment segment_alignment = 7; /* Segment alignment can be specified for H264/H265, will use NAL if not set */
+    optional SegmentAlignment segment_alignment = 7; /* Segment alignment can be specified for H264/H265, will use NAL if not set */
     optional AudioConfig audio_config = 8;
     optional CodecData codec_data = 9;
-    required StreamFormat stream_format = 10;
+    optional StreamFormat stream_format = 10;
     optional uint32 dolby_vision_profile = 11;
+    optional string text_track_identifier = 12;
+
 }
 message AttachSourceResponse {
-    required int32 source_id = 1;
+    optional int32 source_id = 1 [default = -1]; 
 }
 
 /**
@@ -167,8 +172,8 @@ message AttachSourceResponse {
  *
  */
 message RemoveSourceRequest {
-  required int32 session_id = 1;
-  required int32 source_id = 2;
+  optional int32 session_id = 1 [default = -1];
+  optional int32 source_id = 2 [default = -1];
 }
 message RemoveSourceResponse {
 }
@@ -181,7 +186,7 @@ message RemoveSourceResponse {
  *
  */
 message AllSourcesAttachedRequest {
-  required int32 session_id = 1;
+  optional int32 session_id = 1 [default = -1];
 }
 message AllSourcesAttachedResponse {
 }
@@ -198,11 +203,11 @@ message AllSourcesAttachedResponse {
  *
  */
 message SetVideoWindowRequest {
-    required int32 session_id = 1;
-    required uint32 x = 2;
-    required uint32 y = 3;
-    required uint32 width = 4;
-    required uint32 height = 5;
+    optional int32 session_id = 1 [default = -1];
+    optional uint32 x = 2;
+    optional uint32 y = 3;
+    optional uint32 width = 4;
+    optional uint32 height = 5;
 }
 message SetVideoWindowResponse {
 }
@@ -218,7 +223,7 @@ message SetVideoWindowResponse {
  *
  */
 message PlayRequest {
-    required int32 session_id = 1;
+    optional int32 session_id = 1 [default = -1];
 }
 message PlayResponse {
 }
@@ -234,7 +239,7 @@ message PlayResponse {
  *
  */
 message PauseRequest {
-    required int32 session_id = 1;
+    optional int32 session_id = 1 [default = -1];
 }
 message PauseResponse {
 }
@@ -250,7 +255,7 @@ message PauseResponse {
  *
  */
 message StopRequest {
-    required int32 session_id = 1;
+    optional int32 session_id = 1 [default = -1];
 }
 message StopResponse {
 }
@@ -267,12 +272,12 @@ message StopResponse {
  *
  * This method is asynchronous. For MSE playback Rialto Client will already be in the SEEKING state when this method is
  * called. This method is used to tell PLAYER that data for the new position will be supplied. When seeking has
- * completed and PLAYER is playing the new data the state FLUSHED is notified followed by PLAYING.
+ * completed and PLAYER is playing the new data the state SEEK_DONE is notified followed by PLAYING.
  *
  */
 message SetPositionRequest {
-    required int32 session_id = 1;
-    required int64 position = 2;
+    optional int32 session_id = 1 [default = -1];
+    optional int64 position = 2 [default = -1];
 }
 message SetPositionResponse {
 }
@@ -287,10 +292,10 @@ message SetPositionResponse {
  *
  */
 message GetPositionRequest {
-    required int32 session_id = 1;
+    optional int32 session_id = 1 [default = -1];
 }
 message GetPositionResponse {
-    required int64 position = 1;
+    optional int64 position = 1 [default = -1];
 }
 
 /**
@@ -304,8 +309,8 @@ message GetPositionResponse {
  *
  */
 message SetPlaybackRateRequest {
-    required int32 session_id = 1;
-    required double rate = 2;
+    optional int32 session_id = 1 [default = -1];
+    optional double rate = 2;
 }
 message SetPlaybackRateResponse {
 }
@@ -329,10 +334,10 @@ message HaveDataRequest {
         NO_AVAILABLE_SAMPLES = 5;   ///< Could not retrieve media samples.
     };
 
-    required int32 session_id = 1;
-    required MediaSourceStatus status = 2;
+    optional int32 session_id = 1 [default = -1];
+    optional MediaSourceStatus status = 2;
     optional uint32 num_frames = 3;
-    required uint32 request_id = 4;
+    optional uint32 request_id = 4;
 }
 message HaveDataResponse {
 }
@@ -344,7 +349,7 @@ message HaveDataResponse {
  * @param session_id        The id of the A/V session the request is for.
  */
 message RenderFrameRequest {
-    required int32 session_id = 1;
+    optional int32 session_id = 1 [default = -1];
 }
 message RenderFrameResponse {
 }
@@ -358,8 +363,8 @@ message RenderFrameResponse {
  *
  */
 message SetVolumeRequest {
-    required int32 session_id = 1;
-    required double volume = 2;
+    optional int32 session_id = 1 [default = -1];
+    optional double volume = 2 [default = -1];
 }
 message SetVolumeResponse {
 }
@@ -374,10 +379,10 @@ message SetVolumeResponse {
  * @retval true on success false otherwise
  */
 message GetVolumeRequest {
-    required int32 session_id = 1;
+    optional int32 session_id = 1 [default = -1];
 }
 message GetVolumeResponse {
-    required double volume = 1;
+    optional double volume = 1 [default = -1];
 }
 
 /**
@@ -389,8 +394,8 @@ message GetVolumeResponse {
  *
  */
 message SetMuteRequest {
-    required int32 session_id = 1;
-    required bool mute = 2;
+    optional int32 session_id = 1 [default = -1];
+    optional bool mute = 2;
 }
 message SetMuteResponse {
 }
@@ -405,10 +410,46 @@ message SetMuteResponse {
  * @retval true on success false otherwise
  */
 message GetMuteRequest {
-    required int32 session_id = 1;
+    optional int32 session_id = 1 [default = -1];
 }
 message GetMuteResponse {
-    required bool mute = 1;
+    optional bool mute = 1;
+}
+
+/**
+ * @fn void flush(int session_id, int source_id)
+ * @brief Flush a media source for a session.
+ *
+ * @param[in]  session_id   The id of the A/V session.
+ * @param[in]  source_id    The id of the media source to flush.
+ * @param[in]  reset_time   True if time should be reset
+ *
+ */
+message FlushRequest {
+  optional int32 session_id = 1 [default = -1];
+  optional int32 source_id = 2 [default = -1];
+  optional bool reset_time = 3 [default = false];
+}
+message FlushResponse {
+}
+
+/**
+ * @fn void setSourcePosition(int session_id, int source_id, int64 position)
+ * @brief Set the source position in nanoseconds.
+ *
+ * @param[in]  session_id   The id of the A/V session.
+ * @param[in]  source_id    The id of the media source.
+ * @param[in]  position     The position in nanoseconds.
+ *
+ * This method sets the start position for a source.
+ *
+ */
+message SetSourcePositionRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional int32 source_id = 2 [default = -1];
+    optional int64 position = 3 [default = -1];
+}
+message SetSourcePositionResponse {
 }
 
 /**
@@ -426,14 +467,14 @@ message PlaybackStateChangeEvent {
         PLAYING = 2;        ///< The backend player is playing media.
         PAUSED = 3;         ///< The backend player is paused.
         SEEKING = 4;        ///< The backend player is seeking a new playback position.
-        FLUSHED = 5;        ///< The backend player has flushed the media data.
+        SEEK_DONE = 5;      ///< The backend player has finished seek.
         STOPPED = 6;        ///< The backend player has stopped playback.
         END_OF_STREAM = 7;  ///< The backend player has got to the end of playback.
         FAILURE = 8;        ///< The backend player failed to set playback state.
     }
 
-    required int32 session_id = 1;
-    required PlaybackState state = 2;
+    optional int32 session_id = 1 [default = -1];
+    optional PlaybackState state = 2;
 }
 
 /**
@@ -457,8 +498,8 @@ message NetworkStateChangeEvent {
         DECODE_ERROR = 8;       ///< There has been a decode error of the data.
     }
 
-    required int32 session_id = 1;
-    required NetworkState state = 2;
+    optional int32 session_id = 1 [default = -1];
+    optional NetworkState state = 2;
 }
 
 /**
@@ -469,8 +510,8 @@ message NetworkStateChangeEvent {
  *
  */
 message PositionChangeEvent {
-    required int32 session_id = 1;
-    required int64 position = 2;
+    optional int32 session_id = 1 [default = -1];
+    optional int64 position = 2 [default = -1];
 }
 
 /**
@@ -488,17 +529,17 @@ message PositionChangeEvent {
 message NeedMediaDataEvent {
 
     message MediaPlayerShmInfo {
-        required uint32 max_metadata_bytes = 1;
-        required uint32 metadata_offset = 2;
-        required uint32 media_data_offset = 3;
-        required uint32 max_media_bytes = 4;
+        optional uint32 max_metadata_bytes = 1;
+        optional uint32 metadata_offset = 2;
+        optional uint32 media_data_offset = 3;
+        optional uint32 max_media_bytes = 4;
     }
 
-    required int32 session_id = 1;
-    required uint64 source_id = 2;
-    required uint32 request_id = 3;
+    optional int32 session_id = 1 [default = -1];
+    optional int32 source_id = 2 [default = -1];
+    optional uint32 request_id = 3;
 
-    required uint32 frame_count = 4;
+    optional uint32 frame_count = 4;
     optional MediaPlayerShmInfo shm_info = 5;
 }
 
@@ -514,13 +555,13 @@ message NeedMediaDataEvent {
 message QosEvent {
 
     message QosInfo {
-        required uint64 processed = 1;
-        required uint64 dropped = 2;
+        optional uint64 processed = 1;
+        optional uint64 dropped = 2;
     }
 
-    required int32 session_id = 1;
-    required uint64 source_id = 2;
-    required QosInfo qos_info = 3;
+    optional int32 session_id = 1 [default = -1];
+    optional int32 source_id = 2 [default = -1];
+    optional QosInfo qos_info = 3;
 }
 
 /**
@@ -532,8 +573,26 @@ message QosEvent {
  * This is sent by the server whenever buffer underflow occurs
  */
 message BufferUnderflowEvent {
-    required int32 session_id = 1;
-    required uint64 source_id = 2;
+    optional int32 session_id = 1 [default = -1];
+    optional int32 source_id = 2 [default = -1];
+}
+
+/**
+ * @brief Event sent by the server when a non-fatal error has occurred in the player.
+ *
+ * @param session_id        The id of the A/V session the request is for.
+ * @param source_id         The id of the media source the request is for.
+ * @param error             The type of error that occurred.
+ */
+message PlaybackErrorEvent {
+    enum PlaybackError {
+        UNKNOWN = 0;            ///< An unknown or undefined network state.
+        DECRYPTION = 1;         ///< Player failed to decrypt a buffer and the frame has been dropped.
+    }
+
+    optional int32 session_id = 1 [default = -1];
+    optional int32 source_id = 2 [default = -1];
+    optional PlaybackError error = 3;
 }
 
 /**
@@ -550,6 +609,17 @@ message SetLogLevelsEvent {
     optional uint32 clientLogLevels = 2;
     optional uint32 ipcLogLevels = 3;
     optional uint32 commonLogLevels = 4;
+}
+
+/**
+ * @brief Event sent by the server when a source has been flushed.
+ *
+ * @param session_id        The id of the A/V session the request is for.
+ * @param source_id         The id of the media source the request is for.
+ */
+message SourceFlushedEvent {
+    optional int32 session_id = 1 [default = -1];
+    optional int32 source_id = 2 [default = -1];
 }
 
 service MediaPipelineModule {
@@ -684,5 +754,19 @@ service MediaPipelineModule {
      * @see GetMuteRequest
      */
     rpc getMute(GetMuteRequest) returns (GetMuteResponse) {
+    }
+
+    /**
+     * @brief Flush the media source.
+     * @see FlushRequest
+     */
+    rpc flush(FlushRequest) returns (FlushResponse) {
+    }
+
+    /**
+     * @brief This method sets the start position for a source.
+     * @see SetSourcePositionRequest
+     */
+    rpc setSourcePosition(SetSourcePositionRequest) returns (SetSourcePositionResponse) {
     }
 }

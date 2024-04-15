@@ -58,7 +58,8 @@ public:
     {
         std::unique_ptr<IMediaKeySession> mediaKeySession;
         uint32_t bufCounter = 0;
-        bool shouldBeDestroyed = false;
+        bool shouldBeClosed = false;
+        bool shouldBeReleased = false;
     };
     /**
      * @brief The constructor.
@@ -70,7 +71,7 @@ public:
      *
      */
     MediaKeysServerInternal(const std::string &keySystem, const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
-                            std::shared_ptr<IOcdmSystemFactory> ocdmSystemFactory,
+                            std::shared_ptr<firebolt::rialto::wrappers::IOcdmSystemFactory> ocdmSystemFactory,
                             std::shared_ptr<IMediaKeySessionFactory> mediaKeySessionFactory);
 
     /**
@@ -114,6 +115,8 @@ public:
 
     MediaKeyErrorStatus getCdmKeySessionId(int32_t keySessionId, std::string &cdmKeySessionId) override;
 
+    MediaKeyErrorStatus releaseKeySession(int32_t keySessionId) override;
+
     MediaKeyErrorStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps) override;
 
     // TODO(RIALTO-127): Remove
@@ -123,10 +126,11 @@ public:
 
     bool hasSession(int32_t keySessionId) const override;
 
-    bool isPlayreadyKeySystem(int32_t keySessionId) const override;
+    bool isNetflixPlayreadyKeySystem(int32_t keySessionId) const override;
 
     void incrementSessionIdUsageCounter(int32_t keySessionId) override;
     void decrementSessionIdUsageCounter(int32_t keySessionId) override;
+    void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) override;
 
 private:
     /**
@@ -142,7 +146,7 @@ private:
     /**
      * @brief The IOcdmSystem instance.
      */
-    std::unique_ptr<IOcdmSystem> m_ocdmSystem;
+    std::shared_ptr<firebolt::rialto::wrappers::IOcdmSystem> m_ocdmSystem;
 
     /**
      * @brief Map containing created sessions.
@@ -308,13 +312,22 @@ private:
     MediaKeyErrorStatus getLastDrmErrorInternal(int32_t keySessionId, uint32_t &errorCode);
 
     /**
-     * @brief Checks, if key system of media key session is Playready internally, only to be called on the main thread.
+     * @brief Checks, if key system of media key session is Netflix Playready internally, only to be called on the main thread.
      *
      * @param[in] keySessionId    : The session id for the session.
      *
      * @retval true if key system is Playready
      */
-    bool isPlayreadyKeySystemInternal(int32_t keySessionId) const;
+    bool isNetflixPlayreadyKeySystemInternal(int32_t keySessionId) const;
+
+    /**
+     * @brief Releases a key session internally, only to be called on the main thread.
+     *
+     * @param[in] keySessionId : The key session id.
+     *
+     * @retval an error status.
+     */
+    MediaKeyErrorStatus releaseKeySessionInternal(int32_t keySessionId);
 
     void incrementSessionIdUsageCounterInternal(int32_t keySessionId);
     void decrementSessionIdUsageCounterInternal(int32_t keySessionId);

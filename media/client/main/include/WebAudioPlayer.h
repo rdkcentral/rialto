@@ -44,7 +44,27 @@ public:
 
     std::unique_ptr<IWebAudioPlayer> createWebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client,
                                                           const std::string &audioMimeType, const uint32_t priority,
-                                                          const WebAudioConfig *config) const override;
+                                                          std::weak_ptr<const WebAudioConfig> config) const override;
+
+    /**
+     * @brief IWebAudioPlayer factory method with factory parameters for mock injection.
+     *
+     * @param[in] client                    : The Web Audio Player client.
+     * @param[in] audioMimeType             : The audio encoding format, currently only "audio/x-raw" (PCM).
+     * @param[in] priority                  : Priority value for this pipeline.
+     * @param[in] config                    : Additional type dependent configuration data or nullptr.
+     * @param[in] webAudioPlayerIpcFactory  : This was added for the test environment where a mock object needs to be
+     * passed in.
+     * @param[in] clientController          : This was added for the test environment where a mock object needs to be
+     * passed in.
+     *
+     * @retval the new Web Audio Player instance or null on error.
+     */
+    virtual std::unique_ptr<IWebAudioPlayer>
+    createWebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
+                         const uint32_t priority, std::weak_ptr<const WebAudioConfig> config,
+                         std::weak_ptr<client::IWebAudioPlayerIpcFactory> webAudioPlayerIpcFactory,
+                         std::weak_ptr<client::IClientController> clientController) const;
 };
 
 }; // namespace firebolt::rialto
@@ -60,13 +80,13 @@ public:
     /**
      * @brief The constructor.
      *
-     * @param[in] client:        The Web Audio Player client
-     * @param[in] audioMimeType: The audio encoding format, currently only "audio/x-raw" (PCM)
-     * @param[in] priority:      Priority value for this pipeline.
-     * @param[in] config:        Additional type dependent configuration data or nullptr
+     * @param[in] client        : The Web Audio Player client
+     * @param[in] audioMimeType : The audio encoding format, currently only "audio/x-raw" (PCM)
+     * @param[in] priority      : Priority value for this pipeline.
+     * @param[in] config        : Additional type dependent configuration data or nullptr
      */
     WebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
-                   const uint32_t priority, const WebAudioConfig *config,
+                   const uint32_t priority, std::weak_ptr<const WebAudioConfig> config,
                    const std::shared_ptr<IWebAudioPlayerIpcFactory> &webAudioPlayerIpcFactory,
                    IClientController &clientController);
 

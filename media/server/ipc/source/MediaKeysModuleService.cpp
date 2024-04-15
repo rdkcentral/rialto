@@ -457,4 +457,16 @@ void MediaKeysModuleService::getCdmKeySessionId(::google::protobuf::RpcControlle
     done->Run();
 }
 
+void MediaKeysModuleService::releaseKeySession(::google::protobuf::RpcController *controller,
+                                               const ::firebolt::rialto::ReleaseKeySessionRequest *request,
+                                               ::firebolt::rialto::ReleaseKeySessionResponse *response,
+                                               ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    MediaKeyErrorStatus status = m_cdmService.releaseKeySession(request->media_keys_handle(), request->key_session_id());
+    response->set_error_status(convertMediaKeyErrorStatus(status));
+    done->Run();
+}
+
 } // namespace firebolt::rialto::server::ipc

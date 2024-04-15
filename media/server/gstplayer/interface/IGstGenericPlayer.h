@@ -28,6 +28,7 @@
 #include "IDataReader.h"
 #include "IDecryptionService.h"
 #include "IGstGenericPlayerClient.h"
+#include "IHeartbeatHandler.h"
 #include "IMediaPipeline.h"
 #include "IRdkGstreamerUtilsWrapper.h"
 
@@ -64,7 +65,8 @@ public:
     virtual std::unique_ptr<IGstGenericPlayer>
     createGstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
                            const VideoRequirements &videoRequirements,
-                           const std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactory) = 0;
+                           const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory>
+                               &rdkGstreamerUtilsWrapperFactory) = 0;
 };
 
 class IGstGenericPlayer
@@ -241,6 +243,33 @@ public:
      * @retval True in success, false otherwise
      */
     virtual bool getMute(bool &mute) = 0;
+
+    /**
+     * @brief Checks if worker thread is not deadlocked
+     *
+     * @param[out] heartbeatHandler : The heartbeat handler instance
+     *
+     */
+    virtual void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) = 0;
+
+    /**
+     * @brief Flushes a source.
+     *
+     * @param[in] mediaSourceType : The media source type to flush.
+     * @param[in] resetTime : True if time should be reset
+     *
+     */
+    virtual void flush(const MediaSourceType &mediaSourceType, bool resetTime) = 0;
+
+    /**
+     * @brief Set the source position in nanoseconds.
+     *
+     * This method sets the start position for a source.
+     *
+     * @param[in] mediaSourceType : The media source type to flush.
+     * @param[in] position : The position in nanoseconds.
+     */
+    virtual void setSourcePosition(const MediaSourceType &mediaSourceType, int64_t position) = 0;
 };
 
 }; // namespace firebolt::rialto::server

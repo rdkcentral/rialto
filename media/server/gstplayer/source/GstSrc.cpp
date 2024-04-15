@@ -35,8 +35,8 @@ GST_DEBUG_CATEGORY(rialto_gst_player_debug);
     GST_DEBUG_CATEGORY_INIT(rialto_gst_player_debug, "rialtosrc", 0, "Rialto source element");
 G_DEFINE_TYPE_WITH_CODE(GstRialtoSrc, gst_rialto_src, GST_TYPE_BIN,
                         G_ADD_PRIVATE(GstRialtoSrc)
-                            G_IMPLEMENT_INTERFACE(GST_TYPE_URI_HANDLER, gstRialtoSrcUriHandlerInit);
-                        RIALTO_SRC_CATEGORY_INIT);
+                            G_IMPLEMENT_INTERFACE(GST_TYPE_URI_HANDLER, gstRialtoSrcUriHandlerInit)
+                                RIALTO_SRC_CATEGORY_INIT)
 
 static void gstRialtoSrcDispose(GObject *object)
 {
@@ -312,7 +312,8 @@ std::shared_ptr<IGstSrc> GstSrcFactory::getGstSrc()
     {
         try
         {
-            gstSrc = std::make_shared<GstSrc>(IGstWrapperFactory::getFactory(), IGlibWrapperFactory::getFactory(),
+            gstSrc = std::make_shared<GstSrc>(firebolt::rialto::wrappers::IGstWrapperFactory::getFactory(),
+                                              firebolt::rialto::wrappers::IGlibWrapperFactory::getFactory(),
                                               IGstDecryptorElementFactory::createFactory());
         }
         catch (const std::exception &e)
@@ -326,8 +327,8 @@ std::shared_ptr<IGstSrc> GstSrcFactory::getGstSrc()
     return gstSrc;
 }
 
-GstSrc::GstSrc(const std::shared_ptr<IGstWrapperFactory> &gstWrapperFactory,
-               const std::shared_ptr<IGlibWrapperFactory> &glibWrapperFactory,
+GstSrc::GstSrc(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapperFactory> &gstWrapperFactory,
+               const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapperFactory> &glibWrapperFactory,
                const std::shared_ptr<IGstDecryptorElementFactory> &decryptorFactory)
     : m_decryptorFactory(decryptorFactory)
 {
@@ -358,12 +359,41 @@ void GstSrc::initSrc()
         src_factory = nullptr;
     }
 }
+
+void GstSrc::setDefaultStreamFormatIfNeeded(GstElement *appSrc)
+{
+    GstCaps *currentCaps = m_gstWrapper->gstAppSrcGetCaps(GST_APP_SRC(appSrc));
+    if (currentCaps)
+    {
+        GstStructure *structure = m_gstWrapper->gstCapsGetStructure(currentCaps, 0);
+        if (structure && (m_gstWrapper->gstStructureHasName(structure, "video/x-h264") ||
+                          m_gstWrapper->gstStructureHasName(structure, "video/x-h265")))
+        {
+            bool hasStreamFormat = m_gstWrapper->gstStructureHasField(structure, "stream-format");
+            bool hasCodecData = m_gstWrapper->gstStructureHasField(structure, "codec_data");
+
+            if (!hasStreamFormat && !hasCodecData)
+            {
+                GstCaps *newCaps = m_gstWrapper->gstCapsCopy(currentCaps);
+                if (newCaps)
+                {
+                    m_gstWrapper->gstCapsSetSimple(newCaps, "stream-format", G_TYPE_STRING, "byte-stream", nullptr);
+                    m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(appSrc), newCaps);
+                    GST_INFO("Added stream-format=byte-stream to caps %" GST_PTR_FORMAT, newCaps);
+                    m_gstWrapper->gstCapsUnref(newCaps);
+                }
+            }
+        }
+    }
+    m_gstWrapper->gstCapsUnref(currentCaps);
+}
+
 void GstSrc::setupAndAddAppSrc(IDecryptionService *decryptionService, GstElement *source, StreamInfo &streamInfo,
                                GstAppSrcCallbacks *callbacks, gpointer userData, firebolt::rialto::MediaSourceType type)
 {
     // Configure and add appsrc
     m_glibWrapper->gObjectSet(streamInfo.appSrc, "block", FALSE, "format", GST_FORMAT_TIME, "stream-type",
-                              GST_APP_STREAM_TYPE_STREAM, "min-percent", 20, nullptr);
+                              GST_APP_STREAM_TYPE_STREAM, "min-percent", 20, "handle-segment-change", TRUE, nullptr);
     m_gstWrapper->gstAppSrcSetCallbacks(GST_APP_SRC(streamInfo.appSrc), callbacks, userData, nullptr);
     if (type == firebolt::rialto::MediaSourceType::VIDEO)
     {
@@ -376,8 +406,9 @@ void GstSrc::setupAndAddAppSrc(IDecryptionService *decryptionService, GstElement
     m_gstWrapper->gstAppSrcSetStreamType(GST_APP_SRC(streamInfo.appSrc), GST_APP_STREAM_TYPE_SEEKABLE);
 
     GstRialtoSrc *src = GST_RIALTO_SRC(source);
-    gchar *name = m_glibWrapper->gStrdupPrintf("src_%u", src->priv->appsrc_count);
+    guint id = src->priv->appsrc_count;
     src->priv->appsrc_count++;
+    gchar *name = m_glibWrapper->gStrdupPrintf("src_%u", id);
     m_gstWrapper->gstBinAdd(GST_BIN(source), streamInfo.appSrc);
 
     GstElement *src_elem = streamInfo.appSrc;
@@ -385,7 +416,12 @@ void GstSrc::setupAndAddAppSrc(IDecryptionService *decryptionService, GstElement
     // Configure and add decryptor
     if (streamInfo.hasDrm)
     {
-        GstElement *decryptor = m_decryptorFactory->createDecryptorElement(nullptr, decryptionService, m_gstWrapper);
+        gchar *decryptorName =
+            m_glibWrapper->gStrdupPrintf("rialtodecryptor%s_%u",
+                                         (type == firebolt::rialto::MediaSourceType::VIDEO) ? "video" : "audio", id);
+        GstElement *decryptor =
+            m_decryptorFactory->createDecryptorElement(decryptorName, decryptionService, m_gstWrapper);
+        m_glibWrapper->gFree(decryptorName);
         if (decryptor)
         {
             GST_DEBUG_OBJECT(src, "Injecting decryptor element %" GST_PTR_FORMAT, decryptor);
@@ -406,6 +442,12 @@ void GstSrc::setupAndAddAppSrc(IDecryptionService *decryptionService, GstElement
             GstElement *payloader = createPayloader();
             if (payloader)
             {
+                /*
+                h264secparse and h265secparse have problems with parsing blank caps (with no stream-format nor
+                codec_data defined). This is a workaround to set the stream-format to byte-stream if needed.
+                */
+                setDefaultStreamFormatIfNeeded(streamInfo.appSrc);
+
                 if (GST_IS_BASE_TRANSFORM(payloader))
                 {
                     m_gstWrapper->gstBaseTransformSetInPlace(GST_BASE_TRANSFORM(payloader), TRUE);

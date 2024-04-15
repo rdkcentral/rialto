@@ -37,9 +37,9 @@ namespace firebolt::rialto::client
 class WebAudioPlayerIpcFactory : public IWebAudioPlayerIpcFactory
 {
 public:
-    std::unique_ptr<IWebAudioPlayerIpc> createWebAudioPlayerIpc(IWebAudioPlayerIpcClient *client,
-                                                                const std::string &audioMimeType, const uint32_t priority,
-                                                                const WebAudioConfig *config) override;
+    std::unique_ptr<IWebAudioPlayerIpc>
+    createWebAudioPlayerIpc(IWebAudioPlayerIpcClient *client, const std::string &audioMimeType, const uint32_t priority,
+                            std::weak_ptr<const WebAudioConfig> config, std::weak_ptr<IIpcClient> ipcClient) override;
 };
 
 /**
@@ -59,7 +59,7 @@ public:
      * @param[in] eventThreadFactory    : The event thread factory
      */
     WebAudioPlayerIpc(IWebAudioPlayerIpcClient *client, const std::string &audioMimeType, const uint32_t priority,
-                      const WebAudioConfig *config, IIpcClient &ipcClient,
+                      std::weak_ptr<const WebAudioConfig> config, IIpcClient &ipcClient,
                       const std::shared_ptr<common::IEventThreadFactory> &eventThreadFactory);
 
     virtual ~WebAudioPlayerIpc();
@@ -83,7 +83,8 @@ public:
     bool getVolume(double &volume) override;
 
 private:
-    bool createWebAudioPlayer(const std::string &audioMimeType, const uint32_t priority, const WebAudioConfig *config);
+    bool createWebAudioPlayer(const std::string &audioMimeType, const uint32_t priority,
+                              std::weak_ptr<const WebAudioConfig> config);
 
     void destroyWebAudioPlayer();
 

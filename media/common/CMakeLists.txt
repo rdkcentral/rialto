@@ -17,14 +17,10 @@
 # limitations under the License.
 #
 
-set( CMAKE_CXX_STANDARD 14 )
+set( CMAKE_CXX_STANDARD 17 )
 
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
 include( CheckCXXCompilerFlag )
-
-# Run the protoc tool to generate the code
-set( Protobuf_IMPORT_DIRS "${CMAKE_SYSROOT}/usr/include" "${CMAKE_CURRENT_LIST_DIR}/../../ipc/common/proto" )
-protobuf_generate_cpp( PROTO_SRCS PROTO_HEADERS proto/metadata.proto )
 
 # Find includes in corresponding build directories
 set( CMAKE_INCLUDE_CURRENT_DIR ON )
@@ -33,13 +29,11 @@ add_library(
         RialtoPlayerCommon
         STATIC
 
-        ${PROTO_SRCS}
-        ${PROTO_HEADERS}
-
         source/ByteWriter.cpp
         source/MediaFrameWriterFactory.cpp
         source/MediaFrameWriterV1.cpp
         source/MediaFrameWriterV2.cpp
+        source/SchemaVersion.cpp
     )
 
 set_property (
@@ -78,5 +72,5 @@ target_link_libraries (
 
         PRIVATE
         RialtoLogging
-        protobuf::libprotobuf
+        RialtoProtobuf
     )

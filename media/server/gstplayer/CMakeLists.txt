@@ -40,9 +40,11 @@ add_library(
         source/tasks/generic/EnoughData.cpp
         source/tasks/generic/Eos.cpp
         source/tasks/generic/FinishSetupSource.cpp
+        source/tasks/generic/Flush.cpp
         source/tasks/generic/HandleBusMessage.cpp
         source/tasks/generic/NeedData.cpp
         source/tasks/generic/Pause.cpp
+        source/tasks/generic/Ping.cpp
         source/tasks/generic/Play.cpp
         source/tasks/generic/ReadShmDataAndAttachSamples.cpp
         source/tasks/generic/RemoveSource.cpp
@@ -56,6 +58,7 @@ add_library(
         source/tasks/generic/SetVideoGeometry.cpp
         source/tasks/generic/SetVolume.cpp
         source/tasks/generic/SetMute.cpp
+        source/tasks/generic/SetSourcePosition.cpp
         source/tasks/generic/Shutdown.cpp
         source/tasks/generic/Stop.cpp
         source/tasks/generic/Underflow.cpp
@@ -65,6 +68,7 @@ add_library(
         source/tasks/webAudio/Shutdown.cpp
         source/tasks/webAudio/Stop.cpp
         source/tasks/webAudio/Pause.cpp
+        source/tasks/webAudio/Ping.cpp
         source/tasks/webAudio/Play.cpp
         source/tasks/webAudio/Eos.cpp
         source/tasks/webAudio/SetCaps.cpp
@@ -77,9 +81,7 @@ add_library(
         source/GstGenericPlayer.cpp
         source/GstWebAudioPlayer.cpp
         source/GstProtectionMetadata.cpp
-        source/GstProtectionMetadataWrapper.cpp
-        source/GstWrapper.cpp
-        source/GlibWrapper.cpp
+        source/GstProtectionMetadataHelper.cpp
         source/GstSrc.cpp
         source/Utils.cpp
         source/WorkerThread.cpp
@@ -102,7 +104,7 @@ target_include_directories(
         $<TARGET_PROPERTY:RialtoPlayerPublic,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoServerCommon,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoServerMain,INTERFACE_INCLUDE_DIRECTORIES>
-        $<TARGET_PROPERTY:RialtoServerWrappers,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoWrappers,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoCommon,INTERFACE_INCLUDE_DIRECTORIES>
         ${GStreamerApp_INCLUDE_DIRS}
 
@@ -121,7 +123,7 @@ target_link_libraries(
         PRIVATE
         RialtoLogging
         RialtoServerMain
-        RialtoServerWrappers
+        RialtoWrappers
         RialtoCommon
         ${GStreamerApp_LIBRARIES}
 

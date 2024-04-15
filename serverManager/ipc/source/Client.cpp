@@ -184,7 +184,9 @@ bool Client::performSetState(const firebolt::rialto::common::SessionServerState 
 
 bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServerState &initialState,
                                      const std::string &socketName, const std::string &clientDisplayName,
-                                     const firebolt::rialto::common::MaxResourceCapabilitites &maxResource) const
+                                     const firebolt::rialto::common::MaxResourceCapabilitites &maxResource,
+                                     const unsigned int socketPermissions, const std::string &socketOwner,
+                                     const std::string &socketGroup) const
 {
     if (!m_ipcLoop || !m_serviceStub)
     {
@@ -198,6 +200,9 @@ bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServ
     request.set_clientdisplayname(clientDisplayName);
     request.mutable_resources()->set_maxplaybacks(maxResource.maxPlaybacks);
     request.mutable_resources()->set_maxwebaudioplayers(maxResource.maxWebAudioPlayers);
+    request.set_socketpermissions(socketPermissions);
+    request.set_socketowner(socketOwner);
+    request.set_socketgroup(socketGroup);
     *(request.mutable_loglevels()) = getCurrentLogLevels();
     request.set_initialsessionserverstate(convert(initialState));
     auto ipcController = m_ipcLoop->createRpcController();
@@ -267,9 +272,9 @@ bool Client::setLogLevels(const service::LoggingLevels &logLevels) const
 
 void Client::onDisconnected() const
 {
-    RIALTO_SERVER_MANAGER_LOG_WARN("Connection to serverId: %d broken!", m_serverId);
-    m_sessionServerAppManager->onSessionServerStateChanged(m_serverId,
-                                                           firebolt::rialto::common::SessionServerState::NOT_RUNNING);
+    RIALTO_SERVER_MANAGER_LOG_WARN("Connection to serverId: %d broken, server probably crashed. Starting recovery",
+                                   m_serverId);
+    m_sessionServerAppManager->restartServer(m_serverId);
 }
 
 void Client::onStateChangedEvent(const std::shared_ptr<rialto::StateChangedEvent> &event) const

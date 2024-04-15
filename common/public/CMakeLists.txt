@@ -17,10 +17,15 @@
 # limitations under the License.
 #
 
-set( CMAKE_CXX_STANDARD 14 )
+set( CMAKE_CXX_STANDARD 17 )
 
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
 include( CheckCXXCompilerFlag )
+
+configure_file(
+        include/SessionServerCommon.in
+        include/SessionServerCommon.h
+        @ONLY )
 
 add_library(
         RialtoCommonPublic
@@ -31,13 +36,13 @@ target_include_directories(
         RialtoCommonPublic
 
         INTERFACE
-        include
+        ${CMAKE_BINARY_DIR}/common/public/include
     )
 
 if( NOT CMAKE_BUILD_TYPE STREQUAL "UnitTests" )
         include( GNUInstallDirs )
         set (LIB_RIALTO_COMMON_PUBLIC_HEADERS
-                include/SessionServerCommon.h
+                ${CMAKE_BINARY_DIR}/common/public/include/SessionServerCommon.h
         )
         install (
                 FILES ${LIB_RIALTO_COMMON_PUBLIC_HEADERS}

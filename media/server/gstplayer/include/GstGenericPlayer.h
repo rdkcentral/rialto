@@ -26,7 +26,7 @@
 #include "IGstDispatcherThreadClient.h"
 #include "IGstGenericPlayer.h"
 #include "IGstGenericPlayerPrivate.h"
-#include "IGstProtectionMetadataWrapperFactory.h"
+#include "IGstProtectionMetadataHelperFactory.h"
 #include "IGstSrc.h"
 #include "IGstWrapper.h"
 #include "ITimer.h"
@@ -54,10 +54,11 @@ public:
      */
     static std::weak_ptr<IGstGenericPlayerFactory> m_factory;
 
-    std::unique_ptr<IGstGenericPlayer> createGstGenericPlayer(
-        IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
-        const VideoRequirements &videoRequirements,
-        const std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactory) override;
+    std::unique_ptr<IGstGenericPlayer>
+    createGstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
+                           const VideoRequirements &videoRequirements,
+                           const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory>
+                               &rdkGstreamerUtilsWrapperFactory) override;
 };
 
 /**
@@ -82,14 +83,15 @@ public:
      * @param[in] gstDispatcherThreadFactory   : The gst dispatcher thread factory
      */
     GstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
-                     const VideoRequirements &videoRequirements, const std::shared_ptr<IGstWrapper> &gstWrapper,
-                     const std::shared_ptr<IGlibWrapper> &glibWrapper,
+                     const VideoRequirements &videoRequirements,
+                     const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                     const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
                      const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
                      std::shared_ptr<common::ITimerFactory> timerFactory,
                      std::unique_ptr<IGenericPlayerTaskFactory> taskFactory,
                      std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
                      std::unique_ptr<IGstDispatcherThreadFactory> gstDispatcherThreadFactory,
-                     std::shared_ptr<IGstProtectionMetadataWrapperFactory> gstProtectionMetadataFactory);
+                     std::shared_ptr<IGstProtectionMetadataHelperFactory> gstProtectionMetadataFactory);
 
     /**
      * @brief Virtual destructor.
@@ -113,6 +115,9 @@ public:
     bool getVolume(double &volume) override;
     void setMute(bool mute) override;
     bool getMute(bool &mute) override;
+    void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) override;
+    void flush(const MediaSourceType &mediaSourceType, bool resetTime) override;
+    void setSourcePosition(const MediaSourceType &mediaSourceType, int64_t position) override;
 
 private:
     void scheduleNeedMediaData(GstAppSrc *src) override;
@@ -120,7 +125,7 @@ private:
     void scheduleAudioUnderflow() override;
     void scheduleVideoUnderflow() override;
     void scheduleAllSourcesAttached() override;
-    bool setWesterossinkRectangle() override;
+    bool setVideoSinkRectangle() override;
     void notifyNeedMediaData(bool audioNotificationNeeded, bool videoNotificationNeeded) override;
     GstBuffer *createBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const override;
     void attachAudioData() override;
@@ -128,6 +133,7 @@ private:
     void updateAudioCaps(int32_t rate, int32_t channels, const std::shared_ptr<CodecData> &codecData) override;
     void updateVideoCaps(int32_t width, int32_t height, Fraction frameRate,
                          const std::shared_ptr<CodecData> &codecData) override;
+    void addAudioClippingToBuffer(GstBuffer *buffer, uint64_t clippingStart, uint64_t clippingEnd) const override;
     bool changePipelineState(GstState newState) override;
     void startPositionReportingAndCheckAudioUnderflowTimer() override;
     void stopPositionReportingAndCheckAudioUnderflowTimer() override;
@@ -137,6 +143,10 @@ private:
     void renderFrame() override;
     void handleBusMessage(GstMessage *message) override;
     void updatePlaybackGroup(GstElement *typefind, const GstCaps *caps) override;
+    void addAutoVideoSinkChild(GObject *object) override;
+    void removeAutoVideoSinkChild(GObject *object) override;
+    GstElement *getSinkChildIfAutoVideoSink(GstElement *sink) override;
+    void setAudioVideoFlags(bool enableAudio, bool enableVideo) override;
 
 private:
     /**
@@ -189,6 +199,13 @@ private:
     bool setWesterossinkSecondaryVideo();
 
     /**
+     * @brief Creates an "erm" gstreamer context in the pipeline
+     *
+     * @retval true on success.
+     */
+    bool setErmContext();
+
+    /**
      * @brief Terminates the player pipeline.
      */
     void termPipeline();
@@ -210,6 +227,13 @@ private:
      */
     bool setCodecData(GstCaps *caps, const std::shared_ptr<CodecData> &codecData) const;
 
+    /**
+     * @brief Pushes GstSample if playback position has changed or new segment needs to be sent.
+     *
+     * @param[in] source          : The Gst Source element, that should receive new sample
+     */
+    void pushSampleIfRequired(GstElement *source);
+
 private:
     /**
      * @brief The player context.
@@ -224,12 +248,12 @@ private:
     /**
      * @brief The gstreamer wrapper object.
      */
-    std::shared_ptr<IGstWrapper> m_gstWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
 
     /**
      * @brief The glib wrapper object.
      */
-    std::shared_ptr<IGlibWrapper> m_glibWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
 
     /**
      * @brief Thread for handling player tasks.
@@ -267,7 +291,7 @@ private:
     /**
      * @brief The protection metadata wrapper
      */
-    std::unique_ptr<IGstProtectionMetadataWrapper> m_protectionMetadataWrapper;
+    std::unique_ptr<IGstProtectionMetadataHelper> m_protectionMetadataWrapper;
 };
 } // namespace firebolt::rialto::server
 

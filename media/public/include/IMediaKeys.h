@@ -58,7 +58,7 @@ public:
     /**
      * @brief IMediaKeys factory method, returns a concrete implementation of IMediaKeys
      *
-     * @param[in] keySystem : The key system for which to create a Media Keys instance
+     * @param[in] keySystem           : The key system for which to create a Media Keys instance.
      *
      * @retval the new media keys instance or null on error.
      */
@@ -277,6 +277,19 @@ public:
      * @retval the return status value.
      */
     virtual MediaKeyErrorStatus getCdmKeySessionId(int32_t keySessionId, std::string &cdmKeySessionId) = 0;
+
+    /**
+     * @brief Releases a key session
+     *
+     * This method releases an open session. If the session id does
+     * not exist an MediaKeyErrorStatus:BAD_SESSION_ID is returned. Any other
+     * errors will result in MediaKeyErrorStatus:FAIL.
+     *
+     * @param[in] keySessionId : The key session id.
+     *
+     * @retval an error status.
+     */
+    virtual MediaKeyErrorStatus releaseKeySession(int32_t keySessionId) = 0;
 };
 
 }; // namespace firebolt::rialto

@@ -18,8 +18,11 @@
  */
 
 #include "WebAudioPlayerService.h"
+#include "IGstWebAudioPlayer.h"
+#include "IMainThread.h"
+#include "ITimer.h"
 #include "IWebAudioPlayer.h"
-#include "IWebAudioPlayerServerInternalFactory.h"
+#include "IWebAudioPlayerServerInternal.h"
 #include "RialtoServerLogging.h"
 #include <exception>
 #include <future>
@@ -50,7 +53,7 @@ void WebAudioPlayerService::clearWebAudioPlayers()
 bool WebAudioPlayerService::createWebAudioPlayer(int handle,
                                                  const std::shared_ptr<IWebAudioPlayerClient> &webAudioPlayerClient,
                                                  const std::string &audioMimeType, const uint32_t priority,
-                                                 const WebAudioConfig *config)
+                                                 std::weak_ptr<const WebAudioConfig> config)
 {
     RIALTO_SERVER_LOG_DEBUG("WebAudioPlayerService requested to create new WebAudioPlayer with id: %d", handle);
     if (!m_playbackService.isActive())
@@ -72,11 +75,14 @@ bool WebAudioPlayerService::createWebAudioPlayer(int handle,
             return false;
         }
         auto shmBuffer = m_playbackService.getShmBuffer();
+
         m_webAudioPlayers.emplace(
-            std::make_pair(handle,
-                           m_webAudioPlayerFactory->createWebAudioPlayerServerInternal(webAudioPlayerClient,
-                                                                                       audioMimeType, priority, config,
-                                                                                       shmBuffer, handle)));
+            std::make_pair(handle, m_webAudioPlayerFactory
+                                       ->createWebAudioPlayerServerInternal(webAudioPlayerClient, audioMimeType,
+                                                                            priority, config, shmBuffer, handle,
+                                                                            IMainThreadFactory::createFactory(),
+                                                                            IGstWebAudioPlayerFactory::getFactory(),
+                                                                            common::ITimerFactory::getFactory())));
         if (!m_webAudioPlayers.at(handle))
         {
             RIALTO_SERVER_LOG_ERROR("Could not create WebAudioPlayer for handle: %d", handle);
@@ -235,4 +241,14 @@ bool WebAudioPlayerService::getVolume(int handle, double &volume)
     return webAudioPlayerIter->second->getVolume(volume);
 }
 
+void WebAudioPlayerService::ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure)
+{
+    RIALTO_SERVER_LOG_DEBUG("Ping requested");
+    std::lock_guard<std::mutex> lock{m_webAudioPlayerMutex};
+    for (const auto &webAudioPlayersPair : m_webAudioPlayers)
+    {
+        auto &webAudioPlayer = webAudioPlayersPair.second;
+        webAudioPlayer->ping(heartbeatProcedure->createHandler());
+    }
+}
 } // namespace firebolt::rialto::server::service

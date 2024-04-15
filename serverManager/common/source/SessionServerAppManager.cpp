@@ -68,31 +68,34 @@ bool SessionServerAppManager::initiateApplication(const std::string &appName,
 {
     std::promise<bool> p;
     std::future<bool> f{p.get_future()};
-    m_eventThread->add(
-        [&]()
-        {
-            RIALTO_SERVER_MANAGER_LOG_INFO("RialtoServerManager requests to launch %s with initial state: %s",
-                                           appName.c_str(), toString(state));
-            if (state != firebolt::rialto::common::SessionServerState::NOT_RUNNING && !getServerByAppName(appName))
-            {
-                auto &preloadedServer{getPreloadedServer()};
-                if (preloadedServer)
-                {
-                    return p.set_value(configurePreloadedSessionServer(preloadedServer, appName, state, appConfig));
-                }
-                return p.set_value(connectSessionServer(launchSessionServer(appName, state, appConfig)));
-            }
-            else if (state == firebolt::rialto::common::SessionServerState::NOT_RUNNING)
-            {
-                RIALTO_SERVER_MANAGER_LOG_ERROR("Initialization of %s failed - wrong state", appName.c_str());
-            }
-            else
-            {
-                RIALTO_SERVER_MANAGER_LOG_ERROR("Initialization of %s failed. App is already launched", appName.c_str());
-            }
-            return p.set_value(false);
-        });
+    m_eventThread->add([&]() { return p.set_value(handleInitiateApplication(appName, state, appConfig)); });
     return f.get();
+}
+
+bool SessionServerAppManager::handleInitiateApplication(const std::string &appName,
+                                                        const firebolt::rialto::common::SessionServerState &state,
+                                                        const firebolt::rialto::common::AppConfig &appConfig)
+{
+    RIALTO_SERVER_MANAGER_LOG_INFO("RialtoServerManager requests to launch %s with initial state: %s", appName.c_str(),
+                                   toString(state));
+    if (state != firebolt::rialto::common::SessionServerState::NOT_RUNNING && !getServerByAppName(appName))
+    {
+        auto &preloadedServer{getPreloadedServer()};
+        if (preloadedServer)
+        {
+            return configurePreloadedSessionServer(preloadedServer, appName, state, appConfig);
+        }
+        return connectSessionServer(launchSessionServer(appName, state, appConfig));
+    }
+    else if (state == firebolt::rialto::common::SessionServerState::NOT_RUNNING)
+    {
+        RIALTO_SERVER_MANAGER_LOG_ERROR("Initialization of %s failed - wrong state", appName.c_str());
+    }
+    else
+    {
+        RIALTO_SERVER_MANAGER_LOG_ERROR("Initialization of %s failed. App is already launched", appName.c_str());
+    }
+    return false;
 }
 
 bool SessionServerAppManager::setSessionServerState(const std::string &appName,
@@ -112,7 +115,7 @@ void SessionServerAppManager::onSessionServerStateChanged(int serverId,
     m_eventThread->add(&SessionServerAppManager::handleSessionServerStateChange, this, serverId, newState);
 }
 
-void SessionServerAppManager::sendPingEvents(int pingId) const
+void SessionServerAppManager::sendPingEvents(int pingId)
 {
     RIALTO_SERVER_MANAGER_LOG_DEBUG("Queue ping procedure with id: %d", pingId);
     m_eventThread->add(
@@ -123,8 +126,8 @@ void SessionServerAppManager::sendPingEvents(int pingId) const
                 auto serverId{sessionServer->getServerId()};
                 if (!m_ipcController->performPing(serverId, pingId))
                 {
-                    RIALTO_SERVER_MANAGER_LOG_WARN("Ping event (id: %d) sending failed for serverId: %d", pingId,
-                                                   serverId);
+                    RIALTO_SERVER_MANAGER_LOG_ERROR("Ping with id: %d failed for server: %d", pingId, serverId);
+                    m_healthcheckService->onPingFailed(serverId, pingId);
                     continue;
                 }
                 m_healthcheckService->onPingSent(serverId, pingId);
@@ -145,10 +148,10 @@ std::string SessionServerAppManager::getAppConnectionInfo(const std::string &app
     m_eventThread->add(
         [&]()
         {
-            const auto &sessionServer{getServerByAppName(appName)};
-            if (sessionServer)
+            const auto &kSessionServer{getServerByAppName(appName)};
+            if (kSessionServer)
             {
-                return p.set_value(sessionServer->getSessionManagementSocketName());
+                return p.set_value(kSessionServer->getSessionManagementSocketName());
             }
             RIALTO_SERVER_MANAGER_LOG_ERROR("App: %s could not be found", appName.c_str());
             return p.set_value("");
@@ -175,67 +178,106 @@ bool SessionServerAppManager::setLogLevels(const service::LoggingLevels &logLeve
     return f.get();
 }
 
-bool SessionServerAppManager::connectSessionServer(const std::unique_ptr<ISessionServerApp> &sessionServer)
+void SessionServerAppManager::restartServer(int serverId)
 {
-    if (!sessionServer)
+    RIALTO_SERVER_MANAGER_LOG_DEBUG("Queue restart server handling for serverId: %d", serverId);
+    m_eventThread->add(&SessionServerAppManager::handleRestartServer, this, serverId);
+}
+
+void SessionServerAppManager::handleRestartServer(int serverId)
+{
+    const auto &kSessionServer{getServerById(serverId)};
+    if (!kSessionServer)
+    {
+        RIALTO_SERVER_MANAGER_LOG_WARN("Unable to restart server, serverId: %d", serverId);
+        return;
+    }
+    // First, get all needed information from current app
+    const std::string kAppName{kSessionServer->getAppName()};
+    const firebolt::rialto::common::SessionServerState kState{kSessionServer->getExpectedState()};
+    const firebolt::rialto::common::AppConfig kAppConfig{kSessionServer->getSessionManagementSocketName(),
+                                                         kSessionServer->getClientDisplayName()};
+    if (firebolt::rialto::common::SessionServerState::INACTIVE != kState &&
+        firebolt::rialto::common::SessionServerState::ACTIVE != kState)
+    {
+        RIALTO_SERVER_MANAGER_LOG_DEBUG("Restart server to %s not needed for serverId: %d", toString(kState), serverId);
+        return;
+    }
+    RIALTO_SERVER_MANAGER_LOG_DEBUG("Restarting server with id: %d", serverId);
+    // Then kill the app
+    kSessionServer->kill();
+    handleSessionServerStateChange(serverId, firebolt::rialto::common::SessionServerState::NOT_RUNNING);
+
+    // Finally, spawn the new app with old settings
+    handleInitiateApplication(kAppName, kState, kAppConfig);
+}
+
+bool SessionServerAppManager::connectSessionServer(const std::unique_ptr<ISessionServerApp> &kSessionServer)
+{
+    if (!kSessionServer)
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("Unable to connect Session Server - pointer is null!");
         return false;
     }
-    if (!m_ipcController->createClient(sessionServer->getServerId(), sessionServer->getAppManagementSocketName()))
+    if (!m_ipcController->createClient(kSessionServer->getServerId(), kSessionServer->getAppManagementSocketName()))
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("Failed to establish RialtoServerManager - RialtoSessionServer connection for "
                                         "session server with id: %d",
-                                        sessionServer->getServerId());
-        sessionServer->kill();
-        m_healthcheckService->onServerRemoved(sessionServer->getServerId());
-        m_sessionServerApps.erase(sessionServer);
+                                        kSessionServer->getServerId());
+        kSessionServer->kill();
+        m_healthcheckService->onServerRemoved(kSessionServer->getServerId());
+        m_sessionServerApps.erase(kSessionServer);
         return false;
     }
-    RIALTO_SERVER_MANAGER_LOG_INFO("RialtoServerManager with id %d successfully connected", sessionServer->getServerId());
+    RIALTO_SERVER_MANAGER_LOG_INFO("RialtoServerManager with id %d successfully connected",
+                                   kSessionServer->getServerId());
     return true;
 }
 
-bool SessionServerAppManager::configureSessionServer(const std::unique_ptr<ISessionServerApp> &sessionServer)
+bool SessionServerAppManager::configureSessionServer(const std::unique_ptr<ISessionServerApp> &kSessionServer)
 {
-    if (!sessionServer)
+    if (!kSessionServer)
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("Unable to configure Session Server - pointer is null!");
         return false;
     }
-    const auto initialState{sessionServer->getInitialState()};
-    const auto socketName{sessionServer->getSessionManagementSocketName()};
-    const auto clientDisplayName{sessionServer->getClientDisplayName()};
-    const firebolt::rialto::common::MaxResourceCapabilitites maxResource{sessionServer->getMaxPlaybackSessions(),
-                                                                         sessionServer->getMaxWebAudioPlayers()};
-    if (!m_ipcController->performSetConfiguration(sessionServer->getServerId(), initialState, socketName,
-                                                  clientDisplayName, maxResource))
+    const auto kInitialState{kSessionServer->getInitialState()};
+    const auto kSocketName{kSessionServer->getSessionManagementSocketName()};
+    const auto kClientDisplayName{kSessionServer->getClientDisplayName()};
+    const auto kSocketPermissions{kSessionServer->getSessionManagementSocketPermissions()};
+    const auto kSocketOwner{kSessionServer->getSessionManagementSocketOwner()};
+    const auto kSocketGroup{kSessionServer->getSessionManagementSocketGroup()};
+    const firebolt::rialto::common::MaxResourceCapabilitites kMaxResource{kSessionServer->getMaxPlaybackSessions(),
+                                                                          kSessionServer->getMaxWebAudioPlayers()};
+    if (!m_ipcController->performSetConfiguration(kSessionServer->getServerId(), kInitialState, kSocketName,
+                                                  kClientDisplayName, kMaxResource, kSocketPermissions, kSocketOwner,
+                                                  kSocketGroup))
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("Configuration of server with id %d failed - ipc error.",
-                                        sessionServer->getServerId());
+                                        kSessionServer->getServerId());
         return false;
     }
-    RIALTO_SERVER_MANAGER_LOG_INFO("Configuration of server with id %d succeeded.", sessionServer->getServerId());
+    RIALTO_SERVER_MANAGER_LOG_INFO("Configuration of server with id %d succeeded.", kSessionServer->getServerId());
     return true;
 }
 
-bool SessionServerAppManager::configurePreloadedSessionServer(const std::unique_ptr<ISessionServerApp> &sessionServer,
+bool SessionServerAppManager::configurePreloadedSessionServer(const std::unique_ptr<ISessionServerApp> &kSessionServer,
                                                               const std::string &appName,
                                                               const firebolt::rialto::common::SessionServerState &state,
                                                               const firebolt::rialto::common::AppConfig &appConfig)
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("Configuration of preloaded session server with id: %d for %s app",
-                                   sessionServer->getServerId(), appName.c_str());
-    if (sessionServer->configure(appName, state, appConfig) && configureSessionServer(sessionServer))
+                                   kSessionServer->getServerId(), appName.c_str());
+    if (kSessionServer->configure(appName, state, appConfig) && configureSessionServer(kSessionServer))
     {
         // Schedule adding new preloaded session server (as we've just used one) and return immediately
         m_eventThread->add([this]() { connectSessionServer(preloadSessionServer()); });
         return true;
     }
     // Configuration failed, kill server and return error
-    handleSessionServerStateChange(sessionServer->getServerId(), firebolt::rialto::common::SessionServerState::ERROR);
-    sessionServer->kill();
-    handleSessionServerStateChange(sessionServer->getServerId(),
+    handleSessionServerStateChange(kSessionServer->getServerId(), firebolt::rialto::common::SessionServerState::ERROR);
+    kSessionServer->kill();
+    handleSessionServerStateChange(kSessionServer->getServerId(),
                                    firebolt::rialto::common::SessionServerState::NOT_RUNNING);
     // Schedule adding new preloaded session server
     m_eventThread->add([this]() { connectSessionServer(preloadSessionServer()); });
@@ -247,16 +289,18 @@ bool SessionServerAppManager::changeSessionServerState(const std::string &appNam
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("RialtoServerManager requests to change state of %s to %s", appName.c_str(),
                                    toString(newState));
-    const auto &sessionServer{getServerByAppName(appName)};
-    if (!sessionServer)
+    const auto &kSessionServer{getServerByAppName(appName)};
+    if (!kSessionServer)
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("Change state of %s to %s failed - session server not found.", appName.c_str(),
                                         toString(newState));
         return false;
     }
-    if (!m_ipcController->performSetState(sessionServer->getServerId(), newState))
+    kSessionServer->setExpectedState(newState);
+    if (!m_ipcController->performSetState(kSessionServer->getServerId(), newState))
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("Change state of %s to %s failed.", appName.c_str(), toString(newState));
+        handleStateChangeFailure(kSessionServer, newState);
         return false;
     }
     RIALTO_SERVER_MANAGER_LOG_INFO("Change state of %s to %s succeeded.", appName.c_str(), toString(newState));
@@ -267,61 +311,72 @@ void SessionServerAppManager::handleSessionServerStateChange(int serverId,
                                                              firebolt::rialto::common::SessionServerState newState)
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("SessionServer with id: %d changed state to %s", serverId, toString(newState));
-    const auto &sessionServer{getServerById(serverId)};
-    std::string appName{sessionServer->getAppName()};
+    const auto &kSessionServer{getServerById(serverId)};
+    if (!kSessionServer)
+    {
+        RIALTO_SERVER_MANAGER_LOG_WARN("SessionServer with id: %d not found", serverId);
+        return;
+    }
+    std::string appName{kSessionServer->getAppName()};
     if (!appName.empty() && m_stateObserver) // empty app name is when SessionServer is preloaded
     {
         m_stateObserver->stateChanged(appName, newState);
     }
     if (firebolt::rialto::common::SessionServerState::UNINITIALIZED == newState)
     {
-        sessionServer->cancelStartupTimer();
-        if (!sessionServer->isPreloaded() && !configureSessionServer(sessionServer))
+        kSessionServer->cancelStartupTimer();
+        if (!kSessionServer->isPreloaded() && !configureSessionServer(kSessionServer))
         {
             handleSessionServerStateChange(serverId, firebolt::rialto::common::SessionServerState::ERROR);
-            sessionServer->kill();
+            kSessionServer->kill();
             handleSessionServerStateChange(serverId, firebolt::rialto::common::SessionServerState::NOT_RUNNING);
         }
     }
-    else if (newState == firebolt::rialto::common::SessionServerState::ERROR && sessionServer->isPreloaded())
+    else if (newState == firebolt::rialto::common::SessionServerState::ERROR && kSessionServer->isPreloaded())
     {
         m_ipcController->removeClient(serverId);
-        sessionServer->kill();
-        m_healthcheckService->onServerRemoved(sessionServer->getServerId());
-        m_sessionServerApps.erase(sessionServer);
+        kSessionServer->kill();
+        m_healthcheckService->onServerRemoved(kSessionServer->getServerId());
+        m_sessionServerApps.erase(kSessionServer);
         connectSessionServer(preloadSessionServer());
     }
     else if (newState == firebolt::rialto::common::SessionServerState::NOT_RUNNING)
     {
         m_ipcController->removeClient(serverId);
-        m_healthcheckService->onServerRemoved(sessionServer->getServerId());
-        m_sessionServerApps.erase(sessionServer);
+        m_healthcheckService->onServerRemoved(kSessionServer->getServerId());
+        m_sessionServerApps.erase(kSessionServer);
     }
 }
 
 void SessionServerAppManager::handleAck(int serverId, int pingId, bool success)
 {
-    RIALTO_SERVER_MANAGER_LOG_INFO("Ping with id: %d %s for server: %d", pingId, (success ? "succeeded" : "failed"),
-                                   serverId);
+    if (success)
+    {
+        RIALTO_SERVER_MANAGER_LOG_DEBUG("Ping with id: %d succeeded for server: %d", pingId, serverId);
+    }
+    else
+    {
+        RIALTO_SERVER_MANAGER_LOG_ERROR("Ping with id: %d failed for server: %d", pingId, serverId);
+    }
     m_healthcheckService->onAckReceived(serverId, pingId, success);
 }
 
 void SessionServerAppManager::shutdownAllSessionServers()
 {
-    for (const auto &sessionServer : m_sessionServerApps)
+    for (const auto &kSessionServer : m_sessionServerApps)
     {
-        sessionServer->kill();
+        kSessionServer->kill();
     }
     m_sessionServerApps.clear();
 }
 
 const std::unique_ptr<ISessionServerApp> &
 SessionServerAppManager::launchSessionServer(const std::string &appName,
-                                             const firebolt::rialto::common::SessionServerState &initialState,
+                                             const firebolt::rialto::common::SessionServerState &kInitialState,
                                              const firebolt::rialto::common::AppConfig &appConfig)
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("Launching Rialto Session Server for %s", appName.c_str());
-    auto app = m_sessionServerAppFactory->create(appName, initialState, appConfig, *this);
+    auto app = m_sessionServerAppFactory->create(appName, kInitialState, appConfig, *this);
     if (app->launch())
     {
         auto result = m_sessionServerApps.emplace(std::move(app));
@@ -379,5 +434,21 @@ const std::unique_ptr<ISessionServerApp> &SessionServerAppManager::getServerById
         return *iter;
     }
     return kInvalidSessionServer;
+}
+
+void SessionServerAppManager::handleStateChangeFailure(const std::unique_ptr<ISessionServerApp> &kSessionServer,
+                                                       const firebolt::rialto::common::SessionServerState &state)
+{
+    if (state == firebolt::rialto::common::SessionServerState::NOT_RUNNING)
+    {
+        RIALTO_SERVER_MANAGER_LOG_WARN("Force change of %s to NotRunning.", kSessionServer->getAppName().c_str());
+        kSessionServer->kill();
+        handleSessionServerStateChange(kSessionServer->getServerId(), state);
+    }
+    else
+    {
+        handleSessionServerStateChange(kSessionServer->getServerId(),
+                                       firebolt::rialto::common::SessionServerState::ERROR);
+    }
 }
 } // namespace rialto::servermanager::common

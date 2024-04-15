@@ -60,10 +60,10 @@ std::unique_ptr<IGstWebAudioPlayer> GstWebAudioPlayerFactory::createGstWebAudioP
 
     try
     {
-        auto gstWrapperFactory = IGstWrapperFactory::getFactory();
-        auto glibWrapperFactory = IGlibWrapperFactory::getFactory();
-        std::shared_ptr<IGstWrapper> gstWrapper;
-        std::shared_ptr<IGlibWrapper> glibWrapper;
+        auto gstWrapperFactory = firebolt::rialto::wrappers::IGstWrapperFactory::getFactory();
+        auto glibWrapperFactory = firebolt::rialto::wrappers::IGlibWrapperFactory::getFactory();
+        std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper;
+        std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper;
         if ((!gstWrapperFactory) || (!(gstWrapper = gstWrapperFactory->getGstWrapper())))
         {
             throw std::runtime_error("Cannot create GstWrapper");
@@ -88,8 +88,8 @@ std::unique_ptr<IGstWebAudioPlayer> GstWebAudioPlayerFactory::createGstWebAudioP
 }
 
 GstWebAudioPlayer::GstWebAudioPlayer(IGstWebAudioPlayerClient *client, const uint32_t priority,
-                                     const std::shared_ptr<IGstWrapper> &gstWrapper,
-                                     const std::shared_ptr<IGlibWrapper> &glibWrapper,
+                                     const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                                     const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
                                      const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
                                      std::unique_ptr<IWebAudioPlayerTaskFactory> taskFactory,
                                      std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
@@ -296,7 +296,7 @@ void GstWebAudioPlayer::resetWorkerThread()
     m_workerThread.reset();
 }
 
-void GstWebAudioPlayer::setCaps(const std::string &audioMimeType, const WebAudioConfig *config)
+void GstWebAudioPlayer::setCaps(const std::string &audioMimeType, std::weak_ptr<const WebAudioConfig> config)
 {
     m_workerThread->enqueueTask(m_taskFactory->createSetCaps(m_context, audioMimeType, config));
 }
@@ -377,6 +377,14 @@ void GstWebAudioPlayer::handleBusMessage(GstMessage *message)
     if (m_workerThread)
     {
         m_workerThread->enqueueTask(m_taskFactory->createHandleBusMessage(m_context, *this, message));
+    }
+}
+
+void GstWebAudioPlayer::ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler)
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(m_taskFactory->createPing(std::move(heartbeatHandler)));
     }
 }
 

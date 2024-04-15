@@ -116,6 +116,8 @@ public:
 
     bool haveData(MediaSourceStatus status, uint32_t numFrames, uint32_t needDataRequestId) override;
 
+    void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) override;
+
     bool renderFrame() override;
 
     bool setVolume(double volume) override;
@@ -125,6 +127,10 @@ public:
     bool setMute(bool mute) override;
 
     bool getMute(bool &mute) override;
+
+    bool flush(int32_t sourceId, bool resetTime) override;
+
+    bool setSourcePosition(int32_t sourceId, int64_t position) override;
 
     AddSegmentStatus addSegment(uint32_t needDataRequestId, const std::unique_ptr<MediaSegment> &mediaSegment) override;
 
@@ -145,6 +151,10 @@ public:
     void notifyQos(MediaSourceType mediaSourceType, const QosInfo &qosInfo) override;
 
     void notifyBufferUnderflow(MediaSourceType mediaSourceType) override;
+
+    void notifyPlaybackError(MediaSourceType mediaSourceType, PlaybackError error) override;
+
+    void notifySourceFlushed(MediaSourceType mediaSourceType) override;
 
 protected:
     /**
@@ -421,6 +431,35 @@ protected:
      * @retval true on success false otherwise
      */
     bool getMuteInternal(bool &mute);
+
+    /**
+     * @brief Checks if MediaPipeline threads are not deadlocked internally
+     *
+     * @param[out] heartbeatHandler : The heartbeat handler instance
+     */
+    void pingInternal(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler);
+
+    /**
+     * @brief Flushes a source.
+     *
+     * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[in] resetTime : True if time should be reset
+     *
+     * @retval true on success.
+     */
+    bool flushInternal(int32_t sourceId, bool resetTime);
+
+    /**
+     * @brief Set the source position in nanoseconds.
+     *
+     * This method sets the start position for a source.
+     *
+     * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[in] position : The position in nanoseconds.
+     *
+     * @retval true on success.
+     */
+    bool setSourcePositionInternal(int32_t sourceId, int64_t position);
 };
 
 }; // namespace firebolt::rialto::server

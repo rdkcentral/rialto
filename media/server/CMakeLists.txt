@@ -17,7 +17,7 @@
 # limitations under the License.
 #
 
-set( CMAKE_CXX_STANDARD 14 )
+set( CMAKE_CXX_STANDARD 17 )
 
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
 include( CheckCXXCompilerFlag )
@@ -27,7 +27,6 @@ add_subdirectory(gstplayer)
 add_subdirectory(main)
 add_subdirectory(ipc)
 add_subdirectory(service)
-add_subdirectory(wrappers)
 
 add_executable (
         RialtoServer
@@ -64,6 +63,13 @@ target_link_libraries(
         RialtoServerService
         protobuf::libprotobuf
 )
+
+if( NATIVE_BUILD )
+        set_target_properties(
+        RialtoServer
+        PROPERTIES INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib"
+)
+endif()
 
 install(
         TARGETS RialtoServer

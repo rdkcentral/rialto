@@ -17,22 +17,9 @@
  * limitations under the License.
  */
 
-#include "CdmService.h"
-#include "ControlService.h"
 #include "GstInit.h"
-#include "IControlServerInternal.h"
-#include "IHeartbeatProcedure.h"
-#include "IMediaKeysCapabilities.h"
-#include "IMediaKeysServerInternal.h"
-#include "IMediaPipelineCapabilities.h"
-#include "IMediaPipelineServerInternal.h"
-#include "ISharedMemoryBuffer.h"
-#include "IWebAudioPlayerServerInternalFactory.h"
-#include "IpcFactory.h"
-#include "PlaybackService.h"
+#include "IApplicationSessionServer.h"
 #include "RialtoServerLogging.h"
-#include "SessionServerManager.h"
-#include <cstdlib>
 #include <cstring>
 #include <thread>
 #include <google/protobuf/service.h>
@@ -41,42 +28,38 @@
 
 int main(int argc, char *argv[])
 {
-    const char commitID[] = COMMIT_ID;
+    const char kSrcRev[] = SRCREV;
+    const char kTags[] = TAGS;
 
-    if (std::strlen(commitID) > 0)
+    if (std::strlen(kSrcRev) > 0)
     {
-        RIALTO_SERVER_LOG_MIL("Commit ID: %s", commitID);
+        if (std::strlen(kTags) > 0)
+        {
+            RIALTO_SERVER_LOG_MIL("Release Tag(s): %s (Commit ID: %s)", kTags, kSrcRev);
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_MIL("Release Tag(s): No Release Tags! (Commit ID: %s)", kSrcRev);
+        }
     }
     else
     {
-        RIALTO_SERVER_LOG_WARN("Failed to get git commit ID.");
+        RIALTO_SERVER_LOG_WARN("Failed to get git commit ID!");
     }
 
     firebolt::rialto::server::gstInitalise(argc, argv);
 
-    firebolt::rialto::server::ipc::IpcFactory ipcFactory;
-    firebolt::rialto::server::service::ControlService
-        controlService{firebolt::rialto::server::IControlServerInternalFactory::createFactory(),
-                       firebolt::rialto::server::IHeartbeatProcedureFactory::createFactory()};
-    firebolt::rialto::server::service::CdmService
-        cdmService{firebolt::rialto::server::IMediaKeysServerInternalFactory::createFactory(),
-                   firebolt::rialto::IMediaKeysCapabilitiesFactory::createFactory()};
-    firebolt::rialto::server::service::PlaybackService
-        playbackService{firebolt::rialto::server::IMediaPipelineServerInternalFactory::createFactory(),
-                        firebolt::rialto::IMediaPipelineCapabilitiesFactory::createFactory(),
-                        firebolt::rialto::server::IWebAudioPlayerServerInternalFactory::createFactory(),
-                        firebolt::rialto::server::ISharedMemoryBufferFactory::createFactory(), cdmService};
-    firebolt::rialto::server::service::SessionServerManager serviceManager{ipcFactory, playbackService, cdmService,
-                                                                           controlService};
-    if (!serviceManager.initialize(argc, argv))
+    auto appSessionServer =
+        firebolt::rialto::server::IApplicationSessionServerFactory::getFactory()->createApplicationSessionServer();
+
+    if (!appSessionServer->init(argc, argv))
     {
         firebolt::rialto::server::gstDeinitalise();
         return EXIT_FAILURE;
     }
-    serviceManager.startService();
 
+    appSessionServer->startService();
     firebolt::rialto::server::gstDeinitalise();
     google::protobuf::ShutdownProtobufLibrary();
-
     return EXIT_SUCCESS;
 }

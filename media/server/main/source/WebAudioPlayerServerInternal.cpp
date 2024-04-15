@@ -17,10 +17,11 @@
  * limitations under the License.
  */
 
-#include "WebAudioPlayerServerInternal.h"
-#include "RialtoServerLogging.h"
 #include <limits.h>
 #include <stdexcept>
+
+#include "RialtoServerLogging.h"
+#include "WebAudioPlayerServerInternal.h"
 
 namespace
 {
@@ -57,25 +58,26 @@ std::shared_ptr<IWebAudioPlayerServerInternalFactory> IWebAudioPlayerServerInter
 std::unique_ptr<IWebAudioPlayer>
 WebAudioPlayerServerInternalFactory::createWebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client,
                                                           const std::string &audioMimeType, const uint32_t priority,
-                                                          const WebAudioConfig *config) const
+                                                          std::weak_ptr<const WebAudioConfig> config) const
 {
     RIALTO_SERVER_LOG_ERROR(
         "This function can't be used by rialto server. Please use createWebAudioPlayerServerInternal");
     return nullptr;
 }
 
-std::unique_ptr<IWebAudioPlayer> WebAudioPlayerServerInternalFactory::createWebAudioPlayerServerInternal(
+std::unique_ptr<IWebAudioPlayerServerInternal> WebAudioPlayerServerInternalFactory::createWebAudioPlayerServerInternal(
     std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType, const uint32_t priority,
-    const WebAudioConfig *config, const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle) const
+    std::weak_ptr<const WebAudioConfig> config, const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle,
+    const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
+    const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory,
+    std::weak_ptr<common::ITimerFactory> timerFactory) const
 {
-    std::unique_ptr<IWebAudioPlayer> webAudioPlayer;
+    std::unique_ptr<IWebAudioPlayerServerInternal> webAudioPlayer;
     try
     {
         webAudioPlayer = std::make_unique<server::WebAudioPlayerServerInternal>(client, audioMimeType, priority, config,
-                                                                                shmBuffer, handle,
-                                                                                IMainThreadFactory::createFactory(),
-                                                                                IGstWebAudioPlayerFactory::getFactory(),
-                                                                                common::ITimerFactory::getFactory());
+                                                                                shmBuffer, handle, mainThreadFactory,
+                                                                                gstPlayerFactory, timerFactory);
     }
     catch (const std::exception &e)
     {
@@ -87,10 +89,9 @@ std::unique_ptr<IWebAudioPlayer> WebAudioPlayerServerInternalFactory::createWebA
 
 WebAudioPlayerServerInternal::WebAudioPlayerServerInternal(
     std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType, const uint32_t priority,
-    const WebAudioConfig *config, const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle,
-    const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
-    const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory,
-    std::shared_ptr<common::ITimerFactory> timerFactory)
+    std::weak_ptr<const WebAudioConfig> webAudioConfig, const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer,
+    int handle, const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
+    const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory, std::weak_ptr<common::ITimerFactory> timerFactory)
     : m_webAudioPlayerClient(client), m_shmBuffer{shmBuffer}, m_priority{priority}, m_shmId{handle}, m_shmPtr{nullptr},
       m_partitionOffset{0}, m_maxDataLength{0}, m_availableBuffer{}, m_expectWriteBuffer{false},
       m_timerFactory{timerFactory}, m_bytesPerFrame{0}, m_isEosRequested{false}
@@ -99,15 +100,16 @@ WebAudioPlayerServerInternal::WebAudioPlayerServerInternal(
 
     if (audioMimeType == "audio/x-raw")
     {
-        if (config == nullptr)
+        std::shared_ptr<const WebAudioConfig> kConfig = webAudioConfig.lock();
+        if (kConfig == nullptr)
         {
             throw std::runtime_error("Config is null for 'audio/x-raw'");
         }
-        m_bytesPerFrame = config->pcm.channels * (config->pcm.sampleSize / CHAR_BIT);
+        m_bytesPerFrame = kConfig->pcm.channels * (kConfig->pcm.sampleSize / CHAR_BIT);
         if (m_bytesPerFrame == 0)
         {
-            throw std::runtime_error("Bytes per frame cannot be 0, channels " + std::to_string(config->pcm.channels) +
-                                     ", sampleSize " + std::to_string(config->pcm.sampleSize));
+            throw std::runtime_error("Bytes per frame cannot be 0, channels " + std::to_string(kConfig->pcm.channels) +
+                                     ", sampleSize " + std::to_string(kConfig->pcm.sampleSize));
         }
     }
     else
@@ -123,7 +125,7 @@ WebAudioPlayerServerInternal::WebAudioPlayerServerInternal(
     m_mainThreadClientId = m_mainThread->registerClient();
 
     bool result = false;
-    auto task = [&]() { result = initWebAudioPlayerInternal(audioMimeType, config, gstPlayerFactory); };
+    auto task = [&]() { result = initWebAudioPlayerInternal(audioMimeType, webAudioConfig, gstPlayerFactory); };
 
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     if (!result)
@@ -133,7 +135,7 @@ WebAudioPlayerServerInternal::WebAudioPlayerServerInternal(
 }
 
 bool WebAudioPlayerServerInternal::initWebAudioPlayerInternal(
-    const std::string &audioMimeType, const WebAudioConfig *config,
+    const std::string &audioMimeType, std::weak_ptr<const WebAudioConfig> config,
     const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory)
 {
     if (!m_shmBuffer->mapPartition(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, m_shmId))
@@ -483,7 +485,7 @@ bool WebAudioPlayerServerInternal::setVolume(double volume)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    auto task = [&]() { m_gstPlayer->setVolume(volume); };
+    auto task = [&, volume]() { m_gstPlayer->setVolume(volume); };
 
     m_mainThread->enqueueTask(m_mainThreadClientId, task);
 
@@ -522,7 +524,8 @@ void WebAudioPlayerServerInternal::notifyState(WebAudioPlayerState state)
     m_mainThread->enqueueTask(m_mainThreadClientId, task);
 }
 
-bool WebAudioPlayerServerInternal::initGstWebAudioPlayer(const std::string &audioMimeType, const WebAudioConfig *config,
+bool WebAudioPlayerServerInternal::initGstWebAudioPlayer(const std::string &audioMimeType,
+                                                         std::weak_ptr<const WebAudioConfig> config,
                                                          const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory)
 {
     m_gstPlayer = gstPlayerFactory->createGstWebAudioPlayer(this, m_priority);
@@ -562,5 +565,13 @@ void WebAudioPlayerServerInternal::handleWriteDataTimer()
 uint32_t WebAudioPlayerServerInternal::getQueuedFramesInShm()
 {
     return (m_maxDataLength - (m_availableBuffer.lengthMain + m_availableBuffer.lengthWrap)) / m_bytesPerFrame;
+}
+
+void WebAudioPlayerServerInternal::ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    auto task = [&]() { m_gstPlayer->ping(std::move(heartbeatHandler)); };
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
 }
 }; // namespace firebolt::rialto::server

@@ -24,7 +24,7 @@
 #include "IMainThread.h"
 #include "ITimer.h"
 #include "IWebAudioPlayer.h"
-#include "IWebAudioPlayerServerInternalFactory.h"
+#include "IWebAudioPlayerServerInternal.h"
 
 #include <memory>
 #include <stdint.h>
@@ -43,18 +43,20 @@ public:
 
     std::unique_ptr<IWebAudioPlayer> createWebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client,
                                                           const std::string &audioMimeType, const uint32_t priority,
-                                                          const WebAudioConfig *config) const override;
+                                                          std::weak_ptr<const WebAudioConfig> config) const override;
 
-    std::unique_ptr<IWebAudioPlayer>
-    createWebAudioPlayerServerInternal(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
-                                       const uint32_t priority, const WebAudioConfig *config,
-                                       const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle) const override;
+    std::unique_ptr<IWebAudioPlayerServerInternal> createWebAudioPlayerServerInternal(
+        std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType, const uint32_t priority,
+        std::weak_ptr<const WebAudioConfig> config, const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle,
+        const std::shared_ptr<firebolt::rialto::server::IMainThreadFactory> &mainThreadFactory,
+        const std::shared_ptr<firebolt::rialto::server::IGstWebAudioPlayerFactory> &gstPlayerFactory,
+        std::weak_ptr<firebolt::rialto::common::ITimerFactory> timerFactory) const override;
 };
 
 /**
  * @brief The definition of the WebAudioPlayerServerInternal.
  */
-class WebAudioPlayerServerInternal : public IWebAudioPlayer, public IGstWebAudioPlayerClient
+class WebAudioPlayerServerInternal : public IWebAudioPlayerServerInternal, public IGstWebAudioPlayerClient
 {
 public:
     /**
@@ -71,11 +73,11 @@ public:
      * @param[in] timerFactory      : The timer factory.
      */
     WebAudioPlayerServerInternal(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
-                                 const uint32_t priority, const WebAudioConfig *config,
+                                 const uint32_t priority, std::weak_ptr<const WebAudioConfig> config,
                                  const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle,
                                  const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
                                  const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory,
-                                 std::shared_ptr<common::ITimerFactory> timerFactory);
+                                 std::weak_ptr<common::ITimerFactory> timerFactory);
 
     /**
      * @brief Virtual destructor.
@@ -103,6 +105,8 @@ public:
     std::weak_ptr<IWebAudioPlayerClient> getClient() override;
 
     void notifyState(WebAudioPlayerState state) override;
+
+    void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) override;
 
 protected:
     /**
@@ -194,7 +198,7 @@ protected:
      *
      * @retval true on success.
      */
-    bool initWebAudioPlayerInternal(const std::string &audioMimeType, const WebAudioConfig *config,
+    bool initWebAudioPlayerInternal(const std::string &audioMimeType, std::weak_ptr<const WebAudioConfig> config,
                                     const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory);
 
     /**
@@ -206,7 +210,7 @@ protected:
      *
      * @retval true on success.
      */
-    bool initGstWebAudioPlayer(const std::string &audioMimeType, const WebAudioConfig *config,
+    bool initGstWebAudioPlayer(const std::string &audioMimeType, std::weak_ptr<const WebAudioConfig> config,
                                const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory);
 
     /**

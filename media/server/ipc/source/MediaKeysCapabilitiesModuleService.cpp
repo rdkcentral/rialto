@@ -17,12 +17,13 @@
  * limitations under the License.
  */
 
-#include "MediaKeysCapabilitiesModuleService.h"
-#include "ICdmService.h"
-#include "RialtoServerLogging.h"
 #include <IIpcController.h>
 #include <algorithm>
 #include <cstdint>
+
+#include "ICdmService.h"
+#include "MediaKeysCapabilitiesModuleService.h"
+#include "RialtoServerLogging.h"
 
 namespace firebolt::rialto::server::ipc
 {
@@ -146,6 +147,24 @@ void MediaKeysCapabilitiesModuleService::getSupportedKeySystemVersion(
         controller->SetFailed("Operation failed");
     }
 
+    done->Run();
+}
+
+void MediaKeysCapabilitiesModuleService::isServerCertificateSupported(
+    ::google::protobuf::RpcController *controller, const ::firebolt::rialto::IsServerCertificateSupportedRequest *request,
+    ::firebolt::rialto::IsServerCertificateSupportedResponse *response, ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
+    if (!ipcController)
+    {
+        RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
+        controller->SetFailed("ipc library provided incompatible controller object");
+        done->Run();
+        return;
+    }
+
+    response->set_is_supported(m_cdmService.isServerCertificateSupported(request->key_system()));
     done->Run();
 }
 

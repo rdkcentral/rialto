@@ -24,7 +24,8 @@
 
 namespace firebolt::rialto::server::tasks::generic
 {
-Eos::Eos(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, std::shared_ptr<IGstWrapper> gstWrapper,
+Eos::Eos(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+         std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
          const firebolt::rialto::MediaSourceType &type)
     : m_context{context}, m_player{player}, m_gstWrapper{gstWrapper}, m_type{type}
 {

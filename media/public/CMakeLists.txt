@@ -17,7 +17,7 @@
 # limitations under the License.
 #
 
-set( CMAKE_CXX_STANDARD 14 )
+set( CMAKE_CXX_STANDARD 17 )
 
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
 include( CheckCXXCompilerFlag )
@@ -29,25 +29,27 @@ add_library(
 
 target_include_directories(
         RialtoPlayerPublic
-
         INTERFACE
+        $<TARGET_PROPERTY:RialtoClientIpcImpl,INTERFACE_INCLUDE_DIRECTORIES>
         include
     )
 
 set (
         RIALTO_PLAYER_PUBLIC_HEADERS
-        include/IMediaPipeline.h
-        include/IMediaPipelineClient.h
-        include/IMediaPipelineCapabilities.h
-        include/IMediaKeys.h
-        include/IMediaKeysClient.h
-        include/IMediaKeysCapabilities.h
+        include/ControlCommon.h
+        include/IClientLogControl.h
+        include/IClientLogHandler.h
         include/IControl.h
         include/IControlClient.h
-        include/MediaCommon.h
-        include/ControlCommon.h
+        include/IMediaKeys.h
+        include/IMediaKeysCapabilities.h
+        include/IMediaKeysClient.h
+        include/IMediaPipeline.h
+        include/IMediaPipelineCapabilities.h
+        include/IMediaPipelineClient.h
         include/IWebAudioPlayer.h
         include/IWebAudioPlayerClient.h
+        include/MediaCommon.h
 )
 
 install (

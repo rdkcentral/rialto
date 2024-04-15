@@ -43,18 +43,33 @@ std::shared_ptr<IWebAudioPlayerFactory> IWebAudioPlayerFactory::createFactory()
     return factory;
 }
 
-std::unique_ptr<IWebAudioPlayer> WebAudioPlayerFactory::createWebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client,
-                                                                             const std::string &audioMimeType,
-                                                                             const uint32_t priority,
-                                                                             const WebAudioConfig *config) const
+std::unique_ptr<IWebAudioPlayer>
+WebAudioPlayerFactory::createWebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
+                                            const uint32_t priority, std::weak_ptr<const WebAudioConfig> config) const
+{
+    return createWebAudioPlayer(client, audioMimeType, priority, config, {}, {});
+}
+
+std::unique_ptr<IWebAudioPlayer>
+WebAudioPlayerFactory::createWebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
+                                            const uint32_t priority, std::weak_ptr<const WebAudioConfig> config,
+                                            std::weak_ptr<client::IWebAudioPlayerIpcFactory> webAudioPlayerIpcFactory,
+                                            std::weak_ptr<client::IClientController> clientController) const
 {
     std::unique_ptr<IWebAudioPlayer> webAudioPlayer;
     try
     {
-        webAudioPlayer =
-            std::make_unique<client::WebAudioPlayer>(client, audioMimeType, priority, config,
-                                                     client::IWebAudioPlayerIpcFactory::getFactory(),
-                                                     client::IClientControllerAccessor::instance().getClientController());
+        std::shared_ptr<client::IWebAudioPlayerIpcFactory> webAudioPlayerIpcFactoryLocked =
+            webAudioPlayerIpcFactory.lock();
+        std::shared_ptr<client::IClientController> clientControllerLocked = clientController.lock();
+        webAudioPlayer = std::make_unique<client::WebAudioPlayer>(client, audioMimeType, priority, config,
+                                                                  webAudioPlayerIpcFactoryLocked
+                                                                      ? webAudioPlayerIpcFactoryLocked
+                                                                      : client::IWebAudioPlayerIpcFactory::getFactory(),
+                                                                  clientControllerLocked
+                                                                      ? *clientControllerLocked
+                                                                      : client::IClientControllerAccessor::instance()
+                                                                            .getClientController());
     }
     catch (const std::exception &e)
     {
@@ -68,7 +83,7 @@ std::unique_ptr<IWebAudioPlayer> WebAudioPlayerFactory::createWebAudioPlayer(std
 namespace firebolt::rialto::client
 {
 WebAudioPlayer::WebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
-                               const uint32_t priority, const WebAudioConfig *config,
+                               const uint32_t priority, std::weak_ptr<const WebAudioConfig> webAudioConfig,
                                const std::shared_ptr<IWebAudioPlayerIpcFactory> &webAudioPlayerIpcFactory,
                                IClientController &clientController)
     : m_webAudioPlayerClient(client), m_clientController{clientController}, m_bytesPerFrame{0},
@@ -78,15 +93,16 @@ WebAudioPlayer::WebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, cons
 
     if (audioMimeType == "audio/x-raw")
     {
-        if (config == nullptr)
+        std::shared_ptr<const WebAudioConfig> kConfig = webAudioConfig.lock();
+        if (!kConfig)
         {
             throw std::runtime_error("Config is null for 'audio/x-raw'");
         }
-        m_bytesPerFrame = config->pcm.channels * (config->pcm.sampleSize / CHAR_BIT);
+        m_bytesPerFrame = kConfig->pcm.channels * (kConfig->pcm.sampleSize / CHAR_BIT);
         if (m_bytesPerFrame == 0)
         {
-            throw std::runtime_error("Bytes per frame cannot be 0, channels " + std::to_string(config->pcm.channels) +
-                                     ", sampleSize " + std::to_string(config->pcm.sampleSize));
+            throw std::runtime_error("Bytes per frame cannot be 0, channels " + std::to_string(kConfig->pcm.channels) +
+                                     ", sampleSize " + std::to_string(kConfig->pcm.sampleSize));
         }
     }
 
@@ -95,7 +111,8 @@ WebAudioPlayer::WebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, cons
         throw std::runtime_error("Web audio player ipc factory could not be null");
     }
 
-    m_webAudioPlayerIpc = webAudioPlayerIpcFactory->createWebAudioPlayerIpc(this, audioMimeType, priority, config);
+    m_webAudioPlayerIpc =
+        webAudioPlayerIpcFactory->createWebAudioPlayerIpc(this, audioMimeType, priority, webAudioConfig);
     if (!m_webAudioPlayerIpc)
     {
         throw std::runtime_error("Web audio player ipc could not be created");

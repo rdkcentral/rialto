@@ -17,14 +17,10 @@
 # limitations under the License.
 #
 
-set( CMAKE_CXX_STANDARD 14 )
+set( CMAKE_CXX_STANDARD 17 )
 
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
 include( CheckCXXCompilerFlag )
-
-# Run the protoc tool to generate the code
-set( Protobuf_IMPORT_DIRS "${CMAKE_SYSROOT}/usr/include" "${CMAKE_CURRENT_LIST_DIR}/../../../ipc/common/proto" )
-protobuf_generate_cpp( PROTO_SRCS PROTO_HEADERS proto/metadata.proto )
 
 # Find includes in corresponding build directories
 set( CMAKE_INCLUDE_CURRENT_DIR ON )
@@ -65,7 +61,7 @@ target_include_directories(
         $<TARGET_PROPERTY:RialtoServerGstPlayer,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoServerCommon,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoPlayerCommon,INTERFACE_INCLUDE_DIRECTORIES>
-        $<TARGET_PROPERTY:RialtoServerWrappers,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoWrappers,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoCommon,INTERFACE_INCLUDE_DIRECTORIES>
         )
 
@@ -87,11 +83,11 @@ target_link_libraries(
         PRIVATE
         RialtoLogging
         RialtoServerGstPlayer
-        RialtoServerWrappers
+        RialtoWrappers
         RialtoCommon
+        RialtoProtobuf
 
         Threads::Threads
-        protobuf::libprotobuf
         )
 
 install(

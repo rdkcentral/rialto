@@ -20,9 +20,10 @@
 #ifndef FIREBOLT_RIALTO_SERVER_CONTROL_SERVER_INTERNAL_H_
 #define FIREBOLT_RIALTO_SERVER_CONTROL_SERVER_INTERNAL_H_
 
+#include <memory>
+
 #include "IControlServerInternal.h"
 #include "IMainThread.h"
-#include <memory>
 
 namespace firebolt::rialto::server
 {

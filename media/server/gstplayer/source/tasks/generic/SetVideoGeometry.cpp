@@ -41,7 +41,7 @@ void SetVideoGeometry::execute() const
     m_context.pendingGeometry = m_rectangle;
     if (m_context.pipeline)
     {
-        m_player.setWesterossinkRectangle();
+        m_player.setVideoSinkRectangle();
     }
 }
 } // namespace firebolt::rialto::server::tasks::generic

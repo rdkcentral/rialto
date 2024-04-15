@@ -42,6 +42,9 @@ public:
                            const firebolt::rialto::common::AppConfig &appConfig) = 0;
     virtual bool isConnected() const = 0;
     virtual std::string getSessionManagementSocketName() const = 0;
+    virtual unsigned int getSessionManagementSocketPermissions() const = 0;
+    virtual std::string getSessionManagementSocketOwner() const = 0;
+    virtual std::string getSessionManagementSocketGroup() const = 0;
     virtual std::string getClientDisplayName() const = 0;
     virtual firebolt::rialto::common::SessionServerState getInitialState() const = 0;
     virtual int getServerId() const = 0;
@@ -51,6 +54,8 @@ public:
     virtual int getMaxWebAudioPlayers() const = 0;
     virtual void cancelStartupTimer() = 0;
     virtual void kill() const = 0;
+    virtual void setExpectedState(const firebolt::rialto::common::SessionServerState &state) = 0;
+    virtual firebolt::rialto::common::SessionServerState getExpectedState() const = 0;
 };
 } // namespace rialto::servermanager::common
 

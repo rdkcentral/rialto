@@ -1,0 +1,74 @@
+# If not stated otherwise in this file or this component's LICENSE file the
+# following copyright and licenses apply:
+#
+# Copyright 2023 Sky UK
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Rialto OCDM Test
+
+on:
+  pull_request:
+    branches:
+      - "master"
+      - "rdkcentral:master"
+
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Check if rialto-ocdm branch with the same name exists
+        id: check-branch
+        shell: sh +e {0}
+        run: |
+          branch=master
+          git ls-remote --exit-code --heads "https://github.com/rdkcentral/rialto-ocdm.git" ${{ github.event.pull_request.head.ref }} > /dev/null
+          if [ $? -eq 0 ]; then
+            branch="${{ github.event.pull_request.head.ref }}"
+          fi
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout rialto-ocdm repo
+        uses: actions/checkout@v4
+        with:
+          repository: rdkcentral/rialto-ocdm
+          ref: ${{ steps.check-branch.outputs.branch }}
+          path: rialto-ocdm
+          
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Build gstreamer library
+        run: |
+          sudo apt-get update
+          sudo apt-get install libunwind-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-plugins-base 
+
+      - name: Run tests
+        run: |
+          cd rialto-ocdm    
+          python build_ut.py -c -xml -f -b ${{ github.event.pull_request.head.ref }}
+        
+      - name: Upload logs
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: logs
+          path: |
+            rialto-ocdm/gtest_result.log
+            rialto-ocdm/build/*gtest_result.xml
+           

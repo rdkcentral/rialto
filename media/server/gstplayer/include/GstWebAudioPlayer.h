@@ -70,7 +70,8 @@ public:
      * @param[in] gstDispatcherThreadFactory   : The gst dispatcher thread factory
      */
     GstWebAudioPlayer(IGstWebAudioPlayerClient *client, const uint32_t priority,
-                      const std::shared_ptr<IGstWrapper> &gstWrapper, const std::shared_ptr<IGlibWrapper> &glibWrapper,
+                      const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                      const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
                       const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
                       std::unique_ptr<IWebAudioPlayerTaskFactory> taskFactory,
                       std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
@@ -81,7 +82,7 @@ public:
      */
     virtual ~GstWebAudioPlayer();
 
-    void setCaps(const std::string &audioMimeType, const WebAudioConfig *config) override;
+    void setCaps(const std::string &audioMimeType, std::weak_ptr<const WebAudioConfig> config) override;
     void play() override;
     void pause() override;
     void setVolume(double volume) override;
@@ -93,6 +94,7 @@ public:
     bool changePipelineState(GstState newState) override;
     void stopWorkerThread() override;
     void handleBusMessage(GstMessage *message) override;
+    void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) override;
 
 private:
     /**
@@ -158,12 +160,12 @@ private:
     /**
      * @brief The gstreamer wrapper object.
      */
-    std::shared_ptr<IGstWrapper> m_gstWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
 
     /**
      * @brief The glib wrapper object.
      */
-    std::shared_ptr<IGlibWrapper> m_glibWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
 
     /**
      * @brief Thread for handling player tasks.

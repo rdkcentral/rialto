@@ -47,14 +47,14 @@ enum ProtoMediaKeyErrorStatus {
  *
  */
 message LicenseRequestEvent {
-    required int32 media_keys_handle = 1;
-    required int32 key_session_id = 2;
+    optional int32 media_keys_handle = 1 [default = -1];
+    optional int32 key_session_id = 2 [default = -1];
     repeated uint32 license_request_message = 3;
-    required string url = 4;
+    optional string url = 4;
 }
 
 /**
- * @brief Event to notify that a license renewal is requiredy.
+ * @brief Event to notify that a license renewal is required.
  *
  * @param media_keys_handle       The handle of the media keys.
  * @param key_session_id          The key session id for the session.
@@ -62,8 +62,8 @@ message LicenseRequestEvent {
  *
  */
 message LicenseRenewalEvent {
-    required int32 media_keys_handle = 1;
-    required int32 key_session_id = 2;
+    optional int32 media_keys_handle = 1 [default = -1];
+    optional int32 key_session_id = 2 [default = -1];
     repeated uint32 license_renewal_message = 3;
 }
 
@@ -88,11 +88,11 @@ message KeyStatusesChangedEvent {
 
   message KeyStatusPair {
     repeated uint32 key_id = 1;
-    required KeyStatus key_status = 2;
+    optional KeyStatus key_status = 2 [default = INTERNAL_ERROR];
   }
 
-  required int32 media_keys_handle = 1;
-  required int32 key_session_id = 2;
+  optional int32 media_keys_handle = 1 [default = -1];
+  optional int32 key_session_id = 2 [default = -1];
   repeated KeyStatusPair key_statuses = 3;
 }
 
@@ -111,10 +111,10 @@ message KeyStatusesChangedEvent {
  * @returns a unique numeric media keys handle value that should be used for all subsequent operations on the media keys.
  */
 message CreateMediaKeysRequest {
-  required string key_system = 1;
+  optional string key_system = 1;
 }
 message CreateMediaKeysResponse {
-  required int32 media_keys_handle = 1;
+  optional int32 media_keys_handle = 1 [default = -1];
 }
 
 /**
@@ -127,7 +127,7 @@ message CreateMediaKeysResponse {
  *
  */
 message DestroyMediaKeysRequest {
-  required int32 media_keys_handle = 1;
+  optional int32 media_keys_handle = 1 [default = -1];
 }
 message DestroyMediaKeysResponse {
 }
@@ -143,12 +143,12 @@ message DestroyMediaKeysResponse {
  * @retval true if it contains the key.
  */
 message ContainsKeyRequest {
-  required int32 media_keys_handle = 1;
-  required int32 key_session_id = 2;
+  optional int32 media_keys_handle = 1 [default = -1];
+  optional int32 key_session_id = 2 [default = -1];
   repeated uint32 key_id = 3;
 }
 message ContainsKeyResponse {
-  required bool contains_key = 1;
+  optional bool contains_key = 1;
 }
 
 /**
@@ -174,13 +174,13 @@ message CreateKeySessionRequest {
     PERSISTENT_RELEASE_MESSAGE = 3;   ///< The session's persistent licence should be released.
   };
 
-  required int32 media_keys_handle = 1;
-  required KeySessionType session_type = 2;
-  required bool is_ldl = 3;
+  optional int32 media_keys_handle = 1 [default = -1];
+  optional KeySessionType session_type = 2;
+  optional bool is_ldl = 3;
 }
 message CreateKeySessionResponse {
-  required ProtoMediaKeyErrorStatus error_status = 1;
-  required int32 key_session_id = 2;
+  optional ProtoMediaKeyErrorStatus error_status = 1 [default = FAIL];
+  optional int32 key_session_id = 2 [default = -1];
 }
 
 /**
@@ -213,14 +213,14 @@ message GenerateRequestRequest {
     DRMHEADER = 4;  ///< The init data is in DrmHeader format.
   };
 
-  required int32 media_keys_handle = 1;
-  required int32 key_session_id = 2;
-  required InitDataType init_data_type = 3;
+  optional int32 media_keys_handle = 1 [default = -1];
+  optional int32 key_session_id = 2 [default = -1];
+  optional InitDataType init_data_type = 3;
   repeated uint32 init_data = 4;
 
 }
 message GenerateRequestResponse {
-  required ProtoMediaKeyErrorStatus error_status = 1;
+  optional ProtoMediaKeyErrorStatus error_status = 1 [default = FAIL];
 }
 
 /**
@@ -240,11 +240,11 @@ message GenerateRequestResponse {
  * @retval an error status.
  */
 message LoadSessionRequest {
-  required int32 media_keys_handle = 1;
-  required int32 key_session_id = 2;
+  optional int32 media_keys_handle = 1 [default = -1];
+  optional int32 key_session_id = 2 [default = -1];
 }
 message LoadSessionResponse {
-  required ProtoMediaKeyErrorStatus error_status = 1;
+  optional ProtoMediaKeyErrorStatus error_status = 1 [default = FAIL];
 }
 
 /**
@@ -266,12 +266,12 @@ message LoadSessionResponse {
  * @retval an error status.
  */
 message UpdateSessionRequest {
-  required int32 media_keys_handle = 1;
-  required int32 key_session_id = 2;
+  optional int32 media_keys_handle = 1 [default = -1];
+  optional int32 key_session_id = 2 [default = -1];
   repeated uint32 response_data = 3;
 }
 message UpdateSessionResponse {
-  required ProtoMediaKeyErrorStatus error_status = 1;
+  optional ProtoMediaKeyErrorStatus error_status = 1 [default = FAIL];
 }
 
 /**
@@ -293,12 +293,12 @@ message UpdateSessionResponse {
  * @retval an error status.
  */
 message SetDrmHeaderRequest {
-  required int32 media_keys_handle = 1;
-  required int32 key_session_id = 2;
+  optional int32 media_keys_handle = 1 [default = -1];
+  optional int32 key_session_id = 2 [default = -1];
   repeated uint32 request_data = 3;
 }
 message SetDrmHeaderResponse {
-  required ProtoMediaKeyErrorStatus error_status = 1;
+  optional ProtoMediaKeyErrorStatus error_status = 1 [default = FAIL];
 }
 
 /**
@@ -315,11 +315,11 @@ message SetDrmHeaderResponse {
  * @retval an error status.
  */
 message CloseKeySessionRequest {
-  required int32 media_keys_handle = 1;
-  required int32 key_session_id = 2;
+  optional int32 media_keys_handle = 1 [default = -1];
+  optional int32 key_session_id = 2 [default = -1];
 }
 message CloseKeySessionResponse {
-  required ProtoMediaKeyErrorStatus error_status = 1;
+  optional ProtoMediaKeyErrorStatus error_status = 1 [default = FAIL];
 }
 
 /**
@@ -336,11 +336,11 @@ message CloseKeySessionResponse {
  * @retval an error status.
  */
 message RemoveKeySessionRequest {
-  required int32 media_keys_handle = 1;
-  required int32 key_session_id = 2;
+  optional int32 media_keys_handle = 1 [default = -1];
+  optional int32 key_session_id = 2 [default = -1];
 }
 message RemoveKeySessionResponse {
-  required ProtoMediaKeyErrorStatus error_status = 1;
+  optional ProtoMediaKeyErrorStatus error_status = 1 [default = FAIL];
 }
 
 /**
@@ -352,10 +352,10 @@ message RemoveKeySessionResponse {
  * @retval an error status.
  */
 message DeleteDrmStoreRequest {
-  required int32 media_keys_handle = 1;
+  optional int32 media_keys_handle = 1 [default = -1];
 }
 message DeleteDrmStoreResponse {
-  required ProtoMediaKeyErrorStatus error_status = 1;
+  optional ProtoMediaKeyErrorStatus error_status = 1 [default = FAIL];
 }
 
 /**
@@ -367,10 +367,10 @@ message DeleteDrmStoreResponse {
  * @retval an error status.
  */
 message DeleteKeyStoreRequest {
-  required int32 media_keys_handle = 1;
+  optional int32 media_keys_handle = 1 [default = -1];
 }
 message DeleteKeyStoreResponse {
-  required ProtoMediaKeyErrorStatus error_status = 1;
+  optional ProtoMediaKeyErrorStatus error_status = 1 [default = FAIL];
 }
 
 /**
@@ -385,10 +385,10 @@ message DeleteKeyStoreResponse {
  * @retval an error status & the drm hash.
  */
 message GetDrmStoreHashRequest {
-  required int32 media_keys_handle = 1;
+  optional int32 media_keys_handle = 1 [default = -1];
 }
 message GetDrmStoreHashResponse {
-  required ProtoMediaKeyErrorStatus error_status = 1;
+  optional ProtoMediaKeyErrorStatus error_status = 1 [default = FAIL];
   repeated uint32 drm_store_hash = 2;
 }
 
@@ -404,10 +404,10 @@ message GetDrmStoreHashResponse {
  * @retval an error status & the key hash.
  */
 message GetKeyStoreHashRequest {
-  required int32 media_keys_handle = 1;
+  optional int32 media_keys_handle = 1 [default = -1];
 }
 message GetKeyStoreHashResponse {
-  required ProtoMediaKeyErrorStatus error_status = 1;
+  optional ProtoMediaKeyErrorStatus error_status = 1 [default = FAIL];
   repeated uint32 key_store_hash = 2;
 }
 
@@ -420,11 +420,11 @@ message GetKeyStoreHashResponse {
  * @retval an error status & the limit on the number of ldl key sessions.
  */
 message GetLdlSessionsLimitRequest {
-  required int32 media_keys_handle = 1;
+  optional int32 media_keys_handle = 1 [default = -1];
 }
 message GetLdlSessionsLimitResponse {
-  required ProtoMediaKeyErrorStatus error_status = 1;
-  required uint32 ldl_limit = 2;
+  optional ProtoMediaKeyErrorStatus error_status = 1 [default = FAIL];
+  optional uint32 ldl_limit = 2;
 }
 
 /**
@@ -437,12 +437,12 @@ message GetLdlSessionsLimitResponse {
  * @retval an error status & the error code.
  */
 message GetLastDrmErrorRequest {
-  required int32 media_keys_handle = 1;
-  required int32 key_session_id = 2;
+  optional int32 media_keys_handle = 1 [default = -1];
+  optional int32 key_session_id = 2 [default = -1];
 }
 message GetLastDrmErrorResponse {
-  required ProtoMediaKeyErrorStatus error_status = 1;
-  required uint32 error_code = 2;
+  optional ProtoMediaKeyErrorStatus error_status = 1 [default = FAIL];
+  optional uint32 error_code = 2;
 }
 
 /**
@@ -454,11 +454,11 @@ message GetLastDrmErrorResponse {
  * @retval an error status & the drm system time.
  */
 message GetDrmTimeRequest {
-  required int32 media_keys_handle = 1;
+  optional int32 media_keys_handle = 1 [default = -1];
 }
 message GetDrmTimeResponse {
-  required ProtoMediaKeyErrorStatus error_status = 1;
-  required uint64 drm_time = 2;
+  optional ProtoMediaKeyErrorStatus error_status = 1 [default = FAIL];
+  optional uint64 drm_time = 2;
 }
 
 /**
@@ -473,12 +473,33 @@ message GetDrmTimeResponse {
  * @retval an error status & internal CDM key session ID.
  */
 message GetCdmKeySessionIdRequest {
-  required int32 media_keys_handle = 1;
-  required int32 key_session_id = 2;
+  optional int32 media_keys_handle = 1 [default = -1];
+  optional int32 key_session_id = 2 [default = -1];
 }
 message GetCdmKeySessionIdResponse {
-  required ProtoMediaKeyErrorStatus error_status = 1;
-  required string cdm_key_session_id = 2;
+  optional ProtoMediaKeyErrorStatus error_status = 1 [default = FAIL];
+  optional string cdm_key_session_id = 2;
+}
+
+/**
+ * @fn ProtoMediaKeyErrorStatus releaseKeySession(int32 media_keys_handle,int32 key_session_id)
+ * @brief Releases a key session.
+ *
+ * This method releases a session. If the session id does
+ * not exist an MediaKeyErrorStatus:BAD_SESSION_ID is returned. Any other
+ * errors will result in MediaKeyErrorStatus:FAIL.
+ *
+ * @param[in] media_keys_handle The handle of the media keys.
+ * @param[in] key_session_id    The key session id for the session.
+ *
+ * @retval an error status.
+ */
+message ReleaseKeySessionRequest {
+  optional int32 media_keys_handle = 1 [default = -1];
+  optional int32 key_session_id = 2 [default = -1];
+}
+message ReleaseKeySessionResponse {
+  optional ProtoMediaKeyErrorStatus error_status = 1 [default = FAIL];
 }
 
 service MediaKeysModule {
@@ -606,5 +627,12 @@ service MediaKeysModule {
      * @see GetCdmKeySessionIdRequest
      */
     rpc getCdmKeySessionId(GetCdmKeySessionIdRequest) returns (GetCdmKeySessionIdResponse) {
+    }
+
+    /**
+     * @brief Releases a key session.
+     * @see ReleaseKeySessionRequest
+     */
+    rpc releaseKeySession(ReleaseKeySessionRequest) returns (ReleaseKeySessionResponse) {
     }
 }

@@ -29,6 +29,12 @@ namespace firebolt::rialto::client
 {
 class AttachedSources
 {
+    struct Source
+    {
+        MediaSourceType type{MediaSourceType::UNKNOWN};
+        bool isFlushing{false};
+    };
+
 public:
     AttachedSources() = default;
     ~AttachedSources() = default;
@@ -39,11 +45,13 @@ public:
 
     void add(std::uint32_t id, const MediaSourceType &mediaSourceType);
     void remove(std::uint32_t id);
-    MediaSourceType get(std::uint32_t id) const;
+    MediaSourceType getType(std::uint32_t id) const;
+    bool isFlushing(std::uint32_t id) const;
+    void setFlushing(std::uint32_t id, bool flushing);
 
 private:
     mutable std::mutex m_mutex;
-    std::map<std::uint32_t, MediaSourceType> m_attachedSources;
+    std::map<std::uint32_t, Source> m_attachedSources;
 };
 } // namespace firebolt::rialto::client
 

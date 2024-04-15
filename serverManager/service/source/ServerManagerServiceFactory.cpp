@@ -18,20 +18,63 @@
  */
 
 #include "ServerManagerServiceFactory.h"
+#include "ConfigHelper.h"
+#include "RialtoServerManagerLogging.h"
 #include "ServerManagerService.h"
 #include "ServiceContext.h"
 #include <memory>
 
+#ifdef RIALTO_ENABLE_CONFIG_FILE
+#include "ConfigReaderFactory.h"
+#endif
+
+namespace
+{
+unsigned int convertSocketPermissions(firebolt::rialto::common::SocketPermissions permissions) // copy param intentionally
+{
+    constexpr unsigned int kDefaultPermissions{0666};
+    if (permissions.ownerPermissions > 7 || permissions.groupPermissions > 7 || permissions.otherPermissions > 7)
+    {
+        RIALTO_SERVER_MANAGER_LOG_WARN("One of permissions values is out of bounds. Default permissions will be used");
+        return kDefaultPermissions;
+    }
+    permissions.ownerPermissions <<= 6;
+    permissions.groupPermissions <<= 3;
+    return (permissions.ownerPermissions | permissions.groupPermissions | permissions.otherPermissions);
+}
+} // namespace
+
 namespace rialto::servermanager::service
 {
+std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserver> &stateObserver)
+{
+    firebolt::rialto::common::ServerManagerConfig config;
+    return create(stateObserver, config);
+}
+
 std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserver> &stateObserver,
                                               const firebolt::rialto::common::ServerManagerConfig &config)
 {
-    return std::make_unique<ServerManagerService>(std::make_unique<ServiceContext>(stateObserver,
-                                                                                   config.sessionServerEnvVars,
-                                                                                   config.sessionServerPath,
-                                                                                   config.sessionServerStartupTimeout,
-                                                                                   config.healthcheckInterval),
-                                                  config.numOfPreloadedServers);
+    std::unique_ptr<IConfigReaderFactory> configReaderFactory{};
+#ifdef RIALTO_ENABLE_CONFIG_FILE
+    configReaderFactory = std::make_unique<ConfigReaderFactory>();
+#endif
+    ConfigHelper configHelper{std::move(configReaderFactory), config};
+
+    std::unique_ptr<IServerManagerService> service = std::make_unique<
+        ServerManagerService>(std::make_unique<ServiceContext>(stateObserver, configHelper.getSessionServerEnvVars(),
+                                                               configHelper.getSessionServerPath(),
+                                                               configHelper.getSessionServerStartupTimeout(),
+                                                               configHelper.getHealthcheckInterval(),
+                                                               configHelper.getNumOfFailedPingsBeforeRecovery(),
+                                                               convertSocketPermissions(
+                                                                   configHelper.getSocketPermissions()),
+                                                               configHelper.getSocketPermissions().owner,
+                                                               configHelper.getSocketPermissions().group),
+                              configHelper.getNumOfPreloadedServers());
+#ifdef RIALTO_ENABLE_CONFIG_FILE
+    service->setLogLevels(configHelper.getLoggingLevels());
+#endif
+    return service;
 }
 } // namespace rialto::servermanager::service

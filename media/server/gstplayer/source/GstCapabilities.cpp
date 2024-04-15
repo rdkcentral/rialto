@@ -55,8 +55,9 @@ std::unique_ptr<IGstCapabilities> GstCapabilitiesFactory::createGstCapabilities(
     std::unique_ptr<IGstCapabilities> gstCapabilities;
     try
     {
-        std::shared_ptr<IGstWrapperFactory> gstWrapperFactory = IGstWrapperFactory::getFactory();
-        std::shared_ptr<IGstWrapper> gstWrapper;
+        std::shared_ptr<firebolt::rialto::wrappers::IGstWrapperFactory> gstWrapperFactory =
+            firebolt::rialto::wrappers::IGstWrapperFactory::getFactory();
+        std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper;
 
         if ((!gstWrapperFactory) || (!(gstWrapper = gstWrapperFactory->getGstWrapper())))
         {
@@ -73,7 +74,8 @@ std::unique_ptr<IGstCapabilities> GstCapabilitiesFactory::createGstCapabilities(
     return gstCapabilities;
 }
 
-GstCapabilities::GstCapabilities(const std::shared_ptr<IGstWrapper> &gstWrapper) : m_gstWrapper{gstWrapper}
+GstCapabilities::GstCapabilities(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper)
+    : m_gstWrapper{gstWrapper}
 {
     fillSupportedMimeTypes();
 }
@@ -141,9 +143,9 @@ std::vector<GstCaps *> GstCapabilities::getSupportedCapsFromDecoders()
     for (GList *factoriesIter = decoderFactories; factoriesIter; factoriesIter = factoriesIter->next)
     {
         GstElementFactory *factory = static_cast<GstElementFactory *>(factoriesIter->data);
-        const GList *decoderPadTemplates = m_gstWrapper->gstElementFactoryGetStaticPadTemplates(factory);
+        const GList *kDecoderPadTemplates = m_gstWrapper->gstElementFactoryGetStaticPadTemplates(factory);
 
-        addAllUniqueSinkPadsCapsToVector(supportedCaps, decoderPadTemplates);
+        addAllUniqueSinkPadsCapsToVector(supportedCaps, kDecoderPadTemplates);
     }
 
     m_gstWrapper->gstPluginFeatureListFree(decoderFactories);
@@ -172,11 +174,11 @@ void GstCapabilities::appendSupportedCapsFromParserDecoderChains(std::vector<Gst
         for (GList *factoriesIter = parserFactories; factoriesIter; factoriesIter = factoriesIter->next)
         {
             GstElementFactory *factory = static_cast<GstElementFactory *>(factoriesIter->data);
-            const GList *parserPadTemplates = m_gstWrapper->gstElementFactoryGetStaticPadTemplates(factory);
+            const GList *kParserPadTemplates = m_gstWrapper->gstElementFactoryGetStaticPadTemplates(factory);
 
-            if (canCreateParserDecoderChain(decoderCaps, parserPadTemplates))
+            if (canCreateParserDecoderChain(decoderCaps, kParserPadTemplates))
             {
-                addAllUniqueSinkPadsCapsToVector(supportedCaps, parserPadTemplates);
+                addAllUniqueSinkPadsCapsToVector(supportedCaps, kParserPadTemplates);
             }
         }
     }
@@ -184,9 +186,9 @@ void GstCapabilities::appendSupportedCapsFromParserDecoderChains(std::vector<Gst
     m_gstWrapper->gstPluginFeatureListFree(parserFactories);
 }
 
-bool GstCapabilities::canCreateParserDecoderChain(GstCaps *decoderCaps, const GList *parserPadTemplates)
+bool GstCapabilities::canCreateParserDecoderChain(GstCaps *decoderCaps, const GList *kParserPadTemplates)
 {
-    for (const GList *padTemplateIter = parserPadTemplates; padTemplateIter; padTemplateIter = padTemplateIter->next)
+    for (const GList *padTemplateIter = kParserPadTemplates; padTemplateIter; padTemplateIter = padTemplateIter->next)
     {
         GstStaticPadTemplate *padTemplate = static_cast<GstStaticPadTemplate *>(padTemplateIter->data);
         if (padTemplate->direction == GST_PAD_SRC)

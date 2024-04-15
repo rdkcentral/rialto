@@ -40,7 +40,6 @@ void Play::execute() const
     if (!m_player.changePipelineState(GST_STATE_PLAYING))
     {
         RIALTO_SERVER_LOG_ERROR("Failed to play the web audio player");
-        m_gstPlayerClient->notifyState(WebAudioPlayerState::FAILURE);
     }
 }
 } // namespace firebolt::rialto::server::tasks::webaudio

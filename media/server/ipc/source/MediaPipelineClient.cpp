@@ -49,9 +49,9 @@ convertPlaybackState(const firebolt::rialto::PlaybackState &playbackState)
     {
         return firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_SEEKING;
     }
-    case firebolt::rialto::PlaybackState::FLUSHED:
+    case firebolt::rialto::PlaybackState::SEEK_DONE:
     {
-        return firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_FLUSHED;
+        return firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_SEEK_DONE;
     }
     case firebolt::rialto::PlaybackState::STOPPED:
     {
@@ -112,6 +112,22 @@ convertNetworkState(const firebolt::rialto::NetworkState &networkState)
     }
     }
     return firebolt::rialto::NetworkStateChangeEvent_NetworkState_UNKNOWN;
+}
+
+firebolt::rialto::PlaybackErrorEvent_PlaybackError convertPlaybackError(const firebolt::rialto::PlaybackError &playbackError)
+{
+    switch (playbackError)
+    {
+    case firebolt::rialto::PlaybackError::UNKNOWN:
+    {
+        return firebolt::rialto::PlaybackErrorEvent_PlaybackError_UNKNOWN;
+    }
+    case firebolt::rialto::PlaybackError::DECRYPTION:
+    {
+        return firebolt::rialto::PlaybackErrorEvent_PlaybackError_DECRYPTION;
+    }
+    }
+    return firebolt::rialto::PlaybackErrorEvent_PlaybackError_UNKNOWN;
 }
 } // namespace
 
@@ -218,6 +234,29 @@ void MediaPipelineClient::notifyBufferUnderflow(int32_t sourceId)
     RIALTO_SERVER_LOG_DEBUG("Sending BufferUnderflowEvent...");
 
     auto event = std::make_shared<firebolt::rialto::BufferUnderflowEvent>();
+    event->set_session_id(m_sessionId);
+    event->set_source_id(sourceId);
+
+    m_ipcClient->sendEvent(event);
+}
+
+void MediaPipelineClient::notifyPlaybackError(int32_t sourceId, PlaybackError error)
+{
+    RIALTO_SERVER_LOG_DEBUG("Sending notifyPlaybackError...");
+
+    auto event = std::make_shared<firebolt::rialto::PlaybackErrorEvent>();
+    event->set_session_id(m_sessionId);
+    event->set_source_id(sourceId);
+    event->set_error(convertPlaybackError(error));
+
+    m_ipcClient->sendEvent(event);
+}
+
+void MediaPipelineClient::notifySourceFlushed(int32_t sourceId)
+{
+    RIALTO_SERVER_LOG_DEBUG("Sending SourceFlushedEvent...");
+
+    auto event = std::make_shared<firebolt::rialto::SourceFlushedEvent>();
     event->set_session_id(m_sessionId);
     event->set_source_id(sourceId);
 

@@ -71,13 +71,13 @@ bool IpcClient::connect()
     // check if either of following env vars are set to determine the location of the rialto socket
     //  - RIALTO_SOCKET_PATH should specify the absolute path to the socket to connect to
     //  - RIALTO_SOCKET_FD should specify the number of a file descriptor of the socket to connect to
-    const char *rialtoPath = getenv("RIALTO_SOCKET_PATH");
-    const char *rialtoFd = getenv("RIALTO_SOCKET_FD");
-    if (rialtoFd)
+    const char *kRialtoPath = getenv("RIALTO_SOCKET_PATH");
+    const char *kRialtoFd = getenv("RIALTO_SOCKET_FD");
+    if (kRialtoFd)
     {
         char *end = nullptr;
-        int fd = strtol(rialtoFd, &end, 10);
-        if ((errno != 0) || (rialtoFd == end) || (*end != '\0'))
+        int fd = strtol(kRialtoFd, &end, 10);
+        if ((errno != 0) || (kRialtoFd == end) || (*end != '\0'))
         {
             RIALTO_CLIENT_LOG_SYS_ERROR(errno, "Invalid value set in RIALTO_SOCKET_FD env var");
             return false;
@@ -85,9 +85,9 @@ bool IpcClient::connect()
 
         m_ipcChannel = m_ipcChannelFactory->createChannel(fd);
     }
-    else if (rialtoPath)
+    else if (kRialtoPath)
     {
-        m_ipcChannel = m_ipcChannelFactory->createChannel(rialtoPath);
+        m_ipcChannel = m_ipcChannelFactory->createChannel(kRialtoPath);
     }
     else
     {
@@ -162,6 +162,12 @@ void IpcClient::processIpcThread()
         // Safe to destroy the ipc objects in the ipc thread as the client has already disconnected.
         // This ensures the channel is destructed and that all ongoing ipc calls are unblocked.
         m_ipcChannel.reset();
+
+        auto connectionObserver{m_connectionObserver.lock()};
+        if (connectionObserver)
+        {
+            connectionObserver->onConnectionBroken();
+        }
     }
 
     RIALTO_CLIENT_LOG_INFO("exiting ipc thread");
@@ -193,6 +199,21 @@ std::shared_ptr<ipc::IBlockingClosure> IpcClient::createBlockingClosure()
 std::shared_ptr<google::protobuf::RpcController> IpcClient::createRpcController()
 {
     return m_ipcControllerFactory->create();
+}
+
+bool IpcClient::reconnect()
+{
+    RIALTO_CLIENT_LOG_INFO("Trying to reconnect channel");
+    if (disconnect())
+    {
+        return connect();
+    }
+    return false;
+}
+
+void IpcClient::registerConnectionObserver(const std::weak_ptr<IConnectionObserver> &observer)
+{
+    m_connectionObserver = observer;
 }
 
 }; // namespace firebolt::rialto::client

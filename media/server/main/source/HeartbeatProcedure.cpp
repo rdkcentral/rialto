@@ -33,19 +33,14 @@ HeartbeatProcedureFactory::createHeartbeatProcedure(const std::shared_ptr<IAckSe
 }
 
 HeartbeatProcedure::HeartbeatHandler::HeartbeatHandler(const std::shared_ptr<HeartbeatProcedure> &procedure,
-                                                       int controlId, std::int32_t pingId)
-    : m_procedure{procedure}, m_kControlId{controlId}, m_kPingId{pingId}, m_success{true}
+                                                       std::int32_t pingId)
+    : m_procedure{procedure}, m_kPingId{pingId}, m_success{true}
 {
 }
 
 HeartbeatProcedure::HeartbeatHandler::~HeartbeatHandler()
 {
-    m_procedure->onFinish(m_kControlId, m_success);
-}
-
-void HeartbeatProcedure::HeartbeatHandler::pingSent()
-{
-    m_procedure->onStart(m_kControlId);
+    m_procedure->onFinish(m_success);
 }
 
 void HeartbeatProcedure::HeartbeatHandler::error()
@@ -68,19 +63,13 @@ HeartbeatProcedure::~HeartbeatProcedure()
     m_ackSender->send(m_kPingId, m_success);
 }
 
-std::unique_ptr<IHeartbeatHandler> HeartbeatProcedure::createHandler(int controlId)
+std::unique_ptr<IHeartbeatHandler> HeartbeatProcedure::createHandler()
 {
-    return std::make_unique<HeartbeatHandler>(shared_from_this(), controlId, m_kPingId);
+    return std::make_unique<HeartbeatHandler>(shared_from_this(), m_kPingId);
 }
 
-void HeartbeatProcedure::onStart(int controlId)
+void HeartbeatProcedure::onFinish(bool success)
 {
-    m_pingsSent.emplace(controlId);
-}
-
-void HeartbeatProcedure::onFinish(int controlId, bool success)
-{
-    m_pingsSent.erase(controlId);
     if (!success)
     {
         m_success = false;
