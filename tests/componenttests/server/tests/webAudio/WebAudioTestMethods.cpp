@@ -286,6 +286,26 @@ void WebAudioTestMethods::createWebAudioPlayer()
         .send(request)
         .expectSuccess()
         .matchResponse([&](const auto &resp) { m_webAudioPlayerHandle = resp.web_audio_player_handle(); });
+
+    EXPECT_GE(m_webAudioPlayerHandle, 0);
+}
+
+void WebAudioTestMethods::willFailToCreateWebAudioPlayer()
+{
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(StrEq("rialtosrc"))).WillOnce(Return(nullptr));
+
+    EXPECT_CALL(*m_gstWrapperMock, gstElementRegister(nullptr, StrEq("rialtosrc"), _, _)).WillOnce(Return(false));
+
+    EXPECT_CALL(*m_gstWrapperMock, gstPipelineNew(StrEq("webaudiopipeline3"))).WillOnce(Return(nullptr));
+}
+
+void WebAudioTestMethods::failToCreateWebAudioPlayer()
+{
+    constexpr int kPriority{3};
+    auto request = createCreateWebAudioPlayerRequest(kPcmRate, kPcmChannels, kPcmSampleSize, kPcmIsBigEndian,
+                                                     kPcmIsSigned, kPcmIsFloat, kAudioMimeType, kPriority);
+
+    ConfigureAction<CreateWebAudioPlayer>(m_clientStub).send(request).expectFailure();
 }
 
 void WebAudioTestMethods::destroyWebAudioPlayer()
@@ -305,6 +325,12 @@ void WebAudioTestMethods::willWebAudioPlay()
         .WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
 }
 
+void WebAudioTestMethods::willWebAudioPlayFail()
+{
+    EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&m_pipeline, GST_STATE_PLAYING))
+        .WillOnce(Return(GST_STATE_CHANGE_FAILURE));
+}
+
 void WebAudioTestMethods::webAudioPlay()
 {
     EXPECT_GE(m_webAudioPlayerHandle, 0);
@@ -316,6 +342,12 @@ void WebAudioTestMethods::willWebAudioPause()
 {
     EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&m_pipeline, GST_STATE_PAUSED))
         .WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
+}
+
+void WebAudioTestMethods::willWebAudioPauseFail()
+{
+    EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&m_pipeline, GST_STATE_PAUSED))
+        .WillOnce(Return(GST_STATE_CHANGE_FAILURE));
 }
 
 void WebAudioTestMethods::webAudioPause()
