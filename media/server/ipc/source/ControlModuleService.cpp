@@ -135,14 +135,23 @@ void ControlModuleService::registerClient(::google::protobuf::RpcController *con
                                           ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
-    if (!ipcController)
+    firebolt::rialto::ipc::IController *ipcController = nullptr;
+    try
     {
-        RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
-        controller->SetFailed("ipc library provided incompatible controller object");
-        done->Run();
-        return;
+        ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
+        if (!ipcController)
+        {
+            RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
+            controller->SetFailed("ipc library provided incompatible controller object");
+            done->Run();
+            return;
+        }
     }
+    catch(const std::exception& e)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to cast ipcController, reason: %s", e.what());
+    }
+
     const auto kCurrentSchemaVersion{common::getCurrentSchemaVersion()};
     if (request->has_client_schema_version())
     {

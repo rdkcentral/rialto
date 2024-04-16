@@ -103,17 +103,31 @@ try
 {
     if (MediaSourceType::AUDIO == data->getType())
     {
-        IMediaPipeline::MediaSegmentAudio &audioSegment = dynamic_cast<IMediaPipeline::MediaSegmentAudio &>(*data);
-        m_metadataOffset = m_bytewriter.writeUint32(m_shmBuffer, m_metadataOffset,
-                                                    static_cast<uint32_t>(audioSegment.getSampleRate()));
-        m_metadataOffset = m_bytewriter.writeUint32(m_shmBuffer, m_metadataOffset,
+        try
+        {
+            IMediaPipeline::MediaSegmentAudio &audioSegment = dynamic_cast<IMediaPipeline::MediaSegmentAudio &>(*data);
+            m_metadataOffset = m_bytewriter.writeUint32(m_shmBuffer, m_metadataOffset,
+                                                        static_cast<uint32_t>(audioSegment.getSampleRate()));
+            m_metadataOffset = m_bytewriter.writeUint32(m_shmBuffer, m_metadataOffset,
                                                     static_cast<uint32_t>(audioSegment.getNumberOfChannels()));
+        }
+        catch (const std::bad_cast &e)
+        {
+            RIALTO_COMMON_LOG_ERROR("Failed to get the audio segment, reason: %s", e.what());
+        }
     }
     else if (MediaSourceType::VIDEO == data->getType())
     {
-        IMediaPipeline::MediaSegmentVideo &videoSegment = dynamic_cast<IMediaPipeline::MediaSegmentVideo &>(*data);
-        m_metadataOffset = m_bytewriter.writeUint32(m_shmBuffer, m_metadataOffset, videoSegment.getWidth());
-        m_metadataOffset = m_bytewriter.writeUint32(m_shmBuffer, m_metadataOffset, videoSegment.getHeight());
+        try
+        {
+            IMediaPipeline::MediaSegmentVideo &videoSegment = dynamic_cast<IMediaPipeline::MediaSegmentVideo &>(*data);
+            m_metadataOffset = m_bytewriter.writeUint32(m_shmBuffer, m_metadataOffset, videoSegment.getWidth());
+            m_metadataOffset = m_bytewriter.writeUint32(m_shmBuffer, m_metadataOffset, videoSegment.getHeight());
+        }
+        catch (const std::bad_cast &e)
+        {
+            RIALTO_COMMON_LOG_ERROR("Failed to get the video segment, reason: %s", e.what());
+        }
     }
     else
     {

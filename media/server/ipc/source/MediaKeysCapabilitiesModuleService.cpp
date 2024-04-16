@@ -84,13 +84,20 @@ void MediaKeysCapabilitiesModuleService::getSupportedKeySystems(
     ::firebolt::rialto::GetSupportedKeySystemsResponse *response, ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
-    if (!ipcController)
+    try
     {
-        RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
-        controller->SetFailed("ipc library provided incompatible controller object");
-        done->Run();
-        return;
+        auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
+        if (!ipcController)
+        {
+            RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
+            controller->SetFailed("ipc library provided incompatible controller object");
+            done->Run();
+            return;
+        }
+    }
+    catch (const std::exception &e)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to cast ipcController, reason: %s", e.what());
     }
 
     std::vector<std::string> keySystems = m_cdmService.getSupportedKeySystems();
@@ -108,15 +115,21 @@ void MediaKeysCapabilitiesModuleService::supportsKeySystem(::google::protobuf::R
                                                            ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
-    if (!ipcController)
+    try
     {
-        RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
-        controller->SetFailed("ipc library provided incompatible controller object");
-        done->Run();
-        return;
+        auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
+        if (!ipcController)
+        {
+            RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
+            controller->SetFailed("ipc library provided incompatible controller object");
+            done->Run();
+            return;
+        }
     }
-
+    catch (const std::exception &e)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to cast ipcController, reason: %s", e.what());
+    }
     response->set_is_supported(m_cdmService.supportsKeySystem(request->key_system()));
     done->Run();
 }
@@ -126,15 +139,21 @@ void MediaKeysCapabilitiesModuleService::getSupportedKeySystemVersion(
     ::firebolt::rialto::GetSupportedKeySystemVersionResponse *response, ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
-    if (!ipcController)
+    try
     {
-        RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
-        controller->SetFailed("ipc library provided incompatible controller object");
-        done->Run();
-        return;
+        auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
+        if (!ipcController)
+        {
+            RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
+            controller->SetFailed("ipc library provided incompatible controller object");
+            done->Run();
+            return;
+        }
     }
-
+    catch (const std::exception &e)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to cast ipcController, reason: %s", e.what());
+    }
     std::string version;
     bool status = m_cdmService.getSupportedKeySystemVersion(request->key_system(), version);
     if (status)
@@ -155,13 +174,20 @@ void MediaKeysCapabilitiesModuleService::isServerCertificateSupported(
     ::firebolt::rialto::IsServerCertificateSupportedResponse *response, ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
-    if (!ipcController)
+    try
     {
-        RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
-        controller->SetFailed("ipc library provided incompatible controller object");
-        done->Run();
-        return;
+        auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
+        if (!ipcController)
+        {
+            RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
+            controller->SetFailed("ipc library provided incompatible controller object");
+            done->Run();
+            return;
+        }
+    }
+    catch (const std::exception &e)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to cast ipcController, reason: %s", e.what());
     }
 
     response->set_is_supported(m_cdmService.isServerCertificateSupported(request->key_system()));

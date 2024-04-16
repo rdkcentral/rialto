@@ -167,14 +167,23 @@ void MediaKeysModuleService::createMediaKeys(::google::protobuf::RpcController *
                                              ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
-    if (!ipcController)
+    firebolt::rialto::ipc::IController *ipcController = nullptr;
+    try
     {
-        RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
-        controller->SetFailed("ipc library provided incompatible controller object");
-        done->Run();
-        return;
+        ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
+        if (!ipcController)
+        {
+            RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
+            controller->SetFailed("ipc library provided incompatible controller object");
+            done->Run();
+            return;
+        }
     }
+    catch(const std::exception& e)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to cast ipcController in createMediaKeys function, reason: %s", e.what());
+    }
+
     int mediaKeysHandle = generateHandle();
     bool mediaKeysCreated = m_cdmService.createMediaKeys(mediaKeysHandle, request->key_system());
     if (mediaKeysCreated)
@@ -197,14 +206,23 @@ void MediaKeysModuleService::destroyMediaKeys(::google::protobuf::RpcController 
                                               ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
-    if (!ipcController)
+    firebolt::rialto::ipc::IController *ipcController = nullptr;
+    try
     {
-        RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
-        controller->SetFailed("ipc library provided incompatible controller object");
-        done->Run();
-        return;
+        ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
+        if (!ipcController)
+        {
+            RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
+            controller->SetFailed("ipc library provided incompatible controller object");
+            done->Run();
+            return;
+        }
     }
+    catch(const std::exception& e)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to cast ipcController in destroyMediaKeys function, reason: %s", e.what());
+    }
+
     if (!m_cdmService.destroyMediaKeys(request->media_keys_handle()))
     {
         RIALTO_SERVER_LOG_ERROR("Destroy session failed");
@@ -239,13 +257,21 @@ void MediaKeysModuleService::createKeySession(::google::protobuf::RpcController 
                                               ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
-    if (!ipcController)
+    firebolt::rialto::ipc::IController *ipcController = nullptr;
+    try
     {
-        RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
-        controller->SetFailed("ipc library provided incompatible controller object");
-        done->Run();
-        return;
+        ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
+        if (!ipcController)
+        {
+            RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
+            controller->SetFailed("ipc library provided incompatible controller object");
+            done->Run();
+            return;
+        }
+    }
+    catch(const std::exception& e)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to cast ipcController in createKeySession function, reason: %s", e.what());
     }
 
     int32_t keySessionId;

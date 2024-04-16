@@ -145,14 +145,23 @@ void ServerManagerModuleService::ping(::google::protobuf::RpcController *control
                                       ::rialto::PingResponse *response, ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("Ping received from ServerManager");
-    auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
-    if (!ipcController)
+    firebolt::rialto::ipc::IController *ipcController = nullptr;
+    try
     {
-        RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
-        controller->SetFailed("ipc library provided incompatible controller object");
-        done->Run();
-        return;
+        ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
+        if (!ipcController)
+        {
+            RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
+            controller->SetFailed("ipc library provided incompatible controller object");
+            done->Run();
+            return;
+        }
     }
+    catch(const std::exception& e)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to cast ipcController in ping function, reason: %s", e.what());
+    }
+
     bool success = m_sessionServerManager.ping(request->id(), std::make_shared<AckSender>(ipcController->getClient()));
     if (!success)
     {

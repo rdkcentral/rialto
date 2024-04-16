@@ -378,10 +378,18 @@ GstCaps *AttachSource::createCapsFromMediaSource() const
     firebolt::rialto::SourceConfigType configType = m_attachedSource->getConfigType();
     if (configType == firebolt::rialto::SourceConfigType::AUDIO)
     {
-        const IMediaPipeline::MediaSourceAudio &kSource =
-            dynamic_cast<IMediaPipeline::MediaSourceAudio &>(*m_attachedSource);
+        try
+        {
+            const IMediaPipeline::MediaSourceAudio &kSource =
+                dynamic_cast<IMediaPipeline::MediaSourceAudio &>(*m_attachedSource);
 
-        capsBuilder = std::make_unique<MediaSourceAudioCapsBuilder>(m_gstWrapper, m_glibWrapper, kSource);
+            capsBuilder = std::make_unique<MediaSourceAudioCapsBuilder>(m_gstWrapper, m_glibWrapper, kSource);
+        }
+        catch (const std::bad_cast &e)
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to cast to audio source, reason: %s", e.what());
+            return nullptr;
+        }
     }
     else if (configType == firebolt::rialto::SourceConfigType::VIDEO)
     {

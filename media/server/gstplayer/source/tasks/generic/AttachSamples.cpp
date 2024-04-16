@@ -42,7 +42,7 @@ AttachSamples::AttachSamples(GenericPlayerContext &context, IGstGenericPlayerPri
                                        videoSegment.getFrameRate(), videoSegment.getCodecData()};
                 m_videoData.push_back(videoData);
             }
-            catch (const std::exception &e)
+            catch (const std::bad_cast &e)
             {
                 RIALTO_SERVER_LOG_ERROR("Failed to get the video segment, reason: %s", e.what());
             }
@@ -61,7 +61,7 @@ AttachSamples::AttachSamples(GenericPlayerContext &context, IGstGenericPlayerPri
                                        audioSegment.getClippingEnd()};
                 m_audioData.push_back(audioData);
             }
-            catch (const std::exception &e)
+            catch (const std::bad_cast &e)
             {
                 RIALTO_SERVER_LOG_ERROR("Failed to get the audio segment, reason: %s", e.what());
             }

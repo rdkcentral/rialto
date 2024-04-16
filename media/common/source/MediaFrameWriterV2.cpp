@@ -150,19 +150,33 @@ MediaSegmentMetadata MediaFrameWriterV2::buildMetadata(const std::unique_ptr<IMe
     metadata.set_stream_id(static_cast<uint32_t>(data->getId()));
     if (MediaSourceType::AUDIO == data->getType())
     {
-        IMediaPipeline::MediaSegmentAudio &audioSegment = dynamic_cast<IMediaPipeline::MediaSegmentAudio &>(*data);
-        metadata.set_sample_rate(static_cast<uint32_t>(audioSegment.getSampleRate()));
-        metadata.set_channels_num(static_cast<uint32_t>(audioSegment.getNumberOfChannels()));
-        metadata.set_clipping_start(audioSegment.getClippingStart());
-        metadata.set_clipping_end(audioSegment.getClippingEnd());
+        try
+        {
+            IMediaPipeline::MediaSegmentAudio &audioSegment = dynamic_cast<IMediaPipeline::MediaSegmentAudio &>(*data);
+            metadata.set_sample_rate(static_cast<uint32_t>(audioSegment.getSampleRate()));
+            metadata.set_channels_num(static_cast<uint32_t>(audioSegment.getNumberOfChannels()));
+            metadata.set_clipping_start(audioSegment.getClippingStart());
+            metadata.set_clipping_end(audioSegment.getClippingEnd());
+        }
+        catch (const std::bad_cast &e)
+        {
+            RIALTO_COMMON_LOG_ERROR("Failed to get the audio segment, reason: %s", e.what());
+        }
     }
     else if (MediaSourceType::VIDEO == data->getType())
     {
-        IMediaPipeline::MediaSegmentVideo &videoSegment = dynamic_cast<IMediaPipeline::MediaSegmentVideo &>(*data);
-        metadata.set_width(videoSegment.getWidth());
-        metadata.set_height(videoSegment.getHeight());
-        metadata.mutable_frame_rate()->set_numerator(videoSegment.getFrameRate().numerator);
-        metadata.mutable_frame_rate()->set_denominator(videoSegment.getFrameRate().denominator);
+        try
+        {
+            IMediaPipeline::MediaSegmentVideo &videoSegment = dynamic_cast<IMediaPipeline::MediaSegmentVideo &>(*data);
+            metadata.set_width(videoSegment.getWidth());
+            metadata.set_height(videoSegment.getHeight());
+            metadata.mutable_frame_rate()->set_numerator(videoSegment.getFrameRate().numerator);
+            metadata.mutable_frame_rate()->set_denominator(videoSegment.getFrameRate().denominator);
+        }
+        catch (const std::bad_cast &e)
+        {
+            RIALTO_COMMON_LOG_ERROR("Failed to get the video segment, reason: %s", e.what());
+        }
     }
     else
     {
