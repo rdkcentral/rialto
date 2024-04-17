@@ -157,7 +157,7 @@ void ServerManagerModuleService::ping(::google::protobuf::RpcController *control
             return;
         }
     }
-    catch(const std::exception& e)
+    catch (const std::exception &e)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to cast ipcController in ping function, reason: %s", e.what());
     }

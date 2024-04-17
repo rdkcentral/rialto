@@ -109,7 +109,7 @@ try
             m_metadataOffset = m_bytewriter.writeUint32(m_shmBuffer, m_metadataOffset,
                                                         static_cast<uint32_t>(audioSegment.getSampleRate()));
             m_metadataOffset = m_bytewriter.writeUint32(m_shmBuffer, m_metadataOffset,
-                                                    static_cast<uint32_t>(audioSegment.getNumberOfChannels()));
+                                                        static_cast<uint32_t>(audioSegment.getNumberOfChannels()));
         }
         catch (const std::bad_cast &e)
         {

@@ -261,7 +261,7 @@ void MediaPipelineModuleService::createSession(::google::protobuf::RpcController
             return;
         }
     }
-    catch(const std::exception& e)
+    catch (const std::exception &e)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to cast ipcController in createSession function, reason: %s", e.what());
     }
@@ -303,7 +303,7 @@ void MediaPipelineModuleService::destroySession(::google::protobuf::RpcControlle
             return;
         }
     }
-    catch(const std::exception& e)
+    catch (const std::exception &e)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to cast ipcController in destroySession function, reason: %s", e.what());
     }

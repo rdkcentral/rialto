@@ -114,16 +114,16 @@ void WebAudioPlayerModuleService::createWebAudioPlayer(::google::protobuf::RpcCo
     firebolt::rialto::ipc::IController *ipcController = nullptr;
     try
     {
-    ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
-    if (!ipcController)
-    {
-        RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
-        controller->SetFailed("ipc library provided incompatible controller object");
-        done->Run();
-        return;
+        ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
+        if (!ipcController)
+        {
+            RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
+            controller->SetFailed("ipc library provided incompatible controller object");
+            done->Run();
+            return;
+        }
     }
-    }
-    catch(const std::exception& e)
+    catch (const std::exception &e)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to cast ipcController in createWebAudioPlayer function, reason: %s", e.what());
     }
@@ -179,7 +179,7 @@ void WebAudioPlayerModuleService::destroyWebAudioPlayer(::google::protobuf::RpcC
             return;
         }
     }
-    catch(const std::exception& e)
+    catch (const std::exception &e)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to cast ipcController in destroyWebAudioPlayer function, reason: %s", e.what());
     }

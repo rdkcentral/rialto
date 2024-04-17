@@ -235,7 +235,7 @@ bool MediaPipelineIpc::attachSource(const std::unique_ptr<IMediaPipeline::MediaS
         {
             RIALTO_CLIENT_LOG_ERROR("Failed to get the audio video source, reason: %s", e.what());
         }
-        
+
         request.set_segment_alignment(convertSegmentAlignment(mediaSourceAV->getSegmentAlignment()));
 
         if (mediaSourceAV->getCodecData())
@@ -261,7 +261,6 @@ bool MediaPipelineIpc::attachSource(const std::unique_ptr<IMediaPipeline::MediaS
             {
                 RIALTO_CLIENT_LOG_ERROR("Failed to get the video dolby vision media source, reason: %s", e.what());
             }
-            
         }
         else if (configType == SourceConfigType::VIDEO)
         {

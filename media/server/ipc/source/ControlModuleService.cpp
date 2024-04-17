@@ -147,7 +147,7 @@ void ControlModuleService::registerClient(::google::protobuf::RpcController *con
             return;
         }
     }
-    catch(const std::exception& e)
+    catch (const std::exception &e)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to cast ipcController, reason: %s", e.what());
     }

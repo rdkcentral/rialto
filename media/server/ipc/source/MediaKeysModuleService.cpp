@@ -179,7 +179,7 @@ void MediaKeysModuleService::createMediaKeys(::google::protobuf::RpcController *
             return;
         }
     }
-    catch(const std::exception& e)
+    catch (const std::exception &e)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to cast ipcController in createMediaKeys function, reason: %s", e.what());
     }
@@ -218,7 +218,7 @@ void MediaKeysModuleService::destroyMediaKeys(::google::protobuf::RpcController 
             return;
         }
     }
-    catch(const std::exception& e)
+    catch (const std::exception &e)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to cast ipcController in destroyMediaKeys function, reason: %s", e.what());
     }
@@ -269,7 +269,7 @@ void MediaKeysModuleService::createKeySession(::google::protobuf::RpcController 
             return;
         }
     }
-    catch(const std::exception& e)
+    catch (const std::exception &e)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to cast ipcController in createKeySession function, reason: %s", e.what());
     }

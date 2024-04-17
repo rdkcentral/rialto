@@ -95,7 +95,7 @@ void MediaPipelineCapabilitiesModuleService::getSupportedMimeTypes(
             return;
         }
     }
-    catch(const std::exception& e)
+    catch (const std::exception &e)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to cast ipcController in getSupportedMimeTypes function, reason: %s", e.what());
     }
@@ -127,7 +127,7 @@ void MediaPipelineCapabilitiesModuleService::isMimeTypeSupported(
             return;
         }
     }
-    catch(const std::exception& e)
+    catch (const std::exception &e)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to cast ipcController in isMimeTypeSupported function, reason: %s", e.what());
     }
