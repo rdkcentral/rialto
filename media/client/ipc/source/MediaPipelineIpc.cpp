@@ -226,26 +226,26 @@ bool MediaPipelineIpc::attachSource(const std::unique_ptr<IMediaPipeline::MediaS
     if (configType == SourceConfigType::VIDEO_DOLBY_VISION || configType == SourceConfigType::VIDEO ||
         configType == SourceConfigType::AUDIO)
     {
+        IMediaPipeline::MediaSourceAV *mediaSourceAV = nullptr;
         try
         {
-            IMediaPipeline::MediaSourceAV &mediaSourceAV = dynamic_cast<IMediaPipeline::MediaSourceAV &>(*source);
-
-            request.set_segment_alignment(convertSegmentAlignment(mediaSourceAV.getSegmentAlignment()));
-
-            if (mediaSourceAV.getCodecData())
-            {
-                request.mutable_codec_data()->set_data(mediaSourceAV.getCodecData()->data.data(),
-                                                       mediaSourceAV.getCodecData()->data.size());
-                request.mutable_codec_data()->set_type(convertCodecDataType(mediaSourceAV.getCodecData()->type));
-            }
-            request.set_stream_format(convertStreamFormat(mediaSourceAV.getStreamFormat()));
-
+            mediaSourceAV = &dynamic_cast<IMediaPipeline::MediaSourceAV &>(*source);
         }
         catch (const std::bad_cast &e)
         {
             RIALTO_CLIENT_LOG_ERROR("Failed to get the audio video source, reason: %s", e.what());
         }
         
+        request.set_segment_alignment(convertSegmentAlignment(mediaSourceAV->getSegmentAlignment()));
+
+        if (mediaSourceAV->getCodecData())
+        {
+            request.mutable_codec_data()->set_data(mediaSourceAV->getCodecData()->data.data(),
+                                                   mediaSourceAV->getCodecData()->data.size());
+            request.mutable_codec_data()->set_type(convertCodecDataType(mediaSourceAV->getCodecData()->type));
+        }
+        request.set_stream_format(convertStreamFormat(mediaSourceAV->getStreamFormat()));
+
         if (configType == SourceConfigType::VIDEO_DOLBY_VISION)
         {
             try
