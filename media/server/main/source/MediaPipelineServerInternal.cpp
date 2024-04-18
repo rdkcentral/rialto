@@ -17,15 +17,16 @@
  * limitations under the License.
  */
 
-#include "MediaPipelineServerInternal.h"
+#include <algorithm>
+
 #include "ActiveRequests.h"
 #include "DataReaderFactory.h"
 #include "IDataReader.h"
 #include "IRdkGstreamerUtilsWrapper.h"
 #include "ISharedMemoryBuffer.h"
+#include "MediaPipelineServerInternal.h"
 #include "NeedMediaData.h"
 #include "RialtoServerLogging.h"
-#include <algorithm>
 
 namespace
 {
@@ -900,7 +901,7 @@ AddSegmentStatus MediaPipelineServerInternal::addSegment(uint32_t needDataReques
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    AddSegmentStatus status;
+    AddSegmentStatus status{AddSegmentStatus::ERROR};
     auto task = [&]() { status = addSegmentInternal(needDataRequestId, mediaSegment); };
 
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
@@ -944,10 +945,15 @@ bool MediaPipelineServerInternal::notifyNeedMediaData(MediaSourceType mediaSourc
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    bool result;
+    // the task won't execute for a disconnected client therefore
+    // set a default value of true which will help to stop any further
+    // action being taken
+    bool result{true};
+
     auto task = [&]() { result = notifyNeedMediaDataInternal(mediaSourceType); };
 
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+
     return result;
 }
 
