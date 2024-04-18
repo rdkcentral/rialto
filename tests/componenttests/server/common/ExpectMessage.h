@@ -20,8 +20,8 @@
 #ifndef FIREBOLT_RIALTO_SERVER_CT_EXPECT_MESSAGE_H_
 #define FIREBOLT_RIALTO_SERVER_CT_EXPECT_MESSAGE_H_
 
+#include "EventRanger.h"
 #include "IIpcChannel.h"
-#include "IStub.h"
 #include <condition_variable>
 #include <functional>
 #include <gtest/gtest.h>
@@ -33,27 +33,13 @@ namespace firebolt::rialto::server::ct
 template <typename MessageType> class ExpectMessage
 {
 public:
-    explicit ExpectMessage(IStub &stub) : m_channel{stub.getChannel()}
+    explicit ExpectMessage(EventRanger &eventRanger) : m_eventRanger{eventRanger}
     {
-        if (!m_channel)
-        {
-            EXPECT_TRUE(m_channel); // assert not possible in constructor, just to fail test and not crash
-            return;
-        }
-        // TODO(RIALTO-448): Unexpected messages not checked
         m_subscriptionTag =
-            m_channel->subscribe<MessageType>(std::bind(&ExpectMessage::onEvent, this, std::placeholders::_1));
+            m_eventRanger.addExpectation<MessageType>(std::bind(&ExpectMessage::onEvent, this, std::placeholders::_1));
     }
 
-    ~ExpectMessage()
-    {
-        if (!m_channel)
-        {
-            EXPECT_TRUE(m_channel); // assert not possible in destructor, just to fail test and not crash
-            return;
-        }
-        m_channel->unsubscribe(m_subscriptionTag);
-    }
+    ~ExpectMessage() { m_eventRanger.removeExpectation(m_subscriptionTag); }
 
     std::shared_ptr<MessageType> getMessage()
     {
@@ -79,9 +65,9 @@ private:
 
 private:
     std::mutex m_messageMutex;
+    EventRanger &m_eventRanger;
     std::condition_variable m_messageCv;
     int m_subscriptionTag{-1};
-    std::shared_ptr<::firebolt::rialto::ipc::IChannel> m_channel{nullptr};
     std::shared_ptr<MessageType> m_message{nullptr};
     std::function<bool(const MessageType &)> m_filter{[](const MessageType &) { return true; }};
     std::chrono::milliseconds m_timeout{400};
