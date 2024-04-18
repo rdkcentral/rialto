@@ -1,0 +1,136 @@
+#
+# If not stated otherwise in this file or this component's LICENSE file the
+# following copyright and licenses apply:
+#
+# Copyright 2022 Sky UK
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# Suppression logic for valgrind
+
+{
+   ignore_libgobject-2.0_register_static
+   Memcheck:Leak
+   ...
+   obj:*/libgobject-2.0.so*
+   fun:g_type_register_static
+   fun:g_param_type_register_static
+}
+{
+   ignore_libgobject-2.0_register_fundamental
+   Memcheck:Leak
+   ...
+   obj:*/libgobject-2.0.so*
+   fun:g_type_register_fundamental
+}
+{
+   ignore_libgobject-2.0_specific_leak
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:calloc
+   fun:g_malloc0
+   obj:*/libgobject-2.0.so*
+   obj:*/libgobject-2.0.so*
+   ...
+   fun:call_init
+   fun:_dl_init
+   obj:*/ld-*
+}
+{
+   ignore_protobuf_descriptor_possible_leak
+   Memcheck:Leak
+   match-leak-kinds: possible
+   ...
+   fun:*DescriptorBuilder*BuildMessage*
+   fun:*DescriptorBuilder*BuildFileImpl*
+   fun:*DescriptorBuilder*BuildFile*
+   fun:*DescriptorPool*BuildFileFromDatabase*
+   fun:*DescriptorPool*TryFindFileInFallbackDatabase*
+}
+{
+   ignore_glib_type_leaks
+   Memcheck:Leak
+   fun:*alloc
+   ...
+   fun:g_type_register_static
+}
+{
+   ignore_gst_init_leak
+   Memcheck:Leak
+   ...
+   fun:gst_init_check
+   fun:gst_init
+}
+{
+   ignore_gtype_class_ref_leak
+   Memcheck:Leak
+   ...
+   fun:g_type_class_ref
+}
+{
+   ignore_dl_init_definitely_lost
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:g_malloc
+   obj:*/libglib-2.0*
+   ...
+   fun:call_init
+   fun:_dl_init
+   obj:*/ld-*
+}
+{
+   ignore_dl_init_possibly_lost
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   fun:g_malloc
+   obj:*/libglib-2.0*
+   ...
+   fun:call_init
+   fun:_dl_init
+   obj:*/ld-*
+}
+{
+   ignore_dl_open_possibly_lost
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   fun:malloc
+   fun:_dlfo_mappings_segment_allocate
+   fun:_dl_find_object_update_1
+   fun:_dl_find_object_update
+   fun:dl_open_worker_begin
+   fun:_dl_catch_exception
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_exception
+   fun:_dl_catch_error
+   fun:_dlerror_run
+   fun:dlopen_implementation
+   fun:dlopen@@GLIBC_2.34
+}
+{
+   ignore_log_fowarding_definitly_lost
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:g_slist_prepend
+   fun:gst_debug_add_log_function
+   ...
+}
