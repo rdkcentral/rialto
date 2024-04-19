@@ -65,9 +65,9 @@ private:
 
 private:
     std::mutex m_messageMutex;
-    EventRanger &m_eventRanger;
     std::condition_variable m_messageCv;
     int m_subscriptionTag{-1};
+    EventRanger &m_eventRanger;
     std::shared_ptr<MessageType> m_message{nullptr};
     std::function<bool(const MessageType &)> m_filter{[](const MessageType &) { return true; }};
     std::chrono::milliseconds m_timeout{400};
