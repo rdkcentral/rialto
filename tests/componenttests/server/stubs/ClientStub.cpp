@@ -64,8 +64,11 @@ void ClientStub::disconnect()
     {
         m_ipcThread.join();
     }
-    teardownSubscriptions(m_ipcChannel);
-    m_ipcChannel.reset();
+    if (m_ipcChannel)
+    {
+        teardownSubscriptions(m_ipcChannel);
+        m_ipcChannel.reset();
+    }
 }
 
 void ClientStub::ipcThread()

@@ -120,6 +120,10 @@ TEST_F(ControlTest, healthcheckProcedure)
  *   Rialto Client stub doesnt send Ack message to Rialto Server
  *   Expect that Rialto Server doesnt send Ack to Server Manager Stub
  *
+ *  Step 3: Server sends ACK when client disconnects
+ *   Rialto Client stub disconnects
+ *   Expect that Rialto Server sends Ack to Server Manager Stub
+ *
  * Test Teardown:
  *  Server is terminated.
  *
@@ -142,10 +146,18 @@ TEST_F(ControlTest, noAckWithoutClientResponse)
     EXPECT_EQ(receivedPing->id(), kPingId);
 
     // Step 2: Fail healthcheck procedure
-    ExpectMessage<::rialto::AckEvent> expectedAck(m_serverManagerStub);
+    {
+        ExpectMessage<::rialto::AckEvent> expectedAck(m_serverManagerStub);
 
+        auto receivedAck = expectedAck.getMessage();
+        EXPECT_FALSE(receivedAck);
+    }
+
+    // Step 3: Server sends ACK when client disconnects
+    ExpectMessage<::rialto::AckEvent> expectedAck(m_serverManagerStub);
+    disconnectClient();
     auto receivedAck = expectedAck.getMessage();
-    EXPECT_FALSE(receivedAck);
+    EXPECT_TRUE(receivedAck);
 }
 
 /*
@@ -176,6 +188,10 @@ TEST_F(ControlTest, noAckWithoutClientResponse)
  *   Rialto Client stub sends Ack message with wrong id to Rialto Server
  *   Expect that Rialto Server doesnt send Ack to Server Manager Stub
  *
+ *  Step 3: Server sends ACK when client disconnects
+ *   Rialto Client stub disconnects
+ *   Expect that Rialto Server sends Ack to Server Manager Stub
+ *
  * Test Teardown:
  *  Server is terminated.
  *
@@ -198,12 +214,20 @@ TEST_F(ControlTest, noAckWhenClientRespondsWithWrongId)
     EXPECT_EQ(receivedPing->id(), kPingId);
 
     // Step 2: Fail healthcheck procedure
+    {
+        ExpectMessage<::rialto::AckEvent> expectedAck(m_serverManagerStub);
+
+        auto ackReq{createAckRequest(m_controlHandle, kPingId + 1)};
+        ConfigureAction<Ack>(m_clientStub).send(ackReq).expectSuccess();
+
+        auto receivedAck = expectedAck.getMessage();
+        EXPECT_FALSE(receivedAck);
+    }
+
+    // Step 3: Server sends ACK when client disconnects
     ExpectMessage<::rialto::AckEvent> expectedAck(m_serverManagerStub);
-
-    auto ackReq{createAckRequest(m_controlHandle, kPingId + 1)};
-    ConfigureAction<Ack>(m_clientStub).send(ackReq).expectSuccess();
-
+    disconnectClient();
     auto receivedAck = expectedAck.getMessage();
-    EXPECT_FALSE(receivedAck);
+    EXPECT_TRUE(receivedAck);
 }
 } // namespace firebolt::rialto::server::ct
