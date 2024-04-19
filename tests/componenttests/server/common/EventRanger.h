@@ -23,6 +23,7 @@
 #include <IIpcChannel.h>
 #include <functional>
 #include <gtest/gtest.h>
+#include <memory>
 #include <mutex>
 #include <string>
 #include <unordered_map>
