@@ -35,7 +35,7 @@ class MediaPipelineTest : public RialtoServerComponentTest
 {
 public:
     MediaPipelineTest();
-    ~MediaPipelineTest() override = default;
+    ~MediaPipelineTest() override;
 
     void gstPlayerWillBeCreated();
     void gstPlayerWillBeDestructed();

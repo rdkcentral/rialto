@@ -62,6 +62,11 @@ MediaPipelineTest::MediaPipelineTest()
     initShm();
 }
 
+MediaPipelineTest::~MediaPipelineTest()
+{
+    positionUpdatesShouldNotBeReceivedFromNow();
+}
+
 void MediaPipelineTest::gstPlayerWillBeCreated()
 {
     m_gstreamerStub.setupPipeline();
@@ -776,6 +781,8 @@ void MediaPipelineTest::stop()
     ASSERT_TRUE(receivedPlaybackStateChange);
     EXPECT_EQ(receivedPlaybackStateChange->session_id(), m_sessionId);
     EXPECT_EQ(receivedPlaybackStateChange->state(), ::firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_STOPPED);
+
+    positionUpdatesShouldNotBeReceivedFromNow();
 }
 
 void MediaPipelineTest::destroySession()
@@ -795,7 +802,7 @@ void MediaPipelineTest::initShm()
 
 void MediaPipelineTest::mayReceivePositionUpdates()
 {
-    if (-1 != m_positionChangeEventSuppressionId)
+    if (-1 == m_positionChangeEventSuppressionId)
     {
         m_positionChangeEventSuppressionId = m_clientStub.addSuppression<firebolt::rialto::PositionChangeEvent>();
     }
