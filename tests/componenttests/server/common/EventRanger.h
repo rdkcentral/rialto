@@ -75,6 +75,13 @@ public:
     }
     void removeExpectation(int expectationTag);
 
+    template <typename Message> int addSuppression()
+    {
+        return addExpectation<Message>([](const auto &) {});
+    }
+    // Same as removeExpectation, added for readability only
+    void removeSuppression(int expectationTag);
+
 private:
     std::mutex m_mutex;
     std::vector<int> m_eventTags;

@@ -43,4 +43,9 @@ void EventRanger::removeExpectation(int expectationTag)
         }
     }
 }
+
+void EventRanger::removeSuppression(int expectationTag)
+{
+    removeExpectation(expectationTag);
+}
 } // namespace firebolt::rialto::server::ct

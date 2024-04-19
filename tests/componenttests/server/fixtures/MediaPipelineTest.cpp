@@ -473,6 +473,7 @@ void MediaPipelineTest::pause()
 {
     auto pauseReq{createPauseRequest(m_sessionId)};
     ConfigureAction<Pause>(m_clientStub).send(pauseReq).expectSuccess();
+    positionUpdatesShouldNotBeReceivedFromNow();
 }
 
 void MediaPipelineTest::notifyPaused()
@@ -729,6 +730,8 @@ void MediaPipelineTest::play()
 
     ExpectMessage<firebolt::rialto::PlaybackStateChangeEvent> expectedPlaybackStateChange{m_clientStub};
 
+    mayReceivePositionUpdates();
+
     m_gstreamerStub.sendStateChanged(GST_STATE_NULL, GST_STATE_PLAYING, GST_STATE_NULL);
 
     auto receivedPlaybackStateChange{expectedPlaybackStateChange.getMessage()};
@@ -788,6 +791,23 @@ void MediaPipelineTest::initShm()
         .send(getShmReq)
         .expectSuccess()
         .matchResponse([&](const auto &resp) { m_shmHandle.init(resp.fd(), resp.size()); });
+}
+
+void MediaPipelineTest::mayReceivePositionUpdates()
+{
+    if (-1 != m_positionChangeEventSuppressionId)
+    {
+        m_positionChangeEventSuppressionId = m_clientStub.addSuppression<firebolt::rialto::PositionChangeEvent>();
+    }
+}
+
+void MediaPipelineTest::positionUpdatesShouldNotBeReceivedFromNow()
+{
+    if (-1 != m_positionChangeEventSuppressionId)
+    {
+        m_clientStub.removeSuppression(m_positionChangeEventSuppressionId);
+        m_positionChangeEventSuppressionId = -1;
+    }
 }
 
 void MediaPipelineTest::waitWorker()
