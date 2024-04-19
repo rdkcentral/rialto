@@ -26,6 +26,7 @@
 #include <mutex>
 #include <string>
 #include <unordered_map>
+#include <utility>
 
 namespace firebolt::rialto::server::ct
 {

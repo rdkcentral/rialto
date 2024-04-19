@@ -19,6 +19,7 @@
 
 #include "EventRanger.h"
 #include <gtest/gtest.h>
+#include <memory>
 
 namespace firebolt::rialto::server::ct
 {

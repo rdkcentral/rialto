@@ -51,4 +51,8 @@
         <fileName>tests/*</fileName>
         <symbolName>__*</symbolName>
     </suppress>
+    <suppress>
+        <id>unusedFunction</id>
+        <fileName>tests/componenttests/server/common/EventRanger.cpp</fileName>
+    </suppress>
 </suppressions>
