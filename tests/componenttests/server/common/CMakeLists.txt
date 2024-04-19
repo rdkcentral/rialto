@@ -24,6 +24,7 @@ add_library (
         RialtoServerComponentTestsCommon
         STATIC
 
+        EventRanger.cpp
         MessageBuilders.cpp
         SegmentBuilder.cpp
         ShmHandle.cpp
@@ -42,6 +43,7 @@ target_include_directories (
         $<TARGET_PROPERTY:RialtoPlayerPublic,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoIpcCommon,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoLogging,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoIpcClient,INTERFACE_INCLUDE_DIRECTORIES>
         ${CMAKE_CURRENT_LIST_DIR}
 
         PRIVATE

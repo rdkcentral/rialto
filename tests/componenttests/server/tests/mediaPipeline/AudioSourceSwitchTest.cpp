@@ -18,6 +18,7 @@
  */
 
 #include "Constants.h"
+#include "ExpectMessage.h"
 #include "Matchers.h"
 #include "MediaPipelineTest.h"
 
@@ -63,6 +64,15 @@ public:
         EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_audioCaps)).WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
 
         willSetAudioAndVideoFlags();
+    }
+
+    void switchAudioSource()
+    {
+        ExpectMessage<firebolt::rialto::NeedMediaDataEvent> expectedNeedData{m_clientStub};
+        attachAudioSource();
+        auto receivedNeedData{expectedNeedData.getMessage()};
+        ASSERT_TRUE(receivedNeedData);
+        m_lastAudioNeedData = receivedNeedData;
     }
 
 private:
@@ -117,6 +127,7 @@ private:
  *   Attach the new audio source.
  *   Expect that audio switch procedure is triggered.
  *   Expect that new audio source is attached.
+ *   Expect, that RialtoServer sends NeedMediaData for newly attached source
  *
  *  Step 6: Remove sources
  *   Remove the audio source.
@@ -169,7 +180,7 @@ TEST_F(AudioSourceSwitchTest, SwitchAudioSource)
 
     // Step 5: Attach new audio source
     willSwitchAudioSource();
-    attachAudioSource();
+    switchAudioSource();
 
     // Step 6: Remove sources
     willRemoveAudioSource();
