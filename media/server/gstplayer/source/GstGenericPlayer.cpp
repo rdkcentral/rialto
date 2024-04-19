@@ -487,14 +487,15 @@ void GstGenericPlayer::attachAudioData()
     if (m_context.audioAppSrc)
     {
         pushSampleIfRequired(m_context.audioAppSrc);
+        if (m_context.audioBuffers.size())
+        {
+            // This needs to be done before gstAppSrcPushBuffer() is
+            // called because it can free the memory
+            m_context.lastAudioSampleTimestamps = static_cast<int64_t>(GST_BUFFER_PTS(m_context.audioBuffers.back()));
+        }
         for (GstBuffer *buffer : m_context.audioBuffers)
         {
             m_gstWrapper->gstAppSrcPushBuffer(GST_APP_SRC(m_context.audioAppSrc), buffer);
-        }
-
-        if (m_context.audioBuffers.size())
-        {
-            m_context.lastAudioSampleTimestamps = static_cast<int64_t>(GST_BUFFER_PTS(m_context.audioBuffers.back()));
         }
         m_context.audioBuffers.clear();
         m_context.audioDataPushed = true;

@@ -58,6 +58,7 @@ target_link_libraries (
         RialtoServerComponentTestsCommon
         RialtoIpcClient
         RialtoIpcCommon
+        RialtoProtobuf
         GoogleTest::gtest
         GoogleTest::gmock
 )

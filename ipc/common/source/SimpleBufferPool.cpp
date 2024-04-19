@@ -17,9 +17,10 @@
  * limitations under the License.
  */
 
-#include "SimpleBufferPool.h"
-#include "IpcLogging.h"
 #include <algorithm>
+
+#include "IpcLogging.h"
+#include "SimpleBufferPool.h"
 
 SimpleBufferPool::SimpleBufferPool() : m_staticBuf(nullptr), m_staticBufSize(0)
 {
@@ -86,7 +87,7 @@ void SimpleBufferPool::deallocate(void *p)
 {
     // if the pointer is not within our static area then assume it was dynamically
     // allocated, in which case just free it
-    if ((p < m_staticBuf) || (p > (m_staticBuf + m_staticBufSize)))
+    if ((p < m_staticBuf) || (p >= (m_staticBuf + m_staticBufSize)))
     {
         free(p);
         return;

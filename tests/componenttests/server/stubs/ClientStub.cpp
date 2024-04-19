@@ -19,6 +19,10 @@
 
 #include "ClientStub.h"
 #include "Constants.h"
+#include "controlmodule.pb.h"
+#include "mediakeysmodule.pb.h"
+#include "mediapipelinemodule.pb.h"
+#include "webaudioplayermodule.pb.h"
 
 namespace firebolt::rialto::server::ct
 {
@@ -39,6 +43,13 @@ bool ClientStub::connect()
     {
         return false;
     }
+    setupSubscriptions<firebolt::rialto::PlaybackStateChangeEvent, firebolt::rialto::NetworkStateChangeEvent,
+                       firebolt::rialto::PositionChangeEvent, firebolt::rialto::NeedMediaDataEvent, firebolt::rialto::QosEvent,
+                       firebolt::rialto::BufferUnderflowEvent, firebolt::rialto::PlaybackErrorEvent,
+                       firebolt::rialto::SetLogLevelsEvent, firebolt::rialto::SourceFlushedEvent,
+                       firebolt::rialto::WebAudioPlayerStateEvent, firebolt::rialto::ApplicationStateChangeEvent,
+                       firebolt::rialto::PingEvent, firebolt::rialto::LicenseRequestEvent,
+                       firebolt::rialto::LicenseRenewalEvent, firebolt::rialto::KeyStatusesChangedEvent>(m_ipcChannel);
     m_ipcThread = std::thread(&ClientStub::ipcThread, this);
     return true;
 }
@@ -53,7 +64,11 @@ void ClientStub::disconnect()
     {
         m_ipcThread.join();
     }
-    m_ipcChannel.reset();
+    if (m_ipcChannel)
+    {
+        teardownSubscriptions(m_ipcChannel);
+        m_ipcChannel.reset();
+    }
 }
 
 void ClientStub::ipcThread()

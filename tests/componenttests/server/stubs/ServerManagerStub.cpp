@@ -18,6 +18,7 @@
  */
 
 #include "ServerManagerStub.h"
+#include "servermanagermodule.pb.h"
 #include <functional>
 #include <gtest/gtest.h>
 #include <sys/socket.h>
@@ -43,6 +44,10 @@ ServerManagerStub::~ServerManagerStub()
     {
         m_ipcThread.join();
     }
+    if (m_ipcChannel)
+    {
+        teardownSubscriptions(m_ipcChannel);
+    }
 
     // Shutdown and close the server socket
     // Other socket will be closed by the ipc channel
@@ -59,6 +64,7 @@ void ServerManagerStub::ipcThread()
         EXPECT_TRUE(m_ipcChannel);
         m_channelCond.notify_all();
     }
+    setupSubscriptions<::rialto::StateChangedEvent, ::rialto::AckEvent>(m_ipcChannel);
     while (m_ipcChannel->process())
     {
         m_ipcChannel->wait(-1);
