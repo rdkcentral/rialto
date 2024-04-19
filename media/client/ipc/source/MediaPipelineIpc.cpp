@@ -263,11 +263,9 @@ bool MediaPipelineIpc::attachSource(const std::unique_ptr<IMediaPipeline::MediaS
         }
         else if (configType == SourceConfigType::VIDEO)
         {
-
             IMediaPipeline::MediaSourceVideo *mediaSourceVideo =
                 dynamic_cast<IMediaPipeline::MediaSourceVideo *>(source.get());
             if (mediaSourceVideo)
-
             {
                 request.set_width(mediaSourceVideo->getWidth());
                 request.set_height(mediaSourceVideo->getHeight());
