@@ -103,30 +103,32 @@ try
 {
     if (MediaSourceType::AUDIO == data->getType())
     {
-        try
+        IMediaPipeline::MediaSegmentAudio *audioSegment = dynamic_cast<IMediaPipeline::MediaSegmentAudio *>(data.get());
+        if (audioSegment)
         {
-            IMediaPipeline::MediaSegmentAudio &audioSegment = dynamic_cast<IMediaPipeline::MediaSegmentAudio &>(*data);
             m_metadataOffset = m_bytewriter.writeUint32(m_shmBuffer, m_metadataOffset,
-                                                        static_cast<uint32_t>(audioSegment.getSampleRate()));
+                                                        static_cast<uint32_t>(audioSegment->getSampleRate()));
             m_metadataOffset = m_bytewriter.writeUint32(m_shmBuffer, m_metadataOffset,
-                                                        static_cast<uint32_t>(audioSegment.getNumberOfChannels()));
+                                                        static_cast<uint32_t>(audioSegment->getNumberOfChannels()));
         }
-        catch (const std::bad_cast &e)
+        else
         {
-            RIALTO_COMMON_LOG_ERROR("Failed to get the audio segment, reason: %s", e.what());
+            RIALTO_COMMON_LOG_ERROR("Failed to get the audio segment");
+            return false;
         }
     }
     else if (MediaSourceType::VIDEO == data->getType())
     {
-        try
+        IMediaPipeline::MediaSegmentVideo *videoSegment = dynamic_cast<IMediaPipeline::MediaSegmentVideo *>(data.get());
+        if (videoSegment)
         {
-            IMediaPipeline::MediaSegmentVideo &videoSegment = dynamic_cast<IMediaPipeline::MediaSegmentVideo &>(*data);
-            m_metadataOffset = m_bytewriter.writeUint32(m_shmBuffer, m_metadataOffset, videoSegment.getWidth());
-            m_metadataOffset = m_bytewriter.writeUint32(m_shmBuffer, m_metadataOffset, videoSegment.getHeight());
+            m_metadataOffset = m_bytewriter.writeUint32(m_shmBuffer, m_metadataOffset, videoSegment->getWidth());
+            m_metadataOffset = m_bytewriter.writeUint32(m_shmBuffer, m_metadataOffset, videoSegment->getHeight());
         }
-        catch (const std::bad_cast &e)
+        else
         {
-            RIALTO_COMMON_LOG_ERROR("Failed to get the video segment, reason: %s", e.what());
+            RIALTO_COMMON_LOG_ERROR("Failed to get the video segment");
+            return false;
         }
     }
     else

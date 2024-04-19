@@ -56,7 +56,7 @@ void ReadShmDataAndAttachSamples::execute() const
                 m_player.updateVideoCaps(videoSegment.getWidth(), videoSegment.getHeight(), videoSegment.getFrameRate(),
                                          videoSegment.getCodecData());
             }
-            catch (const std::bad_cast &e)
+            catch (const std::exception &e)
             {
                 RIALTO_SERVER_LOG_ERROR("Failed to get the video segment, reason: %s", e.what());
             }
@@ -75,7 +75,7 @@ void ReadShmDataAndAttachSamples::execute() const
                 m_player.addAudioClippingToBuffer(gstBuffer, audioSegment.getClippingStart(),
                                                   audioSegment.getClippingEnd());
             }
-            catch (const std::bad_cast &e)
+            catch (const std::exception &e)
             {
                 RIALTO_SERVER_LOG_ERROR("Failed to get the audio segment, reason: %s", e.what());
             }

@@ -84,20 +84,13 @@ void MediaPipelineCapabilitiesModuleService::getSupportedMimeTypes(
     ::firebolt::rialto::GetSupportedMimeTypesResponse *response, ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    try
+    auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
+    if (!ipcController)
     {
-        auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
-        if (!ipcController)
-        {
-            RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
-            controller->SetFailed("ipc library provided incompatible controller object");
-            done->Run();
-            return;
-        }
-    }
-    catch (const std::exception &e)
-    {
-        RIALTO_SERVER_LOG_ERROR("Failed to cast ipcController in getSupportedMimeTypes function, reason: %s", e.what());
+        RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
+        controller->SetFailed("ipc library provided incompatible controller object");
+        done->Run();
+        return;
     }
 
     firebolt::rialto::MediaSourceType sourceType = convertMediaSourceType(request->media_type());
@@ -116,20 +109,13 @@ void MediaPipelineCapabilitiesModuleService::isMimeTypeSupported(
     ::firebolt::rialto::IsMimeTypeSupportedResponse *response, ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    try
+    auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
+    if (!ipcController)
     {
-        auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
-        if (!ipcController)
-        {
-            RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
-            controller->SetFailed("ipc library provided incompatible controller object");
-            done->Run();
-            return;
-        }
-    }
-    catch (const std::exception &e)
-    {
-        RIALTO_SERVER_LOG_ERROR("Failed to cast ipcController in isMimeTypeSupported function, reason: %s", e.what());
+        RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
+        controller->SetFailed("ipc library provided incompatible controller object");
+        done->Run();
+        return;
     }
 
     bool isSupported = m_mediaPipelineService.isMimeTypeSupported(request->mime_type());
