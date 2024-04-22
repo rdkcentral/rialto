@@ -329,7 +329,6 @@ void AttachSource::reattachAudioSource(GstCaps *caps, const std::string &strCaps
         RIALTO_SERVER_LOG_MIL("Old caps: %s", oldCapsStr.c_str());
         RIALTO_SERVER_LOG_MIL("New caps: %s", strCaps.c_str());
 
-        // firebolt::rialto::wrappers::AudioAttributesPrivate audioAttributes{createAudioAttributes()};
         int sampleAttributes{
             0}; // rdk_gstreamer_utils::performAudioTrackCodecChannelSwitch checks if this param != NULL only.
         std::uint32_t status{0};   // must be 0 to make rdk_gstreamer_utils::performAudioTrackCodecChannelSwitch work
