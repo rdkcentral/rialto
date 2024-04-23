@@ -459,7 +459,7 @@ std::optional<firebolt::rialto::wrappers::AudioAttributesPrivate> AttachSource::
         {
             audioAttributes.m_codecParam = std::string("ec-3.A") + std::to_string(audioConfig.numberOfChannels);
         }
-        return audioAttributes;
+        return;
     }
     else
     {
