@@ -99,7 +99,6 @@ bool MediaFrameWriterV1::writeMetaDataGeneric(const std::unique_ptr<IMediaPipeli
 }
 
 bool MediaFrameWriterV1::writeMetaDataTypeSpecific(const std::unique_ptr<IMediaPipeline::MediaSegment> &data)
-try
 {
     if (MediaSourceType::AUDIO == data->getType())
     {
@@ -137,11 +136,6 @@ try
         return false;
     }
     return true;
-}
-catch (const std::exception &e)
-{
-    RIALTO_COMMON_LOG_ERROR("Failed to write type specific metadata - exception occured");
-    return false;
 }
 
 bool MediaFrameWriterV1::writeData(const std::unique_ptr<IMediaPipeline::MediaSegment> &data)
