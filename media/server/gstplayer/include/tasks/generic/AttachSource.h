@@ -28,6 +28,7 @@
 #include "IPlayerTask.h"
 #include "IRdkGstreamerUtilsWrapper.h"
 #include <memory>
+#include <optional>
 #include <string>
 
 namespace firebolt::rialto::server::tasks::generic
