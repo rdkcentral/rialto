@@ -49,7 +49,7 @@ jobs:
           path: rialto-ocdm
           
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: 3.8
 
@@ -64,7 +64,7 @@ jobs:
           python build_ut.py -c -xml -f -b ${{ github.event.pull_request.head.ref }}
         
       - name: Upload logs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: logs
