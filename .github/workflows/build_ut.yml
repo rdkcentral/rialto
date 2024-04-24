@@ -674,7 +674,7 @@ jobs:
         
       # Download current master coverage statistics
       - name: Download Master Coverage Statistics
-        uses: dawidd6/action-download-artifact@v4
+        uses: dawidd6/action-download-artifact@v3
         if: ${{ success() && github.ref != 'refs/heads/master' }}
         with:
           workflow_conclusion: success
