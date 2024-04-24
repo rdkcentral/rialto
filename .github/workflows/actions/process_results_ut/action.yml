@@ -42,7 +42,7 @@ runs:
 
     # Upload logs on failure
     - name: Upload logs
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: failure()
       with:
         name: logs

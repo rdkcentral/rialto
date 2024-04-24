@@ -51,7 +51,7 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Initialises the host ready to run component tests
       - name: Initialise host
@@ -71,7 +71,7 @@ jobs:
 
       # Upload logs on failure
       - name: Upload logs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: logs
@@ -82,7 +82,7 @@ jobs:
       # Cache lcov output
       - name: Cache client component tests interface stats
         id: cache-client-component-coverage-stats
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         if: success()
         with:
           path: build/coverage_statistics_public_apis.txt
@@ -90,7 +90,7 @@ jobs:
 
       # Upload coverage report on success
       - name: Upload Coverage Report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: success()
         with:
           name: coverage_report_component
@@ -98,7 +98,7 @@ jobs:
 
       # Upload coverage statistics on success
       - name: Upload Coverage Statistics
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: success()
         with:
           name: coverage_report_stats_component
@@ -123,12 +123,12 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: checkout repo
         if: ${{ github.ref != 'refs/heads/master' }}
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Get cached lcov client component tests interface api stats
       - name: Get client component tests interface api stats
         id: cache-client-component-coverage-stats
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         if: ${{ github.ref != 'refs/heads/master' }}
         with:
           path: build/coverage_statistics_public_apis.txt
