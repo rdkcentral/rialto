@@ -377,26 +377,11 @@ bool SessionServerApp::spawnSessionServer()
                     }
                 }
                 const std::string kAppMgmtSocketStr{std::to_string(newSocket)};
-#if 1
-#  define VALGRIND
-#endif
-
-                char *const appArguments[] = {
-#ifdef VALGRIND
-                    strdup("/usr/bin/valgrind"), strdup("--num-callers=100"), strdup("--suppressions=rialto-native.supp"), strdup("--leak-check=full"),
-#endif
-                    strdup(m_kSessionServerPath.c_str()), strdup(kAppMgmtSocketStr.c_str()), nullptr};
+                char *const appArguments[] = {strdup(m_kSessionServerPath.c_str()), strdup(kAppMgmtSocketStr.c_str()),
+                                              nullptr};
                 RIALTO_SERVER_MANAGER_LOG_DEBUG("PID: %d, executing: \"%s\" \"%s\"", m_linuxWrapper->getpid(),
                                                 appArguments[0], appArguments[1]);
-
-                m_linuxWrapper->execve(
-#ifdef VALGRIND
-                    "/usr/bin/valgrind",
-#else
-                    m_kSessionServerPath.c_str(),
-#endif
-
-                    appArguments, m_environmentVariables.data());
+                m_linuxWrapper->execve(m_kSessionServerPath.c_str(), appArguments, m_environmentVariables.data());
                 RIALTO_SERVER_MANAGER_LOG_SYS_ERROR(errno, "Unable to spawn RialtoSessionServer - execve problem");
                 for (char *arg : appArguments)
                 {

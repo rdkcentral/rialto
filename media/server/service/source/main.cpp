@@ -17,12 +17,14 @@
  * limitations under the License.
  */
 
+#include <cstring>
+#include <thread>
+
+#include <google/protobuf/service.h>
+
 #include "GstInit.h"
 #include "IApplicationSessionServer.h"
 #include "RialtoServerLogging.h"
-#include <cstring>
-#include <thread>
-#include <google/protobuf/service.h>
 
 // NOLINT(build/filename_format)
 
@@ -66,7 +68,8 @@ int main(int argc, char *argv[])
     }
 
 #ifdef FREE_MEM_BEFORE_EXIT
-    if (getenv("RIALTO_FREE_MEM_BEFORE_EXIT")) {
+    if (getenv("RIALTO_FREE_MEM_BEFORE_EXIT"))
+    {
         RIALTO_SERVER_LOG_INFO("Calling gst_deinit");
         firebolt::rialto::server::gstDeinitalise();
 
