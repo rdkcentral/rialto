@@ -50,7 +50,7 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Initialises the host ready to run unittests
       - name: Initialise host
@@ -71,7 +71,7 @@ jobs:
       # Cache lcov output
       - name: Cache servermain coverage
         id: cache-servermain-coverage
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         if: success()
         with:
           path: build/coverage-servermain.info
@@ -91,7 +91,7 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Initialises the host ready to run unittests
       - name: Initialise host
@@ -112,7 +112,7 @@ jobs:
       # Cache lcov output
       - name: Cache servergstplayer coverage
         id: cache-servergstplayer-coverage
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         if: success()
         with:
           path: build/coverage-servergstplayer.info
@@ -132,7 +132,7 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Initialises the host ready to run unittests
       - name: Initialise host
@@ -153,7 +153,7 @@ jobs:
       # Cache lcov output
       - name: Cache serveripc coverage
         id: cache-serveripc-coverage
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         if: success()
         with:
           path: build/coverage-serveripc.info
@@ -173,7 +173,7 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Initialises the host ready to run unittests
       - name: Initialise host
@@ -194,7 +194,7 @@ jobs:
       # Cache lcov output
       - name: Cache serverservice coverage
         id: cache-serverservice-coverage
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         if: success()
         with:
           path: build/coverage-serverservice.info
@@ -214,7 +214,7 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Initialises the host ready to run unittests
       - name: Initialise host
@@ -235,7 +235,7 @@ jobs:
       # Cache lcov output
       - name: Cache client coverage
         id: cache-client-coverage
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         if: success()
         with:
           path: build/coverage-client.info
@@ -255,7 +255,7 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Initialises the host ready to run unittests
       - name: Initialise host
@@ -276,7 +276,7 @@ jobs:
       # Cache lcov output
       - name: Cache clientipc coverage
         id: cache-clientipc-coverage
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         if: success()
         with:
           path: build/coverage-clientipc.info
@@ -296,7 +296,7 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Initialises the host ready to run unittests
       - name: Initialise host
@@ -317,7 +317,7 @@ jobs:
       # Cache lcov output
       - name: Cache playercommon coverage
         id: cache-playercommon-coverage
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         if: success()
         with:
           path: build/coverage-playercommon.info
@@ -337,7 +337,7 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Initialises the host ready to run unittests
       - name: Initialise host
@@ -358,7 +358,7 @@ jobs:
       # Cache lcov output
       - name: Cache common coverage
         id: cache-common-coverage
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         if: success()
         with:
           path: build/coverage-common.info
@@ -378,7 +378,7 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Initialises the host ready to run unittests
       - name: Initialise host
@@ -399,7 +399,7 @@ jobs:
       # Cache lcov output
       - name: Cache logging coverage
         id: cache-logging-coverage
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         if: success()
         with:
           path: build/coverage-logging.info
@@ -420,7 +420,7 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Initialises the host ready to run unittests
       - name: Initialise host
@@ -441,7 +441,7 @@ jobs:
       # Cache lcov output
       - name: Cache manager coverage
         id: cache-manager-coverage
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         if: success()
         with:
           path: build/coverage-manager.info
@@ -461,7 +461,7 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Initialises the host ready to run unittests
       - name: Initialise host
@@ -482,7 +482,7 @@ jobs:
       # Cache lcov output
       - name: Cache ipc coverage
         id: cache-ipc-coverage
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         if: success()
         with:
           path: build/coverage-ipc.info
@@ -505,7 +505,7 @@ jobs:
 
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Setup lcov 2.0
       - name: Install lcov library
@@ -519,7 +519,7 @@ jobs:
       # Get cached lcov servermain output
       - name: Get servermain coverage
         id: cache-servermain-coverage
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         if: success()
         with:
           path: build/coverage-servermain.info
@@ -528,7 +528,7 @@ jobs:
       # Get cached lcov servergstplayer output
       - name: Get servergstplayer coverage
         id: cache-servergstplayer-coverage
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         if: success()
         with:
           path: build/coverage-servergstplayer.info
@@ -537,7 +537,7 @@ jobs:
       # Get cached lcov serveripc output
       - name: Get serveripc coverage
         id: cache-serveripc-coverage
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         if: success()
         with:
           path: build/coverage-serveripc.info
@@ -546,7 +546,7 @@ jobs:
       # Get cached lcov serverservice output
       - name: Get serverservice coverage
         id: cache-serverservice-coverage
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         if: success()
         with:
           path: build/coverage-serverservice.info
@@ -555,7 +555,7 @@ jobs:
       # Get cached lcov client output
       - name: Get client coverage
         id: cache-client-coverage
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         if: success()
         with:
           path: build/coverage-client.info
@@ -564,7 +564,7 @@ jobs:
       # Get cached lcov clientipc output
       - name: Get clientipc coverage
         id: cache-clientipc-coverage
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         if: success()
         with:
           path: build/coverage-clientipc.info
@@ -573,7 +573,7 @@ jobs:
       # Get cached lcov common output
       - name: Get common coverage
         id: cache-common-coverage
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         if: success()
         with:
           path: build/coverage-common.info
@@ -582,7 +582,7 @@ jobs:
       # Get cached lcov playercommon output
       - name: Get playercommon coverage
         id: cache-playercommon-coverage
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         if: success()
         with:
           path: build/coverage-playercommon.info
@@ -591,7 +591,7 @@ jobs:
       # Get cached lcov logging output
       - name: Get logging coverage
         id: cache-logging-coverage
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         if: success()
         with:
           path: build/coverage-logging.info
@@ -600,7 +600,7 @@ jobs:
       # Get cached lcov manager output
       - name: Get manager coverage
         id: cache-manager-coverage
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         if: success()
         with:
           path: build/coverage-manager.info
@@ -609,7 +609,7 @@ jobs:
       # Get cached lcov ipc output
       - name: Get ipc coverage
         id: cache-ipc-coverage
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         if: success()
         with:
           path: build/coverage-ipc.info
@@ -635,7 +635,7 @@ jobs:
 
       # Upload coverage report on success
       - name: Upload Coverage Report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: success()
         with:
           name: coverage_report
@@ -643,7 +643,7 @@ jobs:
 
       # Upload coverage statistics on success
       - name: Upload Coverage Statistics
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: success()
         with:
           name: coverage_report_stats
@@ -663,18 +663,18 @@ jobs:
     
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
     
       # Download the current coverage statistics
       - name: Download Current Coverage Statistics
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: coverage_report_stats
           path: build
         
       # Download current master coverage statistics
       - name: Download Master Coverage Statistics
-        uses: dawidd6/action-download-artifact@v2
+        uses: dawidd6/action-download-artifact@v3
         if: ${{ success() && github.ref != 'refs/heads/master' }}
         with:
           workflow_conclusion: success
@@ -700,7 +700,7 @@ jobs:
       # Create comment with coverage info
       - name: Create Coverage Comment
         if: ${{ (success() || failure()) && github.ref != 'refs/heads/master' }}
-        uses: peter-evans/create-or-update-comment@v2
+        uses: peter-evans/create-or-update-comment@v4
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: ${{ steps.get-comment-body.outputs.body }}
