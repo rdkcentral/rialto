@@ -167,6 +167,21 @@ protected:
 };
 
 /**
+ * Class to test MediaSegmentAudio and MediaSegmentVideo
+ */
+class MediaSegmentTest : public IMediaPipeline::MediaSegment
+{
+public:
+    MediaSegmentTest(int32_t sourceId, MediaSourceType type, int64_t timeStamp, int64_t duration)
+        : MediaSegment(sourceId, type, timeStamp, duration)
+    {
+    }
+    ~MediaSegmentTest() {}
+
+    std::unique_ptr<MediaSegment> copy() const override { return std::make_unique<MediaSegmentTest>(*this); }
+};
+
+/**
  * Test that an MediaFrameWriterV1 object can write a frame to the shared buffer.
  */
 TEST_F(RialtoPlayerCommonWriteFrameV1Test, WriteAudioFrame)
@@ -264,4 +279,28 @@ TEST_F(RialtoPlayerCommonWriteFrameV1Test, WriteMultipleFramesOffset)
     EXPECT_EQ(m_mediaFrameWriter->writeFrame(m_dataVec[2]), AddSegmentStatus::OK);
 
     CheckSharedBuffer(MediaSourceType::VIDEO, m_shmInfo);
+}
+
+/**
+ * Test the invalid audio media source type
+ */
+TEST_F(RialtoPlayerCommonWriteFrameV1Test, AttachSourceWithInvalidAudioSegment)
+{
+    std::unique_ptr<IMediaPipeline::MediaSegment> data =
+        std::make_unique<MediaSegmentTest>(0, MediaSourceType::AUDIO, 0, 0);
+
+    m_mediaFrameWriter = std::make_unique<MediaFrameWriterV1>(m_shmBuffer, m_shmInfo);
+    EXPECT_EQ(m_mediaFrameWriter->writeFrame(data), AddSegmentStatus::ERROR);
+}
+
+/**
+ * Test the invalid video media source type
+ */
+TEST_F(RialtoPlayerCommonWriteFrameV1Test, AttachSourceWithInvalidVideoSegment)
+{
+    std::unique_ptr<IMediaPipeline::MediaSegment> data =
+        std::make_unique<MediaSegmentTest>(0, MediaSourceType::VIDEO, 0, 0);
+
+    m_mediaFrameWriter = std::make_unique<MediaFrameWriterV1>(m_shmBuffer, m_shmInfo);
+    EXPECT_EQ(m_mediaFrameWriter->writeFrame(data), AddSegmentStatus::ERROR);
 }

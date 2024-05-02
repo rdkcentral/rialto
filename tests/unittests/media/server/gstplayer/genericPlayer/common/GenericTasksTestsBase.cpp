@@ -99,6 +99,7 @@ const std::string kAudName{"audsrc"};
 const std::string kAutoVideoSinkTypeName{"GstAutoVideoSink"};
 const std::string kElementTypeName{"GenericSink"};
 constexpr bool kResetTime{false};
+constexpr int32_t kId{0};
 
 firebolt::rialto::IMediaPipeline::MediaSegmentVector buildAudioSamples()
 {
@@ -128,6 +129,53 @@ firebolt::rialto::IMediaPipeline::MediaSegmentVector buildVideoSamples()
     return dataVec;
 }
 } // namespace
+
+/**
+ * Class to test the cast of AudioSource
+ */
+class MediaAudioSourceTest : public IMediaPipeline::MediaSource
+{
+public:
+    MediaAudioSourceTest(SourceConfigType configType, int id) : IMediaPipeline::MediaSource(configType) {}
+    ~MediaAudioSourceTest() {}
+
+    MediaSourceType getType() const override { return MediaSourceType::AUDIO; }
+    std::unique_ptr<MediaSource> copy() const override { return std::make_unique<MediaAudioSourceTest>(*this); }
+};
+
+/**
+ * Class to test the cast of VideoSource
+ */
+class MediaVideoSourceTest : public IMediaPipeline::MediaSource
+{
+public:
+    MediaVideoSourceTest(SourceConfigType configType, int id) : IMediaPipeline::MediaSource(configType) {}
+    ~MediaVideoSourceTest() {}
+
+    MediaSourceType getType() const override { return MediaSourceType::VIDEO; }
+    std::unique_ptr<MediaSource> copy() const override { return std::make_unique<MediaVideoSourceTest>(*this); }
+};
+
+/**
+ * Class to test the cast of DolbyVisionSource
+ */
+class MediaVideoDolbyVisionSourceTest : public IMediaPipeline::MediaSourceVideo
+{
+public:
+    MediaVideoDolbyVisionSourceTest(SourceConfigType configType, const std::string &mimeType, int32_t dolbyVisionProfile)
+        : IMediaPipeline::MediaSourceVideo(configType, mimeType, true, firebolt::rialto::kUndefinedSize,
+                                           firebolt::rialto::kUndefinedSize, SegmentAlignment::UNDEFINED,
+                                           StreamFormat::UNDEFINED, nullptr)
+    {
+    }
+    ~MediaVideoDolbyVisionSourceTest() {}
+
+    MediaSourceType getType() const override { return MediaSourceType::VIDEO; }
+    std::unique_ptr<MediaSource> copy() const override
+    {
+        return std::make_unique<MediaVideoDolbyVisionSourceTest>(*this);
+    }
+};
 
 GenericTasksTestsBase::GenericTasksTestsBase()
 {
@@ -2251,4 +2299,53 @@ void GenericTasksTestsBase::checkInitialPositionNotSet(firebolt::rialto::MediaSo
     GstElement *source = sourceType == firebolt::rialto::MediaSourceType::AUDIO ? &testContext->m_appSrcAudio
                                                                                 : &testContext->m_appSrcVideo;
     EXPECT_EQ(testContext->m_context.initialPositions.end(), testContext->m_context.initialPositions.find(source));
+}
+
+void GenericTasksTestsBase::triggerFailToCastAudioSource()
+{
+    std::unique_ptr<IMediaPipeline::MediaSource> source =
+        std::make_unique<MediaAudioSourceTest>(SourceConfigType::AUDIO, kId);
+    firebolt::rialto::server::tasks::generic::AttachSource task{testContext->m_context,
+                                                                testContext->m_gstWrapper,
+                                                                testContext->m_glibWrapper,
+                                                                testContext->m_rdkGstreamerUtilsWrapper,
+                                                                testContext->m_gstPlayer,
+                                                                source};
+    task.execute();
+    EXPECT_EQ(0, testContext->m_context.streamInfo.size());
+    EXPECT_EQ(testContext->m_context.streamInfo.end(),
+              testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO));
+}
+
+void GenericTasksTestsBase::triggerFailToCastVideoSource()
+{
+    std::unique_ptr<IMediaPipeline::MediaSource> source =
+        std::make_unique<MediaVideoSourceTest>(SourceConfigType::VIDEO, kId);
+    firebolt::rialto::server::tasks::generic::AttachSource task{testContext->m_context,
+                                                                testContext->m_gstWrapper,
+                                                                testContext->m_glibWrapper,
+                                                                testContext->m_rdkGstreamerUtilsWrapper,
+                                                                testContext->m_gstPlayer,
+                                                                source};
+    task.execute();
+    EXPECT_EQ(0, testContext->m_context.streamInfo.size());
+    EXPECT_EQ(testContext->m_context.streamInfo.end(),
+              testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO));
+}
+
+void GenericTasksTestsBase::triggerFailToCastDolbyVisionSource()
+{
+    std::unique_ptr<IMediaPipeline::MediaSource> source =
+        std::make_unique<MediaVideoDolbyVisionSourceTest>(SourceConfigType::VIDEO_DOLBY_VISION, "video/h264",
+                                                          kDolbyVisionProfile);
+    firebolt::rialto::server::tasks::generic::AttachSource task{testContext->m_context,
+                                                                testContext->m_gstWrapper,
+                                                                testContext->m_glibWrapper,
+                                                                testContext->m_rdkGstreamerUtilsWrapper,
+                                                                testContext->m_gstPlayer,
+                                                                source};
+    task.execute();
+    EXPECT_EQ(0, testContext->m_context.streamInfo.size());
+    EXPECT_EQ(testContext->m_context.streamInfo.end(),
+              testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO));
 }

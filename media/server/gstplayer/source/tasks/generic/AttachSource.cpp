@@ -263,6 +263,11 @@ void AttachSource::execute() const
     }
 
     GstCaps *caps = createCapsFromMediaSource();
+    if (!caps)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to create caps from media source");
+        return;
+    }
     gchar *capsStr = m_gstWrapper->gstCapsToString(caps);
     std::string strCaps = capsStr;
     m_glibWrapper->gFree(capsStr);
@@ -421,7 +426,7 @@ GstCaps *AttachSource::createCapsFromMediaSource() const
         }
         else
         {
-            RIALTO_SERVER_LOG_ERROR("Failed to cast to dolby vision source");
+            RIALTO_SERVER_LOG_ERROR("Failed to cast to dolby vision source!");
             return nullptr;
         }
     }

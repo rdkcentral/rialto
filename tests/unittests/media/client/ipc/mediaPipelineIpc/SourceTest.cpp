@@ -64,6 +64,33 @@ public:
 };
 
 /**
+ * Class to test MediaSourceAV and MediaSourceSubtitle
+ */
+class MediaSourceTest : public IMediaPipeline::MediaSource
+{
+public:
+    MediaSourceTest(SourceConfigType configType, int id) : IMediaPipeline::MediaSource(configType) {}
+    ~MediaSourceTest() {}
+
+    std::unique_ptr<MediaSource> copy() const override { return std::make_unique<MediaSourceTest>(*this); }
+};
+
+/**
+ * Class to test MediaSourceVideoDolbyVision, MediaSourceVideo and MediaSourceAudio
+ */
+class MediaSourceVideoDolbyVideoAudioTest : public IMediaPipeline::MediaSourceAV
+{
+public:
+    MediaSourceVideoDolbyVideoAudioTest(SourceConfigType configType, int id) : MediaSourceAV(configType) {}
+    ~MediaSourceVideoDolbyVideoAudioTest() {}
+
+    std::unique_ptr<MediaSource> copy() const override
+    {
+        return std::make_unique<MediaSourceVideoDolbyVideoAudioTest>(*this);
+    }
+};
+
+/**
  * Test that attachSource can be called successfully.
  */
 TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachSourceSuccess)
@@ -345,4 +372,74 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, AllSourcesAttachedReconnectChanne
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("allSourcesAttached"), _, _, _, _));
 
     EXPECT_EQ(m_mediaPipelineIpc->allSourcesAttached(), true);
+}
+
+/**
+ * Test that attachSource fails if the media source AV is invalid.
+ */
+TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachSourceWithInvalidMediaSourceAV)
+{
+    EXPECT_CALL(*m_channelMock, isConnected()).InSequence(m_isConnectedSeq).WillOnce(Return(true)).RetiresOnSaturation();
+    std::unique_ptr<IMediaPipeline::MediaSource> source =
+        std::make_unique<MediaSourceTest>(SourceConfigType::VIDEO_DOLBY_VISION, m_id);
+
+    bool result = m_mediaPipelineIpc->attachSource(source, m_id);
+
+    EXPECT_EQ(result, false);
+}
+
+/**
+ * Test that attachSource fails if the media source video dolby vision is invalid.
+ */
+TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachSourceWithInvalidMediaSourceVideoDolbyVision)
+{
+    EXPECT_CALL(*m_channelMock, isConnected()).InSequence(m_isConnectedSeq).WillOnce(Return(true)).RetiresOnSaturation();
+    std::unique_ptr<IMediaPipeline::MediaSource> source =
+        std::make_unique<MediaSourceVideoDolbyVideoAudioTest>(SourceConfigType::VIDEO_DOLBY_VISION, m_id);
+
+    bool result = m_mediaPipelineIpc->attachSource(source, m_id);
+
+    EXPECT_EQ(result, false);
+}
+
+/**
+ * Test that attachSource fails if the media source video is invalid.
+ */
+TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachSourceWithInvalidMediaSourceVideo)
+{
+    EXPECT_CALL(*m_channelMock, isConnected()).InSequence(m_isConnectedSeq).WillOnce(Return(true)).RetiresOnSaturation();
+    std::unique_ptr<IMediaPipeline::MediaSource> source =
+        std::make_unique<MediaSourceVideoDolbyVideoAudioTest>(SourceConfigType::VIDEO, m_id);
+
+    bool result = m_mediaPipelineIpc->attachSource(source, m_id);
+
+    EXPECT_EQ(result, false);
+}
+
+/**
+ * Test that attachSource fails if the media source audio is invalid.
+ */
+TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachSourceWithInvalidMediaSourceAudio)
+{
+    EXPECT_CALL(*m_channelMock, isConnected()).InSequence(m_isConnectedSeq).WillOnce(Return(true)).RetiresOnSaturation();
+    std::unique_ptr<IMediaPipeline::MediaSource> source =
+        std::make_unique<MediaSourceVideoDolbyVideoAudioTest>(SourceConfigType::AUDIO, m_id);
+
+    bool result = m_mediaPipelineIpc->attachSource(source, m_id);
+
+    EXPECT_EQ(result, false);
+}
+
+/**
+ * Test that attachSource fails if the media source subtitle is invalid.
+ */
+TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachSourceWithInvalidMediaSourceSubtitle)
+{
+    EXPECT_CALL(*m_channelMock, isConnected()).InSequence(m_isConnectedSeq).WillOnce(Return(true)).RetiresOnSaturation();
+    std::unique_ptr<IMediaPipeline::MediaSource> source =
+        std::make_unique<MediaSourceTest>(SourceConfigType::SUBTITLE, m_id);
+
+    bool result = m_mediaPipelineIpc->attachSource(source, m_id);
+
+    EXPECT_EQ(result, false);
 }
